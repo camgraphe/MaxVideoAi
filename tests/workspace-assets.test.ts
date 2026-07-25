@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import type { KlingElementState } from '../frontend/components/KlingElementsBuilder';
-import type { EngineInputField } from '../frontend/types/engines';
+import type { ResolvedEngineReferenceBudget } from '../frontend/lib/reference-budget';
+import type { EngineInputField, EngineInputSchema } from '../frontend/types/engines';
 import {
   buildKlingLibraryAsset,
   buildReferenceAssetFromLibraryAsset,
@@ -11,15 +12,23 @@ import {
   insertKlingLibraryAsset,
   insertReferenceAsset,
   normalizeAssetLibraryPayload,
+  reconcileReferenceAssets,
   removeReferenceAsset,
   shouldMirrorCharacterImageAsset,
   shouldMirrorVideoLibraryAsset,
+  tryInsertReferenceAsset,
   type ReferenceAsset,
   type UserAsset,
 } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-assets';
 
 const imageField: EngineInputField = { id: 'image_url', type: 'image', label: 'Image', maxCount: 2 };
 const videoField: EngineInputField = { id: 'video_url', type: 'video', label: 'Video', maxCount: 1 };
+
+const sharedBudget: ResolvedEngineReferenceBudget = {
+  fieldIds: ['image_urls', 'video_urls'],
+  maxTotal: 2,
+  countUniqueUrls: true,
+};
 
 function userAsset(patch: Partial<UserAsset> = {}): UserAsset {
   return {
@@ -114,6 +123,171 @@ test('reference asset insertion fills slots, replaces assets, and preserves max 
   state = removeReferenceAsset(state, imageField, 1, (asset) => released.push(asset.id));
   assert.deepEqual(state.image_url.map((entry) => entry?.id ?? null), ['asset_replacement', null]);
   assert.deepEqual(released, ['asset_first', 'asset_second']);
+});
+
+test('candidate insertion enforces one shared budget across fields', () => {
+  const images: EngineInputField = { id: 'image_urls', type: 'image', label: 'Images', maxCount: 5 };
+  const videos: EngineInputField = { id: 'video_urls', type: 'video', label: 'Videos', maxCount: 5 };
+  const inputSchema: EngineInputSchema = {
+    optional: [
+      { ...images, modes: ['ref2v' as const] },
+      { ...videos, modes: ['ref2v' as const] },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_urls', 'video_urls'],
+      modes: ['ref2v' as const],
+      maxTotal: 2,
+      countUniqueUrls: true,
+    },
+  };
+  const first = buildReferenceAssetFromLibraryAsset(images, userAsset({ id: 'one', url: 'one' }));
+  const second = buildReferenceAssetFromLibraryAsset(videos, userAsset({
+    id: 'two',
+    kind: 'video',
+    mime: 'video/mp4',
+    url: 'two',
+  }));
+  const rejected = buildReferenceAssetFromLibraryAsset(images, userAsset({ id: 'three', url: 'three' }));
+
+  const one = tryInsertReferenceAsset({}, images, first, undefined, {
+    inputSchema,
+    preferredMode: 't2v',
+  });
+  assert.equal(one.accepted, true);
+  const two = tryInsertReferenceAsset(one.state, videos, second, undefined, {
+    inputSchema,
+    preferredMode: 't2v',
+  });
+  assert.equal(two.accepted, true);
+  const three = tryInsertReferenceAsset(two.state, images, rejected, undefined, {
+    inputSchema,
+    preferredMode: 't2v',
+  });
+  assert.deepEqual(three, {
+    accepted: false,
+    state: two.state,
+    reason: 'reference_budget',
+    maxTotal: 2,
+  });
+});
+
+test('rejected replacement neither mutates state nor releases the current asset', () => {
+  const field: EngineInputField = { id: 'image_urls', type: 'image', label: 'Images', maxCount: 2 };
+  const current = buildReferenceAssetFromLibraryAsset(field, userAsset({ id: 'current', url: 'current' }));
+  const other = buildReferenceAssetFromLibraryAsset(field, userAsset({ id: 'other', url: 'other' }));
+  const replacement = buildReferenceAssetFromLibraryAsset(field, userAsset({ id: 'replacement', url: 'replacement' }));
+  const state = { image_urls: [current, other] };
+  const result = tryInsertReferenceAsset(state, field, replacement, 0, {
+    inputSchema: {
+      optional: [{ ...field, modes: ['ref2v'] }],
+      referenceBudget: {
+        fieldIds: ['image_urls'],
+        modes: ['ref2v'],
+        maxTotal: 2,
+        countUniqueUrls: false,
+      },
+    },
+    preferredMode: 'ref2v',
+  });
+  assert.equal(result.accepted, true);
+  assert.equal(result.replacedAsset?.id, 'current');
+
+  const overflowResult = tryInsertReferenceAsset(
+    { image_urls: [current, other], video_urls: [replacement] },
+    field,
+    replacement,
+    0,
+    {
+      inputSchema: {
+        optional: [
+          { ...field, modes: ['ref2v'] },
+          { id: 'video_urls', type: 'video', label: 'Videos', modes: ['ref2v'] },
+        ],
+        referenceBudget: {
+          fieldIds: ['image_urls', 'video_urls'],
+          modes: ['ref2v'],
+          maxTotal: 2,
+          countUniqueUrls: false,
+        },
+      },
+      preferredMode: 'ref2v',
+    }
+  );
+  assert.equal(overflowResult.accepted, false);
+  assert.equal(overflowResult.replacedAsset, undefined);
+  assert.equal(overflowResult.state.image_urls[0], current);
+});
+
+test('reconciliation preserves retained arrays exactly when no aggregate budget exists', () => {
+  const field: EngineInputField = { id: 'image_urls', type: 'image', label: 'Images', maxCount: 1 };
+  const first = buildReferenceAssetFromLibraryAsset(field, userAsset({ id: 'first', url: 'first' }));
+  const second = buildReferenceAssetFromLibraryAsset(field, userAsset({ id: 'second', url: 'second' }));
+  const previous = { image_urls: [first, second] };
+  assert.equal(reconcileReferenceAssets(previous, [field], null), previous);
+});
+
+test('budget reconciliation keeps destination field order and releases overflow', () => {
+  const images: EngineInputField = { id: 'image_urls', type: 'image', label: 'Images', maxCount: 3 };
+  const videos: EngineInputField = { id: 'video_urls', type: 'video', label: 'Videos', maxCount: 1 };
+  const released: string[] = [];
+  const previous = {
+    video_urls: [buildReferenceAssetFromLibraryAsset(videos, userAsset({ id: 'video', kind: 'video', mime: 'video/mp4', url: 'video' }))],
+    image_urls: [
+      buildReferenceAssetFromLibraryAsset(images, userAsset({ id: 'image-1', url: 'image-1' })),
+      buildReferenceAssetFromLibraryAsset(images, userAsset({ id: 'image-2', url: 'image-2' })),
+      buildReferenceAssetFromLibraryAsset(images, userAsset({ id: 'image-3', url: 'image-3' })),
+    ],
+  };
+  const reconciled = reconcileReferenceAssets(
+    previous,
+    [images, videos],
+    sharedBudget,
+    (asset) => released.push(asset.id)
+  );
+  assert.deepEqual(reconciled.image_urls.map((entry) => entry?.id ?? null), ['image-1', 'image-2', null]);
+  assert.equal(reconciled.video_urls, undefined);
+  assert.deepEqual(released.sort(), ['image-3', 'video']);
+});
+
+test('reconciliation does not count or release an active source field outside the budget', () => {
+  const images: EngineInputField = {
+    id: 'image_urls',
+    type: 'image',
+    label: 'Images',
+    maxCount: 2,
+  };
+  const source: EngineInputField = {
+    id: 'video_url',
+    type: 'video',
+    label: 'Source',
+    maxCount: 1,
+  };
+  const released: string[] = [];
+  const image = buildReferenceAssetFromLibraryAsset(
+    images,
+    userAsset({ id: 'image', url: 'image' })
+  );
+  const video = buildReferenceAssetFromLibraryAsset(
+    source,
+    userAsset({
+      id: 'source',
+      kind: 'video',
+      mime: 'video/mp4',
+      url: 'source',
+    })
+  );
+  const result = reconcileReferenceAssets(
+    { image_urls: [image], video_url: [video] },
+    [images, source],
+    {
+      fieldIds: ['image_urls'],
+      maxTotal: 1,
+      countUniqueUrls: true,
+    },
+    (asset) => released.push(asset.id)
+  );
+  assert.equal(result.video_url[0], video);
+  assert.deepEqual(released, []);
 });
 
 test('kling library insertion targets frontal and reference slots', () => {

@@ -1,6 +1,11 @@
 import type { ComposerAttachment, AssetFieldConfig } from '@/components/Composer';
 import type { KlingElementAsset, KlingElementState } from '@/components/KlingElementsBuilder';
-import type { EngineInputField } from '@/types/engines';
+import {
+  evaluateReferenceBudget,
+  resolveEngineReferenceBudgetForValues,
+  type ResolvedEngineReferenceBudget,
+} from '@/lib/reference-budget';
+import type { EngineInputField, EngineInputSchema, Mode } from '@/types/engines';
 
 export type ReferenceAsset = {
   id: string;
@@ -18,6 +23,22 @@ export type ReferenceAsset = {
   status: 'uploading' | 'ready' | 'error';
   error?: string;
 };
+
+type InputAssetState = Record<string, (ReferenceAsset | null)[]>;
+
+export type ReferenceAssetInsertionResult =
+  | {
+      accepted: true;
+      state: InputAssetState;
+      replacedAsset: ReferenceAsset | null;
+    }
+  | {
+      accepted: false;
+      state: InputAssetState;
+      reason: 'field_limit' | 'reference_budget';
+      maxTotal?: number;
+      replacedAsset?: undefined;
+    };
 
 export type UserAsset = {
   id: string;
@@ -191,16 +212,16 @@ export function buildReferenceAssetFromLibraryAsset(field: EngineInputField, ass
   };
 }
 
-export function insertReferenceAsset(
-  previous: Record<string, (ReferenceAsset | null)[]>,
+export function tryInsertReferenceAsset(
+  previous: InputAssetState,
   field: EngineInputField,
   asset: ReferenceAsset,
   slotIndex?: number,
   options?: {
-    release?: (asset: ReferenceAsset) => void;
-    onMaxReached?: () => void;
+    inputSchema?: EngineInputSchema | null;
+    preferredMode?: Mode;
   }
-): Record<string, (ReferenceAsset | null)[]> {
+): ReferenceAssetInsertionResult {
   const maxCount = field.maxCount ?? 0;
   const current = previous[field.id] ? [...previous[field.id]] : [];
 
@@ -217,21 +238,158 @@ export function insertReferenceAsset(
   if (targetIndex < 0) {
     targetIndex = current.findIndex((entry) => entry === null);
   }
-  if (targetIndex < 0) {
-    if (maxCount > 0 && current.length >= maxCount) {
-      options?.onMaxReached?.();
-      return previous;
-    }
-    current.push(asset);
-  } else {
-    const existing = current[targetIndex];
-    if (existing) {
-      options?.release?.(existing);
-    }
-    current[targetIndex] = asset;
+  if (targetIndex < 0 && maxCount > 0 && current.length >= maxCount) {
+    return { accepted: false, state: previous, reason: 'field_limit' };
   }
 
-  return { ...previous, [field.id]: current };
+  const candidate = [...current];
+  const replacedAsset = targetIndex >= 0 ? candidate[targetIndex] ?? null : null;
+  if (targetIndex < 0) candidate.push(asset);
+  else candidate[targetIndex] = asset;
+  const candidateState = { ...previous, [field.id]: candidate };
+  const budget = resolveEngineReferenceBudgetForValues(
+    options?.inputSchema,
+    options?.preferredMode ?? 't2v',
+    candidateState,
+    (entry) => entry?.url ?? entry?.previewUrl ?? null,
+    field.id
+  );
+  if (budget) {
+    const evaluation = evaluateReferenceBudget({
+      budget,
+      valuesByField: candidateState,
+      getIdentity: (entry) => entry?.url ?? entry?.previewUrl ?? null,
+    });
+    if (!evaluation.ok) {
+      return {
+        accepted: false,
+        state: previous,
+        reason: 'reference_budget',
+        maxTotal: evaluation.maxTotal,
+      };
+    }
+  }
+  return {
+    accepted: true,
+    state: candidateState,
+    replacedAsset,
+  };
+}
+
+export function insertReferenceAsset(
+  previous: InputAssetState,
+  field: EngineInputField,
+  asset: ReferenceAsset,
+  slotIndex?: number,
+  options?: {
+    release?: (asset: ReferenceAsset) => void;
+    onMaxReached?: () => void;
+    inputSchema?: EngineInputSchema | null;
+    preferredMode?: Mode;
+    onBudgetReached?: (maxTotal: number) => void;
+  }
+): InputAssetState {
+  const result = tryInsertReferenceAsset(previous, field, asset, slotIndex, {
+    inputSchema: options?.inputSchema,
+    preferredMode: options?.preferredMode,
+  });
+  if (!result.accepted) {
+    if (result.reason === 'field_limit') options?.onMaxReached?.();
+    else options?.onBudgetReached?.(result.maxTotal ?? 0);
+    return previous;
+  }
+  if (result.replacedAsset) options?.release?.(result.replacedAsset);
+  return result.state;
+}
+
+function inputAssetStatesAreIdentical(
+  left: InputAssetState,
+  right: InputAssetState
+): boolean {
+  const leftKeys = Object.keys(left);
+  const rightKeys = Object.keys(right);
+  if (leftKeys.length !== rightKeys.length) return false;
+  for (const key of leftKeys) {
+    const leftItems = left[key];
+    const rightItems = right[key];
+    if (!rightItems || leftItems.length !== rightItems.length) return false;
+    if (leftItems.some((asset, index) => asset !== rightItems[index])) return false;
+  }
+  return true;
+}
+
+export function reconcileReferenceAssets(
+  previous: InputAssetState,
+  fields: EngineInputField[],
+  referenceBudget: ResolvedEngineReferenceBudget | null,
+  release?: (asset: ReferenceAsset) => void
+): InputAssetState {
+  const fieldsById = new Map(fields.map((field) => [field.id, field]));
+
+  if (!referenceBudget) {
+    const next: InputAssetState = {};
+    for (const [fieldId, items] of Object.entries(previous)) {
+      if (fieldsById.has(fieldId)) {
+        next[fieldId] = items;
+      } else {
+        items.forEach((asset) => {
+          if (asset) release?.(asset);
+        });
+      }
+    }
+    return inputAssetStatesAreIdentical(previous, next) ? previous : next;
+  }
+
+  const next: InputAssetState = {};
+  const counted = new Set<string>();
+  let aggregateCount = 0;
+  const seenFieldIds = new Set<string>();
+
+  for (const field of fields) {
+    if (seenFieldIds.has(field.id)) continue;
+    seenFieldIds.add(field.id);
+    const items = previous[field.id];
+    if (!items) continue;
+
+    const retained = [...items];
+    const maxCount = field.maxCount ?? 0;
+    const shouldCount = referenceBudget.fieldIds.includes(field.id);
+    for (let index = 0; index < retained.length; index += 1) {
+      const asset = retained[index];
+      if (!asset) continue;
+      if (maxCount > 0 && index >= maxCount) {
+        release?.(asset);
+        retained[index] = null;
+        continue;
+      }
+      if (!shouldCount) continue;
+
+      const identity = (asset.url ?? asset.previewUrl).trim();
+      const consumesUnit = !referenceBudget.countUniqueUrls || !counted.has(identity);
+      if (consumesUnit && aggregateCount >= referenceBudget.maxTotal) {
+        release?.(asset);
+        retained[index] = null;
+        continue;
+      }
+      if (consumesUnit) {
+        aggregateCount += 1;
+        counted.add(identity);
+      }
+    }
+    if (retained.some((asset) => asset !== null)) {
+      next[field.id] = retained;
+    }
+  }
+
+  for (const [fieldId, items] of Object.entries(previous)) {
+    if (!fieldsById.has(fieldId)) {
+      items.forEach((asset) => {
+        if (asset) release?.(asset);
+      });
+    }
+  }
+
+  return inputAssetStatesAreIdentical(previous, next) ? previous : next;
 }
 
 export function removeReferenceAsset(
