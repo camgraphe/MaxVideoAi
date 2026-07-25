@@ -249,6 +249,31 @@ test('budget reconciliation keeps destination field order and releases overflow'
   assert.deepEqual(released.sort(), ['image-3', 'video']);
 });
 
+test('automatic insertion ignores trailing nulls beyond a positive field limit', () => {
+  const field: EngineInputField = { id: 'image_urls', type: 'image', label: 'Images', maxCount: 2 };
+  const first = buildReferenceAssetFromLibraryAsset(field, userAsset({ id: 'first', url: 'first' }));
+  const second = buildReferenceAssetFromLibraryAsset(field, userAsset({ id: 'second', url: 'second' }));
+  const overflow = buildReferenceAssetFromLibraryAsset(field, userAsset({ id: 'overflow', url: 'overflow' }));
+  const replacement = buildReferenceAssetFromLibraryAsset(field, userAsset({ id: 'replacement', url: 'replacement' }));
+  const reconciled = reconcileReferenceAssets(
+    { image_urls: [first, second, overflow] },
+    [field],
+    {
+      fieldIds: ['image_urls'],
+      maxTotal: 3,
+      countUniqueUrls: true,
+    }
+  );
+  assert.deepEqual(reconciled.image_urls.map((asset) => asset?.id ?? null), ['first', 'second', null]);
+
+  for (const slotIndex of [undefined, 99]) {
+    assert.deepEqual(
+      tryInsertReferenceAsset(reconciled, field, replacement, slotIndex),
+      { accepted: false, state: reconciled, reason: 'field_limit' }
+    );
+  }
+});
+
 test('reconciliation does not count or release an active source field outside the budget', () => {
   const images: EngineInputField = {
     id: 'image_urls',

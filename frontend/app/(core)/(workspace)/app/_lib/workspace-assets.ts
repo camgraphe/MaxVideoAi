@@ -236,7 +236,9 @@ export function tryInsertReferenceAsset(
     targetIndex = -1;
   }
   if (targetIndex < 0) {
-    targetIndex = current.findIndex((entry) => entry === null);
+    targetIndex = current.findIndex(
+      (entry, index) => entry === null && (maxCount <= 0 || index < maxCount)
+    );
   }
   if (targetIndex < 0 && maxCount > 0 && current.length >= maxCount) {
     return { accepted: false, state: previous, reason: 'field_limit' };
