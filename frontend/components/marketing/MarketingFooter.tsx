@@ -217,6 +217,7 @@ export function MarketingFooter() {
         <div className="flex items-center justify-between gap-4 text-sm text-text-muted">
           <Link
             href="/"
+            prefetch={false}
             className="inline-flex items-center gap-4 font-display text-lg font-semibold tracking-tight text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
           >
             <Image src="/assets/branding/logo-mark.svg" alt="" aria-hidden="true" width={32} height={32} className="h-8 w-8" />
@@ -234,7 +235,7 @@ export function MarketingFooter() {
             <p className={sectionTitleClass}>{enginesTitle}</p>
             <nav className="mt-3 flex flex-col gap-2" aria-label={enginesTitle}>
               {engineLinks.map((item) => (
-                <Link key={item.key} href={item.href} className={linkClass}>
+                <Link key={item.key} href={item.href} prefetch={false} className={linkClass}>
                   {item.label}
                 </Link>
               ))}
@@ -244,7 +245,7 @@ export function MarketingFooter() {
             <p className={sectionTitleClass}>{comparisonsTitle}</p>
             <nav className="mt-3 flex flex-col gap-2" aria-label={comparisonsTitle}>
               {comparisonLinks.map((item) => (
-                <Link key={item.key} href={item.href} className={linkClass}>
+                <Link key={item.key} href={item.href} prefetch={false} className={linkClass}>
                   {item.label}
                 </Link>
               ))}
@@ -254,7 +255,7 @@ export function MarketingFooter() {
             <p className={sectionTitleClass}>{useCasesTitle}</p>
             <nav className="mt-3 flex flex-col gap-2" aria-label={useCasesTitle}>
               {useCaseLinks.map((item) => (
-                <Link key={item.key} href={item.href} className={linkClass}>
+                <Link key={item.key} href={item.href} prefetch={false} className={linkClass}>
                   {item.label}
                 </Link>
               ))}
@@ -264,7 +265,7 @@ export function MarketingFooter() {
             <p className={sectionTitleClass}>{examplesTitle}</p>
             <nav className="mt-3 flex flex-col gap-2" aria-label={examplesTitle}>
               {exampleLinks.map((item) => (
-                <Link key={item.key} href={item.href} className={linkClass}>
+                <Link key={item.key} href={item.href} prefetch={false} className={linkClass}>
                   {item.label}
                 </Link>
               ))}
@@ -274,7 +275,7 @@ export function MarketingFooter() {
             <p className={sectionTitleClass}>{productTitle}</p>
             <nav className="mt-3 flex flex-col gap-2" aria-label={productTitle}>
               {productLinks.map((item) => (
-                <Link key={item.key} href={item.href} className={linkClass}>
+                <Link key={item.key} href={item.href} prefetch={false} className={linkClass}>
                   {item.label}
                 </Link>
               ))}
@@ -284,7 +285,7 @@ export function MarketingFooter() {
             <p className={sectionTitleClass}>{companyTitle}</p>
             <nav className="mt-3 flex flex-col gap-2" aria-label={companyTitle}>
               {companyLinks.map((item) => (
-                <Link key={item.key} href={item.href} className={linkClass}>
+                <Link key={item.key} href={item.href} prefetch={false} className={linkClass}>
                   {item.label}
                 </Link>
               ))}
@@ -299,6 +300,7 @@ export function MarketingFooter() {
               <Link
                 key={`policy-${item.href}`}
                 href={item.href}
+                prefetch={false}
                 locale={item.locale === true ? undefined : false}
                 className={linkClass}
               >

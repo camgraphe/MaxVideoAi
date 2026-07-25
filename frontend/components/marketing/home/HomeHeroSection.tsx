@@ -190,6 +190,7 @@ export function HomeHero({
             </ButtonLink>
             <ButtonLink
               href={{ pathname: '/examples' }}
+              prefetch={false}
               linkComponent={Link}
               variant="outline"
               size="lg"
@@ -202,6 +203,7 @@ export function HomeHero({
             </ButtonLink>
             <Link
               href={{ pathname: '/ai-video-engines' }}
+              prefetch={false}
               className="inline-flex min-h-[48px] items-center gap-2 px-2 text-sm font-semibold text-brand underline decoration-transparent underline-offset-4 transition hover:text-brandHover hover:decoration-current"
               data-analytics-event="hero_compare_click"
               data-analytics-cta-name="compare_engines"

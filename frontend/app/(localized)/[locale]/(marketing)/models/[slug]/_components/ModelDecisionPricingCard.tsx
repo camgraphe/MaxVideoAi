@@ -36,6 +36,7 @@ export function ModelDecisionPricingCard({ pricing }: ModelDecisionPricingCardPr
           </div>
           <Link
             href={pricing.cta.href}
+            prefetch={false}
             className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[10px] border border-[#d8e0ec] bg-white px-5 py-2 text-sm font-semibold text-[#071126] shadow-[0_10px_28px_rgba(15,23,42,0.07)] transition hover:border-[#b8c6db] hover:bg-[#fbfdff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg dark:border-white/12 dark:bg-white/[0.055] dark:text-white dark:hover:bg-white/[0.085]"
           >
             <span>{pricing.cta.label}</span>

@@ -31,6 +31,10 @@ test('homepage emits a deterministic responsive LCP preload without waiting for 
   assert.match(imageConfigSource, /showcase-seedance-2-0\.webp/);
   assert.match(heroSource, /HOME_LCP_POSTER_SRC/);
   assert.match(heroSource, /engineId === HERO_VIDEO_ORDER\[0\]/);
+  assert.ok(
+    (heroSource.match(/prefetch=\{false\}/g) ?? []).length >= 3,
+    'above-the-fold homepage CTAs must not compete with the LCP image through route prefetches',
+  );
 });
 
 test('homepage starts its exact unoptimized LCP poster from the HTTP response headers', () => {

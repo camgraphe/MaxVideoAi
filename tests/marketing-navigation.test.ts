@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import test from 'node:test';
 
 import {
@@ -13,6 +14,8 @@ const marketingNavSource = readFileSync('frontend/components/marketing/Marketing
 const marketingDesktopNavSource = readFileSync('frontend/components/marketing/MarketingDesktopNav.tsx', 'utf8');
 const marketingFooterSource = readFileSync('frontend/components/marketing/MarketingFooter.tsx', 'utf8');
 const headerBarSource = readFileSync('frontend/components/HeaderBar.tsx', 'utf8');
+const modelPageComponentsDirectory =
+  'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components';
 
 const bestForUseCaseLinks = [
   ['Cinematic realism', '/ai-video-engines/best-for/cinematic-realism'],
@@ -123,6 +126,33 @@ test('marketing footer keeps crawlable Best-For hub and priority child links', (
     MARKETING_NAV_BEST_FOR_USE_CASES.map((item) => [item.label, hrefPath(item.href)]),
     bestForUseCaseLinks
   );
+});
+
+test('marketing navigation avoids background-prefetching every crawlable destination', () => {
+  for (const [surface, source] of [
+    ['desktop navigation', marketingDesktopNavSource],
+    ['footer', marketingFooterSource],
+  ] as const) {
+    const linkOpeningTags = source.match(/<Link\b[\s\S]*?>/g) ?? [];
+    assert.ok(linkOpeningTags.length > 0, `${surface} should render links`);
+
+    for (const tag of linkOpeningTags) {
+      assert.match(tag, /prefetch=\{false\}/, `${surface} links should load only after navigation`);
+    }
+  }
+});
+
+test('model pages do not prefetch every linked route while their hero media is loading', () => {
+  const componentSources = readdirSync(modelPageComponentsDirectory)
+    .filter((file) => file.endsWith('.tsx'))
+    .map((file) => [file, readFileSync(join(modelPageComponentsDirectory, file), 'utf8')] as const);
+
+  for (const [file, source] of componentSources) {
+    const linkOpeningTags = source.match(/<Link\b[\s\S]*?>/g) ?? [];
+    for (const tag of linkOpeningTags) {
+      assert.match(tag, /prefetch=\{false\}/, `${file} links should load only after navigation`);
+    }
+  }
 });
 
 test('marketing footer separates Best-For use cases from popular comparisons', () => {

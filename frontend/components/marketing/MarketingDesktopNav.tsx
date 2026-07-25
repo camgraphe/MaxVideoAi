@@ -37,6 +37,7 @@ export function MarketingDesktopNav({
             <Link
               key={item.key}
               href={item.href}
+              prefetch={false}
               className={clsx(
                 'whitespace-nowrap transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
                 isActive ? 'text-text-primary' : undefined
@@ -67,6 +68,7 @@ export function MarketingDesktopNav({
           >
             <Link
               href={item.href}
+              prefetch={false}
               aria-haspopup="menu"
               className={clsx(
                 'inline-flex items-center gap-1 whitespace-nowrap transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
@@ -88,6 +90,7 @@ export function MarketingDesktopNav({
                   <nav className="flex flex-col gap-1" role="menu" aria-label={label}>
                     <Link
                       href={dropdown.allHref}
+                      prefetch={false}
                       className="rounded-input px-3 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       role="menuitem"
                       onClick={() => onCloseDesktopDropdown(200)}
@@ -98,6 +101,7 @@ export function MarketingDesktopNav({
                       <Link
                         key={entry.key}
                         href={entry.href}
+                        prefetch={false}
                         className="rounded-input px-3 py-2 text-sm text-text-secondary transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         role="menuitem"
                         onClick={() => onCloseDesktopDropdown(200)}
@@ -127,6 +131,7 @@ export function MarketingDesktopNav({
                           <Link
                             key={entry.key}
                             href={entry.href}
+                            prefetch={false}
                             className={clsx(
                               'rounded-input px-3 py-2 text-sm transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                               entry.emphasized ? 'font-semibold text-text-primary' : 'text-text-secondary'

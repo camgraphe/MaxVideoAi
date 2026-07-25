@@ -79,7 +79,11 @@ export function ModelPageContentSections({
       {pricingCallout ? <ModelPricingCallout callout={pricingCallout} /> : null}
       {microCta ? (
         <div className="flex justify-center">
-          <Link href={microCtaHref} className="text-sm font-semibold text-brand transition hover:text-brandHover">
+          <Link
+            href={microCtaHref}
+            prefetch={false}
+            className="text-sm font-semibold text-brand transition hover:text-brandHover"
+          >
             {microCta}
           </Link>
         </div>

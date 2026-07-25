@@ -40,6 +40,7 @@ export function ModelPrepLinksSection({ prepLinksSection, locale }: ModelPrepLin
                     <Link
                       key={item.href}
                       href={item.href}
+                      prefetch={false}
                       className="group overflow-hidden rounded-2xl border border-hairline bg-bg shadow-card transition hover:-translate-y-0.5 hover:border-text-muted"
                     >
                       {visual ? (

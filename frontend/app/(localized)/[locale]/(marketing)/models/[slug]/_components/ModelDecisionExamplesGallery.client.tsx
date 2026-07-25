@@ -90,6 +90,7 @@ export function ModelDecisionExamplesGallery({
           {examplesLinkHref ? (
             <Link
               href={examplesLinkHref}
+              prefetch={false}
               className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-hairline bg-surface px-4 text-sm font-semibold text-text-primary shadow-sm transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
             >
               <span>{viewAllLabel}</span>
@@ -112,6 +113,7 @@ export function ModelDecisionExamplesGallery({
                   >
                     <Link
                       href={item.href as LocalizedLinkHref}
+                      prefetch={false}
                       className={[
                         'group relative block aspect-video overflow-hidden',
                         isVertical ? 'bg-slate-950 dark:bg-black' : 'bg-slate-100 dark:bg-white/5',
@@ -157,12 +159,17 @@ export function ModelDecisionExamplesGallery({
                         {item.title}
                       </h3>
                       <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[0.72rem] font-semibold sm:gap-x-5 sm:text-[0.78rem]">
-                        <Link href={item.href as LocalizedLinkHref} className="text-slate-950 transition hover:text-blue-600 dark:text-white dark:hover:text-blue-200">
+                        <Link
+                          href={item.href as LocalizedLinkHref}
+                          prefetch={false}
+                          className="text-slate-950 transition hover:text-blue-600 dark:text-white dark:hover:text-blue-200"
+                        >
                           {renderLinkLabel}
                         </Link>
                         {item.recreateHref && item.recreateLabel ? (
                           <Link
                             href={item.recreateHref as LocalizedLinkHref}
+                            prefetch={false}
                             className="inline-flex items-center gap-1 text-blue-700 transition hover:text-blue-500 dark:text-blue-200 dark:hover:text-blue-100"
                           >
                             <span>{item.recreateLabel.replace(/\s*(?:→|->)\s*$/, '')}</span>

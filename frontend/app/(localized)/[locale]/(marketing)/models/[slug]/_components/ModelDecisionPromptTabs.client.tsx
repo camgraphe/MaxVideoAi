@@ -99,6 +99,7 @@ export function ModelDecisionPromptTabs({
             {exampleHref ? (
               <Link
                 href={exampleHref}
+                prefetch={false}
                 className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-hairline bg-surface px-4 text-sm font-semibold text-text-primary shadow-sm transition hover:bg-surface-2"
               >
                 <UIIcon icon={Play} size={15} />
@@ -108,6 +109,7 @@ export function ModelDecisionPromptTabs({
             ) : null}
             <Link
               href={usePromptHref}
+              prefetch={false}
               className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-hairline bg-surface px-4 text-sm font-semibold text-text-primary shadow-sm transition hover:bg-surface-2"
             >
               <UIIcon icon={Clock3} size={15} />

@@ -40,7 +40,7 @@ export function ModelDefaultExamplesSection({
                       key={item.id}
                       className="flex w-80 shrink-0 flex-col overflow-hidden rounded-2xl border border-hairline bg-surface shadow-card"
                     >
-                      <Link href={item.href} className="group relative block aspect-video bg-placeholder">
+                      <Link href={item.href} prefetch={false} className="group relative block aspect-video bg-placeholder">
                         {item.posterUrl ? (
                           <Image
                             src={item.posterUrl}
@@ -78,7 +78,11 @@ export function ModelDefaultExamplesSection({
             </div>
             {section.defaultCtaLabel ? (
               <p className="mt-4 text-center text-base leading-relaxed text-text-secondary">
-                <Link href={defaultPresentation.examplesLinkHref} className="font-semibold text-brand hover:text-brandHover">
+                <Link
+                  href={defaultPresentation.examplesLinkHref}
+                  prefetch={false}
+                  className="font-semibold text-brand hover:text-brandHover"
+                >
                   {section.defaultCtaLabel}
                 </Link>
               </p>
@@ -88,7 +92,11 @@ export function ModelDefaultExamplesSection({
           <div className="mt-4 rounded-2xl border border-dashed border-hairline bg-surface/60 px-4 py-4 text-sm text-text-secondary">
             {section.intro}{' '}
             {section.defaultCtaLabel ? (
-              <Link href={defaultPresentation.examplesLinkHref} className="font-semibold text-brand hover:text-brandHover">
+              <Link
+                href={defaultPresentation.examplesLinkHref}
+                prefetch={false}
+                className="font-semibold text-brand hover:text-brandHover"
+              >
                 {section.defaultCtaLabel}
               </Link>
             ) : null}
