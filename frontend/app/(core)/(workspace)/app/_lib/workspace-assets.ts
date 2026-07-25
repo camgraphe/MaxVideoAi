@@ -278,6 +278,44 @@ export function tryInsertReferenceAsset(
   };
 }
 
+export function settleReferenceAssetReservation(
+  previous: InputAssetState,
+  field: EngineInputField,
+  reservationId: string,
+  replacement: ReferenceAsset | null
+): {
+  state: InputAssetState;
+  settled: boolean;
+} {
+  const current = previous[field.id];
+  const reservationIndex = current?.findIndex(
+    (asset) => asset?.id === reservationId
+  ) ?? -1;
+  if (!current || reservationIndex < 0) {
+    return { state: previous, settled: false };
+  }
+
+  const nextList = [...current];
+  if (replacement) {
+    nextList[reservationIndex] = replacement;
+  } else if ((field.maxCount ?? 0) > 0) {
+    nextList[reservationIndex] = null;
+  } else {
+    nextList.splice(reservationIndex, 1);
+  }
+
+  const state = { ...previous };
+  if (
+    nextList.some((asset) => asset !== null) ||
+    ((field.maxCount ?? 0) > 0 && nextList.length > 0)
+  ) {
+    state[field.id] = nextList;
+  } else {
+    delete state[field.id];
+  }
+  return { state, settled: true };
+}
+
 export function insertReferenceAsset(
   previous: InputAssetState,
   field: EngineInputField,

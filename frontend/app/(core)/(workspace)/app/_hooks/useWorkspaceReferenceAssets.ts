@@ -16,6 +16,7 @@ import {
   mergeMirroredLibraryAsset,
   removeReferenceAsset,
   revokeAssetPreview,
+  settleReferenceAssetReservation,
   shouldMirrorCharacterImageAsset,
   shouldMirrorVideoLibraryAsset,
   tryInsertReferenceAsset,
@@ -132,66 +133,29 @@ export function useWorkspaceReferenceAssets({
         return;
       }
 
-      let resolvedAsset = asset;
-
-      if (field.type === 'video' && asset.kind === 'video') {
-        try {
-          if (shouldMirrorVideoLibraryAsset(asset)) {
-            const mirrored = await saveAssetToLibrary({
-              url: asset.url,
-              label:
-                field.label ??
-                asset.url.split('/').pop() ??
-                'Video',
-              source: asset.source === 'recent' ? 'saved_job_output' : asset.source,
-              kind: 'video',
-              jobId: asset.jobId ?? null,
-              sourceOutputId: asset.sourceOutputId ?? null,
-              durationSec: asset.durationSec ?? null,
-            });
-            resolvedAsset = mergeMirroredLibraryAsset(asset, mirrored);
-            setAssetLibrary((previous) =>
-              previous.map((entry) =>
-                entry.id === asset.id || entry.url === asset.url ? resolvedAsset : entry
-              )
-            );
+      const shouldMirrorVideo =
+        field.type === 'video' &&
+        asset.kind === 'video' &&
+        shouldMirrorVideoLibraryAsset(asset);
+      const shouldMirrorImage =
+        field.type === 'image' &&
+        asset.kind === 'image' &&
+        shouldMirrorCharacterImageAsset(asset);
+      const reservationId =
+        shouldMirrorVideo || shouldMirrorImage
+          ? createReferenceAssetId()
+          : null;
+      const newAsset = buildReferenceAssetFromLibraryAsset(field, asset);
+      const reservedAsset = reservationId
+        ? {
+            ...newAsset,
+            id: reservationId,
+            status: 'uploading' as const,
           }
-        } catch (error) {
-          console.error('[assets] failed to mirror generated video asset', error);
-          showNotice(error instanceof Error ? error.message : 'Unable to prepare this video. Try importing the source clip directly.');
-          return;
-        }
-      }
-
-      if (field.type === 'image' && asset.kind === 'image') {
-        try {
-          if (shouldMirrorCharacterImageAsset(asset)) {
-            const mirrored = await saveImageToLibrary({
-              url: asset.url,
-              label:
-                field.label ??
-                asset.url.split('/').pop() ??
-                'Image',
-              source: asset.source,
-            });
-            resolvedAsset = mergeMirroredLibraryAsset(asset, mirrored);
-            setAssetLibrary((previous) =>
-              previous.map((entry) =>
-                entry.id === asset.id || entry.url === asset.url ? resolvedAsset : entry
-              )
-            );
-          }
-        } catch (error) {
-          console.error('[assets] failed to mirror character library asset', error);
-          showNotice(error instanceof Error ? error.message : 'Unable to prepare this character asset. Try another image.');
-          return;
-        }
-      }
-
-      const newAsset = buildReferenceAssetFromLibraryAsset(field, resolvedAsset);
+        : newAsset;
 
       const insertion = commitInputAssetMutation((previous) =>
-        tryInsertReferenceAsset(previous, field, newAsset, slotIndex, {
+        tryInsertReferenceAsset(previous, field, reservedAsset, slotIndex, {
           inputSchema,
           preferredMode,
         })
@@ -204,8 +168,93 @@ export function useWorkspaceReferenceAssets({
         );
         return;
       }
-      if (insertion.replacedAsset) revokeAssetPreview(insertion.replacedAsset);
       setAssetPickerTarget(null);
+      if (!reservationId) {
+        if (insertion.replacedAsset) {
+          revokeAssetPreview(insertion.replacedAsset);
+        }
+        return;
+      }
+
+      try {
+        const mirrored = shouldMirrorVideo
+          ? await saveAssetToLibrary({
+              url: asset.url,
+              label:
+                field.label ??
+                asset.url.split('/').pop() ??
+                'Video',
+              source: asset.source === 'recent' ? 'saved_job_output' : asset.source,
+              kind: 'video',
+              jobId: asset.jobId ?? null,
+              sourceOutputId: asset.sourceOutputId ?? null,
+              durationSec: asset.durationSec ?? null,
+            })
+          : await saveImageToLibrary({
+              url: asset.url,
+              label:
+                field.label ??
+                asset.url.split('/').pop() ??
+                'Image',
+              source: asset.source,
+            });
+        const resolvedAsset = mergeMirroredLibraryAsset(asset, mirrored);
+        const resolvedReferenceAsset = {
+          ...buildReferenceAssetFromLibraryAsset(field, resolvedAsset),
+          id: reservationId,
+        };
+        const settlement = commitInputAssetMutation((previous) =>
+          settleReferenceAssetReservation(
+            previous,
+            field,
+            reservationId,
+            resolvedReferenceAsset
+          )
+        );
+        if (!settlement.settled) {
+          if (insertion.replacedAsset) {
+            revokeAssetPreview(insertion.replacedAsset);
+          }
+          return;
+        }
+        if (insertion.replacedAsset) {
+          revokeAssetPreview(insertion.replacedAsset);
+        }
+        setAssetLibrary((previous) =>
+          previous.map((entry) =>
+            entry.id === asset.id || entry.url === asset.url
+              ? resolvedAsset
+              : entry
+          )
+        );
+      } catch (error) {
+        const rollback = commitInputAssetMutation((previous) =>
+          settleReferenceAssetReservation(
+            previous,
+            field,
+            reservationId,
+            insertion.replacedAsset
+          )
+        );
+        if (!rollback.settled && insertion.replacedAsset) {
+          revokeAssetPreview(insertion.replacedAsset);
+        }
+        if (shouldMirrorVideo) {
+          console.error('[assets] failed to mirror generated video asset', error);
+          showNotice(
+            error instanceof Error
+              ? error.message
+              : 'Unable to prepare this video. Try importing the source clip directly.'
+          );
+        } else {
+          console.error('[assets] failed to mirror character library asset', error);
+          showNotice(
+            error instanceof Error
+              ? error.message
+              : 'Unable to prepare this character asset. Try another image.'
+          );
+        }
+      }
     },
     [
       commitInputAssetMutation,

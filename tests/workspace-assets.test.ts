@@ -14,6 +14,7 @@ import {
   normalizeAssetLibraryPayload,
   reconcileReferenceAssets,
   removeReferenceAsset,
+  settleReferenceAssetReservation,
   shouldMirrorCharacterImageAsset,
   shouldMirrorVideoLibraryAsset,
   tryInsertReferenceAsset,
@@ -216,6 +217,115 @@ test('rejected replacement neither mutates state nor releases the current asset'
   assert.equal(overflowResult.accepted, false);
   assert.equal(overflowResult.replacedAsset, undefined);
   assert.equal(overflowResult.state.image_urls[0], current);
+});
+
+test('reservation settlement patches only the exact pending operation', () => {
+  const reservation = {
+    ...buildReferenceAssetFromLibraryAsset(
+      imageField,
+      userAsset({ id: 'source', url: 'https://fal.media/source.jpg' })
+    ),
+    id: 'mirror-operation',
+    status: 'uploading' as const,
+  };
+  const neighbor = buildReferenceAssetFromLibraryAsset(
+    imageField,
+    userAsset({ id: 'neighbor', url: 'https://cdn.example.com/neighbor.jpg' })
+  );
+  const otherField: EngineInputField = {
+    id: 'other_images',
+    type: 'image',
+    label: 'Other',
+    maxCount: 1,
+  };
+  const other = buildReferenceAssetFromLibraryAsset(
+    otherField,
+    userAsset({ id: 'other', url: 'https://cdn.example.com/other.jpg' })
+  );
+  const resolved = {
+    ...reservation,
+    url: 'https://cdn.example.com/mirrored.jpg',
+    previewUrl: 'https://cdn.example.com/mirrored.jpg',
+    status: 'ready' as const,
+  };
+  const previous = {
+    image_url: [reservation, neighbor],
+    other_images: [other],
+  };
+
+  const result = settleReferenceAssetReservation(
+    previous,
+    imageField,
+    'mirror-operation',
+    resolved
+  );
+
+  assert.equal(result.settled, true);
+  assert.equal(result.state.image_url[0], resolved);
+  assert.equal(result.state.image_url[1], neighbor);
+  assert.equal(result.state.other_images, previous.other_images);
+});
+
+test('stale reservation settlement leaves newer state unchanged', () => {
+  const current = buildReferenceAssetFromLibraryAsset(
+    imageField,
+    userAsset({ id: 'newer', url: 'https://cdn.example.com/newer.jpg' })
+  );
+  const previous = { image_url: [current, null] };
+  const resolved = buildReferenceAssetFromLibraryAsset(
+    imageField,
+    userAsset({ id: 'resolved', url: 'https://cdn.example.com/resolved.jpg' })
+  );
+
+  const result = settleReferenceAssetReservation(
+    previous,
+    imageField,
+    'obsolete-operation',
+    resolved
+  );
+
+  assert.deepEqual(result, { state: previous, settled: false });
+});
+
+test('failed reservation settlement restores the replaced asset or removes only its slot', () => {
+  const reservation = {
+    ...buildReferenceAssetFromLibraryAsset(
+      imageField,
+      userAsset({ id: 'source', url: 'https://fal.media/source.jpg' })
+    ),
+    id: 'mirror-operation',
+    status: 'uploading' as const,
+  };
+  const replaced = buildReferenceAssetFromLibraryAsset(
+    imageField,
+    userAsset({ id: 'replaced', url: 'https://cdn.example.com/replaced.jpg' })
+  );
+  const neighbor = buildReferenceAssetFromLibraryAsset(
+    imageField,
+    userAsset({ id: 'neighbor', url: 'https://cdn.example.com/neighbor.jpg' })
+  );
+
+  const restored = settleReferenceAssetReservation(
+    { image_url: [reservation, neighbor] },
+    imageField,
+    'mirror-operation',
+    replaced
+  );
+  assert.equal(restored.settled, true);
+  assert.equal(restored.state.image_url[0], replaced);
+  assert.equal(restored.state.image_url[1], neighbor);
+
+  const removed = settleReferenceAssetReservation(
+    { image_url: [reservation, neighbor] },
+    imageField,
+    'mirror-operation',
+    null
+  );
+  assert.equal(removed.settled, true);
+  assert.deepEqual(
+    removed.state.image_url.map((asset) => asset?.id ?? null),
+    [null, 'neighbor']
+  );
 });
 
 test('reconciliation preserves retained arrays exactly when no aggregate budget exists', () => {

@@ -60,8 +60,46 @@ test('workspace asset library, field assets, and Kling element assets are split 
   assert.match(referenceAssetsSource, /prepareImageFileForUpload/);
   assert.match(referenceAssetsSource, /tryInsertReferenceAsset/);
   assert.match(referenceAssetsSource, /commitInputAssetMutation/);
+  assert.match(referenceAssetsSource, /settleReferenceAssetReservation/);
+  const handleSelectLibraryAssetIndex = referenceAssetsSource.indexOf(
+    'const handleSelectLibraryAsset = useCallback'
+  );
   const handleAssetAddIndex = referenceAssetsSource.indexOf(
     'const handleAssetAdd = useCallback'
+  );
+  const librarySelectionSource = referenceAssetsSource.slice(
+    handleSelectLibraryAssetIndex,
+    handleAssetAddIndex
+  );
+  const libraryInsertionIndex = librarySelectionSource.indexOf(
+    'const insertion = commitInputAssetMutation'
+  );
+  const videoMirrorIndex = librarySelectionSource.indexOf(
+    'await saveAssetToLibrary'
+  );
+  const imageMirrorIndex = librarySelectionSource.indexOf(
+    'await saveImageToLibrary'
+  );
+  const libraryMutationIndex = librarySelectionSource.indexOf(
+    'setAssetLibrary((previous)'
+  );
+  const pickerCloseIndex = librarySelectionSource.indexOf(
+    'setAssetPickerTarget(null)'
+  );
+  assert.ok(
+    libraryInsertionIndex >= 0 &&
+      libraryInsertionIndex < videoMirrorIndex &&
+      libraryInsertionIndex < imageMirrorIndex &&
+      libraryInsertionIndex < libraryMutationIndex
+  );
+  assert.ok(
+    pickerCloseIndex > libraryInsertionIndex &&
+      pickerCloseIndex < videoMirrorIndex &&
+      pickerCloseIndex < imageMirrorIndex
+  );
+  assert.equal(
+    librarySelectionSource.match(/setAssetPickerTarget\(null\)/g)?.length,
+    1
   );
   const uploadIndex = referenceAssetsSource.indexOf(
     'const upload = async',
