@@ -328,6 +328,121 @@ test('failed reservation settlement restores the replaced asset or removes only 
   );
 });
 
+test('newer mirror failure cannot resurrect a superseded reservation that already settled', () => {
+  const firstReservation = {
+    ...buildReferenceAssetFromLibraryAsset(
+      imageField,
+      userAsset({ id: 'source-one', url: 'https://fal.media/source-one.jpg' })
+    ),
+    id: 'mirror-operation-one',
+    status: 'uploading' as const,
+  };
+  const secondReservation = {
+    ...buildReferenceAssetFromLibraryAsset(
+      imageField,
+      userAsset({ id: 'source-two', url: 'https://fal.media/source-two.jpg' })
+    ),
+    id: 'mirror-operation-two',
+    status: 'uploading' as const,
+  };
+  const firstResolved = {
+    ...firstReservation,
+    url: 'https://cdn.example.com/source-one.jpg',
+    previewUrl: 'https://cdn.example.com/source-one.jpg',
+    status: 'ready' as const,
+  };
+  const secondInsertion = tryInsertReferenceAsset(
+    { image_url: [firstReservation, null] },
+    imageField,
+    secondReservation,
+    0
+  );
+  assert.equal(secondInsertion.accepted, true);
+  if (!secondInsertion.accepted) return;
+
+  const hiddenFirstSettlement = settleReferenceAssetReservation(
+    secondInsertion.state,
+    imageField,
+    firstReservation.id,
+    firstResolved
+  );
+  assert.deepEqual(hiddenFirstSettlement, {
+    state: secondInsertion.state,
+    settled: false,
+  });
+
+  const secondRollback = settleReferenceAssetReservation(
+    hiddenFirstSettlement.state,
+    imageField,
+    secondReservation.id,
+    secondInsertion.replacedAsset
+  );
+
+  assert.equal(secondRollback.settled, true);
+  assert.equal(secondRollback.state.image_url[0], null);
+  assert.equal(secondRollback.discardedAsset, firstReservation);
+  assert.equal(
+    Object.values(secondRollback.state)
+      .flat()
+      .some((asset) => asset?.status === 'uploading'),
+    false
+  );
+});
+
+test('superseded reservation cannot repopulate state when the newer mirror fails first', () => {
+  const firstReservation = {
+    ...buildReferenceAssetFromLibraryAsset(
+      imageField,
+      userAsset({ id: 'source-one', url: 'https://fal.media/source-one.jpg' })
+    ),
+    id: 'mirror-operation-one',
+    status: 'uploading' as const,
+  };
+  const secondReservation = {
+    ...buildReferenceAssetFromLibraryAsset(
+      imageField,
+      userAsset({ id: 'source-two', url: 'https://fal.media/source-two.jpg' })
+    ),
+    id: 'mirror-operation-two',
+    status: 'uploading' as const,
+  };
+  const firstResolved = {
+    ...firstReservation,
+    url: 'https://cdn.example.com/source-one.jpg',
+    previewUrl: 'https://cdn.example.com/source-one.jpg',
+    status: 'ready' as const,
+  };
+  const secondInsertion = tryInsertReferenceAsset(
+    { image_url: [firstReservation, null] },
+    imageField,
+    secondReservation,
+    0
+  );
+  assert.equal(secondInsertion.accepted, true);
+  if (!secondInsertion.accepted) return;
+
+  const secondRollback = settleReferenceAssetReservation(
+    secondInsertion.state,
+    imageField,
+    secondReservation.id,
+    secondInsertion.replacedAsset
+  );
+  assert.equal(secondRollback.settled, true);
+  assert.equal(secondRollback.state.image_url[0], null);
+  assert.equal(secondRollback.discardedAsset, firstReservation);
+
+  const lateFirstSettlement = settleReferenceAssetReservation(
+    secondRollback.state,
+    imageField,
+    firstReservation.id,
+    firstResolved
+  );
+  assert.deepEqual(lateFirstSettlement, {
+    state: secondRollback.state,
+    settled: false,
+  });
+});
+
 test('reconciliation preserves retained arrays exactly when no aggregate budget exists', () => {
   const field: EngineInputField = { id: 'image_urls', type: 'image', label: 'Images', maxCount: 1 };
   const first = buildReferenceAssetFromLibraryAsset(field, userAsset({ id: 'first', url: 'first' }));

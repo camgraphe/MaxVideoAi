@@ -61,6 +61,7 @@ test('workspace asset library, field assets, and Kling element assets are split 
   assert.match(referenceAssetsSource, /tryInsertReferenceAsset/);
   assert.match(referenceAssetsSource, /commitInputAssetMutation/);
   assert.match(referenceAssetsSource, /settleReferenceAssetReservation/);
+  assert.match(referenceAssetsSource, /rollback\.discardedAsset/);
   const handleSelectLibraryAssetIndex = referenceAssetsSource.indexOf(
     'const handleSelectLibraryAsset = useCallback'
   );

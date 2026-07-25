@@ -283,10 +283,16 @@ export function settleReferenceAssetReservation(
   field: EngineInputField,
   reservationId: string,
   replacement: ReferenceAsset | null
-): {
-  state: InputAssetState;
-  settled: boolean;
-} {
+):
+  | {
+      state: InputAssetState;
+      settled: false;
+    }
+  | {
+      state: InputAssetState;
+      settled: true;
+      discardedAsset: ReferenceAsset | null;
+    } {
   const current = previous[field.id];
   const reservationIndex = current?.findIndex(
     (asset) => asset?.id === reservationId
@@ -296,8 +302,11 @@ export function settleReferenceAssetReservation(
   }
 
   const nextList = [...current];
-  if (replacement) {
-    nextList[reservationIndex] = replacement;
+  const discardedAsset =
+    replacement?.status === 'uploading' ? replacement : null;
+  const rollbackTarget = discardedAsset ? null : replacement;
+  if (rollbackTarget) {
+    nextList[reservationIndex] = rollbackTarget;
   } else if ((field.maxCount ?? 0) > 0) {
     nextList[reservationIndex] = null;
   } else {
@@ -313,7 +322,7 @@ export function settleReferenceAssetReservation(
   } else {
     delete state[field.id];
   }
-  return { state, settled: true };
+  return { state, settled: true, discardedAsset };
 }
 
 export function insertReferenceAsset(

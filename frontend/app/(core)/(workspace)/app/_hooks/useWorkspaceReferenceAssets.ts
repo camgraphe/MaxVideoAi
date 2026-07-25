@@ -236,7 +236,9 @@ export function useWorkspaceReferenceAssets({
             insertion.replacedAsset
           )
         );
-        if (!rollback.settled && insertion.replacedAsset) {
+        if (rollback.settled && rollback.discardedAsset) {
+          revokeAssetPreview(rollback.discardedAsset);
+        } else if (!rollback.settled && insertion.replacedAsset) {
           revokeAssetPreview(insertion.replacedAsset);
         }
         if (shouldMirrorVideo) {
