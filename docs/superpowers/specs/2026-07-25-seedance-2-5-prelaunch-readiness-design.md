@@ -2,11 +2,11 @@
 
 Date: 2026-07-25
 
-Status: approved design, pending implementation plan
+Status: approved design, implementation plans ready
 
 ## Context
 
-Dreamina publicly describes Seedance 2.5 as a forthcoming model with longer video generation, 4K output, richer multimodal references, reference-to-video control, and localized editing. The same official page still labels the model as coming soon. The current BytePlus ModelArk documentation exposes Seedance 2.0, Seedance 2.0 Fast, and Seedance 2.0 Mini model IDs, but no Seedance 2.5 API contract.
+Dreamina publicly describes Seedance 2.5 as a forthcoming model with longer video generation, 4K output, richer multimodal references, reference-to-video control, and precise editing of selected regions. The same official page still labels the model as coming soon. The current BytePlus ModelArk documentation exposes Seedance 2.0, Seedance 2.0 Fast, and Seedance 2.0 Mini model IDs, but no Seedance 2.5 API contract.
 
 MaxVideoAI already has a direct BytePlus ModelArk integration with asynchronous submission, polling, storage copying, failure normalization, pricing, and admin-gated routing. That foundation is suitable for Seedance 2.5, but several current branches treat any unrecognized Seedance engine as the Fast variant. This creates an unacceptable prelaunch risk: an unknown future model could inherit the wrong model ID, duration and resolution caps, or vendor rate.
 
@@ -145,13 +145,19 @@ The future high-volume UI should reuse the existing progressive-slot behavior an
 
 ### 4. Unpublished launch content
 
-Use the existing model setup workflow to create:
+Run the existing model setup workflow in dry-run mode to validate the future
+scaffold, then keep prelaunch drafts outside `content/models/`:
 
-- `content/models/en/seedance-2-5.json`
-- `content/models/fr/seedance-2-5.json`
-- `content/models/es/seedance-2-5.json`
+- `docs/model-launch/seedance-2-5/en.overlay.json`
+- `docs/model-launch/seedance-2-5/fr.overlay.json`
+- `docs/model-launch/seedance-2-5/es.overlay.json`
 - `docs/model-launch/seedance-2-5.md`
 - an engine stub under `docs/model-launch/`
+
+This location is required because `pnpm models:audit` treats any localized
+model slug without a matching engine/catalog entry as a critical orphan.
+The drafts move into `content/models/{en,fr,es}/` only in the later factual
+runtime/registry batch.
 
 The localized content is rewritten from the scaffold and may state only:
 
@@ -169,7 +175,10 @@ The content must not contain:
 - API capability language inferred from Dreamina;
 - claims that Seedance 2.5 is available on MaxVideoAI.
 
-The model setup command may generate a registry skeleton for review, but the skeleton is not inserted. Canonical registry validation requires a factual engine-catalog entry, so the route remains nonexistent rather than partially modeled.
+The dry-run setup command may print a registry skeleton for review, but the
+skeleton is not inserted and the dry run writes no files. Canonical registry
+validation requires a factual engine-catalog entry, so the route remains
+nonexistent rather than partially modeled.
 
 ### 5. Publication state machine after API release
 
@@ -270,7 +279,9 @@ Primary tests:
 ### Launch-content contracts
 
 - EN, FR, and ES files have the exact `seedance-2-5` identity.
-- No localized content exposes an app-generation CTA, model ID, price, or availability claim.
+- No localized content exposes an app-generation CTA, provider model ID,
+  price, or positive MaxVideoAI/API availability claim. The internal candidate
+  identity and explicit unavailability statement remain allowed.
 - No canonical registry, generated runtime, app, pricing, sitemap, examples, or comparison surface includes Seedance 2.5.
 - The launch packet records the official-facts gate and required promotion commands.
 
@@ -285,12 +296,18 @@ Focused verification:
 
 ```bash
 pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
+  tests/byteplus-seedance-profiles.test.ts \
   tests/byteplus-provider-architecture.test.ts \
   tests/generate-byteplus-submission.test.ts \
+  tests/generate-route-context.test.ts \
   tests/generate-request-options.test.ts \
   tests/seedance-2-pricing.test.ts \
+  tests/reference-budget.test.ts \
   tests/validate-request.test.ts \
+  tests/generate-attachment-references.test.ts \
+  tests/generate-validation-payload.test.ts \
   tests/workspace-assets.test.ts \
+  tests/workspace-assets-split-contract.test.ts \
   tests/workspace-generation-inputs.test.ts \
   tests/model-setup-cli.test.ts \
   tests/seedance-2-5-readiness.test.ts
@@ -300,6 +317,8 @@ Repository guards:
 
 ```bash
 pnpm model:registry:check
+pnpm model:check
+pnpm models:audit
 pnpm pricing:baseline
 pnpm pricing:public-baseline
 pnpm pricing:audit
@@ -320,7 +339,7 @@ The preparation batch is complete only when:
 3. All existing Seedance 2.0 capability and price assertions remain unchanged.
 4. The generic aggregate reference-budget contract is enforced consistently in tested client, server, and payload paths without being enabled for current engines.
 5. Seedance 2.5 localized launch content exists but cannot resolve to a public or executable model.
-6. No Seedance 2.5 model ID, rate, API limit, or launch date is invented.
+6. No BytePlus/provider model ID, rate, API limit, or launch date is invented.
 7. Focused tests, pricing baselines/audit, registry checks, lint, TypeScript, and diff checks pass with fresh evidence.
 
 ## Official API Facts Required for the Next Batch

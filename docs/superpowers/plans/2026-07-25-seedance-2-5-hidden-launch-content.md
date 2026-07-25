@@ -1,0 +1,886 @@
+# Seedance 2.5 Hidden Launch Content Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Prepare canonical-shape EN, FR, and ES Seedance 2.5 launch drafts plus an API-evidence packet without creating an orphan model-content slug, public route, or executable engine.
+
+**Architecture:** The existing model setup workflow runs in dry-run mode to verify the future scaffold and print an all-false registry skeleton without writing files. Localized overlays remain under `docs/model-launch/seedance-2-5/` until a factual engine and registry entry exist; a readiness contract proves that the drafts are safe while all runtime and publication surfaces remain absent.
+
+**Tech Stack:** JSON model overlays, Markdown launch documentation, TypeScript documentation stub, Node test runner through `tsx`, canonical model-registry and model-audit tooling.
+
+## Global Constraints
+
+- Attribute product claims only to the official Dreamina page: `https://dreamina.capcut.com/seedance/seedance-2-5`.
+- Use “Dreamina states”, “Dreamina describes”, or “Dreamina-announced product-surface claims”; do not present the capabilities as independently verified or available through BytePlus.
+- State in EN, FR, and ES that Seedance 2.5 is not yet available for generation on MaxVideoAI.
+- State that MaxVideoAI API availability, customer pricing, BytePlus pricing, executable limits, and timing are unconfirmed.
+- Keep drafts at `docs/model-launch/seedance-2-5/{en,fr,es}.overlay.json`; do not add an orphan slug under `content/models/`.
+- Do not add a `seedance-2-5` runtime engine, canonical registry entry, generated projection, app CTA, public route, sitemap entry, pricing card, examples membership, or comparison.
+- Do not invent or reserve a provider model ID, release date, rate, payload field, entitlement, region, quota, failure-charging rule, or API limit.
+- Do not copy Seedance 2.0 pricing, prompts, decision content, examples content, runtime specs, or generation CTA into the drafts.
+- The registry skeleton printed by `model:setup --dry-run` is review output only and must not be inserted.
+- The engine evidence stub is documentation-only and must not be imported by runtime code.
+- Follow red-green-refactor, make one focused commit per implementation task, and keep unrelated worktree changes intact.
+
+---
+
+## File Map
+
+- Create `tests/seedance-2-5-readiness.test.ts`: overlay safety, evidence, and no-runtime exposure contract.
+- Create `docs/model-launch/seedance-2-5/en.overlay.json`: English Dreamina-attributed draft.
+- Create `docs/model-launch/seedance-2-5/fr.overlay.json`: French Dreamina-attributed adaptation.
+- Create `docs/model-launch/seedance-2-5/es.overlay.json`: Spanish Dreamina-attributed adaptation.
+- Create `docs/model-launch/seedance-2-5.engine.stub.ts`: documentation-only official API evidence gate.
+- Create `docs/model-launch/seedance-2-5.md`: staged launch packet and promotion gates.
+- Verify, but do not modify, canonical registry, generated model projections, raw engines, provider mappings, accounting, and API routes.
+
+### Task 1: Create safe localized launch drafts
+
+**Files:**
+- Create: `tests/seedance-2-5-readiness.test.ts`
+- Create: `docs/model-launch/seedance-2-5/en.overlay.json`
+- Create: `docs/model-launch/seedance-2-5/fr.overlay.json`
+- Create: `docs/model-launch/seedance-2-5/es.overlay.json`
+
+**Interfaces:**
+- Consumes: `EngineOverlay` and `mergeEngineLocalizedContent` from `frontend/lib/models/i18n-normalization.ts`.
+- Produces: three canonical-shape overlays that can later move to `content/models/{locale}/seedance-2-5.json` without copying runtime assumptions.
+
+- [ ] **Step 1: Write the failing localized-overlay contract**
+
+Create `tests/seedance-2-5-readiness.test.ts`:
+
+```ts
+import assert from 'node:assert/strict';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import test from 'node:test';
+
+import {
+  mergeEngineLocalizedContent,
+  type EngineOverlay,
+} from '../frontend/lib/models/i18n-normalization';
+
+const root = process.cwd();
+const overlayPaths = {
+  en: join(root, 'docs/model-launch/seedance-2-5/en.overlay.json'),
+  fr: join(root, 'docs/model-launch/seedance-2-5/fr.overlay.json'),
+  es: join(root, 'docs/model-launch/seedance-2-5/es.overlay.json'),
+} as const;
+const expected = {
+  en: {
+    unavailable: 'Seedance 2.5 is not yet available for generation on MaxVideoAI.',
+    primaryHref: '/models/seedance-2-0',
+    secondaryHref: '/examples/seedance',
+  },
+  fr: {
+    unavailable: "Seedance 2.5 n’est pas encore disponible pour générer des vidéos sur MaxVideoAI.",
+    primaryHref: '/fr/modeles/seedance-2-0',
+    secondaryHref: '/fr/galerie/seedance',
+  },
+  es: {
+    unavailable: 'Seedance 2.5 todavía no está disponible para generar vídeos en MaxVideoAI.',
+    primaryHref: '/es/modelos/seedance-2-0',
+    secondaryHref: '/es/galeria/seedance',
+  },
+} as const;
+
+function asRecord(value: unknown, path: string): Record<string, unknown> {
+  assert.equal(
+    Boolean(value) && typeof value === 'object' && !Array.isArray(value),
+    true,
+    `${path} must be an object`
+  );
+  return value as Record<string, unknown>;
+}
+
+function assertExactKeys(
+  value: Record<string, unknown>,
+  keys: readonly string[],
+  path: string
+) {
+  assert.deepEqual(Object.keys(value).sort(), [...keys].sort(), path);
+}
+
+function assertString(value: unknown, path: string) {
+  assert.equal(typeof value, 'string', `${path} must be a string`);
+  assert.notEqual((value as string).trim(), '', `${path} must not be empty`);
+}
+
+function parseLaunchOverlay(path: string): EngineOverlay {
+  const overlay = asRecord(JSON.parse(readFileSync(path, 'utf8')), path);
+  assertExactKeys(
+    overlay,
+    [
+      'marketingName',
+      'versionLabel',
+      'seo',
+      'overview',
+      'pricingNotes',
+      'hero',
+      'faqs',
+      'custom',
+    ],
+    `${path} top-level keys`
+  );
+  ['marketingName', 'versionLabel', 'overview', 'pricingNotes'].forEach((key) =>
+    assertString(overlay[key], `${path}.${key}`)
+  );
+
+  const seo = asRecord(overlay.seo, `${path}.seo`);
+  assertExactKeys(seo, ['title', 'description'], `${path}.seo keys`);
+  assertString(seo.title, `${path}.seo.title`);
+  assertString(seo.description, `${path}.seo.description`);
+
+  const hero = asRecord(overlay.hero, `${path}.hero`);
+  assertExactKeys(
+    hero,
+    ['title', 'intro', 'badge', 'ctaPrimary', 'secondaryLinks'],
+    `${path}.hero keys`
+  );
+  ['title', 'intro', 'badge'].forEach((key) =>
+    assertString(hero[key], `${path}.hero.${key}`)
+  );
+  const primary = asRecord(hero.ctaPrimary, `${path}.hero.ctaPrimary`);
+  assertExactKeys(primary, ['label', 'href'], `${path}.hero.ctaPrimary keys`);
+  const secondaryLinks = hero.secondaryLinks;
+  assert.equal(Array.isArray(secondaryLinks), true);
+  assert.equal((secondaryLinks as unknown[]).length, 1);
+  [primary, asRecord((secondaryLinks as unknown[])[0], `${path}.hero.secondaryLinks[0]`)]
+    .forEach((link, index) => {
+      assertExactKeys(link, ['label', 'href'], `${path}.hero link ${index}`);
+      assertString(link.label, `${path}.hero link ${index}.label`);
+      assertString(link.href, `${path}.hero link ${index}.href`);
+    });
+
+  assert.equal(Array.isArray(overlay.faqs), true);
+  (overlay.faqs as unknown[]).forEach((entry, index) => {
+    const faq = asRecord(entry, `${path}.faqs[${index}]`);
+    assertExactKeys(faq, ['q', 'a'], `${path}.faqs[${index}] keys`);
+    assertString(faq.q, `${path}.faqs[${index}].q`);
+    assertString(faq.a, `${path}.faqs[${index}].a`);
+  });
+
+  const custom = asRecord(overlay.custom, `${path}.custom`);
+  assertExactKeys(custom, ['prelaunch'], `${path}.custom keys`);
+  const prelaunch = asRecord(custom.prelaunch, `${path}.custom.prelaunch`);
+  assertExactKeys(
+    prelaunch,
+    [
+      'dreaminaLabel',
+      'checkedAt',
+      'apiAvailability',
+      'pricingAvailability',
+      'productSurface',
+      'sourceUrl',
+      'announcedProductClaims',
+    ],
+    `${path}.custom.prelaunch keys`
+  );
+  [
+    'dreaminaLabel',
+    'checkedAt',
+    'apiAvailability',
+    'pricingAvailability',
+    'productSurface',
+    'sourceUrl',
+  ].forEach((key) =>
+    assertString(prelaunch[key], `${path}.custom.prelaunch.${key}`)
+  );
+  assert.equal(Array.isArray(prelaunch.announcedProductClaims), true);
+  (prelaunch.announcedProductClaims as unknown[]).forEach((claim, index) =>
+    assertString(claim, `${path}.custom.prelaunch.announcedProductClaims[${index}]`)
+  );
+
+  return overlay as unknown as EngineOverlay;
+}
+
+test('Seedance 2.5 launch overlays are safe and structurally canonical in EN, FR, and ES', () => {
+  for (const [locale, path] of Object.entries(overlayPaths)) {
+    assert.equal(existsSync(path), true, `${locale} launch overlay is required`);
+    const overlay = parseLaunchOverlay(path);
+    const content = mergeEngineLocalizedContent({}, overlay);
+    const serialized = JSON.stringify(overlay);
+    const readerCopy = JSON.stringify({
+      seo: overlay.seo,
+      overview: overlay.overview,
+      pricingNotes: overlay.pricingNotes,
+      hero: overlay.hero,
+      faqs: overlay.faqs,
+    });
+    const localeExpected = expected[locale as keyof typeof expected];
+    const prelaunch = content.custom?.prelaunch as
+      | {
+          dreaminaLabel?: string;
+          checkedAt?: string;
+          apiAvailability?: string;
+          pricingAvailability?: string;
+          productSurface?: string;
+          sourceUrl?: string;
+          announcedProductClaims?: string[];
+        }
+      | undefined;
+
+    assert.equal(content.marketingName, 'Seedance 2.5');
+    assert.equal(content.versionLabel, '2.5');
+    assert.match(content.overview ?? '', new RegExp(localeExpected.unavailable));
+    assert.equal(content.hero?.ctaPrimary?.href, localeExpected.primaryHref);
+    assert.equal(content.hero?.secondaryLinks?.[0]?.href, localeExpected.secondaryHref);
+    assert.equal(prelaunch?.dreaminaLabel, 'coming_soon');
+    assert.equal(prelaunch?.checkedAt, '2026-07-25');
+    assert.equal(prelaunch?.apiAvailability, 'unconfirmed');
+    assert.equal(prelaunch?.pricingAvailability, 'unconfirmed');
+    assert.equal(prelaunch?.productSurface, 'Dreamina');
+    assert.equal(
+      prelaunch?.sourceUrl,
+      'https://dreamina.capcut.com/seedance/seedance-2-5'
+    );
+    assert.deepEqual(prelaunch?.announcedProductClaims, [
+      '4k_output',
+      'standard_mode_up_to_30_seconds',
+      'beta_long_video_mode_up_to_180_seconds',
+      'up_to_50_multimodal_inputs',
+      'reference_to_video_control',
+      'precise_local_video_editing',
+    ]);
+    assert.equal(Object.hasOwn(overlay, 'decision'), false);
+    assert.equal(Object.hasOwn(overlay, 'prompting'), false);
+    assert.equal(Object.hasOwn(overlay, 'examples'), false);
+    assert.equal(Object.hasOwn(overlay, 'prompts'), false);
+    assert.equal(Object.hasOwn(overlay, 'faqTitle'), false);
+    assert.doesNotMatch(serialized, /dreamina-seedance[-_. ]?2[-_. ]?5/i);
+    assert.doesNotMatch(serialized, /\/app\?engine=seedance[-_. ]?2[-_. ]?5/i);
+    assert.doesNotMatch(serialized, /\$\s*\d|€\s*\d|\b(?:USD|EUR)\s*\d/i);
+    assert.doesNotMatch(readerCopy, /\b(?:July|juillet|julio)\b|\b20\d{2}\b/i);
+  }
+});
+```
+
+- [ ] **Step 2: Run the test and verify the red state**
+
+Run:
+
+```bash
+pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/seedance-2-5-readiness.test.ts
+```
+
+Expected: FAIL on the missing English overlay.
+
+- [ ] **Step 3: Verify the future model scaffold without writing files**
+
+Run:
+
+```bash
+pnpm model:setup -- \
+  --from seedance-2-0 \
+  --slug seedance-2-5 \
+  --name "Seedance 2.5" \
+  --family seedance \
+  --stage hidden \
+  --availability paused \
+  --version "2.5" \
+  --engine seedance-2-5 \
+  --dry-run
+```
+
+Expected: the command prints dry-run writes plus an all-false registry skeleton; it does not create content, documentation, registry, or runtime files. `--stage hidden` affects packet text only, while the printed registry skeleton remains fully unpublished.
+
+- [ ] **Step 4: Create the English overlay**
+
+Set `docs/model-launch/seedance-2-5/en.overlay.json` to:
+
+```json
+{
+  "marketingName": "Seedance 2.5",
+  "versionLabel": "2.5",
+  "seo": {
+    "title": "Seedance 2.5: Dreamina-Announced Features and API Status",
+    "description": "Track Dreamina-announced product information and BytePlus API status for Seedance 2.5. Generation is not yet available on MaxVideoAI."
+  },
+  "overview": "Dreamina labels Seedance 2.5 as coming soon and describes 4K output, standard videos up to 30 seconds, a beta long-video mode up to 180 seconds, as many as 50 multimodal inputs, reference-to-video control, and precise editing of selected video regions on its product surface. Seedance 2.5 is not yet available for generation on MaxVideoAI.",
+  "pricingNotes": "MaxVideoAI API access, customer pricing, BytePlus pricing, executable limits, and launch timing are unconfirmed. No Seedance 2.0 rate is being reused for Seedance 2.5.",
+  "hero": {
+    "title": "Seedance 2.5 — launch status and Dreamina-announced information",
+    "intro": "Dreamina currently labels Seedance 2.5 as coming soon. The capabilities summarized here are Dreamina product-surface statements, not a confirmed BytePlus ModelArk API contract. Seedance 2.5 is not yet available for generation on MaxVideoAI.",
+    "badge": "Coming soon on Dreamina · BytePlus API unconfirmed",
+    "ctaPrimary": {
+      "label": "Explore Seedance 2.0",
+      "href": "/models/seedance-2-0"
+    },
+    "secondaryLinks": [
+      {
+        "label": "View current Seedance examples",
+        "href": "/examples/seedance"
+      }
+    ]
+  },
+  "faqs": [
+    {
+      "q": "Can I generate with Seedance 2.5 on MaxVideoAI now?",
+      "a": "No. Seedance 2.5 is not yet available for generation on MaxVideoAI. It will only be enabled after BytePlus publishes an official API contract and the integration passes billing, reliability, safety, and output checks."
+    },
+    {
+      "q": "Are Dreamina’s announced features confirmed for the BytePlus API?",
+      "a": "No. Dreamina product-surface statements do not establish BytePlus API modes, limits, payloads, regions, pricing, or release timing."
+    }
+  ],
+  "custom": {
+    "prelaunch": {
+      "dreaminaLabel": "coming_soon",
+      "checkedAt": "2026-07-25",
+      "apiAvailability": "unconfirmed",
+      "pricingAvailability": "unconfirmed",
+      "productSurface": "Dreamina",
+      "sourceUrl": "https://dreamina.capcut.com/seedance/seedance-2-5",
+      "announcedProductClaims": [
+        "4k_output",
+        "standard_mode_up_to_30_seconds",
+        "beta_long_video_mode_up_to_180_seconds",
+        "up_to_50_multimodal_inputs",
+        "reference_to_video_control",
+        "precise_local_video_editing"
+      ]
+    }
+  }
+}
+```
+
+- [ ] **Step 5: Create the French overlay**
+
+Set `docs/model-launch/seedance-2-5/fr.overlay.json` to:
+
+```json
+{
+  "marketingName": "Seedance 2.5",
+  "versionLabel": "2.5",
+  "seo": {
+    "title": "Seedance 2.5 : annonces Dreamina et statut de l’API",
+    "description": "Suivez les informations produit annoncées par Dreamina et le statut de l’API BytePlus pour Seedance 2.5. La génération n’est pas encore disponible sur MaxVideoAI."
+  },
+  "overview": "Dreamina présente Seedance 2.5 comme un modèle à venir et décrit, sur son propre produit, une sortie 4K, des vidéos standard allant jusqu’à 30 secondes, un mode vidéo longue en bêta allant jusqu’à 180 secondes, jusqu’à 50 entrées multimodales, un contrôle par référence vidéo et la retouche précise de zones vidéo spécifiques. Seedance 2.5 n’est pas encore disponible pour générer des vidéos sur MaxVideoAI.",
+  "pricingNotes": "L’accès via l’API MaxVideoAI, le prix client, le tarif BytePlus, les limites exécutables et le calendrier de lancement ne sont pas confirmés. Aucun tarif Seedance 2.0 n’est réutilisé pour Seedance 2.5.",
+  "hero": {
+    "title": "Seedance 2.5 — état du lancement et annonces Dreamina",
+    "intro": "Dreamina présente actuellement Seedance 2.5 comme un modèle à venir. Les capacités résumées ici sont des déclarations concernant le produit Dreamina, pas un contrat API BytePlus ModelArk confirmé. Seedance 2.5 n’est pas encore disponible pour générer des vidéos sur MaxVideoAI.",
+    "badge": "Bientôt sur Dreamina · API BytePlus non confirmée",
+    "ctaPrimary": {
+      "label": "Découvrir Seedance 2.0",
+      "href": "/fr/modeles/seedance-2-0"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Voir les exemples Seedance actuels",
+        "href": "/fr/galerie/seedance"
+      }
+    ]
+  },
+  "faqs": [
+    {
+      "q": "Puis-je générer avec Seedance 2.5 sur MaxVideoAI maintenant ?",
+      "a": "Non. Seedance 2.5 n’est pas encore disponible pour générer des vidéos sur MaxVideoAI. Il ne sera activé qu’après la publication d’un contrat API officiel par BytePlus et la validation de la facturation, de la fiabilité, de la sécurité et des sorties."
+    },
+    {
+      "q": "Les fonctions annoncées par Dreamina sont-elles confirmées pour l’API BytePlus ?",
+      "a": "Non. Les déclarations concernant le produit Dreamina ne confirment ni les modes, ni les limites, ni les paramètres, ni les régions, ni les tarifs, ni le calendrier de l’API BytePlus."
+    }
+  ],
+  "custom": {
+    "prelaunch": {
+      "dreaminaLabel": "coming_soon",
+      "checkedAt": "2026-07-25",
+      "apiAvailability": "unconfirmed",
+      "pricingAvailability": "unconfirmed",
+      "productSurface": "Dreamina",
+      "sourceUrl": "https://dreamina.capcut.com/seedance/seedance-2-5",
+      "announcedProductClaims": [
+        "4k_output",
+        "standard_mode_up_to_30_seconds",
+        "beta_long_video_mode_up_to_180_seconds",
+        "up_to_50_multimodal_inputs",
+        "reference_to_video_control",
+        "precise_local_video_editing"
+      ]
+    }
+  }
+}
+```
+
+- [ ] **Step 6: Create the Spanish overlay**
+
+Set `docs/model-launch/seedance-2-5/es.overlay.json` to:
+
+```json
+{
+  "marketingName": "Seedance 2.5",
+  "versionLabel": "2.5",
+  "seo": {
+    "title": "Seedance 2.5: anuncios de Dreamina y estado de la API",
+    "description": "Consulta la información de producto anunciada por Dreamina y el estado de la API de BytePlus para Seedance 2.5. La generación todavía no está disponible en MaxVideoAI."
+  },
+  "overview": "Dreamina presenta Seedance 2.5 como un modelo próximo y describe, en su propio producto, salida 4K, vídeos estándar de hasta 30 segundos, un modo de vídeo largo en beta de hasta 180 segundos, hasta 50 entradas multimodales, control de referencia a vídeo y edición precisa de regiones concretas del vídeo. Seedance 2.5 todavía no está disponible para generar vídeos en MaxVideoAI.",
+  "pricingNotes": "El acceso mediante la API de MaxVideoAI, el precio para clientes, el precio de BytePlus, los límites ejecutables y el calendario de lanzamiento no están confirmados. No se reutilizará ninguna tarifa de Seedance 2.0 para Seedance 2.5.",
+  "hero": {
+    "title": "Seedance 2.5 — estado del lanzamiento y anuncios de Dreamina",
+    "intro": "Dreamina presenta actualmente Seedance 2.5 como un modelo próximo. Las capacidades resumidas aquí son declaraciones sobre el producto Dreamina, no un contrato confirmado de la API BytePlus ModelArk. Seedance 2.5 todavía no está disponible para generar vídeos en MaxVideoAI.",
+    "badge": "Próximamente en Dreamina · API de BytePlus sin confirmar",
+    "ctaPrimary": {
+      "label": "Explorar Seedance 2.0",
+      "href": "/es/modelos/seedance-2-0"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Ver ejemplos actuales de Seedance",
+        "href": "/es/galeria/seedance"
+      }
+    ]
+  },
+  "faqs": [
+    {
+      "q": "¿Puedo generar con Seedance 2.5 en MaxVideoAI ahora?",
+      "a": "No. Seedance 2.5 todavía no está disponible para generar vídeos en MaxVideoAI. Solo se activará después de que BytePlus publique un contrato oficial de API y la integración supere las comprobaciones de facturación, fiabilidad, seguridad y resultados."
+    },
+    {
+      "q": "¿Las funciones anunciadas por Dreamina están confirmadas para la API de BytePlus?",
+      "a": "No. Las declaraciones sobre el producto Dreamina no confirman los modos, límites, parámetros, regiones, precios ni fechas de la API de BytePlus."
+    }
+  ],
+  "custom": {
+    "prelaunch": {
+      "dreaminaLabel": "coming_soon",
+      "checkedAt": "2026-07-25",
+      "apiAvailability": "unconfirmed",
+      "pricingAvailability": "unconfirmed",
+      "productSurface": "Dreamina",
+      "sourceUrl": "https://dreamina.capcut.com/seedance/seedance-2-5",
+      "announcedProductClaims": [
+        "4k_output",
+        "standard_mode_up_to_30_seconds",
+        "beta_long_video_mode_up_to_180_seconds",
+        "up_to_50_multimodal_inputs",
+        "reference_to_video_control",
+        "precise_local_video_editing"
+      ]
+    }
+  }
+}
+```
+
+- [ ] **Step 7: Run the localized contract**
+
+Run:
+
+```bash
+pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/seedance-2-5-readiness.test.ts
+```
+
+Expected: PASS.
+
+- [ ] **Step 8: Commit localized drafts and their green contract**
+
+```bash
+git add \
+  tests/seedance-2-5-readiness.test.ts \
+  docs/model-launch/seedance-2-5/en.overlay.json \
+  docs/model-launch/seedance-2-5/fr.overlay.json \
+  docs/model-launch/seedance-2-5/es.overlay.json
+git commit -m "content: prepare Seedance 2.5 launch drafts"
+```
+
+### Task 2: Add the official API evidence and publication gates
+
+**Files:**
+- Modify: `tests/seedance-2-5-readiness.test.ts`
+- Create: `docs/model-launch/seedance-2-5.engine.stub.ts`
+- Create: `docs/model-launch/seedance-2-5.md`
+
+**Interfaces:**
+- Consumes: the approved hidden execution → admin canary → public noindex → public indexed state machine.
+- Produces: a documentation-only evidence checklist and a persistent no-runtime exposure contract.
+
+- [ ] **Step 1: Extend the readiness contract**
+
+Extend the `node:fs` import:
+
+```ts
+import {
+  existsSync,
+  readFileSync,
+  readdirSync,
+  statSync,
+} from 'node:fs';
+```
+
+After `overlayPaths`, add:
+
+```ts
+const launchPacketPath = join(root, 'docs/model-launch/seedance-2-5.md');
+const engineStubPath = join(root, 'docs/model-launch/seedance-2-5.engine.stub.ts');
+const runtimeProjectionPaths = [
+  'frontend/config/model-registry.json',
+  'frontend/config/model-runtime.json',
+  'frontend/config/engine-catalog.json',
+  'frontend/config/model-roster.json',
+  'docs/model-roster.json',
+  'docs/model-roster.csv',
+  'docs/model-roster-report.md',
+].map((path) => join(root, path));
+const runtimeSourceRoots = [
+  join(root, 'frontend/app'),
+  join(root, 'frontend/components'),
+  join(root, 'frontend/config'),
+  join(root, 'frontend/content'),
+  join(root, 'frontend/fixtures'),
+  join(root, 'frontend/hooks'),
+  join(root, 'frontend/i18n'),
+  join(root, 'frontend/lib'),
+  join(root, 'frontend/messages'),
+  join(root, 'frontend/pages'),
+  join(root, 'frontend/public'),
+  join(root, 'frontend/scripts'),
+  join(root, 'frontend/server'),
+  join(root, 'frontend/src'),
+  join(root, 'frontend/types'),
+  join(root, 'content'),
+  join(root, 'fixtures'),
+  join(root, 'packages/pricing'),
+];
+const forbiddenRuntimeIdentity = /seedance[-_. ]?2[-_. ]?5/i;
+
+function listRuntimeSourceFiles(directory: string): string[] {
+  return readdirSync(directory).flatMap((name) => {
+    const path = join(directory, name);
+    if (statSync(path).isDirectory()) return listRuntimeSourceFiles(path);
+    return /\.(?:c?js|html|mjs|json|md|mdx|svg|ts|tsx|txt|xml|ya?ml)$/.test(path)
+      ? [path]
+      : [];
+  });
+}
+```
+
+Append:
+
+```ts
+test('Seedance 2.5 launch documentation records evidence and publication gates', () => {
+  assert.equal(existsSync(launchPacketPath), true);
+  assert.equal(existsSync(engineStubPath), true);
+  const packet = readFileSync(launchPacketPath, 'utf8');
+  const stub = readFileSync(engineStubPath, 'utf8');
+  assert.match(packet, /## Current state/);
+  assert.match(packet, /## Dreamina-announced product-surface claims/);
+  assert.match(packet, /## Official BytePlus API evidence required/);
+  assert.match(packet, /## Promotion state machine/);
+  assert.match(packet, /Hidden execution[\s\S]*Admin canary[\s\S]*Public noindex[\s\S]*Public indexed/);
+  assert.match(packet, /pnpm model:registry:check/);
+  assert.match(stub, /documentationOnly: true/);
+  assert.match(stub, /runtimeEntryAllowed: false/);
+  assert.doesNotMatch(stub, /RawFalEngineEntry/);
+  assert.doesNotMatch(stub, /dreamina-seedance[-_. ]?2[-_. ]?5/i);
+  assert.doesNotMatch(stub, /unitPrice|priceUsd|costPer/i);
+});
+
+test('Seedance 2.5 is absent from runtime and publication sources', () => {
+  const runtimePaths = [
+    ...runtimeProjectionPaths,
+    ...runtimeSourceRoots.flatMap(listRuntimeSourceFiles),
+  ];
+  for (const path of runtimePaths) {
+    const source = readFileSync(path, 'utf8');
+    assert.doesNotMatch(source, forbiddenRuntimeIdentity, path);
+  }
+});
+```
+
+- [ ] **Step 2: Run the extended test and verify the red state**
+
+Run:
+
+```bash
+pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/seedance-2-5-readiness.test.ts
+```
+
+Expected: the localized and runtime-absence tests PASS; the documentation test FAILS because the dry-run created no packet or stub.
+
+- [ ] **Step 3: Create the documentation-only engine evidence stub**
+
+Set `docs/model-launch/seedance-2-5.engine.stub.ts` to:
+
+```ts
+/**
+ * Documentation-only Seedance 2.5 launch gate.
+ *
+ * Runtime code must not import this file.
+ * An executable engine entry can be authored only from official BytePlus
+ * ModelArk documentation.
+ */
+export const seedance25EngineEvidenceGate = {
+  canonicalEngineId: 'seedance-2-5',
+  documentationOnly: true,
+  runtimeEntryAllowed: false,
+  requiredOfficialApiFacts: [
+    'canonical BytePlus model ID and supported regions',
+    'entitlement and release status',
+    'supported input modes and payload roles',
+    'duration, resolution, aspect-ratio, FPS, and audio options',
+    'combined and per-media reference limits, formats, sizes, and durations',
+    'prompt and reference anchor syntax plus ordering rules',
+    'editing and extension semantics',
+    'task status, webhook, output, expiration, and usage schemas',
+    'moderation and provider error codes',
+    'concurrency, RPM, quotas, and service tiers',
+    'vendor pricing units, failure charging, and refund behavior',
+  ],
+  promotionOrder: [
+    'hidden_execution',
+    'admin_canary',
+    'public_noindex',
+    'public_indexed',
+  ],
+} as const;
+```
+
+- [ ] **Step 4: Create the launch packet**
+
+Set `docs/model-launch/seedance-2-5.md` to:
+
+````markdown
+# Seedance 2.5 launch packet
+
+## Current state
+
+- Prepared on: 2026-07-25
+- Future source template: `seedance-2-0`
+- Canonical candidate ID: `seedance-2-5`
+- Family: `seedance`
+- Runtime status: absent
+- Registry status: absent
+- Public route: absent
+- MaxVideoAI generation availability: unavailable
+- BytePlus ModelArk API availability: unconfirmed
+- Customer and provider pricing: unconfirmed
+
+The localized files in `docs/model-launch/seedance-2-5/` are unpublished launch drafts. They are not a live generation offer. Move them to `content/models/{en,fr,es}/` only when a factual engine and canonical registry entry exist.
+
+## Dreamina-announced product-surface claims
+
+Official source: https://dreamina.capcut.com/seedance/seedance-2-5
+
+Checked on 2026-07-25, Dreamina labels Seedance 2.5 as coming soon and states that its product surface is designed to offer:
+
+- 4K output
+- standard video generation up to 30 seconds
+- beta long-video mode up to 180 seconds
+- up to 50 multimodal inputs
+- reference-to-video control
+- precise editing of selected video regions
+
+These are attributed product-surface statements. They do not establish BytePlus ModelArk API availability, payloads, limits, regions, pricing, or release timing.
+
+The same Dreamina page also describes a generation workflow and free credits.
+That copy is internally mixed with the “coming soon” label, so this packet
+records the label as a Dreamina observation rather than inferring product or
+API availability.
+
+## Official BytePlus API evidence required
+
+Record every item below from official BytePlus documentation before adding a runtime profile:
+
+1. Canonical model ID, supported regions, entitlement, and release status.
+2. Supported input modes, payload roles, reference ordering, and anchor syntax.
+3. Duration, resolution, aspect-ratio, FPS, generated-audio, editing, and extension behavior.
+4. Combined and per-media reference limits, formats, file sizes, and media durations.
+5. Task creation, polling, webhook, output, expiration, usage, moderation, and error schemas.
+6. Concurrency, RPM, quota, and service-tier limits.
+7. Vendor pricing units, input-type distinctions, failed-task charging, cancellation, and refund behavior.
+
+Until every item is recorded, do not add a provider profile, engine catalog entry, registry entry, customer price, or generation CTA.
+
+## Promotion state machine
+
+### 1. Hidden execution
+
+- Add a factual raw engine and canonical registry entry.
+- Keep every publication field false.
+- Default the engine to disabled and admin-only.
+- Configure the real provider model ID through the provider environment layer.
+
+### 2. Admin canary
+
+- Enable authenticated admins only.
+- Verify submission, polling, storage copying, expiration, moderation errors, usage accounting, cancellation, and refunds.
+- Run the fixed quality and cost benchmark suite.
+
+### 3. Public noindex
+
+- Publish the model route with `indexable=false`.
+- Keep sitemap, pricing, comparison, examples, and broad app discovery disabled until each prerequisite passes.
+- Use limited-availability messaging only when generation access is intentionally restricted.
+
+### 4. Public indexed
+
+- Enable app, pricing, sitemap, examples, comparisons, and indexation independently in the canonical registry.
+- Keep Seedance 2.0 available unless a separate retirement decision is approved.
+
+## Verification commands
+
+```bash
+pnpm model:registry:generate
+pnpm engine:catalog
+pnpm model:generate:write
+pnpm model:registry:check
+pnpm model:check
+pnpm models:audit
+pnpm pricing:baseline
+pnpm pricing:public-baseline
+pnpm pricing:audit
+npm --prefix frontend run lint
+npm run lint:exposure
+pnpm --prefix frontend exec tsc --noEmit --pretty false
+git diff --check
+```
+````
+
+- [ ] **Step 5: Run the complete readiness contract**
+
+Run:
+
+```bash
+pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/seedance-2-5-readiness.test.ts
+```
+
+Expected: PASS with all three tests green.
+
+- [ ] **Step 6: Commit the evidence packet and persistent boundary**
+
+```bash
+git add \
+  tests/seedance-2-5-readiness.test.ts \
+  docs/model-launch/seedance-2-5.engine.stub.ts \
+  docs/model-launch/seedance-2-5.md
+git commit -m "docs: add Seedance 2.5 launch gates"
+```
+
+## Final Verification
+
+- [ ] **Step 1: Run focused setup and readiness tests**
+
+```bash
+pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
+  tests/model-setup-cli.test.ts \
+  tests/seedance-2-5-readiness.test.ts
+```
+
+Expected: PASS with zero failures.
+
+- [ ] **Step 2: Parse all three overlay files independently**
+
+```bash
+node -e "for (const locale of ['en','fr','es']) JSON.parse(require('node:fs').readFileSync('docs/model-launch/seedance-2-5/'+locale+'.overlay.json','utf8')); console.log('Seedance 2.5 launch overlays: OK')"
+```
+
+Expected: prints `Seedance 2.5 launch overlays: OK`.
+
+- [ ] **Step 3: Prove runtime surfaces remain absent**
+
+```bash
+if rg -n -i 'seedance[-_. ]?2[-_. ]?5' \
+  frontend/config \
+  frontend/app \
+  frontend/components \
+  frontend/content \
+  frontend/fixtures \
+  frontend/hooks \
+  frontend/i18n \
+  frontend/lib \
+  frontend/messages \
+  frontend/pages \
+  frontend/public \
+  frontend/scripts \
+  frontend/server \
+  frontend/src \
+  frontend/types \
+  content \
+  fixtures \
+  packages/pricing; then
+  echo "Forbidden Seedance 2.5 runtime or publication reference found"
+  exit 1
+fi
+```
+
+Expected: prints no matches and exits 0.
+
+- [ ] **Step 4: Run model, registry, pricing, and repository guards**
+
+```bash
+pnpm model:check
+pnpm models:audit
+pnpm model:registry:check
+pnpm pricing:baseline
+pnpm pricing:public-baseline
+pnpm pricing:audit
+npm --prefix frontend run lint
+npm run lint:exposure
+pnpm --prefix frontend exec tsc --noEmit --pretty false
+git diff --check
+```
+
+Expected: every command exits 0; no orphan content slug or generated projection changes.
+
+- [ ] **Step 5: Inspect the implementation range**
+
+```bash
+LAUNCH_BASE_SHA="$(
+  git rev-parse "$(
+    git log --format=%H \
+      --grep='^content: prepare Seedance 2.5 launch drafts$' \
+      -n 1
+  )^"
+)"
+git diff "$LAUNCH_BASE_SHA"..HEAD -- \
+  docs/model-launch/seedance-2-5 \
+  docs/model-launch/seedance-2-5.engine.stub.ts \
+  docs/model-launch/seedance-2-5.md \
+  tests/seedance-2-5-readiness.test.ts
+```
+
+Expected: only Dreamina-attributed drafts, explicit unavailability, API evidence gates, and the readiness contract are present.
+
+- [ ] **Step 6: Commit verification corrections only when required**
+
+If a guard required a scoped correction, make the correction and repeat Final
+Verification Steps 1–4 in full. Do not commit until every repeated command is
+green. Then run:
+
+```bash
+git add \
+  tests/seedance-2-5-readiness.test.ts \
+  docs/model-launch/seedance-2-5/en.overlay.json \
+  docs/model-launch/seedance-2-5/fr.overlay.json \
+  docs/model-launch/seedance-2-5/es.overlay.json \
+  docs/model-launch/seedance-2-5.engine.stub.ts \
+  docs/model-launch/seedance-2-5.md
+git commit -m "test: complete Seedance 2.5 launch readiness"
+```
+
+If no correction was needed, do not create an empty commit.
+
+- [ ] **Step 7: Inspect the final verified commit range**
+
+```bash
+LAUNCH_BASE_SHA="$(
+  git rev-parse "$(
+    git log --format=%H \
+      --grep='^content: prepare Seedance 2.5 launch drafts$' \
+      -n 1
+  )^"
+)"
+git diff --check "$LAUNCH_BASE_SHA"..HEAD
+git diff "$LAUNCH_BASE_SHA"..HEAD -- \
+  docs/model-launch/seedance-2-5 \
+  docs/model-launch/seedance-2-5.engine.stub.ts \
+  docs/model-launch/seedance-2-5.md \
+  tests/seedance-2-5-readiness.test.ts
+```
+
+Expected: the committed range is whitespace-clean and contains only the
+verified draft overlays, evidence gates, persistent unavailability boundary,
+and readiness tests.
