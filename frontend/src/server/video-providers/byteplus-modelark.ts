@@ -51,6 +51,8 @@ export {
   isPublicSeedanceMiniEngine,
 } from './byteplus-modelark-constants';
 export { BytePlusModelArkError } from './byteplus-modelark-error';
+export { getBytePlusSeedanceProfile, requireBytePlusSeedanceProfile } from './byteplus-modelark-profiles';
+export type { BytePlusSeedanceModelConfigKey, BytePlusSeedancePricingProfileKey, BytePlusSeedanceProfile } from './byteplus-modelark-profiles';
 export {
   buildBytePlusSeedanceFastPayload,
   buildBytePlusSeedancePayload,
