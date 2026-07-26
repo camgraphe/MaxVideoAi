@@ -137,7 +137,45 @@ export function buildBytePlusSeedancePayload(params: {
   const referenceAudioUrls = uniqueNonEmptyUrls(
     resolveTypedPayloadUrls('audio', params.referenceAudioUrls)
   );
+  const resolveTypedPayloadScalarUrl = (
+    kind: ReferenceBudgetMediaItem['kind'],
+    fieldId: string,
+    requestedUrl: string
+  ) => {
+    if (!requestedUrl || !referenceMediaItems) return requestedUrl;
+    const item = referenceMediaItems.find(
+      (candidate) =>
+        candidate.kind === kind &&
+        candidate.fieldId === fieldId &&
+        candidate.url.trim() === requestedUrl
+    );
+    if (!item) {
+      throw new BytePlusModelArkError(
+        'BytePlus reference payload is missing original field provenance.',
+        { code: 'BYTEPLUS_REFERENCE_BUDGET_INPUT_MISMATCH' }
+      );
+    }
+    return item.url.trim();
+  };
+  const selectedImageUrl =
+    mode === 'i2v'
+      ? resolveTypedPayloadScalarUrl('image', 'image_url', imageUrl)
+      : '';
+  const selectedEndImageUrl =
+    mode === 'i2v'
+      ? resolveTypedPayloadScalarUrl('image', 'end_image_url', endImageUrl)
+      : '';
   if (budgetFieldIds && referenceMediaItems) {
+    const selectedScalarImageUrlsByField = new Map<string, string>();
+    if (selectedImageUrl) {
+      selectedScalarImageUrlsByField.set('image_url', selectedImageUrl);
+    }
+    if (selectedEndImageUrl) {
+      selectedScalarImageUrlsByField.set(
+        'end_image_url',
+        selectedEndImageUrl
+      );
+    }
     const selectedByKind = {
       image: new Set(referenceImageUrls),
       video: new Set(referenceVideoUrls),
@@ -146,6 +184,7 @@ export function buildBytePlusSeedancePayload(params: {
     const omittedBudgetItem = referenceMediaItems.find(
       (item) =>
         budgetFieldIds.has(item.fieldId) &&
+        selectedScalarImageUrlsByField.get(item.fieldId) !== item.url.trim() &&
         !selectedByKind[item.kind].has(item.url.trim())
     );
     if (omittedBudgetItem) {
@@ -176,7 +215,7 @@ export function buildBytePlusSeedancePayload(params: {
       code: 'BYTEPLUS_MODE_UNSUPPORTED',
     });
   }
-  if (mode === 'i2v' && !imageUrl) {
+  if (mode === 'i2v' && !selectedImageUrl) {
     throw new BytePlusModelArkError('Image URL is required for BytePlus Seedance image-to-video.', {
       code: 'IMAGE_URL_REQUIRED',
     });
@@ -220,7 +259,7 @@ export function buildBytePlusSeedancePayload(params: {
   }
 
   const text =
-    mode === 'i2v' && endImageUrl
+    mode === 'i2v' && selectedEndImageUrl
       ? `Use Image 1 as the opening frame and Image 2 as the final frame. ${prompt}`
       : mode === 'i2v'
         ? `Use Image 1 as the opening frame. ${prompt}`
@@ -229,13 +268,13 @@ export function buildBytePlusSeedancePayload(params: {
   if (mode === 'i2v') {
     content.push({
       type: 'image_url',
-      image_url: { url: imageUrl },
+      image_url: { url: selectedImageUrl },
       role: 'reference_image',
     });
-    if (endImageUrl) {
+    if (selectedEndImageUrl) {
       content.push({
         type: 'image_url',
-        image_url: { url: endImageUrl },
+        image_url: { url: selectedEndImageUrl },
         role: 'reference_image',
       });
     }

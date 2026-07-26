@@ -5,12 +5,25 @@ import test from 'node:test';
 
 import { deriveGenerationAttachmentReferences } from '../frontend/app/api/generate/_lib/attachment-references.ts';
 import type { NormalizedAttachment } from '../frontend/app/api/generate/_lib/attachments.ts';
-import { buildFalInputs } from '../frontend/app/api/generate/_lib/fal-request.ts';
+import {
+  buildFalInputs,
+  buildFalRequestParts,
+} from '../frontend/app/api/generate/_lib/fal-request.ts';
 import { buildGenerateValidationPayload } from '../frontend/app/api/generate/_lib/validation-payload.ts';
 import { validateModeMediaInputs } from '../frontend/app/api/generate/_lib/validate-media-inputs.ts';
 import { validateRequest } from '../frontend/app/api/generate/_lib/validate.ts';
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
+import {
+  buildReferenceMediaItems,
+  resolveEngineReferenceBudget,
+} from '../frontend/lib/reference-budget.ts';
 import { buildFalGenerationRequest } from '../frontend/src/lib/fal-request-body.ts';
+import {
+  buildSoraFalInput,
+  type SoraRequest,
+} from '../frontend/src/lib/sora.ts';
+import type { MaxVideoProviderElement } from '../frontend/src/lib/video-provider-elements.ts';
+import { buildBytePlusSeedancePayload } from '../frontend/src/server/video-providers/byteplus-modelark.ts';
 import type { EngineInputSchema, Mode } from '../frontend/types/engines.ts';
 
 const root = process.cwd();
@@ -224,6 +237,9 @@ type FalMediaPipelineParams = {
   image_url?: string;
   rawAudioUrl?: string | null;
   endImageUrl?: string | null;
+  soraRequest?: SoraRequest | null;
+  elements?: MaxVideoProviderElement[] | null;
+  isBytePlusV1a?: boolean;
   validationDuration?: number | string;
   captureValidationContext?: boolean;
 };
@@ -235,6 +251,10 @@ function buildFalMediaPipeline(params: FalMediaPipelineParams) {
     engineId: params.engineId,
     mode: params.mode,
     inputSchema: params.inputSchema,
+    soraImageUrl:
+      params.soraRequest?.mode === 'i2v'
+        ? params.soraRequest.image_url
+        : undefined,
     imageUrl: params.imageUrl,
     image_url: params.image_url,
     referenceImages: params.referenceImages ?? [],
@@ -254,7 +274,7 @@ function buildFalMediaPipeline(params: FalMediaPipelineParams) {
     supportsAspectRatio: false,
     aspectRatio: null,
     audioEnabled: undefined,
-    isBytePlusV1a: false,
+    isBytePlusV1a: params.isBytePlusV1a ?? false,
     supportsDuration: true,
     numFrames: null,
     validationDuration: params.validationDuration ?? 4,
@@ -266,7 +286,7 @@ function buildFalMediaPipeline(params: FalMediaPipelineParams) {
     audioUrls: references.audioUrls,
     resolvedAudioUrl: references.resolvedAudioUrl,
     sourceInputVideoUrl: references.sourceInputVideoUrl,
-    elements: null,
+    elements: params.elements ?? null,
     endImageUrl: params.endImageUrl ?? null,
     startImageUrl: references.startImageUrl,
     isLumaRay2: false,
@@ -284,27 +304,50 @@ function buildFalMediaPipeline(params: FalMediaPipelineParams) {
         }
       : undefined,
   });
-  const providerImageUrl =
-    params.mode === 'fl2v'
-      ? references.resolvedFirstFrameUrl
-      : params.mode === 'i2v' ||
-          params.mode === 'i2i' ||
-          params.mode === 'v2v' ||
-          params.mode === 'reframe'
-        ? references.initialImageUrl
-        : undefined;
+  const falParts = buildFalRequestParts({
+    attachments,
+    engineId: params.engineId,
+    prompt: 'Keep the same subject and motion',
+    mode: params.mode,
+    apiKey: undefined,
+    jobId: 'job-provider-media-contract',
+    localKey: null,
+    needsImage: params.mode === 'i2v' || params.mode === 'i2i',
+    needsFirstLastFrames: params.mode === 'fl2v',
+    initialImageUrl: references.initialImageUrl,
+    resolvedFirstFrameUrl: references.resolvedFirstFrameUrl,
+    lastFrameUrl: references.lastFrameUrl,
+    resolvedAudioUrl: references.resolvedAudioUrl,
+    normalizedReferenceImages: references.normalizedReferenceImages,
+    videoUrls: references.videoUrls,
+    audioUrls: references.audioUrls,
+    soraRequest: params.soraRequest ?? null,
+    isLumaRay2: false,
+    loop: false,
+    multiPrompt: null,
+    shotType: null,
+    seed: null,
+    cameraFixed: null,
+    safetyChecker: null,
+    voiceIds: [],
+    elements: params.elements ?? null,
+    endImageUrl: params.endImageUrl ?? null,
+    extraInputValues: {},
+    supportsDuration: true,
+    durationSec: 4,
+    durationOption: 4,
+    numFrames: null,
+    supportsAspectRatio: false,
+    aspectRatio: null,
+    supportsResolution: false,
+    resolution: '720p',
+    audioEnabled: undefined,
+    supportsFps: false,
+    fps: undefined,
+    cfgScale: undefined,
+  });
   const falRequest = buildFalGenerationRequest(
-    {
-      engineId: params.engineId,
-      prompt: 'Keep the same subject and motion',
-      mode: params.mode,
-      durationSec: 4,
-      imageUrl: providerImageUrl,
-      audioUrl: references.resolvedAudioUrl,
-      referenceImages: references.normalizedReferenceImages,
-      inputs: buildFalInputs(attachments),
-      endImageUrl: params.endImageUrl ?? undefined,
-    },
+    falParts.falPayload,
     params.defaultModel
   );
 
@@ -910,6 +953,570 @@ test('direct image remains distinct from a non-overwriting input_image attachmen
   }
   assert.equal(scenario.validation.body.field, 'referenceBudget');
   assert.equal(scenario.validation.body.value, 2);
+});
+
+test('Sora I2V budgets the two distinct images that survive its real alias serialization', () => {
+  const inputSchema = {
+    optional: [
+      {
+        id: 'image_url',
+        type: 'image',
+        label: 'Image input',
+        modes: ['i2v'],
+      },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_url'],
+      modes: ['i2v'],
+      maxTotal: 1,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const soraRequest = {
+    variant: 'sora2',
+    mode: 'i2v',
+    prompt: 'Keep the same subject and motion',
+    duration: 4,
+    resolution: '720p',
+    aspect_ratio: '16:9',
+    image_url: 'https://example.com/direct-sora.png',
+  } satisfies SoraRequest;
+
+  const seededSoraInput = buildSoraFalInput(soraRequest);
+  assert.equal(
+    seededSoraInput.input.image_url,
+    'https://example.com/direct-sora.png'
+  );
+  assert.equal(
+    seededSoraInput.input.input_image,
+    'https://example.com/direct-sora.png'
+  );
+
+  const scenario = buildFalMediaPipeline({
+    engineId: 'sora-2',
+    defaultModel: 'fal-ai/sora-2/image-to-video',
+    mode: 'i2v',
+    inputSchema,
+    soraRequest,
+    attachments: [
+      attachment(
+        'image',
+        'image_url',
+        'https://example.com/attachment-sora.png'
+      ),
+    ],
+  });
+
+  assert.equal(
+    scenario.falRequest.requestBody.image_url,
+    'https://example.com/attachment-sora.png'
+  );
+  assert.equal(
+    scenario.falRequest.requestBody.input_image,
+    'https://example.com/direct-sora.png'
+  );
+  assert.deepEqual(scenario.references.referenceValuesByField, {
+    image_url: [
+      'https://example.com/attachment-sora.png',
+      'https://example.com/direct-sora.png',
+    ],
+  });
+  assert.deepEqual(scenario.references.referenceMediaItems, [
+    {
+      fieldId: 'image_url',
+      kind: 'image',
+      url: 'https://example.com/attachment-sora.png',
+    },
+    {
+      fieldId: 'image_url',
+      kind: 'image',
+      url: 'https://example.com/direct-sora.png',
+    },
+  ]);
+  assert.equal(scenario.validation.ok, false);
+  if (scenario.validation.ok) {
+    assert.fail('Sora accepted two distinct provider-selected images under a max-one budget');
+  }
+  assert.equal(scenario.validation.body.field, 'referenceBudget');
+  assert.equal(scenario.validation.body.value, 2);
+});
+
+test('Sora direct-only aliases are one logical medium and no-budget alias behavior is unchanged', () => {
+  const soraRequest = {
+    variant: 'sora2',
+    mode: 'i2v',
+    prompt: 'Keep the same subject and motion',
+    duration: 4,
+    resolution: '720p',
+    aspect_ratio: '16:9',
+    image_url: 'https://example.com/direct-sora.png',
+  } satisfies SoraRequest;
+  const budgetedSchema = {
+    optional: [
+      {
+        id: 'image_url',
+        type: 'image',
+        label: 'Image input',
+        modes: ['i2v'],
+      },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_url'],
+      modes: ['i2v'],
+      maxTotal: 1,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+
+  const directOnly = buildFalMediaPipeline({
+    engineId: 'sora-2',
+    defaultModel: 'fal-ai/sora-2/image-to-video',
+    mode: 'i2v',
+    inputSchema: budgetedSchema,
+    soraRequest,
+  });
+  assert.equal(directOnly.validation.ok, true);
+  assert.deepEqual(directOnly.references.referenceValuesByField, {
+    image_url: ['https://example.com/direct-sora.png'],
+  });
+  assert.equal(
+    directOnly.falRequest.requestBody.image_url,
+    'https://example.com/direct-sora.png'
+  );
+  assert.equal(
+    directOnly.falRequest.requestBody.input_image,
+    'https://example.com/direct-sora.png'
+  );
+
+  const noBudget = buildFalMediaPipeline({
+    engineId: 'sora-2',
+    defaultModel: 'fal-ai/sora-2/image-to-video',
+    mode: 'i2v',
+    inputSchema: {
+      optional: budgetedSchema.optional,
+    },
+    soraRequest,
+    attachments: [
+      attachment(
+        'image',
+        'image_url',
+        'https://example.com/attachment-sora.png'
+      ),
+    ],
+  });
+  assert.equal(noBudget.validation.ok, true);
+  assert.equal(
+    noBudget.falRequest.requestBody.image_url,
+    'https://example.com/attachment-sora.png'
+  );
+  assert.equal(
+    noBudget.falRequest.requestBody.input_image,
+    'https://example.com/direct-sora.png'
+  );
+});
+
+test('an attachment-only input_image remains one logical medium when Fal repeats its URL', () => {
+  const inputSchema = {
+    optional: [
+      { id: 'image_url', type: 'image', label: 'Image', modes: ['i2v'] },
+      {
+        id: 'input_image',
+        type: 'image',
+        label: 'Input image',
+        modes: ['i2v'],
+      },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_url', 'input_image'],
+      modes: ['i2v'],
+      maxTotal: 1,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const scenario = buildFalMediaPipeline({
+    engineId: 'seedance-2-0',
+    defaultModel: 'fal-ai/bytedance/seedance/v2/image-to-video',
+    mode: 'i2v',
+    inputSchema,
+    attachments: [
+      attachment(
+        'image',
+        'input_image',
+        'https://example.com/attachment-only.png'
+      ),
+    ],
+  });
+
+  assert.equal(scenario.validation.ok, true);
+  assert.equal(
+    scenario.falRequest.requestBody.image_url,
+    'https://example.com/attachment-only.png'
+  );
+  assert.equal(
+    scenario.falRequest.requestBody.input_image,
+    'https://example.com/attachment-only.png'
+  );
+  assert.deepEqual(scenario.references.referenceValuesByField, {
+    input_image: ['https://example.com/attachment-only.png'],
+  });
+  assert.deepEqual(scenario.references.referenceMediaItems, [
+    {
+      fieldId: 'input_image',
+      kind: 'image',
+      url: 'https://example.com/attachment-only.png',
+    },
+  ]);
+});
+
+test('Kling O3 does not budget a direct ref2v start image that its real Fal path drops', () => {
+  const inputSchema = {
+    optional: [
+      { id: 'image_urls', type: 'image', label: 'References', modes: ['ref2v'] },
+      {
+        id: 'start_image_url',
+        type: 'image',
+        label: 'Start image',
+        modes: ['ref2v'],
+      },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_urls', 'start_image_url'],
+      modes: ['ref2v'],
+      maxTotal: 1,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const scenario = buildFalMediaPipeline({
+    engineId: 'kling-o3-pro',
+    defaultModel: 'fal-ai/kling-video/o3/pro/reference-to-video',
+    mode: 'ref2v',
+    inputSchema,
+    imageUrl: 'https://example.com/dropped-direct-start.png',
+    attachments: [
+      attachment(
+        'image',
+        'image_urls',
+        'https://example.com/selected-reference.png'
+      ),
+    ],
+  });
+
+  assert.equal(scenario.references.startImageUrl, undefined);
+  assert.deepEqual(scenario.references.referenceValuesByField, {
+    image_urls: ['https://example.com/selected-reference.png'],
+  });
+  assert.equal(scenario.validation.ok, true);
+  assert.equal(scenario.falRequest.requestBody.image_url, undefined);
+  assert.equal(scenario.falRequest.requestBody.start_image_url, undefined);
+  assert.deepEqual(scenario.falRequest.requestBody.image_urls, [
+    'https://example.com/selected-reference.png',
+  ]);
+});
+
+test('Kling O3 rejects an end frame when only a dropped direct start fallback exists', () => {
+  const inputSchema = {
+    optional: [
+      { id: 'image_urls', type: 'image', label: 'References', modes: ['ref2v'] },
+      {
+        id: 'start_image_url',
+        type: 'image',
+        label: 'Start image',
+        modes: ['ref2v'],
+      },
+      {
+        id: 'end_image_url',
+        type: 'image',
+        label: 'End image',
+        modes: ['ref2v'],
+      },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_urls', 'start_image_url', 'end_image_url'],
+      modes: ['ref2v'],
+      maxTotal: 3,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const scenario = buildFalMediaPipeline({
+    engineId: 'kling-o3-pro',
+    defaultModel: 'fal-ai/kling-video/o3/pro/reference-to-video',
+    mode: 'ref2v',
+    inputSchema,
+    imageUrl: 'https://example.com/dropped-direct-start.png',
+    endImageUrl: 'https://example.com/end.png',
+    attachments: [
+      attachment(
+        'image',
+        'image_urls',
+        'https://example.com/selected-reference.png'
+      ),
+    ],
+  });
+
+  assert.equal(scenario.validation.ok, false);
+  if (scenario.validation.ok) {
+    assert.fail('Kling O3 accepted an end frame without a provider-selected start frame');
+  }
+  assert.deepEqual(scenario.validation.body, {
+    ok: false,
+    error: 'End frame requires a start frame for Kling 3.0 Omni reference-to-video.',
+  });
+  assert.equal(scenario.falRequest.requestBody.start_image_url, undefined);
+  assert.equal(
+    scenario.falRequest.requestBody.end_image_url,
+    'https://example.com/end.png'
+  );
+});
+
+test('BytePlus I2V accepts budgeted direct start and end images selected by its real payload', () => {
+  const inputSchema = {
+    optional: [
+      { id: 'image_url', type: 'image', label: 'Start image', modes: ['i2v'] },
+      {
+        id: 'end_image_url',
+        type: 'image',
+        label: 'End image',
+        modes: ['i2v'],
+      },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_url', 'end_image_url'],
+      modes: ['i2v'],
+      maxTotal: 2,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const scenario = buildFalMediaPipeline({
+    engineId: 'seedance-2-0',
+    defaultModel: 'fal-ai/bytedance/seedance/v2/image-to-video',
+    mode: 'i2v',
+    inputSchema,
+    imageUrl: 'https://example.com/start.png',
+    endImageUrl: 'https://example.com/end.png',
+    isBytePlusV1a: true,
+  });
+  assert.equal(scenario.validation.ok, true);
+
+  const referenceBudget = resolveEngineReferenceBudget(inputSchema, 'i2v');
+  if (!referenceBudget) {
+    assert.fail('test schema must resolve its I2V reference budget');
+  }
+  const providerMediaItems = buildReferenceMediaItems(
+    inputSchema,
+    'i2v',
+    scenario.references.referenceValuesByField
+  );
+  assert.deepEqual(
+    providerMediaItems,
+    scenario.references.referenceMediaItems
+  );
+  const providerPayload = buildBytePlusSeedancePayload({
+    modelId: 'current-model-id',
+    prompt: 'Animate between the supplied frames',
+    durationSec: 5,
+    mode: 'i2v',
+    imageUrl: scenario.references.initialImageUrl,
+    endImageUrl: 'https://example.com/end.png',
+    resolution: '720p',
+    ratio: '16:9',
+    allowedResolutions: ['720p'],
+    allowedDurationOptions: [5],
+    referenceBudget,
+    referenceMediaItems: providerMediaItems,
+  });
+
+  assert.deepEqual(
+    providerPayload.content
+      .filter((item) => item.type === 'image_url')
+      .map((item) => item.image_url.url),
+    ['https://example.com/start.png', 'https://example.com/end.png']
+  );
+});
+
+test('BytePlus budget defense rejects every emitted I2V scalar without typed provenance', () => {
+  const build = (
+    referenceMediaItems: Parameters<
+      typeof buildBytePlusSeedancePayload
+    >[0]['referenceMediaItems']
+  ) =>
+    buildBytePlusSeedancePayload({
+      modelId: 'current-model-id',
+      prompt: 'Animate between the supplied frames',
+      durationSec: 5,
+      mode: 'i2v',
+      imageUrl: 'https://example.com/start.png',
+      endImageUrl: 'https://example.com/end.png',
+      resolution: '720p',
+      ratio: '16:9',
+      allowedResolutions: ['720p'],
+      allowedDurationOptions: [5],
+      referenceBudget: {
+        fieldIds: ['end_image_url'],
+        maxTotal: 1,
+        countUniqueUrls: false,
+      },
+      referenceMediaItems,
+    });
+
+  assert.throws(
+    () => build([]),
+    (error: unknown) =>
+      error instanceof Error &&
+      (error as Error & { code?: string }).code ===
+        'BYTEPLUS_REFERENCE_BUDGET_INPUT_MISMATCH'
+  );
+  assert.throws(
+    () =>
+      build([
+        {
+          fieldId: 'image_url',
+          kind: 'image',
+          url: 'https://example.com/start.png',
+        },
+      ]),
+    (error: unknown) =>
+      error instanceof Error &&
+      (error as Error & { code?: string }).code ===
+        'BYTEPLUS_REFERENCE_BUDGET_INPUT_MISMATCH'
+  );
+  assert.throws(
+    () =>
+      buildBytePlusSeedancePayload({
+        modelId: 'current-model-id',
+        prompt: 'Hold on the same supplied frame',
+        durationSec: 5,
+        mode: 'i2v',
+        imageUrl: 'https://example.com/same-frame.png',
+        endImageUrl: 'https://example.com/same-frame.png',
+        resolution: '720p',
+        ratio: '16:9',
+        allowedResolutions: ['720p'],
+        allowedDurationOptions: [5],
+        referenceBudget: {
+          fieldIds: ['image_url', 'end_image_url'],
+          maxTotal: 2,
+          countUniqueUrls: false,
+        },
+        referenceMediaItems: [
+          {
+            fieldId: 'image_url',
+            kind: 'image',
+            url: 'https://example.com/same-frame.png',
+          },
+        ],
+      }),
+    (error: unknown) =>
+      error instanceof Error &&
+      (error as Error & { code?: string }).code ===
+        'BYTEPLUS_REFERENCE_BUDGET_INPUT_MISMATCH'
+  );
+});
+
+test('active budgets reject non-Kling elements while Kling and no-budget Fal behavior stay intact', () => {
+  const budgetedSchema = {
+    optional: [
+      { id: 'image_urls', type: 'image', label: 'References', modes: ['ref2v'] },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_urls'],
+      modes: ['ref2v'],
+      maxTotal: 1,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const elements = [
+    {
+      frontalImageUrl: 'https://example.com/front.png',
+      referenceImageUrls: [
+        'https://example.com/ref-1.png',
+        'https://example.com/ref-2.png',
+        'https://example.com/ref-3.png',
+      ],
+    },
+  ] satisfies MaxVideoProviderElement[];
+  const attachments = [
+    attachment(
+      'image',
+      'image_urls',
+      'https://example.com/base-reference.png'
+    ),
+  ];
+
+  const unsupported = buildFalMediaPipeline({
+    engineId: 'seedance-2-0',
+    defaultModel: 'fal-ai/bytedance/seedance/v2/reference-to-video',
+    mode: 'ref2v',
+    inputSchema: budgetedSchema,
+    attachments,
+    elements,
+  });
+  assert.deepEqual(unsupported.falRequest.requestBody.image_urls, [
+    'https://example.com/base-reference.png',
+  ]);
+  assert.deepEqual(unsupported.falRequest.requestBody.elements, [
+    {
+      frontal_image_url: 'https://example.com/front.png',
+      reference_image_urls: [
+        'https://example.com/ref-1.png',
+        'https://example.com/ref-2.png',
+        'https://example.com/ref-3.png',
+      ],
+      video_url: undefined,
+    },
+  ]);
+  assert.equal(unsupported.validation.ok, false);
+  if (unsupported.validation.ok) {
+    assert.fail('a non-Kling budget accepted nested provider-selected element media');
+  }
+  assert.deepEqual(unsupported.validation.body, {
+    ok: false,
+    error: 'ENGINE_CONSTRAINT',
+    message:
+      'Elements are not supported for this engine mode when a reference budget is active.',
+    field: 'elements',
+    allowed: undefined,
+    value: undefined,
+  });
+
+  const kling = buildFalMediaPipeline({
+    engineId: 'kling-o3-pro',
+    defaultModel: 'fal-ai/kling-video/o3/pro/reference-to-video',
+    mode: 'ref2v',
+    inputSchema: budgetedSchema,
+    attachments,
+    elements,
+  });
+  assert.equal(kling.validation.ok, true);
+  assert.deepEqual(kling.references.referenceValuesByField, {
+    image_urls: ['https://example.com/base-reference.png'],
+  });
+  assert.deepEqual(kling.falRequest.requestBody.elements, [
+    {
+      frontal_image_url: 'https://example.com/front.png',
+      reference_image_urls: [
+        'https://example.com/ref-1.png',
+        'https://example.com/ref-2.png',
+        'https://example.com/ref-3.png',
+      ],
+      video_url: undefined,
+    },
+  ]);
+
+  const noBudget = buildFalMediaPipeline({
+    engineId: 'seedance-2-0',
+    defaultModel: 'fal-ai/bytedance/seedance/v2/reference-to-video',
+    mode: 'ref2v',
+    inputSchema: {
+      optional: budgetedSchema.optional,
+    },
+    attachments,
+    elements,
+  });
+  assert.equal(noBudget.validation.ok, true);
+  assert.deepEqual(
+    noBudget.falRequest.requestBody.elements,
+    unsupported.falRequest.requestBody.elements
+  );
 });
 
 test('inherited-key slots reach deterministic unknown-field rejection without mutation', () => {

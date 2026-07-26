@@ -1,6 +1,7 @@
 import type { EngineInputSchema, Mode } from '@/types/engines';
 import { isHappyHorseEngineId, supportsHappyHorseVideoEdit } from '@/lib/happy-horse-workflow';
 import type { ReferenceBudgetMediaItem, ReferenceBudgetValuesByField } from '@/lib/reference-budget';
+import { isSoraEngineId } from '@/lib/sora';
 import type { NormalizedAttachment } from './attachments';
 
 export type ReferenceProvenanceIssue =
@@ -92,8 +93,12 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
         attachment.slotId === 'image'
       );
     })?.url?.trim() ?? undefined;
+  const directPrimaryImageUrl =
+    trimString(params.soraImageUrl) ??
+    trimString(params.imageUrl) ??
+    trimString(params.image_url);
   const requestedPrimaryImageUrl =
-    params.soraImageUrl ?? trimString(params.imageUrl) ?? trimString(params.image_url) ?? attachmentPrimaryImageUrl;
+    directPrimaryImageUrl ?? attachmentPrimaryImageUrl;
   const referenceImagesInput = Array.isArray(params.referenceImages)
     ? params.referenceImages
     : Array.isArray(params.reference_images)
@@ -282,22 +287,28 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
   const resolvedFirstFrameUrl = params.mode === 'fl2v' ? firstFrameUrl ?? requestedPrimaryImageUrl : firstFrameUrl;
   const explicitStartImageUrl =
     params.attachments.find((attachment) => attachment.slotId === 'start_image_url')?.url?.trim() ?? undefined;
-  const startImageUrl =
-    explicitStartImageUrl ??
-    (params.engineId.startsWith('kling-o3') && params.mode === 'ref2v' ? requestedPrimaryImageUrl : undefined);
+  const startImageUrl = explicitStartImageUrl;
   const sourceInputVideoUrl = videoUrls[0];
   const primaryImageSlotIds = ['image_url', 'input_image', 'image'] as const;
-  if (initialImageUrl) {
-    appendScalarProjectionOnlyValue(
-      resolveDirectMediaFieldId(
-        'image',
-        primaryImageSlotIds,
-        'image_url'
-      ),
-      initialImageUrl,
-      attachmentUrlsForSlots(['image_url']),
-      'image'
+  if (initialImageUrl && directPrimaryImageUrl) {
+    const providerOverwriteSlots =
+      isSoraEngineId(params.engineId) && params.mode === 'i2v'
+        ? (['image_url', 'input_image'] as const)
+        : (['image_url'] as const);
+    const directImageIsFullyOverwritten = providerOverwriteSlots.every(
+      (slotId) => attachmentUrlsForSlots([slotId]).length > 0
     );
+    if (!directImageIsFullyOverwritten) {
+      appendTypedReferenceValue(
+        resolveDirectMediaFieldId(
+          'image',
+          primaryImageSlotIds,
+          'image_url'
+        ),
+        directPrimaryImageUrl,
+        'image'
+      );
+    }
   }
   if (resolvedFirstFrameUrl) {
     const firstFrameSlotIds =

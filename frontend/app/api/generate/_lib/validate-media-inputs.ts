@@ -162,6 +162,12 @@ export function validateModeMediaInputs(params: {
   referenceProvenanceIssues?: readonly ReferenceProvenanceIssue[];
 }): ValidationResult {
   const { engineId, normalizedMode, payload } = params;
+  const isKling3Engine = engineId.startsWith('kling-3');
+  const isKlingO3Engine = engineId.startsWith('kling-o3');
+  const hasKlingElements = hasKlingElementEntries(payload);
+  const supportsKlingElements =
+    (isKling3Engine && (normalizedMode === 'i2v' || normalizedMode === 'ref2v')) ||
+    (isKlingO3Engine && (normalizedMode === 'ref2v' || normalizedMode === 'v2v'));
   const referenceBudget = resolveEngineReferenceBudget(
     params.inputSchema,
     params.normalizedMode
@@ -264,6 +270,17 @@ export function validateModeMediaInputs(params: {
         },
       };
     }
+    if (hasKlingElements && !supportsKlingElements) {
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: 'elements',
+          message:
+            'Elements are not supported for this engine mode when a reference budget is active.',
+        },
+      };
+    }
     const evaluation = evaluateReferenceBudget({
       budget: referenceBudget,
       valuesByField: params.referenceValuesByField ?? {},
@@ -282,9 +299,6 @@ export function validateModeMediaInputs(params: {
       };
     }
   }
-  const isKling3Engine = engineId.startsWith('kling-3');
-  const isKlingO3Engine = engineId.startsWith('kling-o3');
-  const hasKlingElements = hasKlingElementEntries(payload);
 
   if (isKlingO3Engine && normalizedMode !== 'ref2v' && normalizedMode !== 'v2v' && hasKlingElements) {
     return {
@@ -297,9 +311,6 @@ export function validateModeMediaInputs(params: {
     };
   }
 
-  const supportsKlingElements =
-    (isKling3Engine && (normalizedMode === 'i2v' || normalizedMode === 'ref2v')) ||
-    (isKlingO3Engine && (normalizedMode === 'ref2v' || normalizedMode === 'v2v'));
   if (supportsKlingElements) {
     const klingElementsValidation = validateKlingElements(payload);
     if (!klingElementsValidation.ok) return klingElementsValidation;
