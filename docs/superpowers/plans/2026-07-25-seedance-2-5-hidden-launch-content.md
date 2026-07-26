@@ -642,7 +642,15 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
+import {
+  basename,
+  dirname,
+  isAbsolute,
+  join,
+  relative,
+  resolve,
+  sep,
+} from 'node:path';
 ```
 
 Keep the exact documentation/test allowlist, then add mode-aware result types and
@@ -658,6 +666,7 @@ const exposureMatchOrder = [
   'index_content',
   'index_symlink_target',
   'index_symlink_resolved_content',
+  'worktree_redirect',
   'worktree_content',
   'worktree_symlink_target',
   'worktree_symlink_resolved_content',
@@ -675,6 +684,7 @@ type GitIndexEntry = {
   path: string;
 };
 type GitRepositorySnapshot = {
+  canonicalRepositoryRoot: string;
   candidatePaths: string[];
   candidatePathSet: ReadonlySet<string>;
   indexEntriesByPath: Map<string, GitIndexEntry[]>;
@@ -697,6 +707,14 @@ Implement the repository snapshot and scanner with these exact semantics:
   and the current worktree regular file independently, so staged-safe /
   worktree-forbidden, staged-forbidden / worktree-safe, and deleted-worktree
   states are all explicit.
+- Canonicalize the repository root once. Before any worktree read,
+  canonicalize the candidate's parent components against that root. If a
+  symlinked parent resolves outside the repository, emit `worktree_redirect`
+  for the original logical path and return without reading. If it resolves
+  inside, allow a read only when the fully resolved target is itself in the
+  tracked or untracked-nonignored candidate set; otherwise emit the same fixed
+  non-secret label and return. Read approved regular targets through their
+  contained canonical path.
 - For mode `120000`, scan the target text, resolve only repository-internal
   targets, and recursively scan the indexed target on behalf of the generic
   link path. For the current worktree link, scan `readlink` text and the
@@ -780,11 +798,16 @@ regressions before running the scanner:
   `docs/model-launch/seedance-2-5.md`;
 - a tracked generic symlink to ignored `frontend/.env.local`, which must not
   leak or appear in results;
+- a safe indexed regular file whose parent is replaced by a symlink to an
+  ignored in-repository secret directory containing forbidden sentinel bytes;
+- a safe indexed regular file whose parent is replaced by a symlink to an
+  external temporary directory containing different forbidden sentinel bytes;
 - a mode `160000` generic provider gitlink;
 - a true binary containing identity bytes, which remains excluded.
 
-Assert the exact eight result paths and exact match-kind arrays. Keep the real
-repository assertion:
+Assert the exact ten result paths and exact match-kind arrays. Both redirected
+logical candidates must return only `worktree_redirect`; neither sentinel may
+appear in serialized result metadata. Keep the real repository assertion:
 
 ```ts
 test('Seedance 2.5 is absent from runtime and publication sources', () => {
@@ -797,7 +820,10 @@ before replacing the prior worktree-only scanner, observe the regression test
 fail, then implement the mode-aware snapshot. Add the ignored-secret symlink
 before its candidate-set guard and observe that privacy regression fail. Add
 the packet-command mutation before composing the complete packet snapshot and
-observe that mutation test fail.
+observe that mutation test fail. For the final correction, add both
+symlinked-parent fixtures before the containment gate and observe that the old
+scanner returns `worktree_content` for both instead of
+`worktree_redirect`.
 
 - [ ] **Step 2: Run the extended test and verify the red state**
 
@@ -813,7 +839,10 @@ or stub. In the round-two regression sequence against the prior scanner, the
 synthetic scanner test FAILS because index/worktree divergence, a deleted
 indexed file, the generic symlink, and the gitlink are missing. The privacy
 variant FAILS because the ignored secret target is read, and the packet
-mutation FAILS because an omitted verification command is accepted.
+mutation FAILS because an omitted verification command is accepted. In the
+final correction sequence, both safe indexed paths with redirected parents
+FAIL because the prior scanner reads their forbidden sentinel targets and
+reports `worktree_content` instead of the fixed `worktree_redirect` metadata.
 
 - [ ] **Step 3: Create the documentation-only engine evidence stub**
 
@@ -1012,8 +1041,8 @@ pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/seedance-2-5-readin
 ```
 
 Expected: PASS with all five tests green, including the complete-packet
-mutation guard, the synthetic index/worktree/symlink/gitlink regression, and
-the repository-wide absence boundary.
+mutation guard, the synthetic index/worktree/direct-symlink/parent-redirect/
+gitlink regression, and the repository-wide absence boundary.
 
 - [ ] **Step 6: Commit the evidence packet and persistent boundary**
 
@@ -1057,7 +1086,9 @@ Expected: the repository-wide Git candidate scan exits 0 after checking every
 non-allowlisted path, every indexed regular/symlink blob, every current
 tracked/untracked non-ignored worktree candidate, and every unapproved gitlink,
 including the provider environment template and benchmark data. Ignored
-untracked secrets are neither read nor reported.
+untracked secrets and external targets reached through symlinked parents are
+never read or reported; their original logical paths fail closed with fixed
+non-secret match metadata.
 
 - [ ] **Step 4: Run model, registry, pricing, and repository guards**
 

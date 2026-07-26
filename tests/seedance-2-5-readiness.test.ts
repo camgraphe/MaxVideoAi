@@ -13,7 +13,15 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
+import {
+  basename,
+  dirname,
+  isAbsolute,
+  join,
+  relative,
+  resolve,
+  sep,
+} from 'node:path';
 import test from 'node:test';
 
 import {
@@ -51,6 +59,7 @@ const exposureMatchOrder = [
   'index_content',
   'index_symlink_target',
   'index_symlink_resolved_content',
+  'worktree_redirect',
   'worktree_content',
   'worktree_symlink_target',
   'worktree_symlink_resolved_content',
@@ -68,6 +77,7 @@ type GitIndexEntry = {
   path: string;
 };
 type GitRepositorySnapshot = {
+  canonicalRepositoryRoot: string;
   candidatePaths: string[];
   candidatePathSet: ReadonlySet<string>;
   indexEntriesByPath: Map<string, GitIndexEntry[]>;
@@ -453,6 +463,7 @@ function readGitRepositorySnapshot(
     new Set([...indexEntriesByPath.keys(), ...untrackedPaths]),
   ).sort();
   return {
+    canonicalRepositoryRoot: realpathSync(repositoryRoot),
     candidatePaths,
     candidatePathSet: new Set(candidatePaths),
     indexEntriesByPath,
@@ -567,18 +578,133 @@ function tryLstat(path: string): ReturnType<typeof lstatSync> | null {
   }
 }
 
+type WorktreeCandidateAccess =
+  | { kind: 'missing' }
+  | { kind: 'redirect' }
+  | { kind: 'direct'; absolutePath: string }
+  | {
+      kind: 'approved_redirect';
+      absolutePath: string;
+      resolvedPath: string;
+    };
+
+function resolveWorktreeCandidateAccess(
+  repositoryRoot: string,
+  candidatePath: string,
+  snapshot: GitRepositorySnapshot,
+): WorktreeCandidateAccess {
+  const absolutePath = join(repositoryRoot, candidatePath);
+  let canonicalParent: string;
+  try {
+    canonicalParent = realpathSync(dirname(absolutePath));
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      'code' in error &&
+      (error as NodeJS.ErrnoException).code === 'ENOENT'
+    ) {
+      return { kind: 'missing' };
+    }
+    if (
+      error instanceof Error &&
+      'code' in error &&
+      (error as NodeJS.ErrnoException).code === 'ELOOP'
+    ) {
+      return { kind: 'redirect' };
+    }
+    throw error;
+  }
+
+  const expectedCanonicalParent = resolve(
+    snapshot.canonicalRepositoryRoot,
+    dirname(candidatePath),
+  );
+  if (canonicalParent === expectedCanonicalParent) {
+    return { kind: 'direct', absolutePath };
+  }
+
+  let resolvedPath: string;
+  try {
+    resolvedPath = realpathSync(join(canonicalParent, basename(candidatePath)));
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      'code' in error &&
+      ['ENOENT', 'ELOOP'].includes((error as NodeJS.ErrnoException).code ?? '')
+    ) {
+      return { kind: 'redirect' };
+    }
+    throw error;
+  }
+  const resolvedRepositoryPath = repositoryPathInside(
+    snapshot.canonicalRepositoryRoot,
+    resolvedPath,
+  );
+  if (
+    !resolvedRepositoryPath ||
+    !snapshot.candidatePathSet.has(resolvedRepositoryPath)
+  ) {
+    return { kind: 'redirect' };
+  }
+  return {
+    kind: 'approved_redirect',
+    absolutePath,
+    resolvedPath,
+  };
+}
+
 function addWorktreeMatches(
   repositoryRoot: string,
   candidatePath: string,
   snapshot: GitRepositorySnapshot,
   matches: Set<ExposureMatch>,
 ) {
-  const absolutePath = join(repositoryRoot, candidatePath);
+  const access = resolveWorktreeCandidateAccess(
+    repositoryRoot,
+    candidatePath,
+    snapshot,
+  );
+  if (access.kind === 'missing') return;
+  if (access.kind === 'redirect') {
+    matches.add('worktree_redirect');
+    return;
+  }
+  const { absolutePath } = access;
   const stats = tryLstat(absolutePath);
   if (!stats) return;
 
   if (stats.isFile()) {
-    if (bufferHasForbiddenIdentity(readFileSync(absolutePath))) {
+    let resolvedPath: string;
+    if (access.kind === 'approved_redirect') {
+      resolvedPath = access.resolvedPath;
+    } else {
+      try {
+        resolvedPath = realpathSync(absolutePath);
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          'code' in error &&
+          ['ENOENT', 'ELOOP'].includes(
+            (error as NodeJS.ErrnoException).code ?? '',
+          )
+        ) {
+          return;
+        }
+        throw error;
+      }
+      const resolvedRepositoryPath = repositoryPathInside(
+        snapshot.canonicalRepositoryRoot,
+        resolvedPath,
+      );
+      if (
+        !resolvedRepositoryPath ||
+        !snapshot.candidatePathSet.has(resolvedRepositoryPath)
+      ) {
+        matches.add('worktree_redirect');
+        return;
+      }
+    }
+    if (bufferHasForbiddenIdentity(readFileSync(resolvedPath))) {
       matches.add('worktree_content');
     }
     return;
@@ -604,7 +730,7 @@ function addWorktreeMatches(
     throw error;
   }
   const resolvedRepositoryPath = repositoryPathInside(
-    realpathSync(repositoryRoot),
+    snapshot.canonicalRepositoryRoot,
     resolvedTarget,
   );
   if (
@@ -935,6 +1061,9 @@ test('Seedance 2.5 packet contract rejects verification command omissions', () =
 
 test('Seedance 2.5 exposure scan reconciles index and worktree states', () => {
   const fixtureRoot = mkdtempSync(join(tmpdir(), 'seedance-2-5-exposure-'));
+  const externalFixtureRoot = mkdtempSync(
+    join(tmpdir(), 'exposure-external-'),
+  );
   const writeFixture = (path: string, content: string | Uint8Array) => {
     const target = join(fixtureRoot, path);
     mkdirSync(dirname(target), { recursive: true });
@@ -942,7 +1071,10 @@ test('Seedance 2.5 exposure scan reconciles index and worktree states', () => {
   };
 
   try {
-    writeFixture('.gitignore', 'frontend/.env.local\n');
+    writeFixture(
+      '.gitignore',
+      'frontend/.env.local\nfrontend/ignored-parent-secrets/\n',
+    );
     execFileSync('git', ['init', '-q'], { cwd: fixtureRoot, stdio: 'ignore' });
     execFileSync('git', ['add', '--', '.gitignore'], {
       cwd: fixtureRoot,
@@ -994,6 +1126,14 @@ test('Seedance 2.5 exposure scan reconciles index and worktree states', () => {
       'frontend/config/staged-provider.env',
       'BYTEPLUS_STAGED_MODEL=seedance-2-5\n',
     );
+    writeFixture(
+      'frontend/redirected-external/provider.env',
+      'BYTEPLUS_STAGED_MODEL=safe-engine\n',
+    );
+    writeFixture(
+      'frontend/redirected-internal/provider.env',
+      'BYTEPLUS_STAGED_MODEL=safe-engine\n',
+    );
     const ignoredSecretSymlinkPath = join(
       fixtureRoot,
       'frontend/config/local-secret-link.ts',
@@ -1022,6 +1162,8 @@ test('Seedance 2.5 exposure scan reconciles index and worktree states', () => {
         'frontend/config/staged-provider.env',
         'frontend/config/upcoming-engine.ts',
         'frontend/public/provider-cache.bin',
+        'frontend/redirected-external/provider.env',
+        'frontend/redirected-internal/provider.env',
       ],
       { cwd: fixtureRoot, stdio: 'ignore' },
     );
@@ -1034,6 +1176,28 @@ test('Seedance 2.5 exposure scan reconciles index and worktree states', () => {
       'BYTEPLUS_STAGED_MODEL=safe-engine\n',
     );
     rmSync(join(fixtureRoot, 'frontend/config/deleted-provider.env'));
+    rmSync(join(fixtureRoot, 'frontend/redirected-external'), {
+      recursive: true,
+    });
+    rmSync(join(fixtureRoot, 'frontend/redirected-internal'), {
+      recursive: true,
+    });
+    writeFixture(
+      'frontend/ignored-parent-secrets/provider.env',
+      'INTERNAL_REDIRECT_SENTINEL=seedance-2-5\n',
+    );
+    writeFileSync(
+      join(externalFixtureRoot, 'provider.env'),
+      'EXTERNAL_REDIRECT_SENTINEL=seedance-2-5\n',
+    );
+    symlinkSync(
+      externalFixtureRoot,
+      join(fixtureRoot, 'frontend/redirected-external'),
+    );
+    symlinkSync(
+      'ignored-parent-secrets',
+      join(fixtureRoot, 'frontend/redirected-internal'),
+    );
     const gitlinkObject = execFileSync('git', ['rev-parse', 'HEAD'], {
       cwd: fixtureRoot,
       encoding: 'utf8',
@@ -1051,11 +1215,16 @@ test('Seedance 2.5 exposure scan reconciles index and worktree states', () => {
       { cwd: fixtureRoot, stdio: 'ignore' },
     );
 
+    const exposures = findForbiddenSeedance25Exposures(
+      fixtureRoot,
+      new Set(['docs/model-launch/seedance-2-5.md']),
+    );
+    assert.doesNotMatch(
+      JSON.stringify(exposures),
+      /INTERNAL_REDIRECT_SENTINEL|EXTERNAL_REDIRECT_SENTINEL/,
+    );
     assert.deepEqual(
-      findForbiddenSeedance25Exposures(
-        fixtureRoot,
-        new Set(['docs/model-launch/seedance-2-5.md']),
-      ),
+      exposures,
       [
         {
           path: 'data/benchmarks/engine-scores.v1.json',
@@ -1094,10 +1263,19 @@ test('Seedance 2.5 exposure scan reconciles index and worktree states', () => {
           path: 'frontend/providers/upcoming-provider',
           matches: ['gitlink'],
         },
+        {
+          path: 'frontend/redirected-external/provider.env',
+          matches: ['worktree_redirect'],
+        },
+        {
+          path: 'frontend/redirected-internal/provider.env',
+          matches: ['worktree_redirect'],
+        },
       ],
     );
   } finally {
     rmSync(fixtureRoot, { recursive: true, force: true });
+    rmSync(externalFixtureRoot, { recursive: true, force: true });
   }
 });
 
