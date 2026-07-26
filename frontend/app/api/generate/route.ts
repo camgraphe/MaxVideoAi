@@ -478,6 +478,8 @@ export async function POST(req: NextRequest) {
       renderIds,
       heroRenderId,
       localKey,
+      inputSchema: engine.inputSchema,
+      referenceValuesByField,
       deps: {
         logMetricFn: logMetric,
       },

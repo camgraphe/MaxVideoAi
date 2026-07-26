@@ -1,5 +1,10 @@
 import type { AspectRatio, Mode, Resolution } from '@/types/engines';
 import {
+  evaluateReferenceBudget,
+  type ReferenceBudgetMediaItem,
+  type ResolvedEngineReferenceBudget,
+} from '@/lib/reference-budget';
+import {
   BYTEPLUS_SEEDANCE_ASPECT_RATIOS,
   BYTEPLUS_SEEDANCE_DURATION_OPTIONS,
   BYTEPLUS_SEEDANCE_FAST_RESOLUTIONS,
@@ -66,15 +71,90 @@ export function buildBytePlusSeedancePayload(params: {
   allowedAspectRatios?: readonly AspectRatio[];
   allowedResolutions?: Resolution[];
   allowedDurationOptions?: readonly number[];
+  referenceBudget?: ResolvedEngineReferenceBudget;
+  referenceMediaItems?: ReferenceBudgetMediaItem[];
 }): BytePlusSeedancePayload {
   const prompt = params.prompt.trim();
   const duration = Math.trunc(params.durationSec);
   const mode = params.mode ?? 't2v';
   const imageUrl = typeof params.imageUrl === 'string' ? params.imageUrl.trim() : '';
   const endImageUrl = typeof params.endImageUrl === 'string' ? params.endImageUrl.trim() : '';
-  const referenceImageUrls = uniqueNonEmptyUrls(params.referenceImageUrls);
-  const referenceVideoUrls = uniqueNonEmptyUrls(params.referenceVideoUrls);
-  const referenceAudioUrls = uniqueNonEmptyUrls(params.referenceAudioUrls);
+  const referenceMediaItems = params.referenceBudget
+    ? params.referenceMediaItems ?? []
+    : null;
+  const budgetFieldIds = params.referenceBudget
+    ? new Set(params.referenceBudget.fieldIds)
+    : null;
+  if (params.referenceBudget) {
+    const valuesByField = referenceMediaItems!
+      .filter((item) => budgetFieldIds!.has(item.fieldId))
+      .reduce<Record<string, string[]>>((acc, item) => {
+        (acc[item.fieldId] ??= []).push(item.url);
+        return acc;
+      }, {});
+    const evaluation = evaluateReferenceBudget({
+      budget: params.referenceBudget,
+      valuesByField,
+      getIdentity: (value) => value,
+    });
+    if (!evaluation.ok) {
+      throw new BytePlusModelArkError(
+        `BytePlus Seedance supports up to ${evaluation.maxTotal} total references for this mode.`,
+        { code: 'BYTEPLUS_REFERENCE_BUDGET_EXCEEDED' }
+      );
+    }
+  }
+
+  const resolveTypedPayloadUrls = (
+    kind: ReferenceBudgetMediaItem['kind'],
+    requestedUrls: string[] | undefined
+  ) => {
+    const requested = uniqueNonEmptyUrls(requestedUrls);
+    if (!referenceMediaItems) return requested;
+    const typedByUrl = new Map(
+      referenceMediaItems
+        .filter((item) => item.kind === kind)
+        .map((item) => [item.url.trim(), item] as const)
+    );
+    return requested.map((url) => {
+      const item = typedByUrl.get(url);
+      if (!item) {
+        throw new BytePlusModelArkError(
+          'BytePlus reference payload is missing original field provenance.',
+          { code: 'BYTEPLUS_REFERENCE_BUDGET_INPUT_MISMATCH' }
+        );
+      }
+      return item.url.trim();
+    });
+  };
+
+  const referenceImageUrls = uniqueNonEmptyUrls(
+    resolveTypedPayloadUrls('image', params.referenceImageUrls)
+  );
+  const referenceVideoUrls = uniqueNonEmptyUrls(
+    resolveTypedPayloadUrls('video', params.referenceVideoUrls)
+  );
+  const referenceAudioUrls = uniqueNonEmptyUrls(
+    resolveTypedPayloadUrls('audio', params.referenceAudioUrls)
+  );
+  if (budgetFieldIds && referenceMediaItems) {
+    const selectedByKind = {
+      image: new Set(referenceImageUrls),
+      video: new Set(referenceVideoUrls),
+      audio: new Set(referenceAudioUrls),
+    };
+    const omittedBudgetItem = referenceMediaItems.find(
+      (item) =>
+        budgetFieldIds.has(item.fieldId) &&
+        !selectedByKind[item.kind].has(item.url.trim())
+    );
+    if (omittedBudgetItem) {
+      throw new BytePlusModelArkError(
+        'BytePlus budgeted reference is missing from the provider payload.',
+        { code: 'BYTEPLUS_REFERENCE_BUDGET_INPUT_MISMATCH' }
+      );
+    }
+  }
   const allowedModes = params.allowedModes ?? BYTEPLUS_SEEDANCE_MODES;
   const allowedAspectRatios =
     params.allowedAspectRatios ?? BYTEPLUS_SEEDANCE_ASPECT_RATIOS;

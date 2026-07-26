@@ -269,6 +269,103 @@ test('BytePlus payload respects explicit empty capabilities while omitted capabi
   assert.equal(payload.ratio, '16:9');
 });
 
+test('BytePlus payload counts typed budget items before URL deduplication', () => {
+  assert.throws(
+    () =>
+      buildBytePlusSeedancePayload({
+        modelId: 'current-model-id',
+        prompt: 'A reference-guided scene',
+        durationSec: 5,
+        mode: 'ref2v',
+        resolution: '720p',
+        ratio: '16:9',
+        allowedResolutions: ['720p'],
+        allowedDurationOptions: [5],
+        referenceBudget: {
+          fieldIds: ['image_urls'],
+          maxTotal: 1,
+          countUniqueUrls: false,
+        },
+        referenceMediaItems: [
+          { fieldId: 'image_urls', kind: 'image', url: 'same' },
+          { fieldId: 'image_urls', kind: 'image', url: 'same' },
+        ],
+      }),
+    (error: unknown) =>
+      error instanceof Error &&
+      (error as Error & { code?: string }).code === 'BYTEPLUS_REFERENCE_BUDGET_EXCEEDED'
+  );
+});
+
+test('BytePlus typed provenance preserves a non-budget V2V source video', () => {
+  const payload = buildBytePlusSeedancePayload({
+    modelId: 'current-model-id',
+    prompt: 'Edit the source',
+    durationSec: 5,
+    mode: 'v2v',
+    resolution: '720p',
+    ratio: '16:9',
+    allowedResolutions: ['720p'],
+    allowedDurationOptions: [5],
+    referenceImageUrls: ['reference-image'],
+    referenceVideoUrls: ['source-video'],
+    referenceBudget: {
+      fieldIds: ['reference_image_urls'],
+      maxTotal: 1,
+      countUniqueUrls: true,
+    },
+    referenceMediaItems: [
+      {
+        fieldId: 'reference_image_urls',
+        kind: 'image',
+        url: 'reference-image',
+      },
+      { fieldId: 'video_url', kind: 'video', url: 'source-video' },
+    ],
+  });
+
+  assert.deepEqual(
+    payload.content
+      .filter((item) => item.type !== 'text')
+      .map((item) =>
+        item.type === 'image_url'
+          ? item.image_url.url
+          : item.type === 'video_url'
+            ? item.video_url.url
+            : item.audio_url.url
+      ),
+    ['reference-image', 'source-video']
+  );
+});
+
+test('BytePlus rejects a budgeted item omitted from provider-selected arrays', () => {
+  assert.throws(
+    () =>
+      buildBytePlusSeedancePayload({
+        modelId: 'current-model-id',
+        prompt: 'A reference-guided scene',
+        durationSec: 5,
+        mode: 'ref2v',
+        resolution: '720p',
+        ratio: '16:9',
+        allowedResolutions: ['720p'],
+        allowedDurationOptions: [5],
+        referenceBudget: {
+          fieldIds: ['image_urls'],
+          maxTotal: 2,
+          countUniqueUrls: true,
+        },
+        referenceMediaItems: [
+          { fieldId: 'image_urls', kind: 'image', url: 'missing-image' },
+        ],
+      }),
+    (error: unknown) =>
+      error instanceof Error &&
+      (error as Error & { code?: string }).code ===
+        'BYTEPLUS_REFERENCE_BUDGET_INPUT_MISMATCH'
+  );
+});
+
 test('BytePlus Standard 4k accounting uses 4k dimensions and input-aware official rates', () => {
   assert.equal(
     expectedBytePlusTokens({

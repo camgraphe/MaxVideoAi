@@ -253,6 +253,62 @@ test('BytePlus submission helper marks failed tasks, rolls back payments, and re
   }
 });
 
+test('BytePlus submission budget overflow stops before provider access and rolls back', async () => {
+  const originalWarn = console.warn;
+  console.warn = () => undefined;
+  let clientRequests = 0;
+  let rollbacks = 0;
+  try {
+    const result = await submitBytePlusGenerateTask({
+      ...baseParams,
+      inputSchema: {
+        optional: [
+          { id: 'image_urls', type: 'image', label: 'Images', modes: ['ref2v'] },
+          { id: 'video_urls', type: 'video', label: 'Videos', modes: ['ref2v'] },
+        ],
+        referenceBudget: {
+          fieldIds: ['image_urls', 'video_urls'],
+          modes: ['ref2v'],
+          maxTotal: 2,
+          countUniqueUrls: true,
+        },
+      },
+      referenceValuesByField: {
+        image_urls: ['a', 'b'],
+        video_urls: ['c'],
+      },
+      pendingReceipt,
+      deps: {
+        getBytePlusArkConfigFn: () =>
+          ({
+            seedanceModelId: 'standard-id',
+            seedanceFastModelId: 'fast-id',
+            seedanceMiniModelId: 'mini-id',
+          }) as never,
+        getBytePlusModelArkClientFn: () => ({
+          createSeedanceFastTask: async () => {
+            clientRequests += 1;
+            return { providerJobId: 'must_not_exist', status: 'queued' };
+          },
+        }),
+        getBytePlusSeedanceAllowedResolutionsFn: () => ['720p'] as never,
+        getBytePlusUserSafeErrorMessageFn: () => 'Reference limit exceeded',
+        scrubBytePlusErrorFn: () => 'reference budget exceeded',
+        queryFn: async () => undefined,
+        rollbackPendingPaymentFn: async () => {
+          rollbacks += 1;
+        },
+      },
+    });
+    assert.equal(result.ok, false);
+    assert.equal(result.body.error, 'BYTEPLUS_REFERENCE_BUDGET_EXCEEDED');
+    assert.equal(clientRequests, 0);
+    assert.equal(rollbacks, 1);
+  } finally {
+    console.warn = originalWarn;
+  }
+});
+
 test('unknown BytePlus Seedance engine fails before provider submission and rolls back', async () => {
   const originalWarn = console.warn;
   console.warn = () => undefined;

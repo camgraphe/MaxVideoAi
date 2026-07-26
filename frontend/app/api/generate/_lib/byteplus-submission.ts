@@ -1,5 +1,10 @@
-import type { Mode, PricingSnapshot } from '@/types/engines';
+import type { EngineInputSchema, Mode, PricingSnapshot } from '@/types/engines';
 import { query } from '@/lib/db';
+import {
+  buildReferenceMediaItems,
+  resolveEngineReferenceBudget,
+  type ReferenceBudgetValuesByField,
+} from '@/lib/reference-budget';
 import {
   BYTEPLUS_MODELARK_PROVIDER,
   buildBytePlusSeedancePayload,
@@ -82,6 +87,8 @@ export async function submitBytePlusGenerateTask(params: {
   renderIds: Array<string | null> | null;
   heroRenderId: string | null;
   localKey: string | null;
+  inputSchema?: EngineInputSchema | null;
+  referenceValuesByField?: ReferenceBudgetValuesByField<string>;
   deps?: BytePlusSubmissionDeps;
 }): Promise<BytePlusSubmissionResult> {
   const deps = params.deps ?? {};
@@ -105,6 +112,18 @@ export async function submitBytePlusGenerateTask(params: {
     const config = getBytePlusArkConfigFn();
     const generateAudio =
       profile.generatedAudio && params.audioEnabled !== false;
+    const referenceBudget = resolveEngineReferenceBudget(
+      params.inputSchema,
+      params.mode
+    );
+    const referenceMediaItems =
+      referenceBudget && params.inputSchema
+        ? buildReferenceMediaItems(
+            params.inputSchema,
+            params.mode,
+            params.referenceValuesByField ?? {}
+          )
+        : undefined;
     const payload = buildBytePlusSeedancePayloadFn({
       modelId: resolveBytePlusSeedanceModelIdFn(params.engineId, config),
       prompt: params.prompt,
@@ -126,6 +145,9 @@ export async function submitBytePlusGenerateTask(params: {
       allowedAspectRatios: profile.aspectRatios,
       allowedResolutions: getBytePlusSeedanceAllowedResolutionsFn(params.engineId),
       allowedDurationOptions: getBytePlusSeedanceDurationOptionsFn(params.engineId),
+      ...(referenceBudget
+        ? { referenceBudget, referenceMediaItems: referenceMediaItems ?? [] }
+        : {}),
     });
     const providerTask = await getBytePlusModelArkClientFn().createSeedanceFastTask(payload);
     const providerJobId = providerTask.providerJobId;
