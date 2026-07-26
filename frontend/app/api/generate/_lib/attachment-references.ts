@@ -1,6 +1,6 @@
 import type { EngineInputSchema, Mode } from '@/types/engines';
 import { isHappyHorseEngineId, supportsHappyHorseVideoEdit } from '@/lib/happy-horse-workflow';
-import type { ReferenceBudgetValuesByField } from '@/lib/reference-budget';
+import type { ReferenceBudgetMediaItem, ReferenceBudgetValuesByField } from '@/lib/reference-budget';
 import type { NormalizedAttachment } from './attachments';
 
 type AttachmentReferenceParams = {
@@ -30,6 +30,7 @@ type AttachmentReferenceResult = {
   startImageUrl: string | undefined;
   sourceInputVideoUrl: string | undefined;
   referenceValuesByField: ReferenceBudgetValuesByField<string>;
+  referenceMediaItems: ReferenceBudgetMediaItem[];
 };
 
 type SourceVideoDurationResolution = {
@@ -116,21 +117,28 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
       .map((attachment) => attachment.url!.trim())
   );
   const referenceValuesByField: Record<string, string[]> = {};
-  const appendReferenceValue = (fieldId: string, rawUrl: string | undefined) => {
+  const referenceMediaItems: ReferenceBudgetMediaItem[] = [];
+  const appendReferenceValue = (
+    fieldId: string,
+    rawUrl: string | undefined,
+    kind?: ReferenceBudgetMediaItem['kind']
+  ) => {
     const url = rawUrl?.trim();
     if (!fieldId || !url) return;
     (referenceValuesByField[fieldId] ??= []).push(url);
+    if (kind) referenceMediaItems.push({ fieldId, kind, url });
   };
 
   for (const attachment of params.attachments) {
     if (!attachment.slotId || typeof attachment.url !== 'string') continue;
-    appendReferenceValue(attachment.slotId, attachment.url);
+    appendReferenceValue(attachment.slotId, attachment.url, attachment.kind);
   }
 
   const appendProjectionOnlyValues = (
     fieldId: string,
     projectedUrls: string[],
-    representedUrls: string[]
+    representedUrls: string[],
+    kind: ReferenceBudgetMediaItem['kind']
   ) => {
     const remainingRepresented = new Map<string, number>();
     representedUrls.forEach((url) => {
@@ -142,7 +150,7 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
         remainingRepresented.set(url, representedCount - 1);
         return;
       }
-      appendReferenceValue(fieldId, url);
+      appendReferenceValue(fieldId, url, kind);
     });
   };
 
@@ -163,7 +171,8 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
   appendProjectionOnlyValues(
     directReferenceImageFieldId,
     directReferenceImages,
-    attachmentReferenceImageUrls
+    attachmentReferenceImageUrls,
+    'image'
   );
   const directReferenceAudioFieldId = schemaFields.find(
     (field) =>
@@ -178,7 +187,8 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
     appendProjectionOnlyValues(
       directReferenceAudioFieldId,
       [directAudioUrl],
-      audioUrls
+      audioUrls,
+      'audio'
     );
   }
   const resolvedAudioUrl = params.rawAudioUrl ?? audioUrls[0] ?? undefined;
@@ -208,6 +218,7 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
     startImageUrl,
     sourceInputVideoUrl,
     referenceValuesByField,
+    referenceMediaItems,
   };
 }
 

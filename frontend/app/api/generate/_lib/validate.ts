@@ -1,13 +1,13 @@
 import type { Mode } from '../../../../fixtures/engineCaps';
 import type { EngineInputSchema } from '@/types/engines';
-import type { ReferenceBudgetValuesByField } from '@/lib/reference-budget';
+import type { ReferenceBudgetMediaItem, ReferenceBudgetValuesByField } from '@/lib/reference-budget';
 import { ENGINE_CAPS, resolveEngineCapsKey, type EngineCapsKey } from '../../../../fixtures/engineCaps';
 import { listFalEngines } from '../../../../src/config/falEngines';
 import { validateModeMediaInputs } from './validate-media-inputs';
 import { validateProviderSpecificConstraints } from './validate-provider-constraints';
 import { validateProviderControls } from './validate-provider-controls';
 import type { ValidationResult } from './validate-types';
-export type RequestValidationContext = { inputSchema?: EngineInputSchema | null; referenceValuesByField?: ReferenceBudgetValuesByField<string> };
+export type RequestValidationContext = { inputSchema?: EngineInputSchema | null; referenceValuesByField?: ReferenceBudgetValuesByField<string>; referenceMediaItems?: readonly ReferenceBudgetMediaItem[] };
 
 const ENGINE_INPUT_LIMITS = listFalEngines().reduce<Record<string, { promptMaxChars?: number }>>((acc, entry) => {
   acc[entry.id] = { promptMaxChars: entry.engine.inputLimits.promptMaxChars };
@@ -84,7 +84,7 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
     };
   }
 
-  const mediaInputValidation = validateModeMediaInputs({ engineId, normalizedMode, payload, inputSchema: context.inputSchema, referenceValuesByField: context.referenceValuesByField });
+  const mediaInputValidation = validateModeMediaInputs({ engineId, normalizedMode, payload, inputSchema: context.inputSchema, referenceValuesByField: context.referenceValuesByField, referenceMediaItems: context.referenceMediaItems });
   if (!mediaInputValidation.ok) {
     return mediaInputValidation;
   }

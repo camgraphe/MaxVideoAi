@@ -84,6 +84,15 @@ test('attachment reference helper derives primary image, media lists, and frame 
         'https://cdn.maxvideoai.com/ref-a.png',
       ],
     },
+    referenceMediaItems: [
+      { fieldId: 'image_url', kind: 'image', url: 'https://cdn.maxvideoai.com/primary.png' },
+      { fieldId: 'last_frame_url', kind: 'image', url: 'https://cdn.maxvideoai.com/last.png' },
+      { fieldId: 'reference_images', kind: 'image', url: 'https://cdn.maxvideoai.com/ref-b.png' },
+      { fieldId: 'video_url', kind: 'video', url: 'https://cdn.maxvideoai.com/source.mp4' },
+      { fieldId: 'audio_url', kind: 'audio', url: 'https://cdn.maxvideoai.com/audio.mp3' },
+      { fieldId: 'image_urls', kind: 'image', url: 'https://cdn.maxvideoai.com/ref-a.png' },
+      { fieldId: 'image_urls', kind: 'image', url: 'https://cdn.maxvideoai.com/ref-a.png' },
+    ],
   });
 });
 
@@ -114,6 +123,41 @@ test('attachment reference derivation preserves V2V field ids before projection'
     reference_image_urls: ['v2v-image', 'legacy-image'],
     video_url: ['source-video'],
   });
+});
+
+test('attachment reference derivation preserves actual media kind independently of schema', () => {
+  const result = deriveGenerationAttachmentReferences({
+    engineId: 'contract-test-engine',
+    mode: 'v2v',
+    inputSchema: {
+      optional: [
+        { id: 'image_urls', type: 'image', label: 'Images', modes: ['v2v'] },
+        { id: 'video_url', type: 'video', label: 'Source video', modes: ['v2v'] },
+      ],
+    },
+    referenceImages: ['valid-image'],
+    rawAudioUrl: null,
+    attachments: [
+      attachment({
+        kind: 'image',
+        slotId: 'image_urls',
+        url: 'valid-image',
+      }),
+      attachment({
+        kind: 'audio',
+        slotId: 'video_url',
+        url: 'forged-audio',
+      }),
+    ],
+  });
+  assert.deepEqual(result.referenceValuesByField, {
+    image_urls: ['valid-image'],
+    video_url: ['forged-audio'],
+  });
+  assert.deepEqual(result.referenceMediaItems, [
+    { fieldId: 'image_urls', kind: 'image', url: 'valid-image' },
+    { fieldId: 'video_url', kind: 'audio', url: 'forged-audio' },
+  ]);
 });
 
 test('browser compatibility projections do not duplicate attachment multiplicity', () => {
@@ -161,6 +205,9 @@ test('direct-only Seedance V2V references use the schema-authored image_urls fie
   assert.deepEqual(result.referenceValuesByField, {
     image_urls: ['direct-image'],
   });
+  assert.deepEqual(result.referenceMediaItems, [
+    { fieldId: 'image_urls', kind: 'image', url: 'direct-image' },
+  ]);
 });
 
 for (const mode of ['v2v', 'extend'] as const) {
@@ -185,6 +232,9 @@ for (const mode of ['v2v', 'extend'] as const) {
     assert.deepEqual(result.referenceValuesByField, {
       audio_urls: ['direct-audio'],
     });
+    assert.deepEqual(result.referenceMediaItems, [
+      { fieldId: 'audio_urls', kind: 'audio', url: 'direct-audio' },
+    ]);
   });
 }
 

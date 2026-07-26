@@ -37,6 +37,35 @@ const budgetedRef2vSchema = {
     countUniqueUrls: true,
   },
 } satisfies EngineInputSchema;
+const typedReferenceV2vFields = [
+  {
+    id: 'reference_image_urls',
+    type: 'image',
+    label: 'References',
+    modes: ['v2v'],
+  },
+  {
+    id: 'audio_urls',
+    type: 'audio',
+    label: 'Reference audio',
+    modes: ['v2v'],
+  },
+  {
+    id: 'video_url',
+    type: 'video',
+    label: 'Source video',
+    modes: ['v2v'],
+  },
+] satisfies NonNullable<EngineInputSchema['optional']>;
+const typedReferenceBudgetV2vSchema = {
+  optional: typedReferenceV2vFields,
+  referenceBudget: {
+    fieldIds: ['reference_image_urls', 'audio_urls'],
+    modes: ['v2v'],
+    maxTotal: 1,
+    countUniqueUrls: true,
+  },
+} satisfies EngineInputSchema;
 
 function attachment(
   kind: 'image' | 'video' | 'audio',
@@ -74,6 +103,7 @@ function deriveAndValidateBudgetedRef2v(
       normalizedMode: 'ref2v',
       inputSchema: budgetedRef2vSchema,
       referenceValuesByField: references.referenceValuesByField,
+      referenceMediaItems: references.referenceMediaItems,
       payload: {
         image_urls: references.normalizedReferenceImages,
         video_urls: references.videoUrls,
@@ -176,68 +206,104 @@ test('server aggregate validation rejects provider audio projected from a mode-i
   });
 });
 
-test('attachment slot provenance remains backward compatible without an aggregate budget', () => {
-  const result = validateModeMediaInputs({
-    engineId: 'contract-test-engine',
-    normalizedMode: 'ref2v',
-    inputSchema: {
-      optional: [
-        {
-          id: 'image_urls',
-          type: 'image',
-          label: 'References',
-          modes: ['ref2v'],
-        },
-      ],
+test('typed attachment provenance rejects actual media kind hidden under an active non-budget field', () => {
+  const references = deriveGenerationAttachmentReferences({
+    engineId: 'seedance-2-0',
+    mode: 'v2v',
+    inputSchema: typedReferenceBudgetV2vSchema,
+    referenceImages: [],
+    rawAudioUrl: null,
+    attachments: [
+      attachment('image', 'reference_image_urls', 'valid-image'),
+      attachment('audio', 'video_url', 'forged-audio'),
+    ],
+  });
+
+  assert.deepEqual(references.audioUrls, ['forged-audio']);
+  const result = validateRequest(
+    'seedance-2-0',
+    'v2v',
+    {
+      reference_image_urls: ['valid-image'],
+      video_url: 'source-video',
+      duration: 4,
     },
-    referenceValuesByField: {
-      image_urls: ['valid-image'],
-      forged_video_slot: ['legacy-video'],
-    },
-    payload: {
-      image_urls: ['valid-image'],
-      video_urls: ['legacy-video'],
+    {
+      inputSchema: typedReferenceBudgetV2vSchema,
+      referenceValuesByField: references.referenceValuesByField,
+      referenceMediaItems: references.referenceMediaItems,
+    }
+  );
+
+  assert.deepEqual(result, {
+    ok: false,
+    error: {
+      code: 'ENGINE_CONSTRAINT',
+      field: 'video_url',
+      message: 'Media input "video_url" expects video, not audio',
     },
   });
+});
+
+test('attachment slot provenance remains backward compatible without an aggregate budget', () => {
+  const inputSchema = {
+    optional: typedReferenceV2vFields,
+  } satisfies EngineInputSchema;
+  const references = deriveGenerationAttachmentReferences({
+    engineId: 'seedance-2-0',
+    mode: 'v2v',
+    inputSchema,
+    referenceImages: [],
+    rawAudioUrl: null,
+    attachments: [
+      attachment('image', 'reference_image_urls', 'valid-image'),
+      attachment('audio', 'video_url', 'forged-audio'),
+    ],
+  });
+  const result = validateRequest(
+    'seedance-2-0',
+    'v2v',
+    {
+      reference_image_urls: ['valid-image'],
+      video_url: 'source-video',
+      duration: 4,
+    },
+    {
+      inputSchema,
+      referenceValuesByField: references.referenceValuesByField,
+      referenceMediaItems: references.referenceMediaItems,
+    }
+  );
 
   assert.deepEqual(result, OK);
 });
 
 test('active schema media outside the aggregate budget remains valid', () => {
-  const result = validateModeMediaInputs({
-    engineId: 'contract-test-engine',
-    normalizedMode: 'v2v',
-    inputSchema: {
-      optional: [
-        {
-          id: 'reference_image_urls',
-          type: 'image',
-          label: 'References',
-          modes: ['v2v'],
-        },
-        {
-          id: 'video_url',
-          type: 'video',
-          label: 'Source video',
-          modes: ['v2v'],
-        },
-      ],
-      referenceBudget: {
-        fieldIds: ['reference_image_urls'],
-        modes: ['v2v'],
-        maxTotal: 1,
-        countUniqueUrls: true,
-      },
-    },
-    referenceValuesByField: {
-      reference_image_urls: ['valid-image'],
-      video_url: ['source-video'],
-    },
-    payload: {
+  const references = deriveGenerationAttachmentReferences({
+    engineId: 'seedance-2-0',
+    mode: 'v2v',
+    inputSchema: typedReferenceBudgetV2vSchema,
+    referenceImages: [],
+    rawAudioUrl: null,
+    attachments: [
+      attachment('image', 'reference_image_urls', 'valid-image'),
+      attachment('video', 'video_url', 'source-video'),
+    ],
+  });
+  const result = validateRequest(
+    'seedance-2-0',
+    'v2v',
+    {
       reference_image_urls: ['valid-image'],
       video_url: 'source-video',
+      duration: 4,
     },
-  });
+    {
+      inputSchema: typedReferenceBudgetV2vSchema,
+      referenceValuesByField: references.referenceValuesByField,
+      referenceMediaItems: references.referenceMediaItems,
+    }
+  );
 
   assert.deepEqual(result, OK);
 });

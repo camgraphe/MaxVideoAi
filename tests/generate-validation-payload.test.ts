@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import test from 'node:test';
 
 import { buildGenerateValidationPayload } from '../frontend/app/api/generate/_lib/validation-payload';
+import type { ReferenceBudgetMediaItem } from '../frontend/lib/reference-budget';
 import type { EngineInputSchema } from '../frontend/types/engines';
 
 const root = process.cwd();
@@ -42,6 +43,7 @@ const baseParams = {
   startImageUrl: null,
   inputSchema: null,
   referenceValuesByField: {},
+  referenceMediaItems: [],
 };
 
 test('generate route delegates validation payload and required input checks', () => {
@@ -97,11 +99,15 @@ test('validation payload forwards runtime schema and original reference fields',
     },
   } satisfies EngineInputSchema;
   const referenceValuesByField = { image_urls: ['original-field-value'] };
+  const referenceMediaItems = [
+    { fieldId: 'image_urls', kind: 'image', url: 'original-field-value' },
+  ] satisfies ReferenceBudgetMediaItem[];
   let capturedContext: unknown;
   const result = buildGenerateValidationPayload({
     ...baseParams,
     inputSchema,
     referenceValuesByField,
+    referenceMediaItems,
     deps: {
       validateRequestFn: (_engineId, _mode, _payload, context) => {
         capturedContext = context;
@@ -114,7 +120,12 @@ test('validation payload forwards runtime schema and original reference fields',
   assert.deepEqual(capturedContext, {
     inputSchema,
     referenceValuesByField,
+    referenceMediaItems,
   });
+  assert.strictEqual(
+    (capturedContext as { referenceMediaItems?: unknown }).referenceMediaItems,
+    referenceMediaItems
+  );
 });
 
 test('validation payload helper builds base payload and mode flags', () => {

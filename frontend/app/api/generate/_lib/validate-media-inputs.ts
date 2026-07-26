@@ -3,6 +3,7 @@ import type { EngineInputSchema } from '@/types/engines';
 import {
   evaluateReferenceBudget,
   resolveEngineReferenceBudget,
+  type ReferenceBudgetMediaItem,
   type ReferenceBudgetValuesByField,
 } from '@/lib/reference-budget';
 import { listFalEngines } from '../../../../src/config/falEngines';
@@ -77,30 +78,14 @@ function normalizeStringArray(raw: unknown): string[] {
 }
 
 function findUnsupportedReferenceMediaField(params: {
-  inputSchema: EngineInputSchema | null | undefined;
-  normalizedMode: Mode;
+  activeMediaFieldKinds: ReadonlyMap<string, ReferenceBudgetMediaItem['kind']>;
   referenceValuesByField: ReferenceBudgetValuesByField<string>;
 }): string | null {
-  const activeMediaFieldIds = new Set(
-    [
-      ...(params.inputSchema?.required ?? []),
-      ...(params.inputSchema?.optional ?? []),
-    ]
-      .filter(
-        (field) =>
-          (field.type === 'image' ||
-            field.type === 'video' ||
-            field.type === 'audio') &&
-          (!field.modes?.length ||
-            field.modes.includes(params.normalizedMode))
-      )
-      .map((field) => field.id)
-  );
   return (
     Object.entries(params.referenceValuesByField)
       .filter(
         ([fieldId, values]) =>
-          !activeMediaFieldIds.has(fieldId) &&
+          !params.activeMediaFieldKinds.has(fieldId) &&
           (values ?? []).some((value) => value.trim().length > 0)
       )
       .map(([fieldId]) => fieldId)
@@ -172,6 +157,7 @@ export function validateModeMediaInputs(params: {
   payload: Record<string, unknown>;
   inputSchema?: EngineInputSchema | null;
   referenceValuesByField?: ReferenceBudgetValuesByField<string>;
+  referenceMediaItems?: readonly ReferenceBudgetMediaItem[];
 }): ValidationResult {
   const { engineId, normalizedMode, payload } = params;
   const referenceBudget = resolveEngineReferenceBudget(
@@ -179,9 +165,25 @@ export function validateModeMediaInputs(params: {
     params.normalizedMode
   );
   if (referenceBudget) {
+    const activeMediaFieldKinds = new Map<string, ReferenceBudgetMediaItem['kind']>(
+      [
+        ...(params.inputSchema?.required ?? []),
+        ...(params.inputSchema?.optional ?? []),
+      ]
+        .filter(
+          (field): field is typeof field & {
+            type: ReferenceBudgetMediaItem['kind'];
+          } =>
+            (field.type === 'image' ||
+              field.type === 'video' ||
+              field.type === 'audio') &&
+            (!field.modes?.length ||
+              field.modes.includes(params.normalizedMode))
+        )
+        .map((field) => [field.id, field.type])
+    );
     const unsupportedMediaField = findUnsupportedReferenceMediaField({
-      inputSchema: params.inputSchema,
-      normalizedMode: params.normalizedMode,
+      activeMediaFieldKinds,
       referenceValuesByField: params.referenceValuesByField ?? {},
     });
     if (unsupportedMediaField) {
@@ -191,6 +193,29 @@ export function validateModeMediaInputs(params: {
           code: 'ENGINE_CONSTRAINT',
           field: unsupportedMediaField,
           message: `Media input "${unsupportedMediaField}" is not supported for this engine mode`,
+        },
+      };
+    }
+    const kindMismatch = [...(params.referenceMediaItems ?? [])]
+      .filter((item) => item.url.trim().length > 0)
+      .sort(
+        (left, right) =>
+          left.fieldId.localeCompare(right.fieldId) ||
+          left.kind.localeCompare(right.kind) ||
+          left.url.localeCompare(right.url)
+      )
+      .find((item) => {
+        const expectedKind = activeMediaFieldKinds.get(item.fieldId);
+        return expectedKind && expectedKind !== item.kind;
+      });
+    if (kindMismatch) {
+      const expectedKind = activeMediaFieldKinds.get(kindMismatch.fieldId)!;
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: kindMismatch.fieldId,
+          message: `Media input "${kindMismatch.fieldId}" expects ${expectedKind}, not ${kindMismatch.kind}`,
         },
       };
     }

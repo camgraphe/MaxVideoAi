@@ -138,6 +138,7 @@ export async function POST(req: NextRequest) {
     startImageUrl,
     sourceInputVideoUrl,
     referenceValuesByField,
+    referenceMediaItems,
   } = deriveGenerationAttachmentReferences({
     attachments: processedAttachments,
     engineId: engine.id,
@@ -194,6 +195,7 @@ export async function POST(req: NextRequest) {
     isLumaRay2, initialImageUrl, loop, seed, safetyChecker,
     inputSchema: engine.inputSchema,
     referenceValuesByField,
+    referenceMediaItems,
   });
   if (!validationPayloadResult.ok) {
     logMetric('rejected', validationPayloadResult.metric);
