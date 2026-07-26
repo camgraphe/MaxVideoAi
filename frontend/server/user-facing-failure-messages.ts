@@ -20,6 +20,8 @@ type SeedanceSpecificFailure = 'copyright' | 'reference_safety' | 'start' | 'tas
 const PROVIDER_OR_INTERNAL_PATTERN =
   /\b(?:fal(?:\.ai)?|fail\.ai|byteplus|modelark|google\s+vertex|vertex\s+veo|google\s+veo\s+direct|kling\s+direct|provider|providers|provider_job_id|request_id|webhook|polling|api\s*key)\b/i;
 const URL_OR_PAYLOAD_PATTERN = /https?:\/\/|\/v\d+\/|{.*}|^\[[\s\S]*\]$/i;
+const OPAQUE_TRANSPORT_FAILURE_PATTERN =
+  /\b(?:unexpected\s+)?(?:http\s+)?status(?:\s+code)?\s*:?\s*\d{3}\b|\bunprocessable entity\b/i;
 
 function normalizeMessage(value: string | null | undefined): string | null {
   const normalized = value?.replace(/\s+/g, ' ').trim();
@@ -215,7 +217,18 @@ function canReuseMessage(message: string): boolean {
   return (
     message.length <= 260 &&
     !PROVIDER_OR_INTERNAL_PATTERN.test(message) &&
+    !OPAQUE_TRANSPORT_FAILURE_PATTERN.test(message) &&
     !URL_OR_PAYLOAD_PATTERN.test(message)
+  );
+}
+
+export function isGenericFailureDescription(message: string | null | undefined): boolean {
+  const normalized = normalizeMessage(message);
+  if (!normalized) return true;
+  return (
+    OPAQUE_TRANSPORT_FAILURE_PATTERN.test(normalized) ||
+    normalized.includes(DEFAULT_FAILURE_MESSAGE) ||
+    normalized.includes(DEFAULT_REFUND_REASON)
   );
 }
 

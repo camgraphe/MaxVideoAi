@@ -30,6 +30,16 @@ test('refund descriptions use product wording instead of raw provider failures',
   assert.doesNotMatch(description, forbidden);
 });
 
+test('raw HTTP status failures never leak into job or refund copy', () => {
+  const rawMessage = 'Unexpected status code: 422';
+
+  assert.equal(
+    toUserFacingFailureMessage(rawMessage),
+    'MaxVideoAI could not complete this render. Please retry in a few moments. If this keeps happening, contact support with your request ID.'
+  );
+  assert.equal(toUserFacingRefundReason(rawMessage), 'Render could not be completed.');
+});
+
 test('refund reasons classify storage preparation failures', () => {
   const reason = toUserFacingRefundReason(
     'The provider finished this render, but the video could not be copied to MaxVideoAI storage.'
