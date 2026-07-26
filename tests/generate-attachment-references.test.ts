@@ -290,6 +290,78 @@ for (const mode of ['v2v', 'extend'] as const) {
   });
 }
 
+test('direct scalar media use their active schema-authored fields', () => {
+  const derivationParams = {
+    engineId: 'contract-test-engine',
+    mode: 'i2v' as const,
+    inputSchema: {
+      optional: [
+        {
+          id: 'image_url',
+          type: 'image' as const,
+          label: 'Start image',
+          modes: ['i2v' as const],
+        },
+        {
+          id: 'end_image_url',
+          type: 'image' as const,
+          label: 'End image',
+          modes: ['i2v' as const],
+        },
+        {
+          id: 'audio_url',
+          type: 'audio' as const,
+          label: 'Audio',
+          modes: ['i2v' as const],
+        },
+      ],
+    },
+    imageUrl: 'direct-start',
+    endImageUrl: 'direct-end',
+    referenceImages: [],
+    rawAudioUrl: 'direct-audio',
+    attachments: [],
+  };
+  const result = deriveGenerationAttachmentReferences(derivationParams);
+
+  assert.deepEqual(result.referenceValuesByField, {
+    audio_url: ['direct-audio'],
+    image_url: ['direct-start'],
+    end_image_url: ['direct-end'],
+  });
+  assert.deepEqual(result.referenceMediaItems, [
+    { fieldId: 'audio_url', kind: 'audio', url: 'direct-audio' },
+    { fieldId: 'image_url', kind: 'image', url: 'direct-start' },
+    { fieldId: 'end_image_url', kind: 'image', url: 'direct-end' },
+  ]);
+});
+
+test('reference accumulation safely preserves inherited-key slot ids', () => {
+  const result = deriveGenerationAttachmentReferences({
+    engineId: 'contract-test-engine',
+    mode: 'ref2v',
+    inputSchema: {
+      optional: [
+        { id: 'image_urls', type: 'image', label: 'Images', modes: ['ref2v'] },
+      ],
+    },
+    referenceImages: [],
+    rawAudioUrl: null,
+    attachments: [
+      attachment({ kind: 'audio', slotId: '__proto__', url: 'proto-audio' }),
+      attachment({ kind: 'audio', slotId: 'constructor', url: 'constructor-audio' }),
+      attachment({ kind: 'audio', slotId: 'toString', url: 'to-string-audio' }),
+    ],
+  });
+
+  assert.equal(Object.hasOwn(result.referenceValuesByField, '__proto__'), true);
+  assert.equal(Object.hasOwn(result.referenceValuesByField, 'constructor'), true);
+  assert.equal(Object.hasOwn(result.referenceValuesByField, 'toString'), true);
+  assert.deepEqual(result.referenceValuesByField['__proto__'], ['proto-audio']);
+  assert.deepEqual(result.referenceValuesByField['constructor'], ['constructor-audio']);
+  assert.deepEqual(result.referenceValuesByField['toString'], ['to-string-audio']);
+});
+
 test('attachment reference helper preserves Happy Horse slot routing', () => {
   const attachments: NormalizedAttachment[] = [
     attachment({ kind: 'image', slotId: 'image_urls', url: 'https://cdn.maxvideoai.com/ref2v-only.png' }),

@@ -150,7 +150,7 @@ export async function POST(req: NextRequest) {
     image_url: body.image_url,
     referenceImages: body.referenceImages,
     reference_images: body.reference_images,
-    rawAudioUrl,
+    rawAudioUrl, endImageUrl,
   });
   const sourceVideoContext = resolveGenerateSourceVideoContext({
     mode,

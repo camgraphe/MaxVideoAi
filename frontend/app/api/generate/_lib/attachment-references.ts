@@ -25,6 +25,7 @@ type AttachmentReferenceParams = {
   referenceImages?: unknown;
   reference_images?: unknown;
   rawAudioUrl?: string | null;
+  endImageUrl?: string | null;
   inputSchema?: EngineInputSchema | null;
 };
 
@@ -129,14 +130,19 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
       .filter((attachment) => attachment.kind === 'audio' && typeof attachment.url === 'string')
       .map((attachment) => attachment.url!.trim())
   );
-  const referenceValuesByField: Record<string, string[]> = {};
+  const referenceValuesByField = new Map<string, string[]>();
   const referenceMediaItems: ReferenceBudgetMediaItem[] = [];
   const referenceProvenanceIssues: ReferenceProvenanceIssue[] = [];
   const appendReferenceValue = (fieldId: string, rawUrl: string | undefined) => {
     const normalizedFieldId = fieldId.trim();
     const url = rawUrl?.trim();
     if (!normalizedFieldId || !url) return null;
-    (referenceValuesByField[normalizedFieldId] ??= []).push(url);
+    const currentValues = referenceValuesByField.get(normalizedFieldId);
+    if (currentValues) {
+      currentValues.push(url);
+    } else {
+      referenceValuesByField.set(normalizedFieldId, [url]);
+    }
     return { fieldId: normalizedFieldId, url };
   };
   const appendTypedReferenceValue = (
@@ -193,11 +199,51 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
       appendTypedReferenceValue(fieldId, url, kind);
     });
   };
+  const appendScalarProjectionOnlyValue = (
+    fieldId: string,
+    projectedUrl: string,
+    representedUrls: string[],
+    kind: ReferenceBudgetMediaItem['kind']
+  ) => {
+    if (representedUrls.length > 0) return;
+    appendTypedReferenceValue(fieldId, projectedUrl, kind);
+  };
 
   const schemaFields = [
     ...(params.inputSchema?.required ?? []),
     ...(params.inputSchema?.optional ?? []),
   ];
+  const resolveDirectMediaFieldId = (
+    kind: ReferenceBudgetMediaItem['kind'],
+    candidateFieldIds: readonly string[],
+    fallbackFieldId: string
+  ) => {
+    const findCandidate = (activeOnly: boolean) =>
+      candidateFieldIds
+        .map((fieldId) =>
+          schemaFields.find(
+            (field) =>
+              field.id === fieldId &&
+              field.type === kind &&
+              (!activeOnly ||
+                !field.modes?.length ||
+                field.modes.includes(params.mode))
+          )
+        )
+        .find((field) => Boolean(field));
+    return (
+      findCandidate(true)?.id ??
+      findCandidate(false)?.id ??
+      fallbackFieldId
+    );
+  };
+  const attachmentUrlsForSlots = (slotIds: readonly string[]) =>
+    params.attachments
+      .filter((attachment) =>
+        slotIds.includes(attachment.slotId?.trim() ?? '')
+      )
+      .map((attachment) => attachment.url?.trim() ?? '')
+      .filter((url) => url.length > 0);
   const directReferenceImageFieldId =
     schemaFields.find(
       (field) =>
@@ -214,20 +260,17 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
     attachmentReferenceImageUrls,
     'image'
   );
-  const directReferenceAudioFieldId = schemaFields.find(
-    (field) =>
-      field.type === 'audio' &&
-      ['audio_urls', 'reference_audio_urls', 'reference_audios'].includes(
-        field.id
-      ) &&
-      (!field.modes?.length || field.modes.includes(params.mode))
-  )?.id;
+  const directReferenceAudioFieldId = resolveDirectMediaFieldId(
+    'audio',
+    ['audio_url', 'audio_urls', 'reference_audio_urls', 'reference_audios'],
+    'audio_url'
+  );
   const directAudioUrl = trimString(params.rawAudioUrl);
-  if (directReferenceAudioFieldId && directAudioUrl) {
-    appendProjectionOnlyValues(
+  if (directAudioUrl) {
+    appendScalarProjectionOnlyValue(
       directReferenceAudioFieldId,
-      [directAudioUrl],
-      audioUrls,
+      directAudioUrl,
+      attachmentUrlsForSlots(['audio_url']),
       'audio'
     );
   }
@@ -243,6 +286,76 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
     explicitStartImageUrl ??
     (params.engineId.startsWith('kling-o3') && params.mode === 'ref2v' ? requestedPrimaryImageUrl : undefined);
   const sourceInputVideoUrl = videoUrls[0];
+  const primaryImageSlotIds = ['image_url', 'input_image', 'image'] as const;
+  if (initialImageUrl) {
+    appendScalarProjectionOnlyValue(
+      resolveDirectMediaFieldId(
+        'image',
+        primaryImageSlotIds,
+        'image_url'
+      ),
+      initialImageUrl,
+      attachmentUrlsForSlots(['image_url']),
+      'image'
+    );
+  }
+  if (resolvedFirstFrameUrl) {
+    const firstFrameSlotIds =
+      params.mode === 'fl2v'
+        ? (['first_frame_url', ...primaryImageSlotIds] as const)
+        : (['first_frame_url'] as const);
+    appendScalarProjectionOnlyValue(
+      resolveDirectMediaFieldId(
+        'image',
+        firstFrameSlotIds,
+        'first_frame_url'
+      ),
+      resolvedFirstFrameUrl,
+      attachmentUrlsForSlots(firstFrameSlotIds),
+      'image'
+    );
+  }
+  if (lastFrameUrl) {
+    appendScalarProjectionOnlyValue(
+      resolveDirectMediaFieldId(
+        'image',
+        ['last_frame_url'],
+        'last_frame_url'
+      ),
+      lastFrameUrl,
+      attachmentUrlsForSlots(['last_frame_url']),
+      'image'
+    );
+  }
+  if (startImageUrl) {
+    const startImageSlotIds =
+      params.engineId.startsWith('kling-o3') && params.mode === 'ref2v'
+        ? (['start_image_url', ...primaryImageSlotIds] as const)
+        : (['start_image_url'] as const);
+    appendScalarProjectionOnlyValue(
+      resolveDirectMediaFieldId(
+        'image',
+        startImageSlotIds,
+        'start_image_url'
+      ),
+      startImageUrl,
+      attachmentUrlsForSlots(startImageSlotIds),
+      'image'
+    );
+  }
+  const directEndImageUrl = trimString(params.endImageUrl);
+  if (directEndImageUrl) {
+    appendScalarProjectionOnlyValue(
+      resolveDirectMediaFieldId(
+        'image',
+        ['end_image_url'],
+        'end_image_url'
+      ),
+      directEndImageUrl,
+      attachmentUrlsForSlots(['end_image_url']),
+      'image'
+    );
+  }
 
   return {
     maxUploadedBytes,
@@ -257,7 +370,7 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
     resolvedFirstFrameUrl,
     startImageUrl,
     sourceInputVideoUrl,
-    referenceValuesByField,
+    referenceValuesByField: Object.fromEntries(referenceValuesByField),
     referenceMediaItems,
     referenceProvenanceIssues,
   };

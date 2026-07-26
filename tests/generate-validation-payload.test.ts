@@ -139,6 +139,11 @@ test('validation payload forwards runtime schema and original reference fields',
     referenceProvenanceIssues,
   });
   assert.strictEqual(
+    (capturedContext as { referenceValuesByField?: unknown })
+      .referenceValuesByField,
+    referenceValuesByField
+  );
+  assert.strictEqual(
     (capturedContext as { referenceMediaItems?: unknown }).referenceMediaItems,
     referenceMediaItems
   );
