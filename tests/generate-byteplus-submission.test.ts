@@ -374,6 +374,189 @@ test('BytePlus I2V canonicalizes a direct image before validation and provider s
   assert.equal(rollbacks, 0);
 });
 
+test('BytePlus I2V canonicalizes its direct end frame before validation and real submission', async () => {
+  const directStartUrl = 'https://cdn.maxvideoai.com/direct-start.png';
+  const directEndUrl = 'https://cdn.maxvideoai.com/direct-end.png';
+  const distinctAttachmentEndUrl =
+    'https://cdn.maxvideoai.com/unselected-end.png';
+  const budgetedSchema = {
+    optional: [
+      { id: 'image_url', type: 'image', label: 'Start image', modes: ['i2v'] },
+      {
+        id: 'end_image_url',
+        type: 'image',
+        label: 'End image',
+        modes: ['i2v'],
+      },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_url', 'end_image_url'],
+      modes: ['i2v'],
+      maxTotal: 2,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const noBudgetSchema = {
+    optional: budgetedSchema.optional,
+  } satisfies EngineInputSchema;
+
+  const cases = [
+    {
+      name: 'distinct direct and attachment end frames',
+      inputSchema: budgetedSchema,
+      directEndImageUrl: directEndUrl,
+      attachmentEndImageUrl: distinctAttachmentEndUrl,
+      expectedProviderImageUrls: [directStartUrl, directEndUrl],
+      expectedReferenceMediaItems: [
+        { fieldId: 'image_url', kind: 'image', url: directStartUrl },
+        { fieldId: 'end_image_url', kind: 'image', url: directEndUrl },
+      ],
+    },
+    {
+      name: 'matching direct and attachment end frames',
+      inputSchema: budgetedSchema,
+      directEndImageUrl: directEndUrl,
+      attachmentEndImageUrl: directEndUrl,
+      expectedProviderImageUrls: [directStartUrl, directEndUrl],
+      expectedReferenceMediaItems: [
+        { fieldId: 'image_url', kind: 'image', url: directStartUrl },
+        { fieldId: 'end_image_url', kind: 'image', url: directEndUrl },
+      ],
+    },
+    {
+      name: 'attachment-only end frame',
+      inputSchema: budgetedSchema,
+      directEndImageUrl: null,
+      attachmentEndImageUrl: distinctAttachmentEndUrl,
+      expectedProviderImageUrls: [directStartUrl],
+      expectedReferenceMediaItems: [
+        { fieldId: 'image_url', kind: 'image', url: directStartUrl },
+      ],
+    },
+    {
+      name: 'no-budget direct end frame',
+      inputSchema: noBudgetSchema,
+      directEndImageUrl: directEndUrl,
+      attachmentEndImageUrl: distinctAttachmentEndUrl,
+      expectedProviderImageUrls: [directStartUrl, directEndUrl],
+      expectedReferenceMediaItems: [
+        { fieldId: 'image_url', kind: 'image', url: directStartUrl },
+        { fieldId: 'end_image_url', kind: 'image', url: directEndUrl },
+      ],
+    },
+  ] as const;
+
+  for (const scenario of cases) {
+    const attachments: NormalizedAttachment[] = [
+      {
+        name: 'attachment-end.png',
+        type: 'image/png',
+        size: 1200,
+        kind: 'image',
+        slotId: 'end_image_url',
+        url: scenario.attachmentEndImageUrl,
+      },
+    ];
+    const references = deriveGenerationAttachmentReferences({
+      attachments,
+      engineId: 'seedance-2-0',
+      mode: 'i2v',
+      imageUrl: directStartUrl,
+      endImageUrl: scenario.directEndImageUrl,
+      inputSchema: scenario.inputSchema,
+      isBytePlusV1a: true,
+    });
+    const validation = buildGenerateValidationPayload({
+      engineId: 'seedance-2-0',
+      mode: 'i2v',
+      prompt: 'Animate between the selected frames',
+      multiPrompt: null,
+      supportsResolution: false,
+      effectiveResolution: '720p',
+      supportsAspectRatio: false,
+      aspectRatio: '16:9',
+      audioEnabled: true,
+      isBytePlusV1a: true,
+      supportsDuration: true,
+      numFrames: null,
+      validationDuration: 8,
+      maxUploadedBytes: references.maxUploadedBytes,
+      resolvedFirstFrameUrl: references.resolvedFirstFrameUrl,
+      lastFrameUrl: references.lastFrameUrl,
+      normalizedReferenceImages: references.normalizedReferenceImages,
+      videoUrls: references.videoUrls,
+      audioUrls: references.audioUrls,
+      resolvedAudioUrl: references.resolvedAudioUrl,
+      sourceInputVideoUrl: references.sourceInputVideoUrl,
+      elements: null,
+      endImageUrl: scenario.directEndImageUrl,
+      startImageUrl: references.startImageUrl,
+      isLumaRay2: false,
+      initialImageUrl: references.initialImageUrl,
+      inputSchema: scenario.inputSchema,
+      referenceValuesByField: references.referenceValuesByField,
+      referenceMediaItems: references.referenceMediaItems,
+      referenceProvenanceIssues: references.referenceProvenanceIssues,
+    });
+    assert.equal(validation.ok, true, scenario.name);
+    assert.deepEqual(
+      references.referenceMediaItems,
+      scenario.expectedReferenceMediaItems,
+      scenario.name
+    );
+
+    let providerCalls = 0;
+    let providerImageUrls: string[] = [];
+    let rollbacks = 0;
+    const result = await submitBytePlusGenerateTask({
+      ...baseParams,
+      mode: 'i2v',
+      initialImageUrl: references.initialImageUrl,
+      endImageUrl: scenario.directEndImageUrl,
+      normalizedReferenceImages: [],
+      videoUrls: [],
+      resolvedAudioUrl: null,
+      audioUrls: [],
+      inputSchema: scenario.inputSchema,
+      referenceValuesByField: references.referenceValuesByField,
+      pendingReceipt,
+      deps: {
+        getBytePlusArkConfigFn: () => ({
+          seedanceModelId: 'model-public',
+          seedanceFastModelId: 'model-fast',
+        }),
+        getBytePlusModelArkClientFn: () => ({
+          createSeedanceFastTask: async (payload) => {
+            providerCalls += 1;
+            providerImageUrls = payload.content
+              .filter((item) => item.type === 'image_url')
+              .map((item) => item.image_url.url);
+            return {
+              providerJobId: `provider_${scenario.name.replaceAll(' ', '_')}`,
+              status: 'queued',
+            };
+          },
+        }),
+        getBytePlusSeedanceAllowedResolutionsFn: () => ['720p'] as never,
+        getBytePlusSeedanceDurationOptionsFn: () => [8] as never,
+        queryFn: async () => undefined,
+        rollbackPendingPaymentFn: async () => {
+          rollbacks += 1;
+        },
+      },
+    });
+
+    assert.equal(result.ok, true, scenario.name);
+    assert.equal(providerCalls, 1, scenario.name);
+    assert.deepEqual(
+      providerImageUrls,
+      scenario.expectedProviderImageUrls,
+      scenario.name
+    );
+    assert.equal(rollbacks, 0, scenario.name);
+  }
+});
+
 test('BytePlus submission budget overflow stops before provider access and rolls back', async () => {
   const originalWarn = console.warn;
   console.warn = () => undefined;

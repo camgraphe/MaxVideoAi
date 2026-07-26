@@ -98,10 +98,32 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
     trimString(params.soraImageUrl) ??
     trimString(params.imageUrl) ??
     trimString(params.image_url);
+  const directEndImageUrl = trimString(params.endImageUrl);
+  const isBytePlusI2v =
+    params.isBytePlusV1a === true && params.mode === 'i2v';
   const bytePlusDirectPrimarySelected =
-    params.isBytePlusV1a === true &&
-    params.mode === 'i2v' &&
-    Boolean(directPrimaryImageUrl);
+    isBytePlusI2v && Boolean(directPrimaryImageUrl);
+  const bytePlusDirectEndSelected =
+    isBytePlusI2v && Boolean(directEndImageUrl);
+  const isKlingO3Ref2v =
+    params.engineId.startsWith('kling-o3') && params.mode === 'ref2v';
+  const selectedKlingO3StartAttachmentIndex = (() => {
+    if (!isKlingO3Ref2v) return -1;
+    for (let index = params.attachments.length - 1; index >= 0; index -= 1) {
+      const attachment = params.attachments[index];
+      if (
+        attachment.slotId?.trim() === 'start_image_url' &&
+        attachment.url?.trim()
+      ) {
+        return index;
+      }
+    }
+    return params.attachments.findIndex(
+      (attachment) =>
+        attachment.slotId?.trim() === 'image_url' &&
+        Boolean(attachment.url?.trim())
+    );
+  })();
   const requestedPrimaryImageUrl =
     directPrimaryImageUrl ?? attachmentPrimaryImageUrl;
   const referenceImagesInput = Array.isArray(params.referenceImages)
@@ -164,7 +186,7 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
     if (referenceValue) referenceMediaItems.push({ ...referenceValue, kind });
   };
 
-  for (const attachment of params.attachments) {
+  for (const [attachmentIndex, attachment] of params.attachments.entries()) {
     const url = attachment.url?.trim();
     if (!url) continue;
     const fieldId = attachment.slotId?.trim();
@@ -184,6 +206,20 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
       (fieldId === 'image_url' ||
         fieldId === 'input_image' ||
         fieldId === 'image')
+    ) {
+      continue;
+    }
+    if (
+      attachment.kind === 'image' &&
+      isBytePlusI2v &&
+      fieldId === 'end_image_url'
+    ) {
+      continue;
+    }
+    if (
+      isKlingO3Ref2v &&
+      (fieldId === 'start_image_url' || fieldId === 'image_url') &&
+      attachmentIndex !== selectedKlingO3StartAttachmentIndex
     ) {
       continue;
     }
@@ -299,17 +335,14 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
       ? requestedPrimaryImageUrl
       : undefined;
   const resolvedFirstFrameUrl = params.mode === 'fl2v' ? firstFrameUrl ?? requestedPrimaryImageUrl : firstFrameUrl;
-  const explicitStartImageUrl =
-    params.attachments
-      .find(
-        (attachment) =>
-          attachment.slotId === 'start_image_url' ||
-          (params.engineId.startsWith('kling-o3') &&
-            params.mode === 'ref2v' &&
-            attachment.slotId === 'image_url')
-      )
-      ?.url?.trim() ?? undefined;
-  const startImageUrl = explicitStartImageUrl;
+  const startImageUrl =
+    selectedKlingO3StartAttachmentIndex >= 0
+      ? params.attachments[
+          selectedKlingO3StartAttachmentIndex
+        ]?.url?.trim()
+      : params.attachments.find(
+          (attachment) => attachment.slotId === 'start_image_url'
+        )?.url?.trim();
   const sourceInputVideoUrl = videoUrls[0];
   const primaryImageSlotIds = ['image_url', 'input_image', 'image'] as const;
   if (initialImageUrl && directPrimaryImageUrl) {
@@ -387,18 +420,26 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
       'image'
     );
   }
-  const directEndImageUrl = trimString(params.endImageUrl);
   if (directEndImageUrl) {
-    appendScalarProjectionOnlyValue(
-      resolveDirectMediaFieldId(
-        'image',
-        ['end_image_url'],
-        'end_image_url'
-      ),
-      directEndImageUrl,
-      attachmentUrlsForSlots(['end_image_url']),
-      'image'
+    const directEndImageFieldId = resolveDirectMediaFieldId(
+      'image',
+      ['end_image_url'],
+      'end_image_url'
     );
+    if (bytePlusDirectEndSelected) {
+      appendTypedReferenceValue(
+        directEndImageFieldId,
+        directEndImageUrl,
+        'image'
+      );
+    } else {
+      appendScalarProjectionOnlyValue(
+        directEndImageFieldId,
+        directEndImageUrl,
+        attachmentUrlsForSlots(['end_image_url']),
+        'image'
+      );
+    }
   }
 
   return {

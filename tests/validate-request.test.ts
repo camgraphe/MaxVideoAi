@@ -1386,6 +1386,194 @@ test('Kling O3 unified image_url attachment supplies the validated Fal and direc
   ]);
 });
 
+test('Kling O3 explicit opening alias wins in both attachment orders and every provider payload', () => {
+  const unifiedStartUrl = 'https://example.com/unified-start.png';
+  const explicitStartUrl = 'https://example.com/explicit-start.png';
+  const referenceImageUrl = 'https://example.com/reference.png';
+  const endImageUrl = 'https://example.com/end.png';
+  const inputSchema = {
+    optional: [
+      { id: 'image_urls', type: 'image', label: 'References', modes: ['ref2v'] },
+      {
+        id: 'image_url',
+        type: 'image',
+        label: 'Unified start image',
+        modes: ['ref2v'],
+      },
+      {
+        id: 'start_image_url',
+        type: 'image',
+        label: 'Explicit start image',
+        modes: ['ref2v'],
+      },
+      {
+        id: 'end_image_url',
+        type: 'image',
+        label: 'End image',
+        modes: ['ref2v'],
+      },
+    ],
+    referenceBudget: {
+      fieldIds: [
+        'image_urls',
+        'image_url',
+        'start_image_url',
+        'end_image_url',
+      ],
+      modes: ['ref2v'],
+      maxTotal: 3,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const openingOrders = [
+    [
+      attachment('image', 'image_url', unifiedStartUrl),
+      attachment('image', 'start_image_url', explicitStartUrl),
+    ],
+    [
+      attachment('image', 'start_image_url', explicitStartUrl),
+      attachment('image', 'image_url', unifiedStartUrl),
+    ],
+  ];
+
+  for (const openingAttachments of openingOrders) {
+    const scenario = buildFalMediaPipeline({
+      engineId: 'kling-o3-pro',
+      defaultModel: 'fal-ai/kling-video/o3/pro/reference-to-video',
+      mode: 'ref2v',
+      inputSchema,
+      endImageUrl,
+      attachments: [
+        ...openingAttachments,
+        attachment('image', 'image_urls', referenceImageUrl),
+        attachment('image', 'end_image_url', endImageUrl),
+      ],
+    });
+
+    assert.equal(scenario.references.startImageUrl, explicitStartUrl);
+    assert.deepEqual(scenario.references.referenceValuesByField, {
+      start_image_url: [explicitStartUrl],
+      image_urls: [referenceImageUrl],
+      end_image_url: [endImageUrl],
+    });
+    assert.deepEqual(scenario.references.referenceMediaItems, [
+      {
+        fieldId: 'start_image_url',
+        kind: 'image',
+        url: explicitStartUrl,
+      },
+      { fieldId: 'image_urls', kind: 'image', url: referenceImageUrl },
+      { fieldId: 'end_image_url', kind: 'image', url: endImageUrl },
+    ]);
+    assert.equal(scenario.validation.ok, true);
+    assert.equal(
+      scenario.falRequest.requestBody.start_image_url,
+      explicitStartUrl
+    );
+    assert.equal(scenario.falRequest.requestBody.end_image_url, endImageUrl);
+
+    const directMedia = resolveKlingDirectSubmissionMediaInputs({
+      imageUrl: scenario.references.initialImageUrl,
+      falPayload: scenario.falPayload,
+    });
+    assert.equal(directMedia.startImageUrl, explicitStartUrl);
+    const directPayload = buildKlingDirectPayload({
+      engineId: 'kling-o3-pro',
+      jobId: 'job-kling-explicit-opening-priority',
+      mode: 'ref2v',
+      prompt: 'Use @Image1 as style guidance and animate between the frames',
+      durationSec: 5,
+      startImageUrl: directMedia.startImageUrl,
+      endImageUrl,
+      referenceImageUrls: directMedia.referenceImageUrls,
+    });
+    assert.deepEqual(directPayload.body.image_list, [
+      { image_url: referenceImageUrl },
+      { image_url: explicitStartUrl, type: 'first_frame' },
+      { image_url: endImageUrl, type: 'end_frame' },
+    ]);
+  }
+});
+
+test('Kling O3 uses the final explicit opening attachment selected by Fal', () => {
+  const firstUnifiedUrl = 'https://example.com/unified-first.png';
+  const secondUnifiedUrl = 'https://example.com/unified-second.png';
+  const firstExplicitUrl = 'https://example.com/explicit-first.png';
+  const finalExplicitUrl = 'https://example.com/explicit-final.png';
+  const referenceImageUrl = 'https://example.com/reference.png';
+  const inputSchema = {
+    optional: [
+      {
+        id: 'image_urls',
+        type: 'image',
+        label: 'References',
+        modes: ['ref2v'],
+      },
+      {
+        id: 'image_url',
+        type: 'image',
+        label: 'Unified start image',
+        modes: ['ref2v'],
+      },
+      {
+        id: 'start_image_url',
+        type: 'image',
+        label: 'Explicit start image',
+        modes: ['ref2v'],
+      },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_urls', 'image_url', 'start_image_url'],
+      modes: ['ref2v'],
+      maxTotal: 2,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const scenario = buildFalMediaPipeline({
+    engineId: 'kling-o3-standard',
+    defaultModel: 'fal-ai/kling-video/o3/standard/reference-to-video',
+    mode: 'ref2v',
+    inputSchema,
+    attachments: [
+      attachment('image', 'image_url', firstUnifiedUrl),
+      attachment('image', 'start_image_url', firstExplicitUrl),
+      attachment('image', 'image_url', secondUnifiedUrl),
+      attachment('image', 'start_image_url', finalExplicitUrl),
+      attachment('image', 'image_urls', referenceImageUrl),
+    ],
+  });
+
+  assert.equal(scenario.references.startImageUrl, finalExplicitUrl);
+  assert.deepEqual(scenario.references.referenceValuesByField, {
+    start_image_url: [finalExplicitUrl],
+    image_urls: [referenceImageUrl],
+  });
+  assert.deepEqual(scenario.references.referenceMediaItems, [
+    {
+      fieldId: 'start_image_url',
+      kind: 'image',
+      url: finalExplicitUrl,
+    },
+    {
+      fieldId: 'image_urls',
+      kind: 'image',
+      url: referenceImageUrl,
+    },
+  ]);
+  assert.equal(scenario.validation.ok, true);
+  assert.equal(
+    scenario.falRequest.requestBody.start_image_url,
+    finalExplicitUrl
+  );
+  assert.equal(
+    resolveKlingDirectSubmissionMediaInputs({
+      imageUrl: scenario.references.initialImageUrl,
+      falPayload: scenario.falPayload,
+    }).startImageUrl,
+    finalExplicitUrl
+  );
+});
+
 test('BytePlus I2V accepts budgeted direct start and end images selected by its real payload', () => {
   const inputSchema = {
     optional: [
