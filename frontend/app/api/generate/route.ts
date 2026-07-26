@@ -139,6 +139,7 @@ export async function POST(req: NextRequest) {
     sourceInputVideoUrl,
     referenceValuesByField,
     referenceMediaItems,
+    referenceProvenanceIssues,
   } = deriveGenerationAttachmentReferences({
     attachments: processedAttachments,
     engineId: engine.id,
@@ -196,6 +197,7 @@ export async function POST(req: NextRequest) {
     inputSchema: engine.inputSchema,
     referenceValuesByField,
     referenceMediaItems,
+    referenceProvenanceIssues,
   });
   if (!validationPayloadResult.ok) {
     logMetric('rejected', validationPayloadResult.metric);

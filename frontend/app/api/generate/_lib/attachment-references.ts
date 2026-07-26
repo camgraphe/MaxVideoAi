@@ -3,6 +3,18 @@ import { isHappyHorseEngineId, supportsHappyHorseVideoEdit } from '@/lib/happy-h
 import type { ReferenceBudgetMediaItem, ReferenceBudgetValuesByField } from '@/lib/reference-budget';
 import type { NormalizedAttachment } from './attachments';
 
+export type ReferenceProvenanceIssue =
+  | {
+      reason: 'missing-field-id';
+      kind: ReferenceBudgetMediaItem['kind'];
+      url: string;
+    }
+  | {
+      reason: 'missing-kind';
+      fieldId: string;
+      url: string;
+    };
+
 type AttachmentReferenceParams = {
   attachments: NormalizedAttachment[];
   engineId: string;
@@ -31,6 +43,7 @@ type AttachmentReferenceResult = {
   sourceInputVideoUrl: string | undefined;
   referenceValuesByField: ReferenceBudgetValuesByField<string>;
   referenceMediaItems: ReferenceBudgetMediaItem[];
+  referenceProvenanceIssues: ReferenceProvenanceIssue[];
 };
 
 type SourceVideoDurationResolution = {
@@ -118,20 +131,47 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
   );
   const referenceValuesByField: Record<string, string[]> = {};
   const referenceMediaItems: ReferenceBudgetMediaItem[] = [];
-  const appendReferenceValue = (
+  const referenceProvenanceIssues: ReferenceProvenanceIssue[] = [];
+  const appendReferenceValue = (fieldId: string, rawUrl: string | undefined) => {
+    const normalizedFieldId = fieldId.trim();
+    const url = rawUrl?.trim();
+    if (!normalizedFieldId || !url) return null;
+    (referenceValuesByField[normalizedFieldId] ??= []).push(url);
+    return { fieldId: normalizedFieldId, url };
+  };
+  const appendTypedReferenceValue = (
     fieldId: string,
     rawUrl: string | undefined,
-    kind?: ReferenceBudgetMediaItem['kind']
+    kind: ReferenceBudgetMediaItem['kind']
   ) => {
-    const url = rawUrl?.trim();
-    if (!fieldId || !url) return;
-    (referenceValuesByField[fieldId] ??= []).push(url);
-    if (kind) referenceMediaItems.push({ fieldId, kind, url });
+    const referenceValue = appendReferenceValue(fieldId, rawUrl);
+    if (referenceValue) referenceMediaItems.push({ ...referenceValue, kind });
   };
 
   for (const attachment of params.attachments) {
-    if (!attachment.slotId || typeof attachment.url !== 'string') continue;
-    appendReferenceValue(attachment.slotId, attachment.url, attachment.kind);
+    const url = attachment.url?.trim();
+    if (!url) continue;
+    const fieldId = attachment.slotId?.trim();
+    if (!fieldId) {
+      if (attachment.kind) {
+        referenceProvenanceIssues.push({
+          reason: 'missing-field-id',
+          kind: attachment.kind,
+          url,
+        });
+      }
+      continue;
+    }
+    if (!attachment.kind) {
+      appendReferenceValue(fieldId, url);
+      referenceProvenanceIssues.push({
+        reason: 'missing-kind',
+        fieldId,
+        url,
+      });
+      continue;
+    }
+    appendTypedReferenceValue(fieldId, url, attachment.kind);
   }
 
   const appendProjectionOnlyValues = (
@@ -150,7 +190,7 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
         remainingRepresented.set(url, representedCount - 1);
         return;
       }
-      appendReferenceValue(fieldId, url, kind);
+      appendTypedReferenceValue(fieldId, url, kind);
     });
   };
 
@@ -219,6 +259,7 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
     sourceInputVideoUrl,
     referenceValuesByField,
     referenceMediaItems,
+    referenceProvenanceIssues,
   };
 }
 

@@ -93,6 +93,7 @@ test('attachment reference helper derives primary image, media lists, and frame 
       { fieldId: 'image_urls', kind: 'image', url: 'https://cdn.maxvideoai.com/ref-a.png' },
       { fieldId: 'image_urls', kind: 'image', url: 'https://cdn.maxvideoai.com/ref-a.png' },
     ],
+    referenceProvenanceIssues: [],
   });
 });
 
@@ -157,6 +158,57 @@ test('attachment reference derivation preserves actual media kind independently 
   assert.deepEqual(result.referenceMediaItems, [
     { fieldId: 'image_urls', kind: 'image', url: 'valid-image' },
     { fieldId: 'video_url', kind: 'audio', url: 'forged-audio' },
+  ]);
+});
+
+test('attachment reference derivation preserves incomplete provenance order and multiplicity without inference', () => {
+  const result = deriveGenerationAttachmentReferences({
+    engineId: 'contract-test-engine',
+    mode: 'ref2v',
+    inputSchema: {
+      optional: [
+        { id: 'image_urls', type: 'image', label: 'Images', modes: ['ref2v'] },
+        { id: 'video_urls', type: 'video', label: 'Videos', modes: ['ref2v'] },
+        { id: 'audio_urls', type: 'audio', label: 'Audio', modes: ['ref2v'] },
+      ],
+    },
+    referenceImages: [],
+    rawAudioUrl: null,
+    attachments: [
+      attachment({ kind: 'video', url: 'slotless-video' }),
+      attachment({ kind: 'audio', url: 'slotless-audio' }),
+      attachment({ kind: 'audio', url: 'slotless-audio' }),
+      attachment({ slotId: 'audio_urls', url: 'kindless-audio' }),
+    ],
+  });
+
+  assert.deepEqual(result.videoUrls, ['slotless-video']);
+  assert.deepEqual(result.audioUrls, ['slotless-audio']);
+  assert.deepEqual(result.referenceValuesByField, {
+    audio_urls: ['kindless-audio'],
+  });
+  assert.deepEqual(result.referenceMediaItems, []);
+  assert.deepEqual(result.referenceProvenanceIssues, [
+    {
+      reason: 'missing-field-id',
+      kind: 'video',
+      url: 'slotless-video',
+    },
+    {
+      reason: 'missing-field-id',
+      kind: 'audio',
+      url: 'slotless-audio',
+    },
+    {
+      reason: 'missing-field-id',
+      kind: 'audio',
+      url: 'slotless-audio',
+    },
+    {
+      reason: 'missing-kind',
+      fieldId: 'audio_urls',
+      url: 'kindless-audio',
+    },
   ]);
 });
 

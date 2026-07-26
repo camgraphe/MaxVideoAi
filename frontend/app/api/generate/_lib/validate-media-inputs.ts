@@ -7,6 +7,7 @@ import {
   type ReferenceBudgetValuesByField,
 } from '@/lib/reference-budget';
 import { listFalEngines } from '../../../../src/config/falEngines';
+import type { ReferenceProvenanceIssue } from './attachment-references';
 import type { ValidationResult } from './validate-types';
 
 type Ref2vLimits = {
@@ -158,6 +159,7 @@ export function validateModeMediaInputs(params: {
   inputSchema?: EngineInputSchema | null;
   referenceValuesByField?: ReferenceBudgetValuesByField<string>;
   referenceMediaItems?: readonly ReferenceBudgetMediaItem[];
+  referenceProvenanceIssues?: readonly ReferenceProvenanceIssue[];
 }): ValidationResult {
   const { engineId, normalizedMode, payload } = params;
   const referenceBudget = resolveEngineReferenceBudget(
@@ -193,6 +195,49 @@ export function validateModeMediaInputs(params: {
           code: 'ENGINE_CONSTRAINT',
           field: unsupportedMediaField,
           message: `Media input "${unsupportedMediaField}" is not supported for this engine mode`,
+        },
+      };
+    }
+    const provenanceIssue = [...(params.referenceProvenanceIssues ?? [])]
+      .filter((issue) => issue.url.trim().length > 0)
+      .sort((left, right) => {
+        if (left.reason !== right.reason) {
+          return left.reason === 'missing-field-id' ? -1 : 1;
+        }
+        if (
+          left.reason === 'missing-field-id' &&
+          right.reason === 'missing-field-id'
+        ) {
+          return (
+            left.kind.localeCompare(right.kind) ||
+            left.url.localeCompare(right.url)
+          );
+        }
+        if (left.reason === 'missing-kind' && right.reason === 'missing-kind') {
+          return (
+            left.fieldId.localeCompare(right.fieldId) ||
+            left.url.localeCompare(right.url)
+          );
+        }
+        return 0;
+      })[0];
+    if (provenanceIssue) {
+      if (provenanceIssue.reason === 'missing-field-id') {
+        return {
+          ok: false,
+          error: {
+            code: 'ENGINE_CONSTRAINT',
+            field: 'inputs',
+            message: `Media input of kind "${provenanceIssue.kind}" is missing a field assignment`,
+          },
+        };
+      }
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: provenanceIssue.fieldId,
+          message: `Media input "${provenanceIssue.fieldId}" is missing an explicit media kind`,
         },
       };
     }

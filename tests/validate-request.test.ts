@@ -5,9 +5,12 @@ import test from 'node:test';
 
 import { deriveGenerationAttachmentReferences } from '../frontend/app/api/generate/_lib/attachment-references.ts';
 import type { NormalizedAttachment } from '../frontend/app/api/generate/_lib/attachments.ts';
+import { buildFalInputs } from '../frontend/app/api/generate/_lib/fal-request.ts';
+import { buildGenerateValidationPayload } from '../frontend/app/api/generate/_lib/validation-payload.ts';
 import { validateModeMediaInputs } from '../frontend/app/api/generate/_lib/validate-media-inputs.ts';
 import { validateRequest } from '../frontend/app/api/generate/_lib/validate.ts';
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
+import { buildFalGenerationRequest } from '../frontend/src/lib/fal-request-body.ts';
 import type { EngineInputSchema } from '../frontend/types/engines.ts';
 
 const root = process.cwd();
@@ -66,6 +69,47 @@ const typedReferenceBudgetV2vSchema = {
     countUniqueUrls: true,
   },
 } satisfies EngineInputSchema;
+const falReferenceFields = [
+  {
+    id: 'image_urls',
+    type: 'image',
+    label: 'References',
+    modes: ['ref2v'],
+  },
+  {
+    id: 'video_urls',
+    type: 'video',
+    label: 'Reference video',
+    modes: ['ref2v'],
+  },
+  {
+    id: 'audio_urls',
+    type: 'audio',
+    label: 'Reference audio',
+    modes: ['ref2v'],
+  },
+] satisfies NonNullable<EngineInputSchema['optional']>;
+const budgetedFalReferenceSchema = {
+  optional: falReferenceFields,
+  referenceBudget: {
+    fieldIds: ['image_urls', 'video_urls', 'audio_urls'],
+    modes: ['ref2v'],
+    maxTotal: 1,
+    countUniqueUrls: true,
+  },
+} satisfies EngineInputSchema;
+const kindlessFalReferenceSchema = {
+  optional: falReferenceFields,
+  referenceBudget: {
+    fieldIds: ['image_urls', 'video_urls', 'audio_urls'],
+    modes: ['ref2v'],
+    maxTotal: 2,
+    countUniqueUrls: true,
+  },
+} satisfies EngineInputSchema;
+const unbudgetedFalReferenceSchema = {
+  optional: falReferenceFields,
+} satisfies EngineInputSchema;
 
 function attachment(
   kind: 'image' | 'video' | 'audio',
@@ -80,6 +124,93 @@ function attachment(
     slotId,
     url,
   };
+}
+
+function incompleteAttachment(
+  overrides: Partial<NormalizedAttachment> & { url: string }
+): NormalizedAttachment {
+  return {
+    name: 'incomplete-asset',
+    type: 'application/octet-stream',
+    size: 1,
+    ...overrides,
+  };
+}
+
+function deriveFalReferences(
+  extraAttachments: NormalizedAttachment[],
+  inputSchema: EngineInputSchema
+) {
+  const attachments = [
+    attachment('image', 'image_urls', 'valid-image'),
+    ...extraAttachments,
+  ];
+  return {
+    attachments,
+    references: deriveGenerationAttachmentReferences({
+      engineId: 'seedance-2-0',
+      mode: 'ref2v',
+      inputSchema,
+      referenceImages: [],
+      rawAudioUrl: null,
+      attachments,
+    }),
+  };
+}
+
+function buildFalReferenceValidation(
+  references: ReturnType<typeof deriveGenerationAttachmentReferences>,
+  inputSchema: EngineInputSchema
+) {
+  return buildGenerateValidationPayload({
+    engineId: 'seedance-2-0',
+    mode: 'ref2v',
+    prompt: 'Keep the same subject and motion',
+    multiPrompt: null,
+    supportsResolution: false,
+    effectiveResolution: '720p',
+    supportsAspectRatio: false,
+    aspectRatio: null,
+    audioEnabled: undefined,
+    isBytePlusV1a: false,
+    supportsDuration: true,
+    numFrames: null,
+    validationDuration: 4,
+    maxUploadedBytes: references.maxUploadedBytes,
+    resolvedFirstFrameUrl: null,
+    lastFrameUrl: null,
+    normalizedReferenceImages: references.normalizedReferenceImages,
+    videoUrls: references.videoUrls,
+    audioUrls: references.audioUrls,
+    resolvedAudioUrl: references.resolvedAudioUrl,
+    sourceInputVideoUrl: null,
+    elements: null,
+    endImageUrl: null,
+    startImageUrl: null,
+    isLumaRay2: false,
+    initialImageUrl: null,
+    inputSchema,
+    referenceValuesByField: references.referenceValuesByField,
+    referenceMediaItems: references.referenceMediaItems,
+    referenceProvenanceIssues: references.referenceProvenanceIssues,
+  });
+}
+
+function buildFalReferenceRequest(
+  attachments: NormalizedAttachment[],
+  references: ReturnType<typeof deriveGenerationAttachmentReferences>
+) {
+  return buildFalGenerationRequest(
+    {
+      engineId: 'seedance-2-0',
+      prompt: 'Keep the same subject and motion',
+      mode: 'ref2v',
+      durationSec: 4,
+      inputs: buildFalInputs(attachments),
+      referenceImages: references.normalizedReferenceImages,
+    },
+    'fal-ai/bytedance/seedance/v2/reference-to-video'
+  );
 }
 
 function deriveAndValidateBudgetedRef2v(
@@ -243,6 +374,209 @@ test('typed attachment provenance rejects actual media kind hidden under an acti
       message: 'Media input "video_url" expects video, not audio',
     },
   });
+});
+
+test('budgeted route validation rejects deterministic slotless references that Fal would submit', () => {
+  const { attachments, references } = deriveFalReferences(
+    [
+      incompleteAttachment({
+        kind: 'video',
+        url: 'slotless-video',
+      }),
+      incompleteAttachment({
+        kind: 'audio',
+        url: 'slotless-audio',
+      }),
+      incompleteAttachment({
+        kind: 'audio',
+        url: 'slotless-audio',
+      }),
+    ],
+    budgetedFalReferenceSchema
+  );
+  const falRequest = buildFalReferenceRequest(attachments, references);
+
+  assert.deepEqual(falRequest.requestBody.video_urls, ['slotless-video']);
+  assert.deepEqual(falRequest.requestBody.audio_urls, ['slotless-audio']);
+
+  const validation = buildFalReferenceValidation(
+    references,
+    budgetedFalReferenceSchema
+  );
+  if (validation.ok) {
+    assert.fail(
+      'budgeted validation accepted slotless references selected by Fal'
+    );
+  }
+  assert.equal(validation.body.field, 'inputs');
+  assert.equal(
+    validation.body.message,
+    'Media input of kind "audio" is missing a field assignment'
+  );
+  assert.deepEqual(references.referenceProvenanceIssues, [
+    {
+      reason: 'missing-field-id',
+      kind: 'video',
+      url: 'slotless-video',
+    },
+    {
+      reason: 'missing-field-id',
+      kind: 'audio',
+      url: 'slotless-audio',
+    },
+    {
+      reason: 'missing-field-id',
+      kind: 'audio',
+      url: 'slotless-audio',
+    },
+  ]);
+
+  const reversed = deriveFalReferences(
+    [
+      incompleteAttachment({
+        kind: 'audio',
+        url: 'slotless-audio',
+      }),
+      incompleteAttachment({
+        kind: 'audio',
+        url: 'slotless-audio',
+      }),
+      incompleteAttachment({
+        kind: 'video',
+        url: 'slotless-video',
+      }),
+    ],
+    budgetedFalReferenceSchema
+  );
+  const reversedFalRequest = buildFalReferenceRequest(
+    reversed.attachments,
+    reversed.references
+  );
+  assert.deepEqual(reversedFalRequest.requestBody.video_urls, [
+    'slotless-video',
+  ]);
+  assert.deepEqual(reversedFalRequest.requestBody.audio_urls, [
+    'slotless-audio',
+  ]);
+
+  const reversedValidation = buildFalReferenceValidation(
+    reversed.references,
+    budgetedFalReferenceSchema
+  );
+  if (reversedValidation.ok) {
+    assert.fail(
+      'budgeted validation accepted reversed slotless references selected by Fal'
+    );
+  }
+  assert.equal(reversedValidation.body.field, 'inputs');
+  assert.equal(
+    reversedValidation.body.message,
+    'Media input of kind "audio" is missing a field assignment'
+  );
+  assert.deepEqual(reversed.references.referenceProvenanceIssues, [
+    {
+      reason: 'missing-field-id',
+      kind: 'audio',
+      url: 'slotless-audio',
+    },
+    {
+      reason: 'missing-field-id',
+      kind: 'audio',
+      url: 'slotless-audio',
+    },
+    {
+      reason: 'missing-field-id',
+      kind: 'video',
+      url: 'slotless-video',
+    },
+  ]);
+});
+
+test('budgeted route validation independently rejects a slotless video selected by Fal', () => {
+  const { attachments, references } = deriveFalReferences(
+    [
+      incompleteAttachment({
+        kind: 'video',
+        url: 'slotless-video',
+      }),
+    ],
+    budgetedFalReferenceSchema
+  );
+  const falRequest = buildFalReferenceRequest(attachments, references);
+
+  assert.deepEqual(falRequest.requestBody.video_urls, ['slotless-video']);
+
+  const validation = buildFalReferenceValidation(
+    references,
+    budgetedFalReferenceSchema
+  );
+  if (validation.ok) {
+    assert.fail('budgeted validation accepted a slotless video selected by Fal');
+  }
+  assert.equal(validation.body.field, 'inputs');
+  assert.equal(
+    validation.body.message,
+    'Media input of kind "video" is missing a field assignment'
+  );
+});
+
+test('budgeted route validation rejects an active Fal slot without an explicit kind', () => {
+  const { attachments, references } = deriveFalReferences(
+    [
+      incompleteAttachment({
+        slotId: 'audio_urls',
+        url: 'kindless-audio',
+      }),
+    ],
+    kindlessFalReferenceSchema
+  );
+  const falRequest = buildFalReferenceRequest(attachments, references);
+
+  assert.deepEqual(falRequest.requestBody.audio_urls, ['kindless-audio']);
+
+  const validation = buildFalReferenceValidation(
+    references,
+    kindlessFalReferenceSchema
+  );
+  if (validation.ok) {
+    assert.fail('budgeted validation accepted an active slot without a kind');
+  }
+  assert.equal(validation.body.field, 'audio_urls');
+  assert.equal(
+    validation.body.message,
+    'Media input "audio_urls" is missing an explicit media kind'
+  );
+});
+
+test('incomplete Fal attachment provenance remains compatible without a budget', () => {
+  const cases: NormalizedAttachment[][] = [
+    [
+      incompleteAttachment({
+        kind: 'audio',
+        url: 'slotless-audio',
+      }),
+    ],
+    [
+      incompleteAttachment({
+        slotId: 'audio_urls',
+        url: 'kindless-audio',
+      }),
+    ],
+  ];
+
+  for (const extraAttachments of cases) {
+    const { references } = deriveFalReferences(
+      extraAttachments,
+      unbudgetedFalReferenceSchema
+    );
+    assert.equal(
+      buildFalReferenceValidation(
+        references,
+        unbudgetedFalReferenceSchema
+      ).ok,
+      true
+    );
+  }
 });
 
 test('attachment slot provenance remains backward compatible without an aggregate budget', () => {

@@ -3,12 +3,12 @@ import type { EngineInputSchema } from '@/types/engines';
 import type { ReferenceBudgetMediaItem, ReferenceBudgetValuesByField } from '@/lib/reference-budget';
 import { ENGINE_CAPS, resolveEngineCapsKey, type EngineCapsKey } from '../../../../fixtures/engineCaps';
 import { listFalEngines } from '../../../../src/config/falEngines';
+import type { ReferenceProvenanceIssue } from './attachment-references';
 import { validateModeMediaInputs } from './validate-media-inputs';
 import { validateProviderSpecificConstraints } from './validate-provider-constraints';
 import { validateProviderControls } from './validate-provider-controls';
 import type { ValidationResult } from './validate-types';
-export type RequestValidationContext = { inputSchema?: EngineInputSchema | null; referenceValuesByField?: ReferenceBudgetValuesByField<string>; referenceMediaItems?: readonly ReferenceBudgetMediaItem[] };
-
+export type RequestValidationContext = { inputSchema?: EngineInputSchema | null; referenceValuesByField?: ReferenceBudgetValuesByField<string>; referenceMediaItems?: readonly ReferenceBudgetMediaItem[]; referenceProvenanceIssues?: readonly ReferenceProvenanceIssue[] };
 const ENGINE_INPUT_LIMITS = listFalEngines().reduce<Record<string, { promptMaxChars?: number }>>((acc, entry) => {
   acc[entry.id] = { promptMaxChars: entry.engine.inputLimits.promptMaxChars };
   return acc;
@@ -84,7 +84,7 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
     };
   }
 
-  const mediaInputValidation = validateModeMediaInputs({ engineId, normalizedMode, payload, inputSchema: context.inputSchema, referenceValuesByField: context.referenceValuesByField, referenceMediaItems: context.referenceMediaItems });
+  const mediaInputValidation = validateModeMediaInputs({ engineId, normalizedMode, payload, inputSchema: context.inputSchema, referenceValuesByField: context.referenceValuesByField, referenceMediaItems: context.referenceMediaItems, referenceProvenanceIssues: context.referenceProvenanceIssues });
   if (!mediaInputValidation.ok) {
     return mediaInputValidation;
   }
