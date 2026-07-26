@@ -10,13 +10,16 @@
 
 ## Global Constraints
 
-- Attribute product claims only to the official Dreamina page: `https://dreamina.capcut.com/seedance/seedance-2-5`.
+- Use the official Dreamina page as the canonical detailed product-claims source: `https://dreamina.capcut.com/seedance/seedance-2-5`.
+- Record the narrower official BytePlus sales page, `https://www.byteplus.com/en/contact-us/ai-seedance2-5-official`, only as prelaunch marketing evidence; never treat it as an API contract, executable limit, or pricing source.
 - Use “Dreamina states”, “Dreamina describes”, or “Dreamina-announced product-surface claims”; do not present the capabilities as independently verified or available through BytePlus.
 - State in EN, FR, and ES that Seedance 2.5 is not yet available for generation on MaxVideoAI.
 - State that MaxVideoAI API availability, customer pricing, BytePlus pricing, executable limits, and timing are unconfirmed.
 - Keep drafts at `docs/model-launch/seedance-2-5/{en,fr,es}.overlay.json`; do not add an orphan slug under `content/models/`.
 - Do not add a `seedance-2-5` runtime engine, canonical registry entry, generated projection, app CTA, public route, sitemap entry, pricing card, examples membership, or comparison.
 - Do not invent or reserve a provider model ID, release date, rate, payload field, entitlement, region, quota, failure-charging rule, or API limit.
+- Do not reuse or publish BytePlus's sales discount as MaxVideoAI or ModelArk unit pricing.
+- Require written integration, redistribution, and trademark clearance before any public launch, with the BytePlus video-generation terms and Platform Customer Code reviewed by counsel.
 - Do not copy Seedance 2.0 pricing, prompts, decision content, examples content, runtime specs, or generation CTA into the drafts.
 - The registry skeleton printed by `model:setup --dry-run` is review output only and must not be inserted.
 - The engine evidence stub is documentation-only and must not be imported by runtime code.
@@ -227,7 +230,7 @@ test('Seedance 2.5 launch overlays are safe and structurally canonical in EN, FR
     assert.equal(content.hero?.ctaPrimary?.href, localeExpected.primaryHref);
     assert.equal(content.hero?.secondaryLinks?.[0]?.href, localeExpected.secondaryHref);
     assert.equal(prelaunch?.dreaminaLabel, 'coming_soon');
-    assert.equal(prelaunch?.checkedAt, '2026-07-25');
+    assert.equal(prelaunch?.checkedAt, '2026-07-26');
     assert.equal(prelaunch?.apiAvailability, 'unconfirmed');
     assert.equal(prelaunch?.pricingAvailability, 'unconfirmed');
     assert.equal(prelaunch?.productSurface, 'Dreamina');
@@ -327,7 +330,7 @@ Set `docs/model-launch/seedance-2-5/en.overlay.json` to:
   "custom": {
     "prelaunch": {
       "dreaminaLabel": "coming_soon",
-      "checkedAt": "2026-07-25",
+      "checkedAt": "2026-07-26",
       "apiAvailability": "unconfirmed",
       "pricingAvailability": "unconfirmed",
       "productSurface": "Dreamina",
@@ -387,7 +390,7 @@ Set `docs/model-launch/seedance-2-5/fr.overlay.json` to:
   "custom": {
     "prelaunch": {
       "dreaminaLabel": "coming_soon",
-      "checkedAt": "2026-07-25",
+      "checkedAt": "2026-07-26",
       "apiAvailability": "unconfirmed",
       "pricingAvailability": "unconfirmed",
       "productSurface": "Dreamina",
@@ -447,7 +450,7 @@ Set `docs/model-launch/seedance-2-5/es.overlay.json` to:
   "custom": {
     "prelaunch": {
       "dreaminaLabel": "coming_soon",
-      "checkedAt": "2026-07-25",
+      "checkedAt": "2026-07-26",
       "apiAvailability": "unconfirmed",
       "pricingAvailability": "unconfirmed",
       "productSurface": "Dreamina",
@@ -567,10 +570,16 @@ test('Seedance 2.5 launch documentation records evidence and publication gates',
   const stub = readFileSync(engineStubPath, 'utf8');
   assert.match(packet, /## Current state/);
   assert.match(packet, /## Dreamina-announced product-surface claims/);
+  assert.match(packet, /## BytePlus prelaunch marketing evidence/);
   assert.match(packet, /## Official BytePlus API evidence required/);
+  assert.match(packet, /## Legal and commercial clearance required/);
   assert.match(packet, /## Promotion state machine/);
   assert.match(packet, /Hidden execution[\s\S]*Admin canary[\s\S]*Public noindex[\s\S]*Public indexed/);
   assert.match(packet, /pnpm model:registry:check/);
+  assert.match(packet, /https:\/\/www\.byteplus\.com\/en\/contact-us\/ai-seedance2-5-official/);
+  assert.match(packet, /Specific_Terms_for_the_BytePlus_Video_Generation_Model_Services/);
+  assert.match(packet, /\/docs\/ModelArk\/2353368/);
+  assert.doesNotMatch(packet, /26\s*%/);
   assert.match(stub, /documentationOnly: true/);
   assert.match(stub, /runtimeEntryAllowed: false/);
   assert.doesNotMatch(stub, /RawFalEngineEntry/);
@@ -628,6 +637,7 @@ export const seedance25EngineEvidenceGate = {
     'moderation and provider error codes',
     'concurrency, RPM, quotas, and service tiers',
     'vendor pricing units, failure charging, and refund behavior',
+    'written integration, redistribution, and trademark clearance',
   ],
   promotionOrder: [
     'hidden_execution',
@@ -647,7 +657,7 @@ Set `docs/model-launch/seedance-2-5.md` to:
 
 ## Current state
 
-- Prepared on: 2026-07-25
+- Prepared on: 2026-07-26
 - Future source template: `seedance-2-0`
 - Canonical candidate ID: `seedance-2-5`
 - Family: `seedance`
@@ -664,7 +674,7 @@ The localized files in `docs/model-launch/seedance-2-5/` are unpublished launch 
 
 Official source: https://dreamina.capcut.com/seedance/seedance-2-5
 
-Checked on 2026-07-25, Dreamina labels Seedance 2.5 as coming soon and states that its product surface is designed to offer:
+Checked on 2026-07-26, Dreamina labels Seedance 2.5 as coming soon and states that its product surface is designed to offer:
 
 - 4K output
 - standard video generation up to 30 seconds
@@ -680,6 +690,17 @@ That copy is internally mixed with the “coming soon” label, so this packet
 records the label as a Dreamina observation rather than inferring product or
 API availability.
 
+## BytePlus prelaunch marketing evidence
+
+Official sales page: https://www.byteplus.com/en/contact-us/ai-seedance2-5-official
+
+Checked on 2026-07-26, BytePlus also labels Seedance 2.5 as coming soon and
+mentions 30-second generation, up to 50 references, and editable output. This
+is a sales/contact page, not ModelArk API documentation. Its statements are
+prelaunch marketing evidence only: they do not establish a provider model ID,
+payload contract, executable limits, availability, entitlement, regions, or
+unit pricing.
+
 ## Official BytePlus API evidence required
 
 Record every item below from official BytePlus documentation before adding a runtime profile:
@@ -694,6 +715,18 @@ Record every item below from official BytePlus documentation before adding a run
 
 Until every item is recorded, do not add a provider profile, engine catalog entry, registry entry, customer price, or generation CTA.
 
+## Legal and commercial clearance required
+
+Before any public launch, obtain written confirmation that MaxVideoAI may
+integrate and redistribute the service and use the relevant BytePlus and
+Seedance marks. Have counsel review both official documents:
+
+- https://docs.byteplus.com/en/docs/modelark/Specific_Terms_for_the_BytePlus_Video_Generation_Model_Services
+- https://docs.byteplus.com/en/docs/ModelArk/2353368
+
+Treat this as a publication gate, independent of technical readiness. Private
+or sales-gated access does not satisfy it.
+
 ## Promotion state machine
 
 ### 1. Hidden execution
@@ -702,6 +735,8 @@ Until every item is recorded, do not add a provider profile, engine catalog entr
 - Keep every publication field false.
 - Default the engine to disabled and admin-only.
 - Configure the real provider model ID through the provider environment layer.
+- Record written integration, redistribution, and trademark clearance before
+  advancing beyond internal evaluation.
 
 ### 2. Admin canary
 
