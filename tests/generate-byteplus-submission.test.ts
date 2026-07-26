@@ -274,12 +274,28 @@ test('BytePlus I2V canonicalizes a direct image before validation and provider s
   } satisfies EngineInputSchema;
   const attachments: NormalizedAttachment[] = [
     {
-      name: 'attachment-start.png',
+      name: 'attachment-image-url.png',
       type: 'image/png',
       size: 1200,
       kind: 'image',
       slotId: 'image_url',
       url: unselectedAttachmentUrl,
+    },
+    {
+      name: 'attachment-input-image.png',
+      type: 'image/png',
+      size: 1200,
+      kind: 'image',
+      slotId: 'input_image',
+      url: 'https://cdn.maxvideoai.com/unselected-input-image.png',
+    },
+    {
+      name: 'attachment-image.png',
+      type: 'image/png',
+      size: 1200,
+      kind: 'image',
+      slotId: 'image',
+      url: 'https://cdn.maxvideoai.com/unselected-image.png',
     },
   ];
   const references = deriveGenerationAttachmentReferences({
@@ -372,6 +388,269 @@ test('BytePlus I2V canonicalizes a direct image before validation and provider s
   assert.equal(providerCalls, 1);
   assert.deepEqual(providerImageUrls, [directImageUrl]);
   assert.equal(rollbacks, 0);
+});
+
+test(
+  'BytePlus I2V canonicalizes one attachment-only primary before validation and submission',
+  async (t) => {
+    const firstUrl = 'https://cdn.maxvideoai.com/selected-start.png';
+    const secondUrl = 'https://cdn.maxvideoai.com/unselected-start.png';
+    const cases = [
+      {
+        name: 'distinct canonical attachments retain only the first scalar',
+        activeFieldId: 'image_url',
+        slots: [
+          ['image_url', firstUrl],
+          ['image_url', secondUrl],
+        ],
+        maxTotal: 2,
+      },
+      {
+        name: 'duplicate canonical attachments count as one emitted scalar',
+        activeFieldId: 'image_url',
+        slots: [
+          ['image_url', firstUrl],
+          ['image_url', firstUrl],
+        ],
+        maxTotal: 1,
+      },
+      {
+        name: 'active input_image remains exact provenance for the provider scalar',
+        activeFieldId: 'input_image',
+        slots: [
+          ['input_image', firstUrl],
+          ['input_image', secondUrl],
+        ],
+        maxTotal: 2,
+      },
+      {
+        name: 'active image remains exact provenance for the provider scalar',
+        activeFieldId: 'image',
+        slots: [
+          ['image', firstUrl],
+          ['image', secondUrl],
+        ],
+        maxTotal: 2,
+      },
+      {
+        name: 'no-budget submission keeps the first attachment scalar',
+        activeFieldId: 'image_url',
+        slots: [
+          ['input_image', firstUrl],
+          ['image_url', secondUrl],
+        ],
+        maxTotal: null,
+      },
+    ] as const;
+
+    for (const [caseIndex, scenario] of cases.entries()) {
+      await t.test(scenario.name, async () => {
+        const attachments: NormalizedAttachment[] = scenario.slots.map(
+          ([slotId, url], index) => ({
+            name: `attachment-start-${index}.png`,
+            type: 'image/png',
+            size: 1200,
+            kind: 'image',
+            slotId,
+            url,
+          })
+        );
+        const inputSchema: EngineInputSchema = {
+          optional: [
+            {
+              id: scenario.activeFieldId,
+              type: 'image',
+              label: 'Start image',
+              modes: ['i2v'],
+            },
+          ],
+          ...(scenario.maxTotal === null
+            ? {}
+            : {
+                referenceBudget: {
+                  fieldIds: [scenario.activeFieldId],
+                  modes: ['i2v'],
+                  maxTotal: scenario.maxTotal,
+                  countUniqueUrls: false,
+                },
+              }),
+        };
+        const references = deriveGenerationAttachmentReferences({
+          attachments,
+          engineId: 'seedance-2-0',
+          mode: 'i2v',
+          inputSchema,
+          isBytePlusV1a: true,
+        });
+        const validation = buildGenerateValidationPayload({
+          engineId: 'seedance-2-0',
+          mode: 'i2v',
+          prompt: 'Animate the selected attachment',
+          multiPrompt: null,
+          supportsResolution: false,
+          effectiveResolution: '720p',
+          supportsAspectRatio: false,
+          aspectRatio: '16:9',
+          audioEnabled: true,
+          isBytePlusV1a: true,
+          supportsDuration: true,
+          numFrames: null,
+          validationDuration: 8,
+          maxUploadedBytes: references.maxUploadedBytes,
+          resolvedFirstFrameUrl: references.resolvedFirstFrameUrl,
+          lastFrameUrl: references.lastFrameUrl,
+          normalizedReferenceImages: references.normalizedReferenceImages,
+          videoUrls: references.videoUrls,
+          audioUrls: references.audioUrls,
+          resolvedAudioUrl: references.resolvedAudioUrl,
+          sourceInputVideoUrl: references.sourceInputVideoUrl,
+          elements: null,
+          endImageUrl: null,
+          startImageUrl: references.startImageUrl,
+          isLumaRay2: false,
+          initialImageUrl: references.initialImageUrl,
+          inputSchema,
+          referenceValuesByField: references.referenceValuesByField,
+          referenceMediaItems: references.referenceMediaItems,
+          referenceProvenanceIssues: references.referenceProvenanceIssues,
+        });
+
+        assert.equal(references.initialImageUrl, firstUrl, scenario.name);
+        assert.deepEqual(
+          references.referenceValuesByField,
+          { [scenario.slots[0][0]]: [firstUrl] },
+          scenario.name
+        );
+        assert.deepEqual(
+          references.referenceMediaItems,
+          [
+            {
+              fieldId: scenario.slots[0][0],
+              kind: 'image',
+              url: firstUrl,
+            },
+          ],
+          scenario.name
+        );
+        assert.equal(validation.ok, true, scenario.name);
+
+        let providerCalls = 0;
+        let providerImageUrls: string[] = [];
+        let rollbacks = 0;
+        const result = await submitBytePlusGenerateTask({
+          ...baseParams,
+          mode: 'i2v',
+          initialImageUrl: references.initialImageUrl,
+          endImageUrl: null,
+          normalizedReferenceImages: [],
+          videoUrls: [],
+          resolvedAudioUrl: null,
+          audioUrls: [],
+          inputSchema,
+          referenceValuesByField: references.referenceValuesByField,
+          pendingReceipt,
+          deps: {
+            getBytePlusModelArkClientFn: () => ({
+              createSeedanceFastTask: async (payload) => {
+                providerCalls += 1;
+                providerImageUrls = payload.content
+                  .filter((item) => item.type === 'image_url')
+                  .map((item) => item.image_url.url);
+                return {
+                  providerJobId: `provider_attachment_primary_${caseIndex}`,
+                  status: 'queued',
+                };
+              },
+            }),
+            queryFn: async () => undefined,
+            rollbackPendingPaymentFn: async () => {
+              rollbacks += 1;
+            },
+          },
+        });
+
+        assert.equal(result.ok, true, scenario.name);
+        assert.equal(providerCalls, 1, scenario.name);
+        assert.deepEqual(providerImageUrls, [firstUrl], scenario.name);
+        assert.equal(rollbacks, 0, scenario.name);
+      });
+    }
+  }
+);
+
+test('BytePlus I2V rejects an inactive primary alias before submission', () => {
+  const inputSchema = {
+    optional: [
+      {
+        id: 'image_url',
+        type: 'image',
+        label: 'Start image',
+        modes: ['i2v'],
+      },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_url'],
+      modes: ['i2v'],
+      maxTotal: 1,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const attachments: NormalizedAttachment[] = [
+    {
+      name: 'inactive-input-image.png',
+      type: 'image/png',
+      size: 1200,
+      kind: 'image',
+      slotId: 'input_image',
+      url: 'https://cdn.maxvideoai.com/inactive-input-image.png',
+    },
+  ];
+  const references = deriveGenerationAttachmentReferences({
+    attachments,
+    engineId: 'seedance-2-0',
+    mode: 'i2v',
+    inputSchema,
+    isBytePlusV1a: true,
+  });
+  const validation = buildGenerateValidationPayload({
+    engineId: 'seedance-2-0',
+    mode: 'i2v',
+    prompt: 'Animate the selected attachment',
+    multiPrompt: null,
+    supportsResolution: false,
+    effectiveResolution: '720p',
+    supportsAspectRatio: false,
+    aspectRatio: '16:9',
+    audioEnabled: true,
+    isBytePlusV1a: true,
+    supportsDuration: true,
+    numFrames: null,
+    validationDuration: 8,
+    maxUploadedBytes: references.maxUploadedBytes,
+    resolvedFirstFrameUrl: references.resolvedFirstFrameUrl,
+    lastFrameUrl: references.lastFrameUrl,
+    normalizedReferenceImages: references.normalizedReferenceImages,
+    videoUrls: references.videoUrls,
+    audioUrls: references.audioUrls,
+    resolvedAudioUrl: references.resolvedAudioUrl,
+    sourceInputVideoUrl: references.sourceInputVideoUrl,
+    elements: null,
+    endImageUrl: null,
+    startImageUrl: references.startImageUrl,
+    isLumaRay2: false,
+    initialImageUrl: references.initialImageUrl,
+    inputSchema,
+    referenceValuesByField: references.referenceValuesByField,
+    referenceMediaItems: references.referenceMediaItems,
+    referenceProvenanceIssues: references.referenceProvenanceIssues,
+  });
+
+  assert.equal(validation.ok, false);
+  if (validation.ok) {
+    assert.fail('inactive input_image must reject before BytePlus submission');
+  }
+  assert.equal(validation.body.field, 'input_image');
+  assert.equal(validation.body.error, 'ENGINE_CONSTRAINT');
 });
 
 test('BytePlus I2V canonicalizes its direct end frame before validation and real submission', async () => {

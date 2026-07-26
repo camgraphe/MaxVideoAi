@@ -44,6 +44,12 @@ export type BytePlusSeedanceFastPayload = {
 
 export type BytePlusSeedancePayload = BytePlusSeedanceFastPayload;
 
+const BYTEPLUS_PRIMARY_IMAGE_FIELD_IDS = [
+  'image_url',
+  'input_image',
+  'image',
+] as const;
+
 function uniqueNonEmptyUrls(values: Array<string | null | undefined> | undefined): string[] {
   return Array.from(
     new Set(
@@ -137,42 +143,57 @@ export function buildBytePlusSeedancePayload(params: {
   const referenceAudioUrls = uniqueNonEmptyUrls(
     resolveTypedPayloadUrls('audio', params.referenceAudioUrls)
   );
-  const resolveTypedPayloadScalarUrl = (
+  const resolveTypedPayloadScalar = (
     kind: ReferenceBudgetMediaItem['kind'],
-    fieldId: string,
+    fieldIds: readonly string[],
     requestedUrl: string
   ) => {
-    if (!requestedUrl || !referenceMediaItems) return requestedUrl;
-    const item = referenceMediaItems.find(
+    const fallbackFieldId = fieldIds[0] ?? '';
+    if (!requestedUrl || !referenceMediaItems) {
+      return { fieldId: fallbackFieldId, url: requestedUrl };
+    }
+    const matches = referenceMediaItems.filter(
       (candidate) =>
         candidate.kind === kind &&
-        candidate.fieldId === fieldId &&
+        fieldIds.includes(candidate.fieldId) &&
         candidate.url.trim() === requestedUrl
     );
-    if (!item) {
+    if (matches.length !== 1) {
       throw new BytePlusModelArkError(
         'BytePlus reference payload is missing original field provenance.',
         { code: 'BYTEPLUS_REFERENCE_BUDGET_INPUT_MISMATCH' }
       );
     }
-    return item.url.trim();
+    return {
+      fieldId: matches[0].fieldId,
+      url: matches[0].url.trim(),
+    };
   };
-  const selectedImageUrl =
+  const selectedImage =
     mode === 'i2v'
-      ? resolveTypedPayloadScalarUrl('image', 'image_url', imageUrl)
-      : '';
-  const selectedEndImageUrl =
+      ? resolveTypedPayloadScalar(
+          'image',
+          BYTEPLUS_PRIMARY_IMAGE_FIELD_IDS,
+          imageUrl
+        )
+      : { fieldId: 'image_url', url: '' };
+  const selectedEndImage =
     mode === 'i2v'
-      ? resolveTypedPayloadScalarUrl('image', 'end_image_url', endImageUrl)
-      : '';
+      ? resolveTypedPayloadScalar('image', ['end_image_url'], endImageUrl)
+      : { fieldId: 'end_image_url', url: '' };
+  const selectedImageUrl = selectedImage.url;
+  const selectedEndImageUrl = selectedEndImage.url;
   if (budgetFieldIds && referenceMediaItems) {
     const selectedScalarImageUrlsByField = new Map<string, string>();
     if (selectedImageUrl) {
-      selectedScalarImageUrlsByField.set('image_url', selectedImageUrl);
+      selectedScalarImageUrlsByField.set(
+        selectedImage.fieldId,
+        selectedImageUrl
+      );
     }
     if (selectedEndImageUrl) {
       selectedScalarImageUrlsByField.set(
-        'end_image_url',
+        selectedEndImage.fieldId,
         selectedEndImageUrl
       );
     }

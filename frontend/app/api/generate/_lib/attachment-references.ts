@@ -85,15 +85,22 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
     params.attachments.find((attachment) => attachment.slotId === 'first_frame_url')?.url?.trim() ?? undefined;
   const lastFrameUrl =
     params.attachments.find((attachment) => attachment.slotId === 'last_frame_url')?.url?.trim() ?? undefined;
+  const primaryImageSlotIds = ['image_url', 'input_image', 'image'] as const;
+  type PrimaryImageSlotId = (typeof primaryImageSlotIds)[number];
+  const isPrimaryImageSlot = (
+    slotId: string | null | undefined
+  ): slotId is PrimaryImageSlotId =>
+    primaryImageSlotIds.includes(slotId as PrimaryImageSlotId);
+  const attachmentPrimaryImageIndex = params.attachments.findIndex(
+    (attachment) =>
+      attachment.kind === 'image' &&
+      typeof attachment.url === 'string' &&
+      isPrimaryImageSlot(attachment.slotId)
+  );
   const attachmentPrimaryImageUrl =
-    params.attachments.find((attachment) => {
-      if (attachment.kind !== 'image' || typeof attachment.url !== 'string') return false;
-      return (
-        attachment.slotId === 'image_url' ||
-        attachment.slotId === 'input_image' ||
-        attachment.slotId === 'image'
-      );
-    })?.url?.trim() ?? undefined;
+    attachmentPrimaryImageIndex >= 0
+      ? params.attachments[attachmentPrimaryImageIndex]?.url?.trim()
+      : undefined;
   const directPrimaryImageUrl =
     trimString(params.soraImageUrl) ??
     trimString(params.imageUrl) ??
@@ -202,11 +209,16 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
     }
     if (
       attachment.kind === 'image' &&
-      bytePlusDirectPrimarySelected &&
-      (fieldId === 'image_url' ||
-        fieldId === 'input_image' ||
-        fieldId === 'image')
+      isBytePlusI2v &&
+      isPrimaryImageSlot(fieldId)
     ) {
+      if (
+        bytePlusDirectPrimarySelected ||
+        attachmentIndex !== attachmentPrimaryImageIndex
+      ) {
+        continue;
+      }
+      appendTypedReferenceValue(fieldId, url, 'image');
       continue;
     }
     if (
@@ -344,7 +356,6 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
           (attachment) => attachment.slotId === 'start_image_url'
         )?.url?.trim();
   const sourceInputVideoUrl = videoUrls[0];
-  const primaryImageSlotIds = ['image_url', 'input_image', 'image'] as const;
   if (initialImageUrl && directPrimaryImageUrl) {
     const providerOverwriteSlots =
       isSoraEngineId(params.engineId) && params.mode === 'i2v'

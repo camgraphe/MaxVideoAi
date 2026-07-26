@@ -1640,6 +1640,78 @@ test('BytePlus I2V accepts budgeted direct start and end images selected by its 
 });
 
 test('BytePlus budget defense rejects every emitted I2V scalar without typed provenance', () => {
+  const buildPrimary = (
+    referenceMediaItems: Parameters<
+      typeof buildBytePlusSeedancePayload
+    >[0]['referenceMediaItems']
+  ) =>
+    buildBytePlusSeedancePayload({
+      modelId: 'current-model-id',
+      prompt: 'Animate the supplied opening frame',
+      durationSec: 5,
+      mode: 'i2v',
+      imageUrl: 'https://example.com/start.png',
+      resolution: '720p',
+      ratio: '16:9',
+      allowedResolutions: ['720p'],
+      allowedDurationOptions: [5],
+      referenceBudget: {
+        fieldIds: ['image_url', 'input_image', 'image'],
+        maxTotal: 2,
+        countUniqueUrls: false,
+      },
+      referenceMediaItems,
+    });
+  const invalidPrimaryProvenance = [
+    [],
+    [
+      {
+        fieldId: 'end_image_url',
+        kind: 'image',
+        url: 'https://example.com/start.png',
+      },
+    ],
+    [
+      {
+        fieldId: 'image_url',
+        kind: 'video',
+        url: 'https://example.com/start.png',
+      },
+    ],
+    [
+      {
+        fieldId: 'image_url',
+        kind: 'image',
+        url: 'https://example.com/other.png',
+      },
+    ],
+    [
+      {
+        fieldId: 'image_url',
+        kind: 'image',
+        url: 'https://example.com/start.png',
+      },
+      {
+        fieldId: 'input_image',
+        kind: 'image',
+        url: 'https://example.com/start.png',
+      },
+    ],
+  ] satisfies Array<
+    NonNullable<
+      Parameters<typeof buildBytePlusSeedancePayload>[0]['referenceMediaItems']
+    >
+  >;
+  for (const referenceMediaItems of invalidPrimaryProvenance) {
+    assert.throws(
+      () => buildPrimary(referenceMediaItems),
+      (error: unknown) =>
+        error instanceof Error &&
+        (error as Error & { code?: string }).code ===
+          'BYTEPLUS_REFERENCE_BUDGET_INPUT_MISMATCH'
+    );
+  }
+
   const build = (
     referenceMediaItems: Parameters<
       typeof buildBytePlusSeedancePayload
