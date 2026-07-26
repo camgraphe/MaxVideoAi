@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import test from 'node:test';
 
 import { buildGenerateValidationPayload } from '../frontend/app/api/generate/_lib/validation-payload';
+import type { EngineInputSchema } from '../frontend/types/engines';
 
 const root = process.cwd();
 const routePath = join(root, 'frontend/app/api/generate/route.ts');
@@ -39,6 +40,8 @@ const baseParams = {
   isLumaRay2: false,
   initialImageUrl: null,
   startImageUrl: null,
+  inputSchema: null,
+  referenceValuesByField: {},
 };
 
 test('generate route delegates validation payload and required input checks', () => {
@@ -55,6 +58,39 @@ test('generate route delegates validation payload and required input checks', ()
 test('validation payload helper exposes the route contract', () => {
   assert.match(helperSource, /export type GenerateValidationPayloadResult/, 'GenerateValidationPayloadResult should be exported');
   assert.match(helperSource, /export function buildGenerateValidationPayload/, 'validation payload builder should be exported');
+});
+
+test('validation payload forwards runtime schema and original reference fields', () => {
+  const inputSchema = {
+    optional: [
+      { id: 'image_urls', type: 'image', label: 'Images', modes: ['ref2v'] },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_urls'],
+      modes: ['ref2v'],
+      maxTotal: 1,
+      countUniqueUrls: true,
+    },
+  } satisfies EngineInputSchema;
+  const referenceValuesByField = { image_urls: ['original-field-value'] };
+  let capturedContext: unknown;
+  const result = buildGenerateValidationPayload({
+    ...baseParams,
+    inputSchema,
+    referenceValuesByField,
+    deps: {
+      validateRequestFn: (_engineId, _mode, _payload, context) => {
+        capturedContext = context;
+        return { ok: true };
+      },
+    },
+  });
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(capturedContext, {
+    inputSchema,
+    referenceValuesByField,
+  });
 });
 
 test('validation payload helper builds base payload and mode flags', () => {

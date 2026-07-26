@@ -1,10 +1,13 @@
 import type { Mode } from '../../../../fixtures/engineCaps';
+import type { EngineInputSchema } from '@/types/engines';
+import type { ReferenceBudgetValuesByField } from '@/lib/reference-budget';
 import { ENGINE_CAPS, resolveEngineCapsKey, type EngineCapsKey } from '../../../../fixtures/engineCaps';
 import { listFalEngines } from '../../../../src/config/falEngines';
 import { validateModeMediaInputs } from './validate-media-inputs';
 import { validateProviderSpecificConstraints } from './validate-provider-constraints';
 import { validateProviderControls } from './validate-provider-controls';
 import type { ValidationResult } from './validate-types';
+export type RequestValidationContext = { inputSchema?: EngineInputSchema | null; referenceValuesByField?: ReferenceBudgetValuesByField<string> };
 
 const ENGINE_INPUT_LIMITS = listFalEngines().reduce<Record<string, { promptMaxChars?: number }>>((acc, entry) => {
   acc[entry.id] = { promptMaxChars: entry.engine.inputLimits.promptMaxChars };
@@ -33,7 +36,7 @@ function normalizeDurationValue(value: unknown): number | string | undefined {
   return undefined;
 }
 
-export function validateRequest(engineId: string, mode: Mode | undefined, payload: Record<string, unknown>): ValidationResult {
+export function validateRequest(engineId: string, mode: Mode | undefined, payload: Record<string, unknown>, context: RequestValidationContext = {}): ValidationResult {
   const capsKey: EngineCapsKey | undefined = resolveEngineCapsKey(engineId, mode);
   if (!capsKey) {
     return {
@@ -81,7 +84,7 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
     };
   }
 
-  const mediaInputValidation = validateModeMediaInputs({ engineId, normalizedMode, payload });
+  const mediaInputValidation = validateModeMediaInputs({ engineId, normalizedMode, payload, inputSchema: context.inputSchema, referenceValuesByField: context.referenceValuesByField });
   if (!mediaInputValidation.ok) {
     return mediaInputValidation;
   }

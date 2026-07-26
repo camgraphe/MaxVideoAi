@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
 
+import { validateModeMediaInputs } from '../frontend/app/api/generate/_lib/validate-media-inputs.ts';
 import { validateRequest } from '../frontend/app/api/generate/_lib/validate.ts';
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
 
@@ -30,6 +31,46 @@ test('generate request validation delegates media mode rules', () => {
 
   const lineCount = validateSource.split('\n').length;
   assert.ok(lineCount <= 300, `validate.ts should stay below 300 lines after media-rule extraction, got ${lineCount}`);
+});
+
+test('server aggregate validation uses original slot ids instead of projected keys', () => {
+  const result = validateModeMediaInputs({
+    engineId: 'contract-test-engine',
+    normalizedMode: 'v2v',
+    inputSchema: {
+      optional: [
+        { id: 'reference_image_urls', type: 'image', label: 'Images', modes: ['v2v'] },
+        { id: 'video_url', type: 'video', label: 'Source', modes: ['v2v'] },
+        { id: 'audio_urls', type: 'audio', label: 'Audio', modes: ['v2v'] },
+      ],
+      referenceBudget: {
+        fieldIds: ['reference_image_urls', 'audio_urls'],
+        modes: ['v2v'],
+        maxTotal: 2,
+        countUniqueUrls: true,
+      },
+    },
+    referenceValuesByField: {
+      reference_image_urls: ['a', 'b'],
+      audio_urls: ['c'],
+      video_url: ['source'],
+    },
+    payload: {
+      reference_image_urls: ['a', 'b'],
+      audio_url: 'c',
+      video_url: 'source',
+    },
+  });
+  assert.deepEqual(result, {
+    ok: false,
+    error: {
+      code: 'ENGINE_CONSTRAINT',
+      field: 'referenceBudget',
+      message: 'Up to 2 total references are supported for this engine mode',
+      allowed: [0, 2],
+      value: 3,
+    },
+  });
 });
 
 test('Pika 2.2 rejects duration under 5 seconds', () => {

@@ -137,10 +137,12 @@ export async function POST(req: NextRequest) {
     resolvedFirstFrameUrl,
     startImageUrl,
     sourceInputVideoUrl,
+    referenceValuesByField,
   } = deriveGenerationAttachmentReferences({
     attachments: processedAttachments,
     engineId: engine.id,
     mode,
+    inputSchema: engine.inputSchema,
     soraImageUrl: soraRequest?.mode === 'i2v' ? soraRequest.image_url : undefined,
     imageUrl: body.imageUrl,
     image_url: body.image_url,
@@ -190,6 +192,8 @@ export async function POST(req: NextRequest) {
     endImageUrl,
     startImageUrl,
     isLumaRay2, initialImageUrl, loop, seed, safetyChecker,
+    inputSchema: engine.inputSchema,
+    referenceValuesByField,
   });
   if (!validationPayloadResult.ok) {
     logMetric('rejected', validationPayloadResult.metric);

@@ -1,4 +1,10 @@
 import type { Mode } from '../../../../fixtures/engineCaps';
+import type { EngineInputSchema } from '@/types/engines';
+import {
+  evaluateReferenceBudget,
+  resolveEngineReferenceBudget,
+  type ReferenceBudgetValuesByField,
+} from '@/lib/reference-budget';
 import { listFalEngines } from '../../../../src/config/falEngines';
 import type { ValidationResult } from './validate-types';
 
@@ -132,8 +138,33 @@ export function validateModeMediaInputs(params: {
   engineId: string;
   normalizedMode: Mode;
   payload: Record<string, unknown>;
+  inputSchema?: EngineInputSchema | null;
+  referenceValuesByField?: ReferenceBudgetValuesByField<string>;
 }): ValidationResult {
   const { engineId, normalizedMode, payload } = params;
+  const referenceBudget = resolveEngineReferenceBudget(
+    params.inputSchema,
+    params.normalizedMode
+  );
+  if (referenceBudget) {
+    const evaluation = evaluateReferenceBudget({
+      budget: referenceBudget,
+      valuesByField: params.referenceValuesByField ?? {},
+      getIdentity: (value) => value,
+    });
+    if (!evaluation.ok) {
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: 'referenceBudget',
+          message: `Up to ${evaluation.maxTotal} total references are supported for this engine mode`,
+          allowed: [0, evaluation.maxTotal],
+          value: evaluation.count,
+        },
+      };
+    }
+  }
   const isKling3Engine = engineId.startsWith('kling-3');
   const isKlingO3Engine = engineId.startsWith('kling-o3');
   const hasKlingElements = hasKlingElementEntries(payload);

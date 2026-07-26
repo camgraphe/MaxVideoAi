@@ -1,5 +1,6 @@
 import type { MaxVideoProviderElement } from '@/lib/video-provider-elements';
-import type { Mode } from '@/types/engines';
+import type { EngineInputSchema, Mode } from '@/types/engines';
+import type { ReferenceBudgetValuesByField } from '@/lib/reference-budget';
 import { validateRequest } from './validate';
 
 type GenerateValidationMetric = {
@@ -58,6 +59,8 @@ export function buildGenerateValidationPayload(params: {
   loop?: boolean;
   seed?: number | null;
   safetyChecker?: boolean | null;
+  inputSchema: EngineInputSchema | null | undefined;
+  referenceValuesByField: ReferenceBudgetValuesByField<string>;
   deps?: GenerateValidationDeps;
 }): GenerateValidationPayloadResult {
   const validateRequestFn = params.deps?.validateRequestFn ?? validateRequest;
@@ -185,7 +188,15 @@ export function buildGenerateValidationPayload(params: {
     payload.image_url = params.initialImageUrl;
   }
 
-  const validationResult = validateRequestFn(params.engineId, params.mode, payload);
+  const validationResult = validateRequestFn(
+    params.engineId,
+    params.mode,
+    payload,
+    {
+      inputSchema: params.inputSchema,
+      referenceValuesByField: params.referenceValuesByField,
+    }
+  );
   if (!validationResult.ok) {
     return {
       ok: false,
