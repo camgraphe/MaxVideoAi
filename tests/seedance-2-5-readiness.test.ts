@@ -6,11 +6,14 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readlinkSync,
+  realpathSync,
   rmSync,
+  symlinkSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join, relative, sep } from 'node:path';
+import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import test from 'node:test';
 
 import {
@@ -42,9 +45,33 @@ const allowedSeedance25Paths = new Set([
   'tests/seedance-2-5-readiness.test.ts',
   'tests/seedance-2-pricing.test.ts',
 ]);
+const approvedSeedance25GitlinkPaths = new Set<string>();
+const exposureMatchOrder = [
+  'path',
+  'index_content',
+  'index_symlink_target',
+  'index_symlink_resolved_content',
+  'worktree_content',
+  'worktree_symlink_target',
+  'worktree_symlink_resolved_content',
+  'gitlink',
+] as const;
+type ExposureMatch = (typeof exposureMatchOrder)[number];
 type ForbiddenIdentityExposure = {
   path: string;
-  matches: Array<'path' | 'content'>;
+  matches: ExposureMatch[];
+};
+type GitIndexEntry = {
+  mode: string;
+  objectId: string;
+  stage: number;
+  path: string;
+};
+type GitRepositorySnapshot = {
+  candidatePaths: string[];
+  candidatePathSet: ReadonlySet<string>;
+  indexEntriesByPath: Map<string, GitIndexEntry[]>;
+  indexBlobs: Map<string, Buffer>;
 };
 const approvedLaunchPacketSections = {
   'Current state': `- Prepared on: 2026-07-26
@@ -152,7 +179,28 @@ or sales-gated access does not satisfy it.`,
 - Enable app, pricing, sitemap, examples, comparisons, and indexation
   independently in the canonical registry.
 - Keep Seedance 2.0 available unless a separate retirement decision is approved.`,
+  'Verification commands': `\`\`\`bash
+pnpm model:registry:generate
+pnpm engine:catalog
+pnpm model:generate:write
+pnpm model:registry:check
+pnpm model:check
+pnpm models:audit
+pnpm pricing:baseline
+pnpm pricing:public-baseline
+pnpm pricing:audit
+npm --prefix frontend run lint
+npm run lint:exposure
+pnpm --prefix frontend exec tsc --noEmit --pretty false
+git diff --check
+\`\`\``,
 } as const;
+const approvedLaunchPacket = `# Seedance 2.5 launch packet
+
+${Object.entries(approvedLaunchPacketSections)
+  .map(([heading, body]) => `## ${heading}\n\n${body}`)
+  .join('\n\n')}
+`;
 const requiredOfficialApiFacts = [
   'canonical BytePlus model ID and supported regions',
   'entitlement and release status',
@@ -294,23 +342,149 @@ const unavailableCopy = {
   es: 'Seedance 2.5 todavía no está disponible para generar vídeos en MaxVideoAI.',
 } as const;
 
-function toRepositoryPath(repositoryRoot: string, path: string): string {
-  return relative(repositoryRoot, path).split(sep).join('/');
+function splitNulList(value: string): string[] {
+  return value.split('\0').filter(Boolean);
 }
 
-function listRepositoryCandidatePaths(repositoryRoot: string): string[] {
-  return execFileSync(
-    'git',
-    ['ls-files', '--cached', '--others', '--exclude-standard', '-z'],
-    {
+function compareStrings(left: string, right: string): number {
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+
+function readGitIndexEntries(repositoryRoot: string): GitIndexEntry[] {
+  const records = splitNulList(
+    execFileSync('git', ['ls-files', '--stage', '-z'], {
       cwd: repositoryRoot,
       encoding: 'utf8',
       maxBuffer: 10 * 1024 * 1024,
-    },
-  )
-    .split('\0')
-    .filter(Boolean)
-    .sort();
+    }),
+  );
+  return records
+    .map((record) => {
+      const separatorIndex = record.indexOf('\t');
+      assert.notEqual(separatorIndex, -1, 'git index record must contain a tab');
+      const header = record.slice(0, separatorIndex);
+      const path = record.slice(separatorIndex + 1);
+      const [mode, objectId, stageValue, ...extra] = header.split(' ');
+      assert.equal(extra.length, 0, `unexpected git index header for ${path}`);
+      assert.equal(Boolean(mode && objectId && stageValue), true, path);
+      const stage = Number(stageValue);
+      assert.equal(Number.isInteger(stage), true, `invalid git stage for ${path}`);
+      return {
+        mode,
+        objectId,
+        stage,
+        path,
+      };
+    })
+    .sort((left, right) => {
+      return (
+        compareStrings(left.path, right.path) ||
+        left.stage - right.stage ||
+        compareStrings(left.mode, right.mode) ||
+        compareStrings(left.objectId, right.objectId)
+      );
+    });
+}
+
+function readGitIndexBlobs(
+  repositoryRoot: string,
+  entries: GitIndexEntry[],
+): Map<string, Buffer> {
+  const objectIds = Array.from(
+    new Set(
+      entries
+        .filter((entry) => entry.mode.startsWith('100') || entry.mode === '120000')
+        .map((entry) => entry.objectId),
+    ),
+  ).sort();
+  if (objectIds.length === 0) return new Map();
+
+  const output = execFileSync('git', ['cat-file', '--batch'], {
+    cwd: repositoryRoot,
+    input: `${objectIds.join('\n')}\n`,
+    maxBuffer: 256 * 1024 * 1024,
+  });
+  const blobs = new Map<string, Buffer>();
+  let offset = 0;
+
+  for (const objectId of objectIds) {
+    const headerEnd = output.indexOf(10, offset);
+    assert.notEqual(headerEnd, -1, `missing git blob header for ${objectId}`);
+    const header = output.subarray(offset, headerEnd).toString('ascii');
+    const [returnedId, objectType, sizeValue, ...extra] = header.split(' ');
+    assert.equal(extra.length, 0, `unexpected git blob header for ${objectId}`);
+    assert.equal(returnedId, objectId);
+    assert.equal(objectType, 'blob', objectId);
+    const size = Number(sizeValue);
+    assert.equal(Number.isSafeInteger(size) && size >= 0, true, objectId);
+    const contentStart = headerEnd + 1;
+    const contentEnd = contentStart + size;
+    assert.equal(contentEnd < output.length, true, objectId);
+    assert.equal(output[contentEnd], 10, objectId);
+    blobs.set(objectId, Buffer.from(output.subarray(contentStart, contentEnd)));
+    offset = contentEnd + 1;
+  }
+  assert.equal(offset, output.length, 'unexpected trailing git cat-file output');
+  return blobs;
+}
+
+function readGitRepositorySnapshot(
+  repositoryRoot: string,
+): GitRepositorySnapshot {
+  const indexEntries = readGitIndexEntries(repositoryRoot);
+  const indexEntriesByPath = new Map<string, GitIndexEntry[]>();
+  for (const entry of indexEntries) {
+    const entries = indexEntriesByPath.get(entry.path) ?? [];
+    entries.push(entry);
+    indexEntriesByPath.set(entry.path, entries);
+  }
+  const untrackedPaths = splitNulList(
+    execFileSync(
+      'git',
+      ['ls-files', '--others', '--exclude-standard', '-z'],
+      {
+        cwd: repositoryRoot,
+        encoding: 'utf8',
+        maxBuffer: 10 * 1024 * 1024,
+      },
+    ),
+  );
+  const candidatePaths = Array.from(
+    new Set([...indexEntriesByPath.keys(), ...untrackedPaths]),
+  ).sort();
+  return {
+    candidatePaths,
+    candidatePathSet: new Set(candidatePaths),
+    indexEntriesByPath,
+    indexBlobs: readGitIndexBlobs(repositoryRoot, indexEntries),
+  };
+}
+
+function repositoryPathInside(
+  repositoryRoot: string,
+  absolutePath: string,
+): string | null {
+  const repositoryPath = relative(repositoryRoot, absolutePath);
+  if (
+    repositoryPath === '' ||
+    repositoryPath === '..' ||
+    repositoryPath.startsWith(`..${sep}`) ||
+    isAbsolute(repositoryPath)
+  ) {
+    return null;
+  }
+  return repositoryPath.split(sep).join('/');
+}
+
+function resolveIndexSymlinkTarget(
+  repositoryRoot: string,
+  linkPath: string,
+  target: string,
+): string | null {
+  return repositoryPathInside(
+    repositoryRoot,
+    resolve(dirname(join(repositoryRoot, linkPath)), target),
+  );
 }
 
 function isTextLike(buffer: Buffer): boolean {
@@ -325,46 +499,211 @@ function isTextLike(buffer: Buffer): boolean {
   return controlBytes / sample.length < 0.03;
 }
 
+function bufferHasForbiddenIdentity(buffer: Buffer): boolean {
+  return (
+    isTextLike(buffer) &&
+    forbiddenRuntimeIdentity.test(buffer.toString('utf8'))
+  );
+}
+
+function indexPathHasForbiddenIdentity(
+  repositoryRoot: string,
+  repositoryPath: string,
+  snapshot: GitRepositorySnapshot,
+  visitedPaths: ReadonlySet<string> = new Set(),
+): boolean {
+  if (visitedPaths.has(repositoryPath)) return false;
+  const nextVisitedPaths = new Set(visitedPaths);
+  nextVisitedPaths.add(repositoryPath);
+
+  for (const entry of snapshot.indexEntriesByPath.get(repositoryPath) ?? []) {
+    if (entry.mode.startsWith('100')) {
+      const blob = snapshot.indexBlobs.get(entry.objectId);
+      assert.equal(Boolean(blob), true, entry.path);
+      if (bufferHasForbiddenIdentity(blob as Buffer)) return true;
+      continue;
+    }
+    if (entry.mode === '120000') {
+      const blob = snapshot.indexBlobs.get(entry.objectId);
+      assert.equal(Boolean(blob), true, entry.path);
+      const target = (blob as Buffer).toString('utf8');
+      if (forbiddenRuntimeIdentity.test(target)) return true;
+      const resolvedPath = resolveIndexSymlinkTarget(
+        repositoryRoot,
+        entry.path,
+        target,
+      );
+      if (
+        resolvedPath &&
+        indexPathHasForbiddenIdentity(
+          repositoryRoot,
+          resolvedPath,
+          snapshot,
+          nextVisitedPaths,
+        )
+      ) {
+        return true;
+      }
+      continue;
+    }
+    if (entry.mode === '160000') return true;
+    assert.fail(`unsupported git index mode ${entry.mode} at ${entry.path}`);
+  }
+  return false;
+}
+
+function tryLstat(path: string): ReturnType<typeof lstatSync> | null {
+  try {
+    return lstatSync(path);
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      'code' in error &&
+      (error as NodeJS.ErrnoException).code === 'ENOENT'
+    ) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+function addWorktreeMatches(
+  repositoryRoot: string,
+  candidatePath: string,
+  snapshot: GitRepositorySnapshot,
+  matches: Set<ExposureMatch>,
+) {
+  const absolutePath = join(repositoryRoot, candidatePath);
+  const stats = tryLstat(absolutePath);
+  if (!stats) return;
+
+  if (stats.isFile()) {
+    if (bufferHasForbiddenIdentity(readFileSync(absolutePath))) {
+      matches.add('worktree_content');
+    }
+    return;
+  }
+  if (!stats.isSymbolicLink()) return;
+
+  const target = readlinkSync(absolutePath);
+  if (forbiddenRuntimeIdentity.test(target)) {
+    matches.add('worktree_symlink_target');
+  }
+
+  let resolvedTarget: string;
+  try {
+    resolvedTarget = realpathSync(absolutePath);
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      'code' in error &&
+      ['ENOENT', 'ELOOP'].includes((error as NodeJS.ErrnoException).code ?? '')
+    ) {
+      return;
+    }
+    throw error;
+  }
+  const resolvedRepositoryPath = repositoryPathInside(
+    realpathSync(repositoryRoot),
+    resolvedTarget,
+  );
+  if (
+    !resolvedRepositoryPath ||
+    !snapshot.candidatePathSet.has(resolvedRepositoryPath)
+  ) {
+    return;
+  }
+  const resolvedStats = tryLstat(resolvedTarget);
+  if (
+    resolvedStats?.isFile() &&
+    bufferHasForbiddenIdentity(readFileSync(resolvedTarget))
+  ) {
+    matches.add('worktree_symlink_resolved_content');
+  }
+}
+
 function findForbiddenSeedance25Exposures(
   repositoryRoot: string,
   allowedPaths: ReadonlySet<string> = allowedSeedance25Paths,
+  approvedGitlinkPaths: ReadonlySet<string> = approvedSeedance25GitlinkPaths,
 ): ForbiddenIdentityExposure[] {
-  return listRepositoryCandidatePaths(repositoryRoot).flatMap((candidatePath) => {
-    if (allowedPaths.has(candidatePath)) return [];
-    const matches: Array<'path' | 'content'> = [];
-    if (forbiddenRuntimeIdentity.test(candidatePath)) matches.push('path');
+  const snapshot = readGitRepositorySnapshot(repositoryRoot);
+  return snapshot.candidatePaths.flatMap((candidatePath) => {
+    const indexEntries = snapshot.indexEntriesByPath.get(candidatePath) ?? [];
+    const matches = new Set<ExposureMatch>();
+    if (
+      indexEntries.some((entry) => entry.mode === '160000') &&
+      !approvedGitlinkPaths.has(candidatePath)
+    ) {
+      matches.add('gitlink');
+    }
+    if (allowedPaths.has(candidatePath)) {
+      return matches.size === 0
+        ? []
+        : [{ path: candidatePath, matches: ['gitlink'] as ExposureMatch[] }];
+    }
+    if (forbiddenRuntimeIdentity.test(candidatePath)) matches.add('path');
 
-    const absolutePath = join(repositoryRoot, candidatePath);
-    if (existsSync(absolutePath) && lstatSync(absolutePath).isFile()) {
-      const buffer = readFileSync(absolutePath);
-      if (
-        isTextLike(buffer) &&
-        forbiddenRuntimeIdentity.test(buffer.toString('utf8'))
-      ) {
-        matches.push('content');
+    for (const entry of indexEntries) {
+      if (entry.mode.startsWith('100')) {
+        const blob = snapshot.indexBlobs.get(entry.objectId);
+        assert.equal(Boolean(blob), true, entry.path);
+        if (bufferHasForbiddenIdentity(blob as Buffer)) {
+          matches.add('index_content');
+        }
+        continue;
+      }
+      if (entry.mode === '120000') {
+        const blob = snapshot.indexBlobs.get(entry.objectId);
+        assert.equal(Boolean(blob), true, entry.path);
+        const target = (blob as Buffer).toString('utf8');
+        if (forbiddenRuntimeIdentity.test(target)) {
+          matches.add('index_symlink_target');
+        }
+        const resolvedPath = resolveIndexSymlinkTarget(
+          repositoryRoot,
+          entry.path,
+          target,
+        );
+        if (
+          resolvedPath &&
+          indexPathHasForbiddenIdentity(repositoryRoot, resolvedPath, snapshot)
+        ) {
+          matches.add('index_symlink_resolved_content');
+        }
+        continue;
+      }
+      if (entry.mode !== '160000') {
+        assert.fail(`unsupported git index mode ${entry.mode} at ${entry.path}`);
       }
     }
 
-    return matches.length === 0
+    addWorktreeMatches(repositoryRoot, candidatePath, snapshot, matches);
+    const orderedMatches = exposureMatchOrder.filter((match) =>
+      matches.has(match),
+    );
+    return orderedMatches.length === 0
       ? []
       : [
           {
-            path: toRepositoryPath(repositoryRoot, absolutePath),
-            matches,
+            path: candidatePath,
+            matches: orderedMatches,
           },
         ];
   });
 }
 
-function readMarkdownSection(markdown: string, heading: string): string {
-  const marker = `## ${heading}\n`;
-  const start = markdown.indexOf(marker);
-  assert.notEqual(start, -1, `missing ${marker.trim()}`);
-  const bodyStart = start + marker.length;
-  const nextHeading = markdown.indexOf('\n## ', bodyStart);
-  return markdown
-    .slice(bodyStart, nextHeading === -1 ? markdown.length : nextHeading)
-    .trim();
+function assertApprovedLaunchPacket(packet: string) {
+  assert.equal(
+    packet,
+    approvedLaunchPacket,
+    'packet must match the complete approved launch packet',
+  );
+  assert.doesNotMatch(packet, /26\s*%/);
+  assert.doesNotMatch(
+    packet,
+    /(?:[$€£]\s*\d|\d+(?:[.,]\d+)?\s*(?:USD|EUR|GBP|%|credits?\s*(?:per|\/)))/i,
+  );
 }
 
 function quotedArrayValues(source: string, property: string): string[] {
@@ -570,29 +909,7 @@ test('Seedance 2.5 launch documentation records evidence and publication gates',
   const packet = readFileSync(launchPacketPath, 'utf8');
   const stub = readFileSync(engineStubPath, 'utf8');
 
-  assert.equal(packet.startsWith('# Seedance 2.5 launch packet\n'), true);
-  assert.deepEqual(
-    Array.from(packet.matchAll(/^## (.+)$/gm), (match) => match[1]),
-    [
-      ...Object.keys(approvedLaunchPacketSections),
-      'Verification commands',
-    ],
-  );
-  for (const [heading, approvedSection] of Object.entries(
-    approvedLaunchPacketSections,
-  )) {
-    assert.equal(
-      readMarkdownSection(packet, heading),
-      approvedSection,
-      `${heading} must retain the approved launch-safety semantics`,
-    );
-  }
-  assert.match(packet, /pnpm model:registry:check/);
-  assert.doesNotMatch(packet, /26\s*%/);
-  assert.doesNotMatch(
-    packet,
-    /(?:[$€£]\s*\d|\d+(?:[.,]\d+)?\s*(?:USD|EUR|GBP|%|credits?\s*(?:per|\/)))/i,
-  );
+  assertApprovedLaunchPacket(packet);
 
   assert.match(stub, /documentationOnly: true/);
   assert.match(stub, /runtimeEntryAllowed: false/);
@@ -606,7 +923,17 @@ test('Seedance 2.5 launch documentation records evidence and publication gates',
   assert.doesNotMatch(stub, /unitPrice|priceUsd|costPer/i);
 });
 
-test('Seedance 2.5 exposure scan catches path-only routes and provider or benchmark content', () => {
+test('Seedance 2.5 packet contract rejects verification command omissions', () => {
+  const packet = readFileSync(launchPacketPath, 'utf8');
+  const incompletePacket = packet.replace('pnpm pricing:audit\n', '');
+  assert.notEqual(incompletePacket, packet);
+  assert.throws(
+    () => assertApprovedLaunchPacket(incompletePacket),
+    /complete approved launch packet/,
+  );
+});
+
+test('Seedance 2.5 exposure scan reconciles index and worktree states', () => {
   const fixtureRoot = mkdtempSync(join(tmpdir(), 'seedance-2-5-exposure-'));
   const writeFixture = (path: string, content: string | Uint8Array) => {
     const target = join(fixtureRoot, path);
@@ -616,9 +943,32 @@ test('Seedance 2.5 exposure scan catches path-only routes and provider or benchm
 
   try {
     writeFixture('.gitignore', 'frontend/.env.local\n');
+    execFileSync('git', ['init', '-q'], { cwd: fixtureRoot, stdio: 'ignore' });
+    execFileSync('git', ['add', '--', '.gitignore'], {
+      cwd: fixtureRoot,
+      stdio: 'ignore',
+    });
+    execFileSync(
+      'git',
+      [
+        '-c',
+        'user.name=Exposure Probe',
+        '-c',
+        'user.email=exposure-probe@example.invalid',
+        'commit',
+        '-qm',
+        'fixture base',
+      ],
+      { cwd: fixtureRoot, stdio: 'ignore' },
+    );
+
     writeFixture(
       'data/benchmarks/engine-scores.v1.json',
       '{"engine":"seedance.2.5"}\n',
+    );
+    writeFixture(
+      'data/benchmarks/worktree-only.json',
+      '{"engine":"safe-engine"}\n',
     );
     writeFixture(
       'docs/model-launch/seedance-2-5.md',
@@ -637,21 +987,66 @@ test('Seedance 2.5 exposure scan catches path-only routes and provider or benchm
       "export { default } from '../generic/page';\n",
     );
     writeFixture(
+      'frontend/config/deleted-provider.env',
+      'BYTEPLUS_STAGED_MODEL=seedance-2-5\n',
+    );
+    writeFixture(
+      'frontend/config/staged-provider.env',
+      'BYTEPLUS_STAGED_MODEL=seedance-2-5\n',
+    );
+    const ignoredSecretSymlinkPath = join(
+      fixtureRoot,
+      'frontend/config/local-secret-link.ts',
+    );
+    mkdirSync(dirname(ignoredSecretSymlinkPath), { recursive: true });
+    symlinkSync('../.env.local', ignoredSecretSymlinkPath);
+    const symlinkPath = join(fixtureRoot, 'frontend/config/upcoming-engine.ts');
+    mkdirSync(dirname(symlinkPath), { recursive: true });
+    symlinkSync('../../docs/model-launch/seedance-2-5.md', symlinkPath);
+    writeFixture(
       'frontend/public/provider-cache.bin',
       Buffer.concat([Buffer.from([0, 1, 2]), Buffer.from('seedance-2-5')]),
     );
 
-    execFileSync('git', ['init', '-q'], { cwd: fixtureRoot, stdio: 'ignore' });
     execFileSync(
       'git',
       [
         'add',
         '--',
-        '.gitignore',
         'data/benchmarks/engine-scores.v1.json',
+        'data/benchmarks/worktree-only.json',
         'docs/model-launch/seedance-2-5.md',
         'frontend/.env.local.example',
+        'frontend/config/deleted-provider.env',
+        'frontend/config/local-secret-link.ts',
+        'frontend/config/staged-provider.env',
+        'frontend/config/upcoming-engine.ts',
         'frontend/public/provider-cache.bin',
+      ],
+      { cwd: fixtureRoot, stdio: 'ignore' },
+    );
+    writeFixture(
+      'data/benchmarks/worktree-only.json',
+      '{"engine":"seedance-2-5"}\n',
+    );
+    writeFixture(
+      'frontend/config/staged-provider.env',
+      'BYTEPLUS_STAGED_MODEL=safe-engine\n',
+    );
+    rmSync(join(fixtureRoot, 'frontend/config/deleted-provider.env'));
+    const gitlinkObject = execFileSync('git', ['rev-parse', 'HEAD'], {
+      cwd: fixtureRoot,
+      encoding: 'utf8',
+    }).trim();
+    execFileSync(
+      'git',
+      [
+        'update-index',
+        '--add',
+        '--cacheinfo',
+        '160000',
+        gitlinkObject,
+        'frontend/providers/upcoming-provider',
       ],
       { cwd: fixtureRoot, stdio: 'ignore' },
     );
@@ -664,15 +1059,40 @@ test('Seedance 2.5 exposure scan catches path-only routes and provider or benchm
       [
         {
           path: 'data/benchmarks/engine-scores.v1.json',
-          matches: ['content'],
+          matches: ['index_content', 'worktree_content'],
+        },
+        {
+          path: 'data/benchmarks/worktree-only.json',
+          matches: ['worktree_content'],
         },
         {
           path: 'frontend/.env.local.example',
-          matches: ['content'],
+          matches: ['index_content', 'worktree_content'],
         },
         {
           path: 'frontend/app/models/seedance-2-5/page.tsx',
           matches: ['path'],
+        },
+        {
+          path: 'frontend/config/deleted-provider.env',
+          matches: ['index_content'],
+        },
+        {
+          path: 'frontend/config/staged-provider.env',
+          matches: ['index_content'],
+        },
+        {
+          path: 'frontend/config/upcoming-engine.ts',
+          matches: [
+            'index_symlink_target',
+            'index_symlink_resolved_content',
+            'worktree_symlink_target',
+            'worktree_symlink_resolved_content',
+          ],
+        },
+        {
+          path: 'frontend/providers/upcoming-provider',
+          matches: ['gitlink'],
         },
       ],
     );

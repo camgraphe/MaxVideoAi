@@ -635,214 +635,169 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readlinkSync,
+  realpathSync,
   rmSync,
+  symlinkSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join, relative, sep } from 'node:path';
+import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 ```
 
-After `overlayPaths`, add:
+Keep the exact documentation/test allowlist, then add mode-aware result types and
+a separate, initially empty gitlink approval set:
 
 ```ts
 const launchPacketPath = join(root, 'docs/model-launch/seedance-2-5.md');
 const engineStubPath = join(root, 'docs/model-launch/seedance-2-5.engine.stub.ts');
 const forbiddenRuntimeIdentity = /seedance[-_. ]?2[-_. ]?5/i;
-const allowedSeedance25Paths = new Set([
-  'docs/model-launch/seedance-2-5.engine.stub.ts',
-  'docs/model-launch/seedance-2-5.md',
-  'docs/model-launch/seedance-2-5/en.overlay.json',
-  'docs/model-launch/seedance-2-5/es.overlay.json',
-  'docs/model-launch/seedance-2-5/fr.overlay.json',
-  'docs/superpowers/plans/2026-07-25-seedance-2-5-byteplus-fail-closed.md',
-  'docs/superpowers/plans/2026-07-25-seedance-2-5-hidden-launch-content.md',
-  'docs/superpowers/plans/2026-07-25-seedance-2-5-reference-budget.md',
-  'docs/superpowers/specs/2026-07-25-seedance-2-5-prelaunch-readiness-design.md',
-  'tests/byteplus-seedance-profiles.test.ts',
-  'tests/generate-byteplus-submission.test.ts',
-  'tests/seedance-2-5-readiness.test.ts',
-  'tests/seedance-2-pricing.test.ts',
-]);
+const approvedSeedance25GitlinkPaths = new Set<string>();
+const exposureMatchOrder = [
+  'path',
+  'index_content',
+  'index_symlink_target',
+  'index_symlink_resolved_content',
+  'worktree_content',
+  'worktree_symlink_target',
+  'worktree_symlink_resolved_content',
+  'gitlink',
+] as const;
+type ExposureMatch = (typeof exposureMatchOrder)[number];
 type ForbiddenIdentityExposure = {
   path: string;
-  matches: Array<'path' | 'content'>;
+  matches: ExposureMatch[];
 };
-
-function toRepositoryPath(repositoryRoot: string, path: string): string {
-  return relative(repositoryRoot, path).split(sep).join('/');
-}
-
-function listRepositoryCandidatePaths(repositoryRoot: string): string[] {
-  return execFileSync(
-    'git',
-    ['ls-files', '--cached', '--others', '--exclude-standard', '-z'],
-    {
-      cwd: repositoryRoot,
-      encoding: 'utf8',
-      maxBuffer: 10 * 1024 * 1024,
-    },
-  )
-    .split('\0')
-    .filter(Boolean)
-    .sort();
-}
-
-function isTextLike(buffer: Buffer): boolean {
-  if (buffer.length === 0) return true;
-  if (buffer.includes(0)) return false;
-  const sample = buffer.subarray(0, Math.min(buffer.length, 8192));
-  let controlBytes = 0;
-  for (const byte of sample) {
-    const isTextWhitespace = byte === 9 || byte === 10 || byte === 13;
-    if ((byte < 32 && !isTextWhitespace) || byte === 127) controlBytes += 1;
-  }
-  return controlBytes / sample.length < 0.03;
-}
-
-function findForbiddenSeedance25Exposures(
-  repositoryRoot: string,
-  allowedPaths: ReadonlySet<string> = allowedSeedance25Paths,
-): ForbiddenIdentityExposure[] {
-  return listRepositoryCandidatePaths(repositoryRoot).flatMap((candidatePath) => {
-    if (allowedPaths.has(candidatePath)) return [];
-    const matches: Array<'path' | 'content'> = [];
-    if (forbiddenRuntimeIdentity.test(candidatePath)) matches.push('path');
-
-    const absolutePath = join(repositoryRoot, candidatePath);
-    if (existsSync(absolutePath) && lstatSync(absolutePath).isFile()) {
-      const buffer = readFileSync(absolutePath);
-      if (
-        isTextLike(buffer) &&
-        forbiddenRuntimeIdentity.test(buffer.toString('utf8'))
-      ) {
-        matches.push('content');
-      }
-    }
-
-    return matches.length === 0
-      ? []
-      : [
-          {
-            path: toRepositoryPath(repositoryRoot, absolutePath),
-            matches,
-          },
-        ];
-  });
-}
+type GitIndexEntry = {
+  mode: string;
+  objectId: string;
+  stage: number;
+  path: string;
+};
+type GitRepositorySnapshot = {
+  candidatePaths: string[];
+  candidatePathSet: ReadonlySet<string>;
+  indexEntriesByPath: Map<string, GitIndexEntry[]>;
+  indexBlobs: Map<string, Buffer>;
+};
 ```
 
-The Git candidate list includes cached/tracked and untracked non-ignored files,
-so it covers `frontend/.env.local.example`, `data/benchmarks/`, and future
-model/provider/configuration surfaces without reading ignored local secret
-files. Every non-allowlisted candidate path is checked, then text-like file
-content is checked after true binary files are excluded.
+Implement the repository snapshot and scanner with these exact semantics:
 
-Append:
+- Parse `git ls-files --stage -z` into deterministic `GitIndexEntry` records.
+  Preserve every index stage and classify by mode instead of relying on
+  worktree `lstat`.
+- Read unique mode `100xxx` and `120000` objects with one
+  `git cat-file --batch` invocation. Keep blob bytes internal; no assertion or
+  result may expose matched content.
+- Union indexed paths with `git ls-files --others --exclude-standard -z`.
+  Ignored untracked files remain outside the candidate set and must never be
+  read.
+- Scan every non-allowlisted candidate path. Scan indexed regular-file blobs
+  and the current worktree regular file independently, so staged-safe /
+  worktree-forbidden, staged-forbidden / worktree-safe, and deleted-worktree
+  states are all explicit.
+- For mode `120000`, scan the target text, resolve only repository-internal
+  targets, and recursively scan the indexed target on behalf of the generic
+  link path. For the current worktree link, scan `readlink` text and the
+  resolved regular target only when that target is itself in the tracked or
+  untracked-nonignored candidate set. The target allowlist never exempts a
+  non-allowlisted link.
+- For mode `160000`, emit `gitlink` unless the exact link path appears in the
+  distinct `approvedSeedance25GitlinkPaths`. There is no current approval.
+  Any other unsupported index mode fails closed.
+- Keep binary filtering for regular blobs/files, resolve symlink cycles and
+  missing links safely, normalize repository-relative paths, and sort paths
+  and match kinds deterministically.
+- Return only `{ path, matches }`, where `matches` contains the labels in
+  `exposureMatchOrder`. Never return a matched line, blob, symlink target, or
+  secret value.
+
+Add the complete packet snapshot. `Verification commands` belongs inside
+`approvedLaunchPacketSections` with the exact fenced body below; compose the
+title, every section, ordering, whitespace, and final newline into one
+approved packet:
 
 ```ts
-test('Seedance 2.5 launch documentation records evidence and publication gates', () => {
-  assert.equal(existsSync(launchPacketPath), true);
-  assert.equal(existsSync(engineStubPath), true);
-  const packet = readFileSync(launchPacketPath, 'utf8');
-  const stub = readFileSync(engineStubPath, 'utf8');
-  assert.match(packet, /## Current state/);
-  assert.match(packet, /## Dreamina-announced product-surface claims/);
-  assert.match(packet, /## BytePlus prelaunch marketing evidence/);
-  assert.match(packet, /## Official BytePlus API evidence required/);
-  assert.match(packet, /## Legal and commercial clearance required/);
-  assert.match(packet, /## Promotion state machine/);
-  assert.match(packet, /Hidden execution[\s\S]*Admin canary[\s\S]*Public noindex[\s\S]*Public indexed/);
-  assert.match(packet, /pnpm model:registry:check/);
-  assert.match(packet, /https:\/\/www\.byteplus\.com\/en\/contact-us\/ai-seedance2-5-official/);
-  assert.match(packet, /Specific_Terms_for_the_BytePlus_Video_Generation_Model_Services/);
-  assert.match(packet, /\/docs\/ModelArk\/2353368/);
+  'Verification commands': `\`\`\`bash
+pnpm model:registry:generate
+pnpm engine:catalog
+pnpm model:generate:write
+pnpm model:registry:check
+pnpm model:check
+pnpm models:audit
+pnpm pricing:baseline
+pnpm pricing:public-baseline
+pnpm pricing:audit
+npm --prefix frontend run lint
+npm run lint:exposure
+pnpm --prefix frontend exec tsc --noEmit --pretty false
+git diff --check
+\`\`\``,
+} as const;
+const approvedLaunchPacket = `# Seedance 2.5 launch packet
+
+${Object.entries(approvedLaunchPacketSections)
+  .map(([heading, body]) => `## ${heading}\n\n${body}`)
+  .join('\n\n')}
+`;
+
+function assertApprovedLaunchPacket(packet: string) {
+  assert.equal(
+    packet,
+    approvedLaunchPacket,
+    'packet must match the complete approved launch packet',
+  );
   assert.doesNotMatch(packet, /26\s*%/);
-  assert.match(stub, /documentationOnly: true/);
-  assert.match(stub, /runtimeEntryAllowed: false/);
-  assert.doesNotMatch(stub, /RawFalEngineEntry/);
-  assert.doesNotMatch(stub, /dreamina-seedance[-_. ]?2[-_. ]?5/i);
-  assert.doesNotMatch(stub, /unitPrice|priceUsd|costPer/i);
+  assert.doesNotMatch(
+    packet,
+    /(?:[$€£]\s*\d|\d+(?:[.,]\d+)?\s*(?:USD|EUR|GBP|%|credits?\s*(?:per|\/)))/i,
+  );
+}
+
+test('Seedance 2.5 packet contract rejects verification command omissions', () => {
+  const packet = readFileSync(launchPacketPath, 'utf8');
+  const incompletePacket = packet.replace('pnpm pricing:audit\n', '');
+  assert.notEqual(incompletePacket, packet);
+  assert.throws(
+    () => assertApprovedLaunchPacket(incompletePacket),
+    /complete approved launch packet/,
+  );
 });
+```
 
-test('Seedance 2.5 exposure scan catches path-only routes and provider or benchmark content', () => {
-  const fixtureRoot = mkdtempSync(join(tmpdir(), 'seedance-2-5-exposure-'));
-  const writeFixture = (path: string, content: string | Uint8Array) => {
-    const target = join(fixtureRoot, path);
-    mkdirSync(dirname(target), { recursive: true });
-    writeFileSync(target, content);
-  };
+The synthetic
+`Seedance 2.5 exposure scan reconciles index and worktree states` fixture must
+initialize and commit `.gitignore`, then create all of these independent
+regressions before running the scanner:
 
-  try {
-    writeFixture('.gitignore', 'frontend/.env.local\n');
-    writeFixture(
-      'data/benchmarks/engine-scores.v1.json',
-      '{"engine":"seedance.2.5"}\n',
-    );
-    writeFixture(
-      'docs/model-launch/seedance-2-5.md',
-      '# Allowed Seedance 2.5 packet\n',
-    );
-    writeFixture(
-      'frontend/.env.local.example',
-      'BYTEPLUS_SEEDANCE_NEXT_MODEL=dreamina-seedance_2_5\n',
-    );
-    writeFixture(
-      'frontend/.env.local',
-      'IGNORED_LOCAL_PLACEHOLDER=seedance-2-5\n',
-    );
-    writeFixture(
-      'frontend/app/models/seedance-2-5/page.tsx',
-      "export { default } from '../generic/page';\n",
-    );
-    writeFixture(
-      'frontend/public/provider-cache.bin',
-      Buffer.concat([Buffer.from([0, 1, 2]), Buffer.from('seedance-2-5')]),
-    );
+- tracked regular content present in both index and worktree;
+- safe indexed content changed to forbidden worktree content;
+- forbidden indexed content changed to safe worktree content;
+- forbidden indexed content deleted from the worktree;
+- an untracked path-only route;
+- a generic tracked symlink to the allowlisted
+  `docs/model-launch/seedance-2-5.md`;
+- a tracked generic symlink to ignored `frontend/.env.local`, which must not
+  leak or appear in results;
+- a mode `160000` generic provider gitlink;
+- a true binary containing identity bytes, which remains excluded.
 
-    execFileSync('git', ['init', '-q'], { cwd: fixtureRoot, stdio: 'ignore' });
-    execFileSync(
-      'git',
-      [
-        'add',
-        '--',
-        '.gitignore',
-        'data/benchmarks/engine-scores.v1.json',
-        'docs/model-launch/seedance-2-5.md',
-        'frontend/.env.local.example',
-        'frontend/public/provider-cache.bin',
-      ],
-      { cwd: fixtureRoot, stdio: 'ignore' },
-    );
+Assert the exact eight result paths and exact match-kind arrays. Keep the real
+repository assertion:
 
-    assert.deepEqual(
-      findForbiddenSeedance25Exposures(
-        fixtureRoot,
-        new Set(['docs/model-launch/seedance-2-5.md']),
-      ),
-      [
-        {
-          path: 'data/benchmarks/engine-scores.v1.json',
-          matches: ['content'],
-        },
-        {
-          path: 'frontend/.env.local.example',
-          matches: ['content'],
-        },
-        {
-          path: 'frontend/app/models/seedance-2-5/page.tsx',
-          matches: ['path'],
-        },
-      ],
-    );
-  } finally {
-    rmSync(fixtureRoot, { recursive: true, force: true });
-  }
-});
-
+```ts
 test('Seedance 2.5 is absent from runtime and publication sources', () => {
   assert.deepEqual(findForbiddenSeedance25Exposures(root), []);
 });
 ```
+
+For strict TDD, add the symlink/divergence/deletion/gitlink fixture expectations
+before replacing the prior worktree-only scanner, observe the regression test
+fail, then implement the mode-aware snapshot. Add the ignored-secret symlink
+before its candidate-set guard and observe that privacy regression fail. Add
+the packet-command mutation before composing the complete packet snapshot and
+observe that mutation test fail.
 
 - [ ] **Step 2: Run the extended test and verify the red state**
 
@@ -852,7 +807,13 @@ Run:
 pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/seedance-2-5-readiness.test.ts
 ```
 
-Expected: the localized and runtime-absence tests PASS; the documentation test FAILS because the dry-run created no packet or stub.
+Expected in the original Task 2 sequence: the localized and runtime-absence
+tests PASS; the documentation test FAILS because the dry-run created no packet
+or stub. In the round-two regression sequence against the prior scanner, the
+synthetic scanner test FAILS because index/worktree divergence, a deleted
+indexed file, the generic symlink, and the gitlink are missing. The privacy
+variant FAILS because the ignored secret target is read, and the packet
+mutation FAILS because an omitted verification command is accepted.
 
 - [ ] **Step 3: Create the documentation-only engine evidence stub**
 
@@ -912,14 +873,23 @@ Set `docs/model-launch/seedance-2-5.md` to:
 - MaxVideoAI generation availability: unavailable
 - BytePlus ModelArk API availability: unconfirmed
 - Customer and provider pricing: unconfirmed
+- MaxVideoAI launch commitment: none
 
-The localized files in `docs/model-launch/seedance-2-5/` are unpublished launch drafts. They are not a live generation offer. Move them to `content/models/{en,fr,es}/` only when a factual engine and canonical registry entry exist.
+No MaxVideoAI launch is committed. Any future integration depends on official
+BytePlus API evidence, successful technical validation, and the required legal
+and commercial clearances.
+
+The localized files in `docs/model-launch/seedance-2-5/` are unpublished
+launch drafts. They are not a live generation offer. Move them to
+`content/models/{en,fr,es}/` only when a factual engine and canonical registry
+entry exist.
 
 ## Dreamina-announced product-surface claims
 
 Official source: https://dreamina.capcut.com/seedance/seedance-2-5
 
-Checked on 2026-07-26, Dreamina labels Seedance 2.5 as coming soon and states that its product surface is designed to offer:
+Checked on 2026-07-26, Dreamina labels Seedance 2.5 as coming soon and states
+that its product surface is designed to offer:
 
 - 4K output
 - standard video generation up to 30 seconds
@@ -928,7 +898,9 @@ Checked on 2026-07-26, Dreamina labels Seedance 2.5 as coming soon and states th
 - reference-to-video control
 - precise editing of selected video regions
 
-These are attributed product-surface statements. They do not establish BytePlus ModelArk API availability, payloads, limits, regions, pricing, or release timing.
+These are attributed product-surface statements. They do not establish
+BytePlus ModelArk API availability, payloads, limits, regions, pricing, or
+release timing.
 
 The same Dreamina page also describes a generation workflow and free credits.
 That copy is internally mixed with the “coming soon” label, so this packet
@@ -946,9 +918,16 @@ prelaunch marketing evidence only: they do not establish a provider model ID,
 payload contract, executable limits, availability, entitlement, regions, or
 unit pricing.
 
+Any percentage discount shown on the sales page is promotional marketing
+evidence only. It must not be used as MaxVideoAI customer pricing or BytePlus
+ModelArk unit pricing.
+
 ## Official BytePlus API evidence required
 
-Record every item below from official BytePlus documentation before adding a runtime profile:
+No public BytePlus ModelArk Seedance 2.5 API contract was located as of 2026-07-26; access may still be private or sales-gated.
+
+Record every item below from official BytePlus documentation before adding a
+runtime profile:
 
 1. Canonical model ID, supported regions, entitlement, and release status.
 2. Supported input modes, payload roles, reference ordering, and anchor syntax.
@@ -958,7 +937,8 @@ Record every item below from official BytePlus documentation before adding a run
 6. Concurrency, RPM, quota, and service-tier limits.
 7. Vendor pricing units, input-type distinctions, failed-task charging, cancellation, and refund behavior.
 
-Until every item is recorded, do not add a provider profile, engine catalog entry, registry entry, customer price, or generation CTA.
+Until every item is recorded, do not add a provider profile, engine catalog
+entry, registry entry, customer price, or generation CTA.
 
 ## Legal and commercial clearance required
 
@@ -986,18 +966,22 @@ or sales-gated access does not satisfy it.
 ### 2. Admin canary
 
 - Enable authenticated admins only.
-- Verify submission, polling, storage copying, expiration, moderation errors, usage accounting, cancellation, and refunds.
+- Verify submission, polling, storage copying, expiration, moderation errors,
+  usage accounting, cancellation, and refunds.
 - Run the fixed quality and cost benchmark suite.
 
 ### 3. Public noindex
 
 - Publish the model route with `indexable=false`.
-- Keep sitemap, pricing, comparison, examples, and broad app discovery disabled until each prerequisite passes.
-- Use limited-availability messaging only when generation access is intentionally restricted.
+- Keep sitemap, pricing, comparison, examples, and broad app discovery disabled
+  until each prerequisite passes.
+- Use limited-availability messaging only when generation access is
+  intentionally restricted.
 
 ### 4. Public indexed
 
-- Enable app, pricing, sitemap, examples, comparisons, and indexation independently in the canonical registry.
+- Enable app, pricing, sitemap, examples, comparisons, and indexation
+  independently in the canonical registry.
 - Keep Seedance 2.0 available unless a separate retirement decision is approved.
 
 ## Verification commands
@@ -1027,8 +1011,9 @@ Run:
 pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/seedance-2-5-readiness.test.ts
 ```
 
-Expected: PASS with all four tests green, including the synthetic path/content
-regression and the repository-wide absence boundary.
+Expected: PASS with all five tests green, including the complete-packet
+mutation guard, the synthetic index/worktree/symlink/gitlink regression, and
+the repository-wide absence boundary.
 
 - [ ] **Step 6: Commit the evidence packet and persistent boundary**
 
@@ -1069,8 +1054,10 @@ pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
 ```
 
 Expected: the repository-wide Git candidate scan exits 0 after checking every
-non-allowlisted path and every text-like tracked/untracked non-ignored file,
-including the provider environment template and benchmark data.
+non-allowlisted path, every indexed regular/symlink blob, every current
+tracked/untracked non-ignored worktree candidate, and every unapproved gitlink,
+including the provider environment template and benchmark data. Ignored
+untracked secrets are neither read nor reported.
 
 - [ ] **Step 4: Run model, registry, pricing, and repository guards**
 
