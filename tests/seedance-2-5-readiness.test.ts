@@ -1,5 +1,10 @@
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import {
+  existsSync,
+  readFileSync,
+  readdirSync,
+  statSync,
+} from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
 
@@ -14,6 +19,165 @@ const overlayPaths = {
   fr: join(root, 'docs/model-launch/seedance-2-5/fr.overlay.json'),
   es: join(root, 'docs/model-launch/seedance-2-5/es.overlay.json'),
 } as const;
+const launchPacketPath = join(root, 'docs/model-launch/seedance-2-5.md');
+const engineStubPath = join(root, 'docs/model-launch/seedance-2-5.engine.stub.ts');
+const runtimeProjectionPaths = [
+  'frontend/config/model-registry.json',
+  'frontend/config/model-runtime.json',
+  'frontend/config/engine-catalog.json',
+  'frontend/config/model-roster.json',
+  'docs/model-roster.json',
+  'docs/model-roster.csv',
+  'docs/model-roster-report.md',
+].map((path) => join(root, path));
+const runtimeSourceRoots = [
+  join(root, 'frontend/app'),
+  join(root, 'frontend/components'),
+  join(root, 'frontend/config'),
+  join(root, 'frontend/content'),
+  join(root, 'frontend/fixtures'),
+  join(root, 'frontend/hooks'),
+  join(root, 'frontend/i18n'),
+  join(root, 'frontend/lib'),
+  join(root, 'frontend/messages'),
+  join(root, 'frontend/pages'),
+  join(root, 'frontend/public'),
+  join(root, 'frontend/scripts'),
+  join(root, 'frontend/server'),
+  join(root, 'frontend/src'),
+  join(root, 'frontend/types'),
+  join(root, 'content'),
+  join(root, 'fixtures'),
+  join(root, 'packages/pricing'),
+];
+const forbiddenRuntimeIdentity = /seedance[-_. ]?2[-_. ]?5/i;
+const approvedLaunchPacketSections = {
+  'Current state': `- Prepared on: 2026-07-26
+- Future source template: \`seedance-2-0\`
+- Canonical candidate ID: \`seedance-2-5\`
+- Family: \`seedance\`
+- Runtime status: absent
+- Registry status: absent
+- Public route: absent
+- MaxVideoAI generation availability: unavailable
+- BytePlus ModelArk API availability: unconfirmed
+- Customer and provider pricing: unconfirmed
+- MaxVideoAI launch commitment: none
+
+No MaxVideoAI launch is committed. Any future integration depends on official
+BytePlus API evidence, successful technical validation, and the required legal
+and commercial clearances.
+
+The localized files in \`docs/model-launch/seedance-2-5/\` are unpublished
+launch drafts. They are not a live generation offer. Move them to
+\`content/models/{en,fr,es}/\` only when a factual engine and canonical registry
+entry exist.`,
+  'Dreamina-announced product-surface claims': `Official source: https://dreamina.capcut.com/seedance/seedance-2-5
+
+Checked on 2026-07-26, Dreamina labels Seedance 2.5 as coming soon and states
+that its product surface is designed to offer:
+
+- 4K output
+- standard video generation up to 30 seconds
+- beta long-video mode up to 180 seconds
+- up to 50 multimodal inputs
+- reference-to-video control
+- precise editing of selected video regions
+
+These are attributed product-surface statements. They do not establish
+BytePlus ModelArk API availability, payloads, limits, regions, pricing, or
+release timing.
+
+The same Dreamina page also describes a generation workflow and free credits.
+That copy is internally mixed with the “coming soon” label, so this packet
+records the label as a Dreamina observation rather than inferring product or
+API availability.`,
+  'BytePlus prelaunch marketing evidence': `Official sales page: https://www.byteplus.com/en/contact-us/ai-seedance2-5-official
+
+Checked on 2026-07-26, BytePlus also labels Seedance 2.5 as coming soon and
+mentions 30-second generation, up to 50 references, and editable output. This
+is a sales/contact page, not ModelArk API documentation. Its statements are
+prelaunch marketing evidence only: they do not establish a provider model ID,
+payload contract, executable limits, availability, entitlement, regions, or
+unit pricing.
+
+Any percentage discount shown on the sales page is promotional marketing
+evidence only. It must not be used as MaxVideoAI customer pricing or BytePlus
+ModelArk unit pricing.`,
+  'Official BytePlus API evidence required': `No public BytePlus ModelArk Seedance 2.5 API contract was located as of 2026-07-26; access may still be private or sales-gated.
+
+Record every item below from official BytePlus documentation before adding a
+runtime profile:
+
+1. Canonical model ID, supported regions, entitlement, and release status.
+2. Supported input modes, payload roles, reference ordering, and anchor syntax.
+3. Duration, resolution, aspect-ratio, FPS, generated-audio, editing, and extension behavior.
+4. Combined and per-media reference limits, formats, file sizes, and media durations.
+5. Task creation, polling, webhook, output, expiration, usage, moderation, and error schemas.
+6. Concurrency, RPM, quota, and service-tier limits.
+7. Vendor pricing units, input-type distinctions, failed-task charging, cancellation, and refund behavior.
+
+Until every item is recorded, do not add a provider profile, engine catalog
+entry, registry entry, customer price, or generation CTA.`,
+  'Legal and commercial clearance required': `Before any public launch, obtain written confirmation that MaxVideoAI may
+integrate and redistribute the service and use the relevant BytePlus and
+Seedance marks. Have counsel review both official documents:
+
+- https://docs.byteplus.com/en/docs/modelark/Specific_Terms_for_the_BytePlus_Video_Generation_Model_Services
+- https://docs.byteplus.com/en/docs/ModelArk/2353368
+
+Treat this as a publication gate, independent of technical readiness. Private
+or sales-gated access does not satisfy it.`,
+  'Promotion state machine': `### 1. Hidden execution
+
+- Add a factual raw engine and canonical registry entry.
+- Keep every publication field false.
+- Default the engine to disabled and admin-only.
+- Configure the real provider model ID through the provider environment layer.
+- Record written integration, redistribution, and trademark clearance before
+  advancing beyond internal evaluation.
+
+### 2. Admin canary
+
+- Enable authenticated admins only.
+- Verify submission, polling, storage copying, expiration, moderation errors,
+  usage accounting, cancellation, and refunds.
+- Run the fixed quality and cost benchmark suite.
+
+### 3. Public noindex
+
+- Publish the model route with \`indexable=false\`.
+- Keep sitemap, pricing, comparison, examples, and broad app discovery disabled
+  until each prerequisite passes.
+- Use limited-availability messaging only when generation access is
+  intentionally restricted.
+
+### 4. Public indexed
+
+- Enable app, pricing, sitemap, examples, comparisons, and indexation
+  independently in the canonical registry.
+- Keep Seedance 2.0 available unless a separate retirement decision is approved.`,
+} as const;
+const requiredOfficialApiFacts = [
+  'canonical BytePlus model ID and supported regions',
+  'entitlement and release status',
+  'supported input modes and payload roles',
+  'duration, resolution, aspect-ratio, FPS, and audio options',
+  'combined and per-media reference limits, formats, sizes, and durations',
+  'prompt and reference anchor syntax plus ordering rules',
+  'editing and extension semantics',
+  'task status, webhook, output, expiration, and usage schemas',
+  'moderation and provider error codes',
+  'concurrency, RPM, quotas, and service tiers',
+  'vendor pricing units, failure charging, and refund behavior',
+  'written integration, redistribution, and trademark clearance',
+] as const;
+const promotionOrder = [
+  'hidden_execution',
+  'admin_canary',
+  'public_noindex',
+  'public_indexed',
+] as const;
 const approvedReaderCopy = {
   en: {
     seo: {
@@ -134,6 +298,41 @@ const unavailableCopy = {
     'Seedance 2.5 n’est pas encore disponible pour générer des vidéos sur MaxVideoAI.',
   es: 'Seedance 2.5 todavía no está disponible para generar vídeos en MaxVideoAI.',
 } as const;
+
+function listRuntimeSourceFiles(directory: string): string[] {
+  return readdirSync(directory)
+    .sort()
+    .flatMap((name) => {
+      const path = join(directory, name);
+      if (statSync(path).isDirectory()) return listRuntimeSourceFiles(path);
+      return /\.(?:c?js|html|mjs|json|md|mdx|svg|ts|tsx|txt|xml|ya?ml)$/.test(path)
+        ? [path]
+        : [];
+    });
+}
+
+function readMarkdownSection(markdown: string, heading: string): string {
+  const marker = `## ${heading}\n`;
+  const start = markdown.indexOf(marker);
+  assert.notEqual(start, -1, `missing ${marker.trim()}`);
+  const bodyStart = start + marker.length;
+  const nextHeading = markdown.indexOf('\n## ', bodyStart);
+  return markdown
+    .slice(bodyStart, nextHeading === -1 ? markdown.length : nextHeading)
+    .trim();
+}
+
+function quotedArrayValues(source: string, property: string): string[] {
+  const propertyStart = source.indexOf(`${property}: [`);
+  assert.notEqual(propertyStart, -1, `missing ${property}`);
+  const arrayStart = source.indexOf('[', propertyStart);
+  const arrayEnd = source.indexOf(']', arrayStart);
+  assert.notEqual(arrayEnd, -1, `unterminated ${property}`);
+  return Array.from(
+    source.slice(arrayStart, arrayEnd).matchAll(/'([^']+)'/g),
+    (match) => match[1],
+  );
+}
 
 function asRecord(value: unknown, path: string): Record<string, unknown> {
   assert.equal(
@@ -317,5 +516,60 @@ test('Seedance 2.5 launch overlays are safe and structurally canonical in EN, FR
     assert.equal(Object.hasOwn(overlay, 'faqTitle'), false);
     assert.doesNotMatch(serialized, /dreamina-seedance[-_. ]?2[-_. ]?5/i);
     assert.doesNotMatch(serialized, /\/app\?engine=seedance[-_. ]?2[-_. ]?5/i);
+  }
+});
+
+test('Seedance 2.5 launch documentation records evidence and publication gates', () => {
+  assert.equal(existsSync(launchPacketPath), true, 'launch packet is required');
+  assert.equal(existsSync(engineStubPath), true, 'engine evidence stub is required');
+  const packet = readFileSync(launchPacketPath, 'utf8');
+  const stub = readFileSync(engineStubPath, 'utf8');
+
+  assert.equal(packet.startsWith('# Seedance 2.5 launch packet\n'), true);
+  assert.deepEqual(
+    Array.from(packet.matchAll(/^## (.+)$/gm), (match) => match[1]),
+    [
+      ...Object.keys(approvedLaunchPacketSections),
+      'Verification commands',
+    ],
+  );
+  for (const [heading, approvedSection] of Object.entries(
+    approvedLaunchPacketSections,
+  )) {
+    assert.equal(
+      readMarkdownSection(packet, heading),
+      approvedSection,
+      `${heading} must retain the approved launch-safety semantics`,
+    );
+  }
+  assert.match(packet, /pnpm model:registry:check/);
+  assert.doesNotMatch(packet, /26\s*%/);
+  assert.doesNotMatch(
+    packet,
+    /(?:[$€£]\s*\d|\d+(?:[.,]\d+)?\s*(?:USD|EUR|GBP|%|credits?\s*(?:per|\/)))/i,
+  );
+
+  assert.match(stub, /documentationOnly: true/);
+  assert.match(stub, /runtimeEntryAllowed: false/);
+  assert.deepEqual(
+    quotedArrayValues(stub, 'requiredOfficialApiFacts'),
+    requiredOfficialApiFacts,
+  );
+  assert.deepEqual(quotedArrayValues(stub, 'promotionOrder'), promotionOrder);
+  assert.doesNotMatch(stub, /RawFalEngineEntry/);
+  assert.doesNotMatch(stub, /dreamina-seedance[-_. ]?2[-_. ]?5/i);
+  assert.doesNotMatch(stub, /unitPrice|priceUsd|costPer/i);
+});
+
+test('Seedance 2.5 is absent from runtime and publication sources', () => {
+  const runtimePaths = Array.from(
+    new Set([
+      ...runtimeProjectionPaths,
+      ...runtimeSourceRoots.flatMap(listRuntimeSourceFiles),
+    ]),
+  ).sort();
+  for (const path of runtimePaths) {
+    const source = readFileSync(path, 'utf8');
+    assert.doesNotMatch(source, forbiddenRuntimeIdentity, path);
   }
 });
