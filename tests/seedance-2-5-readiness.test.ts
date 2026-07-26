@@ -1,11 +1,16 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import {
   existsSync,
+  lstatSync,
+  mkdirSync,
+  mkdtempSync,
   readFileSync,
-  readdirSync,
-  statSync,
+  rmSync,
+  writeFileSync,
 } from 'node:fs';
-import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { dirname, join, relative, sep } from 'node:path';
 import test from 'node:test';
 
 import {
@@ -21,36 +26,26 @@ const overlayPaths = {
 } as const;
 const launchPacketPath = join(root, 'docs/model-launch/seedance-2-5.md');
 const engineStubPath = join(root, 'docs/model-launch/seedance-2-5.engine.stub.ts');
-const runtimeProjectionPaths = [
-  'frontend/config/model-registry.json',
-  'frontend/config/model-runtime.json',
-  'frontend/config/engine-catalog.json',
-  'frontend/config/model-roster.json',
-  'docs/model-roster.json',
-  'docs/model-roster.csv',
-  'docs/model-roster-report.md',
-].map((path) => join(root, path));
-const runtimeSourceRoots = [
-  join(root, 'frontend/app'),
-  join(root, 'frontend/components'),
-  join(root, 'frontend/config'),
-  join(root, 'frontend/content'),
-  join(root, 'frontend/fixtures'),
-  join(root, 'frontend/hooks'),
-  join(root, 'frontend/i18n'),
-  join(root, 'frontend/lib'),
-  join(root, 'frontend/messages'),
-  join(root, 'frontend/pages'),
-  join(root, 'frontend/public'),
-  join(root, 'frontend/scripts'),
-  join(root, 'frontend/server'),
-  join(root, 'frontend/src'),
-  join(root, 'frontend/types'),
-  join(root, 'content'),
-  join(root, 'fixtures'),
-  join(root, 'packages/pricing'),
-];
 const forbiddenRuntimeIdentity = /seedance[-_. ]?2[-_. ]?5/i;
+const allowedSeedance25Paths = new Set([
+  'docs/model-launch/seedance-2-5.engine.stub.ts',
+  'docs/model-launch/seedance-2-5.md',
+  'docs/model-launch/seedance-2-5/en.overlay.json',
+  'docs/model-launch/seedance-2-5/es.overlay.json',
+  'docs/model-launch/seedance-2-5/fr.overlay.json',
+  'docs/superpowers/plans/2026-07-25-seedance-2-5-byteplus-fail-closed.md',
+  'docs/superpowers/plans/2026-07-25-seedance-2-5-hidden-launch-content.md',
+  'docs/superpowers/plans/2026-07-25-seedance-2-5-reference-budget.md',
+  'docs/superpowers/specs/2026-07-25-seedance-2-5-prelaunch-readiness-design.md',
+  'tests/byteplus-seedance-profiles.test.ts',
+  'tests/generate-byteplus-submission.test.ts',
+  'tests/seedance-2-5-readiness.test.ts',
+  'tests/seedance-2-pricing.test.ts',
+]);
+type ForbiddenIdentityExposure = {
+  path: string;
+  matches: Array<'path' | 'content'>;
+};
 const approvedLaunchPacketSections = {
   'Current state': `- Prepared on: 2026-07-26
 - Future source template: \`seedance-2-0\`
@@ -299,16 +294,66 @@ const unavailableCopy = {
   es: 'Seedance 2.5 todavía no está disponible para generar vídeos en MaxVideoAI.',
 } as const;
 
-function listRuntimeSourceFiles(directory: string): string[] {
-  return readdirSync(directory)
-    .sort()
-    .flatMap((name) => {
-      const path = join(directory, name);
-      if (statSync(path).isDirectory()) return listRuntimeSourceFiles(path);
-      return /\.(?:c?js|html|mjs|json|md|mdx|svg|ts|tsx|txt|xml|ya?ml)$/.test(path)
-        ? [path]
-        : [];
-    });
+function toRepositoryPath(repositoryRoot: string, path: string): string {
+  return relative(repositoryRoot, path).split(sep).join('/');
+}
+
+function listRepositoryCandidatePaths(repositoryRoot: string): string[] {
+  return execFileSync(
+    'git',
+    ['ls-files', '--cached', '--others', '--exclude-standard', '-z'],
+    {
+      cwd: repositoryRoot,
+      encoding: 'utf8',
+      maxBuffer: 10 * 1024 * 1024,
+    },
+  )
+    .split('\0')
+    .filter(Boolean)
+    .sort();
+}
+
+function isTextLike(buffer: Buffer): boolean {
+  if (buffer.length === 0) return true;
+  if (buffer.includes(0)) return false;
+  const sample = buffer.subarray(0, Math.min(buffer.length, 8192));
+  let controlBytes = 0;
+  for (const byte of sample) {
+    const isTextWhitespace = byte === 9 || byte === 10 || byte === 13;
+    if ((byte < 32 && !isTextWhitespace) || byte === 127) controlBytes += 1;
+  }
+  return controlBytes / sample.length < 0.03;
+}
+
+function findForbiddenSeedance25Exposures(
+  repositoryRoot: string,
+  allowedPaths: ReadonlySet<string> = allowedSeedance25Paths,
+): ForbiddenIdentityExposure[] {
+  return listRepositoryCandidatePaths(repositoryRoot).flatMap((candidatePath) => {
+    if (allowedPaths.has(candidatePath)) return [];
+    const matches: Array<'path' | 'content'> = [];
+    if (forbiddenRuntimeIdentity.test(candidatePath)) matches.push('path');
+
+    const absolutePath = join(repositoryRoot, candidatePath);
+    if (existsSync(absolutePath) && lstatSync(absolutePath).isFile()) {
+      const buffer = readFileSync(absolutePath);
+      if (
+        isTextLike(buffer) &&
+        forbiddenRuntimeIdentity.test(buffer.toString('utf8'))
+      ) {
+        matches.push('content');
+      }
+    }
+
+    return matches.length === 0
+      ? []
+      : [
+          {
+            path: toRepositoryPath(repositoryRoot, absolutePath),
+            matches,
+          },
+        ];
+  });
 }
 
 function readMarkdownSection(markdown: string, heading: string): string {
@@ -561,15 +606,81 @@ test('Seedance 2.5 launch documentation records evidence and publication gates',
   assert.doesNotMatch(stub, /unitPrice|priceUsd|costPer/i);
 });
 
-test('Seedance 2.5 is absent from runtime and publication sources', () => {
-  const runtimePaths = Array.from(
-    new Set([
-      ...runtimeProjectionPaths,
-      ...runtimeSourceRoots.flatMap(listRuntimeSourceFiles),
-    ]),
-  ).sort();
-  for (const path of runtimePaths) {
-    const source = readFileSync(path, 'utf8');
-    assert.doesNotMatch(source, forbiddenRuntimeIdentity, path);
+test('Seedance 2.5 exposure scan catches path-only routes and provider or benchmark content', () => {
+  const fixtureRoot = mkdtempSync(join(tmpdir(), 'seedance-2-5-exposure-'));
+  const writeFixture = (path: string, content: string | Uint8Array) => {
+    const target = join(fixtureRoot, path);
+    mkdirSync(dirname(target), { recursive: true });
+    writeFileSync(target, content);
+  };
+
+  try {
+    writeFixture('.gitignore', 'frontend/.env.local\n');
+    writeFixture(
+      'data/benchmarks/engine-scores.v1.json',
+      '{"engine":"seedance.2.5"}\n',
+    );
+    writeFixture(
+      'docs/model-launch/seedance-2-5.md',
+      '# Allowed Seedance 2.5 packet\n',
+    );
+    writeFixture(
+      'frontend/.env.local.example',
+      'BYTEPLUS_SEEDANCE_NEXT_MODEL=dreamina-seedance_2_5\n',
+    );
+    writeFixture(
+      'frontend/.env.local',
+      'IGNORED_LOCAL_PLACEHOLDER=seedance-2-5\n',
+    );
+    writeFixture(
+      'frontend/app/models/seedance-2-5/page.tsx',
+      "export { default } from '../generic/page';\n",
+    );
+    writeFixture(
+      'frontend/public/provider-cache.bin',
+      Buffer.concat([Buffer.from([0, 1, 2]), Buffer.from('seedance-2-5')]),
+    );
+
+    execFileSync('git', ['init', '-q'], { cwd: fixtureRoot, stdio: 'ignore' });
+    execFileSync(
+      'git',
+      [
+        'add',
+        '--',
+        '.gitignore',
+        'data/benchmarks/engine-scores.v1.json',
+        'docs/model-launch/seedance-2-5.md',
+        'frontend/.env.local.example',
+        'frontend/public/provider-cache.bin',
+      ],
+      { cwd: fixtureRoot, stdio: 'ignore' },
+    );
+
+    assert.deepEqual(
+      findForbiddenSeedance25Exposures(
+        fixtureRoot,
+        new Set(['docs/model-launch/seedance-2-5.md']),
+      ),
+      [
+        {
+          path: 'data/benchmarks/engine-scores.v1.json',
+          matches: ['content'],
+        },
+        {
+          path: 'frontend/.env.local.example',
+          matches: ['content'],
+        },
+        {
+          path: 'frontend/app/models/seedance-2-5/page.tsx',
+          matches: ['path'],
+        },
+      ],
+    );
+  } finally {
+    rmSync(fixtureRoot, { recursive: true, force: true });
   }
+});
+
+test('Seedance 2.5 is absent from runtime and publication sources', () => {
+  assert.deepEqual(findForbiddenSeedance25Exposures(root), []);
 });
