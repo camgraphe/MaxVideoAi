@@ -6,7 +6,7 @@
     "description": "Track Dreamina-announced product information and BytePlus API status for Seedance 2.5. Generation is not yet available on MaxVideoAI."
   },
   "overview": "Dreamina labels Seedance 2.5 as coming soon and describes 4K output, standard videos up to 30 seconds, a beta long-video mode up to 180 seconds, as many as 50 multimodal inputs, reference-to-video control, and precise editing of selected video regions on its product surface. Seedance 2.5 is not yet available for generation on MaxVideoAI.",
-  "pricingNotes": "MaxVideoAI API access, customer pricing, BytePlus pricing, executable limits, and launch timing are unconfirmed. No Seedance 2.0 rate is being reused for Seedance 2.5.",
+  "pricingNotes": "MaxVideoAI API access, customer pricing, BytePlus pricing, technical API limits, and launch timing are unconfirmed. No Seedance 2.0 rate is being reused for Seedance 2.5, and no launch is committed.",
   "hero": {
     "title": "Seedance 2.5 — launch status and Dreamina-announced information",
     "intro": "Dreamina currently labels Seedance 2.5 as coming soon. The capabilities summarized here are Dreamina product-surface statements, not a confirmed BytePlus ModelArk API contract. Seedance 2.5 is not yet available for generation on MaxVideoAI.",
@@ -17,7 +17,7 @@
     },
     "secondaryLinks": [
       {
-        "label": "View current Seedance examples",
+        "label": "View examples from available Seedance models",
         "href": "/examples/seedance"
       }
     ]
@@ -25,7 +25,7 @@
   "faqs": [
     {
       "q": "Can I generate with Seedance 2.5 on MaxVideoAI now?",
-      "a": "No. Seedance 2.5 is not yet available for generation on MaxVideoAI. It will only be enabled after BytePlus publishes an official API contract and the integration passes billing, reliability, safety, and output checks."
+      "a": "No. Seedance 2.5 is not yet available for generation on MaxVideoAI. No launch is committed. Any future MaxVideoAI integration would depend on official BytePlus API evidence, successful billing, reliability, safety, and output validation, and the required legal and commercial clearances."
     },
     {
       "q": "Are Dreamina’s announced features confirmed for the BytePlus API?",
