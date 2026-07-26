@@ -3,8 +3,12 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
 
+import { deriveGenerationAttachmentReferences } from '../frontend/app/api/generate/_lib/attachment-references';
 import { submitBytePlusGenerateTask } from '../frontend/app/api/generate/_lib/byteplus-submission';
 import type { PendingReceipt } from '../frontend/app/api/generate/_lib/initial-video-job';
+import { buildGenerateValidationPayload } from '../frontend/app/api/generate/_lib/validation-payload';
+import type { NormalizedAttachment } from '../frontend/app/api/generate/_lib/attachments';
+import type { EngineInputSchema } from '../frontend/types/engines';
 
 const root = process.cwd();
 const routePath = join(root, 'frontend/app/api/generate/route.ts');
@@ -251,6 +255,123 @@ test('BytePlus submission helper marks failed tasks, rolls back payments, and re
   } finally {
     console.warn = originalWarn;
   }
+});
+
+test('BytePlus I2V canonicalizes a direct image before validation and provider submission', async () => {
+  const directImageUrl = 'https://cdn.maxvideoai.com/direct-start.png';
+  const unselectedAttachmentUrl =
+    'https://cdn.maxvideoai.com/unselected-attachment.png';
+  const inputSchema = {
+    optional: [
+      { id: 'image_url', type: 'image', label: 'Start image', modes: ['i2v'] },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_url'],
+      modes: ['i2v'],
+      maxTotal: 1,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const attachments: NormalizedAttachment[] = [
+    {
+      name: 'attachment-start.png',
+      type: 'image/png',
+      size: 1200,
+      kind: 'image',
+      slotId: 'image_url',
+      url: unselectedAttachmentUrl,
+    },
+  ];
+  const references = deriveGenerationAttachmentReferences({
+    attachments,
+    engineId: 'seedance-2-0',
+    mode: 'i2v',
+    imageUrl: directImageUrl,
+    inputSchema,
+    isBytePlusV1a: true,
+  });
+  const validation = buildGenerateValidationPayload({
+    engineId: 'seedance-2-0',
+    mode: 'i2v',
+    prompt: 'Animate the direct image',
+    multiPrompt: null,
+    supportsResolution: false,
+    effectiveResolution: '720p',
+    supportsAspectRatio: false,
+    aspectRatio: '16:9',
+    audioEnabled: true,
+    isBytePlusV1a: true,
+    supportsDuration: true,
+    numFrames: null,
+    validationDuration: 8,
+    maxUploadedBytes: references.maxUploadedBytes,
+    resolvedFirstFrameUrl: references.resolvedFirstFrameUrl,
+    lastFrameUrl: references.lastFrameUrl,
+    normalizedReferenceImages: references.normalizedReferenceImages,
+    videoUrls: references.videoUrls,
+    audioUrls: references.audioUrls,
+    resolvedAudioUrl: references.resolvedAudioUrl,
+    sourceInputVideoUrl: references.sourceInputVideoUrl,
+    elements: null,
+    endImageUrl: null,
+    startImageUrl: references.startImageUrl,
+    isLumaRay2: false,
+    initialImageUrl: references.initialImageUrl,
+    inputSchema,
+    referenceValuesByField: references.referenceValuesByField,
+    referenceMediaItems: references.referenceMediaItems,
+    referenceProvenanceIssues: references.referenceProvenanceIssues,
+  });
+  assert.deepEqual(references.referenceValuesByField, {
+    image_url: [directImageUrl],
+  });
+  assert.deepEqual(references.referenceMediaItems, [
+    { fieldId: 'image_url', kind: 'image', url: directImageUrl },
+  ]);
+  assert.equal(validation.ok, true);
+
+  let providerCalls = 0;
+  let providerImageUrls: string[] = [];
+  let rollbacks = 0;
+  const result = await submitBytePlusGenerateTask({
+    ...baseParams,
+    mode: 'i2v',
+    initialImageUrl: references.initialImageUrl,
+    endImageUrl: null,
+    normalizedReferenceImages: [],
+    videoUrls: [],
+    resolvedAudioUrl: null,
+    audioUrls: [],
+    inputSchema,
+    referenceValuesByField: references.referenceValuesByField,
+    pendingReceipt,
+    deps: {
+      getBytePlusArkConfigFn: () => ({
+        seedanceModelId: 'model-public',
+        seedanceFastModelId: 'model-fast',
+      }),
+      getBytePlusModelArkClientFn: () => ({
+        createSeedanceFastTask: async (payload) => {
+          providerCalls += 1;
+          providerImageUrls = payload.content
+            .filter((item) => item.type === 'image_url')
+            .map((item) => item.image_url.url);
+          return { providerJobId: 'provider_direct_start', status: 'queued' };
+        },
+      }),
+      getBytePlusSeedanceAllowedResolutionsFn: () => ['720p'] as never,
+      getBytePlusSeedanceDurationOptionsFn: () => [8] as never,
+      queryFn: async () => undefined,
+      rollbackPendingPaymentFn: async () => {
+        rollbacks += 1;
+      },
+    },
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(providerCalls, 1);
+  assert.deepEqual(providerImageUrls, [directImageUrl]);
+  assert.equal(rollbacks, 0);
 });
 
 test('BytePlus submission budget overflow stops before provider access and rolls back', async () => {

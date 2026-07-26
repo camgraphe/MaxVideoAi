@@ -24,6 +24,8 @@ import {
 } from '../frontend/src/lib/sora.ts';
 import type { MaxVideoProviderElement } from '../frontend/src/lib/video-provider-elements.ts';
 import { buildBytePlusSeedancePayload } from '../frontend/src/server/video-providers/byteplus-modelark.ts';
+import { resolveKlingDirectSubmissionMediaInputs } from '../frontend/app/api/generate/_lib/kling-direct-submission.ts';
+import { buildKlingDirectPayload } from '../frontend/src/server/video-providers/kling-direct/payload.ts';
 import type { EngineInputSchema, Mode } from '../frontend/types/engines.ts';
 
 const root = process.cwd();
@@ -260,6 +262,7 @@ function buildFalMediaPipeline(params: FalMediaPipelineParams) {
     referenceImages: params.referenceImages ?? [],
     rawAudioUrl: params.rawAudioUrl ?? null,
     endImageUrl: params.endImageUrl ?? null,
+    isBytePlusV1a: params.isBytePlusV1a ?? false,
   };
   const references =
     deriveGenerationAttachmentReferences(derivationParams);
@@ -355,6 +358,7 @@ function buildFalMediaPipeline(params: FalMediaPipelineParams) {
     attachments,
     references,
     validation,
+    falPayload: falParts.falPayload,
     falRequest,
     capturedValidationContext,
   };
@@ -1041,6 +1045,54 @@ test('Sora I2V budgets the two distinct images that survive its real alias seria
   assert.equal(scenario.validation.body.value, 2);
 });
 
+test('Sora workspace same-image compatibility aliases consume one non-unique budget unit', () => {
+  const imageUrl = 'https://example.com/workspace-primary.png';
+  const inputSchema = {
+    optional: [
+      {
+        id: 'image_url',
+        type: 'image',
+        label: 'Image input',
+        modes: ['i2v'],
+      },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_url'],
+      modes: ['i2v'],
+      maxTotal: 1,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const soraRequest = {
+    variant: 'sora2',
+    mode: 'i2v',
+    prompt: 'Animate the uploaded workspace image',
+    duration: 4,
+    resolution: '720p',
+    aspect_ratio: '16:9',
+    image_url: imageUrl,
+  } satisfies SoraRequest;
+
+  const scenario = buildFalMediaPipeline({
+    engineId: 'sora-2',
+    defaultModel: 'fal-ai/sora-2/image-to-video',
+    mode: 'i2v',
+    inputSchema,
+    soraRequest,
+    attachments: [attachment('image', 'image_url', imageUrl)],
+  });
+
+  assert.deepEqual(scenario.references.referenceValuesByField, {
+    image_url: [imageUrl],
+  });
+  assert.deepEqual(scenario.references.referenceMediaItems, [
+    { fieldId: 'image_url', kind: 'image', url: imageUrl },
+  ]);
+  assert.equal(scenario.validation.ok, true);
+  assert.equal(scenario.falRequest.requestBody.image_url, imageUrl);
+  assert.equal(scenario.falRequest.requestBody.input_image, imageUrl);
+});
+
 test('Sora direct-only aliases are one logical medium and no-budget alias behavior is unchanged', () => {
   const soraRequest = {
     variant: 'sora2',
@@ -1266,6 +1318,72 @@ test('Kling O3 rejects an end frame when only a dropped direct start fallback ex
     scenario.falRequest.requestBody.end_image_url,
     'https://example.com/end.png'
   );
+});
+
+test('Kling O3 unified image_url attachment supplies the validated Fal and direct opening frame', () => {
+  const startImageUrl = 'https://example.com/unified-start.png';
+  const endImageUrl = 'https://example.com/unified-end.png';
+  const referenceImageUrl = 'https://example.com/reference.png';
+  const inputSchema = {
+    optional: [
+      { id: 'image_urls', type: 'image', label: 'References', modes: ['ref2v'] },
+      {
+        id: 'image_url',
+        type: 'image',
+        label: 'Start image',
+        modes: ['ref2v'],
+      },
+      {
+        id: 'end_image_url',
+        type: 'image',
+        label: 'End image',
+        modes: ['ref2v'],
+      },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_urls', 'image_url', 'end_image_url'],
+      modes: ['ref2v'],
+      maxTotal: 3,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const scenario = buildFalMediaPipeline({
+    engineId: 'kling-o3-pro',
+    defaultModel: 'fal-ai/kling-video/o3/pro/reference-to-video',
+    mode: 'ref2v',
+    inputSchema,
+    endImageUrl,
+    attachments: [
+      attachment('image', 'image_url', startImageUrl),
+      attachment('image', 'image_urls', referenceImageUrl),
+      attachment('image', 'end_image_url', endImageUrl),
+    ],
+  });
+
+  assert.equal(scenario.references.startImageUrl, startImageUrl);
+  assert.equal(scenario.validation.ok, true);
+  assert.equal(scenario.falRequest.requestBody.start_image_url, startImageUrl);
+  assert.equal(scenario.falRequest.requestBody.end_image_url, endImageUrl);
+
+  const directMedia = resolveKlingDirectSubmissionMediaInputs({
+    imageUrl: scenario.references.initialImageUrl,
+    falPayload: scenario.falPayload,
+  });
+  const directPayload = buildKlingDirectPayload({
+    engineId: 'kling-o3-pro',
+    jobId: 'job-kling-unified-opening',
+    mode: 'ref2v',
+    prompt: 'Use @Image1 as style guidance and animate between the frames',
+    durationSec: 5,
+    startImageUrl: directMedia.startImageUrl,
+    endImageUrl,
+    referenceImageUrls: directMedia.referenceImageUrls,
+  });
+  assert.deepEqual(directPayload.body.image_list, [
+    { image_url: referenceImageUrl },
+    { image_url: startImageUrl, type: 'first_frame' },
+    { image_url: endImageUrl, type: 'end_frame' },
+  ]);
 });
 
 test('BytePlus I2V accepts budgeted direct start and end images selected by its real payload', () => {

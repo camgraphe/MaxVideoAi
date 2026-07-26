@@ -28,6 +28,7 @@ type AttachmentReferenceParams = {
   rawAudioUrl?: string | null;
   endImageUrl?: string | null;
   inputSchema?: EngineInputSchema | null;
+  isBytePlusV1a?: boolean;
 };
 
 type AttachmentReferenceResult = {
@@ -97,6 +98,10 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
     trimString(params.soraImageUrl) ??
     trimString(params.imageUrl) ??
     trimString(params.image_url);
+  const bytePlusDirectPrimarySelected =
+    params.isBytePlusV1a === true &&
+    params.mode === 'i2v' &&
+    Boolean(directPrimaryImageUrl);
   const requestedPrimaryImageUrl =
     directPrimaryImageUrl ?? attachmentPrimaryImageUrl;
   const referenceImagesInput = Array.isArray(params.referenceImages)
@@ -171,6 +176,15 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
           url,
         });
       }
+      continue;
+    }
+    if (
+      attachment.kind === 'image' &&
+      bytePlusDirectPrimarySelected &&
+      (fieldId === 'image_url' ||
+        fieldId === 'input_image' ||
+        fieldId === 'image')
+    ) {
       continue;
     }
     if (!attachment.kind) {
@@ -286,7 +300,15 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
       : undefined;
   const resolvedFirstFrameUrl = params.mode === 'fl2v' ? firstFrameUrl ?? requestedPrimaryImageUrl : firstFrameUrl;
   const explicitStartImageUrl =
-    params.attachments.find((attachment) => attachment.slotId === 'start_image_url')?.url?.trim() ?? undefined;
+    params.attachments
+      .find(
+        (attachment) =>
+          attachment.slotId === 'start_image_url' ||
+          (params.engineId.startsWith('kling-o3') &&
+            params.mode === 'ref2v' &&
+            attachment.slotId === 'image_url')
+      )
+      ?.url?.trim() ?? undefined;
   const startImageUrl = explicitStartImageUrl;
   const sourceInputVideoUrl = videoUrls[0];
   const primaryImageSlotIds = ['image_url', 'input_image', 'image'] as const;
@@ -295,10 +317,21 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
       isSoraEngineId(params.engineId) && params.mode === 'i2v'
         ? (['image_url', 'input_image'] as const)
         : (['image_url'] as const);
-    const directImageIsFullyOverwritten = providerOverwriteSlots.every(
-      (slotId) => attachmentUrlsForSlots([slotId]).length > 0
-    );
-    if (!directImageIsFullyOverwritten) {
+    const directImageIsFullyOverwritten =
+      !bytePlusDirectPrimarySelected &&
+      providerOverwriteSlots.every(
+        (slotId) => attachmentUrlsForSlots([slotId]).length > 0
+      );
+    const directSoraImageAlreadyRepresented =
+      isSoraEngineId(params.engineId) &&
+      params.mode === 'i2v' &&
+      providerOverwriteSlots.some((slotId) =>
+        attachmentUrlsForSlots([slotId]).includes(directPrimaryImageUrl)
+      );
+    if (
+      !directImageIsFullyOverwritten &&
+      !directSoraImageAlreadyRepresented
+    ) {
       appendTypedReferenceValue(
         resolveDirectMediaFieldId(
           'image',
