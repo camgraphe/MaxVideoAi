@@ -218,12 +218,13 @@ export function buildBytePlusSeedancePayload(params: {
   const allowedModes = params.allowedModes ?? BYTEPLUS_SEEDANCE_MODES;
   const allowedAspectRatios =
     params.allowedAspectRatios ?? BYTEPLUS_SEEDANCE_ASPECT_RATIOS;
-  const allowedResolutions = params.allowedResolutions?.length ? params.allowedResolutions : BYTEPLUS_SEEDANCE_FAST_RESOLUTIONS;
-  const allowedDurationOptions = params.allowedDurationOptions?.length
-    ? params.allowedDurationOptions
-    : params.modelId.trim() === BYTEPLUS_SEEDANCE_MINI_DEFAULT_MODEL_ID
+  const allowedResolutions =
+    params.allowedResolutions ?? BYTEPLUS_SEEDANCE_FAST_RESOLUTIONS;
+  const allowedDurationOptions =
+    params.allowedDurationOptions ??
+    (params.modelId.trim() === BYTEPLUS_SEEDANCE_MINI_DEFAULT_MODEL_ID
       ? BYTEPLUS_SEEDANCE_MINI_DURATION_OPTIONS
-      : BYTEPLUS_SEEDANCE_DURATION_OPTIONS;
+      : BYTEPLUS_SEEDANCE_DURATION_OPTIONS);
   const requestedResolution = (typeof params.resolution === 'string' && params.resolution.trim()
     ? params.resolution.trim()
     : '720p') as Resolution;

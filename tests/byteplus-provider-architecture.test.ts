@@ -263,6 +263,24 @@ test('BytePlus payload respects explicit empty capabilities while omitted capabi
       error instanceof Error &&
       (error as Error & { code?: string }).code === 'BYTEPLUS_RATIO_UNSUPPORTED'
   );
+  assert.throws(
+    () => buildBytePlusSeedancePayload({ ...basePayload, allowedResolutions: [] }),
+    (error: unknown) =>
+      error instanceof Error &&
+      (error as Error & { code?: string }).code ===
+        'BYTEPLUS_RESOLUTION_UNSUPPORTED'
+  );
+  assert.throws(
+    () =>
+      buildBytePlusSeedancePayload({
+        ...basePayload,
+        allowedDurationOptions: [],
+      }),
+    (error: unknown) =>
+      error instanceof Error &&
+      (error as Error & { code?: string }).code ===
+        'BYTEPLUS_DURATION_UNSUPPORTED'
+  );
 
   const payload = buildBytePlusSeedancePayload(basePayload);
   assert.equal(payload.resolution, '720p');
