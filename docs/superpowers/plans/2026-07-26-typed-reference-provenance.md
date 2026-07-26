@@ -19,7 +19,7 @@
 - Reject malformed provenance before `resolveGenerateBillingPreflight`, `createAtomicInitialVideoJob`, and every provider submission path.
 - Keep BytePlus payload provenance validation as defense in depth.
 - Do not attach `referenceBudget` to a current engine.
-- Do not add a Seedance 2.5 engine, provider profile/model ID, pricing row, registry entry, route, CTA, sitemap entry, or any other activation surface.
+- Do not add any unpublished engine, provider profile/model ID, pricing row, registry entry, route, CTA, sitemap entry, or other activation surface.
 - Keep the correction limited to server reference derivation/validation plumbing and its focused tests.
 
 ---
