@@ -55,6 +55,30 @@ test('generate route delegates validation payload and required input checks', ()
   assert.ok(lineCount <= 1585, `/api/generate route should stay below 1585 lines after validation payload extraction, got ${lineCount}`);
 });
 
+test('generate route evaluates validation rejection before billing, job reservation, and provider submission', () => {
+  const validationRejectionIndex = routeSource.indexOf(
+    'if (!validationPayloadResult.ok)'
+  );
+  const billingPreflightIndex = routeSource.indexOf(
+    'const billingPreflight = await resolveGenerateBillingPreflight'
+  );
+  const initialJobIndex = routeSource.indexOf(
+    'const initialJobState = await createAtomicInitialVideoJob'
+  );
+  const bytePlusSubmissionIndex = routeSource.indexOf(
+    'const bytePlusSubmission = await submitBytePlusGenerateTask'
+  );
+  const providerSubmissionIndex = routeSource.indexOf(
+    'const providerSubmission = await submitGenerateProviderTask'
+  );
+
+  assert.ok(validationRejectionIndex >= 0);
+  assert.ok(validationRejectionIndex < billingPreflightIndex);
+  assert.ok(billingPreflightIndex < initialJobIndex);
+  assert.ok(initialJobIndex < bytePlusSubmissionIndex);
+  assert.ok(initialJobIndex < providerSubmissionIndex);
+});
+
 test('validation payload helper exposes the route contract', () => {
   assert.match(helperSource, /export type GenerateValidationPayloadResult/, 'GenerateValidationPayloadResult should be exported');
   assert.match(helperSource, /export function buildGenerateValidationPayload/, 'validation payload builder should be exported');

@@ -3,15 +3,85 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
 
+import { deriveGenerationAttachmentReferences } from '../frontend/app/api/generate/_lib/attachment-references.ts';
+import type { NormalizedAttachment } from '../frontend/app/api/generate/_lib/attachments.ts';
 import { validateModeMediaInputs } from '../frontend/app/api/generate/_lib/validate-media-inputs.ts';
 import { validateRequest } from '../frontend/app/api/generate/_lib/validate.ts';
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
+import type { EngineInputSchema } from '../frontend/types/engines.ts';
 
 const root = process.cwd();
 const validatePath = join(root, 'frontend/app/api/generate/_lib/validate.ts');
 const mediaInputsPath = join(root, 'frontend/app/api/generate/_lib/validate-media-inputs.ts');
 const typesPath = join(root, 'frontend/app/api/generate/_lib/validate-types.ts');
 const OK = { ok: true } as const;
+const budgetedRef2vSchema = {
+  optional: [
+    {
+      id: 'image_urls',
+      type: 'image',
+      label: 'References',
+      modes: ['ref2v'],
+    },
+    {
+      id: 'audio_urls',
+      type: 'audio',
+      label: 'Reference audio',
+      modes: ['v2v'],
+    },
+  ],
+  referenceBudget: {
+    fieldIds: ['image_urls'],
+    modes: ['ref2v'],
+    maxTotal: 1,
+    countUniqueUrls: true,
+  },
+} satisfies EngineInputSchema;
+
+function attachment(
+  kind: 'image' | 'video' | 'audio',
+  slotId: string,
+  url: string
+): NormalizedAttachment {
+  return {
+    name: `${kind}-asset`,
+    type: `${kind}/test`,
+    size: 1,
+    kind,
+    slotId,
+    url,
+  };
+}
+
+function deriveAndValidateBudgetedRef2v(
+  extraAttachment: NormalizedAttachment
+) {
+  const references = deriveGenerationAttachmentReferences({
+    engineId: 'contract-test-engine',
+    mode: 'ref2v',
+    inputSchema: budgetedRef2vSchema,
+    referenceImages: [],
+    rawAudioUrl: null,
+    attachments: [
+      attachment('image', 'image_urls', 'valid-image'),
+      extraAttachment,
+    ],
+  });
+  return {
+    references,
+    validation: validateModeMediaInputs({
+      engineId: 'contract-test-engine',
+      normalizedMode: 'ref2v',
+      inputSchema: budgetedRef2vSchema,
+      referenceValuesByField: references.referenceValuesByField,
+      payload: {
+        image_urls: references.normalizedReferenceImages,
+        video_urls: references.videoUrls,
+        audio_urls: references.audioUrls,
+      },
+    }),
+  };
+}
 
 test('generate request validation delegates media mode rules', () => {
   assert.equal(existsSync(mediaInputsPath), true);
@@ -71,6 +141,105 @@ test('server aggregate validation uses original slot ids instead of projected ke
       value: 3,
     },
   });
+});
+
+test('server aggregate validation rejects provider video projected from an unknown attachment slot', () => {
+  const { references, validation } = deriveAndValidateBudgetedRef2v(
+    attachment('video', 'forged_video_slot', 'forged-video')
+  );
+
+  assert.deepEqual(references.videoUrls, ['forged-video']);
+  assert.deepEqual(validation, {
+    ok: false,
+    error: {
+      code: 'ENGINE_CONSTRAINT',
+      field: 'forged_video_slot',
+      message:
+        'Media input "forged_video_slot" is not supported for this engine mode',
+    },
+  });
+});
+
+test('server aggregate validation rejects provider audio projected from a mode-inactive attachment slot', () => {
+  const { references, validation } = deriveAndValidateBudgetedRef2v(
+    attachment('audio', 'audio_urls', 'inactive-audio')
+  );
+
+  assert.deepEqual(references.audioUrls, ['inactive-audio']);
+  assert.deepEqual(validation, {
+    ok: false,
+    error: {
+      code: 'ENGINE_CONSTRAINT',
+      field: 'audio_urls',
+      message: 'Media input "audio_urls" is not supported for this engine mode',
+    },
+  });
+});
+
+test('attachment slot provenance remains backward compatible without an aggregate budget', () => {
+  const result = validateModeMediaInputs({
+    engineId: 'contract-test-engine',
+    normalizedMode: 'ref2v',
+    inputSchema: {
+      optional: [
+        {
+          id: 'image_urls',
+          type: 'image',
+          label: 'References',
+          modes: ['ref2v'],
+        },
+      ],
+    },
+    referenceValuesByField: {
+      image_urls: ['valid-image'],
+      forged_video_slot: ['legacy-video'],
+    },
+    payload: {
+      image_urls: ['valid-image'],
+      video_urls: ['legacy-video'],
+    },
+  });
+
+  assert.deepEqual(result, OK);
+});
+
+test('active schema media outside the aggregate budget remains valid', () => {
+  const result = validateModeMediaInputs({
+    engineId: 'contract-test-engine',
+    normalizedMode: 'v2v',
+    inputSchema: {
+      optional: [
+        {
+          id: 'reference_image_urls',
+          type: 'image',
+          label: 'References',
+          modes: ['v2v'],
+        },
+        {
+          id: 'video_url',
+          type: 'video',
+          label: 'Source video',
+          modes: ['v2v'],
+        },
+      ],
+      referenceBudget: {
+        fieldIds: ['reference_image_urls'],
+        modes: ['v2v'],
+        maxTotal: 1,
+        countUniqueUrls: true,
+      },
+    },
+    referenceValuesByField: {
+      reference_image_urls: ['valid-image'],
+      video_url: ['source-video'],
+    },
+    payload: {
+      reference_image_urls: ['valid-image'],
+      video_url: 'source-video',
+    },
+  });
+
+  assert.deepEqual(result, OK);
 });
 
 test('Pika 2.2 rejects duration under 5 seconds', () => {

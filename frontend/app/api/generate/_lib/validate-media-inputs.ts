@@ -76,6 +76,38 @@ function normalizeStringArray(raw: unknown): string[] {
       : [];
 }
 
+function findUnsupportedReferenceMediaField(params: {
+  inputSchema: EngineInputSchema | null | undefined;
+  normalizedMode: Mode;
+  referenceValuesByField: ReferenceBudgetValuesByField<string>;
+}): string | null {
+  const activeMediaFieldIds = new Set(
+    [
+      ...(params.inputSchema?.required ?? []),
+      ...(params.inputSchema?.optional ?? []),
+    ]
+      .filter(
+        (field) =>
+          (field.type === 'image' ||
+            field.type === 'video' ||
+            field.type === 'audio') &&
+          (!field.modes?.length ||
+            field.modes.includes(params.normalizedMode))
+      )
+      .map((field) => field.id)
+  );
+  return (
+    Object.entries(params.referenceValuesByField)
+      .filter(
+        ([fieldId, values]) =>
+          !activeMediaFieldIds.has(fieldId) &&
+          (values ?? []).some((value) => value.trim().length > 0)
+      )
+      .map(([fieldId]) => fieldId)
+      .sort()[0] ?? null
+  );
+}
+
 function validateKlingElements(payload: Record<string, unknown>): ValidationResult {
   const rawElements = payload['elements'];
   if (!Array.isArray(rawElements)) {
@@ -147,6 +179,21 @@ export function validateModeMediaInputs(params: {
     params.normalizedMode
   );
   if (referenceBudget) {
+    const unsupportedMediaField = findUnsupportedReferenceMediaField({
+      inputSchema: params.inputSchema,
+      normalizedMode: params.normalizedMode,
+      referenceValuesByField: params.referenceValuesByField ?? {},
+    });
+    if (unsupportedMediaField) {
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: unsupportedMediaField,
+          message: `Media input "${unsupportedMediaField}" is not supported for this engine mode`,
+        },
+      };
+    }
     const evaluation = evaluateReferenceBudget({
       budget: referenceBudget,
       valuesByField: params.referenceValuesByField ?? {},
