@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { AudioLines, ShieldCheck, Sparkles, Users, Zap } from 'lucide-react';
@@ -22,6 +22,7 @@ import {
   type BuildModelExamplesViewModelInput,
 } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-view-model.ts';
 import { buildDecisionTocItems } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-toc.ts';
+import { listModelPageTemplateSlugs } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-template-registry.ts';
 
 const MODEL_CONTENT_ROOT = path.join(process.cwd(), 'content', 'models');
 const CONTENT_ROOT = path.join(MODEL_CONTENT_ROOT, 'en');
@@ -579,11 +580,9 @@ test('runtime policy receives localized numbered-example copy without owning loc
 });
 
 test('static poster manifest keys exactly match migrated models with fallback items', () => {
-  const documents = readdirSync(CONTENT_ROOT)
-    .filter((fileName) => fileName.endsWith('.json'))
-    .map((fileName) => {
-      const slug = fileName.slice(0, -5);
-      const document = JSON.parse(readFileSync(path.join(CONTENT_ROOT, fileName), 'utf8')) as { examples?: unknown };
+  const documents = listModelPageTemplateSlugs()
+    .map((slug) => {
+      const document = JSON.parse(readFileSync(path.join(CONTENT_ROOT, `${slug}.json`), 'utf8')) as { examples?: unknown };
       return parseModelExamplesContent(document.examples, slug, 'en');
     });
   const expected = documents

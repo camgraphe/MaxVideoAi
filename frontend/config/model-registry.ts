@@ -9,8 +9,10 @@ const byEngineInput = new Map<string, ModelRegistryEntry>();
 const byPublicSlug = new Map<string, ModelRegistryEntry>();
 
 for (const model of registry.models) {
-  for (const value of [model.id, model.slug, ...model.aliases.internal]) {
-    byEngineInput.set(value.trim().toLowerCase(), model);
+  if (model.presentationOnly !== true) {
+    for (const value of [model.id, model.slug, ...model.aliases.internal]) {
+      byEngineInput.set(value.trim().toLowerCase(), model);
+    }
   }
   for (const value of [model.slug, ...model.aliases.publicSlugs]) {
     byPublicSlug.set(value.trim().toLowerCase(), model);

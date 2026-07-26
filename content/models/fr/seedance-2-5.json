@@ -1,0 +1,119 @@
+{
+  "marketingName": "Seedance 2.5",
+  "versionLabel": "2.5",
+  "seo": {
+    "title": "Seedance 2.5 bientôt disponible | MaxVideoAI",
+    "description": "Découvrez les capacités annoncées pour Seedance 2.5 : sortie 4K, vidéos plus longues, guidage multimodal et retouche précise.",
+    "image": "/models/seedance-2-5-coming-soon.png"
+  },
+  "overview": "Seedance 2.5 se présente comme une évolution majeure de Seedance, avec plus de détail, des formats plus longs et un contrôle créatif enrichi.",
+  "hero": {
+    "title": "Seedance 2.5 arrive bientôt",
+    "intro": "Dreamina présente Seedance 2.5 en mettant en avant la résolution, la durée, les entrées multimodales, les références vidéo et la retouche locale précise.",
+    "badge": "Aperçu · Découvrez les nouveautés",
+    "ctaPrimary": {
+      "label": "Générer avec Seedance 2.0",
+      "href": "/fr/modeles/seedance-2-0"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Voir les exemples Seedance disponibles",
+        "href": "/fr/galerie/seedance"
+      }
+    ]
+  },
+  "faqs": [
+    {
+      "q": "Qu’est-ce qui distingue Seedance 2.5 ?",
+      "a": "Seedance 2.5 réunit six nouveautés annoncées : sortie 4K, vidéos jusqu’à 30 secondes, mode bêta jusqu’à 180 secondes, jusqu’à 50 entrées multimodales, contrôle par vidéo de référence et retouche locale précise."
+    },
+    {
+      "q": "Quels formats vidéo ont été annoncés ?",
+      "a": "La présentation met en avant un mode standard jusqu’à 30 secondes et un mode bêta vidéo longue jusqu’à 180 secondes."
+    },
+    {
+      "q": "Comment Seedance 2.5 enrichit-il le contrôle créatif ?",
+      "a": "Les entrées multimodales, les références vidéo et la retouche locale annoncées visent à offrir davantage de matière pour guider et affiner chaque scène."
+    },
+    {
+      "q": "Que puis-je explorer dès maintenant ?",
+      "a": "Essayez Seedance 2.0 ou parcourez de vrais exemples Seedance pour découvrir les possibilités visuelles de cette famille de modèles."
+    }
+  ],
+  "custom": {
+    "prelaunch": {
+      "modelSlug": "seedance-2-5",
+      "dreaminaLabel": "coming_soon",
+      "checkedAt": "2026-07-26",
+      "productSurface": "Dreamina",
+      "sourceUrl": "https://dreamina.capcut.com/seedance/seedance-2-5",
+      "announcedProductClaims": [
+        "4k_output",
+        "standard_mode_up_to_30_seconds",
+        "beta_long_video_mode_up_to_180_seconds",
+        "up_to_50_multimodal_inputs",
+        "reference_to_video_control",
+        "precise_local_video_editing"
+      ],
+      "labels": {
+        "statusEyebrow": "Aperçu de Seedance 2.5",
+        "claimsEyebrow": "Les nouveautés",
+        "claimsTitle": "Six avancées annoncées pour la création vidéo",
+        "claimsIntro": "Découvrez les principales possibilités présentées pour Seedance 2.5.",
+        "alternativesEyebrow": "Créez dès maintenant",
+        "alternativesTitle": "Donnez vie à vos idées avec Seedance 2.0",
+        "alternativesIntro": "Créez dès aujourd’hui avec Seedance 2.0 ou explorez de vrais exemples pendant que la prochaine génération se prépare.",
+        "faqEyebrow": "Questions fréquentes",
+        "faqTitle": "Tout savoir sur Seedance 2.5",
+        "sourceLabel": "Consulter l’annonce officielle Seedance 2.5",
+        "checkedLabel": "Source officielle consultée le 26 juillet 2026"
+      },
+      "statusItems": [
+        {
+          "label": "Qualité d’image",
+          "value": "Sortie 4K",
+          "detail": "La sortie 4K figure parmi les capacités phares présentées pour Seedance 2.5.",
+          "state": "announced"
+        },
+        {
+          "label": "Formats vidéo",
+          "value": "Jusqu’à 180 s en bêta",
+          "detail": "Un mode standard jusqu’à 30 secondes et un format long jusqu’à 180 secondes en bêta sont annoncés.",
+          "state": "highlight"
+        },
+        {
+          "label": "Contrôle créatif",
+          "value": "Jusqu’à 50 entrées et retouche locale",
+          "detail": "Références multimodales, guidage vidéo et retouche locale précise ouvrent la voie à un contrôle enrichi de chaque scène.",
+          "state": "comingSoon"
+        }
+      ],
+      "announcedCapabilities": [
+        {
+          "title": "Sortie 4K",
+          "body": "La sortie 4K figure parmi les nouveautés annoncées, pour des images plus détaillées et plus soignées."
+        },
+        {
+          "title": "Jusqu’à 30 secondes",
+          "body": "Le mode standard est annoncé jusqu’à 30 secondes, pour laisser plus de temps à une scène ou à une idée de se développer."
+        },
+        {
+          "title": "Bêta vidéo longue",
+          "body": "Un mode bêta vidéo longue allant jusqu’à 180 secondes est également présenté pour des récits plus développés."
+        },
+        {
+          "title": "Jusqu’à 50 entrées",
+          "body": "Jusqu’à 50 entrées multimodales sont mises en avant, afin de combiner davantage de matières créatives."
+        },
+        {
+          "title": "Vidéo par référence",
+          "body": "Le contrôle par vidéo de référence est présenté comme un moyen de guider la création à partir d’une séquence existante."
+        },
+        {
+          "title": "Retouche vidéo locale",
+          "body": "La retouche locale précise est présentée comme un moyen d’affiner des zones choisies d’une vidéo avec davantage de contrôle."
+        }
+      ]
+    }
+  }
+}

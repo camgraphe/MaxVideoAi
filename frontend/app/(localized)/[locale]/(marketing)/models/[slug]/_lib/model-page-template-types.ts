@@ -1,7 +1,12 @@
 import type { AppLocale } from '@/i18n/locales';
 import type { Resolution } from '@/types/engines';
 
-export type ModelPageTemplateIntent = 'production' | 'draft' | 'reference-prep' | 'specialized';
+export type ModelPageTemplateIntent =
+  | 'production'
+  | 'draft'
+  | 'reference-prep'
+  | 'specialized'
+  | 'prelaunch';
 
 export type ModelPageTemplateIcon =
   | 'app'
@@ -71,6 +76,7 @@ export type ModelPageTemplateConfig = {
     quickLinks: ModelPageTemplateQuickLink[];
   };
   pricing: {
+    enabled?: boolean;
     anchorHref: string;
     presets: ModelPagePricingPreset[];
   };

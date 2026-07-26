@@ -39,6 +39,9 @@ const launchPacketPath = join(root, 'docs/model-launch/seedance-2-5.md');
 const engineStubPath = join(root, 'docs/model-launch/seedance-2-5.engine.stub.ts');
 const forbiddenRuntimeIdentity = /seedance[-_. ]?2[-_. ]?5/i;
 const allowedSeedance25Paths = new Set([
+  'content/models/en/seedance-2-5.json',
+  'content/models/es/seedance-2-5.json',
+  'content/models/fr/seedance-2-5.json',
   'docs/model-launch/seedance-2-5.engine.stub.ts',
   'docs/model-launch/seedance-2-5.md',
   'docs/model-launch/seedance-2-5/en.overlay.json',
@@ -48,8 +51,16 @@ const allowedSeedance25Paths = new Set([
   'docs/superpowers/plans/2026-07-25-seedance-2-5-hidden-launch-content.md',
   'docs/superpowers/plans/2026-07-25-seedance-2-5-reference-budget.md',
   'docs/superpowers/specs/2026-07-25-seedance-2-5-prelaunch-readiness-design.md',
+  'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prelaunch-content.ts',
+  'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-template-registry.ts',
+  'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-templates/seedance-2-5.ts',
+  'frontend/config/model-registry.json',
+  'frontend/config/model-runtime.json',
+  'frontend/public/models/seedance-2-5-coming-soon.png',
+  'frontend/public/models/seedance-2-5-coming-soon.svg',
   'tests/byteplus-seedance-profiles.test.ts',
   'tests/generate-byteplus-submission.test.ts',
+  'tests/seedance-2-5-coming-soon.test.ts',
   'tests/seedance-2-5-readiness.test.ts',
   'tests/seedance-2-pricing.test.ts',
 ]);
@@ -85,25 +96,29 @@ type GitRepositorySnapshot = {
 };
 const approvedLaunchPacketSections = {
   'Current state': `- Prepared on: 2026-07-26
-- Future source template: \`seedance-2-0\`
-- Canonical candidate ID: \`seedance-2-5\`
+- Page template: canonical model-page \`prelaunch\` variant
+- Canonical ID: \`seedance-2-5\`
 - Family: \`seedance\`
-- Runtime status: absent
-- Registry status: absent
-- Public route: absent
+- Presentation identity: present in the canonical registry and runtime projection
+- Executable engine: absent
+- Public routes: present in EN, FR, and ES
+- Robots: \`noindex, follow\`
+- Sitemap, app, pricing, examples, and comparison surfaces: disabled
 - MaxVideoAI generation availability: unavailable
 - BytePlus ModelArk API availability: unconfirmed
 - Customer and provider pricing: unconfirmed
 - MaxVideoAI launch commitment: none
 
-No MaxVideoAI launch is committed. Any future integration depends on official
+The published page is an editorial coming-soon surface only. It has no raw
+engine, provider profile, provider model ID, executable alias, customer price,
+or generation CTA. Any future generation integration depends on official
 BytePlus API evidence, successful technical validation, and the required legal
 and commercial clearances.
 
-The localized files in \`docs/model-launch/seedance-2-5/\` are unpublished
-launch drafts. They are not a live generation offer. Move them to
-\`content/models/{en,fr,es}/\` only when a factual engine and canonical registry
-entry exist.`,
+The localized files in \`content/models/{en,fr,es}/seedance-2-5.json\` own the
+live presentation-only copy. The earlier files in
+\`docs/model-launch/seedance-2-5/\` remain evidence snapshots and are not runtime
+configuration.`,
   'Dreamina-announced product-surface claims': `Official source: https://dreamina.capcut.com/seedance/seedance-2-5
 
 Checked on 2026-07-26, Dreamina labels Seedance 2.5 as coming soon and states
@@ -149,8 +164,9 @@ runtime profile:
 6. Concurrency, RPM, quota, and service-tier limits.
 7. Vendor pricing units, input-type distinctions, failed-task charging, cancellation, and refund behavior.
 
-Until every item is recorded, do not add a provider profile, engine catalog
-entry, registry entry, customer price, or generation CTA.`,
+Until every item is recorded, do not convert the presentation-only identity
+into an executable engine, add a provider profile or engine-catalog entry,
+publish a customer price, or expose a generation CTA.`,
   'Legal and commercial clearance required': `Before any public launch, obtain written confirmation that MaxVideoAI may
 integrate and redistribute the service and use the relevant BytePlus and
 Seedance marks. Have counsel review both official documents:
@@ -160,10 +176,22 @@ Seedance marks. Have counsel review both official documents:
 
 Treat this as a publication gate, independent of technical readiness. Private
 or sales-gated access does not satisfy it.`,
-  'Promotion state machine': `### 1. Hidden execution
+  'Promotion state machine': `### 0. Presentation only — current
 
-- Add a factual raw engine and canonical registry entry.
-- Keep every publication field false.
+- Publish the canonical localized model route with \`presentationOnly=true\`,
+  \`model.published=true\`, and \`model.indexable=false\`.
+- Keep engine catalog, provider profiles, app, pricing, examples, comparisons,
+  and sitemap surfaces absent or disabled.
+- Show attributed product announcements and links to currently available
+  Seedance surfaces. Keep API, provider, and pricing uncertainty documented in
+  this packet, not in customer-facing copy.
+
+### 1. Hidden execution
+
+- Add a factual raw engine and convert the existing registry identity out of
+  presentation-only mode in the same reviewed change.
+- Keep every execution and discovery publication surface false; the editorial
+  noindex page may remain published.
 - Default the engine to disabled and admin-only.
 - Configure the real provider model ID through the provider environment layer.
 - Record written integration, redistribution, and trademark clearance before
@@ -176,7 +204,7 @@ or sales-gated access does not satisfy it.`,
   usage accounting, cancellation, and refunds.
 - Run the fixed quality and cost benchmark suite.
 
-### 3. Public noindex
+### 3. Public noindex generation
 
 - Publish the model route with \`indexable=false\`.
 - Keep sitemap, pricing, comparison, examples, and broad app discovery disabled
@@ -206,24 +234,29 @@ provider facts, or publishing every surface at once.
   workspace through server validation into the BytePlus payload.
 - [x] BytePlus image-to-video canonicalizes one opening image and rejects
   missing, mismatched, or ambiguous provenance.
-- [x] EN, FR, and ES launch overlays are stored outside runtime content.
-- [x] The readiness contract proves that Seedance 2.5 is absent from runtime
-  and public discovery while API facts remain unconfirmed.
+- [x] The canonical EN, FR, and ES coming-soon routes use the shared model-page
+  shell and a dedicated \`prelaunch\` renderer.
+- [x] The canonical registry marks Seedance 2.5 as presentation-only, published
+  noindex, and disabled on app, pricing, examples, comparison, and sitemap
+  surfaces.
+- [x] The readiness contract proves that the page is public while every
+  executable engine, provider, pricing, and generation path remains absent.
 
 These items are reusable foundation, not launch toggles. Do not recreate or
 bypass them in the factual integration batch.
 
 ### Hidden artefact inventory
 
-- \`docs/model-launch/seedance-2-5/{en,fr,es}.overlay.json\` contains unpublished
-  copy. Rewrite it from confirmed facts before moving it to
-  \`content/models/{en,fr,es}/seedance-2-5.json\`.
+- \`content/models/{en,fr,es}/seedance-2-5.json\` owns the live localized
+  presentation copy. The overlays under \`docs/model-launch/seedance-2-5/\` are
+  retained as the original evidence snapshots.
 - \`docs/model-launch/seedance-2-5.engine.stub.ts\` is an evidence gate only. It
   stays under \`docs/\` and must never be imported by runtime code.
-- \`tests/seedance-2-5-readiness.test.ts\` deliberately blocks runtime and public
-  exposure today. During hidden execution, replace only its global-absence
-  contract with assertions for a disabled, admin-only, fully unpublished
-  registry entry. Preserve the evidence, content-safety, and exposure checks.
+- \`tests/seedance-2-5-readiness.test.ts\` and
+  \`tests/seedance-2-5-coming-soon.test.ts\` permit only the presentation
+  identity and canonical page assets. They continue to block executable
+  aliases, engine-catalog membership, app discovery, pricing, examples,
+  comparisons, sitemap publication, and provider configuration.
 - The Seedance 2.5 specifications and implementation plans under
   \`docs/superpowers/\` are historical design evidence. They stay documentation
   and are not production configuration.
@@ -277,15 +310,16 @@ from a marketing page.
   and the canonical pricing owners described by
   \`docs/engineering/pricing-engine.md\`. Review billing and public quotes
   independently.
-- [ ] Add \`seedance-2-5\` to \`frontend/config/model-registry.json\` with every
-  publication surface false, no speculative aliases, and no replacement.
-- [ ] Rewrite the three overlays from confirmed facts, move them into
-  \`content/models/{en,fr,es}/seedance-2-5.json\`, and review every localized
-  decision, prompting, example, CTA, href, and claim.
-- [ ] Convert the readiness global-absence assertion into a hidden-stage
-  contract: the engine and registry entry may exist, but app discovery, model
-  publication, pricing, examples, comparisons, sitemap, and indexation must
-  remain false.
+- [ ] Convert the existing \`seedance-2-5\` registry identity out of
+  \`presentationOnly\` only in the same reviewed change that adds its factual raw
+  engine. Keep app, pricing, examples, comparisons, sitemap, and indexation
+  disabled, with no speculative aliases and no replacement.
+- [ ] Replace the presentation-only copy with confirmed execution facts and add
+  reviewed localized decision, prompting, examples, CTA, href, and claim data
+  only for capabilities that passed the canary.
+- [ ] Extend the presentation-only readiness contract into a hidden-execution
+  contract: the factual engine may exist, but public execution, app discovery,
+  pricing, examples, comparisons, sitemap, and indexation must remain disabled.
 - [ ] Regenerate runtime, engine-catalog, and roster projections using the model
   registry workflow; never edit generated JSON or roster files directly.
 - [ ] Add focused profile, payload, validation, polling, accounting, billing,
@@ -309,10 +343,11 @@ from a marketing page.
   signed media URLs, prompts, or billing identifiers that should stay private.
 - [ ] Keep the rollback controls below tested and immediately available.
 
-### Phase 3 execution checklist — public noindex
+### Phase 3 execution checklist — public noindex generation
 
-- [ ] Obtain explicit approval to open the model route.
-- [ ] Set only \`publication.model.published=true\` and keep
+- [ ] Obtain explicit approval to open restricted generation; the editorial
+  route is already public noindex.
+- [ ] Keep \`publication.model.published=true\` and
   \`publication.model.indexable=false\`. Keep app discovery, public pricing,
   examples, comparisons, and sitemap publication disabled unless separately
   approved for this phase.
@@ -344,7 +379,18 @@ from a marketing page.
 - [ ] Deploy through the normal reviewed \`main\` branch flow and complete the
   production smoke checks before announcing availability.
 
-### Production smoke checks
+### Presentation-only deployment smoke — current
+
+- [ ] Confirm the production commit and deployment ID match the reviewed page.
+- [ ] Confirm EN, FR, and ES routes return 200 with localized canonical and
+  hreflang values and \`noindex, follow\`; confirm the prelaunch renderer adds
+  only WebPage and BreadcrumbList beyond the site's global structured data.
+- [ ] Confirm Seedance 2.5 is absent from every sitemap, the model catalog, app
+  discovery, pricing, examples, and comparisons.
+- [ ] Submit a controlled invalid generation request for \`seedance-2-5\` and
+  confirm \`Unknown engine\` occurs before billing or provider submission.
+
+### Future execution production smoke checks
 
 - [ ] Confirm the production commit and deployment ID match the reviewed release.
 - [ ] Confirm model pages in EN, FR, and ES return the intended status, metadata,
@@ -359,6 +405,18 @@ from a marketing page.
   customer-facing errors during the initial release window.
 
 ### Rollback
+
+#### Current presentation-only page
+
+1. Roll back to the previous reviewed deployment. This page owns no provider
+   tasks, billing events, or in-flight generations.
+2. If a code rollback is required instead, retire the presentation route and
+   its live localized content in the same reviewed change, regenerate the
+   runtime projection, and deploy.
+3. Confirm all three localized routes are withdrawn and that generation,
+   pricing, app, examples, comparisons, and sitemap surfaces remained absent.
+
+#### Future executable model
 
 1. Activate the recorded model-specific hard-disable control before any other
    rollback action. It must reject both administrator and non-administrator
@@ -384,11 +442,13 @@ from a marketing page.
 
 ### Definition of done
 
-The launch is complete only when the evidence record is current, legal and
-commercial gates are linked, canary evidence is retained, intended registry
-surfaces are explicit, every verification command below passes, production
-smoke checks pass, monitoring is healthy, and the rollback state is recorded.
-Update “Current state” and this checklist in the same reviewed launch change.
+The presentation-only deployment is complete when its current smoke checks pass
+and its rollback is recorded. A future generation launch is complete only when
+the evidence record is current, legal and commercial gates are linked, canary
+evidence is retained, intended registry surfaces are explicit, every
+verification command below passes, execution smoke checks pass, monitoring is
+healthy, and the rollback state is recorded. Update “Current state” and this
+checklist in the same reviewed launch change.
 
 ### Instruction to give Codex
 
@@ -1496,6 +1556,38 @@ test('Seedance 2.5 exposure scan reconciles index and worktree states', () => {
   }
 });
 
-test('Seedance 2.5 is absent from runtime and publication sources', () => {
+test('Seedance 2.5 exposure is limited to the presentation-only page and launch evidence', () => {
   assert.deepEqual(findForbiddenSeedance25Exposures(root), []);
+
+  const registry = JSON.parse(
+    readFileSync(join(root, 'frontend/config/model-registry.json'), 'utf8'),
+  ) as {
+    models: Array<{
+      id: string;
+      presentationOnly?: boolean;
+      publication: Record<string, { published?: boolean; indexable?: boolean }>;
+    }>;
+  };
+  const model = registry.models.find((candidate) => candidate.id === 'seedance-2-5');
+  assert.ok(model);
+  assert.equal(model.presentationOnly, true);
+  assert.deepEqual(model.publication.model, {
+    published: true,
+    indexable: false,
+  });
+  for (const surface of ['examples', 'compare', 'app', 'pricing', 'sitemap']) {
+    assert.equal(
+      model.publication[surface].published,
+      false,
+      `presentation-only ${surface} surface must stay disabled`,
+    );
+  }
+
+  const engineCatalog = JSON.parse(
+    readFileSync(join(root, 'frontend/config/engine-catalog.json'), 'utf8'),
+  ) as Array<{ engineId?: string }>;
+  assert.equal(
+    engineCatalog.some((entry) => entry.engineId === 'seedance-2-5'),
+    false,
+  );
 });

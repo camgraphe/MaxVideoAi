@@ -28,6 +28,29 @@ The browser-safe runtime projection omits the replacement graph. A retired repla
 The scaffold retargets `decision.modelSlug`, but its generated English, French, and Spanish
 decision content still requires the manual review in the checklist above before publication.
 
+## Add a presentation-only model page
+
+Use `presentationOnly: true` only for a factual public model identity whose
+provider execution contract is not yet available. This is a route state, not a
+hidden engine.
+
+A presentation-only entry must:
+
+- publish only the model page with `indexable: false`
+- keep app, pricing, examples, comparison, and sitemap publication disabled
+- have no ranks, variant labels, comparison relationships, replacement, or
+  executable aliases
+- stay absent from raw engine definitions and `engine-catalog.json`
+- use a dedicated `prelaunch` template and localized content that contains no
+  generation or pricing destination
+
+The validator rejects any presentation-only entry that enables an executable
+or discovery surface. Its public slug resolves for the canonical page, but it
+is deliberately absent from engine-input resolution. Promote it only in the
+same reviewed change that adds a factual raw engine and removes
+`presentationOnly`; keep public execution surfaces disabled until their
+separate launch gates pass.
+
 ## Rename a public slug
 
 Keep the old slug in `aliases.publicSlugs`, change `slug`, regenerate the projections, and verify the generated English, French, and Spanish 301 matrix. Never replace an old slug with a hand-authored redirect in Next.js config, middleware, or a route.

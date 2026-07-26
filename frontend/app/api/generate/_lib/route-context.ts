@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto';
 import type { NextRequest } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
+import { getBaseEngineIncludingHidden } from '@/lib/engines';
 import { ensureBillingSchema } from '@/lib/schema';
 import { AdminAuthError, requireAdmin } from '@/server/admin';
 import { getConfiguredEngine, getConfiguredEngineIncludingHidden } from '@/server/engines';
@@ -49,6 +50,10 @@ export async function resolveGenerateRouteContext(params: {
 }): Promise<GenerateRouteContextResult> {
   const { body, req } = params;
   const requestedEngineId = String(body.engineId || '');
+  const registeredBaseEngine = getBaseEngineIncludingHidden(requestedEngineId);
+  if (!registeredBaseEngine) {
+    return { ok: false, status: 400, body: { ok: false, error: 'Unknown engine' } };
+  }
   const publicEngine = await getConfiguredEngine(requestedEngineId);
   const engine =
     publicEngine ??

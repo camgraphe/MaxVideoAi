@@ -1876,6 +1876,44 @@
       "replacement": null
     },
     {
+      "id": "seedance-2-5",
+      "slug": "seedance-2-5",
+      "family": "seedance",
+      "category": "video",
+      "presentationOnly": true,
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": true,
+          "indexable": false
+        },
+        "examples": {
+          "published": false,
+          "includeInFamilyCopy": false,
+          "current": false
+        },
+        "compare": {
+          "published": false,
+          "indexed": false,
+          "suggestedOpponentIds": [],
+          "publishedPairIds": []
+        },
+        "app": {
+          "published": false
+        },
+        "pricing": {
+          "published": false
+        },
+        "sitemap": {
+          "published": false
+        }
+      },
+      "replacement": null
+    },
+    {
       "id": "seedream",
       "slug": "seedream",
       "family": "seedream",
