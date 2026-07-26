@@ -49,7 +49,7 @@ jobs:
         if: ${{ env.RUNTIME_AUDIT_DATABASE_URL != '' }}
         env:
           DATABASE_URL: ${{ env.RUNTIME_AUDIT_DATABASE_URL }}
-        run: pnpm run models:audit -- --runtime
+        run: pnpm run models:audit --runtime
         continue-on-error: true
 
       - name: Check sources quality (warn-only)
@@ -65,11 +65,11 @@ jobs:
       - name: Alt quality check (frontend)
         run: pnpm --dir frontend run qa:image-alt
 
-      - name: Validate tests
-        run: pnpm run test:validate
-
       - name: Install Playwright browser
         run: pnpm exec playwright install --with-deps chromium
+
+      - name: Validate tests
+        run: pnpm run test:validate
 
       - name: Smoke test admin
         env:
