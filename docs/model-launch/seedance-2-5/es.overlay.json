@@ -1,0 +1,53 @@
+{
+  "marketingName": "Seedance 2.5",
+  "versionLabel": "2.5",
+  "seo": {
+    "title": "Seedance 2.5: anuncios de Dreamina y estado de la API",
+    "description": "Consulta la información de producto anunciada por Dreamina y el estado de la API de BytePlus para Seedance 2.5. La generación todavía no está disponible en MaxVideoAI."
+  },
+  "overview": "Dreamina presenta Seedance 2.5 como un modelo próximo y describe, en su propio producto, salida 4K, vídeos estándar de hasta 30 segundos, un modo de vídeo largo en beta de hasta 180 segundos, hasta 50 entradas multimodales, control de referencia a vídeo y edición precisa de regiones concretas del vídeo. Seedance 2.5 todavía no está disponible para generar vídeos en MaxVideoAI.",
+  "pricingNotes": "El acceso mediante la API de MaxVideoAI, el precio para clientes, el precio de BytePlus, los límites ejecutables y el calendario de lanzamiento no están confirmados. No se reutilizará ninguna tarifa de Seedance 2.0 para Seedance 2.5.",
+  "hero": {
+    "title": "Seedance 2.5 — estado del lanzamiento y anuncios de Dreamina",
+    "intro": "Dreamina presenta actualmente Seedance 2.5 como un modelo próximo. Las capacidades resumidas aquí son declaraciones sobre el producto Dreamina, no un contrato confirmado de la API BytePlus ModelArk. Seedance 2.5 todavía no está disponible para generar vídeos en MaxVideoAI.",
+    "badge": "Próximamente en Dreamina · API de BytePlus sin confirmar",
+    "ctaPrimary": {
+      "label": "Explorar Seedance 2.0",
+      "href": "/es/modelos/seedance-2-0"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Ver ejemplos actuales de Seedance",
+        "href": "/es/galeria/seedance"
+      }
+    ]
+  },
+  "faqs": [
+    {
+      "q": "¿Puedo generar con Seedance 2.5 en MaxVideoAI ahora?",
+      "a": "No. Seedance 2.5 todavía no está disponible para generar vídeos en MaxVideoAI. Solo se activará después de que BytePlus publique un contrato oficial de API y la integración supere las comprobaciones de facturación, fiabilidad, seguridad y resultados."
+    },
+    {
+      "q": "¿Las funciones anunciadas por Dreamina están confirmadas para la API de BytePlus?",
+      "a": "No. Las declaraciones sobre el producto Dreamina no confirman los modos, límites, parámetros, regiones, precios ni fechas de la API de BytePlus."
+    }
+  ],
+  "custom": {
+    "prelaunch": {
+      "dreaminaLabel": "coming_soon",
+      "checkedAt": "2026-07-26",
+      "apiAvailability": "unconfirmed",
+      "pricingAvailability": "unconfirmed",
+      "productSurface": "Dreamina",
+      "sourceUrl": "https://dreamina.capcut.com/seedance/seedance-2-5",
+      "announcedProductClaims": [
+        "4k_output",
+        "standard_mode_up_to_30_seconds",
+        "beta_long_video_mode_up_to_180_seconds",
+        "up_to_50_multimodal_inputs",
+        "reference_to_video_control",
+        "precise_local_video_editing"
+      ]
+    }
+  }
+}
