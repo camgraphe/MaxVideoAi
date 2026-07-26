@@ -28,4 +28,7 @@ test('workspace input schema derivation is owned by a route-local hook', () => {
   assert.match(hookSource, /getPrimaryAssetFieldLabel/);
   assert.match(hookSource, /revokeAssetPreview/);
   assert.match(hookSource, /SEEDANCE_REFERENCE_AUDIO_FIELD_IDS/);
+  assert.match(hookSource, /reconcileReferenceAssets/);
+  assert.match(hookSource, /resolveEngineReferenceBudget/);
+  assert.match(hookSource, /submissionMode/);
 });

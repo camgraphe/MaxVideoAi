@@ -16,8 +16,10 @@ export function createRuntimeModelResolver(document: ModelRuntimeDocument) {
   const byPublicSlug = new Map<string, RuntimeModelEntry>();
 
   for (const model of models) {
-    for (const value of [model.id, model.slug, ...model.aliases.internal]) {
-      byEngineInput.set(value.trim().toLowerCase(), model);
+    if (model.presentationOnly !== true) {
+      for (const value of [model.id, model.slug, ...model.aliases.internal]) {
+        byEngineInput.set(value.trim().toLowerCase(), model);
+      }
     }
     const targetId = model.publicTargetId ?? model.id;
     const target = byId.get(targetId.trim().toLowerCase());
@@ -50,6 +52,10 @@ export function listRuntimeModels(): readonly RuntimeModelEntry[] {
   return runtimeResolver.models;
 }
 
+export function listPublishedRuntimeModels(): readonly RuntimeModelEntry[] {
+  return runtimeResolver.models.filter((model) => model.publication.model.published);
+}
+
 export function getRuntimeModelById(id: string): RuntimeModelEntry | null {
   return runtimeResolver.getById(id);
 }
@@ -69,6 +75,13 @@ export function resolveRuntimePublicSlug(slug: string): RuntimeModelEntry | null
 export function isRuntimeModelPagePublished(modelOrId: RuntimeModelEntry | string | null | undefined): boolean {
   const model = typeof modelOrId === 'string' ? getRuntimeModelById(modelOrId) : modelOrId;
   return model?.publication.model.published === true;
+}
+
+export function isRuntimePresentationOnlyModel(
+  modelOrId: RuntimeModelEntry | string | null | undefined
+): boolean {
+  const model = typeof modelOrId === 'string' ? getRuntimeModelById(modelOrId) : modelOrId;
+  return model?.presentationOnly === true;
 }
 
 export function toLegacyModelSurfaces(model: RuntimeModelEntry): ModelPublicationSurfaces {

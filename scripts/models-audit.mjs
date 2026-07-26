@@ -10,6 +10,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
 
 const ENGINE_CATALOG_PATH = path.join(ROOT, 'frontend', 'config', 'engine-catalog.json');
+const MODEL_REGISTRY_PATH = path.join(ROOT, 'frontend', 'config', 'model-registry.json');
 const MODEL_ROSTER_PATH = path.join(ROOT, 'frontend', 'config', 'model-roster.json');
 const DEFAULT_CONTENT_MODELS_ROOT = path.join(ROOT, 'content', 'models');
 const DEFAULT_REPORT_PATH = path.join(ROOT, '.reports', 'models-audit.json');
@@ -644,7 +645,7 @@ function validateRosterEntries(roster, catalogBySlug, issues) {
   });
 }
 
-function runSlugParityChecks(catalogSlugs, rosterSlugs, localeSlugMaps, issues) {
+function runSlugParityChecks(catalogSlugs, rosterSlugs, contentSlugs, localeSlugMaps, issues) {
   const missingInRoster = diffSet(catalogSlugs, rosterSlugs);
   const missingInCatalogFromRoster = diffSet(rosterSlugs, catalogSlugs);
 
@@ -668,14 +669,14 @@ function runSlugParityChecks(catalogSlugs, rosterSlugs, localeSlugMaps, issues) 
   }
 
   localeSlugMaps.forEach(({ locale, slugs }) => {
-    const missingInLocale = diffSet(catalogSlugs, slugs);
-    const extraInLocale = diffSet(slugs, catalogSlugs);
+    const missingInLocale = diffSet(contentSlugs, slugs);
+    const extraInLocale = diffSet(slugs, contentSlugs);
     if (missingInLocale.length) {
       addIssue(
         issues,
         'critical',
         'missing_content_locale_slugs',
-        `Catalog slugs missing from content/models/${locale}: ${missingInLocale.join(', ')}`,
+        `Published model slugs missing from content/models/${locale}: ${missingInLocale.join(', ')}`,
         { locale, slugs: missingInLocale }
       );
     }
@@ -684,7 +685,7 @@ function runSlugParityChecks(catalogSlugs, rosterSlugs, localeSlugMaps, issues) 
         issues,
         'critical',
         'extra_content_locale_slugs',
-        `Content slugs in content/models/${locale} missing from catalog: ${extraInLocale.join(', ')}`,
+        `Content slugs in content/models/${locale} missing from the published model registry: ${extraInLocale.join(', ')}`,
         { locale, slugs: extraInLocale }
       );
     }
@@ -890,12 +891,19 @@ async function main() {
   const { runtime, contentRoot, reportPath } = parseArgs(process.argv.slice(2));
   const issues = { critical: [], warning: [] };
 
-  const [catalog, roster] = await Promise.all([loadJson(ENGINE_CATALOG_PATH), loadJson(MODEL_ROSTER_PATH)]);
+  const [catalog, roster, registry] = await Promise.all([
+    loadJson(ENGINE_CATALOG_PATH),
+    loadJson(MODEL_ROSTER_PATH),
+    loadJson(MODEL_REGISTRY_PATH),
+  ]);
   if (!Array.isArray(catalog)) {
     throw new Error('engine-catalog.json must contain an array.');
   }
   if (!Array.isArray(roster)) {
     throw new Error('model-roster.json must contain an array.');
+  }
+  if (!registry || !Array.isArray(registry.models)) {
+    throw new Error('model-registry.json must contain a models array.');
   }
 
   const localeSlugMaps = await Promise.all(
@@ -907,11 +915,15 @@ async function main() {
 
   const publicCatalog = catalog.filter((entry) => hasPublishedModelPage(entry));
   const catalogSlugs = setFromSlugs(publicCatalog, 'modelSlug');
+  const publishedContentSlugs = setFromSlugs(
+    registry.models.filter((model) => model?.publication?.model?.published === true),
+    'slug',
+  );
   const rosterSlugs = setFromSlugs(roster, 'modelSlug');
   const catalogBySlug = new Map(catalog.map((entry) => [entry.modelSlug, entry]));
   const publicCatalogBySlug = new Map(publicCatalog.map((entry) => [entry.modelSlug, entry]));
 
-  runSlugParityChecks(catalogSlugs, rosterSlugs, localeSlugMaps, issues);
+  runSlugParityChecks(catalogSlugs, rosterSlugs, publishedContentSlugs, localeSlugMaps, issues);
   validateCatalogEntries(catalog, issues);
   validateRosterEntries(roster, catalogBySlug, issues);
   await runPrelaunchContentChecks(catalogBySlug, issues, contentRoot);

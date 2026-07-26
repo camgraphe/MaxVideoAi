@@ -2,6 +2,10 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
+import {
+  expectedBytePlusTokens,
+  getBytePlusUnitPriceUsdPer1kTokens,
+} from '../frontend/server/byteplus-accounting';
 import { computeCanonicalPublicSnapshot as computePricingSnapshot } from '../frontend/server/pricing/quote-public.ts';
 import { computeSeedance2TokenQuote, isSeedance2TokenPricing } from '../frontend/src/lib/seedance-2-pricing.ts';
 
@@ -16,6 +20,39 @@ const DEFAULT_MAXVIDEOAI_MARGIN_FACTOR = 1.3;
 function targetCustomerUnitPriceUsdPer1kTokens(unitPriceUsdPer1kTokens: number): number {
   return Number((unitPriceUsdPer1kTokens * DEFAULT_MAXVIDEOAI_MARGIN_FACTOR).toFixed(6));
 }
+
+test('BytePlus pricing fails closed for an unknown Seedance engine', () => {
+  assert.throws(
+    () => getBytePlusUnitPriceUsdPer1kTokens('seedance-2-5', 'no_video_input', '720p'),
+    (error: unknown) =>
+      error instanceof Error &&
+      (error as Error & { code?: string }).code === 'BYTEPLUS_ENGINE_PROFILE_MISSING'
+  );
+});
+
+test('hidden direct Fast keeps the current Fast unit rate', () => {
+  assert.equal(
+    getBytePlusUnitPriceUsdPer1kTokens('seedance-2-0-fast-byteplus', 'no_video_input', '720p'),
+    getBytePlusUnitPriceUsdPer1kTokens('seedance-2-0-fast', 'no_video_input', '720p')
+  );
+});
+
+test('BytePlus token estimation also fails closed for an unknown profile', () => {
+  assert.throws(
+    () =>
+      expectedBytePlusTokens({
+        engine_id: 'seedance-2-5',
+        duration_sec: 5,
+        settings_snapshot: {
+          core: { resolution: '720p', aspectRatio: '16:9' },
+        },
+      }),
+    (error: unknown) =>
+      error instanceof Error &&
+      (error as Error & { code?: string }).code ===
+        'BYTEPLUS_ENGINE_PROFILE_MISSING'
+  );
+});
 
 test('Seedance 2 token quote follows dimensions and targets 2.5x BytePlus no-video pricing', () => {
   const engine = getEngine('seedance-2-0');

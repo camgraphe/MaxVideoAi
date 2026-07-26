@@ -1,5 +1,10 @@
-import type { Mode, PricingSnapshot } from '@/types/engines';
+import type { EngineInputSchema, Mode, PricingSnapshot } from '@/types/engines';
 import { query } from '@/lib/db';
+import {
+  buildReferenceMediaItems,
+  resolveEngineReferenceBudget,
+  type ReferenceBudgetValuesByField,
+} from '@/lib/reference-budget';
 import {
   BYTEPLUS_MODELARK_PROVIDER,
   buildBytePlusSeedancePayload,
@@ -9,6 +14,7 @@ import {
   getBytePlusSeedanceDurationOptions,
   getBytePlusSeedanceAllowedResolutions,
   getBytePlusUserSafeErrorMessage,
+  requireBytePlusSeedanceProfile,
   resolveBytePlusSeedanceModelId,
   scrubBytePlusError,
 } from '@/server/video-providers/byteplus-modelark';
@@ -81,6 +87,8 @@ export async function submitBytePlusGenerateTask(params: {
   renderIds: Array<string | null> | null;
   heroRenderId: string | null;
   localKey: string | null;
+  inputSchema?: EngineInputSchema | null;
+  referenceValuesByField?: ReferenceBudgetValuesByField<string>;
   deps?: BytePlusSubmissionDeps;
 }): Promise<BytePlusSubmissionResult> {
   const deps = params.deps ?? {};
@@ -100,8 +108,22 @@ export async function submitBytePlusGenerateTask(params: {
   const logMetricFn = deps.logMetricFn;
 
   try {
+    const profile = requireBytePlusSeedanceProfile(params.engineId);
     const config = getBytePlusArkConfigFn();
-    const generateAudio = params.audioEnabled !== false;
+    const generateAudio =
+      profile.generatedAudio && params.audioEnabled !== false;
+    const referenceBudget = resolveEngineReferenceBudget(
+      params.inputSchema,
+      params.mode
+    );
+    const referenceMediaItems =
+      referenceBudget && params.inputSchema
+        ? buildReferenceMediaItems(
+            params.inputSchema,
+            params.mode,
+            params.referenceValuesByField ?? {}
+          )
+        : undefined;
     const payload = buildBytePlusSeedancePayloadFn({
       modelId: resolveBytePlusSeedanceModelIdFn(params.engineId, config),
       prompt: params.prompt,
@@ -119,8 +141,13 @@ export async function submitBytePlusGenerateTask(params: {
       resolution: params.effectiveResolution,
       ratio: params.aspectRatio,
       generateAudio,
+      allowedModes: profile.supportedModes,
+      allowedAspectRatios: profile.aspectRatios,
       allowedResolutions: getBytePlusSeedanceAllowedResolutionsFn(params.engineId),
       allowedDurationOptions: getBytePlusSeedanceDurationOptionsFn(params.engineId),
+      ...(referenceBudget
+        ? { referenceBudget, referenceMediaItems: referenceMediaItems ?? [] }
+        : {}),
     });
     const providerTask = await getBytePlusModelArkClientFn().createSeedanceFastTask(payload);
     const providerJobId = providerTask.providerJobId;
@@ -190,7 +217,18 @@ export async function submitBytePlusGenerateTask(params: {
     const providerMessage = scrubBytePlusErrorFn(error);
     const providerStatus = error instanceof BytePlusModelArkError ? error.status : null;
     const errorCode = error instanceof BytePlusModelArkError && error.code ? error.code : 'BYTEPLUS_PROVIDER_ERROR';
-    const failureMessage = toUserFacingFailureMessage(getBytePlusUserSafeErrorMessageFn(providerMessage));
+    const failureMessage =
+      errorCode === 'BYTEPLUS_ENGINE_PROFILE_MISSING'
+        ? 'This engine is not configured for BytePlus.'
+        : toUserFacingFailureMessage(
+            getBytePlusUserSafeErrorMessageFn(providerMessage)
+          );
+    const responseStatus =
+      error instanceof BytePlusModelArkError && error.code === 'BYTEPLUS_ENGINE_PROFILE_MISSING'
+        ? 400
+        : providerStatus && providerStatus >= 400 && providerStatus < 500
+          ? 502
+          : 503;
     console.warn('[byteplus] task submission failed', {
       jobId: params.jobId,
       engineId: params.engineId,
@@ -238,7 +276,7 @@ export async function submitBytePlusGenerateTask(params: {
 
     return {
       ok: false,
-      status: providerStatus && providerStatus >= 400 && providerStatus < 500 ? 502 : 503,
+      status: responseStatus,
       body: {
         ok: false,
         error: errorCode,

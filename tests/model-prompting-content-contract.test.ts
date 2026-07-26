@@ -5,7 +5,10 @@ import test from 'node:test';
 
 import type { AppLocale } from '../frontend/i18n/locales.ts';
 import { parseModelPromptingContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-content.ts';
-import { listModelPageTemplateSlugs } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-template-registry.ts';
+import {
+  listModelPageTemplateSlugs,
+  listPrelaunchModelPageTemplateSlugs,
+} from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-template-registry.ts';
 import { getModelPromptingUiCopy } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-ui-copy.ts';
 
 const LOCALES = ['en', 'fr', 'es'] as const satisfies readonly AppLocale[];
@@ -70,11 +73,15 @@ function valueAtPath(value: unknown, objectPath: string): unknown {
   }, value);
 }
 
-test('all 40 model documents expose strict prompting content in every locale', () => {
+test('all 40 executable model documents expose strict prompting content in every locale', () => {
   const expectedFiles = listModelPageTemplateSlugs().map((slug) => `${slug}.json`).sort();
+  const completeInventory = [
+    ...expectedFiles,
+    ...listPrelaunchModelPageTemplateSlugs().map((slug) => `${slug}.json`),
+  ].sort();
   assert.equal(expectedFiles.length, 40);
   for (const locale of LOCALES) {
-    assert.deepEqual(files(locale), expectedFiles, `${locale} model inventory`);
+    assert.deepEqual(files(locale), completeInventory, `${locale} model inventory`);
     for (const fileName of expectedFiles) {
       const slug = fileName.slice(0, -5);
       const parsed = parseModelPromptingContent(

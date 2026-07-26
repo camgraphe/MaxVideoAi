@@ -5,7 +5,10 @@ import test from 'node:test';
 
 import type { AppLocale } from '../frontend/i18n/locales.ts';
 import { parseModelExamplesContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-content.ts';
-import { listModelPageTemplateSlugs } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-template-registry.ts';
+import {
+  listModelPageTemplateSlugs,
+  listPrelaunchModelPageTemplateSlugs,
+} from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-template-registry.ts';
 import {
   formatEmptyExamplesLabel,
   getModelExamplesUiCopy,
@@ -151,11 +154,15 @@ test('generic Examples UI copy is complete and model-neutral', () => {
   }
 });
 
-test('all 40 model documents expose strict Examples content in every locale', () => {
+test('all 40 executable model documents expose strict Examples content in every locale', () => {
   const expected = listModelPageTemplateSlugs().map((slug) => `${slug}.json`).sort();
+  const completeInventory = [
+    ...expected,
+    ...listPrelaunchModelPageTemplateSlugs().map((slug) => `${slug}.json`),
+  ].sort();
   assert.equal(expected.length, 40);
   for (const locale of LOCALES) {
-    assert.deepEqual(files(locale), expected);
+    assert.deepEqual(files(locale), completeInventory);
     for (const fileName of expected) {
       const slug = fileName.slice(0, -5);
       const parsed = parseModelExamplesContent(readDocument(locale, slug).examples, slug, locale);

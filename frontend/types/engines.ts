@@ -168,9 +168,17 @@ export interface EngineInputField {
   slotLabelPattern?: string;
 }
 
+export interface EngineReferenceBudget {
+  fieldIds: string[];
+  modes?: Mode[];
+  maxTotal: number;
+  countUniqueUrls: boolean;
+}
+
 export interface EngineInputSchema {
   required?: EngineInputField[];
   optional?: EngineInputField[];
+  referenceBudget?: EngineReferenceBudget;
   constraints?: {
     supportedFormats?: string[];
     maxImageSizeMB?: number;

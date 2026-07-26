@@ -9,6 +9,7 @@ import {
 } from './kling-o3-unified-workflow';
 import { isHappyHorseEngineId, supportsHappyHorseVideoEdit } from '@/lib/happy-horse-workflow';
 import { getImageDimensionViolation, normalizeMinimumImageSide } from '@/lib/image-dimension-constraints';
+import { evaluateReferenceBudget, resolveEngineReferenceBudget } from '@/lib/reference-budget';
 import type { ReferenceAsset } from './workspace-assets';
 import { normalizeExtraInputValue, type FormState } from './workspace-form-state';
 import type { WorkspaceInputFieldEntry, WorkspaceInputSchemaSummary } from './workspace-input-schema';
@@ -61,7 +62,7 @@ export type PrepareGenerationInputsOptions = {
   selectedEngineId: string;
   selectedEngineLabel?: string;
   activeMode: Mode;
-  submissionMode: string;
+  submissionMode: Mode;
   form: FormState;
   inputSchema: EngineCaps['inputSchema'] | null | undefined;
   inputSchemaSummary: Pick<WorkspaceInputSchemaSummary, 'assetFields'>;
@@ -189,6 +190,24 @@ function buildKlingElementsPayload(
 }
 
 export function prepareGenerationInputs(options: PrepareGenerationInputsOptions): GenerationInputPreparationResult {
+  const referenceBudget = resolveEngineReferenceBudget(
+    options.inputSchema,
+    options.submissionMode
+  );
+  if (referenceBudget) {
+    const evaluation = evaluateReferenceBudget({
+      budget: referenceBudget,
+      valuesByField: options.inputAssets,
+      getIdentity: (asset) => asset?.url ?? asset?.previewUrl ?? null,
+    });
+    if (!evaluation.ok) {
+      return {
+        ok: false,
+        message: `This engine mode supports up to ${evaluation.maxTotal} total references.`,
+      };
+    }
+  }
+
   const minimumImageSidePx = normalizeMinimumImageSide(
     options.inputSchema?.constraints?.minImageSidePx
   );

@@ -137,16 +137,20 @@ export async function POST(req: NextRequest) {
     resolvedFirstFrameUrl,
     startImageUrl,
     sourceInputVideoUrl,
+    referenceValuesByField,
+    referenceMediaItems,
+    referenceProvenanceIssues,
   } = deriveGenerationAttachmentReferences({
     attachments: processedAttachments,
     engineId: engine.id,
     mode,
+    inputSchema: engine.inputSchema,
     soraImageUrl: soraRequest?.mode === 'i2v' ? soraRequest.image_url : undefined,
     imageUrl: body.imageUrl,
     image_url: body.image_url,
     referenceImages: body.referenceImages,
     reference_images: body.reference_images,
-    rawAudioUrl,
+    rawAudioUrl, endImageUrl, isBytePlusV1a,
   });
   const sourceVideoContext = resolveGenerateSourceVideoContext({
     mode,
@@ -190,6 +194,10 @@ export async function POST(req: NextRequest) {
     endImageUrl,
     startImageUrl,
     isLumaRay2, initialImageUrl, loop, seed, safetyChecker,
+    inputSchema: engine.inputSchema,
+    referenceValuesByField,
+    referenceMediaItems,
+    referenceProvenanceIssues,
   });
   if (!validationPayloadResult.ok) {
     logMetric('rejected', validationPayloadResult.metric);
@@ -474,6 +482,8 @@ export async function POST(req: NextRequest) {
       renderIds,
       heroRenderId,
       localKey,
+      inputSchema: engine.inputSchema,
+      referenceValuesByField,
       deps: {
         logMetricFn: logMetric,
       },

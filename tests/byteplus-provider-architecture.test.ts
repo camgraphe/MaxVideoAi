@@ -241,9 +241,153 @@ test('BytePlus Standard exposes 4k while Fast and Mini stay capped below 4k', ()
   );
 });
 
+test('BytePlus payload respects explicit empty capabilities while omitted capabilities keep defaults', () => {
+  const basePayload = {
+    modelId: 'dreamina-seedance-2-0-fast-260128',
+    prompt: 'A profile capability test.',
+    durationSec: 5,
+    mode: 't2v' as const,
+    resolution: '720p',
+    ratio: '16:9',
+  };
+
+  assert.throws(
+    () => buildBytePlusSeedancePayload({ ...basePayload, allowedModes: [] }),
+    (error: unknown) =>
+      error instanceof Error &&
+      (error as Error & { code?: string }).code === 'BYTEPLUS_MODE_UNSUPPORTED'
+  );
+  assert.throws(
+    () => buildBytePlusSeedancePayload({ ...basePayload, allowedAspectRatios: [] }),
+    (error: unknown) =>
+      error instanceof Error &&
+      (error as Error & { code?: string }).code === 'BYTEPLUS_RATIO_UNSUPPORTED'
+  );
+  assert.throws(
+    () => buildBytePlusSeedancePayload({ ...basePayload, allowedResolutions: [] }),
+    (error: unknown) =>
+      error instanceof Error &&
+      (error as Error & { code?: string }).code ===
+        'BYTEPLUS_RESOLUTION_UNSUPPORTED'
+  );
+  assert.throws(
+    () =>
+      buildBytePlusSeedancePayload({
+        ...basePayload,
+        allowedDurationOptions: [],
+      }),
+    (error: unknown) =>
+      error instanceof Error &&
+      (error as Error & { code?: string }).code ===
+        'BYTEPLUS_DURATION_UNSUPPORTED'
+  );
+
+  const payload = buildBytePlusSeedancePayload(basePayload);
+  assert.equal(payload.resolution, '720p');
+  assert.equal(payload.ratio, '16:9');
+});
+
+test('BytePlus payload counts typed budget items before URL deduplication', () => {
+  assert.throws(
+    () =>
+      buildBytePlusSeedancePayload({
+        modelId: 'current-model-id',
+        prompt: 'A reference-guided scene',
+        durationSec: 5,
+        mode: 'ref2v',
+        resolution: '720p',
+        ratio: '16:9',
+        allowedResolutions: ['720p'],
+        allowedDurationOptions: [5],
+        referenceBudget: {
+          fieldIds: ['image_urls'],
+          maxTotal: 1,
+          countUniqueUrls: false,
+        },
+        referenceMediaItems: [
+          { fieldId: 'image_urls', kind: 'image', url: 'same' },
+          { fieldId: 'image_urls', kind: 'image', url: 'same' },
+        ],
+      }),
+    (error: unknown) =>
+      error instanceof Error &&
+      (error as Error & { code?: string }).code === 'BYTEPLUS_REFERENCE_BUDGET_EXCEEDED'
+  );
+});
+
+test('BytePlus typed provenance preserves a non-budget V2V source video', () => {
+  const payload = buildBytePlusSeedancePayload({
+    modelId: 'current-model-id',
+    prompt: 'Edit the source',
+    durationSec: 5,
+    mode: 'v2v',
+    resolution: '720p',
+    ratio: '16:9',
+    allowedResolutions: ['720p'],
+    allowedDurationOptions: [5],
+    referenceImageUrls: ['reference-image'],
+    referenceVideoUrls: ['source-video'],
+    referenceBudget: {
+      fieldIds: ['reference_image_urls'],
+      maxTotal: 1,
+      countUniqueUrls: true,
+    },
+    referenceMediaItems: [
+      {
+        fieldId: 'reference_image_urls',
+        kind: 'image',
+        url: 'reference-image',
+      },
+      { fieldId: 'video_url', kind: 'video', url: 'source-video' },
+    ],
+  });
+
+  assert.deepEqual(
+    payload.content
+      .filter((item) => item.type !== 'text')
+      .map((item) =>
+        item.type === 'image_url'
+          ? item.image_url.url
+          : item.type === 'video_url'
+            ? item.video_url.url
+            : item.audio_url.url
+      ),
+    ['reference-image', 'source-video']
+  );
+});
+
+test('BytePlus rejects a budgeted item omitted from provider-selected arrays', () => {
+  assert.throws(
+    () =>
+      buildBytePlusSeedancePayload({
+        modelId: 'current-model-id',
+        prompt: 'A reference-guided scene',
+        durationSec: 5,
+        mode: 'ref2v',
+        resolution: '720p',
+        ratio: '16:9',
+        allowedResolutions: ['720p'],
+        allowedDurationOptions: [5],
+        referenceBudget: {
+          fieldIds: ['image_urls'],
+          maxTotal: 2,
+          countUniqueUrls: true,
+        },
+        referenceMediaItems: [
+          { fieldId: 'image_urls', kind: 'image', url: 'missing-image' },
+        ],
+      }),
+    (error: unknown) =>
+      error instanceof Error &&
+      (error as Error & { code?: string }).code ===
+        'BYTEPLUS_REFERENCE_BUDGET_INPUT_MISMATCH'
+  );
+});
+
 test('BytePlus Standard 4k accounting uses 4k dimensions and input-aware official rates', () => {
   assert.equal(
     expectedBytePlusTokens({
+      engine_id: 'seedance-2-0',
       duration_sec: 1,
       settings_snapshot: {
         core: {
@@ -256,6 +400,7 @@ test('BytePlus Standard 4k accounting uses 4k dimensions and input-aware officia
   );
   assert.equal(
     expectedBytePlusTokens({
+      engine_id: 'seedance-2-0',
       duration_sec: 1,
       settings_snapshot: {
         core: {
@@ -312,4 +457,33 @@ test('BytePlus runtime exposes Seedance 2.0 Standard and Fast video source workf
     assert.equal(extensionSourceField?.maxCount, 3);
     assert.deepEqual(referenceVideoField?.modes, ['ref2v']);
   }
+});
+
+test('hidden direct Fast keeps its narrow raw runtime caps by default', () => {
+  const hiddenEntry = listFalEngines().find(
+    (entry) => entry.id === 'seedance-2-0-fast-byteplus'
+  );
+  assert.ok(hiddenEntry);
+  const runtimeEngine = applyBytePlusSeedanceRuntimeOptions(hiddenEntry.engine);
+  assert.deepEqual(runtimeEngine.modes, ['t2v']);
+  assert.deepEqual(runtimeEngine.resolutions, ['720p']);
+  assert.deepEqual(runtimeEngine.aspectRatios, ['16:9']);
+  assert.deepEqual(hiddenEntry.modes[0]?.ui.resolution, ['720p']);
+  assert.equal(hiddenEntry.modes[0]?.ui.audioToggle, false);
+});
+
+test('profile policy is separated from the thin provider facade', () => {
+  const facade = readFileSync(
+    'frontend/src/server/video-providers/byteplus-modelark.ts',
+    'utf8'
+  );
+  const policy = readFileSync(
+    'frontend/src/server/video-providers/byteplus-modelark-profile-policy.ts',
+    'utf8'
+  );
+  assert.ok(facade.split('\n').length < 430);
+  assert.match(facade, /from '\.\/byteplus-modelark-profile-policy'/);
+  assert.match(policy, /export function applyBytePlusSeedanceRuntimeOptions/);
+  assert.match(policy, /export function resolveBytePlusSeedanceRouteProfile/);
+  assert.doesNotMatch(facade, /function filterInputFieldsForModes/);
 });

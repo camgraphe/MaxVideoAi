@@ -2,6 +2,12 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { listFalEngines, getFalEngineBySlug, type FalEngineEntry } from '@/config/falEngines';
+import {
+  isRuntimeModelPagePublished,
+  isRuntimePresentationOnlyModel,
+  listPublishedRuntimeModels,
+  resolveRuntimePublicSlug,
+} from '@/config/model-runtime';
 import { locales, type AppLocale } from '@/i18n/locales';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
@@ -53,6 +59,10 @@ import {
   type KeySpecRow,
 } from './_lib/model-page-specs';
 import { MarketingModelPageLayout } from './_components/MarketingModelPageLayout';
+import {
+  buildModelPrelaunchMetadata,
+  renderMarketingModelPrelaunchPage,
+} from './_lib/model-page-prelaunch-route';
 
 type PageParams = {
   params: Promise<{
@@ -67,17 +77,35 @@ export const revalidate = 300;
 const UNBRANDED_MODEL_TITLE_SLUGS = new Set(['pika-text-to-video', 'ltx-2-3-fast', 'seedance-2-0', 'veo-3-1']);
 
 export function generateStaticParams() {
-  const engines = listFalEngines();
   return locales.flatMap((locale) =>
-    engines
-      .filter(isPublishedModelPage)
-      .map((entry) => ({ locale, slug: entry.modelSlug }))
+    listPublishedRuntimeModels().map((model) => ({ locale, slug: model.slug }))
   );
 }
 
 export async function generateMetadata(props: PageParams): Promise<Metadata> {
   const params = await props.params;
   const { slug, locale } = params;
+  const model = resolveRuntimePublicSlug(slug);
+  if (!model || !isRuntimeModelPagePublished(model)) {
+    return {
+      title: 'Model not found - MaxVideo AI',
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const canonicalSlug = model.slug;
+  const localized = await getEngineLocalized(canonicalSlug, locale);
+  const detailSlugMap = buildDetailSlugMap(canonicalSlug);
+  const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${canonicalSlug}`));
+
+  if (isRuntimePresentationOnlyModel(model)) {
+    return buildModelPrelaunchMetadata({
+      model,
+      localizedContent: localized,
+      locale,
+    });
+  }
+
   const engine = getFalEngineBySlug(slug);
   if (!isPublishedModelPage(engine)) {
     return {
@@ -86,15 +114,11 @@ export async function generateMetadata(props: PageParams): Promise<Metadata> {
     };
   }
 
-  const canonicalSlug = engine.modelSlug ?? slug;
-  const localized = await getEngineLocalized(canonicalSlug, locale);
   const decisionData = buildModelDecisionData({
     engine,
     locale,
     decisionContent: localized.decision,
   });
-  const detailSlugMap = buildDetailSlugMap(canonicalSlug);
-  const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${canonicalSlug}`));
   const fallbackTitle = engine.seo.title ?? `${engine.marketingName} — MaxVideo AI`;
   const title = decisionData?.meta.title ?? localized.seo.title ?? fallbackTitle;
   const description =
@@ -442,13 +466,13 @@ export default async function ModelDetailPage(props: PageParams) {
   const params = await props.params;
   const { slug, locale: routeLocale } = params;
   const localizedModelsBase = (MODELS_BASE_PATH_MAP[routeLocale ?? 'en'] ?? 'models').replace(/^\/+|\/+$/g, '');
-  const engine = getFalEngineBySlug(slug);
-  if (!isPublishedModelPage(engine)) {
+  const model = resolveRuntimePublicSlug(slug);
+  if (!model || !isRuntimeModelPagePublished(model)) {
     notFound();
   }
 
-  if (slug !== engine.modelSlug) {
-    permanentRedirect(`/${localizedModelsBase}/${engine.modelSlug}`.replace(/\/{2,}/g, '/'));
+  if (slug !== model.slug) {
+    permanentRedirect(`/${localizedModelsBase}/${model.slug}`.replace(/\/{2,}/g, '/'));
   }
 
   {
@@ -461,7 +485,20 @@ export default async function ModelDetailPage(props: PageParams) {
       ...(dictionary.models.detail ?? {}),
       breadcrumb: { ...DEFAULT_DETAIL_COPY.breadcrumb, ...(dictionary.models.detail?.breadcrumb ?? {}) },
     };
-    const localizedContent = await getEngineLocalized(engine.modelSlug, activeLocale);
+    const localizedContent = await getEngineLocalized(model.slug, activeLocale);
+    if (isRuntimePresentationOnlyModel(model)) {
+      return await renderMarketingModelPrelaunchPage({
+        model,
+        detailCopy,
+        localizedContent,
+        locale: activeLocale,
+      });
+    }
+
+    const engine = getFalEngineBySlug(model.slug);
+    if (!isPublishedModelPage(engine)) {
+      notFound();
+    }
     return await renderMarketingModelPage({
       engine,
       detailCopy,

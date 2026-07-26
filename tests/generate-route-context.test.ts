@@ -32,11 +32,29 @@ test('route context helper exposes the expected guard contract', () => {
   assert.match(helperSource, /randomUUID/);
   assert.match(helperSource, /isVideoMode/);
   assert.match(helperSource, /isGoogleVertexOmniEngine/);
+  assert.match(helperSource, /isBytePlusSeedanceAdminOnly/);
+  assert.match(helperSource, /resolveBytePlusSeedanceRouteProfile/);
+  assert.match(
+    helperSource,
+    /isBytePlusV1a\s*&&\s*!getBytePlusSeedanceAllowedModes\(engine\.id\)\.includes\(mode\)/
+  );
+  assert.doesNotMatch(helperSource, /const bytePlusModeAllowed\s*=\s*getBytePlusSeedanceAllowedModes/);
+  assert.doesNotMatch(helperSource, /isPublicSeedanceStandardBytePlus/);
+  assert.doesNotMatch(helperSource, /isPublicSeedanceFastBytePlus/);
+  assert.doesNotMatch(helperSource, /isPublicSeedanceMiniBytePlus/);
 
   const directProviderAdminGuard = helperSource.match(/if \(\s*!\s*isBytePlusV1a[\s\S]*?\)\s*\{/)?.[0] ?? '';
   assert.match(directProviderAdminGuard, /isGoogleVertexOmniEngine\(engine\.id\)/);
   assert.match(helperSource, /providerRoutingPlan\.kind === 'google_vertex_unavailable'/);
   assert.doesNotMatch(helperSource, /GOOGLE_VERTEX_OMNI_FALLBACK_TO_FAL_ENABLED/);
+});
+
+test('generate route resolves context before billing preflight', () => {
+  assert.ok(
+    routeSource.indexOf('const routeContext = await resolveGenerateRouteContext') <
+      routeSource.indexOf('const billingPreflight = await resolveGenerateBillingPreflight'),
+    'BytePlus profile preflight in route context must happen before billing'
+  );
 });
 
 test('generate route delegates source-video duration and input context', () => {

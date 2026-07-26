@@ -3,14 +3,397 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
 
+import { deriveGenerationAttachmentReferences } from '../frontend/app/api/generate/_lib/attachment-references.ts';
+import type { NormalizedAttachment } from '../frontend/app/api/generate/_lib/attachments.ts';
+import {
+  buildFalInputs,
+  buildFalRequestParts,
+} from '../frontend/app/api/generate/_lib/fal-request.ts';
+import { buildGenerateValidationPayload } from '../frontend/app/api/generate/_lib/validation-payload.ts';
+import { validateModeMediaInputs } from '../frontend/app/api/generate/_lib/validate-media-inputs.ts';
 import { validateRequest } from '../frontend/app/api/generate/_lib/validate.ts';
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
+import {
+  buildReferenceMediaItems,
+  resolveEngineReferenceBudget,
+} from '../frontend/lib/reference-budget.ts';
+import { buildFalGenerationRequest } from '../frontend/src/lib/fal-request-body.ts';
+import {
+  buildSoraFalInput,
+  type SoraRequest,
+} from '../frontend/src/lib/sora.ts';
+import type { MaxVideoProviderElement } from '../frontend/src/lib/video-provider-elements.ts';
+import { buildBytePlusSeedancePayload } from '../frontend/src/server/video-providers/byteplus-modelark.ts';
+import { resolveKlingDirectSubmissionMediaInputs } from '../frontend/app/api/generate/_lib/kling-direct-submission.ts';
+import { buildKlingDirectPayload } from '../frontend/src/server/video-providers/kling-direct/payload.ts';
+import type { EngineInputSchema, Mode } from '../frontend/types/engines.ts';
 
 const root = process.cwd();
 const validatePath = join(root, 'frontend/app/api/generate/_lib/validate.ts');
 const mediaInputsPath = join(root, 'frontend/app/api/generate/_lib/validate-media-inputs.ts');
 const typesPath = join(root, 'frontend/app/api/generate/_lib/validate-types.ts');
 const OK = { ok: true } as const;
+const budgetedRef2vSchema = {
+  optional: [
+    {
+      id: 'image_urls',
+      type: 'image',
+      label: 'References',
+      modes: ['ref2v'],
+    },
+    {
+      id: 'audio_urls',
+      type: 'audio',
+      label: 'Reference audio',
+      modes: ['v2v'],
+    },
+  ],
+  referenceBudget: {
+    fieldIds: ['image_urls'],
+    modes: ['ref2v'],
+    maxTotal: 1,
+    countUniqueUrls: true,
+  },
+} satisfies EngineInputSchema;
+const typedReferenceV2vFields = [
+  {
+    id: 'reference_image_urls',
+    type: 'image',
+    label: 'References',
+    modes: ['v2v'],
+  },
+  {
+    id: 'audio_urls',
+    type: 'audio',
+    label: 'Reference audio',
+    modes: ['v2v'],
+  },
+  {
+    id: 'video_url',
+    type: 'video',
+    label: 'Source video',
+    modes: ['v2v'],
+  },
+] satisfies NonNullable<EngineInputSchema['optional']>;
+const typedReferenceBudgetV2vSchema = {
+  optional: typedReferenceV2vFields,
+  referenceBudget: {
+    fieldIds: ['reference_image_urls', 'audio_urls'],
+    modes: ['v2v'],
+    maxTotal: 1,
+    countUniqueUrls: true,
+  },
+} satisfies EngineInputSchema;
+const falReferenceFields = [
+  {
+    id: 'image_urls',
+    type: 'image',
+    label: 'References',
+    modes: ['ref2v'],
+  },
+  {
+    id: 'video_urls',
+    type: 'video',
+    label: 'Reference video',
+    modes: ['ref2v'],
+  },
+  {
+    id: 'audio_urls',
+    type: 'audio',
+    label: 'Reference audio',
+    modes: ['ref2v'],
+  },
+] satisfies NonNullable<EngineInputSchema['optional']>;
+const budgetedFalReferenceSchema = {
+  optional: falReferenceFields,
+  referenceBudget: {
+    fieldIds: ['image_urls', 'video_urls', 'audio_urls'],
+    modes: ['ref2v'],
+    maxTotal: 1,
+    countUniqueUrls: true,
+  },
+} satisfies EngineInputSchema;
+const kindlessFalReferenceSchema = {
+  optional: falReferenceFields,
+  referenceBudget: {
+    fieldIds: ['image_urls', 'video_urls', 'audio_urls'],
+    modes: ['ref2v'],
+    maxTotal: 2,
+    countUniqueUrls: true,
+  },
+} satisfies EngineInputSchema;
+const unbudgetedFalReferenceSchema = {
+  optional: falReferenceFields,
+} satisfies EngineInputSchema;
+
+function attachment(
+  kind: 'image' | 'video' | 'audio',
+  slotId: string,
+  url: string
+): NormalizedAttachment {
+  return {
+    name: `${kind}-asset`,
+    type: `${kind}/test`,
+    size: 1,
+    kind,
+    slotId,
+    url,
+  };
+}
+
+function incompleteAttachment(
+  overrides: Partial<NormalizedAttachment> & { url: string }
+): NormalizedAttachment {
+  return {
+    name: 'incomplete-asset',
+    type: 'application/octet-stream',
+    size: 1,
+    ...overrides,
+  };
+}
+
+function deriveFalReferences(
+  extraAttachments: NormalizedAttachment[],
+  inputSchema: EngineInputSchema
+) {
+  const attachments = [
+    attachment('image', 'image_urls', 'valid-image'),
+    ...extraAttachments,
+  ];
+  return {
+    attachments,
+    references: deriveGenerationAttachmentReferences({
+      engineId: 'seedance-2-0',
+      mode: 'ref2v',
+      inputSchema,
+      referenceImages: [],
+      rawAudioUrl: null,
+      attachments,
+    }),
+  };
+}
+
+function buildFalReferenceValidation(
+  references: ReturnType<typeof deriveGenerationAttachmentReferences>,
+  inputSchema: EngineInputSchema
+) {
+  return buildGenerateValidationPayload({
+    engineId: 'seedance-2-0',
+    mode: 'ref2v',
+    prompt: 'Keep the same subject and motion',
+    multiPrompt: null,
+    supportsResolution: false,
+    effectiveResolution: '720p',
+    supportsAspectRatio: false,
+    aspectRatio: null,
+    audioEnabled: undefined,
+    isBytePlusV1a: false,
+    supportsDuration: true,
+    numFrames: null,
+    validationDuration: 4,
+    maxUploadedBytes: references.maxUploadedBytes,
+    resolvedFirstFrameUrl: null,
+    lastFrameUrl: null,
+    normalizedReferenceImages: references.normalizedReferenceImages,
+    videoUrls: references.videoUrls,
+    audioUrls: references.audioUrls,
+    resolvedAudioUrl: references.resolvedAudioUrl,
+    sourceInputVideoUrl: null,
+    elements: null,
+    endImageUrl: null,
+    startImageUrl: null,
+    isLumaRay2: false,
+    initialImageUrl: null,
+    inputSchema,
+    referenceValuesByField: references.referenceValuesByField,
+    referenceMediaItems: references.referenceMediaItems,
+    referenceProvenanceIssues: references.referenceProvenanceIssues,
+  });
+}
+
+function buildFalReferenceRequest(
+  attachments: NormalizedAttachment[],
+  references: ReturnType<typeof deriveGenerationAttachmentReferences>
+) {
+  return buildFalGenerationRequest(
+    {
+      engineId: 'seedance-2-0',
+      prompt: 'Keep the same subject and motion',
+      mode: 'ref2v',
+      durationSec: 4,
+      inputs: buildFalInputs(attachments),
+      referenceImages: references.normalizedReferenceImages,
+    },
+    'fal-ai/bytedance/seedance/v2/reference-to-video'
+  );
+}
+
+type FalMediaPipelineParams = {
+  engineId: string;
+  defaultModel: string;
+  mode: Mode;
+  inputSchema: EngineInputSchema;
+  attachments?: NormalizedAttachment[];
+  referenceImages?: string[];
+  imageUrl?: string;
+  image_url?: string;
+  rawAudioUrl?: string | null;
+  endImageUrl?: string | null;
+  soraRequest?: SoraRequest | null;
+  elements?: MaxVideoProviderElement[] | null;
+  isBytePlusV1a?: boolean;
+  validationDuration?: number | string;
+  captureValidationContext?: boolean;
+};
+
+function buildFalMediaPipeline(params: FalMediaPipelineParams) {
+  const attachments = params.attachments ?? [];
+  const derivationParams = {
+    attachments,
+    engineId: params.engineId,
+    mode: params.mode,
+    inputSchema: params.inputSchema,
+    soraImageUrl:
+      params.soraRequest?.mode === 'i2v'
+        ? params.soraRequest.image_url
+        : undefined,
+    imageUrl: params.imageUrl,
+    image_url: params.image_url,
+    referenceImages: params.referenceImages ?? [],
+    rawAudioUrl: params.rawAudioUrl ?? null,
+    endImageUrl: params.endImageUrl ?? null,
+    isBytePlusV1a: params.isBytePlusV1a ?? false,
+  };
+  const references =
+    deriveGenerationAttachmentReferences(derivationParams);
+  let capturedValidationContext: unknown;
+  const validation = buildGenerateValidationPayload({
+    engineId: params.engineId,
+    mode: params.mode,
+    prompt: 'Keep the same subject and motion',
+    multiPrompt: null,
+    supportsResolution: false,
+    effectiveResolution: '720p',
+    supportsAspectRatio: false,
+    aspectRatio: null,
+    audioEnabled: undefined,
+    isBytePlusV1a: params.isBytePlusV1a ?? false,
+    supportsDuration: true,
+    numFrames: null,
+    validationDuration: params.validationDuration ?? 4,
+    maxUploadedBytes: references.maxUploadedBytes,
+    resolvedFirstFrameUrl: references.resolvedFirstFrameUrl,
+    lastFrameUrl: references.lastFrameUrl,
+    normalizedReferenceImages: references.normalizedReferenceImages,
+    videoUrls: references.videoUrls,
+    audioUrls: references.audioUrls,
+    resolvedAudioUrl: references.resolvedAudioUrl,
+    sourceInputVideoUrl: references.sourceInputVideoUrl,
+    elements: params.elements ?? null,
+    endImageUrl: params.endImageUrl ?? null,
+    startImageUrl: references.startImageUrl,
+    isLumaRay2: false,
+    initialImageUrl: references.initialImageUrl,
+    inputSchema: params.inputSchema,
+    referenceValuesByField: references.referenceValuesByField,
+    referenceMediaItems: references.referenceMediaItems,
+    referenceProvenanceIssues: references.referenceProvenanceIssues,
+    deps: params.captureValidationContext
+      ? {
+          validateRequestFn: (engineId, mode, payload, context) => {
+            capturedValidationContext = context;
+            return validateRequest(engineId, mode, payload, context);
+          },
+        }
+      : undefined,
+  });
+  const falParts = buildFalRequestParts({
+    attachments,
+    engineId: params.engineId,
+    prompt: 'Keep the same subject and motion',
+    mode: params.mode,
+    apiKey: undefined,
+    jobId: 'job-provider-media-contract',
+    localKey: null,
+    needsImage: params.mode === 'i2v' || params.mode === 'i2i',
+    needsFirstLastFrames: params.mode === 'fl2v',
+    initialImageUrl: references.initialImageUrl,
+    resolvedFirstFrameUrl: references.resolvedFirstFrameUrl,
+    lastFrameUrl: references.lastFrameUrl,
+    resolvedAudioUrl: references.resolvedAudioUrl,
+    normalizedReferenceImages: references.normalizedReferenceImages,
+    videoUrls: references.videoUrls,
+    audioUrls: references.audioUrls,
+    soraRequest: params.soraRequest ?? null,
+    isLumaRay2: false,
+    loop: false,
+    multiPrompt: null,
+    shotType: null,
+    seed: null,
+    cameraFixed: null,
+    safetyChecker: null,
+    voiceIds: [],
+    elements: params.elements ?? null,
+    endImageUrl: params.endImageUrl ?? null,
+    extraInputValues: {},
+    supportsDuration: true,
+    durationSec: 4,
+    durationOption: 4,
+    numFrames: null,
+    supportsAspectRatio: false,
+    aspectRatio: null,
+    supportsResolution: false,
+    resolution: '720p',
+    audioEnabled: undefined,
+    supportsFps: false,
+    fps: undefined,
+    cfgScale: undefined,
+  });
+  const falRequest = buildFalGenerationRequest(
+    falParts.falPayload,
+    params.defaultModel
+  );
+
+  return {
+    attachments,
+    references,
+    validation,
+    falPayload: falParts.falPayload,
+    falRequest,
+    capturedValidationContext,
+  };
+}
+
+function deriveAndValidateBudgetedRef2v(
+  extraAttachment: NormalizedAttachment
+) {
+  const references = deriveGenerationAttachmentReferences({
+    engineId: 'contract-test-engine',
+    mode: 'ref2v',
+    inputSchema: budgetedRef2vSchema,
+    referenceImages: [],
+    rawAudioUrl: null,
+    attachments: [
+      attachment('image', 'image_urls', 'valid-image'),
+      extraAttachment,
+    ],
+  });
+  return {
+    references,
+    validation: validateModeMediaInputs({
+      engineId: 'contract-test-engine',
+      normalizedMode: 'ref2v',
+      inputSchema: budgetedRef2vSchema,
+      referenceValuesByField: references.referenceValuesByField,
+      referenceMediaItems: references.referenceMediaItems,
+      payload: {
+        image_urls: references.normalizedReferenceImages,
+        video_urls: references.videoUrls,
+        audio_urls: references.audioUrls,
+      },
+    }),
+  };
+}
 
 test('generate request validation delegates media mode rules', () => {
   assert.equal(existsSync(mediaInputsPath), true);
@@ -30,6 +413,1924 @@ test('generate request validation delegates media mode rules', () => {
 
   const lineCount = validateSource.split('\n').length;
   assert.ok(lineCount <= 300, `validate.ts should stay below 300 lines after media-rule extraction, got ${lineCount}`);
+});
+
+test('server aggregate validation uses original slot ids instead of projected keys', () => {
+  const result = validateModeMediaInputs({
+    engineId: 'contract-test-engine',
+    normalizedMode: 'v2v',
+    inputSchema: {
+      optional: [
+        { id: 'reference_image_urls', type: 'image', label: 'Images', modes: ['v2v'] },
+        { id: 'video_url', type: 'video', label: 'Source', modes: ['v2v'] },
+        { id: 'audio_urls', type: 'audio', label: 'Audio', modes: ['v2v'] },
+      ],
+      referenceBudget: {
+        fieldIds: ['reference_image_urls', 'audio_urls'],
+        modes: ['v2v'],
+        maxTotal: 2,
+        countUniqueUrls: true,
+      },
+    },
+    referenceValuesByField: {
+      reference_image_urls: ['a', 'b'],
+      audio_urls: ['c'],
+      video_url: ['source'],
+    },
+    payload: {
+      reference_image_urls: ['a', 'b'],
+      audio_url: 'c',
+      video_url: 'source',
+    },
+  });
+  assert.deepEqual(result, {
+    ok: false,
+    error: {
+      code: 'ENGINE_CONSTRAINT',
+      field: 'referenceBudget',
+      message: 'Up to 2 total references are supported for this engine mode',
+      allowed: [0, 2],
+      value: 3,
+    },
+  });
+});
+
+test('server aggregate validation rejects provider video projected from an unknown attachment slot', () => {
+  const { references, validation } = deriveAndValidateBudgetedRef2v(
+    attachment('video', 'forged_video_slot', 'forged-video')
+  );
+
+  assert.deepEqual(references.videoUrls, ['forged-video']);
+  assert.deepEqual(validation, {
+    ok: false,
+    error: {
+      code: 'ENGINE_CONSTRAINT',
+      field: 'forged_video_slot',
+      message:
+        'Media input "forged_video_slot" is not supported for this engine mode',
+    },
+  });
+});
+
+test('server aggregate validation rejects provider audio projected from a mode-inactive attachment slot', () => {
+  const { references, validation } = deriveAndValidateBudgetedRef2v(
+    attachment('audio', 'audio_urls', 'inactive-audio')
+  );
+
+  assert.deepEqual(references.audioUrls, ['inactive-audio']);
+  assert.deepEqual(validation, {
+    ok: false,
+    error: {
+      code: 'ENGINE_CONSTRAINT',
+      field: 'audio_urls',
+      message: 'Media input "audio_urls" is not supported for this engine mode',
+    },
+  });
+});
+
+test('budgeted route validation counts singular direct audio that Fal would submit', () => {
+  const inputSchema = {
+    optional: [
+      { id: 'image_urls', type: 'image', label: 'Images', modes: ['ref2v'] },
+      { id: 'audio_url', type: 'audio', label: 'Audio', modes: ['ref2v'] },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_urls', 'audio_url'],
+      modes: ['ref2v'],
+      maxTotal: 1,
+      countUniqueUrls: true,
+    },
+  } satisfies EngineInputSchema;
+  const scenario = buildFalMediaPipeline({
+    engineId: 'seedance-2-0',
+    defaultModel: 'fal-ai/bytedance/seedance/v2/reference-to-video',
+    mode: 'ref2v',
+    inputSchema,
+    attachments: [
+      attachment('image', 'image_urls', 'valid-image'),
+    ],
+    rawAudioUrl: 'direct-audio',
+  });
+
+  assert.deepEqual(scenario.falRequest.requestBody.image_urls, [
+    'valid-image',
+  ]);
+  assert.equal(scenario.falRequest.requestBody.audio_url, 'direct-audio');
+  assert.deepEqual(scenario.references.referenceValuesByField, {
+    image_urls: ['valid-image'],
+    audio_url: ['direct-audio'],
+  });
+  assert.deepEqual(scenario.references.referenceMediaItems, [
+    { fieldId: 'image_urls', kind: 'image', url: 'valid-image' },
+    { fieldId: 'audio_url', kind: 'audio', url: 'direct-audio' },
+  ]);
+  assert.equal(scenario.validation.ok, false);
+  if (scenario.validation.ok) {
+    assert.fail('budgeted validation accepted singular direct audio selected by Fal');
+  }
+  assert.equal(scenario.validation.status, 400);
+  assert.deepEqual(scenario.validation.body, {
+    ok: false,
+    error: 'ENGINE_CONSTRAINT',
+    message: 'Up to 1 total references are supported for this engine mode',
+    field: 'referenceBudget',
+    allowed: [0, 1],
+    value: 2,
+  });
+});
+
+test('budgeted route validation rejects a direct audio alias that is inactive for the mode', () => {
+  const inputSchema = {
+    optional: [
+      { id: 'image_urls', type: 'image', label: 'Images', modes: ['ref2v'] },
+      { id: 'audio_urls', type: 'audio', label: 'Audio', modes: ['v2v'] },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_urls'],
+      modes: ['ref2v'],
+      maxTotal: 1,
+      countUniqueUrls: true,
+    },
+  } satisfies EngineInputSchema;
+  const scenario = buildFalMediaPipeline({
+    engineId: 'seedance-2-0',
+    defaultModel: 'fal-ai/bytedance/seedance/v2/reference-to-video',
+    mode: 'ref2v',
+    inputSchema,
+    attachments: [
+      attachment('image', 'image_urls', 'valid-image'),
+    ],
+    rawAudioUrl: 'direct-audio',
+  });
+
+  assert.equal(scenario.falRequest.requestBody.audio_url, 'direct-audio');
+  assert.equal(scenario.validation.ok, false);
+  if (scenario.validation.ok) {
+    assert.fail('budgeted validation dropped a mode-inactive direct audio alias');
+  }
+  assert.deepEqual(scenario.validation.body, {
+    ok: false,
+    error: 'ENGINE_CONSTRAINT',
+    message:
+      'Media input "audio_urls" is not supported for this engine mode',
+    field: 'audio_urls',
+    allowed: undefined,
+    value: undefined,
+  });
+});
+
+test('budgeted route validation counts direct start and end images that Fal would submit', () => {
+  const inputSchema = {
+    optional: [
+      { id: 'image_url', type: 'image', label: 'Start image', modes: ['i2v'] },
+      { id: 'end_image_url', type: 'image', label: 'End image', modes: ['i2v'] },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_url', 'end_image_url'],
+      modes: ['i2v'],
+      maxTotal: 1,
+      countUniqueUrls: true,
+    },
+  } satisfies EngineInputSchema;
+  const scenario = buildFalMediaPipeline({
+    engineId: 'seedance-2-0',
+    defaultModel: 'fal-ai/bytedance/seedance/v2/image-to-video',
+    mode: 'i2v',
+    inputSchema,
+    imageUrl: 'direct-start',
+    endImageUrl: 'direct-end',
+  });
+
+  assert.equal(scenario.falRequest.requestBody.image_url, 'direct-start');
+  assert.equal(scenario.falRequest.requestBody.end_image_url, 'direct-end');
+  assert.equal(scenario.validation.ok, false);
+  if (scenario.validation.ok) {
+    assert.fail('budgeted validation accepted direct start and end images selected by Fal');
+  }
+  assert.deepEqual(scenario.validation.body, {
+    ok: false,
+    error: 'ENGINE_CONSTRAINT',
+    message: 'Up to 1 total references are supported for this engine mode',
+    field: 'referenceBudget',
+    allowed: [0, 1],
+    value: 2,
+  });
+});
+
+test('direct image and frame surfaces retain exact typed provenance through real Fal projection', () => {
+  const i2vSchema = {
+    optional: [
+      { id: 'image_url', type: 'image', label: 'Image', modes: ['i2v'] },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_url'],
+      modes: ['i2v'],
+      maxTotal: 1,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const directImage = buildFalMediaPipeline({
+    engineId: 'seedance-2-0',
+    defaultModel: 'fal-ai/bytedance/seedance/v2/image-to-video',
+    mode: 'i2v',
+    inputSchema: i2vSchema,
+    image_url: 'direct-image',
+  });
+  assert.equal(directImage.validation.ok, true);
+  assert.equal(directImage.falRequest.requestBody.image_url, 'direct-image');
+  assert.deepEqual(directImage.references.referenceMediaItems, [
+    { fieldId: 'image_url', kind: 'image', url: 'direct-image' },
+  ]);
+
+  const firstLastSchema = {
+    optional: [
+      {
+        id: 'first_frame_url',
+        type: 'image',
+        label: 'First frame',
+        modes: ['fl2v'],
+      },
+      {
+        id: 'last_frame_url',
+        type: 'image',
+        label: 'Last frame',
+        modes: ['fl2v'],
+      },
+    ],
+    referenceBudget: {
+      fieldIds: ['first_frame_url'],
+      modes: ['fl2v'],
+      maxTotal: 1,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const firstLastFrames = buildFalMediaPipeline({
+    engineId: 'veo-3-1-fast',
+    defaultModel: 'fal-ai/veo3.1/fast/first-last-frame-to-video',
+    mode: 'fl2v',
+    inputSchema: firstLastSchema,
+    imageUrl: 'direct-first-frame',
+    attachments: [
+      attachment('image', 'last_frame_url', 'attachment-last-frame'),
+    ],
+  });
+  assert.equal(firstLastFrames.validation.ok, true);
+  assert.equal(
+    firstLastFrames.falRequest.requestBody.first_frame_url,
+    'direct-first-frame'
+  );
+  assert.equal(
+    firstLastFrames.falRequest.requestBody.last_frame_url,
+    'attachment-last-frame'
+  );
+  assert.deepEqual(firstLastFrames.references.referenceMediaItems, [
+    {
+      fieldId: 'last_frame_url',
+      kind: 'image',
+      url: 'attachment-last-frame',
+    },
+    {
+      fieldId: 'first_frame_url',
+      kind: 'image',
+      url: 'direct-first-frame',
+    },
+  ]);
+
+  const startFrameSchema = {
+    optional: [
+      { id: 'image_urls', type: 'image', label: 'Images', modes: ['ref2v'] },
+      {
+        id: 'start_image_url',
+        type: 'image',
+        label: 'Start frame',
+        modes: ['ref2v'],
+      },
+    ],
+    referenceBudget: {
+      fieldIds: ['start_image_url'],
+      modes: ['ref2v'],
+      maxTotal: 1,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const startFrame = buildFalMediaPipeline({
+    engineId: 'kling-o3-standard',
+    defaultModel: 'fal-ai/kling-video/o3/standard/reference-to-video',
+    mode: 'ref2v',
+    inputSchema: startFrameSchema,
+    attachments: [
+      attachment('image', 'image_urls', 'valid-image'),
+      attachment('image', 'start_image_url', 'attachment-start-frame'),
+    ],
+  });
+  assert.equal(startFrame.validation.ok, true);
+  assert.equal(
+    startFrame.falRequest.requestBody.start_image_url,
+    'attachment-start-frame'
+  );
+  assert.deepEqual(
+    startFrame.references.referenceValuesByField['start_image_url'],
+    ['attachment-start-frame']
+  );
+});
+
+test('direct media remain provider-compatible when no reference budget resolves', () => {
+  const directAudio = buildFalMediaPipeline({
+    engineId: 'seedance-2-0',
+    defaultModel: 'fal-ai/bytedance/seedance/v2/reference-to-video',
+    mode: 'ref2v',
+    inputSchema: {
+      optional: [
+        { id: 'image_urls', type: 'image', label: 'Images', modes: ['ref2v'] },
+        { id: 'audio_url', type: 'audio', label: 'Audio', modes: ['ref2v'] },
+      ],
+    },
+    attachments: [
+      attachment('image', 'image_urls', 'valid-image'),
+    ],
+    rawAudioUrl: 'direct-audio',
+  });
+  assert.equal(directAudio.validation.ok, true);
+  assert.equal(directAudio.falRequest.requestBody.audio_url, 'direct-audio');
+
+  const directEndImage = buildFalMediaPipeline({
+    engineId: 'seedance-2-0',
+    defaultModel: 'fal-ai/bytedance/seedance/v2/image-to-video',
+    mode: 'i2v',
+    inputSchema: {
+      optional: [
+        { id: 'image_url', type: 'image', label: 'Image', modes: ['i2v'] },
+        {
+          id: 'end_image_url',
+          type: 'image',
+          label: 'End image',
+          modes: ['i2v'],
+        },
+      ],
+    },
+    imageUrl: 'direct-start',
+    endImageUrl: 'direct-end',
+  });
+  assert.equal(directEndImage.validation.ok, true);
+  assert.equal(
+    directEndImage.falRequest.requestBody.end_image_url,
+    'direct-end'
+  );
+});
+
+test('direct scalar projections do not double-count matching attachment values', () => {
+  const inputSchema = {
+    optional: [
+      { id: 'image_url', type: 'image', label: 'Image', modes: ['i2v'] },
+      {
+        id: 'end_image_url',
+        type: 'image',
+        label: 'End image',
+        modes: ['i2v'],
+      },
+    ],
+    referenceBudget: {
+      fieldIds: ['end_image_url'],
+      modes: ['i2v'],
+      maxTotal: 1,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const scenario = buildFalMediaPipeline({
+    engineId: 'seedance-2-0',
+    defaultModel: 'fal-ai/bytedance/seedance/v2/image-to-video',
+    mode: 'i2v',
+    inputSchema,
+    imageUrl: 'direct-start',
+    endImageUrl: 'same-end',
+    attachments: [
+      attachment('image', 'end_image_url', 'same-end'),
+    ],
+  });
+
+  assert.equal(scenario.validation.ok, true);
+  assert.deepEqual(
+    scenario.references.referenceValuesByField['end_image_url'],
+    ['same-end']
+  );
+  assert.equal(scenario.falRequest.requestBody.end_image_url, 'same-end');
+});
+
+test('direct audio remains distinct from a matching non-overwriting audio array attachment', () => {
+  const inputSchema = {
+    optional: [
+      { id: 'image_urls', type: 'image', label: 'Images', modes: ['ref2v'] },
+      { id: 'audio_url', type: 'audio', label: 'Audio', modes: ['ref2v'] },
+      {
+        id: 'audio_urls',
+        type: 'audio',
+        label: 'Reference audio',
+        modes: ['ref2v'],
+      },
+    ],
+    referenceBudget: {
+      fieldIds: ['audio_url', 'audio_urls'],
+      modes: ['ref2v'],
+      maxTotal: 1,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const scenario = buildFalMediaPipeline({
+    engineId: 'seedance-2-0',
+    defaultModel: 'fal-ai/bytedance/seedance/v2/reference-to-video',
+    mode: 'ref2v',
+    inputSchema,
+    attachments: [
+      attachment('image', 'image_urls', 'valid-image'),
+      attachment('audio', 'audio_urls', 'same-audio'),
+    ],
+    rawAudioUrl: 'same-audio',
+  });
+
+  assert.equal(scenario.falRequest.requestBody.audio_url, 'same-audio');
+  assert.deepEqual(scenario.falRequest.requestBody.audio_urls, ['same-audio']);
+  assert.deepEqual(scenario.references.referenceValuesByField['audio_url'], [
+    'same-audio',
+  ]);
+  assert.deepEqual(scenario.references.referenceValuesByField['audio_urls'], [
+    'same-audio',
+  ]);
+  assert.equal(scenario.validation.ok, false);
+  if (scenario.validation.ok) {
+    assert.fail('budgeted validation merged distinct Fal audio fields');
+  }
+  assert.equal(scenario.validation.body.field, 'referenceBudget');
+  assert.equal(scenario.validation.body.value, 2);
+});
+
+test('an exact audio_url attachment replaces direct audio without double counting', () => {
+  const inputSchema = {
+    optional: [
+      { id: 'image_urls', type: 'image', label: 'Images', modes: ['ref2v'] },
+      { id: 'audio_url', type: 'audio', label: 'Audio', modes: ['ref2v'] },
+    ],
+    referenceBudget: {
+      fieldIds: ['audio_url'],
+      modes: ['ref2v'],
+      maxTotal: 1,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const scenario = buildFalMediaPipeline({
+    engineId: 'seedance-2-0',
+    defaultModel: 'fal-ai/bytedance/seedance/v2/reference-to-video',
+    mode: 'ref2v',
+    inputSchema,
+    attachments: [
+      attachment('image', 'image_urls', 'valid-image'),
+      attachment('audio', 'audio_url', 'attachment-audio'),
+    ],
+    rawAudioUrl: 'direct-audio',
+  });
+
+  assert.equal(
+    scenario.falRequest.requestBody.audio_url,
+    'attachment-audio'
+  );
+  assert.equal(scenario.validation.ok, true);
+  assert.deepEqual(scenario.references.referenceValuesByField['audio_url'], [
+    'attachment-audio',
+  ]);
+  assert.deepEqual(
+    scenario.references.referenceMediaItems.filter(
+      (item) => item.fieldId === 'audio_url'
+    ),
+    [
+      {
+        fieldId: 'audio_url',
+        kind: 'audio',
+        url: 'attachment-audio',
+      },
+    ]
+  );
+});
+
+test('direct image remains distinct from a non-overwriting input_image attachment', () => {
+  const inputSchema = {
+    optional: [
+      { id: 'image_url', type: 'image', label: 'Image', modes: ['i2v'] },
+      {
+        id: 'input_image',
+        type: 'image',
+        label: 'Input image',
+        modes: ['i2v'],
+      },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_url', 'input_image'],
+      modes: ['i2v'],
+      maxTotal: 1,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const scenario = buildFalMediaPipeline({
+    engineId: 'seedance-2-0',
+    defaultModel: 'fal-ai/bytedance/seedance/v2/image-to-video',
+    mode: 'i2v',
+    inputSchema,
+    imageUrl: 'direct-image',
+    attachments: [
+      attachment('image', 'input_image', 'attachment-image'),
+    ],
+  });
+
+  assert.equal(scenario.falRequest.requestBody.image_url, 'direct-image');
+  assert.equal(
+    scenario.falRequest.requestBody.input_image,
+    'attachment-image'
+  );
+  assert.deepEqual(scenario.references.referenceValuesByField['image_url'], [
+    'direct-image',
+  ]);
+  assert.deepEqual(
+    scenario.references.referenceValuesByField['input_image'],
+    ['attachment-image']
+  );
+  assert.equal(scenario.validation.ok, false);
+  if (scenario.validation.ok) {
+    assert.fail('budgeted validation merged distinct Fal image fields');
+  }
+  assert.equal(scenario.validation.body.field, 'referenceBudget');
+  assert.equal(scenario.validation.body.value, 2);
+});
+
+test('Sora I2V budgets the two distinct images that survive its real alias serialization', () => {
+  const inputSchema = {
+    optional: [
+      {
+        id: 'image_url',
+        type: 'image',
+        label: 'Image input',
+        modes: ['i2v'],
+      },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_url'],
+      modes: ['i2v'],
+      maxTotal: 1,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const soraRequest = {
+    variant: 'sora2',
+    mode: 'i2v',
+    prompt: 'Keep the same subject and motion',
+    duration: 4,
+    resolution: '720p',
+    aspect_ratio: '16:9',
+    image_url: 'https://example.com/direct-sora.png',
+  } satisfies SoraRequest;
+
+  const seededSoraInput = buildSoraFalInput(soraRequest);
+  assert.equal(
+    seededSoraInput.input.image_url,
+    'https://example.com/direct-sora.png'
+  );
+  assert.equal(
+    seededSoraInput.input.input_image,
+    'https://example.com/direct-sora.png'
+  );
+
+  const scenario = buildFalMediaPipeline({
+    engineId: 'sora-2',
+    defaultModel: 'fal-ai/sora-2/image-to-video',
+    mode: 'i2v',
+    inputSchema,
+    soraRequest,
+    attachments: [
+      attachment(
+        'image',
+        'image_url',
+        'https://example.com/attachment-sora.png'
+      ),
+    ],
+  });
+
+  assert.equal(
+    scenario.falRequest.requestBody.image_url,
+    'https://example.com/attachment-sora.png'
+  );
+  assert.equal(
+    scenario.falRequest.requestBody.input_image,
+    'https://example.com/direct-sora.png'
+  );
+  assert.deepEqual(scenario.references.referenceValuesByField, {
+    image_url: [
+      'https://example.com/attachment-sora.png',
+      'https://example.com/direct-sora.png',
+    ],
+  });
+  assert.deepEqual(scenario.references.referenceMediaItems, [
+    {
+      fieldId: 'image_url',
+      kind: 'image',
+      url: 'https://example.com/attachment-sora.png',
+    },
+    {
+      fieldId: 'image_url',
+      kind: 'image',
+      url: 'https://example.com/direct-sora.png',
+    },
+  ]);
+  assert.equal(scenario.validation.ok, false);
+  if (scenario.validation.ok) {
+    assert.fail('Sora accepted two distinct provider-selected images under a max-one budget');
+  }
+  assert.equal(scenario.validation.body.field, 'referenceBudget');
+  assert.equal(scenario.validation.body.value, 2);
+});
+
+test('Sora workspace same-image compatibility aliases consume one non-unique budget unit', () => {
+  const imageUrl = 'https://example.com/workspace-primary.png';
+  const inputSchema = {
+    optional: [
+      {
+        id: 'image_url',
+        type: 'image',
+        label: 'Image input',
+        modes: ['i2v'],
+      },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_url'],
+      modes: ['i2v'],
+      maxTotal: 1,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const soraRequest = {
+    variant: 'sora2',
+    mode: 'i2v',
+    prompt: 'Animate the uploaded workspace image',
+    duration: 4,
+    resolution: '720p',
+    aspect_ratio: '16:9',
+    image_url: imageUrl,
+  } satisfies SoraRequest;
+
+  const scenario = buildFalMediaPipeline({
+    engineId: 'sora-2',
+    defaultModel: 'fal-ai/sora-2/image-to-video',
+    mode: 'i2v',
+    inputSchema,
+    soraRequest,
+    attachments: [attachment('image', 'image_url', imageUrl)],
+  });
+
+  assert.deepEqual(scenario.references.referenceValuesByField, {
+    image_url: [imageUrl],
+  });
+  assert.deepEqual(scenario.references.referenceMediaItems, [
+    { fieldId: 'image_url', kind: 'image', url: imageUrl },
+  ]);
+  assert.equal(scenario.validation.ok, true);
+  assert.equal(scenario.falRequest.requestBody.image_url, imageUrl);
+  assert.equal(scenario.falRequest.requestBody.input_image, imageUrl);
+});
+
+test('Sora direct-only aliases are one logical medium and no-budget alias behavior is unchanged', () => {
+  const soraRequest = {
+    variant: 'sora2',
+    mode: 'i2v',
+    prompt: 'Keep the same subject and motion',
+    duration: 4,
+    resolution: '720p',
+    aspect_ratio: '16:9',
+    image_url: 'https://example.com/direct-sora.png',
+  } satisfies SoraRequest;
+  const budgetedSchema = {
+    optional: [
+      {
+        id: 'image_url',
+        type: 'image',
+        label: 'Image input',
+        modes: ['i2v'],
+      },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_url'],
+      modes: ['i2v'],
+      maxTotal: 1,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+
+  const directOnly = buildFalMediaPipeline({
+    engineId: 'sora-2',
+    defaultModel: 'fal-ai/sora-2/image-to-video',
+    mode: 'i2v',
+    inputSchema: budgetedSchema,
+    soraRequest,
+  });
+  assert.equal(directOnly.validation.ok, true);
+  assert.deepEqual(directOnly.references.referenceValuesByField, {
+    image_url: ['https://example.com/direct-sora.png'],
+  });
+  assert.equal(
+    directOnly.falRequest.requestBody.image_url,
+    'https://example.com/direct-sora.png'
+  );
+  assert.equal(
+    directOnly.falRequest.requestBody.input_image,
+    'https://example.com/direct-sora.png'
+  );
+
+  const noBudget = buildFalMediaPipeline({
+    engineId: 'sora-2',
+    defaultModel: 'fal-ai/sora-2/image-to-video',
+    mode: 'i2v',
+    inputSchema: {
+      optional: budgetedSchema.optional,
+    },
+    soraRequest,
+    attachments: [
+      attachment(
+        'image',
+        'image_url',
+        'https://example.com/attachment-sora.png'
+      ),
+    ],
+  });
+  assert.equal(noBudget.validation.ok, true);
+  assert.equal(
+    noBudget.falRequest.requestBody.image_url,
+    'https://example.com/attachment-sora.png'
+  );
+  assert.equal(
+    noBudget.falRequest.requestBody.input_image,
+    'https://example.com/direct-sora.png'
+  );
+});
+
+test('an attachment-only input_image remains one logical medium when Fal repeats its URL', () => {
+  const inputSchema = {
+    optional: [
+      { id: 'image_url', type: 'image', label: 'Image', modes: ['i2v'] },
+      {
+        id: 'input_image',
+        type: 'image',
+        label: 'Input image',
+        modes: ['i2v'],
+      },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_url', 'input_image'],
+      modes: ['i2v'],
+      maxTotal: 1,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const scenario = buildFalMediaPipeline({
+    engineId: 'seedance-2-0',
+    defaultModel: 'fal-ai/bytedance/seedance/v2/image-to-video',
+    mode: 'i2v',
+    inputSchema,
+    attachments: [
+      attachment(
+        'image',
+        'input_image',
+        'https://example.com/attachment-only.png'
+      ),
+    ],
+  });
+
+  assert.equal(scenario.validation.ok, true);
+  assert.equal(
+    scenario.falRequest.requestBody.image_url,
+    'https://example.com/attachment-only.png'
+  );
+  assert.equal(
+    scenario.falRequest.requestBody.input_image,
+    'https://example.com/attachment-only.png'
+  );
+  assert.deepEqual(scenario.references.referenceValuesByField, {
+    input_image: ['https://example.com/attachment-only.png'],
+  });
+  assert.deepEqual(scenario.references.referenceMediaItems, [
+    {
+      fieldId: 'input_image',
+      kind: 'image',
+      url: 'https://example.com/attachment-only.png',
+    },
+  ]);
+});
+
+test('Kling O3 does not budget a direct ref2v start image that its real Fal path drops', () => {
+  const inputSchema = {
+    optional: [
+      { id: 'image_urls', type: 'image', label: 'References', modes: ['ref2v'] },
+      {
+        id: 'start_image_url',
+        type: 'image',
+        label: 'Start image',
+        modes: ['ref2v'],
+      },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_urls', 'start_image_url'],
+      modes: ['ref2v'],
+      maxTotal: 1,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const scenario = buildFalMediaPipeline({
+    engineId: 'kling-o3-pro',
+    defaultModel: 'fal-ai/kling-video/o3/pro/reference-to-video',
+    mode: 'ref2v',
+    inputSchema,
+    imageUrl: 'https://example.com/dropped-direct-start.png',
+    attachments: [
+      attachment(
+        'image',
+        'image_urls',
+        'https://example.com/selected-reference.png'
+      ),
+    ],
+  });
+
+  assert.equal(scenario.references.startImageUrl, undefined);
+  assert.deepEqual(scenario.references.referenceValuesByField, {
+    image_urls: ['https://example.com/selected-reference.png'],
+  });
+  assert.equal(scenario.validation.ok, true);
+  assert.equal(scenario.falRequest.requestBody.image_url, undefined);
+  assert.equal(scenario.falRequest.requestBody.start_image_url, undefined);
+  assert.deepEqual(scenario.falRequest.requestBody.image_urls, [
+    'https://example.com/selected-reference.png',
+  ]);
+});
+
+test('Kling O3 rejects an end frame when only a dropped direct start fallback exists', () => {
+  const inputSchema = {
+    optional: [
+      { id: 'image_urls', type: 'image', label: 'References', modes: ['ref2v'] },
+      {
+        id: 'start_image_url',
+        type: 'image',
+        label: 'Start image',
+        modes: ['ref2v'],
+      },
+      {
+        id: 'end_image_url',
+        type: 'image',
+        label: 'End image',
+        modes: ['ref2v'],
+      },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_urls', 'start_image_url', 'end_image_url'],
+      modes: ['ref2v'],
+      maxTotal: 3,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const scenario = buildFalMediaPipeline({
+    engineId: 'kling-o3-pro',
+    defaultModel: 'fal-ai/kling-video/o3/pro/reference-to-video',
+    mode: 'ref2v',
+    inputSchema,
+    imageUrl: 'https://example.com/dropped-direct-start.png',
+    endImageUrl: 'https://example.com/end.png',
+    attachments: [
+      attachment(
+        'image',
+        'image_urls',
+        'https://example.com/selected-reference.png'
+      ),
+    ],
+  });
+
+  assert.equal(scenario.validation.ok, false);
+  if (scenario.validation.ok) {
+    assert.fail('Kling O3 accepted an end frame without a provider-selected start frame');
+  }
+  assert.deepEqual(scenario.validation.body, {
+    ok: false,
+    error: 'End frame requires a start frame for Kling 3.0 Omni reference-to-video.',
+  });
+  assert.equal(scenario.falRequest.requestBody.start_image_url, undefined);
+  assert.equal(
+    scenario.falRequest.requestBody.end_image_url,
+    'https://example.com/end.png'
+  );
+});
+
+test('Kling O3 unified image_url attachment supplies the validated Fal and direct opening frame', () => {
+  const startImageUrl = 'https://example.com/unified-start.png';
+  const endImageUrl = 'https://example.com/unified-end.png';
+  const referenceImageUrl = 'https://example.com/reference.png';
+  const inputSchema = {
+    optional: [
+      { id: 'image_urls', type: 'image', label: 'References', modes: ['ref2v'] },
+      {
+        id: 'image_url',
+        type: 'image',
+        label: 'Start image',
+        modes: ['ref2v'],
+      },
+      {
+        id: 'end_image_url',
+        type: 'image',
+        label: 'End image',
+        modes: ['ref2v'],
+      },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_urls', 'image_url', 'end_image_url'],
+      modes: ['ref2v'],
+      maxTotal: 3,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const scenario = buildFalMediaPipeline({
+    engineId: 'kling-o3-pro',
+    defaultModel: 'fal-ai/kling-video/o3/pro/reference-to-video',
+    mode: 'ref2v',
+    inputSchema,
+    endImageUrl,
+    attachments: [
+      attachment('image', 'image_url', startImageUrl),
+      attachment('image', 'image_urls', referenceImageUrl),
+      attachment('image', 'end_image_url', endImageUrl),
+    ],
+  });
+
+  assert.equal(scenario.references.startImageUrl, startImageUrl);
+  assert.equal(scenario.validation.ok, true);
+  assert.equal(scenario.falRequest.requestBody.start_image_url, startImageUrl);
+  assert.equal(scenario.falRequest.requestBody.end_image_url, endImageUrl);
+
+  const directMedia = resolveKlingDirectSubmissionMediaInputs({
+    imageUrl: scenario.references.initialImageUrl,
+    falPayload: scenario.falPayload,
+  });
+  const directPayload = buildKlingDirectPayload({
+    engineId: 'kling-o3-pro',
+    jobId: 'job-kling-unified-opening',
+    mode: 'ref2v',
+    prompt: 'Use @Image1 as style guidance and animate between the frames',
+    durationSec: 5,
+    startImageUrl: directMedia.startImageUrl,
+    endImageUrl,
+    referenceImageUrls: directMedia.referenceImageUrls,
+  });
+  assert.deepEqual(directPayload.body.image_list, [
+    { image_url: referenceImageUrl },
+    { image_url: startImageUrl, type: 'first_frame' },
+    { image_url: endImageUrl, type: 'end_frame' },
+  ]);
+});
+
+test('Kling O3 explicit opening alias wins in both attachment orders and every provider payload', () => {
+  const unifiedStartUrl = 'https://example.com/unified-start.png';
+  const explicitStartUrl = 'https://example.com/explicit-start.png';
+  const referenceImageUrl = 'https://example.com/reference.png';
+  const endImageUrl = 'https://example.com/end.png';
+  const inputSchema = {
+    optional: [
+      { id: 'image_urls', type: 'image', label: 'References', modes: ['ref2v'] },
+      {
+        id: 'image_url',
+        type: 'image',
+        label: 'Unified start image',
+        modes: ['ref2v'],
+      },
+      {
+        id: 'start_image_url',
+        type: 'image',
+        label: 'Explicit start image',
+        modes: ['ref2v'],
+      },
+      {
+        id: 'end_image_url',
+        type: 'image',
+        label: 'End image',
+        modes: ['ref2v'],
+      },
+    ],
+    referenceBudget: {
+      fieldIds: [
+        'image_urls',
+        'image_url',
+        'start_image_url',
+        'end_image_url',
+      ],
+      modes: ['ref2v'],
+      maxTotal: 3,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const openingOrders = [
+    [
+      attachment('image', 'image_url', unifiedStartUrl),
+      attachment('image', 'start_image_url', explicitStartUrl),
+    ],
+    [
+      attachment('image', 'start_image_url', explicitStartUrl),
+      attachment('image', 'image_url', unifiedStartUrl),
+    ],
+  ];
+
+  for (const openingAttachments of openingOrders) {
+    const scenario = buildFalMediaPipeline({
+      engineId: 'kling-o3-pro',
+      defaultModel: 'fal-ai/kling-video/o3/pro/reference-to-video',
+      mode: 'ref2v',
+      inputSchema,
+      endImageUrl,
+      attachments: [
+        ...openingAttachments,
+        attachment('image', 'image_urls', referenceImageUrl),
+        attachment('image', 'end_image_url', endImageUrl),
+      ],
+    });
+
+    assert.equal(scenario.references.startImageUrl, explicitStartUrl);
+    assert.deepEqual(scenario.references.referenceValuesByField, {
+      start_image_url: [explicitStartUrl],
+      image_urls: [referenceImageUrl],
+      end_image_url: [endImageUrl],
+    });
+    assert.deepEqual(scenario.references.referenceMediaItems, [
+      {
+        fieldId: 'start_image_url',
+        kind: 'image',
+        url: explicitStartUrl,
+      },
+      { fieldId: 'image_urls', kind: 'image', url: referenceImageUrl },
+      { fieldId: 'end_image_url', kind: 'image', url: endImageUrl },
+    ]);
+    assert.equal(scenario.validation.ok, true);
+    assert.equal(
+      scenario.falRequest.requestBody.start_image_url,
+      explicitStartUrl
+    );
+    assert.equal(scenario.falRequest.requestBody.end_image_url, endImageUrl);
+
+    const directMedia = resolveKlingDirectSubmissionMediaInputs({
+      imageUrl: scenario.references.initialImageUrl,
+      falPayload: scenario.falPayload,
+    });
+    assert.equal(directMedia.startImageUrl, explicitStartUrl);
+    const directPayload = buildKlingDirectPayload({
+      engineId: 'kling-o3-pro',
+      jobId: 'job-kling-explicit-opening-priority',
+      mode: 'ref2v',
+      prompt: 'Use @Image1 as style guidance and animate between the frames',
+      durationSec: 5,
+      startImageUrl: directMedia.startImageUrl,
+      endImageUrl,
+      referenceImageUrls: directMedia.referenceImageUrls,
+    });
+    assert.deepEqual(directPayload.body.image_list, [
+      { image_url: referenceImageUrl },
+      { image_url: explicitStartUrl, type: 'first_frame' },
+      { image_url: endImageUrl, type: 'end_frame' },
+    ]);
+  }
+});
+
+test('Kling O3 uses the final explicit opening attachment selected by Fal', () => {
+  const firstUnifiedUrl = 'https://example.com/unified-first.png';
+  const secondUnifiedUrl = 'https://example.com/unified-second.png';
+  const firstExplicitUrl = 'https://example.com/explicit-first.png';
+  const finalExplicitUrl = 'https://example.com/explicit-final.png';
+  const referenceImageUrl = 'https://example.com/reference.png';
+  const inputSchema = {
+    optional: [
+      {
+        id: 'image_urls',
+        type: 'image',
+        label: 'References',
+        modes: ['ref2v'],
+      },
+      {
+        id: 'image_url',
+        type: 'image',
+        label: 'Unified start image',
+        modes: ['ref2v'],
+      },
+      {
+        id: 'start_image_url',
+        type: 'image',
+        label: 'Explicit start image',
+        modes: ['ref2v'],
+      },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_urls', 'image_url', 'start_image_url'],
+      modes: ['ref2v'],
+      maxTotal: 2,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const scenario = buildFalMediaPipeline({
+    engineId: 'kling-o3-standard',
+    defaultModel: 'fal-ai/kling-video/o3/standard/reference-to-video',
+    mode: 'ref2v',
+    inputSchema,
+    attachments: [
+      attachment('image', 'image_url', firstUnifiedUrl),
+      attachment('image', 'start_image_url', firstExplicitUrl),
+      attachment('image', 'image_url', secondUnifiedUrl),
+      attachment('image', 'start_image_url', finalExplicitUrl),
+      attachment('image', 'image_urls', referenceImageUrl),
+    ],
+  });
+
+  assert.equal(scenario.references.startImageUrl, finalExplicitUrl);
+  assert.deepEqual(scenario.references.referenceValuesByField, {
+    start_image_url: [finalExplicitUrl],
+    image_urls: [referenceImageUrl],
+  });
+  assert.deepEqual(scenario.references.referenceMediaItems, [
+    {
+      fieldId: 'start_image_url',
+      kind: 'image',
+      url: finalExplicitUrl,
+    },
+    {
+      fieldId: 'image_urls',
+      kind: 'image',
+      url: referenceImageUrl,
+    },
+  ]);
+  assert.equal(scenario.validation.ok, true);
+  assert.equal(
+    scenario.falRequest.requestBody.start_image_url,
+    finalExplicitUrl
+  );
+  assert.equal(
+    resolveKlingDirectSubmissionMediaInputs({
+      imageUrl: scenario.references.initialImageUrl,
+      falPayload: scenario.falPayload,
+    }).startImageUrl,
+    finalExplicitUrl
+  );
+});
+
+test('BytePlus I2V accepts budgeted direct start and end images selected by its real payload', () => {
+  const inputSchema = {
+    optional: [
+      { id: 'image_url', type: 'image', label: 'Start image', modes: ['i2v'] },
+      {
+        id: 'end_image_url',
+        type: 'image',
+        label: 'End image',
+        modes: ['i2v'],
+      },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_url', 'end_image_url'],
+      modes: ['i2v'],
+      maxTotal: 2,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const scenario = buildFalMediaPipeline({
+    engineId: 'seedance-2-0',
+    defaultModel: 'fal-ai/bytedance/seedance/v2/image-to-video',
+    mode: 'i2v',
+    inputSchema,
+    imageUrl: 'https://example.com/start.png',
+    endImageUrl: 'https://example.com/end.png',
+    isBytePlusV1a: true,
+  });
+  assert.equal(scenario.validation.ok, true);
+
+  const referenceBudget = resolveEngineReferenceBudget(inputSchema, 'i2v');
+  if (!referenceBudget) {
+    assert.fail('test schema must resolve its I2V reference budget');
+  }
+  const providerMediaItems = buildReferenceMediaItems(
+    inputSchema,
+    'i2v',
+    scenario.references.referenceValuesByField
+  );
+  assert.deepEqual(
+    providerMediaItems,
+    scenario.references.referenceMediaItems
+  );
+  const providerPayload = buildBytePlusSeedancePayload({
+    modelId: 'current-model-id',
+    prompt: 'Animate between the supplied frames',
+    durationSec: 5,
+    mode: 'i2v',
+    imageUrl: scenario.references.initialImageUrl,
+    endImageUrl: 'https://example.com/end.png',
+    resolution: '720p',
+    ratio: '16:9',
+    allowedResolutions: ['720p'],
+    allowedDurationOptions: [5],
+    referenceBudget,
+    referenceMediaItems: providerMediaItems,
+  });
+
+  assert.deepEqual(
+    providerPayload.content
+      .filter((item) => item.type === 'image_url')
+      .map((item) => item.image_url.url),
+    ['https://example.com/start.png', 'https://example.com/end.png']
+  );
+});
+
+test('BytePlus budget defense rejects every emitted I2V scalar without typed provenance', () => {
+  const buildPrimary = (
+    referenceMediaItems: Parameters<
+      typeof buildBytePlusSeedancePayload
+    >[0]['referenceMediaItems']
+  ) =>
+    buildBytePlusSeedancePayload({
+      modelId: 'current-model-id',
+      prompt: 'Animate the supplied opening frame',
+      durationSec: 5,
+      mode: 'i2v',
+      imageUrl: 'https://example.com/start.png',
+      resolution: '720p',
+      ratio: '16:9',
+      allowedResolutions: ['720p'],
+      allowedDurationOptions: [5],
+      referenceBudget: {
+        fieldIds: ['image_url', 'input_image', 'image'],
+        maxTotal: 2,
+        countUniqueUrls: false,
+      },
+      referenceMediaItems,
+    });
+  const invalidPrimaryProvenance = [
+    [],
+    [
+      {
+        fieldId: 'end_image_url',
+        kind: 'image',
+        url: 'https://example.com/start.png',
+      },
+    ],
+    [
+      {
+        fieldId: 'image_url',
+        kind: 'video',
+        url: 'https://example.com/start.png',
+      },
+    ],
+    [
+      {
+        fieldId: 'image_url',
+        kind: 'image',
+        url: 'https://example.com/other.png',
+      },
+    ],
+    [
+      {
+        fieldId: 'image_url',
+        kind: 'image',
+        url: 'https://example.com/start.png',
+      },
+      {
+        fieldId: 'input_image',
+        kind: 'image',
+        url: 'https://example.com/start.png',
+      },
+    ],
+  ] satisfies Array<
+    NonNullable<
+      Parameters<typeof buildBytePlusSeedancePayload>[0]['referenceMediaItems']
+    >
+  >;
+  for (const referenceMediaItems of invalidPrimaryProvenance) {
+    assert.throws(
+      () => buildPrimary(referenceMediaItems),
+      (error: unknown) =>
+        error instanceof Error &&
+        (error as Error & { code?: string }).code ===
+          'BYTEPLUS_REFERENCE_BUDGET_INPUT_MISMATCH'
+    );
+  }
+
+  const build = (
+    referenceMediaItems: Parameters<
+      typeof buildBytePlusSeedancePayload
+    >[0]['referenceMediaItems']
+  ) =>
+    buildBytePlusSeedancePayload({
+      modelId: 'current-model-id',
+      prompt: 'Animate between the supplied frames',
+      durationSec: 5,
+      mode: 'i2v',
+      imageUrl: 'https://example.com/start.png',
+      endImageUrl: 'https://example.com/end.png',
+      resolution: '720p',
+      ratio: '16:9',
+      allowedResolutions: ['720p'],
+      allowedDurationOptions: [5],
+      referenceBudget: {
+        fieldIds: ['end_image_url'],
+        maxTotal: 1,
+        countUniqueUrls: false,
+      },
+      referenceMediaItems,
+    });
+
+  assert.throws(
+    () => build([]),
+    (error: unknown) =>
+      error instanceof Error &&
+      (error as Error & { code?: string }).code ===
+        'BYTEPLUS_REFERENCE_BUDGET_INPUT_MISMATCH'
+  );
+  assert.throws(
+    () =>
+      build([
+        {
+          fieldId: 'image_url',
+          kind: 'image',
+          url: 'https://example.com/start.png',
+        },
+      ]),
+    (error: unknown) =>
+      error instanceof Error &&
+      (error as Error & { code?: string }).code ===
+        'BYTEPLUS_REFERENCE_BUDGET_INPUT_MISMATCH'
+  );
+  assert.throws(
+    () =>
+      buildBytePlusSeedancePayload({
+        modelId: 'current-model-id',
+        prompt: 'Hold on the same supplied frame',
+        durationSec: 5,
+        mode: 'i2v',
+        imageUrl: 'https://example.com/same-frame.png',
+        endImageUrl: 'https://example.com/same-frame.png',
+        resolution: '720p',
+        ratio: '16:9',
+        allowedResolutions: ['720p'],
+        allowedDurationOptions: [5],
+        referenceBudget: {
+          fieldIds: ['image_url', 'end_image_url'],
+          maxTotal: 2,
+          countUniqueUrls: false,
+        },
+        referenceMediaItems: [
+          {
+            fieldId: 'image_url',
+            kind: 'image',
+            url: 'https://example.com/same-frame.png',
+          },
+        ],
+      }),
+    (error: unknown) =>
+      error instanceof Error &&
+      (error as Error & { code?: string }).code ===
+        'BYTEPLUS_REFERENCE_BUDGET_INPUT_MISMATCH'
+  );
+});
+
+test('active budgets reject non-Kling elements while Kling and no-budget Fal behavior stay intact', () => {
+  const budgetedSchema = {
+    optional: [
+      { id: 'image_urls', type: 'image', label: 'References', modes: ['ref2v'] },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_urls'],
+      modes: ['ref2v'],
+      maxTotal: 1,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const elements = [
+    {
+      frontalImageUrl: 'https://example.com/front.png',
+      referenceImageUrls: [
+        'https://example.com/ref-1.png',
+        'https://example.com/ref-2.png',
+        'https://example.com/ref-3.png',
+      ],
+    },
+  ] satisfies MaxVideoProviderElement[];
+  const attachments = [
+    attachment(
+      'image',
+      'image_urls',
+      'https://example.com/base-reference.png'
+    ),
+  ];
+
+  const unsupported = buildFalMediaPipeline({
+    engineId: 'seedance-2-0',
+    defaultModel: 'fal-ai/bytedance/seedance/v2/reference-to-video',
+    mode: 'ref2v',
+    inputSchema: budgetedSchema,
+    attachments,
+    elements,
+  });
+  assert.deepEqual(unsupported.falRequest.requestBody.image_urls, [
+    'https://example.com/base-reference.png',
+  ]);
+  assert.deepEqual(unsupported.falRequest.requestBody.elements, [
+    {
+      frontal_image_url: 'https://example.com/front.png',
+      reference_image_urls: [
+        'https://example.com/ref-1.png',
+        'https://example.com/ref-2.png',
+        'https://example.com/ref-3.png',
+      ],
+      video_url: undefined,
+    },
+  ]);
+  assert.equal(unsupported.validation.ok, false);
+  if (unsupported.validation.ok) {
+    assert.fail('a non-Kling budget accepted nested provider-selected element media');
+  }
+  assert.deepEqual(unsupported.validation.body, {
+    ok: false,
+    error: 'ENGINE_CONSTRAINT',
+    message:
+      'Elements are not supported for this engine mode when a reference budget is active.',
+    field: 'elements',
+    allowed: undefined,
+    value: undefined,
+  });
+
+  const kling = buildFalMediaPipeline({
+    engineId: 'kling-o3-pro',
+    defaultModel: 'fal-ai/kling-video/o3/pro/reference-to-video',
+    mode: 'ref2v',
+    inputSchema: budgetedSchema,
+    attachments,
+    elements,
+  });
+  assert.equal(kling.validation.ok, true);
+  assert.deepEqual(kling.references.referenceValuesByField, {
+    image_urls: ['https://example.com/base-reference.png'],
+  });
+  assert.deepEqual(kling.falRequest.requestBody.elements, [
+    {
+      frontal_image_url: 'https://example.com/front.png',
+      reference_image_urls: [
+        'https://example.com/ref-1.png',
+        'https://example.com/ref-2.png',
+        'https://example.com/ref-3.png',
+      ],
+      video_url: undefined,
+    },
+  ]);
+
+  const noBudget = buildFalMediaPipeline({
+    engineId: 'seedance-2-0',
+    defaultModel: 'fal-ai/bytedance/seedance/v2/reference-to-video',
+    mode: 'ref2v',
+    inputSchema: {
+      optional: budgetedSchema.optional,
+    },
+    attachments,
+    elements,
+  });
+  assert.equal(noBudget.validation.ok, true);
+  assert.deepEqual(
+    noBudget.falRequest.requestBody.elements,
+    unsupported.falRequest.requestBody.elements
+  );
+});
+
+test('inherited-key slots reach deterministic unknown-field rejection without mutation', () => {
+  const inputSchema = {
+    optional: [
+      { id: 'image_urls', type: 'image', label: 'Images', modes: ['ref2v'] },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_urls'],
+      modes: ['ref2v'],
+      maxTotal: 1,
+      countUniqueUrls: true,
+    },
+  } satisfies EngineInputSchema;
+
+  for (const fieldId of ['__proto__', 'constructor'] as const) {
+    const scenario = buildFalMediaPipeline({
+      engineId: 'seedance-2-0',
+      defaultModel: 'fal-ai/bytedance/seedance/v2/reference-to-video',
+      mode: 'ref2v',
+      inputSchema,
+      attachments: [
+        attachment('image', 'image_urls', 'valid-image'),
+        attachment('audio', fieldId, `${fieldId}-audio`),
+      ],
+      captureValidationContext: true,
+    });
+
+    assert.equal(
+      scenario.falRequest.requestBody.audio_url,
+      `${fieldId}-audio`
+    );
+    assert.equal(
+      Object.hasOwn(scenario.references.referenceValuesByField, fieldId),
+      true
+    );
+    assert.equal(scenario.validation.ok, false);
+    if (scenario.validation.ok) {
+      assert.fail(`budgeted validation accepted inherited-key slot ${fieldId}`);
+    }
+    assert.equal(scenario.validation.body.field, fieldId);
+    assert.equal(
+      scenario.validation.body.message,
+      `Media input "${fieldId}" is not supported for this engine mode`
+    );
+    const context = scenario.capturedValidationContext as {
+      referenceValuesByField?: unknown;
+      referenceMediaItems?: unknown;
+      referenceProvenanceIssues?: unknown;
+    };
+    assert.strictEqual(
+      context.referenceValuesByField,
+      scenario.references.referenceValuesByField
+    );
+    assert.strictEqual(
+      context.referenceMediaItems,
+      scenario.references.referenceMediaItems
+    );
+    assert.strictEqual(
+      context.referenceProvenanceIssues,
+      scenario.references.referenceProvenanceIssues
+    );
+    assert.deepEqual(scenario.references.referenceMediaItems, [
+      { fieldId: 'image_urls', kind: 'image', url: 'valid-image' },
+      {
+        fieldId,
+        kind: 'audio',
+        url: `${fieldId}-audio`,
+      },
+    ]);
+    assert.deepEqual(scenario.references.referenceProvenanceIssues, []);
+  }
+});
+
+test('unknown inherited-key fields reject before incomplete provenance and budget without mutation', () => {
+  const inputSchema = {
+    optional: [
+      { id: 'image_urls', type: 'image', label: 'Images', modes: ['ref2v'] },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_urls'],
+      modes: ['ref2v'],
+      maxTotal: 1,
+      countUniqueUrls: false,
+    },
+  } satisfies EngineInputSchema;
+  const scenario = buildFalMediaPipeline({
+    engineId: 'seedance-2-0',
+    defaultModel: 'fal-ai/bytedance/seedance/v2/reference-to-video',
+    mode: 'ref2v',
+    inputSchema,
+    attachments: [
+      attachment('image', 'image_urls', 'valid-image'),
+      attachment('audio', 'constructor', 'constructor-audio'),
+      attachment('audio', '__proto__', 'proto-audio'),
+      incompleteAttachment({ kind: 'audio', url: 'slotless-audio' }),
+      attachment('audio', 'image_urls', 'wrong-kind-audio'),
+    ],
+    captureValidationContext: true,
+  });
+
+  assert.equal(scenario.validation.ok, false);
+  if (scenario.validation.ok) {
+    assert.fail('budgeted validation accepted unknown inherited-key fields');
+  }
+  assert.equal(scenario.validation.body.field, '__proto__');
+  assert.equal(
+    scenario.validation.body.message,
+    'Media input "__proto__" is not supported for this engine mode'
+  );
+  assert.deepEqual(scenario.references.referenceMediaItems, [
+    { fieldId: 'image_urls', kind: 'image', url: 'valid-image' },
+    {
+      fieldId: 'constructor',
+      kind: 'audio',
+      url: 'constructor-audio',
+    },
+    { fieldId: '__proto__', kind: 'audio', url: 'proto-audio' },
+    {
+      fieldId: 'image_urls',
+      kind: 'audio',
+      url: 'wrong-kind-audio',
+    },
+  ]);
+  assert.deepEqual(scenario.references.referenceProvenanceIssues, [
+    {
+      reason: 'missing-field-id',
+      kind: 'audio',
+      url: 'slotless-audio',
+    },
+  ]);
+});
+
+test('typed attachment provenance rejects actual media kind hidden under an active non-budget field', () => {
+  const references = deriveGenerationAttachmentReferences({
+    engineId: 'seedance-2-0',
+    mode: 'v2v',
+    inputSchema: typedReferenceBudgetV2vSchema,
+    referenceImages: [],
+    rawAudioUrl: null,
+    attachments: [
+      attachment('image', 'reference_image_urls', 'valid-image'),
+      attachment('audio', 'video_url', 'forged-audio'),
+    ],
+  });
+
+  assert.deepEqual(references.audioUrls, ['forged-audio']);
+  const result = validateRequest(
+    'seedance-2-0',
+    'v2v',
+    {
+      reference_image_urls: ['valid-image'],
+      video_url: 'source-video',
+      duration: 4,
+    },
+    {
+      inputSchema: typedReferenceBudgetV2vSchema,
+      referenceValuesByField: references.referenceValuesByField,
+      referenceMediaItems: references.referenceMediaItems,
+    }
+  );
+
+  assert.deepEqual(result, {
+    ok: false,
+    error: {
+      code: 'ENGINE_CONSTRAINT',
+      field: 'video_url',
+      message: 'Media input "video_url" expects video, not audio',
+    },
+  });
+});
+
+test('budgeted route validation rejects deterministic slotless references that Fal would submit', () => {
+  const { attachments, references } = deriveFalReferences(
+    [
+      incompleteAttachment({
+        kind: 'video',
+        url: 'slotless-video',
+      }),
+      incompleteAttachment({
+        kind: 'audio',
+        url: 'slotless-audio',
+      }),
+      incompleteAttachment({
+        kind: 'audio',
+        url: 'slotless-audio',
+      }),
+    ],
+    budgetedFalReferenceSchema
+  );
+  const falRequest = buildFalReferenceRequest(attachments, references);
+
+  assert.deepEqual(falRequest.requestBody.video_urls, ['slotless-video']);
+  assert.deepEqual(falRequest.requestBody.audio_urls, ['slotless-audio']);
+
+  const validation = buildFalReferenceValidation(
+    references,
+    budgetedFalReferenceSchema
+  );
+  if (validation.ok) {
+    assert.fail(
+      'budgeted validation accepted slotless references selected by Fal'
+    );
+  }
+  assert.equal(validation.body.field, 'inputs');
+  assert.equal(
+    validation.body.message,
+    'Media input of kind "audio" is missing a field assignment'
+  );
+  assert.deepEqual(references.referenceProvenanceIssues, [
+    {
+      reason: 'missing-field-id',
+      kind: 'video',
+      url: 'slotless-video',
+    },
+    {
+      reason: 'missing-field-id',
+      kind: 'audio',
+      url: 'slotless-audio',
+    },
+    {
+      reason: 'missing-field-id',
+      kind: 'audio',
+      url: 'slotless-audio',
+    },
+  ]);
+
+  const reversed = deriveFalReferences(
+    [
+      incompleteAttachment({
+        kind: 'audio',
+        url: 'slotless-audio',
+      }),
+      incompleteAttachment({
+        kind: 'audio',
+        url: 'slotless-audio',
+      }),
+      incompleteAttachment({
+        kind: 'video',
+        url: 'slotless-video',
+      }),
+    ],
+    budgetedFalReferenceSchema
+  );
+  const reversedFalRequest = buildFalReferenceRequest(
+    reversed.attachments,
+    reversed.references
+  );
+  assert.deepEqual(reversedFalRequest.requestBody.video_urls, [
+    'slotless-video',
+  ]);
+  assert.deepEqual(reversedFalRequest.requestBody.audio_urls, [
+    'slotless-audio',
+  ]);
+
+  const reversedValidation = buildFalReferenceValidation(
+    reversed.references,
+    budgetedFalReferenceSchema
+  );
+  if (reversedValidation.ok) {
+    assert.fail(
+      'budgeted validation accepted reversed slotless references selected by Fal'
+    );
+  }
+  assert.equal(reversedValidation.body.field, 'inputs');
+  assert.equal(
+    reversedValidation.body.message,
+    'Media input of kind "audio" is missing a field assignment'
+  );
+  assert.deepEqual(reversed.references.referenceProvenanceIssues, [
+    {
+      reason: 'missing-field-id',
+      kind: 'audio',
+      url: 'slotless-audio',
+    },
+    {
+      reason: 'missing-field-id',
+      kind: 'audio',
+      url: 'slotless-audio',
+    },
+    {
+      reason: 'missing-field-id',
+      kind: 'video',
+      url: 'slotless-video',
+    },
+  ]);
+});
+
+test('budgeted route validation independently rejects a slotless video selected by Fal', () => {
+  const { attachments, references } = deriveFalReferences(
+    [
+      incompleteAttachment({
+        kind: 'video',
+        url: 'slotless-video',
+      }),
+    ],
+    budgetedFalReferenceSchema
+  );
+  const falRequest = buildFalReferenceRequest(attachments, references);
+
+  assert.deepEqual(falRequest.requestBody.video_urls, ['slotless-video']);
+
+  const validation = buildFalReferenceValidation(
+    references,
+    budgetedFalReferenceSchema
+  );
+  if (validation.ok) {
+    assert.fail('budgeted validation accepted a slotless video selected by Fal');
+  }
+  assert.equal(validation.body.field, 'inputs');
+  assert.equal(
+    validation.body.message,
+    'Media input of kind "video" is missing a field assignment'
+  );
+});
+
+test('budgeted route validation rejects an active Fal slot without an explicit kind', () => {
+  const { attachments, references } = deriveFalReferences(
+    [
+      incompleteAttachment({
+        slotId: 'audio_urls',
+        url: 'kindless-audio',
+      }),
+    ],
+    kindlessFalReferenceSchema
+  );
+  const falRequest = buildFalReferenceRequest(attachments, references);
+
+  assert.deepEqual(falRequest.requestBody.audio_urls, ['kindless-audio']);
+
+  const validation = buildFalReferenceValidation(
+    references,
+    kindlessFalReferenceSchema
+  );
+  if (validation.ok) {
+    assert.fail('budgeted validation accepted an active slot without a kind');
+  }
+  assert.equal(validation.body.field, 'audio_urls');
+  assert.equal(
+    validation.body.message,
+    'Media input "audio_urls" is missing an explicit media kind'
+  );
+});
+
+test('incomplete Fal attachment provenance remains compatible without a budget', () => {
+  const cases: NormalizedAttachment[][] = [
+    [
+      incompleteAttachment({
+        kind: 'audio',
+        url: 'slotless-audio',
+      }),
+    ],
+    [
+      incompleteAttachment({
+        slotId: 'audio_urls',
+        url: 'kindless-audio',
+      }),
+    ],
+  ];
+
+  for (const extraAttachments of cases) {
+    const { references } = deriveFalReferences(
+      extraAttachments,
+      unbudgetedFalReferenceSchema
+    );
+    assert.equal(
+      buildFalReferenceValidation(
+        references,
+        unbudgetedFalReferenceSchema
+      ).ok,
+      true
+    );
+  }
+});
+
+test('attachment slot provenance remains backward compatible without an aggregate budget', () => {
+  const inputSchema = {
+    optional: typedReferenceV2vFields,
+  } satisfies EngineInputSchema;
+  const references = deriveGenerationAttachmentReferences({
+    engineId: 'seedance-2-0',
+    mode: 'v2v',
+    inputSchema,
+    referenceImages: [],
+    rawAudioUrl: null,
+    attachments: [
+      attachment('image', 'reference_image_urls', 'valid-image'),
+      attachment('audio', 'video_url', 'forged-audio'),
+    ],
+  });
+  const result = validateRequest(
+    'seedance-2-0',
+    'v2v',
+    {
+      reference_image_urls: ['valid-image'],
+      video_url: 'source-video',
+      duration: 4,
+    },
+    {
+      inputSchema,
+      referenceValuesByField: references.referenceValuesByField,
+      referenceMediaItems: references.referenceMediaItems,
+    }
+  );
+
+  assert.deepEqual(result, OK);
+});
+
+test('active schema media outside the aggregate budget remains valid', () => {
+  const references = deriveGenerationAttachmentReferences({
+    engineId: 'seedance-2-0',
+    mode: 'v2v',
+    inputSchema: typedReferenceBudgetV2vSchema,
+    referenceImages: [],
+    rawAudioUrl: null,
+    attachments: [
+      attachment('image', 'reference_image_urls', 'valid-image'),
+      attachment('video', 'video_url', 'source-video'),
+    ],
+  });
+  const result = validateRequest(
+    'seedance-2-0',
+    'v2v',
+    {
+      reference_image_urls: ['valid-image'],
+      video_url: 'source-video',
+      duration: 4,
+    },
+    {
+      inputSchema: typedReferenceBudgetV2vSchema,
+      referenceValuesByField: references.referenceValuesByField,
+      referenceMediaItems: references.referenceMediaItems,
+    }
+  );
+
+  assert.deepEqual(result, OK);
 });
 
 test('Pika 2.2 rejects duration under 5 seconds', () => {

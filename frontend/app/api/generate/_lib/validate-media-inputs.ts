@@ -1,5 +1,13 @@
 import type { Mode } from '../../../../fixtures/engineCaps';
+import type { EngineInputSchema } from '@/types/engines';
+import {
+  evaluateReferenceBudget,
+  resolveEngineReferenceBudget,
+  type ReferenceBudgetMediaItem,
+  type ReferenceBudgetValuesByField,
+} from '@/lib/reference-budget';
 import { listFalEngines } from '../../../../src/config/falEngines';
+import type { ReferenceProvenanceIssue } from './attachment-references';
 import type { ValidationResult } from './validate-types';
 
 type Ref2vLimits = {
@@ -70,6 +78,22 @@ function normalizeStringArray(raw: unknown): string[] {
       : [];
 }
 
+function findUnsupportedReferenceMediaField(params: {
+  activeMediaFieldKinds: ReadonlyMap<string, ReferenceBudgetMediaItem['kind']>;
+  referenceValuesByField: ReferenceBudgetValuesByField<string>;
+}): string | null {
+  return (
+    Object.entries(params.referenceValuesByField)
+      .filter(
+        ([fieldId, values]) =>
+          !params.activeMediaFieldKinds.has(fieldId) &&
+          (values ?? []).some((value) => value.trim().length > 0)
+      )
+      .map(([fieldId]) => fieldId)
+      .sort()[0] ?? null
+  );
+}
+
 function validateKlingElements(payload: Record<string, unknown>): ValidationResult {
   const rawElements = payload['elements'];
   if (!Array.isArray(rawElements)) {
@@ -132,11 +156,149 @@ export function validateModeMediaInputs(params: {
   engineId: string;
   normalizedMode: Mode;
   payload: Record<string, unknown>;
+  inputSchema?: EngineInputSchema | null;
+  referenceValuesByField?: ReferenceBudgetValuesByField<string>;
+  referenceMediaItems?: readonly ReferenceBudgetMediaItem[];
+  referenceProvenanceIssues?: readonly ReferenceProvenanceIssue[];
 }): ValidationResult {
   const { engineId, normalizedMode, payload } = params;
   const isKling3Engine = engineId.startsWith('kling-3');
   const isKlingO3Engine = engineId.startsWith('kling-o3');
   const hasKlingElements = hasKlingElementEntries(payload);
+  const supportsKlingElements =
+    (isKling3Engine && (normalizedMode === 'i2v' || normalizedMode === 'ref2v')) ||
+    (isKlingO3Engine && (normalizedMode === 'ref2v' || normalizedMode === 'v2v'));
+  const referenceBudget = resolveEngineReferenceBudget(
+    params.inputSchema,
+    params.normalizedMode
+  );
+  if (referenceBudget) {
+    const activeMediaFieldKinds = new Map<string, ReferenceBudgetMediaItem['kind']>(
+      [
+        ...(params.inputSchema?.required ?? []),
+        ...(params.inputSchema?.optional ?? []),
+      ]
+        .filter(
+          (field): field is typeof field & {
+            type: ReferenceBudgetMediaItem['kind'];
+          } =>
+            (field.type === 'image' ||
+              field.type === 'video' ||
+              field.type === 'audio') &&
+            (!field.modes?.length ||
+              field.modes.includes(params.normalizedMode))
+        )
+        .map((field) => [field.id, field.type])
+    );
+    const unsupportedMediaField = findUnsupportedReferenceMediaField({
+      activeMediaFieldKinds,
+      referenceValuesByField: params.referenceValuesByField ?? {},
+    });
+    if (unsupportedMediaField) {
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: unsupportedMediaField,
+          message: `Media input "${unsupportedMediaField}" is not supported for this engine mode`,
+        },
+      };
+    }
+    const provenanceIssue = [...(params.referenceProvenanceIssues ?? [])]
+      .filter((issue) => issue.url.trim().length > 0)
+      .sort((left, right) => {
+        if (left.reason !== right.reason) {
+          return left.reason === 'missing-field-id' ? -1 : 1;
+        }
+        if (
+          left.reason === 'missing-field-id' &&
+          right.reason === 'missing-field-id'
+        ) {
+          return (
+            left.kind.localeCompare(right.kind) ||
+            left.url.localeCompare(right.url)
+          );
+        }
+        if (left.reason === 'missing-kind' && right.reason === 'missing-kind') {
+          return (
+            left.fieldId.localeCompare(right.fieldId) ||
+            left.url.localeCompare(right.url)
+          );
+        }
+        return 0;
+      })[0];
+    if (provenanceIssue) {
+      if (provenanceIssue.reason === 'missing-field-id') {
+        return {
+          ok: false,
+          error: {
+            code: 'ENGINE_CONSTRAINT',
+            field: 'inputs',
+            message: `Media input of kind "${provenanceIssue.kind}" is missing a field assignment`,
+          },
+        };
+      }
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: provenanceIssue.fieldId,
+          message: `Media input "${provenanceIssue.fieldId}" is missing an explicit media kind`,
+        },
+      };
+    }
+    const kindMismatch = [...(params.referenceMediaItems ?? [])]
+      .filter((item) => item.url.trim().length > 0)
+      .sort(
+        (left, right) =>
+          left.fieldId.localeCompare(right.fieldId) ||
+          left.kind.localeCompare(right.kind) ||
+          left.url.localeCompare(right.url)
+      )
+      .find((item) => {
+        const expectedKind = activeMediaFieldKinds.get(item.fieldId);
+        return expectedKind && expectedKind !== item.kind;
+      });
+    if (kindMismatch) {
+      const expectedKind = activeMediaFieldKinds.get(kindMismatch.fieldId)!;
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: kindMismatch.fieldId,
+          message: `Media input "${kindMismatch.fieldId}" expects ${expectedKind}, not ${kindMismatch.kind}`,
+        },
+      };
+    }
+    if (hasKlingElements && !supportsKlingElements) {
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: 'elements',
+          message:
+            'Elements are not supported for this engine mode when a reference budget is active.',
+        },
+      };
+    }
+    const evaluation = evaluateReferenceBudget({
+      budget: referenceBudget,
+      valuesByField: params.referenceValuesByField ?? {},
+      getIdentity: (value) => value,
+    });
+    if (!evaluation.ok) {
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: 'referenceBudget',
+          message: `Up to ${evaluation.maxTotal} total references are supported for this engine mode`,
+          allowed: [0, evaluation.maxTotal],
+          value: evaluation.count,
+        },
+      };
+    }
+  }
 
   if (isKlingO3Engine && normalizedMode !== 'ref2v' && normalizedMode !== 'v2v' && hasKlingElements) {
     return {
@@ -149,9 +311,6 @@ export function validateModeMediaInputs(params: {
     };
   }
 
-  const supportsKlingElements =
-    (isKling3Engine && (normalizedMode === 'i2v' || normalizedMode === 'ref2v')) ||
-    (isKlingO3Engine && (normalizedMode === 'ref2v' || normalizedMode === 'v2v'));
   if (supportsKlingElements) {
     const klingElementsValidation = validateKlingElements(payload);
     if (!klingElementsValidation.ok) return klingElementsValidation;

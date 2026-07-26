@@ -149,7 +149,8 @@ export function resolveKlingDirectSubmissionMediaInputs(params: {
 } {
   const attachments = params.falPayload.inputs ?? [];
   let sourceVideoUrl = cleanPayloadUrl(params.falPayload.videoUrl);
-  let startImageUrl = cleanPayloadUrl(params.falPayload.extraInputValues?.start_image_url) ?? null;
+  let explicitAttachmentStartImageUrl: string | null = null;
+  let unifiedAttachmentStartImageUrl: string | null = null;
   const referenceImageUrls: string[] = [];
 
   for (const url of params.falPayload.referenceImages ?? []) {
@@ -175,8 +176,17 @@ export function resolveKlingDirectSubmissionMediaInputs(params: {
       continue;
     }
 
-    if (!startImageUrl && attachment.kind === 'image' && (slotId === 'start_image_url' || slotId === 'image_url')) {
-      startImageUrl = url;
+    if (attachment.kind === 'image' && slotId === 'start_image_url') {
+      explicitAttachmentStartImageUrl = url;
+      continue;
+    }
+
+    if (
+      !unifiedAttachmentStartImageUrl &&
+      attachment.kind === 'image' &&
+      slotId === 'image_url'
+    ) {
+      unifiedAttachmentStartImageUrl = url;
       continue;
     }
 
@@ -189,6 +199,10 @@ export function resolveKlingDirectSubmissionMediaInputs(params: {
   }
 
   const keepAudioValue = params.falPayload.extraInputValues?.keep_audio;
+  const startImageUrl =
+    explicitAttachmentStartImageUrl ??
+    unifiedAttachmentStartImageUrl ??
+    cleanPayloadUrl(params.falPayload.extraInputValues?.start_image_url);
   return {
     sourceVideoUrl,
     referenceImageUrls,

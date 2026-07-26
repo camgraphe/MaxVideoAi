@@ -1,5 +1,7 @@
 import type { MaxVideoProviderElement } from '@/lib/video-provider-elements';
-import type { Mode } from '@/types/engines';
+import type { EngineInputSchema, Mode } from '@/types/engines';
+import type { ReferenceBudgetMediaItem, ReferenceBudgetValuesByField } from '@/lib/reference-budget';
+import type { ReferenceProvenanceIssue } from './attachment-references';
 import { validateRequest } from './validate';
 
 type GenerateValidationMetric = {
@@ -58,6 +60,10 @@ export function buildGenerateValidationPayload(params: {
   loop?: boolean;
   seed?: number | null;
   safetyChecker?: boolean | null;
+  inputSchema: EngineInputSchema | null | undefined;
+  referenceValuesByField: ReferenceBudgetValuesByField<string>;
+  referenceMediaItems: readonly ReferenceBudgetMediaItem[];
+  referenceProvenanceIssues: readonly ReferenceProvenanceIssue[];
   deps?: GenerateValidationDeps;
 }): GenerateValidationPayloadResult {
   const validateRequestFn = params.deps?.validateRequestFn ?? validateRequest;
@@ -185,7 +191,17 @@ export function buildGenerateValidationPayload(params: {
     payload.image_url = params.initialImageUrl;
   }
 
-  const validationResult = validateRequestFn(params.engineId, params.mode, payload);
+  const validationResult = validateRequestFn(
+    params.engineId,
+    params.mode,
+    payload,
+    {
+      inputSchema: params.inputSchema,
+      referenceValuesByField: params.referenceValuesByField,
+      referenceMediaItems: params.referenceMediaItems,
+      referenceProvenanceIssues: params.referenceProvenanceIssues,
+    }
+  );
   if (!validationResult.ok) {
     return {
       ok: false,

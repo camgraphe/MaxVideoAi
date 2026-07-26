@@ -4,6 +4,9 @@ import { join } from 'node:path';
 import test from 'node:test';
 
 import { buildGenerateValidationPayload } from '../frontend/app/api/generate/_lib/validation-payload';
+import type { ReferenceProvenanceIssue } from '../frontend/app/api/generate/_lib/attachment-references';
+import type { ReferenceBudgetMediaItem } from '../frontend/lib/reference-budget';
+import type { EngineInputSchema } from '../frontend/types/engines';
 
 const root = process.cwd();
 const routePath = join(root, 'frontend/app/api/generate/route.ts');
@@ -39,6 +42,10 @@ const baseParams = {
   isLumaRay2: false,
   initialImageUrl: null,
   startImageUrl: null,
+  inputSchema: null,
+  referenceValuesByField: {},
+  referenceMediaItems: [],
+  referenceProvenanceIssues: [],
 };
 
 test('generate route delegates validation payload and required input checks', () => {
@@ -52,9 +59,99 @@ test('generate route delegates validation payload and required input checks', ()
   assert.ok(lineCount <= 1585, `/api/generate route should stay below 1585 lines after validation payload extraction, got ${lineCount}`);
 });
 
+test('generate route evaluates validation rejection before billing, job reservation, and provider submission', () => {
+  const validationRejectionIndex = routeSource.indexOf(
+    'if (!validationPayloadResult.ok)'
+  );
+  const billingPreflightIndex = routeSource.indexOf(
+    'const billingPreflight = await resolveGenerateBillingPreflight'
+  );
+  const initialJobIndex = routeSource.indexOf(
+    'const initialJobState = await createAtomicInitialVideoJob'
+  );
+  const bytePlusSubmissionIndex = routeSource.indexOf(
+    'const bytePlusSubmission = await submitBytePlusGenerateTask'
+  );
+  const providerSubmissionIndex = routeSource.indexOf(
+    'const providerSubmission = await submitGenerateProviderTask'
+  );
+
+  assert.ok(validationRejectionIndex >= 0);
+  assert.ok(validationRejectionIndex < billingPreflightIndex);
+  assert.ok(billingPreflightIndex < initialJobIndex);
+  assert.ok(initialJobIndex < bytePlusSubmissionIndex);
+  assert.ok(initialJobIndex < providerSubmissionIndex);
+});
+
 test('validation payload helper exposes the route contract', () => {
   assert.match(helperSource, /export type GenerateValidationPayloadResult/, 'GenerateValidationPayloadResult should be exported');
   assert.match(helperSource, /export function buildGenerateValidationPayload/, 'validation payload builder should be exported');
+});
+
+test('validation payload forwards runtime schema and original reference fields', () => {
+  const inputSchema = {
+    optional: [
+      { id: 'image_urls', type: 'image', label: 'Images', modes: ['ref2v'] },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_urls'],
+      modes: ['ref2v'],
+      maxTotal: 1,
+      countUniqueUrls: true,
+    },
+  } satisfies EngineInputSchema;
+  const referenceValuesByField = { image_urls: ['original-field-value'] };
+  const referenceMediaItems = [
+    { fieldId: 'image_urls', kind: 'image', url: 'original-field-value' },
+  ] satisfies ReferenceBudgetMediaItem[];
+  const referenceProvenanceIssues = [
+    {
+      reason: 'missing-field-id',
+      kind: 'audio',
+      url: 'unassigned-audio',
+    },
+    {
+      reason: 'missing-kind',
+      fieldId: 'audio_urls',
+      url: 'kindless-audio',
+    },
+  ] satisfies ReferenceProvenanceIssue[];
+  let capturedContext: unknown;
+  const result = buildGenerateValidationPayload({
+    ...baseParams,
+    inputSchema,
+    referenceValuesByField,
+    referenceMediaItems,
+    referenceProvenanceIssues,
+    deps: {
+      validateRequestFn: (_engineId, _mode, _payload, context) => {
+        capturedContext = context;
+        return { ok: true };
+      },
+    },
+  });
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(capturedContext, {
+    inputSchema,
+    referenceValuesByField,
+    referenceMediaItems,
+    referenceProvenanceIssues,
+  });
+  assert.strictEqual(
+    (capturedContext as { referenceValuesByField?: unknown })
+      .referenceValuesByField,
+    referenceValuesByField
+  );
+  assert.strictEqual(
+    (capturedContext as { referenceMediaItems?: unknown }).referenceMediaItems,
+    referenceMediaItems
+  );
+  assert.strictEqual(
+    (capturedContext as { referenceProvenanceIssues?: unknown })
+      .referenceProvenanceIssues,
+    referenceProvenanceIssues
+  );
 });
 
 test('validation payload helper builds base payload and mode flags', () => {
