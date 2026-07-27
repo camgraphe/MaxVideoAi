@@ -101,6 +101,7 @@ function applyCuratedHeroMedia(item: HeroVideoShowcaseItem): HeroVideoShowcaseIt
 
   return {
     ...item,
+    chips: media.chips ?? item.chips,
     posterSrc: media.posterSrc,
     videoSrc: media.videoSrc ?? null,
     duration: media.duration,
@@ -108,7 +109,7 @@ function applyCuratedHeroMedia(item: HeroVideoShowcaseItem): HeroVideoShowcaseIt
     mediaInfo: [modeLabel, durationLabel, media.resolution].filter(Boolean).join(' · '),
     estimateValue: media.estimateValue ?? item.estimateValue,
     estimateMeta: media.estimateMeta ?? item.estimateMeta,
-    imageAlt: `${item.name} AI video preview in MaxVideoAI.`,
+    imageAlt: media.imageAlt ?? `${item.name} AI video preview in MaxVideoAI.`,
   };
 }
 

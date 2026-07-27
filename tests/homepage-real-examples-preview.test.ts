@@ -1,10 +1,17 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
+import React from 'react';
 
 import engineCatalog from '../frontend/config/engine-catalog.json' with { type: 'json' };
 import enMessages from '../frontend/messages/en.json' with { type: 'json' };
+import esMessages from '../frontend/messages/es.json' with { type: 'json' };
+import frMessages from '../frontend/messages/fr.json' with { type: 'json' };
 import { isIndexedExampleFamilyId, resolveExampleFamilyId } from '../frontend/lib/model-families.ts';
+import { HeroVideoShowcase, type HeroVideoShowcaseItem } from '../frontend/components/marketing/home/HeroVideoShowcase.tsx';
+import { HomeHero } from '../frontend/components/marketing/home/HomeHeroSection.tsx';
+import { buildHeroContent } from '../frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data/hero.ts';
+import type { RedesignContent } from '../frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data/types.ts';
 
 type FallbackCard = {
   title: string;
@@ -158,6 +165,69 @@ test('homepage hero uses only curated media even when programmed slots exist', (
   assert.match(homeHeroSource, /applyCuratedHeroMedia\(item\)/);
   assert.match(source, /HERO_ENGINE_MEDIA\[engineId\]/);
   assert.match(source, /videoSrc:\s*media\.videoSrc \?\? null/);
+});
+
+test('homepage Veo 3.1 Lite hero renders its real Romantic clip and matching overlays', () => {
+  (globalThis as typeof globalThis & { React: typeof React }).React = React;
+  const cases = [
+    ['en', enMessages, 'Text-to-video'],
+    ['fr', frMessages, 'Texte-vers-vidéo'],
+    ['es', esMessages, 'Texto a video'],
+  ] as const;
+  let englishItem: HeroVideoShowcaseItem | null = null;
+
+  for (const [locale, messages, expectedModeLabel] of cases) {
+    const copy = buildHeroContent(locale, messages.home.redesign as RedesignContent);
+    const hero = HomeHero({
+      copy,
+      proofStats: [],
+      previews: [],
+    });
+    const pending = [hero] as React.ReactNode[];
+    let showcaseItems: HeroVideoShowcaseItem[] | null = null;
+
+    while (pending.length) {
+      const node = pending.shift();
+      if (!React.isValidElement(node)) continue;
+      if (node.type === HeroVideoShowcase) {
+        showcaseItems = (node.props as { items: HeroVideoShowcaseItem[] }).items;
+        break;
+      }
+      pending.push(...React.Children.toArray((node.props as { children?: React.ReactNode }).children));
+    }
+
+    assert.ok(showcaseItems, `HomeHero should compose the ${locale} video showcase`);
+    const veoLiteItem = showcaseItems.find((item) => item.engineId === 'veo-3-1-lite') ?? null;
+    assert.ok(veoLiteItem, `HomeHero should include Veo 3.1 Lite in ${locale}`);
+    assert.equal(veoLiteItem.mediaInfo, `${expectedModeLabel} · 8s · 16:9`);
+    if (locale === 'en') englishItem = veoLiteItem;
+  }
+
+  assert.ok(englishItem);
+  assert.deepEqual(
+    {
+      chips: englishItem.chips,
+      estimateMeta: englishItem.estimateMeta,
+      estimateValue: englishItem.estimateValue,
+      imageAlt: englishItem.imageAlt,
+      posterSrc: englishItem.posterSrc,
+      videoSrc: englishItem.videoSrc,
+      duration: englishItem.duration,
+      resolution: englishItem.resolution,
+    },
+    {
+      chips: ['Cinematic', 'Audio'],
+      estimateMeta: '8s generation',
+      estimateValue: '$0.52',
+      imageAlt: 'Veo 3.1 Lite romantic train-station reunion generated with MaxVideoAI.',
+      posterSrc:
+        'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/8729a3ad-aa8e-470d-85e5-558a5f897893.jpg',
+      videoSrc:
+        'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/4e4954fc-513a-4345-945c-41adba7ec26a.mp4',
+      duration: '0:08',
+      resolution: '16:9',
+    },
+  );
 });
 
 test('homepage hero avoids initial mobile video downloads', () => {
