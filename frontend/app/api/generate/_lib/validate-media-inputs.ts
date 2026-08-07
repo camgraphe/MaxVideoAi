@@ -117,6 +117,47 @@ function findUnsupportedReferenceMediaField(params: {
   );
 }
 
+function validateActiveSchemaMediaFieldCounts(params: {
+  normalizedMode: Mode;
+  payload: Record<string, unknown>;
+  inputSchema?: EngineInputSchema | null;
+  referenceValuesByField?: ReferenceBudgetValuesByField<string>;
+}): ValidationResult {
+  const fields = [
+    ...(params.inputSchema?.required ?? []),
+    ...(params.inputSchema?.optional ?? []),
+  ];
+  for (const field of fields) {
+    if (
+      (field.type !== 'image' && field.type !== 'video' && field.type !== 'audio') ||
+      typeof field.maxCount !== 'number' ||
+      (field.modes?.length && !field.modes.includes(params.normalizedMode))
+    ) {
+      continue;
+    }
+    const fieldValues = params.referenceValuesByField?.[field.id];
+    const values = Array.from(
+      new Set(
+        (fieldValues?.length ? fieldValues : normalizeStringArray(params.payload[field.id]))
+          .map((value) => value.trim())
+          .filter(Boolean)
+      )
+    );
+    if (values.length <= field.maxCount) continue;
+    return {
+      ok: false,
+      error: {
+        code: 'ENGINE_CONSTRAINT',
+        field: field.id,
+        message: `Up to ${field.maxCount} ${field.label.toLowerCase()} are supported`,
+        allowed: [field.minCount ?? 0, field.maxCount],
+        value: values.length,
+      },
+    };
+  }
+  return { ok: true };
+}
+
 function validateKlingElements(payload: Record<string, unknown>): ValidationResult {
   const rawElements = payload['elements'];
   if (!Array.isArray(rawElements)) {
@@ -195,6 +236,8 @@ export function validateModeMediaInputs(params: {
     params.inputSchema,
     params.normalizedMode
   );
+  const schemaMediaFieldCounts = validateActiveSchemaMediaFieldCounts(params);
+  if (!schemaMediaFieldCounts.ok) return schemaMediaFieldCounts;
   if (referenceBudget) {
     const activeMediaFieldKinds = new Map<string, ReferenceBudgetMediaItem['kind']>(
       [

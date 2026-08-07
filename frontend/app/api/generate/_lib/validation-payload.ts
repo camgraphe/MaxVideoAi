@@ -126,11 +126,36 @@ export function buildGenerateValidationPayload(params: {
     }
   }
   if (params.mode === 'v2v' && params.normalizedReferenceImages.length) {
-    if (params.engineId.startsWith('kling-o3')) {
-      payload.image_urls = params.normalizedReferenceImages;
-    } else {
-      payload.reference_image_urls = params.normalizedReferenceImages;
+    payload[resolveActiveMediaFieldId({
+      inputSchema: params.inputSchema,
+      mode: params.mode,
+      type: 'image',
+      candidateFieldIds: ['image_urls', 'reference_image_urls'],
+      fallbackFieldId: params.engineId.startsWith('kling-o3') ? 'image_urls' : 'reference_image_urls',
+    })] = params.normalizedReferenceImages;
+  }
+  if (params.mode === 'v2v') {
+    const audioUrls = Array.from(
+      new Set([...(params.resolvedAudioUrl ? [params.resolvedAudioUrl] : []), ...params.audioUrls])
+    );
+    if (audioUrls.length) {
+      payload[resolveActiveMediaFieldId({
+        inputSchema: params.inputSchema,
+        mode: params.mode,
+        type: 'audio',
+        candidateFieldIds: ['audio_urls', 'reference_audio_urls', 'audio_url'],
+        fallbackFieldId: 'audio_url',
+      })] = audioUrls;
     }
+  }
+  if (params.mode === 'extend' && params.videoUrls.length) {
+    payload[resolveActiveMediaFieldId({
+      inputSchema: params.inputSchema,
+      mode: params.mode,
+      type: 'video',
+      candidateFieldIds: ['extension_source_videos', 'video_urls', 'video_url'],
+      fallbackFieldId: 'video_url',
+    })] = params.videoUrls;
   }
   if (params.mode === 'r2v' && params.videoUrls.length) {
     payload.video_urls = params.videoUrls;
@@ -238,6 +263,31 @@ export function buildGenerateValidationPayload(params: {
 
 function isSourceVideoEditMode(mode: Mode): boolean {
   return mode === 'v2v' || mode === 'reframe' || mode === 'extend' || mode === 'retake';
+}
+
+function resolveActiveMediaFieldId(params: {
+  inputSchema: EngineInputSchema | null | undefined;
+  mode: Mode;
+  type: 'image' | 'video' | 'audio';
+  candidateFieldIds: string[];
+  fallbackFieldId: string;
+}): string {
+  const fields = [
+    ...(params.inputSchema?.required ?? []),
+    ...(params.inputSchema?.optional ?? []),
+  ];
+  return (
+    params.candidateFieldIds
+      .map((fieldId) =>
+        fields.find(
+          (field) =>
+            field.id === fieldId &&
+            field.type === params.type &&
+            (!field.modes?.length || field.modes.includes(params.mode))
+        )?.id
+      )
+      .find(Boolean) ?? params.fallbackFieldId
+  );
 }
 
 function validateRequiredInputs(params: {

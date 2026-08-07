@@ -2648,9 +2648,65 @@ test('Seedance 2.5 validates each unified input family and its aggregate referen
     }
   );
   assert.equal(overBudget.ok, false);
-  assert.equal(overBudget.error?.field, 'referenceBudget');
-  assert.deepEqual(overBudget.error?.allowed, [0, 50]);
-  assert.equal(overBudget.error?.value, 51);
+  assert.equal(overBudget.error?.field, 'audio_urls');
+  assert.deepEqual(overBudget.error?.allowed, [0, 10]);
+  assert.equal(overBudget.error?.value, 11);
+});
+
+test('Seedance 2.5 production validation enforces each V2V and Extend field cap', () => {
+  const engine = listFalEngines().find((entry) => entry.id === 'seedance-2-5')?.engine;
+  assert.ok(engine?.inputSchema);
+
+  const media = (
+    kind: 'image' | 'video' | 'audio',
+    slotId: string,
+    count: number
+  ) =>
+    Array.from(
+      { length: count },
+      (_, index) => attachment(kind, slotId, `https://cdn.test/${slotId}-${index + 1}.${kind === 'image' ? 'png' : kind === 'video' ? 'mp4' : 'wav'}`)
+    );
+  const validateV2v = (attachments: NormalizedAttachment[]) =>
+    buildFalMediaPipeline({
+      engineId: 'seedance-2-5',
+      defaultModel: 'byteplus/dreamina-seedance-2.5/video-to-video',
+      mode: 'v2v',
+      inputSchema: engine.inputSchema,
+      attachments,
+    }).validation;
+  const validateExtend = (attachments: NormalizedAttachment[]) =>
+    buildFalMediaPipeline({
+      engineId: 'seedance-2-5',
+      defaultModel: 'byteplus/dreamina-seedance-2.5/extend',
+      mode: 'extend',
+      inputSchema: engine.inputSchema,
+      attachments,
+    }).validation;
+  const sourceVideo = media('video', 'video_url', 1);
+
+  assert.equal(validateV2v([...media('image', 'image_urls', 30), ...sourceVideo]).ok, true);
+  const tooManyImages = validateV2v([...media('image', 'image_urls', 31), ...sourceVideo]);
+  assert.equal(tooManyImages.ok, false);
+  if (!tooManyImages.ok) assert.equal(tooManyImages.body.field, 'image_urls');
+
+  assert.equal(validateV2v([...sourceVideo, ...media('audio', 'audio_urls', 10)]).ok, true);
+  const tooManyAudio = validateV2v([...sourceVideo, ...media('audio', 'audio_urls', 11)]);
+  assert.equal(tooManyAudio.ok, false);
+  if (!tooManyAudio.ok) assert.equal(tooManyAudio.body.field, 'audio_urls');
+
+  assert.equal(validateV2v(sourceVideo).ok, true);
+  const tooManySources = validateV2v(media('video', 'video_url', 2));
+  assert.equal(tooManySources.ok, false);
+  if (!tooManySources.ok) assert.equal(tooManySources.body.field, 'video_url');
+
+  assert.equal(validateExtend(media('video', 'extension_source_videos', 3)).ok, true);
+  const tooManyExtensionSources = validateExtend(
+    media('video', 'extension_source_videos', 4)
+  );
+  assert.equal(tooManyExtensionSources.ok, false);
+  if (!tooManyExtensionSources.ok) {
+    assert.equal(tooManyExtensionSources.body.field, 'extension_source_videos');
+  }
 });
 
 test('Veo 3.1 Fast FL2V requires both frames', () => {
