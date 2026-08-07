@@ -2598,6 +2598,61 @@ test('Seedance 2.0 REF2V accepts Fal-style multimodal references and keeps audio
   assert.equal(audioOnly.error?.field, 'audio_urls');
 });
 
+test('Seedance 2.5 validates each unified input family and its aggregate reference budget', () => {
+  const engine = listFalEngines().find((entry) => entry.id === 'seedance-2-5')?.engine;
+  assert.ok(engine?.inputSchema);
+
+  const validateSeedance25 = (
+    mode: Mode,
+    payload: Record<string, unknown>,
+    referenceValuesByField: Record<string, string[]> = {}
+  ) =>
+    validateRequest('seedance-2-5', mode, { duration: 4, ...payload }, {
+      inputSchema: engine.inputSchema,
+      referenceValuesByField,
+    });
+
+  for (const [label, mode, payload, expectedField] of [
+    ['i2v requires image_url', 'i2v', {}, 'image_url'],
+    ['ref2v accepts image_urls', 'ref2v', { image_urls: ['https://cdn.test/ref.png'] }, null],
+    ['v2v requires video_url', 'v2v', {}, 'video_url'],
+    ['extend requires extension_source_videos', 'extend', {}, 'extension_source_videos'],
+  ] as const) {
+    const result = validateSeedance25(mode, payload);
+    assert.equal(result.ok, expectedField === null, label);
+    if (expectedField) {
+      assert.equal(result.error?.field, expectedField, label);
+    }
+  }
+
+  const imageUrls = Array.from(
+    { length: 31 },
+    (_, index) => `https://cdn.test/reference-${index + 1}.png`
+  );
+  const tooManyImages = validateSeedance25('ref2v', { image_urls: imageUrls }, { image_urls: imageUrls });
+  assert.equal(tooManyImages.ok, false);
+  assert.equal(tooManyImages.error?.field, 'image_urls');
+  assert.deepEqual(tooManyImages.error?.allowed, [1, 30]);
+
+  const combinedReferences = Array.from(
+    { length: 51 },
+    (_, index) => `https://cdn.test/combined-${index + 1}.png`
+  );
+  const overBudget = validateSeedance25(
+    'ref2v',
+    { image_urls: combinedReferences.slice(0, 30) },
+    {
+      image_urls: combinedReferences.slice(0, 30),
+      video_urls: combinedReferences.slice(30, 40),
+      audio_urls: combinedReferences.slice(40),
+    }
+  );
+  assert.equal(overBudget.ok, false);
+  assert.equal(overBudget.error?.field, 'referenceBudget');
+  assert.deepEqual(overBudget.error?.allowed, [0, 50]);
+  assert.equal(overBudget.error?.value, 51);
+});
+
 test('Veo 3.1 Fast FL2V requires both frames', () => {
   const invalid = validateRequest('veo-3-1-fast', 'fl2v', {
     prompt: 'Bridge frames',

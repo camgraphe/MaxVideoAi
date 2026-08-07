@@ -9,6 +9,28 @@ import {
 import { getPublicConfiguredEnginesByCategory } from '../frontend/src/server/engines.ts';
 import type { EngineReferenceBudget } from '../frontend/types/engines.ts';
 
+test('Seedance 2.5 keeps its unified 50-reference budget when cloned', () => {
+  const entry = FAL_ENGINE_REGISTRY.find((candidate) => candidate.id === 'seedance-2-5');
+  assert.ok(entry);
+
+  const clonedBudget = cloneEngine(entry.engine).inputSchema?.referenceBudget;
+  assert.deepEqual(clonedBudget, {
+    fieldIds: [
+      'image_url',
+      'end_image_url',
+      'image_urls',
+      'video_url',
+      'video_urls',
+      'extension_source_videos',
+      'audio_urls',
+    ],
+    modes: ['i2v', 'ref2v', 'v2v', 'extend'],
+    maxTotal: 50,
+    countUniqueUrls: true,
+  });
+  assert.notStrictEqual(clonedBudget?.fieldIds, entry.engine.inputSchema?.referenceBudget?.fieldIds);
+});
+
 test('engine clone and configured projection preserve independent aggregate reference budgets', async () => {
   const registryEntry = FAL_ENGINE_REGISTRY.find(
     (entry) =>

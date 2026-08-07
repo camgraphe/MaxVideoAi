@@ -31,6 +31,10 @@ export const BYTEPLUS_SEEDANCE_2_MINI_ENDPOINTS = {
 export const BYTEPLUS_SEEDANCE_2_5_MODEL_ID = 'dreamina-seedance-2-5-260628';
 export const BYTEPLUS_SEEDANCE_2_5_ENDPOINTS = {
   t2v: 'byteplus/dreamina-seedance-2.5/text-to-video',
+  i2v: 'byteplus/dreamina-seedance-2.5/image-to-video',
+  ref2v: 'byteplus/dreamina-seedance-2.5/reference-to-video',
+  v2v: 'byteplus/dreamina-seedance-2.5/video-to-video',
+  extend: 'byteplus/dreamina-seedance-2.5/extend',
 } as const;
 
 export const HAPPY_HORSE_ENDPOINTS = {

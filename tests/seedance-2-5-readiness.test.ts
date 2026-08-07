@@ -63,6 +63,32 @@ test('Seedance 2.5 is an executable hidden engine with no public generation surf
   assert.equal(modelRoster.some((entry) => entry.engineId === slug), true);
 });
 
+test('Seedance 2.5 exposes one unified five-mode engine schema', () => {
+  const entry = getFalEngineById(slug);
+  assert.ok(entry);
+  assert.deepEqual(entry.engine.modes, ['t2v', 'i2v', 'ref2v', 'v2v', 'extend']);
+  assert.deepEqual(entry.modes.map(({ mode }) => mode), ['t2v', 'i2v', 'ref2v', 'v2v', 'extend']);
+  assert.equal(entry.engine.inputSchema?.referenceBudget?.maxTotal, 50);
+  assert.deepEqual(entry.engine.inputSchema?.referenceBudget?.fieldIds, [
+    'image_url',
+    'end_image_url',
+    'image_urls',
+    'video_url',
+    'video_urls',
+    'extension_source_videos',
+    'audio_urls',
+  ]);
+
+  const fields = [
+    ...(entry.engine.inputSchema?.required ?? []),
+    ...(entry.engine.inputSchema?.optional ?? []),
+  ];
+  assert.equal(fields.find((field) => field.id === 'image_urls')?.maxCount, 30);
+  assert.equal(fields.find((field) => field.id === 'video_urls')?.maxCount, 10);
+  assert.equal(fields.find((field) => field.id === 'extension_source_videos')?.maxCount, 3);
+  assert.equal(fields.find((field) => field.id === 'audio_urls')?.maxCount, 10);
+});
+
 test('Seedance 2.5 owns a dedicated fail-closed ModelArk profile', () => {
   const profile = requireBytePlusSeedanceProfile(slug);
   assert.equal(profile.modelConfigKey, 'seedance25ModelId');

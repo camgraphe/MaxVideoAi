@@ -50,6 +50,11 @@ type V2vReferenceImageLimits = {
   maxImageCount: number;
 };
 
+type ExtendSourceVideoLimits = {
+  fieldId: string;
+  maxCount?: number;
+};
+
 const ENGINE_V2V_REFERENCE_IMAGE_LIMITS = listFalEngines().reduce<Record<string, V2vReferenceImageLimits>>(
   (acc, entry) => {
     const fields = [...(entry.engine.inputSchema?.required ?? []), ...(entry.engine.inputSchema?.optional ?? [])];
@@ -69,6 +74,24 @@ const ENGINE_V2V_REFERENCE_IMAGE_LIMITS = listFalEngines().reduce<Record<string,
   },
   {}
 );
+
+const ENGINE_EXTEND_SOURCE_VIDEO_LIMITS = listFalEngines().reduce<
+  Record<string, ExtendSourceVideoLimits>
+>((acc, entry) => {
+  const field = [...(entry.engine.inputSchema?.required ?? []), ...(entry.engine.inputSchema?.optional ?? [])].find(
+    (candidate) =>
+      candidate.type === 'video' &&
+      candidate.modes?.includes('extend') &&
+      candidate.requiredInModes?.includes('extend')
+  );
+  if (field) {
+    acc[entry.id] = {
+      fieldId: field.id,
+      maxCount: field.maxCount,
+    };
+  }
+  return acc;
+}, {});
 
 function normalizeStringArray(raw: unknown): string[] {
   return Array.isArray(raw)
@@ -343,16 +366,38 @@ export function validateModeMediaInputs(params: {
   }
 
   if (normalizedMode === 'v2v' || normalizedMode === 'reframe' || normalizedMode === 'extend' || normalizedMode === 'retake') {
+    const configuredExtendSource =
+      normalizedMode === 'extend' ? ENGINE_EXTEND_SOURCE_VIDEO_LIMITS[engineId] : undefined;
+    const extensionSources = configuredExtendSource
+      ? normalizeStringArray(payload[configuredExtendSource.fieldId])
+      : [];
+    if (
+      configuredExtendSource &&
+      typeof configuredExtendSource.maxCount === 'number' &&
+      extensionSources.length > configuredExtendSource.maxCount
+    ) {
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: configuredExtendSource.fieldId,
+          message: `Up to ${configuredExtendSource.maxCount} source videos are supported`,
+          allowed: [1, configuredExtendSource.maxCount],
+          value: extensionSources.length,
+        },
+      };
+    }
     const sourceVideo =
-      typeof payload['video_url'] === 'string' && payload['video_url'].trim().length
+      extensionSources[0] ??
+      (typeof payload['video_url'] === 'string' && payload['video_url'].trim().length
         ? payload['video_url'].trim()
-        : normalizeStringArray(payload['video_urls'])[0] ?? '';
+        : normalizeStringArray(payload['video_urls'])[0] ?? '');
     if (!sourceVideo) {
       return {
         ok: false,
         error: {
           code: 'ENGINE_CONSTRAINT',
-          field: 'video_url',
+          field: configuredExtendSource?.fieldId ?? 'video_url',
           message: 'A source video is required for this engine mode',
         },
       };
