@@ -2,22 +2,22 @@
   "marketingName": "Seedance 2.5",
   "versionLabel": "2.5",
   "seo": {
-    "title": "Seedance 2.5 AI Video: 30-Second Cinematic Scenes",
-    "description": "Explore real Seedance 2.5 renders focused on longer cinematic scenes, controlled camera movement, physical coherence and natural human performance."
+    "title": "Seedance 2.5 AI Video Generator: 30s, 720p & Audio",
+    "description": "Generate 4–30-second Seedance 2.5 videos at 480p or 720p with text, start and end images, multimodal references, video editing, extension and optional audio."
   },
-  "overview": "Seedance 2.5 is designed for longer cinematic sequences where story beats, camera movement, physical interaction and human performance need to remain coherent across the scene.",
+  "overview": "Create 4–30-second 16:9 videos at 480p or 720p and 24 FPS. Start from text or images, direct the result with multimodal references, edit or extend video, and add generated audio when the project needs it.",
   "hero": {
-    "title": "Seedance 2.5 — cinematic AI video with longer, more controlled scenes",
-    "intro": "Explore Seedance 2.5 through real MaxVideoAI renders designed to test 30-second storytelling, camera movement, physical coherence and natural human performance.",
-    "badge": "Real MaxVideoAI examples · Up to 30 seconds · 720p",
+    "title": "Seedance 2.5 — create longer AI videos with multimodal control",
+    "intro": "Turn a prompt, frames or references into a coherent 4–30-second video, with 480p or 720p output and optional generated audio.",
+    "badge": "New · Up to 30 seconds · 720p · Native audio",
     "ctaPrimary": {
-      "label": "View Seedance examples",
-      "href": "/examples/seedance"
+      "label": "Generate with Seedance 2.5",
+      "href": "/app?engine=seedance-2-5"
     },
     "secondaryLinks": [
       {
-        "label": "Explore available Seedance 2.0",
-        "href": "/models/seedance-2-0"
+        "label": "View Seedance examples",
+        "href": "/examples/seedance"
       },
       {
         "label": "Open Seedance 2.5 prompt examples",
@@ -49,24 +49,24 @@
   "technicalOverviewTitle": "Seedance 2.5 overview",
   "technicalOverview": [
     {
-      "label": "Scene planning",
-      "body": "Text-first concepts with timed story beats and explicit continuity constraints"
-    },
-    {
       "label": "Duration",
-      "body": "Up to 30 seconds for longer scene development"
+      "body": "4–30 seconds"
     },
     {
-      "label": "Published examples",
-      "body": "Real MaxVideoAI renders presented at 720p"
+      "label": "Output",
+      "body": "480p or 720p · 16:9 · 24 FPS"
     },
     {
-      "label": "Hero framing",
-      "body": "24-second landscape render in 16:9"
+      "label": "Creation inputs",
+      "body": "Text prompts, start and optional end images, and multimodal references"
+    },
+    {
+      "label": "Video workflows",
+      "body": "Edit a source video or extend one to three clips"
     },
     {
       "label": "Audio",
-      "body": "Audio status is shown from each published render"
+      "body": "Optional generated audio in the same workflow"
     }
   ],
   "tips": {
@@ -81,7 +81,7 @@
   "faqs": [
     {
       "q": "What does this Seedance 2.5 page show?",
-      "a": "It presents real MaxVideoAI renders selected to examine longer storytelling, camera movement, physical coherence and human performance."
+      "a": "It shows how Seedance 2.5 turns text, frames, multimodal references and source video into longer cinematic outputs with optional generated audio."
     },
     {
       "q": "How long are the scenes shown here?",
@@ -93,37 +93,37 @@
     },
     {
       "q": "Can I generate with Seedance 2.5 from this page?",
-      "a": "Public generation is not open on this page. Browse the Seedance gallery or explore the currently available Seedance 2.0 model."
+      "a": "Seedance 2.5 generation is available to MaxVideoAI users, with the price calculated and shown before each render."
     }
   ],
   "decision": {
     "modelSlug": "seedance-2-5",
     "hero": {
-      "eyebrow": "BYTEDANCE NEXT-GEN VIDEO MODEL",
+      "eyebrow": "NEW AI VIDEO MODEL",
       "title": "Seedance 2.5",
-      "subtitle": "30-second storytelling, cinematic continuity and camera control for longer scenes with coherent motion and natural human performance.",
+      "subtitle": "Create 4–30-second videos with multimodal control, coherent motion and optional generated audio at 480p or 720p.",
       "subtitleHighlights": [
-        "30-second storytelling",
-        "cinematic continuity",
-        "camera control"
+        "4–30-second videos",
+        "multimodal control",
+        "optional generated audio"
       ],
-      "paragraph": "Use these real MaxVideoAI renders to evaluate how Seedance 2.5 carries story beats, camera direction, physical interactions and human performances through a longer sequence.",
+      "paragraph": "Build from text, start and end frames, or multimodal references. You can also edit source video, extend clips and decide whether the final render includes generated audio.",
       "primaryCta": {
-        "label": "View Seedance examples",
+        "label": "Generate with Seedance 2.5",
         "href": "/app?engine=seedance-2-5"
       },
       "secondaryCta": {
-        "label": "Explore available Seedance 2.0",
-        "href": "/models/seedance-2-0"
+        "label": "View Seedance examples",
+        "href": "/examples/seedance"
       },
       "quickLinks": [
         {
-          "label": "View Seedance examples",
-          "href": "/examples/seedance"
+          "label": "Compare with Seedance 2.0",
+          "href": "/ai-video-engines/seedance-2-0-vs-seedance-2-5?order=seedance-2-5"
         },
         {
-          "label": "Explore available Seedance 2.0",
-          "href": "/models/seedance-2-0"
+          "label": "View pricing",
+          "href": "/pricing#seedance-2-5-pricing"
         },
         {
           "label": "Prompt examples",
@@ -144,46 +144,46 @@
     },
     "features": [
       {
-        "title": "30-second storytelling",
-        "body": "Plan a complete scene with room for setup, progression and payoff.",
+        "title": "4–30-second video",
+        "body": "Choose the duration your story needs and render in 480p or 720p at 24 FPS.",
         "tone": "duration"
       },
       {
-        "title": "Camera continuity",
-        "body": "Direct deliberate framing and movement across consecutive story beats.",
+        "title": "Start and end frame control",
+        "body": "Animate a start image and add an optional end image to guide the transition.",
+        "tone": "reference"
+      },
+      {
+        "title": "Multimodal references",
+        "body": "Guide subject identity, motion, pacing or sound with image, video and audio references.",
         "tone": "continuity"
       },
       {
-        "title": "Physical coherence",
-        "body": "Evaluate motion, contact and environmental reactions across the sequence.",
-        "tone": "quality"
-      },
-      {
-        "title": "Human performance",
-        "body": "Shape readable gestures, expressions and short spoken moments.",
+        "title": "Edit, extend and add audio",
+        "body": "Transform source video, extend clips and include generated audio when it suits the deliverable.",
         "tone": "audio"
       }
     ],
     "decisionCards": [
       {
-        "title": "Cinematic storytelling",
-        "body": "Use a clear beginning, progression and ending when one scene needs to carry a complete narrative beat.",
+        "title": "Create from text",
+        "body": "Describe the scene, action, camera and sound to turn a written concept into a complete video.",
         "cta": {
-          "label": "See cinematic examples",
-          "href": "/examples/seedance"
+          "label": "Generate from text",
+          "href": "/app?engine=seedance-2-5"
         }
       },
       {
-        "title": "Commercial concepts",
-        "body": "Plan product reveals and brand moments around timed camera moves, visible actions and a clean closing frame.",
+        "title": "Control the first and final frames",
+        "body": "Use start and end images when a transition needs to land on a planned composition.",
         "cta": {
-          "label": "See Seedance examples",
-          "href": "/examples/seedance"
+          "label": "Generate with frames",
+          "href": "/app?engine=seedance-2-5"
         }
       },
       {
-        "title": "Human scenes",
-        "body": "Keep gestures, eye lines, expressions and brief dialogue tied to specific moments in the scene.",
+        "title": "Edit or extend video",
+        "body": "Restyle a source clip or continue one to three clips while keeping the direction in one workflow.",
         "cta": {
           "label": "Open Prompt Lab",
           "href": "#prompting"
@@ -192,24 +192,32 @@
     ],
     "referenceWorkflows": [
       {
-        "title": "Text-first scene planning",
-        "body": "Start with the subject, setting and narrative change, then define the visual ending before adding camera detail."
+        "title": "Text and frame control",
+        "body": "Start from text, or guide the shot with a start image and an optional end image."
       },
       {
-        "title": "Timed beat direction",
-        "body": "Divide the scene into sequential time ranges and give each range one action, one camera instruction and one continuity anchor."
+        "title": "Multimodal references",
+        "body": "Use image, video and audio references to carry visual identity, motion, pacing or sound into the result."
+      },
+      {
+        "title": "Video editing and extension",
+        "body": "Edit one source video or extend one to three clips into a longer continuation."
+      },
+      {
+        "title": "Optional generated audio",
+        "body": "Generate ambience, effects or brief speech with the video, or leave audio off for post-production."
       }
     ],
     "pricingCopy": {
-      "title": "Explore real Seedance 2.5 outputs",
-      "subtitle": "Review accepted renders before deciding whether the model fits your storytelling and camera-direction needs.",
-      "footnote": "Selected Seedance 2.5 renders, reviewed for cinematic continuity, camera direction and scene coherence.",
-      "ctaLabel": "View Seedance examples",
-      "ctaHref": "/examples/seedance"
+      "title": "Seedance 2.5 pricing for your render",
+      "subtitle": "Choose duration, resolution, inputs and audio, then review the calculated price before you render.",
+      "footnote": "The price is shown before rendering and updates with the settings you select.",
+      "ctaLabel": "Generate with Seedance 2.5",
+      "ctaHref": "/app?engine=seedance-2-5"
     },
     "meta": {
-      "title": "Seedance 2.5 AI Video: 30-Second Cinematic Scenes",
-      "description": "Explore real Seedance 2.5 renders focused on longer cinematic scenes, controlled camera movement, physical coherence and natural human performance."
+      "title": "Seedance 2.5 AI Video Generator: 30s, 720p & Audio",
+      "description": "Generate 4–30-second Seedance 2.5 videos at 480p or 720p with text, frames, multimodal references, video editing, extension and optional audio."
     }
   },
   "prompting": {
@@ -218,10 +226,7 @@
       "title": "Prompt Lab — Seedance 2.5",
       "intro": "Build a longer scene in three passes: define the concept, direct timed beats, then lock the constraints that protect continuity.",
       "tip": "Give each time range one visible action and one camera instruction.",
-      "guide": {
-        "label": "Explore available Seedance 2.0",
-        "href": "/models/seedance-2-0"
-      },
+      "guide": null,
       "referencesTitle": "A text-first workflow for longer scenes"
     },
     "tabs": [

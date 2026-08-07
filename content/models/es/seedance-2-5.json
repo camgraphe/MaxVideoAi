@@ -2,22 +2,22 @@
   "marketingName": "Seedance 2.5",
   "versionLabel": "2.5",
   "seo": {
-    "title": "Seedance 2.5: vídeo con IA cinematográfico de 30 segundos",
-    "description": "Explora renders reales de Seedance 2.5 centrados en escenas cinematográficas más largas, cámara controlada, coherencia física e interpretación humana natural."
+    "title": "Generador de vídeo con IA Seedance 2.5: 30 s, 720p y audio",
+    "description": "Genera vídeos Seedance 2.5 de 4 a 30 segundos en 480p o 720p con texto, imágenes inicial y final, referencias multimodales, edición de vídeo, extensión y audio opcional."
   },
-  "overview": "Seedance 2.5 está diseñado para secuencias cinematográficas más largas en las que los momentos narrativos, el movimiento de cámara, las interacciones físicas y la interpretación deben mantener la coherencia.",
+  "overview": "Crea vídeos 16:9 de 4 a 30 segundos en 480p o 720p y a 24 FPS. Empieza con texto o imágenes, dirige el resultado mediante referencias multimodales, edita o extiende vídeo y añade audio generado cuando el proyecto lo necesite.",
   "hero": {
-    "title": "Seedance 2.5 — vídeo con IA cinematográfico para escenas más largas y controladas",
-    "intro": "Descubre Seedance 2.5 mediante renders reales de MaxVideoAI diseñados para probar narración larga, movimiento de cámara, coherencia física e interpretación humana natural.",
-    "badge": "Ejemplos reales de MaxVideoAI · Hasta 30 segundos · 720p",
+    "title": "Seedance 2.5 — crea vídeos con IA más largos y control multimodal",
+    "intro": "Convierte un prompt, imágenes o referencias en un vídeo coherente de 4 a 30 segundos, en 480p o 720p, con audio generado opcional.",
+    "badge": "Nuevo · Hasta 30 segundos · 720p · Audio nativo",
     "ctaPrimary": {
-      "label": "Ver ejemplos de Seedance",
-      "href": "/es/galeria/seedance"
+      "label": "Generar con Seedance 2.5",
+      "href": "/app?engine=seedance-2-5"
     },
     "secondaryLinks": [
       {
-        "label": "Explorar Seedance 2.0 disponible",
-        "href": "/es/modelos/seedance-2-0"
+        "label": "Ver ejemplos de Seedance",
+        "href": "/es/galeria/seedance"
       },
       {
         "label": "Abrir ejemplos de prompts de Seedance 2.5",
@@ -49,24 +49,24 @@
   "technicalOverviewTitle": "Resumen de Seedance 2.5",
   "technicalOverview": [
     {
-      "label": "Planificación de escena",
-      "body": "Conceptos desde texto con momentos narrativos pautados y restricciones de continuidad explícitas"
-    },
-    {
       "label": "Duración",
-      "body": "Hasta 30 segundos para desarrollar escenas más largas"
+      "body": "De 4 a 30 segundos"
     },
     {
-      "label": "Ejemplos publicados",
-      "body": "Renders reales de MaxVideoAI presentados en 720p"
+      "label": "Salida",
+      "body": "480p o 720p · 16:9 · 24 FPS"
     },
     {
-      "label": "Encuadre principal",
-      "body": "Render horizontal de 24 segundos en formato 16:9"
+      "label": "Entradas creativas",
+      "body": "Prompts de texto, imágenes inicial y final opcional, y referencias multimodales"
+    },
+    {
+      "label": "Flujos de vídeo",
+      "body": "Edición de un vídeo fuente o extensión de uno a tres clips"
     },
     {
       "label": "Audio",
-      "body": "El estado del audio procede de cada render publicado"
+      "body": "Audio generado opcional dentro del mismo flujo"
     }
   ],
   "tips": {
@@ -81,7 +81,7 @@
   "faqs": [
     {
       "q": "¿Qué muestra esta página de Seedance 2.5?",
-      "a": "Presenta renders reales de MaxVideoAI elegidos para examinar narración larga, movimiento de cámara, coherencia física e interpretación humana."
+      "a": "Muestra cómo Seedance 2.5 convierte texto, imágenes, referencias multimodales y vídeo fuente en resultados cinematográficos más largos con audio generado opcional."
     },
     {
       "q": "¿Cuánto duran las escenas que se muestran?",
@@ -93,37 +93,37 @@
     },
     {
       "q": "¿Puedo generar con Seedance 2.5 desde esta página?",
-      "a": "La generación pública no está abierta en esta página. Explora la galería de Seedance o descubre el modelo Seedance 2.0 disponible actualmente."
+      "a": "La generación con Seedance 2.5 está disponible para los usuarios de MaxVideoAI; el precio se calcula y se muestra antes de cada render."
     }
   ],
   "decision": {
     "modelSlug": "seedance-2-5",
     "hero": {
-      "eyebrow": "MODELO DE VÍDEO DE NUEVA GENERACIÓN DE BYTEDANCE",
+      "eyebrow": "NUEVO MODELO DE VÍDEO CON IA",
       "title": "Seedance 2.5",
-      "subtitle": "Narración de 30 segundos, continuidad cinematográfica y control de cámara para escenas más largas con movimiento coherente e interpretación humana natural.",
+      "subtitle": "Crea vídeos de 4 a 30 segundos con control multimodal, movimiento coherente y audio generado opcional en 480p o 720p.",
       "subtitleHighlights": [
-        "Narración de 30 segundos",
-        "continuidad cinematográfica",
-        "control de cámara"
+        "vídeos de 4 a 30 segundos",
+        "control multimodal",
+        "audio generado opcional"
       ],
-      "paragraph": "Usa estos renders reales de MaxVideoAI para evaluar cómo Seedance 2.5 mantiene los momentos narrativos, la dirección de cámara, las interacciones físicas y la interpretación a lo largo de una secuencia más extensa.",
+      "paragraph": "Crea a partir de texto, imágenes inicial y final o referencias multimodales. También puedes editar vídeo fuente, extender clips y elegir si el render incluye audio generado.",
       "primaryCta": {
-        "label": "Ver ejemplos de Seedance",
+        "label": "Generar con Seedance 2.5",
         "href": "/app?engine=seedance-2-5"
       },
       "secondaryCta": {
-        "label": "Explorar Seedance 2.0 disponible",
-        "href": "/es/modelos/seedance-2-0"
+        "label": "Ver ejemplos de Seedance",
+        "href": "/es/galeria/seedance"
       },
       "quickLinks": [
         {
-          "label": "Ver ejemplos de Seedance",
-          "href": "/es/galeria/seedance"
+          "label": "Comparar con Seedance 2.0",
+          "href": "/es/comparativa/seedance-2-0-vs-seedance-2-5?order=seedance-2-5"
         },
         {
-          "label": "Explorar Seedance 2.0 disponible",
-          "href": "/es/modelos/seedance-2-0"
+          "label": "Ver precios",
+          "href": "/es/precios#seedance-2-5-pricing"
         },
         {
           "label": "Ejemplos de prompts",
@@ -144,46 +144,46 @@
     },
     "features": [
       {
-        "title": "Narración de 30 segundos",
-        "body": "Planifica una escena completa con espacio para planteamiento, progresión y cierre.",
+        "title": "Vídeo de 4 a 30 segundos",
+        "body": "Elige la duración que necesita la historia y genera en 480p o 720p a 24 FPS.",
         "tone": "duration"
       },
       {
-        "title": "Continuidad de cámara",
-        "body": "Dirige el encuadre y el movimiento de forma deliberada entre momentos narrativos consecutivos.",
+        "title": "Control de las imágenes inicial y final",
+        "body": "Anima una imagen inicial y añade una imagen final opcional para guiar la transición.",
+        "tone": "reference"
+      },
+      {
+        "title": "Referencias multimodales",
+        "body": "Guía la identidad, el movimiento, el ritmo o el sonido con referencias de imagen, vídeo y audio.",
         "tone": "continuity"
       },
       {
-        "title": "Coherencia física",
-        "body": "Evalúa el movimiento, el contacto y las reacciones del entorno durante la secuencia.",
-        "tone": "quality"
-      },
-      {
-        "title": "Interpretación humana",
-        "body": "Construye gestos, expresiones y momentos hablados breves que resulten legibles.",
+        "title": "Edición, extensión y audio",
+        "body": "Transforma vídeo fuente, extiende clips e incluye audio generado cuando convenga al proyecto.",
         "tone": "audio"
       }
     ],
     "decisionCards": [
       {
-        "title": "Narración cinematográfica",
-        "body": "Usa un inicio, una progresión y un final claros cuando una sola escena deba contener un momento narrativo completo.",
+        "title": "Crear desde texto",
+        "body": "Describe la escena, la acción, la cámara y el sonido para convertir un concepto escrito en un vídeo completo.",
         "cta": {
-          "label": "Ver ejemplos cinematográficos",
-          "href": "/es/galeria/seedance"
+          "label": "Generar desde texto",
+          "href": "/app?engine=seedance-2-5"
         }
       },
       {
-        "title": "Conceptos comerciales",
-        "body": "Planifica revelaciones de producto y momentos de marca mediante movimientos de cámara pautados, acciones visibles y un encuadre final limpio.",
+        "title": "Controlar la primera y la última imagen",
+        "body": "Usa imágenes inicial y final cuando una transición deba terminar en una composición prevista.",
         "cta": {
-          "label": "Ver ejemplos de Seedance",
-          "href": "/es/galeria/seedance"
+          "label": "Generar con imágenes",
+          "href": "/app?engine=seedance-2-5"
         }
       },
       {
-        "title": "Escenas humanas",
-        "body": "Vincula gestos, miradas, expresiones y diálogos breves a momentos concretos de la escena.",
+        "title": "Editar o extender vídeo",
+        "body": "Cambia el estilo de un clip fuente o extiende de uno a tres clips sin salir del mismo flujo de dirección.",
         "cta": {
           "label": "Abrir Prompt Lab",
           "href": "#prompting"
@@ -192,24 +192,32 @@
     ],
     "referenceWorkflows": [
       {
-        "title": "Planificación de escena desde texto",
-        "body": "Empieza por el sujeto, el entorno y el cambio narrativo; después define el final visual antes de añadir detalles de cámara."
+        "title": "Texto e imágenes de control",
+        "body": "Empieza con texto o guía la toma con una imagen inicial y una imagen final opcional."
       },
       {
-        "title": "Dirección por momentos temporales",
-        "body": "Divide la escena en tramos consecutivos y asigna a cada uno una acción, una instrucción de cámara y un ancla de continuidad."
+        "title": "Referencias multimodales",
+        "body": "Usa referencias de imagen, vídeo y audio para trasladar identidad visual, movimiento, ritmo o sonido al resultado."
+      },
+      {
+        "title": "Edición y extensión de vídeo",
+        "body": "Edita un vídeo fuente o extiende de uno a tres clips para crear una continuación más larga."
+      },
+      {
+        "title": "Audio generado opcional",
+        "body": "Genera ambiente, efectos o una voz breve con el vídeo, o desactiva el audio para la posproducción."
       }
     ],
     "pricingCopy": {
-      "title": "Explora renders reales de Seedance 2.5",
-      "subtitle": "Revisa los renders publicados antes de decidir si el modelo encaja con tus necesidades de narración y dirección de cámara.",
-      "footnote": "Una selección de renders de Seedance 2.5, evaluados por su continuidad cinematográfica, dirección de cámara y coherencia de escena.",
-      "ctaLabel": "Ver ejemplos de Seedance",
-      "ctaHref": "/es/galeria/seedance"
+      "title": "Precio de Seedance 2.5 para cada render",
+      "subtitle": "Elige la duración, la resolución, las entradas y el audio; después revisa el precio calculado antes de generar.",
+      "footnote": "El precio se muestra antes del render y se actualiza según los ajustes seleccionados.",
+      "ctaLabel": "Generar con Seedance 2.5",
+      "ctaHref": "/app?engine=seedance-2-5"
     },
     "meta": {
-      "title": "Seedance 2.5: vídeo con IA cinematográfico de 30 segundos",
-      "description": "Explora renders reales de Seedance 2.5 centrados en escenas cinematográficas más largas, cámara controlada, coherencia física e interpretación humana natural."
+      "title": "Generador de vídeo con IA Seedance 2.5: 30 s, 720p y audio",
+      "description": "Genera vídeos Seedance 2.5 de 4 a 30 segundos en 480p o 720p con texto, imágenes, referencias multimodales, edición de vídeo, extensión y audio opcional."
     }
   },
   "prompting": {
@@ -218,10 +226,7 @@
       "title": "Prompt Lab — Seedance 2.5",
       "intro": "Construye una escena más larga en tres pasadas: define el concepto, dirige los momentos temporales y fija las restricciones que protegen la continuidad.",
       "tip": "Asigna una acción visible y una instrucción de cámara a cada tramo temporal.",
-      "guide": {
-        "label": "Explorar Seedance 2.0 disponible",
-        "href": "/es/modelos/seedance-2-0"
-      },
+      "guide": null,
       "referencesTitle": "Un flujo desde texto para escenas más largas"
     },
     "tabs": [
