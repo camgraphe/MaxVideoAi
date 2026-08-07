@@ -268,8 +268,16 @@ test('page builder emits only navigable HTTP sources for specification links', a
   const staticData = await loadBenchmarkLabStaticData();
   const pageData = buildBenchmarkPageData(staticData, { status: 'unavailable', windowDays: 30, asOf: null, rows: [] });
   const dreamina = pageData.specs.find((row) => row.modelSlug === 'dreamina-seedance-2-0-mini');
+  const seedanceSource = staticData.specs.find((row) => row.modelSlug === 'seedance-2-5');
+  const seedance = pageData.specs.find((row) => row.modelSlug === 'seedance-2-5');
 
   assert.equal(dreamina?.sourceUrl, 'https://maxvideoai.com/models/dreamina-seedance-2-0-mini');
+  assert.deepEqual(seedanceSource?.sources, ['https://docs.byteplus.com/en/docs/modelark/1520757']);
+  assert.equal(seedance?.sourceUrl, 'https://docs.byteplus.com/en/docs/modelark/1520757');
+  assert.doesNotMatch(
+    JSON.stringify({ sources: seedanceSource?.sources, publicRow: seedance }),
+    /dreamina-seedance-2-5-260628|console\.byteplus\.com/i
+  );
   assert.ok(pageData.specs.every((row) => row.sourceUrl == null || /^https?:\/\//.test(row.sourceUrl)));
 });
 

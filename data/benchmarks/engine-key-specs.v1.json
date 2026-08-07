@@ -815,8 +815,6 @@
     {
       "modelSlug": "seedance-2-5",
       "sources": [
-        "https://maxvideoai.com/models/seedance-2-5",
-        "https://console.byteplus.com/ark/region:ap-southeast-1/model/detail?name=dreamina-seedance-2-5-260628",
         "https://docs.byteplus.com/en/docs/modelark/1520757"
       ],
       "keySpecs": {
