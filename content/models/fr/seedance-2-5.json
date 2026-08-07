@@ -3,7 +3,8 @@
   "versionLabel": "2.5",
   "seo": {
     "title": "Générateur vidéo IA Seedance 2.5 : 30 s, 720p et audio",
-    "description": "Générez des vidéos Seedance 2.5 de 4 à 30 secondes en 480p ou 720p à partir de texte, d’images de départ et de fin, de références multimodales, du montage vidéo, de la prolongation et d’un audio optionnel."
+    "description": "Générez des vidéos Seedance 2.5 de 4 à 30 secondes en 480p ou 720p à partir de texte, d’images de départ et de fin, de références multimodales, du montage vidéo, de la prolongation et d’un audio optionnel.",
+    "image": "/models/seedance-2-5-launch.jpg"
   },
   "overview": "Créez des vidéos 16:9 de 4 à 30 secondes en 480p ou 720p à 24 FPS. Partez d’un texte ou d’images, dirigez le résultat avec des références multimodales, montez ou prolongez une vidéo et ajoutez un audio généré selon les besoins du projet.",
   "hero": {

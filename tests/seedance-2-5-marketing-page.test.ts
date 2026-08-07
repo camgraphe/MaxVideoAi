@@ -176,6 +176,9 @@ test('Seedance 2.5 localized marketing content converts in EN, FR, and ES withou
   for (const locale of locales) {
     const source = `content/models/${locale}/${slug}.json`;
     const document = JSON.parse(readFileSync(source, 'utf8')) as {
+      seo: {
+        image?: string;
+      };
       custom?: Record<string, unknown>;
       hero: {
         ctaPrimary: { label: string; href: string };
@@ -192,6 +195,7 @@ test('Seedance 2.5 localized marketing content converts in EN, FR, and ES withou
     const serialized = JSON.stringify(document);
 
     assert.match(serialized, /seedance-2-5/);
+    assert.equal(document.seo.image, '/models/seedance-2-5-launch.jpg');
     assert.deepEqual(document.hero.ctaPrimary, {
       label: launchCopy.primaryCta,
       href: '/app?engine=seedance-2-5',
@@ -332,4 +336,31 @@ test('Seedance 2.5 emits canonical localized metadata URLs and complete public s
   });
   assert.equal(product.offers.priceCurrency, 'USD');
   assert.equal(product.offers.price, (canonicalQuote.customerTotalCents / 100).toFixed(2));
+
+  for (const locale of locales) {
+    const localizedCanonical = expectedMetadataUrls[locale];
+    const localizedSchemas = buildModelSchemaPayloads({
+      canonical: localizedCanonical,
+      description: 'Seedance 2.5 marketing page',
+      engine,
+      heroPosterAbsolute: null,
+      heroTitle: 'Seedance 2.5',
+      inLanguage: locale === 'en' ? 'en-US' : locale === 'fr' ? 'fr-FR' : 'es-ES',
+      localizedCanonical,
+      localizedHomeUrl: locale === 'en' ? 'https://maxvideoai.com/' : `https://maxvideoai.com/${locale}`,
+      localizedModelsUrl:
+        locale === 'en'
+          ? 'https://maxvideoai.com/models'
+          : `https://maxvideoai.com/${locale}/${locale === 'fr' ? 'modeles' : 'modelos'}`,
+      pricingEngine: engine.engine,
+      resolvedBreadcrumb: { home: 'Home', models: 'Models' },
+    }) as Array<Record<string, unknown>>;
+    const localizedProduct = localizedSchemas.find((schema) => schema['@type'] === 'Product') as
+      | (Record<string, unknown> & { offers?: Record<string, unknown> })
+      | undefined;
+
+    assert.equal(localizedProduct?.url, localizedCanonical);
+    assert.equal(localizedProduct?.offers?.['@type'], 'Offer');
+    assert.equal(localizedProduct?.offers?.url, localizedCanonical);
+  }
 });

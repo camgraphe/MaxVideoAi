@@ -4,6 +4,9 @@ import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 
+import { getFalEngineById } from '../frontend/src/config/falEngines.ts';
+import { buildSeoMetadata } from '../frontend/lib/seo/metadata.ts';
+
 const require = createRequire(import.meta.url);
 const nextConfig = require('../frontend/next.config.js');
 const compareConfig = require('../frontend/config/compare-config.json');
@@ -112,4 +115,55 @@ test('homepage marketing media stays on optimized WebP sources', () => {
   assert.doesNotMatch(source, /showcase-[a-z0-9-]+\.jpg/);
   assert.doesNotMatch(source, /comparison-scorecard-transparent\.png/);
   assert.match(source, /comparison-scorecard-transparent\.webp/);
+});
+
+test('Seedance 2.5 route metadata is index-follow with the accepted launch social card', () => {
+  const expectedUrls = {
+    en: 'https://maxvideoai.com/models/seedance-2-5',
+    fr: 'https://maxvideoai.com/fr/modeles/seedance-2-5',
+    es: 'https://maxvideoai.com/es/modelos/seedance-2-5',
+  } as const;
+  const expectedLanguages = { ...expectedUrls, 'x-default': expectedUrls.en };
+  const socialImagePath = '/models/seedance-2-5-launch.jpg';
+  const socialImageUrl = `https://maxvideoai.com${socialImagePath}`;
+  const engine = getFalEngineById('seedance-2-5');
+
+  assert.ok(engine);
+  assert.equal(engine.surfaces.modelPage.indexable, true);
+  assert.equal(engine.surfaces.modelPage.includeInSitemap, true);
+  assert.equal(existsSync(path.join(repoRoot, 'frontend/public', socialImagePath)), true);
+
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const document = JSON.parse(
+      readFileSync(path.join(repoRoot, 'content/models', locale, 'seedance-2-5.json'), 'utf8'),
+    ) as { seo: { title: string; description: string; image?: string } };
+    const metadata = buildSeoMetadata({
+      locale,
+      title: document.seo.title,
+      description: document.seo.description,
+      image: document.seo.image,
+      imageAlt: document.seo.title,
+      ogType: 'article',
+      englishPath: '/models/seedance-2-5',
+      availableLocales: ['en', 'fr', 'es'],
+      robots: { index: engine.surfaces.modelPage.indexable, follow: true },
+      titleBranding: 'none',
+    });
+    const openGraphImages = metadata.openGraph?.images;
+    const twitterImages = metadata.twitter?.images;
+
+    assert.equal(document.seo.image, socialImagePath, `${locale} social image`);
+    assert.deepEqual(metadata.robots, { index: true, follow: true });
+    assert.equal(metadata.alternates?.canonical, expectedUrls[locale]);
+    assert.deepEqual(metadata.alternates?.languages, expectedLanguages);
+    assert.ok(Array.isArray(openGraphImages));
+    assert.deepEqual(openGraphImages[0], {
+      url: socialImageUrl,
+      width: 1200,
+      height: 630,
+      alt: document.seo.title,
+    });
+    assert.deepEqual(twitterImages, [socialImageUrl]);
+    assert.doesNotMatch(JSON.stringify(metadata), /coming-soon/i);
+  }
 });
