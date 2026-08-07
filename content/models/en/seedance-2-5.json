@@ -99,12 +99,12 @@
   "decision": {
     "modelSlug": "seedance-2-5",
     "hero": {
-      "eyebrow": "NEW AI VIDEO MODEL",
+      "eyebrow": "New · Up to 30 seconds · 720p · Native audio",
       "title": "Seedance 2.5",
-      "subtitle": "Create 4–30-second videos with multimodal control, coherent motion and optional generated audio at 480p or 720p.",
+      "subtitle": "Create 4–30-second videos from text, start and end images, multimodal references or source video, with 480p/720p output and optional generated audio.",
       "subtitleHighlights": [
         "4–30-second videos",
-        "multimodal control",
+        "multimodal references",
         "optional generated audio"
       ],
       "paragraph": "Build from text, start and end frames, or multimodal references. You can also edit source video, extend clips and decide whether the final render includes generated audio.",

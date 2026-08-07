@@ -88,7 +88,6 @@ test('Seedance 2.5 localized marketing content converts in EN, FR, and ES withou
     const document = JSON.parse(readFileSync(source, 'utf8')) as {
       custom?: Record<string, unknown>;
       hero: {
-        badge: string;
         ctaPrimary: { label: string; href: string };
       };
       faqs: Array<{ q: string; a: string }>;
@@ -103,12 +102,16 @@ test('Seedance 2.5 localized marketing content converts in EN, FR, and ES withou
     const serialized = JSON.stringify(document);
 
     assert.match(serialized, /seedance-2-5/);
-    assert.equal(document.hero.badge, launchCopy.badge);
     assert.deepEqual(document.hero.ctaPrimary, {
       label: launchCopy.primaryCta,
       href: '/app?engine=seedance-2-5',
     });
     assert.equal(decision.modelSlug, slug);
+    assert.equal(decision.hero.eyebrow, launchCopy.badge);
+    assert.doesNotMatch(
+      decision.hero.subtitle,
+      /coherent motion|mouvement cohérent|movimiento coherente/i,
+    );
     assert.equal(decision.hero.primaryCta.label, launchCopy.primaryCta);
     assert.equal(decision.hero.primaryCta.href, '/app?engine=seedance-2-5');
     assert.deepEqual(decision.hero.secondaryCta, {

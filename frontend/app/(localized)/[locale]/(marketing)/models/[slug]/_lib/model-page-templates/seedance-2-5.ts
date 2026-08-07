@@ -4,8 +4,8 @@ export const seedance25TemplateConfig: ModelPageTemplateConfig = {
   slug: 'seedance-2-5',
   intent: 'production',
   hero: {
-    eyebrow: 'NEW AI VIDEO MODEL',
-    subtitleHighlightTerms: ['4–30-second videos', 'multimodal control', 'optional generated audio'],
+    eyebrow: 'New · Up to 30 seconds · 720p · Native audio',
+    subtitleHighlightTerms: ['4–30-second videos', 'multimodal references', 'optional generated audio'],
     primaryCtaHref: '/app?engine=seedance-2-5',
     secondaryCtaHref: '/examples/seedance',
     quickLinks: [

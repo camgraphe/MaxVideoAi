@@ -99,12 +99,12 @@
   "decision": {
     "modelSlug": "seedance-2-5",
     "hero": {
-      "eyebrow": "NUEVO MODELO DE VÍDEO CON IA",
+      "eyebrow": "Nuevo · Hasta 30 segundos · 720p · Audio nativo",
       "title": "Seedance 2.5",
-      "subtitle": "Crea vídeos de 4 a 30 segundos con control multimodal, movimiento coherente y audio generado opcional en 480p o 720p.",
+      "subtitle": "Crea vídeos de 4 a 30 segundos a partir de texto, imágenes inicial y final, referencias multimodales o vídeo fuente, en 480p/720p con audio generado opcional.",
       "subtitleHighlights": [
         "vídeos de 4 a 30 segundos",
-        "control multimodal",
+        "referencias multimodales",
         "audio generado opcional"
       ],
       "paragraph": "Crea a partir de texto, imágenes inicial y final o referencias multimodales. También puedes editar vídeo fuente, extender clips y elegir si el render incluye audio generado.",
