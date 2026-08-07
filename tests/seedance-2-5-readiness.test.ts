@@ -21,6 +21,12 @@ import {
   isBytePlusSeedanceSubmissionEnabled,
   requireBytePlusSeedanceProfile,
 } from '../frontend/src/server/video-providers/byteplus-modelark';
+import {
+  BYTEPLUS_SEEDANCE_2_5_MAX_AUDIO,
+  BYTEPLUS_SEEDANCE_2_5_MAX_IMAGES,
+  BYTEPLUS_SEEDANCE_2_5_MAX_REFERENCES,
+  BYTEPLUS_SEEDANCE_2_5_MAX_VIDEOS,
+} from '../frontend/src/server/video-providers/byteplus-modelark-constants';
 import { getBytePlusUnitPriceUsdPer1kTokens } from '../frontend/server/byteplus-accounting';
 import { resolveGenerateRouteContext } from '../frontend/app/api/generate/_lib/route-context';
 import {
@@ -61,15 +67,18 @@ test('Seedance 2.5 owns a dedicated fail-closed ModelArk profile', () => {
   const profile = requireBytePlusSeedanceProfile(slug);
   assert.equal(profile.modelConfigKey, 'seedance25ModelId');
   assert.equal(profile.pricingProfileKey, 'seedance25');
-  assert.deepEqual(profile.supportedModes, ['t2v']);
+  assert.deepEqual(profile.supportedModes, ['t2v', 'i2v', 'ref2v', 'v2v', 'extend']);
   assert.deepEqual(profile.resolutions, ['480p', '720p']);
   assert.deepEqual(profile.aspectRatios, ['16:9']);
-  assert.equal(profile.durationOptions[0], 4);
-  assert.equal(profile.durationOptions.at(-1), 30);
+  assert.deepEqual(profile.durationOptions, Array.from({ length: 27 }, (_, index) => index + 4));
   assert.equal(profile.defaultDurationSec, 4);
   assert.equal(profile.defaultResolution, '480p');
   assert.equal(profile.framesPerSecond, 24);
   assert.equal(profile.generatedAudio, true);
+  assert.equal(BYTEPLUS_SEEDANCE_2_5_MAX_REFERENCES, 50);
+  assert.equal(BYTEPLUS_SEEDANCE_2_5_MAX_IMAGES, 30);
+  assert.equal(BYTEPLUS_SEEDANCE_2_5_MAX_VIDEOS, 10);
+  assert.equal(BYTEPLUS_SEEDANCE_2_5_MAX_AUDIO, 10);
   assert.equal(getFalEngineById(slug)?.engine.audio, true);
   assert.equal(profile.routing.enabledKey, 'SEEDANCE_2_5_BYTEPLUS_ENABLED');
   assert.equal(profile.routing.providerOverrideKey, 'SEEDANCE_2_5_PROVIDER');

@@ -113,12 +113,7 @@ test('every current BytePlus Seedance engine has an explicit parity profile', ()
     assert.equal(profile.routing.providerOverrideKey, entry.providerOverrideKey);
     assert.equal(profile.routing.adminOnlyKey, entry.adminOnlyKey);
     assert.equal(profile.routing.allowedModesKey, entry.allowedModesKey);
-    assert.deepEqual(
-      profile.supportedModes,
-      entry.engineId === 'seedance-2-5'
-        ? ['t2v']
-        : ['t2v', 'i2v', 'ref2v', 'v2v', 'extend']
-    );
+    assert.deepEqual(profile.supportedModes, ['t2v', 'i2v', 'ref2v', 'v2v', 'extend']);
     assert.deepEqual(
       profile.aspectRatios,
       entry.engineId === 'seedance-2-5'
