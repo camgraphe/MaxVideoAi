@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { createServer } from 'node:net';
 import test from 'node:test';
+import { NextRequest } from 'next/server';
 
 import {
   getRuntimeModelById,
@@ -20,6 +22,7 @@ import {
   requireBytePlusSeedanceProfile,
 } from '../frontend/src/server/video-providers/byteplus-modelark';
 import { getBytePlusUnitPriceUsdPer1kTokens } from '../frontend/server/byteplus-accounting';
+import { resolveGenerateRouteContext } from '../frontend/app/api/generate/_lib/route-context';
 import {
   BYTEPLUS_SEEDANCE_2_5_MODEL_ID,
   buildSeedance25PricingDetails,
@@ -113,17 +116,48 @@ test('Seedance 2.5 pricing uses its factual ModelArk rates and approved 2.5x pol
   assert.equal(tokenPricing.framesPerSecond, 24);
 });
 
-test('the generation route enforces the Seedance 2.5 kill switch before database and billing', () => {
-  const source = readFileSync(
-    'frontend/app/api/generate/_lib/route-context.ts',
-    'utf8',
-  );
-  const gate = source.indexOf('assertBytePlusSeedanceSubmissionEnabled(engine.id)');
-  const database = source.indexOf('isDatabaseConfigured()');
-  const billing = source.indexOf('await ensureBillingSchema()');
-  assert.ok(gate >= 0);
-  assert.ok(database > gate);
-  assert.ok(billing > gate);
+test('disabled Seedance 2.5 returns before configured-engine database access', { concurrency: false }, async () => {
+  let databaseConnections = 0;
+  const databaseBoundary = createServer((socket) => {
+    databaseConnections += 1;
+    socket.destroy();
+  });
+  await new Promise<void>((resolve) => databaseBoundary.listen(0, '127.0.0.1', resolve));
+  const address = databaseBoundary.address();
+  assert.ok(address && typeof address !== 'string');
+
+  const original = {
+    databaseUrl: process.env.DATABASE_URL,
+    bytePlusEnabled: ENV.BYTEPLUS_ARK_ENABLED,
+    seedance25Enabled: ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED,
+    seedance25Provider: ENV.SEEDANCE_2_5_PROVIDER,
+  };
+  process.env.DATABASE_URL = `postgres://test:test@127.0.0.1:${address.port}/maxvideoai`;
+  ENV.BYTEPLUS_ARK_ENABLED = 'true';
+  ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = 'false';
+  ENV.SEEDANCE_2_5_PROVIDER = 'byteplus_modelark';
+
+  try {
+    const result = await resolveGenerateRouteContext({
+      body: { engineId: slug, mode: 't2v' },
+      req: new NextRequest('http://localhost/api/generate', { method: 'POST' }),
+    });
+    assert.deepEqual(result, {
+      ok: false,
+      status: 404,
+      body: { ok: false, error: 'Engine unavailable' },
+    });
+    assert.equal(databaseConnections, 0);
+  } finally {
+    if (original.databaseUrl === undefined) delete process.env.DATABASE_URL;
+    else process.env.DATABASE_URL = original.databaseUrl;
+    ENV.BYTEPLUS_ARK_ENABLED = original.bytePlusEnabled;
+    ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = original.seedance25Enabled;
+    ENV.SEEDANCE_2_5_PROVIDER = original.seedance25Provider;
+    await new Promise<void>((resolve, reject) =>
+      databaseBoundary.close((error) => (error ? reject(error) : resolve()))
+    );
+  }
 });
 
 test('the production handoff records the factual canary, controls, rollback, and verification', () => {

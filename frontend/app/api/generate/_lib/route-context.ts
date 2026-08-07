@@ -51,6 +51,23 @@ export async function resolveGenerateRouteContext(params: {
 }): Promise<GenerateRouteContextResult> {
   const { body, req } = params;
   const requestedEngineId = String(body.engineId || '');
+  if (isBytePlusSeedanceHiddenEngine(requestedEngineId)) {
+    try {
+      assertBytePlusSeedanceSubmissionEnabled(requestedEngineId);
+    } catch (error) {
+      if (
+        error instanceof BytePlusModelArkError &&
+        error.code === 'BYTEPLUS_ENGINE_DISABLED'
+      ) {
+        return {
+          ok: false,
+          status: 404,
+          body: { ok: false, error: 'Engine unavailable' },
+        };
+      }
+      throw error;
+    }
+  }
   const registeredBaseEngine = getBaseEngineIncludingHidden(requestedEngineId);
   if (!registeredBaseEngine) {
     return { ok: false, status: 400, body: { ok: false, error: 'Unknown engine' } };
