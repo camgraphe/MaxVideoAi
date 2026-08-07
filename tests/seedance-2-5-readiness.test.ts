@@ -342,37 +342,50 @@ test('Seedance 2.5 never falls back to hidden configured-engine resolution', { c
   }
 });
 
-test('the production handoff records the factual canary, controls, rollback, and verification', () => {
+test('the production handoff records the public flagship matrix, safe local defaults, and rollback', () => {
   const packet = readFileSync('docs/model-launch/seedance-2-5.md', 'utf8');
   const stub = readFileSync('docs/model-launch/seedance-2-5.engine.stub.ts', 'utf8');
+  const localEnvironment = readFileSync('frontend/.env.local.example', 'utf8');
 
   for (const required of [
     'dreamina-seedance-2-5-260628',
-    'SEEDANCE_2_5_BYTEPLUS_ENABLED',
-    'SEEDANCE_2_5_PROVIDER',
-    'SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY',
-    'SEEDANCE_2_5_BYTEPLUS_MODES',
-    '38,830',
-    'paid_wallet',
-    'one charge',
-    'HTTP 206',
-    'video/mp4',
-    'BYTEPLUS_RESOLUTION_UNSUPPORTED',
-    '2.5×',
-    '480p',
-    '720p',
-    '4–30',
-    'noindex, follow',
-    'Rollback',
-    'git diff --check',
+    'BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID=dreamina-seedance-2-5-260628',
+    'SEEDANCE_2_5_BYTEPLUS_ENABLED=true',
+    'SEEDANCE_2_5_PROVIDER=byteplus_modelark',
+    'SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY=false',
+    'SEEDANCE_2_5_BYTEPLUS_MODES=t2v,i2v,ref2v,v2v,extend',
+    'kill switch',
+    'no automated retry',
+    'rollback',
+    'wallet',
+    'refund',
+    'City',
+    'Train',
+    'indexable',
+    'sitemap',
   ]) {
-    assert.match(packet, new RegExp(required.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+    assert.match(packet, new RegExp(required.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'));
   }
-  assert.match(packet, /Provider task ID[^\n]*not stored/i);
-  assert.match(packet, /public[^\n]*(?:disabled|closed)/i);
-  assert.match(packet, /commercial use[^\n]*confirmed/i);
+
+  for (const required of [
+    'BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID=dreamina-seedance-2-5-260628',
+    'SEEDANCE_2_5_BYTEPLUS_ENABLED=false',
+    'SEEDANCE_2_5_PROVIDER=disabled',
+    'SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY=true',
+    'SEEDANCE_2_5_BYTEPLUS_MODES=t2v',
+  ]) {
+    assert.match(localEnvironment, new RegExp(required.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
+
+  assert.match(packet, /City[\s\S]*Train[\s\S]*Dialogue[\s\S]*private/i);
+  assert.match(packet, /public flagship launch/i);
+  assert.match(packet, /no additional pre-launch paid generation/i);
   assert.match(stub, /runtimeEntryAllowed:\s*true/);
   assert.match(stub, /documentationOnly:\s*true/);
+  assert.match(stub, /currentPhase:\s*'public_flagship_launch'/);
+  assert.match(stub, /publicGenerationAllowed:\s*true/);
+  assert.match(stub, /publicMarketingPageAllowed:\s*true/);
+  assert.match(stub, /publicDiscoveryAllowed:\s*true/);
 });
 
 test('the LinkedIn launch package confines approved Seedance 2.5 copy to City and Train', () => {
