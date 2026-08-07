@@ -13,6 +13,8 @@ Read it before changing a flag, publication surface, price, or provider route.
 - Runtime engine and dedicated provider profile: present
 - Safe runtime defaults: disabled, administrator-only, text-to-video only
 - Local MaxVideoAI administrator happy-path canary: completed
+- First long-form marketing render: City accepted and copied durably
+- Remaining marketing renders: Train and Dialogue not submitted
 - Real timeout/failure/refund canary: still pending
 - Public page: the existing localized `prelaunch` / coming-soon renderer
 - Robots: `noindex, follow`
@@ -127,6 +129,28 @@ These results cover the successful MaxVideoAI submission, wallet reservation,
 receipt, polling, actual-token accounting, durable copy, library projection,
 preview, thumbnail, and download path. They do not yet prove a real provider
 timeout/failure followed by exactly one wallet refund.
+
+## Marketing-render acceptance ledger
+
+Executed locally on 2026-08-07 through the hidden administrator-only route.
+No identifier, signed URL, user ID, or wallet ID is recorded here.
+
+| Concept | Disposition | Requested output | Observed output | Customer quote and receipt | Actual provider usage and cost | Durable assets | Acceptance notes |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| The city in the suitcase | Accepted | 24 s, 720p, 16:9, audio off | 1280×720, 24 FPS, 24.0417 s, H.264 video only | USD 13.87; one wallet charge, zero refunds | 519,300 tokens; USD 5.556510 | Video, preview, and poster present; range request returned HTTP 206 `video/mp4` | Woman and suitcase remain stable; the city remains contained inside the suitcase; camera progression is continuous; coastal city, water, buildings, and final reveal remain coherent; final frames are clean; no visible text, logo, watermark, or material anatomy defect |
+| The glass lightning train | Not submitted | 24 s, 720p, 16:9, audio off | Not applicable | No charge | No provider usage | None | Held after the City durable-copy anomaly; no retry or substitute request was made |
+| The runaway sock | Not submitted | 15 s, 720p, 16:9, generated audio on | Not applicable | No charge | No provider usage | None | Held after the City durable-copy anomaly; the real generated-dialogue canary remains pending |
+
+City completed at the provider on its initial take. The first three durable-copy
+passes reached the local 45-second download timeout. The existing retry policy
+kept the job in `processing`; the fourth scheduled pass completed the durable
+video, poster, preview, accounting, and HTTP range path. This consumed no
+content retry and created no additional provider task or wallet charge.
+
+The approved three-render wallet ceiling was USD 36.41. Actual Task 4 wallet
+spend was USD 13.87. Train and Dialogue remained closed under the stop-on-
+anomaly rule, so this ledger proves one launch-quality silent hero asset but
+does not complete the planned 2 + 1 marketing pack or the audio canary.
 
 ## Dedicated controls and safe defaults
 
