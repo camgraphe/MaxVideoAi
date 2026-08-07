@@ -11,6 +11,8 @@ const BYTEPLUS_STANDARD_4K_NO_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS = 0.004;
 const BYTEPLUS_STANDARD_4K_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS = 0.0024;
 const BYTEPLUS_MINI_NO_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS = 0.0035;
 const BYTEPLUS_MINI_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS = 0.0021;
+const BYTEPLUS_SEEDANCE_2_5_NO_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS = 0.0107;
+const BYTEPLUS_SEEDANCE_2_5_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS = 0.0064;
 
 const BYTEPLUS_TOKEN_DIMENSIONS: Record<string, Record<string, { width: number; height: number }>> = {
   '480p': {
@@ -148,6 +150,10 @@ export function getBytePlusUnitPriceUsdPer1kTokens(
         : BYTEPLUS_MINI_NO_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS;
     case 'fast':
       return BYTEPLUS_FAST_UNIT_PRICE_USD_PER_1K_TOKENS;
+    case 'seedance25':
+      return billingInputType === 'video_input'
+        ? BYTEPLUS_SEEDANCE_2_5_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS
+        : BYTEPLUS_SEEDANCE_2_5_NO_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS;
     default: {
       const unsupportedProfile: never = pricingProfileKey;
       throw new BytePlusModelArkError(

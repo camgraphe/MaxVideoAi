@@ -18,6 +18,7 @@ import {
 } from '../frontend/src/lib/engines.ts';
 import {
   getModelPageTemplateConfig,
+  isPrelaunchModelPageTemplateSlug,
   listModelPageTemplateSlugs,
   listPrelaunchModelPageTemplateSlugs,
 } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-template-registry.ts';
@@ -35,11 +36,11 @@ import {
 const slug = 'seedance-2-5';
 const locales = ['en', 'fr', 'es'] as const;
 
-test('Seedance 2.5 is a published noindex presentation page without an executable engine', () => {
+test('Seedance 2.5 is executable internally while every public product surface stays closed', () => {
   const model = getRuntimeModelById(slug);
 
   assert.ok(model);
-  assert.equal(model.presentationOnly, true);
+  assert.notEqual(model.presentationOnly, true);
   assert.equal(model.publication.model.published, true);
   assert.equal(model.publication.model.indexable, false);
   assert.equal(model.publication.app.published, false);
@@ -48,18 +49,23 @@ test('Seedance 2.5 is a published noindex presentation page without an executabl
   assert.equal(model.publication.compare.published, false);
   assert.equal(model.publication.sitemap.published, false);
   assert.equal(resolveRuntimePublicSlug(slug)?.id, slug);
-  assert.equal(resolveRuntimeEngineInput(slug), null);
-  assert.equal(resolveModelRegistryEngineInput(slug), null);
+  assert.equal(resolveRuntimeEngineInput(slug)?.id, slug);
+  assert.equal(resolveModelRegistryEngineInput(slug)?.id, slug);
 
-  assert.equal(getFalEngineById(slug), undefined);
-  assert.equal(getFalEngineBySlug(slug), undefined);
-  assert.equal(getBaseEngineIncludingHidden(slug), undefined);
+  assert.equal(getFalEngineById(slug)?.id, slug);
+  assert.equal(getFalEngineBySlug(slug)?.id, slug);
+  assert.equal(getBaseEngineIncludingHidden(slug)?.id, slug);
   assert.equal(getBaseEngines().some((engine) => engine.id === slug), false);
 
   const roster = JSON.parse(
     readFileSync('frontend/config/model-roster.json', 'utf8'),
   ) as Array<{ modelSlug?: string }>;
-  assert.equal(roster.some((entry) => entry.modelSlug === slug), false);
+  assert.equal(roster.some((entry) => entry.modelSlug === slug), true);
+
+  const catalog = JSON.parse(
+    readFileSync('frontend/config/engine-catalog.json', 'utf8'),
+  ) as Array<{ engineId?: string }>;
+  assert.equal(catalog.some((entry) => entry.engineId === slug), true);
 });
 
 test('Seedance 2.5 uses the canonical model template registry in prelaunch mode', () => {
@@ -67,6 +73,7 @@ test('Seedance 2.5 uses the canonical model template registry in prelaunch mode'
 
   assert.ok(template);
   assert.equal(template.intent, 'prelaunch');
+  assert.equal(isPrelaunchModelPageTemplateSlug(slug), true);
   assert.equal(template.pricing.enabled, false);
   assert.deepEqual(template.pricing.presets, []);
   assert.equal(template.sections.examples, false);
@@ -192,7 +199,7 @@ test('the canonical route has a dedicated prelaunch renderer without product or 
 
   assert.match(route, /listPublishedRuntimeModels/);
   assert.match(route, /renderMarketingModelPrelaunchPage/);
-  assert.match(route, /presentationOnly/i);
+  assert.match(route, /isPrelaunchModelPageTemplateSlug/);
   assert.match(prelaunchRoute, /MarketingModelPrelaunchPageLayout/);
   assert.doesNotMatch(renderer, /ModelDecisionPricingCard|pricingEngine|["']Product["']|["']Offer["']/);
   assert.doesNotMatch(renderer, /\/app\?engine=seedance-2-5/i);
@@ -222,7 +229,7 @@ test('prelaunch structured data contains only the editorial page and breadcrumbs
   assert.doesNotMatch(JSON.stringify(schemas), /"Product"|"Offer"|priceCurrency|availability/);
 });
 
-test('an explicit Seedance 2.5 generation request fails as unknown before configured-engine, database, and billing work', () => {
+test('an explicit Seedance 2.5 request reaches its dedicated availability gate before database and billing work', () => {
   const routeContext = readFileSync(
     'frontend/app/api/generate/_lib/route-context.ts',
     'utf8',
@@ -230,8 +237,8 @@ test('an explicit Seedance 2.5 generation request fails as unknown before config
   const baseEngineGuard = routeContext.indexOf(
     'const registeredBaseEngine = getBaseEngineIncludingHidden(requestedEngineId);',
   );
-  const unknownEngineGuard = routeContext.indexOf(
-    "body: { ok: false, error: 'Unknown engine' }",
+  const availabilityGuard = routeContext.indexOf(
+    'assertBytePlusSeedanceSubmissionEnabled(engine.id)',
   );
   const configuredEngineLookup = routeContext.indexOf(
     'const publicEngine = await getConfiguredEngine(requestedEngineId);',
@@ -240,8 +247,8 @@ test('an explicit Seedance 2.5 generation request fails as unknown before config
   const billingBootstrap = routeContext.indexOf('await ensureBillingSchema()');
 
   assert.ok(baseEngineGuard >= 0);
-  assert.ok(unknownEngineGuard > baseEngineGuard);
-  assert.ok(configuredEngineLookup > unknownEngineGuard);
-  assert.ok(databaseGuard > unknownEngineGuard);
-  assert.ok(billingBootstrap > unknownEngineGuard);
+  assert.ok(configuredEngineLookup > baseEngineGuard);
+  assert.ok(availabilityGuard > configuredEngineLookup);
+  assert.ok(databaseGuard > availabilityGuard);
+  assert.ok(billingBootstrap > availabilityGuard);
 });

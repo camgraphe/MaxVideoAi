@@ -8,11 +8,12 @@ import { getConfiguredEngine, getConfiguredEngineIncludingHidden } from '@/serve
 import {
   BYTEPLUS_MODELARK_PROVIDER,
   BytePlusModelArkError,
+  assertBytePlusSeedanceSubmissionEnabled,
   getBytePlusArkConfig,
   getBytePlusSeedanceAllowedModes,
   isBytePlusModelArkEnabled,
   isBytePlusSeedanceAdminOnly,
-  isBytePlusSeedanceFastEngine,
+  isBytePlusSeedanceHiddenEngine,
   resolveBytePlusSeedanceModelId,
   resolveBytePlusSeedanceRouteProfile,
   type BytePlusSeedanceProfile,
@@ -57,7 +58,7 @@ export async function resolveGenerateRouteContext(params: {
   const publicEngine = await getConfiguredEngine(requestedEngineId);
   const engine =
     publicEngine ??
-    (isBytePlusSeedanceFastEngine(requestedEngineId)
+    (isBytePlusSeedanceHiddenEngine(requestedEngineId)
       ? await getConfiguredEngineIncludingHidden(requestedEngineId)
       : undefined);
   if (!engine) {
@@ -76,10 +77,18 @@ export async function resolveGenerateRouteContext(params: {
       engine.providerMeta?.provider
     );
     if (bytePlusProfile) {
+      assertBytePlusSeedanceSubmissionEnabled(engine.id);
       resolveBytePlusSeedanceModelId(engine.id, getBytePlusArkConfig());
     }
   } catch (error) {
     if (error instanceof BytePlusModelArkError) {
+      if (error.code === 'BYTEPLUS_ENGINE_DISABLED') {
+        return {
+          ok: false,
+          status: 404,
+          body: { ok: false, error: 'Engine unavailable' },
+        };
+      }
       return {
         ok: false,
         status: error.code === 'BYTEPLUS_ENGINE_PROFILE_MISSING' ? 400 : 503,

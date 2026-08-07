@@ -5,6 +5,7 @@ import test from 'node:test';
 
 import { deriveGenerationAttachmentReferences } from '../frontend/app/api/generate/_lib/attachment-references';
 import { submitBytePlusGenerateTask } from '../frontend/app/api/generate/_lib/byteplus-submission';
+import { ENV } from '../frontend/src/lib/env';
 import type { PendingReceipt } from '../frontend/app/api/generate/_lib/initial-video-job';
 import { buildGenerateValidationPayload } from '../frontend/app/api/generate/_lib/validation-payload';
 import type { NormalizedAttachment } from '../frontend/app/api/generate/_lib/attachments';
@@ -903,8 +904,8 @@ test('unknown BytePlus Seedance engine fails before provider submission and roll
   try {
     const result = await submitBytePlusGenerateTask({
       ...baseParams,
-      engineId: 'seedance-2-5',
-      engineLabel: 'Seedance 2.5',
+      engineId: 'seedance-9-9',
+      engineLabel: 'Seedance 9.9',
       pendingReceipt,
       deps: {
         getBytePlusArkConfigFn: () => {
@@ -945,6 +946,66 @@ test('unknown BytePlus Seedance engine fails before provider submission and roll
     assert.equal(clientRequests, 0);
     assert.equal(rollbacks, 1);
   } finally {
+    console.warn = originalWarn;
+  }
+});
+
+test('disabled Seedance 2.5 fails before config, payload, provider, and charge', { concurrency: false }, async () => {
+  const originalWarn = console.warn;
+  const originalEnabled = ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED;
+  const originalProvider = ENV.SEEDANCE_2_5_PROVIDER;
+  console.warn = () => undefined;
+  ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = 'false';
+  ENV.SEEDANCE_2_5_PROVIDER = 'byteplus_modelark';
+  let configReads = 0;
+  let payloadBuilds = 0;
+  let clientRequests = 0;
+  let rollbacks = 0;
+
+  try {
+    const result = await submitBytePlusGenerateTask({
+      ...baseParams,
+      engineId: 'seedance-2-5',
+      engineLabel: 'Seedance 2.5',
+      pendingReceipt,
+      deps: {
+        getBytePlusArkConfigFn: () => {
+          configReads += 1;
+          return {
+            seedanceModelId: 'standard-id',
+            seedanceFastModelId: 'fast-id',
+            seedanceMiniModelId: 'mini-id',
+            seedance25ModelId: 'seedance-25-id',
+          } as never;
+        },
+        buildBytePlusSeedancePayloadFn: (payload) => {
+          payloadBuilds += 1;
+          return payload;
+        },
+        getBytePlusModelArkClientFn: () => ({
+          createSeedanceFastTask: async () => {
+            clientRequests += 1;
+            return { providerJobId: 'must_not_exist', status: 'queued' };
+          },
+        }),
+        scrubBytePlusErrorFn: () => 'disabled',
+        queryFn: async () => undefined,
+        rollbackPendingPaymentFn: async () => {
+          rollbacks += 1;
+        },
+      },
+    });
+
+    assert.equal(result.ok, false);
+    assert.equal(result.status, 404);
+    assert.equal(result.body.error, 'BYTEPLUS_ENGINE_DISABLED');
+    assert.equal(configReads, 0);
+    assert.equal(payloadBuilds, 0);
+    assert.equal(clientRequests, 0);
+    assert.equal(rollbacks, 1);
+  } finally {
+    ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = originalEnabled;
+    ENV.SEEDANCE_2_5_PROVIDER = originalProvider;
     console.warn = originalWarn;
   }
 });

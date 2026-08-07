@@ -2,6 +2,10 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
+import { NextRequest } from 'next/server';
+
+import { ENV } from '../frontend/src/lib/env';
+import { resolveGenerateRouteContext } from '../frontend/app/api/generate/_lib/route-context';
 
 const root = process.cwd();
 const routePath = join(root, 'frontend/app/api/generate/route.ts');
@@ -67,4 +71,61 @@ test('generate route delegates source-video duration and input context', () => {
   assert.doesNotMatch(routeSource, /SOURCE_VIDEO_DURATION_UNSUPPORTED/);
   assert.match(sourceVideoContextSource, /export function resolveGenerateSourceVideoContext/);
   assert.match(sourceVideoContextSource, /resolveSourceVideoDurationSec/);
+});
+
+test('Seedance 2.5 hard-disable and routing gates run before database and billing', { concurrency: false }, async () => {
+  const original = {
+    databaseUrl: process.env.DATABASE_URL,
+    bytePlusEnabled: ENV.BYTEPLUS_ARK_ENABLED,
+    modelId: ENV.BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID,
+    seedance25Enabled: ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED,
+    seedance25Provider: ENV.SEEDANCE_2_5_PROVIDER,
+  };
+  delete process.env.DATABASE_URL;
+  ENV.BYTEPLUS_ARK_ENABLED = 'true';
+  ENV.BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID = 'dreamina-seedance-2-5-260628';
+
+  try {
+    ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = 'false';
+    ENV.SEEDANCE_2_5_PROVIDER = 'byteplus_modelark';
+    const disabled = await resolveGenerateRouteContext({
+      body: { engineId: 'seedance-2-5', mode: 't2v' },
+      req: new NextRequest('http://localhost/api/generate', { method: 'POST' }),
+    });
+    assert.deepEqual(disabled, {
+      ok: false,
+      status: 404,
+      body: { ok: false, error: 'Engine unavailable' },
+    });
+
+    ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = 'true';
+    ENV.SEEDANCE_2_5_PROVIDER = 'disabled';
+    const unrouted = await resolveGenerateRouteContext({
+      body: { engineId: 'seedance-2-5', mode: 't2v' },
+      req: new NextRequest('http://localhost/api/generate', { method: 'POST' }),
+    });
+    assert.deepEqual(unrouted, {
+      ok: false,
+      status: 404,
+      body: { ok: false, error: 'Engine unavailable' },
+    });
+
+    ENV.SEEDANCE_2_5_PROVIDER = 'byteplus_modelark';
+    const enabled = await resolveGenerateRouteContext({
+      body: { engineId: 'seedance-2-5', mode: 't2v' },
+      req: new NextRequest('http://localhost/api/generate', { method: 'POST' }),
+    });
+    assert.deepEqual(enabled, {
+      ok: false,
+      status: 503,
+      body: { ok: false, error: 'Database unavailable' },
+    });
+  } finally {
+    if (original.databaseUrl === undefined) delete process.env.DATABASE_URL;
+    else process.env.DATABASE_URL = original.databaseUrl;
+    ENV.BYTEPLUS_ARK_ENABLED = original.bytePlusEnabled;
+    ENV.BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID = original.modelId;
+    ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = original.seedance25Enabled;
+    ENV.SEEDANCE_2_5_PROVIDER = original.seedance25Provider;
+  }
 });

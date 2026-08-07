@@ -1,6 +1,9 @@
 import type { AspectRatio, Mode, Resolution } from '@/types/engines';
 import {
   BYTEPLUS_SEEDANCE_ASPECT_RATIOS,
+  BYTEPLUS_SEEDANCE_2_5_ASPECT_RATIOS,
+  BYTEPLUS_SEEDANCE_2_5_DURATION_OPTIONS,
+  BYTEPLUS_SEEDANCE_2_5_RESOLUTIONS,
   BYTEPLUS_SEEDANCE_DURATION_OPTIONS,
   BYTEPLUS_SEEDANCE_FAST_ENGINE_ID,
   BYTEPLUS_SEEDANCE_FAST_RESOLUTIONS,
@@ -11,30 +14,37 @@ import {
   PUBLIC_SEEDANCE_ENGINE_ID,
   PUBLIC_SEEDANCE_FAST_ENGINE_ID,
   PUBLIC_SEEDANCE_MINI_ENGINE_ID,
+  SEEDANCE_2_5_ENGINE_ID,
 } from './byteplus-modelark-constants';
 import { BytePlusModelArkError } from './byteplus-modelark-error';
 
 export type BytePlusSeedanceModelConfigKey =
   | 'seedanceModelId'
   | 'seedanceFastModelId'
-  | 'seedanceMiniModelId';
+  | 'seedanceMiniModelId'
+  | 'seedance25ModelId';
 
-export type BytePlusSeedancePricingProfileKey = 'standard' | 'fast' | 'mini';
+export type BytePlusSeedancePricingProfileKey = 'standard' | 'fast' | 'mini' | 'seedance25';
 
 export type BytePlusSeedanceProviderOverrideKey =
   | 'SEEDANCE_2_PROVIDER'
   | 'SEEDANCE_FAST_PROVIDER'
+  | 'SEEDANCE_2_5_PROVIDER'
   | null;
+
+export type BytePlusSeedanceEnabledKey = 'SEEDANCE_2_5_BYTEPLUS_ENABLED' | null;
 
 export type BytePlusSeedanceAdminOnlyKey =
   | 'SEEDANCE_2_BYTEPLUS_ADMIN_ONLY'
   | 'SEEDANCE_FAST_BYTEPLUS_ADMIN_ONLY'
-  | 'SEEDANCE_MINI_BYTEPLUS_ADMIN_ONLY';
+  | 'SEEDANCE_MINI_BYTEPLUS_ADMIN_ONLY'
+  | 'SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY';
 
 export type BytePlusSeedanceAllowedModesKey =
   | 'SEEDANCE_2_BYTEPLUS_MODES'
   | 'SEEDANCE_FAST_BYTEPLUS_MODES'
-  | 'SEEDANCE_MINI_BYTEPLUS_MODES';
+  | 'SEEDANCE_MINI_BYTEPLUS_MODES'
+  | 'SEEDANCE_2_5_BYTEPLUS_MODES';
 
 export type BytePlusSeedanceProfile = Readonly<{
   engineId: string;
@@ -43,10 +53,15 @@ export type BytePlusSeedanceProfile = Readonly<{
   durationOptions: readonly number[];
   resolutions: readonly Resolution[];
   aspectRatios: readonly AspectRatio[];
+  defaultDurationSec: number;
+  defaultResolution: Resolution;
+  defaultAspectRatio: AspectRatio;
+  motionControls: boolean;
   framesPerSecond: number;
   generatedAudio: boolean;
   pricingProfileKey: BytePlusSeedancePricingProfileKey;
   routing: Readonly<{
+    enabledKey: BytePlusSeedanceEnabledKey;
     providerOverrideKey: BytePlusSeedanceProviderOverrideKey;
     adminOnlyKey: BytePlusSeedanceAdminOnlyKey;
     allowedModesKey: BytePlusSeedanceAllowedModesKey;
@@ -57,6 +72,10 @@ export type BytePlusSeedanceProfile = Readonly<{
 const shared = {
   supportedModes: BYTEPLUS_SEEDANCE_MODES,
   aspectRatios: BYTEPLUS_SEEDANCE_ASPECT_RATIOS,
+  defaultDurationSec: 5,
+  defaultResolution: '720p',
+  defaultAspectRatio: '16:9',
+  motionControls: true,
   framesPerSecond: 24,
   generatedAudio: true,
 } as const;
@@ -70,6 +89,7 @@ const BYTEPLUS_SEEDANCE_PROFILES: Readonly<Record<string, BytePlusSeedanceProfil
     resolutions: BYTEPLUS_SEEDANCE_RESOLUTIONS,
     pricingProfileKey: 'standard',
     routing: {
+      enabledKey: null,
       providerOverrideKey: 'SEEDANCE_2_PROVIDER',
       adminOnlyKey: 'SEEDANCE_2_BYTEPLUS_ADMIN_ONLY',
       allowedModesKey: 'SEEDANCE_2_BYTEPLUS_MODES',
@@ -84,6 +104,7 @@ const BYTEPLUS_SEEDANCE_PROFILES: Readonly<Record<string, BytePlusSeedanceProfil
     resolutions: BYTEPLUS_SEEDANCE_FAST_RESOLUTIONS,
     pricingProfileKey: 'fast',
     routing: {
+      enabledKey: null,
       providerOverrideKey: 'SEEDANCE_FAST_PROVIDER',
       adminOnlyKey: 'SEEDANCE_FAST_BYTEPLUS_ADMIN_ONLY',
       allowedModesKey: 'SEEDANCE_FAST_BYTEPLUS_MODES',
@@ -98,6 +119,7 @@ const BYTEPLUS_SEEDANCE_PROFILES: Readonly<Record<string, BytePlusSeedanceProfil
     resolutions: BYTEPLUS_SEEDANCE_MINI_RESOLUTIONS,
     pricingProfileKey: 'mini',
     routing: {
+      enabledKey: null,
       providerOverrideKey: null,
       adminOnlyKey: 'SEEDANCE_MINI_BYTEPLUS_ADMIN_ONLY',
       allowedModesKey: 'SEEDANCE_MINI_BYTEPLUS_MODES',
@@ -112,10 +134,33 @@ const BYTEPLUS_SEEDANCE_PROFILES: Readonly<Record<string, BytePlusSeedanceProfil
     resolutions: BYTEPLUS_SEEDANCE_FAST_RESOLUTIONS,
     pricingProfileKey: 'fast',
     routing: {
+      enabledKey: null,
       providerOverrideKey: 'SEEDANCE_FAST_PROVIDER',
       adminOnlyKey: 'SEEDANCE_FAST_BYTEPLUS_ADMIN_ONLY',
       allowedModesKey: 'SEEDANCE_FAST_BYTEPLUS_MODES',
       alwaysDirect: true,
+    },
+  },
+  [SEEDANCE_2_5_ENGINE_ID]: {
+    engineId: SEEDANCE_2_5_ENGINE_ID,
+    modelConfigKey: 'seedance25ModelId',
+    supportedModes: ['t2v'],
+    durationOptions: BYTEPLUS_SEEDANCE_2_5_DURATION_OPTIONS,
+    resolutions: BYTEPLUS_SEEDANCE_2_5_RESOLUTIONS,
+    aspectRatios: BYTEPLUS_SEEDANCE_2_5_ASPECT_RATIOS,
+    defaultDurationSec: 4,
+    defaultResolution: '480p',
+    defaultAspectRatio: '16:9',
+    motionControls: false,
+    framesPerSecond: 24,
+    generatedAudio: false,
+    pricingProfileKey: 'seedance25',
+    routing: {
+      enabledKey: 'SEEDANCE_2_5_BYTEPLUS_ENABLED',
+      providerOverrideKey: 'SEEDANCE_2_5_PROVIDER',
+      adminOnlyKey: 'SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY',
+      allowedModesKey: 'SEEDANCE_2_5_BYTEPLUS_MODES',
+      alwaysDirect: false,
     },
   },
 };

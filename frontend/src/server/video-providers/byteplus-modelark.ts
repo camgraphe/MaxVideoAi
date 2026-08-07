@@ -2,6 +2,7 @@ import { ENV } from '@/lib/env';
 import type { NormalizedVideoProviderTask } from '@/server/video-providers/types';
 import {
   BYTEPLUS_SEEDANCE_DEFAULT_MODEL_ID,
+  BYTEPLUS_SEEDANCE_2_5_DEFAULT_MODEL_ID,
   BYTEPLUS_SEEDANCE_FAST_DEFAULT_BASE_URL,
   BYTEPLUS_SEEDANCE_FAST_DEFAULT_MODEL_ID,
   BYTEPLUS_SEEDANCE_MINI_DEFAULT_MODEL_ID,
@@ -17,6 +18,7 @@ import {
 
 export {
   BYTEPLUS_MODELARK_PROVIDER,
+  BYTEPLUS_SEEDANCE_2_5_DEFAULT_MODEL_ID,
   BYTEPLUS_SEEDANCE_ASPECT_RATIOS,
   BYTEPLUS_SEEDANCE_DEFAULT_MODEL_ID,
   BYTEPLUS_SEEDANCE_DURATION_OPTIONS,
@@ -32,6 +34,7 @@ export {
   PUBLIC_SEEDANCE_ENGINE_ID,
   PUBLIC_SEEDANCE_FAST_ENGINE_ID,
   PUBLIC_SEEDANCE_MINI_ENGINE_ID,
+  SEEDANCE_2_5_ENGINE_ID,
   isPublicSeedanceEngine,
   isPublicSeedanceFastEngine,
   isPublicSeedanceMiniEngine,
@@ -40,6 +43,7 @@ export { BytePlusModelArkError } from './byteplus-modelark-error';
 export { getBytePlusSeedanceProfile, requireBytePlusSeedanceProfile } from './byteplus-modelark-profiles';
 export type { BytePlusSeedanceModelConfigKey, BytePlusSeedancePricingProfileKey, BytePlusSeedanceProfile } from './byteplus-modelark-profiles';
 export {
+  assertBytePlusSeedanceSubmissionEnabled,
   applyBytePlusSeedanceRuntimeOptions,
   getBytePlusSeedanceAllowedAspectRatios,
   getBytePlusSeedanceAllowedModes,
@@ -48,6 +52,8 @@ export {
   getBytePlusSeedanceGeneratedAudio,
   isBytePlusSeedanceAdminOnly,
   isBytePlusSeedanceFastEngine,
+  isBytePlusSeedanceHiddenEngine,
+  isBytePlusSeedanceSubmissionEnabled,
   isPublicSeedanceBytePlusEngine,
   isSeedanceBytePlusModeAllowed,
   isSeedanceFastBytePlusModeAllowed,
@@ -95,6 +101,7 @@ export function getBytePlusArkConfig() {
     seedanceModelId: ENV.BYTEPLUS_ARK_SEEDANCE_MODEL_ID ?? BYTEPLUS_SEEDANCE_DEFAULT_MODEL_ID,
     seedanceFastModelId: ENV.BYTEPLUS_ARK_SEEDANCE_FAST_MODEL_ID ?? BYTEPLUS_SEEDANCE_FAST_DEFAULT_MODEL_ID,
     seedanceMiniModelId: ENV.BYTEPLUS_ARK_SEEDANCE_MINI_MODEL_ID ?? BYTEPLUS_SEEDANCE_MINI_DEFAULT_MODEL_ID,
+    seedance25ModelId: ENV.BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID ?? BYTEPLUS_SEEDANCE_2_5_DEFAULT_MODEL_ID,
   };
 }
 

@@ -28,6 +28,10 @@ export const BYTEPLUS_SEEDANCE_2_MINI_ENDPOINTS = {
   v2v: 'byteplus/dreamina-seedance-2.0-mini/video-to-video',
   extend: 'byteplus/dreamina-seedance-2.0-mini/extend',
 } as const;
+export const BYTEPLUS_SEEDANCE_2_5_MODEL_ID = 'dreamina-seedance-2-5-260628';
+export const BYTEPLUS_SEEDANCE_2_5_ENDPOINTS = {
+  t2v: 'byteplus/dreamina-seedance-2.5/text-to-video',
+} as const;
 
 export const HAPPY_HORSE_ENDPOINTS = {
   t2v: 'alibaba/happy-horse/text-to-video',
@@ -99,6 +103,10 @@ export const SEEDANCE_2_MINI_TOKEN_DIMENSIONS = {
   '480p': SEEDANCE_2_TOKEN_DIMENSIONS['480p'],
   '720p': SEEDANCE_2_TOKEN_DIMENSIONS['720p'],
 } as const;
+export const SEEDANCE_2_5_TOKEN_DIMENSIONS = {
+  '480p': { '16:9': SEEDANCE_2_TOKEN_DIMENSIONS['480p']['16:9'] },
+  '720p': { '16:9': SEEDANCE_2_TOKEN_DIMENSIONS['720p']['16:9'] },
+} as const;
 
 const SEEDANCE_2_PUBLIC_MARKUP_MULTIPLIER = 2.5;
 const SEEDANCE_2_DEFAULT_PRICING_MARGIN_FACTOR = 1.3;
@@ -115,6 +123,8 @@ export const SEEDANCE_2_NORMALIZED_UNIT_PRICE_USD_PER_1K_TOKENS = {
   standard4k: normalizeSeedance2PublicUnitPrice(0.004),
   fast: normalizeSeedance2PublicUnitPrice(0.0056),
   mini: normalizeSeedance2PublicUnitPrice(0.0035),
+  seedance25NoVideo: normalizeSeedance2PublicUnitPrice(0.0107),
+  seedance25Video: normalizeSeedance2PublicUnitPrice(0.0064),
 } as const;
 
 type Seedance2PricingDetailsOptions = Pick<
@@ -152,6 +162,28 @@ export function buildSeedance2MiniPricingDetails(): EnginePricingDetails {
       framesPerSecond: 24,
       defaultAspectRatio: '16:9',
       dimensions: SEEDANCE_2_MINI_TOKEN_DIMENSIONS,
+      rounding: 'ceil_cent',
+    },
+  };
+}
+
+export function buildSeedance25PricingDetails(): EnginePricingDetails {
+  return {
+    currency: 'USD',
+    tokenPricing: {
+      model: 'byteplus_tokens',
+      unitPriceUsdPer1kTokens:
+        SEEDANCE_2_NORMALIZED_UNIT_PRICE_USD_PER_1K_TOKENS.seedance25NoVideo,
+      unitPriceUsdPer1kTokensByInputType: {
+        no_video_input:
+          SEEDANCE_2_NORMALIZED_UNIT_PRICE_USD_PER_1K_TOKENS.seedance25NoVideo,
+        video_input:
+          SEEDANCE_2_NORMALIZED_UNIT_PRICE_USD_PER_1K_TOKENS.seedance25Video,
+      },
+      pricingSource: 'byteplus_seedance_2_5_260628_approved_2_5x',
+      framesPerSecond: 24,
+      defaultAspectRatio: '16:9',
+      dimensions: SEEDANCE_2_5_TOKEN_DIMENSIONS,
       rounding: 'ceil_cent',
     },
   };

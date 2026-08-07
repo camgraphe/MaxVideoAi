@@ -301,6 +301,24 @@ async function runMarketingContentChecks(catalogBySlug, issues, contentRoot) {
       continue;
     }
 
+    const catalogEntry = catalogBySlug.get(modelSlug);
+    const closedPrelaunchSurface = Boolean(
+      content?.custom?.prelaunch &&
+      typeof content.custom.prelaunch === 'object' &&
+      catalogEntry?.surfaces?.modelPage?.indexable === false &&
+      catalogEntry?.surfaces?.modelPage?.includeInSitemap === false &&
+      catalogEntry?.surfaces?.app?.enabled === false &&
+      catalogEntry?.surfaces?.pricing?.includeInEstimator === false &&
+      catalogEntry?.surfaces?.examples?.includeInFamilyResolver === false &&
+      catalogEntry?.surfaces?.compare?.includeInHub === false
+    );
+    // A fully closed prelaunch page intentionally uses a smaller editorial
+    // schema. Once any product surface opens, the normal marketing completeness
+    // requirements apply again.
+    if (closedPrelaunchSurface) {
+      continue;
+    }
+
     const coverage = getMarketingCoverage(content);
     const missingCriticalBlocks = Object.entries({
       hero: coverage.hero,
@@ -919,7 +937,10 @@ async function main() {
     registry.models.filter((model) => model?.publication?.model?.published === true),
     'slug',
   );
-  const rosterSlugs = setFromSlugs(roster, 'modelSlug');
+  const rosterSlugs = setFromSlugs(
+    roster.filter((entry) => hasPublishedModelPage(entry)),
+    'modelSlug',
+  );
   const catalogBySlug = new Map(catalog.map((entry) => [entry.modelSlug, entry]));
   const publicCatalogBySlug = new Map(publicCatalog.map((entry) => [entry.modelSlug, entry]));
 

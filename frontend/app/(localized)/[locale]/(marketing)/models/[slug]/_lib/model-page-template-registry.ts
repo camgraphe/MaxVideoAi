@@ -89,6 +89,10 @@ export function getModelPageTemplateConfig(slug: string): ModelPageTemplateConfi
   return MODEL_PAGE_TEMPLATE_REGISTRY[slug] ?? null;
 }
 
+export function isPrelaunchModelPageTemplateSlug(slug: string): boolean {
+  return getModelPageTemplateConfig(slug)?.intent === 'prelaunch';
+}
+
 export function listModelPageTemplateSlugs(): string[] {
   return Object.values(MODEL_PAGE_TEMPLATE_REGISTRY)
     .filter((config) => config.intent !== 'prelaunch')

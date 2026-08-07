@@ -96,6 +96,22 @@
     }
   },
   {
+    "engineId": "seedance-2-5",
+    "marketingName": "Seedance 2.5",
+    "brandId": "bytedance",
+    "modelSlug": "seedance-2-5",
+    "family": "seedance",
+    "versionLabel": "2.5",
+    "availability": "limited",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": false,
+        "includeInSitemap": false
+      }
+    }
+  },
+  {
     "engineId": "seedream",
     "marketingName": "Seedream",
     "brandId": "bytedance",

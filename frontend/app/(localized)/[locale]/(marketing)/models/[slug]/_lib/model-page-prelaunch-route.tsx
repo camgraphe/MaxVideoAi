@@ -65,7 +65,7 @@ export function renderMarketingModelPrelaunchPage({
   const template = getModelPageTemplateConfig(model.slug);
   if (!template || template.intent !== 'prelaunch') {
     throw new Error(
-      `Published presentation-only model "${model.id}" requires a prelaunch template`,
+      `Published prelaunch model "${model.id}" requires a prelaunch template`,
     );
   }
   const content = parseModelPrelaunchContent(localizedContent, locale);

@@ -6,6 +6,7 @@ import {
   PUBLIC_SEEDANCE_ENGINE_ID,
   PUBLIC_SEEDANCE_FAST_ENGINE_ID,
   PUBLIC_SEEDANCE_MINI_ENGINE_ID,
+  SEEDANCE_2_5_ENGINE_ID,
   isPublicSeedanceEngine,
   isPublicSeedanceFastEngine,
   isPublicSeedanceMiniEngine,
@@ -61,6 +62,9 @@ function readProviderOverride(
     case 'SEEDANCE_FAST_PROVIDER':
       raw = ENV.SEEDANCE_FAST_PROVIDER;
       break;
+    case 'SEEDANCE_2_5_PROVIDER':
+      raw = ENV.SEEDANCE_2_5_PROVIDER;
+      break;
     case null:
       raw = undefined;
       break;
@@ -70,6 +74,17 @@ function readProviderOverride(
   return raw?.trim().toLowerCase() === BYTEPLUS_MODELARK_PROVIDER
     ? BYTEPLUS_MODELARK_PROVIDER
     : 'fal';
+}
+
+function readEnabled(profile: BytePlusSeedanceProfile): boolean {
+  switch (profile.routing.enabledKey) {
+    case null:
+      return true;
+    case 'SEEDANCE_2_5_BYTEPLUS_ENABLED':
+      return envFlagEnabled(ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED ?? 'false');
+    default:
+      return assertNever(profile.routing.enabledKey);
+  }
 }
 
 function readAdminOnly(profile: BytePlusSeedanceProfile): boolean {
@@ -84,6 +99,9 @@ function readAdminOnly(profile: BytePlusSeedanceProfile): boolean {
       break;
     case 'SEEDANCE_MINI_BYTEPLUS_ADMIN_ONLY':
       raw = ENV.SEEDANCE_MINI_BYTEPLUS_ADMIN_ONLY ?? 'false';
+      break;
+    case 'SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY':
+      raw = ENV.SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY ?? 'true';
       break;
     default:
       return assertNever(key);
@@ -103,6 +121,9 @@ function readAllowedModes(profile: BytePlusSeedanceProfile): Mode[] {
       break;
     case 'SEEDANCE_MINI_BYTEPLUS_MODES':
       raw = ENV.SEEDANCE_MINI_BYTEPLUS_MODES;
+      break;
+    case 'SEEDANCE_2_5_BYTEPLUS_MODES':
+      raw = ENV.SEEDANCE_2_5_BYTEPLUS_MODES;
       break;
     default:
       return assertNever(key);
@@ -141,12 +162,13 @@ function expandBytePlusFieldModes(field: EngineInputField): EngineInputField {
 function filterInputFieldsForModes(
   fields: EngineInputField[] | undefined,
   allowedModes: Mode[],
-  resolutions: Resolution[],
-  aspectRatios: AspectRatio[],
-  durationOptions: readonly number[],
+  profile: BytePlusSeedanceProfile,
   options?: { includeBytePlusVideoSourceFields?: boolean }
 ): EngineInputField[] | undefined {
   if (!fields) return fields;
+  const resolutions = [...profile.resolutions];
+  const aspectRatios = [...profile.aspectRatios];
+  const durationOptions = profile.durationOptions;
   const sourceFields = options?.includeBytePlusVideoSourceFields
     ? withBytePlusVideoSourceFields(fields)
     : fields;
@@ -158,21 +180,21 @@ function filterInputFieldsForModes(
         return {
           ...field,
           values: resolutions,
-          default: resolutions.includes('720p') ? '720p' : resolutions[0] ?? field.default,
+          default: profile.defaultResolution,
         };
       }
       if (field.id === 'aspect_ratio' && field.type === 'enum') {
         return {
           ...field,
           values: aspectRatios,
-          default: '16:9',
+          default: profile.defaultAspectRatio,
         };
       }
       if (field.id === 'duration' && field.type === 'enum') {
         return {
           ...field,
           values: durationOptions.map(String),
-          default: '5',
+          default: String(profile.defaultDurationSec),
           min: durationOptions[0] ?? 5,
           max: durationOptions[durationOptions.length - 1],
         };
@@ -183,6 +205,32 @@ function filterInputFieldsForModes(
 
 export function isBytePlusSeedanceFastEngine(engineId: string | null | undefined): boolean {
   return engineId === BYTEPLUS_SEEDANCE_FAST_ENGINE_ID;
+}
+
+export function isBytePlusSeedanceHiddenEngine(engineId: string | null | undefined): boolean {
+  return engineId === BYTEPLUS_SEEDANCE_FAST_ENGINE_ID || engineId === SEEDANCE_2_5_ENGINE_ID;
+}
+
+export function isBytePlusSeedanceSubmissionEnabled(
+  engineId: string | null | undefined
+): boolean {
+  const profile = getBytePlusSeedanceProfile(engineId);
+  if (!profile || !readEnabled(profile)) return false;
+  return (
+    profile.routing.providerOverrideKey !== 'SEEDANCE_2_5_PROVIDER' ||
+    readProviderOverride(profile.routing.providerOverrideKey) === BYTEPLUS_MODELARK_PROVIDER
+  );
+}
+
+export function assertBytePlusSeedanceSubmissionEnabled(
+  engineId: string | null | undefined
+): void {
+  requireBytePlusSeedanceProfile(engineId);
+  if (isBytePlusSeedanceSubmissionEnabled(engineId)) return;
+  throw new BytePlusModelArkError('BytePlus Seedance engine is disabled.', {
+    status: 404,
+    code: 'BYTEPLUS_ENGINE_DISABLED',
+  });
 }
 
 export function shouldRouteSeedanceEngineToBytePlus(
@@ -317,7 +365,7 @@ export function getBytePlusSeedanceGeneratedAudio(
 export function resolveBytePlusSeedanceModelId(
   engineId: string | null | undefined,
   config: Record<
-    'seedanceModelId' | 'seedanceFastModelId' | 'seedanceMiniModelId',
+    'seedanceModelId' | 'seedanceFastModelId' | 'seedanceMiniModelId' | 'seedance25ModelId',
     string
   >
 ): string {
@@ -377,7 +425,10 @@ export function applyBytePlusSeedanceRuntimeOptions(
                   resolution: resolutions,
                   resolutionLocked: false,
                   aspectRatio: aspectRatios,
-                  duration: { options: [...durationOptions], default: 5 },
+                  duration: {
+                    options: [...durationOptions],
+                    default: profile.defaultDurationSec,
+                  },
                   audioToggle: profile.generatedAudio,
                 }
               : caps,
@@ -396,7 +447,7 @@ export function applyBytePlusSeedanceRuntimeOptions(
     fps: [profile.framesPerSecond],
     audio: profile.generatedAudio,
     extend: allowedModes.includes('extend'),
-    motionControls: true,
+    motionControls: profile.motionControls,
     keyframes: allowedModes.includes('i2v'),
     modeCaps,
     inputSchema: engine.inputSchema
@@ -405,16 +456,12 @@ export function applyBytePlusSeedanceRuntimeOptions(
           required: filterInputFieldsForModes(
             engine.inputSchema.required,
             allowedModes,
-            resolutions,
-            aspectRatios,
-            durationOptions
+            profile
           ),
           optional: filterInputFieldsForModes(
             engine.inputSchema.optional,
             allowedModes,
-            resolutions,
-            aspectRatios,
-            durationOptions,
+            profile,
             { includeBytePlusVideoSourceFields: true }
           ),
         }

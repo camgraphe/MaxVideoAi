@@ -21,12 +21,43 @@ function targetCustomerUnitPriceUsdPer1kTokens(unitPriceUsdPer1kTokens: number):
   return Number((unitPriceUsdPer1kTokens * DEFAULT_MAXVIDEOAI_MARGIN_FACTOR).toFixed(6));
 }
 
-test('BytePlus pricing fails closed for an unknown Seedance engine', () => {
+test('Seedance 2.5 uses its own factual ModelArk input rates', () => {
+  assert.equal(
+    getBytePlusUnitPriceUsdPer1kTokens('seedance-2-5', 'no_video_input', '480p'),
+    0.0107
+  );
+  assert.equal(
+    getBytePlusUnitPriceUsdPer1kTokens('seedance-2-5', 'video_input', '720p'),
+    0.0064
+  );
+});
+
+test('BytePlus pricing still fails closed for an unknown Seedance engine', () => {
   assert.throws(
-    () => getBytePlusUnitPriceUsdPer1kTokens('seedance-2-5', 'no_video_input', '720p'),
+    () => getBytePlusUnitPriceUsdPer1kTokens('seedance-9-9', 'no_video_input', '720p'),
     (error: unknown) =>
       error instanceof Error &&
       (error as Error & { code?: string }).code === 'BYTEPLUS_ENGINE_PROFILE_MISSING'
+  );
+});
+
+test('Seedance 2.5 hidden quote applies the approved 2.5x customer target', async () => {
+  const engine = getEngine('seedance-2-5');
+  const snapshot = await computePricingSnapshot({
+    engine,
+    durationSec: 4,
+    resolution: '480p',
+    aspectRatio: '16:9',
+    membershipTier: 'member',
+  });
+
+  assert.equal(snapshot.totalCents, 103);
+  assert.equal(snapshot.meta?.pricing_model, 'byteplus_tokens');
+  assert.ok(
+    Math.abs(
+      Number(snapshot.meta?.unit_price_usd_per_1k_tokens) -
+        0.02057692307692308
+    ) < 1e-12
   );
 });
 
@@ -41,7 +72,7 @@ test('BytePlus token estimation also fails closed for an unknown profile', () =>
   assert.throws(
     () =>
       expectedBytePlusTokens({
-        engine_id: 'seedance-2-5',
+        engine_id: 'seedance-9-9',
         duration_sec: 5,
         settings_snapshot: {
           core: { resolution: '720p', aspectRatio: '16:9' },

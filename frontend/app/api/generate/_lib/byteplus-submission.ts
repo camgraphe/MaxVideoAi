@@ -7,6 +7,7 @@ import {
 } from '@/lib/reference-budget';
 import {
   BYTEPLUS_MODELARK_PROVIDER,
+  assertBytePlusSeedanceSubmissionEnabled,
   buildBytePlusSeedancePayload,
   BytePlusModelArkError,
   getBytePlusArkConfig,
@@ -108,6 +109,7 @@ export async function submitBytePlusGenerateTask(params: {
   const logMetricFn = deps.logMetricFn;
 
   try {
+    assertBytePlusSeedanceSubmissionEnabled(params.engineId);
     const profile = requireBytePlusSeedanceProfile(params.engineId);
     const config = getBytePlusArkConfigFn();
     const generateAudio =
@@ -218,13 +220,17 @@ export async function submitBytePlusGenerateTask(params: {
     const providerStatus = error instanceof BytePlusModelArkError ? error.status : null;
     const errorCode = error instanceof BytePlusModelArkError && error.code ? error.code : 'BYTEPLUS_PROVIDER_ERROR';
     const failureMessage =
-      errorCode === 'BYTEPLUS_ENGINE_PROFILE_MISSING'
+      errorCode === 'BYTEPLUS_ENGINE_DISABLED'
+        ? 'This engine is temporarily unavailable.'
+        : errorCode === 'BYTEPLUS_ENGINE_PROFILE_MISSING'
         ? 'This engine is not configured for BytePlus.'
         : toUserFacingFailureMessage(
             getBytePlusUserSafeErrorMessageFn(providerMessage)
           );
     const responseStatus =
-      error instanceof BytePlusModelArkError && error.code === 'BYTEPLUS_ENGINE_PROFILE_MISSING'
+      error instanceof BytePlusModelArkError && error.code === 'BYTEPLUS_ENGINE_DISABLED'
+        ? 404
+        : error instanceof BytePlusModelArkError && error.code === 'BYTEPLUS_ENGINE_PROFILE_MISSING'
         ? 400
         : providerStatus && providerStatus >= 400 && providerStatus < 500
           ? 502

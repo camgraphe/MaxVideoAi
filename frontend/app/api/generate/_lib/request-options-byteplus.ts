@@ -49,7 +49,10 @@ export function normalizeBytePlusOptions(params: {
     };
   }
   const allowedResolutions = profile.resolutions;
-  const bytePlusResolution = params.requestedResolution === 'auto' ? '720p' : params.requestedResolution;
+  const bytePlusResolution =
+    params.requestedResolution === 'auto'
+      ? profile.defaultResolution
+      : params.requestedResolution;
   if (!allowedResolutions.includes(bytePlusResolution as (typeof allowedResolutions)[number])) {
     return {
       ok: false,
@@ -65,7 +68,10 @@ export function normalizeBytePlusOptions(params: {
       },
     };
   }
-  const bytePlusAspectRatio = !params.aspectRatio || params.aspectRatio === 'auto' ? '16:9' : params.aspectRatio;
+  const bytePlusAspectRatio =
+    !params.aspectRatio || params.aspectRatio === 'auto'
+      ? profile.defaultAspectRatio
+      : params.aspectRatio;
   if (!profile.aspectRatios.includes(bytePlusAspectRatio as (typeof profile.aspectRatios)[number])) {
     return {
       ok: false,

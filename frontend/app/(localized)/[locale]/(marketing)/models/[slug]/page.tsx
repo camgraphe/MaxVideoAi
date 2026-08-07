@@ -63,6 +63,7 @@ import {
   buildModelPrelaunchMetadata,
   renderMarketingModelPrelaunchPage,
 } from './_lib/model-page-prelaunch-route';
+import { isPrelaunchModelPageTemplateSlug } from './_lib/model-page-template-registry';
 
 type PageParams = {
   params: Promise<{
@@ -98,7 +99,10 @@ export async function generateMetadata(props: PageParams): Promise<Metadata> {
   const detailSlugMap = buildDetailSlugMap(canonicalSlug);
   const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${canonicalSlug}`));
 
-  if (isRuntimePresentationOnlyModel(model)) {
+  if (
+    isRuntimePresentationOnlyModel(model) ||
+    isPrelaunchModelPageTemplateSlug(canonicalSlug)
+  ) {
     return buildModelPrelaunchMetadata({
       model,
       localizedContent: localized,
@@ -486,7 +490,10 @@ export default async function ModelDetailPage(props: PageParams) {
       breadcrumb: { ...DEFAULT_DETAIL_COPY.breadcrumb, ...(dictionary.models.detail?.breadcrumb ?? {}) },
     };
     const localizedContent = await getEngineLocalized(model.slug, activeLocale);
-    if (isRuntimePresentationOnlyModel(model)) {
+    if (
+      isRuntimePresentationOnlyModel(model) ||
+      isPrelaunchModelPageTemplateSlug(model.slug)
+    ) {
       return await renderMarketingModelPrelaunchPage({
         model,
         detailCopy,

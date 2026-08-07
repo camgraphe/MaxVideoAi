@@ -12522,6 +12522,260 @@
     }
   },
   {
+    "engineId": "seedance-2-5",
+    "modelSlug": "seedance-2-5",
+    "marketingName": "Seedance 2.5",
+    "provider": "ByteDance",
+    "brandId": "bytedance",
+    "family": "seedance",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "seedance-2-0",
+        "seedance-2-0-fast",
+        "dreamina-seedance-2-0-mini",
+        "seedance-1-5-pro"
+      ],
+      "currentModelSlugs": [
+        "seedance-2-0",
+        "seedance-2-0-fast",
+        "dreamina-seedance-2-0-mini"
+      ]
+    },
+    "versionLabel": "2.5",
+    "availability": "limited",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": false,
+        "includeInSitemap": false
+      },
+      "examples": {
+        "includeInFamilyResolver": false,
+        "includeInFamilyCopy": false
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [],
+        "includeInHub": false
+      },
+      "app": {
+        "enabled": false
+      },
+      "pricing": {
+        "includeInEstimator": false
+      }
+    },
+    "surfacesSource": "registry",
+    "engine": {
+      "id": "seedance-2-5",
+      "label": "Seedance 2.5",
+      "provider": "ByteDance",
+      "version": "2.5",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "ap-southeast-1",
+      "modes": [
+        "t2v"
+      ],
+      "maxDurationSec": 30,
+      "resolutions": [
+        "480p",
+        "720p"
+      ],
+      "aspectRatios": [
+        "16:9"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": false,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {},
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt"
+          }
+        ],
+        "optional": [
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration (seconds)",
+            "values": [
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20",
+              "21",
+              "22",
+              "23",
+              "24",
+              "25",
+              "26",
+              "27",
+              "28",
+              "29",
+              "30"
+            ],
+            "default": "4",
+            "min": 4,
+            "max": 30
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "16:9"
+            ],
+            "default": "16:9"
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "480p",
+              "720p"
+            ],
+            "default": "480p"
+          }
+        ]
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "tokenPricing": {
+          "model": "byteplus_tokens",
+          "unitPriceUsdPer1kTokens": 0.020576923076923076,
+          "unitPriceUsdPer1kTokensByInputType": {
+            "no_video_input": 0.020576923076923076,
+            "video_input": 0.012307692307692308
+          },
+          "pricingSource": "byteplus_seedance_2_5_260628_approved_2_5x",
+          "framesPerSecond": 24,
+          "defaultAspectRatio": "16:9",
+          "dimensions": {
+            "480p": {
+              "16:9": {
+                "width": 854,
+                "height": 480
+              }
+            },
+            "720p": {
+              "16:9": {
+                "width": 1280,
+                "height": 720
+              }
+            }
+          },
+          "rounding": "ceil_cent"
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "currency": "USD",
+        "notes": "Hidden administrator canary priced from Seedance 2.5 usage tokens."
+      },
+      "updatedAt": "2026-08-07T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "byteplus_modelark",
+        "modelSlug": "dreamina-seedance-2-5-260628"
+      },
+      "availability": "limited",
+      "brandId": "bytedance"
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "byteplus/dreamina-seedance-2.5/text-to-video",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30
+            ],
+            "default": 4
+          },
+          "resolution": [
+            "480p",
+            "720p"
+          ],
+          "aspectRatio": [
+            "16:9"
+          ],
+          "audioToggle": false,
+          "notes": "Hidden canary: text-to-video, 4-30s, 480p/720p, 16:9, silent output."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": false
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    }
+  },
+  {
     "engineId": "wan-2-5",
     "modelSlug": "wan-2-5",
     "marketingName": "Wan 2.5 Text & Image to Video",

@@ -1880,7 +1880,6 @@
       "slug": "seedance-2-5",
       "family": "seedance",
       "category": "video",
-      "presentationOnly": true,
       "aliases": {
         "internal": [],
         "publicSlugs": []
