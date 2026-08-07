@@ -256,8 +256,8 @@ test('Happy Horse is distributed across relevant best-for pages', () => {
     assert.notEqual(topPicksBySlug.get(slug)?.[0], 'happy-horse-1-1', `${slug} should not rank Happy Horse first`);
   });
 
-  assert.deepEqual(topPicksBySlug.get('cinematic-realism')?.slice(0, 2), ['seedance-2-0', 'kling-3-pro']);
-  assert.deepEqual(topPicksBySlug.get('ads')?.slice(0, 2), ['seedance-2-0', 'kling-3-pro']);
+  assert.deepEqual(topPicksBySlug.get('cinematic-realism')?.slice(0, 2), ['seedance-2-5', 'seedance-2-0']);
+  assert.deepEqual(topPicksBySlug.get('ads')?.slice(0, 2), ['seedance-2-5', 'seedance-2-0']);
   assert.deepEqual(topPicksBySlug.get('character-reference')?.slice(0, 2), ['kling-3-pro', 'seedance-2-0']);
 
   ['4k-video', 'fast-drafts', 'stylized-anime'].forEach((slug) => {

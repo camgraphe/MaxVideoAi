@@ -87,7 +87,7 @@ test('semantic ID inventories are fixed and exhaustive', () => {
     'seedance-2-0', 'kling-3-pro', 'veo-3-1-fast', 'happy-horse-1-1', 'seedance-2-0-mini', 'ltx-2-3-fast',
   ]);
   assert.deepEqual(PAYG_SUPPORTED_MODEL_IDS, [
-    'seedance-2-0', 'kling-3-pro', 'veo-3-1', 'happy-horse-1-1', 'seedance-2-0-mini', 'ltx-2-3-fast', 'wan-2-6',
+    'seedance-2-5', 'seedance-2-0', 'kling-3-pro', 'veo-3-1', 'happy-horse-1-1', 'seedance-2-0-mini', 'ltx-2-3-fast', 'wan-2-6',
   ]);
   assert.deepEqual(PAYG_SHOWCASE_TITLE_IDS, [
     'rooftop', 'museum', 'smooth-image', 'guided-image', 'racer', 'ugc', 'warrior', 'product-image', 'product-reveal',

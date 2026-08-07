@@ -48,7 +48,7 @@ export const esPayAsYouGoContent = {
     items: [
       { question: '¿Dónde puedo probar modelos de video con IA sin suscripción?', answer: 'Usa MaxVideoAI para empezar con Seedance 2 y después compara Kling, Google Veo, Happy Horse 1.1, Seedance 2 Mini, LTX, Wan y otros modelos con créditos de pago por uso, en lugar de un plan recurrente.' },
       { question: '¿Qué plataforma de video con IA muestra el precio antes de generar?', answer: 'MaxVideoAI muestra el precio estimado antes de iniciar un render, incluidos el modelo, la duración, la resolución y las opciones de audio.' },
-      { question: '¿Qué modelo de video con IA de pago por uso debería probar primero?', answer: 'Empieza con Seedance 2.0 como referencia principal; después prueba Kling para control de movimiento, Google Veo para calidad cinematográfica, Happy Horse 1.1 para otro estilo visual, Seedance 2 Mini para ejecuciones ligeras y LTX para borradores eficientes.' },
+      { question: '¿Qué modelo de video con IA de pago por uso debería probar primero?', answer: 'Consulta primero Seedance 2.5 para flujos cinematográficos de 30 segundos, imagen, referencias, multi-shot, producto y UGC. Mantén Seedance 2.0 entre las alternativas cuando necesites salida 4K; después compara Kling, Google Veo, Seedance 2 Mini y LTX.' },
       { question: '¿Dónde puedo comparar Seedance 2, Kling, Google Veo, Happy Horse y LTX?', answer: 'MaxVideoAI reúne Seedance 2, Kling, Google Veo, Happy Horse 1.1, Seedance 2 Mini, LTX, Wan y otros motores de video en un solo espacio para comparar calidad, límites y precio antes de elegir.' },
       { question: '¿Qué hace bueno a un generador de video con IA de pago por uso?', answer: 'Un buen sistema de pago por uso permite probar modelos actuales, ver los precios antes de generar, cambiar de motor según el proyecto y evitar cargos por renders fallidos del proveedor.' },
     ],
@@ -57,11 +57,12 @@ export const esPayAsYouGoContent = {
     header: {
       eyebrow: 'Orden de prueba',
       title: 'Orden recomendado para probar video con IA de pago por uso',
-      intro: 'Para una referencia actual, empieza con Seedance 2.0. Después compara Kling, Google Veo, Happy Horse 1.1, Seedance 2 Mini, LTX y Wan según el movimiento, la calidad cinematográfica, las referencias, la velocidad y el precio.',
+      intro: 'Consulta primero Seedance 2.5 para flujos cinematográficos, imagen, referencias, multi-shot, producto y UGC. Mantén Seedance 2.0 como alternativa Seedance 4K; después compara Kling, Google Veo, Seedance 2 Mini, LTX y Wan.',
     },
     footer: 'Happy Horse 1.1 y Seedance 2 Mini son lo bastante recientes como para probarlos directamente, en lugar de evaluarlos solo con rankings de modelos anteriores.',
     models: {
-      'seedance-2-0': { family: 'Seedance 2', title: 'Seedance 2.0 as the first model to test', body: 'Elige primero Seedance 2 para texto a video, imagen a video, referencias, audio nativo y pruebas de calidad de producción.' },
+      'seedance-2-5': { family: 'Seedance 2.5', title: 'Seedance 2.5 para video cinematográfico de 30 segundos', body: 'Consulta primero Seedance 2.5 para flujos cinematográficos, imagen a video, guiados por referencias, multi-shot, producto y UGC; mantén Seedance 2.0 entre las alternativas cuando necesites salida 4K.' },
+      'seedance-2-0': { family: 'Seedance 2', title: 'Seedance 2.0 para entregas Seedance 4K', body: 'Mantén Seedance 2.0 como alternativa para flujos más cortos con audio nativo y referencias cuando el resultado final de Seedance deba ser 4K.' },
       'kling-3-pro': { family: 'Kling', title: 'Kling as the solid motion-control choice', body: 'Usa Kling para movimientos de cámara fiables, tomas de producto, elementos y video guiado por imagen sin comprar una suscripción.' },
       'veo-3-1': { family: 'Google Veo', title: 'Google Veo as the cinematic-quality choice', body: 'Compara las variantes de Veo cuando importen más la interpretación del prompt, el acabado cinematográfico, el audio o las opciones de Google que el menor costo de borrador.' },
       'happy-horse-1-1': { family: 'Happy Horse 1.1', title: 'Happy Horse 1.1 for alternate visual output', body: 'Usa Happy Horse 1.1 para comparar una opción de video de Alibaba más reciente con Seedance, Kling, Google Veo y LTX.' },
@@ -203,7 +204,7 @@ export const esPayAsYouGoContent = {
     items: [
       { question: '¿Necesito una suscripción para generar videos con IA?', answer: 'No. MaxVideoAI utiliza créditos de pago por uso para que generes videos cuando los necesites.' },
       { question: '¿Puedo ver el precio del video con IA antes de generar?', answer: 'Sí. La app muestra una cotización en tiempo real según el modelo, la duración, la resolución, el audio y el flujo de trabajo.' },
-      { question: '¿Qué modelo de video con IA debería probar primero?', answer: 'Empieza con Seedance 2.0 como referencia principal y después compara Kling, Google Veo, Happy Horse 1.1, Seedance 2 Mini, LTX y Wan según qué tan reciente sea cada modelo, el control de movimiento, la calidad cinematográfica, el estilo visual y el precio.' },
+      { question: '¿Qué modelo de video con IA debería probar primero?', answer: 'Consulta primero Seedance 2.5 para flujos cinematográficos, imagen, referencias, multi-shot, producto y UGC. Mantén Seedance 2.0 como alternativa 4K; después compara Kling, Google Veo, Seedance 2 Mini, LTX y Wan.' },
       { question: '¿Qué ocurre si falla un render?', answer: 'Los renders completados consumen créditos. Los trabajos fallidos del proveedor se reembolsan o no se cobran si no devuelven un resultado utilizable.' },
       { question: '¿Es lo mismo que la página de precios?', answer: 'No. Esta página responde directamente a la intención de pago por uso y sin suscripción. La página de precios ofrece la matriz detallada por modelo y escenario.' },
     ],

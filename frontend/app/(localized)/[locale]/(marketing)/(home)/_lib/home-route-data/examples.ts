@@ -80,7 +80,7 @@ export async function loadHomepageExamples(locale: AppLocale, content: RedesignC
     const override = HOMEPAGE_EXAMPLE_VIDEO_OVERRIDES[fallback.engineId];
     const video = preferHomepageExampleVideo([...globalCandidates, ...familyCandidates], fallback.engineId, family, override?.videoId);
     const engineId = video ? normalizeEngineId(video.engineId) ?? video.engineId : fallback.engineId;
-    const modelSlug = fallback.modelSlug ?? (family ? DEFAULT_MODEL_BY_EXAMPLE_FAMILY[family] : fallback.engineId);
+    const modelSlug = family ? DEFAULT_MODEL_BY_EXAMPLE_FAMILY[family] : fallback.modelSlug ?? fallback.engineId;
     const href = family
       ? ({ pathname: '/examples/[model]', params: { model: family } } satisfies LocalizedLinkHref)
       : ({ pathname: '/models/[slug]', params: { slug: modelSlug } } satisfies LocalizedLinkHref);

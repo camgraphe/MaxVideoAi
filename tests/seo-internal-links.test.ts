@@ -1,5 +1,13 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import test from 'node:test';
+import {
+  buildLocalizedModelPath,
+  getModelRegistryEntryById,
+} from '../frontend/config/model-registry.ts';
+import { buildModelRegistryRedirects } from '../frontend/config/model-registry-redirects.cjs';
+import { buildExamplesNextStepLinks } from '../frontend/app/(localized)/[locale]/(marketing)/examples/_lib/examples-page-copy.ts';
 import type { GscPerformanceRow } from '../frontend/lib/seo/gsc-analysis';
 import {
   buildInternalLinkSuggestions,
@@ -10,6 +18,99 @@ import {
   formatCodexActionQueueMarkdown,
 } from '../frontend/lib/seo/codex-action-queue';
 import { buildStrategicSeoOpportunities } from '../frontend/lib/seo/seo-opportunity-engine';
+
+const PROJECT_ROOT = process.cwd();
+const LOCALES = ['en', 'fr', 'es'] as const;
+const REQUIRED_SEEDANCE_25_TARGETS = {
+  en: '/models/seedance-2-5',
+  fr: '/fr/modeles/seedance-2-5',
+  es: '/es/modelos/seedance-2-5',
+} as const;
+const SEEDANCE_25_BEST_FOR_SLUGS = [
+  'ads',
+  'cinematic-realism',
+  'image-to-video',
+  'reference-to-video',
+  'multi-shot-video',
+  'product-videos',
+  'ugc-ads',
+] as const;
+
+function readRepositoryFile(path: string) {
+  return readFileSync(join(PROJECT_ROOT, path), 'utf8');
+}
+
+test('Seedance 2.5 launch-link matrix covers examples, Seedance 2.0, and relevant best-for clusters', () => {
+  const compareConfig = JSON.parse(readRepositoryFile('frontend/config/compare-config.json')) as {
+    bestForPages: Array<{ slug: string; topPicks?: string[] }>;
+  };
+
+  for (const locale of LOCALES) {
+    const target = REQUIRED_SEEDANCE_25_TARGETS[locale];
+    const examplesLinks = buildExamplesNextStepLinks({
+      appLocale: locale,
+      isKlingLanding: false,
+      isLtxLanding: false,
+      isSeedanceLanding: true,
+      isVeoLanding: false,
+      locale,
+      pricingPath: locale === 'fr' ? '/fr/tarifs' : locale === 'es' ? '/es/precios' : '/pricing',
+    });
+    assert.equal(examplesLinks[0]?.href, target, `${locale} Seedance examples should lead with the 2.5 profile`);
+
+    const seedance20Path = `content/models/${locale}/seedance-2-0.json`;
+    assert.match(readRepositoryFile(seedance20Path), new RegExp(target.replaceAll('/', '\\/')));
+
+    for (const slug of SEEDANCE_25_BEST_FOR_SLUGS) {
+      const sourcePath = `content/${locale}/best-for/${slug}.mdx`;
+      const source = readRepositoryFile(sourcePath);
+      const firstPickHref = source.match(/## (?:Best picks|Meilleurs choix|Mejores opciones)[\s\S]*?1\. \*\*\[[^\]]+\]\(([^)]+)\)/)?.[1];
+      assert.equal(firstPickHref, target, `${sourcePath} should rank the localized Seedance 2.5 profile first`);
+      assert.match(
+        source,
+        new RegExp(buildLocalizedModelPath(locale, 'seedance-2-0').replaceAll('/', '\\/')),
+        `${sourcePath} should retain Seedance 2.0 as an alternative`,
+      );
+    }
+  }
+
+  for (const slug of SEEDANCE_25_BEST_FOR_SLUGS) {
+    const entry = compareConfig.bestForPages.find((candidate) => candidate.slug === slug);
+    assert.equal(entry?.topPicks?.[0], 'seedance-2-5', `${slug} ranked cards should lead with Seedance 2.5`);
+    assert.ok(entry?.topPicks?.includes('seedance-2-0'), `${slug} ranked cards should retain Seedance 2.0`);
+  }
+});
+
+test('Seedance 2.0 routes stay published, self-owned, and 4K-specific after the 2.5 launch', () => {
+  const seedance20 = getModelRegistryEntryById('seedance-2-0');
+  const seedance20Fast = getModelRegistryEntryById('seedance-2-0-fast');
+  const seedance20Mini = getModelRegistryEntryById('seedance-2-0-mini');
+
+  assert.ok(seedance20);
+  assert.equal(seedance20.slug, 'seedance-2-0');
+  assert.equal(seedance20.publication.model.published, true);
+  assert.equal(seedance20.publication.model.indexable, true);
+  assert.equal(seedance20.replacement, null);
+  assert.equal(seedance20Fast?.publication.model.published, true);
+  assert.equal(seedance20Mini?.publication.model.published, true);
+
+  const registryDocument = JSON.parse(readRepositoryFile('frontend/config/model-registry.json'));
+  const redirects = buildModelRegistryRedirects(registryDocument);
+  for (const locale of LOCALES) {
+    const source = buildLocalizedModelPath(locale, 'seedance-2-0');
+    const target = REQUIRED_SEEDANCE_25_TARGETS[locale];
+    assert.equal(
+      redirects.some((redirect) => redirect.source === source && redirect.destination === target),
+      false,
+      `${source} must not redirect to ${target}`,
+    );
+
+    const fourKPath = `content/${locale}/best-for/4k-video.mdx`;
+    const fourKSource = readRepositoryFile(fourKPath);
+    assert.match(fourKSource, new RegExp(source.replaceAll('/', '\\/')));
+    assert.doesNotMatch(fourKSource, new RegExp(target.replaceAll('/', '\\/')));
+  }
+});
 
 function gscRow(
   query: string,

@@ -381,6 +381,14 @@
     ],
     "decisionCards": [
       {
+        "title": "Découvrir le nouveau Seedance 2.5",
+        "body": "Comparez Seedance 2.5 à Seedance 2.0 pour la vidéo cinématique de 30 secondes, les workflows image et références, les publicités multi-plans, les vidéos produit et l’UGC. Gardez Seedance 2.0 pour la livraison 4K.",
+        "cta": {
+          "label": "Découvrir le nouveau Seedance 2.5",
+          "href": "/fr/modeles/seedance-2-5"
+        }
+      },
+      {
         "title": "Seedance 2.0 ou Fast ?",
         "body": "Choisissez Seedance 2.0 pour les rendus finaux avec audio natif et continuité multi-plans. Passez à Fast pour les brouillons moins chers et les tests de rythme.",
         "cta": {

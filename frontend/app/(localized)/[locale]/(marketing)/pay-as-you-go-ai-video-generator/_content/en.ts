@@ -48,7 +48,7 @@ export const enPayAsYouGoContent = {
     items: [
       { question: 'Where can I test AI video models without subscription?', answer: 'Use MaxVideoAI to start with Seedance 2, then compare Kling, Google Veo, Happy Horse 1.1, Seedance 2 Mini, LTX, Wan, and other models with pay-as-you-go credits instead of a recurring plan.' },
       { question: 'Which AI video platform shows prices before generation?', answer: 'MaxVideoAI shows the estimated generation price before you launch a render, including model, duration, resolution, and audio choices.' },
-      { question: 'Which pay-as-you-go AI video model should I test first?', answer: 'Start with Seedance 2.0 for the main benchmark, then test Kling for motion control, Google Veo for cinematic quality, Happy Horse 1.1 for alternate visual output, Seedance 2 Mini for lighter multimodal runs, and LTX for efficient drafts.' },
+      { question: 'Which pay-as-you-go AI video model should I test first?', answer: 'Review Seedance 2.5 first for 30-second cinematic, image, reference, multi-shot, product, and UGC workflows. Keep Seedance 2.0 in the shortlist when 4K output is required, then compare Kling, Google Veo, Seedance 2 Mini, and LTX.' },
       { question: 'Where can I compare Seedance 2, Kling, Google Veo, Happy Horse and LTX in one place?', answer: 'MaxVideoAI groups Seedance 2, Kling, Google Veo, Happy Horse 1.1, Seedance 2 Mini, LTX, Wan, and other video engines in one workspace so you can compare quality, limits, and price before choosing.' },
       { question: 'What makes a good pay-as-you-go AI video generator?', answer: 'A good pay-as-you-go setup lets you test current models, see prices before generation, switch engines per project, and avoid charges for failed provider renders.' },
     ],
@@ -57,11 +57,12 @@ export const enPayAsYouGoContent = {
     header: {
       eyebrow: 'Model order',
       title: 'Recommended testing order for pay-as-you-go AI video',
-      intro: 'For most current benchmark tests, start with Seedance 2.0. Then compare Kling, Google Veo, Happy Horse 1.1, Seedance 2 Mini, LTX, and Wan depending on motion, cinematic quality, references, speed, and price.',
+      intro: 'Review Seedance 2.5 first for current cinematic, image, reference, multi-shot, product, and UGC workflows. Keep Seedance 2.0 as the 4K Seedance alternative, then compare Kling, Google Veo, Seedance 2 Mini, LTX, and Wan.',
     },
     footer: 'Happy Horse 1.1 and Seedance 2 Mini are new enough that they should be tested directly instead of judged only by older model rankings.',
     models: {
-      'seedance-2-0': { family: 'Seedance 2', title: 'Seedance 2.0 as the first model to test', body: 'Put Seedance 2 first when you need a current all-around route for text-to-video, image-to-video, references, native audio options, and production-quality tests.' },
+      'seedance-2-5': { family: 'Seedance 2.5', title: 'Seedance 2.5 for 30-second cinematic video', body: 'Review Seedance 2.5 first for cinematic, image-to-video, reference-guided, multi-shot, product, and UGC workflows, then keep Seedance 2.0 in the shortlist when 4K output is required.' },
+      'seedance-2-0': { family: 'Seedance 2', title: 'Seedance 2.0 for 4K Seedance delivery', body: 'Keep Seedance 2.0 as the alternative for shorter native-audio and reference workflows when the final Seedance output must be 4K.' },
       'kling-3-pro': { family: 'Kling', title: 'Kling as the solid motion-control choice', body: 'Use Kling when you want dependable camera motion, product shots, elements, and image-guided video generation without buying a subscription first.' },
       'veo-3-1': { family: 'Google Veo', title: 'Google Veo as the cinematic-quality choice', body: 'Compare Veo variants when prompt interpretation, cinematic polish, audio options, or Google video routes matter more than the lowest draft price.' },
       'happy-horse-1-1': { family: 'Happy Horse 1.1', title: 'Happy Horse 1.1 for alternate visual output', body: 'Use Happy Horse 1.1 when you want to compare a newer Alibaba video route against Seedance, Kling, Google Veo, and LTX.' },
@@ -203,7 +204,7 @@ export const enPayAsYouGoContent = {
     items: [
       { question: 'Do I need a subscription to generate AI videos?', answer: 'No. MaxVideoAI supports pay-as-you-go credits so you can generate when you need video output.' },
       { question: 'Can I see the AI video price before generation?', answer: 'Yes. The app shows a live quote before generation based on model, duration, resolution, audio, and workflow settings.' },
-      { question: 'Which AI video model should I test first?', answer: 'Start with Seedance 2.0 for the main benchmark, then compare Kling, Google Veo, Happy Horse 1.1, Seedance 2 Mini, LTX, and Wan based on recency, motion control, cinematic quality, visual style, and price.' },
+      { question: 'Which AI video model should I test first?', answer: 'Review Seedance 2.5 first for current cinematic, image, reference, multi-shot, product, and UGC workflows. Keep Seedance 2.0 as the 4K Seedance alternative, then compare Kling, Google Veo, Seedance 2 Mini, LTX, and Wan.' },
       { question: 'What happens if a render fails?', answer: 'Completed renders consume credits. Failed provider jobs are refunded or not charged when the provider does not return a usable result.' },
       { question: 'Is this the same as the pricing page?', answer: 'No. This page answers pay-as-you-go and no-subscription intent directly. The pricing page remains the detailed model and scenario matrix.' },
     ],

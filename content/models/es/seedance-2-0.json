@@ -381,6 +381,14 @@
     ],
     "decisionCards": [
       {
+        "title": "Descubrir el nuevo Seedance 2.5",
+        "body": "Compara Seedance 2.5 con Seedance 2.0 para video cinematográfico de 30 segundos, flujos de imagen y referencias, anuncios multi-shot, videos de producto y UGC. Mantén Seedance 2.0 para entregas 4K.",
+        "cta": {
+          "label": "Descubrir el nuevo Seedance 2.5",
+          "href": "/es/modelos/seedance-2-5"
+        }
+      },
+      {
         "title": "¿Seedance 2.0 o Fast?",
         "body": "Usa Seedance 2.0 para piezas finales con audio nativo y continuidad entre tomas. Usa Fast para borradores más económicos y pruebas de ritmo.",
         "cta": {

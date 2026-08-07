@@ -53,6 +53,7 @@ export function MarketingFooter() {
   }));
 
   const engineItems = [
+    { slug: 'seedance-2-5', labelKey: 'footer.sections.engines.items.seedance2_5', fallback: 'Seedance 2.5' },
     { slug: 'seedance-2-0', labelKey: 'footer.sections.engines.items.seedance2_0', fallback: 'Seedance 2.0' },
     { slug: 'kling-3-pro', labelKey: 'footer.sections.engines.items.kling3pro', fallback: 'Kling 3 Pro' },
     { slug: 'veo-3-1', labelKey: 'footer.sections.engines.items.veo3_1', fallback: 'Veo 3.1' },

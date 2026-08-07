@@ -50,6 +50,7 @@ const PREFERRED_EXAMPLES = [
   { id: 'ltx-2-3-fast', presetId: '8s-1080p' },
 ] as const satisfies readonly { id: PaygExampleCostId; presetId: VideoPricePresetId }[];
 const SUPPORTED_MODEL_CONFIGS = [
+  { id: 'seedance-2-5', fallbackHref: '/models/seedance-2-5', fallbackLabel: 'Seedance 2.5' },
   { id: 'seedance-2-0', fallbackHref: '/models/seedance-2-0', fallbackLabel: 'Seedance 2.0' },
   { id: 'kling-3-pro', fallbackHref: '/models/kling-3-pro', fallbackLabel: 'Kling' },
   { id: 'veo-3-1', fallbackHref: '/models/veo-3-1', fallbackLabel: 'Google Veo' },

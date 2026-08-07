@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import { buildLocalizedModelPath } from '../frontend/config/model-registry.ts';
+import {
+  DEFAULT_MODEL_BY_EXAMPLE_FAMILY,
+} from '../frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data/constants.ts';
+import { buildModelsCatalogDecisionData } from '../frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-decision-data.ts';
+import type { ModelGalleryCard } from '../frontend/components/marketing/ModelsGallery.tsx';
 
 const homeSource = readFileSync('frontend/app/(localized)/[locale]/(marketing)/(home)/page.tsx', 'utf8');
 const homeJsonLdSource = readFileSync('frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-jsonld.ts', 'utf8');
@@ -31,6 +37,33 @@ type HomeMessages = {
 const englishMessages = JSON.parse(readFileSync('frontend/messages/en.json', 'utf8')) as HomeMessages;
 const frenchMessages = JSON.parse(readFileSync('frontend/messages/fr.json', 'utf8')) as HomeMessages;
 const spanishMessages = JSON.parse(readFileSync('frontend/messages/es.json', 'utf8')) as HomeMessages;
+
+test('homepage, model catalogue, and footer lead Seedance profile links with 2.5', () => {
+  const requiredTargets = {
+    en: '/models/seedance-2-5',
+    fr: '/fr/modeles/seedance-2-5',
+    es: '/es/modelos/seedance-2-5',
+  } as const;
+  const seedance25Card = {
+    id: 'seedance-2-5',
+    label: 'Seedance 2.5',
+    href: { pathname: '/models/[slug]', params: { slug: 'seedance-2-5' } },
+    overallScore: null,
+  } as unknown as ModelGalleryCard;
+
+  assert.equal(DEFAULT_MODEL_BY_EXAMPLE_FAMILY.seedance, 'seedance-2-5');
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    assert.equal(buildLocalizedModelPath(locale, DEFAULT_MODEL_BY_EXAMPLE_FAMILY.seedance), requiredTargets[locale]);
+    const catalogue = buildModelsCatalogDecisionData({ activeLocale: locale, cards: [seedance25Card] });
+    assert.equal(catalogue.topPicks[0]?.id, 'seedance-2-5');
+  }
+
+  const footerSource = readFileSync('frontend/components/marketing/MarketingFooter.tsx', 'utf8');
+  const seedance25Index = footerSource.indexOf("{ slug: 'seedance-2-5'");
+  const seedance20Index = footerSource.indexOf("{ slug: 'seedance-2-0'");
+  assert.ok(seedance25Index >= 0, 'Footer should include Seedance 2.5');
+  assert.ok(seedance25Index < seedance20Index, 'Footer should list Seedance 2.5 before Seedance 2.0');
+});
 
 test('homepage titles keep the pay-as-you-go differentiator without getting too long', () => {
   const titles = {

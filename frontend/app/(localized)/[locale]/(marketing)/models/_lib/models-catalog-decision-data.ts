@@ -44,8 +44,8 @@ const EXAMPLE_FAMILY_BY_MODEL: Record<string, string> = {
   'minimax-hailuo-02-text': 'hailuo',
 };
 
-const TOP_PICK_IDS = ['seedance-2-0', 'kling-3-pro', 'veo-3-1', 'happy-horse-1-1'] as const;
-const RECOMMENDED_IDS = ['seedance-2-0', 'kling-3-pro', 'veo-3-1', 'happy-horse-1-1', 'ltx-2-3-fast', 'luma-ray-3-2'] as const;
+const TOP_PICK_IDS = ['seedance-2-5', 'seedance-2-0', 'kling-3-pro', 'veo-3-1', 'happy-horse-1-1'] as const;
+const RECOMMENDED_IDS = ['seedance-2-5', 'seedance-2-0', 'kling-3-pro', 'veo-3-1', 'happy-horse-1-1', 'ltx-2-3-fast', 'luma-ray-3-2'] as const;
 
 export type ModelsCatalogDecisionBadge = {
   label: string;
@@ -145,18 +145,21 @@ function buildBadges(locale: AppLocale): ModelsCatalogDecisionBadge[] {
 function buildTopPickCopy(locale: AppLocale) {
   return textByLocale(locale, {
     en: {
+      'seedance-2-5': { reason: 'Current Seedance flagship', detail: '30-second cinematic, image, and reference workflows' },
       'seedance-2-0': { reason: 'Best native audio', detail: 'Native audio, lip sync, realistic motion' },
       'kling-3-pro': { reason: 'Best control', detail: 'Cinematic sequences and prompt control' },
       'veo-3-1': { reason: 'Best Google route', detail: 'Ad-ready prompts, references, and extend control' },
       'happy-horse-1-1': { reason: 'Best Alibaba audio route', detail: 'Text, image, and references with native audio' },
     },
     fr: {
+      'seedance-2-5': { reason: 'Flagship Seedance actuel', detail: 'Vidéo cinématique de 30 s, image et références' },
       'seedance-2-0': { reason: 'Meilleur audio natif', detail: 'Audio natif, lip sync, mouvement realiste' },
       'kling-3-pro': { reason: 'Meilleur controle', detail: 'Sequences cine et controle du prompt' },
       'veo-3-1': { reason: 'Meilleure route Google', detail: 'Prompts pub, references et extension' },
       'happy-horse-1-1': { reason: 'Meilleure route audio Alibaba', detail: 'Texte, image et references avec audio natif' },
     },
     es: {
+      'seedance-2-5': { reason: 'Flagship actual de Seedance', detail: 'Video cinematográfico de 30 s, imagen y referencias' },
       'seedance-2-0': { reason: 'Mejor audio nativo', detail: 'Audio nativo, lip sync y movimiento realista' },
       'kling-3-pro': { reason: 'Mejor control', detail: 'Secuencias cinematicas y control de prompt' },
       'veo-3-1': { reason: 'Mejor ruta Google', detail: 'Prompts para ads, referencias y extension' },
@@ -168,31 +171,31 @@ function buildTopPickCopy(locale: AppLocale) {
 function buildUseCases(locale: AppLocale): ModelsCatalogUseCase[] {
   const copy = textByLocale(locale, {
     en: [
-      ['cinematic-video', 'Cinematic video', 'Film-like motion and scenes', 'Kling 3 Pro'],
-      ['native-audio', 'Native audio & lip sync', 'Dialogue and ambience', 'Seedance 2.0'],
+      ['cinematic-video', 'Cinematic video', 'Film-like motion and scenes', 'Seedance 2.5'],
+      ['native-audio', 'Native audio & lip sync', 'Dialogue and ambience', 'Seedance 2.5'],
       ['fast-drafts', 'Fast drafts', 'Quick iterations', 'Seedance 2.0 Fast'],
-      ['image-to-video', 'Image-to-video', 'Bring images to life', 'Seedance 2.0'],
-      ['product-ads', 'Product ads', 'Ad-ready clips and references', 'Veo 3.1'],
+      ['image-to-video', 'Image-to-video', 'Bring images to life', 'Seedance 2.5'],
+      ['product-ads', 'Product ads', 'Ad-ready clips and references', 'Seedance 2.5'],
       ['prompt-control', 'Prompt control', 'Strong adherence', 'Kling 3 Pro'],
       ['longest-duration', 'Longest duration', 'Longer clips and output limits', 'LTX 2.3 Fast'],
       ['best-value', 'Best value', 'Lower-cost iteration', 'LTX 2.3 Fast'],
     ],
     fr: [
-      ['cinematic-video', 'Video cinematographique', 'Mouvement et scenes cine', 'Kling 3 Pro'],
-      ['native-audio', 'Audio natif & lip sync', 'Dialogue, ambiance et voix', 'Seedance 2.0'],
+      ['cinematic-video', 'Video cinematographique', 'Mouvement et scenes cine', 'Seedance 2.5'],
+      ['native-audio', 'Audio natif & lip sync', 'Dialogue, ambiance et voix', 'Seedance 2.5'],
       ['fast-drafts', 'Drafts rapides', 'Iterations rapides', 'Seedance 2.0 Fast'],
-      ['image-to-video', 'Image-to-video', 'Animer des images', 'Seedance 2.0'],
-      ['product-ads', 'Pubs produit', 'Clips et references prets pour ads', 'Veo 3.1'],
+      ['image-to-video', 'Image-to-video', 'Animer des images', 'Seedance 2.5'],
+      ['product-ads', 'Pubs produit', 'Clips et references prets pour ads', 'Seedance 2.5'],
       ['prompt-control', 'Controle du prompt', 'Forte adherence', 'Kling 3 Pro'],
       ['longest-duration', 'Duree la plus longue', 'Clips plus longs et limites de sortie', 'LTX 2.3 Fast'],
       ['best-value', 'Meilleure valeur', 'Iteration moins chere', 'LTX 2.3 Fast'],
     ],
     es: [
-      ['cinematic-video', 'Video cinematografico', 'Movimiento y escenas cine', 'Kling 3 Pro'],
-      ['native-audio', 'Audio nativo & lip sync', 'Dialogo, ambiente y voz', 'Seedance 2.0'],
+      ['cinematic-video', 'Video cinematografico', 'Movimiento y escenas cine', 'Seedance 2.5'],
+      ['native-audio', 'Audio nativo & lip sync', 'Dialogo, ambiente y voz', 'Seedance 2.5'],
       ['fast-drafts', 'Borradores rapidos', 'Iteraciones rapidas', 'Seedance 2.0 Fast'],
-      ['image-to-video', 'Imagen a video', 'Anima imagenes', 'Seedance 2.0'],
-      ['product-ads', 'Anuncios de producto', 'Clips y referencias listos para ads', 'Veo 3.1'],
+      ['image-to-video', 'Imagen a video', 'Anima imagenes', 'Seedance 2.5'],
+      ['product-ads', 'Anuncios de producto', 'Clips y referencias listos para ads', 'Seedance 2.5'],
       ['prompt-control', 'Control del prompt', 'Alta adherencia', 'Kling 3 Pro'],
       ['longest-duration', 'Mayor duracion', 'Clips mas largos y limites de salida', 'LTX 2.3 Fast'],
       ['best-value', 'Mejor valor', 'Iteracion de menor costo', 'LTX 2.3 Fast'],
@@ -247,7 +250,7 @@ function buildDecisionFaqItems(locale: AppLocale): Array<{ question: string; ans
       {
         question: 'Which AI video model should I start with?',
         answer:
-          'Start with Seedance 2.0 for native audio and realistic motion, Kling 3 Pro for cinematic control, Veo 3.1 for high-quality prompt adherence, and LTX 2.3 Fast for fast drafts and lower-cost iterations.',
+          'Start with Seedance 2.5 for 30-second cinematic, image, and reference workflows. Keep Seedance 2.0 for 4K delivery, Kling 3 Pro for explicit scene controls, and LTX 2.3 Fast for fast drafts.',
       },
       {
         question: 'Which models support native audio or lip sync?',
@@ -279,7 +282,7 @@ function buildDecisionFaqItems(locale: AppLocale): Array<{ question: string; ans
       {
         question: 'Par quel modele video IA commencer ?',
         answer:
-          'Commencez avec Seedance 2.0 pour l audio natif et le mouvement realiste, Kling 3 Pro pour le controle cinematographique, Veo 3.1 pour l adherence au prompt, et LTX 2.3 Fast pour les drafts rapides et moins chers.',
+          'Commencez avec Seedance 2.5 pour la video cinematographique de 30 secondes, l image et les references. Gardez Seedance 2.0 pour la 4K, Kling 3 Pro pour les controles de scene et LTX 2.3 Fast pour les drafts rapides.',
       },
       {
         question: 'Quels modeles supportent l audio natif ou le lip sync ?',
@@ -311,7 +314,7 @@ function buildDecisionFaqItems(locale: AppLocale): Array<{ question: string; ans
       {
         question: 'Con que modelo de video IA deberia empezar?',
         answer:
-          'Empieza con Seedance 2.0 para audio nativo y movimiento realista, Kling 3 Pro para control cinematografico, Veo 3.1 para alta adherencia al prompt y LTX 2.3 Fast para borradores rapidos de menor costo.',
+          'Empieza con Seedance 2.5 para video cinematografico de 30 segundos, imagenes y referencias. Mantén Seedance 2.0 para 4K, Kling 3 Pro para controles de escena y LTX 2.3 Fast para borradores rapidos.',
       },
       {
         question: 'Que modelos soportan audio nativo o lip sync?',
@@ -351,7 +354,7 @@ export function buildModelsCatalogDecisionData({
 }): ModelsCatalogDecisionData {
   const byId = cardMap(cards);
   const topPickCopy = buildTopPickCopy(activeLocale);
-  const topPickIcons = [Mic2, SlidersHorizontal, Bolt, Gauge] as const;
+  const topPickIcons = [Sparkles, Mic2, SlidersHorizontal, Bolt, Gauge] as const;
 
   return {
     badges: buildBadges(activeLocale),

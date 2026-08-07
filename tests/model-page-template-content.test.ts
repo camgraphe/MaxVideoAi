@@ -89,13 +89,47 @@ function readModelContentJson(locale: (typeof LOCALES)[number], slug: string) {
   const contentPath = join(PROJECT_ROOT, 'content', 'models', locale, `${slug}.json`);
   return JSON.parse(readFileSync(contentPath, 'utf8')) as {
     marketingName?: string;
+    seo?: { title?: string; description?: string };
     custom?: {
       specSections?: Array<Record<string, unknown>>;
     };
     prompting?: unknown;
     examples?: unknown;
+    decision?: unknown;
   };
 }
+
+test('Seedance 2.0 keeps unique titles while introducing a localized Seedance 2.5 discovery module', () => {
+  const expectations = {
+    en: {
+      title: 'Seedance 2.0 | AI Video Model, Pricing, Native Audio & Use Cases | MaxVideoAI',
+      href: '/models/seedance-2-5',
+      anchor: /Discover (?:the latest )?Seedance 2\.5/i,
+    },
+    fr: {
+      title: 'Seedance 2.0 | Modèle vidéo IA, prix, audio natif et cas d’usage | MaxVideoAI',
+      href: '/fr/modeles/seedance-2-5',
+      anchor: /Découvrir (?:le nouveau )?Seedance 2\.5/i,
+    },
+    es: {
+      title: 'Seedance 2.0 | Modelo de video IA, precios, audio nativo y ejemplos | MaxVideoAI',
+      href: '/es/modelos/seedance-2-5',
+      anchor: /Descubrir (?:el nuevo )?Seedance 2\.5/i,
+    },
+  } as const;
+
+  for (const locale of LOCALES) {
+    const content = readModelContentJson(locale, 'seedance-2-0');
+    const decision = buildModelDecisionDataFromContent({ engine: getEngine('seedance-2-0'), locale });
+    assert.ok(decision);
+    const discoveryCard = decision.decisionCards.find((card) => card.cta.href === expectations[locale].href);
+
+    assert.equal(content.marketingName, 'Seedance 2.0');
+    assert.equal(content.seo?.title, expectations[locale].title);
+    assert.ok(discoveryCard, `${locale} Seedance 2.0 should link to the localized 2.5 profile`);
+    assert.match(discoveryCard.cta.label, expectations[locale].anchor);
+  }
+});
 
 function collectCustomerFacingStrings(value: unknown, skipKeys = new Set<string>()): string[] {
   if (typeof value === 'string') {

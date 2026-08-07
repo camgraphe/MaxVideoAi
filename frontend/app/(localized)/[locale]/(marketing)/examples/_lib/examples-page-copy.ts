@@ -164,6 +164,15 @@ export function buildExamplesNextStepLinks({
   const rawNextStepLinks = isSeedanceLanding
     ? [
         {
+          href: buildModelHref(appLocale, 'seedance-2-5'),
+          label:
+            locale === 'fr'
+              ? 'Découvrir Seedance 2.5 pour la vidéo cinématique de 30 secondes'
+              : locale === 'es'
+                ? 'Descubrir Seedance 2.5 para video cinematográfico de 30 segundos'
+                : 'Discover Seedance 2.5 for 30-second cinematic video',
+        },
+        {
           href: buildCompareHref(appLocale, 'seedance-2-0-vs-seedance-2-0-fast'),
           label:
             locale === 'fr'

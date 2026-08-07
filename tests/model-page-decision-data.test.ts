@@ -91,7 +91,7 @@ test('Seedance 2.0 decision data returns localized hero, links, features, cards,
     ['5s-480p', '8s-720p', '10s-1080p', '5s-4k', 'audio-included', 'max-duration']
   );
   assert.equal(en.hero.quickLinks[3]?.href, '#prompting');
-  assert.equal(en.decisionCards[2]?.cta.href, '#prompting');
+  assert.equal(en.decisionCards.find((card) => card.title === 'Need prompt examples?')?.cta.href, '#prompting');
   assert.equal(fr.media.badges[0], 'Audio activé');
   assert.equal(es.media.badges[0], 'Audio activado');
   assert.match(fr.hero.subtitle, /continuité multi-plans/);
@@ -101,7 +101,7 @@ test('Seedance 2.0 decision data returns localized hero, links, features, cards,
   assert.equal(en.features.length, 6);
   assert.deepEqual(
     en.decisionCards.map((card) => card.title),
-    ['Seedance 2.0 or Fast?', 'Upgrading from Seedance 1.5?', 'Need prompt examples?']
+    ['Discover the latest Seedance 2.5', 'Seedance 2.0 or Fast?', 'Upgrading from Seedance 1.5?', 'Need prompt examples?']
   );
   assert.deepEqual(
     en.referenceWorkflows.map((workflow) => workflow.title),

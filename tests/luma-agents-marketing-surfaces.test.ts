@@ -205,10 +205,10 @@ test('Luma Uni model pages use the strict content-driven image example fallback 
 
 test('Luma Ray 3.2 discovery stays behind current video leaders', () => {
   const expectedPlacements: Record<string, string[]> = {
-    'image-to-video': ['seedance-2-0', 'kling-3-pro', 'veo-3-1'],
-    'cinematic-realism': ['seedance-2-0', 'kling-3-pro', 'veo-3-1'],
-    'reference-to-video': ['seedance-2-0', 'kling-3-pro', 'veo-3-1', 'happy-horse-1-1'],
-    'product-videos': ['seedance-2-0', 'kling-3-pro', 'veo-3-1', 'happy-horse-1-1'],
+    'image-to-video': ['seedance-2-5', 'seedance-2-0', 'kling-3-pro', 'veo-3-1'],
+    'cinematic-realism': ['seedance-2-5', 'seedance-2-0', 'kling-3-pro', 'veo-3-1'],
+    'reference-to-video': ['seedance-2-5', 'seedance-2-0', 'kling-3-pro', 'veo-3-1', 'happy-horse-1-1'],
+    'product-videos': ['seedance-2-5', 'seedance-2-0', 'kling-3-pro', 'veo-3-1', 'happy-horse-1-1'],
   };
 
   for (const [slug, leaders] of Object.entries(expectedPlacements)) {
