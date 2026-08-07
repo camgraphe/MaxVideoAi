@@ -153,7 +153,7 @@ const BYTEPLUS_SEEDANCE_PROFILES: Readonly<Record<string, BytePlusSeedanceProfil
     defaultAspectRatio: '16:9',
     motionControls: false,
     framesPerSecond: 24,
-    generatedAudio: false,
+    generatedAudio: true,
     pricingProfileKey: 'seedance25',
     routing: {
       enabledKey: 'SEEDANCE_2_5_BYTEPLUS_ENABLED',

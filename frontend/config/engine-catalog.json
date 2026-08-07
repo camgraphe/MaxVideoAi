@@ -12591,7 +12591,7 @@
       "fps": [
         24
       ],
-      "audio": false,
+      "audio": true,
       "upscale4k": false,
       "extend": false,
       "motionControls": false,
@@ -12755,14 +12755,14 @@
           "aspectRatio": [
             "16:9"
           ],
-          "audioToggle": false,
-          "notes": "Hidden canary: text-to-video, 4-30s, 480p/720p, 16:9, silent output."
+          "audioToggle": true,
+          "notes": "Hidden canary: text-to-video, 4-30s, 480p/720p, 16:9, optional generated audio."
         }
       }
     ],
     "features": {
       "audio": {
-        "value": false
+        "value": true
       },
       "motionControls": {
         "value": false

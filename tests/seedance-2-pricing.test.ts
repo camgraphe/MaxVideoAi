@@ -61,6 +61,20 @@ test('Seedance 2.5 hidden quote applies the approved 2.5x customer target', asyn
   );
 });
 
+test('Seedance 2.5 optional audio keeps the canonical 15-second 720p quote stable', async () => {
+  const engine = getEngine('seedance-2-5');
+  const snapshot = await computePricingSnapshot({
+    engine,
+    durationSec: 15,
+    resolution: '720p',
+    aspectRatio: '16:9',
+    membershipTier: 'member',
+  });
+
+  assert.equal(engine.audio, true);
+  assert.equal(snapshot.totalCents, 867);
+});
+
 test('hidden direct Fast keeps the current Fast unit rate', () => {
   assert.equal(
     getBytePlusUnitPriceUsdPer1kTokens('seedance-2-0-fast-byteplus', 'no_video_input', '720p'),

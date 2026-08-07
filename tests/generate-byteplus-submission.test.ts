@@ -1009,3 +1009,75 @@ test('disabled Seedance 2.5 fails before config, payload, provider, and charge',
     console.warn = originalWarn;
   }
 });
+
+test('Seedance 2.5 forwards each optional generated-audio selection to ModelArk', { concurrency: false }, async () => {
+  const original = {
+    bytePlusEnabled: ENV.BYTEPLUS_ARK_ENABLED,
+    seedance25Enabled: ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED,
+    seedance25Provider: ENV.SEEDANCE_2_5_PROVIDER,
+    warn: console.warn,
+  };
+  const capturedGenerateAudioValues: boolean[] = [];
+  let providerRequests = 0;
+  let rollbacks = 0;
+
+  ENV.BYTEPLUS_ARK_ENABLED = 'true';
+  ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = 'true';
+  ENV.SEEDANCE_2_5_PROVIDER = 'byteplus_modelark';
+  console.warn = () => undefined;
+
+  try {
+    for (const audioEnabled of [true, false]) {
+      const result = await submitBytePlusGenerateTask({
+        ...baseParams,
+        engineId: 'seedance-2-5',
+        engineLabel: 'Seedance 2.5',
+        durationSec: 15,
+        mode: 't2v',
+        normalizedReferenceImages: [],
+        videoUrls: [],
+        resolvedAudioUrl: null,
+        audioUrls: [],
+        audioEnabled,
+        effectiveResolution: '720p',
+        pendingReceipt,
+        deps: {
+          getBytePlusArkConfigFn: () =>
+            ({
+              seedanceModelId: 'standard-id',
+              seedanceFastModelId: 'fast-id',
+              seedanceMiniModelId: 'mini-id',
+              seedance25ModelId: 'seedance-25-id',
+            }) as never,
+          buildBytePlusSeedancePayloadFn: (payload) => {
+            assert.notEqual(payload.generateAudio, undefined);
+            capturedGenerateAudioValues.push(payload.generateAudio);
+            return payload;
+          },
+          getBytePlusModelArkClientFn: () => ({
+            createSeedanceFastTask: async () => {
+              providerRequests += 1;
+              return { providerJobId: 'audio-contract-job', status: 'queued' };
+            },
+          }),
+          getBytePlusSeedanceAllowedResolutionsFn: () => ['480p', '720p'] as never,
+          getBytePlusSeedanceDurationOptionsFn: () => [15] as never,
+          queryFn: async () => undefined,
+          rollbackPendingPaymentFn: async () => {
+            rollbacks += 1;
+          },
+        },
+      });
+      assert.equal(result.ok, true);
+    }
+
+    assert.deepEqual(capturedGenerateAudioValues, [true, false]);
+    assert.equal(providerRequests, 2);
+    assert.equal(rollbacks, 0);
+  } finally {
+    ENV.BYTEPLUS_ARK_ENABLED = original.bytePlusEnabled;
+    ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = original.seedance25Enabled;
+    ENV.SEEDANCE_2_5_PROVIDER = original.seedance25Provider;
+    console.warn = original.warn;
+  }
+});

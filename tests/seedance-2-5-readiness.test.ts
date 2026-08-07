@@ -69,7 +69,8 @@ test('Seedance 2.5 owns a dedicated fail-closed ModelArk profile', () => {
   assert.equal(profile.defaultDurationSec, 4);
   assert.equal(profile.defaultResolution, '480p');
   assert.equal(profile.framesPerSecond, 24);
-  assert.equal(profile.generatedAudio, false);
+  assert.equal(profile.generatedAudio, true);
+  assert.equal(getFalEngineById(slug)?.engine.audio, true);
   assert.equal(profile.routing.enabledKey, 'SEEDANCE_2_5_BYTEPLUS_ENABLED');
   assert.equal(profile.routing.providerOverrideKey, 'SEEDANCE_2_5_PROVIDER');
   assert.equal(profile.routing.adminOnlyKey, 'SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY');

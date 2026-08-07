@@ -126,7 +126,7 @@ test('every current BytePlus Seedance engine has an explicit parity profile', ()
         : ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16']
     );
     assert.equal(profile.framesPerSecond, 24);
-    assert.equal(profile.generatedAudio, entry.engineId !== 'seedance-2-5');
+    assert.equal(profile.generatedAudio, true);
   }
 });
 
@@ -159,6 +159,7 @@ test('Seedance 2.5 has a dedicated disabled-by-default provider profile', () => 
 test('Seedance 2.5 runtime keeps the smallest confirmed canary defaults', () => {
   const entry = getFalEngineById('seedance-2-5');
   assert.ok(entry);
+  const profile = requireBytePlusSeedanceProfile('seedance-2-5');
 
   const runtime = applyBytePlusSeedanceRuntimeOptions(entry.engine, {
     provider: 'byteplus_modelark',
@@ -173,23 +174,24 @@ test('Seedance 2.5 runtime keeps the smallest confirmed canary defaults', () => 
   assert.equal(fields.find((field) => field.id === 'resolution')?.default, '480p');
   assert.equal(fields.find((field) => field.id === 'aspect_ratio')?.default, '16:9');
   assert.deepEqual(runtime.modes, ['t2v']);
-  assert.equal(runtime.audio, false);
+  assert.equal(profile.generatedAudio, true);
+  assert.equal(runtime.audio, true);
   assert.equal(runtime.extend, false);
   assert.equal(runtime.motionControls, false);
 
   assert.deepEqual(
     normalizeBytePlusOptions({
       engineId: 'seedance-2-5',
-      durationSec: 4,
-      requestedResolution: 'auto',
-      aspectRatio: 'auto',
+      durationSec: 15,
+      requestedResolution: '720p',
+      aspectRatio: '16:9',
     }),
     {
       ok: true,
-      durationSec: 4,
-      resolution: '480p',
+      durationSec: 15,
+      resolution: '720p',
       aspectRatio: '16:9',
-      generatedAudio: false,
+      generatedAudio: true,
     },
   );
 });
