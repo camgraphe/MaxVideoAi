@@ -13,7 +13,8 @@ Read it before changing a flag, publication surface, price, or provider route.
 - Runtime engine and dedicated provider profile: present
 - Safe runtime defaults: disabled, administrator-only, text-to-video only
 - Local MaxVideoAI administrator happy-path canary: completed
-- Long-form marketing heroes: City and Train accepted and copied durably
+- Long-form marketing candidates: City and Train copied durably and passed
+  sampled-frame QA; final acceptance awaits full uninterrupted human playback
 - Dialogue/audio marketing candidate: generated and copied durably; publication
   held for human review of exact wording, speaker attribution, and lip-sync
 - Real timeout/failure/refund canary: still pending
@@ -138,8 +139,8 @@ No identifier, signed URL, user ID, or wallet ID is recorded here.
 
 | Concept | Disposition | Requested output | Observed output | Customer quote and receipt | Actual provider usage and cost | Durable assets | Acceptance notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| The city in the suitcase | Accepted | 24 s, 720p, 16:9, audio off | 1280×720, 24 FPS, 24.0417 s, H.264 video only | USD 13.87; one wallet charge, zero refunds | 519,300 tokens; USD 5.556510 | Video, preview, and poster present; range request returned HTTP 206 `video/mp4` | Woman and suitcase remain stable; the city remains contained inside the suitcase; camera progression is continuous; coastal city, water, buildings, and final reveal remain coherent; final frames are clean; no visible text, logo, watermark, or material anatomy defect |
-| The glass lightning train | Accepted | 24 s, 720p, 16:9, audio off | 1280×720, 24 FPS, 24.0417 s, H.264 video only | USD 13.87; one wallet charge, zero refunds | 519,300 tokens; USD 5.556510 | Video, preview, and poster present; range request returned HTTP 206 `video/mp4` | Locomotive and wagons remain stable; lightning visibly forms luminous glass arches; the train stays legible through continuous lateral motion and the final aerial reveal; the silent opening reads clearly; no visible text, logo, duplication, or derailment |
+| The city in the suitcase | Provisional — full uninterrupted playback pending | 24 s, 720p, 16:9, audio off | 1280×720, 24 FPS, 24.0417 s, H.264 video only | USD 13.87; one wallet charge, zero refunds | 519,300 tokens; USD 5.556510 | Video, preview, and poster present; range request returned HTTP 206 `video/mp4` | Sampled-frame QA passes: woman and suitcase remain stable; the city remains contained inside the suitcase; camera progression appears continuous; coastal city, water, buildings, and final reveal remain coherent; final sampled frames are clean; no visible text, logo, watermark, or material anatomy defect. Final acceptance requires a human full-screen playback from start to finish |
+| The glass lightning train | Provisional — full uninterrupted playback pending | 24 s, 720p, 16:9, audio off | 1280×720, 24 FPS, 24.0417 s, H.264 video only | USD 13.87; one wallet charge, zero refunds | 519,300 tokens; USD 5.556510 | Video, preview, and poster present; range request returned HTTP 206 `video/mp4` | Sampled-frame QA passes: locomotive and wagons remain stable; lightning visibly forms luminous glass arches; the train stays legible through apparent continuous lateral motion and the final aerial reveal; the silent opening reads clearly; no visible text, logo, duplication, or derailment. Final acceptance requires a human full-screen playback from start to finish |
 | The runaway sock | Conditional — keep non-public until human audio review | 15 s, 720p, 16:9, generated audio on | 1280×720, 24 FPS, 15.0417 s, H.264 video plus AAC stereo audio at 32 kHz | USD 8.67; one wallet charge, zero refunds | 324,900 tokens; USD 3.476430 | Video, preview, and poster present; range request returned HTTP 206 `video/mp4`; durable audio playback stream present | Infrastructure and sampled visual QA pass: stable people, clothes, faces, eyelines, laundromat, red-sock pickup/offer, continuous camera, natural interaction, and no visible subtitles, text, logo, or watermark. Exact dialogue transcription, speaker attribution, and lip-sync remain a required manual review before publication |
 
 City completed at the provider on its initial take. The first three durable-copy
@@ -159,8 +160,17 @@ The approved three-render wallet ceiling was USD 36.41. Actual Task 4 wallet
 spend was exactly USD 36.41: three unique charges, zero refunds, and an ending
 wallet balance of USD 20.66. There were exactly three provider submissions,
 all completed on their initial content take, with cumulative actual provider
-cost USD 14.589450. No content retry or substitute request was made. City and
-Train form the accepted two-hero marketing pack. Dialogue is retained as the
+cost USD 14.589450. The initial provider-cost envelope was USD 14.56; the
+actual usage-based cost is USD 0.029450 higher, a variance of approximately
+0.20%. The envelope was a preflight estimate, while USD 14.589450 comes from
+persisted provider usage. This variance did not affect customer billing and
+the USD 36.41 wallet ceiling was respected exactly. No content retry or
+substitute request was made.
+
+City and Train are retained as the two hero candidates, but the available
+agent viewer exposes sampled stills rather than a continuously observable
+video stream. Their final marketing acceptance therefore remains pending a
+human full-screen playback from start to finish. Dialogue is retained as the
 audio candidate but must remain non-public until a human confirms its exact
 English lines, speaker attribution, and lip-sync.
 
