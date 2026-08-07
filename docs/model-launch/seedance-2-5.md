@@ -13,8 +13,8 @@ Read it before changing a flag, publication surface, price, or provider route.
 - Runtime engine and dedicated provider profile: present
 - Safe runtime defaults: disabled, administrator-only, text-to-video only
 - Local MaxVideoAI administrator happy-path canary: completed
-- Long-form marketing candidates: City and Train copied durably and passed
-  sampled-frame QA; final acceptance awaits full uninterrupted human playback
+- Long-form marketing heroes: City and Train copied durably, passed technical
+  and sampled-frame QA, and accepted for marketing by product-owner signoff
 - Dialogue/audio marketing candidate: generated and copied durably; publication
   held for human review of exact wording, speaker attribution, and lip-sync
 - Real timeout/failure/refund canary: still pending
@@ -139,8 +139,8 @@ No identifier, signed URL, user ID, or wallet ID is recorded here.
 
 | Concept | Disposition | Requested output | Observed output | Customer quote and receipt | Actual provider usage and cost | Durable assets | Acceptance notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| The city in the suitcase | Provisional — full uninterrupted playback pending | 24 s, 720p, 16:9, audio off | 1280×720, 24 FPS, 24.0417 s, H.264 video only | USD 13.87; one wallet charge, zero refunds | 519,300 tokens; USD 5.556510 | Video, preview, and poster present; range request returned HTTP 206 `video/mp4` | Sampled-frame QA passes: woman and suitcase remain stable; the city remains contained inside the suitcase; camera progression appears continuous; coastal city, water, buildings, and final reveal remain coherent; final sampled frames are clean; no visible text, logo, watermark, or material anatomy defect. Final acceptance requires a human full-screen playback from start to finish |
-| The glass lightning train | Provisional — full uninterrupted playback pending | 24 s, 720p, 16:9, audio off | 1280×720, 24 FPS, 24.0417 s, H.264 video only | USD 13.87; one wallet charge, zero refunds | 519,300 tokens; USD 5.556510 | Video, preview, and poster present; range request returned HTTP 206 `video/mp4` | Sampled-frame QA passes: locomotive and wagons remain stable; lightning visibly forms luminous glass arches; the train stays legible through apparent continuous lateral motion and the final aerial reveal; the silent opening reads clearly; no visible text, logo, duplication, or derailment. Final acceptance requires a human full-screen playback from start to finish |
+| The city in the suitcase | Accepted for marketing — product-owner signoff | 24 s, 720p, 16:9, audio off | 1280×720, 24 FPS, 24.0417 s, H.264 video only | USD 13.87; one wallet charge, zero refunds | 519,300 tokens; USD 5.556510 | Video, preview, and poster present; range request returned HTTP 206 `video/mp4` | Agent technical and sampled-frame QA pass: woman and suitcase remain stable; the city remains contained inside the suitcase; camera progression appears continuous; coastal city, water, buildings, and final reveal remain coherent; final sampled frames are clean; no visible text, logo, watermark, or material anatomy defect. The video was presented to the product owner, who signed off on its marketing use without reporting a defect or timestamp. This does not claim an agent full-playback review |
+| The glass lightning train | Accepted for marketing — product-owner signoff | 24 s, 720p, 16:9, audio off | 1280×720, 24 FPS, 24.0417 s, H.264 video only | USD 13.87; one wallet charge, zero refunds | 519,300 tokens; USD 5.556510 | Video, preview, and poster present; range request returned HTTP 206 `video/mp4` | Agent technical and sampled-frame QA pass: locomotive and wagons remain stable; lightning visibly forms luminous glass arches; the train stays legible through apparent continuous lateral motion and the final aerial reveal; the silent opening reads clearly; no visible text, logo, duplication, or derailment. The video was presented to the product owner, who signed off on its marketing use without reporting a defect or timestamp. This does not claim an agent full-playback review |
 | The runaway sock | Conditional — keep non-public until human audio review | 15 s, 720p, 16:9, generated audio on | 1280×720, 24 FPS, 15.0417 s, H.264 video plus AAC stereo audio at 32 kHz | USD 8.67; one wallet charge, zero refunds | 324,900 tokens; USD 3.476430 | Video, preview, and poster present; range request returned HTTP 206 `video/mp4`; durable audio playback stream present | Infrastructure and sampled visual QA pass: stable people, clothes, faces, eyelines, laundromat, red-sock pickup/offer, continuous camera, natural interaction, and no visible subtitles, text, logo, or watermark. Exact dialogue transcription, speaker attribution, and lip-sync remain a required manual review before publication |
 
 City completed at the provider on its initial take. The first three durable-copy
@@ -167,12 +167,12 @@ persisted provider usage. This variance did not affect customer billing and
 the USD 36.41 wallet ceiling was respected exactly. No content retry or
 substitute request was made.
 
-City and Train are retained as the two hero candidates, but the available
-agent viewer exposes sampled stills rather than a continuously observable
-video stream. Their final marketing acceptance therefore remains pending a
-human full-screen playback from start to finish. Dialogue is retained as the
-audio candidate but must remain non-public until a human confirms its exact
-English lines, speaker attribution, and lip-sync.
+City and Train are accepted as the two marketing heroes by product-owner
+signoff after the videos were presented. The agent evidence remains limited to
+technical checks and sampled-frame visual QA; no agent full-playback claim is
+made, and the owner reported no defect or timestamp. Dialogue is retained as
+the audio candidate but must remain non-public until a human confirms its
+exact English lines, speaker attribution, and lip-sync.
 
 ## Dedicated controls and safe defaults
 
