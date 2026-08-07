@@ -187,7 +187,8 @@ const SEEDANCE_2_5_ENGINE: EngineCaps = {
   pricing: {
     unit: 'USD/s',
     currency: 'USD',
-    notes: 'Seedance 2.5 is billed from output usage tokens.',
+    notes:
+      'Price is calculated before generation based on duration, resolution, and whether a source video is used.',
   },
   updatedAt: '2026-08-07T00:00:00Z',
   ttlSec: 600,
@@ -244,7 +245,8 @@ export const SEEDANCE_2_5_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     versionLabel: '2.5',
     availability: 'limited',
     logoPolicy: 'textOnly',
-    billingNote: 'Seedance 2.5 usage is billed from the active generation quote.',
+    billingNote:
+      'Your final price is calculated before generation from the selected duration, resolution, and inputs.',
     engine: SEEDANCE_2_5_ENGINE,
     modes: SEEDANCE_2_5_MODES.map(seedance25Mode),
     defaultFalModelId: BYTEPLUS_SEEDANCE_2_5_ENDPOINTS.t2v,
@@ -258,7 +260,7 @@ export const SEEDANCE_2_5_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     pricingHint: {
       currency: 'USD',
       amountCents: 0,
-      label: 'Live quote in Generate',
+      label: 'Price calculated before generation',
     },
     promptExample: 'A short cinematic scene with clear movement and no text overlays.',
   },

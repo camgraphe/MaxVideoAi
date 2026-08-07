@@ -7,12 +7,23 @@ import {
   getBytePlusUnitPriceUsdPer1kTokens,
 } from '../frontend/server/byteplus-accounting';
 import { computeCanonicalPublicSnapshot as computePricingSnapshot } from '../frontend/server/pricing/quote-public.ts';
+import { buildPublicPricingFacts } from '../frontend/src/lib/pricing-public-facts.ts';
+import {
+  projectPublicPricingSnapshot,
+  quotePublicPricing,
+} from '../frontend/src/lib/pricing-public-quote.ts';
 import { computeSeedance2TokenQuote, isSeedance2TokenPricing } from '../frontend/src/lib/seedance-2-pricing.ts';
 
 function getEngine(engineId: string) {
   const engine = listFalEngines().find((entry) => entry.id === engineId)?.engine;
   assert.ok(engine, `Missing engine ${engineId}`);
   return engine;
+}
+
+function getEngineEntry(engineId: string) {
+  const entry = listFalEngines().find((candidate) => candidate.id === engineId);
+  assert.ok(entry, `Missing engine entry ${engineId}`);
+  return entry;
 }
 
 const DEFAULT_MAXVIDEOAI_MARGIN_FACTOR = 1.3;
@@ -41,38 +52,132 @@ test('BytePlus pricing still fails closed for an unknown Seedance engine', () =>
   );
 });
 
-test('Seedance 2.5 hidden quote applies the approved 2.5x customer target', async () => {
+test('Seedance 2.5 public quotes cover no-video and video-input generation', async () => {
   const engine = getEngine('seedance-2-5');
-  const snapshot = await computePricingSnapshot({
-    engine,
-    durationSec: 4,
-    resolution: '480p',
-    aspectRatio: '16:9',
-    membershipTier: 'member',
-  });
+  const scenarios = [
+    {
+      id: 't2v-4s-480p-audio-off',
+      mode: 't2v' as const,
+      durationSec: 4,
+      resolution: '480p',
+      audio: false,
+      hasVideoInput: false,
+      expectedInputType: 'no_video_input',
+    },
+    {
+      id: 't2v-15s-720p-audio-on',
+      mode: 't2v' as const,
+      durationSec: 15,
+      resolution: '720p',
+      audio: true,
+      hasVideoInput: false,
+      expectedInputType: 'no_video_input',
+    },
+    {
+      id: 'i2v-24s-720p-audio-off',
+      mode: 'i2v' as const,
+      durationSec: 24,
+      resolution: '720p',
+      audio: false,
+      hasVideoInput: false,
+      expectedInputType: 'no_video_input',
+    },
+    {
+      id: 'v2v-15s-720p-audio-on',
+      mode: 'v2v' as const,
+      durationSec: 15,
+      resolution: '720p',
+      audio: true,
+      hasVideoInput: true,
+      expectedInputType: 'video_input',
+    },
+  ];
+  const quotes = new Map<string, Awaited<ReturnType<typeof computePricingSnapshot>>>();
 
-  assert.equal(snapshot.totalCents, 103);
-  assert.equal(snapshot.meta?.pricing_model, 'byteplus_tokens');
+  for (const scenario of scenarios) {
+    const facts = buildPublicPricingFacts({
+      engine,
+      mode: scenario.mode,
+      durationSec: scenario.durationSec,
+      resolution: scenario.resolution,
+      aspectRatio: '16:9',
+      hasVideoInput: scenario.hasVideoInput,
+      addons: { audio: scenario.audio },
+    });
+    const publicQuote = quotePublicPricing({
+      facts: facts.facts,
+      scenario: {
+        id: `public:seedance-2-5:${scenario.id}`,
+        engineId: engine.id,
+        mode: scenario.mode,
+        resolution: scenario.resolution,
+        membershipTier: 'member',
+      },
+      compatibilityProfileId: facts.compatibilityProfileId,
+    });
+    const publicSnapshot = projectPublicPricingSnapshot({
+      quote: publicQuote,
+      base: facts.base,
+      addons: facts.addons,
+      meta: facts.meta,
+    });
+    const snapshot = await computePricingSnapshot({
+      engine,
+      mode: scenario.mode,
+      durationSec: scenario.durationSec,
+      resolution: scenario.resolution,
+      aspectRatio: '16:9',
+      membershipTier: 'member',
+      hasVideoInput: scenario.hasVideoInput,
+      addons: { audio: scenario.audio },
+    });
+
+    assert.ok(snapshot.totalCents > 0, `${scenario.id} should have a positive customer total`);
+    assert.equal(publicSnapshot.totalCents, snapshot.totalCents);
+    assert.equal(
+      snapshot.meta?.pricing_source,
+      'byteplus_seedance_2_5_260628_approved_2_5x',
+      `${scenario.id} should retain the approved pricing source`
+    );
+    assert.equal(
+      (publicSnapshot.meta?.cost_breakdown_usd as { pricingSource?: string } | undefined)
+        ?.pricingSource,
+      'byteplus_seedance_2_5_260628_approved_2_5x'
+    );
+    assert.equal(snapshot.meta?.byteplus_billing_input_type, scenario.expectedInputType);
+    assert.equal(
+      (publicSnapshot.meta?.cost_breakdown_usd as { billingInputType?: string } | undefined)
+        ?.billingInputType,
+      scenario.expectedInputType
+    );
+    assert.equal(publicQuote.policyProvenance.compatibilityProfile, 'provider-reference-current');
+    assert.deepEqual(snapshot.meta?.pricingPolicy, {
+      source: 'versioned',
+      matchedBy: 'global',
+      sourceRuleId: 'default',
+      compatibilityProfile: 'provider-reference-current',
+    });
+    quotes.set(scenario.id, snapshot);
+  }
+
+  assert.equal(quotes.get('t2v-4s-480p-audio-off')?.totalCents, 103);
+  assert.equal(quotes.get('t2v-15s-720p-audio-on')?.totalCents, 867);
   assert.ok(
-    Math.abs(
-      Number(snapshot.meta?.unit_price_usd_per_1k_tokens) -
-        0.02057692307692308
-    ) < 1e-12
+    Number(quotes.get('v2v-15s-720p-audio-on')?.totalCents) <
+      Number(quotes.get('t2v-15s-720p-audio-on')?.totalCents),
+    'V2V should use the lower factual video-input token rate'
   );
 });
 
-test('Seedance 2.5 optional audio keeps the canonical 15-second 720p quote stable', async () => {
-  const engine = getEngine('seedance-2-5');
-  const snapshot = await computePricingSnapshot({
-    engine,
-    durationSec: 15,
-    resolution: '720p',
-    aspectRatio: '16:9',
-    membershipTier: 'member',
-  });
+test('Seedance 2.5 presents pricing in customer-facing language', () => {
+  const entry = getEngineEntry('seedance-2-5');
+  const customerCopy = [entry.engine.pricing?.notes ?? '', entry.billingNote ?? ''];
 
-  assert.equal(engine.audio, true);
-  assert.equal(snapshot.totalCents, 867);
+  for (const copy of customerCopy) {
+    assert.match(copy, /price is calculated before generation/i);
+    assert.doesNotMatch(copy, /provider costs?|internal multipliers?|markup|output usage tokens?|2\.5x/i);
+  }
+  assert.equal(entry.pricingHint?.label, 'Price calculated before generation');
 });
 
 test('hidden direct Fast keeps the current Fast unit rate', () => {
