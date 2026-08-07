@@ -216,3 +216,70 @@ Before any registry policy edit, follow `docs/engineering/model-registry.md` and
 regenerate its projections. This handoff does not authorize a production
 environment update, provider request, paid generation, payment action, push, or
 deployment.
+
+## Pre-launch verification evidence — 2026-08-08
+
+The verified source commit is
+`8412da8321eec3c38c97cff3b1411e9d8ed80f75`. This SHA is the complete
+runtime, product, marketing, SEO, and smoke-fix state immediately before this
+evidence-only documentation commit; the documentation commit cannot cite its
+own SHA without becoming self-referential.
+
+The visual smoke found and closed two launch-scope gaps before this SHA was
+recorded: Seedance 2.5 now reports `available` rather than a restricted-access
+label in the selector and generated rosters, and Generate is disabled whenever
+the active workflow is missing a required media asset (confirmed with Extend
+and no source clip).
+
+### Command evidence
+
+- Focused Seedance/runtime suite: PASS, 97/97 tests.
+- Focused marketing/SEO suite: PASS, 101/101 tests.
+- `pnpm model:registry:check`: PASS; 42 models, 2 tombstones, and current
+  runtime/catalog/roster projections.
+- `pnpm model:check` and `pnpm models:audit`: PASS; 41 roster entries,
+  0 critical findings, and 9 non-blocking existing audit warnings.
+- `pnpm pricing:baseline`: PASS; immutable 178-row baseline.
+- `pnpm pricing:public-baseline`: PASS; current 504-row public projection.
+- `pnpm pricing:audit`: PASS; 182/182 matches and 0 mismatches.
+- `pnpm test:validate`: PASS; 2,483/2,483 tests and 0 failures.
+- `pnpm --prefix frontend run lint`: PASS.
+- `pnpm lint:exposure`: PASS.
+- `pnpm --prefix frontend run i18n:check`: PASS; FR parity at 4,197 keys and
+  ES parity at 4,191 keys.
+- `pnpm --prefix frontend run seo:check`: PASS; canonical, llms, internal-link,
+  and 1,538-public-media-origin checks passed.
+- `pnpm --prefix frontend exec tsc --noEmit --pretty false`: PASS.
+- `pnpm --prefix frontend run build`: PASS with Next.js 15.5.18; production
+  compilation, integrated lint/type check, 729 static pages, build traces, and
+  post-build sitemap generation completed.
+- `git diff --check`: PASS before the source commit and after this evidence
+  update.
+
+### Local route and workspace smoke
+
+Playwright inspected 1440×1000 desktop and 390×844 mobile viewports without
+pressing Generate. All requested pages returned HTTP 200 and showed no
+horizontal overflow:
+
+- EN, FR, and ES Seedance 2.5 model pages;
+- pricing, Benchmark Lab, homepage, model catalogue, Seedance examples, and
+  the Seedance 2.0 upgrade surface;
+- Seedance 2.0 vs Seedance 2.5, Kling 3 Pro vs Seedance 2.5, and Seedance 2.5
+  vs Veo 3.1 comparisons.
+
+The workspace booted from `/app?engine=seedance-2-5`, kept Seedance 2.5
+selected, showed `New`, score 9.1, `Available`, all five mode indicators,
+4–30-second controls, 480p/720p, 16:9, audio, and the expected start/end image,
+source video, 30-image, 10-video, 10-audio, and extension-source upload
+surfaces. A positive local T2V quote displayed; switching to Extend without a
+source clip kept the quote visible but disabled Generate on desktop and mobile.
+
+The browser smoke used the local Next.js development server because local
+`next start` under Node.js 23.9.0 hit an Edge middleware string-code-generation
+restriction. The production build itself passed; deployment smoke must still
+run against the approved production runtime. The unauthenticated workspace also
+returned the expected 401 for the private export-summary request and emitted
+development-only image/LCP warnings. No provider request, paid generation,
+wallet mutation, production environment change, push, deployment, indexation
+request, or LinkedIn publication was performed.
