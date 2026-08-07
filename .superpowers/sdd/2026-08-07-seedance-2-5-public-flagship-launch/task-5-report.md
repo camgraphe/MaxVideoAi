@@ -172,3 +172,68 @@ The nine model-audit warnings are pre-existing/non-critical content quality or f
 - Restored the timestamp-only `docs/model-roster-report.md` audit change, so it is not part of this task.
 - Seedance 2.5's detailed localized marketing copy still contains pre-launch wording, and the existing primary CTA labels remain unchanged even though their destinations now open the engine. This is intentionally deferred to Task 7 per the approved scope.
 - No push or deployment was performed.
+
+## Review fix round 1 — dynamic comparison count
+
+### Finding and root cause
+
+The generated Markdown summary reported `295` published slugs, while the explanatory paragraph under “URLs GSC hors du périmètre publié” still reported `292`. The generator already derived the summary from `document.summary.publishedSlugs`, but that paragraph retained a legacy hard-coded literal. The existing generator test checked the summary and surrounding section text independently, so it did not enforce consistency between them.
+
+The separate minor review finding about the Seedance 1.5 Pro rank was explicitly excluded from this round and was not changed.
+
+### Changes
+
+- `scripts/generate-comparison-indexation-matrix.ts`
+  - Replaces the hard-coded `292` with `${document.summary.publishedSlugs}` in the published-scope sentence.
+- `tests/comparison-indexation-matrix.test.ts`
+  - Adds a focused assertion that the generated sentence uses the count from the generated document summary.
+- `docs/seo/comparison-indexation-matrix-2026-07-08.md`
+  - Regenerated so the explanatory paragraph now reports `295`, matching the summary table.
+
+### TDD and verification evidence
+
+The new focused assertion was run before the implementation change and failed for the intended reason:
+
+```text
+tests/comparison-indexation-matrix.test.ts
+20 passed, 1 failed
+Expected: "ne font pas partie des 295 slugs actuellement publiés"
+Actual generated paragraph: "ne font pas partie des 292 slugs actuellement publiés"
+```
+
+After the minimal interpolation change, the same suite passed `21/21`.
+
+The artifact was then regenerated explicitly:
+
+```bash
+./frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json scripts/generate-comparison-indexation-matrix.ts
+```
+
+Generator output:
+
+```text
+publishedSlugs: 295
+totalUrls: 885
+byLocale: en=295, fr=295, es=295
+byClassification: keep=292, enrich=28, review=347, noindex_candidate=218
+```
+
+Covering comparison-indexation suites:
+
+```bash
+pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/comparison-indexation-matrix.test.ts tests/comparison-indexation-wave-1.test.ts
+```
+
+```text
+33 tests: 33 passed, 0 failed
+```
+
+Full validation suite:
+
+```bash
+pnpm test:validate
+```
+
+```text
+2456 tests: 2456 passed, 0 failed
+```

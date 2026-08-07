@@ -288,6 +288,12 @@ test('the generated inventory covers all 885 localized published comparison URLs
   assert.match(artifacts.markdown, /Aucun noindex n'est applique/i);
   assert.match(artifacts.markdown, /996 premières pages/);
   assert.match(artifacts.markdown, /URLs GSC hors du périmètre publié/);
+  assert.match(
+    artifacts.markdown,
+    new RegExp(
+      `ne font pas partie des ${artifacts.document.summary.publishedSlugs} slugs actuellement publiés`,
+    ),
+  );
   assert.match(artifacts.markdown, /19 anciennes variantes Veo/);
   assert.match(artifacts.markdown, /Happy Horse 1\.0[\s\S]*redirection permanente/);
   assert.match(artifacts.markdown, /^\| en \| \[/m);
