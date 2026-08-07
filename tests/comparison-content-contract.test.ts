@@ -15,6 +15,11 @@ import type { ComparePageContentDocument } from '../frontend/app/(localized)/[lo
 const CONTENT_DIR = path.join(process.cwd(), 'content', 'comparisons');
 const MESSAGES_DIR = path.join(process.cwd(), 'frontend', 'messages');
 const LOCALES = ['en', 'fr', 'es'] as const;
+const PRIORITY_SEEDANCE_2_5_COMPARISON_SLUGS = [
+  'seedance-2-0-vs-seedance-2-5',
+  'kling-3-pro-vs-seedance-2-5',
+  'seedance-2-5-vs-veo-3-1',
+] as const;
 const EXPECTED_GENERIC_METADATA_FALLBACK_SLUGS = [
   'kling-2-6-pro-vs-ltx-2',
   'kling-2-6-pro-vs-seedance-2-0',
@@ -43,23 +48,29 @@ const EXPECTED_GENERIC_METADATA_FALLBACK_SLUGS = [
   'wan-2-5-vs-wan-2-6',
 ] as const;
 const SUPPORTED_HREF_BY_LOCALE = {
-  en: /^\/(?:(?:models|examples|ai-video-engines)\/|pricing(?:#|$))/,
-  fr: /^\/(?:(?:models|examples|ai-video-engines)\/|pricing(?:#|$)|fr\/(?:modeles|exemples|comparatif)\/|fr\/tarifs(?:#|$))/,
-  es: /^\/(?:(?:models|examples|ai-video-engines)\/|pricing(?:#|$)|es\/(?:modelos|ejemplos|comparativa)\/|es\/precios(?:#|$))/,
+  en: /^\/(?:(?:models|examples|ai-video-engines)\/|pricing(?:#|$)|app\?engine=)/,
+  fr: /^\/(?:(?:models|examples|ai-video-engines)\/|pricing(?:#|$)|app\?engine=|fr\/(?:modeles|exemples|comparatif)\/|fr\/tarifs(?:#|$))/,
+  es: /^\/(?:(?:models|examples|ai-video-engines)\/|pricing(?:#|$)|app\?engine=|es\/(?:modelos|ejemplos|comparativa)\/|es\/precios(?:#|$))/,
 } as const;
 const FORBIDDEN_LOCALE_PREFIX_BY_LOCALE = {
   en: /^\/(?:fr|es)(?:\/|$)/,
   fr: /^\/es(?:\/|$)/,
   es: /^\/fr(?:\/|$)/,
 } as const;
+const CANONICAL_COMPARISON_PREFIX_BY_LOCALE = {
+  en: '/ai-video-engines',
+  fr: '/fr/comparatif',
+  es: '/es/comparativa',
+} as const;
 const SUPPORTED_HREF_FIXTURES_BY_LOCALE = {
-  en: ['/models/fixture', '/examples/fixture', '/ai-video-engines/fixture', '/pricing', '/pricing#fixture'],
+  en: ['/models/fixture', '/examples/fixture', '/ai-video-engines/fixture', '/pricing', '/pricing#fixture', '/app?engine=fixture'],
   fr: [
     '/models/fixture',
     '/examples/fixture',
     '/ai-video-engines/fixture',
     '/pricing',
     '/pricing#fixture',
+    '/app?engine=fixture',
     '/fr/modeles/fixture',
     '/fr/exemples/fixture',
     '/fr/comparatif/fixture',
@@ -72,6 +83,7 @@ const SUPPORTED_HREF_FIXTURES_BY_LOCALE = {
     '/ai-video-engines/fixture',
     '/pricing',
     '/pricing#fixture',
+    '/app?engine=fixture',
     '/es/modelos/fixture',
     '/es/ejemplos/fixture',
     '/es/comparativa/fixture',
@@ -109,7 +121,7 @@ function loadGenericMetadataFallbacks(locale: (typeof LOCALES)[number]): Record<
 
 test('comparison documents are dynamically discovered with unique matching identities and three locales', () => {
   const files = contentFiles();
-  assert.equal(files.length, 47);
+  assert.equal(files.length, 50);
   const identities = new Set<string>();
 
   for (const fileName of files) {
@@ -118,6 +130,40 @@ test('comparison documents are dynamically discovered with unique matching ident
     assert.deepEqual(Object.keys(document).sort(), ['en', 'es', 'fr', 'slug']);
     assert.equal(identities.has(document.slug), false, `duplicate comparison identity ${document.slug}`);
     identities.add(document.slug);
+  }
+});
+
+test('the three priority Seedance 2.5 comparisons are published, enriched, and indexable in every locale', () => {
+  const documentSlugs = new Set(contentFiles().map((fileName) => fileName.slice(0, -'.json'.length)));
+
+  for (const slug of PRIORITY_SEEDANCE_2_5_COMPARISON_SLUGS) {
+    assert.ok(isPublishedComparisonSlug(slug), `${slug} must be published by the reciprocal pair graph`);
+    assert.ok(documentSlugs.has(slug), `${slug} must have an enriched comparison document`);
+    assert.deepEqual(getIndexableComparisonLocales(slug), LOCALES, `${slug} must be indexable in all locales`);
+
+    for (const locale of LOCALES) {
+      const override = getComparePageOverride(locale, slug);
+      assert.ok(override?.meta?.title, `${locale} ${slug} must own localized metadata`);
+      assert.ok(override.meta.description, `${locale} ${slug} must own a localized description`);
+      const metadata = buildSeoMetadata({
+        locale,
+        title: override.meta.title,
+        description: override.meta.description,
+        englishPath: `/ai-video-engines/${slug}`,
+        availableLocales: getIndexableComparisonLocales(slug),
+      });
+      assert.equal(
+        metadata.alternates?.canonical,
+        `https://maxvideoai.com${CANONICAL_COMPARISON_PREFIX_BY_LOCALE[locale]}/${slug}`,
+        `${locale} ${slug} self-canonical`,
+      );
+      assert.deepEqual(metadata.alternates?.languages, {
+        en: `https://maxvideoai.com/ai-video-engines/${slug}`,
+        fr: `https://maxvideoai.com/fr/comparatif/${slug}`,
+        es: `https://maxvideoai.com/es/comparativa/${slug}`,
+        'x-default': `https://maxvideoai.com/ai-video-engines/${slug}`,
+      });
+    }
   }
 });
 
@@ -286,6 +332,18 @@ test('locale-aware link validation accepts supported families and rejects crosse
     () => parseComparePageContentDocument(withHref('en', '/tools/fixture'), slug, 'unsupported.json'),
     /Invalid href.*unsupported\.json.*en\.primaryLinks\.0\.href/s,
   );
+  for (const href of [
+    '/app',
+    '/app?model=fixture',
+    '/app?engine=fixture&mode=t2v',
+    '/app?engine=../fixture',
+  ]) {
+    assert.throws(
+      () => parseComparePageContentDocument(withHref('en', href), slug, 'invalid-app-link.json'),
+      /Invalid href.*invalid-app-link\.json.*en\.primaryLinks\.0\.href/s,
+      `generation link must reject ${href}`,
+    );
+  }
 });
 
 test('all comparison-content links use supported public route families without crossed locale prefixes', () => {

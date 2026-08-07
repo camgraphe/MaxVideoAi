@@ -12,6 +12,10 @@ import { parseModelDecisionContent } from '../frontend/app/(localized)/[locale]/
 import { parseModelExamplesContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-content.ts';
 import { parseModelPromptingContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-content.ts';
 import { buildDetailSlugMap } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-links.ts';
+import { getComparePageOverride } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides.ts';
+import { isPublishedComparisonSlug } from '../frontend/lib/compare-hub/data.ts';
+import { getIndexableComparisonLocales } from '../frontend/lib/compare-hub/indexation.ts';
+import { generateComparisonIndexationArtifacts } from '../scripts/generate-comparison-indexation-matrix.ts';
 import {
   getModelPageTemplateConfig,
   isPrelaunchModelPageTemplateSlug,
@@ -20,6 +24,16 @@ import {
 
 const slug = 'seedance-2-5';
 const locales = ['en', 'fr', 'es'] as const;
+const priorityComparisonSlugs = [
+  'seedance-2-0-vs-seedance-2-5',
+  'kling-3-pro-vs-seedance-2-5',
+  'seedance-2-5-vs-veo-3-1',
+] as const;
+const priorityComparisonModels = {
+  'seedance-2-0-vs-seedance-2-5': ['seedance-2-0', 'seedance-2-5'],
+  'kling-3-pro-vs-seedance-2-5': ['kling-3-pro', 'seedance-2-5'],
+  'seedance-2-5-vs-veo-3-1': ['seedance-2-5', 'veo-3-1'],
+} as const;
 
 const expectedLaunchCopy = {
   en: {
@@ -80,6 +94,82 @@ test('Seedance 2.5 uses the public conversion template with pricing and comparis
   assert.equal(model.publication.compare.published, true);
   assert.equal(model.publication.sitemap.published, true);
   assert.deepEqual(listPrelaunchModelPageTemplateSlugs(), []);
+});
+
+test('Seedance 2.5 launches with three localized, indexable comparison decisions', () => {
+  for (const comparisonSlug of priorityComparisonSlugs) {
+    assert.equal(isPublishedComparisonSlug(comparisonSlug), true, `${comparisonSlug} publication`);
+    assert.deepEqual(getIndexableComparisonLocales(comparisonSlug), locales, `${comparisonSlug} indexation`);
+
+    for (const locale of locales) {
+      const override = getComparePageOverride(locale, comparisonSlug);
+      assert.ok(override?.quickVerdict?.body, `${locale} ${comparisonSlug} quick verdict`);
+      const expectedLinks = priorityComparisonModels[comparisonSlug].flatMap((modelSlug) => [
+        locale === 'en'
+          ? `/models/${modelSlug}`
+          : `/${locale}/${locale === 'fr' ? 'modeles' : 'modelos'}/${modelSlug}`,
+        `/app?engine=${modelSlug}`,
+      ]);
+      assert.deepEqual(override.primaryLinks?.map(({ href }) => href), expectedLinks);
+    }
+  }
+});
+
+test('only the three priority Seedance 2.5 comparisons are promoted across comparison discovery', () => {
+  const compareConfig = JSON.parse(readFileSync('frontend/config/compare-config.json', 'utf8')) as {
+    trophyComparisons: string[];
+    bestForPages: Array<{ slug: string; relatedComparisons: string[] }>;
+    relatedComparisons: Record<string, string[]>;
+  };
+  const serializedSeedance25Slugs = new Set(
+    JSON.stringify(compareConfig).match(/[a-z0-9-]*seedance-2-5[a-z0-9-]*-vs-[a-z0-9-]+|[a-z0-9-]+-vs-[a-z0-9-]*seedance-2-5[a-z0-9-]*/g) ?? [],
+  );
+
+  assert.deepEqual(compareConfig.trophyComparisons.slice(0, 3), priorityComparisonSlugs);
+  assert.deepEqual([...serializedSeedance25Slugs].sort(), [...priorityComparisonSlugs].sort());
+  assert.deepEqual(compareConfig.relatedComparisons['seedance-2-0-vs-seedance-2-5'], [
+    'seedance-2-0-vs-seedance-2-0-fast',
+    'kling-3-pro-vs-seedance-2-5',
+    'seedance-2-5-vs-veo-3-1',
+  ]);
+  assert.deepEqual(compareConfig.relatedComparisons['kling-3-pro-vs-seedance-2-5'], [
+    'kling-3-pro-vs-kling-3-standard',
+    'kling-3-pro-vs-seedance-2-0',
+    'seedance-2-0-vs-seedance-2-5',
+  ]);
+  assert.deepEqual(compareConfig.relatedComparisons['seedance-2-5-vs-veo-3-1'], [
+    'seedance-2-0-vs-veo-3-1',
+    'kling-3-pro-vs-veo-3-1',
+    'seedance-2-0-vs-seedance-2-5',
+  ]);
+
+  const bestForBySlug = new Map(compareConfig.bestForPages.map((entry) => [entry.slug, entry.relatedComparisons]));
+  assert.ok(bestForBySlug.get('cinematic-realism')?.includes('kling-3-pro-vs-seedance-2-5'));
+  assert.ok(bestForBySlug.get('cinematic-realism')?.includes('seedance-2-5-vs-veo-3-1'));
+  assert.ok(bestForBySlug.get('ads')?.includes('seedance-2-5-vs-veo-3-1'));
+  assert.ok(bestForBySlug.get('reference-to-video')?.includes('kling-3-pro-vs-seedance-2-5'));
+  assert.ok(bestForBySlug.get('reference-to-video')?.includes('seedance-2-5-vs-veo-3-1'));
+  assert.ok(bestForBySlug.get('multi-shot-video')?.includes('seedance-2-0-vs-seedance-2-5'));
+  assert.ok(bestForBySlug.get('multi-shot-video')?.includes('kling-3-pro-vs-seedance-2-5'));
+});
+
+test('the indexation matrix keeps all nine localized Seedance 2.5 comparison URLs', () => {
+  const rows = generateComparisonIndexationArtifacts().document.rows.filter((row) =>
+    priorityComparisonSlugs.includes(row.slug as (typeof priorityComparisonSlugs)[number]),
+  );
+
+  assert.equal(rows.length, 9);
+  for (const row of rows) {
+    assert.equal(row.hasLocalizedOverride, true, `${row.locale} ${row.slug} localized content`);
+    assert.equal(row.classification, 'keep', `${row.locale} ${row.slug} classification`);
+  }
+});
+
+test('Seedance 2.5 comparison copy delegates numeric prices to live projections', () => {
+  for (const comparisonSlug of priorityComparisonSlugs) {
+    const source = readFileSync(`content/comparisons/${comparisonSlug}.json`, 'utf8');
+    assert.doesNotMatch(source, /\$\s*\d|\bUSD\b|\bcredits?\b/i, `${comparisonSlug} authored pricing`);
+  }
 });
 
 test('Seedance 2.5 localized marketing content converts in EN, FR, and ES without rollout language', () => {

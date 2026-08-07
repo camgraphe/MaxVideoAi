@@ -1,5 +1,8 @@
 {
   "trophyComparisons": [
+    "seedance-2-0-vs-seedance-2-5",
+    "kling-3-pro-vs-seedance-2-5",
+    "seedance-2-5-vs-veo-3-1",
     "sora-2-vs-veo-3-1",
     "kling-2-6-pro-vs-sora-2",
     "kling-2-6-pro-vs-veo-3-1",
@@ -30,7 +33,7 @@
       "description": "Best AI video models for turning a still image, style frame, or product shot into controlled motion.",
       "tier": 1,
       "topPicks": ["seedance-2-0", "kling-3-pro", "veo-3-1", "happy-horse-1-1", "dreamina-seedance-2-0-mini", "luma-ray-3-2"],
-      "relatedComparisons": ["happy-horse-1-1-vs-seedance-2-0", "dreamina-seedance-2-0-mini-vs-luma-ray-3-2", "dreamina-seedance-2-0-mini-vs-happy-horse-1-1", "luma-ray-3-2-vs-veo-3-1-fast"]
+      "relatedComparisons": ["seedance-2-0-vs-seedance-2-5", "happy-horse-1-1-vs-seedance-2-0", "dreamina-seedance-2-0-mini-vs-luma-ray-3-2", "dreamina-seedance-2-0-mini-vs-happy-horse-1-1", "luma-ray-3-2-vs-veo-3-1-fast"]
     },
     {
       "slug": "cinematic-realism",
@@ -38,7 +41,7 @@
       "description": "Best AI video models for cinematic motion, lighting, camera language, and high-end visual polish.",
       "tier": 1,
       "topPicks": ["seedance-2-0", "kling-3-pro", "veo-3-1", "happy-horse-1-1", "luma-ray-3-2"],
-      "relatedComparisons": ["happy-horse-1-1-vs-seedance-2-0", "happy-horse-1-1-vs-kling-3-pro", "seedance-2-0-vs-veo-3-1"]
+      "relatedComparisons": ["kling-3-pro-vs-seedance-2-5", "seedance-2-5-vs-veo-3-1", "happy-horse-1-1-vs-seedance-2-0", "happy-horse-1-1-vs-kling-3-pro", "seedance-2-0-vs-veo-3-1"]
     },
     {
       "slug": "character-reference",
@@ -46,7 +49,7 @@
       "description": "Best AI video models when a character, wardrobe, prop, or product identity needs to stay stable across shots.",
       "tier": 1,
       "topPicks": ["kling-3-pro", "seedance-2-0", "veo-3-1", "happy-horse-1-1", "kling-3-standard"],
-      "relatedComparisons": ["happy-horse-1-1-vs-kling-3-pro", "happy-horse-1-1-vs-seedance-2-0", "kling-3-pro-vs-kling-3-standard"]
+      "relatedComparisons": ["kling-3-pro-vs-seedance-2-5", "happy-horse-1-1-vs-kling-3-pro", "happy-horse-1-1-vs-seedance-2-0", "kling-3-pro-vs-kling-3-standard"]
     },
     {
       "slug": "reference-to-video",
@@ -54,7 +57,7 @@
       "description": "Best AI video models for guiding output with reference images, video clips, audio, or approved visual material.",
       "tier": 1,
       "topPicks": ["seedance-2-0", "kling-3-pro", "veo-3-1", "happy-horse-1-1", "luma-ray-3-2"],
-      "relatedComparisons": ["happy-horse-1-1-vs-seedance-2-0", "happy-horse-1-1-vs-veo-3-1", "kling-3-pro-vs-seedance-2-0"]
+      "relatedComparisons": ["kling-3-pro-vs-seedance-2-5", "seedance-2-5-vs-veo-3-1", "happy-horse-1-1-vs-seedance-2-0", "happy-horse-1-1-vs-veo-3-1", "kling-3-pro-vs-seedance-2-0"]
     },
     {
       "slug": "multi-shot-video",
@@ -62,7 +65,7 @@
       "description": "Best AI video models for creating a complete mini-sequence, trailer beat, or edited-style clip from one structured prompt.",
       "tier": 1,
       "topPicks": ["kling-3-pro", "seedance-2-0", "sora-2-pro", "kling-3-standard"],
-      "relatedComparisons": ["kling-3-pro-vs-seedance-2-0", "kling-3-pro-vs-sora-2-pro", "seedance-2-0-vs-sora-2-pro"]
+      "relatedComparisons": ["seedance-2-0-vs-seedance-2-5", "kling-3-pro-vs-seedance-2-5", "kling-3-pro-vs-seedance-2-0", "kling-3-pro-vs-sora-2-pro", "seedance-2-0-vs-sora-2-pro"]
     },
     {
       "slug": "4k-video",
@@ -78,7 +81,7 @@
       "description": "Best AI video models for product ads, ecommerce creative, paid social variants, and polished campaign assets.",
       "tier": 1,
       "topPicks": ["seedance-2-0", "kling-3-pro", "veo-3-1", "happy-horse-1-1", "dreamina-seedance-2-0-mini"],
-      "relatedComparisons": ["happy-horse-1-1-vs-seedance-2-0", "happy-horse-1-1-vs-veo-3-1", "dreamina-seedance-2-0-mini-vs-happy-horse-1-1", "seedance-2-0-vs-veo-3-1"]
+      "relatedComparisons": ["seedance-2-5-vs-veo-3-1", "happy-horse-1-1-vs-seedance-2-0", "happy-horse-1-1-vs-veo-3-1", "dreamina-seedance-2-0-mini-vs-happy-horse-1-1", "seedance-2-0-vs-veo-3-1"]
     },
     {
       "slug": "ugc-ads",
@@ -122,6 +125,21 @@
     }
   ],
   "relatedComparisons": {
+    "seedance-2-0-vs-seedance-2-5": [
+      "seedance-2-0-vs-seedance-2-0-fast",
+      "kling-3-pro-vs-seedance-2-5",
+      "seedance-2-5-vs-veo-3-1"
+    ],
+    "kling-3-pro-vs-seedance-2-5": [
+      "kling-3-pro-vs-kling-3-standard",
+      "kling-3-pro-vs-seedance-2-0",
+      "seedance-2-0-vs-seedance-2-5"
+    ],
+    "seedance-2-5-vs-veo-3-1": [
+      "seedance-2-0-vs-veo-3-1",
+      "kling-3-pro-vs-veo-3-1",
+      "seedance-2-0-vs-seedance-2-5"
+    ],
     "gemini-omni-flash-vs-veo-3-1": [
       "gemini-omni-flash-vs-veo-3-1-fast",
       "gemini-omni-flash-vs-sora-2",

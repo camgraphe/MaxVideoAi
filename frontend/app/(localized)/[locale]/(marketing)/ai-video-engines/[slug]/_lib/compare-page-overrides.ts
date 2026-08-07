@@ -11,10 +11,11 @@ const COMPARISON_SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*-vs-[a-z0-9]+(?:-[a-z0
 const COMPARISON_CONTENT_ROOT = path.join(CONTENT_ROOT, 'comparisons');
 const nonEmptyString = z.string().min(1);
 const neutralInternalHrefPattern = /^\/(?:(?:models|examples|ai-video-engines)\/[^\s]+|pricing(?:#[^\s]+)?)$/;
+const generationInternalHrefPattern = /^\/app\?engine=[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const internalHrefPatternsByLocale: Record<AppLocale, readonly RegExp[]> = {
-  en: [neutralInternalHrefPattern],
-  fr: [neutralInternalHrefPattern, /^\/fr\/(?:(?:modeles|exemples|comparatif)\/[^\s]+|tarifs(?:#[^\s]+)?)$/],
-  es: [neutralInternalHrefPattern, /^\/es\/(?:(?:modelos|ejemplos|comparativa)\/[^\s]+|precios(?:#[^\s]+)?)$/],
+  en: [neutralInternalHrefPattern, generationInternalHrefPattern],
+  fr: [neutralInternalHrefPattern, generationInternalHrefPattern, /^\/fr\/(?:(?:modeles|exemples|comparatif)\/[^\s]+|tarifs(?:#[^\s]+)?)$/],
+  es: [neutralInternalHrefPattern, generationInternalHrefPattern, /^\/es\/(?:(?:modelos|ejemplos|comparativa)\/[^\s]+|precios(?:#[^\s]+)?)$/],
 };
 
 const metaSchema = z.object({

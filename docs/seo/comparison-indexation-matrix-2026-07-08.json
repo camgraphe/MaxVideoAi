@@ -51,10 +51,10 @@
       "es": 295
     },
     "byClassification": {
-      "keep": 292,
+      "keep": 301,
       "enrich": 28,
       "review": 347,
-      "noindex_candidate": 218
+      "noindex_candidate": 209
     }
   },
   "rows": [
@@ -2146,11 +2146,16 @@
       "position": 0,
       "hasGscRow": false,
       "gscSourceUrls": [],
-      "hasLocalizedOverride": false,
-      "strategicSignals": [],
-      "classification": "noindex_candidate",
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "best_for_related",
+        "related_graph",
+        "trophy"
+      ],
+      "classification": "keep",
       "rationale": [
-        "no_gsc_row_or_editorial_signal"
+        "localized_editorial_override",
+        "english_strategic_surface"
       ]
     },
     {
@@ -2215,6 +2220,7 @@
         "best_for_related",
         "opponent_override",
         "popular",
+        "related_graph",
         "use_case_bucket"
       ],
       "classification": "keep",
@@ -5396,11 +5402,16 @@
       "position": 0,
       "hasGscRow": false,
       "gscSourceUrls": [],
-      "hasLocalizedOverride": false,
-      "strategicSignals": [],
-      "classification": "noindex_candidate",
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "best_for_related",
+        "related_graph",
+        "trophy"
+      ],
+      "classification": "keep",
       "rationale": [
-        "no_gsc_row_or_editorial_signal"
+        "localized_editorial_override",
+        "english_strategic_surface"
       ]
     },
     {
@@ -5569,11 +5580,16 @@
       "position": 0,
       "hasGscRow": false,
       "gscSourceUrls": [],
-      "hasLocalizedOverride": false,
-      "strategicSignals": [],
-      "classification": "noindex_candidate",
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "best_for_related",
+        "related_graph",
+        "trophy"
+      ],
+      "classification": "keep",
       "rationale": [
-        "no_gsc_row_or_editorial_signal"
+        "localized_editorial_override",
+        "english_strategic_surface"
       ]
     },
     {
@@ -8015,11 +8031,15 @@
       "position": 0,
       "hasGscRow": false,
       "gscSourceUrls": [],
-      "hasLocalizedOverride": false,
-      "strategicSignals": [],
-      "classification": "noindex_candidate",
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "best_for_related",
+        "related_graph",
+        "trophy"
+      ],
+      "classification": "keep",
       "rationale": [
-        "no_gsc_row_or_editorial_signal"
+        "localized_editorial_override"
       ]
     },
     {
@@ -8078,6 +8098,7 @@
         "best_for_related",
         "opponent_override",
         "popular",
+        "related_graph",
         "use_case_bucket"
       ],
       "classification": "review",
@@ -11078,11 +11099,15 @@
       "position": 0,
       "hasGscRow": false,
       "gscSourceUrls": [],
-      "hasLocalizedOverride": false,
-      "strategicSignals": [],
-      "classification": "noindex_candidate",
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "best_for_related",
+        "related_graph",
+        "trophy"
+      ],
+      "classification": "keep",
       "rationale": [
-        "no_gsc_row_or_editorial_signal"
+        "localized_editorial_override"
       ]
     },
     {
@@ -11237,11 +11262,15 @@
       "position": 0,
       "hasGscRow": false,
       "gscSourceUrls": [],
-      "hasLocalizedOverride": false,
-      "strategicSignals": [],
-      "classification": "noindex_candidate",
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "best_for_related",
+        "related_graph",
+        "trophy"
+      ],
+      "classification": "keep",
       "rationale": [
-        "no_gsc_row_or_editorial_signal"
+        "localized_editorial_override"
       ]
     },
     {
@@ -13708,11 +13737,15 @@
       "position": 0,
       "hasGscRow": false,
       "gscSourceUrls": [],
-      "hasLocalizedOverride": false,
-      "strategicSignals": [],
-      "classification": "noindex_candidate",
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "best_for_related",
+        "related_graph",
+        "trophy"
+      ],
+      "classification": "keep",
       "rationale": [
-        "no_gsc_row_or_editorial_signal"
+        "localized_editorial_override"
       ]
     },
     {
@@ -13771,6 +13804,7 @@
         "best_for_related",
         "opponent_override",
         "popular",
+        "related_graph",
         "use_case_bucket"
       ],
       "classification": "review",
@@ -16888,11 +16922,15 @@
       "position": 0,
       "hasGscRow": false,
       "gscSourceUrls": [],
-      "hasLocalizedOverride": false,
-      "strategicSignals": [],
-      "classification": "noindex_candidate",
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "best_for_related",
+        "related_graph",
+        "trophy"
+      ],
+      "classification": "keep",
       "rationale": [
-        "no_gsc_row_or_editorial_signal"
+        "localized_editorial_override"
       ]
     },
     {
@@ -17057,11 +17095,15 @@
       "position": 0,
       "hasGscRow": false,
       "gscSourceUrls": [],
-      "hasLocalizedOverride": false,
-      "strategicSignals": [],
-      "classification": "noindex_candidate",
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "best_for_related",
+        "related_graph",
+        "trophy"
+      ],
+      "classification": "keep",
       "rationale": [
-        "no_gsc_row_or_editorial_signal"
+        "localized_editorial_override"
       ]
     },
     {
