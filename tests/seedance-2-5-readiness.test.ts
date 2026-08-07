@@ -349,6 +349,7 @@ test('the production handoff records the public flagship matrix, safe local defa
 
   for (const required of [
     'dreamina-seedance-2-5-260628',
+    'BYTEPLUS_ARK_ENABLED=true',
     'BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID=dreamina-seedance-2-5-260628',
     'SEEDANCE_2_5_BYTEPLUS_ENABLED=true',
     'SEEDANCE_2_5_PROVIDER=byteplus_modelark',
@@ -368,6 +369,7 @@ test('the production handoff records the public flagship matrix, safe local defa
   }
 
   for (const required of [
+    'BYTEPLUS_ARK_ENABLED=false',
     'BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID=dreamina-seedance-2-5-260628',
     'SEEDANCE_2_5_BYTEPLUS_ENABLED=false',
     'SEEDANCE_2_5_PROVIDER=disabled',
@@ -380,12 +382,45 @@ test('the production handoff records the public flagship matrix, safe local defa
   assert.match(packet, /City[\s\S]*Train[\s\S]*Dialogue[\s\S]*private/i);
   assert.match(packet, /public flagship launch/i);
   assert.match(packet, /no additional pre-launch paid generation/i);
+  assert.match(packet, /Prior phases:\s*complete/i);
+  assert.match(packet, /Current phase:\s*`public_flagship_launch`/i);
+  assert.match(packet, /Next phase:\s*`post_launch_monitoring`/i);
+  assert.match(packet, /BYTEPLUS_ARK_ENABLED=true[\s\S]*existing jobs[\s\S]*(?:poll|reconcil)/i);
+  assert.match(packet, /publication\.app\.published=false/);
+  assert.match(packet, /publication\.pricing\.published=false/);
+  assert.match(packet, /stored charged amounts/i);
+  assert.match(packet, /without redirecting or deleting the route/i);
+  assert.match(packet, /\.\/seedance-2-5-linkedin-launch\.md/);
+
+  for (const requiredSmokeEvidence of [
+    '/models/seedance-2-5',
+    '/fr/modeles/seedance-2-5',
+    '/es/modelos/seedance-2-5',
+    'engine=seedance-2-5',
+    'all five visible modes',
+    'T2V and V2V',
+    'self-canonical metadata',
+    'all three comparison pages',
+    'Benchmark Lab',
+    'media ranges for City and Train',
+  ]) {
+    assert.match(
+      packet,
+      new RegExp(requiredSmokeEvidence.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'),
+    );
+  }
+
   assert.match(stub, /runtimeEntryAllowed:\s*true/);
   assert.match(stub, /documentationOnly:\s*true/);
   assert.match(stub, /currentPhase:\s*'public_flagship_launch'/);
+  assert.match(stub, /nextRequiredPhase:\s*'post_launch_monitoring'/);
   assert.match(stub, /publicGenerationAllowed:\s*true/);
   assert.match(stub, /publicMarketingPageAllowed:\s*true/);
   assert.match(stub, /publicDiscoveryAllowed:\s*true/);
+  assert.match(stub, /modes:\s*\['t2v', 'i2v', 'ref2v', 'v2v', 'extend'\]/);
+  assert.match(stub, /references:\s*true/);
+  assert.match(stub, /editing:\s*true/);
+  assert.match(stub, /extension:\s*true/);
 });
 
 test('the LinkedIn launch package confines approved Seedance 2.5 copy to City and Train', () => {

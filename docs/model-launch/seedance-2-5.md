@@ -37,12 +37,17 @@ They are intentionally documented here rather than copied into
 `frontend/.env.local.example`.
 
 ```dotenv
+BYTEPLUS_ARK_ENABLED=true
 BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID=dreamina-seedance-2-5-260628
 SEEDANCE_2_5_BYTEPLUS_ENABLED=true
 SEEDANCE_2_5_PROVIDER=byteplus_modelark
 SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY=false
 SEEDANCE_2_5_BYTEPLUS_MODES=t2v,i2v,ref2v,v2v,extend
 ```
+
+`BYTEPLUS_ARK_ENABLED=true` is the production prerequisite for ModelArk
+submission, polling, durable copying, and terminal reconciliation. The
+Seedance-specific switch below remains the first rollback control.
 
 `SEEDANCE_2_5_BYTEPLUS_ENABLED=false` is the hard kill switch. It stops new
 Seedance 2.5 submissions before provider work; it is not a reason to remove
@@ -57,6 +62,16 @@ production matrix: it has the factual model ID, but sets the provider to
 `t2v`. Fresh local and review environments therefore cannot accidentally submit
 to ModelArk. Credentials remain in existing secret variables and are never
 committed here.
+
+## Phase status
+
+- Prior phases: complete — implementation, authenticated canaries, public
+  publication surfaces, and launch documentation are recorded.
+- Current phase: `public_flagship_launch`.
+- Next phase: `post_launch_monitoring`.
+
+These values match the documentation-only evidence stub. Post-launch monitoring
+does not authorize new paid canaries or a production mutation.
 
 ## Runtime and publication contract
 
@@ -155,8 +170,9 @@ itself inaccurate.
 1. Set `SEEDANCE_2_5_BYTEPLUS_ENABLED=false` to stop new submissions while
    leaving marketing pages online. Verify no new provider request or wallet
    charge is created.
-2. Keep polling, durable-storage copying, and reconciliation alive for existing
-   jobs until each reaches a terminal state.
+2. Keep `BYTEPLUS_ARK_ENABLED=true` while existing jobs poll, copy to durable
+   storage, and reconcile until each reaches a terminal state. Disable the
+   global ModelArk gate only after no in-flight job still depends on it.
 3. If UI execution exposure must be removed, set only
    `publication.app.published=false` and `publication.pricing.published=false`
    in `frontend/config/model-registry.json`, regenerate projections, review,
@@ -171,6 +187,13 @@ itself inaccurate.
    failed generation: never issue a blind retry or recompute historical charges.
 7. Record the rollback commit, release, cause, owner, and private reconciliation
    evidence. Do not delete the engine/profile while jobs are in flight.
+
+## LinkedIn launch package
+
+The Task 12 repository-only copy, approved City/Train choices, tracked links,
+and publication guard remain discoverable in
+[`seedance-2-5-linkedin-launch.md`](./seedance-2-5-linkedin-launch.md). That
+package does not authorize an external post or deployment.
 
 ## Verification before an approved rollout
 
