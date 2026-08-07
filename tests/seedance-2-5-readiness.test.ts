@@ -374,3 +374,30 @@ test('the production handoff records the factual canary, controls, rollback, and
   assert.match(stub, /runtimeEntryAllowed:\s*true/);
   assert.match(stub, /documentationOnly:\s*true/);
 });
+
+test('the LinkedIn launch package confines approved Seedance 2.5 copy to City and Train', () => {
+  const launchPackage = readFileSync('docs/model-launch/seedance-2-5-linkedin-launch.md', 'utf8');
+
+  for (const required of [
+    'https://maxvideoai.com/models/seedance-2-5',
+    'https://maxvideoai.com/app?engine=seedance-2-5',
+    'The city in the suitcase',
+    'The glass lightning train',
+    'Announcement post',
+    'City creative post',
+    'Train movement and structure post',
+    'utm_source=linkedin&utm_medium=social&utm_campaign=seedance_2_5_launch&utm_content=announcement',
+    'utm_source=linkedin&utm_medium=social&utm_campaign=seedance_2_5_launch&utm_content=city',
+    'utm_source=linkedin&utm_medium=social&utm_campaign=seedance_2_5_launch&utm_content=train',
+    'Do not publish automatically.',
+    'explicit product-owner approval',
+    'outside repository deployment',
+    'Alt text — City',
+    'Alt text — Train',
+  ]) {
+    assert.match(launchPackage, new RegExp(required.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
+
+  assert.match(launchPackage, /Dialogue[\s\S]*private/i);
+  assert.doesNotMatch(launchPackage, /(?:lip[ -]?sync|ModelArk|provider|USD|\$)/i);
+});

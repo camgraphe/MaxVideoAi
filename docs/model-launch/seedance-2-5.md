@@ -275,6 +275,14 @@ homepage promotion, complete human review of the Dialogue asset, prove a real
 failure/refund reconciliation, and plan public generation, pricing, and
 indexation as distinct promotion steps.
 
+## LinkedIn launch package — repository-only
+
+The approved LinkedIn copy, City and Train media choices, canonical
+destinations, tracked links, and ledger-based alt text live in
+[`seedance-2-5-linkedin-launch.md`](./seedance-2-5-linkedin-launch.md).
+It prepares no external post: LinkedIn publication requires explicit
+product-owner approval and remains outside repository deployment.
+
 ## Dedicated controls and safe defaults
 
 These controls belong only to Seedance 2.5. Never substitute a Seedance 2.0
