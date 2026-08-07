@@ -32,7 +32,7 @@ export function ModelDecisionImagePromptExamples({
   copiedLabel: string;
   copyLabel: string;
   imageExamples: NonNullable<ModelPromptingContent['imageExamples']>;
-  workspaceHref: string;
+  workspaceHref: string | null;
 }) {
   return (
     <article className="rounded-[22px] border border-slate-200/80 bg-white/[0.92] p-5 shadow-[0_22px_58px_-36px_rgba(15,23,42,0.36)] backdrop-blur dark:border-white/10 dark:!bg-slate-950/[0.72]">
@@ -41,13 +41,15 @@ export function ModelDecisionImagePromptExamples({
           <h2 className="!text-left text-2xl font-semibold text-text-primary">{imageExamples.title}</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-text-secondary">{imageExamples.intro}</p>
         </div>
-        <a
-          href={workspaceHref}
-          className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-hairline bg-surface px-4 text-sm font-semibold text-text-primary shadow-sm transition hover:bg-surface-2"
-        >
-          <UIIcon icon={Sparkles} size={15} />
-          <span>{imageExamples.workspaceLabel}</span>
-        </a>
+        {workspaceHref ? (
+          <a
+            href={workspaceHref}
+            className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-hairline bg-surface px-4 text-sm font-semibold text-text-primary shadow-sm transition hover:bg-surface-2"
+          >
+            <UIIcon icon={Sparkles} size={15} />
+            <span>{imageExamples.workspaceLabel}</span>
+          </a>
+        ) : null}
       </div>
       <div className="mt-5 grid gap-3 md:grid-cols-2">
         {imageExamples.items.map((example) => {

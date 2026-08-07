@@ -15,7 +15,7 @@ export type ModelPromptingViewModel = {
     items: ModelPromptingContent['tabs'];
     notesById: Record<string, string>;
     exampleHref: string | null;
-    usePromptHref: string;
+    usePromptHref: string | null;
   };
   globalPrinciples: string[];
   engineWhy: string[];
@@ -50,7 +50,7 @@ export type ModelPromptingViewModel = {
     fullHref: string | null;
   } | null;
   imageExamples: (NonNullable<ModelPromptingContent['imageExamples']> & {
-    workspaceHref: string;
+    workspaceHref: string | null;
   }) | null;
   ui: ModelPromptingUiCopy;
 };
@@ -60,6 +60,7 @@ export type BuildModelPromptingViewModelInput = {
   locale: AppLocale;
   engineId: string;
   modelSlug: string;
+  appGenerationEnabled: boolean;
   imageAnchorId: string;
   isVideoEngine: boolean;
   isImageEngine: boolean;
@@ -144,7 +145,9 @@ export function buildModelPromptingViewModel(
 ): ModelPromptingViewModel {
   const ui = getModelPromptingUiCopy(input.locale);
   const workspaceBase = input.isImageEngine ? '/app/image' : '/app';
-  const usePromptHref = `${workspaceBase}?engine=${encodeURIComponent(input.engineId)}`;
+  const usePromptHref = input.appGenerationEnabled
+    ? `${workspaceBase}?engine=${encodeURIComponent(input.engineId)}`
+    : null;
 
   return {
     id: input.imageAnchorId,

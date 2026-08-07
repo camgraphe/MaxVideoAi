@@ -91,6 +91,7 @@ function videoInput(
     locale: 'en',
     engineId: 'fixture-engine',
     modelSlug: 'fixture-model',
+    appGenerationEnabled: true,
     imageAnchorId: 'prompting',
     isVideoEngine: true,
     isImageEngine: false,
@@ -132,6 +133,7 @@ function imageInput(): BuildModelPromptingViewModelInput {
     locale: 'en',
     engineId: 'fixture-image',
     modelSlug: 'fixture-image',
+    appGenerationEnabled: true,
     imageAnchorId: 'prompting',
     isVideoEngine: false,
     isImageEngine: true,
@@ -372,6 +374,15 @@ test('image view model routes to the encoded image workspace and does not manufa
   assert.equal(result.demo, null);
   assert.equal(result.imageExamples?.workspaceHref, '/app/image?engine=fixture%2Fimage%20engine');
   assert.equal(result.tabs.usePromptHref, '/app/image?engine=fixture%2Fimage%20engine');
+});
+
+test('closed app publication removes every Prompt Lab generation destination', () => {
+  const closedVideo = buildModelPromptingViewModel(videoInput({ appGenerationEnabled: false }));
+  const closedImage = buildModelPromptingViewModel({ ...imageInput(), appGenerationEnabled: false });
+
+  assert.equal(closedVideo.tabs.usePromptHref, null);
+  assert.equal(closedImage.tabs.usePromptHref, null);
+  assert.equal(closedImage.imageExamples?.workspaceHref, null);
 });
 
 test('audio chip modes derive labels only from presentation mode and runtime audio state', () => {

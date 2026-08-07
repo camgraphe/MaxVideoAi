@@ -332,7 +332,7 @@ test('image model prompt actions route to the image workspace', () => {
     'utf8'
   );
 
-  assert.match(promptTabsSource, /usePromptHref:\s*string/);
+  assert.match(promptTabsSource, /usePromptHref:\s*string\s*\|\s*null/);
   assert.doesNotMatch(promptTabsSource, /isImageEngine|\/app\/image\?engine=/);
 });
 

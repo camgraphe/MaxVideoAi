@@ -15,7 +15,7 @@ type ModelDecisionPromptTabsProps = {
   tabs: ModelPromptingViewModel['tabs']['items'];
   labels: Pick<ModelPromptingUiCopy, 'copyTemplate' | 'copied' | 'example' | 'viewRender' | 'usePrompt'>;
   exampleHref: string | null;
-  usePromptHref: string;
+  usePromptHref: string | null;
 };
 
 const TAB_ICONS = [FileText, Box, Camera, Sparkles] as const;
@@ -107,15 +107,17 @@ export function ModelDecisionPromptTabs({
                 <UIIcon icon={ArrowRight} size={15} />
               </Link>
             ) : null}
-            <Link
-              href={usePromptHref}
-              prefetch={false}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-hairline bg-surface px-4 text-sm font-semibold text-text-primary shadow-sm transition hover:bg-surface-2"
-            >
-              <UIIcon icon={Clock3} size={15} />
-              <span>{labels.usePrompt}</span>
-              <UIIcon icon={ArrowRight} size={15} />
-            </Link>
+            {usePromptHref ? (
+              <Link
+                href={usePromptHref}
+                prefetch={false}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-hairline bg-surface px-4 text-sm font-semibold text-text-primary shadow-sm transition hover:bg-surface-2"
+              >
+                <UIIcon icon={Clock3} size={15} />
+                <span>{labels.usePrompt}</span>
+                <UIIcon icon={ArrowRight} size={15} />
+              </Link>
+            ) : null}
           </div>
         </div>
       </article>

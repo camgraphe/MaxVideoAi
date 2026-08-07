@@ -372,6 +372,7 @@ export function MarketingModelPageLayout({
     locale,
     engineId: engine.id,
     modelSlug: engine.modelSlug,
+    appGenerationEnabled: engine.surfaces.app.enabled,
     imageAnchorId,
     isVideoEngine,
     isImageEngine,
