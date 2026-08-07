@@ -50,3 +50,12 @@ The seven updated clusters are ads, cinematic realism, image-to-video, reference
 - Seedance 2.0 remains visibly available wherever 2.5 becomes first, with 4K as its distinct intent.
 - Existing comparison URLs remain 2.0-focused because those pages and exact-match anchors own that separate query intent.
 - No open implementation concern identified; the only broad-suite failures observed before contract updates were the four expected stale assertions listed above.
+
+## Fix round 1/5 — catalogue lip-sync capability
+
+- Finding: the EN/FR/ES catalogue row for `Native audio & lip sync` incorrectly named Seedance 2.5, whose launch facts validate optional audio but not lip sync. Seedance 2.0 owns the explicit lip-sync capability.
+- Root cause: the Task 10 catalogue update promoted four use-case leaders together and included the pre-existing lip-sync row even though that intent has a stricter capability requirement.
+- Fix: restored Seedance 2.0 only for the `native-audio` use case in all three locales. Seedance 2.5 remains the leader for cinematic video, image-to-video, and product ads.
+- Regression contract: `home-seo-signals.test.ts` asserts the four capability leaders from the real catalogue builder for EN, FR, and ES.
+- TDD: RED was 8/9 with the sole mismatch `Seedance 2.5` versus `Seedance 2.0`; GREEN covering tests passed 49/49.
+- Final verification: `pnpm test:validate` passed 2476/2476; frontend lint, public-exposure lint, and `git diff --check` passed.

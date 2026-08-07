@@ -172,7 +172,7 @@ function buildUseCases(locale: AppLocale): ModelsCatalogUseCase[] {
   const copy = textByLocale(locale, {
     en: [
       ['cinematic-video', 'Cinematic video', 'Film-like motion and scenes', 'Seedance 2.5'],
-      ['native-audio', 'Native audio & lip sync', 'Dialogue and ambience', 'Seedance 2.5'],
+      ['native-audio', 'Native audio & lip sync', 'Dialogue and ambience', 'Seedance 2.0'],
       ['fast-drafts', 'Fast drafts', 'Quick iterations', 'Seedance 2.0 Fast'],
       ['image-to-video', 'Image-to-video', 'Bring images to life', 'Seedance 2.5'],
       ['product-ads', 'Product ads', 'Ad-ready clips and references', 'Seedance 2.5'],
@@ -182,7 +182,7 @@ function buildUseCases(locale: AppLocale): ModelsCatalogUseCase[] {
     ],
     fr: [
       ['cinematic-video', 'Video cinematographique', 'Mouvement et scenes cine', 'Seedance 2.5'],
-      ['native-audio', 'Audio natif & lip sync', 'Dialogue, ambiance et voix', 'Seedance 2.5'],
+      ['native-audio', 'Audio natif & lip sync', 'Dialogue, ambiance et voix', 'Seedance 2.0'],
       ['fast-drafts', 'Drafts rapides', 'Iterations rapides', 'Seedance 2.0 Fast'],
       ['image-to-video', 'Image-to-video', 'Animer des images', 'Seedance 2.5'],
       ['product-ads', 'Pubs produit', 'Clips et references prets pour ads', 'Seedance 2.5'],
@@ -192,7 +192,7 @@ function buildUseCases(locale: AppLocale): ModelsCatalogUseCase[] {
     ],
     es: [
       ['cinematic-video', 'Video cinematografico', 'Movimiento y escenas cine', 'Seedance 2.5'],
-      ['native-audio', 'Audio nativo & lip sync', 'Dialogo, ambiente y voz', 'Seedance 2.5'],
+      ['native-audio', 'Audio nativo & lip sync', 'Dialogo, ambiente y voz', 'Seedance 2.0'],
       ['fast-drafts', 'Borradores rapidos', 'Iteraciones rapidas', 'Seedance 2.0 Fast'],
       ['image-to-video', 'Imagen a video', 'Anima imagenes', 'Seedance 2.5'],
       ['product-ads', 'Anuncios de producto', 'Clips y referencias listos para ads', 'Seedance 2.5'],

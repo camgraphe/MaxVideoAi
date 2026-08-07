@@ -65,6 +65,29 @@ test('homepage, model catalogue, and footer lead Seedance profile links with 2.5
   assert.ok(seedance25Index < seedance20Index, 'Footer should list Seedance 2.5 before Seedance 2.0');
 });
 
+test('model catalogue keeps Seedance 2.0 on the lip-sync intent while 2.5 leads supported workflows', () => {
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const catalogue = buildModelsCatalogDecisionData({ activeLocale: locale, cards: [] });
+    const bestByIntent = Object.fromEntries(catalogue.useCases.map(({ id, best }) => [id, best]));
+
+    assert.deepEqual(
+      {
+        cinematicVideo: bestByIntent['cinematic-video'],
+        nativeAudioAndLipSync: bestByIntent['native-audio'],
+        imageToVideo: bestByIntent['image-to-video'],
+        productAds: bestByIntent['product-ads'],
+      },
+      {
+        cinematicVideo: 'Seedance 2.5',
+        nativeAudioAndLipSync: 'Seedance 2.0',
+        imageToVideo: 'Seedance 2.5',
+        productAds: 'Seedance 2.5',
+      },
+      `${locale} catalogue use-case leaders should match validated capabilities`,
+    );
+  }
+});
+
 test('homepage titles keep the pay-as-you-go differentiator without getting too long', () => {
   const titles = {
     en: englishMessages.home?.meta?.title ?? '',
