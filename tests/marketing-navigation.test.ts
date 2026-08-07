@@ -7,13 +7,16 @@ import {
   MARKETING_NAV_BEST_FOR_HUB,
   MARKETING_NAV_BEST_FOR_USE_CASES,
   MARKETING_NAV_DROPDOWNS,
+  MARKETING_NAV_MODELS,
   MARKETING_TOP_NAV_LINKS,
 } from '../frontend/config/navigation.ts';
 
 const marketingNavSource = readFileSync('frontend/components/marketing/MarketingNav.tsx', 'utf8');
 const marketingDesktopNavSource = readFileSync('frontend/components/marketing/MarketingDesktopNav.tsx', 'utf8');
+const marketingMobileMenuSource = readFileSync('frontend/components/marketing/MarketingMobileMenu.tsx', 'utf8');
 const marketingFooterSource = readFileSync('frontend/components/marketing/MarketingFooter.tsx', 'utf8');
 const headerBarSource = readFileSync('frontend/components/HeaderBar.tsx', 'utf8');
+const headerMobileMenuSource = readFileSync('frontend/components/header/HeaderMobileMenu.tsx', 'utf8');
 const modelPageComponentsDirectory =
   'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components';
 
@@ -83,6 +86,36 @@ test('marketing top navigation stays clean while Best-For links live inside drop
 
   assert.match(marketingDesktopNavSource, /entry\.emphasized/);
   assert.match(marketingDesktopNavSource, /font-semibold text-text-primary/);
+});
+
+test('public model menus feature Seedance 2.5 first with a generic localized launch badge', () => {
+  assert.deepEqual(
+    MARKETING_NAV_MODELS.slice(0, 2).map(({ key, badge }) => ({ key, badge })),
+    [
+      { key: 'seedance-2-5', badge: 'new' },
+      { key: 'seedance-2-0', badge: undefined },
+    ],
+  );
+
+  for (const [surface, source] of [
+    ['marketing desktop', marketingDesktopNavSource],
+    ['marketing mobile', marketingMobileMenuSource],
+    ['workspace header desktop', headerBarSource],
+    ['workspace header mobile', headerMobileMenuSource],
+  ] as const) {
+    assert.match(source, /entry\.badge/,
+      `${surface} should consume the generic navigation badge field`);
+    assert.match(source, /nav\.badges\.\$\{entry\.badge\}/,
+      `${surface} should localize the generic badge value`);
+    assert.doesNotMatch(source, /entry\.key\s*===\s*['"]seedance-2-5['"]/,
+      `${surface} should not hard-code the flagship model`);
+  }
+
+  const expectedLabels = { en: 'New', fr: 'Nouveau', es: 'Nuevo' } as const;
+  for (const [locale, label] of Object.entries(expectedLabels)) {
+    const dictionary = JSON.parse(readFileSync(`frontend/messages/${locale}.json`, 'utf8'));
+    assert.equal(dictionary.nav.badges.new, label);
+  }
 });
 
 test('localized marketing dropdown sections avoid English fallbacks', () => {

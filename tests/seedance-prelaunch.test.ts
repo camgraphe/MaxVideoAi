@@ -399,6 +399,7 @@ test('Seedance becomes the app and marketing priority family ahead of Sora', () 
   assert.deepEqual(
     MARKETING_NAV_MODELS.map((item) => item.key),
     [
+      'seedance-2-5',
       'seedance-2-0',
       'seedance-2-0-fast',
       'ltx-2-3-fast',
@@ -436,8 +437,9 @@ test('Seedance 1.5 Pro stays active while Seedance 2.0 keeps the primary alias a
   assert.equal(getHubEngines().some((engine) => engine.modelSlug === 'seedance-1-5-pro'), true);
 });
 
-test('Header model menu promotes Seedance Fast while keeping the Veo family expanded', () => {
+test('Header model menu promotes Seedance 2.5 while keeping the Veo family expanded', () => {
   assert.deepEqual(MARKETING_NAV_MODELS.map((item) => item.key), [
+    'seedance-2-5',
     'seedance-2-0',
     'seedance-2-0-fast',
     'ltx-2-3-fast',

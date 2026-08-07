@@ -7,6 +7,7 @@ export type MarketingNavItem = {
   label: string;
   href: LocalizedLinkHref;
   emphasized?: boolean;
+  badge?: 'new';
 };
 
 export type MarketingNavSection = {
@@ -41,7 +42,7 @@ export const MARKETING_TOP_NAV_LINKS: readonly MarketingTopNavLink[] = [
   { key: 'blog', href: '/blog' },
 ] as const;
 
-type LabeledSlug = { slug: string; label: string };
+type LabeledSlug = { slug: string; label: string; badge?: MarketingNavItem['badge'] };
 
 const modelLink = (slug: string): LocalizedLinkHref => ({
   pathname: '/models/[slug]',
@@ -83,6 +84,7 @@ const docLink = (slug: string): LocalizedLinkHref => ({
 });
 
 const MODEL_MENU: LabeledSlug[] = [
+  { slug: 'seedance-2-5', label: 'Seedance 2.5', badge: 'new' },
   { slug: 'seedance-2-0', label: 'Seedance 2.0' },
   { slug: 'seedance-2-0-fast', label: 'Seedance 2.0 Fast' },
   { slug: 'ltx-2-3-fast', label: 'LTX 2.3 Fast' },
@@ -136,6 +138,7 @@ export const MARKETING_NAV_MODELS: MarketingNavItem[] = MODEL_MENU.map((item) =>
   key: item.slug,
   label: item.label,
   href: modelLink(item.slug),
+  badge: item.badge,
 }));
 
 export const MARKETING_NAV_EXAMPLES: MarketingNavItem[] = EXAMPLES_MENU.map((item) => ({

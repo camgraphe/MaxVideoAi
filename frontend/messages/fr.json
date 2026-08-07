@@ -39,6 +39,9 @@
       "docs": "Documentation",
       "blog": "Blog"
     },
+    "badges": {
+      "new": "Nouveau"
+    },
     "dropdown": {
       "allModels": "Tous les modèles",
       "allExamples": "Tous les exemples",
@@ -47,6 +50,7 @@
       "viewAll": "Voir tout",
       "models": {
         "items": {
+          "seedance-2-5": "Seedance 2.5",
           "sora-2": "Sora 2",
           "sora-2-pro": "Sora 2 Pro",
           "veo-3-1": "Veo 3.1",
@@ -3103,9 +3107,9 @@
       },
       "newModel": {
         "label": "Nouveau modèle",
-        "name": "Seedance 2.0",
-        "quality1": "Mouvement cinématique",
-        "quality2": "Continuité multi-plan",
+        "name": "Seedance 2.5",
+        "quality1": "Scènes jusqu’à 30 secondes",
+        "quality2": "Images, références et montage vidéo",
         "quality3": "Workflow audio natif",
         "cta": "Essayer"
       }
@@ -3349,6 +3353,9 @@
         "browseCompact": "Explorer les modèles",
         "inputMode": "Mode d’entrée",
         "unsupportedMode": "Mode non pris en charge par ce modèle",
+        "badges": {
+          "new": "Nouveau"
+        },
         "modal": {
           "close": "Fermer",
           "title": "Choisissez le modèle adapté à votre plan",

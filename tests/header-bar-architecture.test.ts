@@ -9,12 +9,14 @@ const accountHookPath = join(root, 'frontend/components/header/useHeaderAccountS
 const logoPath = join(root, 'frontend/components/header/HeaderLogoMark.tsx');
 const navHelpersPath = join(root, 'frontend/components/header/header-nav-helpers.ts');
 const walletStatusPath = join(root, 'frontend/components/header/HeaderWalletStatus.tsx');
+const mobileMenuPath = join(root, 'frontend/components/header/HeaderMobileMenu.tsx');
 
 const headerSource = readFileSync(headerPath, 'utf8');
 const accountHookSource = readFileSync(accountHookPath, 'utf8');
 const logoSource = readFileSync(logoPath, 'utf8');
 const navHelpersSource = readFileSync(navHelpersPath, 'utf8');
 const walletStatusSource = readFileSync(walletStatusPath, 'utf8');
+const mobileMenuSource = readFileSync(mobileMenuPath, 'utf8');
 
 test('header bar delegates account, logo, and nav helper responsibilities', () => {
   assert.ok(existsSync(accountHookPath), 'header account state should live in a focused hook');
@@ -55,4 +57,12 @@ test('header bar keeps narrow mobile chrome compact', () => {
   assert.match(logoSource, /sr-only[^"]*sm:not-sr-only/, 'brand text should stay accessible while visually collapsing below narrow mobile widths');
   assert.match(walletStatusSource, /aria-label=\{walletLabel\}/, 'compact wallet status needs a stable accessible name');
   assert.match(walletStatusSource, /max-w-\[5rem\]/, 'wallet amount should not stretch the mobile action cluster');
+});
+
+test('header model menus render generic localized navigation badges', () => {
+  for (const source of [headerSource, mobileMenuSource]) {
+    assert.match(source, /entry\.badge/);
+    assert.match(source, /nav\.badges\.\$\{entry\.badge\}/);
+    assert.doesNotMatch(source, /entry\.key\s*===\s*['"]seedance-2-5['"]/);
+  }
 });

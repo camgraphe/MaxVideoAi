@@ -1,3 +1,5 @@
+import { UNIFIED_SEEDANCE_ENGINE_IDS } from '@/lib/seedance-workflow';
+
 const DEFAULT_ASSET_FIELD_RANKS: Record<string, number> = {
   image_url: 0,
   video_url: 0,
@@ -10,7 +12,7 @@ const DEFAULT_ASSET_FIELD_RANKS: Record<string, number> = {
 };
 
 export function getWorkspaceAssetFieldRank(engineId: string, fieldId: string): number {
-  if (engineId.startsWith('seedance-2-0')) {
+  if (UNIFIED_SEEDANCE_ENGINE_IDS.has(engineId)) {
     const seedanceRanks: Record<string, number> = {
       image_url: 0,
       end_image_url: 1,

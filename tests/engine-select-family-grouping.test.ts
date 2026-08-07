@@ -6,6 +6,8 @@ import {
   formatEngineSelectScore,
   formatEngineSelectScorePercent,
 } from '../frontend/src/components/ui/engine-select/engine-select-helpers.ts';
+import { listFalEngines } from '../frontend/src/config/falEngines.ts';
+import { getBaseEngines } from '../frontend/src/lib/engines.ts';
 import type { EngineCaps } from '../frontend/types/engines.ts';
 
 const baseEngine: EngineCaps = {
@@ -180,4 +182,24 @@ test('buildEngineFamilyGroups creates readable fallback families and formats com
   assert.equal(formatEngineSelectScorePercent(9.37), '94');
   assert.equal(formatEngineSelectScore(null), null);
   assert.equal(formatEngineSelectScore(Number.NaN), null);
+});
+
+test('Seedance 2.5 is the first discovered engine and leads the Seedance family', () => {
+  const engines = getBaseEngines();
+  const entries = listFalEngines();
+  const groups = buildEngineFamilyGroups({
+    engines,
+    registryMeta: {
+      order: new Map(entries.map((entry, index) => [entry.id, index])),
+      meta: new Map(entries.map((entry) => [entry.id, entry])),
+    },
+  });
+
+  assert.equal(engines[0]?.id, 'seedance-2-5');
+  assert.deepEqual(groups[0]?.engines.map(({ id }) => id).slice(0, 4), [
+    'seedance-2-5',
+    'seedance-2-0',
+    'seedance-2-0-fast',
+    'seedance-2-0-mini',
+  ]);
 });

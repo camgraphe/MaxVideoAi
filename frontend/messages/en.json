@@ -39,6 +39,9 @@
       "docs": "Docs",
       "blog": "Blog"
     },
+    "badges": {
+      "new": "New"
+    },
     "dropdown": {
       "allModels": "All models",
       "allExamples": "All examples",
@@ -47,6 +50,7 @@
       "viewAll": "View all",
       "models": {
         "items": {
+          "seedance-2-5": "Seedance 2.5",
           "sora-2": "Sora 2",
           "sora-2-pro": "Sora 2 Pro",
           "veo-3-1": "Veo 3.1",
@@ -3068,9 +3072,9 @@
       },
       "newModel": {
         "label": "New model",
-        "name": "Seedance 2.0",
-        "quality1": "Cinematic motion",
-        "quality2": "Multi-shot continuity",
+        "name": "Seedance 2.5",
+        "quality1": "Up to 30-second scenes",
+        "quality2": "Images, references and video editing",
         "quality3": "Native audio workflow",
         "cta": "Try now"
       }
@@ -3314,6 +3318,9 @@
         "browseCompact": "Browse engines",
         "inputMode": "Input mode",
         "unsupportedMode": "Not supported by this engine",
+        "badges": {
+          "new": "New"
+        },
         "modal": {
           "close": "Close",
           "title": "Choose the right engine for your shot",

@@ -348,7 +348,12 @@ export function HeaderBar() {
                                 role="menuitem"
                                 onClick={() => closeDesktopDropdown(200)}
                               >
-                                {t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label)}
+                                <span>{t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label)}</span>
+                                {entry.badge ? (
+                                  <span className="ml-2 inline-flex rounded-full bg-brand px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-micro text-white">
+                                    {t(`nav.badges.${entry.badge}`, entry.badge)}
+                                  </span>
+                                ) : null}
                               </Link>
                             );
                           })}

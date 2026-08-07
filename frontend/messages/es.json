@@ -39,6 +39,9 @@
       "docs": "Documentación",
       "blog": "Blog"
     },
+    "badges": {
+      "new": "Nuevo"
+    },
     "dropdown": {
       "allModels": "Todos los modelos",
       "allExamples": "Todos los ejemplos",
@@ -47,6 +50,7 @@
       "viewAll": "Ver todo",
       "models": {
         "items": {
+          "seedance-2-5": "Seedance 2.5",
           "sora-2": "Sora 2",
           "sora-2-pro": "Sora 2 Pro",
           "veo-3-1": "Veo 3.1",
@@ -3095,9 +3099,9 @@
       },
       "newModel": {
         "label": "Nuevo modelo",
-        "name": "Seedance 2.0",
-        "quality1": "Movimiento cinematográfico",
-        "quality2": "Continuidad entre planos",
+        "name": "Seedance 2.5",
+        "quality1": "Escenas de hasta 30 segundos",
+        "quality2": "Imágenes, referencias y edición de vídeo",
         "quality3": "Flujo de audio nativo",
         "cta": "Probar ahora"
       }
@@ -3341,6 +3345,9 @@
         "browseCompact": "Explorar motores",
         "inputMode": "Modo de entrada",
         "unsupportedMode": "No compatible con este motor",
+        "badges": {
+          "new": "Nuevo"
+        },
         "modal": {
           "close": "Cerrar",
           "title": "Elige el motor adecuado para tu toma",

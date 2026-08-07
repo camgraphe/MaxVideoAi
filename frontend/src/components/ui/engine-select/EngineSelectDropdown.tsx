@@ -348,6 +348,11 @@ export function EngineSelectDropdown({
                             </p>
                           </div>
                           <div className="flex shrink-0 items-center gap-1.5">
+                            {meta?.surfaces.app.launchBadge === 'new' ? (
+                              <span className="rounded-full bg-brand px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-micro text-white">
+                                {copy.badges.new}
+                              </span>
+                            ) : null}
                             {scoreLabel ? <ScoreBadge value={scoreLabel} /> : null}
                             {active ? <Check aria-hidden="true" className="h-3.5 w-3.5 text-brand" /> : null}
                           </div>
