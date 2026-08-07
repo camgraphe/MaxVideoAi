@@ -16,6 +16,8 @@ import {
   isBytePlusSeedanceHiddenEngine,
   resolveBytePlusSeedanceModelId,
   resolveBytePlusSeedanceRouteProfile,
+  shouldRouteSeedanceEngineToBytePlus,
+  type BytePlusSeedanceProfile,
 } from '@/server/video-providers/byteplus-modelark';
 import {
   resolveVideoProviderRoutingPlan,
@@ -90,11 +92,10 @@ export async function resolveGenerateRouteContext(params: {
   if (!registeredBaseEngine) {
     return { ok: false, status: 400, body: { ok: false, error: 'Unknown engine' } };
   }
-  const bytePlusProfile = resolveBytePlusSeedanceRouteProfile(
-    requestedEngineId,
-    registeredBaseEngine.providerMeta?.provider
-  );
-  if (bytePlusProfile && isBytePlusSeedanceAdminOnly(requestedEngineId)) {
+  const bytePlusRequiresEarlyAdmin =
+    shouldRouteSeedanceEngineToBytePlus(requestedEngineId) &&
+    isBytePlusSeedanceAdminOnly(requestedEngineId);
+  if (bytePlusRequiresEarlyAdmin) {
     try {
       await requireAdmin(req);
     } catch (error) {
@@ -121,7 +122,12 @@ export async function resolveGenerateRouteContext(params: {
     return { ok: false, status: 400, body: { ok: false, error: 'Unknown engine' } };
   }
 
+  let bytePlusProfile: BytePlusSeedanceProfile | null;
   try {
+    bytePlusProfile = resolveBytePlusSeedanceRouteProfile(
+      engine.id,
+      engine.providerMeta?.provider
+    );
     if (bytePlusProfile) {
       assertBytePlusSeedanceSubmissionEnabled(engine.id);
       resolveBytePlusSeedanceModelId(engine.id, getBytePlusArkConfig());

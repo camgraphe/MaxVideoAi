@@ -62,6 +62,22 @@ test('generate route resolves context before billing preflight', () => {
   );
 });
 
+test('registered non-Seedance BytePlus engines keep the controlled unknown-engine response', async () => {
+  const result = await resolveGenerateRouteContext({
+    body: { engineId: 'seedream', mode: 't2v' },
+    req: new NextRequest('http://localhost/api/generate', { method: 'POST' }),
+  });
+
+  assert.deepEqual(result, {
+    ok: false,
+    status: 400,
+    body: {
+      ok: false,
+      error: 'Unknown engine',
+    },
+  });
+});
+
 test('generate route delegates source-video duration and input context', () => {
   assert.ok(existsSync(sourceVideoContextPath), 'source-video context should live in the generate route _lib folder');
   const sourceVideoContextSource = readFileSync(sourceVideoContextPath, 'utf8');
