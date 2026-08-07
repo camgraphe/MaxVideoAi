@@ -11,29 +11,36 @@ Read it before changing a flag, publication surface, price, or provider route.
 - ModelArk region: `ap-southeast-1`
 - ModelArk release status: GA
 - Runtime engine and dedicated provider profile: present
-- Safe runtime defaults: disabled, administrator-only, text-to-video only
+- Safe runtime defaults: disabled, administrator-only, text-to-video; generated
+  audio is optional when the hidden runtime is explicitly enabled
 - Local MaxVideoAI administrator happy-path canary: completed
 - Long-form marketing heroes: City and Train copied durably, passed technical
   and sampled-frame QA, and accepted for marketing by product-owner signoff
 - Dialogue/audio marketing candidate: generated and copied durably; publication
   held for human review of exact wording, speaker attribution, and lip-sync
 - Real timeout/failure/refund canary: still pending
-- Public page: the existing localized `prelaunch` / coming-soon renderer
+- Public page: the shared localized marketing model-page renderer, published
+  `noindex` without generation or pricing actions
 - Robots: `noindex, follow`
-- Public app discovery, pricing, examples, comparison, and sitemap: disabled
+- Public app discovery, pricing, examples-family publication, comparison, and
+  sitemap: disabled
+- Dedicated page playlist: public with City then Train; those two media records
+  are public/indexable, while `publication.examples.published=false` keeps
+  examples-family discovery closed
 - Public generation: closed
 - Customer-price policy: approved at 2.5× the factual ModelArk cost
 - Commercial use for the hidden internal phase: confirmed by the product owner
   on 2026-08-07
-- Merge, deployment, production flags, and public opening: not performed by this
-  preparation batch
+- Implementation and handoff: reviewed and committed directly on local `main`
+- Push, deployment, production flags, public generation, and indexation: not
+  performed by this preparation batch
 
 The raw engine is intentionally present in the generated engine catalog and
 model roster so the API can resolve it during a controlled internal canary. It
-is absent from `getBaseEngines()` and every public product surface. The public
-model route keeps using its explicit `prelaunch` template even though the
-registry identity is now executable. It must not expose the internal price,
-provider, model ID, or generation CTA.
+is absent from `getBaseEngines()` and every public generation surface. The
+public route uses the standard shared production marketing-model template with
+`noindex, follow`; it must not expose the internal price, provider, model ID,
+generation action, or public pricing action.
 
 ## Official ModelArk evidence
 
@@ -66,7 +73,8 @@ Only the subset proven by the authenticated canary is executable now:
 - 480p or 720p
 - 16:9
 - 24 FPS
-- generated audio off
+- generated audio optional; its payload, accounting, durable video/audio path,
+  and infrastructure are proven
 - motion controls off
 - no image, video, or audio references
 - no edit or extension mode
@@ -74,6 +82,12 @@ Only the subset proven by the authenticated canary is executable now:
 The broader capabilities remain blocked until each has its own payload,
 polling, storage, accounting, and refund canary. Do not infer their runtime
 contract from the headline limits on the model card.
+
+The two four-second provider and MaxVideoAI happy-path canaries below were
+intentionally silent and remain valid evidence for the audio-off path. The
+separate 15-second Dialogue render proves optional generated-audio
+infrastructure, but that asset remains non-public until human dialogue,
+speaker-attribution, and lip-sync review is complete.
 
 ## Authenticated provider canary evidence
 
@@ -174,6 +188,66 @@ made, and the owner reported no defect or timestamp. Dialogue is retained as
 the audio candidate but must remain non-public until a human confirms its
 exact English lines, speaker attribution, and lip-sync.
 
+## Final noindex marketing handoff — 2026-08-07
+
+The marketing pack is ready for the existing noindex model pages with exactly
+two accepted videos: **The city in the suitcase** first and **The glass
+lightning train** second. Both are public/indexable media records with durable
+video, preview, and poster assets. The dedicated public playlist is named
+`Model · Seedance 2.5`, uses slug `examples-seedance-2-5`, has description
+`Drives /models/seedance-2-5.`, and returns City then Train. This media-level
+moderation does not open the examples-family registry surface or index the
+model page.
+
+**The runaway sock** is the successful generated-audio canary. Its durable
+video, preview, poster, and audio stream are present, but the asset remains
+private, non-indexable, and outside every public playlist until a human validates
+the exact dialogue, speaker attribution, and lip-sync. It must not be used on a
+marketing page before that review.
+
+The three approved initial submissions cost **USD 14.589450** at the provider
+and debited **USD 36.41** from the MaxVideoAI wallet. There were exactly three
+provider submissions, zero content retries, and zero refunds. City required
+automatic retries of the already-generated source's durable-copy operation;
+those attempts did not submit another provider task, generate new content, or
+create another wallet charge. The later timeout correction let the normal
+durable pipeline complete.
+
+Final localized smoke evidence:
+
+- `/models/seedance-2-5`, `/fr/modeles/seedance-2-5`, and
+  `/es/modelos/seedance-2-5` returned HTTP 200 in the safe localized smoke;
+- the shared model-page layout rendered City then Train, excluded Dialogue,
+  exposed localized self-canonicals and the complete hreflang set, and kept
+  `noindex, follow`;
+- WebPage, BreadcrumbList, and Product schema rendered with no public Offer;
+- no Seedance 2.5 app-generation destination, public pricing action, provider
+  jargon, or rollout copy was exposed;
+- both accepted public watch pages returned HTTP 200, while the private
+  Dialogue watch page remained unavailable;
+- the model route remained absent from the model and locale sitemaps;
+- poster-first markup and the muted-video client contract were present. This
+  is not a new agent full-playback claim beyond the recorded product-owner
+  acceptance.
+
+Final automated verification passed on `main`: 123 focused tests, model
+registry/projection checks, model audit with zero critical findings, immutable
+and public pricing baselines, pricing audit with zero mismatches, frontend
+ESLint, public-exposure lint, FR/ES i18n parity, SEO guards, TypeScript, and
+`git diff --check`. The Next.js production build completed successfully and
+generated all 717 static pages, including the localized Seedance 2.5 params.
+
+The following controls remain closed and require separate explicit approval:
+public app generation, public pricing, examples-family publication,
+comparisons, sitemap publication, and indexation. Deployment and push were not
+performed by this handoff.
+
+Separate next work—not part of this packet—is: add a Benchmark Lab score,
+prepare and publish approved VS pages, strengthen internal linking, select any
+homepage promotion, complete human review of the Dialogue asset, prove a real
+failure/refund reconciliation, and plan public generation, pricing, and
+indexation as distinct promotion steps.
+
 ## Dedicated controls and safe defaults
 
 These controls belong only to Seedance 2.5. Never substitute a Seedance 2.0
@@ -210,8 +284,8 @@ added to this packet or committed files.
 
 The customer rate is normalized against the existing canonical 1.3 pricing
 margin so the final member quote equals the approved 2.5× multiple. Do not copy
-a Seedance 2.0 rate. Do not publish this internal price on the coming-soon page
-or pricing surface before explicit approval.
+a Seedance 2.0 rate. Do not publish this internal price on the shared noindex
+marketing page or any pricing surface before explicit approval.
 
 ## Phase checklist
 
@@ -222,16 +296,22 @@ or pricing surface before explicit approval.
 - [x] Add a disabled-by-default hard kill switch and administrator-only policy.
 - [x] Limit execution to the canary-proven text-to-video contract.
 - [x] Add factual provider rates and approved 2.5× customer pricing.
-- [x] Convert the registry identity out of `presentationOnly` while keeping all
-  public execution and discovery surfaces false.
-- [x] Keep the public route on the localized prelaunch renderer with no price or
-  generation CTA.
+- [x] Convert the registry identity out of `presentationOnly` while keeping
+  public app, pricing, examples-family, comparison, and sitemap publication
+  false.
+- [x] Keep the public route on the localized standard shared production
+  marketing renderer with `noindex, follow` and no generation or pricing
+  action.
+- [x] Publish only the dedicated page playlist with City then Train while
+  keeping examples-family discovery closed.
 - [x] Regenerate model runtime, engine catalog, and model roster.
 - [x] Replace the old presentation-only readiness contract with the hidden-
   execution contract.
 - [x] Complete all verification commands below on the implementation diff.
-- [ ] Review the diff before merge.
-- [ ] Merge or deploy. This requires a later explicit instruction.
+- [x] Review the implementation and handoff diff.
+- [x] Commit the reviewed changes directly on local `main`.
+- [ ] Push local `main`. This requires a later explicit instruction.
+- [ ] Deploy. This requires a later explicit instruction.
 
 ### Phase 2 — MaxVideoAI administrator canary (happy path completed locally)
 
@@ -258,17 +338,17 @@ dialogue review is complete.
 ### Phase 3 — restricted public generation
 
 Requires explicit approval after Phase 2. Keep the model page `noindex`, the
-sitemap off, and public pricing/examples/comparisons off unless each surface is
-approved separately. Replace coming-soon copy only when generation is actually
-available to the intended audience.
+sitemap off, and public pricing, examples-family discovery, and comparisons off
+unless each surface is approved separately. The dedicated City/Train playlist
+may continue to serve the noindex model page without opening those surfaces.
 
 ### Phase 4 — indexed public launch
 
-Requires explicit approval for app discovery, pricing, sitemap, examples,
-comparisons, and indexation. Change only the authored publication fields in
-`frontend/config/model-registry.json`, regenerate all projections, and review
-the customer price and localized pages. Keep Seedance 2.0 live unless a
-separate retirement decision is approved.
+Requires explicit approval for app discovery, pricing, sitemap,
+examples-family discovery, comparisons, and indexation. Change only the
+authored publication fields in `frontend/config/model-registry.json`, regenerate
+all projections, and review the customer price and localized pages. Keep
+Seedance 2.0 live unless a separate retirement decision is approved.
 
 ## Production handoff for Codex
 
@@ -333,7 +413,9 @@ Read AGENTS.md and docs/model-launch/seedance-2-5.md, then inspect the current
 main branch and deployment state. Continue only with the next incomplete,
 explicitly approved promotion phase. Preserve the dedicated Seedance 2.5 kill
 switch, admin-only gate, factual ModelArk model ID and rates, 2.5× customer
-policy, prelaunch public page, and disabled public registry surfaces. Return
+policy, standard shared production marketing page with `noindex, follow` and no
+generation or pricing actions, dedicated City/Train page playlist, and closed
+app, pricing, examples-family, comparison, sitemap, and indexation flags. Return
 verification, canary, billing, storage, and rollback evidence before proposing
 any broader opening.
 ```
