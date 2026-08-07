@@ -1,38 +1,31 @@
 import type { ModelPageTemplateConfig } from '../model-page-template-types';
 
-export const seedance25TemplateConfig = {
+export const seedance25TemplateConfig: ModelPageTemplateConfig = {
   slug: 'seedance-2-5',
-  intent: 'prelaunch',
+  intent: 'production',
   hero: {
-    eyebrow: 'COMING SOON · WHAT’S NEW',
-    subtitleHighlightTerms: ['Coming soon', 'What’s new'],
-    primaryCtaHref: '/models/seedance-2-0',
-    secondaryCtaHref: '/examples/seedance',
+    eyebrow: 'BYTEDANCE NEXT-GEN VIDEO MODEL',
+    subtitleHighlightTerms: ['30-second storytelling', 'cinematic continuity', 'camera control'],
+    primaryCtaHref: '/examples/seedance',
+    secondaryCtaHref: '/models/seedance-2-0',
     quickLinks: [
-      {
-        labelKey: 'availableSeedance',
-        href: '/models/seedance-2-0',
-        icon: 'video',
-      },
-      {
-        labelKey: 'seedanceExamples',
-        href: '/examples/seedance',
-        icon: 'examples',
-      },
+      { labelKey: 'seedanceExamples', href: '/examples/seedance', icon: 'examples' },
+      { labelKey: 'availableSeedance', href: '/models/seedance-2-0', icon: 'video' },
+      { labelKey: 'promptExamples', href: '#prompting', icon: 'prompt' },
     ],
   },
   pricing: {
     enabled: false,
-    anchorHref: '#availability',
+    anchorHref: '#specs',
     presets: [],
   },
   sections: {
-    examples: false,
-    prompting: false,
-    tips: false,
+    examples: true,
+    prompting: true,
+    tips: true,
     compare: false,
-    specs: false,
+    specs: true,
     safety: true,
     faq: true,
   },
-} satisfies ModelPageTemplateConfig;
+};

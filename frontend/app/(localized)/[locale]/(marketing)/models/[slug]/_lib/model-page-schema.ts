@@ -297,7 +297,8 @@ export function buildProductSchema({
   pricingEngine?: EngineCaps;
 }) {
   const provider = resolveProviderInfo(engine);
-  const offerPayload: { offers?: ReturnType<typeof buildProductOffer> } = pricingEngine
+  const offerPayload: { offers?: ReturnType<typeof buildProductOffer> } =
+    pricingEngine && engine.surfaces.pricing.includeInEstimator
     ? { offers: buildProductOffer(engine, pricingEngine, canonical) }
     : {};
   const category = isImageOnlyModel(engine)

@@ -154,13 +154,13 @@ test('generic Examples UI copy is complete and model-neutral', () => {
   }
 });
 
-test('all 40 executable model documents expose strict Examples content in every locale', () => {
+test('all 41 executable model documents expose strict Examples content in every locale', () => {
   const expected = listModelPageTemplateSlugs().map((slug) => `${slug}.json`).sort();
   const completeInventory = [
     ...expected,
     ...listPrelaunchModelPageTemplateSlugs().map((slug) => `${slug}.json`),
   ].sort();
-  assert.equal(expected.length, 40);
+  assert.equal(expected.length, 41);
   for (const locale of LOCALES) {
     assert.deepEqual(files(locale), completeInventory);
     for (const fileName of expected) {
@@ -171,7 +171,7 @@ test('all 40 executable model documents expose strict Examples content in every 
   }
 });
 
-test('all 120 documents own the historically derived empty-state visibility boolean', () => {
+test('all 123 documents own the historically derived empty-state visibility boolean', () => {
   const counts = { true: 0, false: 0 };
   for (const locale of LOCALES) {
     const localeCounts = { true: 0, false: 0 };
@@ -181,9 +181,9 @@ test('all 120 documents own the historically derived empty-state visibility bool
       counts[key] += 1;
       localeCounts[key] += 1;
     }
-    assert.deepEqual(localeCounts, { true: 35, false: 5 }, locale);
+    assert.deepEqual(localeCounts, { true: 35, false: 6 }, locale);
   }
-  assert.deepEqual(counts, { true: 105, false: 15 });
+  assert.deepEqual(counts, { true: 105, false: 18 });
 
   for (const slug of ['nano-banana-lite', 'seedream-5-0-pro']) {
     for (const locale of LOCALES) {

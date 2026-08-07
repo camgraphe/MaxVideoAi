@@ -15,6 +15,7 @@ const MIGRATED_TEMPLATE_SLUGS = [
   'seedance-1-5-pro',
   'seedance-2-0',
   'seedance-2-0-fast',
+  'seedance-2-5',
   'dreamina-seedance-2-0-mini',
   'ltx-2',
   'ltx-2-fast',

@@ -75,7 +75,13 @@ type PageParams = {
 export const dynamicParams = false;
 export const revalidate = 300;
 
-const UNBRANDED_MODEL_TITLE_SLUGS = new Set(['pika-text-to-video', 'ltx-2-3-fast', 'seedance-2-0', 'veo-3-1']);
+const UNBRANDED_MODEL_TITLE_SLUGS = new Set([
+  'pika-text-to-video',
+  'ltx-2-3-fast',
+  'seedance-2-0',
+  'seedance-2-5',
+  'veo-3-1',
+]);
 
 export function generateStaticParams() {
   return locales.flatMap((locale) =>
@@ -371,7 +377,8 @@ async function renderMarketingModelPage({
   }
   const compareEngines = pickCompareEngines(listFalEngines(), engine.modelSlug);
   const faqEntries = localizedContent.faqs.length ? localizedContent.faqs : copy.faqs;
-  const showPriceInSpecs = engine.id !== 'lumaRay2';
+  const showPriceInSpecs =
+    engine.id !== 'lumaRay2' && engine.surfaces.pricing.includeInEstimator;
   const keySpecsMap = await loadEngineKeySpecs();
   const keySpecsEntry =
     keySpecsMap.get(engine.modelSlug) ?? keySpecsMap.get(engine.id) ?? null;

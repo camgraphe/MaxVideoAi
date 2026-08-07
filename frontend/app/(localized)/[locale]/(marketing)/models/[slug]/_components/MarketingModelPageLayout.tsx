@@ -218,6 +218,7 @@ export function MarketingModelPageLayout({
     'seedance-1-5-pro',
     'seedance-2-0',
     'seedance-2-0-fast',
+    'seedance-2-5',
     'kling-3-pro',
     'kling-3-standard',
     'kling-2-6-pro',

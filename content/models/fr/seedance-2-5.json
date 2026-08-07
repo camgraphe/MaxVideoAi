@@ -2,118 +2,358 @@
   "marketingName": "Seedance 2.5",
   "versionLabel": "2.5",
   "seo": {
-    "title": "Seedance 2.5 bientôt disponible | MaxVideoAI",
-    "description": "Découvrez les capacités annoncées pour Seedance 2.5 : sortie 4K, vidéos plus longues, guidage multimodal et retouche précise.",
-    "image": "/models/seedance-2-5-coming-soon.png"
+    "title": "Seedance 2.5 : vidéo IA cinématographique de 30 secondes",
+    "description": "Découvrez de vrais rendus Seedance 2.5 centrés sur des scènes cinématographiques plus longues, une caméra maîtrisée, une physique cohérente et un jeu humain naturel."
   },
-  "overview": "Seedance 2.5 se présente comme une évolution majeure de Seedance, avec plus de détail, des formats plus longs et un contrôle créatif enrichi.",
+  "overview": "Seedance 2.5 est conçu pour les séquences cinématographiques plus longues où les temps du récit, les mouvements de caméra, les interactions physiques et le jeu des personnages doivent rester cohérents.",
   "hero": {
-    "title": "Seedance 2.5 arrive bientôt",
-    "intro": "Dreamina présente Seedance 2.5 en mettant en avant la résolution, la durée, les entrées multimodales, les références vidéo et la retouche locale précise.",
-    "badge": "Aperçu · Découvrez les nouveautés",
+    "title": "Seedance 2.5 — vidéo IA cinématographique pour des scènes plus longues et mieux contrôlées",
+    "intro": "Découvrez Seedance 2.5 à travers de vrais rendus MaxVideoAI conçus pour tester la narration longue, les mouvements de caméra, la cohérence physique et le jeu naturel des personnages.",
+    "badge": "Exemples réels MaxVideoAI · Jusqu’à 30 secondes · 720p",
     "ctaPrimary": {
-      "label": "Générer avec Seedance 2.0",
-      "href": "/fr/modeles/seedance-2-0"
+      "label": "Voir les exemples Seedance",
+      "href": "/fr/galerie/seedance"
     },
     "secondaryLinks": [
       {
-        "label": "Voir les exemples Seedance disponibles",
-        "href": "/fr/galerie/seedance"
+        "label": "Découvrir Seedance 2.0 disponible",
+        "href": "/fr/modeles/seedance-2-0"
+      },
+      {
+        "label": "Ouvrir les exemples de prompts Seedance 2.5",
+        "href": "#prompting"
       }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Meilleurs usages de Seedance 2.5",
+    "items": [
+      {
+        "title": "Récits cinématographiques plus longs avec un début, une progression et une fin clairs",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Concepts publicitaires structurés autour de révélations maîtrisées et de plans finaux",
+        "icon": "product"
+      },
+      {
+        "title": "Scènes humaines portées par les gestes, les expressions et de courts moments parlés",
+        "icon": "users"
+      },
+      {
+        "title": "Actions physiques où les contacts et les réactions du décor doivent rester lisibles",
+        "icon": "camera"
+      }
+    ]
+  },
+  "technicalOverviewTitle": "Aperçu de Seedance 2.5",
+  "technicalOverview": [
+    {
+      "label": "Planification de la scène",
+      "body": "Concepts rédigés à partir du texte, temps narratifs minutés et contraintes de continuité explicites"
+    },
+    {
+      "label": "Durée",
+      "body": "Jusqu’à 30 secondes pour développer des scènes plus longues"
+    },
+    {
+      "label": "Exemples publiés",
+      "body": "Vrais rendus MaxVideoAI présentés en 720p"
+    },
+    {
+      "label": "Cadrage principal",
+      "body": "Rendu paysage de 24 secondes au format 16:9"
+    },
+    {
+      "label": "Audio",
+      "body": "L’état audio provient de chaque rendu publié"
+    }
+  ],
+  "tips": {
+    "title": "Comment diriger une scène Seedance 2.5 plus longue",
+    "items": [
+      "Écrivez un arc clair avec un début, une transition et une fin.",
+      "Associez un mouvement de caméra à chaque temps au lieu d’empiler les consignes.",
+      "Décrivez les causes et réactions visibles pour garder une physique lisible.",
+      "Gardez les dialogues brefs et reliez chaque réplique à une action ou une expression précise."
     ]
   },
   "faqs": [
     {
-      "q": "Qu’est-ce qui distingue Seedance 2.5 ?",
-      "a": "Seedance 2.5 réunit six nouveautés annoncées : sortie 4K, vidéos jusqu’à 30 secondes, mode bêta jusqu’à 180 secondes, jusqu’à 50 entrées multimodales, contrôle par vidéo de référence et retouche locale précise."
+      "q": "Que montre cette page Seedance 2.5 ?",
+      "a": "Elle présente de vrais rendus MaxVideoAI choisis pour examiner la narration longue, les mouvements de caméra, la cohérence physique et le jeu humain."
     },
     {
-      "q": "Quels formats vidéo ont été annoncés ?",
-      "a": "La présentation met en avant un mode standard jusqu’à 30 secondes et un mode bêta vidéo longue jusqu’à 180 secondes."
+      "q": "Quelle est la durée des scènes présentées ?",
+      "a": "Les contenus mis en avant comprennent un rendu principal de 24 secondes et illustrent la préparation de scènes pouvant durer jusqu’à 30 secondes."
     },
     {
-      "q": "Comment Seedance 2.5 enrichit-il le contrôle créatif ?",
-      "a": "Les entrées multimodales, les références vidéo et la retouche locale annoncées visent à offrir davantage de matière pour guider et affiner chaque scène."
+      "q": "Comment écrire le prompt d’une scène plus longue ?",
+      "a": "Définissez d’abord le concept, associez les actions et la caméra à des temps précis, puis indiquez les contraintes de continuité et de sécurité à préserver."
     },
     {
-      "q": "Que puis-je explorer dès maintenant ?",
-      "a": "Essayez Seedance 2.0 ou parcourez de vrais exemples Seedance pour découvrir les possibilités visuelles de cette famille de modèles."
+      "q": "Puis-je générer avec Seedance 2.5 depuis cette page ?",
+      "a": "La génération publique n’est pas ouverte sur cette page. Parcourez la galerie Seedance ou découvrez le modèle Seedance 2.0 actuellement disponible."
     }
   ],
-  "custom": {
-    "prelaunch": {
-      "modelSlug": "seedance-2-5",
-      "dreaminaLabel": "coming_soon",
-      "checkedAt": "2026-07-26",
-      "productSurface": "Dreamina",
-      "sourceUrl": "https://dreamina.capcut.com/seedance/seedance-2-5",
-      "announcedProductClaims": [
-        "4k_output",
-        "standard_mode_up_to_30_seconds",
-        "beta_long_video_mode_up_to_180_seconds",
-        "up_to_50_multimodal_inputs",
-        "reference_to_video_control",
-        "precise_local_video_editing"
+  "decision": {
+    "modelSlug": "seedance-2-5",
+    "hero": {
+      "eyebrow": "MODÈLE VIDÉO NOUVELLE GÉNÉRATION DE BYTEDANCE",
+      "title": "Seedance 2.5",
+      "subtitle": "Narration sur 30 secondes, continuité cinématographique et contrôle de la caméra pour des scènes plus longues au mouvement cohérent et au jeu humain naturel.",
+      "subtitleHighlights": [
+        "Narration sur 30 secondes",
+        "continuité cinématographique",
+        "contrôle de la caméra"
       ],
-      "labels": {
-        "statusEyebrow": "Aperçu de Seedance 2.5",
-        "claimsEyebrow": "Les nouveautés",
-        "claimsTitle": "Six avancées annoncées pour la création vidéo",
-        "claimsIntro": "Découvrez les principales possibilités présentées pour Seedance 2.5.",
-        "alternativesEyebrow": "Créez dès maintenant",
-        "alternativesTitle": "Donnez vie à vos idées avec Seedance 2.0",
-        "alternativesIntro": "Créez dès aujourd’hui avec Seedance 2.0 ou explorez de vrais exemples pendant que la prochaine génération se prépare.",
-        "faqEyebrow": "Questions fréquentes",
-        "faqTitle": "Tout savoir sur Seedance 2.5",
-        "sourceLabel": "Consulter l’annonce officielle Seedance 2.5",
-        "checkedLabel": "Source officielle consultée le 26 juillet 2026"
+      "paragraph": "Utilisez ces vrais rendus MaxVideoAI pour évaluer comment Seedance 2.5 maintient les temps du récit, la direction de caméra, les interactions physiques et le jeu des personnages dans une séquence plus longue.",
+      "primaryCta": {
+        "label": "Voir les exemples Seedance",
+        "href": "/fr/galerie/seedance"
       },
-      "statusItems": [
+      "secondaryCta": {
+        "label": "Découvrir Seedance 2.0 disponible",
+        "href": "/fr/modeles/seedance-2-0"
+      },
+      "quickLinks": [
         {
-          "label": "Qualité d’image",
-          "value": "Sortie 4K",
-          "detail": "La sortie 4K figure parmi les capacités phares présentées pour Seedance 2.5.",
-          "state": "announced"
+          "label": "Voir les exemples Seedance",
+          "href": "/fr/galerie/seedance"
         },
         {
-          "label": "Formats vidéo",
-          "value": "Jusqu’à 180 s en bêta",
-          "detail": "Un mode standard jusqu’à 30 secondes et un format long jusqu’à 180 secondes en bêta sont annoncés.",
-          "state": "highlight"
+          "label": "Découvrir Seedance 2.0 disponible",
+          "href": "/fr/modeles/seedance-2-0"
         },
         {
-          "label": "Contrôle créatif",
-          "value": "Jusqu’à 50 entrées et retouche locale",
-          "detail": "Références multimodales, guidage vidéo et retouche locale précise ouvrent la voie à un contrôle enrichi de chaque scène.",
-          "state": "comingSoon"
-        }
-      ],
-      "announcedCapabilities": [
-        {
-          "title": "Sortie 4K",
-          "body": "La sortie 4K figure parmi les nouveautés annoncées, pour des images plus détaillées et plus soignées."
-        },
-        {
-          "title": "Jusqu’à 30 secondes",
-          "body": "Le mode standard est annoncé jusqu’à 30 secondes, pour laisser plus de temps à une scène ou à une idée de se développer."
-        },
-        {
-          "title": "Bêta vidéo longue",
-          "body": "Un mode bêta vidéo longue allant jusqu’à 180 secondes est également présenté pour des récits plus développés."
-        },
-        {
-          "title": "Jusqu’à 50 entrées",
-          "body": "Jusqu’à 50 entrées multimodales sont mises en avant, afin de combiner davantage de matières créatives."
-        },
-        {
-          "title": "Vidéo par référence",
-          "body": "Le contrôle par vidéo de référence est présenté comme un moyen de guider la création à partir d’une séquence existante."
-        },
-        {
-          "title": "Retouche vidéo locale",
-          "body": "La retouche locale précise est présentée comme un moyen d’affiner des zones choisies d’une vidéo avec davantage de contrôle."
+          "label": "Exemples de prompts",
+          "href": "#prompting"
         }
       ]
+    },
+    "media": {
+      "caption": "Rendu réel Seedance 2.5",
+      "description": "Une séquence cinématographique plus longue créée avec MaxVideoAI",
+      "renderLabel": "Voir le rendu complet",
+      "badges": [
+        "24s",
+        "720p",
+        "16:9"
+      ],
+      "altContext": "scène cinématographique longue Seedance 2.5 avec mouvement de caméra maîtrisé"
+    },
+    "features": [
+      {
+        "title": "Narration sur 30 secondes",
+        "body": "Construisez une scène complète avec une mise en place, une progression et une conclusion.",
+        "tone": "duration"
+      },
+      {
+        "title": "Continuité de caméra",
+        "body": "Dirigez le cadrage et les mouvements avec précision entre les temps du récit.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Cohérence physique",
+        "body": "Évaluez les mouvements, les contacts et les réactions du décor au fil de la séquence.",
+        "tone": "quality"
+      },
+      {
+        "title": "Jeu humain",
+        "body": "Façonnez des gestes, des expressions et de courts moments parlés lisibles.",
+        "tone": "audio"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Narration cinématographique",
+        "body": "Utilisez un début, une progression et une fin clairs lorsqu’une seule scène doit porter un temps narratif complet.",
+        "cta": {
+          "label": "Voir les exemples cinématographiques",
+          "href": "/fr/galerie/seedance"
+        }
+      },
+      {
+        "title": "Concepts publicitaires",
+        "body": "Organisez les révélations produit et les moments de marque autour de mouvements de caméra minutés, d’actions visibles et d’un plan final net.",
+        "cta": {
+          "label": "Voir les exemples Seedance",
+          "href": "/fr/galerie/seedance"
+        }
+      },
+      {
+        "title": "Scènes humaines",
+        "body": "Reliez les gestes, les regards, les expressions et les dialogues brefs à des moments précis de la scène.",
+        "cta": {
+          "label": "Ouvrir Prompt Lab",
+          "href": "#prompting"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Planification textuelle de la scène",
+        "body": "Commencez par le sujet, le décor et le changement narratif, puis définissez la fin visuelle avant d’ajouter les détails de caméra."
+      },
+      {
+        "title": "Direction par temps minutés",
+        "body": "Découpez la scène en plages successives et attribuez à chacune une action, une consigne de caméra et un repère de continuité."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Découvrir de vrais rendus Seedance 2.5",
+      "subtitle": "Examinez les rendus publiés avant de déterminer si le modèle correspond à vos besoins de narration et de direction de caméra.",
+      "footnote": "La génération publique reste fermée, tandis que ces exemples sont disponibles pour évaluation.",
+      "ctaLabel": "Voir les exemples Seedance",
+      "ctaHref": "/fr/galerie/seedance"
+    },
+    "meta": {
+      "title": "Seedance 2.5 : vidéo IA cinématographique de 30 secondes",
+      "description": "Découvrez de vrais rendus Seedance 2.5 centrés sur des scènes cinématographiques plus longues, une caméra maîtrisée, une physique cohérente et un jeu humain naturel."
     }
+  },
+  "prompting": {
+    "modelSlug": "seedance-2-5",
+    "section": {
+      "title": "Prompt Lab — Seedance 2.5",
+      "intro": "Construisez une scène plus longue en trois passages : définissez le concept, dirigez les temps, puis verrouillez les contraintes qui protègent la continuité.",
+      "tip": "Attribuez une action visible et une consigne de caméra à chaque plage temporelle.",
+      "guide": {
+        "label": "Découvrir Seedance 2.0 disponible",
+        "href": "/fr/modeles/seedance-2-0"
+      },
+      "referencesTitle": "Une méthode textuelle pour les scènes plus longues"
+    },
+    "tabs": [
+      {
+        "id": "concept",
+        "label": "Concept",
+        "title": "Définir l’arc de la scène",
+        "description": "Précisez les personnages, le changement narratif et la destination finale de la scène.",
+        "copy": "Sujet et décor :\n[Qui apparaît, où et avec quels détails visuels distinctifs]\n\nChangement narratif :\n[Ce qui évolue entre l’ouverture et le dernier temps]\n\nPlan final :\n[L’action, l’expression ou la composition finale]\n\nLangage visuel :\n[Lumière, palette, texture et caractère de l’objectif]"
+      },
+      {
+        "id": "timeline",
+        "label": "Chronologie",
+        "title": "Diriger les temps du récit",
+        "description": "Répartissez les actions et les mouvements de caméra sur toute la durée.",
+        "copy": "0 à 6 secondes :\n[Composition d’ouverture + première action + mouvement de caméra]\n\n6 à 14 secondes :\n[Développement + réaction + transition de caméra]\n\n14 à 22 secondes :\n[Révélation principale ou temps de jeu + cadrage]\n\n22 à 30 secondes :\n[Résolution + position finale de la caméra]\n\nDirection audio :\n[Ambiance, dialogue bref et sons liés aux actions]"
+      },
+      {
+        "id": "constraints",
+        "label": "Contraintes",
+        "title": "Protéger la continuité et la lisibilité",
+        "description": "Indiquez les éléments qui ne doivent pas dériver pendant le développement de la scène.",
+        "copy": "Repères de continuité :\n[Tenue, accessoires, lieu, lumière et direction à l’écran]\n\nRègles physiques :\n[Contact, poids, vitesse et réactions de l’environnement]\n\nRègles de jeu :\n[Regards, gestes, expression du visage et rythme du dialogue]\n\nÀ éviter :\n[Coupes indésirables, sujets dupliqués, changements brusques de caméra et artefacts visuels]"
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "concept",
+        "body": "Le concept fixe un seul changement narratif lisible pour toute la scène."
+      },
+      {
+        "tabId": "timeline",
+        "body": "La chronologie attribue une action et un mouvement de caméra à chaque temps."
+      },
+      {
+        "tabId": "constraints",
+        "body": "Les contraintes répètent uniquement les détails qui doivent rester stables."
+      }
+    ],
+    "globalPrinciples": [
+      "Décrivez un arc complet avant d’ajouter les détails de chaque plan.",
+      "Utilisez des plages temporelles pour ordonner les actions au lieu de tout demander en même temps.",
+      "Gardez un langage de caméra précis et physiquement compatible avec la scène.",
+      "Reliez les gestes, les expressions et les dialogues brefs aux temps visibles du récit."
+    ],
+    "engineWhy": [
+      "La planification d’une scène plus longue donne assez de place à la mise en place, au développement et à la conclusion.",
+      "La direction minutée facilite l’évaluation de la caméra et du jeu, temps par temps.",
+      "Des règles physiques explicites aident à préserver des mouvements et des réactions crédibles dans toute la séquence."
+    ],
+    "demo": {
+      "title": "Démonstration chronologique Seedance 2.5",
+      "promptLabel": "Scène cinématographique minutée",
+      "prompt": "Une séquence urbaine réaliste se déploie en temps clairement définis. Commencez par un large mouvement d’ouverture, suivez une action humaine lisible, passez à un moment de jeu plus rapproché, puis terminez sur un plan composé. Gardez la tenue, la lumière, la direction du mouvement et les réactions du décor cohérentes.",
+      "notes": [
+        "Utilisez l’action visible et la transition de caméra pour vérifier la lisibilité de chaque temps.",
+        "L’état audio correspond au rendu sélectionné."
+      ],
+      "summary": {
+        "subject": "Une histoire humaine réaliste en milieu urbain",
+        "action": "Une suite d’actions minutées avec une fin claire",
+        "camera": "Mouvement d’ouverture, transition maîtrisée et plan final stable",
+        "style": "Naturalisme cinématographique, lumière et tenue cohérentes",
+        "output": "Scène 16:9 plus longue avec état audio issu du média"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Planification textuelle",
+        "outputLabel": "Rendu 720p",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "media",
+        "audioChipLabel": null,
+        "altContext": "démonstration d’une scène cinématographique minutée Seedance 2.5"
+      }
+    },
+    "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "seedance-2-5",
+    "showWhenEmpty": false,
+    "section": {
+      "title": "Rendus réels Seedance 2.5",
+      "intro": "Examinez des rendus MaxVideoAI publiés qui testent la narration longue, la maîtrise de la caméra, la cohérence physique et le jeu naturel des personnages.",
+      "defaultCtaLabel": "Voir tous les exemples Seedance",
+      "recreateLabel": null
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Tous"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinématographique"
+      },
+      {
+        "id": "audio",
+        "label": "Audio"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "continuity",
+        "icon": "users",
+        "title": "Continuité de la scène",
+        "body": "Observez comment les personnages, les tenues et le décor se maintiennent dans des séquences plus longues."
+      },
+      {
+        "id": "camera",
+        "icon": "maximize",
+        "title": "Contrôle de la caméra",
+        "body": "Suivez le cadrage et les mouvements de caméra d’un temps du récit au suivant."
+      },
+      {
+        "id": "physics",
+        "icon": "zap",
+        "title": "Cohérence physique",
+        "body": "Observez les mouvements, les contacts et les réactions de l’environnement au fil de la scène."
+      },
+      {
+        "id": "dialogue",
+        "icon": "audio",
+        "title": "Jeu humain",
+        "body": "Évaluez les gestes, les expressions et les courts moments parlés lorsqu’ils sont présents."
+      },
+      {
+        "id": "production",
+        "icon": "shield",
+        "title": "Évaluation éditoriale",
+        "body": "Chaque exemple présenté ici est un vrai rendu MaxVideoAI."
+      }
+    ],
+    "fallbackItems": null
   }
 }

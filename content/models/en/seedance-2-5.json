@@ -2,118 +2,358 @@
   "marketingName": "Seedance 2.5",
   "versionLabel": "2.5",
   "seo": {
-    "title": "Seedance 2.5 Coming Soon: What’s New | MaxVideoAI",
-    "description": "Discover the capabilities announced for Seedance 2.5, from 4K output and longer videos to multimodal guidance and precise editing.",
-    "image": "/models/seedance-2-5-coming-soon.png"
+    "title": "Seedance 2.5 AI Video: 30-Second Cinematic Scenes",
+    "description": "Explore real Seedance 2.5 renders focused on longer cinematic scenes, controlled camera movement, physical coherence and natural human performance."
   },
-  "overview": "Seedance 2.5 is shaping up as a major evolution of Seedance, with more detail, longer formats and richer creative control.",
+  "overview": "Seedance 2.5 is designed for longer cinematic sequences where story beats, camera movement, physical interaction and human performance need to remain coherent across the scene.",
   "hero": {
-    "title": "Seedance 2.5 is coming soon",
-    "intro": "Dreamina presents Seedance 2.5 by highlighting advances in resolution, duration, multimodal inputs, video references and precise local editing.",
-    "badge": "Preview · Discover what’s new",
+    "title": "Seedance 2.5 — cinematic AI video with longer, more controlled scenes",
+    "intro": "Explore Seedance 2.5 through real MaxVideoAI renders designed to test 30-second storytelling, camera movement, physical coherence and natural human performance.",
+    "badge": "Real MaxVideoAI examples · Up to 30 seconds · 720p",
     "ctaPrimary": {
-      "label": "Generate with Seedance 2.0",
-      "href": "/models/seedance-2-0"
+      "label": "View Seedance examples",
+      "href": "/examples/seedance"
     },
     "secondaryLinks": [
       {
-        "label": "View available Seedance examples",
-        "href": "/examples/seedance"
+        "label": "Explore available Seedance 2.0",
+        "href": "/models/seedance-2-0"
+      },
+      {
+        "label": "Open Seedance 2.5 prompt examples",
+        "href": "#prompting"
       }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Best uses for Seedance 2.5",
+    "items": [
+      {
+        "title": "Longer cinematic stories with a clear beginning, progression and ending",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Commercial concepts built around controlled reveals and final frames",
+        "icon": "product"
+      },
+      {
+        "title": "Human scenes driven by gestures, expressions and brief spoken moments",
+        "icon": "users"
+      },
+      {
+        "title": "Physical action where contact and environmental reactions must remain readable",
+        "icon": "camera"
+      }
+    ]
+  },
+  "technicalOverviewTitle": "Seedance 2.5 overview",
+  "technicalOverview": [
+    {
+      "label": "Scene planning",
+      "body": "Text-first concepts with timed story beats and explicit continuity constraints"
+    },
+    {
+      "label": "Duration",
+      "body": "Up to 30 seconds for longer scene development"
+    },
+    {
+      "label": "Published examples",
+      "body": "Real MaxVideoAI renders presented at 720p"
+    },
+    {
+      "label": "Hero framing",
+      "body": "24-second landscape render in 16:9"
+    },
+    {
+      "label": "Audio",
+      "body": "Audio status is shown from each published render"
+    }
+  ],
+  "tips": {
+    "title": "How to direct a longer Seedance 2.5 scene",
+    "items": [
+      "Write one clear story arc with a beginning, transition and ending.",
+      "Assign one camera move to each timed beat instead of stacking directions.",
+      "Describe visible causes and reactions to keep physical motion readable.",
+      "Keep dialogue brief and pair each line with a specific action or expression."
     ]
   },
   "faqs": [
     {
-      "q": "What makes Seedance 2.5 stand out?",
-      "a": "Seedance 2.5 brings together six announced advances: 4K output, videos up to 30 seconds, a beta mode up to 180 seconds, up to 50 multimodal inputs, reference-to-video control and precise local editing."
+      "q": "What does this Seedance 2.5 page show?",
+      "a": "It presents real MaxVideoAI renders selected to examine longer storytelling, camera movement, physical coherence and human performance."
     },
     {
-      "q": "What video lengths have been announced?",
-      "a": "The presentation highlights a standard mode up to 30 seconds and a beta long-video mode up to 180 seconds."
+      "q": "How long are the scenes shown here?",
+      "a": "The featured material includes a 24-second hero render and demonstrates scene planning for videos up to 30 seconds."
     },
     {
-      "q": "How does Seedance 2.5 expand creative control?",
-      "a": "Announced multimodal inputs, video references and local editing are intended to give creators more material for guiding and refining each scene."
+      "q": "How should I prompt a longer scene?",
+      "a": "Define the concept first, assign actions and camera direction to timed beats, then state the continuity and safety constraints that must remain stable."
     },
     {
-      "q": "What can I explore today?",
-      "a": "Try Seedance 2.0 or browse real Seedance examples to discover the model family’s visual possibilities."
+      "q": "Can I generate with Seedance 2.5 from this page?",
+      "a": "Public generation is not open on this page. Browse the Seedance gallery or explore the currently available Seedance 2.0 model."
     }
   ],
-  "custom": {
-    "prelaunch": {
-      "modelSlug": "seedance-2-5",
-      "dreaminaLabel": "coming_soon",
-      "checkedAt": "2026-07-26",
-      "productSurface": "Dreamina",
-      "sourceUrl": "https://dreamina.capcut.com/seedance/seedance-2-5",
-      "announcedProductClaims": [
-        "4k_output",
-        "standard_mode_up_to_30_seconds",
-        "beta_long_video_mode_up_to_180_seconds",
-        "up_to_50_multimodal_inputs",
-        "reference_to_video_control",
-        "precise_local_video_editing"
+  "decision": {
+    "modelSlug": "seedance-2-5",
+    "hero": {
+      "eyebrow": "BYTEDANCE NEXT-GEN VIDEO MODEL",
+      "title": "Seedance 2.5",
+      "subtitle": "30-second storytelling, cinematic continuity and camera control for longer scenes with coherent motion and natural human performance.",
+      "subtitleHighlights": [
+        "30-second storytelling",
+        "cinematic continuity",
+        "camera control"
       ],
-      "labels": {
-        "statusEyebrow": "Seedance 2.5 preview",
-        "claimsEyebrow": "What’s new",
-        "claimsTitle": "Six announced advances for video creation",
-        "claimsIntro": "Explore the headline capabilities presented for Seedance 2.5.",
-        "alternativesEyebrow": "Create today",
-        "alternativesTitle": "Bring ideas to life with Seedance 2.0",
-        "alternativesIntro": "Create now with Seedance 2.0 or explore real examples while the next generation takes shape.",
-        "faqEyebrow": "FAQ",
-        "faqTitle": "Everything to know about Seedance 2.5",
-        "sourceLabel": "Explore the official Seedance 2.5 announcement",
-        "checkedLabel": "Official source reviewed 26 July 2026"
+      "paragraph": "Use these real MaxVideoAI renders to evaluate how Seedance 2.5 carries story beats, camera direction, physical interactions and human performances through a longer sequence.",
+      "primaryCta": {
+        "label": "View Seedance examples",
+        "href": "/examples/seedance"
       },
-      "statusItems": [
+      "secondaryCta": {
+        "label": "Explore available Seedance 2.0",
+        "href": "/models/seedance-2-0"
+      },
+      "quickLinks": [
         {
-          "label": "Image quality",
-          "value": "4K output",
-          "detail": "4K output is one of the headline capabilities presented for Seedance 2.5.",
-          "state": "announced"
+          "label": "View Seedance examples",
+          "href": "/examples/seedance"
         },
         {
-          "label": "Video formats",
-          "value": "Up to 180s in beta",
-          "detail": "A standard mode up to 30 seconds and a long-video beta up to 180 seconds are announced.",
-          "state": "highlight"
+          "label": "Explore available Seedance 2.0",
+          "href": "/models/seedance-2-0"
         },
         {
-          "label": "Creative control",
-          "value": "Up to 50 inputs and local editing",
-          "detail": "Multimodal references, video guidance and precise local editing point to richer scene control.",
-          "state": "comingSoon"
-        }
-      ],
-      "announcedCapabilities": [
-        {
-          "title": "4K output",
-          "body": "4K output is among the announced highlights, opening the way to more detailed, polished imagery."
-        },
-        {
-          "title": "Up to 30 seconds",
-          "body": "The announced standard mode reaches up to 30 seconds, leaving more room for complete scenes and ideas."
-        },
-        {
-          "title": "Long-video beta",
-          "body": "A beta long-video mode up to 180 seconds is also presented for longer-form storytelling."
-        },
-        {
-          "title": "Up to 50 inputs",
-          "body": "Up to 50 multimodal inputs are highlighted, allowing richer combinations of creative materials."
-        },
-        {
-          "title": "Reference-to-video",
-          "body": "Video-reference control is presented as a way to guide generation from existing footage."
-        },
-        {
-          "title": "Local video editing",
-          "body": "Precise local editing is presented as a way to refine selected parts of a video with greater control."
+          "label": "Prompt examples",
+          "href": "#prompting"
         }
       ]
+    },
+    "media": {
+      "caption": "Real Seedance 2.5 render",
+      "description": "A longer cinematic sequence created with MaxVideoAI",
+      "renderLabel": "View full render",
+      "badges": [
+        "24s",
+        "720p",
+        "16:9"
+      ],
+      "altContext": "long-form cinematic Seedance 2.5 scene with controlled camera movement"
+    },
+    "features": [
+      {
+        "title": "30-second storytelling",
+        "body": "Plan a complete scene with room for setup, progression and payoff.",
+        "tone": "duration"
+      },
+      {
+        "title": "Camera continuity",
+        "body": "Direct deliberate framing and movement across consecutive story beats.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Physical coherence",
+        "body": "Evaluate motion, contact and environmental reactions across the sequence.",
+        "tone": "quality"
+      },
+      {
+        "title": "Human performance",
+        "body": "Shape readable gestures, expressions and short spoken moments.",
+        "tone": "audio"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Cinematic storytelling",
+        "body": "Use a clear beginning, progression and ending when one scene needs to carry a complete narrative beat.",
+        "cta": {
+          "label": "See cinematic examples",
+          "href": "/examples/seedance"
+        }
+      },
+      {
+        "title": "Commercial concepts",
+        "body": "Plan product reveals and brand moments around timed camera moves, visible actions and a clean closing frame.",
+        "cta": {
+          "label": "See Seedance examples",
+          "href": "/examples/seedance"
+        }
+      },
+      {
+        "title": "Human scenes",
+        "body": "Keep gestures, eye lines, expressions and brief dialogue tied to specific moments in the scene.",
+        "cta": {
+          "label": "Open Prompt Lab",
+          "href": "#prompting"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text-first scene planning",
+        "body": "Start with the subject, setting and narrative change, then define the visual ending before adding camera detail."
+      },
+      {
+        "title": "Timed beat direction",
+        "body": "Divide the scene into sequential time ranges and give each range one action, one camera instruction and one continuity anchor."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Explore real Seedance 2.5 outputs",
+      "subtitle": "Review accepted renders before deciding whether the model fits your storytelling and camera-direction needs.",
+      "footnote": "Public generation remains closed while these examples are available for evaluation.",
+      "ctaLabel": "View Seedance examples",
+      "ctaHref": "/examples/seedance"
+    },
+    "meta": {
+      "title": "Seedance 2.5 AI Video: 30-Second Cinematic Scenes",
+      "description": "Explore real Seedance 2.5 renders focused on longer cinematic scenes, controlled camera movement, physical coherence and natural human performance."
     }
+  },
+  "prompting": {
+    "modelSlug": "seedance-2-5",
+    "section": {
+      "title": "Prompt Lab — Seedance 2.5",
+      "intro": "Build a longer scene in three passes: define the concept, direct timed beats, then lock the constraints that protect continuity.",
+      "tip": "Give each time range one visible action and one camera instruction.",
+      "guide": {
+        "label": "Explore available Seedance 2.0",
+        "href": "/models/seedance-2-0"
+      },
+      "referencesTitle": "A text-first workflow for longer scenes"
+    },
+    "tabs": [
+      {
+        "id": "concept",
+        "label": "Concept",
+        "title": "Define the scene arc",
+        "description": "Establish who is present, what changes and where the scene must end.",
+        "copy": "Subject and setting:\n[Who appears, where they are, and the defining visual details]\n\nStory change:\n[What happens from the opening moment to the final beat]\n\nEnding frame:\n[The final action, expression or composition]\n\nVisual language:\n[Lighting, palette, texture and lens character]"
+      },
+      {
+        "id": "timeline",
+        "label": "Timeline",
+        "title": "Direct timed story beats",
+        "description": "Map actions and camera movement across the full duration.",
+        "copy": "0-6 seconds:\n[Opening composition + first action + camera move]\n\n6-14 seconds:\n[Development beat + reaction + camera transition]\n\n14-22 seconds:\n[Main reveal or performance beat + framing]\n\n22-30 seconds:\n[Resolution + final camera position]\n\nAudio direction:\n[Ambience, brief dialogue and action-linked sound cues]"
+      },
+      {
+        "id": "constraints",
+        "label": "Constraints",
+        "title": "Protect continuity and clarity",
+        "description": "State the elements that cannot drift while the scene develops.",
+        "copy": "Continuity anchors:\n[Wardrobe, props, location, lighting and screen direction]\n\nPhysical rules:\n[Contact, weight, speed and environmental reactions]\n\nPerformance rules:\n[Eye lines, gestures, facial expression and dialogue timing]\n\nAvoid:\n[Unwanted cuts, duplicate subjects, abrupt camera changes and visual artifacts]"
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "concept",
+        "body": "Concept sets one readable narrative change for the whole scene."
+      },
+      {
+        "tabId": "timeline",
+        "body": "Timeline assigns one action and one camera move to each beat."
+      },
+      {
+        "tabId": "constraints",
+        "body": "Constraints repeat only the details that must remain stable."
+      }
+    ],
+    "globalPrinciples": [
+      "Describe a complete scene arc before adding shot-level detail.",
+      "Use time ranges to sequence actions instead of requesting everything at once.",
+      "Keep camera language deliberate and physically compatible with the scene.",
+      "Tie gestures, expressions and brief dialogue to visible story beats."
+    ],
+    "engineWhy": [
+      "Longer scene planning gives setup, development and payoff enough room to read.",
+      "Timed direction makes camera movement and performance easier to evaluate beat by beat.",
+      "Explicit physical rules help preserve believable motion and reactions across the sequence."
+    ],
+    "demo": {
+      "title": "Seedance 2.5 timeline demonstration",
+      "promptLabel": "Timed cinematic scene",
+      "prompt": "A grounded city sequence unfolds through clear timed beats. Begin with a wide establishing move, follow one readable human action, transition to a closer performance moment, then settle on a composed ending frame. Keep wardrobe, lighting, direction of movement and environmental reactions consistent throughout.",
+      "notes": [
+        "Use the visible action and camera transition to check whether each timed beat remains readable.",
+        "The audio label matches the selected render."
+      ],
+      "summary": {
+        "subject": "One grounded human story in a city setting",
+        "action": "A sequence of timed actions with a clear ending",
+        "camera": "Establishing move, controlled transition and settled final frame",
+        "style": "Cinematic naturalism with stable lighting and wardrobe",
+        "output": "Longer 16:9 scene with media-derived audio status"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Text-first scene plan",
+        "outputLabel": "720p render",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "media",
+        "audioChipLabel": null,
+        "altContext": "Seedance 2.5 timed cinematic scene demonstration"
+      }
+    },
+    "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "seedance-2-5",
+    "showWhenEmpty": false,
+    "section": {
+      "title": "Real Seedance 2.5 outputs",
+      "intro": "Review accepted MaxVideoAI renders that test longer storytelling, controlled camera movement, physical coherence and natural human performance.",
+      "defaultCtaLabel": "View all Seedance examples",
+      "recreateLabel": null
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "All"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinematic"
+      },
+      {
+        "id": "audio",
+        "label": "Audio"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "continuity",
+        "icon": "users",
+        "title": "Scene continuity",
+        "body": "Inspect how people, wardrobe and setting carry across longer sequences."
+      },
+      {
+        "id": "camera",
+        "icon": "maximize",
+        "title": "Camera control",
+        "body": "Follow framing and camera movement from one story beat to the next."
+      },
+      {
+        "id": "physics",
+        "icon": "zap",
+        "title": "Physical coherence",
+        "body": "Observe motion, contact and environmental reactions through the scene."
+      },
+      {
+        "id": "dialogue",
+        "icon": "audio",
+        "title": "Human performance",
+        "body": "Evaluate gestures, expressions and short spoken moments where present."
+      },
+      {
+        "id": "production",
+        "icon": "shield",
+        "title": "Curated evaluation",
+        "body": "Every example shown here is a real MaxVideoAI render."
+      }
+    ],
+    "fallbackItems": null
   }
 }
