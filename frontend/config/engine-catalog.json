@@ -12559,7 +12559,7 @@
       ]
     },
     "versionLabel": "2.5",
-    "availability": "limited",
+    "availability": "available",
     "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
@@ -12879,7 +12879,7 @@
         "provider": "byteplus_modelark",
         "modelSlug": "dreamina-seedance-2-5-260628"
       },
-      "availability": "limited",
+      "availability": "available",
       "brandId": "bytedance"
     },
     "modes": [

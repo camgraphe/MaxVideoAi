@@ -196,7 +196,7 @@ const SEEDANCE_2_5_ENGINE: EngineCaps = {
     provider: 'byteplus_modelark',
     modelSlug: BYTEPLUS_SEEDANCE_2_5_MODEL_ID,
   },
-  availability: 'limited',
+  availability: 'available',
   brandId: 'bytedance',
 };
 
@@ -243,7 +243,7 @@ export const SEEDANCE_2_5_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     provider: 'ByteDance',
     brandId: 'bytedance',
     versionLabel: '2.5',
-    availability: 'limited',
+    availability: 'available',
     logoPolicy: 'textOnly',
     billingNote:
       'Your final price is calculated before generation from the selected duration, resolution, and inputs.',

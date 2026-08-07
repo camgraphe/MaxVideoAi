@@ -69,7 +69,10 @@ test('Seedance 2.5 is the public flagship across every product surface', () => {
   assert.equal(model.publication.app.variantLabel, '2.5');
   assert.equal(model.publication.pricing.featuredScenario, 'seedance-2-family');
 
-  assert.equal(getFalEngineById(slug)?.id, slug);
+  const publicEngine = getFalEngineById(slug);
+  assert.equal(publicEngine?.id, slug);
+  assert.equal(publicEngine?.availability, 'available');
+  assert.equal(publicEngine?.engine.availability, 'available');
   assert.equal(getBaseEngineIncludingHidden(slug)?.id, slug);
   assert.equal(getBaseEngines().some((engine) => engine.id === slug), true);
 
