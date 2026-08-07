@@ -17,7 +17,7 @@ import {
 const slug = 'seedance-2-5';
 const locales = ['en', 'fr', 'es'] as const;
 
-test('Seedance 2.5 uses the shared decision template while launch surfaces stay closed', () => {
+test('Seedance 2.5 uses the shared decision template with registry-owned launch surfaces open', () => {
   const model = getRuntimeModelById(slug);
   const template = getModelPageTemplateConfig(slug);
 
@@ -33,12 +33,12 @@ test('Seedance 2.5 uses the shared decision template while launch surfaces stay 
   assert.equal(template.sections.specs, true);
   assert.doesNotMatch(JSON.stringify(template), /\/app\?engine=seedance-2-5/i);
 
-  assert.equal(model.publication.model.indexable, false);
-  assert.equal(model.publication.app.published, false);
-  assert.equal(model.publication.pricing.published, false);
-  assert.equal(model.publication.examples.published, false);
-  assert.equal(model.publication.compare.published, false);
-  assert.equal(model.publication.sitemap.published, false);
+  assert.equal(model.publication.model.indexable, true);
+  assert.equal(model.publication.app.published, true);
+  assert.equal(model.publication.pricing.published, true);
+  assert.equal(model.publication.examples.published, true);
+  assert.equal(model.publication.compare.published, true);
+  assert.equal(model.publication.sitemap.published, true);
   assert.deepEqual(listPrelaunchModelPageTemplateSlugs(), []);
 });
 
@@ -56,6 +56,7 @@ test('Seedance 2.5 localized marketing content is strict, aligned, and free of i
     const examples = parseModelExamplesContent(document.examples, slug, locale, `${source}#examples`);
 
     assert.equal(decision.modelSlug, slug);
+    assert.equal(decision.hero.primaryCta.href, '/app?engine=seedance-2-5');
     assert.equal(prompting.modelSlug, slug);
     assert.equal(examples.modelSlug, slug);
     assert.equal(examples.showWhenEmpty, false);
@@ -85,10 +86,10 @@ test('Seedance 2.5 localized marketing content is strict, aligned, and free of i
   }
 });
 
-test('Seedance 2.5 closed pricing publication emits no public offer schema', () => {
+test('Seedance 2.5 published pricing emits a public offer schema', () => {
   const engine = getFalEngineById(slug);
   assert.ok(engine);
-  assert.equal(engine.surfaces.pricing.includeInEstimator, false);
+  assert.equal(engine.surfaces.pricing.includeInEstimator, true);
 
   const schemas = buildModelSchemaPayloads({
     canonical: `https://maxvideoai.com/models/${slug}`,
@@ -106,5 +107,5 @@ test('Seedance 2.5 closed pricing publication emits no public offer schema', () 
   const product = schemas.find((schema) => schema['@type'] === 'Product');
 
   assert.ok(product);
-  assert.equal('offers' in product, false);
+  assert.equal('offers' in product, true);
 });

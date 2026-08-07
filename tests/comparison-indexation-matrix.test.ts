@@ -241,7 +241,7 @@ test('a noindex candidate with observed low demand gets an accurate rationale', 
   assert.deepEqual(english?.rationale, ['low_demand_outside_top_10']);
 });
 
-test('the generated inventory covers all 876 localized published comparison URLs', () => {
+test('the generated inventory covers all 885 localized published comparison URLs', () => {
   const artifacts = generateComparisonIndexationArtifacts() as {
     document: {
       summary: {
@@ -262,22 +262,22 @@ test('the generated inventory covers all 876 localized published comparison URLs
     markdown: string;
   };
 
-  assert.equal(artifacts.document.summary.publishedSlugs, 292);
-  assert.equal(artifacts.document.summary.totalUrls, 876);
+  assert.equal(artifacts.document.summary.publishedSlugs, 295);
+  assert.equal(artifacts.document.summary.totalUrls, 885);
   assert.equal(artifacts.document.summary.gscRowsOutsidePublishedSet, 21);
   assert.equal(artifacts.document.summary.gscRowsOutsidePublishedSetWithClicks, 2);
   assert.equal(artifacts.document.legacyGscRows.length, 21);
-  assert.equal(artifacts.document.rows.length, 876);
+  assert.equal(artifacts.document.rows.length, 885);
   assert.equal(
     new Set(artifacts.document.rows.map((row) => `${row.locale}:${row.slug}`)).size,
-    876,
+    885,
   );
   assert.equal(
     Object.values(artifacts.document.summary.byClassification).reduce(
       (sum, count) => sum + count,
       0,
     ),
-    876,
+    885,
   );
   assert.ok(
     artifacts.document.rows
@@ -307,5 +307,5 @@ test('the generator CLI writes the JSON and Markdown audit artifacts', () => {
   assert.equal(result.status, 0, result.stderr);
   assert.ok(existsSync('docs/seo/comparison-indexation-matrix-2026-07-08.json'));
   assert.ok(existsSync('docs/seo/comparison-indexation-matrix-2026-07-08.md'));
-  assert.match(result.stdout, /"totalUrls": 876/);
+  assert.match(result.stdout, /"totalUrls": 885/);
 });

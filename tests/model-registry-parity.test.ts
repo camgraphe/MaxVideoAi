@@ -28,14 +28,43 @@ const baseline = JSON.parse(readFileSync('tests/fixtures/model-registry-baseline
 
 test('runtime model projection matches every baseline identity and surface', () => {
   const runtimeById = new Map(listRuntimeModels().map((model) => [model.id, model]));
+  const reciprocalSeedance25PairOwners = new Set([
+    'kling-3-pro',
+    'seedance-2-0',
+    'veo-3-1',
+  ]);
   for (const expected of baseline.models) {
     const actual = runtimeById.get(expected.id);
     assert.ok(actual, `missing runtime model ${expected.id}`);
     assert.equal(actual.slug, expected.slug);
     assert.equal(actual.family, expected.family);
     assert.equal(actual.category, expected.category);
-    assert.deepEqual(toLegacyModelSurfaces(actual), expected.publication);
+    const actualPublication = toLegacyModelSurfaces(actual);
+    if (reciprocalSeedance25PairOwners.has(expected.id)) {
+      assert.equal(
+        actualPublication.compare.publishedPairs.filter((slug) => slug === 'seedance-2-5').length,
+        1,
+        expected.id,
+      );
+      actualPublication.compare.publishedPairs = actualPublication.compare.publishedPairs.filter(
+        (slug) => slug !== 'seedance-2-5',
+      );
+    }
+    assert.deepEqual(actualPublication, expected.publication);
   }
+});
+
+test('legacy app projection preserves registry-owned launch metadata', () => {
+  const model = getRuntimeModelById('seedance-2-5');
+  assert.ok(model);
+  assert.equal(model.publication.app.launchBadge, 'new');
+  assert.deepEqual(toLegacyModelSurfaces(model).app, {
+    enabled: true,
+    discoveryRank: -3,
+    variantGroup: 'seedance-2-0',
+    variantLabel: '2.5',
+    launchBadge: 'new',
+  });
 });
 
 test('every published runtime model has canonical localized paths', () => {
@@ -102,15 +131,22 @@ test('family model membership and current variants remain identical to baseline'
     assert.ok(actual, expected.id);
     assert.equal(actual.defaultModelSlug, expected.defaultModelSlug);
     assert.deepEqual(actual.routeAliases, expected.routeAliases);
+    const expectedPublishedModelSlugs = expected.id === 'seedance'
+      ? ['seedance-2-5', ...(expected.examplesPage?.publishedModelSlugs ?? [])]
+      : expected.examplesPage?.publishedModelSlugs ?? [];
+    const baselineCurrentModelSlugs = expected.examplesPage?.currentModelSlugs?.length
+      ? expected.examplesPage.currentModelSlugs
+      : expected.examplesPage?.publishedModelSlugs ?? [];
+    const expectedCurrentModelSlugs = expected.id === 'seedance'
+      ? ['seedance-2-5', ...baselineCurrentModelSlugs]
+      : baselineCurrentModelSlugs;
     assert.deepEqual(
       getModelFamilyExamplesPageConfig(expected.id)?.publishedModelSlugs,
-      expected.examplesPage?.publishedModelSlugs ?? []
+      expectedPublishedModelSlugs,
     );
     assert.deepEqual(
       getModelFamilyExamplesPageConfig(expected.id)?.currentModelSlugs,
-      expected.examplesPage?.currentModelSlugs?.length
-        ? expected.examplesPage.currentModelSlugs
-        : expected.examplesPage?.publishedModelSlugs ?? []
+      expectedCurrentModelSlugs,
     );
   }
 });

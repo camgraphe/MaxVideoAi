@@ -370,6 +370,7 @@
           "pika-text-to-video",
           "seedance-1-5-pro",
           "seedance-2-0",
+          "seedance-2-5",
           "sora-2",
           "sora-2-pro",
           "veo-3-1-fast",
@@ -5697,6 +5698,7 @@
           "pika-text-to-video",
           "seedance-1-5-pro",
           "seedance-2-0",
+          "seedance-2-5",
           "sora-2",
           "sora-2-pro",
           "veo-3-1",
@@ -9790,12 +9792,14 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "seedance-2-5",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini",
         "seedance-1-5-pro"
       ],
       "currentModelSlugs": [
+        "seedance-2-5",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini"
@@ -10170,12 +10174,14 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "seedance-2-5",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini",
         "seedance-1-5-pro"
       ],
       "currentModelSlugs": [
+        "seedance-2-5",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini"
@@ -10221,7 +10227,8 @@
           "veo-3-1-lite",
           "wan-2-5",
           "wan-2-6",
-          "seedance-2-0-fast"
+          "seedance-2-0-fast",
+          "seedance-2-5"
         ],
         "includeInHub": true
       },
@@ -10886,12 +10893,14 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "seedance-2-5",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini",
         "seedance-1-5-pro"
       ],
       "currentModelSlugs": [
+        "seedance-2-5",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini"
@@ -11585,12 +11594,14 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "seedance-2-5",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini",
         "seedance-1-5-pro"
       ],
       "currentModelSlugs": [
+        "seedance-2-5",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini"
@@ -12199,12 +12210,14 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "seedance-2-5",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini",
         "seedance-1-5-pro"
       ],
       "currentModelSlugs": [
+        "seedance-2-5",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini"
@@ -12532,12 +12545,14 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "seedance-2-5",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini",
         "seedance-1-5-pro"
       ],
       "currentModelSlugs": [
+        "seedance-2-5",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini"
@@ -12548,23 +12563,36 @@
     "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
-        "indexable": false,
-        "includeInSitemap": false
+        "indexable": true,
+        "includeInSitemap": true
       },
       "examples": {
-        "includeInFamilyResolver": false,
-        "includeInFamilyCopy": false
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
       },
       "compare": {
-        "suggestOpponents": [],
-        "publishedPairs": [],
-        "includeInHub": false
+        "suggestOpponents": [
+          "seedance-2-0",
+          "kling-3-pro",
+          "veo-3-1"
+        ],
+        "publishedPairs": [
+          "seedance-2-0",
+          "kling-3-pro",
+          "veo-3-1"
+        ],
+        "includeInHub": true
       },
       "app": {
-        "enabled": false
+        "enabled": true,
+        "discoveryRank": -3,
+        "variantGroup": "seedance-2-0",
+        "variantLabel": "2.5",
+        "launchBadge": "new"
       },
       "pricing": {
-        "includeInEstimator": false
+        "includeInEstimator": true,
+        "featuredScenario": "seedance-2-family"
       }
     },
     "surfacesSource": "registry",
@@ -12578,7 +12606,11 @@
       "queueDepth": 0,
       "region": "ap-southeast-1",
       "modes": [
-        "t2v"
+        "t2v",
+        "i2v",
+        "ref2v",
+        "v2v",
+        "extend"
       ],
       "maxDurationSec": 30,
       "resolutions": [
@@ -12593,20 +12625,52 @@
       ],
       "audio": true,
       "upscale4k": false,
-      "extend": false,
+      "extend": true,
       "motionControls": false,
       "keyframes": false,
       "params": {},
-      "inputLimits": {},
+      "inputLimits": {
+        "imageMaxMB": 30,
+        "videoMaxMB": 50,
+        "audioMaxMB": 15,
+        "videoMaxDurationSec": 30
+      },
       "inputSchema": {
         "required": [
           {
             "id": "prompt",
             "type": "text",
             "label": "Prompt"
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Start image",
+            "description": "Required starting frame for image-to-video.",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
           }
         ],
         "optional": [
+          {
+            "id": "end_image_url",
+            "type": "image",
+            "label": "End image",
+            "description": "Optional final frame for image-to-video transitions.",
+            "modes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
           {
             "id": "duration",
             "type": "enum",
@@ -12662,8 +12726,118 @@
               "720p"
             ],
             "default": "480p"
+          },
+          {
+            "id": "generate_audio",
+            "type": "boolean",
+            "label": "Audio",
+            "default": true
+          },
+          {
+            "id": "image_urls",
+            "type": "image",
+            "label": "Reference images (up to 30)",
+            "description": "Optional visual references for reference-to-video or video-to-video.",
+            "modes": [
+              "ref2v",
+              "v2v"
+            ],
+            "minCount": 1,
+            "maxCount": 30,
+            "source": "either"
+          },
+          {
+            "id": "video_url",
+            "type": "video",
+            "label": "Source video",
+            "description": "Required source video for video-to-video editing.",
+            "modes": [
+              "v2v"
+            ],
+            "requiredInModes": [
+              "v2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "video_urls",
+            "type": "video",
+            "label": "Reference video clips (up to 10)",
+            "description": "Optional motion or pacing references for reference-to-video.",
+            "modes": [
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 10,
+            "source": "either"
+          },
+          {
+            "id": "extension_source_videos",
+            "type": "video",
+            "label": "Source clips to extend (up to 3)",
+            "description": "Extend one source clip or stitch a transition from two or three clips.",
+            "modes": [
+              "extend"
+            ],
+            "requiredInModes": [
+              "extend"
+            ],
+            "minCount": 1,
+            "maxCount": 3,
+            "source": "either",
+            "slotLabelPattern": "Source clip {n}"
+          },
+          {
+            "id": "audio_urls",
+            "type": "audio",
+            "label": "Reference audio clips (up to 10)",
+            "description": "Optional audio references for reference-to-video or video-to-video.",
+            "modes": [
+              "ref2v",
+              "v2v"
+            ],
+            "minCount": 0,
+            "maxCount": 10,
+            "source": "either"
           }
-        ]
+        ],
+        "referenceBudget": {
+          "fieldIds": [
+            "image_url",
+            "end_image_url",
+            "image_urls",
+            "video_url",
+            "video_urls",
+            "extension_source_videos",
+            "audio_urls"
+          ],
+          "maxTotal": 50,
+          "countUniqueUrls": true,
+          "modes": [
+            "i2v",
+            "ref2v",
+            "v2v",
+            "extend"
+          ]
+        },
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp",
+            "mp4",
+            "mov",
+            "mp3",
+            "wav"
+          ],
+          "maxImageSizeMB": 30,
+          "minImageSidePx": 300,
+          "maxVideoSizeMB": 50,
+          "maxAudioSizeMB": 15
+        }
       },
       "pricingDetails": {
         "currency": "USD",
@@ -12697,7 +12871,7 @@
       "pricing": {
         "unit": "USD/s",
         "currency": "USD",
-        "notes": "Hidden administrator canary priced from Seedance 2.5 usage tokens."
+        "notes": "Price is calculated before generation based on duration, resolution, and whether a source video is used."
       },
       "updatedAt": "2026-08-07T00:00:00Z",
       "ttlSec": 600,
@@ -12756,7 +12930,229 @@
             "16:9"
           ],
           "audioToggle": true,
-          "notes": "Hidden canary: text-to-video, 4-30s, 480p/720p, 16:9, optional generated audio."
+          "notes": "Create 4-30 second 480p or 720p 16:9 videos with generated audio available."
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "byteplus/dreamina-seedance-2.5/image-to-video",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30
+            ],
+            "default": 4
+          },
+          "resolution": [
+            "480p",
+            "720p"
+          ],
+          "aspectRatio": [
+            "16:9"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 30,
+          "audioToggle": true,
+          "notes": "Animate one start image with an optional end image; 4-30 seconds, 480p/720p, 16:9, and generated audio. images: jpg, jpeg, png, webp"
+        }
+      },
+      {
+        "mode": "ref2v",
+        "falModelId": "byteplus/dreamina-seedance-2.5/reference-to-video",
+        "ui": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30
+            ],
+            "default": 4
+          },
+          "resolution": [
+            "480p",
+            "720p"
+          ],
+          "aspectRatio": [
+            "16:9"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 50,
+          "audioToggle": true,
+          "notes": "Use up to 30 images, 10 video clips, and 10 audio clips, with 50 unique references total. images: jpg, jpeg, png, webp; video: mp4, mov; audio: mp3, wav"
+        }
+      },
+      {
+        "mode": "v2v",
+        "falModelId": "byteplus/dreamina-seedance-2.5/video-to-video",
+        "ui": {
+          "modes": [
+            "v2v"
+          ],
+          "duration": {
+            "options": [
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30
+            ],
+            "default": 4
+          },
+          "resolution": [
+            "480p",
+            "720p"
+          ],
+          "aspectRatio": [
+            "16:9"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 50,
+          "audioToggle": true,
+          "notes": "Edit one source video with optional image and audio references; 4-30 seconds, 480p/720p, 16:9, and generated audio. images: jpg, jpeg, png, webp; video: mp4, mov; audio: mp3, wav"
+        }
+      },
+      {
+        "mode": "extend",
+        "falModelId": "byteplus/dreamina-seedance-2.5/extend",
+        "ui": {
+          "modes": [
+            "extend"
+          ],
+          "duration": {
+            "options": [
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30
+            ],
+            "default": 4
+          },
+          "resolution": [
+            "480p",
+            "720p"
+          ],
+          "aspectRatio": [
+            "16:9"
+          ],
+          "maxUploadMB": 50,
+          "audioToggle": true,
+          "notes": "Continue one to three source clips; 4-30 seconds, 480p/720p, 16:9, and generated audio. video: mp4, mov"
         }
       }
     ],
@@ -12771,7 +13167,7 @@
         "value": false
       },
       "extend": {
-        "value": false
+        "value": true
       }
     }
   },

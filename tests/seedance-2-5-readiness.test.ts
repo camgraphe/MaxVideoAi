@@ -36,22 +36,42 @@ import {
 
 const slug = 'seedance-2-5';
 
-test('Seedance 2.5 is an executable hidden engine with no public generation surface', () => {
+test('Seedance 2.5 is the public flagship across every product surface', () => {
   const model = getRuntimeModelById(slug);
   assert.ok(model);
   assert.notEqual(model.presentationOnly, true);
   assert.equal(resolveRuntimeEngineInput(slug)?.id, slug);
   assert.equal(model.publication.model.published, true);
-  assert.equal(model.publication.model.indexable, false);
-  assert.equal(model.publication.app.published, false);
-  assert.equal(model.publication.pricing.published, false);
-  assert.equal(model.publication.examples.published, false);
-  assert.equal(model.publication.compare.published, false);
-  assert.equal(model.publication.sitemap.published, false);
+  assert.equal(model.publication.model.indexable, true);
+  assert.equal(model.publication.examples.published, true);
+  assert.equal(model.publication.examples.includeInFamilyCopy, true);
+  assert.equal(model.publication.examples.current, true);
+  assert.equal(model.publication.compare.published, true);
+  assert.equal(model.publication.compare.indexed, true);
+  assert.equal(model.publication.app.published, true);
+  assert.equal(model.publication.pricing.published, true);
+  assert.equal(model.publication.sitemap.published, true);
+  assert.equal(model.publication.app.launchBadge, 'new');
+
+  assert.equal(model.publication.examples.familyRank, 0);
+  assert.deepEqual(model.publication.compare.suggestedOpponentIds, [
+    'seedance-2-0',
+    'kling-3-pro',
+    'veo-3-1',
+  ]);
+  assert.deepEqual(model.publication.compare.publishedPairIds, [
+    'seedance-2-0',
+    'kling-3-pro',
+    'veo-3-1',
+  ]);
+  assert.equal(model.publication.app.discoveryRank, -3);
+  assert.equal(model.publication.app.variantGroup, 'seedance-2-0');
+  assert.equal(model.publication.app.variantLabel, '2.5');
+  assert.equal(model.publication.pricing.featuredScenario, 'seedance-2-family');
 
   assert.equal(getFalEngineById(slug)?.id, slug);
   assert.equal(getBaseEngineIncludingHidden(slug)?.id, slug);
-  assert.equal(getBaseEngines().some((engine) => engine.id === slug), false);
+  assert.equal(getBaseEngines().some((engine) => engine.id === slug), true);
 
   const engineCatalog = JSON.parse(
     readFileSync('frontend/config/engine-catalog.json', 'utf8'),
@@ -61,6 +81,33 @@ test('Seedance 2.5 is an executable hidden engine with no public generation surf
   ) as Array<{ engineId?: string }>;
   assert.equal(engineCatalog.some((entry) => entry.engineId === slug), true);
   assert.equal(modelRoster.some((entry) => entry.engineId === slug), true);
+});
+
+test('Seedance publication ranks and reciprocal flagship comparison pairs stay exact', () => {
+  const expectedRanks = new Map([
+    ['seedance-2-5', 0],
+    ['seedance-2-0', 1],
+    ['seedance-2-0-fast', 2],
+    ['seedance-2-0-mini', 3],
+  ]);
+  for (const [modelId, expectedRank] of expectedRanks) {
+    assert.equal(getRuntimeModelById(modelId)?.publication.examples.familyRank, expectedRank, modelId);
+  }
+
+  const standard = getRuntimeModelById('seedance-2-0');
+  assert.ok(standard);
+  assert.deepEqual(standard.publication.compare.suggestedOpponentIds, [
+    'veo-3-1',
+    'kling-3-pro',
+    'sora-2',
+  ]);
+  for (const opponentId of ['seedance-2-0', 'kling-3-pro', 'veo-3-1']) {
+    assert.equal(
+      getRuntimeModelById(opponentId)?.publication.compare.publishedPairIds.includes(slug),
+      true,
+      opponentId,
+    );
+  }
 });
 
 test('Seedance 2.5 exposes one unified five-mode engine schema', () => {

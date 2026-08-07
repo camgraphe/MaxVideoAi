@@ -157,12 +157,18 @@ test('Seedance examples landing owns use-case-focused SERP metadata', () => {
   assert.equal(family.defaultModelSlug, 'seedance-2-0');
   assert.deepEqual(family.routeAliases, ['seedance-1-5-pro', 'seedance-2-0', 'seedance-2-0-fast', 'dreamina-seedance-2-0-mini']);
   assert.deepEqual(getExampleFamilyModelSlugs('seedance'), [
+    'seedance-2-5',
     'seedance-2-0',
     'seedance-2-0-fast',
     'dreamina-seedance-2-0-mini',
     'seedance-1-5-pro',
   ]);
-  assert.deepEqual(getExampleFamilyCurrentModelSlugs('seedance'), ['seedance-2-0', 'seedance-2-0-fast', 'dreamina-seedance-2-0-mini']);
+  assert.deepEqual(getExampleFamilyCurrentModelSlugs('seedance'), [
+    'seedance-2-5',
+    'seedance-2-0',
+    'seedance-2-0-fast',
+    'dreamina-seedance-2-0-mini',
+  ]);
   assert.match(landing.intro, /Seedance 2\.0 Mini/i);
   assert.match(landing.intro, /lower-cost|batch|ecommerce|UGC|reference-guided/i);
   assert.match(landing.summary, /Seedance 2\.0.*polished|final|high-ceiling/i);

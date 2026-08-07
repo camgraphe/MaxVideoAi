@@ -110,7 +110,7 @@
       "paragraph": "Utilisez ces vrais rendus MaxVideoAI pour évaluer comment Seedance 2.5 maintient les temps du récit, la direction de caméra, les interactions physiques et le jeu des personnages dans une séquence plus longue.",
       "primaryCta": {
         "label": "Voir les exemples Seedance",
-        "href": "/fr/galerie/seedance"
+        "href": "/app?engine=seedance-2-5"
       },
       "secondaryCta": {
         "label": "Découvrir Seedance 2.0 disponible",

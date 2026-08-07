@@ -111,6 +111,9 @@ export function toLegacyModelSurfaces(model: RuntimeModelEntry): ModelPublicatio
       ...(model.publication.app.variantLabel === undefined
         ? {}
         : { variantLabel: model.publication.app.variantLabel }),
+      ...(model.publication.app.launchBadge === undefined
+        ? {}
+        : { launchBadge: model.publication.app.launchBadge }),
     },
     pricing: {
       includeInEstimator: model.publication.pricing.published,

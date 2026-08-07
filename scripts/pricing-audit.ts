@@ -5,8 +5,15 @@ import type { FrozenPricingOutput } from '../frontend/src/lib/pricing-audit/type
 
 async function main(): Promise<void> {
   const fixturePath = new URL('../tests/fixtures/pricing-parity.v1.json', import.meta.url);
+  const launchAdditionsFixturePath = new URL(
+    '../tests/fixtures/pricing-shadow-additions.v1.json',
+    import.meta.url,
+  );
   const fixture = JSON.parse(await readFile(fixturePath, 'utf8')) as { rows: FrozenPricingOutput[] };
-  const matrix = await buildPricingAuditMatrix(fixture.rows);
+  const launchAdditions = JSON.parse(await readFile(launchAdditionsFixturePath, 'utf8')) as {
+    rows: FrozenPricingOutput[];
+  };
+  const matrix = await buildPricingAuditMatrix([...fixture.rows, ...launchAdditions.rows]);
   if (process.argv.includes('--json')) {
     process.stdout.write(`${JSON.stringify(matrix, null, 2)}\n`);
   } else {

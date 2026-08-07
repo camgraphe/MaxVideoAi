@@ -106,8 +106,8 @@
     "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
-        "indexable": false,
-        "includeInSitemap": false
+        "indexable": true,
+        "includeInSitemap": true
       }
     }
   },

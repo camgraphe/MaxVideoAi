@@ -17,6 +17,7 @@ export type ModelRegistryPublication = {
     discoveryRank?: number;
     variantGroup?: string;
     variantLabel?: string;
+    launchBadge?: 'new';
   };
   pricing: { published: boolean; featuredScenario?: string };
   sitemap: { published: boolean };
@@ -74,6 +75,7 @@ function isPresentationOnlyPublication(model: ModelRegistryEntry): boolean {
     publication.app.discoveryRank === undefined &&
     publication.app.variantGroup === undefined &&
     publication.app.variantLabel === undefined &&
+    publication.app.launchBadge === undefined &&
     !publication.pricing.published &&
     publication.pricing.featuredScenario === undefined &&
     !publication.sitemap.published
@@ -163,6 +165,18 @@ export function validateModelRegistryDocument(value: unknown): ModelRegistryDocu
       `${model.id}.publication.compare.publishedPairIds`
     );
     requireBoolean(model.publication?.app?.published, `${model.id}.publication.app.published`);
+    if (
+      model.publication?.app?.launchBadge !== undefined &&
+      model.publication.app.launchBadge !== 'new'
+    ) {
+      fail(`${model.id}.publication.app.launchBadge must equal "new" when provided`);
+    }
+    if (
+      model.publication?.app?.launchBadge !== undefined &&
+      !model.publication.app.published
+    ) {
+      fail(`${model.id}.publication.app.launchBadge requires a published app surface`);
+    }
     requireOptionalNonBlankString(
       model.publication?.app?.variantGroup,
       `${model.id}.publication.app.variantGroup`
@@ -278,6 +292,7 @@ export function validateModelRegistryDocument(value: unknown): ModelRegistryDocu
         publication.app.discoveryRank === undefined &&
         publication.app.variantGroup === undefined &&
         publication.app.variantLabel === undefined &&
+        publication.app.launchBadge === undefined &&
         !publication.pricing.published &&
         publication.pricing.featuredScenario === undefined &&
         !publication.sitemap.published;

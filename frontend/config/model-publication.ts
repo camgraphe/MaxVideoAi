@@ -21,6 +21,7 @@ export type AppPublicationConfig = {
   discoveryRank?: number;
   variantGroup?: string;
   variantLabel?: string;
+  launchBadge?: 'new';
 };
 
 export type PricingPublicationConfig = {

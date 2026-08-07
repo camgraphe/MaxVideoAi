@@ -110,7 +110,7 @@
       "paragraph": "Use these real MaxVideoAI renders to evaluate how Seedance 2.5 carries story beats, camera direction, physical interactions and human performances through a longer sequence.",
       "primaryCta": {
         "label": "View Seedance examples",
-        "href": "/examples/seedance"
+        "href": "/app?engine=seedance-2-5"
       },
       "secondaryCta": {
         "label": "Explore available Seedance 2.0",

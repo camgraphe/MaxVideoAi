@@ -8,17 +8,17 @@ Source : Google Search Console, propriété `sc-domain:maxvideoai.com`, recherch
 
 | Mesure | Total |
 | --- | ---: |
-| Slugs publiés | 292 |
-| URLs localisées auditées | 876 |
+| Slugs publiés | 295 |
+| URLs localisées auditées | 885 |
 | URLs présentes dans l'export GSC | 639 |
-| URLs sans ligne GSC dans les 996 premières pages | 237 |
+| URLs sans ligne GSC dans les 996 premières pages | 246 |
 | URLs avec au moins un clic | 144 |
 | Lignes GSC hors du périmètre publié | 21 |
 | Lignes hors périmètre avec clics | 2 |
 | Keep | 292 |
 | Enrich | 28 |
 | Review | 347 |
-| Noindex candidate | 209 |
+| Noindex candidate | 218 |
 
 ## Règles conservatrices
 
@@ -143,6 +143,7 @@ Ce lot commence par les URLs absentes de l'export GSC, puis par celles avec le m
 | en | [kling-2-6-pro-vs-ltx-2-fast](https://maxvideoai.com/ai-video-engines/kling-2-6-pro-vs-ltx-2-fast) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 | en | [kling-2-6-pro-vs-veo-3-1-fast](https://maxvideoai.com/ai-video-engines/kling-2-6-pro-vs-veo-3-1-fast) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 | en | [kling-3-pro-vs-ltx-2-3-fast](https://maxvideoai.com/ai-video-engines/kling-3-pro-vs-ltx-2-3-fast) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
+| en | [kling-3-pro-vs-seedance-2-5](https://maxvideoai.com/ai-video-engines/kling-3-pro-vs-seedance-2-5) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 | en | [ltx-2-3-fast-vs-minimax-hailuo-02-text](https://maxvideoai.com/ai-video-engines/ltx-2-3-fast-vs-minimax-hailuo-02-text) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 | en | [ltx-2-3-fast-vs-seedance-1-5-pro](https://maxvideoai.com/ai-video-engines/ltx-2-3-fast-vs-seedance-1-5-pro) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 | en | [ltx-2-3-pro-vs-minimax-hailuo-02-text](https://maxvideoai.com/ai-video-engines/ltx-2-3-pro-vs-minimax-hailuo-02-text) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
@@ -154,6 +155,8 @@ Ce lot commence par les URLs absentes de l'export GSC, puis par celles avec le m
 | en | [ltx-2-3-pro-vs-wan-2-6](https://maxvideoai.com/ai-video-engines/ltx-2-3-pro-vs-wan-2-6) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 | en | [minimax-hailuo-02-text-vs-seedance-1-5-pro](https://maxvideoai.com/ai-video-engines/minimax-hailuo-02-text-vs-seedance-1-5-pro) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 | en | [seedance-1-5-pro-vs-veo-3-1-fast](https://maxvideoai.com/ai-video-engines/seedance-1-5-pro-vs-veo-3-1-fast) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
+| en | [seedance-2-0-vs-seedance-2-5](https://maxvideoai.com/ai-video-engines/seedance-2-0-vs-seedance-2-5) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
+| en | [seedance-2-5-vs-veo-3-1](https://maxvideoai.com/ai-video-engines/seedance-2-5-vs-veo-3-1) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 | es | [kling-2-5-turbo-vs-kling-2-6-pro](https://maxvideoai.com/es/comparativa/kling-2-5-turbo-vs-kling-2-6-pro) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 | es | [kling-2-5-turbo-vs-ltx-2-3-pro](https://maxvideoai.com/es/comparativa/kling-2-5-turbo-vs-ltx-2-3-pro) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 | es | [kling-2-5-turbo-vs-ltx-2-fast](https://maxvideoai.com/es/comparativa/kling-2-5-turbo-vs-ltx-2-fast) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
@@ -170,6 +173,7 @@ Ce lot commence par les URLs absentes de l'export GSC, puis par celles avec le m
 | es | [kling-3-4k-vs-luma-ray-2-flash](https://maxvideoai.com/es/comparativa/kling-3-4k-vs-luma-ray-2-flash) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 | es | [kling-3-pro-vs-ltx-2-3-pro](https://maxvideoai.com/es/comparativa/kling-3-pro-vs-ltx-2-3-pro) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 | es | [kling-3-pro-vs-luma-ray-2](https://maxvideoai.com/es/comparativa/kling-3-pro-vs-luma-ray-2) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
+| es | [kling-3-pro-vs-seedance-2-5](https://maxvideoai.com/es/comparativa/kling-3-pro-vs-seedance-2-5) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 | es | [ltx-2-3-pro-vs-luma-ray-2](https://maxvideoai.com/es/comparativa/ltx-2-3-pro-vs-luma-ray-2) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 | es | [ltx-2-3-pro-vs-pika-text-to-video](https://maxvideoai.com/es/comparativa/ltx-2-3-pro-vs-pika-text-to-video) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 | es | [ltx-2-3-pro-vs-sora-2-pro](https://maxvideoai.com/es/comparativa/ltx-2-3-pro-vs-sora-2-pro) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
@@ -182,10 +186,6 @@ Ce lot commence par les URLs absentes de l'export GSC, puis par celles avec le m
 | es | [ltx-2-fast-vs-sora-2-pro](https://maxvideoai.com/es/comparativa/ltx-2-fast-vs-sora-2-pro) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 | es | [ltx-2-vs-pika-text-to-video](https://maxvideoai.com/es/comparativa/ltx-2-vs-pika-text-to-video) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 | es | [luma-ray-2-flash-vs-minimax-hailuo-02-text](https://maxvideoai.com/es/comparativa/luma-ray-2-flash-vs-minimax-hailuo-02-text) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
-| es | [luma-ray-2-flash-vs-pika-text-to-video](https://maxvideoai.com/es/comparativa/luma-ray-2-flash-vs-pika-text-to-video) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
-| es | [luma-ray-2-flash-vs-seedance-1-5-pro](https://maxvideoai.com/es/comparativa/luma-ray-2-flash-vs-seedance-1-5-pro) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
-| es | [luma-ray-2-flash-vs-sora-2](https://maxvideoai.com/es/comparativa/luma-ray-2-flash-vs-sora-2) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
-| es | [luma-ray-2-flash-vs-sora-2-pro](https://maxvideoai.com/es/comparativa/luma-ray-2-flash-vs-sora-2-pro) | 0 | 0 | — | no_gsc_row_or_editorial_signal |
 
 ## URLs GSC hors du périmètre publié
 
@@ -218,4 +218,4 @@ Ces anciennes URLs ou variantes ne font pas partie des 292 slugs actuellement pu
 | es | [seedance-2-0-vs-veo-3-1-first-last](https://maxvideoai.com/es/comparativa/seedance-2-0-vs-veo-3-1-first-last) | 0 | 1 | 9 |
 | es | [veo-3-1-fast-vs-veo-3-1-first-last](https://maxvideoai.com/es/comparativa/veo-3-1-fast-vs-veo-3-1-first-last) | 0 | 1 | 11 |
 
-L'inventaire exhaustif des 876 URLs se trouve dans `docs/seo/comparison-indexation-matrix-2026-07-08.json`.
+L'inventaire exhaustif des 885 URLs se trouve dans `docs/seo/comparison-indexation-matrix-2026-07-08.json`.

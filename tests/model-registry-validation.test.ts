@@ -228,6 +228,30 @@ test('registry rejects blank and non-string optional publication labels', () => 
   }
 });
 
+test('registry launch badges require a published app surface and the supported value', () => {
+  assert.doesNotThrow(() => validateModelRegistryDocument(mutate((copy) => {
+    const model = copy.models.find((candidate: any) => candidate.id === 'veo-3-1');
+    model.publication.app.launchBadge = 'new';
+  })));
+
+  assert.throws(
+    () => validateModelRegistryDocument(mutate((copy) => {
+      const model = copy.models.find((candidate: any) => candidate.id === 'veo-3-1');
+      model.publication.app.launchBadge = 'featured';
+    })),
+    /launchBadge must equal "new"/i
+  );
+
+  assert.throws(
+    () => validateModelRegistryDocument(mutate((copy) => {
+      const model = copy.models.find((candidate: any) => candidate.id === 'veo-3-1');
+      model.publication.app.published = false;
+      model.publication.app.launchBadge = 'new';
+    })),
+    /launchBadge requires a published app surface/i
+  );
+});
+
 test('registry rejects broken references, chains, and tombstone collisions', () => {
   assert.throws(
     () => validateModelRegistryDocument(mutate((copy) => {
