@@ -5,6 +5,7 @@ import test from 'node:test';
 
 import { deriveGenerationAttachmentReferences } from '../frontend/app/api/generate/_lib/attachment-references';
 import { submitBytePlusGenerateTask } from '../frontend/app/api/generate/_lib/byteplus-submission';
+import { getFalEngineById } from '../frontend/src/config/falEngines';
 import { ENV } from '../frontend/src/lib/env';
 import type { PendingReceipt } from '../frontend/app/api/generate/_lib/initial-video-job';
 import { buildGenerateValidationPayload } from '../frontend/app/api/generate/_lib/validation-payload';
@@ -1079,5 +1080,120 @@ test('Seedance 2.5 forwards each optional generated-audio selection to ModelArk'
     ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = original.seedance25Enabled;
     ENV.SEEDANCE_2_5_PROVIDER = original.seedance25Provider;
     console.warn = original.warn;
+  }
+});
+
+test('Seedance 2.5 submits the exact provider content for every public mode', { concurrency: false }, async () => {
+  const inputSchema = getFalEngineById('seedance-2-5')?.engine.inputSchema;
+  assert.ok(inputSchema);
+  const original = {
+    seedance25Enabled: ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED,
+    seedance25Provider: ENV.SEEDANCE_2_5_PROVIDER,
+  };
+  const imageUrl = 'https://cdn.maxvideoai.com/seedance-25-image.png';
+  const videoUrl = 'https://cdn.maxvideoai.com/seedance-25-video.mp4';
+  const audioUrl = 'https://cdn.maxvideoai.com/seedance-25-audio.wav';
+  const cases = [
+    {
+      mode: 't2v' as const,
+      initialImageUrl: null,
+      normalizedReferenceImages: [],
+      videoUrls: [],
+      resolvedAudioUrl: null,
+      audioUrls: [],
+      referenceValuesByField: {},
+      expectedTypes: ['text'],
+    },
+    {
+      mode: 'i2v' as const,
+      initialImageUrl: imageUrl,
+      normalizedReferenceImages: [],
+      videoUrls: [],
+      resolvedAudioUrl: null,
+      audioUrls: [],
+      referenceValuesByField: { image_url: [imageUrl] },
+      expectedTypes: ['text', 'image_url'],
+    },
+    {
+      mode: 'ref2v' as const,
+      initialImageUrl: null,
+      normalizedReferenceImages: [imageUrl],
+      videoUrls: [videoUrl],
+      resolvedAudioUrl: audioUrl,
+      audioUrls: [audioUrl],
+      referenceValuesByField: {
+        image_urls: [imageUrl],
+        video_urls: [videoUrl],
+        audio_urls: [audioUrl],
+      },
+      expectedTypes: ['text', 'image_url', 'video_url', 'audio_url'],
+    },
+    {
+      mode: 'v2v' as const,
+      initialImageUrl: null,
+      normalizedReferenceImages: [imageUrl],
+      videoUrls: [videoUrl],
+      resolvedAudioUrl: audioUrl,
+      audioUrls: [audioUrl],
+      referenceValuesByField: {
+        image_urls: [imageUrl],
+        video_url: [videoUrl],
+        audio_urls: [audioUrl],
+      },
+      expectedTypes: ['text', 'image_url', 'video_url', 'audio_url'],
+    },
+    {
+      mode: 'extend' as const,
+      initialImageUrl: null,
+      normalizedReferenceImages: [],
+      videoUrls: [videoUrl],
+      resolvedAudioUrl: audioUrl,
+      audioUrls: [audioUrl],
+      referenceValuesByField: { extension_source_videos: [videoUrl] },
+      expectedTypes: ['text', 'video_url'],
+    },
+  ];
+  ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = 'true';
+  ENV.SEEDANCE_2_5_PROVIDER = 'byteplus_modelark';
+
+  try {
+    for (const scenario of cases) {
+      let contentTypes: string[] = [];
+      const result = await submitBytePlusGenerateTask({
+        ...baseParams,
+        engineId: 'seedance-2-5',
+        engineLabel: 'Seedance 2.5',
+        durationSec: 8,
+        mode: scenario.mode,
+        initialImageUrl: scenario.initialImageUrl,
+        endImageUrl: null,
+        normalizedReferenceImages: scenario.normalizedReferenceImages,
+        videoUrls: scenario.videoUrls,
+        resolvedAudioUrl: scenario.resolvedAudioUrl,
+        audioUrls: scenario.audioUrls,
+        inputSchema,
+        referenceValuesByField: scenario.referenceValuesByField,
+        deps: {
+          getBytePlusArkConfigFn: () =>
+            ({ seedance25ModelId: 'seedance-25-id' }) as never,
+          getBytePlusModelArkClientFn: () => ({
+            createSeedanceFastTask: async (payload) => {
+              contentTypes = payload.content.map((item) => item.type);
+              return {
+                providerJobId: `provider_seedance_25_${scenario.mode}`,
+                status: 'queued',
+              };
+            },
+          }),
+          queryFn: async () => undefined,
+        },
+      });
+
+      assert.equal(result.ok, true, scenario.mode);
+      assert.deepEqual(contentTypes, scenario.expectedTypes, scenario.mode);
+    }
+  } finally {
+    ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = original.seedance25Enabled;
+    ENV.SEEDANCE_2_5_PROVIDER = original.seedance25Provider;
   }
 });

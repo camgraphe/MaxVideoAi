@@ -137,7 +137,7 @@ export async function submitBytePlusGenerateTask(params: {
       referenceVideoUrls:
         params.mode === 'ref2v' || params.mode === 'v2v' || params.mode === 'extend' ? params.videoUrls : undefined,
       referenceAudioUrls:
-        params.mode === 'ref2v' || params.mode === 'v2v' || params.mode === 'extend'
+        params.mode === 'ref2v' || params.mode === 'v2v'
           ? Array.from(new Set([...(params.resolvedAudioUrl ? [params.resolvedAudioUrl] : []), ...params.audioUrls]))
           : undefined,
       resolution: params.effectiveResolution,
@@ -187,7 +187,7 @@ export async function submitBytePlusGenerateTask(params: {
           referenceVideoCount:
             params.mode === 'ref2v' || params.mode === 'v2v' || params.mode === 'extend' ? params.videoUrls.length : 0,
           referenceAudioCount:
-            params.mode === 'ref2v' || params.mode === 'v2v' || params.mode === 'extend' ? params.audioUrls.length : 0,
+            params.mode === 'ref2v' || params.mode === 'v2v' ? params.audioUrls.length : 0,
         },
       },
     });

@@ -196,6 +196,105 @@ test('disabled Seedance 2.5 returns before configured-engine database access', {
   }
 });
 
+test('public configured Seedance 2.5 resolves without admin or hidden-engine access', { concurrency: false }, async () => {
+  const engine = getFalEngineById(slug)?.engine;
+  assert.ok(engine);
+  const original = {
+    bytePlusEnabled: ENV.BYTEPLUS_ARK_ENABLED,
+    modelId: ENV.BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID,
+    seedance25Enabled: ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED,
+    seedance25Provider: ENV.SEEDANCE_2_5_PROVIDER,
+    seedance25AdminOnly: ENV.SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY,
+  };
+  const boundaryCalls: string[] = [];
+  ENV.BYTEPLUS_ARK_ENABLED = 'true';
+  ENV.BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID = BYTEPLUS_SEEDANCE_2_5_DEFAULT_MODEL_ID;
+  ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = 'true';
+  ENV.SEEDANCE_2_5_PROVIDER = 'byteplus_modelark';
+  ENV.SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY = 'false';
+
+  try {
+    const result = await resolveGenerateRouteContext({
+      body: { engineId: slug, mode: 't2v' },
+      req: new NextRequest('http://localhost/api/generate', { method: 'POST' }),
+      boundaryOverrides: {
+        getConfiguredEngine: async () => {
+          boundaryCalls.push('getConfiguredEngine');
+          return engine;
+        },
+        getConfiguredEngineIncludingHidden: async () => {
+          boundaryCalls.push('getConfiguredEngineIncludingHidden');
+          throw new Error('public Seedance 2.5 must not use the hidden fallback');
+        },
+        isDatabaseConfigured: () => true,
+        ensureBillingSchema: async () => undefined,
+        requireAdmin: async () => {
+          boundaryCalls.push('requireAdmin');
+          throw new Error('public Seedance 2.5 must not require an administrator');
+        },
+      },
+    });
+
+    assert.equal(result.ok, true);
+    if (!result.ok) assert.fail('public configured Seedance 2.5 should resolve');
+    assert.equal(result.context.engine.id, slug);
+    assert.equal(result.context.providerKey, 'byteplus_modelark');
+    assert.equal(result.context.isBytePlusV1a, true);
+    assert.deepEqual(boundaryCalls, ['getConfiguredEngine']);
+  } finally {
+    ENV.BYTEPLUS_ARK_ENABLED = original.bytePlusEnabled;
+    ENV.BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID = original.modelId;
+    ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = original.seedance25Enabled;
+    ENV.SEEDANCE_2_5_PROVIDER = original.seedance25Provider;
+    ENV.SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY = original.seedance25AdminOnly;
+  }
+});
+
+test('Seedance 2.5 never falls back to hidden configured-engine resolution', { concurrency: false }, async () => {
+  const hiddenEngine = getFalEngineById(slug)?.engine;
+  assert.ok(hiddenEngine);
+  const original = {
+    bytePlusEnabled: ENV.BYTEPLUS_ARK_ENABLED,
+    modelId: ENV.BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID,
+    seedance25Enabled: ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED,
+    seedance25Provider: ENV.SEEDANCE_2_5_PROVIDER,
+    seedance25AdminOnly: ENV.SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY,
+  };
+  let hiddenFallbackCalls = 0;
+  ENV.BYTEPLUS_ARK_ENABLED = 'true';
+  ENV.BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID = BYTEPLUS_SEEDANCE_2_5_DEFAULT_MODEL_ID;
+  ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = 'true';
+  ENV.SEEDANCE_2_5_PROVIDER = 'byteplus_modelark';
+  ENV.SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY = 'false';
+
+  try {
+    const result = await resolveGenerateRouteContext({
+      body: { engineId: slug, mode: 't2v' },
+      req: new NextRequest('http://localhost/api/generate', { method: 'POST' }),
+      boundaryOverrides: {
+        getConfiguredEngine: async () => undefined,
+        getConfiguredEngineIncludingHidden: async () => {
+          hiddenFallbackCalls += 1;
+          return hiddenEngine;
+        },
+      },
+    });
+
+    assert.deepEqual(result, {
+      ok: false,
+      status: 400,
+      body: { ok: false, error: 'Unknown engine' },
+    });
+    assert.equal(hiddenFallbackCalls, 0);
+  } finally {
+    ENV.BYTEPLUS_ARK_ENABLED = original.bytePlusEnabled;
+    ENV.BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID = original.modelId;
+    ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = original.seedance25Enabled;
+    ENV.SEEDANCE_2_5_PROVIDER = original.seedance25Provider;
+    ENV.SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY = original.seedance25AdminOnly;
+  }
+});
+
 test('the production handoff records the factual canary, controls, rollback, and verification', () => {
   const packet = readFileSync('docs/model-launch/seedance-2-5.md', 'utf8');
   const stub = readFileSync('docs/model-launch/seedance-2-5.engine.stub.ts', 'utf8');

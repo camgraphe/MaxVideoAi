@@ -262,7 +262,7 @@ test('recognized model selection preserves all current config keys', () => {
   assert.equal(resolveBytePlusSeedanceModelId('seedance-2-0-mini', config), 'mini-id');
   assert.equal(resolveBytePlusSeedanceModelId('seedance-2-0-fast-byteplus', config), 'fast-id');
   assert.equal(resolveBytePlusSeedanceModelId('seedance-2-5', config), 'seedance-25-id');
-  assert.equal(isBytePlusSeedanceHiddenEngine('seedance-2-5'), true);
+  assert.equal(isBytePlusSeedanceHiddenEngine('seedance-2-5'), false);
   assert.deepEqual(
     getBytePlusSeedanceAllowedAspectRatios('seedance-2-0'),
     ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16']

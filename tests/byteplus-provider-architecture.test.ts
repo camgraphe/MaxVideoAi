@@ -15,6 +15,10 @@ import {
 } from '../frontend/src/server/video-providers/byteplus-modelark';
 import { listFalEngines } from '../frontend/src/config/falEngines';
 import {
+  isBytePlusSeedanceHiddenEngine,
+  requiresBytePlusSeedanceEarlyGate,
+} from '../frontend/src/server/video-providers/byteplus-modelark-profile-policy';
+import {
   expectedBytePlusTokens,
   getBytePlusAccounting,
   getBytePlusUnitPriceUsdPer1kTokens,
@@ -417,6 +421,76 @@ test('BytePlus Standard 4k accounting uses 4k dimensions and input-aware officia
   assert.equal(getBytePlusUnitPriceUsdPer1kTokens('seedance-2-0-fast', 'no_video_input', '4k'), 0.0056);
 });
 
+test('Seedance 2.5 accounting selects the factual rate class from video input presence', () => {
+  const cases = [
+    {
+      name: 'text to video',
+      mode: 't2v',
+      refs: {},
+      expectedClass: 'no_video_input',
+      expectedRate: 0.0107,
+    },
+    {
+      name: 'image to video',
+      mode: 'i2v',
+      refs: { imageUrl: 'https://cdn.maxvideoai.com/start.png' },
+      expectedClass: 'no_video_input',
+      expectedRate: 0.0107,
+    },
+    {
+      name: 'image-only reference to video',
+      mode: 'ref2v',
+      refs: { referenceImages: ['https://cdn.maxvideoai.com/reference.png'] },
+      expectedClass: 'no_video_input',
+      expectedRate: 0.0107,
+    },
+    {
+      name: 'video reference to video',
+      mode: 'ref2v',
+      refs: { videoUrls: ['https://cdn.maxvideoai.com/reference.mp4'] },
+      expectedClass: 'video_input',
+      expectedRate: 0.0064,
+    },
+    {
+      name: 'video edit',
+      mode: 'v2v',
+      refs: { videoUrls: ['https://cdn.maxvideoai.com/source.mp4'] },
+      expectedClass: 'video_input',
+      expectedRate: 0.0064,
+    },
+    {
+      name: 'video extension',
+      mode: 'extend',
+      refs: { videoUrls: ['https://cdn.maxvideoai.com/source.mp4'] },
+      expectedClass: 'video_input',
+      expectedRate: 0.0064,
+    },
+  ] as const;
+
+  for (const scenario of cases) {
+    const accounting = getBytePlusAccounting({
+      has_audio: false,
+      settings_snapshot: {
+        inputMode: scenario.mode,
+        refs: scenario.refs,
+      },
+    });
+    assert.equal(
+      accounting.byteplusBillingInputType,
+      scenario.expectedClass,
+      scenario.name
+    );
+    assert.equal(
+      getBytePlusUnitPriceUsdPer1kTokens(
+        'seedance-2-5',
+        accounting.byteplusBillingInputType
+      ),
+      scenario.expectedRate,
+      scenario.name
+    );
+  }
+});
+
 test('BytePlus Mini cannot fall back to Fal through provider env override', () => {
   const providerSource = readFileSync(providerPath, 'utf8');
   const envSource = readFileSync(envPath, 'utf8');
@@ -470,6 +544,14 @@ test('hidden direct Fast keeps its narrow raw runtime caps by default', () => {
   assert.deepEqual(runtimeEngine.aspectRatios, ['16:9']);
   assert.deepEqual(hiddenEntry.modes[0]?.ui.resolution, ['720p']);
   assert.equal(hiddenEntry.modes[0]?.ui.audioToggle, false);
+});
+
+test('Seedance early gating is independent from hidden-engine resolution', () => {
+  assert.equal(requiresBytePlusSeedanceEarlyGate('seedance-2-5'), true);
+  assert.equal(requiresBytePlusSeedanceEarlyGate('seedance-2-0-fast-byteplus'), true);
+  assert.equal(requiresBytePlusSeedanceEarlyGate('seedance-2-0'), false);
+  assert.equal(isBytePlusSeedanceHiddenEngine('seedance-2-5'), false);
+  assert.equal(isBytePlusSeedanceHiddenEngine('seedance-2-0-fast-byteplus'), true);
 });
 
 test('profile policy is separated from the thin provider facade', () => {

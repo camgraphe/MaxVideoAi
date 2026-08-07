@@ -19,6 +19,7 @@ import {
   shouldRouteSeedanceEngineToBytePlus,
   type BytePlusSeedanceProfile,
 } from '@/server/video-providers/byteplus-modelark';
+import { requiresBytePlusSeedanceEarlyGate } from '@/server/video-providers/byteplus-modelark-profile-policy';
 import {
   resolveVideoProviderRoutingPlan,
   shouldRouteKlingDirectSourceElementsToFal,
@@ -51,6 +52,7 @@ type GenerateRouteContextBoundaries = {
   getConfiguredEngine: typeof getConfiguredEngine;
   getConfiguredEngineIncludingHidden: typeof getConfiguredEngineIncludingHidden;
   isDatabaseConfigured: typeof isDatabaseConfigured;
+  requireAdmin: typeof requireAdmin;
 };
 
 const defaultGenerateRouteContextBoundaries: GenerateRouteContextBoundaries = {
@@ -58,6 +60,7 @@ const defaultGenerateRouteContextBoundaries: GenerateRouteContextBoundaries = {
   getConfiguredEngine,
   getConfiguredEngineIncludingHidden,
   isDatabaseConfigured,
+  requireAdmin,
 };
 
 export async function resolveGenerateRouteContext(params: {
@@ -71,7 +74,7 @@ export async function resolveGenerateRouteContext(params: {
     ...params.boundaryOverrides,
   };
   const requestedEngineId = String(body.engineId || '');
-  if (isBytePlusSeedanceHiddenEngine(requestedEngineId)) {
+  if (requiresBytePlusSeedanceEarlyGate(requestedEngineId)) {
     try {
       assertBytePlusSeedanceSubmissionEnabled(requestedEngineId);
     } catch (error) {
@@ -97,7 +100,7 @@ export async function resolveGenerateRouteContext(params: {
     isBytePlusSeedanceAdminOnly(requestedEngineId);
   if (bytePlusRequiresEarlyAdmin) {
     try {
-      await requireAdmin(req);
+      await boundaries.requireAdmin(req);
     } catch (error) {
       if (error instanceof AdminAuthError) {
         return { ok: false, status: error.status, body: { ok: false, error: error.message } };
@@ -190,7 +193,7 @@ export async function resolveGenerateRouteContext(params: {
       isLumaAgentsVideoEngine(engine.id))
   ) {
     try {
-      await requireAdmin(req);
+      await boundaries.requireAdmin(req);
       isAdminForDirectProvider = true;
     } catch {
       isAdminForDirectProvider = false;

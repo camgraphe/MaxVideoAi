@@ -220,8 +220,14 @@ export function isBytePlusSeedanceFastEngine(engineId: string | null | undefined
   return engineId === BYTEPLUS_SEEDANCE_FAST_ENGINE_ID;
 }
 
-export function isBytePlusSeedanceHiddenEngine(engineId: string | null | undefined): boolean {
+export function requiresBytePlusSeedanceEarlyGate(
+  engineId: string | null | undefined
+): boolean {
   return engineId === BYTEPLUS_SEEDANCE_FAST_ENGINE_ID || engineId === SEEDANCE_2_5_ENGINE_ID;
+}
+
+export function isBytePlusSeedanceHiddenEngine(engineId: string | null | undefined): boolean {
+  return engineId === BYTEPLUS_SEEDANCE_FAST_ENGINE_ID;
 }
 
 export function isBytePlusSeedanceSubmissionEnabled(
