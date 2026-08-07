@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "last_updated": "2026-06-25",
+  "last_updated": "2026-08-07",
   "specs": [
     {
       "modelSlug": "sora-2",
@@ -810,6 +810,43 @@
         "lipSync": "Supported",
         "cameraMotionControls": "camera_fixed + prompt-based controls",
         "watermark": "No (MaxVideoAI)"
+      }
+    },
+    {
+      "modelSlug": "seedance-2-5",
+      "sources": [
+        "https://maxvideoai.com/models/seedance-2-5",
+        "https://console.byteplus.com/ark/region:ap-southeast-1/model/detail?name=dreamina-seedance-2-5-260628",
+        "https://docs.byteplus.com/en/docs/modelark/1520757"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "referenceToVideo": "Supported",
+        "videoToVideo": "Supported (video editing)",
+        "extension": "Supported",
+        "firstLastFrame": "Supported (start image + optional end image)",
+        "workflows": [
+          "Text-to-video",
+          "Image-to-video",
+          "Reference-to-video",
+          "Video editing",
+          "Extension"
+        ],
+        "referenceLimit": "Up to 50 combined references",
+        "referenceImageStyle": "Up to 30 image references",
+        "referenceVideo": "Up to 10 video references",
+        "referenceAudio": "Up to 10 audio references",
+        "maxResolution": "480p / 720p",
+        "maxDuration": "4-30s",
+        "aspectRatios": [
+          "16:9"
+        ],
+        "fpsOptions": [
+          "24 fps"
+        ],
+        "audioOutput": "Optional generated audio",
+        "nativeAudioGeneration": "Optional"
       }
     },
     {

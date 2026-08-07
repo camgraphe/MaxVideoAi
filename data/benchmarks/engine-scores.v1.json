@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "last_updated": "2026-07-01",
+  "last_updated": "2026-08-07",
   "method": "manual-v1-internet-calibrated-with-platform-pricing",
   "scores": [
     {
@@ -197,6 +197,21 @@
       "speedStability": 7.2,
       "pricing": 8.5,
       "last_updated": "2026-04-06"
+    },
+    {
+      "modelSlug": "seedance-2-5",
+      "fidelity": 9.1,
+      "visualQuality": 9.2,
+      "motion": 9.2,
+      "consistency": 9.0,
+      "anatomy": null,
+      "textRendering": null,
+      "lipsyncQuality": null,
+      "sequencingQuality": null,
+      "controllability": 9.0,
+      "speedStability": null,
+      "pricing": null,
+      "last_updated": "2026-08-07"
     },
     {
       "modelSlug": "seedance-2-0",

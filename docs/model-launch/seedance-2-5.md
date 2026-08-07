@@ -188,6 +188,33 @@ made, and the owner reported no defect or timestamp. Dialogue is retained as
 the audio candidate but must remain non-public until a human confirms its
 exact English lines, speaker attribution, and lip-sync.
 
+### Benchmark Lab evidence boundary — 2026-08-07
+
+The initial Benchmark Lab row is an evidence-bounded editorial score based only
+on the accepted City and Train outputs above. It is not a complete run of the
+versioned eight-prompt pack, and it does not extend the sampled-frame and
+product-owner acceptance claims already recorded in this ledger.
+
+| Criterion | Initial value | Existing evidence boundary |
+| --- | ---: | --- |
+| Prompt adherence (`fidelity`) | 9.1 | City preserved the requested woman, suitcase-contained coastal city, camera progression, and final reveal; Train preserved the requested train, lightning-built glass arches, lateral movement, and aerial reveal. |
+| Visual quality (`visualQuality`) | 9.2 | Both accepted outputs passed sampled-frame QA with coherent environments and clean final frames; no material visual defect was reported at signoff. |
+| Motion realism (`motion`) | 9.2 | City showed apparent continuous camera progression; Train remained legible through apparent continuous lateral motion and the crane-like final reveal. |
+| Temporal consistency (`consistency`) | 9.0 | The woman and suitcase remained stable in City, while the locomotive and wagons remained stable without duplication or derailment in Train. |
+| Controllability (`controllability`) | 9.0 | Both initial takes followed their requested camera progression, framing, scene containment, and final reveal closely enough for marketing acceptance. |
+| Human fidelity (`anatomy`) | `null` | Neither accepted hero was the methodology's targeted human-interaction evaluation; the absence of a sampled material anatomy defect is not scored as a dedicated anatomy result. |
+| Text legibility (`textRendering`) | `null` | Neither accepted hero requested text; observing no text or logo does not evaluate requested typography. |
+| Audio and lip sync (`lipsyncQuality`) | `null` | City and Train are silent, and Dialogue still requires human dialogue, attribution, and lip-sync review. |
+| Multi-shot sequencing (`sequencingQuality`) | `null` | City and Train explicitly requested continuous movement without cuts, so they do not evaluate continuity across the explicit shot changes required by the methodology. The proposed 9.1 launch value was therefore not used. |
+| Speed and stability (`speedStability`) | `null` | Two marketing renders do not meet the methodology's normal operational sample requirements. |
+| Value score (`pricing`) | `null` | The recorded costs establish billing facts, not a comparative editorial production-value score. |
+
+The displayed overall score is **9.1**, using the unchanged arithmetic mean of
+prompt adherence 9.1, motion realism 9.2, and temporal consistency 9.0. Null
+criteria do not enter that formula. The row will be recalibrated from normal
+post-launch usage under the existing versioned methodology; unevidenced fields
+remain null until qualifying evidence exists.
+
 ## Final noindex marketing handoff — 2026-08-07
 
 The marketing pack is ready for the existing noindex model pages with exactly
