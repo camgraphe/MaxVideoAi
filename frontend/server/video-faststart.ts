@@ -14,9 +14,20 @@ type EnsureFastStartVideoOptions = {
   videoUrl: string;
 };
 
+export type EnsureFastStartVideoDependencies = {
+  fetchFn?: typeof fetch;
+  isStorageConfiguredFn?: typeof isStorageConfigured;
+  isStorageUrlFn?: typeof isStorageUrl;
+  getFfmpegPathFn?: typeof getFfmpegPath;
+  ensureExecutableFfmpegPathFn?: typeof ensureExecutableFfmpegPath;
+  runFastStartFn?: typeof runFastStart;
+  uploadFileBufferFn?: typeof uploadFileBuffer;
+};
+
 const requireForRuntime = createRequire(import.meta.url);
 const DEFAULT_MAX_BYTES = 80 * 1024 * 1024;
-const DOWNLOAD_TIMEOUT_MS = 45_000;
+const DOWNLOAD_HEADER_TIMEOUT_MS = 45_000;
+const DOWNLOAD_BODY_TIMEOUT_MS = 120_000;
 let ffmpegPathResolved = false;
 let resolvedFfmpegPath: string | null = null;
 
@@ -84,20 +95,36 @@ async function runFastStart(ffmpegPath: string, inputPath: string, outputPath: s
   });
 }
 
-export async function ensureFastStartVideo(options: EnsureFastStartVideoOptions): Promise<string | null> {
+export async function ensureFastStartVideo(
+  options: EnsureFastStartVideoOptions,
+  dependencies: EnsureFastStartVideoDependencies = {}
+): Promise<string | null> {
+  const fetchFn = dependencies.fetchFn ?? fetch;
+  const isStorageConfiguredFn = dependencies.isStorageConfiguredFn ?? isStorageConfigured;
+  const isStorageUrlFn = dependencies.isStorageUrlFn ?? isStorageUrl;
+  const getFfmpegPathFn = dependencies.getFfmpegPathFn ?? getFfmpegPath;
+  const ensureExecutableFfmpegPathFn = dependencies.ensureExecutableFfmpegPathFn ?? ensureExecutableFfmpegPath;
+  const runFastStartFn = dependencies.runFastStartFn ?? runFastStart;
+  const uploadFileBufferFn = dependencies.uploadFileBufferFn ?? uploadFileBuffer;
   const sourceUrl = normalizeMediaUrl(options.videoUrl) ?? options.videoUrl;
   if (!options.jobId || !/^https?:\/\//i.test(sourceUrl)) return null;
-  if (isDisabled() || !isStorageConfigured() || isStorageUrl(sourceUrl)) return null;
+  if (isDisabled() || !isStorageConfiguredFn() || isStorageUrlFn(sourceUrl)) return null;
 
-  const ffmpegPath = getFfmpegPath();
+  const ffmpegPath = getFfmpegPathFn();
   if (!ffmpegPath) return null;
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), DOWNLOAD_TIMEOUT_MS);
+  let headerTimeout: ReturnType<typeof setTimeout> | null = setTimeout(
+    () => controller.abort(),
+    DOWNLOAD_HEADER_TIMEOUT_MS
+  );
+  let bodyTimeout: ReturnType<typeof setTimeout> | null = null;
   let tempDir: string | null = null;
 
   try {
-    const response = await fetch(sourceUrl, { cache: 'no-store', signal: controller.signal });
+    const response = await fetchFn(sourceUrl, { cache: 'no-store', signal: controller.signal });
+    clearTimeout(headerTimeout);
+    headerTimeout = null;
     if (!response.ok) {
       console.warn('[video-faststart] source fetch failed', { jobId: options.jobId, status: response.status });
       return null;
@@ -113,7 +140,10 @@ export async function ensureFastStartVideo(options: EnsureFastStartVideoOptions)
       return null;
     }
 
+    bodyTimeout = setTimeout(() => controller.abort(), DOWNLOAD_BODY_TIMEOUT_MS);
     const buffer = Buffer.from(await response.arrayBuffer());
+    clearTimeout(bodyTimeout);
+    bodyTimeout = null;
     if (!buffer.length || buffer.length > maxBytes) {
       console.warn('[video-faststart] downloaded source too large or empty', {
         jobId: options.jobId,
@@ -127,12 +157,12 @@ export async function ensureFastStartVideo(options: EnsureFastStartVideoOptions)
     const inputPath = path.join(tempDir, 'source.mp4');
     const outputPath = path.join(tempDir, 'faststart.mp4');
     await writeFile(inputPath, buffer);
-    const executableFfmpegPath = await ensureExecutableFfmpegPath(ffmpegPath);
-    await runFastStart(executableFfmpegPath, inputPath, outputPath);
+    const executableFfmpegPath = await ensureExecutableFfmpegPathFn(ffmpegPath);
+    await runFastStartFn(executableFfmpegPath, inputPath, outputPath);
     const optimized = await readFile(outputPath);
     if (!optimized.length) return null;
 
-    const upload = await uploadFileBuffer({
+    const upload = await uploadFileBufferFn({
       data: optimized,
       mime: 'video/mp4',
       userId: options.userId ?? undefined,
@@ -145,7 +175,8 @@ export async function ensureFastStartVideo(options: EnsureFastStartVideoOptions)
     console.warn('[video-faststart] failed', { jobId: options.jobId, error });
     return null;
   } finally {
-    clearTimeout(timeout);
+    if (headerTimeout) clearTimeout(headerTimeout);
+    if (bodyTimeout) clearTimeout(bodyTimeout);
     if (tempDir) {
       await rm(tempDir, { recursive: true, force: true }).catch(() => {});
     }
