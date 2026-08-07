@@ -11,7 +11,7 @@ publish, schedule, or otherwise send a post to LinkedIn.
 
 | Approved hero | Use | Alt text |
 | --- | --- | --- |
-| The city in the suitcase | City creative post | **Alt text — City:** A woman carries a suitcase as a coastal city of water and buildings is revealed inside it during a continuous camera move. |
+| The city in the suitcase | City creative post | **Alt text — City:** A woman opens a suitcase on a railway platform as a coastal city with water and buildings is revealed inside during a continuous camera move. |
 | The glass lightning train | Train movement and structure post | **Alt text — Train:** A train moves laterally beneath luminous glass arches formed by lightning, ending in an aerial reveal. |
 
 ## Canonical destinations and tracked links

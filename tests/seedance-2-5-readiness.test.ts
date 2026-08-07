@@ -394,10 +394,13 @@ test('the LinkedIn launch package confines approved Seedance 2.5 copy to City an
     'outside repository deployment',
     'Alt text — City',
     'Alt text — Train',
+    'opens a suitcase on a railway platform',
+    'coastal city with water and buildings',
   ]) {
     assert.match(launchPackage, new RegExp(required.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
 
   assert.match(launchPackage, /Dialogue[\s\S]*private/i);
+  assert.doesNotMatch(launchPackage, /carries a suitcase/i);
   assert.doesNotMatch(launchPackage, /(?:lip[ -]?sync|ModelArk|provider|USD|\$)/i);
 });
