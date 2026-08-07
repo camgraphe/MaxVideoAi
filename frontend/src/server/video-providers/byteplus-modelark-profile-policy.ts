@@ -23,6 +23,14 @@ function envFlagEnabled(value: string | undefined): boolean {
   return ['1', 'true', 'yes', 'on'].includes((value ?? '').trim().toLowerCase());
 }
 
+function adminOnlyFlagEnabled(value: string | undefined, defaultValue: boolean): boolean {
+  const normalized = value?.trim().toLowerCase();
+  if (!normalized) return defaultValue;
+  if (['0', 'false', 'no', 'off'].includes(normalized)) return false;
+  if (['1', 'true', 'yes', 'on'].includes(normalized)) return true;
+  return true;
+}
+
 function splitCsvEnv(value: string | undefined): string[] {
   return (value ?? '')
     .split(',')
@@ -90,23 +98,28 @@ function readEnabled(profile: BytePlusSeedanceProfile): boolean {
 function readAdminOnly(profile: BytePlusSeedanceProfile): boolean {
   const key = profile.routing.adminOnlyKey;
   let raw: string | undefined;
+  let defaultValue: boolean;
   switch (key) {
     case 'SEEDANCE_2_BYTEPLUS_ADMIN_ONLY':
-      raw = ENV.SEEDANCE_2_BYTEPLUS_ADMIN_ONLY ?? 'true';
+      raw = ENV.SEEDANCE_2_BYTEPLUS_ADMIN_ONLY;
+      defaultValue = true;
       break;
     case 'SEEDANCE_FAST_BYTEPLUS_ADMIN_ONLY':
-      raw = ENV.SEEDANCE_FAST_BYTEPLUS_ADMIN_ONLY ?? 'true';
+      raw = ENV.SEEDANCE_FAST_BYTEPLUS_ADMIN_ONLY;
+      defaultValue = true;
       break;
     case 'SEEDANCE_MINI_BYTEPLUS_ADMIN_ONLY':
-      raw = ENV.SEEDANCE_MINI_BYTEPLUS_ADMIN_ONLY ?? 'false';
+      raw = ENV.SEEDANCE_MINI_BYTEPLUS_ADMIN_ONLY;
+      defaultValue = false;
       break;
     case 'SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY':
-      raw = ENV.SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY ?? 'true';
+      raw = ENV.SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY;
+      defaultValue = true;
       break;
     default:
       return assertNever(key);
   }
-  return envFlagEnabled(raw);
+  return adminOnlyFlagEnabled(raw, defaultValue);
 }
 
 function readAllowedModes(profile: BytePlusSeedanceProfile): Mode[] {

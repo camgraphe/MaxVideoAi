@@ -16,7 +16,6 @@ import {
   isBytePlusSeedanceHiddenEngine,
   resolveBytePlusSeedanceModelId,
   resolveBytePlusSeedanceRouteProfile,
-  type BytePlusSeedanceProfile,
 } from '@/server/video-providers/byteplus-modelark';
 import {
   resolveVideoProviderRoutingPlan,
@@ -45,11 +44,30 @@ export type GenerateRouteContextResult =
   | { ok: true; context: GenerateRouteContext }
   | { ok: false; status: number; body: Record<string, unknown> };
 
+type GenerateRouteContextBoundaries = {
+  ensureBillingSchema: typeof ensureBillingSchema;
+  getConfiguredEngine: typeof getConfiguredEngine;
+  getConfiguredEngineIncludingHidden: typeof getConfiguredEngineIncludingHidden;
+  isDatabaseConfigured: typeof isDatabaseConfigured;
+};
+
+const defaultGenerateRouteContextBoundaries: GenerateRouteContextBoundaries = {
+  ensureBillingSchema,
+  getConfiguredEngine,
+  getConfiguredEngineIncludingHidden,
+  isDatabaseConfigured,
+};
+
 export async function resolveGenerateRouteContext(params: {
+  boundaryOverrides?: Partial<GenerateRouteContextBoundaries>;
   body: Record<string, unknown>;
   req: NextRequest;
 }): Promise<GenerateRouteContextResult> {
   const { body, req } = params;
+  const boundaries = {
+    ...defaultGenerateRouteContextBoundaries,
+    ...params.boundaryOverrides,
+  };
   const requestedEngineId = String(body.engineId || '');
   if (isBytePlusSeedanceHiddenEngine(requestedEngineId)) {
     try {
@@ -72,14 +90,30 @@ export async function resolveGenerateRouteContext(params: {
   if (!registeredBaseEngine) {
     return { ok: false, status: 400, body: { ok: false, error: 'Unknown engine' } };
   }
-  const publicEngine = await getConfiguredEngine(requestedEngineId);
+  const bytePlusProfile = resolveBytePlusSeedanceRouteProfile(
+    requestedEngineId,
+    registeredBaseEngine.providerMeta?.provider
+  );
+  if (bytePlusProfile && isBytePlusSeedanceAdminOnly(requestedEngineId)) {
+    try {
+      await requireAdmin(req);
+    } catch (error) {
+      if (error instanceof AdminAuthError) {
+        return { ok: false, status: error.status, body: { ok: false, error: error.message } };
+      }
+      console.error('[api/generate] failed to check BytePlus admin access', error);
+      return { ok: false, status: 500, body: { ok: false, error: 'Server error' } };
+    }
+  }
+
+  const publicEngine = await boundaries.getConfiguredEngine(requestedEngineId);
   const engine =
     publicEngine ??
     (isBytePlusSeedanceHiddenEngine(requestedEngineId)
-      ? await getConfiguredEngineIncludingHidden(requestedEngineId)
+      ? await boundaries.getConfiguredEngineIncludingHidden(requestedEngineId)
       : undefined);
   if (!engine) {
-    const disabledEngine = await getConfiguredEngine(requestedEngineId, true);
+    const disabledEngine = await boundaries.getConfiguredEngine(requestedEngineId, true);
     if (disabledEngine) {
       console.info('[api/generate] runtime lock active; generation blocked', { engineId: requestedEngineId });
       return { ok: false, status: 400, body: { ok: false, error: 'Engine unavailable' } };
@@ -87,12 +121,7 @@ export async function resolveGenerateRouteContext(params: {
     return { ok: false, status: 400, body: { ok: false, error: 'Unknown engine' } };
   }
 
-  let bytePlusProfile: BytePlusSeedanceProfile | null;
   try {
-    bytePlusProfile = resolveBytePlusSeedanceRouteProfile(
-      engine.id,
-      engine.providerMeta?.provider
-    );
     if (bytePlusProfile) {
       assertBytePlusSeedanceSubmissionEnabled(engine.id);
       resolveBytePlusSeedanceModelId(engine.id, getBytePlusArkConfig());
@@ -136,12 +165,12 @@ export async function resolveGenerateRouteContext(params: {
     return { ok: false, status: 404, body: { ok: false, error: 'Engine unavailable' } };
   }
 
-  if (!isDatabaseConfigured()) {
+  if (!boundaries.isDatabaseConfigured()) {
     return { ok: false, status: 503, body: { ok: false, error: 'Database unavailable' } };
   }
 
   try {
-    await ensureBillingSchema();
+    await boundaries.ensureBillingSchema();
   } catch {
     return { ok: false, status: 503, body: { ok: false, error: 'Database unavailable' } };
   }
@@ -176,20 +205,6 @@ export async function resolveGenerateRouteContext(params: {
     return { ok: false, status: 503, body: { ok: false, error: 'Engine unavailable' } };
   }
   const providerKey = isBytePlusV1a ? BYTEPLUS_MODELARK_PROVIDER : providerRoutingPlan.primaryProvider;
-
-  const bytePlusRequiresAdmin =
-    isBytePlusV1a && isBytePlusSeedanceAdminOnly(engine.id);
-  if (bytePlusRequiresAdmin) {
-    try {
-      await requireAdmin(req);
-    } catch (error) {
-      if (error instanceof AdminAuthError) {
-        return { ok: false, status: error.status, body: { ok: false, error: error.message } };
-      }
-      console.error('[api/generate] failed to check BytePlus admin access', error);
-      return { ok: false, status: 500, body: { ok: false, error: 'Server error' } };
-    }
-  }
 
   if (
     isBytePlusV1a &&

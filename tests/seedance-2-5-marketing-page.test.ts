@@ -72,6 +72,12 @@ test('Seedance 2.5 localized marketing content is strict, aligned, and free of i
       ],
     );
     assert.equal(Object.hasOwn(document.custom ?? {}, 'prelaunch'), false);
+    const rolloutLanguageByLocale = {
+      en: /\b(?:public generation|closed|rollout|availability|available)\b/i,
+      fr: /(?:génération publique|fermée?|déploiement|disponib)/i,
+      es: /(?:generación pública|cerrad[ao]|despliegue|disponib)/i,
+    } as const;
+    assert.doesNotMatch(decision.pricingCopy.footnote, rolloutLanguageByLocale[locale]);
     assert.doesNotMatch(
       JSON.stringify(document),
       /\b(?:BytePlus|ModelArk|provider|canary|unconfirmed|USD|credits?)\b|\$\s*\d/i,

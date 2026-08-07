@@ -156,6 +156,45 @@ test('Seedance 2.5 has a dedicated disabled-by-default provider profile', () => 
   }
 });
 
+test('admin-only policy preserves profile defaults and treats malformed values as restricted', { concurrency: false }, () => {
+  const original = {
+    standard: ENV.SEEDANCE_2_BYTEPLUS_ADMIN_ONLY,
+    fast: ENV.SEEDANCE_FAST_BYTEPLUS_ADMIN_ONLY,
+    mini: ENV.SEEDANCE_MINI_BYTEPLUS_ADMIN_ONLY,
+    seedance25: ENV.SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY,
+  };
+
+  try {
+    ENV.SEEDANCE_2_BYTEPLUS_ADMIN_ONLY = undefined;
+    ENV.SEEDANCE_FAST_BYTEPLUS_ADMIN_ONLY = undefined;
+    ENV.SEEDANCE_MINI_BYTEPLUS_ADMIN_ONLY = undefined;
+    ENV.SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY = undefined;
+    assert.equal(isBytePlusSeedanceAdminOnly('seedance-2-0'), true);
+    assert.equal(isBytePlusSeedanceAdminOnly('seedance-2-0-fast'), true);
+    assert.equal(isBytePlusSeedanceAdminOnly('seedance-2-0-mini'), false);
+    assert.equal(isBytePlusSeedanceAdminOnly('seedance-2-5'), true);
+
+    for (const explicitFalse of ['0', 'false', 'no', 'off']) {
+      ENV.SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY = explicitFalse;
+      assert.equal(isBytePlusSeedanceAdminOnly('seedance-2-5'), false);
+    }
+    for (const explicitTrue of ['1', 'true', 'yes', 'on']) {
+      ENV.SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY = explicitTrue;
+      assert.equal(isBytePlusSeedanceAdminOnly('seedance-2-5'), true);
+    }
+
+    ENV.SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY = 'ture';
+    ENV.SEEDANCE_MINI_BYTEPLUS_ADMIN_ONLY = 'flase';
+    assert.equal(isBytePlusSeedanceAdminOnly('seedance-2-5'), true);
+    assert.equal(isBytePlusSeedanceAdminOnly('seedance-2-0-mini'), true);
+  } finally {
+    ENV.SEEDANCE_2_BYTEPLUS_ADMIN_ONLY = original.standard;
+    ENV.SEEDANCE_FAST_BYTEPLUS_ADMIN_ONLY = original.fast;
+    ENV.SEEDANCE_MINI_BYTEPLUS_ADMIN_ONLY = original.mini;
+    ENV.SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY = original.seedance25;
+  }
+});
+
 test('Seedance 2.5 runtime keeps the smallest confirmed canary defaults', () => {
   const entry = getFalEngineById('seedance-2-5');
   assert.ok(entry);

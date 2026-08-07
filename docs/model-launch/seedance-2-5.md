@@ -262,10 +262,12 @@ flag, model ID, profile, or price.
 | `SEEDANCE_2_5_BYTEPLUS_MODES` | `t2v` | `t2v` |
 
 `SEEDANCE_2_5_BYTEPLUS_ENABLED=false` is the hard kill switch. The generation
-route checks it, together with the provider route, before database bootstrap,
-billing, or provider submission. The submission adapter repeats the check as
-defence in depth and rolls back an already-created billing reservation if it
-ever encounters the disabled state.
+route checks it before administrator authorization. When the route is enabled
+and administrator-only, authorization then runs before configured-engine
+resolution, database bootstrap, billing schema work, or provider submission.
+The submission adapter repeats the kill-switch check as defence in depth and
+rolls back an already-created billing reservation if it ever encounters the
+disabled state.
 
 The committed defaults remain disabled. Enabling a local or deployed admin
 canary requires both `SEEDANCE_2_5_BYTEPLUS_ENABLED=true` and

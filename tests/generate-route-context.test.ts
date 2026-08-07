@@ -118,8 +118,8 @@ test('Seedance 2.5 hard-disable and routing gates run before database and billin
     });
     assert.deepEqual(enabled, {
       ok: false,
-      status: 503,
-      body: { ok: false, error: 'Database unavailable' },
+      status: 401,
+      body: { ok: false, error: 'Unauthorized' },
     });
   } finally {
     if (original.databaseUrl === undefined) delete process.env.DATABASE_URL;
@@ -128,6 +128,78 @@ test('Seedance 2.5 hard-disable and routing gates run before database and billin
     ENV.BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID = original.modelId;
     ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = original.seedance25Enabled;
     ENV.SEEDANCE_2_5_PROVIDER = original.seedance25Provider;
+  }
+});
+
+test('every enabled admin-only Seedance profile rejects a non-admin before every config and billing boundary', { concurrency: false }, async () => {
+  const original = {
+    bytePlusEnabled: ENV.BYTEPLUS_ARK_ENABLED,
+    modelId: ENV.BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID,
+    standardProvider: ENV.SEEDANCE_2_PROVIDER,
+    standardAdminOnly: ENV.SEEDANCE_2_BYTEPLUS_ADMIN_ONLY,
+    fastProvider: ENV.SEEDANCE_FAST_PROVIDER,
+    fastAdminOnly: ENV.SEEDANCE_FAST_BYTEPLUS_ADMIN_ONLY,
+    miniAdminOnly: ENV.SEEDANCE_MINI_BYTEPLUS_ADMIN_ONLY,
+    seedance25Enabled: ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED,
+    seedance25Provider: ENV.SEEDANCE_2_5_PROVIDER,
+    seedance25AdminOnly: ENV.SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY,
+  };
+  const boundaryCalls: string[] = [];
+  const explode = (boundary: string) => () => {
+    boundaryCalls.push(boundary);
+    throw new Error(`${boundary} must not run before admin authorization`);
+  };
+
+  ENV.BYTEPLUS_ARK_ENABLED = 'true';
+  ENV.BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID = 'dreamina-seedance-2-5-260628';
+  ENV.SEEDANCE_2_PROVIDER = 'byteplus_modelark';
+  ENV.SEEDANCE_2_BYTEPLUS_ADMIN_ONLY = 'true';
+  ENV.SEEDANCE_FAST_PROVIDER = 'byteplus_modelark';
+  ENV.SEEDANCE_FAST_BYTEPLUS_ADMIN_ONLY = 'true';
+  ENV.SEEDANCE_MINI_BYTEPLUS_ADMIN_ONLY = 'true';
+  ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = 'true';
+  ENV.SEEDANCE_2_5_PROVIDER = 'byteplus_modelark';
+  ENV.SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY = 'true';
+
+  try {
+    for (const engineId of [
+      'seedance-2-0',
+      'seedance-2-0-fast',
+      'seedance-2-0-mini',
+      'seedance-2-0-fast-byteplus',
+      'seedance-2-5',
+    ]) {
+      const result = await resolveGenerateRouteContext({
+        body: { engineId, mode: 't2v' },
+        req: new NextRequest('http://localhost/api/generate', { method: 'POST' }),
+        boundaryOverrides: {
+          getConfiguredEngine: explode('getConfiguredEngine'),
+          getConfiguredEngineIncludingHidden: explode('getConfiguredEngineIncludingHidden'),
+          isDatabaseConfigured: explode('isDatabaseConfigured'),
+          ensureBillingSchema: explode('ensureBillingSchema'),
+        },
+      } as Parameters<typeof resolveGenerateRouteContext>[0] & {
+        boundaryOverrides: Record<string, () => never>;
+      });
+
+      assert.deepEqual(result, {
+        ok: false,
+        status: 401,
+        body: { ok: false, error: 'Unauthorized' },
+      });
+    }
+    assert.deepEqual(boundaryCalls, []);
+  } finally {
+    ENV.BYTEPLUS_ARK_ENABLED = original.bytePlusEnabled;
+    ENV.BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID = original.modelId;
+    ENV.SEEDANCE_2_PROVIDER = original.standardProvider;
+    ENV.SEEDANCE_2_BYTEPLUS_ADMIN_ONLY = original.standardAdminOnly;
+    ENV.SEEDANCE_FAST_PROVIDER = original.fastProvider;
+    ENV.SEEDANCE_FAST_BYTEPLUS_ADMIN_ONLY = original.fastAdminOnly;
+    ENV.SEEDANCE_MINI_BYTEPLUS_ADMIN_ONLY = original.miniAdminOnly;
+    ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = original.seedance25Enabled;
+    ENV.SEEDANCE_2_5_PROVIDER = original.seedance25Provider;
+    ENV.SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY = original.seedance25AdminOnly;
   }
 });
 

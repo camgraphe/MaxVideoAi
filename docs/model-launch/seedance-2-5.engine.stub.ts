@@ -10,8 +10,9 @@ export const seedance25EngineEvidenceGate = {
   checkedAt: '2026-08-07',
   documentationOnly: true,
   runtimeEntryAllowed: true,
-  currentPhase: 'hidden_execution',
+  currentPhase: 'noindex_marketing_handoff',
   publicGenerationAllowed: false,
+  publicMarketingPageAllowed: true,
   publicDiscoveryAllowed: false,
   testedContract: {
     modes: ['t2v'],
@@ -20,7 +21,7 @@ export const seedance25EngineEvidenceGate = {
     defaultResolution: '480p',
     aspectRatios: ['16:9'],
     framesPerSecond: 24,
-    generatedAudio: false,
+    generatedAudio: true,
     motionControls: false,
     references: false,
     editing: false,
@@ -33,5 +34,5 @@ export const seedance25EngineEvidenceGate = {
     'SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY',
     'SEEDANCE_2_5_BYTEPLUS_MODES',
   ],
-  nextRequiredPhase: 'maxvideoai_admin_canary',
+  nextRequiredPhase: 'failure_refund_canary',
 } as const;
