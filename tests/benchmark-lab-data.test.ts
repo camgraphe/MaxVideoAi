@@ -42,32 +42,15 @@ test('overall score stays aligned with current model and compare hubs', () => {
   assert.equal(computeBenchmarkOverall({}), null);
 });
 
-test('Seedance 2.5 exposes only City and Train supported score criteria', () => {
+test('Seedance 2.5 exposes a complete production scorecard', () => {
   const score = scores.scores.find((row) => row.modelSlug === 'seedance-2-5');
   assert.ok(score);
 
-  for (const criterion of ['fidelity', 'visualQuality', 'motion', 'consistency', 'controllability'] as const) {
-    assert.equal(typeof score[criterion], 'number', `${criterion} should have accepted visual evidence`);
-    assert.ok(score[criterion] > 0, `${criterion} must not use zero as a scored value`);
+  for (const criterion of methodology.criteria) {
+    const value = score[criterion.id as keyof typeof score];
+    assert.equal(typeof value, 'number', `${criterion.id} must be published`);
+    assert.ok(Number(value) > 0, `${criterion.id} must not use zero as a scored value`);
   }
-  assert.deepEqual(
-    {
-      anatomy: score.anatomy,
-      textRendering: score.textRendering,
-      lipsyncQuality: score.lipsyncQuality,
-      sequencingQuality: score.sequencingQuality,
-      speedStability: score.speedStability,
-      pricing: score.pricing,
-    },
-    {
-      anatomy: null,
-      textRendering: null,
-      lipsyncQuality: null,
-      sequencingQuality: null,
-      speedStability: null,
-      pricing: null,
-    }
-  );
   assert.equal(computeBenchmarkOverall(score), 9.1);
 });
 
@@ -113,4 +96,5 @@ test('score slug lookup exposes the exact current editorial roster', async () =>
   assert.ok(slugs.has('kling-3-pro'));
   assert.ok(slugs.has('dreamina-seedance-2-0-mini'));
   assert.ok(slugs.has('seedance-2-5'));
+  assert.ok(slugs.has('minimax-h3'));
 });
