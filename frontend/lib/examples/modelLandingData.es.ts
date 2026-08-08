@@ -159,7 +159,7 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     ],
   },
   seedance: {
-    metaTitle: 'Ejemplos de video IA Seedance 2.5, prompts y ajustes | MaxVideoAI',
+    metaTitle: 'Ejemplos de Seedance 2.5, prompts y ajustes | MaxVideoAI',
     metaDescription:
       'Explora ejemplos de video Seedance 2.5 y sus prompts, y compara los workflows Seedance 2.0, Fast, Mini y 1.5 Pro aún compatibles.',
     heroTitle: 'Ejemplos de video IA Seedance 2.5, prompts y ajustes',

@@ -142,7 +142,7 @@ test('Kling examples landing owns motion-focused CTR metadata without a site-nam
 });
 
 test('Seedance examples landing leads with Seedance 2.5 while retaining the family context', () => {
-  const title = 'Seedance 2.5 AI Video Examples, Prompts & Settings | MaxVideoAI';
+  const title = 'Seedance 2.5 Video Examples, Prompts & Settings | MaxVideoAI';
   const landing = getExampleModelLanding('en', 'seedance');
   const family = getModelFamilyDefinition('seedance');
 
@@ -173,11 +173,16 @@ test('Seedance examples landing leads with Seedance 2.5 while retaining the fami
     fr: /^Commencez par Seedance 2\.5/,
     es: /^Empieza con Seedance 2\.5/,
   } as const;
+  const localizedMetaTitles = {
+    en: 'Seedance 2.5 Video Examples, Prompts & Settings | MaxVideoAI',
+    fr: 'Exemples Seedance 2.5, prompts et réglages | MaxVideoAI',
+    es: 'Ejemplos de Seedance 2.5, prompts y ajustes | MaxVideoAI',
+  } as const;
 
   for (const locale of ['en', 'fr', 'es'] as const) {
     const localizedLanding = getExampleModelLanding(locale, 'seedance');
     assert.ok(localizedLanding);
-    assert.match(localizedLanding.metaTitle, /Seedance 2\.5/);
+    assert.equal(localizedLanding.metaTitle, localizedMetaTitles[locale]);
     assert.match(localizedLanding.metaDescription, /Seedance 2\.5/);
     assert.match(localizedLanding.heroTitle, /Seedance 2\.5/);
     assert.match(localizedLanding.intro, localizedLeadPatterns[locale]);
@@ -185,6 +190,18 @@ test('Seedance examples landing leads with Seedance 2.5 while retaining the fami
     assert.match(localizedLanding.intro, /Seedance 2\.0/);
     assert.match(localizedLanding.intro, /Fast/);
     assert.match(localizedLanding.intro, /Mini/);
+
+    const localizedMetadata = buildSeoMetadata({
+      locale,
+      title: localizedLanding.metaTitle,
+      description: localizedLanding.metaDescription,
+      englishPath: '/examples/seedance',
+    });
+    const renderedTitle =
+      typeof localizedMetadata.title === 'object' ? localizedMetadata.title.absolute : localizedMetadata.title;
+
+    assert.equal(renderedTitle, localizedMetaTitles[locale]);
+    assert.doesNotMatch(renderedTitle ?? '', /\|…/);
   }
 
   const metadata = buildSeoMetadata({
