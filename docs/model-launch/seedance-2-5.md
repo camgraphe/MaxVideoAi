@@ -297,10 +297,11 @@ request, or LinkedIn publication was performed.
 ## Final review correction evidence — 2026-08-08
 
 The verified source commit for the final review corrections is
-`075ea11a62be564d26d9ab1265db82505980eb6b`. This SHA is intentionally
+`b01aa298e876ffafbadc983098154720c5dcf2be`. This SHA is intentionally
 recorded from the source commit before this evidence-only documentation commit.
 
-The final review closed six launch-quality gaps without changing the approved
+The final review and its homepage discovery follow-up closed seven
+launch-quality gaps without changing the approved
 price, scores, publication state, model routes, Seedance 2.0 SEO, or paid
 generation policy:
 
@@ -309,8 +310,11 @@ generation policy:
 - Runtime expansion preserves the authored Seedance 2.5 labels and the
   30-image, 10-video, and 10-audio counts.
 - Homepage proof remains truthfully attributed to Seedance 2.0 and cannot
-  relabel a family-level Seedance 2.5 asset as 2.0; the model catalogue links
-  Seedance 2.5 to the established Seedance example family.
+  relabel a family-level Seedance 2.5 asset as 2.0. A separate visible and
+  followed homepage CTA names Seedance 2.5 explicitly and resolves to
+  `/models/seedance-2-5`, `/fr/modeles/seedance-2-5`, or
+  `/es/modelos/seedance-2-5`; the model catalogue links 2.5 to the established
+  Seedance example family. This CTA makes no new proof-media claim.
 - Benchmark Lab separates the MaxVideoAI production route contract from the
   generic ModelArk task-mechanics link, with no provider or model identifier on
   the public surface.
@@ -323,6 +327,10 @@ generation policy:
 
 ### Final command evidence
 
+- Focused rendered homepage and architecture suite: PASS, 24/24. The TDD
+  regression first failed 9/10 on the absent Seedance 2.5 discovery CTA, then
+  passed 10/10 with exact localized labels, hrefs, followed-link behavior, and
+  the preserved Seedance 2.0 identity, CTA, and accessible name.
 - Focused provider/runtime/home/catalog/benchmark/media suite: PASS, 68/68.
 - Focused Seedance 2.5 media-constraint suite: PASS, 4/4, including exact
   15 MiB acceptance, oversize rejection, MP3/WAV acceptance, M4A and missing
@@ -332,8 +340,8 @@ generation policy:
 - `pnpm test:validate`: PASS, 2,492/2,492 tests and 0 failures.
 - `pnpm --prefix frontend run lint`: PASS.
 - `pnpm lint:exposure`: PASS.
-- `pnpm --prefix frontend run i18n:check`: PASS; FR parity at 4,197 keys and
-  ES parity at 4,191 keys.
+- `pnpm --prefix frontend run i18n:check`: PASS; FR parity at 4,198 keys and
+  ES parity at 4,192 keys.
 - `pnpm --prefix frontend run seo:check`: PASS; canonical, llms, internal-link,
   and public-media-origin guards passed.
 - `pnpm --prefix frontend exec tsc --noEmit --pretty false`: PASS.
