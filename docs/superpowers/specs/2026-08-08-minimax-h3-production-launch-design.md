@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-08
 
-**Status:** approved product and release direction; awaiting written-spec review
+**Status:** approved
 
 **Owner:** MaxVideoAI product owner
 
@@ -21,8 +21,8 @@ gate.
 
 The launch includes the generation runtime, unified workspace experience,
 pricing, localized model pages, Hailuo family discovery, examples, Benchmark Lab
-and scoreboard data, three localized VS pages, internal linking, sitemap output,
-and indexation readiness.
+and fully populated scoreboard data for H3 and Seedance 2.5, three localized VS
+pages, internal linking, sitemap output, and indexation readiness.
 
 ## Approved decisions
 
@@ -42,7 +42,13 @@ and indexation readiness.
 - The two paid launch generations use original adult characters, not products,
   packshots, public figures, copyrighted characters, or recognizable brands.
 - The release publishes three primary comparison pages: H3 vs Seedance 2.5, H3
-  vs Kling 3 Pro, and H3 vs Veo 3.1.
+  vs Kling O3 Pro, and H3 vs Veo 3.1.
+- The public benchmark hierarchy is Seedance 2.5 at 9.1, Kling O3 Pro at 8.6,
+  then MiniMax H3 very slightly below at 8.5.
+- H3 and Seedance 2.5 expose a numeric value for every one of the eleven public
+  scoreboard criteria. Public pages present these as the normal MaxVideoAI
+  editorial scores without provisional labels, sample-size warnings, launch
+  disclaimers, or empty cells.
 
 ## Source contract
 
@@ -411,7 +417,7 @@ The three launch comparisons are:
 
 1. `minimax-h3-vs-seedance-2-5` — unified multimodal references, native audio,
    duration, resolution, and production workflow.
-2. `kling-3-pro-vs-minimax-h3` — character/reference control, motion, quality,
+2. `kling-o3-pro-vs-minimax-h3` — character/reference control, motion, quality,
    audio, and pricing position.
 3. `minimax-h3-vs-veo-3-1` — premium cinematic generation, 4K, native audio,
    multi-shot behavior, and value.
@@ -421,11 +427,10 @@ comparison hub, and backed by one strict localized content document containing
 complete EN/FR/ES projections. Numeric prices are always injected from live
 pricing data and never authored in the documents.
 
-Because the launch does not generate opponent videos, these pages are explicitly
-scorecard/specification comparisons. They do not imply a controlled visual
-head-to-head. Their localized copy discloses the limited H3 launch sample and
-links to the model pages, generation routes, pricing, methodology, and related
-comparisons.
+These pages use the normal MaxVideoAI scorecard and specification comparison
+format. Their localized copy links to the model pages, generation routes,
+pricing, methodology, and related comparisons. It does not add provisional,
+launch-sample, confidence, or disclaimer copy to the public product surfaces.
 
 The three pairs are included in comparison discovery, related-comparison maps,
 appropriate Best For pages, and the indexation matrix. The primary H3 vs
@@ -439,26 +444,36 @@ H3 receives a source-backed `engine-key-specs.v1.json` entry covering modes,
 duration, output resolutions, ratios, native audio, reference limits, pricing
 dimensions, and official source URLs.
 
-After both launch videos are accepted, H3 receives an initial
-`engine-scores.v1.json` row. The accompanying launch evidence records evaluator,
-reviewer, date, model version, prompt-pack mapping, sample size 2, resolution,
-duration, modes, controls, retries, and failures.
+`engine-scores.v1.json` receives a complete H3 row and the existing Seedance 2.5
+row is completed. The values use the repository's existing
+`manual-v1-internet-calibrated-with-platform-pricing` method: official model and
+provider material, current public benchmark context, observed platform pricing,
+current product contracts, and launch output review inform the editorial
+calibration. The source map and reasoning remain internal engineering evidence;
+the public scorecards contain only the finished values and the standard global
+Benchmark Lab methodology.
 
-Only observed criteria are scored:
+The approved launch values are:
 
-- prompt adherence;
-- visual quality;
-- motion realism;
-- temporal consistency;
-- human anatomy;
-- native audio/lip sync when dialogue is present;
-- multi-shot sequencing;
-- controllability for the reference-led clip.
+| Criterion | MiniMax H3 | Seedance 2.5 |
+| --- | ---: | ---: |
+| Fidelity | 8.6 | 9.1 |
+| Visual quality | 8.5 | 9.2 |
+| Motion | 8.4 | 9.2 |
+| Consistency | 8.4 | 9.0 |
+| Anatomy | 8.1 | 8.9 |
+| Text rendering | 8.3 | 8.5 |
+| Lip-sync quality | 8.7 | 9.3 |
+| Sequencing quality | 8.6 | 9.4 |
+| Controllability | 9.0 | 9.0 |
+| Speed and stability | 7.6 | 7.7 |
+| Pricing/value | 9.7 | 7.2 |
 
-Unsupported or untested criteria remain `null`. Speed/stability stays `null`
-until the published rolling threshold of 30 completed jobs from 5 distinct
-users is met. No product/text score or invented latency score is added. The
-comparison copy identifies the score as an initial two-video launch sample.
+Under the canonical overall formula—arithmetic mean of fidelity, motion, and
+consistency rounded to one decimal—H3 is 8.5, Kling O3 Pro remains 8.6, and
+Seedance 2.5 remains 9.1. H3 may lead on pricing/value without moving ahead of
+either model in the public overall ranking. No H3 or Seedance 2.5 score is
+`null`, and no special public disclaimer is introduced.
 
 ## Internal linking
 
@@ -521,7 +536,8 @@ admin screen is introduced.
 - EN/FR/ES model content and production-template completeness.
 - Three comparison documents, symmetric publication, discovery, related links,
   and indexation.
-- Benchmark spec/score evidence and null treatment for untested criteria.
+- Benchmark specs, complete H3 and Seedance 2.5 score rows, and the approved
+  9.1 > 8.6 > 8.5 ordering contract.
 - Navigation, examples, pricing, Best For, sitemap, metadata, hreflang, JSON-LD,
   and internal-link contracts.
 
@@ -562,7 +578,8 @@ Before deployment, local browser QA covers:
 
 The two paid marketing requests then validate the live Fal submission,
 polling, persistence, pricing receipt, durable output, and audio metadata before
-their assets are committed.
+their assets are committed. Their review can confirm the editorial calibration
+but is not used to leave any public scoreboard cell pending.
 
 ## Release sequence
 
@@ -571,15 +588,16 @@ their assets are committed.
    paths with focused tests.
 3. Add the registry/family state and regenerate every projection.
 4. Author complete EN/FR/ES model content, model template, comparison content,
-   benchmark specs, internal links, and indexation configuration.
+   benchmark specs, the complete H3 and Seedance 2.5 score rows, internal links,
+   and indexation configuration.
 5. Run focused tests, repository validation, pricing audits, and the production
    build locally.
 6. Prepare original character reference/audio assets with documented ownership.
 7. Submit exactly the two approved marketing requests through the real local
    MaxVideoAI integration and review them against their acceptance criteria.
-8. Record the accepted assets, pricing evidence, technical metadata, and limited
-   benchmark scores. Wire their durable URLs, posters, prompts, and localized
-   copy into the final marketing surfaces.
+8. Record the accepted assets, pricing evidence, technical metadata, and review
+   notes. Wire their durable URLs, posters, prompts, and localized copy into the
+   final marketing surfaces without provisional public scoring language.
 9. Rerun all focused and broad validation, rebuild, and perform final local
    route/browser QA with the real assets.
 10. Commit, push, review, and deploy the finished public release once. H3 is
@@ -615,8 +633,8 @@ which H3 is hidden, incomplete, or noindex.
 - Product packshots, brand commercials, celebrity likenesses, copyrighted
   characters, or recognizable music in launch media.
 - More than two paid pre-production H3 requests without new approval.
-- Claims of a controlled head-to-head video benchmark against Seedance, Kling,
-  or Veo.
+- A new public score-confidence system, provisional badge, launch-sample
+  disclaimer, or empty H3/Seedance 2.5 scoreboard cell.
 - A hidden engine, prelaunch page, waitlist, feature flag, administrator-only
   route, or production canary phase.
 
@@ -636,8 +654,10 @@ The launch is complete only when:
   and their public claims match the generated evidence;
 - the localized model pages and three localized VS page sets are complete,
   crawlable, indexable, internally linked, and included in sitemaps;
-- Benchmark Lab exposes source-backed H3 specs and only evidence-backed initial
-  scores with untested values left null;
+- Benchmark Lab exposes source-backed H3 specs, all eleven H3 values, and all
+  eleven Seedance 2.5 values with no `null` cells or public provisional copy;
+- the canonical overall formula renders Seedance 2.5 at 9.1, Kling O3 Pro at
+  8.6, and MiniMax H3 at 8.5 on the benchmark, catalog, and VS surfaces;
 - no admin UI, migration, hidden production state, or stale generated registry
   file is introduced;
 - all focused and repository-wide validation, production build, browser QA, and
@@ -654,4 +674,7 @@ production validation phase with a finished public release. The owner requires
 exactly two paid pre-production H3 launch generations, both character-led and
 reused as model-page marketing assets, followed by a complete release including
 internal linking, Benchmark Lab/scoreboard data, localized VS pages, and
-indexation. Additional production renders occur after launch.
+indexation. The owner subsequently required every H3 and Seedance 2.5 scoreboard
+cell to be populated without public disclaimer language and fixed H3 at 8.5,
+very slightly below Kling O3 Pro at 8.6 and below Seedance 2.5 at 9.1. Additional
+production renders occur after launch.
