@@ -138,7 +138,7 @@
     },
     "media": {
       "caption": "Rendu MiniMax H3 réel",
-      "description": "Elara traverse la tempête pour rallumer un phare et ramener un canot de sauvetage au port",
+      "description": "Lio quitte une tour de guet pour guider des randonneurs bloqués le long d’un chemin de fusées rouges",
       "renderLabel": "Voir le rendu complet",
       "badges": [
         "15s",
@@ -146,7 +146,7 @@
         "16:9",
         "Audio stéréo"
       ],
-      "altContext": "séquence de sauvetage MiniMax H3 avec gardienne de phare, tempête et dialogue stéréo natif"
+      "altContext": "séquence de sauvetage MiniMax H3 avec Lio, tour de guet, fusées rouges et dialogue stéréo natif"
     },
     "features": [
       {

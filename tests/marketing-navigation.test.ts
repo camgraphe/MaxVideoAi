@@ -88,11 +88,11 @@ test('marketing top navigation stays clean while Best-For links live inside drop
   assert.match(marketingDesktopNavSource, /font-semibold text-text-primary/);
 });
 
-test('public model menus keep Seedance 2.5 first and feature MiniMax H3 with a generic localized launch badge', () => {
+test('public model menus keep both Seedance 2.5 and MiniMax H3 launch badges', () => {
   assert.deepEqual(
     MARKETING_NAV_MODELS.slice(0, 2).map(({ key, badge }) => ({ key, badge })),
     [
-      { key: 'seedance-2-5', badge: undefined },
+      { key: 'seedance-2-5', badge: 'new' },
       { key: 'minimax-h3', badge: 'new' },
     ],
   );

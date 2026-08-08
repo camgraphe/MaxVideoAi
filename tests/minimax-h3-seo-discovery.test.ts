@@ -102,7 +102,7 @@ test('bounded discovery surfaces feature H3 immediately after Seedance 2.5', () 
   assert.deepEqual(
     MARKETING_NAV_MODELS.slice(0, 2).map(({ key, badge }) => ({ key, badge })),
     [
-      { key: 'seedance-2-5', badge: undefined },
+      { key: 'seedance-2-5', badge: 'new' },
       { key: 'minimax-h3', badge: 'new' },
     ],
   );

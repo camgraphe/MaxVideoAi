@@ -84,7 +84,7 @@ const docLink = (slug: string): LocalizedLinkHref => ({
 });
 
 const MODEL_MENU: LabeledSlug[] = [
-  { slug: 'seedance-2-5', label: 'Seedance 2.5' },
+  { slug: 'seedance-2-5', label: 'Seedance 2.5', badge: 'new' },
   { slug: 'minimax-h3', label: 'MiniMax H3', badge: 'new' },
   { slug: 'seedance-2-0', label: 'Seedance 2.0' },
   { slug: 'seedance-2-0-fast', label: 'Seedance 2.0 Fast' },

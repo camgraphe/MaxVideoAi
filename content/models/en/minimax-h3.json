@@ -138,7 +138,7 @@
     },
     "media": {
       "caption": "Real MiniMax H3 render",
-      "description": "Elara races through a storm to relight a lighthouse and guide a lifeboat home",
+      "description": "Lio leaves a wildfire lookout tower to guide stranded hikers along a red flare rescue trail",
       "renderLabel": "View full render",
       "badges": [
         "15s",
@@ -146,7 +146,7 @@
         "16:9",
         "Stereo audio"
       ],
-      "altContext": "MiniMax H3 lighthouse keeper rescue sequence with storm ambience and native stereo dialogue"
+      "altContext": "MiniMax H3 wildfire lookout rescue sequence with Lio, red flares and native stereo dialogue"
     },
     "features": [
       {

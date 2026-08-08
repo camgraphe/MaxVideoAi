@@ -67,10 +67,12 @@ before spending or deploying.
 
 ## Production marketing run
 
-The launch run on 2026-08-08 used exactly two paid H3 requests. Both scenes
-are character-led narrative films; neither contains a product packshot.
-Deterministic local keys prevented accidental resubmission after client
-timeouts.
+The initial launch run on 2026-08-08 used exactly two paid H3 requests. A
+third paid text-to-video request was added later that day at the product
+owner's explicit request so the model page could use two different playable
+videos. All scenes are character-led narrative films; none contains a product
+packshot. Deterministic local keys prevented accidental resubmission after
+client timeouts.
 
 ### Accepted model-page render
 
@@ -112,7 +114,35 @@ production direction and the requested 15-second settings.
 - Fal completed the request, but the returned CDN object did not provide a
   readable byte during launch QA. The job remains private and in durable-copy
   processing; it is not part of the model page, playlists or video sitemap.
-  No third paid request was made.
+  No third paid request was made during the initial launch run.
+
+### Accepted model-page hero render
+
+- Job: `job_87d713f7-9193-4831-a9e5-59ce1e0c668c`
+- Provider request: `019fe299-7ca1-7e33-9d92-c1a75f6015e3`
+- Configuration: text-to-video, 15 seconds, 2K, requested 16:9, 24 FPS,
+  native stereo audio.
+- Prompt: Lio, an original wildfire lookout in a rust-red field jacket, sees
+  stranded hikers from a mountain tower, descends wet stairs, builds a red
+  flare corridor, says “Trail three, follow the red lights. I'm coming
+  down.”, and runs toward the group. Four consecutive shots specify identity,
+  action, camera, geography and sound while excluding music, subtitles, text,
+  logos, watermarks, beauty-ad framing and product packshots.
+- Durable video:
+  <https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/ee88f1fa-7d90-4b1d-b6d0-8373eea6c726.mp4>
+- Durable thumbnail:
+  <https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/1a5ea6c8-1d4e-4675-bc10-6e91abd3fd99.jpg>
+- Media QA: H.264 at 2544×1456, 24 FPS, 15.083 seconds, two-channel AAC;
+  no detected black, frozen or silent segment. The stereo difference channel
+  is active. Visual review accepted the consistent lookout, tower-to-trail
+  progression, flare corridor and final rescue reveal.
+- Publication: public and indexable in `examples`, `examples-minimax-h3` and
+  `family-hailuo`, with an approved canonical watch page at
+  `/video/minimax-h3-wildfire-lookout-rescue`.
+
+The model page pins this wildfire rescue as the hero and keeps the accepted
+lighthouse render as the separate prompt-lab demo. The paid H3 request count
+for the completed launch and model-page correction is therefore three.
 
 ### Owned reference assets
 

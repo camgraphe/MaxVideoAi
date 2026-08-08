@@ -9,6 +9,9 @@ import {
   getModelPageTemplateConfig,
   isPrelaunchModelPageTemplateSlug,
 } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-template-registry.ts';
+import { PREFERRED_MEDIA } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-static-media.ts';
+import { VIDEO_SEO_EDITORIAL_ENTRIES } from '../frontend/config/video-seo-editorial.ts';
+import { VIDEO_SEO_WATCHLIST } from '../frontend/config/video-seo-watchlist.ts';
 
 const slug = 'minimax-h3';
 const locales = ['en', 'fr', 'es'] as const;
@@ -52,6 +55,29 @@ test('MiniMax H3 uses a visible production model-page template with all three wo
   );
   assert.ok(Object.values(template.sections).every(Boolean));
 });
+
+test('MiniMax H3 pins distinct playable renders to its hero and demo prompt', () => {
+  const preferred = PREFERRED_MEDIA['minimax-h3'];
+
+  assert.ok(preferred?.hero?.startsWith('job_'));
+  assert.equal(preferred.demo, 'job_91c6f549-7b07-45b3-ad45-cbaf67d10959');
+  assert.notEqual(preferred.hero, preferred.demo);
+});
+
+test('both MiniMax H3 model-page videos have approved indexed watch-page metadata', () => {
+  const preferred = PREFERRED_MEDIA['minimax-h3'];
+  const ids = [preferred.hero, preferred.demo];
+
+  for (const id of ids) {
+    const editorial = VIDEO_SEO_EDITORIAL_ENTRIES.find((entry) => entry.id === id);
+    const watch = VIDEO_SEO_WATCHLIST.find((entry) => entry.id === id);
+    assert.equal(editorial?.seoStatus, 'approved');
+    assert.equal(editorial?.modelSlug, 'minimax-h3');
+    assert.equal(watch?.engineSlug, 'minimax-h3');
+    assert.equal(watch?.watchPageEligible, true);
+  }
+});
+
 test('MiniMax H3 ships complete localized conversion content without rollout disclaimers', () => {
   for (const locale of locales) {
     const path = `content/models/${locale}/${slug}.json`;
@@ -71,6 +97,9 @@ test('MiniMax H3 ships complete localized conversion content without rollout dis
     assert.equal(document.hero.ctaPrimary.label, copy.cta);
     assert.equal(document.hero.ctaPrimary.href, '/app?engine=minimax-h3');
     assert.equal(document.seo.image, '/models/minimax-h3-launch.jpg');
+    assert.match(decision.media.description, /\bLio\b/);
+    assert.match(decision.media.altContext, /\bLio\b/);
+    assert.match(prompting.demo.prompt, /\bELARA\b/);
     assert.equal(decision.hero.primaryCta.label, copy.cta);
     assert.equal(decision.hero.primaryCta.href, '/app?engine=minimax-h3');
     assert.equal(decision.hero.secondaryCta.href, copy.examplesHref);
