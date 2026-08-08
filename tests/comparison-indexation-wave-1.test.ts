@@ -170,9 +170,9 @@ test('wave 1 sitemap contains exactly the indexable localized comparison URLs', 
     }),
   );
 
-  assert.equal(publishedSlugs.length, 295);
+  assert.equal(publishedSlugs.length, 298);
   assert.equal(comparisonEntries.length, publishedSlugs.length);
-  assert.equal(comparisonUrlKeys.size, 295 * 3 - 60);
+  assert.equal(comparisonUrlKeys.size, 298 * 3 - 60);
 
   for (const slug of publishedSlugs) {
     assert.ok(

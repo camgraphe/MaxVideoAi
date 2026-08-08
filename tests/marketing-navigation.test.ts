@@ -88,12 +88,12 @@ test('marketing top navigation stays clean while Best-For links live inside drop
   assert.match(marketingDesktopNavSource, /font-semibold text-text-primary/);
 });
 
-test('public model menus feature Seedance 2.5 first with a generic localized launch badge', () => {
+test('public model menus feature MiniMax H3 first with a generic localized launch badge', () => {
   assert.deepEqual(
     MARKETING_NAV_MODELS.slice(0, 2).map(({ key, badge }) => ({ key, badge })),
     [
-      { key: 'seedance-2-5', badge: 'new' },
-      { key: 'seedance-2-0', badge: undefined },
+      { key: 'minimax-h3', badge: 'new' },
+      { key: 'seedance-2-5', badge: undefined },
     ],
   );
 
@@ -107,7 +107,7 @@ test('public model menus feature Seedance 2.5 first with a generic localized lau
       `${surface} should consume the generic navigation badge field`);
     assert.match(source, /nav\.badges\.\$\{entry\.badge\}/,
       `${surface} should localize the generic badge value`);
-    assert.doesNotMatch(source, /entry\.key\s*===\s*['"]seedance-2-5['"]/,
+    assert.doesNotMatch(source, /entry\.key\s*===\s*['"]minimax-h3['"]/,
       `${surface} should not hard-code the flagship model`);
   }
 
@@ -118,18 +118,18 @@ test('public model menus feature Seedance 2.5 first with a generic localized lau
   }
 
   const flagshipComparison = MARKETING_NAV_DROPDOWNS.compare?.items[0];
-  assert.equal(flagshipComparison?.key, 'seedance-2-0-vs-seedance-2-5');
+  assert.equal(flagshipComparison?.key, 'minimax-h3-vs-seedance-2-5');
   assert.equal(flagshipComparison?.badge, 'new');
   assert.deepEqual(flagshipComparison?.href, {
     pathname: '/ai-video-engines/[slug]',
-    params: { slug: 'seedance-2-0-vs-seedance-2-5' },
+    params: { slug: 'minimax-h3-vs-seedance-2-5' },
   });
 
   for (const locale of ['en', 'fr', 'es'] as const) {
     const dictionary = JSON.parse(readFileSync(`frontend/messages/${locale}.json`, 'utf8'));
     assert.equal(
-      dictionary.nav.dropdown.compare.items['seedance-2-0-vs-seedance-2-5'],
-      'Seedance 2.0 vs Seedance 2.5',
+      dictionary.nav.dropdown.compare.items['minimax-h3-vs-seedance-2-5'],
+      'MiniMax H3 vs Seedance 2.5',
     );
   }
 });

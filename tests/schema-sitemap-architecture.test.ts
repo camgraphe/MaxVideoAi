@@ -88,7 +88,7 @@ test('sitemap data facade delegates route discovery, lastmod, locales, and XML h
   });
 });
 
-test('models sitemap retains every localized Seedance 2.5 and Seedance 2.0 canonical', async () => {
+test('models sitemap retains every localized H3, Seedance 2.5 and Seedance 2.0 canonical', async () => {
   // The facade also imports video SEO, whose React Server cache is not exposed by
   // React 18's standalone Node entry. The models builder never calls that branch.
   const react = frontendRequire('react') as {
@@ -98,7 +98,7 @@ test('models sitemap retains every localized Seedance 2.5 and Seedance 2.0 canon
   const { buildModelsSitemapXml } = await import('../frontend/lib/sitemapData.ts');
   const xml = await buildModelsSitemapXml();
 
-  for (const slug of ['seedance-2-5', 'seedance-2-0']) {
+  for (const slug of ['minimax-h3', 'seedance-2-5', 'seedance-2-0']) {
     const urls = {
       en: `https://maxvideoai.com/models/${slug}`,
       fr: `https://maxvideoai.com/fr/modeles/${slug}`,

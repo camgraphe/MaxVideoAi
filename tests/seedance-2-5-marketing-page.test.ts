@@ -115,7 +115,7 @@ test('Seedance 2.5 launches with three localized, indexable comparison decisions
   }
 });
 
-test('only the three priority Seedance 2.5 comparisons are promoted across comparison discovery', () => {
+test('the three priority Seedance 2.5 comparisons remain promoted behind the H3 launch', () => {
   const compareConfig = JSON.parse(readFileSync('frontend/config/compare-config.json', 'utf8')) as {
     trophyComparisons: string[];
     bestForPages: Array<{ slug: string; relatedComparisons: string[] }>;
@@ -125,8 +125,9 @@ test('only the three priority Seedance 2.5 comparisons are promoted across compa
     JSON.stringify(compareConfig).match(/[a-z0-9-]*seedance-2-5[a-z0-9-]*-vs-[a-z0-9-]+|[a-z0-9-]+-vs-[a-z0-9-]*seedance-2-5[a-z0-9-]*/g) ?? [],
   );
 
-  assert.deepEqual(compareConfig.trophyComparisons.slice(0, 3), priorityComparisonSlugs);
-  assert.deepEqual([...serializedSeedance25Slugs].sort(), [...priorityComparisonSlugs].sort());
+  assert.deepEqual(compareConfig.trophyComparisons.slice(3, 6), priorityComparisonSlugs);
+  for (const slug of priorityComparisonSlugs) assert.ok(serializedSeedance25Slugs.has(slug));
+  assert.ok(serializedSeedance25Slugs.has('minimax-h3-vs-seedance-2-5'));
   assert.deepEqual(compareConfig.relatedComparisons['seedance-2-0-vs-seedance-2-5'], [
     'seedance-2-0-vs-seedance-2-0-fast',
     'kling-3-pro-vs-seedance-2-5',

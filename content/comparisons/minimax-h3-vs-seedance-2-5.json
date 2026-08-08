@@ -1,0 +1,189 @@
+{
+  "slug": "minimax-h3-vs-seedance-2-5",
+  "en": {
+    "meta": {
+      "title": "MiniMax H3 vs Seedance 2.5: quality, audio and value",
+      "description": "Compare MiniMax H3 and Seedance 2.5 for character consistency, multi-shot direction, native audio, resolution and production value."
+    },
+    "heroIntro": "Seedance 2.5 is the stronger all-round choice for maximum visual quality, motion and long-form shot sequencing. MiniMax H3 is the sharper value choice when a production needs native stereo audio, dense reference inputs and direct 2K or 4K delivery.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Choose Seedance 2.5 for the best overall finish and the most reliable multi-shot direction. Choose MiniMax H3 for high-resolution, audio-ready character work with unusually generous reference control and lower production cost."
+    },
+    "topCards": [
+      {
+        "title": "Overall winner: Seedance 2.5",
+        "body": "Its 9.1 overall score leads H3's 8.5 through stronger visual fidelity, motion, anatomy, lip sync and sequencing."
+      },
+      {
+        "title": "Value winner: MiniMax H3",
+        "body": "H3 combines strong character continuity, native stereo audio and direct 2K or 4K output in one production route."
+      },
+      {
+        "title": "Reference workflow",
+        "body": "H3 accepts a broad mix of character images, video clips and audio references, making it especially practical for identity-led scenes."
+      },
+      {
+        "title": "Best production split",
+        "body": "Use Seedance 2.5 for hero sequences where maximum polish matters; use H3 for reference-heavy, audio-ready variants and high-resolution volume."
+      }
+    ],
+    "primaryLinksTitle": "Explore both models",
+    "primaryLinks": [
+      { "href": "/models/minimax-h3", "label": "MiniMax H3 model guide" },
+      { "href": "/app?engine=minimax-h3", "label": "Create with MiniMax H3" },
+      { "href": "/models/seedance-2-5", "label": "Seedance 2.5 model guide" },
+      { "href": "/app?engine=seedance-2-5", "label": "Create with Seedance 2.5" }
+    ],
+    "faq": {
+      "title": "MiniMax H3 vs Seedance 2.5 FAQ",
+      "subtitle": "Direct answers for choosing the right production route.",
+      "items": [
+        {
+          "question": "Which model has the higher overall score?",
+          "answer": "Seedance 2.5 scores 9.1 overall, ahead of MiniMax H3 at 8.5."
+        },
+        {
+          "question": "Which model is better for multi-shot storytelling?",
+          "answer": "Seedance 2.5 is the better choice for complex shot progression and high-end sequence continuity."
+        },
+        {
+          "question": "Which model is better for reference-heavy character work?",
+          "answer": "MiniMax H3 is especially flexible because its reference workflow can combine multiple images, video clips and audio references."
+        },
+        {
+          "question": "Can MiniMax H3 generate native audio?",
+          "answer": "Yes. H3 generates native stereo audio as part of its video workflow."
+        },
+        {
+          "question": "Where can I compare the current generation cost?",
+          "answer": "Open each model in the MaxVideoAI workspace or visit the pricing page for the live total before generating."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "MiniMax H3 vs Seedance 2.5 : qualité, audio et valeur",
+      "description": "Comparez MiniMax H3 et Seedance 2.5 pour la cohérence des personnages, la mise en scène multi-plan, l'audio natif, la résolution et la valeur en production."
+    },
+    "heroIntro": "Seedance 2.5 est le choix global le plus fort pour viser la qualité visuelle maximale, le mouvement et l'enchaînement de plans longs. MiniMax H3 offre une meilleure valeur lorsqu'une production demande de l'audio stéréo natif, de nombreuses références et une sortie directe en 2K ou 4K.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Choisissez Seedance 2.5 pour la meilleure finition globale et la mise en scène multi-plan la plus fiable. Choisissez MiniMax H3 pour des personnages en haute résolution, prêts avec audio, un contrôle de référence très large et un coût de production inférieur."
+    },
+    "topCards": [
+      {
+        "title": "Vainqueur global : Seedance 2.5",
+        "body": "Son score global de 9,1 devance les 8,5 de H3 grâce à une fidélité visuelle, un mouvement, une anatomie, une synchronisation labiale et un séquençage supérieurs."
+      },
+      {
+        "title": "Meilleure valeur : MiniMax H3",
+        "body": "H3 réunit une forte continuité des personnages, un audio stéréo natif et une sortie directe en 2K ou 4K dans un seul parcours de production."
+      },
+      {
+        "title": "Flux avec références",
+        "body": "H3 accepte un large mélange d'images de personnages, de clips vidéo et de références audio, très pratique pour les scènes centrées sur l'identité."
+      },
+      {
+        "title": "Meilleure répartition en production",
+        "body": "Utilisez Seedance 2.5 pour les séquences phares où la finition prime ; utilisez H3 pour les variantes riches en références, avec audio et en haute résolution."
+      }
+    ],
+    "primaryLinksTitle": "Explorer les deux modèles",
+    "primaryLinks": [
+      { "href": "/fr/modeles/minimax-h3", "label": "Guide du modèle MiniMax H3" },
+      { "href": "/app?engine=minimax-h3", "label": "Créer avec MiniMax H3" },
+      { "href": "/fr/modeles/seedance-2-5", "label": "Guide du modèle Seedance 2.5" },
+      { "href": "/app?engine=seedance-2-5", "label": "Créer avec Seedance 2.5" }
+    ],
+    "faq": {
+      "title": "FAQ MiniMax H3 vs Seedance 2.5",
+      "subtitle": "Des réponses directes pour choisir le bon parcours de production.",
+      "items": [
+        {
+          "question": "Quel modèle obtient le meilleur score global ?",
+          "answer": "Seedance 2.5 obtient 9,1 au global, devant MiniMax H3 à 8,5."
+        },
+        {
+          "question": "Quel modèle convient le mieux au récit multi-plan ?",
+          "answer": "Seedance 2.5 est le meilleur choix pour les progressions de plans complexes et la continuité haut de gamme."
+        },
+        {
+          "question": "Quel modèle convient le mieux aux personnages avec de nombreuses références ?",
+          "answer": "MiniMax H3 est particulièrement flexible car son flux de référence peut combiner plusieurs images, clips vidéo et références audio."
+        },
+        {
+          "question": "MiniMax H3 peut-il générer de l'audio natif ?",
+          "answer": "Oui. H3 génère un audio stéréo natif dans son flux vidéo."
+        },
+        {
+          "question": "Où comparer le coût actuel d'une génération ?",
+          "answer": "Ouvrez chaque modèle dans l'espace MaxVideoAI ou consultez la page des tarifs pour voir le total en direct avant de générer."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "MiniMax H3 vs Seedance 2.5: calidad, audio y valor",
+      "description": "Compara MiniMax H3 y Seedance 2.5 en consistencia de personajes, dirección multipla, audio nativo, resolución y valor de producción."
+    },
+    "heroIntro": "Seedance 2.5 es la opción general más fuerte para obtener la máxima calidad visual, movimiento y secuencias largas. MiniMax H3 ofrece mejor valor cuando una producción necesita audio estéreo nativo, muchas referencias y entrega directa en 2K o 4K.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Elige Seedance 2.5 para el mejor acabado general y la dirección multipla más fiable. Elige MiniMax H3 para personajes en alta resolución con audio, un control de referencias muy amplio y menor coste de producción."
+    },
+    "topCards": [
+      {
+        "title": "Ganador general: Seedance 2.5",
+        "body": "Su puntuación general de 9,1 supera el 8,5 de H3 gracias a una mayor fidelidad visual, movimiento, anatomía, sincronización labial y secuenciación."
+      },
+      {
+        "title": "Mejor valor: MiniMax H3",
+        "body": "H3 combina una sólida continuidad de personajes, audio estéreo nativo y salida directa en 2K o 4K en una sola ruta de producción."
+      },
+      {
+        "title": "Flujo con referencias",
+        "body": "H3 acepta una amplia mezcla de imágenes de personajes, clips de vídeo y referencias de audio, muy útil para escenas centradas en la identidad."
+      },
+      {
+        "title": "Mejor reparto de producción",
+        "body": "Usa Seedance 2.5 para secuencias principales donde el acabado sea clave; usa H3 para variantes con muchas referencias, audio y alta resolución."
+      }
+    ],
+    "primaryLinksTitle": "Explorar ambos modelos",
+    "primaryLinks": [
+      { "href": "/es/modelos/minimax-h3", "label": "Guía del modelo MiniMax H3" },
+      { "href": "/app?engine=minimax-h3", "label": "Crear con MiniMax H3" },
+      { "href": "/es/modelos/seedance-2-5", "label": "Guía del modelo Seedance 2.5" },
+      { "href": "/app?engine=seedance-2-5", "label": "Crear con Seedance 2.5" }
+    ],
+    "faq": {
+      "title": "Preguntas sobre MiniMax H3 vs Seedance 2.5",
+      "subtitle": "Respuestas directas para elegir la ruta de producción adecuada.",
+      "items": [
+        {
+          "question": "¿Qué modelo tiene la mayor puntuación general?",
+          "answer": "Seedance 2.5 obtiene 9,1 en general, por delante de MiniMax H3 con 8,5."
+        },
+        {
+          "question": "¿Qué modelo es mejor para narración multipla?",
+          "answer": "Seedance 2.5 es la mejor opción para progresiones complejas y continuidad de secuencias de alta gama."
+        },
+        {
+          "question": "¿Qué modelo es mejor para personajes con muchas referencias?",
+          "answer": "MiniMax H3 es especialmente flexible porque su flujo puede combinar varias imágenes, clips de vídeo y referencias de audio."
+        },
+        {
+          "question": "¿MiniMax H3 puede generar audio nativo?",
+          "answer": "Sí. H3 genera audio estéreo nativo como parte de su flujo de vídeo."
+        },
+        {
+          "question": "¿Dónde puedo comparar el coste actual de generación?",
+          "answer": "Abre cada modelo en el espacio de MaxVideoAI o visita la página de precios para ver el total en directo antes de generar."
+        }
+      ]
+    }
+  }
+}

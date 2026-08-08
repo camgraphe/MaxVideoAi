@@ -1,0 +1,189 @@
+{
+  "slug": "kling-o3-pro-vs-minimax-h3",
+  "en": {
+    "meta": {
+      "title": "Kling O3 Pro vs MiniMax H3: reference control and audio",
+      "description": "Compare Kling 3.0 Omni Pro and MiniMax H3 for reference control, character consistency, native audio, resolution and production value."
+    },
+    "heroIntro": "Kling 3.0 Omni Pro holds a narrow overall lead with stronger general reference control and visual consistency. MiniMax H3 sits just behind it while offering an excellent native-audio value route, direct 2K or 4K output and a flexible mix of image, video and audio references.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Choose Kling O3 Pro when the primary goal is precise, premium reference-led control. Choose MiniMax H3 when native stereo audio, high-resolution delivery and production value matter more than the final tenth of overall score."
+    },
+    "topCards": [
+      {
+        "title": "Narrow winner: Kling O3 Pro",
+        "body": "Kling O3 Pro scores 8.6 overall against H3 at 8.5, preserving a deliberately small lead in the production ranking."
+      },
+      {
+        "title": "Native-audio value: MiniMax H3",
+        "body": "H3 makes audio-ready character scenes especially efficient by generating stereo sound inside the same video workflow."
+      },
+      {
+        "title": "Reference strategy",
+        "body": "Kling is the safer premium choice for general reference control; H3 is compelling when many image, video and audio cues must travel together."
+      },
+      {
+        "title": "Resolution choice",
+        "body": "H3 exposes direct 768P, 2K and 4K routes, making final-resolution planning explicit before a render starts."
+      }
+    ],
+    "primaryLinksTitle": "Explore both models",
+    "primaryLinks": [
+      { "href": "/models/kling-o3-pro", "label": "Kling O3 Pro model guide" },
+      { "href": "/app?engine=kling-o3-pro", "label": "Create with Kling O3 Pro" },
+      { "href": "/models/minimax-h3", "label": "MiniMax H3 model guide" },
+      { "href": "/app?engine=minimax-h3", "label": "Create with MiniMax H3" }
+    ],
+    "faq": {
+      "title": "Kling O3 Pro vs MiniMax H3 FAQ",
+      "subtitle": "The practical differences behind a very close ranking.",
+      "items": [
+        {
+          "question": "Which model ranks higher overall?",
+          "answer": "Kling O3 Pro scores 8.6 overall, just ahead of MiniMax H3 at 8.5."
+        },
+        {
+          "question": "Which model is better for premium reference control?",
+          "answer": "Kling O3 Pro is the stronger general-purpose choice when precise reference control is the main requirement."
+        },
+        {
+          "question": "Which model is better for native-audio value?",
+          "answer": "MiniMax H3 is the stronger value choice for character scenes that need native stereo audio in the same generation."
+        },
+        {
+          "question": "Can MiniMax H3 use several reference types together?",
+          "answer": "Yes. Its reference route can combine images, video clips and audio references within the supported input limits."
+        },
+        {
+          "question": "How should a team split work between them?",
+          "answer": "Use Kling O3 Pro for the most control-sensitive hero renders and H3 for audio-ready, high-resolution variations and reference-dense scenes."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Kling O3 Pro vs MiniMax H3 : références et audio",
+      "description": "Comparez Kling 3.0 Omni Pro et MiniMax H3 pour le contrôle des références, la cohérence des personnages, l'audio natif, la résolution et la valeur en production."
+    },
+    "heroIntro": "Kling 3.0 Omni Pro conserve une courte avance globale grâce à un meilleur contrôle général des références et une forte cohérence visuelle. MiniMax H3 le suit de très près avec un excellent parcours audio natif, des sorties directes en 2K ou 4K et un mélange flexible de références image, vidéo et audio.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Choisissez Kling O3 Pro lorsque la priorité est un contrôle précis et haut de gamme par références. Choisissez MiniMax H3 lorsque l'audio stéréo natif, la haute résolution et la valeur de production comptent davantage que le dernier dixième de score global."
+    },
+    "topCards": [
+      {
+        "title": "Court vainqueur : Kling O3 Pro",
+        "body": "Kling O3 Pro obtient 8,6 au global contre 8,5 pour H3, soit une avance volontairement très légère dans le classement de production."
+      },
+      {
+        "title": "Valeur avec audio natif : MiniMax H3",
+        "body": "H3 rend les scènes de personnages avec audio particulièrement efficaces en générant le son stéréo dans le même flux vidéo."
+      },
+      {
+        "title": "Stratégie de référence",
+        "body": "Kling est le choix premium le plus sûr pour le contrôle général ; H3 devient très convaincant lorsque plusieurs signaux image, vidéo et audio doivent être combinés."
+      },
+      {
+        "title": "Choix de résolution",
+        "body": "H3 propose des parcours directs en 768P, 2K et 4K, ce qui rend la résolution finale explicite avant le lancement du rendu."
+      }
+    ],
+    "primaryLinksTitle": "Explorer les deux modèles",
+    "primaryLinks": [
+      { "href": "/fr/modeles/kling-o3-pro", "label": "Guide du modèle Kling O3 Pro" },
+      { "href": "/app?engine=kling-o3-pro", "label": "Créer avec Kling O3 Pro" },
+      { "href": "/fr/modeles/minimax-h3", "label": "Guide du modèle MiniMax H3" },
+      { "href": "/app?engine=minimax-h3", "label": "Créer avec MiniMax H3" }
+    ],
+    "faq": {
+      "title": "FAQ Kling O3 Pro vs MiniMax H3",
+      "subtitle": "Les différences pratiques derrière un classement très serré.",
+      "items": [
+        {
+          "question": "Quel modèle est le mieux classé au global ?",
+          "answer": "Kling O3 Pro obtient 8,6 au global, juste devant MiniMax H3 à 8,5."
+        },
+        {
+          "question": "Quel modèle convient le mieux au contrôle premium par références ?",
+          "answer": "Kling O3 Pro est le meilleur choix général lorsque le contrôle précis des références est le besoin principal."
+        },
+        {
+          "question": "Quel modèle offre la meilleure valeur avec audio natif ?",
+          "answer": "MiniMax H3 est le meilleur choix de valeur pour les scènes de personnages qui demandent un audio stéréo natif dans la même génération."
+        },
+        {
+          "question": "MiniMax H3 peut-il utiliser plusieurs types de références ensemble ?",
+          "answer": "Oui. Son parcours de référence peut combiner des images, des clips vidéo et des références audio dans les limites prises en charge."
+        },
+        {
+          "question": "Comment répartir la production entre les deux ?",
+          "answer": "Utilisez Kling O3 Pro pour les rendus phares les plus sensibles au contrôle et H3 pour les variantes avec audio, en haute résolution et riches en références."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Kling O3 Pro vs MiniMax H3: referencias y audio",
+      "description": "Compara Kling 3.0 Omni Pro y MiniMax H3 en control de referencias, consistencia de personajes, audio nativo, resolución y valor de producción."
+    },
+    "heroIntro": "Kling 3.0 Omni Pro mantiene una estrecha ventaja general gracias a un mejor control global de referencias y una sólida consistencia visual. MiniMax H3 queda justo detrás con una excelente ruta de audio nativo, salida directa en 2K o 4K y una mezcla flexible de referencias de imagen, vídeo y audio.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Elige Kling O3 Pro cuando la prioridad sea un control por referencias preciso y premium. Elige MiniMax H3 cuando el audio estéreo nativo, la alta resolución y el valor de producción importen más que la última décima de puntuación general."
+    },
+    "topCards": [
+      {
+        "title": "Ganador por poco: Kling O3 Pro",
+        "body": "Kling O3 Pro obtiene 8,6 en general frente al 8,5 de H3, una ventaja deliberadamente muy ligera en el ranking de producción."
+      },
+      {
+        "title": "Valor con audio nativo: MiniMax H3",
+        "body": "H3 hace especialmente eficientes las escenas de personajes con audio al generar sonido estéreo dentro del mismo flujo de vídeo."
+      },
+      {
+        "title": "Estrategia de referencias",
+        "body": "Kling es la opción premium más segura para el control general; H3 resulta muy atractivo cuando deben combinarse muchas señales de imagen, vídeo y audio."
+      },
+      {
+        "title": "Elección de resolución",
+        "body": "H3 ofrece rutas directas en 768P, 2K y 4K, haciendo explícita la resolución final antes de iniciar el render."
+      }
+    ],
+    "primaryLinksTitle": "Explorar ambos modelos",
+    "primaryLinks": [
+      { "href": "/es/modelos/kling-o3-pro", "label": "Guía del modelo Kling O3 Pro" },
+      { "href": "/app?engine=kling-o3-pro", "label": "Crear con Kling O3 Pro" },
+      { "href": "/es/modelos/minimax-h3", "label": "Guía del modelo MiniMax H3" },
+      { "href": "/app?engine=minimax-h3", "label": "Crear con MiniMax H3" }
+    ],
+    "faq": {
+      "title": "Preguntas sobre Kling O3 Pro vs MiniMax H3",
+      "subtitle": "Las diferencias prácticas detrás de un ranking muy ajustado.",
+      "items": [
+        {
+          "question": "¿Qué modelo ocupa una posición más alta?",
+          "answer": "Kling O3 Pro obtiene 8,6 en general, justo por delante de MiniMax H3 con 8,5."
+        },
+        {
+          "question": "¿Qué modelo es mejor para control premium por referencias?",
+          "answer": "Kling O3 Pro es la opción general más fuerte cuando el control preciso de referencias es el requisito principal."
+        },
+        {
+          "question": "¿Qué modelo ofrece mejor valor con audio nativo?",
+          "answer": "MiniMax H3 es la mejor opción de valor para escenas de personajes que necesitan audio estéreo nativo en la misma generación."
+        },
+        {
+          "question": "¿MiniMax H3 puede usar varios tipos de referencias juntos?",
+          "answer": "Sí. Su ruta de referencia puede combinar imágenes, clips de vídeo y referencias de audio dentro de los límites admitidos."
+        },
+        {
+          "question": "¿Cómo debería un equipo repartir el trabajo entre ambos?",
+          "answer": "Usa Kling O3 Pro para renders principales muy sensibles al control y H3 para variaciones con audio, alta resolución y muchas referencias."
+        }
+      ]
+    }
+  }
+}

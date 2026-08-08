@@ -389,16 +389,18 @@ test('Public marketing media fetchers stay visibility-safe for pinned and prompt
   ]);
 });
 
-test('Seedance becomes the app and marketing priority family ahead of Sora', () => {
+test('MiniMax H3 launch leads the menus while Seedance remains ahead of Sora', () => {
   const appEngineIds = getBaseEnginesByCategory('video').map((engine) => engine.id);
-  assert.equal(appEngineIds[0], 'seedance-2-5');
-  assert.equal(appEngineIds[1], 'seedance-2-0');
-  assert.equal(appEngineIds[2], 'seedance-2-0-fast');
+  assert.equal(appEngineIds[0], 'minimax-h3');
+  assert.equal(appEngineIds[1], 'seedance-2-5');
+  assert.equal(appEngineIds[2], 'seedance-2-0');
+  assert.equal(appEngineIds[3], 'seedance-2-0-fast');
   assert.ok(appEngineIds.indexOf('sora-2') > appEngineIds.indexOf('seedance-2-5'));
 
   assert.deepEqual(
     MARKETING_NAV_MODELS.map((item) => item.key),
     [
+      'minimax-h3',
       'seedance-2-5',
       'seedance-2-0',
       'seedance-2-0-fast',
@@ -407,24 +409,23 @@ test('Seedance becomes the app and marketing priority family ahead of Sora', () 
       'gemini-omni-flash',
       'veo-3-1-lite',
       'kling-o3-pro',
-      'kling-o3-4k',
     ]
   );
   assert.deepEqual(
     MARKETING_NAV_COMPARE.map((item) => item.key),
     [
-      'seedance-2-0-vs-seedance-2-5',
+      'minimax-h3-vs-seedance-2-5',
+      'kling-o3-pro-vs-minimax-h3',
       'gemini-omni-flash-vs-veo-3-1',
       'kling-3-pro-vs-kling-o3-pro',
       'ltx-2-3-pro-vs-veo-3-1',
-      'seedance-2-0-vs-seedance-2-0-fast',
-      'ltx-2-3-fast-vs-ltx-2-3-pro',
+      'minimax-h3-vs-veo-3-1',
     ]
   );
   assert.equal(MARKETING_NAV_COMPARE.length, 6);
   assert.equal(MARKETING_NAV_COMPARE[0]?.badge, 'new');
-  assert.deepEqual(MARKETING_NAV_EXAMPLES.map((item) => item.key), ['veo', 'seedance', 'ltx', 'kling', 'wan']);
-  assert.deepEqual(MARKETING_FOOTER_EXAMPLES.map((item) => item.key), ['veo', 'seedance', 'ltx', 'kling', 'wan']);
+  assert.deepEqual(MARKETING_NAV_EXAMPLES.map((item) => item.key), ['veo', 'seedance', 'hailuo', 'ltx', 'kling']);
+  assert.deepEqual(MARKETING_FOOTER_EXAMPLES.map((item) => item.key), ['veo', 'seedance', 'hailuo', 'ltx', 'kling']);
 });
 
 test('Seedance 1.5 Pro stays active while Seedance 2.0 keeps the primary alias and promoted slots', () => {
@@ -439,8 +440,9 @@ test('Seedance 1.5 Pro stays active while Seedance 2.0 keeps the primary alias a
   assert.equal(getHubEngines().some((engine) => engine.modelSlug === 'seedance-1-5-pro'), true);
 });
 
-test('Header model menu promotes Seedance 2.5 while keeping the Veo family expanded', () => {
+test('Header model menu promotes MiniMax H3 while keeping the Veo family expanded', () => {
   assert.deepEqual(MARKETING_NAV_MODELS.map((item) => item.key), [
+    'minimax-h3',
     'seedance-2-5',
     'seedance-2-0',
     'seedance-2-0-fast',
@@ -449,7 +451,6 @@ test('Header model menu promotes Seedance 2.5 while keeping the Veo family expan
     'gemini-omni-flash',
     'veo-3-1-lite',
     'kling-o3-pro',
-    'kling-o3-4k',
   ]);
 });
 

@@ -84,7 +84,8 @@ const docLink = (slug: string): LocalizedLinkHref => ({
 });
 
 const MODEL_MENU: LabeledSlug[] = [
-  { slug: 'seedance-2-5', label: 'Seedance 2.5', badge: 'new' },
+  { slug: 'minimax-h3', label: 'MiniMax H3', badge: 'new' },
+  { slug: 'seedance-2-5', label: 'Seedance 2.5' },
   { slug: 'seedance-2-0', label: 'Seedance 2.0' },
   { slug: 'seedance-2-0-fast', label: 'Seedance 2.0 Fast' },
   { slug: 'ltx-2-3-fast', label: 'LTX 2.3 Fast' },
@@ -92,11 +93,10 @@ const MODEL_MENU: LabeledSlug[] = [
   { slug: 'gemini-omni-flash', label: 'Gemini Omni Flash' },
   { slug: 'veo-3-1-lite', label: 'Veo 3.1 Lite' },
   { slug: 'kling-o3-pro', label: 'Kling 3.0 Omni Pro' },
-  { slug: 'kling-o3-4k', label: 'Kling 3.0 Omni 4K' },
 ];
 
-const HEADER_EXAMPLE_FAMILY_PRIORITY = ['veo', 'seedance', 'ltx', 'kling', 'wan'] as const;
-const FOOTER_EXAMPLE_FAMILIES = ['veo', 'seedance', 'ltx', 'kling', 'wan'] as const;
+const HEADER_EXAMPLE_FAMILY_PRIORITY = ['veo', 'seedance', 'hailuo', 'ltx', 'kling'] as const;
+const FOOTER_EXAMPLE_FAMILIES = ['veo', 'seedance', 'hailuo', 'ltx', 'kling'] as const;
 const AVAILABLE_EXAMPLE_FAMILY_IDS = getExampleNavFamilyIds();
 
 const EXAMPLES_MENU: LabeledSlug[] = HEADER_EXAMPLE_FAMILY_PRIORITY
@@ -118,15 +118,15 @@ const FOOTER_EXAMPLES_MENU: LabeledSlug[] = FOOTER_EXAMPLE_FAMILIES
 
 const COMPARE_MENU: LabeledSlug[] = [
   {
-    slug: 'seedance-2-0-vs-seedance-2-5',
-    label: 'Seedance 2.0 vs Seedance 2.5',
+    slug: 'minimax-h3-vs-seedance-2-5',
+    label: 'MiniMax H3 vs Seedance 2.5',
     badge: 'new',
   },
+  { slug: 'kling-o3-pro-vs-minimax-h3', label: 'Kling 3.0 Omni Pro vs MiniMax H3' },
   { slug: 'gemini-omni-flash-vs-veo-3-1', label: 'Gemini Omni Flash vs Veo 3.1' },
   { slug: 'kling-3-pro-vs-kling-o3-pro', label: 'Kling 3 Pro vs Kling 3.0 Omni Pro' },
   { slug: 'ltx-2-3-pro-vs-veo-3-1', label: 'LTX 2.3 Pro vs Veo 3.1' },
-  { slug: 'seedance-2-0-vs-seedance-2-0-fast', label: 'Seedance 2.0 vs Fast' },
-  { slug: 'ltx-2-3-fast-vs-ltx-2-3-pro', label: 'LTX 2.3 Fast vs Pro' },
+  { slug: 'minimax-h3-vs-veo-3-1', label: 'MiniMax H3 vs Veo 3.1' },
 ];
 
 const BEST_FOR_USE_CASES: Array<LabeledSlug & { key: string }> = [

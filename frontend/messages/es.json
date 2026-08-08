@@ -50,6 +50,7 @@
       "viewAll": "Ver todo",
       "models": {
         "items": {
+          "minimax-h3": "MiniMax H3",
           "seedance-2-5": "Seedance 2.5",
           "sora-2": "Sora 2",
           "sora-2-pro": "Sora 2 Pro",
@@ -101,6 +102,9 @@
       },
       "compare": {
         "items": {
+          "minimax-h3-vs-seedance-2-5": "MiniMax H3 vs Seedance 2.5",
+          "kling-o3-pro-vs-minimax-h3": "Kling 3.0 Omni Pro vs MiniMax H3",
+          "minimax-h3-vs-veo-3-1": "MiniMax H3 vs Veo 3.1",
           "seedance-2-0-vs-seedance-2-5": "Seedance 2.0 vs Seedance 2.5",
           "sora-2-vs-veo-3-1": "Sora 2 vs Veo 3.1",
           "veo-3-1-vs-veo-3-1-fast": "Veo 3.1 vs Veo 3.1 Fast",
@@ -1474,8 +1478,12 @@
       "compare": {
         "title": "Compara modelos de video con IA antes de generar",
         "body": "MaxVideoAI te permite probar varios modelos en un solo lugar. Cada modelo tiene fortalezas distintas (velocidad, fidelidad al prompt, movimiento, realismo y estilo). Compara resultados lado a lado, elige el mejor modelo para cada toma y mantén el precio visible antes de generar.",
-        "worksWith": "Compatible con Seedance 2.0, Veo 3.1, Kling 3, LTX 2.3, Sora 2, Wan 2.6, Pika 2.2, Hailuo 02... y más.",
+        "worksWith": "Compatible con MiniMax H3, Seedance 2.5, Veo 3.1, Kling 3, LTX 2.3, Sora 2, Wan 2.6, Pika 2.2... y más.",
         "popularLinks": [
+          {
+            "label": "Comparativa MiniMax H3 vs Seedance 2.5",
+            "slug": "minimax-h3-vs-seedance-2-5"
+          },
           {
             "label": "Comparativa Sora 2 vs Veo 3.1",
             "slug": "sora-2-vs-veo-3-1"
@@ -1487,10 +1495,6 @@
           {
             "label": "Comparativa Veo 3.1 vs Kling 3",
             "slug": "kling-3-pro-vs-veo-3-1"
-          },
-          {
-            "label": "Comparativa LTX 2 vs Veo 3.1",
-            "slug": "ltx-2-vs-veo-3-1"
           }
         ],
         "seeAllLabel": "Ver todas las comparativas de modelos de video con IA",

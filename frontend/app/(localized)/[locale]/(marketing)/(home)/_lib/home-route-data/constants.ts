@@ -81,7 +81,7 @@ export const DEFAULT_MODEL_BY_EXAMPLE_FAMILY: Record<HomepageExampleFamily, stri
   kling: 'kling-3-pro',
   ltx: 'ltx-2-3-pro',
   veo: 'veo-3-1',
-  wan: 'wan-2-6',
+  hailuo: 'minimax-h3',
   'happy-horse': 'happy-horse-1-1',
 };
 
