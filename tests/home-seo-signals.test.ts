@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { buildLocalizedModelPath } from '../frontend/config/model-registry.ts';
 import {
   DEFAULT_MODEL_BY_EXAMPLE_FAMILY,
@@ -10,6 +12,8 @@ import { buildModelsCatalogDecisionData } from '../frontend/app/(localized)/[loc
 import type { ModelGalleryCard } from '../frontend/components/marketing/ModelsGallery.tsx';
 import type { RedesignContent } from '../frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data/types.ts';
 import type { GalleryVideo } from '../frontend/server/videos.ts';
+import { RealExamplesPreview } from '../frontend/components/marketing/home/HomeRealExamplesPreview.tsx';
+import { I18nProvider } from '../frontend/lib/i18n/I18nProvider.tsx';
 
 const homeSource = readFileSync('frontend/app/(localized)/[locale]/(marketing)/(home)/page.tsx', 'utf8');
 const homeJsonLdSource = readFileSync('frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-jsonld.ts', 'utf8');
@@ -68,7 +72,8 @@ test('homepage proof card stays on Seedance 2.0 while discovery surfaces lead wi
   assert.ok(seedance25Index < seedance20Index, 'Footer should list Seedance 2.5 before Seedance 2.0');
 });
 
-test('localized homepage Seedance proof cards cannot relabel a 2.5 family asset as 2.0', () => {
+test('localized homepage keeps the Seedance 2.0 proof and renders a separate Seedance 2.5 discovery CTA', () => {
+  (globalThis as typeof globalThis & { React: typeof React }).React = React;
   const onlySeedance25Video = {
     id: 'seedance-25-family-video',
     engineId: 'seedance-2-5',
@@ -82,6 +87,11 @@ test('localized homepage Seedance proof cards cannot relabel a 2.5 family asset 
     en: englishMessages,
     fr: frenchMessages,
     es: spanishMessages,
+  } as const;
+  const expectedDiscovery = {
+    en: { label: 'Discover Seedance 2.5', href: '/models/seedance-2-5', proofHref: '/models/seedance-2-0' },
+    fr: { label: 'Découvrir Seedance 2.5', href: '/fr/modeles/seedance-2-5', proofHref: '/fr/modeles/seedance-2-0' },
+    es: { label: 'Descubrir Seedance 2.5', href: '/es/modelos/seedance-2-5', proofHref: '/es/modelos/seedance-2-0' },
   } as const;
 
   for (const locale of ['en', 'fr', 'es'] as const) {
@@ -117,6 +127,36 @@ test('localized homepage Seedance proof cards cannot relabel a 2.5 family asset 
       },
       `${locale} proof card must keep one coherent Seedance 2.0 identity`,
     );
+
+    const markup = renderToStaticMarkup(
+      React.createElement(
+        I18nProvider,
+        {
+          locale,
+          dictionary: messagesByLocale[locale] as Record<string, unknown>,
+          fallback: englishMessages as Record<string, unknown>,
+        },
+        React.createElement(RealExamplesPreview, {
+          copy: content.examples,
+          examples: [card],
+          providers: [],
+        }),
+      ),
+    );
+    const links = [...markup.matchAll(/<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/g)];
+    const discoveryLink = links.find(([, href, body]) =>
+      href === expectedDiscovery[locale].href && body.includes(expectedDiscovery[locale].label)
+    );
+    assert.ok(discoveryLink, `${locale} homepage must render its localized Seedance 2.5 discovery CTA`);
+    assert.doesNotMatch(discoveryLink[0], /rel="[^"]*nofollow/);
+
+    const escapedProofLabel = fallback.modelCta.replaceAll('&', '&amp;');
+    const proofModelLink = links.find(([anchor, href]) =>
+      href === expectedDiscovery[locale].proofHref &&
+      anchor.includes(`aria-label="${escapedProofLabel} - Seedance 2.0"`)
+    );
+    assert.ok(proofModelLink, `${locale} homepage must render the Seedance 2.0 proof CTA`);
+    assert.match(proofModelLink[0], new RegExp(`>${escapedProofLabel}<span aria-hidden="true">→<\/span>`));
   }
 });
 

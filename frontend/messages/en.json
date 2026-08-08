@@ -535,6 +535,7 @@
         "cta": "Browse all examples",
         "modelsCta": "View all model specs",
         "compareLink": "Compare engines",
+        "featuredModelCta": "Discover Seedance 2.5",
         "providerLabel": "Supported engines:",
         "viewPrompt": "Clone settings",
         "fallbackCards": [
