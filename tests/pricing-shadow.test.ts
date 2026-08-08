@@ -62,8 +62,15 @@ test('committed pre-canonical pricing baseline is immutable after legacy deletio
     rows: Array<{ scenarioId: string }>;
   };
   assert.equal(additions.generatedFrom, 'registry-publication-shadow-additions');
-  assert.equal(additions.rows.length, 4);
-  assert.equal(additions.rows.every((row) => row.scenarioId.includes('seedance-2-5')), true);
+  assert.equal(additions.rows.length, 8);
+  assert.deepEqual(
+    additions.rows.reduce<Record<string, number>>((counts, row) => {
+      const engineId = row.scenarioId.includes('minimax-h3') ? 'minimax-h3' : 'seedance-2-5';
+      counts[engineId] = (counts[engineId] ?? 0) + 1;
+      return counts;
+    }, {}),
+    { 'seedance-2-5': 4, 'minimax-h3': 4 },
+  );
 });
 
 test('canonical shadow quotes match every frozen current output', async () => {

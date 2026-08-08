@@ -41,6 +41,7 @@ const MIGRATED_TEMPLATE_SLUGS = [
   'luma-uni-1-max',
   'happy-horse-1-1',
   'happy-horse-1-0',
+  'minimax-h3',
   'minimax-hailuo-02-text',
   'pika-text-to-video',
   'gpt-image-2',

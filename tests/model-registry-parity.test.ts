@@ -33,6 +33,11 @@ test('runtime model projection matches every baseline identity and surface', () 
     'seedance-2-0',
     'veo-3-1',
   ]);
+  const reciprocalMinimaxH3PairOwners = new Set([
+    'kling-o3-pro',
+    'seedance-2-5',
+    'veo-3-1',
+  ]);
   for (const expected of baseline.models) {
     const actual = runtimeById.get(expected.id);
     assert.ok(actual, `missing runtime model ${expected.id}`);
@@ -48,6 +53,16 @@ test('runtime model projection matches every baseline identity and surface', () 
       );
       actualPublication.compare.publishedPairs = actualPublication.compare.publishedPairs.filter(
         (slug) => slug !== 'seedance-2-5',
+      );
+    }
+    if (reciprocalMinimaxH3PairOwners.has(expected.id)) {
+      assert.equal(
+        actualPublication.compare.publishedPairs.filter((slug) => slug === 'minimax-h3').length,
+        1,
+        expected.id,
+      );
+      actualPublication.compare.publishedPairs = actualPublication.compare.publishedPairs.filter(
+        (slug) => slug !== 'minimax-h3',
       );
     }
     assert.deepEqual(actualPublication, expected.publication);
@@ -129,17 +144,27 @@ test('family model membership and current variants remain identical to baseline'
   for (const expected of baseline.familyDefinitions) {
     const actual = MODEL_FAMILIES.find((family) => family.id === expected.id);
     assert.ok(actual, expected.id);
-    assert.equal(actual.defaultModelSlug, expected.defaultModelSlug);
-    assert.deepEqual(actual.routeAliases, expected.routeAliases);
+    assert.equal(
+      actual.defaultModelSlug,
+      expected.id === 'hailuo' ? 'minimax-h3' : expected.defaultModelSlug,
+    );
+    assert.deepEqual(
+      actual.routeAliases,
+      expected.id === 'hailuo' ? ['minimax-h3', ...expected.routeAliases] : expected.routeAliases,
+    );
     const expectedPublishedModelSlugs = expected.id === 'seedance'
       ? ['seedance-2-5', ...(expected.examplesPage?.publishedModelSlugs ?? [])]
-      : expected.examplesPage?.publishedModelSlugs ?? [];
+      : expected.id === 'hailuo'
+        ? ['minimax-h3', ...(expected.examplesPage?.publishedModelSlugs ?? [])]
+        : expected.examplesPage?.publishedModelSlugs ?? [];
     const baselineCurrentModelSlugs = expected.examplesPage?.currentModelSlugs?.length
       ? expected.examplesPage.currentModelSlugs
       : expected.examplesPage?.publishedModelSlugs ?? [];
     const expectedCurrentModelSlugs = expected.id === 'seedance'
       ? ['seedance-2-5', ...baselineCurrentModelSlugs]
-      : baselineCurrentModelSlugs;
+      : expected.id === 'hailuo'
+        ? ['minimax-h3']
+        : baselineCurrentModelSlugs;
     assert.deepEqual(
       getModelFamilyExamplesPageConfig(expected.id)?.publishedModelSlugs,
       expectedPublishedModelSlugs,

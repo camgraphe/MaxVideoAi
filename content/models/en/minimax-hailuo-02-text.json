@@ -17,6 +17,10 @@
     },
     "secondaryLinks": [
       {
+        "label": "Discover the current MiniMax H3 →",
+        "href": "/models/minimax-h3"
+      },
+      {
         "label": "Compare MiniMax vs Pika 2.2 →",
         "href": "/models/pika-text-to-video"
       }

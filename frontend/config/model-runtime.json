@@ -637,6 +637,7 @@
           "publishedPairIds": [
             "kling-3-pro",
             "kling-3-standard",
+            "minimax-h3",
             "seedance-2-0",
             "veo-3-1"
           ]
@@ -1242,6 +1243,56 @@
       }
     },
     {
+      "id": "minimax-h3",
+      "slug": "minimax-h3",
+      "family": "hailuo",
+      "category": "video",
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": true,
+          "indexable": true
+        },
+        "examples": {
+          "published": true,
+          "includeInFamilyCopy": true,
+          "current": true,
+          "familyRank": 0
+        },
+        "compare": {
+          "published": true,
+          "indexed": true,
+          "suggestedOpponentIds": [
+            "seedance-2-5",
+            "kling-o3-pro",
+            "veo-3-1"
+          ],
+          "publishedPairIds": [
+            "seedance-2-5",
+            "kling-o3-pro",
+            "veo-3-1"
+          ]
+        },
+        "app": {
+          "published": true,
+          "discoveryRank": -4,
+          "variantGroup": "hailuo",
+          "variantLabel": "H3",
+          "launchBadge": "new"
+        },
+        "pricing": {
+          "published": true,
+          "featuredScenario": "minimax-h3"
+        },
+        "sitemap": {
+          "published": true
+        }
+      }
+    },
+    {
       "id": "minimax-hailuo-02-text",
       "slug": "minimax-hailuo-02-text",
       "family": "hailuo",
@@ -1269,8 +1320,8 @@
         "examples": {
           "published": true,
           "includeInFamilyCopy": true,
-          "current": true,
-          "familyRank": 0
+          "current": false,
+          "familyRank": 1
         },
         "compare": {
           "published": true,
@@ -1876,6 +1927,7 @@
           "publishedPairIds": [
             "seedance-2-0",
             "kling-3-pro",
+            "minimax-h3",
             "veo-3-1"
           ]
         },
@@ -2163,6 +2215,7 @@
             "ltx-2-fast",
             "lumaRay2",
             "lumaRay2_flash",
+            "minimax-h3",
             "minimax-hailuo-02-text",
             "pika-text-to-video",
             "seedance-1-5-pro",

@@ -544,6 +544,22 @@
     }
   },
   {
+    "engineId": "minimax-h3",
+    "marketingName": "MiniMax H3",
+    "brandId": "minimax",
+    "modelSlug": "minimax-h3",
+    "family": "hailuo",
+    "versionLabel": "H3",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
     "engineId": "minimax-hailuo-02-text",
     "marketingName": "MiniMax Hailuo 02 Standard",
     "brandId": "minimax",

@@ -366,6 +366,7 @@
           "ltx-2-fast",
           "luma-ray-2",
           "luma-ray-2-flash",
+          "minimax-h3",
           "minimax-hailuo-02-text",
           "pika-text-to-video",
           "seedance-1-5-pro",
@@ -7448,6 +7449,7 @@
         "publishedPairs": [
           "kling-3-pro",
           "kling-3-standard",
+          "minimax-h3",
           "seedance-2-0",
           "veo-3-1"
         ],
@@ -12579,6 +12581,7 @@
         "publishedPairs": [
           "seedance-2-0",
           "kling-3-pro",
+          "minimax-h3",
           "veo-3-1"
         ],
         "includeInHub": true
@@ -15504,6 +15507,537 @@
     }
   },
   {
+    "engineId": "minimax-h3",
+    "modelSlug": "minimax-h3",
+    "marketingName": "MiniMax H3",
+    "provider": "MiniMax",
+    "brandId": "minimax",
+    "family": "hailuo",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "minimax-h3",
+        "minimax-hailuo-02-text"
+      ],
+      "currentModelSlugs": [
+        "minimax-h3"
+      ]
+    },
+    "versionLabel": "H3",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [
+          "seedance-2-5",
+          "kling-o3-pro",
+          "veo-3-1"
+        ],
+        "publishedPairs": [
+          "seedance-2-5",
+          "kling-o3-pro",
+          "veo-3-1"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true,
+        "discoveryRank": -4,
+        "variantGroup": "hailuo",
+        "variantLabel": "H3",
+        "launchBadge": "new"
+      },
+      "pricing": {
+        "includeInEstimator": true,
+        "featuredScenario": "minimax-h3"
+      }
+    },
+    "surfacesSource": "registry",
+    "engine": {
+      "id": "minimax-h3",
+      "label": "MiniMax H3",
+      "provider": "MiniMax",
+      "version": "H3",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v",
+        "ref2v"
+      ],
+      "maxDurationSec": 15,
+      "resolutions": [
+        "768P",
+        "2K",
+        "4K"
+      ],
+      "aspectRatios": [
+        "21:9",
+        "16:9",
+        "4:3",
+        "1:1",
+        "3:4",
+        "9:16",
+        "auto"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": true,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 30,
+        "videoMaxMB": 50,
+        "videoMaxDurationSec": 15,
+        "videoCodecs": [
+          "mp4",
+          "mov"
+        ],
+        "audioMaxMB": 15,
+        "audioMaxDurationSec": 15,
+        "promptMaxChars": 7000,
+        "promptMaxCharsSource": "official"
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "description": "Describe the characters, action, setting, camera, dialogue, and sound.",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "requiredInModes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ]
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Start image",
+            "description": "Required first frame for image-to-video.",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "maxSizeMB": 30,
+            "acceptedMimeTypes": [
+              "image/jpeg",
+              "image/png",
+              "image/webp"
+            ],
+            "acceptedFileExtensions": [
+              "jpg",
+              "jpeg",
+              "png",
+              "webp"
+            ],
+            "source": "either"
+          }
+        ],
+        "optional": [
+          {
+            "id": "end_image_url",
+            "type": "image",
+            "label": "End image",
+            "description": "Optional final frame for an image-to-video transition.",
+            "modes": [
+              "i2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "maxSizeMB": 30,
+            "acceptedMimeTypes": [
+              "image/jpeg",
+              "image/png",
+              "image/webp"
+            ],
+            "acceptedFileExtensions": [
+              "jpg",
+              "jpeg",
+              "png",
+              "webp"
+            ],
+            "source": "either"
+          },
+          {
+            "id": "reference_image_urls",
+            "type": "image",
+            "label": "Reference images (up to 9)",
+            "description": "Visual references for characters, environments, wardrobe, or composition.",
+            "modes": [
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 9,
+            "maxSizeMB": 30,
+            "acceptedMimeTypes": [
+              "image/jpeg",
+              "image/png",
+              "image/webp"
+            ],
+            "acceptedFileExtensions": [
+              "jpg",
+              "jpeg",
+              "png",
+              "webp"
+            ],
+            "source": "either"
+          },
+          {
+            "id": "reference_video_urls",
+            "type": "video",
+            "label": "Reference videos (up to 3)",
+            "description": "Motion or performance references; 15 seconds combined maximum.",
+            "modes": [
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 3,
+            "minDurationSec": 2,
+            "maxDurationSec": 15,
+            "maxSizeMB": 50,
+            "acceptedMimeTypes": [
+              "video/mp4",
+              "video/quicktime"
+            ],
+            "acceptedFileExtensions": [
+              "mp4",
+              "mov"
+            ],
+            "source": "either"
+          },
+          {
+            "id": "reference_audio_urls",
+            "type": "audio",
+            "label": "Reference audio (up to 3)",
+            "description": "Audio references paired with at least one image or video; 15 seconds combined maximum.",
+            "modes": [
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 3,
+            "minDurationSec": 2,
+            "maxDurationSec": 15,
+            "maxSizeMB": 15,
+            "acceptedMimeTypes": [
+              "audio/mpeg",
+              "audio/mp3",
+              "audio/wav",
+              "audio/x-wav",
+              "audio/wave",
+              "audio/vnd.wave"
+            ],
+            "acceptedFileExtensions": [
+              "mp3",
+              "wav"
+            ],
+            "source": "either"
+          },
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration (seconds)",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "values": [
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15"
+            ],
+            "default": "10",
+            "min": 5,
+            "max": 15
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "values": [
+              "768P",
+              "2K",
+              "4K"
+            ],
+            "default": "2K"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "description": "Auto uses Fal adaptive framing.",
+            "modes": [
+              "t2v",
+              "ref2v"
+            ],
+            "values": [
+              "21:9",
+              "16:9",
+              "4:3",
+              "1:1",
+              "3:4",
+              "9:16",
+              "auto"
+            ],
+            "default": "16:9"
+          }
+        ],
+        "referenceBudget": {
+          "fieldIds": [
+            "reference_image_urls",
+            "reference_video_urls",
+            "reference_audio_urls"
+          ],
+          "modes": [
+            "ref2v"
+          ],
+          "maxTotal": 12,
+          "countUniqueUrls": true
+        },
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp",
+            "mp4",
+            "mov",
+            "mp3",
+            "wav"
+          ],
+          "maxImageSizeMB": 30,
+          "maxVideoSizeMB": 50,
+          "maxAudioSizeMB": 15,
+          "maxCombinedVideoDurationSec": 15,
+          "maxCombinedAudioDurationSec": 15,
+          "referenceAudioRequiresVisual": true
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 13,
+          "byResolution": {
+            "768P": 8,
+            "2K": 13,
+            "4K": 16
+          }
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.13,
+        "byResolution": {
+          "768P": 0.08,
+          "2K": 0.13,
+          "4K": 0.16
+        },
+        "currency": "USD",
+        "notes": "Provider cost varies by resolution; reference images above five add USD 0.08 each."
+      },
+      "updatedAt": "2026-08-08T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "minimax",
+        "modelSlug": "minimax/h3/text-to-video"
+      },
+      "availability": "available",
+      "brandId": "minimax",
+      "brandAssetPolicy": {
+        "logoAllowed": false,
+        "textOnly": true,
+        "usageNotes": "Use text-only MiniMax attribution until approved H3 brand assets are present."
+      }
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "minimax/h3/text-to-video",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 10
+          },
+          "resolution": [
+            "768P",
+            "2K",
+            "4K"
+          ],
+          "aspectRatio": [
+            "21:9",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16",
+            "auto"
+          ],
+          "fps": 24,
+          "audioToggle": false,
+          "notes": "Text-to-video with native stereo audio and fixed or Auto framing."
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "minimax/h3/image-to-video",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 10
+          },
+          "resolution": [
+            "768P",
+            "2K",
+            "4K"
+          ],
+          "fps": 24,
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 30,
+          "audioToggle": false,
+          "notes": "Animate one start image with an optional end image; framing follows the source image and audio is generated natively."
+        }
+      },
+      {
+        "mode": "ref2v",
+        "falModelId": "minimax/h3/reference-to-video",
+        "ui": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 10
+          },
+          "resolution": [
+            "768P",
+            "2K",
+            "4K"
+          ],
+          "aspectRatio": [
+            "21:9",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16",
+            "auto"
+          ],
+          "fps": 24,
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 50,
+          "audioToggle": false,
+          "notes": "Combine up to 9 images, 3 videos, and 3 audio clips, with 12 unique references total and native stereo output."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": true
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    },
+    "bestFor": "Native-audio multimodal character video"
+  },
+  {
     "engineId": "minimax-hailuo-02-text",
     "modelSlug": "minimax-hailuo-02-text",
     "marketingName": "MiniMax Hailuo 02 Standard",
@@ -15514,10 +16048,11 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "minimax-h3",
         "minimax-hailuo-02-text"
       ],
       "currentModelSlugs": [
-        "minimax-hailuo-02-text"
+        "minimax-h3"
       ]
     },
     "versionLabel": "Standard",

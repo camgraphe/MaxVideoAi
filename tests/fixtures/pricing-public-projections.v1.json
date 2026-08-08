@@ -799,6 +799,48 @@
       "status": "unavailable"
     },
     {
+      "id": "estimator:minimax-h3:member:default",
+      "surface": "estimator",
+      "engineId": "minimax-h3",
+      "status": "exact",
+      "currency": "USD",
+      "vendorSubtotalCents": 80,
+      "marginCents": 24,
+      "discountCents": 0,
+      "customerTotalCents": 104,
+      "unit": "sec",
+      "quantity": 10,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "estimator:minimax-h3:plus:default",
+      "surface": "estimator",
+      "engineId": "minimax-h3",
+      "status": "exact",
+      "currency": "USD",
+      "vendorSubtotalCents": 80,
+      "marginCents": 24,
+      "discountCents": 5,
+      "customerTotalCents": 99,
+      "unit": "sec",
+      "quantity": 10,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "estimator:minimax-h3:pro:default",
+      "surface": "estimator",
+      "engineId": "minimax-h3",
+      "status": "exact",
+      "currency": "USD",
+      "vendorSubtotalCents": 80,
+      "marginCents": 24,
+      "discountCents": 10,
+      "customerTotalCents": 94,
+      "unit": "sec",
+      "quantity": 10,
+      "compatibilityProfile": "standard"
+    },
+    {
       "id": "estimator:minimax-hailuo-02-text:member:default",
       "surface": "estimator",
       "engineId": "minimax-hailuo-02-text",
@@ -2061,6 +2103,18 @@
       "status": "unavailable"
     },
     {
+      "id": "json-ld:minimax-h3:offer",
+      "surface": "json-ld",
+      "engineId": "minimax-h3",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 130,
+      "unit": "offer",
+      "quantity": 1,
+      "structuredDataAmount": "1.30",
+      "compatibilityProfile": "schema-current"
+    },
+    {
       "id": "json-ld:minimax-hailuo-02-text:offer",
       "surface": "json-ld",
       "engineId": "minimax-hailuo-02-text",
@@ -2592,6 +2646,20 @@
       "customerTotalCents": 65,
       "unit": "sec",
       "quantity": 5,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "model-page:minimax-h3:default",
+      "surface": "model-page",
+      "engineId": "minimax-h3",
+      "status": "exact",
+      "currency": "USD",
+      "vendorSubtotalCents": 130,
+      "marginCents": 39,
+      "discountCents": 0,
+      "customerTotalCents": 169,
+      "unit": "sec",
+      "quantity": 10,
       "compatibilityProfile": "standard"
     },
     {
@@ -4704,6 +4772,60 @@
       "unit": "scenario",
       "quantity": 1,
       "displayedAmount": "$1.30",
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "pricing-hub-video:minimax-h3:10s-1080p",
+      "surface": "pricing-hub-video",
+      "engineId": "minimax-h3",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:minimax-h3:10s-1080p-audio",
+      "surface": "pricing-hub-video",
+      "engineId": "minimax-h3",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:minimax-h3:10s-720p",
+      "surface": "pricing-hub-video",
+      "engineId": "minimax-h3",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:minimax-h3:4k-route",
+      "surface": "pricing-hub-video",
+      "engineId": "minimax-h3",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 208,
+      "unit": "scenario",
+      "quantity": 1,
+      "displayedAmount": "$2.08",
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "pricing-hub-video:minimax-h3:5s-720p",
+      "surface": "pricing-hub-video",
+      "engineId": "minimax-h3",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:minimax-h3:8s-1080p",
+      "surface": "pricing-hub-video",
+      "engineId": "minimax-h3",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:minimax-h3:entry-route",
+      "surface": "pricing-hub-video",
+      "engineId": "minimax-h3",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 104,
+      "unit": "scenario",
+      "quantity": 1,
+      "displayedAmount": "$1.04",
       "compatibilityProfile": "standard"
     },
     {

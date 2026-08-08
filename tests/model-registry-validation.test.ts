@@ -55,7 +55,7 @@ function repositoryDocument(models: Array<ReturnType<typeof isolatedModel>>) {
 }
 
 test('canonical registry validates the committed document', () => {
-  assert.equal(validateModelRegistryDocument(valid).models.length, 42);
+  assert.equal(validateModelRegistryDocument(valid).models.length, 43);
 });
 
 test('published model pages require localized content in en, fr, and es', () => {

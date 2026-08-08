@@ -17,6 +17,10 @@
     },
     "secondaryLinks": [
       {
+        "label": "Descubrir el nuevo MiniMax H3 →",
+        "href": "/es/modelos/minimax-h3"
+      },
+      {
         "label": "Comparar MiniMax vs Pika 2.2 →",
         "href": "/models/pika-text-to-video"
       }
