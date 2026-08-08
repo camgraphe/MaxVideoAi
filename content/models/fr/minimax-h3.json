@@ -1,0 +1,377 @@
+{
+  "marketingName": "MiniMax H3",
+  "versionLabel": "H3",
+  "seo": {
+    "title": "MiniMax H3 : générateur vidéo IA 4K, références et audio",
+    "description": "Générez des vidéos MiniMax H3 de 5 à 15 secondes en 768P, 2K ou 4K depuis du texte, des images de départ et de fin ou des références image, vidéo et audio.",
+    "image": "/models/minimax-h3-launch.jpg"
+  },
+  "overview": "Créez des vidéos de 5 à 15 secondes en 768P, 2K ou 4K à 24 FPS. Partez d’un texte, animez une image de départ avec une image de fin optionnelle, ou dirigez la scène avec des références image, vidéo et audio. H3 génère le son stéréo natif avec la vidéo.",
+  "hero": {
+    "title": "MiniMax H3 — réalisez des vidéos IA 4K avec références multimodales",
+    "intro": "Transformez du texte, des images ou des références multimodales en vidéo de 5 à 15 secondes jusqu’en 4K, avec audio stéréo natif et mise en scène multi-plan.",
+    "badge": "Nouveau · 5–15 secondes · Jusqu’en 4K · Audio stéréo natif",
+    "ctaPrimary": {
+      "label": "Générer avec MiniMax H3",
+      "href": "/app?engine=minimax-h3"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Voir les exemples MiniMax H3",
+        "href": "/fr/galerie/minimax-h3"
+      },
+      {
+        "label": "Ouvrir les exemples de prompts H3",
+        "href": "#prompting"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Meilleurs usages de MiniMax H3",
+    "items": [
+      {
+        "title": "Scènes cinématographiques centrées sur des personnages expressifs et du dialogue",
+        "icon": "users"
+      },
+      {
+        "title": "Séquences multi-plans qui préservent identité, tenue et décor",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Transfert de mouvement guidé par vidéo et consignes d’action précises",
+        "icon": "camera"
+      },
+      {
+        "title": "Films sociaux et de campagne en haute résolution avec son synchronisé",
+        "icon": "audio"
+      }
+    ]
+  },
+  "technicalOverviewTitle": "Aperçu de MiniMax H3",
+  "technicalOverview": [
+    {
+      "label": "Durée",
+      "body": "Chaque seconde entière de 5 à 15 secondes"
+    },
+    {
+      "label": "Sortie",
+      "body": "768P, 2K ou 4K · Auto, 21:9, 16:9, 4:3, 1:1, 3:4 ou 9:16 · 24 FPS"
+    },
+    {
+      "label": "Texte et images",
+      "body": "Texte vers vidéo, ou image de départ avec image de fin optionnelle"
+    },
+    {
+      "label": "Mode références",
+      "body": "Jusqu’à 9 images, 3 vidéos et 3 audios, pour 12 références uniques au total"
+    },
+    {
+      "label": "Audio",
+      "body": "Audio stéréo natif généré avec chaque vidéo"
+    }
+  ],
+  "tips": {
+    "title": "Comment diriger MiniMax H3",
+    "items": [
+      "Décrivez le personnage, l’action, le décor, la caméra puis le son.",
+      "Associez une action visible et un mouvement de caméra à chaque plan.",
+      "Donnez à chaque référence un rôle précis : identité, mouvement, tenue ou voix.",
+      "Répétez uniquement les éléments de continuité indispensables à chaque plan."
+    ]
+  },
+  "faqs": [
+    {
+      "q": "Quelles entrées MiniMax H3 accepte-t-il ?",
+      "a": "Utilisez un prompt texte, une image de départ avec une image de fin optionnelle, ou un ensemble de références image, vidéo et audio. Une référence audio doit être accompagnée d’au moins une image ou une vidéo."
+    },
+    {
+      "q": "Quelles durées et résolutions sont disponibles ?",
+      "a": "Choisissez chaque seconde entière de 5 à 15 secondes et générez en 768P, 2K ou 4K à 24 FPS."
+    },
+    {
+      "q": "Combien de références H3 peut-il utiliser ?",
+      "a": "Le mode références accepte jusqu’à 9 images, 3 vidéos et 3 audios, sans dépasser 12 références uniques par requête."
+    },
+    {
+      "q": "MiniMax H3 génère-t-il l’audio ?",
+      "a": "Oui. H3 produit un audio stéréo natif avec la vidéo, sans interrupteur audio séparé."
+    },
+    {
+      "q": "Puis-je générer avec MiniMax H3 depuis cette page ?",
+      "a": "Oui. MiniMax H3 est disponible dans MaxVideoAI et le prix exact est affiché avant chaque rendu."
+    }
+  ],
+  "decision": {
+    "modelSlug": "minimax-h3",
+    "hero": {
+      "eyebrow": "Nouveau · 5–15 secondes · Jusqu’en 4K · Audio stéréo natif",
+      "title": "MiniMax H3",
+      "subtitle": "Créez des vidéos de 5 à 15 secondes depuis du texte, des images de départ et de fin, ou des références image, vidéo et audio, jusqu’en 4K avec audio stéréo natif.",
+      "subtitleHighlights": [
+        "5 à 15 secondes",
+        "jusqu’en 4K",
+        "audio stéréo natif"
+      ],
+      "paragraph": "Utilisez un seul moteur MiniMax H3 pour le texte vers vidéo, l’image vers vidéo et les références vers vidéo. Choisissez durée et résolution, puis dirigez continuité, mouvement, caméra et son dans le même flux.",
+      "primaryCta": {
+        "label": "Générer avec MiniMax H3",
+        "href": "/app?engine=minimax-h3"
+      },
+      "secondaryCta": {
+        "label": "Voir les exemples MiniMax H3",
+        "href": "/fr/galerie/minimax-h3"
+      },
+      "quickLinks": [
+        {
+          "label": "Comparer avec Kling O3 Pro",
+          "href": "/fr/comparatif/kling-o3-pro-vs-minimax-h3?order=minimax-h3"
+        },
+        {
+          "label": "Voir les tarifs",
+          "href": "/fr/tarifs#minimax-h3-pricing"
+        },
+        {
+          "label": "Exemples de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Rendu MiniMax H3 réel",
+      "description": "Une séquence cinématographique centrée sur un personnage, générée avec MaxVideoAI",
+      "renderLabel": "Voir le rendu complet",
+      "badges": [
+        "10s",
+        "2K",
+        "16:9",
+        "Audio stéréo"
+      ],
+      "altContext": "vidéo cinématographique MiniMax H3 centrée sur un personnage avec son stéréo natif"
+    },
+    "features": [
+      {
+        "title": "Trois modes de création",
+        "body": "Passez du texte vers vidéo à l’image vers vidéo ou aux références vers vidéo dans un seul moteur H3.",
+        "tone": "reference"
+      },
+      {
+        "title": "5–15 secondes jusqu’en 4K",
+        "body": "Choisissez chaque seconde entière et générez en 768P, 2K ou 4K à 24 FPS.",
+        "tone": "quality"
+      },
+      {
+        "title": "Direction par références multimodales",
+        "body": "Combinez images, vidéos et audios pour guider identité, jeu, mouvement et son.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Audio stéréo natif",
+        "body": "Générez ambiance, effets, musique ou parole avec l’image dans le même rendu.",
+        "tone": "audio"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Vous partez d’une scène écrite ?",
+        "body": "Utilisez le texte vers vidéo et choisissez Auto ou un ratio fixe pour créer un plan complet depuis un prompt.",
+        "cta": {
+          "label": "Générer depuis du texte",
+          "href": "/app?engine=minimax-h3"
+        }
+      },
+      {
+        "title": "Vous contrôlez le début et la fin ?",
+        "body": "Animez une image de départ et ajoutez une image de fin optionnelle ; H3 suit automatiquement son cadrage.",
+        "cta": {
+          "label": "Générer depuis des images",
+          "href": "/app?engine=minimax-h3"
+        }
+      },
+      {
+        "title": "Vous dirigez un personnage récurrent ?",
+        "body": "Utilisez les références pour attribuer des repères d’identité, de tenue, de mouvement et de voix.",
+        "cta": {
+          "label": "Ouvrir Prompt Lab",
+          "href": "#prompting"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Texte vers vidéo",
+        "body": "Décrivez personnage, action, décor, caméra et son, puis choisissez un ratio fixe ou Auto."
+      },
+      {
+        "title": "Image vers vidéo",
+        "body": "Importez une image de départ et éventuellement une image de fin ; la sortie suit le ratio de la source."
+      },
+      {
+        "title": "Références vers vidéo",
+        "body": "Combinez jusqu’à 9 images, 3 vidéos et 3 audios, dans la limite de 12 références uniques."
+      },
+      {
+        "title": "Direction audio native",
+        "body": "Écrivez directement dans le prompt les dialogues, ambiances et sons synchronisés."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Prix de votre rendu MiniMax H3",
+      "subtitle": "Choisissez mode, durée, résolution et références, puis vérifiez le prix exact avant de générer.",
+      "footnote": "Les cinq premières images de référence sont incluses ; chaque image supplémentaire ajoute le supplément affiché.",
+      "ctaLabel": "Générer avec MiniMax H3",
+      "ctaHref": "/app?engine=minimax-h3"
+    },
+    "meta": {
+      "title": "MiniMax H3 : générateur vidéo IA 4K, références et audio",
+      "description": "Générez des vidéos MiniMax H3 de 5 à 15 secondes en 768P, 2K ou 4K depuis du texte, des images ou des références image, vidéo et audio."
+    }
+  },
+  "prompting": {
+    "modelSlug": "minimax-h3",
+    "section": {
+      "title": "Prompt Lab — MiniMax H3",
+      "intro": "Construisez le prompt en trois passes : définissez le jeu, dirigez les plans, puis verrouillez continuité et son.",
+      "tip": "Donnez à chaque plan une action visible, une instruction caméra et un événement sonore.",
+      "guide": {
+        "label": "Guide MiniMax H3",
+        "href": "https://minimaxi.com/blog/minimax-h3"
+      },
+      "referencesTitle": "Une méthode centrée sur le personnage"
+    },
+    "tabs": [
+      {
+        "id": "performance",
+        "label": "Interprétation",
+        "title": "Définir le personnage et l’action",
+        "description": "Fixez identité, expression, langage corporel et changement visible.",
+        "copy": "Personnage :\n[Apparence, tenue, expression et voix]\n\nDécor :\n[Lieu, heure, météo et repères visuels]\n\nAction :\n[Une action physique claire et sa réaction]\n\nSon :\n[Dialogue, ambiance et effets synchronisés]"
+      },
+      {
+        "id": "shots",
+        "label": "Plans",
+        "title": "Diriger la séquence",
+        "description": "Écrivez une progression courte avec cadrages et transitions explicites.",
+        "copy": "Plan d’ouverture :\n[Composition + première action + mouvement caméra]\n\nPlan de développement :\n[Moment de jeu + transition]\n\nPlan final :\n[Résolution + image finale]\n\nTiming audio :\n[Son lié à chaque événement visible]"
+      },
+      {
+        "id": "references",
+        "label": "Références",
+        "title": "Attribuer un rôle à chaque référence",
+        "description": "Précisez ce que H3 doit reprendre de chaque image, vidéo ou audio.",
+        "copy": "Images :\n[Identité, tenue, lieu ou style visuel]\n\nVidéos :\n[Mouvement, geste, caméra ou rythme]\n\nAudios :\n[Voix, rythme ou texture sonore]\n\nRègles de continuité :\n[Détails qui ne doivent pas varier entre les plans]"
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "performance",
+        "body": "L’interprétation définit une action et une évolution émotionnelle lisibles."
+      },
+      {
+        "tabId": "shots",
+        "body": "Les plans structurent l’action en début, développement et fin."
+      },
+      {
+        "tabId": "references",
+        "body": "Les références sont plus efficaces quand chaque fichier a une fonction nommée."
+      }
+    ],
+    "globalPrinciples": [
+      "Placez personnage et action avant les adjectifs de style.",
+      "Reliez chaque mouvement caméra à un moment visible du récit.",
+      "Décrivez les sons au moment où leur cause apparaît à l’image.",
+      "Maintenez identité, tenue, lumière et direction de mouvement entre les plans."
+    ],
+    "engineWhy": [
+      "H3 réunit texte, images et références multimodales dans un seul modèle de production.",
+      "La direction multi-plan permet de construire une courte séquence plutôt qu’un mouvement isolé.",
+      "L’audio stéréo natif fait évoluer dialogue, ambiance et effets avec l’image."
+    ],
+    "demo": {
+      "title": "Séquence personnage MiniMax H3",
+      "promptLabel": "Prompt cinématographique centré sur un personnage",
+      "prompt": "Une jeune alpiniste déterminée, vêtue d’une veste rouge patinée, traverse une arête battue par le vent à l’heure bleue. Commencer par un profil large lorsqu’elle plante son piolet et reprend son équilibre ; passer à un gros plan tandis que le givre se pose sur ses cils et qu’elle murmure : « Presque arrivée. » Finir par une orbite lente révélant les lumières chaudes de la vallée. Conserver son visage, sa veste, son équipement et la direction du vent. Respiration naturelle, mouvement du tissu, vent lointain et synchronisation labiale précise, son stéréo natif.",
+      "notes": [
+        "Le personnage, la tenue et le vent sont des repères de continuité explicites.",
+        "Chaque plan associe un geste, un mouvement caméra et un événement sonore."
+      ],
+      "summary": {
+        "subject": "Une alpiniste en veste rouge patinée",
+        "action": "Traverse une arête, reprend son équilibre et parle",
+        "camera": "Profil large, gros plan de jeu et orbite finale lente",
+        "style": "Naturalisme cinématographique à l’heure bleue",
+        "output": "Scène personnage de 10 secondes en 2K avec audio stéréo natif"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Texte vers vidéo",
+        "outputLabel": "Rendu 2K",
+        "duration": "10s",
+        "aspectRatio": "16:9",
+        "audioChipMode": "supported",
+        "audioChipLabel": "Audio stéréo natif",
+        "altContext": "scène cinématographique d’alpiniste MiniMax H3"
+      }
+    },
+    "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "minimax-h3",
+    "showWhenEmpty": false,
+    "section": {
+      "title": "Rendus MiniMax H3 réels",
+      "intro": "Examinez des rendus MaxVideoAI qui testent continuité du personnage, direction caméra, contrôle par références et son synchronisé.",
+      "defaultCtaLabel": "Voir tous les exemples MiniMax H3",
+      "recreateLabel": "Recréer cette scène"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Tous"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinématographique"
+      },
+      {
+        "id": "audio",
+        "label": "Audio"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "character",
+        "icon": "users",
+        "title": "Continuité du personnage",
+        "body": "Examinez visage, tenue et interprétation sur toute la séquence."
+      },
+      {
+        "id": "camera",
+        "icon": "maximize",
+        "title": "Direction caméra",
+        "body": "Suivez cadrage, mouvement caméra et transitions d’un moment à l’autre."
+      },
+      {
+        "id": "references",
+        "icon": "sparkles",
+        "title": "Contrôle par références",
+        "body": "Comparez identité, mouvement et son visés avec la vidéo finale."
+      },
+      {
+        "id": "audio",
+        "icon": "audio",
+        "title": "Son stéréo natif",
+        "body": "Évaluez timing du dialogue, ambiance et effets synchronisés."
+      },
+      {
+        "id": "production",
+        "icon": "shield",
+        "title": "Rendus de production réels",
+        "body": "Chaque exemple de cette page est généré avec MaxVideoAI."
+      }
+    ],
+    "fallbackItems": null
+  }
+}

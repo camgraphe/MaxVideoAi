@@ -21,6 +21,7 @@ import { ltx23FastTemplateConfig } from './model-page-templates/ltx-2-3-fast';
 import { ltx2TemplateConfig } from './model-page-templates/ltx-2';
 import { ltx2FastTemplateConfig } from './model-page-templates/ltx-2-fast';
 import { minimaxHailuo02TemplateConfig } from './model-page-templates/minimax-hailuo-02-text';
+import { minimaxH3TemplateConfig } from './model-page-templates/minimax-h3';
 import { nanoBanana2TemplateConfig } from './model-page-templates/nano-banana-2';
 import { nanoBananaLiteTemplateConfig } from './model-page-templates/nano-banana-lite';
 import { nanoBananaProTemplateConfig } from './model-page-templates/nano-banana-pro';
@@ -64,6 +65,7 @@ const MODEL_PAGE_TEMPLATE_REGISTRY: Record<string, ModelPageTemplateConfig> = {
   [ltx23FastTemplateConfig.slug]: ltx23FastTemplateConfig,
   [ltx23ProTemplateConfig.slug]: ltx23ProTemplateConfig,
   [minimaxHailuo02TemplateConfig.slug]: minimaxHailuo02TemplateConfig,
+  [minimaxH3TemplateConfig.slug]: minimaxH3TemplateConfig,
   [nanoBananaTemplateConfig.slug]: nanoBananaTemplateConfig,
   [nanoBananaLiteTemplateConfig.slug]: nanoBananaLiteTemplateConfig,
   [nanoBanana2TemplateConfig.slug]: nanoBanana2TemplateConfig,
