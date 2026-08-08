@@ -1,7 +1,7 @@
 # Seedance 2.5 — menu comparison and examples linking design
 
 **Date:** 2026-08-08  
-**Status:** approved design, awaiting written-spec review
+**Status:** approved
 
 ## Goal
 
@@ -91,4 +91,3 @@ The local preview exposed a self-redirect on canonical French and Spanish
 marketing routes. That routing defect is not caused by this content/linking
 design and must be diagnosed and fixed as a separate technical change before
 production deployment.
-
