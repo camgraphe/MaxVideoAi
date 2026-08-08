@@ -13,7 +13,7 @@
 - Canonical product ID and public slug are exactly `minimax-h3`; the family is `hailuo`.
 - One public engine exposes `t2v`, `i2v`, and `ref2v`; do not create mode-specific public model identities.
 - H3 becomes the Hailuo `current` and default model; `minimax-hailuo-02-text` remains published, indexable, selectable, priced, and linked as the secondary budget model.
-- The Fal contract is 5–15 integer seconds, 24 FPS, `768P`/`2K`/`4K`, fixed ratios `21:9`/`16:9`/`4:3`/`1:1`/`3:4`/`9:16`, and `adaptive` only when MaxVideoAI `auto` is selected in H3 reference mode.
+- The Fal contract is 5–15 integer seconds, 24 FPS, `768P`/`2K`/`4K`, fixed ratios `21:9`/`16:9`/`4:3`/`1:1`/`3:4`/`9:16`, and provider value `adaptive` when MaxVideoAI `auto` is selected in H3 text or reference mode.
 - H3 native stereo audio is always present. Do not expose an audio toggle and never send `generate_audio` or an `audio` boolean.
 - H3 reference mode supports at most 9 images, 3 videos, 3 audios, and 12 unique references in total. Audio-only reference requests are invalid; video-only reference requests are valid.
 - H3 image mode requires one start image, permits one optional end image, and omits `aspect_ratio` from the provider body.
@@ -34,13 +34,13 @@
 **Files:**
 - Create: `docs/model-launch/minimax-h3.md`
 - Create: `frontend/src/config/fal-engines/minimax-h3.ts`
-- Modify: `frontend/src/config/fal-engines/registry.ts`
 - Modify: `frontend/src/config/engineCatalog.overrides.ts`
 - Create: `tests/minimax-h3-engine-catalog.test.ts`
+- Modify: `tests/fal-engine-catalog-architecture.test.ts`
 
 **Interfaces:**
 - Consumes: `RawFalEngineEntry`, `EngineCaps`, and the official H3 Fal endpoint schemas.
-- Produces: `MINIMAX_H3_FAL_ENGINE_REGISTRY`, one `minimax-h3` engine with three mode configs, exact input fields, exact provider rates, and no audio toggle.
+- Produces: `MINIMAX_H3_FAL_ENGINE_REGISTRY`, one raw `minimax-h3` engine contract with three mode configs, exact input fields, exact provider rates, and no audio toggle. It is intentionally not added to the executable registry until Task 5 can add the canonical model identity in the same atomic publication change.
 
 - [ ] **Step 1: Re-check and record the official source contract**
 
@@ -61,9 +61,8 @@ If the live contract differs from the approved spec, update the spec, this plan,
 Create `tests/minimax-h3-engine-catalog.test.ts` with assertions equivalent to:
 
 ```ts
-const entry = getFalEngineById('minimax-h3');
+const entry = MINIMAX_H3_FAL_ENGINE_REGISTRY.find(({ id }) => id === 'minimax-h3');
 assert.ok(entry);
-assert.equal(entry.modelSlug, 'minimax-h3');
 assert.equal(entry.engine.provider, 'MiniMax');
 assert.deepEqual(entry.engine.modes, ['t2v', 'i2v', 'ref2v']);
 assert.deepEqual(entry.engine.resolutions, ['768P', '2K', '4K']);
@@ -112,9 +111,9 @@ export const MINIMAX_H3_RESOLUTIONS = ['768P', '2K', '4K'] as const;
 export const MINIMAX_H3_FIXED_ASPECT_RATIOS = ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16'] as const;
 ```
 
-Use field IDs `image_url`, `end_image_url`, `reference_image_urls`, `reference_video_urls`, and `reference_audio_urls`. Put `auto` only in the `ref2v` UI mode; omit an aspect-ratio control from `i2v`. Set `pricingDetails.perSecondCents` to `8`, `13`, and `16` and set `pricing.base` to `0.13` only as the default 2K presentation rate.
+Use field IDs `image_url`, `end_image_url`, `reference_image_urls`, `reference_video_urls`, and `reference_audio_urls`. Put `auto` in the `t2v` and `ref2v` UI modes; omit an aspect-ratio control from `i2v`. Set `pricingDetails.perSecondCents` to `8`, `13`, and `16` and set `pricing.base` to `0.13` only as the default 2K presentation rate.
 
-Import and spread `MINIMAX_H3_FAL_ENGINE_REGISTRY` in `frontend/src/config/fal-engines/registry.ts`. Add a `minimax-h3` override with `bestFor: 'Native-audio multimodal character video'`.
+Add `minimax-h3.ts` to the provider-module architecture contract. Do not yet import the raw entry into the executable registry: `falEngines.ts` requires a matching canonical runtime model and deliberately throws when that identity is missing. Add a `minimax-h3` override with `bestFor: 'Native-audio multimodal character video'`.
 
 - [ ] **Step 5: Run the green test and architecture gate**
 
@@ -130,7 +129,7 @@ Expected: PASS.
 - [ ] **Step 6: Commit the engine boundary**
 
 ```bash
-git add docs/model-launch/minimax-h3.md frontend/src/config/fal-engines/minimax-h3.ts frontend/src/config/fal-engines/registry.ts frontend/src/config/engineCatalog.overrides.ts tests/minimax-h3-engine-catalog.test.ts
+git add docs/model-launch/minimax-h3.md frontend/src/config/fal-engines/minimax-h3.ts frontend/src/config/engineCatalog.overrides.ts tests/minimax-h3-engine-catalog.test.ts tests/fal-engine-catalog-architecture.test.ts
 git commit -m "feat: add MiniMax H3 engine contract"
 ```
 
@@ -200,7 +199,7 @@ Cover these table rows in `tests/minimax-h3-validation.test.ts`:
 ```text
 duration: 5 PASS; 15 PASS; 4 FAIL; 16 FAIL; 5.5 FAIL
 resolution: 768P PASS; 2K PASS; 4K PASS; 1080p FAIL
-t2v ratio: all six fixed values PASS; auto FAIL
+t2v ratio: all six fixed values PASS; auto PASS
 i2v: one start PASS; missing start FAIL; two starts FAIL; one end PASS; aspect_ratio present FAIL
 ref2v: video only PASS; image only PASS; image + audio PASS; video + audio PASS; audio only FAIL
 counts: 9 images PASS; 10 images FAIL; 3 videos PASS; 4 videos FAIL; 3 audios PASS; 4 audios FAIL
@@ -230,7 +229,7 @@ export function buildMinimaxH3FalRequest(payload: GeneratePayload): {
 };
 ```
 
-The helper derives every media array from `payload.inputs` by its exact `slotId`, de-duplicates in insertion order, maps `auto` to `adaptive` only for `ref2v`, omits aspect ratio for `i2v`, and never copies arbitrary `extraInputValues`. Call it at the start of `buildFalGenerationRequest` when `payload.engineId === 'minimax-h3'`.
+The helper derives every media array from `payload.inputs` by its exact `slotId`, de-duplicates in insertion order, maps `auto` to `adaptive` for `t2v` and `ref2v`, omits aspect ratio for `i2v`, and never copies arbitrary `extraInputValues`. Call it at the start of `buildFalGenerationRequest` when `payload.engineId === 'minimax-h3'`.
 
 - [ ] **Step 5: Implement H3 validation without Seedance coupling**
 
@@ -442,6 +441,7 @@ git commit -m "feat: add canonical MiniMax H3 pricing"
 **Files:**
 - Modify: `frontend/config/model-registry.json`
 - Modify: `frontend/config/model-families.ts`
+- Modify: `frontend/src/config/fal-engines/registry.ts`
 - Modify: `content/models/en/minimax-hailuo-02-text.json`
 - Modify: `content/models/fr/minimax-hailuo-02-text.json`
 - Modify: `content/models/es/minimax-hailuo-02-text.json`
@@ -456,7 +456,7 @@ git commit -m "feat: add canonical MiniMax H3 pricing"
 
 **Interfaces:**
 - Consumes: executable `minimax-h3` engine from Task 1.
-- Produces: fully public/indexable registry identity, reciprocal comparison graph, Hailuo family default/current ordering, and generated projections.
+- Produces: atomically executable and fully public/indexable registry identity, reciprocal comparison graph, Hailuo family default/current ordering, and generated projections.
 
 - [ ] **Step 1: Write the failing registry contract**
 
@@ -495,7 +495,7 @@ Expected: FAIL because the registry entry is absent.
 
 - [ ] **Step 3: Author the H3 registry identity and reciprocal pairs**
 
-Add `minimax-h3` with empty alias arrays and every publication field explicit. Use app discovery rank `-4`, `variantGroup: 'hailuo'`, `variantLabel: 'H3'`, and `launchBadge: 'new'`. Add H3 to the published pair arrays for Seedance 2.5, Kling O3 Pro, and Veo 3.1; add the three opponents to H3's pair array. Do not add provider IDs as aliases.
+Import and spread `MINIMAX_H3_FAL_ENGINE_REGISTRY` in `frontend/src/config/fal-engines/registry.ts`. Add `minimax-h3` to the authored model registry with empty alias arrays and every publication field explicit. Use app discovery rank `-4`, `variantGroup: 'hailuo'`, `variantLabel: 'H3'`, and `launchBadge: 'new'`. Add H3 to the published pair arrays for Seedance 2.5, Kling O3 Pro, and Veo 3.1; add the three opponents to H3's pair array. Do not add provider IDs as aliases.
 
 Change only Hailuo 02 family rank/current state. In `model-families.ts`, change Hailuo nav/default/aliases to H3 while preserving every Hailuo 02 alias:
 
@@ -530,7 +530,7 @@ Expected: PASS with all generated projections exact.
 - [ ] **Step 6: Commit registry and family publication**
 
 ```bash
-git add frontend/config/model-registry.json frontend/config/model-families.ts content/models/en/minimax-hailuo-02-text.json content/models/fr/minimax-hailuo-02-text.json content/models/es/minimax-hailuo-02-text.json frontend/config/model-runtime.json frontend/config/engine-catalog.json frontend/config/model-roster.json docs/model-roster.json docs/model-roster.csv tests/model-registry-validation.test.ts tests/model-registry-parity.test.ts tests/minimax-h3-registry.test.ts
+git add frontend/config/model-registry.json frontend/config/model-families.ts frontend/src/config/fal-engines/registry.ts content/models/en/minimax-hailuo-02-text.json content/models/fr/minimax-hailuo-02-text.json content/models/es/minimax-hailuo-02-text.json frontend/config/model-runtime.json frontend/config/engine-catalog.json frontend/config/model-roster.json docs/model-roster.json docs/model-roster.csv tests/model-registry-validation.test.ts tests/model-registry-parity.test.ts tests/minimax-h3-registry.test.ts
 git commit -m "feat: publish MiniMax H3 as Hailuo flagship"
 ```
 
@@ -671,7 +671,7 @@ assert.match(document.decision.hero.primaryCta.href, /\/app\?engine=minimax-h3$/
 assert.doesNotMatch(JSON.stringify(document), /admin|canary|rollout|hidden engine|provider routing/i);
 ```
 
-Require all three workflow descriptions, 5–15s, 24 FPS, 768P/2K/4K, native stereo audio, 9/3/3/12 reference limits, six ratios plus Auto in reference mode, and source-backed update date.
+Require all three workflow descriptions, 5–15s, 24 FPS, 768P/2K/4K, native stereo audio, 9/3/3/12 reference limits, six ratios plus Auto in text and reference modes, and source-backed update date.
 
 - [ ] **Step 2: Run the red content tests**
 

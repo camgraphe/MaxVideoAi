@@ -72,7 +72,7 @@ The approved contract on 2026-08-08 is:
 | Frame rate | 24 FPS |
 | Resolutions | `768P`, `2K`, `4K`; default `2K` |
 | Fixed aspect ratios | `21:9`, `16:9`, `4:3`, `1:1`, `3:4`, `9:16` |
-| Reference aspect mode | Provider value `adaptive`; MaxVideoAI label `Auto` |
+| Adaptive aspect mode | Provider value `adaptive`; MaxVideoAI label `Auto`; available in text and reference modes |
 | Prompt limit | 7,000 characters |
 | Audio | Native stereo output; no request toggle |
 | Text input | Prompt, duration, resolution, aspect ratio |
@@ -138,7 +138,7 @@ Provider endpoint selection is mode-specific:
 
 | MaxVideoAI mode | Fal endpoint | Visible controls |
 | --- | --- | --- |
-| `t2v` | `minimax/h3/text-to-video` | Prompt, 5–15 s, 768P/2K/4K, six fixed ratios |
+| `t2v` | `minimax/h3/text-to-video` | Prompt, 5–15 s, 768P/2K/4K, Auto plus six fixed ratios |
 | `i2v` | `minimax/h3/image-to-video` | Prompt, start image, optional end image, 5–15 s, 768P/2K/4K |
 | `ref2v` | `minimax/h3/reference-to-video` | Prompt, reference images/videos/audios, 5–15 s, 768P/2K/4K, Auto plus six fixed ratios |
 
@@ -172,8 +172,8 @@ It must not project those fields to generic `image_urls`, `video_urls`, or
 `audio_urls` for H3. It must also:
 
 - omit `aspect_ratio` entirely in image-to-video;
-- map the MaxVideoAI `auto` selection to provider value `adaptive` only for H3
-  reference-to-video;
+- map the MaxVideoAI `auto` selection to provider value `adaptive` for H3
+  text-to-video and reference-to-video;
 - send fixed H3 aspect ratios unchanged in text/reference modes;
 - omit `generate_audio` and `audio` boolean fields in all modes;
 - preserve `image_url` and optional `end_image_url` in image-to-video;
@@ -195,7 +195,7 @@ error rather than spending money on a provider rejection.
 - Prompt is required in all three modes and is limited to 7,000 characters.
 - Duration accepts only the integers 5 through 15.
 - Resolution accepts only `768P`, `2K`, and `4K`.
-- Text mode accepts the six documented fixed ratios.
+- Text mode accepts `auto` plus the six documented fixed ratios.
 - Image mode rejects or omits a client-supplied aspect ratio.
 - Reference mode accepts `auto` plus the six fixed ratios.
 - Image mode requires exactly one start image and accepts at most one end image.
