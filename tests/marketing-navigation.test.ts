@@ -116,6 +116,22 @@ test('public model menus feature Seedance 2.5 first with a generic localized lau
     const dictionary = JSON.parse(readFileSync(`frontend/messages/${locale}.json`, 'utf8'));
     assert.equal(dictionary.nav.badges.new, label);
   }
+
+  const flagshipComparison = MARKETING_NAV_DROPDOWNS.compare?.items[0];
+  assert.equal(flagshipComparison?.key, 'seedance-2-0-vs-seedance-2-5');
+  assert.equal(flagshipComparison?.badge, 'new');
+  assert.deepEqual(flagshipComparison?.href, {
+    pathname: '/ai-video-engines/[slug]',
+    params: { slug: 'seedance-2-0-vs-seedance-2-5' },
+  });
+
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const dictionary = JSON.parse(readFileSync(`frontend/messages/${locale}.json`, 'utf8'));
+    assert.equal(
+      dictionary.nav.dropdown.compare.items['seedance-2-0-vs-seedance-2-5'],
+      'Seedance 2.0 vs Seedance 2.5',
+    );
+  }
 });
 
 test('localized marketing dropdown sections avoid English fallbacks', () => {

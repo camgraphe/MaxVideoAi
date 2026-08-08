@@ -413,7 +413,7 @@ test('Seedance becomes the app and marketing priority family ahead of Sora', () 
   assert.deepEqual(
     MARKETING_NAV_COMPARE.map((item) => item.key),
     [
-      'seedance-2-0-vs-veo-3-1',
+      'seedance-2-0-vs-seedance-2-5',
       'gemini-omni-flash-vs-veo-3-1',
       'kling-3-pro-vs-kling-o3-pro',
       'ltx-2-3-pro-vs-veo-3-1',
@@ -421,6 +421,8 @@ test('Seedance becomes the app and marketing priority family ahead of Sora', () 
       'ltx-2-3-fast-vs-ltx-2-3-pro',
     ]
   );
+  assert.equal(MARKETING_NAV_COMPARE.length, 6);
+  assert.equal(MARKETING_NAV_COMPARE[0]?.badge, 'new');
   assert.deepEqual(MARKETING_NAV_EXAMPLES.map((item) => item.key), ['veo', 'seedance', 'ltx', 'kling', 'wan']);
   assert.deepEqual(MARKETING_FOOTER_EXAMPLES.map((item) => item.key), ['veo', 'seedance', 'ltx', 'kling', 'wan']);
 });

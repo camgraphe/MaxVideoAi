@@ -90,6 +90,7 @@
       },
       "compare": {
         "items": {
+          "seedance-2-0-vs-seedance-2-5": "Seedance 2.0 vs Seedance 2.5",
           "sora-2-vs-veo-3-1": "Sora 2 vs Veo 3.1",
           "veo-3-1-vs-veo-3-1-fast": "Veo 3.1 vs Veo 3.1 Fast",
           "veo-3-1-fast-vs-veo-3-1-lite": "Veo 3.1 Fast vs Veo 3.1 Lite",

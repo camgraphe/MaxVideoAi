@@ -117,7 +117,11 @@ const FOOTER_EXAMPLES_MENU: LabeledSlug[] = FOOTER_EXAMPLE_FAMILIES
   }));
 
 const COMPARE_MENU: LabeledSlug[] = [
-  { slug: 'seedance-2-0-vs-veo-3-1', label: 'Seedance 2.0 vs Veo 3.1' },
+  {
+    slug: 'seedance-2-0-vs-seedance-2-5',
+    label: 'Seedance 2.0 vs Seedance 2.5',
+    badge: 'new',
+  },
   { slug: 'gemini-omni-flash-vs-veo-3-1', label: 'Gemini Omni Flash vs Veo 3.1' },
   { slug: 'kling-3-pro-vs-kling-o3-pro', label: 'Kling 3 Pro vs Kling 3.0 Omni Pro' },
   { slug: 'ltx-2-3-pro-vs-veo-3-1', label: 'LTX 2.3 Pro vs Veo 3.1' },
@@ -157,6 +161,7 @@ export const MARKETING_NAV_COMPARE: MarketingNavItem[] = COMPARE_MENU.map((item)
   key: item.slug,
   label: item.label,
   href: compareLink(item.slug),
+  badge: item.badge,
 }));
 
 export const MARKETING_NAV_BEST_FOR_USE_CASES: MarketingNavItem[] = BEST_FOR_USE_CASES.map((item) => ({
