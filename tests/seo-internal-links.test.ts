@@ -26,6 +26,11 @@ const REQUIRED_SEEDANCE_25_TARGETS = {
   fr: '/fr/modeles/seedance-2-5',
   es: '/es/modelos/seedance-2-5',
 } as const;
+const EXPECTED_SEEDANCE_25_COMPARISON_TARGETS = {
+  en: '/ai-video-engines/seedance-2-0-vs-seedance-2-5',
+  fr: '/fr/comparatif/seedance-2-0-vs-seedance-2-5',
+  es: '/es/comparativa/seedance-2-0-vs-seedance-2-5',
+} as const;
 const SEEDANCE_25_BEST_FOR_SLUGS = [
   'ads',
   'cinematic-realism',
@@ -57,6 +62,8 @@ test('Seedance 2.5 launch-link matrix covers examples, Seedance 2.0, and relevan
       pricingPath: locale === 'fr' ? '/fr/tarifs' : locale === 'es' ? '/es/precios' : '/pricing',
     });
     assert.equal(examplesLinks[0]?.href, target, `${locale} Seedance examples should lead with the 2.5 profile`);
+    assert.equal(examplesLinks[1]?.href, EXPECTED_SEEDANCE_25_COMPARISON_TARGETS[locale]);
+    assert.equal(examplesLinks.length, 5);
 
     const seedance20Path = `content/models/${locale}/seedance-2-0.json`;
     assert.match(readRepositoryFile(seedance20Path), new RegExp(target.replaceAll('/', '\\/')));

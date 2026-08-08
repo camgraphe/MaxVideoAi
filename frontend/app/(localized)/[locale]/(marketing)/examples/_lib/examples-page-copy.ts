@@ -173,13 +173,13 @@ export function buildExamplesNextStepLinks({
                 : 'Discover Seedance 2.5 for 30-second cinematic video',
         },
         {
-          href: buildCompareHref(appLocale, 'seedance-2-0-vs-seedance-2-0-fast'),
+          href: buildCompareHref(appLocale, 'seedance-2-0-vs-seedance-2-5'),
           label:
             locale === 'fr'
-              ? 'Comparer Seedance 2.0 vs Seedance 2.0 Fast'
+              ? 'Comparer Seedance 2.0 vs Seedance 2.5'
               : locale === 'es'
-                ? 'Comparar Seedance 2.0 vs Seedance 2.0 Fast'
-                : 'Compare Seedance 2.0 vs Seedance 2.0 Fast',
+                ? 'Comparar Seedance 2.0 vs Seedance 2.5'
+                : 'Compare Seedance 2.0 vs Seedance 2.5',
         },
         {
           href: buildCompareHref(appLocale, 'seedance-2-0-vs-veo-3-1'),

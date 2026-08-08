@@ -159,35 +159,37 @@ export const FR_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     ],
   },
   seedance: {
-    metaTitle: 'Exemples vidéo IA Seedance, prompts et réglages | MaxVideoAI',
+    metaTitle: 'Exemples vidéo IA Seedance 2.5, prompts et réglages | MaxVideoAI',
     metaDescription:
-      'Parcourez des exemples vidéo IA Seedance avec prompts et réglages, puis ouvrez une fiche pour voir le coût enregistré pour Seedance 2.0, Fast, Mini et le flux Seedance 1.5 Pro encore pris en charge sur MaxVideoAI.',
-    heroTitle: 'Exemples vidéo IA Seedance, prompts et réglages',
-    subtitle: 'Exemples vidéo IA Seedance, prompts, réglages et sorties pour les flux Seedance actuels et les versions encore prises en charge.',
+      'Découvrez des exemples vidéo Seedance 2.5 et leurs prompts, puis comparez les flux Seedance 2.0, Fast, Mini et 1.5 Pro encore pris en charge.',
+    heroTitle: 'Exemples vidéo IA Seedance 2.5, prompts et réglages',
+    subtitle:
+      'Des exemples, prompts et réglages Seedance menés par Seedance 2.5, avec les flux actuels et encore pris en charge remis dans leur contexte.',
     intro:
-      'Parcourez des exemples vidéo IA Seedance, des prompts et des réglages réutilisables pour Seedance 2.0, Seedance 2.0 Fast et Seedance 2.0 Mini. Utilisez Mini comme route batch moins coûteuse et orientée valeur pour variantes e-commerce, accroches UGC et itérations guidées par référence, puis explorez Seedance 1.5 Pro comme repère hérité pour des clips plus courts. Utilisez cette page pour comparer des flux vidéo Seedance, des structures de prompt et des schemas de sortie avant d’ouvrir la page modèle Seedance correspondante.',
+      'Commencez par Seedance 2.5 pour les flux actuels de 4 à 30 secondes en 720p, avec audio généré et références, puis comparez les exemples Seedance 2.0, Fast et Mini sans présenter les anciens rendus comme des sorties Seedance 2.5. Ouvrez d’abord une vidéo pour voir son prompt et ses réglages; les liens modèle et comparatif restent sous la galerie.',
     summary:
-      'Seedance 2.0 reste la route finale, polie et au plafond qualité le plus élevé; Seedance 2.0 Fast reste la route de brouillon plus rapide; Seedance 2.0 Mini ajoute une route batch moins coûteuse pour des variantes répétables. Seedance 1.5 Pro reste disponible comme repère hérité pour des clips courts et répétables.',
+      'Seedance 2.5 est la route phare pour les flux plus longs en 720p, l’audio généré, les références, l’édition et l’extension. Seedance 2.0 reste disponible pour les besoins de plus haute résolution et de 4K, Fast et Mini couvrent les brouillons ou les lots, et Seedance 1.5 Pro reste pris en charge comme ancien point de comparaison.',
     promptPatterns:
-      'Un objectif de plan clair, puis contraintes caméra/environnement. Utilisez Mini pour des lots de variantes e-commerce, d’accroches UGC ou d’itérations guidées par référence où des prompts compacts rendent les sorties comparables.',
+      'Pour Seedance 2.5, définissez une action principale, une direction caméra et le rôle de chaque référence avant d’ajouter les détails de scène. Gardez la même structure de prompt quand vous comparez 2.5 avec Seedance 2.0, Fast ou Mini.',
     strengthsLimits:
-      'Seedance est utile quand vous cherchez une caméra stable et un mouvement lisible. Limitez la complexité de scène pour garder les variantes cohérentes, et réservez Seedance 2.0 aux plans finaux qui demandent le meilleur plafond qualité.',
+      'Utilisez Seedance 2.5 quand la durée, l’audio généré, les références mixtes, l’édition ou l’extension comptent. Sa route publique MaxVideoAI est actuellement en 16:9 à 480p ou 720p; gardez Seedance 2.0 pour les besoins de plus haute résolution ou de 4K.',
     pricingNotes:
-      'Comparez Seedance sur des presets identiques pour obtenir un signal coût fiable. Mini est la route batch moins coûteuse, Fast garde les cycles de brouillon rapides, et Seedance 2.0 convient mieux aux rendus finaux polis.',
+      'La durée, l’audio et le type de média influencent le prix. Le générateur affiche le tarif avant le lancement.',
     faq: [
       {
-        question: 'Ces exemples vidéo IA Seedance sont-ils optimisés pour la stabilité caméra ?',
-        answer: 'Oui, la plupart des exemples vidéo IA Seedance de cette page privilégient des mouvements lisibles et peu de dérive.',
+        question: 'Tous les exemples Seedance de cette page ont-ils été générés avec Seedance 2.5 ?',
+        answer:
+          'Non. La galerie conserve les libellés exacts des rendus Seedance 2.5, Seedance 2.0, Fast, Mini et 1.5 Pro encore pris en charge afin que vous puissiez comparer la route réellement utilisée.',
       },
       {
-        question: 'Quel modèle vidéo IA Seedance faut-il utiliser pour les exemples et les tests de prompt ?',
+        question: 'Par quel modèle Seedance commencer pour les exemples et les tests de prompt ?',
         answer:
-          'Commencez par Seedance 2.0 Fast si vous voulez des brouillons plus rapides, utilisez Seedance 2.0 Mini pour des variantes e-commerce, accroches UGC et lots guidés par référence moins coûteux, puis passez à Seedance 2.0 pour une meilleure qualité multi-plans, une livraison en plus haute résolution et des sorties plus prêtes pour la production.',
+          'Commencez par Seedance 2.5 pour le flux phare actuel. Utilisez Seedance 2.0 pour les besoins de plus haute résolution ou de 4K, Fast pour des brouillons plus rapides et Mini pour des variantes répétables en lot.',
       },
       {
-        question: 'Quels réglages influencent le plus le prix sur les flux vidéo Seedance ?',
+        question: 'Quels réglages influencent le plus le prix d’une vidéo Seedance ?',
         answer:
-          'La durée et la résolution restent les premiers facteurs de prix sur les flux vidéo Seedance, puis viennent les options propres au flux.',
+          'La durée, l’audio généré et l’utilisation d’une vidéo source influencent le plus le prix. Gardez ces réglages alignés quand vous comparez les routes.',
       },
     ],
   },
