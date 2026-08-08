@@ -372,7 +372,8 @@ required after the approved deployment.
   Next steps below the gallery.
 - Focused suite: PASS, 87/87 tests.
 - Full validation: PASS, 2,492/2,492 tests.
-- Production build: PASS; this run did not emit a static-page count.
+- Production build: PASS, 729 static pages; the PTY build transcript emitted
+  `✓ Generating static pages (729/729)`.
 - Local smoke: PASS for the EN menu, examples, and comparison routes at
   1440×1000 desktop and 390×844 mobile; no generation submitted.
 - Deployment: still blocked until the separate localized-route self-redirect
