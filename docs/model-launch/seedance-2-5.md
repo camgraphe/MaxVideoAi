@@ -100,9 +100,19 @@ Official ModelArk model card (checked 2026-08-07):
 
 https://console.byteplus.com/ark/region:ap-southeast-1/model/detail?name=dreamina-seedance-2-5
 
+This authenticated console page is private launch evidence for the exact model
+identity and availability. It is not presented as a public benchmark source.
+
 Official asynchronous video API flow:
 
 https://docs.byteplus.com/en/docs/modelark/1520757
+
+This public document establishes only the generic asynchronous ModelArk video
+task mechanics. It is not evidence for Seedance 2.5 durations, resolutions,
+reference limits, audio formats, pricing, or model-specific capabilities. The
+public Benchmark Lab therefore labels the Seedance 2.5 limits as the
+**MaxVideoAI production route contract**, keeps its external source list empty,
+and links the generic API document separately as mechanics context.
 
 The recorded four-second provider and MaxVideoAI administrator happy path used
 480p, 16:9, 24 FPS, generated audio off, and model
@@ -283,3 +293,63 @@ returned the expected 401 for the private export-summary request and emitted
 development-only image/LCP warnings. No provider request, paid generation,
 wallet mutation, production environment change, push, deployment, indexation
 request, or LinkedIn publication was performed.
+
+## Final review correction evidence — 2026-08-08
+
+The verified source commit for the final review corrections is
+`075ea11a62be564d26d9ab1265db82505980eb6b`. This SHA is intentionally
+recorded from the source commit before this evidence-only documentation commit.
+
+The final review closed six launch-quality gaps without changing the approved
+price, scores, publication state, model routes, Seedance 2.0 SEO, or paid
+generation policy:
+
+- I2V now sends the original user prompt with exact `first_frame` and optional
+  `last_frame` roles; reference-to-video keeps `reference_image` roles.
+- Runtime expansion preserves the authored Seedance 2.5 labels and the
+  30-image, 10-video, and 10-audio counts.
+- Homepage proof remains truthfully attributed to Seedance 2.0 and cannot
+  relabel a family-level Seedance 2.5 asset as 2.0; the model catalogue links
+  Seedance 2.5 to the established Seedance example family.
+- Benchmark Lab separates the MaxVideoAI production route contract from the
+  generic ModelArk task-mechanics link, with no provider or model identifier on
+  the public surface.
+- Seedance 2.5 audio references use an exact 15 MiB MP3/WAV contract in the
+  selector, browser validation, upload API, and pre-billing generation path.
+  Generation validates user-owned stored size, MIME, filename, and URL identity
+  rather than trusting request-authored metadata; unknown metadata fails closed.
+- Attachment derivation and trusted media validation now have one focused route
+  helper, keeping `/api/generate` below its 700-line architecture contract.
+
+### Final command evidence
+
+- Focused provider/runtime/home/catalog/benchmark/media suite: PASS, 68/68.
+- Focused Seedance 2.5 media-constraint suite: PASS, 4/4, including exact
+  15 MiB acceptance, oversize rejection, MP3/WAV acceptance, M4A and missing
+  extension rejection, generic-upload preservation, and stored-metadata checks.
+- Generate route architecture contract: PASS, 9/9; route count 686 including
+  the trailing-line contract, below the 700-line ceiling.
+- `pnpm test:validate`: PASS, 2,492/2,492 tests and 0 failures.
+- `pnpm --prefix frontend run lint`: PASS.
+- `pnpm lint:exposure`: PASS.
+- `pnpm --prefix frontend run i18n:check`: PASS; FR parity at 4,197 keys and
+  ES parity at 4,191 keys.
+- `pnpm --prefix frontend run seo:check`: PASS; canonical, llms, internal-link,
+  and public-media-origin guards passed.
+- `pnpm --prefix frontend exec tsc --noEmit --pretty false`: PASS.
+- `pnpm model:registry:check`: PASS; 42 models, 2 tombstones, and current
+  runtime, engine-catalog, and roster projections.
+- `pnpm models:audit`: PASS with 0 critical findings and 9 non-blocking optional
+  catalogue warnings.
+- `pnpm pricing:baseline`: PASS; immutable 178-row baseline.
+- `pnpm pricing:public-baseline`: PASS; current 504-row public projection.
+- `pnpm pricing:audit`: PASS; 182/182 matches and 0 mismatches.
+- `pnpm --prefix frontend run build`: PASS with Next.js 15.5.18, 729 static
+  pages, integrated lint/type validation, build traces, and sitemap postbuild.
+- `git diff --check`: PASS before the source commit and on this documentation
+  update.
+
+No provider call, paid generation, wallet or environment mutation, push,
+deployment, Search Console request, or LinkedIn publication was performed in
+this correction pass. The read-only production smoke in this handoff remains
+required after the approved deployment.
