@@ -84,8 +84,8 @@ const docLink = (slug: string): LocalizedLinkHref => ({
 });
 
 const MODEL_MENU: LabeledSlug[] = [
-  { slug: 'minimax-h3', label: 'MiniMax H3', badge: 'new' },
   { slug: 'seedance-2-5', label: 'Seedance 2.5' },
+  { slug: 'minimax-h3', label: 'MiniMax H3', badge: 'new' },
   { slug: 'seedance-2-0', label: 'Seedance 2.0' },
   { slug: 'seedance-2-0-fast', label: 'Seedance 2.0 Fast' },
   { slug: 'ltx-2-3-fast', label: 'LTX 2.3 Fast' },
@@ -93,6 +93,7 @@ const MODEL_MENU: LabeledSlug[] = [
   { slug: 'gemini-omni-flash', label: 'Gemini Omni Flash' },
   { slug: 'veo-3-1-lite', label: 'Veo 3.1 Lite' },
   { slug: 'kling-o3-pro', label: 'Kling 3.0 Omni Pro' },
+  { slug: 'kling-o3-4k', label: 'Kling 3.0 Omni 4K' },
 ];
 
 const HEADER_EXAMPLE_FAMILY_PRIORITY = ['veo', 'seedance', 'hailuo', 'ltx', 'kling'] as const;

@@ -1299,7 +1299,7 @@
         },
         "app": {
           "published": true,
-          "discoveryRank": -4,
+          "discoveryRank": -2,
           "variantGroup": "hailuo",
           "variantLabel": "H3",
           "launchBadge": "new"

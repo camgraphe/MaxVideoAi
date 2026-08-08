@@ -28,14 +28,14 @@ function createPick(slug: string): RankedPick {
   };
 }
 
-test('4K best-for shortlist ranks Veo standard first and Veo Fast third', () => {
+test('4K best-for shortlist ranks H3 below Kling 4K and ahead of Veo Fast', () => {
   assert.ok(fourKEntry, '4K best-for entry should exist');
-  assert.deepEqual(fourKEntry.topPicks?.slice(0, 3), ['veo-3-1', 'kling-3-4k', 'veo-3-1-fast']);
-  assert.equal(fourKEntry.topPicks?.[3], 'seedance-2-0');
+  assert.deepEqual(fourKEntry.topPicks?.slice(0, 4), ['veo-3-1', 'kling-3-4k', 'minimax-h3', 'veo-3-1-fast']);
+  assert.equal(fourKEntry.topPicks?.[4], 'seedance-2-0');
   assert.deepEqual(getPublishedRelatedComparisons(fourKEntry, 'en').slice(0, 3), [
     'kling-3-4k-vs-veo-3-1',
+    'minimax-h3-vs-veo-3-1',
     'veo-3-1-vs-veo-3-1-fast',
-    'ltx-2-3-pro-vs-veo-3-1',
   ]);
   assert.ok(getPublishedRelatedComparisons(fourKEntry, 'en').includes('seedance-2-0-vs-veo-3-1'));
 });

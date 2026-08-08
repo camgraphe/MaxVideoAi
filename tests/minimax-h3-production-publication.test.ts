@@ -28,7 +28,7 @@ test('MiniMax H3 is one canonical executable production model on every public su
   });
   assert.deepEqual(model.publication.app, {
     published: true,
-    discoveryRank: -4,
+    discoveryRank: -2,
     variantGroup: 'hailuo',
     variantLabel: 'H3',
     launchBadge: 'new',
