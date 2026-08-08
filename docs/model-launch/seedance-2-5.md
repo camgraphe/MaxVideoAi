@@ -142,7 +142,9 @@ release identifier, and redacted result in the private launch record.
 1. Request HTTP 200 for `/models/seedance-2-5`,
    `/fr/modeles/seedance-2-5`, and `/es/modelos/seedance-2-5`.
 2. Open the authenticated generator with `engine=seedance-2-5`; verify the
-   selected engine boots without submitting a job.
+   selected engine boots without submitting a job and generated audio is on by
+   default. Switching away and back to Seedance 2.5 must restore that engine
+   default; the user must still be able to turn audio off afterward.
 3. Verify the selector puts Seedance 2.5 first in its family and shows `New`.
 4. Verify all five visible modes and their expected upload fields: image input
    for I2V, reference image/video/audio fields for Ref2V, video input for V2V,
@@ -377,5 +379,28 @@ required after the approved deployment.
   integrated lint/type validation.
 - Local smoke: PASS for the EN menu, examples, and comparison routes at
   1440×1000 desktop and 390×844 mobile; no generation submitted.
-- Deployment: still blocked until the separate localized-route self-redirect
-  is fixed and reverified.
+- The earlier localized-route concern was rechecked on the canonical local
+  host after a clean development-server restart: the EN/FR/ES Seedance 2.5
+  model and Seedance 2.0 comparison routes all returned HTTP 200. It is no
+  longer a deployment blocker.
+
+### Generator audio default verification — 2026-08-08
+
+- Verified source SHA: `4bbcc4a511dc96f58d4c6d16cfd644b4359f9e40`.
+- Entering Seedance 2.5 from another video engine now applies its declared
+  `generate_audio=true` default instead of carrying over the previous engine's
+  audio-off state. Same-engine mode changes preserve the user's explicit audio
+  choice, so the control remains optional rather than forced.
+- The TDD regression first failed with the stored Seedance 2.0 audio-off state
+  leaking into a requested Seedance 2.5 session, then passed after the generic
+  engine-change coercion was added.
+- Focused workspace, validation, submission, and Seedance 2.5 suite: PASS,
+  60/60 tests.
+- Full validation: PASS, 2,493/2,493 tests and 0 failures.
+- Lint, public-exposure guard, TypeScript, and `git diff --check`: PASS.
+- Production build: PASS with Next.js 15.5.18, 729 static pages, current model
+  registry projections, integrated lint/type validation, and sitemap postbuild.
+- Read-only route recheck after a clean server restart: HTTP 200 for the
+  EN/FR/ES Seedance 2.5 model pages and Seedance 2.0 comparison pages. No
+  generation, provider request, wallet mutation, push, or deployment was
+  performed.
