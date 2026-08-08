@@ -114,12 +114,7 @@ test('every current BytePlus Seedance engine has an explicit parity profile', ()
     assert.equal(profile.routing.adminOnlyKey, entry.adminOnlyKey);
     assert.equal(profile.routing.allowedModesKey, entry.allowedModesKey);
     assert.deepEqual(profile.supportedModes, ['t2v', 'i2v', 'ref2v', 'v2v', 'extend']);
-    assert.deepEqual(
-      profile.aspectRatios,
-      entry.engineId === 'seedance-2-5'
-        ? ['16:9']
-        : ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16']
-    );
+    assert.deepEqual(profile.aspectRatios, ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16']);
     assert.equal(profile.framesPerSecond, 24);
     assert.equal(profile.generatedAudio, true);
   }
@@ -207,6 +202,14 @@ test('Seedance 2.5 runtime keeps the smallest confirmed canary defaults', () => 
   assert.equal(fields.find((field) => field.id === 'duration')?.default, '4');
   assert.equal(fields.find((field) => field.id === 'resolution')?.default, '480p');
   assert.equal(fields.find((field) => field.id === 'aspect_ratio')?.default, '16:9');
+  assert.deepEqual(fields.find((field) => field.id === 'aspect_ratio')?.values, [
+    '21:9',
+    '16:9',
+    '4:3',
+    '1:1',
+    '3:4',
+    '9:16',
+  ]);
   assert.deepEqual(runtime.modes, ['t2v']);
   assert.equal(profile.generatedAudio, true);
   assert.equal(runtime.audio, true);
@@ -218,13 +221,13 @@ test('Seedance 2.5 runtime keeps the smallest confirmed canary defaults', () => 
       engineId: 'seedance-2-5',
       durationSec: 15,
       requestedResolution: '720p',
-      aspectRatio: '16:9',
+      aspectRatio: '9:16',
     }),
     {
       ok: true,
       durationSec: 15,
       resolution: '720p',
-      aspectRatio: '16:9',
+      aspectRatio: '9:16',
       generatedAudio: true,
     },
   );

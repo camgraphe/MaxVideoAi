@@ -33,8 +33,10 @@ import {
   BYTEPLUS_SEEDANCE_2_5_MODEL_ID,
   buildSeedance25PricingDetails,
 } from '../frontend/src/config/fal-engines/launch-config';
+import { resolveSeedance2Dimensions } from '../frontend/src/lib/seedance-2-pricing';
 
 const slug = 'seedance-2-5';
+const supportedAspectRatios = ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16'];
 
 test('Seedance 2.5 is the public flagship across every product surface', () => {
   const model = getRuntimeModelById(slug);
@@ -118,6 +120,11 @@ test('Seedance 2.5 exposes one unified five-mode engine schema', () => {
   assert.ok(entry);
   assert.deepEqual(entry.engine.modes, ['t2v', 'i2v', 'ref2v', 'v2v', 'extend']);
   assert.deepEqual(entry.modes.map(({ mode }) => mode), ['t2v', 'i2v', 'ref2v', 'v2v', 'extend']);
+  assert.deepEqual(entry.engine.aspectRatios, supportedAspectRatios);
+  assert.deepEqual(
+    entry.modes.map(({ ui }) => ui.aspectRatio),
+    entry.modes.map(() => supportedAspectRatios),
+  );
   assert.equal(entry.engine.inputSchema?.referenceBudget?.maxTotal, 50);
   assert.deepEqual(entry.engine.inputSchema?.referenceBudget?.fieldIds, [
     'image_url',
@@ -137,6 +144,7 @@ test('Seedance 2.5 exposes one unified five-mode engine schema', () => {
   assert.equal(fields.find((field) => field.id === 'video_urls')?.maxCount, 10);
   assert.equal(fields.find((field) => field.id === 'extension_source_videos')?.maxCount, 3);
   assert.equal(fields.find((field) => field.id === 'audio_urls')?.maxCount, 10);
+  assert.deepEqual(fields.find((field) => field.id === 'aspect_ratio')?.values, supportedAspectRatios);
 });
 
 test('Seedance 2.5 owns a dedicated fail-closed ModelArk profile', () => {
@@ -145,7 +153,7 @@ test('Seedance 2.5 owns a dedicated fail-closed ModelArk profile', () => {
   assert.equal(profile.pricingProfileKey, 'seedance25');
   assert.deepEqual(profile.supportedModes, ['t2v', 'i2v', 'ref2v', 'v2v', 'extend']);
   assert.deepEqual(profile.resolutions, ['480p', '720p']);
-  assert.deepEqual(profile.aspectRatios, ['16:9']);
+  assert.deepEqual(profile.aspectRatios, supportedAspectRatios);
   assert.deepEqual(profile.durationOptions, Array.from({ length: 27 }, (_, index) => index + 4));
   assert.equal(profile.defaultDurationSec, 4);
   assert.equal(profile.defaultResolution, '480p');
@@ -200,6 +208,42 @@ test('Seedance 2.5 pricing uses its factual ModelArk rates and approved 2.5x pol
   assert.equal(tokenPricing.pricingSource, 'byteplus_seedance_2_5_260628_approved_2_5x');
   assert.equal(tokenPricing.defaultAspectRatio, '16:9');
   assert.equal(tokenPricing.framesPerSecond, 24);
+
+  const expectedDimensions = {
+    '480p': {
+      '21:9': [1120, 480],
+      '16:9': [854, 480],
+      '4:3': [640, 480],
+      '1:1': [480, 480],
+      '3:4': [480, 640],
+      '9:16': [480, 854],
+    },
+    '720p': {
+      '21:9': [1680, 720],
+      '16:9': [1280, 720],
+      '4:3': [960, 720],
+      '1:1': [720, 720],
+      '3:4': [720, 960],
+      '9:16': [720, 1280],
+    },
+  } as const;
+  const pricingDetails = buildSeedance25PricingDetails();
+  assert.ok(pricingDetails.tokenPricing);
+  for (const resolution of ['480p', '720p'] as const) {
+    for (const aspectRatio of supportedAspectRatios) {
+      const dimensions = resolveSeedance2Dimensions(
+        { ...pricingDetails, tokenPricing: pricingDetails.tokenPricing },
+        resolution,
+        aspectRatio,
+      );
+      assert.deepEqual(
+        [dimensions.width, dimensions.height],
+        expectedDimensions[resolution][aspectRatio as keyof typeof expectedDimensions[typeof resolution]],
+        `${resolution} ${aspectRatio}`,
+      );
+      assert.equal(dimensions.aspectRatio, aspectRatio);
+    }
+  }
 });
 
 test('disabled Seedance 2.5 returns before configured-engine database access', { concurrency: false }, async () => {

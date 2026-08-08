@@ -78,7 +78,14 @@ test('Seedance 2.5 specifications expose the factual public model card contract'
 
   assert.equal(spec.keySpecs.maxDuration, '4-30s');
   assert.equal(spec.keySpecs.maxResolution, '480p / 720p');
-  assert.deepEqual(spec.keySpecs.aspectRatios, ['16:9']);
+  assert.deepEqual(spec.keySpecs.aspectRatios, [
+    '21:9',
+    '16:9',
+    '4:3',
+    '1:1',
+    '3:4',
+    '9:16',
+  ]);
   assert.deepEqual(spec.keySpecs.fpsOptions, ['24 fps']);
   assert.equal(spec.keySpecs.nativeAudioGeneration, 'Optional');
   assert.deepEqual(spec.keySpecs.workflows, [

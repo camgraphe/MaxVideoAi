@@ -15,7 +15,7 @@ import {
 
 const DURATION_OPTIONS = Array.from({ length: 27 }, (_, index) => index + 4);
 const RESOLUTIONS: EngineCaps['resolutions'] = ['480p', '720p'];
-const ASPECT_RATIOS: EngineCaps['aspectRatios'] = ['16:9'];
+const ASPECT_RATIOS: EngineCaps['aspectRatios'] = ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16'];
 const IMAGE_FORMATS = ['jpg', 'jpeg', 'png', 'webp'];
 const VIDEO_FORMATS = ['mp4', 'mov'];
 const AUDIO_FORMATS = ['mp3', 'wav'];
@@ -222,11 +222,11 @@ function seedance25Mode(mode: Seedance25Mode): RawFalEngineEntry['modes'][number
     .filter(Boolean)
     .join('; ');
   const workflowNotes: Record<Seedance25Mode, string> = {
-    t2v: 'Create 4-30 second 480p or 720p 16:9 videos with generated audio available.',
-    i2v: 'Animate one start image with an optional end image; 4-30 seconds, 480p/720p, 16:9, and generated audio.',
+    t2v: 'Create 4-30 second 480p or 720p videos in landscape, square, or vertical formats with generated audio available.',
+    i2v: 'Animate one start image with an optional end image; 4-30 seconds, 480p/720p, landscape, square, or vertical, with generated audio.',
     ref2v: `Use up to ${BYTEPLUS_SEEDANCE_2_5_MAX_IMAGES} images, ${BYTEPLUS_SEEDANCE_2_5_MAX_VIDEOS} video clips, and ${BYTEPLUS_SEEDANCE_2_5_MAX_AUDIO} audio clips, with ${BYTEPLUS_SEEDANCE_2_5_MAX_REFERENCES} unique references total.`,
-    v2v: 'Edit one source video with optional image and audio references; 4-30 seconds, 480p/720p, 16:9, and generated audio.',
-    extend: 'Continue one to three source clips; 4-30 seconds, 480p/720p, 16:9, and generated audio.',
+    v2v: 'Edit one source video with optional image and audio references; 4-30 seconds, 480p/720p, landscape, square, or vertical, with generated audio.',
+    extend: 'Continue one to three source clips; 4-30 seconds, 480p/720p, landscape, square, or vertical, with generated audio.',
   };
 
   return {

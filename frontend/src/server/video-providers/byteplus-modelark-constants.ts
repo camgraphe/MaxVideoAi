@@ -28,7 +28,14 @@ export const BYTEPLUS_SEEDANCE_2_5_DURATION_OPTIONS = Array.from(
   (_, index) => index + 4
 );
 export const BYTEPLUS_SEEDANCE_2_5_RESOLUTIONS: Resolution[] = ['480p', '720p'];
-export const BYTEPLUS_SEEDANCE_2_5_ASPECT_RATIOS: AspectRatio[] = ['16:9'];
+export const BYTEPLUS_SEEDANCE_2_5_ASPECT_RATIOS: AspectRatio[] = [
+  '21:9',
+  '16:9',
+  '4:3',
+  '1:1',
+  '3:4',
+  '9:16',
+];
 
 const BYTEPLUS_SOURCE_VIDEO_FIELD: EngineInputField = {
   id: 'video_url',

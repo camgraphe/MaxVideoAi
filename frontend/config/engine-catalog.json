@@ -12618,7 +12618,12 @@
         "720p"
       ],
       "aspectRatios": [
-        "16:9"
+        "21:9",
+        "16:9",
+        "4:3",
+        "1:1",
+        "3:4",
+        "9:16"
       ],
       "fps": [
         24
@@ -12713,7 +12718,12 @@
             "type": "enum",
             "label": "Aspect ratio",
             "values": [
-              "16:9"
+              "21:9",
+              "16:9",
+              "4:3",
+              "1:1",
+              "3:4",
+              "9:16"
             ],
             "default": "16:9"
           },
@@ -12866,15 +12876,55 @@
           "defaultAspectRatio": "16:9",
           "dimensions": {
             "480p": {
+              "21:9": {
+                "width": 1120,
+                "height": 480
+              },
               "16:9": {
                 "width": 854,
                 "height": 480
+              },
+              "4:3": {
+                "width": 640,
+                "height": 480
+              },
+              "1:1": {
+                "width": 480,
+                "height": 480
+              },
+              "3:4": {
+                "width": 480,
+                "height": 640
+              },
+              "9:16": {
+                "width": 480,
+                "height": 854
               }
             },
             "720p": {
+              "21:9": {
+                "width": 1680,
+                "height": 720
+              },
               "16:9": {
                 "width": 1280,
                 "height": 720
+              },
+              "4:3": {
+                "width": 960,
+                "height": 720
+              },
+              "1:1": {
+                "width": 720,
+                "height": 720
+              },
+              "3:4": {
+                "width": 720,
+                "height": 960
+              },
+              "9:16": {
+                "width": 720,
+                "height": 1280
               }
             }
           },
@@ -12940,10 +12990,15 @@
             "720p"
           ],
           "aspectRatio": [
-            "16:9"
+            "21:9",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
           ],
           "audioToggle": true,
-          "notes": "Create 4-30 second 480p or 720p 16:9 videos with generated audio available."
+          "notes": "Create 4-30 second 480p or 720p videos in landscape, square, or vertical formats with generated audio available."
         }
       },
       {
@@ -12990,7 +13045,12 @@
             "720p"
           ],
           "aspectRatio": [
-            "16:9"
+            "21:9",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
           ],
           "acceptsImageFormats": [
             "jpg",
@@ -13000,7 +13060,7 @@
           ],
           "maxUploadMB": 30,
           "audioToggle": true,
-          "notes": "Animate one start image with an optional end image; 4-30 seconds, 480p/720p, 16:9, and generated audio. images: jpg, jpeg, png, webp"
+          "notes": "Animate one start image with an optional end image; 4-30 seconds, 480p/720p, landscape, square, or vertical, with generated audio. images: jpg, jpeg, png, webp"
         }
       },
       {
@@ -13047,7 +13107,12 @@
             "720p"
           ],
           "aspectRatio": [
-            "16:9"
+            "21:9",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
           ],
           "acceptsImageFormats": [
             "jpg",
@@ -13104,7 +13169,12 @@
             "720p"
           ],
           "aspectRatio": [
-            "16:9"
+            "21:9",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
           ],
           "acceptsImageFormats": [
             "jpg",
@@ -13114,7 +13184,7 @@
           ],
           "maxUploadMB": 50,
           "audioToggle": true,
-          "notes": "Edit one source video with optional image and audio references; 4-30 seconds, 480p/720p, 16:9, and generated audio. images: jpg, jpeg, png, webp; video: mp4, mov; audio: mp3, wav"
+          "notes": "Edit one source video with optional image and audio references; 4-30 seconds, 480p/720p, landscape, square, or vertical, with generated audio. images: jpg, jpeg, png, webp; video: mp4, mov; audio: mp3, wav"
         }
       },
       {
@@ -13161,11 +13231,16 @@
             "720p"
           ],
           "aspectRatio": [
-            "16:9"
+            "21:9",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
           ],
           "maxUploadMB": 50,
           "audioToggle": true,
-          "notes": "Continue one to three source clips; 4-30 seconds, 480p/720p, 16:9, and generated audio. video: mp4, mov"
+          "notes": "Continue one to three source clips; 4-30 seconds, 480p/720p, landscape, square, or vertical, with generated audio. video: mp4, mov"
         }
       }
     ],

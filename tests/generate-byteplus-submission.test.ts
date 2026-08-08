@@ -1083,6 +1083,61 @@ test('Seedance 2.5 forwards each optional generated-audio selection to ModelArk'
   }
 });
 
+test('Seedance 2.5 submits every advertised aspect ratio to ModelArk', { concurrency: false }, async () => {
+  const original = {
+    bytePlusEnabled: ENV.BYTEPLUS_ARK_ENABLED,
+    seedance25Enabled: ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED,
+    seedance25Provider: ENV.SEEDANCE_2_5_PROVIDER,
+  };
+  const advertisedAspectRatios = ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16'] as const;
+  const capturedRatios: string[] = [];
+
+  ENV.BYTEPLUS_ARK_ENABLED = 'true';
+  ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = 'true';
+  ENV.SEEDANCE_2_5_PROVIDER = 'byteplus_modelark';
+
+  try {
+    for (const aspectRatio of advertisedAspectRatios) {
+      const result = await submitBytePlusGenerateTask({
+        ...baseParams,
+        engineId: 'seedance-2-5',
+        engineLabel: 'Seedance 2.5',
+        durationSec: 8,
+        mode: 't2v',
+        normalizedReferenceImages: [],
+        videoUrls: [],
+        resolvedAudioUrl: null,
+        audioUrls: [],
+        aspectRatio,
+        pendingReceipt,
+        deps: {
+          getBytePlusArkConfigFn: () =>
+            ({ seedance25ModelId: 'seedance-25-id' }) as never,
+          getBytePlusModelArkClientFn: () => ({
+            createSeedanceFastTask: async (payload) => {
+              capturedRatios.push(payload.ratio);
+              return {
+                providerJobId: `provider_seedance_25_${aspectRatio.replace(':', '_')}`,
+                status: 'queued',
+              };
+            },
+          }),
+          queryFn: async () => undefined,
+          rollbackPendingPaymentFn: async () => undefined,
+        },
+      });
+
+      assert.equal(result.ok, true, aspectRatio);
+    }
+
+    assert.deepEqual(capturedRatios, advertisedAspectRatios);
+  } finally {
+    ENV.BYTEPLUS_ARK_ENABLED = original.bytePlusEnabled;
+    ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = original.seedance25Enabled;
+    ENV.SEEDANCE_2_5_PROVIDER = original.seedance25Provider;
+  }
+});
+
 test('Seedance 2.5 submits the exact provider content for every public mode', { concurrency: false }, async () => {
   const inputSchema = getFalEngineById('seedance-2-5')?.engine.inputSchema;
   assert.ok(inputSchema);
