@@ -284,7 +284,7 @@ seedance: {
   strengthsLimits:
     'Use Seedance 2.5 when longer duration, generated audio, mixed references, editing or extension matter. Its public MaxVideoAI route is currently 16:9 at 480p or 720p, so keep Seedance 2.0 for higher-resolution or 4K intent.',
   pricingNotes:
-    'Keep duration, audio choice and input class aligned when comparing Seedance routes. MaxVideoAI shows the current quote before generation; no authored price is embedded in this examples copy.',
+    'Duration, audio and the type of media used influence the price. The generator shows the current price before you launch.',
   faq: [
     {
       question: 'Are all Seedance examples on this page generated with Seedance 2.5?',
@@ -299,7 +299,7 @@ seedance: {
     {
       question: 'What settings affect Seedance video pricing most?',
       answer:
-        'Duration, generated audio and whether the workflow includes video input determine the main Seedance 2.5 quote class. Keep those settings aligned when comparing routes.',
+        'Duration, generated audio and the use of a source video have the greatest impact on the price. Keep those settings aligned when comparing routes.',
     },
   ],
 }
@@ -326,7 +326,7 @@ seedance: {
   strengthsLimits:
     'Utilisez Seedance 2.5 quand la durée, l’audio généré, les références mixtes, l’édition ou l’extension comptent. Sa route publique MaxVideoAI est actuellement en 16:9 à 480p ou 720p; gardez Seedance 2.0 pour les besoins de plus haute résolution ou de 4K.',
   pricingNotes:
-    'Gardez la durée, le choix audio et la classe d’entrée alignés quand vous comparez les routes Seedance. MaxVideoAI affiche le devis actuel avant la génération; aucun prix rédigé en dur n’est intégré à ce texte d’exemples.',
+    'La durée, l’audio et le type de média influencent le prix. Le générateur affiche le tarif avant le lancement.',
   faq: [
     {
       question: 'Tous les exemples Seedance de cette page ont-ils été générés avec Seedance 2.5 ?',
@@ -341,7 +341,7 @@ seedance: {
     {
       question: 'Quels réglages influencent le plus le prix d’une vidéo Seedance ?',
       answer:
-        'La durée, l’audio généré et la présence d’une vidéo en entrée déterminent la classe de devis principale de Seedance 2.5. Gardez ces réglages alignés quand vous comparez les routes.',
+        'La durée, l’audio généré et l’utilisation d’une vidéo source influencent le plus le prix. Gardez ces réglages alignés quand vous comparez les routes.',
     },
   ],
 }
@@ -368,7 +368,7 @@ seedance: {
   strengthsLimits:
     'Usa Seedance 2.5 cuando importen una mayor duración, el audio generado, las referencias mixtas, la edición o la extensión. Su ruta pública de MaxVideoAI está actualmente en 16:9 a 480p o 720p; conserva Seedance 2.0 para necesidades de mayor resolución o 4K.',
   pricingNotes:
-    'Mantén alineados la duración, la elección de audio y la clase de entrada al comparar rutas Seedance. MaxVideoAI muestra la cotización actual antes de generar; este texto de ejemplos no incorpora ningún precio escrito de forma fija.',
+    'La duración, el audio y el tipo de medio utilizado influyen en el precio. El generador muestra la tarifa antes de iniciar.',
   faq: [
     {
       question: '¿Todos los ejemplos de Seedance de esta página se generaron con Seedance 2.5?',
@@ -383,7 +383,7 @@ seedance: {
     {
       question: '¿Qué ajustes afectan más al precio de un video Seedance?',
       answer:
-        'La duración, el audio generado y la presencia de video como entrada determinan la clase principal de cotización de Seedance 2.5. Mantén estos ajustes alineados al comparar rutas.',
+        'La duración, el audio generado y el uso de un video fuente son los factores que más influyen en el precio. Mantén estos ajustes alineados al comparar rutas.',
     },
   ],
 }
