@@ -76,8 +76,9 @@ does not authorize new paid canaries or a production mutation.
 ## Runtime and publication contract
 
 The public runtime contract has five modes: `t2v`, `i2v`, `ref2v`, `v2v`, and
-`extend`. It supports 4–30 seconds, 480p or 720p, 16:9, 24 FPS, generated audio,
-and up to 50 combined references (30 images, 10 videos, 10 audio files). The
+`extend`. It supports 4–30 seconds, 480p or 720p, all six explicit aspect ratios
+(`21:9`, `16:9`, `4:3`, `1:1`, `3:4`, and `9:16`), 24 FPS, generated audio, and
+up to 50 combined references (30 images, 10 videos, 10 audio files). The
 corresponding payload, polling, storage, accounting, and refund paths are the
 existing executable owners; this document is documentation-only.
 
@@ -404,3 +405,37 @@ required after the approved deployment.
   EN/FR/ES Seedance 2.5 model pages and Seedance 2.0 comparison pages. No
   generation, provider request, wallet mutation, push, or deployment was
   performed.
+
+### Full aspect-ratio launch contract — 2026-08-08
+
+- Verified source SHA: `cb1d4cddbaf85c8d659307eff1e3bdddf69f8e25`.
+- The public runtime, every Seedance 2.5 mode, the request profile, payload
+  validation, pricing dimensions, generated engine catalogue, Benchmark Lab,
+  and EN/FR/ES model content now expose the same six explicit aspect ratios:
+  `21:9`, `16:9`, `4:3`, `1:1`, `3:4`, and `9:16`.
+- `16:9` remains the default. Each other selection retains its exact ratio
+  through normalization and submission instead of silently falling back to
+  `16:9`; both 480p and 720p pricing use the matching output dimensions.
+- The current Seedance 2.5 API schema was checked at
+  `https://fal.ai/models/bytedance/seedance-2.5/text-to-video/api`; it lists the
+  six explicit ratios above in addition to its automatic choice. MaxVideoAI
+  exposes the six deterministic formats and does not expose `auto` as a format.
+- TDD red evidence: the pre-change suite failed at the authored engine, runtime
+  profile, request normalization, real payload builder, pricing dimensions,
+  and Benchmark Lab contract because Seedance 2.5 still allowed only `16:9`.
+- Focused Seedance/profile/payload/Benchmark Lab suite: PASS, 44/44.
+- Full validation: PASS, 2,494/2,494 tests and 0 failures.
+- TypeScript, frontend lint, SEO guards, i18n parity, model registry, model
+  audit, immutable and public pricing baselines, pricing audit, and
+  `git diff --check`: PASS.
+- Production build: PASS with Next.js 15.5.18, 729 static pages, integrated
+  lint/type validation, current model projections, and sitemap postbuild.
+- Authenticated local browser smoke: PASS. The aspect-ratio selector displayed
+  all six formats; `9:16` remained selected and produced a visible quote in
+  Generate Video; the same six choices remained available in Extend Video.
+  Generate was never submitted.
+
+No provider request, paid generation, wallet mutation, production environment
+change, push, or deployment was performed in this aspect-ratio pass. After an
+approved deployment, perform the read-only production route smoke already
+described above; the first real customer renders remain the live output check.
