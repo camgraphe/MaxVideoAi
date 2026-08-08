@@ -361,3 +361,19 @@ No provider call, paid generation, wallet or environment mutation, push,
 deployment, Search Console request, or LinkedIn publication was performed in
 this correction pass. The read-only production smoke in this handoff remains
 required after the approved deployment.
+
+### Internal linking and examples refresh — 2026-08-08
+
+- Verified source SHA: `a8b747ceb62527ff13cd59a88b42b1e3f5e93355`.
+- Compare dropdown: six items; Seedance 2.0 vs Seedance 2.5 is first and
+  displays localized `New`.
+- Seedance examples: EN/FR/ES copy leads with Seedance 2.5; the existing
+  gallery layout is unchanged; Seedance 2.0 vs Seedance 2.5 is linked only in
+  Next steps below the gallery.
+- Focused suite: PASS, 87/87 tests.
+- Full validation: PASS, 2,492/2,492 tests.
+- Production build: PASS; this run did not emit a static-page count.
+- Local smoke: PASS for the EN menu, examples, and comparison routes at
+  1440×1000 desktop and 390×844 mobile; no generation submitted.
+- Deployment: still blocked until the separate localized-route self-redirect
+  is fixed and reverified.
