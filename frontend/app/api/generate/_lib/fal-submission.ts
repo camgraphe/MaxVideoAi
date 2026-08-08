@@ -73,7 +73,7 @@ export async function markJobAwaitingFal(params: {
       `UPDATE app_jobs
        SET status = 'running',
            progress = GREATEST(progress, $2),
-           message = CASE WHEN $3 IS NOT NULL THEN $3::text ELSE message END,
+           message = COALESCE($3::text, message),
            provider_job_id = COALESCE($4, provider_job_id),
            provisional = FALSE,
            updated_at = NOW()

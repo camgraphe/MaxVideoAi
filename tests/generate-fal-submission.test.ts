@@ -64,6 +64,11 @@ test('markJobAwaitingFal updates the running job and records provider queue cont
 
   assert.equal(queries.length, 2);
   assert.match(queries[0].sql, /UPDATE app_jobs/);
+  assert.match(
+    queries[0].sql,
+    /COALESCE\(\$3::text, message\)/,
+    'nullable timeout messages must be explicitly typed for PostgreSQL'
+  );
   assert.equal(queries[0].params?.[2], 'still processing');
   assert.match(queries[1].sql, /INSERT INTO fal_queue_log/);
   assert.deepEqual(queries[1].params?.slice(0, 5), ['job_123', 'fal', 'fal_123', 'seedance-2-0', 'deferred']);
