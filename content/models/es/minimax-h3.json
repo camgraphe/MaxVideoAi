@@ -138,15 +138,15 @@
     },
     "media": {
       "caption": "Render real de MiniMax H3",
-      "description": "Una secuencia cinematográfica centrada en un personaje y generada con MaxVideoAI",
+      "description": "Elara atraviesa la tormenta para encender un faro y guiar un bote de rescate hasta el puerto",
       "renderLabel": "Ver render completo",
       "badges": [
-        "10s",
+        "15s",
         "2K",
         "16:9",
         "Audio estéreo"
       ],
-      "altContext": "vídeo cinematográfico MiniMax H3 centrado en un personaje con sonido estéreo nativo"
+      "altContext": "secuencia de rescate MiniMax H3 con farera, tormenta y diálogo estéreo nativo"
     },
     "features": [
       {
@@ -287,28 +287,28 @@
       "El audio estéreo nativo hace evolucionar diálogo, ambiente y efectos junto a la imagen."
     ],
     "demo": {
-      "title": "Secuencia de personaje MiniMax H3",
-      "promptLabel": "Prompt cinematográfico centrado en un personaje",
-      "prompt": "Una joven montañera decidida con una chaqueta roja desgastada cruza una cresta azotada por el viento durante la hora azul. Empieza con un perfil amplio mientras clava el piolet y recupera el equilibrio; corta a un primer plano cuando la escarcha se posa en sus pestañas y susurra: «Ya casi». Termina con una órbita lenta que revela las luces cálidas del valle. Mantén su rostro, chaqueta, equipo y dirección del viento. Respiración natural, movimiento de la tela, viento lejano y sincronización labial precisa, sonido estéreo nativo.",
+      "title": "Rescate de una farera durante la tormenta",
+      "promptLabel": "Prompt de producción usado para este render",
+      "prompt": "Crea una película cinematográfica de 15 segundos en 16:9 con continuidad multiplano nativa y sonido estéreo nativo. Personaje ficticio original: ELARA, una farera de 34 años, piel oliva curtida por el viento, cabello oscuro ondulado recogido, impermeable mostaza desgastado, jersey gris carbón y botas marineras. Mantén su rostro, ropa y proporciones en todos los planos. 0,0–3,5 s: exterior amplio en la hora azul, faro de piedra sobre un acantilado atlántico azotado por una tormenta; la lluvia cruza de lado mientras Elara corre hacia la torre con una pequeña caja de señales desgastada, cámara de seguimiento en mano, tela mojada y pisadas realistas. 3,5–7,5 s: escalera de caracol interior, seguimiento medio y cercano mientras sube deprisa, aliento visible, una mano en la barandilla, lámparas ámbar prácticas y ningún corte que rompa la identidad. 7,5–11,5 s: sala de la linterna, llega a los controles y acciona la palanca de emergencia; órbita desde su rostro decidido hasta la enorme lente Fresnel al encenderse. A los 10,5 s Elara dice con claridad y sincronización labial natural: «Harbor light is alive. Bring them home.» 11,5–15,0 s: retroceso aéreo exterior mientras el haz de rescate barre las olas negras y revela un bote lejano que gira hacia un lugar seguro. Audio: solo estéreo nativo — viento de tormenta, lluvia en los cristales, botas sobre escaleras de hierro, respiración forzada, golpe de la palanca, subida eléctrica, mecanismo grave del faro, oleaje distante y la frase exacta de Elara. Sin música, subtítulos, texto en pantalla, logotipos, marcas de agua, encuadre publicitario de belleza ni packshot de producto. Piel y movimiento fotorrealistas, manos coherentes y contraste cinematográfico contenido.",
       "notes": [
-        "El personaje, el vestuario y el viento son anclajes de continuidad explícitos.",
-        "Cada plano une un gesto físico, un movimiento de cámara y un evento sonoro."
+        "El rostro de Elara, su impermeable mostaza y sus proporciones fijan la continuidad de los cuatro momentos narrativos.",
+        "Cada plano temporizado une una acción visible, una dirección de cámara y un evento sonoro sincronizado."
       ],
       "summary": {
-        "subject": "Una montañera con chaqueta roja desgastada",
-        "action": "Cruza una cresta, recupera el equilibrio y habla",
-        "camera": "Perfil amplio, primer plano interpretativo y órbita final lenta",
-        "style": "Naturalismo cinematográfico de hora azul",
-        "output": "Escena de personaje de 10 segundos en 2K con audio estéreo nativo"
+        "subject": "Elara, una farera con impermeable mostaza",
+        "action": "Sube la torre, enciende la lente y guía un bote de vuelta al puerto",
+        "camera": "Seguimiento exterior en mano, persecución cercana en la escalera, órbita en la linterna y retroceso aéreo",
+        "style": "Naturalismo cinematográfico de tormenta en la hora azul",
+        "output": "Secuencia multiplano de 15 segundos en 2K con diálogo estéreo nativo"
       },
       "presentationOverrides": {
         "modeLabel": "Texto a vídeo",
         "outputLabel": "Render 2K",
-        "duration": "10s",
+        "duration": "15s",
         "aspectRatio": "16:9",
         "audioChipMode": "supported",
         "audioChipLabel": "Audio estéreo nativo",
-        "altContext": "escena cinematográfica de montañera MiniMax H3"
+        "altContext": "secuencia de rescate con farera MiniMax H3"
       }
     },
     "imageExamples": null

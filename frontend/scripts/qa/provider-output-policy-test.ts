@@ -7,6 +7,7 @@ import {
   getProviderVideoCopyState,
   isProviderVideoCopyRetryDue,
   PROVIDER_VIDEO_COPY_RETRY_MESSAGE,
+  requireFalProviderVideoCopy,
   resolveProviderVideoCopyMaxAttempts,
   shouldFailVideoJobOnProviderCopyMiss,
   shouldRetryProviderVideoCopy,
@@ -18,6 +19,13 @@ const previousS3Bucket = process.env.S3_BUCKET;
 const previousS3Region = process.env.S3_REGION;
 
 try {
+  delete process.env.REQUIRE_PROVIDER_VIDEO_COPY_FOR_FAL;
+  assert.equal(
+    requireFalProviderVideoCopy(),
+    true,
+    'fal provider output copy must be mandatory by default so fresh jobs cannot complete on an ephemeral provider URL'
+  );
+
   process.env.REQUIRE_PROVIDER_VIDEO_COPY_FOR_FAL = 'true';
   process.env.S3_PUBLIC_BASE_URL = 'https://cdn.maxvideoai.com';
   process.env.S3_BUCKET = 'maxvideoai-renders';

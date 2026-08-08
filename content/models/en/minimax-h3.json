@@ -138,15 +138,15 @@
     },
     "media": {
       "caption": "Real MiniMax H3 render",
-      "description": "A character-led cinematic sequence generated with MaxVideoAI",
+      "description": "Elara races through a storm to relight a lighthouse and guide a lifeboat home",
       "renderLabel": "View full render",
       "badges": [
-        "10s",
+        "15s",
         "2K",
         "16:9",
         "Stereo audio"
       ],
-      "altContext": "character-led MiniMax H3 cinematic video with native stereo sound"
+      "altContext": "MiniMax H3 lighthouse keeper rescue sequence with storm ambience and native stereo dialogue"
     },
     "features": [
       {
@@ -287,28 +287,28 @@
       "Native stereo audio lets dialogue, ambience and effects develop with the picture."
     ],
     "demo": {
-      "title": "MiniMax H3 character sequence",
-      "promptLabel": "Character-led cinematic prompt",
-      "prompt": "A determined young mountaineer in a weathered red jacket crosses a wind-cut ridge at blue hour. Begin on a wide profile as she plants an ice axe and steadies herself; cut to a close shot as frost gathers on her eyelashes and she whispers, ‘Almost there.’ Finish with a slow orbit revealing warm valley lights below. Keep her face, jacket, gear and wind direction consistent. Natural breathing, fabric movement, distant wind and precise lip sync, native stereo sound.",
+      "title": "Lighthouse keeper rescue sequence",
+      "promptLabel": "Production prompt used for this render",
+      "prompt": "Create a 15-second cinematic 16:9 film with native multi-shot continuity and native stereo sound. Original fictional character: ELARA, a 34-year-old lighthouse keeper with wind-burned olive skin, dark wavy hair tied back, a weathered mustard raincoat, charcoal sweater, and practical sea boots. Keep her face, clothing, and proportions consistent in every shot. 0.0–3.5 seconds: wide exterior at blue hour, a stone lighthouse on a violent Atlantic cliff, rain sweeping sideways, Elara runs toward the tower carrying a small weathered signal case; handheld tracking camera, realistic wet fabric and foot contact. 3.5–7.5 seconds: interior spiral stairwell, medium close tracking shot as she climbs fast, breath visible, one hand gripping the rail, practical amber lamps, no cuts that break identity. 7.5–11.5 seconds: lantern room, she reaches the controls and throws the emergency lever; orbit from her determined face to the huge Fresnel lens as it powers on. At 10.5 seconds Elara says clearly, with natural lip sync: “Harbor light is alive. Bring them home.” 11.5–15.0 seconds: exterior aerial pullback as the rescue beam sweeps across black waves and reveals a distant lifeboat turning toward safety. Audio: native stereo only—storm wind outside, rain on glass, boots on iron stairs, strained breathing, lever clunk, electrical rise, deep lighthouse mechanism, distant surf, and Elara's exact spoken line. No music. No subtitles, captions, on-screen text, logos, watermarks, beauty-ad framing, or product pack shot. Photorealistic skin and motion, coherent hands, restrained cinematic contrast.",
       "notes": [
-        "The character, wardrobe and wind direction are explicit continuity anchors.",
-        "Each shot pairs one physical beat with one camera move and one sound event."
+        "Elara's face, mustard raincoat and proportions anchor continuity across four story beats.",
+        "Every timed shot pairs a visible action with camera direction and a synchronized sound cue."
       ],
       "summary": {
-        "subject": "A mountaineer in a weathered red jacket",
-        "action": "Crosses a ridge, steadies herself and speaks",
-        "camera": "Wide profile, close performance shot and slow final orbit",
-        "style": "Blue-hour cinematic naturalism",
-        "output": "10-second 2K character scene with native stereo audio"
+        "subject": "Elara, a lighthouse keeper in a mustard raincoat",
+        "action": "Races up the tower, powers the lens and calls a lifeboat home",
+        "camera": "Handheld exterior tracking, stairwell close follow, lantern-room orbit and aerial pullback",
+        "style": "Storm-lit cinematic naturalism at blue hour",
+        "output": "15-second 2K multi-shot scene with native stereo dialogue"
       },
       "presentationOverrides": {
         "modeLabel": "Text-to-video",
         "outputLabel": "2K render",
-        "duration": "10s",
+        "duration": "15s",
         "aspectRatio": "16:9",
         "audioChipMode": "supported",
         "audioChipLabel": "Native stereo audio",
-        "altContext": "MiniMax H3 mountaineer cinematic scene"
+        "altContext": "MiniMax H3 lighthouse keeper rescue sequence"
       }
     },
     "imageExamples": null

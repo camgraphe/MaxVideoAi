@@ -30,7 +30,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 export function requireFalProviderVideoCopy(): boolean {
-  return enabled(process.env.REQUIRE_PROVIDER_VIDEO_COPY_FOR_FAL);
+  const configured = process.env.REQUIRE_PROVIDER_VIDEO_COPY_FOR_FAL;
+  if (!configured?.trim()) return true;
+  return enabled(configured);
 }
 
 export function isManagedStorageUrl(url: string | null | undefined): boolean {

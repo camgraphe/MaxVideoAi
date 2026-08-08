@@ -30,6 +30,26 @@ export type SeoWatchVideoConfig = {
 
 export const VIDEO_SEO_WATCHLIST: readonly SeoWatchVideoConfig[] = [
   {
+    id: 'job_91c6f549-7b07-45b3-ad45-cbaf67d10959',
+    engineSlug: 'minimax-h3',
+    engineFamily: 'minimax',
+    engineLabel: 'MiniMax H3',
+    sourceType: 'models',
+    sourcePath: '/models/minimax-h3',
+    sourceLabel: 'Model page · MiniMax H3',
+    seoTitle: 'MiniMax H3 lighthouse keeper rescue with native audio',
+    intro:
+      'The launch render for MiniMax H3 follows a lighthouse keeper through four connected storm shots, with stable character identity, timed dialogue and native stereo sound.',
+    reasonForSelection: 'Accepted launch render and primary proof video on the MiniMax H3 model page.',
+    priority: 260,
+    publishedAt: '2026-08-08T15:08:49.512Z',
+    watchPageEligible: true,
+    videoPrimaryIntent: 'audio-enabled',
+    exampleFamily: 'minimax',
+    styleTags: ['cinematic', 'character', 'storm'],
+    capabilityTags: ['text-to-video', 'multi-shot', 'native-audio', 'dialogue'],
+  },
+  {
     id: 'job_b8e58d1b-7e9b-427b-a55c-17da2fafa48f',
     engineSlug: 'sora-2',
     engineFamily: 'sora',

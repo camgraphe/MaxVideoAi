@@ -138,15 +138,15 @@
     },
     "media": {
       "caption": "Rendu MiniMax H3 réel",
-      "description": "Une séquence cinématographique centrée sur un personnage, générée avec MaxVideoAI",
+      "description": "Elara traverse la tempête pour rallumer un phare et ramener un canot de sauvetage au port",
       "renderLabel": "Voir le rendu complet",
       "badges": [
-        "10s",
+        "15s",
         "2K",
         "16:9",
         "Audio stéréo"
       ],
-      "altContext": "vidéo cinématographique MiniMax H3 centrée sur un personnage avec son stéréo natif"
+      "altContext": "séquence de sauvetage MiniMax H3 avec gardienne de phare, tempête et dialogue stéréo natif"
     },
     "features": [
       {
@@ -287,28 +287,28 @@
       "L’audio stéréo natif fait évoluer dialogue, ambiance et effets avec l’image."
     ],
     "demo": {
-      "title": "Séquence personnage MiniMax H3",
-      "promptLabel": "Prompt cinématographique centré sur un personnage",
-      "prompt": "Une jeune alpiniste déterminée, vêtue d’une veste rouge patinée, traverse une arête battue par le vent à l’heure bleue. Commencer par un profil large lorsqu’elle plante son piolet et reprend son équilibre ; passer à un gros plan tandis que le givre se pose sur ses cils et qu’elle murmure : « Presque arrivée. » Finir par une orbite lente révélant les lumières chaudes de la vallée. Conserver son visage, sa veste, son équipement et la direction du vent. Respiration naturelle, mouvement du tissu, vent lointain et synchronisation labiale précise, son stéréo natif.",
+      "title": "Sauvetage par une gardienne de phare",
+      "promptLabel": "Prompt de production utilisé pour ce rendu",
+      "prompt": "Créer un film cinématographique de 15 secondes en 16:9 avec continuité multi-plan native et son stéréo natif. Personnage fictif original : ELARA, gardienne de phare de 34 ans, peau olive marquée par le vent, cheveux noirs ondulés attachés, imperméable moutarde patiné, pull anthracite et bottes de mer. Conserver son visage, ses vêtements et ses proportions dans chaque plan. 0,0–3,5 s : extérieur large à l’heure bleue, phare en pierre sur une falaise atlantique battue par la tempête ; la pluie balaie l’image tandis qu’Elara court vers la tour avec une petite mallette de signalisation usée, caméra de suivi à l’épaule, tissu mouillé et appuis réalistes. 3,5–7,5 s : escalier en colimaçon intérieur, suivi rapproché pendant qu’elle monte rapidement, souffle visible, une main sur la rampe, lampes ambrées pratiques, aucune coupe qui rompe son identité. 7,5–11,5 s : lanterne, elle atteint les commandes et actionne le levier de secours ; orbite depuis son visage déterminé vers l’immense lentille de Fresnel qui s’allume. À 10,5 s, Elara dit clairement avec une synchronisation labiale naturelle : « Harbor light is alive. Bring them home. » 11,5–15,0 s : recul aérien extérieur, le faisceau de sauvetage balaie les vagues noires et révèle au loin un canot qui vire vers la sécurité. Audio : stéréo native uniquement — vent de tempête, pluie sur les vitres, bottes sur l’escalier métallique, respiration, choc du levier, montée électrique, mécanisme grave du phare, ressac et réplique exacte d’Elara. Sans musique, sous-titres, texte à l’écran, logo, filigrane, cadrage publicitaire beauté ni packshot produit. Peau et mouvements photoréalistes, mains cohérentes, contraste cinématographique retenu.",
       "notes": [
-        "Le personnage, la tenue et le vent sont des repères de continuité explicites.",
-        "Chaque plan associe un geste, un mouvement caméra et un événement sonore."
+        "Le visage d’Elara, son imperméable moutarde et ses proportions ancrent la continuité des quatre moments du récit.",
+        "Chaque plan minuté associe une action visible, une direction caméra et un événement sonore synchronisé."
       ],
       "summary": {
-        "subject": "Une alpiniste en veste rouge patinée",
-        "action": "Traverse une arête, reprend son équilibre et parle",
-        "camera": "Profil large, gros plan de jeu et orbite finale lente",
-        "style": "Naturalisme cinématographique à l’heure bleue",
-        "output": "Scène personnage de 10 secondes en 2K avec audio stéréo natif"
+        "subject": "Elara, gardienne de phare en imperméable moutarde",
+        "action": "Gravit la tour, rallume la lentille et rappelle un canot au port",
+        "camera": "Suivi extérieur à l’épaule, poursuite rapprochée dans l’escalier, orbite dans la lanterne et recul aérien",
+        "style": "Naturalisme cinématographique sous la tempête à l’heure bleue",
+        "output": "Séquence multi-plan de 15 secondes en 2K avec dialogue stéréo natif"
       },
       "presentationOverrides": {
         "modeLabel": "Texte vers vidéo",
         "outputLabel": "Rendu 2K",
-        "duration": "10s",
+        "duration": "15s",
         "aspectRatio": "16:9",
         "audioChipMode": "supported",
         "audioChipLabel": "Audio stéréo natif",
-        "altContext": "scène cinématographique d’alpiniste MiniMax H3"
+        "altContext": "séquence de sauvetage avec gardienne de phare MiniMax H3"
       }
     },
     "imageExamples": null
