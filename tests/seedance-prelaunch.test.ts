@@ -389,19 +389,19 @@ test('Public marketing media fetchers stay visibility-safe for pinned and prompt
   ]);
 });
 
-test('MiniMax H3 launch leads the menus while Seedance remains ahead of Sora', () => {
+test('Seedance 2.5 and Seedance 2.0 lead the app menu while the MiniMax H3 launch stays in the top group', () => {
   const appEngineIds = getBaseEnginesByCategory('video').map((engine) => engine.id);
-  assert.equal(appEngineIds[0], 'minimax-h3');
-  assert.equal(appEngineIds[1], 'seedance-2-5');
-  assert.equal(appEngineIds[2], 'seedance-2-0');
+  assert.equal(appEngineIds[0], 'seedance-2-5');
+  assert.equal(appEngineIds[1], 'seedance-2-0');
+  assert.equal(appEngineIds[2], 'minimax-h3');
   assert.equal(appEngineIds[3], 'seedance-2-0-fast');
   assert.ok(appEngineIds.indexOf('sora-2') > appEngineIds.indexOf('seedance-2-5'));
 
   assert.deepEqual(
     MARKETING_NAV_MODELS.map((item) => item.key),
     [
-      'minimax-h3',
       'seedance-2-5',
+      'minimax-h3',
       'seedance-2-0',
       'seedance-2-0-fast',
       'ltx-2-3-fast',
@@ -409,6 +409,7 @@ test('MiniMax H3 launch leads the menus while Seedance remains ahead of Sora', (
       'gemini-omni-flash',
       'veo-3-1-lite',
       'kling-o3-pro',
+      'kling-o3-4k',
     ]
   );
   assert.deepEqual(
@@ -440,10 +441,10 @@ test('Seedance 1.5 Pro stays active while Seedance 2.0 keeps the primary alias a
   assert.equal(getHubEngines().some((engine) => engine.modelSlug === 'seedance-1-5-pro'), true);
 });
 
-test('Header model menu promotes MiniMax H3 while keeping the Veo family expanded', () => {
+test('Header model menu promotes MiniMax H3 after Seedance 2.5 while keeping the Veo and Kling families expanded', () => {
   assert.deepEqual(MARKETING_NAV_MODELS.map((item) => item.key), [
-    'minimax-h3',
     'seedance-2-5',
+    'minimax-h3',
     'seedance-2-0',
     'seedance-2-0-fast',
     'ltx-2-3-fast',
@@ -451,6 +452,7 @@ test('Header model menu promotes MiniMax H3 while keeping the Veo family expande
     'gemini-omni-flash',
     'veo-3-1-lite',
     'kling-o3-pro',
+    'kling-o3-4k',
   ]);
 });
 
