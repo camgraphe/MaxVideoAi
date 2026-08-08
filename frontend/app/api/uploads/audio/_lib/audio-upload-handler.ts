@@ -9,6 +9,7 @@ import {
   type MediaFieldConstraint,
 } from '@/lib/media-field-constraints';
 import type { Mode } from '@/types/engines';
+import { detectMediaBufferDuration } from '@/server/media/detect-has-audio';
 
 const MAX_AUDIO_MB = Number(process.env.ASSET_MAX_AUDIO_MB ?? '30');
 
@@ -18,12 +19,19 @@ function formText(form: FormData, key: string): string | null {
 }
 
 function resolveUploadConstraint(form: FormData):
-  | { ok: true; constraint: MediaFieldConstraint | null }
+  | {
+      ok: true;
+      constraint: MediaFieldConstraint | null;
+      minDurationSec: number | null;
+      maxDurationSec: number | null;
+    }
   | { ok: false } {
   const engineId = formText(form, 'engineId');
   const mode = formText(form, 'mode');
   const fieldId = formText(form, 'fieldId');
-  if (!engineId && !mode && !fieldId) return { ok: true, constraint: null };
+  if (!engineId && !mode && !fieldId) {
+    return { ok: true, constraint: null, minDurationSec: null, maxDurationSec: null };
+  }
   if (!engineId || !mode || !fieldId) return { ok: false };
 
   const engine = getFalEngineById(engineId)?.engine;
@@ -41,6 +49,14 @@ function resolveUploadConstraint(form: FormData):
   return {
     ok: true,
     constraint: resolveEngineMediaFieldConstraint({ engine, field }),
+    minDurationSec:
+      typeof field.minDurationSec === 'number' && Number.isFinite(field.minDurationSec)
+        ? field.minDurationSec
+        : null,
+    maxDurationSec:
+      typeof field.maxDurationSec === 'number' && Number.isFinite(field.maxDurationSec)
+        ? field.maxDurationSec
+        : null,
   };
 }
 
@@ -100,6 +116,35 @@ export async function handleAudioUpload(
     return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
   }
 
+  const durationSec = await detectMediaBufferDuration(buffer, {
+    fileName: blob.name,
+    mimeType: mime,
+  });
+  const requiresTrustedDuration =
+    uploadConstraint.minDurationSec !== null || uploadConstraint.maxDurationSec !== null;
+  if (requiresTrustedDuration && durationSec === null) {
+    return NextResponse.json(
+      { ok: false, error: 'DURATION_UNVERIFIED' },
+      { status: 422 }
+    );
+  }
+  if (
+    durationSec !== null &&
+    ((uploadConstraint.minDurationSec !== null && durationSec < uploadConstraint.minDurationSec) ||
+      (uploadConstraint.maxDurationSec !== null && durationSec > uploadConstraint.maxDurationSec))
+  ) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: 'DURATION_UNSUPPORTED',
+        durationSec,
+        minDurationSec: uploadConstraint.minDurationSec,
+        maxDurationSec: uploadConstraint.maxDurationSec,
+      },
+      { status: 422 }
+    );
+  }
+
   let uploadResult;
   try {
     uploadResult = await uploadFileBuffer({
@@ -123,7 +168,7 @@ export async function handleAudioUpload(
       height: null,
       size: buffer.length,
       source: 'upload',
-      metadata: { originalName: blob.name, kind: 'audio' },
+      metadata: { originalName: blob.name, kind: 'audio', durationSec },
     });
 
     await ensureReusableAsset({
@@ -133,6 +178,7 @@ export async function handleAudioUpload(
       source: 'upload',
       mimeType: mime,
       sizeBytes: buffer.length,
+      durationSec,
     }).catch((error) => {
       console.warn('[upload] failed to mirror audio into media_assets', error);
     });
@@ -147,6 +193,7 @@ export async function handleAudioUpload(
         size: buffer.length,
         mime,
         name: blob.name,
+        durationSec,
       },
     });
   } catch (error) {

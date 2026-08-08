@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import {
@@ -8,6 +9,7 @@ import {
 import type { NormalizedAttachment } from '../frontend/app/api/generate/_lib/attachments';
 import { MINIMAX_H3_FAL_ENGINE_REGISTRY } from '../frontend/src/config/fal-engines/minimax-h3';
 import type { ReferenceBudgetMediaItem } from '../frontend/lib/reference-budget';
+import { detectMediaBufferDuration } from '../frontend/server/media/detect-has-audio';
 
 const MB = 1024 * 1024;
 const inputSchema = MINIMAX_H3_FAL_ENGINE_REGISTRY[0]?.engine.inputSchema;
@@ -134,4 +136,43 @@ test('MiniMax H3 enforces 15-second combined video and audio reference budgets',
       assert.equal(over.body.field, fieldFor(kind));
     }
   }
+});
+
+test('audio uploads persist trusted duration metadata for MiniMax H3 references', () => {
+  const source = readFileSync(
+    'frontend/app/api/uploads/audio/_lib/audio-upload-handler.ts',
+    'utf8'
+  );
+
+  assert.match(source, /detectMediaBufferDuration\(buffer/);
+  assert.match(source, /metadata:\s*\{[^}]*durationSec/s);
+  assert.match(source, /ensureReusableAsset\(\{[^}]*durationSec/s);
+  assert.match(source, /asset:\s*\{[^}]*durationSec/s);
+});
+
+test('trusted audio duration probing reads an uploaded WAV buffer', async () => {
+  const sampleRate = 8_000;
+  const channels = 1;
+  const bitsPerSample = 16;
+  const durationSec = 2;
+  const dataSize = sampleRate * channels * (bitsPerSample / 8) * durationSec;
+  const wav = Buffer.alloc(44 + dataSize);
+  wav.write('RIFF', 0);
+  wav.writeUInt32LE(36 + dataSize, 4);
+  wav.write('WAVE', 8);
+  wav.write('fmt ', 12);
+  wav.writeUInt32LE(16, 16);
+  wav.writeUInt16LE(1, 20);
+  wav.writeUInt16LE(channels, 22);
+  wav.writeUInt32LE(sampleRate, 24);
+  wav.writeUInt32LE(sampleRate * channels * (bitsPerSample / 8), 28);
+  wav.writeUInt16LE(channels * (bitsPerSample / 8), 32);
+  wav.writeUInt16LE(bitsPerSample, 34);
+  wav.write('data', 36);
+  wav.writeUInt32LE(dataSize, 40);
+
+  assert.equal(
+    await detectMediaBufferDuration(wav, { fileName: 'reference.wav', mimeType: 'audio/wav' }),
+    durationSec
+  );
 });
