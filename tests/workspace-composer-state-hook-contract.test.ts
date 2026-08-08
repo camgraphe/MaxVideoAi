@@ -56,6 +56,7 @@ test('workspace composer mode and settings state is owned by a route-local hook'
   assert.match(engineModeHookSource, /const implicitMode = useMemo<Mode>/);
   assert.match(engineModeHookSource, /const audioWorkflowUnsupported =/);
   assert.match(engineModeHookSource, /const handleEngineChange = useCallback/);
+  assert.match(engineModeHookSource, /coerceFormStateForEngineChange/);
   assert.match(engineModeHookSource, /const handleComposerModeToggle = useCallback/);
   assert.match(engineModeHookSource, /buildComposerModeToggles/);
   assert.match(engineModeHookSource, /getComposerWorkflowNotice/);

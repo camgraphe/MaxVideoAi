@@ -102,6 +102,44 @@ test('initial workspace form applies requested engine while preserving stored dr
   });
 });
 
+test('requested Seedance 2.5 starts with its audio default instead of the previous engine choice', () => {
+  const stored: StoredFormState = {
+    engineId: 'seedance-2-0',
+    mode: 't2v',
+    durationSec: 9,
+    resolution: '720p',
+    aspectRatio: '16:9',
+    fps: 24,
+    iterations: 1,
+    audio: false,
+    extraInputValues: {},
+  };
+  const seedance25 = makeEngine('seedance-2-5', {
+    inputSchema: {
+      required: [],
+      optional: [
+        {
+          id: 'generate_audio',
+          type: 'boolean',
+          label: 'Audio',
+          default: true,
+        },
+      ],
+    },
+  });
+
+  const result = buildInitialWorkspaceFormState({
+    engines: [makeEngine('seedance-2-0'), seedance25],
+    storedFormRaw: stored,
+    effectiveRequestedEngineId: 'seedance-2-5',
+    effectiveRequestedEngineToken: '',
+    effectiveRequestedMode: 't2v',
+  });
+
+  assert.equal(result.form?.engineId, 'seedance-2-5');
+  assert.equal(result.form?.audio, true);
+});
+
 test('initial workspace form defaults Luma Ray 3.2 engine requests to modify video', () => {
   const stored: StoredFormState = {
     engineId: 'seedance-2-0',

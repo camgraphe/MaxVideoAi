@@ -33,6 +33,7 @@ import type { FormState } from '../_lib/workspace-form-state';
 import {
   buildComposerModeToggles,
   coerceFormState,
+  coerceFormStateForEngineChange,
   getComposerWorkflowNotice,
   getEngineModeOptions,
   getModeCaps,
@@ -380,8 +381,7 @@ export function useWorkspaceEngineModeState({
           requestedMode: null,
           carryoverMode: candidate?.mode ?? null,
         });
-        const normalizedPrevious = candidate ? { ...candidate, engineId: nextEngine.id, mode: nextMode } : null;
-        return coerceFormState(nextEngine, nextMode, normalizedPrevious);
+        return coerceFormStateForEngineChange(nextEngine, nextMode, candidate);
       });
     },
     [
@@ -406,8 +406,7 @@ export function useWorkspaceEngineModeState({
         requestedMode: requestedModeOverrideRef.current,
         carryoverMode: candidate?.mode ?? null,
       });
-      const normalizedPrevious = candidate ? { ...candidate, engineId: engineOverride.id, mode: preferredMode } : null;
-      const nextState = coerceFormState(engineOverride, preferredMode, normalizedPrevious);
+      const nextState = coerceFormStateForEngineChange(engineOverride, preferredMode, candidate);
       if (process.env.NODE_ENV !== 'production') {
         console.log('[generate] engine override applied', {
           previous: candidate?.engineId,
@@ -447,8 +446,7 @@ export function useWorkspaceEngineModeState({
         requestedMode: requestedModeOverrideRef.current,
         carryoverMode: candidate?.mode ?? null,
       });
-      const normalizedPrevious = candidate ? { ...candidate, engineId: pinnedEngine.id, mode: nextMode } : null;
-      return coerceFormState(pinnedEngine, nextMode, normalizedPrevious);
+      return coerceFormStateForEngineChange(pinnedEngine, nextMode, candidate);
     });
   }, [
     authChecked,
