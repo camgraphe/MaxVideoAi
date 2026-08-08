@@ -12,6 +12,7 @@ import type { NormalizedAttachment } from '../frontend/app/api/generate/_lib/att
 const root = process.cwd();
 const routePath = join(root, 'frontend/app/api/generate/route.ts');
 const helperPath = join(root, 'frontend/app/api/generate/_lib/attachment-references.ts');
+const processingPath = join(root, 'frontend/app/api/generate/_lib/generation-attachment-processing.ts');
 
 const routeSource = readFileSync(routePath, 'utf8');
 const helperSource = readFileSync(helperPath, 'utf8');
@@ -25,7 +26,9 @@ const attachment = (overrides: Partial<NormalizedAttachment>): NormalizedAttachm
 
 test('generate route delegates attachment reference derivation', () => {
   assert.ok(existsSync(helperPath), 'attachment reference derivation should live in the generate route _lib folder');
-  assert.match(routeSource, /from '\.\/_lib\/attachment-references'/);
+  assert.ok(existsSync(processingPath), 'attachment reference orchestration should live in the generate route _lib folder');
+  assert.match(routeSource, /from '\.\/_lib\/generation-attachment-processing'/);
+  assert.match(readFileSync(processingPath, 'utf8'), /from '\.\/attachment-references'/);
   assert.doesNotMatch(routeSource, /attachmentPrimaryImageUrl/, 'primary image derivation belongs in attachment-references.ts');
   assert.doesNotMatch(routeSource, /requestedPrimaryImageUrl/, 'requested primary image fallback belongs in attachment-references.ts');
   assert.doesNotMatch(routeSource, /referenceImagesInput/, 'reference image input selection belongs in attachment-references.ts');

@@ -2,9 +2,48 @@ import type { EngineInputField } from '@/types/engines';
 import type { getLocalizedAssetDropzoneCopy } from '@/lib/ltx-localization';
 import { readImageFileDimensions } from '@/lib/client-image-upload';
 import { getImageDimensionViolation } from '@/lib/image-dimension-constraints';
+import {
+  validateMediaFileAgainstConstraint,
+  type MediaFieldConstraint,
+} from '@/lib/media-field-constraints';
 import type { AssetFieldRole } from './asset-dropzone-types';
 
 export const VEO_REFERENCE_WARNING_ENGINES = new Set(['veo-3-1', 'veo-3-1-fast', 'veo-3-1-lite']);
+
+export function resolveAcceptedAudioInputTypes(constraint: MediaFieldConstraint): string {
+  return constraint.acceptedFileExtensions.length
+    ? constraint.acceptedFileExtensions.map((extension) => `.${extension}`).join(',')
+    : 'audio/*';
+}
+
+export function formatAcceptedAudioExtensions(constraint: MediaFieldConstraint): string {
+  return constraint.acceptedFileExtensions.length
+    ? constraint.acceptedFileExtensions.map((extension) => extension.toUpperCase()).join(', ')
+    : 'MP3, WAV, M4A';
+}
+
+export function validateEngineAudioFile(params: {
+  file: File;
+  constraint: MediaFieldConstraint;
+  assetCopy: ReturnType<typeof getLocalizedAssetDropzoneCopy>;
+}): { ok: true } | { ok: false; message: string } {
+  if (!params.file.type.startsWith('audio/')) {
+    return { ok: false, message: params.assetCopy.dropAudioFile };
+  }
+  const validation = validateMediaFileAgainstConstraint({
+    name: params.file.name,
+    mimeType: params.file.type,
+    sizeBytes: params.file.size,
+    constraint: params.constraint,
+  });
+  if (validation.ok) return { ok: true };
+  return {
+    ok: false,
+    message: validation.reason === 'size'
+      ? params.assetCopy.fileTooLarge(validation.maxSizeMB ?? 0)
+      : params.assetCopy.dropAudioFile,
+  };
+}
 
 export function resolveAssetFieldTitle(
   field: EngineInputField,

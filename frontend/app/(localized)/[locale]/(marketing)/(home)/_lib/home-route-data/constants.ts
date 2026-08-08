@@ -77,7 +77,7 @@ export const HERO_ENGINE_TARGETS: Record<
 };
 
 export const DEFAULT_MODEL_BY_EXAMPLE_FAMILY: Record<HomepageExampleFamily, string> = {
-  seedance: 'seedance-2-5',
+  seedance: 'seedance-2-0',
   kling: 'kling-3-pro',
   ltx: 'ltx-2-3-pro',
   veo: 'veo-3-1',

@@ -12800,6 +12800,19 @@
             ],
             "minCount": 0,
             "maxCount": 10,
+            "maxSizeMB": 15,
+            "acceptedMimeTypes": [
+              "audio/mpeg",
+              "audio/mp3",
+              "audio/wav",
+              "audio/x-wav",
+              "audio/wave",
+              "audio/vnd.wave"
+            ],
+            "acceptedFileExtensions": [
+              "mp3",
+              "wav"
+            ],
             "source": "either"
           }
         ],

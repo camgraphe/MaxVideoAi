@@ -2,7 +2,6 @@ import type { HomeExampleCard } from '@/components/marketing/home/HomeRedesignSe
 import { type AppLocale } from '@/i18n/locales';
 import type { LocalizedLinkHref } from '@/i18n/navigation';
 import { normalizeEngineId } from '@/lib/engine-alias';
-import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
 import { listExampleFamilyPage, listExamples, type GalleryVideo } from '@/server/videos';
 import {
   DEFAULT_MODEL_BY_EXAMPLE_FAMILY,
@@ -24,23 +23,20 @@ function sortExamplesByPriority(videos: GalleryVideo[]) {
 function preferHomepageExampleVideo(
   videos: GalleryVideo[],
   targetEngineId: string,
-  family: HomepageExampleFamily | undefined,
   preferredVideoId?: string
 ): GalleryVideo | null {
   const normalizedTarget = normalizeEngineId(targetEngineId) ?? targetEngineId;
   const usable = videos.filter((video) => {
     if (!video.thumbUrl) return false;
     const engineId = normalizeEngineId(video.engineId) ?? video.engineId;
-    if (engineId === normalizedTarget) return true;
-    return family ? resolveExampleCanonicalSlug(engineId) === family : false;
+    return engineId === normalizedTarget;
   });
   const preferred = preferredVideoId ? usable.find((video) => video.id === preferredVideoId && video.aspectRatio === '16:9') : null;
   if (preferred) return preferred;
   const exactEngine = usable.filter((video) => (normalizeEngineId(video.engineId) ?? video.engineId) === normalizedTarget);
   const exact16x9 = exactEngine.find((video) => video.aspectRatio === '16:9');
   if (exact16x9) return exact16x9;
-  const family16x9 = usable.find((video) => video.aspectRatio === '16:9');
-  return exactEngine[0] ?? family16x9 ?? usable[0] ?? null;
+  return exactEngine[0] ?? null;
 }
 
 function formatHomepageExampleDuration(locale: AppLocale, video: GalleryVideo | null, fallback: string): string {
@@ -54,33 +50,25 @@ function formatHomepageExamplePrice(locale: AppLocale, video: GalleryVideo | nul
   return formatCurrency(locale, video?.currency, video?.finalPriceCents) ?? fallback ?? null;
 }
 
-export async function loadHomepageExamples(locale: AppLocale, content: RedesignContent): Promise<HomeExampleCard[]> {
-  const [latestVideos, playlistVideos, familyPools] = await Promise.all([
-    listExamples('date-desc', 120).catch(() => [] as GalleryVideo[]),
-    listExamples('playlist', 120).catch(() => [] as GalleryVideo[]),
-    Promise.all(
-      HOMEPAGE_EXAMPLE_FAMILIES.map(async (family) => {
-        const result = await listExampleFamilyPage(family, { sort: 'date-desc', limit: 24, offset: 0 }).catch(() => ({
-          items: [] as GalleryVideo[],
-          total: 0,
-          limit: 24,
-          offset: 0,
-          hasMore: false,
-        }));
-        return [family, result.items] as const;
-      })
-    ),
-  ]);
-  const familyVideos = new Map(familyPools);
-  const globalCandidates = [...latestVideos, ...sortExamplesByPriority(playlistVideos)];
-
+export function assembleHomepageExampleCards({
+  locale,
+  content,
+  globalCandidates,
+  familyVideos,
+}: {
+  locale: AppLocale;
+  content: RedesignContent;
+  globalCandidates: GalleryVideo[];
+  familyVideos: ReadonlyMap<HomepageExampleFamily, GalleryVideo[]>;
+}): HomeExampleCard[] {
   return content.examples.fallbackCards.flatMap<HomeExampleCard>((fallback) => {
     const family = fallback.examplesSlug;
     const familyCandidates = family ? familyVideos.get(family) ?? [] : [];
     const override = HOMEPAGE_EXAMPLE_VIDEO_OVERRIDES[fallback.engineId];
-    const video = preferHomepageExampleVideo([...globalCandidates, ...familyCandidates], fallback.engineId, family, override?.videoId);
+    const video = preferHomepageExampleVideo([...globalCandidates, ...familyCandidates], fallback.engineId, override?.videoId);
     const engineId = video ? normalizeEngineId(video.engineId) ?? video.engineId : fallback.engineId;
     const modelSlug = family ? DEFAULT_MODEL_BY_EXAMPLE_FAMILY[family] : fallback.modelSlug ?? fallback.engineId;
+    const modelCtaLabel = fallback.modelCta ?? 'Specs & pricing';
     const href = family
       ? ({ pathname: '/examples/[model]', params: { model: family } } satisfies LocalizedLinkHref)
       : ({ pathname: '/models/[slug]', params: { slug: modelSlug } } satisfies LocalizedLinkHref);
@@ -103,9 +91,35 @@ export async function loadHomepageExamples(locale: AppLocale, content: RedesignC
         cloneHref: undefined,
         ctaLabel: fallback.cta,
         examplesCtaVisible: fallback.showExamplesCta !== false,
-        modelCtaLabel: fallback.modelCta,
+        modelCtaLabel,
         cloneLabel: fallback.cloneCta ?? content.examples.viewPrompt,
       },
     ];
+  });
+}
+
+export async function loadHomepageExamples(locale: AppLocale, content: RedesignContent): Promise<HomeExampleCard[]> {
+  const [latestVideos, playlistVideos, familyPools] = await Promise.all([
+    listExamples('date-desc', 120).catch(() => [] as GalleryVideo[]),
+    listExamples('playlist', 120).catch(() => [] as GalleryVideo[]),
+    Promise.all(
+      HOMEPAGE_EXAMPLE_FAMILIES.map(async (family) => {
+        const result = await listExampleFamilyPage(family, { sort: 'date-desc', limit: 24, offset: 0 }).catch(() => ({
+          items: [] as GalleryVideo[],
+          total: 0,
+          limit: 24,
+          offset: 0,
+          hasMore: false,
+        }));
+        return [family, result.items] as const;
+      })
+    ),
+  ]);
+
+  return assembleHomepageExampleCards({
+    locale,
+    content,
+    globalCandidates: [...latestVideos, ...sortExamplesByPriority(playlistVideos)],
+    familyVideos: new Map(familyPools),
   });
 }

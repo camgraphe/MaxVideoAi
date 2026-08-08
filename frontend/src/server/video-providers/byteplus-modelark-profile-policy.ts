@@ -148,24 +148,18 @@ function expandBytePlusFieldModes(field: EngineInputField): EngineInputField {
   if (field.id === 'image_urls') {
     return {
       ...field,
-      label: 'Reference images (up to 9)',
-      description: 'Optional visual references for Reference to Video or Video Edit.',
       modes: ['ref2v', 'v2v'],
     };
   }
   if (field.id === 'video_urls') {
     return {
       ...field,
-      label: 'Reference video clips (up to 3)',
-      description: 'Optional video references for Reference to Video.',
       modes: ['ref2v'],
     };
   }
   if (field.id === 'audio_urls') {
     return {
       ...field,
-      label: 'Reference audio (up to 3)',
-      description: 'Optional audio references for pacing or soundtrack guidance.',
       modes: ['ref2v', 'v2v'],
     };
   }

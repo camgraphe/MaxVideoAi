@@ -92,6 +92,12 @@ test('Seedance 2.5 specifications expose the factual public model card contract'
   assert.equal(spec.keySpecs.referenceImageStyle, 'Up to 30 image references');
   assert.equal(spec.keySpecs.referenceVideo, 'Up to 10 video references');
   assert.equal(spec.keySpecs.referenceAudio, 'Up to 10 audio references');
+  assert.deepEqual(spec.sources ?? [], []);
+  assert.deepEqual(spec.provenance, {
+    basis: 'maxvideoai-production-route-contract',
+    mechanicsSources: ['https://docs.byteplus.com/en/docs/modelark/1520757'],
+    note: 'Generic ModelArk asynchronous video task mechanics only; not evidence for Seedance 2.5 limits.',
+  });
 });
 
 test('score slug lookup exposes the exact current editorial roster', async () => {

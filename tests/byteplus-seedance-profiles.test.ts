@@ -230,6 +230,32 @@ test('Seedance 2.5 runtime keeps the smallest confirmed canary defaults', () => 
   );
 });
 
+test('Seedance 2.5 provider runtime preserves the authored 30/10/10 reference labels and limits', () => {
+  const entry = getFalEngineById('seedance-2-5');
+  assert.ok(entry);
+
+  const runtime = applyBytePlusSeedanceRuntimeOptions(entry.engine, {
+    provider: 'byteplus_modelark',
+    allowedModes: ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'],
+  });
+  const fields = [
+    ...(runtime.inputSchema?.required ?? []),
+    ...(runtime.inputSchema?.optional ?? []),
+  ];
+
+  assert.deepEqual(
+    ['image_urls', 'video_urls', 'audio_urls'].map((fieldId) => {
+      const field = fields.find((candidate) => candidate.id === fieldId);
+      return { fieldId, label: field?.label, maxCount: field?.maxCount };
+    }),
+    [
+      { fieldId: 'image_urls', label: 'Reference images (up to 30)', maxCount: 30 },
+      { fieldId: 'video_urls', label: 'Reference video clips (up to 10)', maxCount: 10 },
+      { fieldId: 'audio_urls', label: 'Reference audio clips (up to 10)', maxCount: 10 },
+    ]
+  );
+});
+
 test('strict capability and model helpers reject an unknown engine', () => {
   const config = {
     seedanceModelId: 'standard-id',

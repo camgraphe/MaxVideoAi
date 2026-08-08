@@ -5,8 +5,11 @@ import { buildLocalizedModelPath } from '../frontend/config/model-registry.ts';
 import {
   DEFAULT_MODEL_BY_EXAMPLE_FAMILY,
 } from '../frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data/constants.ts';
+import { assembleHomepageExampleCards } from '../frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data/examples.ts';
 import { buildModelsCatalogDecisionData } from '../frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-decision-data.ts';
 import type { ModelGalleryCard } from '../frontend/components/marketing/ModelsGallery.tsx';
+import type { RedesignContent } from '../frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data/types.ts';
+import type { GalleryVideo } from '../frontend/server/videos.ts';
 
 const homeSource = readFileSync('frontend/app/(localized)/[locale]/(marketing)/(home)/page.tsx', 'utf8');
 const homeJsonLdSource = readFileSync('frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-jsonld.ts', 'utf8');
@@ -38,7 +41,7 @@ const englishMessages = JSON.parse(readFileSync('frontend/messages/en.json', 'ut
 const frenchMessages = JSON.parse(readFileSync('frontend/messages/fr.json', 'utf8')) as HomeMessages;
 const spanishMessages = JSON.parse(readFileSync('frontend/messages/es.json', 'utf8')) as HomeMessages;
 
-test('homepage, model catalogue, and footer lead Seedance profile links with 2.5', () => {
+test('homepage proof card stays on Seedance 2.0 while discovery surfaces lead with 2.5', () => {
   const requiredTargets = {
     en: '/models/seedance-2-5',
     fr: '/fr/modeles/seedance-2-5',
@@ -51,9 +54,9 @@ test('homepage, model catalogue, and footer lead Seedance profile links with 2.5
     overallScore: null,
   } as unknown as ModelGalleryCard;
 
-  assert.equal(DEFAULT_MODEL_BY_EXAMPLE_FAMILY.seedance, 'seedance-2-5');
+  assert.equal(DEFAULT_MODEL_BY_EXAMPLE_FAMILY.seedance, 'seedance-2-0');
   for (const locale of ['en', 'fr', 'es'] as const) {
-    assert.equal(buildLocalizedModelPath(locale, DEFAULT_MODEL_BY_EXAMPLE_FAMILY.seedance), requiredTargets[locale]);
+    assert.equal(buildLocalizedModelPath(locale, 'seedance-2-5'), requiredTargets[locale]);
     const catalogue = buildModelsCatalogDecisionData({ activeLocale: locale, cards: [seedance25Card] });
     assert.equal(catalogue.topPicks[0]?.id, 'seedance-2-5');
   }
@@ -63,6 +66,58 @@ test('homepage, model catalogue, and footer lead Seedance profile links with 2.5
   const seedance20Index = footerSource.indexOf("{ slug: 'seedance-2-0'");
   assert.ok(seedance25Index >= 0, 'Footer should include Seedance 2.5');
   assert.ok(seedance25Index < seedance20Index, 'Footer should list Seedance 2.5 before Seedance 2.0');
+});
+
+test('localized homepage Seedance proof cards cannot relabel a 2.5 family asset as 2.0', () => {
+  const onlySeedance25Video = {
+    id: 'seedance-25-family-video',
+    engineId: 'seedance-2-5',
+    thumbUrl: 'https://media.maxvideoai.com/seedance-2-5-proof.webp',
+    aspectRatio: '16:9',
+    durationSec: 12,
+    finalPriceCents: 1378,
+    currency: 'USD',
+  } as GalleryVideo;
+  const messagesByLocale = {
+    en: englishMessages,
+    fr: frenchMessages,
+    es: spanishMessages,
+  } as const;
+
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const content = (messagesByLocale[locale] as unknown as { home: { redesign: RedesignContent } }).home.redesign;
+    const cards = assembleHomepageExampleCards({
+      locale,
+      content,
+      globalCandidates: [],
+      familyVideos: new Map([['seedance', [onlySeedance25Video]]]),
+    });
+    const card = cards.find((candidate) => candidate.id === 'fallback-seedance');
+    const fallback = content.examples.fallbackCards.find((candidate) => candidate.id === 'fallback-seedance');
+    assert.ok(card);
+    assert.ok(fallback);
+    assert.deepEqual(
+      {
+        title: card.title,
+        engine: card.engine,
+        engineId: card.engineId,
+        imageSrc: card.imageSrc,
+        imageAlt: card.imageAlt,
+        modelHref: card.modelHref,
+        modelAriaLabel: `${card.modelCtaLabel} - ${card.engine}`,
+      },
+      {
+        title: 'Seedance 2.0',
+        engine: 'Seedance 2.0',
+        engineId: 'seedance-2-0',
+        imageSrc: '/hero/seedance-2-0.jpg',
+        imageAlt: fallback.imageAlt,
+        modelHref: { pathname: '/models/[slug]', params: { slug: 'seedance-2-0' } },
+        modelAriaLabel: `${fallback.modelCta} - Seedance 2.0`,
+      },
+      `${locale} proof card must keep one coherent Seedance 2.0 identity`,
+    );
+  }
 });
 
 test('model catalogue keeps Seedance 2.0 on the lip-sync intent while 2.5 leads supported workflows', () => {

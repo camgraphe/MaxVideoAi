@@ -19,6 +19,7 @@ import type { ModelGalleryCard } from '@/components/marketing/ModelsGallery';
 import type { ModelsGalleryCompareHref } from '@/components/marketing/models-gallery/models-gallery-types';
 
 const EXAMPLE_FAMILY_BY_MODEL: Record<string, string> = {
+  'seedance-2-5': 'seedance',
   'seedance-2-0': 'seedance',
   'seedance-2-0-fast': 'seedance',
   'seedance-1-5-pro': 'seedance',

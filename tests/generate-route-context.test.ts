@@ -12,6 +12,7 @@ const root = process.cwd();
 const routePath = join(root, 'frontend/app/api/generate/route.ts');
 const helperPath = join(root, 'frontend/app/api/generate/_lib/route-context.ts');
 const sourceVideoContextPath = join(root, 'frontend/app/api/generate/_lib/source-video-context.ts');
+const attachmentProcessingPath = join(root, 'frontend/app/api/generate/_lib/generation-attachment-processing.ts');
 
 const routeSource = readFileSync(routePath, 'utf8');
 const helperSource = readFileSync(helperPath, 'utf8');
@@ -88,6 +89,25 @@ test('generate route delegates source-video duration and input context', () => {
   assert.doesNotMatch(routeSource, /SOURCE_VIDEO_DURATION_UNSUPPORTED/);
   assert.match(sourceVideoContextSource, /export function resolveGenerateSourceVideoContext/);
   assert.match(sourceVideoContextSource, /resolveSourceVideoDurationSec/);
+});
+
+test('generate route delegates attachment processing and trusted media validation', () => {
+  assert.ok(existsSync(attachmentProcessingPath), 'attachment processing should live in the generate route _lib folder');
+  const attachmentProcessingSource = readFileSync(attachmentProcessingPath, 'utf8');
+
+  assert.match(routeSource, /from '\.\/_lib\/generation-attachment-processing'/);
+  assert.match(routeSource, /processAndValidateGenerationAttachments\(\{/);
+  assert.doesNotMatch(routeSource, /processGenerationAttachments\(\{/);
+  assert.doesNotMatch(routeSource, /deriveGenerationAttachmentReferences\(\{/);
+  assert.doesNotMatch(routeSource, /validateGenerationMediaConstraints\(\{/);
+  assert.match(attachmentProcessingSource, /processGenerationAttachments\(\{/);
+  assert.match(attachmentProcessingSource, /deriveGenerationAttachmentReferences\(\{/);
+  assert.match(attachmentProcessingSource, /validateGenerationMediaConstraints\(\{/);
+  assert.ok(
+    attachmentProcessingSource.indexOf('deriveGenerationAttachmentReferences') <
+      attachmentProcessingSource.indexOf('validateGenerationMediaConstraints'),
+    'trusted media validation must run after attachment references are derived'
+  );
 });
 
 test('Seedance 2.5 hard-disable and routing gates run before database and billing', { concurrency: false }, async () => {

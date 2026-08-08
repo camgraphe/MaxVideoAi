@@ -68,7 +68,22 @@ export function BenchmarkSpecsTable({ copy, locale, rows }: BenchmarkSpecsTableP
                 <td className="max-w-[170px] px-5 py-4 text-sm leading-6 text-text-secondary">{row.audio}</td>
                 <td className="max-w-[190px] px-5 py-4 text-sm leading-6 text-text-secondary">{row.references}</td>
                 <td className="px-5 py-4">
-                  {row.sourceUrl ? (
+                  {row.sourceKind === 'route-contract' ? (
+                    <div className="flex max-w-[220px] flex-col items-start gap-1.5 text-sm">
+                      <span className="font-semibold text-text-primary">{copy.specs.routeContract}</span>
+                      {row.mechanicsUrl ? (
+                        <a
+                          href={row.mechanicsUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex min-h-10 items-center gap-1.5 font-semibold text-brand transition hover:text-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          {copy.specs.apiMechanics}
+                          <UIIcon icon={ExternalLink} size={14} />
+                        </a>
+                      ) : null}
+                    </div>
+                  ) : row.sourceUrl ? (
                     <a
                       href={row.sourceUrl}
                       target="_blank"

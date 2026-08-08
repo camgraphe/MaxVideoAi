@@ -165,6 +165,9 @@ export interface EngineInputField {
   engineParam?: string;
   minDurationSec?: number;
   maxDurationSec?: number;
+  maxSizeMB?: number;
+  acceptedMimeTypes?: string[];
+  acceptedFileExtensions?: string[];
   slotLabelPattern?: string;
 }
 

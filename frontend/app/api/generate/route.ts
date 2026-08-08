@@ -1,8 +1,7 @@
 export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { validateExtraInputValues } from './_lib/extra-input-values';
-import { processGenerationAttachments } from './_lib/attachments';
-import { deriveGenerationAttachmentReferences } from './_lib/attachment-references';
+import { processAndValidateGenerationAttachments } from './_lib/generation-attachment-processing';
 import { createGenerateMetricLogger } from './_lib/metric-logger';
 import { buildFalRequestParts } from './_lib/fal-request';
 import { buildGenerationSettingsSnapshot } from './_lib/settings-snapshot';
@@ -120,38 +119,25 @@ export async function POST(req: NextRequest) {
   }
   const validatedExtraInputValues = extraInputValidation.values;
 
-  const attachmentProcessing = await processGenerationAttachments({ rawInputs: body.inputs, userId });
-  if (!attachmentProcessing.ok) {
-    return NextResponse.json(attachmentProcessing.body, { status: attachmentProcessing.status });
-  }
-  const processedAttachments = attachmentProcessing.attachments;
-
-  const {
-    maxUploadedBytes,
-    lastFrameUrl,
-    normalizedReferenceImages,
-    videoUrls,
-    audioUrls,
-    resolvedAudioUrl,
-    initialImageUrl,
-    resolvedFirstFrameUrl,
-    startImageUrl,
-    sourceInputVideoUrl,
-    referenceValuesByField,
-    referenceMediaItems,
-    referenceProvenanceIssues,
-  } = deriveGenerationAttachmentReferences({
-    attachments: processedAttachments,
-    engineId: engine.id,
-    mode,
-    inputSchema: engine.inputSchema,
-    soraImageUrl: soraRequest?.mode === 'i2v' ? soraRequest.image_url : undefined,
-    imageUrl: body.imageUrl,
-    image_url: body.image_url,
-    referenceImages: body.referenceImages,
-    reference_images: body.reference_images,
+  const attachmentProcessing = await processAndValidateGenerationAttachments({
+    rawInputs: body.inputs, userId, engineId: engine.id, mode,
+    inputSchema: engine.inputSchema, soraImageUrl: soraRequest?.mode === 'i2v' ? soraRequest.image_url : undefined,
+    imageUrl: body.imageUrl, image_url: body.image_url,
+    referenceImages: body.referenceImages, reference_images: body.reference_images,
     rawAudioUrl, endImageUrl, isBytePlusV1a,
   });
+  if (!attachmentProcessing.ok) {
+    if (attachmentProcessing.metric) logMetric('rejected', attachmentProcessing.metric);
+    return NextResponse.json(attachmentProcessing.body, { status: attachmentProcessing.status });
+  }
+  const {
+    attachments: processedAttachments,
+    references: {
+      maxUploadedBytes, lastFrameUrl, normalizedReferenceImages, videoUrls, audioUrls,
+      resolvedAudioUrl, initialImageUrl, resolvedFirstFrameUrl, startImageUrl, sourceInputVideoUrl,
+      referenceValuesByField, referenceMediaItems, referenceProvenanceIssues,
+    },
+  } = attachmentProcessing;
   const sourceVideoContext = resolveGenerateSourceVideoContext({
     mode,
     attachments: processedAttachments,

@@ -326,6 +326,11 @@ export function useWorkspaceReferenceAssets({
                       : file;
                   const formData = new FormData();
                   formData.append('file', preparedFile, preparedFile.name);
+                  if (field.type === 'audio' && engineId) {
+                    formData.append('engineId', engineId);
+                    formData.append('mode', preferredMode);
+                    formData.append('fieldId', field.id);
+                  }
                   const uploadEndpoint = field.type === 'audio' ? '/api/uploads/audio' : '/api/uploads/image';
                   const uploadAssetType: UploadableAssetKind = field.type === 'audio' ? 'audio' : 'image';
                   const response = await authFetch(uploadEndpoint, {
@@ -402,6 +407,7 @@ export function useWorkspaceReferenceAssets({
     },
     [
       commitInputAssetMutation,
+      engineId,
       getSeedanceFieldBlockedMessage,
       inputSchema,
       preferredMode,

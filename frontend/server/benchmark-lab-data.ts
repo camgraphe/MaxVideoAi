@@ -22,6 +22,11 @@ export type BenchmarkSpec = {
   modelSlug?: string;
   engineId?: string;
   sources?: string[];
+  provenance?: {
+    basis?: 'maxvideoai-production-route-contract';
+    mechanicsSources?: string[];
+    note?: string;
+  };
   keySpecs?: Record<string, unknown>;
 };
 

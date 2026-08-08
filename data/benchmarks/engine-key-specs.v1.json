@@ -814,9 +814,14 @@
     },
     {
       "modelSlug": "seedance-2-5",
-      "sources": [
-        "https://docs.byteplus.com/en/docs/modelark/1520757"
-      ],
+      "sources": [],
+      "provenance": {
+        "basis": "maxvideoai-production-route-contract",
+        "mechanicsSources": [
+          "https://docs.byteplus.com/en/docs/modelark/1520757"
+        ],
+        "note": "Generic ModelArk asynchronous video task mechanics only; not evidence for Seedance 2.5 limits."
+      },
       "keySpecs": {
         "textToVideo": "Supported",
         "imageToVideo": "Supported",

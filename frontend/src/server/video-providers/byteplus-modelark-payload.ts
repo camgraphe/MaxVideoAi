@@ -19,7 +19,7 @@ type BytePlusContentItem =
   | {
       type: 'image_url';
       image_url: { url: string };
-      role: 'reference_image';
+      role: 'first_frame' | 'last_frame' | 'reference_image';
     }
   | {
       type: 'video_url';
@@ -280,24 +280,18 @@ export function buildBytePlusSeedancePayload(params: {
     });
   }
 
-  const text =
-    mode === 'i2v' && selectedEndImageUrl
-      ? `Use Image 1 as the opening frame and Image 2 as the final frame. ${prompt}`
-      : mode === 'i2v'
-        ? `Use Image 1 as the opening frame. ${prompt}`
-        : prompt;
-  const content: BytePlusContentItem[] = [{ type: 'text', text }];
+  const content: BytePlusContentItem[] = [{ type: 'text', text: prompt }];
   if (mode === 'i2v') {
     content.push({
       type: 'image_url',
       image_url: { url: selectedImageUrl },
-      role: 'reference_image',
+      role: 'first_frame',
     });
     if (selectedEndImageUrl) {
       content.push({
         type: 'image_url',
         image_url: { url: selectedEndImageUrl },
-        role: 'reference_image',
+        role: 'last_frame',
       });
     }
   }

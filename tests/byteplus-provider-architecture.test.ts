@@ -319,6 +319,72 @@ test('BytePlus payload counts typed budget items before URL deduplication', () =
   );
 });
 
+test('BytePlus image-to-video uses first and last frame roles without rewriting the prompt', () => {
+  const prompt = 'A dancer crosses the room while the camera slowly pulls back.';
+  const startOnly = buildBytePlusSeedancePayload({
+    modelId: 'current-model-id',
+    prompt,
+    durationSec: 5,
+    mode: 'i2v',
+    imageUrl: 'https://cdn.maxvideoai.com/start.png',
+    resolution: '720p',
+    ratio: '16:9',
+    allowedResolutions: ['720p'],
+    allowedDurationOptions: [5],
+  });
+  const startAndEnd = buildBytePlusSeedancePayload({
+    modelId: 'current-model-id',
+    prompt,
+    durationSec: 5,
+    mode: 'i2v',
+    imageUrl: 'https://cdn.maxvideoai.com/start.png',
+    endImageUrl: 'https://cdn.maxvideoai.com/end.png',
+    resolution: '720p',
+    ratio: '16:9',
+    allowedResolutions: ['720p'],
+    allowedDurationOptions: [5],
+  });
+
+  assert.deepEqual(startOnly.content, [
+    { type: 'text', text: prompt },
+    {
+      type: 'image_url',
+      image_url: { url: 'https://cdn.maxvideoai.com/start.png' },
+      role: 'first_frame',
+    },
+  ]);
+  assert.deepEqual(startAndEnd.content, [
+    { type: 'text', text: prompt },
+    {
+      type: 'image_url',
+      image_url: { url: 'https://cdn.maxvideoai.com/start.png' },
+      role: 'first_frame',
+    },
+    {
+      type: 'image_url',
+      image_url: { url: 'https://cdn.maxvideoai.com/end.png' },
+      role: 'last_frame',
+    },
+  ]);
+
+  const referencePayload = buildBytePlusSeedancePayload({
+    modelId: 'current-model-id',
+    prompt,
+    durationSec: 5,
+    mode: 'ref2v',
+    referenceImageUrls: ['https://cdn.maxvideoai.com/reference.png'],
+    resolution: '720p',
+    ratio: '16:9',
+    allowedResolutions: ['720p'],
+    allowedDurationOptions: [5],
+  });
+  assert.deepEqual(referencePayload.content[1], {
+    type: 'image_url',
+    image_url: { url: 'https://cdn.maxvideoai.com/reference.png' },
+    role: 'reference_image',
+  });
+});
+
 test('BytePlus typed provenance preserves a non-budget V2V source video', () => {
   const payload = buildBytePlusSeedancePayload({
     modelId: 'current-model-id',

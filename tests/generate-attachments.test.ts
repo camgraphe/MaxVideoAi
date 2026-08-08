@@ -8,13 +8,16 @@ import { processGenerationAttachments } from '../frontend/app/api/generate/_lib/
 const root = process.cwd();
 const routePath = join(root, 'frontend/app/api/generate/route.ts');
 const helperPath = join(root, 'frontend/app/api/generate/_lib/attachments.ts');
+const processingPath = join(root, 'frontend/app/api/generate/_lib/generation-attachment-processing.ts');
 
 const routeSource = readFileSync(routePath, 'utf8');
 const helperSource = readFileSync(helperPath, 'utf8');
 
 test('generate route delegates attachment normalization and inline uploads', () => {
   assert.ok(existsSync(helperPath), 'attachment processing should live in the generate route _lib folder');
-  assert.match(routeSource, /from '\.\/_lib\/attachments'/);
+  assert.ok(existsSync(processingPath), 'attachment orchestration should live in the generate route _lib folder');
+  assert.match(routeSource, /from '\.\/_lib\/generation-attachment-processing'/);
+  assert.match(readFileSync(processingPath, 'utf8'), /from '\.\/attachments'/);
   assert.doesNotMatch(routeSource, /type NormalizedAttachment =/, 'attachment type belongs in attachments.ts');
   assert.doesNotMatch(routeSource, /function decodeDataUrl\(/, 'data URL decoding belongs in attachments.ts');
   assert.doesNotMatch(routeSource, /uploadImageToStorage/, 'inline upload belongs in attachments.ts');
