@@ -52,4 +52,3 @@ export const minimaxH3TemplateConfig: ModelPageTemplateConfig = {
     faq: true,
   },
 };
-

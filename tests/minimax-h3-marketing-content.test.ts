@@ -52,7 +52,6 @@ test('MiniMax H3 uses a visible production model-page template with all three wo
   );
   assert.ok(Object.values(template.sections).every(Boolean));
 });
-
 test('MiniMax H3 ships complete localized conversion content without rollout disclaimers', () => {
   for (const locale of locales) {
     const path = `content/models/${locale}/${slug}.json`;
@@ -93,4 +92,3 @@ test('MiniMax H3 ships complete localized conversion content without rollout dis
     assert.doesNotMatch(source, /pre-?launch|rollout|waitlist|coming soon|provisional|estimated|disclaimer/i);
   }
 });
-
