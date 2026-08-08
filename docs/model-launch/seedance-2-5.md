@@ -364,16 +364,17 @@ required after the approved deployment.
 
 ### Internal linking and examples refresh — 2026-08-08
 
-- Verified source SHA: `a8b747ceb62527ff13cd59a88b42b1e3f5e93355`.
+- Verified source SHA: `94c3d847ca9edb4d62a538c2012f228ebd8ceaeb`.
 - Compare dropdown: six items; Seedance 2.0 vs Seedance 2.5 is first and
   displays localized `New`.
 - Seedance examples: EN/FR/ES copy leads with Seedance 2.5; the existing
   gallery layout is unchanged; Seedance 2.0 vs Seedance 2.5 is linked only in
   Next steps below the gallery.
-- Focused suite: PASS, 87/87 tests.
+- Focused examples/SEO route suite: PASS, 16/16 tests.
 - Full validation: PASS, 2,492/2,492 tests.
-- Production build: PASS, 729 static pages; the PTY build transcript emitted
-  `✓ Generating static pages (729/729)`.
+- Production build: PASS with Next.js 15.5.18, 729 static pages; the post-fix
+  build generated a fresh `BUILD_ID` after production compilation and
+  integrated lint/type validation.
 - Local smoke: PASS for the EN menu, examples, and comparison routes at
   1440×1000 desktop and 390×844 mobile; no generation submitted.
 - Deployment: still blocked until the separate localized-route self-redirect
