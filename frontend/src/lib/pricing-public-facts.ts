@@ -14,6 +14,8 @@ import { buildPricingDefinition } from '@/lib/pricing-definition';
 import { computeSeedance2TokenQuote, isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';
 import { normalizeGptImage2Quality, resolveGptImage2PricingTier } from '@/lib/image/gptImage2';
 import type { EngineCaps, Mode } from '@/types/engines';
+import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
+import { calculateMinimaxH3ProviderPrice } from '@/lib/minimax-h3-pricing';
 
 export type PublicPricingFactsResult = {
   facts: PricingFacts;
@@ -60,6 +62,7 @@ function resultFromExactFacts(params: {
   presentedBaseCents?: number;
   rate?: number;
   meta?: Record<string, unknown>;
+  addons?: PricingSnapshot['addons'];
 }): PublicPricingFactsResult {
   const presentedBaseCents = params.presentedBaseCents ?? Math.round(params.exactCents);
   return {
@@ -76,7 +79,7 @@ function resultFromExactFacts(params: {
       unit: params.unit,
       amountCents: presentedBaseCents,
     },
-    addons: [],
+    addons: (params.addons ?? []).map((addon) => ({ ...addon })),
     meta: { ...(params.meta ?? {}) },
     compatibilityProfileId: params.compatibilityProfileId ?? 'standard',
   };
@@ -119,6 +122,37 @@ export function buildPublicPricingFacts(context: PublicPricingFactsContext): Pub
   const currency = (engine.pricingDetails?.currency ?? engine.pricing?.currency ?? 'USD').toUpperCase();
   if (context.useStandardDefinitionFacts) {
     return buildStandardDefinitionFacts(context, currency);
+  }
+
+  if (isMinimaxH3EngineId(engine.id)) {
+    const reference = calculateMinimaxH3ProviderPrice({
+      durationSec,
+      resolution: resolution as '768P' | '2K' | '4K',
+      referenceImageCount: context.referenceImageCount,
+    });
+    const surchargeCents = Math.round(reference.breakdown.referenceImageSurchargeUsd * 100);
+    return resultFromExactFacts({
+      engineId: engine.id,
+      currency,
+      exactCents: Math.round(reference.subtotalUsd * 100),
+      presentedBaseCents: Math.round(reference.breakdown.baseSubtotalUsd * 100),
+      quantity: durationSec,
+      unit: 'sec',
+      rate: reference.breakdown.ratePerSecondUsd,
+      addons: surchargeCents > 0
+        ? [{ type: 'reference_images_above_five', amountCents: surchargeCents }]
+        : [],
+      compatibilityProfileId: 'provider-reference-current',
+      meta: {
+        pricing_model: 'fal_h3_resolution_plus_reference_images',
+        provider_cost_source: 'fal_minimax_h3_pricing',
+        cost_breakdown_usd: reference.breakdown,
+        mode,
+        reference_image_count: reference.breakdown.referenceImageCount,
+        paid_reference_image_count: reference.breakdown.paidReferenceImages,
+        reference_image_surcharge_usd: reference.breakdown.referenceImageSurchargeUsd,
+      },
+    });
   }
 
   if (isLumaAgentsImageEngineId(engine.id) && (mode === 't2i' || mode === 'i2i')) {

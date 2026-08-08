@@ -226,6 +226,7 @@ export async function POST(req: NextRequest) {
     isLumaRay2,
     loop,
     hasVideoInput,
+    referenceImageCount: normalizedReferenceImages.length,
     rawDurationOption,
     lumaDurationLabel: lumaDurationInfo?.label ?? null,
     audioEnabled,

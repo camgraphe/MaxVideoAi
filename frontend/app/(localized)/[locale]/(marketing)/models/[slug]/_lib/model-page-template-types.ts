@@ -1,5 +1,5 @@
 import type { AppLocale } from '@/i18n/locales';
-import type { Resolution } from '@/types/engines';
+import type { Mode, Resolution } from '@/types/engines';
 
 export type ModelPageTemplateIntent =
   | 'production'
@@ -28,8 +28,10 @@ type BaseModelPagePricingPreset = {
 
 export type ModelPageVideoPricingPreset = BaseModelPagePricingPreset & {
   seconds: number;
-  resolution: Extract<Resolution, '480p' | '512P' | '540p' | '720p' | '768P' | '1080p' | '1440p' | '4k'>;
+  resolution: Extract<Resolution, '480p' | '512P' | '540p' | '720p' | '768P' | '1080p' | '1440p' | '2K' | '4k' | '4K'>;
   audio?: boolean;
+  mode?: Mode;
+  referenceImageCount?: number;
   fixedValueKey?: never;
   imageResolution?: never;
 };
@@ -39,6 +41,8 @@ export type ModelPageFixedPricingPreset = BaseModelPagePricingPreset & {
   seconds?: never;
   resolution?: never;
   audio?: never;
+  mode?: never;
+  referenceImageCount?: never;
   imageResolution?: never;
 };
 

@@ -30,6 +30,8 @@ import {
   roundUsdUpToCents,
 } from '@/lib/seedance-2-pricing';
 import type { EnginePricingDetails } from '@/types/engines';
+import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
+import { calculateMinimaxH3ProviderPrice } from '@/lib/minimax-h3-pricing';
 
 export type BillingPricingFacts = {
   facts: PricingFacts;
@@ -76,6 +78,40 @@ export function buildBillingPricingFacts(
 ): BillingPricingFacts {
   const { engine, durationSec, resolution } = context;
   const mode = context.mode ?? 't2v';
+
+  if (isMinimaxH3EngineId(engine.id)) {
+    const reference = calculateMinimaxH3ProviderPrice({
+      durationSec,
+      resolution: resolution as '768P' | '2K' | '4K',
+      referenceImageCount: context.referenceImageCount,
+    });
+    const baseAmountCents = Math.round(reference.breakdown.baseSubtotalUsd * 100);
+    const surchargeCents = Math.round(reference.breakdown.referenceImageSurchargeUsd * 100);
+    return resultFromFacts({
+      engineId: engine.id,
+      currency,
+      vendorSubtotalExactCents: Math.round(reference.subtotalUsd * 100),
+      base: {
+        seconds: durationSec,
+        rate: reference.breakdown.ratePerSecondUsd,
+        unit: 'sec',
+        amountCents: baseAmountCents,
+      },
+      addons: surchargeCents > 0
+        ? [{ type: 'reference_images_above_five', amountCents: surchargeCents }]
+        : [],
+      compatibilityProfileId: 'provider-reference-current',
+      meta: {
+        pricing_model: 'fal_h3_resolution_plus_reference_images',
+        provider_cost_source: 'fal_minimax_h3_pricing',
+        cost_breakdown_usd: reference.breakdown,
+        mode,
+        reference_image_count: reference.breakdown.referenceImageCount,
+        paid_reference_image_count: reference.breakdown.paidReferenceImages,
+        reference_image_surcharge_usd: reference.breakdown.referenceImageSurchargeUsd,
+      },
+    });
+  }
 
   if (isLumaAgentsImageEngineId(engine.id) && (mode === 't2i' || mode === 'i2i')) {
     const addonReferenceImageCount =

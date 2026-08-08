@@ -278,6 +278,8 @@ function buildPricedScenarioPreset(preset: ModelPageVideoPricingPreset): VideoPr
     resolution: preset.resolution,
     durationSec: preset.seconds,
     audio: preset.audio ?? false,
+    mode: preset.mode,
+    referenceImageCount: preset.referenceImageCount,
   };
 }
 

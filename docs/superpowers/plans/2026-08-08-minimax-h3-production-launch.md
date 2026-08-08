@@ -351,8 +351,6 @@ git commit -m "feat: support MiniMax H3 unified workspace"
 - Create: `tests/minimax-h3-pricing.test.ts`
 - Modify: `tests/pricing-billing-migration.test.ts`
 - Modify: `tests/pricing-public-projection.test.ts`
-- Regenerate: `tests/fixtures/pricing-parity.v1.json`
-- Regenerate: `tests/fixtures/pricing-public-projections.v1.json`
 
 **Interfaces:**
 - Consumes: `PricingContext.referenceImageCount`, H3 duration, resolution, and mode.
@@ -415,22 +413,19 @@ Use this helper before the standard definition branch in both `buildBillingPrici
 
 Add optional `mode` and `referenceImageCount` to `ModelPageVideoPricingPreset` and `VideoPriceScenario`, import `Mode`, and expand the video-preset resolution extract to include `2K` and `4K`. Pass the new fields into `buildPublicPricingFacts`. Base pricing-hub rows remain reference-free; the H3 model page includes an exact six-reference preset so users can see the surcharge before opening the app.
 
-- [ ] **Step 6: Regenerate pricing baselines and run green tests**
+- [ ] **Step 6: Run green pricing tests**
 
 ```bash
-pnpm pricing:baseline -- --write
-pnpm pricing:public-baseline:generate
 pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/minimax-h3-pricing.test.ts tests/pricing-billing-migration.test.ts tests/pricing-billing-projection.test.ts tests/pricing-public-projection.test.ts
-pnpm pricing:audit
 git diff --check
 ```
 
-Expected: PASS with exact billing/public equivalence.
+Expected: PASS with exact billing/public equivalence. Regenerate the exhaustive pricing baselines in Task 5, after H3 is atomically added to the executable and public registry so the collectors can discover it.
 
 - [ ] **Step 7: Commit canonical H3 pricing**
 
 ```bash
-git add frontend/src/lib/minimax-h3-pricing.ts frontend/src/lib/pricing-billing-facts.ts frontend/src/lib/pricing-public-facts.ts frontend/app/api/generate/_lib/billing-preflight.ts frontend/app/api/generate/route.ts frontend/app/'(localized)'/'[locale]'/'(marketing)'/pricing/_lib/pricingHubData.ts frontend/app/'(localized)'/'[locale]'/'(marketing)'/models/'[slug]'/_lib/model-page-template-types.ts frontend/app/'(localized)'/'[locale]'/'(marketing)'/models/'[slug]'/_lib/model-page-decision-pricing.ts tests/minimax-h3-pricing.test.ts tests/pricing-billing-migration.test.ts tests/pricing-public-projection.test.ts tests/fixtures/pricing-parity.v1.json tests/fixtures/pricing-public-projections.v1.json
+git add frontend/src/lib/minimax-h3-pricing.ts frontend/src/lib/pricing-billing-facts.ts frontend/src/lib/pricing-public-facts.ts frontend/app/api/generate/_lib/billing-preflight.ts frontend/app/api/generate/route.ts frontend/app/'(localized)'/'[locale]'/'(marketing)'/pricing/_lib/pricingHubData.ts frontend/app/'(localized)'/'[locale]'/'(marketing)'/models/'[slug]'/_lib/model-page-template-types.ts frontend/app/'(localized)'/'[locale]'/'(marketing)'/models/'[slug]'/_lib/model-page-decision-pricing.ts tests/minimax-h3-pricing.test.ts tests/pricing-billing-migration.test.ts tests/pricing-public-projection.test.ts
 git commit -m "feat: add canonical MiniMax H3 pricing"
 ```
 
@@ -453,6 +448,8 @@ git commit -m "feat: add canonical MiniMax H3 pricing"
 - Regenerate: `frontend/config/model-roster.json`
 - Regenerate: `docs/model-roster.json`
 - Regenerate: `docs/model-roster.csv`
+- Regenerate: `tests/fixtures/pricing-parity.v1.json`
+- Regenerate: `tests/fixtures/pricing-public-projections.v1.json`
 
 **Interfaces:**
 - Consumes: executable `minimax-h3` engine from Task 1.
@@ -515,6 +512,8 @@ Add one localized crawlable Hailuo 02 link to the H3 model page in each existing
 pnpm model:registry:generate
 pnpm engine:catalog
 pnpm model:generate:write
+pnpm pricing:baseline -- --write
+pnpm pricing:public-baseline:generate
 ```
 
 - [ ] **Step 5: Run green registry gates**
@@ -522,6 +521,7 @@ pnpm model:generate:write
 ```bash
 pnpm model:registry:check
 pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/minimax-h3-registry.test.ts tests/model-registry-validation.test.ts tests/model-registry-parity.test.ts tests/model-page-publication.test.ts
+pnpm pricing:audit
 git diff --check
 ```
 
@@ -530,7 +530,7 @@ Expected: PASS with all generated projections exact.
 - [ ] **Step 6: Commit registry and family publication**
 
 ```bash
-git add frontend/config/model-registry.json frontend/config/model-families.ts frontend/src/config/fal-engines/registry.ts content/models/en/minimax-hailuo-02-text.json content/models/fr/minimax-hailuo-02-text.json content/models/es/minimax-hailuo-02-text.json frontend/config/model-runtime.json frontend/config/engine-catalog.json frontend/config/model-roster.json docs/model-roster.json docs/model-roster.csv tests/model-registry-validation.test.ts tests/model-registry-parity.test.ts tests/minimax-h3-registry.test.ts
+git add frontend/config/model-registry.json frontend/config/model-families.ts frontend/src/config/fal-engines/registry.ts content/models/en/minimax-hailuo-02-text.json content/models/fr/minimax-hailuo-02-text.json content/models/es/minimax-hailuo-02-text.json frontend/config/model-runtime.json frontend/config/engine-catalog.json frontend/config/model-roster.json docs/model-roster.json docs/model-roster.csv tests/fixtures/pricing-parity.v1.json tests/fixtures/pricing-public-projections.v1.json tests/model-registry-validation.test.ts tests/model-registry-parity.test.ts tests/minimax-h3-registry.test.ts
 git commit -m "feat: publish MiniMax H3 as Hailuo flagship"
 ```
 
