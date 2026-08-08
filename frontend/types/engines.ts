@@ -188,6 +188,8 @@ export interface EngineInputSchema {
     minImageSidePx?: number;
     maxVideoSizeMB?: number;
     maxAudioSizeMB?: number;
+    maxCombinedVideoDurationSec?: number;
+    maxCombinedAudioDurationSec?: number;
     [key: string]: unknown;
   };
 }

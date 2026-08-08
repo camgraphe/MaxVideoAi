@@ -8,6 +8,8 @@ import type { ReferenceBudgetMediaItem } from '@/lib/reference-budget';
 import { getFalEngineById } from '@/config/falEngines';
 import type { EngineInputSchema, Mode } from '@/types/engines';
 import type { NormalizedAttachment } from './attachments';
+import { MINIMAX_H3_ENGINE } from '@/src/config/fal-engines/minimax-h3';
+import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
 
 type QueryFn = <T = unknown>(sql: string, params?: readonly unknown[]) => Promise<T[]>;
 
@@ -18,7 +20,16 @@ export type StoredMediaMetadataRow = {
   original_name: string | null;
   mime_type: string | null;
   size_bytes: string | number | null;
+  duration_sec?: string | number | null;
 };
+
+type MediaConstraintError =
+  | 'MEDIA_METADATA_UNVERIFIED'
+  | 'MEDIA_FILE_TOO_LARGE'
+  | 'MEDIA_FORMAT_UNSUPPORTED'
+  | 'MEDIA_DURATION_UNVERIFIED'
+  | 'MEDIA_DURATION_UNSUPPORTED'
+  | 'MEDIA_COMBINED_DURATION_EXCEEDED';
 
 export type GenerationMediaConstraintValidationResult =
   | { ok: true }
@@ -27,14 +38,17 @@ export type GenerationMediaConstraintValidationResult =
       status: 422;
       body: {
         ok: false;
-        error: 'MEDIA_METADATA_UNVERIFIED' | 'MEDIA_FILE_TOO_LARGE' | 'MEDIA_FORMAT_UNSUPPORTED';
+        error: MediaConstraintError;
         message: string;
         field: string;
         maxMB?: number;
         acceptedFormats?: string[];
+        minDurationSec?: number;
+        maxDurationSec?: number;
+        durationSec?: number;
       };
       metric: {
-        errorCode: 'MEDIA_METADATA_UNVERIFIED' | 'MEDIA_FILE_TOO_LARGE' | 'MEDIA_FORMAT_UNSUPPORTED';
+        errorCode: MediaConstraintError;
         meta: Record<string, unknown>;
       };
     };
@@ -50,6 +64,13 @@ function normalizeSizeBytes(value: string | number | null): number | null {
     : null;
 }
 
+function normalizeDurationSec(value: string | number | null | undefined): number | null {
+  const parsed = typeof value === 'string' ? Number(value) : value;
+  return typeof parsed === 'number' && Number.isFinite(parsed) && parsed > 0
+    ? parsed
+    : null;
+}
+
 function inferredAudioMime(name: string): string {
   const clean = name.split(/[?#]/, 1)[0]?.toLowerCase() ?? '';
   if (clean.endsWith('.wav')) return 'audio/wav';
@@ -58,11 +79,14 @@ function inferredAudioMime(name: string): string {
 }
 
 function failure(params: {
-  error: 'MEDIA_METADATA_UNVERIFIED' | 'MEDIA_FILE_TOO_LARGE' | 'MEDIA_FORMAT_UNSUPPORTED';
+  error: MediaConstraintError;
   fieldId: string;
   message: string;
   maxMB?: number;
   acceptedFormats?: string[];
+  minDurationSec?: number;
+  maxDurationSec?: number;
+  durationSec?: number;
 }): GenerationMediaConstraintValidationResult {
   return {
     ok: false,
@@ -74,6 +98,9 @@ function failure(params: {
       field: params.fieldId,
       ...(typeof params.maxMB === 'number' ? { maxMB: params.maxMB } : {}),
       ...(params.acceptedFormats?.length ? { acceptedFormats: params.acceptedFormats } : {}),
+      ...(typeof params.minDurationSec === 'number' ? { minDurationSec: params.minDurationSec } : {}),
+      ...(typeof params.maxDurationSec === 'number' ? { maxDurationSec: params.maxDurationSec } : {}),
+      ...(typeof params.durationSec === 'number' ? { durationSec: params.durationSec } : {}),
     },
     metric: {
       errorCode: params.error,
@@ -81,6 +108,9 @@ function failure(params: {
         field: params.fieldId,
         ...(typeof params.maxMB === 'number' ? { maxMB: params.maxMB } : {}),
         ...(params.acceptedFormats?.length ? { acceptedFormats: params.acceptedFormats } : {}),
+        ...(typeof params.minDurationSec === 'number' ? { minDurationSec: params.minDurationSec } : {}),
+        ...(typeof params.maxDurationSec === 'number' ? { maxDurationSec: params.maxDurationSec } : {}),
+        ...(typeof params.durationSec === 'number' ? { durationSec: params.durationSec } : {}),
       },
     },
   };
@@ -95,7 +125,9 @@ export async function validateGenerationMediaConstraints(params: {
   referenceMediaItems: readonly ReferenceBudgetMediaItem[];
   deps?: { queryFn?: QueryFn };
 }): Promise<GenerationMediaConstraintValidationResult> {
-  const engine = getFalEngineById(params.engineId)?.engine;
+  const engine =
+    getFalEngineById(params.engineId)?.engine ??
+    (isMinimaxH3EngineId(params.engineId) ? MINIMAX_H3_ENGINE : undefined);
   if (!engine) return { ok: true };
 
   const constrainedFields = [
@@ -105,7 +137,9 @@ export async function validateGenerationMediaConstraints(params: {
     (field) =>
       (field.type === 'image' || field.type === 'video' || field.type === 'audio') &&
       (!field.modes?.length || field.modes.includes(params.mode)) &&
-      hasFieldSpecificMediaConstraint(field)
+      (hasFieldSpecificMediaConstraint(field) ||
+        typeof field.minDurationSec === 'number' ||
+        typeof field.maxDurationSec === 'number')
   );
   if (!constrainedFields.length) return { ok: true };
 
@@ -124,7 +158,7 @@ export async function validateGenerationMediaConstraints(params: {
       const attachment = params.attachments.find(
         (candidate) => candidate.url?.trim() === url && candidate.slotId?.trim() === item.fieldId
       ) ?? params.attachments.find((candidate) => candidate.url?.trim() === url);
-      return { fieldId: item.fieldId, url, assetId: attachment?.assetId?.trim() || null };
+      return { fieldId: item.fieldId, kind: item.kind, url, assetId: attachment?.assetId?.trim() || null };
     });
   if (!candidates.length) return { ok: true };
 
@@ -139,7 +173,8 @@ export async function validateGenerationMediaConstraints(params: {
               metadata->>'originUrl' AS origin_url,
               metadata->>'originalName' AS original_name,
               mime_type,
-              size_bytes
+              size_bytes,
+              metadata->>'durationSec' AS duration_sec
          FROM user_assets
         WHERE user_id = $1
           AND (
@@ -153,7 +188,8 @@ export async function validateGenerationMediaConstraints(params: {
               metadata->>'originUrl' AS origin_url,
               metadata->>'originalName' AS original_name,
               mime_type,
-              size_bytes
+              size_bytes,
+              metadata->>'durationSec' AS duration_sec
          FROM media_assets
         WHERE user_id = $1
           AND deleted_at IS NULL
@@ -168,6 +204,7 @@ export async function validateGenerationMediaConstraints(params: {
     rows = [];
   }
 
+  const durationByKindAndUrl = new Map<string, { kind: 'video' | 'audio'; durationSec: number; fieldId: string }>();
   for (const candidate of candidates) {
     const matchingRows = rows.filter((row) => {
       const rowUrl = normalizeUrl(row.url);
@@ -180,10 +217,11 @@ export async function validateGenerationMediaConstraints(params: {
         : undefined) ?? matchingRows[0];
     const sizeBytes = stored ? normalizeSizeBytes(stored.size_bytes) : null;
     if (!stored || sizeBytes == null) {
+      if (candidate.kind === 'image') continue;
       return failure({
         error: 'MEDIA_METADATA_UNVERIFIED',
         fieldId: candidate.fieldId,
-        message: 'This audio reference could not be verified in your media library. Upload it again before generating.',
+        message: `This ${candidate.kind} reference could not be verified in your media library. Upload it again before generating.`,
       });
     }
 
@@ -201,7 +239,7 @@ export async function validateGenerationMediaConstraints(params: {
       return failure({
         error: 'MEDIA_FILE_TOO_LARGE',
         fieldId: candidate.fieldId,
-        message: `Each audio reference must be ${validation.maxSizeMB} MB or smaller.`,
+        message: `Each ${field.type} reference must be ${validation.maxSizeMB} MB or smaller.`,
         maxMB: validation.maxSizeMB,
       });
     }
@@ -209,10 +247,70 @@ export async function validateGenerationMediaConstraints(params: {
       return failure({
         error: 'MEDIA_FORMAT_UNSUPPORTED',
         fieldId: candidate.fieldId,
-        message: `Audio references must use ${validation.acceptedFileExtensions?.map((format) => format.toUpperCase()).join(' or ')}.`,
+        message: `${field.type[0]?.toUpperCase()}${field.type.slice(1)} references must use ${validation.acceptedFileExtensions?.map((format) => format.toUpperCase()).join(' or ')}.`,
         acceptedFormats: validation.acceptedFileExtensions,
       });
     }
+
+    const combinedDurationLimit =
+      field.type === 'video'
+        ? params.inputSchema?.constraints?.maxCombinedVideoDurationSec
+        : field.type === 'audio'
+          ? params.inputSchema?.constraints?.maxCombinedAudioDurationSec
+          : undefined;
+    const requiresTrustedDuration =
+      (field.type === 'video' || field.type === 'audio') &&
+      (typeof field.minDurationSec === 'number' ||
+        typeof field.maxDurationSec === 'number' ||
+        typeof combinedDurationLimit === 'number');
+    if ((field.type === 'video' || field.type === 'audio') && requiresTrustedDuration) {
+      const durationSec = normalizeDurationSec(stored.duration_sec);
+      if (durationSec == null) {
+        return failure({
+          error: 'MEDIA_DURATION_UNVERIFIED',
+          fieldId: candidate.fieldId,
+          message: `This ${field.type} reference has no trusted duration metadata. Upload it again before generating.`,
+        });
+      }
+      const belowMinimum =
+        typeof field.minDurationSec === 'number' && durationSec < field.minDurationSec;
+      const aboveMaximum =
+        typeof field.maxDurationSec === 'number' && durationSec > field.maxDurationSec;
+      if (belowMinimum || aboveMaximum) {
+        return failure({
+          error: 'MEDIA_DURATION_UNSUPPORTED',
+          fieldId: candidate.fieldId,
+          message: `Each ${field.type} reference must be between ${field.minDurationSec ?? 0} and ${field.maxDurationSec ?? 'the provider maximum'} seconds.`,
+          minDurationSec: field.minDurationSec,
+          maxDurationSec: field.maxDurationSec,
+          durationSec,
+        });
+      }
+      durationByKindAndUrl.set(`${field.type}:${candidate.url}`, {
+        kind: field.type,
+        durationSec,
+        fieldId: candidate.fieldId,
+      });
+    }
+  }
+
+  const combinedLimits = {
+    video: params.inputSchema?.constraints?.maxCombinedVideoDurationSec,
+    audio: params.inputSchema?.constraints?.maxCombinedAudioDurationSec,
+  } as const;
+  for (const kind of ['video', 'audio'] as const) {
+    const maxDurationSec = combinedLimits[kind];
+    if (typeof maxDurationSec !== 'number' || !Number.isFinite(maxDurationSec)) continue;
+    const matching = [...durationByKindAndUrl.values()].filter((entry) => entry.kind === kind);
+    const durationSec = matching.reduce((total, entry) => total + entry.durationSec, 0);
+    if (durationSec <= maxDurationSec) continue;
+    return failure({
+      error: 'MEDIA_COMBINED_DURATION_EXCEEDED',
+      fieldId: matching[0]?.fieldId ?? (kind === 'video' ? 'video_urls' : 'audio_urls'),
+      message: `Combined ${kind} references must be ${maxDurationSec} seconds or shorter.`,
+      maxDurationSec,
+      durationSec,
+    });
   }
 
   return { ok: true };

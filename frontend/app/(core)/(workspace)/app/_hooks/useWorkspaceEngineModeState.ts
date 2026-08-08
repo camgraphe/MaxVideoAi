@@ -23,6 +23,10 @@ import {
   resolveGeminiOmniUnifiedMode,
 } from '../_lib/gemini-omni-unified-workflow';
 import {
+  isUnifiedMinimaxH3EngineId,
+  resolveMinimaxH3UnifiedMode,
+} from '../_lib/minimax-h3-unified-workflow';
+import {
   getReferenceInputStatus,
   hasInputAssetInSlots,
   PRIMARY_IMAGE_SLOT_IDS,
@@ -172,6 +176,7 @@ export function useWorkspaceEngineModeState({
   const isUnifiedHappyHorse = isHappyHorseEngineId(selectedEngine?.id);
   const isUnifiedKlingO3 = isKlingO3EngineId(selectedEngine?.id);
   const isUnifiedGeminiOmni = isGeminiOmniEngineId(selectedEngine?.id);
+  const isUnifiedMinimaxH3 = isUnifiedMinimaxH3EngineId(selectedEngine?.id);
   const klingO3DisabledEngineReasons = useMemo(
     () => getKlingO3DisabledEngineReasons({ engines, inputAssets, klingElements }),
     [engines, inputAssets, klingElements]
@@ -228,6 +233,9 @@ export function useWorkspaceEngineModeState({
 
   const implicitMode = useMemo<Mode>(() => {
     if (!selectedEngine) return form?.mode ?? 't2v';
+    if (isUnifiedMinimaxH3) {
+      return resolveMinimaxH3UnifiedMode(inputAssets);
+    }
     if (isUnifiedSeedance) {
       return getUnifiedSeedanceMode(inputAssets);
     }
@@ -265,6 +273,7 @@ export function useWorkspaceEngineModeState({
     isUnifiedHappyHorse,
     isUnifiedGeminiOmni,
     isUnifiedKlingO3,
+    isUnifiedMinimaxH3,
     isUnifiedSeedance,
     klingElements,
     referenceInputStatus.hasAudio,
@@ -279,7 +288,8 @@ export function useWorkspaceEngineModeState({
     referenceInputStatus.hasAudio &&
     Boolean(selectedEngine) &&
     !audioToVideoSupported &&
-    !(isUnifiedSeedance && seedanceAssetState.hasReferenceAudio);
+    !(isUnifiedSeedance && seedanceAssetState.hasReferenceAudio) &&
+    !isUnifiedMinimaxH3;
 
   const activeManualMode = useMemo<Mode | null>(() => {
     if (!selectedEngine) return null;
@@ -289,6 +299,7 @@ export function useWorkspaceEngineModeState({
     }
     if (isUnifiedKlingO3) return null;
     if (isUnifiedGeminiOmni) return null;
+    if (isUnifiedMinimaxH3) return null;
     if (referenceInputStatus.hasAudio) return null;
     if (
       (currentMode === 'v2v' ||
@@ -305,6 +316,7 @@ export function useWorkspaceEngineModeState({
     form?.mode,
     isUnifiedGeminiOmni,
     isUnifiedKlingO3,
+    isUnifiedMinimaxH3,
     isUnifiedSeedance,
     referenceInputStatus.hasAudio,
     selectedEngine,
@@ -499,6 +511,7 @@ export function useWorkspaceEngineModeState({
       if (
         referenceInputStatus.hasAudio &&
         !isUnifiedSeedance &&
+        !isUnifiedMinimaxH3 &&
         (mode === 'v2v' || mode === 'reframe' || mode === 'extend' || mode === 'retake')
       ) {
         showNotice(workflowCopy.removeAudioToUseEdit);
@@ -510,7 +523,7 @@ export function useWorkspaceEngineModeState({
         coerceFormState(selectedEngine, nextMode, current ? { ...current, mode: nextMode } : null)
       );
     },
-    [implicitMode, isUnifiedSeedance, referenceInputStatus.hasAudio, selectedEngine, setForm, showNotice, workflowCopy]
+    [implicitMode, isUnifiedMinimaxH3, isUnifiedSeedance, referenceInputStatus.hasAudio, selectedEngine, setForm, showNotice, workflowCopy]
   );
 
   useEffect(() => {

@@ -68,8 +68,8 @@ test('MiniMax H3 raw contract encodes every duration, rate, and reference bound'
   assert.equal(audios.minDurationSec, 2);
   assert.equal(audios.maxDurationSec, 15);
 
-  assert.equal(entry.engine.inputSchema?.constraints?.maxCombinedReferenceVideoDurationSec, 15);
-  assert.equal(entry.engine.inputSchema?.constraints?.maxCombinedReferenceAudioDurationSec, 15);
+  assert.equal(entry.engine.inputSchema?.constraints?.maxCombinedVideoDurationSec, 15);
+  assert.equal(entry.engine.inputSchema?.constraints?.maxCombinedAudioDurationSec, 15);
   assert.deepEqual(entry.engine.pricingDetails?.perSecondCents?.byResolution, {
     '768P': 8,
     '2K': 13,

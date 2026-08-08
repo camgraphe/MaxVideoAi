@@ -62,4 +62,5 @@ test('workspace composer mode and settings state is owned by a route-local hook'
   assert.match(engineModeHookSource, /getComposerWorkflowNotice/);
   assert.match(engineModeHookSource, /getUnifiedSeedanceMode/);
   assert.match(engineModeHookSource, /getUnifiedHappyHorseMode/);
+  assert.match(engineModeHookSource, /resolveMinimaxH3UnifiedMode/);
 });

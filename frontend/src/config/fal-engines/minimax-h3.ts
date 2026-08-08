@@ -21,7 +21,7 @@ const IMAGE_FORMATS = ['jpg', 'jpeg', 'png', 'webp'];
 const VIDEO_FORMATS = ['mp4', 'mov'];
 const AUDIO_FORMATS = ['mp3', 'wav'];
 
-const MINIMAX_H3_ENGINE: EngineCaps = {
+export const MINIMAX_H3_ENGINE: EngineCaps = {
   id: MINIMAX_H3_ID,
   label: 'MiniMax H3',
   provider: 'MiniMax',
@@ -183,8 +183,8 @@ const MINIMAX_H3_ENGINE: EngineCaps = {
       maxImageSizeMB: 30,
       maxVideoSizeMB: 50,
       maxAudioSizeMB: 15,
-      maxCombinedReferenceVideoDurationSec: 15,
-      maxCombinedReferenceAudioDurationSec: 15,
+      maxCombinedVideoDurationSec: 15,
+      maxCombinedAudioDurationSec: 15,
       referenceAudioRequiresVisual: true,
     },
   },
