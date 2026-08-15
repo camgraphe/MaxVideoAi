@@ -195,9 +195,9 @@ const SEEDREAM_PRO_ENGINE: EngineCaps = {
         engineParam: 'size',
         type: 'enum',
         label: 'Image size',
-        values: ['2K', '4K'],
+        values: ['2K'],
         default: '2K',
-        description: 'Seedream Pro supports 2K and 4K professional outputs.',
+        description: 'Seedream Pro supports professional 2K outputs.',
       },
       {
         id: 'output_format',
@@ -363,7 +363,7 @@ export const SEEDREAM_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         falModelId: 'dola-seedream-5-0-pro-260628',
         ui: {
           modes: ['t2i'],
-          resolution: ['2K', '4K'],
+          resolution: ['2K'],
           aspectRatio: [...SEEDREAM_ASPECT_RATIO_VALUES],
           notes: 'Generate professional infographics, campaign visuals, and high-detail production stills.',
         },
@@ -373,7 +373,7 @@ export const SEEDREAM_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         falModelId: 'dola-seedream-5-0-pro-260628',
         ui: {
           modes: ['i2i'],
-          resolution: ['2K', '4K'],
+          resolution: ['2K'],
           aspectRatio: [...SEEDREAM_ASPECT_RATIO_VALUES],
           acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'tiff', 'gif'],
           maxUploadMB: 10,

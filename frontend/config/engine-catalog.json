@@ -18365,11 +18365,10 @@
             "type": "enum",
             "label": "Image size",
             "values": [
-              "2K",
-              "4K"
+              "2K"
             ],
             "default": "2K",
-            "description": "Seedream Pro supports 2K and 4K professional outputs."
+            "description": "Seedream Pro supports professional 2K outputs."
           },
           {
             "id": "output_format",
@@ -18450,8 +18449,7 @@
             "t2i"
           ],
           "resolution": [
-            "2K",
-            "4K"
+            "2K"
           ],
           "aspectRatio": [
             "auto",
@@ -18475,8 +18473,7 @@
             "i2i"
           ],
           "resolution": [
-            "2K",
-            "4K"
+            "2K"
           ],
           "aspectRatio": [
             "auto",
