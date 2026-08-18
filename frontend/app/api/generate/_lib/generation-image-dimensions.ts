@@ -27,27 +27,26 @@ type ImageCandidate = {
 };
 
 export type GenerationImageDimensionValidationResult =
-  | { ok: true }
+  | {
+      ok: true;
+      sourceImageDimensions?: { width: number; height: number };
+      sourceAspectRatio?: string;
+    }
   | {
       ok: false;
       status: 422;
       body: {
         ok: false;
-        error: typeof IMAGE_DIMENSIONS_TOO_SMALL;
+        error: typeof IMAGE_DIMENSIONS_TOO_SMALL | 'IMAGE_DIMENSIONS_UNVERIFIED';
         message: string;
-        actualWidth: number;
-        actualHeight: number;
-        minimumWidth: number;
-        minimumHeight: number;
+        actualWidth?: number;
+        actualHeight?: number;
+        minimumWidth?: number;
+        minimumHeight?: number;
       };
       metric: {
-        errorCode: typeof IMAGE_DIMENSIONS_TOO_SMALL;
-        meta: {
-          actualWidth: number;
-          actualHeight: number;
-          minimumWidth: number;
-          minimumHeight: number;
-        };
+        errorCode: typeof IMAGE_DIMENSIONS_TOO_SMALL | 'IMAGE_DIMENSIONS_UNVERIFIED';
+        meta: Record<string, unknown>;
       };
     };
 
@@ -77,11 +76,37 @@ function uniqueCandidates(candidates: ImageCandidate[]): ImageCandidate[] {
   });
 }
 
+function closestSupportedAspectRatio(
+  width: number,
+  height: number,
+  supportedAspectRatios: readonly string[]
+): string | undefined {
+  const sourceRatio = width / height;
+  let closest: { label: string; difference: number } | undefined;
+  for (const label of supportedAspectRatios) {
+    const [ratioWidth, ratioHeight] = label.split(':').map(Number);
+    if (
+      !Number.isFinite(ratioWidth) ||
+      !Number.isFinite(ratioHeight) ||
+      ratioWidth <= 0 ||
+      ratioHeight <= 0
+    ) {
+      continue;
+    }
+    const difference = Math.abs(sourceRatio - ratioWidth / ratioHeight);
+    if (!closest || difference < closest.difference) {
+      closest = { label, difference };
+    }
+  }
+  return closest?.label;
+}
+
 export async function validateGenerationImageDimensions(params: {
   engineId: string;
   userId: string;
   attachments?: NormalizedAttachment[];
   imageUrls?: Array<string | null | undefined>;
+  sourceImageUrl?: string | null;
   elements?: MaxVideoProviderElement[] | null;
   deps?: { queryFn?: QueryFn };
 }): Promise<GenerationImageDimensionValidationResult> {
@@ -119,6 +144,8 @@ export async function validateGenerationImageDimensions(params: {
   );
   const rowsByAssetId = new Map(rows.map((row) => [row.asset_id, row]));
   const rowsByUrl = new Map(rows.map((row) => [row.url, row]));
+  let sourceImageDimensions: { width: number; height: number } | undefined;
+  let sourceAspectRatio: string | undefined;
 
   for (const candidate of candidates) {
     const stored =
@@ -126,6 +153,18 @@ export async function validateGenerationImageDimensions(params: {
       (candidate.url ? rowsByUrl.get(candidate.url) : undefined);
     const storedWidth = normalizeImageDimension(stored?.width);
     const storedHeight = normalizeImageDimension(stored?.height);
+    if (
+      candidate.url === params.sourceImageUrl &&
+      storedWidth != null &&
+      storedHeight != null
+    ) {
+      sourceImageDimensions = { width: storedWidth, height: storedHeight };
+      sourceAspectRatio = closestSupportedAspectRatio(
+        storedWidth,
+        storedHeight,
+        engine.aspectRatios
+      );
+    }
     const violation = getImageDimensionViolation({
       width: storedWidth ?? candidate.width,
       height: storedHeight ?? candidate.height,
@@ -156,5 +195,25 @@ export async function validateGenerationImageDimensions(params: {
     };
   }
 
-  return { ok: true };
+  if (params.sourceImageUrl && (!sourceImageDimensions || !sourceAspectRatio)) {
+    return {
+      ok: false,
+      status: 422,
+      body: {
+        ok: false,
+        error: 'IMAGE_DIMENSIONS_UNVERIFIED',
+        message: 'The start image dimensions could not be verified. Upload the image again before generating.',
+      },
+      metric: {
+        errorCode: 'IMAGE_DIMENSIONS_UNVERIFIED',
+        meta: {},
+      },
+    };
+  }
+
+  return {
+    ok: true,
+    ...(sourceImageDimensions ? { sourceImageDimensions } : {}),
+    ...(sourceAspectRatio ? { sourceAspectRatio } : {}),
+  };
 }

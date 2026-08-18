@@ -259,6 +259,53 @@ test('BytePlus submission helper marks failed tasks, rolls back payments, and re
   }
 });
 
+test('BytePlus submission persists a normalized failure code for provider pixel-floor errors', async () => {
+  const originalWarn = console.warn;
+  console.warn = () => undefined;
+  const queries: Array<{ sql: string; params?: unknown[] }> = [];
+  const providerMessage =
+    'The parameter content[1] video pixel count must be >= 407696 for model dreamina-seedance-2-5 in r2v.';
+
+  try {
+    const result = await submitBytePlusGenerateTask({
+      ...baseParams,
+      pendingReceipt: null,
+      deps: {
+        getBytePlusArkConfigFn: () => ({ seedanceModelId: 'model-public', seedanceFastModelId: 'model-fast' }),
+        buildBytePlusSeedancePayloadFn: (payload) => payload,
+        getBytePlusModelArkClientFn: () => ({
+          createSeedanceFastTask: async () => {
+            throw new Error('provider rejected video dimensions');
+          },
+        }),
+        getBytePlusSeedanceAllowedResolutionsFn: () => ['720p'] as never,
+        scrubBytePlusErrorFn: () => providerMessage,
+        queryFn: async (sql, params) => {
+          queries.push({ sql, params });
+        },
+      },
+    });
+
+    assert.equal(result.ok, false);
+    assert.deepEqual(result.body, {
+      ok: false,
+      error: 'seedance_input_video_too_small',
+      message: 'The source video is too small for Seedance. Use a video with at least 407,696 total pixels and try again.',
+    });
+    assert.match(queries[0]?.sql ?? '', /providerFailure/);
+    assert.equal(
+      queries[0]?.params?.[4],
+      JSON.stringify({
+        provider: 'byteplus_modelark',
+        providerErrorCode: 'BYTEPLUS_PROVIDER_ERROR',
+        failureCode: 'seedance_input_video_too_small',
+      })
+    );
+  } finally {
+    console.warn = originalWarn;
+  }
+});
+
 test('BytePlus I2V canonicalizes a direct image before validation and provider submission', async () => {
   const directImageUrl = 'https://cdn.maxvideoai.com/direct-start.png';
   const unselectedAttachmentUrl =

@@ -198,10 +198,73 @@ test('accepts the exact 300 x 300 boundary', async () => {
   assert.deepEqual(result, { ok: true });
 });
 
+test('returns the trusted canonical source ratio for Seedance I2V billing', async () => {
+  const result = await validateGenerationImageDimensions({
+    engineId: 'seedance-2-5',
+    userId: 'user',
+    sourceImageUrl: smallImageUrl,
+    attachments: [{
+      name: 'start.png',
+      type: 'image/png',
+      size: 12_000,
+      kind: 'image',
+      slotId: 'image_url',
+      url: smallImageUrl,
+      width: 1920,
+      height: 1080,
+      assetId: 'start_asset',
+    }],
+    deps: {
+      queryFn: async <T>() => [{
+        asset_id: 'start_asset',
+        url: smallImageUrl,
+        width: 640,
+        height: 480,
+      }] as T[],
+    },
+  });
+
+  assert.deepEqual(result, {
+    ok: true,
+    sourceImageDimensions: { width: 640, height: 480 },
+    sourceAspectRatio: '4:3',
+  });
+});
+
+test('rejects Seedance I2V before billing when the source ratio cannot be verified', async () => {
+  const result = await validateGenerationImageDimensions({
+    engineId: 'seedance-2-5',
+    userId: 'user',
+    sourceImageUrl: smallImageUrl,
+    attachments: [{
+      name: 'start.png',
+      type: 'image/png',
+      size: 12_000,
+      kind: 'image',
+      slotId: 'image_url',
+      url: smallImageUrl,
+      width: 640,
+      height: 480,
+    }],
+    deps: { queryFn: async <T>() => [] as T[] },
+  });
+
+  assert.equal(result.ok, false);
+  if (result.ok) return;
+  assert.equal(result.status, 422);
+  assert.deepEqual(result.body, {
+    ok: false,
+    error: 'IMAGE_DIMENSIONS_UNVERIFIED',
+    message: 'The start image dimensions could not be verified. Upload the image again before generating.',
+  });
+});
+
 test('validates all constrained generation images before billing preflight', () => {
   const source = readFileSync(join(process.cwd(), 'frontend/app/api/generate/route.ts'), 'utf8');
 
   assert.match(source, /validateGenerationImageDimensions/);
+  assert.match(source, /sourceImageUrl:\s*isBytePlusV1a.*initialImageUrl/s);
+  assert.match(source, /aspectRatio\s*=\s*dimensionValidation\.sourceAspectRatio/);
   assert.ok(
     source.indexOf('await validateGenerationImageDimensions') <
       source.indexOf('await resolveGenerateBillingPreflight'),

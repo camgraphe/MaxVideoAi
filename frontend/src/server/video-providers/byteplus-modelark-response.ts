@@ -1,5 +1,9 @@
 import type { NormalizedVideoProviderTask, NormalizedVideoProviderUsage } from '@/server/video-providers/types';
-import { SEEDANCE_OUTPUT_COPYRIGHT_RESTRICTED } from '@/lib/video-failure-codes';
+import {
+  SEEDANCE_I2V_RATIO_REJECTED,
+  SEEDANCE_INPUT_VIDEO_TOO_SMALL,
+  SEEDANCE_OUTPUT_COPYRIGHT_RESTRICTED,
+} from '@/lib/video-failure-codes';
 
 export type BytePlusTaskResponse = Record<string, unknown>;
 
@@ -122,6 +126,20 @@ function isBytePlusCopyrightFailure(providerMessage: string, providerErrorCode?:
   );
 }
 
+function isBytePlusVideoPixelFloorFailure(providerMessage: string): boolean {
+  const normalized = providerMessage.toLowerCase();
+  return normalized.includes('video pixel count') && normalized.includes('must be >=');
+}
+
+function isBytePlusInheritedRatioFailure(providerMessage: string): boolean {
+  const normalized = providerMessage.toLowerCase();
+  return (
+    normalized.includes('parameter ratio') &&
+    normalized.includes('not valid') &&
+    normalized.includes('follows the first-frame image')
+  );
+}
+
 function getBytePlusUserSafeFailureMessage(
   providerMessage: string,
   fallbackMessage: string,
@@ -130,6 +148,12 @@ function getBytePlusUserSafeFailureMessage(
   const normalized = providerMessage.toLowerCase();
   if (isBytePlusCopyrightFailure(providerMessage, providerErrorCode)) {
     return SEEDANCE_COPYRIGHT_FAILURE_MESSAGE;
+  }
+  if (isBytePlusVideoPixelFloorFailure(providerMessage)) {
+    return 'The source video is too small for Seedance. Use a video with at least 407,696 total pixels and try again.';
+  }
+  if (isBytePlusInheritedRatioFailure(providerMessage)) {
+    return "Seedance follows the start image's aspect ratio automatically. Re-upload the start image and try again.";
   }
   if (
     normalized.includes('real person') ||
@@ -183,9 +207,17 @@ export function getBytePlusTaskFailureCode(
   providerMessage: string | null | undefined,
   providerErrorCode?: string | null
 ): string | null {
-  return isBytePlusCopyrightFailure(providerMessage ?? '', providerErrorCode)
-    ? SEEDANCE_OUTPUT_COPYRIGHT_RESTRICTED
-    : null;
+  const message = providerMessage ?? '';
+  if (isBytePlusCopyrightFailure(message, providerErrorCode)) {
+    return SEEDANCE_OUTPUT_COPYRIGHT_RESTRICTED;
+  }
+  if (isBytePlusVideoPixelFloorFailure(message)) {
+    return SEEDANCE_INPUT_VIDEO_TOO_SMALL;
+  }
+  if (isBytePlusInheritedRatioFailure(message)) {
+    return SEEDANCE_I2V_RATIO_REJECTED;
+  }
+  return null;
 }
 
 export async function parseJsonResponse(response: Response): Promise<BytePlusTaskResponse> {

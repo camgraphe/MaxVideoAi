@@ -1,4 +1,5 @@
 import { requireBytePlusSeedanceProfile } from '@/server/video-providers/byteplus-modelark';
+import type { Mode } from '@/types/engines';
 
 type RequestOptionsFailure = {
   ok: false;
@@ -15,12 +16,13 @@ export function normalizeBytePlusOptions(params: {
   durationSec: number;
   requestedResolution: string;
   aspectRatio: string | null;
+  mode?: Mode;
 }):
   | {
       ok: true;
       durationSec: number;
       resolution: string;
-      aspectRatio: string;
+      aspectRatio: string | null;
       generatedAudio: boolean;
     }
   | RequestOptionsFailure {
@@ -68,11 +70,18 @@ export function normalizeBytePlusOptions(params: {
       },
     };
   }
+  const inheritsSourceAspectRatio =
+    params.engineId === 'seedance-2-5' && params.mode === 'i2v';
   const bytePlusAspectRatio =
-    !params.aspectRatio || params.aspectRatio === 'auto'
-      ? profile.defaultAspectRatio
-      : params.aspectRatio;
-  if (!profile.aspectRatios.includes(bytePlusAspectRatio as (typeof profile.aspectRatios)[number])) {
+    inheritsSourceAspectRatio
+      ? null
+      : !params.aspectRatio || params.aspectRatio === 'auto'
+        ? profile.defaultAspectRatio
+        : params.aspectRatio;
+  if (
+    bytePlusAspectRatio &&
+    !profile.aspectRatios.includes(bytePlusAspectRatio as (typeof profile.aspectRatios)[number])
+  ) {
     return {
       ok: false,
       status: 400,

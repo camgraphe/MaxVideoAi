@@ -437,7 +437,10 @@ export function applyBytePlusSeedanceRuntimeOptions(
                   modes: [mode],
                   resolution: resolutions,
                   resolutionLocked: false,
-                  aspectRatio: aspectRatios,
+                  aspectRatio:
+                    engine.id === 'seedance-2-5' && mode === 'i2v'
+                      ? undefined
+                      : aspectRatios,
                   duration: {
                     options: [...durationOptions],
                     default: profile.defaultDurationSec,

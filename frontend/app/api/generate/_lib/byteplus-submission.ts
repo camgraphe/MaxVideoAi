@@ -14,6 +14,7 @@ import {
   getBytePlusModelArkClient,
   getBytePlusSeedanceDurationOptions,
   getBytePlusSeedanceAllowedResolutions,
+  getBytePlusTaskFailureCode,
   getBytePlusUserSafeErrorMessage,
   requireBytePlusSeedanceProfile,
   resolveBytePlusSeedanceModelId,
@@ -40,6 +41,7 @@ type BytePlusSubmissionDeps = {
   getBytePlusSeedanceDurationOptionsFn?: typeof getBytePlusSeedanceDurationOptions;
   resolveBytePlusSeedanceModelIdFn?: typeof resolveBytePlusSeedanceModelId;
   getBytePlusUserSafeErrorMessageFn?: typeof getBytePlusUserSafeErrorMessage;
+  getBytePlusTaskFailureCodeFn?: typeof getBytePlusTaskFailureCode;
   scrubBytePlusErrorFn?: typeof scrubBytePlusError;
   queryFn?: QueryFn;
   rollbackPendingPaymentFn?: typeof rollbackPendingPayment;
@@ -102,6 +104,8 @@ export async function submitBytePlusGenerateTask(params: {
     deps.getBytePlusSeedanceDurationOptionsFn ?? getBytePlusSeedanceDurationOptions;
   const resolveBytePlusSeedanceModelIdFn = deps.resolveBytePlusSeedanceModelIdFn ?? resolveBytePlusSeedanceModelId;
   const getBytePlusUserSafeErrorMessageFn = deps.getBytePlusUserSafeErrorMessageFn ?? getBytePlusUserSafeErrorMessage;
+  const getBytePlusTaskFailureCodeFn =
+    deps.getBytePlusTaskFailureCodeFn ?? getBytePlusTaskFailureCode;
   const scrubBytePlusErrorFn = deps.scrubBytePlusErrorFn ?? scrubBytePlusError;
   const queryFn = deps.queryFn ?? query;
   const rollbackPendingPaymentFn = deps.rollbackPendingPaymentFn ?? rollbackPendingPayment;
@@ -218,7 +222,15 @@ export async function submitBytePlusGenerateTask(params: {
   } catch (error) {
     const providerMessage = scrubBytePlusErrorFn(error);
     const providerStatus = error instanceof BytePlusModelArkError ? error.status : null;
-    const errorCode = error instanceof BytePlusModelArkError && error.code ? error.code : 'BYTEPLUS_PROVIDER_ERROR';
+    const providerErrorCode =
+      error instanceof BytePlusModelArkError && error.code
+        ? error.code
+        : 'BYTEPLUS_PROVIDER_ERROR';
+    const failureCode = getBytePlusTaskFailureCodeFn(
+      providerMessage,
+      providerErrorCode
+    );
+    const errorCode = failureCode ?? providerErrorCode;
     const failureMessage =
       errorCode === 'BYTEPLUS_ENGINE_DISABLED'
         ? 'This engine is temporarily unavailable.'
@@ -243,8 +255,31 @@ export async function submitBytePlusGenerateTask(params: {
       message: providerMessage,
     });
     try {
+      const providerFailureJson = failureCode
+        ? JSON.stringify({
+            provider: BYTEPLUS_MODELARK_PROVIDER,
+            providerErrorCode,
+            failureCode,
+          })
+        : null;
       await queryFn(
-        `UPDATE app_jobs
+        providerFailureJson
+          ? `UPDATE app_jobs
+         SET status = 'failed',
+             progress = 0,
+             message = $2,
+             provider = $3,
+             provisional = FALSE,
+             payment_status = CASE WHEN $4::text IS NOT NULL THEN $4 ELSE payment_status END,
+             settings_snapshot = jsonb_set(
+               COALESCE(settings_snapshot, '{}'::jsonb),
+               '{providerFailure}',
+               $5::jsonb,
+               true
+             ),
+             updated_at = NOW()
+         WHERE job_id = $1`
+          : `UPDATE app_jobs
          SET status = 'failed',
              progress = 0,
              message = $2,
@@ -258,6 +293,7 @@ export async function submitBytePlusGenerateTask(params: {
           failureMessage,
           BYTEPLUS_MODELARK_PROVIDER,
           params.pendingReceipt ? (params.paymentMode === 'wallet' ? 'refunded_wallet' : 'refunded') : null,
+          ...(providerFailureJson ? [providerFailureJson] : []),
         ]
       );
     } catch (updateError) {
@@ -277,7 +313,12 @@ export async function submitBytePlusGenerateTask(params: {
     logMetricFn?.('failed', {
       jobId: params.jobId,
       errorCode,
-      meta: { provider: BYTEPLUS_MODELARK_PROVIDER, providerStatus },
+      meta: {
+        provider: BYTEPLUS_MODELARK_PROVIDER,
+        providerStatus,
+        providerErrorCode,
+        failureCode,
+      },
     });
 
     return {

@@ -187,6 +187,7 @@ export interface EngineInputSchema {
     maxImageSizeMB?: number;
     minImageSidePx?: number;
     maxVideoSizeMB?: number;
+    minVideoPixelCount?: number;
     maxAudioSizeMB?: number;
     maxCombinedVideoDurationSec?: number;
     maxCombinedAudioDurationSec?: number;

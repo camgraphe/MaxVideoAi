@@ -124,7 +124,7 @@ test('Seedance 2.5 exposes one unified five-mode engine schema', () => {
   assert.deepEqual(entry.engine.aspectRatios, supportedAspectRatios);
   assert.deepEqual(
     entry.modes.map(({ ui }) => ui.aspectRatio),
-    entry.modes.map(() => supportedAspectRatios),
+    [supportedAspectRatios, undefined, supportedAspectRatios, supportedAspectRatios, supportedAspectRatios],
   );
   assert.equal(entry.engine.inputSchema?.referenceBudget?.maxTotal, 50);
   assert.deepEqual(entry.engine.inputSchema?.referenceBudget?.fieldIds, [
@@ -146,6 +146,12 @@ test('Seedance 2.5 exposes one unified five-mode engine schema', () => {
   assert.equal(fields.find((field) => field.id === 'extension_source_videos')?.maxCount, 3);
   assert.equal(fields.find((field) => field.id === 'audio_urls')?.maxCount, 10);
   assert.deepEqual(fields.find((field) => field.id === 'aspect_ratio')?.values, supportedAspectRatios);
+  assert.deepEqual(fields.find((field) => field.id === 'aspect_ratio')?.modes, [
+    't2v',
+    'ref2v',
+    'v2v',
+    'extend',
+  ]);
 });
 
 test('Seedance 2.5 owns a dedicated fail-closed ModelArk profile', () => {

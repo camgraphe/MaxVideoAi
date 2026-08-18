@@ -233,6 +233,42 @@ test('Seedance 2.5 runtime keeps the smallest confirmed canary defaults', () => 
   );
 });
 
+test('Seedance 2.5 I2V inherits its aspect ratio instead of exposing a provider setting', () => {
+  const entry = getFalEngineById('seedance-2-5');
+  assert.ok(entry);
+  const i2v = entry.modes.find((candidate) => candidate.mode === 'i2v');
+  assert.ok(i2v);
+  assert.equal(i2v.ui.aspectRatio, undefined);
+
+  assert.deepEqual(
+    normalizeBytePlusOptions({
+      engineId: 'seedance-2-5',
+      durationSec: 8,
+      requestedResolution: '720p',
+      aspectRatio: '9:16',
+      mode: 'i2v',
+    }),
+    {
+      ok: true,
+      durationSec: 8,
+      resolution: '720p',
+      aspectRatio: null,
+      generatedAudio: true,
+    }
+  );
+
+  assert.equal(
+    normalizeBytePlusOptions({
+      engineId: 'seedance-2-0',
+      durationSec: 5,
+      requestedResolution: '720p',
+      aspectRatio: '9:16',
+      mode: 'i2v',
+    }).aspectRatio,
+    '9:16'
+  );
+});
+
 test('Seedance 2.5 provider runtime preserves the authored 30/10/10 reference labels and limits', () => {
   const entry = getFalEngineById('seedance-2-5');
   assert.ok(entry);

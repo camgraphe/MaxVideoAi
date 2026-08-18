@@ -18,6 +18,7 @@ import type { ReferenceBudgetMediaItem } from '../frontend/lib/reference-budget.
 
 const MB = 1024 * 1024;
 const AUDIO_URL = 'https://media.maxvideoai.com/user-assets/reference.mp3';
+const VIDEO_URL = 'https://media.maxvideoai.com/user-assets/source.mp4';
 
 function seedanceAudioContext() {
   const entry = getFalEngineById('seedance-2-5');
@@ -79,6 +80,39 @@ async function validateStoredAudio(params: {
     },
   });
   return { result, calls };
+}
+
+async function validateStoredVideo(width: number, height: number) {
+  const entry = getFalEngineById('seedance-2-5');
+  assert.ok(entry);
+  return validateGenerationMediaConstraints({
+    engineId: entry.engine.id,
+    mode: 'v2v',
+    userId: 'user-1',
+    inputSchema: entry.engine.inputSchema,
+    attachments: [{
+      name: 'source.mp4',
+      type: 'video/mp4',
+      size: 1,
+      kind: 'video',
+      slotId: 'video_url',
+      url: VIDEO_URL,
+      assetId: 'asset-video',
+    }],
+    referenceMediaItems: [{ fieldId: 'video_url', kind: 'video', url: VIDEO_URL }],
+    deps: {
+      queryFn: async <T>() => [{
+        asset_id: 'asset-video',
+        url: VIDEO_URL,
+        origin_url: null,
+        original_name: 'source.mp4',
+        mime_type: 'video/mp4',
+        size_bytes: 425_179,
+        width,
+        height,
+      }] as T[],
+    },
+  });
 }
 
 test('Seedance 2.5 audio field resolves an exact 15 MB MP3/WAV contract', () => {
@@ -170,6 +204,61 @@ test('generation validation uses stored user-owned metadata instead of client si
   });
   assert.equal(mismatchedAsset.result.ok, false);
   assert.equal(mismatchedAsset.result.ok ? null : mismatchedAsset.result.body.error, 'MEDIA_METADATA_UNVERIFIED');
+});
+
+test('Seedance 2.5 rejects source videos below the provider pixel floor before submission', async () => {
+  const belowFloor = await validateStoredVideo(637, 640);
+  assert.equal(belowFloor.ok, false);
+  if (belowFloor.ok) return;
+  assert.equal(belowFloor.status, 422);
+  assert.deepEqual(belowFloor.body, {
+    ok: false,
+    error: 'MEDIA_DIMENSIONS_TOO_SMALL',
+    message: 'This video is 637 x 640 px. Seedance 2.5 requires at least 407696 total pixels. Choose a larger video and try again.',
+    field: 'video_url',
+    actualWidth: 637,
+    actualHeight: 640,
+    minimumPixelCount: 407696,
+  });
+
+  const aboveFloor = await validateStoredVideo(638, 640);
+  assert.deepEqual(aboveFloor, { ok: true });
+});
+
+test('Seedance 2.5 probes a trusted stored video when dimension metadata is missing', async () => {
+  const entry = getFalEngineById('seedance-2-5');
+  assert.ok(entry);
+  const result = await validateGenerationMediaConstraints({
+    engineId: entry.engine.id,
+    mode: 'v2v',
+    userId: 'user-1',
+    inputSchema: entry.engine.inputSchema,
+    attachments: [{
+      name: 'source.mp4',
+      type: 'video/mp4',
+      size: 1,
+      kind: 'video',
+      slotId: 'video_url',
+      url: VIDEO_URL,
+      assetId: 'asset-video',
+    }],
+    referenceMediaItems: [{ fieldId: 'video_url', kind: 'video', url: VIDEO_URL }],
+    deps: {
+      queryFn: async <T>() => [{
+        asset_id: 'asset-video',
+        url: VIDEO_URL,
+        origin_url: null,
+        original_name: 'source.mp4',
+        mime_type: 'video/mp4',
+        size_bytes: 425_179,
+        width: null,
+        height: null,
+      }] as T[],
+      detectVideoDimensionsFn: async () => ({ width: 638, height: 640 }),
+    },
+  });
+
+  assert.deepEqual(result, { ok: true });
 });
 
 async function uploadRequest(params: {

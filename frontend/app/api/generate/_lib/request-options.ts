@@ -278,6 +278,7 @@ export function buildGenerateRequestOptions(params: {
       durationSec,
       requestedResolution,
       aspectRatio,
+      mode,
     });
     if (!bytePlusResult.ok) {
       return bytePlusResult;

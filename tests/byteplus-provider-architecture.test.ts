@@ -8,6 +8,7 @@ import {
   buildBytePlusSeedancePayload,
   getBytePlusUserSafeErrorMessage,
   getBytePlusUserSafeTaskFailureMessage,
+  getBytePlusTaskFailureCode,
   getBytePlusSeedanceAllowedResolutions,
   normalizeBytePlusTask,
   shouldRoutePublicSeedanceFastToBytePlus,
@@ -110,6 +111,30 @@ test('BytePlus ModelArk non-safety start failures stay specific without provider
   assert.equal(
     getBytePlusUserSafeErrorMessage('Quota exceeded: resource pack exhausted.'),
     'The render queue is temporarily busy. Please retry in a few moments.'
+  );
+});
+
+test('BytePlus ModelArk explains provider pixel-floor and inherited-ratio rejections precisely', () => {
+  const pixelMessage =
+    'The parameter content[1] video pixel count must be >= 407696 for model dreamina-seedance-2-5 in r2v.';
+  assert.equal(
+    getBytePlusUserSafeErrorMessage(pixelMessage),
+    'The source video is too small for Seedance. Use a video with at least 407,696 total pixels and try again.'
+  );
+  assert.equal(
+    getBytePlusTaskFailureCode(pixelMessage),
+    'seedance_input_video_too_small'
+  );
+
+  const ratioMessage =
+    'The parameter ratio specified in the request is not valid. For first-frame or first-last-frame generation, the output ratio follows the first-frame image.';
+  assert.equal(
+    getBytePlusUserSafeErrorMessage(ratioMessage),
+    "Seedance follows the start image's aspect ratio automatically. Re-upload the start image and try again."
+  );
+  assert.equal(
+    getBytePlusTaskFailureCode(ratioMessage),
+    'seedance_i2v_ratio_rejected'
   );
 });
 
@@ -322,7 +347,7 @@ test('BytePlus payload counts typed budget items before URL deduplication', () =
 test('BytePlus image-to-video uses first and last frame roles without rewriting the prompt', () => {
   const prompt = 'A dancer crosses the room while the camera slowly pulls back.';
   const startOnly = buildBytePlusSeedancePayload({
-    modelId: 'current-model-id',
+    modelId: 'dreamina-seedance-2-5-250815',
     prompt,
     durationSec: 5,
     mode: 'i2v',
@@ -333,7 +358,7 @@ test('BytePlus image-to-video uses first and last frame roles without rewriting 
     allowedDurationOptions: [5],
   });
   const startAndEnd = buildBytePlusSeedancePayload({
-    modelId: 'current-model-id',
+    modelId: 'dreamina-seedance-2-5-250815',
     prompt,
     durationSec: 5,
     mode: 'i2v',
@@ -366,6 +391,33 @@ test('BytePlus image-to-video uses first and last frame roles without rewriting 
       role: 'last_frame',
     },
   ]);
+  assert.equal(
+    Object.hasOwn(startOnly, 'ratio'),
+    false,
+    'first-frame generation must let BytePlus inherit the source image ratio'
+  );
+  assert.equal(
+    Object.hasOwn(startAndEnd, 'ratio'),
+    false,
+    'first/last-frame generation must let BytePlus inherit the source image ratio'
+  );
+
+  const seedance20Payload = buildBytePlusSeedancePayload({
+    modelId: 'dreamina-seedance-2-0-260128',
+    prompt,
+    durationSec: 5,
+    mode: 'i2v',
+    imageUrl: 'https://cdn.maxvideoai.com/start.png',
+    resolution: '720p',
+    ratio: '16:9',
+    allowedResolutions: ['720p'],
+    allowedDurationOptions: [5],
+  });
+  assert.equal(
+    seedance20Payload.ratio,
+    '16:9',
+    'the Seedance 2.5 provider workaround must not change older payload contracts'
+  );
 
   const referencePayload = buildBytePlusSeedancePayload({
     modelId: 'current-model-id',

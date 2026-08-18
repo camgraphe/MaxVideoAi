@@ -79,7 +79,6 @@ export async function POST(req: NextRequest) {
     elements,
     endImageUrl,
     rawAudioUrl,
-    aspectRatio,
     batchId,
     groupId,
     iterationIndex,
@@ -93,7 +92,7 @@ export async function POST(req: NextRequest) {
     loop,
     soraRequest,
   } = requestOptionsResult.options;
-  let { message, pricingResolution, effectiveResolution } = requestOptionsResult.options;
+  let { message, pricingResolution, effectiveResolution, aspectRatio } = requestOptionsResult.options;
   ({ pricingResolution, effectiveResolution } = normalizeProviderRoutedResolution({
     providerRoutingPlan,
     engineId: engine.id,
@@ -203,11 +202,18 @@ export async function POST(req: NextRequest) {
       startImageUrl,
       endImageUrl,
     ],
+    sourceImageUrl:
+      isBytePlusV1a && engine.id === 'seedance-2-5' && mode === 'i2v'
+        ? initialImageUrl
+        : null,
     elements,
   });
   if (!dimensionValidation.ok) {
     logMetric('rejected', dimensionValidation.metric);
     return NextResponse.json(dimensionValidation.body, { status: dimensionValidation.status });
+  }
+  if (dimensionValidation.sourceAspectRatio) {
+    aspectRatio = dimensionValidation.sourceAspectRatio;
   }
   const billingPreflight = await resolveGenerateBillingPreflight({
     req,

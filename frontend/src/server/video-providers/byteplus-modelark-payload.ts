@@ -36,7 +36,7 @@ export type BytePlusSeedanceFastPayload = {
   model: string;
   content: BytePlusContentItem[];
   resolution: '480p' | '720p' | '1080p' | '4k';
-  ratio: '21:9' | '16:9' | '4:3' | '1:1' | '3:4' | '9:16';
+  ratio?: '21:9' | '16:9' | '4:3' | '1:1' | '3:4' | '9:16';
   duration: number;
   generate_audio: boolean;
   watermark: false;
@@ -229,6 +229,9 @@ export function buildBytePlusSeedancePayload(params: {
     ? params.resolution.trim()
     : '720p') as Resolution;
   const requestedRatio = (typeof params.ratio === 'string' && params.ratio.trim() ? params.ratio.trim() : '16:9') as AspectRatio;
+  const inheritsSourceAspectRatio =
+    mode === 'i2v' &&
+    params.modelId.trim().toLowerCase().includes('seedance-2-5');
   if (!prompt) {
     throw new BytePlusModelArkError('Prompt is required for BytePlus Seedance.', { code: 'PROMPT_REQUIRED' });
   }
@@ -274,7 +277,7 @@ export function buildBytePlusSeedancePayload(params: {
       code: 'BYTEPLUS_RESOLUTION_UNSUPPORTED',
     });
   }
-  if (!allowedAspectRatios.includes(requestedRatio)) {
+  if (!inheritsSourceAspectRatio && !allowedAspectRatios.includes(requestedRatio)) {
     throw new BytePlusModelArkError('BytePlus Seedance aspect ratio is not supported.', {
       code: 'BYTEPLUS_RATIO_UNSUPPORTED',
     });
@@ -323,7 +326,9 @@ export function buildBytePlusSeedancePayload(params: {
     model: params.modelId.trim(),
     content,
     resolution: requestedResolution as BytePlusSeedancePayload['resolution'],
-    ratio: requestedRatio as BytePlusSeedancePayload['ratio'],
+    ...(inheritsSourceAspectRatio
+      ? {}
+      : { ratio: requestedRatio as BytePlusSeedancePayload['ratio'] }),
     duration,
     generate_audio: params.generateAudio === true,
     watermark: false,

@@ -10,6 +10,7 @@ import type { EngineInputSchema, Mode } from '@/types/engines';
 import type { NormalizedAttachment } from './attachments';
 import { MINIMAX_H3_ENGINE } from '@/src/config/fal-engines/minimax-h3';
 import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
+import { detectVideoDimensions } from '@/server/media/detect-has-audio';
 
 type QueryFn = <T = unknown>(sql: string, params?: readonly unknown[]) => Promise<T[]>;
 
@@ -21,12 +22,16 @@ export type StoredMediaMetadataRow = {
   mime_type: string | null;
   size_bytes: string | number | null;
   duration_sec?: string | number | null;
+  width?: string | number | null;
+  height?: string | number | null;
 };
 
 type MediaConstraintError =
   | 'MEDIA_METADATA_UNVERIFIED'
   | 'MEDIA_FILE_TOO_LARGE'
   | 'MEDIA_FORMAT_UNSUPPORTED'
+  | 'MEDIA_DIMENSIONS_UNVERIFIED'
+  | 'MEDIA_DIMENSIONS_TOO_SMALL'
   | 'MEDIA_DURATION_UNVERIFIED'
   | 'MEDIA_DURATION_UNSUPPORTED'
   | 'MEDIA_COMBINED_DURATION_EXCEEDED';
@@ -46,6 +51,9 @@ export type GenerationMediaConstraintValidationResult =
         minDurationSec?: number;
         maxDurationSec?: number;
         durationSec?: number;
+        actualWidth?: number;
+        actualHeight?: number;
+        minimumPixelCount?: number;
       };
       metric: {
         errorCode: MediaConstraintError;
@@ -71,6 +79,13 @@ function normalizeDurationSec(value: string | number | null | undefined): number
     : null;
 }
 
+function normalizeDimension(value: string | number | null | undefined): number | null {
+  const parsed = typeof value === 'string' ? Number(value) : value;
+  return typeof parsed === 'number' && Number.isFinite(parsed) && parsed > 0
+    ? Math.round(parsed)
+    : null;
+}
+
 function inferredAudioMime(name: string): string {
   const clean = name.split(/[?#]/, 1)[0]?.toLowerCase() ?? '';
   if (clean.endsWith('.wav')) return 'audio/wav';
@@ -87,6 +102,9 @@ function failure(params: {
   minDurationSec?: number;
   maxDurationSec?: number;
   durationSec?: number;
+  actualWidth?: number;
+  actualHeight?: number;
+  minimumPixelCount?: number;
 }): GenerationMediaConstraintValidationResult {
   return {
     ok: false,
@@ -101,6 +119,9 @@ function failure(params: {
       ...(typeof params.minDurationSec === 'number' ? { minDurationSec: params.minDurationSec } : {}),
       ...(typeof params.maxDurationSec === 'number' ? { maxDurationSec: params.maxDurationSec } : {}),
       ...(typeof params.durationSec === 'number' ? { durationSec: params.durationSec } : {}),
+      ...(typeof params.actualWidth === 'number' ? { actualWidth: params.actualWidth } : {}),
+      ...(typeof params.actualHeight === 'number' ? { actualHeight: params.actualHeight } : {}),
+      ...(typeof params.minimumPixelCount === 'number' ? { minimumPixelCount: params.minimumPixelCount } : {}),
     },
     metric: {
       errorCode: params.error,
@@ -111,6 +132,9 @@ function failure(params: {
         ...(typeof params.minDurationSec === 'number' ? { minDurationSec: params.minDurationSec } : {}),
         ...(typeof params.maxDurationSec === 'number' ? { maxDurationSec: params.maxDurationSec } : {}),
         ...(typeof params.durationSec === 'number' ? { durationSec: params.durationSec } : {}),
+        ...(typeof params.actualWidth === 'number' ? { actualWidth: params.actualWidth } : {}),
+        ...(typeof params.actualHeight === 'number' ? { actualHeight: params.actualHeight } : {}),
+        ...(typeof params.minimumPixelCount === 'number' ? { minimumPixelCount: params.minimumPixelCount } : {}),
       },
     },
   };
@@ -123,7 +147,10 @@ export async function validateGenerationMediaConstraints(params: {
   inputSchema?: EngineInputSchema | null;
   attachments: readonly NormalizedAttachment[];
   referenceMediaItems: readonly ReferenceBudgetMediaItem[];
-  deps?: { queryFn?: QueryFn };
+  deps?: {
+    queryFn?: QueryFn;
+    detectVideoDimensionsFn?: typeof detectVideoDimensions;
+  };
 }): Promise<GenerationMediaConstraintValidationResult> {
   const engine =
     getFalEngineById(params.engineId)?.engine ??
@@ -138,6 +165,8 @@ export async function validateGenerationMediaConstraints(params: {
       (field.type === 'image' || field.type === 'video' || field.type === 'audio') &&
       (!field.modes?.length || field.modes.includes(params.mode)) &&
       (hasFieldSpecificMediaConstraint(field) ||
+        (field.type === 'video' &&
+          typeof params.inputSchema?.constraints?.minVideoPixelCount === 'number') ||
         typeof field.minDurationSec === 'number' ||
         typeof field.maxDurationSec === 'number')
   );
@@ -165,6 +194,8 @@ export async function validateGenerationMediaConstraints(params: {
   const assetIds = Array.from(new Set(candidates.map((candidate) => candidate.assetId).filter(Boolean))) as string[];
   const urls = Array.from(new Set(candidates.map((candidate) => candidate.url)));
   const queryFn = params.deps?.queryFn ?? query;
+  const detectVideoDimensionsFn =
+    params.deps?.detectVideoDimensionsFn ?? detectVideoDimensions;
   let rows: StoredMediaMetadataRow[];
   try {
     rows = await queryFn<StoredMediaMetadataRow>(
@@ -174,7 +205,9 @@ export async function validateGenerationMediaConstraints(params: {
               metadata->>'originalName' AS original_name,
               mime_type,
               size_bytes,
-              metadata->>'durationSec' AS duration_sec
+              metadata->>'durationSec' AS duration_sec,
+              width,
+              height
          FROM user_assets
         WHERE user_id = $1
           AND (
@@ -189,7 +222,9 @@ export async function validateGenerationMediaConstraints(params: {
               metadata->>'originalName' AS original_name,
               mime_type,
               size_bytes,
-              metadata->>'durationSec' AS duration_sec
+              metadata->>'durationSec' AS duration_sec,
+              width,
+              height
          FROM media_assets
         WHERE user_id = $1
           AND deleted_at IS NULL
@@ -250,6 +285,43 @@ export async function validateGenerationMediaConstraints(params: {
         message: `${field.type[0]?.toUpperCase()}${field.type.slice(1)} references must use ${validation.acceptedFileExtensions?.map((format) => format.toUpperCase()).join(' or ')}.`,
         acceptedFormats: validation.acceptedFileExtensions,
       });
+    }
+
+    const minimumPixelCount =
+      field.type === 'video'
+        ? params.inputSchema?.constraints?.minVideoPixelCount
+        : undefined;
+    if (
+      field.type === 'video' &&
+      typeof minimumPixelCount === 'number' &&
+      Number.isFinite(minimumPixelCount) &&
+      minimumPixelCount > 0
+    ) {
+      let width = normalizeDimension(stored.width);
+      let height = normalizeDimension(stored.height);
+      if (width == null || height == null) {
+        const detected = await detectVideoDimensionsFn(stored.url).catch(() => null);
+        width = normalizeDimension(detected?.width);
+        height = normalizeDimension(detected?.height);
+      }
+      if (width == null || height == null) {
+        return failure({
+          error: 'MEDIA_DIMENSIONS_UNVERIFIED',
+          fieldId: candidate.fieldId,
+          message: 'This video reference has no trusted dimension metadata. Upload it again before generating.',
+          minimumPixelCount,
+        });
+      }
+      if (width * height < minimumPixelCount) {
+        return failure({
+          error: 'MEDIA_DIMENSIONS_TOO_SMALL',
+          fieldId: candidate.fieldId,
+          message: `This video is ${width} x ${height} px. ${engine.label} requires at least ${minimumPixelCount} total pixels. Choose a larger video and try again.`,
+          actualWidth: width,
+          actualHeight: height,
+          minimumPixelCount,
+        });
+      }
     }
 
     const combinedDurationLimit =
