@@ -50,8 +50,13 @@ test('header bar does not regain auth session ownership', () => {
 test('header bar keeps narrow mobile chrome compact', () => {
   assert.match(headerSource, /flex min-w-0 items-center gap-2/, 'left header cluster should be allowed to shrink on narrow screens');
   assert.match(headerSource, /flex min-w-0 shrink-0 items-center justify-end/, 'right header actions should stay compact and right aligned');
-  assert.doesNotMatch(headerSource, /className="h-10 w-\[180px\]/, 'auth loading placeholder should not force desktop width on mobile');
-  assert.match(headerSource, /w-24[^"]*sm:w-\[180px\]/, 'auth loading placeholder should expand only from the small breakpoint');
+  assert.match(
+    headerSource,
+    /className="flex w-32 shrink-0 justify-end sm:w-\[205px\]"/,
+    'guest auth controls should reserve the same first-paint width as their resolved state'
+  );
+  assert.match(headerSource, /className="h-10 w-full rounded-input/, 'auth loading placeholder should fill the stable guest slot');
+  assert.doesNotMatch(headerSource, /w-24[^"]*sm:w-\[180px\]/, 'auth loading should not resize the guest slot');
   assert.match(logoSource, /alt=""/, 'decorative logo mark should not duplicate the brand in the accessible name');
   assert.match(logoSource, /aria-hidden/, 'decorative logo mark should be hidden from assistive tech');
   assert.match(logoSource, /sr-only[^"]*sm:not-sr-only/, 'brand text should stay accessible while visually collapsing below narrow mobile widths');

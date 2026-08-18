@@ -4,7 +4,7 @@ import type { ResultProvider } from '@/types/video-groups';
 import { countResolvedVisualSlots, mergeImageProgressGroup } from '@/lib/group-progress';
 import { isPlaceholderMediaUrl, isTemporaryProviderMediaUrl, normalizeMediaUrl } from '@/lib/media';
 
-export type GalleryVariant = 'desktop' | 'mobile';
+export type GalleryVariant = 'desktop' | 'mobile' | 'responsive';
 export type GalleryFeedType = 'video' | 'image';
 
 export const DEFAULT_GALLERY_COPY = {

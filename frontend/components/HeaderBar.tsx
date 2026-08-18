@@ -443,28 +443,27 @@ export function HeaderBar() {
               onSignOut={handleSignOut}
               onToggleAccountMenu={() => setAccountMenuOpen((prev) => !prev)}
             />
-          ) : authResolved ? (
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <ButtonLink
-                href={signupHref}
-                size="sm"
-                className="h-9 px-2.5 text-[11px] shadow-card sm:h-10 sm:px-3 sm:text-sm"
-              >
-                <span className="sm:hidden">{createAccountMobile}</span>
-                <span className="hidden sm:inline">{t('workspace.header.createAccount', 'Create account')}</span>
-              </ButtonLink>
-              <ButtonLink
-                href={signinHref}
-                variant="outline"
-                size="sm"
-                className="h-9 px-2.5 text-[11px] sm:h-10 sm:px-3 sm:text-sm"
-              >
-                <span className="sm:hidden">{signInMobile}</span>
-                <span className="hidden sm:inline">{t('workspace.header.signIn', 'Sign in')}</span>
-              </ButtonLink>
-            </div>
           ) : (
-            <div className="h-10 w-24 rounded-input bg-surface-2 shadow-sm sm:w-[180px]" aria-hidden />
+            <div className="flex w-32 shrink-0 justify-end sm:w-[205px]">
+              {authResolved ? (
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <ButtonLink href={signupHref} size="sm"
+                    className="h-9 px-2.5 text-[11px] shadow-card sm:h-10 sm:px-3 sm:text-sm"
+                  >
+                    <span className="sm:hidden">{createAccountMobile}</span>
+                    <span className="hidden sm:inline">{t('workspace.header.createAccount', 'Create account')}</span>
+                  </ButtonLink>
+                  <ButtonLink href={signinHref} variant="outline" size="sm"
+                    className="h-9 px-2.5 text-[11px] sm:h-10 sm:px-3 sm:text-sm"
+                  >
+                    <span className="sm:hidden">{signInMobile}</span>
+                    <span className="hidden sm:inline">{t('workspace.header.signIn', 'Sign in')}</span>
+                  </ButtonLink>
+                </div>
+              ) : (
+                <div className="h-10 w-full rounded-input bg-surface-2 shadow-sm" aria-hidden />
+              )}
+            </div>
           )}
         </div>
       </header>

@@ -7,7 +7,6 @@ import { useWorkspaceAppBootstrap } from './_hooks/useWorkspaceAppBootstrap';
 import { useWorkspaceAssetState } from './_hooks/useWorkspaceAssetState';
 import { useWorkspaceAssets } from './_hooks/useWorkspaceAssets';
 import { useWorkspaceComposerState } from './_hooks/useWorkspaceComposerState';
-import { useWorkspaceDesktopLayout } from './_hooks/useWorkspaceDesktopLayout';
 import { useWorkspaceDraftHydration } from './_hooks/useWorkspaceDraftHydration';
 import { useWorkspaceDraftStorage } from './_hooks/useWorkspaceDraftStorage';
 import { useWorkspaceGalleryActions } from './_hooks/useWorkspaceGalleryActions';
@@ -35,7 +34,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     authChecked: draft.authChecked,
     skipOnboardingRef: draft.skipOnboardingRef,
   });
-  const isDesktopLayout = useWorkspaceDesktopLayout();
   const renderState = useWorkspaceRenderState({
     recentJobs: app.recentJobs,
     engineIdByLabel: app.engineIdByLabel,
@@ -274,7 +272,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     batchHeroes: renderState.batchHeroes,
     preflightCurrency: pricing.preflight?.currency,
     fallbackEngineId: composer.selectedEngine?.id ?? 'unknown-engine',
-    suppressGuidedSampleAutoApply: Boolean(draft.effectiveRequestedEngineId || draft.effectiveRequestedEngineToken),
     sharedPrompt: routeForm.sharedPrompt,
     selectedPreview: renderState.selectedPreview,
     compositeOverrideSummary: routeForm.compositeOverrideSummary,
@@ -300,7 +297,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     hasSelectedEngine: Boolean(composer.selectedEngine),
     initialPreviewFallbackGroup: previewState.initialPreviewFallbackGroup,
     initialPreviewPosterSrc: previewState.compositePreviewPosterSrc,
-    isDesktopLayout,
     isLoading: app.isLoading,
     loadEnginesError: app.workspaceCopy.errors.loadEngines,
     noEnginesError: app.workspaceCopy.errors.noEngines,
@@ -318,7 +314,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
       generation={generation}
       handleRefreshJob={handleRefreshJob}
       inputSchema={inputSchema}
-      isDesktopLayout={isDesktopLayout}
       noticeState={noticeState}
       previewState={previewState}
       pricing={pricing}
