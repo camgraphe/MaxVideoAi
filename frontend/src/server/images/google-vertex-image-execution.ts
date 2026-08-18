@@ -13,7 +13,10 @@ import { uploadGoogleVertexGcsObject } from '@/server/video-providers/google-ver
 import { GoogleVertexImageClient, isGoogleVertexImageConfigured } from './google-vertex-image-client';
 import { GoogleVertexImageError } from './google-vertex-image-error';
 import { buildGoogleVertexImagePayload, type GoogleVertexReferenceImage } from './google-vertex-image-payload';
-import { extractGoogleVertexImages, parseGoogleVertexResponseId } from './google-vertex-image-response';
+import {
+  extractGoogleVertexImages,
+  summarizeGoogleVertexImageResponse,
+} from './google-vertex-image-response';
 import { persistCompletedImageGeneration } from './image-generation-completion';
 import { persistFailedImageGeneration } from './image-generation-failure';
 import type { PendingReceipt } from './image-generation-receipts';
@@ -155,6 +158,7 @@ export async function executeGoogleVertexImageGeneration(params: {
 }): Promise<ImageGenerationResponse> {
   const modelId = params.engine.providerMeta?.modelSlug ?? params.engine.id;
   let providerJobId: string | null = null;
+  let lastProviderResponse: unknown = null;
 
   try {
     assertGoogleVertexImageAvailable(params.engine);
@@ -174,7 +178,19 @@ export async function executeGoogleVertexImageGeneration(params: {
         imageSize: params.resolution,
         enableWebSearch: params.enableWebSearch,
       }));
-      providerJobId = providerJobId ?? parseGoogleVertexResponseId(providerResponse);
+      lastProviderResponse = providerResponse;
+      const responseSummary = summarizeGoogleVertexImageResponse(providerResponse);
+      providerJobId = providerJobId ?? responseSummary.responseId;
+      if (responseSummary.blockedForSafety) {
+        throw new GoogleVertexImageError(
+          'This request was blocked by safety checks. Try rephrasing it with safer, more neutral wording.',
+          {
+            code: 'google_vertex_image_safety_block',
+            status: 422,
+            detail: responseSummary,
+          }
+        );
+      }
       inlineImages.push(...extractGoogleVertexImages(providerResponse));
     }
 
@@ -182,6 +198,7 @@ export async function executeGoogleVertexImageGeneration(params: {
       throw new GoogleVertexImageError('Google Vertex did not return images.', {
         code: 'GOOGLE_VERTEX_IMAGE_EMPTY_RESPONSE',
         status: 502,
+        detail: summarizeGoogleVertexImageResponse(lastProviderResponse),
       });
     }
 
@@ -278,8 +295,11 @@ export async function executeGoogleVertexImageGeneration(params: {
 
     throw new ImageGenerationExecutionError(message, {
       mode: params.mode,
-      code: 'google_vertex_image_error',
-      status: 502,
+      code: error instanceof GoogleVertexImageError ? error.code : 'google_vertex_image_error',
+      status:
+        error instanceof GoogleVertexImageError && error.status != null
+          ? error.status
+          : 502,
       detail: { providerStatus, providerBody },
       extras: {
         engineId: params.engineEntry.id,

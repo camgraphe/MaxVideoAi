@@ -2462,6 +2462,20 @@ test('Kling multi-prompt scenes use the provider 512 character scene limit', () 
   assert.equal(invalid.error?.value, 513);
 });
 
+test('Kling rejects an end frame combined with a multi-prompt shot plan', () => {
+  const invalid = validateRequest('kling-3-standard', 'i2v', {
+    multi_prompt: [{ prompt: 'Open on the product and push in slowly.', duration: 5 }],
+    duration: 5,
+    resolution: '1080p',
+    image_url: 'https://example.com/start.png',
+    end_image_url: 'https://example.com/end.png',
+  });
+
+  assert.equal(invalid.ok, false);
+  assert.equal(invalid.error?.field, 'end_image_url');
+  assert.match(invalid.error?.message ?? '', /end frame.*multi-prompt/i);
+});
+
 test('Veo 3.1 Fast I2V requires image_url', () => {
   const invalid = validateRequest('veo-3-1-fast', 'i2v', {
     prompt: 'Animate this still',
@@ -2959,6 +2973,23 @@ test('Kling 3 prompt length is capped before provider submission', () => {
     aspect_ratio: '16:9',
   });
   assert.deepEqual(valid, OK);
+});
+
+test('Kling O3 applies its prompt limit after normalizing media references', () => {
+  const rawPromptAtLimit = `${'x'.repeat(2492)} @Image1`;
+  assert.equal(rawPromptAtLimit.length, 2500);
+
+  const invalid = validateRequest('kling-o3-pro', 'i2v', {
+    prompt: rawPromptAtLimit,
+    duration: 5,
+    resolution: '1080p',
+    image_url: 'https://example.com/start.png',
+  });
+
+  assert.equal(invalid.ok, false);
+  assert.equal(invalid.error?.field, 'prompt');
+  assert.equal(invalid.error?.value, 2506);
+  assert.deepEqual(invalid.error?.allowed, [2500]);
 });
 
 test('Kling 3 4K accepts multi-prompt shot plans', () => {

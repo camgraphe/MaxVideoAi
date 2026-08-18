@@ -1,5 +1,6 @@
 import type { Mode } from '@/types/engines';
 import { buildKlingDirectElementList, type MaxVideoProviderElement } from '@/lib/video-provider-elements';
+import { normalizeKlingOmniPromptReferences } from '@/lib/kling-provider-limits';
 import {
   getKlingDirectRouteCapabilities,
   type KlingDirectSubmitCapabilities,
@@ -92,21 +93,8 @@ function normalizeUrlList(values: string[] | null | undefined, maxCount: number)
   return urls;
 }
 
-function normalizeOmniPromptReferences(value: string): string {
-  return value
-    .replace(/(^|[^\w])@(Image|image)_?(\d+)\b/g, (_match, prefix: string, _kind: string, index: string) => {
-      return `${prefix}<<<image_${index}>>>`;
-    })
-    .replace(/(^|[^\w])@(Video|video)_?(\d+)\b/g, (_match, prefix: string, _kind: string, index: string) => {
-      return `${prefix}<<<video_${index}>>>`;
-    })
-    .replace(/(^|[^\w])@(Element|element)_?(\d+)\b/g, (_match, prefix: string, _kind: string, index: string) => {
-      return `${prefix}<<<element_${index}>>>`;
-    });
-}
-
 function maybeNormalizePromptReferences(value: string, endpointFamily: string): string {
-  return endpointFamily === 'video-o3-omni' ? normalizeOmniPromptReferences(value) : value;
+  return endpointFamily === 'video-o3-omni' ? normalizeKlingOmniPromptReferences(value) : value;
 }
 
 function normalizeShotType(value: 'customize' | 'intelligent' | 'intelligence' | null | undefined) {

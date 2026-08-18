@@ -97,6 +97,7 @@ export async function persistCompletedImageGeneration(params: {
          message = $12,
          render_ids = $13::jsonb,
          hero_render_id = $14,
+         provider = $16,
          provisional = FALSE,
          updated_at = NOW()
      WHERE job_id = $1`,
@@ -116,6 +117,7 @@ export async function persistCompletedImageGeneration(params: {
       renderIdsJson,
       hero,
       paymentStatus ?? 'paid_wallet',
+      providerMode,
     ]
   );
 

@@ -67,6 +67,10 @@ test('wave 1 exposes one shared locale indexation policy', async () => {
   );
 });
 
+test('comparison indexation fails closed for an unsupported locale', () => {
+  assert.equal(isComparisonIndexable('de' as never, 'ltx-2-vs-veo-3-1-lite'), false);
+});
+
 test('wave 1 configuration contains exactly 30 unique candidates per localized market', () => {
   assert.equal(comparisonIndexation.schemaVersion, 1);
   assert.equal(comparisonIndexation.wave, 'localized-low-signal-2026-07-11');

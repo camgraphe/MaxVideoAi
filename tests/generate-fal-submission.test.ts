@@ -157,6 +157,41 @@ test('submitFalGenerateTask defers timeout responses without refunding pending p
   assert.match(updates[0].sql, /UPDATE app_jobs/);
 });
 
+test('submitFalGenerateTask defers before the Vercel runtime deadline', async () => {
+  let timeoutBudgetMs: number | null = null;
+
+  const result = await withMutedFalLogs(() => submitFalGenerateTask({
+    falPayload: { engineId: 'seedance-2-0', prompt: 'test', mode: 't2v' },
+    jobId: 'job_vercel_budget',
+    engineId: 'seedance-2-0',
+    engineLabel: 'Seedance 2.0',
+    isLumaRay2: false,
+    batchId: null,
+    durationSec: 5,
+    pendingReceipt: null,
+    paymentMode: 'platform',
+    walletChargeReserved: false,
+    getLastProviderJobId: () => 'fal_request_budget',
+    setLastProviderJobId: () => undefined,
+    persistProviderJobId: async () => undefined,
+    logMetricFn: () => undefined,
+    deps: {
+      generateVideoFn: async () => new Promise<GenerateResult>(() => undefined),
+      withFalTimeoutFn: async (_promise, timeoutMs) => {
+        timeoutBudgetMs = timeoutMs;
+        throw new FalTimeoutError('timeout');
+      },
+      queryFn: async () => [],
+    },
+  }));
+
+  assert.equal(result.ok, false);
+  if (result.ok) return;
+  assert.equal(result.status, 202);
+  assert.equal(result.body.deferred, true);
+  assert.ok(timeoutBudgetMs !== null && timeoutBudgetMs <= 240_000, `expected at least 60s of Vercel headroom, got ${timeoutBudgetMs}ms`);
+});
+
 async function withMutedFalLogs<T>(fn: () => Promise<T>): Promise<T> {
   const originalInfo = console.info;
   const originalError = console.error;

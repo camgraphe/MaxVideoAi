@@ -4,6 +4,7 @@ const ERROR_MESSAGE_KEYS = [
   'error_message',
   'errorMessage',
   'message',
+  'msg',
   'detail',
   'error',
   'reason',

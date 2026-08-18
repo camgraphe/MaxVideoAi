@@ -1,7 +1,10 @@
 import type { Mode } from '../../../../fixtures/engineCaps';
 import {
   isKlingMultiPromptEngine,
+  isKlingOmniEngine,
   KLING_MULTI_PROMPT_SCENE_MAX_CHARS,
+  KLING_PROVIDER_PROMPT_MAX_CHARS,
+  normalizeKlingOmniPromptReferences,
 } from '../../../../src/lib/kling-provider-limits';
 import type { ValidationResult } from './validate-types';
 import {
@@ -141,6 +144,23 @@ export function validateProviderSpecificConstraints(params: {
 
   if (isKlingMultiPromptEngine(params.engineId) && Array.isArray(params.payload['multi_prompt'])) {
     const multiPrompt = params.payload['multi_prompt'];
+    const hasMultiPrompt = multiPrompt.some((entry) => {
+      if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return false;
+      const prompt = (entry as { prompt?: unknown }).prompt;
+      return typeof prompt === 'string' && prompt.trim().length > 0;
+    });
+    const endImageUrl =
+      typeof params.payload['end_image_url'] === 'string' ? params.payload['end_image_url'].trim() : '';
+    if (hasMultiPrompt && endImageUrl) {
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: 'end_image_url',
+          message: 'Kling end frame inputs cannot be combined with a multi-prompt shot plan.',
+        },
+      };
+    }
     for (let index = 0; index < multiPrompt.length; index += 1) {
       const entry = multiPrompt[index];
       if (!entry || typeof entry !== 'object' || Array.isArray(entry)) continue;
@@ -154,6 +174,22 @@ export function validateProviderSpecificConstraints(params: {
           message: `Kling multi-prompt scene prompts must be at most ${KLING_MULTI_PROMPT_SCENE_MAX_CHARS} characters.`,
           allowed: [KLING_MULTI_PROMPT_SCENE_MAX_CHARS],
           value: prompt.length,
+        },
+      };
+    }
+  }
+
+  if (isKlingOmniEngine(params.engineId) && typeof params.payload.prompt === 'string') {
+    const providerPromptLength = normalizeKlingOmniPromptReferences(params.payload.prompt).length;
+    if (providerPromptLength > KLING_PROVIDER_PROMPT_MAX_CHARS) {
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: 'prompt',
+          message: `Kling prompts must be at most ${KLING_PROVIDER_PROMPT_MAX_CHARS} characters after media references are normalized.`,
+          allowed: [KLING_PROVIDER_PROMPT_MAX_CHARS],
+          value: providerPromptLength,
         },
       };
     }

@@ -18,7 +18,7 @@ import {
 
 const LUMA_RAY2_TIMEOUT_MS = 180_000;
 const FAL_RETRY_DELAYS_MS = [5_000, 15_000, 30_000];
-const FAL_HARD_TIMEOUT_MS = 400_000;
+const FAL_HARD_TIMEOUT_MS = 240_000;
 const FAL_PROGRESS_FLOOR = 10;
 
 type QueryFn = <T = unknown>(sql: string, params?: unknown[]) => Promise<T[]>;
