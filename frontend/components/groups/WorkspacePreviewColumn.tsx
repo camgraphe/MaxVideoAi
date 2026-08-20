@@ -16,7 +16,7 @@ export function WorkspacePreviewColumn({
     <div
       data-workspace-preview-column={constrained || undefined}
       className={clsx(
-        'flex flex-col items-center',
+        'mx-auto flex flex-col items-center',
         constrained
           ? '[--workspace-preview-fluid-width:calc(44.444444svh_-_21.333333px)] sm:[--workspace-preview-fluid-width:calc(56.888889svh_-_21.333333px)]'
           : 'w-full'

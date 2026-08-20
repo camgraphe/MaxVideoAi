@@ -20,3 +20,15 @@ test('workspace preview width constraints are present in the first rendered mark
   assert.match(markup, /width:min\(100%,max\(1\.778px,var\(--workspace-preview-fluid-width\)\),583\.111px\)/);
   assert.match(markup, /data-preview-child="true"/);
 });
+
+test('constrained workspace preview centers its fixed-width first-paint column', () => {
+  const markup = renderToStaticMarkup(
+    React.createElement(
+      WorkspacePreviewColumn,
+      null,
+      React.createElement('div', { 'data-preview-child': true })
+    )
+  );
+
+  assert.match(markup, /class="[^"]*\bmx-auto\b[^"]*"/);
+});
