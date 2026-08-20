@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 export function HeaderLogoMark() {
   return (
-    <Link href="/" className="flex items-center gap-2">
+    <Link href="/" prefetch={false} className="flex items-center gap-2">
       <Image
         src="/assets/branding/logo-mark.svg"
         alt=""

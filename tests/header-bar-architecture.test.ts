@@ -6,6 +6,7 @@ import test from 'node:test';
 const root = process.cwd();
 const headerPath = join(root, 'frontend/components/HeaderBar.tsx');
 const accountHookPath = join(root, 'frontend/components/header/useHeaderAccountState.ts');
+const accountMenuPath = join(root, 'frontend/components/header/HeaderAccountMenu.tsx');
 const logoPath = join(root, 'frontend/components/header/HeaderLogoMark.tsx');
 const navHelpersPath = join(root, 'frontend/components/header/header-nav-helpers.ts');
 const walletStatusPath = join(root, 'frontend/components/header/HeaderWalletStatus.tsx');
@@ -13,10 +14,15 @@ const mobileMenuPath = join(root, 'frontend/components/header/HeaderMobileMenu.t
 
 const headerSource = readFileSync(headerPath, 'utf8');
 const accountHookSource = readFileSync(accountHookPath, 'utf8');
+const accountMenuSource = readFileSync(accountMenuPath, 'utf8');
 const logoSource = readFileSync(logoPath, 'utf8');
 const navHelpersSource = readFileSync(navHelpersPath, 'utf8');
 const walletStatusSource = readFileSync(walletStatusPath, 'utf8');
 const mobileMenuSource = readFileSync(mobileMenuPath, 'utf8');
+
+function openingTags(source: string, component: 'Link' | 'ButtonLink') {
+  return source.match(new RegExp(`<${component}\\b[\\s\\S]*?>`, 'g')) ?? [];
+}
 
 test('header bar delegates account, logo, and nav helper responsibilities', () => {
   assert.ok(existsSync(accountHookPath), 'header account state should live in a focused hook');
@@ -62,6 +68,31 @@ test('header bar keeps narrow mobile chrome compact', () => {
   assert.match(logoSource, /sr-only[^"]*sm:not-sr-only/, 'brand text should stay accessible while visually collapsing below narrow mobile widths');
   assert.match(walletStatusSource, /aria-label=\{walletLabel\}/, 'compact wallet status needs a stable accessible name');
   assert.match(walletStatusSource, /max-w-\[5rem\]/, 'wallet amount should not stretch the mobile action cluster');
+});
+
+test('header auth resolution preserves the account and wallet footprints', () => {
+  assert.match(
+    headerSource,
+    /className="flex w-32 shrink-0 justify-end sm:w-\[205px\]">\s*\{email \? \(/,
+    'guest, loading, and authenticated account states should share one fixed-width slot'
+  );
+  assert.match(accountMenuSource, /className="relative w-full"/, 'the authenticated menu should fill the stable slot');
+  assert.match(accountMenuSource, /className="h-10 w-full min-h-0/, 'the authenticated trigger should keep the slot width');
+  assert.match(accountMenuSource, /truncate[^\n]*>\{email\}<\/span>/, 'the fixed slot should usefully expose the account email');
+  assert.match(walletStatusSource, /w-\[72px\][^\n]*lg:w-24/, 'wallet loading and resolved states should keep one width');
+});
+
+test('workspace header navigation waits for user intent before prefetching routes', () => {
+  const navigationTags = [
+    ...openingTags(headerSource, 'Link'),
+    ...openingTags(headerSource, 'ButtonLink'),
+    ...openingTags(logoSource, 'Link'),
+  ];
+
+  assert.ok(navigationTags.length >= 8, 'the contract should cover the logo, marketing links, and auth links');
+  for (const tag of navigationTags) {
+    assert.match(tag, /prefetch=\{false\}/, `header navigation must not eagerly prefetch: ${tag}`);
+  }
 });
 
 test('header model menus render generic localized navigation badges', () => {

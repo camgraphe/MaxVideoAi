@@ -284,6 +284,7 @@ export function HeaderBar() {
                   <Link
                     key={item.href}
                     href={item.href}
+                    prefetch={false}
                     className="transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
                   >
                     {label}
@@ -309,6 +310,7 @@ export function HeaderBar() {
                 >
                   <Link
                     href={item.href}
+                    prefetch={false}
                     aria-haspopup="menu"
                     className="inline-flex items-center gap-1 transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
                     onClick={() => closeDesktopDropdown(200)}
@@ -332,6 +334,7 @@ export function HeaderBar() {
                         <nav className="flex flex-col gap-1" role="menu" aria-label={label}>
                           <Link
                             href={resolveLocalizedHref(dropdown.allHref)}
+                            prefetch={false}
                             className="rounded-input px-3 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring whitespace-nowrap"
                             role="menuitem"
                             onClick={() => closeDesktopDropdown(200)}
@@ -344,6 +347,7 @@ export function HeaderBar() {
                               <Link
                                 key={entry.key}
                                 href={href}
+                                prefetch={false}
                                 className="rounded-input px-3 py-2 text-sm text-text-secondary transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring whitespace-nowrap"
                                 role="menuitem"
                                 onClick={() => closeDesktopDropdown(200)}
@@ -381,6 +385,7 @@ export function HeaderBar() {
                                   <Link
                                     key={entry.key}
                                     href={href}
+                                    prefetch={false}
                                     className={clsx(
                                       'rounded-input px-3 py-2 text-sm transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring whitespace-nowrap',
                                       entry.emphasized ? 'font-semibold text-text-primary' : 'text-text-secondary'
@@ -429,42 +434,40 @@ export function HeaderBar() {
               </span>
             </Button>
           </div>
-          {email ? (
-            <HeaderAccountMenu
-              accountMenuOpen={accountMenuOpen}
-              avatarRef={avatarRef}
-              email={email}
-              initials={initials}
-              isAdmin={isAdmin}
-              menuRef={menuRef}
-              t={t}
-              onAdminNavigation={handleAdminNavigation}
-              onCloseAccountMenu={() => setAccountMenuOpen(false)}
-              onSignOut={handleSignOut}
-              onToggleAccountMenu={() => setAccountMenuOpen((prev) => !prev)}
-            />
-          ) : (
-            <div className="flex w-32 shrink-0 justify-end sm:w-[205px]">
-              {authResolved ? (
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  <ButtonLink href={signupHref} size="sm"
-                    className="h-9 px-2.5 text-[11px] shadow-card sm:h-10 sm:px-3 sm:text-sm"
-                  >
-                    <span className="sm:hidden">{createAccountMobile}</span>
-                    <span className="hidden sm:inline">{t('workspace.header.createAccount', 'Create account')}</span>
-                  </ButtonLink>
-                  <ButtonLink href={signinHref} variant="outline" size="sm"
-                    className="h-9 px-2.5 text-[11px] sm:h-10 sm:px-3 sm:text-sm"
-                  >
-                    <span className="sm:hidden">{signInMobile}</span>
-                    <span className="hidden sm:inline">{t('workspace.header.signIn', 'Sign in')}</span>
-                  </ButtonLink>
-                </div>
-              ) : (
-                <div className="h-10 w-full rounded-input bg-surface-2 shadow-sm" aria-hidden />
-              )}
-            </div>
-          )}
+          <div className="flex w-32 shrink-0 justify-end sm:w-[205px]">
+            {email ? (
+              <HeaderAccountMenu
+                accountMenuOpen={accountMenuOpen}
+                avatarRef={avatarRef}
+                email={email}
+                initials={initials}
+                isAdmin={isAdmin}
+                menuRef={menuRef}
+                t={t}
+                onAdminNavigation={handleAdminNavigation}
+                onCloseAccountMenu={() => setAccountMenuOpen(false)}
+                onSignOut={handleSignOut}
+                onToggleAccountMenu={() => setAccountMenuOpen((prev) => !prev)}
+              />
+            ) : authResolved ? (
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <ButtonLink href={signupHref} prefetch={false} size="sm"
+                  className="h-9 px-2.5 text-[11px] shadow-card sm:h-10 sm:px-3 sm:text-sm"
+                >
+                  <span className="sm:hidden">{createAccountMobile}</span>
+                  <span className="hidden sm:inline">{t('workspace.header.createAccount', 'Create account')}</span>
+                </ButtonLink>
+                <ButtonLink href={signinHref} prefetch={false} variant="outline" size="sm"
+                  className="h-9 px-2.5 text-[11px] sm:h-10 sm:px-3 sm:text-sm"
+                >
+                  <span className="sm:hidden">{signInMobile}</span>
+                  <span className="hidden sm:inline">{t('workspace.header.signIn', 'Sign in')}</span>
+                </ButtonLink>
+              </div>
+            ) : (
+              <div className="h-10 w-full rounded-input bg-surface-2 shadow-sm" aria-hidden />
+            )}
+          </div>
         </div>
       </header>
       {mobileMenuOpen ? (

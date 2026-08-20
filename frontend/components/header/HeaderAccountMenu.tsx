@@ -35,29 +35,32 @@ export function HeaderAccountMenu({
   onCloseAccountMenu,
 }: HeaderAccountMenuProps) {
   return (
-    <div className="relative">
+    <div className="relative w-full">
       <Button
         ref={avatarRef}
         type="button"
         variant="ghost"
         size="sm"
         onClick={onToggleAccountMenu}
-        className="h-10 w-10 min-h-0 rounded-full border border-hairline bg-surface-2 p-0 text-sm font-semibold text-text-primary shadow-sm hover:bg-surface-3"
+        className="h-10 w-full min-h-0 justify-between gap-2 rounded-input border border-hairline bg-surface-2 px-2 py-0 text-sm font-semibold text-text-primary shadow-sm hover:bg-surface-3"
         aria-haspopup="menu"
         aria-expanded={accountMenuOpen}
       >
-        {initials}
-        <span className="absolute -bottom-0.5 left-1/2 flex h-4 w-4 -translate-x-1/2 items-center justify-center text-[10px] text-text-muted opacity-40">
-          <svg viewBox="0 0 12 12" aria-hidden="true" className="h-2.5 w-2.5">
-            <path
-              d="m2.2 4.6 3.8 3.8 3.8-3.8"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="1.6"
-            />
-          </svg>
+        <span className="min-w-0 truncate text-left text-xs font-medium">{email}</span>
+        <span className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface text-xs font-semibold">
+          {initials}
+          <span className="absolute -bottom-1 left-1/2 flex h-4 w-4 -translate-x-1/2 items-center justify-center text-[10px] text-text-muted opacity-40">
+            <svg viewBox="0 0 12 12" aria-hidden="true" className="h-2.5 w-2.5">
+              <path
+                d="m2.2 4.6 3.8 3.8 3.8-3.8"
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.6"
+              />
+            </svg>
+          </span>
         </span>
       </Button>
       {accountMenuOpen ? (

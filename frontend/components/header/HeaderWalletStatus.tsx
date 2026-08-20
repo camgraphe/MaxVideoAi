@@ -35,7 +35,7 @@ export function HeaderWalletStatus({
       <Link
         href="/billing"
         prefetch={false}
-        className="flex h-10 items-center gap-1 rounded-input border border-hairline bg-surface px-2 py-1 text-text-primary shadow-sm transition-colors hover:border-border-hover hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:gap-1.5 lg:gap-2 lg:px-3"
+        className="flex h-10 w-[72px] items-center justify-center gap-1 rounded-input border border-hairline bg-surface px-2 py-1 text-text-primary shadow-sm transition-colors hover:border-border-hover hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:gap-1.5 lg:w-24 lg:gap-2 lg:px-3"
         aria-label={walletLabel}
         aria-describedby={walletPromptOpen ? promptId : undefined}
         onFocus={onOpenPrompt}
