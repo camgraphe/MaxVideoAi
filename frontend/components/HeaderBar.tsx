@@ -8,11 +8,12 @@ import { ReconsentPrompt } from '@/components/legal/ReconsentPrompt';
 import { AppLanguageToggle } from '@/components/AppLanguageToggle';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { MARKETING_NAV_DROPDOWNS, MARKETING_TOP_NAV_LINKS } from '@/config/navigation';
 import { SERVICE_NOTICE_POLLING_INTERVAL_MS } from '@/lib/service-notice-polling';
 import { HeaderAccountMenu } from '@/components/header/HeaderAccountMenu';
+import { HeaderAuthActions } from '@/components/header/HeaderAuthActions';
 import { HeaderLogoMark } from '@/components/header/HeaderLogoMark';
 import { HeaderMobileMenu } from '@/components/header/HeaderMobileMenu';
 import { HeaderWalletStatus } from '@/components/header/HeaderWalletStatus';
@@ -450,20 +451,13 @@ export function HeaderBar() {
                 onToggleAccountMenu={() => setAccountMenuOpen((prev) => !prev)}
               />
             ) : authResolved ? (
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <ButtonLink href={signupHref} prefetch={false} size="sm"
-                  className="h-9 px-2.5 text-[11px] shadow-card sm:h-10 sm:px-3 sm:text-sm"
-                >
-                  <span className="sm:hidden">{createAccountMobile}</span>
-                  <span className="hidden sm:inline">{t('workspace.header.createAccount', 'Create account')}</span>
-                </ButtonLink>
-                <ButtonLink href={signinHref} prefetch={false} variant="outline" size="sm"
-                  className="h-9 px-2.5 text-[11px] sm:h-10 sm:px-3 sm:text-sm"
-                >
-                  <span className="sm:hidden">{signInMobile}</span>
-                  <span className="hidden sm:inline">{t('workspace.header.signIn', 'Sign in')}</span>
-                </ButtonLink>
-              </div>
+              <HeaderAuthActions
+                createAccountMobile={createAccountMobile}
+                signInMobile={signInMobile}
+                signinHref={signinHref}
+                signupHref={signupHref}
+                t={t}
+              />
             ) : (
               <div className="h-10 w-full rounded-input bg-surface-2 shadow-sm" aria-hidden />
             )}
