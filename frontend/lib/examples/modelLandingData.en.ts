@@ -159,35 +159,37 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     ],
   },
   seedance: {
-    metaTitle: 'Seedance AI Video Examples, Prompts & Use Cases | MaxVideoAI',
+    metaTitle: 'Seedance 2.5 Video Examples, Prompts & Settings | MaxVideoAI',
     metaDescription:
-      'Explore real Seedance video outputs, copy prompt ideas, compare model settings, and see when to use Seedance 2.0, Fast, Mini, or 1.5 Pro.',
-    heroTitle: 'Seedance AI Video Examples, Prompts & Settings',
-    subtitle: 'Seedance AI video examples, prompts, settings, and outputs for current Seedance workflows and supported older runs.',
+      'Explore Seedance 2.5 video examples and prompt patterns, then compare current Seedance 2.0, Fast, Mini and supported 1.5 Pro workflows.',
+    heroTitle: 'Seedance 2.5 AI Video Examples, Prompts & Settings',
+    subtitle:
+      'Seedance examples, prompts and settings led by Seedance 2.5, with current and supported workflows kept in context.',
     intro:
-      'Explore real Seedance video outputs for Seedance 2.0, Seedance 2.0 Fast, and Seedance 2.0 Mini. Use Mini as the lower-cost batch/value route for ecommerce variants, UGC hooks, and reference-guided iteration, then use Seedance 1.5 Pro examples as legacy references for shorter clip patterns. Compare prompt structure, model settings, duration, and output patterns before opening the matching Seedance model page.',
+      'Start with Seedance 2.5 for current 4–30 second, 720p, audio-enabled and reference-guided workflows, then compare Seedance 2.0, Fast and Mini examples without treating older renders as Seedance 2.5 output. Open a video first for its prompt and settings; use the model and comparison links below the gallery when you need the right route.',
     summary:
-      'Seedance 2.0 remains the final, polished, high-ceiling route; Seedance 2.0 Fast is the faster draft route; Seedance 2.0 Mini adds a lower-cost batch value path for repeatable variants. Seedance 1.5 Pro stays available as a legacy reference for shorter, repeatable clips.',
+      'Seedance 2.5 is the flagship route for longer 720p workflows, generated audio, references, editing and extension. Seedance 2.0 remains available for higher-resolution and 4K intent, Fast and Mini cover draft or batch workflows, and Seedance 1.5 Pro remains supported as an older reference.',
     promptPatterns:
-      'Lead with one core action, then define camera and environment constraints. Use Mini for batches of ecommerce variants, UGC hooks, or reference-guided iterations where compact prompt sequences keep outputs comparable.',
+      'For Seedance 2.5, define one core action, camera direction and reference role before adding scene detail. Keep the same prompt structure when comparing 2.5 with Seedance 2.0, Fast or Mini.',
     strengthsLimits:
-      'Seedance tends to work well for controlled movement and steady framing. Keep scene complexity moderate to maintain consistency across variants, and reserve Seedance 2.0 for final shots that need the highest ceiling.',
+      'Use Seedance 2.5 when longer duration, generated audio, mixed references, editing or extension matter. Its public MaxVideoAI route is currently 16:9 at 480p or 720p, so keep Seedance 2.0 for higher-resolution or 4K intent.',
     pricingNotes:
-      'Evaluate Seedance on equivalent presets before scaling. Mini is the lower-cost batch route, Fast keeps draft cycles quick, and Seedance 2.0 is the better fit for polished final renders.',
+      'Duration, audio and the type of media used influence the price. The generator shows the current price before you launch.',
     faq: [
       {
-        question: 'Are these Seedance AI video examples tuned for stable camera motion?',
-        answer: 'Yes. Most Seedance AI video examples on this page prioritize camera clarity and low-drift movement patterns.',
+        question: 'Are all Seedance examples on this page generated with Seedance 2.5?',
+        answer:
+          'No. The gallery keeps factual labels for Seedance 2.5, Seedance 2.0, Fast, Mini and supported 1.5 Pro renders so you can compare the actual route used.',
       },
       {
-        question: 'Which Seedance AI video model should I start with for examples and prompt testing?',
+        question: 'Which Seedance model should I start with for examples and prompt testing?',
         answer:
-          'Start with Seedance 2.0 Fast when you want faster draft passes, use Seedance 2.0 Mini for lower-cost ecommerce variants, UGC hooks, and reference-guided batches, then move to Seedance 2.0 for stronger multi-shot quality, higher-resolution delivery, and more production-ready outputs.',
+          'Start with Seedance 2.5 for the current flagship workflow. Use Seedance 2.0 for higher-resolution or 4K intent, Fast for quicker drafts, and Mini for repeatable batch variants.',
       },
       {
         question: 'What settings affect Seedance video pricing most?',
         answer:
-          'Duration and resolution are the primary price drivers across Seedance video workflows, followed by optional mode-specific add-ons.',
+          'Duration, generated audio and the use of a source video have the greatest impact on the price. Keep those settings aligned when comparing routes.',
       },
     ],
   },

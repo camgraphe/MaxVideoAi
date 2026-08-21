@@ -1,18 +1,24 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import test from 'node:test';
 
 import {
   MARKETING_NAV_BEST_FOR_HUB,
   MARKETING_NAV_BEST_FOR_USE_CASES,
   MARKETING_NAV_DROPDOWNS,
+  MARKETING_NAV_MODELS,
   MARKETING_TOP_NAV_LINKS,
 } from '../frontend/config/navigation.ts';
 
 const marketingNavSource = readFileSync('frontend/components/marketing/MarketingNav.tsx', 'utf8');
 const marketingDesktopNavSource = readFileSync('frontend/components/marketing/MarketingDesktopNav.tsx', 'utf8');
+const marketingMobileMenuSource = readFileSync('frontend/components/marketing/MarketingMobileMenu.tsx', 'utf8');
 const marketingFooterSource = readFileSync('frontend/components/marketing/MarketingFooter.tsx', 'utf8');
 const headerBarSource = readFileSync('frontend/components/HeaderBar.tsx', 'utf8');
+const headerMobileMenuSource = readFileSync('frontend/components/header/HeaderMobileMenu.tsx', 'utf8');
+const modelPageComponentsDirectory =
+  'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components';
 
 const bestForUseCaseLinks = [
   ['Cinematic realism', '/ai-video-engines/best-for/cinematic-realism'],
@@ -82,6 +88,52 @@ test('marketing top navigation stays clean while Best-For links live inside drop
   assert.match(marketingDesktopNavSource, /font-semibold text-text-primary/);
 });
 
+test('public model menus keep both Seedance 2.5 and MiniMax H3 launch badges', () => {
+  assert.deepEqual(
+    MARKETING_NAV_MODELS.slice(0, 2).map(({ key, badge }) => ({ key, badge })),
+    [
+      { key: 'seedance-2-5', badge: 'new' },
+      { key: 'minimax-h3', badge: 'new' },
+    ],
+  );
+
+  for (const [surface, source] of [
+    ['marketing desktop', marketingDesktopNavSource],
+    ['marketing mobile', marketingMobileMenuSource],
+    ['workspace header desktop', headerBarSource],
+    ['workspace header mobile', headerMobileMenuSource],
+  ] as const) {
+    assert.match(source, /entry\.badge/,
+      `${surface} should consume the generic navigation badge field`);
+    assert.match(source, /nav\.badges\.\$\{entry\.badge\}/,
+      `${surface} should localize the generic badge value`);
+    assert.doesNotMatch(source, /entry\.key\s*===\s*['"]minimax-h3['"]/,
+      `${surface} should not hard-code the flagship model`);
+  }
+
+  const expectedLabels = { en: 'New', fr: 'Nouveau', es: 'Nuevo' } as const;
+  for (const [locale, label] of Object.entries(expectedLabels)) {
+    const dictionary = JSON.parse(readFileSync(`frontend/messages/${locale}.json`, 'utf8'));
+    assert.equal(dictionary.nav.badges.new, label);
+  }
+
+  const flagshipComparison = MARKETING_NAV_DROPDOWNS.compare?.items[0];
+  assert.equal(flagshipComparison?.key, 'minimax-h3-vs-seedance-2-5');
+  assert.equal(flagshipComparison?.badge, 'new');
+  assert.deepEqual(flagshipComparison?.href, {
+    pathname: '/ai-video-engines/[slug]',
+    params: { slug: 'minimax-h3-vs-seedance-2-5' },
+  });
+
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const dictionary = JSON.parse(readFileSync(`frontend/messages/${locale}.json`, 'utf8'));
+    assert.equal(
+      dictionary.nav.dropdown.compare.items['minimax-h3-vs-seedance-2-5'],
+      'MiniMax H3 vs Seedance 2.5',
+    );
+  }
+});
+
 test('localized marketing dropdown sections avoid English fallbacks', () => {
   const expectedUseCaseKeys = ['cinematic-realism', 'image-to-video', 'fast-drafts', 'ads'];
   const forbiddenFallbacks = [
@@ -123,6 +175,33 @@ test('marketing footer keeps crawlable Best-For hub and priority child links', (
     MARKETING_NAV_BEST_FOR_USE_CASES.map((item) => [item.label, hrefPath(item.href)]),
     bestForUseCaseLinks
   );
+});
+
+test('marketing navigation avoids background-prefetching every crawlable destination', () => {
+  for (const [surface, source] of [
+    ['desktop navigation', marketingDesktopNavSource],
+    ['footer', marketingFooterSource],
+  ] as const) {
+    const linkOpeningTags = source.match(/<Link\b[\s\S]*?>/g) ?? [];
+    assert.ok(linkOpeningTags.length > 0, `${surface} should render links`);
+
+    for (const tag of linkOpeningTags) {
+      assert.match(tag, /prefetch=\{false\}/, `${surface} links should load only after navigation`);
+    }
+  }
+});
+
+test('model pages do not prefetch every linked route while their hero media is loading', () => {
+  const componentSources = readdirSync(modelPageComponentsDirectory)
+    .filter((file) => file.endsWith('.tsx'))
+    .map((file) => [file, readFileSync(join(modelPageComponentsDirectory, file), 'utf8')] as const);
+
+  for (const [file, source] of componentSources) {
+    const linkOpeningTags = source.match(/<Link\b[\s\S]*?>/g) ?? [];
+    for (const tag of linkOpeningTags) {
+      assert.match(tag, /prefetch=\{false\}/, `${file} links should load only after navigation`);
+    }
+  }
 });
 
 test('marketing footer separates Best-For use cases from popular comparisons', () => {

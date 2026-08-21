@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
+import { buildModelExamplesHref } from '../frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-decision-data.ts';
 
 const root = process.cwd();
 const pagePath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/ModelsCatalogPage.tsx');
@@ -126,6 +127,13 @@ test('models catalog decision hub sections stay route-local and focused', () => 
   assert.ok(popularComparisonsSource.split('\n').length <= 180, 'popular comparisons should stay focused');
   assert.ok(pricingLimitsSource.split('\n').length <= 180, 'pricing limits section should stay focused');
   assert.ok(decisionFaqSource.split('\n').length <= 180, 'decision FAQ should stay focused');
+});
+
+test('Seedance 2.5 model cards link to the shared Seedance examples family', () => {
+  assert.deepEqual(buildModelExamplesHref('seedance-2-5'), {
+    pathname: '/examples/[model]',
+    params: { model: 'seedance' },
+  });
 });
 
 test('models catalog JSON-LD helper owns schema payload construction', () => {

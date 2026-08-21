@@ -8,23 +8,26 @@ import { getVisibleAssetSlots } from '@/lib/asset-slot-layout';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { getLocalizedAssetDropzoneCopy, normalizeUiLocale } from '@/lib/ltx-localization';
 import { normalizeMinimumImageSide } from '@/lib/image-dimension-constraints';
+import { resolveEngineMediaFieldConstraint } from '@/lib/media-field-constraints';
 import { AssetFieldTooltip } from '@/components/asset-dropzone/AssetFieldTooltip';
 import { AssetFieldGuidance } from '@/components/asset-dropzone/AssetFieldGuidance';
 import { AssetFieldDisabledBadge, AssetFieldDisabledNotice } from '@/components/asset-dropzone/AssetFieldDisabledState';
 import { AssetDropzoneSlot } from '@/components/asset-dropzone/AssetDropzoneSlot';
 import {
   buildAssetFieldTooltipLines,
+  formatAcceptedAudioExtensions,
   readMediaDuration,
+  resolveAcceptedAudioInputTypes,
   resolveAssetFieldTitle,
   resolveAssetRoleDescription,
   resolveSlotLabel,
+  validateEngineAudioFile,
   validateEngineImageFile,
   VEO_REFERENCE_WARNING_ENGINES,
 } from '@/components/asset-dropzone/asset-dropzone-helpers';
 import type { AssetDisabledPresentation, AssetFieldGuidance as AssetFieldGuidanceCopy, AssetFieldRole, AssetSlotAttachment, AssetUploadMeta } from '@/components/asset-dropzone/asset-dropzone-types';
 
 export type { AssetDisabledPresentation, AssetFieldConfig, AssetFieldGuidance, AssetFieldRole, AssetSlotAttachment, AssetUploadMeta } from '@/components/asset-dropzone/asset-dropzone-types';
-
 interface AssetDropzoneProps {
   engine: EngineCaps;
   caps?: CapabilityCaps;
@@ -77,6 +80,9 @@ export function AssetDropzone({
   const minCount = required ? (field.minCount ?? 1) : 0;
   const limits = engine.inputLimits;
   const constraints = engine.inputSchema?.constraints ?? {};
+  const mediaFieldConstraint = useMemo(
+    () => resolveEngineMediaFieldConstraint({ engine, field }),
+    [engine, field]);
   const minimumImageSidePx = normalizeMinimumImageSide(constraints.minImageSidePx);
   const acceptFormats = useMemo(() => {
     const configuredFormats = caps?.acceptsImageFormats?.length ? caps.acceptsImageFormats : constraints.supportedFormats;
@@ -89,7 +95,7 @@ export function AssetDropzone({
         : 'image/*';
     }
     if (field.type === 'audio') {
-      return 'audio/*';
+      return resolveAcceptedAudioInputTypes(mediaFieldConstraint);
     }
     return 'video/*';
   })();
@@ -135,9 +141,9 @@ export function AssetDropzone({
         onError?.(assetCopy.dropVideoFile);
         return;
       }
-      if (field.type === 'audio' && !file.type.startsWith('audio/')) {
-        onError?.(assetCopy.dropAudioFile);
-        return;
+      if (field.type === 'audio') {
+        const validation = validateEngineAudioFile({ file, constraint: mediaFieldConstraint, assetCopy });
+        if (!validation.ok) return onError?.(validation.message);
       }
       if (field.type === 'video') {
         const maxSizeMB = constraints.maxVideoSizeMB ?? limits.videoMaxMB;
@@ -188,6 +194,7 @@ export function AssetDropzone({
       limits.audioMaxDurationSec,
       limits.videoMaxDurationSec,
       limits.videoMaxMB,
+      mediaFieldConstraint,
       minimumImageSidePx,
       onError,
       onSelect,
@@ -262,8 +269,9 @@ export function AssetDropzone({
       const maxVideoDuration = field.maxDurationSec ?? limits.videoMaxDurationSec;
       if (maxVideoDuration) lines.push(assetCopy.secondsMax(maxVideoDuration));
     } else {
-      lines.push(assetCopy.formats('MP3, WAV, M4A'));
-      const maxAudio = constraints.maxAudioSizeMB ?? limits.audioMaxMB ?? limits.videoMaxMB;
+      const audioFormats = formatAcceptedAudioExtensions(mediaFieldConstraint);
+      lines.push(assetCopy.formats(audioFormats));
+      const maxAudio = mediaFieldConstraint.maxSizeMB ?? limits.videoMaxMB;
       if (maxAudio) lines.push(assetCopy.mbMax(maxAudio));
       const minAudioDuration = field.minDurationSec;
       const maxAudioDuration = field.maxDurationSec ?? limits.audioMaxDurationSec;
@@ -287,7 +295,6 @@ export function AssetDropzone({
     acceptFormats,
     assetCopy,
     caps?.maxUploadMB,
-    constraints.maxAudioSizeMB,
     constraints.maxImageSizeMB,
     constraints.maxVideoSizeMB,
     field.id,
@@ -297,10 +304,10 @@ export function AssetDropzone({
     field.minDurationSec,
     field.type,
     limits.audioMaxDurationSec,
-    limits.audioMaxMB,
     limits.imageMaxMB,
     limits.videoMaxDurationSec,
     limits.videoMaxMB,
+    mediaFieldConstraint,
     minimumImageSidePx,
   ]);
 

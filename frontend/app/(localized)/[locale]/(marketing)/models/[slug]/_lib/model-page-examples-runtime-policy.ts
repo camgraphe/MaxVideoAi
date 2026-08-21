@@ -19,9 +19,29 @@ const NUMBERED_ALT_MODELS = new Set([
   'pika-text-to-video',
 ]);
 
+const DECISION_ALT_PREFIX_ENGINE_IDS = new Set([
+  'luma-ray-2',
+  'lumaRay2',
+  'luma-ray-3-2',
+  'sora-2-pro',
+  'sora-2',
+  'ltx-2-3-fast',
+  'ltx-2-3-pro',
+  'ltx-2-3',
+  'kling-3-pro',
+  'kling-3-4k',
+  'kling-3-standard',
+  'veo-3-1-lite',
+  'veo-3-1',
+  'veo-3-1-fast',
+  'seedance-2-0-fast',
+  'seedance-1-5-pro',
+]);
+
 export type ModelExamplesRuntimePolicy = {
   audioMode: 'runtime' | 'silent';
   previewAltMode: 'prompt' | 'numbered-model-example';
+  decisionAltMode: 'preview-alt' | 'model-name-prefix';
 };
 
 export function resolveModelExamplesRuntimePolicy({
@@ -34,6 +54,9 @@ export function resolveModelExamplesRuntimePolicy({
   return {
     audioMode: SILENT_ENGINE_IDS.has(engineId) ? 'silent' : 'runtime',
     previewAltMode: NUMBERED_ALT_MODELS.has(modelSlug) ? 'numbered-model-example' : 'prompt',
+    decisionAltMode: DECISION_ALT_PREFIX_ENGINE_IDS.has(engineId)
+      ? 'model-name-prefix'
+      : 'preview-alt',
   };
 }
 
@@ -42,18 +65,19 @@ export function buildModelExamplePreviewAlts({
   locale,
   modelName,
   mode,
+  numberedExampleLabel,
 }: {
   galleryVideos: readonly ExampleGalleryVideo[];
   locale: AppLocale;
   modelName: string;
   mode: ModelExamplesRuntimePolicy['previewAltMode'];
+  numberedExampleLabel: string;
 }): Map<string, string> {
-  const exampleLabel = locale === 'fr' ? 'exemple' : locale === 'es' ? 'ejemplo' : 'example';
   return dedupeAltsInList(galleryVideos.slice(0, 6).map((video, index) => {
     const prompt = video.promptFull ?? video.prompt;
     const tag = inferRenderTag(prompt, locale);
     const label = mode === 'numbered-model-example'
-      ? `${modelName} ${tag ? `${tag} ` : ''}${exampleLabel} ${index + 1}`
+      ? `${modelName} ${tag ? `${tag} ` : ''}${numberedExampleLabel} ${index + 1}`
       : prompt;
     return {
       id: video.id,

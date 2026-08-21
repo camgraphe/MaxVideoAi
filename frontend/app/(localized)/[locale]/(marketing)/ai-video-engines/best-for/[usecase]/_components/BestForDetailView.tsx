@@ -105,7 +105,7 @@ export function BestForDetailView({
         </header>
 
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
-          <main className="space-y-10">
+          <div className="space-y-10">
             <section id="compare-shortlist" className="space-y-4" aria-labelledby="best-for-shortlist">
               <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
                 <div>
@@ -139,7 +139,7 @@ export function BestForDetailView({
             </section>
 
             <BestForContent content={content} contentComing={copy.contentComing} />
-          </main>
+          </div>
 
           <aside className="space-y-4 lg:sticky lg:top-24">
             <CriteriaCard criteria={criteria} locale={locale} copy={copy} />

@@ -1,5 +1,6 @@
 import type { ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
+import { isLegacyMarketingVideoUrl, resolvePublicMarketingVideoUrl } from '@/lib/media';
 import type { GalleryVideo } from '@/server/videos';
 
 export type FeaturedMedia = {
@@ -78,7 +79,10 @@ export function toGalleryCard(
     ? `${appPath}?job=${encodeURIComponent(video.id)}`
     : `/video/${encodeURIComponent(video.id)}`;
   const videoHref = !isImageWorkspace && fromPath ? `${videoHrefBase}?from=${encodeURIComponent(fromPath)}` : videoHrefBase;
-  const thumbUrl = normalizeMediaUrl(video.thumbUrl);
+  const thumbUrl =
+    video.thumbUrl && !isLegacyMarketingVideoUrl(video.thumbUrl)
+      ? normalizeMediaUrl(video.thumbUrl)
+      : null;
   return {
     id: video.id,
     href: videoHref,
@@ -93,8 +97,8 @@ export function toGalleryCard(
     hasAudio: video.hasAudio,
     optimizedPosterUrl: buildOptimizedPosterUrl(thumbUrl),
     rawPosterUrl: thumbUrl,
-    videoUrl: normalizeMediaUrl(video.videoUrl),
-    previewVideoUrl: normalizeMediaUrl(video.previewVideoUrl),
+    videoUrl: resolvePublicMarketingVideoUrl(video.videoUrl),
+    previewVideoUrl: resolvePublicMarketingVideoUrl(video.previewVideoUrl),
     recreateHref: `${appPath}?engine=${encodeURIComponent(engineSlug)}&from=${encodeURIComponent(video.id)}`,
   };
 }
@@ -106,8 +110,8 @@ export function toFeaturedMedia(entry?: ExampleGalleryVideo | null, preferFullPr
   return {
     id: entry.id,
     prompt,
-    videoUrl: normalizeMediaUrl(entry.videoUrl),
-    previewVideoUrl: normalizeMediaUrl(entry.previewVideoUrl),
+    videoUrl: resolvePublicMarketingVideoUrl(entry.videoUrl),
+    previewVideoUrl: resolvePublicMarketingVideoUrl(entry.previewVideoUrl),
     posterUrl: normalizeMediaUrl(entry.optimizedPosterUrl) ?? normalizeMediaUrl(entry.rawPosterUrl),
     durationSec: entry.durationSec,
     hasAudio: entry.hasAudio,

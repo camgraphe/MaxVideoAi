@@ -2,15 +2,20 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
+import { getPayAsYouGoContent } from '../frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/_content/index.ts';
 import { buildPayAsYouGoPageData } from '../frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/_lib/payg-page-data.ts';
-import mcpPublication from '../frontend/config/mcp-publication.json';
-import { buildLlmsText } from '../frontend/lib/seo/llms-text.ts';
 
 const root = process.cwd();
 const routeRoot = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator');
 const pagePath = join(routeRoot, 'page.tsx');
 const viewPath = join(routeRoot, '_components/PayAsYouGoPageView.tsx');
 const showcasePath = join(routeRoot, '_components/PayAsYouGoVideoShowcase.tsx');
+const sectionPaths = [
+  'PayAsYouGoHeroSections.tsx',
+  'PayAsYouGoGuideSections.tsx',
+  'PayAsYouGoPricingSections.tsx',
+  'PayAsYouGoTrustSections.tsx',
+].map((name) => join(routeRoot, '_components', name));
 const dataPath = join(routeRoot, '_lib/payg-page-data.ts');
 const jsonLdPath = join(routeRoot, '_lib/payg-jsonld.ts');
 const showcaseDataPath = join(routeRoot, '_lib/payg-video-showcase.ts');
@@ -19,7 +24,8 @@ const middlewarePath = join(root, 'frontend/lib/middleware/routing-marketing.ts'
 const queryPath = join(root, 'frontend/lib/middleware/routing-query.ts');
 const localizedSlugsPath = join(root, 'frontend/config/localized-slugs.json');
 const routingPath = join(root, 'frontend/i18n/routing.ts');
-const llmsText = buildLlmsText(mcpPublication);
+const llmsBuilderPath = join(root, 'frontend/lib/seo/llms-text.ts');
+const contentRoot = join(routeRoot, '_content');
 
 function read(path: string) {
   return readFileSync(path, 'utf8');
@@ -48,8 +54,10 @@ test('pay-as-you-go page exists with focused route-local boundaries', () => {
 
 test('pay-as-you-go page targets natural-language AI search questions', () => {
   const viewSource = read(viewPath);
+  const rendererSource = [viewPath, ...sectionPaths].filter(existsSync).map(read).join('\n');
   const dataSource = read(dataPath);
-  const combined = `${viewSource}\n${dataSource}`;
+  const contentSource = ['en.ts', 'fr.ts', 'es.ts'].map((name) => read(join(contentRoot, name))).join('\n');
+  const combined = `${viewSource}\n${dataSource}\n${contentSource}`;
 
   [
     'Pay-as-you-go AI Video Generator',
@@ -79,16 +87,16 @@ test('pay-as-you-go page targets natural-language AI search questions', () => {
   });
 
   assert.match(dataSource, /buildPricingHubData/);
-  assert.match(viewSource, /EngineIcon/);
+  assert.match(rendererSource, /EngineIcon/);
   assert.doesNotMatch(combined, /Direct AI-search answers|natural questions users ask LLMs|GSC-informed shortcuts/);
   assert.doesNotMatch(viewSource, /generated_images|\\.codex/);
-  assert.match(dataSource, /Kling/);
-  assert.match(dataSource, /Veo/);
-  assert.match(dataSource, /Seedance 2/);
-  assert.match(dataSource, /Happy Horse 1\.1/);
-  assert.match(dataSource, /Seedance 2 Mini/);
-  assert.match(dataSource, /LTX/);
-  assert.match(dataSource, /Wan/);
+  assert.match(combined, /Kling/);
+  assert.match(combined, /Veo/);
+  assert.match(combined, /Seedance 2/);
+  assert.match(combined, /Happy Horse 1\.1/);
+  assert.match(combined, /Seedance 2 Mini/);
+  assert.match(combined, /LTX/);
+  assert.match(combined, /Wan/);
   assert.doesNotMatch(combined, /Sora|sora|OpenAI|Pika|pika/);
 });
 
@@ -102,17 +110,26 @@ test('pay-as-you-go page uses an admin-controlled public video playlist strip', 
   assert.match(showcaseDataSource, /listPlaylistVideos\(PAYG_VIDEO_PLAYLIST_SLUG/);
   assert.match(showcaseDataSource, /listGalleryVideos\('starter'/);
   assert.match(showcaseDataSource, /finalPriceCents/);
-  assert.match(showcaseDataSource, /Price shown first/);
   assert.match(showcaseDataSource, /SHOWCASE_DISALLOWED_MODEL_PATTERN/);
   assert.match(showcaseDataSource, /SHOWCASE_MODEL_PRIORITY/);
   assert.match(showcaseDataSource, /formatVideoTitle/);
-  assert.match(showcaseDataSource, /Earlier Happy Horse render used as an Alibaba-route example/);
-  assert.match(showcaseSource, /View prompt and result/);
   assert.match(pageSource, /const showcaseVideos = await loadPayAsYouGoVideoShowcase/);
   assert.match(viewSource, /<PayAsYouGoVideoShowcase videos=\{showcaseVideos\}/);
-  assert.match(showcaseSource, /Real pay-as-you-go outputs/);
   assert.match(showcaseSource, /<video/);
   assert.doesNotMatch(showcaseSource, /admin\/playlists|Manage playlist/);
+});
+
+test('showcase keeps runtime selection but owns no localized prose', () => {
+  const componentSource = read(showcasePath);
+  const loaderSource = read(showcaseDataPath);
+
+  assert.doesNotMatch(componentSource, /getShowcaseCopy|locale: AppLocale/);
+  assert.match(componentSource, /copy: PayAsYouGoContent\['showcase'\]\['section'\]/);
+  assert.doesNotMatch(
+    loaderSource,
+    /translatedTitles|const copy = \(en: string|Price shown first|Precio visible antes de generar|Prix affiché avant la génération/,
+  );
+  assert.match(loaderSource, /copy: PayAsYouGoShowcaseRuntimeCopy/);
 });
 
 test('pay-as-you-go route is discoverable by middleware and query cleanup', () => {
@@ -126,33 +143,32 @@ test('pay-as-you-go route is discoverable by middleware and query cleanup', () =
   assert.match(read(routingPath), /\/pay-as-you-go-ai-video-generator/);
   assert.match(read(middlewarePath), /pay-as-you-go-ai-video-generator/);
   assert.match(read(queryPath), /pay-as-you-go-ai-video-generator/);
-  assert.match(llmsText, /https:\/\/maxvideoai\.com\/pay-as-you-go-ai-video-generator/);
+  assert.match(read(llmsBuilderPath), /https:\/\/maxvideoai\.com\/pay-as-you-go-ai-video-generator/);
 });
 
-test('pay-as-you-go page localizes its metadata and every route-local content surface', () => {
+test('pay-as-you-go page localizes every route-local content surface', () => {
   const pageSource = read(pagePath);
   const viewSource = read(viewPath);
   const dataSource = read(dataPath);
   const showcaseSource = read(showcasePath);
   const showcaseDataSource = read(showcaseDataPath);
 
-  assert.match(pageSource, /PAYG_META\[locale\]/);
-  assert.match(pageSource, /<PayAsYouGoPageView locale=\{locale\}/);
-  assert.match(pageSource, /loadPayAsYouGoVideoShowcase\(locale\)/);
-  assert.match(dataSource, /PAYG_COPY_BY_LOCALE\[locale\]/);
-  assert.match(dataSource, /Generador de video con IA de pago por uso/);
-  assert.match(dataSource, /Générateur de vidéos IA sans abonnement/);
-  assert.match(viewSource, /getPayAsYouGoViewCopy\(locale\)/);
-  assert.match(showcaseSource, /locale: AppLocale/);
+  assert.doesNotMatch(pageSource, /<PayAsYouGoPageView\s+locale=\{locale\}/);
+  assert.match(pageSource, /<PayAsYouGoPageView\s+data=\{data\}/);
+  assert.match(pageSource, /loadPayAsYouGoVideoShowcase\(\{ locale, copy: content\.showcase\.runtime \}\)/);
+  assert.match(pageSource, /const content = getPayAsYouGoContent\(locale\)/);
+  assert.match(pageSource, /buildPayAsYouGoPageData\(\{ locale, content \}\)/);
+  assert.doesNotMatch(dataSource, /PAYG_COPY_BY_LOCALE|PRICE_LOOKUP_COPY|modelBestFor|localizedLabels/);
+  assert.doesNotMatch(viewSource, /getPayAsYouGoViewCopy|copy\.text|locale ===|\[locale\]/);
+  assert.match(viewSource, /<PayAsYouGoVideoShowcase videos=\{showcaseVideos\} copy=\{showcaseCopy\} \/>/);
+  assert.doesNotMatch(showcaseSource, /locale: AppLocale/);
   assert.match(showcaseDataSource, /locale: AppLocale/);
-  assert.match(read(jsonLdPath), /buildPayAsYouGoServiceJsonLd\(\{ canonical, locale = 'en' \}/);
-  assert.match(read(jsonLdPath), /Generador de video con IA de pago por uso/);
-  assert.match(read(jsonLdPath), /Générateur de vidéos IA sans abonnement/);
+  assert.ok(dataSource.split('\n').length <= 400);
 });
 
 test('pay-as-you-go runtime data uses market-adapted Spanish and French copy', () => {
-  const es = JSON.stringify(buildPayAsYouGoPageData('es'));
-  const fr = JSON.stringify(buildPayAsYouGoPageData('fr'));
+  const es = JSON.stringify(buildPayAsYouGoPageData({ locale: 'es', content: getPayAsYouGoContent('es') }));
+  const fr = JSON.stringify(buildPayAsYouGoPageData({ locale: 'fr', content: getPayAsYouGoContent('fr') }));
 
   assert.match(es, /Generador de video con IA de pago por uso/);
   assert.match(es, /cotización en tiempo real/);

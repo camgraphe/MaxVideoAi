@@ -5,9 +5,6 @@
   "description": "Mock API server and fixtures for the MaxVideoAI Generate page",
   "license": "BUSL-1.1",
   "author": "MaxVideoAI",
-  "engines": {
-    "node": ">=22"
-  },
   "dependencies": {
     "lucide-react": "^0.553.0",
     "pg": "^8.11.3",
@@ -27,16 +24,12 @@
     "model:registry:check": "tsx --tsconfig frontend/tsconfig.json scripts/validate-model-registry.ts && node scripts/generate-model-runtime.mjs && pnpm engine:catalog -- --check && pnpm model:generate",
     "model:scaffold": "npm --prefix frontend run models:scaffold --",
     "model:setup": "node scripts/model-setup.mjs",
-    "models:audit": "node scripts/models-audit.mjs",
+    "models:audit": "tsx --tsconfig frontend/tsconfig.json scripts/models-audit.mjs",
     "pricing:baseline": "tsx --tsconfig frontend/tsconfig.json scripts/pricing-baseline.ts",
     "pricing:public-baseline": "tsx --tsconfig frontend/tsconfig.json frontend/scripts/pricing-public-baseline.ts",
     "pricing:public-baseline:generate": "tsx --tsconfig frontend/tsconfig.json frontend/scripts/pricing-public-baseline.ts --write",
     "pricing:audit": "tsx --tsconfig frontend/tsconfig.json scripts/pricing-audit.ts",
     "architecture:audit": "node scripts/audit-large-files.mjs",
-    "qa:mcp-launch:gated": "node scripts/run-mcp-launch-fixture.mjs --mode gated",
-    "qa:mcp-launch:preview": "node scripts/run-mcp-launch-fixture.mjs --mode preview",
-    "qa:mcp-launch:enabled": "node scripts/run-mcp-launch-fixture.mjs --mode enabled",
-    "qa:mcp-launch:lighthouse": "node scripts/run-mcp-launch-fixture.mjs --mode enabled --lighthouse",
     "db:migrate:neon": "bash scripts/apply-neon-migrations.sh",
     "neon:branches:check": "node scripts/neon-branch-guard.mjs",
     "neon:branches:prune": "node scripts/neon-branch-guard.mjs --delete-archived",
@@ -93,6 +86,7 @@
   "devDependencies": {
     "@playwright/test": "^1.59.1",
     "@types/pg": "^8.10.2",
+    "esbuild": "0.25.11",
     "jsdom": "26.1.0",
     "tsx": "^4.20.6"
   }

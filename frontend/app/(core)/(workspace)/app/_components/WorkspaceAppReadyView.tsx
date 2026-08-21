@@ -27,7 +27,6 @@ type WorkspaceAppReadyViewProps = {
   generation: ReturnType<typeof useWorkspaceGenerationRunner>;
   handleRefreshJob: ReturnType<typeof useWorkspaceJobRefresh>;
   inputSchema: ReturnType<typeof useWorkspaceInputSchemaState>;
-  isDesktopLayout: boolean;
   noticeState: ReturnType<typeof useWorkspaceNotice>;
   previewState: ReturnType<typeof useWorkspacePreviewState>;
   pricing: ReturnType<typeof useWorkspacePricingGate>;
@@ -44,7 +43,6 @@ export function WorkspaceAppReadyView({
   generation,
   handleRefreshJob,
   inputSchema,
-  isDesktopLayout,
   noticeState,
   previewState,
   pricing,
@@ -197,7 +195,6 @@ export function WorkspaceAppReadyView({
   return (
     <>
       <WorkspaceAppShell
-        isDesktopLayout={isDesktopLayout}
         selectedEngine={selectedEngine}
         engines={engines}
         normalizedPendingGroups={normalizedPendingGroups}

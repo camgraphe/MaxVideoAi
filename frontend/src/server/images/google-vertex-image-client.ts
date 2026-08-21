@@ -5,6 +5,7 @@ import {
 } from '@/server/video-providers/google-vertex-auth';
 import { GoogleVertexImageError } from './google-vertex-image-error';
 import type { GoogleVertexImagePayload } from './google-vertex-image-payload';
+import { extractGoogleVertexImages, summarizeGoogleVertexImageResponse } from './google-vertex-image-response';
 
 export type GoogleVertexImageClientConfig = {
   projectId: string;
@@ -14,7 +15,25 @@ export type GoogleVertexImageClientConfig = {
   fetchFn?: typeof fetch;
   getAccessTokenFn?: (serviceAccount: GoogleVertexServiceAccount) => Promise<string>;
   timeoutMs?: number;
+  retryDelayMs?: number;
 };
+
+const GOOGLE_VERTEX_IMAGE_MAX_ATTEMPTS = 2;
+
+function isRetryableGoogleVertexImageError(error: unknown): boolean {
+  if (!(error instanceof GoogleVertexImageError)) return false;
+  return (
+    error.status === 429 ||
+    Boolean(error.status && error.status >= 500) ||
+    error.code === 'GOOGLE_VERTEX_IMAGE_TIMEOUT' ||
+    error.code === 'GOOGLE_VERTEX_IMAGE_NETWORK_ERROR'
+  );
+}
+
+async function waitForRetry(delayMs: number): Promise<void> {
+  if (delayMs <= 0) return;
+  await new Promise<void>((resolve) => setTimeout(resolve, delayMs));
+}
 
 export function isGoogleVertexImageConfigured(env: NodeJS.ProcessEnv = process.env): boolean {
   return Boolean(
@@ -45,6 +64,27 @@ export class GoogleVertexImageClient {
   }
 
   async generateContent(modelId: string, payload: GoogleVertexImagePayload): Promise<unknown> {
+    let lastResponse: unknown = null;
+    for (let attempt = 0; attempt < GOOGLE_VERTEX_IMAGE_MAX_ATTEMPTS; attempt += 1) {
+      try {
+        const response = await this.generateContentOnce(modelId, payload);
+        lastResponse = response;
+        const hasImages = extractGoogleVertexImages(response).length > 0;
+        const responseSummary = summarizeGoogleVertexImageResponse(response);
+        const isLastAttempt = attempt === GOOGLE_VERTEX_IMAGE_MAX_ATTEMPTS - 1;
+        if (hasImages || responseSummary.blockedForSafety || isLastAttempt) {
+          return response;
+        }
+      } catch (error) {
+        const isLastAttempt = attempt === GOOGLE_VERTEX_IMAGE_MAX_ATTEMPTS - 1;
+        if (!isRetryableGoogleVertexImageError(error) || isLastAttempt) throw error;
+      }
+      await waitForRetry(this.config.retryDelayMs ?? 500);
+    }
+    return lastResponse;
+  }
+
+  private async generateContentOnce(modelId: string, payload: GoogleVertexImagePayload): Promise<unknown> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.config.timeoutMs ?? 120_000);
     const base = this.config.apiBaseUrl.replace(/\/+$/, '');

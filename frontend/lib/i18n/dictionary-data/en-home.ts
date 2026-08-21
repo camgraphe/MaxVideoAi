@@ -99,11 +99,6 @@ export const home: Dictionary['home'] = {
             slug: 'veo-3-1',
             pricing: { engineId: 'veo-3-1', durationSec: 8, resolution: '1080p', memberTier: 'member' },
           },
-          media: {
-            videoSrc: '/assets/gallery/robot-look.mp4',
-            posterSrc: '/hero/veo-3-1-hero.jpg',
-            hasAudio: true,
-          },
         },
         {
           id: 'veo31-fast-demo',
@@ -114,11 +109,6 @@ export const home: Dictionary['home'] = {
             slug: 'veo-3-1-fast',
             pricing: { engineId: 'veo-3-1-fast', durationSec: 8, resolution: '720p', memberTier: 'member' },
           },
-        media: {
-          videoSrc: '/assets/gallery/robot-eyes.mp4',
-          posterSrc: '/hero/veo-3-1-hero.jpg',
-          hasAudio: true,
-        },
       },
         {
           id: 'minimax-hailuo',
@@ -128,11 +118,6 @@ export const home: Dictionary['home'] = {
           meta: {
             slug: 'minimax-hailuo-02-text',
             pricing: { engineId: 'minimax-hailuo-02-text', durationSec: 6, resolution: '768P', memberTier: 'member' },
-          },
-          media: {
-            videoSrc: '/hero/minimax-video01.mp4',
-            posterSrc: '/hero/minimax-video01.jpg',
-            hasAudio: true,
           },
         },
       ],

@@ -74,6 +74,18 @@ test('video preview empty, download, and error copy are localized in every works
   }
 });
 
+test('Seedance copyright failure and wallet refund copy are localized in every workspace locale', () => {
+  const requiredPaths = [
+    'workspace.generate.messages.seedanceCopyrightBlocked',
+    'workspace.generate.messages.seedanceCopyrightBlockedRefunded',
+  ];
+
+  for (const [locale, messages] of Object.entries(localeMessages)) {
+    const missing = requiredPaths.filter((path) => typeof readPath(messages, path) !== 'string');
+    assert.deepEqual(missing, [], `${locale} is missing Seedance copyright failure copy: ${missing.join(', ')}`);
+  }
+});
+
 test('video and image auth gates promise only a return to the workspace', () => {
   for (const [locale, messages] of Object.entries(localeMessages)) {
     for (const gate of [messages.workspace.generate.authGate, messages.workspace.image.authGate]) {

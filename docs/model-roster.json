@@ -96,6 +96,22 @@
     }
   },
   {
+    "engineId": "seedance-2-5",
+    "marketingName": "Seedance 2.5",
+    "brandId": "bytedance",
+    "modelSlug": "seedance-2-5",
+    "family": "seedance",
+    "versionLabel": "2.5",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
     "engineId": "seedream",
     "marketingName": "Seedream",
     "brandId": "bytedance",
@@ -518,6 +534,22 @@
     "modelSlug": "luma-uni-1-max",
     "family": "luma-uni",
     "versionLabel": "Uni-1 Max",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
+    "engineId": "minimax-h3",
+    "marketingName": "MiniMax H3",
+    "brandId": "minimax",
+    "modelSlug": "minimax-h3",
+    "family": "hailuo",
+    "versionLabel": "H3",
     "availability": "available",
     "logoPolicy": "logoAllowed",
     "surfaces": {

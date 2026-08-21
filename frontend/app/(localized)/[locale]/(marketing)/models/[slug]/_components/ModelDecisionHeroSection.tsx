@@ -109,13 +109,21 @@ export function ModelDecisionHeroSection({
   return (
     <div id="top" className="space-y-7">
       <nav className="flex flex-wrap items-center gap-2 text-sm text-[#5d6b82] dark:text-white/60">
-        <Link href={homeCrumb.href} className="font-medium transition hover:text-[#071126] dark:hover:text-white">
+        <Link
+          href={homeCrumb.href}
+          prefetch={false}
+          className="font-medium transition hover:text-[#071126] dark:hover:text-white"
+        >
           {homeCrumb.label}
         </Link>
         <span aria-hidden className="text-text-muted dark:text-white/30">
           /
         </span>
-        <Link href={localizeModelsPath()} className="font-medium transition hover:text-[#071126] dark:hover:text-white">
+        <Link
+          href={localizeModelsPath()}
+          prefetch={false}
+          className="font-medium transition hover:text-[#071126] dark:hover:text-white"
+        >
           {resolvedBreadcrumb.models}
         </Link>
         <span aria-hidden className="text-text-muted dark:text-white/30">
@@ -145,6 +153,7 @@ export function ModelDecisionHeroSection({
             <div className="flex flex-col gap-3 sm:flex-row">
               <Link
                 href={decision.hero.primaryCta.href}
+                prefetch={false}
                 className="inline-flex min-h-[50px] items-center justify-center gap-2 whitespace-nowrap rounded-[10px] bg-[#071126] px-5 py-3 text-[0.84rem] font-semibold text-white shadow-[0_16px_34px_rgba(7,17,38,0.18)] transition hover:bg-[#122340] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg dark:bg-white dark:text-[#071126] dark:hover:bg-white/90 sm:px-6 sm:text-sm"
               >
                 <UIIcon icon={Sparkles} size={17} />
@@ -153,6 +162,7 @@ export function ModelDecisionHeroSection({
               </Link>
               <Link
                 href={decision.hero.secondaryCta.href}
+                prefetch={false}
                 className="inline-flex min-h-[50px] items-center justify-center gap-2 whitespace-nowrap rounded-[10px] border border-[#d8e0ec] bg-white px-5 py-3 text-[0.84rem] font-semibold text-[#071126] shadow-[0_10px_28px_rgba(15,23,42,0.07)] transition hover:border-[#b8c6db] hover:bg-[#fbfdff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg dark:border-white/12 dark:bg-white/[0.055] dark:text-white dark:hover:bg-white/[0.085] sm:px-6 sm:text-sm"
               >
                 <UIIcon icon={PlayCircle} size={18} />
@@ -169,6 +179,7 @@ export function ModelDecisionHeroSection({
                   <Link
                     key={`${link.label}-${link.href}`}
                     href={link.href}
+                    prefetch={false}
                     className="inline-flex items-center gap-2 font-medium text-[#52627a] transition hover:text-[#071126] dark:text-white/60 dark:hover:text-white"
                   >
                     <UIIcon icon={Icon} size={16} strokeWidth={1.9} className={MODEL_PAGE_ICON_MUTED} />

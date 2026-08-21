@@ -1,7 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { validateExtraInputValues } from '@/app/api/generate/_lib/extra-input-values';
-import { processGenerationAttachments } from '@/app/api/generate/_lib/attachments';
-import { deriveGenerationAttachmentReferences } from '@/app/api/generate/_lib/attachment-references';
+import { processAndValidateGenerationAttachments } from '@/app/api/generate/_lib/generation-attachment-processing';
 import { buildFalRequestParts } from '@/app/api/generate/_lib/fal-request';
 import { buildGenerationSettingsSnapshot } from '@/app/api/generate/_lib/settings-snapshot';
 import {
@@ -136,40 +135,46 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
   }
   const validatedExtraInputValues = extraInputValidation.values;
 
-  const attachmentProcessing = await processGenerationAttachments({
+  const attachmentProcessing = await processAndValidateGenerationAttachments({
     rawInputs: body.inputs,
     userId,
-  });
-  if (!attachmentProcessing.ok) {
-    return {
-      body: attachmentProcessing.body,
-      status: attachmentProcessing.status,
-    };
-  }
-  const processedAttachments = attachmentProcessing.attachments;
-
-  const {
-    maxUploadedBytes,
-    lastFrameUrl,
-    normalizedReferenceImages,
-    videoUrls,
-    audioUrls,
-    resolvedAudioUrl,
-    initialImageUrl,
-    resolvedFirstFrameUrl,
-    startImageUrl,
-    sourceInputVideoUrl,
-  } = deriveGenerationAttachmentReferences({
-    attachments: processedAttachments,
     engineId: engine.id,
     mode,
+    inputSchema: engine.inputSchema,
     soraImageUrl: soraRequest?.mode === 'i2v' ? soraRequest.image_url : undefined,
     imageUrl: body.imageUrl,
     image_url: body.image_url,
     referenceImages: body.referenceImages,
     reference_images: body.reference_images,
     rawAudioUrl,
+    endImageUrl,
+    isBytePlusV1a,
   });
+  if (!attachmentProcessing.ok) {
+    if (attachmentProcessing.metric) logMetric('rejected', attachmentProcessing.metric);
+    return {
+      body: attachmentProcessing.body,
+      status: attachmentProcessing.status,
+    };
+  }
+  const {
+    attachments: processedAttachments,
+    references: {
+      maxUploadedBytes,
+      lastFrameUrl,
+      normalizedReferenceImages,
+      videoUrls,
+      audioUrls,
+      resolvedAudioUrl,
+      initialImageUrl,
+      resolvedFirstFrameUrl,
+      startImageUrl,
+      sourceInputVideoUrl,
+      referenceValuesByField,
+      referenceMediaItems,
+      referenceProvenanceIssues,
+    },
+  } = attachmentProcessing;
   const sourceVideoContext = resolveGenerateSourceVideoContext({
     mode,
     attachments: processedAttachments,
@@ -216,6 +221,10 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     loop,
     seed,
     safetyChecker,
+    inputSchema: engine.inputSchema,
+    referenceValuesByField,
+    referenceMediaItems,
+    referenceProvenanceIssues,
   });
   if (!validationPayloadResult.ok) {
     logMetric('rejected', validationPayloadResult.metric);
@@ -391,6 +400,8 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     videoUrls,
     resolvedAudioUrl,
     audioUrls,
+    inputSchema: engine.inputSchema,
+    referenceValuesByField,
     placeholderThumb,
     falPayload,
     falInputSummary,

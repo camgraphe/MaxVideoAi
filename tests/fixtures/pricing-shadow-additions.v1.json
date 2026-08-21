@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "generatedFrom": "registry-publication-shadow-additions",
+  "rows": [
+    {
+      "scenarioId": "billing:minimax-h3:t2v:10:2K:member",
+      "surface": "billing",
+      "currency": "USD",
+      "vendorSubtotalCents": 130,
+      "marginCents": 39,
+      "surchargeCents": 0,
+      "customerTotalCents": 169,
+      "unit": "sec",
+      "quantity": 10,
+      "equivalenceKey": "minimax-h3:t2v:10:2K:member"
+    },
+    {
+      "scenarioId": "billing:minimax-h3:t2v:10:2K:plus",
+      "surface": "billing",
+      "currency": "USD",
+      "vendorSubtotalCents": 130,
+      "marginCents": 39,
+      "surchargeCents": 0,
+      "customerTotalCents": 161,
+      "unit": "sec",
+      "quantity": 10,
+      "equivalenceKey": "minimax-h3:t2v:10:2K:plus"
+    },
+    {
+      "scenarioId": "billing:minimax-h3:t2v:10:2K:pro",
+      "surface": "billing",
+      "currency": "USD",
+      "vendorSubtotalCents": 130,
+      "marginCents": 39,
+      "surchargeCents": 0,
+      "customerTotalCents": 152,
+      "unit": "sec",
+      "quantity": 10,
+      "equivalenceKey": "minimax-h3:t2v:10:2K:pro"
+    },
+    {
+      "scenarioId": "estimator:minimax-h3:10:2K",
+      "surface": "estimator",
+      "currency": "USD",
+      "vendorSubtotalCents": 130,
+      "marginCents": 39,
+      "surchargeCents": 0,
+      "customerTotalCents": 169,
+      "unit": "sec",
+      "quantity": 10,
+      "equivalenceKey": "minimax-h3:t2v:10:2K:member",
+      "displayedAmount": "$1.69"
+    },
+    {
+      "scenarioId": "billing:seedance-2-5:t2v:4:480p:member",
+      "surface": "billing",
+      "currency": "USD",
+      "vendorSubtotalCents": 79,
+      "marginCents": 24,
+      "surchargeCents": 0,
+      "customerTotalCents": 103,
+      "unit": "sec",
+      "quantity": 4,
+      "equivalenceKey": "seedance-2-5:t2v:4:480p:member"
+    },
+    {
+      "scenarioId": "billing:seedance-2-5:t2v:4:480p:plus",
+      "surface": "billing",
+      "currency": "USD",
+      "vendorSubtotalCents": 79,
+      "marginCents": 24,
+      "surchargeCents": 0,
+      "customerTotalCents": 98,
+      "unit": "sec",
+      "quantity": 4,
+      "equivalenceKey": "seedance-2-5:t2v:4:480p:plus"
+    },
+    {
+      "scenarioId": "billing:seedance-2-5:t2v:4:480p:pro",
+      "surface": "billing",
+      "currency": "USD",
+      "vendorSubtotalCents": 79,
+      "marginCents": 24,
+      "surchargeCents": 0,
+      "customerTotalCents": 93,
+      "unit": "sec",
+      "quantity": 4,
+      "equivalenceKey": "seedance-2-5:t2v:4:480p:pro"
+    },
+    {
+      "scenarioId": "estimator:seedance-2-5:4:480p",
+      "surface": "estimator",
+      "currency": "USD",
+      "vendorSubtotalCents": 79,
+      "marginCents": 24,
+      "surchargeCents": 0,
+      "customerTotalCents": 103,
+      "unit": "sec",
+      "quantity": 4,
+      "equivalenceKey": "seedance-2-5:t2v:4:480p:member",
+      "displayedAmount": "$1.03"
+    }
+  ]
+}

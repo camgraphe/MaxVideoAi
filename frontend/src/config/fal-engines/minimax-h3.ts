@@ -1,0 +1,321 @@
+import type { AspectRatio, EngineCaps } from '../../../types/engines';
+import type { RawFalEngineEntry } from './types';
+
+export const MINIMAX_H3_ID = 'minimax-h3' as const;
+
+export const MINIMAX_H3_ENDPOINTS = {
+  t2v: 'minimax/h3/text-to-video',
+  i2v: 'minimax/h3/image-to-video',
+  ref2v: 'minimax/h3/reference-to-video',
+} as const;
+
+export const MINIMAX_H3_DURATION_OPTIONS = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] as const;
+export const MINIMAX_H3_RESOLUTIONS = ['768P', '2K', '4K'] as const;
+export const MINIMAX_H3_FIXED_ASPECT_RATIOS = ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16'] as const;
+export const MINIMAX_H3_ASPECT_RATIOS = [
+  ...MINIMAX_H3_FIXED_ASPECT_RATIOS,
+  'auto',
+] as const satisfies readonly AspectRatio[];
+
+const IMAGE_FORMATS = ['jpg', 'jpeg', 'png', 'webp'];
+const VIDEO_FORMATS = ['mp4', 'mov'];
+const AUDIO_FORMATS = ['mp3', 'wav'];
+
+export const MINIMAX_H3_ENGINE: EngineCaps = {
+  id: MINIMAX_H3_ID,
+  label: 'MiniMax H3',
+  provider: 'MiniMax',
+  version: 'H3',
+  status: 'live',
+  latencyTier: 'standard',
+  queueDepth: 0,
+  region: 'global',
+  modes: ['t2v', 'i2v', 'ref2v'],
+  maxDurationSec: 15,
+  resolutions: [...MINIMAX_H3_RESOLUTIONS],
+  aspectRatios: [...MINIMAX_H3_ASPECT_RATIOS],
+  fps: [24],
+  audio: true,
+  upscale4k: false,
+  extend: false,
+  motionControls: false,
+  keyframes: false,
+  params: {},
+  inputLimits: {
+    imageMaxMB: 30,
+    videoMaxMB: 50,
+    videoMaxDurationSec: 15,
+    videoCodecs: [...VIDEO_FORMATS],
+    audioMaxMB: 15,
+    audioMaxDurationSec: 15,
+    promptMaxChars: 7000,
+    promptMaxCharsSource: 'official',
+  },
+  inputSchema: {
+    required: [
+      {
+        id: 'prompt',
+        type: 'text',
+        label: 'Prompt',
+        description: 'Describe the characters, action, setting, camera, dialogue, and sound.',
+        modes: ['t2v', 'i2v', 'ref2v'],
+        requiredInModes: ['t2v', 'i2v', 'ref2v'],
+      },
+      {
+        id: 'image_url',
+        type: 'image',
+        label: 'Start image',
+        description: 'Required first frame for image-to-video.',
+        modes: ['i2v'],
+        requiredInModes: ['i2v'],
+        minCount: 1,
+        maxCount: 1,
+        maxSizeMB: 30,
+        acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+        acceptedFileExtensions: [...IMAGE_FORMATS],
+        source: 'either',
+      },
+    ],
+    optional: [
+      {
+        id: 'end_image_url',
+        type: 'image',
+        label: 'End image',
+        description: 'Optional final frame for an image-to-video transition.',
+        modes: ['i2v'],
+        minCount: 0,
+        maxCount: 1,
+        maxSizeMB: 30,
+        acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+        acceptedFileExtensions: [...IMAGE_FORMATS],
+        source: 'either',
+      },
+      {
+        id: 'reference_image_urls',
+        type: 'image',
+        label: 'Reference images (up to 9)',
+        description: 'Visual references for characters, environments, wardrobe, or composition.',
+        modes: ['ref2v'],
+        minCount: 0,
+        maxCount: 9,
+        maxSizeMB: 30,
+        acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+        acceptedFileExtensions: [...IMAGE_FORMATS],
+        source: 'either',
+      },
+      {
+        id: 'reference_video_urls',
+        type: 'video',
+        label: 'Reference videos (up to 3)',
+        description: 'Motion or performance references; 15 seconds combined maximum.',
+        modes: ['ref2v'],
+        minCount: 0,
+        maxCount: 3,
+        minDurationSec: 2,
+        maxDurationSec: 15,
+        maxSizeMB: 50,
+        acceptedMimeTypes: ['video/mp4', 'video/quicktime'],
+        acceptedFileExtensions: [...VIDEO_FORMATS],
+        source: 'either',
+      },
+      {
+        id: 'reference_audio_urls',
+        type: 'audio',
+        label: 'Reference audio (up to 3)',
+        description: 'Audio references paired with at least one image or video; 15 seconds combined maximum.',
+        modes: ['ref2v'],
+        minCount: 0,
+        maxCount: 3,
+        minDurationSec: 2,
+        maxDurationSec: 15,
+        maxSizeMB: 15,
+        acceptedMimeTypes: [
+          'audio/mpeg',
+          'audio/mp3',
+          'audio/wav',
+          'audio/x-wav',
+          'audio/wave',
+          'audio/vnd.wave',
+        ],
+        acceptedFileExtensions: [...AUDIO_FORMATS],
+        source: 'either',
+      },
+      {
+        id: 'duration',
+        type: 'enum',
+        label: 'Duration (seconds)',
+        modes: ['t2v', 'i2v', 'ref2v'],
+        values: MINIMAX_H3_DURATION_OPTIONS.map(String),
+        default: '10',
+        min: 5,
+        max: 15,
+      },
+      {
+        id: 'resolution',
+        type: 'enum',
+        label: 'Resolution',
+        modes: ['t2v', 'i2v', 'ref2v'],
+        values: [...MINIMAX_H3_RESOLUTIONS],
+        default: '2K',
+      },
+      {
+        id: 'aspect_ratio',
+        type: 'enum',
+        label: 'Aspect ratio',
+        description: 'Auto uses Fal adaptive framing.',
+        modes: ['t2v', 'ref2v'],
+        values: [...MINIMAX_H3_ASPECT_RATIOS],
+        default: '16:9',
+      },
+    ],
+    referenceBudget: {
+      fieldIds: [
+        'reference_image_urls',
+        'reference_video_urls',
+        'reference_audio_urls',
+      ],
+      modes: ['ref2v'],
+      maxTotal: 12,
+      countUniqueUrls: true,
+    },
+    constraints: {
+      supportedFormats: [...IMAGE_FORMATS, ...VIDEO_FORMATS, ...AUDIO_FORMATS],
+      maxImageSizeMB: 30,
+      maxVideoSizeMB: 50,
+      maxAudioSizeMB: 15,
+      maxCombinedVideoDurationSec: 15,
+      maxCombinedAudioDurationSec: 15,
+      referenceAudioRequiresVisual: true,
+    },
+  },
+  pricingDetails: {
+    currency: 'USD',
+    perSecondCents: {
+      default: 13,
+      byResolution: {
+        '768P': 8,
+        '2K': 13,
+        '4K': 16,
+      },
+    },
+  },
+  pricing: {
+    unit: 'USD/s',
+    base: 0.13,
+    byResolution: {
+      '768P': 0.08,
+      '2K': 0.13,
+      '4K': 0.16,
+    },
+    currency: 'USD',
+    notes: 'Provider cost varies by resolution; reference images above five add USD 0.08 each.',
+  },
+  updatedAt: '2026-08-08T00:00:00Z',
+  ttlSec: 600,
+  providerMeta: {
+    provider: 'minimax',
+    modelSlug: MINIMAX_H3_ENDPOINTS.t2v,
+  },
+  availability: 'available',
+  brandId: 'minimax',
+  brandAssetPolicy: {
+    logoAllowed: false,
+    textOnly: true,
+    usageNotes: 'Use text-only MiniMax attribution until approved H3 brand assets are present.',
+  },
+};
+
+export const MINIMAX_H3_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
+  {
+    id: MINIMAX_H3_ID,
+    marketingName: 'MiniMax H3',
+    cardTitle: 'MiniMax H3',
+    provider: 'MiniMax',
+    brandId: 'minimax',
+    versionLabel: 'H3',
+    availability: 'available',
+    logoPolicy: 'textOnly',
+    billingNote: 'Your final price is calculated before generation from duration, resolution, and reference count.',
+    engine: MINIMAX_H3_ENGINE,
+    modes: [
+      {
+        mode: 't2v',
+        falModelId: MINIMAX_H3_ENDPOINTS.t2v,
+        ui: {
+          modes: ['t2v'],
+          duration: { options: [...MINIMAX_H3_DURATION_OPTIONS], default: 10 },
+          resolution: [...MINIMAX_H3_RESOLUTIONS],
+          aspectRatio: [...MINIMAX_H3_ASPECT_RATIOS],
+          fps: 24,
+          audioToggle: false,
+          notes: 'Text-to-video with native stereo audio and fixed or Auto framing.',
+        },
+      },
+      {
+        mode: 'i2v',
+        falModelId: MINIMAX_H3_ENDPOINTS.i2v,
+        ui: {
+          modes: ['i2v'],
+          duration: { options: [...MINIMAX_H3_DURATION_OPTIONS], default: 10 },
+          resolution: [...MINIMAX_H3_RESOLUTIONS],
+          fps: 24,
+          acceptsImageFormats: [...IMAGE_FORMATS],
+          maxUploadMB: 30,
+          audioToggle: false,
+          notes: 'Animate one start image with an optional end image; framing follows the source image and audio is generated natively.',
+        },
+      },
+      {
+        mode: 'ref2v',
+        falModelId: MINIMAX_H3_ENDPOINTS.ref2v,
+        ui: {
+          modes: ['ref2v'],
+          duration: { options: [...MINIMAX_H3_DURATION_OPTIONS], default: 10 },
+          resolution: [...MINIMAX_H3_RESOLUTIONS],
+          aspectRatio: [...MINIMAX_H3_ASPECT_RATIOS],
+          fps: 24,
+          acceptsImageFormats: [...IMAGE_FORMATS],
+          maxUploadMB: 50,
+          audioToggle: false,
+          notes: 'Combine up to 9 images, 3 videos, and 3 audio clips, with 12 unique references total and native stereo output.',
+        },
+      },
+    ],
+    defaultFalModelId: MINIMAX_H3_ENDPOINTS.t2v,
+    seo: {
+      title: 'MiniMax H3 – Native-Audio Multimodal AI Video',
+      description: 'Create 5–15 second character-led videos from text, images, video, and audio references with MiniMax H3 in MaxVideoAI.',
+      canonicalPath: '/models/minimax-h3',
+    },
+    type: 'Text + Image + References · Native audio',
+    seoText: 'Generate native-audio character video from prompts, start and end frames, or mixed visual and audio references with MiniMax H3.',
+    prompts: [
+      {
+        title: 'Storm-platform encounter',
+        prompt: 'An original night-train conductor meets a weathered cartographer on a rain-lashed platform, slow dolly in, practical amber lamps, native station ambience and restrained dialogue.',
+        mode: 't2v',
+      },
+      {
+        title: 'Lighthouse turn',
+        prompt: 'The original lighthouse keeper turns toward the sweeping beam as sea mist crosses the lens, natural coat movement, distant gulls and surf, one continuous cinematic shot.',
+        mode: 'i2v',
+      },
+      {
+        title: 'Reference-led map exchange',
+        prompt: 'Preserve the two original explorers from the references as they exchange a hand-drawn map, match the reference blocking and room tone, then cut to a close reaction shot.',
+        mode: 'ref2v',
+      },
+    ],
+    faqs: [
+      {
+        question: 'Does MiniMax H3 generate audio?',
+        answer: 'Yes. H3 generates native stereo audio with every video, so there is no separate audio switch.',
+      },
+      {
+        question: 'Which H3 reference inputs can I combine?',
+        answer: 'Use up to 9 images, 3 videos, and 3 audio clips, with 12 unique references total. Audio references must be paired with an image or video.',
+      },
+    ],
+    promptExample: 'An original aviator walks through a cloud observatory at dawn, controlled handheld camera, linen coat moving in the wind, soft footsteps and distant machinery.',
+  },
+];

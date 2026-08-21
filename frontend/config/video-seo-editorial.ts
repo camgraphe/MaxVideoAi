@@ -38,6 +38,42 @@ export type VideoSeoEditorialEntry = {
 
 export const VIDEO_SEO_EDITORIAL_ENTRIES = [
   {
+    id: 'job_87d713f7-9193-4831-a9e5-59ce1e0c668c',
+    seoStatus: 'approved',
+    seoTitle: 'MiniMax H3 Wildfire Lookout Rescue with Native Audio',
+    metaDescription:
+      'Watch a 15-second MiniMax H3 wildfire rescue with one consistent lookout, cinematic camera changes, flare effects, dialogue and native stereo sound.',
+    h1: 'MiniMax H3 wildfire lookout rescue video with native audio',
+    videoObjectName: 'MiniMax H3 wildfire lookout mountain rescue sequence',
+    shortDescription:
+      'This MiniMax H3 text-to-video example follows Lio from a mountain lookout tower to a flare-lit rescue trail, preserving character identity across four connected shots with dialogue and native stereo sound.',
+    editorialPromptBreakdown:
+      'The prompt first fixes Lio’s face, rust-red field jacket and body proportions, then assigns a location, action, camera move and sound cue to each shot. The sequence travels continuously from the lookout exterior to wet metal stairs, the ridge flare corridor and an aerial rescue reveal. Native stereo audio combines storm ambience, footsteps, breathing, flare ignition and one precisely written line without music or on-screen text.',
+    targetKeyword: 'MiniMax H3 wildfire rescue video',
+    intent: 'audio-enabled',
+    modelSlug: 'minimax-h3',
+    examplesSlug: 'minimax',
+    canonicalSlug: 'minimax-h3-wildfire-lookout-rescue',
+  },
+  {
+    id: 'job_91c6f549-7b07-45b3-ad45-cbaf67d10959',
+    seoStatus: 'approved',
+    seoTitle: 'MiniMax H3 Lighthouse Keeper Rescue with Native Audio',
+    metaDescription:
+      'Watch a 15-second MiniMax H3 lighthouse rescue with four cinematic shots, stable character continuity, natural dialogue and native stereo sound.',
+    h1: 'MiniMax H3 lighthouse keeper rescue video with native audio',
+    videoObjectName: 'MiniMax H3 lighthouse keeper storm rescue sequence',
+    shortDescription:
+      'This MiniMax H3 text-to-video example follows Elara through a storm as she relights a lighthouse, speaks in the lantern room and guides a lifeboat home across four connected shots.',
+    editorialPromptBreakdown:
+      'The prompt defines Elara first, then assigns one action, camera move and synchronized sound cue to each timed shot. Her face, mustard raincoat and proportions stay fixed while the sequence moves from the cliff to the stairwell, the lantern room and the final aerial rescue reveal. Native stereo audio carries rain, footsteps, machinery, surf and one precisely timed line of dialogue without music.',
+    targetKeyword: 'MiniMax H3 lighthouse keeper video',
+    intent: 'audio-enabled',
+    modelSlug: 'minimax-h3',
+    examplesSlug: 'minimax',
+    canonicalSlug: 'minimax-h3-lighthouse-keeper-rescue',
+  },
+  {
     id: 'job_b8e58d1b-7e9b-427b-a55c-17da2fafa48f',
     seoStatus: 'approved',
     seoTitle: 'Sora 2 Gorilla Dance Video Example with Strobe Lighting',

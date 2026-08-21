@@ -38,23 +38,23 @@
     "safety": "Recommendation only; no sitemap, robots, canonical, or noindex change is applied."
   },
   "summary": {
-    "publishedSlugs": 292,
-    "totalUrls": 876,
+    "publishedSlugs": 298,
+    "totalUrls": 894,
     "withGscRows": 639,
-    "withoutGscRows": 237,
+    "withoutGscRows": 255,
     "withClicks": 144,
     "gscRowsOutsidePublishedSet": 21,
     "gscRowsOutsidePublishedSetWithClicks": 2,
     "byLocale": {
-      "en": 292,
-      "fr": 292,
-      "es": 292
+      "en": 298,
+      "fr": 298,
+      "es": 298
     },
     "byClassification": {
-      "keep": 292,
+      "keep": 310,
       "enrich": 28,
-      "review": 347,
-      "noindex_candidate": 209
+      "review": 346,
+      "noindex_candidate": 210
     }
   },
   "rows": [
@@ -1212,8 +1212,7 @@
       "hasLocalizedOverride": false,
       "strategicSignals": [
         "related_graph",
-        "showdown",
-        "trophy"
+        "showdown"
       ],
       "classification": "keep",
       "rationale": [
@@ -1334,7 +1333,6 @@
       ],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "popular",
         "related_graph",
         "showdown",
         "trophy",
@@ -1826,7 +1824,6 @@
       ],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "related_graph"
       ],
       "classification": "keep",
@@ -2137,6 +2134,28 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/ai-video-engines/kling-3-pro-vs-seedance-2-5",
+      "locale": "en",
+      "slug": "kling-3-pro-vs-seedance-2-5",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "best_for_related",
+        "related_graph",
+        "trophy"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override",
+        "english_strategic_surface"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/ai-video-engines/kling-3-pro-vs-sora-2",
       "locale": "en",
       "slug": "kling-3-pro-vs-sora-2",
@@ -2198,6 +2217,7 @@
         "best_for_related",
         "opponent_override",
         "popular",
+        "related_graph",
         "use_case_bucket"
       ],
       "classification": "keep",
@@ -2726,6 +2746,29 @@
       "classification": "review",
       "rationale": [
         "gsc_review_opportunity"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/ai-video-engines/kling-o3-pro-vs-minimax-h3",
+      "locale": "en",
+      "slug": "kling-o3-pro-vs-minimax-h3",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "best_for_related",
+        "opponent_override",
+        "related_graph",
+        "trophy"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override",
+        "english_strategic_surface"
       ]
     },
     {
@@ -3954,8 +3997,7 @@
       "hasLocalizedOverride": false,
       "strategicSignals": [
         "related_graph",
-        "showdown",
-        "trophy"
+        "showdown"
       ],
       "classification": "keep",
       "rationale": [
@@ -4616,6 +4658,55 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/ai-video-engines/minimax-h3-vs-seedance-2-5",
+      "locale": "en",
+      "slug": "minimax-h3-vs-seedance-2-5",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "best_for_related",
+        "opponent_override",
+        "popular",
+        "related_graph",
+        "trophy",
+        "use_case_bucket"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override",
+        "english_strategic_surface"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/ai-video-engines/minimax-h3-vs-veo-3-1",
+      "locale": "en",
+      "slug": "minimax-h3-vs-veo-3-1",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "best_for_related",
+        "opponent_override",
+        "related_graph",
+        "trophy",
+        "use_case_bucket"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override",
+        "english_strategic_surface"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/ai-video-engines/minimax-hailuo-02-text-vs-pika-text-to-video",
       "locale": "en",
       "slug": "minimax-hailuo-02-text-vs-pika-text-to-video",
@@ -4634,7 +4725,6 @@
         "popular",
         "related_graph",
         "showdown",
-        "trophy",
         "use_case_bucket"
       ],
       "classification": "keep",
@@ -5370,6 +5460,28 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/ai-video-engines/seedance-2-0-vs-seedance-2-5",
+      "locale": "en",
+      "slug": "seedance-2-0-vs-seedance-2-5",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "best_for_related",
+        "related_graph",
+        "trophy"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override",
+        "english_strategic_surface"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/ai-video-engines/seedance-2-0-vs-sora-2",
       "locale": "en",
       "slug": "seedance-2-0-vs-sora-2",
@@ -5407,13 +5519,10 @@
         "https://maxvideoai.com/ai-video-engines/seedance-2-0-vs-sora-2-pro"
       ],
       "hasLocalizedOverride": false,
-      "strategicSignals": [
-        "best_for_related"
-      ],
+      "strategicSignals": [],
       "classification": "keep",
       "rationale": [
-        "gsc_clicks",
-        "english_strategic_surface"
+        "gsc_clicks"
       ]
     },
     {
@@ -5522,6 +5631,28 @@
       "rationale": [
         "gsc_clicks",
         "gsc_high_impressions",
+        "english_strategic_surface"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/ai-video-engines/seedance-2-5-vs-veo-3-1",
+      "locale": "en",
+      "slug": "seedance-2-5-vs-veo-3-1",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "best_for_related",
+        "related_graph",
+        "trophy"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override",
         "english_strategic_surface"
       ]
     },
@@ -7061,8 +7192,7 @@
       "hasLocalizedOverride": false,
       "strategicSignals": [
         "related_graph",
-        "showdown",
-        "trophy"
+        "showdown"
       ],
       "classification": "review",
       "rationale": [
@@ -7180,7 +7310,6 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "popular",
         "related_graph",
         "showdown",
         "trophy",
@@ -7660,7 +7789,6 @@
       ],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "related_graph"
       ],
       "classification": "keep",
@@ -7955,6 +8083,27 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/fr/comparatif/kling-3-pro-vs-seedance-2-5",
+      "locale": "fr",
+      "slug": "kling-3-pro-vs-seedance-2-5",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "best_for_related",
+        "related_graph",
+        "trophy"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/fr/comparatif/kling-3-pro-vs-sora-2",
       "locale": "fr",
       "slug": "kling-3-pro-vs-sora-2",
@@ -8010,6 +8159,7 @@
         "best_for_related",
         "opponent_override",
         "popular",
+        "related_graph",
         "use_case_bucket"
       ],
       "classification": "review",
@@ -8512,6 +8662,28 @@
       "classification": "review",
       "rationale": [
         "gsc_top_10_review"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/fr/comparatif/kling-o3-pro-vs-minimax-h3",
+      "locale": "fr",
+      "slug": "kling-o3-pro-vs-minimax-h3",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "best_for_related",
+        "opponent_override",
+        "related_graph",
+        "trophy"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
       ]
     },
     {
@@ -9675,8 +9847,7 @@
       "hasLocalizedOverride": false,
       "strategicSignals": [
         "related_graph",
-        "showdown",
-        "trophy"
+        "showdown"
       ],
       "classification": "review",
       "rationale": [
@@ -10293,6 +10464,53 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/fr/comparatif/minimax-h3-vs-seedance-2-5",
+      "locale": "fr",
+      "slug": "minimax-h3-vs-seedance-2-5",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "best_for_related",
+        "opponent_override",
+        "popular",
+        "related_graph",
+        "trophy",
+        "use_case_bucket"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/fr/comparatif/minimax-h3-vs-veo-3-1",
+      "locale": "fr",
+      "slug": "minimax-h3-vs-veo-3-1",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "best_for_related",
+        "opponent_override",
+        "related_graph",
+        "trophy",
+        "use_case_bucket"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/fr/comparatif/minimax-hailuo-02-text-vs-pika-text-to-video",
       "locale": "fr",
       "slug": "minimax-hailuo-02-text-vs-pika-text-to-video",
@@ -10309,7 +10527,6 @@
         "popular",
         "related_graph",
         "showdown",
-        "trophy",
         "use_case_bucket"
       ],
       "classification": "review",
@@ -11001,6 +11218,27 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/fr/comparatif/seedance-2-0-vs-seedance-2-5",
+      "locale": "fr",
+      "slug": "seedance-2-0-vs-seedance-2-5",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "best_for_related",
+        "related_graph",
+        "trophy"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/fr/comparatif/seedance-2-0-vs-sora-2",
       "locale": "fr",
       "slug": "seedance-2-0-vs-sora-2",
@@ -11033,12 +11271,10 @@
       "hasGscRow": false,
       "gscSourceUrls": [],
       "hasLocalizedOverride": false,
-      "strategicSignals": [
-        "best_for_related"
-      ],
-      "classification": "review",
+      "strategicSignals": [],
+      "classification": "noindex_candidate",
       "rationale": [
-        "strategic_localization_review"
+        "no_gsc_row_or_editorial_signal"
       ]
     },
     {
@@ -11140,6 +11376,27 @@
       "rationale": [
         "gsc_top_10_review",
         "strategic_localization_review"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/fr/comparatif/seedance-2-5-vs-veo-3-1",
+      "locale": "fr",
+      "slug": "seedance-2-5-vs-veo-3-1",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "best_for_related",
+        "related_graph",
+        "trophy"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
       ]
     },
     {
@@ -12687,8 +12944,7 @@
       "hasLocalizedOverride": false,
       "strategicSignals": [
         "related_graph",
-        "showdown",
-        "trophy"
+        "showdown"
       ],
       "classification": "review",
       "rationale": [
@@ -12803,7 +13059,6 @@
       "gscSourceUrls": [],
       "hasLocalizedOverride": false,
       "strategicSignals": [
-        "popular",
         "related_graph",
         "showdown",
         "trophy",
@@ -13294,7 +13549,6 @@
       ],
       "hasLocalizedOverride": true,
       "strategicSignals": [
-        "best_for_related",
         "related_graph"
       ],
       "classification": "keep",
@@ -13597,6 +13851,27 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/es/comparativa/kling-3-pro-vs-seedance-2-5",
+      "locale": "es",
+      "slug": "kling-3-pro-vs-seedance-2-5",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "best_for_related",
+        "related_graph",
+        "trophy"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/es/comparativa/kling-3-pro-vs-sora-2",
       "locale": "es",
       "slug": "kling-3-pro-vs-sora-2",
@@ -13652,6 +13927,7 @@
         "best_for_related",
         "opponent_override",
         "popular",
+        "related_graph",
         "use_case_bucket"
       ],
       "classification": "review",
@@ -14183,6 +14459,28 @@
       "classification": "review",
       "rationale": [
         "gsc_top_10_review"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/es/comparativa/kling-o3-pro-vs-minimax-h3",
+      "locale": "es",
+      "slug": "kling-o3-pro-vs-minimax-h3",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "best_for_related",
+        "opponent_override",
+        "related_graph",
+        "trophy"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
       ]
     },
     {
@@ -15392,8 +15690,7 @@
       "hasLocalizedOverride": false,
       "strategicSignals": [
         "related_graph",
-        "showdown",
-        "trophy"
+        "showdown"
       ],
       "classification": "review",
       "rationale": [
@@ -16024,6 +16321,53 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/es/comparativa/minimax-h3-vs-seedance-2-5",
+      "locale": "es",
+      "slug": "minimax-h3-vs-seedance-2-5",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "best_for_related",
+        "opponent_override",
+        "popular",
+        "related_graph",
+        "trophy",
+        "use_case_bucket"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/es/comparativa/minimax-h3-vs-veo-3-1",
+      "locale": "es",
+      "slug": "minimax-h3-vs-veo-3-1",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "best_for_related",
+        "opponent_override",
+        "related_graph",
+        "trophy",
+        "use_case_bucket"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/es/comparativa/minimax-hailuo-02-text-vs-pika-text-to-video",
       "locale": "es",
       "slug": "minimax-hailuo-02-text-vs-pika-text-to-video",
@@ -16042,7 +16386,6 @@
         "popular",
         "related_graph",
         "showdown",
-        "trophy",
         "use_case_bucket"
       ],
       "classification": "review",
@@ -16760,6 +17103,27 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/es/comparativa/seedance-2-0-vs-seedance-2-5",
+      "locale": "es",
+      "slug": "seedance-2-0-vs-seedance-2-5",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "best_for_related",
+        "related_graph",
+        "trophy"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/es/comparativa/seedance-2-0-vs-sora-2",
       "locale": "es",
       "slug": "seedance-2-0-vs-sora-2",
@@ -16797,13 +17161,10 @@
         "https://maxvideoai.com/es/comparativa/seedance-2-0-vs-sora-2-pro"
       ],
       "hasLocalizedOverride": false,
-      "strategicSignals": [
-        "best_for_related"
-      ],
+      "strategicSignals": [],
       "classification": "review",
       "rationale": [
-        "gsc_review_opportunity",
-        "strategic_localization_review"
+        "gsc_review_opportunity"
       ]
     },
     {
@@ -16909,6 +17270,27 @@
       "rationale": [
         "gsc_top_10_review",
         "strategic_localization_review"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/es/comparativa/seedance-2-5-vs-veo-3-1",
+      "locale": "es",
+      "slug": "seedance-2-5-vs-veo-3-1",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "best_for_related",
+        "related_graph",
+        "trophy"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
       ]
     },
     {

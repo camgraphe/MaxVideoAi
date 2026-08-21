@@ -52,6 +52,10 @@ test('model route gates use published state rather than sitemap membership', () 
   ]) {
     const source = readFileSync(path, 'utf8');
     assert.doesNotMatch(source, /includeInSitemap/, path);
-    assert.match(source, /(?:isPublishedModelPage|modelPage\.published)/, path);
+    assert.match(
+      source,
+      /(?:isPublishedModelPage|modelPage\.published|listPublishedRuntimeModels)/,
+      path,
+    );
   }
 });

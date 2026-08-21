@@ -3,6 +3,10 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
 import { buildPricingHubData } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData.ts';
+import { buildPayAsYouGoPageData } from '../frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/_lib/payg-page-data.ts';
+import { enPayAsYouGoContent } from '../frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/_content/en.ts';
+import { frPayAsYouGoContent } from '../frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/_content/fr.ts';
+import { esPayAsYouGoContent } from '../frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/_content/es.ts';
 import type { AppLocale } from '../frontend/i18n/locales.ts';
 
 const root = process.cwd();
@@ -18,6 +22,21 @@ const otherSurfacesPath = join(
 function getRow(locale: AppLocale, anchorId: string) {
   return buildPricingHubData(locale).video.rows.find((row) => row.anchorId === anchorId);
 }
+
+test('pay-as-you-go model choices lead with the localized Seedance 2.5 profile', () => {
+  const matrix = [
+    ['en', enPayAsYouGoContent, '/models/seedance-2-5'],
+    ['fr', frPayAsYouGoContent, '/fr/modeles/seedance-2-5'],
+    ['es', esPayAsYouGoContent, '/es/modelos/seedance-2-5'],
+  ] as const;
+
+  for (const [locale, content, target] of matrix) {
+    const data = buildPayAsYouGoPageData({ locale, content });
+    assert.equal(data.modelTesting.items[0]?.id, 'seedance-2-5');
+    assert.equal(data.modelTesting.items[0]?.href, target);
+    assert.ok(data.modelTesting.items.some((item) => item.id === 'seedance-2-0'));
+  }
+});
 
 test('pricing video engine rows expose localized model hrefs for clickable engine names', () => {
   const seedance = getRow('en', 'seedance-2-0-pricing');

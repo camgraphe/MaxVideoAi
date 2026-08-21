@@ -96,6 +96,7 @@ export async function resolveGenerateBillingPreflight(params: {
   isLumaRay2: boolean;
   loop: boolean;
   hasVideoInput?: boolean;
+  referenceImageCount?: number;
   rawDurationOption: number | string | null;
   lumaDurationLabel: string | null;
   audioEnabled: boolean | undefined;
@@ -136,6 +137,7 @@ export async function resolveGenerateBillingPreflight(params: {
     membershipTier: params.membershipTier,
     loop: params.isLumaRay2 ? params.loop : undefined,
     hasVideoInput: params.hasVideoInput,
+    referenceImageCount: Math.max(0, Math.floor(params.referenceImageCount ?? 0)),
     durationOption: params.lumaDurationLabel ?? params.rawDurationOption ?? null,
     currency: DISPLAY_CURRENCY,
     addons: pricingAddons,
@@ -161,6 +163,9 @@ export async function resolveGenerateBillingPreflight(params: {
   }
   if (params.isLumaRay2) {
     requestMeta.loop = params.loop;
+  }
+  if (typeof params.referenceImageCount === 'number') {
+    requestMeta.referenceImageCount = Math.max(0, Math.floor(params.referenceImageCount));
   }
 
   pricing.meta = {

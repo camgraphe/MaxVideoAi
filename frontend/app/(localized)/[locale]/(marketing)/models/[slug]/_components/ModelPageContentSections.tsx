@@ -22,7 +22,7 @@ type ModelPageContentSectionsProps = {
   pricingCallout: ComponentProps<typeof ModelPricingCallout>['callout'] | null;
   microCta: string | null | undefined;
   microCtaHref: ComponentProps<typeof Link>['href'];
-  examplesProps: ComponentProps<typeof ModelExamplesSection>;
+  examplesProps: Omit<ComponentProps<typeof ModelExamplesSection>, 'variant'>;
   decisionCards: ModelDecisionData['decisionCards'] | null;
   promptingProps: ComponentProps<typeof ModelPromptingSection>;
   prepLinksProps: ComponentProps<typeof ModelPrepLinksSection>;
@@ -79,7 +79,11 @@ export function ModelPageContentSections({
       {pricingCallout ? <ModelPricingCallout callout={pricingCallout} /> : null}
       {microCta ? (
         <div className="flex justify-center">
-          <Link href={microCtaHref} className="text-sm font-semibold text-brand transition hover:text-brandHover">
+          <Link
+            href={microCtaHref}
+            prefetch={false}
+            className="text-sm font-semibold text-brand transition hover:text-brandHover"
+          >
             {microCta}
           </Link>
         </div>

@@ -366,10 +366,12 @@
           "ltx-2-fast",
           "luma-ray-2",
           "luma-ray-2-flash",
+          "minimax-h3",
           "minimax-hailuo-02-text",
           "pika-text-to-video",
           "seedance-1-5-pro",
           "seedance-2-0",
+          "seedance-2-5",
           "sora-2",
           "sora-2-pro",
           "veo-3-1-fast",
@@ -5697,6 +5699,7 @@
           "pika-text-to-video",
           "seedance-1-5-pro",
           "seedance-2-0",
+          "seedance-2-5",
           "sora-2",
           "sora-2-pro",
           "veo-3-1",
@@ -7446,6 +7449,7 @@
         "publishedPairs": [
           "kling-3-pro",
           "kling-3-standard",
+          "minimax-h3",
           "seedance-2-0",
           "veo-3-1"
         ],
@@ -9790,12 +9794,14 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "seedance-2-5",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini",
         "seedance-1-5-pro"
       ],
       "currentModelSlugs": [
+        "seedance-2-5",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini"
@@ -10170,12 +10176,14 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "seedance-2-5",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini",
         "seedance-1-5-pro"
       ],
       "currentModelSlugs": [
+        "seedance-2-5",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini"
@@ -10221,7 +10229,8 @@
           "veo-3-1-lite",
           "wan-2-5",
           "wan-2-6",
-          "seedance-2-0-fast"
+          "seedance-2-0-fast",
+          "seedance-2-5"
         ],
         "includeInHub": true
       },
@@ -10886,12 +10895,14 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "seedance-2-5",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini",
         "seedance-1-5-pro"
       ],
       "currentModelSlugs": [
+        "seedance-2-5",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini"
@@ -11585,12 +11596,14 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "seedance-2-5",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini",
         "seedance-1-5-pro"
       ],
       "currentModelSlugs": [
+        "seedance-2-5",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini"
@@ -12199,12 +12212,14 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "seedance-2-5",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini",
         "seedance-1-5-pro"
       ],
       "currentModelSlugs": [
+        "seedance-2-5",
         "seedance-2-0",
         "seedance-2-0-fast",
         "dreamina-seedance-2-0-mini"
@@ -12518,6 +12533,731 @@
       },
       "extend": {
         "value": false
+      }
+    }
+  },
+  {
+    "engineId": "seedance-2-5",
+    "modelSlug": "seedance-2-5",
+    "marketingName": "Seedance 2.5",
+    "provider": "ByteDance",
+    "brandId": "bytedance",
+    "family": "seedance",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "seedance-2-5",
+        "seedance-2-0",
+        "seedance-2-0-fast",
+        "dreamina-seedance-2-0-mini",
+        "seedance-1-5-pro"
+      ],
+      "currentModelSlugs": [
+        "seedance-2-5",
+        "seedance-2-0",
+        "seedance-2-0-fast",
+        "dreamina-seedance-2-0-mini"
+      ]
+    },
+    "versionLabel": "2.5",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [
+          "seedance-2-0",
+          "kling-3-pro",
+          "veo-3-1"
+        ],
+        "publishedPairs": [
+          "seedance-2-0",
+          "kling-3-pro",
+          "minimax-h3",
+          "veo-3-1"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true,
+        "discoveryRank": -3,
+        "variantGroup": "seedance-2-0",
+        "variantLabel": "2.5",
+        "launchBadge": "new"
+      },
+      "pricing": {
+        "includeInEstimator": true,
+        "featuredScenario": "seedance-2-family"
+      }
+    },
+    "surfacesSource": "registry",
+    "engine": {
+      "id": "seedance-2-5",
+      "label": "Seedance 2.5",
+      "provider": "ByteDance",
+      "version": "2.5",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "ap-southeast-1",
+      "modes": [
+        "t2v",
+        "i2v",
+        "ref2v",
+        "v2v",
+        "extend"
+      ],
+      "maxDurationSec": 30,
+      "resolutions": [
+        "480p",
+        "720p"
+      ],
+      "aspectRatios": [
+        "21:9",
+        "16:9",
+        "4:3",
+        "1:1",
+        "3:4",
+        "9:16"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": true,
+      "upscale4k": false,
+      "extend": true,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 30,
+        "videoMaxMB": 50,
+        "audioMaxMB": 15,
+        "videoMaxDurationSec": 30
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt"
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Start image",
+            "description": "Required starting frame for image-to-video.",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          }
+        ],
+        "optional": [
+          {
+            "id": "end_image_url",
+            "type": "image",
+            "label": "End image",
+            "description": "Optional final frame for image-to-video transitions.",
+            "modes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration (seconds)",
+            "values": [
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20",
+              "21",
+              "22",
+              "23",
+              "24",
+              "25",
+              "26",
+              "27",
+              "28",
+              "29",
+              "30"
+            ],
+            "default": "4",
+            "min": 4,
+            "max": 30
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "21:9",
+              "16:9",
+              "4:3",
+              "1:1",
+              "3:4",
+              "9:16"
+            ],
+            "default": "16:9",
+            "modes": [
+              "t2v",
+              "ref2v",
+              "v2v",
+              "extend"
+            ]
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "480p",
+              "720p"
+            ],
+            "default": "480p"
+          },
+          {
+            "id": "generate_audio",
+            "type": "boolean",
+            "label": "Audio",
+            "default": true
+          },
+          {
+            "id": "image_urls",
+            "type": "image",
+            "label": "Reference images (up to 30)",
+            "description": "Optional visual references for reference-to-video or video-to-video.",
+            "modes": [
+              "ref2v",
+              "v2v"
+            ],
+            "minCount": 1,
+            "maxCount": 30,
+            "source": "either"
+          },
+          {
+            "id": "video_url",
+            "type": "video",
+            "label": "Source video",
+            "description": "Required source video for video-to-video editing.",
+            "modes": [
+              "v2v"
+            ],
+            "requiredInModes": [
+              "v2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "video_urls",
+            "type": "video",
+            "label": "Reference video clips (up to 10)",
+            "description": "Optional motion or pacing references for reference-to-video.",
+            "modes": [
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 10,
+            "source": "either"
+          },
+          {
+            "id": "extension_source_videos",
+            "type": "video",
+            "label": "Source clips to extend (up to 3)",
+            "description": "Extend one source clip or stitch a transition from two or three clips.",
+            "modes": [
+              "extend"
+            ],
+            "requiredInModes": [
+              "extend"
+            ],
+            "minCount": 1,
+            "maxCount": 3,
+            "source": "either",
+            "slotLabelPattern": "Source clip {n}"
+          },
+          {
+            "id": "audio_urls",
+            "type": "audio",
+            "label": "Reference audio clips (up to 10)",
+            "description": "Optional audio references for reference-to-video or video-to-video.",
+            "modes": [
+              "ref2v",
+              "v2v"
+            ],
+            "minCount": 0,
+            "maxCount": 10,
+            "maxSizeMB": 15,
+            "acceptedMimeTypes": [
+              "audio/mpeg",
+              "audio/mp3",
+              "audio/wav",
+              "audio/x-wav",
+              "audio/wave",
+              "audio/vnd.wave"
+            ],
+            "acceptedFileExtensions": [
+              "mp3",
+              "wav"
+            ],
+            "source": "either"
+          }
+        ],
+        "referenceBudget": {
+          "fieldIds": [
+            "image_url",
+            "end_image_url",
+            "image_urls",
+            "video_url",
+            "video_urls",
+            "extension_source_videos",
+            "audio_urls"
+          ],
+          "maxTotal": 50,
+          "countUniqueUrls": true,
+          "modes": [
+            "i2v",
+            "ref2v",
+            "v2v",
+            "extend"
+          ]
+        },
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp",
+            "mp4",
+            "mov",
+            "mp3",
+            "wav"
+          ],
+          "maxImageSizeMB": 30,
+          "minImageSidePx": 300,
+          "maxVideoSizeMB": 50,
+          "minVideoPixelCount": 407696,
+          "maxAudioSizeMB": 15
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "tokenPricing": {
+          "model": "byteplus_tokens",
+          "unitPriceUsdPer1kTokens": 0.020576923076923076,
+          "unitPriceUsdPer1kTokensByInputType": {
+            "no_video_input": 0.020576923076923076,
+            "video_input": 0.012307692307692308
+          },
+          "pricingSource": "byteplus_seedance_2_5_260628_approved_2_5x",
+          "framesPerSecond": 24,
+          "defaultAspectRatio": "16:9",
+          "dimensions": {
+            "480p": {
+              "21:9": {
+                "width": 1120,
+                "height": 480
+              },
+              "16:9": {
+                "width": 854,
+                "height": 480
+              },
+              "4:3": {
+                "width": 640,
+                "height": 480
+              },
+              "1:1": {
+                "width": 480,
+                "height": 480
+              },
+              "3:4": {
+                "width": 480,
+                "height": 640
+              },
+              "9:16": {
+                "width": 480,
+                "height": 854
+              }
+            },
+            "720p": {
+              "21:9": {
+                "width": 1680,
+                "height": 720
+              },
+              "16:9": {
+                "width": 1280,
+                "height": 720
+              },
+              "4:3": {
+                "width": 960,
+                "height": 720
+              },
+              "1:1": {
+                "width": 720,
+                "height": 720
+              },
+              "3:4": {
+                "width": 720,
+                "height": 960
+              },
+              "9:16": {
+                "width": 720,
+                "height": 1280
+              }
+            }
+          },
+          "rounding": "ceil_cent"
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "currency": "USD",
+        "notes": "Price is calculated before generation based on duration, resolution, and whether a source video is used."
+      },
+      "updatedAt": "2026-08-07T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "byteplus_modelark",
+        "modelSlug": "dreamina-seedance-2-5-260628"
+      },
+      "availability": "available",
+      "brandId": "bytedance"
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "byteplus/dreamina-seedance-2.5/text-to-video",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30
+            ],
+            "default": 4
+          },
+          "resolution": [
+            "480p",
+            "720p"
+          ],
+          "aspectRatio": [
+            "21:9",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "audioToggle": true,
+          "notes": "Create 4-30 second 480p or 720p videos in landscape, square, or vertical formats with generated audio available."
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "byteplus/dreamina-seedance-2.5/image-to-video",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30
+            ],
+            "default": 4
+          },
+          "resolution": [
+            "480p",
+            "720p"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 30,
+          "audioToggle": true,
+          "notes": "Animate one start image with an optional end image; 4-30 seconds, 480p/720p, landscape, square, or vertical, with generated audio. images: jpg, jpeg, png, webp"
+        }
+      },
+      {
+        "mode": "ref2v",
+        "falModelId": "byteplus/dreamina-seedance-2.5/reference-to-video",
+        "ui": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30
+            ],
+            "default": 4
+          },
+          "resolution": [
+            "480p",
+            "720p"
+          ],
+          "aspectRatio": [
+            "21:9",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 50,
+          "audioToggle": true,
+          "notes": "Use up to 30 images, 10 video clips, and 10 audio clips, with 50 unique references total. images: jpg, jpeg, png, webp; video: mp4, mov; audio: mp3, wav"
+        }
+      },
+      {
+        "mode": "v2v",
+        "falModelId": "byteplus/dreamina-seedance-2.5/video-to-video",
+        "ui": {
+          "modes": [
+            "v2v"
+          ],
+          "duration": {
+            "options": [
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30
+            ],
+            "default": 4
+          },
+          "resolution": [
+            "480p",
+            "720p"
+          ],
+          "aspectRatio": [
+            "21:9",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 50,
+          "audioToggle": true,
+          "notes": "Edit one source video with optional image and audio references; 4-30 seconds, 480p/720p, landscape, square, or vertical, with generated audio. images: jpg, jpeg, png, webp; video: mp4, mov; audio: mp3, wav"
+        }
+      },
+      {
+        "mode": "extend",
+        "falModelId": "byteplus/dreamina-seedance-2.5/extend",
+        "ui": {
+          "modes": [
+            "extend"
+          ],
+          "duration": {
+            "options": [
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30
+            ],
+            "default": 4
+          },
+          "resolution": [
+            "480p",
+            "720p"
+          ],
+          "aspectRatio": [
+            "21:9",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "maxUploadMB": 50,
+          "audioToggle": true,
+          "notes": "Continue one to three source clips; 4-30 seconds, 480p/720p, landscape, square, or vertical, with generated audio. video: mp4, mov"
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": true
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": true
       }
     }
   },
@@ -14766,6 +15506,537 @@
     }
   },
   {
+    "engineId": "minimax-h3",
+    "modelSlug": "minimax-h3",
+    "marketingName": "MiniMax H3",
+    "provider": "MiniMax",
+    "brandId": "minimax",
+    "family": "hailuo",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "minimax-h3",
+        "minimax-hailuo-02-text"
+      ],
+      "currentModelSlugs": [
+        "minimax-h3"
+      ]
+    },
+    "versionLabel": "H3",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [
+          "seedance-2-5",
+          "kling-o3-pro",
+          "veo-3-1"
+        ],
+        "publishedPairs": [
+          "seedance-2-5",
+          "kling-o3-pro",
+          "veo-3-1"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true,
+        "discoveryRank": -2,
+        "variantGroup": "hailuo",
+        "variantLabel": "H3",
+        "launchBadge": "new"
+      },
+      "pricing": {
+        "includeInEstimator": true,
+        "featuredScenario": "minimax-h3"
+      }
+    },
+    "surfacesSource": "registry",
+    "engine": {
+      "id": "minimax-h3",
+      "label": "MiniMax H3",
+      "provider": "MiniMax",
+      "version": "H3",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v",
+        "ref2v"
+      ],
+      "maxDurationSec": 15,
+      "resolutions": [
+        "768P",
+        "2K",
+        "4K"
+      ],
+      "aspectRatios": [
+        "21:9",
+        "16:9",
+        "4:3",
+        "1:1",
+        "3:4",
+        "9:16",
+        "auto"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": true,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 30,
+        "videoMaxMB": 50,
+        "videoMaxDurationSec": 15,
+        "videoCodecs": [
+          "mp4",
+          "mov"
+        ],
+        "audioMaxMB": 15,
+        "audioMaxDurationSec": 15,
+        "promptMaxChars": 7000,
+        "promptMaxCharsSource": "official"
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "description": "Describe the characters, action, setting, camera, dialogue, and sound.",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "requiredInModes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ]
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Start image",
+            "description": "Required first frame for image-to-video.",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "maxSizeMB": 30,
+            "acceptedMimeTypes": [
+              "image/jpeg",
+              "image/png",
+              "image/webp"
+            ],
+            "acceptedFileExtensions": [
+              "jpg",
+              "jpeg",
+              "png",
+              "webp"
+            ],
+            "source": "either"
+          }
+        ],
+        "optional": [
+          {
+            "id": "end_image_url",
+            "type": "image",
+            "label": "End image",
+            "description": "Optional final frame for an image-to-video transition.",
+            "modes": [
+              "i2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "maxSizeMB": 30,
+            "acceptedMimeTypes": [
+              "image/jpeg",
+              "image/png",
+              "image/webp"
+            ],
+            "acceptedFileExtensions": [
+              "jpg",
+              "jpeg",
+              "png",
+              "webp"
+            ],
+            "source": "either"
+          },
+          {
+            "id": "reference_image_urls",
+            "type": "image",
+            "label": "Reference images (up to 9)",
+            "description": "Visual references for characters, environments, wardrobe, or composition.",
+            "modes": [
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 9,
+            "maxSizeMB": 30,
+            "acceptedMimeTypes": [
+              "image/jpeg",
+              "image/png",
+              "image/webp"
+            ],
+            "acceptedFileExtensions": [
+              "jpg",
+              "jpeg",
+              "png",
+              "webp"
+            ],
+            "source": "either"
+          },
+          {
+            "id": "reference_video_urls",
+            "type": "video",
+            "label": "Reference videos (up to 3)",
+            "description": "Motion or performance references; 15 seconds combined maximum.",
+            "modes": [
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 3,
+            "minDurationSec": 2,
+            "maxDurationSec": 15,
+            "maxSizeMB": 50,
+            "acceptedMimeTypes": [
+              "video/mp4",
+              "video/quicktime"
+            ],
+            "acceptedFileExtensions": [
+              "mp4",
+              "mov"
+            ],
+            "source": "either"
+          },
+          {
+            "id": "reference_audio_urls",
+            "type": "audio",
+            "label": "Reference audio (up to 3)",
+            "description": "Audio references paired with at least one image or video; 15 seconds combined maximum.",
+            "modes": [
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 3,
+            "minDurationSec": 2,
+            "maxDurationSec": 15,
+            "maxSizeMB": 15,
+            "acceptedMimeTypes": [
+              "audio/mpeg",
+              "audio/mp3",
+              "audio/wav",
+              "audio/x-wav",
+              "audio/wave",
+              "audio/vnd.wave"
+            ],
+            "acceptedFileExtensions": [
+              "mp3",
+              "wav"
+            ],
+            "source": "either"
+          },
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration (seconds)",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "values": [
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15"
+            ],
+            "default": "10",
+            "min": 5,
+            "max": 15
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "values": [
+              "768P",
+              "2K",
+              "4K"
+            ],
+            "default": "2K"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "description": "Auto uses Fal adaptive framing.",
+            "modes": [
+              "t2v",
+              "ref2v"
+            ],
+            "values": [
+              "21:9",
+              "16:9",
+              "4:3",
+              "1:1",
+              "3:4",
+              "9:16",
+              "auto"
+            ],
+            "default": "16:9"
+          }
+        ],
+        "referenceBudget": {
+          "fieldIds": [
+            "reference_image_urls",
+            "reference_video_urls",
+            "reference_audio_urls"
+          ],
+          "modes": [
+            "ref2v"
+          ],
+          "maxTotal": 12,
+          "countUniqueUrls": true
+        },
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp",
+            "mp4",
+            "mov",
+            "mp3",
+            "wav"
+          ],
+          "maxImageSizeMB": 30,
+          "maxVideoSizeMB": 50,
+          "maxAudioSizeMB": 15,
+          "maxCombinedVideoDurationSec": 15,
+          "maxCombinedAudioDurationSec": 15,
+          "referenceAudioRequiresVisual": true
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 13,
+          "byResolution": {
+            "768P": 8,
+            "2K": 13,
+            "4K": 16
+          }
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.13,
+        "byResolution": {
+          "768P": 0.08,
+          "2K": 0.13,
+          "4K": 0.16
+        },
+        "currency": "USD",
+        "notes": "Provider cost varies by resolution; reference images above five add USD 0.08 each."
+      },
+      "updatedAt": "2026-08-08T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "minimax",
+        "modelSlug": "minimax/h3/text-to-video"
+      },
+      "availability": "available",
+      "brandId": "minimax",
+      "brandAssetPolicy": {
+        "logoAllowed": false,
+        "textOnly": true,
+        "usageNotes": "Use text-only MiniMax attribution until approved H3 brand assets are present."
+      }
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "minimax/h3/text-to-video",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 10
+          },
+          "resolution": [
+            "768P",
+            "2K",
+            "4K"
+          ],
+          "aspectRatio": [
+            "21:9",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16",
+            "auto"
+          ],
+          "fps": 24,
+          "audioToggle": false,
+          "notes": "Text-to-video with native stereo audio and fixed or Auto framing."
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "minimax/h3/image-to-video",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 10
+          },
+          "resolution": [
+            "768P",
+            "2K",
+            "4K"
+          ],
+          "fps": 24,
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 30,
+          "audioToggle": false,
+          "notes": "Animate one start image with an optional end image; framing follows the source image and audio is generated natively."
+        }
+      },
+      {
+        "mode": "ref2v",
+        "falModelId": "minimax/h3/reference-to-video",
+        "ui": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 10
+          },
+          "resolution": [
+            "768P",
+            "2K",
+            "4K"
+          ],
+          "aspectRatio": [
+            "21:9",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16",
+            "auto"
+          ],
+          "fps": 24,
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 50,
+          "audioToggle": false,
+          "notes": "Combine up to 9 images, 3 videos, and 3 audio clips, with 12 unique references total and native stereo output."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": true
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    },
+    "bestFor": "Native-audio multimodal character video"
+  },
+  {
     "engineId": "minimax-hailuo-02-text",
     "modelSlug": "minimax-hailuo-02-text",
     "marketingName": "MiniMax Hailuo 02 Standard",
@@ -14776,10 +16047,11 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "minimax-h3",
         "minimax-hailuo-02-text"
       ],
       "currentModelSlugs": [
-        "minimax-hailuo-02-text"
+        "minimax-h3"
       ]
     },
     "versionLabel": "Standard",
@@ -17092,11 +18364,10 @@
             "type": "enum",
             "label": "Image size",
             "values": [
-              "2K",
-              "4K"
+              "2K"
             ],
             "default": "2K",
-            "description": "Seedream Pro supports 2K and 4K professional outputs."
+            "description": "Seedream Pro supports professional 2K outputs."
           },
           {
             "id": "output_format",
@@ -17177,8 +18448,7 @@
             "t2i"
           ],
           "resolution": [
-            "2K",
-            "4K"
+            "2K"
           ],
           "aspectRatio": [
             "auto",
@@ -17202,8 +18472,7 @@
             "i2i"
           ],
           "resolution": [
-            "2K",
-            "4K"
+            "2K"
           ],
           "aspectRatio": [
             "auto",

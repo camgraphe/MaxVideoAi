@@ -164,6 +164,49 @@ test('request option helper rejects unsupported BytePlus durations before provid
   assert.equal(result.metric?.errorCode, 'BYTEPLUS_DURATION_UNSUPPORTED');
 });
 
+test('request option helper uses profile capabilities and generated audio for BytePlus engines', () => {
+  const standardResult = buildGenerateRequestOptions({
+    body: {
+      prompt: 'standard profile render',
+      durationSec: 5,
+      resolution: '4k',
+      aspectRatio: '21:9',
+    },
+    engine: {
+      ...baseEngine,
+      id: 'seedance-2-0',
+      resolutions: ['720p'],
+      aspectRatios: ['16:9'],
+    } as EngineCaps,
+    mode: 't2v',
+    isBytePlusV1a: true,
+  });
+  assert.equal(standardResult.ok, true);
+  if (!standardResult.ok) return;
+  assert.equal(standardResult.options.requestedResolution, '4k');
+  assert.equal(standardResult.options.aspectRatio, '21:9');
+  assert.equal(standardResult.options.audioEnabled, true);
+
+  const miniResult = buildGenerateRequestOptions({
+    body: {
+      prompt: 'mini profile render',
+      durationSec: 4,
+      resolution: '480p',
+      aspectRatio: '16:9',
+    },
+    engine: {
+      ...baseEngine,
+      id: 'seedance-2-0-mini',
+    } as EngineCaps,
+    mode: 't2v',
+    isBytePlusV1a: true,
+  });
+  assert.equal(miniResult.ok, true);
+  if (!miniResult.ok) return;
+  assert.equal(miniResult.options.durationSec, 4);
+  assert.equal(miniResult.options.audioEnabled, true);
+});
+
 test('request option helper keeps video mode narrowing explicit', () => {
   assert.equal(isVideoMode('t2v'), true);
   assert.equal(isVideoMode('t2i'), false);

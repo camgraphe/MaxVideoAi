@@ -3,12 +3,13 @@ import test from 'node:test';
 
 import type { MultiPromptScene } from '../frontend/components/Composer';
 import type { KlingElementState } from '../frontend/components/KlingElementsBuilder';
-import type { EngineInputField } from '../frontend/types/engines';
+import type { EngineInputField, EngineInputSchema } from '../frontend/types/engines';
 import type { ReferenceAsset } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-assets';
 import type { FormState } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-form-state';
 import {
   prepareGenerationInputs,
   type GenerationInputPreparationResult,
+  type PrepareGenerationInputsOptions,
 } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-generation-inputs';
 
 function field(id: string, type: EngineInputField['type'], label = id): EngineInputField {
@@ -57,6 +58,79 @@ function assertReady(
 ): asserts result is Extract<GenerationInputPreparationResult, { ok: true }> {
   assert.equal(result.ok, true, result.ok ? undefined : result.message);
 }
+
+function referenceBudgetPreparationOptions(params: {
+  inputSchema: EngineInputSchema;
+  inputAssets: Record<string, (ReferenceAsset | null)[]>;
+  fields: EngineInputField[];
+}): PrepareGenerationInputsOptions {
+  return {
+    selectedEngineId: 'contract-test-engine',
+    selectedEngineLabel: 'Contract test engine',
+    activeMode: 't2v',
+    submissionMode: 'ref2v',
+    form: baseForm({ engineId: 'contract-test-engine', mode: 't2v' }),
+    inputSchema: params.inputSchema,
+    inputSchemaSummary: {
+      assetFields: params.fields.map((inputField) => ({
+        field: inputField,
+        required: false,
+        role: 'reference' as const,
+      })),
+    },
+    extraInputFields: [],
+    inputAssets: params.inputAssets,
+    primaryAssetFieldIds: new Set(),
+    referenceAssetFieldIds: new Set(params.fields.map((inputField) => inputField.id)),
+    genericImageFieldIds: new Set(
+      params.fields.filter((inputField) => inputField.type === 'image').map((inputField) => inputField.id)
+    ),
+    frameAssetFieldIds: new Set(),
+    referenceAudioFieldIds: new Set(
+      params.fields.filter((inputField) => inputField.type === 'audio').map((inputField) => inputField.id)
+    ),
+    supportsKlingV3Controls: false,
+    klingElements: [],
+    multiPromptActive: false,
+    multiPromptScenes: [],
+  };
+}
+
+test('prepareGenerationInputs validates the submission mode when active mode lags', () => {
+  const images = field('image_urls', 'image', 'Images');
+  const videos = field('video_urls', 'video', 'Videos');
+  const inputSchema: EngineInputSchema = {
+    optional: [
+      { ...images, modes: ['ref2v'] },
+      { ...videos, modes: ['ref2v'] },
+    ],
+    referenceBudget: {
+      fieldIds: ['image_urls', 'video_urls'],
+      modes: ['ref2v'],
+      maxTotal: 2,
+      countUniqueUrls: true,
+    },
+  };
+  const result = prepareGenerationInputs(
+    referenceBudgetPreparationOptions({
+      fields: [images, videos],
+      inputSchema,
+      inputAssets: {
+        image_urls: [
+          asset({ id: 'a', fieldId: 'image_urls', url: 'a' }),
+          asset({ id: 'b', fieldId: 'image_urls', url: 'b' }),
+        ],
+        video_urls: [
+          asset({ id: 'c', fieldId: 'video_urls', kind: 'video', url: 'c' }),
+        ],
+      },
+    })
+  );
+  assert.deepEqual(result, {
+    ok: false,
+    message: 'This engine mode supports up to 2 total references.',
+  });
+});
 
 test('prepareGenerationInputs orders attachments and derives generation URL groups', () => {
   const primary = field('image_url', 'image', 'Primary image');

@@ -34,3 +34,22 @@ test('extracts inline images from Vertex candidates', () => {
   assert.equal(images[0]?.mimeType, 'image/png');
   assert.equal(images[0]?.data.toString(), 'image');
 });
+
+test('summarizes empty Vertex image responses without retaining generated content', async () => {
+  const responseModule = await import('../frontend/src/server/images/google-vertex-image-response.ts');
+  const summarize = (responseModule as unknown as Record<string, unknown>).summarizeGoogleVertexImageResponse;
+  assert.equal(typeof summarize, 'function');
+
+  const summary = (summarize as (payload: unknown) => unknown)({
+    responseId: 'response-blocked',
+    promptFeedback: { blockReason: 'SAFETY', blockReasonMessage: 'sensitive request details' },
+    candidates: [{ finishReason: 'SAFETY', content: { parts: [{ text: 'private generated text' }] } }],
+  });
+
+  assert.deepEqual(summary, {
+    responseId: 'response-blocked',
+    promptBlockReason: 'SAFETY',
+    finishReasons: ['SAFETY'],
+    blockedForSafety: true,
+  });
+});

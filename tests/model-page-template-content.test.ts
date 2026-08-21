@@ -7,14 +7,15 @@ import { fileURLToPath } from 'node:url';
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
 import { buildModelDecisionData } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-data.ts';
 import { buildModelSchemaPayloads } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-schema-payloads.ts';
-import { buildSoraCopy } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-copy.ts';
 import { parseModelPromptingContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-content.ts';
+import { parseModelExamplesContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-content.ts';
 import { buildModelDecisionDataFromContent } from './helpers/model-decision-content.ts';
 
 const MIGRATED_TEMPLATE_SLUGS = [
   'seedance-1-5-pro',
   'seedance-2-0',
   'seedance-2-0-fast',
+  'seedance-2-5',
   'dreamina-seedance-2-0-mini',
   'ltx-2',
   'ltx-2-fast',
@@ -40,6 +41,7 @@ const MIGRATED_TEMPLATE_SLUGS = [
   'luma-uni-1-max',
   'happy-horse-1-1',
   'happy-horse-1-0',
+  'minimax-h3',
   'minimax-hailuo-02-text',
   'pika-text-to-video',
   'gpt-image-2',
@@ -88,13 +90,47 @@ function readModelContentJson(locale: (typeof LOCALES)[number], slug: string) {
   const contentPath = join(PROJECT_ROOT, 'content', 'models', locale, `${slug}.json`);
   return JSON.parse(readFileSync(contentPath, 'utf8')) as {
     marketingName?: string;
+    seo?: { title?: string; description?: string };
     custom?: {
       specSections?: Array<Record<string, unknown>>;
     };
     prompting?: unknown;
     examples?: unknown;
+    decision?: unknown;
   };
 }
+
+test('Seedance 2.0 keeps unique titles while introducing a localized Seedance 2.5 discovery module', () => {
+  const expectations = {
+    en: {
+      title: 'Seedance 2.0 | AI Video Model, Pricing, Native Audio & Use Cases | MaxVideoAI',
+      href: '/models/seedance-2-5',
+      anchor: /Discover (?:the latest )?Seedance 2\.5/i,
+    },
+    fr: {
+      title: 'Seedance 2.0 | Modèle vidéo IA, prix, audio natif et cas d’usage | MaxVideoAI',
+      href: '/fr/modeles/seedance-2-5',
+      anchor: /Découvrir (?:le nouveau )?Seedance 2\.5/i,
+    },
+    es: {
+      title: 'Seedance 2.0 | Modelo de video IA, precios, audio nativo y ejemplos | MaxVideoAI',
+      href: '/es/modelos/seedance-2-5',
+      anchor: /Descubrir (?:el nuevo )?Seedance 2\.5/i,
+    },
+  } as const;
+
+  for (const locale of LOCALES) {
+    const content = readModelContentJson(locale, 'seedance-2-0');
+    const decision = buildModelDecisionDataFromContent({ engine: getEngine('seedance-2-0'), locale });
+    assert.ok(decision);
+    const discoveryCard = decision.decisionCards.find((card) => card.cta.href === expectations[locale].href);
+
+    assert.equal(content.marketingName, 'Seedance 2.0');
+    assert.equal(content.seo?.title, expectations[locale].title);
+    assert.ok(discoveryCard, `${locale} Seedance 2.0 should link to the localized 2.5 profile`);
+    assert.match(discoveryCard.cta.label, expectations[locale].anchor);
+  }
+});
 
 function collectCustomerFacingStrings(value: unknown, skipKeys = new Set<string>()): string[] {
   if (typeof value === 'string') {
@@ -177,6 +213,27 @@ test('migrated model templates provide complete localized decision data', () => 
         );
       }
     }
+  }
+});
+
+test('Sora 2 Pro template locales retain the strict customer-visible Examples contract', () => {
+  const expected = {
+    en: ['Example Gallery: Sora 2 Pro Outputs', 'Recreate this Pro shot →', 'Audio on'],
+    fr: ['Galerie d’exemples : rendus Sora 2 Pro', 'Recréer ce plan Pro →', 'Audio activé'],
+    es: ['Galería de ejemplos: renders Sora 2 Pro', 'Recrear esta toma Pro →', 'Audio activado'],
+  } as const;
+
+  for (const locale of LOCALES) {
+    const content = readModelContentJson(locale, 'sora-2-pro');
+    const examples = parseModelExamplesContent(content.examples, 'sora-2-pro', locale);
+
+    assert.equal(examples.section.title, expected[locale][0]);
+    assert.equal(examples.section.recreateLabel, expected[locale][1]);
+    assert.equal(examples.filters.find(({ id }) => id === 'audio')?.label, expected[locale][2]);
+    assert.deepEqual(
+      examples.proofItems.map(({ icon }) => icon),
+      ['sparkles', 'zap', 'audio', 'users', 'shield'],
+    );
   }
 });
 
@@ -310,7 +367,7 @@ test('image model prompt actions route to the image workspace', () => {
     'utf8'
   );
 
-  assert.match(promptTabsSource, /usePromptHref:\s*string/);
+  assert.match(promptTabsSource, /usePromptHref:\s*string\s*\|\s*null/);
   assert.doesNotMatch(promptTabsSource, /isImageEngine|\/app\/image\?engine=/);
 });
 
@@ -430,10 +487,10 @@ test('migrated localized model content avoids placeholder media copy', () => {
       const rawContent = readFileSync(contentPath, 'utf8');
       const content = JSON.parse(rawContent) as {
         seo?: { image?: string };
-        custom?: { galleryIntro?: string };
+        examples?: unknown;
       };
       const seoImage = content.seo?.image ?? '';
-      const galleryIntro = content.custom?.galleryIntro ?? '';
+      const examples = parseModelExamplesContent(content.examples, slug, locale);
 
       assert.doesNotMatch(
         seoImage,
@@ -441,9 +498,9 @@ test('migrated localized model content avoids placeholder media copy', () => {
         `${slug}/${locale} SEO image should not point to placeholder media`
       );
       assert.doesNotMatch(
-        galleryIntro,
+        examples.section.intro,
         /placeholder/i,
-        `${slug}/${locale} gallery intro should not expose branch placeholder copy`
+        `${slug}/${locale} Examples intro should not expose branch placeholder copy`
       );
       assert.doesNotMatch(
         rawContent,
@@ -473,23 +530,6 @@ test('shared decision sections do not hardcode Seedance identity fallbacks', () 
     /Prompt Lab — Seedance 2\.0|How Seedance 2\.0 uses references|strongest results with Seedance 2\.0|responsible creation with Seedance 2\.0|engine:\s*['"]Seedance 2\.0['"]/,
     'shared decision components should derive identity fallback copy from the active model name'
   );
-});
-
-test('localized model pages do not inherit English recreate labels from base content', () => {
-  const localizedContent = {
-    seo: {},
-    prompts: [],
-    faqs: [],
-    custom: {
-      recreateLabel: 'Recreate this shot →',
-    },
-  };
-
-  const frCopy = buildSoraCopy(localizedContent, 'example-model', 'fr');
-  const esCopy = buildSoraCopy(localizedContent, 'example-model', 'es');
-
-  assert.equal(frCopy.recreateLabel, 'Recréer ce rendu →');
-  assert.equal(esCopy.recreateLabel, 'Recrear este resultado →');
 });
 
 test('migrated template metadata preserves non-cannibalizing route intent', () => {

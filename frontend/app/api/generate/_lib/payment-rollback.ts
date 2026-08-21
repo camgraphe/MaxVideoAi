@@ -2,7 +2,76 @@ import Stripe from 'stripe';
 
 import { query } from '@/lib/db';
 import { ENV, receiptsPriceOnlyEnabled } from '@/lib/env';
+import { isGenericFailureDescription } from '@/server/user-facing-failure-messages';
 import type { PendingReceipt } from './initial-video-job';
+
+type QueryFn = <T = unknown>(sql: string, params?: unknown[]) => Promise<T[]>;
+
+export async function persistRefundReceipt(params: {
+  receipt: PendingReceipt;
+  description: string;
+  stripeRefundId: string | null;
+  priceOnly: boolean;
+  queryFn: QueryFn;
+}): Promise<void> {
+  const { receipt, description, stripeRefundId, priceOnly, queryFn } = params;
+  await queryFn(
+    `INSERT INTO app_receipts (
+       user_id,
+       type,
+       amount_cents,
+       currency,
+       description,
+       job_id,
+       pricing_snapshot,
+       application_fee_cents,
+       vendor_account_id,
+       stripe_payment_intent_id,
+       stripe_charge_id,
+       stripe_refund_id,
+       platform_revenue_cents,
+       destination_acct
+     )
+     VALUES (
+       $1,'refund',$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,$11,$12,$13
+     )
+     ON CONFLICT DO NOTHING`,
+    [
+      receipt.userId,
+      receipt.amountCents,
+      receipt.currency,
+      description,
+      receipt.jobId,
+      JSON.stringify(receipt.snapshot),
+      priceOnly ? null : 0,
+      priceOnly ? null : receipt.vendorAccountId,
+      receipt.stripePaymentIntentId ?? null,
+      receipt.stripeChargeId ?? null,
+      stripeRefundId ?? null,
+      priceOnly ? null : 0,
+      priceOnly ? null : receipt.vendorAccountId,
+    ]
+  );
+
+  const existingRows = await queryFn<{ id: string; description: string | null }>(
+    `SELECT id, description FROM app_receipts WHERE job_id = $1 AND type = 'refund' LIMIT 1`,
+    [receipt.jobId]
+  );
+  const existing = existingRows.at(0);
+  if (
+    existing &&
+    isGenericFailureDescription(existing.description) &&
+    !isGenericFailureDescription(description)
+  ) {
+    await queryFn(
+      `UPDATE app_receipts
+          SET description = $2
+        WHERE id = $1
+          AND description IS NOT DISTINCT FROM $3`,
+      [existing.id, description, existing.description]
+    );
+  }
+}
 
 export async function recordRefundReceipt(
   receipt: PendingReceipt,
@@ -11,55 +80,15 @@ export async function recordRefundReceipt(
 ): Promise<void> {
   const priceOnly = receiptsPriceOnlyEnabled();
   if (!receipt.jobId) return;
-  try {
-    const existing = await query<{ id: string }>(
-      `SELECT id FROM app_receipts WHERE job_id = $1 AND type = 'refund' LIMIT 1`,
-      [receipt.jobId]
-    );
-    if (existing.length) return;
-  } catch (error) {
-    console.warn('[receipts] failed to check existing refund', error);
-    return;
-  }
 
   try {
-    await query(
-      `INSERT INTO app_receipts (
-         user_id,
-         type,
-         amount_cents,
-         currency,
-         description,
-         job_id,
-         pricing_snapshot,
-         application_fee_cents,
-         vendor_account_id,
-         stripe_payment_intent_id,
-         stripe_charge_id,
-         stripe_refund_id,
-         platform_revenue_cents,
-         destination_acct
-       )
-       VALUES (
-         $1,'refund',$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,$11,$12,$13
-       )
-       ON CONFLICT DO NOTHING`,
-      [
-        receipt.userId,
-        receipt.amountCents,
-        receipt.currency,
-        description,
-        receipt.jobId,
-        JSON.stringify(receipt.snapshot),
-        priceOnly ? null : 0,
-        priceOnly ? null : receipt.vendorAccountId,
-        receipt.stripePaymentIntentId ?? null,
-        receipt.stripeChargeId ?? null,
-        stripeRefundId ?? null,
-        priceOnly ? null : 0,
-        priceOnly ? null : receipt.vendorAccountId,
-      ]
-    );
+    await persistRefundReceipt({
+      receipt,
+      description,
+      stripeRefundId,
+      priceOnly,
+      queryFn: query,
+    });
   } catch (error) {
     console.warn('[receipts] failed to record refund', error);
   }

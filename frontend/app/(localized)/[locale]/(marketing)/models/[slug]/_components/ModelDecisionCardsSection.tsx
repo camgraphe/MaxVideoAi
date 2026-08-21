@@ -32,6 +32,7 @@ export function ModelDecisionCardsSection({ cards }: ModelDecisionCardsSectionPr
             </div>
             <Link
               href={card.cta.href}
+              prefetch={false}
               className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-brand transition hover:text-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:mt-5 sm:gap-2 sm:text-sm"
             >
               <span>{card.cta.label}</span>

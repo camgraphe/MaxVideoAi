@@ -116,6 +116,21 @@ return schemas.map((schema, index) => (
 
 Keep serialization centralized to avoid inconsistent escaping.
 
+## Pay-as-you-go Route Content
+
+The localized Pay-as-you-go route keeps authored copy strict and runtime pricing derived:
+
+```text
+locale -> strict route content -> runtime page-data builder -> focused sections
+                         \-> metadata / JSON-LD / showcase copy
+```
+
+`_content/{en,fr,es}.ts` owns the complete exact-locale editorial documents. The page-data
+builder owns pricing-hub projection, row selection, price fallback formatting, runtime links,
+hero quote preparation, and example costs. Route components render those projections; they do
+not select locales or calculate prices. Metadata, JSON-LD, and showcase helpers receive their
+authored projections explicitly.
+
 ## Localized Comparison Content
 
 Enriched comparison editorial content, including slug-specific metadata, is owned by
@@ -150,6 +165,22 @@ English. `model-page-decision-content.ts` validates the editorial copy and hrefs
 
 Do not add TypeScript copy maps, a second filesystem loader, direct JSON imports, or numeric
 prices to decision content.
+
+## Localized Model Examples Content
+
+Model-specific Examples editorial copy lives only in
+`content/models/{locale}/{slug}.json#examples`. The model loader selects the exact requested
+locale and never falls back to English for this block. The strict parser, pure view-model
+builder, and focused server/client renderers must remain model-neutral; do not add slug-specific
+editorial branches or reads from `custom` gallery fields.
+
+Every strict `examples` block owns a required `showWhenEmpty` boolean. Keep it aligned across
+EN, FR, and ES. The view-model stays visible when final real/fallback items exist, or when
+`showWhenEmpty` is true for authored empty-state copy; it must not infer this from model identity.
+
+Runtime gallery media, engine capabilities, route destinations, and poster selection remain
+runtime policy. They are not localized editorial content and do not belong in the `examples`
+document block.
 
 ## Refactor Checklist
 

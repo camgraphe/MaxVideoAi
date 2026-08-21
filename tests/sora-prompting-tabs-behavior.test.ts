@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import test from 'node:test';
 
 import { chromium } from '@playwright/test';
-import { build } from '../frontend/node_modules/esbuild/lib/main.js';
+import { build } from 'esbuild';
 
 const ROOT = process.cwd();
 const FRONTEND_ROOT = join(ROOT, 'frontend');

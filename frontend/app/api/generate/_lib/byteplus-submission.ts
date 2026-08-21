@@ -1,14 +1,22 @@
-import type { Mode, PricingSnapshot } from '@/types/engines';
+import type { EngineInputSchema, Mode, PricingSnapshot } from '@/types/engines';
 import { query } from '@/lib/db';
 import {
+  buildReferenceMediaItems,
+  resolveEngineReferenceBudget,
+  type ReferenceBudgetValuesByField,
+} from '@/lib/reference-budget';
+import {
   BYTEPLUS_MODELARK_PROVIDER,
+  assertBytePlusSeedanceSubmissionEnabled,
   buildBytePlusSeedancePayload,
   BytePlusModelArkError,
   getBytePlusArkConfig,
   getBytePlusModelArkClient,
   getBytePlusSeedanceDurationOptions,
   getBytePlusSeedanceAllowedResolutions,
+  getBytePlusTaskFailureCode,
   getBytePlusUserSafeErrorMessage,
+  requireBytePlusSeedanceProfile,
   resolveBytePlusSeedanceModelId,
   scrubBytePlusError,
 } from '@/server/video-providers/byteplus-modelark';
@@ -33,6 +41,7 @@ type BytePlusSubmissionDeps = {
   getBytePlusSeedanceDurationOptionsFn?: typeof getBytePlusSeedanceDurationOptions;
   resolveBytePlusSeedanceModelIdFn?: typeof resolveBytePlusSeedanceModelId;
   getBytePlusUserSafeErrorMessageFn?: typeof getBytePlusUserSafeErrorMessage;
+  getBytePlusTaskFailureCodeFn?: typeof getBytePlusTaskFailureCode;
   scrubBytePlusErrorFn?: typeof scrubBytePlusError;
   queryFn?: QueryFn;
   rollbackPendingPaymentFn?: typeof rollbackPendingPayment;
@@ -81,6 +90,8 @@ export async function submitBytePlusGenerateTask(params: {
   renderIds: Array<string | null> | null;
   heroRenderId: string | null;
   localKey: string | null;
+  inputSchema?: EngineInputSchema | null;
+  referenceValuesByField?: ReferenceBudgetValuesByField<string>;
   deps?: BytePlusSubmissionDeps;
 }): Promise<BytePlusSubmissionResult> {
   const deps = params.deps ?? {};
@@ -93,6 +104,8 @@ export async function submitBytePlusGenerateTask(params: {
     deps.getBytePlusSeedanceDurationOptionsFn ?? getBytePlusSeedanceDurationOptions;
   const resolveBytePlusSeedanceModelIdFn = deps.resolveBytePlusSeedanceModelIdFn ?? resolveBytePlusSeedanceModelId;
   const getBytePlusUserSafeErrorMessageFn = deps.getBytePlusUserSafeErrorMessageFn ?? getBytePlusUserSafeErrorMessage;
+  const getBytePlusTaskFailureCodeFn =
+    deps.getBytePlusTaskFailureCodeFn ?? getBytePlusTaskFailureCode;
   const scrubBytePlusErrorFn = deps.scrubBytePlusErrorFn ?? scrubBytePlusError;
   const queryFn = deps.queryFn ?? query;
   const rollbackPendingPaymentFn = deps.rollbackPendingPaymentFn ?? rollbackPendingPayment;
@@ -100,8 +113,23 @@ export async function submitBytePlusGenerateTask(params: {
   const logMetricFn = deps.logMetricFn;
 
   try {
+    assertBytePlusSeedanceSubmissionEnabled(params.engineId);
+    const profile = requireBytePlusSeedanceProfile(params.engineId);
     const config = getBytePlusArkConfigFn();
-    const generateAudio = params.audioEnabled !== false;
+    const generateAudio =
+      profile.generatedAudio && params.audioEnabled !== false;
+    const referenceBudget = resolveEngineReferenceBudget(
+      params.inputSchema,
+      params.mode
+    );
+    const referenceMediaItems =
+      referenceBudget && params.inputSchema
+        ? buildReferenceMediaItems(
+            params.inputSchema,
+            params.mode,
+            params.referenceValuesByField ?? {}
+          )
+        : undefined;
     const payload = buildBytePlusSeedancePayloadFn({
       modelId: resolveBytePlusSeedanceModelIdFn(params.engineId, config),
       prompt: params.prompt,
@@ -113,14 +141,19 @@ export async function submitBytePlusGenerateTask(params: {
       referenceVideoUrls:
         params.mode === 'ref2v' || params.mode === 'v2v' || params.mode === 'extend' ? params.videoUrls : undefined,
       referenceAudioUrls:
-        params.mode === 'ref2v' || params.mode === 'v2v' || params.mode === 'extend'
+        params.mode === 'ref2v' || params.mode === 'v2v'
           ? Array.from(new Set([...(params.resolvedAudioUrl ? [params.resolvedAudioUrl] : []), ...params.audioUrls]))
           : undefined,
       resolution: params.effectiveResolution,
       ratio: params.aspectRatio,
       generateAudio,
+      allowedModes: profile.supportedModes,
+      allowedAspectRatios: profile.aspectRatios,
       allowedResolutions: getBytePlusSeedanceAllowedResolutionsFn(params.engineId),
       allowedDurationOptions: getBytePlusSeedanceDurationOptionsFn(params.engineId),
+      ...(referenceBudget
+        ? { referenceBudget, referenceMediaItems: referenceMediaItems ?? [] }
+        : {}),
     });
     const providerTask = await getBytePlusModelArkClientFn().createSeedanceFastTask(payload);
     const providerJobId = providerTask.providerJobId;
@@ -163,7 +196,7 @@ export async function submitBytePlusGenerateTask(params: {
           referenceVideoCount:
             params.mode === 'ref2v' || params.mode === 'v2v' || params.mode === 'extend' ? params.videoUrls.length : 0,
           referenceAudioCount:
-            params.mode === 'ref2v' || params.mode === 'v2v' || params.mode === 'extend' ? params.audioUrls.length : 0,
+            params.mode === 'ref2v' || params.mode === 'v2v' ? params.audioUrls.length : 0,
         },
       },
     });
@@ -194,14 +227,34 @@ export async function submitBytePlusGenerateTask(params: {
   } catch (error) {
     const providerMessage = scrubBytePlusErrorFn(error);
     const providerStatus = error instanceof BytePlusModelArkError ? error.status : null;
-    const errorCode = error instanceof BytePlusModelArkError && error.code ? error.code : 'BYTEPLUS_PROVIDER_ERROR';
-    const responseErrorCode = providerStatus && providerStatus >= 400 && providerStatus < 500
-      ? 'PROVIDER_REQUEST_REJECTED'
-      : 'BYTEPLUS_PROVIDER_ERROR';
-    const trialDisposition = responseErrorCode === 'PROVIDER_REQUEST_REJECTED'
+    const providerErrorCode =
+      error instanceof BytePlusModelArkError && error.code
+        ? error.code
+        : 'BYTEPLUS_PROVIDER_ERROR';
+    const failureCode = getBytePlusTaskFailureCodeFn(
+      providerMessage,
+      providerErrorCode
+    );
+    const errorCode = failureCode ?? providerErrorCode;
+    const failureMessage =
+      errorCode === 'BYTEPLUS_ENGINE_DISABLED'
+        ? 'This engine is temporarily unavailable.'
+        : errorCode === 'BYTEPLUS_ENGINE_PROFILE_MISSING'
+        ? 'This engine is not configured for BytePlus.'
+        : toUserFacingFailureMessage(
+            getBytePlusUserSafeErrorMessageFn(providerMessage)
+          );
+    const responseStatus =
+      error instanceof BytePlusModelArkError && error.code === 'BYTEPLUS_ENGINE_DISABLED'
+        ? 404
+        : error instanceof BytePlusModelArkError && error.code === 'BYTEPLUS_ENGINE_PROFILE_MISSING'
+        ? 400
+        : providerStatus && providerStatus >= 400 && providerStatus < 500
+          ? 502
+          : 503;
+    const trialDisposition = providerStatus && providerStatus >= 400 && providerStatus < 500
       ? 'definitive_failure'
       : 'unknown';
-    const failureMessage = toUserFacingFailureMessage(getBytePlusUserSafeErrorMessageFn(providerMessage));
     console.warn('[byteplus] task submission failed', {
       jobId: params.jobId,
       engineId: params.engineId,
@@ -210,6 +263,13 @@ export async function submitBytePlusGenerateTask(params: {
       message: providerMessage,
     });
     try {
+      const providerFailureJson = failureCode
+        ? JSON.stringify({
+            provider: BYTEPLUS_MODELARK_PROVIDER,
+            providerErrorCode,
+            failureCode,
+          })
+        : null;
       await queryFn(
         `UPDATE app_jobs
          SET status = 'failed',
@@ -218,11 +278,20 @@ export async function submitBytePlusGenerateTask(params: {
              provider = $3,
              provisional = FALSE,
              payment_status = CASE WHEN $4::text IS NOT NULL THEN $4 ELSE payment_status END,
+             settings_snapshot = CASE
+               WHEN $5::jsonb IS NULL THEN settings_snapshot
+               ELSE jsonb_set(
+                 COALESCE(settings_snapshot, '{}'::jsonb),
+                 '{providerFailure}',
+                 $5::jsonb,
+                 true
+               )
+             END,
              mcp_trial_outcome_disposition = CASE
                WHEN payment_status <> 'included_mcp_trial' THEN mcp_trial_outcome_disposition
                WHEN mcp_trial_outcome_disposition IN ('completed', 'definitive_failure', 'canceled')
                  THEN mcp_trial_outcome_disposition
-               WHEN $5 = 'definitive_failure' THEN 'definitive_failure'
+               WHEN $6 = 'definitive_failure' THEN 'definitive_failure'
                WHEN mcp_trial_outcome_disposition IS NULL
                  OR mcp_trial_outcome_disposition = 'accepted' THEN 'unknown'
                ELSE mcp_trial_outcome_disposition
@@ -234,6 +303,7 @@ export async function submitBytePlusGenerateTask(params: {
           failureMessage,
           BYTEPLUS_MODELARK_PROVIDER,
           params.pendingReceipt ? (params.paymentMode === 'wallet' ? 'refunded_wallet' : 'refunded') : null,
+          providerFailureJson,
           trialDisposition,
         ]
       );
@@ -254,15 +324,20 @@ export async function submitBytePlusGenerateTask(params: {
     logMetricFn?.('failed', {
       jobId: params.jobId,
       errorCode,
-      meta: { provider: BYTEPLUS_MODELARK_PROVIDER, providerStatus },
+      meta: {
+        provider: BYTEPLUS_MODELARK_PROVIDER,
+        providerStatus,
+        providerErrorCode,
+        failureCode,
+      },
     });
 
     return {
       ok: false,
-      status: providerStatus && providerStatus >= 400 && providerStatus < 500 ? 502 : 503,
+      status: responseStatus,
       body: {
         ok: false,
-        error: responseErrorCode,
+        error: errorCode,
         message: failureMessage,
       },
     };

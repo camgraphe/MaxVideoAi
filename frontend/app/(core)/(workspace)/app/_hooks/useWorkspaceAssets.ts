@@ -1,13 +1,21 @@
-import { useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { KlingElementState } from '@/components/KlingElementsBuilder';
-import type { ReferenceAsset } from '../_lib/workspace-assets';
+import type { EngineInputSchema, Mode } from '@/types/engines';
 import { useWorkspaceAssetLibrary } from './useWorkspaceAssetLibrary';
+import type {
+  CommitInputAssetMutation,
+  WorkspaceInputAssetState,
+} from './useWorkspaceAssetState';
 import { useWorkspaceKlingElementAssets } from './useWorkspaceKlingElementAssets';
 import { useWorkspaceReferenceAssets } from './useWorkspaceReferenceAssets';
 
 type UseWorkspaceAssetsOptions = {
+  inputAssets: WorkspaceInputAssetState;
+  setInputAssets: Dispatch<SetStateAction<WorkspaceInputAssetState>>;
+  commitInputAssetMutation: CommitInputAssetMutation;
   engineId?: string | null;
+  inputSchema?: EngineInputSchema | null;
+  preferredMode: Mode;
   workflowCopy: {
     clearReferencesToUseStartEnd: string;
     clearStartEndToUseReferences: string;
@@ -18,14 +26,17 @@ type UseWorkspaceAssetsOptions = {
 };
 
 export function useWorkspaceAssets({
+  inputAssets,
+  setInputAssets,
+  commitInputAssetMutation,
   engineId,
+  inputSchema,
+  preferredMode,
   workflowCopy,
   showNotice,
   klingElements,
   setKlingElements,
 }: UseWorkspaceAssetsOptions) {
-  const [inputAssets, setInputAssets] = useState<Record<string, (ReferenceAsset | null)[]>>({});
-
   const {
     assetPickerTarget,
     setAssetPickerTarget,
@@ -53,10 +64,13 @@ export function useWorkspaceAssets({
     handleAssetRemove,
   } = useWorkspaceReferenceAssets({
     engineId,
+    inputSchema,
+    preferredMode,
     workflowCopy,
     showNotice,
     inputAssets,
     setInputAssets,
+    commitInputAssetMutation,
     assetLibrarySource,
     resetAssetLibraryForSource,
     setAssetPickerTarget,

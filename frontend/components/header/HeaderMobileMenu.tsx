@@ -192,7 +192,12 @@ export function HeaderMobileMenu({
                           onClick={onClose}
                           className="rounded-input px-2 py-2 transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
-                          {t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label)}
+                          <span>{t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label)}</span>
+                          {entry.badge ? (
+                            <span className="ml-2 inline-flex rounded-full bg-brand px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-micro text-white">
+                              {t(`nav.badges.${entry.badge}`, entry.badge)}
+                            </span>
+                          ) : null}
                         </Link>
                       );
                     })}

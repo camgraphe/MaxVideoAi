@@ -141,33 +141,68 @@ test('Kling examples landing owns motion-focused CTR metadata without a site-nam
   assert.equal(metadata.description, description);
 });
 
-test('Seedance examples landing owns use-case-focused SERP metadata', () => {
-  const title = 'Seedance AI Video Examples, Prompts & Use Cases | MaxVideoAI';
-  const description =
-    'Explore real Seedance video outputs, copy prompt ideas, compare model settings, and see when to use Seedance 2.0, Fast, Mini, or 1.5 Pro.';
+test('Seedance examples landing leads with Seedance 2.5 while retaining the family context', () => {
+  const title = 'Seedance 2.5 Video Examples, Prompts & Settings | MaxVideoAI';
   const landing = getExampleModelLanding('en', 'seedance');
   const family = getModelFamilyDefinition('seedance');
 
   assert.ok(landing);
   assert.ok(family);
   assert.equal(landing.metaTitle, title);
-  assert.equal(landing.metaDescription, description);
-  assert.doesNotMatch(landing.intro, /supported Seedance 1\.5 Pro setup for/i);
-  assert.doesNotMatch(landing.intro, /Read more/i);
+  assert.match(landing.metaDescription, /^Explore Seedance 2\.5 video examples/);
+  assert.equal(landing.heroTitle, 'Seedance 2.5 AI Video Examples, Prompts & Settings');
+  assert.match(landing.intro, /^Start with Seedance 2\.5/);
+  assert.match(landing.summary, /^Seedance 2\.5 is the flagship route/);
+  assert.doesNotMatch(landing.intro, /every example|all examples.*2\.5/i);
   assert.equal(family.defaultModelSlug, 'seedance-2-0');
   assert.deepEqual(family.routeAliases, ['seedance-1-5-pro', 'seedance-2-0', 'seedance-2-0-fast', 'dreamina-seedance-2-0-mini']);
   assert.deepEqual(getExampleFamilyModelSlugs('seedance'), [
+    'seedance-2-5',
     'seedance-2-0',
     'seedance-2-0-fast',
     'dreamina-seedance-2-0-mini',
     'seedance-1-5-pro',
   ]);
-  assert.deepEqual(getExampleFamilyCurrentModelSlugs('seedance'), ['seedance-2-0', 'seedance-2-0-fast', 'dreamina-seedance-2-0-mini']);
-  assert.match(landing.intro, /Seedance 2\.0 Mini/i);
-  assert.match(landing.intro, /lower-cost|batch|ecommerce|UGC|reference-guided/i);
-  assert.match(landing.summary, /Seedance 2\.0.*polished|final|high-ceiling/i);
-  assert.match(landing.summary, /Seedance 2\.0 Fast.*draft|faster/i);
-  assert.match(landing.summary, /Seedance 2\.0 Mini.*lower-cost|batch|value/i);
+  assert.deepEqual(getExampleFamilyCurrentModelSlugs('seedance').slice(0, 2), [
+    'seedance-2-5',
+    'seedance-2-0',
+  ]);
+
+  const localizedLeadPatterns = {
+    en: /^Start with Seedance 2\.5/,
+    fr: /^Commencez par Seedance 2\.5/,
+    es: /^Empieza con Seedance 2\.5/,
+  } as const;
+  const localizedMetaTitles = {
+    en: 'Seedance 2.5 Video Examples, Prompts & Settings | MaxVideoAI',
+    fr: 'Exemples Seedance 2.5, prompts et réglages | MaxVideoAI',
+    es: 'Ejemplos de Seedance 2.5, prompts y ajustes | MaxVideoAI',
+  } as const;
+
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const localizedLanding = getExampleModelLanding(locale, 'seedance');
+    assert.ok(localizedLanding);
+    assert.equal(localizedLanding.metaTitle, localizedMetaTitles[locale]);
+    assert.match(localizedLanding.metaDescription, /Seedance 2\.5/);
+    assert.match(localizedLanding.heroTitle, /Seedance 2\.5/);
+    assert.match(localizedLanding.intro, localizedLeadPatterns[locale]);
+    assert.match(localizedLanding.summary, /^Seedance 2\.5/);
+    assert.match(localizedLanding.intro, /Seedance 2\.0/);
+    assert.match(localizedLanding.intro, /Fast/);
+    assert.match(localizedLanding.intro, /Mini/);
+
+    const localizedMetadata = buildSeoMetadata({
+      locale,
+      title: localizedLanding.metaTitle,
+      description: localizedLanding.metaDescription,
+      englishPath: '/examples/seedance',
+    });
+    const renderedTitle =
+      typeof localizedMetadata.title === 'object' ? localizedMetadata.title.absolute : localizedMetadata.title;
+
+    assert.equal(renderedTitle, localizedMetaTitles[locale]);
+    assert.doesNotMatch(renderedTitle ?? '', /\|…/);
+  }
 
   const metadata = buildSeoMetadata({
     locale: 'en',
@@ -176,8 +211,7 @@ test('Seedance examples landing owns use-case-focused SERP metadata', () => {
     englishPath: '/examples/seedance',
   });
 
-  assert.equal(typeof metadata.title === 'object' ? metadata.title.absolute : metadata.title, title);
-  assert.equal(metadata.description, description);
+  assert.equal(metadata.description, landing.metaDescription);
   assert.equal(metadata.alternates?.canonical, 'https://maxvideoai.com/examples/seedance');
   assert.deepEqual(metadata.alternates?.languages, {
     en: 'https://maxvideoai.com/examples/seedance',
@@ -307,6 +341,14 @@ test('examples route components own nav and JSON-LD rendering', () => {
   assert.match(pageViewSource, /ExamplesEngineFilterNav/, 'page view should compose engine filter nav');
   assert.match(pageViewSource, /ExamplesMainVideoFeature/, 'page view should compose the main video feature');
   assert.match(pageViewSource, /ExamplesGallerySection/, 'page view should compose the gallery section');
+  const gallerySectionIndex = pageViewSource.indexOf('<ExamplesGallerySection');
+  const nextStepsIndex = pageViewSource.indexOf('<ExamplesNextStepsSection');
+  assert.ok(gallerySectionIndex >= 0);
+  assert.ok(nextStepsIndex > gallerySectionIndex);
+  assert.match(
+    pageViewSource,
+    /<ExamplesIntroHero heroLead=\{heroLead\} heroSubtitle=\{heroSubtitle\} heroTitle=\{heroTitle\} \/>/,
+  );
   assert.match(pageViewSource, /detailsCtaLabel=\{galleryUiCopy\.detailsCta\}/);
   assert.match(pageViewSource, /ExamplesJsonLdScripts/, 'page view should compose JSON-LD scripts');
   assert.match(engineFilterNavSource, /export function ExamplesEngineFilterNav/, 'engine filter nav should be exported');

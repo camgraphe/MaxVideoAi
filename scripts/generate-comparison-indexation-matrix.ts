@@ -280,7 +280,7 @@ ${rowTable(noindexCandidates, 50)}
 
 ## URLs GSC hors du périmètre publié
 
-Ces anciennes URLs ou variantes ne font pas partie des 292 slugs actuellement publiés. Celles qui ont des clics doivent être vérifiées en priorité pour décider entre republication, redirection 301 pertinente ou maintien temporaire.
+Ces anciennes URLs ou variantes ne font pas partie des ${document.summary.publishedSlugs} slugs actuellement publiés. Celles qui ont des clics doivent être vérifiées en priorité pour décider entre republication, redirection 301 pertinente ou maintien temporaire.
 
 - ${veoAliasRows} anciennes variantes Veo \`first-last\` sont déjà normalisées par une redirection permanente vers les comparatifs Veo 3.1 canoniques.
 - Les ${happyHorseLegacyRows} URLs localisées Happy Horse 1.0 vs Sora 2 Pro passent désormais par une redirection permanente vers le comparatif publié Happy Horse 1.1 vs Sora 2 Pro dans cette branche.

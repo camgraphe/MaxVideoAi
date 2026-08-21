@@ -11,6 +11,7 @@ export type NormalizedVideoProviderTask = {
   rawStatus: string | null;
   videoUrl: string | null;
   message: string | null;
+  errorCode?: string | null;
   usage: NormalizedVideoProviderUsage | null;
   providerCostUnits?: number | null;
   providerCostUsd?: number | null;

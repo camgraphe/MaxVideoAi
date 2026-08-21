@@ -575,3 +575,18 @@ export function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormSt
     extraInputValues: previous?.extraInputValues ?? {},
   };
 }
+
+export function coerceFormStateForEngineChange(
+  engine: EngineCaps,
+  mode: Mode,
+  previous: FormState | null | undefined
+): FormState {
+  if (!previous || previous.engineId === engine.id) {
+    return coerceFormState(engine, mode, previous);
+  }
+  return coerceFormState(engine, mode, {
+    ...previous,
+    mode,
+    audio: resolveAudioDefault(engine, mode),
+  });
+}

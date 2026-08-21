@@ -55,7 +55,7 @@ function repositoryDocument(models: Array<ReturnType<typeof isolatedModel>>) {
 }
 
 test('canonical registry validates the committed document', () => {
-  assert.equal(validateModelRegistryDocument(valid).models.length, 41);
+  assert.equal(validateModelRegistryDocument(valid).models.length, 43);
 });
 
 test('published model pages require localized content in en, fr, and es', () => {
@@ -77,6 +77,67 @@ test('registry and engine catalog must contain the same canonical model ids', ()
     () => validateModelRegistryRepository(document, writeRepositoryFixture(document.models, [])),
     /registry model is missing from engine catalog "veo-3-1"/i
   );
+});
+
+test('presentation-only models may publish a noindex route without an engine catalog entry', () => {
+  const model = isolatedModel('veo-3-1');
+  model.presentationOnly = true;
+  model.publication = {
+    model: { published: true, indexable: false },
+    examples: { published: false, includeInFamilyCopy: false, current: false },
+    compare: {
+      published: false,
+      indexed: false,
+      suggestedOpponentIds: [],
+      publishedPairIds: [],
+    },
+    app: { published: false },
+    pricing: { published: false },
+    sitemap: { published: false },
+  };
+  const document = repositoryDocument([model]);
+
+  assert.doesNotThrow(() =>
+    validateModelRegistryRepository(
+      document,
+      writeRepositoryFixture(document.models, []),
+    ),
+  );
+});
+
+test('presentation-only models reject every executable or discovery surface', () => {
+  const fields = [
+    (model: any) => { model.publication.model.indexable = true; },
+    (model: any) => { model.publication.app.published = true; },
+    (model: any) => { model.publication.pricing.published = true; },
+    (model: any) => { model.publication.examples.published = true; },
+    (model: any) => { model.publication.compare.published = true; },
+    (model: any) => { model.publication.sitemap.published = true; },
+  ];
+
+  for (const mutatePresentationModel of fields) {
+    const model = isolatedModel('veo-3-1');
+    model.presentationOnly = true;
+    model.publication = {
+      model: { published: true, indexable: false },
+      examples: { published: false, includeInFamilyCopy: false, current: false },
+      compare: {
+        published: false,
+        indexed: false,
+        suggestedOpponentIds: [],
+        publishedPairIds: [],
+      },
+      app: { published: false },
+      pricing: { published: false },
+      sitemap: { published: false },
+    };
+    mutatePresentationModel(model);
+
+    assert.throws(
+      () => validateModelRegistryDocument(repositoryDocument([model])),
+      /presentation-only/i,
+    );
+  }
 });
 
 test('sitemap publication requires an indexable model route', () => {
@@ -165,6 +226,30 @@ test('registry rejects blank and non-string optional publication labels', () => 
       );
     }
   }
+});
+
+test('registry launch badges require a published app surface and the supported value', () => {
+  assert.doesNotThrow(() => validateModelRegistryDocument(mutate((copy) => {
+    const model = copy.models.find((candidate: any) => candidate.id === 'veo-3-1');
+    model.publication.app.launchBadge = 'new';
+  })));
+
+  assert.throws(
+    () => validateModelRegistryDocument(mutate((copy) => {
+      const model = copy.models.find((candidate: any) => candidate.id === 'veo-3-1');
+      model.publication.app.launchBadge = 'featured';
+    })),
+    /launchBadge must equal "new"/i
+  );
+
+  assert.throws(
+    () => validateModelRegistryDocument(mutate((copy) => {
+      const model = copy.models.find((candidate: any) => candidate.id === 'veo-3-1');
+      model.publication.app.published = false;
+      model.publication.app.launchBadge = 'new';
+    })),
+    /launchBadge requires a published app surface/i
+  );
 });
 
 test('registry rejects broken references, chains, and tombstone collisions', () => {

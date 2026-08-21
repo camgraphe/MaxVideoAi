@@ -45,6 +45,10 @@ const FALLBACK_POSTERS: Readonly<Record<string, Readonly<Record<string, string>>
   },
 };
 
+export const MODEL_EXAMPLE_FALLBACK_POSTER_SLUGS: readonly string[] = Object.freeze(
+  Object.keys(FALLBACK_POSTERS),
+);
+
 export function resolveModelExampleFallbackPosters(
   modelSlug: string,
   itemIds: readonly string[],

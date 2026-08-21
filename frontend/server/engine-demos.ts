@@ -34,7 +34,8 @@ const STATIC_ENGINE_DEMOS: Record<string, EngineDemo> = {
     hasAudio: false,
   },
   'minimax-hailuo-02-text': {
-    videoUrl: '/hero/minimax-video01.mp4',
+    videoUrl:
+      'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/b318922e-0042-4812-8c83-604fc8eeeed3.mp4',
     posterUrl: '/hero/minimax-video01.jpg',
     hasAudio: false,
   },

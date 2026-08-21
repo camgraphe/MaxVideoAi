@@ -67,7 +67,7 @@ export const HOME_HERO_IMAGE_URL = '/assets/home/home-hero-reference.webp';
 export const HERO_VIDEO_MODE_LABELS: Record<string, string> = {
   'kling-3-pro': 'image-to-video',
   'seedance-2-0': 'image-to-video',
-  'veo-3-1-lite': 'image-to-video',
+  'veo-3-1-lite': 'text-to-video',
   'happy-horse-1-1': 'reference-to-video',
   'ltx-2-3-pro': 'audio-to-video',
 };
@@ -107,18 +107,22 @@ export const HERO_ENGINE_MEDIA: Record<
   {
     posterSrc: string;
     videoSrc?: string;
+    chips?: string[];
     resolution: string;
     duration: string;
     estimateValue?: string;
     estimateMeta?: string;
     price?: string;
+    imageAlt?: string;
   }
 > = {
   'kling-3-pro': {
     ...KLING_3_PRO_HERO_RENDER,
   },
   'seedance-2-0': {
-    posterSrc: '/hero/showcase-seedance-2-0.webp',
+    posterSrc: '/hero/showcase-seedance-2-0-business-workflow.webp',
+    videoSrc:
+      'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/9d6811c9-226c-44bd-8b56-b3aa74039d59.mp4',
     resolution: '16:9',
     duration: '0:05',
   },
@@ -128,9 +132,16 @@ export const HERO_ENGINE_MEDIA: Record<
     duration: '0:05',
   },
   'veo-3-1-lite': {
-    posterSrc: '/hero/showcase-veo-3-1.webp',
+    posterSrc:
+      'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/8729a3ad-aa8e-470d-85e5-558a5f897893.jpg',
+    videoSrc:
+      'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/4e4954fc-513a-4345-945c-41adba7ec26a.mp4',
+    chips: ['Cinematic', 'Audio'],
     resolution: '16:9',
-    duration: '0:05',
+    duration: '0:08',
+    estimateValue: '$0.52',
+    estimateMeta: '8s generation',
+    imageAlt: 'Veo 3.1 Lite romantic train-station reunion generated with MaxVideoAI.',
   },
   'ltx-2-3-pro': {
     posterSrc:
@@ -175,7 +186,7 @@ export const COMPARISON_CARD_MEDIA: Record<string, { imageSrc: string; imageAlt:
     imageAlt: 'Fast draft AI video comparison preview for LTX models.',
   },
   'ltx-seedance': {
-    imageSrc: '/hero/showcase-seedance-2-0.webp',
+    imageSrc: '/hero/showcase-seedance-2-0-business-workflow.webp',
     imageAlt: 'AI video comparison preview between LTX and Seedance.',
   },
   'ltx-veo': {

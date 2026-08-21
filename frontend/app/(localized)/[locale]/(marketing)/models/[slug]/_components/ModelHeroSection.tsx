@@ -104,7 +104,11 @@ export function ModelHeroSection({
               <span aria-hidden className="text-text-muted">
                 /
               </span>
-              <Link href={localizeModelsPath()} className="font-semibold text-text-secondary hover:text-text-primary">
+              <Link
+                href={localizeModelsPath()}
+                prefetch={false}
+                className="font-semibold text-text-secondary hover:text-text-primary"
+              >
                 {resolvedBreadcrumb.models}
               </Link>
               <span aria-hidden className="text-text-muted">
@@ -197,7 +201,12 @@ export function ModelHeroSection({
             {heroQuickLinks.length ? (
               <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm">
                 {heroQuickLinks.map((item) => (
-                  <Link key={`${item.label}-${String(item.href)}`} href={item.href} className="font-semibold text-brand hover:text-brandHover">
+                  <Link
+                    key={`${item.label}-${String(item.href)}`}
+                    href={item.href}
+                    prefetch={false}
+                    className="font-semibold text-brand hover:text-brandHover"
+                  >
                     {item.label}
                   </Link>
                 ))}
@@ -205,7 +214,11 @@ export function ModelHeroSection({
             ) : null}
             {!heroSpecChips.length ? (
               <div className="flex flex-wrap justify-center gap-4 text-sm">
-                <Link href={pricingLinkHref} className="font-semibold text-brand hover:text-brandHover">
+                <Link
+                  href={pricingLinkHref}
+                  prefetch={false}
+                  className="font-semibold text-brand hover:text-brandHover"
+                >
                   {pricingLinkLabel}
                 </Link>
               </div>
@@ -269,6 +282,7 @@ export function ModelHeroSection({
                             <Link
                               key={`${item.title}-${index}`}
                               href={item.href}
+                              prefetch={false}
                               className="inline-flex rounded-full transition hover:border-brand/35 hover:text-brandHover focus:outline-none focus:ring-2 focus:ring-brand/35"
                             >
                               {chip}

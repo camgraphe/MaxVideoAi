@@ -3,3 +3,13 @@
   width: 100% !important;
   height: 100% !important;
 }
+
+.mediaFrame {
+  padding-bottom: var(--examples-mobile-media-padding);
+}
+
+@media (min-width: 768px) {
+  .mediaFrame {
+    padding-bottom: var(--examples-desktop-media-padding);
+  }
+}

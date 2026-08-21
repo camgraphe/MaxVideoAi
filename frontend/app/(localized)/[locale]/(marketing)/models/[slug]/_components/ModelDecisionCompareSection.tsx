@@ -116,6 +116,7 @@ export function ModelDecisionCompareSection({
             <p className="mt-2 text-base text-text-secondary">{getFocusSubtitle(locale)}</p>
             <Link
               href={localizeModelsPath(focusVsConfig.ctaSlug)}
+              prefetch={false}
               className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-blue-600 transition hover:text-blue-500 dark:text-blue-300"
             >
               <span>{focusVsConfig.ctaLabel}</span>
@@ -209,6 +210,7 @@ export function ModelDecisionCompareSection({
                         <p className="mt-2 line-clamp-3 text-sm leading-6 text-text-secondary">{description}</p>
                         <Link
                           href={compareHref}
+                          prefetch={false}
                           className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-blue-600 transition hover:text-blue-500 dark:text-blue-300"
                         >
                           <span>{ctaLabel}</span>

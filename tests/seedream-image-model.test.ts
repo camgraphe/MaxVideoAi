@@ -98,10 +98,8 @@ test('Seedream 5.0 Pro is registered with direct BytePlus Pro-only options', () 
   assert.equal(entry.engine.providerMeta?.provider, 'byteplus_modelark');
   assert.equal(entry.engine.providerMeta?.modelSlug, 'dola-seedream-5-0-pro-260628');
   assert.equal(ENV.BYTEPLUS_ARK_SEEDREAM_PRO_MODEL_ID, 'dola-seedream-5-0-pro-260628');
-  assert.deepEqual(entry.engine.inputSchema?.optional?.find((field) => field.id === 'resolution')?.values, [
-    '2K',
-    '4K',
-  ]);
+  assert.deepEqual(entry.engine.inputSchema?.optional?.find((field) => field.id === 'resolution')?.values, ['2K']);
+  assert.deepEqual(entry.modes.map((mode) => mode.ui.resolution), [['2K'], ['2K']]);
   assert.equal(entry.engine.inputSchema?.optional?.find((field) => field.id === 'num_images')?.max, 1);
   assert.equal(entry.engine.inputSchema?.optional?.find((field) => field.id === 'image_urls')?.maxCount, 10);
   assert.equal(entry.surfaces.app.enabled, true);

@@ -252,10 +252,6 @@
       "Vérifiez le provider actif avant de monter en volume.",
       "Utilisez le devis final dans Generate avant un déploiement côté client ou une automatisation."
     ],
-    "galleryTitle": "Exemples Seedance 2.0",
-    "galleryIntro": "Utilisez cette galerie pour revoir les schémas de prompts, la structure des scènes et les séquences que Seedance 2.0 gère bien dans MaxVideoAI.",
-    "galleryAllCta": "Voir tous les exemples Seedance ->",
-    "recreateLabel": "Recréer ce plan ->",
     "relatedItems": [
       {
         "brand": "bytedance",
@@ -384,6 +380,14 @@
       }
     ],
     "decisionCards": [
+      {
+        "title": "Découvrir le nouveau Seedance 2.5",
+        "body": "Comparez Seedance 2.5 à Seedance 2.0 pour la vidéo cinématique de 30 secondes, les workflows image et références, les publicités multi-plans, les vidéos produit et l’UGC. Gardez Seedance 2.0 pour la livraison 4K.",
+        "cta": {
+          "label": "Découvrir le nouveau Seedance 2.5",
+          "href": "/fr/modeles/seedance-2-5"
+        }
+      },
       {
         "title": "Seedance 2.0 ou Fast ?",
         "body": "Choisissez Seedance 2.0 pour les rendus finaux avec audio natif et continuité multi-plans. Passez à Fast pour les brouillons moins chers et les tests de rythme.",
@@ -606,6 +610,7 @@
         "icon": "shield"
       }
     ],
-    "fallbackItems": null
+    "fallbackItems": null,
+    "showWhenEmpty": true
   }
 }

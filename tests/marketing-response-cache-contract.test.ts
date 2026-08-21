@@ -25,6 +25,7 @@ test('critical marketing pages use CDN caching without browser staleness', () =>
   }
 
   const cachePathsBlock = source.match(/const MARKETING_CDN_CACHE_PATHS = \[(.*?)\];/s)?.[1] ?? '';
+  assert.match(cachePathsBlock, /'\/',/);
   assert.doesNotMatch(cachePathsBlock, /'\/pricing'/);
   assert.doesNotMatch(cachePathsBlock, /'\/models\/:path\*'/);
 });

@@ -8,11 +8,17 @@ import {
   buildBytePlusSeedancePayload,
   getBytePlusUserSafeErrorMessage,
   getBytePlusUserSafeTaskFailureMessage,
+  getBytePlusTaskFailureCode,
   getBytePlusSeedanceAllowedResolutions,
+  normalizeBytePlusTask,
   shouldRoutePublicSeedanceFastToBytePlus,
   shouldRoutePublicSeedanceMiniToBytePlus,
 } from '../frontend/src/server/video-providers/byteplus-modelark';
 import { listFalEngines } from '../frontend/src/config/falEngines';
+import {
+  isBytePlusSeedanceHiddenEngine,
+  requiresBytePlusSeedanceEarlyGate,
+} from '../frontend/src/server/video-providers/byteplus-modelark-profile-policy';
 import {
   expectedBytePlusTokens,
   getBytePlusAccounting,
@@ -20,6 +26,7 @@ import {
 } from '../frontend/server/byteplus-accounting';
 
 const pollPath = 'frontend/server/byteplus-poll.ts';
+const pollFailurePath = 'frontend/server/byteplus-poll-failure.ts';
 const accountingPath = 'frontend/server/byteplus-accounting.ts';
 const storageCopyPath = 'frontend/server/byteplus-storage-copy.ts';
 const pollTypesPath = 'frontend/server/byteplus-poll-types.ts';
@@ -30,18 +37,20 @@ const providerPayloadPath = 'frontend/src/server/video-providers/byteplus-modela
 const providerResponsePath = 'frontend/src/server/video-providers/byteplus-modelark-response.ts';
 const envPath = 'frontend/src/lib/env.ts';
 
-test('BytePlus poll delegates accounting, storage-copy retry, and shared types', () => {
-  for (const path of [pollPath, accountingPath, storageCopyPath, pollTypesPath]) {
+test('BytePlus poll delegates accounting, failure handling, storage-copy retry, and shared types', () => {
+  for (const path of [pollPath, pollFailurePath, accountingPath, storageCopyPath, pollTypesPath]) {
     assert.equal(existsSync(path), true, `${path} should exist`);
   }
 
   const pollSource = readFileSync(pollPath, 'utf8');
+  const pollFailureSource = readFileSync(pollFailurePath, 'utf8');
   const accountingSource = readFileSync(accountingPath, 'utf8');
   const storageCopySource = readFileSync(storageCopyPath, 'utf8');
   const pollTypesSource = readFileSync(pollTypesPath, 'utf8');
 
   assert.ok(pollSource.split('\n').length < 430, 'byteplus-poll.ts should stay under 430 lines');
   assert.match(pollSource, /from '\.\/byteplus-accounting'/);
+  assert.match(pollSource, /from '\.\/byteplus-poll-failure'/);
   assert.match(pollSource, /from '\.\/byteplus-storage-copy'/);
   assert.match(pollSource, /from '\.\/byteplus-poll-types'/);
   assert.doesNotMatch(pollSource, /const BYTEPLUS_TOKEN_DIMENSIONS/);
@@ -53,6 +62,8 @@ test('BytePlus poll delegates accounting, storage-copy retry, and shared types',
   assert.match(storageCopySource, /export function getBytePlusStorageCopyState/);
   assert.match(storageCopySource, /export function shouldRetryBytePlusStorageCopy/);
   assert.match(pollTypesSource, /export type BytePlusPendingJob/);
+  assert.match(pollFailureSource, /providerErrorCode/);
+  assert.match(pollFailureSource, /providerFailure/);
 });
 
 test('BytePlus ModelArk provider delegates payload and response normalization', () => {
@@ -103,6 +114,30 @@ test('BytePlus ModelArk non-safety start failures stay specific without provider
   );
 });
 
+test('BytePlus ModelArk explains provider pixel-floor and inherited-ratio rejections precisely', () => {
+  const pixelMessage =
+    'The parameter content[1] video pixel count must be >= 407696 for model dreamina-seedance-2-5 in r2v.';
+  assert.equal(
+    getBytePlusUserSafeErrorMessage(pixelMessage),
+    'The source video is too small for Seedance. Use a video with at least 407,696 total pixels and try again.'
+  );
+  assert.equal(
+    getBytePlusTaskFailureCode(pixelMessage),
+    'seedance_input_video_too_small'
+  );
+
+  const ratioMessage =
+    'The parameter ratio specified in the request is not valid. For first-frame or first-last-frame generation, the output ratio follows the first-frame image.';
+  assert.equal(
+    getBytePlusUserSafeErrorMessage(ratioMessage),
+    "Seedance follows the start image's aspect ratio automatically. Re-upload the start image and try again."
+  );
+  assert.equal(
+    getBytePlusTaskFailureCode(ratioMessage),
+    'seedance_i2v_ratio_rejected'
+  );
+});
+
 test('BytePlus ModelArk task failures say when a Seedance render stopped after starting', () => {
   const message = getBytePlusUserSafeTaskFailureMessage('Request failed.');
 
@@ -111,6 +146,26 @@ test('BytePlus ModelArk task failures say when a Seedance render stopped after s
     'Seedance started this render but did not deliver a video. Retry with a simpler prompt or fewer reference assets.'
   );
   assert.doesNotMatch(message, /BytePlus|ModelArk|request failed/i);
+});
+
+test('BytePlus ModelArk preserves and explains output copyright policy failures', () => {
+  const providerCode = 'OutputVideoSensitiveContentDetected.PolicyViolation';
+  const providerMessage =
+    'The request failed because the output video may be related to copyright restrictions. Request id: req_123';
+  const task = normalizeBytePlusTask({
+    id: 'cgt_123',
+    status: 'failed',
+    error: {
+      code: providerCode,
+      message: providerMessage,
+    },
+  });
+
+  assert.equal(task.errorCode, providerCode);
+  assert.equal(
+    getBytePlusUserSafeTaskFailureMessage(task.message, task.errorCode),
+    'Seedance stopped this render after it started because its output checks detected possible copyright-restricted content. Change recognizable characters, brands, logos, franchise references, or source media before trying again.'
+  );
 });
 
 test('BytePlus Mini runtime uses Mini caps and input-specific accounting rates', () => {
@@ -215,9 +270,246 @@ test('BytePlus Standard exposes 4k while Fast and Mini stay capped below 4k', ()
   );
 });
 
+test('BytePlus payload respects explicit empty capabilities while omitted capabilities keep defaults', () => {
+  const basePayload = {
+    modelId: 'dreamina-seedance-2-0-fast-260128',
+    prompt: 'A profile capability test.',
+    durationSec: 5,
+    mode: 't2v' as const,
+    resolution: '720p',
+    ratio: '16:9',
+  };
+
+  assert.throws(
+    () => buildBytePlusSeedancePayload({ ...basePayload, allowedModes: [] }),
+    (error: unknown) =>
+      error instanceof Error &&
+      (error as Error & { code?: string }).code === 'BYTEPLUS_MODE_UNSUPPORTED'
+  );
+  assert.throws(
+    () => buildBytePlusSeedancePayload({ ...basePayload, allowedAspectRatios: [] }),
+    (error: unknown) =>
+      error instanceof Error &&
+      (error as Error & { code?: string }).code === 'BYTEPLUS_RATIO_UNSUPPORTED'
+  );
+  assert.throws(
+    () => buildBytePlusSeedancePayload({ ...basePayload, allowedResolutions: [] }),
+    (error: unknown) =>
+      error instanceof Error &&
+      (error as Error & { code?: string }).code ===
+        'BYTEPLUS_RESOLUTION_UNSUPPORTED'
+  );
+  assert.throws(
+    () =>
+      buildBytePlusSeedancePayload({
+        ...basePayload,
+        allowedDurationOptions: [],
+      }),
+    (error: unknown) =>
+      error instanceof Error &&
+      (error as Error & { code?: string }).code ===
+        'BYTEPLUS_DURATION_UNSUPPORTED'
+  );
+
+  const payload = buildBytePlusSeedancePayload(basePayload);
+  assert.equal(payload.resolution, '720p');
+  assert.equal(payload.ratio, '16:9');
+});
+
+test('BytePlus payload counts typed budget items before URL deduplication', () => {
+  assert.throws(
+    () =>
+      buildBytePlusSeedancePayload({
+        modelId: 'current-model-id',
+        prompt: 'A reference-guided scene',
+        durationSec: 5,
+        mode: 'ref2v',
+        resolution: '720p',
+        ratio: '16:9',
+        allowedResolutions: ['720p'],
+        allowedDurationOptions: [5],
+        referenceBudget: {
+          fieldIds: ['image_urls'],
+          maxTotal: 1,
+          countUniqueUrls: false,
+        },
+        referenceMediaItems: [
+          { fieldId: 'image_urls', kind: 'image', url: 'same' },
+          { fieldId: 'image_urls', kind: 'image', url: 'same' },
+        ],
+      }),
+    (error: unknown) =>
+      error instanceof Error &&
+      (error as Error & { code?: string }).code === 'BYTEPLUS_REFERENCE_BUDGET_EXCEEDED'
+  );
+});
+
+test('BytePlus image-to-video uses first and last frame roles without rewriting the prompt', () => {
+  const prompt = 'A dancer crosses the room while the camera slowly pulls back.';
+  const startOnly = buildBytePlusSeedancePayload({
+    modelId: 'dreamina-seedance-2-5-250815',
+    prompt,
+    durationSec: 5,
+    mode: 'i2v',
+    imageUrl: 'https://cdn.maxvideoai.com/start.png',
+    resolution: '720p',
+    ratio: '16:9',
+    allowedResolutions: ['720p'],
+    allowedDurationOptions: [5],
+  });
+  const startAndEnd = buildBytePlusSeedancePayload({
+    modelId: 'dreamina-seedance-2-5-250815',
+    prompt,
+    durationSec: 5,
+    mode: 'i2v',
+    imageUrl: 'https://cdn.maxvideoai.com/start.png',
+    endImageUrl: 'https://cdn.maxvideoai.com/end.png',
+    resolution: '720p',
+    ratio: '16:9',
+    allowedResolutions: ['720p'],
+    allowedDurationOptions: [5],
+  });
+
+  assert.deepEqual(startOnly.content, [
+    { type: 'text', text: prompt },
+    {
+      type: 'image_url',
+      image_url: { url: 'https://cdn.maxvideoai.com/start.png' },
+      role: 'first_frame',
+    },
+  ]);
+  assert.deepEqual(startAndEnd.content, [
+    { type: 'text', text: prompt },
+    {
+      type: 'image_url',
+      image_url: { url: 'https://cdn.maxvideoai.com/start.png' },
+      role: 'first_frame',
+    },
+    {
+      type: 'image_url',
+      image_url: { url: 'https://cdn.maxvideoai.com/end.png' },
+      role: 'last_frame',
+    },
+  ]);
+  assert.equal(
+    Object.hasOwn(startOnly, 'ratio'),
+    false,
+    'first-frame generation must let BytePlus inherit the source image ratio'
+  );
+  assert.equal(
+    Object.hasOwn(startAndEnd, 'ratio'),
+    false,
+    'first/last-frame generation must let BytePlus inherit the source image ratio'
+  );
+
+  const seedance20Payload = buildBytePlusSeedancePayload({
+    modelId: 'dreamina-seedance-2-0-260128',
+    prompt,
+    durationSec: 5,
+    mode: 'i2v',
+    imageUrl: 'https://cdn.maxvideoai.com/start.png',
+    resolution: '720p',
+    ratio: '16:9',
+    allowedResolutions: ['720p'],
+    allowedDurationOptions: [5],
+  });
+  assert.equal(
+    seedance20Payload.ratio,
+    '16:9',
+    'the Seedance 2.5 provider workaround must not change older payload contracts'
+  );
+
+  const referencePayload = buildBytePlusSeedancePayload({
+    modelId: 'current-model-id',
+    prompt,
+    durationSec: 5,
+    mode: 'ref2v',
+    referenceImageUrls: ['https://cdn.maxvideoai.com/reference.png'],
+    resolution: '720p',
+    ratio: '16:9',
+    allowedResolutions: ['720p'],
+    allowedDurationOptions: [5],
+  });
+  assert.deepEqual(referencePayload.content[1], {
+    type: 'image_url',
+    image_url: { url: 'https://cdn.maxvideoai.com/reference.png' },
+    role: 'reference_image',
+  });
+});
+
+test('BytePlus typed provenance preserves a non-budget V2V source video', () => {
+  const payload = buildBytePlusSeedancePayload({
+    modelId: 'current-model-id',
+    prompt: 'Edit the source',
+    durationSec: 5,
+    mode: 'v2v',
+    resolution: '720p',
+    ratio: '16:9',
+    allowedResolutions: ['720p'],
+    allowedDurationOptions: [5],
+    referenceImageUrls: ['reference-image'],
+    referenceVideoUrls: ['source-video'],
+    referenceBudget: {
+      fieldIds: ['reference_image_urls'],
+      maxTotal: 1,
+      countUniqueUrls: true,
+    },
+    referenceMediaItems: [
+      {
+        fieldId: 'reference_image_urls',
+        kind: 'image',
+        url: 'reference-image',
+      },
+      { fieldId: 'video_url', kind: 'video', url: 'source-video' },
+    ],
+  });
+
+  assert.deepEqual(
+    payload.content
+      .filter((item) => item.type !== 'text')
+      .map((item) =>
+        item.type === 'image_url'
+          ? item.image_url.url
+          : item.type === 'video_url'
+            ? item.video_url.url
+            : item.audio_url.url
+      ),
+    ['reference-image', 'source-video']
+  );
+});
+
+test('BytePlus rejects a budgeted item omitted from provider-selected arrays', () => {
+  assert.throws(
+    () =>
+      buildBytePlusSeedancePayload({
+        modelId: 'current-model-id',
+        prompt: 'A reference-guided scene',
+        durationSec: 5,
+        mode: 'ref2v',
+        resolution: '720p',
+        ratio: '16:9',
+        allowedResolutions: ['720p'],
+        allowedDurationOptions: [5],
+        referenceBudget: {
+          fieldIds: ['image_urls'],
+          maxTotal: 2,
+          countUniqueUrls: true,
+        },
+        referenceMediaItems: [
+          { fieldId: 'image_urls', kind: 'image', url: 'missing-image' },
+        ],
+      }),
+    (error: unknown) =>
+      error instanceof Error &&
+      (error as Error & { code?: string }).code ===
+        'BYTEPLUS_REFERENCE_BUDGET_INPUT_MISMATCH'
+  );
+});
+
 test('BytePlus Standard 4k accounting uses 4k dimensions and input-aware official rates', () => {
   assert.equal(
     expectedBytePlusTokens({
+      engine_id: 'seedance-2-0',
       duration_sec: 1,
       settings_snapshot: {
         core: {
@@ -230,6 +522,7 @@ test('BytePlus Standard 4k accounting uses 4k dimensions and input-aware officia
   );
   assert.equal(
     expectedBytePlusTokens({
+      engine_id: 'seedance-2-0',
       duration_sec: 1,
       settings_snapshot: {
         core: {
@@ -244,6 +537,76 @@ test('BytePlus Standard 4k accounting uses 4k dimensions and input-aware officia
   assert.equal(getBytePlusUnitPriceUsdPer1kTokens('seedance-2-0', 'video_input', '4k'), 0.0024);
   assert.equal(getBytePlusUnitPriceUsdPer1kTokens('seedance-2-0', 'no_video_input', '1080p'), 0.007);
   assert.equal(getBytePlusUnitPriceUsdPer1kTokens('seedance-2-0-fast', 'no_video_input', '4k'), 0.0056);
+});
+
+test('Seedance 2.5 accounting selects the factual rate class from video input presence', () => {
+  const cases = [
+    {
+      name: 'text to video',
+      mode: 't2v',
+      refs: {},
+      expectedClass: 'no_video_input',
+      expectedRate: 0.0107,
+    },
+    {
+      name: 'image to video',
+      mode: 'i2v',
+      refs: { imageUrl: 'https://cdn.maxvideoai.com/start.png' },
+      expectedClass: 'no_video_input',
+      expectedRate: 0.0107,
+    },
+    {
+      name: 'image-only reference to video',
+      mode: 'ref2v',
+      refs: { referenceImages: ['https://cdn.maxvideoai.com/reference.png'] },
+      expectedClass: 'no_video_input',
+      expectedRate: 0.0107,
+    },
+    {
+      name: 'video reference to video',
+      mode: 'ref2v',
+      refs: { videoUrls: ['https://cdn.maxvideoai.com/reference.mp4'] },
+      expectedClass: 'video_input',
+      expectedRate: 0.0064,
+    },
+    {
+      name: 'video edit',
+      mode: 'v2v',
+      refs: { videoUrls: ['https://cdn.maxvideoai.com/source.mp4'] },
+      expectedClass: 'video_input',
+      expectedRate: 0.0064,
+    },
+    {
+      name: 'video extension',
+      mode: 'extend',
+      refs: { videoUrls: ['https://cdn.maxvideoai.com/source.mp4'] },
+      expectedClass: 'video_input',
+      expectedRate: 0.0064,
+    },
+  ] as const;
+
+  for (const scenario of cases) {
+    const accounting = getBytePlusAccounting({
+      has_audio: false,
+      settings_snapshot: {
+        inputMode: scenario.mode,
+        refs: scenario.refs,
+      },
+    });
+    assert.equal(
+      accounting.byteplusBillingInputType,
+      scenario.expectedClass,
+      scenario.name
+    );
+    assert.equal(
+      getBytePlusUnitPriceUsdPer1kTokens(
+        'seedance-2-5',
+        accounting.byteplusBillingInputType
+      ),
+      scenario.expectedRate,
+      scenario.name
+    );
+  }
 });
 
 test('BytePlus Mini cannot fall back to Fal through provider env override', () => {
@@ -286,4 +649,41 @@ test('BytePlus runtime exposes Seedance 2.0 Standard and Fast video source workf
     assert.equal(extensionSourceField?.maxCount, 3);
     assert.deepEqual(referenceVideoField?.modes, ['ref2v']);
   }
+});
+
+test('hidden direct Fast keeps its narrow raw runtime caps by default', () => {
+  const hiddenEntry = listFalEngines().find(
+    (entry) => entry.id === 'seedance-2-0-fast-byteplus'
+  );
+  assert.ok(hiddenEntry);
+  const runtimeEngine = applyBytePlusSeedanceRuntimeOptions(hiddenEntry.engine);
+  assert.deepEqual(runtimeEngine.modes, ['t2v']);
+  assert.deepEqual(runtimeEngine.resolutions, ['720p']);
+  assert.deepEqual(runtimeEngine.aspectRatios, ['16:9']);
+  assert.deepEqual(hiddenEntry.modes[0]?.ui.resolution, ['720p']);
+  assert.equal(hiddenEntry.modes[0]?.ui.audioToggle, false);
+});
+
+test('Seedance early gating is independent from hidden-engine resolution', () => {
+  assert.equal(requiresBytePlusSeedanceEarlyGate('seedance-2-5'), true);
+  assert.equal(requiresBytePlusSeedanceEarlyGate('seedance-2-0-fast-byteplus'), true);
+  assert.equal(requiresBytePlusSeedanceEarlyGate('seedance-2-0'), false);
+  assert.equal(isBytePlusSeedanceHiddenEngine('seedance-2-5'), false);
+  assert.equal(isBytePlusSeedanceHiddenEngine('seedance-2-0-fast-byteplus'), true);
+});
+
+test('profile policy is separated from the thin provider facade', () => {
+  const facade = readFileSync(
+    'frontend/src/server/video-providers/byteplus-modelark.ts',
+    'utf8'
+  );
+  const policy = readFileSync(
+    'frontend/src/server/video-providers/byteplus-modelark-profile-policy.ts',
+    'utf8'
+  );
+  assert.ok(facade.split('\n').length < 430);
+  assert.match(facade, /from '\.\/byteplus-modelark-profile-policy'/);
+  assert.match(policy, /export function applyBytePlusSeedanceRuntimeOptions/);
+  assert.match(policy, /export function resolveBytePlusSeedanceRouteProfile/);
+  assert.doesNotMatch(facade, /function filterInputFieldsForModes/);
 });

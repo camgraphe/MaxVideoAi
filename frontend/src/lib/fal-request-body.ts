@@ -10,12 +10,17 @@ import { buildSoraFalInput } from '@/lib/sora';
 import { stripKlingDirectOnlyExtraInputValues } from '@/lib/kling-direct-extra-values';
 import { buildFalElementInputs } from '@/lib/video-provider-elements';
 import { isHappyHorseFalModelId, supportsHappyHorseVideoEdit } from '@/lib/happy-horse-workflow';
+import { buildMinimaxH3FalRequest, isMinimaxH3EngineId } from '@/lib/minimax-h3';
 import type { GeneratePayload } from '@/lib/fal-types';
 
 export function buildFalGenerationRequest(
   payload: GeneratePayload,
   defaultModel: string
 ): { model: string; requestBody: Record<string, unknown> } {
+  if (isMinimaxH3EngineId(payload.engineId)) {
+    return buildMinimaxH3FalRequest(payload);
+  }
+
   let apiKey: string | undefined;
   if (payload.apiKey && payload.apiKey.trim().length > 10) {
     apiKey = payload.apiKey.trim();

@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "last_updated": "2026-07-01",
+  "last_updated": "2026-08-08",
   "method": "manual-v1-internet-calibrated-with-platform-pricing",
   "scores": [
     {
@@ -199,6 +199,21 @@
       "last_updated": "2026-04-06"
     },
     {
+      "modelSlug": "seedance-2-5",
+      "fidelity": 9.1,
+      "visualQuality": 9.2,
+      "motion": 9.2,
+      "consistency": 9.0,
+      "anatomy": 8.9,
+      "textRendering": 8.5,
+      "lipsyncQuality": 9.3,
+      "sequencingQuality": 9.4,
+      "controllability": 9.0,
+      "speedStability": 7.7,
+      "pricing": 7.2,
+      "last_updated": "2026-08-08"
+    },
+    {
       "modelSlug": "seedance-2-0",
       "fidelity": 8.6,
       "visualQuality": 8.8,
@@ -287,6 +302,21 @@
       "controllability": 6.0,
       "speedStability": 7.5,
       "pricing": 9.6
+    },
+    {
+      "modelSlug": "minimax-h3",
+      "fidelity": 8.6,
+      "visualQuality": 8.5,
+      "motion": 8.4,
+      "consistency": 8.4,
+      "anatomy": 8.1,
+      "textRendering": 8.3,
+      "lipsyncQuality": 8.7,
+      "sequencingQuality": 8.6,
+      "controllability": 9.0,
+      "speedStability": 7.6,
+      "pricing": 9.7,
+      "last_updated": "2026-08-08"
     },
     {
       "modelSlug": "minimax-hailuo-02-text",

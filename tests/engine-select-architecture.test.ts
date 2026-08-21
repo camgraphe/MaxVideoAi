@@ -80,6 +80,17 @@ test('engine select modules expose the expected contracts', () => {
   assert.match(typesSource, /export type EngineRegistryMeta/);
 });
 
+test('engine rows render launch badges from registry metadata without model-specific branches', () => {
+  assert.match(typesSource, /export type EngineLaunchBadge = 'new'/);
+  assert.match(dropdownSource, /meta\?\.surfaces\.app\.launchBadge === 'new'/);
+  assert.match(dropdownSource, /copy\.badges\.new/);
+  assert.doesNotMatch(
+    dropdownSource,
+    /engine\.id\s*===\s*['"]seedance-2-5['"]/,
+    'launch badge rendering must stay driven by registry metadata',
+  );
+});
+
 test('engine select delegates variant presentation to a focused component', () => {
   assert.ok(existsSync(variantControlPath));
   const variantControlSource = readFileSync(variantControlPath, 'utf8');

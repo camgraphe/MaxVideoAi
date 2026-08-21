@@ -32,7 +32,7 @@ export function BenchmarkLabView({ copy, data, editorialProfile, locale }: Bench
   ];
 
   return (
-    <main className="overflow-x-clip bg-bg text-text-primary">
+    <div className="overflow-x-clip bg-bg text-text-primary">
       <header className="relative isolate overflow-hidden border-b border-hairline px-4 py-16 sm:px-8 sm:py-24">
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_0%,color-mix(in_srgb,var(--accent)_14%,transparent),transparent_55%)]" />
         <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-0 -z-10 h-px w-[min(720px,80vw)] -translate-x-1/2 bg-gradient-to-r from-transparent via-brand/45 to-transparent" />
@@ -155,6 +155,6 @@ export function BenchmarkLabView({ copy, data, editorialProfile, locale }: Bench
           </div>
         </aside>
       </div>
-    </main>
+    </div>
   );
 }

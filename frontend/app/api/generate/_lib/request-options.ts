@@ -278,6 +278,7 @@ export function buildGenerateRequestOptions(params: {
       durationSec,
       requestedResolution,
       aspectRatio,
+      mode,
     });
     if (!bytePlusResult.ok) {
       return bytePlusResult;
@@ -287,7 +288,9 @@ export function buildGenerateRequestOptions(params: {
     pricingResolution = bytePlusResult.resolution;
     effectiveResolution = bytePlusResult.resolution;
     aspectRatio = bytePlusResult.aspectRatio;
-    audioEnabled = audioEnabled ?? true;
+    audioEnabled = bytePlusResult.generatedAudio
+      ? audioEnabled ?? true
+      : false;
   }
 
   const rawNumFrames =

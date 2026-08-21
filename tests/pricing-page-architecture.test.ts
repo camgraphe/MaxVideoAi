@@ -27,6 +27,10 @@ const jsonLdLibPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/
 const videoMatrixPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pricing/_components/PricingVideoMatrixSection.tsx');
 const popularChecksPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pricing/_components/PricingPopularChecksSection.tsx');
 const otherSurfacesPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pricing/_components/PricingOtherSurfacesSection.tsx');
+const tableScrollRegionPath = join(
+  root,
+  'frontend/app/(localized)/[locale]/(marketing)/pricing/_components/PricingTableScrollRegion.tsx'
+);
 const creditsRefundsPath = join(
   root,
   'frontend/app/(localized)/[locale]/(marketing)/pricing/_components/PricingCreditsRefundsSection.tsx'
@@ -57,6 +61,21 @@ const englishMessages = JSON.parse(readFileSync(englishMessagesPath, 'utf8')) as
   };
 };
 const engineCatalog = JSON.parse(readFileSync(catalogPath, 'utf8')) as EngineCatalogEntry[];
+
+test('pricing tables use labelled keyboard-focusable scroll regions', () => {
+  assert.ok(existsSync(tableScrollRegionPath));
+  const source = readFileSync(tableScrollRegionPath, 'utf8');
+
+  assert.match(source, /role="region"/);
+  assert.match(source, /tabIndex=\{0\}/);
+  assert.match(source, /aria-labelledby=\{labelledBy\}/);
+  assert.match(source, /focus-visible:ring-2/);
+  assert.match(videoMatrixSource, /labelledBy="video-pricing-table-title"/);
+  assert.match(popularChecksSource, /labelledBy="popular-pricing-checks-title"/);
+  assert.match(otherSurfacesSource, /labelledBy="image-pricing-title"/);
+  assert.match(otherSurfacesSource, /labelledBy="audio-pricing-title"/);
+  assert.match(otherSurfacesSource, /labelledBy="tool-pricing-title"/);
+});
 
 test('pricing page delegates compact matrix sections and JSON-LD rendering', () => {
   assert.ok(existsSync(heroPath), 'pricing hero should live in a route-local component');

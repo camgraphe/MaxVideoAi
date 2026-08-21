@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
 import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
+
+const frontendRequire = createRequire(new URL('../frontend/package.json', import.meta.url));
 
 const schemaFacadePath = 'frontend/src/lib/schema.ts';
 const schemaModulePaths = [
@@ -98,4 +101,33 @@ test('sitemap data facade delegates route discovery, lastmod, locales, and XML h
   sitemapModulePaths.forEach((path) => {
     assert.ok(lineCount(path) < 500, `${path} should stay under 500 lines`);
   });
+});
+
+test('models sitemap retains every localized H3, Seedance 2.5 and Seedance 2.0 canonical', async () => {
+  // The facade also imports video SEO, whose React Server cache is not exposed by
+  // React 18's standalone Node entry. The models builder never calls that branch.
+  const react = frontendRequire('react') as {
+    cache?: <TFunction extends (...args: never[]) => unknown>(fn: TFunction) => TFunction;
+  };
+  react.cache ??= (fn) => fn;
+  const { buildModelsSitemapXml } = await import('../frontend/lib/sitemapData.ts');
+  const xml = await buildModelsSitemapXml();
+
+  for (const slug of ['minimax-h3', 'seedance-2-5', 'seedance-2-0']) {
+    const urls = {
+      en: `https://maxvideoai.com/models/${slug}`,
+      fr: `https://maxvideoai.com/fr/modeles/${slug}`,
+      es: `https://maxvideoai.com/es/modelos/${slug}`,
+    } as const;
+
+    for (const [hreflang, url] of Object.entries(urls)) {
+      assert.match(xml, new RegExp(`<loc>${url}</loc>`), `${url} sitemap membership`);
+      assert.match(xml, new RegExp(`hreflang="${hreflang}" href="${url}"`), `${url} alternate membership`);
+    }
+    assert.match(
+      xml,
+      new RegExp(`hreflang="x-default" href="${urls.en}"`),
+      `${slug} x-default membership`,
+    );
+  }
 });

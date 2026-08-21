@@ -17,6 +17,10 @@
     },
     "secondaryLinks": [
       {
+        "label": "Discover the current MiniMax H3 →",
+        "href": "/models/minimax-h3"
+      },
+      {
         "label": "Compare MiniMax vs Pika 2.2 →",
         "href": "/models/pika-text-to-video"
       }
@@ -215,10 +219,6 @@
       }
     ],
     "specValueProp": "MiniMax Hailuo 02 is a fast, physics-savvy draft engine for cheap, silent motion tests.",
-    "galleryTitle": "MiniMax Hailuo 02 Example Gallery",
-    "galleryIntro": "See text and image runs rendered with the same configuration you have.",
-    "galleryAllCta": "View all MiniMax Hailuo 02 examples →",
-    "recreateLabel": "Recreate this shot →",
     "imageTitle": "Image-to-Video with MiniMax Hailuo 02 (+ End Frames)",
     "imageIntro": "Animate boards/renders/concepts quickly with optional end frame.",
     "imageFlow": [
@@ -598,6 +598,7 @@
         "icon": "shield"
       }
     ],
-    "fallbackItems": null
+    "fallbackItems": null,
+    "showWhenEmpty": true
   }
 }

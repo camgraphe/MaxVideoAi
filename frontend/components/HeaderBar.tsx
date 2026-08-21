@@ -8,11 +8,12 @@ import { ReconsentPrompt } from '@/components/legal/ReconsentPrompt';
 import { AppLanguageToggle } from '@/components/AppLanguageToggle';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { MARKETING_NAV_DROPDOWNS, MARKETING_TOP_NAV_LINKS } from '@/config/navigation';
 import { SERVICE_NOTICE_POLLING_INTERVAL_MS } from '@/lib/service-notice-polling';
 import { HeaderAccountMenu } from '@/components/header/HeaderAccountMenu';
+import { HeaderAuthActions } from '@/components/header/HeaderAuthActions';
 import { HeaderLogoMark } from '@/components/header/HeaderLogoMark';
 import { HeaderMobileMenu } from '@/components/header/HeaderMobileMenu';
 import { HeaderWalletStatus } from '@/components/header/HeaderWalletStatus';
@@ -284,6 +285,7 @@ export function HeaderBar() {
                   <Link
                     key={item.href}
                     href={item.href}
+                    prefetch={false}
                     className="transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
                   >
                     {label}
@@ -309,6 +311,7 @@ export function HeaderBar() {
                 >
                   <Link
                     href={item.href}
+                    prefetch={false}
                     aria-haspopup="menu"
                     className="inline-flex items-center gap-1 transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
                     onClick={() => closeDesktopDropdown(200)}
@@ -332,6 +335,7 @@ export function HeaderBar() {
                         <nav className="flex flex-col gap-1" role="menu" aria-label={label}>
                           <Link
                             href={resolveLocalizedHref(dropdown.allHref)}
+                            prefetch={false}
                             className="rounded-input px-3 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring whitespace-nowrap"
                             role="menuitem"
                             onClick={() => closeDesktopDropdown(200)}
@@ -344,11 +348,17 @@ export function HeaderBar() {
                               <Link
                                 key={entry.key}
                                 href={href}
+                                prefetch={false}
                                 className="rounded-input px-3 py-2 text-sm text-text-secondary transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring whitespace-nowrap"
                                 role="menuitem"
                                 onClick={() => closeDesktopDropdown(200)}
                               >
-                                {t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label)}
+                                <span>{t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label)}</span>
+                                {entry.badge ? (
+                                  <span className="ml-2 inline-flex rounded-full bg-brand px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-micro text-white">
+                                    {t(`nav.badges.${entry.badge}`, entry.badge)}
+                                  </span>
+                                ) : null}
                               </Link>
                             );
                           })}
@@ -376,6 +386,7 @@ export function HeaderBar() {
                                   <Link
                                     key={entry.key}
                                     href={href}
+                                    prefetch={false}
                                     className={clsx(
                                       'rounded-input px-3 py-2 text-sm transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring whitespace-nowrap',
                                       entry.emphasized ? 'font-semibold text-text-primary' : 'text-text-secondary'
@@ -424,43 +435,33 @@ export function HeaderBar() {
               </span>
             </Button>
           </div>
-          {email ? (
-            <HeaderAccountMenu
-              accountMenuOpen={accountMenuOpen}
-              avatarRef={avatarRef}
-              email={email}
-              initials={initials}
-              isAdmin={isAdmin}
-              menuRef={menuRef}
-              t={t}
-              onAdminNavigation={handleAdminNavigation}
-              onCloseAccountMenu={() => setAccountMenuOpen(false)}
-              onSignOut={handleSignOut}
-              onToggleAccountMenu={() => setAccountMenuOpen((prev) => !prev)}
-            />
-          ) : authResolved ? (
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <ButtonLink
-                href={signupHref}
-                size="sm"
-                className="h-9 px-2.5 text-[11px] shadow-card sm:h-10 sm:px-3 sm:text-sm"
-              >
-                <span className="sm:hidden">{createAccountMobile}</span>
-                <span className="hidden sm:inline">{t('workspace.header.createAccount', 'Create account')}</span>
-              </ButtonLink>
-              <ButtonLink
-                href={signinHref}
-                variant="outline"
-                size="sm"
-                className="h-9 px-2.5 text-[11px] sm:h-10 sm:px-3 sm:text-sm"
-              >
-                <span className="sm:hidden">{signInMobile}</span>
-                <span className="hidden sm:inline">{t('workspace.header.signIn', 'Sign in')}</span>
-              </ButtonLink>
-            </div>
-          ) : (
-            <div className="h-10 w-24 rounded-input bg-surface-2 shadow-sm sm:w-[180px]" aria-hidden />
-          )}
+          <div className="flex w-32 shrink-0 justify-end sm:w-[205px]">
+            {email ? (
+              <HeaderAccountMenu
+                accountMenuOpen={accountMenuOpen}
+                avatarRef={avatarRef}
+                email={email}
+                initials={initials}
+                isAdmin={isAdmin}
+                menuRef={menuRef}
+                t={t}
+                onAdminNavigation={handleAdminNavigation}
+                onCloseAccountMenu={() => setAccountMenuOpen(false)}
+                onSignOut={handleSignOut}
+                onToggleAccountMenu={() => setAccountMenuOpen((prev) => !prev)}
+              />
+            ) : authResolved ? (
+              <HeaderAuthActions
+                createAccountMobile={createAccountMobile}
+                signInMobile={signInMobile}
+                signinHref={signinHref}
+                signupHref={signupHref}
+                t={t}
+              />
+            ) : (
+              <div className="h-10 w-full rounded-input bg-surface-2 shadow-sm" aria-hidden />
+            )}
+          </div>
         </div>
       </header>
       {mobileMenuOpen ? (

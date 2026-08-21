@@ -264,13 +264,41 @@ test('page builder preserves the complete editorial roster, including legacy vid
   assert.ok(pageData.scores.some((row) => row.modelSlug === 'ltx-2'));
 });
 
-test('page builder emits only navigable HTTP sources for specification links', async () => {
+test('page builder distinguishes Seedance 2.5 route-contract provenance from generic API mechanics', async () => {
   const staticData = await loadBenchmarkLabStaticData();
   const pageData = buildBenchmarkPageData(staticData, { status: 'unavailable', windowDays: 30, asOf: null, rows: [] });
   const dreamina = pageData.specs.find((row) => row.modelSlug === 'dreamina-seedance-2-0-mini');
+  const seedanceSource = staticData.specs.find((row) => row.modelSlug === 'seedance-2-5');
+  const seedance = pageData.specs.find((row) => row.modelSlug === 'seedance-2-5');
 
   assert.equal(dreamina?.sourceUrl, 'https://maxvideoai.com/models/dreamina-seedance-2-0-mini');
+  assert.deepEqual(seedanceSource?.sources ?? [], []);
+  assert.equal(seedanceSource?.provenance?.basis, 'maxvideoai-production-route-contract');
+  assert.equal(seedance?.sourceKind, 'route-contract');
+  assert.equal(seedance?.sourceUrl, null);
+  assert.equal(seedance?.mechanicsUrl, 'https://docs.byteplus.com/en/docs/modelark/1520757');
+  assert.doesNotMatch(
+    JSON.stringify({ sources: seedanceSource?.sources, provenance: seedanceSource?.provenance, publicRow: seedance }),
+    /dreamina-seedance-2-5-260628|console\.byteplus\.com/i
+  );
   assert.ok(pageData.specs.every((row) => row.sourceUrl == null || /^https?:\/\//.test(row.sourceUrl)));
+
+  const localizedLabels = {
+    en: ['MaxVideoAI production route contract', 'Generic API mechanics'],
+    fr: ['Contrat de la route de production MaxVideoAI', 'Mécanique API générique'],
+    es: ['Contrato de la ruta de producción de MaxVideoAI', 'Mecánica de la API genérica'],
+  } as const;
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const copy = getBenchmarkCopy(locale);
+    assert.deepEqual(
+      [copy.specs.routeContract, copy.specs.apiMechanics],
+      localizedLabels[locale],
+    );
+  }
+  const specsTableSource = readFileSync(path.join(routeRoot, '_components/BenchmarkSpecsTable.tsx'), 'utf8');
+  assert.match(specsTableSource, /row\.sourceKind === 'route-contract'/);
+  assert.match(specsTableSource, /copy\.specs\.routeContract/);
+  assert.match(specsTableSource, /copy\.specs\.apiMechanics/);
 });
 
 test('specification rows and localized tables include release information with a missing-value dash', async () => {

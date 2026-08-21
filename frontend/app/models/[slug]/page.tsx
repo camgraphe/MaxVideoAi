@@ -4,13 +4,10 @@ import ModelsDetailPage, {
 import LocaleLayout from '../../(localized)/[locale]/layout';
 import MarketingLayout from '../../(localized)/[locale]/(marketing)/layout';
 import { DEFAULT_LOCALE } from '../../default-locale-wrapper';
-import { listFalEngines } from '@/config/falEngines';
-import { isPublishedModelPage } from '../../(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-publication';
+import { listPublishedRuntimeModels } from '@/config/model-runtime';
 
 export function generateStaticParams() {
-  return listFalEngines()
-    .filter(isPublishedModelPage)
-    .map((entry) => ({ slug: entry.modelSlug }));
+  return listPublishedRuntimeModels().map((model) => ({ slug: model.slug }));
 }
 
 export const generateMetadata = async (props: { params: Promise<{ slug: string }> }) => {

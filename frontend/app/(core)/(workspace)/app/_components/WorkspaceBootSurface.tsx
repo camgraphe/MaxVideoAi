@@ -30,9 +30,10 @@ function WorkspaceBootContent({
   const posterSrc = getCompositePreviewPosterSrc(initialPreviewGroup ?? null) ?? initialPreviewPosterSrc ?? null;
 
   return (
-    <div className="stack-gap-lg">
+    <div className="flex flex-col gap-2 sm:gap-3">
       {initialPreviewGroup ? (
         <CompositePreviewDock
+          density="workspace"
           group={initialPreviewGroup}
           isLoading={false}
           showTitle={false}
@@ -47,19 +48,15 @@ function WorkspaceBootContent({
 }
 
 export function WorkspaceBootSurface({
-  isDesktopLayout,
   initialPreviewGroup,
   initialPreviewPosterSrc,
 }: {
-  isDesktopLayout: boolean;
   initialPreviewGroup?: VideoGroup | null;
   initialPreviewPosterSrc?: string | null;
 }) {
   return (
     <WorkspaceChrome
-      isDesktopLayout={isDesktopLayout}
-      desktopRail={<GalleryRailSkeleton />}
-      mobileRail={<GalleryRailSkeleton />}
+      rail={<GalleryRailSkeleton responsive />}
     >
       <WorkspaceBootContent
         initialPreviewGroup={initialPreviewGroup}

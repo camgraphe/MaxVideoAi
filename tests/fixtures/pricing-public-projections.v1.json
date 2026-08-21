@@ -799,6 +799,48 @@
       "status": "unavailable"
     },
     {
+      "id": "estimator:minimax-h3:member:default",
+      "surface": "estimator",
+      "engineId": "minimax-h3",
+      "status": "exact",
+      "currency": "USD",
+      "vendorSubtotalCents": 80,
+      "marginCents": 24,
+      "discountCents": 0,
+      "customerTotalCents": 104,
+      "unit": "sec",
+      "quantity": 10,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "estimator:minimax-h3:plus:default",
+      "surface": "estimator",
+      "engineId": "minimax-h3",
+      "status": "exact",
+      "currency": "USD",
+      "vendorSubtotalCents": 80,
+      "marginCents": 24,
+      "discountCents": 5,
+      "customerTotalCents": 99,
+      "unit": "sec",
+      "quantity": 10,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "estimator:minimax-h3:pro:default",
+      "surface": "estimator",
+      "engineId": "minimax-h3",
+      "status": "exact",
+      "currency": "USD",
+      "vendorSubtotalCents": 80,
+      "marginCents": 24,
+      "discountCents": 10,
+      "customerTotalCents": 94,
+      "unit": "sec",
+      "quantity": 10,
+      "compatibilityProfile": "standard"
+    },
+    {
       "id": "estimator:minimax-hailuo-02-text:member:default",
       "surface": "estimator",
       "engineId": "minimax-hailuo-02-text",
@@ -1231,6 +1273,48 @@
       "unit": "sec",
       "quantity": 10,
       "compatibilityProfile": "provider-reference-current"
+    },
+    {
+      "id": "estimator:seedance-2-5:member:default",
+      "surface": "estimator",
+      "engineId": "seedance-2-5",
+      "status": "exact",
+      "currency": "USD",
+      "vendorSubtotalCents": 79,
+      "marginCents": 24,
+      "discountCents": 0,
+      "customerTotalCents": 103,
+      "unit": "sec",
+      "quantity": 4,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "estimator:seedance-2-5:plus:default",
+      "surface": "estimator",
+      "engineId": "seedance-2-5",
+      "status": "exact",
+      "currency": "USD",
+      "vendorSubtotalCents": 79,
+      "marginCents": 24,
+      "discountCents": 5,
+      "customerTotalCents": 98,
+      "unit": "sec",
+      "quantity": 4,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "estimator:seedance-2-5:pro:default",
+      "surface": "estimator",
+      "engineId": "seedance-2-5",
+      "status": "exact",
+      "currency": "USD",
+      "vendorSubtotalCents": 79,
+      "marginCents": 24,
+      "discountCents": 10,
+      "customerTotalCents": 93,
+      "unit": "sec",
+      "quantity": 4,
+      "compatibilityProfile": "standard"
     },
     {
       "id": "estimator:seedream-5-0-pro:member:default",
@@ -2019,6 +2103,18 @@
       "status": "unavailable"
     },
     {
+      "id": "json-ld:minimax-h3:offer",
+      "surface": "json-ld",
+      "engineId": "minimax-h3",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 130,
+      "unit": "offer",
+      "quantity": 1,
+      "structuredDataAmount": "1.30",
+      "compatibilityProfile": "schema-current"
+    },
+    {
       "id": "json-ld:minimax-hailuo-02-text:offer",
       "surface": "json-ld",
       "engineId": "minimax-hailuo-02-text",
@@ -2136,6 +2232,18 @@
       "unit": "offer",
       "quantity": 1,
       "structuredDataAmount": "1.52",
+      "compatibilityProfile": "schema-current"
+    },
+    {
+      "id": "json-ld:seedance-2-5:offer",
+      "surface": "json-ld",
+      "engineId": "seedance-2-5",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 103,
+      "unit": "offer",
+      "quantity": 1,
+      "structuredDataAmount": "1.03",
       "compatibilityProfile": "schema-current"
     },
     {
@@ -2541,6 +2649,20 @@
       "compatibilityProfile": "standard"
     },
     {
+      "id": "model-page:minimax-h3:default",
+      "surface": "model-page",
+      "engineId": "minimax-h3",
+      "status": "exact",
+      "currency": "USD",
+      "vendorSubtotalCents": 130,
+      "marginCents": 39,
+      "discountCents": 0,
+      "customerTotalCents": 169,
+      "unit": "sec",
+      "quantity": 10,
+      "compatibilityProfile": "standard"
+    },
+    {
       "id": "model-page:minimax-hailuo-02-text:default",
       "surface": "model-page",
       "engineId": "minimax-hailuo-02-text",
@@ -2679,6 +2801,20 @@
       "unit": "sec",
       "quantity": 4,
       "compatibilityProfile": "provider-reference-current"
+    },
+    {
+      "id": "model-page:seedance-2-5:default",
+      "surface": "model-page",
+      "engineId": "seedance-2-5",
+      "status": "exact",
+      "currency": "USD",
+      "vendorSubtotalCents": 80,
+      "marginCents": 23,
+      "discountCents": 0,
+      "customerTotalCents": 103,
+      "unit": "sec",
+      "quantity": 4,
+      "compatibilityProfile": "standard"
     },
     {
       "id": "model-page:seedream-5-0-pro:default",
@@ -4639,6 +4775,60 @@
       "compatibilityProfile": "standard"
     },
     {
+      "id": "pricing-hub-video:minimax-h3:10s-1080p",
+      "surface": "pricing-hub-video",
+      "engineId": "minimax-h3",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:minimax-h3:10s-1080p-audio",
+      "surface": "pricing-hub-video",
+      "engineId": "minimax-h3",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:minimax-h3:10s-720p",
+      "surface": "pricing-hub-video",
+      "engineId": "minimax-h3",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:minimax-h3:4k-route",
+      "surface": "pricing-hub-video",
+      "engineId": "minimax-h3",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 208,
+      "unit": "scenario",
+      "quantity": 1,
+      "displayedAmount": "$2.08",
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "pricing-hub-video:minimax-h3:5s-720p",
+      "surface": "pricing-hub-video",
+      "engineId": "minimax-h3",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:minimax-h3:8s-1080p",
+      "surface": "pricing-hub-video",
+      "engineId": "minimax-h3",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:minimax-h3:entry-route",
+      "surface": "pricing-hub-video",
+      "engineId": "minimax-h3",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 104,
+      "unit": "scenario",
+      "quantity": 1,
+      "displayedAmount": "$1.04",
+      "compatibilityProfile": "standard"
+    },
+    {
       "id": "pricing-hub-video:minimax-hailuo-02-text:10s-1080p",
       "surface": "pricing-hub-video",
       "engineId": "minimax-hailuo-02-text",
@@ -5033,6 +5223,66 @@
       "quantity": 1,
       "displayedAmount": "$3.79",
       "compatibilityProfile": "provider-reference-current"
+    },
+    {
+      "id": "pricing-hub-video:seedance-2-5:10s-1080p",
+      "surface": "pricing-hub-video",
+      "engineId": "seedance-2-5",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:seedance-2-5:10s-1080p-audio",
+      "surface": "pricing-hub-video",
+      "engineId": "seedance-2-5",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:seedance-2-5:10s-720p",
+      "surface": "pricing-hub-video",
+      "engineId": "seedance-2-5",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 578,
+      "unit": "scenario",
+      "quantity": 1,
+      "displayedAmount": "$5.78",
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "pricing-hub-video:seedance-2-5:4k-route",
+      "surface": "pricing-hub-video",
+      "engineId": "seedance-2-5",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:seedance-2-5:5s-720p",
+      "surface": "pricing-hub-video",
+      "engineId": "seedance-2-5",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 289,
+      "unit": "scenario",
+      "quantity": 1,
+      "displayedAmount": "$2.89",
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "pricing-hub-video:seedance-2-5:8s-1080p",
+      "surface": "pricing-hub-video",
+      "engineId": "seedance-2-5",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:seedance-2-5:entry-route",
+      "surface": "pricing-hub-video",
+      "engineId": "seedance-2-5",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 578,
+      "unit": "scenario",
+      "quantity": 1,
+      "displayedAmount": "$5.78",
+      "compatibilityProfile": "standard"
     },
     {
       "id": "pricing-hub-video:sora-2-pro:10s-1080p",

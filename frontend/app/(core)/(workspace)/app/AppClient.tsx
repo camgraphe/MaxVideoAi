@@ -4,9 +4,9 @@ import type { VideoGroup } from '@/types/video-groups';
 import { getWorkspaceAppLoadState } from './_components/WorkspaceAppLoadState';
 import { WorkspaceAppReadyView } from './_components/WorkspaceAppReadyView';
 import { useWorkspaceAppBootstrap } from './_hooks/useWorkspaceAppBootstrap';
+import { useWorkspaceAssetState } from './_hooks/useWorkspaceAssetState';
 import { useWorkspaceAssets } from './_hooks/useWorkspaceAssets';
 import { useWorkspaceComposerState } from './_hooks/useWorkspaceComposerState';
-import { useWorkspaceDesktopLayout } from './_hooks/useWorkspaceDesktopLayout';
 import { useWorkspaceDraftHydration } from './_hooks/useWorkspaceDraftHydration';
 import { useWorkspaceDraftStorage } from './_hooks/useWorkspaceDraftStorage';
 import { useWorkspaceGalleryActions } from './_hooks/useWorkspaceGalleryActions';
@@ -34,7 +34,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     authChecked: draft.authChecked,
     skipOnboardingRef: draft.skipOnboardingRef,
   });
-  const isDesktopLayout = useWorkspaceDesktopLayout();
   const renderState = useWorkspaceRenderState({
     recentJobs: app.recentJobs,
     engineIdByLabel: app.engineIdByLabel,
@@ -45,6 +44,7 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     compositeOverride: routeForm.compositeOverride,
     compositeOverrideSummary: routeForm.compositeOverrideSummary,
     writeScopedStorage: draft.writeScopedStorage,
+    workspaceCopy: app.workspaceCopy,
   });
 
   useWorkspaceDraftHydration({
@@ -98,13 +98,7 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     requestedJobId: draft.requestedJobId,
     fromVideoId: draft.fromVideoId,
   });
-  const assets = useWorkspaceAssets({
-    engineId: routeForm.form?.engineId,
-    workflowCopy: app.workflowCopy,
-    showNotice: noticeState.showNotice,
-    klingElements: routeForm.klingElements,
-    setKlingElements: routeForm.setKlingElements,
-  });
+  const assetState = useWorkspaceAssetState();
   const handleRefreshJob = useWorkspaceJobRefresh();
   const videoSettings = useWorkspaceVideoSettings({
     engines: app.engines,
@@ -135,7 +129,7 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     setMultiPromptEnabled: routeForm.setMultiPromptEnabled,
     setMultiPromptScenes: routeForm.setMultiPromptScenes,
     setForm: routeForm.setForm,
-    setInputAssets: assets.setInputAssets,
+    setInputAssets: assetState.setInputAssets,
     setKlingElements: routeForm.setKlingElements,
     setSelectedPreview: renderState.setSelectedPreview,
     setCompositeOverride: routeForm.setCompositeOverride,
@@ -148,7 +142,7 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     engines: app.engines,
     form: routeForm.form,
     setForm: routeForm.setForm,
-    inputAssets: assets.inputAssets,
+    inputAssets: assetState.inputAssets,
     klingElements: routeForm.klingElements,
     prompt: routeForm.prompt,
     multiPromptEnabled: routeForm.multiPromptEnabled,
@@ -171,9 +165,22 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     workflowCopy: app.workflowCopy,
     showNotice: noticeState.showNotice,
   });
+  const assets = useWorkspaceAssets({
+    inputAssets: assetState.inputAssets,
+    setInputAssets: assetState.setInputAssets,
+    commitInputAssetMutation: assetState.commitInputAssetMutation,
+    engineId: routeForm.form?.engineId,
+    inputSchema: composer.selectedEngine?.inputSchema,
+    preferredMode: composer.submissionMode,
+    workflowCopy: app.workflowCopy,
+    showNotice: noticeState.showNotice,
+    klingElements: routeForm.klingElements,
+    setKlingElements: routeForm.setKlingElements,
+  });
   const inputSchema = useWorkspaceInputSchemaState({
     selectedEngine: composer.selectedEngine,
     activeMode: composer.activeMode,
+    submissionMode: composer.submissionMode,
     allowsUnifiedVeoFirstLast: composer.allowsUnifiedVeoFirstLast,
     isUnifiedHappyHorse: composer.isUnifiedHappyHorse,
     isUnifiedSeedance: composer.isUnifiedSeedance,
@@ -265,7 +272,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     batchHeroes: renderState.batchHeroes,
     preflightCurrency: pricing.preflight?.currency,
     fallbackEngineId: composer.selectedEngine?.id ?? 'unknown-engine',
-    suppressGuidedSampleAutoApply: Boolean(draft.effectiveRequestedEngineId || draft.effectiveRequestedEngineToken),
     sharedPrompt: routeForm.sharedPrompt,
     selectedPreview: renderState.selectedPreview,
     compositeOverrideSummary: routeForm.compositeOverrideSummary,
@@ -291,7 +297,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     hasSelectedEngine: Boolean(composer.selectedEngine),
     initialPreviewFallbackGroup: previewState.initialPreviewFallbackGroup,
     initialPreviewPosterSrc: previewState.compositePreviewPosterSrc,
-    isDesktopLayout,
     isLoading: app.isLoading,
     loadEnginesError: app.workspaceCopy.errors.loadEngines,
     noEnginesError: app.workspaceCopy.errors.noEngines,
@@ -309,7 +314,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
       generation={generation}
       handleRefreshJob={handleRefreshJob}
       inputSchema={inputSchema}
-      isDesktopLayout={isDesktopLayout}
       noticeState={noticeState}
       previewState={previewState}
       pricing={pricing}

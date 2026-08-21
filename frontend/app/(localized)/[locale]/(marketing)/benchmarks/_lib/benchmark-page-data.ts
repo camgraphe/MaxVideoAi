@@ -22,7 +22,9 @@ export type BenchmarkSpecRow = {
   inputModes: Array<'textToVideo' | 'imageToVideo' | 'videoToVideo'>;
   audio: string;
   references: string;
+  sourceKind: 'external' | 'route-contract' | 'none';
   sourceUrl: string | null;
+  mechanicsUrl: string | null;
 };
 
 export type PublicBenchmarkMethodology = Pick<
@@ -100,6 +102,8 @@ export function buildBenchmarkPageData(
       isSupported(spec.keySpecs.imageToVideo) ? 'imageToVideo' : null,
       isSupported(spec.keySpecs.videoToVideo) ? 'videoToVideo' : null,
     ].filter((entry): entry is 'textToVideo' | 'imageToVideo' | 'videoToVideo' => Boolean(entry));
+    const routeContract = spec.provenance?.basis === 'maxvideoai-production-route-contract';
+    const externalSourceUrl = sourceUrl(spec.sources);
     return [{
       modelSlug,
       modelName: engine.marketingName,
@@ -109,7 +113,9 @@ export function buildBenchmarkPageData(
       inputModes,
       audio: value(spec.keySpecs.nativeAudioGeneration ?? spec.keySpecs.audioOutput),
       references: value(spec.keySpecs.referenceImageStyle ?? spec.keySpecs.referenceVideo),
-      sourceUrl: sourceUrl(spec.sources),
+      sourceKind: (routeContract ? 'route-contract' : externalSourceUrl ? 'external' : 'none') as BenchmarkSpecRow['sourceKind'],
+      sourceUrl: routeContract ? null : externalSourceUrl,
+      mechanicsUrl: routeContract ? sourceUrl(spec.provenance?.mechanicsSources) : null,
     }];
   }).sort((left, right) => left.modelName.localeCompare(right.modelName));
 

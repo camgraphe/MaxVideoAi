@@ -54,19 +54,16 @@ test('workspace draft storage and hydration are owned by route-local hooks', () 
   assert.match(hydrationHookSource, /hydratePendingRendersFromStorage/);
 });
 
-test('targeted engine links stay authoritative over stored drafts and guided samples', () => {
+test('targeted engine links stay authoritative over stored drafts', () => {
   const appSource = readFileSync(appClientPath, 'utf8');
   const engineModeHookSource = readFileSync(engineModeHookPath, 'utf8');
-  const galleryActionsHookSource = readFileSync(galleryActionsHookPath, 'utf8');
 
   assert.match(engineModeHookSource, /matchesEngineToken\(engine, effectiveRequestedEngineToken\)/);
   assert.doesNotMatch(engineModeHookSource, /if\s*\(\s*hasStoredFormRef\.current\s*\)\s*return null;/);
   assert.doesNotMatch(engineModeHookSource, /if\s*\(\s*hasStoredFormRef\.current\s*\)\s*return;\s*setForm/);
   assert.match(engineModeHookSource, /candidate\?\.engineId !== nextState\.engineId/);
 
-  assert.match(appSource, /suppressGuidedSampleAutoApply: Boolean\(draft\.effectiveRequestedEngineId \|\| draft\.effectiveRequestedEngineToken\)/);
-  assert.match(galleryActionsHookSource, /suppressGuidedSampleAutoApply/);
-  assert.match(galleryActionsHookSource, /if \(suppressGuidedSampleAutoApply\) return;/);
+  assert.doesNotMatch(appSource, /suppressGuidedSampleAutoApply/);
 });
 
 test('workspace keeps Kling V3 voice ID controls disabled for current direct routes', () => {

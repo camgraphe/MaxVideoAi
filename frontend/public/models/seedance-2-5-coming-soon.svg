@@ -1,0 +1,40 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="background" x1="80" y1="20" x2="1110" y2="620" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#071126"/>
+      <stop offset="0.52" stop-color="#10265B"/>
+      <stop offset="1" stop-color="#17317B"/>
+    </linearGradient>
+    <radialGradient id="glowBlue" cx="0" cy="0" r="1" gradientTransform="translate(921 139) rotate(138.8) scale(390 325)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5F7CFF" stop-opacity="0.88"/>
+      <stop offset="1" stop-color="#5F7CFF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowCyan" cx="0" cy="0" r="1" gradientTransform="translate(987 483) rotate(-151.3) scale(340 250)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#25D6E5" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#25D6E5" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="54" height="54" patternUnits="userSpaceOnUse">
+      <path d="M54 0H0V54" stroke="white" stroke-opacity="0.055"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" rx="42" fill="url(#background)"/>
+  <rect width="1200" height="630" rx="42" fill="url(#glowBlue)"/>
+  <rect width="1200" height="630" rx="42" fill="url(#glowCyan)"/>
+  <rect x="2" y="2" width="1196" height="626" rx="40" stroke="white" stroke-opacity="0.16" stroke-width="4"/>
+  <rect x="620" width="580" height="630" fill="url(#grid)"/>
+  <circle cx="930" cy="312" r="185" stroke="white" stroke-opacity="0.1" stroke-width="2"/>
+  <circle cx="930" cy="312" r="132" stroke="white" stroke-opacity="0.13" stroke-width="2"/>
+  <path d="M801 390C841 312 886 253 969 218C1017 197 1058 205 1096 229" stroke="white" stroke-opacity="0.25" stroke-width="3" stroke-linecap="round"/>
+  <path d="M792 426C859 375 926 352 1019 364C1068 371 1101 391 1121 419" stroke="#7EE7F0" stroke-opacity="0.45" stroke-width="3" stroke-linecap="round"/>
+  <rect x="76" y="68" width="176" height="40" rx="20" fill="white" fill-opacity="0.1"/>
+  <circle cx="98" cy="88" r="6" fill="#67E8F9"/>
+  <text x="116" y="94" fill="white" fill-opacity="0.9" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" letter-spacing="1.6">MAXVIDEOAI</text>
+  <text x="76" y="214" fill="white" font-family="Arial, Helvetica, sans-serif" font-size="74" font-weight="700" letter-spacing="-3">Seedance 2.5</text>
+  <text x="76" y="278" fill="#B8C7EE" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="600">Coming soon</text>
+  <text x="76" y="347" fill="white" fill-opacity="0.72" font-family="Arial, Helvetica, sans-serif" font-size="22">4K output and longer video formats.</text>
+  <text x="76" y="381" fill="white" fill-opacity="0.72" font-family="Arial, Helvetica, sans-serif" font-size="22">Multimodal guidance and precise editing.</text>
+  <rect x="76" y="449" width="292" height="54" rx="14" fill="white" fill-opacity="0.1" stroke="white" stroke-opacity="0.18"/>
+  <circle cx="105" cy="476" r="7" fill="#67E8F9"/>
+  <text x="124" y="484" fill="white" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="600">Discover what’s new</text>
+  <text x="1102" y="558" text-anchor="end" fill="white" fill-opacity="0.14" font-family="Arial, Helvetica, sans-serif" font-size="166" font-weight="700" letter-spacing="-9">2.5</text>
+</svg>

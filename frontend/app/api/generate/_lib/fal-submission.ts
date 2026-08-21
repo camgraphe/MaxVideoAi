@@ -18,7 +18,7 @@ import {
 
 const LUMA_RAY2_TIMEOUT_MS = 180_000;
 const FAL_RETRY_DELAYS_MS = [5_000, 15_000, 30_000];
-const FAL_HARD_TIMEOUT_MS = 400_000;
+const FAL_HARD_TIMEOUT_MS = 240_000;
 const FAL_PROGRESS_FLOOR = 10;
 
 type QueryFn = <T = unknown>(sql: string, params?: unknown[]) => Promise<T[]>;
@@ -73,7 +73,7 @@ export async function markJobAwaitingFal(params: {
       `UPDATE app_jobs
        SET status = 'running',
            progress = GREATEST(progress, $2),
-           message = CASE WHEN $3 IS NOT NULL THEN $3::text ELSE message END,
+           message = COALESCE($3::text, message),
            provider_job_id = COALESCE($4, provider_job_id),
            provisional = FALSE,
            updated_at = NOW()

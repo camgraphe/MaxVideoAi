@@ -4,6 +4,11 @@ import type { PricingSnapshot } from '@/types/engines';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import { recordRefundReceipt, type PendingReceipt } from './image-generation-receipts';
 
+type ImageGenerationQuery = (
+  text: string,
+  params?: ReadonlyArray<unknown>
+) => Promise<unknown>;
+
 export async function persistFailedImageGeneration(params: {
   characterReferenceCount: number;
   enableWebSearch: boolean;
@@ -31,7 +36,7 @@ export async function persistFailedImageGeneration(params: {
   resolution: string;
   style?: string | null;
   thinkingLevel: string | null;
-}) {
+}, deps: { queryFn?: ImageGenerationQuery } = {}) {
   const {
     characterReferenceCount,
     enableWebSearch,
@@ -60,6 +65,7 @@ export async function persistFailedImageGeneration(params: {
     style = null,
     thinkingLevel,
   } = params;
+  const queryFn = deps.queryFn ?? query;
 
   const genericProviderError =
     error && typeof error === 'object'
@@ -98,7 +104,7 @@ export async function persistFailedImageGeneration(params: {
         : messageBase;
 
   try {
-    await query(
+    await queryFn(
       `UPDATE app_jobs
        SET status = 'failed',
            progress = 0,
@@ -106,9 +112,10 @@ export async function persistFailedImageGeneration(params: {
            provider_job_id = COALESCE($3, provider_job_id),
            provisional = FALSE,
            updated_at = NOW(),
-           payment_status = $4
+           payment_status = $4,
+           provider = $5
        WHERE job_id = $1`,
-      [jobId, message, providerJobId ?? null, failedPaymentStatus]
+      [jobId, message, providerJobId ?? null, failedPaymentStatus, providerMode]
     );
   } catch (updateError) {
     console.warn('[images] failed to update failed job', updateError);
@@ -126,7 +133,7 @@ export async function persistFailedImageGeneration(params: {
       .filter((host): host is string => Boolean(host));
     const uniqueHosts = Array.from(new Set(hosts));
 
-    await query(
+    await queryFn(
       `INSERT INTO fal_queue_log (job_id, provider, provider_job_id, engine_id, status, payload)
        VALUES ($1,$2,$3,$4,$5,$6::jsonb)`,
       [

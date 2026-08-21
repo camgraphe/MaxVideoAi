@@ -7,16 +7,36 @@ const assetLibraryHookPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWork
 const referenceAssetsHookPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceReferenceAssets.ts';
 const klingAssetsHookPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceKlingElementAssets.ts';
 const assetDropzoneSlotPath = 'frontend/components/asset-dropzone/AssetDropzoneSlot.tsx';
+const appClientPath = 'frontend/app/(core)/(workspace)/app/AppClient.tsx';
+const assetStateHookPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceAssetState.ts';
 
 test('workspace asset library, field assets, and Kling element assets are split from the assets orchestrator', () => {
   assert.equal(existsSync(assetLibraryHookPath), true);
   assert.equal(existsSync(referenceAssetsHookPath), true);
   assert.equal(existsSync(klingAssetsHookPath), true);
 
+  const appSource = readFileSync(appClientPath, 'utf8');
   const assetsHookSource = readFileSync(assetsHookPath, 'utf8');
   const assetLibrarySource = readFileSync(assetLibraryHookPath, 'utf8');
   const referenceAssetsSource = readFileSync(referenceAssetsHookPath, 'utf8');
   const klingAssetsSource = readFileSync(klingAssetsHookPath, 'utf8');
+  const assetStateSource = existsSync(assetStateHookPath)
+    ? readFileSync(assetStateHookPath, 'utf8')
+    : '';
+
+  assert.equal(existsSync(assetStateHookPath), true);
+  assert.match(assetStateSource, /export function useWorkspaceAssetState/);
+  assert.match(assetStateSource, /commitInputAssetMutation/);
+  assert.match(appSource, /const assetState = useWorkspaceAssetState\(\)/);
+  assert.ok(
+    appSource.indexOf('useWorkspaceAssetState()') <
+      appSource.indexOf('useWorkspaceComposerState({')
+  );
+  assert.ok(
+    appSource.indexOf('useWorkspaceComposerState({') <
+      appSource.indexOf('useWorkspaceAssets({')
+  );
+  assert.match(appSource, /preferredMode: composer\.submissionMode/);
 
   assert.match(assetsHookSource, /useWorkspaceAssetLibrary\(\{/);
   assert.match(assetsHookSource, /useWorkspaceReferenceAssets\(\{/);
@@ -38,7 +58,63 @@ test('workspace asset library, field assets, and Kling element assets are split 
   assert.match(referenceAssetsSource, /const handleSelectLibraryAsset = useCallback/);
   assert.match(referenceAssetsSource, /const handleAssetAdd = useCallback/);
   assert.match(referenceAssetsSource, /prepareImageFileForUpload/);
-  assert.match(referenceAssetsSource, /insertReferenceAsset/);
+  assert.match(referenceAssetsSource, /tryInsertReferenceAsset/);
+  assert.match(referenceAssetsSource, /commitInputAssetMutation/);
+  assert.match(referenceAssetsSource, /settleReferenceAssetReservation/);
+  assert.match(referenceAssetsSource, /rollback\.discardedAsset/);
+  const handleSelectLibraryAssetIndex = referenceAssetsSource.indexOf(
+    'const handleSelectLibraryAsset = useCallback'
+  );
+  const handleAssetAddIndex = referenceAssetsSource.indexOf(
+    'const handleAssetAdd = useCallback'
+  );
+  const librarySelectionSource = referenceAssetsSource.slice(
+    handleSelectLibraryAssetIndex,
+    handleAssetAddIndex
+  );
+  const libraryInsertionIndex = librarySelectionSource.indexOf(
+    'const insertion = commitInputAssetMutation'
+  );
+  const videoMirrorIndex = librarySelectionSource.indexOf(
+    'await saveAssetToLibrary'
+  );
+  const imageMirrorIndex = librarySelectionSource.indexOf(
+    'await saveImageToLibrary'
+  );
+  const libraryMutationIndex = librarySelectionSource.indexOf(
+    'setAssetLibrary((previous)'
+  );
+  const pickerCloseIndex = librarySelectionSource.indexOf(
+    'setAssetPickerTarget(null)'
+  );
+  assert.ok(
+    libraryInsertionIndex >= 0 &&
+      libraryInsertionIndex < videoMirrorIndex &&
+      libraryInsertionIndex < imageMirrorIndex &&
+      libraryInsertionIndex < libraryMutationIndex
+  );
+  assert.ok(
+    pickerCloseIndex > libraryInsertionIndex &&
+      pickerCloseIndex < videoMirrorIndex &&
+      pickerCloseIndex < imageMirrorIndex
+  );
+  assert.equal(
+    librarySelectionSource.match(/setAssetPickerTarget\(null\)/g)?.length,
+    1
+  );
+  const uploadIndex = referenceAssetsSource.indexOf(
+    'const upload = async',
+    handleAssetAddIndex
+  );
+  const localRejectedGuardIndex = referenceAssetsSource.lastIndexOf(
+    'if (!insertion.accepted)',
+    uploadIndex
+  );
+  assert.ok(
+    handleAssetAddIndex >= 0 &&
+      localRejectedGuardIndex > handleAssetAddIndex &&
+      localRejectedGuardIndex < uploadIndex
+  );
 
   assert.match(klingAssetsSource, /export function useWorkspaceKlingElementAssets/);
   assert.match(klingAssetsSource, /const handleKlingElementAssetAdd = useCallback/);

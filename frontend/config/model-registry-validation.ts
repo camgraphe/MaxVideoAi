@@ -17,6 +17,7 @@ export type ModelRegistryPublication = {
     discoveryRank?: number;
     variantGroup?: string;
     variantLabel?: string;
+    launchBadge?: 'new';
   };
   pricing: { published: boolean; featuredScenario?: string };
   sitemap: { published: boolean };
@@ -27,6 +28,7 @@ export type ModelRegistryEntry = {
   slug: string;
   family: string | null;
   category: ModelCategory;
+  presentationOnly?: boolean;
   aliases: { internal: string[]; publicSlugs: string[] };
   publication: ModelRegistryPublication;
   replacement: string | null;
@@ -52,6 +54,32 @@ function fail(message: string): never {
 
 function requireBoolean(value: unknown, path: string): asserts value is boolean {
   if (typeof value !== 'boolean') fail(`${path} must be boolean`);
+}
+
+function isPresentationOnlyPublication(model: ModelRegistryEntry): boolean {
+  const publication = model.publication;
+  return (
+    model.presentationOnly === true &&
+    model.replacement === null &&
+    publication.model.published &&
+    !publication.model.indexable &&
+    !publication.examples.published &&
+    !publication.examples.includeInFamilyCopy &&
+    !publication.examples.current &&
+    publication.examples.familyRank === undefined &&
+    !publication.compare.published &&
+    !publication.compare.indexed &&
+    publication.compare.suggestedOpponentIds.length === 0 &&
+    publication.compare.publishedPairIds.length === 0 &&
+    !publication.app.published &&
+    publication.app.discoveryRank === undefined &&
+    publication.app.variantGroup === undefined &&
+    publication.app.variantLabel === undefined &&
+    publication.app.launchBadge === undefined &&
+    !publication.pricing.published &&
+    publication.pricing.featuredScenario === undefined &&
+    !publication.sitemap.published
+  );
 }
 
 function requireStringArray(value: unknown, path: string): asserts value is string[] {
@@ -113,6 +141,9 @@ export function validateModelRegistryDocument(value: unknown): ModelRegistryDocu
     if (!['video', 'image', 'audio', 'multimodal'].includes(model.category)) {
       fail(`invalid category for "${model.id}"`);
     }
+    if (model.presentationOnly !== undefined) {
+      requireBoolean(model.presentationOnly, `${model.id}.presentationOnly`);
+    }
     requireStringArray(model.aliases?.internal, `${model.id}.aliases.internal`);
     requireStringArray(model.aliases?.publicSlugs, `${model.id}.aliases.publicSlugs`);
     requireBoolean(model.publication?.model?.published, `${model.id}.publication.model.published`);
@@ -134,6 +165,18 @@ export function validateModelRegistryDocument(value: unknown): ModelRegistryDocu
       `${model.id}.publication.compare.publishedPairIds`
     );
     requireBoolean(model.publication?.app?.published, `${model.id}.publication.app.published`);
+    if (
+      model.publication?.app?.launchBadge !== undefined &&
+      model.publication.app.launchBadge !== 'new'
+    ) {
+      fail(`${model.id}.publication.app.launchBadge must equal "new" when provided`);
+    }
+    if (
+      model.publication?.app?.launchBadge !== undefined &&
+      !model.publication.app.published
+    ) {
+      fail(`${model.id}.publication.app.launchBadge requires a published app surface`);
+    }
     requireOptionalNonBlankString(
       model.publication?.app?.variantGroup,
       `${model.id}.publication.app.variantGroup`
@@ -150,6 +193,11 @@ export function validateModelRegistryDocument(value: unknown): ModelRegistryDocu
     requireBoolean(model.publication?.sitemap?.published, `${model.id}.publication.sitemap.published`);
     if (model.replacement !== null && (typeof model.replacement !== 'string' || !model.replacement.trim())) {
       fail(`invalid replacement for "${model.id}"`);
+    }
+    if (model.presentationOnly === true && !isPresentationOnlyPublication(model)) {
+      fail(
+        `presentation-only model "${model.id}" must publish only a noindex model page and disable every executable or discovery surface`
+      );
     }
     const idKey = normalized(model.id);
     const slugKey = normalized(model.slug);
@@ -244,6 +292,7 @@ export function validateModelRegistryDocument(value: unknown): ModelRegistryDocu
         publication.app.discoveryRank === undefined &&
         publication.app.variantGroup === undefined &&
         publication.app.variantLabel === undefined &&
+        publication.app.launchBadge === undefined &&
         !publication.pricing.published &&
         publication.pricing.featuredScenario === undefined &&
         !publication.sitemap.published;
@@ -307,13 +356,17 @@ export function validateModelRegistryRepository(document: ModelRegistryDocument,
   const catalogIds = new Set(catalog.map((entry) => normalized(entry.engineId)));
 
   for (const entry of catalog) {
-    if (!modelsById.has(normalized(entry.engineId))) {
+    const model = modelsById.get(normalized(entry.engineId));
+    if (!model) {
       fail(`engine catalog references missing registry id "${entry.engineId}"`);
+    }
+    if (model.presentationOnly === true) {
+      fail(`presentation-only model must not appear in engine catalog "${entry.engineId}"`);
     }
   }
 
   for (const model of document.models) {
-    if (!catalogIds.has(normalized(model.id))) {
+    if (!catalogIds.has(normalized(model.id)) && model.presentationOnly !== true) {
       fail(`registry model is missing from engine catalog "${model.id}"`);
     }
 

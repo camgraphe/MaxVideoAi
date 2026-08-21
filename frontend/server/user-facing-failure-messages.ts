@@ -10,13 +10,18 @@ const SEEDANCE_START_REFUND_REASON = 'Seedance render could not start.';
 const SEEDANCE_TASK_FAILURE_MESSAGE =
   'Seedance started this render but did not deliver a video. Retry with a simpler prompt or fewer reference assets.';
 const SEEDANCE_TASK_REFUND_REASON = 'Seedance started the render but did not deliver a video.';
+const SEEDANCE_COPYRIGHT_FAILURE_MESSAGE =
+  'Seedance stopped this render after it started because its output checks detected possible copyright-restricted content. Change recognizable characters, brands, logos, franchise references, or source media before trying again.';
+const SEEDANCE_COPYRIGHT_REFUND_REASON = 'Output was blocked for possible copyright-restricted content.';
 
-type FailureCategory = 'busy' | 'no_output' | 'safety' | 'start' | 'storage' | 'timeout' | 'unsupported';
-type SeedanceSpecificFailure = 'reference_safety' | 'start' | 'task_output';
+type FailureCategory = 'busy' | 'copyright' | 'no_output' | 'safety' | 'start' | 'storage' | 'timeout' | 'unsupported';
+type SeedanceSpecificFailure = 'copyright' | 'reference_safety' | 'start' | 'task_output';
 
 const PROVIDER_OR_INTERNAL_PATTERN =
   /\b(?:fal(?:\.ai)?|fail\.ai|byteplus|modelark|google\s+vertex|vertex\s+veo|google\s+veo\s+direct|kling\s+direct|provider|providers|provider_job_id|request_id|webhook|polling|api\s*key)\b/i;
 const URL_OR_PAYLOAD_PATTERN = /https?:\/\/|\/v\d+\/|{.*}|^\[[\s\S]*\]$/i;
+const OPAQUE_TRANSPORT_FAILURE_PATTERN =
+  /\b(?:unexpected\s+)?(?:http\s+)?status(?:\s+code)?\s*:?\s*\d{3}\b|\bunprocessable entity\b/i;
 
 function normalizeMessage(value: string | null | undefined): string | null {
   const normalized = value?.replace(/\s+/g, ' ').trim();
@@ -30,6 +35,10 @@ function containsAny(value: string, needles: string[]): boolean {
 function classifyFailure(message: string | null): FailureCategory | null {
   if (!message) return null;
   const lower = message.toLowerCase();
+
+  if (containsAny(lower, ['copyright', 'copyright-restricted', 'copyright restriction'])) {
+    return 'copyright';
+  }
 
   if (
     containsAny(lower, [
@@ -136,6 +145,9 @@ function classifySeedanceSpecificFailure(message: string | null): SeedanceSpecif
   if (!message) return null;
   const lower = message.toLowerCase();
   if (!lower.includes('seedance')) return null;
+  if (containsAny(lower, ['copyright', 'copyright-restricted', 'copyright restriction'])) {
+    return 'copyright';
+  }
   if (lower.includes('started this render') && lower.includes('did not deliver a video')) {
     return 'task_output';
   }
@@ -163,6 +175,8 @@ function messageForCategory(category: FailureCategory): string {
   switch (category) {
     case 'busy':
       return 'The render queue is temporarily busy. Please retry in a few moments.';
+    case 'copyright':
+      return SEEDANCE_COPYRIGHT_FAILURE_MESSAGE;
     case 'no_output':
       return 'The render finished without a usable output. Please retry or contact support with your request ID if it happens again.';
     case 'safety':
@@ -182,6 +196,8 @@ function refundReasonForCategory(category: FailureCategory): string {
   switch (category) {
     case 'busy':
       return 'Render queue was temporarily busy.';
+    case 'copyright':
+      return SEEDANCE_COPYRIGHT_REFUND_REASON;
     case 'no_output':
       return 'Render finished without a usable output.';
     case 'safety':
@@ -201,7 +217,18 @@ function canReuseMessage(message: string): boolean {
   return (
     message.length <= 260 &&
     !PROVIDER_OR_INTERNAL_PATTERN.test(message) &&
+    !OPAQUE_TRANSPORT_FAILURE_PATTERN.test(message) &&
     !URL_OR_PAYLOAD_PATTERN.test(message)
+  );
+}
+
+export function isGenericFailureDescription(message: string | null | undefined): boolean {
+  const normalized = normalizeMessage(message);
+  if (!normalized) return true;
+  return (
+    OPAQUE_TRANSPORT_FAILURE_PATTERN.test(normalized) ||
+    normalized.includes(DEFAULT_FAILURE_MESSAGE) ||
+    normalized.includes(DEFAULT_REFUND_REASON)
   );
 }
 
@@ -222,6 +249,7 @@ function normalizeDurationSec(value: number | string | null | undefined): number
 export function toUserFacingFailureMessage(message: string | null | undefined): string {
   const normalized = normalizeMessage(message);
   const seedanceFailure = classifySeedanceSpecificFailure(normalized);
+  if (seedanceFailure === 'copyright') return SEEDANCE_COPYRIGHT_FAILURE_MESSAGE;
   if (seedanceFailure === 'reference_safety') return SEEDANCE_REFERENCE_FAILURE_MESSAGE;
   if (seedanceFailure === 'start') return SEEDANCE_START_FAILURE_MESSAGE;
   if (seedanceFailure === 'task_output') return SEEDANCE_TASK_FAILURE_MESSAGE;
@@ -234,6 +262,7 @@ export function toUserFacingFailureMessage(message: string | null | undefined): 
 export function toUserFacingRefundReason(message: string | null | undefined): string {
   const normalized = normalizeMessage(message);
   const seedanceFailure = classifySeedanceSpecificFailure(normalized);
+  if (seedanceFailure === 'copyright') return SEEDANCE_COPYRIGHT_REFUND_REASON;
   if (seedanceFailure === 'reference_safety') return SEEDANCE_REFERENCE_REFUND_REASON;
   if (seedanceFailure === 'start') return SEEDANCE_START_REFUND_REASON;
   if (seedanceFailure === 'task_output') return SEEDANCE_TASK_REFUND_REASON;

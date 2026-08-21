@@ -1,6 +1,5 @@
 import { dispatchAnalyticsEvent } from '@/lib/analytics-client';
 
-export const DESKTOP_RAIL_MIN_WIDTH = 1088;
 export const DEFAULT_PROMPT = 'A quiet cinematic shot of neon-lit Tokyo streets in the rain';
 export const DEBOUNCE_MS = 200;
 export const UNIFIED_VEO_FIRST_LAST_ENGINE_IDS = new Set(['veo-3-1', 'veo-3-1-fast', 'veo-3-1-lite']);

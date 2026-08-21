@@ -1,8 +1,5 @@
-import {
-  BYTEPLUS_SEEDANCE_ASPECT_RATIOS,
-  getBytePlusSeedanceDurationOptions,
-  getBytePlusSeedanceAllowedResolutions,
-} from '@/server/video-providers/byteplus-modelark';
+import { requireBytePlusSeedanceProfile } from '@/server/video-providers/byteplus-modelark';
+import type { Mode } from '@/types/engines';
 
 type RequestOptionsFailure = {
   ok: false;
@@ -19,16 +16,19 @@ export function normalizeBytePlusOptions(params: {
   durationSec: number;
   requestedResolution: string;
   aspectRatio: string | null;
+  mode?: Mode;
 }):
   | {
       ok: true;
       durationSec: number;
       resolution: string;
-      aspectRatio: string;
+      aspectRatio: string | null;
+      generatedAudio: boolean;
     }
   | RequestOptionsFailure {
+  const profile = requireBytePlusSeedanceProfile(params.engineId);
   const normalizedDuration = Math.trunc(params.durationSec);
-  const allowedDurations = getBytePlusSeedanceDurationOptions(params.engineId);
+  const allowedDurations = profile.durationOptions;
   if (
     !Number.isFinite(params.durationSec) ||
     normalizedDuration !== params.durationSec ||
@@ -50,8 +50,11 @@ export function normalizeBytePlusOptions(params: {
       },
     };
   }
-  const allowedResolutions = getBytePlusSeedanceAllowedResolutions(params.engineId);
-  const bytePlusResolution = params.requestedResolution === 'auto' ? '720p' : params.requestedResolution;
+  const allowedResolutions = profile.resolutions;
+  const bytePlusResolution =
+    params.requestedResolution === 'auto'
+      ? profile.defaultResolution
+      : params.requestedResolution;
   if (!allowedResolutions.includes(bytePlusResolution as (typeof allowedResolutions)[number])) {
     return {
       ok: false,
@@ -67,8 +70,18 @@ export function normalizeBytePlusOptions(params: {
       },
     };
   }
-  const bytePlusAspectRatio = !params.aspectRatio || params.aspectRatio === 'auto' ? '16:9' : params.aspectRatio;
-  if (!BYTEPLUS_SEEDANCE_ASPECT_RATIOS.includes(bytePlusAspectRatio as (typeof BYTEPLUS_SEEDANCE_ASPECT_RATIOS)[number])) {
+  const inheritsSourceAspectRatio =
+    params.engineId === 'seedance-2-5' && params.mode === 'i2v';
+  const bytePlusAspectRatio =
+    inheritsSourceAspectRatio
+      ? null
+      : !params.aspectRatio || params.aspectRatio === 'auto'
+        ? profile.defaultAspectRatio
+        : params.aspectRatio;
+  if (
+    bytePlusAspectRatio &&
+    !profile.aspectRatios.includes(bytePlusAspectRatio as (typeof profile.aspectRatios)[number])
+  ) {
     return {
       ok: false,
       status: 400,
@@ -88,5 +101,6 @@ export function normalizeBytePlusOptions(params: {
     durationSec: normalizedDuration,
     resolution: bytePlusResolution,
     aspectRatio: bytePlusAspectRatio,
+    generatedAudio: profile.generatedAudio,
   };
 }

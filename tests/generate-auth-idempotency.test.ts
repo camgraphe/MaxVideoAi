@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
+import { NextRequest } from 'next/server';
 
 import {
   resolveGenerateUserGate,
@@ -43,6 +44,26 @@ test('resolveGenerateUserId falls back to the local admin bypass after Supabase 
   });
 
   assert.equal(userId, 'admin_user_123');
+});
+
+test('resolveGenerateUserId accepts the Bearer session sent by the workspace client', async () => {
+  const request = new NextRequest('http://localhost/api/generate', {
+    headers: { Authorization: 'Bearer owner-session-token' },
+  });
+  let receivedRequest: NextRequest | undefined;
+  const userId = await resolveGenerateUserId(request, {
+    getRouteAuthContextFn: async (req) => {
+      receivedRequest = req;
+      return { userId: 'owner_user_123' } as never;
+    },
+    createSupabaseRouteClientFn: async () => {
+      throw new Error('cookie fallback should not run after Bearer authentication');
+    },
+    resolveLocalAdminBypassUserIdFn: async () => null,
+  });
+
+  assert.equal(receivedRequest, request);
+  assert.equal(userId, 'owner_user_123');
 });
 
 test('resolveGenerateUserGate returns an auth response before DB work when no user is available', async () => {

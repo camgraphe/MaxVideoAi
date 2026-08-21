@@ -5,6 +5,11 @@ import test from 'node:test';
 
 const collectorPath = 'frontend/src/lib/pricing-audit/legacy-collectors.ts';
 const fixturePath = 'tests/fixtures/pricing-parity.v1.json';
+const launchAdditionsFixturePath = 'tests/fixtures/pricing-shadow-additions.v1.json';
+
+function readFixtureRows<T>(path: string): T[] {
+  return (JSON.parse(readFileSync(path, 'utf8')) as { rows: T[] }).rows;
+}
 
 function resolveLocalImport(fromFile: string, specifier: string): string | null {
   let candidates: string[];
@@ -50,14 +55,34 @@ test('committed pre-canonical pricing baseline is immutable after legacy deletio
   const frozen = JSON.parse(readFileSync(fixturePath, 'utf8')) as { generatedFrom: string; rows: unknown[] };
   assert.equal(frozen.generatedFrom, 'legacy-authoritative-pricing-paths');
   assert.equal(frozen.rows.length, 178);
+
+  assert.equal(existsSync(launchAdditionsFixturePath), true, `${launchAdditionsFixturePath} should exist`);
+  const additions = JSON.parse(readFileSync(launchAdditionsFixturePath, 'utf8')) as {
+    generatedFrom: string;
+    rows: Array<{ scenarioId: string }>;
+  };
+  assert.equal(additions.generatedFrom, 'registry-publication-shadow-additions');
+  assert.equal(additions.rows.length, 8);
+  assert.deepEqual(
+    additions.rows.reduce<Record<string, number>>((counts, row) => {
+      const engineId = row.scenarioId.includes('minimax-h3') ? 'minimax-h3' : 'seedance-2-5';
+      counts[engineId] = (counts[engineId] ?? 0) + 1;
+      return counts;
+    }, {}),
+    { 'seedance-2-5': 4, 'minimax-h3': 4 },
+  );
 });
 
 test('canonical shadow quotes match every frozen current output', async () => {
   const matrixPath = 'frontend/src/lib/pricing-audit/matrix.ts';
   assert.equal(existsSync(matrixPath), true, `${matrixPath} should exist`);
   const { buildPricingAuditMatrix } = await import('../frontend/src/lib/pricing-audit/matrix.ts');
-  const frozen = JSON.parse(readFileSync(fixturePath, 'utf8')) as { rows: Parameters<typeof buildPricingAuditMatrix>[0] };
-  const matrix = await buildPricingAuditMatrix(frozen.rows);
+  type AuditRows = Parameters<typeof buildPricingAuditMatrix>[0];
+  const rows = [
+    ...readFixtureRows<AuditRows[number]>(fixturePath),
+    ...readFixtureRows<AuditRows[number]>(launchAdditionsFixturePath),
+  ];
+  const matrix = await buildPricingAuditMatrix(rows);
   assert.equal(matrix.rows.length > 0, true);
   assert.deepEqual(
     matrix.rows.filter((row) => row.status !== 'match'),
@@ -86,8 +111,12 @@ test('canonical admin scenario projection has no transitive dependency on the br
 
 test('every cross-surface pricing difference is explicitly profiled', async () => {
   const { findUnprofiledCrossSurfaceDifferences } = await import('../frontend/src/lib/pricing-audit/matrix.ts');
-  const frozen = JSON.parse(readFileSync(fixturePath, 'utf8')) as { rows: Parameters<typeof findUnprofiledCrossSurfaceDifferences>[0] };
-  assert.deepEqual(findUnprofiledCrossSurfaceDifferences(frozen.rows), []);
+  type AuditRows = Parameters<typeof findUnprofiledCrossSurfaceDifferences>[0];
+  const rows = [
+    ...readFixtureRows<AuditRows[number]>(fixturePath),
+    ...readFixtureRows<AuditRows[number]>(launchAdditionsFixturePath),
+  ];
+  assert.deepEqual(findUnprofiledCrossSurfaceDifferences(rows), []);
 });
 
 test('matrix validation rejects missing scenarios and invalid quote fields with stable codes', async () => {

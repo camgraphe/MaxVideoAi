@@ -32,7 +32,7 @@ import {
   loadSuccessfulGenerationCount,
   type RedesignContent,
 } from './_lib/home-route-data';
-import { buildFaqSchema, buildItemListSchema, buildOrganizationSchema, buildSoftwareSchema, serializeJsonLd } from './_lib/home-jsonld';
+import { buildFaqSchema, buildItemListSchema, buildSoftwareSchema, serializeJsonLd } from './_lib/home-jsonld';
 
 export const revalidate = 60;
 
@@ -72,7 +72,6 @@ export default async function HomePage(props: { params: Promise<{ locale: AppLoc
   const providers = filterProviderItems(content);
   const tools = filterToolCards(content, stats);
   const softwareSchema = buildSoftwareSchema(content);
-  const organizationSchema = buildOrganizationSchema();
   const faqSchema = buildFaqSchema(content.faq.items);
   const itemListSchema = buildItemListSchema(content, providers);
 
@@ -103,9 +102,6 @@ export default async function HomePage(props: { params: Promise<{ locale: AppLoc
       </DeferredMarketingContent>
       <Script id="home-webapp-jsonld" type="application/ld+json">
         {JSON.stringify(softwareSchema)}
-      </Script>
-      <Script id="home-organization-jsonld" type="application/ld+json">
-        {JSON.stringify(organizationSchema)}
       </Script>
       <script id="home-faq-jsonld" type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(faqSchema) }} />
       <Script id="home-provider-itemlist-jsonld" type="application/ld+json">

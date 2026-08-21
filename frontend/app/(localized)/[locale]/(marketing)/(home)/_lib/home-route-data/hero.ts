@@ -3,6 +3,7 @@ import type { AppLocale } from '@/i18n/locales';
 import type { LocalizedLinkHref } from '@/i18n/navigation';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
+import { isLegacyMarketingVideoUrl, resolvePublicMarketingVideoUrl } from '@/lib/media';
 import { getHomepageSlotsCached, getSuccessfulGenerationCountCached, type HomepageSlotWithVideo } from '@/server/homepage';
 import type { GalleryVideo } from '@/server/videos';
 import type { HeroVideoShowcaseItem } from '@/components/marketing/home/HeroVideoShowcase';
@@ -151,7 +152,11 @@ export function buildProgrammedHeroItems(
   );
 
   return slots
-    .filter((slot) => Boolean(slot.video?.thumbUrl || slot.video?.videoUrl))
+    .filter(
+      (slot) =>
+        Boolean(slot.video?.thumbUrl || slot.video?.videoUrl) &&
+        !slot.video?.id.startsWith('placeholder-')
+    )
     .map((slot) => {
       const video = slot.video!;
       const normalizedEngineId = normalizeEngineId(video.engineId) ?? video.engineId;
@@ -190,8 +195,11 @@ export function buildProgrammedHeroItems(
         modelHref: linkMeta.modelHref,
         examplesLabel: linkMeta.examplesLabel,
         modelLabel: linkMeta.modelLabel,
-        posterSrc: video.thumbUrl ?? '/assets/placeholders/preview-16x9.png',
-        videoSrc: video.videoUrl ?? null,
+        posterSrc:
+          video.thumbUrl && !isLegacyMarketingVideoUrl(video.thumbUrl)
+            ? video.thumbUrl
+            : '/assets/placeholders/preview-16x9.png',
+        videoSrc: resolvePublicMarketingVideoUrl(video.videoUrl),
         duration,
         resolution,
         imageAlt: `${video.engineLabel} AI video programmed for the MaxVideoAI homepage.`,

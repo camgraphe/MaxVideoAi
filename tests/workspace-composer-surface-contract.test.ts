@@ -6,6 +6,7 @@ import { getSeedanceFieldBlockKey, getUnifiedSeedanceMode, isUnifiedSeedanceEngi
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
 import { buildComposerModeToggles } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers.ts';
 import { summarizeWorkspaceInputSchema } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-input-schema.ts';
+import { hasMissingRequiredComposerAsset } from '../frontend/components/composer/composer-generation.ts';
 
 const appClientPath = 'frontend/app/(core)/(workspace)/app/AppClient.tsx';
 const readyViewPath = 'frontend/app/(core)/(workspace)/app/_components/WorkspaceAppReadyView.tsx';
@@ -184,6 +185,38 @@ test('workspace exposes only source clips in the Seedance 2.0 Mini extension sch
   assert.equal(schema.assetFields[0]?.field.label, 'Source clips to extend (up to 3)');
   assert.equal(schema.assetFields[0]?.required, true);
   assert.equal(schema.assetFields[0]?.role, 'generic');
+});
+
+test('workspace disables generation while an active mode is missing required assets', () => {
+  const entry = listFalEngines().find((candidate) => candidate.id === 'seedance-2-5');
+  assert.ok(entry);
+
+  const schema = summarizeWorkspaceInputSchema({
+    selectedEngine: entry.engine,
+    activeMode: 'extend',
+    allowsUnifiedVeoFirstLast: false,
+    isUnifiedHappyHorse: false,
+    isUnifiedSeedance: true,
+    isUnifiedGeminiOmni: false,
+    uiLocale: 'en',
+  });
+
+  assert.equal(
+    hasMissingRequiredComposerAsset(schema.assetFields, { extension_source_videos: [null] }),
+    true,
+  );
+  assert.equal(
+    hasMissingRequiredComposerAsset(schema.assetFields, {
+      extension_source_videos: [{
+        kind: 'video',
+        name: 'clip.mp4',
+        size: 1,
+        type: 'video/mp4',
+        previewUrl: 'blob:clip',
+      }],
+    }),
+    false,
+  );
 });
 
 test('workspace exposes Seedance 2.0 Mini extension as an explicit composer mode', () => {

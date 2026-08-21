@@ -164,13 +164,22 @@ export function buildExamplesNextStepLinks({
   const rawNextStepLinks = isSeedanceLanding
     ? [
         {
-          href: buildCompareHref(appLocale, 'seedance-2-0-vs-seedance-2-0-fast'),
+          href: buildModelHref(appLocale, 'seedance-2-5'),
           label:
             locale === 'fr'
-              ? 'Comparer Seedance 2.0 vs Seedance 2.0 Fast'
+              ? 'Découvrir Seedance 2.5 pour la vidéo cinématique de 30 secondes'
               : locale === 'es'
-                ? 'Comparar Seedance 2.0 vs Seedance 2.0 Fast'
-                : 'Compare Seedance 2.0 vs Seedance 2.0 Fast',
+                ? 'Descubrir Seedance 2.5 para video cinematográfico de 30 segundos'
+                : 'Discover Seedance 2.5 for 30-second cinematic video',
+        },
+        {
+          href: buildCompareHref(appLocale, 'seedance-2-0-vs-seedance-2-5'),
+          label:
+            locale === 'fr'
+              ? 'Comparer Seedance 2.0 vs Seedance 2.5'
+              : locale === 'es'
+                ? 'Comparar Seedance 2.0 vs Seedance 2.5'
+                : 'Compare Seedance 2.0 vs Seedance 2.5',
         },
         {
           href: buildCompareHref(appLocale, 'seedance-2-0-vs-veo-3-1'),

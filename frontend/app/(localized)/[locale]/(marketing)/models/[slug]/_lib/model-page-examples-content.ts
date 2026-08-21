@@ -18,6 +18,7 @@ const nonEmpty = z.string().refine((value) => value.trim().length > 0, 'Expected
 const filterId = z.enum(DECISION_EXAMPLE_FILTER_IDS);
 const schema = z.object({
   modelSlug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  showWhenEmpty: z.boolean(),
   section: z.object({
     title: nonEmpty,
     intro: nonEmpty,

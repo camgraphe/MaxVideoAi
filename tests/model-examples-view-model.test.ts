@@ -1,13 +1,18 @@
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
+import { AudioLines, ShieldCheck, Sparkles, Users, Zap } from 'lucide-react';
 
 import type { ExampleGalleryVideo } from '../frontend/components/examples/examples-gallery-types.ts';
+import type { AppLocale } from '../frontend/i18n/locales.ts';
 import type { LocalizedLinkHref } from '../frontend/i18n/navigation.tsx';
 import { parseModelExamplesContent, type ModelExamplesContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-content.ts';
 import { getModelExamplesUiCopy } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-ui-copy.ts';
-import { resolveModelExampleFallbackPosters } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-example-media.ts';
+import {
+  MODEL_EXAMPLE_FALLBACK_POSTER_SLUGS,
+  resolveModelExampleFallbackPosters,
+} from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-example-media.ts';
 import {
   buildModelExamplePreviewAlts,
   resolveModelExamplesRuntimePolicy,
@@ -16,8 +21,19 @@ import {
   buildModelExamplesViewModel,
   type BuildModelExamplesViewModelInput,
 } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-view-model.ts';
+import { buildDecisionTocItems } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-toc.ts';
+import { listModelPageTemplateSlugs } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-template-registry.ts';
 
-const CONTENT_ROOT = path.join(process.cwd(), 'content', 'models', 'en');
+const MODEL_CONTENT_ROOT = path.join(process.cwd(), 'content', 'models');
+const CONTENT_ROOT = path.join(MODEL_CONTENT_ROOT, 'en');
+const RUNTIME_POLICY_PATH = path.join(
+  process.cwd(),
+  'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-runtime-policy.ts',
+);
+const VIEW_MODEL_PATH = path.join(
+  process.cwd(),
+  'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-view-model.ts',
+);
 const examplesLinkHref = {
   pathname: '/examples/[model]',
   params: { model: 'fixture' },
@@ -26,6 +42,7 @@ const examplesLinkHref = {
 function videoContent(): ModelExamplesContent {
   return {
     modelSlug: 'fixture-model',
+    showWhenEmpty: true,
     section: {
       title: 'Fixture examples',
       intro: 'Current Fixture outputs.',
@@ -79,6 +96,7 @@ function videoInput(
     modelName: 'Fixture Model',
     mode: 'video',
     audioMode: 'runtime',
+    decisionAltMode: 'preview-alt',
     galleryVideos: [galleryVideo()],
     galleryPreviewAlts: new Map([['job_fixture', 'Fixture preview alt']]),
     fallbackPosters: new Map(),
@@ -94,6 +112,7 @@ function imageFallbackInput(): BuildModelExamplesViewModelInput {
     content: {
       ...videoContent(),
       modelSlug: 'fixture-image',
+      showWhenEmpty: false,
       section: {
         ...videoContent().section,
         defaultCtaLabel: null,
@@ -118,6 +137,50 @@ function imageFallbackInput(): BuildModelExamplesViewModelInput {
     galleryPreviewAlts: new Map(),
     fallbackPosters: new Map([['product', '/assets/model-examples/fixture/product.webp']]),
   };
+}
+
+function buildStoredExamplesViewModel({
+  slug,
+  locale,
+  modelName,
+  galleryVideos = [],
+}: {
+  slug: string;
+  locale: AppLocale;
+  modelName: string;
+  galleryVideos?: ExampleGalleryVideo[];
+}) {
+  const document = JSON.parse(
+    readFileSync(path.join(MODEL_CONTENT_ROOT, locale, `${slug}.json`), 'utf8'),
+  ) as { examples?: unknown };
+  const content = parseModelExamplesContent(document.examples, slug, locale);
+  const ui = getModelExamplesUiCopy(locale);
+  const policy = resolveModelExamplesRuntimePolicy({ modelSlug: slug, engineId: slug });
+  return buildModelExamplesViewModel({
+    content,
+    ui,
+    locale,
+    anchorId: content.fallbackItems ? 'text-to-image' : 'text-to-video',
+    modelName,
+    mode: content.fallbackItems ? 'image-fallback' : 'video',
+    audioMode: policy.audioMode,
+    decisionAltMode: policy.decisionAltMode,
+    galleryVideos,
+    galleryPreviewAlts: buildModelExamplePreviewAlts({
+      galleryVideos,
+      locale,
+      modelName,
+      mode: policy.previewAltMode,
+      numberedExampleLabel: ui.numberedExampleLabel,
+    }),
+    fallbackPosters: resolveModelExampleFallbackPosters(
+      slug,
+      content.fallbackItems?.map((item) => item.id) ?? [],
+      null,
+    ),
+    examplesLinkHref: { pathname: '/examples/[model]', params: { model: slug } },
+    imageWorkspaceHref: `/app/image?engine=${encodeURIComponent(slug)}`,
+  });
 }
 
 function deepFreeze<T>(value: T): T {
@@ -150,6 +213,119 @@ test('real video media preserves current title, alt, badges, links and available
   assert.equal(result.section.defaultCtaLabel, 'View all Fixture examples');
 });
 
+test('Sora 2 Pro stored EN FR ES copy drives real-video filters, proof, recreate and audio output', () => {
+  const videos = [
+    galleryVideo({
+      id: 'job_sora_cinematic',
+      href: '/video/job_sora_cinematic',
+      engineLabel: 'Sora 2 Pro',
+      prompt: 'A cinematic film follows a rain-soaked detective.',
+      hasAudio: true,
+      recreateHref: '/app?engine=sora-2-pro&recreate=job_sora_cinematic',
+    }),
+    galleryVideo({
+      id: 'job_sora_product',
+      href: '/video/job_sora_product',
+      engineLabel: 'Sora 2 Pro',
+      prompt: 'A product packshot rotates on a clean tabletop.',
+      hasAudio: false,
+      recreateHref: '/app?engine=sora-2-pro&recreate=job_sora_product',
+    }),
+    galleryVideo({
+      id: 'job_sora_action',
+      href: '/video/job_sora_action',
+      engineLabel: 'Sora 2 Pro',
+      prompt: 'An athlete running through a narrow market.',
+      aspectRatio: '9:16',
+      hasAudio: false,
+      recreateHref: '/app?engine=sora-2-pro&recreate=job_sora_action',
+    }),
+  ];
+  const expected = {
+    en: {
+      title: 'Example Gallery: Sora 2 Pro Outputs',
+      recreate: 'Recreate this Pro shot →',
+      audio: 'Audio on',
+    },
+    fr: {
+      title: 'Galerie d’exemples : rendus Sora 2 Pro',
+      recreate: 'Recréer ce plan Pro →',
+      audio: 'Audio activé',
+    },
+    es: {
+      title: 'Galería de ejemplos: renders Sora 2 Pro',
+      recreate: 'Recrear esta toma Pro →',
+      audio: 'Audio activado',
+    },
+  } as const;
+
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const result = buildStoredExamplesViewModel({
+      slug: 'sora-2-pro',
+      locale,
+      modelName: 'Sora 2 Pro',
+      galleryVideos: videos,
+    });
+
+    assert.equal(result.section.title, expected[locale].title);
+    assert.deepEqual(result.filters.map(({ id }) => id), [
+      'all',
+      'cinematic',
+      'product',
+      'action',
+      'vertical',
+      'audio',
+    ]);
+    assert.deepEqual(
+      result.proofItems.map(({ icon }) => icon),
+      [Sparkles, Zap, AudioLines, Users, ShieldCheck],
+    );
+    assert.equal(result.decision.items[0]?.title, 'A cinematic film follows a rain-soaked detective');
+    assert.equal(result.decision.items[0]?.recreateLabel, expected[locale].recreate);
+    assert.equal(result.decision.items[0]?.audioBadgeLabel, expected[locale].audio);
+    assert.equal(
+      result.decision.items[0]?.alt,
+      'Sora 2 Pro a cinematic film follows a rain-soaked detective',
+    );
+  }
+});
+
+test('compatibility-prefix routes derive decision alts generically from the supplied model name', () => {
+  for (const fixture of [
+    {
+      modelName: 'Sora 2 Pro',
+      engineLabel: 'Sora 2',
+      prompt: 'A cinematic tracking shot through a rain-soaked city.',
+      expected: 'Sora 2 Pro a cinematic tracking shot through a rain-soaked city',
+    },
+    {
+      modelName: 'Luma Ray 3.2',
+      engineLabel: 'Luma Ray 3',
+      prompt: 'A product bottle rotates under controlled studio light.',
+      expected: 'Luma Ray 3.2 a product bottle rotates under controlled studio light',
+    },
+  ]) {
+    const video = galleryVideo({
+      engineLabel: fixture.engineLabel,
+      prompt: fixture.prompt,
+    });
+    const result = buildModelExamplesViewModel(videoInput({
+      modelName: fixture.modelName,
+      decisionAltMode: 'model-name-prefix',
+      galleryVideos: [video],
+      galleryPreviewAlts: new Map([['job_fixture', `${fixture.engineLabel} supplied preview alt`]]),
+    }));
+
+    assert.equal(result.decision.items[0]?.alt, fixture.expected, fixture.modelName);
+    assert.equal(
+      result.defaultPresentation.items[0]?.alt,
+      `${fixture.engineLabel} supplied preview alt`,
+      fixture.modelName,
+    );
+  }
+  assert.doesNotMatch(readFileSync(VIEW_MODEL_PATH, 'utf8'), /sora-2-pro|luma-ray-3-2/);
+});
+
 test('silent mode never exposes the audio filter and uses the silent badge', () => {
   const result = buildModelExamplesViewModel(videoInput({ audioMode: 'silent' }));
 
@@ -161,6 +337,7 @@ test('silent mode never exposes the audio filter and uses the silent badge', () 
 test('image fallback attaches static posters without inventing runtime gallery media', () => {
   const result = buildModelExamplesViewModel(imageFallbackInput());
 
+  assert.equal(result.visible, true);
   assert.equal(result.decision.items[0]?.id, 'fixture-image-fallback-product');
   assert.equal(result.decision.items[0]?.posterUrl, '/assets/model-examples/fixture/product.webp');
   assert.equal(result.decision.items[0]?.href, '/app/image?engine=fixture-image');
@@ -173,12 +350,126 @@ test('image fallback attaches static posters without inventing runtime gallery m
   assert.deepEqual(result.filters.map(({ id }) => id), ['all', 'product']);
 });
 
-test('missing real media stays empty when content has no active fallback items', () => {
-  const result = buildModelExamplesViewModel(videoInput({ galleryVideos: [] }));
+test('Nano Banana Pro and Luma Uni-1 stored fallbacks preserve item order and workspace output', () => {
+  const fixtures = [
+    {
+      slug: 'nano-banana-pro',
+      modelName: 'Nano Banana Pro',
+      ids: ['campaign', 'typography', 'reference', 'final'],
+      posters: [
+        '/assets/model-examples/nano-banana-pro/campaign.webp',
+        '/assets/model-examples/nano-banana-pro/typography.webp',
+        '/assets/model-examples/nano-banana-pro/reference.webp',
+        '/assets/model-examples/nano-banana-pro/final.webp',
+      ],
+      categories: ['Campaign', 'Typography', 'Reference edit', '4K final'],
+      alts: [
+        'Nano Banana Pro campaign image with ad layout',
+        'Nano Banana Pro poster with readable typography',
+        'Nano Banana Pro product edit guided by references',
+        'Nano Banana Pro campaign asset finalized in 4K',
+      ],
+    },
+    {
+      slug: 'luma-uni-1',
+      modelName: 'Luma Uni-1',
+      ids: ['product', 'edit', 'reference', 'campaign'],
+      posters: [
+        '/assets/model-examples/luma-uni-1/product.webp',
+        '/assets/model-examples/luma-uni-1/edit.webp',
+        '/assets/model-examples/luma-uni-1/reference.webp',
+        '/assets/model-examples/luma-uni-1/research.webp',
+      ],
+      categories: ['Product', 'Edit', 'References', 'Direction'],
+      alts: [
+        'Luma Uni-1 clean product still with simple studio light',
+        'Luma Uni-1 edit preserving product shape while changing studio tone',
+        'Luma Uni-1 still guided by product and mood references',
+        'Luma Uni-1 retail research still for product direction',
+      ],
+    },
+  ] as const;
 
-  assert.equal(result.visible, true);
-  assert.deepEqual(result.decision.items, []);
-  assert.deepEqual(result.filters.map(({ id }) => id), ['all']);
+  for (const fixture of fixtures) {
+    const result = buildStoredExamplesViewModel({
+      slug: fixture.slug,
+      locale: 'en',
+      modelName: fixture.modelName,
+    });
+    const workspaceHref = `/app/image?engine=${fixture.slug}`;
+
+    assert.deepEqual(
+      result.decision.items.map(({ id }) => id),
+      fixture.ids.map((id) => `${fixture.slug}-fallback-${id}`),
+    );
+    assert.deepEqual(result.decision.items.map(({ posterUrl }) => posterUrl), fixture.posters);
+    assert.deepEqual(result.decision.items.map(({ category }) => category), fixture.categories);
+    assert.deepEqual(result.decision.items.map(({ alt }) => alt), fixture.alts);
+    assert.ok(result.decision.items.every(({ href }) => href === workspaceHref));
+    assert.ok(result.decision.items.every(({ recreateHref }) => recreateHref === workspaceHref));
+    assert.equal(result.decision.examplesLinkHref, null);
+  }
+});
+
+test('empty visibility follows authored ownership while real and fallback items take precedence', () => {
+  const hidden = buildModelExamplesViewModel(videoInput({
+    content: { ...videoContent(), showWhenEmpty: false },
+    galleryVideos: [],
+  }));
+  const authored = buildModelExamplesViewModel(videoInput({ galleryVideos: [] }));
+  const realMedia = buildModelExamplesViewModel(videoInput({
+    content: { ...videoContent(), showWhenEmpty: false },
+  }));
+  const fallback = buildModelExamplesViewModel(imageFallbackInput());
+
+  assert.equal(hidden.visible, false);
+  assert.equal(authored.visible, true);
+  assert.equal(realMedia.visible, true);
+  assert.equal(fallback.visible, true);
+  assert.deepEqual(hidden.decision.items, []);
+  assert.deepEqual(hidden.filters.map(({ id }) => id), ['all']);
+});
+
+test('stored no-media routes preserve legacy section and TOC visibility in every locale', () => {
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    for (const [slug, modelName, expectedVisible] of [
+      ['nano-banana-lite', 'Nano Banana Lite', false],
+      ['seedream-5-0-pro', 'Seedream 5.0 Pro', false],
+      ['sora-2', 'Sora 2', true],
+    ] as const) {
+      const result = buildStoredExamplesViewModel({ slug, locale, modelName });
+      const toc = buildDecisionTocItems({
+        locale,
+        sectionLabels: {
+          specs: 'Specs',
+          examples: 'Examples',
+          prompting: 'Prompting',
+          tips: 'Tips',
+          compare: 'Compare',
+          safety: 'Safety',
+          faq: 'FAQ',
+        },
+        textAnchorId: result.anchorId,
+        imageAnchorId: 'prompting',
+        compareAnchorId: 'compare',
+        hasExamples: result.visible,
+        hasSpecs: true,
+        hasTextSection: true,
+        hasTipsSection: true,
+        hasCompareSection: false,
+        hasSafetySection: true,
+        hasFaqSection: true,
+      });
+
+      assert.equal(result.visible, expectedVisible, `${slug}/${locale}`);
+      assert.deepEqual(result.decision.items, [], `${slug}/${locale} items`);
+      assert.equal(
+        toc.some(({ id }) => id === result.anchorId),
+        expectedVisible,
+        `${slug}/${locale} TOC`,
+      );
+    }
+  }
 });
 
 test('builder does not mutate frozen content, media, maps or link inputs', () => {
@@ -218,9 +509,37 @@ test('runtime policy bounds every silent engine and numbered-alt model compatibi
       modelSlug,
     );
   }
+  for (const engineId of [
+    'luma-ray-2',
+    'lumaRay2',
+    'luma-ray-3-2',
+    'sora-2-pro',
+    'sora-2',
+    'ltx-2-3-fast',
+    'ltx-2-3-pro',
+    'ltx-2-3',
+    'kling-3-pro',
+    'kling-3-4k',
+    'kling-3-standard',
+    'veo-3-1-lite',
+    'veo-3-1',
+    'veo-3-1-fast',
+    'seedance-2-0-fast',
+    'seedance-1-5-pro',
+  ]) {
+    assert.equal(
+      resolveModelExamplesRuntimePolicy({ modelSlug: 'fixture', engineId }).decisionAltMode,
+      'model-name-prefix',
+      engineId,
+    );
+  }
   assert.deepEqual(
     resolveModelExamplesRuntimePolicy({ modelSlug: 'fixture', engineId: 'fixture-engine' }),
-    { audioMode: 'runtime', previewAltMode: 'prompt' },
+    {
+      audioMode: 'runtime',
+      previewAltMode: 'prompt',
+      decisionAltMode: 'preview-alt',
+    },
   );
 });
 
@@ -234,12 +553,14 @@ test('preview alt builder preserves prompt mode, localizes numbered mode and cap
     locale: 'en',
     modelName: 'Fixture Model',
     mode: 'prompt',
+    numberedExampleLabel: getModelExamplesUiCopy('en').numberedExampleLabel,
   });
   const numberedAlts = buildModelExamplePreviewAlts({
     galleryVideos,
     locale: 'fr',
     modelName: 'Fixture Model',
     mode: 'numbered-model-example',
+    numberedExampleLabel: getModelExamplesUiCopy('fr').numberedExampleLabel,
   });
 
   assert.equal(promptAlts.get('job_1'), 'Fixture Engine AI video example: Product launch on a tabletop.');
@@ -248,29 +569,30 @@ test('preview alt builder preserves prompt mode, localizes numbered mode and cap
   assert.equal(promptAlts.has('job_7'), false);
 });
 
+test('runtime policy receives localized numbered-example copy without owning locale branches', () => {
+  const source = readFileSync(RUNTIME_POLICY_PATH, 'utf8');
+
+  assert.equal(getModelExamplesUiCopy('en').numberedExampleLabel, 'example');
+  assert.equal(getModelExamplesUiCopy('fr').numberedExampleLabel, 'exemple');
+  assert.equal(getModelExamplesUiCopy('es').numberedExampleLabel, 'ejemplo');
+  assert.doesNotMatch(source, /\b(?:if|switch)\s*\([^)]*\blocale\b|locale\s*(?:===|==)|\blocale\s*\?/);
+  assert.doesNotMatch(source, /['"`](?:example|exemple|ejemplo)['"`]/i);
+});
+
 test('static poster manifest keys exactly match migrated models with fallback items', () => {
-  const documents = readdirSync(CONTENT_ROOT)
-    .filter((fileName) => fileName.endsWith('.json'))
-    .map((fileName) => {
-      const slug = fileName.slice(0, -5);
-      const document = JSON.parse(readFileSync(path.join(CONTENT_ROOT, fileName), 'utf8')) as { examples?: unknown };
+  const documents = listModelPageTemplateSlugs()
+    .map((slug) => {
+      const document = JSON.parse(readFileSync(path.join(CONTENT_ROOT, `${slug}.json`), 'utf8')) as { examples?: unknown };
       return parseModelExamplesContent(document.examples, slug, 'en');
     });
   const expected = documents
     .filter((content) => content.fallbackItems !== null)
     .map((content) => content.modelSlug)
     .sort();
-  const probeIds = Array.from(new Set(documents.flatMap(
-    (content) => content.fallbackItems?.map((item) => item.id) ?? [],
-  )));
   const sentinel = '/fallback-sentinel.webp';
-  const actual = documents
-    .filter((content) => Array.from(
-      resolveModelExampleFallbackPosters(content.modelSlug, probeIds, sentinel).values(),
-    ).some((poster) => poster !== sentinel))
-    .map((content) => content.modelSlug)
-    .sort();
+  const actual = [...MODEL_EXAMPLE_FALLBACK_POSTER_SLUGS].sort();
 
+  assert.equal(Object.isFrozen(MODEL_EXAMPLE_FALLBACK_POSTER_SLUGS), true);
   assert.deepEqual(actual, expected);
   for (const content of documents.filter((item) => item.fallbackItems !== null)) {
     const ids = content.fallbackItems?.map((item) => item.id) ?? [];

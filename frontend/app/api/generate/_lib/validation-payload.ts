@@ -1,5 +1,8 @@
 import type { MaxVideoProviderElement } from '@/lib/video-provider-elements';
-import type { Mode } from '@/types/engines';
+import type { EngineInputSchema, Mode } from '@/types/engines';
+import type { ReferenceBudgetMediaItem, ReferenceBudgetValuesByField } from '@/lib/reference-budget';
+import type { ReferenceProvenanceIssue } from './attachment-references';
+import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
 import { validateRequest } from './validate';
 
 type GenerateValidationMetric = {
@@ -58,10 +61,15 @@ export function buildGenerateValidationPayload(params: {
   loop?: boolean;
   seed?: number | null;
   safetyChecker?: boolean | null;
+  inputSchema: EngineInputSchema | null | undefined;
+  referenceValuesByField: ReferenceBudgetValuesByField<string>;
+  referenceMediaItems: readonly ReferenceBudgetMediaItem[];
+  referenceProvenanceIssues: readonly ReferenceProvenanceIssue[];
   deps?: GenerateValidationDeps;
 }): GenerateValidationPayloadResult {
   const validateRequestFn = params.deps?.validateRequestFn ?? validateRequest;
   const payload: Record<string, unknown> = {};
+  const isMinimaxH3 = isMinimaxH3EngineId(params.engineId);
 
   if (params.prompt.length > 0) {
     payload.prompt = params.prompt;
@@ -75,7 +83,7 @@ export function buildGenerateValidationPayload(params: {
   if (params.supportsAspectRatio && params.aspectRatio) {
     payload.aspect_ratio = params.aspectRatio;
   }
-  if (typeof params.audioEnabled === 'boolean' && !params.isBytePlusV1a) {
+  if (typeof params.audioEnabled === 'boolean' && !params.isBytePlusV1a && !isMinimaxH3) {
     payload.generate_audio = params.audioEnabled;
   }
 
@@ -108,23 +116,48 @@ export function buildGenerateValidationPayload(params: {
     payload.last_frame_url = params.lastFrameUrl;
   }
   if (params.mode === 'ref2v' && params.normalizedReferenceImages.length) {
-    payload.image_urls = params.normalizedReferenceImages;
+    payload[isMinimaxH3 ? 'reference_image_urls' : 'image_urls'] = params.normalizedReferenceImages;
   }
   if (params.mode === 'ref2v' && params.videoUrls.length) {
-    payload.video_urls = params.videoUrls;
+    payload[isMinimaxH3 ? 'reference_video_urls' : 'video_urls'] = params.videoUrls;
   }
   if (params.mode === 'ref2v') {
     const refAudioUrls = Array.from(new Set([...(params.resolvedAudioUrl ? [params.resolvedAudioUrl] : []), ...params.audioUrls]));
     if (refAudioUrls.length) {
-      payload.audio_urls = refAudioUrls;
+      payload[isMinimaxH3 ? 'reference_audio_urls' : 'audio_urls'] = refAudioUrls;
     }
   }
   if (params.mode === 'v2v' && params.normalizedReferenceImages.length) {
-    if (params.engineId.startsWith('kling-o3')) {
-      payload.image_urls = params.normalizedReferenceImages;
-    } else {
-      payload.reference_image_urls = params.normalizedReferenceImages;
+    payload[resolveActiveMediaFieldId({
+      inputSchema: params.inputSchema,
+      mode: params.mode,
+      type: 'image',
+      candidateFieldIds: ['image_urls', 'reference_image_urls'],
+      fallbackFieldId: params.engineId.startsWith('kling-o3') ? 'image_urls' : 'reference_image_urls',
+    })] = params.normalizedReferenceImages;
+  }
+  if (params.mode === 'v2v') {
+    const audioUrls = Array.from(
+      new Set([...(params.resolvedAudioUrl ? [params.resolvedAudioUrl] : []), ...params.audioUrls])
+    );
+    if (audioUrls.length) {
+      payload[resolveActiveMediaFieldId({
+        inputSchema: params.inputSchema,
+        mode: params.mode,
+        type: 'audio',
+        candidateFieldIds: ['audio_urls', 'reference_audio_urls', 'audio_url'],
+        fallbackFieldId: 'audio_url',
+      })] = audioUrls;
     }
+  }
+  if (params.mode === 'extend' && params.videoUrls.length) {
+    payload[resolveActiveMediaFieldId({
+      inputSchema: params.inputSchema,
+      mode: params.mode,
+      type: 'video',
+      candidateFieldIds: ['extension_source_videos', 'video_urls', 'video_url'],
+      fallbackFieldId: 'video_url',
+    })] = params.videoUrls;
   }
   if (params.mode === 'r2v' && params.videoUrls.length) {
     payload.video_urls = params.videoUrls;
@@ -132,7 +165,7 @@ export function buildGenerateValidationPayload(params: {
   if (isSourceVideoEditMode(params.mode) && params.sourceInputVideoUrl) {
     payload.video_url = params.sourceInputVideoUrl;
   }
-  if (params.resolvedAudioUrl) {
+  if (params.resolvedAudioUrl && !(isMinimaxH3 && params.mode === 'ref2v')) {
     payload.audio_url = params.resolvedAudioUrl;
   }
   if (params.elements?.length) {
@@ -158,6 +191,7 @@ export function buildGenerateValidationPayload(params: {
     mode: params.mode,
     isLumaRay2: params.isLumaRay2,
     isBytePlusV1a: params.isBytePlusV1a,
+    isMinimaxH3,
     needsImage,
     needsReferenceImages,
     needsFirstLastFrames,
@@ -185,7 +219,17 @@ export function buildGenerateValidationPayload(params: {
     payload.image_url = params.initialImageUrl;
   }
 
-  const validationResult = validateRequestFn(params.engineId, params.mode, payload);
+  const validationResult = validateRequestFn(
+    params.engineId,
+    params.mode,
+    payload,
+    {
+      inputSchema: params.inputSchema,
+      referenceValuesByField: params.referenceValuesByField,
+      referenceMediaItems: params.referenceMediaItems,
+      referenceProvenanceIssues: params.referenceProvenanceIssues,
+    }
+  );
   if (!validationResult.ok) {
     return {
       ok: false,
@@ -224,11 +268,37 @@ function isSourceVideoEditMode(mode: Mode): boolean {
   return mode === 'v2v' || mode === 'reframe' || mode === 'extend' || mode === 'retake';
 }
 
+function resolveActiveMediaFieldId(params: {
+  inputSchema: EngineInputSchema | null | undefined;
+  mode: Mode;
+  type: 'image' | 'video' | 'audio';
+  candidateFieldIds: string[];
+  fallbackFieldId: string;
+}): string {
+  const fields = [
+    ...(params.inputSchema?.required ?? []),
+    ...(params.inputSchema?.optional ?? []),
+  ];
+  return (
+    params.candidateFieldIds
+      .map((fieldId) =>
+        fields.find(
+          (field) =>
+            field.id === fieldId &&
+            field.type === params.type &&
+            (!field.modes?.length || field.modes.includes(params.mode))
+        )?.id
+      )
+      .find(Boolean) ?? params.fallbackFieldId
+  );
+}
+
 function validateRequiredInputs(params: {
   engineId: string;
   mode: Mode;
   isLumaRay2: boolean;
   isBytePlusV1a: boolean;
+  isMinimaxH3: boolean;
   needsImage: boolean;
   needsReferenceImages: boolean;
   needsFirstLastFrames: boolean;
@@ -266,11 +336,13 @@ function validateRequiredInputs(params: {
     }
     const bytePlusHasAnyReference =
       params.isBytePlusV1a && (params.normalizedReferenceImages.length > 0 || params.videoUrls.length > 0);
-    if (!params.normalizedReferenceImages.length && !bytePlusHasAnyReference) {
+    const minimaxH3HasAnyVisualReference =
+      params.isMinimaxH3 && (params.normalizedReferenceImages.length > 0 || params.videoUrls.length > 0);
+    if (!params.normalizedReferenceImages.length && !bytePlusHasAnyReference && !minimaxH3HasAnyVisualReference) {
       return missingInput(
         'IMAGE_URL_REQUIRED',
         params,
-        params.isBytePlusV1a
+        params.isBytePlusV1a || params.isMinimaxH3
           ? 'At least one reference image or video is required for this engine mode'
           : 'Reference images are required for this engine mode'
       );

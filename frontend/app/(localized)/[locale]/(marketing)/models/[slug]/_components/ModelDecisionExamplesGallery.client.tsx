@@ -8,56 +8,19 @@ import { Link, type LocalizedLinkHref } from '@/i18n/navigation';
 import { UIIcon } from '@/components/ui/UIIcon';
 
 import { MODEL_PAGE_ICON_MUTED, MODEL_PAGE_ICON_ON_DARK } from '../_lib/model-page-icon-styles';
-
-export type DecisionExampleFilterId =
-  | 'all'
-  | 'cinematic'
-  | 'product'
-  | 'action'
-  | 'vertical'
-  | 'audio'
-  | 'campaign'
-  | 'typography'
-  | 'reference'
-  | 'final'
-  | 'grounded'
-  | 'edit'
-  | 'wide'
-  | 'character'
-  | 'batch'
-  | 'ui'
-  | 'mask'
-  | 'infographic';
-
-export type DecisionExampleFilter = {
-  id: DecisionExampleFilterId;
-  label: string;
-};
-
-export type DecisionExampleGalleryItem = {
-  id: string;
-  href: string;
-  posterUrl: string;
-  alt: string;
-  audioBadgeLabel: string | null;
-  durationLabel: string | null;
-  aspectRatio: string | null;
-  category: string;
-  title: string;
-  recreateHref: string | null;
-  recreateLabel: string | null;
-  tags: DecisionExampleFilterId[];
-};
+import type { DecisionExampleFilterId, ModelExampleFilter } from '../_lib/model-page-examples-content';
+import type { ModelExamplesGalleryItem } from '../_lib/model-page-examples-view-model';
 
 type ModelDecisionExamplesGalleryProps = {
   title: string;
   intro: string;
-  filters: DecisionExampleFilter[];
-  items: DecisionExampleGalleryItem[];
+  filters: ModelExampleFilter[];
+  items: ModelExamplesGalleryItem[];
   examplesLinkHref: LocalizedLinkHref | null;
   viewAllLabel: string;
   renderLinkLabel: string;
   emptyLabel: string;
+  noPreviewLabel: string;
 };
 
 export function ModelDecisionExamplesGallery({
@@ -69,6 +32,7 @@ export function ModelDecisionExamplesGallery({
   viewAllLabel,
   renderLinkLabel,
   emptyLabel,
+  noPreviewLabel,
 }: ModelDecisionExamplesGalleryProps) {
   const [activeFilter, setActiveFilter] = useState<DecisionExampleFilterId>('all');
   const [pageIndex, setPageIndex] = useState(0);
@@ -126,6 +90,7 @@ export function ModelDecisionExamplesGallery({
           {examplesLinkHref ? (
             <Link
               href={examplesLinkHref}
+              prefetch={false}
               className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-hairline bg-surface px-4 text-sm font-semibold text-text-primary shadow-sm transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
             >
               <span>{viewAllLabel}</span>
@@ -148,6 +113,7 @@ export function ModelDecisionExamplesGallery({
                   >
                     <Link
                       href={item.href as LocalizedLinkHref}
+                      prefetch={false}
                       className={[
                         'group relative block aspect-video overflow-hidden',
                         isVertical ? 'bg-slate-950 dark:bg-black' : 'bg-slate-100 dark:bg-white/5',
@@ -167,7 +133,7 @@ export function ModelDecisionExamplesGallery({
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-slate-500 dark:text-slate-400">
-                          No preview
+                          {noPreviewLabel}
                         </div>
                       )}
                       {item.audioBadgeLabel ? (
@@ -193,12 +159,17 @@ export function ModelDecisionExamplesGallery({
                         {item.title}
                       </h3>
                       <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[0.72rem] font-semibold sm:gap-x-5 sm:text-[0.78rem]">
-                        <Link href={item.href as LocalizedLinkHref} className="text-slate-950 transition hover:text-blue-600 dark:text-white dark:hover:text-blue-200">
+                        <Link
+                          href={item.href as LocalizedLinkHref}
+                          prefetch={false}
+                          className="text-slate-950 transition hover:text-blue-600 dark:text-white dark:hover:text-blue-200"
+                        >
                           {renderLinkLabel}
                         </Link>
                         {item.recreateHref && item.recreateLabel ? (
                           <Link
                             href={item.recreateHref as LocalizedLinkHref}
+                            prefetch={false}
                             className="inline-flex items-center gap-1 text-blue-700 transition hover:text-blue-500 dark:text-blue-200 dark:hover:text-blue-100"
                           >
                             <span>{item.recreateLabel.replace(/\s*(?:→|->)\s*$/, '')}</span>

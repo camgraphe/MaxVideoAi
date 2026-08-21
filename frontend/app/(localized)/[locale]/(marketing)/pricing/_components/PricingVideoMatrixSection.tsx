@@ -24,6 +24,7 @@ import type {
   VideoPricingRow,
 } from '../_lib/pricingHubData';
 import { getPricingHubCopy } from '../_lib/pricingHubCopy';
+import { PricingTableScrollRegion } from './PricingTableScrollRegion';
 
 const highlightStyles = [
   { icon: Zap, tone: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-200' },
@@ -398,7 +399,7 @@ export function PricingVideoMatrixSection({ locale, video }: { locale: AppLocale
       <div className="border-b border-hairline p-4 sm:p-5">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h2 className="text-xl font-semibold tracking-normal text-text-primary sm:text-2xl">
+            <h2 id="video-pricing-table-title" className="text-xl font-semibold tracking-normal text-text-primary sm:text-2xl">
               {copy.video.title}
             </h2>
             <p className="mt-1 max-w-[780px] text-sm leading-6 text-text-secondary">
@@ -418,7 +419,11 @@ export function PricingVideoMatrixSection({ locale, video }: { locale: AppLocale
       </div>
 
       <div className="flex flex-col">
-      <div id="full-video-pricing-table" className="order-2 scroll-mt-24 overflow-x-auto md:order-1">
+      <PricingTableScrollRegion
+        id="full-video-pricing-table"
+        labelledBy="video-pricing-table-title"
+        className="order-2 scroll-mt-24 md:order-1"
+      >
         <table className="min-w-[1460px] border-separate border-spacing-0 text-left text-sm">
           <thead className="sticky top-0 z-20 bg-surface">
             <tr className="text-xs font-semibold text-text-muted">
@@ -452,7 +457,7 @@ export function PricingVideoMatrixSection({ locale, video }: { locale: AppLocale
             />
           ) : null}
         </table>
-      </div>
+      </PricingTableScrollRegion>
       <div className="order-1 md:order-2">
         <MobileScenarioLeaderboard video={video} locale={locale} />
       </div>

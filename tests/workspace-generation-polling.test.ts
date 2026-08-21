@@ -6,6 +6,11 @@ import {
   applyGenerationPollToSelectedPreview,
   projectGenerationPollStatus,
 } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-generation-polling';
+import { getWorkspaceGenerationFailureMessage } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-failure-messages';
+import {
+  getVideoFailureCodeFromSettingsSnapshot,
+  SEEDANCE_OUTPUT_COPYRIGHT_RESTRICTED,
+} from '../frontend/lib/video-failure-codes';
 import type { LocalRender } from '../frontend/app/(core)/(workspace)/app/_lib/render-persistence';
 import type { SelectedVideoPreview } from '../frontend/lib/video-preview-group';
 
@@ -134,4 +139,51 @@ test('poll projection marks refunded failures and stops progress tracking', () =
   assert.equal(nextRender.paymentStatus, 'refunded');
   assert.equal(nextRender.failedAt, 12_000);
   assert.equal(nextRender.message, 'Failed');
+});
+
+test('Seedance copyright failures use localized refund-aware workspace copy', () => {
+  const copy = {
+    messages: {
+      seedanceCopyrightBlocked: 'Le rendu a été arrêté pour un possible contenu protégé.',
+      seedanceCopyrightBlockedRefunded:
+        'Le rendu a été arrêté pour un possible contenu protégé. Les crédits ont été recrédités.',
+    },
+  };
+
+  assert.equal(
+    getWorkspaceGenerationFailureMessage(
+      {
+        failureCode: 'seedance_output_copyright_restricted',
+        message: 'English server fallback',
+        paymentStatus: 'refunded_wallet',
+      },
+      copy
+    ),
+    copy.messages.seedanceCopyrightBlockedRefunded
+  );
+  assert.equal(
+    getWorkspaceGenerationFailureMessage(
+      {
+        failureCode: 'seedance_output_copyright_restricted',
+        message: 'English server fallback',
+        paymentStatus: 'paid_wallet',
+      },
+      copy
+    ),
+    copy.messages.seedanceCopyrightBlocked
+  );
+});
+
+test('provider failure metadata exposes the stable client failure code', () => {
+  assert.equal(
+    getVideoFailureCodeFromSettingsSnapshot({
+      providerFailure: {
+        provider: 'byteplus_modelark',
+        providerErrorCode: 'OutputVideoSensitiveContentDetected.PolicyViolation',
+        failureCode: SEEDANCE_OUTPUT_COPYRIGHT_RESTRICTED,
+      },
+    }),
+    SEEDANCE_OUTPUT_COPYRIGHT_RESTRICTED
+  );
+  assert.equal(getVideoFailureCodeFromSettingsSnapshot({ providerFailure: 'invalid' }), null);
 });

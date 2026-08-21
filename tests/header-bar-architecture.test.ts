@@ -6,22 +6,66 @@ import test from 'node:test';
 const root = process.cwd();
 const headerPath = join(root, 'frontend/components/HeaderBar.tsx');
 const accountHookPath = join(root, 'frontend/components/header/useHeaderAccountState.ts');
+const accountMenuPath = join(root, 'frontend/components/header/HeaderAccountMenu.tsx');
+const authActionsPath = join(root, 'frontend/components/header/HeaderAuthActions.tsx');
 const logoPath = join(root, 'frontend/components/header/HeaderLogoMark.tsx');
 const navHelpersPath = join(root, 'frontend/components/header/header-nav-helpers.ts');
 const walletStatusPath = join(root, 'frontend/components/header/HeaderWalletStatus.tsx');
+const mobileMenuPath = join(root, 'frontend/components/header/HeaderMobileMenu.tsx');
 
 const headerSource = readFileSync(headerPath, 'utf8');
 const accountHookSource = readFileSync(accountHookPath, 'utf8');
+const accountMenuSource = readFileSync(accountMenuPath, 'utf8');
+const authActionsSource = readFileSync(authActionsPath, 'utf8');
 const logoSource = readFileSync(logoPath, 'utf8');
 const navHelpersSource = readFileSync(navHelpersPath, 'utf8');
 const walletStatusSource = readFileSync(walletStatusPath, 'utf8');
+const mobileMenuSource = readFileSync(mobileMenuPath, 'utf8');
+
+function openingTags(source: string, component: 'Link' | 'ButtonLink') {
+  const tags: string[] = [];
+  const opening = `<${component}`;
+  let cursor = 0;
+
+  while (cursor < source.length) {
+    const start = source.indexOf(opening, cursor);
+    if (start === -1) break;
+    let braceDepth = 0;
+    let quote: '"' | "'" | null = null;
+
+    for (let index = start + opening.length; index < source.length; index += 1) {
+      const character = source[index];
+      if (quote) {
+        if (character === quote && source[index - 1] !== '\\') quote = null;
+        continue;
+      }
+      if (character === '"' || character === "'") {
+        quote = character;
+        continue;
+      }
+      if (character === '{') braceDepth += 1;
+      if (character === '}') braceDepth -= 1;
+      if (character === '>' && braceDepth === 0) {
+        tags.push(source.slice(start, index + 1));
+        cursor = index + 1;
+        break;
+      }
+    }
+
+    if (cursor <= start) break;
+  }
+
+  return tags;
+}
 
 test('header bar delegates account, logo, and nav helper responsibilities', () => {
   assert.ok(existsSync(accountHookPath), 'header account state should live in a focused hook');
   assert.ok(existsSync(logoPath), 'header logo mark should live in a focused component');
+  assert.ok(existsSync(authActionsPath), 'guest auth actions should live in a focused component');
   assert.ok(existsSync(navHelpersPath), 'header nav normalization should live in a focused helper');
   assert.match(headerSource, /from '@\/components\/header\/useHeaderAccountState'/);
   assert.match(headerSource, /from '@\/components\/header\/HeaderLogoMark'/);
+  assert.match(headerSource, /from '@\/components\/header\/HeaderAuthActions'/);
   assert.match(headerSource, /from '@\/components\/header\/header-nav-helpers'/);
   assert.match(accountHookSource, /export function useHeaderAccountState/);
   assert.match(logoSource, /export function HeaderLogoMark/);
@@ -48,11 +92,73 @@ test('header bar does not regain auth session ownership', () => {
 test('header bar keeps narrow mobile chrome compact', () => {
   assert.match(headerSource, /flex min-w-0 items-center gap-2/, 'left header cluster should be allowed to shrink on narrow screens');
   assert.match(headerSource, /flex min-w-0 shrink-0 items-center justify-end/, 'right header actions should stay compact and right aligned');
-  assert.doesNotMatch(headerSource, /className="h-10 w-\[180px\]/, 'auth loading placeholder should not force desktop width on mobile');
-  assert.match(headerSource, /w-24[^"]*sm:w-\[180px\]/, 'auth loading placeholder should expand only from the small breakpoint');
+  assert.match(
+    headerSource,
+    /className="flex w-32 shrink-0 justify-end sm:w-\[205px\]"/,
+    'guest auth controls should reserve the same first-paint width as their resolved state'
+  );
+  assert.match(headerSource, /className="h-10 w-full rounded-input/, 'auth loading placeholder should fill the stable guest slot');
+  assert.doesNotMatch(headerSource, /w-24[^"]*sm:w-\[180px\]/, 'auth loading should not resize the guest slot');
   assert.match(logoSource, /alt=""/, 'decorative logo mark should not duplicate the brand in the accessible name');
   assert.match(logoSource, /aria-hidden/, 'decorative logo mark should be hidden from assistive tech');
   assert.match(logoSource, /sr-only[^"]*sm:not-sr-only/, 'brand text should stay accessible while visually collapsing below narrow mobile widths');
   assert.match(walletStatusSource, /aria-label=\{walletLabel\}/, 'compact wallet status needs a stable accessible name');
   assert.match(walletStatusSource, /max-w-\[5rem\]/, 'wallet amount should not stretch the mobile action cluster');
+});
+
+test('header auth resolution preserves the account and wallet footprints', () => {
+  assert.match(
+    headerSource,
+    /className="flex w-32 shrink-0 justify-end sm:w-\[205px\]">\s*\{email \? \(/,
+    'guest, loading, and authenticated account states should share one fixed-width slot'
+  );
+  assert.match(accountMenuSource, /className="relative w-full"/, 'the authenticated menu should fill the stable slot');
+  assert.match(accountMenuSource, /className="h-10 w-full min-h-0/, 'the authenticated trigger should keep the slot width');
+  assert.match(accountMenuSource, /truncate[^\n]*>\{email\}<\/span>/, 'the fixed slot should usefully expose the account email');
+  assert.match(walletStatusSource, /w-\[72px\][^\n]*lg:w-24/, 'wallet loading and resolved states should keep one width');
+});
+
+test('workspace header navigation waits for user intent before prefetching routes', () => {
+  const navigationTags = [
+    ...openingTags(headerSource, 'Link'),
+    ...openingTags(headerSource, 'ButtonLink'),
+    ...openingTags(authActionsSource, 'ButtonLink'),
+    ...openingTags(logoSource, 'Link'),
+  ];
+
+  assert.ok(navigationTags.length >= 8, 'the contract should cover the logo, marketing links, and auth links');
+  for (const tag of navigationTags) {
+    assert.match(tag, /prefetch=\{false\}/, `header navigation must not eagerly prefetch: ${tag}`);
+  }
+});
+
+test('workspace auth links warm only their target route on hover or focus', () => {
+  const authTags = openingTags(authActionsSource, 'ButtonLink').filter((tag) =>
+    /href=\{(?:signupHref|signinHref)\}/.test(tag)
+  );
+
+  assert.equal(authTags.length, 2, 'the contract should cover both workspace auth actions');
+  for (const tag of authTags) {
+    const href = tag.match(/href=\{(signupHref|signinHref)\}/)?.[1];
+    assert.ok(href, `auth action should keep a known target: ${tag}`);
+    assert.match(tag, /prefetch=\{false\}/, `auth action must not prefetch from viewport visibility: ${tag}`);
+    assert.match(
+      tag,
+      new RegExp(`onMouseEnter=\\{\\(\\) => router\\.prefetch\\(${href}\\)\\}`),
+      `auth action should warm ${href} on hover`
+    );
+    assert.match(
+      tag,
+      new RegExp(`onFocus=\\{\\(\\) => router\\.prefetch\\(${href}\\)\\}`),
+      `auth action should warm ${href} for keyboard users`
+    );
+  }
+});
+
+test('header model menus render generic localized navigation badges', () => {
+  for (const source of [headerSource, mobileMenuSource]) {
+    assert.match(source, /entry\.badge/);
+    assert.match(source, /nav\.badges\.\$\{entry\.badge\}/);
+    assert.doesNotMatch(source, /entry\.key\s*===\s*['"]seedance-2-5['"]/);
+  }
 });

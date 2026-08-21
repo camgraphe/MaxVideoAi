@@ -1,0 +1,228 @@
+{
+  "slug": "kling-3-pro-vs-seedance-2-5",
+  "en": {
+    "meta": {
+      "title": "Kling 3 Pro vs Seedance 2.5: Cinematic Control or More References?",
+      "description": "Compare Kling 3 Pro and Seedance 2.5 for cinematic control, character references, duration, resolution, editing, audio, and live workflow pricing.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Kling 3 Pro and Seedance 2.5 solve different reference-led briefs. Choose Kling 3 Pro for a focused 1080p cinematic workflow built around a start image, optional end frame, Kling Elements, and clips up to 15 seconds. Choose Seedance 2.5 when a longer sequence, a larger mix of image, video, and audio references, or source-video editing and extension matters more.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Kling 3 Pro is the focused choice for 1080p cinematic shots, planned first-to-last-frame movement, and character or product continuity guided by Kling Elements. Seedance 2.5 is the broader production canvas: up to 30 seconds, up to 50 combined references, optional generated audio, video editing, and extension, with output currently capped at 720p."
+    },
+    "topCards": [
+      {
+        "title": "Choose Kling 3 Pro",
+        "body": "Pick Kling for a concise cinematic brief, 1080p delivery, a start and optional end frame, and a focused character or product workflow using Elements in the prompt."
+      },
+      {
+        "title": "Choose Seedance 2.5",
+        "body": "Pick Seedance for longer narrative beats, a large multimodal reference board, or a workflow that edits and extends an existing clip."
+      },
+      {
+        "title": "Reference strategy",
+        "body": "Kling keeps the reference setup deliberate and compact. Seedance accepts a much larger combined set of images, videos, and audio when the creative brief needs more source material."
+      },
+      {
+        "title": "Compare the render, not a fixed rate",
+        "body": "Use the live pricing cards on this page to compare your intended duration, mode, resolution, and audio choice. The commercial decision updates with the current pricing projection."
+      }
+    ],
+    "primaryLinksTitle": "Open the right production route",
+    "primaryLinks": [
+      {
+        "href": "/models/kling-3-pro",
+        "label": "Open the Kling 3 Pro model page"
+      },
+      {
+        "href": "/app?engine=kling-3-pro",
+        "label": "Generate with Kling 3 Pro"
+      },
+      {
+        "href": "/models/seedance-2-5",
+        "label": "Open the Seedance 2.5 model page"
+      },
+      {
+        "href": "/app?engine=seedance-2-5",
+        "label": "Generate with Seedance 2.5"
+      }
+    ],
+    "faq": {
+      "title": "Kling 3 Pro vs Seedance 2.5 FAQ",
+      "subtitle": "Short answers for cinematic, character, and reference-heavy production decisions.",
+      "items": [
+        {
+          "question": "Which model is better for cinematic control?",
+          "answer": "Kling 3 Pro is the more focused option when you want a 1080p cinematic shot, prompt-led camera control, and planned movement between a start image and an optional end frame. Seedance 2.5 is better when the sequence needs more source material or more time."
+        },
+        {
+          "question": "Which model is better for consistent characters?",
+          "answer": "Kling 3 Pro suits a compact character workflow built around a source image and Kling Elements. Seedance 2.5 suits briefs that need many character, wardrobe, prop, scene, video, or audio references in one workflow."
+        },
+        {
+          "question": "Can Kling 3 Pro edit or extend a source video?",
+          "answer": "Not on the current MaxVideoAI Kling 3 Pro route. Seedance 2.5 supports both video editing and extension, so it is the direct choice when an existing clip is the input."
+        },
+        {
+          "question": "Which model supports longer clips?",
+          "answer": "Seedance 2.5 supports up to 30 seconds. Kling 3 Pro supports up to 15 seconds, with a 1080p route aimed at tighter cinematic sequences."
+        },
+        {
+          "question": "How do I compare Kling 3 Pro and Seedance 2.5 pricing?",
+          "answer": "Compare matching jobs in the live pricing section. Duration, mode, resolution, and audio can change the quote, so the current projected price is more useful than a number written into this guide."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Kling 3 Pro vs Seedance 2.5 : contrôle cinéma ou plus de références ?",
+      "description": "Comparez Kling 3 Pro et Seedance 2.5 sur le contrôle cinéma, les références personnage, la durée, la résolution, le montage, l’audio et le prix en direct.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Kling 3 Pro et Seedance 2.5 répondent à des briefs guidés par références très différents. Choisissez Kling 3 Pro pour un workflow cinématographique ciblé en 1080p, construit autour d’une image de départ, d’une image de fin optionnelle, de Kling Elements et de clips jusqu’à 15 secondes. Choisissez Seedance 2.5 si une séquence plus longue, un grand mélange de références image, vidéo et audio, ou le montage et l’extension d’une vidéo source comptent davantage.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Kling 3 Pro est le choix ciblé pour des plans cinématographiques en 1080p, un mouvement planifié entre la première et la dernière image, et la continuité d’un personnage ou d’un produit guidée par Kling Elements. Seedance 2.5 offre un terrain de production plus large : jusqu’à 30 secondes, jusqu’à 50 références combinées, audio généré optionnel, montage vidéo et extension, avec une sortie actuellement limitée au 720p."
+    },
+    "topCards": [
+      {
+        "title": "Choisir Kling 3 Pro",
+        "body": "Choisissez Kling pour un brief cinéma concis, une livraison en 1080p, une image de départ et de fin optionnelle, et un workflow personnage ou produit ciblé avec Elements dans le prompt."
+      },
+      {
+        "title": "Choisir Seedance 2.5",
+        "body": "Choisissez Seedance pour des séquences narratives plus longues, un grand board de références multimodales, ou un workflow qui monte et prolonge un clip existant."
+      },
+      {
+        "title": "Stratégie de références",
+        "body": "Kling garde un setup de références volontairement compact. Seedance accepte un ensemble bien plus large d’images, de vidéos et d’audios quand le brief exige davantage de matière source."
+      },
+      {
+        "title": "Comparer le rendu, pas un tarif figé",
+        "body": "Utilisez les cartes de prix en direct pour comparer la durée, le mode, la résolution et l’option audio visés. La décision commerciale suit la projection tarifaire actuelle."
+      }
+    ],
+    "primaryLinksTitle": "Ouvrez la bonne route de production",
+    "primaryLinks": [
+      {
+        "href": "/fr/modeles/kling-3-pro",
+        "label": "Ouvrir la page Kling 3 Pro"
+      },
+      {
+        "href": "/app?engine=kling-3-pro",
+        "label": "Générer avec Kling 3 Pro"
+      },
+      {
+        "href": "/fr/modeles/seedance-2-5",
+        "label": "Ouvrir la page Seedance 2.5"
+      },
+      {
+        "href": "/app?engine=seedance-2-5",
+        "label": "Générer avec Seedance 2.5"
+      }
+    ],
+    "faq": {
+      "title": "FAQ Kling 3 Pro vs Seedance 2.5",
+      "subtitle": "Des réponses courtes pour les décisions cinéma, personnage et production riche en références.",
+      "items": [
+        {
+          "question": "Quel modèle choisir pour le contrôle cinématographique ?",
+          "answer": "Kling 3 Pro est l’option la plus ciblée pour un plan cinéma en 1080p, un contrôle caméra par le prompt et un mouvement planifié entre une image de départ et une image de fin optionnelle. Seedance 2.5 convient mieux si la séquence demande plus de sources ou de durée."
+        },
+        {
+          "question": "Quel modèle choisir pour garder un personnage cohérent ?",
+          "answer": "Kling 3 Pro convient à un workflow personnage compact construit autour d’une image source et de Kling Elements. Seedance 2.5 convient aux briefs qui combinent beaucoup de références de personnages, tenues, accessoires, scènes, vidéos ou audios."
+        },
+        {
+          "question": "Kling 3 Pro peut-il monter ou prolonger une vidéo source ?",
+          "answer": "Pas sur la route Kling 3 Pro actuelle de MaxVideoAI. Seedance 2.5 prend en charge le montage vidéo et l’extension : c’est le choix direct lorsqu’un clip existant sert d’entrée."
+        },
+        {
+          "question": "Quel modèle produit les clips les plus longs ?",
+          "answer": "Seedance 2.5 monte jusqu’à 30 secondes. Kling 3 Pro monte jusqu’à 15 secondes, avec une route 1080p pensée pour des séquences cinéma plus resserrées."
+        },
+        {
+          "question": "Comment comparer le prix de Kling 3 Pro et Seedance 2.5 ?",
+          "answer": "Comparez des rendus équivalents dans la section de prix en direct. La durée, le mode, la résolution et l’audio peuvent modifier le devis ; la projection actuelle est donc plus utile qu’un montant écrit dans ce guide."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Kling 3 Pro vs Seedance 2.5: ¿control cinematográfico o más referencias?",
+      "description": "Compara Kling 3 Pro y Seedance 2.5 en control cinematográfico, referencias de personaje, duración, resolución, edición, audio y precio en vivo.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Kling 3 Pro y Seedance 2.5 resuelven briefs guiados por referencias muy distintos. Elige Kling 3 Pro para un flujo cinematográfico enfocado en 1080p, construido alrededor de una imagen inicial, un fotograma final opcional, Kling Elements y clips de hasta 15 segundos. Elige Seedance 2.5 cuando importe más una secuencia larga, una mezcla amplia de referencias de imagen, vídeo y audio, o editar y extender un vídeo fuente.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Kling 3 Pro es la opción enfocada para tomas cinematográficas en 1080p, movimiento planificado entre el primer y el último fotograma y continuidad de personajes o productos guiada por Kling Elements. Seedance 2.5 ofrece un lienzo de producción más amplio: hasta 30 segundos, hasta 50 referencias combinadas, audio generado opcional, edición de vídeo y extensión, con salida actualmente limitada a 720p."
+    },
+    "topCards": [
+      {
+        "title": "Elegir Kling 3 Pro",
+        "body": "Elige Kling para un brief cinematográfico conciso, entrega en 1080p, imagen inicial y final opcional, y un flujo enfocado en personaje o producto con Elements en el prompt."
+      },
+      {
+        "title": "Elegir Seedance 2.5",
+        "body": "Elige Seedance para secuencias narrativas más largas, un panel amplio de referencias multimodales o un flujo que edite y extienda un clip existente."
+      },
+      {
+        "title": "Estrategia de referencias",
+        "body": "Kling mantiene una configuración de referencias deliberada y compacta. Seedance admite una combinación mucho mayor de imágenes, vídeos y audios cuando el brief necesita más material fuente."
+      },
+      {
+        "title": "Comparar el render, no una tarifa fija",
+        "body": "Usa las tarjetas de precio en vivo para comparar la duración, el modo, la resolución y la opción de audio que necesitas. La decisión comercial se actualiza con la proyección actual."
+      }
+    ],
+    "primaryLinksTitle": "Abre la ruta de producción adecuada",
+    "primaryLinks": [
+      {
+        "href": "/es/modelos/kling-3-pro",
+        "label": "Abrir la página de Kling 3 Pro"
+      },
+      {
+        "href": "/app?engine=kling-3-pro",
+        "label": "Generar con Kling 3 Pro"
+      },
+      {
+        "href": "/es/modelos/seedance-2-5",
+        "label": "Abrir la página de Seedance 2.5"
+      },
+      {
+        "href": "/app?engine=seedance-2-5",
+        "label": "Generar con Seedance 2.5"
+      }
+    ],
+    "faq": {
+      "title": "Preguntas sobre Kling 3 Pro vs Seedance 2.5",
+      "subtitle": "Respuestas breves para decisiones cinematográficas, de personaje y de producción con muchas referencias.",
+      "items": [
+        {
+          "question": "¿Qué modelo conviene para control cinematográfico?",
+          "answer": "Kling 3 Pro es la opción más enfocada para una toma cinematográfica en 1080p, control de cámara mediante prompt y movimiento planificado entre una imagen inicial y un fotograma final opcional. Seedance 2.5 conviene cuando la secuencia necesita más fuentes o más tiempo."
+        },
+        {
+          "question": "¿Qué modelo conviene para mantener personajes consistentes?",
+          "answer": "Kling 3 Pro encaja en un flujo compacto de personaje basado en una imagen fuente y Kling Elements. Seedance 2.5 encaja en briefs con muchas referencias de personajes, vestuario, objetos, escenas, vídeo o audio."
+        },
+        {
+          "question": "¿Kling 3 Pro puede editar o extender un vídeo fuente?",
+          "answer": "No en la ruta actual de Kling 3 Pro en MaxVideoAI. Seedance 2.5 admite edición y extensión de vídeo, por lo que es la elección directa cuando la entrada es un clip existente."
+        },
+        {
+          "question": "¿Qué modelo admite clips más largos?",
+          "answer": "Seedance 2.5 admite hasta 30 segundos. Kling 3 Pro admite hasta 15 segundos, con una ruta 1080p orientada a secuencias cinematográficas más compactas."
+        },
+        {
+          "question": "¿Cómo comparo el precio de Kling 3 Pro y Seedance 2.5?",
+          "answer": "Compara trabajos equivalentes en la sección de precio en vivo. La duración, el modo, la resolución y el audio pueden cambiar el presupuesto, así que la proyección actual es más útil que una cifra escrita en esta guía."
+        }
+      ]
+    }
+  }
+}

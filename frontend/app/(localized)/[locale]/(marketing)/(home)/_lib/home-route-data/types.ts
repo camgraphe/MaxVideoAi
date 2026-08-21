@@ -11,7 +11,7 @@ type ProofConfig = {
   items: Array<{ id: string; label: string }>;
 };
 
-export const HOMEPAGE_EXAMPLE_FAMILIES = ['seedance', 'kling', 'ltx', 'veo', 'wan', 'happy-horse'] as const;
+export const HOMEPAGE_EXAMPLE_FAMILIES = ['seedance', 'kling', 'ltx', 'veo', 'hailuo', 'happy-horse'] as const;
 export type HomepageExampleFamily = (typeof HOMEPAGE_EXAMPLE_FAMILIES)[number];
 
 export type FallbackExampleCard = {
@@ -96,6 +96,7 @@ export type RedesignContent = {
     cta: string;
     modelsCta?: string;
     compareLink?: string;
+    featuredModelCta: string;
     libraryTitle?: string;
     libraryBody?: string;
     providerLabel?: string;

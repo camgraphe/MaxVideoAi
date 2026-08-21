@@ -90,6 +90,7 @@ type ExamplesGallerySectionProps = {
   locale: string;
   noPreviewLabel: string;
   pageOffsetEnd: number;
+  prioritizeFirstPoster: boolean;
   show: boolean;
   sort: ExampleSort;
 };
@@ -240,6 +241,7 @@ export function ExamplesGallerySection({
   locale,
   noPreviewLabel,
   pageOffsetEnd,
+  prioritizeFirstPoster,
   show,
   sort,
 }: ExamplesGallerySectionProps) {
@@ -253,6 +255,7 @@ export function ExamplesGallerySection({
         loadMoreLabel={loadMoreLabel}
         loadingLabel={loadingLabel}
         noPreviewLabel={noPreviewLabel}
+        prioritizeFirstPoster={prioritizeFirstPoster}
         audioAvailableLabel={audioAvailableLabel}
         initialDesktopBatch={initialDesktopBatch}
         initialMobileBatch={initialMobileBatch}

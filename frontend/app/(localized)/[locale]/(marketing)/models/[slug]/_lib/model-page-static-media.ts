@@ -1,4 +1,8 @@
 export const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string | null }> = {
+  'minimax-h3': {
+    hero: 'job_87d713f7-9193-4831-a9e5-59ce1e0c668c',
+    demo: 'job_91c6f549-7b07-45b3-ad45-cbaf67d10959',
+  },
   'sora-2': {
     hero: 'job_74677d4f-9f28-4e47-b230-64accef8e239',
     demo: 'job_7fbd6334-8535-438a-98a2-880205744b6b',

@@ -67,6 +67,10 @@ test('wave 1 exposes one shared locale indexation policy', async () => {
   );
 });
 
+test('comparison indexation fails closed for an unsupported locale', () => {
+  assert.equal(isComparisonIndexable('de' as never, 'ltx-2-vs-veo-3-1-lite'), false);
+});
+
 test('wave 1 configuration contains exactly 30 unique candidates per localized market', () => {
   assert.equal(comparisonIndexation.schemaVersion, 1);
   assert.equal(comparisonIndexation.wave, 'localized-low-signal-2026-07-11');
@@ -170,9 +174,9 @@ test('wave 1 sitemap contains exactly the indexable localized comparison URLs', 
     }),
   );
 
-  assert.equal(publishedSlugs.length, 292);
+  assert.equal(publishedSlugs.length, 298);
   assert.equal(comparisonEntries.length, publishedSlugs.length);
-  assert.equal(comparisonUrlKeys.size, 292 * 3 - 60);
+  assert.equal(comparisonUrlKeys.size, 298 * 3 - 60);
 
   for (const slug of publishedSlugs) {
     assert.ok(

@@ -5,7 +5,10 @@ import test from 'node:test';
 
 import type { AppLocale } from '../frontend/i18n/locales.ts';
 import { parseModelDecisionContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-content.ts';
-import { listModelPageTemplateSlugs } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-template-registry.ts';
+import {
+  listModelPageTemplateSlugs,
+  listPrelaunchModelPageTemplateSlugs,
+} from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-template-registry.ts';
 
 const LOCALES = ['en', 'fr', 'es'] as const satisfies readonly AppLocale[];
 const CONTENT_ROOT = path.join(process.cwd(), 'content', 'models');
@@ -58,11 +61,15 @@ function signature(value: unknown): unknown {
   return typeof value;
 }
 
-test('all 40 model documents expose strict decision content in every locale', () => {
+test('all 42 executable model documents expose strict decision content in every locale', () => {
   const expectedFiles = listModelPageTemplateSlugs().map((slug) => `${slug}.json`).sort();
-  assert.equal(expectedFiles.length, 40);
+  const completeInventory = [
+    ...expectedFiles,
+    ...listPrelaunchModelPageTemplateSlugs().map((slug) => `${slug}.json`),
+  ].sort();
+  assert.equal(expectedFiles.length, 42);
   for (const locale of LOCALES) {
-    assert.deepEqual(files(locale), expectedFiles, `${locale} model inventory`);
+    assert.deepEqual(files(locale), completeInventory, `${locale} model inventory`);
     for (const fileName of expectedFiles) {
       const slug = fileName.slice(0, -5);
       const parsed = parseModelDecisionContent(rawDecision(locale, slug), slug, locale, `${locale}/${fileName}#decision`);

@@ -190,7 +190,7 @@ test('Seedance 2 registry centralizes provisional Fal IDs and keeps both launch 
   assert.equal(fast.surfaces.compare.includeInHub, true);
   assert.equal(seedance.surfaces.modelPage.indexable, true);
   assert.equal(fast.surfaces.modelPage.indexable, true);
-  assert.equal(seedance.surfaces.compare.publishedPairs.length, 22);
+  assert.equal(seedance.surfaces.compare.publishedPairs.length, 23);
   assert.equal(fast.surfaces.compare.publishedPairs.length, 22);
   assert.equal(mini.surfaces.app.enabled, true);
   assert.equal(mini.surfaces.modelPage.indexable, true);
@@ -223,6 +223,7 @@ test('Seedance aliases, family routing, hub publication, and locale coverage are
   assert.equal(family.defaultModelSlug, 'seedance-2-0');
   assert.deepEqual(family.routeAliases, ['seedance-1-5-pro', 'seedance-2-0', 'seedance-2-0-fast', 'dreamina-seedance-2-0-mini']);
   assert.deepEqual(family.examplesPage?.publishedModelSlugs, [
+    'seedance-2-5',
     'seedance-2-0',
     'seedance-2-0-fast',
     'dreamina-seedance-2-0-mini',
@@ -388,15 +389,19 @@ test('Public marketing media fetchers stay visibility-safe for pinned and prompt
   ]);
 });
 
-test('Seedance becomes the app and marketing priority family ahead of Sora', () => {
+test('Seedance 2.5 and Seedance 2.0 lead the app menu while the MiniMax H3 launch stays in the top group', () => {
   const appEngineIds = getBaseEnginesByCategory('video').map((engine) => engine.id);
-  assert.equal(appEngineIds[0], 'seedance-2-0');
-  assert.equal(appEngineIds[1], 'seedance-2-0-fast');
-  assert.ok(appEngineIds.indexOf('sora-2') > appEngineIds.indexOf('seedance-2-0'));
+  assert.equal(appEngineIds[0], 'seedance-2-5');
+  assert.equal(appEngineIds[1], 'seedance-2-0');
+  assert.equal(appEngineIds[2], 'minimax-h3');
+  assert.equal(appEngineIds[3], 'seedance-2-0-fast');
+  assert.ok(appEngineIds.indexOf('sora-2') > appEngineIds.indexOf('seedance-2-5'));
 
   assert.deepEqual(
     MARKETING_NAV_MODELS.map((item) => item.key),
     [
+      'seedance-2-5',
+      'minimax-h3',
       'seedance-2-0',
       'seedance-2-0-fast',
       'ltx-2-3-fast',
@@ -410,16 +415,18 @@ test('Seedance becomes the app and marketing priority family ahead of Sora', () 
   assert.deepEqual(
     MARKETING_NAV_COMPARE.map((item) => item.key),
     [
-      'seedance-2-0-vs-veo-3-1',
+      'minimax-h3-vs-seedance-2-5',
+      'kling-o3-pro-vs-minimax-h3',
       'gemini-omni-flash-vs-veo-3-1',
       'kling-3-pro-vs-kling-o3-pro',
       'ltx-2-3-pro-vs-veo-3-1',
-      'seedance-2-0-vs-seedance-2-0-fast',
-      'ltx-2-3-fast-vs-ltx-2-3-pro',
+      'minimax-h3-vs-veo-3-1',
     ]
   );
-  assert.deepEqual(MARKETING_NAV_EXAMPLES.map((item) => item.key), ['veo', 'seedance', 'ltx', 'kling', 'wan']);
-  assert.deepEqual(MARKETING_FOOTER_EXAMPLES.map((item) => item.key), ['veo', 'seedance', 'ltx', 'kling', 'wan']);
+  assert.equal(MARKETING_NAV_COMPARE.length, 6);
+  assert.equal(MARKETING_NAV_COMPARE[0]?.badge, 'new');
+  assert.deepEqual(MARKETING_NAV_EXAMPLES.map((item) => item.key), ['veo', 'seedance', 'hailuo', 'ltx', 'kling']);
+  assert.deepEqual(MARKETING_FOOTER_EXAMPLES.map((item) => item.key), ['veo', 'seedance', 'hailuo', 'ltx', 'kling']);
 });
 
 test('Seedance 1.5 Pro stays active while Seedance 2.0 keeps the primary alias and promoted slots', () => {
@@ -434,8 +441,10 @@ test('Seedance 1.5 Pro stays active while Seedance 2.0 keeps the primary alias a
   assert.equal(getHubEngines().some((engine) => engine.modelSlug === 'seedance-1-5-pro'), true);
 });
 
-test('Header model menu promotes Seedance Fast while keeping the Veo family expanded', () => {
+test('Header model menu promotes MiniMax H3 after Seedance 2.5 while keeping the Veo and Kling families expanded', () => {
   assert.deepEqual(MARKETING_NAV_MODELS.map((item) => item.key), [
+    'seedance-2-5',
+    'minimax-h3',
     'seedance-2-0',
     'seedance-2-0-fast',
     'ltx-2-3-fast',
@@ -490,7 +499,12 @@ test('Examples family current model groups do not classify new delivery models a
     'kling-3-standard',
     'kling-3-4k',
   ]);
-  assert.deepEqual(getExampleFamilyCurrentModelSlugs('seedance'), ['seedance-2-0', 'seedance-2-0-fast', 'dreamina-seedance-2-0-mini']);
+  assert.deepEqual(getExampleFamilyCurrentModelSlugs('seedance'), [
+    'seedance-2-5',
+    'seedance-2-0',
+    'seedance-2-0-fast',
+    'dreamina-seedance-2-0-mini',
+  ]);
   assert.deepEqual(getExampleFamilyCurrentModelSlugs('ltx'), ['ltx-2-3-pro', 'ltx-2-3-fast']);
 });
 

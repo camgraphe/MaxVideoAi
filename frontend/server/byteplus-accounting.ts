@@ -1,7 +1,6 @@
 import {
-  BYTEPLUS_SEEDANCE_ASPECT_RATIOS,
-  PUBLIC_SEEDANCE_ENGINE_ID,
-  PUBLIC_SEEDANCE_MINI_ENGINE_ID,
+  BytePlusModelArkError,
+  requireBytePlusSeedanceProfile,
 } from '@/server/video-providers/byteplus-modelark';
 import { isRecord } from './byteplus-record-utils';
 import type { BytePlusPendingJob } from './byteplus-poll-types';
@@ -12,6 +11,8 @@ const BYTEPLUS_STANDARD_4K_NO_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS = 0.004;
 const BYTEPLUS_STANDARD_4K_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS = 0.0024;
 const BYTEPLUS_MINI_NO_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS = 0.0035;
 const BYTEPLUS_MINI_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS = 0.0021;
+const BYTEPLUS_SEEDANCE_2_5_NO_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS = 0.0107;
+const BYTEPLUS_SEEDANCE_2_5_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS = 0.0064;
 
 const BYTEPLUS_TOKEN_DIMENSIONS: Record<string, Record<string, { width: number; height: number }>> = {
   '480p': {
@@ -48,16 +49,40 @@ const BYTEPLUS_TOKEN_DIMENSIONS: Record<string, Record<string, { width: number; 
   },
 };
 
-export function expectedBytePlusTokens(job: Pick<BytePlusPendingJob, 'duration_sec' | 'settings_snapshot'>): number {
+export function expectedBytePlusTokens(
+  job: Pick<BytePlusPendingJob, 'engine_id' | 'duration_sec' | 'settings_snapshot'>
+): number {
+  const profile = requireBytePlusSeedanceProfile(job.engine_id);
   const settings = isRecord(job.settings_snapshot) ? job.settings_snapshot : {};
   const core = isRecord(settings.core) ? settings.core : {};
-  const resolution = typeof core.resolution === 'string' ? core.resolution : '720p';
-  const aspectRatio =
-    typeof core.aspectRatio === 'string' && BYTEPLUS_SEEDANCE_ASPECT_RATIOS.includes(core.aspectRatio as never)
-      ? core.aspectRatio
-      : '16:9';
-  const dimensions = BYTEPLUS_TOKEN_DIMENSIONS[resolution]?.[aspectRatio] ?? BYTEPLUS_TOKEN_DIMENSIONS['720p']['16:9'];
-  return (dimensions.width * dimensions.height * Math.max(1, Math.round(job.duration_sec)) * 24) / 1024;
+  const requestedResolution = typeof core.resolution === 'string' ? core.resolution : null;
+  const requestedAspectRatio = typeof core.aspectRatio === 'string' ? core.aspectRatio : null;
+  const resolution = profile.resolutions.includes(requestedResolution as never)
+    ? requestedResolution!
+    : profile.resolutions.includes('720p')
+      ? '720p'
+      : profile.resolutions[0];
+  const aspectRatio = profile.aspectRatios.includes(requestedAspectRatio as never)
+    ? requestedAspectRatio!
+    : profile.aspectRatios.includes('16:9')
+      ? '16:9'
+      : profile.aspectRatios[0];
+  const dimensions =
+    resolution && aspectRatio
+      ? BYTEPLUS_TOKEN_DIMENSIONS[resolution]?.[aspectRatio]
+      : undefined;
+  if (!dimensions) {
+    throw new BytePlusModelArkError(
+      'BytePlus accounting dimensions are not configured for this profile.',
+      { status: 500, code: 'BYTEPLUS_ACCOUNTING_DIMENSIONS_MISSING' }
+    );
+  }
+  return (
+    dimensions.width *
+    dimensions.height *
+    Math.max(1, Math.round(job.duration_sec)) *
+    profile.framesPerSecond
+  ) / 1024;
 }
 
 export function getBytePlusAccounting(job: Pick<BytePlusPendingJob, 'settings_snapshot' | 'has_audio'>) {
@@ -109,20 +134,34 @@ export function getBytePlusUnitPriceUsdPer1kTokens(
   billingInputType?: string | null,
   resolution?: string | null
 ): number {
-  if (engineId === PUBLIC_SEEDANCE_ENGINE_ID) {
-    if ((resolution ?? '').trim().toLowerCase() === '4k') {
+  const pricingProfileKey = requireBytePlusSeedanceProfile(engineId).pricingProfileKey;
+
+  switch (pricingProfileKey) {
+    case 'standard':
+      if ((resolution ?? '').trim().toLowerCase() === '4k') {
+        return billingInputType === 'video_input'
+          ? BYTEPLUS_STANDARD_4K_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS
+          : BYTEPLUS_STANDARD_4K_NO_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS;
+      }
+      return BYTEPLUS_STANDARD_UNIT_PRICE_USD_PER_1K_TOKENS;
+    case 'mini':
       return billingInputType === 'video_input'
-        ? BYTEPLUS_STANDARD_4K_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS
-        : BYTEPLUS_STANDARD_4K_NO_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS;
+        ? BYTEPLUS_MINI_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS
+        : BYTEPLUS_MINI_NO_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS;
+    case 'fast':
+      return BYTEPLUS_FAST_UNIT_PRICE_USD_PER_1K_TOKENS;
+    case 'seedance25':
+      return billingInputType === 'video_input'
+        ? BYTEPLUS_SEEDANCE_2_5_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS
+        : BYTEPLUS_SEEDANCE_2_5_NO_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS;
+    default: {
+      const unsupportedProfile: never = pricingProfileKey;
+      throw new BytePlusModelArkError(
+        `Unsupported BytePlus pricing profile: ${String(unsupportedProfile)}`,
+        { status: 500, code: 'BYTEPLUS_PRICING_PROFILE_INVALID' }
+      );
     }
-    return BYTEPLUS_STANDARD_UNIT_PRICE_USD_PER_1K_TOKENS;
   }
-  if (engineId === PUBLIC_SEEDANCE_MINI_ENGINE_ID) {
-    return billingInputType === 'video_input'
-      ? BYTEPLUS_MINI_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS
-      : BYTEPLUS_MINI_NO_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS;
-  }
-  return BYTEPLUS_FAST_UNIT_PRICE_USD_PER_1K_TOKENS;
 }
 
 export function estimateBytePlusProviderCostCents(input: {

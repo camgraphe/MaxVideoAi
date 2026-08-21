@@ -452,6 +452,7 @@
             "pika-text-to-video",
             "seedance-1-5-pro",
             "seedance-2-0",
+            "seedance-2-5",
             "sora-2",
             "sora-2-pro",
             "veo-3-1",
@@ -646,6 +647,7 @@
           "publishedPairIds": [
             "kling-3-pro",
             "kling-3-standard",
+            "minimax-h3",
             "seedance-2-0",
             "veo-3-1"
           ]
@@ -1262,6 +1264,57 @@
       "replacement": null
     },
     {
+      "id": "minimax-h3",
+      "slug": "minimax-h3",
+      "family": "hailuo",
+      "category": "video",
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": true,
+          "indexable": true
+        },
+        "examples": {
+          "published": true,
+          "includeInFamilyCopy": true,
+          "current": true,
+          "familyRank": 0
+        },
+        "compare": {
+          "published": true,
+          "indexed": true,
+          "suggestedOpponentIds": [
+            "seedance-2-5",
+            "kling-o3-pro",
+            "veo-3-1"
+          ],
+          "publishedPairIds": [
+            "seedance-2-5",
+            "kling-o3-pro",
+            "veo-3-1"
+          ]
+        },
+        "app": {
+          "published": true,
+          "discoveryRank": -2,
+          "variantGroup": "hailuo",
+          "variantLabel": "H3",
+          "launchBadge": "new"
+        },
+        "pricing": {
+          "published": true,
+          "featuredScenario": "minimax-h3"
+        },
+        "sitemap": {
+          "published": true
+        }
+      },
+      "replacement": null
+    },
+    {
       "id": "minimax-hailuo-02-text",
       "slug": "minimax-hailuo-02-text",
       "family": "hailuo",
@@ -1289,8 +1342,8 @@
         "examples": {
           "published": true,
           "includeInFamilyCopy": true,
-          "current": true,
-          "familyRank": 0
+          "current": false,
+          "familyRank": 1
         },
         "compare": {
           "published": true,
@@ -1583,7 +1636,7 @@
           "published": true,
           "includeInFamilyCopy": true,
           "current": false,
-          "familyRank": 3
+          "familyRank": 4
         },
         "compare": {
           "published": true,
@@ -1653,7 +1706,7 @@
           "published": true,
           "includeInFamilyCopy": true,
           "current": true,
-          "familyRank": 0
+          "familyRank": 1
         },
         "compare": {
           "published": true,
@@ -1685,7 +1738,8 @@
             "veo-3-1-lite",
             "wan-2-5",
             "wan-2-6",
-            "seedance-2-0-fast"
+            "seedance-2-0-fast",
+            "seedance-2-5"
           ]
         },
         "app": {
@@ -1734,7 +1788,7 @@
           "published": true,
           "includeInFamilyCopy": true,
           "current": true,
-          "familyRank": 1
+          "familyRank": 2
         },
         "compare": {
           "published": true,
@@ -1840,7 +1894,7 @@
           "published": true,
           "includeInFamilyCopy": true,
           "current": true,
-          "familyRank": 2
+          "familyRank": 3
         },
         "compare": {
           "published": true,
@@ -1864,6 +1918,58 @@
           "discoveryRank": 0,
           "variantGroup": "seedance-2-0",
           "variantLabel": "Mini"
+        },
+        "pricing": {
+          "published": true,
+          "featuredScenario": "seedance-2-family"
+        },
+        "sitemap": {
+          "published": true
+        }
+      },
+      "replacement": null
+    },
+    {
+      "id": "seedance-2-5",
+      "slug": "seedance-2-5",
+      "family": "seedance",
+      "category": "video",
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": true,
+          "indexable": true
+        },
+        "examples": {
+          "published": true,
+          "includeInFamilyCopy": true,
+          "current": true,
+          "familyRank": 0
+        },
+        "compare": {
+          "published": true,
+          "indexed": true,
+          "suggestedOpponentIds": [
+            "seedance-2-0",
+            "kling-3-pro",
+            "veo-3-1"
+          ],
+          "publishedPairIds": [
+            "seedance-2-0",
+            "kling-3-pro",
+            "minimax-h3",
+            "veo-3-1"
+          ]
+        },
+        "app": {
+          "published": true,
+          "discoveryRank": -3,
+          "variantGroup": "seedance-2-0",
+          "variantLabel": "2.5",
+          "launchBadge": "new"
         },
         "pricing": {
           "published": true,
@@ -2147,10 +2253,12 @@
             "ltx-2-fast",
             "lumaRay2",
             "lumaRay2_flash",
+            "minimax-h3",
             "minimax-hailuo-02-text",
             "pika-text-to-video",
             "seedance-1-5-pro",
             "seedance-2-0",
+            "seedance-2-5",
             "sora-2",
             "sora-2-pro",
             "veo-3-1-fast",

@@ -10,7 +10,6 @@ type WorkspaceAppLoadStateOptions = {
   hasSelectedEngine: boolean;
   initialPreviewFallbackGroup: VideoGroup | null;
   initialPreviewPosterSrc: string | null;
-  isDesktopLayout: boolean;
   isLoading: boolean;
   loadEnginesError: string;
   noEnginesError: string;
@@ -23,7 +22,6 @@ export function getWorkspaceAppLoadState({
   hasSelectedEngine,
   initialPreviewFallbackGroup,
   initialPreviewPosterSrc,
-  isDesktopLayout,
   isLoading,
   loadEnginesError,
   noEnginesError,
@@ -31,7 +29,6 @@ export function getWorkspaceAppLoadState({
   if (isLoading && engineCount === 0) {
     return (
       <WorkspaceBootSurface
-        isDesktopLayout={isDesktopLayout}
         initialPreviewGroup={initialPreviewFallbackGroup}
         initialPreviewPosterSrc={initialPreviewPosterSrc}
       />
@@ -50,7 +47,6 @@ export function getWorkspaceAppLoadState({
     if (engineCount > 0) {
       return (
         <WorkspaceBootSurface
-          isDesktopLayout={isDesktopLayout}
           initialPreviewGroup={initialPreviewFallbackGroup}
           initialPreviewPosterSrc={initialPreviewPosterSrc}
         />

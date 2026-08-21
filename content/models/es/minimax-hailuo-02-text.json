@@ -17,6 +17,10 @@
     },
     "secondaryLinks": [
       {
+        "label": "Descubrir el nuevo MiniMax H3 →",
+        "href": "/es/modelos/minimax-h3"
+      },
+      {
         "label": "Comparar MiniMax vs Pika 2.2 →",
         "href": "/models/pika-text-to-video"
       }
@@ -215,10 +219,6 @@
       }
     ],
     "specValueProp": "MiniMax Hailuo 02 es un motor de borrador rápido y con física para tests de motion silenciosos y baratos.",
-    "galleryTitle": "Galería de ejemplos MiniMax Hailuo 02",
-    "galleryIntro": "Mira renders de texto e imagen con la misma configuración que tienes.",
-    "galleryAllCta": "Ver todos los ejemplos MiniMax Hailuo 02 →",
-    "recreateLabel": "Recrear este plano →",
     "imageTitle": "Imagen→Video con MiniMax Hailuo 02 (+ frames finales)",
     "imageIntro": "Anima boards/renders/conceptos rápido con frame final opcional.",
     "imageFlow": [
@@ -598,6 +598,7 @@
         "icon": "shield"
       }
     ],
-    "fallbackItems": null
+    "fallbackItems": null,
+    "showWhenEmpty": true
   }
 }

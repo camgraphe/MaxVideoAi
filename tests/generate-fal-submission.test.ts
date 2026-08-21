@@ -65,6 +65,11 @@ test('markJobAwaitingFal updates the running job and records provider queue cont
 
   assert.equal(queries.length, 2);
   assert.match(queries[0].sql, /UPDATE app_jobs/);
+  assert.match(
+    queries[0].sql,
+    /COALESCE\(\$3::text, message\)/,
+    'nullable timeout messages must be explicitly typed for PostgreSQL'
+  );
   assert.equal(queries[0].params?.[2], 'still processing');
   assert.match(queries[1].sql, /INSERT INTO fal_queue_log/);
   assert.deepEqual(queries[1].params?.slice(0, 5), ['job_123', 'fal', 'fal_123', 'seedance-2-0', 'deferred']);
@@ -151,6 +156,41 @@ test('submitFalGenerateTask defers timeout responses without refunding pending p
   assert.equal(result.body.status, 'running');
   assert.equal(rolledBack, false);
   assert.match(updates[0].sql, /UPDATE app_jobs/);
+});
+
+test('submitFalGenerateTask defers before the Vercel runtime deadline', async () => {
+  let timeoutBudgetMs: number | null = null;
+
+  const result = await withMutedFalLogs(() => submitFalGenerateTask({
+    falPayload: { engineId: 'seedance-2-0', prompt: 'test', mode: 't2v' },
+    jobId: 'job_vercel_budget',
+    engineId: 'seedance-2-0',
+    engineLabel: 'Seedance 2.0',
+    isLumaRay2: false,
+    batchId: null,
+    durationSec: 5,
+    pendingReceipt: null,
+    paymentMode: 'platform',
+    walletChargeReserved: false,
+    getLastProviderJobId: () => 'fal_request_budget',
+    setLastProviderJobId: () => undefined,
+    persistProviderJobId: async () => undefined,
+    logMetricFn: () => undefined,
+    deps: {
+      generateVideoFn: async () => new Promise<GenerateResult>(() => undefined),
+      withFalTimeoutFn: async (_promise, timeoutMs) => {
+        timeoutBudgetMs = timeoutMs;
+        throw new FalTimeoutError('timeout');
+      },
+      queryFn: async () => [],
+    },
+  }));
+
+  assert.equal(result.ok, false);
+  if (result.ok) return;
+  assert.equal(result.status, 202);
+  assert.equal(result.body.deferred, true);
+  assert.ok(timeoutBudgetMs !== null && timeoutBudgetMs <= 240_000, `expected at least 60s of Vercel headroom, got ${timeoutBudgetMs}ms`);
 });
 
 async function withMutedFalLogs<T>(fn: () => Promise<T>): Promise<T> {

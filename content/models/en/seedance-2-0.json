@@ -254,10 +254,6 @@
       "Check the active provider route before scaling production traffic.",
       "Use the final quote in Generate before client-facing rollout or automated workflows."
     ],
-    "galleryTitle": "Seedance 2.0 examples",
-    "galleryIntro": "Use this gallery to review prompt patterns, scene structure, and the kinds of beats Seedance 2.0 handles well inside MaxVideoAI.",
-    "galleryAllCta": "View all Seedance examples ->",
-    "recreateLabel": "Recreate this shot ->",
     "relatedItems": [
       {
         "brand": "bytedance",
@@ -386,6 +382,14 @@
       }
     ],
     "decisionCards": [
+      {
+        "title": "Discover the latest Seedance 2.5",
+        "body": "Compare Seedance 2.5 with Seedance 2.0 for 30-second cinematic video, image and reference workflows, multi-shot ads, product videos, and UGC. Keep Seedance 2.0 for 4K delivery.",
+        "cta": {
+          "label": "Discover the latest Seedance 2.5",
+          "href": "/models/seedance-2-5"
+        }
+      },
       {
         "title": "Seedance 2.0 or Fast?",
         "body": "Use Seedance 2.0 for final-quality, native-audio, multi-shot work. Use Fast for cheaper draft passes and timing tests.",
@@ -608,6 +612,7 @@
         "icon": "shield"
       }
     ],
-    "fallbackItems": null
+    "fallbackItems": null,
+    "showWhenEmpty": true
   }
 }

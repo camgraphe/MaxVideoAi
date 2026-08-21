@@ -21,6 +21,7 @@ import { ltx23FastTemplateConfig } from './model-page-templates/ltx-2-3-fast';
 import { ltx2TemplateConfig } from './model-page-templates/ltx-2';
 import { ltx2FastTemplateConfig } from './model-page-templates/ltx-2-fast';
 import { minimaxHailuo02TemplateConfig } from './model-page-templates/minimax-hailuo-02-text';
+import { minimaxH3TemplateConfig } from './model-page-templates/minimax-h3';
 import { nanoBanana2TemplateConfig } from './model-page-templates/nano-banana-2';
 import { nanoBananaLiteTemplateConfig } from './model-page-templates/nano-banana-lite';
 import { nanoBananaProTemplateConfig } from './model-page-templates/nano-banana-pro';
@@ -30,6 +31,7 @@ import { seedance15ProTemplateConfig } from './model-page-templates/seedance-1-5
 import { seedance20TemplateConfig } from './model-page-templates/seedance-2-0';
 import { seedance20FastTemplateConfig } from './model-page-templates/seedance-2-0-fast';
 import { seedance20MiniTemplateConfig } from './model-page-templates/seedance-2-0-mini';
+import { seedance25TemplateConfig } from './model-page-templates/seedance-2-5';
 import { seedream50ProTemplateConfig } from './model-page-templates/seedream-5-0-pro';
 import { seedreamTemplateConfig } from './model-page-templates/seedream';
 import { sora2ProTemplateConfig } from './model-page-templates/sora-2-pro';
@@ -63,6 +65,7 @@ const MODEL_PAGE_TEMPLATE_REGISTRY: Record<string, ModelPageTemplateConfig> = {
   [ltx23FastTemplateConfig.slug]: ltx23FastTemplateConfig,
   [ltx23ProTemplateConfig.slug]: ltx23ProTemplateConfig,
   [minimaxHailuo02TemplateConfig.slug]: minimaxHailuo02TemplateConfig,
+  [minimaxH3TemplateConfig.slug]: minimaxH3TemplateConfig,
   [nanoBananaTemplateConfig.slug]: nanoBananaTemplateConfig,
   [nanoBananaLiteTemplateConfig.slug]: nanoBananaLiteTemplateConfig,
   [nanoBanana2TemplateConfig.slug]: nanoBanana2TemplateConfig,
@@ -72,6 +75,7 @@ const MODEL_PAGE_TEMPLATE_REGISTRY: Record<string, ModelPageTemplateConfig> = {
   [seedance20TemplateConfig.slug]: seedance20TemplateConfig,
   [seedance20FastTemplateConfig.slug]: seedance20FastTemplateConfig,
   [seedance20MiniTemplateConfig.slug]: seedance20MiniTemplateConfig,
+  [seedance25TemplateConfig.slug]: seedance25TemplateConfig,
   [seedream50ProTemplateConfig.slug]: seedream50ProTemplateConfig,
   [seedreamTemplateConfig.slug]: seedreamTemplateConfig,
   [sora2TemplateConfig.slug]: sora2TemplateConfig,
@@ -87,6 +91,18 @@ export function getModelPageTemplateConfig(slug: string): ModelPageTemplateConfi
   return MODEL_PAGE_TEMPLATE_REGISTRY[slug] ?? null;
 }
 
+export function isPrelaunchModelPageTemplateSlug(slug: string): boolean {
+  return getModelPageTemplateConfig(slug)?.intent === 'prelaunch';
+}
+
 export function listModelPageTemplateSlugs(): string[] {
-  return Object.keys(MODEL_PAGE_TEMPLATE_REGISTRY);
+  return Object.values(MODEL_PAGE_TEMPLATE_REGISTRY)
+    .filter((config) => config.intent !== 'prelaunch')
+    .map((config) => config.slug);
+}
+
+export function listPrelaunchModelPageTemplateSlugs(): string[] {
+  return Object.values(MODEL_PAGE_TEMPLATE_REGISTRY)
+    .filter((config) => config.intent === 'prelaunch')
+    .map((config) => config.slug);
 }

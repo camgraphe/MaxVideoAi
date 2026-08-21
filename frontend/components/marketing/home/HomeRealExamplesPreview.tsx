@@ -10,7 +10,7 @@ export function RealExamplesPreview({
   examples,
   providers,
 }: {
-  copy: SectionCopy & { viewPrompt?: string };
+  copy: SectionCopy & { viewPrompt?: string; featuredModelCta: string };
   examples: HomeExampleCard[];
   providers?: ProviderItem[];
 }) {
@@ -21,6 +21,17 @@ export function RealExamplesPreview({
           <p className="text-xs font-semibold uppercase tracking-micro text-brand">{copy.eyebrow ?? 'AI video examples'}</p>
           <h2 className="mt-3 text-3xl font-semibold leading-tight text-text-primary sm:text-4xl">{copy.title}</h2>
           <p className="mx-auto mt-3 max-w-[780px] text-base leading-7 text-text-secondary">{copy.subtitle}</p>
+          <Link
+            href={{ pathname: '/models/[slug]', params: { slug: 'seedance-2-5' } }}
+            className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-pill border border-brand/30 bg-brand/10 px-4 py-2 text-sm font-semibold text-brand transition hover:border-brand/50 hover:bg-brand/15 hover:text-brandHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            data-analytics-event="model_card_click"
+            data-analytics-cta-name="seedance-2-5"
+            data-analytics-cta-location="examples_preview_featured_model"
+            data-analytics-target-family="models"
+          >
+            {copy.featuredModelCta}
+            <span aria-hidden="true">→</span>
+          </Link>
           <div className="mt-5 flex flex-wrap justify-center gap-3">
             <ButtonLink
               href={{ pathname: '/examples' }}

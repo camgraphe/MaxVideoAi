@@ -7,6 +7,7 @@ const root = process.cwd();
 
 const headerBarPath = join(root, 'frontend/components/HeaderBar.tsx');
 const headerAccountMenuPath = join(root, 'frontend/components/header/HeaderAccountMenu.tsx');
+const headerAuthActionsPath = join(root, 'frontend/components/header/HeaderAuthActions.tsx');
 const headerMobileMenuPath = join(root, 'frontend/components/header/HeaderMobileMenu.tsx');
 const headerWalletStatusPath = join(root, 'frontend/components/header/HeaderWalletStatus.tsx');
 
@@ -22,6 +23,7 @@ test('navigation surfaces delegate account, wallet, and mobile ownership', () =>
   for (const path of [
     headerBarPath,
     headerAccountMenuPath,
+    headerAuthActionsPath,
     headerMobileMenuPath,
     headerWalletStatusPath,
     marketingNavPath,
@@ -34,14 +36,17 @@ test('navigation surfaces delegate account, wallet, and mobile ownership', () =>
 
   const headerBarSource = readSource(headerBarPath);
   const headerAccountMenuSource = readSource(headerAccountMenuPath);
+  const headerAuthActionsSource = readSource(headerAuthActionsPath);
   const headerMobileMenuSource = readSource(headerMobileMenuPath);
   const headerWalletStatusSource = readSource(headerWalletStatusPath);
 
   assert.match(headerBarSource, /<HeaderAccountMenu/, 'HeaderBar should compose a focused account menu');
+  assert.match(headerBarSource, /<HeaderAuthActions/, 'HeaderBar should compose focused guest auth actions');
   assert.match(headerBarSource, /<HeaderMobileMenu/, 'HeaderBar should compose a focused mobile menu');
   assert.match(headerBarSource, /<HeaderWalletStatus/, 'HeaderBar should compose focused wallet status');
   assert.doesNotMatch(headerBarSource, /NAV_ITEMS\.map|walletTopUp\.copy|GUEST_MOBILE_NAV_ICONS/, 'HeaderBar should not own account, wallet prompt, or guest mobile internals');
   assert.match(headerAccountMenuSource, /NAV_ITEMS\.map/, 'HeaderAccountMenu should own authenticated menu items');
+  assert.match(headerAuthActionsSource, /router\.prefetch/, 'HeaderAuthActions should own intent-based auth prefetching');
   assert.match(headerMobileMenuSource, /GUEST_MOBILE_NAV_ICONS|MARKETING_NAV_DROPDOWNS/, 'HeaderMobileMenu should own guest and marketing mobile items');
   assert.match(headerWalletStatusSource, /walletTopUp\.copy/, 'HeaderWalletStatus should own wallet prompt copy');
 });
@@ -64,6 +69,7 @@ test('marketing nav delegates desktop, mobile, and account menu rendering', () =
 test('navigation orchestrators stay below page-sized component thresholds', () => {
   const headerBarSource = readSource(headerBarPath);
   const headerAccountMenuSource = readSource(headerAccountMenuPath);
+  const headerAuthActionsSource = readSource(headerAuthActionsPath);
   const headerMobileMenuSource = readSource(headerMobileMenuPath);
   const headerWalletStatusSource = readSource(headerWalletStatusPath);
   const marketingNavSource = readSource(marketingNavPath);
@@ -74,6 +80,7 @@ test('navigation orchestrators stay below page-sized component thresholds', () =
   assert.ok(lineCount(headerBarSource) <= 500, `HeaderBar should stay below 500 lines, got ${lineCount(headerBarSource)}`);
   assert.ok(lineCount(marketingNavSource) <= 450, `MarketingNav should stay below 450 lines, got ${lineCount(marketingNavSource)}`);
   assert.ok(lineCount(headerAccountMenuSource) <= 150, `HeaderAccountMenu should stay focused, got ${lineCount(headerAccountMenuSource)}`);
+  assert.ok(lineCount(headerAuthActionsSource) <= 80, `HeaderAuthActions should stay focused, got ${lineCount(headerAuthActionsSource)}`);
   assert.ok(lineCount(headerMobileMenuSource) <= 300, `HeaderMobileMenu should stay focused, got ${lineCount(headerMobileMenuSource)}`);
   assert.ok(lineCount(headerWalletStatusSource) <= 100, `HeaderWalletStatus should stay focused, got ${lineCount(headerWalletStatusSource)}`);
   assert.ok(lineCount(marketingAccountMenuSource) <= 140, `MarketingAccountMenu should stay focused, got ${lineCount(marketingAccountMenuSource)}`);

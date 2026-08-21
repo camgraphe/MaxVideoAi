@@ -31,6 +31,7 @@ import type {
   WorkspaceInputSchemaSummary,
 } from '../_lib/workspace-input-schema';
 import type { ReferenceAsset } from '../_lib/workspace-assets';
+import type { WorkspaceFailureCopy } from '../_lib/workspace-failure-messages';
 import { useWorkspaceWalletPreflight } from './useWorkspaceWalletPreflight';
 import { runWorkspaceGenerationIteration } from './workspace-generation-iteration-runner';
 
@@ -43,7 +44,7 @@ type TopUpModalState = {
   shortfallCents?: number;
 } | null;
 
-type WorkspaceWalletCopy = {
+type WorkspaceGenerationCopy = WorkspaceFailureCopy & {
   wallet: {
     insufficient: string;
     insufficientWithAmount: string;
@@ -88,7 +89,7 @@ type UseWorkspaceGenerationRunnerOptions = {
   rendersRef: MutableRefObject<LocalRender[]>;
   uiLocale: string;
   workflowCopy: WorkflowCopy;
-  workspaceCopy: WorkspaceWalletCopy;
+  workspaceCopy: WorkspaceGenerationCopy;
   capability: EngineModeUiCaps | undefined;
   cfgScale: number | null;
   formatTakeLabel: (current: number, total: number) => string;
@@ -322,6 +323,7 @@ export function useWorkspaceGenerationRunner({
         voiceControlEnabled,
         voiceIds,
         workflowCopy,
+        workspaceCopy,
         writeScopedStorage,
       });
     }
@@ -354,6 +356,7 @@ export function useWorkspaceGenerationRunner({
     rendersRef,
     uiLocale,
     workflowCopy,
+    workspaceCopy,
     capability,
     cfgScale,
     formatTakeLabel,

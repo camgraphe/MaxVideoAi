@@ -115,6 +115,7 @@ export function ModelDecisionMediaCard({
       {media.href ? (
         <Link
           href={media.href}
+          prefetch={false}
           className="mx-4 mb-4 flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-white/[0.12] px-4 py-2 text-sm font-semibold text-white shadow-[0_14px_36px_rgba(0,0,0,0.24)] backdrop-blur transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 sm:absolute sm:bottom-5 sm:right-5 sm:mx-0 sm:mb-0 sm:inline-flex sm:bg-white/[0.14]"
         >
           <span>{renderLinkLabel}</span>

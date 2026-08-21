@@ -7,6 +7,7 @@ export type EngineRegistryMeta = {
 };
 
 export type EngineSelectControlPresentation = 'default' | 'workspace';
+export type EngineLaunchBadge = 'new';
 
 export interface EngineSelectProps {
   engines: EngineCaps[];

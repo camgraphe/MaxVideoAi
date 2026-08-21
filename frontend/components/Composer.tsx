@@ -9,10 +9,12 @@ import { CURRENCY_LOCALE } from '@/lib/intl';
 import { AssetDropzone } from '@/components/AssetDropzone';
 import { ComposerMultiPromptEditor } from '@/components/composer/ComposerMultiPromptEditor';
 import { ComposerPromotedActionIcon } from '@/components/composer/ComposerPromotedActionIcon';
+import { hasMissingRequiredComposerAsset } from '@/components/composer/composer-generation';
 import { getWorkspaceAssetFieldRank, getWorkspaceAssetGridClass } from '@/components/composer/composer-layout';
 import { DEFAULT_COMPOSER_COPY, type ComposerCopy } from '@/components/composer/composer-copy';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { isHappyHorseEngineId } from '@/lib/happy-horse-workflow';
+import { UNIFIED_SEEDANCE_ENGINE_IDS } from '@/lib/seedance-workflow';
 import type { ComposerProps } from '@/components/composer/composer-types';
 
 export type {
@@ -129,12 +131,14 @@ export function Composer({
   const promptCharCount = prompt.length;
   const promptTooLong = !multiPromptEnabled && typeof promptMaxChars === 'number' && promptCharCount > promptMaxChars;
   const promptValueReady = multiPromptEnabled ? true : Boolean(prompt.trim());
+  const missingRequiredAsset = hasMissingRequiredComposerAsset(assetFields, assets);
   const isGenerateDisabled =
     Boolean(disableGenerate) ||
     isLoading ||
     promptTooLong ||
     (promptRequired && !promptValueReady) ||
-    (negativePromptField && negativePromptRequired && !negativePromptValue);
+    (negativePromptField && negativePromptRequired && !negativePromptValue) ||
+    missingRequiredAsset;
   const showSoraImageWarning = engine.id.startsWith('sora-2') && assetFields.some((entry) => entry.field.type === 'image');
   const hasReferenceImage = useMemo(() => {
     return assetFields.some((entry) => {
@@ -147,7 +151,7 @@ export function Composer({
     const useCustomAssetOrder =
       engine.id.startsWith('ltx-2-3') ||
       engine.id.startsWith('lumaRay2') ||
-      engine.id.startsWith('seedance-2-0') ||
+      UNIFIED_SEEDANCE_ENGINE_IDS.has(engine.id) ||
       isHappyHorseEngineId(engine.id);
     if (!useCustomAssetOrder) {
       return assetFields;
@@ -164,7 +168,7 @@ export function Composer({
   }, [assetFields, engine.id]);
   const useLtxAssetGridLayout =
     engine.id.startsWith('ltx-2-3') ||
-    engine.id.startsWith('seedance-2-0') ||
+    UNIFIED_SEEDANCE_ENGINE_IDS.has(engine.id) ||
     isHappyHorseEngineId(engine.id);
   const assetFieldLayoutClass = workspaceDensity
     ? getWorkspaceAssetGridClass(orderedAssetFields.length)

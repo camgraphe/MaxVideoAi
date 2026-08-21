@@ -5,13 +5,23 @@ import test from 'node:test';
 
 import type { AppLocale } from '../frontend/i18n/locales.ts';
 import { parseModelExamplesContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-content.ts';
-import { listModelPageTemplateSlugs } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-template-registry.ts';
+import {
+  listModelPageTemplateSlugs,
+  listPrelaunchModelPageTemplateSlugs,
+} from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-template-registry.ts';
 import {
   formatEmptyExamplesLabel,
   getModelExamplesUiCopy,
 } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-ui-copy.ts';
 
 const LOCALES = ['en', 'fr', 'es'] as const satisfies readonly AppLocale[];
+const LEGACY_GALLERY_KEYS = [
+  'galleryTitle',
+  'galleryIntro',
+  'galleryAllCta',
+  'gallerySceneCta',
+  'recreateLabel',
+] as const;
 const CONTENT_ROOT = path.join(process.cwd(), 'content', 'models');
 const normalizationSource = readFileSync(
   path.join(process.cwd(), 'frontend', 'lib', 'models', 'i18n-normalization.ts'),
@@ -60,6 +70,7 @@ function structuralSignature(
 function validExamplesFixture() {
   return {
     modelSlug: 'fixture-model',
+    showWhenEmpty: true,
     section: {
       title: 'Fixture examples',
       intro: 'Current Fixture outputs.',
@@ -108,6 +119,28 @@ test('Examples parser rejects missing, identity mismatch, unknown fields, blanks
   );
 });
 
+test('Examples parser requires a strict showWhenEmpty boolean', () => {
+  const valid = validExamplesFixture();
+  assert.equal(
+    parseModelExamplesContent(valid, 'fixture-model', 'en', 'fixture.json').showWhenEmpty,
+    true,
+  );
+  const { showWhenEmpty: _omitted, ...missing } = valid;
+  assert.throws(
+    () => parseModelExamplesContent(missing, 'fixture-model', 'en', 'missing-visibility.json'),
+    /showWhenEmpty/,
+  );
+  assert.throws(
+    () => parseModelExamplesContent(
+      { ...valid, showWhenEmpty: 'true' },
+      'fixture-model',
+      'en',
+      'string-visibility.json',
+    ),
+    /showWhenEmpty/,
+  );
+});
+
 test('generic Examples UI copy is complete and model-neutral', () => {
   for (const locale of ['en', 'fr', 'es'] as const) {
     const copy = getModelExamplesUiCopy(locale);
@@ -115,20 +148,72 @@ test('generic Examples UI copy is complete and model-neutral', () => {
     assert.ok(copy.renderLabel.trim());
     assert.ok(copy.openLabel.trim());
     assert.ok(copy.noPreviewLabel.trim());
+    assert.ok(copy.numberedExampleLabel.trim());
     assert.ok(formatEmptyExamplesLabel(copy, 'Fixture Model').includes('Fixture Model'));
     assert.doesNotMatch(JSON.stringify(copy), /sora|veo|kling|luma|seedance|nano banana/i);
   }
 });
 
-test('all 40 model documents expose strict Examples content in every locale', () => {
+test('all 42 executable model documents expose strict Examples content in every locale', () => {
   const expected = listModelPageTemplateSlugs().map((slug) => `${slug}.json`).sort();
-  assert.equal(expected.length, 40);
+  const completeInventory = [
+    ...expected,
+    ...listPrelaunchModelPageTemplateSlugs().map((slug) => `${slug}.json`),
+  ].sort();
+  assert.equal(expected.length, 42);
   for (const locale of LOCALES) {
-    assert.deepEqual(files(locale), expected);
+    assert.deepEqual(files(locale), completeInventory);
     for (const fileName of expected) {
       const slug = fileName.slice(0, -5);
       const parsed = parseModelExamplesContent(readDocument(locale, slug).examples, slug, locale);
       assert.equal(parsed.modelSlug, slug);
+    }
+  }
+});
+
+test('all 126 documents own the historically derived empty-state visibility boolean', () => {
+  const counts = { true: 0, false: 0 };
+  for (const locale of LOCALES) {
+    const localeCounts = { true: 0, false: 0 };
+    for (const slug of listModelPageTemplateSlugs()) {
+      const parsed = parseModelExamplesContent(readDocument(locale, slug).examples, slug, locale);
+      const key = String(parsed.showWhenEmpty) as 'true' | 'false';
+      counts[key] += 1;
+      localeCounts[key] += 1;
+    }
+    assert.deepEqual(localeCounts, { true: 35, false: 7 }, locale);
+  }
+  assert.deepEqual(counts, { true: 105, false: 21 });
+
+  for (const slug of ['nano-banana-lite', 'seedream-5-0-pro']) {
+    for (const locale of LOCALES) {
+      assert.equal(
+        parseModelExamplesContent(readDocument(locale, slug).examples, slug, locale).showWhenEmpty,
+        false,
+        `${slug}/${locale}`,
+      );
+    }
+  }
+  for (const locale of LOCALES) {
+    assert.equal(
+      parseModelExamplesContent(readDocument(locale, 'sora-2').examples, 'sora-2', locale).showWhenEmpty,
+      true,
+      `sora-2/${locale}`,
+    );
+  }
+});
+
+test('model documents contain no legacy Examples ownership', () => {
+  for (const locale of LOCALES) {
+    for (const slug of listModelPageTemplateSlugs()) {
+      const document = readDocument(locale, slug);
+      const custom = document.custom && typeof document.custom === 'object'
+        ? document.custom as Record<string, unknown>
+        : {};
+      for (const key of LEGACY_GALLERY_KEYS) {
+        assert.equal(Object.hasOwn(document, key), false, `${slug}/${locale}/root/${key}`);
+        assert.equal(Object.hasOwn(custom, key), false, `${slug}/${locale}/custom/${key}`);
+      }
     }
   }
 });
@@ -147,6 +232,7 @@ test('each model keeps identical EN FR ES Examples structure and semantic IDs', 
         }),
       );
       assert.deepEqual(localized.filters.map(({ id }) => id), en.filters.map(({ id }) => id));
+      assert.equal(localized.showWhenEmpty, en.showWhenEmpty);
       assert.deepEqual(
         localized.proofItems.map(({ id, icon }) => [id, icon]),
         en.proofItems.map(({ id, icon }) => [id, icon]),

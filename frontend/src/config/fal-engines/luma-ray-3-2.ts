@@ -351,9 +351,11 @@ export const LUMA_RAY_3_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     type: 'Modify and reframe video',
     seoText:
       'Luma Ray 3.2 is available in MaxVideoAI for source-video Modify, Reframe delivery cuts, guide/keyframe edit passes, and short silent text-to-video or image-to-video tests.',
-    demoUrl: '/hero/luma-dream.mp4',
+    demoUrl:
+      'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/8c74f95a-9671-4415-b099-02470892f5d8.mp4',
     media: {
-      videoUrl: '/hero/luma-dream.mp4',
+      videoUrl:
+        'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/8c74f95a-9671-4415-b099-02470892f5d8.mp4',
       imagePath: '/hero/luma-dream.jpg',
       altText: 'Cinematic AI video frame for Luma Ray 3.2',
     },

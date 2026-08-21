@@ -196,17 +196,19 @@ test('Luma Uni image models have specs but no compare pairs or video best-for pl
   }
 });
 
-test('Luma Uni model pages use the image example fallback surface', () => {
-  assert.match(modelPageLayoutSource, /engine\.modelSlug === 'luma-uni-1'/);
-  assert.match(modelPageLayoutSource, /engine\.modelSlug === 'luma-uni-1-max'/);
+test('Luma Uni model pages use the strict content-driven image example fallback surface', () => {
+  assert.match(modelPageLayoutSource, /parseModelExamplesContent\(/);
+  assert.match(modelPageLayoutSource, /mode:\s*examplesContent\.fallbackItems\s*\?\s*'image-fallback'\s*:\s*'video'/);
+  assert.match(modelPageLayoutSource, /resolveModelExampleFallbackPosters\(/);
+  assert.doesNotMatch(modelPageLayoutSource, /engine\.modelSlug === 'luma-uni-1(?:-max)?'/);
 });
 
 test('Luma Ray 3.2 discovery stays behind current video leaders', () => {
   const expectedPlacements: Record<string, string[]> = {
-    'image-to-video': ['seedance-2-0', 'kling-3-pro', 'veo-3-1'],
-    'cinematic-realism': ['seedance-2-0', 'kling-3-pro', 'veo-3-1'],
-    'reference-to-video': ['seedance-2-0', 'kling-3-pro', 'veo-3-1', 'happy-horse-1-1'],
-    'product-videos': ['seedance-2-0', 'kling-3-pro', 'veo-3-1', 'happy-horse-1-1'],
+    'image-to-video': ['seedance-2-5', 'seedance-2-0', 'kling-3-pro', 'veo-3-1'],
+    'cinematic-realism': ['seedance-2-5', 'seedance-2-0', 'kling-3-pro', 'kling-o3-pro', 'minimax-h3', 'veo-3-1'],
+    'reference-to-video': ['seedance-2-5', 'seedance-2-0', 'kling-3-pro', 'kling-o3-pro', 'minimax-h3', 'veo-3-1', 'happy-horse-1-1'],
+    'product-videos': ['seedance-2-5', 'seedance-2-0', 'kling-3-pro', 'veo-3-1', 'happy-horse-1-1'],
   };
 
   for (const [slug, leaders] of Object.entries(expectedPlacements)) {

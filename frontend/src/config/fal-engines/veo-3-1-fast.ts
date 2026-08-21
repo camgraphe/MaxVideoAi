@@ -292,9 +292,11 @@ export const VEO_3_1_FAST_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     type: 'Text, start image, references, last frame, extend',
     seoText:
       'Veo 3.1 Fast keeps quick prompt iteration, single start-image animation, multi-reference guidance, optional last-frame control, and extend-video workflows inside one lower-cost DeepMind route with optional audio.',
-    demoUrl: '/hero/veo3.mp4',
+    demoUrl:
+      'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/f35b56ab-e529-4bf2-a066-bb2a3197f54d.mp4',
     media: {
-      videoUrl: '/hero/veo3.mp4',
+      videoUrl:
+        'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/f35b56ab-e529-4bf2-a066-bb2a3197f54d.mp4',
       imagePath: '/hero/veo-3-1-hero.jpg',
       altText: 'Fast rendering sample with Veo 3.1 Fast',
     },

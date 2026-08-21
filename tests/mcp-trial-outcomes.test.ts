@@ -396,6 +396,7 @@ test('confirmation, shared final persistence, and BytePlus polling delegate to t
   const confirmation = readFileSync(join(root, 'frontend/src/server/agent-api/confirm-generation.ts'), 'utf8');
   const finalPersistence = readFileSync(join(root, 'frontend/app/api/generate/_lib/final-job-persistence.ts'), 'utf8');
   const bytePlusPoll = readFileSync(join(root, 'frontend/server/byteplus-poll.ts'), 'utf8');
+  const bytePlusPollFailure = readFileSync(join(root, 'frontend/server/byteplus-poll-failure.ts'), 'utf8');
   const bytePlusTrial = readFileSync(join(root, 'frontend/server/byteplus-trial-outcomes.ts'), 'utf8');
   const outcomeOwner = readFileSync(join(root, 'frontend/src/server/agent-api/trial-outcomes.ts'), 'utf8');
   assert.match(confirmation, /applyTrialJobOutcome/);
@@ -410,10 +411,10 @@ test('confirmation, shared final persistence, and BytePlus polling delegate to t
   assert.match(outcomeOwner, /export function createTrialJobOutcomeService/);
   assert.match(outcomeOwner, /export async function applyTrialSupportOverride/);
   assert.match(bytePlusPoll, /kind:\s*'completed'/);
-  assert.match(bytePlusPoll, /persistBytePlusTerminalFailure/);
-  assert.match(bytePlusPoll, /BytePlusTerminalTrialOutcome/);
-  assert.match(bytePlusPoll, /kind:\s*trialOutcome/);
-  assert.match(bytePlusPoll, /mcp_trial_outcome_disposition/);
+  assert.match(bytePlusPoll, /markBytePlusJobFailed/);
+  assert.match(bytePlusPollFailure, /BytePlusTerminalTrialOutcome/);
+  assert.match(bytePlusPollFailure, /kind:\s*trialOutcome/);
+  assert.match(bytePlusPollFailure, /mcp_trial_outcome_disposition/);
   assert.match(bytePlusPoll, /returned no video URL[\s\S]{0,240}'unknown'/);
   assert.match(bytePlusPoll, /could not be copied[\s\S]{0,320}'unknown'/);
   assert.doesNotMatch(bytePlusPoll, /payment_status\s*=\s*'refunded_wallet'[\s\S]{0,300}included_mcp_trial/);

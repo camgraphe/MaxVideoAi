@@ -26,19 +26,6 @@ export function buildSoftwareSchema(content: RedesignContent) {
   };
 }
 
-export function buildOrganizationSchema() {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: 'MaxVideo AI',
-    url: 'https://maxvideoai.com',
-    logo: 'https://maxvideoai.com/favicon-512.png',
-    sameAs: [],
-    description:
-      'Independent hub for AI video generation. Price before you generate. Works with Seedance, Kling, Veo, LTX, Wan, Pika, Sora and more.',
-  };
-}
-
 export function buildFaqSchema(items: FaqItem[]) {
   return {
     '@context': 'https://schema.org',

@@ -165,18 +165,32 @@ export interface EngineInputField {
   engineParam?: string;
   minDurationSec?: number;
   maxDurationSec?: number;
+  maxSizeMB?: number;
+  acceptedMimeTypes?: string[];
+  acceptedFileExtensions?: string[];
   slotLabelPattern?: string;
+}
+
+export interface EngineReferenceBudget {
+  fieldIds: string[];
+  modes?: Mode[];
+  maxTotal: number;
+  countUniqueUrls: boolean;
 }
 
 export interface EngineInputSchema {
   required?: EngineInputField[];
   optional?: EngineInputField[];
+  referenceBudget?: EngineReferenceBudget;
   constraints?: {
     supportedFormats?: string[];
     maxImageSizeMB?: number;
     minImageSidePx?: number;
     maxVideoSizeMB?: number;
+    minVideoPixelCount?: number;
     maxAudioSizeMB?: number;
+    maxCombinedVideoDurationSec?: number;
+    maxCombinedAudioDurationSec?: number;
     [key: string]: unknown;
   };
 }

@@ -6,6 +6,7 @@ import test from 'node:test';
 import engineCatalog from '../frontend/config/engine-catalog.json' with { type: 'json' };
 import compareConfig from '../frontend/config/compare-config.json' with { type: 'json' };
 import scoresFile from '../data/benchmarks/engine-scores.v1.json' with { type: 'json' };
+import type { ExampleGalleryVideo } from '../frontend/components/examples/examples-gallery-types.ts';
 import { MARKETING_MODEL_SLUGS, MARKETING_NAV_COMPARE, MARKETING_NAV_MODELS } from '../frontend/config/navigation.ts';
 import { canonicalizeFalModelSlug, listFalEngines } from '../frontend/src/config/falEngines.ts';
 import { buildModelDecisionDataFromContent } from './helpers/model-decision-content.ts';
@@ -15,6 +16,10 @@ import { buildPricingHubData } from '../frontend/app/(localized)/[locale]/(marke
 import { isPrelaunchAvailability } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-pricing.ts';
 import { getComparePageOverride } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides.ts';
 import { getPublishedComparisonSlugs } from '../frontend/lib/compare-hub/data.ts';
+import { parseModelExamplesContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-content.ts';
+import { getModelExamplesUiCopy } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-ui-copy.ts';
+import { buildModelExamplePreviewAlts, resolveModelExamplesRuntimePolicy } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-runtime-policy.ts';
+import { buildModelExamplesViewModel } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-view-model.ts';
 
 const PROJECT_ROOT = process.cwd();
 const LOCALES = ['en', 'fr', 'es'] as const;
@@ -95,6 +100,69 @@ test('Gemini Omni Flash model page uses approved hero and demo render IDs', () =
     hero: 'job_bd1604b7-ae90-45eb-9a65-fb6d44dfffe9',
     demo: 'job_bbc31801-7191-4d40-90b7-6b52bdeb1a7a',
   });
+});
+
+test('Gemini Omni Flash Examples preserve current localized sections and approved media links', () => {
+  const slug = 'gemini-omni-flash';
+  const mediaIds = [
+    'job_bd1604b7-ae90-45eb-9a65-fb6d44dfffe9',
+    'job_bbc31801-7191-4d40-90b7-6b52bdeb1a7a',
+  ];
+  const galleryVideos: ExampleGalleryVideo[] = mediaIds.map((id, index) => ({
+    id,
+    href: `/video/${id}`,
+    engineLabel: 'Gemini Omni Flash',
+    engineIconId: 'google',
+    priceLabel: null,
+    prompt: index === 0
+      ? 'A cinematic rooftop character performance with camera direction.'
+      : 'A portrait close-up with synchronized dialogue and city ambience.',
+    aspectRatio: '16:9',
+    durationSec: 10,
+    hasAudio: true,
+    optimizedPosterUrl: `/omni-${index + 1}.webp`,
+    recreateHref: `/app?engine=${slug}&recreate=${id}`,
+  }));
+  const expected = {
+    en: { title: 'Gemini Omni Flash examples', recreate: 'Recreate this shot' },
+    fr: { title: 'Exemples Gemini Omni Flash', recreate: 'Recreer ce plan' },
+    es: { title: 'Ejemplos de Gemini Omni Flash', recreate: 'Recrear esta toma' },
+  } as const;
+
+  for (const locale of LOCALES) {
+    const content = parseModelExamplesContent(readModelContent(locale).data.examples, slug, locale);
+    const ui = getModelExamplesUiCopy(locale);
+    const policy = resolveModelExamplesRuntimePolicy({ modelSlug: slug, engineId: slug });
+    const galleryPreviewAlts = buildModelExamplePreviewAlts({
+      galleryVideos,
+      locale,
+      modelName: 'Gemini Omni Flash',
+      mode: policy.previewAltMode,
+      numberedExampleLabel: ui.numberedExampleLabel,
+    });
+    const viewModel = buildModelExamplesViewModel({
+      content,
+      ui,
+      locale,
+      anchorId: 'text-to-video',
+      modelName: 'Gemini Omni Flash',
+      mode: 'video',
+      audioMode: policy.audioMode,
+      decisionAltMode: policy.decisionAltMode,
+      galleryVideos,
+      galleryPreviewAlts,
+      fallbackPosters: new Map(),
+      examplesLinkHref: { pathname: '/examples/[model]', params: { model: slug } },
+      imageWorkspaceHref: `/app/image?engine=${slug}`,
+    });
+
+    assert.equal(viewModel.section.title, expected[locale].title);
+    assert.equal(viewModel.section.defaultCtaLabel, null);
+    assert.deepEqual(viewModel.decision.items.map(({ id }) => id), mediaIds);
+    assert.deepEqual(viewModel.decision.items.map(({ href }) => href), mediaIds.map((id) => `/video/${id}`));
+    assert.ok(viewModel.decision.items.every(({ recreateLabel }) => recreateLabel === expected[locale].recreate));
+    assert.deepEqual(viewModel.filters.map(({ id }) => id), ['all', 'cinematic', 'audio']);
+  }
 });
 
 test('Gemini Omni Flash aliases canonicalize to the public model slug', () => {

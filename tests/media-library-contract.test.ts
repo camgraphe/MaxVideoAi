@@ -39,6 +39,22 @@ test('media library keeps record mapping helpers outside server orchestration', 
   assert.match(recordsSource, /normalizeMediaUrl/);
 });
 
+test('media library source constraint refresh is serialized in one transaction', () => {
+  const source = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/src/lib/schema/media-library-schema.ts'),
+    'utf8'
+  );
+  const transactionStart = source.indexOf('await withDbTransaction');
+  const advisoryLock = source.indexOf('pg_advisory_xact_lock', transactionStart);
+  const constraintDrop = source.indexOf('DROP CONSTRAINT IF EXISTS media_assets_source_check', transactionStart);
+  const constraintAdd = source.indexOf('ADD CONSTRAINT media_assets_source_check', transactionStart);
+
+  assert.ok(transactionStart >= 0, 'constraint refresh should use an explicit transaction');
+  assert.ok(advisoryLock > transactionStart, 'constraint refresh should serialize concurrent instances');
+  assert.ok(constraintDrop > advisoryLock, 'constraint drop should happen after the transaction lock');
+  assert.ok(constraintAdd > constraintDrop, 'constraint add should happen after the drop in the same transaction');
+});
+
 test('maps legacy app_jobs media columns into ordered job outputs', () => {
   const outputs = mapLegacyJobRowToOutputs({
     job_id: 'job_123',

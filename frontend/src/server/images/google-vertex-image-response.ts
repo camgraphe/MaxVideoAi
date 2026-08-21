@@ -1,5 +1,14 @@
 export type GoogleVertexInlineImage = { data: Buffer; mimeType: string };
 
+export type GoogleVertexImageResponseSummary = {
+  responseId: string | null;
+  promptBlockReason: string | null;
+  finishReasons: string[];
+  blockedForSafety: boolean;
+};
+
+const SAFETY_FINISH_REASON_PATTERN = /safety|prohibited|blocklist|recitation/i;
+
 function asRecord(value: unknown): Record<string, unknown> | null {
   return value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
 }
@@ -24,4 +33,33 @@ export function extractGoogleVertexImages(payload: unknown): GoogleVertexInlineI
 export function parseGoogleVertexResponseId(payload: unknown): string | null {
   const root = asRecord(payload);
   return typeof root?.responseId === 'string' ? root.responseId : null;
+}
+
+export function summarizeGoogleVertexImageResponse(payload: unknown): GoogleVertexImageResponseSummary {
+  const root = asRecord(payload);
+  const promptFeedback = asRecord(root?.promptFeedback);
+  const promptBlockReason =
+    typeof promptFeedback?.blockReason === 'string' && promptFeedback.blockReason.trim()
+      ? promptFeedback.blockReason.trim()
+      : null;
+  const candidates = Array.isArray(root?.candidates) ? root.candidates : [];
+  const finishReasons = Array.from(
+    new Set(
+      candidates
+        .map((candidate) => asRecord(candidate)?.finishReason)
+        .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+        .map((value) => value.trim())
+    )
+  );
+  const blockedForSafety = Boolean(
+    (promptBlockReason && !/^(?:BLOCK_REASON_)?UNSPECIFIED$/i.test(promptBlockReason)) ||
+      finishReasons.some((reason) => SAFETY_FINISH_REASON_PATTERN.test(reason))
+  );
+
+  return {
+    responseId: parseGoogleVertexResponseId(payload),
+    promptBlockReason,
+    finishReasons,
+    blockedForSafety,
+  };
 }

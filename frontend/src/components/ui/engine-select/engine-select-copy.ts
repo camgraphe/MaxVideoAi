@@ -12,6 +12,9 @@ export const DEFAULT_ENGINE_SELECT_COPY = {
   browseCompact: 'Browse engines',
   inputMode: 'Input mode',
   unsupportedMode: 'Not supported by this engine',
+  badges: {
+    new: 'New',
+  },
   modal: {
     close: 'Close',
     title: 'Choose the right engine for your shot',
@@ -43,6 +46,10 @@ export function mergeEngineSelectCopy(rawCopy: Partial<EngineSelectCopy> | null 
     modal: {
       ...DEFAULT_ENGINE_SELECT_COPY.modal,
       ...(rawCopy?.modal ?? {}),
+    },
+    badges: {
+      ...DEFAULT_ENGINE_SELECT_COPY.badges,
+      ...(rawCopy?.badges ?? {}),
     },
     guides: {
       ...DEFAULT_ENGINE_SELECT_COPY.guides,

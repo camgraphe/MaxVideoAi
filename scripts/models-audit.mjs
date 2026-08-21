@@ -2,14 +2,18 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import modelExamplesContent from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-content.ts';
+
+const { parseModelExamplesContent } = modelExamplesContent;
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
 
 const ENGINE_CATALOG_PATH = path.join(ROOT, 'frontend', 'config', 'engine-catalog.json');
+const MODEL_REGISTRY_PATH = path.join(ROOT, 'frontend', 'config', 'model-registry.json');
 const MODEL_ROSTER_PATH = path.join(ROOT, 'frontend', 'config', 'model-roster.json');
-const CONTENT_MODELS_ROOT = path.join(ROOT, 'content', 'models');
-const REPORTS_DIR = path.join(ROOT, '.reports');
-const REPORT_PATH = path.join(REPORTS_DIR, 'models-audit.json');
+const DEFAULT_CONTENT_MODELS_ROOT = path.join(ROOT, 'content', 'models');
+const DEFAULT_REPORT_PATH = path.join(ROOT, '.reports', 'models-audit.json');
 const LOCALES = ['en', 'fr', 'es'];
 const PRELAUNCH_CONTENT_RULES = [
   {
@@ -29,11 +33,41 @@ const VALID_STATUS = new Set(['live', 'early_access', 'busy', 'degraded', 'maint
 const VALID_EXAMPLES_STAGES = new Set(['hidden', 'public_noindex', 'indexed']);
 const TEMPLATE_MARKER_REGEX = /\{\{[^}]+\}\}/g;
 const GRANDFATHERED_PRELAUNCH_COMPARE_PUBLICATION_SLUGS = new Set(['seedance-2-0']);
+const LEGACY_GALLERY_KEYS = [
+  'galleryTitle',
+  'galleryIntro',
+  'galleryAllCta',
+  'gallerySceneCta',
+  'recreateLabel',
+];
+const EXAMPLES_NULLABLE_STRING_PATHS = new Set([
+  'section.defaultCtaLabel',
+  'section.recreateLabel',
+]);
 
 function parseArgs(argv) {
-  return {
-    runtime: argv.includes('--runtime'),
+  const options = {
+    runtime: false,
+    contentRoot: DEFAULT_CONTENT_MODELS_ROOT,
+    reportPath: DEFAULT_REPORT_PATH,
   };
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+    if (arg === '--runtime') {
+      options.runtime = true;
+      continue;
+    }
+    if (arg === '--content-root' || arg === '--report-path') {
+      const value = argv[index + 1];
+      if (!value) throw new Error(`${arg} requires a path.`);
+      if (arg === '--content-root') options.contentRoot = path.resolve(value);
+      else options.reportPath = path.resolve(value);
+      index += 1;
+      continue;
+    }
+    throw new Error(`Unknown option: ${arg}`);
+  }
+  return options;
 }
 
 async function loadJson(filePath) {
@@ -86,8 +120,8 @@ function diffSet(left, right) {
   return missing.sort((a, b) => a.localeCompare(b, 'en'));
 }
 
-async function loadLocaleContentSlugs(locale) {
-  const localeDir = path.join(CONTENT_MODELS_ROOT, locale);
+async function loadLocaleContentSlugs(locale, contentRoot) {
+  const localeDir = path.join(contentRoot, locale);
   const fileNames = await fs.readdir(localeDir);
   return new Set(
     fileNames
@@ -97,8 +131,8 @@ async function loadLocaleContentSlugs(locale) {
   );
 }
 
-async function loadLocaleContentEntry(locale, slug) {
-  const filePath = path.join(CONTENT_MODELS_ROOT, locale, `${slug}.json`);
+async function loadLocaleContentEntry(locale, slug, contentRoot) {
+  const filePath = path.join(contentRoot, locale, `${slug}.json`);
   const raw = await fs.readFile(filePath, 'utf-8');
   return JSON.parse(raw);
 }
@@ -126,6 +160,105 @@ function collectStringValues(value, output = []) {
   return output;
 }
 
+function examplesStructuralSignature(value, currentPath = '') {
+  if (EXAMPLES_NULLABLE_STRING_PATHS.has(currentPath)) return 'nullable-string';
+  if (Array.isArray(value)) {
+    return {
+      kind: 'array',
+      length: value.length,
+      items: value.map((item, index) =>
+        examplesStructuralSignature(item, currentPath ? `${currentPath}.${index}` : String(index))
+      ),
+    };
+  }
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([key, nested]) => [
+          key,
+          examplesStructuralSignature(nested, currentPath ? `${currentPath}.${key}` : key),
+        ]),
+    );
+  }
+  return value === null ? 'null' : typeof value;
+}
+
+function sameJson(left, right) {
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
+function getExamplesParityDifferences(english, localized) {
+  const differences = [];
+  if (!sameJson(examplesStructuralSignature(localized), examplesStructuralSignature(english))) {
+    differences.push('structure');
+  }
+  if (!sameJson(localized.filters.map(({ id }) => id), english.filters.map(({ id }) => id))) {
+    differences.push('filters');
+  }
+  if (localized.showWhenEmpty !== english.showWhenEmpty) {
+    differences.push('showWhenEmpty');
+  }
+  if (!sameJson(
+    localized.proofItems.map(({ id, icon }) => [id, icon]),
+    english.proofItems.map(({ id, icon }) => [id, icon]),
+  )) {
+    differences.push('proofItems');
+  }
+  if (!sameJson(
+    localized.fallbackItems?.map(({ id, tags }) => [id, tags]) ?? null,
+    english.fallbackItems?.map(({ id, tags }) => [id, tags]) ?? null,
+  )) {
+    differences.push('fallbackItems');
+  }
+  return differences;
+}
+
+async function runLocalizedExamplesChecks(catalogBySlug, issues, contentRoot) {
+  const modelSlugs = Array.from(catalogBySlug.keys()).sort((left, right) => left.localeCompare(right, 'en'));
+  for (const modelSlug of modelSlugs) {
+    const examplesByLocale = new Map();
+    for (const locale of LOCALES) {
+      try {
+        const content = await loadLocaleContentEntry(locale, modelSlug, contentRoot);
+        examplesByLocale.set(
+          locale,
+          parseModelExamplesContent(content?.examples, modelSlug, locale),
+        );
+      } catch (error) {
+        addIssue(
+          issues,
+          'critical',
+          'invalid_localized_examples_content',
+          `Model "${modelSlug}" has invalid ${locale.toUpperCase()} Examples content: ${error instanceof Error ? error.message : String(error)}.`,
+          {
+            modelSlug,
+            locale,
+            error: error instanceof Error ? error.message : String(error),
+          },
+        );
+      }
+    }
+
+    const english = examplesByLocale.get('en');
+    if (!english) continue;
+    for (const locale of ['fr', 'es']) {
+      const localized = examplesByLocale.get(locale);
+      if (!localized) continue;
+      const differences = getExamplesParityDifferences(english, localized);
+      if (differences.length) {
+        addIssue(
+          issues,
+          'critical',
+          'localized_examples_parity_mismatch',
+          `Model "${modelSlug}" ${locale.toUpperCase()} Examples diverge from EN in: ${differences.join(', ')}.`,
+          { modelSlug, locale, differences },
+        );
+      }
+    }
+  }
+}
+
 function getMarketingCoverage(content) {
   const custom = content?.custom && typeof content.custom === 'object' ? content.custom : {};
 
@@ -146,12 +279,8 @@ function getMarketingCoverage(content) {
         hasNonEmptyString(content?.pricingNotes)
     ),
     prompting: Boolean(content?.prompting),
+    examples: Boolean(content?.examples),
     faq: hasNonEmptyArray(content?.faqs),
-    gallery: Boolean(
-      hasNonEmptyString(custom?.galleryTitle) ||
-        hasNonEmptyString(custom?.galleryIntro) ||
-        hasNonEmptyString(custom?.galleryAllCta)
-    ),
     closingCta: Boolean(
       hasNonEmptyString(custom?.finalPara1) ||
         hasNonEmptyString(custom?.finalButton) ||
@@ -162,13 +291,31 @@ function getMarketingCoverage(content) {
   };
 }
 
-async function runMarketingContentChecks(catalogBySlug, issues) {
+async function runMarketingContentChecks(catalogBySlug, issues, contentRoot) {
   const modelSlugs = Array.from(catalogBySlug.keys()).sort((a, b) => a.localeCompare(b, 'en'));
   for (const modelSlug of modelSlugs) {
     let content = null;
     try {
-      content = await loadLocaleContentEntry('en', modelSlug);
+      content = await loadLocaleContentEntry('en', modelSlug, contentRoot);
     } catch {
+      continue;
+    }
+
+    const catalogEntry = catalogBySlug.get(modelSlug);
+    const closedPrelaunchSurface = Boolean(
+      content?.custom?.prelaunch &&
+      typeof content.custom.prelaunch === 'object' &&
+      catalogEntry?.surfaces?.modelPage?.indexable === false &&
+      catalogEntry?.surfaces?.modelPage?.includeInSitemap === false &&
+      catalogEntry?.surfaces?.app?.enabled === false &&
+      catalogEntry?.surfaces?.pricing?.includeInEstimator === false &&
+      catalogEntry?.surfaces?.examples?.includeInFamilyResolver === false &&
+      catalogEntry?.surfaces?.compare?.includeInHub === false
+    );
+    // A fully closed prelaunch page intentionally uses a smaller editorial
+    // schema. Once any product surface opens, the normal marketing completeness
+    // requirements apply again.
+    if (closedPrelaunchSurface) {
       continue;
     }
 
@@ -178,6 +325,7 @@ async function runMarketingContentChecks(catalogBySlug, issues) {
       useCases: coverage.useCases,
       specs: coverage.specs,
       prompting: coverage.prompting,
+      examples: coverage.examples,
       faq: coverage.faq,
     })
       .filter(([, present]) => !present)
@@ -194,7 +342,6 @@ async function runMarketingContentChecks(catalogBySlug, issues) {
     }
 
     const missingWarningBlocks = Object.entries({
-      gallery: coverage.gallery,
       closingCta: coverage.closingCta,
     })
       .filter(([, present]) => !present)
@@ -213,9 +360,27 @@ async function runMarketingContentChecks(catalogBySlug, issues) {
     for (const locale of LOCALES) {
       let localizedContent = null;
       try {
-        localizedContent = locale === 'en' ? content : await loadLocaleContentEntry(locale, modelSlug);
+        localizedContent = locale === 'en'
+          ? content
+          : await loadLocaleContentEntry(locale, modelSlug, contentRoot);
       } catch {
         continue;
+      }
+      const localizedCustom = localizedContent?.custom && typeof localizedContent.custom === 'object'
+        ? localizedContent.custom
+        : {};
+      const legacyExamplesLocations = LEGACY_GALLERY_KEYS.flatMap((key) => [
+        ...(Object.hasOwn(localizedContent, key) ? [`root.${key}`] : []),
+        ...(Object.hasOwn(localizedCustom, key) ? [`custom.${key}`] : []),
+      ]);
+      if (legacyExamplesLocations.length) {
+        addIssue(
+          issues,
+          'critical',
+          'legacy_examples_ownership',
+          `Model "${modelSlug}" still owns legacy Examples copy in ${locale.toUpperCase()} content: ${legacyExamplesLocations.join(', ')}.`,
+          { modelSlug, locale, locations: legacyExamplesLocations }
+        );
       }
       const templateMarkers = Array.from(
         new Set(
@@ -498,7 +663,7 @@ function validateRosterEntries(roster, catalogBySlug, issues) {
   });
 }
 
-function runSlugParityChecks(catalogSlugs, rosterSlugs, localeSlugMaps, issues) {
+function runSlugParityChecks(catalogSlugs, rosterSlugs, contentSlugs, localeSlugMaps, issues) {
   const missingInRoster = diffSet(catalogSlugs, rosterSlugs);
   const missingInCatalogFromRoster = diffSet(rosterSlugs, catalogSlugs);
 
@@ -522,14 +687,14 @@ function runSlugParityChecks(catalogSlugs, rosterSlugs, localeSlugMaps, issues) 
   }
 
   localeSlugMaps.forEach(({ locale, slugs }) => {
-    const missingInLocale = diffSet(catalogSlugs, slugs);
-    const extraInLocale = diffSet(slugs, catalogSlugs);
+    const missingInLocale = diffSet(contentSlugs, slugs);
+    const extraInLocale = diffSet(slugs, contentSlugs);
     if (missingInLocale.length) {
       addIssue(
         issues,
         'critical',
         'missing_content_locale_slugs',
-        `Catalog slugs missing from content/models/${locale}: ${missingInLocale.join(', ')}`,
+        `Published model slugs missing from content/models/${locale}: ${missingInLocale.join(', ')}`,
         { locale, slugs: missingInLocale }
       );
     }
@@ -538,14 +703,14 @@ function runSlugParityChecks(catalogSlugs, rosterSlugs, localeSlugMaps, issues) 
         issues,
         'critical',
         'extra_content_locale_slugs',
-        `Content slugs in content/models/${locale} missing from catalog: ${extraInLocale.join(', ')}`,
+        `Content slugs in content/models/${locale} missing from the published model registry: ${extraInLocale.join(', ')}`,
         { locale, slugs: extraInLocale }
       );
     }
   });
 }
 
-async function runPrelaunchContentChecks(catalogBySlug, issues) {
+async function runPrelaunchContentChecks(catalogBySlug, issues, contentRoot) {
   for (const rule of PRELAUNCH_CONTENT_RULES) {
     const catalogEntry = catalogBySlug.get(rule.modelSlug);
     if (!catalogEntry) continue;
@@ -563,7 +728,7 @@ async function runPrelaunchContentChecks(catalogBySlug, issues) {
 
       let content = null;
       try {
-        content = await loadLocaleContentEntry(locale, rule.modelSlug);
+        content = await loadLocaleContentEntry(locale, rule.modelSlug, contentRoot);
       } catch (error) {
         addIssue(
           issues,
@@ -727,9 +892,9 @@ async function runRuntimeChecks(catalog, issues) {
   }
 }
 
-async function writeReport(report) {
-  await fs.mkdir(REPORTS_DIR, { recursive: true });
-  await fs.writeFile(REPORT_PATH, `${JSON.stringify(report, null, 2)}\n`, 'utf-8');
+async function writeReport(report, reportPath) {
+  await fs.mkdir(path.dirname(reportPath), { recursive: true });
+  await fs.writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`, 'utf-8');
 }
 
 function printIssues(issues, level) {
@@ -741,31 +906,50 @@ function printIssues(issues, level) {
 }
 
 async function main() {
-  const { runtime } = parseArgs(process.argv.slice(2));
+  const { runtime, contentRoot, reportPath } = parseArgs(process.argv.slice(2));
   const issues = { critical: [], warning: [] };
 
-  const [catalog, roster] = await Promise.all([loadJson(ENGINE_CATALOG_PATH), loadJson(MODEL_ROSTER_PATH)]);
+  const [catalog, roster, registry] = await Promise.all([
+    loadJson(ENGINE_CATALOG_PATH),
+    loadJson(MODEL_ROSTER_PATH),
+    loadJson(MODEL_REGISTRY_PATH),
+  ]);
   if (!Array.isArray(catalog)) {
     throw new Error('engine-catalog.json must contain an array.');
   }
   if (!Array.isArray(roster)) {
     throw new Error('model-roster.json must contain an array.');
   }
+  if (!registry || !Array.isArray(registry.models)) {
+    throw new Error('model-registry.json must contain a models array.');
+  }
 
   const localeSlugMaps = await Promise.all(
-    LOCALES.map(async (locale) => ({ locale, slugs: await loadLocaleContentSlugs(locale) }))
+    LOCALES.map(async (locale) => ({
+      locale,
+      slugs: await loadLocaleContentSlugs(locale, contentRoot),
+    }))
   );
 
   const publicCatalog = catalog.filter((entry) => hasPublishedModelPage(entry));
   const catalogSlugs = setFromSlugs(publicCatalog, 'modelSlug');
-  const rosterSlugs = setFromSlugs(roster, 'modelSlug');
+  const publishedContentSlugs = setFromSlugs(
+    registry.models.filter((model) => model?.publication?.model?.published === true),
+    'slug',
+  );
+  const rosterSlugs = setFromSlugs(
+    roster.filter((entry) => hasPublishedModelPage(entry)),
+    'modelSlug',
+  );
   const catalogBySlug = new Map(catalog.map((entry) => [entry.modelSlug, entry]));
+  const publicCatalogBySlug = new Map(publicCatalog.map((entry) => [entry.modelSlug, entry]));
 
-  runSlugParityChecks(catalogSlugs, rosterSlugs, localeSlugMaps, issues);
+  runSlugParityChecks(catalogSlugs, rosterSlugs, publishedContentSlugs, localeSlugMaps, issues);
   validateCatalogEntries(catalog, issues);
   validateRosterEntries(roster, catalogBySlug, issues);
-  await runPrelaunchContentChecks(catalogBySlug, issues);
-  await runMarketingContentChecks(catalogBySlug, issues);
+  await runPrelaunchContentChecks(catalogBySlug, issues, contentRoot);
+  await runLocalizedExamplesChecks(publicCatalogBySlug, issues, contentRoot);
+  await runMarketingContentChecks(catalogBySlug, issues, contentRoot);
 
   if (runtime) {
     await runRuntimeChecks(catalog, issues);
@@ -785,7 +969,7 @@ async function main() {
     warning: issues.warning,
   };
 
-  await writeReport(report);
+  await writeReport(report, reportPath);
 
   console.table([
     { metric: 'catalog', value: catalog.length },
@@ -801,12 +985,12 @@ async function main() {
   printIssues(issues, 'critical');
 
   if (issues.critical.length) {
-    console.error(`[models:audit] Failed with ${issues.critical.length} critical issue(s). Report: .reports/models-audit.json`);
+    console.error(`[models:audit] Failed with ${issues.critical.length} critical issue(s). Report: ${reportPath}`);
     process.exitCode = 1;
     return;
   }
 
-  console.log(`[models:audit] Passed with ${issues.warning.length} warning(s). Report: .reports/models-audit.json`);
+  console.log(`[models:audit] Passed with ${issues.warning.length} warning(s). Report: ${reportPath}`);
 }
 
 main().catch((error) => {

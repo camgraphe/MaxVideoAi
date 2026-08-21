@@ -1,0 +1,189 @@
+{
+  "slug": "minimax-h3-vs-veo-3-1",
+  "en": {
+    "meta": {
+      "title": "MiniMax H3 vs Veo 3.1: 4K, references and cinematic video",
+      "description": "Compare MiniMax H3 and Veo 3.1 for cinematic video, 4K output, native audio, character references and production value."
+    },
+    "heroIntro": "MiniMax H3 is the value and reference-volume choice, with direct 2K or 4K output, native stereo audio and a broad multimodal reference route. Veo 3.1 remains an established premium cinematic route when its workflow, shot style and delivery profile match the production.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Choose MiniMax H3 for reference-dense character work, native-audio value and flexible high-resolution volume. Choose Veo 3.1 for premium cinematic shots when its established visual language is the best fit for the brief."
+    },
+    "topCards": [
+      {
+        "title": "Value and reference volume: MiniMax H3",
+        "body": "H3 can combine many image, video and audio cues while keeping high-resolution and native-audio generation in one route."
+      },
+      {
+        "title": "Premium cinematic route: Veo 3.1",
+        "body": "Veo 3.1 remains a dependable choice for polished cinematic shots, controlled camera language and premium hero content."
+      },
+      {
+        "title": "4K planning",
+        "body": "Both can serve 4K-oriented production, but H3 exposes explicit 768P, 2K and 4K choices for predictable routing."
+      },
+      {
+        "title": "Practical production split",
+        "body": "Use H3 for character variations and multimodal reference scenes; reserve Veo 3.1 for selected cinematic hero shots."
+      }
+    ],
+    "primaryLinksTitle": "Explore both models",
+    "primaryLinks": [
+      { "href": "/models/minimax-h3", "label": "MiniMax H3 model guide" },
+      { "href": "/app?engine=minimax-h3", "label": "Create with MiniMax H3" },
+      { "href": "/models/veo-3-1", "label": "Veo 3.1 model guide" },
+      { "href": "/app?engine=veo-3-1", "label": "Create with Veo 3.1" }
+    ],
+    "faq": {
+      "title": "MiniMax H3 vs Veo 3.1 FAQ",
+      "subtitle": "A production-focused comparison of two 4K-capable routes.",
+      "items": [
+        {
+          "question": "Which model is better for premium cinematic shots?",
+          "answer": "Veo 3.1 is the established premium route when cinematic polish and its camera language match the brief."
+        },
+        {
+          "question": "Which model offers better reference volume?",
+          "answer": "MiniMax H3 is the stronger choice when a scene needs to combine numerous image, video and audio references."
+        },
+        {
+          "question": "Can MiniMax H3 generate 4K video with native audio?",
+          "answer": "Yes. H3 exposes a direct 4K route and generates native stereo audio as part of the video."
+        },
+        {
+          "question": "Which model is better for character-led production volume?",
+          "answer": "H3 is especially effective for character variations where reference density, native audio and value all matter."
+        },
+        {
+          "question": "Can a production use both models?",
+          "answer": "Yes. A practical split is H3 for reference-heavy variants and Veo 3.1 for selected premium cinematic shots."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "MiniMax H3 vs Veo 3.1 : 4K, références et cinéma",
+      "description": "Comparez MiniMax H3 et Veo 3.1 pour la vidéo cinématographique, la sortie 4K, l'audio natif, les références de personnages et la valeur en production."
+    },
+    "heroIntro": "MiniMax H3 est le choix de la valeur et du volume de références, avec une sortie directe en 2K ou 4K, un audio stéréo natif et un large parcours de référence multimodal. Veo 3.1 reste une voie cinématographique premium reconnue lorsque son flux, son style de plan et son profil de livraison correspondent à la production.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Choisissez MiniMax H3 pour les personnages riches en références, la valeur avec audio natif et le volume en haute résolution. Choisissez Veo 3.1 pour les plans cinématographiques premium lorsque son langage visuel établi convient le mieux au brief."
+    },
+    "topCards": [
+      {
+        "title": "Valeur et volume de références : MiniMax H3",
+        "body": "H3 peut combiner de nombreux signaux image, vidéo et audio tout en gardant la haute résolution et l'audio natif dans un seul parcours."
+      },
+      {
+        "title": "Parcours cinéma premium : Veo 3.1",
+        "body": "Veo 3.1 reste un choix fiable pour les plans cinématographiques soignés, le langage caméra contrôlé et les contenus phares premium."
+      },
+      {
+        "title": "Planification 4K",
+        "body": "Les deux peuvent servir une production orientée 4K, mais H3 expose des choix explicites en 768P, 2K et 4K pour un routage prévisible."
+      },
+      {
+        "title": "Répartition pratique en production",
+        "body": "Utilisez H3 pour les variations de personnages et les scènes à références multimodales ; réservez Veo 3.1 à certains plans phares cinématographiques."
+      }
+    ],
+    "primaryLinksTitle": "Explorer les deux modèles",
+    "primaryLinks": [
+      { "href": "/fr/modeles/minimax-h3", "label": "Guide du modèle MiniMax H3" },
+      { "href": "/app?engine=minimax-h3", "label": "Créer avec MiniMax H3" },
+      { "href": "/fr/modeles/veo-3-1", "label": "Guide du modèle Veo 3.1" },
+      { "href": "/app?engine=veo-3-1", "label": "Créer avec Veo 3.1" }
+    ],
+    "faq": {
+      "title": "FAQ MiniMax H3 vs Veo 3.1",
+      "subtitle": "Une comparaison orientée production de deux parcours capables de livrer en 4K.",
+      "items": [
+        {
+          "question": "Quel modèle convient le mieux aux plans cinématographiques premium ?",
+          "answer": "Veo 3.1 est le parcours premium établi lorsque la finition cinématographique et son langage caméra correspondent au brief."
+        },
+        {
+          "question": "Quel modèle offre le plus grand volume de références ?",
+          "answer": "MiniMax H3 est le choix le plus fort lorsqu'une scène doit combiner de nombreuses références image, vidéo et audio."
+        },
+        {
+          "question": "MiniMax H3 peut-il générer une vidéo 4K avec audio natif ?",
+          "answer": "Oui. H3 propose un parcours direct en 4K et génère un audio stéréo natif avec la vidéo."
+        },
+        {
+          "question": "Quel modèle convient le mieux au volume de productions centrées sur les personnages ?",
+          "answer": "H3 est particulièrement efficace pour les variations de personnages où la densité des références, l'audio natif et la valeur comptent ensemble."
+        },
+        {
+          "question": "Une production peut-elle utiliser les deux modèles ?",
+          "answer": "Oui. Une répartition pratique consiste à utiliser H3 pour les variantes riches en références et Veo 3.1 pour certains plans cinématographiques premium."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "MiniMax H3 vs Veo 3.1: 4K, referencias y cine",
+      "description": "Compara MiniMax H3 y Veo 3.1 en vídeo cinematográfico, salida 4K, audio nativo, referencias de personajes y valor de producción."
+    },
+    "heroIntro": "MiniMax H3 es la opción de valor y volumen de referencias, con salida directa en 2K o 4K, audio estéreo nativo y una amplia ruta multimodal. Veo 3.1 sigue siendo una vía cinematográfica premium consolidada cuando su flujo, estilo de plano y perfil de entrega encajan con la producción.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Elige MiniMax H3 para personajes con muchas referencias, valor con audio nativo y volumen en alta resolución. Elige Veo 3.1 para planos cinematográficos premium cuando su lenguaje visual consolidado sea el más adecuado para el brief."
+    },
+    "topCards": [
+      {
+        "title": "Valor y volumen de referencias: MiniMax H3",
+        "body": "H3 puede combinar muchas señales de imagen, vídeo y audio manteniendo la alta resolución y el audio nativo en una sola ruta."
+      },
+      {
+        "title": "Ruta cinematográfica premium: Veo 3.1",
+        "body": "Veo 3.1 sigue siendo una opción fiable para planos cinematográficos pulidos, lenguaje de cámara controlado y contenido principal premium."
+      },
+      {
+        "title": "Planificación 4K",
+        "body": "Ambos pueden servir una producción orientada a 4K, pero H3 ofrece opciones explícitas de 768P, 2K y 4K para un enrutado predecible."
+      },
+      {
+        "title": "Reparto práctico de producción",
+        "body": "Usa H3 para variaciones de personajes y escenas con referencias multimodales; reserva Veo 3.1 para determinados planos cinematográficos principales."
+      }
+    ],
+    "primaryLinksTitle": "Explorar ambos modelos",
+    "primaryLinks": [
+      { "href": "/es/modelos/minimax-h3", "label": "Guía del modelo MiniMax H3" },
+      { "href": "/app?engine=minimax-h3", "label": "Crear con MiniMax H3" },
+      { "href": "/es/modelos/veo-3-1", "label": "Guía del modelo Veo 3.1" },
+      { "href": "/app?engine=veo-3-1", "label": "Crear con Veo 3.1" }
+    ],
+    "faq": {
+      "title": "Preguntas sobre MiniMax H3 vs Veo 3.1",
+      "subtitle": "Una comparación centrada en producción de dos rutas capaces de entregar 4K.",
+      "items": [
+        {
+          "question": "¿Qué modelo es mejor para planos cinematográficos premium?",
+          "answer": "Veo 3.1 es la ruta premium consolidada cuando el acabado cinematográfico y su lenguaje de cámara encajan con el brief."
+        },
+        {
+          "question": "¿Qué modelo ofrece mayor volumen de referencias?",
+          "answer": "MiniMax H3 es la opción más fuerte cuando una escena necesita combinar numerosas referencias de imagen, vídeo y audio."
+        },
+        {
+          "question": "¿MiniMax H3 puede generar vídeo 4K con audio nativo?",
+          "answer": "Sí. H3 ofrece una ruta directa 4K y genera audio estéreo nativo como parte del vídeo."
+        },
+        {
+          "question": "¿Qué modelo es mejor para volumen de producción con personajes?",
+          "answer": "H3 es especialmente eficaz para variaciones de personajes donde importan a la vez la densidad de referencias, el audio nativo y el valor."
+        },
+        {
+          "question": "¿Puede una producción usar ambos modelos?",
+          "answer": "Sí. Una división práctica es usar H3 para variantes con muchas referencias y Veo 3.1 para determinados planos cinematográficos premium."
+        }
+      ]
+    }
+  }
+}

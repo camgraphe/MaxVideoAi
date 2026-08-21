@@ -16,10 +16,6 @@ export const examples: Dictionary['examples'] = {
           slug: 'sora-2',
           pricing: { engineId: 'sora-2', durationSec: 10, resolution: '1080p', memberTier: 'member' },
         },
-        media: {
-          videoSrc: '/hero/sora2.mp4',
-          aspectRatio: '16:9',
-        },
       },
       {
         title: 'Veo 3 branded flythrough',
@@ -29,10 +25,6 @@ export const examples: Dictionary['examples'] = {
         meta: {
           slug: 'veo-3-1',
           pricing: { engineId: 'veo-3-1', durationSec: 8, resolution: '1080p', memberTier: 'member' },
-        },
-        media: {
-          videoSrc: '/hero/veo3.mp4',
-          aspectRatio: '16:9',
         },
       },
       {
@@ -44,10 +36,6 @@ export const examples: Dictionary['examples'] = {
           slug: 'veo-3-1-fast',
           pricing: { engineId: 'veo-3-1-fast', durationSec: 8, resolution: '720p', memberTier: 'member' },
         },
-        media: {
-          videoSrc: '/hero/veo3.mp4',
-          aspectRatio: '16:9',
-        },
       },
       {
         title: 'Pika 2.2 social loop',
@@ -58,10 +46,6 @@ export const examples: Dictionary['examples'] = {
           slug: 'pika-text-to-video',
           pricing: { engineId: 'pika-text-to-video', durationSec: 8, resolution: '1080p', memberTier: 'member' },
         },
-        media: {
-          videoSrc: '/hero/pika-22.mp4',
-          aspectRatio: '16:9',
-        },
       },
       {
         title: 'MiniMax Hailuo concept pass',
@@ -71,10 +55,6 @@ export const examples: Dictionary['examples'] = {
         meta: {
           slug: 'minimax-hailuo-02-text',
           pricing: { engineId: 'minimax-hailuo-02-text', durationSec: 10, resolution: '768P', memberTier: 'member' },
-        },
-        media: {
-          videoSrc: '/hero/minimax-video01.mp4',
-          aspectRatio: '16:9',
         },
       },
     ],

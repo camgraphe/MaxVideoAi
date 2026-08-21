@@ -22,6 +22,8 @@ test('app engine score map excludes image-only models while keeping video models
     assert.equal(scoreMap[engineId], undefined, `${engineId} should not expose an app selector score`);
   });
   assert.equal(typeof scoreMap['luma-ray-3-2'], 'number', 'Luma Ray is a video engine and should keep its selector score');
+  assert.equal(typeof scoreMap['seedance-2-5'], 'number');
+  assert.equal(scoreMap['seedance-2-5'], 9.1);
 });
 
 test('image engine surfaces do not request selector scores', () => {

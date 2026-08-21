@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import test from 'node:test';
 
 import { resolveGenerateBillingPreflight } from '../frontend/app/api/generate/_lib/billing-preflight';
+import { listFalEngines } from '../frontend/src/config/falEngines';
 import type { PricingSnapshot } from '../frontend/types/engines';
 
 const root = process.cwd();
@@ -158,6 +159,54 @@ test('billing preflight passes aspect ratio into pricing calculation', async () 
   assert.equal(result.ok, true);
   assert.equal(capturedAspectRatio, '1:1');
   assert.equal(result.preflight.pricing.totalCents, 202);
+});
+
+test('billing preflight passes the Seedance video-input class into canonical pricing', async () => {
+  let capturedHasVideoInput: unknown = undefined;
+  const seedance25Engine = listFalEngines().find((entry) => entry.id === 'seedance-2-5')?.engine;
+  assert.ok(seedance25Engine);
+
+  const result = await resolveGenerateBillingPreflight({
+    req: createReq('US'),
+    engine: seedance25Engine,
+    mode: 'v2v',
+    userId: 'user_123',
+    payment: { mode: 'wallet', paymentIntentId: null },
+    jobId: 'job_123',
+    durationSec: 15,
+    durationLabel: '15s',
+    pricingResolution: '720p',
+    effectiveResolution: '720p',
+    aspectRatio: '16:9',
+    membershipTier: 'member',
+    isLumaRay2: false,
+    loop: false,
+    hasVideoInput: true,
+    rawDurationOption: null,
+    lumaDurationLabel: null,
+    audioEnabled: true,
+    voiceControl: false,
+    deps: {
+      getUserPreferredCurrencyFn: async () => 'usd',
+      resolveCurrencyFn: () => ({ currency: 'usd', source: 'user_pref' }),
+      computePricingSnapshotFn: async (context) => {
+        capturedHasVideoInput = context.hasVideoInput;
+        return { ...pricing, meta: { ...pricing.meta } };
+      },
+      convertCentsFn: async () => ({ cents: 1200, rate: 1, source: 'test' }),
+      getPlatformFeeCentsFn: () => 0,
+      receiptsPriceOnlyEnabledFn: () => true,
+      buildReceiptSnapshotFn: (value) => ({
+        totalCents: value.totalCents,
+        currency: value.currency,
+      }),
+      applyEngineVariantPricingFn: (value) => value,
+      buildEngineAddonInputFn: () => ({ audio: true }),
+    },
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(capturedHasVideoInput, true);
 });
 
 test('billing preflight accepts captured direct payment intents', async () => {

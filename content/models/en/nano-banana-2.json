@@ -499,6 +499,7 @@
           "wide"
         ]
       }
-    ]
+    ],
+    "showWhenEmpty": false
   }
 }

@@ -11,7 +11,11 @@ export function ModelPricingCallout({ callout }: { callout: ModelPricingCalloutD
           <h2 className="text-base font-semibold text-text-primary">{callout.title}</h2>
           <p className="mt-1 max-w-3xl text-sm leading-6 text-text-secondary">{callout.body}</p>
         </div>
-        <Link href={callout.href} className="shrink-0 text-sm font-semibold text-brand hover:text-brandHover">
+        <Link
+          href={callout.href}
+          prefetch={false}
+          className="shrink-0 text-sm font-semibold text-brand hover:text-brandHover"
+        >
           {callout.linkLabel}
         </Link>
       </div>

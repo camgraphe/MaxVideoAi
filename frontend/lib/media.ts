@@ -54,6 +54,33 @@ export function isPlaceholderMediaUrl(value?: string | null): boolean {
   );
 }
 
+function getMediaPathname(value: string): string {
+  if (/^https?:\/\//i.test(value)) {
+    try {
+      return new URL(value).pathname;
+    } catch {
+      return value;
+    }
+  }
+  return value.split(/[?#]/, 1)[0];
+}
+
+export function isLegacyMarketingVideoUrl(value?: string | null): boolean {
+  const normalized = normalizeMediaUrl(value);
+  if (!normalized) return false;
+  const pathname = getMediaPathname(normalized).toLowerCase();
+  return (
+    /^\/assets\/gallery\/[^/]+\.(?:mp4|webm)$/.test(pathname) ||
+    /^\/hero\/[^/]+\.(?:mp4|webm)$/.test(pathname)
+  );
+}
+
+export function resolvePublicMarketingVideoUrl(value?: string | null): string | null {
+  const normalized = normalizeMediaUrl(value);
+  if (!normalized || isLegacyMarketingVideoUrl(normalized)) return null;
+  return normalized;
+}
+
 export function isTemporaryProviderMediaUrl(value?: string | null): boolean {
   const normalized = normalizeMediaUrl(value);
   if (!normalized || !/^https?:\/\//i.test(normalized)) return false;

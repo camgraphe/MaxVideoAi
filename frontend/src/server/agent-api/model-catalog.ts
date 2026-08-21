@@ -4,6 +4,12 @@ import {
   getPublicConfiguredEnginesByCategory,
   getPublicConfiguredEnginesByCategoryInExecutor,
 } from '@/server/engines';
+import {
+  isBytePlusModelArkEnabled,
+  isBytePlusSeedanceAdminOnly,
+  isBytePlusSeedanceSubmissionEnabled,
+  resolveBytePlusSeedanceRouteProfile,
+} from '@/server/video-providers/byteplus-modelark';
 import type { EngineCaps, EngineModeUiCaps } from '@/types/engines';
 
 import type { AgentGenerationMode, AgentModel, AgentModelFilter } from './types';
@@ -37,6 +43,7 @@ const MODE_CAPS_BY_ENGINE_ID = new Map<string, Partial<Record<AgentGenerationMod
 export type AgentModelCatalogDeps = {
   listEngines(): Promise<EngineCaps[]>;
   surfaceByEngineId(engineId: string): 'video' | 'image' | null;
+  isEngineExecutable?(engine: EngineCaps): boolean;
 };
 
 export type AgentModelCandidate = {
@@ -50,10 +57,26 @@ const defaultDeps: AgentModelCatalogDeps = {
   surfaceByEngineId(engineId) {
     return SURFACE_BY_ENGINE_ID.get(engineId) ?? null;
   },
+  isEngineExecutable: isAgentGenerationEngineExecutable,
 };
 
 function referenceImagesSupported(modes: AgentGenerationMode[]): boolean {
   return modes.some((mode) => mode === 'i2v' || mode === 'ref2v' || mode === 'i2i');
+}
+
+export function isAgentGenerationEngineExecutable(engine: EngineCaps): boolean {
+  try {
+    const bytePlusProfile = resolveBytePlusSeedanceRouteProfile(
+      engine.id,
+      engine.providerMeta?.provider,
+    );
+    if (!bytePlusProfile) return true;
+    return isBytePlusModelArkEnabled()
+      && isBytePlusSeedanceSubmissionEnabled(engine.id)
+      && !isBytePlusSeedanceAdminOnly(engine.id);
+  } catch {
+    return false;
+  }
 }
 
 function toCandidate(
@@ -86,7 +109,7 @@ export async function listPublicAgentGenerationEngines(
   const engines = await deps.listEngines();
   return engines.flatMap((engine) => {
     const surface = deps.surfaceByEngineId(engine.id);
-    if (!isPublicAgentEngine(engine, surface)) return [];
+    if (!isPublicAgentEngine(engine, surface) || deps.isEngineExecutable?.(engine) === false) return [];
     const modes = listPublicAgentModes(engine, surface);
     const configuredModeCaps = engine.modeCaps ?? {};
     const registryModeCaps = MODE_CAPS_BY_ENGINE_ID.get(engine.id) ?? {};
@@ -115,6 +138,7 @@ export async function listPublicAgentGenerationEnginesInExecutor(
     surfaceByEngineId(engineId) {
       return SURFACE_BY_ENGINE_ID.get(engineId) ?? null;
     },
+    isEngineExecutable: isAgentGenerationEngineExecutable,
   });
 }
 

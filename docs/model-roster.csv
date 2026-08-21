@@ -5,6 +5,7 @@ seedance-2-0-mini,Dreamina Seedance 2.0 Mini,bytedance,dreamina-seedance-2-0-min
 seedance-1-5-pro,Seedance 1.5 Pro,bytedance,seedance-1-5-pro,seedance,v1.5 Pro,available,logoAllowed,true,true
 seedance-2-0,Seedance 2.0,bytedance,seedance-2-0,seedance,2.0,available,logoAllowed,true,true
 seedance-2-0-fast,Seedance 2.0 Fast,bytedance,seedance-2-0-fast,seedance,2.0 Fast,available,logoAllowed,true,true
+seedance-2-5,Seedance 2.5,bytedance,seedance-2-5,seedance,2.5,available,logoAllowed,true,true
 seedream,Seedream,bytedance,seedream,seedream,5.0 Lite,available,logoAllowed,true,true
 seedream-5-0-pro,Seedream 5.0 Pro,bytedance,seedream-5-0-pro,seedream,5.0 Pro,available,logoAllowed,true,true
 nano-banana,Nano Banana (Image Generation),google,nano-banana,nano-banana,Nano,available,logoAllowed,true,true
@@ -32,6 +33,7 @@ lumaRay2_flash,Luma Ray 2 Flash,luma,luma-ray-2-flash,luma,Ray 2 Flash,available
 luma-ray-3-2,Luma Ray 3.2,luma,luma-ray-3-2,luma,Ray 3.2,available,logoAllowed,true,true
 luma-uni-1,Luma Uni-1,luma,luma-uni-1,luma-uni,Uni-1,available,logoAllowed,true,true
 luma-uni-1-max,Luma Uni-1 Max,luma,luma-uni-1-max,luma-uni,Uni-1 Max,available,logoAllowed,true,true
+minimax-h3,MiniMax H3,minimax,minimax-h3,hailuo,H3,available,logoAllowed,true,true
 minimax-hailuo-02-text,MiniMax Hailuo 02 Standard,minimax,minimax-hailuo-02-text,hailuo,Standard,available,logoAllowed,true,true
 gpt-image-2,GPT Image 2,openai,gpt-image-2,gpt-image,2,available,logoAllowed,true,true
 sora-2,OpenAI Sora 2,openai,sora-2,sora,2,available,logoAllowed,true,true

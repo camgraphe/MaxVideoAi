@@ -108,6 +108,15 @@ export function cloneEngine(engine: EngineCaps): EngineCaps {
       ? {
           required: engine.inputSchema.required?.map(cloneInputField),
           optional: engine.inputSchema.optional?.map(cloneInputField),
+          referenceBudget: engine.inputSchema.referenceBudget
+            ? {
+                ...engine.inputSchema.referenceBudget,
+                fieldIds: [...engine.inputSchema.referenceBudget.fieldIds],
+                modes: engine.inputSchema.referenceBudget.modes
+                  ? [...engine.inputSchema.referenceBudget.modes]
+                  : undefined,
+              }
+            : undefined,
           constraints: engine.inputSchema.constraints ? { ...engine.inputSchema.constraints } : undefined,
         }
       : undefined,

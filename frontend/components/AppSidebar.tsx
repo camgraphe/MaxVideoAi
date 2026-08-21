@@ -140,16 +140,16 @@ export function AppSidebar() {
               {t('workspace.sidebar.newModel.label', 'New model')}
             </p>
             <p className="mt-1 text-base font-semibold text-brand">
-              {t('workspace.sidebar.newModel.name', 'Seedance 2.0')}
+              {t('workspace.sidebar.newModel.name', 'Seedance 2.5')}
             </p>
             <ul className="mt-3 space-y-2 text-xs text-text-secondary">
               <li className="flex items-center gap-2">
                 <Check className="h-3.5 w-3.5 text-brand" aria-hidden />
-                {t('workspace.sidebar.newModel.quality1', 'Cinematic motion')}
+                {t('workspace.sidebar.newModel.quality1', 'Up to 30-second scenes')}
               </li>
               <li className="flex items-center gap-2">
                 <Check className="h-3.5 w-3.5 text-brand" aria-hidden />
-                {t('workspace.sidebar.newModel.quality2', 'Multi-shot continuity')}
+                {t('workspace.sidebar.newModel.quality2', 'Images, references and video editing')}
               </li>
               <li className="flex items-center gap-2">
                 <Check className="h-3.5 w-3.5 text-brand" aria-hidden />
@@ -157,7 +157,7 @@ export function AppSidebar() {
               </li>
             </ul>
             <ButtonLink
-              href="/app?engine=seedance-2-0"
+              href="/app?engine=seedance-2-5"
               prefetch={false}
               size="sm"
               className="mt-4 w-full"

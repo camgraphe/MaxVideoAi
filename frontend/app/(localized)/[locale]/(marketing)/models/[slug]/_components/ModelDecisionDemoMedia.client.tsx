@@ -98,6 +98,7 @@ export function ModelDecisionDemoMedia({
       {renderHref && !isPlaying ? (
         <Link
           href={renderHref}
+          prefetch={false}
           className="absolute bottom-4 right-4 inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-white/20 bg-slate-950/[0.56] px-4 py-2 text-sm font-semibold text-white shadow-sm backdrop-blur transition hover:bg-slate-950/[0.72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
         >
           <span>{renderLabel}</span>

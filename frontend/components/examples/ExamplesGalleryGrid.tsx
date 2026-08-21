@@ -8,6 +8,7 @@ export function ExamplesGalleryGrid({
   loadMoreLabel = 'Load more examples',
   loadingLabel = 'Loading…',
   noPreviewLabel = 'No preview',
+  prioritizeFirstPoster = false,
   audioAvailableLabel = 'Audio available on playback',
   initialDesktopBatch = 8,
   initialMobileBatch = 4,
@@ -22,6 +23,7 @@ export function ExamplesGalleryGrid({
   loadMoreLabel?: string;
   loadingLabel?: string;
   noPreviewLabel?: string;
+  prioritizeFirstPoster?: boolean;
   audioAvailableLabel?: string;
   initialDesktopBatch?: number;
   initialMobileBatch?: number;
@@ -38,6 +40,7 @@ export function ExamplesGalleryGrid({
       loadMoreLabel={loadMoreLabel}
       loadingLabel={loadingLabel}
       noPreviewLabel={noPreviewLabel}
+      prioritizeFirstPoster={prioritizeFirstPoster}
       audioAvailableLabel={audioAvailableLabel}
       initialDesktopBatch={initialDesktopBatch}
       initialMobileBatch={initialMobileBatch}

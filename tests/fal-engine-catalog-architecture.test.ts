@@ -38,6 +38,7 @@ const moduleNames = [
   'wan-2-5.ts',
   'wan-2-6.ts',
   'hailuo.ts',
+  'minimax-h3.ts',
   'ltx-2-fast.ts',
   'ltx-2.ts',
   'ltx-2-3-fast.ts',

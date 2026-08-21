@@ -13,6 +13,7 @@ import { PRIMARY_VIDEO_READY_EVENT } from '@/lib/video-warmup-events';
 import { CompositePreviewDockHeader } from './CompositePreviewDockHeader';
 import { CompositePreviewDockTile } from './CompositePreviewDockTile';
 import { CompositePreviewDockToolbar } from './CompositePreviewDockToolbar';
+import { WorkspacePreviewColumn } from './WorkspacePreviewColumn';
 import {
   DEFAULT_PREVIEW_COPY,
   GRID_CLASS,
@@ -115,6 +116,7 @@ export function CompositePreviewDock({
   }, []);
 
   useEffect(() => {
+    if (workspaceDensity) return;
     const target = previewRef.current;
     const toolbar = toolbarRef.current;
     if (!target || !toolbar) return;
@@ -129,13 +131,9 @@ export function CompositePreviewDock({
         const maxHeight = viewportHeight * 0.5;
         const maxWidth = 960;
         const availableWidth = parent.clientWidth;
-        const workspaceHeightRatio = window.innerWidth < 640 ? 0.25 : 0.32;
-        const workspaceHeightBudget = Math.max(1, Math.min(viewportHeight * workspaceHeightRatio, 340) - 12);
-        const width = workspaceDensity
-          ? Math.min(availableWidth, maxWidth, (workspaceHeightBudget * 16) / 9)
-          : Math.min(availableWidth, maxWidth, (maxHeight * 16) / 9);
+        const width = Math.min(availableWidth, maxWidth, (maxHeight * 16) / 9);
         const widthPx = `${Math.round(width)}px`;
-        const heightPx = workspaceDensity ? '' : `${Math.round((width * 9) / 16)}px`;
+        const heightPx = `${Math.round((width * 9) / 16)}px`;
         if (target.style.width !== widthPx) target.style.width = widthPx;
         if (target.style.height !== heightPx) target.style.height = heightPx;
         if (toolbar.style.width !== widthPx) toolbar.style.width = widthPx;
@@ -328,7 +326,7 @@ export function CompositePreviewDock({
       />
 
       <div className={workspaceDensity ? 'px-0 py-0' : 'px-4 py-4'}>
-        <div className="flex flex-col items-center">
+        <WorkspacePreviewColumn constrained={workspaceDensity}>
           <div
             ref={previewRef}
             data-workspace-preview-media={workspaceDensity ? '' : undefined}
@@ -476,7 +474,7 @@ export function CompositePreviewDock({
               />
             </div>
           </div>
-        </div>
+        </WorkspacePreviewColumn>
       </div>
     </section>
   );

@@ -32,3 +32,19 @@ test('workspace gallery actions are owned by a route-local hook', () => {
   assert.match(hookSource, /buildQuadTileFromGroupMember/);
   assert.match(hookSource, /haveSameGroupOrder/);
 });
+
+test('guided samples change composer settings only after an explicit gallery action', () => {
+  const appSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/AppClient.tsx'),
+    'utf8'
+  );
+  const hookSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceGalleryActions.ts'),
+    'utf8'
+  );
+
+  assert.doesNotMatch(hookSource, /handleGalleryGroupAction\(guidedSampleGroups\[0\], 'open'\)/);
+  assert.doesNotMatch(hookSource, /suppressGuidedSampleAutoApply/);
+  assert.doesNotMatch(appSource, /suppressGuidedSampleAutoApply/);
+  assert.match(hookSource, /handleGalleryGroupAction\(target, 'open', \{ autoPlayPreview: true \}\)/);
+});

@@ -1,5 +1,6 @@
 import type { GeneratePayload } from '@/lib/fal';
 import { ensureUserPreferredCurrency } from '@/lib/currency';
+import type { ReferenceBudgetValuesByField } from '@/lib/reference-budget';
 import { generateAndPersistJobKeyframes } from '@/server/video-keyframes';
 import {
   buildResponseFromExistingVideoJob,
@@ -18,6 +19,7 @@ import type { GenerateRequestOptions } from '@/app/api/generate/_lib/request-opt
 import type { GenerateRouteContext } from '@/app/api/generate/_lib/route-context';
 import type { GenerateRouteMetricOptions, GenerateRouteMetricStatus } from '@/app/api/generate/_lib/metric-logger';
 import type { WalletReservation } from '@/server/generations/initial-job-reservation';
+import type { EngineInputSchema } from '@/types/engines';
 import { executeVideoGenerationLifecycle } from './video-generation-lifecycle';
 import type { PreReservedVideoInitialState, VideoGenerationAdapters, VideoGenerationResponse } from './video-generation-contracts';
 
@@ -47,6 +49,8 @@ export type ExecutePreparedVideoGenerationParams = {
   videoUrls: string[];
   resolvedAudioUrl: string | null | undefined;
   audioUrls: string[];
+  inputSchema?: EngineInputSchema | null;
+  referenceValuesByField?: ReferenceBudgetValuesByField<string>;
   placeholderThumb: string;
   falPayload: GeneratePayload;
   falInputSummary: FalInputSummary;
@@ -74,6 +78,8 @@ export async function executePreparedVideoGeneration(params: ExecutePreparedVide
     videoUrls,
     resolvedAudioUrl,
     audioUrls,
+    inputSchema,
+    referenceValuesByField,
     placeholderThumb,
     falPayload,
     falInputSummary,
@@ -283,6 +289,8 @@ export async function executePreparedVideoGeneration(params: ExecutePreparedVide
           renderIds,
           heroRenderId,
           localKey,
+          inputSchema,
+          referenceValuesByField,
           deps: { logMetricFn: logMetric },
         });
         return submission.ok

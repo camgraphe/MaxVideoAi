@@ -161,6 +161,8 @@ export function ExamplesPageView({
   totalPages,
   usesCurrentAndSupportedBlocks,
 }: ExamplesPageViewProps) {
+  const hasRouteHero = Boolean(mainVideo && mainVideoFeature.contentUrl);
+
   return (
     <>
       <ExamplesEngineFilterNav
@@ -171,7 +173,7 @@ export function ExamplesPageView({
         selectedEngine={selectedEngine}
       />
 
-      <main
+      <div
         className={clsx(
           'container-page max-w-7xl',
           engineFilterOptions.length ? 'pb-[var(--section-padding-y)] pt-4 sm:pt-6' : 'section'
@@ -230,6 +232,7 @@ export function ExamplesPageView({
             locale={locale}
             noPreviewLabel={galleryUiCopy.noPreview}
             pageOffsetEnd={pageOffsetEnd}
+            prioritizeFirstPoster={!hasRouteHero}
             show={showGallerySection}
             sort={sort}
           />
@@ -265,7 +268,7 @@ export function ExamplesPageView({
           faqJsonLd={faqJsonLd}
           itemListJson={itemListJson}
         />
-      </main>
+      </div>
     </>
   );
 }

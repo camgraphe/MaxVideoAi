@@ -15,7 +15,7 @@ const GalleryRail = dynamic<GalleryRailProps>(
   () => import('@/components/GalleryRail').then((mod) => mod.GalleryRail),
   {
     ssr: false,
-    loading: () => <GalleryRailSkeleton />,
+    loading: () => <GalleryRailSkeleton responsive />,
   }
 );
 
@@ -23,7 +23,6 @@ type CenterGalleryProps = ComponentProps<typeof WorkspaceCenterGallery>;
 type PreviewDockProps = ComponentProps<typeof WorkspacePreviewDock>;
 
 type WorkspaceAppShellProps = {
-  isDesktopLayout: boolean;
   selectedEngine: EngineCaps;
   engines: EngineCaps[];
   normalizedPendingGroups: GroupSummary[];
@@ -60,7 +59,6 @@ type WorkspaceAppShellProps = {
 };
 
 export function WorkspaceAppShell({
-  isDesktopLayout,
   selectedEngine,
   engines,
   normalizedPendingGroups,
@@ -97,8 +95,7 @@ export function WorkspaceAppShell({
 }: WorkspaceAppShellProps) {
   return (
     <WorkspaceChrome
-      isDesktopLayout={isDesktopLayout}
-      desktopRail={
+      rail={
         <GalleryRail
           engine={selectedEngine}
           engineRegistry={engines}
@@ -106,18 +103,7 @@ export function WorkspaceAppShell({
           onOpenGroup={openGroupViaGallery}
           onGroupAction={handleGalleryGroupAction}
           onFeedStateChange={handleGalleryFeedStateChange}
-          variant="desktop"
-        />
-      }
-      mobileRail={
-        <GalleryRail
-          engine={selectedEngine}
-          engineRegistry={engines}
-          activeGroups={normalizedPendingGroups}
-          onOpenGroup={openGroupViaGallery}
-          onGroupAction={handleGalleryGroupAction}
-          onFeedStateChange={handleGalleryFeedStateChange}
-          variant="mobile"
+          variant="responsive"
         />
       }
     >

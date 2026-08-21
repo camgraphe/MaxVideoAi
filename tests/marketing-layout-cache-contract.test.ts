@@ -38,6 +38,16 @@ test('canonical localized marketing pages receive cache headers on the middlewar
   }
 });
 
+test('default homepage receives cache headers on the middleware response', async () => {
+  const response = await middleware(new NextRequest('https://maxvideoai.com/'));
+
+  assert.equal(response.headers.get('cache-control'), 'public, max-age=0, must-revalidate');
+  assert.equal(
+    response.headers.get('vercel-cdn-cache-control'),
+    'max-age=300, stale-while-revalidate=60'
+  );
+});
+
 test('unprefixed marketing routes stay outside the middleware CDN cache policy', async () => {
   const response = await middleware(new NextRequest('https://maxvideoai.com/pricing'));
 

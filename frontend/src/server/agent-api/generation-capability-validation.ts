@@ -179,9 +179,13 @@ function buildProviderConstraintPayload(
   request: CanonicalGenerationRequest,
 ): Record<string, unknown> {
   const payload: Record<string, unknown> = {
+    prompt: request.prompt,
     duration: request.settings.durationSec,
     resolution: request.settings.resolution,
   };
+  if (request.settings.aspectRatio !== undefined) {
+    payload.aspect_ratio = request.settings.aspectRatio;
+  }
   if (request.settings.loop !== undefined) payload.loop = request.settings.loop;
   if (request.settings.seed !== undefined) payload.seed = request.settings.seed;
   if (request.settings.safetyChecker !== undefined) {
@@ -203,7 +207,10 @@ function buildProviderConstraintPayload(
     payload.last_frame_url = lastFrame;
     payload.end_image_url = lastFrame;
   }
-  if (references?.length) payload.image_urls = references;
+  if (references?.length) {
+    if (request.engineId === 'minimax-h3') payload.reference_image_urls = references;
+    else payload.image_urls = references;
+  }
   return payload;
 }
 

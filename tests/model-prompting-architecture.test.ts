@@ -75,6 +75,11 @@ test('model prompting parses and builds once before rendering', () => {
     /demoPromptSource,[\s\S]*defaultDemoPromptSource,[\s\S]*demoMedia,/,
     'the builder should receive separate decision and default prompt sources',
   );
+  assert.match(
+    layoutSource,
+    /appGenerationEnabled:\s*engine\.surfaces\.app\.enabled/,
+    'the route should pass authoritative app publication into the Prompt Lab view model',
+  );
   assert.doesNotMatch(
     layoutSource,
     /const\s+useDemoMediaPrompt\s*=\s*Boolean\(demoMedia\?\.prompt\?\.trim\(\)\)/,
@@ -155,11 +160,11 @@ test('interactive Prompt Lab children receive derived labels and destinations', 
   assert.match(tabsSource, /tabs:\s*ModelPromptingViewModel\['tabs'\]\['items'\]/);
   assert.match(tabsSource, /labels:\s*Pick<ModelPromptingUiCopy,/);
   assert.match(tabsSource, /exampleHref:\s*string\s*\|\s*null/);
-  assert.match(tabsSource, /usePromptHref:\s*string/);
+  assert.match(tabsSource, /usePromptHref:\s*string\s*\|\s*null/);
   assert.doesNotMatch(tabsSource, /getCopy|AppLocale|engineSlug|isImageEngine|encodeURIComponent/);
   assert.match(decisionSource, /usePromptHref=\{viewModel\.tabs\.usePromptHref\}/);
   assert.match(decisionSource, /workspaceHref=\{viewModel\.imageExamples\.workspaceHref\}/);
-  assert.match(imageExamplesSource, /workspaceHref:\s*string/);
+  assert.match(imageExamplesSource, /workspaceHref:\s*string\s*\|\s*null/);
   assert.match(imageExamplesSource, /key=\{example\.id\}/);
   assert.doesNotMatch(imageExamplesSource, /key=\{example\.title\}/);
   assert.doesNotMatch(imageExamplesSource, /engineSlug|encodeURIComponent|\/app\/image\?engine=/);

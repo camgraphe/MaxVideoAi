@@ -30,6 +30,12 @@ function getSeedreamEngine() {
   return engine;
 }
 
+function getSeedreamProEngine() {
+  const engine = listFalEngines().find((entry) => entry.id === 'seedream-5-0-pro')?.engine;
+  assert.ok(engine);
+  return engine;
+}
+
 test('Nano Banana 2 resolves generic aspect ratios including auto and 4:1', () => {
   const engine = getNanoBanana2Engine();
 
@@ -127,4 +133,16 @@ test('Seedream resolves BytePlus sizes and edit references', () => {
   assert.equal(refs.min, 1);
   assert.equal(refs.max, 10);
   assert.equal(refs.requires, true);
+});
+
+test('Seedream 5.0 Pro rejects provider-unsupported 4K requests before execution', () => {
+  const engine = getSeedreamProEngine();
+
+  const supported = resolveRequestedResolution(engine, 't2i', '2K');
+  const unsupported = resolveRequestedResolution(engine, 't2i', '4K');
+
+  assert.equal(supported.ok, true);
+  assert.equal(supported.ok && supported.resolution, '2K');
+  assert.equal(unsupported.ok, false);
+  assert.deepEqual(unsupported.ok ? [] : unsupported.allowed, ['2K']);
 });

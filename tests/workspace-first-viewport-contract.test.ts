@@ -32,6 +32,10 @@ const compositePreviewSource = readFileSync(
   'frontend/components/groups/CompositePreviewDock.tsx',
   'utf8'
 );
+const workspacePreviewColumnSource = readFileSync(
+  'frontend/components/groups/WorkspacePreviewColumn.tsx',
+  'utf8'
+);
 const compositePreviewHeaderSource = readFileSync(
   'frontend/components/groups/CompositePreviewDockHeader.tsx',
   'utf8'
@@ -141,23 +145,9 @@ test('workspace preview and image prompt density stay opt-in without changing sh
   assert.match(compositePreviewSource, /workspaceDensity \? 'px-0 py-0' : 'px-4 py-4'/);
   assert.match(compositePreviewSource, /workspaceDensity \? 'mt-1' : 'mt-3'/);
   assert.match(compositePreviewSource, /workspaceDensity \? 'px-3 py-0' : 'px-3 py-2'/);
-  assert.match(compositePreviewSource, /window\.innerWidth < 640 \? 0\.25 : 0\.32/);
-  assert.match(
-    compositePreviewSource,
-    /const workspaceHeightBudget = Math\.max\(1, Math\.min\(viewportHeight \* workspaceHeightRatio, 340\) - 12\)/
-  );
-  assert.match(
-    compositePreviewSource,
-    /Math\.min\(availableWidth, maxWidth, \(workspaceHeightBudget \* 16\) \/ 9\)/
-  );
-  assert.match(
-    compositePreviewSource,
-    /const heightPx = workspaceDensity \? '' : `\$\{Math\.round\(\(width \* 9\) \/ 16\)\}px`/
-  );
-  assert.doesNotMatch(
-    compositePreviewSource,
-    /const height = workspaceDensity[\s\S]{0,180}viewportHeight \* workspaceHeightRatio/
-  );
+  assert.match(compositePreviewSource, /if \(workspaceDensity\) return;/);
+  assert.match(compositePreviewSource, /const width = Math\.min\(availableWidth, maxWidth, \(maxHeight \* 16\) \/ 9\)/);
+  assert.match(compositePreviewSource, /const heightPx = `\$\{Math\.round\(\(width \* 9\) \/ 16\)\}px`/);
   assert.match(compositePreviewHeaderSource, /density\?: 'default' \| 'workspace'/);
   assert.match(compositePreviewHeaderSource, /density === 'workspace' \? 'py-1' : 'py-3'/);
   assert.match(imageCompositePreviewSource, /density\?: 'default' \| 'workspace'/);
@@ -169,6 +159,14 @@ test('workspace preview and image prompt density stay opt-in without changing sh
     /workspaceDensity \? 'max-h-\[220px\] sm:max-h-\[330px\]' : 'max-h-\[320px\] sm:max-h-\[420px\]'/
   );
   assert.match(imageSurfaceSource, /<div className="flex flex-col gap-1">/);
+});
+
+test('workspace video preview shares first-paint geometry with its boot skeleton', () => {
+  assert.match(compositePreviewSource, /WorkspacePreviewColumn/);
+  assert.match(compositePreviewSource, /if \(workspaceDensity\) return;/);
+  assert.match(workspacePreviewColumnSource, /--workspace-preview-fluid-width/);
+  assert.match(workspacePreviewColumnSource, /44\.444444svh/);
+  assert.match(workspacePreviewColumnSource, /56\.888889svh/);
 });
 
 test('video composer limits calm upload locks to the winning guest-auth reason', () => {

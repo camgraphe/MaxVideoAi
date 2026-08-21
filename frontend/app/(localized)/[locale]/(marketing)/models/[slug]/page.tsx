@@ -2,12 +2,19 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { listFalEngines, getFalEngineBySlug, type FalEngineEntry } from '@/config/falEngines';
+import {
+  isRuntimeModelPagePublished,
+  isRuntimePresentationOnlyModel,
+  listPublishedRuntimeModels,
+  resolveRuntimePublicSlug,
+} from '@/config/model-runtime';
 import { locales, type AppLocale } from '@/i18n/locales';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveLocalesForEnglishPath } from '@/lib/seo/alternateLocales';
 import { getEngineLocalized, type EngineLocalizedContent } from '@/lib/models/i18n';
 import { normalizeEngineId } from '@/lib/engine-alias';
+import { resolvePublicMarketingVideoUrl } from '@/lib/media';
 import { listPlaylistVideos, getPublicVideosByIds, type GalleryVideo } from '@/server/videos';
 import { applyEnginePricingOverride } from '@/lib/pricing-definition';
 import { listEnginePricingOverrides } from '@/server/engine-settings';
@@ -52,6 +59,11 @@ import {
   type KeySpecRow,
 } from './_lib/model-page-specs';
 import { MarketingModelPageLayout } from './_components/MarketingModelPageLayout';
+import {
+  buildModelPrelaunchMetadata,
+  renderMarketingModelPrelaunchPage,
+} from './_lib/model-page-prelaunch-route';
+import { isPrelaunchModelPageTemplateSlug } from './_lib/model-page-template-registry';
 
 type PageParams = {
   params: Promise<{
@@ -63,20 +75,47 @@ type PageParams = {
 export const dynamicParams = false;
 export const revalidate = 300;
 
-const UNBRANDED_MODEL_TITLE_SLUGS = new Set(['pika-text-to-video', 'ltx-2-3-fast', 'seedance-2-0', 'veo-3-1']);
+const UNBRANDED_MODEL_TITLE_SLUGS = new Set([
+  'pika-text-to-video',
+  'ltx-2-3-fast',
+  'seedance-2-0',
+  'seedance-2-5',
+  'veo-3-1',
+]);
 
 export function generateStaticParams() {
-  const engines = listFalEngines();
   return locales.flatMap((locale) =>
-    engines
-      .filter(isPublishedModelPage)
-      .map((entry) => ({ locale, slug: entry.modelSlug }))
+    listPublishedRuntimeModels().map((model) => ({ locale, slug: model.slug }))
   );
 }
 
 export async function generateMetadata(props: PageParams): Promise<Metadata> {
   const params = await props.params;
   const { slug, locale } = params;
+  const model = resolveRuntimePublicSlug(slug);
+  if (!model || !isRuntimeModelPagePublished(model)) {
+    return {
+      title: 'Model not found - MaxVideo AI',
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const canonicalSlug = model.slug;
+  const localized = await getEngineLocalized(canonicalSlug, locale);
+  const detailSlugMap = buildDetailSlugMap(canonicalSlug);
+  const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${canonicalSlug}`));
+
+  if (
+    isRuntimePresentationOnlyModel(model) ||
+    isPrelaunchModelPageTemplateSlug(canonicalSlug)
+  ) {
+    return buildModelPrelaunchMetadata({
+      model,
+      localizedContent: localized,
+      locale,
+    });
+  }
+
   const engine = getFalEngineBySlug(slug);
   if (!isPublishedModelPage(engine)) {
     return {
@@ -85,15 +124,11 @@ export async function generateMetadata(props: PageParams): Promise<Metadata> {
     };
   }
 
-  const canonicalSlug = engine.modelSlug ?? slug;
-  const localized = await getEngineLocalized(canonicalSlug, locale);
   const decisionData = buildModelDecisionData({
     engine,
     locale,
     decisionContent: localized.decision,
   });
-  const detailSlugMap = buildDetailSlugMap(canonicalSlug);
-  const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${canonicalSlug}`));
   const fallbackTitle = engine.seo.title ?? `${engine.marketingName} — MaxVideo AI`;
   const title = decisionData?.meta.title ?? localized.seo.title ?? fallbackTitle;
   const description =
@@ -310,7 +345,10 @@ async function renderMarketingModelPage({
       engine.type === 'image'
         ? `${modelName} demo still from MaxVideoAI`
         : `${modelName} demo clip from MaxVideoAI`,
-    videoUrl: engine.type === 'image' ? null : (normalizeMediaUrl(engine.media?.videoUrl) ?? normalizeMediaUrl(engine.demoUrl)),
+    videoUrl:
+      engine.type === 'image'
+        ? null
+        : (resolvePublicMarketingVideoUrl(engine.media?.videoUrl) ?? resolvePublicMarketingVideoUrl(engine.demoUrl)),
     posterUrl: normalizeMediaUrl(engine.media?.imagePath),
     durationSec: null,
     hasAudio: engine.type === 'image' ? false : true,
@@ -337,14 +375,10 @@ async function renderMarketingModelPage({
     demoMedia.prompt =
       '10s silent Hailuo 02 draft in 16:9. A cyclist rides through a shallow puddle on an empty concrete path; water splashes outward and the jacket fabric reacts to the motion. Low side tracking shot with one smooth push-in, natural dusk light, simple background, physics-focused movement, no dialogue or audio.';
   }
-  const galleryCtaHref = appGenerationEnabled
-    ? heroMedia?.id
-      ? `${appPath}?engine=${engine.id}&from=${encodeURIComponent(heroMedia.id)}`
-      : `${appPath}?engine=${engine.id}`
-    : fallbackMarketingHref;
   const compareEngines = pickCompareEngines(listFalEngines(), engine.modelSlug);
   const faqEntries = localizedContent.faqs.length ? localizedContent.faqs : copy.faqs;
-  const showPriceInSpecs = engine.id !== 'lumaRay2';
+  const showPriceInSpecs =
+    engine.id !== 'lumaRay2' && engine.surfaces.pricing.includeInEstimator;
   const keySpecsMap = await loadEngineKeySpecs();
   const keySpecsEntry =
     keySpecsMap.get(engine.modelSlug) ?? keySpecsMap.get(engine.id) ?? null;
@@ -424,7 +458,6 @@ async function renderMarketingModelPage({
       heroMedia={heroMedia}
       demoMedia={demoMedia}
       galleryVideos={galleryVideos}
-      galleryCtaHref={galleryCtaHref}
       compareEngines={compareEngines}
       faqEntries={faqEntries}
       keySpecRows={keySpecRows}
@@ -444,13 +477,13 @@ export default async function ModelDetailPage(props: PageParams) {
   const params = await props.params;
   const { slug, locale: routeLocale } = params;
   const localizedModelsBase = (MODELS_BASE_PATH_MAP[routeLocale ?? 'en'] ?? 'models').replace(/^\/+|\/+$/g, '');
-  const engine = getFalEngineBySlug(slug);
-  if (!isPublishedModelPage(engine)) {
+  const model = resolveRuntimePublicSlug(slug);
+  if (!model || !isRuntimeModelPagePublished(model)) {
     notFound();
   }
 
-  if (slug !== engine.modelSlug) {
-    permanentRedirect(`/${localizedModelsBase}/${engine.modelSlug}`.replace(/\/{2,}/g, '/'));
+  if (slug !== model.slug) {
+    permanentRedirect(`/${localizedModelsBase}/${model.slug}`.replace(/\/{2,}/g, '/'));
   }
 
   {
@@ -463,7 +496,23 @@ export default async function ModelDetailPage(props: PageParams) {
       ...(dictionary.models.detail ?? {}),
       breadcrumb: { ...DEFAULT_DETAIL_COPY.breadcrumb, ...(dictionary.models.detail?.breadcrumb ?? {}) },
     };
-    const localizedContent = await getEngineLocalized(engine.modelSlug, activeLocale);
+    const localizedContent = await getEngineLocalized(model.slug, activeLocale);
+    if (
+      isRuntimePresentationOnlyModel(model) ||
+      isPrelaunchModelPageTemplateSlug(model.slug)
+    ) {
+      return await renderMarketingModelPrelaunchPage({
+        model,
+        detailCopy,
+        localizedContent,
+        locale: activeLocale,
+      });
+    }
+
+    const engine = getFalEngineBySlug(model.slug);
+    if (!isPublishedModelPage(engine)) {
+      notFound();
+    }
     return await renderMarketingModelPage({
       engine,
       detailCopy,

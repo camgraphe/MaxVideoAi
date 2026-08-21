@@ -3,7 +3,7 @@ import { localePathnames } from '@/i18n/locales';
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
 import { listAngleToolEngines } from '@/config/tools-angle-engines';
 import { listUpscaleToolEngines } from '@/config/tools-upscale-engines';
-import type { EngineCaps, Resolution } from '@/types/engines';
+import type { EngineCaps, Mode, Resolution } from '@/types/engines';
 import { CHARACTER_FORMAT_OPTIONS } from '@/lib/character-builder';
 import type { AudioPackId, AudioVoiceMode } from '@/lib/audio-generation';
 import type { GptImage2Quality } from '@/lib/image/gptImage2';
@@ -71,6 +71,8 @@ export type VideoPriceScenario = {
   resolution: Resolution;
   durationSec: number | null;
   audio: boolean;
+  mode?: Mode;
+  referenceImageCount?: number;
 };
 
 export type ImagePriceScenario = {
@@ -392,7 +394,9 @@ function quoteVideoScenarioCents(
   engine: EngineCaps,
   resolution: string,
   durationSec: number,
-  audioMode: AudioRateMode = 'default'
+  audioMode: AudioRateMode = 'default',
+  mode: Mode = 't2v',
+  referenceImageCount = 0
 ) {
   try {
     const lumaBasePriceUsd = getLumaRay2BasePriceUsd(engine.id);
@@ -400,7 +404,8 @@ function quoteVideoScenarioCents(
       engine,
       durationSec,
       resolution,
-      mode: 't2v',
+      mode,
+      referenceImageCount,
       ...(audioMode === 'audio_off' ? { addons: { audio_off: true } } : {}),
       ...(Number.isFinite(lumaBasePriceUsd) && lumaBasePriceUsd > 0 ? { lumaRay2BasePriceUsd: lumaBasePriceUsd } : {}),
     });
@@ -412,7 +417,7 @@ function quoteVideoScenarioCents(
         resolution,
         membershipTier: 'member',
       },
-      compatibilityProfileId: isLumaRay32EngineId(engine.id)
+      compatibilityProfileId: isLumaRay32EngineId(engine.id) || engine.id === 'minimax-h3'
         ? facts.compatibilityProfileId
         : 'public-rounded-vendor-current',
     }).customerTotalCents;
@@ -447,7 +452,14 @@ export function getPresetQuote(entry: FalEngineEntry, preset: VideoPriceScenario
 
   const exactCents =
     exact && duration.durationSec != null
-      ? quoteVideoScenarioCents(engine, resolution.resolution, duration.durationSec, audioMode)
+      ? quoteVideoScenarioCents(
+          engine,
+          resolution.resolution,
+          duration.durationSec,
+          audioMode,
+          preset.mode,
+          preset.referenceImageCount
+        )
       : null;
   if (exact) {
     if (exactCents == null || duration.durationSec == null) {

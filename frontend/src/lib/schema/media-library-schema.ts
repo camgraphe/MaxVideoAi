@@ -1,4 +1,4 @@
-import { query } from '@/lib/db';
+import { query, withDbTransaction } from '@/lib/db';
 
 let ensureMediaLibraryPromise: Promise<void> | null = null;
 
@@ -77,16 +77,20 @@ export async function ensureMediaLibrarySchema(): Promise<void> {
     );
   `);
 
-  await query(`
-    ALTER TABLE media_assets
-    DROP CONSTRAINT IF EXISTS media_assets_source_check;
-  `);
-
-  await query(`
-    ALTER TABLE media_assets
-    ADD CONSTRAINT media_assets_source_check
-    CHECK (source IN ('upload','saved_job_output','storyboard','character','angle','upscale','background-removal','import'));
-  `);
+  await withDbTransaction(async (executor) => {
+    await executor.query(`
+      SELECT pg_advisory_xact_lock(hashtext('maxvideoai:media_assets_source_check'));
+    `);
+    await executor.query(`
+      ALTER TABLE media_assets
+      DROP CONSTRAINT IF EXISTS media_assets_source_check;
+    `);
+    await executor.query(`
+      ALTER TABLE media_assets
+      ADD CONSTRAINT media_assets_source_check
+      CHECK (source IN ('upload','saved_job_output','storyboard','character','angle','upscale','background-removal','import'));
+    `);
+  });
 
   await query(`
     ALTER TABLE media_assets

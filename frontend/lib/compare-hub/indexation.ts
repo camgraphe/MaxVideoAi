@@ -8,7 +8,8 @@ const noindexByLocale: Record<AppLocale, ReadonlySet<string>> = {
 };
 
 export function isComparisonIndexable(locale: AppLocale, canonicalSlug: string): boolean {
-  return !noindexByLocale[locale].has(canonicalSlug);
+  const exclusions = noindexByLocale[locale];
+  return exclusions ? !exclusions.has(canonicalSlug) : false;
 }
 
 export function getIndexableComparisonLocales(canonicalSlug: string): AppLocale[] {

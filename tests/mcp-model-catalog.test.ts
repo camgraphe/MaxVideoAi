@@ -2,9 +2,11 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { listFalEngines } from '../frontend/src/config/falEngines';
+import { ENV } from '../frontend/src/lib/env';
 import {
   listAgentModels,
   listPublicAgentGenerationEngines,
+  isAgentGenerationEngineExecutable,
   type AgentModelCatalogDeps,
 } from '../frontend/src/server/agent-api/model-catalog';
 import type { EngineCaps, Mode } from '../frontend/types/engines';
@@ -54,6 +56,21 @@ function deps(engines: EngineCaps[], surfaces: Record<string, 'video' | 'image' 
     surfaceByEngineId(id) {
       return surfaces[id] ?? null;
     },
+  };
+}
+
+function realRegistryDeps(): AgentModelCatalogDeps {
+  const entries = listFalEngines();
+  return {
+    async listEngines() {
+      return entries.map((entry) => entry.engine);
+    },
+    surfaceByEngineId(id) {
+      const entry = entries.find((candidate) => candidate.id === id);
+      if (!entry) return null;
+      return entry.category === 'image' ? 'image' : 'video';
+    },
+    isEngineExecutable: isAgentGenerationEngineExecutable,
   };
 }
 
@@ -133,17 +150,7 @@ test('catalog filters against real capabilities', async () => {
 });
 
 test('real Sora 2 Pro never publishes ref2v without an executable mode capability', async () => {
-  const entries = listFalEngines();
-  const registryDeps: AgentModelCatalogDeps = {
-    async listEngines() {
-      return entries.map((entry) => entry.engine);
-    },
-    surfaceByEngineId(id) {
-      const entry = entries.find((candidate) => candidate.id === id);
-      if (!entry) return null;
-      return entry.category === 'image' ? 'image' : 'video';
-    },
-  };
+  const registryDeps = realRegistryDeps();
   const [soraModel] = await listAgentModels({ id: 'sora-2-pro' }, registryDeps);
   const soraCapability = (await listPublicAgentGenerationEngines(registryDeps))
     .find((candidate) => candidate.engine.id === 'sora-2-pro');
@@ -151,4 +158,69 @@ test('real Sora 2 Pro never publishes ref2v without an executable mode capabilit
   assert.ok(soraCapability);
   assert.deepEqual(soraModel.modes, ['t2v', 'i2v']);
   assert.deepEqual(soraCapability.publicModes, ['t2v', 'i2v']);
+});
+
+test('catalog mirrors real execution gates for newly registered video models', { concurrency: false }, async () => {
+  const original = {
+    bytePlusEnabled: ENV.BYTEPLUS_ARK_ENABLED,
+    seedance25Enabled: ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED,
+    seedance25Provider: ENV.SEEDANCE_2_5_PROVIDER,
+    seedance25AdminOnly: ENV.SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY,
+    seedance25Modes: ENV.SEEDANCE_2_5_BYTEPLUS_MODES,
+  };
+  const registryDeps = realRegistryDeps();
+
+  try {
+    ENV.BYTEPLUS_ARK_ENABLED = 'false';
+    ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = 'false';
+    ENV.SEEDANCE_2_5_PROVIDER = 'disabled';
+    ENV.SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY = 'true';
+    ENV.SEEDANCE_2_5_BYTEPLUS_MODES = 't2v';
+
+    const closedModels = await listAgentModels({}, registryDeps);
+    assert.equal(closedModels.some((model) => model.id === 'seedance-2-5'), false);
+    assert.deepEqual(
+      closedModels.find((model) => model.id === 'minimax-h3'),
+      {
+        id: 'minimax-h3',
+        label: 'MiniMax H3',
+        surface: 'video',
+        modes: ['t2v', 'i2v', 'ref2v'],
+        aspectRatios: ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16', 'auto'],
+        resolutions: ['768P', '2K', '4K'],
+        maxDurationSec: 15,
+        audio: true,
+        referenceImages: true,
+        availability: 'available',
+      },
+    );
+
+    ENV.BYTEPLUS_ARK_ENABLED = 'true';
+    ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = 'true';
+    ENV.SEEDANCE_2_5_PROVIDER = 'byteplus_modelark';
+    ENV.SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY = 'false';
+    ENV.SEEDANCE_2_5_BYTEPLUS_MODES = 't2v,i2v,ref2v,v2v,extend';
+
+    assert.deepEqual(
+      (await listAgentModels({ id: 'seedance-2-5' }, registryDeps))[0],
+      {
+        id: 'seedance-2-5',
+        label: 'Seedance 2.5',
+        surface: 'video',
+        modes: ['t2v', 'i2v', 'ref2v'],
+        aspectRatios: ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
+        resolutions: ['480p', '720p'],
+        maxDurationSec: 30,
+        audio: true,
+        referenceImages: true,
+        availability: 'available',
+      },
+    );
+  } finally {
+    ENV.BYTEPLUS_ARK_ENABLED = original.bytePlusEnabled;
+    ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = original.seedance25Enabled;
+    ENV.SEEDANCE_2_5_PROVIDER = original.seedance25Provider;
+    ENV.SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY = original.seedance25AdminOnly;
+    ENV.SEEDANCE_2_5_BYTEPLUS_MODES = original.seedance25Modes;
+  }
 });

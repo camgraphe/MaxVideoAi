@@ -164,7 +164,7 @@ export function ComparisonPreview({ copy, comparisons }: { copy: SectionCopy; co
                     </div>
                   ) : (
                     <Image
-                      src={comparison.imageSrc ?? COMPARISON_CARD_MEDIA[comparison.id]?.imageSrc ?? '/hero/showcase-seedance-2-0.webp'}
+                      src={comparison.imageSrc ?? COMPARISON_CARD_MEDIA[comparison.id]?.imageSrc ?? '/hero/showcase-seedance-2-0-business-workflow.webp'}
                       alt={comparison.imageAlt ?? COMPARISON_CARD_MEDIA[comparison.id]?.imageAlt ?? `${comparison.title} AI video comparison preview.`}
                       fill
                       sizes="(max-width: 639px) 50vw, (max-width: 1023px) 220px, 132px"
@@ -282,7 +282,7 @@ export function AiVideoToolbox({ copy, tools }: { copy: SectionCopy; tools: Tool
               data-analytics-tool-surface="public"
             >
               <Image
-                src={TOOLBOX_VISUALS[tool.id] ?? '/hero/showcase-seedance-2-0.webp'}
+                src={TOOLBOX_VISUALS[tool.id] ?? '/hero/showcase-seedance-2-0-business-workflow.webp'}
                 alt=""
                 aria-hidden="true"
                 fill

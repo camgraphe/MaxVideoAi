@@ -37,27 +37,3 @@ export function parseAspectRatio(aspect: string) {
   if (!Number.isFinite(w) || !Number.isFinite(h) || h === 0) return 16 / 9;
   return w / h;
 }
-
-export function estimateCardHeightWeight(aspectRatio: string | null) {
-  const ratio = aspectRatio ? parseAspectRatio(aspectRatio) : DEFAULT_LANDSCAPE_RATIO;
-  if (ratio < 0.9) return 1.8;
-  if (ratio < 1.1) return 1;
-  return 0.6;
-}
-
-export function splitIntoColumns(videos: ExampleGalleryVideo[], columnCount: number): ExampleGalleryVideo[][] {
-  if (!videos.length) return [];
-  const safeCount = Math.max(1, Math.floor(columnCount) || 1);
-  const count = Math.min(safeCount, videos.length);
-  const columns: ExampleGalleryVideo[][] = Array.from({ length: count }, () => []);
-  const heights = Array.from({ length: count }, () => 0);
-
-  for (const video of videos) {
-    const targetHeight = Math.min(...heights);
-    const targetIndex = heights.indexOf(targetHeight);
-    columns[targetIndex].push(video);
-    heights[targetIndex] += estimateCardHeightWeight(video.aspectRatio);
-  }
-
-  return columns;
-}

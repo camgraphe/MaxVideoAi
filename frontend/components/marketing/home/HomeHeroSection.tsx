@@ -10,9 +10,9 @@ import {
   HERO_VIDEO_MODE_LABELS,
   HERO_VIDEO_ORDER,
   HOME_HERO_IMAGE_URL,
-  KLING_3_PRO_HERO_RENDER,
   PROOF_ICONS,
 } from '@/components/marketing/home/home-redesign-visuals';
+import { HOME_LCP_POSTER_SRC } from '@/components/marketing/home/home-lcp-image';
 import type { HomeExampleCard, HomeHeroContent, ProofStat } from '@/components/marketing/home/home-redesign-types';
 
 function normalizeHeroText(value: string) {
@@ -91,24 +91,34 @@ function renderHeroTitle(title: string) {
   );
 }
 
-function applyHeroMediaOverride(item: HeroVideoShowcaseItem): HeroVideoShowcaseItem {
+function applyCuratedHeroMedia(item: HeroVideoShowcaseItem): HeroVideoShowcaseItem {
   const engineId = item.engineId ?? item.id;
-  if (engineId !== 'kling-3-pro') return item;
+  const media = HERO_ENGINE_MEDIA[engineId];
+  if (!media) return item;
 
-  const modeLabel = item.mediaInfo?.split(' · ')[0] ?? HERO_VIDEO_MODE_LABELS['kling-3-pro'];
-  const durationLabel = `${Number(KLING_3_PRO_HERO_RENDER.duration.slice(2))}s`;
+  const modeLabel = item.mediaInfo?.split(' · ')[0] ?? HERO_VIDEO_MODE_LABELS[engineId];
+  const durationLabel = media.duration.startsWith('0:') ? `${Number(media.duration.slice(2))}s` : media.duration;
 
   return {
     ...item,
-    posterSrc: KLING_3_PRO_HERO_RENDER.posterSrc,
-    videoSrc: KLING_3_PRO_HERO_RENDER.videoSrc,
-    duration: KLING_3_PRO_HERO_RENDER.duration,
-    resolution: KLING_3_PRO_HERO_RENDER.resolution,
-    mediaInfo: [modeLabel, durationLabel, KLING_3_PRO_HERO_RENDER.resolution].join(' · '),
-    estimateValue: KLING_3_PRO_HERO_RENDER.estimateValue,
-    estimateMeta: KLING_3_PRO_HERO_RENDER.estimateMeta,
-    imageAlt: 'Kling 3 Pro AI video preview in MaxVideoAI.',
+    chips: media.chips ?? item.chips,
+    posterSrc: media.posterSrc,
+    videoSrc: media.videoSrc ?? null,
+    duration: media.duration,
+    resolution: media.resolution,
+    mediaInfo: [modeLabel, durationLabel, media.resolution].filter(Boolean).join(' · '),
+    estimateValue: media.estimateValue ?? item.estimateValue,
+    estimateMeta: media.estimateMeta ?? item.estimateMeta,
+    imageAlt: media.imageAlt ?? `${item.name} AI video preview in MaxVideoAI.`,
   };
+}
+
+function applyHomeLcpPoster(item: HeroVideoShowcaseItem): HeroVideoShowcaseItem {
+  const engineId = item.engineId ?? item.id;
+  if (engineId === HERO_VIDEO_ORDER[0]) {
+    return { ...item, posterSrc: HOME_LCP_POSTER_SRC, unoptimizedPoster: true };
+  }
+  return item;
 }
 
 export function HomeHero({
@@ -133,7 +143,7 @@ export function HomeHero({
   const fallbackByEngine = new Map(fallbackItems.map((item) => [item.engineId ?? item.id, item]));
   const videoItems = HERO_VIDEO_ORDER.flatMap((engineId) => {
     const item = programmedByEngine.get(engineId) ?? fallbackByEngine.get(engineId);
-    return item ? [applyHeroMediaOverride(item)] : [];
+    return item ? [applyHomeLcpPoster(applyCuratedHeroMedia(item))] : [];
   });
   const proofGridColumnsClass = proofStats.length >= 8 ? 'xl:grid-cols-8' : 'xl:grid-cols-7';
 
@@ -181,6 +191,7 @@ export function HomeHero({
             </ButtonLink>
             <ButtonLink
               href={{ pathname: '/examples' }}
+              prefetch={false}
               linkComponent={Link}
               variant="outline"
               size="lg"
@@ -193,6 +204,7 @@ export function HomeHero({
             </ButtonLink>
             <Link
               href={{ pathname: '/ai-video-engines' }}
+              prefetch={false}
               className="inline-flex min-h-[48px] items-center gap-2 px-2 text-sm font-semibold text-brand underline decoration-transparent underline-offset-4 transition hover:text-brandHover hover:decoration-current"
               data-analytics-event="hero_compare_click"
               data-analytics-cta-name="compare_engines"

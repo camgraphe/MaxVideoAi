@@ -22,6 +22,7 @@ import { SEEDANCE_2_STANDARD_FAL_ENGINE_REGISTRY } from './seedance-2-standard';
 import { SEEDANCE_2_FAST_FAL_ENGINE_REGISTRY } from './seedance-2-fast';
 import { SEEDANCE_2_MINI_FAL_ENGINE_REGISTRY } from './seedance-2-mini';
 import { SEEDANCE_2_BYTEPLUS_FAL_ENGINE_REGISTRY } from './seedance-2-byteplus';
+import { SEEDANCE_2_5_FAL_ENGINE_REGISTRY } from './seedance-2-5';
 import { WAN_2_5_FAL_ENGINE_REGISTRY } from './wan-2-5';
 import { WAN_2_6_FAL_ENGINE_REGISTRY } from './wan-2-6';
 import { LTX_2_FAST_FAL_ENGINE_REGISTRY } from './ltx-2-fast';
@@ -29,6 +30,7 @@ import { LTX_2_FAL_ENGINE_REGISTRY } from './ltx-2';
 import { LTX_2_3_FAST_FAL_ENGINE_REGISTRY } from './ltx-2-3-fast';
 import { LTX_2_3_FAL_ENGINE_REGISTRY } from './ltx-2-3';
 import { HAILUO_FAL_ENGINE_REGISTRY } from './hailuo';
+import { MINIMAX_H3_FAL_ENGINE_REGISTRY } from './minimax-h3';
 import { NANO_BANANA_FAL_ENGINE_REGISTRY } from './nano-banana';
 import { NANO_BANANA_LITE_FAL_ENGINE_REGISTRY } from './nano-banana-lite';
 import { NANO_BANANA_PRO_FAL_ENGINE_REGISTRY } from './nano-banana-pro';
@@ -60,12 +62,14 @@ export const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   ...SEEDANCE_2_FAST_FAL_ENGINE_REGISTRY,
   ...SEEDANCE_2_MINI_FAL_ENGINE_REGISTRY,
   ...SEEDANCE_2_BYTEPLUS_FAL_ENGINE_REGISTRY,
+  ...SEEDANCE_2_5_FAL_ENGINE_REGISTRY,
   ...WAN_2_5_FAL_ENGINE_REGISTRY,
   ...WAN_2_6_FAL_ENGINE_REGISTRY,
   ...LTX_2_FAST_FAL_ENGINE_REGISTRY,
   ...LTX_2_FAL_ENGINE_REGISTRY,
   ...LTX_2_3_FAST_FAL_ENGINE_REGISTRY,
   ...LTX_2_3_FAL_ENGINE_REGISTRY,
+  ...MINIMAX_H3_FAL_ENGINE_REGISTRY,
   ...HAILUO_FAL_ENGINE_REGISTRY,
   ...NANO_BANANA_FAL_ENGINE_REGISTRY,
   ...NANO_BANANA_LITE_FAL_ENGINE_REGISTRY,

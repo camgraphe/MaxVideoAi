@@ -114,7 +114,6 @@ test('home JSON-LD module owns schema serialization helpers', () => {
   for (const exportedName of [
     'buildFaqSchema',
     'buildItemListSchema',
-    'buildOrganizationSchema',
     'buildSoftwareSchema',
     'serializeJsonLd',
   ]) {
