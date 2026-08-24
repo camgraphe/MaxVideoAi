@@ -1,6 +1,6 @@
 ---
 title: "Guide technique du MCP MaxVideoAI"
-description: "Configuration vérifiée, OAuth, outils en lecture seule, confidentialité, limites et récupération pour le socle MCP MaxVideoAI."
+description: "Guide du paquet MCP local non vérifié de MaxVideoAI : conception OAuth, outils en lecture seule, confidentialité, limites et récupération."
 date: "2026-07-14"
 updatedAt: "2026-08-24"
 authorId: "adrien-millot"
@@ -39,9 +39,10 @@ Claude, ni appel fournisseur, ni soumission à une marketplace. Les scopes OAuth
 
 ## OAuth et accès au compte
 
-OAuth 2.1 passe par la connexion et le consentement dans le navigateur. Le client reçoit l’autorisation d’appeler les
-outils MaxVideoAI publiés pour le compte approuvé ; il ne reçoit ni accès direct à la base de données, ni données de
-paiement, ni mot de passe. Refuser le consentement laisse la connexion non authentifiée.
+Le comportement prévu, soumis à publication, est qu’OAuth 2.1 passe par la connexion et le consentement dans le
+navigateur. Un hôte peut alors recevoir l’autorisation d’appeler les outils MaxVideoAI publiés pour le compte approuvé ;
+il ne reçoit ni accès direct à la base de données, ni données de paiement, ni mot de passe. Refuser le consentement
+laisse la connexion non authentifiée.
 
 Tous les outils du registre local exigent OAuth. `get_account_status` renvoie l’état de connexion, la vérification de
 l’e-mail, un résumé du portefeuille, l’état désactivé de l’essai, les champs de limite facultatifs et l’URL des
@@ -63,8 +64,8 @@ peut évoluer.
 
 ## Fonctions implémentées derrière des flags désactivés
 
-Le code contient aussi un parcours connecté protégé. Il ne fait pas encore partie du registre public ni de la preuve de
-compatibilité hébergée du 2026-07-12 :
+Le code contient aussi un parcours connecté protégé. Il est hors du profil local de découverte à cinq outils et reste
+derrière des flags de publication désactivés :
 
 - `list_media` liste uniquement les images privées prêtes de l’utilisateur authentifié, avec des aperçus contrôlés.
 - `create_reference_upload_link` crée un passage navigateur privé, utilisable une fois et valable 15 minutes. Le token

@@ -1,6 +1,6 @@
 ---
 title: "Guía técnica del MCP de MaxVideoAI"
-description: "Configuración verificada, OAuth, herramientas de solo lectura, privacidad, límites y recuperación para la base MCP de MaxVideoAI."
+description: "Guía del paquete MCP local sin verificar de MaxVideoAI: diseño OAuth, herramientas de solo lectura, privacidad, límites y recuperación."
 date: "2026-07-14"
 updatedAt: "2026-08-24"
 authorId: "adrien-millot"
@@ -39,9 +39,10 @@ restricciones de diseño hasta que se pruebe un flujo alojado.
 
 ## OAuth y acceso a la cuenta
 
-OAuth 2.1 usa el inicio de sesión y el consentimiento en el navegador. El cliente recibe permiso para llamar las
-herramientas publicadas de MaxVideoAI con la cuenta aprobada; no obtiene acceso a la base de datos, datos de pago ni la
-contraseña. Si rechazas el consentimiento, la conexión queda sin autenticar.
+El comportamiento previsto, sujeto a publicación, es que OAuth 2.1 usa el inicio de sesión y el consentimiento en el
+navegador. Un host puede entonces recibir permiso para llamar las herramientas publicadas de MaxVideoAI con la cuenta
+aprobada; no obtiene acceso a la base de datos, datos de pago ni la contraseña. Si rechazas el consentimiento, la
+conexión queda sin autenticar.
 
 Todas las herramientas del registro local exigen OAuth. `get_account_status` devuelve el estado de conexión, el estado
 del correo verificado, un resumen de la billetera, el estado deshabilitado de la prueba, los campos opcionales de
@@ -63,8 +64,8 @@ resultado actual pueda cambiar.
 
 ## Funciones implementadas detrás de flags desactivados
 
-El código también contiene un flujo conectado protegido. Todavía no forma parte del registro público ni de la prueba de
-compatibilidad alojada del 2026-07-12:
+El código también contiene un flujo conectado protegido. Está fuera del perfil local de descubrimiento de cinco
+herramientas y sigue detrás de flags de publicación desactivados:
 
 - `list_media` enumera solo las imágenes privadas listas del usuario autenticado, con vistas previas controladas.
 - `create_reference_upload_link` crea un paso privado en el navegador, de un solo uso y válido durante 15 minutos. El

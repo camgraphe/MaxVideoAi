@@ -282,6 +282,16 @@ test('localized MCP documents expose authoritative metadata and a copyable produ
     assert.match(markdown, /^slug:\s*['"]mcp['"]$/m);
     assert.match(markdown, endpointBlock, `${locale} should show the endpoint in a plain copy block`);
     assert.doesNotMatch(markdown, /(?:staging|localhost|127\.0\.0\.1)[^\s`]*\/mcp/i);
+    assert.doesNotMatch(markdown, /Verified setup|Configuration vérifiée|Configuración verificada/i);
+    assert.match(
+      markdown,
+      locale === 'fr'
+        ? /^description:.*paquet.*local.*non vérifi/im
+        : locale === 'es'
+          ? /^description:.*paquete.*local.*sin verificar/im
+          : /^description:.*local package.*unverified/im,
+      `${locale} metadata should make the local, unverified status explicit`
+    );
   }
 });
 
@@ -294,6 +304,16 @@ test('localized MCP documents distinguish the local package from unverified host
     assert.match(markdown, locale === 'fr' ? /non vérifi/i : locale === 'es' ? /sin verificar/i : /unverified/i);
     assert.match(markdown, /Claude/i);
     assert.match(markdown, /Codex/i);
+    assert.doesNotMatch(markdown, /2026-07-12|host-compatibility proof|preuve de\s+compatibilité hébergée|prueba de\s+compatibilidad alojada/i);
+    assert.match(
+      markdown,
+      locale === 'fr'
+        ? /comportement prévu.*publication/i
+        : locale === 'es'
+          ? /comportamiento previsto.*publicación/i
+          : /intended.*release-gated behavior/i,
+      `${locale} should qualify OAuth account access as release-gated`
+    );
     assert.doesNotMatch(markdown, /one[- ]click|deep link|Codex (?:app|library).*(?:supported|available)|directory approval/i);
     assert.doesNotMatch(markdown, /claude mcp add --transport http maxvideoai|codex mcp add maxvideoai --url|codex mcp login maxvideoai --scopes/i);
   }

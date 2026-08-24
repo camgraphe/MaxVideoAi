@@ -1,6 +1,6 @@
 ---
 title: "MaxVideoAI MCP technical guide"
-description: "Verified setup, OAuth, read-only tools, privacy, limitations, and recovery guidance for the MaxVideoAI MCP foundation."
+description: "Local package guidance for an unverified MaxVideoAI MCP: OAuth design, read-only tools, privacy, limitations, and recovery boundaries."
 date: "2026-07-14"
 updatedAt: "2026-08-24"
 authorId: "adrien-millot"
@@ -37,9 +37,9 @@ as design constraints until a hosted flow is tested.
 
 ## OAuth and account access
 
-OAuth 2.1 uses browser sign-in and consent. The host receives permission to call the published MaxVideoAI tools for
-the approved account; it does not receive database access, payment details, or the account password. Denying consent
-leaves the connection unauthenticated.
+The intended, release-gated behavior is that OAuth 2.1 uses browser sign-in and consent. A host may then receive
+permission to call the released MaxVideoAI tools for the approved account; it does not receive database access, payment
+details, or the account password. Denying consent leaves the connection unauthenticated.
 
 The local discovery registry requires OAuth for every tool. `get_account_status` returns account connection state, verified-email
 state, wallet summary, disabled trial state, nullable spending-limit fields, and the account-connections URL. It omits
@@ -60,8 +60,8 @@ idempotent with respect to account state: repeating a call performs no write, al
 
 ## Implemented behind disabled publication gates
 
-The current code also contains a gated connected workflow. It is not part of the public registry or the 2026-07-12
-host-compatibility proof yet:
+The current code also contains a gated connected workflow. It is outside the local five-tool discovery profile and
+remains behind disabled publication gates:
 
 - `list_media` lists only the authenticated user's ready private image assets, with controlled previews.
 - `create_reference_upload_link` creates a private, one-use browser handoff that expires after 15 minutes. The raw
