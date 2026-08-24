@@ -12,6 +12,10 @@ import {
   type AgentMediaPage,
   type ListAgentMediaInput,
 } from '@/server/agent-api/media-library';
+import {
+  createDefaultReferenceUploadLinkService,
+  type ReferenceUploadLink,
+} from '@/server/agent-api/create-reference-upload-link';
 import { recommendAgentModels } from '@/server/agent-api/model-recommendations';
 import {
   createConfirmGenerationService,
@@ -49,6 +53,7 @@ import { buildMaxVideoAiMcpInstructions } from '@/server/mcp/instructions';
 import { registerGetAccountStatusTool } from '@/server/mcp/tools/get-account-status';
 import { registerConfirmGenerationTool } from '@/server/mcp/tools/confirm-generation';
 import { registerCreateTopupLinkTool } from '@/server/mcp/tools/create-topup-link';
+import { registerCreateReferenceUploadLinkTool } from '@/server/mcp/tools/create-reference-upload-link';
 import { registerGetGenerationStatusTool } from '@/server/mcp/tools/get-generation-status';
 import { registerListModelsTool } from '@/server/mcp/tools/list-models';
 import { registerListMediaTool } from '@/server/mcp/tools/list-media';
@@ -87,6 +92,9 @@ export type MaxVideoAiMcpServices = {
     input: ListAgentMediaInput,
     principal: AgentPrincipal,
   ): Promise<AgentMediaPage>;
+  createReferenceUploadLink?(
+    principal: AgentPrincipal,
+  ): Promise<ReferenceUploadLink>;
 };
 
 export type MaxVideoAiMcpServerOptions = {
@@ -113,6 +121,7 @@ export function createDefaultMaxVideoAiMcpServices(
       ...topupHandoffDeps,
     }),
     listMedia: (input, principal) => listAgentMedia(input, principal),
+    createReferenceUploadLink: createDefaultReferenceUploadLinkService(config.accountUrl),
   };
 }
 
@@ -140,6 +149,7 @@ export function createMaxVideoAiMcpServer(
   registerRecommendModelsTool(server, principal, services);
   if (referenceUploads) {
     registerListMediaTool(server, principal, services);
+    registerCreateReferenceUploadLinkTool(server, principal, services);
   }
   if (paidGeneration) {
     registerPrepareGenerationTool(server, principal, services);

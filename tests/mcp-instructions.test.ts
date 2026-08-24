@@ -46,6 +46,9 @@ const services = {
   async createTopupLink() {
     throw new Error('unused');
   },
+  async createReferenceUploadLink() {
+    throw new Error('unused');
+  },
 } satisfies MaxVideoAiMcpServices;
 
 async function getInstructions(options: MaxVideoAiMcpServerOptions): Promise<string> {
@@ -81,10 +84,12 @@ test('instructions describe the exact quote and confirmation flow when paid gene
   assert.match(instructions, /do not claim completion/i);
 });
 
-test('instructions advertise only existing private reference selection when its gate is enabled', async () => {
+test('instructions distinguish private selection from the browser upload handoff', async () => {
   const instructions = await getInstructions({ paidGeneration: false, referenceUploads: true });
 
   assert.match(instructions, /use list_media/i);
   assert.match(instructions, /existing private.*image/i);
   assert.match(instructions, /do not upload images with list_media/i);
+  assert.match(instructions, /use create_reference_upload_link/i);
+  assert.match(instructions, /short-lived.*browser handoff/i);
 });

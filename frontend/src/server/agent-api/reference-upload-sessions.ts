@@ -59,6 +59,10 @@ type CompleteDependencies = {
   executor: TransactionQueryExecutor;
   uploadedAt: Date;
 };
+type ReleaseDependencies = {
+  executor: TransactionQueryExecutor;
+  releasedAt: Date;
+};
 type ExpireDependencies = {
   executor: QueryExecutor;
   now: () => Date;
@@ -285,6 +289,28 @@ export async function completeUploadSession(
   const completed = parseOptionalSession(rows);
   if (!completed) throw new AgentApiError('UPLOAD_ALREADY_USED', 'Reference upload link cannot be completed.');
   return completed;
+}
+
+export async function releaseUploadSessionClaim(
+  input: { sessionId: string; userId: string; claimId: string },
+  dependencies: ReleaseDependencies,
+): Promise<ReferenceUploadSession | null> {
+  requireIdentity(input?.userId);
+  requireUuid(input?.sessionId, 'reference upload session ID');
+  requireUuid(input?.claimId, 'reference upload claim ID');
+  const releasedAt = requireClock(dependencies.releasedAt, 'reference upload release');
+  const rows = await dependencies.executor.query<SessionRow>(
+    `UPDATE mcp_reference_upload_sessions
+        SET claim_id = NULL, claimed_at = NULL, updated_at = $4
+      WHERE session_id = $1
+        AND user_id = $2
+        AND claim_id = $3
+        AND state = 'created'
+        AND expires_at > $4
+    RETURNING ${SESSION_COLUMNS}`,
+    [input.sessionId, input.userId, input.claimId, releasedAt],
+  );
+  return parseOptionalSession(rows);
 }
 
 export async function expireUploadSessions(

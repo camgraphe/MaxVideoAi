@@ -421,6 +421,29 @@ const nextConfig = {
       ],
     });
 
+    // Reference upload links are private, short-lived account handoffs.
+    rules.push({
+      source: '/mcp/reference-upload/:path*',
+      headers: [
+        {
+          key: 'X-Robots-Tag',
+          value: 'noindex, nofollow',
+        },
+        {
+          key: 'Cache-Control',
+          value: 'private, no-store, max-age=0',
+        },
+        {
+          key: 'Referrer-Policy',
+          value: 'no-referrer',
+        },
+        {
+          key: 'Content-Security-Policy',
+          value: "default-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'",
+        },
+      ],
+    });
+
     // In preview deployments, block indexing site-wide
     if (isPreviewDeployment) {
       rules.push({

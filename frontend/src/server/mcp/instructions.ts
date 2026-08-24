@@ -16,6 +16,7 @@ export function buildMaxVideoAiMcpInstructions(
   if (capabilities.referenceUploads) {
     instructions.push(
       'Use list_media to select existing private MaxVideoAI image assets. Do not upload images with list_media or expose private source URLs.',
+      'When a new private image is needed, use create_reference_upload_link and ask the user to open its short-lived MaxVideoAI browser handoff before calling list_media again.',
     );
   }
 
