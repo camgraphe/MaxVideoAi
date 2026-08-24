@@ -58,10 +58,22 @@ test('the MaxVideoAI plugin has thin Codex and Claude package adapters', () => {
 
   const interfaceMetadata = codex.interface as Record<string, unknown>;
   assert.equal(interfaceMetadata.category, 'Creativity');
+  assert.equal(interfaceMetadata.brandColor, '#111827');
   assert.equal(interfaceMetadata.privacyPolicyURL, 'https://maxvideoai.com/legal/privacy');
   assert.equal(interfaceMetadata.termsOfServiceURL, 'https://maxvideoai.com/legal/terms');
   assert.equal((interfaceMetadata.defaultPrompt as unknown[]).length, 3);
   assert.equal('screenshots' in interfaceMetadata, false);
+
+  for (const field of ['composerIcon', 'logo', 'logoDark'] as const) {
+    const assetPath = interfaceMetadata[field];
+    assert.equal(typeof assetPath, 'string', `${field} must be a plugin-local path`);
+    assert.match(assetPath as string, /^\.\/assets\/[a-z0-9-]+\.svg$/);
+    assert.doesNotMatch(assetPath as string, /\.\./);
+
+    const resolvedAssetPath = path.resolve(pluginRoot, assetPath as string);
+    assert.ok(resolvedAssetPath.startsWith(`${path.resolve(pluginRoot, 'assets')}${path.sep}`));
+    assert.ok(existsSync(resolvedAssetPath), `${field} asset must exist`);
+  }
 });
 
 test('the shared skill gives hosts conversational, factual guardrails', () => {
