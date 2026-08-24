@@ -163,11 +163,6 @@ function requireText(value: unknown, maxLength: number): string {
   return value;
 }
 
-function requireInteger(value: unknown, min: number, max: number): number {
-  if (!Number.isSafeInteger(value) || (value as number) < min || (value as number) > max) invalidParameter();
-  return value as number;
-}
-
 function requirePrincipal(principal: AgentPrincipal): void {
   if (
     !principal
