@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "maxvideoai": {
+      "type": "http",
+      "url": "https://api.maxvideoai.com/mcp"
+    }
+  }
+}

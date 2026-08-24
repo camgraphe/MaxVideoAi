@@ -1,0 +1,27 @@
+{
+  "name": "maxvideoai",
+  "version": "0.1.0",
+  "description": "Plan and generate AI video with current MaxVideoAI models and prices from Codex.",
+  "author": { "name": "MaxVideoAI" },
+  "homepage": "https://maxvideoai.com/mcp",
+  "repository": "https://github.com/camgraphe/MaxVideoAi",
+  "license": "BUSL-1.1",
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "MaxVideoAI",
+    "shortDescription": "Plan and generate AI video from your conversation.",
+    "longDescription": "Use MaxVideoAI facts, estimates, and generation tools while Codex remains your creative partner.",
+    "developerName": "MaxVideoAI",
+    "category": "Creativity",
+    "capabilities": ["MCP", "Skills"],
+    "websiteURL": "https://maxvideoai.com/mcp",
+    "privacyPolicyURL": "https://maxvideoai.com/legal/privacy",
+    "termsOfServiceURL": "https://maxvideoai.com/legal/terms",
+    "defaultPrompt": [
+      "Help me plan a short product film with MaxVideoAI.",
+      "Compare current MaxVideoAI models for my brief.",
+      "Build a few named video production proposals."
+    ]
+  }
+}
