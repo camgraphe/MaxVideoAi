@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { isMcpFoundationFeatureEnabled } from '../frontend/src/server/mcp/feature-access';
+import { resolveMcpRuntimeCapabilities } from '../frontend/src/server/mcp/operational-access';
 
 const stagingEnv = {
   NODE_ENV: 'production',
@@ -16,6 +17,51 @@ test('hosted staging enables only foundation features on the exact staging host'
   assert.equal(isMcpFoundationFeatureEnabled('transport', stagingEnv, requestHost), true);
   assert.equal(isMcpFoundationFeatureEnabled('oauth', stagingEnv, requestHost), true);
   assert.equal(isMcpFoundationFeatureEnabled('discovery', stagingEnv, requestHost), true);
+});
+
+test('operational capabilities enable only on the exact hosted staging authority', () => {
+  const enabled = resolveMcpRuntimeCapabilities({
+    ...stagingEnv,
+    MCP_STAGING_OPERATIONAL_ENABLED: 'true',
+  }, 'maxvideoai-mcp-staging.vercel.app');
+
+  assert.deepEqual(enabled, { paidGeneration: true, referenceUploads: true });
+  assert.equal(Object.isFrozen(enabled), true);
+
+  for (const host of ['maxvideoai.com', 'www.maxvideoai.com', 'api.maxvideoai.com', 'other.vercel.app']) {
+    assert.deepEqual(resolveMcpRuntimeCapabilities({
+      ...stagingEnv,
+      MCP_STAGING_OPERATIONAL_ENABLED: 'true',
+    }, host), { paidGeneration: false, referenceUploads: false });
+  }
+});
+
+test('operational capabilities reject a differently configured non-production host', () => {
+  const otherHostEnv = {
+    ...stagingEnv,
+    MCP_STAGING_HOST: 'other.vercel.app',
+    MCP_API_HOST: 'other.vercel.app',
+    MCP_RESOURCE_URL: 'https://other.vercel.app/mcp',
+    MCP_STAGING_OPERATIONAL_ENABLED: 'true',
+  };
+
+  assert.deepEqual(resolveMcpRuntimeCapabilities(otherHostEnv, 'other.vercel.app'), {
+    paidGeneration: false,
+    referenceUploads: false,
+  });
+});
+
+test('the operational staging flag cannot widen the local development bypass', () => {
+  assert.deepEqual(resolveMcpRuntimeCapabilities({
+    NODE_ENV: 'development',
+    MCP_LOCAL_ENABLED: 'true',
+    MCP_API_HOST: '127.0.0.1:3000',
+    MCP_RESOURCE_URL: 'http://127.0.0.1:3000/mcp',
+    MCP_STAGING_OPERATIONAL_ENABLED: 'true',
+  }, '127.0.0.1:3000'), {
+    paidGeneration: false,
+    referenceUploads: false,
+  });
 });
 
 test('hosted staging fails closed when the request host is missing, production, or mismatched', () => {

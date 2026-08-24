@@ -57,6 +57,7 @@ import type {
 } from '@/server/agent-api/types';
 import type { McpConfig } from '@/server/mcp/config';
 import { buildMaxVideoAiMcpInstructions } from '@/server/mcp/instructions';
+import type { McpRuntimeCapabilities } from '@/server/mcp/operational-access';
 import { registerGetAccountStatusTool } from '@/server/mcp/tools/get-account-status';
 import { registerConfirmGenerationTool } from '@/server/mcp/tools/confirm-generation';
 import { registerCreateTopupLinkTool } from '@/server/mcp/tools/create-topup-link';
@@ -119,6 +120,7 @@ export type MaxVideoAiMcpServerOptions = {
 export function createDefaultMaxVideoAiMcpServices(
   config: McpConfig,
   trialRiskContext: TrialRiskRequestContext,
+  capabilities: McpRuntimeCapabilities,
   accountStatusDeps?: AgentAccountStatusWalletDeps,
   topupHandoffDeps?: Partial<Omit<McpTopupHandoffDependencies, 'billingBaseUrl'>>,
 ): MaxVideoAiMcpServices {
@@ -128,8 +130,12 @@ export function createDefaultMaxVideoAiMcpServices(
     getModelDetails: (engineId) => getAgentModelDetails(engineId),
     recommendModels: (input) => recommendAgentModels(input),
     calculateProjectBudget: (input, principal) => calculateAgentProjectBudget(input, principal),
-    prepareGeneration: createPrepareGenerationService(config.accountUrl, trialRiskContext),
-    confirmGeneration: createConfirmGenerationService(config.accountUrl, trialRiskContext),
+    prepareGeneration: createPrepareGenerationService(config.accountUrl, trialRiskContext, {
+      paidGenerationEnabled: () => capabilities.paidGeneration,
+    }),
+    confirmGeneration: createConfirmGenerationService(config.accountUrl, trialRiskContext, {
+      paidGenerationEnabled: () => capabilities.paidGeneration,
+    }),
     getGenerationStatus: (input, principal) => getAgentGenerationStatus(input, principal),
     listRecentGenerations: (input, principal) => listAgentRecentGenerations(input, principal),
     createTopupLink: createMcpTopupHandoffService({

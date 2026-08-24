@@ -3,7 +3,9 @@ import { isMcpApiHost } from '@/lib/mcp-host-routing';
 import { resolveMcpConfig } from '@/server/mcp/config';
 
 export type McpFoundationFeature = 'transport' | 'oauth' | 'discovery';
-type FeatureEnv = Readonly<Record<string, string | undefined>>;
+export type FeatureEnv = Readonly<Record<string, string | undefined>>;
+
+const HOSTED_STAGING_HOST = 'maxvideoai-mcp-staging.vercel.app';
 
 const PRODUCTION_HOSTS = new Set([
   'maxvideoai.com',
@@ -24,7 +26,7 @@ function isHostedStagingEnabled(env: FeatureEnv, requestHost: string | null | un
   const allowedHost = env.MCP_STAGING_HOST?.trim().toLowerCase();
   if (!allowedHost) return false;
   const allowedHostname = canonicalizeHostname(allowedHost);
-  if (PRODUCTION_HOSTS.has(allowedHostname)) return false;
+  if (PRODUCTION_HOSTS.has(allowedHostname) || allowedHost !== HOSTED_STAGING_HOST) return false;
 
   try {
     const config = resolveMcpConfig(env);

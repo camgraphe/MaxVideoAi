@@ -161,7 +161,7 @@ export type ConfirmGenerationDependencies = {
 };
 
 const defaultDependencies: Omit<ConfirmGenerationDependencies, 'trialRiskContext'> = {
-  paidGenerationEnabled: () => mcpPublication.paidGeneration,
+  paidGenerationEnabled: () => false,
   trialGenerationEnabled: () => isTrialEligibilityEnabled(
     mcpPublication.trial,
     process.env.MCP_TRIAL_ENABLED,

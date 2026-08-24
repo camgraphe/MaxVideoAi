@@ -1,4 +1,3 @@
-import mcpPublication from '@/config/mcp-publication.json';
 import { withDbTransaction, type QueryExecutor, type TransactionQueryExecutor } from '@/lib/db';
 import { getActiveAccountRestriction } from '@/server/fraud-cleanup';
 import {
@@ -134,7 +133,7 @@ export type TrialRiskRequestContext = Readonly<{
 const TRIAL_RISK_CONTEXT_KEYS = new Set(['clientIp', 'userAgent']);
 
 const defaultDependencies: Omit<PrepareGenerationDependencies, 'trialRiskContext'> = {
-  paidGenerationEnabled: () => mcpPublication.paidGeneration,
+  paidGenerationEnabled: () => false,
   getAccountRestriction: getActiveAccountRestriction,
   listPublicEngines: () => listPublicAgentGenerationEngines(),
   resolveMembershipPricing: async (userId) => (await getUserMembershipStatus(userId)).pricing,

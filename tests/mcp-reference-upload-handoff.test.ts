@@ -214,6 +214,7 @@ test('known image failures safely release the exact claim for retry without leak
 
 test('private upload page has login return, noindex metadata, private cache, and restrictive headers', () => {
   const page = readFileSync('frontend/app/(core)/mcp/reference-upload/[token]/page.tsx', 'utf8');
+  const route = readFileSync('frontend/app/api/mcp/reference-upload/[token]/route.ts', 'utf8');
   const nextConfig = readFileSync('frontend/next.config.js', 'utf8');
   assert.match(page, /robots:\s*\{\s*index:\s*false,\s*follow:\s*false/i);
   assert.match(page, /\/login\?next=/i);
@@ -223,4 +224,9 @@ test('private upload page has login return, noindex metadata, private cache, and
   assert.match(nextConfig, /Cache-Control[\s\S]*private, no-store/i);
   assert.match(nextConfig, /Content-Security-Policy/i);
   assert.match(nextConfig, /frame-ancestors 'none'/i);
+  assert.match(page, /resolveMcpRuntimeCapabilities/);
+  assert.match(page, /getMcpRequestHost/);
+  assert.match(route, /resolveMcpRuntimeCapabilities/);
+  assert.match(route, /getMcpRequestHost/);
+  assert.doesNotMatch(`${page}\n${route}`, /MCP_STAGING_OPERATIONAL_ENABLED/);
 });

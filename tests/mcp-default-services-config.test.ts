@@ -14,6 +14,8 @@ const principal: AgentPrincipal = {
   emailVerified: true,
   authMethod: 'oauth',
 };
+const disabledCapabilities = Object.freeze({ paidGeneration: false, referenceUploads: false });
+const operationalCapabilities = Object.freeze({ paidGeneration: true, referenceUploads: true });
 
 function config(resourceOrigin: string): McpConfig {
   const resource = new URL('/mcp', resourceOrigin);
@@ -43,6 +45,7 @@ test('default account service uses the resolved MCP account URL for production a
     const services = createDefaultMaxVideoAiMcpServices(
       config(new URL(expectedAccountUrl).origin),
       { clientIp: null, userAgent: null },
+      disabledCapabilities,
       { getWalletSummary },
     );
 
@@ -94,6 +97,7 @@ test('official staging config reaches the real default top-up service while cust
   const services = createDefaultMaxVideoAiMcpServices(
     stagingConfig,
     { clientIp: null, userAgent: null },
+    operationalCapabilities,
     undefined,
     {
       secret: '0123456789abcdef0123456789abcdef',
@@ -125,6 +129,7 @@ test('official staging config reaches the real default top-up service while cust
   const custom = createDefaultMaxVideoAiMcpServices(
     customConfig,
     { clientIp: null, userAgent: null },
+    disabledCapabilities,
     undefined,
     {
       secret: '0123456789abcdef0123456789abcdef',

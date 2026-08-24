@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 
 import { HeaderBar } from '@/components/HeaderBar';
-import { FEATURES } from '@/content/feature-flags';
+import { getMcpRequestHost } from '@/lib/mcp-host-routing';
 import { createSupabaseServerClient } from '@/lib/supabase-ssr';
 import { getOwnedUploadSession } from '@/server/agent-api/reference-upload-sessions';
+import { resolveMcpRuntimeCapabilities } from '@/server/mcp/operational-access';
 import { MAX_IMAGE_UPLOAD_BYTES } from '@/server/uploads/store-image-upload';
 
 import { ReferenceUploadClient } from './_components/ReferenceUploadClient';
@@ -22,7 +24,8 @@ export default async function ReferenceUploadPage({
 }: {
   params: Promise<{ token: string }>;
 }) {
-  if (!FEATURES.mcp.referenceUploads) notFound();
+  const requestHost = getMcpRequestHost(await headers());
+  if (!resolveMcpRuntimeCapabilities(process.env, requestHost).referenceUploads) notFound();
   const { token } = await params;
   if (!TOKEN_PATTERN.test(token)) notFound();
 

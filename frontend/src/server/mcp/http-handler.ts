@@ -17,6 +17,7 @@ import {
   createMaxVideoAiMcpServer,
 } from '@/server/mcp/server';
 import { isMcpFoundationFeatureEnabled } from '@/server/mcp/feature-access';
+import { resolveMcpRuntimeCapabilities } from '@/server/mcp/operational-access';
 import { withMcpNoindexHeaders } from '@/server/mcp/response-headers';
 import type { TrialRiskRequestContext } from '@/server/agent-api/prepare-generation';
 
@@ -87,6 +88,13 @@ const AUDITABLE_TOOL_NAMES = new Set([
   'get_model_details',
   'recommend_models',
   'calculate_project_budget',
+  'prepare_generation',
+  'confirm_generation',
+  'get_generation_status',
+  'list_recent_generations',
+  'create_topup_link',
+  'list_media',
+  'create_reference_upload_link',
 ]);
 
 async function readJsonRpcResponse(response: Response): Promise<Record<string, unknown> | null> {
@@ -214,6 +222,7 @@ export async function handleMcpHttpRequest(
   injectedDeps?: McpHttpHandlerDeps
 ): Promise<Response> {
   const requestHost = getMcpRequestHost(request.headers);
+  const capabilities = resolveMcpRuntimeCapabilities(process.env, requestHost);
   const enabled =
     injectedDeps?.enabled ??
     (isMcpFoundationFeatureEnabled('transport', process.env, requestHost) &&
@@ -249,8 +258,10 @@ export async function handleMcpHttpRequest(
     createDefaultMaxVideoAiMcpServices(
       config,
       resolveTrialRiskRequestContext(request.headers),
+      capabilities,
       injectedDeps?.accountStatusDeps,
-    )
+    ),
+    capabilities,
   );
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,

@@ -60,6 +60,56 @@ function protocolRequestWithoutAuthorization(body: object): Request {
   });
 }
 
+function stagingProtocolRequest(body: object): Request {
+  return new Request('https://maxvideoai-mcp-staging.vercel.app/mcp', {
+    method: 'POST',
+    headers: {
+      authorization: 'Bearer access-token',
+      accept: 'application/json, text/event-stream',
+      'content-type': 'application/json',
+      host: 'maxvideoai-mcp-staging.vercel.app',
+    },
+    body: JSON.stringify(body),
+  });
+}
+
+const stagingEnvironment = {
+  NODE_ENV: 'production',
+  MCP_STAGING_ENABLED: 'true',
+  MCP_STAGING_HOST: 'maxvideoai-mcp-staging.vercel.app',
+  MCP_API_HOST: 'maxvideoai-mcp-staging.vercel.app',
+  MCP_RESOURCE_URL: 'https://maxvideoai-mcp-staging.vercel.app/mcp',
+  MCP_STAGING_OPERATIONAL_ENABLED: 'true',
+};
+
+async function withStagingEnvironment<TResult>(callback: () => Promise<TResult>): Promise<TResult> {
+  const previous = Object.fromEntries(
+    Object.keys(stagingEnvironment).map((key) => [key, process.env[key]]),
+  );
+  Object.assign(process.env, stagingEnvironment);
+  try {
+    return await callback();
+  } finally {
+    for (const [key, value] of Object.entries(previous)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
+}
+
+function stagingDeps(overrides: Partial<McpHttpHandlerDeps> = {}): McpHttpHandlerDeps {
+  return deps({
+    config: {
+      apiHost: 'maxvideoai-mcp-staging.vercel.app',
+      resourceUrl: 'https://maxvideoai-mcp-staging.vercel.app/mcp',
+      protectedResourceMetadataUrl:
+        'https://maxvideoai-mcp-staging.vercel.app/.well-known/oauth-protected-resource/mcp',
+      accountUrl: 'https://maxvideoai-mcp-staging.vercel.app/account/connections',
+    },
+    ...overrides,
+  });
+}
+
 const initializeRequest = {
   jsonrpc: '2.0',
   id: 1,
@@ -129,6 +179,70 @@ test('authenticated initialize uses stateless Streamable HTTP and private cachin
   assert.equal(payload.jsonrpc, '2.0');
   assert.equal(payload.id, 1);
   assert.equal(payload.result.serverInfo.name, 'maxvideoai');
+});
+
+test('exact hosted staging exposes the complete operational tool inventory', async () => {
+  await withStagingEnvironment(async () => {
+    const response = await handleMcpHttpRequest(
+      stagingProtocolRequest({ jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} }),
+      stagingDeps(),
+    );
+    const payload = await response.json();
+
+    assert.equal(response.status, 200);
+    assert.deepEqual(payload.result.tools.map((tool: { name: string }) => tool.name).sort(), [
+      'calculate_project_budget',
+      'confirm_generation',
+      'create_reference_upload_link',
+      'create_topup_link',
+      'get_account_status',
+      'get_generation_status',
+      'get_model_details',
+      'list_media',
+      'list_models',
+      'list_recent_generations',
+      'prepare_generation',
+      'recommend_models',
+    ]);
+  });
+});
+
+test('operational tool audit records only approved names and coarse failure outcomes', async () => {
+  await withStagingEnvironment(async () => {
+    const events: McpAuditEvent[] = [];
+    const operationalTools = [
+      'prepare_generation',
+      'confirm_generation',
+      'get_generation_status',
+      'list_recent_generations',
+      'create_topup_link',
+      'list_media',
+      'create_reference_upload_link',
+    ];
+    for (const [index, name] of operationalTools.entries()) {
+      const response = await handleMcpHttpRequest(
+        stagingProtocolRequest({
+          jsonrpc: '2.0',
+          id: 20 + index,
+          method: 'tools/call',
+          params: { name, arguments: { prompt: 'private', rawUrl: 'https://secret.example' } },
+        }),
+        stagingDeps({
+          async recordEvent(event) {
+            events.push(event);
+            return true;
+          },
+        }),
+      );
+      assert.equal(response.status, 200);
+    }
+
+    assert.deepEqual(events.map(({ tool, outcome }) => ({ tool, outcome })), operationalTools.map((tool) => ({
+      tool,
+      outcome: 'failure',
+    })));
+    assert.doesNotMatch(JSON.stringify(events), /private|secret\.example|prompt|rawUrl/i);
+  });
 });
 
 test('successful initialize and tools/list responses are audited after SDK handling', async () => {
