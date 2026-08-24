@@ -23,26 +23,45 @@ function normalizedIds(values: readonly string[] | undefined): ReadonlySet<strin
   return new Set(values?.map((value) => value.trim()).filter(Boolean));
 }
 
-function normalizedPriorities(values: readonly AgentModelPriority[] | undefined): ReadonlySet<AgentModelPriority> {
-  return new Set(values ?? []);
+function normalizedPriorities(values: readonly AgentModelPriority[] | undefined): readonly AgentModelPriority[] {
+  const priorities: AgentModelPriority[] = [];
+  for (const value of values ?? []) {
+    if (!priorities.includes(value)) priorities.push(value);
+    if (priorities.length === 6) break;
+  }
+  return priorities;
+}
+
+function prioritySignal(
+  candidate: AgentModelCandidate,
+  priority: AgentModelPriority,
+  maximumDurationSec: number,
+): number {
+  const { model } = candidate;
+  if (priority === 'speed') return candidate.latencyTier === 'fast' ? 1 : 0;
+  if (priority === 'highest_resolution') return resolutionQuality(model.resolutions) / 3;
+  if (priority === 'native_audio') return model.audio ? 1 : 0;
+  if (priority === 'reference_control') return model.referenceImages ? 1 : 0;
+  if (priority === 'longer_clips') return (model.maxDurationSec ?? 0) / maximumDurationSec;
+  return 0;
 }
 
 function scoreCandidate(
   candidate: AgentModelCandidate,
   input: AgentModelRecommendationInput,
-  priorities: ReadonlySet<AgentModelPriority>,
+  priorities: readonly AgentModelPriority[],
   preferredModelIds: ReadonlySet<string>,
+  maximumDurationSec: number,
 ): number {
   const { model } = candidate;
-  let score = model.availability === 'available' ? 10 : 0;
+  let score = model.availability === 'available' ? 0.05 : 0;
 
-  if (priorities.has('speed') && candidate.latencyTier === 'fast') score += 100;
-  if (priorities.has('highest_resolution')) score += resolutionQuality(model.resolutions) * 100;
-  if (priorities.has('native_audio') && model.audio) score += 100;
-  if (priorities.has('reference_control') && model.referenceImages) score += 100;
-  if (priorities.has('longer_clips')) score += model.maxDurationSec ?? 0;
-  if (input.useCase && getAgentModelGuidance(model.id)?.bestFor.includes(input.useCase)) score += 100;
-  if (preferredModelIds.has(model.id)) score += 15;
+  priorities.forEach((priority, index) => {
+    const weight = 2 ** (priorities.length - index);
+    score += prioritySignal(candidate, priority, maximumDurationSec) * weight;
+  });
+  if (input.useCase && getAgentModelGuidance(model.id)?.bestFor.includes(input.useCase)) score += 1;
+  if (preferredModelIds.has(model.id)) score += 0.25;
 
   return score;
 }
@@ -102,6 +121,7 @@ export async function recommendAgentModels(
   deps?: AgentModelCatalogDeps,
 ): Promise<AgentModelRecommendationResult> {
   const priorities = normalizedPriorities(input.priorities);
+  const prioritySet = new Set(priorities);
   const preferredModelIds = normalizedIds(input.preferredModelIds);
   const excludedModelIds = normalizedIds(input.excludedModelIds);
   const candidates = (await listAgentModelCandidates(input, deps))
@@ -115,12 +135,17 @@ export async function recommendAgentModels(
     };
   }
 
-  const hasCostIntent = priorities.has('lower_cost') || typeof input.budgetCeilingCents === 'number';
+  const hasCostIntent = prioritySet.has('lower_cost') || typeof input.budgetCeilingCents === 'number';
   const nextAction = hasCostIntent ? 'calculate_project_budget' : 'prepare_generation';
+  const rankedPriorities = priorities.filter((priority) => priority !== 'lower_cost');
+  const maximumDurationSec = Math.max(
+    1,
+    ...candidates.map((candidate) => candidate.model.maxDurationSec ?? 0),
+  );
   const ranked = candidates
     .map((candidate) => ({
       candidate,
-      score: scoreCandidate(candidate, input, priorities, preferredModelIds),
+      score: scoreCandidate(candidate, input, rankedPriorities, preferredModelIds, maximumDurationSec),
     }))
     .sort((a, b) => b.score - a.score || a.candidate.model.id.localeCompare(b.candidate.model.id))
     .slice(0, 3);
@@ -129,7 +154,7 @@ export async function recommendAgentModels(
     recommendations: ranked.map(({ candidate }, index) => ({
       rank: index + 1,
       model: candidate.model,
-      ...describeCandidate(candidate, input, priorities, preferredModelIds),
+      ...describeCandidate(candidate, input, prioritySet, preferredModelIds),
       nextAction,
     })),
     nextAction,

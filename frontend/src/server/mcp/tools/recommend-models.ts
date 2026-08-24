@@ -33,7 +33,7 @@ const inputSchema = z.object({
     'reference_control',
     'longer_clips',
     'lower_cost',
-  ])).max(6).optional().describe('Optional factual priorities. Use lower_cost to request a project budget, not a price guess.'),
+  ])).max(6).optional().describe('Ordered factual priorities, most important first. Use lower_cost to request a project budget, not a price guess.'),
   preferredModelIds: z.array(z.string().trim().min(1).max(128)).max(10).optional()
     .describe('Up to ten public model IDs the user would like considered when compatible.'),
   excludedModelIds: z.array(z.string().trim().min(1).max(128)).max(10).optional()

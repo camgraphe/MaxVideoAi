@@ -228,6 +228,7 @@ test('server advertises only the five read-only discovery tools with narrow guid
   for (const field of ['useCase', 'priorities', 'preferredModelIds', 'excludedModelIds', 'budgetCeilingCents']) {
     assert.equal(typeof record(recommendationProperties[field]).description, 'string');
   }
+  assert.match(String(record(recommendationProperties.priorities).description), /ordered/i);
 });
 
 test('tools return structured content and pass validated filters to facade services', async (t) => {

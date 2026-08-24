@@ -135,6 +135,25 @@ test('factual priorities and reviewed use cases provide deterministic ranking re
   }
 });
 
+test('declared priority order can invert ranking between verified dimensions', async () => {
+  const catalogDeps = deps([
+    candidate('fast-hd', { latencyTier: 'fast', resolutions: ['1080p'] }),
+    candidate('standard-four-k', { latencyTier: 'standard', resolutions: ['1080p', '4k'] }),
+  ]);
+
+  const speedFirst = await recommendAgentModels(
+    { priorities: ['speed', 'highest_resolution'] },
+    catalogDeps,
+  );
+  const resolutionFirst = await recommendAgentModels(
+    { priorities: ['highest_resolution', 'speed'] },
+    catalogDeps,
+  );
+
+  assert.equal(speedFirst.recommendations[0].model.id, 'fast-hd');
+  assert.equal(resolutionFirst.recommendations[0].model.id, 'standard-four-k');
+});
+
 test('cost intent always routes to current project budgeting without static price ranking or tier labels', async () => {
   const firstDeps = deps([
     candidate('alpha', { base: 0.99 }),
