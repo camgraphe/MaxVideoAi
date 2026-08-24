@@ -342,7 +342,7 @@ test('claimed trial repeats return the same included job without gates, risk, en
   assert.equal(captures.events.includes('risk'), false);
 });
 
-test('direct service construction requires the same explicit request risk context used by preparation', () => {
+test('direct service construction requires explicit risk context and injected paid capability', () => {
   assert.throws(
     () => createConfirmGenerationService('https://maxvideoai.com/account/connections', null as never),
     /trial risk request context/i,
@@ -362,7 +362,10 @@ test('direct service construction requires the same explicit request risk contex
     /trial risk request context/i,
   );
   const source = readFileSync('frontend/src/server/mcp/server.ts', 'utf8');
-  assert.match(source, /createConfirmGenerationService\(config\.accountUrl,\s*trialRiskContext\)/);
+  assert.match(
+    source,
+    /createConfirmGenerationService\(\s*config\.accountUrl,\s*trialRiskContext,\s*\{\s*paidGenerationEnabled:\s*\(\)\s*=>\s*capabilities\.paidGeneration,\s*\}\s*\)/,
+  );
 });
 
 test('internal trial initial-job funding preserves private cost data and cannot masquerade as wallet-reserved', async () => {
