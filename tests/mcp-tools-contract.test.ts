@@ -89,9 +89,7 @@ const projectBudget: AgentProjectBudgetResult = {
     total: { amountCents: 1_440, currency: 'USD' },
     intendedOutputDurationSec: 60,
   }],
-  total: { amountCents: 1_440, currency: 'USD' },
   currency: 'USD',
-  intendedOutputDurationSec: 60,
   membershipTier: 'member',
   catalogRevision: 'mcp-catalog-v2:test',
   quoteRequired: true,
@@ -393,13 +391,40 @@ test('tool errors are stable and unexpected failures never expose secrets or sta
       throw new Error('database password super-secret');
     },
   });
+  const budgetFailure = await connectedClient({
+    async calculateProjectBudget() {
+      throw new AgentApiError(
+        'PARAMETER_INVALID',
+        'A setting is not supported by the selected model.',
+        false,
+        { type: 'edit_project_line', proposalIndex: 1, lineIndex: 2, field: 'resolution' },
+      );
+    },
+  });
   t.after(async () => {
     await expected.close();
     await unexpected.close();
+    await budgetFailure.close();
   });
 
   const expectedResult = await expected.client.callTool({ name: 'get_account_status', arguments: {} });
   const unexpectedResult = await unexpected.client.callTool({ name: 'get_account_status', arguments: {} });
+  const budgetFailureResult = await budgetFailure.client.callTool({
+    name: 'calculate_project_budget',
+    arguments: {
+      proposals: [{
+        name: 'Alternative',
+        lines: [{
+          purpose: 'Hero shot',
+          engineId: 'seedance-2-5',
+          mode: 't2v',
+          settings: { durationSec: 10, resolution: '720p', aspectRatio: '16:9' },
+          clipCount: 1,
+          attemptsPerClip: 1,
+        }],
+      }],
+    },
+  });
 
   assert.equal(expectedResult.isError, true);
   assert.deepEqual(expectedResult.structuredContent, {
@@ -415,4 +440,13 @@ test('tool errors are stable and unexpected failures never expose secrets or sta
   assert.match(JSON.stringify(unexpectedResult.structuredContent), /"code":"INTERNAL_ERROR"/);
   assert.match(JSON.stringify(unexpectedResult.structuredContent), /"correlationId":"[^"]+"/);
   assert.doesNotMatch(JSON.stringify(unexpectedResult), /super-secret|database password|at .*\.ts/);
+  assert.deepEqual(budgetFailureResult.structuredContent, {
+    ok: false,
+    error: {
+      code: 'PARAMETER_INVALID',
+      message: 'A setting is not supported by the selected model.',
+      retryable: false,
+      nextAction: { type: 'edit_project_line', proposalIndex: 1, lineIndex: 2, field: 'resolution' },
+    },
+  });
 });

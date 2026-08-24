@@ -85,9 +85,7 @@ export type AgentProjectBudgetProposal = Readonly<{
 
 export type AgentProjectBudgetResult = Readonly<{
   proposals: readonly AgentProjectBudgetProposal[];
-  total: BudgetMoney;
   currency: string;
-  intendedOutputDurationSec: number;
   membershipTier: AuthoritativeMembershipTier;
   catalogRevision: string;
   quoteRequired: true;
@@ -113,6 +111,21 @@ const defaultDependencies: AgentProjectBudgetDependencies = {
 
 function invalidParameter(): never {
   throw new AgentApiError('PARAMETER_INVALID', 'The project budget request contains invalid settings.');
+}
+
+function editProjectLine(
+  code: AgentApiError['code'],
+  message: string,
+  proposalIndex: number,
+  lineIndex: number,
+  field: string,
+): never {
+  throw new AgentApiError(code, message, false, {
+    type: 'edit_project_line',
+    proposalIndex,
+    lineIndex,
+    field,
+  });
 }
 
 function internalPricingError(): never {
@@ -186,26 +199,110 @@ function checkedAddCents(left: number, right: number): number {
   return result;
 }
 
-function mapCapabilityError(error: unknown): never {
+function safeCapabilityField(field: string): string {
+  const aliases: Readonly<Record<string, string>> = {
+    duration: 'durationSec',
+    aspect_ratio: 'aspectRatio',
+    generate_audio: 'audio',
+    image_url: 'references',
+    image_urls: 'references',
+    reference_image_urls: 'references',
+  };
+  const normalized = aliases[field] ?? field;
+  return new Set([
+    'engineId', 'mode', 'prompt', 'durationSec', 'resolution', 'aspectRatio', 'fps',
+    'audio', 'loop', 'references', 'settings',
+  ]).has(normalized) ? normalized : 'settings';
+}
+
+function mapCapabilityError(
+  error: unknown,
+  proposalIndex: number,
+  lineIndex: number,
+): never {
   if (error instanceof GenerationCapabilityError) {
+    const field = safeCapabilityField(error.field);
     if (error.kind === 'reference_required') {
-      throw new AgentApiError('REFERENCE_REQUIRED', 'The selected model needs the declared reference input.');
+      editProjectLine(
+        'REFERENCE_REQUIRED',
+        'The selected model needs the declared reference input.',
+        proposalIndex,
+        lineIndex,
+        field,
+      );
     }
     if (error.kind === 'reference_invalid') {
-      throw new AgentApiError('REFERENCE_INVALID', 'The declared reference inputs are not supported by the selected model.');
+      editProjectLine(
+        'REFERENCE_INVALID',
+        'The declared reference inputs are not supported by the selected model.',
+        proposalIndex,
+        lineIndex,
+        field,
+      );
     }
+    editProjectLine(
+      'PARAMETER_INVALID',
+      'A setting is not supported by the selected model.',
+      proposalIndex,
+      lineIndex,
+      field,
+    );
   }
   invalidParameter();
 }
 
-function normalizeSettings(value: unknown): AgentProjectBudgetLine['settings'] {
-  const settings = requireExactObject(value, ['durationSec', 'resolution', 'aspectRatio', 'fps', 'audio', 'loop']);
-  const durationSec = requireInteger(settings.durationSec, 1, 86_400);
-  const resolution = requireText(settings.resolution, 64);
-  const aspectRatio = requireText(settings.aspectRatio, 64);
-  const fps = settings.fps === undefined ? undefined : requireInteger(settings.fps, 1, 240);
-  if (settings.audio !== undefined && typeof settings.audio !== 'boolean') invalidParameter();
-  if (settings.loop !== undefined && typeof settings.loop !== 'boolean') invalidParameter();
+function requireLineText(
+  value: unknown,
+  maxLength: number,
+  proposalIndex: number,
+  lineIndex: number,
+  field: string,
+): string {
+  if (typeof value !== 'string' || value !== value.trim() || value.length < 1 || value.length > maxLength) {
+    editProjectLine('PARAMETER_INVALID', 'A project line field is invalid.', proposalIndex, lineIndex, field);
+  }
+  return value;
+}
+
+function requireLineInteger(
+  value: unknown,
+  min: number,
+  max: number,
+  proposalIndex: number,
+  lineIndex: number,
+  field: string,
+): number {
+  if (!Number.isSafeInteger(value) || (value as number) < min || (value as number) > max) {
+    editProjectLine('PARAMETER_INVALID', 'A project line number is invalid.', proposalIndex, lineIndex, field);
+  }
+  return value as number;
+}
+
+function normalizeSettings(
+  value: unknown,
+  proposalIndex: number,
+  lineIndex: number,
+): AgentProjectBudgetLine['settings'] {
+  if (!isPlainObject(value)) {
+    editProjectLine('PARAMETER_INVALID', 'Project line settings are invalid.', proposalIndex, lineIndex, 'settings');
+  }
+  const allowed = new Set(['durationSec', 'resolution', 'aspectRatio', 'fps', 'audio', 'loop']);
+  if (Object.keys(value).some((key) => !allowed.has(key))) {
+    editProjectLine('PARAMETER_INVALID', 'Project line settings contain an unsupported field.', proposalIndex, lineIndex, 'settings');
+  }
+  const settings = value;
+  const durationSec = requireLineInteger(settings.durationSec, 1, 86_400, proposalIndex, lineIndex, 'durationSec');
+  const resolution = requireLineText(settings.resolution, 64, proposalIndex, lineIndex, 'resolution');
+  const aspectRatio = requireLineText(settings.aspectRatio, 64, proposalIndex, lineIndex, 'aspectRatio');
+  const fps = settings.fps === undefined
+    ? undefined
+    : requireLineInteger(settings.fps, 1, 240, proposalIndex, lineIndex, 'fps');
+  if (settings.audio !== undefined && typeof settings.audio !== 'boolean') {
+    editProjectLine('PARAMETER_INVALID', 'Project line audio intent is invalid.', proposalIndex, lineIndex, 'audio');
+  }
+  if (settings.loop !== undefined && typeof settings.loop !== 'boolean') {
+    editProjectLine('PARAMETER_INVALID', 'Project line loop intent is invalid.', proposalIndex, lineIndex, 'loop');
+  }
   return {
     durationSec,
     resolution,
@@ -216,15 +313,39 @@ function normalizeSettings(value: unknown): AgentProjectBudgetLine['settings'] {
   };
 }
 
-function normalizeReferenceRoles(value: unknown): readonly ProjectReferenceRole[] {
+function normalizeReferenceRoles(
+  value: unknown,
+  proposalIndex: number,
+  lineIndex: number,
+): readonly ProjectReferenceRole[] {
   if (value === undefined) return [];
   if (Array.isArray(value) && value.length > 16) {
-    throw new AgentApiError('REFERENCE_INVALID', 'The project includes too many references for one line.');
+    editProjectLine(
+      'REFERENCE_INVALID',
+      'The project includes too many references for one line.',
+      proposalIndex,
+      lineIndex,
+      'references',
+    );
   }
-  const roles = requireDenseArray(value, 0, 16);
+  if (!Array.isArray(value) || Object.getPrototypeOf(value) !== Array.prototype) {
+    editProjectLine('REFERENCE_INVALID', 'The project references are invalid.', proposalIndex, lineIndex, 'references');
+  }
+  const roles = value;
+  for (let index = 0; index < roles.length; index += 1) {
+    if (!Object.hasOwn(roles, index)) {
+      editProjectLine('REFERENCE_INVALID', 'The project references are invalid.', proposalIndex, lineIndex, 'references');
+    }
+  }
   return roles.map((role) => {
     if (typeof role !== 'string' || !REFERENCE_ROLES.has(role)) {
-      throw new AgentApiError('REFERENCE_INVALID', 'The project includes an unsupported reference role.');
+      editProjectLine(
+        'REFERENCE_INVALID',
+        'The project includes an unsupported reference role.',
+        proposalIndex,
+        lineIndex,
+        'references',
+      );
     }
     return role as ProjectReferenceRole;
   });
@@ -268,10 +389,17 @@ function validatePrice(
   return { amountCents: result.priceCents, currency: result.currency };
 }
 
-function requireLine(value: unknown): Record<string, unknown> {
-  return requireExactObject(value, [
+function requireLine(value: unknown, proposalIndex: number, lineIndex: number): Record<string, unknown> {
+  if (!isPlainObject(value)) {
+    editProjectLine('PARAMETER_INVALID', 'The project line is invalid.', proposalIndex, lineIndex, 'line');
+  }
+  const allowed = new Set([
     'purpose', 'engineId', 'mode', 'settings', 'referenceRoles', 'clipCount', 'attemptsPerClip',
   ]);
+  if (Object.keys(value).some((key) => !allowed.has(key))) {
+    editProjectLine('PARAMETER_INVALID', 'The project line contains an unsupported field.', proposalIndex, lineIndex, 'line');
+  }
+  return value;
 }
 
 export async function calculateAgentProjectBudget(
@@ -295,9 +423,6 @@ export async function calculateAgentProjectBudget(
   let lineCount = 0;
   let totalAttempts = 0;
   let currency: string | null = null;
-  let projectBaseCents = 0;
-  let projectCreativeCents = 0;
-  let projectDurationSec = 0;
   const proposals: AgentProjectBudgetProposal[] = [];
 
   for (let proposalIndex = 0; proposalIndex < rawProposals.length; proposalIndex += 1) {
@@ -312,22 +437,53 @@ export async function calculateAgentProjectBudget(
     const lines: AgentProjectBudgetLine[] = [];
 
     for (let lineIndex = 0; lineIndex < rawLines.length; lineIndex += 1) {
-      const rawLine = requireLine(rawLines[lineIndex]);
-      const purpose = requireText(rawLine.purpose, 240);
-      const engineId = requireText(rawLine.engineId, 128);
+      const rawLine = requireLine(rawLines[lineIndex], proposalIndex, lineIndex);
+      const purpose = requireLineText(rawLine.purpose, 240, proposalIndex, lineIndex, 'purpose');
+      const engineId = requireLineText(rawLine.engineId, 128, proposalIndex, lineIndex, 'engineId');
       const mode = rawLine.mode;
       const candidate = candidates.get(engineId);
-      if (!candidate) throw new AgentApiError('ENGINE_UNAVAILABLE', 'The selected model is not currently available.');
-      if (candidate.surface !== 'video' || typeof mode !== 'string' || !VIDEO_MODES.has(mode) || !candidate.publicModes.includes(mode as never)) {
-        throw new AgentApiError('MODE_UNSUPPORTED', 'The selected model does not support this video mode.');
+      if (!candidate) {
+        editProjectLine(
+          'ENGINE_UNAVAILABLE',
+          'The selected model is not currently available.',
+          proposalIndex,
+          lineIndex,
+          'engineId',
+        );
       }
-      const settings = normalizeSettings(rawLine.settings);
-      const clipCount = requireInteger(rawLine.clipCount, 1, MAX_PROJECT_CLIPS_PER_LINE);
-      const attemptsPerClip = requireInteger(rawLine.attemptsPerClip, 1, MAX_PROJECT_ATTEMPTS_PER_CLIP);
+      if (candidate.surface !== 'video' || typeof mode !== 'string' || !VIDEO_MODES.has(mode) || !candidate.publicModes.includes(mode as never)) {
+        editProjectLine(
+          'MODE_UNSUPPORTED',
+          'The selected model does not support this video mode.',
+          proposalIndex,
+          lineIndex,
+          'mode',
+        );
+      }
+      const settings = normalizeSettings(rawLine.settings, proposalIndex, lineIndex);
+      const clipCount = requireLineInteger(
+        rawLine.clipCount, 1, MAX_PROJECT_CLIPS_PER_LINE, proposalIndex, lineIndex, 'clipCount',
+      );
+      const attemptsPerClip = requireLineInteger(
+        rawLine.attemptsPerClip,
+        1,
+        MAX_PROJECT_ATTEMPTS_PER_CLIP,
+        proposalIndex,
+        lineIndex,
+        'attemptsPerClip',
+      );
       const pricedAttempts = checkedMultiplyCents(clipCount, attemptsPerClip);
       totalAttempts = checkedAddCents(totalAttempts, pricedAttempts);
-      if (totalAttempts > MAX_PROJECT_TOTAL_ATTEMPTS) invalidParameter();
-      const referenceRoles = normalizeReferenceRoles(rawLine.referenceRoles);
+      if (totalAttempts > MAX_PROJECT_TOTAL_ATTEMPTS) {
+        editProjectLine(
+          'PARAMETER_INVALID',
+          'The project includes too many priced attempts.',
+          proposalIndex,
+          lineIndex,
+          'attemptsPerClip',
+        );
+      }
+      const referenceRoles = normalizeReferenceRoles(rawLine.referenceRoles, proposalIndex, lineIndex);
       const request: CanonicalGenerationRequest = {
         schemaVersion: 1,
         surface: 'video',
@@ -341,7 +497,7 @@ export async function calculateAgentProjectBudget(
       try {
         validateCanonicalGenerationCapabilities(request, candidate);
       } catch (error) {
-        mapCapabilityError(error);
+        mapCapabilityError(error, proposalIndex, lineIndex);
       }
       let unitPrice: BudgetMoney;
       try {
@@ -372,9 +528,6 @@ export async function calculateAgentProjectBudget(
     const outputCurrency = currency;
     if (!outputCurrency) internalPricingError();
     const proposalTotalCents = checkedAddCents(proposalBaseCents, proposalCreativeCents);
-    projectBaseCents = checkedAddCents(projectBaseCents, proposalBaseCents);
-    projectCreativeCents = checkedAddCents(projectCreativeCents, proposalCreativeCents);
-    projectDurationSec = checkedAddCents(projectDurationSec, proposalDurationSec);
     proposals.push({
       name, lines,
       baseProduction: { amountCents: proposalBaseCents, currency: outputCurrency },
@@ -386,9 +539,7 @@ export async function calculateAgentProjectBudget(
   if (!currency) internalPricingError();
   return {
     proposals,
-    total: { amountCents: checkedAddCents(projectBaseCents, projectCreativeCents), currency },
     currency,
-    intendedOutputDurationSec: projectDurationSec,
     membershipTier,
     catalogRevision,
     quoteRequired: true,

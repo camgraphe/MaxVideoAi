@@ -77,18 +77,92 @@ async function assertError(work: Promise<unknown>, code: AgentApiError['code']):
   });
 }
 
+async function assertLineError(
+  work: Promise<unknown>,
+  code: AgentApiError['code'],
+  location: { proposalIndex: number; lineIndex: number; field: string },
+): Promise<void> {
+  await assert.rejects(work, (error: unknown) => {
+    assert.ok(error instanceof AgentApiError);
+    assert.equal(error.code, code);
+    assert.deepEqual(error.nextAction, { type: 'edit_project_line', ...location });
+    return true;
+  });
+}
+
 test('prices a 60-second single-model video project as a named proposal', async () => {
   const deps = makeDeps();
   const result = await calculateAgentProjectBudget(input([{ name: 'Consistent product film', lines: [line({ clipCount: 6 })] }]), principal, deps);
   assert.equal(result.proposals.length, 1);
   assert.equal(result.proposals[0]?.name, 'Consistent product film');
   assert.equal(result.proposals[0]?.intendedOutputDurationSec, 60);
-  assert.equal(result.intendedOutputDurationSec, 60);
   assert.equal(result.proposals[0]?.total.amountCents, 720);
+  assert.equal(Object.hasOwn(result, 'total'), false);
+  assert.equal(Object.hasOwn(result, 'intendedOutputDurationSec'), false);
   assert.equal(result.currency, 'USD');
   assert.equal(result.quoteRequired, true);
   assert.equal(result.nextAction, 'discuss_and_refine');
   assert.equal(deps.calls.length, 1);
+});
+
+test('keeps alternative proposal totals separate instead of summing them as one project', async () => {
+  const result = await calculateAgentProjectBudget(input([
+    { name: 'Seedance direction', lines: [line({ clipCount: 6 })] },
+    { name: 'Omni direction', lines: [line({ engineId: 'gemini-omni-flash', clipCount: 6 })] },
+  ]), principal, makeDeps());
+
+  assert.deepEqual(result.proposals.map((proposal) => ({
+    name: proposal.name,
+    totalCents: proposal.total.amountCents,
+    durationSec: proposal.intendedOutputDurationSec,
+  })), [
+    { name: 'Seedance direction', totalCents: 720, durationSec: 60 },
+    { name: 'Omni direction', totalCents: 480, durationSec: 60 },
+  ]);
+  assert.equal(Object.hasOwn(result, 'total'), false);
+  assert.equal(Object.hasOwn(result, 'intendedOutputDurationSec'), false);
+});
+
+test('returns an exact safe line location when a project capability is invalid', async () => {
+  const proposals = [
+    { name: 'Valid alternative', lines: [line()] },
+    {
+      name: 'Alternative to edit',
+      lines: [
+        line({ purpose: 'Valid opening' }),
+        line({ purpose: 'Invalid hero', settings: { durationSec: 7, resolution: '720p', aspectRatio: '16:9' } }),
+      ],
+    },
+  ];
+  await assertLineError(
+    calculateAgentProjectBudget(input(proposals), principal, makeDeps()),
+    'PARAMETER_INVALID',
+    { proposalIndex: 1, lineIndex: 1, field: 'durationSec' },
+  );
+  await assertLineError(
+    calculateAgentProjectBudget(input([{
+      name: 'Reference line',
+      lines: [line({ mode: 'i2v', referenceRoles: [] })],
+    }]), principal, makeDeps()),
+    'REFERENCE_REQUIRED',
+    { proposalIndex: 0, lineIndex: 0, field: 'references' },
+  );
+  await assertLineError(
+    calculateAgentProjectBudget(input([{
+      name: 'Resolution line',
+      lines: [line({ settings: { durationSec: 10, resolution: '4K', aspectRatio: '16:9' } })],
+    }]), principal, makeDeps()),
+    'PARAMETER_INVALID',
+    { proposalIndex: 0, lineIndex: 0, field: 'resolution' },
+  );
+  await assertLineError(
+    calculateAgentProjectBudget(input([{
+      name: 'Audio line',
+      lines: [line({ settings: { durationSec: 10, resolution: '720p', aspectRatio: '16:9', audio: 'yes' } })],
+    }]), principal, makeDeps()),
+    'PARAMETER_INVALID',
+    { proposalIndex: 0, lineIndex: 0, field: 'audio' },
+  );
 });
 
 test('preserves named mixed-model proposals, line order, and creative attempt allowances', async () => {
