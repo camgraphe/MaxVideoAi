@@ -86,6 +86,7 @@ const AUDITABLE_TOOL_NAMES = new Set([
   'list_models',
   'get_model_details',
   'recommend_models',
+  'calculate_project_budget',
 ]);
 
 async function readJsonRpcResponse(response: Response): Promise<Record<string, unknown> | null> {

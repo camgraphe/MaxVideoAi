@@ -237,10 +237,18 @@ test('tool audit records only the allowlisted name and success/failure projectio
     }),
     deps({ recordEvent }),
   );
+  const projectBudget = await handleMcpHttpRequest(
+    protocolRequest({
+      jsonrpc: '2.0', id: 8, method: 'tools/call',
+      params: { name: 'calculate_project_budget', arguments: {} },
+    }),
+    deps({ recordEvent }),
+  );
 
   assert.equal(success.status, 200);
   assert.equal(failed.status, 200);
   assert.equal(details.status, 200);
+  assert.equal(projectBudget.status, 200);
   assert.deepEqual(events, [
     {
       eventType: 'tool_call', userId: 'user-1', oauthClientId: 'client-1',
@@ -253,6 +261,10 @@ test('tool audit records only the allowlisted name and success/failure projectio
     {
       eventType: 'tool_call', userId: 'user-1', oauthClientId: 'client-1',
       tool: 'get_model_details', outcome: 'success', surface: null, engineId: null, errorCode: null,
+    },
+    {
+      eventType: 'tool_call', userId: 'user-1', oauthClientId: 'client-1',
+      tool: 'calculate_project_budget', outcome: 'failure', surface: null, engineId: null, errorCode: null,
     },
   ]);
   assert.doesNotMatch(JSON.stringify(events), /private|prompt|token|provider/i);

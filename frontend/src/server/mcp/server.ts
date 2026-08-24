@@ -19,6 +19,11 @@ import {
 } from '@/server/agent-api/create-reference-upload-link';
 import { recommendAgentModels } from '@/server/agent-api/model-recommendations';
 import {
+  calculateAgentProjectBudget,
+  type AgentProjectBudgetInput,
+  type AgentProjectBudgetResult,
+} from '@/server/agent-api/project-budget';
+import {
   createConfirmGenerationService,
   type ConfirmGenerationInput,
 } from '@/server/agent-api/confirm-generation';
@@ -63,6 +68,7 @@ import { registerListMediaTool } from '@/server/mcp/tools/list-media';
 import { registerListRecentGenerationsTool } from '@/server/mcp/tools/list-recent-generations';
 import { registerPrepareGenerationTool } from '@/server/mcp/tools/prepare-generation';
 import { registerRecommendModelsTool } from '@/server/mcp/tools/recommend-models';
+import { registerCalculateProjectBudgetTool } from '@/server/mcp/tools/calculate-project-budget';
 
 export type MaxVideoAiMcpServices = {
   getAccountStatus(principal: AgentPrincipal): Promise<AgentAccountStatus>;
@@ -72,6 +78,10 @@ export type MaxVideoAiMcpServices = {
     input: AgentModelRecommendationInput,
     principal: AgentPrincipal
   ): Promise<AgentModelRecommendationResult>;
+  calculateProjectBudget?(
+    input: AgentProjectBudgetInput,
+    principal: AgentPrincipal,
+  ): Promise<AgentProjectBudgetResult>;
   prepareGeneration?(
     input: PrepareGenerationInput,
     principal: AgentPrincipal,
@@ -117,6 +127,7 @@ export function createDefaultMaxVideoAiMcpServices(
     listModels: (filter) => listAgentModels(filter),
     getModelDetails: (engineId) => getAgentModelDetails(engineId),
     recommendModels: (input) => recommendAgentModels(input),
+    calculateProjectBudget: (input, principal) => calculateAgentProjectBudget(input, principal),
     prepareGeneration: createPrepareGenerationService(config.accountUrl, trialRiskContext),
     confirmGeneration: createConfirmGenerationService(config.accountUrl, trialRiskContext),
     getGenerationStatus: (input, principal) => getAgentGenerationStatus(input, principal),
@@ -153,6 +164,7 @@ export function createMaxVideoAiMcpServer(
   registerListModelsTool(server, principal, services);
   registerGetModelDetailsTool(server, principal, services);
   registerRecommendModelsTool(server, principal, services);
+  registerCalculateProjectBudgetTool(server, principal, services);
   if (referenceUploads) {
     registerListMediaTool(server, principal, services);
     registerCreateReferenceUploadLinkTool(server, principal, services);

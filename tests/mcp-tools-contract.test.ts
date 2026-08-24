@@ -13,6 +13,10 @@ import type {
   AgentModelFilter,
   AgentModelRecommendationInput,
 } from '../frontend/src/server/agent-api/types';
+import type {
+  AgentProjectBudgetInput,
+  AgentProjectBudgetResult,
+} from '../frontend/src/server/agent-api/project-budget';
 import {
   createMaxVideoAiMcpServer,
   type MaxVideoAiMcpServices,
@@ -63,6 +67,37 @@ const modelDetails: AgentModelDetails = {
   catalogUpdatedAt: '2026-08-24T12:00:00.000Z',
 };
 
+const projectBudget: AgentProjectBudgetResult = {
+  proposals: [{
+    name: 'Consistent product film',
+    lines: [{
+      purpose: 'Opening hero shot',
+      engineId: 'seedance-2-5',
+      mode: 't2v',
+      settings: { durationSec: 10, resolution: '720p', aspectRatio: '16:9' },
+      referenceCount: 0,
+      clipCount: 6,
+      attemptsPerClip: 2,
+      unitPrice: { amountCents: 120, currency: 'USD' },
+      baseProduction: { amountCents: 720, currency: 'USD', attempts: 6 },
+      creativeAttempts: { amountCents: 720, currency: 'USD', attempts: 6 },
+      total: { amountCents: 1_440, currency: 'USD' },
+      intendedOutputDurationSec: 60,
+    }],
+    baseProduction: { amountCents: 720, currency: 'USD' },
+    creativeAttempts: { amountCents: 720, currency: 'USD' },
+    total: { amountCents: 1_440, currency: 'USD' },
+    intendedOutputDurationSec: 60,
+  }],
+  total: { amountCents: 1_440, currency: 'USD' },
+  currency: 'USD',
+  intendedOutputDurationSec: 60,
+  membershipTier: 'member',
+  catalogRevision: 'mcp-catalog-v2:test',
+  quoteRequired: true,
+  nextAction: 'discuss_and_refine',
+};
+
 function services(overrides: Partial<MaxVideoAiMcpServices> = {}): MaxVideoAiMcpServices {
   return {
     async getAccountStatus() {
@@ -87,6 +122,9 @@ function services(overrides: Partial<MaxVideoAiMcpServices> = {}): MaxVideoAiMcp
         ],
         nextAction: 'prepare_generation',
       };
+    },
+    async calculateProjectBudget() {
+      return projectBudget;
     },
     ...overrides,
   };
@@ -147,7 +185,7 @@ async function connectedClient(serviceOverrides: Partial<MaxVideoAiMcpServices> 
   };
 }
 
-test('server advertises only the four read-only discovery tools with narrow guidance', async (t) => {
+test('server advertises only the five read-only discovery tools with narrow guidance', async (t) => {
   const connected = await connectedClient();
   t.after(() => connected.close());
 
@@ -158,6 +196,7 @@ test('server advertises only the four read-only discovery tools with narrow guid
     'list_models',
     'get_model_details',
     'recommend_models',
+    'calculate_project_budget',
   ]);
 
   for (const tool of result.tools) {
@@ -172,6 +211,11 @@ test('server advertises only the four read-only discovery tools with narrow guid
   assert.ok(detailTool);
   assert.equal(detailTool.inputSchema.additionalProperties, false);
   assert.deepEqual(Object.keys(detailTool.inputSchema.properties ?? {}), ['id']);
+  const budgetTool = result.tools.find((tool) => tool.name === 'calculate_project_budget');
+  assert.ok(budgetTool);
+  assert.equal(budgetTool.inputSchema.additionalProperties, false);
+  assert.match(budgetTool.description ?? '', /mixed models/i);
+  assert.match(budgetTool.description ?? '', /explicit creative attempts/i);
   assert.match(connected.client.getInstructions() ?? '', /prompt drafting.*host agent/i);
   assert.match(connected.client.getInstructions() ?? '', /generation is not available/i);
 });
@@ -180,6 +224,7 @@ test('tools return structured content and pass validated filters to facade servi
   let listFilter: AgentModelFilter | null = null;
   let modelDetailId: string | null = null;
   let recommendationInput: AgentModelRecommendationInput | null = null;
+  let budgetInput: AgentProjectBudgetInput | null = null;
   const connected = await connectedClient({
     async listModels(filter) {
       listFilter = filter;
@@ -192,6 +237,10 @@ test('tools return structured content and pass validated filters to facade servi
     async recommendModels(input) {
       recommendationInput = input;
       return { recommendations: [], nextAction: 'clarify_requirements' };
+    },
+    async calculateProjectBudget(input) {
+      budgetInput = input;
+      return projectBudget;
     },
   });
   t.after(() => connected.close());
@@ -213,6 +262,63 @@ test('tools return structured content and pass validated filters to facade servi
     name: 'recommend_models',
     arguments: { mode: 't2v', speedPreference: 'fastest', qualityPreference: 'balanced' },
   });
+  const budgetArguments = {
+    proposals: [
+      {
+        name: 'Consistent product film',
+        lines: [{
+          purpose: 'Opening hero shot',
+          engineId: 'seedance-2-5',
+          mode: 't2v',
+          settings: { durationSec: 10, resolution: '720p', aspectRatio: '16:9', audio: true },
+          clipCount: 6,
+          attemptsPerClip: 2,
+        }],
+      },
+      {
+        name: 'Mixed cutaway plan',
+        lines: [{
+          purpose: 'Reference product shot',
+          engineId: 'minimax-h3',
+          mode: 'ref2v',
+          settings: { durationSec: 5, resolution: '2K', aspectRatio: '9:16', fps: 24, loop: false },
+          referenceRoles: ['reference', 'reference'],
+          clipCount: 3,
+          attemptsPerClip: 1,
+        }],
+      },
+    ],
+  } satisfies AgentProjectBudgetInput;
+  const budgetResult = await connected.client.callTool({
+    name: 'calculate_project_budget',
+    arguments: budgetArguments,
+  });
+  const rejectedBudgetResults = await Promise.all([
+    connected.client.callTool({
+      name: 'calculate_project_budget',
+      arguments: { ...budgetArguments, unexpected: true },
+    }),
+    connected.client.callTool({
+      name: 'calculate_project_budget',
+      arguments: { proposals: Array.from({ length: 5 }, () => budgetArguments.proposals[0]) },
+    }),
+    connected.client.callTool({
+      name: 'calculate_project_budget',
+      arguments: { proposals: [{ ...budgetArguments.proposals[0], lines: Array.from({ length: 13 }, () => budgetArguments.proposals[0].lines[0]) }] },
+    }),
+    connected.client.callTool({
+      name: 'calculate_project_budget',
+      arguments: { proposals: [{ ...budgetArguments.proposals[0], lines: [{ ...budgetArguments.proposals[0].lines[0], clipCount: 101 }] }] },
+    }),
+    connected.client.callTool({
+      name: 'calculate_project_budget',
+      arguments: { proposals: [{ ...budgetArguments.proposals[0], lines: [{ ...budgetArguments.proposals[0].lines[0], mode: 't2i' }] }] },
+    }),
+    connected.client.callTool({
+      name: 'calculate_project_budget',
+      arguments: { proposals: [{ ...budgetArguments.proposals[0], lines: [{ ...budgetArguments.proposals[0].lines[0], settings: { ...budgetArguments.proposals[0].lines[0].settings, arbitrary: true } }] }] },
+    }),
+  ]);
 
   assert.deepEqual(accountResult.structuredContent, account);
   assert.deepEqual(modelsResult.structuredContent, { models: [model] });
@@ -222,6 +328,7 @@ test('tools return structured content and pass validated filters to facade servi
     recommendations: [],
     nextAction: 'clarify_requirements',
   });
+  assert.deepEqual(budgetResult.structuredContent, projectBudget);
   assert.deepEqual(listFilter, { surface: 'video', mode: 't2v', audio: true });
   assert.equal(modelDetailId, 'minimax-h3');
   assert.deepEqual(recommendationInput, {
@@ -229,6 +336,8 @@ test('tools return structured content and pass validated filters to facade servi
     speedPreference: 'fastest',
     qualityPreference: 'balanced',
   });
+  assert.deepEqual(budgetInput, budgetArguments);
+  rejectedBudgetResults.forEach((result) => assert.equal(result.isError, true));
   assertAccountStatus(accountResult.structuredContent);
   const listedModels = record(modelsResult.structuredContent).models;
   assert.ok(Array.isArray(listedModels));
