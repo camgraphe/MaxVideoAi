@@ -7,6 +7,7 @@ import {
   type AgentAccountStatusWalletDeps,
 } from '@/server/agent-api/account-status';
 import { listAgentModels } from '@/server/agent-api/model-catalog';
+import { getAgentModelDetails } from '@/server/agent-api/model-details';
 import {
   listAgentMedia,
   type AgentMediaPage,
@@ -44,6 +45,7 @@ import {
 import type {
   AgentAccountStatus,
   AgentModel,
+  AgentModelDetails,
   AgentModelFilter,
   AgentModelRecommendationInput,
   AgentModelRecommendationResult,
@@ -56,6 +58,7 @@ import { registerCreateTopupLinkTool } from '@/server/mcp/tools/create-topup-lin
 import { registerCreateReferenceUploadLinkTool } from '@/server/mcp/tools/create-reference-upload-link';
 import { registerGetGenerationStatusTool } from '@/server/mcp/tools/get-generation-status';
 import { registerListModelsTool } from '@/server/mcp/tools/list-models';
+import { registerGetModelDetailsTool } from '@/server/mcp/tools/get-model-details';
 import { registerListMediaTool } from '@/server/mcp/tools/list-media';
 import { registerListRecentGenerationsTool } from '@/server/mcp/tools/list-recent-generations';
 import { registerPrepareGenerationTool } from '@/server/mcp/tools/prepare-generation';
@@ -64,6 +67,7 @@ import { registerRecommendModelsTool } from '@/server/mcp/tools/recommend-models
 export type MaxVideoAiMcpServices = {
   getAccountStatus(principal: AgentPrincipal): Promise<AgentAccountStatus>;
   listModels(filter: AgentModelFilter, principal: AgentPrincipal): Promise<AgentModel[]>;
+  getModelDetails(engineId: string, principal: AgentPrincipal): Promise<AgentModelDetails>;
   recommendModels(
     input: AgentModelRecommendationInput,
     principal: AgentPrincipal
@@ -111,6 +115,7 @@ export function createDefaultMaxVideoAiMcpServices(
   return {
     getAccountStatus: createAgentAccountStatusService(config.accountUrl, accountStatusDeps),
     listModels: (filter) => listAgentModels(filter),
+    getModelDetails: (engineId) => getAgentModelDetails(engineId),
     recommendModels: (input) => recommendAgentModels(input),
     prepareGeneration: createPrepareGenerationService(config.accountUrl, trialRiskContext),
     confirmGeneration: createConfirmGenerationService(config.accountUrl, trialRiskContext),
@@ -146,6 +151,7 @@ export function createMaxVideoAiMcpServer(
 
   registerGetAccountStatusTool(server, principal, services);
   registerListModelsTool(server, principal, services);
+  registerGetModelDetailsTool(server, principal, services);
   registerRecommendModelsTool(server, principal, services);
   if (referenceUploads) {
     registerListMediaTool(server, principal, services);

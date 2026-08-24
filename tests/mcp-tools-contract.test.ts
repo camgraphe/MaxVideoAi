@@ -9,6 +9,7 @@ import type { AgentPrincipal } from '../frontend/src/server/agent-api/principal'
 import type {
   AgentAccountStatus,
   AgentModel,
+  AgentModelDetails,
   AgentModelFilter,
   AgentModelRecommendationInput,
 } from '../frontend/src/server/agent-api/types';
@@ -47,6 +48,21 @@ const model: AgentModel = {
   availability: 'available',
 };
 
+const modelDetails: AgentModelDetails = {
+  id: 'minimax-h3',
+  label: 'MiniMax H3',
+  surface: 'video',
+  availability: 'available',
+  modes: [],
+  guidance: null,
+  links: {
+    model: 'https://maxvideoai.com/models/minimax-h3',
+    pricing: 'https://maxvideoai.com/pricing',
+    examples: null,
+  },
+  catalogUpdatedAt: '2026-08-24T12:00:00.000Z',
+};
+
 function services(overrides: Partial<MaxVideoAiMcpServices> = {}): MaxVideoAiMcpServices {
   return {
     async getAccountStatus() {
@@ -54,6 +70,9 @@ function services(overrides: Partial<MaxVideoAiMcpServices> = {}): MaxVideoAiMcp
     },
     async listModels() {
       return [model];
+    },
+    async getModelDetails() {
+      return modelDetails;
     },
     async recommendModels() {
       return {
@@ -128,7 +147,7 @@ async function connectedClient(serviceOverrides: Partial<MaxVideoAiMcpServices> 
   };
 }
 
-test('server advertises only the three read-only discovery tools with narrow guidance', async (t) => {
+test('server advertises only the four read-only discovery tools with narrow guidance', async (t) => {
   const connected = await connectedClient();
   t.after(() => connected.close());
 
@@ -137,6 +156,7 @@ test('server advertises only the three read-only discovery tools with narrow gui
   assert.deepEqual(result.tools.map((tool) => tool.name), [
     'get_account_status',
     'list_models',
+    'get_model_details',
     'recommend_models',
   ]);
 
@@ -148,17 +168,26 @@ test('server advertises only the three read-only discovery tools with narrow gui
     assert.match(tool.description ?? '', /Do not use/i);
     assert.equal(tool.inputSchema.type, 'object');
   }
+  const detailTool = result.tools.find((tool) => tool.name === 'get_model_details');
+  assert.ok(detailTool);
+  assert.equal(detailTool.inputSchema.additionalProperties, false);
+  assert.deepEqual(Object.keys(detailTool.inputSchema.properties ?? {}), ['id']);
   assert.match(connected.client.getInstructions() ?? '', /prompt drafting.*host agent/i);
   assert.match(connected.client.getInstructions() ?? '', /generation is not available/i);
 });
 
 test('tools return structured content and pass validated filters to facade services', async (t) => {
   let listFilter: AgentModelFilter | null = null;
+  let modelDetailId: string | null = null;
   let recommendationInput: AgentModelRecommendationInput | null = null;
   const connected = await connectedClient({
     async listModels(filter) {
       listFilter = filter;
       return [model];
+    },
+    async getModelDetails(id) {
+      modelDetailId = id;
+      return modelDetails;
     },
     async recommendModels(input) {
       recommendationInput = input;
@@ -172,6 +201,14 @@ test('tools return structured content and pass validated filters to facade servi
     name: 'list_models',
     arguments: { surface: 'video', mode: 't2v', audio: true },
   });
+  const detailsResult = await connected.client.callTool({
+    name: 'get_model_details',
+    arguments: { id: 'minimax-h3' },
+  });
+  const rejectedDetailResult = await connected.client.callTool({
+    name: 'get_model_details',
+    arguments: { id: 'minimax-h3', unexpected: true },
+  });
   const recommendationResult = await connected.client.callTool({
     name: 'recommend_models',
     arguments: { mode: 't2v', speedPreference: 'fastest', qualityPreference: 'balanced' },
@@ -179,11 +216,14 @@ test('tools return structured content and pass validated filters to facade servi
 
   assert.deepEqual(accountResult.structuredContent, account);
   assert.deepEqual(modelsResult.structuredContent, { models: [model] });
+  assert.deepEqual(detailsResult.structuredContent, modelDetails);
+  assert.equal(rejectedDetailResult.isError, true);
   assert.deepEqual(recommendationResult.structuredContent, {
     recommendations: [],
     nextAction: 'clarify_requirements',
   });
   assert.deepEqual(listFilter, { surface: 'video', mode: 't2v', audio: true });
+  assert.equal(modelDetailId, 'minimax-h3');
   assert.deepEqual(recommendationInput, {
     mode: 't2v',
     speedPreference: 'fastest',

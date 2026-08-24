@@ -81,6 +81,7 @@ export async function inspectLiveMcpMetadata(): Promise<RegistryEvidence> {
   const services: MaxVideoAiMcpServices = {
     getAccountStatus: unavailable,
     listModels: unavailable,
+    getModelDetails: unavailable,
     recommendModels: unavailable,
   };
   const server = createMaxVideoAiMcpServer(principal, services);

@@ -84,6 +84,7 @@ function protocolMethod(body: unknown): string | null {
 const AUDITABLE_TOOL_NAMES = new Set([
   'get_account_status',
   'list_models',
+  'get_model_details',
   'recommend_models',
 ]);
 
