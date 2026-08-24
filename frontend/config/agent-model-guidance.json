@@ -1,0 +1,69 @@
+[
+  {
+    "engineId": "seedance-2-5",
+    "strengths": [
+      "Longer cinematic scenes with a clear story arc.",
+      "Multimodal direction for identity, motion, pacing, and sound."
+    ],
+    "bestFor": [
+      "cinematic_story",
+      "multi_shot",
+      "product_video",
+      "character_scene",
+      "reference_guided"
+    ],
+    "considerations": [
+      "Use the current model details to confirm the settings required for the brief."
+    ],
+    "evidenceUrls": [
+      "https://maxvideoai.com/models/seedance-2-5",
+      "https://maxvideoai.com/examples/seedance"
+    ],
+    "reviewedAt": "2026-08-24"
+  },
+  {
+    "engineId": "minimax-h3",
+    "strengths": [
+      "Character-led cinematic scenes with expressive movement and dialogue.",
+      "Multi-shot direction that keeps character, wardrobe, and setting coherent.",
+      "Multimodal direction for identity, motion, and sound."
+    ],
+    "bestFor": [
+      "character_scene",
+      "multi_shot",
+      "reference_guided",
+      "native_audio",
+      "high_resolution"
+    ],
+    "considerations": [
+      "Use the current model details to confirm the settings required for the brief."
+    ],
+    "evidenceUrls": [
+      "https://maxvideoai.com/models/minimax-h3",
+      "https://maxvideoai.com/examples/minimax-h3"
+    ],
+    "reviewedAt": "2026-08-24"
+  },
+  {
+    "engineId": "gemini-omni-flash",
+    "strengths": [
+      "Stateful follow-up refinement.",
+      "Reference-guided shots and short source-video edits.",
+      "Prompt-directed sound."
+    ],
+    "bestFor": [
+      "conversational_refine",
+      "source_edit",
+      "reference_guided",
+      "product_video"
+    ],
+    "considerations": [
+      "Use the current model details to confirm the delivery controls required for the brief."
+    ],
+    "evidenceUrls": [
+      "https://maxvideoai.com/models/gemini-omni-flash",
+      "https://maxvideoai.com/ai-video-engines/gemini-omni-flash-vs-veo-3-1"
+    ],
+    "reviewedAt": "2026-08-24"
+  }
+]
