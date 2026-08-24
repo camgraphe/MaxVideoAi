@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { listFalEngines } from '../frontend/src/config/falEngines';
+import { ENV } from '../frontend/src/lib/env';
 import { AgentApiError } from '../frontend/src/server/agent-api/errors';
 import {
   getAgentModelDetails,
@@ -274,6 +275,26 @@ test('real i2i model details honor requiredInModes even when the field is stored
     JSON.stringify(details),
     /google_vertex_image|providerMeta|pricingDetails|source|acceptedMimeTypes/i,
   );
+});
+
+test('Seedream details mirror direct provider credential readiness', { concurrency: false }, async () => {
+  const original = {
+    bytePlusEnabled: ENV.BYTEPLUS_ARK_ENABLED,
+    bytePlusApiKey: ENV.BYTEPLUS_ARK_API_KEY,
+  };
+  const registryDeps = realRegistryDetailsDeps();
+
+  try {
+    ENV.BYTEPLUS_ARK_ENABLED = 'true';
+    ENV.BYTEPLUS_ARK_API_KEY = '';
+    assert.equal((await getAgentModelDetails('seedream', registryDeps)).generationEnabled, false);
+
+    ENV.BYTEPLUS_ARK_API_KEY = 'test-key';
+    assert.equal((await getAgentModelDetails('seedream', registryDeps)).generationEnabled, true);
+  } finally {
+    ENV.BYTEPLUS_ARK_ENABLED = original.bytePlusEnabled;
+    ENV.BYTEPLUS_ARK_API_KEY = original.bytePlusApiKey;
+  }
 });
 
 test('custom guidance is projected into an immutable detached public DTO', async () => {

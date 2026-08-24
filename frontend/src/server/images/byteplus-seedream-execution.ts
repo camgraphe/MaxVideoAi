@@ -27,6 +27,7 @@ import { recordRefundReceipt, type PendingReceipt } from './image-generation-rec
 import { ImageGenerationExecutionError } from './image-generation-error';
 import { copyGeneratedImagesToStorage } from './image-output-storage';
 import { resolveBytePlusSeedreamOutputPricing } from './byteplus-seedream-pricing';
+import { assertBytePlusSeedreamExecutable } from './byteplus-seedream-policy';
 
 const SIGNED_REFERENCE_URL_TTL_SECONDS = 60 * 60;
 const BYTEPLUS_PROVIDER_MODE = BYTEPLUS_SEEDREAM_PROVIDER;
@@ -95,6 +96,8 @@ export async function executeBytePlusSeedreamGeneration(params: {
   let providerJobId: string | null = null;
 
   try {
+    assertBytePlusSeedreamExecutable(params.engine);
+
     if (!apiKey) {
       throw new BytePlusSeedreamError('BytePlus Seedream API key is not configured.', {
         code: 'BYTEPLUS_SEEDREAM_API_KEY_MISSING',

@@ -305,3 +305,31 @@ test('catalog mirrors real execution gates for newly registered video models', {
     ENV.SEEDANCE_2_5_BYTEPLUS_MODES = original.seedance25Modes;
   }
 });
+
+test('catalog mirrors direct Seedream credential readiness', { concurrency: false }, async () => {
+  const original = {
+    bytePlusEnabled: ENV.BYTEPLUS_ARK_ENABLED,
+    bytePlusApiKey: ENV.BYTEPLUS_ARK_API_KEY,
+  };
+  const registryDeps = realRegistryDeps();
+
+  try {
+    ENV.BYTEPLUS_ARK_ENABLED = 'true';
+    ENV.BYTEPLUS_ARK_API_KEY = '';
+
+    assert.equal(
+      (await listAgentModels({ id: 'seedream' }, registryDeps))[0]?.generationEnabled,
+      false,
+    );
+
+    ENV.BYTEPLUS_ARK_API_KEY = 'test-key';
+
+    assert.equal(
+      (await listAgentModels({ id: 'seedream' }, registryDeps))[0]?.generationEnabled,
+      true,
+    );
+  } finally {
+    ENV.BYTEPLUS_ARK_ENABLED = original.bytePlusEnabled;
+    ENV.BYTEPLUS_ARK_API_KEY = original.bytePlusApiKey;
+  }
+});
