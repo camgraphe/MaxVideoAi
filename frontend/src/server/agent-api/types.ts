@@ -1,5 +1,5 @@
 import type { AgentApiFailure } from './errors';
-import type { AgentModelGuidance } from './model-guidance';
+import type { AgentModelGuidance, AgentModelUseCase } from './model-guidance';
 
 export type AgentApiResult<T> = { ok: true; data: T } | AgentApiFailure;
 
