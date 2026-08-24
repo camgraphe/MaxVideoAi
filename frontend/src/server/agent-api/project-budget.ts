@@ -38,7 +38,7 @@ export type AgentProjectBudgetInput = Readonly<{
       settings: Readonly<{
         durationSec: number;
         resolution: string;
-        aspectRatio: string;
+        aspectRatio?: string;
         fps?: number;
         audio?: boolean;
         loop?: boolean;
@@ -59,7 +59,7 @@ export type AgentProjectBudgetLine = Readonly<{
   settings: Readonly<{
     durationSec: number;
     resolution: string;
-    aspectRatio: string;
+    aspectRatio?: string;
     fps?: number;
     audio?: boolean;
     loop?: boolean;
@@ -288,7 +288,9 @@ function normalizeSettings(
   const settings = value;
   const durationSec = requireLineInteger(settings.durationSec, 1, 86_400, proposalIndex, lineIndex, 'durationSec');
   const resolution = requireLineText(settings.resolution, 64, proposalIndex, lineIndex, 'resolution');
-  const aspectRatio = requireLineText(settings.aspectRatio, 64, proposalIndex, lineIndex, 'aspectRatio');
+  const aspectRatio = settings.aspectRatio === undefined
+    ? undefined
+    : requireLineText(settings.aspectRatio, 64, proposalIndex, lineIndex, 'aspectRatio');
   const fps = settings.fps === undefined
     ? undefined
     : requireLineInteger(settings.fps, 1, 240, proposalIndex, lineIndex, 'fps');
@@ -301,7 +303,7 @@ function normalizeSettings(
   return {
     durationSec,
     resolution,
-    aspectRatio,
+    ...(aspectRatio === undefined ? {} : { aspectRatio }),
     ...(fps === undefined ? {} : { fps }),
     ...(settings.audio === undefined ? {} : { audio: settings.audio }),
     ...(settings.loop === undefined ? {} : { loop: settings.loop }),

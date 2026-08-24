@@ -109,12 +109,15 @@ export async function priceCanonicalGeneration(
 ): Promise<GenerationPricingResult> {
   if (request.surface === 'video') {
     const settings = request.settings;
+    const aspectRatio = optionalString(settings, 'aspectRatio');
     const result = await dependencies.computeVideoPreflight({
       engine: request.engineId,
       mode: request.mode,
       durationSec: requiredPositiveInteger(settings, 'durationSec'),
       resolution: requiredString(settings, 'resolution') as PreflightRequest['resolution'],
-      aspectRatio: requiredString(settings, 'aspectRatio') as PreflightRequest['aspectRatio'],
+      ...(aspectRatio === undefined
+        ? {}
+        : { aspectRatio: aspectRatio as NonNullable<PreflightRequest['aspectRatio']> }),
       fps: typeof settings.fps === 'number' ? settings.fps : 24,
       ...(typeof settings.loop === 'boolean' ? { loop: settings.loop } : {}),
       ...(typeof settings.audio === 'boolean' ? { audio: settings.audio } : {}),

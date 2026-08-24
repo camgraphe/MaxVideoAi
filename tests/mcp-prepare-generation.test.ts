@@ -821,6 +821,33 @@ test('generation pricing forwards MiniMax H3 reference counts to both canonical 
   }
 });
 
+test('canonical video pricing leaves source-derived i2v framing unset', async () => {
+  const request: CanonicalGenerationRequest = {
+    schemaVersion: 1,
+    surface: 'video',
+    engineId: 'minimax-h3',
+    mode: 'i2v',
+    prompt: 'Animate the source framing',
+    settings: { durationSec: 5, resolution: '2K' },
+    references: [{ kind: 'asset', assetId: 'h3-source', role: 'source' }],
+    outputCount: 1,
+  };
+  let captured: Record<string, unknown> | null = null;
+  await priceCanonicalGeneration(request, 'member', {
+    computeVideoPreflight: async (payload: Record<string, unknown>) => {
+      captured = payload;
+      return {
+        ok: true,
+        total: 100,
+        currency: 'USD',
+        pricing: { totalCents: 100, currency: 'USD', membershipTier: 'member' },
+      };
+    },
+    estimateImage: async () => { throw new Error('unused'); },
+  });
+  assert.equal(Object.hasOwn(captured!, 'aspectRatio'), false);
+});
+
 test('paid generation tools are gated out by default and prepare is accurately annotated when injected on', async (t) => {
   const prepared = {
     quoteId,

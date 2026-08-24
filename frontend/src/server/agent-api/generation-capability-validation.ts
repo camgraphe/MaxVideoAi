@@ -134,11 +134,15 @@ function validateVideoModeCaps(
     fail('resolution');
   }
   const aspectRatio = request.settings.aspectRatio;
-  if (
+  const supportedAspectRatios = caps.aspectRatio ?? [];
+  if (supportedAspectRatios.length > 0 && (
     typeof aspectRatio !== 'string'
-    || !caps.aspectRatio?.includes(aspectRatio)
+    || !supportedAspectRatios.includes(aspectRatio)
     || !candidate.engine.aspectRatios.includes(aspectRatio as never)
-  ) {
+  )) {
+    fail('aspectRatio');
+  }
+  if (supportedAspectRatios.length === 0 && aspectRatio !== undefined) {
     fail('aspectRatio');
   }
   const fps = request.settings.fps;

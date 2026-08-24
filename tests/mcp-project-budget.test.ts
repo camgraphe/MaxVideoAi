@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
+import { listFalEngines } from '../frontend/src/config/falEngines';
 import { AgentApiError } from '../frontend/src/server/agent-api/errors';
 import {
   calculateAgentProjectBudget,
@@ -42,6 +43,21 @@ function engine(id: string, modes: readonly ('t2v' | 'i2v' | 'ref2v')[], duratio
 const seedance = engine('seedance-2-5', ['t2v', 'i2v', 'ref2v'], [5, 10]);
 const h3 = engine('minimax-h3', ['t2v', 'i2v', 'ref2v'], [5, 10, 15]);
 const omni = engine('gemini-omni-flash', ['t2v', 'i2v', 'ref2v'], [5, 10]);
+
+function registryCapability(engineId: string): AgentPublicGenerationEngine {
+  const entry = listFalEngines().find((candidate) => candidate.id === engineId);
+  assert.ok(entry, `Missing registry engine ${engineId}`);
+  const publicModes = entry.modes
+    .map((mode) => mode.mode)
+    .filter((mode): mode is AgentPublicGenerationEngine['publicModes'][number] =>
+      ['t2v', 'i2v', 'ref2v', 't2i', 'i2i'].includes(mode));
+  return {
+    engine: entry.engine,
+    surface: entry.category === 'image' ? 'image' : 'video',
+    publicModes,
+    modeCaps: Object.fromEntries(entry.modes.map((mode) => [mode.mode, mode.ui])),
+  };
+}
 
 function makeDeps(overrides: Partial<AgentProjectBudgetDependencies> = {}) {
   const calls: Array<Record<string, unknown>> = [];
@@ -123,6 +139,50 @@ test('keeps alternative proposal totals separate instead of summing them as one 
   assert.equal(Object.hasOwn(result, 'intendedOutputDurationSec'), false);
 });
 
+test('budgets real H3 and Seedance 2.5 i2v lines with source-derived framing', async () => {
+  const candidates = [registryCapability('minimax-h3'), registryCapability('seedance-2-5')];
+  const pricedSettings: Array<Record<string, unknown>> = [];
+  const result = await calculateAgentProjectBudget(input([
+    {
+      name: 'H3 source framing',
+      lines: [line({
+        engineId: 'minimax-h3',
+        mode: 'i2v',
+        settings: { durationSec: 5, resolution: '2K' },
+        referenceRoles: ['source'],
+      })],
+    },
+    {
+      name: 'Seedance source framing',
+      lines: [line({
+        engineId: 'seedance-2-5',
+        mode: 'i2v',
+        settings: { durationSec: 4, resolution: '480p' },
+        referenceRoles: ['source'],
+      })],
+    },
+  ]), principal, {
+    listPublicEngines: async () => candidates,
+    getMembershipStatus: async () => ({ pricing: { tier: 'member' } }),
+    computeCatalogRevision: () => 'mcp-catalog-v2:source-framing',
+    priceGeneration: async (request) => {
+      pricedSettings.push(request.settings);
+      return {
+        priceCents: 100,
+        currency: 'USD',
+        membershipTier: 'member',
+        pricingSnapshot: { totalCents: 100, currency: 'USD', membershipTier: 'member' },
+      };
+    },
+  });
+
+  assert.deepEqual(result.proposals.map((proposal) => proposal.total.amountCents), [100, 100]);
+  assert.deepEqual(pricedSettings, [
+    { durationSec: 5, resolution: '2K' },
+    { durationSec: 4, resolution: '480p' },
+  ]);
+});
+
 test('returns an exact safe line location when a project capability is invalid', async () => {
   const proposals = [
     { name: 'Valid alternative', lines: [line()] },
@@ -154,6 +214,14 @@ test('returns an exact safe line location when a project capability is invalid',
     }]), principal, makeDeps()),
     'PARAMETER_INVALID',
     { proposalIndex: 0, lineIndex: 0, field: 'resolution' },
+  );
+  await assertLineError(
+    calculateAgentProjectBudget(input([{
+      name: 'Missing framing line',
+      lines: [line({ settings: { durationSec: 10, resolution: '720p' } })],
+    }]), principal, makeDeps()),
+    'PARAMETER_INVALID',
+    { proposalIndex: 0, lineIndex: 0, field: 'aspectRatio' },
   );
   await assertLineError(
     calculateAgentProjectBudget(input([{

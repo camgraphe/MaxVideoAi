@@ -120,6 +120,7 @@ test('video capability validation enforces discrete/min durations, fps, enums, a
   rejectsCapability(capability(), request({ settings: { ...request().settings, fps: 25 } }));
   rejectsCapability(capability(), request({ settings: { ...request().settings, audio: 'yes' } }));
   rejectsCapability(capability(), request({ settings: { ...request().settings, resolution: '4k' } }));
+  rejectsCapability(capability(), request({ settings: { durationSec: 4, resolution: '720p', fps: 24, audio: true } }));
   rejectsCapability(capability(), request({ settings: { ...request().settings, aspectRatio: '1:1' } }));
   rejectsCapability(
     capability(),
@@ -281,6 +282,30 @@ test('real execution duration options accept numeric MCP seconds for Veo 3.1 and
   assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(videoRequest(luma, 5), luma));
   rejectsCapability(veo, videoRequest(veo, 5));
   rejectsCapability(luma, videoRequest(luma, 6));
+});
+
+test('real H3 and Seedance 2.5 i2v capabilities inherit framing from the source image', () => {
+  for (const [engineId, durationSec, resolution] of [
+    ['minimax-h3', 5, '2K'],
+    ['seedance-2-5', 4, '480p'],
+  ] as const) {
+    const candidate = registryCapability(engineId);
+    const inherited: CanonicalGenerationRequest = {
+      schemaVersion: 1,
+      surface: 'video',
+      engineId,
+      mode: 'i2v',
+      prompt: 'Animate the source framing',
+      settings: { durationSec, resolution },
+      references: [{ kind: 'asset', assetId: `${engineId}-source`, role: 'source' }],
+      outputCount: 1,
+    };
+    assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(inherited, candidate));
+    rejectsCapability(candidate, {
+      ...inherited,
+      settings: { ...inherited.settings, aspectRatio: '16:9' },
+    });
+  }
 });
 
 test('global provider controls reject an out-of-range seed even when a provider field omits bounds', () => {
