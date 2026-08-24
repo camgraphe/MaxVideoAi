@@ -45,7 +45,7 @@ import type {
   AgentModelRecommendationResult,
 } from '@/server/agent-api/types';
 import type { McpConfig } from '@/server/mcp/config';
-import { MAXVIDEOAI_MCP_INSTRUCTIONS } from '@/server/mcp/instructions';
+import { buildMaxVideoAiMcpInstructions } from '@/server/mcp/instructions';
 import { registerGetAccountStatusTool } from '@/server/mcp/tools/get-account-status';
 import { registerConfirmGenerationTool } from '@/server/mcp/tools/confirm-generation';
 import { registerCreateTopupLinkTool } from '@/server/mcp/tools/create-topup-link';
@@ -121,6 +121,8 @@ export function createMaxVideoAiMcpServer(
   services: MaxVideoAiMcpServices,
   options: MaxVideoAiMcpServerOptions = {},
 ): McpServer {
+  const referenceUploads = options.referenceUploads ?? FEATURES.mcp.referenceUploads;
+  const paidGeneration = options.paidGeneration ?? mcpPublication.paidGeneration;
   const server = new McpServer(
     {
       name: 'maxvideoai',
@@ -128,7 +130,7 @@ export function createMaxVideoAiMcpServer(
       websiteUrl: 'https://maxvideoai.com/mcp',
     },
     {
-      instructions: MAXVIDEOAI_MCP_INSTRUCTIONS,
+      instructions: buildMaxVideoAiMcpInstructions({ paidGeneration, referenceUploads }),
       capabilities: { tools: {} },
     }
   );
@@ -136,10 +138,10 @@ export function createMaxVideoAiMcpServer(
   registerGetAccountStatusTool(server, principal, services);
   registerListModelsTool(server, principal, services);
   registerRecommendModelsTool(server, principal, services);
-  if (options.referenceUploads ?? FEATURES.mcp.referenceUploads) {
+  if (referenceUploads) {
     registerListMediaTool(server, principal, services);
   }
-  if (options.paidGeneration ?? mcpPublication.paidGeneration) {
+  if (paidGeneration) {
     registerPrepareGenerationTool(server, principal, services);
     registerConfirmGenerationTool(server, principal, services);
     registerGetGenerationStatusTool(server, principal, services);
