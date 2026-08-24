@@ -15,6 +15,7 @@ import {
 import type { AgentPublicGenerationEngine } from '../frontend/src/server/agent-api/model-catalog';
 import {
   priceCanonicalGeneration,
+  priceCanonicalGenerationInExecutor,
 } from '../frontend/src/server/agent-api/generation-pricing';
 import {
   prepareGeneration,
@@ -701,6 +702,7 @@ test('generation pricing delegates video and image formulas to the existing cano
     aspectRatio: '16:9',
     fps: 24,
     audio: true,
+    extraInputValues: { referenceImageCount: 0 },
     user: { memberTier: 'member' },
   });
   assert.deepEqual(imagePayload, {
@@ -741,6 +743,82 @@ test('generation pricing passes the authoritative tier to both canonical pricing
   assert.equal((await priceCanonicalGeneration(videoRequest, 'pro' as never, deps as never)).priceCents, 113);
   assert.equal((await priceCanonicalGeneration(imageRequest, 'pro' as never, deps as never)).priceCents, 18);
   assert.deepEqual(seen, ['video:pro', 'image:pro']);
+});
+
+test('generation pricing forwards MiniMax H3 reference counts to both canonical pricing paths', async () => {
+  const candidate = registryCapability('minimax-h3');
+  const references = Array.from({ length: 6 }, (_, index) => ({
+    kind: 'asset' as const,
+    assetId: `reference-${index + 1}`,
+    role: 'reference' as const,
+  }));
+  const ref2vRequest: CanonicalGenerationRequest = {
+    schemaVersion: 1,
+    surface: 'video',
+    engineId: candidate.engine.id,
+    mode: 'ref2v',
+    prompt: 'A reference-led character moment',
+    settings: { durationSec: 5, resolution: '2K', aspectRatio: '16:9' },
+    references,
+    outputCount: 1,
+  };
+  let capturedPreflight: Record<string, unknown> | null = null;
+  await priceCanonicalGeneration(ref2vRequest, 'member', {
+    computeVideoPreflight: async (payload: Record<string, unknown>) => {
+      capturedPreflight = payload;
+      return {
+        ok: true,
+        total: 100,
+        currency: 'USD',
+        pricing: { totalCents: 100, currency: 'USD', membershipTier: 'member' },
+      };
+    },
+    estimateImage: async () => {
+      throw new Error('unused');
+    },
+  });
+  assert.equal((capturedPreflight?.extraInputValues as { referenceImageCount?: number } | undefined)?.referenceImageCount, 6);
+
+  let capturedBillingContext: Record<string, unknown> | null = null;
+  const pricingExecutor = {
+    async query(sql: string) {
+      if (sql.includes('app_membership_tiers')) return [];
+      return [];
+    },
+  } as TransactionQueryExecutor;
+  await priceCanonicalGenerationInExecutor(ref2vRequest, 'member', {
+    executor: pricingExecutor,
+    candidate,
+    computeBillingSnapshot: async (context) => {
+      capturedBillingContext = context as unknown as Record<string, unknown>;
+      return { totalCents: 100, currency: 'USD', membershipTier: 'member' } as never;
+    },
+  });
+  assert.equal(capturedBillingContext?.referenceImageCount, 6);
+
+  for (const mode of ['t2v', 'ref2v'] as const) {
+    const request: CanonicalGenerationRequest = {
+      ...ref2vRequest,
+      mode,
+      references: mode === 'ref2v' ? references : [],
+    };
+    let count: number | undefined;
+    await priceCanonicalGeneration(request, 'member', {
+      computeVideoPreflight: async (payload: Record<string, unknown>) => {
+        count = (payload.extraInputValues as { referenceImageCount?: number } | undefined)?.referenceImageCount;
+        return {
+          ok: true,
+          total: 100,
+          currency: 'USD',
+          pricing: { totalCents: 100, currency: 'USD', membershipTier: 'member' },
+        };
+      },
+      estimateImage: async () => {
+        throw new Error('unused');
+      },
+    });
+    assert.equal(count, mode === 'ref2v' ? 6 : 0);
+  }
 });
 
 test('paid generation tools are gated out by default and prepare is accurately annotated when injected on', async (t) => {
@@ -826,11 +904,11 @@ test('paid generation tools are gated out by default and prepare is accurately a
   });
 
   assert.deepEqual((await defaultClient.listTools()).tools.map((tool) => tool.name), [
-    'get_account_status', 'list_models', 'recommend_models',
+    'get_account_status', 'list_models', 'get_model_details', 'recommend_models',
   ]);
   const tools = (await enabledClient.listTools()).tools;
   assert.deepEqual(tools.map((tool) => tool.name), [
-    'get_account_status', 'list_models', 'recommend_models', 'prepare_generation', 'confirm_generation',
+    'get_account_status', 'list_models', 'get_model_details', 'recommend_models', 'prepare_generation', 'confirm_generation',
     'get_generation_status', 'list_recent_generations', 'create_topup_link',
   ]);
   const prepareTool = tools.find((tool) => tool.name === 'prepare_generation');

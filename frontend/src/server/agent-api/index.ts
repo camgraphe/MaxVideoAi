@@ -3,6 +3,7 @@ export { getAgentAccountStatus } from './account-status';
 export { listAgentModels } from './model-catalog';
 export { getAgentModelDetails } from './model-details';
 export { recommendAgentModels } from './model-recommendations';
+export { calculateAgentProjectBudget } from './project-budget';
 export { recordMcpEvent } from './audit-events';
 export type { AgentApiErrorCode, AgentApiFailure } from './errors';
 export type { AgentPrincipal } from './principal';
@@ -24,3 +25,10 @@ export type {
   TrialPresetSummary,
   TrialStatus,
 } from './types';
+export type {
+  AgentProjectBudgetDependencies,
+  AgentProjectBudgetInput,
+  AgentProjectBudgetLine,
+  AgentProjectBudgetProposal,
+  AgentProjectBudgetResult,
+} from './project-budget';

@@ -402,6 +402,23 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
     request.extraInputValues && typeof request.extraInputValues === 'object' && !Array.isArray(request.extraInputValues)
       ? request.extraInputValues
       : {};
+  const rawReferenceImageCount: unknown = rawExtraInputValues.referenceImageCount;
+  let referenceImageCount: number | undefined;
+  if (rawReferenceImageCount !== undefined) {
+    if (typeof rawReferenceImageCount !== 'number'
+      || !Number.isSafeInteger(rawReferenceImageCount)
+      || rawReferenceImageCount < 0) {
+      return {
+        ok: false,
+        messages: ['Unable to compute pricing'],
+        error: {
+          code: 'PRICING_ERROR',
+          message: 'Reference image count must be a non-negative safe integer.',
+        },
+      };
+    }
+    referenceImageCount = rawReferenceImageCount;
+  }
   const booleanExtraAddon = (value: unknown): boolean | undefined => {
     if (typeof value === 'boolean') return value;
     if (typeof value === 'string') {
@@ -426,6 +443,7 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
       loop,
       durationOption: durationInfo?.label,
       addons: Object.keys(pricingAddons).length ? pricingAddons : undefined,
+      referenceImageCount,
     });
   } catch (error) {
     return {

@@ -31,6 +31,13 @@ export type GenerationPricingDependencies = {
   ): Promise<Awaited<ReturnType<typeof estimateImageGeneration>>>;
 };
 
+export type ExecutorGenerationPricingDependencies = {
+  executor: TransactionQueryExecutor;
+  candidate: AgentPublicGenerationEngine;
+  /** Test-only seam; production always uses the canonical billing snapshot. */
+  computeBillingSnapshot?: typeof computeCanonicalBillingSnapshot;
+};
+
 const defaultDependencies: GenerationPricingDependencies = {
   computeVideoPreflight: computeConfiguredPreflight,
   estimateImage: estimateImageGeneration,
@@ -111,6 +118,7 @@ export async function priceCanonicalGeneration(
       fps: typeof settings.fps === 'number' ? settings.fps : 24,
       ...(typeof settings.loop === 'boolean' ? { loop: settings.loop } : {}),
       ...(typeof settings.audio === 'boolean' ? { audio: settings.audio } : {}),
+      extraInputValues: { referenceImageCount: request.references.length },
       user: { memberTier: membershipTier },
     });
     if (!result.ok || !result.pricing || result.total === undefined || !result.currency) {
@@ -137,10 +145,7 @@ export async function priceCanonicalGeneration(
 export async function priceCanonicalGenerationInExecutor(
   request: CanonicalGenerationRequest,
   membershipTier: AuthoritativeMembershipTier,
-  dependencies: {
-    executor: TransactionQueryExecutor;
-    candidate: AgentPublicGenerationEngine;
-  },
+  dependencies: ExecutorGenerationPricingDependencies,
 ): Promise<GenerationPricingResult> {
   if (
     dependencies.candidate.engine.id !== request.engineId
@@ -159,6 +164,7 @@ export async function priceCanonicalGenerationInExecutor(
     tiers.map((tier) => [tier.tier, tier.discountPercent]),
   );
   const pricingPolicy = { loadOverrides: async () => overrideResult, warn: () => undefined };
+  const computeBillingSnapshot = dependencies.computeBillingSnapshot ?? computeCanonicalBillingSnapshot;
   const engine = dependencies.candidate.engine;
   let snapshot: PricingSnapshot;
   if (request.surface === 'video') {
@@ -168,12 +174,13 @@ export async function priceCanonicalGenerationInExecutor(
     const audioEnabled = typeof request.settings.audio === 'boolean'
       ? request.settings.audio
       : undefined;
-    snapshot = await computeCanonicalBillingSnapshot({
+    snapshot = await computeBillingSnapshot({
       engine: pricingEngine,
       durationSec,
       resolution,
       aspectRatio: optionalString(request.settings, 'aspectRatio'),
       mode: request.mode,
+      referenceImageCount: request.references.length,
       membershipTier,
       loop: isLumaRay2EngineId(engine.id) && request.settings.loop === true,
       durationOption: isLumaRay2EngineId(engine.id)
@@ -187,7 +194,7 @@ export async function priceCanonicalGenerationInExecutor(
         ? Math.max(0, request.references.length - 1)
         : request.references.length
       : undefined;
-    snapshot = await computeCanonicalBillingSnapshot({
+    snapshot = await computeBillingSnapshot({
       engine,
       durationSec: request.outputCount,
       resolution: requiredString(request.settings, 'resolution'),
