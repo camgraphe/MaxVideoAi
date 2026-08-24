@@ -47,12 +47,6 @@ function candidate(engineId: 'gpt-image-2' | 'seedance-2-0-mini'): AgentPublicGe
 }
 
 const catalog = [candidate('gpt-image-2'), candidate('seedance-2-0-mini')];
-const catalogDeps = {
-  async listEngines() { return catalog.map((entry) => entry.engine); },
-  surfaceByEngineId(engineId: string) {
-    return catalog.find((entry) => entry.engine.id === engineId)?.surface ?? null;
-  },
-};
 
 export async function sharedWebPrice(
   request: Parameters<typeof priceCanonicalGeneration>[0],
@@ -85,20 +79,28 @@ export function principal(userId: string, clientId = `${userId}-oauth-client`): 
 export function createServices(options: {
   submitPaidGeneration?: (execution: PaidGenerationExecution) => Promise<PaidGenerationProviderOutcome>;
   prepareNow?: () => Date;
+  publicEngines?: readonly AgentPublicGenerationEngine[];
 } = {}): MaxVideoAiMcpServices {
+  const publicEngines = options.publicEngines ?? catalog;
+  const publicCatalogDependencies = {
+    async listEngines() { return publicEngines.map((entry) => entry.engine); },
+    surfaceByEngineId(engineId: string) {
+      return publicEngines.find((entry) => entry.engine.id === engineId)?.surface ?? null;
+    },
+  };
   return {
     getAccountStatus: (identity) => getAgentAccountStatus(identity, {
       getWalletSummary,
       accountUrl: 'https://maxvideoai.com/account/connections',
     }),
-    listModels: (filter) => listAgentModels(filter, catalogDeps),
-    recommendModels: (input) => recommendAgentModels(input, catalogDeps),
+    listModels: (filter) => listAgentModels(filter, publicCatalogDependencies),
+    recommendModels: (input) => recommendAgentModels(input, publicCatalogDependencies),
     prepareGeneration: createPrepareGenerationService(
       'https://maxvideoai.com/account/connections',
       { clientIp: null, userAgent: null },
       {
         paidGenerationEnabled: () => true,
-        listPublicEngines: async () => catalog,
+        listPublicEngines: async () => [...publicEngines],
         ...(options.prepareNow ? { now: options.prepareNow } : {}),
       },
     ),
@@ -107,7 +109,7 @@ export function createServices(options: {
       { clientIp: null, userAgent: null },
       {
         paidGenerationEnabled: () => true,
-        listPublicEngines: async () => catalog,
+        listPublicEngines: async () => [...publicEngines],
         submitPaidGeneration: options.submitPaidGeneration ?? (async () => ({ kind: 'accepted' })),
       },
     ),

@@ -65,11 +65,13 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
   const defaults = await sessionFor(registryIdentity, false);
   const enabled = await sessionFor(registryIdentity, true);
   assert.deepEqual((await defaults.client.listTools()).tools.map((tool) => tool.name), [
-    'get_account_status', 'list_models', 'recommend_models',
+    'get_account_status', 'list_models', 'get_model_details', 'recommend_models',
+    'calculate_project_budget',
   ]);
   const paidTools = (await enabled.client.listTools()).tools;
   assert.deepEqual(paidTools.map((tool) => tool.name), [
-    'get_account_status', 'list_models', 'recommend_models', 'prepare_generation',
+    'get_account_status', 'list_models', 'get_model_details', 'recommend_models',
+    'calculate_project_budget', 'prepare_generation',
     'confirm_generation', 'get_generation_status', 'list_recent_generations', 'create_topup_link',
   ]);
   const annotations = Object.fromEntries(paidTools.map((tool) => [tool.name, tool.annotations]));
@@ -79,7 +81,10 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
   assert.deepEqual(annotations.create_topup_link, {
     readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true,
   });
-  for (const name of ['get_account_status', 'list_models', 'recommend_models', 'prepare_generation', 'get_generation_status', 'list_recent_generations']) {
+  for (const name of [
+    'get_account_status', 'list_models', 'get_model_details', 'recommend_models',
+    'calculate_project_budget', 'prepare_generation', 'get_generation_status', 'list_recent_generations',
+  ]) {
     assert.equal(record(annotations[name]).readOnlyHint, true);
     assert.equal(record(annotations[name]).destructiveHint, false);
     assert.equal(record(annotations[name]).openWorldHint, false);

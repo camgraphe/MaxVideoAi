@@ -119,6 +119,16 @@ function requiredSetting(
   return value;
 }
 
+function optionalSetting(
+  quote: McpGenerationQuote,
+  key: string,
+): string | null {
+  const value = quote.request.settings[key];
+  if (value === undefined) return null;
+  if (typeof value !== 'string' || !value) throw new Error('Invalid reserved generation setting.');
+  return value;
+}
+
 function canonicalPricing(input: ReservePaidGenerationInput): Record<string, unknown> {
   const stored = record(input.quote.pricingSnapshot.canonicalPricing, 'Invalid stored generation pricing.');
   const authoritative = record(input.pricingSnapshot.canonicalPricing, 'Invalid authoritative generation pricing.');
@@ -153,7 +163,7 @@ function videoInitialParams(
   if (!Number.isSafeInteger(durationSec) || (durationSec as number) < 1) {
     throw new Error('Invalid reserved video duration.');
   }
-  const aspectRatio = requiredSetting(quote, 'aspectRatio');
+  const aspectRatio = optionalSetting(quote, 'aspectRatio');
   const placeholder = aspectRatio === '9:16'
     ? '/assets/frames/thumb-9x16.svg'
     : aspectRatio === '1:1'
