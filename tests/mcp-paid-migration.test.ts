@@ -11,6 +11,7 @@ import { hashCanonicalGenerationRequest } from '../frontend/src/server/agent-api
 import type { CanonicalGenerationRequest } from '../frontend/src/server/agent-api/generation-types';
 
 const migrationPath = 'neon/migrations/30_mcp_paid_generation.sql';
+const referenceUploadMigrationPath = 'neon/migrations/32_mcp_reference_uploads.sql';
 const runtimeSchemaPath = 'frontend/src/lib/schema/mcp-schema.ts';
 
 function commandExists(command: string): boolean {
@@ -30,6 +31,7 @@ test('migration 30 remains the paid-generation owner alongside trial migration 3
   assert.deepEqual(numbered, [
     '30_mcp_paid_generation.sql',
     '31_mcp_trial_entitlements.sql',
+    '32_mcp_reference_uploads.sql',
     '33_mcp_acquisition_funnel.sql',
   ]);
 
@@ -115,6 +117,10 @@ test('migration 30 constraints, state machine, immutability, indexes, row locks,
       '--single-transaction', '-v', 'ON_ERROR_STOP=1', '-f', join(root, migrationPath),
     );
     assert.equal(migration.status, 0, commandFailure(migration));
+    const referenceUploadMigration = psql(
+      '--single-transaction', '-v', 'ON_ERROR_STOP=1', '-f', join(root, referenceUploadMigrationPath),
+    );
+    assert.equal(referenceUploadMigration.status, 0, commandFailure(referenceUploadMigration));
   }
 
   const baseValues = `

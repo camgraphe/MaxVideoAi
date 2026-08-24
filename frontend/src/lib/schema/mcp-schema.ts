@@ -1,6 +1,7 @@
 import { query } from '@/lib/db';
 
-// Paid/trial/reference durable tables are migration-owned. Runtime bootstrap intentionally covers audit only.
+// Paid, trial, reference-upload, and funnel tables are migration-owned.
+// Runtime bootstrap intentionally covers audit only.
 let schemaPromise: Promise<void> | null = null;
 
 async function createMcpSchema(): Promise<void> {
