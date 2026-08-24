@@ -52,6 +52,9 @@ import {
   type OwnedQuoteInput,
   type OwnedQuoteJobInput,
 } from './quote-repository';
+import { resolveOwnedReferenceAsset } from './reference-assets';
+import { resolveGenerationReferences } from './resolve-generation-references';
+import type { ResolvedReference } from './reference-types';
 import {
   checkMcpConfirmationSpendingLimits,
   MCP_SPENDING_APPROVAL_PATH,
@@ -125,6 +128,7 @@ export type ConfirmGenerationDependencies = {
       quote: McpGenerationQuote;
       candidate: AgentPublicGenerationEngine;
       pricingSnapshot: Record<string, unknown>;
+      resolvedReferences?: ResolvedReference[];
     },
     dependencies: ExecutorDependencies,
   ): Promise<PaidGenerationReservation>;
@@ -148,6 +152,11 @@ export type ConfirmGenerationDependencies = {
   markQuoteAccepted(input: OwnedQuoteJobInput): Promise<McpGenerationQuote | null>;
   markQuoteFailed(input: OwnedQuoteJobInput): Promise<McpGenerationQuote | null>;
   readGenerationStatus(input: { userId: string; jobId: string }): Promise<AgentGenerationStatus | null>;
+  resolveGenerationReferences?(
+    request: McpGenerationQuote['request'],
+    principal: AgentPrincipal,
+    dependencies: ExecutorDependencies,
+  ): Promise<ResolvedReference[]>;
   accountUrl: string;
 };
 
@@ -184,6 +193,11 @@ const defaultDependencies: Omit<ConfirmGenerationDependencies, 'trialRiskContext
   markQuoteAccepted,
   markQuoteFailed,
   readGenerationStatus: ({ userId, jobId }) => getGenerationStatus({ userId, jobId }),
+  resolveGenerationReferences: (request, principal, { executor }) =>
+    resolveGenerationReferences(request, principal, {
+      resolveOwnedReferenceAsset: (currentPrincipal, assetId) =>
+        resolveOwnedReferenceAsset(currentPrincipal, assetId, { executor }),
+    }),
   accountUrl: 'https://maxvideoai.com/account/connections',
 };
 
@@ -324,6 +338,21 @@ async function confirmationTransaction(
       }
       throw error;
     }
+    let resolvedReferences: ResolvedReference[] = [];
+    if (quote.request.references.some((reference) => reference.kind === 'asset')) {
+      try {
+        const resolveReferences = dependencies.resolveGenerationReferences
+          ?? ((request, currentPrincipal, { executor: currentExecutor }) =>
+            resolveGenerationReferences(request, currentPrincipal, {
+              resolveOwnedReferenceAsset: (ownedPrincipal, assetId) =>
+                resolveOwnedReferenceAsset(ownedPrincipal, assetId, { executor: currentExecutor }),
+            }));
+        resolvedReferences = await resolveReferences(quote.request, principal, { executor });
+      } catch (error) {
+        if (error instanceof AgentApiError) throw error;
+        throw new AgentApiError('INTERNAL_ERROR', 'The reference image could not be verified.');
+      }
+    }
     const catalogRevision = computeGenerationCatalogRevision(publicEngines);
     if (catalogRevision !== quote.catalogRevision) {
       if (includedTrial) trialNotEligible();
@@ -381,7 +410,7 @@ async function confirmationTransaction(
       if (!spending.allowed) throw spendingError(dependencies);
       try {
         reservation = await dependencies.reserveInitialJob(
-          { quote, candidate, pricingSnapshot },
+          { quote, candidate, pricingSnapshot, resolvedReferences },
           { executor },
         );
       } catch (error) {

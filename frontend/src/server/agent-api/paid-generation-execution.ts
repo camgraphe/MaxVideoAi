@@ -22,6 +22,7 @@ import {
 } from './included-trial-generation-execution';
 import type { AgentPublicGenerationEngine } from './model-catalog';
 import type { McpGenerationQuote } from './quote-repository';
+import type { ResolvedReference } from './reference-types';
 import { stableJson } from './generation-normalization';
 
 export { submitReservedIncludedTrialGeneration };
@@ -37,6 +38,7 @@ export type PaidGenerationExecution = {
   quoteId: string;
   userId: string;
   request: McpGenerationQuote['request'];
+  resolvedReferences?: ResolvedReference[];
   engine: AgentPublicGenerationEngine['engine'];
   canonicalPricing: Record<string, unknown>;
   trustedInitialState:
@@ -96,6 +98,7 @@ export type ReservePaidGenerationInput = {
   quote: McpGenerationQuote;
   candidate: AgentPublicGenerationEngine;
   pricingSnapshot: Record<string, unknown>;
+  resolvedReferences?: ResolvedReference[];
 };
 
 type ReservePaidGenerationDependencies = {
@@ -274,6 +277,7 @@ export async function reservePaidGenerationInitialJob(
         quoteId: input.quote.quoteId,
         userId: input.quote.userId,
         request: input.quote.request,
+        resolvedReferences: input.resolvedReferences ?? [],
         engine: input.candidate.engine,
         canonicalPricing: pricing,
         trustedInitialState: {
@@ -300,6 +304,7 @@ export async function reservePaidGenerationInitialJob(
       quoteId: input.quote.quoteId,
       userId: input.quote.userId,
       request: input.quote.request,
+      resolvedReferences: input.resolvedReferences ?? [],
       engine: input.candidate.engine,
       canonicalPricing: pricing,
       trustedInitialState: {
@@ -328,8 +333,14 @@ function membershipTier(pricing: Record<string, unknown>): 'member' | 'plus' | '
 }
 
 function referenceUrls(execution: PaidGenerationExecution, role?: string): string[] {
-  return execution.request.references.flatMap((reference) =>
-    reference.kind === 'https' && (!role || reference.role === role) ? [reference.url] : []);
+  return execution.request.references.flatMap((reference) => {
+    if (role && reference.role !== role) return [];
+    if (reference.kind === 'https') return [reference.url];
+    const resolved = (execution.resolvedReferences ?? []).find((candidate) =>
+      candidate.assetId === reference.assetId && candidate.role === reference.role);
+    if (!resolved) throw new Error('A verified resolved reference is required before provider submission.');
+    return [resolved.storageUrl];
+  });
 }
 
 function paidRequestBody(execution: PaidGenerationExecution): Record<string, unknown> {

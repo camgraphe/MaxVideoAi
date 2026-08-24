@@ -36,6 +36,8 @@ import {
   type InsertPreparedQuoteInput,
   type McpGenerationQuote,
 } from './quote-repository';
+import { resolveGenerationReferences } from './resolve-generation-references';
+import type { ResolvedReference } from './reference-types';
 import {
   checkMcpSpendingLimits,
   MCP_SPENDING_APPROVAL_PATH,
@@ -115,6 +117,10 @@ export type PrepareGenerationDependencies = {
     input: TrialQuotePreparedAuditInput,
     dependencies: { executor: QueryExecutor },
   ): Promise<boolean>;
+  resolveGenerationReferences?(
+    request: CanonicalGenerationRequest,
+    principal: AgentPrincipal,
+  ): Promise<ResolvedReference[]>;
   trialRiskContext: TrialRiskRequestContext;
   accountUrl: string;
   now(): Date;
@@ -140,6 +146,7 @@ const defaultDependencies: Omit<PrepareGenerationDependencies, 'trialRiskContext
   getTrialEligibility: (principal) => getTrialEligibility(principal),
   checkTrialRisk: (input) => checkTrialRisk(input),
   recordTrialQuotePreparedAudit,
+  resolveGenerationReferences: (request, principal) => resolveGenerationReferences(request, principal),
   accountUrl: 'https://maxvideoai.com/account/connections',
   now: () => new Date(),
 };
@@ -398,6 +405,17 @@ export async function prepareGeneration(
     throw error;
   }
   validateRepresentablePricingFacts(request);
+  if (request.references.some((reference) => reference.kind === 'asset')) {
+    try {
+      const resolveReferences = dependencies.resolveGenerationReferences
+        ?? ((currentRequest, currentPrincipal) =>
+          resolveGenerationReferences(currentRequest, currentPrincipal));
+      await resolveReferences(request, principal);
+    } catch (error) {
+      if (error instanceof AgentApiError) throw error;
+      throw new AgentApiError('INTERNAL_ERROR', 'The reference image could not be verified.');
+    }
+  }
 
   const catalogRevision = computeGenerationCatalogRevision(publicEngines);
   let membership: MembershipPricingContext;
