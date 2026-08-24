@@ -13,9 +13,9 @@ keywords:
 slug: "mcp"
 ---
 
-This reference describes the controlled, read-only rollout verified on 2026-07-12. Public connection is not currently
-available. It separates the three-tool registry covered by that hosted evidence from additional reference, quote, and
-generation capabilities that are implemented in code but remain behind disabled publication gates.
+This reference describes the local, controlled read-only package. Public connection is not currently available. The
+five-tool discovery profile is covered by local contract tests; hosted OAuth, Codex loading, and Claude loading remain
+unverified. Generation, upload, quotes, wallet debit, and trial capabilities remain behind disabled publication gates.
 
 ## Production MCP address
 
@@ -28,50 +28,12 @@ https://api.maxvideoai.com/mcp
 This is the MCP Streamable HTTP resource, not a browser page or a general public REST API. Do not add an access token,
 query string, or user credential to the address. OAuth 2.1 authorization is required when the rollout is enabled.
 
-## Verified client paths
+## Local package and host verification
 
-The three paths below are separate. A pass for one client is not evidence for another. Last verified: 2026-07-12.
-
-### Claude Desktop 1.20186.1
-
-The recorded hosted test used a custom remote connector. Add the production MCP address in Claude Desktop, then review
-the `openid,email,profile` identity permissions in the MaxVideoAI browser approval. Read-only tool calls, revocation,
-and reconnect passed. Token refresh after expiry remains pending.
-
-### Claude Code 2.1.207
-
-The recorded local path is:
-
-```bash
-claude mcp add --transport http maxvideoai https://api.maxvideoai.com/mcp
-claude mcp get maxvideoai
-```
-
-Open `/mcp` in Claude Code to start browser authorization. Local OAuth, revocation, and reapproval passed. The Claude
-Code hosted tool call is pending because the test client had no Anthropic session.
-
-### Codex CLI 0.144.1
-
-The default add flow requested the extra `phone` permission and remains blocked. Start by registering the entry:
-
-```bash
-codex mcp add maxvideoai --url https://api.maxvideoai.com/mcp
-```
-
-That command immediately opens the default consent flow. Cancel or deny that consent without approving `phone`; keep
-the registered MaxVideoAI entry. Then start the separate least-privilege login that passed the hosted read-only test:
-
-```bash
-codex mcp login maxvideoai --scopes openid,email,profile
-```
-
-After approving only those three scopes, verify the retained entry:
-
-```bash
-codex mcp get maxvideoai
-```
-
-The Codex app and library have not been validated. Do not infer their compatibility from the Codex CLI evidence.
+The shared local package contains thin adapters for Codex and Claude, but it is unpublished and is not an installation
+guide. No hosted OAuth authorization, refresh, Codex rendering, Claude rendering, provider call, or marketplace
+submission is verified by this branch. The intended OAuth 2.1 identity scopes are `openid,email,profile`; treat them
+as design constraints until a hosted flow is tested.
 
 ## OAuth and account access
 
@@ -79,20 +41,22 @@ OAuth 2.1 uses browser sign-in and consent. The host receives permission to call
 the approved account; it does not receive database access, payment details, or the account password. Denying consent
 leaves the connection unauthenticated.
 
-The live registry requires OAuth for every tool. `get_account_status` returns account connection state, verified-email
+The local discovery registry requires OAuth for every tool. `get_account_status` returns account connection state, verified-email
 state, wallet summary, disabled trial state, nullable spending-limit fields, and the account-connections URL. It omits
 the account email and payment details.
 
-## Complete published tool table
+## Complete local discovery tool table
 
-The current public registry contains exactly these three tools. All are Read-only, non-destructive, Closed world, and
+The current local registry contains exactly these five tools. All are Read-only, non-destructive, Closed world, and
 idempotent with respect to account state: repeating a call performs no write, although current results can change.
 
 | Tool | Use this when | Purpose | Side effects / read-only | Destructive | Open-world annotation | Idempotent | Auth | Confirmation and Negative case |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `get_account_status` | Use this when the user asks whether MaxVideoAI is connected, verified, or funded. | Read the account, wallet summary, disabled-trial state, limit slots, and connections URL. | None; Read-only. | No. | Closed world. | Idempotent: yes, no write. | OAuth required. | No confirmation. Negative case: do not charge, start a trial, reveal an email, or generate media. |
 | `list_models` | Use this when the user needs current public image or video model capabilities. | Filter public models by surface, mode, format, duration, audio, or reference-image support. | None; Read-only. | No. | Closed world. | Idempotent: yes, no write. | OAuth required. | No confirmation. Negative case: do not generate, quote an exact price, expose private models, or promise capacity. |
+| `get_model_details` | Use this when a shortlisted public model needs factual constraints, evidence, or official MaxVideoAI links. | Return the safe detail record for one public model without exposing internal routing or customer prices. | None; Read-only. | No. | Closed world. | Idempotent: yes, no write. | OAuth required. | No confirmation. Negative case: do not use it to infer a quote, access a hidden model, or promise provider capacity. |
 | `recommend_models` | Use this when the user wants a short factual model shortlist for stated creative constraints. | Rank up to three public models with reasons, trade-offs, and a next action. | None; Read-only. | No. | Closed world. | Idempotent: yes, no write. | OAuth required. | No confirmation. Negative case: do not treat a recommendation as a quote, generation command, or acceptance promise. |
+| `calculate_project_budget` | Use this when the user has one to four named video production proposals and wants current cost assumptions. | Validate each proposal and return a canonical-price project estimate, including base passes and explicit creative attempts. | None; Read-only. | No. | Closed world. | Idempotent: yes, no write. | OAuth required. | No confirmation. Negative case: an estimate is not a quote, reservation, debit, or generation command. |
 
 ## Implemented behind disabled publication gates
 
@@ -129,8 +93,10 @@ image-to-video workflow can be advertised.
 
 ## Price, quote, confirmation, and job status
 
-The MaxVideoAI web product shows the displayed price before generation. This read-only rollout does not expose an exact
-price, debit a wallet, or submit media. `recommend_models` is not a price quote.
+The MaxVideoAI web product shows the displayed price before generation. The local `calculate_project_budget` tool can
+return a canonical-price project estimate for named proposals, including separately declared creative attempts. A
+project estimate is not a quote: it does not reserve price or capacity, debit a wallet, or submit media.
+`recommend_models` is not a price quote.
 
 The public registry has no `prepare_generation` or `confirm_generation` tool. The gated implementation prepares a
 short-lived, server-owned immutable quote and requires a separate explicit confirmation before spending. Because that
@@ -202,15 +168,15 @@ MaxVideoAI application code that the live code does not provide.
 The grant may have been revoked or expired. Reopen the client connection and complete a fresh MaxVideoAI browser
 approval. Never paste a bearer token into the MCP address.
 
-### Codex asks for more than the three recorded identity permissions
+### Codex or Claude does not load the package
 
-Stop the default flow. Use the explicit `codex mcp login` command above with `openid,email,profile`. The default flow is
-not approved by the current evidence.
+That is an expected release gate: this branch has no verified host loading. Do not treat the local package as a public
+installation path; record the exact host, version, OAuth result, tool rendering, and refresh behavior before a claim.
 
-### Claude shows only three read-only tools
+### A local client shows five read-only tools
 
-That is the complete current registry. Do not expect generation, upload, trial, quote, wallet mutation, or polling
-actions from this rollout.
+That is the complete local discovery profile. Do not expect generation, upload, trial, exact quote, wallet mutation, or
+polling actions from this rollout.
 
 ### A model recommendation has no exact price
 

@@ -7,7 +7,6 @@ import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import compatibility from '../frontend/config/mcp-compatibility.json';
 import mcpPublication from '../frontend/config/mcp-publication.json';
 import { getEditorialProfile } from '../frontend/lib/editorial/profile';
 import { getMcpPublicationState } from '../frontend/lib/mcp-publication';
@@ -40,6 +39,9 @@ const docsArticleAttributionPath =
   'frontend/app/(localized)/[locale]/(marketing)/docs/_components/DocsArticleAttribution.tsx';
 const docsSectionsPath =
   'frontend/app/(localized)/[locale]/(marketing)/docs/_components/DocsSectionsGrid.tsx';
+const compatibilityPath = 'docs/operations/mcp-host-compatibility-matrix.md';
+const directorySubmissionsPath = 'docs/marketing/mcp-directory-submissions.md';
+const publicClaimsPath = 'docs/marketing/mcp-public-claims-matrix.md';
 
 function source(locale: Locale): string {
   const path = docPaths[locale];
@@ -66,10 +68,6 @@ function section(markdown: string, start: RegExp, end: RegExp): string {
   return endMatch?.index == null
     ? fromStart
     : fromStart.slice(0, startMatch[0].length + endMatch.index);
-}
-
-function bashBlocks(markdown: string): string[] {
-  return Array.from(markdown.matchAll(/```bash\n([\s\S]*?)\n```/g), (match) => match[1].trim());
 }
 
 type ParsedToolRow = {
@@ -287,60 +285,17 @@ test('localized MCP documents expose authoritative metadata and a copyable produ
   }
 });
 
-test('client setup is limited to the recorded hosts, versions, and OAuth paths', () => {
+test('localized MCP documents distinguish the local package from unverified host setup', () => {
   for (const locale of locales) {
     const markdown = body(locale);
-    for (const host of Object.values(compatibility.hosts)) {
-      assert.ok(markdown.includes(host.hostLabel), `${locale} should name ${host.hostLabel}`);
-      assert.ok(markdown.includes(host.version), `${locale} should name ${host.hostLabel} ${host.version}`);
-    }
-    assert.ok(markdown.includes(compatibility.lastVerified));
     assert.match(markdown, /OAuth 2\.1/i);
     assert.match(markdown, /openid,email,profile/);
-    assert.match(markdown, /claude mcp add --transport http maxvideoai/);
-    assert.match(markdown, /codex mcp add maxvideoai --url/);
-    assert.match(markdown, /codex mcp login maxvideoai --scopes openid,email,profile/);
+    assert.match(markdown, locale === 'fr' ? /paquet local/i : locale === 'es' ? /paquete local/i : /local package/i);
+    assert.match(markdown, locale === 'fr' ? /non vérifi/i : locale === 'es' ? /sin verificar/i : /unverified/i);
+    assert.match(markdown, /Claude/i);
+    assert.match(markdown, /Codex/i);
     assert.doesNotMatch(markdown, /one[- ]click|deep link|Codex (?:app|library).*(?:supported|available)|directory approval/i);
-  }
-
-  assert.match(body('en'), /Claude Desktop.*custom remote connector/is);
-  assert.match(body('en'), /Claude Code.*hosted tool.*pending/is);
-  assert.match(body('en'), /Codex CLI.*default.*blocked/is);
-});
-
-test('Codex setup preserves the evidence-backed consent interruption before least-privilege login', () => {
-  assert.match(compatibility.hosts.codexCli.status, /default-flow-blocked/);
-  const evidence = readFileSync(compatibility.sourceEvidence, 'utf8');
-  assert.match(evidence, /current CLI starts OAuth\s+as part of `mcp add`/i);
-  assert.match(evidence, /default request included `phone` and was stopped\s+before approval/i);
-  assert.match(evidence, /Keeping the registered entry and then running explicit\s+`mcp login --scopes openid,email,profile`/i);
-  const evidenceCommands = section(evidence, /^Codex CLI:$/m, /^Claude Code:$/m)
-    .split('\n')
-    .filter((line) => line.startsWith('codex mcp '));
-  assert.deepEqual(evidenceCommands.map((line) => line.split(' ')[2]), ['add', 'login', 'get']);
-
-  const interruptionPatterns: Record<Locale, RegExp> = {
-    en: /(?:cancel|deny)[\s\S]*`phone`[\s\S]*(?:keep|retain)[\s\S]*(?:entry|connection)/i,
-    fr: /(?:annulez|refusez)[\s\S]*`phone`[\s\S]*conserv[\s\S]*(?:entrée|connexion)/i,
-    es: /(?:cancela|rechaza)[\s\S]*`phone`[\s\S]*conserv[\s\S]*(?:entrada|conexión)/i,
-  };
-
-  for (const locale of locales) {
-    const codexSection = section(body(locale), /^### Codex CLI 0\.144\.1$/m, /^## /m);
-    const blocks = bashBlocks(codexSection);
-    const addBlock = blocks.find((block) => block.includes(evidenceCommands[0]));
-    const loginBlock = blocks.find((block) => block.includes(evidenceCommands[1]));
-    const getBlock = blocks.find((block) => block.includes(evidenceCommands[2]));
-    assert.equal(addBlock, evidenceCommands[0], `${locale} should isolate the add command`);
-    assert.equal(loginBlock, evidenceCommands[1], `${locale} should isolate the least-privilege login command`);
-    assert.equal(getBlock, evidenceCommands[2], `${locale} should isolate the verification command`);
-    assert.notEqual(addBlock, loginBlock);
-
-    const addIndex = codexSection.indexOf(evidenceCommands[0]);
-    const loginIndex = codexSection.indexOf(evidenceCommands[1]);
-    const getIndex = codexSection.indexOf(evidenceCommands[2]);
-    assert.ok(addIndex >= 0 && addIndex < loginIndex && loginIndex < getIndex);
-    assert.match(codexSection.slice(addIndex + evidenceCommands[0].length, loginIndex), interruptionPatterns[locale]);
+    assert.doesNotMatch(markdown, /claude mcp add --transport http maxvideoai|codex mcp add maxvideoai --url|codex mcp login maxvideoai --scopes/i);
   }
 });
 
@@ -350,7 +305,13 @@ test('each localized tool row semantically mirrors the live registry and authent
   const observedErrors = await observeReachableProductionErrors();
   assert.match(observedErrors.unauthorized.identifier, /^HTTP 401 \/ JSON-RPC -32001$/);
 
-  assert.deepEqual(expectedNames, ['get_account_status', 'list_models', 'recommend_models']);
+  assert.deepEqual(expectedNames, [
+    'get_account_status',
+    'list_models',
+    'get_model_details',
+    'recommend_models',
+    'calculate_project_budget',
+  ]);
   for (const tool of tools) {
     assert.equal(tool.annotations?.readOnlyHint, true);
     assert.equal(tool.annotations?.destructiveHint, false);
@@ -421,12 +382,41 @@ test('each localized tool row semantically mirrors the live registry and authent
   }
 });
 
+test('operations and acquisition records describe the five-tool local profile without host or publication claims', () => {
+  const compatibilityMatrix = readFileSync(compatibilityPath, 'utf8');
+  const directorySubmissions = readFileSync(directorySubmissionsPath, 'utf8');
+  const publicClaims = readFileSync(publicClaimsPath, 'utf8');
+  const discoveryTools = [
+    'get_account_status',
+    'list_models',
+    'get_model_details',
+    'recommend_models',
+    'calculate_project_budget',
+  ];
+
+  for (const document of [compatibilityMatrix, directorySubmissions, publicClaims]) {
+    for (const tool of discoveryTools) assert.match(document, new RegExp(`\\\`${tool}\\\``));
+    assert.match(document, /local/i);
+    assert.match(document, /not submitted|unpublished/i);
+  }
+
+  assert.match(compatibilityMatrix, /OAuth.*unverified/i);
+  assert.match(compatibilityMatrix, /Codex.*unverified/i);
+  assert.match(compatibilityMatrix, /Claude.*unverified/i);
+  assert.match(directorySubmissions, /estimate.*not.*quote/i);
+  assert.match(directorySubmissions, /prepare_generation.*confirm_generation/is);
+  assert.match(publicClaims, /estimate.*not.*quote/i);
+  assert.match(publicClaims, /host.*unverified/i);
+});
+
 test('unpublished generation capabilities are explicit non-live contracts rather than tool claims', () => {
   const expectations: Record<Locale, RegExp[]> = {
     en: [
       /read-only rollout/i,
       /not currently available/i,
       /displayed price before generation/i,
+      /project estimate/i,
+      /not a quote/i,
       /separate explicit confirmation/i,
       /no public quote fingerprint or expiry/i,
       /Jobs in\s+the MaxVideoAI web product/i,
@@ -435,6 +425,8 @@ test('unpublished generation capabilities are explicit non-live contracts rather
       /déploiement en lecture seule/i,
       /pas disponibles actuellement/i,
       /prix affiché avant la génération/i,
+      /estimation de projet/i,
+      /n’est pas un devis/i,
       /confirmation explicite séparée/i,
       /aucune empreinte ni\s+expiration publique/i,
       /Jobs dans le produit web MaxVideoAI/i,
@@ -443,6 +435,8 @@ test('unpublished generation capabilities are explicit non-live contracts rather
       /despliegue de solo lectura/i,
       /no están disponibles actualmente/i,
       /precio mostrado antes de generar/i,
+      /estimación de proyecto/i,
+      /no es una cotización/i,
       /confirmación explícita\s+separada/i,
       /no hay una huella ni\s+un vencimiento públicos/i,
       /Trabajos del producto web de MaxVideoAI/i,

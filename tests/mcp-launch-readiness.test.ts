@@ -157,14 +157,19 @@ test('launch evidence records local states, artifacts, exact limitations, and fu
   assert.doesNotMatch(evidence, /frontend\/\.tmp\/mcp-launch/);
 });
 
-test('the compatibility matrix distinguishes local QA from real host evidence', () => {
+test('the compatibility matrix keeps the local five-tool profile distinct from unverified host evidence', () => {
   const compatibility = readFileSync(compatibilityPath, 'utf8');
-  assert.match(compatibility, /Task 11 local launch verification/);
-  assert.match(compatibility, /Codex default[^\n]+phone/i);
-  assert.match(compatibility, /Claude Desktop[^\n]+refresh/i);
-  assert.match(compatibility, /Real-host end-to-end[^\n]+Not run/i);
-  assert.match(compatibility, /Paid generation[^\n]+Blocked/i);
-  assert.match(compatibility, /Trial[^\n]+Blocked/i);
-  assert.match(compatibility, /Reference[^\n]+Blocked/i);
-  assert.match(compatibility, /Funnel[^\n]+Blocked/i);
+  for (const tool of [
+    'get_account_status',
+    'list_models',
+    'get_model_details',
+    'recommend_models',
+    'calculate_project_budget',
+  ]) assert.match(compatibility, new RegExp(`\\\`${tool}\\\``));
+  assert.match(compatibility, /OAuth.*unverified/i);
+  assert.match(compatibility, /Codex.*unverified/i);
+  assert.match(compatibility, /Claude.*unverified/i);
+  assert.match(compatibility, /project estimate/i);
+  assert.match(compatibility, /prepare_generation.*confirm_generation/is);
+  assert.match(compatibility, /all eight[^\n]+false/i);
 });

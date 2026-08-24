@@ -904,11 +904,11 @@ test('paid generation tools are gated out by default and prepare is accurately a
   });
 
   assert.deepEqual((await defaultClient.listTools()).tools.map((tool) => tool.name), [
-    'get_account_status', 'list_models', 'get_model_details', 'recommend_models',
+    'get_account_status', 'list_models', 'get_model_details', 'recommend_models', 'calculate_project_budget',
   ]);
   const tools = (await enabledClient.listTools()).tools;
   assert.deepEqual(tools.map((tool) => tool.name), [
-    'get_account_status', 'list_models', 'get_model_details', 'recommend_models', 'prepare_generation', 'confirm_generation',
+    'get_account_status', 'list_models', 'get_model_details', 'recommend_models', 'calculate_project_budget', 'prepare_generation', 'confirm_generation',
     'get_generation_status', 'list_recent_generations', 'create_topup_link',
   ]);
   const prepareTool = tools.find((tool) => tool.name === 'prepare_generation');

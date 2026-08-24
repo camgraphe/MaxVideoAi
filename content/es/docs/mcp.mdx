@@ -13,9 +13,10 @@ keywords:
 slug: "mcp"
 ---
 
-Esta referencia describe el despliegue de solo lectura controlado y verificado el 2026-07-12. La conexión pública no
-está disponible actualmente. Distingue el registro de tres herramientas cubierto por esa prueba alojada de las
-funciones de referencias, cotización y generación ya implementadas, pero aún detrás de flags de publicación desactivados.
+Esta referencia describe el paquete local controlado de solo lectura. La conexión pública no está disponible. El perfil
+de descubrimiento de cinco herramientas está cubierto por pruebas locales; OAuth alojado, la carga en Codex y la carga
+en Claude siguen sin verificar. La generación, la carga, las cotizaciones, el débito de la billetera y la prueba siguen
+detrás de flags de publicación desactivados. Estas capacidades no están disponibles actualmente.
 
 ## Dirección MCP de producción
 
@@ -29,56 +30,12 @@ Es el recurso MCP Streamable HTTP, no una página web ni una API REST pública d
 parámetros de consulta ni credenciales de usuario a la dirección. La autorización OAuth 2.1 es obligatoria cuando se
 habilita el despliegue.
 
-## Rutas verificadas por cliente
+## Paquete local y verificación de hosts
 
-Las tres rutas siguientes son independientes. Una prueba aprobada para un cliente no sirve como evidencia para otro.
-Última verificación: 2026-07-12.
-
-### Claude Desktop 1.20186.1
-
-La prueba alojada registrada usó un conector remoto personalizado. Agrega la dirección MCP de producción en Claude
-Desktop y revisa los permisos de identidad `openid,email,profile` en la aprobación de MaxVideoAI que se abre en el
-navegador. Las herramientas de solo lectura, la revocación y la reconexión pasaron. La renovación del token después de
-su vencimiento sigue pendiente.
-
-### Claude Code 2.1.207
-
-La ruta local registrada es:
-
-```bash
-claude mcp add --transport http maxvideoai https://api.maxvideoai.com/mcp
-claude mcp get maxvideoai
-```
-
-Abre `/mcp` en Claude Code para iniciar la autorización en el navegador. OAuth local, la revocación y la nueva
-aprobación pasaron; una llamada alojada a las herramientas sigue pendiente porque el cliente de prueba no tenía una
-sesión de Anthropic.
-
-### Codex CLI 0.144.1
-
-El flujo predeterminado para agregar la conexión solicita el permiso adicional `phone` y sigue bloqueado. Primero,
-registra la conexión:
-
-```bash
-codex mcp add maxvideoai --url https://api.maxvideoai.com/mcp
-```
-
-Ese comando abre inmediatamente el consentimiento predeterminado. Cancela o rechaza ese consentimiento sin aprobar
-`phone`, pero conserva la entrada registrada de MaxVideoAI. Después inicia por separado la ruta con permisos mínimos
-que pasó la prueba alojada de solo lectura:
-
-```bash
-codex mcp login maxvideoai --scopes openid,email,profile
-```
-
-Tras aprobar solo esos tres permisos, verifica la entrada conservada:
-
-```bash
-codex mcp get maxvideoai
-```
-
-La aplicación y la biblioteca de Codex no han sido validadas. Su compatibilidad no se puede deducir de la evidencia de
-Codex CLI.
+El paquete local compartido contiene adaptadores ligeros para Codex y Claude, pero no está publicado ni es una guía de
+instalación. Esta rama no verifica OAuth alojado, renovación, renderizado en Codex, renderizado en Claude, llamadas al
+proveedor ni envíos a marketplaces. Los scopes de identidad OAuth 2.1 previstos son `openid,email,profile`; son
+restricciones de diseño hasta que se pruebe un flujo alojado.
 
 ## OAuth y acceso a la cuenta
 
@@ -86,13 +43,13 @@ OAuth 2.1 usa el inicio de sesión y el consentimiento en el navegador. El clien
 herramientas publicadas de MaxVideoAI con la cuenta aprobada; no obtiene acceso a la base de datos, datos de pago ni la
 contraseña. Si rechazas el consentimiento, la conexión queda sin autenticar.
 
-Todas las herramientas del registro actual exigen OAuth. `get_account_status` devuelve el estado de conexión, el estado
+Todas las herramientas del registro local exigen OAuth. `get_account_status` devuelve el estado de conexión, el estado
 del correo verificado, un resumen de la billetera, el estado deshabilitado de la prueba, los campos opcionales de
 límite y la URL de conexiones de la cuenta. El correo se omite, igual que los datos de pago.
 
-## Tabla completa de herramientas publicadas
+## Tabla completa de herramientas locales de descubrimiento
 
-El registro público actual contiene exactamente estas tres herramientas. Todas son de Solo lectura, no destructivas,
+El registro local actual contiene exactamente estas cinco herramientas. Todas son de Solo lectura, no destructivas,
 de Mundo cerrado e idempotentes respecto al estado de la cuenta: repetir una llamada no escribe datos, aunque el
 resultado actual pueda cambiar.
 
@@ -100,7 +57,9 @@ resultado actual pueda cambiar.
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `get_account_status` | Úsala cuando la persona pregunte si MaxVideoAI está conectado, verificado o tiene fondos. | Consultar la cuenta, la billetera, la prueba deshabilitada, los campos de límite y la URL de conexiones. | Ninguno; Solo lectura. | No. | Mundo cerrado. | Idempotente: sí, no escribe. | OAuth obligatorio. | Sin confirmación. Caso negativo: no cobrar, iniciar una prueba, revelar un correo ni generar medios. |
 | `list_models` | Úsala para consultar capacidades actuales de modelos públicos de imagen o video. | Filtrar modelos públicos por superficie, modo, formato, duración, audio o imágenes de referencia. | Ninguno; Solo lectura. | No. | Mundo cerrado. | Idempotente: sí, no escribe. | OAuth obligatorio. | Sin confirmación. Caso negativo: no generar, indicar un precio exacto, exponer modelos privados ni prometer capacidad. |
+| `get_model_details` | Úsala cuando un modelo público preseleccionado necesita restricciones factuales, evidencia o enlaces de MaxVideoAI. | Devolver la ficha segura de un modelo público sin exponer el enrutamiento interno ni precios de clientes. | Ninguno; Solo lectura. | No. | Mundo cerrado. | Idempotente: sí, no escribe. | OAuth obligatorio. | Sin confirmación. Caso negativo: no inferir una cotización, acceder a un modelo oculto ni prometer capacidad del proveedor. |
 | `recommend_models` | Úsala para obtener una lista breve y factual según las restricciones creativas indicadas. | Ordenar hasta tres modelos públicos con motivos, diferencias y siguiente acción. | Ninguno; Solo lectura. | No. | Mundo cerrado. | Idempotente: sí, no escribe. | OAuth obligatorio. | Sin confirmación. Caso negativo: no tratar la recomendación como cotización, orden de generación o promesa de aceptación. |
+| `calculate_project_budget` | Úsala cuando la persona tiene de una a cuatro propuestas de vídeo con nombre y quiere supuestos de coste actuales. | Validar cada propuesta y devolver una estimación de proyecto con precio canónico, pases base e intentos creativos explícitos. | Ninguno; Solo lectura. | No. | Mundo cerrado. | Idempotente: sí, no escribe. | OAuth obligatorio. | Sin confirmación. Caso negativo: una estimación no es cotización, reserva, débito ni orden de generación. |
 
 ## Funciones implementadas detrás de flags desactivados
 
@@ -137,9 +96,10 @@ anunciar un flujo circular completo de imagen a video.
 
 ## Precio, cotización, confirmación y estado de los trabajos
 
-El producto web de MaxVideoAI enseña el precio mostrado antes de generar. Este despliegue de solo lectura no entrega un
-precio exacto, no cobra la billetera y no envía medios. Estas funciones no están disponibles actualmente.
-`recommend_models` no es una cotización.
+El producto web de MaxVideoAI enseña el precio mostrado antes de generar. La herramienta local
+`calculate_project_budget` puede devolver una estimación de proyecto al precio canónico para propuestas con nombre, con
+intentos creativos separados. Una estimación de proyecto no es una cotización: no reserva precio ni capacidad, no cobra
+la billetera ni envía medios. `recommend_models` no es una cotización.
 
 El registro público no incluye `prepare_generation` ni `confirm_generation`. La implementación protegida prepara una
 cotización inmutable, de corta duración y controlada por el servidor, además de exigir una confirmación explícita
@@ -214,15 +174,16 @@ MaxVideoAI que el código actual no proporciona.
 El acceso puede haberse revocado o vencido. Abre otra vez la conexión del cliente y completa una aprobación nueva de
 MaxVideoAI en el navegador. Nunca pegues un token en la dirección MCP.
 
-### Codex solicita más que los tres permisos de identidad registrados
+### Codex o Claude no carga el paquete
 
-Detén el flujo predeterminado. Usa el comando explícito `codex mcp login` anterior con `openid,email,profile`. La
-evidencia actual no aprueba la ruta predeterminada.
+Es un gate de salida esperado: esta rama no tiene ninguna carga de host verificada. No presentes el paquete local como
+una ruta pública de instalación; registra el host, la versión, OAuth, el renderizado de herramientas y la renovación
+antes de hacer una afirmación.
 
-### Claude solo muestra tres herramientas de lectura
+### Un cliente local muestra cinco herramientas de solo lectura
 
-Ese es el registro actual completo. No esperes acciones de generación, carga de referencias, prueba, cotización, cobro o
-polling en este despliegue.
+Ese es el perfil local completo de descubrimiento. No esperes generación, carga de referencias, prueba, cotización
+exacta, cobro ni polling en este despliegue.
 
 ### Una recomendación no tiene un precio exacto
 
