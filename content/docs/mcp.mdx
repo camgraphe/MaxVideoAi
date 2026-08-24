@@ -2,7 +2,7 @@
 title: "MaxVideoAI MCP technical guide"
 description: "Verified setup, OAuth, read-only tools, privacy, limitations, and recovery guidance for the MaxVideoAI MCP foundation."
 date: "2026-07-14"
-updatedAt: "2026-07-14"
+updatedAt: "2026-08-24"
 authorId: "adrien-millot"
 image: "/og/price-before.png"
 keywords:
@@ -14,8 +14,8 @@ slug: "mcp"
 ---
 
 This reference describes the controlled, read-only rollout verified on 2026-07-12. Public connection is not currently
-available. It documents only the production address, clients, tools, and recovery behavior backed by the current code
-and recorded compatibility evidence.
+available. It separates the three-tool registry covered by that hosted evidence from additional reference, quote, and
+generation capabilities that are implemented in code but remain behind disabled publication gates.
 
 ## Production MCP address
 
@@ -94,30 +94,55 @@ idempotent with respect to account state: repeating a call performs no write, al
 | `list_models` | Use this when the user needs current public image or video model capabilities. | Filter public models by surface, mode, format, duration, audio, or reference-image support. | None; Read-only. | No. | Closed world. | Idempotent: yes, no write. | OAuth required. | No confirmation. Negative case: do not generate, quote an exact price, expose private models, or promise capacity. |
 | `recommend_models` | Use this when the user wants a short factual model shortlist for stated creative constraints. | Rank up to three public models with reasons, trade-offs, and a next action. | None; Read-only. | No. | Closed world. | Idempotent: yes, no write. | OAuth required. | No confirmation. Negative case: do not treat a recommendation as a quote, generation command, or acceptance promise. |
 
+## Implemented behind disabled publication gates
+
+The current code also contains a gated connected workflow. It is not part of the public registry or the 2026-07-12
+host-compatibility proof yet:
+
+- `list_media` lists only the authenticated user's ready private image assets, with controlled previews.
+- `create_reference_upload_link` creates a private, one-use browser handoff that expires after 15 minutes. The raw
+  handoff token is never stored; the browser upload is bound to the authenticated MaxVideoAI user.
+- `prepare_generation` validates the selected public model and settings, verifies owned asset references, computes the
+  account's exact price, and stores a short-lived immutable quote without charging or starting generation.
+- `confirm_generation` requires explicit confirmation of that quote, applies account spending controls, and submits
+  the job idempotently. `get_generation_status` and `list_recent_generations` recover its state and outputs.
+- `create_topup_link` returns a short-lived MaxVideoAI billing handoff; it never collects payment details through MCP.
+
+These tools must not be presented as live until their publication flags are enabled and the complete hosted path has
+been reverified in each supported host.
+
 ## Prompts and reference images
 
-Claude or Codex clarifies the brief and writes the prompt. MaxVideoAI supplies current catalog facts and factual model
-trade-offs in this read-only rollout. It does not run another model merely to rewrite the prompt.
+Claude or Codex clarifies the brief and writes the prompt. It can also help create a suitable reference image with the
+host's own image capability. MaxVideoAI supplies current catalog facts and factual model trade-offs; it does not run
+another model merely to rewrite the prompt.
 
-A host may later prepare an image with the host's own image tool or through a verified MaxVideoAI image-model flow.
-That does not mean every host can create images. Before a video request can use it, MaxVideoAI must validate and persist
-the image; only a persisted MaxVideoAI asset ID reaches video generation. The current registry has no `list_media` or
-`create_reference_upload_link` tool, so connected reference transfer is not currently available.
+A host-created image can enter the gated workflow through `create_reference_upload_link`, or an existing private image
+can be selected with `list_media`. MaxVideoAI validates ownership and raster type during preparation and again during
+confirmation. The immutable quote keeps only the stable asset ID; only the verified internal media URL is materialized
+temporarily for provider submission. The current public registry still has no `list_media` or
+`create_reference_upload_link` tool, so connected reference transfer is not currently available publicly.
+
+Direct arbitrary HTTPS-reference ingestion is not claimed as complete: remote fetch hardening and hosted verification
+remain required. Generated image outputs also still need a guaranteed reusable `assetId` before a fully circular
+image-to-video workflow can be advertised.
 
 ## Price, quote, confirmation, and job status
 
 The MaxVideoAI web product shows the displayed price before generation. This read-only rollout does not expose an exact
 price, debit a wallet, or submit media. `recommend_models` is not a price quote.
 
-The public registry has no `prepare_generation` or `confirm_generation` tool. A later generation contract must prepare
-a short-lived, server-owned immutable quote and require a separate explicit confirmation before spending. Because that
-contract is not implemented in this rollout, there is no public quote fingerprint or expiry to rely on today, and this
-guide contains no static price examples.
+The public registry has no `prepare_generation` or `confirm_generation` tool. The gated implementation prepares a
+short-lived, server-owned immutable quote and requires a separate explicit confirmation before spending. Because that
+contract is not published in this read-only rollout, there is no public quote fingerprint or expiry to rely on today,
+and this guide contains no static price examples.
 
-There is also no `get_generation_status` or `list_recent_generations` tool. Follow current work in Jobs in the MaxVideoAI web product and recover completed output from the web library. No MCP polling interval is published.
+There is also no published `get_generation_status` or `list_recent_generations` tool. Their gated implementation uses
+safe recovery DTOs, but hosted client rendering and polling still require verification. Follow current work in Jobs in
+the MaxVideoAI web product and recover completed output from the web library. No public MCP polling interval is published.
 
-`create_topup_link` is not published. Wallet funding and direct payment remain in the MaxVideoAI web product; prepare a
-new web price review after funding rather than relying on stale information.
+`create_topup_link` is implemented but not published. Wallet funding and direct payment remain in the MaxVideoAI web
+product; a successful top-up invalidates the previous short-lived quote, so prepare a new exact quote afterward.
 
 ## Gated Seedance 2 Mini trial contract
 
@@ -136,8 +161,9 @@ The account result includes `perGenerationCents`, `dailyCents`, and `webApproval
 foundation, each value is `null`: no MCP spending-limit control or spending action is active. A null value is not a
 promise of unlimited spending; no connected generation is available at all.
 
-Host-level automatic approval cannot be overridden by server copy. If paid tools are later published, the separate
-quote and explicit confirmation, server-side limits, idempotency, and a web approval handoff must all be verified first.
+Host-level automatic approval cannot be overridden by server copy. Before paid tools are published, the implemented
+separate quote, explicit confirmation, server-side limits, idempotency, and web approval handoff must all pass hosted
+verification.
 
 ## Disconnect and revoke access
 

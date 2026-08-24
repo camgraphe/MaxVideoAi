@@ -279,7 +279,7 @@ test('localized MCP documents expose authoritative metadata and a copyable produ
     assert.match(markdown, /^title:\s*['"].+['"]$/m);
     assert.match(markdown, /^description:\s*['"].+['"]$/m);
     assert.match(markdown, /^date:\s*['"]2026-07-14['"]$/m);
-    assert.match(markdown, /^updatedAt:\s*['"]2026-07-14['"]$/m);
+    assert.match(markdown, /^updatedAt:\s*['"]2026-08-24['"]$/m);
     assert.match(markdown, /^authorId:\s*['"]adrien-millot['"]$/m);
     assert.match(markdown, /^slug:\s*['"]mcp['"]$/m);
     assert.match(markdown, endpointBlock, `${locale} should show the endpoint in a plain copy block`);
@@ -429,22 +429,22 @@ test('unpublished generation capabilities are explicit non-live contracts rather
       /displayed price before generation/i,
       /separate explicit confirmation/i,
       /no public quote fingerprint or expiry/i,
-      /Jobs in the MaxVideoAI web product/i,
+      /Jobs in\s+the MaxVideoAI web product/i,
     ],
     fr: [
       /déploiement en lecture seule/i,
       /pas disponibles actuellement/i,
       /prix affiché avant la génération/i,
       /confirmation explicite séparée/i,
-      /aucune empreinte ni expiration publique/i,
+      /aucune empreinte ni\s+expiration publique/i,
       /Jobs dans le produit web MaxVideoAI/i,
     ],
     es: [
       /despliegue de solo lectura/i,
       /no están disponibles actualmente/i,
       /precio mostrado antes de generar/i,
-      /confirmación explícita separada/i,
-      /no hay una huella ni un vencimiento públicos/i,
+      /confirmación explícita\s+separada/i,
+      /no hay una huella ni\s+un vencimiento públicos/i,
       /Trabajos del producto web de MaxVideoAI/i,
     ],
   };
@@ -533,27 +533,35 @@ test('prompt and reference guidance preserves host and persisted-asset boundarie
   const localePatterns: Record<Locale, RegExp[]> = {
     en: [
       /Claude or Codex clarifies the brief and writes the prompt/i,
-      /host's own image tool/i,
-      /verified MaxVideoAI image-model flow/i,
-      /only a persisted MaxVideoAI asset ID reaches video generation/i,
+      /host's own image capability/i,
+      /create_reference_upload_link/i,
+      /validates ownership and raster type/i,
+      /quote keeps only the stable asset ID/i,
+      /verified internal media URL is materialized\s+temporarily/i,
     ],
     fr: [
       /Claude ou Codex précise le brief et rédige le prompt/i,
-      /outil d’image du client/i,
-      /parcours vérifié d’un modèle d’image MaxVideoAI/i,
-      /seul l’identifiant d’un asset conservé par MaxVideoAI atteint la génération vidéo/i,
+      /propres capacités d’image/i,
+      /create_reference_upload_link/i,
+      /vérifie le propriétaire et le format raster/i,
+      /devis immuable ne conserve que l’identifiant stable/i,
+      /URL média interne vérifiée est matérialisée\s+temporairement/i,
     ],
     es: [
       /Claude o Codex aclara la idea y redacta el prompt/i,
-      /herramienta de imagen del cliente/i,
-      /flujo verificado de un modelo de imagen de MaxVideoAI/i,
-      /solo el ID de un activo guardado en MaxVideoAI llega a la generación de video/i,
+      /propias capacidades de imagen/i,
+      /create_reference_upload_link/i,
+      /verifica el propietario y el formato ráster/i,
+      /cotización inmutable conserva solo el ID estable/i,
+      /URL\s+interna verificada se materializa temporalmente/i,
     ],
   };
 
   for (const locale of locales) {
     const markdown = body(locale);
     for (const pattern of localePatterns[locale]) assert.match(markdown, pattern);
+    assert.match(markdown, /HTTPS/i);
+    assert.match(markdown, /assetId/i);
     assert.doesNotMatch(markdown, /Claude (?:always )?(?:generates|creates) images|Codex (?:always )?(?:generates|creates) images/i);
   }
 });

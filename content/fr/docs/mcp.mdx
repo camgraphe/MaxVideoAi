@@ -2,7 +2,7 @@
 title: "Guide technique du MCP MaxVideoAI"
 description: "Configuration vérifiée, OAuth, outils en lecture seule, confidentialité, limites et récupération pour le socle MCP MaxVideoAI."
 date: "2026-07-14"
-updatedAt: "2026-07-14"
+updatedAt: "2026-08-24"
 authorId: "adrien-millot"
 image: "/og/price-before.png"
 keywords:
@@ -14,8 +14,8 @@ slug: "mcp"
 ---
 
 Cette référence décrit le déploiement en lecture seule contrôlé et vérifié le 2026-07-12. La connexion publique n’est
-pas disponible actuellement. Elle documente uniquement l’adresse de production, les clients, les outils et les actions
-de récupération confirmés par le code et les preuves de compatibilité actuels.
+pas disponible actuellement. Elle distingue le registre à trois outils couvert par cette preuve hébergée des fonctions
+de référence, devis et génération déjà implémentées dans le code, mais toujours derrière des flags de publication désactivés.
 
 ## Adresse MCP de production
 
@@ -102,15 +102,38 @@ peut évoluer.
 | `list_models` | À utiliser pour consulter les capacités actuelles des modèles publics d’image ou de vidéo. | Filtrer les modèles publics par surface, mode, format, durée, audio ou prise en charge des images de référence. | Aucun ; Lecture seule. | Non. | Monde fermé. | Idempotent : oui, aucune écriture. | OAuth requis. | Aucune confirmation. Cas négatif : ne pas générer, annoncer un prix exact, exposer des modèles privés ni promettre une capacité. |
 | `recommend_models` | À utiliser pour obtenir une courte sélection factuelle selon les contraintes créatives indiquées. | Classer jusqu’à trois modèles publics avec raisons, compromis et prochaine action. | Aucun ; Lecture seule. | Non. | Monde fermé. | Idempotent : oui, aucune écriture. | OAuth requis. | Aucune confirmation. Cas négatif : ne pas traiter la recommandation comme un devis, une commande de génération ou une promesse d’acceptation. |
 
+## Fonctions implémentées derrière des flags désactivés
+
+Le code contient aussi un parcours connecté protégé. Il ne fait pas encore partie du registre public ni de la preuve de
+compatibilité hébergée du 2026-07-12 :
+
+- `list_media` liste uniquement les images privées prêtes de l’utilisateur authentifié, avec des aperçus contrôlés.
+- `create_reference_upload_link` crée un passage navigateur privé, utilisable une fois et valable 15 minutes. Le token
+  brut n’est jamais stocké et l’envoi reste lié à l’utilisateur MaxVideoAI authentifié.
+- `prepare_generation` valide le modèle public et ses réglages, vérifie les références possédées, calcule le prix exact
+  du compte et conserve un devis immuable de courte durée, sans débiter ni générer.
+- `confirm_generation` exige la confirmation explicite de ce devis, applique les limites de dépense et soumet le job de
+  façon idempotente. `get_generation_status` et `list_recent_generations` permettent ensuite la récupération.
+- `create_topup_link` ouvre un passage de facturation MaxVideoAI temporaire sans collecter de données de paiement dans le MCP.
+
+Ces outils ne doivent pas être présentés comme disponibles tant que leurs flags ne sont pas activés et que le parcours
+hébergé complet n’a pas été revérifié dans chaque client pris en charge.
+
 ## Prompts et images de référence
 
-Claude ou Codex précise le brief et rédige le prompt. Dans ce déploiement en lecture seule, MaxVideoAI fournit les
-données actuelles du catalogue et les compromis factuels entre modèles. Aucun autre modèle n’est lancé uniquement pour
-réécrire le prompt.
+Claude ou Codex précise le brief et rédige le prompt. Il peut aussi aider à créer une image de référence adaptée avec
+ses propres capacités d’image. MaxVideoAI fournit les données actuelles du catalogue et les compromis factuels entre
+modèles ; aucun autre modèle n’est lancé uniquement pour réécrire le prompt.
 
-Un client pourra préparer une image avec l’outil d’image du client ou avec le parcours vérifié d’un modèle d’image MaxVideoAI. Cela ne signifie pas que tous les clients savent créer des images. Avant son utilisation par une demande
-vidéo, MaxVideoAI doit valider et conserver l’image ; seul l’identifiant d’un asset conservé par MaxVideoAI atteint la génération vidéo. Le registre actuel ne contient ni `list_media` ni `create_reference_upload_link` : le transfert de
-références connecté n’est pas disponible actuellement.
+Une image créée par le client peut entrer dans le parcours protégé avec `create_reference_upload_link`, ou une image
+privée existante peut être choisie avec `list_media`. MaxVideoAI vérifie le propriétaire et le format raster pendant la
+préparation puis à nouveau lors de la confirmation. Le devis immuable ne conserve que l’identifiant stable de l’asset ;
+seule l’URL média interne vérifiée est matérialisée temporairement pour le fournisseur. Le registre public actuel ne
+contient toujours ni `list_media` ni `create_reference_upload_link` : le transfert connecté n’est pas disponible publiquement.
+
+L’ingestion directe d’une URL HTTPS arbitraire n’est pas annoncée comme terminée : le téléchargement distant sécurisé
+et sa vérification hébergée restent à faire. Les images générées doivent aussi recevoir systématiquement un `assetId`
+réutilisable avant de pouvoir annoncer un parcours image-vers-vidéo entièrement circulaire.
 
 ## Prix, devis, confirmation et état des jobs
 
@@ -118,15 +141,18 @@ Le produit web MaxVideoAI montre le prix affiché avant la génération. Ce dép
 prix exact, ne débite pas le portefeuille et ne soumet aucun média. Ces capacités ne sont pas disponibles actuellement.
 `recommend_models` n’est pas un devis.
 
-Le registre public ne contient ni `prepare_generation` ni `confirm_generation`. Un futur contrat de génération devra
-préparer un devis immuable, de courte durée et détenu par le serveur, puis demander une confirmation explicite séparée
-avant toute dépense. Ce contrat n’étant pas implémenté dans ce déploiement, il n’existe aujourd’hui aucune empreinte ni expiration publique de devis sur laquelle s’appuyer. Ce guide ne contient aucun exemple de prix statique.
+Le registre public ne contient ni `prepare_generation` ni `confirm_generation`. L’implémentation protégée prépare un
+devis immuable, de courte durée et détenu par le serveur, puis demande une confirmation explicite séparée avant toute
+dépense. Ce contrat n’étant pas publié dans ce déploiement en lecture seule, il n’existe aujourd’hui aucune empreinte ni
+expiration publique de devis sur laquelle s’appuyer. Ce guide ne contient aucun exemple de prix statique.
 
-Il n’existe pas non plus d’outil `get_generation_status` ou `list_recent_generations`. Suivez le travail dans Jobs dans le produit web MaxVideoAI et retrouvez les résultats terminés dans la bibliothèque web. Aucun intervalle de polling MCP
-n’est publié.
+Il n’existe pas non plus d’outil publié `get_generation_status` ou `list_recent_generations`. Leur implémentation protégée
+renvoie des données de récupération sûres, mais le rendu et le polling dans les clients hébergés restent à vérifier.
+Suivez le travail dans Jobs dans le produit web MaxVideoAI et retrouvez les résultats terminés dans la bibliothèque web.
+Aucun intervalle public de polling MCP n’est publié.
 
-`create_topup_link` n’est pas publié. L’approvisionnement du portefeuille et le paiement direct restent dans le produit
-web MaxVideoAI. Après l’approvisionnement, vérifiez un nouveau prix plutôt que de réutiliser une information ancienne.
+`create_topup_link` est implémenté mais pas publié. L’approvisionnement du portefeuille et le paiement direct restent
+dans le produit web MaxVideoAI. Une recharge réussie invalide l’ancien devis court : préparez ensuite un nouveau devis exact.
 
 ## Conditions prévues pour l’essai Seedance 2 Mini
 
@@ -145,9 +171,9 @@ Le résultat du compte inclut `perGenerationCents`, `dailyCents` et `webApproval
 lecture seule, chaque valeur vaut `null` : aucun contrôle de dépense MCP ni aucune action payante ne sont actifs. Une
 valeur nulle ne promet pas une dépense illimitée ; la génération connectée n’est pas disponible.
 
-Le texte du serveur ne peut pas annuler l’approbation automatique configurée dans un client. Si des outils payants sont
-publiés plus tard, le devis séparé, la confirmation explicite, les limites serveur, l’idempotence et une approbation web
-devront d’abord être vérifiés.
+Le texte du serveur ne peut pas annuler l’approbation automatique configurée dans un client. Avant la publication des
+outils payants, le devis séparé, la confirmation explicite, les limites serveur, l’idempotence et le passage
+d’approbation web déjà implémentés devront réussir la vérification hébergée.
 
 ## Déconnexion et révocation de l’accès
 
