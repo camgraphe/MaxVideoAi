@@ -30,9 +30,14 @@ a browser handoff when an image must be added to MaxVideoAI.
 
 ## Use current facts deliberately
 
-- Use `list_models` to build a current shortlist.
+- Use `list_models` with a small `limit` to build a focused current shortlist.
+  A public model can still report `generationEnabled: false` when it is not
+  enabled in the connected environment; explain that distinction instead of
+  describing the model itself as retired or unavailable everywhere.
 - Use `get_model_details` before relying on a model-specific setting or making
-  a detailed comparison.
+  a detailed comparison. For budget or generation settings, omit `audio` when
+  the selected mode reports `always_generated` or `unavailable`; send an audio
+  choice only when the mode reports `optional`.
 - Use `recommend_models` when the user is open to suggestions or needs an
   evidence-backed match to their creative priorities.
 - Use `get_account_status` when account context matters to the conversation.
@@ -51,7 +56,9 @@ Use `calculate_project_budget` for each concrete video proposal. Supply real
 shot purposes, model IDs, modes, settings, clip counts, references, and a
 deliberate creative-attempt allowance. The tool validates the plan against the
 current catalog and provides the comparable estimate; it does not reserve a
-future rate or submit work. Read [budget planning](references/budget-planning.md)
+future rate or submit work. Treat `pricingScope: connected_environment` as the
+catalog of the connection being used; a staging estimate is not a production
+quote. Read [budget planning](references/budget-planning.md)
 when you need the detailed project-planning rules.
 
 ## Generate only after an explicit choice

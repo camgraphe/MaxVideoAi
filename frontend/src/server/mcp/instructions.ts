@@ -16,6 +16,8 @@ export function buildMaxVideoAiMcpInstructions(
     'For multi-shot work, the host may compose one or more named single- or mixed-model proposals and use calculate_project_budget.',
     'Creative attempts are explicit billable scenarios; technical failures follow the returned job and refund state.',
     'Project estimates do not reserve price.',
+    'Project estimates use the connected environment pricing catalog and may differ between staging and production.',
+    'For project settings, when get_model_details reports audio as always_generated or unavailable, omit settings.audio; only when audio is optional, send settings.audio.',
     'Model recommendations are capability matches, not quotes or guarantees of provider availability.',
   ];
 

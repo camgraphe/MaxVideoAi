@@ -166,6 +166,7 @@ test('model details project one executable public model into the exact safe shap
     label: 'MiniMax H3',
     surface: 'video',
     availability: 'available',
+    generationEnabled: true,
     modes: [
       {
         mode: 't2v',
@@ -235,7 +236,7 @@ test('model details project one executable public model into the exact safe shap
   assert.equal(Object.hasOwn(details, 'pricing'), false);
 });
 
-test('model details reject unknown, hidden, non-executable, and retired public IDs', async () => {
+test('model details distinguish a public model that is disabled in the connected environment', async () => {
   const engines = [
     engine('minimax-h3', ['t2v']),
     engine('hidden', ['t2v'], { isLab: true }),
@@ -244,7 +245,11 @@ test('model details reject unknown, hidden, non-executable, and retired public I
   ];
   const deps = detailsDeps(engines);
 
-  for (const id of ['unknown', 'hidden', 'non-executable', 'retired']) {
+  const disabledDetails = await getAgentModelDetails('non-executable', deps);
+  assert.equal(disabledDetails.generationEnabled, false);
+  assert.equal(disabledDetails.availability, 'available');
+
+  for (const id of ['unknown', 'hidden', 'retired']) {
     await assert.rejects(
       () => getAgentModelDetails(id, deps),
       (error: unknown) => error instanceof AgentApiError && error.code === 'ENGINE_UNAVAILABLE',

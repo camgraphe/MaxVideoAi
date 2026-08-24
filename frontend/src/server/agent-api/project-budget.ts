@@ -88,6 +88,7 @@ export type AgentProjectBudgetResult = Readonly<{
   currency: string;
   membershipTier: AuthoritativeMembershipTier;
   catalogRevision: string;
+  pricingScope: 'connected_environment';
   quoteRequired: true;
   nextAction: 'discuss_and_refine';
 }>;
@@ -539,6 +540,7 @@ export async function calculateAgentProjectBudget(
     currency,
     membershipTier,
     catalogRevision,
+    pricingScope: 'connected_environment',
     quoteRequired: true,
     nextAction: 'discuss_and_refine',
   };

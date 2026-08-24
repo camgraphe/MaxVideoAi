@@ -48,6 +48,10 @@ export type AgentModelCandidate = {
   latencyTier: EngineCaps['latencyTier'];
 };
 
+export type AgentPublicCatalogEngine = AgentPublicGenerationEngine & {
+  generationEnabled: boolean;
+};
+
 const defaultDeps: AgentModelCatalogDeps = {
   listEngines: () => getPublicConfiguredEnginesByCategory('all'),
   surfaceByEngineId(engineId) {
@@ -77,6 +81,7 @@ function toCandidate(
   engine: EngineCaps,
   surface: 'video' | 'image',
   modes: AgentGenerationMode[],
+  generationEnabled: boolean,
   scopedMode?: Readonly<{ mode: AgentGenerationMode; caps: EngineModeUiCaps }>,
 ): AgentModelCandidate {
   const aspectRatios = scopedMode ? scopedMode.caps.aspectRatio ?? [] : engine.aspectRatios;
@@ -98,18 +103,19 @@ function toCandidate(
       audio: surface === 'video' && engine.audio,
       referenceImages: referenceImagesSupported(scopedMode ? [scopedMode.mode] : modes),
       availability: engine.availability,
+      generationEnabled,
     },
     latencyTier: engine.latencyTier,
   };
 }
 
-export async function listPublicAgentGenerationEngines(
+export async function listPublicAgentCatalogEngines(
   deps: AgentModelCatalogDeps = defaultDeps,
-): Promise<AgentPublicGenerationEngine[]> {
+): Promise<AgentPublicCatalogEngine[]> {
   const engines = await deps.listEngines();
   return engines.flatMap((engine) => {
     const surface = deps.surfaceByEngineId(engine.id);
-    if (!isPublicAgentEngine(engine, surface) || deps.isEngineExecutable?.(engine) === false) return [];
+    if (!isPublicAgentEngine(engine, surface)) return [];
     const modes = listPublicAgentModes(engine, surface);
     const configuredModeCaps = engine.modeCaps ?? {};
     const registryModeCaps = MODE_CAPS_BY_ENGINE_ID.get(engine.id) ?? {};
@@ -126,8 +132,17 @@ export async function listPublicAgentGenerationEngines(
       surface,
       publicModes: executableModes,
       modeCaps,
+      generationEnabled: deps.isEngineExecutable?.(engine) !== false,
     }];
   });
+}
+
+export async function listPublicAgentGenerationEngines(
+  deps: AgentModelCatalogDeps = defaultDeps,
+): Promise<AgentPublicGenerationEngine[]> {
+  return (await listPublicAgentCatalogEngines(deps)).flatMap(({ generationEnabled, ...candidate }) =>
+    generationEnabled ? [candidate] : []
+  );
 }
 
 export async function listPublicAgentGenerationEnginesInExecutor(
@@ -161,16 +176,19 @@ function matchesFilter(model: AgentModel, filter: AgentModelFilter): boolean {
 
 export async function listAgentModelCandidates(
   filter: AgentModelFilter = {},
-  deps: AgentModelCatalogDeps = defaultDeps
+  deps: AgentModelCatalogDeps = defaultDeps,
+  options: Readonly<{ generationEnabledOnly?: boolean }> = {},
 ): Promise<AgentModelCandidate[]> {
-  const engines = await listPublicAgentGenerationEngines(deps);
-  return engines.flatMap(({ engine, surface, publicModes: modes, modeCaps }) => {
+  const engines = await listPublicAgentCatalogEngines(deps);
+  return engines.flatMap(({ engine, surface, publicModes: modes, modeCaps, generationEnabled }) => {
+    if (options.generationEnabledOnly && !generationEnabled) return [];
     const selectedModeCaps = filter.mode ? modeCaps[filter.mode] : undefined;
     if (filter.mode && !selectedModeCaps) return [];
     const candidate = toCandidate(
       engine,
       surface,
       modes,
+      generationEnabled,
       filter.mode && selectedModeCaps ? { mode: filter.mode, caps: selectedModeCaps } : undefined,
     );
     return matchesFilter(candidate.model, filter) ? [candidate] : [];
@@ -181,5 +199,6 @@ export async function listAgentModels(
   filter: AgentModelFilter = {},
   deps: AgentModelCatalogDeps = defaultDeps
 ): Promise<AgentModel[]> {
-  return (await listAgentModelCandidates(filter, deps)).map((candidate) => candidate.model);
+  const models = (await listAgentModelCandidates(filter, deps)).map((candidate) => candidate.model);
+  return filter.limit === undefined ? models : models.slice(0, filter.limit);
 }

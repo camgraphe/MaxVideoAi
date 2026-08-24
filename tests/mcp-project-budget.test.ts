@@ -116,6 +116,7 @@ test('prices a 60-second single-model video project as a named proposal', async 
   assert.equal(Object.hasOwn(result, 'total'), false);
   assert.equal(Object.hasOwn(result, 'intendedOutputDurationSec'), false);
   assert.equal(result.currency, 'USD');
+  assert.equal(result.pricingScope, 'connected_environment');
   assert.equal(result.quoteRequired, true);
   assert.equal(result.nextAction, 'discuss_and_refine');
   assert.equal(deps.calls.length, 1);

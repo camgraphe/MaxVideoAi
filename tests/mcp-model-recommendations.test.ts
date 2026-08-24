@@ -259,3 +259,21 @@ test('recommendations cannot revive a declared mode that has no executable mode 
   assert.deepEqual(result.recommendations, []);
   assert.equal(result.nextAction, 'clarify_requirements');
 });
+
+test('recommendations exclude public models disabled in the connected environment', async () => {
+  const enabled = candidate('enabled');
+  const disabled = candidate('disabled');
+  const catalogDeps: AgentModelCatalogDeps = {
+    ...deps([disabled, enabled]),
+    isEngineExecutable(engine) {
+      return engine.id !== 'disabled';
+    },
+  };
+
+  const result = await recommendAgentModels(
+    { surface: 'video', mode: 't2v', preferredModelIds: ['disabled'] },
+    catalogDeps,
+  );
+
+  assert.deepEqual(result.recommendations.map((entry) => entry.model.id), ['enabled']);
+});

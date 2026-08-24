@@ -60,6 +60,7 @@ export type AgentModel = {
   audio: boolean;
   referenceImages: boolean;
   availability: string;
+  generationEnabled: boolean;
 };
 
 export type AgentModelFilter = {
@@ -71,6 +72,7 @@ export type AgentModelFilter = {
   maxDurationSec?: number;
   audio?: boolean;
   referenceImages?: boolean;
+  limit?: number;
 };
 
 export type AgentModelPriority =
@@ -133,6 +135,7 @@ export type AgentModelDetails = Readonly<{
   label: string;
   surface: 'video' | 'image';
   availability: string;
+  generationEnabled: boolean;
   modes: readonly AgentModelModeDetails[];
   guidance: AgentModelGuidance | null;
   links: Readonly<{

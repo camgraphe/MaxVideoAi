@@ -3,9 +3,9 @@ import type { EngineCaps, EngineInputField, EngineModeUiCaps } from '@/types/eng
 import { AgentApiError } from './errors';
 import { getAgentModelGuidance, type AgentModelGuidance } from './model-guidance';
 import {
-  listPublicAgentGenerationEngines,
+  listPublicAgentCatalogEngines,
   type AgentModelCatalogDeps,
-  type AgentPublicGenerationEngine,
+  type AgentPublicCatalogEngine,
 } from './model-catalog';
 import type {
   AgentGenerationMode,
@@ -82,7 +82,7 @@ function projectAudio(caps: EngineModeUiCaps, engine: EngineCaps): AgentModelAud
 }
 
 function projectMode(
-  candidate: AgentPublicGenerationEngine,
+  candidate: AgentPublicCatalogEngine,
   mode: AgentGenerationMode,
 ): AgentModelModeDetails {
   const caps = candidate.modeCaps[mode];
@@ -101,8 +101,8 @@ function projectMode(
   });
 }
 
-function listPublicCandidates(deps?: AgentModelDetailsDeps): Promise<readonly AgentPublicGenerationEngine[]> {
-  return deps ? listPublicAgentGenerationEngines(deps) : listPublicAgentGenerationEngines();
+function listPublicCandidates(deps?: AgentModelDetailsDeps): Promise<readonly AgentPublicCatalogEngine[]> {
+  return deps ? listPublicAgentCatalogEngines(deps) : listPublicAgentCatalogEngines();
 }
 
 export async function getAgentModelDetails(
@@ -122,6 +122,7 @@ export async function getAgentModelDetails(
     label: candidate.engine.label,
     surface: candidate.surface,
     availability: candidate.engine.availability,
+    generationEnabled: candidate.generationEnabled,
     modes: Object.freeze(candidate.publicModes.map((mode) => projectMode(candidate, mode))),
     guidance,
     links: Object.freeze({

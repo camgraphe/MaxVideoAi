@@ -24,7 +24,7 @@ const settingsSchema = z.object({
     'Optional requested frames per second when the selected model supports it.',
   ),
   audio: z.boolean().optional().describe(
-    'Optional intent to generate audio when the selected model and mode support it.',
+    'Set only when get_model_details reports audio as optional. Omit this field when audio is always_generated or unavailable.',
   ),
   loop: z.boolean().optional().describe(
     'Optional intent to create a looping clip when the selected model and mode support it.',

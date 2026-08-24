@@ -76,6 +76,9 @@ test('instructions never advertise paid generation when its gate is closed', asy
   assert.match(instructions, /creative attempts are explicit billable scenarios/i);
   assert.match(instructions, /technical failures follow the returned job and refund state/i);
   assert.match(instructions, /project estimates do not reserve price/i);
+  assert.match(instructions, /connected environment.*may differ.*staging.*production/i);
+  assert.match(instructions, /always_generated.*omit settings\.audio/i);
+  assert.match(instructions, /optional.*settings\.audio/i);
   assert.match(instructions, /generation is not available/i);
   assert.doesNotMatch(instructions, /use prepare_generation/i);
   assert.doesNotMatch(instructions, /use list_media/i);

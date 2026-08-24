@@ -16,10 +16,18 @@ base production pass. Additional attempts are an intentional creative
 allowance, not an automatic retry or a promise that every variation will be
 used.
 
+Use the mode details literally. Omit `aspectRatio` when image-to-video framing
+comes from the source image. Omit `audio` for `always_generated` and
+`unavailable`; include it only for an `optional` audio policy.
+
 Present the returned base production and creative-attempt allowance separately.
 Explain the assumptions and differences between named proposals so the user can
 choose. Do not replace a user preference with a generic tier, and do not derive
 figures yourself from remembered model information.
+
+The returned `pricingScope` identifies the estimate as belonging to the
+connected environment. Do not compare a staging estimate to a production UI
+price as if they shared one live pricing catalog.
 
 An estimate is not a reservation and does not create a generation. When the
 user chooses a concrete request, return to the skill and obtain a fresh exact

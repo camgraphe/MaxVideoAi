@@ -27,6 +27,9 @@ export function registerListModelsTool(
         maxDurationSec: z.number().positive().max(300).optional(),
         audio: z.boolean().optional(),
         referenceImages: z.boolean().optional(),
+        limit: z.number().int().min(1).max(50).optional().describe(
+          'Maximum number of matching models to return after all capability filters are applied.',
+        ),
       },
       annotations: {
         readOnlyHint: true,

@@ -50,6 +50,7 @@ const model: AgentModel = {
   audio: true,
   referenceImages: false,
   availability: 'available',
+  generationEnabled: true,
 };
 
 const modelDetails: AgentModelDetails = {
@@ -57,6 +58,7 @@ const modelDetails: AgentModelDetails = {
   label: 'MiniMax H3',
   surface: 'video',
   availability: 'available',
+  generationEnabled: true,
   modes: [],
   guidance: null,
   links: {
@@ -92,6 +94,7 @@ const projectBudget: AgentProjectBudgetResult = {
   currency: 'USD',
   membershipTier: 'member',
   catalogRevision: 'mcp-catalog-v2:test',
+  pricingScope: 'connected_environment',
   quoteRequired: true,
   nextAction: 'discuss_and_refine',
 };
@@ -151,6 +154,7 @@ function assertModel(value: unknown): asserts value is AgentModel {
   assert.ok(Array.isArray(candidate.aspectRatios));
   assert.equal(typeof candidate.audio, 'boolean');
   assert.equal(typeof candidate.referenceImages, 'boolean');
+  assert.equal(typeof candidate.generationEnabled, 'boolean');
   assert.equal('pricing' in candidate, false);
 }
 
@@ -213,11 +217,22 @@ test('server advertises only the five read-only discovery tools with narrow guid
   assert.ok(detailTool);
   assert.equal(detailTool.inputSchema.additionalProperties, false);
   assert.deepEqual(Object.keys(detailTool.inputSchema.properties ?? {}), ['id']);
+  const listTool = result.tools.find((tool) => tool.name === 'list_models');
+  assert.ok(listTool);
+  const listProperties = record(listTool.inputSchema.properties);
+  assert.equal(record(listProperties.limit).minimum, 1);
+  assert.equal(record(listProperties.limit).maximum, 50);
   const budgetTool = result.tools.find((tool) => tool.name === 'calculate_project_budget');
   assert.ok(budgetTool);
   assert.equal(budgetTool.inputSchema.additionalProperties, false);
   assert.match(budgetTool.description ?? '', /mixed models/i);
   assert.match(budgetTool.description ?? '', /explicit creative attempts/i);
+  const proposalSchema = record(record(budgetTool.inputSchema).properties).proposals;
+  const proposalItem = record(record(proposalSchema).items);
+  const lineSchema = record(record(record(proposalItem.properties).lines).items);
+  const settingsSchema = record(record(lineSchema.properties).settings);
+  const audioSchema = record(record(settingsSchema.properties).audio);
+  assert.match(String(audioSchema.description), /omit.*always_generated/i);
   assert.match(connected.client.getInstructions() ?? '', /prompt drafting.*host agent/i);
   assert.match(connected.client.getInstructions() ?? '', /generation is not available/i);
 
@@ -259,7 +274,7 @@ test('tools return structured content and pass validated filters to facade servi
   const accountResult = await connected.client.callTool({ name: 'get_account_status', arguments: {} });
   const modelsResult = await connected.client.callTool({
     name: 'list_models',
-    arguments: { surface: 'video', mode: 't2v', audio: true },
+    arguments: { surface: 'video', mode: 't2v', audio: true, limit: 3 },
   });
   const detailsResult = await connected.client.callTool({
     name: 'get_model_details',
@@ -369,7 +384,7 @@ test('tools return structured content and pass validated filters to facade servi
     nextAction: 'clarify_requirements',
   });
   assert.deepEqual(budgetResult.structuredContent, projectBudget);
-  assert.deepEqual(listFilter, { surface: 'video', mode: 't2v', audio: true });
+  assert.deepEqual(listFilter, { surface: 'video', mode: 't2v', audio: true, limit: 3 });
   assert.equal(modelDetailId, 'minimax-h3');
   assert.deepEqual(recommendationInput, {
     mode: 't2v',

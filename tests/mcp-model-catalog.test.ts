@@ -95,6 +95,7 @@ test('catalog emits a narrow public DTO and supported modes only', async () => {
       audio: false,
       referenceImages: true,
       availability: 'available',
+      generationEnabled: true,
     },
     {
       id: 'image-public',
@@ -107,6 +108,7 @@ test('catalog emits a narrow public DTO and supported modes only', async () => {
       audio: false,
       referenceImages: true,
       availability: 'available',
+      generationEnabled: true,
     },
   ]);
   assert.equal('pricing' in models[0], false);
@@ -199,6 +201,7 @@ test('mode-scoped catalog filtering uses modeCaps while aggregate discovery stay
     audio: true,
     referenceImages: false,
     availability: 'available',
+    generationEnabled: true,
   });
 
   const [aggregate] = await listAgentModels({}, catalogDeps);
@@ -219,6 +222,15 @@ test('real Sora 2 Pro never publishes ref2v without an executable mode capabilit
   assert.deepEqual(soraCapability.publicModes, ['t2v', 'i2v']);
 });
 
+test('catalog applies the requested result limit after capability filtering', async () => {
+  const engines = Array.from({ length: 5 }, (_, index) => engine(`video-${index + 1}`, ['t2v']));
+  const surfaces = Object.fromEntries(engines.map((item) => [item.id, 'video' as const]));
+
+  const models = await listAgentModels({ surface: 'video', limit: 3 }, deps(engines, surfaces));
+
+  assert.deepEqual(models.map((model) => model.id), ['video-1', 'video-2', 'video-3']);
+});
+
 test('catalog mirrors real execution gates for newly registered video models', { concurrency: false }, async () => {
   const original = {
     bytePlusEnabled: ENV.BYTEPLUS_ARK_ENABLED,
@@ -237,7 +249,15 @@ test('catalog mirrors real execution gates for newly registered video models', {
     ENV.SEEDANCE_2_5_BYTEPLUS_MODES = 't2v';
 
     const closedModels = await listAgentModels({}, registryDeps);
-    assert.equal(closedModels.some((model) => model.id === 'seedance-2-5'), false);
+    assert.equal(
+      closedModels.find((model) => model.id === 'seedance-2-5')?.generationEnabled,
+      false,
+    );
+    assert.equal(
+      (await listPublicAgentGenerationEngines(registryDeps))
+        .some((candidate) => candidate.engine.id === 'seedance-2-5'),
+      false,
+    );
     assert.deepEqual(
       closedModels.find((model) => model.id === 'minimax-h3'),
       {
@@ -251,6 +271,7 @@ test('catalog mirrors real execution gates for newly registered video models', {
         audio: true,
         referenceImages: true,
         availability: 'available',
+        generationEnabled: true,
       },
     );
 
@@ -273,6 +294,7 @@ test('catalog mirrors real execution gates for newly registered video models', {
         audio: true,
         referenceImages: true,
         availability: 'available',
+        generationEnabled: true,
       },
     );
   } finally {

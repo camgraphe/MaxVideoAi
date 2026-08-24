@@ -163,6 +163,7 @@ const model: AgentModel = {
   audio: false,
   referenceImages: false,
   availability: 'available',
+  generationEnabled: true,
 };
 
 const services: MaxVideoAiMcpServices = {
