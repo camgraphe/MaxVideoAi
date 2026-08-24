@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
+import { listFalEngines } from '../frontend/src/config/falEngines';
 import { AgentApiError } from '../frontend/src/server/agent-api/errors';
 import {
   getAgentModelDetails,
   type AgentModelDetailsDeps,
 } from '../frontend/src/server/agent-api/model-details';
+import { isAgentGenerationEngineExecutable } from '../frontend/src/server/agent-api/model-catalog';
 import type { EngineCaps, Mode } from '../frontend/types/engines';
 
 function engine(
@@ -138,6 +140,21 @@ function detailsDeps(
   };
 }
 
+function realRegistryDetailsDeps(): AgentModelDetailsDeps {
+  const entries = listFalEngines();
+  return {
+    async listEngines() {
+      return entries.map((entry) => entry.engine);
+    },
+    surfaceByEngineId(id) {
+      const entry = entries.find((candidate) => candidate.id === id);
+      if (!entry) return null;
+      return entry.category === 'image' ? 'image' : 'video';
+    },
+    isEngineExecutable: isAgentGenerationEngineExecutable,
+  };
+}
+
 test('model details project one executable public model into the exact safe shape', async () => {
   const details = await getAgentModelDetails(
     'minimax-h3',
@@ -234,4 +251,57 @@ test('model details reject unknown, hidden, non-executable, and retired public I
       id,
     );
   }
+});
+
+test('real i2i model details honor requiredInModes even when the field is stored as optional', async () => {
+  const details = await getAgentModelDetails('nano-banana', realRegistryDetailsDeps());
+  const textMode = details.modes.find((mode) => mode.mode === 't2i');
+  const editMode = details.modes.find((mode) => mode.mode === 'i2i');
+
+  assert.ok(textMode);
+  assert.ok(editMode);
+  assert.deepEqual(textMode.references, []);
+  assert.deepEqual(editMode.references, [
+    { id: 'image_urls', type: 'image', required: true, min: 1, max: 4 },
+  ]);
+  assert.equal(Object.isFrozen(editMode.references), true);
+  assert.doesNotMatch(
+    JSON.stringify(details),
+    /google_vertex_image|providerMeta|pricingDetails|source|acceptedMimeTypes/i,
+  );
+});
+
+test('custom guidance is projected into an immutable detached public DTO', async () => {
+  const mutableGuidance = {
+    engineId: 'minimax-h3',
+    strengths: ['Original strength.'],
+    bestFor: ['character_scene'] as const,
+    considerations: ['Original consideration.'],
+    evidenceUrls: [
+      'https://maxvideoai.com/models/minimax-h3',
+      'https://maxvideoai.com/examples/minimax-h3',
+    ],
+    reviewedAt: '2026-08-24',
+  };
+  const deps = detailsDeps([engine('minimax-h3', ['t2v'])]);
+  deps.getGuidance = () => mutableGuidance;
+
+  const details = await getAgentModelDetails('minimax-h3', deps);
+  const projected = details.guidance;
+  assert.ok(projected);
+  assert.notEqual(projected, mutableGuidance);
+  assert.notEqual(projected.strengths, mutableGuidance.strengths);
+  assert.equal(Object.isFrozen(projected), true);
+  assert.equal(Object.isFrozen(projected.strengths), true);
+  assert.equal(Object.isFrozen(projected.bestFor), true);
+  assert.equal(Object.isFrozen(projected.considerations), true);
+  assert.equal(Object.isFrozen(projected.evidenceUrls), true);
+
+  mutableGuidance.strengths[0] = 'Mutated strength.';
+  mutableGuidance.evidenceUrls[1] = 'https://maxvideoai.com/examples/mutated';
+  assert.deepEqual(projected.strengths, ['Original strength.']);
+  assert.deepEqual(projected.evidenceUrls, [
+    'https://maxvideoai.com/models/minimax-h3',
+    'https://maxvideoai.com/examples/minimax-h3',
+  ]);
 });

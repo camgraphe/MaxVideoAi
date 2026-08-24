@@ -43,11 +43,23 @@ function projectReferences(
     return [Object.freeze({
       id: field.id,
       type: field.type,
-      required: required && (!field.requiredInModes?.length || field.requiredInModes.includes(mode)),
+      required: field.requiredInModes ? field.requiredInModes.includes(mode) : required,
       min: field.minCount ?? null,
       max: field.maxCount ?? null,
     })];
   }));
+}
+
+function projectGuidance(guidance: AgentModelGuidance | null): AgentModelGuidance | null {
+  if (!guidance) return null;
+  return Object.freeze({
+    engineId: guidance.engineId,
+    strengths: Object.freeze([...guidance.strengths]),
+    bestFor: Object.freeze([...guidance.bestFor]),
+    considerations: Object.freeze([...guidance.considerations]),
+    evidenceUrls: Object.freeze([...guidance.evidenceUrls]),
+    reviewedAt: guidance.reviewedAt,
+  });
 }
 
 function projectDuration(caps: EngineModeUiCaps, engine: EngineCaps): AgentModelDurationDetails | null {
@@ -103,7 +115,7 @@ export async function getAgentModelDetails(
     throw new AgentApiError('ENGINE_UNAVAILABLE', 'This MaxVideoAI model is not currently available.');
   }
 
-  const guidance = (deps?.getGuidance ?? getAgentModelGuidance)(candidate.engine.id);
+  const guidance = projectGuidance((deps?.getGuidance ?? getAgentModelGuidance)(candidate.engine.id));
   const examples = guidance?.evidenceUrls.find((url) => new URL(url).pathname.includes('/examples/')) ?? null;
   return Object.freeze({
     id: candidate.engine.id,
