@@ -39,9 +39,14 @@ test('guidance exposes exactly the reviewed engine records without pricing data'
     assert.ok(entry.considerations.length >= 1 && entry.considerations.length <= 4);
     entry.evidenceUrls.forEach((url) => assert.match(url, /^https:\/\/maxvideoai\.com\//));
     assert.doesNotMatch(JSON.stringify(entry), /\$|€|£|priceCents|costTier|provider|0\.13/);
+    assert.doesNotMatch(
+      JSON.stringify(entry),
+      /native_audio|high_resolution|\baudio\b|\bsound\b|\bresolution\b/i,
+    );
     assert.ok(Object.isFrozen(entry));
     assert.ok(Object.isFrozen(entry.strengths));
   }
+  assert.equal(getAgentModelGuidance('seedance-2-5')?.bestFor.includes('product_video'), false);
   assert.equal(getAgentModelGuidance('unknown-model'), null);
 });
 

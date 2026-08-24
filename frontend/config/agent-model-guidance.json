@@ -3,12 +3,11 @@
     "engineId": "seedance-2-5",
     "strengths": [
       "Longer cinematic scenes with a clear story arc.",
-      "Multimodal direction for identity, motion, pacing, and sound."
+      "Multimodal direction for identity, motion, and pacing."
     ],
     "bestFor": [
       "cinematic_story",
       "multi_shot",
-      "product_video",
       "character_scene",
       "reference_guided"
     ],
@@ -26,14 +25,12 @@
     "strengths": [
       "Character-led cinematic scenes with expressive movement and dialogue.",
       "Multi-shot direction that keeps character, wardrobe, and setting coherent.",
-      "Multimodal direction for identity, motion, and sound."
+      "Multimodal direction for identity and motion."
     ],
     "bestFor": [
       "character_scene",
       "multi_shot",
-      "reference_guided",
-      "native_audio",
-      "high_resolution"
+      "reference_guided"
     ],
     "considerations": [
       "Use the current model details to confirm the settings required for the brief."
@@ -48,8 +45,7 @@
     "engineId": "gemini-omni-flash",
     "strengths": [
       "Stateful follow-up refinement.",
-      "Reference-guided shots and short source-video edits.",
-      "Prompt-directed sound."
+      "Reference-guided shots and short source-video edits."
     ],
     "bestFor": [
       "conversational_refine",
