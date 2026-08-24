@@ -17,6 +17,7 @@ export type {
   AgentModelDurationDetails,
   AgentModelFilter,
   AgentModelModeDetails,
+  AgentModelPriority,
   AgentModelRecommendation,
   AgentModelRecommendationInput,
   AgentModelRecommendationResult,

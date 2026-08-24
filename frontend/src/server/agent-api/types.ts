@@ -73,10 +73,20 @@ export type AgentModelFilter = {
   referenceImages?: boolean;
 };
 
+export type AgentModelPriority =
+  | 'speed'
+  | 'highest_resolution'
+  | 'native_audio'
+  | 'reference_control'
+  | 'longer_clips'
+  | 'lower_cost';
+
 export type AgentModelRecommendationInput = AgentModelFilter & {
-  budgetPreference?: 'lowest' | 'balanced' | 'flexible';
-  speedPreference?: 'fastest' | 'balanced' | 'quality';
-  qualityPreference?: 'draft' | 'balanced' | 'highest';
+  useCase?: AgentModelUseCase;
+  priorities?: readonly AgentModelPriority[];
+  preferredModelIds?: readonly string[];
+  excludedModelIds?: readonly string[];
+  budgetCeilingCents?: number;
 };
 
 export type AgentModelRecommendation = {
@@ -84,12 +94,12 @@ export type AgentModelRecommendation = {
   model: AgentModel;
   reasons: string[];
   tradeoffs: string[];
-  nextAction: 'prepare_generation' | 'clarify_requirements';
+  nextAction: 'calculate_project_budget' | 'prepare_generation' | 'clarify_requirements';
 };
 
 export type AgentModelRecommendationResult = {
   recommendations: AgentModelRecommendation[];
-  nextAction: 'prepare_generation' | 'clarify_requirements';
+  nextAction: 'calculate_project_budget' | 'prepare_generation' | 'clarify_requirements';
   message?: string;
 };
 

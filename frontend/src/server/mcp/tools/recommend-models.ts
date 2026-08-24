@@ -5,6 +5,43 @@ import type { AgentPrincipal } from '@/server/agent-api/principal';
 import type { MaxVideoAiMcpServices } from '@/server/mcp/server';
 import { runAgentTool } from '@/server/mcp/tool-result';
 
+const inputSchema = z.object({
+  id: z.string().trim().min(1).max(128).optional(),
+  surface: z.enum(['video', 'image']).optional(),
+  mode: z.enum(['t2v', 'i2v', 'ref2v', 't2i', 'i2i']).optional(),
+  aspectRatio: z.string().trim().min(1).max(32).optional(),
+  resolution: z.string().trim().min(1).max(32).optional(),
+  maxDurationSec: z.number().positive().max(300).optional(),
+  audio: z.boolean().optional(),
+  referenceImages: z.boolean().optional(),
+  useCase: z.enum([
+    'cinematic_story',
+    'multi_shot',
+    'product_video',
+    'character_scene',
+    'reference_guided',
+    'source_edit',
+    'conversational_refine',
+    'social_video',
+    'native_audio',
+    'high_resolution',
+  ]).optional().describe('Optional creative goal used only with reviewed MaxVideoAI model guidance.'),
+  priorities: z.array(z.enum([
+    'speed',
+    'highest_resolution',
+    'native_audio',
+    'reference_control',
+    'longer_clips',
+    'lower_cost',
+  ])).max(6).optional().describe('Optional factual priorities. Use lower_cost to request a project budget, not a price guess.'),
+  preferredModelIds: z.array(z.string().trim().min(1).max(128)).max(10).optional()
+    .describe('Up to ten public model IDs the user would like considered when compatible.'),
+  excludedModelIds: z.array(z.string().trim().min(1).max(128)).max(10).optional()
+    .describe('Up to ten public model IDs to leave out of the recommendations.'),
+  budgetCeilingCents: z.number().int().positive().max(10_000_000).optional()
+    .describe('Optional project budget ceiling in cents; use calculate_project_budget for current comparable totals.'),
+}).strict();
+
 export function registerRecommendModelsTool(
   server: McpServer,
   principal: AgentPrincipal,
@@ -15,20 +52,8 @@ export function registerRecommendModelsTool(
     {
       title: 'Recommend MaxVideoAI models',
       description:
-        'Use this when the user wants up to three public models matched to image/video, prompt mode, format, duration, audio, references, speed, budget, or quality needs. Do not use it as an exact quote, a generation command, or a claim that a provider will accept a job.',
-      inputSchema: {
-        id: z.string().trim().min(1).optional(),
-        surface: z.enum(['video', 'image']).optional(),
-        mode: z.enum(['t2v', 'i2v', 'ref2v', 't2i', 'i2i']).optional(),
-        aspectRatio: z.string().trim().min(1).optional(),
-        resolution: z.string().trim().min(1).optional(),
-        maxDurationSec: z.number().positive().max(300).optional(),
-        audio: z.boolean().optional(),
-        referenceImages: z.boolean().optional(),
-        budgetPreference: z.enum(['lowest', 'balanced', 'flexible']).optional(),
-        speedPreference: z.enum(['fastest', 'balanced', 'quality']).optional(),
-        qualityPreference: z.enum(['draft', 'balanced', 'highest']).optional(),
-      },
+        'Use this when the user wants up to three public models matched to a creative goal and factual capabilities. Ask about missing goals, preferences, or budget; use calculate_project_budget for current costs. Do not use it as an exact quote, a generation command, or a claim that a provider will accept a job.',
+      inputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

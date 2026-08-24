@@ -7,36 +7,43 @@ import type { EngineCaps } from '../frontend/types/engines';
 
 function candidate(
   id: string,
-  options: { latencyTier?: 'fast' | 'standard'; base?: number; resolutions?: EngineCaps['resolutions'] } = {}
+  options: {
+    latencyTier?: 'fast' | 'standard';
+    base?: number;
+    resolutions?: EngineCaps['resolutions'];
+    modes?: EngineCaps['modes'];
+    audio?: boolean;
+    maxDurationSec?: number;
+  } = {},
 ): EngineCaps {
+  const modes = options.modes ?? ['t2v'];
+  const resolutions = options.resolutions ?? ['1080p'];
   return {
     id,
     label: id,
     provider: 'test',
     status: 'live',
     latencyTier: options.latencyTier ?? 'standard',
-    modes: ['t2v'],
-    maxDurationSec: 10,
-    resolutions: options.resolutions ?? ['1080p'],
+    modes,
+    maxDurationSec: options.maxDurationSec ?? 10,
+    resolutions,
     aspectRatios: ['16:9'],
     fps: [24],
-    audio: true,
-    upscale4k: options.resolutions?.includes('4k') ?? false,
+    audio: options.audio ?? false,
+    upscale4k: resolutions.includes('4k'),
     extend: false,
     motionControls: false,
     keyframes: false,
     params: {},
     inputLimits: {},
-    modeCaps: {
-      t2v: {
-        modes: ['t2v'],
-        duration: { options: [5, 10], default: 5 },
-        resolution: options.resolutions ?? ['1080p'],
-        aspectRatio: ['16:9'],
-        fps: [24],
-        audioToggle: true,
-      },
-    },
+    modeCaps: Object.fromEntries(modes.map((mode) => [mode, {
+      modes: [mode],
+      duration: { options: [5, options.maxDurationSec ?? 10], default: 5 },
+      resolution: resolutions,
+      aspectRatio: ['16:9'],
+      fps: [24],
+      audioToggle: options.audio ?? false,
+    }])),
     pricing: options.base == null ? undefined : { unit: 'sec', base: options.base, currency: 'USD' },
     updatedAt: '2026-07-11T00:00:00.000Z',
     ttlSec: 300,
@@ -55,50 +62,106 @@ function deps(engines: EngineCaps[]): AgentModelCatalogDeps {
   };
 }
 
-test('recommendations are deterministic, capped at three, and use real capability preferences', async () => {
+test('recommendations keep explicit capabilities as hard constraints and cap stable ties at three', async () => {
   const catalogDeps = deps([
-    candidate('standard-cheap', { base: 0.01 }),
-    candidate('fast-mid', { latencyTier: 'fast', base: 0.03 }),
-    candidate('fast-cheap', { latencyTier: 'fast', base: 0.02 }),
-    candidate('fast-expensive', { latencyTier: 'fast', base: 0.08 }),
+    candidate('hidden-by-mode', { modes: ['t2v'] }),
+    candidate('charlie', { modes: ['ref2v'], audio: true, maxDurationSec: 12 }),
+    candidate('bravo', { modes: ['ref2v'], audio: true, maxDurationSec: 12 }),
+    candidate('alpha', { modes: ['ref2v'], audio: true, maxDurationSec: 12 }),
+    candidate('delta', { modes: ['ref2v'], audio: true, maxDurationSec: 12 }),
   ]);
   const input = {
     surface: 'video' as const,
-    mode: 't2v' as const,
-    aspectRatio: '16:9',
-    maxDurationSec: 8,
+    mode: 'ref2v' as const,
     audio: true,
-    speedPreference: 'fastest' as const,
-    budgetPreference: 'lowest' as const,
+    referenceImages: true,
+    maxDurationSec: 10,
   };
 
   const first = await recommendAgentModels(input, catalogDeps);
   const second = await recommendAgentModels(input, catalogDeps);
 
   assert.deepEqual(first, second);
+  assert.deepEqual(first.recommendations.map((entry) => entry.model.id), ['alpha', 'bravo', 'charlie']);
   assert.equal(first.recommendations.length, 3);
-  assert.equal(first.recommendations[0].model.id, 'fast-cheap');
-  assert.equal(first.nextAction, 'prepare_generation');
-  assert.ok(first.recommendations[0].reasons.some((reason) => reason.includes('16:9')));
-  assert.equal(JSON.stringify(first).includes('$'), false);
-  assert.equal(JSON.stringify(first).includes('0.02'), false);
+  assert.equal(first.recommendations.some((entry) => entry.model.id === 'hidden-by-mode'), false);
+  assert.ok(first.recommendations[0].reasons.some((reason) => reason.includes('ref2v')));
 });
 
-test('recommendations explain quality tradeoffs without inventing exact prices', async () => {
+test('compatible preferences are a bounded bonus while exclusions and incompatible preferences stay out', async () => {
+  const catalogDeps = deps([
+    candidate('alpha-fast', { latencyTier: 'fast' }),
+    candidate('zulu-preferred'),
+    candidate('not-compatible', { modes: ['i2v'] }),
+  ]);
   const result = await recommendAgentModels(
-    { mode: 't2v', qualityPreference: 'highest' },
-    deps([candidate('hd-only'), candidate('four-k', { resolutions: ['1080p', '4k'] })])
+    {
+      mode: 't2v',
+      priorities: ['speed'],
+      preferredModelIds: ['zulu-preferred', 'not-compatible', 'does-not-exist'],
+      excludedModelIds: ['alpha-fast'],
+    },
+    catalogDeps,
   );
 
-  assert.equal(result.recommendations[0].model.id, 'four-k');
-  assert.ok(result.recommendations[0].reasons.some((reason) => /4k/i.test(reason)));
-  assert.ok(result.recommendations[1].tradeoffs.some((tradeoff) => /1080p/i.test(tradeoff)));
+  assert.deepEqual(result.recommendations.map((entry) => entry.model.id), ['zulu-preferred']);
+  assert.ok(result.recommendations[0].reasons.some((reason) => /preferred/i.test(reason)));
+  assert.equal(result.recommendations.some((entry) => entry.model.id === 'not-compatible'), false);
+});
+
+test('factual priorities and reviewed use cases provide deterministic ranking reasons', async () => {
+  const catalogDeps = deps([
+    candidate('fast', { latencyTier: 'fast' }),
+    candidate('four-k', { resolutions: ['1080p', '4k'] }),
+    candidate('audio', { audio: true }),
+    candidate('reference', { modes: ['ref2v'] }),
+    candidate('long', { maxDurationSec: 30 }),
+    candidate('minimax-h3', { modes: ['ref2v'], audio: true, maxDurationSec: 15, resolutions: ['2K'] }),
+  ]);
+
+  const cases = [
+    { input: { priorities: ['speed' as const] }, id: 'fast', reason: /fast latency/i },
+    { input: { priorities: ['highest_resolution' as const] }, id: 'four-k', reason: /4K-class/i },
+    { input: { priorities: ['native_audio' as const] }, id: 'audio', reason: /generated audio/i },
+    { input: { priorities: ['reference_control' as const] }, id: 'minimax-h3', reason: /reference image/i },
+    { input: { priorities: ['longer_clips' as const] }, id: 'long', reason: /longer clip/i },
+    { input: { useCase: 'multi_shot' as const }, id: 'minimax-h3', reason: /multi_shot/i },
+  ];
+
+  for (const entry of cases) {
+    const result = await recommendAgentModels(entry.input, catalogDeps);
+    assert.equal(result.recommendations[0].model.id, entry.id);
+    assert.ok(result.recommendations[0].reasons.some((reason) => entry.reason.test(reason)));
+  }
+});
+
+test('cost intent always routes to current project budgeting without static price ranking or tier labels', async () => {
+  const firstDeps = deps([
+    candidate('alpha', { base: 0.99 }),
+    candidate('bravo', { base: 0.01 }),
+    candidate('charlie', { base: 0.49 }),
+  ]);
+  const secondDeps = deps([
+    candidate('alpha', { base: 0.01 }),
+    candidate('bravo', { base: 0.99 }),
+    candidate('charlie', { base: 0.49 }),
+  ]);
+  const input = { priorities: ['lower_cost' as const], budgetCeilingCents: 5_000 };
+
+  const first = await recommendAgentModels(input, firstDeps);
+  const second = await recommendAgentModels(input, secondDeps);
+
+  assert.deepEqual(first, second);
+  assert.equal(first.nextAction, 'calculate_project_budget');
+  assert.ok(first.recommendations.every((entry) => entry.nextAction === 'calculate_project_budget'));
+  assert.match(first.message ?? '', /calculate current comparable scenarios/i);
+  assert.doesNotMatch(JSON.stringify(first), /0\.01|0\.49|0\.99|economy|balanced|premium/i);
 });
 
 test('an incompatible request returns an explicit clarification next action', async () => {
   const result = await recommendAgentModels(
     { surface: 'video', mode: 'ref2v', referenceImages: true },
-    deps([candidate('text-only')])
+    deps([candidate('text-only')]),
   );
 
   assert.deepEqual(result, {
@@ -128,7 +191,7 @@ test('recommendations cannot revive a declared mode that has no executable mode 
     },
   } satisfies EngineCaps;
   const result = await recommendAgentModels(
-    { surface: 'video', mode: 'ref2v', referenceImages: true },
+    { surface: 'video', mode: 'ref2v', referenceImages: true, preferredModelIds: ['sora-2-pro'] },
     deps([sora]),
   );
   assert.deepEqual(result.recommendations, []);

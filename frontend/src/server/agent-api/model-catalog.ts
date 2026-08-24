@@ -45,7 +45,6 @@ export type AgentModelCatalogDeps = {
 export type AgentModelCandidate = {
   model: AgentModel;
   latencyTier: EngineCaps['latencyTier'];
-  indicativeCost: number | null;
 };
 
 const defaultDeps: AgentModelCatalogDeps = {
@@ -65,7 +64,6 @@ function toCandidate(
   surface: 'video' | 'image',
   modes: AgentGenerationMode[],
 ): AgentModelCandidate {
-  const rawBase = engine.pricing?.base;
   return {
     model: {
       id: engine.id,
@@ -80,7 +78,6 @@ function toCandidate(
       availability: engine.availability,
     },
     latencyTier: engine.latencyTier,
-    indicativeCost: typeof rawBase === 'number' && Number.isFinite(rawBase) ? rawBase : null,
   };
 }
 

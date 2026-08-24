@@ -159,7 +159,11 @@ function assertModel(value: unknown): asserts value is AgentModel {
 function assertRecommendationResult(value: unknown): void {
   const result = record(value);
   assert.ok(Array.isArray(result.recommendations));
-  assert.ok(result.nextAction === 'prepare_generation' || result.nextAction === 'clarify_requirements');
+  assert.ok(
+    result.nextAction === 'calculate_project_budget'
+      || result.nextAction === 'prepare_generation'
+      || result.nextAction === 'clarify_requirements',
+  );
   for (const recommendation of result.recommendations) {
     const entry = record(recommendation);
     assert.equal(typeof entry.rank, 'number');
@@ -218,6 +222,14 @@ test('server advertises only the five read-only discovery tools with narrow guid
   assert.match(budgetTool.description ?? '', /explicit creative attempts/i);
   assert.match(connected.client.getInstructions() ?? '', /prompt drafting.*host agent/i);
   assert.match(connected.client.getInstructions() ?? '', /generation is not available/i);
+
+  const recommendationTool = result.tools.find((tool) => tool.name === 'recommend_models');
+  assert.ok(recommendationTool);
+  assert.equal(recommendationTool.inputSchema.additionalProperties, false);
+  const recommendationProperties = record(recommendationTool.inputSchema.properties);
+  for (const field of ['useCase', 'priorities', 'preferredModelIds', 'excludedModelIds', 'budgetCeilingCents']) {
+    assert.equal(typeof record(recommendationProperties[field]).description, 'string');
+  }
 });
 
 test('tools return structured content and pass validated filters to facade services', async (t) => {
@@ -260,8 +272,29 @@ test('tools return structured content and pass validated filters to facade servi
   });
   const recommendationResult = await connected.client.callTool({
     name: 'recommend_models',
-    arguments: { mode: 't2v', speedPreference: 'fastest', qualityPreference: 'balanced' },
+    arguments: {
+      mode: 't2v',
+      useCase: 'product_video',
+      priorities: ['speed', 'reference_control'],
+      preferredModelIds: ['seedance-2-mini', 'seedance-2-mini'],
+      excludedModelIds: ['minimax-h3'],
+      budgetCeilingCents: 1_000,
+    },
   });
+  const rejectedRecommendationResults = await Promise.all([
+    connected.client.callTool({
+      name: 'recommend_models',
+      arguments: { mode: 't2v', economy: true },
+    }),
+    connected.client.callTool({
+      name: 'recommend_models',
+      arguments: { preferredModelIds: Array.from({ length: 11 }, () => 'seedance-2-mini') },
+    }),
+    connected.client.callTool({
+      name: 'recommend_models',
+      arguments: { priorities: Array.from({ length: 7 }, () => 'speed') },
+    }),
+  ]);
   const budgetArguments = {
     proposals: [
       {
@@ -333,11 +366,15 @@ test('tools return structured content and pass validated filters to facade servi
   assert.equal(modelDetailId, 'minimax-h3');
   assert.deepEqual(recommendationInput, {
     mode: 't2v',
-    speedPreference: 'fastest',
-    qualityPreference: 'balanced',
+    useCase: 'product_video',
+    priorities: ['speed', 'reference_control'],
+    preferredModelIds: ['seedance-2-mini', 'seedance-2-mini'],
+    excludedModelIds: ['minimax-h3'],
+    budgetCeilingCents: 1_000,
   });
   assert.deepEqual(budgetInput, budgetArguments);
   rejectedBudgetResults.forEach((result) => assert.equal(result.isError, true));
+  rejectedRecommendationResults.forEach((result) => assert.equal(result.isError, true));
   assertAccountStatus(accountResult.structuredContent);
   const listedModels = record(modelsResult.structuredContent).models;
   assert.ok(Array.isArray(listedModels));
