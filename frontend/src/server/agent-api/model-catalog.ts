@@ -1,4 +1,5 @@
 import { listFalEngines } from '@/config/falEngines';
+import { getModelRegistryEntryById } from '@/config/model-registry';
 import type { TransactionQueryExecutor } from '@/lib/db';
 import {
   getPublicConfiguredEnginesByCategory,
@@ -46,6 +47,8 @@ export type AgentModelCatalogDeps = {
 export type AgentModelCandidate = {
   model: AgentModel;
   latencyTier: EngineCaps['latencyTier'];
+  discoveryRank: number | null;
+  selectionGroup: string;
 };
 
 export type AgentPublicCatalogEngine = AgentPublicGenerationEngine & {
@@ -84,6 +87,7 @@ function toCandidate(
   generationEnabled: boolean,
   scopedMode?: Readonly<{ mode: AgentGenerationMode; caps: EngineModeUiCaps }>,
 ): AgentModelCandidate {
+  const registryEntry = getModelRegistryEntryById(engine.id);
   const aspectRatios = scopedMode ? scopedMode.caps.aspectRatio ?? [] : engine.aspectRatios;
   const resolutions = scopedMode ? scopedMode.caps.resolution ?? [] : engine.resolutions;
   const maxDurationSec = surface === 'video'
@@ -106,6 +110,9 @@ function toCandidate(
       generationEnabled,
     },
     latencyTier: engine.latencyTier,
+    discoveryRank: registryEntry?.publication.app.discoveryRank ?? null,
+    selectionGroup:
+      registryEntry?.family ?? registryEntry?.publication.app.variantGroup ?? engine.id,
   };
 }
 

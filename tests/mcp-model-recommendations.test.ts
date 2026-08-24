@@ -178,6 +178,39 @@ test('factual priorities and reviewed use cases provide deterministic ranking re
   }
 });
 
+test('reviewed quality fits use the authored discovery order as a deterministic tie-breaker', async () => {
+  const result = await recommendAgentModels(
+    { surface: 'video', mode: 'ref2v', useCase: 'multi_shot', referenceImages: true },
+    deps([
+      candidate('minimax-h3', { modes: ['ref2v'], audio: true, maxDurationSec: 15 }),
+      candidate('seedance-2-5', { modes: ['ref2v'], audio: true, maxDurationSec: 30 }),
+    ]),
+  );
+
+  assert.deepEqual(result.recommendations.map((entry) => entry.model.id), [
+    'seedance-2-5',
+    'minimax-h3',
+  ]);
+});
+
+test('an open shortlist keeps one representative per authored model family', async () => {
+  const result = await recommendAgentModels(
+    { surface: 'video', mode: 't2v' },
+    deps([
+      candidate('ltx-2-3'),
+      candidate('ltx-2-3-fast', { latencyTier: 'fast' }),
+      candidate('zulu-a'),
+      candidate('zulu-b'),
+    ]),
+  );
+
+  assert.deepEqual(result.recommendations.map((entry) => entry.model.id), [
+    'ltx-2-3',
+    'zulu-a',
+    'zulu-b',
+  ]);
+});
+
 test('declared priority order can invert ranking between verified dimensions', async () => {
   const catalogDeps = deps([
     candidate('fast-hd', { latencyTier: 'fast', resolutions: ['1080p'] }),

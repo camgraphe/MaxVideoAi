@@ -16,6 +16,8 @@ export function buildMaxVideoAiMcpInstructions(
     'An explicit model choice takes precedence: when the user only wants validation, pricing, or execution for that compatible choice, do not call recommend_models.',
     'Never substitute a named model without the user’s approval. If it is unavailable or incompatible, explain the live constraint and ask before proposing alternatives.',
     'When the user is undecided or asks for advice, use recommend_models and discuss the factual matches before the user chooses.',
+    'Present the best-fit generation-enabled option first, then strong alternatives from distinct model families when available.',
+    'Use calculate_project_budget on comparable proposals before describing an alternative as cheaper or lower-cost.',
     'Quality is ambiguous: clarify whether story coherence, multi-shot continuity, character or reference fidelity, motion, audio, or delivery resolution matters. Never use highest resolution as a proxy for overall creative quality.',
     'For multi-shot work, the host may compose one or more named single- or mixed-model proposals and use calculate_project_budget.',
     'Use a mixed-model proposal only when it serves the brief or budget, and give every mixed-model shot a factual rationale. Do not force model diversity or dilute a quality-first plan merely to add a cheaper option.',

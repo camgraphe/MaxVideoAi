@@ -52,7 +52,7 @@ export function registerRecommendModelsTool(
     {
       title: 'Recommend MaxVideoAI models',
       description:
-        'Use this when the user is undecided, asks for advice, or wants up to three public models matched to a creative goal and factual capabilities. Ask only about missing goals, preferences, or budget; use calculate_project_budget for current costs. Do not use it when the user already chose a compatible model and only wants validation, pricing, or execution. Do not use it as an exact quote, a generation command, or a claim that a provider will accept a job.',
+        'Use this when the user is undecided, asks for advice, or wants a best-fit generation-enabled model plus strong alternatives from distinct model families, matched to a creative goal and factual capabilities. Ask only about missing goals, preferences, or budget; use calculate_project_budget before calling an alternative cheaper or lower-cost. Do not use it when the user already chose a compatible model and only wants validation, pricing, or execution. Do not use it as an exact quote, a generation command, or a claim that a provider will accept a job.',
       inputSchema,
       annotations: {
         readOnlyHint: true,

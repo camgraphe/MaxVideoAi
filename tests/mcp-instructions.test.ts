@@ -82,6 +82,9 @@ test('instructions never advertise paid generation when its gate is closed', asy
   assert.match(instructions, /explicit model choice.*do not.*recommend_models/i);
   assert.match(instructions, /never.*substitut.*without.*user/i);
   assert.match(instructions, /user.*undecided.*recommend_models/i);
+  assert.match(instructions, /best-fit.*available.*first/i);
+  assert.match(instructions, /distinct model famil/i);
+  assert.match(instructions, /calculate_project_budget.*before.*(?:cheaper|lower-cost)/i);
   assert.match(instructions, /quality.*clarify.*story|quality.*clarify.*resolution/i);
   assert.match(instructions, /mixed-model.*shot.*rationale/i);
   assert.match(instructions, /aspectRatios.*empty.*omit aspectRatio/i);

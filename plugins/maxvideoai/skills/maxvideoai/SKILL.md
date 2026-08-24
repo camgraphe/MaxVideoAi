@@ -35,7 +35,8 @@ a browser handoff when an image must be added to MaxVideoAI.
   named model's live details, but do not call `recommend_models` or reopen the
   creative decision unless the request is incompatible.
 - If the project is defined but model choices are open, compare current facts
-  and propose a single-model or shot-by-shot approach with a clear rationale.
+  and propose the best-fit available model first, followed by strong alternatives
+  from distinct model families when they genuinely fit the brief.
 - If the user is undecided, discuss the intended result, important quality
   dimensions, budget, speed, audio, references, and model preferences before
   proposing concrete alternatives.
@@ -65,7 +66,9 @@ overall creative quality.
 - Use `get_account_status` when account context matters to the conversation.
 
 Keep the host free to make a creative recommendation. Explain factual tradeoffs
-from the returned results rather than inventing a static model ranking.
+from the returned results rather than inventing a static model ranking. A model
+may lead because of reviewed creative fit, current capabilities, and the user's
+priorities; do not turn that contextual lead into an all-purpose brand ranking.
 
 ## Turn a project into proposals
 
@@ -76,6 +79,12 @@ wants your advice. Do not force generic tier labels. Mix models only when the
 brief or budget benefits, and explain the factual reason for each model on each
 shot. Do not add cheaper alternatives merely for variety when the user has
 prioritized quality.
+
+Use `calculate_project_budget` on comparable concrete proposals before calling
+an alternative cheaper or lower-cost. A remembered price, provider claim, or
+generic tier label is not enough. Present a quality-first proposal even when it
+is not the least expensive, then show validated lower-cost alternatives when
+the user wants budget options and explain what changes shot by shot.
 
 Use `calculate_project_budget` for each concrete video proposal. Supply real
 shot purposes, model IDs, modes, settings, clip counts, references, and a

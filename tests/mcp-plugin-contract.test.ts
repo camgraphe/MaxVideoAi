@@ -92,6 +92,9 @@ test('the shared skill gives hosts conversational, factual guardrails', () => {
   assert.match(skill, /host.*creative/i);
   assert.match(skill, /do not.*model memory/i);
   assert.match(skill, /calculate_project_budget/i);
+  assert.match(skill, /best-fit.*available.*first/i);
+  assert.match(skill, /distinct model famil/i);
+  assert.match(skill, /calculate_project_budget.*before.*(?:cheaper|lower-cost)/is);
   assert.match(skill, /prepare_generation.*confirm_generation/is);
   assert.doesNotMatch(skill, /economy|balanced|premium/i);
 

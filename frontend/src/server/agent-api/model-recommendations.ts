@@ -116,6 +116,30 @@ function describeCandidate(
   return { reasons, tradeoffs };
 }
 
+function selectDiverseShortlist<T extends Readonly<{
+  candidate: AgentModelCandidate;
+}>>(ranked: readonly T[], limit: number): T[] {
+  const selected: T[] = [];
+  const groups = new Set<string>();
+  for (const entry of ranked) {
+    if (groups.has(entry.candidate.selectionGroup)) continue;
+    groups.add(entry.candidate.selectionGroup);
+    selected.push(entry);
+    if (selected.length === limit) break;
+  }
+  return selected;
+}
+
+function reviewedFitDiscoveryRank(
+  candidate: AgentModelCandidate,
+  input: AgentModelRecommendationInput,
+): number {
+  if (!input.useCase || !getAgentModelGuidance(candidate.model.id)?.bestFor.includes(input.useCase)) {
+    return Number.POSITIVE_INFINITY;
+  }
+  return candidate.discoveryRank ?? Number.POSITIVE_INFINITY;
+}
+
 export async function recommendAgentModels(
   input: AgentModelRecommendationInput,
   deps?: AgentModelCatalogDeps,
@@ -142,13 +166,17 @@ export async function recommendAgentModels(
     1,
     ...candidates.map((candidate) => candidate.model.maxDurationSec ?? 0),
   );
-  const ranked = candidates
+  const rankedCandidates = candidates
     .map((candidate) => ({
       candidate,
       score: scoreCandidate(candidate, input, rankedPriorities, preferredModelIds, maximumDurationSec),
     }))
-    .sort((a, b) => b.score - a.score || a.candidate.model.id.localeCompare(b.candidate.model.id))
-    .slice(0, 3);
+    .sort((a, b) =>
+      b.score - a.score ||
+      reviewedFitDiscoveryRank(a.candidate, input) - reviewedFitDiscoveryRank(b.candidate, input) ||
+      a.candidate.model.id.localeCompare(b.candidate.model.id)
+    );
+  const ranked = selectDiverseShortlist(rankedCandidates, 3);
 
   return {
     recommendations: ranked.map(({ candidate }, index) => ({

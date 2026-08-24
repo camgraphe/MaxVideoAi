@@ -9,6 +9,8 @@ import {
 
 const knownEngineIds = new Set([
   'gemini-omni-flash',
+  'happy-horse-1-1',
+  'kling-o3-pro',
   'minimax-h3',
   'seedance-2-5',
 ]);
@@ -29,6 +31,8 @@ test('guidance exposes exactly the reviewed engine records without pricing data'
 
   assert.deepEqual(reviewed.map((entry) => entry.engineId).sort(), [
     'gemini-omni-flash',
+    'happy-horse-1-1',
+    'kling-o3-pro',
     'minimax-h3',
     'seedance-2-5',
   ]);

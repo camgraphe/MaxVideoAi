@@ -61,5 +61,47 @@
       "https://maxvideoai.com/ai-video-engines/gemini-omni-flash-vs-veo-3-1"
     ],
     "reviewedAt": "2026-08-24"
+  },
+  {
+    "engineId": "happy-horse-1-1",
+    "strengths": [
+      "Realistic first-frame animation with smooth motion.",
+      "Reference-led clips for products, characters, and short-form creative."
+    ],
+    "bestFor": [
+      "reference_guided",
+      "product_video",
+      "social_video"
+    ],
+    "considerations": [
+      "Use the current model details to confirm the settings required for the brief."
+    ],
+    "evidenceUrls": [
+      "https://maxvideoai.com/models/happy-horse-1-1",
+      "https://maxvideoai.com/examples/happy-horse"
+    ],
+    "reviewedAt": "2026-08-24"
+  },
+  {
+    "engineId": "kling-o3-pro",
+    "strengths": [
+      "Multi-shot storyboards with precise shot-level direction.",
+      "Reference-led consistency for characters, objects, and scenes.",
+      "Complex narrative instructions with controlled camera changes."
+    ],
+    "bestFor": [
+      "cinematic_story",
+      "multi_shot",
+      "reference_guided",
+      "product_video"
+    ],
+    "considerations": [
+      "Use the current model details to confirm the settings required for the brief."
+    ],
+    "evidenceUrls": [
+      "https://maxvideoai.com/models/kling-o3-pro",
+      "https://maxvideoai.com/examples/kling"
+    ],
+    "reviewedAt": "2026-08-24"
   }
 ]

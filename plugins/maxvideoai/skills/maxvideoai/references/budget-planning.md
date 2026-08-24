@@ -12,6 +12,12 @@ user already chose. Use a mixed plan only when the brief or budget benefits,
 and give every model a shot-specific factual rationale; do not force diversity
 or dilute a quality-first plan merely to show a cheaper option.
 
+When model choice is open, make the best-fit available approach the creative
+baseline. Compare it with genuinely different model families rather than
+several sibling variants. Only describe a proposal as cheaper or lower-cost
+after `calculate_project_budget` has returned comparable current totals for the
+same intended output and creative-attempt assumptions.
+
 Use whole, concrete quantities. Each line needs the selected public model and
 mode, output duration per clip, clip count, settings that matter to the
 request, declared reference use, and attempts per clip. One attempt is the
