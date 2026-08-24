@@ -149,6 +149,65 @@ test('catalog filters against real capabilities', async () => {
   assert.deepEqual(matches.map((model) => model.id), ['video-reference']);
 });
 
+test('mode-scoped catalog filtering uses modeCaps while aggregate discovery stays available', async () => {
+  const splitControls = engine('split-controls', ['t2v', 'i2v'], {
+    maxDurationSec: 12,
+    resolutions: ['720p', '4k'],
+    aspectRatios: ['16:9', '9:16'],
+    audio: true,
+    modeCaps: {
+      t2v: {
+        modes: ['t2v'],
+        duration: { options: [4, 6], default: 4 },
+        resolution: ['720p'],
+        aspectRatio: ['16:9'],
+        audioToggle: false,
+      },
+      i2v: {
+        modes: ['i2v'],
+        duration: { options: [8, 12], default: 8 },
+        resolution: ['4k'],
+        aspectRatio: ['9:16'],
+        audioToggle: true,
+      },
+    },
+  });
+  const catalogDeps = deps([splitControls], { 'split-controls': 'video' });
+
+  assert.deepEqual(
+    await listAgentModels({ mode: 't2v', resolution: '4k' }, catalogDeps),
+    [],
+  );
+  assert.deepEqual(
+    await listAgentModels({ mode: 't2v', aspectRatio: '9:16' }, catalogDeps),
+    [],
+  );
+  assert.deepEqual(
+    await listAgentModels({ mode: 't2v', maxDurationSec: 8 }, catalogDeps),
+    [],
+  );
+
+  const [t2v] = await listAgentModels({ mode: 't2v' }, catalogDeps);
+  assert.deepEqual(t2v, {
+    id: 'split-controls',
+    label: 'split-controls',
+    surface: 'video',
+    modes: ['t2v'],
+    aspectRatios: ['16:9'],
+    resolutions: ['720p'],
+    maxDurationSec: 6,
+    audio: true,
+    referenceImages: false,
+    availability: 'available',
+  });
+
+  const [aggregate] = await listAgentModels({}, catalogDeps);
+  assert.deepEqual(aggregate.aspectRatios, ['16:9', '9:16']);
+  assert.deepEqual(aggregate.resolutions, ['720p', '4k']);
+  assert.equal(aggregate.maxDurationSec, 12);
+  assert.equal(aggregate.referenceImages, true);
+});
+
 test('real Sora 2 Pro never publishes ref2v without an executable mode capability', async () => {
   const registryDeps = realRegistryDeps();
   const [soraModel] = await listAgentModels({ id: 'sora-2-pro' }, registryDeps);

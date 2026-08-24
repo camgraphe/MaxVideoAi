@@ -5,6 +5,7 @@ import {
   getPublicConfiguredEnginesByCategoryInExecutor,
 } from '@/server/engines';
 import { isAgentGenerationEngineExecutable } from '@/server/agent-runtime/model-executability';
+import { normalizeVideoDurationOption } from '@/server/video-generation/execution-constraints';
 import type { EngineCaps, EngineModeUiCaps } from '@/types/engines';
 
 import type { AgentGenerationMode, AgentModel, AgentModelFilter } from './types';
@@ -59,22 +60,43 @@ function referenceImagesSupported(modes: AgentGenerationMode[]): boolean {
   return modes.some((mode) => mode === 'i2v' || mode === 'ref2v' || mode === 'i2i');
 }
 
+function maximumModeDurationSec(
+  caps: EngineModeUiCaps,
+  engineMaximumDurationSec: number,
+): number | null {
+  if (!caps.duration) return null;
+  if (!('options' in caps.duration)) return engineMaximumDurationSec;
+  const numericOptions = caps.duration.options
+    .map(normalizeVideoDurationOption)
+    .filter((value): value is number => typeof value === 'number');
+  if (!numericOptions.length) return null;
+  return Math.min(engineMaximumDurationSec, Math.max(...numericOptions));
+}
+
 function toCandidate(
   engine: EngineCaps,
   surface: 'video' | 'image',
   modes: AgentGenerationMode[],
+  scopedMode?: Readonly<{ mode: AgentGenerationMode; caps: EngineModeUiCaps }>,
 ): AgentModelCandidate {
+  const aspectRatios = scopedMode ? scopedMode.caps.aspectRatio ?? [] : engine.aspectRatios;
+  const resolutions = scopedMode ? scopedMode.caps.resolution ?? [] : engine.resolutions;
+  const maxDurationSec = surface === 'video'
+    ? scopedMode
+      ? maximumModeDurationSec(scopedMode.caps, engine.maxDurationSec)
+      : engine.maxDurationSec
+    : null;
   return {
     model: {
       id: engine.id,
       label: engine.label,
       surface,
-      modes,
-      aspectRatios: [...engine.aspectRatios],
-      resolutions: [...engine.resolutions],
-      maxDurationSec: surface === 'video' ? engine.maxDurationSec : null,
+      modes: scopedMode ? [scopedMode.mode] : modes,
+      aspectRatios: [...aspectRatios],
+      resolutions: [...resolutions],
+      maxDurationSec,
       audio: surface === 'video' && engine.audio,
-      referenceImages: referenceImagesSupported(modes),
+      referenceImages: referenceImagesSupported(scopedMode ? [scopedMode.mode] : modes),
       availability: engine.availability,
     },
     latencyTier: engine.latencyTier,
@@ -142,8 +164,15 @@ export async function listAgentModelCandidates(
   deps: AgentModelCatalogDeps = defaultDeps
 ): Promise<AgentModelCandidate[]> {
   const engines = await listPublicAgentGenerationEngines(deps);
-  return engines.flatMap(({ engine, surface, publicModes: modes }) => {
-    const candidate = toCandidate(engine, surface, modes);
+  return engines.flatMap(({ engine, surface, publicModes: modes, modeCaps }) => {
+    const selectedModeCaps = filter.mode ? modeCaps[filter.mode] : undefined;
+    if (filter.mode && !selectedModeCaps) return [];
+    const candidate = toCandidate(
+      engine,
+      surface,
+      modes,
+      filter.mode && selectedModeCaps ? { mode: filter.mode, caps: selectedModeCaps } : undefined,
+    );
     return matchesFilter(candidate.model, filter) ? [candidate] : [];
   });
 }

@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
+import { listFalEngines } from '../frontend/src/config/falEngines';
+import { getAgentModelDetails } from '../frontend/src/server/agent-api/model-details';
 import { recommendAgentModels } from '../frontend/src/server/agent-api/model-recommendations';
 import type { AgentModelCatalogDeps } from '../frontend/src/server/agent-api/model-catalog';
 import type { EngineCaps } from '../frontend/types/engines';
@@ -62,6 +64,20 @@ function deps(engines: EngineCaps[]): AgentModelCatalogDeps {
   };
 }
 
+function realRegistryDeps(): AgentModelCatalogDeps {
+  const entries = listFalEngines();
+  return {
+    async listEngines() {
+      return entries.map((entry) => entry.engine);
+    },
+    surfaceByEngineId(id) {
+      const entry = entries.find((candidate) => candidate.id === id);
+      if (!entry) return null;
+      return entry.category === 'image' ? 'image' : 'video';
+    },
+  };
+}
+
 test('recommendations keep explicit capabilities as hard constraints and cap stable ties at three', async () => {
   const catalogDeps = deps([
     candidate('hidden-by-mode', { modes: ['t2v'] }),
@@ -86,6 +102,33 @@ test('recommendations keep explicit capabilities as hard constraints and cap sta
   assert.equal(first.recommendations.length, 3);
   assert.equal(first.recommendations.some((entry) => entry.model.id === 'hidden-by-mode'), false);
   assert.ok(first.recommendations[0].reasons.some((reason) => reason.includes('ref2v')));
+});
+
+test('real MiniMax H3 recommendations agree with current per-mode model details', async () => {
+  const catalogDeps = realRegistryDeps();
+  const details = await getAgentModelDetails('minimax-h3', catalogDeps);
+  const t2vDetails = details.modes.find((entry) => entry.mode === 't2v');
+  const i2vDetails = details.modes.find((entry) => entry.mode === 'i2v');
+  assert.ok(t2vDetails);
+  assert.ok(i2vDetails);
+  assert.ok(t2vDetails.aspectRatios.includes('16:9'));
+  assert.deepEqual(i2vDetails.aspectRatios, []);
+
+  const incompatible = await recommendAgentModels(
+    { id: 'minimax-h3', mode: 'i2v', aspectRatio: '16:9' },
+    catalogDeps,
+  );
+  assert.deepEqual(incompatible.recommendations, []);
+  assert.doesNotMatch(JSON.stringify(incompatible), /Supports the requested 16:9 aspect ratio/);
+
+  const compatible = await recommendAgentModels(
+    { id: 'minimax-h3', mode: 't2v', aspectRatio: '16:9' },
+    catalogDeps,
+  );
+  assert.equal(compatible.recommendations[0].model.id, 'minimax-h3');
+  assert.deepEqual(compatible.recommendations[0].model.modes, ['t2v']);
+  assert.deepEqual(compatible.recommendations[0].model.aspectRatios, t2vDetails.aspectRatios);
+  assert.ok(compatible.recommendations[0].reasons.some((reason) => reason.includes('16:9')));
 });
 
 test('compatible preferences are a bounded bonus while exclusions and incompatible preferences stay out', async () => {
