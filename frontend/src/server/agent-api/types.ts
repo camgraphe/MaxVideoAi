@@ -96,12 +96,12 @@ export type AgentModelRecommendation = {
   model: AgentModel;
   reasons: string[];
   tradeoffs: string[];
-  nextAction: 'calculate_project_budget' | 'prepare_generation' | 'clarify_requirements';
+  nextAction: 'calculate_project_budget' | 'discuss_and_choose' | 'clarify_requirements';
 };
 
 export type AgentModelRecommendationResult = {
   recommendations: AgentModelRecommendation[];
-  nextAction: 'calculate_project_budget' | 'prepare_generation' | 'clarify_requirements';
+  nextAction: 'calculate_project_budget' | 'discuss_and_choose' | 'clarify_requirements';
   message?: string;
 };
 

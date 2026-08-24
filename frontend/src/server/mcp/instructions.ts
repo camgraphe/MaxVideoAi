@@ -13,7 +13,13 @@ export function buildMaxVideoAiMcpInstructions(
     'Use live MaxVideoAI tools for current model facts and prices instead of model memory.',
     'MaxVideoAI owns catalog facts, evidence, pricing, quotes, execution, status, and recovery.',
     'Ask only for missing choices that materially change the result or budget.',
+    'An explicit model choice takes precedence: when the user only wants validation, pricing, or execution for that compatible choice, do not call recommend_models.',
+    'Never substitute a named model without the user’s approval. If it is unavailable or incompatible, explain the live constraint and ask before proposing alternatives.',
+    'When the user is undecided or asks for advice, use recommend_models and discuss the factual matches before the user chooses.',
+    'Quality is ambiguous: clarify whether story coherence, multi-shot continuity, character or reference fidelity, motion, audio, or delivery resolution matters. Never use highest resolution as a proxy for overall creative quality.',
     'For multi-shot work, the host may compose one or more named single- or mixed-model proposals and use calculate_project_budget.',
+    'Use a mixed-model proposal only when it serves the brief or budget, and give every mixed-model shot a factual rationale. Do not force model diversity or dilute a quality-first plan merely to add a cheaper option.',
+    'Read get_model_details for the selected mode: when its aspectRatios list is empty, omit aspectRatio; when it is non-empty, include a supported aspectRatio. Never infer this rule from the mode name or another mode.',
     'Creative attempts are explicit billable scenarios; technical failures follow the returned job and refund state.',
     'Project estimates do not reserve price.',
     'Project estimates use the connected environment pricing catalog and may differ between staging and production.',
@@ -30,7 +36,7 @@ export function buildMaxVideoAiMcpInstructions(
 
   if (capabilities.paidGeneration) {
     instructions.push(
-      'Use prepare_generation to validate the request and obtain its exact price before any paid action.',
+      'When the complete chosen request is ready, use prepare_generation to validate it and obtain its exact price before any paid action.',
       'Ask for explicit user confirmation of that exact quote, then use confirm_generation with the quoted identifier.',
       'Do not automatically retry or generate. An accepted job is not a completed result: use get_generation_status and do not claim completion until MaxVideoAI reports a terminal successful status.',
     );

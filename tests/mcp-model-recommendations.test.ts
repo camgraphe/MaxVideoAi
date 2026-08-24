@@ -220,6 +220,24 @@ test('cost intent always routes to current project budgeting without static pric
   assert.doesNotMatch(JSON.stringify(first), /0\.01|0\.49|0\.99|economy|balanced|premium/i);
 });
 
+test('advice leaves the final model choice with the user before any quote preparation', async () => {
+  const result = await recommendAgentModels(
+    {
+      useCase: 'cinematic_story',
+      priorities: ['reference_control'],
+    },
+    deps([
+      candidate('story-model', { modes: ['ref2v'] }),
+      candidate('alternate-model', { modes: ['ref2v'] }),
+    ]),
+  );
+
+  assert.equal(result.nextAction as string, 'discuss_and_choose');
+  assert.ok(result.recommendations.every((entry) => (entry.nextAction as string) === 'discuss_and_choose'));
+  assert.match(result.message ?? '', /user.*choose|choose.*user/i);
+  assert.doesNotMatch(JSON.stringify(result), /prepare_generation/);
+});
+
 test('an incompatible request returns an explicit clarification next action', async () => {
   const result = await recommendAgentModels(
     { surface: 'video', mode: 'ref2v', referenceImages: true },

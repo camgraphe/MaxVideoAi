@@ -120,6 +120,66 @@
     "reason": "A budget ceiling supports discussion and estimation, never quote confirmation or spending."
   },
   {
+    "id": "chosen-model-budget-no-advice",
+    "category": "price_first",
+    "registryProfile": "live-read-only",
+    "prompt": "I already chose Seedance 2.5 for this project. Check its current mode details and calculate the project estimate only; do not recommend alternatives and do not generate anything.",
+    "expectedTools": ["get_model_details", "calculate_project_budget"],
+    "allowedAlternatives": [],
+    "prohibitedTools": ["recommend_models", "prepare_generation", "confirm_generation"],
+    "expectedCapabilityClaims": ["model_details_read_only", "project_budget_read_only", "project_estimate_not_reservation"],
+    "prohibitedClaims": ["exact_quote_live", "generation_live"],
+    "reason": "A user's explicit model choice should be validated and estimated without reopening model selection or spending funds."
+  },
+  {
+    "id": "quality-first-open-choice",
+    "category": "model_comparison",
+    "registryProfile": "live-read-only",
+    "prompt": "I have not chosen a model. For this cinematic multi-shot film, story and character continuity matter more than savings. Recommend current fits, verify their details, and show project budgets without downgrading just to make the plan cheaper.",
+    "expectedTools": ["recommend_models", "get_model_details", "calculate_project_budget"],
+    "allowedAlternatives": ["list_models"],
+    "prohibitedTools": ["prepare_generation", "confirm_generation"],
+    "expectedCapabilityClaims": ["model_recommendations_read_only", "model_details_read_only", "project_budget_read_only", "project_estimate_not_reservation"],
+    "prohibitedClaims": ["exact_quote_live", "generation_live", "provider_acceptance_guaranteed"],
+    "reason": "An open quality-first brief needs factual advice and comparable estimates while preserving the user's final choice."
+  },
+  {
+    "id": "budget-led-mixed-shot-plan",
+    "category": "ambiguous_spending",
+    "registryProfile": "live-read-only",
+    "prompt": "I have a firm budget ceiling. Build a shot-by-shot plan using a premium model for the hero shots and cheaper current models only where their capabilities justify it, then calculate the total without spending anything.",
+    "expectedTools": ["list_models", "get_model_details", "calculate_project_budget"],
+    "allowedAlternatives": ["recommend_models"],
+    "prohibitedTools": ["prepare_generation", "confirm_generation"],
+    "expectedCapabilityClaims": ["public_model_catalog_read_only", "model_details_read_only", "project_budget_read_only", "project_estimate_not_reservation"],
+    "prohibitedClaims": ["exact_quote_live", "generation_live", "payment_through_mcp_live"],
+    "reason": "A budget-led mixed plan needs current catalog facts and a rationale per shot before any paid action."
+  },
+  {
+    "id": "named-model-unavailable-no-substitution",
+    "category": "model_comparison",
+    "registryProfile": "live-read-only",
+    "prompt": "I chose this named MaxVideoAI model. Tell me whether it is usable in the connected environment now; if it is unavailable, explain why and ask me before considering any substitute.",
+    "expectedTools": ["get_model_details"],
+    "allowedAlternatives": [],
+    "prohibitedTools": ["recommend_models", "calculate_project_budget", "prepare_generation", "confirm_generation"],
+    "expectedCapabilityClaims": ["model_details_read_only"],
+    "prohibitedClaims": ["provider_acceptance_guaranteed", "generation_live"],
+    "reason": "A named model should receive a factual availability check without a silent recommendation or substitution."
+  },
+  {
+    "id": "host-designed-generator-only",
+    "category": "direct_maxvideoai",
+    "registryProfile": "future-generation-evaluation",
+    "prompt": "Synthetic gated scenario: Codex and I already finalized the prompt, references, settings, and model. Use MaxVideoAI only to validate the exact request and show its quote; do not recommend another model and do not confirm it.",
+    "expectedTools": ["prepare_generation"],
+    "allowedAlternatives": [],
+    "prohibitedTools": ["recommend_models", "confirm_generation"],
+    "expectedCapabilityClaims": ["future_exact_quote_gated"],
+    "prohibitedClaims": ["exact_quote_live", "generation_live"],
+    "reason": "A host-designed request should reach gated validation directly without reopening creative advice or confirming payment."
+  },
+  {
     "id": "synthetic-explicit-confirmation-sequence",
     "category": "direct_maxvideoai",
     "registryProfile": "future-generation-evaluation",

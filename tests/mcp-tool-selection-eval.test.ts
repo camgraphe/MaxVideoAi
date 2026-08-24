@@ -106,6 +106,28 @@ test('public fixture corpus covers every approved intent with strict labels and 
     corpus.some((fixture) => fixture.expectedTools.includes('get_generation_status')),
     'one synthetic gated scenario should cover status and recovery without retrying'
   );
+  const byId = new Map(corpus.map((fixture) => [fixture.id, fixture]));
+  assert.deepEqual(byId.get('chosen-model-budget-no-advice')?.expectedTools, [
+    'get_model_details',
+    'calculate_project_budget',
+  ]);
+  assert.ok(byId.get('chosen-model-budget-no-advice')?.prohibitedTools.includes('recommend_models'));
+  assert.deepEqual(byId.get('quality-first-open-choice')?.expectedTools, [
+    'recommend_models',
+    'get_model_details',
+    'calculate_project_budget',
+  ]);
+  assert.deepEqual(byId.get('budget-led-mixed-shot-plan')?.expectedTools, [
+    'list_models',
+    'get_model_details',
+    'calculate_project_budget',
+  ]);
+  assert.deepEqual(byId.get('named-model-unavailable-no-substitution')?.expectedTools, [
+    'get_model_details',
+  ]);
+  assert.ok(byId.get('named-model-unavailable-no-substitution')?.prohibitedTools.includes('recommend_models'));
+  assert.deepEqual(byId.get('host-designed-generator-only')?.expectedTools, ['prepare_generation']);
+  assert.ok(byId.get('host-designed-generator-only')?.prohibitedTools.includes('recommend_models'));
   assert.deepEqual(mcpPublication, {
     publicMarketing: false,
     publicIndexing: false,
@@ -289,11 +311,11 @@ test('fixture baseline and empty evidence rows stay separated by registry profil
     assert.equal(entry.forbiddenConfirmRate.rate, 0);
     assert.equal(entry.unsupportedClaimRate.rate, 0);
   }
-  assert.equal(baseline[0].evaluatedFixtures, 17);
-  assert.equal(baseline[0].totalFixtures, 17);
+  assert.equal(baseline[0].evaluatedFixtures, 21);
+  assert.equal(baseline[0].totalFixtures, 21);
   assert.equal(baseline[0].quoteBeforeConfirmRate.rate, null);
-  assert.equal(baseline[1].evaluatedFixtures, 3);
-  assert.equal(baseline[1].totalFixtures, 3);
+  assert.equal(baseline[1].evaluatedFixtures, 4);
+  assert.equal(baseline[1].totalFixtures, 4);
   assert.equal(baseline[1].quoteBeforeConfirmRate.rate, 1);
 
   assert.equal(recorded.hostProfiles.length, 6);
@@ -374,8 +396,8 @@ test('complete live evidence stays complete while future evidence remains absent
   const futureFixtures = corpus.filter(
     (fixture) => fixture.registryProfile === 'future-generation-evaluation'
   );
-  assert.equal(liveFixtures.length, 17);
-  assert.equal(futureFixtures.length, 3);
+  assert.equal(liveFixtures.length, 21);
+  assert.equal(futureFixtures.length, 4);
 
   const liveDecisions = parseDecisionBundle({
     version: 1,
@@ -392,11 +414,11 @@ test('complete live evidence stays complete while future evidence remains absent
   const codexLive = hostProfileScore(liveOnly, 'codex', 'live-read-only');
   const codexFuture = hostProfileScore(liveOnly, 'codex', 'future-generation-evaluation');
   assert.equal(codexLive.evidenceStatus, 'recorded-complete');
-  assert.equal(codexLive.evaluatedFixtures, 17);
-  assert.equal(codexLive.totalFixtures, 17);
+  assert.equal(codexLive.evaluatedFixtures, 21);
+  assert.equal(codexLive.totalFixtures, 21);
   assert.equal(codexFuture.evidenceStatus, 'no-recorded-host-evidence');
   assert.equal(codexFuture.evaluatedFixtures, 0);
-  assert.equal(codexFuture.totalFixtures, 3);
+  assert.equal(codexFuture.totalFixtures, 4);
   assert.equal(aggregateProfileScore(liveOnly, 'live-read-only').evidenceStatus, 'recorded-aggregate-partial');
   assert.equal(
     aggregateProfileScore(liveOnly, 'future-generation-evaluation').evidenceStatus,
@@ -428,7 +450,7 @@ test('complete live evidence stays complete while future evidence remains absent
   const partialFuture = hostProfileScore(withFuture, 'codex', 'future-generation-evaluation');
   assert.equal(partialFuture.evidenceStatus, 'recorded-partial');
   assert.equal(partialFuture.evaluatedFixtures, 1);
-  assert.equal(partialFuture.totalFixtures, 3);
+  assert.equal(partialFuture.totalFixtures, 4);
 });
 
 test('live MCP metadata validation observes five read-only discovery tools and no resources', async () => {

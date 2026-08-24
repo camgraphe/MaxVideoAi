@@ -18,7 +18,7 @@ const settingsSchema = z.object({
     'Requested output resolution supported by the selected model and mode.',
   ),
   aspectRatio: z.string().trim().min(1).max(64).optional().describe(
-    'Requested output aspect ratio. Required when the selected model mode exposes aspect-ratio choices; omit it when image-to-video framing comes from the source image.',
+    'Read the selected mode from get_model_details. If mode.aspectRatios is non-empty, include one supported aspectRatio, including for i2v; if it is empty, omit aspectRatio. Never infer this from the mode name or another mode.',
   ),
   fps: z.number().int().min(1).max(240).optional().describe(
     'Optional requested frames per second when the selected model supports it.',

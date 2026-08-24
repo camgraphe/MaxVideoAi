@@ -1,17 +1,17 @@
 # MaxVideoAI MCP tool-selection scorecard
 
-Status: offline evaluation contract, last checked 2026-07-14. This scorecard is a release gate, not a claim that a
+Status: offline evaluation contract, last checked 2026-08-24. This scorecard is a release gate, not a claim that a
 client integration is publicly available.
 
 ## Current evidence state
 
-The checked-in fixture-only baseline contains 17 public synthetic prompts across 15 approved intent categories. It is
+The checked-in fixture-only baseline contains 25 public synthetic prompts across 15 approved intent categories. It is
 not recorded host evidence: its decisions are generated from the labels themselves to validate the evaluator,
 sequence rules, null handling, and safety counters.
 
 | Evidence source | Registry profile | Sanitized decisions | Evidence status |
 | --- | --- | ---: | --- |
-| Fixture-only baseline | `live-read-only` | 13 synthetic label decisions | Synthetic only |
+| Fixture-only baseline | `live-read-only` | 21 synthetic label decisions | Synthetic only |
 | Fixture-only baseline | `future-generation-evaluation` | 4 synthetic label decisions | Synthetic only |
 | Codex, Claude, other | `live-read-only` | 0 each | No recorded host evidence |
 | Codex, Claude, other | `future-generation-evaluation` | 0 each | No recorded host evidence |
@@ -19,8 +19,9 @@ sequence rules, null handling, and safety counters.
 Codex has no sanitized decisions, Claude has no sanitized decisions, and other hosts have no sanitized decisions in
 either registry profile.
 
-The current server metadata inspection observes only `get_account_status`, `list_models`, and `recommend_models`.
-They are read-only, non-destructive, closed-world tools with narrow positive and negative selection guidance. The
+The current server metadata inspection observes only `get_account_status`, `list_models`, `get_model_details`,
+`recommend_models`, and `calculate_project_budget`. They are read-only, non-destructive, closed-world tools with
+narrow positive and negative selection guidance. The
 server advertises no MCP resources. `prepare_generation` and `confirm_generation` appear only in fixtures whose
 profile is `future-generation-evaluation`; that profile is not live and is not a public capability claim. All MCP
 publication flags remain false.
@@ -38,7 +39,7 @@ profile:
 The proposed quality gates are selection precision at least 0.90 and selection recall at least 0.85 for each
 host/profile row and its profile-scoped aggregate. Manual approval of these two quality targets is pending; no public
 host-compatibility claim may use them until an owner approves the targets and real sanitized host decisions meet them.
-A complete `live-read-only` result requires all 13 live fixtures for that host. A complete
+A complete `live-read-only` result requires all 21 live fixtures for that host. A complete
 `future-generation-evaluation` result requires all four future fixtures for that host. Completion in one profile never
 fills or improves the other profile.
 
@@ -64,7 +65,7 @@ quality target. A host with no confirmation scenario receives `null`, not a pass
 Aggregate rates are calculated from aggregate numerators and denominators within each registry profile, not by
 averaging host percentages. The evaluator never mixes `live-read-only` evidence with
 `future-generation-evaluation` expectations. There is deliberately no cross-profile aggregate: hypothetical future
-tool behavior cannot improve or degrade evidence for the three-tool live registry.
+tool behavior cannot improve or degrade evidence for the five-tool live registry.
 
 ## Privacy-safe recorded evidence
 
@@ -117,16 +118,16 @@ The current labels produce the following evaluator self-check:
 
 | Registry profile | Metric | Numerator | Denominator | Rate |
 | --- | --- | ---: | ---: | ---: |
-| `live-read-only` | Selection precision | 7 | 7 | 1.00 |
-| `live-read-only` | Selection recall | 7 | 7 | 1.00 |
-| `live-read-only` | Forbidden confirmation | 0 | 13 | 0 |
+| `live-read-only` | Selection precision | 25 | 25 | 1.00 |
+| `live-read-only` | Selection recall | 25 | 25 | 1.00 |
+| `live-read-only` | Forbidden confirmation | 0 | 21 | 0 |
 | `live-read-only` | Quote before confirmation | 0 | 0 | `null` |
-| `live-read-only` | Unsupported capability claims | 0 | 18 | 0 |
-| `future-generation-evaluation` | Selection precision | 8 | 8 | 1.00 |
-| `future-generation-evaluation` | Selection recall | 8 | 8 | 1.00 |
+| `live-read-only` | Unsupported capability claims | 0 | 43 | 0 |
+| `future-generation-evaluation` | Selection precision | 5 | 5 | 1.00 |
+| `future-generation-evaluation` | Selection recall | 5 | 5 | 1.00 |
 | `future-generation-evaluation` | Forbidden confirmation | 0 | 3 | 0 |
 | `future-generation-evaluation` | Quote before confirmation | 1 | 1 | 1.00 |
-| `future-generation-evaluation` | Unsupported capability claims | 0 | 7 | 0 |
+| `future-generation-evaluation` | Unsupported capability claims | 0 | 5 | 0 |
 
 These values prove only that the labels and scoring implementation agree. They do not measure host behavior. Until
 sanitized recorded decisions are imported, the evaluator still emits Codex, Claude, other-host, and aggregate rows for

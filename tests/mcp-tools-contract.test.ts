@@ -163,7 +163,7 @@ function assertRecommendationResult(value: unknown): void {
   assert.ok(Array.isArray(result.recommendations));
   assert.ok(
     result.nextAction === 'calculate_project_budget'
-      || result.nextAction === 'prepare_generation'
+      || result.nextAction === 'discuss_and_choose'
       || result.nextAction === 'clarify_requirements',
   );
   for (const recommendation of result.recommendations) {
@@ -231,19 +231,25 @@ test('server advertises only the five read-only discovery tools with narrow guid
   const proposalItem = record(record(proposalSchema).items);
   const lineSchema = record(record(record(proposalItem.properties).lines).items);
   const settingsSchema = record(record(lineSchema.properties).settings);
+  const aspectRatioSchema = record(record(settingsSchema.properties).aspectRatio);
   const audioSchema = record(record(settingsSchema.properties).audio);
+  assert.match(String(aspectRatioSchema.description), /aspectRatios.*non-empty.*include/i);
+  assert.match(String(aspectRatioSchema.description), /empty.*omit/i);
   assert.match(String(audioSchema.description), /omit.*always_generated/i);
   assert.match(connected.client.getInstructions() ?? '', /prompt drafting.*host agent/i);
   assert.match(connected.client.getInstructions() ?? '', /generation is not available/i);
 
   const recommendationTool = result.tools.find((tool) => tool.name === 'recommend_models');
   assert.ok(recommendationTool);
+  assert.match(recommendationTool.description ?? '', /undecided|asks.*advice/i);
+  assert.match(recommendationTool.description ?? '', /already chose.*do not use|do not use.*already chose/i);
   assert.equal(recommendationTool.inputSchema.additionalProperties, false);
   const recommendationProperties = record(recommendationTool.inputSchema.properties);
   for (const field of ['useCase', 'priorities', 'preferredModelIds', 'excludedModelIds', 'budgetCeilingCents']) {
     assert.equal(typeof record(recommendationProperties[field]).description, 'string');
   }
   assert.match(String(record(recommendationProperties.priorities).description), /ordered/i);
+  assert.match(String(record(recommendationProperties.priorities).description), /not.*proxy.*quality/i);
 });
 
 test('tools return structured content and pass validated filters to facade services', async (t) => {

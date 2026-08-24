@@ -125,6 +125,13 @@ export async function inspectLiveMcpMetadata(): Promise<RegistryEvidence> {
       toolByName.get('recommend_models')?.description,
       /exact quote.*generation command.*provider.*accept/i
     );
+    const recommendationDescription = toolByName.get('recommend_models')?.description ?? '';
+    if (!/user is undecided.*asks for advice/i.test(recommendationDescription)) {
+      throw new Error('recommend_models must be scoped to undecided or advice-seeking users');
+    }
+    if (!/do not use.*user already chose.*validation.*pricing.*execution/i.test(recommendationDescription)) {
+      throw new Error('recommend_models must preserve an explicit compatible model choice');
+    }
     assertToolDescription(
       'calculate_project_budget',
       toolByName.get('calculate_project_budget')?.description,
@@ -146,6 +153,18 @@ export async function inspectLiveMcpMetadata(): Promise<RegistryEvidence> {
     }
     if (!/recommendations are capability matches, not quotes or guarantees/i.test(instructions)) {
       throw new Error('server instructions must reject quote and provider guarantees');
+    }
+    if (!/explicit model choice.*do not call recommend_models/i.test(instructions)) {
+      throw new Error('server instructions must preserve an explicit model choice');
+    }
+    if (!/never substitute a named model without the user’s approval/i.test(instructions)) {
+      throw new Error('server instructions must prohibit silent model substitution');
+    }
+    if (!/quality is ambiguous.*clarify.*story coherence.*delivery resolution/i.test(instructions)) {
+      throw new Error('server instructions must clarify quality instead of inferring it from resolution');
+    }
+    if (!/aspectRatios list is empty, omit aspectRatio.*non-empty, include a supported aspectRatio/i.test(instructions)) {
+      throw new Error('server instructions must follow selected-mode aspect-ratio details literally');
     }
 
     const resourcesAdvertised = Boolean(client.getServerCapabilities()?.resources);

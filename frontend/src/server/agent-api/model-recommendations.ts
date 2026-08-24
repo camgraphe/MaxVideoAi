@@ -136,7 +136,7 @@ export async function recommendAgentModels(
   }
 
   const hasCostIntent = prioritySet.has('lower_cost') || typeof input.budgetCeilingCents === 'number';
-  const nextAction = hasCostIntent ? 'calculate_project_budget' : 'prepare_generation';
+  const nextAction = hasCostIntent ? 'calculate_project_budget' : 'discuss_and_choose';
   const rankedPriorities = priorities.filter((priority) => priority !== 'lower_cost');
   const maximumDurationSec = Math.max(
     1,
@@ -160,6 +160,6 @@ export async function recommendAgentModels(
     nextAction,
     ...(hasCostIntent
       ? { message: 'Use calculate_project_budget to calculate current comparable scenarios before choosing a production plan.' }
-      : {}),
+      : { message: 'Discuss these factual matches and let the user choose before preparing any generation.' }),
   };
 }

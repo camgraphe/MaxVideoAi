@@ -33,7 +33,7 @@ const inputSchema = z.object({
     'reference_control',
     'longer_clips',
     'lower_cost',
-  ])).max(6).optional().describe('Ordered factual priorities, most important first. Use lower_cost to request a project budget, not a price guess.'),
+  ])).max(6).optional().describe('Ordered user-stated factual priorities, most important first. highest_resolution applies only when delivery resolution matters and is not a proxy for overall creative quality. Use lower_cost to request a project budget, not a price guess.'),
   preferredModelIds: z.array(z.string().trim().min(1).max(128)).max(10).optional()
     .describe('Up to ten public model IDs the user would like considered when compatible.'),
   excludedModelIds: z.array(z.string().trim().min(1).max(128)).max(10).optional()
@@ -52,7 +52,7 @@ export function registerRecommendModelsTool(
     {
       title: 'Recommend MaxVideoAI models',
       description:
-        'Use this when the user wants up to three public models matched to a creative goal and factual capabilities. Ask about missing goals, preferences, or budget; use calculate_project_budget for current costs. Do not use it as an exact quote, a generation command, or a claim that a provider will accept a job.',
+        'Use this when the user is undecided, asks for advice, or wants up to three public models matched to a creative goal and factual capabilities. Ask only about missing goals, preferences, or budget; use calculate_project_budget for current costs. Do not use it when the user already chose a compatible model and only wants validation, pricing, or execution. Do not use it as an exact quote, a generation command, or a claim that a provider will accept a job.',
       inputSchema,
       annotations: {
         readOnlyHint: true,

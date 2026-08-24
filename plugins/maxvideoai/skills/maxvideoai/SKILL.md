@@ -28,6 +28,25 @@ not create reference images. Use `list_media` to inspect existing private media
 when that capability is available. Use `create_reference_upload_link` only for
 a browser handoff when an image must be added to MaxVideoAI.
 
+## Follow the user's decision state
+
+- If the user and host already chose the model, prompt, references, and
+  settings, treat MaxVideoAI as the validator, pricer, and generator. Check the
+  named model's live details, but do not call `recommend_models` or reopen the
+  creative decision unless the request is incompatible.
+- If the project is defined but model choices are open, compare current facts
+  and propose a single-model or shot-by-shot approach with a clear rationale.
+- If the user is undecided, discuss the intended result, important quality
+  dimensions, budget, speed, audio, references, and model preferences before
+  proposing concrete alternatives.
+
+Never silently substitute a named model. If it is unavailable or incompatible,
+explain the live constraint and ask permission before suggesting alternatives.
+"Quality" is not one setting: clarify whether the user means story coherence,
+multi-shot continuity, character or reference fidelity, motion, audio, or
+delivery resolution. Do not treat the highest output resolution as a proxy for
+overall creative quality.
+
 ## Use current facts deliberately
 
 - Use `list_models` with a small `limit` to build a focused current shortlist.
@@ -37,7 +56,10 @@ a browser handoff when an image must be added to MaxVideoAI.
 - Use `get_model_details` before relying on a model-specific setting or making
   a detailed comparison. For budget or generation settings, omit `audio` when
   the selected mode reports `always_generated` or `unavailable`; send an audio
-  choice only when the mode reports `optional`.
+  choice only when the mode reports `optional`. Read that selected mode's
+  `aspectRatios` literally: include one supported `aspectRatio` when the list is
+  non-empty, including for i2v, and omit it when the list is empty. Never infer
+  this from the mode name or copy settings from another mode.
 - Use `recommend_models` when the user is open to suggestions or needs an
   evidence-backed match to their creative priorities.
 - Use `get_account_status` when account context matters to the conversation.
@@ -50,7 +72,10 @@ from the returned results rather than inventing a static model ranking.
 For multi-shot work, offer one to four named approaches that reflect the
 user's brief. A proposal can use one model or mix models by shot purpose. Ask
 whether the user has a firm ceiling, a target range, a preferred model, or
-wants your advice. Do not force generic tier labels.
+wants your advice. Do not force generic tier labels. Mix models only when the
+brief or budget benefits, and explain the factual reason for each model on each
+shot. Do not add cheaper alternatives merely for variety when the user has
+prioritized quality.
 
 Use `calculate_project_budget` for each concrete video proposal. Supply real
 shot purposes, model IDs, modes, settings, clip counts, references, and a

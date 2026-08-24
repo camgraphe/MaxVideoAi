@@ -79,6 +79,13 @@ test('instructions never advertise paid generation when its gate is closed', asy
   assert.match(instructions, /connected environment.*may differ.*staging.*production/i);
   assert.match(instructions, /always_generated.*omit settings\.audio/i);
   assert.match(instructions, /optional.*settings\.audio/i);
+  assert.match(instructions, /explicit model choice.*do not.*recommend_models/i);
+  assert.match(instructions, /never.*substitut.*without.*user/i);
+  assert.match(instructions, /user.*undecided.*recommend_models/i);
+  assert.match(instructions, /quality.*clarify.*story|quality.*clarify.*resolution/i);
+  assert.match(instructions, /mixed-model.*shot.*rationale/i);
+  assert.match(instructions, /aspectRatios.*empty.*omit aspectRatio/i);
+  assert.match(instructions, /aspectRatios.*non-empty.*supported aspectRatio/i);
   assert.match(instructions, /generation is not available/i);
   assert.doesNotMatch(instructions, /use prepare_generation/i);
   assert.doesNotMatch(instructions, /use list_media/i);
@@ -96,6 +103,7 @@ test('instructions describe the exact quote and confirmation flow when paid gene
   assert.match(instructions, /use confirm_generation/i);
   assert.match(instructions, /do not claim completion/i);
   assert.match(instructions, /do not automatically retry/i);
+  assert.match(instructions, /complete.*chosen request.*prepare_generation/i);
 });
 
 test('instructions distinguish private selection from the browser upload handoff', async () => {
