@@ -116,14 +116,30 @@ export async function inspectLiveMcpMetadata(): Promise<RegistryEvidence> {
       /generation.*exact pricing.*private models.*provider guarantees/i
     );
     assertToolDescription(
+      'get_model_details',
+      toolByName.get('get_model_details')?.description,
+      /pricing.*generation.*hidden models.*provider guarantees/i
+    );
+    assertToolDescription(
       'recommend_models',
       toolByName.get('recommend_models')?.description,
       /exact quote.*generation command.*provider.*accept/i
     );
+    assertToolDescription(
+      'calculate_project_budget',
+      toolByName.get('calculate_project_budget')?.description,
+      /invent the creative plan.*reserve a price.*generation quote.*wallet.*spend funds/i
+    );
 
     const instructions = client.getInstructions() ?? '';
-    if (!/prompt drafting remains the host agent's responsibility/i.test(instructions)) {
-      throw new Error('server instructions must keep prompt drafting with the host agent');
+    if (!/host owns creative discussion, scripts, prompts, shot plans, and reference ideas/i.test(instructions)) {
+      throw new Error('server instructions must keep creative work with the host agent');
+    }
+    if (!/live MaxVideoAI tools for current model facts and prices instead of model memory/i.test(instructions)) {
+      throw new Error('server instructions must require live facts and prices');
+    }
+    if (!/project estimates do not reserve price/i.test(instructions)) {
+      throw new Error('server instructions must distinguish project estimates from quotes');
     }
     if (!/generation is not available/i.test(instructions)) {
       throw new Error('server instructions must say generation is unavailable');

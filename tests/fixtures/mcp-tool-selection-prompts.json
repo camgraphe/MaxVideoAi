@@ -12,16 +12,16 @@
     "reason": "The live account tool can answer connection and funding state without charging or generating."
   },
   {
-    "id": "direct-maxvideoai-price-plan",
+    "id": "complete-generation-exact-price",
     "category": "direct_maxvideoai",
     "registryProfile": "future-generation-evaluation",
-    "prompt": "Use MaxVideoAI to choose a video model and prepare the exact price, but stop before generation.",
-    "expectedTools": ["recommend_models", "prepare_generation"],
-    "allowedAlternatives": ["list_models"],
-    "prohibitedTools": ["confirm_generation"],
-    "expectedCapabilityClaims": ["model_recommendations_read_only", "future_exact_quote_gated"],
+    "prompt": "Synthetic gated scenario: generate this complete 8-second 16:9 Seedance 2.5 request and show its exact MaxVideoAI price first; I already chose the model.",
+    "expectedTools": ["prepare_generation"],
+    "allowedAlternatives": [],
+    "prohibitedTools": ["recommend_models", "confirm_generation"],
+    "expectedCapabilityClaims": ["future_exact_quote_gated"],
     "prohibitedClaims": ["exact_quote_live", "generation_live"],
-    "reason": "This is a future gated quote-selection scenario; explicit confirmation is deliberately absent."
+    "reason": "A complete request needs its gated exact quote without forcing a new recommendation or confirmation."
   },
   {
     "id": "indirect-video-creative-choice",
@@ -54,7 +54,7 @@
     "prompt": "Rewrite my idea as a concise cinematic prompt; do not choose a model or use MaxVideoAI.",
     "expectedTools": [],
     "allowedAlternatives": [],
-    "prohibitedTools": ["get_account_status", "list_models", "recommend_models", "prepare_generation", "confirm_generation"],
+    "prohibitedTools": ["get_account_status", "list_models", "get_model_details", "recommend_models", "calculate_project_budget", "list_media", "create_reference_upload_link", "prepare_generation", "confirm_generation", "get_generation_status", "list_recent_generations", "create_topup_link"],
     "expectedCapabilityClaims": ["host_prompt_drafting_only"],
     "prohibitedClaims": ["generation_live", "exact_quote_live"],
     "reason": "Prompt drafting belongs to the host agent and the user explicitly excluded model selection."
@@ -66,7 +66,7 @@
     "prompt": "Trim my local source video, replace its background, preserve the original motion, and export it.",
     "expectedTools": [],
     "allowedAlternatives": [],
-    "prohibitedTools": ["get_account_status", "list_models", "recommend_models", "prepare_generation", "confirm_generation"],
+    "prohibitedTools": ["get_account_status", "list_models", "get_model_details", "recommend_models", "calculate_project_budget", "list_media", "create_reference_upload_link", "prepare_generation", "confirm_generation", "get_generation_status", "list_recent_generations", "create_topup_link"],
     "expectedCapabilityClaims": ["unsupported_by_live_registry"],
     "prohibitedClaims": ["generation_live", "universal_model_support"],
     "reason": "The live read-only registry exposes no source-video editing, upload, export, or generation tool."
@@ -78,7 +78,7 @@
     "prompt": "Remove room noise from this podcast recording and return a mastered WAV file.",
     "expectedTools": [],
     "allowedAlternatives": [],
-    "prohibitedTools": ["get_account_status", "list_models", "recommend_models", "prepare_generation", "confirm_generation"],
+    "prohibitedTools": ["get_account_status", "list_models", "get_model_details", "recommend_models", "calculate_project_budget", "list_media", "create_reference_upload_link", "prepare_generation", "confirm_generation", "get_generation_status", "list_recent_generations", "create_topup_link"],
     "expectedCapabilityClaims": ["unsupported_by_live_registry"],
     "prohibitedClaims": ["audio_editing_live", "generation_live"],
     "reason": "Model audio capability metadata does not provide audio cleanup, mastering, or file export."
@@ -90,34 +90,34 @@
     "prompt": "Turn this contract PDF into a redlined Word document and preserve every tracked change.",
     "expectedTools": [],
     "allowedAlternatives": [],
-    "prohibitedTools": ["get_account_status", "list_models", "recommend_models", "prepare_generation", "confirm_generation"],
+    "prohibitedTools": ["get_account_status", "list_models", "get_model_details", "recommend_models", "calculate_project_budget", "list_media", "create_reference_upload_link", "prepare_generation", "confirm_generation", "get_generation_status", "list_recent_generations", "create_topup_link"],
     "expectedCapabilityClaims": ["unsupported_by_live_registry"],
     "prohibitedClaims": ["document_processing_live", "generation_live"],
     "reason": "Document conversion and redlining are outside the live MaxVideoAI MCP tool registry."
   },
   {
-    "id": "budget-video-with-reference",
+    "id": "reference-led-product-plan",
     "category": "price_first",
-    "registryProfile": "future-generation-evaluation",
-    "prompt": "Help me plan a low-cost product video from this reference image and show the price first.",
-    "expectedTools": ["recommend_models", "prepare_generation"],
+    "registryProfile": "live-read-only",
+    "prompt": "Plan a reference-led product video from my existing brand image. Check the compatible model details, then budget the shots; do not upload anything yet.",
+    "expectedTools": ["get_model_details", "calculate_project_budget"],
     "allowedAlternatives": ["list_models"],
-    "prohibitedTools": ["confirm_generation"],
-    "expectedCapabilityClaims": ["future_exact_quote_gated", "model_specific_reference_support"],
-    "prohibitedClaims": ["exact_quote_live", "reference_upload_live", "generation_live"],
-    "reason": "The user asked for planning and price, not spending; future quote behavior remains gated."
+    "prohibitedTools": ["create_reference_upload_link", "prepare_generation", "confirm_generation"],
+    "expectedCapabilityClaims": ["model_details_read_only", "project_budget_read_only", "project_estimate_not_reservation", "model_specific_reference_support"],
+    "prohibitedClaims": ["reference_upload_live", "exact_quote_live", "generation_live"],
+    "reason": "A reference-led proposal needs factual compatibility and a read-only budget, not a private upload."
   },
   {
-    "id": "ambiguous-budget-no-spend",
+    "id": "under-forty-no-spend",
     "category": "ambiguous_spending",
-    "registryProfile": "future-generation-evaluation",
-    "prompt": "Maybe make a short clip for under one dollar, but do not spend anything until I decide.",
-    "expectedTools": ["recommend_models", "prepare_generation"],
-    "allowedAlternatives": ["list_models"],
-    "prohibitedTools": ["confirm_generation"],
-    "expectedCapabilityClaims": ["future_exact_quote_gated"],
+    "registryProfile": "live-read-only",
+    "prompt": "I have under $40 and do not spend anything. Recommend credible approaches, then calculate project budgets so I can choose.",
+    "expectedTools": ["recommend_models", "calculate_project_budget"],
+    "allowedAlternatives": ["list_models", "get_model_details"],
+    "prohibitedTools": ["prepare_generation", "confirm_generation"],
+    "expectedCapabilityClaims": ["model_recommendations_read_only", "project_budget_read_only", "project_estimate_not_reservation"],
     "prohibitedClaims": ["payment_through_mcp_live", "generation_live"],
-    "reason": "A budget ceiling permits planning and a future quote, but it is not permission to confirm."
+    "reason": "A budget ceiling supports discussion and estimation, never quote confirmation or spending."
   },
   {
     "id": "synthetic-explicit-confirmation-sequence",
@@ -161,11 +161,47 @@
     "registryProfile": "live-read-only",
     "prompt": "Compare current public video models for duration, resolution, audio, references, speed, and quality.",
     "expectedTools": ["list_models", "recommend_models"],
-    "allowedAlternatives": [],
+    "allowedAlternatives": ["get_model_details"],
     "prohibitedTools": ["prepare_generation", "confirm_generation"],
     "expectedCapabilityClaims": ["public_model_catalog_read_only", "model_recommendations_read_only"],
     "prohibitedClaims": ["provider_acceptance_guaranteed", "exact_quote_live"],
     "reason": "Catalog facts should be inspected before a constraint-based shortlist, without quoting or generating."
+  },
+  {
+    "id": "sixty-second-two-current-plans",
+    "category": "model_comparison",
+    "registryProfile": "live-read-only",
+    "prompt": "I need a 60-second film. Build two named current-model production plans, verify their details, and calculate each project budget before I decide.",
+    "expectedTools": ["list_models", "get_model_details", "calculate_project_budget"],
+    "allowedAlternatives": ["recommend_models"],
+    "prohibitedTools": ["prepare_generation", "confirm_generation"],
+    "expectedCapabilityClaims": ["public_model_catalog_read_only", "model_details_read_only", "project_budget_read_only", "project_estimate_not_reservation"],
+    "prohibitedClaims": ["exact_quote_live", "generation_live"],
+    "reason": "A multi-shot comparison needs current inventory, exact capability details, and read-only proposal totals."
+  },
+  {
+    "id": "seedance-versus-h3-fit",
+    "category": "model_comparison",
+    "registryProfile": "live-read-only",
+    "prompt": "I prefer Seedance 2.5, but tell me whether H3 is a better fit for this character-led product film.",
+    "expectedTools": ["get_model_details", "recommend_models"],
+    "allowedAlternatives": [],
+    "prohibitedTools": ["prepare_generation", "confirm_generation"],
+    "expectedCapabilityClaims": ["model_details_read_only", "model_recommendations_read_only"],
+    "prohibitedClaims": ["provider_acceptance_guaranteed", "generation_live"],
+    "reason": "The host should verify the named models and then return a factual fit recommendation, not a price or job."
+  },
+  {
+    "id": "synthetic-generation-status-recovery",
+    "category": "direct_maxvideoai",
+    "registryProfile": "future-generation-evaluation",
+    "prompt": "Synthetic gated scenario: the user already has a MaxVideoAI job ID and asks for its current result or refund state; do not create another generation.",
+    "expectedTools": ["get_generation_status"],
+    "allowedAlternatives": ["list_recent_generations"],
+    "prohibitedTools": ["prepare_generation", "confirm_generation"],
+    "expectedCapabilityClaims": ["future_generation_status_gated"],
+    "prohibitedClaims": ["generation_live", "provider_acceptance_guaranteed"],
+    "reason": "Recovery is a synthetic gated status lookup and must not turn into an automatic retry or a new charge."
   },
   {
     "id": "unrelated-typescript-debugging",
@@ -174,7 +210,7 @@
     "prompt": "Find the TypeScript type error in this reducer and suggest the smallest safe code fix.",
     "expectedTools": [],
     "allowedAlternatives": [],
-    "prohibitedTools": ["get_account_status", "list_models", "recommend_models", "prepare_generation", "confirm_generation"],
+    "prohibitedTools": ["get_account_status", "list_models", "get_model_details", "recommend_models", "calculate_project_budget", "list_media", "create_reference_upload_link", "prepare_generation", "confirm_generation", "get_generation_status", "list_recent_generations", "create_topup_link"],
     "expectedCapabilityClaims": ["no_maxvideoai_tool_needed"],
     "prohibitedClaims": ["generation_live", "universal_model_support"],
     "reason": "A local coding task has no video, image, account, catalog, pricing, or generation intent."
@@ -186,7 +222,7 @@
     "prompt": "Research current European accessibility rules and cite the primary legal sources.",
     "expectedTools": [],
     "allowedAlternatives": [],
-    "prohibitedTools": ["get_account_status", "list_models", "recommend_models", "prepare_generation", "confirm_generation"],
+    "prohibitedTools": ["get_account_status", "list_models", "get_model_details", "recommend_models", "calculate_project_budget", "list_media", "create_reference_upload_link", "prepare_generation", "confirm_generation", "get_generation_status", "list_recent_generations", "create_topup_link"],
     "expectedCapabilityClaims": ["no_maxvideoai_tool_needed"],
     "prohibitedClaims": ["generation_live", "document_processing_live"],
     "reason": "General legal research requires authoritative sources, not a MaxVideoAI model-catalog tool."
@@ -198,7 +234,7 @@
     "prompt": "Crop this local PNG to 1200 by 630 pixels and remove the white border without generating a new image.",
     "expectedTools": [],
     "allowedAlternatives": [],
-    "prohibitedTools": ["get_account_status", "list_models", "recommend_models", "prepare_generation", "confirm_generation"],
+    "prohibitedTools": ["get_account_status", "list_models", "get_model_details", "recommend_models", "calculate_project_budget", "list_media", "create_reference_upload_link", "prepare_generation", "confirm_generation", "get_generation_status", "list_recent_generations", "create_topup_link"],
     "expectedCapabilityClaims": ["no_maxvideoai_tool_needed"],
     "prohibitedClaims": ["generation_live", "reference_upload_live"],
     "reason": "Deterministic local pixel editing does not require any live MaxVideoAI MCP capability."

@@ -68,9 +68,19 @@ async function getInstructions(options: MaxVideoAiMcpServerOptions): Promise<str
 test('instructions never advertise paid generation when its gate is closed', async () => {
   const instructions = await getInstructions({ paidGeneration: false, referenceUploads: false });
 
+  assert.match(instructions, /host owns creative discussion, scripts, prompts, shot plans, and reference ideas/i);
+  assert.match(instructions, /host may help create or select reference images/i);
+  assert.match(instructions, /live MaxVideoAI tools for current model facts and prices instead of model memory/i);
+  assert.match(instructions, /ask only for missing choices that materially change the result or budget/i);
+  assert.match(instructions, /named single- or mixed-model proposals.*calculate_project_budget/i);
+  assert.match(instructions, /creative attempts are explicit billable scenarios/i);
+  assert.match(instructions, /technical failures follow the returned job and refund state/i);
+  assert.match(instructions, /project estimates do not reserve price/i);
   assert.match(instructions, /generation is not available/i);
   assert.doesNotMatch(instructions, /use prepare_generation/i);
   assert.doesNotMatch(instructions, /use list_media/i);
+  assert.doesNotMatch(instructions, /economy|balanced|premium/i);
+  assert.doesNotMatch(instructions, /fixed questionnaire|automatic retr(?:y|ies)|automatic generation|custom ui/i);
 });
 
 test('instructions describe the exact quote and confirmation flow when paid generation is enabled', async () => {
@@ -82,6 +92,7 @@ test('instructions describe the exact quote and confirmation flow when paid gene
   assert.match(instructions, /explicit user confirmation/i);
   assert.match(instructions, /use confirm_generation/i);
   assert.match(instructions, /do not claim completion/i);
+  assert.match(instructions, /do not automatically retry/i);
 });
 
 test('instructions distinguish private selection from the browser upload handoff', async () => {
@@ -92,4 +103,5 @@ test('instructions distinguish private selection from the browser upload handoff
   assert.match(instructions, /do not upload images with list_media/i);
   assert.match(instructions, /use create_reference_upload_link/i);
   assert.match(instructions, /short-lived.*browser handoff/i);
+  assert.match(instructions, /does not create reference images/i);
 });

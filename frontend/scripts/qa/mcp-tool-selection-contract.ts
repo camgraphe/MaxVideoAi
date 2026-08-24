@@ -19,12 +19,19 @@ export const ALL_FIXTURE_CATEGORIES = [
 export const LIVE_TOOL_NAMES = [
   'get_account_status',
   'list_models',
+  'get_model_details',
   'recommend_models',
+  'calculate_project_budget',
 ] as const;
 
 export const FUTURE_GATED_TOOL_NAMES = [
+  'list_media',
+  'create_reference_upload_link',
   'prepare_generation',
   'confirm_generation',
+  'get_generation_status',
+  'list_recent_generations',
+  'create_topup_link',
 ] as const;
 
 const ALL_EVALUATION_TOOL_NAMES = [...LIVE_TOOL_NAMES, ...FUTURE_GATED_TOOL_NAMES] as const;
@@ -33,13 +40,17 @@ export const RECORDED_HOSTS = ['codex', 'claude', 'other'] as const;
 const CAPABILITY_CLAIMS = [
   'account_status_read_only',
   'public_model_catalog_read_only',
+  'model_details_read_only',
   'model_recommendations_read_only',
+  'project_budget_read_only',
+  'project_estimate_not_reservation',
   'host_prompt_drafting_only',
   'unsupported_by_live_registry',
   'no_maxvideoai_tool_needed',
   'generation_not_live',
   'future_exact_quote_gated',
   'future_confirmation_gated',
+  'future_generation_status_gated',
   'model_specific_reference_support',
   'model_specific_audio_support',
   'generation_live',
