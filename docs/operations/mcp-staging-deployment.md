@@ -150,8 +150,10 @@ The wrapper waits for `READY` and rejects the candidate unless all pre-promotion
 checks pass: the deployment belongs to `maxvideoai-mcp-staging`, the API cron
 list is empty, both metadata values exactly match the current clean approved
 `HEAD`, and the direct candidate origin is anonymous and carries the exact
-global noindex header. Missing or mismatched provenance aborts before
-promotion. Only then does it call `vercel promote`.
+global noindex header. It also calls the candidate discovery and direct MCP
+route with the unaliased host: both must fail closed with HTTP `404` while
+retaining the exact noindex header. Missing or mismatched provenance or headers
+abort before promotion. Only then does it call `vercel promote`.
 
 To resume validation of an already-created unaliased candidate, use
 `bash scripts/deploy-mcp-staging-vercel.sh --candidate dpl_ID` from the same
@@ -161,11 +163,12 @@ checks, including exact `mcpApprovedGitSha` and
 candidates that lack those values.
 
 After promotion the wrapper proves that the stable alias resolves to the same
-candidate, rechecks the noindex header, OAuth protected-resource metadata, and
-the unauthenticated MCP challenge, then compares the production project's
-settings, domains, and Deployment Protection with the baseline captured before
-packaging. Temporary files, local Vercel links, and downloaded OIDC material
-are removed by a trap. No environment-variable value is read or printed.
+candidate, rechecks the exact noindex header on the root, OAuth
+protected-resource metadata, and unauthenticated MCP challenge, then compares
+the production project's settings, domains, and Deployment Protection with the
+baseline captured before packaging. Temporary files, local Vercel links, and
+downloaded OIDC material are removed by a trap. No environment-variable value
+is read or printed.
 
 The acceptance conditions are all mandatory:
 
@@ -173,7 +176,8 @@ The acceptance conditions are all mandatory:
 - `mcpApprovedGitSha` and `mcpTrackedArchiveSha256` match the current clean
   tracked revision exactly;
 - its cron list is empty;
-- every response includes `X-Robots-Tag: noindex, nofollow, noarchive`;
+- the tested root, protected-resource discovery, and MCP protocol responses
+  include exact `X-Robots-Tag: noindex, nofollow, noarchive`;
 - the stable alias resolves directly without Vercel Authentication;
 - the production `maxvideoai` project and protection settings are unchanged.
 

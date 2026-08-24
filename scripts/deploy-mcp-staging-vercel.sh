@@ -214,6 +214,20 @@ jq -e \
     ([.alias[]?, .automaticAliases[]?] | index($stable) | not)
   ' "$ARTIFACTS/candidate-api.json" >/dev/null
 
+assert_exact_robots_header() {
+  local header_file="$1"
+  awk -v expected="$EXPECTED_ROBOTS" '
+    BEGIN { IGNORECASE = 1; found = 0 }
+    /^x-robots-tag:/ {
+      value = $0
+      sub(/^[^:]+:[[:space:]]*/, "", value)
+      sub(/\r$/, "", value)
+      if (value == expected) found++
+    }
+    END { exit(found == 1 ? 0 : 1) }
+  ' "$header_file"
+}
+
 assert_public_noindex() {
   local url="$1"
   local prefix="$2"
@@ -227,20 +241,68 @@ assert_public_noindex() {
     --write-out '%{http_code}' \
     "$url")"
   test "$status" = '200'
-  awk -v expected="$EXPECTED_ROBOTS" '
-    BEGIN { IGNORECASE = 1; found = 0 }
-    /^x-robots-tag:/ {
-      value = $0
-      sub(/^[^:]+:[[:space:]]*/, "", value)
-      sub(/\r$/, "", value)
-      if (value == expected) found++
-    }
-    END { exit(found == 1 ? 0 : 1) }
-  ' "${prefix}.headers"
+  assert_exact_robots_header "${prefix}.headers"
   ! grep -Eiq '^location:' "${prefix}.headers"
 }
 
+assert_protocol_endpoints() {
+  local base_url="$1"
+  local prefix="$2"
+  local mode="$3"
+  local discovery_status
+  local mcp_status
+  local mcp_path='/mcp'
+  if [[ "$mode" == 'candidate' ]]; then
+    mcp_path='/api/mcp'
+  fi
+
+  discovery_status="$(curl \
+    --silent \
+    --show-error \
+    --max-time 30 \
+    --dump-header "${prefix}.oauth.headers" \
+    --output "${prefix}.oauth.json" \
+    --write-out '%{http_code}' \
+    "${base_url}/.well-known/oauth-protected-resource/mcp")"
+  assert_exact_robots_header "${prefix}.oauth.headers"
+
+  mcp_status="$(curl \
+    --silent \
+    --show-error \
+    --max-time 30 \
+    --request POST \
+    --header 'Accept: application/json, text/event-stream' \
+    --header 'Content-Type: application/json' \
+    --dump-header "${prefix}.mcp.headers" \
+    --output /dev/null \
+    --write-out '%{http_code}' \
+    --data '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"staging-deploy-gate","version":"1.0"}}}' \
+    "${base_url}${mcp_path}")"
+  assert_exact_robots_header "${prefix}.mcp.headers"
+
+  if [[ "$mode" == 'candidate' ]]; then
+    test "$discovery_status" = '404'
+    test "$mcp_status" = '404'
+    return
+  fi
+
+  test "$mode" = 'stable'
+  test "$discovery_status" = '200'
+  jq -e \
+    --arg resource "https://${STABLE_HOST}/mcp" \
+    --arg authorization_server "${STAGING_SUPABASE_ORIGIN}/auth/v1" '
+      .resource == $resource and
+      .authorization_servers == [$authorization_server]
+    ' "${prefix}.oauth.json" >/dev/null
+
+  test "$mcp_status" = '401'
+  grep -Eiq '^cache-control:[[:space:]]*private, no-store\r?$' "${prefix}.mcp.headers"
+  grep -Eiq "^www-authenticate:[[:space:]]*Bearer resource_metadata=\"https://${STABLE_HOST}/\.well-known/oauth-protected-resource/mcp\"\r?$" \
+    "${prefix}.mcp.headers"
+}
+
 assert_public_noindex "${CANDIDATE_URL}/" "$ARTIFACTS/candidate-root"
+assert_protocol_endpoints "$CANDIDATE_URL" "$ARTIFACTS/candidate-protocol" candidate
 
 "${VERCEL[@]}" promote "$CANDIDATE_ID" \
   --scope "$STAGING_SCOPE" \
@@ -261,37 +323,7 @@ jq -e \
   ' "$ARTIFACTS/stable-inspect.json" >/dev/null
 
 assert_public_noindex "https://${STABLE_HOST}/" "$ARTIFACTS/stable-root"
-
-curl \
-  --fail \
-  --silent \
-  --show-error \
-  --max-time 30 \
-  "https://${STABLE_HOST}/.well-known/oauth-protected-resource/mcp" \
-  >"$ARTIFACTS/oauth-protected-resource.json"
-jq -e \
-  --arg resource "https://${STABLE_HOST}/mcp" \
-  --arg authorization_server "${STAGING_SUPABASE_ORIGIN}/auth/v1" '
-    .resource == $resource and
-    .authorization_servers == [$authorization_server]
-  ' "$ARTIFACTS/oauth-protected-resource.json" >/dev/null
-
-MCP_STATUS="$(curl \
-  --silent \
-  --show-error \
-  --max-time 30 \
-  --request POST \
-  --header 'Accept: application/json, text/event-stream' \
-  --header 'Content-Type: application/json' \
-  --dump-header "$ARTIFACTS/mcp.headers" \
-  --output /dev/null \
-  --write-out '%{http_code}' \
-  --data '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"staging-deploy-gate","version":"1.0"}}}' \
-  "https://${STABLE_HOST}/mcp")"
-test "$MCP_STATUS" = '401'
-grep -Eiq '^cache-control:[[:space:]]*private, no-store\r?$' "$ARTIFACTS/mcp.headers"
-grep -Eiq "^www-authenticate:[[:space:]]*Bearer resource_metadata=\"https://${STABLE_HOST}/\.well-known/oauth-protected-resource/mcp\"\r?$" \
-  "$ARTIFACTS/mcp.headers"
+assert_protocol_endpoints "https://${STABLE_HOST}" "$ARTIFACTS/stable-protocol" stable
 
 capture_production_baseline "$ARTIFACTS/production-after"
 diff -u "$ARTIFACTS/production-before.project.json" "$ARTIFACTS/production-after.project.json" >/dev/null

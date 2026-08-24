@@ -76,6 +76,15 @@ test('MCP staging deploy wrapper gates an unaliased candidate before promotion',
   assert.match(script, /\.crons \| type == "array"/);
   assert.match(script, /noindex, nofollow, noarchive/);
   assert.match(script, /oauth-protected-resource\/mcp/);
+  assert.match(script, /assert_exact_robots_header\(\)/);
+  assert.match(
+    script,
+    /assert_protocol_endpoints "\$CANDIDATE_URL" "\$ARTIFACTS\/candidate-protocol" candidate/,
+  );
+  assert.match(
+    script,
+    /assert_protocol_endpoints "https:\/\/\$\{STABLE_HOST\}" "\$ARTIFACTS\/stable-protocol" stable/,
+  );
   assert.match(script, /promote/);
   assert.match(script, /select\(\.name == \$name\) \| \.id/);
   assert.match(script, /select\([\s\S]*\.readyState == "READY"[\s\S]*\) \| \.id/);
@@ -88,6 +97,10 @@ test('MCP staging deploy wrapper gates an unaliased candidate before promotion',
   assert.ok(
     script.indexOf('--skip-domain') < script.indexOf('promote'),
     'the candidate must remain unaliased until after verification',
+  );
+  assert.ok(
+    script.indexOf('assert_protocol_endpoints "$CANDIDATE_URL"') < script.indexOf('"${VERCEL[@]}" promote'),
+    'the candidate MCP protocol headers must be verified before promotion',
   );
   assert.doesNotMatch(script, /vercel deploy frontend/);
   assert.doesNotMatch(script, /--local-config/);
