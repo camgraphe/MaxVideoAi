@@ -4,12 +4,7 @@ import {
   getPublicConfiguredEnginesByCategory,
   getPublicConfiguredEnginesByCategoryInExecutor,
 } from '@/server/engines';
-import {
-  isBytePlusModelArkEnabled,
-  isBytePlusSeedanceAdminOnly,
-  isBytePlusSeedanceSubmissionEnabled,
-  resolveBytePlusSeedanceRouteProfile,
-} from '@/server/video-providers/byteplus-modelark';
+import { isAgentGenerationEngineExecutable } from '@/server/agent-runtime/model-executability';
 import type { EngineCaps, EngineModeUiCaps } from '@/types/engines';
 
 import type { AgentGenerationMode, AgentModel, AgentModelFilter } from './types';
@@ -21,6 +16,7 @@ import {
 } from './public-engine-policy';
 
 export type { AgentPublicGenerationEngine } from './public-engine-policy';
+export { isAgentGenerationEngineExecutable } from '@/server/agent-runtime/model-executability';
 
 const SURFACE_BY_ENGINE_ID = new Map<string, 'video' | 'image'>(
   listFalEngines().flatMap((entry) => {
@@ -62,21 +58,6 @@ const defaultDeps: AgentModelCatalogDeps = {
 
 function referenceImagesSupported(modes: AgentGenerationMode[]): boolean {
   return modes.some((mode) => mode === 'i2v' || mode === 'ref2v' || mode === 'i2i');
-}
-
-export function isAgentGenerationEngineExecutable(engine: EngineCaps): boolean {
-  try {
-    const bytePlusProfile = resolveBytePlusSeedanceRouteProfile(
-      engine.id,
-      engine.providerMeta?.provider,
-    );
-    if (!bytePlusProfile) return true;
-    return isBytePlusModelArkEnabled()
-      && isBytePlusSeedanceSubmissionEnabled(engine.id)
-      && !isBytePlusSeedanceAdminOnly(engine.id);
-  } catch {
-    return false;
-  }
 }
 
 function toCandidate(

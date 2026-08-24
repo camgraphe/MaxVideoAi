@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { query } from '@/lib/db';
-import { createSupabaseRouteClient, getRouteAuthContext } from '@/lib/supabase-ssr';
+import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { resolveLocalAdminBypassUserId } from '@/server/admin';
 import { buildRestrictedAccountPayload, getActiveAccountRestriction } from '@/server/fraud-cleanup';
 import { buildResponseFromExistingVideoJob, type ExistingVideoJobRow } from './initial-video-job';
@@ -26,7 +26,6 @@ export type GenerateUserGateResult =
 
 type ResolveGenerateUserIdDeps = {
   getRouteAuthContextFn?: typeof getRouteAuthContext;
-  createSupabaseRouteClientFn?: typeof createSupabaseRouteClient;
   resolveLocalAdminBypassUserIdFn?: typeof resolveLocalAdminBypassUserId;
 };
 
@@ -43,7 +42,6 @@ export async function resolveGenerateUserId(
   deps: ResolveGenerateUserIdDeps = {}
 ): Promise<string | null> {
   const getRouteAuthContextFn = deps.getRouteAuthContextFn ?? getRouteAuthContext;
-  const createSupabaseRouteClientFn = deps.createSupabaseRouteClientFn ?? createSupabaseRouteClient;
   const resolveLocalAdminBypassUserIdFn =
     deps.resolveLocalAdminBypassUserIdFn ?? resolveLocalAdminBypassUserId;
 
@@ -51,19 +49,7 @@ export async function resolveGenerateUserId(
     const { userId } = await getRouteAuthContextFn(req);
     if (userId) return userId;
   } catch {
-    // Keep the legacy cookie lookup and local admin bypass available as fallbacks.
-  }
-
-  try {
-    const supabase = await createSupabaseRouteClientFn();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (user?.id) {
-      return user.id;
-    }
-  } catch {
-    // Keep auth fallback tolerant so local admin bypass still works in dev.
+    // Keep the local admin bypass available as a development fallback.
   }
 
   const localAdminUserId = await resolveLocalAdminBypassUserIdFn(req);

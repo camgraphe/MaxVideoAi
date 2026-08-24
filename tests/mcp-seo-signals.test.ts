@@ -264,7 +264,7 @@ test('contextual MCP links are localized, varied, and absent until the shared ga
 
   for (const path of [
     'frontend/components/marketing/MarketingFooter.tsx',
-    `${routeRoot}/pay-as-you-go-ai-video-generator/_components/PayAsYouGoPageView.tsx`,
+    `${routeRoot}/pay-as-you-go-ai-video-generator/_lib/payg-page-data.ts`,
     `${routeRoot}/models/_components/ModelsCatalogPricingLimitsSection.tsx`,
     `${routeRoot}/examples/_components/examples-route-sections.tsx`,
   ]) {

@@ -32,12 +32,12 @@ async function loadFunnel(): Promise<FunnelModule> {
   return import('../frontend/src/server/agent-api/mcp-funnel');
 }
 
-test('migration 33 remains reserved after migration 31 and fails closed until migration 32 exists', () => {
+test('migration 33 remains reserved after the implemented migration 32 prerequisite', () => {
   assert.equal(existsSync(migrationPath), true, 'Task 7 must reserve migration 33');
   const names = readdirSync(migrationDirectory).filter((name) => /^\d+_.+\.sql$/.test(name));
   assert.equal(names.includes('30_mcp_paid_generation.sql'), true);
   assert.equal(names.includes('31_mcp_trial_entitlements.sql'), true);
-  assert.equal(names.includes('32_mcp_reference_uploads.sql'), false);
+  assert.equal(names.includes('32_mcp_reference_uploads.sql'), true);
   assert.equal(names.includes('33_mcp_acquisition_funnel.sql'), true);
   assert.deepEqual(names.filter((name) => name.startsWith('33_')), ['33_mcp_acquisition_funnel.sql']);
 

@@ -315,7 +315,10 @@ test('workspace upload context and trusted generation validation are wired befor
   const dropzoneSource = readFileSync('frontend/components/AssetDropzone.tsx', 'utf8');
   const dropzoneHelpersSource = readFileSync('frontend/components/asset-dropzone/asset-dropzone-helpers.ts', 'utf8');
   const workspaceUploadSource = readFileSync('frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceReferenceAssets.ts', 'utf8');
-  const generateRouteSource = readFileSync('frontend/app/api/generate/route.ts', 'utf8');
+  const videoGenerationSource = readFileSync(
+    'frontend/src/server/video-generation/execute-video-generation.ts',
+    'utf8'
+  );
   const attachmentProcessingSource = readFileSync(
     'frontend/app/api/generate/_lib/generation-attachment-processing.ts',
     'utf8'
@@ -327,8 +330,8 @@ test('workspace upload context and trusted generation validation are wired befor
   assert.match(workspaceUploadSource, /formData\.append\('engineId', engineId\)/);
   assert.match(workspaceUploadSource, /formData\.append\('mode', preferredMode\)/);
   assert.match(workspaceUploadSource, /formData\.append\('fieldId', field\.id\)/);
-  const constraintValidation = generateRouteSource.indexOf('const attachmentProcessing = await processAndValidateGenerationAttachments');
-  const billingPreflight = generateRouteSource.indexOf('const billingPreflight = await resolveGenerateBillingPreflight');
+  const constraintValidation = videoGenerationSource.indexOf('const attachmentProcessing = await processAndValidateGenerationAttachments');
+  const billingPreflight = videoGenerationSource.indexOf('const billingPreflight = trustedIncludedTrialBilling');
   assert.ok(constraintValidation >= 0);
   assert.ok(constraintValidation < billingPreflight, 'trusted media validation must run before billing preflight');
   assert.match(attachmentProcessingSource, /validateGenerationMediaConstraints/);

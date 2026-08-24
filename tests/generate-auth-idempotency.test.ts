@@ -56,9 +56,6 @@ test('resolveGenerateUserId accepts the Bearer session sent by the workspace cli
       receivedRequest = req;
       return { userId: 'owner_user_123' } as never;
     },
-    createSupabaseRouteClientFn: async () => {
-      throw new Error('cookie fallback should not run after Bearer authentication');
-    },
     resolveLocalAdminBypassUserIdFn: async () => null,
   });
 

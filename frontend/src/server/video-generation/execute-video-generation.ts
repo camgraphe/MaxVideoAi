@@ -113,13 +113,13 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     elements,
     endImageUrl,
     rawAudioUrl,
-    aspectRatio,
     iterationCount,
     rawExtraInputValues,
     numFrames,
     loop,
     soraRequest,
   } = requestOptions;
+  let { aspectRatio } = requestOptions;
   const { pricingResolution, effectiveResolution } = requestOptions;
 
   const extraInputValidation = validateExtraInputValues({
@@ -238,6 +238,7 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
   const dimensionValidation = await validateGenerationImageDimensions({
     engineId: engine.id,
     userId: String(userId),
+    sourceImageUrl: isBytePlusV1a ? initialImageUrl : null,
     attachments: processedAttachments,
     imageUrls: [initialImageUrl, resolvedFirstFrameUrl, lastFrameUrl, ...normalizedReferenceImages, startImageUrl, endImageUrl],
     elements,
@@ -248,6 +249,9 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
       body: dimensionValidation.body,
       status: dimensionValidation.status,
     };
+  }
+  if (dimensionValidation.sourceAspectRatio) {
+    aspectRatio = dimensionValidation.sourceAspectRatio;
   }
   const billingPreflight = trustedIncludedTrialBilling
     ? buildTrustedIncludedTrialVideoBilling(trustedIncludedTrialBilling)

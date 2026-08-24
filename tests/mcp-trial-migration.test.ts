@@ -55,7 +55,7 @@ test('migration 31 owns durable trial tables while runtime bootstrap remains aud
   assert.match(source, /::pg_catalog\.regprocedure/i);
   assert.doesNotMatch(source, /current_setting|set_config/i);
   assert.match(source, /runtime role must not own the table or (?:cleanup )?function/i);
-  assert.match(runtime, /paid\/trial\/reference durable tables are migration-owned/i);
+  assert.match(runtime, /paid, trial, reference-upload, and funnel tables are migration-owned/i);
   assert.doesNotMatch(runtime, /mcp_trial_entitlements|mcp_trial_risk_events/i);
 
   const riskTable = source.match(/CREATE TABLE IF NOT EXISTS mcp_trial_risk_events\s*\(([\s\S]*?)\n\);/i)?.[1] ?? '';
