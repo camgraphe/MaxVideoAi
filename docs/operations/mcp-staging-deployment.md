@@ -83,8 +83,8 @@ protection and the normal skew-protection setting remain enabled. The project
 serving `maxvideoai.com` is a different project and must stay read-only during
 staging operations.
 
-Only these application variables belong in the staging project's Production
-target:
+The foundation application variables below belong in the staging project's
+Production target:
 
 ```text
 DATABASE_URL
@@ -98,15 +98,56 @@ NEXT_PUBLIC_SUPABASE_URL
 SUPABASE_SITE_URL
 ```
 
+The operational profile adds the following non-secret values to that same
+Production target. These values are exact; do not add whitespace, alternate
+provider names, or additional modes:
+
+```text
+MCP_STAGING_OPERATIONAL_ENABLED=true
+BYTEPLUS_ARK_ENABLED=true
+SEEDANCE_2_5_BYTEPLUS_ENABLED=true
+SEEDANCE_2_5_PROVIDER=byteplus_modelark
+SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY=false
+SEEDANCE_2_5_BYTEPLUS_MODES=t2v,i2v,ref2v,v2v,extend
+```
+
+`BYTEPLUS_ARK_API_KEY` is also required on the Production target, but its value
+must be a dedicated staging credential supplied out of band and stored only in
+the dedicated `maxvideoai-mcp-staging` Vercel project. Never write it to Git,
+the shell command line, logs, reports, or a downloaded environment file. The
+deployment wrapper requests non-decrypted Vercel metadata and retains only
+environment-variable names and targets; it never reads, pulls, compares, or
+prints the credential value. If the dedicated credential does not exist, stop
+with `CREDENTIAL_BLOCKED`. Do not substitute a production credential and do
+not weaken or bypass the metadata preflight.
+
 `DATABASE_URL` must identify the pooled endpoint for the exact Neon branch
 `preview/mcp-staging`. The Supabase variables must identify the project
 documented above. Vercel does not accept empty environment-variable values, so
 `COOKIE_DOMAIN` and `NEXT_PUBLIC_COOKIE_DOMAIN` are intentionally absent; the
 application treats absence as an unset, host-only cookie domain.
 
-Do not add provider keys, Stripe secrets, a Supabase secret or legacy
-`service_role` key, SMTP credentials, `CRON_SECRET`, or any production
-database URL to this project.
+Except for the dedicated staging-only `BYTEPLUS_ARK_API_KEY`, do not add
+provider keys, Stripe secrets, a Supabase secret or legacy `service_role` key,
+SMTP credentials, `CRON_SECRET`, or any production database URL to this
+project.
+
+### Schema and cleanup prerequisite
+
+Neon migration 37 is a deployment prerequisite and must be confirmed as
+already applied to the exact `preview/mcp-staging` branch before this binary is
+deployed. The deployment wrapper does not run migrations or mutate the live
+database. If the required schema is unavailable or its status cannot be
+established without revealing credentials, stop with `SCHEMA_BLOCKED`; do not
+deploy and do not attempt an in-band repair.
+
+Task 5's destructive abandoned-upload cleanup route requires a non-empty
+`CRON_SECRET`, but the approved MCP staging package remains zero-cron. Therefore
+this profile intentionally has neither `CRON_SECRET` nor a cleanup schedule,
+and it does not claim that periodic reference-upload cleanup is active. Do not
+add the cleanup cron to `frontend/vercel.mcp-staging.json`. Enabling it requires
+a separately reviewed reconciliation of the cleanup prerequisite with the
+staging zero-cron invariant.
 
 ### Deployment packaging guard
 
@@ -140,9 +181,14 @@ tracked, staged, or untracked worktree change. The dry run exports tracked
 `frontend/vercel.json`, and verifies the repo-root workspace and staging config
 without contacting Vercel.
 
-The real invocation repeats those checks, asserts the exact Vercel scope and
-project, links only the temporary directory, and creates a production-target
-candidate with `--skip-domain`. The stable alias is not changed at this point.
+The real invocation repeats those checks, resolves the exact dedicated Vercel
+project, then queries its non-decrypted Production-target environment metadata.
+It reduces the response to names and targets only and requires all seven
+operational names, including `BYTEPLUS_ARK_API_KEY`, before any link or deploy
+command. It does not add, remove, pull, decrypt, or print an environment value.
+After that sanitized preflight, it links only the temporary directory and
+creates a production-target candidate with `--skip-domain`. The stable alias is
+not changed at this point.
 The deployment receives only two sanitized provenance metadata values:
 `mcpApprovedGitSha`, containing the exact full tracked commit SHA, and
 `mcpTrackedArchiveSha256`, containing the SHA-256 digest of `git archive HEAD`.

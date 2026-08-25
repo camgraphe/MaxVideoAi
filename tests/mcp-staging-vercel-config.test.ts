@@ -13,6 +13,16 @@ import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 
+const REQUIRED_OPERATIONAL_ENVIRONMENT = [
+  'MCP_STAGING_OPERATIONAL_ENABLED',
+  'BYTEPLUS_ARK_ENABLED',
+  'BYTEPLUS_ARK_API_KEY',
+  'SEEDANCE_2_5_BYTEPLUS_ENABLED',
+  'SEEDANCE_2_5_PROVIDER',
+  'SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY',
+  'SEEDANCE_2_5_BYTEPLUS_MODES',
+] as const;
+
 function runGit(cwd: string, args: string[]) {
   const result = spawnSync('git', args, { cwd, encoding: 'utf8' });
   assert.equal(result.status, 0, result.stderr);
@@ -67,6 +77,18 @@ test('MCP staging deploy wrapper gates an unaliased candidate before promotion',
   assert.match(script, /STAGING_PROJECT=['"]maxvideoai-mcp-staging['"]/);
   assert.match(script, /PRODUCTION_PROJECT=['"]maxvideoai['"]/);
   assert.match(script, /STAGING_SCOPE=['"]camgraphes-projects['"]/);
+  for (const name of REQUIRED_OPERATIONAL_ENVIRONMENT) {
+    assert.match(script, new RegExp(`['"]${name}['"]`));
+  }
+  assert.match(script, /\/v10\/projects\/\$\{STAGING_PROJECT\}\/env\?decrypt=false&target=production/);
+  assert.match(script, /\{[\s\S]{0,80}key,[\s\S]{0,80}target:/);
+  assert.match(script, /CREDENTIAL_BLOCKED/);
+  assert.ok(
+    script.indexOf('assert_staging_operational_environment') < script.indexOf('"${VERCEL[@]}" deploy'),
+    'the sanitized environment metadata gate must run before deployment',
+  );
+  assert.doesNotMatch(script, /env pull/);
+  assert.doesNotMatch(script, /\$\{?BYTEPLUS_ARK_API_KEY/);
   assert.match(script, /git .*archive HEAD/);
   assert.match(script, /vercel\.mcp-staging\.json/);
   assert.match(script, /--prod/);
@@ -135,9 +157,11 @@ test('MCP staging deploy wrapper gates an unaliased candidate before promotion',
       encoding: 'utf8',
     });
     assert.equal(dryRun.status, 0, dryRun.stderr);
-    assert.match(dryRun.stdout, /SAFE_PACKAGE_OK/);
-    assert.match(dryRun.stdout, /project=maxvideoai-mcp-staging/);
-    assert.match(dryRun.stdout, /scope=camgraphes-projects/);
+    assert.match(
+      dryRun.stdout,
+      /^SAFE_PACKAGE_OK project=maxvideoai-mcp-staging scope=camgraphes-projects tracked_head=[0-9a-f]+ mode=new-candidate\n$/,
+    );
+    assert.equal(dryRun.stderr, '');
 
     const resumeDryRun = spawnSync(
       'bash',
@@ -174,4 +198,20 @@ test('MCP staging deploy wrapper gates an unaliased candidate before promotion',
     assert.match(document, /mcpApprovedGitSha/);
     assert.match(document, /mcpTrackedArchiveSha256/);
   }
+
+  for (const setting of [
+    'MCP_STAGING_OPERATIONAL_ENABLED=true',
+    'BYTEPLUS_ARK_ENABLED=true',
+    'SEEDANCE_2_5_BYTEPLUS_ENABLED=true',
+    'SEEDANCE_2_5_PROVIDER=byteplus_modelark',
+    'SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY=false',
+    'SEEDANCE_2_5_BYTEPLUS_MODES=t2v,i2v,ref2v,v2v,extend',
+  ]) {
+    assert.match(runbook, new RegExp(`^${setting}$`, 'm'));
+  }
+  assert.match(runbook, /BYTEPLUS_ARK_API_KEY[\s\S]{0,400}dedicated staging credential/i);
+  assert.match(runbook, /CREDENTIAL_BLOCKED/);
+  assert.match(runbook, /migration 37[\s\S]{0,400}(?:before|prerequisite)/i);
+  assert.match(runbook, /zero cron|zero-cron/i);
+  assert.doesNotMatch(runbook, /BYTEPLUS_ARK_API_KEY\s*=/);
 });

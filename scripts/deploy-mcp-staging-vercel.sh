@@ -10,6 +10,15 @@ STAGING_SUPABASE_ORIGIN='https://gecrywjztpbwbrlnomti.supabase.co'
 EXPECTED_ROBOTS='noindex, nofollow, noarchive'
 VERCEL_VERSION='55.0.0'
 DEPLOYMENT_REF_FILTER='.deployment.url // .deployment.deploymentUrl // .deployment.id // .url // .deploymentUrl // .id'
+REQUIRED_OPERATIONAL_ENVIRONMENT=(
+  'MCP_STAGING_OPERATIONAL_ENABLED'
+  'BYTEPLUS_ARK_ENABLED'
+  'BYTEPLUS_ARK_API_KEY'
+  'SEEDANCE_2_5_BYTEPLUS_ENABLED'
+  'SEEDANCE_2_5_PROVIDER'
+  'SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY'
+  'SEEDANCE_2_5_BYTEPLUS_MODES'
+)
 
 usage() {
   printf 'Usage: %s [--candidate dpl_ID] [--dry-run]\n' "$0" >&2
@@ -137,12 +146,56 @@ capture_production_baseline() {
   jq -S . "${prefix}.protection.json" >"${prefix}.protection.sorted.json"
 }
 
-capture_production_baseline "$ARTIFACTS/production-before"
+capture_staging_environment_metadata() {
+  local output="$1"
+  "${VERCEL[@]}" api "/v10/projects/${STAGING_PROJECT}/env?decrypt=false&target=production" \
+    --scope "$STAGING_SCOPE" \
+    --raw \
+    | jq -eS '[
+        (.envs // [])[]
+        | {
+            key,
+            target: ((
+              if (.target | type) == "array" then .target
+              elif .target == null then []
+              else [.target]
+              end
+            ) | sort)
+          }
+      ] | sort_by(.key, .target)' >"$output"
+}
+
+assert_staging_operational_environment() {
+  local metadata="$ARTIFACTS/staging-environment-metadata.json"
+  local name
+
+  capture_staging_environment_metadata "$metadata"
+
+  if ! jq -e --arg name 'BYTEPLUS_ARK_API_KEY' \
+    'any(.[]; .key == $name and .target == ["production"])' \
+    "$metadata" >/dev/null; then
+    printf 'CREDENTIAL_BLOCKED\n' >&2
+    exit 66
+  fi
+
+  for name in "${REQUIRED_OPERATIONAL_ENVIRONMENT[@]}"; do
+    if ! jq -e --arg name "$name" \
+      'any(.[]; .key == $name and .target == ["production"])' \
+      "$metadata" >/dev/null; then
+      printf 'ENVIRONMENT_BLOCKED name=%s target=production\n' "$name" >&2
+      exit 66
+    fi
+  done
+}
 
 "${VERCEL[@]}" api "/v9/projects/${STAGING_PROJECT}" \
   --scope "$STAGING_SCOPE" \
   --raw >"$ARTIFACTS/staging-project.json"
 STAGING_PROJECT_ID="$(jq -er --arg name "$STAGING_PROJECT" 'select(.name == $name) | .id' "$ARTIFACTS/staging-project.json")"
+assert_staging_operational_environment
+
+capture_production_baseline "$ARTIFACTS/production-before"
+
 PRODUCTION_PROJECT_ID="$(jq -er --arg name "$PRODUCTION_PROJECT" 'select(.name == $name) | .id' "$ARTIFACTS/production-before.project.raw.json")"
 test "$STAGING_PROJECT_ID" != "$PRODUCTION_PROJECT_ID"
 

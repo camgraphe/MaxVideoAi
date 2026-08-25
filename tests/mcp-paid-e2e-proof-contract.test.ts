@@ -26,3 +26,31 @@ test('P11 wallet proof calls the MCP account tool and three independent ledger q
     assert.match(body, new RegExp(`type = '${type}'`, 'u'));
   }
 });
+
+test('operational staging proof remains isolated and publication stays closed', () => {
+  const script = readFileSync('scripts/deploy-mcp-staging-vercel.sh', 'utf8');
+  const runbook = readFileSync('docs/operations/mcp-staging-deployment.md', 'utf8');
+  const publication = JSON.parse(
+    readFileSync('frontend/config/mcp-publication.json', 'utf8'),
+  ) as Record<string, boolean>;
+
+  assert.deepEqual(publication, {
+    publicMarketing: false,
+    publicIndexing: false,
+    transport: false,
+    oauth: false,
+    discovery: false,
+    paidGeneration: false,
+    trial: false,
+    referenceUploads: false,
+  });
+  assert.match(script, /capture_production_baseline "\$ARTIFACTS\/production-before"/);
+  assert.match(script, /capture_production_baseline "\$ARTIFACTS\/production-after"/);
+  assert.match(script, /diff -u "\$ARTIFACTS\/production-before\.project\.json"/);
+  assert.match(script, /diff -u "\$ARTIFACTS\/production-before\.domains\.json"/);
+  assert.match(script, /diff -u "\$ARTIFACTS\/production-before\.protection\.sorted\.json"/);
+  assert.doesNotMatch(script, /(?:deploy|promote)[^\n]*\$PRODUCTION_PROJECT/);
+  assert.doesNotMatch(script, /env (?:add|rm|pull)/);
+  assert.match(runbook, /do not substitute (?:a )?production credential/i);
+  assert.match(runbook, /production[\s\S]{0,160}(?:read-only|unchanged)/i);
+});
