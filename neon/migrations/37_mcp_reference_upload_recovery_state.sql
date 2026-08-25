@@ -216,6 +216,13 @@ CREATE TRIGGER media_assets_fence_content_addressed_object
   BEFORE INSERT OR UPDATE OF url ON media_assets
   FOR EACH ROW EXECUTE FUNCTION fence_canonical_content_addressed_asset();
 
+DROP TRIGGER IF EXISTS media_assets_fence_restored_content_addressed_object ON media_assets;
+CREATE TRIGGER media_assets_fence_restored_content_addressed_object
+  BEFORE UPDATE OF deleted_at ON media_assets
+  FOR EACH ROW
+  WHEN (OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL)
+  EXECUTE FUNCTION fence_canonical_content_addressed_asset();
+
 CREATE OR REPLACE FUNCTION release_unreferenced_content_addressed_asset()
 RETURNS TRIGGER
 LANGUAGE plpgsql

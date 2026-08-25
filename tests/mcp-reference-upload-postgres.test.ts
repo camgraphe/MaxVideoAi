@@ -724,6 +724,86 @@ test('real PostgreSQL upload recovery and interleavings preserve one terminal as
     )).rows, [{ state: 'orphaned' }]);
   });
 
+  await t.test('restoring a media row after its object was deleted is rejected', async () => {
+    await reset(database.pool);
+    const finalKey = `user-assets/by-content/${'3'.repeat(32)}/${fileSha256}.mp4`;
+    await database.pool.query(
+      'INSERT INTO media_assets (id, public_id, user_id, url) VALUES ($1,$2,$3,$4)',
+      ['restore-deleted', 'ma_dddddddddddddddddddddddddddddddd', 'user-a', `https://assets.maxvideo.ai/${finalKey}`],
+    );
+    await database.pool.query('UPDATE media_assets SET deleted_at = $2 WHERE id = $1', [
+      'restore-deleted', new Date(now.getTime() + 1_000),
+    ]);
+    assert.deepEqual(await cleanupExpiredReferenceUploadAttempts({}, {
+      executor: createQueryExecutor(database.pool), now: () => new Date(now.getTime() + 2_000),
+      async deleteStorageObjectKey() {},
+    }), { selected: 1, deleted: 1 });
+
+    await assert.rejects(() => database.pool.query(
+      'UPDATE media_assets SET deleted_at = NULL WHERE id = $1', ['restore-deleted'],
+    ), /delet|retry/iu);
+    assert.equal((await database.pool.query<{ deleted_at: Date | null }>(
+      'SELECT deleted_at FROM media_assets WHERE id = $1', ['restore-deleted'],
+    )).rows[0]?.deleted_at instanceof Date, true);
+  });
+
+  await t.test('a producer reclaim and reupload permit media restore with referenced ownership', async () => {
+    await reset(database.pool);
+    const finalKey = `user-assets/by-content/${'2'.repeat(32)}/${fileSha256}.mp4`;
+    await database.pool.query(
+      'INSERT INTO media_assets (id, public_id, user_id, url) VALUES ($1,$2,$3,$4)',
+      ['restore-reuploaded', 'ma_eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', 'user-a', `https://assets.maxvideo.ai/${finalKey}`],
+    );
+    await database.pool.query('UPDATE media_assets SET deleted_at = $2 WHERE id = $1', [
+      'restore-reuploaded', new Date(now.getTime() + 1_000),
+    ]);
+    assert.deepEqual(await cleanupExpiredReferenceUploadAttempts({}, {
+      executor: createQueryExecutor(database.pool), now: () => new Date(now.getTime() + 2_000),
+      async deleteStorageObjectKey() {},
+    }), { selected: 1, deleted: 1 });
+
+    const producer = await transaction(database.pool, (executor) => claimStorageObjectProducer(
+      { objectKey: finalKey }, {
+        executor, now: new Date(now.getTime() + 3_000),
+        claimId: '00000000-0000-4000-8000-000000000705',
+      },
+    ));
+    await database.pool.query(
+      'UPDATE media_assets SET deleted_at = NULL WHERE id = $1', ['restore-reuploaded'],
+    );
+    assert.deepEqual((await database.pool.query<{ state: string; producer_claim_id: string | null }>(
+      'SELECT state, producer_claim_id FROM mcp_reference_upload_object_fences WHERE object_key = $1', [finalKey],
+    )).rows, [{ state: 'referenced', producer_claim_id: producer.claimId }]);
+    await transaction(database.pool, (executor) => settleStorageObjectProducer(
+      { claim: producer, outcome: 'persisted' }, { executor, now: new Date(now.getTime() + 4_000) },
+    ));
+    assert.deepEqual((await database.pool.query<{ state: string; producer_claim_id: string | null }>(
+      'SELECT state, producer_claim_id FROM mcp_reference_upload_object_fences WHERE object_key = $1', [finalKey],
+    )).rows, [{ state: 'referenced', producer_claim_id: null }]);
+  });
+
+  await t.test('restoring a soft-deleted media row reacquires an object that cleanup never deleted', async () => {
+    await reset(database.pool);
+    const finalKey = `user-assets/by-content/${'1'.repeat(32)}/${fileSha256}.mp4`;
+    await database.pool.query(
+      'INSERT INTO media_assets (id, public_id, user_id, url) VALUES ($1,$2,$3,$4)',
+      ['restore-existing', 'ma_ffffffffffffffffffffffffffffffff', 'user-a', `https://assets.maxvideo.ai/${finalKey}`],
+    );
+    await database.pool.query('UPDATE media_assets SET deleted_at = $2 WHERE id = $1', [
+      'restore-existing', new Date(now.getTime() + 1_000),
+    ]);
+    assert.deepEqual((await database.pool.query<{ state: string }>(
+      'SELECT state FROM mcp_reference_upload_object_fences WHERE object_key = $1', [finalKey],
+    )).rows, [{ state: 'orphaned' }]);
+
+    await database.pool.query(
+      'UPDATE media_assets SET deleted_at = NULL WHERE id = $1', ['restore-existing'],
+    );
+    assert.deepEqual((await database.pool.query<{ state: string }>(
+      'SELECT state FROM mcp_reference_upload_object_fences WHERE object_key = $1', [finalKey],
+    )).rows, [{ state: 'referenced' }]);
+  });
+
   await t.test('failed workspace persistence leaves an orphaned producer fence for durable cleanup', async () => {
     await reset(database.pool);
     const finalKey = `user-assets/by-content/${'6'.repeat(32)}/${fileSha256}.mp4`;
