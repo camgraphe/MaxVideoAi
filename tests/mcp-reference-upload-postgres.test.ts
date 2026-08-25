@@ -37,6 +37,12 @@ const uploadId = '00000000-0000-4000-8000-000000000103';
 const firstLeaseId = '00000000-0000-4000-8000-000000000104';
 const retryLeaseId = '00000000-0000-4000-8000-000000000105';
 const partLeaseId = '00000000-0000-4000-8000-000000000106';
+const secondAttemptIds = {
+  sessionId: '00000000-0000-4000-8000-000000000121',
+  claimId: '00000000-0000-4000-8000-000000000122',
+  uploadId: '00000000-0000-4000-8000-000000000123',
+  tokenChar: 'B',
+};
 const publicAssetId = 'ma_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 const fileSha256 = 'a'.repeat(64);
 const now = new Date();
@@ -57,19 +63,21 @@ async function transaction<T>(pool: Pool, callback: (executor: TransactionQueryE
 }
 
 async function reset(pool: Pool): Promise<void> {
-  await pool.query('TRUNCATE mcp_reference_upload_sessions, media_assets, user_assets CASCADE');
+  await pool.query('TRUNCATE mcp_reference_upload_sessions, mcp_reference_upload_object_fences, media_assets, user_assets CASCADE');
 }
 
-async function createClaimedAttempt(pool: Pool, createdAt = now) {
+async function createClaimedAttempt(pool: Pool, createdAt = now, ids: {
+  sessionId: string; claimId: string; uploadId: string; tokenChar: string;
+} = { sessionId, claimId, uploadId, tokenChar: 'A' }) {
   const created = await createUploadSession({ userId: 'user-a', oauthClientId: 'client-a', mediaKind: 'video' }, {
     executor: createQueryExecutor(pool), now: () => createdAt,
-    randomUUID: () => sessionId, randomToken: () => `mru_${'A'.repeat(43)}`,
+    randomUUID: () => ids.sessionId, randomToken: () => `mru_${ids.tokenChar.repeat(43)}`,
   });
   const claimed = await transaction(pool, (executor) => claimUploadSessionForUpload(
-    { token: created.token, userId: 'user-a' }, { executor, randomUUID: () => claimId },
+    { token: created.token, userId: 'user-a' }, { executor, randomUUID: () => ids.claimId },
   ));
   const attempt = await transaction(pool, (executor) => createReferenceUploadAttempt({
-    session: claimed, uploadId, storageKey: `mcp-reference-staging/${'b'.repeat(32)}/${uploadId}`,
+    session: claimed, uploadId: ids.uploadId, storageKey: `mcp-reference-staging/${'b'.repeat(32)}/${ids.uploadId}`,
     fileName: 'reference.mp4', declaredMime: 'video/mp4', declaredSize: 4,
     fileSha256, chunkBytes: 4, totalParts: 1, mediaKind: 'video',
   }, { executor }));
@@ -234,6 +242,49 @@ test('real PostgreSQL upload recovery and interleavings preserve one terminal as
     )).rows[0]?.state, 'pending');
   });
 
+  await t.test('a valid completion lease crosses link expiry and remains renewable before cleanup takeover', async () => {
+    await reset(database.pool);
+    const createdAt = new Date(now.getTime() - 12.5 * 60_000);
+    const { attempt } = await createClaimedAttempt(database.pool, createdAt);
+    const leased = await transaction(database.pool, (executor) => acquireReferenceUploadCompletionLease(
+      { attempt }, { executor, now, leaseId: firstLeaseId },
+    ));
+    assert.equal(leased.leaseExpiresAt?.getTime(), now.getTime() + 5 * 60_000);
+
+    const afterLinkExpiry = new Date(now.getTime() + 3 * 60_000);
+    assert.deepEqual(await cleanupExpiredReferenceUploadAttempts({}, {
+      executor: createQueryExecutor(database.pool), now: () => afterLinkExpiry,
+      async deleteStorageObjectKey() { throw new Error('active lease must prevent cleanup'); },
+    }), { selected: 0, deleted: 0 });
+    assert.equal((await database.pool.query<{ state: string }>(
+      'SELECT state FROM mcp_reference_upload_attempts WHERE upload_id = $1', [uploadId],
+    )).rows[0]?.state, 'processing');
+
+    const renewed = await transaction(database.pool, (executor) => renewReferenceUploadCompletionLease(
+      { attempt: leased, leaseId: firstLeaseId, version: leased.version },
+      { executor, now: afterLinkExpiry },
+    ));
+    assert.equal(renewed.leaseExpiresAt?.getTime(), afterLinkExpiry.getTime() + 5 * 60_000);
+    const staged = await transaction(database.pool, (executor) => stageReferenceUploadAttempt({
+      attempt: renewed, leaseId: firstLeaseId, version: renewed.version,
+      contentSha256: fileSha256, assetId: publicAssetId,
+    }, { executor, updatedAt: new Date(afterLinkExpiry.getTime() + 1_000) }));
+    await transaction(database.pool, async (executor) => {
+      await completeUploadSession({
+        sessionId: staged.session.sessionId, userId: 'user-a', claimId,
+        mediaKind: 'video', assetId: publicAssetId,
+        completionLease: { uploadId, leaseId: firstLeaseId, version: staged.version },
+      }, { executor, uploadedAt: new Date(afterLinkExpiry.getTime() + 2_000) });
+      await completeReferenceUploadAttempt(
+        { attempt: staged, leaseId: firstLeaseId, version: staged.version },
+        { executor, completedAt: new Date(afterLinkExpiry.getTime() + 2_000) },
+      );
+    });
+    assert.equal((await database.pool.query<{ state: string }>(
+      'SELECT state FROM mcp_reference_upload_sessions WHERE session_id = $1', [sessionId],
+    )).rows[0]?.state, 'uploaded');
+  });
+
   await t.test('expiry cleanup does not delete while a completion lease remains active', async () => {
     await reset(database.pool);
     const { attempt } = await createClaimedAttempt(database.pool, new Date(now.getTime() - 12 * 60_000));
@@ -340,6 +391,87 @@ test('real PostgreSQL upload recovery and interleavings preserve one terminal as
     assert.deepEqual(deleted, [finalKey]);
   });
 
+  await t.test('expired attempt cannot delete a shared final while another attempt is between upload and persistence', async () => {
+    await reset(database.pool);
+    const { attempt: expiredAttempt } = await createClaimedAttempt(
+      database.pool, new Date(now.getTime() - 14 * 60_000),
+    );
+    const { attempt: activeAttempt } = await createClaimedAttempt(database.pool, now, secondAttemptIds);
+    const finalKey = `user-assets/by-content/${'e'.repeat(32)}/${fileSha256}.mp4`;
+    await transaction(database.pool, (executor) => registerReferenceUploadCleanupObject(
+      { attempt: expiredAttempt, objectKey: finalKey, objectRole: 'final', safeToDelete: false }, { executor, now },
+    ));
+    await transaction(database.pool, (executor) => registerReferenceUploadCleanupObject(
+      { attempt: activeAttempt, objectKey: finalKey, objectRole: 'final', safeToDelete: false }, { executor, now },
+    ));
+    let deletes = 0;
+    assert.deepEqual(await cleanupExpiredReferenceUploadAttempts({}, {
+      executor: createQueryExecutor(database.pool), now: () => new Date(now.getTime() + 2 * 60_000),
+      async deleteStorageObjectKey() { deletes += 1; },
+    }), { selected: 0, deleted: 0 });
+    assert.equal(deletes, 0);
+    assert.equal((await database.pool.query<{ state: string }>(
+      'SELECT state FROM mcp_reference_upload_attempts WHERE upload_id = $1', [secondAttemptIds.uploadId],
+    )).rows[0]?.state, 'pending');
+  });
+
+  await t.test('deleting fence blocks a concurrent uploader until deletion settles, then permits a safe reupload', async () => {
+    await reset(database.pool);
+    const { attempt: expiredAttempt } = await createClaimedAttempt(
+      database.pool, new Date(now.getTime() - 14 * 60_000),
+    );
+    const { attempt: retryAttempt } = await createClaimedAttempt(database.pool, now, secondAttemptIds);
+    const finalKey = `user-assets/by-content/${'f'.repeat(32)}/${fileSha256}.mp4`;
+    await transaction(database.pool, (executor) => registerReferenceUploadCleanupObject(
+      { attempt: expiredAttempt, objectKey: finalKey, objectRole: 'final', safeToDelete: false }, { executor, now },
+    ));
+    let releaseDelete: (() => void) | undefined;
+    let markDeleteStarted: (() => void) | undefined;
+    const deleteStarted = new Promise<void>((resolve) => { markDeleteStarted = resolve; });
+    const deleteReleased = new Promise<void>((resolve) => { releaseDelete = resolve; });
+    const cleanup = cleanupExpiredReferenceUploadAttempts({}, {
+      executor: createQueryExecutor(database.pool), now: () => new Date(now.getTime() + 2 * 60_000),
+      async deleteStorageObjectKey() { markDeleteStarted?.(); await deleteReleased; },
+    });
+    await deleteStarted;
+    const concurrentRegistration = await transaction(database.pool, (executor) => registerReferenceUploadCleanupObject(
+      { attempt: retryAttempt, objectKey: finalKey, objectRole: 'final', safeToDelete: false }, { executor, now },
+    )).then(() => 'registered', () => 'blocked');
+    releaseDelete?.();
+    assert.deepEqual(await cleanup, { selected: 1, deleted: 1 });
+    assert.equal(concurrentRegistration, 'blocked');
+    assert.deepEqual((await database.pool.query<{ state: string }>(
+      'SELECT state FROM mcp_reference_upload_object_fences WHERE object_key = $1', [finalKey],
+    )).rows, [{ state: 'deleted' }]);
+
+    await transaction(database.pool, (executor) => registerReferenceUploadCleanupObject(
+      { attempt: retryAttempt, objectKey: finalKey, objectRole: 'final', safeToDelete: false },
+      { executor, now: new Date(now.getTime() + 1_000) },
+    ));
+    assert.deepEqual((await database.pool.query<{ state: string }>(
+      'SELECT state FROM mcp_reference_upload_object_fences WHERE object_key = $1', [finalKey],
+    )).rows, [{ state: 'available' }]);
+  });
+
+  await t.test('failed final deletion releases its durable key fence for cleanup retry', async () => {
+    await reset(database.pool);
+    const { attempt } = await createClaimedAttempt(database.pool, new Date(now.getTime() - 14 * 60_000));
+    const finalKey = `user-assets/by-content/${'9'.repeat(32)}/${fileSha256}.mp4`;
+    await transaction(database.pool, (executor) => registerReferenceUploadCleanupObject(
+      { attempt, objectKey: finalKey, objectRole: 'final', safeToDelete: false }, { executor, now },
+    ));
+    assert.deepEqual(await cleanupExpiredReferenceUploadAttempts({}, {
+      executor: createQueryExecutor(database.pool), now: () => new Date(now.getTime() + 2 * 60_000),
+      async deleteStorageObjectKey() { throw new Error('temporary delete failure'); },
+    }), { selected: 1, deleted: 0 });
+    assert.deepEqual((await database.pool.query<{ state: string }>(
+      'SELECT state FROM mcp_reference_upload_object_fences WHERE object_key = $1', [finalKey],
+    )).rows, [{ state: 'available' }]);
+    assert.equal((await database.pool.query<{ state: string }>(
+      'SELECT state FROM mcp_reference_upload_cleanup_objects WHERE object_key = $1', [finalKey],
+    )).rows[0]?.state, 'pending');
+  });
+
   await t.test('shared content-addressed final candidate is retained when another canonical row references it', async () => {
     await reset(database.pool);
     const { attempt } = await createClaimedAttempt(database.pool);
@@ -363,6 +495,9 @@ test('real PostgreSQL upload recovery and interleavings preserve one terminal as
     assert.equal((await database.pool.query<{ state: string }>(
       'SELECT state FROM mcp_reference_upload_cleanup_objects WHERE object_key = $1', [finalKey],
     )).rows[0]?.state, 'retained');
+    assert.deepEqual((await database.pool.query<{ state: string }>(
+      'SELECT state FROM mcp_reference_upload_object_fences WHERE object_key = $1', [finalKey],
+    )).rows, [{ state: 'available' }]);
   });
 
   await t.test('expiry cleanup takes over only an expired lease and retries its durable tombstone', async () => {

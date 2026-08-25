@@ -312,39 +312,49 @@ export function createReferenceUploadCompleteHandler(overrides: Partial<Completi
       };
       let assetId = leased.stagedAssetId;
       if (!assetId) {
-        await renewLease();
-        const parts = await dependencies.listReferenceUploadParts({ attempt: leased });
-        if (parts.length !== leased.totalParts) throw new ReferenceValidationError();
-        const buffers: Buffer[] = [];
-        let totalSize = 0;
-        for (let index = 0; index < parts.length; index += 1) {
+        const finalized = await runSettledBoundedFinalization(async (signal) => {
+          signal.throwIfAborted();
           await renewLease();
-          const part = parts[index];
-          const expectedNumber = index + 1;
-          const expectedSize = expectedNumber === leased.totalParts
-            ? leased.declaredSize - leased.chunkBytes * (leased.totalParts - 1) : leased.chunkBytes;
-          if (!part || part.partNumber !== expectedNumber || part.sizeBytes !== expectedSize) throw new ReferenceValidationError();
-          const bytes = await dependencies.getStorageObjectBuffer(part.storageKey);
-          if (bytes.length !== part.sizeBytes || contentSha256(bytes) !== part.contentSha256) throw new ReferenceValidationError();
-          totalSize += bytes.length;
-          buffers.push(bytes);
-        }
-        if (totalSize !== leased.declaredSize) throw new ReferenceValidationError();
-        const bytes = Buffer.concat(buffers, totalSize);
-        const digest = contentSha256(bytes);
-        if (digest !== leased.fileSha256) throw new ReferenceValidationError();
-        await renewLease();
-        const cleanupObjects = {
-          beforeUpload: (entry: { objectRole: 'final' | 'thumbnail'; objectKey: string; safeToDelete: boolean }) =>
-            dependencies.withTransaction((executor) => dependencies.registerReferenceUploadCleanupObject(
-              { attempt: leased!, ...entry }, { executor, now: dependencies.now() },
-            )),
-          retain: (objectKey: string) => dependencies.withTransaction((executor) =>
-            dependencies.retainReferenceUploadCleanupObject(
-              { attempt: leased!, objectKey }, { executor, now: dependencies.now() },
-            )),
-        };
-        assetId = await runBoundedFinalization(async (signal) => {
+          signal.throwIfAborted();
+          const parts = await dependencies.listReferenceUploadParts({ attempt: leased! });
+          if (parts.length !== leased!.totalParts) throw new ReferenceValidationError();
+          const buffers: Buffer[] = [];
+          let totalSize = 0;
+          for (let index = 0; index < parts.length; index += 1) {
+            signal.throwIfAborted();
+            await renewLease();
+            const part = parts[index];
+            const expectedNumber = index + 1;
+            const expectedSize = expectedNumber === leased!.totalParts
+              ? leased!.declaredSize - leased!.chunkBytes! * (leased!.totalParts! - 1) : leased!.chunkBytes!;
+            if (!part || part.partNumber !== expectedNumber || part.sizeBytes !== expectedSize) throw new ReferenceValidationError();
+            const partBytes = await dependencies.getStorageObjectBuffer(part.storageKey, { signal });
+            signal.throwIfAborted();
+            if (partBytes.length !== part.sizeBytes || contentSha256(partBytes) !== part.contentSha256) throw new ReferenceValidationError();
+            totalSize += partBytes.length;
+            buffers.push(partBytes);
+          }
+          if (totalSize !== leased!.declaredSize) throw new ReferenceValidationError();
+          const bytes = Buffer.concat(buffers, totalSize);
+          const digest = contentSha256(bytes);
+          if (digest !== leased!.fileSha256) throw new ReferenceValidationError();
+
+          // Refresh the durable fence immediately before probe/storage side effects. The
+          // lease outlives the bounded operation even if the original link expires.
+          signal.throwIfAborted();
+          await renewLease();
+          signal.throwIfAborted();
+          const cleanupObjects = {
+            beforeUpload: (entry: { objectRole: 'final' | 'thumbnail'; objectKey: string; safeToDelete: boolean }) =>
+              dependencies.withTransaction((executor) => dependencies.registerReferenceUploadCleanupObject(
+                { attempt: leased!, ...entry }, { executor, now: dependencies.now() },
+              )),
+            retain: (objectKey: string) => dependencies.withTransaction((executor) =>
+              dependencies.retainReferenceUploadCleanupObject(
+                { attempt: leased!, objectKey }, { executor, now: dependencies.now() },
+              )),
+          };
+          let finalizedAssetId: string;
           if (leased!.session.mediaKind === 'image') {
             const stored = await dependencies.storeImageUpload({
               userId, fileName: leased!.fileName, declaredMime: leased!.declaredMime,
@@ -354,29 +364,37 @@ export function createReferenceUploadCompleteHandler(overrides: Partial<Completi
             const canonical = await dependencies.ensureReusableAsset({ userId, url: image.url, kind: 'image', source: 'upload', mimeType: image.mimeType,
               width: image.width, height: image.height, sizeBytes: image.sizeBytes, thumbUrl: image.thumbUrl });
             if (!canonical.publicId || !/^ma_[a-f0-9]{32}$/u.test(canonical.publicId)) throw new Error('Canonical image has no public alias.');
-            return canonical.publicId;
+            finalizedAssetId = canonical.publicId;
+          } else {
+            const stored = leased!.session.mediaKind === 'video'
+              ? await dependencies.storeVideoUpload({
+                  userId, fileName: leased!.fileName, declaredMime: leased!.declaredMime,
+                  bytes, referenceEligibility: 'mcp', cleanupObjects, signal,
+                })
+              : await dependencies.storeAudioUpload({
+                  userId, fileName: leased!.fileName, declaredMime: leased!.declaredMime,
+                  bytes, referenceEligibility: 'mcp', cleanupObjects, signal,
+                });
+            finalizedAssetId = stored.assetId;
           }
-          const stored = leased!.session.mediaKind === 'video'
-            ? await dependencies.storeVideoUpload({
-                userId, fileName: leased!.fileName, declaredMime: leased!.declaredMime,
-                bytes, referenceEligibility: 'mcp', cleanupObjects, signal,
-              })
-            : await dependencies.storeAudioUpload({
-                userId, fileName: leased!.fileName, declaredMime: leased!.declaredMime,
-                bytes, referenceEligibility: 'mcp', cleanupObjects, signal,
-              });
-          return stored.assetId;
+          signal.throwIfAborted();
+          await renewLease();
+          signal.throwIfAborted();
+          const stagedAttempt = await dependencies.withTransaction((executor) => dependencies.stageReferenceUploadAttempt(
+            { attempt: leased!, leaseId: leased!.leaseId!, version: leased!.version, contentSha256: digest, assetId: finalizedAssetId },
+            { executor, updatedAt: dependencies.now() },
+          ));
+          return { assetId: finalizedAssetId, attempt: stagedAttempt };
         }, dependencies.finalizationTimeoutMs);
-        await renewLease();
-        leased = await dependencies.withTransaction((executor) => dependencies.stageReferenceUploadAttempt(
-          { attempt: leased!, leaseId: leased!.leaseId!, version: leased!.version, contentSha256: digest, assetId: assetId! },
-          { executor, updatedAt: dependencies.now() },
-        ));
+        assetId = finalized.assetId;
+        leased = finalized.attempt;
       }
       await renewLease();
       await dependencies.withTransaction(async (executor) => {
         await dependencies.completeUploadSession({ sessionId: leased!.session.sessionId, userId,
-          claimId: leased!.session.claimId!, mediaKind: leased!.session.mediaKind, assetId: assetId! },
+          claimId: leased!.session.claimId!, mediaKind: leased!.session.mediaKind, assetId: assetId!,
+          completionLease: { uploadId: leased!.uploadId, leaseId: leased!.leaseId!, version: leased!.version },
+        },
         { executor, uploadedAt: dependencies.now() });
         await dependencies.completeReferenceUploadAttempt(
           { attempt: leased!, leaseId: leased!.leaseId!, version: leased!.version },
@@ -405,20 +423,23 @@ export function createReferenceUploadCompleteHandler(overrides: Partial<Completi
   };
 }
 
-async function runBoundedFinalization<T>(operation: (signal: AbortSignal) => Promise<T>, timeoutMs: number): Promise<T> {
+async function runSettledBoundedFinalization<T>(operation: (signal: AbortSignal) => Promise<T>, timeoutMs: number): Promise<T> {
   if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 1) throw new Error('Invalid finalization timeout.');
   const controller = new AbortController();
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const timeout = new Promise<never>((_resolve, reject) => {
-    timer = setTimeout(() => {
-      controller.abort();
-      reject(new Error('Reference upload finalization timed out.'));
-    }, timeoutMs);
-  });
+  let timedOut = false;
+  const timer = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, timeoutMs);
   try {
-    return await Promise.race([operation(controller.signal), timeout]);
+    const result = await operation(controller.signal);
+    if (timedOut) throw new Error('Reference upload finalization timed out.');
+    return result;
+  } catch (error) {
+    if (timedOut) throw new Error('Reference upload finalization timed out.', { cause: error });
+    throw error;
   } finally {
-    if (timer) clearTimeout(timer);
+    clearTimeout(timer);
   }
 }
 

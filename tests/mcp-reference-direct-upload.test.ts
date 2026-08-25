@@ -370,8 +370,44 @@ test('duplicate MCP image returns the existing opaque asset without inventing cl
   assert.equal(cleanupTransitions, 0);
 });
 
+test('one finalization budget and AbortSignal cover part downloads before media side effects', async () => {
+  let downloadSignal: AbortSignal | undefined;
+  let stores = 0;
+  let failures = 0;
+  const handler = createReferenceUploadCompleteHandler({
+    ...common,
+    finalizationTimeoutMs: 10,
+    async getOwnedReferenceUploadAttempt() { return attempt(); },
+    async acquireReferenceUploadCompletionLease() { return attempt({ state: 'processing', leaseId }); },
+    async renewReferenceUploadCompletionLease(input) { return input.attempt; },
+    async listReferenceUploadParts() {
+      return [
+        { partNumber: 1, storageKey: 'part-1', sizeBytes: 4, contentSha256: createHash('sha256').update('abcd').digest('hex') },
+        { partNumber: 2, storageKey: 'part-2', sizeBytes: 1, contentSha256: createHash('sha256').update('e').digest('hex') },
+      ];
+    },
+    async getStorageObjectBuffer(key: string, options?: { signal?: AbortSignal }) {
+      downloadSignal = options?.signal;
+      await new Promise((resolve) => setTimeout(resolve, 25));
+      options?.signal?.throwIfAborted();
+      return Buffer.from(key === 'part-1' ? 'abcd' : 'e');
+    },
+    async storeVideoUpload() { stores += 1; return { assetId: publicAssetId } as never; },
+    async failReferenceUploadAttempt() { failures += 1; return true; },
+  } as never);
+
+  const response = await handler(jsonRequest('/complete', { uploadId }), { params: Promise.resolve({ token }) });
+  assert.equal(response.status, 500);
+  assert.equal(downloadSignal instanceof AbortSignal, true);
+  assert.equal(downloadSignal?.aborted, true);
+  assert.equal(stores, 0);
+  assert.equal(failures, 1);
+});
+
 test('bounded finalization aborts timed-out media work and leaves the lease retryable', async () => {
   let observedAbort = false;
+  let compensationSettled = false;
+  let failureBeforeSettlement = false;
   let failures = 0;
   const handler = createReferenceUploadCompleteHandler({
     ...common,
@@ -390,19 +426,27 @@ test('bounded finalization aborts timed-out media work and leaves the lease retr
       const signal = (input as { signal?: AbortSignal }).signal;
       await new Promise<never>((_resolve, reject) => {
         const fallback = setTimeout(() => reject(new Error('media work was not bounded')), 100);
-        signal?.addEventListener('abort', () => {
+        signal?.addEventListener('abort', async () => {
           clearTimeout(fallback);
           observedAbort = true;
+          await new Promise((resolve) => setTimeout(resolve, 20));
+          compensationSettled = true;
           reject(new Error('media finalization aborted'));
         }, { once: true });
       });
       throw new Error('unreachable');
     },
-    async failReferenceUploadAttempt() { failures += 1; return true; },
+    async failReferenceUploadAttempt() {
+      failures += 1;
+      failureBeforeSettlement = !compensationSettled;
+      return true;
+    },
   } as never);
   const response = await handler(jsonRequest('/complete', { uploadId }), { params: Promise.resolve({ token }) });
   assert.equal(response.status, 500);
   assert.equal(observedAbort, true);
+  assert.equal(compensationSettled, true);
+  assert.equal(failureBeforeSettlement, false);
   assert.equal(failures, 1);
 });
 

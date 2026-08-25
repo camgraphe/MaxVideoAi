@@ -290,6 +290,7 @@ export async function completeUploadSession(
     claimId: string;
     mediaKind: CanonicalReferenceMediaKind;
     assetId: string;
+    completionLease?: { uploadId: string; leaseId: string; version: number };
   },
   dependencies: CompleteDependencies,
 ): Promise<ReferenceUploadSession> {
@@ -298,6 +299,12 @@ export async function completeUploadSession(
   requireUuid(input?.claimId, 'reference upload claim ID');
   if (!MEDIA_KINDS.has(input?.mediaKind)) throw new Error('Invalid reference upload media kind.');
   if (!boundedText(input?.assetId, 512)) throw new Error('Invalid reference upload asset ID.');
+  const completionLease = input.completionLease ?? null;
+  if (completionLease && (!UUID_V4_PATTERN.test(completionLease.uploadId)
+    || !UUID_V4_PATTERN.test(completionLease.leaseId)
+    || !Number.isSafeInteger(completionLease.version) || completionLease.version < 1)) {
+    throw new Error('Invalid reference upload completion lease.');
+  }
   const uploadedAt = requireClock(dependencies.uploadedAt, 'reference upload completion');
   const lockedRows = await dependencies.executor.query<SessionRow>(
     `SELECT ${SESSION_COLUMNS}
@@ -324,9 +331,19 @@ export async function completeUploadSession(
         AND claim_id = $3
         AND media_kind = $4
         AND state = 'created'
-        AND expires_at > $6
+        AND (expires_at > $6 OR (
+          $7::uuid IS NOT NULL AND EXISTS (
+            SELECT 1 FROM mcp_reference_upload_attempts AS attempts
+             WHERE attempts.session_id = mcp_reference_upload_sessions.session_id
+               AND attempts.upload_id = $7 AND attempts.user_id = $2 AND attempts.media_kind = $4
+               AND attempts.lease_id = $8 AND attempts.version = $9
+               AND attempts.state IN ('processing','staged') AND attempts.lease_expires_at > $6
+               AND attempts.staged_asset_id = $5 AND attempts.content_sha256 IS NOT NULL
+          )
+        ))
     RETURNING ${SESSION_COLUMNS}`,
-    [input.sessionId, input.userId, input.claimId, input.mediaKind, input.assetId, uploadedAt],
+    [input.sessionId, input.userId, input.claimId, input.mediaKind, input.assetId, uploadedAt,
+      completionLease?.uploadId ?? null, completionLease?.leaseId ?? null, completionLease?.version ?? null],
   );
   const completed = parseOptionalSession(rows);
   if (!completed) throw new AgentApiError('UPLOAD_ALREADY_USED', 'Reference upload link cannot be completed.');

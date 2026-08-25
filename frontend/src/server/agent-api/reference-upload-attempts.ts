@@ -255,10 +255,7 @@ export async function acquireReferenceUploadCompletionLease(input: { attempt: Re
     throw new AgentApiError('UPLOAD_EXPIRED', 'Reference upload is too close to expiry; restart the upload.');
   }
   const leaseId = requireUuid(dependencies.leaseId ?? randomUUID());
-  const expiresAt = new Date(Math.min(
-    dependencies.now.getTime() + MCP_REFERENCE_UPLOAD_LEASE_MS,
-    input.attempt.session.expiresAt.getTime(),
-  ));
+  const expiresAt = new Date(dependencies.now.getTime() + MCP_REFERENCE_UPLOAD_LEASE_MS);
   const rows = await dependencies.executor.query<AttemptRow>(
     `UPDATE mcp_reference_upload_attempts AS attempts SET state = 'processing', lease_id = $5, lease_expires_at = $6,
        version = version + 1, failure_code = NULL, updated_at = $7
@@ -282,11 +279,11 @@ export async function acquireReferenceUploadCompletionLease(input: { attempt: Re
 export async function renewReferenceUploadCompletionLease(input: {
   attempt: ReferenceUploadAttempt; leaseId: string; version: number;
 }, dependencies: { executor: TransactionQueryExecutor; now: Date }): Promise<ReferenceUploadAttempt> {
-  assertAttemptUsable(input.attempt, dependencies.now);
-  const expiresAt = new Date(Math.min(
-    dependencies.now.getTime() + MCP_REFERENCE_UPLOAD_LEASE_MS,
-    input.attempt.session.expiresAt.getTime(),
-  ));
+  if (input.attempt.protocolVersion !== 2
+    || input.attempt.state === 'completed' || input.attempt.state === 'aborted') {
+    throw new AgentApiError('UPLOAD_ALREADY_USED', 'Reference upload lease was lost.');
+  }
+  const expiresAt = new Date(dependencies.now.getTime() + MCP_REFERENCE_UPLOAD_LEASE_MS);
   const rows = await dependencies.executor.query<AttemptRow>(
     `UPDATE mcp_reference_upload_attempts AS attempts SET lease_expires_at = $7, updated_at = $8
       FROM mcp_reference_upload_sessions AS sessions
@@ -294,7 +291,7 @@ export async function renewReferenceUploadCompletionLease(input: {
        AND attempts.media_kind = $4 AND attempts.lease_id = $5 AND attempts.version = $6
        AND attempts.state IN ('processing','staged') AND attempts.lease_expires_at > $8
        AND sessions.session_id = attempts.session_id AND sessions.user_id = attempts.user_id
-       AND sessions.media_kind = attempts.media_kind AND sessions.state = 'created' AND sessions.expires_at > $8
+       AND sessions.media_kind = attempts.media_kind AND sessions.state = 'created'
      RETURNING attempts.protocol_version, attempts.upload_id, attempts.storage_key, attempts.file_name,
        attempts.declared_mime, attempts.declared_size, attempts.file_sha256, attempts.chunk_bytes,
        attempts.total_parts, attempts.state, attempts.version, attempts.lease_id,
@@ -486,6 +483,81 @@ export async function retainReferenceUploadCleanupObject(input: {
   if (retained.length !== 1) throw new Error('Reference upload cleanup object was not retained.');
 }
 
+type ReferenceUploadCleanupCandidate = {
+  cleanup_id: unknown; object_key: unknown; owner_prefix: unknown;
+  object_role: unknown; attempt_storage_key: unknown;
+};
+
+async function claimReferenceUploadFinalDeletion(
+  row: ReferenceUploadCleanupCandidate,
+  executor: QueryExecutor,
+  now: Date,
+): Promise<string | null> {
+  const claimId = randomUUID();
+  const leaseExpiresAt = new Date(now.getTime() + MCP_REFERENCE_UPLOAD_LEASE_MS);
+  const rows = await executor.query<{ delete_claim_id: unknown }>(
+    `UPDATE mcp_reference_upload_object_fences AS fences
+        SET state = 'deleting', delete_claim_id = $3, delete_lease_expires_at = $4, updated_at = $2
+      WHERE fences.object_key = $1
+        AND (fences.state IN ('available','deleted')
+          OR (fences.state = 'deleting' AND fences.delete_lease_expires_at <= $2))
+        AND NOT EXISTS (
+          SELECT 1 FROM user_assets AS assets
+           WHERE position($1 in assets.url) > 0
+              OR position($1 in COALESCE(assets.metadata->>'thumbUrl', '')) > 0
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM media_assets AS media
+           WHERE media.deleted_at IS NULL
+             AND (position($1 in media.url) > 0
+               OR position($1 in COALESCE(media.thumb_url, '')) > 0)
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM mcp_reference_upload_cleanup_objects AS owners
+          JOIN mcp_reference_upload_attempts AS attempts
+            ON attempts.session_id = owners.session_id AND attempts.upload_id = owners.upload_id
+           AND attempts.user_id = owners.user_id AND attempts.media_kind = owners.media_kind
+          WHERE owners.object_key = $1 AND owners.cleanup_id <> $5
+            AND owners.state IN ('pending','retained')
+            AND (owners.state = 'retained' OR attempts.state <> 'aborted'
+              OR (attempts.lease_id IS NOT NULL AND attempts.lease_expires_at > $2))
+        )
+      RETURNING fences.delete_claim_id`,
+    [String(row.object_key), now, claimId, leaseExpiresAt, String(row.cleanup_id)],
+  );
+  return rows.length === 1 ? String(rows[0].delete_claim_id) : null;
+}
+
+async function settleReferenceUploadFinalDeletion(input: {
+  row: ReferenceUploadCleanupCandidate; claimId: string; deleted: boolean; now: Date;
+}, executor: QueryExecutor): Promise<boolean> {
+  if (!input.deleted) {
+    await executor.query(
+      `UPDATE mcp_reference_upload_object_fences
+          SET state = 'available', delete_claim_id = NULL, delete_lease_expires_at = NULL, updated_at = $3
+        WHERE object_key = $1 AND state = 'deleting' AND delete_claim_id = $2`,
+      [String(input.row.object_key), input.claimId, input.now],
+    );
+    return false;
+  }
+  const rows = await executor.query<{ cleanup_id: unknown }>(
+    `WITH settled_fence AS (
+       UPDATE mcp_reference_upload_object_fences
+          SET state = 'deleted', delete_claim_id = NULL, delete_lease_expires_at = NULL, updated_at = $4
+        WHERE object_key = $1 AND state = 'deleting' AND delete_claim_id = $2
+       RETURNING object_key
+     )
+     UPDATE mcp_reference_upload_cleanup_objects AS cleanup
+        SET state = 'deleted', updated_at = $4
+       FROM settled_fence
+      WHERE cleanup.cleanup_id = $3 AND cleanup.object_key = settled_fence.object_key
+        AND cleanup.state = 'pending'
+     RETURNING cleanup.cleanup_id`,
+    [String(input.row.object_key), input.claimId, String(input.row.cleanup_id), input.now],
+  );
+  return rows.length === 1;
+}
+
 export async function cleanupExpiredReferenceUploadAttempts(options: { limit?: number } = {}, dependencies: {
   executor?: QueryExecutor;
   now?: () => Date;
@@ -495,10 +567,7 @@ export async function cleanupExpiredReferenceUploadAttempts(options: { limit?: n
   if (!Number.isSafeInteger(limit) || limit < 1 || limit > 1_000) throw new Error('Invalid upload cleanup batch size.');
   const executor = dependencies.executor ?? { query };
   const now = (dependencies.now ?? (() => new Date()))();
-  const rows = await executor.query<{
-    cleanup_id: unknown; object_key: unknown; owner_prefix: unknown;
-    object_role: unknown; attempt_storage_key: unknown;
-  }>(
+  const rows = await executor.query<ReferenceUploadCleanupCandidate>(
     `WITH candidates AS (
        SELECT attempts.session_id, attempts.upload_id, attempts.user_id, attempts.media_kind
          FROM mcp_reference_upload_attempts AS attempts
@@ -530,11 +599,10 @@ export async function cleanupExpiredReferenceUploadAttempts(options: { limit?: n
           AND cleanup.user_id = aborted.user_id AND cleanup.media_kind = aborted.media_kind
           AND cleanup.state = 'pending' AND cleanup.object_role IN ('final','thumbnail','legacy_staging')
           AND (
-            EXISTS (SELECT 1 FROM user_assets AS assets WHERE assets.user_id = cleanup.user_id
-              AND (position(cleanup.object_key in assets.url) > 0
-                OR position(cleanup.object_key in COALESCE(assets.metadata->>'thumbUrl', '')) > 0))
-            OR EXISTS (SELECT 1 FROM media_assets AS media WHERE media.user_id = cleanup.user_id
-              AND media.deleted_at IS NULL
+            EXISTS (SELECT 1 FROM user_assets AS assets
+              WHERE position(cleanup.object_key in assets.url) > 0
+                OR position(cleanup.object_key in COALESCE(assets.metadata->>'thumbUrl', '')) > 0)
+            OR EXISTS (SELECT 1 FROM media_assets AS media WHERE media.deleted_at IS NULL
               AND (position(cleanup.object_key in media.url) > 0
                 OR position(cleanup.object_key in COALESCE(media.thumb_url, '')) > 0))
           )
@@ -560,15 +628,40 @@ export async function cleanupExpiredReferenceUploadAttempts(options: { limit?: n
       && objectKey === String(row.attempt_storage_key);
     return row.object_role === 'final' && ownerPrefix.startsWith('user-assets/');
   });
-  const results = await Promise.allSettled(scopedRows.map((row) => dependencies.deleteStorageObjectKey(String(row.object_key))));
-  const deletedIds = scopedRows.filter((_row, index) => results[index]?.status === 'fulfilled')
-    .map((row) => String(row.cleanup_id));
-  if (deletedIds.length) await executor.query(
+  const claimedRows: Array<{ row: ReferenceUploadCleanupCandidate; claimId: string | null }> = [];
+  for (const row of scopedRows) {
+    if (row.object_role !== 'final') {
+      claimedRows.push({ row, claimId: null });
+      continue;
+    }
+    const claimId = await claimReferenceUploadFinalDeletion(row, executor, now);
+    if (claimId) claimedRows.push({ row, claimId });
+  }
+  const results = await Promise.allSettled(claimedRows.map(({ row }) => dependencies.deleteStorageObjectKey(String(row.object_key))));
+  const deletedIds: string[] = [];
+  for (let index = 0; index < claimedRows.length; index += 1) {
+    const claimed = claimedRows[index];
+    if (!claimed) continue;
+    const deleted = results[index]?.status === 'fulfilled';
+    if (claimed.claimId) {
+      if (await settleReferenceUploadFinalDeletion({
+        row: claimed.row, claimId: claimed.claimId, deleted, now,
+      }, executor)) {
+        deletedIds.push(String(claimed.row.cleanup_id));
+      }
+    } else if (deleted) {
+      deletedIds.push(String(claimed.row.cleanup_id));
+    }
+  }
+  const nonFinalDeletedIds = deletedIds.filter((cleanupId) => claimedRows.some(
+    ({ row, claimId }) => claimId === null && String(row.cleanup_id) === cleanupId,
+  ));
+  if (nonFinalDeletedIds.length) await executor.query(
     `UPDATE mcp_reference_upload_cleanup_objects SET state = 'deleted', updated_at = clock_timestamp()
       WHERE cleanup_id = ANY($1::uuid[]) AND state = 'pending'`,
-    [deletedIds],
+    [nonFinalDeletedIds],
   );
-  return { selected: scopedRows.length, deleted: deletedIds.length };
+  return { selected: claimedRows.length, deleted: deletedIds.length };
 }
 
 export function contentSha256(bytes: Buffer): string { return createHash('sha256').update(bytes).digest('hex'); }

@@ -626,36 +626,42 @@ export async function getStorageObjectMetadata(key: string): Promise<{ size: num
   };
 }
 
-async function storageBodyToBuffer(body: unknown): Promise<Buffer> {
+async function storageBodyToBuffer(body: unknown, signal?: AbortSignal): Promise<Buffer> {
+  signal?.throwIfAborted();
   if (!body) return Buffer.alloc(0);
   if (body instanceof Uint8Array) return Buffer.from(body);
   if (typeof (body as { transformToByteArray?: unknown }).transformToByteArray === 'function') {
     const bytes = await (body as { transformToByteArray: () => Promise<Uint8Array> }).transformToByteArray();
+    signal?.throwIfAborted();
     return Buffer.from(bytes);
   }
   if (typeof (body as { arrayBuffer?: unknown }).arrayBuffer === 'function') {
     const arrayBuffer = await (body as { arrayBuffer: () => Promise<ArrayBuffer> }).arrayBuffer();
+    signal?.throwIfAborted();
     return Buffer.from(arrayBuffer);
   }
   if (typeof (body as AsyncIterable<Uint8Array | string>)[Symbol.asyncIterator] === 'function') {
     const chunks: Buffer[] = [];
     for await (const chunk of body as AsyncIterable<Uint8Array | string>) {
+      signal?.throwIfAborted();
       chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
     }
+    signal?.throwIfAborted();
     return Buffer.concat(chunks);
   }
   throw new StorageUploadError('Failed to read storage object body.');
 }
 
-export async function getStorageObjectBuffer(key: string): Promise<Buffer> {
+export async function getStorageObjectBuffer(key: string, options: { signal?: AbortSignal } = {}): Promise<Buffer> {
   const client = getS3Client();
   const response = await client.send(
     new GetObjectCommand({
       Bucket: S3_BUCKET,
       Key: key,
-    })
+    }),
+    { abortSignal: options.signal },
   );
-  return storageBodyToBuffer(response.Body);
+  return storageBodyToBuffer(response.Body, options.signal);
 }
 
 export async function createSignedDownloadUrl(key: string, { expiresInSeconds }: { expiresInSeconds: number }): Promise<string> {

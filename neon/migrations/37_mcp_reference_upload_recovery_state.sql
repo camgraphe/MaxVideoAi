@@ -1,6 +1,15 @@
 ALTER TABLE mcp_reference_upload_attempts
   ADD COLUMN IF NOT EXISTS protocol_version SMALLINT NOT NULL DEFAULT 1;
 
+ALTER TABLE mcp_reference_upload_sessions
+  DROP CONSTRAINT IF EXISTS mcp_reference_upload_sessions_time_order;
+ALTER TABLE mcp_reference_upload_sessions
+  ADD CONSTRAINT mcp_reference_upload_sessions_time_order CHECK (
+    updated_at >= created_at
+    AND (claimed_at IS NULL OR (claimed_at >= created_at AND claimed_at < expires_at))
+    AND (uploaded_at IS NULL OR uploaded_at >= created_at)
+  ) NOT VALID;
+
 UPDATE mcp_reference_upload_attempts
    SET protocol_version = 2
  WHERE file_sha256 ~ '^[a-f0-9]{64}$'
@@ -52,6 +61,65 @@ CREATE TABLE IF NOT EXISTS mcp_reference_upload_cleanup_objects (
 CREATE INDEX IF NOT EXISTS mcp_reference_upload_cleanup_pending_idx
   ON mcp_reference_upload_cleanup_objects (state, updated_at, cleanup_id)
   WHERE state = 'pending';
+
+CREATE TABLE IF NOT EXISTS mcp_reference_upload_object_fences (
+  object_key TEXT PRIMARY KEY,
+  state TEXT NOT NULL DEFAULT 'available' CHECK (state IN ('available', 'deleting', 'deleted')),
+  delete_claim_id UUID,
+  delete_lease_expires_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL,
+  CONSTRAINT mcp_reference_upload_object_fence_shape CHECK (
+    (state = 'deleting' AND delete_claim_id IS NOT NULL AND delete_lease_expires_at IS NOT NULL)
+    OR (state IN ('available', 'deleted') AND delete_claim_id IS NULL AND delete_lease_expires_at IS NULL)
+  ),
+  CONSTRAINT mcp_reference_upload_object_fence_key CHECK (
+    length(object_key) BETWEEN 1 AND 1024
+    AND object_key = btrim(object_key)
+    AND object_key LIKE 'user-assets/by-content/%'
+  )
+);
+
+INSERT INTO mcp_reference_upload_object_fences (object_key, state, created_at, updated_at)
+SELECT DISTINCT object_key, 'available', min(created_at), max(updated_at)
+  FROM mcp_reference_upload_cleanup_objects
+ WHERE object_role = 'final'
+ GROUP BY object_key
+ON CONFLICT (object_key) DO NOTHING;
+
+CREATE OR REPLACE FUNCTION fence_mcp_reference_upload_final_registration()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  fenced_key TEXT;
+BEGIN
+  IF NEW.object_role <> 'final' THEN
+    RETURN NEW;
+  END IF;
+  INSERT INTO mcp_reference_upload_object_fences (
+    object_key, state, delete_claim_id, delete_lease_expires_at, created_at, updated_at
+  ) VALUES (
+    NEW.object_key, 'available', NULL, NULL, NEW.created_at, NEW.updated_at
+  )
+  ON CONFLICT (object_key) DO UPDATE
+    SET state = 'available', delete_claim_id = NULL, delete_lease_expires_at = NULL,
+        updated_at = EXCLUDED.updated_at
+    WHERE mcp_reference_upload_object_fences.state IN ('available', 'deleted')
+  RETURNING object_key INTO fenced_key;
+  IF fenced_key IS NULL THEN
+    RAISE EXCEPTION 'reference upload object is being deleted; retry registration'
+      USING ERRCODE = '40001';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS mcp_reference_upload_cleanup_fence_final_registration
+  ON mcp_reference_upload_cleanup_objects;
+CREATE TRIGGER mcp_reference_upload_cleanup_fence_final_registration
+  BEFORE INSERT ON mcp_reference_upload_cleanup_objects
+  FOR EACH ROW EXECUTE FUNCTION fence_mcp_reference_upload_final_registration();
 
 INSERT INTO mcp_reference_upload_cleanup_objects (
   cleanup_id, session_id, upload_id, user_id, media_kind, object_role,
