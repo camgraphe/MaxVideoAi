@@ -80,6 +80,9 @@ const stagingEnvironment = {
   MCP_API_HOST: 'maxvideoai-mcp-staging.vercel.app',
   MCP_RESOURCE_URL: 'https://maxvideoai-mcp-staging.vercel.app/mcp',
   MCP_STAGING_OPERATIONAL_ENABLED: 'true',
+  MCP_STAGING_REFERENCE_CLEANUP_ENABLED: 'true',
+  MCP_STAGING_REFERENCE_STORAGE_PREFIX: 'mcp-reference-staging/',
+  CRON_SECRET: 'test-only-cleanup-secret',
 };
 
 async function withStagingEnvironment<TResult>(callback: () => Promise<TResult>): Promise<TResult> {
@@ -312,7 +315,7 @@ test('tool audit records only the allowlisted name and success/failure projectio
   const success = await handleMcpHttpRequest(
     protocolRequest({
       jsonrpc: '2.0', id: 4, method: 'tools/call',
-      params: { name: 'get_account_status', arguments: { prompt: 'private', accessToken: 'private' } },
+      params: { name: 'get_account_status', arguments: {} },
     }),
     deps({
       recordEvent,
