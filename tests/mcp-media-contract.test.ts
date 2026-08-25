@@ -32,26 +32,36 @@ test('R1 owns separate public media and internal reference type modules', () => 
   assert.equal(existsSync(referenceTypesPath), true, `${referenceTypesPath} must exist`);
 });
 
-test('AgentMediaItem is the exact image-only public DTO with one controlled URL field', () => {
+test('AgentMediaKind aliases the canonical kind and AgentMediaItem is an exact safe DTO', () => {
   const moduleSource = source(mediaTypesPath);
   const body = typeBody(moduleSource, 'AgentMediaItem');
+  assert.match(
+    moduleSource,
+    /import type \{\s*CanonicalReferenceMediaKind\s*\} from ['"]\.\/generation-types['"];/u,
+  );
+  assert.match(
+    moduleSource,
+    /export type AgentMediaKind\s*=\s*CanonicalReferenceMediaKind;/u,
+  );
   assert.deepEqual(fieldNames(body), [
     'assetId',
     'kind',
     'label',
     'width',
     'height',
+    'durationSec',
     'mimeType',
     'previewUrl',
     'source',
     'createdAt',
   ]);
   assert.match(body, /assetId:\s*string;/u);
-  assert.match(body, /kind:\s*'image';/u);
+  assert.match(body, /kind:\s*AgentMediaKind;/u);
   assert.match(body, /label:\s*string\s*\|\s*null;/u);
   assert.match(body, /width:\s*number\s*\|\s*null;/u);
   assert.match(body, /height:\s*number\s*\|\s*null;/u);
-  assert.match(body, /mimeType:\s*string\s*\|\s*null;/u);
+  assert.match(body, /durationSec:\s*number\s*\|\s*null;/u);
+  assert.match(body, /mimeType:\s*string;/u);
   assert.match(body, /previewUrl:\s*string\s*\|\s*null;/u);
   assert.match(body, /source:\s*'upload'\s*\|\s*'generated'\s*\|\s*'imported';/u);
   assert.match(body, /createdAt:\s*string;/u);

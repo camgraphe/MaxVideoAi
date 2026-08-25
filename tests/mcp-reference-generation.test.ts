@@ -79,6 +79,48 @@ test('owned asset references resolve to private internal URLs without changing t
   assert.deepEqual(request.references, [{ kind: 'asset', assetId: 'asset-image-1', role: 'source' }]);
 });
 
+test('owned video and audio kinds stay database-derived while caller asset references have no kind field', async () => {
+  const multimodalRequest: CanonicalGenerationRequest = {
+    ...request,
+    mode: 'ref2v',
+    references: [
+      { kind: 'asset', assetId: 'asset-video-1', role: 'source' },
+      { kind: 'asset', assetId: 'asset-audio-1', role: 'reference' },
+    ],
+  };
+  const resolved = await resolveGenerationReferences(multimodalRequest, principal, {
+    async resolveOwnedReferenceAsset(_currentPrincipal, assetId) {
+      return assetId === 'asset-video-1'
+        ? {
+            assetId,
+            mediaKind: 'video',
+            storageUrl: 'https://media.maxvideoai.com/private/source.mp4',
+            width: 1920,
+            height: 1080,
+            mimeType: 'video/mp4',
+          }
+        : {
+            assetId,
+            mediaKind: 'audio',
+            storageUrl: 'https://media.maxvideoai.com/private/reference.m4a',
+            width: null,
+            height: null,
+            mimeType: 'audio/mp4',
+          };
+    },
+  });
+
+  assert.deepEqual(resolved.map(({ assetId, role, mediaKind, mimeType }) => ({ assetId, role, mediaKind, mimeType })), [
+    { assetId: 'asset-video-1', role: 'source', mediaKind: 'video', mimeType: 'video/mp4' },
+    { assetId: 'asset-audio-1', role: 'reference', mediaKind: 'audio', mimeType: 'audio/mp4' },
+  ]);
+  assert.deepEqual(multimodalRequest.references, [
+    { kind: 'asset', assetId: 'asset-video-1', role: 'source' },
+    { kind: 'asset', assetId: 'asset-audio-1', role: 'reference' },
+  ]);
+  assert.equal(multimodalRequest.references.some((reference) => 'mediaKind' in reference), false);
+});
+
 test('wrong-user and stale assets fail before pricing or provider submission', async () => {
   await assert.rejects(
     resolveGenerationReferences(request, principal, {

@@ -1,4 +1,6 @@
 import type { AgentMediaItem } from '../../frontend/src/server/agent-api/media-types';
+import type { AgentMediaKind } from '../../frontend/src/server/agent-api/media-types';
+import type { CanonicalReferenceMediaKind } from '../../frontend/src/server/agent-api/generation-types';
 import type { ResolvedReference } from '../../frontend/src/server/agent-api/reference-types';
 
 type Equal<Left, Right> =
@@ -14,11 +16,12 @@ type Assert<Condition extends true> = Condition;
 
 type ExpectedAgentMediaItem = {
   assetId: string;
-  kind: 'image';
+  kind: 'image' | 'video' | 'audio';
   label: string | null;
   width: number | null;
   height: number | null;
-  mimeType: string | null;
+  durationSec: number | null;
+  mimeType: string;
   previewUrl: string | null;
   source: 'upload' | 'generated' | 'imported';
   createdAt: string;
@@ -30,6 +33,7 @@ type ExpectedAgentMediaKeys =
   | 'label'
   | 'width'
   | 'height'
+  | 'durationSec'
   | 'mimeType'
   | 'previewUrl'
   | 'source'
@@ -49,7 +53,12 @@ type _AgentMediaShapeIsExact = Assert<
 type _AgentMediaKeysAreExact = Assert<
   Equal<keyof AgentMediaItem, ExpectedAgentMediaKeys>
 >;
-type _AgentMediaKindIsExact = Assert<Equal<AgentMediaItem['kind'], 'image'>>;
+type _AgentMediaKindAliasesCanonicalKind = Assert<
+  Equal<AgentMediaKind, CanonicalReferenceMediaKind>
+>;
+type _AgentMediaKindIsExact = Assert<
+  Equal<AgentMediaItem['kind'], 'image' | 'video' | 'audio'>
+>;
 type _AgentMediaSourceIsExact = Assert<
   Equal<AgentMediaItem['source'], 'upload' | 'generated' | 'imported'>
 >;

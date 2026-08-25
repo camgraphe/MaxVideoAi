@@ -6,6 +6,7 @@ import type { MaxVideoAiMcpServices } from '@/server/mcp/server';
 import { runAgentTool } from '@/server/mcp/tool-result';
 
 const inputSchema = z.object({
+  kind: z.enum(['image', 'video', 'audio']).optional(),
   cursor: z.string().min(1).max(1_024).optional(),
   limit: z.number().int().min(1).max(50).default(20),
 }).strict();
@@ -21,9 +22,9 @@ export function registerListMediaTool(
   server.registerTool(
     'list_media',
     {
-      title: 'List private MaxVideoAI images',
+      title: 'List private MaxVideoAI reference media',
       description:
-        'Use this when the user needs their reusable private MaxVideoAI image asset IDs and controlled previews. Do not use it to upload files, list audio or video, expose source URLs, or start generation.',
+        'Use this when the user needs reusable private MaxVideoAI image, video, or audio asset IDs and controlled signed previews. Optionally filter by media kind. Do not use it to upload files, expose storage or provider URLs, return asset metadata, or start generation.',
       inputSchema,
       annotations: {
         readOnlyHint: true,

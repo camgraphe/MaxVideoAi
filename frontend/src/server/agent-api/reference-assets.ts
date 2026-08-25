@@ -3,7 +3,10 @@ import { isAllowedAssetHost } from '@/server/storage';
 
 import { AgentApiError } from './errors';
 import type { AgentPrincipal } from './principal';
-import { normalizeSupportedReferenceRasterMime } from './reference-media-policy';
+import {
+  normalizeSupportedReferenceDuration,
+  resolveSupportedReferenceMedia,
+} from './reference-media-policy';
 import type { ResolvedReference } from './reference-types';
 
 const MAX_ASSET_ID_LENGTH = 512;
@@ -18,6 +21,7 @@ type ReferenceAssetRow = {
   height: number | null;
   status: string | null;
   deleted_at: string | null;
+  metadata: unknown;
 };
 
 export type OwnedReferenceAsset = Omit<ResolvedReference, 'role'>;
@@ -49,7 +53,7 @@ function normalizeAssetId(value: unknown): string {
     || value !== value.trim()
     || /[\u0000-\u001f\u007f]/u.test(value)
   ) {
-    throw new AgentApiError('REFERENCE_INVALID', 'Reference image is not usable.');
+    throw new AgentApiError('REFERENCE_INVALID', 'Reference media is not usable.');
   }
   return value;
 }
@@ -75,8 +79,15 @@ function validStorageUrl(value: unknown): value is string {
   }
 }
 
+function hasValidDurationMetadata(value: unknown): boolean {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return true;
+  if (!Object.hasOwn(value, 'durationSec')) return true;
+  const durationSec = (value as Record<string, unknown>).durationSec;
+  return normalizeSupportedReferenceDuration('video', durationSec).valid;
+}
+
 function invalidReference(): never {
-  throw new AgentApiError('REFERENCE_INVALID', 'Reference image is not usable.');
+  throw new AgentApiError('REFERENCE_INVALID', 'Reference media is not usable.');
 }
 
 export async function resolveOwnedReferenceAsset(
@@ -88,7 +99,7 @@ export async function resolveOwnedReferenceAsset(
   const normalizedAssetId = normalizeAssetId(assetId);
   const executor = dependencies.executor ?? defaultExecutor;
   const rows = await executor.query<ReferenceAssetRow>(
-    `SELECT id, user_id, kind, url, mime_type, width, height, status, deleted_at
+    `SELECT id, user_id, kind, url, mime_type, width, height, status, deleted_at, metadata
        FROM media_assets
       WHERE id = $1
         AND user_id = $2
@@ -97,30 +108,30 @@ export async function resolveOwnedReferenceAsset(
   );
   const row = rows[0];
   if (!row) {
-    throw new AgentApiError('REFERENCE_NOT_FOUND', 'Reference image not found.');
+    throw new AgentApiError('REFERENCE_NOT_FOUND', 'Reference media not found.');
   }
   if (row.user_id !== principal.userId) {
-    throw new AgentApiError('REFERENCE_FORBIDDEN', 'Reference image is not available.');
+    throw new AgentApiError('REFERENCE_FORBIDDEN', 'Reference media is not available.');
   }
 
-  const mimeType = normalizeSupportedReferenceRasterMime(row.mime_type);
+  const media = resolveSupportedReferenceMedia(row.kind, row.mime_type);
   if (
     row.id !== normalizedAssetId
-    || row.kind !== 'image'
     || row.status?.trim().toLowerCase() !== 'ready'
     || row.deleted_at !== null
-    || !mimeType
+    || !media
     || !validStorageUrl(row.url)
     || !validDimension(row.width)
     || !validDimension(row.height)
+    || !hasValidDurationMetadata(row.metadata)
   ) invalidReference();
 
   return {
     assetId: row.id,
-    mediaKind: 'image',
+    mediaKind: media.kind,
     storageUrl: row.url,
     width: row.width,
     height: row.height,
-    mimeType,
+    mimeType: media.canonicalMime,
   };
 }

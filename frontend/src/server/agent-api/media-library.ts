@@ -15,16 +15,22 @@ import {
 import type { MediaAssetRecord } from '@/server/media-library';
 
 import { AgentApiError } from './errors';
-import type { AgentMediaItem } from './media-types';
+import type { AgentMediaItem, AgentMediaKind } from './media-types';
 import type { AgentPrincipal } from './principal';
-import { normalizeSupportedReferenceRasterMime } from './reference-media-policy';
+import {
+  normalizeSupportedReferenceDuration,
+  resolveSupportedReferenceMedia,
+  type SupportedReferenceMedia,
+} from './reference-media-policy';
 
 const DEFAULT_PAGE_LIMIT = 20;
 const MAX_PAGE_LIMIT = 50;
 const MAX_CURSOR_LENGTH = 1_024;
 const PRIVATE_PREVIEW_TTL_SECONDS = 5 * 60;
+const MEDIA_KIND_SET = new Set<AgentMediaKind>(['image', 'video', 'audio']);
 
 export type ListAgentMediaInput = {
+  kind?: AgentMediaKind;
   cursor?: string | null;
   limit?: number;
 };
@@ -49,7 +55,15 @@ function requirePrincipal(principal: AgentPrincipal): void {
   }
 }
 
-function normalizeInput(input: ListAgentMediaInput): { cursor: string | null; limit: number } {
+function normalizeInput(input: ListAgentMediaInput): {
+  kind: AgentMediaKind | null;
+  cursor: string | null;
+  limit: number;
+} {
+  const kind = input.kind ?? null;
+  if (kind !== null && !MEDIA_KIND_SET.has(kind)) {
+    throw new AgentApiError('PARAMETER_INVALID', 'kind must be image, video, or audio.');
+  }
   const limit = input.limit ?? DEFAULT_PAGE_LIMIT;
   if (!Number.isInteger(limit) || limit < 1 || limit > MAX_PAGE_LIMIT) {
     throw new AgentApiError('PARAMETER_INVALID', 'limit must be an integer between 1 and 50.');
@@ -66,7 +80,7 @@ function normalizeInput(input: ListAgentMediaInput): { cursor: string | null; li
   ) {
     throw new AgentApiError('PARAMETER_INVALID', 'cursor is not a valid media-library cursor.');
   }
-  return { cursor, limit };
+  return { kind, cursor, limit };
 }
 
 function normalizeLabel(value: unknown): string | null {
@@ -117,15 +131,27 @@ async function createStoragePreviewUrl(asset: MediaAssetRecord): Promise<string 
   return null;
 }
 
-function isListableImage(asset: MediaAssetRecord, userId: string): boolean {
-  return asset.userId === userId
-    && asset.kind === 'image'
-    && normalizeSupportedReferenceRasterMime(asset.mimeType) !== null
-    && asset.status.trim().toLowerCase() === 'ready'
-    && typeof asset.id === 'string'
-    && asset.id.length > 0
-    && typeof asset.createdAt === 'string'
-    && Number.isFinite(Date.parse(asset.createdAt));
+function resolveListableMedia(
+  asset: MediaAssetRecord,
+  userId: string,
+  requestedKind: AgentMediaKind | null,
+): { media: SupportedReferenceMedia; durationSec: number | null } | null {
+  const media = resolveSupportedReferenceMedia(asset.kind, asset.mimeType);
+  const duration = normalizeSupportedReferenceDuration(asset.kind, asset.durationSec);
+  if (
+    asset.userId !== userId
+    || (requestedKind !== null && asset.kind !== requestedKind)
+    || !media
+    || !duration.valid
+    || typeof asset.status !== 'string'
+    || asset.status.trim().toLowerCase() !== 'ready'
+    || typeof asset.id !== 'string'
+    || asset.id.length < 1
+    || asset.id.length > 512
+    || typeof asset.createdAt !== 'string'
+    || !Number.isFinite(Date.parse(asset.createdAt))
+  ) return null;
+  return { media, durationSec: duration.durationSec };
 }
 
 export async function listAgentMedia(
@@ -139,7 +165,7 @@ export async function listAgentMedia(
   const createPrivatePreviewUrl = dependencies.createPrivatePreviewUrl ?? createStoragePreviewUrl;
   const page = await listAssetPage({
     userId: principal.userId,
-    kind: 'image',
+    kind: normalized.kind,
     cursor: normalized.cursor,
     limit: normalized.limit,
   });
@@ -147,20 +173,23 @@ export async function listAgentMedia(
     throw new Error('The media library returned an invalid pagination cursor.');
   }
 
+  const listable = page.items.flatMap((asset) => {
+    const resolved = resolveListableMedia(asset, principal.userId, normalized.kind);
+    return resolved ? [{ asset, resolved }] : [];
+  });
   const items = await Promise.all(
-    page.items
-      .filter((asset) => isListableImage(asset, principal.userId))
-      .map(async (asset): Promise<AgentMediaItem> => ({
-        assetId: asset.id,
-        kind: 'image',
-        label: normalizeLabel(asset.metadata.label),
-        width: normalizeDimension(asset.width),
-        height: normalizeDimension(asset.height),
-        mimeType: normalizeSupportedReferenceRasterMime(asset.mimeType),
-        previewUrl: controlledPrivatePreview(await createPrivatePreviewUrl(asset)),
-        source: normalizeSource(asset.source),
-        createdAt: asset.createdAt!,
-      })),
+    listable.map(async ({ asset, resolved }): Promise<AgentMediaItem> => ({
+      assetId: asset.id,
+      kind: resolved.media.kind,
+      label: normalizeLabel(asset.metadata.label),
+      width: normalizeDimension(asset.width),
+      height: normalizeDimension(asset.height),
+      durationSec: resolved.durationSec,
+      mimeType: resolved.media.canonicalMime,
+      previewUrl: controlledPrivatePreview(await createPrivatePreviewUrl(asset)),
+      source: normalizeSource(asset.source),
+      createdAt: asset.createdAt!,
+    })),
   );
 
   return {

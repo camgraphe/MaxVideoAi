@@ -54,7 +54,7 @@ type AgentMediaPage = {
 
 type MediaLibraryModule = {
   listAgentMedia(
-    input: { cursor?: string | null; limit?: number },
+    input: { kind?: 'image' | 'video' | 'audio'; cursor?: string | null; limit?: number },
     currentPrincipal: AgentPrincipal,
     dependencies: {
       listAssetPage(params: Record<string, unknown>): Promise<{
@@ -119,7 +119,7 @@ function baseServices(overrides: Record<string, unknown> = {}): MaxVideoAiMcpSer
   } as MaxVideoAiMcpServices;
 }
 
-test('listAgentMedia delegates image-only pagination and returns safe normalized DTOs', async () => {
+test('listAgentMedia performs one unfiltered owner page read and returns safe multimodal DTOs', async () => {
   const { listAgentMedia } = await loadMediaLibrary();
   const cursor = encodeMediaLibraryCursor({
     createdAt: '2026-07-17T09:00:00.000Z',
@@ -134,8 +134,22 @@ test('listAgentMedia delegates image-only pagination and returns safe normalized
           asset(),
           asset({ id: 'asset-generated', source: 'saved_job_output', metadata: { label: 'Generated' } }),
           asset({ id: 'asset-imported', source: 'character', metadata: { label: 'Imported' } }),
-          asset({ id: 'asset-video', kind: 'video', mimeType: 'video/mp4' }),
-          asset({ id: 'asset-audio', kind: 'audio', mimeType: 'audio/mpeg' }),
+          asset({
+            id: 'asset-video',
+            kind: 'video',
+            mimeType: 'VIDEO/MP4; charset=binary',
+            durationSec: 4,
+            metadata: { label: 'Opening shot', providerPayload: 'do-not-return' },
+          }),
+          asset({
+            id: 'asset-audio',
+            kind: 'audio',
+            mimeType: 'audio/x-wav',
+            width: null,
+            height: null,
+            durationSec: 12.5,
+            metadata: { label: 'Sound bed', sourceUrl: 'https://private.example/audio.wav' },
+          }),
           asset({ id: 'asset-image-video-mime', kind: 'image', mimeType: 'video/mp4' }),
           asset({ id: 'asset-image-audio-mime', kind: 'image', mimeType: 'audio/mpeg' }),
           asset({ id: 'asset-deleted', status: 'deleted' }),
@@ -149,6 +163,9 @@ test('listAgentMedia delegates image-only pagination and returns safe normalized
       if (candidate.id === 'asset-upload') {
         return 'https://cdn.maxvideoai.com/private/upload.png?X-Amz-Signature=test';
       }
+      if (candidate.id === 'asset-video') {
+        return 'https://cdn.maxvideoai.com/private/video.mp4?X-Amz-Signature=test';
+      }
       if (candidate.id === 'asset-generated') {
         return 'https://private-provider.example/generated.png?X-Amz-Signature=leak';
       }
@@ -156,7 +173,7 @@ test('listAgentMedia delegates image-only pagination and returns safe normalized
     },
   });
 
-  assert.deepEqual(calls, [{ userId: principal.userId, kind: 'image', cursor, limit: 50 }]);
+  assert.deepEqual(calls, [{ userId: principal.userId, kind: null, cursor, limit: 50 }]);
   assert.deepEqual(page, {
     items: [
       {
@@ -165,6 +182,7 @@ test('listAgentMedia delegates image-only pagination and returns safe normalized
         label: 'Uploaded reference',
         width: 1280,
         height: 720,
+        durationSec: null,
         mimeType: 'image/png',
         previewUrl: 'https://cdn.maxvideoai.com/private/upload.png?X-Amz-Signature=test',
         source: 'upload',
@@ -176,6 +194,7 @@ test('listAgentMedia delegates image-only pagination and returns safe normalized
         label: 'Generated',
         width: 1280,
         height: 720,
+        durationSec: null,
         mimeType: 'image/png',
         previewUrl: null,
         source: 'generated',
@@ -187,9 +206,34 @@ test('listAgentMedia delegates image-only pagination and returns safe normalized
         label: 'Imported',
         width: 1280,
         height: 720,
+        durationSec: null,
         mimeType: 'image/png',
         previewUrl: null,
         source: 'imported',
+        createdAt: '2026-07-17T08:00:00.000Z',
+      },
+      {
+        assetId: 'asset-video',
+        kind: 'video',
+        label: 'Opening shot',
+        width: 1280,
+        height: 720,
+        durationSec: 4,
+        mimeType: 'video/mp4',
+        previewUrl: 'https://cdn.maxvideoai.com/private/video.mp4?X-Amz-Signature=test',
+        source: 'upload',
+        createdAt: '2026-07-17T08:00:00.000Z',
+      },
+      {
+        assetId: 'asset-audio',
+        kind: 'audio',
+        label: 'Sound bed',
+        width: null,
+        height: null,
+        durationSec: 12.5,
+        mimeType: 'audio/wav',
+        previewUrl: null,
+        source: 'upload',
         createdAt: '2026-07-17T08:00:00.000Z',
       },
     ],
@@ -202,6 +246,7 @@ test('listAgentMedia delegates image-only pagination and returns safe normalized
     'label',
     'width',
     'height',
+    'durationSec',
     'mimeType',
     'previewUrl',
     'source',
@@ -213,7 +258,7 @@ test('listAgentMedia delegates image-only pagination and returns safe normalized
   );
 });
 
-test('listAgentMedia allowlists exact raster MIME types before invoking the private signer', async () => {
+test('listAgentMedia allowlists and canonicalizes exact media MIME types before signing', async () => {
   const { listAgentMedia } = await loadMediaLibrary();
   const supported = [
     ['jpeg', 'image/jpeg', 'image/jpeg'],
@@ -223,6 +268,12 @@ test('listAgentMedia allowlists exact raster MIME types before invoking the priv
     ['webp', 'image/webp', 'image/webp'],
     ['gif', 'image/gif', 'image/gif'],
     ['avif', 'image/avif', 'image/avif'],
+    ['mp4', 'video/mp4', 'video/mp4', 'video'],
+    ['mov', 'video/quicktime; charset=binary', 'video/quicktime', 'video'],
+    ['mp3', 'audio/mpeg', 'audio/mpeg', 'audio'],
+    ['wav', 'audio/wav', 'audio/wav', 'audio'],
+    ['x-wav', 'audio/x-wav', 'audio/wav', 'audio'],
+    ['m4a', 'audio/mp4', 'audio/mp4', 'audio'],
   ] as const;
   const rejected = [
     ['pdf', 'application/pdf'],
@@ -232,14 +283,18 @@ test('listAgentMedia allowlists exact raster MIME types before invoking the priv
     ['missing', null],
     ['empty', ''],
     ['unsupported-raster', 'image/tiff'],
+    ['unsupported-video', 'video/webm', 'video'],
+    ['unsupported-audio', 'audio/ogg', 'audio'],
+    ['video-with-audio-mime', 'audio/mpeg', 'video'],
+    ['audio-with-video-mime', 'video/mp4', 'audio'],
   ] as const;
   const signerCalls: string[] = [];
   const page = await listAgentMedia({}, principal, {
     async listAssetPage() {
       return {
         items: [
-          ...supported.map(([id, mimeType]) => asset({ id, mimeType })),
-          ...rejected.map(([id, mimeType]) => asset({ id, mimeType })),
+          ...supported.map(([id, mimeType, , kind = 'image']) => asset({ id, mimeType, kind })),
+          ...rejected.map(([id, mimeType, kind = 'image']) => asset({ id, mimeType, kind })),
         ],
         nextCursor: null,
         hasMore: false,
@@ -259,7 +314,7 @@ test('listAgentMedia allowlists exact raster MIME types before invoking the priv
   assert.doesNotMatch(JSON.stringify(page), /pdf|binary|html|svg|missing|empty|unsupported-raster/u);
 });
 
-test('listAgentMedia accepts only existing cursor envelopes and bounded page sizes', async () => {
+test('listAgentMedia accepts only exact kind filters, existing cursors, and bounded page sizes', async () => {
   const { listAgentMedia } = await loadMediaLibrary();
   let reads = 0;
   const dependencies = {
@@ -274,6 +329,7 @@ test('listAgentMedia accepts only existing cursor envelopes and bounded page siz
     { limit: 0 },
     { limit: 51 },
     { limit: 1.5 },
+    { kind: 'document' },
   ]) {
     await assert.rejects(
       listAgentMedia(input, principal, dependencies),
@@ -286,12 +342,37 @@ test('listAgentMedia accepts only existing cursor envelopes and bounded page siz
   assert.equal(reads, 1);
 });
 
+test('listAgentMedia passes an exact optional kind filter through one owner query', async () => {
+  const { listAgentMedia } = await loadMediaLibrary();
+  const calls: Array<Record<string, unknown>> = [];
+  const page = await listAgentMedia({ kind: 'video', limit: 10 }, principal, {
+    async listAssetPage(params) {
+      calls.push(params);
+      return {
+        items: [
+          asset({ id: 'video-ready', kind: 'video', mimeType: 'video/mp4', durationSec: 4 }),
+          asset({ id: 'wrong-kind', kind: 'audio', mimeType: 'audio/mpeg', durationSec: 4 }),
+          asset({ id: 'wrong-owner', userId: 'other-user', kind: 'video', mimeType: 'video/mp4', durationSec: 4 }),
+          asset({ id: 'not-ready', kind: 'video', mimeType: 'video/mp4', durationSec: 4, status: 'processing' }),
+          asset({ id: 'oversized-duration', kind: 'video', mimeType: 'video/mp4', durationSec: 86_401 }),
+        ],
+        nextCursor: null,
+        hasMore: false,
+      };
+    },
+    async createPrivatePreviewUrl() { return null; },
+  });
+
+  assert.deepEqual(calls, [{ userId: principal.userId, kind: 'video', cursor: null, limit: 10 }]);
+  assert.deepEqual(page.items.map((item) => item.assetId), ['video-ready']);
+});
+
 test('agent listing relies on the canonical non-deleted library owner', () => {
   assert.equal(existsSync(mediaLibraryPath), true, `${mediaLibraryPath} must exist`);
   const facadeSource = readFileSync(mediaLibraryPath, 'utf8');
   const canonicalSource = readFileSync(canonicalListingPath, 'utf8');
   assert.match(facadeSource, /listLibraryAssetPage/u);
-  assert.match(facadeSource, /kind:\s*['"]image['"]/u);
+  assert.match(facadeSource, /kind:\s*normalized\.kind/u);
   assert.match(canonicalSource, /FROM media_assets[\s\S]*?deleted_at IS NULL/u);
 });
 
@@ -332,6 +413,7 @@ test('list_media is feature-gated, strict, read-only, non-destructive, and close
   assert.equal(tool.annotations?.openWorldHint, false);
   assert.equal(tool.inputSchema.additionalProperties, false);
   assert.equal((tool.inputSchema.properties?.limit as Record<string, unknown>)?.maximum, 50);
+  assert.deepEqual((tool.inputSchema.properties?.kind as Record<string, unknown>)?.enum, ['image', 'video', 'audio']);
   assert.match(tool.description ?? '', /Use this when/iu);
   assert.match(tool.description ?? '', /Do not use/iu);
 
@@ -341,10 +423,10 @@ test('list_media is feature-gated, strict, read-only, non-destructive, and close
   });
   const result = await enabledClient.callTool({
     name: 'list_media',
-    arguments: { cursor, limit: 50 },
+    arguments: { kind: 'video', cursor, limit: 50 },
   });
   assert.deepEqual(result.structuredContent, { items: [], nextCursor: null, hasMore: false });
-  assert.deepEqual(calls, [{ input: { cursor, limit: 50 }, principal }]);
+  assert.deepEqual(calls, [{ input: { kind: 'video', cursor, limit: 50 }, principal }]);
 
   const invalid = await enabledClient.callTool({
     name: 'list_media',

@@ -41,6 +41,7 @@ type ReferenceRow = {
   height: number | null;
   status: string | null;
   deleted_at: string | null;
+  metadata: unknown;
 };
 
 async function loadReferenceAssets(): Promise<ReferenceAssetsModule> {
@@ -59,6 +60,7 @@ function row(overrides: Partial<ReferenceRow> = {}): ReferenceRow {
     height: 768,
     status: 'ready',
     deleted_at: null,
+    metadata: {},
     ...overrides,
   };
 }
@@ -113,6 +115,31 @@ test('resolveOwnedReferenceAsset accepts the exact shared raster MIME set and ca
   }
 });
 
+test('resolveOwnedReferenceAsset derives video and audio kinds from exact owned-row MIME policy', async () => {
+  const { resolveOwnedReferenceAsset } = await loadReferenceAssets();
+  const supported = [
+    ['video', 'VIDEO/MP4; charset=binary', 'video/mp4'],
+    ['video', 'video/quicktime', 'video/quicktime'],
+    ['audio', 'audio/mpeg', 'audio/mpeg'],
+    ['audio', 'audio/wav', 'audio/wav'],
+    ['audio', 'audio/x-wav', 'audio/wav'],
+    ['audio', 'audio/mp4', 'audio/mp4'],
+  ] as const;
+  for (const [kind, mimeType, canonicalMime] of supported) {
+    const resolved = await resolveOwnedReferenceAsset(principal, 'asset-owned', {
+      executor: executorWithRows([row({
+        kind,
+        mime_type: mimeType,
+        width: kind === 'audio' ? null : 1920,
+        height: kind === 'audio' ? null : 1080,
+        metadata: { durationSec: 4 },
+      })], []),
+    });
+    assert.equal(resolved.mediaKind, kind);
+    assert.equal(resolved.mimeType, canonicalMime);
+  }
+});
+
 test('missing and another-user asset IDs are publicly indistinguishable', async () => {
   const { resolveOwnedReferenceAsset } = await loadReferenceAssets();
   const failures: Array<{ code: string; message: string }> = [];
@@ -132,8 +159,8 @@ test('missing and another-user asset IDs are publicly indistinguishable', async 
     assert.deepEqual(calls[0]?.params, [assetId, principal.userId]);
   }
   assert.deepEqual(failures, [
-    { code: 'REFERENCE_NOT_FOUND', message: 'Reference image not found.' },
-    { code: 'REFERENCE_NOT_FOUND', message: 'Reference image not found.' },
+    { code: 'REFERENCE_NOT_FOUND', message: 'Reference media not found.' },
+    { code: 'REFERENCE_NOT_FOUND', message: 'Reference media not found.' },
   ]);
 });
 
@@ -146,23 +173,28 @@ test('an impossible cross-user row fails closed as forbidden without returning a
     (error: unknown) => {
       assert.ok(error instanceof AgentApiError);
       assert.equal(error.code, 'REFERENCE_FORBIDDEN');
-      assert.equal(error.message, 'Reference image is not available.');
+      assert.equal(error.message, 'Reference media is not available.');
       assert.doesNotMatch(error.message, /asset-owned|other-user|cdn\.maxvideoai/u);
       return true;
     },
   );
 });
 
-test('owned rows must be ready, non-deleted raster images on a controlled HTTPS storage host', async () => {
+test('owned rows must be ready, non-deleted supported media on a controlled HTTPS storage host', async () => {
   const { resolveOwnedReferenceAsset } = await loadReferenceAssets();
   const invalidRows = [
     row({ status: 'processing' }),
     row({ status: 'deleted' }),
     row({ deleted_at: '2026-07-17T09:00:00.000Z' }),
-    row({ kind: 'video', mime_type: 'video/mp4' }),
-    row({ kind: 'audio', mime_type: 'audio/mpeg' }),
+    row({ kind: 'video', mime_type: 'video/webm' }),
+    row({ kind: 'audio', mime_type: 'audio/ogg' }),
+    row({ kind: 'video', mime_type: 'audio/mpeg' }),
+    row({ kind: 'audio', mime_type: 'video/mp4' }),
+    row({ kind: 'document', mime_type: 'application/pdf' }),
     row({ mime_type: 'image/svg+xml' }),
     row({ mime_type: 'application/octet-stream' }),
+    row({ mime_type: null }),
+    row({ kind: 'video', mime_type: 'video/mp4', metadata: { durationSec: 86_401 } }),
     row({ url: 'http://cdn.maxvideoai.com/reference.png' }),
     row({ url: 'https://user:secret@cdn.maxvideoai.com/reference.png' }),
     row({ url: 'https://private-provider.example/reference.png' }),
