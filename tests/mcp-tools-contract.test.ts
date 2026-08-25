@@ -253,7 +253,7 @@ test('server advertises only the five read-only discovery tools with narrow guid
   assert.match(String(record(recommendationProperties.priorities).description), /not.*proxy.*quality/i);
 });
 
-test('paid prepare schema accepts full video modes and requires mediaKind only for HTTPS references', async (t) => {
+test('paid prepare schema exposes canonical settings and accepts full video reference modes', async (t) => {
   const preparedInputs: unknown[] = [];
   const operationalServices = services({
     prepareGeneration: async (input) => {
@@ -296,6 +296,32 @@ test('paid prepare schema accepts full video modes and requires mediaKind only f
     });
     assert.notEqual(result.isError, true);
   }
+
+  const handlerCallsBeforeAlias = preparedInputs.length;
+  const durationAliasResult = await client.callTool({
+    name: 'prepare_generation',
+    arguments: {
+      surface: 'video',
+      engineId: 'seedance-2-5',
+      mode: 'v2v',
+      prompt: 'Continue the scene.',
+      settings: { duration: 4, resolution: '480p', aspectRatio: '16:9', audio: false },
+      references: [{ kind: 'asset', assetId: 'source-asset', role: 'source' }],
+    },
+  });
+  assert.equal(durationAliasResult.isError, true);
+  assert.equal(preparedInputs.length, handlerCallsBeforeAlias, 'duration must be rejected before the handler');
+
+  const prepareTool = (await client.listTools()).tools.find((tool) => tool.name === 'prepare_generation');
+  assert.ok(prepareTool);
+  const prepareProperties = record(prepareTool.inputSchema.properties);
+  const settingsSchema = record(prepareProperties.settings);
+  assert.equal(settingsSchema.additionalProperties, false);
+  const settingsProperties = record(settingsSchema.properties);
+  assert.equal('duration' in settingsProperties, false);
+  const durationSecSchema = record(settingsProperties.durationSec);
+  assert.equal(durationSecSchema.type, 'integer');
+  assert.match(String(durationSecSchema.description), /durationSec.*seconds.*never.*duration/is);
 
   const invalidReferences = [
     { kind: 'https', url: 'https://cdn.example.com/source', role: 'source' },
