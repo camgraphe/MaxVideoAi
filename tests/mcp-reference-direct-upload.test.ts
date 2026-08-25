@@ -5,9 +5,11 @@ import test from 'node:test';
 
 import { NextRequest } from 'next/server';
 
+import { createMcpReferenceUploadCleanupHandler } from '../frontend/app/api/cron/mcp-reference-upload-cleanup/route';
 import type { TransactionQueryExecutor } from '../frontend/src/lib/db';
 import { AgentApiError } from '../frontend/src/server/agent-api/errors';
 import { cleanupExpiredReferenceUploadAttempts } from '../frontend/src/server/agent-api/reference-upload-attempts';
+import { purgeMcpReferenceStagingObjects } from '../frontend/server/storage';
 import {
   MCP_REFERENCE_UPLOAD_CHUNK_BYTES,
   createReferenceUploadAbortHandler,
@@ -659,6 +661,129 @@ test('durable cleanup aborts never-finalized expired attempts and retains failed
   assert.deepEqual(deleted, ['attempt/parts/part-ok', 'attempt/parts/part-retry']);
   assert.match(calls[0] ?? '', /FOR UPDATE(?:\s+OF\s+attempts)?\s+SKIP LOCKED/iu);
   assert.match(calls[0] ?? '', /state\s*=\s*'aborted'/iu);
+});
+
+test('scheduled cleanup retains the production count-only response contract', async () => {
+  const handler = createMcpReferenceUploadCleanupHandler({
+    env: { CRON_SECRET: 'production-cleanup-route-test-secret' },
+    async cleanupExpiredReferenceUploadAttempts(input) {
+      assert.deepEqual(input, { limit: 100 });
+      return { selected: 1, deleted: 1 };
+    },
+  });
+
+  const response = await handler(new NextRequest(
+    'https://maxvideoai.com/api/cron/mcp-reference-upload-cleanup',
+    { headers: { authorization: 'Bearer production-cleanup-route-test-secret' } },
+  ));
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { ok: true, selected: 1, deleted: 1 });
+});
+
+test('staging cleanup route blocks prefix purge until the bounded ledger batch reaches zero', async () => {
+  let purgeCalls = 0;
+  const cleanupResults = [
+    { selected: 2, deleted: 2 },
+    { selected: 0, deleted: 0 },
+  ];
+  const handler = createMcpReferenceUploadCleanupHandler({
+    env: {
+      CRON_SECRET: 'cleanup-route-test-secret',
+      MCP_STAGING_HOST: 'maxvideoai-mcp-staging.vercel.app',
+      MCP_STAGING_REFERENCE_CLEANUP_ENABLED: 'true',
+      MCP_STAGING_REFERENCE_STORAGE_PREFIX: 'mcp-reference-staging/',
+    },
+    async cleanupExpiredReferenceUploadAttempts(input) {
+      assert.deepEqual(input, { limit: 100 });
+      return cleanupResults.shift() ?? { selected: 0, deleted: 0 };
+    },
+    async purgeMcpReferenceStagingObjects(input) {
+      purgeCalls += 1;
+      assert.deepEqual(input, { limit: 100 });
+      return { selected: 3, deleted: 3 };
+    },
+  });
+  const headers = { authorization: 'Bearer cleanup-route-test-secret' };
+
+  const pending = await handler(new NextRequest(
+    'https://maxvideoai-mcp-staging.vercel.app/api/cron/mcp-reference-upload-cleanup?mode=purge-staging',
+    { method: 'POST', headers },
+  ));
+  assert.equal(pending.status, 409);
+  assert.deepEqual(await pending.json(), {
+    ok: false,
+    error: 'CLEANUP_PENDING',
+    selected: 2,
+    deleted: 2,
+  });
+  assert.equal(purgeCalls, 0);
+
+  const purged = await handler(new NextRequest(
+    'https://maxvideoai-mcp-staging.vercel.app/api/cron/mcp-reference-upload-cleanup?mode=purge-staging',
+    { method: 'POST', headers },
+  ));
+  assert.equal(purged.status, 200);
+  assert.deepEqual(await purged.json(), {
+    ok: true,
+    mode: 'purge-staging',
+    selected: 3,
+    deleted: 3,
+  });
+  assert.equal(purgeCalls, 1);
+});
+
+test('staging prefix purge requires the exact authenticated host and storage namespace', async () => {
+  let effects = 0;
+  const createHandler = (env: Record<string, string | undefined>) => createMcpReferenceUploadCleanupHandler({
+    env,
+    async cleanupExpiredReferenceUploadAttempts() { effects += 1; return { selected: 0, deleted: 0 }; },
+    async purgeMcpReferenceStagingObjects() { effects += 1; return { selected: 0, deleted: 0 }; },
+  });
+  const baseEnv = {
+    CRON_SECRET: 'cleanup-route-test-secret',
+    MCP_STAGING_HOST: 'maxvideoai-mcp-staging.vercel.app',
+    MCP_STAGING_REFERENCE_CLEANUP_ENABLED: 'true',
+    MCP_STAGING_REFERENCE_STORAGE_PREFIX: 'mcp-reference-staging/',
+  };
+
+  const wrongHost = await createHandler(baseEnv)(new NextRequest(
+    'https://maxvideoai.com/api/cron/mcp-reference-upload-cleanup?mode=purge-staging',
+    { method: 'POST', headers: { authorization: 'Bearer cleanup-route-test-secret' } },
+  ));
+  assert.equal(wrongHost.status, 404);
+
+  const wrongPrefix = await createHandler({
+    ...baseEnv,
+    MCP_STAGING_REFERENCE_STORAGE_PREFIX: 'user-assets/',
+  })(new NextRequest(
+    'https://maxvideoai-mcp-staging.vercel.app/api/cron/mcp-reference-upload-cleanup?mode=purge-staging',
+    { method: 'POST', headers: { authorization: 'Bearer cleanup-route-test-secret' } },
+  ));
+  assert.equal(wrongPrefix.status, 503);
+  assert.equal(effects, 0);
+});
+
+test('storage teardown deletes only a bounded batch from the dedicated staging prefix', async () => {
+  const deleted: string[] = [];
+  const result = await purgeMcpReferenceStagingObjects({ limit: 2 }, {
+    async listStorageObjectKeys(prefix, limit) {
+      assert.equal(prefix, 'mcp-reference-staging/');
+      assert.equal(limit, 2);
+      return [
+        'mcp-reference-staging/owner-a/upload-a/parts/1',
+        'user-assets/shared-production-object.mp4',
+        'mcp-reference-staging/owner-b/upload-b/parts/1',
+      ];
+    },
+    async deleteStorageObjectKey(key) { deleted.push(key); },
+  });
+
+  assert.deepEqual(result, { selected: 2, deleted: 2 });
+  assert.deepEqual(deleted, [
+    'mcp-reference-staging/owner-a/upload-a/parts/1',
+    'mcp-reference-staging/owner-b/upload-b/parts/1',
+  ]);
 });
 
 test('browser and deployed routes use chunk relay and expose no signed PUT capability', () => {

@@ -17,8 +17,12 @@ export function resolveMcpRuntimeCapabilities(
     && env.MCP_STAGING_OPERATIONAL_ENABLED === 'true'
     && isMcpFoundationFeatureEnabled('transport', env, requestHost)
     && isMcpFoundationFeatureEnabled('oauth', env, requestHost);
+  const stagingReferenceCleanup = operationalStaging
+    && env.MCP_STAGING_REFERENCE_CLEANUP_ENABLED === 'true'
+    && env.MCP_STAGING_REFERENCE_STORAGE_PREFIX === 'mcp-reference-staging/'
+    && Boolean(env.CRON_SECRET?.trim());
   return Object.freeze({
     paidGeneration: FEATURES.mcp.paidGeneration || operationalStaging,
-    referenceUploads: FEATURES.mcp.referenceUploads || operationalStaging,
+    referenceUploads: FEATURES.mcp.referenceUploads || stagingReferenceCleanup,
   });
 }

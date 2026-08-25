@@ -1,4 +1,11 @@
-import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  HeadObjectCommand,
+  ListObjectsV2Command,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { createHash, randomUUID } from 'crypto';
 import { ensureAssetSchema } from '@/lib/schema';
 import { query } from '@/lib/db';
@@ -23,6 +30,7 @@ const S3_CACHE_CONTROL = (process.env.S3_CACHE_CONTROL || 'public, max-age=3600'
 
 let s3Client: S3Client | null = null;
 const MAX_SAFE_OBJECT_KEY_BYTES = 1000;
+export const MCP_REFERENCE_STAGING_STORAGE_PREFIX = 'mcp-reference-staging/';
 
 export class StorageUploadError extends Error {
   context: {
@@ -364,6 +372,40 @@ async function deleteObjectFromStorage(key: string): Promise<void> {
 
 export async function deleteStorageObjectKey(key: string): Promise<void> {
   await deleteObjectFromStorage(key);
+}
+
+async function listStorageObjectKeys(prefix: string, limit: number): Promise<string[]> {
+  if (!S3_BUCKET) throw new Error('S3_BUCKET is missing');
+  const result = await getS3Client().send(new ListObjectsV2Command({
+    Bucket: S3_BUCKET,
+    Prefix: prefix,
+    MaxKeys: limit,
+  }));
+  return (result.Contents ?? []).flatMap((entry) => typeof entry.Key === 'string' ? [entry.Key] : []);
+}
+
+export async function purgeMcpReferenceStagingObjects(
+  options: { limit?: number } = {},
+  dependencies: {
+    listStorageObjectKeys(prefix: string, limit: number): Promise<string[]>;
+    deleteStorageObjectKey(key: string): Promise<unknown>;
+  } = { listStorageObjectKeys, deleteStorageObjectKey },
+): Promise<{ selected: number; deleted: number }> {
+  const limit = options.limit ?? 100;
+  if (!Number.isSafeInteger(limit) || limit < 1 || limit > 1_000) {
+    throw new Error('Invalid staging storage cleanup batch size.');
+  }
+  const candidates = (await dependencies.listStorageObjectKeys(
+    MCP_REFERENCE_STAGING_STORAGE_PREFIX,
+    limit,
+  )).filter((key) => key.startsWith(MCP_REFERENCE_STAGING_STORAGE_PREFIX)).slice(0, limit);
+  const results = await Promise.allSettled(
+    candidates.map((key) => dependencies.deleteStorageObjectKey(key)),
+  );
+  return {
+    selected: candidates.length,
+    deleted: results.filter((result) => result.status === 'fulfilled').length,
+  };
 }
 
 export async function deleteStorageObjectByUrl(assetUrl: string): Promise<boolean> {

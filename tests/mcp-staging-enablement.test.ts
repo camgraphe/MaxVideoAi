@@ -12,6 +12,14 @@ const stagingEnv = {
   MCP_RESOURCE_URL: 'https://maxvideoai-mcp-staging.vercel.app/mcp',
 };
 
+const operationalStagingEnv = {
+  ...stagingEnv,
+  MCP_STAGING_OPERATIONAL_ENABLED: 'true',
+  MCP_STAGING_REFERENCE_CLEANUP_ENABLED: 'true',
+  MCP_STAGING_REFERENCE_STORAGE_PREFIX: 'mcp-reference-staging/',
+  CRON_SECRET: 'test-only-cleanup-secret',
+};
+
 test('hosted staging enables only foundation features on the exact staging host', () => {
   const requestHost = 'maxvideoai-mcp-staging.vercel.app';
   assert.equal(isMcpFoundationFeatureEnabled('transport', stagingEnv, requestHost), true);
@@ -20,19 +28,35 @@ test('hosted staging enables only foundation features on the exact staging host'
 });
 
 test('operational capabilities enable only on the exact hosted staging authority', () => {
-  const enabled = resolveMcpRuntimeCapabilities({
-    ...stagingEnv,
-    MCP_STAGING_OPERATIONAL_ENABLED: 'true',
-  }, 'maxvideoai-mcp-staging.vercel.app');
+  const enabled = resolveMcpRuntimeCapabilities(
+    operationalStagingEnv,
+    'maxvideoai-mcp-staging.vercel.app',
+  );
 
   assert.deepEqual(enabled, { paidGeneration: true, referenceUploads: true });
   assert.equal(Object.isFrozen(enabled), true);
 
   for (const host of ['maxvideoai.com', 'www.maxvideoai.com', 'api.maxvideoai.com', 'other.vercel.app']) {
     assert.deepEqual(resolveMcpRuntimeCapabilities({
-      ...stagingEnv,
-      MCP_STAGING_OPERATIONAL_ENABLED: 'true',
+      ...operationalStagingEnv,
     }, host), { paidGeneration: false, referenceUploads: false });
+  }
+});
+
+test('operational staging keeps reference uploads closed without the authenticated cleanup path', () => {
+  const host = 'maxvideoai-mcp-staging.vercel.app';
+  for (const overrides of [
+    { MCP_STAGING_REFERENCE_CLEANUP_ENABLED: undefined },
+    { MCP_STAGING_REFERENCE_CLEANUP_ENABLED: 'false' },
+    { MCP_STAGING_REFERENCE_STORAGE_PREFIX: undefined },
+    { MCP_STAGING_REFERENCE_STORAGE_PREFIX: 'user-assets/' },
+    { CRON_SECRET: undefined },
+    { CRON_SECRET: '   ' },
+  ]) {
+    assert.deepEqual(resolveMcpRuntimeCapabilities({
+      ...operationalStagingEnv,
+      ...overrides,
+    }, host), { paidGeneration: true, referenceUploads: false });
   }
 });
 

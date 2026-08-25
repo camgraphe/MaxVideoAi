@@ -18,6 +18,9 @@ REQUIRED_OPERATIONAL_ENVIRONMENT=(
   'SEEDANCE_2_5_PROVIDER'
   'SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY'
   'SEEDANCE_2_5_BYTEPLUS_MODES'
+  'MCP_STAGING_REFERENCE_CLEANUP_ENABLED'
+  'MCP_STAGING_REFERENCE_STORAGE_PREFIX'
+  'CRON_SECRET'
 )
 
 usage() {
@@ -165,6 +168,43 @@ capture_staging_environment_metadata() {
       ] | sort_by(.key, .target)' >"$output"
 }
 
+assert_staging_mutation() {
+  local command="$1"
+  shift
+  local argument
+  local project=''
+  local scope=''
+  local previous=''
+
+  for argument in "$@"; do
+    if [[ "$argument" == "$PRODUCTION_PROJECT" || "$argument" == 'maxvideoai.com' ]]; then
+      printf 'PRODUCTION_MUTATION_BLOCKED\n' >&2
+      exit 67
+    fi
+    if [[ "$previous" == '--project' ]]; then project="$argument"; fi
+    if [[ "$previous" == '--scope' ]]; then scope="$argument"; fi
+    previous="$argument"
+  done
+
+  if [[ "$scope" != "$STAGING_SCOPE" ]]; then
+    printf 'STAGING_IDENTITY_BLOCKED\n' >&2
+    exit 67
+  fi
+  if [[ "$command" == 'link' || "$command" == 'deploy' ]]; then
+    if [[ "$project" != "$STAGING_PROJECT" ]]; then
+      printf 'STAGING_IDENTITY_BLOCKED\n' >&2
+      exit 67
+    fi
+  fi
+}
+
+run_staging_mutation() {
+  local command="$1"
+  shift
+  assert_staging_mutation "$command" "$@"
+  "${VERCEL[@]}" "$command" "$@"
+}
+
 assert_staging_operational_environment() {
   local metadata="$ARTIFACTS/staging-environment-metadata.json"
   local name
@@ -175,6 +215,13 @@ assert_staging_operational_environment() {
     'any(.[]; .key == $name and .target == ["production"])' \
     "$metadata" >/dev/null; then
     printf 'CREDENTIAL_BLOCKED\n' >&2
+    exit 66
+  fi
+
+  if ! jq -e --arg name 'CRON_SECRET' \
+    'any(.[]; .key == $name and .target == ["production"])' \
+    "$metadata" >/dev/null; then
+    printf 'CLEANUP_BLOCKED\n' >&2
     exit 66
   fi
 
@@ -192,6 +239,15 @@ assert_staging_operational_environment() {
   --scope "$STAGING_SCOPE" \
   --raw >"$ARTIFACTS/staging-project.json"
 STAGING_PROJECT_ID="$(jq -er --arg name "$STAGING_PROJECT" 'select(.name == $name) | .id' "$ARTIFACTS/staging-project.json")"
+"${VERCEL[@]}" api "/v9/projects/${STAGING_PROJECT}/domains" \
+  --scope "$STAGING_SCOPE" \
+  --raw \
+  | jq -eS '[.domains[]? | {name}] | sort_by(.name)' >"$ARTIFACTS/staging-domains.json"
+if ! jq -e --arg stable "$STABLE_HOST" \
+  'any(.[]; .name == $stable)' "$ARTIFACTS/staging-domains.json" >/dev/null; then
+  printf 'STAGING_IDENTITY_BLOCKED\n' >&2
+  exit 67
+fi
 assert_staging_operational_environment
 
 capture_production_baseline "$ARTIFACTS/production-before"
@@ -202,7 +258,7 @@ test "$STAGING_PROJECT_ID" != "$PRODUCTION_PROJECT_ID"
 if [[ -n "$RESUME_CANDIDATE_ID" ]]; then
   CANDIDATE_REF="$RESUME_CANDIDATE_ID"
 else
-  "${VERCEL[@]}" link \
+  run_staging_mutation link \
     --cwd "$TEMP_ROOT" \
     --yes \
     --project "$STAGING_PROJECT" \
@@ -215,7 +271,7 @@ else
     '.projectId == $id and .projectName == $name' \
     "$TEMP_ROOT/.vercel/project.json" >/dev/null
 
-  "${VERCEL[@]}" deploy "$TEMP_ROOT" \
+  run_staging_mutation deploy "$TEMP_ROOT" \
     --project "$STAGING_PROJECT" \
     --scope "$STAGING_SCOPE" \
     --prod \
@@ -357,7 +413,7 @@ assert_protocol_endpoints() {
 assert_public_noindex "${CANDIDATE_URL}/" "$ARTIFACTS/candidate-root"
 assert_protocol_endpoints "$CANDIDATE_URL" "$ARTIFACTS/candidate-protocol" candidate
 
-"${VERCEL[@]}" promote "$CANDIDATE_ID" \
+run_staging_mutation promote "$CANDIDATE_ID" \
   --scope "$STAGING_SCOPE" \
   --yes \
   --timeout 10m \

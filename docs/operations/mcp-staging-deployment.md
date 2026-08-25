@@ -109,6 +109,8 @@ SEEDANCE_2_5_BYTEPLUS_ENABLED=true
 SEEDANCE_2_5_PROVIDER=byteplus_modelark
 SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY=false
 SEEDANCE_2_5_BYTEPLUS_MODES=t2v,i2v,ref2v,v2v,extend
+MCP_STAGING_REFERENCE_CLEANUP_ENABLED=true
+MCP_STAGING_REFERENCE_STORAGE_PREFIX=mcp-reference-staging/
 ```
 
 `BYTEPLUS_ARK_API_KEY` is also required on the Production target, but its value
@@ -121,16 +123,24 @@ prints the credential value. If the dedicated credential does not exist, stop
 with `CREDENTIAL_BLOCKED`. Do not substitute a production credential and do
 not weaken or bypass the metadata preflight.
 
+`CRON_SECRET` is also required on the Production target. For this project it is
+a dedicated staging cleanup-auth credential, not a schedule declaration. Supply
+it out of band, store it only in Vercel, and never include its value in a shell
+command, Git file, log, report, or downloaded environment file. The wrapper
+checks only that the name exists on the exact target. At runtime,
+`referenceUploads` remains false unless the cleanup flag, exact storage prefix,
+and a nonblank `CRON_SECRET` are all present.
+
 `DATABASE_URL` must identify the pooled endpoint for the exact Neon branch
 `preview/mcp-staging`. The Supabase variables must identify the project
 documented above. Vercel does not accept empty environment-variable values, so
 `COOKIE_DOMAIN` and `NEXT_PUBLIC_COOKIE_DOMAIN` are intentionally absent; the
 application treats absence as an unset, host-only cookie domain.
 
-Except for the dedicated staging-only `BYTEPLUS_ARK_API_KEY`, do not add
+Except for the dedicated staging-only `BYTEPLUS_ARK_API_KEY` and cleanup-only
+`CRON_SECRET`, do not add
 provider keys, Stripe secrets, a Supabase secret or legacy `service_role` key,
-SMTP credentials, `CRON_SECRET`, or any production database URL to this
-project.
+SMTP credentials, or any production database URL to this project.
 
 ### Schema and cleanup prerequisite
 
@@ -141,13 +151,61 @@ database. If the required schema is unavailable or its status cannot be
 established without revealing credentials, stop with `SCHEMA_BLOCKED`; do not
 deploy and do not attempt an in-band repair.
 
-Task 5's destructive abandoned-upload cleanup route requires a non-empty
-`CRON_SECRET`, but the approved MCP staging package remains zero-cron. Therefore
-this profile intentionally has neither `CRON_SECRET` nor a cleanup schedule,
-and it does not claim that periodic reference-upload cleanup is active. Do not
-add the cleanup cron to `frontend/vercel.mcp-staging.json`. Enabling it requires
-a separately reviewed reconciliation of the cleanup prerequisite with the
-staging zero-cron invariant.
+The approved MCP staging package remains zero-cron: do not add the Task 5
+cleanup schedule to `frontend/vercel.mcp-staging.json`. Cleanup is instead an
+attended, authenticated one-shot operation using the same route and bounded
+Task 5 ledger owner as production. A secret name without a working operator
+path is not sufficient; a failed cleanup run blocks promotion and the staging
+operational session.
+
+### One-shot cleanup and teardown
+
+The operator wrapper is local and dry-run by default. It is pinned to the exact
+project and host, processes at most 100 ledger objects per request, permits at
+most 20 requests per phase, and records counts only:
+
+```bash
+bash scripts/run-mcp-staging-reference-cleanup.sh
+```
+
+For an attended cleanup window, supply the dedicated cleanup credential through
+the local `MCP_STAGING_CLEANUP_SECRET` process environment out of band. The
+operator wrapper accepts only a 32–512 character URL-safe token consisting of
+letters, digits, `_`, `.`, `~`, and `-`. Then run:
+
+```bash
+bash scripts/run-mcp-staging-reference-cleanup.sh --execute
+```
+
+The secret is sent only as the bearer credential to the exact staging cleanup
+URL and is never printed. The wrapper repeats bounded ledger cleanup until a
+batch reports zero. Any HTTP/authentication failure, malformed response,
+batch-limit exhaustion, or `selected != deleted` result stops with
+`CLEANUP_BLOCKED`.
+
+Reference uploads may be enabled only during an attended test window. Run the
+one-shot cleanup at least every 10 minutes while they are enabled and once
+immediately after the window. Upload links live for 15 minutes, so this cadence
+bounds expired temporary-object exposure to less than 10 additional minutes
+when cleanup is healthy. A missed or failed cadence requires disabling
+`MCP_STAGING_OPERATIONAL_ENABLED` and blocks further reference uploads until a
+successful zero batch.
+
+Teardown is stricter. First disable operational staging and deploy that closed
+state, then wait for the 15-minute upload lifetime plus the 5-minute processing
+lease. Run:
+
+```bash
+bash scripts/run-mcp-staging-reference-cleanup.sh --execute --teardown
+```
+
+The command requires the durable cleanup ledger to reach zero before each purge
+request. It then deletes bounded batches only from the literal
+`mcp-reference-staging/` namespace using the staging deployment's own database
+and storage identity. It cannot purge `user-assets/`, shared production keys,
+another bucket, or an operator-supplied prefix. Both phases repeat until zero;
+any failed deletion blocks teardown completion and must be retried rather than
+waived.
 
 ### Deployment packaging guard
 
@@ -183,7 +241,7 @@ without contacting Vercel.
 
 The real invocation repeats those checks, resolves the exact dedicated Vercel
 project, then queries its non-decrypted Production-target environment metadata.
-It reduces the response to names and targets only and requires all seven
+It reduces the response to names and targets only and requires all ten
 operational names, including `BYTEPLUS_ARK_API_KEY`, before any link or deploy
 command. It does not add, remove, pull, decrypt, or print an environment value.
 After that sanitized preflight, it links only the temporary directory and
