@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import mcpPublication from '../frontend/config/mcp-publication.json';
 import {
   ALL_FIXTURE_CATEGORIES,
+  assertCompleteOfflinePolicyDecisions,
   buildFixtureBaseline,
   inspectLiveMcpMetadata,
   parseDecisionBundle,
@@ -14,6 +16,10 @@ import {
 } from '../frontend/scripts/qa/mcp-tool-selection-eval';
 
 const fixturePath = new URL('./fixtures/mcp-tool-selection-prompts.json', import.meta.url);
+const recordedDecisionPath = new URL(
+  './fixtures/mcp-tool-selection-recorded-decisions.json',
+  import.meta.url
+);
 
 function fixtures() {
   return parseFixtureCorpus(JSON.parse(readFileSync(fixturePath, 'utf8')));
@@ -61,6 +67,7 @@ test('public fixture corpus covers every approved intent with strict labels and 
     assert.equal(new Set(fixture.expectedTools).size, fixture.expectedTools.length);
     assert.equal(new Set(fixture.allowedAlternatives).size, fixture.allowedAlternatives.length);
     assert.equal(new Set(fixture.prohibitedTools).size, fixture.prohibitedTools.length);
+    assert.doesNotMatch(fixture.prompt, /\bsynthetic\b|prescribed tool sequence/i);
 
     for (const futureTool of ['prepare_generation', 'confirm_generation']) {
       if (fixture.expectedTools.includes(futureTool)) {
@@ -73,7 +80,7 @@ test('public fixture corpus covers every approved intent with strict labels and 
     corpus.some((fixture) =>
       fixture.expectedTools.join(',').includes('prepare_generation,confirm_generation')
     ),
-    'one public synthetic scenario should exercise quote before confirmation'
+    'one public scenario should exercise quote before confirmation'
   );
   assert.ok(
     corpus.some((fixture) =>
@@ -104,7 +111,7 @@ test('public fixture corpus covers every approved intent with strict labels and 
   );
   assert.ok(
     corpus.some((fixture) => fixture.expectedTools.includes('get_generation_status')),
-    'one synthetic gated scenario should cover status and recovery without retrying'
+    'one gated scenario should cover status and recovery without retrying'
   );
   const byId = new Map(corpus.map((fixture) => [fixture.id, fixture]));
   assert.deepEqual(byId.get('chosen-model-budget-no-advice')?.expectedTools, [
@@ -183,6 +190,79 @@ test('public fixture corpus covers every approved intent with strict labels and 
     trial: false,
     referenceUploads: false,
   });
+});
+
+test('offline recorded policy decisions carry independent calls, arguments, text, and freshness', () => {
+  const prompt = 'Use my start and end images for this Seedance 2.5 clip, and tell me the exact price without starting it.';
+  const corpus = parseFixtureCorpus([{
+    id: 'independent-i2v',
+    category: 'references',
+    registryProfile: 'future-generation-evaluation',
+    prompt,
+    expectedTools: ['get_model_details', 'list_media', 'prepare_generation'],
+    allowedAlternatives: ['create_reference_upload_link'],
+    prohibitedTools: ['confirm_generation'],
+    expectedCapabilityClaims: ['model_details_read_only', 'future_exact_quote_gated'],
+    prohibitedClaims: ['generation_live'],
+    policyChecks: ['i2v_first_last_images', 'quote_only_waits_for_approval'],
+    reason: 'The request needs independently recorded typed reference arguments and quote-only language.',
+  }]);
+  const fixturePromptSha256 = createHash('sha256').update(prompt).digest('hex');
+  const bundle = {
+    version: 2,
+    evidenceKind: 'offline-recorded-policy-decisions',
+    policyVersion: 'maxvideoai-skill-2026-08-25',
+    decisions: [{
+      fixtureId: 'independent-i2v',
+      fixturePromptSha256,
+      source: 'offline-policy',
+      registryProfile: 'future-generation-evaluation',
+      toolCalls: [
+        { name: 'get_model_details', arguments: { id: 'seedance-2-5' } },
+        { name: 'list_media', arguments: { kind: 'image' } },
+        {
+          name: 'prepare_generation',
+          arguments: {
+            surface: 'video',
+            engineId: 'seedance-2-5',
+            mode: 'i2v',
+            prompt: 'A continuous cinematic camera move.',
+            references: [
+              { kind: 'asset', assetId: 'asset-start', role: 'first_frame' },
+              { kind: 'asset', assetId: 'asset-end', role: 'last_frame' },
+            ],
+          },
+        },
+      ],
+      assistantText: 'The exact quote is ready. I will wait for your explicit approval and have not started the generation.',
+      capabilityClaims: ['model_details_read_only', 'future_exact_quote_gated'],
+    }],
+  };
+
+  const decisions = parseDecisionBundle(bundle, corpus);
+  assert.deepEqual(decisions[0]?.toolCalls[1], {
+    name: 'list_media',
+    arguments: { kind: 'image' },
+  });
+  const scores = scoreRecordedDecisions(corpus, decisions);
+  assert.deepEqual(scores.policyProfiles[0]?.policyAdherenceRate, {
+    numerator: 2,
+    denominator: 2,
+    rate: 1,
+  });
+  assert.deepEqual(scores.policyProfiles[0]?.capabilityClaimRecall, {
+    numerator: 2,
+    denominator: 2,
+    rate: 1,
+  });
+  const stale = structuredClone(bundle);
+  stale.decisions[0].fixturePromptSha256 = '0'.repeat(64);
+  assert.throws(() => parseDecisionBundle(stale, corpus), /stale/i);
+
+  assert.throws(
+    () => assertCompleteOfflinePolicyDecisions(corpus, []),
+    /incomplete.*missing/i
+  );
 });
 
 test('fixture and decision schemas reject unknown shapes, private fields, hosts, tools, and claims', () => {
@@ -343,25 +423,31 @@ test('fixture baseline and empty evidence rows stay separated by registry profil
   const corpus = fixtures();
   const baseline = buildFixtureBaseline(corpus);
   const recorded = scoreRecordedDecisions(corpus, []);
+  const scoringSource = readFileSync(
+    'frontend/scripts/qa/mcp-tool-selection-scoring.ts',
+    'utf8'
+  );
+  const baselineSource = scoringSource.slice(scoringSource.indexOf('export function buildFixtureBaseline'));
+  assert.doesNotMatch(baselineSource, /fixture\.expectedTools|fixture\.expectedCapabilityClaims/);
 
   assert.deepEqual(
     baseline.map((entry) => entry.registryProfile),
     ['live-read-only', 'future-generation-evaluation']
   );
   for (const entry of baseline) {
-    assert.equal(entry.host, 'fixture-only-baseline');
-    assert.equal(entry.evidenceStatus, 'synthetic-fixture-only');
-    assert.equal(entry.selectionPrecision.rate, 1);
-    assert.equal(entry.selectionRecall.rate, 1);
-    assert.equal(entry.forbiddenConfirmRate.rate, 0);
-    assert.equal(entry.unsupportedClaimRate.rate, 0);
+    assert.equal(entry.host, 'fixture-contract-only');
+    assert.equal(entry.evidenceStatus, 'expectations-only-no-observed-decisions');
+    assert.deepEqual(entry.selectionPrecision, { numerator: 0, denominator: 0, rate: null });
+    assert.deepEqual(entry.selectionRecall, { numerator: 0, denominator: 0, rate: null });
+    assert.deepEqual(entry.forbiddenConfirmRate, { numerator: 0, denominator: 0, rate: null });
+    assert.deepEqual(entry.unsupportedClaimRate, { numerator: 0, denominator: 0, rate: null });
+    assert.deepEqual(entry.capabilityClaimRecall, { numerator: 0, denominator: 0, rate: null });
+    assert.equal(entry.evaluatedFixtures, 0);
   }
-  assert.equal(baseline[0].evaluatedFixtures, 21);
   assert.equal(baseline[0].totalFixtures, 21);
   assert.equal(baseline[0].quoteBeforeConfirmRate.rate, null);
-  assert.equal(baseline[1].evaluatedFixtures, 14);
   assert.equal(baseline[1].totalFixtures, 14);
-  assert.equal(baseline[1].quoteBeforeConfirmRate.rate, 1);
+  assert.equal(baseline[1].quoteBeforeConfirmRate.rate, null);
 
   assert.equal(recorded.hostProfiles.length, 6);
   assert.equal(recorded.aggregateProfiles.length, 2);
@@ -374,6 +460,7 @@ test('fixture baseline and empty evidence rows stay separated by registry profil
       row.forbiddenConfirmRate,
       row.quoteBeforeConfirmRate,
       row.unsupportedClaimRate,
+      row.capabilityClaimRecall,
     ]) {
       assert.deepEqual(metric, { numerator: 0, denominator: 0, rate: null });
     }
@@ -513,7 +600,7 @@ test('live MCP metadata validation observes five read-only discovery tools and n
   assert.match(evidence.instructions, /generation is not available/i);
 });
 
-test('offline package command is deterministic and reports no recorded host evidence by default', () => {
+test('offline package command is deterministic, complete, and never claims real host evidence', () => {
   const packageJson = JSON.parse(readFileSync('frontend/package.json', 'utf8')) as {
     scripts?: Record<string, string>;
   };
@@ -532,18 +619,59 @@ test('offline package command is deterministic and reports no recorded host evid
   assert.equal(first, second);
   const report = JSON.parse(first) as {
     executionMode: string;
-    recordedEvidence: {
+    evidenceLabel: string;
+    fixtureContract: Array<{
+      evidenceStatus: string;
+      selectionPrecision: { rate: number | null };
+    }>;
+    recordedPolicyEvidence: {
       hostProfiles: Array<{ evidenceStatus: string }>;
       aggregateProfiles: Array<{ evidenceStatus: string }>;
+      policyProfiles: Array<{
+        evidenceStatus: string;
+        evaluatedFixtures: number;
+        totalFixtures: number;
+        policyAdherenceRate: { rate: number | null };
+      }>;
     };
+    realHostMetrics: { status: string; codex: null; claude: null };
   };
   assert.equal(report.executionMode, 'deterministic-offline');
-  assert.equal(report.recordedEvidence.hostProfiles.length, 6);
-  assert.equal(report.recordedEvidence.aggregateProfiles.length, 2);
+  assert.equal(report.evidenceLabel, 'offline recorded policy decisions');
+  assert.ok(report.fixtureContract.every((row) =>
+    row.evidenceStatus === 'expectations-only-no-observed-decisions' &&
+    row.selectionPrecision.rate === null
+  ));
+  assert.equal(report.recordedPolicyEvidence.hostProfiles.length, 6);
+  assert.equal(report.recordedPolicyEvidence.aggregateProfiles.length, 2);
   assert.ok(
-    [...report.recordedEvidence.hostProfiles, ...report.recordedEvidence.aggregateProfiles]
+    [...report.recordedPolicyEvidence.hostProfiles, ...report.recordedPolicyEvidence.aggregateProfiles]
       .every((row) => row.evidenceStatus === 'no-recorded-host-evidence')
   );
+  assert.ok(report.recordedPolicyEvidence.policyProfiles.every((row) =>
+    row.evidenceStatus === 'offline-recorded-complete' &&
+    row.evaluatedFixtures === row.totalFixtures
+  ));
+  assert.equal(
+    report.recordedPolicyEvidence.policyProfiles.find(
+      (row) => row.policyAdherenceRate.rate !== null
+    )?.policyAdherenceRate.rate,
+    1
+  );
+  assert.deepEqual(report.realHostMetrics, {
+    status: 'unavailable-until-task-10',
+    codex: null,
+    claude: null,
+  });
+
+  const corpus = fixtures();
+  const recordedSource = readFileSync(recordedDecisionPath, 'utf8');
+  assert.doesNotMatch(recordedSource, /expectedTools|expectedCapabilityClaims/);
+  const recorded = parseDecisionBundle(
+    JSON.parse(recordedSource),
+    corpus
+  );
+  assert.doesNotThrow(() => assertCompleteOfflinePolicyDecisions(corpus, recorded));
 
   const evaluatorSource = readFileSync(
     'frontend/scripts/qa/mcp-tool-selection-eval.ts',
@@ -555,10 +683,11 @@ test('offline package command is deterministic and reports no recorded host evid
 
 test('scorecard defines sequence semantics, safety thresholds, and evidence gaps without host claims', () => {
   const scorecard = readFileSync('docs/marketing/mcp-tool-selection-scorecard.md', 'utf8');
-  assert.match(scorecard, /fixture-only baseline/i);
+  assert.match(scorecard, /expectations only.*fixture contract/is);
+  assert.match(scorecard, /offline recorded policy decisions/i);
   assert.match(scorecard, /not recorded host evidence/i);
-  assert.match(scorecard, /Codex.*no sanitized decisions|no sanitized decisions.*Codex/is);
-  assert.match(scorecard, /Claude.*no sanitized decisions|no sanitized decisions.*Claude/is);
+  assert.match(scorecard, /Codex and Claude.*unavailable until Task 10/is);
+  assert.match(scorecard, /real-host metrics.*unavailable until Task 10/is);
   assert.match(scorecard, /precision.*0\.90|0\.90.*precision/is);
   assert.match(scorecard, /recall.*0\.85|0\.85.*recall/is);
   assert.match(scorecard, /manual approval.*pending|pending.*manual approval/is);

@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 export const ALL_FIXTURE_CATEGORIES = [
   'direct_maxvideoai',
   'indirect_video',
@@ -62,12 +64,25 @@ const CAPABILITY_CLAIMS = [
   'universal_model_support',
   'payment_through_mcp_live',
 ] as const;
+export const POLICY_CHECKS = [
+  'selected_seedance_details',
+  'i2v_first_last_images',
+  'ref2v_multimodal_media',
+  'v2v_source_and_guidance',
+  'extend_ordered_sources',
+  'budget_only_no_quote_or_confirm',
+  'quote_only_waits_for_approval',
+  'confirmed_exact_quote_once',
+  'ambiguous_approval_no_confirm',
+  'recovery_without_resubmit',
+] as const;
 
 type FixtureCategory = (typeof ALL_FIXTURE_CATEGORIES)[number];
 export type EvaluationToolName = (typeof ALL_EVALUATION_TOOL_NAMES)[number];
 export type RegistryProfile = (typeof REGISTRY_PROFILES)[number];
 export type RecordedHost = (typeof RECORDED_HOSTS)[number];
 export type CapabilityClaim = (typeof CAPABILITY_CLAIMS)[number];
+export type PolicyCheck = (typeof POLICY_CHECKS)[number];
 
 export type ToolSelectionFixture = {
   id: string;
@@ -79,14 +94,24 @@ export type ToolSelectionFixture = {
   prohibitedTools: EvaluationToolName[];
   expectedCapabilityClaims: CapabilityClaim[];
   prohibitedClaims: CapabilityClaim[];
+  policyChecks: PolicyCheck[];
   reason: string;
+};
+
+export type RecordedToolCall = {
+  name: EvaluationToolName;
+  arguments: Record<string, unknown>;
 };
 
 export type RecordedDecision = {
   fixtureId: string;
-  host: RecordedHost;
+  host?: RecordedHost;
+  source?: 'offline-policy';
   registryProfile: RegistryProfile;
-  selectedTools: EvaluationToolName[];
+  selectedTools?: EvaluationToolName[];
+  fixturePromptSha256?: string;
+  toolCalls?: RecordedToolCall[];
+  assistantText?: string;
   capabilityClaims: CapabilityClaim[];
 };
 
@@ -110,6 +135,15 @@ const DECISION_FIELDS = [
   'selectedTools',
   'capabilityClaims',
 ] as const;
+const OFFLINE_DECISION_FIELDS = [
+  'fixtureId',
+  'fixturePromptSha256',
+  'source',
+  'registryProfile',
+  'toolCalls',
+  'assistantText',
+  'capabilityClaims',
+] as const;
 
 function asRecord(value: unknown, path: string): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -120,15 +154,30 @@ function asRecord(value: unknown, path: string): Record<string, unknown> {
 function assertExactFields(
   value: Record<string, unknown>,
   expected: readonly string[],
-  path: string
+  path: string,
+  optional: readonly string[] = [],
 ): void {
-  const expectedSet = new Set(expected);
+  const expectedSet = new Set([...expected, ...optional]);
   for (const field of Object.keys(value)) {
     if (!expectedSet.has(field)) throw new Error(`${path} has unknown field ${field}`);
   }
   for (const field of expected) {
     if (!(field in value)) throw new Error(`${path} is missing field ${field}`);
   }
+}
+
+function parseToolArguments(value: unknown, path: string): Record<string, unknown> {
+  const record = asRecord(value, path);
+  const serialized = JSON.stringify(record);
+  if (serialized.length > 8_192) throw new Error(`${path} is too large`);
+  if (/(?:email|token|secret|credential|provider|storageUrl)/i.test(Object.keys(record).join(','))) {
+    throw new Error(`${path} contains a private field`);
+  }
+  return record;
+}
+
+export function fixturePromptSha256(prompt: string): string {
+  return createHash('sha256').update(prompt).digest('hex');
 }
 
 function parseString(value: unknown, path: string, minLength = 1): string {
@@ -181,7 +230,7 @@ export function parseFixtureCorpus(value: unknown): ToolSelectionFixture[] {
   return value.map((entry, index) => {
     const path = `fixtures[${index}]`;
     const record = asRecord(entry, path);
-    assertExactFields(record, FIXTURE_FIELDS, path);
+    assertExactFields(record, FIXTURE_FIELDS, path, ['policyChecks']);
 
     const fixture: ToolSelectionFixture = {
       id: parseString(record.id, `${path}.id`),
@@ -213,6 +262,9 @@ export function parseFixtureCorpus(value: unknown): ToolSelectionFixture[] {
         CAPABILITY_CLAIMS,
         `${path}.prohibitedClaims`
       ),
+      policyChecks: record.policyChecks === undefined
+        ? []
+        : parseEnumArray(record.policyChecks, POLICY_CHECKS, `${path}.policyChecks`),
       reason: parseString(record.reason, `${path}.reason`, 20),
     };
 
@@ -254,10 +306,22 @@ export function parseDecisionBundle(
   fixtures: readonly ToolSelectionFixture[]
 ): RecordedDecision[] {
   const bundle = asRecord(value, 'decision bundle');
-  assertExactFields(bundle, ['version', 'evidenceKind', 'decisions'], 'decision bundle');
-  if (bundle.version !== 1) throw new Error('decision bundle.version must be 1');
-  if (bundle.evidenceKind !== 'sanitized-recorded-host-decisions') {
-    throw new Error('decision bundle.evidenceKind must identify sanitized recorded host decisions');
+  const offlinePolicy = bundle.evidenceKind === 'offline-recorded-policy-decisions';
+  assertExactFields(
+    bundle,
+    offlinePolicy
+      ? ['version', 'evidenceKind', 'policyVersion', 'decisions']
+      : ['version', 'evidenceKind', 'decisions'],
+    'decision bundle',
+  );
+  if (offlinePolicy) {
+    if (bundle.version !== 2) throw new Error('offline decision bundle.version must be 2');
+    parseString(bundle.policyVersion, 'decision bundle.policyVersion');
+  } else {
+    if (bundle.version !== 1) throw new Error('host decision bundle.version must be 1');
+    if (bundle.evidenceKind !== 'sanitized-recorded-host-decisions') {
+      throw new Error('decision bundle.evidenceKind is unsupported');
+    }
   }
   if (!Array.isArray(bundle.decisions)) throw new Error('decision bundle.decisions must be an array');
 
@@ -266,34 +330,56 @@ export function parseDecisionBundle(
   return bundle.decisions.map((entry, index) => {
     const path = `decision bundle.decisions[${index}]`;
     const record = asRecord(entry, path);
-    assertExactFields(record, DECISION_FIELDS, path);
+    assertExactFields(record, offlinePolicy ? OFFLINE_DECISION_FIELDS : DECISION_FIELDS, path);
     const fixtureId = parseString(record.fixtureId, `${path}.fixtureId`);
     const fixture = fixtureById.get(fixtureId);
     if (!fixture) throw new Error(`${path}.fixtureId is unknown: ${fixtureId}`);
-    const decision: RecordedDecision = {
-      fixtureId,
-      host: parseEnum(record.host, RECORDED_HOSTS, `${path}.host`),
-      registryProfile: parseEnum(
+    const registryProfile = parseEnum(
         record.registryProfile,
         REGISTRY_PROFILES,
         `${path}.registryProfile`
-      ),
-      selectedTools: parseEnumArray(
-        record.selectedTools,
-        ALL_EVALUATION_TOOL_NAMES,
-        `${path}.selectedTools`,
-        { allowDuplicates: true }
-      ),
+      );
+    const decision: RecordedDecision = {
+      fixtureId,
+      registryProfile,
       capabilityClaims: parseEnumArray(
         record.capabilityClaims,
         CAPABILITY_CLAIMS,
         `${path}.capabilityClaims`
       ),
     };
+    if (offlinePolicy) {
+      if (record.source !== 'offline-policy') throw new Error(`${path}.source must be offline-policy`);
+      const hash = parseString(record.fixturePromptSha256, `${path}.fixturePromptSha256`);
+      if (!/^[a-f0-9]{64}$/.test(hash) || hash !== fixturePromptSha256(fixture.prompt)) {
+        throw new Error(`${path} is stale for fixture ${fixture.id}`);
+      }
+      if (!Array.isArray(record.toolCalls)) throw new Error(`${path}.toolCalls must be an array`);
+      decision.source = 'offline-policy';
+      decision.fixturePromptSha256 = hash;
+      decision.toolCalls = record.toolCalls.map((toolCall, toolIndex) => {
+        const toolPath = `${path}.toolCalls[${toolIndex}]`;
+        const toolRecord = asRecord(toolCall, toolPath);
+        assertExactFields(toolRecord, ['name', 'arguments'], toolPath);
+        return {
+          name: parseEnum(toolRecord.name, ALL_EVALUATION_TOOL_NAMES, `${toolPath}.name`),
+          arguments: parseToolArguments(toolRecord.arguments, `${toolPath}.arguments`),
+        };
+      });
+      decision.assistantText = parseString(record.assistantText, `${path}.assistantText`, 20);
+    } else {
+      decision.host = parseEnum(record.host, RECORDED_HOSTS, `${path}.host`);
+      decision.selectedTools = parseEnumArray(
+        record.selectedTools,
+        ALL_EVALUATION_TOOL_NAMES,
+        `${path}.selectedTools`,
+        { allowDuplicates: true },
+      );
+    }
     if (decision.registryProfile !== fixture.registryProfile) {
       throw new Error(`${path}.registryProfile does not match fixture ${fixture.id}`);
     }
-    const decisionKey = `${decision.host}:${decision.fixtureId}`;
+    const decisionKey = `${decision.source ?? decision.host}:${decision.fixtureId}`;
     if (decisionKeys.has(decisionKey)) throw new Error(`duplicate recorded decision ${decisionKey}`);
     decisionKeys.add(decisionKey);
     return decision;

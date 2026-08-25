@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
@@ -317,15 +318,22 @@ test('paid prepare schema accepts full video modes and requires mediaKind only f
   assert.deepEqual(preparedInputs.map((input) => record(input).mode), ['v2v', 'extend']);
 });
 
-test('operational reference and prepare tools expose strict schemas and exact side-effect hints', async (t) => {
+test('all twelve operational tools expose strict schemas and reject unknown keys before handlers', async (t) => {
+  const calls = new Map<string, number>();
+  const called = (name: string) => calls.set(name, (calls.get(name) ?? 0) + 1);
   const operationalServices = services({
-    listMedia: async () => ({ items: [], nextCursor: null, hasMore: false }),
-    createReferenceUploadLink: async () => ({}) as never,
-    prepareGeneration: async () => ({}) as never,
-    confirmGeneration: async () => ({}) as never,
-    getGenerationStatus: async () => ({}) as never,
-    listRecentGenerations: async () => ({ items: [], nextCursor: null }) as never,
-    createTopupLink: async () => ({}) as never,
+    getAccountStatus: async () => { called('get_account_status'); return account; },
+    listModels: async () => { called('list_models'); return [model]; },
+    getModelDetails: async () => { called('get_model_details'); return modelDetails; },
+    recommendModels: async () => { called('recommend_models'); return { recommendations: [], nextAction: 'clarify_requirements' }; },
+    calculateProjectBudget: async () => { called('calculate_project_budget'); return projectBudget; },
+    listMedia: async () => { called('list_media'); return { items: [], nextCursor: null, hasMore: false }; },
+    createReferenceUploadLink: async () => { called('create_reference_upload_link'); return {} as never; },
+    prepareGeneration: async () => { called('prepare_generation'); return {} as never; },
+    confirmGeneration: async () => { called('confirm_generation'); return {} as never; },
+    getGenerationStatus: async () => { called('get_generation_status'); return {} as never; },
+    listRecentGenerations: async () => { called('list_recent_generations'); return { items: [], nextCursor: null }; },
+    createTopupLink: async () => { called('create_topup_link'); return {} as never; },
   });
   const server = createMaxVideoAiMcpServer(principal, operationalServices, {
     paidGeneration: true,
@@ -360,8 +368,68 @@ test('operational reference and prepare tools expose strict schemas and exact si
   assert.match(tools.get('list_media')?.description ?? '', /image, video, or audio.*filter.*kind/is);
   assert.match(tools.get('create_reference_upload_link')?.description ?? '', /requested.*media kind/i);
   assert.match(tools.get('prepare_generation')?.description ?? '', /t2v.*i2v.*ref2v.*v2v.*extend/is);
-  for (const name of ['list_media', 'create_reference_upload_link', 'prepare_generation']) {
+  const validArguments: Record<string, Record<string, unknown>> = {
+    get_account_status: {},
+    list_models: {},
+    get_model_details: { id: 'seedance-2-5' },
+    recommend_models: {},
+    calculate_project_budget: {
+      proposals: [{
+        name: 'One clip',
+        lines: [{
+          purpose: 'Opening',
+          engineId: 'seedance-2-5',
+          mode: 't2v',
+          settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9' },
+          clipCount: 1,
+          attemptsPerClip: 1,
+        }],
+      }],
+    },
+    list_media: {},
+    create_reference_upload_link: { kind: 'image' },
+    prepare_generation: {
+      surface: 'video',
+      engineId: 'seedance-2-5',
+      mode: 't2v',
+      prompt: 'A cinematic opening shot.',
+    },
+    confirm_generation: {
+      quoteId: '00000000-0000-4000-8000-000000000001',
+      confirmed: true,
+    },
+    get_generation_status: { jobId: 'job-1' },
+    list_recent_generations: {},
+    create_topup_link: { quoteId: '00000000-0000-4000-8000-000000000001' },
+  };
+  assert.deepEqual([...tools.keys()], Object.keys(validArguments));
+  for (const [name, arguments_] of Object.entries(validArguments)) {
     assert.equal(tools.get(name)?.inputSchema.additionalProperties, false);
+    const result = await client.callTool({
+      name,
+      arguments: { ...arguments_, unexpected: true },
+    });
+    assert.equal(result.isError, true, `${name} must reject an unknown key`);
+    assert.equal(calls.get(name) ?? 0, 0, `${name} handler must not run`);
+  }
+
+  const recordedBundle = JSON.parse(
+    readFileSync('tests/fixtures/mcp-tool-selection-recorded-decisions.json', 'utf8')
+  ) as {
+    decisions: Array<{
+      toolCalls: Array<{ name: string; arguments: Record<string, unknown> }>;
+    }>;
+  };
+  for (const decision of recordedBundle.decisions) {
+    for (const toolCall of decision.toolCalls) {
+      const before = calls.get(toolCall.name) ?? 0;
+      await client.callTool({ name: toolCall.name, arguments: toolCall.arguments });
+      assert.equal(
+        calls.get(toolCall.name),
+        before + 1,
+        `${toolCall.name} recorded arguments must pass its runtime schema`
+      );
+    }
   }
 });
 

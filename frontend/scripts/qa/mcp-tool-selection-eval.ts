@@ -20,6 +20,7 @@ import {
   type ToolSelectionFixture,
 } from './mcp-tool-selection-contract';
 import {
+  assertCompleteOfflinePolicyDecisions,
   assertUniqueRecordedDecisions,
   buildFixtureBaseline,
   scoreRecordedDecisions,
@@ -37,6 +38,7 @@ export type {
   ToolSelectionFixture,
 } from './mcp-tool-selection-contract';
 export {
+  assertCompleteOfflinePolicyDecisions,
   buildFixtureBaseline,
   scoreRecordedDecisions,
 } from './mcp-tool-selection-scoring';
@@ -201,13 +203,22 @@ export async function runEvaluation(options: {
   );
   const fixtures = parseFixtureCorpus(JSON.parse(readFileSync(fixturePath, 'utf8')));
   assertFixtureCoverage(fixtures);
-  const decisions = (options.decisionPaths ?? []).flatMap((path) =>
+  const requestedDecisionPaths = options.decisionPaths ?? [];
+  const usingDefaultPolicyBundle = requestedDecisionPaths.length === 0;
+  const decisionPaths = usingDefaultPolicyBundle
+    ? [fileURLToPath(new URL('../../../tests/fixtures/mcp-tool-selection-recorded-decisions.json', import.meta.url))]
+    : requestedDecisionPaths;
+  const decisions = decisionPaths.flatMap((path) =>
     parseDecisionBundle(JSON.parse(readFileSync(path, 'utf8')), fixtures)
   );
   assertUniqueRecordedDecisions(decisions);
+  if (usingDefaultPolicyBundle || decisions.some((decision) => decision.source === 'offline-policy')) {
+    assertCompleteOfflinePolicyDecisions(fixtures, decisions);
+  }
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     executionMode: 'deterministic-offline',
+    evidenceLabel: 'offline recorded policy decisions',
     registry: await inspectLiveMcpMetadata(),
     corpus: {
       fixtureCount: fixtures.length,
@@ -217,8 +228,13 @@ export async function runEvaluation(options: {
         (fixture) => fixture.registryProfile === 'future-generation-evaluation'
       ).length,
     },
-    fixtureBaseline: buildFixtureBaseline(fixtures),
-    recordedEvidence: scoreRecordedDecisions(fixtures, decisions),
+    fixtureContract: buildFixtureBaseline(fixtures),
+    recordedPolicyEvidence: scoreRecordedDecisions(fixtures, decisions),
+    realHostMetrics: {
+      status: 'unavailable-until-task-10',
+      codex: null,
+      claude: null,
+    },
   };
 }
 
