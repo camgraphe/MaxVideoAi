@@ -24,6 +24,10 @@ import type { AgentPublicGenerationEngine } from './model-catalog';
 import type { McpGenerationQuote } from './quote-repository';
 import type { ResolvedReference } from './reference-types';
 import { stableJson } from './generation-normalization';
+import {
+  buildPaidVideoRequestBody,
+  resolvePaidMembershipTier,
+} from './paid-video-request-body';
 
 export { submitReservedIncludedTrialGeneration };
 export type {
@@ -334,17 +338,8 @@ export async function reserveIncludedTrialGenerationInitialJob(
   return reserveIncludedTrialGenerationWithPricing(input, dependencies, pricing);
 }
 
-function membershipTier(pricing: Record<string, unknown>): 'member' | 'plus' | 'pro' {
-  const value = pricing.membershipTier;
-  if (value !== 'member' && value !== 'plus' && value !== 'pro') {
-    throw new Error('Invalid paid generation membership tier.');
-  }
-  return value;
-}
-
-function referenceUrls(execution: PaidGenerationExecution, role?: string): string[] {
+function imageReferenceUrls(execution: PaidGenerationExecution): string[] {
   return execution.request.references.flatMap((reference) => {
-    if (role && reference.role !== role) return [];
     if (reference.kind === 'https') return [reference.url];
     const resolved = (execution.resolvedReferences ?? []).find((candidate) =>
       candidate.assetId === reference.assetId && candidate.role === reference.role);
@@ -354,30 +349,18 @@ function referenceUrls(execution: PaidGenerationExecution, role?: string): strin
 }
 
 function paidRequestBody(execution: PaidGenerationExecution): Record<string, unknown> {
+  if (execution.surface === 'video') return buildPaidVideoRequestBody(execution);
   const settings = { ...execution.request.settings };
-  const references = referenceUrls(execution);
-  const sources = referenceUrls(execution, 'source');
-  const firstFrames = referenceUrls(execution, 'first_frame');
-  const lastFrames = referenceUrls(execution, 'last_frame');
   return {
     engineId: execution.request.engineId,
     mode: execution.request.mode,
     prompt: execution.request.prompt,
     jobId: execution.quoteId,
     payment: { mode: 'wallet' },
-    membershipTier: membershipTier(execution.canonicalPricing),
+    membershipTier: resolvePaidMembershipTier(execution.canonicalPricing),
     ...settings,
-    ...(execution.request.surface === 'image'
-      ? {
-          numImages: execution.request.outputCount,
-          imageUrls: references,
-        }
-      : {
-          inputs: [],
-          imageUrl: sources[0] ?? firstFrames[0] ?? undefined,
-          referenceImages: referenceUrls(execution, 'reference'),
-          endImageUrl: lastFrames[0] ?? undefined,
-        }),
+    numImages: execution.request.outputCount,
+    imageUrls: imageReferenceUrls(execution),
   };
 }
 
@@ -412,7 +395,7 @@ export async function submitReservedPaidGeneration(
 ): Promise<PaidGenerationProviderOutcome> {
   const trustedQuotedBilling: TrustedQuotedBilling = {
     pricing: execution.canonicalPricing as unknown as PricingSnapshot,
-    membershipTier: membershipTier(execution.canonicalPricing),
+    membershipTier: resolvePaidMembershipTier(execution.canonicalPricing),
   };
   const body = paidRequestBody(execution);
   try {

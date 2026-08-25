@@ -64,6 +64,7 @@ export async function sharedWebPrice(
         resolution: input.resolution,
         aspectRatio: input.aspectRatio,
         mode: input.mode,
+        hasVideoInput: input.hasVideoInput,
         membershipTier: input.user?.memberTier,
         addons: buildEngineAddonInput(engine, { audioEnabled: input.audio }),
       });

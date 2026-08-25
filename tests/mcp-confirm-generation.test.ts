@@ -691,6 +691,87 @@ test('confirmation preserves resolver error details but neutralizes extend asset
   }
 });
 
+test('duplicate canonical media fails before pricing, wallet reservation, or provider submission', async () => {
+  const candidateEntry = listFalEngines().find((entry) => entry.id === 'seedance-2-5');
+  assert.ok(candidateEntry);
+  const candidate: AgentPublicGenerationEngine = {
+    engine: candidateEntry.engine,
+    surface: 'video',
+    publicModes: ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'],
+    modeCaps: Object.fromEntries(candidateEntry.modes.map((mode) => [mode.mode, mode.ui])),
+  };
+  const duplicateUrl = 'https://cdn.maxvideoai.com/mcp/duplicate-frame.png';
+  const request: CanonicalGenerationRequest = {
+    schemaVersion: 1,
+    surface: 'video',
+    engineId: 'seedance-2-5',
+    mode: 'i2v',
+    prompt: 'Animate one canonical frame without duplicating it.',
+    settings: { durationSec: 4, resolution: '480p', audio: true },
+    references: [
+      { kind: 'https', url: duplicateUrl, role: 'first_frame', mediaKind: 'image' },
+      { kind: 'https', url: duplicateUrl, role: 'last_frame', mediaKind: 'image' },
+    ],
+    outputCount: 1,
+  };
+  const catalogRevision = computeGenerationCatalogRevision([candidate]);
+  const stored = quoteFor(request, { catalogRevision });
+  const { dependencies, captures } = baseDependencies(request, {
+    lockOwnedQuote: async () => ({ quote: stored, databaseNow: NOW }),
+    listPublicEngines: async () => [candidate],
+  });
+
+  await expectAgentError(
+    confirmGeneration({ quoteId: QUOTE_ID, confirmed: true }, principal, dependencies),
+    'QUOTE_EXPIRED',
+  );
+  assert.equal(captures.events.includes('pricing'), false);
+  assert.equal(captures.events.includes('spending'), false);
+  assert.equal(captures.events.includes('reserve_video'), false);
+  assert.equal(captures.providerCalls, 0);
+});
+
+test('Seedance ref2v audio-only input fails before pricing, wallet reservation, or provider submission', async () => {
+  const candidateEntry = listFalEngines().find((entry) => entry.id === 'seedance-2-5');
+  assert.ok(candidateEntry);
+  const candidate: AgentPublicGenerationEngine = {
+    engine: candidateEntry.engine,
+    surface: 'video',
+    publicModes: ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'],
+    modeCaps: Object.fromEntries(candidateEntry.modes.map((mode) => [mode.mode, mode.ui])),
+  };
+  const request: CanonicalGenerationRequest = {
+    schemaVersion: 1,
+    surface: 'video',
+    engineId: 'seedance-2-5',
+    mode: 'ref2v',
+    prompt: 'Use a voice reference without inventing visual input.',
+    settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9', audio: true },
+    references: [{
+      kind: 'https',
+      url: 'https://cdn.maxvideoai.com/mcp/voice-only.wav',
+      role: 'reference',
+      mediaKind: 'audio',
+    }],
+    outputCount: 1,
+  };
+  const catalogRevision = computeGenerationCatalogRevision([candidate]);
+  const stored = quoteFor(request, { catalogRevision });
+  const { dependencies, captures } = baseDependencies(request, {
+    lockOwnedQuote: async () => ({ quote: stored, databaseNow: NOW }),
+    listPublicEngines: async () => [candidate],
+  });
+
+  await expectAgentError(
+    confirmGeneration({ quoteId: QUOTE_ID, confirmed: true }, principal, dependencies),
+    'QUOTE_EXPIRED',
+  );
+  assert.equal(captures.events.includes('pricing'), false);
+  assert.equal(captures.events.includes('spending'), false);
+  assert.equal(captures.events.includes('reserve_video'), false);
+  assert.equal(captures.providerCalls, 0);
+});
+
 test('claimed, accepted, and failed repeats return their linked job without revalidation, charge, or submission', async () => {
   for (const state of ['claimed', 'accepted', 'failed'] as const) {
     const repeatQuote = quoteFor(videoRequest, {

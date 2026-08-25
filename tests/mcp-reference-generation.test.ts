@@ -167,6 +167,9 @@ test('paid execution materializes a verified asset URL only in the ephemeral pro
   assert.deepEqual(outcome, { kind: 'accepted' });
   assert.equal(providerBody?.imageUrl, 'https://media.maxvideoai.com/private/reference.png');
   assert.equal(JSON.stringify(providerBody).includes('asset-image-1'), false);
+  assert.equal(JSON.stringify(providerBody).includes('mimeType'), false);
+  assert.equal(JSON.stringify(providerBody).includes('storageUrl'), false);
+  assert.equal(JSON.stringify(providerBody).includes('mediaKind'), false);
   assert.deepEqual(request.references, [{ kind: 'asset', assetId: 'asset-image-1', role: 'source' }]);
 });
 

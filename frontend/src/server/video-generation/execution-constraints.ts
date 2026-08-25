@@ -11,6 +11,7 @@ import {
 } from '@/config/fal-engines/minimax-h3';
 import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
 import type { EngineModeDurationCaps, Mode } from '@/types/engines';
+import { SEEDANCE_2_5_ENGINE_ID } from '@/server/video-providers/byteplus-modelark-constants';
 
 const MINIMAX_H3_MODES = ['t2v', 'i2v', 'ref2v'] as const;
 
@@ -166,6 +167,53 @@ function validateMinimaxH3Constraints(params: {
   return { ok: true };
 }
 
+function seedanceUrlList(payload: Record<string, unknown>, field: string): string[] | null {
+  const raw = payload[field];
+  if (raw === undefined) return [];
+  if (!Array.isArray(raw)) return null;
+  if (raw.some((value) => typeof value !== 'string' || !value.trim())) return null;
+  return raw as string[];
+}
+
+function validateSeedance25Constraints(params: {
+  normalizedMode: Mode;
+  payload: Record<string, unknown>;
+}): VideoExecutionValidationResult {
+  const { normalizedMode, payload } = params;
+  if (normalizedMode === 't2v') return { ok: true };
+  if (normalizedMode === 'i2v') {
+    if ('aspect_ratio' in payload) {
+      return minimaxH3Error('aspect_ratio', 'Seedance image-to-video follows source framing.');
+    }
+    return typeof payload.image_url === 'string' && payload.image_url.trim()
+      ? { ok: true }
+      : minimaxH3Error('image_url', 'Seedance image-to-video requires one start image.');
+  }
+  if (normalizedMode === 'ref2v') {
+    const images = seedanceUrlList(payload, 'image_urls');
+    const videos = seedanceUrlList(payload, 'video_urls');
+    const audio = seedanceUrlList(payload, 'audio_urls');
+    if (!images || !videos || !audio) {
+      return minimaxH3Error('references', 'Seedance references must use typed URL arrays.');
+    }
+    return images.length || videos.length
+      ? { ok: true }
+      : minimaxH3Error('references', 'Seedance reference mode requires visual media.');
+  }
+  if (normalizedMode === 'v2v') {
+    return typeof payload.video_url === 'string' && payload.video_url.trim()
+      ? { ok: true }
+      : minimaxH3Error('video_url', 'Seedance video editing requires one source video.');
+  }
+  if (normalizedMode === 'extend') {
+    const sources = seedanceUrlList(payload, 'extension_source_videos');
+    return sources && sources.length >= 1 && sources.length <= 3
+      ? { ok: true }
+      : minimaxH3Error('extension_source_videos', 'Seedance extension requires one to three source videos.');
+  }
+  return minimaxH3Error('mode', 'Seedance mode is unsupported.');
+}
+
 export function validateProviderSpecificConstraints(params: {
   engineId: string;
   normalizedMode: Mode;
@@ -173,6 +221,9 @@ export function validateProviderSpecificConstraints(params: {
 }): VideoExecutionValidationResult {
   if (isMinimaxH3EngineId(params.engineId)) {
     return validateMinimaxH3Constraints(params);
+  }
+  if (params.engineId === SEEDANCE_2_5_ENGINE_ID) {
+    return validateSeedance25Constraints(params);
   }
 
   if (isKlingMultiPromptEngine(params.engineId) && Array.isArray(params.payload.multi_prompt)) {

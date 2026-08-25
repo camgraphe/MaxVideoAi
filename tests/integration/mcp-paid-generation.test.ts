@@ -138,7 +138,7 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
     surface: 'image', engineId: 'gpt-image-2', mode: 'i2i',
     prompt: 'P11 private image edit prompt',
     settings: { resolution: '1024x1024', quality: 'high', aspectRatio: '1:1' },
-    references: [{ kind: 'https', url: imageReference, role: 'source' }], outputCount: 1,
+    references: [{ kind: 'https', url: imageReference, role: 'source', mediaKind: 'image' }], outputCount: 1,
   };
   const i2iPrepared = await callPrepared(media.client, i2iInput);
   assert.deepEqual(i2iPrepared.summary, normalizeGenerationRequest(i2iInput));
@@ -206,7 +206,7 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
     surface: 'video', engineId: 'seedance-2-0-mini', mode: 'i2v',
     prompt: 'P11 private image to video prompt',
     settings: { durationSec: 5, resolution: '720p', aspectRatio: '16:9', audio: true },
-    references: [{ kind: 'https', url: firstFrame, role: 'first_frame' }], outputCount: 1,
+    references: [{ kind: 'https', url: firstFrame, role: 'first_frame', mediaKind: 'image' }], outputCount: 1,
   };
   const i2vPrepared = await callPrepared(media.client, i2vInput);
   const i2vQuoteId = String(i2vPrepared.quoteId);

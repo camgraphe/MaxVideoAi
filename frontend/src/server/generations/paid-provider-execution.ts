@@ -26,7 +26,7 @@ async function executePaidVideoContinuation(
     headers: { 'content-type': 'application/json' },
   });
   const mode = options.body.mode;
-  if (mode !== 't2v' && mode !== 'i2v' && mode !== 'ref2v') {
+  if (mode !== 't2v' && mode !== 'i2v' && mode !== 'ref2v' && mode !== 'v2v' && mode !== 'extend') {
     return { status: 400, body: { ok: false, error: 'Unsupported paid video mode' } };
   }
   const jobId = String(options.body.jobId ?? '');

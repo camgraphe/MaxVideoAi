@@ -229,6 +229,7 @@ test('Seedance source and reference fields enforce canonical HTTPS media kinds',
     mode: 'ref2v',
     settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9' },
     references: [
+      httpsReference('visual.png', 'reference', 'image'),
       ...Array.from({ length: 10 }, (_, index) =>
         httpsReference(`audio-${index + 1}`, 'reference', 'audio')),
     ],
@@ -240,6 +241,10 @@ test('Seedance source and reference fields enforce canonical HTTPS media kinds',
       ...ref2v.references,
       httpsReference('audio-11', 'reference', 'audio'),
     ],
+  });
+  rejectsCapability(seedance, {
+    ...ref2v,
+    references: [httpsReference('voice-only.wav', 'reference', 'audio')],
   });
 });
 
