@@ -200,7 +200,7 @@ test('SSR answer passages cover the integration, price, references, confirmation
   const html = renderToStaticMarkup(
     React.createElement(McpAnswerPassagesSection, {
       copy: copy.answers,
-      lastVerified: '2026-07-12',
+      lastChecked: '2026-08-24',
       locale: 'en',
       publication,
     }),
@@ -209,7 +209,7 @@ test('SSR answer passages cover the integration, price, references, confirmation
     assert.ok(html.includes(item.title));
     assert.ok(html.includes(item.gatedBody));
   }
-  assert.match(html, /<time[^>]*dateTime="2026-07-12"/);
+  assert.match(html, /<time[^>]*dateTime="2026-08-24"/);
   assert.match(html, /model, mode, duration, resolution/i);
   assert.match(html, /recommendation is not an exact quote/i);
   assert.match(html, /separate confirmation/i);

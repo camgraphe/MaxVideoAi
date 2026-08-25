@@ -79,7 +79,7 @@ export type McpPageCopy = {
     compatibility: {
       title: string;
       body: string;
-      lastVerifiedLabel: string;
+      checkpointLabel: string;
       sourceLabel: string;
       statuses: Record<McpCompatibilityHostId, string>;
     };

@@ -109,7 +109,7 @@ const COPY: Record<AppLocale, McpPageCopy> = {
     answers: {
       eyebrow: 'Direct answers',
       title: 'How the Claude and Codex workflow works',
-      updatedLabel: 'Evidence last verified',
+      updatedLabel: 'Local evidence checkpoint',
       items: {
         integration: {
           title: 'What does the MaxVideoAI integration do?',
@@ -144,7 +144,7 @@ const COPY: Record<AppLocale, McpPageCopy> = {
           liveBody:
             'Remove MaxVideoAI from the client, then open MaxVideoAI account connections and revoke that client authorization. Revocation ends the saved grant; a later protected action must start a new browser approval. Removing the client entry and revoking the account grant are separate actions, so complete both steps.',
           gatedBody:
-            'For a controlled test connection, the recorded procedure is to remove MaxVideoAI from the client and revoke its authorization from MaxVideoAI account connections. A later protected action should then require a new approval. This is version-specific compatibility evidence, not a claim that public connection is currently available in every client.',
+            'For a future controlled test connection, the documented procedure is to remove MaxVideoAI from the client and revoke its authorization from MaxVideoAI account connections. A later protected action should then require a new approval. Actual host behavior remains unverified; this local procedure is not a claim that public connection is available in any client.',
         },
       },
     },
@@ -163,15 +163,15 @@ const COPY: Record<AppLocale, McpPageCopy> = {
           'The public connection is disabled while generation, trial and reference flows complete their release checks. The setup guides document controlled evidence, not general availability.',
       },
       compatibility: {
-        title: 'Recorded client compatibility',
+        title: 'Client compatibility checkpoint',
         body:
-          'Compatibility evidence is version-specific. A recorded read-only pass does not prove every client flow or public generation capability.',
-        lastVerifiedLabel: 'Last verified',
+          'Local package and protocol checks are recorded. Hosted installation, OAuth, rendering, refresh and tool selection remain unverified for every listed client.',
+        checkpointLabel: 'Local evidence checkpoint',
         sourceLabel: 'Compatibility evidence',
         statuses: {
-          claudeDesktop: 'Hosted read-only checks passed; token-expiry refresh remains pending.',
-          claudeCode: 'Local OAuth, revocation and reapproval passed; the hosted tool smoke test remains pending.',
-          codexCli: 'Explicit-scope read-only login passed; the default add flow remains blocked.',
+          claudeDesktop: 'Hosted compatibility is unverified. Only local package structure and protocol contracts are recorded.',
+          claudeCode: 'Hosted compatibility is unverified. Only local adapter structure and protocol contracts are recorded.',
+          codexCli: 'Hosted compatibility is unverified. Only local package structure and protocol contracts are recorded.',
         },
       },
       confirmation: {
@@ -307,7 +307,7 @@ const COPY: Record<AppLocale, McpPageCopy> = {
     answers: {
       eyebrow: 'Réponses directes',
       title: 'Fonctionnement du parcours avec Claude et Codex',
-      updatedLabel: 'Preuves vérifiées le',
+      updatedLabel: 'Point de contrôle local',
       items: {
         integration: {
           title: 'Que fait l’intégration MaxVideoAI ?',
@@ -342,7 +342,7 @@ const COPY: Record<AppLocale, McpPageCopy> = {
           liveBody:
             'Supprimez MaxVideoAI du client, puis ouvrez les connexions du compte MaxVideoAI et révoquez l’autorisation du client. La révocation ferme l’accès enregistré ; une future action protégée doit ouvrir une nouvelle approbation dans le navigateur. La suppression côté client et la révocation côté compte sont deux actions distinctes, à effectuer toutes les deux.',
           gatedBody:
-            'Pour une connexion de test contrôlée, la procédure enregistrée consiste à supprimer MaxVideoAI du client puis à révoquer son autorisation depuis les connexions du compte MaxVideoAI. Une future action protégée doit ensuite demander une nouvelle approbation. Cette preuve dépend de la version testée et ne signifie pas que la connexion publique est disponible dans tous les clients.',
+            'Pour une future connexion de test contrôlée, la procédure documentée consiste à supprimer MaxVideoAI du client puis à révoquer son autorisation depuis les connexions du compte MaxVideoAI. Une future action protégée doit ensuite demander une nouvelle approbation. Le comportement réel des hôtes reste non vérifié ; cette procédure locale ne signifie pas que la connexion publique est disponible dans un client.',
         },
       },
     },
@@ -360,15 +360,15 @@ const COPY: Record<AppLocale, McpPageCopy> = {
           'La connexion publique reste désactivée pendant la validation des parcours de génération, d’essai et de références. Les guides décrivent des preuves contrôlées, pas une disponibilité générale.',
       },
       compatibility: {
-        title: 'Compatibilité client enregistrée',
+        title: 'Point de contrôle de compatibilité client',
         body:
-          'La preuve de compatibilité dépend d’une version précise. Un test en lecture seule ne valide pas tous les parcours du client ni la génération publique.',
-        lastVerifiedLabel: 'Dernière vérification',
+          'Les contrôles locaux du paquet et du protocole sont documentés. L’installation hébergée, OAuth, le rendu, l’actualisation et la sélection des outils restent non vérifiés pour chaque client affiché.',
+        checkpointLabel: 'Point de contrôle local',
         sourceLabel: 'Preuve de compatibilité',
         statuses: {
-          claudeDesktop: 'Les contrôles hébergés en lecture seule ont réussi ; l’actualisation après expiration reste à vérifier.',
-          claudeCode: 'Les tests locaux OAuth, de révocation et de nouvelle approbation ont réussi ; le test hébergé des outils reste à effectuer.',
-          codexCli: 'La connexion en lecture seule avec autorisations explicites a réussi ; le parcours d’ajout par défaut reste bloqué.',
+          claudeDesktop: 'La compatibilité hébergée reste non vérifiée. Seuls la structure locale du paquet et les contrats de protocole sont documentés.',
+          claudeCode: 'La compatibilité hébergée reste non vérifiée. Seuls la structure locale de l’adaptateur et les contrats de protocole sont documentés.',
+          codexCli: 'La compatibilité hébergée reste non vérifiée. Seuls la structure locale du paquet et les contrats de protocole sont documentés.',
         },
       },
       confirmation: {
@@ -495,7 +495,7 @@ const COPY: Record<AppLocale, McpPageCopy> = {
     answers: {
       eyebrow: 'Respuestas directas',
       title: 'Cómo funciona el flujo con Claude y Codex',
-      updatedLabel: 'Evidencia verificada el',
+      updatedLabel: 'Control local de evidencia',
       items: {
         integration: {
           title: '¿Qué hace la integración de MaxVideoAI?',
@@ -530,7 +530,7 @@ const COPY: Record<AppLocale, McpPageCopy> = {
           liveBody:
             'Elimina MaxVideoAI del cliente y después abre las conexiones de la cuenta de MaxVideoAI para revocar la autorización de ese cliente. La revocación termina el acceso guardado; una acción protegida posterior debe abrir una nueva aprobación en el navegador. Eliminar la entrada del cliente y revocar el acceso en la cuenta son acciones distintas, por lo que debes completar ambas.',
           gatedBody:
-            'Para una conexión de prueba controlada, el procedimiento registrado consiste en eliminar MaxVideoAI del cliente y revocar su autorización desde las conexiones de la cuenta de MaxVideoAI. Una acción protegida posterior deberá solicitar una aprobación nueva. Esta evidencia corresponde a versiones concretas y no significa que la conexión pública esté disponible en todos los clientes.',
+            'Para una futura conexión de prueba controlada, el procedimiento documentado consiste en eliminar MaxVideoAI del cliente y revocar su autorización desde las conexiones de la cuenta de MaxVideoAI. Una acción protegida posterior deberá solicitar una aprobación nueva. El comportamiento real de los hosts sigue sin verificar; este procedimiento local no implica que la conexión pública esté disponible en ningún cliente.',
         },
       },
     },
@@ -548,15 +548,15 @@ const COPY: Record<AppLocale, McpPageCopy> = {
           'La conexión pública permanece deshabilitada mientras terminan las revisiones de generación, prueba y referencias. Las guías documentan evidencia controlada, no disponibilidad general.',
       },
       compatibility: {
-        title: 'Compatibilidad registrada del cliente',
+        title: 'Control de compatibilidad del cliente',
         body:
-          'La evidencia de compatibilidad corresponde a una versión concreta. Una prueba de solo lectura no demuestra todos los flujos del cliente ni la generación pública.',
-        lastVerifiedLabel: 'Última verificación',
+          'Están documentadas las comprobaciones locales del paquete y del protocolo. La instalación alojada, OAuth, el renderizado, la renovación y la selección de herramientas siguen sin verificar para todos los clientes mostrados.',
+        checkpointLabel: 'Control local de evidencia',
         sourceLabel: 'Evidencia de compatibilidad',
         statuses: {
-          claudeDesktop: 'Las pruebas alojadas de solo lectura pasaron; queda pendiente la renovación al vencer el acceso.',
-          claudeCode: 'Las pruebas locales de OAuth, revocación y nueva aprobación pasaron; queda pendiente probar las herramientas en el entorno alojado.',
-          codexCli: 'El acceso de solo lectura con permisos explícitos pasó; el flujo predeterminado para agregar la conexión sigue bloqueado.',
+          claudeDesktop: 'La compatibilidad alojada sigue sin verificar. Solo están documentados la estructura local del paquete y los contratos de protocolo.',
+          claudeCode: 'La compatibilidad alojada sigue sin verificar. Solo están documentados la estructura local del adaptador y los contratos de protocolo.',
+          codexCli: 'La compatibilidad alojada sigue sin verificar. Solo están documentados la estructura local del paquete y los contratos de protocolo.',
         },
       },
       confirmation: {

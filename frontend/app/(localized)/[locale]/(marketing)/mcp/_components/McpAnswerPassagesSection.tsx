@@ -1,6 +1,6 @@
 import type { AppLocale } from '@/i18n/locales';
 import type { McpPublicationState } from '@/lib/mcp-publication';
-import { formatMcpVerifiedDate } from '../_lib/mcp-compatibility';
+import { formatMcpCheckpointDate } from '../_lib/mcp-compatibility';
 import type { McpPageCopy } from '../_lib/mcp-page-types';
 
 type AnswerKey = keyof McpPageCopy['answers']['items'];
@@ -15,12 +15,12 @@ const LIVE_GATE: Record<AnswerKey, keyof McpPublicationState> = {
 
 export function McpAnswerPassagesSection({
   copy,
-  lastVerified,
+  lastChecked,
   locale,
   publication,
 }: {
   copy: McpPageCopy['answers'];
-  lastVerified: string;
+  lastChecked: string;
   locale: AppLocale;
   publication: McpPublicationState;
 }) {
@@ -34,7 +34,7 @@ export function McpAnswerPassagesSection({
           <h2 className="text-3xl font-semibold text-text-primary dark:text-white">{copy.title}</h2>
           <p className="text-xs font-medium text-text-secondary dark:text-white/68">
             {copy.updatedLabel}:{' '}
-            <time dateTime={lastVerified}>{formatMcpVerifiedDate(locale, lastVerified)}</time>
+            <time dateTime={lastChecked}>{formatMcpCheckpointDate(locale, lastChecked)}</time>
           </p>
         </div>
         <div className="mt-6 grid gap-4 lg:grid-cols-2">

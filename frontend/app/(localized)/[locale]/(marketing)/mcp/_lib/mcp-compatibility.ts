@@ -6,8 +6,8 @@ export type McpCompatibilityHostEvidence = {
   id: McpCompatibilityHostId;
   client: McpClientId;
   hostLabel: string;
-  lastVerified: string;
-  version: string;
+  lastChecked: string;
+  status: 'unverified';
 };
 
 export type McpCompatibilityClientEvidence = {
@@ -17,7 +17,8 @@ export type McpCompatibilityClientEvidence = {
 
 export type McpCompatibilityEvidence = {
   clients: Record<McpClientId, McpCompatibilityClientEvidence>;
-  lastVerified: string;
+  evidenceKind: 'local-checkpoint';
+  lastChecked: string;
   sourceEvidence: string;
 };
 
@@ -26,11 +27,12 @@ export function getMcpCompatibilityEvidence(): McpCompatibilityEvidence {
     id,
     client: compatibility.hosts[id].client as McpClientId,
     hostLabel: compatibility.hosts[id].hostLabel,
-    lastVerified: compatibility.lastVerified,
-    version: compatibility.hosts[id].version,
+    lastChecked: compatibility.lastChecked,
+    status: compatibility.hosts[id].status as 'unverified',
   });
   return {
-    lastVerified: compatibility.lastVerified,
+    evidenceKind: compatibility.evidenceKind as 'local-checkpoint',
+    lastChecked: compatibility.lastChecked,
     sourceEvidence: compatibility.sourceEvidence,
     clients: {
       claude: {
@@ -45,7 +47,7 @@ export function getMcpCompatibilityEvidence(): McpCompatibilityEvidence {
   };
 }
 
-export function formatMcpVerifiedDate(locale: AppLocale, isoDate: string): string {
+export function formatMcpCheckpointDate(locale: AppLocale, isoDate: string): string {
   return new Intl.DateTimeFormat(locale, {
     day: 'numeric',
     month: 'long',

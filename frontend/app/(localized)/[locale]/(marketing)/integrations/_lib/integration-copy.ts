@@ -33,8 +33,7 @@ export type IntegrationPageCopy = {
     backHref: string;
   };
   compatibility: {
-    lastVerifiedLabel: string;
-    versionLabel: string;
+    checkpointLabel: string;
     statuses: Record<McpCompatibilityHostId, string>;
   };
   setup: {
@@ -88,26 +87,25 @@ function englishCopy(client: McpClientId): IntegrationPageCopy {
       eyebrow: 'CLIENT SETUP GUIDE',
       title: `Plan your MaxVideoAI workflow with ${label}.`,
       intro: `Use ${label} to clarify an AI video brief, formulate a prompt, plan references, and compare model and budget choices before continuing in MaxVideoAI.`,
-      unavailable: 'Public connection is not available yet. This guide documents controlled compatibility evidence and the intended setup path.',
+      unavailable: 'Public connection is not available yet. This guide documents local package evidence and an intended, host-unverified setup path.',
       liveStatus: 'Public access is enabled for the capabilities shown in this guide.',
       backLabel: 'Back to the MaxVideoAI workflow hub',
       backHref: '/mcp',
     },
     compatibility: {
-      lastVerifiedLabel: 'Last verified',
-      versionLabel: 'Tested host version',
+      checkpointLabel: 'Local evidence checkpoint',
       statuses: {
-        claudeDesktop: 'Hosted read-only connection, revocation and reconnect checks passed. Token-expiry refresh remains pending.',
-        claudeCode: 'Local OAuth, revocation and reapproval passed. A hosted tool call remains pending because the test client had no Anthropic session.',
-        codexCli: 'Explicit-scope hosted read-only login passed. The default add flow remains blocked by a permissions mismatch.',
+        claudeDesktop: 'Hosted compatibility is unverified. Only local package structure and protocol contracts are recorded.',
+        claudeCode: 'Hosted compatibility is unverified. Only local adapter structure and protocol contracts are recorded.',
+        codexCli: 'Hosted compatibility is unverified. Only local package structure and protocol contracts are recorded.',
       },
     },
     setup: {
       eyebrow: 'Connection',
       title: `Connect ${label} to MaxVideoAI`,
       intro: claude
-        ? 'Claude Desktop and Claude Code use different recorded connection paths. Follow the guide for the client you actually use, then check the recorded host status below.'
-        : 'The recorded path uses Codex CLI with an explicit least-privilege login command. The default first-run add flow is not approved for public use.',
+        ? 'Claude Desktop and Claude Code have different intended connection paths. Both remain unverified in a real host; use these steps only for a separately approved test.'
+        : 'The intended path uses Codex CLI with explicit least-privilege scopes. Real-host installation and OAuth remain unverified, and the default first-run add flow is not approved for public use.',
       hostGuides: claude
         ? [
             {
@@ -121,7 +119,7 @@ function englishCopy(client: McpClientId): IntegrationPageCopy {
               ],
               commands: [],
               setupValues: [{ label: 'MCP server URL', value: MCP_PRODUCTION_RESOURCE_URL }],
-              limitation: 'Hosted read-only tools, revocation and reconnect passed on the recorded version. Automatic refresh after access expiry has not yet been recorded.',
+              limitation: 'Hosted installation, OAuth, tool calls, refresh, revocation and reconnect are unverified. Treat these steps as an intended test procedure only.',
             },
             {
               hostId: 'claudeCode',
@@ -136,7 +134,7 @@ function englishCopy(client: McpClientId): IntegrationPageCopy {
               commands: [`claude mcp add --transport http maxvideoai ${MCP_PRODUCTION_RESOURCE_URL}`, 'claude mcp get maxvideoai'],
               setupValues: [],
               authTrigger: 'After adding the server, open /mcp in Claude Code to authenticate.',
-              limitation: 'Local OAuth, revocation and reapproval passed. A hosted tool call remains pending, so this evidence does not prove hosted tool execution.',
+              limitation: 'Host installation, OAuth, tool calls, refresh, revocation and reconnect are unverified. Treat these steps as an intended test procedure only.',
             },
           ]
         : [
@@ -156,7 +154,7 @@ function englishCopy(client: McpClientId): IntegrationPageCopy {
                 'codex mcp get maxvideoai',
               ],
               setupValues: [],
-              limitation: 'The default Codex add flow requested an extra permission and was stopped. Only the explicit login path above passed the recorded read-only test.',
+              limitation: 'Host installation, OAuth permissions, tool calls, refresh, revocation and reconnect are unverified. Stop any test that requests scopes beyond the documented least-privilege set.',
             },
           ],
       oauthTitle: 'What happens during OAuth authorization',
@@ -226,26 +224,25 @@ function frenchCopy(client: McpClientId): IntegrationPageCopy {
       eyebrow: 'GUIDE DE CONFIGURATION CLIENT',
       title: `Préparez votre parcours MaxVideoAI avec ${label}.`,
       intro: `Utilisez ${label} pour préciser un brief vidéo IA, formuler un prompt, préparer les références et comparer les modèles et budgets avant de poursuivre dans MaxVideoAI.`,
-      unavailable: 'La connexion publique n’est pas encore disponible. Ce guide décrit des preuves de compatibilité contrôlées et le parcours de configuration prévu.',
+      unavailable: 'La connexion publique n’est pas encore disponible. Ce guide décrit les preuves locales du paquet et un parcours prévu, non vérifié dans un hôte réel.',
       liveStatus: 'L’accès public est activé pour les fonctions présentées dans ce guide.',
       backLabel: 'Retour au parcours MaxVideoAI',
       backHref: '/fr/mcp',
     },
     compatibility: {
-      lastVerifiedLabel: 'Dernière vérification',
-      versionLabel: 'Version du client testée',
+      checkpointLabel: 'Point de contrôle local',
       statuses: {
-        claudeDesktop: 'Les tests hébergés en lecture seule, de révocation et de reconnexion ont réussi. L’actualisation après expiration reste à vérifier.',
-        claudeCode: 'Les tests locaux OAuth, de révocation et de nouvelle approbation ont réussi. L’appel hébergé d’un outil reste à effectuer, car le client de test n’avait pas de session Anthropic.',
-        codexCli: 'La connexion hébergée en lecture seule avec autorisations explicites a réussi. Le parcours d’ajout par défaut reste bloqué par une incompatibilité d’autorisations.',
+        claudeDesktop: 'La compatibilité hébergée reste non vérifiée. Seuls la structure locale du paquet et les contrats de protocole sont documentés.',
+        claudeCode: 'La compatibilité hébergée reste non vérifiée. Seuls la structure locale de l’adaptateur et les contrats de protocole sont documentés.',
+        codexCli: 'La compatibilité hébergée reste non vérifiée. Seuls la structure locale du paquet et les contrats de protocole sont documentés.',
       },
     },
     setup: {
       eyebrow: 'Connexion',
       title: `Connecter ${label} à MaxVideoAI`,
       intro: claude
-        ? 'Claude Desktop et Claude Code suivent deux parcours de connexion enregistrés différents. Utilisez le guide correspondant à votre client, puis vérifiez ci-dessous l’état enregistré de sa compatibilité.'
-        : 'Le parcours enregistré utilise Codex CLI avec une commande de connexion aux autorisations explicites. Le premier parcours d’ajout par défaut n’est pas approuvé pour le public.',
+        ? 'Claude Desktop et Claude Code ont deux parcours de connexion prévus différents. Les deux restent non vérifiés dans un hôte réel ; utilisez ces étapes uniquement pour un test approuvé séparément.'
+        : 'Le parcours prévu utilise Codex CLI avec des autorisations explicites et minimales. L’installation et OAuth dans un hôte réel restent non vérifiés, et le premier parcours d’ajout par défaut n’est pas approuvé pour le public.',
       hostGuides: claude
         ? [
             {
@@ -259,7 +256,7 @@ function frenchCopy(client: McpClientId): IntegrationPageCopy {
               ],
               commands: [],
               setupValues: [{ label: 'URL du serveur MCP', value: MCP_PRODUCTION_RESOURCE_URL }],
-              limitation: 'Les outils hébergés en lecture seule, la révocation et la reconnexion ont réussi sur la version enregistrée. L’actualisation automatique après expiration reste à vérifier.',
+              limitation: 'L’installation hébergée, OAuth, les appels d’outils, l’actualisation, la révocation et la reconnexion restent non vérifiés. Ces étapes constituent uniquement une procédure de test prévue.',
             },
             {
               hostId: 'claudeCode',
@@ -274,7 +271,7 @@ function frenchCopy(client: McpClientId): IntegrationPageCopy {
               commands: [`claude mcp add --transport http maxvideoai ${MCP_PRODUCTION_RESOURCE_URL}`, 'claude mcp get maxvideoai'],
               setupValues: [],
               authTrigger: 'Après l’ajout du serveur, ouvrez /mcp dans Claude Code pour vous authentifier.',
-              limitation: 'Les tests locaux OAuth, de révocation et de nouvelle approbation ont réussi. L’appel hébergé d’un outil reste à effectuer ; cette preuve ne valide donc pas l’exécution hébergée des outils.',
+              limitation: 'L’installation dans l’hôte, OAuth, les appels d’outils, l’actualisation, la révocation et la reconnexion restent non vérifiés. Ces étapes constituent uniquement une procédure de test prévue.',
             },
           ]
         : [
@@ -294,7 +291,7 @@ function frenchCopy(client: McpClientId): IntegrationPageCopy {
                 'codex mcp get maxvideoai',
               ],
               setupValues: [],
-              limitation: 'Le parcours d’ajout par défaut de Codex a demandé une autorisation supplémentaire et a été interrompu. Seul le parcours explicite ci-dessus a réussi en lecture seule.',
+              limitation: 'L’installation dans l’hôte, les autorisations OAuth, les appels d’outils, l’actualisation, la révocation et la reconnexion restent non vérifiés. Interrompez tout test qui demande plus que les autorisations minimales documentées.',
             },
           ],
       oauthTitle: 'Déroulement de l’autorisation OAuth',
@@ -363,26 +360,25 @@ function spanishCopy(client: McpClientId): IntegrationPageCopy {
       eyebrow: 'GUÍA DE CONFIGURACIÓN DEL CLIENTE',
       title: `Planifica tu flujo de MaxVideoAI con ${label}.`,
       intro: `Usa ${label} para aclarar una idea de video con IA, formular un prompt, planificar referencias y comparar modelos y presupuestos antes de continuar en MaxVideoAI.`,
-      unavailable: 'La conexión pública aún no está disponible. Esta guía documenta evidencia de compatibilidad controlada y el flujo de configuración previsto.',
+      unavailable: 'La conexión pública aún no está disponible. Esta guía documenta evidencia local del paquete y un flujo previsto, sin verificar en un host real.',
       liveStatus: 'El acceso público está habilitado para las funciones que aparecen en esta guía.',
       backLabel: 'Volver al centro de flujos de MaxVideoAI',
       backHref: '/es/mcp',
     },
     compatibility: {
-      lastVerifiedLabel: 'Última verificación',
-      versionLabel: 'Versión del cliente probada',
+      checkpointLabel: 'Control local de evidencia',
       statuses: {
-        claudeDesktop: 'Las pruebas alojadas de solo lectura, revocación y reconexión pasaron. Queda pendiente la renovación tras el vencimiento del acceso.',
-        claudeCode: 'Las pruebas locales de OAuth, revocación y nueva aprobación pasaron. Queda pendiente una llamada alojada a las herramientas porque el cliente de prueba no tenía una sesión de Anthropic.',
-        codexCli: 'El acceso alojado de solo lectura con permisos explícitos pasó. El flujo predeterminado para agregar la conexión sigue bloqueado por una incompatibilidad de permisos.',
+        claudeDesktop: 'La compatibilidad alojada sigue sin verificar. Solo están documentados la estructura local del paquete y los contratos de protocolo.',
+        claudeCode: 'La compatibilidad alojada sigue sin verificar. Solo están documentados la estructura local del adaptador y los contratos de protocolo.',
+        codexCli: 'La compatibilidad alojada sigue sin verificar. Solo están documentados la estructura local del paquete y los contratos de protocolo.',
       },
     },
     setup: {
       eyebrow: 'Conexión',
       title: `Conecta ${label} con MaxVideoAI`,
       intro: claude
-        ? 'Claude Desktop y Claude Code siguen rutas de conexión registradas diferentes. Usa la guía del cliente que utilizas y revisa abajo su estado de compatibilidad registrado.'
-        : 'La ruta registrada usa Codex CLI con un comando de inicio de sesión de permisos explícitos. El flujo predeterminado inicial no está aprobado para uso público.',
+        ? 'Claude Desktop y Claude Code tienen rutas de conexión previstas diferentes. Ambas siguen sin verificar en un host real; usa estos pasos solo en una prueba aprobada por separado.'
+        : 'La ruta prevista usa Codex CLI con permisos explícitos y mínimos. La instalación y OAuth en un host real siguen sin verificar, y el flujo predeterminado inicial no está aprobado para uso público.',
       hostGuides: claude
         ? [
             {
@@ -396,7 +392,7 @@ function spanishCopy(client: McpClientId): IntegrationPageCopy {
               ],
               commands: [],
               setupValues: [{ label: 'URL del servidor MCP', value: MCP_PRODUCTION_RESOURCE_URL }],
-              limitation: 'Las herramientas alojadas de solo lectura, la revocación y la reconexión pasaron en la versión registrada. Queda pendiente comprobar la renovación automática después del vencimiento.',
+              limitation: 'La instalación alojada, OAuth, las llamadas a herramientas, la renovación, la revocación y la reconexión siguen sin verificar. Estos pasos son solo un procedimiento de prueba previsto.',
             },
             {
               hostId: 'claudeCode',
@@ -411,7 +407,7 @@ function spanishCopy(client: McpClientId): IntegrationPageCopy {
               commands: [`claude mcp add --transport http maxvideoai ${MCP_PRODUCTION_RESOURCE_URL}`, 'claude mcp get maxvideoai'],
               setupValues: [],
               authTrigger: 'Después de agregar el servidor, abre /mcp en Claude Code para autenticarte.',
-              limitation: 'Las pruebas locales de OAuth, revocación y nueva aprobación pasaron. Queda pendiente una llamada alojada a las herramientas, por lo que esta evidencia no confirma su ejecución alojada.',
+              limitation: 'La instalación en el host, OAuth, las llamadas a herramientas, la renovación, la revocación y la reconexión siguen sin verificar. Estos pasos son solo un procedimiento de prueba previsto.',
             },
           ]
         : [
@@ -431,7 +427,7 @@ function spanishCopy(client: McpClientId): IntegrationPageCopy {
                 'codex mcp get maxvideoai',
               ],
               setupValues: [],
-              limitation: 'El flujo predeterminado de Codex solicitó un permiso adicional y se detuvo. Solo la ruta explícita anterior pasó la prueba registrada de solo lectura.',
+              limitation: 'La instalación en el host, los permisos OAuth, las llamadas a herramientas, la renovación, la revocación y la reconexión siguen sin verificar. Detén cualquier prueba que solicite más permisos que el conjunto mínimo documentado.',
             },
           ],
       oauthTitle: 'Qué sucede durante la autorización OAuth',

@@ -416,8 +416,11 @@ test('listing payload is exact, localized, read-only, and contains negative case
   }
 
   assert.match(directory, /`openid`, `email`, `profile`/);
-  assert.match(directory, /`get_account_status`, `list_models`, `recommend_models`/);
-  assert.match(directory, /No generation, quote, upload, trial, payment, or polling tool is currently public/);
+  assert.match(
+    directory,
+    /`get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`/,
+  );
+  assert.match(directory, /No generation, exact quote, upload, trial, payment, or polling tool is currently public/);
   assert.match(directory, /real screenshots and end-to-end demo: NOT AVAILABLE/);
   assert.match(directory, /Owner checklist[\s\S]*Legal[\s\S]*Security[\s\S]*MCP engineering[\s\S]*Growth/);
 });
@@ -451,13 +454,18 @@ test('readiness packages follow the live registry and canonical localized route 
 });
 
 test('directory facts do not outrun checked-in claims or host evidence', () => {
-  assert.match(claims, /Codex app compatibility has not yet been validated/);
-  assert.match(compatibility, /token-expiry refresh pending/);
-  assert.match(directory, /no recorded real Codex, Claude, or other-host selection bundle/i);
-  assert.match(directory, /Codex default[\s\S]{0,80}`phone`[\s\S]{0,80}blocker/i);
-  assert.match(directory, /Claude Desktop[^\n]*token refresh[^\n]*pending/i);
-  assert.match(directory, /migrations 30–32[^\n]*absent/i);
-  assert.match(directory, /migration 33[^\n]*unapplied/i);
+  assert.match(claims, /Codex app compatibility is unverified/);
+  assert.match(compatibility, /Last local checkpoint: 2026-08-24/);
+  assert.match(compatibility, /Hosted OAuth and refresh \| Not run/);
+  assert.match(
+    directory,
+    /No real Codex,[\s\S]{0,120}Claude,[\s\S]{0,120}other-host[\s\S]{0,120}tool-selection bundle is recorded/i,
+  );
+  assert.match(support, /Codex default OAuth flow[^\n]*`phone` scope/i);
+  assert.match(support, /default Codex add flow remains a release blocker/i);
+  assert.match(support, /Claude Desktop token-expiry refresh remains pending/i);
+  assert.match(support, /migrations 30–32 are absent/i);
+  assert.match(support, /migration 33 is unapplied/i);
   assert.match(directory, /https:\/\/modelcontextprotocol\.io\/registry\/moderation-policy/);
   assert.match(
     directory,

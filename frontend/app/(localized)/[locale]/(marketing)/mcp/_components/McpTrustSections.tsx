@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { AppLocale } from '@/i18n/locales';
 import type { McpPublicationState } from '@/lib/mcp-publication';
 import type { McpCompatibilityEvidence } from '../_lib/mcp-compatibility';
-import { formatMcpVerifiedDate } from '../_lib/mcp-compatibility';
+import { formatMcpCheckpointDate } from '../_lib/mcp-compatibility';
 import type { McpPageCopy } from '../_lib/mcp-page-types';
 import { McpClientActions } from './McpClientActions';
 
@@ -17,7 +17,7 @@ export function McpTrustSections({
   locale: AppLocale;
   publication: McpPublicationState;
 }) {
-  const verified = formatMcpVerifiedDate(locale, compatibility.lastVerified);
+  const checkpoint = formatMcpCheckpointDate(locale, compatibility.lastChecked);
   return (
     <div className="border-b border-hairline bg-bg text-text-primary dark:border-white/[0.1] dark:bg-bg dark:text-white">
       <section className="container-page grid max-w-[1120px] gap-4 py-12 lg:grid-cols-2">
@@ -38,11 +38,11 @@ export function McpTrustSections({
         <div className="container-page max-w-[1120px]">
           <h2 className="text-2xl font-semibold text-text-primary dark:text-white">{copy.trust.compatibility.title}</h2>
           <p className="mt-2 max-w-[760px] text-sm leading-6 text-text-secondary dark:text-white/68">{copy.trust.compatibility.body}</p>
-          <p className="mt-2 text-xs font-medium text-text-secondary dark:text-white/68">{copy.trust.compatibility.lastVerifiedLabel}: {verified}</p>
+          <p className="mt-2 text-xs font-medium text-text-secondary dark:text-white/68">{copy.trust.compatibility.checkpointLabel}: {checkpoint}</p>
           <div className="mt-5 grid gap-3 md:grid-cols-3">
             {Object.values(compatibility.clients).flatMap((client) => client.hosts).map((host) => (
               <article key={host.id} className="rounded-[12px] border border-hairline bg-bg p-4 dark:border-white/[0.14] dark:bg-white/[0.04]">
-                <h3 className="font-semibold text-text-primary dark:text-white">{host.hostLabel} {host.version}</h3>
+                <h3 className="font-semibold text-text-primary dark:text-white">{host.hostLabel}</h3>
                 <p className="mt-2 text-sm leading-6 text-text-secondary dark:text-white/68">{copy.trust.compatibility.statuses[host.id]}</p>
               </article>
             ))}

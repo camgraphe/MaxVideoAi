@@ -231,7 +231,8 @@ test('Claude Desktop and Claude Code keep separate evidence-backed setup paths',
   );
   const evidence = getMcpCompatibilityEvidence().clients.claude;
   assert.deepEqual(evidence.hosts.map((host: { id: string }) => host.id), ['claudeDesktop', 'claudeCode']);
-  assert.deepEqual(evidence.hosts.map((host: { version: string }) => host.version), ['1.20186.1', '2.1.207']);
+  assert.deepEqual(evidence.hosts.map((host: { status: string }) => host.status), ['unverified', 'unverified']);
+  assert.equal(evidence.hosts.some((host: object) => 'version' in host), false);
 
   for (const locale of ['en', 'fr', 'es'] as const) {
     const copy = getIntegrationCopy(locale, 'claude');
@@ -241,6 +242,10 @@ test('Claude Desktop and Claude Code keep separate evidence-backed setup paths',
     assert.ok(code.commands.some((command) => command.includes('claude mcp add --transport http')));
     assert.match(code.authTrigger ?? '', /\/mcp/);
     assert.doesNotMatch(copy.compatibility.statuses.claudeCode, /hosted (?:tools?|calls?).*pass/i);
+    for (const status of Object.values(copy.compatibility.statuses)) {
+      assert.match(status, locale === 'fr' ? /non vérifi/i : locale === 'es' ? /sin verificar/i : /unverified/i);
+      assert.doesNotMatch(status, /passed|réussi|pasaron/i);
+    }
   }
 });
 

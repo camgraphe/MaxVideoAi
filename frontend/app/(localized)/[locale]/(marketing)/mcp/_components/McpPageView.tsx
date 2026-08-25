@@ -42,7 +42,7 @@ export function McpPageView({
       <McpReferenceWorkflowSection copy={copy.references} showReferenceClaim={publication.showReferenceClaim} />
       <McpAnswerPassagesSection
         copy={copy.answers}
-        lastVerified={compatibility.lastVerified}
+        lastChecked={compatibility.lastChecked}
         locale={locale}
         publication={publication}
       />

@@ -5,8 +5,8 @@ Readiness: **NOT READY FOR PUBLIC PROMOTION**
 
 This runbook is the support and disclosure boundary for the controlled MaxVideoAI MCP foundation. It is not a public
 availability announcement or a legal policy. The only registered tools are the read-only `get_account_status`,
-`list_models`, and `recommend_models`. Production transport, OAuth, discovery, generation, trial, and reference upload
-publication remain disabled.
+`list_models`, `get_model_details`, `recommend_models`, and `calculate_project_budget`. Production transport, OAuth,
+discovery, generation, trial, and reference upload publication remain disabled.
 
 ## Authoritative checked-in state
 

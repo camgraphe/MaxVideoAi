@@ -1,6 +1,6 @@
 import type { AppLocale } from '@/i18n/locales';
 import type { McpCompatibilityClientEvidence } from '../../mcp/_lib/mcp-compatibility';
-import { formatMcpVerifiedDate } from '../../mcp/_lib/mcp-compatibility';
+import { formatMcpCheckpointDate } from '../../mcp/_lib/mcp-compatibility';
 import type { IntegrationPageCopy } from '../_lib/integration-copy';
 
 export function IntegrationSetupSection({
@@ -27,8 +27,8 @@ export function IntegrationSetupSection({
                 <h3 className="text-xl font-semibold text-text-primary dark:text-white">{guide.title}</h3>
                 <p className="mt-2 text-sm leading-6 text-text-secondary dark:text-white/68">{guide.intro}</p>
                 <div className="mt-4 border-y border-hairline py-3 dark:border-white/[0.12]">
-                  <p className="text-sm font-semibold text-text-primary dark:text-white">{evidence.hostLabel} {evidence.version}</p>
-                  <p className="mt-1 text-xs text-text-secondary dark:text-white/68">{copy.compatibility.lastVerifiedLabel}: {formatMcpVerifiedDate(locale, evidence.lastVerified)}</p>
+                  <p className="text-sm font-semibold text-text-primary dark:text-white">{evidence.hostLabel}</p>
+                  <p className="mt-1 text-xs text-text-secondary dark:text-white/68">{copy.compatibility.checkpointLabel}: {formatMcpCheckpointDate(locale, evidence.lastChecked)}</p>
                   <p className="mt-2 text-sm leading-6 text-text-secondary dark:text-white/68">{copy.compatibility.statuses[guide.hostId]}</p>
                 </div>
                 <ol className="mt-4 grid gap-3 md:grid-cols-3">

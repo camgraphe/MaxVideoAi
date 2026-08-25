@@ -1,24 +1,22 @@
 {
-  "lastVerified": "2026-07-12",
+  "evidenceKind": "local-checkpoint",
+  "lastChecked": "2026-08-24",
   "sourceEvidence": "docs/operations/mcp-host-compatibility-matrix.md",
   "hosts": {
     "claudeDesktop": {
       "client": "claude",
       "hostLabel": "Claude Desktop",
-      "version": "1.20186.1",
-      "status": "hosted-read-only-refresh-pending"
+      "status": "unverified"
     },
     "claudeCode": {
       "client": "claude",
       "hostLabel": "Claude Code",
-      "version": "2.1.207",
-      "status": "local-oauth-revocation-hosted-tool-smoke-pending"
+      "status": "unverified"
     },
     "codexCli": {
       "client": "codex",
       "hostLabel": "Codex CLI",
-      "version": "0.144.1",
-      "status": "explicit-scope-read-only-default-flow-blocked"
+      "status": "unverified"
     }
   }
 }

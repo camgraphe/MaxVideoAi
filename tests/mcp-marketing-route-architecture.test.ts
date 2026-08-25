@@ -349,14 +349,28 @@ test('MCP schema builders fail closed and emit only factual live schema types', 
 
 test('visible compatibility dates are sourced from the recorded evidence config', () => {
   const config = JSON.parse(requireFile('frontend/config/mcp-compatibility.json')) as {
-    lastVerified: string;
+    evidenceKind: string;
+    lastChecked: string;
     sourceEvidence: string;
-    hosts: Record<string, { version: string }>;
+    hosts: Record<string, { status: string; version?: string }>;
   };
-  assert.match(config.lastVerified, /^\d{4}-\d{2}-\d{2}$/);
+  assert.equal(config.evidenceKind, 'local-checkpoint');
+  assert.equal(config.lastChecked, '2026-08-24');
   assert.equal(config.sourceEvidence, 'docs/operations/mcp-host-compatibility-matrix.md');
-  assert.match(requireFile(config.sourceEvidence), new RegExp(`Last verified: ${config.lastVerified}`));
-  assert.equal(config.hosts.claudeDesktop?.version, '1.20186.1');
-  assert.equal(config.hosts.claudeCode?.version, '2.1.207');
-  assert.equal(config.hosts.codexCli?.version, '0.144.1');
+  assert.match(requireFile(config.sourceEvidence), new RegExp(`Last local checkpoint: ${config.lastChecked}`));
+  assert.equal('lastVerified' in config, false);
+  for (const host of Object.values(config.hosts)) {
+    assert.equal(host.status, 'unverified');
+    assert.equal('version' in host, false);
+  }
+
+  const mcpCopy = requireFile(`${mcpRoot}/_lib/mcp-page-copy.ts`);
+  const integrationCopy = requireFile(`${integrationsRoot}/_lib/integration-copy.ts`);
+  for (const source of [mcpCopy, integrationCopy]) {
+    assert.doesNotMatch(source, /lastVerifiedLabel/);
+    assert.doesNotMatch(source, /Hosted read-only[^\n]*passed|hébergé[^\n]*réussi|alojad[^\n]*pasaron/i);
+    assert.match(source, /Local evidence checkpoint/);
+    assert.match(source, /Point de contrôle local/);
+    assert.match(source, /Control local de evidencia/);
+  }
 });
