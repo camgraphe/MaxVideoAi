@@ -135,10 +135,11 @@ may complete a render while MaxVideoAI correctly keeps it unavailable because
 the temporary provider URL has not been copied to durable storage.
 
 `CRON_SECRET` is also required on the Production target. For this project it is
-a dedicated staging cleanup-auth credential, not a schedule declaration. Supply
-it out of band, store it only in Vercel, and never include its value in a shell
-command, Git file, log, report, or downloaded environment file. The wrapper
-checks only that the name exists on the exact target. At runtime,
+the dedicated staging credential used to authenticate the scheduled BytePlus
+poll and the attended reference-cleanup route. Supply it out of band, store it
+only in Vercel, and never include its value in a shell command, Git file, log,
+report, or downloaded environment file. The wrapper checks only that the name
+exists on the exact target. At runtime,
 `referenceUploads` remains false unless the cleanup flag, exact storage prefix,
 and a nonblank `CRON_SECRET` are all present.
 
@@ -162,12 +163,14 @@ mutate the live database. If the required schema state cannot be established
 without revealing credentials, stop with `SCHEMA_BLOCKED`; do not deploy and do
 not attempt an in-band repair.
 
-The approved MCP staging package remains zero-cron: do not add the Task 5
-cleanup schedule to `frontend/vercel.mcp-staging.json`. Cleanup is instead an
-attended, authenticated one-shot operation using the same route and bounded
-Task 5 ledger owner as production. A secret name without a working operator
-path is not sufficient; a failed cleanup run blocks promotion and the staging
-operational session.
+The operational MCP staging package registers exactly one schedule:
+`/api/cron/byteplus-poll` every five minutes. It is required to advance accepted
+Seedance 2.5 jobs and persist their terminal outputs. Do not add the Task 5
+cleanup schedule or any other production cron to `frontend/vercel.mcp-staging.json`.
+Cleanup remains an attended, authenticated one-shot operation using the same
+route and bounded Task 5 ledger owner as production. A secret name without a
+working operator path is not sufficient; a failed cleanup run blocks promotion
+and the staging operational session.
 
 ### One-shot cleanup and teardown
 
@@ -236,9 +239,10 @@ Vercel also resolves deployment configuration from the effective project-root
 `frontend/vercel.json`. With this monorepo layout, passing
 `--local-config frontend/vercel.mcp-staging.json` from the repository root was
 not sufficient: Vercel used the production config, including its cron list.
-The current staging deployment was therefore produced with
-`frontend/vercel.mcp-staging.json` as the effective project-root config and was
-verified after stable-alias assignment to contain zero cron registrations.
+The current staging deployment is produced with
+`frontend/vercel.mcp-staging.json` as the effective project-root config and must
+contain exactly the five-minute BytePlus poll registration—no inherited Fal,
+Kling, Vertex, Luma, reconciliation, cleanup, retention, or alert schedules.
 
 Do not run Vercel deployment commands directly against this linked staging
 project. Commit the exact revision to validate, make sure the worktree contains
@@ -271,12 +275,13 @@ The deployment receives only two sanitized provenance metadata values:
 `mcpTrackedArchiveSha256`, containing the SHA-256 digest of `git archive HEAD`.
 The wrapper waits for `READY` and rejects the candidate unless all pre-promotion
 checks pass: the deployment belongs to `maxvideoai-mcp-staging`, the API cron
-list is empty, both metadata values exactly match the current clean approved
-`HEAD`, and the direct candidate origin is anonymous and carries the exact
-global noindex header. It also calls the candidate discovery and direct MCP
-route with the unaliased host: both must fail closed with HTTP `404` while
-retaining the exact noindex header. Missing or mismatched provenance or headers
-abort before promotion. Only then does it call `vercel promote`.
+list contains only the exact five-minute BytePlus poll, both metadata values
+exactly match the current clean approved `HEAD`, and the direct candidate origin
+is anonymous and carries the exact global noindex header. It also calls the
+candidate discovery and direct MCP route with the unaliased host: both must fail
+closed with HTTP `404` while retaining the exact noindex header. Missing or
+mismatched provenance or headers abort before promotion. Only then does it call
+`vercel promote`.
 
 To resume validation of an already-created unaliased candidate, use
 `bash scripts/deploy-mcp-staging-vercel.sh --candidate dpl_ID` from the same
@@ -298,7 +303,7 @@ The acceptance conditions are all mandatory:
 - the deployment belongs to `maxvideoai-mcp-staging`;
 - `mcpApprovedGitSha` and `mcpTrackedArchiveSha256` match the current clean
   tracked revision exactly;
-- its cron list is empty;
+- its cron list contains only `/api/cron/byteplus-poll` on `*/5 * * * *`;
 - the tested root, protected-resource discovery, and MCP protocol responses
   include exact `X-Robots-Tag: noindex, nofollow, noarchive`;
 - the stable alias resolves directly without Vercel Authentication;
@@ -312,8 +317,10 @@ production cron list because the alternate config path was ignored. A later
 building: Fal, BytePlus, Kling, both Vertex pollers, Luma, and missing-job
 reconciliation. Every request returned HTTP `401`. No cron secret, provider
 credential, payment credential, or production database was present, and no
-side effect is evidenced. The corrected stable deployment has an empty cron
-list. The candidate-before-promotion wrapper above prevents recurrence.
+side effect is evidenced. The corrected deployment at that time had an empty
+cron list. The current operational staging contract intentionally permits only
+the authenticated BytePlus poll; the candidate-before-promotion wrapper
+prevents every other schedule from recurring.
 
 ## Verification
 

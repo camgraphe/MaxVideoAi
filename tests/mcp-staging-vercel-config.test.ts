@@ -35,6 +35,10 @@ const REQUIRED_OPERATIONAL_ENVIRONMENT = [
   'CRON_SECRET',
 ] as const;
 
+const EXPECTED_STAGING_CRONS = [
+  { path: '/api/cron/byteplus-poll', schedule: '*/5 * * * *' },
+] as const;
+
 const PROVIDER_SECRET_FIXTURE = 'provider-secret-must-never-appear';
 
 function runGit(cwd: string, args: string[]) {
@@ -186,14 +190,14 @@ printf '200'
   return fixture;
 }
 
-test('MCP staging Vercel config has no crons and blocks indexing', () => {
+test('MCP staging schedules only the authenticated BytePlus poll and blocks indexing', () => {
   const path = join(process.cwd(), 'frontend/vercel.mcp-staging.json');
   assert.equal(existsSync(path), true);
   const config = JSON.parse(readFileSync(path, 'utf8')) as {
     crons?: unknown[];
     headers?: Array<{ source: string; headers: Array<{ key: string; value: string }> }>;
   };
-  assert.equal(config.crons, undefined);
+  assert.deepEqual(config.crons, EXPECTED_STAGING_CRONS);
   assert.deepEqual(config.headers, [
     {
       source: '/(.*)',
@@ -467,6 +471,27 @@ test('MCP staging deploy wrapper gates an unaliased candidate before promotion',
     assert.match(resumeDryRun.stdout, /mode=existing-candidate/);
     assert.match(resumeDryRun.stdout, /candidate=dpl_E8nXLZ2WH6jrmrvcm5AnBzdKoZos/);
 
+    const fixtureConfigPath = join(fixture, 'frontend/vercel.mcp-staging.json');
+    const fixtureConfigSource = readFileSync(fixtureConfigPath, 'utf8');
+    const fixtureConfig = JSON.parse(fixtureConfigSource) as { crons?: unknown[] };
+    fixtureConfig.crons = [
+      ...EXPECTED_STAGING_CRONS,
+      { path: '/api/cron/fal-poll', schedule: '*/5 * * * *' },
+    ];
+    writeFileSync(fixtureConfigPath, `${JSON.stringify(fixtureConfig, null, 2)}\n`);
+    runGit(fixture, ['add', 'frontend/vercel.mcp-staging.json']);
+    runGit(fixture, ['commit', '--quiet', '-m', 'add unauthorized staging cron']);
+    const extraCronDryRun = spawnSync('bash', [fixtureScript, '--dry-run'], {
+      cwd: fixture,
+      encoding: 'utf8',
+    });
+    assert.notEqual(extraCronDryRun.status, 0);
+    assert.doesNotMatch(extraCronDryRun.stdout, /SAFE_PACKAGE_OK/);
+
+    writeFileSync(fixtureConfigPath, fixtureConfigSource);
+    runGit(fixture, ['add', 'frontend/vercel.mcp-staging.json']);
+    runGit(fixture, ['commit', '--quiet', '-m', 'restore staging cron contract']);
+
     writeFileSync(join(fixture, 'untracked-change.txt'), 'dirty\n');
     const dirtyDryRun = spawnSync('bash', [fixtureScript, '--dry-run'], {
       cwd: fixture,
@@ -509,6 +534,5 @@ test('MCP staging deploy wrapper gates an unaliased candidate before promotion',
   assert.match(runbook, /migration files 30–37 are present locally/i);
   assert.match(runbook, /staging application remains unverified pending Task 10/i);
   assert.doesNotMatch(runbook, /already applied|remains unapplied|migrations? 30–32 (?:are )?absent/i);
-  assert.match(runbook, /zero cron|zero-cron/i);
   assert.doesNotMatch(runbook, /BYTEPLUS_ARK_API_KEY\s*=/);
 });
