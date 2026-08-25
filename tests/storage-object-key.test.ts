@@ -43,3 +43,29 @@ test('a render namespace isolates videos and all gallery derivatives', { concurr
     }
   }
 });
+
+test('a reference namespace isolates reusable library media and thumbnails', { concurrency: false }, () => {
+  const previousPrefix = process.env.MCP_STAGING_REFERENCE_STORAGE_PREFIX;
+  process.env.MCP_STAGING_REFERENCE_STORAGE_PREFIX = 'mcp-reference-staging/';
+
+  try {
+    assert.equal(
+      buildObjectKey({ prefix: 'media-assets', userId: 'user_test', leafName: 'video.mp4' }),
+      'mcp-reference-staging/media-assets/user_test/video.mp4'
+    );
+    assert.equal(
+      buildObjectKey({ prefix: 'user-asset-thumbs', userId: 'user_test', leafName: 'thumb.jpg' }),
+      'mcp-reference-staging/user-asset-thumbs/user_test/thumb.jpg'
+    );
+    assert.equal(
+      buildObjectKey({ prefix: 'uploads', userId: 'user_test', leafName: 'source.png' }),
+      'uploads/user_test/source.png'
+    );
+  } finally {
+    if (previousPrefix === undefined) {
+      delete process.env.MCP_STAGING_REFERENCE_STORAGE_PREFIX;
+    } else {
+      process.env.MCP_STAGING_REFERENCE_STORAGE_PREFIX = previousPrefix;
+    }
+  }
+});

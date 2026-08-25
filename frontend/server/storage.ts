@@ -166,6 +166,15 @@ function getObjectKeySizeBytes(key: string): number {
 
 function resolveStoragePrefix(prefix?: string): string {
   const requested = (prefix || 'uploads').replace(/^\/+|\/+$/g, '');
+  const referenceNamespace = process.env.MCP_STAGING_REFERENCE_STORAGE_PREFIX?.trim().replace(/^\/+|\/+$/g, '');
+  if (
+    referenceNamespace
+    && ['media-assets', 'user-asset-thumbs'].some(
+      (root) => requested === root || requested.startsWith(`${root}/`),
+    )
+  ) {
+    return `${referenceNamespace}/${requested}`;
+  }
   const renderNamespace = process.env.VIDEO_RENDER_STORAGE_PREFIX?.trim().replace(/^\/+|\/+$/g, '');
   if (!renderNamespace || (requested !== 'renders' && !requested.startsWith('renders/'))) {
     return requested;
