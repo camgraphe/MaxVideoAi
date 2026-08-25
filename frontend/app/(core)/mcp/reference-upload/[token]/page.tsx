@@ -6,8 +6,8 @@ import { HeaderBar } from '@/components/HeaderBar';
 import { getMcpRequestHost } from '@/lib/mcp-host-routing';
 import { createSupabaseServerClient } from '@/lib/supabase-ssr';
 import { getOwnedUploadSession } from '@/server/agent-api/reference-upload-sessions';
+import { getReferenceUploadPolicy } from '@/server/agent-api/create-reference-upload-link';
 import { resolveMcpRuntimeCapabilities } from '@/server/mcp/operational-access';
-import { MAX_IMAGE_UPLOAD_BYTES } from '@/server/uploads/store-image-upload';
 
 import { ReferenceUploadClient } from './_components/ReferenceUploadClient';
 
@@ -41,22 +41,26 @@ export default async function ReferenceUploadPage({
   const available = session.state === 'created'
     && session.claimId === null
     && session.expiresAt.getTime() > Date.now();
+  const policy = getReferenceUploadPolicy(session.mediaKind);
+  const mediaLabel = session.mediaKind === 'audio' ? 'audio file' : session.mediaKind;
 
   return (
     <div className="min-h-screen bg-bg text-text-primary">
       <HeaderBar />
       <main className="mx-auto w-full max-w-2xl px-5 py-12 sm:py-16">
         <p className="text-xs font-semibold uppercase tracking-micro text-brand">MaxVideoAI × your assistant</p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight">Add a reference image</h1>
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight">Add a reference {mediaLabel}</h1>
         <p className="mt-3 max-w-xl text-sm leading-6 text-text-secondary sm:text-base">
-          Upload one image to your private MaxVideoAI library, then return to Claude or Codex to continue preparing your generation.
+          Upload one {mediaLabel} to your private MaxVideoAI library, then return to Claude or Codex to continue preparing your generation.
         </p>
         <div className="mt-7">
           <ReferenceUploadClient
             token={token}
             expiresAt={session.expiresAt.toISOString()}
             available={available}
-            maxBytes={MAX_IMAGE_UPLOAD_BYTES}
+            mediaKind={session.mediaKind}
+            accepted={[...policy.accepted]}
+            maxBytes={policy.maxBytes}
           />
         </div>
       </main>

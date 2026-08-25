@@ -28,6 +28,7 @@ function row(overrides: Record<string, unknown> = {}) {
     token_hash: tokenHash,
     user_id: 'user-a',
     oauth_client_id: 'claude-client',
+    media_kind: 'video',
     state: 'created',
     claim_id: null,
     asset_id: null,
@@ -50,19 +51,22 @@ test('createUploadSession stores only a token hash and returns the random token 
   };
 
   const created = await createUploadSession(
-    { userId: 'user-a', oauthClientId: 'claude-client' },
+    { userId: 'user-a', oauthClientId: 'claude-client', mediaKind: 'video' },
     { executor, now: () => now, randomUUID: () => sessionId, randomToken: () => rawToken },
   );
 
   assert.equal(MCP_REFERENCE_UPLOAD_LIFETIME_SECONDS, 15 * 60);
   assert.equal(created.token, rawToken);
   assert.equal(created.session.sessionId, sessionId);
+  assert.equal(created.session.mediaKind, 'video');
   assert.equal(created.session.expiresAt.toISOString(), expiresAt.toISOString());
   assert.equal(calls.length, 1);
   assert.match(calls[0].sql, /INSERT INTO mcp_reference_upload_sessions/i);
   assert.ok(calls[0].params.includes(tokenHash));
   assert.equal(calls[0].params.includes(rawToken), false);
   assert.equal(calls[0].sql.includes('token,'), false);
+  assert.match(calls[0].sql, /media_kind/i);
+  assert.ok(calls[0].params.includes('video'));
 });
 
 test('getOwnedUploadSession hashes the bearer token and scopes the read to the authenticated user', async () => {
@@ -76,6 +80,7 @@ test('getOwnedUploadSession hashes the bearer token and scopes the read to the a
 
   const session = await getOwnedUploadSession({ token: rawToken, userId: 'user-a' }, { executor });
   assert.equal(session?.sessionId, sessionId);
+  assert.equal(session?.mediaKind, 'video');
   assert.match(calls[0].sql, /token_hash\s*=\s*\$1[\s\S]*user_id\s*=\s*\$2/i);
   assert.deepEqual(calls[0].params, [tokenHash, 'user-a']);
   assert.doesNotMatch(calls[0].sql, /oauth_client_id\s+IS NOT DISTINCT/i);
@@ -98,6 +103,7 @@ test('claimUploadSessionForUpload row-locks and allows only a live owned unclaim
   );
 
   assert.equal(claimed.claimId, claimId);
+  assert.equal(claimed.mediaKind, 'video');
   assert.match(calls[0].sql, /FOR UPDATE/i);
   assert.match(calls.at(-1)?.sql ?? '', /state\s*=\s*'created'[\s\S]*claim_id\s+IS NULL/i);
 });
@@ -137,20 +143,37 @@ test('completeUploadSession binds one asset to the exact owner and claim', async
       calls.push({ sql, params });
       return [row({
         state: 'uploaded', claim_id: claimId, claimed_at: now,
-        asset_id: 'asset-image-1', uploaded_at: now, updated_at: now,
+        asset_id: 'asset-video-1', uploaded_at: now, updated_at: now,
       })] as T[];
     },
   };
 
   const completed = await completeUploadSession(
-    { sessionId, userId: 'user-a', claimId, assetId: 'asset-image-1' },
+    { sessionId, userId: 'user-a', claimId, mediaKind: 'video', assetId: 'asset-video-1' },
     { executor: executor as TransactionQueryExecutor, uploadedAt: now },
   );
 
-  assert.equal(completed.assetId, 'asset-image-1');
+  assert.equal(completed.assetId, 'asset-video-1');
   assert.equal(completed.state, 'uploaded');
   assert.match(calls[0].sql, /session_id\s*=\s*\$1[\s\S]*user_id\s*=\s*\$2/i);
   assert.match(calls[0].sql, /claim_id\s*=\s*\$3[\s\S]*state\s*=\s*'created'/i);
+  assert.match(calls[0].sql, /media_kind\s*=\s*\$4/i);
+  assert.ok(calls[0].params.includes('video'));
+});
+
+test('session rows fail closed when the persisted media kind is missing or unsupported', async () => {
+  for (const mediaKind of [undefined, 'document']) {
+    const executor: QueryExecutor = {
+      async query<T>() {
+        return [row({ media_kind: mediaKind })] as T[];
+      },
+    };
+
+    await assert.rejects(
+      getOwnedUploadSession({ token: rawToken, userId: 'user-a' }, { executor }),
+      /Invalid reference upload session row/i,
+    );
+  }
 });
 
 test('expireUploadSessions skips locks and validates the batch count', async () => {

@@ -108,6 +108,7 @@ export type MaxVideoAiMcpServices = {
     principal: AgentPrincipal,
   ): Promise<AgentMediaPage>;
   createReferenceUploadLink?(
+    input: import('@/server/agent-api/create-reference-upload-link').CreateReferenceUploadLinkInput,
     principal: AgentPrincipal,
   ): Promise<ReferenceUploadLink>;
 };

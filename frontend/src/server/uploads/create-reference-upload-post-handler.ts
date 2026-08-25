@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { withDbTransaction, type TransactionQueryExecutor } from '@/lib/db';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
+import { ensureReusableAsset } from '@/server/media-library';
 import { AgentApiError } from '@/server/agent-api/errors';
-import { REFERENCE_UPLOAD_ACCEPTED_MIME_TYPES } from '@/server/agent-api/create-reference-upload-link';
+import { getReferenceUploadPolicy } from '@/server/agent-api/create-reference-upload-link';
 import {
   claimUploadSessionForUpload,
   completeUploadSession,
@@ -13,11 +14,35 @@ import {
 import { isSameOriginConsentRequest } from '@/server/mcp/oauth-consent';
 import {
   ImageUploadError,
-  MAX_IMAGE_UPLOAD_BYTES,
+  loadStoredImageUploadRouteAsset,
   storeImageUpload,
 } from '@/server/uploads/store-image-upload';
+import {
+  MediaUploadError,
+  storeAudioUpload,
+  storeVideoUpload,
+} from '@/server/uploads/store-media-upload';
 
 type RouteContext = { params: Promise<{ token: string }> };
+
+async function resolveStoredImageReferenceAsset(input: {
+  userId: string;
+  assetId: string;
+}): Promise<{ assetId: string }> {
+  const stored = await loadStoredImageUploadRouteAsset(input);
+  const canonical = await ensureReusableAsset({
+    userId: input.userId,
+    url: stored.url,
+    kind: 'image',
+    source: 'upload',
+    mimeType: stored.mimeType,
+    width: stored.width,
+    height: stored.height,
+    sizeBytes: stored.sizeBytes,
+    thumbUrl: stored.thumbUrl,
+  });
+  return { assetId: canonical.id };
+}
 
 type ReferenceUploadPostDependencies = {
   isEnabled(request: NextRequest): boolean;
@@ -28,6 +53,9 @@ type ReferenceUploadPostDependencies = {
   ): Promise<TResult>;
   claimUploadSessionForUpload: typeof claimUploadSessionForUpload;
   storeImageUpload: typeof storeImageUpload;
+  resolveStoredImageReferenceAsset: typeof resolveStoredImageReferenceAsset;
+  storeVideoUpload: typeof storeVideoUpload;
+  storeAudioUpload: typeof storeAudioUpload;
   completeUploadSession: typeof completeUploadSession;
   releaseUploadSessionClaim: typeof releaseUploadSessionClaim;
   now(): Date;
@@ -35,7 +63,6 @@ type ReferenceUploadPostDependencies = {
 
 type ReferenceUploadLimits = { maxBytes: number };
 
-const ACCEPTED_MIME_TYPES = new Set<string>(REFERENCE_UPLOAD_ACCEPTED_MIME_TYPES);
 const defaultDependencies: ReferenceUploadPostDependencies = {
   isEnabled: () => false,
   isSameOriginRequest: isSameOriginConsentRequest,
@@ -43,11 +70,13 @@ const defaultDependencies: ReferenceUploadPostDependencies = {
   withTransaction: (callback) => withDbTransaction((executor) => callback(executor)),
   claimUploadSessionForUpload,
   storeImageUpload,
+  resolveStoredImageReferenceAsset,
+  storeVideoUpload,
+  storeAudioUpload,
   completeUploadSession,
   releaseUploadSessionClaim,
   now: () => new Date(),
 };
-const defaultLimits: ReferenceUploadLimits = { maxBytes: MAX_IMAGE_UPLOAD_BYTES };
 
 function privateHeaders(): HeadersInit {
   return {
@@ -70,10 +99,13 @@ function errorResponse(error: unknown): NextResponse {
     if (error.code === 'AUTH_REQUIRED') return json({ ok: false, error: error.code }, 401);
     return json({ ok: false, error: 'REFERENCE_INVALID' }, 400);
   }
-  if (error instanceof ImageUploadError) {
+  if (error instanceof ImageUploadError || error instanceof MediaUploadError) {
     if (error.code === 'FILE_TOO_LARGE') return json({ ok: false, error: error.code }, 413);
     if (error.code === 'UNSUPPORTED_TYPE') return json({ ok: false, error: error.code }, 415);
     if (error.code === 'EMPTY_FILE') return json({ ok: false, error: error.code }, 400);
+    if (error instanceof MediaUploadError && error.code === 'METADATA_UNVERIFIED') {
+      return json({ ok: false, error: 'REFERENCE_INVALID' }, 422);
+    }
     return json({ ok: false, error: error.code }, 500);
   }
   return json({ ok: false, error: 'STORE_FAILED' }, 500);
@@ -91,7 +123,6 @@ export function createReferenceUploadPostHandler(
   limitOverrides: Partial<ReferenceUploadLimits> = {},
 ): (request: NextRequest, context: RouteContext) => Promise<NextResponse> {
   const dependencies = { ...defaultDependencies, ...overrides };
-  const limits = { ...defaultLimits, ...limitOverrides };
 
   return async function referenceUploadPost(
     request: NextRequest,
@@ -102,40 +133,89 @@ export function createReferenceUploadPostHandler(
 
     const { userId } = await dependencies.getRouteAuthContext(request);
     if (!userId) return json({ ok: false, error: 'AUTH_REQUIRED' }, 401);
-    if (exceedsContentLength(request, limits.maxBytes)) {
-      return json({ ok: false, error: 'FILE_TOO_LARGE', maxBytes: limits.maxBytes }, 413);
-    }
 
     const { token } = await context.params;
-    const form = await request.formData();
-    const file = form.get('file');
-    if (!(file instanceof File)) return json({ ok: false, error: 'FILE_REQUIRED' }, 400);
-    if (file.size < 1) return json({ ok: false, error: 'EMPTY_FILE' }, 400);
-    if (file.size > limits.maxBytes) {
-      return json({ ok: false, error: 'FILE_TOO_LARGE', maxBytes: limits.maxBytes }, 413);
-    }
-    const declaredMime = file.type.trim().toLowerCase();
-    if (!ACCEPTED_MIME_TYPES.has(declaredMime)) {
-      return json({ ok: false, error: 'UNSUPPORTED_TYPE' }, 415);
-    }
-    const bytes = Buffer.from(await file.arrayBuffer());
-    if (bytes.length > limits.maxBytes) {
-      return json({ ok: false, error: 'FILE_TOO_LARGE', maxBytes: limits.maxBytes }, 413);
-    }
-
     let claimed: ReferenceUploadSession | null = null;
+    let storedAssetId: string | null = null;
+    const releaseClaim = async (): Promise<void> => {
+      if (!claimed?.claimId) return;
+      const releasedAt = dependencies.now();
+      await dependencies.withTransaction((executor) =>
+        dependencies.releaseUploadSessionClaim(
+          { sessionId: claimed!.sessionId, userId, claimId: claimed!.claimId! },
+          { executor, releasedAt },
+        )).catch(() => undefined);
+    };
+
     try {
       claimed = await dependencies.withTransaction((executor) =>
         dependencies.claimUploadSessionForUpload(
           { token, userId },
           { executor, randomUUID: crypto.randomUUID },
         ));
-      const stored = await dependencies.storeImageUpload({
-        userId,
-        fileName: file.name,
-        declaredMime,
-        bytes,
-      });
+      const policy = getReferenceUploadPolicy(claimed.mediaKind);
+      const maxBytes = limitOverrides.maxBytes === undefined
+        ? policy.maxBytes
+        : Math.min(policy.maxBytes, limitOverrides.maxBytes);
+      if (exceedsContentLength(request, maxBytes)) {
+        await releaseClaim();
+        return json({ ok: false, error: 'FILE_TOO_LARGE', maxBytes }, 413);
+      }
+
+      const form = await request.formData();
+      const file = form.get('file');
+      if (!(file instanceof File)) {
+        await releaseClaim();
+        return json({ ok: false, error: 'FILE_REQUIRED' }, 400);
+      }
+      if (file.size < 1) {
+        await releaseClaim();
+        return json({ ok: false, error: 'EMPTY_FILE' }, 400);
+      }
+      if (file.size > maxBytes) {
+        await releaseClaim();
+        return json({ ok: false, error: 'FILE_TOO_LARGE', maxBytes }, 413);
+      }
+      const declaredMime = file.type.trim().toLowerCase();
+      if (!policy.accepted.includes(declaredMime)) {
+        await releaseClaim();
+        return json({ ok: false, error: 'REFERENCE_INVALID' }, 400);
+      }
+      const bytes = Buffer.from(await file.arrayBuffer());
+      if (bytes.length > maxBytes) {
+        await releaseClaim();
+        return json({ ok: false, error: 'FILE_TOO_LARGE', maxBytes }, 413);
+      }
+
+      let assetId: string;
+      if (claimed.mediaKind === 'image') {
+        const stored = await dependencies.storeImageUpload({
+          userId,
+          fileName: file.name,
+          declaredMime,
+          bytes,
+        });
+        assetId = (await dependencies.resolveStoredImageReferenceAsset({
+          userId,
+          assetId: stored.assetId,
+        })).assetId;
+      } else if (claimed.mediaKind === 'video') {
+        assetId = (await dependencies.storeVideoUpload({
+          userId,
+          fileName: file.name,
+          declaredMime,
+          bytes,
+        })).assetId;
+      } else {
+        assetId = (await dependencies.storeAudioUpload({
+          userId,
+          fileName: file.name,
+          declaredMime,
+          bytes,
+        })).assetId;
+      }
+      storedAssetId = assetId;
+
       const completedAt = dependencies.now();
       await dependencies.withTransaction((executor) =>
         dependencies.completeUploadSession(
@@ -143,19 +223,15 @@ export function createReferenceUploadPostHandler(
             sessionId: claimed!.sessionId,
             userId,
             claimId: claimed!.claimId!,
-            assetId: stored.assetId,
+            mediaKind: claimed!.mediaKind,
+            assetId,
           },
           { executor, uploadedAt: completedAt },
         ));
-      return json({ ok: true, assetId: stored.assetId }, 200);
+      return json({ ok: true, assetId, mediaKind: claimed.mediaKind }, 200);
     } catch (error) {
-      if (claimed?.claimId && error instanceof ImageUploadError) {
-        const releasedAt = dependencies.now();
-        await dependencies.withTransaction((executor) =>
-          dependencies.releaseUploadSessionClaim(
-            { sessionId: claimed!.sessionId, userId, claimId: claimed!.claimId! },
-            { executor, releasedAt },
-          )).catch(() => undefined);
+      if (claimed?.claimId && storedAssetId === null) {
+        await releaseClaim();
       }
       return errorResponse(error);
     }

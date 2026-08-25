@@ -3,6 +3,7 @@ import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { query, type QueryExecutor, type TransactionQueryExecutor } from '@/lib/db';
 
 import { AgentApiError } from './errors';
+import type { CanonicalReferenceMediaKind } from './generation-types';
 
 export const MCP_REFERENCE_UPLOAD_LIFETIME_SECONDS = 15 * 60;
 export const MCP_REFERENCE_UPLOAD_EXPIRATION_BATCH_SIZE = 100;
@@ -13,6 +14,7 @@ export type ReferenceUploadSession = {
   sessionId: string;
   userId: string;
   oauthClientId: string | null;
+  mediaKind: CanonicalReferenceMediaKind;
   state: ReferenceUploadSessionState;
   claimId: string | null;
   assetId: string | null;
@@ -33,6 +35,7 @@ type SessionRow = {
   token_hash: unknown;
   user_id: unknown;
   oauth_client_id: unknown;
+  media_kind: unknown;
   state: unknown;
   claim_id: unknown;
   asset_id: unknown;
@@ -78,8 +81,9 @@ const defaultCreateDependencies: CreateDependencies = {
 const UUID_V4_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 const TOKEN_PATTERN = /^mru_[A-Za-z0-9_-]{43}$/u;
 const STATES = new Set<ReferenceUploadSessionState>(['created', 'uploaded', 'expired', 'revoked']);
+const MEDIA_KINDS = new Set<CanonicalReferenceMediaKind>(['image', 'video', 'audio']);
 const SESSION_COLUMNS = `
-  session_id, token_hash, user_id, oauth_client_id, state, claim_id, asset_id,
+  session_id, token_hash, user_id, oauth_client_id, media_kind, state, claim_id, asset_id,
   expires_at, claimed_at, uploaded_at, created_at, updated_at
 `;
 
@@ -118,11 +122,16 @@ function parseSessionRow(row: SessionRow): ReferenceUploadSession {
   const uploadedAt = row.uploaded_at === null ? null : finiteDate(row.uploaded_at);
   const createdAt = finiteDate(row.created_at);
   const updatedAt = finiteDate(row.updated_at);
+  const mediaKind = typeof row.media_kind === 'string'
+    && MEDIA_KINDS.has(row.media_kind as CanonicalReferenceMediaKind)
+    ? row.media_kind as CanonicalReferenceMediaKind
+    : null;
   if (!UUID_V4_PATTERN.test(String(row.session_id))
     || typeof row.token_hash !== 'string'
     || !/^[a-f0-9]{64}$/u.test(row.token_hash)
     || !boundedText(row.user_id, 128)
     || !nullableBoundedText(row.oauth_client_id, 256)
+    || !mediaKind
     || !state
     || (row.claim_id !== null && !UUID_V4_PATTERN.test(String(row.claim_id)))
     || !nullableBoundedText(row.asset_id, 512)
@@ -144,6 +153,7 @@ function parseSessionRow(row: SessionRow): ReferenceUploadSession {
     sessionId: row.session_id as string,
     userId: row.user_id,
     oauthClientId: row.oauth_client_id,
+    mediaKind,
     state,
     claimId: row.claim_id as string | null,
     assetId: row.asset_id,
@@ -182,10 +192,17 @@ function requireClock(value: unknown, label: string): Date {
 }
 
 export async function createUploadSession(
-  input: { userId: string; oauthClientId: string | null },
+  input: {
+    userId: string;
+    oauthClientId: string | null;
+    mediaKind: CanonicalReferenceMediaKind;
+  },
   dependencies: Partial<CreateDependencies> = {},
 ): Promise<CreatedReferenceUploadSession> {
   requireIdentity(input?.userId, input?.oauthClientId);
+  if (!MEDIA_KINDS.has(input?.mediaKind)) {
+    throw new AgentApiError('REFERENCE_INVALID', 'Choose an image, video, or audio reference.');
+  }
   const resolved = { ...defaultCreateDependencies, ...dependencies };
   const createdAt = requireClock(resolved.now(), 'reference upload');
   const expiresAt = new Date(createdAt.getTime() + MCP_REFERENCE_UPLOAD_LIFETIME_SECONDS * 1000);
@@ -194,11 +211,11 @@ export async function createUploadSession(
   const tokenHash = tokenDigest(token);
   const rows = await resolved.executor.query<SessionRow>(
     `INSERT INTO mcp_reference_upload_sessions (
-      session_id, token_hash, user_id, oauth_client_id, state,
+      session_id, token_hash, user_id, oauth_client_id, media_kind, state,
       expires_at, created_at, updated_at
-    ) VALUES ($1, $2, $3, $4, 'created', $5, $6, $6)
+    ) VALUES ($1, $2, $3, $4, $5, 'created', $6, $7, $7)
     RETURNING ${SESSION_COLUMNS}`,
-    [sessionId, tokenHash, input.userId, input.oauthClientId, expiresAt, createdAt],
+    [sessionId, tokenHash, input.userId, input.oauthClientId, input.mediaKind, expiresAt, createdAt],
   );
   const session = parseOptionalSession(rows);
   if (!session) throw new Error('Reference upload session was not persisted.');
@@ -267,24 +284,32 @@ export async function claimUploadSessionForUpload(
 }
 
 export async function completeUploadSession(
-  input: { sessionId: string; userId: string; claimId: string; assetId: string },
+  input: {
+    sessionId: string;
+    userId: string;
+    claimId: string;
+    mediaKind: CanonicalReferenceMediaKind;
+    assetId: string;
+  },
   dependencies: CompleteDependencies,
 ): Promise<ReferenceUploadSession> {
   requireIdentity(input?.userId);
   requireUuid(input?.sessionId, 'reference upload session ID');
   requireUuid(input?.claimId, 'reference upload claim ID');
+  if (!MEDIA_KINDS.has(input?.mediaKind)) throw new Error('Invalid reference upload media kind.');
   if (!boundedText(input?.assetId, 512)) throw new Error('Invalid reference upload asset ID.');
   const uploadedAt = requireClock(dependencies.uploadedAt, 'reference upload completion');
   const rows = await dependencies.executor.query<SessionRow>(
     `UPDATE mcp_reference_upload_sessions
-        SET state = 'uploaded', asset_id = $4, uploaded_at = $5, updated_at = $5
+        SET state = 'uploaded', asset_id = $5, uploaded_at = $6, updated_at = $6
       WHERE session_id = $1
         AND user_id = $2
         AND claim_id = $3
+        AND media_kind = $4
         AND state = 'created'
-        AND expires_at > $5
+        AND expires_at > $6
     RETURNING ${SESSION_COLUMNS}`,
-    [input.sessionId, input.userId, input.claimId, input.assetId, uploadedAt],
+    [input.sessionId, input.userId, input.claimId, input.mediaKind, input.assetId, uploadedAt],
   );
   const completed = parseOptionalSession(rows);
   if (!completed) throw new AgentApiError('UPLOAD_ALREADY_USED', 'Reference upload link cannot be completed.');

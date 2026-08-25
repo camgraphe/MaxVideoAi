@@ -491,16 +491,20 @@ test('upload routes persist reusable thumbnails for new image and video assets',
     path.join(process.cwd(), 'frontend/app/api/uploads/video/route.ts'),
     'utf8'
   );
+  const mediaUploadService = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/src/server/uploads/store-media-upload.ts'),
+    'utf8'
+  );
 
   assert.match(imageUploadService, /createUploadImageThumbnail/);
   assert.match(imageUploadService, /thumbUrl:\s*imageThumbUrl/);
   assert.match(imageUploadService, /ensureReusableAsset\([\s\S]*thumbUrl:\s*imageThumbUrl/);
   assert.match(imageUploadHandler, /asset:\s*\{[\s\S]*thumbUrl:\s*routeAsset\.thumbUrl/);
 
-  assert.match(videoRoute, /createUploadVideoThumbnail/);
-  assert.match(videoRoute, /thumbUrl:\s*videoThumbUrl/);
-  assert.match(videoRoute, /ensureReusableAsset\([\s\S]*thumbUrl:\s*videoThumbUrl/);
-  assert.match(videoRoute, /asset:\s*\{[\s\S]*thumbUrl:\s*videoThumbUrl/);
+  assert.match(videoRoute, /storeVideoUpload/);
+  assert.match(mediaUploadService, /createUploadVideoThumbnail/);
+  assert.match(mediaUploadService, /ensureReusableAsset\([\s\S]*thumbUrl:\s*previewUrl/);
+  assert.match(videoRoute, /asset:\s*\{[\s\S]*thumbUrl:\s*stored\.previewUrl/);
 });
 
 test('image upload and library routes return stable JSON errors for storage failures', () => {

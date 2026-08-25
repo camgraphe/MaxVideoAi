@@ -15,6 +15,7 @@ type DetectOptions = {
 type DetectBufferOptions = DetectOptions & {
   fileName?: string | null;
   mimeType?: string | null;
+  streamSelector?: 'audio' | 'video';
 };
 
 export type VideoDimensions = {
@@ -93,20 +94,43 @@ export async function detectMediaBufferDuration(
 
   try {
     await writeFile(temporaryFile, mediaBuffer);
+    const args = options.streamSelector
+      ? [
+          '-v',
+          'error',
+          '-select_streams',
+          options.streamSelector === 'audio' ? 'a:0' : 'v:0',
+          '-show_entries',
+          'stream=codec_type:format=duration',
+          '-of',
+          'json',
+          temporaryFile,
+        ]
+      : [
+          '-v',
+          'error',
+          '-show_entries',
+          'format=duration',
+          '-of',
+          'default=noprint_wrappers=1:nokey=1',
+          temporaryFile,
+        ];
     const { stdout } = await execFileAsync(
       ffprobe.path,
-      [
-        '-v',
-        'error',
-        '-show_entries',
-        'format=duration',
-        '-of',
-        'default=noprint_wrappers=1:nokey=1',
-        temporaryFile,
-      ],
+      args,
       { timeout: timeoutMs, maxBuffer: 1024 * 1024 }
     );
-    const parsed = Number.parseFloat(stdout.trim());
+    let parsed: number;
+    if (options.streamSelector) {
+      const metadata = JSON.parse(stdout) as {
+        streams?: Array<{ codec_type?: string }>;
+        format?: { duration?: string };
+      };
+      if (metadata.streams?.[0]?.codec_type !== options.streamSelector) return null;
+      parsed = Number.parseFloat(metadata.format?.duration ?? '');
+    } else {
+      parsed = Number.parseFloat(stdout.trim());
+    }
     if (!Number.isFinite(parsed) || parsed <= 0) return null;
     return Math.round(parsed * 1000) / 1000;
   } catch (error) {

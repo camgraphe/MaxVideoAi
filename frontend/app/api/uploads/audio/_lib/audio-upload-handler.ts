@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { uploadFileBuffer, recordUserAsset } from '@/server/storage';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
-import { ensureReusableAsset } from '@/server/media-library';
 import { getFalEngineById } from '@/config/falEngines';
 import {
   resolveEngineMediaFieldConstraint,
@@ -10,8 +8,11 @@ import {
 } from '@/lib/media-field-constraints';
 import type { Mode } from '@/types/engines';
 import { detectMediaBufferDuration } from '@/server/media/detect-has-audio';
-
-const MAX_AUDIO_MB = Number(process.env.ASSET_MAX_AUDIO_MB ?? '30');
+import {
+  getMaxAudioUploadMB,
+  MediaUploadError,
+  storeAudioUpload,
+} from '@/server/uploads/store-media-upload';
 
 function formText(form: FormData, key: string): string | null {
   const value = form.get(key);
@@ -66,6 +67,7 @@ export async function handleAudioUpload(
     getRouteAuthContextFn?: (request: NextRequest) => Promise<{ userId: string | null }>;
   } = {}
 ) {
+  const maxAudioMB = getMaxAudioUploadMB();
   const form = await req.formData();
   const blob = form.get('file');
 
@@ -100,8 +102,8 @@ export async function handleAudioUpload(
       return NextResponse.json({ ok: false, error: 'UNSUPPORTED_TYPE' }, { status: 415 });
     }
   } else {
-    if (Number.isFinite(MAX_AUDIO_MB) && MAX_AUDIO_MB > 0 && size > MAX_AUDIO_MB * 1024 * 1024) {
-      return NextResponse.json({ ok: false, error: 'FILE_TOO_LARGE', maxMB: MAX_AUDIO_MB }, { status: 413 });
+    if (size > maxAudioMB * 1024 * 1024) {
+      return NextResponse.json({ ok: false, error: 'FILE_TOO_LARGE', maxMB: maxAudioMB }, { status: 413 });
     }
   }
 
@@ -145,59 +147,42 @@ export async function handleAudioUpload(
     );
   }
 
-  let uploadResult;
   try {
-    uploadResult = await uploadFileBuffer({
-      data: buffer,
-      mime,
+    const stored = await storeAudioUpload({
+      userId,
       fileName: blob.name,
-      userId,
-      prefix: 'user-assets',
+      declaredMime: mime,
+      bytes: buffer,
+      verifiedDurationSec: durationSec,
     });
-  } catch (error) {
-    console.error('[upload] failed to store audio', error);
-    return NextResponse.json({ ok: false, error: 'UPLOAD_FAILED' }, { status: 500 });
-  }
-
-  try {
-    const assetId = await recordUserAsset({
-      userId,
-      url: uploadResult.url,
-      mime,
-      width: null,
-      height: null,
-      size: buffer.length,
-      source: 'upload',
-      metadata: { originalName: blob.name, kind: 'audio', durationSec },
-    });
-
-    await ensureReusableAsset({
-      userId,
-      url: uploadResult.url,
-      kind: 'audio',
-      source: 'upload',
-      mimeType: mime,
-      sizeBytes: buffer.length,
-      durationSec,
-    }).catch((error) => {
-      console.warn('[upload] failed to mirror audio into media_assets', error);
-    });
-
     return NextResponse.json({
       ok: true,
       asset: {
-        id: assetId,
-        url: uploadResult.url,
-        width: null,
-        height: null,
-        size: buffer.length,
-        mime,
+        id: stored.legacyAssetId,
+        url: stored.storageUrl,
+        width: stored.width,
+        height: stored.height,
+        size: stored.sizeBytes,
+        mime: stored.mimeType,
         name: blob.name,
-        durationSec,
+        durationSec: stored.durationSec,
       },
     });
   } catch (error) {
-    console.error('[upload] failed to record audio asset', error);
+    if (error instanceof MediaUploadError) {
+      if (error.code === 'UNSUPPORTED_TYPE') {
+        return NextResponse.json({ ok: false, error: error.code }, { status: 415 });
+      }
+      if (error.code === 'EMPTY_FILE') {
+        return NextResponse.json({ ok: false, error: error.code }, { status: 400 });
+      }
+      if (error.code === 'METADATA_UNVERIFIED') {
+        return NextResponse.json({ ok: false, error: error.code }, { status: 422 });
+      }
+      if (error.code === 'UPLOAD_FAILED') {
+        return NextResponse.json({ ok: false, error: error.code }, { status: 500 });
+      }
+    }
     return NextResponse.json({ ok: false, error: 'STORE_FAILED' }, { status: 500 });
   }
 }

@@ -3,6 +3,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import test from 'node:test';
 
 const migrationPath = 'neon/migrations/32_mcp_reference_uploads.sql';
+const mediaKindMigrationPath = 'neon/migrations/34_mcp_reference_upload_media_kind.sql';
 
 test('migration 32 owns short-lived single-use reference upload sessions', () => {
   assert.equal(existsSync(migrationPath), true, `${migrationPath} should exist`);
@@ -35,4 +36,15 @@ test('reserved MCP migrations now contain the missing migration 32 in order', ()
     '32_mcp_reference_uploads.sql',
     '33_mcp_acquisition_funnel.sql',
   ]);
+});
+
+test('the next Neon migration binds an immutable exact media kind to every upload session', () => {
+  assert.equal(existsSync(mediaKindMigrationPath), true, `${mediaKindMigrationPath} should exist`);
+  const source = readFileSync(mediaKindMigrationPath, 'utf8');
+
+  assert.match(source, /ALTER TABLE\s+mcp_reference_upload_sessions/i);
+  assert.match(source, /ADD COLUMN IF NOT EXISTS\s+media_kind\s+TEXT/i);
+  assert.match(source, /media_kind\s+IN\s*\(\s*'image'\s*,\s*'video'\s*,\s*'audio'\s*\)/i);
+  assert.match(source, /media_kind\s+IS DISTINCT FROM\s+OLD\.media_kind/i);
+  assert.doesNotMatch(source, /supabase/i);
 });

@@ -5,7 +5,9 @@ import type { AgentPrincipal } from '@/server/agent-api/principal';
 import type { MaxVideoAiMcpServices } from '@/server/mcp/server';
 import { runAgentTool } from '@/server/mcp/tool-result';
 
-const inputSchema = z.object({}).strict();
+const inputSchema = z.object({
+  kind: z.enum(['image', 'video', 'audio']),
+}).strict();
 
 export function registerCreateReferenceUploadLinkTool(
   server: McpServer,
@@ -18,9 +20,9 @@ export function registerCreateReferenceUploadLinkTool(
   server.registerTool(
     'create_reference_upload_link',
     {
-      title: 'Upload a private reference image',
+      title: 'Upload private reference media',
       description:
-        'Use this when the user needs to add one private reference image to MaxVideoAI. It creates a short-lived browser handoff and does not upload the file, start generation, or modify an existing asset by itself.',
+        'Use this when the user needs to add one private image, video, or audio reference to MaxVideoAI. It creates a short-lived browser handoff and does not upload the file, start generation, or modify an existing asset by itself.',
       inputSchema,
       annotations: {
         readOnlyHint: false,
@@ -29,6 +31,6 @@ export function registerCreateReferenceUploadLinkTool(
         openWorldHint: true,
       },
     },
-    async () => runAgentTool(() => services.createReferenceUploadLink!(principal)),
+    async (input) => runAgentTool(() => services.createReferenceUploadLink!(input, principal)),
   );
 }

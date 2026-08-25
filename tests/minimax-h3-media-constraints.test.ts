@@ -139,15 +139,21 @@ test('MiniMax H3 enforces 15-second combined video and audio reference budgets',
 });
 
 test('audio uploads persist trusted duration metadata for MiniMax H3 references', () => {
-  const source = readFileSync(
+  const routeSource = readFileSync(
     'frontend/app/api/uploads/audio/_lib/audio-upload-handler.ts',
     'utf8'
   );
+  const storageSource = readFileSync(
+    'frontend/src/server/uploads/store-media-upload.ts',
+    'utf8'
+  );
 
-  assert.match(source, /detectMediaBufferDuration\(buffer/);
-  assert.match(source, /metadata:\s*\{[^}]*durationSec/s);
-  assert.match(source, /ensureReusableAsset\(\{[^}]*durationSec/s);
-  assert.match(source, /asset:\s*\{[^}]*durationSec/s);
+  assert.match(routeSource, /detectMediaBufferDuration\(buffer/);
+  assert.match(routeSource, /storeAudioUpload\(\{[^}]*verifiedDurationSec:\s*durationSec/s);
+  assert.match(storageSource, /const metadata\s*=\s*\{[^}]*durationSec/s);
+  assert.match(storageSource, /recordUserAsset\(\{[\s\S]*metadata,/s);
+  assert.match(storageSource, /ensureReusableAsset\(\{[^}]*durationSec:\s*duration\.durationSec/s);
+  assert.match(routeSource, /asset:\s*\{[^}]*durationSec:\s*stored\.durationSec/s);
 });
 
 test('trusted audio duration probing reads an uploaded WAV buffer', async () => {

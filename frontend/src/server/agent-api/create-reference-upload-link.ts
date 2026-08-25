@@ -1,23 +1,51 @@
 import { MAX_IMAGE_UPLOAD_BYTES } from '@/server/uploads/store-image-upload';
+import {
+  audioUploadLimitBytes,
+} from '@/server/uploads/store-media-upload';
+import {
+  videoUploadLimitBytes,
+} from '@/app/api/uploads/video/_lib/video-upload-limits';
 
 import { AgentApiError } from './errors';
 import type { AgentPrincipal } from './principal';
+import type { CanonicalReferenceMediaKind } from './generation-types';
 import {
   createUploadSession,
   type CreatedReferenceUploadSession,
 } from './reference-upload-sessions';
 
-export const REFERENCE_UPLOAD_ACCEPTED_MIME_TYPES = [
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-  'image/avif',
-] as const;
+export const REFERENCE_UPLOAD_ACCEPTED_MIME_TYPES = {
+  image: ['image/jpeg', 'image/png', 'image/webp', 'image/avif'],
+  video: ['video/mp4', 'video/quicktime'],
+  audio: ['audio/mpeg', 'audio/wav', 'audio/x-wav', 'audio/mp4'],
+} as const satisfies Record<CanonicalReferenceMediaKind, readonly string[]>;
+
+export type CreateReferenceUploadLinkInput = {
+  kind: CanonicalReferenceMediaKind;
+};
+
+export type ReferenceUploadPolicy = Readonly<{
+  accepted: readonly string[];
+  maxBytes: number;
+}>;
+
+export function getReferenceUploadPolicy(
+  mediaKind: CanonicalReferenceMediaKind,
+): ReferenceUploadPolicy {
+  if (mediaKind === 'image') {
+    return { accepted: REFERENCE_UPLOAD_ACCEPTED_MIME_TYPES.image, maxBytes: MAX_IMAGE_UPLOAD_BYTES };
+  }
+  if (mediaKind === 'video') {
+    return { accepted: REFERENCE_UPLOAD_ACCEPTED_MIME_TYPES.video, maxBytes: videoUploadLimitBytes() };
+  }
+  return { accepted: REFERENCE_UPLOAD_ACCEPTED_MIME_TYPES.audio, maxBytes: audioUploadLimitBytes() };
+}
 
 export type ReferenceUploadLink = {
   uploadUrl: string;
   expiresAt: string;
-  accepted: Array<(typeof REFERENCE_UPLOAD_ACCEPTED_MIME_TYPES)[number]>;
+  mediaKind: CanonicalReferenceMediaKind;
+  accepted: string[];
   maxBytes: number;
   nextAction: string;
 };
@@ -27,6 +55,7 @@ type CreateReferenceUploadLinkDependencies = {
   createUploadSession(input: {
     userId: string;
     oauthClientId: string | null;
+    mediaKind: CanonicalReferenceMediaKind;
   }): Promise<CreatedReferenceUploadSession>;
 };
 
@@ -67,27 +96,36 @@ function requirePrincipal(principal: AgentPrincipal): void {
 
 export function createReferenceUploadLinkService(
   dependencies: CreateReferenceUploadLinkDependencies,
-): (principal: AgentPrincipal) => Promise<ReferenceUploadLink> {
+): (input: CreateReferenceUploadLinkInput, principal: AgentPrincipal) => Promise<ReferenceUploadLink> {
   const origin = requireOrigin(dependencies.baseUrl);
-  return async (principal) => {
+  return async (input, principal) => {
     requirePrincipal(principal);
+    if (!input || (input.kind !== 'image' && input.kind !== 'video' && input.kind !== 'audio')) {
+      throw new AgentApiError('REFERENCE_INVALID', 'Choose an image, video, or audio reference.');
+    }
+    const policy = getReferenceUploadPolicy(input.kind);
     const created = await dependencies.createUploadSession({
       userId: principal.userId,
       oauthClientId: principal.clientId,
+      mediaKind: input.kind,
     });
+    if (created.session.mediaKind !== input.kind) {
+      throw new Error('Reference upload session kind mismatch.');
+    }
     return {
       uploadUrl: `${origin}/mcp/reference-upload/${created.token}`,
       expiresAt: created.session.expiresAt.toISOString(),
-      accepted: [...REFERENCE_UPLOAD_ACCEPTED_MIME_TYPES],
-      maxBytes: MAX_IMAGE_UPLOAD_BYTES,
-      nextAction: 'Open the URL, upload one image, then call list_media.',
+      mediaKind: input.kind,
+      accepted: [...policy.accepted],
+      maxBytes: policy.maxBytes,
+      nextAction: `Open the URL, upload one ${input.kind === 'audio' ? 'audio file' : input.kind}, then call list_media.`,
     };
   };
 }
 
 export function createDefaultReferenceUploadLinkService(
   baseUrl: string,
-): (principal: AgentPrincipal) => Promise<ReferenceUploadLink> {
+): (input: CreateReferenceUploadLinkInput, principal: AgentPrincipal) => Promise<ReferenceUploadLink> {
   return createReferenceUploadLinkService({
     baseUrl,
     createUploadSession: (input) => createUploadSession(input),
