@@ -54,6 +54,10 @@ export type StoreMediaUploadInput = {
   declaredMime: string | null;
   bytes: Buffer;
   referenceEligibility?: 'workspace' | 'mcp';
+  cleanupObjects?: {
+    beforeUpload(entry: { objectRole: 'final' | 'thumbnail'; objectKey: string; safeToDelete: boolean }): Promise<void>;
+    retain(objectKey: string): Promise<void>;
+  };
 };
 
 export type StoredMediaUpload = {
@@ -123,18 +127,28 @@ function createStoreMediaUploadService(
         userId: input.userId,
         prefix: 'user-assets',
         contentAddressed: true,
+        ...(input.cleanupObjects ? {
+          beforeUpload: (objectKey: string) => input.cleanupObjects!.beforeUpload({ objectRole: 'final', objectKey, safeToDelete: false }),
+        } : {}),
       });
     } catch (error) {
       throw new MediaUploadError('UPLOAD_FAILED', 'The media file could not be uploaded.', { cause: error });
     }
 
     let previewUrl: string | null = null;
+    let cleanupThumbnailKey: string | null = null;
     try {
       previewUrl = mediaKind === 'video'
-        ? await dependencies.createUploadVideoThumbnail({
+          ? await dependencies.createUploadVideoThumbnail({
             data: input.bytes,
             userId: input.userId,
             fileName: input.fileName,
+            ...(input.cleanupObjects ? {
+              beforeUpload: async (objectKey: string) => {
+                cleanupThumbnailKey = objectKey;
+                await input.cleanupObjects!.beforeUpload({ objectRole: 'thumbnail', objectKey, safeToDelete: true });
+              },
+            } : {}),
           })
         : null;
       const metadata = {
@@ -168,6 +182,12 @@ function createStoreMediaUploadService(
       if (!canonicalAsset.publicId || !/^ma_[a-f0-9]{32}$/u.test(canonicalAsset.publicId)) {
         throw new Error('Canonical media asset has no public alias.');
       }
+      if (input.cleanupObjects) {
+        await input.cleanupObjects.retain(upload.key);
+        if (cleanupThumbnailKey) {
+          await input.cleanupObjects.retain(cleanupThumbnailKey);
+        }
+      }
       return {
         assetId: canonicalAsset.publicId,
         legacyAssetId,
@@ -180,7 +200,7 @@ function createStoreMediaUploadService(
         storageUrl: upload.url,
       };
     } catch (error) {
-      if (previewUrl) {
+      if (previewUrl && !input.cleanupObjects) {
         await dependencies.deleteStorageObjectByUrl(previewUrl).catch(() => false);
       }
       if (error instanceof MediaUploadError) throw error;

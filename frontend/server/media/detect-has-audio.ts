@@ -40,6 +40,9 @@ function canonicalMimeForProbe(kind: 'video' | 'audio', formatName: string): str
     if (formats.has('ogg')) return 'video/ogg';
     if (formats.has('avi')) return 'video/x-msvideo';
     if (formats.has('mpegts')) return 'video/mp2t';
+    if (formats.has('flv')) return 'video/x-flv';
+    if (formats.has('mxf')) return 'video/mxf';
+    if (formats.has('asf')) return 'video/x-ms-asf';
     if (formats.has('mov') || formats.has('mp4') || formats.has('m4v')) return 'video/mp4';
     return null;
   }
@@ -49,17 +52,24 @@ function canonicalMimeForProbe(kind: 'video' | 'audio', formatName: string): str
   if (formats.has('webm') || formats.has('matroska')) return 'audio/webm';
   if (formats.has('flac')) return 'audio/flac';
   if (formats.has('aac')) return 'audio/aac';
+  if (formats.has('aiff')) return 'audio/aiff';
   if (formats.has('mov') || formats.has('mp4') || formats.has('m4a')) return 'audio/mp4';
   return null;
 }
 
-export function resolveProbedMediaMetadata(metadata: ProbeMetadata): ProbedMediaBuffer | null {
+export function resolveProbedMediaMetadata(
+  metadata: ProbeMetadata,
+  options: { declaredMime?: string | null } = {},
+): ProbedMediaBuffer | null {
   const streams = metadata.streams ?? [];
   const hasVideo = streams.some((stream) => stream.codec_type === 'video' && stream.disposition?.attached_pic !== 1);
   const hasAudio = streams.some((stream) => stream.codec_type === 'audio');
   const kind = hasVideo ? 'video' : hasAudio ? 'audio' : null;
   if (!kind) return null;
-  const canonicalMime = canonicalMimeForProbe(kind, metadata.format?.format_name ?? '');
+  const declaredMime = options.declaredMime?.split(';', 1)[0]?.trim().toLowerCase() ?? '';
+  const safeDeclaredMime = declaredMime.startsWith(`${kind}/`) && /^[a-z]+\/[a-z0-9.+-]+$/u.test(declaredMime)
+    ? declaredMime : null;
+  const canonicalMime = canonicalMimeForProbe(kind, metadata.format?.format_name ?? '') ?? safeDeclaredMime;
   if (!canonicalMime) return null;
   const streamDuration = streams.find((stream) => stream.codec_type === kind
     && (kind !== 'video' || stream.disposition?.attached_pic !== 1))?.duration;
@@ -84,7 +94,7 @@ export async function probeMediaBuffer(
       '-of', 'json',
       temporaryFile,
     ], { timeout: timeoutMs, maxBuffer: 1024 * 1024 });
-    return resolveProbedMediaMetadata(JSON.parse(stdout) as ProbeMetadata);
+    return resolveProbedMediaMetadata(JSON.parse(stdout) as ProbeMetadata, { declaredMime: options.mimeType });
   } catch (error) {
     const reason = error instanceof Error ? error.message : 'unknown error running ffprobe';
     console.warn('[media-probe] ffprobe buffer probe failed', { reason });

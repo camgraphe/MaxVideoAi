@@ -5,7 +5,7 @@ import sharp from 'sharp';
 import { query } from '@/lib/db';
 import { ensureAssetSchema } from '@/lib/schema';
 import { ensureReusableAsset } from '@/server/media-library';
-import { recordUserAsset, uploadImageToStorage } from '@/server/storage';
+import { extractObjectKeyFromUrl, recordUserAsset, uploadImageToStorage } from '@/server/storage';
 import { createUploadImageThumbnail } from '@/server/upload-thumbnails';
 
 const DEFAULT_MAX_IMAGE_MB = 25;
@@ -63,6 +63,10 @@ export type StoreImageUploadParams = {
   fileName: string;
   declaredMime: string | null;
   bytes: Buffer;
+  cleanupObjects?: {
+    beforeUpload(entry: { objectRole: 'final' | 'thumbnail'; objectKey: string; safeToDelete: boolean }): Promise<void>;
+    retain(objectKey: string): Promise<void>;
+  };
 };
 
 export type StoreImageUploadResult = {
@@ -423,6 +427,12 @@ export function createStoreImageUploadService(
 
     if (existingAssets.length > 0) {
       const [asset] = existingAssets;
+      if (params.cleanupObjects) {
+        const existingKeys = [extractObjectKeyFromUrl(asset.url), extractObjectKeyFromUrl(asset.thumb_url ?? '')].filter(
+          (value): value is string => Boolean(value),
+        );
+        await Promise.all(existingKeys.map((objectKey) => params.cleanupObjects!.retain(objectKey)));
+      }
       return {
         assetId: asset.asset_id,
         width: asset.width ?? normalized.width,
@@ -441,6 +451,9 @@ export function createStoreImageUploadService(
         fileName: normalized.fileName,
         userId: params.userId,
         prefix: 'user-assets',
+        ...(params.cleanupObjects ? {
+          beforeUpload: (objectKey: string) => params.cleanupObjects!.beforeUpload({ objectRole: 'final', objectKey, safeToDelete: true }),
+        } : {}),
       });
     } catch (error) {
       dependencies.logImageUploadEvent('error', 'IMAGE_UPLOAD_STORAGE_FAILED');
@@ -448,10 +461,17 @@ export function createStoreImageUploadService(
     }
 
     try {
+      let cleanupThumbnailKey: string | null = null;
       const imageThumbUrl = await dependencies.createUploadImageThumbnail({
         data: normalized.bytes,
         userId: params.userId,
         fileName: normalized.fileName,
+        ...(params.cleanupObjects ? {
+          beforeUpload: async (objectKey: string) => {
+            cleanupThumbnailKey = objectKey;
+            await params.cleanupObjects!.beforeUpload({ objectRole: 'thumbnail', objectKey, safeToDelete: true });
+          },
+        } : {}),
       });
       const width = uploadResult.width ?? normalized.width;
       const height = uploadResult.height ?? normalized.height;
@@ -490,6 +510,11 @@ export function createStoreImageUploadService(
           dependencies.logImageUploadEvent('warn', 'IMAGE_UPLOAD_MIRROR_FAILED');
         });
 
+      if (params.cleanupObjects) {
+        await params.cleanupObjects.retain(uploadResult.key);
+        if (cleanupThumbnailKey) await params.cleanupObjects.retain(cleanupThumbnailKey);
+      }
+
       return {
         assetId,
         width,
@@ -513,6 +538,7 @@ export async function storeImageUpload(params: {
   fileName: string;
   declaredMime: string | null;
   bytes: Buffer;
+  cleanupObjects?: StoreImageUploadParams['cleanupObjects'];
 }): Promise<{
   assetId: string;
   width: number;

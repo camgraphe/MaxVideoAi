@@ -6,6 +6,7 @@ const migrationPath = 'neon/migrations/32_mcp_reference_uploads.sql';
 const mediaKindMigrationPath = 'neon/migrations/34_mcp_reference_upload_media_kind.sql';
 const hardeningMigrationPath = 'neon/migrations/35_mcp_reference_upload_hardening.sql';
 const replaySafetyMigrationPath = 'neon/migrations/36_mcp_reference_upload_replay_safety.sql';
+const recoveryMigrationPath = 'neon/migrations/37_mcp_reference_upload_recovery_state.sql';
 
 test('migration 32 owns short-lived single-use reference upload sessions', () => {
   assert.equal(existsSync(migrationPath), true, `${migrationPath} should exist`);
@@ -86,4 +87,19 @@ test('replay safety migration adds immutable parts and versioned completion leas
   assert.match(source, /content_sha256\s+TEXT/i);
   assert.match(source, /UNIQUE\s*\(upload_id,\s*part_number\)/i);
   assert.doesNotMatch(source, /supabase/i);
+});
+
+test('recovery migration versions rolling uploads and owns a durable scoped cleanup ledger', () => {
+  assert.equal(existsSync(recoveryMigrationPath), true, `${recoveryMigrationPath} should exist`);
+  const source = readFileSync(recoveryMigrationPath, 'utf8');
+  assert.match(source, /protocol_version\s+SMALLINT[\s\S]*DEFAULT\s+1/iu);
+  assert.match(source, /CREATE TABLE IF NOT EXISTS\s+mcp_reference_upload_cleanup_objects/iu);
+  assert.match(source, /object_role[\s\S]*part[\s\S]*final[\s\S]*thumbnail/iu);
+  assert.match(source, /legacy_staging[\s\S]*AFTER INSERT[\s\S]*register_mcp_reference_upload_v1_cleanup/iu);
+  assert.match(source, /object_key\s+TEXT/iu);
+  assert.match(source, /state[\s\S]*pending[\s\S]*retained[\s\S]*deleted/iu);
+  assert.match(source, /FOREIGN KEY\s*\(session_id,\s*upload_id,\s*user_id,\s*media_kind\)/iu);
+  assert.match(source, /UNIQUE\s*\(session_id,\s*upload_id,\s*user_id,\s*media_kind,\s*object_key\)/iu);
+  assert.doesNotMatch(source, /object_key\s+TEXT\s+NOT\s+NULL\s+UNIQUE/iu);
+  assert.doesNotMatch(source, /ALTER COLUMN\s+protocol_version\s+DROP DEFAULT/iu);
 });

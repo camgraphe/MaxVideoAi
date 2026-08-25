@@ -234,6 +234,7 @@ export async function uploadImageToStorage(params: {
   userId?: string | null;
   fileName?: string | null;
   prefix?: string;
+  beforeUpload?: (key: string) => Promise<void>;
 }): Promise<UploadResult> {
   const client = getS3Client();
   const safeMime = params.mime && params.mime.startsWith('image/') ? params.mime : 'image/png';
@@ -257,6 +258,7 @@ export async function uploadImageToStorage(params: {
   }
 
   try {
+    await params.beforeUpload?.(key);
     await client.send(putCommand);
   } catch (error) {
     throw new StorageUploadError('Failed to upload image to storage.', {
@@ -308,7 +310,7 @@ function buildHostAllowList(): Set<string> {
   return hosts;
 }
 
-function extractObjectKeyFromUrl(assetUrl: string): string | null {
+export function extractObjectKeyFromUrl(assetUrl: string): string | null {
   if (!assetUrl) return null;
   try {
     const parsed = new URL(assetUrl);
@@ -474,6 +476,7 @@ export async function uploadFileBuffer(params: {
   cacheControl?: string;
   acl?: string | null;
   contentAddressed?: boolean;
+  beforeUpload?: (key: string) => Promise<void>;
 }): Promise<{ key: string; url: string }> {
   const client = getS3Client();
   const key = params.contentAddressed
@@ -504,6 +507,7 @@ export async function uploadFileBuffer(params: {
   }
 
   try {
+    await params.beforeUpload?.(key);
     await client.send(command);
   } catch {
     throw new StorageUploadError('Failed to upload file to storage.', {

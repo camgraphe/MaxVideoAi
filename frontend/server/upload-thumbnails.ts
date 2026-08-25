@@ -20,6 +20,7 @@ type UploadThumbnailParams = {
   data: Buffer;
   userId?: string | null;
   fileName?: string | null;
+  beforeUpload?: (key: string) => Promise<void>;
 };
 
 function normalizePositiveInt(value: number, fallback: number): number {
@@ -70,6 +71,7 @@ export async function createUploadImageThumbnail(params: UploadThumbnailParams):
       userId: params.userId ?? undefined,
       prefix: 'user-asset-thumbs',
       fileName: `${baseName(params.fileName)}-thumb.webp`,
+      beforeUpload: params.beforeUpload,
     });
 
     return normalizeMediaUrl(upload.url) ?? upload.url;
@@ -105,6 +107,7 @@ export async function createUploadVideoThumbnail(params: UploadThumbnailParams):
       userId: params.userId ?? undefined,
       prefix: 'user-asset-thumbs',
       fileName: `${baseName(params.fileName)}-thumb.jpg`,
+      beforeUpload: params.beforeUpload,
     });
 
     return normalizeMediaUrl(upload.url) ?? upload.url;

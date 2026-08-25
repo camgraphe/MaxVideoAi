@@ -521,6 +521,68 @@ test('primary stream probing ignores attached cover art and keeps broad workspac
   assert.equal(resolveSupportedReferenceMedia('audio', 'audio/ogg'), null);
 });
 
+test('workspace probing safely persists broad verified containers while MCP remains closed', () => {
+  const fixtures = [
+    { format: 'flv', declared: 'video/x-flv', kind: 'video' as const, expected: 'video/x-flv' },
+    { format: 'mxf', declared: 'video/mxf', kind: 'video' as const, expected: 'video/mxf' },
+    { format: 'asf', declared: 'video/x-ms-asf', kind: 'video' as const, expected: 'video/x-ms-asf' },
+    { format: 'aiff', declared: 'audio/aiff', kind: 'audio' as const, expected: 'audio/aiff' },
+  ];
+  for (const fixture of fixtures) {
+    assert.deepEqual(resolveProbedMediaMetadata({
+      streams: [{ codec_type: fixture.kind, duration: '2.5' }],
+      format: { format_name: fixture.format, duration: '2.5' },
+    }, { declaredMime: fixture.declared }), {
+      kind: fixture.kind, canonicalMime: fixture.expected, durationSec: 2.5,
+    });
+    assert.equal(resolveSupportedReferenceMedia(fixture.kind, fixture.expected), null);
+  }
+  assert.deepEqual(resolveProbedMediaMetadata({
+    streams: [
+      { codec_type: 'video', disposition: { attached_pic: 1 } },
+      { codec_type: 'audio', duration: '3' },
+    ],
+    format: { format_name: 'aiff', duration: '3' },
+  }, { declaredMime: 'audio/aiff' }), { kind: 'audio', canonicalMime: 'audio/aiff', durationSec: 3 });
+});
+
+test('multimedia storage registers final and thumbnail keys before upload and retains winner keys', async () => {
+  const events: string[] = [];
+  const service = createStoreVideoUploadService({
+    async probeMediaBuffer() { return { kind: 'video', canonicalMime: 'video/mp4', durationSec: 2 }; },
+    async uploadFileBuffer(input: Record<string, unknown>) {
+      const key = 'user-assets/by-content/owner/content.mp4';
+      await (input.beforeUpload as ((key: string) => Promise<void>))(key);
+      events.push(`upload:${key}`);
+      return { key, url: 'https://assets.maxvideo.ai/content.mp4' };
+    },
+    async createUploadVideoThumbnail(input: Record<string, unknown>) {
+      const key = 'user-asset-thumbs/owner/thumb.jpg';
+      await (input.beforeUpload as ((key: string) => Promise<void>))(key);
+      events.push(`upload:${key}`);
+      return 'https://assets.maxvideo.ai/thumb.jpg';
+    },
+    async recordUserAsset() { return 'ua_asset'; },
+    async ensureReusableAsset() { return { publicId: 'ma_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' } as never; },
+  } as never);
+  await service({
+    userId: 'user-a', fileName: 'clip.mp4', declaredMime: 'video/mp4', bytes: Buffer.from([1]),
+    referenceEligibility: 'mcp',
+    cleanupObjects: {
+      async beforeUpload(entry) { events.push(`register:${entry.objectRole}:${entry.objectKey}:${entry.safeToDelete}`); },
+      async retain(objectKey) { events.push(`retain:${objectKey}`); },
+    },
+  });
+  assert.deepEqual(events, [
+    'register:final:user-assets/by-content/owner/content.mp4:false',
+    'upload:user-assets/by-content/owner/content.mp4',
+    'register:thumbnail:user-asset-thumbs/owner/thumb.jpg:true',
+    'upload:user-asset-thumbs/owner/thumb.jpg',
+    'retain:user-assets/by-content/owner/content.mp4',
+    'retain:user-asset-thumbs/owner/thumb.jpg',
+  ]);
+});
+
 test('browser handoff rejects cross-origin, oversized, expired, and replayed requests before storage', async () => {
   let authCalls = 0;
   let storeCalls = 0;

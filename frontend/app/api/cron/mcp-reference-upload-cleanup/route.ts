@@ -7,8 +7,10 @@ import { authorizeCronRequest } from '@/server/vercel-cron';
 export const runtime = 'nodejs';
 
 async function handle(request: NextRequest) {
+  const cronSecret = (process.env.CRON_SECRET ?? '').trim();
+  if (!cronSecret) return NextResponse.json({ ok: false, error: 'CONFIGURATION_ERROR' }, { status: 503 });
   const auth = authorizeCronRequest(request.headers, {
-    cronSecret: process.env.CRON_SECRET,
+    cronSecret,
     deploymentId: process.env.VERCEL_DEPLOYMENT_ID,
     vercelEnv: process.env.VERCEL,
   });

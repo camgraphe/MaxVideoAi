@@ -53,7 +53,7 @@ function session(overrides: Record<string, unknown> = {}) {
 
 function attempt(overrides: Record<string, unknown> = {}) {
   return {
-    uploadId, session: session(), storageKey: 'mcp-reference-staging/private-prefix',
+    protocolVersion: 2, uploadId, session: session(), storageKey: 'mcp-reference-staging/private-prefix',
     fileName: 'reference.mp4', declaredMime: 'video/mp4', declaredSize: 5,
     fileSha256: createHash('sha256').update('abcde').digest('hex'),
     chunkBytes: 4, totalParts: 2, state: 'pending', version: 0,
@@ -161,7 +161,7 @@ test('part relay enforces exact server-owned part length and SHA-256 before priv
   assert.equal(stored.length, 1);
 });
 
-test('part storage failure releases the exact lease and deletes only its unique object key', async () => {
+test('part storage failure releases the exact lease and consumes only its durable cleanup tombstone', async () => {
   const failed: Array<Record<string, unknown>> = [];
   const deleted: string[] = [];
   const handler = createReferenceUploadPartHandler({
@@ -170,7 +170,8 @@ test('part storage failure releases the exact lease and deletes only its unique 
     async claimReferenceUploadPart() { return { leaseId, storageKey: 'server-owned/unique-part', alreadyStored: false }; },
     async uploadFileBufferToKey() { throw new Error('storage failed'); },
     async failReferenceUploadPart(input) { failed.push(input); return true; },
-    async deleteStorageObjectKey(key) { deleted.push(key); },
+    async cleanupReferenceUploadObject(input) { deleted.push(input.objectKey); return true; },
+    async deleteStorageObjectKey() { throw new Error('must delete through durable ledger'); },
   } as never);
   const bytes = Buffer.from('abcd');
   const response = await handler(rawRequest(bytes, {
@@ -203,9 +204,29 @@ test('completed uploadId and old part requests are unusable after successful fin
   assert.equal(stores, 0);
 });
 
+test('rolling v1 attempts fail closed with restart semantics before reading parts or storing media', async () => {
+  let effects = 0;
+  const legacy = attempt({
+    protocolVersion: 1, fileSha256: null, chunkBytes: null, totalParts: null,
+  });
+  const complete = createReferenceUploadCompleteHandler({
+    ...common,
+    async getOwnedReferenceUploadAttempt() { return legacy; },
+    async abortReferenceUploadAttempt() { return attempt({ ...legacy, state: 'aborted' }); },
+    async cleanupReferenceUploadParts() { return 0; },
+    async deleteStorageObjectKey() { return undefined; },
+    async acquireReferenceUploadCompletionLease() { effects += 1; throw new Error('must not lease v1'); },
+    async storeVideoUpload() { effects += 1; throw new Error('must not store v1'); },
+  } as never);
+  const response = await complete(jsonRequest('/complete', { uploadId }), { params: Promise.resolve({ token }) });
+  assert.equal(response.status, 410);
+  assert.equal(effects, 0);
+});
+
 test('completion lease allows one persister and recovery reuses the staged canonical asset', async () => {
   let leases = 0;
   let stores = 0;
+  let renewals = 0;
   const dependencies = {
     ...common,
     async getOwnedReferenceUploadAttempt() { return attempt(); },
@@ -213,6 +234,10 @@ test('completion lease allows one persister and recovery reuses the staged canon
       leases += 1;
       if (leases === 2) throw new AgentApiError('UPLOAD_ALREADY_USED', 'Upload is already processing.');
       return attempt({ state: 'processing', leaseId });
+    },
+    async renewReferenceUploadCompletionLease(input) {
+      renewals += 1;
+      return { ...input.attempt, leaseExpiresAt: new Date(now.getTime() + 5 * 60_000) };
     },
     async listReferenceUploadParts() {
       return [
@@ -222,7 +247,7 @@ test('completion lease allows one persister and recovery reuses the staged canon
     },
     async getStorageObjectBuffer(key: string) { return Buffer.from(key === 'part-1' ? 'abcd' : 'e'); },
     async storeVideoUpload() { stores += 1; return { assetId: publicAssetId } as never; },
-    async stageReferenceUploadAttempt() { return attempt({ state: 'staged', stagedAssetId: publicAssetId, contentSha256: attempt().fileSha256 }); },
+    async stageReferenceUploadAttempt() { return attempt({ state: 'staged', leaseId, stagedAssetId: publicAssetId, contentSha256: attempt().fileSha256 }); },
     async completeUploadSession() { return session({ state: 'uploaded', assetId: publicAssetId }) as never; },
     async completeReferenceUploadAttempt() { return attempt({ state: 'completed', stagedAssetId: publicAssetId }); },
     async cleanupReferenceUploadParts() { return 2; },
@@ -234,6 +259,7 @@ test('completion lease allows one persister and recovery reuses the staged canon
   ]);
   assert.deepEqual([first.status, second.status].sort(), [200, 409]);
   assert.equal(stores, 1);
+  assert.equal(renewals, 6);
 
   const recovery = createReferenceUploadCompleteHandler({
     ...dependencies,
@@ -247,6 +273,7 @@ test('completion lease allows one persister and recovery reuses the staged canon
   } as never);
   assert.equal((await recovery(jsonRequest('/complete', { uploadId }), { params: Promise.resolve({ token }) })).status, 200);
   assert.equal(stores, 1);
+  assert.equal(renewals, 7);
 });
 
 test('failure after durable staging records retry state and the next lease does not persist twice', async () => {
@@ -257,6 +284,7 @@ test('failure after durable staging records retry state and the next lease does 
     ...common,
     async getOwnedReferenceUploadAttempt() { return attempt(); },
     async acquireReferenceUploadCompletionLease() { return attempt({ state: 'processing', leaseId }); },
+    async renewReferenceUploadCompletionLease(input) { return input.attempt; },
     async listReferenceUploadParts() {
       return [
         { partNumber: 1, storageKey: 'part-1', sizeBytes: 4, contentSha256: createHash('sha256').update('abcd').digest('hex') },
@@ -277,6 +305,7 @@ test('failure after durable staging records retry state and the next lease does 
     ...common,
     async getOwnedReferenceUploadAttempt() { return attempt({ state: 'failed', stagedAssetId: publicAssetId, contentSha256: attempt().fileSha256 }); },
     async acquireReferenceUploadCompletionLease() { return attempt({ state: 'processing', leaseId, version: 2, stagedAssetId: publicAssetId, contentSha256: attempt().fileSha256 }); },
+    async renewReferenceUploadCompletionLease(input) { return input.attempt; },
     async storeVideoUpload() { stores += 1; throw new Error('must not persist twice'); },
     async completeUploadSession() { return session({ state: 'uploaded', assetId: publicAssetId }) as never; },
     async completeReferenceUploadAttempt() { return attempt({ state: 'completed', stagedAssetId: publicAssetId, contentSha256: attempt().fileSha256 }); },
@@ -335,11 +364,14 @@ test('durable cleanup aborts never-finalized expired attempts and retains failed
   const cleanupExecutor = {
     async query<T>(sql: string, values?: readonly unknown[]) {
       calls.push(sql);
-      if (/RETURNING[\s\S]*storage_key/iu.test(sql)) {
+      if (calls.length === 1) {
         assert.equal(values?.[1], 100);
-        return [{ storage_key: 'part-ok' }, { storage_key: 'part-retry' }] as T[];
+        return [
+          { cleanup_id: '00000000-0000-4000-8000-000000000201', object_key: 'attempt/parts/part-ok', owner_prefix: 'attempt/parts/', object_role: 'part', attempt_storage_key: 'attempt' },
+          { cleanup_id: '00000000-0000-4000-8000-000000000202', object_key: 'attempt/parts/part-retry', owner_prefix: 'attempt/parts/', object_role: 'part', attempt_storage_key: 'attempt' },
+        ] as T[];
       }
-      assert.deepEqual(values?.[3], ['part-ok']);
+      assert.deepEqual(values?.[0], ['00000000-0000-4000-8000-000000000201']);
       return [] as T[];
     },
   } as TransactionQueryExecutor;
@@ -349,12 +381,12 @@ test('durable cleanup aborts never-finalized expired attempts and retains failed
     now: () => now,
     async deleteStorageObjectKey(key) {
       deleted.push(key);
-      if (key === 'part-retry') throw new Error('temporary storage outage');
+      if (key.endsWith('part-retry')) throw new Error('temporary storage outage');
     },
   });
   assert.deepEqual(result, { selected: 2, deleted: 1 });
-  assert.deepEqual(deleted, ['part-ok', 'part-retry']);
-  assert.match(calls[0] ?? '', /FOR UPDATE SKIP LOCKED/iu);
+  assert.deepEqual(deleted, ['attempt/parts/part-ok', 'attempt/parts/part-retry']);
+  assert.match(calls[0] ?? '', /FOR UPDATE(?:\s+OF\s+attempts)?\s+SKIP LOCKED/iu);
   assert.match(calls[0] ?? '', /state\s*=\s*'aborted'/iu);
 });
 
@@ -371,4 +403,8 @@ test('browser and deployed routes use chunk relay and expose no signed PUT capab
   assert.match(client, /\/complete/u);
   assert.doesNotMatch(client, /method:\s*'PUT'|uploadUrl/u);
   assert.doesNotMatch(handlers, /createSignedUploadUrl|signed-put/iu);
+
+  const cleanupCron = readFileSync('frontend/app/api/cron/mcp-reference-upload-cleanup/route.ts', 'utf8');
+  assert.match(cleanupCron, /if\s*\(!cronSecret\)\s*return[\s\S]*503/iu);
+  assert.doesNotMatch(cleanupCron, /x-vercel-cron|user-agent/iu);
 });

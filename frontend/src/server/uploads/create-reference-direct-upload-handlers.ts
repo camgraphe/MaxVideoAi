@@ -12,6 +12,7 @@ import {
   acquireReferenceUploadCompletionLease,
   claimReferenceUploadPart,
   cleanupReferenceUploadParts,
+  cleanupReferenceUploadObject,
   completeReferenceUploadAttempt,
   completeReferenceUploadPart,
   contentSha256,
@@ -20,6 +21,9 @@ import {
   failReferenceUploadPart,
   getOwnedReferenceUploadAttempt,
   listReferenceUploadParts,
+  renewReferenceUploadCompletionLease,
+  registerReferenceUploadCleanupObject,
+  retainReferenceUploadCleanupObject,
   stageReferenceUploadAttempt,
   type ReferenceUploadAttempt,
 } from '@/server/agent-api/reference-upload-attempts';
@@ -159,6 +163,7 @@ type PartDependencies = CommonDependencies & {
   failReferenceUploadPart: typeof failReferenceUploadPart;
   abortReferenceUploadAttempt: typeof abortReferenceUploadAttempt;
   cleanupReferenceUploadParts: typeof cleanupReferenceUploadParts;
+  cleanupReferenceUploadObject: typeof cleanupReferenceUploadObject;
   uploadFileBufferToKey: typeof uploadFileBufferToKey;
   deleteStorageObjectKey: typeof deleteStorageObjectKey;
 };
@@ -172,12 +177,16 @@ async function abortAndCleanup(attempt: ReferenceUploadAttempt, dependencies: Co
     { attempt }, { executor, abortedAt: dependencies.now() },
   ));
   await dependencies.cleanupReferenceUploadParts({ attempt }, { deleteStorageObjectKey: dependencies.deleteStorageObjectKey }).catch(() => undefined);
+  if (attempt.protocolVersion === 1) {
+    await dependencies.deleteStorageObjectKey(attempt.storageKey).catch(() => undefined);
+  }
 }
 
 export function createReferenceUploadPartHandler(overrides: Partial<PartDependencies> = {}) {
   const dependencies: PartDependencies = {
     ...commonDefaults, getOwnedReferenceUploadAttempt, claimReferenceUploadPart, completeReferenceUploadPart, failReferenceUploadPart,
-    abortReferenceUploadAttempt, cleanupReferenceUploadParts, uploadFileBufferToKey, deleteStorageObjectKey, ...overrides,
+    abortReferenceUploadAttempt, cleanupReferenceUploadParts, cleanupReferenceUploadObject,
+    uploadFileBufferToKey, deleteStorageObjectKey, ...overrides,
   };
   return async (request: NextRequest, context: RouteContext): Promise<NextResponse> => {
     const authorized = await authorize(request, dependencies);
@@ -191,6 +200,10 @@ export function createReferenceUploadPartHandler(overrides: Partial<PartDependen
       if (!uploadId || !UUID_PATTERN.test(uploadId) || !Number.isSafeInteger(partNumber)
         || partNumber < 1 || !declaredSha || !SHA_PATTERN.test(declaredSha)) return json({ ok: false, error: 'REFERENCE_INVALID' }, 400);
       const attempt = await dependencies.getOwnedReferenceUploadAttempt({ token, userId, uploadId });
+      if (attempt.protocolVersion !== 2 || attempt.chunkBytes === null || attempt.totalParts === null) {
+        await abortAndCleanup(attempt, dependencies);
+        return json({ ok: false, error: 'UPLOAD_EXPIRED' }, 410);
+      }
       if (attempt.session.expiresAt <= dependencies.now()) {
         await abortAndCleanup(attempt, dependencies);
         return json({ ok: false, error: 'UPLOAD_EXPIRED' }, 410);
@@ -218,7 +231,9 @@ export function createReferenceUploadPartHandler(overrides: Partial<PartDependen
           await dependencies.withTransaction((executor) => dependencies.failReferenceUploadPart(
             { attempt, partNumber, leaseId: claim.leaseId }, { executor, failedAt: dependencies.now() },
           )).catch(() => undefined);
-          await dependencies.deleteStorageObjectKey(claim.storageKey).catch(() => undefined);
+          await dependencies.cleanupReferenceUploadObject(
+            { attempt, objectKey: claim.storageKey }, { deleteStorageObjectKey: dependencies.deleteStorageObjectKey },
+          ).catch(() => false);
           throw error;
         }
       }
@@ -231,6 +246,7 @@ type CompletionDependencies = CommonDependencies & {
   getOwnedReferenceUploadAttempt: typeof getOwnedReferenceUploadAttempt;
   acquireReferenceUploadCompletionLease: typeof acquireReferenceUploadCompletionLease;
   listReferenceUploadParts: typeof listReferenceUploadParts;
+  renewReferenceUploadCompletionLease: typeof renewReferenceUploadCompletionLease;
   getStorageObjectBuffer: typeof getStorageObjectBuffer;
   storeImageUpload: typeof storeImageUpload;
   storeVideoUpload: typeof storeVideoUpload;
@@ -242,14 +258,17 @@ type CompletionDependencies = CommonDependencies & {
   cleanupReferenceUploadParts: typeof cleanupReferenceUploadParts;
   abortReferenceUploadAttempt: typeof abortReferenceUploadAttempt;
   deleteStorageObjectKey: typeof deleteStorageObjectKey;
+  registerReferenceUploadCleanupObject: typeof registerReferenceUploadCleanupObject;
+  retainReferenceUploadCleanupObject: typeof retainReferenceUploadCleanupObject;
 };
 
 export function createReferenceUploadCompleteHandler(overrides: Partial<CompletionDependencies> = {}) {
   const dependencies: CompletionDependencies = {
     ...commonDefaults, getOwnedReferenceUploadAttempt, acquireReferenceUploadCompletionLease,
-    listReferenceUploadParts, getStorageObjectBuffer, storeImageUpload, storeVideoUpload, storeAudioUpload,
+    listReferenceUploadParts, renewReferenceUploadCompletionLease, getStorageObjectBuffer, storeImageUpload, storeVideoUpload, storeAudioUpload,
     stageReferenceUploadAttempt, completeUploadSession, completeReferenceUploadAttempt,
-    failReferenceUploadAttempt, cleanupReferenceUploadParts, abortReferenceUploadAttempt, deleteStorageObjectKey, ...overrides,
+    failReferenceUploadAttempt, cleanupReferenceUploadParts, abortReferenceUploadAttempt, deleteStorageObjectKey,
+    registerReferenceUploadCleanupObject, retainReferenceUploadCleanupObject, ...overrides,
   };
   return async (request: NextRequest, context: RouteContext): Promise<NextResponse> => {
     const authorized = await authorize(request, dependencies);
@@ -261,6 +280,11 @@ export function createReferenceUploadCompleteHandler(overrides: Partial<Completi
       const body = await readBoundedJson(request);
       if (typeof body.uploadId !== 'string' || !UUID_PATTERN.test(body.uploadId)) return json({ ok: false, error: 'REFERENCE_INVALID' }, 400);
       const initial = await dependencies.getOwnedReferenceUploadAttempt({ token, userId, uploadId: body.uploadId });
+      if (initial.protocolVersion !== 2 || initial.fileSha256 === null
+        || initial.chunkBytes === null || initial.totalParts === null) {
+        await abortAndCleanup(initial, dependencies);
+        return json({ ok: false, error: 'UPLOAD_EXPIRED' }, 410);
+      }
       if (initial.session.expiresAt <= dependencies.now()) {
         await abortAndCleanup(initial, dependencies);
         return json({ ok: false, error: 'UPLOAD_EXPIRED' }, 410);
@@ -270,13 +294,25 @@ export function createReferenceUploadCompleteHandler(overrides: Partial<Completi
         { attempt: initial }, { executor, now: dependencies.now() },
       ));
       if (!leased.leaseId) throw new Error('Reference upload lease was not persisted.');
+      if (leased.fileSha256 === null || leased.chunkBytes === null || leased.totalParts === null) {
+        throw new Error('Reference upload protocol identity was lost.');
+      }
+      const renewLease = async () => {
+        if (!leased?.leaseId) throw new Error('Reference upload lease was not persisted.');
+        leased = await dependencies.withTransaction((executor) => dependencies.renewReferenceUploadCompletionLease(
+          { attempt: leased!, leaseId: leased!.leaseId!, version: leased!.version },
+          { executor, now: dependencies.now() },
+        ));
+      };
       let assetId = leased.stagedAssetId;
       if (!assetId) {
+        await renewLease();
         const parts = await dependencies.listReferenceUploadParts({ attempt: leased });
         if (parts.length !== leased.totalParts) throw new ReferenceValidationError();
         const buffers: Buffer[] = [];
         let totalSize = 0;
         for (let index = 0; index < parts.length; index += 1) {
+          await renewLease();
           const part = parts[index];
           const expectedNumber = index + 1;
           const expectedSize = expectedNumber === leased.totalParts
@@ -291,8 +327,19 @@ export function createReferenceUploadCompleteHandler(overrides: Partial<Completi
         const bytes = Buffer.concat(buffers, totalSize);
         const digest = contentSha256(bytes);
         if (digest !== leased.fileSha256) throw new ReferenceValidationError();
+        await renewLease();
+        const cleanupObjects = {
+          beforeUpload: (entry: { objectRole: 'final' | 'thumbnail'; objectKey: string; safeToDelete: boolean }) =>
+            dependencies.withTransaction((executor) => dependencies.registerReferenceUploadCleanupObject(
+              { attempt: leased!, ...entry }, { executor, now: dependencies.now() },
+            )),
+          retain: (objectKey: string) => dependencies.withTransaction((executor) =>
+            dependencies.retainReferenceUploadCleanupObject(
+              { attempt: leased!, objectKey }, { executor, now: dependencies.now() },
+            )),
+        };
         if (leased.session.mediaKind === 'image') {
-          const stored = await dependencies.storeImageUpload({ userId, fileName: leased.fileName, declaredMime: leased.declaredMime, bytes });
+          const stored = await dependencies.storeImageUpload({ userId, fileName: leased.fileName, declaredMime: leased.declaredMime, bytes, cleanupObjects });
           const image = await loadStoredImageUploadRouteAsset({ userId, assetId: stored.assetId });
           const canonical = await ensureReusableAsset({ userId, url: image.url, kind: 'image', source: 'upload', mimeType: image.mimeType,
             width: image.width, height: image.height, sizeBytes: image.sizeBytes, thumbUrl: image.thumbUrl });
@@ -300,15 +347,17 @@ export function createReferenceUploadCompleteHandler(overrides: Partial<Completi
           assetId = canonical.publicId;
         } else {
           const stored = leased.session.mediaKind === 'video'
-            ? await dependencies.storeVideoUpload({ userId, fileName: leased.fileName, declaredMime: leased.declaredMime, bytes, referenceEligibility: 'mcp' })
-            : await dependencies.storeAudioUpload({ userId, fileName: leased.fileName, declaredMime: leased.declaredMime, bytes, referenceEligibility: 'mcp' });
+            ? await dependencies.storeVideoUpload({ userId, fileName: leased.fileName, declaredMime: leased.declaredMime, bytes, referenceEligibility: 'mcp', cleanupObjects })
+            : await dependencies.storeAudioUpload({ userId, fileName: leased.fileName, declaredMime: leased.declaredMime, bytes, referenceEligibility: 'mcp', cleanupObjects });
           assetId = stored.assetId;
         }
+        await renewLease();
         leased = await dependencies.withTransaction((executor) => dependencies.stageReferenceUploadAttempt(
           { attempt: leased!, leaseId: leased!.leaseId!, version: leased!.version, contentSha256: digest, assetId: assetId! },
           { executor, updatedAt: dependencies.now() },
         ));
       }
+      await renewLease();
       await dependencies.withTransaction(async (executor) => {
         await dependencies.completeUploadSession({ sessionId: leased!.session.sessionId, userId,
           claimId: leased!.session.claimId!, mediaKind: leased!.session.mediaKind, assetId: assetId! },
@@ -343,7 +392,8 @@ export function createReferenceUploadCompleteHandler(overrides: Partial<Completi
 export function createReferenceUploadAbortHandler(overrides: Partial<PartDependencies> = {}) {
   const dependencies: PartDependencies = {
     ...commonDefaults, getOwnedReferenceUploadAttempt, claimReferenceUploadPart, completeReferenceUploadPart, failReferenceUploadPart,
-    abortReferenceUploadAttempt, cleanupReferenceUploadParts, uploadFileBufferToKey, deleteStorageObjectKey, ...overrides,
+    abortReferenceUploadAttempt, cleanupReferenceUploadParts, cleanupReferenceUploadObject,
+    uploadFileBufferToKey, deleteStorageObjectKey, ...overrides,
   };
   return async (request: NextRequest, context: RouteContext): Promise<NextResponse> => {
     const authorized = await authorize(request, dependencies);
