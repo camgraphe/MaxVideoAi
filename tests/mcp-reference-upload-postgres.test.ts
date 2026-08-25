@@ -389,7 +389,7 @@ test('real PostgreSQL upload recovery and interleavings preserve one terminal as
     ));
     const deleted: string[] = [];
     assert.deepEqual(await cleanupExpiredReferenceUploadAttempts({}, {
-      executor: createQueryExecutor(database.pool), now: () => new Date(now.getTime() + 2_000),
+      executor: createQueryExecutor(database.pool), now: () => new Date(now.getTime() + 2 * 60_000),
       async deleteStorageObjectKey(key) { deleted.push(key); },
     }), { selected: 1, deleted: 1 });
     assert.deepEqual(deleted, [finalKey]);
@@ -590,10 +590,10 @@ test('real PostgreSQL upload recovery and interleavings preserve one terminal as
       ['workspace-winner', 'user-a', `https://assets.maxvideo.ai/${finalKey}`],
     );
     await transaction(database.pool, (executor) => settleStorageObjectProducer(
-      { claim: producer, outcome: 'persisted' }, { executor, now: new Date(now.getTime() + 3_000) },
+      { claim: producer, outcome: 'persisted' }, { executor, now: new Date(now.getTime() + 2 * 60_000 + 1_000) },
     ));
     assert.deepEqual(await cleanupExpiredReferenceUploadAttempts({}, {
-      executor: createQueryExecutor(database.pool), now: () => new Date(now.getTime() + 4_000),
+      executor: createQueryExecutor(database.pool), now: () => new Date(now.getTime() + 2 * 60_000 + 2_000),
       async deleteStorageObjectKey() { deletes += 1; },
     }), { selected: 0, deleted: 0 });
     assert.equal(deletes, 0);
@@ -613,20 +613,27 @@ test('real PostgreSQL upload recovery and interleavings preserve one terminal as
     const deleteStarted = new Promise<void>((resolve) => { markDeleteStarted = resolve; });
     const deleteReleased = new Promise<void>((resolve) => { releaseDelete = resolve; });
     const cleanup = cleanupExpiredReferenceUploadAttempts({}, {
-      executor: createQueryExecutor(database.pool), now: () => new Date(now.getTime() + 2_000),
+      executor: createQueryExecutor(database.pool), now: () => new Date(now.getTime() + 2 * 60_000),
       async deleteStorageObjectKey() { markDeleteStarted?.(); await deleteReleased; },
     });
     await deleteStarted;
-    await assert.rejects(() => transaction(database.pool, (executor) => claimStorageObjectProducer(
-      { objectKey: finalKey }, {
-        executor, now: new Date(now.getTime() + 2_001), claimId: '00000000-0000-4000-8000-000000000702',
-      },
-    )), /delet|retry/iu);
-    await assert.rejects(() => database.pool.query(
-      'INSERT INTO media_assets (id, public_id, user_id, url) VALUES ($1,$2,$3,$4)',
-      ['late-winner', 'ma_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'user-a', `https://assets.maxvideo.ai/${finalKey}`],
-    ), /delet|retry/iu);
-    releaseDelete?.();
+    const contender = await database.pool.connect();
+    try {
+      await contender.query(`SET statement_timeout = '1000ms'`);
+      await assert.rejects(() => claimStorageObjectProducer(
+        { objectKey: finalKey }, {
+          executor: createQueryExecutor(contender), now: new Date(now.getTime() + 2 * 60_000 + 1),
+          claimId: '00000000-0000-4000-8000-000000000702',
+        },
+      ), /delet|retry/iu);
+      await assert.rejects(() => contender.query(
+        'INSERT INTO media_assets (id, public_id, user_id, url) VALUES ($1,$2,$3,$4)',
+        ['late-winner', 'ma_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'user-a', `https://assets.maxvideo.ai/${finalKey}`],
+      ), /delet|retry/iu);
+    } finally {
+      contender.release();
+      releaseDelete?.();
+    }
     assert.deepEqual(await cleanup, { selected: 1, deleted: 1 });
   });
 

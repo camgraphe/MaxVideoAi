@@ -21,6 +21,7 @@ import {
   failReferenceUploadPart,
   getOwnedReferenceUploadAttempt,
   listReferenceUploadParts,
+  MCP_REFERENCE_UPLOAD_LEASE_MS,
   renewReferenceUploadCompletionLease,
   registerReferenceUploadCleanupObject,
   retainReferenceUploadCleanupObject,
@@ -245,6 +246,8 @@ export function createReferenceUploadPartHandler(overrides: Partial<PartDependen
 
 type CompletionDependencies = CommonDependencies & {
   finalizationTimeoutMs: number;
+  leaseHeartbeatIntervalMs: number;
+  scheduleLeaseHeartbeat(callback: () => Promise<void>, intervalMs: number): () => void;
   getOwnedReferenceUploadAttempt: typeof getOwnedReferenceUploadAttempt;
   acquireReferenceUploadCompletionLease: typeof acquireReferenceUploadCompletionLease;
   listReferenceUploadParts: typeof listReferenceUploadParts;
@@ -266,6 +269,11 @@ type CompletionDependencies = CommonDependencies & {
   retainReferenceUploadCleanupObject: typeof retainReferenceUploadCleanupObject;
 };
 
+function scheduleLeaseHeartbeat(callback: () => Promise<void>, intervalMs: number): () => void {
+  const timer = setInterval(() => { void callback().catch(() => undefined); }, intervalMs);
+  return () => clearInterval(timer);
+}
+
 export function createReferenceUploadCompleteHandler(overrides: Partial<CompletionDependencies> = {}) {
   const dependencies: CompletionDependencies = {
     ...commonDefaults, getOwnedReferenceUploadAttempt, acquireReferenceUploadCompletionLease,
@@ -274,7 +282,10 @@ export function createReferenceUploadCompleteHandler(overrides: Partial<Completi
     stageReferenceUploadAttempt, completeUploadSession, completeReferenceUploadAttempt,
     failReferenceUploadAttempt, cleanupReferenceUploadParts, abortReferenceUploadAttempt, deleteStorageObjectKey,
     registerReferenceUploadCleanupObject, retainReferenceUploadCleanupObject,
-    finalizationTimeoutMs: DEFAULT_FINALIZATION_TIMEOUT_MS, ...overrides,
+    finalizationTimeoutMs: DEFAULT_FINALIZATION_TIMEOUT_MS,
+    leaseHeartbeatIntervalMs: Math.floor(MCP_REFERENCE_UPLOAD_LEASE_MS / 3),
+    scheduleLeaseHeartbeat,
+    ...overrides,
   };
   return async (request: NextRequest, context: RouteContext): Promise<NextResponse> => {
     const authorized = await authorize(request, dependencies);
@@ -282,6 +293,7 @@ export function createReferenceUploadCompleteHandler(overrides: Partial<Completi
     const userId = authorized;
     const { token } = await context.params;
     let leased: ReferenceUploadAttempt | null = null;
+    let stopLeaseHeartbeat: (() => Promise<void>) | null = null;
     try {
       const body = await readBoundedJson(request);
       if (typeof body.uploadId !== 'string' || !UUID_PATTERN.test(body.uploadId)) return json({ ok: false, error: 'REFERENCE_INVALID' }, 400);
@@ -303,33 +315,63 @@ export function createReferenceUploadCompleteHandler(overrides: Partial<Completi
       if (leased.fileSha256 === null || leased.chunkBytes === null || leased.totalParts === null) {
         throw new Error('Reference upload protocol identity was lost.');
       }
-      const renewLease = async () => {
-        if (!leased?.leaseId) throw new Error('Reference upload lease was not persisted.');
-        leased = await dependencies.withTransaction((executor) => dependencies.renewReferenceUploadCompletionLease(
-          { attempt: leased!, leaseId: leased!.leaseId!, version: leased!.version },
-          { executor, now: dependencies.now() },
-        ));
+      const finalizationController = new AbortController();
+      let fenceLoss: unknown = null;
+      let heartbeatStopped = false;
+      let renewalTail: Promise<void> = Promise.resolve();
+      const renewLease = (): Promise<void> => {
+        const renewal = renewalTail.then(async () => {
+          if (heartbeatStopped) return;
+          if (!leased?.leaseId) throw new Error('Reference upload lease was not persisted.');
+          leased = await dependencies.withTransaction((executor) => dependencies.renewReferenceUploadCompletionLease(
+            { attempt: leased!, leaseId: leased!.leaseId!, version: leased!.version },
+            { executor, now: dependencies.now() },
+          ));
+        }).catch((error) => {
+          if (!fenceLoss) {
+            fenceLoss = error;
+            finalizationController.abort(error);
+          }
+          throw error;
+        });
+        renewalTail = renewal.catch(() => undefined);
+        return renewal;
+      };
+      const cancelHeartbeat = dependencies.scheduleLeaseHeartbeat(
+        renewLease,
+        dependencies.leaseHeartbeatIntervalMs,
+      );
+      stopLeaseHeartbeat = async () => {
+        heartbeatStopped = true;
+        cancelHeartbeat();
+        await renewalTail;
+      };
+      const checkpoint = () => {
+        if (fenceLoss) throw fenceLoss;
+        finalizationController.signal.throwIfAborted();
       };
       let assetId = leased.stagedAssetId;
       if (!assetId) {
         const finalized = await runSettledBoundedFinalization(async (signal) => {
-          signal.throwIfAborted();
+          checkpoint();
           await renewLease();
-          signal.throwIfAborted();
+          checkpoint();
           const parts = await dependencies.listReferenceUploadParts({ attempt: leased! });
+          checkpoint();
           if (parts.length !== leased!.totalParts) throw new ReferenceValidationError();
           const buffers: Buffer[] = [];
           let totalSize = 0;
           for (let index = 0; index < parts.length; index += 1) {
-            signal.throwIfAborted();
+            checkpoint();
             await renewLease();
+            checkpoint();
             const part = parts[index];
             const expectedNumber = index + 1;
             const expectedSize = expectedNumber === leased!.totalParts
               ? leased!.declaredSize - leased!.chunkBytes! * (leased!.totalParts! - 1) : leased!.chunkBytes!;
             if (!part || part.partNumber !== expectedNumber || part.sizeBytes !== expectedSize) throw new ReferenceValidationError();
             const partBytes = await dependencies.getStorageObjectBuffer(part.storageKey, { signal });
-            signal.throwIfAborted();
+            checkpoint();
             if (partBytes.length !== part.sizeBytes || contentSha256(partBytes) !== part.contentSha256) throw new ReferenceValidationError();
             totalSize += partBytes.length;
             buffers.push(partBytes);
@@ -341,18 +383,24 @@ export function createReferenceUploadCompleteHandler(overrides: Partial<Completi
 
           // Refresh the durable fence immediately before probe/storage side effects. The
           // lease outlives the bounded operation even if the original link expires.
-          signal.throwIfAborted();
+          checkpoint();
           await renewLease();
-          signal.throwIfAborted();
+          checkpoint();
           const cleanupObjects = {
-            beforeUpload: (entry: { objectRole: 'final' | 'thumbnail'; objectKey: string; safeToDelete: boolean }) =>
-              dependencies.withTransaction((executor) => dependencies.registerReferenceUploadCleanupObject(
+            beforeUpload: async (entry: { objectRole: 'final' | 'thumbnail'; objectKey: string; safeToDelete: boolean }) => {
+              checkpoint();
+              await dependencies.withTransaction((executor) => dependencies.registerReferenceUploadCleanupObject(
                 { attempt: leased!, ...entry }, { executor, now: dependencies.now() },
-              )),
-            retain: (objectKey: string) => dependencies.withTransaction((executor) =>
-              dependencies.retainReferenceUploadCleanupObject(
+              ));
+              checkpoint();
+            },
+            retain: async (objectKey: string) => {
+              checkpoint();
+              await dependencies.withTransaction((executor) => dependencies.retainReferenceUploadCleanupObject(
                 { attempt: leased!, objectKey }, { executor, now: dependencies.now() },
-              )),
+              ));
+              checkpoint();
+            },
           };
           let finalizedAssetId: string;
           if (leased!.session.mediaKind === 'image') {
@@ -360,9 +408,12 @@ export function createReferenceUploadCompleteHandler(overrides: Partial<Completi
               userId, fileName: leased!.fileName, declaredMime: leased!.declaredMime,
               bytes, cleanupObjects, signal,
             });
+            checkpoint();
             const image = await dependencies.loadStoredImageUploadRouteAsset({ userId, assetId: stored.assetId });
+            checkpoint();
             const canonical = await dependencies.ensureReusableAsset({ userId, url: image.url, kind: 'image', source: 'upload', mimeType: image.mimeType,
               width: image.width, height: image.height, sizeBytes: image.sizeBytes, thumbUrl: image.thumbUrl });
+            checkpoint();
             if (!canonical.publicId || !/^ma_[a-f0-9]{32}$/u.test(canonical.publicId)) throw new Error('Canonical image has no public alias.');
             finalizedAssetId = canonical.publicId;
           } else {
@@ -377,19 +428,21 @@ export function createReferenceUploadCompleteHandler(overrides: Partial<Completi
                 });
             finalizedAssetId = stored.assetId;
           }
-          signal.throwIfAborted();
+          checkpoint();
           await renewLease();
-          signal.throwIfAborted();
+          checkpoint();
           const stagedAttempt = await dependencies.withTransaction((executor) => dependencies.stageReferenceUploadAttempt(
             { attempt: leased!, leaseId: leased!.leaseId!, version: leased!.version, contentSha256: digest, assetId: finalizedAssetId },
             { executor, updatedAt: dependencies.now() },
           ));
+          checkpoint();
           return { assetId: finalizedAssetId, attempt: stagedAttempt };
-        }, dependencies.finalizationTimeoutMs);
+        }, dependencies.finalizationTimeoutMs, finalizationController);
         assetId = finalized.assetId;
         leased = finalized.attempt;
       }
       await renewLease();
+      checkpoint();
       await dependencies.withTransaction(async (executor) => {
         await dependencies.completeUploadSession({ sessionId: leased!.session.sessionId, userId,
           claimId: leased!.session.claimId!, mediaKind: leased!.session.mediaKind, assetId: assetId!,
@@ -401,17 +454,22 @@ export function createReferenceUploadCompleteHandler(overrides: Partial<Completi
           { executor, completedAt: dependencies.now() },
         );
       });
+      await stopLeaseHeartbeat();
+      stopLeaseHeartbeat = null;
       await dependencies.cleanupReferenceUploadParts({ attempt: leased }, { deleteStorageObjectKey: dependencies.deleteStorageObjectKey }).catch(() => undefined);
       return json({ ok: true, assetId, mediaKind: leased.session.mediaKind }, 200);
     } catch (error) {
-      if (error instanceof ReferenceValidationError && leased) {
-        await abortAndCleanup(leased, dependencies);
-        return json({ ok: false, error: 'REFERENCE_INVALID' }, 400);
-      }
-      if (leased?.leaseId) await dependencies.withTransaction((executor) => dependencies.failReferenceUploadAttempt(
+      await stopLeaseHeartbeat?.();
+      stopLeaseHeartbeat = null;
+      let leaseReleased = false;
+      if (leased?.leaseId) leaseReleased = await dependencies.withTransaction((executor) => dependencies.failReferenceUploadAttempt(
         { attempt: leased!, leaseId: leased!.leaseId!, version: leased!.version, failureCode: error instanceof Error ? error.name : 'STORE_FAILED' },
         { executor, failedAt: dependencies.now() },
-      )).catch(() => undefined);
+      )).catch(() => false);
+      if (error instanceof ReferenceValidationError && leased) {
+        if (leaseReleased) await abortAndCleanup(leased, dependencies).catch(() => undefined);
+        return json({ ok: false, error: 'REFERENCE_INVALID' }, 400);
+      }
       if (error instanceof ImageUploadError || error instanceof MediaUploadError) {
         if (error.code === 'FILE_TOO_LARGE') return json({ ok: false, error: error.code }, 413);
         if (error.code === 'UNSUPPORTED_TYPE') return json({ ok: false, error: error.code }, 415);
@@ -423,9 +481,12 @@ export function createReferenceUploadCompleteHandler(overrides: Partial<Completi
   };
 }
 
-async function runSettledBoundedFinalization<T>(operation: (signal: AbortSignal) => Promise<T>, timeoutMs: number): Promise<T> {
+async function runSettledBoundedFinalization<T>(
+  operation: (signal: AbortSignal) => Promise<T>,
+  timeoutMs: number,
+  controller = new AbortController(),
+): Promise<T> {
   if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 1) throw new Error('Invalid finalization timeout.');
-  const controller = new AbortController();
   let timedOut = false;
   const timer = setTimeout(() => {
     timedOut = true;

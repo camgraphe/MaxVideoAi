@@ -497,9 +497,11 @@ async function claimReferenceUploadFinalDeletion(
   const leaseExpiresAt = new Date(now.getTime() + MCP_REFERENCE_UPLOAD_LEASE_MS);
   const rows = await executor.query<{ delete_claim_id: unknown }>(
     `UPDATE mcp_reference_upload_object_fences AS fences
-        SET state = 'deleting', delete_claim_id = $3, delete_lease_expires_at = $4, updated_at = $2
+        SET state = 'deleting', producer_claim_id = NULL, producer_lease_expires_at = NULL,
+            delete_claim_id = $3, delete_lease_expires_at = $4, updated_at = $2
       WHERE fences.object_key = $1
-        AND (fences.state IN ('available','deleted')
+        AND (fences.state IN ('available','orphaned','deleted')
+          OR (fences.state = 'producing' AND fences.producer_lease_expires_at <= $2)
           OR (fences.state = 'deleting' AND fences.delete_lease_expires_at <= $2))
         AND NOT EXISTS (
           SELECT 1 FROM user_assets AS assets
@@ -556,6 +558,61 @@ async function settleReferenceUploadFinalDeletion(input: {
     [String(input.row.object_key), input.claimId, String(input.row.cleanup_id), input.now],
   );
   return rows.length === 1;
+}
+
+async function cleanupOrphanedStorageObjectProducers(input: {
+  limit: number; now: Date;
+}, dependencies: { executor: QueryExecutor; deleteStorageObjectKey(key: string): Promise<unknown> }): Promise<{
+  selected: number; deleted: number;
+}> {
+  if (input.limit < 1) return { selected: 0, deleted: 0 };
+  const claimId = randomUUID();
+  const leaseExpiresAt = new Date(input.now.getTime() + MCP_REFERENCE_UPLOAD_LEASE_MS);
+  const rows = await dependencies.executor.query<{ object_key: unknown }>(
+    `WITH candidates AS (
+       SELECT fences.object_key
+         FROM mcp_reference_upload_object_fences AS fences
+        WHERE (fences.state = 'orphaned'
+          OR (fences.state = 'producing' AND fences.producer_lease_expires_at <= $1))
+          AND NOT EXISTS (SELECT 1 FROM user_assets AS assets
+            WHERE position(fences.object_key in assets.url) > 0
+              OR position(fences.object_key in COALESCE(assets.metadata->>'thumbUrl', '')) > 0)
+          AND NOT EXISTS (SELECT 1 FROM media_assets AS media
+            WHERE media.deleted_at IS NULL AND (position(fences.object_key in media.url) > 0
+              OR position(fences.object_key in COALESCE(media.thumb_url, '')) > 0))
+          AND NOT EXISTS (SELECT 1 FROM mcp_reference_upload_cleanup_objects AS cleanup
+            WHERE cleanup.object_key = fences.object_key AND cleanup.state IN ('pending','retained'))
+        ORDER BY fences.updated_at ASC, fences.object_key ASC
+        LIMIT $2 FOR UPDATE SKIP LOCKED
+     )
+     UPDATE mcp_reference_upload_object_fences AS fences
+        SET state = 'deleting', producer_claim_id = NULL, producer_lease_expires_at = NULL,
+            delete_claim_id = $3, delete_lease_expires_at = $4, updated_at = $1
+       FROM candidates
+      WHERE fences.object_key = candidates.object_key
+      RETURNING fences.object_key`,
+    [input.now, input.limit, claimId, leaseExpiresAt],
+  );
+  let deleted = 0;
+  for (const row of rows) {
+    const objectKey = String(row.object_key);
+    let didDelete = false;
+    try {
+      await dependencies.deleteStorageObjectKey(objectKey);
+      didDelete = true;
+    } catch {
+      didDelete = false;
+    }
+    const settled = await dependencies.executor.query<{ object_key: unknown }>(
+      `UPDATE mcp_reference_upload_object_fences
+          SET state = $4, delete_claim_id = NULL, delete_lease_expires_at = NULL, updated_at = $3
+        WHERE object_key = $1 AND state = 'deleting' AND delete_claim_id = $2
+        RETURNING object_key`,
+      [objectKey, claimId, input.now, didDelete ? 'deleted' : 'orphaned'],
+    );
+    if (didDelete && settled.length === 1) deleted += 1;
+  }
+  return { selected: rows.length, deleted };
 }
 
 export async function cleanupExpiredReferenceUploadAttempts(options: { limit?: number } = {}, dependencies: {
@@ -661,7 +718,13 @@ export async function cleanupExpiredReferenceUploadAttempts(options: { limit?: n
       WHERE cleanup_id = ANY($1::uuid[]) AND state = 'pending'`,
     [nonFinalDeletedIds],
   );
-  return { selected: claimedRows.length, deleted: deletedIds.length };
+  const orphaned = await cleanupOrphanedStorageObjectProducers({
+    limit: limit - claimedRows.length, now,
+  }, { executor, deleteStorageObjectKey: dependencies.deleteStorageObjectKey });
+  return {
+    selected: claimedRows.length + orphaned.selected,
+    deleted: deletedIds.length + orphaned.deleted,
+  };
 }
 
 export function contentSha256(bytes: Buffer): string { return createHash('sha256').update(bytes).digest('hex'); }

@@ -44,6 +44,18 @@ const session = {
   updatedAt: new Date('2026-08-24T10:00:00.000Z'),
 };
 
+const producerFenceStubs = {
+  async claimStorageObjectProducer(input: { objectKey: string }) {
+    return {
+      objectKey: input.objectKey,
+      claimId: '00000000-0000-4000-8000-000000000779',
+      leaseExpiresAt: new Date('2026-08-25T10:05:00.000Z'),
+    };
+  },
+  async renewStorageObjectProducer(input: { claim: unknown }) { return input.claim; },
+  async settleStorageObjectProducer() { return undefined; },
+};
+
 test('link service creates one private 15-minute browser handoff for the OAuth principal', async () => {
   const createLink = createReferenceUploadLinkService({
     baseUrl: 'https://maxvideoai.com/account/connections',
@@ -324,12 +336,15 @@ test('shared video and audio storage owners verify metadata and return the canon
   ]) {
     const calls: Array<{ name: string; value: unknown }> = [];
     const dependencies = {
+      ...producerFenceStubs,
       async probeMediaBuffer() {
         return { kind: candidate.kind, canonicalMime: candidate.canonicalMime, detectedMime: candidate.canonicalMime, durationSec: 4.25 };
       },
-      async uploadFileBuffer(input: unknown) {
+      async uploadFileBuffer(input: { beforeUpload?: (key: string) => Promise<void> }) {
         calls.push({ name: 'upload', value: input });
-        return { key: 'private-key', url: `https://assets.maxvideo.ai/${candidate.kind}-1` };
+        const key = `user-assets/by-content/owner/${candidate.kind}-1`;
+        await input.beforeUpload?.(key);
+        return { key, url: `https://assets.maxvideo.ai/${candidate.kind}-1` };
       },
       async createUploadVideoThumbnail() {
         calls.push({ name: 'thumbnail', value: null });
@@ -404,13 +419,16 @@ test('shared media storage always probes bytes, rejects declared/detected disagr
   let probes = 0;
   let uploads = 0;
   const dependencies = {
+    ...producerFenceStubs,
     async probeMediaBuffer() {
       probes += 1;
       return { kind: 'video' as const, canonicalMime: 'video/webm', detectedMime: 'video/webm', durationSec: 2 };
     },
-    async uploadFileBuffer() {
+    async uploadFileBuffer(input: { beforeUpload?: (key: string) => Promise<void> }) {
       uploads += 1;
-      return { key: 'key', url: 'https://assets.maxvideo.ai/video.webm' };
+      const key = 'user-assets/by-content/owner/video.webm';
+      await input.beforeUpload?.(key);
+      return { key, url: 'https://assets.maxvideo.ai/video.webm' };
     },
     async createUploadVideoThumbnail() { return null; },
     async recordUserAsset() { return 'legacy'; },
@@ -442,10 +460,13 @@ test('shared media storage always probes bytes, rejects declared/detected disagr
 test('shared media storage compensates its request-owned thumbnail on downstream record failure without deleting shared content-addressed media', async () => {
   const deleted: string[] = [];
   const service = createStoreVideoUploadService({
+    ...producerFenceStubs,
     async probeMediaBuffer() { return { kind: 'video', canonicalMime: 'video/mp4', detectedMime: 'video/mp4', durationSec: 2 }; },
     async uploadFileBuffer(input: Record<string, unknown>) {
       assert.equal(input.contentAddressed, true);
-      return { key: 'by-content/shared.mp4', url: 'https://assets.maxvideo.ai/by-content/shared.mp4' };
+      const key = 'user-assets/by-content/owner/shared.mp4';
+      await (input.beforeUpload as ((key: string) => Promise<void>))(key);
+      return { key, url: `https://assets.maxvideo.ai/${key}` };
     },
     async createUploadVideoThumbnail() { return 'https://assets.maxvideo.ai/request-owned-thumb.jpg'; },
     async recordUserAsset() { throw new Error('database unavailable'); },
@@ -576,12 +597,15 @@ test('MCP rejects declared allowlist MIME when ffprobe verified only an unsuppor
 test('workspace accepts a same-kind declared fallback while retaining missing detected MIME provenance', async () => {
   const persistedMimes: string[] = [];
   const service = createStoreVideoUploadService({
+    ...producerFenceStubs,
     async probeMediaBuffer() {
       return { kind: 'video', canonicalMime: 'video/x-workspace-custom', detectedMime: null, durationSec: 2 };
     },
-    async uploadFileBuffer(input: { mime: string }) {
+    async uploadFileBuffer(input: { mime: string; beforeUpload?: (key: string) => Promise<void> }) {
       persistedMimes.push(input.mime);
-      return { key: 'user-assets/custom', url: 'https://assets.maxvideo.ai/custom' };
+      const key = 'user-assets/by-content/owner/custom';
+      await input.beforeUpload?.(key);
+      return { key, url: 'https://assets.maxvideo.ai/custom' };
     },
     async createUploadVideoThumbnail() { return null; },
     async recordUserAsset() { return 'ua_custom'; },
@@ -598,6 +622,7 @@ test('workspace accepts a same-kind declared fallback while retaining missing de
 test('multimedia storage registers final and thumbnail keys before upload and retains winner keys', async () => {
   const events: string[] = [];
   const service = createStoreVideoUploadService({
+    ...producerFenceStubs,
     async probeMediaBuffer() { return { kind: 'video', canonicalMime: 'video/mp4', detectedMime: 'video/mp4', durationSec: 2 }; },
     async uploadFileBuffer(input: Record<string, unknown>) {
       const key = 'user-assets/by-content/owner/content.mp4';
@@ -644,10 +669,11 @@ test('workspace media storage holds the shared object producer claim through bot
       assert.equal(input.objectKey, key);
       claimHeld = true;
       events.push('claim');
-      return { objectKey: key, claimId: '00000000-0000-4000-8000-000000000777' } as never;
+      return { objectKey: key, claimId: '00000000-0000-4000-8000-000000000777', leaseExpiresAt: new Date() } as never;
     },
-    async settleStorageObjectProducer(_input: unknown, options: { outcome: string }) {
-      events.push(`settle:${options.outcome}`);
+    async renewStorageObjectProducer(input: { claim: unknown }) { return input.claim; },
+    async settleStorageObjectProducer(input: { outcome: string }) {
+      events.push(`settle:${input.outcome}`);
       claimHeld = false;
     },
     async uploadFileBuffer(input) {
@@ -683,10 +709,11 @@ test('workspace media persistence failure durably abandons the producer claim fo
     },
     async claimStorageObjectProducer() {
       events.push('claim');
-      return { objectKey: key, claimId: '00000000-0000-4000-8000-000000000778' } as never;
+      return { objectKey: key, claimId: '00000000-0000-4000-8000-000000000778', leaseExpiresAt: new Date() } as never;
     },
-    async settleStorageObjectProducer(_input: unknown, options: { outcome: string }) {
-      events.push(`settle:${options.outcome}`);
+    async renewStorageObjectProducer(input: { claim: unknown }) { return input.claim; },
+    async settleStorageObjectProducer(input: { outcome: string }) {
+      events.push(`settle:${input.outcome}`);
     },
     async uploadFileBuffer(input) {
       await input.beforeUpload?.(key);

@@ -64,14 +64,23 @@ CREATE INDEX IF NOT EXISTS mcp_reference_upload_cleanup_pending_idx
 
 CREATE TABLE IF NOT EXISTS mcp_reference_upload_object_fences (
   object_key TEXT PRIMARY KEY,
-  state TEXT NOT NULL DEFAULT 'available' CHECK (state IN ('available', 'deleting', 'deleted')),
+  state TEXT NOT NULL DEFAULT 'available'
+    CONSTRAINT mcp_reference_upload_object_fences_state_check
+    CHECK (state IN ('available', 'producing', 'orphaned', 'deleting', 'deleted')),
+  producer_claim_id UUID,
+  producer_lease_expires_at TIMESTAMPTZ,
   delete_claim_id UUID,
   delete_lease_expires_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL,
   updated_at TIMESTAMPTZ NOT NULL,
   CONSTRAINT mcp_reference_upload_object_fence_shape CHECK (
-    (state = 'deleting' AND delete_claim_id IS NOT NULL AND delete_lease_expires_at IS NOT NULL)
-    OR (state IN ('available', 'deleted') AND delete_claim_id IS NULL AND delete_lease_expires_at IS NULL)
+    (state = 'producing' AND producer_claim_id IS NOT NULL AND producer_lease_expires_at IS NOT NULL
+      AND delete_claim_id IS NULL AND delete_lease_expires_at IS NULL)
+    OR (state = 'deleting' AND delete_claim_id IS NOT NULL AND delete_lease_expires_at IS NOT NULL
+      AND producer_claim_id IS NULL AND producer_lease_expires_at IS NULL)
+    OR (state IN ('available', 'orphaned', 'deleted')
+      AND producer_claim_id IS NULL AND producer_lease_expires_at IS NULL
+      AND delete_claim_id IS NULL AND delete_lease_expires_at IS NULL)
   ),
   CONSTRAINT mcp_reference_upload_object_fence_key CHECK (
     length(object_key) BETWEEN 1 AND 1024
@@ -79,6 +88,28 @@ CREATE TABLE IF NOT EXISTS mcp_reference_upload_object_fences (
     AND object_key LIKE 'user-assets/by-content/%'
   )
 );
+
+ALTER TABLE mcp_reference_upload_object_fences
+  ADD COLUMN IF NOT EXISTS producer_claim_id UUID;
+ALTER TABLE mcp_reference_upload_object_fences
+  ADD COLUMN IF NOT EXISTS producer_lease_expires_at TIMESTAMPTZ;
+ALTER TABLE mcp_reference_upload_object_fences
+  DROP CONSTRAINT IF EXISTS mcp_reference_upload_object_fences_state_check;
+ALTER TABLE mcp_reference_upload_object_fences
+  ADD CONSTRAINT mcp_reference_upload_object_fences_state_check
+  CHECK (state IN ('available', 'producing', 'orphaned', 'deleting', 'deleted')) NOT VALID;
+ALTER TABLE mcp_reference_upload_object_fences
+  DROP CONSTRAINT IF EXISTS mcp_reference_upload_object_fence_shape;
+ALTER TABLE mcp_reference_upload_object_fences
+  ADD CONSTRAINT mcp_reference_upload_object_fence_shape CHECK (
+    (state = 'producing' AND producer_claim_id IS NOT NULL AND producer_lease_expires_at IS NOT NULL
+      AND delete_claim_id IS NULL AND delete_lease_expires_at IS NULL)
+    OR (state = 'deleting' AND delete_claim_id IS NOT NULL AND delete_lease_expires_at IS NOT NULL
+      AND producer_claim_id IS NULL AND producer_lease_expires_at IS NULL)
+    OR (state IN ('available', 'orphaned', 'deleted')
+      AND producer_claim_id IS NULL AND producer_lease_expires_at IS NULL
+      AND delete_claim_id IS NULL AND delete_lease_expires_at IS NULL)
+  ) NOT VALID;
 
 INSERT INTO mcp_reference_upload_object_fences (object_key, state, created_at, updated_at)
 SELECT DISTINCT object_key, 'available', min(created_at), max(updated_at)
@@ -103,9 +134,11 @@ BEGIN
     NEW.object_key, 'available', NULL, NULL, NEW.created_at, NEW.updated_at
   )
   ON CONFLICT (object_key) DO UPDATE
-    SET state = 'available', delete_claim_id = NULL, delete_lease_expires_at = NULL,
+    SET state = CASE WHEN mcp_reference_upload_object_fences.state = 'deleted'
+          THEN 'available' ELSE mcp_reference_upload_object_fences.state END,
+        delete_claim_id = NULL, delete_lease_expires_at = NULL,
         updated_at = EXCLUDED.updated_at
-    WHERE mcp_reference_upload_object_fences.state IN ('available', 'deleted')
+    WHERE mcp_reference_upload_object_fences.state <> 'deleting'
   RETURNING object_key INTO fenced_key;
   IF fenced_key IS NULL THEN
     RAISE EXCEPTION 'reference upload object is being deleted; retry registration'
@@ -120,6 +153,53 @@ DROP TRIGGER IF EXISTS mcp_reference_upload_cleanup_fence_final_registration
 CREATE TRIGGER mcp_reference_upload_cleanup_fence_final_registration
   BEFORE INSERT ON mcp_reference_upload_cleanup_objects
   FOR EACH ROW EXECUTE FUNCTION fence_mcp_reference_upload_final_registration();
+
+CREATE OR REPLACE FUNCTION content_addressed_object_key(candidate_url TEXT)
+RETURNS TEXT
+LANGUAGE plpgsql
+IMMUTABLE
+AS $$
+DECLARE
+  matched_key TEXT;
+BEGIN
+  IF candidate_url IS NULL THEN
+    RETURN NULL;
+  END IF;
+  matched_key := substring(candidate_url FROM '(user-assets/by-content/[^?#[:space:]]+)');
+  RETURN matched_key;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fence_canonical_content_addressed_asset()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  candidate_key TEXT;
+BEGIN
+  candidate_key := content_addressed_object_key(NEW.url);
+  IF candidate_key IS NULL THEN
+    RETURN NEW;
+  END IF;
+  PERFORM 1 FROM mcp_reference_upload_object_fences AS fences
+    WHERE fences.object_key = candidate_key AND fences.state = 'deleting';
+  IF FOUND THEN
+    RAISE EXCEPTION 'content-addressed storage object is being deleted; retry persistence'
+      USING ERRCODE = '40001';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS user_assets_fence_content_addressed_object ON user_assets;
+CREATE TRIGGER user_assets_fence_content_addressed_object
+  BEFORE INSERT OR UPDATE OF url ON user_assets
+  FOR EACH ROW EXECUTE FUNCTION fence_canonical_content_addressed_asset();
+
+DROP TRIGGER IF EXISTS media_assets_fence_content_addressed_object ON media_assets;
+CREATE TRIGGER media_assets_fence_content_addressed_object
+  BEFORE INSERT OR UPDATE OF url ON media_assets
+  FOR EACH ROW EXECUTE FUNCTION fence_canonical_content_addressed_asset();
 
 INSERT INTO mcp_reference_upload_cleanup_objects (
   cleanup_id, session_id, upload_id, user_id, media_kind, object_role,

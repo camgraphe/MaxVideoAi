@@ -3,6 +3,13 @@ import { createHash } from 'node:crypto';
 import { probeMediaBuffer } from '@/server/media/detect-has-audio';
 import { deleteStorageObjectByUrl, uploadFileBuffer, recordUserAsset } from '@/server/storage';
 import { createUploadVideoThumbnail } from '@/server/upload-thumbnails';
+import {
+  claimStorageObjectProducer,
+  renewStorageObjectProducer,
+  settleStorageObjectProducer,
+  STORAGE_OBJECT_PRODUCER_LEASE_MS,
+  type StorageObjectProducerClaim,
+} from '@/server/storage-object-producer-claims';
 
 import {
   normalizeSupportedReferenceDuration,
@@ -46,6 +53,10 @@ type StoreMediaUploadDependencies = {
   recordUserAsset: typeof recordUserAsset;
   ensureReusableAsset: typeof ensureReusableAsset;
   deleteStorageObjectByUrl: typeof deleteStorageObjectByUrl;
+  claimStorageObjectProducer: typeof claimStorageObjectProducer;
+  renewStorageObjectProducer: typeof renewStorageObjectProducer;
+  settleStorageObjectProducer: typeof settleStorageObjectProducer;
+  scheduleProducerHeartbeat(callback: () => Promise<void>, intervalMs: number): () => void;
 };
 
 export type StoreMediaUploadInput = {
@@ -80,6 +91,13 @@ const defaultDependencies: StoreMediaUploadDependencies = {
   recordUserAsset,
   ensureReusableAsset,
   deleteStorageObjectByUrl,
+  claimStorageObjectProducer,
+  renewStorageObjectProducer,
+  settleStorageObjectProducer,
+  scheduleProducerHeartbeat(callback, intervalMs) {
+    const timer = setInterval(() => { void callback().catch(() => undefined); }, intervalMs);
+    return () => clearInterval(timer);
+  },
 };
 
 function createStoreMediaUploadService(
@@ -125,6 +143,36 @@ function createStoreMediaUploadService(
     }
 
     let upload: Awaited<ReturnType<typeof uploadFileBuffer>>;
+    let producerClaim: StorageObjectProducerClaim | null = null;
+    const producerController = new AbortController();
+    if (input.signal?.aborted) producerController.abort(input.signal.reason);
+    else input.signal?.addEventListener('abort', () => producerController.abort(input.signal?.reason), { once: true });
+    let producerFenceLoss: unknown = null;
+    let producerRenewalTail: Promise<void> = Promise.resolve();
+    let stopProducerHeartbeat: (() => Promise<void>) | null = null;
+    const stopActiveProducerHeartbeat = async () => {
+      const stop = stopProducerHeartbeat as (() => Promise<void>) | null;
+      if (stop) await stop();
+      stopProducerHeartbeat = null;
+    };
+    const producerCheckpoint = () => {
+      if (producerFenceLoss) throw producerFenceLoss;
+      producerController.signal.throwIfAborted();
+    };
+    const renewProducerClaim = (): Promise<void> => {
+      const renewal = producerRenewalTail.then(async () => {
+        if (!producerClaim) throw new Error('Storage object producer claim was not acquired.');
+        producerClaim = await dependencies.renewStorageObjectProducer({ claim: producerClaim });
+      }).catch((error) => {
+        if (!producerFenceLoss) {
+          producerFenceLoss = error;
+          producerController.abort(error);
+        }
+        throw error;
+      });
+      producerRenewalTail = renewal.catch(() => undefined);
+      return renewal;
+    };
     try {
       upload = await dependencies.uploadFileBuffer({
         data: input.bytes,
@@ -133,12 +181,35 @@ function createStoreMediaUploadService(
         userId: input.userId,
         prefix: 'user-assets',
         contentAddressed: true,
-        ...(input.cleanupObjects ? {
-          beforeUpload: (objectKey: string) => input.cleanupObjects!.beforeUpload({ objectRole: 'final', objectKey, safeToDelete: false }),
-        } : {}),
-        ...(input.signal ? { signal: input.signal } : {}),
+        beforeUpload: async (objectKey: string) => {
+          input.signal?.throwIfAborted();
+          producerClaim = await dependencies.claimStorageObjectProducer({ objectKey });
+          const cancelHeartbeat = dependencies.scheduleProducerHeartbeat(
+            renewProducerClaim,
+            Math.floor(STORAGE_OBJECT_PRODUCER_LEASE_MS / 3),
+          );
+          stopProducerHeartbeat = async () => {
+            cancelHeartbeat();
+            await producerRenewalTail;
+          };
+          try {
+            await input.cleanupObjects?.beforeUpload({ objectRole: 'final', objectKey, safeToDelete: false });
+          } catch (error) {
+            await stopActiveProducerHeartbeat();
+            await dependencies.settleStorageObjectProducer({ claim: producerClaim, outcome: 'persisted' }).catch(() => undefined);
+            producerClaim = null;
+            throw error;
+          }
+          producerCheckpoint();
+        },
+        signal: producerController.signal,
       });
+      producerCheckpoint();
     } catch (error) {
+      await stopActiveProducerHeartbeat();
+      if (producerClaim) {
+        await dependencies.settleStorageObjectProducer({ claim: producerClaim, outcome: 'abandoned' }).catch(() => undefined);
+      }
       throw new MediaUploadError('UPLOAD_FAILED', 'The media file could not be uploaded.', { cause: error });
     }
 
@@ -156,10 +227,12 @@ function createStoreMediaUploadService(
                 await input.cleanupObjects!.beforeUpload({ objectRole: 'thumbnail', objectKey, safeToDelete: true });
               },
             } : {}),
-            ...(input.signal ? { signal: input.signal } : {}),
+            signal: producerController.signal,
           })
         : null;
-      input.signal?.throwIfAborted();
+      producerCheckpoint();
+      await renewProducerClaim();
+      producerCheckpoint();
       const metadata = {
         originalName: input.fileName,
         kind: mediaKind,
@@ -177,6 +250,9 @@ function createStoreMediaUploadService(
         source: 'upload',
         metadata,
       });
+      producerCheckpoint();
+      await renewProducerClaim();
+      producerCheckpoint();
       const canonicalAsset = await dependencies.ensureReusableAsset({
         userId: input.userId,
         url: upload.url,
@@ -188,15 +264,24 @@ function createStoreMediaUploadService(
         thumbUrl: previewUrl,
         metadata: { originalName: input.fileName },
       });
+      producerCheckpoint();
+      await renewProducerClaim();
+      producerCheckpoint();
       if (!canonicalAsset.publicId || !/^ma_[a-f0-9]{32}$/u.test(canonicalAsset.publicId)) {
         throw new Error('Canonical media asset has no public alias.');
       }
       if (input.cleanupObjects) {
         await input.cleanupObjects.retain(upload.key);
+        producerCheckpoint();
         if (cleanupThumbnailKey) {
           await input.cleanupObjects.retain(cleanupThumbnailKey);
+          producerCheckpoint();
         }
       }
+      await stopActiveProducerHeartbeat();
+      producerCheckpoint();
+      await dependencies.settleStorageObjectProducer({ claim: producerClaim!, outcome: 'persisted' });
+      producerClaim = null;
       return {
         assetId: canonicalAsset.publicId,
         legacyAssetId,
@@ -209,6 +294,11 @@ function createStoreMediaUploadService(
         storageUrl: upload.url,
       };
     } catch (error) {
+      await stopActiveProducerHeartbeat();
+      if (producerClaim) {
+        await dependencies.settleStorageObjectProducer({ claim: producerClaim, outcome: 'abandoned' }).catch(() => undefined);
+        producerClaim = null;
+      }
       if (previewUrl && !input.cleanupObjects) {
         await dependencies.deleteStorageObjectByUrl(previewUrl).catch(() => false);
       }

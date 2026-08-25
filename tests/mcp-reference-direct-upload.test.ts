@@ -511,7 +511,8 @@ test('completion heartbeat renews the durable lease while a database-backed stor
   const response = await responsePromise;
   assert.ok(scheduledHeartbeat, 'the lease heartbeat must remain scheduled while persistence is stalled');
   assert.equal(response.status, 200);
-  assert.deepEqual(renewalTimes, [now.getTime() + 4 * 60_000, now.getTime() + 8 * 60_000]);
+  assert.equal(renewalTimes.includes(now.getTime() + 4 * 60_000), true);
+  assert.equal(renewalTimes.includes(now.getTime() + 8 * 60_000), true);
   assert.equal(completed, 1);
 });
 
@@ -640,6 +641,7 @@ test('durable cleanup aborts never-finalized expired attempts and retains failed
           { cleanup_id: '00000000-0000-4000-8000-000000000202', object_key: 'attempt/parts/part-retry', owner_prefix: 'attempt/parts/', object_role: 'part', attempt_storage_key: 'attempt' },
         ] as T[];
       }
+      if (sql.includes('mcp_reference_upload_object_fences')) return [] as T[];
       assert.deepEqual(values?.[0], ['00000000-0000-4000-8000-000000000201']);
       return [] as T[];
     },
