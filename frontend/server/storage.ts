@@ -164,9 +164,19 @@ function getObjectKeySizeBytes(key: string): number {
   return Buffer.byteLength(key, 'utf8');
 }
 
+function resolveStoragePrefix(prefix?: string): string {
+  const requested = (prefix || 'uploads').replace(/^\/+|\/+$/g, '');
+  const renderNamespace = process.env.VIDEO_RENDER_STORAGE_PREFIX?.trim().replace(/^\/+|\/+$/g, '');
+  if (!renderNamespace || (requested !== 'renders' && !requested.startsWith('renders/'))) {
+    return requested;
+  }
+  const suffix = requested.slice('renders'.length).replace(/^\/+/, '');
+  return suffix ? `${renderNamespace}/${suffix}` : renderNamespace;
+}
+
 export function buildObjectKey(params: { prefix?: string; userId?: string | null; leafName: string }): string {
   const { prefix, userId, leafName } = params;
-  const prefixSegments = (prefix || 'uploads').split('/').map((segment) => sanitizeSegment(segment));
+  const prefixSegments = resolveStoragePrefix(prefix).split('/').map((segment) => sanitizeSegment(segment));
   const key = [...prefixSegments, userId ?? 'anonymous', leafName]
     .map((segment) => sanitizeSegment(segment))
     .filter((segment) => segment.length > 0)

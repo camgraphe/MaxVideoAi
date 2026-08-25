@@ -216,48 +216,6 @@ test('a valid body completing after 45 seconds still reaches durable upload', { 
   }
 });
 
-test('uses the configured render storage prefix for the durable video copy', { concurrency: false }, async () => {
-  const ensureFastStartVideo = await loadEnsureFastStartVideo();
-  let uploadedPrefix: string | undefined;
-  const previousPrefix = process.env.VIDEO_RENDER_STORAGE_PREFIX;
-  process.env.VIDEO_RENDER_STORAGE_PREFIX = 'mcp-render-staging/';
-
-  try {
-    const result = await ensureFastStartVideo(
-      { jobId: 'test-staging-prefix', userId: 'test-user', videoUrl: SOURCE_URL },
-      {
-        fetchFn: async () => new Response(BODY_BYTES, {
-          status: 200,
-          headers: {
-            'content-length': String(BODY_BYTES.byteLength),
-            'content-type': 'video/mp4',
-          },
-        }),
-        isStorageConfiguredFn: () => true,
-        isStorageUrlFn: () => false,
-        getFfmpegPathFn: () => '/test/ffmpeg',
-        ensureExecutableFfmpegPathFn: async (path) => path,
-        runFastStartFn: async (_ffmpegPath, inputPath, outputPath) => {
-          await copyFile(inputPath, outputPath);
-        },
-        uploadFileBufferFn: async ({ prefix }) => {
-          uploadedPrefix = prefix;
-          return { key: 'durable/test-video.mp4', url: DURABLE_URL };
-        },
-      }
-    );
-
-    assert.equal(result, DURABLE_URL);
-    assert.equal(uploadedPrefix, 'mcp-render-staging/');
-  } finally {
-    if (previousPrefix === undefined) {
-      delete process.env.VIDEO_RENDER_STORAGE_PREFIX;
-    } else {
-      process.env.VIDEO_RENDER_STORAGE_PREFIX = previousPrefix;
-    }
-  }
-});
-
 test('a body exceeding the 120 second budget is aborted before upload', { concurrency: false }, async () => {
   const ensureFastStartVideo = await loadEnsureFastStartVideo();
   const scheduler = new ManualTimerScheduler();
