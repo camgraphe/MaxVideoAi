@@ -25,6 +25,7 @@ const compatibilityPath = join(root, 'docs/operations/mcp-host-compatibility-mat
 const stagingDeploymentPath = join(root, 'docs/operations/mcp-staging-deployment.md');
 const paidRunbookPath = join(root, 'docs/operations/mcp-paid-generation-runbook.md');
 const oauthRunbookPath = join(root, 'docs/operations/mcp-oauth-configuration.md');
+const foundationSmokePath = join(root, 'docs/operations/mcp-foundation-smoke-test.md');
 const launchEvidencePath = join(root, 'docs/marketing/mcp-launch-evidence.md');
 const publicationPath = join(root, 'frontend/config/mcp-publication.json');
 const statusPagePath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/status/page.tsx');
@@ -41,6 +42,7 @@ const compatibility = readFileSync(compatibilityPath, 'utf8');
 const stagingDeployment = readFileSync(stagingDeploymentPath, 'utf8');
 const paidRunbook = readFileSync(paidRunbookPath, 'utf8');
 const oauthRunbook = readFileSync(oauthRunbookPath, 'utf8');
+const foundationSmoke = readFileSync(foundationSmokePath, 'utf8');
 const launchEvidence = readFileSync(launchEvidencePath, 'utf8');
 const publication = JSON.parse(readFileSync(publicationPath, 'utf8')) as Record<string, boolean>;
 const statusPage = readFileSync(statusPagePath, 'utf8');
@@ -508,6 +510,15 @@ test('readiness packages follow the live registry and canonical localized route 
   assert.doesNotMatch(stagingDeployment, /Claude Desktop \d|rendered exactly three read-only tools|Revocation \|.*Authentication required|Reconnect \|.*succeeded/i);
   assert.match(oauthRunbook, /Codex and Claude OAuth, refresh, revocation, and requested-scope behavior remain unverified/i);
   assert.doesNotMatch(oauthRunbook, /Codex CLI \d|requested all four during local testing/i);
+  const smokeInventory = foundationSmoke
+    .split('\n')
+    .find((line) => line.includes('List the five default discovery tools in canonical order:')) ?? '';
+  assert.deepEqual(toolNames(smokeInventory), DEFAULT_DISCOVERY_TOOLS);
+  const activeRunbooks = readdirSync(join(root, 'docs/operations'))
+    .filter((name) => name.endsWith('.md'))
+    .map((name) => readFileSync(join(root, 'docs/operations', name), 'utf8'))
+    .join('\n');
+  assert.doesNotMatch(activeRunbooks, /three-tool|three tools|three read-only tools/i);
   assert.match(launchEvidence, /migration files 30–37 are present locally/i);
   assert.match(launchEvidence, /staging application remains unverified[^\n]*Task 10/i);
   assert.doesNotMatch(launchEvidence, /migrations? 30–32 (?:are )?absent|migration[^\n]*\b(?:applied|unapplied)\b/i);

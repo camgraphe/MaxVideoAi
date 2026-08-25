@@ -46,8 +46,8 @@ For Codex and Claude separately:
 3. Verify the browser returns to the same authorization request after login.
 4. Deny once and confirm the host reports denial safely.
 5. Approve once and confirm only `openid`, `email`, and `profile` are requested.
-6. List the three tools and inspect their read-only annotations.
-7. Call account status, model listing, and model recommendations.
+6. List the five default discovery tools in canonical order: `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`. Inspect their read-only annotations.
+7. Call account status, model listing, model details, model recommendations, and project-budget calculation.
 8. Ask the host to help formulate a text-to-video prompt and propose a reference image. Confirm the host performs that reasoning while MaxVideoAI only reports model capabilities.
 9. Refresh/restart the host and confirm its authorization refreshes.
 10. Disconnect the host at `/account/connections`; confirm the connection disappears and reconnect requires approval.
