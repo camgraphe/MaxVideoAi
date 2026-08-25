@@ -1,4 +1,5 @@
 import type { AgentApiFailure } from './errors';
+import type { CanonicalGenerationMode } from './generation-types';
 import type { AgentModelGuidance, AgentModelUseCase } from './model-guidance';
 
 export type AgentApiResult<T> = { ok: true; data: T } | AgentApiFailure;
@@ -47,7 +48,7 @@ export type AgentAccountStatus = {
   accountUrl: string;
 };
 
-export type AgentGenerationMode = 't2v' | 'i2v' | 'ref2v' | 't2i' | 'i2i';
+export type AgentGenerationMode = CanonicalGenerationMode;
 
 export type AgentModel = {
   id: string;

@@ -38,8 +38,8 @@ const lineSchema = z.object({
   engineId: z.string().trim().min(1).max(128).describe(
     'Exact public MaxVideoAI video model ID returned by list_models or get_model_details.',
   ),
-  mode: z.enum(['t2v', 'i2v', 'ref2v']).describe(
-    'Video creation mode: text to video, image to video, or reference to video.',
+  mode: z.enum(['t2v', 'i2v', 'ref2v', 'v2v', 'extend']).describe(
+    'Video creation mode: text, image, reference, source-video edit, or clip extension.',
   ),
   settings: settingsSchema,
   referenceRoles: z.array(referenceRole).max(16).optional().describe(

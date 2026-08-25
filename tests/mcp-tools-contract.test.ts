@@ -252,6 +252,71 @@ test('server advertises only the five read-only discovery tools with narrow guid
   assert.match(String(record(recommendationProperties.priorities).description), /not.*proxy.*quality/i);
 });
 
+test('paid prepare schema accepts full video modes and requires mediaKind only for HTTPS references', async (t) => {
+  const preparedInputs: unknown[] = [];
+  const operationalServices = services({
+    prepareGeneration: async (input) => {
+      preparedInputs.push(input);
+      return { prepared: true } as never;
+    },
+    confirmGeneration: async () => ({}) as never,
+    getGenerationStatus: async () => ({}) as never,
+    listRecentGenerations: async () => ({ items: [], nextCursor: null }) as never,
+    createTopupLink: async () => ({}) as never,
+  });
+  const server = createMaxVideoAiMcpServer(principal, operationalServices, { paidGeneration: true });
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  await server.connect(serverTransport);
+  const client = new Client({ name: 'paid-schema-contract', version: '1.0.0' });
+  await client.connect(clientTransport);
+  t.after(async () => {
+    await client.close();
+    await server.close();
+  });
+
+  for (const mode of ['v2v', 'extend'] as const) {
+    const result = await client.callTool({
+      name: 'prepare_generation',
+      arguments: {
+        schemaVersion: 1,
+        surface: 'video',
+        engineId: 'seedance-2-5',
+        mode,
+        prompt: 'Continue the scene.',
+        settings: { durationSec: 4, resolution: '480p', audio: true },
+        references: [{
+          kind: 'https',
+          url: 'https://cdn.example.com/source',
+          role: 'source',
+          mediaKind: 'video',
+        }],
+        outputCount: 1,
+      },
+    });
+    assert.notEqual(result.isError, true);
+  }
+
+  const invalidReferences = [
+    { kind: 'https', url: 'https://cdn.example.com/source', role: 'source' },
+    { kind: 'https', url: 'https://cdn.example.com/source', role: 'source', mediaKind: 'document' },
+    { kind: 'asset', assetId: 'source-asset', role: 'source', mediaKind: 'video' },
+  ];
+  for (const reference of invalidReferences) {
+    const result = await client.callTool({
+      name: 'prepare_generation',
+      arguments: {
+        surface: 'video',
+        engineId: 'seedance-2-5',
+        mode: 'v2v',
+        prompt: 'Continue the scene.',
+        references: [reference],
+      },
+    });
+    assert.equal(result.isError, true);
+  }
+  assert.deepEqual(preparedInputs.map((input) => record(input).mode), ['v2v', 'extend']);
+});
+
 test('tools return structured content and pass validated filters to facade services', async (t) => {
   let listFilter: AgentModelFilter | null = null;
   let modelDetailId: string | null = null;
@@ -344,6 +409,22 @@ test('tools return structured content and pass validated filters to facade servi
           mode: 'i2v',
           settings: { durationSec: 5, resolution: '2K' },
           referenceRoles: ['source'],
+          clipCount: 1,
+          attemptsPerClip: 1,
+        }, {
+          purpose: 'Source video edit',
+          engineId: 'seedance-2-5',
+          mode: 'v2v',
+          settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9', audio: true },
+          referenceRoles: ['source'],
+          clipCount: 1,
+          attemptsPerClip: 1,
+        }, {
+          purpose: 'Clip extension',
+          engineId: 'seedance-2-5',
+          mode: 'extend',
+          settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9', audio: true },
+          referenceRoles: ['source', 'source'],
           clipCount: 1,
           attemptsPerClip: 1,
         }],

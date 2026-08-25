@@ -16,6 +16,8 @@ const modes = [
   { mode: 't2v', surface: 'video' },
   { mode: 'i2v', surface: 'video' },
   { mode: 'ref2v', surface: 'video' },
+  { mode: 'v2v', surface: 'video' },
+  { mode: 'extend', surface: 'video' },
   { mode: 't2i', surface: 'image' },
   { mode: 'i2i', surface: 'image' },
 ] as const;
@@ -83,9 +85,9 @@ test('defaults optional canonical collections and the single output count', () =
 test('sorts references deterministically within an explicit semantic role order', () => {
   const references = [
     { kind: 'asset', assetId: 'asset-reference-z', role: 'reference' },
-    { kind: 'https', url: 'https://CDN.Example.com/end.png', role: 'last_frame' },
+    { kind: 'https', url: 'https://CDN.Example.com/end.png', role: 'last_frame', mediaKind: 'image' },
     { kind: 'asset', assetId: 'asset-source', role: 'source' },
-    { kind: 'https', url: 'https://cdn.example.com/start.png', role: 'first_frame' },
+    { kind: 'https', url: 'https://cdn.example.com/start.png', role: 'first_frame', mediaKind: 'image' },
     { kind: 'asset', assetId: 'asset-reference-a', role: 'reference' },
   ];
   const first = normalizeGenerationRequest(request({ mode: 'ref2v', references }));
@@ -93,8 +95,8 @@ test('sorts references deterministically within an explicit semantic role order'
 
   assert.deepEqual(first.references, [
     { kind: 'asset', assetId: 'asset-source', role: 'source' },
-    { kind: 'https', url: 'https://cdn.example.com/start.png', role: 'first_frame' },
-    { kind: 'https', url: 'https://cdn.example.com/end.png', role: 'last_frame' },
+    { kind: 'https', url: 'https://cdn.example.com/start.png', role: 'first_frame', mediaKind: 'image' },
+    { kind: 'https', url: 'https://cdn.example.com/end.png', role: 'last_frame', mediaKind: 'image' },
     { kind: 'asset', assetId: 'asset-reference-a', role: 'reference' },
     { kind: 'asset', assetId: 'asset-reference-z', role: 'reference' },
   ]);
@@ -132,7 +134,7 @@ test('serializes every object level with stable keys and hashes schema version p
 });
 
 test('rejects unsupported modes and surface-mode mismatches', () => {
-  for (const mode of ['v2v', 'extend', 'retake']) {
+  for (const mode of ['retake']) {
     assert.throws(() => normalizeGenerationRequest(request({ mode })), /mode/i);
   }
   assert.throws(
@@ -143,6 +145,22 @@ test('rejects unsupported modes and surface-mode mismatches', () => {
     () => normalizeGenerationRequest(request({ surface: 'video', mode: 't2i' })),
     /surface.*mode|mode.*surface/i
   );
+});
+
+test('normalizes v2v and extend source workflows as canonical video modes', () => {
+  for (const mode of ['v2v', 'extend'] as const) {
+    const normalized = normalizeGenerationRequest({
+      schemaVersion: 1,
+      surface: 'video',
+      engineId: 'seedance-2-5',
+      mode,
+      prompt: 'Continue the cinematic scene.',
+      settings: { durationSec: 4, resolution: '480p', audio: true },
+      references: [{ kind: 'asset', assetId: 'video-1', role: 'source' }],
+      outputCount: 1,
+    });
+    assert.equal(normalized.mode, mode);
+  }
 });
 
 test('rejects source-video, audio-reference, provider, identity, price, payment, and job fields', () => {
@@ -269,6 +287,16 @@ test('allows only the closed transport-neutral settings for each canonical mode'
       surface: 'video',
       mode: 'ref2v',
       settings: { audio: true, durationSec: 10, fps: 25, resolution: '1080p' },
+    },
+    {
+      surface: 'video',
+      mode: 'v2v',
+      settings: { audio: true, durationSec: 8, resolution: '720p' },
+    },
+    {
+      surface: 'video',
+      mode: 'extend',
+      settings: { audio: false, durationSec: 12, resolution: '480p' },
     },
     {
       surface: 'image',
@@ -414,8 +442,8 @@ test('detects duplicates after canonical URL normalization with a stable error f
     normalizeGenerationRequest(
       request({
         references: [
-          { kind: 'https', url: 'https://CDN.Example.com:443/image.png', role: 'reference' },
-          { kind: 'https', url: 'https://cdn.example.com/image.png', role: 'reference' },
+          { kind: 'https', url: 'https://CDN.Example.com:443/image.png', role: 'reference', mediaKind: 'image' },
+          { kind: 'https', url: 'https://cdn.example.com/image.png', role: 'reference', mediaKind: 'image' },
         ],
       })
     );
@@ -467,14 +495,38 @@ test('validates asset identifiers and HTTPS references without credentials or fr
   for (const reference of [
     { kind: 'asset', assetId: '../private', role: 'reference' },
     { kind: 'asset', assetId: '', role: 'reference' },
-    { kind: 'https', url: 'http://cdn.example.com/image.png', role: 'reference' },
-    { kind: 'https', url: 'https://user:secret@cdn.example.com/image.png', role: 'reference' },
-    { kind: 'https', url: 'https://cdn.example.com/image.png#private', role: 'reference' },
+    { kind: 'https', url: 'http://cdn.example.com/image.png', role: 'reference', mediaKind: 'image' },
+    { kind: 'https', url: 'https://user:secret@cdn.example.com/image.png', role: 'reference', mediaKind: 'image' },
+    { kind: 'https', url: 'https://cdn.example.com/image.png#private', role: 'reference', mediaKind: 'image' },
     { kind: 'audio', url: 'https://cdn.example.com/audio.wav', role: 'reference' },
-    { kind: 'https', url: 'https://cdn.example.com/image.png', role: 'audio' },
+    { kind: 'https', url: 'https://cdn.example.com/image.png', role: 'audio', mediaKind: 'image' },
+    { kind: 'https', url: 'https://cdn.example.com/image.png', role: 'reference' },
+    { kind: 'https', url: 'https://cdn.example.com/image.png', role: 'reference', mediaKind: 'document' },
+    { kind: 'asset', assetId: 'asset-a', role: 'reference', mediaKind: 'image' },
   ]) {
     assert.throws(() => normalizeGenerationRequest(request({ references: [reference] })), /reference|asset|https|role/i);
   }
+});
+
+test('includes declared HTTPS media kind in canonical identity, serialization, and hashing', () => {
+  const imageRequest = normalizeGenerationRequest(request({
+    mode: 'ref2v',
+    references: [{ kind: 'https', url: 'https://cdn.example.com/reference', role: 'reference', mediaKind: 'image' }],
+  }));
+  const videoRequest = normalizeGenerationRequest(request({
+    mode: 'ref2v',
+    references: [{ kind: 'https', url: 'https://cdn.example.com/reference', role: 'reference', mediaKind: 'video' }],
+  }));
+
+  assert.deepEqual(imageRequest.references, [
+    { kind: 'https', url: 'https://cdn.example.com/reference', role: 'reference', mediaKind: 'image' },
+  ]);
+  assert.notEqual(serializeCanonicalGenerationRequest(imageRequest), serializeCanonicalGenerationRequest(videoRequest));
+  assert.notEqual(hashCanonicalGenerationRequest(imageRequest), hashCanonicalGenerationRequest(videoRequest));
+  assert.doesNotThrow(() => normalizeGenerationRequest(request({
+    mode: 'ref2v',
+    references: [imageRequest.references[0], videoRequest.references[0]],
+  })));
 });
 
 test('rejects duplicate canonical references instead of silently changing request intent', () => {

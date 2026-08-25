@@ -283,6 +283,23 @@ function fieldsForRole(
         ?? applicableField(candidate, 'reference_image_urls', request.mode)],
     ]);
   }
+  if (request.mode === 'v2v') {
+    return new Map([
+      ['source', applicableField(candidate, 'video_url', request.mode)],
+      ['first_frame', null],
+      ['last_frame', null],
+      ['reference', applicableField(candidate, 'image_urls', request.mode)
+        ?? applicableField(candidate, 'audio_urls', request.mode)],
+    ]);
+  }
+  if (request.mode === 'extend') {
+    return new Map([
+      ['source', applicableField(candidate, 'extension_source_videos', request.mode)],
+      ['first_frame', null],
+      ['last_frame', null],
+      ['reference', null],
+    ]);
+  }
   const plural = applicableField(candidate, 'image_urls', request.mode)
     ?? applicableField(candidate, 'reference_image_urls', request.mode);
   return new Map([
@@ -291,6 +308,35 @@ function fieldsForRole(
     ['last_frame', applicableField(candidate, 'end_image_url', request.mode)],
     ['reference', plural],
   ]);
+}
+
+function referenceSourceIdentity(
+  reference: CanonicalGenerationRequest['references'][number],
+): string {
+  return reference.kind === 'asset'
+    ? `asset\u0000${reference.assetId}`
+    : `https\u0000${reference.url}`;
+}
+
+function validateReferenceBudget(
+  request: CanonicalGenerationRequest,
+  candidate: AgentPublicGenerationEngine,
+  roleFields: ReadonlyMap<
+    CanonicalGenerationRequest['references'][number]['role'],
+    EngineInputField | null
+  >,
+): void {
+  const budget = candidate.engine.inputSchema?.referenceBudget;
+  if (!budget || (budget.modes?.length && !budget.modes.includes(request.mode))) return;
+  const budgetFieldIds = new Set(budget.fieldIds);
+  const budgetReferences = request.references.filter((reference) => {
+    const field = roleFields.get(reference.role);
+    return field ? budgetFieldIds.has(field.id) : false;
+  });
+  const count = budget.countUniqueUrls
+    ? new Set(budgetReferences.map(referenceSourceIdentity)).size
+    : budgetReferences.length;
+  if (count > budget.maxTotal) fail('references', 'reference_invalid');
 }
 
 function validateReferences(
@@ -322,6 +368,7 @@ function validateReferences(
     if (count < minimum) fail('references', 'reference_required');
     if (count > maximum) fail('references', 'reference_invalid');
   }
+  validateReferenceBudget(request, candidate, roleFields);
 }
 
 export function validateCanonicalGenerationCapabilities(

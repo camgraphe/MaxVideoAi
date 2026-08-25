@@ -78,7 +78,7 @@ test('catalog emits a narrow public DTO and supported modes only', async () => {
   const models = await listAgentModels(
     {},
     deps(
-      [engine('video-public', ['t2v', 'i2v', 'v2v']), engine('image-public', ['t2i', 'i2i'])],
+      [engine('video-public', ['t2v', 'i2v', 'v2v', 'extend']), engine('image-public', ['t2i', 'i2i'])],
       { 'video-public': 'video', 'image-public': 'image' }
     )
   );
@@ -88,7 +88,7 @@ test('catalog emits a narrow public DTO and supported modes only', async () => {
       id: 'video-public',
       label: 'video-public',
       surface: 'video',
-      modes: ['t2v', 'i2v'],
+      modes: ['t2v', 'i2v', 'v2v', 'extend'],
       aspectRatios: ['16:9', '9:16'],
       resolutions: ['1080p'],
       maxDurationSec: 10,
@@ -122,7 +122,7 @@ test('hidden, disabled, admin-only, maintenance, and unsupported engines never a
     engine('disabled', ['t2v'], { availability: 'paused' }),
     engine('admin', ['t2v'], { apiAvailability: 'admin only' }),
     engine('maintenance', ['t2v'], { status: 'maintenance' }),
-    engine('unsupported', ['v2v']),
+    engine('unsupported', ['v2v'], { modeCaps: {} }),
   ];
   const surfaces = Object.fromEntries(engines.map((item) => [item.id, 'video' as const]));
   const catalogDeps = deps(engines, surfaces);
@@ -287,7 +287,7 @@ test('catalog mirrors real execution gates for newly registered video models', {
         id: 'seedance-2-5',
         label: 'Seedance 2.5',
         surface: 'video',
-        modes: ['t2v', 'i2v', 'ref2v'],
+        modes: ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'],
         aspectRatios: ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
         resolutions: ['480p', '720p'],
         maxDurationSec: 30,

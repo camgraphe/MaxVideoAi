@@ -16,7 +16,9 @@ const principal: AgentPrincipal = {
   userId: 'budget-user', clientId: 'codex-client', emailVerified: true, authMethod: 'oauth',
 };
 
-function engine(id: string, modes: readonly ('t2v' | 'i2v' | 'ref2v')[], durations: readonly number[]): AgentPublicGenerationEngine {
+type VideoBudgetMode = 't2v' | 'i2v' | 'ref2v' | 'v2v' | 'extend';
+
+function engine(id: string, modes: readonly VideoBudgetMode[], durations: readonly number[]): AgentPublicGenerationEngine {
   const inputFields: EngineInputField[] = [
     { id: 'prompt', type: 'text', label: 'Prompt', requiredInModes: [...modes] },
     { id: 'duration', type: 'enum', label: 'Duration', values: durations.map(String), modes: [...modes] },
@@ -25,6 +27,8 @@ function engine(id: string, modes: readonly ('t2v' | 'i2v' | 'ref2v')[], duratio
     { id: 'generate_audio', type: 'boolean', label: 'Audio', modes: [...modes] },
     { id: 'image_url', type: 'image', label: 'Source', modes: ['i2v'], requiredInModes: ['i2v'], minCount: 1, maxCount: 1 },
     { id: 'reference_image_urls', type: 'image', label: 'References', modes: ['ref2v'], requiredInModes: ['ref2v'], minCount: 1, maxCount: 9 },
+    { id: 'video_url', type: 'video', label: 'Source video', modes: ['v2v'], requiredInModes: ['v2v'], minCount: 1, maxCount: 1 },
+    { id: 'extension_source_videos', type: 'video', label: 'Source clips', modes: ['extend'], requiredInModes: ['extend'], minCount: 1, maxCount: 3 },
   ];
   const caps: EngineCaps = {
     id, label: id, provider: 'test', status: 'live', latencyTier: 'standard', modes: [...modes],
@@ -40,7 +44,7 @@ function engine(id: string, modes: readonly ('t2v' | 'i2v' | 'ref2v')[], duratio
   return { engine: caps, surface: 'video', publicModes: [...modes], modeCaps };
 }
 
-const seedance = engine('seedance-2-5', ['t2v', 'i2v', 'ref2v'], [5, 10]);
+const seedance = engine('seedance-2-5', ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'], [5, 10]);
 const h3 = engine('minimax-h3', ['t2v', 'i2v', 'ref2v'], [5, 10, 15]);
 const omni = engine('gemini-omni-flash', ['t2v', 'i2v', 'ref2v'], [5, 10]);
 
@@ -50,7 +54,7 @@ function registryCapability(engineId: string): AgentPublicGenerationEngine {
   const publicModes = entry.modes
     .map((mode) => mode.mode)
     .filter((mode): mode is AgentPublicGenerationEngine['publicModes'][number] =>
-      ['t2v', 'i2v', 'ref2v', 't2i', 'i2i'].includes(mode));
+      ['t2v', 'i2v', 'ref2v', 'v2v', 'extend', 't2i', 'i2i'].includes(mode));
   return {
     engine: entry.engine,
     surface: entry.category === 'image' ? 'image' : 'video',
@@ -182,6 +186,45 @@ test('budgets real H3 and Seedance 2.5 i2v lines with source-derived framing', a
     { durationSec: 5, resolution: '2K' },
     { durationSec: 4, resolution: '480p' },
   ]);
+});
+
+test('budgets real Seedance 2.5 v2v and extend lines through canonical pricing', async () => {
+  const candidate = registryCapability('seedance-2-5');
+  const pricedModes: string[] = [];
+  const result = await calculateAgentProjectBudget(input([{
+    name: 'Source video workflows',
+    lines: [
+      line({
+        purpose: 'Edit source',
+        mode: 'v2v',
+        settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9', audio: true },
+        referenceRoles: ['source'],
+      }),
+      line({
+        purpose: 'Extend clips',
+        mode: 'extend',
+        settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9', audio: true },
+        referenceRoles: ['source', 'source', 'source'],
+      }),
+    ],
+  }]), principal, {
+    listPublicEngines: async () => [candidate],
+    getMembershipStatus: async () => ({ pricing: { tier: 'member' } }),
+    computeCatalogRevision: () => 'mcp-catalog-v2:full-video-modes',
+    priceGeneration: async (request) => {
+      pricedModes.push(request.mode);
+      return {
+        priceCents: 125,
+        currency: 'USD',
+        membershipTier: 'member',
+        pricingSnapshot: { totalCents: 125, currency: 'USD', membershipTier: 'member' },
+      };
+    },
+  });
+
+  assert.deepEqual(pricedModes, ['v2v', 'extend']);
+  assert.deepEqual(result.proposals[0]?.lines.map((budgetLine) => budgetLine.mode), ['v2v', 'extend']);
+  assert.deepEqual(result.proposals[0]?.lines.map((budgetLine) => budgetLine.referenceCount), [1, 3]);
 });
 
 test('returns an exact safe line location when a project capability is invalid', async () => {

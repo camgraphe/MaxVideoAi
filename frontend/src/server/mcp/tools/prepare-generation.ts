@@ -7,15 +7,21 @@ import { runAgentTool } from '@/server/mcp/tool-result';
 
 const settingValue = z.union([z.string(), z.number(), z.boolean(), z.null()]);
 const referenceRole = z.enum(['source', 'reference', 'first_frame', 'last_frame']);
+const referenceMediaKind = z.enum(['image', 'video', 'audio']);
 const reference = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('asset'), assetId: z.string(), role: referenceRole }).strict(),
-  z.object({ kind: z.literal('https'), url: z.string(), role: referenceRole }).strict(),
+  z.object({
+    kind: z.literal('https'),
+    url: z.string(),
+    role: referenceRole,
+    mediaKind: referenceMediaKind,
+  }).strict(),
 ]);
 const inputSchema = z.object({
   schemaVersion: z.literal(1).optional(),
   surface: z.enum(['video', 'image']),
   engineId: z.string(),
-  mode: z.enum(['t2v', 'i2v', 'ref2v', 't2i', 'i2i']),
+  mode: z.enum(['t2v', 'i2v', 'ref2v', 'v2v', 'extend', 't2i', 'i2i']),
   prompt: z.string(),
   settings: z.record(z.string(), settingValue).optional(),
   references: z.array(reference).optional(),

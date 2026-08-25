@@ -94,7 +94,7 @@ function registryCapability(engineId: string): AgentPublicGenerationEngine {
   const publicModes = entry.modes
     .map((mode) => mode.mode)
     .filter((mode): mode is AgentPublicGenerationEngine['publicModes'][number] =>
-      ['t2v', 'i2v', 'ref2v', 't2i', 'i2i'].includes(mode));
+      ['t2v', 'i2v', 'ref2v', 'v2v', 'extend', 't2i', 'i2i'].includes(mode));
   return {
     engine: entry.engine,
     surface: entry.category === 'image' ? 'image' : 'video',
@@ -165,6 +165,101 @@ test('actual input schema owns reference roles, required counts, and maximums', 
     capability(),
     request({ mode: 'ref2v', references: [reference('a'), reference('b'), reference('c')] }),
   );
+});
+
+test('real Seedance 2.5 v2v and extend modes require bounded source references', () => {
+  const seedance = registryCapability('seedance-2-5');
+  const source = (id: string) => ({ kind: 'asset' as const, assetId: id, role: 'source' as const });
+
+  for (const mode of ['v2v', 'extend'] as const) {
+    const executable: CanonicalGenerationRequest = {
+      schemaVersion: 1,
+      surface: 'video',
+      engineId: 'seedance-2-5',
+      mode,
+      prompt: 'Continue the cinematic scene.',
+      settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9', audio: true },
+      references: [source(`${mode}-source`)],
+      outputCount: 1,
+    };
+    assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(executable, seedance));
+    rejectsCapability(seedance, { ...executable, references: [] });
+  }
+
+  const extendRequest: CanonicalGenerationRequest = {
+    schemaVersion: 1,
+    surface: 'video',
+    engineId: 'seedance-2-5',
+    mode: 'extend',
+    prompt: 'Stitch the clips.',
+    settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9' },
+    references: [source('clip-1'), source('clip-2'), source('clip-3')],
+    outputCount: 1,
+  };
+  assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(extendRequest, seedance));
+  rejectsCapability(seedance, { ...extendRequest, references: [...extendRequest.references, source('clip-4')] });
+});
+
+test('video reference validation enforces the registry-owned aggregate budget', () => {
+  const candidate = capability({
+    engine: engine({
+      inputSchema: {
+        ...engine().inputSchema,
+        optional: (engine().inputSchema?.optional ?? []).map((field) =>
+          field.id === 'image_urls' ? { ...field, maxCount: 5 } : field),
+        referenceBudget: {
+          fieldIds: ['image_urls'],
+          modes: ['ref2v'],
+          maxTotal: 2,
+          countUniqueUrls: true,
+        },
+      },
+    }),
+  });
+  const reference = (id: string) => ({ kind: 'asset' as const, assetId: id, role: 'reference' as const });
+  assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(
+    request({ mode: 'ref2v', references: [reference('a'), reference('b')] }),
+    candidate,
+  ));
+  rejectsCapability(
+    candidate,
+    request({ mode: 'ref2v', references: [reference('a'), reference('b'), reference('c')] }),
+  );
+});
+
+test('source-framed video modes reject aspect ratio when their mode caps omit it', () => {
+  const sourceField: EngineInputField = {
+    id: 'video_url',
+    type: 'video',
+    label: 'Source video',
+    modes: ['v2v'],
+    requiredInModes: ['v2v'],
+    minCount: 1,
+    maxCount: 1,
+  };
+  const candidate = capability({
+    publicModes: ['v2v'],
+    engine: engine({
+      modes: ['v2v'],
+      inputSchema: {
+        ...engine().inputSchema,
+        optional: [...(engine().inputSchema?.optional ?? []), sourceField],
+      },
+    }),
+    modeCaps: {
+      v2v: { ...t2vCaps, modes: ['v2v'], aspectRatio: undefined },
+    },
+  });
+  const framed = request({
+    mode: 'v2v',
+    settings: { durationSec: 4, resolution: '720p' },
+    references: [{ kind: 'asset', assetId: 'source-video', role: 'source' }],
+  });
+  assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(framed, candidate));
+  rejectsCapability(candidate, {
+    ...framed,
+    settings: { ...framed.settings, aspectRatio: '16:9' },
+  });
 });
 
 test('image capability validation uses execution input-schema enums and reference limits', () => {

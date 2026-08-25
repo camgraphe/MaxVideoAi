@@ -94,7 +94,7 @@ test('real H3 source-framed i2v prepares and confirms with a nullable stored rat
     mode: 'i2v',
     prompt: 'Animate the source image while preserving its framing',
     settings: { durationSec: 5, resolution: '2K' },
-    references: [{ kind: 'https', url: sourceUrl, role: 'source' }],
+    references: [{ kind: 'https', url: sourceUrl, role: 'source', mediaKind: 'image' }],
     outputCount: 1,
   };
   const prepared = await callPrepared(session.client, sourceFramedI2v);

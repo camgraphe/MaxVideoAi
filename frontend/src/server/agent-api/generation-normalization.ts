@@ -4,6 +4,7 @@ import type {
   CanonicalGenerationMode,
   CanonicalGenerationReference,
   CanonicalGenerationReferenceRole,
+  CanonicalReferenceMediaKind,
   CanonicalGenerationRequest,
   CanonicalGenerationSettingValue,
   CanonicalGenerationSurface,
@@ -19,9 +20,12 @@ export const MAX_CANONICAL_REFERENCE_URL_CHARS = 4_096;
 const MAX_ENGINE_ID_CHARS = 128;
 const MAX_ASSET_ID_CHARS = 256;
 const MAX_SETTING_KEY_CHARS = 64;
-const MODE_SET = new Set<CanonicalGenerationMode>(['t2v', 'i2v', 'ref2v', 't2i', 'i2i']);
-const VIDEO_MODE_SET = new Set<CanonicalGenerationMode>(['t2v', 'i2v', 'ref2v']);
+const MODE_SET = new Set<CanonicalGenerationMode>([
+  't2v', 'i2v', 'ref2v', 'v2v', 'extend', 't2i', 'i2i',
+]);
+const VIDEO_MODE_SET = new Set<CanonicalGenerationMode>(['t2v', 'i2v', 'ref2v', 'v2v', 'extend']);
 const IMAGE_MODE_SET = new Set<CanonicalGenerationMode>(['t2i', 'i2i']);
+const REFERENCE_MEDIA_KIND_SET = new Set<CanonicalReferenceMediaKind>(['image', 'video', 'audio']);
 const ROLE_SET = new Set<CanonicalGenerationReferenceRole>([
   'source',
   'reference',
@@ -45,7 +49,7 @@ const TOP_LEVEL_FIELDS = new Set([
   'outputCount',
 ]);
 const ASSET_REFERENCE_FIELDS = new Set(['kind', 'assetId', 'role']);
-const HTTPS_REFERENCE_FIELDS = new Set(['kind', 'url', 'role']);
+const HTTPS_REFERENCE_FIELDS = new Set(['kind', 'url', 'role', 'mediaKind']);
 const SAFE_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]*$/;
 const SAFE_SETTING_KEY_PATTERN = /^[A-Za-z][A-Za-z0-9._-]*$/;
 const UNSAFE_CONTROL_CHARACTER_PATTERN = /[\u0000-\u001f\u007f-\u009f]/u;
@@ -81,6 +85,8 @@ const SETTING_KEYS_BY_MODE: Record<CanonicalGenerationMode, ReadonlySet<string>>
   t2v: VIDEO_SETTING_KEYS,
   i2v: VIDEO_SETTING_KEYS,
   ref2v: VIDEO_SETTING_KEYS,
+  v2v: VIDEO_SETTING_KEYS,
+  extend: VIDEO_SETTING_KEYS,
   t2i: IMAGE_SETTING_KEYS,
   i2i: IMAGE_SETTING_KEYS,
 };
@@ -276,6 +282,17 @@ function normalizeReferenceRole(value: unknown, index: number): CanonicalGenerat
   return role;
 }
 
+function normalizeReferenceMediaKind(value: unknown, index: number): CanonicalReferenceMediaKind {
+  const mediaKind = normalizeToken(
+    value,
+    `references[${index}].mediaKind`,
+  ) as CanonicalReferenceMediaKind;
+  if (!REFERENCE_MEDIA_KIND_SET.has(mediaKind)) {
+    fail(`references[${index}].mediaKind`, 'reference mediaKind is unsupported.');
+  }
+  return mediaKind;
+}
+
 function normalizeAssetId(value: unknown, index: number): string {
   const field = `references[${index}].assetId`;
   const assetId = normalizeText(value, field, MAX_ASSET_ID_CHARS, false);
@@ -325,14 +342,20 @@ function normalizeReference(value: unknown, index: number): CanonicalGenerationR
   }
   if (kind === 'https') {
     assertExactFields(value, HTTPS_REFERENCE_FIELDS, field);
-    return { kind, url: normalizeHttpsUrl(value.url, index), role };
+    return {
+      kind,
+      url: normalizeHttpsUrl(value.url, index),
+      role,
+      mediaKind: normalizeReferenceMediaKind(value.mediaKind, index),
+    };
   }
   fail(`${field}.kind`, 'reference kind must be asset or https.');
 }
 
 function referenceIdentity(reference: CanonicalGenerationReference): string {
   const source = reference.kind === 'asset' ? reference.assetId : reference.url;
-  return `${reference.role}\u0000${reference.kind}\u0000${source}`;
+  const mediaKind = reference.kind === 'https' ? reference.mediaKind : '';
+  return `${reference.role}\u0000${reference.kind}\u0000${mediaKind}\u0000${source}`;
 }
 
 function compareCodeUnits(left: string, right: string): number {

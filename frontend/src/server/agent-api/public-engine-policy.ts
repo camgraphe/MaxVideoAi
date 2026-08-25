@@ -2,8 +2,10 @@ import type { EngineCaps, EngineModeUiCaps } from '@/types/engines';
 
 import type { AgentGenerationMode } from './types';
 
-const PUBLIC_MODES = new Set<AgentGenerationMode>(['t2v', 'i2v', 'ref2v', 't2i', 'i2i']);
-const VIDEO_MODES = new Set<AgentGenerationMode>(['t2v', 'i2v', 'ref2v']);
+const PUBLIC_MODES = new Set<AgentGenerationMode>([
+  't2v', 'i2v', 'ref2v', 'v2v', 'extend', 't2i', 'i2i',
+]);
+const VIDEO_MODES = new Set<AgentGenerationMode>(['t2v', 'i2v', 'ref2v', 'v2v', 'extend']);
 const IMAGE_MODES = new Set<AgentGenerationMode>(['t2i', 'i2i']);
 const NON_PUBLIC_API_MARKERS = /\b(admin|internal|private|hidden|disabled|unavailable)\b/i;
 

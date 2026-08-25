@@ -7,7 +7,11 @@ import {
   validateCanonicalGenerationCapabilities,
 } from './generation-capability-validation';
 import { priceCanonicalGeneration, type GenerationPricingResult } from './generation-pricing';
-import type { CanonicalGenerationReference, CanonicalGenerationRequest } from './generation-types';
+import type {
+  CanonicalGenerationMode,
+  CanonicalGenerationReference,
+  CanonicalGenerationRequest,
+} from './generation-types';
 import {
   listPublicAgentGenerationEngines,
   type AgentPublicGenerationEngine,
@@ -22,7 +26,12 @@ export const MAX_PROJECT_ATTEMPTS_PER_CLIP = 10;
 export const MAX_PROJECT_TOTAL_ATTEMPTS = 500;
 
 const PROJECT_PROMPT = 'Project pricing scenario';
-const VIDEO_MODES = new Set(['t2v', 'i2v', 'ref2v']);
+type ProjectVideoMode = Extract<
+  CanonicalGenerationMode,
+  't2v' | 'i2v' | 'ref2v' | 'v2v' | 'extend'
+>;
+
+const VIDEO_MODES = new Set<ProjectVideoMode>(['t2v', 'i2v', 'ref2v', 'v2v', 'extend']);
 const REFERENCE_ROLES = new Set(['source', 'first_frame', 'last_frame', 'reference']);
 const CURRENCY_PATTERN = /^[A-Z]{3}$/u;
 
@@ -34,7 +43,7 @@ export type AgentProjectBudgetInput = Readonly<{
     lines: readonly Readonly<{
       purpose: string;
       engineId: string;
-      mode: 't2v' | 'i2v' | 'ref2v';
+      mode: ProjectVideoMode;
       settings: Readonly<{
         durationSec: number;
         resolution: string;
@@ -55,7 +64,7 @@ type BudgetMoney = Readonly<{ amountCents: number; currency: string }>;
 export type AgentProjectBudgetLine = Readonly<{
   purpose: string;
   engineId: string;
-  mode: 't2v' | 'i2v' | 'ref2v';
+  mode: ProjectVideoMode;
   settings: Readonly<{
     durationSec: number;
     resolution: string;
@@ -203,6 +212,8 @@ function safeCapabilityField(field: string): string {
     image_url: 'references',
     image_urls: 'references',
     reference_image_urls: 'references',
+    video_url: 'references',
+    extension_source_videos: 'references',
   };
   const normalized = aliases[field] ?? field;
   return new Set([
@@ -449,7 +460,12 @@ export async function calculateAgentProjectBudget(
           'engineId',
         );
       }
-      if (candidate.surface !== 'video' || typeof mode !== 'string' || !VIDEO_MODES.has(mode) || !candidate.publicModes.includes(mode as never)) {
+      if (
+        candidate.surface !== 'video'
+        || typeof mode !== 'string'
+        || !VIDEO_MODES.has(mode as ProjectVideoMode)
+        || !candidate.publicModes.includes(mode as ProjectVideoMode)
+      ) {
         editProjectLine(
           'MODE_UNSUPPORTED',
           'The selected model does not support this video mode.',
@@ -486,7 +502,7 @@ export async function calculateAgentProjectBudget(
         schemaVersion: 1,
         surface: 'video',
         engineId,
-        mode: mode as 't2v' | 'i2v' | 'ref2v',
+        mode: mode as ProjectVideoMode,
         prompt: PROJECT_PROMPT,
         settings,
         references: placeholdersFor(referenceRoles, proposalIndex, lineIndex),
