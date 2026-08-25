@@ -107,15 +107,32 @@ test('instructions describe the exact quote and confirmation flow when paid gene
   assert.match(instructions, /do not claim completion/i);
   assert.match(instructions, /do not automatically retry/i);
   assert.match(instructions, /complete.*chosen request.*prepare_generation/i);
+  assert.match(instructions, /display.*exact (?:price|quote).*wait.*explicit.*approval/i);
+  assert.match(instructions, /ambiguous.*(?:reply|approval|assent).*not.*confirmation/i);
+  assert.match(instructions, /get_generation_status.*list_recent_generations.*rather than.*second paid/i);
+  assert.match(instructions, /returned.*(?:account|upload|top-up|approval).*URL/i);
 });
 
-test('instructions distinguish private selection from the browser upload handoff', async () => {
+test('instructions cover all video workflows and distinguish private media selection from upload', async () => {
   const instructions = await getInstructions({ paidGeneration: false, referenceUploads: true });
 
+  assert.match(instructions, /get_model_details.*required fields.*limits/i);
+  assert.match(instructions, /t2v.*text.*i2v.*first.*last.*ref2v.*image.*video.*audio.*v2v.*source video.*extend.*ordered/is);
   assert.match(instructions, /use list_media/i);
-  assert.match(instructions, /existing private.*image/i);
-  assert.match(instructions, /do not upload images with list_media/i);
+  assert.match(instructions, /existing private.*image.*video.*audio/i);
+  assert.match(instructions, /filter.*media kind/i);
+  assert.match(instructions, /do not upload.*with list_media/i);
   assert.match(instructions, /use create_reference_upload_link/i);
+  assert.match(instructions, /requested (?:image|media) kind/i);
   assert.match(instructions, /short-lived.*browser handoff/i);
-  assert.match(instructions, /does not create reference images/i);
+  assert.match(instructions, /does not create reference (?:images|media)/i);
+});
+
+test('instructions recommend from live executable facts without hardcoded model hype', async () => {
+  const instructions = await getInstructions({ paidGeneration: true, referenceUploads: true });
+
+  assert.match(instructions, /best executable fit.*first/i);
+  assert.match(instructions, /Seedance 2\.5.*only when.*live.*details.*fit/i);
+  assert.match(instructions, /comparable.*budget.*before.*cheaper/i);
+  assert.doesNotMatch(instructions, /best model|highest quality|state-of-the-art|always choose Seedance/i);
 });

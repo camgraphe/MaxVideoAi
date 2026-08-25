@@ -317,6 +317,54 @@ test('paid prepare schema accepts full video modes and requires mediaKind only f
   assert.deepEqual(preparedInputs.map((input) => record(input).mode), ['v2v', 'extend']);
 });
 
+test('operational reference and prepare tools expose strict schemas and exact side-effect hints', async (t) => {
+  const operationalServices = services({
+    listMedia: async () => ({ items: [], nextCursor: null, hasMore: false }),
+    createReferenceUploadLink: async () => ({}) as never,
+    prepareGeneration: async () => ({}) as never,
+    confirmGeneration: async () => ({}) as never,
+    getGenerationStatus: async () => ({}) as never,
+    listRecentGenerations: async () => ({ items: [], nextCursor: null }) as never,
+    createTopupLink: async () => ({}) as never,
+  });
+  const server = createMaxVideoAiMcpServer(principal, operationalServices, {
+    paidGeneration: true,
+    referenceUploads: true,
+  });
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  await server.connect(serverTransport);
+  const client = new Client({ name: 'operational-metadata-contract', version: '1.0.0' });
+  await client.connect(clientTransport);
+  t.after(async () => {
+    await client.close();
+    await server.close();
+  });
+
+  const tools = new Map((await client.listTools()).tools.map((tool) => [tool.name, tool]));
+  assert.deepEqual(tools.get('list_media')?.annotations, {
+    readOnlyHint: true,
+    destructiveHint: false,
+    openWorldHint: false,
+  });
+  assert.deepEqual(tools.get('create_reference_upload_link')?.annotations, {
+    readOnlyHint: false,
+    destructiveHint: false,
+    idempotentHint: false,
+    openWorldHint: true,
+  });
+  assert.deepEqual(tools.get('prepare_generation')?.annotations, {
+    readOnlyHint: true,
+    destructiveHint: false,
+    openWorldHint: false,
+  });
+  assert.match(tools.get('list_media')?.description ?? '', /image, video, or audio.*filter.*kind/is);
+  assert.match(tools.get('create_reference_upload_link')?.description ?? '', /requested.*media kind/i);
+  assert.match(tools.get('prepare_generation')?.description ?? '', /t2v.*i2v.*ref2v.*v2v.*extend/is);
+  for (const name of ['list_media', 'create_reference_upload_link', 'prepare_generation']) {
+    assert.equal(tools.get(name)?.inputSchema.additionalProperties, false);
+  }
+});
+
 test('tools return structured content and pass validated filters to facade services', async (t) => {
   let listFilter: AgentModelFilter | null = null;
   let modelDetailId: string | null = null;

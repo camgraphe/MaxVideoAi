@@ -24,7 +24,7 @@ export function registerListMediaTool(
     {
       title: 'List private MaxVideoAI reference media',
       description:
-        'Use this when the user needs reusable private MaxVideoAI image, video, or audio asset IDs and controlled signed previews. Optionally filter by media kind. Do not use it to upload files, expose storage or provider URLs, return asset metadata, or start generation.',
+        'Use this when the user needs reusable private MaxVideoAI image, video, or audio asset IDs; filter by the required media kind and use only the returned safe metadata and controlled previews. Do not use it to upload files, expose storage or provider URLs, or start generation.',
       inputSchema,
       annotations: {
         readOnlyHint: true,

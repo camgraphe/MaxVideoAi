@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { homedir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
@@ -34,6 +36,20 @@ function filesAt(rootPath: string): string[] {
     if (entry.isDirectory()) return filesAt(entryPath);
     return [entryPath];
   });
+}
+
+function findCachedPyYamlPath(): string | null {
+  const archiveRoot = path.join(homedir(), '.cache', 'uv', 'archive-v0');
+  if (!existsSync(archiveRoot)) return null;
+  for (const archive of readdirSync(archiveRoot)) {
+    const libRoot = path.join(archiveRoot, archive, 'lib');
+    if (!existsSync(libRoot)) continue;
+    for (const pythonDirectory of readdirSync(libRoot)) {
+      const sitePackages = path.join(libRoot, pythonDirectory, 'site-packages');
+      if (existsSync(path.join(sitePackages, 'yaml', '__init__.py'))) return sitePackages;
+    }
+  }
+  return null;
 }
 
 test('the MaxVideoAI plugin has thin Codex and Claude package adapters', () => {
@@ -96,11 +112,39 @@ test('the shared skill gives hosts conversational, factual guardrails', () => {
   assert.match(skill, /distinct model famil/i);
   assert.match(skill, /calculate_project_budget.*before.*(?:cheaper|lower-cost)/is);
   assert.match(skill, /prepare_generation.*confirm_generation/is);
+  assert.match(skill, /Seedance 2\.5.*best executable fit.*live/is);
+  assert.match(skill, /t2v.*i2v.*ref2v.*v2v.*extend/is);
+  assert.match(skill, /first.*last.*frame/is);
+  assert.match(skill, /image.*video.*audio.*reference/is);
+  assert.match(skill, /exact (?:price|quote).*explicit.*approval/is);
+  assert.match(skill, /ambiguous.*not.*confirmation/is);
+  assert.match(skill, /get_generation_status.*list_recent_generations.*second paid/is);
+  assert.match(skill, /returned.*URL/i);
   assert.doesNotMatch(skill, /economy|balanced|premium/i);
+  assert.doesNotMatch(skill, /highest quality|best model|state-of-the-art|publicly available/i);
 
   const toolNames = skill.match(/\b(?:get_account_status|list_models|get_model_details|recommend_models|calculate_project_budget|list_media|create_reference_upload_link|prepare_generation|confirm_generation|get_generation_status|list_recent_generations|create_topup_link)\b/g) ?? [];
   assert.ok(toolNames.length > 0);
   for (const tool of toolNames) assert.ok(allowedTools.has(tool), `unknown tool ${tool}`);
+});
+
+test('the packaged Skill and plugin pass the repository authoring validators', () => {
+  const cachedPyYamlPath = findCachedPyYamlPath();
+  const pythonPath = [
+    cachedPyYamlPath,
+    process.env.PYTHONPATH,
+  ].filter(Boolean).join(':');
+  const environment = { ...process.env, PYTHONPATH: pythonPath };
+  const codexHome = process.env.CODEX_HOME ?? path.join(homedir(), '.codex');
+
+  execFileSync('python3', [
+    path.join(codexHome, 'skills', '.system', 'skill-creator', 'scripts', 'quick_validate.py'),
+    path.join(pluginRoot, 'skills', 'maxvideoai'),
+  ], { cwd: root, env: environment, stdio: 'pipe' });
+  execFileSync('python3', [
+    path.join(codexHome, 'skills', '.system', 'plugin-creator', 'scripts', 'validate_plugin.py'),
+    pluginRoot,
+  ], { cwd: root, env: environment, stdio: 'pipe' });
 });
 
 test('the plugin is a local thin package without stale facts or an embedded UI', () => {

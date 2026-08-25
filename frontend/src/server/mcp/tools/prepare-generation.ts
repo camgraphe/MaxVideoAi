@@ -42,7 +42,7 @@ export function registerPrepareGenerationTool(
     {
       title: 'Prepare a MaxVideoAI generation',
       description:
-        'Use this when the user has selected an image or video model and needs an exact short-lived quote. It validates and saves the quote, but it does not spend or generate. Do not use it as confirmation.',
+        'Use this when the user has selected an image model or a supported video workflow (t2v, i2v, ref2v, v2v, or extend) and needs validation plus an exact short-lived quote. It saves the quote but does not spend or generate. Do not use it as confirmation or skip the selected mode’s live model details.',
       inputSchema,
       annotations: {
         readOnlyHint: true,

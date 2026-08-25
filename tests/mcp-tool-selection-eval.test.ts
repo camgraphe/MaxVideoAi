@@ -128,6 +128,51 @@ test('public fixture corpus covers every approved intent with strict labels and 
   assert.ok(byId.get('named-model-unavailable-no-substitution')?.prohibitedTools.includes('recommend_models'));
   assert.deepEqual(byId.get('host-designed-generator-only')?.expectedTools, ['prepare_generation']);
   assert.ok(byId.get('host-designed-generator-only')?.prohibitedTools.includes('recommend_models'));
+  assert.deepEqual(byId.get('operational-seedance-quality-first')?.expectedTools, [
+    'recommend_models',
+    'get_model_details',
+    'calculate_project_budget',
+  ]);
+  assert.deepEqual(byId.get('operational-comparable-budget-alternatives')?.expectedTools, [
+    'list_models',
+    'get_model_details',
+    'calculate_project_budget',
+  ]);
+  for (const id of [
+    'operational-seedance-start-end-images',
+    'operational-seedance-multimodal-references',
+    'operational-seedance-video-edit',
+    'operational-seedance-extend-clips',
+  ]) {
+    assert.deepEqual(byId.get(id)?.expectedTools, [
+      'get_model_details',
+      'list_media',
+      'prepare_generation',
+    ]);
+    assert.ok(byId.get(id)?.prohibitedTools.includes('confirm_generation'));
+  }
+  assert.deepEqual(byId.get('operational-budget-only-no-spend')?.expectedTools, [
+    'recommend_models',
+    'get_model_details',
+    'calculate_project_budget',
+  ]);
+  assert.ok(byId.get('operational-budget-only-no-spend')?.prohibitedTools.includes('prepare_generation'));
+  assert.ok(byId.get('operational-budget-only-no-spend')?.prohibitedTools.includes('confirm_generation'));
+  assert.deepEqual(byId.get('operational-exact-quote-only')?.expectedTools, [
+    'get_model_details',
+    'prepare_generation',
+  ]);
+  assert.ok(byId.get('operational-exact-quote-only')?.prohibitedTools.includes('confirm_generation'));
+  assert.deepEqual(byId.get('operational-explicit-confirmed-submission')?.expectedTools, [
+    'prepare_generation',
+    'confirm_generation',
+  ]);
+  assert.deepEqual(byId.get('operational-ambiguous-approval-no-confirm')?.expectedTools, []);
+  assert.ok(byId.get('operational-ambiguous-approval-no-confirm')?.prohibitedTools.includes('confirm_generation'));
+  assert.deepEqual(byId.get('synthetic-generation-status-recovery')?.expectedTools, [
+    'get_generation_status',
+  ]);
+  assert.ok(byId.get('synthetic-generation-status-recovery')?.prohibitedTools.includes('confirm_generation'));
   assert.deepEqual(mcpPublication, {
     publicMarketing: false,
     publicIndexing: false,
@@ -314,8 +359,8 @@ test('fixture baseline and empty evidence rows stay separated by registry profil
   assert.equal(baseline[0].evaluatedFixtures, 21);
   assert.equal(baseline[0].totalFixtures, 21);
   assert.equal(baseline[0].quoteBeforeConfirmRate.rate, null);
-  assert.equal(baseline[1].evaluatedFixtures, 4);
-  assert.equal(baseline[1].totalFixtures, 4);
+  assert.equal(baseline[1].evaluatedFixtures, 14);
+  assert.equal(baseline[1].totalFixtures, 14);
   assert.equal(baseline[1].quoteBeforeConfirmRate.rate, 1);
 
   assert.equal(recorded.hostProfiles.length, 6);
@@ -397,7 +442,7 @@ test('complete live evidence stays complete while future evidence remains absent
     (fixture) => fixture.registryProfile === 'future-generation-evaluation'
   );
   assert.equal(liveFixtures.length, 21);
-  assert.equal(futureFixtures.length, 4);
+  assert.equal(futureFixtures.length, 14);
 
   const liveDecisions = parseDecisionBundle({
     version: 1,
@@ -418,7 +463,7 @@ test('complete live evidence stays complete while future evidence remains absent
   assert.equal(codexLive.totalFixtures, 21);
   assert.equal(codexFuture.evidenceStatus, 'no-recorded-host-evidence');
   assert.equal(codexFuture.evaluatedFixtures, 0);
-  assert.equal(codexFuture.totalFixtures, 4);
+  assert.equal(codexFuture.totalFixtures, 14);
   assert.equal(aggregateProfileScore(liveOnly, 'live-read-only').evidenceStatus, 'recorded-aggregate-partial');
   assert.equal(
     aggregateProfileScore(liveOnly, 'future-generation-evaluation').evidenceStatus,
@@ -450,7 +495,7 @@ test('complete live evidence stays complete while future evidence remains absent
   const partialFuture = hostProfileScore(withFuture, 'codex', 'future-generation-evaluation');
   assert.equal(partialFuture.evidenceStatus, 'recorded-partial');
   assert.equal(partialFuture.evaluatedFixtures, 1);
-  assert.equal(partialFuture.totalFixtures, 4);
+  assert.equal(partialFuture.totalFixtures, 14);
 });
 
 test('live MCP metadata validation observes five read-only discovery tools and no resources', async () => {

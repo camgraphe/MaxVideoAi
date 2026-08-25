@@ -12,8 +12,10 @@ user already chose. Use a mixed plan only when the brief or budget benefits,
 and give every model a shot-specific factual rationale; do not force diversity
 or dilute a quality-first plan merely to show a cheaper option.
 
-When model choice is open, make the best-fit available approach the creative
-baseline. Compare it with genuinely different model families rather than
+When model choice is open, make the best executable fit the creative baseline.
+Seedance 2.5 may lead a quality-first proposal only when the live recommendation
+and model details support that fit; do not encode a permanent model ranking.
+Compare the baseline with genuinely different model families rather than
 several sibling variants. Only describe a proposal as cheaper or lower-cost
 after `calculate_project_budget` has returned comparable current totals for the
 same intended output and creative-attempt assumptions.
@@ -30,6 +32,11 @@ non-empty, include one supported `aspectRatio`, including for i2v. When that
 list is empty, omit `aspectRatio`. Never infer this from the mode name or copy
 the setting from another mode. Omit `audio` for `always_generated` and
 `unavailable`; include it only for an `optional` audio policy.
+
+For `t2v`, `i2v`, `ref2v`, `v2v`, or `extend`, derive reference use and counts
+from the selected model’s live mode details. Preserve the user’s first/last
+frame roles, private image/video/audio kinds, required source video, and ordered
+extension clips in the proposal. Do not copy limits between modes.
 
 Present the returned base production and creative-attempt allowance separately.
 Explain the assumptions and differences between named proposals so the user can

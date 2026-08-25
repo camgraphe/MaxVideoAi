@@ -58,7 +58,11 @@ function baseServices(overrides: Partial<MaxVideoAiMcpServices> = {}): MaxVideoA
       };
     },
     async listModels() { return []; },
+    async getModelDetails() { throw new Error('not used'); },
     async recommendModels() { return { recommendations: [], nextAction: 'clarify_requirements' }; },
+    async calculateProjectBudget() { throw new Error('not used'); },
+    async listMedia() { return { items: [], nextCursor: null, hasMore: false }; },
+    async createReferenceUploadLink() { throw new Error('not used'); },
     async prepareGeneration() { throw new Error('not used'); },
     async confirmGeneration() { throw new Error('not used'); },
     async getGenerationStatus() { return buildAgentGenerationRecovery(status()); },
@@ -70,8 +74,14 @@ function baseServices(overrides: Partial<MaxVideoAiMcpServices> = {}): MaxVideoA
   };
 }
 
-async function connected(overrides: Partial<MaxVideoAiMcpServices> = {}, paidGeneration = true) {
-  const server = createMaxVideoAiMcpServer(principal, baseServices(overrides), { paidGeneration });
+async function connected(
+  overrides: Partial<MaxVideoAiMcpServices> = {},
+  capabilities: { paidGeneration: boolean; referenceUploads: boolean } = {
+    paidGeneration: true,
+    referenceUploads: false,
+  },
+) {
+  const server = createMaxVideoAiMcpServer(principal, baseServices(overrides), capabilities);
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   await server.connect(serverTransport);
   const client = new Client({ name: 'p9-contract', version: '1.0.0' });
@@ -336,9 +346,9 @@ test('recent facade delegates strict cursor pagination and exact surface/status 
   );
 });
 
-test('paid gate registers the exact eight-tool order and default registry remains three tools', async (t) => {
-  const gated = await connected();
-  const defaults = await connected({}, false);
+test('operational gate registers the exact twelve-tool order and default registry remains five tools', async (t) => {
+  const gated = await connected({}, { paidGeneration: true, referenceUploads: true });
+  const defaults = await connected({}, { paidGeneration: false, referenceUploads: false });
   t.after(async () => {
     await gated.close();
     await defaults.close();
@@ -346,7 +356,11 @@ test('paid gate registers the exact eight-tool order and default registry remain
   assert.deepEqual((await gated.client.listTools()).tools.map((tool) => tool.name), [
     'get_account_status',
     'list_models',
+    'get_model_details',
     'recommend_models',
+    'calculate_project_budget',
+    'list_media',
+    'create_reference_upload_link',
     'prepare_generation',
     'confirm_generation',
     'get_generation_status',
@@ -356,7 +370,9 @@ test('paid gate registers the exact eight-tool order and default registry remain
   assert.deepEqual((await defaults.client.listTools()).tools.map((tool) => tool.name), [
     'get_account_status',
     'list_models',
+    'get_model_details',
     'recommend_models',
+    'calculate_project_budget',
   ]);
 });
 
