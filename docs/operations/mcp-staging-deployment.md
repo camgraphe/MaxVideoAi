@@ -191,16 +191,23 @@ when cleanup is healthy. A missed or failed cadence requires disabling
 `MCP_STAGING_OPERATIONAL_ENABLED` and blocks further reference uploads until a
 successful zero batch.
 
-Teardown is stricter. First disable operational staging and deploy that closed
-state, then wait for the 15-minute upload lifetime plus the 5-minute processing
-lease. Run:
+Teardown is stricter. First set `MCP_STAGING_OPERATIONAL_ENABLED=false`, deploy
+that exact closed profile, and verify that the stable host reports
+`referenceUploads` as false. This closes both operational generation and the
+reference-upload capability; the cleanup capability flag and exact prefix must
+remain true so the authenticated teardown route stays available. Then wait for
+the 15-minute upload lifetime plus the 5-minute processing lease and let the
+ledger cleanup drain to zero. Run:
 
 ```bash
 bash scripts/run-mcp-staging-reference-cleanup.sh --execute --teardown
 ```
 
-The command requires the durable cleanup ledger to reach zero before each purge
-request. It then deletes bounded batches only from the literal
+The server refuses purge unless the operational flag is explicitly false and a
+bounded database proof reports zero live sessions, zero active processing
+leases, and zero unfinished parts. The command requires the durable cleanup
+ledger to reach zero before each purge request. It then deletes bounded batches
+only from the literal
 `mcp-reference-staging/` namespace using the staging deployment's own database
 and storage identity. It cannot purge `user-assets/`, shared production keys,
 another bucket, or an operator-supplied prefix. Both phases repeat until zero;

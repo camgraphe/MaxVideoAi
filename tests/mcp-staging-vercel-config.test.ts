@@ -6,7 +6,9 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readdirSync,
   rmSync,
+  statSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -136,6 +138,18 @@ function createCleanupFixture(): string {
   const fakeCurl = join(fixture, 'bin/curl');
   writeFileSync(fakeCurl, `#!/usr/bin/env bash
 set -euo pipefail
+config="$(cat)"
+if [[ -n "\${MCP_STAGING_CLEANUP_SECRET:-}" ]]; then
+  printf '%s' "\${MCP_STAGING_CLEANUP_SECRET}" >"\${STUB_COUNTER_ROOT}/curl-env-secret-leak"
+  exit 74
+fi
+if [[ "\${1:-}" != '--disable' ]]; then
+  [[ ! -f "\${HOME}/.curlrc" ]] || cat "\${HOME}/.curlrc" >&2
+  printf '%s' "$config" >"\${STUB_COUNTER_ROOT}/curl-secret-leak"
+  exit 76
+fi
+if [[ "$config" != *'header = "Authorization: Bearer '* ]]; then exit 75; fi
+printf 'auth-received' >"\${STUB_COUNTER_ROOT}/auth-received"
 output=''
 previous=''
 for argument in "$@"; do
@@ -246,14 +260,25 @@ test('non-dry deployment preflight behavior fails closed before every Vercel mut
 test('one-shot reference cleanup is local by default and teardown records bounded counts only', () => {
   const fixture = createCleanupFixture();
   const script = join(fixture, 'scripts/run-mcp-staging-reference-cleanup.sh');
+  const home = join(fixture, 'adversarial-home');
+  mkdirSync(home);
+  const traceFile = join(home, 'curl-trace.txt');
+  writeFileSync(join(home, '.curlrc'), `--verbose\n--trace-ascii ${traceFile}\n--output ${join(home, 'curl-output.txt')}\n`);
   try {
-    const dryRun = spawnSync('bash', [script], { cwd: fixture, encoding: 'utf8' });
+    const secret = 'cleanup-secret-must-never-appear';
+    const dryRun = spawnSync('bash', ['-x', script], {
+      cwd: fixture,
+      encoding: 'utf8',
+      env: { ...process.env, HOME: home, MCP_STAGING_CLEANUP_SECRET: secret },
+    });
     assert.equal(dryRun.status, 0, dryRun.stderr);
     assert.equal(
       dryRun.stdout,
       'SAFE_CLEANUP_PLAN project=maxvideoai-mcp-staging host=maxvideoai-mcp-staging.vercel.app mode=cleanup limit=100 max_batches=20\n',
     );
-    assert.equal(dryRun.stderr, '');
+    assert.doesNotMatch(`${dryRun.stdout}${dryRun.stderr}`, new RegExp(secret));
+    const source = readFileSync(script, 'utf8');
+    assert.ok(source.indexOf('exit 0') < source.indexOf('CLEANUP_SECRET='));
 
     const missingSecret = spawnSync('bash', [script, '--execute'], {
       cwd: fixture,
@@ -276,27 +301,46 @@ test('one-shot reference cleanup is local by default and teardown records bounde
     assert.equal(malformedSecret.status, 66);
     assert.equal(malformedSecret.stderr, 'CLEANUP_CREDENTIAL_BLOCKED\n');
 
-    const secret = 'cleanup-secret-must-never-appear';
-    const executed = spawnSync('bash', [script, '--execute', '--teardown'], {
+    const executed = spawnSync('bash', ['-x', script, '--execute', '--teardown'], {
       cwd: fixture,
       encoding: 'utf8',
       env: {
         ...process.env,
+        HOME: home,
         PATH: `${join(fixture, 'bin')}:${process.env.PATH ?? ''}`,
         MCP_STAGING_CLEANUP_SECRET: secret,
         STUB_COUNTER_ROOT: fixture,
       },
     });
     assert.equal(executed.status, 0, executed.stderr);
-    assert.equal(executed.stderr, '');
     assert.match(executed.stdout, /CLEANUP_BATCH_OK batch=1 selected=1 deleted=1/);
     assert.match(executed.stdout, /CLEANUP_BATCH_OK batch=2 selected=0 deleted=0/);
     assert.match(executed.stdout, /PURGE_BATCH_OK batch=1 selected=2 deleted=2/);
     assert.match(executed.stdout, /PURGE_BATCH_OK batch=2 selected=0 deleted=0/);
     assert.doesNotMatch(`${executed.stdout}${executed.stderr}`, new RegExp(secret));
+    assert.equal(readFileSync(join(fixture, 'auth-received'), 'utf8'), 'auth-received');
+    assert.equal(existsSync(traceFile), false);
+    const files = readdirSync(fixture, { recursive: true }).filter((entry) => {
+      const path = join(fixture, String(entry));
+      return statSync(path).isFile();
+    });
+    for (const file of files) {
+      assert.doesNotMatch(readFileSync(join(fixture, String(file)), 'utf8'), new RegExp(secret));
+    }
   } finally {
     rmSync(fixture, { recursive: true, force: true });
   }
+});
+
+test('teardown runbook closes and verifies reference capability before drain and purge', () => {
+  const runbook = readFileSync('docs/operations/mcp-staging-deployment.md', 'utf8');
+  const teardown = runbook.slice(runbook.indexOf('Teardown is stricter.'));
+  assert.match(teardown, /MCP_STAGING_OPERATIONAL_ENABLED=false/u);
+  assert.match(teardown, /referenceUploads.*false/iu);
+  assert.match(teardown, /cleanup capability[\s\S]{0,100}remain true/iu);
+  assert.ok(teardown.indexOf('deploy') < teardown.indexOf('wait'));
+  assert.ok(teardown.indexOf('wait') < teardown.indexOf('--execute --teardown'));
+  assert.match(teardown, /live sessions[\s\S]{0,100}processing[\s\S]{0,100}leases[\s\S]{0,100}unfinished parts/iu);
 });
 
 test('MCP staging deploy wrapper gates an unaliased candidate before promotion', () => {

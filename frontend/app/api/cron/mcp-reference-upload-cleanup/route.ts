@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { cleanupExpiredReferenceUploadAttempts } from '@/server/agent-api/reference-upload-attempts';
+import {
+  cleanupExpiredReferenceUploadAttempts,
+  countMcpReferenceUploadLiveState,
+} from '@/server/agent-api/reference-upload-attempts';
 import {
   deleteStorageObjectKey,
   MCP_REFERENCE_STAGING_STORAGE_PREFIX,
@@ -17,6 +20,11 @@ type CleanupResult = { selected: number; deleted: number };
 type CleanupDependencies = {
   env: Readonly<Record<string, string | undefined>>;
   cleanupExpiredReferenceUploadAttempts(input: { limit: number }): Promise<CleanupResult>;
+  countMcpReferenceUploadLiveState(input: { limit: number }): Promise<{
+    liveSessions: number;
+    processingLeases: number;
+    unfinishedParts: number;
+  }>;
   purgeMcpReferenceStagingObjects(input: { limit: number }): Promise<CleanupResult>;
 };
 
@@ -26,6 +34,7 @@ const defaultDependencies: CleanupDependencies = {
     input,
     { deleteStorageObjectKey },
   ),
+  countMcpReferenceUploadLiveState,
   purgeMcpReferenceStagingObjects,
 };
 
@@ -62,6 +71,9 @@ export function createMcpReferenceUploadCleanupHandler(
           !== MCP_REFERENCE_STAGING_STORAGE_PREFIX) {
         return NextResponse.json({ ok: false, error: 'CONFIGURATION_ERROR' }, { status: 503 });
       }
+      if (dependencies.env.MCP_STAGING_OPERATIONAL_ENABLED !== 'false') {
+        return NextResponse.json({ ok: false, error: 'STAGING_NOT_CLOSED' }, { status: 409 });
+      }
     }
 
     try {
@@ -76,6 +88,15 @@ export function createMcpReferenceUploadCleanupHandler(
           ok: false,
           error: 'CLEANUP_PENDING',
           ...ledger,
+        }, { status: 409 });
+      }
+
+      const liveState = await dependencies.countMcpReferenceUploadLiveState({ limit: BATCH_LIMIT });
+      if (Object.values(liveState).some((count) => count !== 0)) {
+        return NextResponse.json({
+          ok: false,
+          error: 'ACTIVE_UPLOADS',
+          ...liveState,
         }, { status: 409 });
       }
 

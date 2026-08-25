@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
+set +x
 
 STAGING_PROJECT='maxvideoai-mcp-staging'
 STAGING_HOST='maxvideoai-mcp-staging.vercel.app'
@@ -42,6 +43,7 @@ if ! "$EXECUTE"; then
 fi
 
 CLEANUP_SECRET="${MCP_STAGING_CLEANUP_SECRET:-}"
+unset MCP_STAGING_CLEANUP_SECRET
 if ((${#CLEANUP_SECRET} < 32 || ${#CLEANUP_SECRET} > 512)) \
   || [[ ! "$CLEANUP_SECRET" =~ ^[[:alnum:]_.~-]+$ ]]; then
   printf 'CLEANUP_CREDENTIAL_BLOCKED\n' >&2
@@ -68,6 +70,7 @@ run_batches() {
     status="$(
       printf 'header = "Authorization: Bearer %s"\n' "$CLEANUP_SECRET" \
         | curl \
+          --disable \
           --config - \
           --silent \
           --show-error \

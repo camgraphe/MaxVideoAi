@@ -727,4 +727,51 @@ export async function cleanupExpiredReferenceUploadAttempts(options: { limit?: n
   };
 }
 
+type ReferenceUploadLiveStateRow = {
+  live_sessions: unknown;
+  processing_leases: unknown;
+  unfinished_parts: unknown;
+};
+
+export async function countMcpReferenceUploadLiveState(
+  options: { limit?: number; now?: Date } = {},
+  executor: QueryExecutor = { query },
+): Promise<{ liveSessions: number; processingLeases: number; unfinishedParts: number }> {
+  const limit = options.limit ?? 100;
+  if (!Number.isSafeInteger(limit) || limit < 1 || limit > 1_000) {
+    throw new Error('Invalid live upload proof limit.');
+  }
+  const now = options.now ?? new Date();
+  const rows = await executor.query<ReferenceUploadLiveStateRow>(
+    `WITH live_sessions AS (
+       SELECT 1 FROM mcp_reference_upload_sessions
+        WHERE state = 'created' AND expires_at > $1
+        LIMIT $2
+     ), processing_leases AS (
+       SELECT 1 FROM mcp_reference_upload_attempts
+        WHERE state IN ('processing','staged') AND lease_id IS NOT NULL AND lease_expires_at > $1
+        LIMIT $2
+     ), unfinished_parts AS (
+       SELECT 1 FROM mcp_reference_upload_parts AS parts
+       JOIN mcp_reference_upload_attempts AS attempts ON attempts.upload_id = parts.upload_id
+        WHERE attempts.state NOT IN ('completed','aborted')
+        LIMIT $2
+     )
+     SELECT (SELECT count(*) FROM live_sessions)::text AS live_sessions,
+            (SELECT count(*) FROM processing_leases)::text AS processing_leases,
+            (SELECT count(*) FROM unfinished_parts)::text AS unfinished_parts`,
+    [now, limit],
+  );
+  if (rows.length !== 1) throw new Error('Live upload proof query failed.');
+  const counts = {
+    liveSessions: Number(rows[0]?.live_sessions),
+    processingLeases: Number(rows[0]?.processing_leases),
+    unfinishedParts: Number(rows[0]?.unfinished_parts),
+  };
+  if (Object.values(counts).some((value) => !Number.isSafeInteger(value) || value < 0 || value > limit)) {
+    throw new Error('Live upload proof result is invalid.');
+  }
+  return counts;
+}
+
 export function contentSha256(bytes: Buffer): string { return createHash('sha256').update(bytes).digest('hex'); }

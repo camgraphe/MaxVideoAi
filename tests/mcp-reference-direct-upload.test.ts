@@ -8,7 +8,10 @@ import { NextRequest } from 'next/server';
 import { createMcpReferenceUploadCleanupHandler } from '../frontend/app/api/cron/mcp-reference-upload-cleanup/route';
 import type { TransactionQueryExecutor } from '../frontend/src/lib/db';
 import { AgentApiError } from '../frontend/src/server/agent-api/errors';
-import { cleanupExpiredReferenceUploadAttempts } from '../frontend/src/server/agent-api/reference-upload-attempts';
+import {
+  cleanupExpiredReferenceUploadAttempts,
+  countMcpReferenceUploadLiveState,
+} from '../frontend/src/server/agent-api/reference-upload-attempts';
 import { purgeMcpReferenceStagingObjects } from '../frontend/server/storage';
 import {
   MCP_REFERENCE_UPLOAD_CHUNK_BYTES,
@@ -681,6 +684,23 @@ test('scheduled cleanup retains the production count-only response contract', as
   assert.deepEqual(await response.json(), { ok: true, selected: 1, deleted: 1 });
 });
 
+test('live upload teardown proof is one bounded database snapshot at the supplied time', async () => {
+  let calls = 0;
+  const result = await countMcpReferenceUploadLiveState({ limit: 100, now }, {
+    async query<T>(sql, values) {
+      calls += 1;
+      assert.deepEqual(values, [now, 100]);
+      assert.match(sql, /mcp_reference_upload_sessions/iu);
+      assert.match(sql, /mcp_reference_upload_attempts/iu);
+      assert.match(sql, /mcp_reference_upload_parts/iu);
+      assert.match(sql, /LIMIT\s+\$2/iu);
+      return [{ live_sessions: '1', processing_leases: '2', unfinished_parts: '3' }] as T[];
+    },
+  });
+  assert.equal(calls, 1);
+  assert.deepEqual(result, { liveSessions: 1, processingLeases: 2, unfinishedParts: 3 });
+});
+
 test('staging cleanup route blocks prefix purge until the bounded ledger batch reaches zero', async () => {
   let purgeCalls = 0;
   const cleanupResults = [
@@ -691,12 +711,16 @@ test('staging cleanup route blocks prefix purge until the bounded ledger batch r
     env: {
       CRON_SECRET: 'cleanup-route-test-secret',
       MCP_STAGING_HOST: 'maxvideoai-mcp-staging.vercel.app',
+      MCP_STAGING_OPERATIONAL_ENABLED: 'false',
       MCP_STAGING_REFERENCE_CLEANUP_ENABLED: 'true',
       MCP_STAGING_REFERENCE_STORAGE_PREFIX: 'mcp-reference-staging/',
     },
     async cleanupExpiredReferenceUploadAttempts(input) {
       assert.deepEqual(input, { limit: 100 });
       return cleanupResults.shift() ?? { selected: 0, deleted: 0 };
+    },
+    async countMcpReferenceUploadLiveState() {
+      return { liveSessions: 0, processingLeases: 0, unfinishedParts: 0 };
     },
     async purgeMcpReferenceStagingObjects(input) {
       purgeCalls += 1;
@@ -738,11 +762,15 @@ test('staging prefix purge requires the exact authenticated host and storage nam
   const createHandler = (env: Record<string, string | undefined>) => createMcpReferenceUploadCleanupHandler({
     env,
     async cleanupExpiredReferenceUploadAttempts() { effects += 1; return { selected: 0, deleted: 0 }; },
+    async countMcpReferenceUploadLiveState() {
+      return { liveSessions: 0, processingLeases: 0, unfinishedParts: 0 };
+    },
     async purgeMcpReferenceStagingObjects() { effects += 1; return { selected: 0, deleted: 0 }; },
   });
   const baseEnv = {
     CRON_SECRET: 'cleanup-route-test-secret',
     MCP_STAGING_HOST: 'maxvideoai-mcp-staging.vercel.app',
+    MCP_STAGING_OPERATIONAL_ENABLED: 'false',
     MCP_STAGING_REFERENCE_CLEANUP_ENABLED: 'true',
     MCP_STAGING_REFERENCE_STORAGE_PREFIX: 'mcp-reference-staging/',
   };
@@ -762,6 +790,61 @@ test('staging prefix purge requires the exact authenticated host and storage nam
   ));
   assert.equal(wrongPrefix.status, 503);
   assert.equal(effects, 0);
+});
+
+test('staging prefix purge has no storage effects while operational or database work is live', async () => {
+  let ledgerCalls = 0;
+  let proofCalls = 0;
+  let purgeCalls = 0;
+  const baseEnv = {
+    CRON_SECRET: 'cleanup-route-test-secret',
+    MCP_STAGING_HOST: 'maxvideoai-mcp-staging.vercel.app',
+    MCP_STAGING_REFERENCE_CLEANUP_ENABLED: 'true',
+    MCP_STAGING_REFERENCE_STORAGE_PREFIX: 'mcp-reference-staging/',
+  };
+  const createHandler = (operational: string | undefined, liveSessions: number) => (
+    createMcpReferenceUploadCleanupHandler({
+      env: { ...baseEnv, MCP_STAGING_OPERATIONAL_ENABLED: operational },
+      async cleanupExpiredReferenceUploadAttempts() {
+        ledgerCalls += 1;
+        return { selected: 0, deleted: 0 };
+      },
+      async countMcpReferenceUploadLiveState() {
+        proofCalls += 1;
+        return { liveSessions, processingLeases: 1, unfinishedParts: 2 };
+      },
+      async purgeMcpReferenceStagingObjects() {
+        purgeCalls += 1;
+        return { selected: 0, deleted: 0 };
+      },
+    })
+  );
+  const request = () => new NextRequest(
+    'https://maxvideoai-mcp-staging.vercel.app/api/cron/mcp-reference-upload-cleanup?mode=purge-staging',
+    { method: 'POST', headers: { authorization: 'Bearer cleanup-route-test-secret' } },
+  );
+
+  for (const operational of ['true', undefined]) {
+    const response = await createHandler(operational, 0)(request());
+    assert.equal(response.status, 409);
+    assert.deepEqual(await response.json(), { ok: false, error: 'STAGING_NOT_CLOSED' });
+  }
+  assert.equal(ledgerCalls, 0);
+  assert.equal(proofCalls, 0);
+  assert.equal(purgeCalls, 0);
+
+  const active = await createHandler('false', 1)(request());
+  assert.equal(active.status, 409);
+  assert.deepEqual(await active.json(), {
+    ok: false,
+    error: 'ACTIVE_UPLOADS',
+    liveSessions: 1,
+    processingLeases: 1,
+    unfinishedParts: 2,
+  });
+  assert.equal(ledgerCalls, 1);
+  assert.equal(proofCalls, 1);
+  assert.equal(purgeCalls, 0);
 });
 
 test('storage teardown deletes only a bounded batch from the dedicated staging prefix', async () => {
