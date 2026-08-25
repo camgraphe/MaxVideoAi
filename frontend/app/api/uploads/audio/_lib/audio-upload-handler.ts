@@ -67,6 +67,11 @@ export async function handleAudioUpload(
     getRouteAuthContextFn?: (request: NextRequest) => Promise<{ userId: string | null }>;
   } = {}
 ) {
+  const { userId } = await (deps.getRouteAuthContextFn ?? getRouteAuthContext)(req);
+  if (!userId) {
+    return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
+  }
+
   const maxAudioMB = getMaxAudioUploadMB();
   const form = await req.formData();
   const blob = form.get('file');
@@ -113,11 +118,6 @@ export async function handleAudioUpload(
     return NextResponse.json({ ok: false, error: 'EMPTY_FILE' }, { status: 400 });
   }
 
-  const { userId } = await (deps.getRouteAuthContextFn ?? getRouteAuthContext)(req);
-  if (!userId) {
-    return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
-  }
-
   const durationSec = await detectMediaBufferDuration(buffer, {
     fileName: blob.name,
     mimeType: mime,
@@ -153,7 +153,7 @@ export async function handleAudioUpload(
       fileName: blob.name,
       declaredMime: mime,
       bytes: buffer,
-      verifiedDurationSec: durationSec,
+      referenceEligibility: 'workspace',
     });
     return NextResponse.json({
       ok: true,

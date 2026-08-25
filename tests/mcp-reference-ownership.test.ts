@@ -15,6 +15,7 @@ const principal: AgentPrincipal = {
   emailVerified: true,
   authMethod: 'oauth',
 };
+const publicAssetId = 'ma_0123456789abcdef0123456789abcdef';
 
 type ReferenceAssetsModule = {
   resolveOwnedReferenceAsset(
@@ -33,6 +34,7 @@ type ReferenceAssetsModule = {
 
 type ReferenceRow = {
   id: string;
+  public_id: string;
   user_id: string | null;
   kind: string;
   url: string;
@@ -52,6 +54,7 @@ async function loadReferenceAssets(): Promise<ReferenceAssetsModule> {
 function row(overrides: Partial<ReferenceRow> = {}): ReferenceRow {
   return {
     id: 'asset-owned',
+    public_id: publicAssetId,
     user_id: principal.userId,
     kind: 'image',
     url: 'https://cdn.maxvideoai.com/users/owner-user/reference.png',
@@ -74,15 +77,15 @@ function executorWithRows(rows: ReferenceRow[], calls: Array<{ sql: string; para
   };
 }
 
-test('resolveOwnedReferenceAsset performs one exact-user media_assets read and returns only internal fields', async () => {
+test('resolveOwnedReferenceAsset resolves an opaque public alias without exposing the internal media identity', async () => {
   const { resolveOwnedReferenceAsset } = await loadReferenceAssets();
   const calls: Array<{ sql: string; params: ReadonlyArray<unknown> }> = [];
-  const resolved = await resolveOwnedReferenceAsset(principal, 'asset-owned', {
+  const resolved = await resolveOwnedReferenceAsset(principal, publicAssetId, {
     executor: executorWithRows([row({ mime_type: 'IMAGE/JPEG; charset=binary' })], calls),
   });
 
   assert.deepEqual(resolved, {
-    assetId: 'asset-owned',
+    assetId: publicAssetId,
     mediaKind: 'image',
     storageUrl: 'https://cdn.maxvideoai.com/users/owner-user/reference.png',
     width: 1024,
@@ -91,8 +94,9 @@ test('resolveOwnedReferenceAsset performs one exact-user media_assets read and r
   });
   assert.equal(calls.length, 1);
   assert.match(calls[0]?.sql ?? '', /FROM\s+media_assets/iu);
-  assert.match(calls[0]?.sql ?? '', /id\s*=\s*\$1[\s\S]*user_id\s*=\s*\$2/iu);
-  assert.deepEqual(calls[0]?.params, ['asset-owned', principal.userId]);
+  assert.match(calls[0]?.sql ?? '', /public_id\s*=\s*\$1[\s\S]*user_id\s*=\s*\$2/iu);
+  assert.deepEqual(calls[0]?.params, ['ma_0123456789abcdef0123456789abcdef', principal.userId]);
+  assert.doesNotMatch(resolved.assetId, /asset-owned|owner-user|https?:|url:/u);
   assert.deepEqual(Object.keys(resolved), ['assetId', 'mediaKind', 'storageUrl', 'width', 'height', 'mimeType']);
 });
 
@@ -108,7 +112,7 @@ test('resolveOwnedReferenceAsset accepts the exact shared raster MIME set and ca
     ['image/avif', 'image/avif'],
   ] as const;
   for (const [mimeType, expected] of supported) {
-    const resolved = await resolveOwnedReferenceAsset(principal, 'asset-owned', {
+    const resolved = await resolveOwnedReferenceAsset(principal, publicAssetId, {
       executor: executorWithRows([row({ mime_type: mimeType })], []),
     });
     assert.equal(resolved.mimeType, expected);
@@ -126,7 +130,7 @@ test('resolveOwnedReferenceAsset derives video and audio kinds from exact owned-
     ['audio', 'audio/mp4', 'audio/mp4'],
   ] as const;
   for (const [kind, mimeType, canonicalMime] of supported) {
-    const resolved = await resolveOwnedReferenceAsset(principal, 'asset-owned', {
+    const resolved = await resolveOwnedReferenceAsset(principal, publicAssetId, {
       executor: executorWithRows([row({
         kind,
         mime_type: mimeType,
@@ -143,7 +147,7 @@ test('resolveOwnedReferenceAsset derives video and audio kinds from exact owned-
 test('missing and another-user asset IDs are publicly indistinguishable', async () => {
   const { resolveOwnedReferenceAsset } = await loadReferenceAssets();
   const failures: Array<{ code: string; message: string }> = [];
-  for (const assetId of ['missing-asset', 'belongs-to-another-user']) {
+  for (const assetId of ['ma_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'ma_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb']) {
     const calls: Array<{ sql: string; params: ReadonlyArray<unknown> }> = [];
     await assert.rejects(
       resolveOwnedReferenceAsset(principal, assetId, {
@@ -167,7 +171,7 @@ test('missing and another-user asset IDs are publicly indistinguishable', async 
 test('an impossible cross-user row fails closed as forbidden without returning asset details', async () => {
   const { resolveOwnedReferenceAsset } = await loadReferenceAssets();
   await assert.rejects(
-    resolveOwnedReferenceAsset(principal, 'asset-owned', {
+    resolveOwnedReferenceAsset(principal, publicAssetId, {
       executor: executorWithRows([row({ user_id: 'other-user' })], []),
     }),
     (error: unknown) => {
@@ -202,7 +206,7 @@ test('owned rows must be ready, non-deleted supported media on a controlled HTTP
   ];
   for (const invalidRow of invalidRows) {
     await assert.rejects(
-      resolveOwnedReferenceAsset(principal, 'asset-owned', {
+      resolveOwnedReferenceAsset(principal, publicAssetId, {
         executor: executorWithRows([invalidRow], []),
       }),
       (error: unknown) => error instanceof AgentApiError
@@ -228,7 +232,7 @@ test('invalid identity input is rejected before any ownership query', async () =
     );
   }
   await assert.rejects(
-    resolveOwnedReferenceAsset({ ...principal, userId: '' }, 'asset-owned', { executor }),
+    resolveOwnedReferenceAsset({ ...principal, userId: '' }, publicAssetId, { executor }),
     (error: unknown) => error instanceof AgentApiError && error.code === 'AUTH_REQUIRED',
   );
   assert.equal(reads, 0);

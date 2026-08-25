@@ -1,6 +1,7 @@
 import { ensureReusableAsset } from '@/server/media-library';
-import { detectMediaBufferDuration } from '@/server/media/detect-has-audio';
-import { uploadFileBuffer, recordUserAsset } from '@/server/storage';
+import { createHash } from 'node:crypto';
+import { probeMediaBuffer } from '@/server/media/detect-has-audio';
+import { deleteStorageObjectByUrl, uploadFileBuffer, recordUserAsset } from '@/server/storage';
 import { createUploadVideoThumbnail } from '@/server/upload-thumbnails';
 
 import {
@@ -39,11 +40,12 @@ export class MediaUploadError extends Error {
 }
 
 type StoreMediaUploadDependencies = {
-  detectMediaBufferDuration: typeof detectMediaBufferDuration;
+  probeMediaBuffer: typeof probeMediaBuffer;
   uploadFileBuffer: typeof uploadFileBuffer;
   createUploadVideoThumbnail: typeof createUploadVideoThumbnail;
   recordUserAsset: typeof recordUserAsset;
   ensureReusableAsset: typeof ensureReusableAsset;
+  deleteStorageObjectByUrl: typeof deleteStorageObjectByUrl;
 };
 
 export type StoreMediaUploadInput = {
@@ -51,7 +53,7 @@ export type StoreMediaUploadInput = {
   fileName: string;
   declaredMime: string | null;
   bytes: Buffer;
-  verifiedDurationSec?: number | null;
+  referenceEligibility?: 'workspace' | 'mcp';
 };
 
 export type StoredMediaUpload = {
@@ -67,11 +69,12 @@ export type StoredMediaUpload = {
 };
 
 const defaultDependencies: StoreMediaUploadDependencies = {
-  detectMediaBufferDuration,
+  probeMediaBuffer,
   uploadFileBuffer,
   createUploadVideoThumbnail,
   recordUserAsset,
   ensureReusableAsset,
+  deleteStorageObjectByUrl,
 };
 
 function createStoreMediaUploadService(
@@ -83,18 +86,30 @@ function createStoreMediaUploadService(
     if (!input.bytes.length) {
       throw new MediaUploadError('EMPTY_FILE', 'The uploaded media file is empty.');
     }
-    const supported = resolveSupportedReferenceMedia(mediaKind, input.declaredMime);
-    if (!supported) {
+    const declaredMime = input.declaredMime?.split(';', 1)[0]?.trim().toLowerCase() ?? '';
+    if (!declaredMime.startsWith(`${mediaKind}/`)) {
       throw new MediaUploadError('UNSUPPORTED_TYPE', 'The uploaded media type is unsupported.');
     }
-    const durationSec = input.verifiedDurationSec === undefined
-      ? await dependencies.detectMediaBufferDuration(input.bytes, {
-          fileName: input.fileName,
-          mimeType: supported.canonicalMime,
-          streamSelector: mediaKind,
-        })
-      : input.verifiedDurationSec;
-    const duration = normalizeSupportedReferenceDuration(mediaKind, durationSec);
+    const strictDeclared = resolveSupportedReferenceMedia(mediaKind, declaredMime);
+    if (input.referenceEligibility === 'mcp' && !strictDeclared) {
+      throw new MediaUploadError('UNSUPPORTED_TYPE', 'The uploaded media type is unsupported.');
+    }
+    const probe = await dependencies.probeMediaBuffer(input.bytes, {
+      fileName: input.fileName,
+      mimeType: declaredMime,
+    });
+    if (!probe || probe.kind !== mediaKind) {
+      throw new MediaUploadError('METADATA_UNVERIFIED', 'The uploaded media metadata could not be verified.');
+    }
+    const strictDetected = resolveSupportedReferenceMedia(mediaKind, probe.canonicalMime);
+    const isoVideoAlias = mediaKind === 'video'
+      && strictDeclared?.canonicalMime === 'video/quicktime'
+      && strictDetected?.canonicalMime === 'video/mp4';
+    if (input.referenceEligibility === 'mcp'
+      && (!strictDetected || (!isoVideoAlias && strictDeclared?.canonicalMime !== strictDetected.canonicalMime))) {
+      throw new MediaUploadError('UNSUPPORTED_TYPE', 'The uploaded media type is unsupported.');
+    }
+    const duration = normalizeSupportedReferenceDuration(mediaKind, probe.durationSec);
     if (!duration.valid || duration.durationSec === null) {
       throw new MediaUploadError('METADATA_UNVERIFIED', 'The uploaded media metadata could not be verified.');
     }
@@ -103,17 +118,19 @@ function createStoreMediaUploadService(
     try {
       upload = await dependencies.uploadFileBuffer({
         data: input.bytes,
-        mime: supported.canonicalMime,
+        mime: probe.canonicalMime,
         fileName: input.fileName,
         userId: input.userId,
         prefix: 'user-assets',
+        contentAddressed: true,
       });
     } catch (error) {
       throw new MediaUploadError('UPLOAD_FAILED', 'The media file could not be uploaded.', { cause: error });
     }
 
+    let previewUrl: string | null = null;
     try {
-      const previewUrl = mediaKind === 'video'
+      previewUrl = mediaKind === 'video'
         ? await dependencies.createUploadVideoThumbnail({
             data: input.bytes,
             userId: input.userId,
@@ -127,9 +144,10 @@ function createStoreMediaUploadService(
         ...(previewUrl ? { thumbUrl: previewUrl } : {}),
       };
       const legacyAssetId = await dependencies.recordUserAsset({
+        assetId: `ua_${createHash('sha256').update(`${input.userId}:${mediaKind}:`).update(input.bytes).digest('hex').slice(0, 32)}`,
         userId: input.userId,
         url: upload.url,
-        mime: supported.canonicalMime,
+        mime: probe.canonicalMime,
         width: null,
         height: null,
         size: input.bytes.length,
@@ -141,24 +159,30 @@ function createStoreMediaUploadService(
         url: upload.url,
         kind: mediaKind,
         source: 'upload',
-        mimeType: supported.canonicalMime,
+        mimeType: probe.canonicalMime,
         sizeBytes: input.bytes.length,
         durationSec: duration.durationSec,
         thumbUrl: previewUrl,
         metadata: { originalName: input.fileName },
       });
+      if (!canonicalAsset.publicId || !/^ma_[a-f0-9]{32}$/u.test(canonicalAsset.publicId)) {
+        throw new Error('Canonical media asset has no public alias.');
+      }
       return {
-        assetId: canonicalAsset.id,
+        assetId: canonicalAsset.publicId,
         legacyAssetId,
         width: null,
         height: null,
         durationSec: duration.durationSec,
-        mimeType: supported.canonicalMime,
+        mimeType: probe.canonicalMime,
         sizeBytes: input.bytes.length,
         previewUrl,
         storageUrl: upload.url,
       };
     } catch (error) {
+      if (previewUrl) {
+        await dependencies.deleteStorageObjectByUrl(previewUrl).catch(() => false);
+      }
       if (error instanceof MediaUploadError) throw error;
       throw new MediaUploadError('STORE_FAILED', 'The media asset could not be recorded.', { cause: error });
     }

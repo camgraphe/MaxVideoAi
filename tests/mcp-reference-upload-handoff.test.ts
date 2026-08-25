@@ -317,12 +317,14 @@ test('browser handoff rejects a MIME from another media kind and releases the un
 
 test('shared video and audio storage owners verify metadata and return the canonical media mirror ID', async () => {
   for (const candidate of [
-    { kind: 'video' as const, declaredMime: 'video/quicktime', canonicalMime: 'video/quicktime' },
+    { kind: 'video' as const, declaredMime: 'video/quicktime', canonicalMime: 'video/mp4' },
     { kind: 'audio' as const, declaredMime: 'audio/x-wav', canonicalMime: 'audio/wav' },
   ]) {
     const calls: Array<{ name: string; value: unknown }> = [];
     const dependencies = {
-      async detectMediaBufferDuration() { return 4.25; },
+      async probeMediaBuffer() {
+        return { kind: candidate.kind, canonicalMime: candidate.canonicalMime, durationSec: 4.25 };
+      },
       async uploadFileBuffer(input: unknown) {
         calls.push({ name: 'upload', value: input });
         return { key: 'private-key', url: `https://assets.maxvideo.ai/${candidate.kind}-1` };
@@ -337,7 +339,7 @@ test('shared video and audio storage owners verify metadata and return the canon
       },
       async ensureReusableAsset(input: unknown) {
         calls.push({ name: 'canonical', value: input });
-        return { id: `canonical-${candidate.kind}-1` };
+        return { id: `canonical-${candidate.kind}-1`, publicId: `ma_${(candidate.kind === 'video' ? 'a' : 'b').repeat(32)}` };
       },
     };
     const service = candidate.kind === 'video'
@@ -352,7 +354,7 @@ test('shared video and audio storage owners verify metadata and return the canon
     });
 
     assert.deepEqual(stored, {
-      assetId: `canonical-${candidate.kind}-1`,
+      assetId: `ma_${(candidate.kind === 'video' ? 'a' : 'b').repeat(32)}`,
       legacyAssetId: `legacy-${candidate.kind}-1`,
       width: null,
       height: null,
@@ -365,6 +367,8 @@ test('shared video and audio storage owners verify metadata and return the canon
       storageUrl: `https://assets.maxvideo.ai/${candidate.kind}-1`,
     });
     const canonical = calls.find((call) => call.name === 'canonical')?.value as Record<string, unknown>;
+    const uploaded = calls.find((call) => call.name === 'upload')?.value as Record<string, unknown>;
+    assert.equal(uploaded.contentAddressed, true);
     assert.equal(canonical.kind, candidate.kind);
     assert.equal(canonical.mimeType, candidate.canonicalMime);
     assert.equal(canonical.durationSec, 4.25);
@@ -375,7 +379,7 @@ test('shared video and audio storage owners verify metadata and return the canon
 test('shared media storage rejects bytes whose server metadata cannot be verified before persistence', async () => {
   let uploadCalls = 0;
   const service = createStoreAudioUploadService({
-    async detectMediaBufferDuration() { return null; },
+    async probeMediaBuffer() { return null; },
     async uploadFileBuffer() { uploadCalls += 1; throw new Error('must not upload'); },
     async createUploadVideoThumbnail() { return null; },
     async recordUserAsset() { throw new Error('must not record'); },
@@ -392,6 +396,69 @@ test('shared media storage rejects bytes whose server metadata cannot be verifie
     (error: unknown) => error instanceof MediaUploadError && error.code === 'METADATA_UNVERIFIED',
   );
   assert.equal(uploadCalls, 0);
+});
+
+test('shared media storage always probes bytes, rejects declared/detected disagreement for MCP, and keeps broad workspace MIME compatibility', async () => {
+  let probes = 0;
+  let uploads = 0;
+  const dependencies = {
+    async probeMediaBuffer() {
+      probes += 1;
+      return { kind: 'video' as const, canonicalMime: 'video/webm', durationSec: 2 };
+    },
+    async uploadFileBuffer() {
+      uploads += 1;
+      return { key: 'key', url: 'https://assets.maxvideo.ai/video.webm' };
+    },
+    async createUploadVideoThumbnail() { return null; },
+    async recordUserAsset() { return 'legacy'; },
+    async ensureReusableAsset() { return { id: 'internal', publicId: 'ma_cccccccccccccccccccccccccccccccc' }; },
+  };
+  const service = createStoreVideoUploadService(dependencies as never);
+
+  await assert.rejects(
+    service({
+      userId: 'user-a', fileName: 'disguised.mp4', declaredMime: 'video/mp4',
+      bytes: Buffer.from([1]), referenceEligibility: 'mcp',
+    }),
+    (error: unknown) => error instanceof MediaUploadError && error.code === 'UNSUPPORTED_TYPE',
+  );
+  assert.equal(uploads, 0);
+
+  const workspace = await service({
+    userId: 'user-a', fileName: 'workspace.custom', declaredMime: 'video/x-workspace-container',
+    bytes: Buffer.from([2]), referenceEligibility: 'workspace',
+  });
+  assert.equal(workspace.mimeType, 'video/webm');
+  assert.equal(probes, 2);
+  assert.equal(uploads, 1);
+
+  const source = readFileSync('frontend/src/server/uploads/store-media-upload.ts', 'utf8');
+  assert.doesNotMatch(source, /verifiedDurationSec/u);
+});
+
+test('shared media storage compensates its request-owned thumbnail on downstream record failure without deleting shared content-addressed media', async () => {
+  const deleted: string[] = [];
+  const service = createStoreVideoUploadService({
+    async probeMediaBuffer() { return { kind: 'video', canonicalMime: 'video/mp4', durationSec: 2 }; },
+    async uploadFileBuffer(input: Record<string, unknown>) {
+      assert.equal(input.contentAddressed, true);
+      return { key: 'by-content/shared.mp4', url: 'https://assets.maxvideo.ai/by-content/shared.mp4' };
+    },
+    async createUploadVideoThumbnail() { return 'https://assets.maxvideo.ai/request-owned-thumb.jpg'; },
+    async recordUserAsset() { throw new Error('database unavailable'); },
+    async ensureReusableAsset() { throw new Error('must not mirror'); },
+    async deleteStorageObjectByUrl(url: string) { deleted.push(url); return true; },
+  } as never);
+
+  await assert.rejects(
+    service({
+      userId: 'user-a', fileName: 'reference.mp4', declaredMime: 'video/mp4',
+      bytes: Buffer.from([1]), referenceEligibility: 'mcp',
+    }),
+    (error: unknown) => error instanceof MediaUploadError && error.code === 'STORE_FAILED',
+  );
+  assert.deepEqual(deleted, ['https://assets.maxvideo.ai/request-owned-thumb.jpg']);
 });
 
 test('server metadata rejects audio-only bytes mislabeled as a video before persistence', async () => {

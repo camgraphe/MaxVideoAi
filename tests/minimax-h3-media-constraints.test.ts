@@ -149,7 +149,8 @@ test('audio uploads persist trusted duration metadata for MiniMax H3 references'
   );
 
   assert.match(routeSource, /detectMediaBufferDuration\(buffer/);
-  assert.match(routeSource, /storeAudioUpload\(\{[^}]*verifiedDurationSec:\s*durationSec/s);
+  assert.doesNotMatch(routeSource, /verifiedDurationSec/s);
+  assert.match(storageSource, /probeMediaBuffer/);
   assert.match(storageSource, /const metadata\s*=\s*\{[^}]*durationSec/s);
   assert.match(storageSource, /recordUserAsset\(\{[\s\S]*metadata,/s);
   assert.match(storageSource, /ensureReusableAsset\(\{[^}]*durationSec:\s*duration\.durationSec/s);

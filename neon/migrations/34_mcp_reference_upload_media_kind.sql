@@ -8,9 +8,6 @@ ALTER TABLE mcp_reference_upload_sessions
     media_kind IN ('image', 'video', 'audio')
   );
 
-ALTER TABLE mcp_reference_upload_sessions
-  ALTER COLUMN media_kind DROP DEFAULT;
-
 CREATE OR REPLACE FUNCTION enforce_mcp_reference_upload_session_update()
 RETURNS TRIGGER
 LANGUAGE plpgsql

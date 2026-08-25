@@ -9,10 +9,11 @@ import {
 } from './reference-media-policy';
 import type { ResolvedReference } from './reference-types';
 
-const MAX_ASSET_ID_LENGTH = 512;
+const PUBLIC_ASSET_ID_PATTERN = /^ma_[a-f0-9]{32}$/u;
 
 type ReferenceAssetRow = {
   id: string;
+  public_id: string;
   user_id: string | null;
   kind: string;
   url: string;
@@ -48,10 +49,7 @@ function requirePrincipal(principal: AgentPrincipal): void {
 function normalizeAssetId(value: unknown): string {
   if (
     typeof value !== 'string'
-    || value.length < 1
-    || value.length > MAX_ASSET_ID_LENGTH
-    || value !== value.trim()
-    || /[\u0000-\u001f\u007f]/u.test(value)
+    || !PUBLIC_ASSET_ID_PATTERN.test(value)
   ) {
     throw new AgentApiError('REFERENCE_INVALID', 'Reference media is not usable.');
   }
@@ -99,9 +97,9 @@ export async function resolveOwnedReferenceAsset(
   const normalizedAssetId = normalizeAssetId(assetId);
   const executor = dependencies.executor ?? defaultExecutor;
   const rows = await executor.query<ReferenceAssetRow>(
-    `SELECT id, user_id, kind, url, mime_type, width, height, status, deleted_at, metadata
+    `SELECT id, public_id, user_id, kind, url, mime_type, width, height, status, deleted_at, metadata
        FROM media_assets
-      WHERE id = $1
+      WHERE public_id = $1
         AND user_id = $2
       LIMIT 1`,
     [normalizedAssetId, principal.userId],
@@ -116,7 +114,7 @@ export async function resolveOwnedReferenceAsset(
 
   const media = resolveSupportedReferenceMedia(row.kind, row.mime_type);
   if (
-    row.id !== normalizedAssetId
+    row.public_id !== normalizedAssetId
     || row.status?.trim().toLowerCase() !== 'ready'
     || row.deleted_at !== null
     || !media
@@ -127,7 +125,7 @@ export async function resolveOwnedReferenceAsset(
   ) invalidReference();
 
   return {
-    assetId: row.id,
+    assetId: row.public_id,
     mediaKind: media.kind,
     storageUrl: row.url,
     width: row.width,

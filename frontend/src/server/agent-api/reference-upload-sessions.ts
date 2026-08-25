@@ -299,6 +299,23 @@ export async function completeUploadSession(
   if (!MEDIA_KINDS.has(input?.mediaKind)) throw new Error('Invalid reference upload media kind.');
   if (!boundedText(input?.assetId, 512)) throw new Error('Invalid reference upload asset ID.');
   const uploadedAt = requireClock(dependencies.uploadedAt, 'reference upload completion');
+  const lockedRows = await dependencies.executor.query<SessionRow>(
+    `SELECT ${SESSION_COLUMNS}
+       FROM mcp_reference_upload_sessions
+      WHERE session_id = $1
+        AND user_id = $2
+        AND claim_id = $3
+        AND media_kind = $4
+      FOR UPDATE`,
+    [input.sessionId, input.userId, input.claimId, input.mediaKind],
+  );
+  const locked = parseOptionalSession(lockedRows);
+  if (!locked) throw new AgentApiError('UPLOAD_ALREADY_USED', 'Reference upload link cannot be completed.');
+  if (locked.state === 'uploaded') {
+    if (locked.assetId === input.assetId) return locked;
+    throw new AgentApiError('UPLOAD_ALREADY_USED', 'Reference upload link cannot be completed.');
+  }
+  if (locked.state !== 'created') throw new AgentApiError('UPLOAD_ALREADY_USED', 'Reference upload link cannot be completed.');
   const rows = await dependencies.executor.query<SessionRow>(
     `UPDATE mcp_reference_upload_sessions
         SET state = 'uploaded', asset_id = $5, uploaded_at = $6, updated_at = $6

@@ -1,5 +1,5 @@
 import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
-import { randomUUID } from 'crypto';
+import { createHash, randomUUID } from 'crypto';
 import { ensureAssetSchema } from '@/lib/schema';
 import { query } from '@/lib/db';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
@@ -473,13 +473,20 @@ export async function uploadFileBuffer(params: {
   prefix?: string;
   cacheControl?: string;
   acl?: string | null;
+  contentAddressed?: boolean;
 }): Promise<{ key: string; url: string }> {
   const client = getS3Client();
-  const key = buildObjectKey({
-    prefix: params.prefix ?? 'files',
-    userId: params.userId ?? 'anonymous',
-    leafName: buildStorageLeafName({ mime: params.mime || 'application/octet-stream', fileName: params.fileName }),
-  });
+  const key = params.contentAddressed
+    ? buildObjectKey({
+        prefix: `${params.prefix ?? 'files'}/by-content`,
+        userId: createHash('sha256').update(params.userId ?? 'anonymous').digest('hex').slice(0, 32),
+        leafName: `${createHash('sha256').update(params.data).digest('hex')}.${inferExtension(params.mime)}`,
+      })
+    : buildObjectKey({
+        prefix: params.prefix ?? 'files',
+        userId: params.userId ?? 'anonymous',
+        leafName: buildStorageLeafName({ mime: params.mime || 'application/octet-stream', fileName: params.fileName }),
+      });
 
   const command = new PutObjectCommand({
     Bucket: S3_BUCKET,

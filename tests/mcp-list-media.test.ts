@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
 
@@ -28,6 +29,7 @@ const principal: AgentPrincipal = {
 
 type AssetRecord = {
   id: string;
+  publicId: string;
   userId: string | null;
   kind: 'image' | 'video' | 'audio';
   url: string;
@@ -73,8 +75,10 @@ async function loadMediaLibrary(): Promise<MediaLibraryModule> {
 }
 
 function asset(overrides: Partial<AssetRecord> = {}): AssetRecord {
+  const id = overrides.id ?? 'asset-upload';
   return {
-    id: 'asset-upload',
+    id,
+    publicId: publicIdFor(id),
     userId: principal.userId,
     kind: 'image',
     url: 'https://provider.example/private-origin.png',
@@ -97,6 +101,10 @@ function asset(overrides: Partial<AssetRecord> = {}): AssetRecord {
     createdAt: '2026-07-17T08:00:00.000Z',
     ...overrides,
   };
+}
+
+function publicIdFor(id: string): string {
+  return `ma_${createHash('sha256').update(id).digest('hex').slice(0, 32)}`;
 }
 
 function baseServices(overrides: Record<string, unknown> = {}): MaxVideoAiMcpServices {
@@ -177,7 +185,7 @@ test('listAgentMedia performs one unfiltered owner page read and returns safe mu
   assert.deepEqual(page, {
     items: [
       {
-        assetId: 'asset-upload',
+        assetId: publicIdFor('asset-upload'),
         kind: 'image',
         label: 'Uploaded reference',
         width: 1280,
@@ -189,7 +197,7 @@ test('listAgentMedia performs one unfiltered owner page read and returns safe mu
         createdAt: '2026-07-17T08:00:00.000Z',
       },
       {
-        assetId: 'asset-generated',
+        assetId: publicIdFor('asset-generated'),
         kind: 'image',
         label: 'Generated',
         width: 1280,
@@ -201,7 +209,7 @@ test('listAgentMedia performs one unfiltered owner page read and returns safe mu
         createdAt: '2026-07-17T08:00:00.000Z',
       },
       {
-        assetId: 'asset-imported',
+        assetId: publicIdFor('asset-imported'),
         kind: 'image',
         label: 'Imported',
         width: 1280,
@@ -213,7 +221,7 @@ test('listAgentMedia performs one unfiltered owner page read and returns safe mu
         createdAt: '2026-07-17T08:00:00.000Z',
       },
       {
-        assetId: 'asset-video',
+        assetId: publicIdFor('asset-video'),
         kind: 'video',
         label: 'Opening shot',
         width: 1280,
@@ -225,7 +233,7 @@ test('listAgentMedia performs one unfiltered owner page read and returns safe mu
         createdAt: '2026-07-17T08:00:00.000Z',
       },
       {
-        assetId: 'asset-audio',
+        assetId: publicIdFor('asset-audio'),
         kind: 'audio',
         label: 'Sound bed',
         width: null,
@@ -308,7 +316,7 @@ test('listAgentMedia allowlists and canonicalizes exact media MIME types before 
 
   assert.deepEqual(
     page.items.map((item) => [item.assetId, item.mimeType]),
-    supported.map(([id, , canonicalMime]) => [id, canonicalMime]),
+    supported.map(([id, , canonicalMime]) => [publicIdFor(id), canonicalMime]),
   );
   assert.deepEqual(signerCalls, supported.map(([id]) => id));
   assert.doesNotMatch(JSON.stringify(page), /pdf|binary|html|svg|missing|empty|unsupported-raster/u);
@@ -364,7 +372,7 @@ test('listAgentMedia passes an exact optional kind filter through one owner quer
   });
 
   assert.deepEqual(calls, [{ userId: principal.userId, kind: 'video', cursor: null, limit: 10 }]);
-  assert.deepEqual(page.items.map((item) => item.assetId), ['video-ready']);
+  assert.deepEqual(page.items.map((item) => item.assetId), [publicIdFor('video-ready')]);
 });
 
 test('agent listing relies on the canonical non-deleted library owner', () => {

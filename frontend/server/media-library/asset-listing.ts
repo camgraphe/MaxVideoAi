@@ -39,6 +39,7 @@ function mediaAssetFromJobOutput(output: JobOutputRecord): MediaAssetRecord {
       source: 'saved_job_output',
       sourceOutputId: output.id,
     }),
+    publicId: null,
     userId: output.userId,
     kind: output.kind,
     url: output.url,
@@ -91,7 +92,7 @@ export async function listLibraryAssetPage(params: {
     cursor?.id ?? null,
   ];
   const rows = await query<DbMediaAssetRow>(
-    `SELECT id, user_id, kind, url, thumb_url, preview_url, mime_type, width, height, size_bytes, source,
+    `SELECT id, public_id, user_id, kind, url, thumb_url, preview_url, mime_type, width, height, size_bytes, source,
             source_job_id, source_output_id, status, metadata, created_at
       FROM media_assets
       WHERE user_id = $1
@@ -237,6 +238,7 @@ export async function listLibraryAssetPage(params: {
     const metadata = normalizeMetadata(row.metadata);
     const legacyAsset: MediaAssetRecord = {
       id: row.asset_id,
+      publicId: null,
       userId: row.user_id,
       kind,
       url: row.url,

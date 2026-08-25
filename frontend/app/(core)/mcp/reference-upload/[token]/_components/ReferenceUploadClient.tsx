@@ -35,11 +35,31 @@ export function ReferenceUploadClient({
     setSubmitting(true);
     setError(null);
     try {
-      const form = new FormData();
-      form.set('file', file);
-      const response = await fetch(`/api/mcp/reference-upload/${encodeURIComponent(token)}`, {
+      const startResponse = await fetch(`/api/mcp/reference-upload/${encodeURIComponent(token)}/start`, {
         method: 'POST',
-        body: form,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileName: file.name, declaredMime: file.type, sizeBytes: file.size }),
+        credentials: 'same-origin',
+      });
+      const start = await startResponse.json() as {
+        ok?: boolean; uploadId?: string; uploadUrl?: string; headers?: Record<string, string>; error?: string;
+      };
+      if (!startResponse.ok || start.ok !== true || !start.uploadId || !start.uploadUrl || !start.headers) {
+        if (start.error === 'FILE_TOO_LARGE') throw new Error(`This ${mediaLabel} is larger than ${maxMB} MB.`);
+        if (start.error === 'UPLOAD_EXPIRED') throw new Error('This upload link has expired. Ask your assistant for a new one.');
+        if (start.error === 'UPLOAD_ALREADY_USED') throw new Error('This upload link has already been used.');
+        throw new Error(`The ${mediaLabel} could not be uploaded. Please try again.`);
+      }
+      const putResponse = await fetch(start.uploadUrl, {
+        method: 'PUT',
+        headers: start.headers,
+        body: file,
+      });
+      if (!putResponse.ok) throw new Error(`The ${mediaLabel} could not be uploaded. Please try again.`);
+      const response = await fetch(`/api/mcp/reference-upload/${encodeURIComponent(token)}/complete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uploadId: start.uploadId }),
         credentials: 'same-origin',
       });
       const payload = await response.json() as { ok?: boolean; assetId?: string; error?: string };

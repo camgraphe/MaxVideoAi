@@ -148,6 +148,8 @@ function resolveListableMedia(
     || typeof asset.id !== 'string'
     || asset.id.length < 1
     || asset.id.length > 512
+    || typeof asset.publicId !== 'string'
+    || !/^ma_[a-f0-9]{32}$/u.test(asset.publicId)
     || typeof asset.createdAt !== 'string'
     || !Number.isFinite(Date.parse(asset.createdAt))
   ) return null;
@@ -179,7 +181,7 @@ export async function listAgentMedia(
   });
   const items = await Promise.all(
     listable.map(async ({ asset, resolved }): Promise<AgentMediaItem> => ({
-      assetId: asset.id,
+      assetId: asset.publicId!,
       kind: resolved.media.kind,
       label: normalizeLabel(asset.metadata.label),
       width: normalizeDimension(asset.width),

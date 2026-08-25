@@ -141,6 +141,7 @@ test('completeUploadSession binds one asset to the exact owner and claim', async
   const executor: QueryExecutor = {
     async query<T>(sql: string, params: ReadonlyArray<unknown> = []) {
       calls.push({ sql, params });
+      if (/FOR UPDATE/i.test(sql)) return [row({ claim_id: claimId, claimed_at: now })] as T[];
       return [row({
         state: 'uploaded', claim_id: claimId, claimed_at: now,
         asset_id: 'asset-video-1', uploaded_at: now, updated_at: now,
@@ -155,10 +156,35 @@ test('completeUploadSession binds one asset to the exact owner and claim', async
 
   assert.equal(completed.assetId, 'asset-video-1');
   assert.equal(completed.state, 'uploaded');
-  assert.match(calls[0].sql, /session_id\s*=\s*\$1[\s\S]*user_id\s*=\s*\$2/i);
-  assert.match(calls[0].sql, /claim_id\s*=\s*\$3[\s\S]*state\s*=\s*'created'/i);
-  assert.match(calls[0].sql, /media_kind\s*=\s*\$4/i);
-  assert.ok(calls[0].params.includes('video'));
+  assert.match(calls.at(-1)?.sql ?? '', /session_id\s*=\s*\$1[\s\S]*user_id\s*=\s*\$2/i);
+  assert.match(calls.at(-1)?.sql ?? '', /claim_id\s*=\s*\$3[\s\S]*state\s*=\s*'created'/i);
+  assert.match(calls.at(-1)?.sql ?? '', /media_kind\s*=\s*\$4/i);
+  assert.ok(calls.at(-1)?.params.includes('video'));
+});
+
+test('completeUploadSession is idempotent only for the exact already-completed owner, kind, claim, and asset', async () => {
+  const calls: Call[] = [];
+  const completedRow = row({
+    state: 'uploaded', claim_id: claimId, claimed_at: now,
+    asset_id: 'ma_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', uploaded_at: now, updated_at: now,
+  });
+  const executor: QueryExecutor = {
+    async query<T>(sql: string, params: ReadonlyArray<unknown> = []) {
+      calls.push({ sql, params });
+      if (/FOR UPDATE/i.test(sql)) return [completedRow] as T[];
+      throw new Error('must not update an already-completed exact replay');
+    },
+  };
+  const completed = await completeUploadSession(
+    {
+      sessionId, userId: 'user-a', claimId, mediaKind: 'video',
+      assetId: 'ma_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    },
+    { executor: executor as TransactionQueryExecutor, uploadedAt: now },
+  );
+  assert.equal(completed.state, 'uploaded');
+  assert.equal(calls.length, 1);
+  assert.match(calls[0].sql, /FOR UPDATE/i);
 });
 
 test('session rows fail closed when the persisted media kind is missing or unsupported', async () => {

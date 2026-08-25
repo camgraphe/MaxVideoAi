@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const migrationPath = 'neon/migrations/32_mcp_reference_uploads.sql';
 const mediaKindMigrationPath = 'neon/migrations/34_mcp_reference_upload_media_kind.sql';
+const hardeningMigrationPath = 'neon/migrations/35_mcp_reference_upload_hardening.sql';
 
 test('migration 32 owns short-lived single-use reference upload sessions', () => {
   assert.equal(existsSync(migrationPath), true, `${migrationPath} should exist`);
@@ -46,5 +47,25 @@ test('the next Neon migration binds an immutable exact media kind to every uploa
   assert.match(source, /ADD COLUMN IF NOT EXISTS\s+media_kind\s+TEXT/i);
   assert.match(source, /media_kind\s+IN\s*\(\s*'image'\s*,\s*'video'\s*,\s*'audio'\s*\)/i);
   assert.match(source, /media_kind\s+IS DISTINCT FROM\s+OLD\.media_kind/i);
+  assert.doesNotMatch(source, /ALTER COLUMN\s+media_kind\s+DROP DEFAULT/i);
+  assert.doesNotMatch(source, /supabase/i);
+});
+
+test('upload hardening migration adds opaque public IDs and durable session-bound attempts with expand-contract checks', () => {
+  assert.equal(existsSync(hardeningMigrationPath), true, `${hardeningMigrationPath} should exist`);
+  const source = readFileSync(hardeningMigrationPath, 'utf8');
+
+  assert.match(source, /ALTER TABLE\s+media_assets[\s\S]*ADD COLUMN IF NOT EXISTS\s+public_id\s+TEXT/i);
+  assert.match(source, /UPDATE\s+media_assets[\s\S]*public_id\s*=\s*['"]?ma_/i);
+  assert.match(source, /CREATE UNIQUE INDEX[\s\S]*media_assets_public_id/i);
+  assert.match(source, /CREATE TABLE IF NOT EXISTS\s+mcp_reference_upload_attempts/i);
+  assert.match(source, /session_id\s+UUID[\s\S]*REFERENCES\s+mcp_reference_upload_sessions/i);
+  assert.match(source, /upload_id\s+UUID[\s\S]*UNIQUE/i);
+  assert.match(source, /storage_key\s+TEXT/i);
+  assert.match(source, /declared_size\s+BIGINT/i);
+  assert.match(source, /content_sha256\s+TEXT/i);
+  assert.match(source, /staged_asset_id\s+TEXT/i);
+  assert.match(source, /FOREIGN KEY\s*\(session_id,\s*user_id,\s*media_kind\)/i);
+  assert.match(source, /mcp_reference_upload_attempts identity is immutable/i);
   assert.doesNotMatch(source, /supabase/i);
 });

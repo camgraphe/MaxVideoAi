@@ -18,6 +18,69 @@ type DetectBufferOptions = DetectOptions & {
   streamSelector?: 'audio' | 'video';
 };
 
+export type ProbedMediaBuffer = {
+  kind: 'video' | 'audio';
+  canonicalMime: string;
+  durationSec: number;
+};
+
+function canonicalMimeForProbe(kind: 'video' | 'audio', formatName: string): string | null {
+  const formats = new Set(formatName.toLowerCase().split(',').map((value) => value.trim()));
+  if (kind === 'video') {
+    if (formats.has('webm') || formats.has('matroska')) return 'video/webm';
+    if (formats.has('avi')) return 'video/x-msvideo';
+    if (formats.has('mpegts')) return 'video/mp2t';
+    if (formats.has('mov') || formats.has('mp4') || formats.has('m4v')) return 'video/mp4';
+    return null;
+  }
+  if (formats.has('mp3')) return 'audio/mpeg';
+  if (formats.has('wav')) return 'audio/wav';
+  if (formats.has('ogg')) return 'audio/ogg';
+  if (formats.has('flac')) return 'audio/flac';
+  if (formats.has('aac')) return 'audio/aac';
+  if (formats.has('mov') || formats.has('mp4') || formats.has('m4a')) return 'audio/mp4';
+  return null;
+}
+
+export async function probeMediaBuffer(
+  mediaBuffer: Buffer,
+  options: Omit<DetectBufferOptions, 'streamSelector'> = {},
+): Promise<ProbedMediaBuffer | null> {
+  if (!ffprobe.path || !mediaBuffer.length) return null;
+  const timeoutMs = options.timeoutMs ?? 12_000;
+  const temporaryDirectory = await mkdtemp(join(tmpdir(), 'maxvideo-media-probe-'));
+  const temporaryFile = join(temporaryDirectory, `input.${resolveTemporaryMediaExtension(options)}`);
+  try {
+    await writeFile(temporaryFile, mediaBuffer);
+    const { stdout } = await execFileAsync(ffprobe.path, [
+      '-v', 'error',
+      '-show_entries', 'stream=codec_type,duration:format=format_name,duration',
+      '-of', 'json',
+      temporaryFile,
+    ], { timeout: timeoutMs, maxBuffer: 1024 * 1024 });
+    const metadata = JSON.parse(stdout) as {
+      streams?: Array<{ codec_type?: string; duration?: string }>;
+      format?: { format_name?: string; duration?: string };
+    };
+    const hasVideo = metadata.streams?.some((stream) => stream.codec_type === 'video') ?? false;
+    const hasAudio = metadata.streams?.some((stream) => stream.codec_type === 'audio') ?? false;
+    const kind = hasVideo ? 'video' : hasAudio ? 'audio' : null;
+    if (!kind) return null;
+    const canonicalMime = canonicalMimeForProbe(kind, metadata.format?.format_name ?? '');
+    if (!canonicalMime) return null;
+    const streamDuration = metadata.streams?.find((stream) => stream.codec_type === kind)?.duration;
+    const durationSec = Number.parseFloat(metadata.format?.duration ?? streamDuration ?? '');
+    if (!Number.isFinite(durationSec) || durationSec <= 0) return null;
+    return { kind, canonicalMime, durationSec: Math.round(durationSec * 1000) / 1000 };
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : 'unknown error running ffprobe';
+    console.warn('[media-probe] ffprobe buffer probe failed', { reason });
+    return null;
+  } finally {
+    await rm(temporaryDirectory, { recursive: true, force: true }).catch(() => undefined);
+  }
+}
+
 export type VideoDimensions = {
   width: number;
   height: number;

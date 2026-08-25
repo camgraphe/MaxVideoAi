@@ -55,6 +55,7 @@ export type JobOutputRecord = {
 
 export type MediaAssetRecord = {
   id: string;
+  publicId: string | null;
   userId: string | null;
   kind: MediaKind;
   url: string;
@@ -116,6 +117,7 @@ export type DbJobOutputRow = {
 
 export type DbMediaAssetRow = {
   id: string;
+  public_id?: string | null;
   user_id: string | null;
   kind: MediaKind;
   url: string;
@@ -385,6 +387,7 @@ export function mapAssetRow(row: DbMediaAssetRow): MediaAssetRecord {
   const metadata = normalizeMetadata(row.metadata);
   return {
     id: row.id,
+    publicId: typeof row.public_id === 'string' ? row.public_id : null,
     userId: row.user_id,
     kind: row.kind,
     url: row.url,

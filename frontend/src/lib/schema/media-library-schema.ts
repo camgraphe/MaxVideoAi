@@ -56,6 +56,7 @@ export async function ensureMediaLibrarySchema(): Promise<void> {
   await query(`
     CREATE TABLE IF NOT EXISTS media_assets (
       id TEXT PRIMARY KEY,
+      public_id TEXT NOT NULL DEFAULT ('ma_' || replace(gen_random_uuid()::text, '-', '')),
       user_id TEXT,
       workspace_id TEXT,
       kind TEXT NOT NULL CHECK (kind IN ('image','video','audio')),
@@ -95,6 +96,20 @@ export async function ensureMediaLibrarySchema(): Promise<void> {
   await query(`
     ALTER TABLE media_assets
     ADD COLUMN IF NOT EXISTS preview_url TEXT;
+  `);
+
+  await query(`
+    ALTER TABLE media_assets
+    ADD COLUMN IF NOT EXISTS public_id TEXT DEFAULT ('ma_' || replace(gen_random_uuid()::text, '-', ''));
+    UPDATE media_assets
+       SET public_id = 'ma_' || replace(gen_random_uuid()::text, '-', '')
+     WHERE public_id IS NULL;
+    ALTER TABLE media_assets
+      ALTER COLUMN public_id SET NOT NULL;
+  `);
+
+  await query(`
+    CREATE UNIQUE INDEX IF NOT EXISTS media_assets_public_id_idx ON media_assets (public_id);
   `);
 
   await query(`

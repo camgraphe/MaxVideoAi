@@ -112,7 +112,7 @@ export async function ensureReusableAsset(params: {
   });
 
   const existing = await query<DbMediaAssetRow>(
-    `SELECT id, user_id, kind, url, thumb_url, preview_url, mime_type, width, height, size_bytes, source,
+    `SELECT id, public_id, user_id, kind, url, thumb_url, preview_url, mime_type, width, height, size_bytes, source,
             source_job_id, source_output_id, status, metadata, created_at
        FROM media_assets
       WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL
@@ -148,7 +148,7 @@ export async function ensureReusableAsset(params: {
           WHERE id = $1
             AND user_id = $2
             AND deleted_at IS NULL
-          RETURNING id, user_id, kind, url, thumb_url, preview_url, mime_type, width, height, size_bytes, source,
+          RETURNING id, public_id, user_id, kind, url, thumb_url, preview_url, mime_type, width, height, size_bytes, source,
                     source_job_id, source_output_id, status, metadata, created_at`,
         [identity, params.userId, resolvedThumbUrl, resolvedPreviewUrl, durationSec, mediaWidth, mediaHeight]
       );
@@ -235,7 +235,7 @@ export async function ensureReusableAsset(params: {
        status = EXCLUDED.status,
        metadata = COALESCE(media_assets.metadata, '{}'::jsonb) || EXCLUDED.metadata,
        updated_at = NOW()
-     RETURNING id, user_id, kind, url, thumb_url, preview_url, mime_type, width, height, size_bytes, source,
+     RETURNING id, public_id, user_id, kind, url, thumb_url, preview_url, mime_type, width, height, size_bytes, source,
                source_job_id, source_output_id, status, metadata, created_at`,
     [
       insert.id,

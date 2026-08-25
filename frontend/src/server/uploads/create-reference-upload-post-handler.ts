@@ -41,7 +41,10 @@ async function resolveStoredImageReferenceAsset(input: {
     sizeBytes: stored.sizeBytes,
     thumbUrl: stored.thumbUrl,
   });
-  return { assetId: canonical.id };
+  if (!canonical.publicId || !/^ma_[a-f0-9]{32}$/u.test(canonical.publicId)) {
+    throw new Error('Canonical image has no public alias.');
+  }
+  return { assetId: canonical.publicId };
 }
 
 type ReferenceUploadPostDependencies = {
@@ -205,6 +208,7 @@ export function createReferenceUploadPostHandler(
           fileName: file.name,
           declaredMime,
           bytes,
+          referenceEligibility: 'mcp',
         })).assetId;
       } else {
         assetId = (await dependencies.storeAudioUpload({
@@ -212,6 +216,7 @@ export function createReferenceUploadPostHandler(
           fileName: file.name,
           declaredMime,
           bytes,
+          referenceEligibility: 'mcp',
         })).assetId;
       }
       storedAssetId = assetId;

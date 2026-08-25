@@ -281,22 +281,20 @@ async function uploadRequest(params: {
   );
 }
 
-test('audio upload API applies Seedance field limits before auth while generic uploads keep existing limits', async () => {
+test('audio upload API authenticates before multipart parsing and keeps constraints behind the auth boundary', async () => {
   const exactMp3 = await uploadRequest({ name: 'reference.mp3', mimeType: 'audio/mpeg', sizeBytes: 15 * MB, constrained: true });
   assert.equal(exactMp3.status, 401);
   const exactWav = await uploadRequest({ name: 'reference.wav', mimeType: 'audio/wav', sizeBytes: 1, constrained: true });
   assert.equal(exactWav.status, 401);
 
   const tooLarge = await uploadRequest({ name: 'reference.mp3', mimeType: 'audio/mpeg', sizeBytes: 15 * MB + 1, constrained: true });
-  assert.equal(tooLarge.status, 413);
-  assert.deepEqual(await tooLarge.json(), { ok: false, error: 'FILE_TOO_LARGE', maxMB: 15 });
+  assert.equal(tooLarge.status, 401);
 
   const m4a = await uploadRequest({ name: 'reference.m4a', mimeType: 'audio/mp4', sizeBytes: 1, constrained: true });
-  assert.equal(m4a.status, 415);
-  assert.deepEqual(await m4a.json(), { ok: false, error: 'UNSUPPORTED_TYPE' });
+  assert.equal(m4a.status, 401);
 
   const missingExtension = await uploadRequest({ name: 'reference', mimeType: 'audio/mpeg', sizeBytes: 1, constrained: true });
-  assert.equal(missingExtension.status, 415);
+  assert.equal(missingExtension.status, 401);
 
   const genericFieldWrongType = await uploadRequest({
     name: 'not-audio.png',
@@ -305,10 +303,13 @@ test('audio upload API applies Seedance field limits before auth while generic u
     constrained: true,
     engineId: 'seedance-2-0',
   });
-  assert.equal(genericFieldWrongType.status, 415);
+  assert.equal(genericFieldWrongType.status, 401);
 
   const genericM4a = await uploadRequest({ name: 'unrelated.m4a', mimeType: 'audio/mp4', sizeBytes: 20 * MB });
   assert.equal(genericM4a.status, 401);
+
+  const routeSource = readFileSync('frontend/app/api/uploads/audio/_lib/audio-upload-handler.ts', 'utf8');
+  assert.ok(routeSource.indexOf('getRouteAuthContextFn') < routeSource.indexOf('req.formData()'));
 });
 
 test('workspace upload context and trusted generation validation are wired before billing', () => {
