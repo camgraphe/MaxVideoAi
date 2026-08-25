@@ -56,12 +56,15 @@ export async function claimStorageObjectProducer(input: { objectKey: string }, d
        object_key, state, producer_claim_id, producer_lease_expires_at, created_at, updated_at
      ) VALUES ($1,'producing',$2,$3,$4,$4)
      ON CONFLICT (object_key) DO UPDATE
-       SET state = 'producing', producer_claim_id = EXCLUDED.producer_claim_id,
+       SET state = CASE WHEN mcp_reference_upload_object_fences.state = 'referenced'
+             THEN 'referenced' ELSE 'producing' END,
+           producer_claim_id = EXCLUDED.producer_claim_id,
            producer_lease_expires_at = EXCLUDED.producer_lease_expires_at,
            delete_claim_id = NULL, delete_lease_expires_at = NULL, updated_at = EXCLUDED.updated_at
        WHERE mcp_reference_upload_object_fences.state IN ('available','deleted','orphaned')
-          OR (mcp_reference_upload_object_fences.state = 'producing'
-            AND mcp_reference_upload_object_fences.producer_lease_expires_at <= EXCLUDED.updated_at)
+          OR (mcp_reference_upload_object_fences.state IN ('producing','referenced')
+            AND (mcp_reference_upload_object_fences.producer_claim_id IS NULL
+              OR mcp_reference_upload_object_fences.producer_lease_expires_at <= EXCLUDED.updated_at))
      RETURNING object_key, producer_claim_id, producer_lease_expires_at`,
     [objectKey, claimId, leaseExpiresAt, now],
   );
@@ -84,7 +87,7 @@ export async function renewStorageObjectProducer(input: { claim: StorageObjectPr
   }>(
     `UPDATE mcp_reference_upload_object_fences
         SET producer_lease_expires_at = $3, updated_at = $4
-      WHERE object_key = $1 AND state = 'producing' AND producer_claim_id = $2
+      WHERE object_key = $1 AND state IN ('producing','referenced') AND producer_claim_id = $2
         AND producer_lease_expires_at > $4
       RETURNING object_key, producer_claim_id, producer_lease_expires_at`,
     [requireObjectKey(input.claim.objectKey), requireClaimId(input.claim.claimId), leaseExpiresAt, now],
@@ -99,13 +102,20 @@ export async function settleStorageObjectProducer(input: {
 }, dependencies: { executor?: QueryExecutor; now?: Date } = {}): Promise<void> {
   const executor = dependencies.executor ?? { query };
   const now = dependencies.now ?? new Date();
-  const nextState = input.outcome === 'persisted' ? 'available' : 'orphaned';
   const rows = await executor.query<{ object_key: unknown }>(
     `UPDATE mcp_reference_upload_object_fences
-        SET state = $3, producer_claim_id = NULL, producer_lease_expires_at = NULL, updated_at = $4
-      WHERE object_key = $1 AND state = 'producing' AND producer_claim_id = $2
+        SET state = CASE
+              WHEN EXISTS (SELECT 1 FROM user_assets AS assets
+                WHERE position($1 in assets.url) > 0
+                  OR position($1 in COALESCE(assets.metadata->>'thumbUrl', '')) > 0)
+                OR EXISTS (SELECT 1 FROM media_assets AS media
+                  WHERE media.deleted_at IS NULL AND (position($1 in media.url) > 0
+                    OR position($1 in COALESCE(media.thumb_url, '')) > 0))
+              THEN 'referenced' ELSE 'orphaned' END,
+            producer_claim_id = NULL, producer_lease_expires_at = NULL, updated_at = $3
+      WHERE object_key = $1 AND state IN ('producing','referenced') AND producer_claim_id = $2
       RETURNING object_key`,
-    [requireObjectKey(input.claim.objectKey), requireClaimId(input.claim.claimId), nextState, now],
+    [requireObjectKey(input.claim.objectKey), requireClaimId(input.claim.claimId), now],
   );
   if (rows.length !== 1) throw new Error('Storage object producer claim was lost.');
 }
