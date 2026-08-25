@@ -21,6 +21,7 @@ type UploadThumbnailParams = {
   userId?: string | null;
   fileName?: string | null;
   beforeUpload?: (key: string) => Promise<void>;
+  signal?: AbortSignal;
 };
 
 function normalizePositiveInt(value: number, fallback: number): number {
@@ -72,6 +73,7 @@ export async function createUploadImageThumbnail(params: UploadThumbnailParams):
       prefix: 'user-asset-thumbs',
       fileName: `${baseName(params.fileName)}-thumb.webp`,
       beforeUpload: params.beforeUpload,
+      ...(params.signal ? { signal: params.signal } : {}),
     });
 
     return normalizeMediaUrl(upload.url) ?? upload.url;
@@ -97,7 +99,7 @@ export async function createUploadVideoThumbnail(params: UploadThumbnailParams):
 
   try {
     await writeFile(inputPath, params.data);
-    await runFfmpeg(executableFfmpegPath, inputPath, outputPath);
+    await runFfmpeg(executableFfmpegPath, inputPath, outputPath, params.signal);
     const thumb = await readFile(outputPath);
     if (!thumb.length) return null;
 
@@ -108,6 +110,7 @@ export async function createUploadVideoThumbnail(params: UploadThumbnailParams):
       prefix: 'user-asset-thumbs',
       fileName: `${baseName(params.fileName)}-thumb.jpg`,
       beforeUpload: params.beforeUpload,
+      ...(params.signal ? { signal: params.signal } : {}),
     });
 
     return normalizeMediaUrl(upload.url) ?? upload.url;
@@ -122,11 +125,11 @@ export async function createUploadVideoThumbnail(params: UploadThumbnailParams):
   }
 }
 
-function runFfmpeg(ffmpegPath: string, inputPath: string, outputPath: string): Promise<void> {
+function runFfmpeg(ffmpegPath: string, inputPath: string, outputPath: string, signal?: AbortSignal): Promise<void> {
   const args = ['-y', '-ss', '0.75', '-i', inputPath, '-frames:v', '1', '-vf', 'scale=640:-2', '-q:v', '4', outputPath];
 
   return new Promise((resolve, reject) => {
-    execFile(ffmpegPath, args, (error) => {
+    execFile(ffmpegPath, args, { timeout: 30_000, signal }, (error) => {
       if (error) {
         reject(error);
       } else {

@@ -58,6 +58,7 @@ export type StoreMediaUploadInput = {
     beforeUpload(entry: { objectRole: 'final' | 'thumbnail'; objectKey: string; safeToDelete: boolean }): Promise<void>;
     retain(objectKey: string): Promise<void>;
   };
+  signal?: AbortSignal;
 };
 
 export type StoredMediaUpload = {
@@ -87,6 +88,7 @@ function createStoreMediaUploadService(
 ): (input: StoreMediaUploadInput) => Promise<StoredMediaUpload> {
   const dependencies = { ...defaultDependencies, ...overrides };
   return async (input) => {
+    input.signal?.throwIfAborted();
     if (!input.bytes.length) {
       throw new MediaUploadError('EMPTY_FILE', 'The uploaded media file is empty.');
     }
@@ -101,11 +103,15 @@ function createStoreMediaUploadService(
     const probe = await dependencies.probeMediaBuffer(input.bytes, {
       fileName: input.fileName,
       mimeType: declaredMime,
+      signal: input.signal,
     });
+    input.signal?.throwIfAborted();
     if (!probe || probe.kind !== mediaKind) {
       throw new MediaUploadError('METADATA_UNVERIFIED', 'The uploaded media metadata could not be verified.');
     }
-    const strictDetected = resolveSupportedReferenceMedia(mediaKind, probe.canonicalMime);
+    const strictDetected = probe.detectedMime
+      ? resolveSupportedReferenceMedia(mediaKind, probe.detectedMime)
+      : null;
     const isoVideoAlias = mediaKind === 'video'
       && strictDeclared?.canonicalMime === 'video/quicktime'
       && strictDetected?.canonicalMime === 'video/mp4';
@@ -130,6 +136,7 @@ function createStoreMediaUploadService(
         ...(input.cleanupObjects ? {
           beforeUpload: (objectKey: string) => input.cleanupObjects!.beforeUpload({ objectRole: 'final', objectKey, safeToDelete: false }),
         } : {}),
+        ...(input.signal ? { signal: input.signal } : {}),
       });
     } catch (error) {
       throw new MediaUploadError('UPLOAD_FAILED', 'The media file could not be uploaded.', { cause: error });
@@ -149,8 +156,10 @@ function createStoreMediaUploadService(
                 await input.cleanupObjects!.beforeUpload({ objectRole: 'thumbnail', objectKey, safeToDelete: true });
               },
             } : {}),
+            ...(input.signal ? { signal: input.signal } : {}),
           })
         : null;
+      input.signal?.throwIfAborted();
       const metadata = {
         originalName: input.fileName,
         kind: mediaKind,

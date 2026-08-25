@@ -1,6 +1,12 @@
 ALTER TABLE mcp_reference_upload_attempts
   ADD COLUMN IF NOT EXISTS protocol_version SMALLINT NOT NULL DEFAULT 1;
 
+UPDATE mcp_reference_upload_attempts
+   SET protocol_version = 2
+ WHERE file_sha256 ~ '^[a-f0-9]{64}$'
+   AND chunk_bytes > 0
+   AND total_parts > 0;
+
 ALTER TABLE mcp_reference_upload_attempts
   DROP CONSTRAINT IF EXISTS mcp_reference_upload_attempts_protocol_shape;
 ALTER TABLE mcp_reference_upload_attempts
@@ -51,6 +57,20 @@ INSERT INTO mcp_reference_upload_cleanup_objects (
   cleanup_id, session_id, upload_id, user_id, media_kind, object_role,
   object_key, owner_prefix, state, created_at, updated_at
 )
+SELECT gen_random_uuid(), parts.session_id, parts.upload_id, parts.user_id, parts.media_kind, 'part',
+  parts.storage_key,
+  CASE WHEN position('/' IN parts.storage_key) > 0
+    THEN regexp_replace(parts.storage_key, '[^/]+$', '')
+    ELSE parts.storage_key
+  END,
+  'pending', parts.created_at, parts.updated_at
+  FROM mcp_reference_upload_parts AS parts
+ON CONFLICT (session_id, upload_id, user_id, media_kind, object_key) DO NOTHING;
+
+INSERT INTO mcp_reference_upload_cleanup_objects (
+  cleanup_id, session_id, upload_id, user_id, media_kind, object_role,
+  object_key, owner_prefix, state, created_at, updated_at
+)
 SELECT gen_random_uuid(), session_id, upload_id, user_id, media_kind, 'legacy_staging',
   storage_key, regexp_replace(storage_key, '[^/]+$', ''), 'pending', created_at, updated_at
   FROM mcp_reference_upload_attempts
@@ -80,6 +100,53 @@ DROP TRIGGER IF EXISTS mcp_reference_upload_attempts_register_v1_cleanup
 CREATE TRIGGER mcp_reference_upload_attempts_register_v1_cleanup
   AFTER INSERT ON mcp_reference_upload_attempts
   FOR EACH ROW EXECUTE FUNCTION register_mcp_reference_upload_v1_cleanup();
+
+CREATE OR REPLACE FUNCTION classify_mcp_reference_upload_protocol()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  IF NEW.file_sha256 ~ '^[a-f0-9]{64}$' AND NEW.chunk_bytes > 0 AND NEW.total_parts > 0 THEN
+    NEW.protocol_version := 2;
+  ELSE
+    NEW.protocol_version := 1;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS mcp_reference_upload_attempts_classify_protocol
+  ON mcp_reference_upload_attempts;
+CREATE TRIGGER mcp_reference_upload_attempts_classify_protocol
+  BEFORE INSERT ON mcp_reference_upload_attempts
+  FOR EACH ROW EXECUTE FUNCTION classify_mcp_reference_upload_protocol();
+
+CREATE OR REPLACE FUNCTION register_mcp_reference_upload_part_cleanup()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  INSERT INTO mcp_reference_upload_cleanup_objects (
+    cleanup_id, session_id, upload_id, user_id, media_kind, object_role,
+    object_key, owner_prefix, state, created_at, updated_at
+  ) VALUES (
+    gen_random_uuid(), NEW.session_id, NEW.upload_id, NEW.user_id, NEW.media_kind, 'part',
+    NEW.storage_key,
+    CASE WHEN position('/' IN NEW.storage_key) > 0
+      THEN regexp_replace(NEW.storage_key, '[^/]+$', '')
+      ELSE NEW.storage_key
+    END,
+    'pending', NEW.created_at, NEW.updated_at
+  ) ON CONFLICT (session_id, upload_id, user_id, media_kind, object_key) DO NOTHING;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS mcp_reference_upload_parts_register_cleanup
+  ON mcp_reference_upload_parts;
+CREATE TRIGGER mcp_reference_upload_parts_register_cleanup
+  AFTER INSERT ON mcp_reference_upload_parts
+  FOR EACH ROW EXECUTE FUNCTION register_mcp_reference_upload_part_cleanup();
 
 CREATE OR REPLACE FUNCTION enforce_mcp_reference_upload_cleanup_update()
 RETURNS TRIGGER

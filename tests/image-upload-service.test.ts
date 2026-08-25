@@ -6,6 +6,8 @@ import { pathToFileURL } from 'node:url';
 
 import sharp from 'sharp';
 
+process.env.S3_BUCKET = 'test-bucket';
+
 const servicePath = path.join(
   process.cwd(),
   'frontend/src/server/uploads/store-image-upload.ts'
@@ -239,6 +241,31 @@ test('service deduplicates the normalized bytes without writing storage twice', 
     'dedupe hash must be computed from normalized bytes'
   );
   assert.equal(writeCalls, 0);
+});
+
+test('MCP image duplicate owned by a previous attempt requires no cleanup-ledger transition', async () => {
+  const service = await loadService();
+  let cleanupTransitions = 0;
+  const store = service.createStoreImageUploadService(
+    makeServiceDependencies({
+      query: async () => [{
+        asset_id: 'asset_existing',
+        url: 'https://test-bucket.s3.amazonaws.com/user-assets/user_1/existing.webp',
+        mime_type: 'image/webp', width: 640, height: 360, size_bytes: '321',
+        thumb_url: 'https://test-bucket.s3.amazonaws.com/user-asset-thumbs/user_1/existing.webp',
+      }],
+      uploadImageToStorage: async () => { throw new Error('must not upload a duplicate'); },
+    })
+  );
+  const result = await store({
+    userId: 'user_1', fileName: 'reference.tiff', declaredMime: 'image/tiff', bytes: Buffer.from('same'),
+    cleanupObjects: {
+      async beforeUpload() { cleanupTransitions += 1; },
+      async retain() { cleanupTransitions += 1; },
+    },
+  });
+  assert.equal(result.assetId, 'asset_existing');
+  assert.equal(cleanupTransitions, 0);
 });
 
 test('service uploads, records, mirrors, and returns the exact public projection', async () => {

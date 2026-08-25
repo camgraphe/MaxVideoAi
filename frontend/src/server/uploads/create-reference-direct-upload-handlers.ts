@@ -35,6 +35,7 @@ import { MediaUploadError, storeAudioUpload, storeVideoUpload } from '@/server/u
 
 type RouteContext = { params: Promise<{ token: string }> };
 const REQUEST_METADATA_LIMIT_BYTES = 16 * 1024;
+const DEFAULT_FINALIZATION_TIMEOUT_MS = 90_000;
 export const MCP_REFERENCE_UPLOAD_CHUNK_BYTES = 3_500_000;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 const SHA_PATTERN = /^[a-f0-9]{64}$/u;
@@ -243,12 +244,15 @@ export function createReferenceUploadPartHandler(overrides: Partial<PartDependen
 }
 
 type CompletionDependencies = CommonDependencies & {
+  finalizationTimeoutMs: number;
   getOwnedReferenceUploadAttempt: typeof getOwnedReferenceUploadAttempt;
   acquireReferenceUploadCompletionLease: typeof acquireReferenceUploadCompletionLease;
   listReferenceUploadParts: typeof listReferenceUploadParts;
   renewReferenceUploadCompletionLease: typeof renewReferenceUploadCompletionLease;
   getStorageObjectBuffer: typeof getStorageObjectBuffer;
   storeImageUpload: typeof storeImageUpload;
+  loadStoredImageUploadRouteAsset: typeof loadStoredImageUploadRouteAsset;
+  ensureReusableAsset: typeof ensureReusableAsset;
   storeVideoUpload: typeof storeVideoUpload;
   storeAudioUpload: typeof storeAudioUpload;
   stageReferenceUploadAttempt: typeof stageReferenceUploadAttempt;
@@ -265,10 +269,12 @@ type CompletionDependencies = CommonDependencies & {
 export function createReferenceUploadCompleteHandler(overrides: Partial<CompletionDependencies> = {}) {
   const dependencies: CompletionDependencies = {
     ...commonDefaults, getOwnedReferenceUploadAttempt, acquireReferenceUploadCompletionLease,
-    listReferenceUploadParts, renewReferenceUploadCompletionLease, getStorageObjectBuffer, storeImageUpload, storeVideoUpload, storeAudioUpload,
+    listReferenceUploadParts, renewReferenceUploadCompletionLease, getStorageObjectBuffer, storeImageUpload,
+    loadStoredImageUploadRouteAsset, ensureReusableAsset, storeVideoUpload, storeAudioUpload,
     stageReferenceUploadAttempt, completeUploadSession, completeReferenceUploadAttempt,
     failReferenceUploadAttempt, cleanupReferenceUploadParts, abortReferenceUploadAttempt, deleteStorageObjectKey,
-    registerReferenceUploadCleanupObject, retainReferenceUploadCleanupObject, ...overrides,
+    registerReferenceUploadCleanupObject, retainReferenceUploadCleanupObject,
+    finalizationTimeoutMs: DEFAULT_FINALIZATION_TIMEOUT_MS, ...overrides,
   };
   return async (request: NextRequest, context: RouteContext): Promise<NextResponse> => {
     const authorized = await authorize(request, dependencies);
@@ -338,19 +344,29 @@ export function createReferenceUploadCompleteHandler(overrides: Partial<Completi
               { attempt: leased!, objectKey }, { executor, now: dependencies.now() },
             )),
         };
-        if (leased.session.mediaKind === 'image') {
-          const stored = await dependencies.storeImageUpload({ userId, fileName: leased.fileName, declaredMime: leased.declaredMime, bytes, cleanupObjects });
-          const image = await loadStoredImageUploadRouteAsset({ userId, assetId: stored.assetId });
-          const canonical = await ensureReusableAsset({ userId, url: image.url, kind: 'image', source: 'upload', mimeType: image.mimeType,
-            width: image.width, height: image.height, sizeBytes: image.sizeBytes, thumbUrl: image.thumbUrl });
-          if (!canonical.publicId || !/^ma_[a-f0-9]{32}$/u.test(canonical.publicId)) throw new Error('Canonical image has no public alias.');
-          assetId = canonical.publicId;
-        } else {
-          const stored = leased.session.mediaKind === 'video'
-            ? await dependencies.storeVideoUpload({ userId, fileName: leased.fileName, declaredMime: leased.declaredMime, bytes, referenceEligibility: 'mcp', cleanupObjects })
-            : await dependencies.storeAudioUpload({ userId, fileName: leased.fileName, declaredMime: leased.declaredMime, bytes, referenceEligibility: 'mcp', cleanupObjects });
-          assetId = stored.assetId;
-        }
+        assetId = await runBoundedFinalization(async (signal) => {
+          if (leased!.session.mediaKind === 'image') {
+            const stored = await dependencies.storeImageUpload({
+              userId, fileName: leased!.fileName, declaredMime: leased!.declaredMime,
+              bytes, cleanupObjects, signal,
+            });
+            const image = await dependencies.loadStoredImageUploadRouteAsset({ userId, assetId: stored.assetId });
+            const canonical = await dependencies.ensureReusableAsset({ userId, url: image.url, kind: 'image', source: 'upload', mimeType: image.mimeType,
+              width: image.width, height: image.height, sizeBytes: image.sizeBytes, thumbUrl: image.thumbUrl });
+            if (!canonical.publicId || !/^ma_[a-f0-9]{32}$/u.test(canonical.publicId)) throw new Error('Canonical image has no public alias.');
+            return canonical.publicId;
+          }
+          const stored = leased!.session.mediaKind === 'video'
+            ? await dependencies.storeVideoUpload({
+                userId, fileName: leased!.fileName, declaredMime: leased!.declaredMime,
+                bytes, referenceEligibility: 'mcp', cleanupObjects, signal,
+              })
+            : await dependencies.storeAudioUpload({
+                userId, fileName: leased!.fileName, declaredMime: leased!.declaredMime,
+                bytes, referenceEligibility: 'mcp', cleanupObjects, signal,
+              });
+          return stored.assetId;
+        }, dependencies.finalizationTimeoutMs);
         await renewLease();
         leased = await dependencies.withTransaction((executor) => dependencies.stageReferenceUploadAttempt(
           { attempt: leased!, leaseId: leased!.leaseId!, version: leased!.version, contentSha256: digest, assetId: assetId! },
@@ -387,6 +403,23 @@ export function createReferenceUploadCompleteHandler(overrides: Partial<Completi
       return safeError(error);
     }
   };
+}
+
+async function runBoundedFinalization<T>(operation: (signal: AbortSignal) => Promise<T>, timeoutMs: number): Promise<T> {
+  if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 1) throw new Error('Invalid finalization timeout.');
+  const controller = new AbortController();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_resolve, reject) => {
+    timer = setTimeout(() => {
+      controller.abort();
+      reject(new Error('Reference upload finalization timed out.'));
+    }, timeoutMs);
+  });
+  try {
+    return await Promise.race([operation(controller.signal), timeout]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
 }
 
 export function createReferenceUploadAbortHandler(overrides: Partial<PartDependencies> = {}) {

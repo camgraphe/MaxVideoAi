@@ -235,6 +235,7 @@ export async function uploadImageToStorage(params: {
   fileName?: string | null;
   prefix?: string;
   beforeUpload?: (key: string) => Promise<void>;
+  signal?: AbortSignal;
 }): Promise<UploadResult> {
   const client = getS3Client();
   const safeMime = params.mime && params.mime.startsWith('image/') ? params.mime : 'image/png';
@@ -259,7 +260,7 @@ export async function uploadImageToStorage(params: {
 
   try {
     await params.beforeUpload?.(key);
-    await client.send(putCommand);
+    await client.send(putCommand, { abortSignal: params.signal });
   } catch (error) {
     throw new StorageUploadError('Failed to upload image to storage.', {
       key,
@@ -477,6 +478,7 @@ export async function uploadFileBuffer(params: {
   acl?: string | null;
   contentAddressed?: boolean;
   beforeUpload?: (key: string) => Promise<void>;
+  signal?: AbortSignal;
 }): Promise<{ key: string; url: string }> {
   const client = getS3Client();
   const key = params.contentAddressed
@@ -508,7 +510,7 @@ export async function uploadFileBuffer(params: {
 
   try {
     await params.beforeUpload?.(key);
-    await client.send(command);
+    await client.send(command, { abortSignal: params.signal });
   } catch {
     throw new StorageUploadError('Failed to upload file to storage.', {
       key,

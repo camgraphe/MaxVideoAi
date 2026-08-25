@@ -60,9 +60,9 @@ async function reset(pool: Pool): Promise<void> {
   await pool.query('TRUNCATE mcp_reference_upload_sessions, media_assets, user_assets CASCADE');
 }
 
-async function createClaimedAttempt(pool: Pool) {
+async function createClaimedAttempt(pool: Pool, createdAt = now) {
   const created = await createUploadSession({ userId: 'user-a', oauthClientId: 'client-a', mediaKind: 'video' }, {
-    executor: createQueryExecutor(pool), now: () => now,
+    executor: createQueryExecutor(pool), now: () => createdAt,
     randomUUID: () => sessionId, randomToken: () => `mru_${'A'.repeat(43)}`,
   });
   const claimed = await transaction(pool, (executor) => claimUploadSessionForUpload(
@@ -220,6 +220,44 @@ test('real PostgreSQL upload recovery and interleavings preserve one terminal as
     assert.equal(aborted.state, 'aborted');
   });
 
+  await t.test('completion lease refuses a session too close to expiry before any finalize effects', async () => {
+    await reset(database.pool);
+    const { created } = await createClaimedAttempt(database.pool, new Date(now.getTime() - 14.5 * 60_000));
+    const nearExpiry = await getOwnedReferenceUploadAttempt({ token: created.token, userId: 'user-a', uploadId }, {
+      executor: createQueryExecutor(database.pool),
+    });
+    await assert.rejects(() => transaction(database.pool, (executor) => acquireReferenceUploadCompletionLease(
+      { attempt: nearExpiry }, { executor, now, leaseId: firstLeaseId },
+    )), (error: unknown) => error instanceof Error && /expired|window|restart/iu.test(error.message));
+    assert.equal((await database.pool.query<{ state: string }>(
+      'SELECT state FROM mcp_reference_upload_attempts WHERE upload_id = $1', [uploadId],
+    )).rows[0]?.state, 'pending');
+  });
+
+  await t.test('expiry cleanup does not delete while a completion lease remains active', async () => {
+    await reset(database.pool);
+    const { attempt } = await createClaimedAttempt(database.pool, new Date(now.getTime() - 12 * 60_000));
+    const claimed = await transaction(database.pool, (executor) => claimReferenceUploadPart({
+      attempt, partNumber: 1, contentSha256: fileSha256, sizeBytes: 4,
+    }, { executor, now, leaseId: partLeaseId }));
+    await transaction(database.pool, (executor) => completeReferenceUploadPart({
+      attempt, partNumber: 1, leaseId: partLeaseId, contentSha256: fileSha256, sizeBytes: 4,
+    }, { executor, now: new Date(now.getTime() + 1_000) }));
+    await transaction(database.pool, (executor) => acquireReferenceUploadCompletionLease(
+      { attempt }, { executor, now: new Date(now.getTime() + 2_000), leaseId: firstLeaseId },
+    ));
+    let deletes = 0;
+    assert.deepEqual(await cleanupExpiredReferenceUploadAttempts({}, {
+      executor: createQueryExecutor(database.pool), now: () => new Date(now.getTime() + 2 * 60_000),
+      async deleteStorageObjectKey() { deletes += 1; },
+    }), { selected: 0, deleted: 0 });
+    assert.equal(deletes, 0);
+    assert.equal((await database.pool.query<{ state: string }>(
+      'SELECT state FROM mcp_reference_upload_attempts WHERE upload_id = $1', [uploadId],
+    )).rows[0]?.state, 'processing');
+    assert.equal(claimed.storageKey.includes('/parts/'), true);
+  });
+
   await t.test('every issued part key remains in the durable ledger until a failed delete retries successfully', async () => {
     await reset(database.pool);
     const { attempt } = await createClaimedAttempt(database.pool);
@@ -265,6 +303,15 @@ test('real PostgreSQL upload recovery and interleavings preserve one terminal as
     await transaction(database.pool, async (executor) => {
       await registerReferenceUploadCleanupObject({ attempt, objectKey: finalKey, objectRole: 'final', safeToDelete: false }, { executor, now });
       await registerReferenceUploadCleanupObject({ attempt, objectKey: thumbnailKey, objectRole: 'thumbnail', safeToDelete: true }, { executor, now });
+    });
+    assert.deepEqual((await database.pool.query<{ object_key: string; object_role: string; state: string }>(
+      'SELECT object_key, object_role, state FROM mcp_reference_upload_cleanup_objects ORDER BY object_role',
+    )).rows, [
+      { object_key: finalKey, object_role: 'final', state: 'pending' },
+      { object_key: thumbnailKey, object_role: 'thumbnail', state: 'pending' },
+    ]);
+    await transaction(database.pool, async (executor) => {
+      await retainReferenceUploadCleanupObject({ attempt, objectKey: finalKey }, { executor, now: new Date(now.getTime() + 1_000) });
       await retainReferenceUploadCleanupObject({ attempt, objectKey: thumbnailKey }, { executor, now: new Date(now.getTime() + 1_000) });
     });
     assert.deepEqual((await database.pool.query<{ object_key: string; object_role: string; state: string }>(
@@ -273,6 +320,49 @@ test('real PostgreSQL upload recovery and interleavings preserve one terminal as
       { object_key: finalKey, object_role: 'final', state: 'retained' },
       { object_key: thumbnailKey, object_role: 'thumbnail', state: 'retained' },
     ]);
+  });
+
+  await t.test('unreferenced final upload candidate is deleted after persistence failure and expiry', async () => {
+    await reset(database.pool);
+    const { attempt } = await createClaimedAttempt(database.pool);
+    const finalKey = `user-assets/by-content/${'c'.repeat(32)}/${fileSha256}.mp4`;
+    await transaction(database.pool, (executor) => registerReferenceUploadCleanupObject(
+      { attempt, objectKey: finalKey, objectRole: 'final', safeToDelete: false }, { executor, now },
+    ));
+    await transaction(database.pool, (executor) => abortReferenceUploadAttempt(
+      { attempt }, { executor, abortedAt: new Date(now.getTime() + 1_000) },
+    ));
+    const deleted: string[] = [];
+    assert.deepEqual(await cleanupExpiredReferenceUploadAttempts({}, {
+      executor: createQueryExecutor(database.pool), now: () => new Date(now.getTime() + 2_000),
+      async deleteStorageObjectKey(key) { deleted.push(key); },
+    }), { selected: 1, deleted: 1 });
+    assert.deepEqual(deleted, [finalKey]);
+  });
+
+  await t.test('shared content-addressed final candidate is retained when another canonical row references it', async () => {
+    await reset(database.pool);
+    const { attempt } = await createClaimedAttempt(database.pool);
+    const finalKey = `user-assets/by-content/${'c'.repeat(32)}/${fileSha256}.mp4`;
+    await transaction(database.pool, (executor) => registerReferenceUploadCleanupObject(
+      { attempt, objectKey: finalKey, objectRole: 'final', safeToDelete: false }, { executor, now },
+    ));
+    await database.pool.query(
+      'INSERT INTO media_assets (id, public_id, user_id, url) VALUES ($1,$2,$3,$4)',
+      ['winner', publicAssetId, 'user-a', `https://assets.maxvideo.ai/${finalKey}`],
+    );
+    await transaction(database.pool, (executor) => abortReferenceUploadAttempt(
+      { attempt }, { executor, abortedAt: new Date(now.getTime() + 1_000) },
+    ));
+    let deletes = 0;
+    assert.deepEqual(await cleanupExpiredReferenceUploadAttempts({}, {
+      executor: createQueryExecutor(database.pool), now: () => new Date(now.getTime() + 2_000),
+      async deleteStorageObjectKey() { deletes += 1; },
+    }), { selected: 0, deleted: 0 });
+    assert.equal(deletes, 0);
+    assert.equal((await database.pool.query<{ state: string }>(
+      'SELECT state FROM mcp_reference_upload_cleanup_objects WHERE object_key = $1', [finalKey],
+    )).rows[0]?.state, 'retained');
   });
 
   await t.test('expiry cleanup takes over only an expired lease and retries its durable tombstone', async () => {
@@ -334,4 +424,91 @@ test('real PostgreSQL upload recovery and interleavings preserve one terminal as
       'SELECT state FROM mcp_reference_upload_cleanup_objects WHERE object_key = $1', [thumbnailKey],
     )).rows[0]?.state, 'retained');
   });
+});
+
+test('migration 37 upgrades and continuously ledgers the immediately previous chunk protocol', async (t) => {
+  const missing = missingDisposablePostgresCommand();
+  if (missing) {
+    t.skip(`${missing} is unavailable`);
+    return;
+  }
+  const database = await startDisposablePostgres('mru37');
+  t.after(() => database.cleanup());
+  await database.pool.query(`CREATE TABLE media_assets (
+    id text PRIMARY KEY, public_id text, user_id text, url text, thumb_url text, deleted_at timestamptz
+  )`);
+  await database.pool.query(`CREATE TABLE user_assets (
+    asset_id text PRIMARY KEY, user_id text, url text, metadata jsonb
+  )`);
+  for (const migration of [32, 34, 35, 36]) {
+    const name = migration === 32 ? '32_mcp_reference_uploads.sql'
+      : migration === 34 ? '34_mcp_reference_upload_media_kind.sql'
+        : migration === 35 ? '35_mcp_reference_upload_hardening.sql'
+          : '36_mcp_reference_upload_replay_safety.sql';
+    await database.pool.query(readFileSync(`neon/migrations/${name}`, 'utf8'));
+  }
+
+  async function insertPreviousBinaryUpload(ids: { sessionId: string; uploadId: string; claimId: string; partLeaseId: string }) {
+    const createdAt = new Date(now.getTime() + Number(ids.sessionId.slice(-2)));
+    await database.pool.query(`INSERT INTO mcp_reference_upload_sessions (
+      session_id, token_hash, user_id, oauth_client_id, media_kind, state, claim_id,
+      expires_at, claimed_at, created_at, updated_at
+    ) VALUES ($1,$2,'user-a','client-a','video','created',$3,$4,$5,$5,$5)`, [
+      ids.sessionId, ids.sessionId.replaceAll('-', '').repeat(2), ids.claimId,
+      new Date(createdAt.getTime() + 15 * 60_000), createdAt,
+    ]);
+    const rootKey = `mcp-reference-staging/${'b'.repeat(32)}/${ids.uploadId}`;
+    await database.pool.query(`INSERT INTO mcp_reference_upload_attempts (
+      session_id, upload_id, user_id, media_kind, storage_key, file_name, declared_mime,
+      declared_size, file_sha256, chunk_bytes, total_parts, state, created_at, updated_at
+    ) VALUES ($1,$2,'user-a','video',$3,'legacy-chunk.mp4','video/mp4',4,$4,4,1,'pending',$5,$5)`, [
+      ids.sessionId, ids.uploadId, rootKey, fileSha256, createdAt,
+    ]);
+    const partKey = `${rootKey}/parts/1-${ids.partLeaseId}`;
+    await database.pool.query(`INSERT INTO mcp_reference_upload_parts (
+      session_id, upload_id, user_id, media_kind, part_number, state, lease_id,
+      lease_expires_at, storage_key, size_bytes, content_sha256, created_at, updated_at
+    ) VALUES ($1,$2,'user-a','video',1,'ready',$3,$4,$5,4,$6,$7,$7)`, [
+      ids.sessionId, ids.uploadId, ids.partLeaseId, new Date(createdAt.getTime() + 5 * 60_000),
+      partKey, fileSha256, createdAt,
+    ]);
+    return partKey;
+  }
+
+  const migratedIds = {
+    sessionId: '00000000-0000-4000-8000-000000000301', uploadId: '00000000-0000-4000-8000-000000000302',
+    claimId: '00000000-0000-4000-8000-000000000303', partLeaseId: '00000000-0000-4000-8000-000000000304',
+  };
+  const migratedPartKey = await insertPreviousBinaryUpload(migratedIds);
+  const slashlessPartKey = 'legacy-part-without-slash';
+  await database.pool.query(`INSERT INTO mcp_reference_upload_parts (
+    session_id, upload_id, user_id, media_kind, part_number, state, lease_id,
+    lease_expires_at, storage_key, size_bytes, content_sha256, created_at, updated_at
+  ) SELECT session_id, upload_id, user_id, media_kind, 2, state, $2,
+      lease_expires_at, $3, size_bytes, content_sha256, created_at, updated_at
+      FROM mcp_reference_upload_parts WHERE upload_id = $1`, [
+    migratedIds.uploadId, '00000000-0000-4000-8000-000000000305', slashlessPartKey,
+  ]);
+  await database.pool.query(readFileSync('neon/migrations/37_mcp_reference_upload_recovery_state.sql', 'utf8'));
+  assert.equal((await database.pool.query<{ protocol_version: number }>(
+    'SELECT protocol_version FROM mcp_reference_upload_attempts WHERE upload_id = $1', [migratedIds.uploadId],
+  )).rows[0]?.protocol_version, 2);
+  assert.deepEqual((await database.pool.query<{ object_key: string; object_role: string; state: string }>(
+    'SELECT object_key, object_role, state FROM mcp_reference_upload_cleanup_objects WHERE upload_id = $1 ORDER BY object_key', [migratedIds.uploadId],
+  )).rows, [
+    { object_key: slashlessPartKey, object_role: 'part', state: 'pending' },
+    { object_key: migratedPartKey, object_role: 'part', state: 'pending' },
+  ]);
+
+  const overlapIds = {
+    sessionId: '00000000-0000-4000-8000-000000000311', uploadId: '00000000-0000-4000-8000-000000000312',
+    claimId: '00000000-0000-4000-8000-000000000313', partLeaseId: '00000000-0000-4000-8000-000000000314',
+  };
+  const overlapPartKey = await insertPreviousBinaryUpload(overlapIds);
+  assert.equal((await database.pool.query<{ protocol_version: number }>(
+    'SELECT protocol_version FROM mcp_reference_upload_attempts WHERE upload_id = $1', [overlapIds.uploadId],
+  )).rows[0]?.protocol_version, 2);
+  assert.deepEqual((await database.pool.query<{ object_key: string; object_role: string; state: string }>(
+    'SELECT object_key, object_role, state FROM mcp_reference_upload_cleanup_objects WHERE upload_id = $1', [overlapIds.uploadId],
+  )).rows, [{ object_key: overlapPartKey, object_role: 'part', state: 'pending' }]);
 });

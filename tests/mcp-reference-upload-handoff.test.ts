@@ -325,7 +325,7 @@ test('shared video and audio storage owners verify metadata and return the canon
     const calls: Array<{ name: string; value: unknown }> = [];
     const dependencies = {
       async probeMediaBuffer() {
-        return { kind: candidate.kind, canonicalMime: candidate.canonicalMime, durationSec: 4.25 };
+        return { kind: candidate.kind, canonicalMime: candidate.canonicalMime, detectedMime: candidate.canonicalMime, durationSec: 4.25 };
       },
       async uploadFileBuffer(input: unknown) {
         calls.push({ name: 'upload', value: input });
@@ -406,7 +406,7 @@ test('shared media storage always probes bytes, rejects declared/detected disagr
   const dependencies = {
     async probeMediaBuffer() {
       probes += 1;
-      return { kind: 'video' as const, canonicalMime: 'video/webm', durationSec: 2 };
+      return { kind: 'video' as const, canonicalMime: 'video/webm', detectedMime: 'video/webm', durationSec: 2 };
     },
     async uploadFileBuffer() {
       uploads += 1;
@@ -442,7 +442,7 @@ test('shared media storage always probes bytes, rejects declared/detected disagr
 test('shared media storage compensates its request-owned thumbnail on downstream record failure without deleting shared content-addressed media', async () => {
   const deleted: string[] = [];
   const service = createStoreVideoUploadService({
-    async probeMediaBuffer() { return { kind: 'video', canonicalMime: 'video/mp4', durationSec: 2 }; },
+    async probeMediaBuffer() { return { kind: 'video', canonicalMime: 'video/mp4', detectedMime: 'video/mp4', durationSec: 2 }; },
     async uploadFileBuffer(input: Record<string, unknown>) {
       assert.equal(input.contentAddressed, true);
       return { key: 'by-content/shared.mp4', url: 'https://assets.maxvideo.ai/by-content/shared.mp4' };
@@ -508,15 +508,15 @@ test('primary stream probing ignores attached cover art and keeps broad workspac
       { codec_type: 'audio', duration: '3' },
     ],
     format: { format_name: 'mp3', duration: '3' },
-  }), { kind: 'audio', canonicalMime: 'audio/mpeg', durationSec: 3 });
+  }), { kind: 'audio', canonicalMime: 'audio/mpeg', detectedMime: 'audio/mpeg', durationSec: 3 });
   assert.deepEqual(resolveProbedMediaMetadata({
     streams: [{ codec_type: 'video', duration: '2' }],
     format: { format_name: 'matroska,webm', duration: '2' },
-  }), { kind: 'video', canonicalMime: 'video/webm', durationSec: 2 });
+  }), { kind: 'video', canonicalMime: 'video/webm', detectedMime: 'video/webm', durationSec: 2 });
   assert.deepEqual(resolveProbedMediaMetadata({
     streams: [{ codec_type: 'audio', duration: '2' }],
     format: { format_name: 'ogg', duration: '2' },
-  }), { kind: 'audio', canonicalMime: 'audio/ogg', durationSec: 2 });
+  }), { kind: 'audio', canonicalMime: 'audio/ogg', detectedMime: 'audio/ogg', durationSec: 2 });
   assert.equal(resolveSupportedReferenceMedia('video', 'video/webm'), null);
   assert.equal(resolveSupportedReferenceMedia('audio', 'audio/ogg'), null);
 });
@@ -533,7 +533,7 @@ test('workspace probing safely persists broad verified containers while MCP rema
       streams: [{ codec_type: fixture.kind, duration: '2.5' }],
       format: { format_name: fixture.format, duration: '2.5' },
     }, { declaredMime: fixture.declared }), {
-      kind: fixture.kind, canonicalMime: fixture.expected, durationSec: 2.5,
+      kind: fixture.kind, canonicalMime: fixture.expected, detectedMime: fixture.expected, durationSec: 2.5,
     });
     assert.equal(resolveSupportedReferenceMedia(fixture.kind, fixture.expected), null);
   }
@@ -543,13 +543,62 @@ test('workspace probing safely persists broad verified containers while MCP rema
       { codec_type: 'audio', duration: '3' },
     ],
     format: { format_name: 'aiff', duration: '3' },
-  }, { declaredMime: 'audio/aiff' }), { kind: 'audio', canonicalMime: 'audio/aiff', durationSec: 3 });
+  }, { declaredMime: 'audio/aiff' }), { kind: 'audio', canonicalMime: 'audio/aiff', detectedMime: 'audio/aiff', durationSec: 3 });
+});
+
+test('MCP rejects declared allowlist MIME when ffprobe verified only an unsupported container fallback', async () => {
+  for (const fixture of [
+    { kind: 'video' as const, declaredMime: 'video/mp4' },
+    { kind: 'audio' as const, declaredMime: 'audio/mpeg' },
+  ]) {
+    let uploads = 0;
+    const service = fixture.kind === 'video'
+      ? createStoreVideoUploadService({
+          async probeMediaBuffer() {
+            return { kind: 'video', canonicalMime: 'video/mp4', detectedMime: null, durationSec: 2 };
+          },
+          async uploadFileBuffer() { uploads += 1; return { key: 'never', url: 'https://assets.maxvideo.ai/never' }; },
+        } as never)
+      : createStoreAudioUploadService({
+          async probeMediaBuffer() {
+            return { kind: 'audio', canonicalMime: 'audio/mpeg', detectedMime: null, durationSec: 2 };
+          },
+          async uploadFileBuffer() { uploads += 1; return { key: 'never', url: 'https://assets.maxvideo.ai/never' }; },
+        } as never);
+    await assert.rejects(() => service({
+      userId: 'user-a', fileName: 'spoofed.bin', declaredMime: fixture.declaredMime,
+      bytes: Buffer.from([1]), referenceEligibility: 'mcp',
+    }), (error: unknown) => error instanceof MediaUploadError && error.code === 'UNSUPPORTED_TYPE');
+    assert.equal(uploads, 0);
+  }
+});
+
+test('workspace accepts a same-kind declared fallback while retaining missing detected MIME provenance', async () => {
+  const persistedMimes: string[] = [];
+  const service = createStoreVideoUploadService({
+    async probeMediaBuffer() {
+      return { kind: 'video', canonicalMime: 'video/x-workspace-custom', detectedMime: null, durationSec: 2 };
+    },
+    async uploadFileBuffer(input: { mime: string }) {
+      persistedMimes.push(input.mime);
+      return { key: 'user-assets/custom', url: 'https://assets.maxvideo.ai/custom' };
+    },
+    async createUploadVideoThumbnail() { return null; },
+    async recordUserAsset() { return 'ua_custom'; },
+    async ensureReusableAsset() { return { publicId: 'ma_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' } as never; },
+  } as never);
+  const stored = await service({
+    userId: 'user-a', fileName: 'custom.bin', declaredMime: 'video/x-workspace-custom',
+    bytes: Buffer.from([1]), referenceEligibility: 'workspace',
+  });
+  assert.equal(stored.mimeType, 'video/x-workspace-custom');
+  assert.deepEqual(persistedMimes, ['video/x-workspace-custom']);
 });
 
 test('multimedia storage registers final and thumbnail keys before upload and retains winner keys', async () => {
   const events: string[] = [];
   const service = createStoreVideoUploadService({
-    async probeMediaBuffer() { return { kind: 'video', canonicalMime: 'video/mp4', durationSec: 2 }; },
+    async probeMediaBuffer() { return { kind: 'video', canonicalMime: 'video/mp4', detectedMime: 'video/mp4', durationSec: 2 }; },
     async uploadFileBuffer(input: Record<string, unknown>) {
       const key = 'user-assets/by-content/owner/content.mp4';
       await (input.beforeUpload as ((key: string) => Promise<void>))(key);

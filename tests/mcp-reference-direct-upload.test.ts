@@ -315,6 +315,97 @@ test('failure after durable staging records retry state and the next lease does 
   assert.equal(stores, 1);
 });
 
+test('duplicate MCP image returns the existing opaque asset without inventing cleanup transitions', async () => {
+  let cleanupTransitions = 0;
+  const imageSession = session({ mediaKind: 'image' });
+  const imageAttempt = attempt({
+    session: imageSession,
+    fileName: 'reference.png',
+    declaredMime: 'image/png',
+  });
+  const handler = createReferenceUploadCompleteHandler({
+    ...common,
+    async getOwnedReferenceUploadAttempt() { return imageAttempt; },
+    async acquireReferenceUploadCompletionLease() {
+      return { ...imageAttempt, state: 'processing', leaseId };
+    },
+    async renewReferenceUploadCompletionLease(input) { return input.attempt; },
+    async listReferenceUploadParts() {
+      return [
+        { partNumber: 1, storageKey: 'part-1', sizeBytes: 4, contentSha256: createHash('sha256').update('abcd').digest('hex') },
+        { partNumber: 2, storageKey: 'part-2', sizeBytes: 1, contentSha256: createHash('sha256').update('e').digest('hex') },
+      ];
+    },
+    async getStorageObjectBuffer(key: string) { return Buffer.from(key === 'part-1' ? 'abcd' : 'e'); },
+    async storeImageUpload() {
+      return { assetId: 'existing-image-row' } as never;
+    },
+    async loadStoredImageUploadRouteAsset() {
+      return {
+        assetId: 'existing-image-row',
+        url: 'https://assets.maxvideo.ai/existing.webp',
+        width: 1,
+        height: 1,
+        mimeType: 'image/webp',
+        sizeBytes: 5,
+        thumbUrl: null,
+      } as never;
+    },
+    async ensureReusableAsset() { return { publicId: publicAssetId } as never; },
+    async registerReferenceUploadCleanupObject() { cleanupTransitions += 1; throw new Error('duplicate must not register cleanup'); },
+    async retainReferenceUploadCleanupObject() { cleanupTransitions += 1; throw new Error('duplicate must not retain absent cleanup'); },
+    async stageReferenceUploadAttempt() {
+      return { ...imageAttempt, state: 'staged', leaseId, stagedAssetId: publicAssetId };
+    },
+    async completeUploadSession() { return { ...imageSession, state: 'uploaded', assetId: publicAssetId } as never; },
+    async completeReferenceUploadAttempt() {
+      return { ...imageAttempt, state: 'completed', stagedAssetId: publicAssetId };
+    },
+    async cleanupReferenceUploadParts() { return 2; },
+  } as never);
+
+  const response = await handler(jsonRequest('/complete', { uploadId }), { params: Promise.resolve({ token }) });
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { ok: true, assetId: publicAssetId, mediaKind: 'image' });
+  assert.equal(cleanupTransitions, 0);
+});
+
+test('bounded finalization aborts timed-out media work and leaves the lease retryable', async () => {
+  let observedAbort = false;
+  let failures = 0;
+  const handler = createReferenceUploadCompleteHandler({
+    ...common,
+    finalizationTimeoutMs: 10,
+    async getOwnedReferenceUploadAttempt() { return attempt(); },
+    async acquireReferenceUploadCompletionLease() { return attempt({ state: 'processing', leaseId }); },
+    async renewReferenceUploadCompletionLease(input) { return input.attempt; },
+    async listReferenceUploadParts() {
+      return [
+        { partNumber: 1, storageKey: 'part-1', sizeBytes: 4, contentSha256: createHash('sha256').update('abcd').digest('hex') },
+        { partNumber: 2, storageKey: 'part-2', sizeBytes: 1, contentSha256: createHash('sha256').update('e').digest('hex') },
+      ];
+    },
+    async getStorageObjectBuffer(key: string) { return Buffer.from(key === 'part-1' ? 'abcd' : 'e'); },
+    async storeVideoUpload(input) {
+      const signal = (input as { signal?: AbortSignal }).signal;
+      await new Promise<never>((_resolve, reject) => {
+        const fallback = setTimeout(() => reject(new Error('media work was not bounded')), 100);
+        signal?.addEventListener('abort', () => {
+          clearTimeout(fallback);
+          observedAbort = true;
+          reject(new Error('media finalization aborted'));
+        }, { once: true });
+      });
+      throw new Error('unreachable');
+    },
+    async failReferenceUploadAttempt() { failures += 1; return true; },
+  } as never);
+  const response = await handler(jsonRequest('/complete', { uploadId }), { params: Promise.resolve({ token }) });
+  assert.equal(response.status, 500);
+  assert.equal(observedAbort, true);
+  assert.equal(failures, 1);
+});
+
 test('abort and expired attempts clean all server-owned parts and make the upload unusable', async () => {
   const deleted: string[] = [];
   const handler = createReferenceUploadAbortHandler({

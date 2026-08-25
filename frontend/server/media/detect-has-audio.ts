@@ -10,6 +10,7 @@ const execFileAsync = promisify(execFile);
 
 type DetectOptions = {
   timeoutMs?: number;
+  signal?: AbortSignal;
 };
 
 type DetectBufferOptions = DetectOptions & {
@@ -21,6 +22,7 @@ type DetectBufferOptions = DetectOptions & {
 export type ProbedMediaBuffer = {
   kind: 'video' | 'audio';
   canonicalMime: string;
+  detectedMime: string | null;
   durationSec: number;
 };
 
@@ -69,13 +71,14 @@ export function resolveProbedMediaMetadata(
   const declaredMime = options.declaredMime?.split(';', 1)[0]?.trim().toLowerCase() ?? '';
   const safeDeclaredMime = declaredMime.startsWith(`${kind}/`) && /^[a-z]+\/[a-z0-9.+-]+$/u.test(declaredMime)
     ? declaredMime : null;
-  const canonicalMime = canonicalMimeForProbe(kind, metadata.format?.format_name ?? '') ?? safeDeclaredMime;
+  const detectedMime = canonicalMimeForProbe(kind, metadata.format?.format_name ?? '');
+  const canonicalMime = detectedMime ?? safeDeclaredMime;
   if (!canonicalMime) return null;
   const streamDuration = streams.find((stream) => stream.codec_type === kind
     && (kind !== 'video' || stream.disposition?.attached_pic !== 1))?.duration;
   const durationSec = Number.parseFloat(metadata.format?.duration ?? streamDuration ?? '');
   if (!Number.isFinite(durationSec) || durationSec <= 0) return null;
-  return { kind, canonicalMime, durationSec: Math.round(durationSec * 1000) / 1000 };
+  return { kind, canonicalMime, detectedMime, durationSec: Math.round(durationSec * 1000) / 1000 };
 }
 
 export async function probeMediaBuffer(
@@ -93,7 +96,7 @@ export async function probeMediaBuffer(
       '-show_entries', 'stream=codec_type,duration:stream_disposition=attached_pic:format=format_name,duration',
       '-of', 'json',
       temporaryFile,
-    ], { timeout: timeoutMs, maxBuffer: 1024 * 1024 });
+    ], { timeout: timeoutMs, maxBuffer: 1024 * 1024, signal: options.signal });
     return resolveProbedMediaMetadata(JSON.parse(stdout) as ProbeMetadata, { declaredMime: options.mimeType });
   } catch (error) {
     const reason = error instanceof Error ? error.message : 'unknown error running ffprobe';

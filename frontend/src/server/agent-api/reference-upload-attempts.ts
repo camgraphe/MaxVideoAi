@@ -11,6 +11,7 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0
 const SHA_PATTERN = /^[a-f0-9]{64}$/u;
 const ASSET_PATTERN = /^ma_[a-f0-9]{32}$/u;
 export const MCP_REFERENCE_UPLOAD_LEASE_MS = 5 * 60_000;
+export const MCP_REFERENCE_UPLOAD_MIN_FINALIZE_WINDOW_MS = 2 * 60_000;
 
 export type ReferenceUploadAttemptState = 'pending' | 'processing' | 'staged' | 'failed' | 'completed' | 'aborted';
 const ATTEMPT_STATES = new Set<ReferenceUploadAttemptState>(['pending', 'processing', 'staged', 'failed', 'completed', 'aborted']);
@@ -247,6 +248,12 @@ export async function acquireReferenceUploadCompletionLease(input: { attempt: Re
   executor: TransactionQueryExecutor; now: Date; leaseId?: string;
 }): Promise<ReferenceUploadAttempt> {
   assertAttemptUsable(input.attempt, dependencies.now);
+  const minimumSessionExpiry = new Date(
+    dependencies.now.getTime() + MCP_REFERENCE_UPLOAD_MIN_FINALIZE_WINDOW_MS,
+  );
+  if (input.attempt.session.expiresAt < minimumSessionExpiry) {
+    throw new AgentApiError('UPLOAD_EXPIRED', 'Reference upload is too close to expiry; restart the upload.');
+  }
   const leaseId = requireUuid(dependencies.leaseId ?? randomUUID());
   const expiresAt = new Date(Math.min(
     dependencies.now.getTime() + MCP_REFERENCE_UPLOAD_LEASE_MS,
@@ -258,7 +265,7 @@ export async function acquireReferenceUploadCompletionLease(input: { attempt: Re
       FROM mcp_reference_upload_sessions AS sessions
       WHERE attempts.session_id = $1 AND attempts.upload_id = $2 AND attempts.user_id = $3 AND attempts.media_kind = $4
        AND sessions.session_id = attempts.session_id AND sessions.user_id = attempts.user_id
-       AND sessions.media_kind = attempts.media_kind AND sessions.state = 'created' AND sessions.expires_at > $7
+       AND sessions.media_kind = attempts.media_kind AND sessions.state = 'created' AND sessions.expires_at >= $8
        AND attempts.state IN ('pending','staged','failed','processing')
        AND (attempts.state <> 'processing' OR attempts.lease_expires_at <= $7)
      RETURNING attempts.upload_id, attempts.storage_key, attempts.file_name, attempts.declared_mime,
@@ -266,7 +273,7 @@ export async function acquireReferenceUploadCompletionLease(input: { attempt: Re
        attempts.state, attempts.version, attempts.lease_id, attempts.lease_expires_at,
        attempts.content_sha256, attempts.staged_asset_id`,
     [input.attempt.session.sessionId, input.attempt.uploadId, input.attempt.session.userId,
-      input.attempt.session.mediaKind, leaseId, expiresAt, dependencies.now],
+      input.attempt.session.mediaKind, leaseId, expiresAt, dependencies.now, minimumSessionExpiry],
   );
   if (rows.length !== 1) throw new AgentApiError('UPLOAD_ALREADY_USED', 'Reference upload is already processing.');
   return parseAttempt(rows[0], input.attempt.session);
@@ -436,7 +443,7 @@ export async function registerReferenceUploadCleanupObject(input: {
   attempt: ReferenceUploadAttempt; objectKey: string; objectRole: ReferenceUploadCleanupRole; safeToDelete: boolean;
 }, dependencies: { executor: TransactionQueryExecutor; now: Date }): Promise<void> {
   const ownerPrefix = cleanupObjectOwnerPrefix(input);
-  const initialState = input.safeToDelete ? 'pending' : 'retained';
+  const initialState = 'pending';
   const inserted = await dependencies.executor.query<{ cleanup_id: unknown }>(
     `INSERT INTO mcp_reference_upload_cleanup_objects (
        cleanup_id, session_id, upload_id, user_id, media_kind, object_role,
