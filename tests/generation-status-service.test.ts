@@ -245,7 +245,7 @@ test('agent status exposes only the safe Seedance task-type code and actionable 
         providerFailure: {
           provider: 'byteplus_modelark',
           providerErrorCode: 'InvalidParameter.TaskTypeConstraint',
-          failureCode: 'seedance_task_type_constraint',
+          failureCode: null,
         },
         privateReferenceUrl: 'https://provider.example/private.mp4',
       },

@@ -9,6 +9,17 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 export function getVideoFailureCodeFromSettingsSnapshot(settingsSnapshot: unknown): string | null {
   if (!isRecord(settingsSnapshot) || !isRecord(settingsSnapshot.providerFailure)) return null;
-  const failureCode = settingsSnapshot.providerFailure.failureCode;
-  return typeof failureCode === 'string' && failureCode.length ? failureCode : null;
+  const providerFailure = settingsSnapshot.providerFailure;
+  const failureCode = providerFailure.failureCode;
+  if (typeof failureCode === 'string' && failureCode.length) return failureCode;
+  const provider = providerFailure.provider;
+  const providerErrorCode = providerFailure.providerErrorCode;
+  if (
+    provider === 'byteplus_modelark' &&
+    typeof providerErrorCode === 'string' &&
+    providerErrorCode.trim().toLowerCase() === 'invalidparameter.tasktypeconstraint'
+  ) {
+    return SEEDANCE_TASK_TYPE_CONSTRAINT;
+  }
+  return null;
 }

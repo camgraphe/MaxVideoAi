@@ -10,6 +10,7 @@ import { getWorkspaceGenerationFailureMessage } from '../frontend/app/(core)/(wo
 import {
   getVideoFailureCodeFromSettingsSnapshot,
   SEEDANCE_OUTPUT_COPYRIGHT_RESTRICTED,
+  SEEDANCE_TASK_TYPE_CONSTRAINT,
 } from '../frontend/lib/video-failure-codes';
 import type { LocalRender } from '../frontend/app/(core)/(workspace)/app/_lib/render-persistence';
 import type { SelectedVideoPreview } from '../frontend/lib/video-preview-group';
@@ -186,4 +187,14 @@ test('provider failure metadata exposes the stable client failure code', () => {
     SEEDANCE_OUTPUT_COPYRIGHT_RESTRICTED
   );
   assert.equal(getVideoFailureCodeFromSettingsSnapshot({ providerFailure: 'invalid' }), null);
+  assert.equal(
+    getVideoFailureCodeFromSettingsSnapshot({
+      providerFailure: {
+        provider: 'byteplus_modelark',
+        providerErrorCode: 'InvalidParameter.TaskTypeConstraint',
+        failureCode: null,
+      },
+    }),
+    SEEDANCE_TASK_TYPE_CONSTRAINT
+  );
 });
