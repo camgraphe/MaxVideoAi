@@ -5,7 +5,7 @@ import test from 'node:test';
 
 import { NextRequest } from 'next/server';
 
-import { createMcpReferenceUploadCleanupHandler } from '../frontend/app/api/cron/mcp-reference-upload-cleanup/route';
+import { createMcpReferenceUploadCleanupHandler } from '../frontend/app/api/cron/mcp-reference-upload-cleanup/_lib/cleanup-handler';
 import type { TransactionQueryExecutor } from '../frontend/src/lib/db';
 import { AgentApiError } from '../frontend/src/server/agent-api/errors';
 import {
@@ -29,6 +29,11 @@ const sessionId = '00000000-0000-4000-8000-000000000032';
 const publicAssetId = 'ma_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 const executor = { async query<T>() { return [] as T[]; } } as TransactionQueryExecutor;
 const now = new Date('2026-08-25T10:00:00.000Z');
+
+test('cleanup cron route exposes only supported Next.js route fields', async () => {
+  const route = await import('../frontend/app/api/cron/mcp-reference-upload-cleanup/route');
+  assert.deepEqual(Object.keys(route).sort(), ['GET', 'POST', 'runtime']);
+});
 
 function jsonRequest(path: string, body: unknown, contentLength?: string): NextRequest {
   const request = new NextRequest(`https://app.maxvideo.ai${path}`, {
@@ -883,7 +888,10 @@ test('browser and deployed routes use chunk relay and expose no signed PUT capab
   assert.doesNotMatch(client, /method:\s*'PUT'|uploadUrl/u);
   assert.doesNotMatch(handlers, /createSignedUploadUrl|signed-put/iu);
 
-  const cleanupCron = readFileSync('frontend/app/api/cron/mcp-reference-upload-cleanup/route.ts', 'utf8');
-  assert.match(cleanupCron, /if\s*\(!cronSecret\)\s*return[\s\S]*503/iu);
-  assert.doesNotMatch(cleanupCron, /x-vercel-cron|user-agent/iu);
+  const cleanupHandler = readFileSync(
+    'frontend/app/api/cron/mcp-reference-upload-cleanup/_lib/cleanup-handler.ts',
+    'utf8',
+  );
+  assert.match(cleanupHandler, /if\s*\(!cronSecret\)\s*return[\s\S]*503/iu);
+  assert.doesNotMatch(cleanupHandler, /x-vercel-cron|user-agent/iu);
 });
