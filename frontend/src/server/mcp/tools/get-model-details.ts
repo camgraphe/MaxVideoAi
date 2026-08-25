@@ -5,7 +5,7 @@ import type { AgentPrincipal } from '@/server/agent-api/principal';
 import type { MaxVideoAiMcpServices } from '@/server/mcp/server';
 import { runAgentTool } from '@/server/mcp/tool-result';
 
-const inputSchema = z.object({
+export const getModelDetailsInputSchema = z.object({
   id: z.string().trim().min(1).max(128).describe(
     'Exact public MaxVideoAI model ID returned by list_models or recommend_models.',
   ),
@@ -22,7 +22,7 @@ export function registerGetModelDetailsTool(
       title: 'Get MaxVideoAI model details',
       description:
         'Use this when the user needs exact current capabilities, constraints, evidence, or links for one known public MaxVideoAI model. Do not use it for pricing, generation, hidden models, or provider guarantees.',
-      inputSchema,
+      inputSchema: getModelDetailsInputSchema,
       annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
     },
     async ({ id }) => runAgentTool(() => services.getModelDetails(id, principal)),

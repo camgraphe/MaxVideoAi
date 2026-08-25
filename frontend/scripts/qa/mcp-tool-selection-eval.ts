@@ -13,6 +13,10 @@ import {
   type MaxVideoAiMcpServices,
 } from '../../src/server/mcp/server';
 import {
+  MCP_TOOL_INPUT_SCHEMAS,
+  type McpToolInputSchemaName,
+} from '../../src/server/mcp/tool-input-schemas';
+import {
   ALL_FIXTURE_CATEGORIES,
   FUTURE_GATED_TOOL_NAMES,
   LIVE_TOOL_NAMES,
@@ -81,6 +85,78 @@ function canonicalize(value: unknown): unknown {
 
 export function computePolicyFingerprintSha256(input: PolicyFingerprintInput): string {
   return createHash('sha256').update(JSON.stringify(canonicalize(input))).digest('hex');
+}
+
+export function computeFixtureContractSha256(
+  fixtures: readonly ToolSelectionFixture[]
+): string {
+  return createHash('sha256').update(JSON.stringify(canonicalize(fixtures))).digest('hex');
+}
+
+const REQUIRED_POLICY_COVERAGE = {
+  fixtureCount: 35,
+  policyCheckCount: 22,
+  requiredChecks: {
+    selected_seedance_details: 7,
+    i2v_first_last_images: 1,
+    ref2v_multimodal_media: 1,
+    v2v_source_and_guidance: 1,
+    extend_ordered_sources: 1,
+    budget_only_no_quote_or_confirm: 3,
+    quote_only_waits_for_approval: 5,
+    confirmed_exact_quote_once: 1,
+    ambiguous_approval_no_confirm: 1,
+    recovery_without_resubmit: 1,
+  },
+} as const;
+
+function policyCoverage(fixtures: readonly ToolSelectionFixture[]) {
+  const requiredChecks = Object.fromEntries(
+    Object.keys(REQUIRED_POLICY_COVERAGE.requiredChecks).map((check) => [check, 0])
+  ) as Record<string, number>;
+  let policyCheckCount = 0;
+  for (const fixture of fixtures) {
+    for (const check of fixture.policyChecks) {
+      policyCheckCount += 1;
+      requiredChecks[check] = (requiredChecks[check] ?? 0) + 1;
+    }
+  }
+  return { fixtureCount: fixtures.length, policyCheckCount, requiredChecks };
+}
+
+function assertFixtureContractAndCoverage(
+  bundle: Record<string, unknown>,
+  fixtures: readonly ToolSelectionFixture[]
+): void {
+  const expectedHash = computeFixtureContractSha256(fixtures);
+  if (bundle.fixtureContractSha256 !== expectedHash) {
+    throw new Error('stale curated fixture contract fingerprint');
+  }
+  const actualCoverage = policyCoverage(fixtures);
+  if (
+    JSON.stringify(canonicalize(actualCoverage)) !==
+      JSON.stringify(canonicalize(REQUIRED_POLICY_COVERAGE)) ||
+    JSON.stringify(canonicalize(bundle.policyCoverage)) !==
+      JSON.stringify(canonicalize(REQUIRED_POLICY_COVERAGE))
+  ) {
+    throw new Error('curated policy coverage is missing or does not match required global counts');
+  }
+}
+
+export function authoritativeToolSchemaNames(): string[] {
+  return Object.keys(MCP_TOOL_INPUT_SCHEMAS);
+}
+
+export function validateCuratedToolArguments(
+  name: string,
+  argumentsValue: Record<string, unknown>
+): void {
+  const schema = MCP_TOOL_INPUT_SCHEMAS[name as McpToolInputSchemaName];
+  if (!schema) throw new Error(`curated tool argument schema is unavailable for ${name}`);
+  const result = schema.safeParse(argumentsValue);
+  if (!result.success) {
+    throw new Error(`curated tool arguments are invalid for ${name}`);
+  }
 }
 
 export function assertPolicyFingerprint(
@@ -325,9 +401,15 @@ export async function runEvaluation(options: {
     const bundle = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>;
     if (bundle.evidenceKind === 'curated-offline-policy-expectations') {
       assertPolicyFingerprint(String(bundle.policyFingerprintSha256 ?? ''), policyFingerprintInput);
+      assertFixtureContractAndCoverage(bundle, fixtures);
     }
     return parseCuratedPolicyBundle(bundle, fixtures);
   });
+  for (const decision of decisions) {
+    for (const toolCall of decision.toolCalls) {
+      validateCuratedToolArguments(toolCall.name, toolCall.arguments);
+    }
+  }
   assertUniqueCuratedPolicyDecisions(decisions);
   if (usingDefaultPolicyBundle || decisions.some((decision) => decision.source === 'curated-offline-policy')) {
     assertCompleteCuratedPolicyDecisions(fixtures, decisions);
@@ -348,6 +430,8 @@ export async function runEvaluation(options: {
       ).length,
     },
     fixtureContract: buildFixtureBaseline(fixtures),
+    fixtureContractSha256: computeFixtureContractSha256(fixtures),
+    policyCoverage: REQUIRED_POLICY_COVERAGE,
     policyFingerprintSha256: computePolicyFingerprintSha256(policyFingerprintInput),
     curatedPolicyEvaluation: policyScores,
     realHostMetrics: {

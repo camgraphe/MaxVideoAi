@@ -18,7 +18,7 @@ const reference = z.discriminatedUnion('kind', [
     mediaKind: referenceMediaKind,
   }).strict(),
 ]);
-const inputSchema = z.object({
+export const prepareGenerationInputSchema = z.object({
   schemaVersion: z.literal(1).optional(),
   surface: z.enum(['video', 'image']),
   engineId: z.string(),
@@ -43,7 +43,7 @@ export function registerPrepareGenerationTool(
       title: 'Prepare a MaxVideoAI generation',
       description:
         'Use this when the user has selected an image model or a supported video workflow (t2v, i2v, ref2v, v2v, or extend) and needs validation plus an exact short-lived quote. It saves the quote but does not spend or generate. Do not use it as confirmation or skip the selected mode’s live model details.',
-      inputSchema,
+      inputSchema: prepareGenerationInputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

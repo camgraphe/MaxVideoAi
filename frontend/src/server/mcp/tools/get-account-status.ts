@@ -5,7 +5,7 @@ import type { AgentPrincipal } from '@/server/agent-api/principal';
 import type { MaxVideoAiMcpServices } from '@/server/mcp/server';
 import { runAgentTool } from '@/server/mcp/tool-result';
 
-const inputSchema = z.object({}).strict();
+export const getAccountStatusInputSchema = z.object({}).strict();
 
 export function registerGetAccountStatusTool(
   server: McpServer,
@@ -18,7 +18,7 @@ export function registerGetAccountStatusTool(
       title: 'Get MaxVideoAI account status',
       description:
         'Use this when the user asks whether MaxVideoAI is connected, verified, or funded. Do not use it to charge the wallet, start a trial, reveal an email address, or generate media.',
-      inputSchema,
+      inputSchema: getAccountStatusInputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

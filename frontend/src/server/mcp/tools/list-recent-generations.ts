@@ -6,7 +6,7 @@ import type { AgentPrincipal } from '@/server/agent-api/principal';
 import type { MaxVideoAiMcpServices } from '@/server/mcp/server';
 import { runAgentToolWithResourceLinks } from '@/server/mcp/tool-result';
 
-const inputSchema = z.object({
+export const listRecentGenerationsInputSchema = z.object({
   cursor: z.string().max(256).optional(),
   limit: z.number().int().min(1).max(20).default(10),
   surface: z.enum(['video', 'image']).optional(),
@@ -27,7 +27,7 @@ export function registerListRecentGenerationsTool(
       title: 'List recent MaxVideoAI generations',
       description:
         'Use this to recover a bounded page of the connected user’s recent image or video generations and safe public result links.',
-      inputSchema,
+      inputSchema: listRecentGenerationsInputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

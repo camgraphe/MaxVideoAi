@@ -5,7 +5,7 @@ import type { AgentPrincipal } from '@/server/agent-api/principal';
 import type { MaxVideoAiMcpServices } from '@/server/mcp/server';
 import { runAgentTool } from '@/server/mcp/tool-result';
 
-const inputSchema = z.object({
+export const createReferenceUploadLinkInputSchema = z.object({
   kind: z.enum(['image', 'video', 'audio']),
 }).strict();
 
@@ -23,7 +23,7 @@ export function registerCreateReferenceUploadLinkTool(
       title: 'Upload private reference media',
       description:
         'Use this when the user needs to add one private reference by requested media kind: image, video, or audio. It creates a short-lived browser handoff. Do not use it as proof that the file was uploaded, to start generation, or to modify an existing asset.',
-      inputSchema,
+      inputSchema: createReferenceUploadLinkInputSchema,
       annotations: {
         readOnlyHint: false,
         destructiveHint: false,

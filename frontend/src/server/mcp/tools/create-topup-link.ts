@@ -5,7 +5,7 @@ import type { AgentPrincipal } from '@/server/agent-api/principal';
 import type { MaxVideoAiMcpServices } from '@/server/mcp/server';
 import { runAgentTool } from '@/server/mcp/tool-result';
 
-const inputSchema = z.object({ quoteId: z.string().uuidv4() }).strict();
+export const createTopupLinkInputSchema = z.object({ quoteId: z.string().uuidv4() }).strict();
 
 export function registerCreateTopupLinkTool(
   server: McpServer,
@@ -21,7 +21,7 @@ export function registerCreateTopupLinkTool(
       title: 'Create a MaxVideoAI top-up handoff',
       description:
         'Creates a short-lived MaxVideoAI web handoff. It does not take payment, invalidates the old short-lived quote, and requires a fresh prepare_generation after funding.',
-      inputSchema,
+      inputSchema: createTopupLinkInputSchema,
       annotations: {
         readOnlyHint: false,
         destructiveHint: false,

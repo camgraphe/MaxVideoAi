@@ -7,7 +7,7 @@ import type { MaxVideoAiMcpServices } from '@/server/mcp/server';
 import { runAgentTool } from '@/server/mcp/tool-result';
 
 const generationMode = z.enum(CANONICAL_GENERATION_MODES);
-const inputSchema = z.object({
+export const listModelsInputSchema = z.object({
   id: z.string().trim().min(1).optional().describe('Optional exact public MaxVideoAI model ID.'),
   surface: z.enum(['video', 'image']).optional(),
   mode: generationMode.optional(),
@@ -32,7 +32,7 @@ export function registerListModelsTool(
       title: 'List MaxVideoAI models',
       description:
         'Use this when the user needs current public MaxVideoAI image or video model capabilities, including audio and reference-image support. Do not use it for generation, exact pricing, private models, or provider guarantees.',
-      inputSchema,
+      inputSchema: listModelsInputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

@@ -5,7 +5,7 @@ import type { AgentPrincipal } from '@/server/agent-api/principal';
 import type { MaxVideoAiMcpServices } from '@/server/mcp/server';
 import { runAgentTool } from '@/server/mcp/tool-result';
 
-const inputSchema = z.object({
+export const confirmGenerationInputSchema = z.object({
   quoteId: z.string().uuid(),
   confirmed: z.literal(true),
 }).strict();
@@ -24,7 +24,7 @@ export function registerConfirmGenerationTool(
       title: 'Confirm a MaxVideoAI generation',
       description:
         'Confirms one exact prepared quote using the funding locked into the quote and contacts an external generation provider. Wallet quotes may spend wallet funds; an included trial does not. Repeating the same confirmation safely returns the same generation job.',
-      inputSchema,
+      inputSchema: confirmGenerationInputSchema,
       annotations: {
         readOnlyHint: false,
         destructiveHint: false,

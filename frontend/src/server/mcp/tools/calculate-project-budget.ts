@@ -53,7 +53,7 @@ const lineSchema = z.object({
   ),
 }).strict().describe('One concrete video production line to validate and price.');
 
-const inputSchema = z.object({
+export const calculateProjectBudgetInputSchema = z.object({
   proposals: z.array(z.object({
     name: z.string().trim().min(1).max(160).describe(
       'Your name for this concrete production proposal; names and order are preserved exactly.',
@@ -78,7 +78,7 @@ export function registerCalculateProjectBudgetTool(
       title: 'Calculate a MaxVideoAI project budget',
       description:
         'Use this when the user wants current pricing for one or more concrete video production proposals, including mixed models, clip counts, and explicit creative attempts. Do not use it to invent the creative plan, reserve a price, create a generation quote, inspect the wallet, or spend funds.',
-      inputSchema,
+      inputSchema: calculateProjectBudgetInputSchema,
       annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
     },
     async (input) => runAgentTool(() => {

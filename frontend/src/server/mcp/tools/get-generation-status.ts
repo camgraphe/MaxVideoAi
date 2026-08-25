@@ -6,7 +6,7 @@ import type { AgentPrincipal } from '@/server/agent-api/principal';
 import type { MaxVideoAiMcpServices } from '@/server/mcp/server';
 import { runAgentToolWithResourceLinks } from '@/server/mcp/tool-result';
 
-const inputSchema = z.object({
+export const getGenerationStatusInputSchema = z.object({
   jobId: z.string().trim().min(1).max(256),
 }).strict();
 
@@ -24,7 +24,7 @@ export function registerGetGenerationStatusTool(
       title: 'Get a MaxVideoAI generation status',
       description:
         'Use this to recover the safe current state and public result links for one owned generation. It never returns prompts, provider details, or private media.',
-      inputSchema,
+      inputSchema: getGenerationStatusInputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

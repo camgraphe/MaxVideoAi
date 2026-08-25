@@ -373,7 +373,15 @@ export function parseCuratedPolicyBundle(
   const bundle = asRecord(value, 'decision bundle');
   assertExactFields(
     bundle,
-    ['version', 'evidenceKind', 'policyFingerprintSha256', 'provenance', 'decisions'],
+    [
+      'version',
+      'evidenceKind',
+      'policyFingerprintSha256',
+      'fixtureContractSha256',
+      'policyCoverage',
+      'provenance',
+      'decisions',
+    ],
     'decision bundle',
   );
   if (bundle.evidenceKind !== 'curated-offline-policy-expectations') {
@@ -386,6 +394,40 @@ export function parseCuratedPolicyBundle(
   );
   if (!/^[a-f0-9]{64}$/.test(fingerprint)) {
     throw new Error('decision bundle.policyFingerprintSha256 must be lowercase SHA-256');
+  }
+  const fixtureContractFingerprint = parseString(
+    bundle.fixtureContractSha256,
+    'decision bundle.fixtureContractSha256'
+  );
+  if (!/^[a-f0-9]{64}$/.test(fixtureContractFingerprint)) {
+    throw new Error('decision bundle.fixtureContractSha256 must be lowercase SHA-256');
+  }
+  const coverage = asRecord(bundle.policyCoverage, 'decision bundle.policyCoverage');
+  assertExactFields(
+    coverage,
+    ['fixtureCount', 'policyCheckCount', 'requiredChecks'],
+    'decision bundle.policyCoverage'
+  );
+  for (const field of ['fixtureCount', 'policyCheckCount'] as const) {
+    if (!Number.isInteger(coverage[field]) || (coverage[field] as number) <= 0) {
+      throw new Error(`decision bundle.policyCoverage.${field} must be a positive integer`);
+    }
+  }
+  const requiredChecks = asRecord(
+    coverage.requiredChecks,
+    'decision bundle.policyCoverage.requiredChecks'
+  );
+  assertExactFields(
+    requiredChecks,
+    POLICY_CHECKS,
+    'decision bundle.policyCoverage.requiredChecks'
+  );
+  for (const check of POLICY_CHECKS) {
+    if (!Number.isInteger(requiredChecks[check]) || (requiredChecks[check] as number) <= 0) {
+      throw new Error(
+        `decision bundle.policyCoverage.requiredChecks.${check} must be a positive integer`
+      );
+    }
   }
   const provenance = asRecord(bundle.provenance, 'decision bundle.provenance');
   assertExactFields(provenance, ['kind', 'authoring', 'noRealHost'], 'decision bundle.provenance');

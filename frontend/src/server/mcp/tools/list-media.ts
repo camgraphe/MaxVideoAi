@@ -5,7 +5,7 @@ import type { AgentPrincipal } from '@/server/agent-api/principal';
 import type { MaxVideoAiMcpServices } from '@/server/mcp/server';
 import { runAgentTool } from '@/server/mcp/tool-result';
 
-const inputSchema = z.object({
+export const listMediaInputSchema = z.object({
   kind: z.enum(['image', 'video', 'audio']).optional(),
   cursor: z.string().min(1).max(1_024).optional(),
   limit: z.number().int().min(1).max(50).default(20),
@@ -25,7 +25,7 @@ export function registerListMediaTool(
       title: 'List private MaxVideoAI reference media',
       description:
         'Use this when the user needs reusable private MaxVideoAI image, video, or audio asset IDs; filter by the required media kind and use only the returned safe metadata and controlled previews. Do not use it to upload files, expose storage or provider URLs, or start generation.',
-      inputSchema,
+      inputSchema: listMediaInputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

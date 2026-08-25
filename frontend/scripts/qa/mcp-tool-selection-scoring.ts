@@ -194,7 +194,9 @@ function quoteTranscriptMatches(decision: CuratedPolicyDecision): boolean {
     resultIndex !== 0 ||
     assistantIndex !== 1 ||
     !assistants[0].text.includes(amountText) ||
-    !(decision.assistantText ?? '').includes(amountText)
+    !assistants[0].text.includes(prepareResult.quoteId) ||
+    !decision.assistantText.includes(amountText) ||
+    !decision.assistantText.includes(prepareResult.quoteId)
   ) {
     return false;
   }

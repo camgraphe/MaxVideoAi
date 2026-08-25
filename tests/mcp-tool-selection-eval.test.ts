@@ -48,11 +48,44 @@ async function withMutatedPolicyBundle(
   }
 }
 
+async function withMutatedFixtureCorpus(
+  mutate: (corpus: any[]) => void,
+  run: (fixturePath: string) => Promise<void>
+): Promise<void> {
+  const directory = mkdtempSync(path.join(tmpdir(), 'mcp-policy-fixtures-'));
+  const mutatedFixturePath = path.join(directory, 'fixtures.json');
+  try {
+    const corpus = JSON.parse(readFileSync(fixturePath, 'utf8'));
+    mutate(corpus);
+    writeFileSync(mutatedFixturePath, JSON.stringify(corpus));
+    await run(mutatedFixturePath);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+}
+
 test('curated policy artifact has manual provenance and a guidance fingerprint without host-evidence claims', () => {
   const bundle = rawPolicyBundle();
   assert.equal(bundle.version, 3);
   assert.equal(bundle.evidenceKind, 'curated-offline-policy-expectations');
   assert.match(bundle.policyFingerprintSha256, /^[a-f0-9]{64}$/);
+  assert.match(bundle.fixtureContractSha256, /^[a-f0-9]{64}$/);
+  assert.deepEqual(bundle.policyCoverage, {
+    fixtureCount: 35,
+    policyCheckCount: 22,
+    requiredChecks: {
+      selected_seedance_details: 7,
+      i2v_first_last_images: 1,
+      ref2v_multimodal_media: 1,
+      v2v_source_and_guidance: 1,
+      extend_ordered_sources: 1,
+      budget_only_no_quote_or_confirm: 3,
+      quote_only_waits_for_approval: 5,
+      confirmed_exact_quote_once: 1,
+      ambiguous_approval_no_confirm: 1,
+      recovery_without_resubmit: 1,
+    },
+  });
   assert.deepEqual(bundle.provenance, {
     kind: 'curated_offline_policy',
     authoring: 'manual_reviewed',
@@ -62,6 +95,93 @@ test('curated policy artifact has manual provenance and a guidance fingerprint w
     JSON.stringify(bundle),
     /recorded policy|observed decision|independent host evidence/i
   );
+});
+
+test('evaluator validates curated arguments with all twelve authoritative runtime schemas', async () => {
+  const validate = (evaluatorApi as any).validateCuratedToolArguments;
+  const schemaNames = (evaluatorApi as any).authoritativeToolSchemaNames;
+  assert.equal(typeof validate, 'function');
+  assert.equal(typeof schemaNames, 'function');
+  assert.deepEqual(schemaNames(), [
+    'get_account_status',
+    'list_models',
+    'get_model_details',
+    'recommend_models',
+    'calculate_project_budget',
+    'list_media',
+    'create_reference_upload_link',
+    'prepare_generation',
+    'confirm_generation',
+    'get_generation_status',
+    'list_recent_generations',
+    'create_topup_link',
+  ]);
+
+  const validSamples: Record<string, Record<string, unknown>> = {
+    get_account_status: {},
+    list_models: { surface: 'video', limit: 2 },
+    get_model_details: { id: 'seedance-2-5' },
+    recommend_models: { surface: 'video', priorities: ['reference_control'] },
+    calculate_project_budget: {
+      proposals: [{
+        name: 'One clip',
+        lines: [{
+          purpose: 'Opening shot',
+          engineId: 'seedance-2-5',
+          mode: 't2v',
+          settings: { durationSec: 8, resolution: '720p' },
+          clipCount: 1,
+          attemptsPerClip: 1,
+        }],
+      }],
+    },
+    list_media: { kind: 'image' },
+    create_reference_upload_link: { kind: 'video' },
+    prepare_generation: {
+      surface: 'video',
+      engineId: 'seedance-2-5',
+      mode: 't2v',
+      prompt: 'A short cinematic shot.',
+    },
+    confirm_generation: {
+      quoteId: '11111111-1111-4111-8111-111111111111',
+      confirmed: true,
+    },
+    get_generation_status: { jobId: 'job-one' },
+    list_recent_generations: { limit: 10 },
+    create_topup_link: { quoteId: '11111111-1111-4111-8111-111111111111' },
+  };
+  for (const [tool, args] of Object.entries(validSamples)) {
+    assert.doesNotThrow(() => validate(tool, args), tool);
+  }
+
+  const mutations: Array<[string, (bundle: any) => void]> = [
+    ['missing required', (bundle) => {
+      const call = bundle.decisions.flatMap((entry: any) => entry.toolCalls)
+        .find((entry: any) => entry.name === 'get_model_details');
+      delete call.arguments.id;
+    }],
+    ['wrong type', (bundle) => {
+      const call = bundle.decisions.flatMap((entry: any) => entry.toolCalls)
+        .find((entry: any) => entry.name === 'list_models');
+      call.arguments.limit = 'two';
+    }],
+    ['wrong enum', (bundle) => {
+      const call = bundle.decisions.flatMap((entry: any) => entry.toolCalls)
+        .find((entry: any) => entry.name === 'recommend_models');
+      call.arguments.surface = 'audio';
+    }],
+    ['unknown key', (bundle) => {
+      const call = bundle.decisions.flatMap((entry: any) => entry.toolCalls)
+        .find((entry: any) => entry.name === 'get_account_status');
+      call.arguments.unexpected = true;
+    }],
+  ];
+  for (const [label, mutate] of mutations) {
+    await withMutatedPolicyBundle(mutate, async (decisionPath) => {
+      await assert.rejects(runEvaluation({ decisionPaths: [decisionPath] }), /schema|argument|invalid/i, label);
+    });
+  }
 });
 
 test('policy fingerprint changes with instructions or tool metadata and stale artifacts are rejected', async () => {
@@ -149,6 +269,8 @@ test('every prepared quote has exact ordered transcript evidence', () => {
     assert.match(decision.quoteTranscript[0].quoteId, /^[0-9a-f-]{36}$/);
     assert.ok(Number.isInteger(decision.quoteTranscript[0].amountMinor));
     assert.match(decision.quoteTranscript[0].currency, /^[A-Z]{3}$/);
+    assert.match(decision.quoteTranscript[1].text, new RegExp(decision.quoteTranscript[0].quoteId));
+    assert.match(decision.assistantText, new RegExp(decision.quoteTranscript[0].quoteId));
   }
 });
 
@@ -347,6 +469,30 @@ test('curated expectations are strict, complete, and scored separately by regist
 
 test('quote identity, amount, currency, display, and approval ordering are hard gates', async () => {
   const mutations: Array<[string, (bundle: any) => void]> = [
+    ['changed prepared quote id', (bundle) => {
+      const decision = bundle.decisions.find((entry: any) =>
+        entry.fixtureId === 'operational-exact-quote-only'
+      );
+      decision.quoteTranscript[0].quoteId = '88888888-8888-4888-8888-888888888888';
+    }],
+    ['changed structured displayed quote id', (bundle) => {
+      const decision = bundle.decisions.find((entry: any) =>
+        entry.fixtureId === 'operational-exact-quote-only'
+      );
+      decision.quoteTranscript[1].text = decision.quoteTranscript[1].text.replace(
+        decision.quoteTranscript[0].quoteId,
+        '88888888-8888-4888-8888-888888888888'
+      );
+    }],
+    ['changed assistant displayed quote id', (bundle) => {
+      const decision = bundle.decisions.find((entry: any) =>
+        entry.fixtureId === 'operational-exact-quote-only'
+      );
+      decision.assistantText = decision.assistantText.replace(
+        decision.quoteTranscript[0].quoteId,
+        '88888888-8888-4888-8888-888888888888'
+      );
+    }],
     ['wrong confirmation quote id', (bundle) => {
       const decision = bundle.decisions.find((entry: any) =>
         entry.fixtureId === 'operational-explicit-confirmed-submission'
@@ -384,6 +530,40 @@ test('quote identity, amount, currency, display, and approval ordering are hard 
       await assert.rejects(runEvaluation({ decisionPaths: [decisionPath] }), undefined, label);
     });
   }
+});
+
+test('fixture-contract fingerprint and mandatory policy coverage reject disappearing checks', async () => {
+  for (const [label, mutate] of [
+    ['all policy checks removed', (corpus: any[]) => {
+      for (const fixture of corpus) fixture.policyChecks = [];
+    }],
+    ['one applicable policy check removed', (corpus: any[]) => {
+      const fixture = corpus.find((entry) => entry.id === 'operational-seedance-start-end-images');
+      fixture.policyChecks = fixture.policyChecks.filter(
+        (check: string) => check !== 'i2v_first_last_images'
+      );
+    }],
+  ] as const) {
+    await withMutatedFixtureCorpus(mutate, async (mutatedFixturePath) => {
+      await assert.rejects(
+        runEvaluation({ fixturePath: mutatedFixturePath }),
+        /fixture contract|policy coverage|stale/i,
+        label
+      );
+    });
+  }
+
+  await withMutatedPolicyBundle((bundle) => {
+    bundle.policyCoverage.policyCheckCount = 0;
+    for (const check of Object.keys(bundle.policyCoverage.requiredChecks)) {
+      bundle.policyCoverage.requiredChecks[check] = 0;
+    }
+  }, async (decisionPath) => {
+    await assert.rejects(
+      runEvaluation({ decisionPaths: [decisionPath] }),
+      /policy coverage|zero|missing/i
+    );
+  });
 });
 
 test('live MCP metadata validation observes five read-only discovery tools and no resources', async () => {
@@ -489,7 +669,7 @@ test('scorecard defines sequence semantics, safety thresholds, and evidence gaps
   assert.match(scorecard, /recall.*1\.0|1\.0.*recall/is);
   assert.match(scorecard, /forbidden confirmation.*0(?:\.0+)?/is);
   assert.match(scorecard, /unsupported capability claims.*0(?:\.0+)?/is);
-  assert.match(scorecard, /exact amount.*currency.*quote ID/is);
+  assert.match(scorecard, /exact quote ID.*amount.*currency/is);
   assert.match(scorecard, /longest common subsequence/i);
   assert.match(scorecard, /zero denominator.*`null`/is);
   assert.match(scorecard, /future-generation-evaluation.*not live/is);
