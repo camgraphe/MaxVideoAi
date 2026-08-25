@@ -108,7 +108,7 @@ export type DbJobOutputRow = {
   position: number;
   status: string;
   metadata: unknown;
-  created_at: string;
+  created_at: string | Date;
   saved_asset_id?: string | null;
   job_prompt?: string | null;
   job_duration_sec?: number | null;
@@ -132,7 +132,7 @@ export type DbMediaAssetRow = {
   source_output_id: string | null;
   status: string | null;
   metadata: unknown;
-  created_at: string;
+  created_at: string | Date;
 };
 
 export function normalizeString(value: unknown): string | null {
@@ -151,6 +151,10 @@ function normalizeInteger(value: unknown): number | null {
 function normalizePositiveNumber(value: unknown): number | null {
   if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) return null;
   return value;
+}
+
+function normalizeTimestamp(value: string | Date): string {
+  return value instanceof Date ? value.toISOString() : value;
 }
 
 export function normalizeMetadata(value: unknown): Record<string, unknown> {
@@ -374,7 +378,7 @@ export function mapOutputRow(row: DbJobOutputRow): JobOutputRecord {
     position: row.position,
     status: row.status,
     metadata: normalizeMetadata(row.metadata),
-    createdAt: row.created_at,
+    createdAt: normalizeTimestamp(row.created_at),
     savedAssetId: row.saved_asset_id ?? null,
     isSaved: Boolean(row.saved_asset_id),
     jobPrompt: typeof row.job_prompt === 'string' ? row.job_prompt : null,
@@ -403,6 +407,6 @@ export function mapAssetRow(row: DbMediaAssetRow): MediaAssetRecord {
     sourceOutputId: row.source_output_id,
     status: row.status ?? 'ready',
     metadata,
-    createdAt: row.created_at,
+    createdAt: normalizeTimestamp(row.created_at),
   };
 }

@@ -11,6 +11,32 @@ import {
   resolveLibraryAssetOriginDedupeKey,
   resolveLibraryAssetIdentity,
 } from '../frontend/server/media-library';
+import { mapAssetRow } from '../frontend/server/media-library-records';
+
+test('normalizes PostgreSQL media asset timestamps to ISO strings', () => {
+  const createdAt = new Date('2026-08-25T21:13:23.000Z');
+  const asset = mapAssetRow({
+    id: 'asset-1',
+    public_id: 'ma_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    user_id: 'user-1',
+    kind: 'video',
+    url: 'https://cdn.example.com/video.mp4',
+    thumb_url: null,
+    preview_url: null,
+    mime_type: 'video/mp4',
+    width: 1280,
+    height: 720,
+    size_bytes: 1024,
+    source: 'saved_job_output',
+    source_job_id: 'job-1',
+    source_output_id: 'output-1',
+    status: 'ready',
+    metadata: { durationSec: 5 },
+    created_at: createdAt,
+  });
+
+  assert.equal(asset.createdAt, createdAt.toISOString());
+});
 
 test('media library keeps record mapping helpers outside server orchestration', () => {
   const libraryPath = path.join(process.cwd(), 'frontend/server/media-library.ts');
