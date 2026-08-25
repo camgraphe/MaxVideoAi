@@ -419,7 +419,7 @@ test('real PostgreSQL upload recovery and interleavings preserve one terminal as
     )).rows[0]?.state, 'pending');
   });
 
-  await t.test('deleting fence blocks a concurrent uploader until deletion settles, then permits a safe reupload', async () => {
+  await t.test('deleting and deleted fences reject legacy registration and canonical persistence', async () => {
     await reset(database.pool);
     const { attempt: expiredAttempt } = await createClaimedAttempt(
       database.pool, new Date(now.getTime() - 14 * 60_000),
@@ -448,13 +448,14 @@ test('real PostgreSQL upload recovery and interleavings preserve one terminal as
       'SELECT state FROM mcp_reference_upload_object_fences WHERE object_key = $1', [finalKey],
     )).rows, [{ state: 'deleted' }]);
 
-    await transaction(database.pool, (executor) => registerReferenceUploadCleanupObject(
+    await assert.rejects(() => transaction(database.pool, (executor) => registerReferenceUploadCleanupObject(
       { attempt: retryAttempt, objectKey: finalKey, objectRole: 'final', safeToDelete: false },
       { executor, now: new Date(now.getTime() + 1_000) },
-    ));
-    assert.deepEqual((await database.pool.query<{ state: string }>(
-      'SELECT state FROM mcp_reference_upload_object_fences WHERE object_key = $1', [finalKey],
-    )).rows, [{ state: 'available' }]);
+    )), /delet|retry/iu);
+    await assert.rejects(() => database.pool.query(
+      'INSERT INTO user_assets (asset_id, user_id, url) VALUES ($1,$2,$3)',
+      ['legacy-late-winner', 'user-a', `https://assets.maxvideo.ai/${finalKey}`],
+    ), /delet|retry/iu);
   });
 
   await t.test('failed final deletion releases its durable key fence for cleanup retry', async () => {
@@ -501,7 +502,7 @@ test('real PostgreSQL upload recovery and interleavings preserve one terminal as
     )).rows[0]?.state, 'retained');
     assert.deepEqual((await database.pool.query<{ state: string }>(
       'SELECT state FROM mcp_reference_upload_object_fences WHERE object_key = $1', [finalKey],
-    )).rows, [{ state: 'available' }]);
+    )).rows, [{ state: 'referenced' }]);
   });
 
   await t.test('expiry cleanup takes over only an expired lease and retries its durable tombstone', async () => {
@@ -597,6 +598,47 @@ test('real PostgreSQL upload recovery and interleavings preserve one terminal as
       async deleteStorageObjectKey() { deletes += 1; },
     }), { selected: 0, deleted: 0 });
     assert.equal(deletes, 0);
+    assert.deepEqual((await database.pool.query<{ state: string; producer_claim_id: string | null }>(
+      'SELECT state, producer_claim_id FROM mcp_reference_upload_object_fences WHERE object_key = $1', [finalKey],
+    )).rows, [{ state: 'referenced', producer_claim_id: null }]);
+  });
+
+  await t.test('canonical-first persistence locks ownership until commit and defeats cleanup', async () => {
+    await reset(database.pool);
+    const { attempt } = await createClaimedAttempt(
+      database.pool, new Date(now.getTime() - 14 * 60_000),
+    );
+    const finalKey = `user-assets/by-content/${'5'.repeat(32)}/${fileSha256}.mp4`;
+    await transaction(database.pool, (executor) => registerReferenceUploadCleanupObject(
+      { attempt, objectKey: finalKey, objectRole: 'final', safeToDelete: false }, { executor, now },
+    ));
+    const canonical = await database.pool.connect();
+    let committed = false;
+    try {
+      await canonical.query('BEGIN');
+      await canonical.query(
+        'INSERT INTO user_assets (asset_id, user_id, url) VALUES ($1,$2,$3)',
+        ['canonical-first', 'user-a', `https://assets.maxvideo.ai/${finalKey}`],
+      );
+      const cleanup = cleanupExpiredReferenceUploadAttempts({}, {
+        executor: createQueryExecutor(database.pool), now: () => new Date(now.getTime() + 2 * 60_000),
+        async deleteStorageObjectKey() {},
+      });
+      const beforeCommit = await Promise.race([
+        cleanup.then(() => 'settled' as const),
+        new Promise<'blocked'>((resolve) => setTimeout(() => resolve('blocked'), 50)),
+      ]);
+      assert.equal(beforeCommit, 'blocked');
+      await canonical.query('COMMIT');
+      committed = true;
+      assert.deepEqual(await cleanup, { selected: 0, deleted: 0 });
+    } finally {
+      if (!committed) await canonical.query('ROLLBACK');
+      canonical.release();
+    }
+    assert.deepEqual((await database.pool.query<{ state: string }>(
+      'SELECT state FROM mcp_reference_upload_object_fences WHERE object_key = $1', [finalKey],
+    )).rows, [{ state: 'referenced' }]);
   });
 
   await t.test('deleting rejects new workspace producers and canonical inserts until deletion settles', async () => {
@@ -635,6 +677,51 @@ test('real PostgreSQL upload recovery and interleavings preserve one terminal as
       releaseDelete?.();
     }
     assert.deepEqual(await cleanup, { selected: 1, deleted: 1 });
+    await assert.rejects(() => database.pool.query(
+      'INSERT INTO media_assets (id, public_id, user_id, url) VALUES ($1,$2,$3,$4)',
+      ['post-delete-winner', 'ma_cccccccccccccccccccccccccccccccc', 'user-a', `https://assets.maxvideo.ai/${finalKey}`],
+    ), /delet|retry/iu);
+  });
+
+  await t.test('a current producer reclaims a deleted key before reupload and settles referenced ownership', async () => {
+    await reset(database.pool);
+    const { attempt } = await createClaimedAttempt(
+      database.pool, new Date(now.getTime() - 14 * 60_000),
+    );
+    const finalKey = `user-assets/by-content/${'4'.repeat(32)}/${fileSha256}.mp4`;
+    await transaction(database.pool, (executor) => registerReferenceUploadCleanupObject(
+      { attempt, objectKey: finalKey, objectRole: 'final', safeToDelete: false }, { executor, now },
+    ));
+    assert.deepEqual(await cleanupExpiredReferenceUploadAttempts({}, {
+      executor: createQueryExecutor(database.pool), now: () => new Date(now.getTime() + 2 * 60_000),
+      async deleteStorageObjectKey() {},
+    }), { selected: 1, deleted: 1 });
+
+    const producer = await transaction(database.pool, (executor) => claimStorageObjectProducer(
+      { objectKey: finalKey }, {
+        executor, now: new Date(now.getTime() + 2 * 60_000 + 1),
+        claimId: '00000000-0000-4000-8000-000000000704',
+      },
+    ));
+    await database.pool.query(
+      'INSERT INTO user_assets (asset_id, user_id, url) VALUES ($1,$2,$3)',
+      ['reuploaded-winner', 'user-a', `https://assets.maxvideo.ai/${finalKey}`],
+    );
+    assert.deepEqual((await database.pool.query<{ state: string; producer_claim_id: string | null }>(
+      'SELECT state, producer_claim_id FROM mcp_reference_upload_object_fences WHERE object_key = $1', [finalKey],
+    )).rows, [{ state: 'referenced', producer_claim_id: producer.claimId }]);
+    await transaction(database.pool, (executor) => settleStorageObjectProducer(
+      { claim: producer, outcome: 'persisted' },
+      { executor, now: new Date(now.getTime() + 2 * 60_000 + 2) },
+    ));
+    assert.deepEqual((await database.pool.query<{ state: string; producer_claim_id: string | null }>(
+      'SELECT state, producer_claim_id FROM mcp_reference_upload_object_fences WHERE object_key = $1', [finalKey],
+    )).rows, [{ state: 'referenced', producer_claim_id: null }]);
+
+    await database.pool.query('DELETE FROM user_assets WHERE asset_id = $1', ['reuploaded-winner']);
+    assert.deepEqual((await database.pool.query<{ state: string }>(
+      'SELECT state FROM mcp_reference_upload_object_fences WHERE object_key = $1', [finalKey],
+    )).rows, [{ state: 'orphaned' }]);
   });
 
   await t.test('failed workspace persistence leaves an orphaned producer fence for durable cleanup', async () => {
