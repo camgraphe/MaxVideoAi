@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -15,34 +16,48 @@ import {
   ALL_FIXTURE_CATEGORIES,
   FUTURE_GATED_TOOL_NAMES,
   LIVE_TOOL_NAMES,
-  parseDecisionBundle,
+  parseCuratedPolicyBundle,
   parseFixtureCorpus,
   type ToolSelectionFixture,
 } from './mcp-tool-selection-contract';
 import {
-  assertCompleteOfflinePolicyDecisions,
-  assertUniqueRecordedDecisions,
+  assertCompleteCuratedPolicyDecisions,
+  assertCuratedPolicyReleaseGates,
+  assertUniqueCuratedPolicyDecisions,
   buildFixtureBaseline,
-  scoreRecordedDecisions,
+  scoreCuratedPolicyDecisions,
 } from './mcp-tool-selection-scoring';
 
 export {
   ALL_FIXTURE_CATEGORIES,
   FUTURE_GATED_TOOL_NAMES,
   LIVE_TOOL_NAMES,
-  parseDecisionBundle,
+  parseCuratedPolicyBundle,
   parseFixtureCorpus,
 } from './mcp-tool-selection-contract';
 export type {
-  RecordedDecision,
+  CuratedPolicyDecision,
   ToolSelectionFixture,
 } from './mcp-tool-selection-contract';
 export {
-  assertCompleteOfflinePolicyDecisions,
+  assertCompleteCuratedPolicyDecisions,
+  assertCuratedPolicyReleaseGates,
   buildFixtureBaseline,
-  scoreRecordedDecisions,
+  scoreCuratedPolicyDecisions,
 } from './mcp-tool-selection-scoring';
 export type { ProfileScore } from './mcp-tool-selection-scoring';
+
+export type PolicyFingerprintInput = {
+  instructions: string;
+  packagedSkill: string;
+  references: Record<string, string>;
+  tools: Array<{
+    name: string;
+    description: string;
+    annotations: Record<string, unknown>;
+    inputSchema: Record<string, unknown>;
+  }>;
+};
 
 export type RegistryEvidence = {
   liveTools: string[];
@@ -51,6 +66,103 @@ export type RegistryEvidence = {
   publicationFlagsAllFalse: boolean;
   instructions: string;
 };
+
+function canonicalize(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(canonicalize);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([key, entry]) => [key, canonicalize(entry)])
+    );
+  }
+  return value;
+}
+
+export function computePolicyFingerprintSha256(input: PolicyFingerprintInput): string {
+  return createHash('sha256').update(JSON.stringify(canonicalize(input))).digest('hex');
+}
+
+export function assertPolicyFingerprint(
+  expectedFingerprint: string,
+  input: PolicyFingerprintInput
+): void {
+  const actualFingerprint = computePolicyFingerprintSha256(input);
+  if (expectedFingerprint !== actualFingerprint) {
+    throw new Error(
+      `stale curated policy fingerprint: expected ${expectedFingerprint}, current ${actualFingerprint}`
+    );
+  }
+}
+
+export async function collectPolicyFingerprintInput(): Promise<PolicyFingerprintInput> {
+  const principal: AgentPrincipal = {
+    userId: 'offline-policy-fingerprint-user',
+    clientId: 'offline-policy-fingerprint-client',
+    emailVerified: true,
+    authMethod: 'oauth',
+  };
+  const unavailable = async (): Promise<never> => {
+    throw new Error('policy fingerprint inspection must not invoke a tool service');
+  };
+  const services: MaxVideoAiMcpServices = {
+    getAccountStatus: unavailable,
+    listModels: unavailable,
+    getModelDetails: unavailable,
+    recommendModels: unavailable,
+    calculateProjectBudget: unavailable,
+    listMedia: unavailable,
+    createReferenceUploadLink: unavailable,
+    prepareGeneration: unavailable,
+    confirmGeneration: unavailable,
+    getGenerationStatus: unavailable,
+    listRecentGenerations: unavailable,
+    createTopupLink: unavailable,
+  };
+  const server = createMaxVideoAiMcpServer(principal, services, {
+    paidGeneration: true,
+    referenceUploads: true,
+  });
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  await server.connect(serverTransport);
+  const client = new Client({ name: 'offline-policy-fingerprint', version: '1.0.0' });
+  await client.connect(clientTransport);
+  try {
+    const tools = (await client.listTools()).tools.map((tool) => ({
+      name: tool.name,
+      description: tool.description ?? '',
+      annotations: (tool.annotations ?? {}) as Record<string, unknown>,
+      inputSchema: tool.inputSchema as Record<string, unknown>,
+    }));
+    if (JSON.stringify(tools.map((tool) => tool.name)) !== JSON.stringify([
+      ...LIVE_TOOL_NAMES,
+      ...FUTURE_GATED_TOOL_NAMES,
+    ])) {
+      throw new Error('policy fingerprint tool inventory drifted');
+    }
+    return {
+      instructions: client.getInstructions() ?? '',
+      packagedSkill: readFileSync(fileURLToPath(new URL(
+        '../../../plugins/maxvideoai/skills/maxvideoai/SKILL.md',
+        import.meta.url
+      )), 'utf8'),
+      references: {
+        'budget-planning.md': readFileSync(fileURLToPath(new URL(
+          '../../../plugins/maxvideoai/skills/maxvideoai/references/budget-planning.md',
+          import.meta.url
+        )), 'utf8'),
+        'generation-safety.md': readFileSync(fileURLToPath(new URL(
+          '../../../plugins/maxvideoai/skills/maxvideoai/references/generation-safety.md',
+          import.meta.url
+        )), 'utf8'),
+      },
+      tools,
+    };
+  } finally {
+    await client.close();
+    await server.close();
+  }
+}
 
 function assertFixtureCoverage(fixtures: readonly ToolSelectionFixture[]): void {
   const categories = new Set(fixtures.map((fixture) => fixture.category));
@@ -206,19 +318,26 @@ export async function runEvaluation(options: {
   const requestedDecisionPaths = options.decisionPaths ?? [];
   const usingDefaultPolicyBundle = requestedDecisionPaths.length === 0;
   const decisionPaths = usingDefaultPolicyBundle
-    ? [fileURLToPath(new URL('../../../tests/fixtures/mcp-tool-selection-recorded-decisions.json', import.meta.url))]
+    ? [fileURLToPath(new URL('../../../tests/fixtures/mcp-tool-selection-curated-policy.json', import.meta.url))]
     : requestedDecisionPaths;
-  const decisions = decisionPaths.flatMap((path) =>
-    parseDecisionBundle(JSON.parse(readFileSync(path, 'utf8')), fixtures)
-  );
-  assertUniqueRecordedDecisions(decisions);
-  if (usingDefaultPolicyBundle || decisions.some((decision) => decision.source === 'offline-policy')) {
-    assertCompleteOfflinePolicyDecisions(fixtures, decisions);
+  const policyFingerprintInput = await collectPolicyFingerprintInput();
+  const decisions = decisionPaths.flatMap((path) => {
+    const bundle = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>;
+    if (bundle.evidenceKind === 'curated-offline-policy-expectations') {
+      assertPolicyFingerprint(String(bundle.policyFingerprintSha256 ?? ''), policyFingerprintInput);
+    }
+    return parseCuratedPolicyBundle(bundle, fixtures);
+  });
+  assertUniqueCuratedPolicyDecisions(decisions);
+  if (usingDefaultPolicyBundle || decisions.some((decision) => decision.source === 'curated-offline-policy')) {
+    assertCompleteCuratedPolicyDecisions(fixtures, decisions);
   }
+  const policyScores = scoreCuratedPolicyDecisions(fixtures, decisions);
+  assertCuratedPolicyReleaseGates(fixtures, decisions, policyScores);
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     executionMode: 'deterministic-offline',
-    evidenceLabel: 'offline recorded policy decisions',
+    evidenceLabel: 'curated offline policy decisions/expectations',
     registry: await inspectLiveMcpMetadata(),
     corpus: {
       fixtureCount: fixtures.length,
@@ -229,7 +348,8 @@ export async function runEvaluation(options: {
       ).length,
     },
     fixtureContract: buildFixtureBaseline(fixtures),
-    recordedPolicyEvidence: scoreRecordedDecisions(fixtures, decisions),
+    policyFingerprintSha256: computePolicyFingerprintSha256(policyFingerprintInput),
+    curatedPolicyEvaluation: policyScores,
     realHostMetrics: {
       status: 'unavailable-until-task-10',
       codex: null,

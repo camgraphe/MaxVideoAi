@@ -413,21 +413,21 @@ test('all twelve operational tools expose strict schemas and reject unknown keys
     assert.equal(calls.get(name) ?? 0, 0, `${name} handler must not run`);
   }
 
-  const recordedBundle = JSON.parse(
-    readFileSync('tests/fixtures/mcp-tool-selection-recorded-decisions.json', 'utf8')
+  const curatedPolicyBundle = JSON.parse(
+    readFileSync('tests/fixtures/mcp-tool-selection-curated-policy.json', 'utf8')
   ) as {
     decisions: Array<{
       toolCalls: Array<{ name: string; arguments: Record<string, unknown> }>;
     }>;
   };
-  for (const decision of recordedBundle.decisions) {
+  for (const decision of curatedPolicyBundle.decisions) {
     for (const toolCall of decision.toolCalls) {
       const before = calls.get(toolCall.name) ?? 0;
       await client.callTool({ name: toolCall.name, arguments: toolCall.arguments });
       assert.equal(
         calls.get(toolCall.name),
         before + 1,
-        `${toolCall.name} recorded arguments must pass its runtime schema`
+        `${toolCall.name} curated policy arguments must pass its runtime schema`
       );
     }
   }

@@ -1,12 +1,11 @@
 import {
-  RECORDED_HOSTS,
   REGISTRY_PROFILES,
   type CapabilityClaim,
   type EvaluationToolName,
-  type RecordedDecision,
-  type RecordedHost,
+  type CuratedPolicyDecision,
   type RegistryProfile,
   type PolicyCheck,
+  type QuoteTranscriptEvent,
   type ToolSelectionFixture,
 } from './mcp-tool-selection-contract';
 
@@ -31,21 +30,17 @@ type ScoreCounts = {
   capabilityRecallDenominator: number;
   policyCheckNumerator: number;
   policyCheckDenominator: number;
+  quoteDisplayNumerator: number;
+  quoteDisplayDenominator: number;
 };
 
 export type ProfileScore = {
-  host: RecordedHost | 'fixture-contract-only' | 'offline-policy' | 'aggregate';
+  evidenceSource: 'fixture-contract' | 'curated-offline-policy';
   registryProfile: RegistryProfile;
   evidenceStatus:
-    | 'expectations-only-no-observed-decisions'
-    | 'recorded-partial'
-    | 'recorded-complete'
-    | 'recorded-aggregate-partial'
-    | 'recorded-aggregate-complete'
-    | 'no-recorded-host-evidence'
-    | 'offline-recorded-complete'
-    | 'offline-recorded-partial'
-    | 'no-offline-policy-evidence';
+    | 'expectations-only-no-host-evidence'
+    | 'curated-policy-complete'
+    | 'curated-policy-partial';
   evaluatedFixtures: number;
   totalFixtures: number;
   selectionPrecision: MetricFraction;
@@ -55,6 +50,7 @@ export type ProfileScore = {
   unsupportedClaimRate: MetricFraction;
   capabilityClaimRecall: MetricFraction;
   policyAdherenceRate: MetricFraction;
+  quoteDisplayMatchRate: MetricFraction;
 };
 
 function emptyCounts(): ScoreCounts {
@@ -73,6 +69,8 @@ function emptyCounts(): ScoreCounts {
     capabilityRecallDenominator: 0,
     policyCheckNumerator: 0,
     policyCheckDenominator: 0,
+    quoteDisplayNumerator: 0,
+    quoteDisplayDenominator: 0,
   };
 }
 
@@ -127,12 +125,12 @@ function hasPairedQuoteBeforeEveryConfirmation(
   return confirmations > 0;
 }
 
-function toolCalls(decision: RecordedDecision) {
+function toolCalls(decision: CuratedPolicyDecision) {
   return decision.toolCalls ?? [];
 }
 
 function callArguments(
-  decision: RecordedDecision,
+  decision: CuratedPolicyDecision,
   name: EvaluationToolName
 ): Record<string, unknown>[] {
   return toolCalls(decision)
@@ -150,18 +148,76 @@ function referenceRoles(argumentsValue: Record<string, unknown>): string[] {
   });
 }
 
-function hasMediaKinds(decision: RecordedDecision, expectedKinds: readonly string[]): boolean {
+function hasMediaKinds(decision: CuratedPolicyDecision, expectedKinds: readonly string[]): boolean {
   const kinds = callArguments(decision, 'list_media').map((args) => args.kind);
   return expectedKinds.every((kind) => kinds.includes(kind));
 }
 
-function hasPrepareMode(decision: RecordedDecision, mode: string): boolean {
+function hasPrepareMode(decision: CuratedPolicyDecision, mode: string): boolean {
   return callArguments(decision, 'prepare_generation').some(
     (args) => args.mode === mode && args.engineId === 'seedance-2-5'
   );
 }
 
-function evaluatePolicyCheck(check: PolicyCheck, decision: RecordedDecision): boolean {
+function exactAmountText(event: Extract<QuoteTranscriptEvent, { type: 'prepare_result' }>): string {
+  return `${event.currency} ${(event.amountMinor / 100).toFixed(2)}`;
+}
+
+function quoteTranscriptMatches(decision: CuratedPolicyDecision): boolean {
+  const calls = toolCalls(decision);
+  const prepareCalls = calls.filter((call) => call.name === 'prepare_generation');
+  if (prepareCalls.length === 0) return decision.quoteTranscript === undefined;
+  if (prepareCalls.length !== 1 || !decision.quoteTranscript) return false;
+
+  const events = decision.quoteTranscript;
+  const prepareResults = events.filter(
+    (event): event is Extract<QuoteTranscriptEvent, { type: 'prepare_result' }> =>
+      event.type === 'prepare_result'
+  );
+  const assistants = events.filter(
+    (event): event is Extract<QuoteTranscriptEvent, { type: 'assistant' }> =>
+      event.type === 'assistant'
+  );
+  const users = events.filter(
+    (event): event is Extract<QuoteTranscriptEvent, { type: 'user' }> => event.type === 'user'
+  );
+  const transcriptConfirms = events.filter(
+    (event): event is Extract<QuoteTranscriptEvent, { type: 'confirm_call' }> =>
+      event.type === 'confirm_call'
+  );
+  if (prepareResults.length !== 1 || assistants.length !== 1) return false;
+  const prepareResult = prepareResults[0];
+  const amountText = exactAmountText(prepareResult);
+  const resultIndex = events.indexOf(prepareResult);
+  const assistantIndex = events.indexOf(assistants[0]);
+  if (
+    resultIndex !== 0 ||
+    assistantIndex !== 1 ||
+    !assistants[0].text.includes(amountText) ||
+    !(decision.assistantText ?? '').includes(amountText)
+  ) {
+    return false;
+  }
+
+  const confirmCalls = calls.filter((call) => call.name === 'confirm_generation');
+  if (confirmCalls.length === 0) {
+    return transcriptConfirms.length === 0 && users.length === 0;
+  }
+  if (confirmCalls.length !== 1 || transcriptConfirms.length !== 1 || users.length !== 1) {
+    return false;
+  }
+  const userIndex = events.indexOf(users[0]);
+  const transcriptConfirmIndex = events.indexOf(transcriptConfirms[0]);
+  const confirmedQuoteId = confirmCalls[0].arguments.quoteId;
+  return assistantIndex < userIndex && userIndex < transcriptConfirmIndex &&
+    /explicit|approve|confirm/i.test(users[0].text) &&
+    users[0].text.includes(amountText) &&
+    confirmedQuoteId === prepareResult.quoteId &&
+    transcriptConfirms[0].quoteId === prepareResult.quoteId &&
+    transcriptConfirms[0].confirmed === true;
+}
+
+function evaluatePolicyCheck(check: PolicyCheck, decision: CuratedPolicyDecision): boolean {
   const calls = toolCalls(decision);
   const selected = calls.map((call) => call.name);
   const assistantText = decision.assistantText ?? '';
@@ -231,7 +287,7 @@ function scoreOne(
   fixture: ToolSelectionFixture,
   selectedTools: readonly EvaluationToolName[],
   capabilityClaims: readonly CapabilityClaim[],
-  decision?: RecordedDecision,
+  decision?: CuratedPolicyDecision,
 ): ScoreCounts {
   const counts = emptyCounts();
   const requiredMatches = orderedMatchCount(selectedTools, fixture.expectedTools);
@@ -268,17 +324,21 @@ function scoreOne(
   counts.capabilityRecallNumerator = fixture.expectedCapabilityClaims.filter((claim) =>
     capabilityClaims.includes(claim)
   ).length;
-  if (decision?.source === 'offline-policy') {
+  if (decision?.source === 'curated-offline-policy') {
     counts.policyCheckDenominator = fixture.policyChecks.length;
     counts.policyCheckNumerator = fixture.policyChecks.filter((check) =>
       evaluatePolicyCheck(check, decision)
     ).length;
   }
+  if (decision?.source === 'curated-offline-policy' && selectedTools.includes('prepare_generation')) {
+    counts.quoteDisplayDenominator = 1;
+    counts.quoteDisplayNumerator = quoteTranscriptMatches(decision) ? 1 : 0;
+  }
   return counts;
 }
 
 function toProfileScore(
-  host: ProfileScore['host'],
+  evidenceSource: ProfileScore['evidenceSource'],
   registryProfile: RegistryProfile,
   evidenceStatus: ProfileScore['evidenceStatus'],
   evaluatedFixtures: number,
@@ -286,7 +346,7 @@ function toProfileScore(
   counts: ScoreCounts
 ): ProfileScore {
   return {
-    host,
+    evidenceSource,
     registryProfile,
     evidenceStatus,
     evaluatedFixtures,
@@ -310,21 +370,22 @@ function toProfileScore(
       counts.capabilityRecallDenominator
     ),
     policyAdherenceRate: fraction(counts.policyCheckNumerator, counts.policyCheckDenominator),
+    quoteDisplayMatchRate: fraction(counts.quoteDisplayNumerator, counts.quoteDisplayDenominator),
   };
 }
 
-export function assertUniqueRecordedDecisions(decisions: readonly RecordedDecision[]): void {
+export function assertUniqueCuratedPolicyDecisions(decisions: readonly CuratedPolicyDecision[]): void {
   const seen = new Set<string>();
   for (const decision of decisions) {
-    const key = `${decision.source ?? decision.host}:${decision.fixtureId}`;
-    if (seen.has(key)) throw new Error(`duplicate recorded decision ${key}`);
+    const key = decision.fixtureId;
+    if (seen.has(key)) throw new Error(`duplicate curated policy decision ${key}`);
     seen.add(key);
   }
 }
 
 function scoreDecisionSet(
   fixtures: readonly ToolSelectionFixture[],
-  decisions: readonly RecordedDecision[]
+  decisions: readonly CuratedPolicyDecision[]
 ): ScoreCounts {
   const counts = emptyCounts();
   const fixtureById = new Map(fixtures.map((fixture) => [fixture.id, fixture]));
@@ -332,11 +393,9 @@ function scoreDecisionSet(
     const fixture = fixtureById.get(decision.fixtureId);
     if (!fixture) throw new Error(`unknown fixture ${decision.fixtureId}`);
     if (fixture.registryProfile !== decision.registryProfile) {
-      throw new Error(`registry profile mismatch for ${decision.source ?? decision.host}:${fixture.id}`);
+      throw new Error(`registry profile mismatch for curated policy fixture ${fixture.id}`);
     }
-    const selectedTools = decision.toolCalls
-      ? [...new Set(decision.toolCalls.map((call) => call.name))]
-      : decision.selectedTools ?? [];
+    const selectedTools = [...new Set(decision.toolCalls.map((call) => call.name))];
     addCounts(counts, scoreOne(fixture, selectedTools, decision.capabilityClaims, decision));
   }
   return counts;
@@ -348,21 +407,19 @@ function relevantProfiles(fixtures: readonly ToolSelectionFixture[]): RegistryPr
   );
 }
 
-export function scoreRecordedDecisions(
+export function scoreCuratedPolicyDecisions(
   fixtures: readonly ToolSelectionFixture[],
-  decisions: readonly RecordedDecision[]
-): { hostProfiles: ProfileScore[]; aggregateProfiles: ProfileScore[]; policyProfiles: ProfileScore[] } {
-  assertUniqueRecordedDecisions(decisions);
+  decisions: readonly CuratedPolicyDecision[]
+): { policyProfiles: ProfileScore[] } {
+  assertUniqueCuratedPolicyDecisions(decisions);
   const fixtureById = new Map(fixtures.map((fixture) => [fixture.id, fixture]));
   for (const decision of decisions) {
     const fixture = fixtureById.get(decision.fixtureId);
     if (!fixture) throw new Error(`unknown fixture ${decision.fixtureId}`);
     if (fixture.registryProfile !== decision.registryProfile) {
-      throw new Error(`registry profile mismatch for ${decision.source ?? decision.host}:${fixture.id}`);
+      throw new Error(`registry profile mismatch for curated policy fixture ${fixture.id}`);
     }
   }
-  const hostProfiles: ProfileScore[] = [];
-  const aggregateProfiles: ProfileScore[] = [];
   const policyProfiles: ProfileScore[] = [];
 
   for (const registryProfile of relevantProfiles(fixtures)) {
@@ -370,60 +427,16 @@ export function scoreRecordedDecisions(
       (fixture) => fixture.registryProfile === registryProfile
     );
     const profileFixtureIds = new Set(profileFixtures.map((fixture) => fixture.id));
-    const profileDecisions = decisions.filter((decision) =>
-      profileFixtureIds.has(decision.fixtureId) && decision.host !== undefined
-    );
     const policyDecisions = decisions.filter((decision) =>
-      profileFixtureIds.has(decision.fixtureId) && decision.source === 'offline-policy'
-    );
-    let everyHostComplete = true;
-
-    for (const host of RECORDED_HOSTS) {
-      const hostDecisions = profileDecisions.filter((decision) => decision.host === host);
-      const evidenceStatus: ProfileScore['evidenceStatus'] =
-        hostDecisions.length === 0
-          ? 'no-recorded-host-evidence'
-          : hostDecisions.length === profileFixtures.length
-            ? 'recorded-complete'
-            : 'recorded-partial';
-      if (evidenceStatus !== 'recorded-complete') everyHostComplete = false;
-      hostProfiles.push(
-        toProfileScore(
-          host,
-          registryProfile,
-          evidenceStatus,
-          hostDecisions.length,
-          profileFixtures.length,
-          scoreDecisionSet(profileFixtures, hostDecisions)
-        )
-      );
-    }
-
-    const aggregateStatus: ProfileScore['evidenceStatus'] =
-      profileDecisions.length === 0
-        ? 'no-recorded-host-evidence'
-        : everyHostComplete
-          ? 'recorded-aggregate-complete'
-          : 'recorded-aggregate-partial';
-    aggregateProfiles.push(
-      toProfileScore(
-        'aggregate',
-        registryProfile,
-        aggregateStatus,
-        profileDecisions.length,
-        profileFixtures.length * RECORDED_HOSTS.length,
-        scoreDecisionSet(profileFixtures, profileDecisions)
-      )
+      profileFixtureIds.has(decision.fixtureId)
     );
     policyProfiles.push(
       toProfileScore(
-        'offline-policy',
+        'curated-offline-policy',
         registryProfile,
-        policyDecisions.length === 0
-          ? 'no-offline-policy-evidence'
-          : policyDecisions.length === profileFixtures.length
-            ? 'offline-recorded-complete'
-            : 'offline-recorded-partial',
+        policyDecisions.length === profileFixtures.length
+          ? 'curated-policy-complete'
+          : 'curated-policy-partial',
         policyDecisions.length,
         profileFixtures.length,
         scoreDecisionSet(profileFixtures, policyDecisions)
@@ -431,22 +444,55 @@ export function scoreRecordedDecisions(
     );
   }
 
-  return { hostProfiles, aggregateProfiles, policyProfiles };
+  return { policyProfiles };
 }
 
-export function assertCompleteOfflinePolicyDecisions(
+export function assertCompleteCuratedPolicyDecisions(
   fixtures: readonly ToolSelectionFixture[],
-  decisions: readonly RecordedDecision[]
+  decisions: readonly CuratedPolicyDecision[]
 ): void {
-  const offline = decisions.filter((decision) => decision.source === 'offline-policy');
+  const curated = decisions.filter((decision) => decision.source === 'curated-offline-policy');
   const expectedIds = new Set(fixtures.map((fixture) => fixture.id));
-  const actualIds = new Set(offline.map((decision) => decision.fixtureId));
+  const actualIds = new Set(curated.map((decision) => decision.fixtureId));
   const missing = [...expectedIds].filter((id) => !actualIds.has(id));
   const extra = [...actualIds].filter((id) => !expectedIds.has(id));
-  if (missing.length > 0 || extra.length > 0 || offline.length !== fixtures.length) {
+  if (missing.length > 0 || extra.length > 0 || curated.length !== fixtures.length) {
     throw new Error(
-      `offline recorded policy decisions are incomplete; missing: ${missing.join(', ') || 'none'}; extra: ${extra.join(', ') || 'none'}`
+      `curated offline policy expectations are incomplete; missing: ${missing.join(', ') || 'none'}; extra: ${extra.join(', ') || 'none'}`
     );
+  }
+}
+
+type PolicyScoreSet = ReturnType<typeof scoreCuratedPolicyDecisions>;
+
+export function assertCuratedPolicyReleaseGates(
+  fixtures: readonly ToolSelectionFixture[],
+  decisions: readonly CuratedPolicyDecision[],
+  scores: PolicyScoreSet = scoreCuratedPolicyDecisions(fixtures, decisions)
+): void {
+  assertCompleteCuratedPolicyDecisions(fixtures, decisions);
+  for (const profile of scores.policyProfiles) {
+    const failures = [
+      ['selection precision', profile.selectionPrecision, 1],
+      ['selection recall', profile.selectionRecall, 1],
+      ['forbidden confirmation', profile.forbiddenConfirmRate, 0],
+      ['quote before confirmation', profile.quoteBeforeConfirmRate, 1],
+      ['unsupported capability claim', profile.unsupportedClaimRate, 0],
+      ['capability claim recall', profile.capabilityClaimRecall, 1],
+      ['policy adherence', profile.policyAdherenceRate, 1],
+      ['quote display match', profile.quoteDisplayMatchRate, 1],
+    ] as const;
+    for (const [label, metric, required] of failures) {
+      if (metric.denominator > 0 && metric.rate !== required) {
+        throw new Error(
+          `curated policy release gate failed for ${profile.registryProfile}: ${label} ` +
+          `${metric.numerator}/${metric.denominator}, required ${required}`
+        );
+      }
+    }
+    if (profile.evaluatedFixtures !== profile.totalFixtures) {
+      throw new Error(`curated policy release gate failed: incomplete ${profile.registryProfile}`);
+    }
   }
 }
 
@@ -458,9 +504,9 @@ export function buildFixtureBaseline(
       (fixture) => fixture.registryProfile === registryProfile
     );
     return toProfileScore(
-      'fixture-contract-only',
+      'fixture-contract',
       registryProfile,
-      'expectations-only-no-observed-decisions',
+      'expectations-only-no-host-evidence',
       0,
       profileFixtures.length,
       emptyCounts()

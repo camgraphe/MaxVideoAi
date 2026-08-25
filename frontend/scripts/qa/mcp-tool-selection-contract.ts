@@ -38,7 +38,6 @@ export const FUTURE_GATED_TOOL_NAMES = [
 
 const ALL_EVALUATION_TOOL_NAMES = [...LIVE_TOOL_NAMES, ...FUTURE_GATED_TOOL_NAMES] as const;
 export const REGISTRY_PROFILES = ['live-read-only', 'future-generation-evaluation'] as const;
-export const RECORDED_HOSTS = ['codex', 'claude', 'other'] as const;
 const CAPABILITY_CLAIMS = [
   'account_status_read_only',
   'public_model_catalog_read_only',
@@ -80,7 +79,6 @@ export const POLICY_CHECKS = [
 type FixtureCategory = (typeof ALL_FIXTURE_CATEGORIES)[number];
 export type EvaluationToolName = (typeof ALL_EVALUATION_TOOL_NAMES)[number];
 export type RegistryProfile = (typeof REGISTRY_PROFILES)[number];
-export type RecordedHost = (typeof RECORDED_HOSTS)[number];
 export type CapabilityClaim = (typeof CAPABILITY_CLAIMS)[number];
 export type PolicyCheck = (typeof POLICY_CHECKS)[number];
 
@@ -98,20 +96,31 @@ export type ToolSelectionFixture = {
   reason: string;
 };
 
-export type RecordedToolCall = {
+export type CuratedToolCall = {
   name: EvaluationToolName;
   arguments: Record<string, unknown>;
 };
 
-export type RecordedDecision = {
+export type QuoteTranscriptEvent =
+  | {
+      type: 'prepare_result';
+      quoteId: string;
+      amountMinor: number;
+      currency: string;
+      expiresAt?: string;
+    }
+  | { type: 'assistant'; text: string }
+  | { type: 'user'; text: string }
+  | { type: 'confirm_call'; quoteId: string; confirmed: true };
+
+export type CuratedPolicyDecision = {
   fixtureId: string;
-  host?: RecordedHost;
-  source?: 'offline-policy';
+  source: 'curated-offline-policy';
   registryProfile: RegistryProfile;
-  selectedTools?: EvaluationToolName[];
-  fixturePromptSha256?: string;
-  toolCalls?: RecordedToolCall[];
-  assistantText?: string;
+  fixturePromptSha256: string;
+  toolCalls: CuratedToolCall[];
+  assistantText: string;
+  quoteTranscript?: QuoteTranscriptEvent[];
   capabilityClaims: CapabilityClaim[];
 };
 
@@ -128,13 +137,6 @@ const FIXTURE_FIELDS = [
   'reason',
 ] as const;
 
-const DECISION_FIELDS = [
-  'fixtureId',
-  'host',
-  'registryProfile',
-  'selectedTools',
-  'capabilityClaims',
-] as const;
 const OFFLINE_DECISION_FIELDS = [
   'fixtureId',
   'fixturePromptSha256',
@@ -144,6 +146,69 @@ const OFFLINE_DECISION_FIELDS = [
   'assistantText',
   'capabilityClaims',
 ] as const;
+
+function parseQuoteTranscript(value: unknown, path: string): QuoteTranscriptEvent[] {
+  if (!Array.isArray(value) || value.length < 2) {
+    throw new Error(`${path} must contain at least a prepare result and assistant display`);
+  }
+  return value.map((entry, index) => {
+    const eventPath = `${path}[${index}]`;
+    const record = asRecord(entry, eventPath);
+    const type = parseString(record.type, `${eventPath}.type`);
+    if (type === 'prepare_result') {
+      assertExactFields(
+        record,
+        ['type', 'quoteId', 'amountMinor', 'currency'],
+        eventPath,
+        ['expiresAt']
+      );
+      const amountMinor = record.amountMinor;
+      if (!Number.isInteger(amountMinor) || (amountMinor as number) <= 0) {
+        throw new Error(`${eventPath}.amountMinor must be a positive integer`);
+      }
+      const currency = parseString(record.currency, `${eventPath}.currency`);
+      if (!/^[A-Z]{3}$/.test(currency)) {
+        throw new Error(`${eventPath}.currency must be ISO uppercase`);
+      }
+      const quoteId = parseString(record.quoteId, `${eventPath}.quoteId`);
+      if (
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(
+          quoteId
+        )
+      ) {
+        throw new Error(`${eventPath}.quoteId must be a UUID v4`);
+      }
+      const result: QuoteTranscriptEvent = {
+        type,
+        quoteId,
+        amountMinor: amountMinor as number,
+        currency,
+      };
+      if (record.expiresAt !== undefined) {
+        const expiresAt = parseString(record.expiresAt, `${eventPath}.expiresAt`);
+        if (Number.isNaN(Date.parse(expiresAt))) {
+          throw new Error(`${eventPath}.expiresAt must be ISO datetime`);
+        }
+        result.expiresAt = expiresAt;
+      }
+      return result;
+    }
+    if (type === 'assistant' || type === 'user') {
+      assertExactFields(record, ['type', 'text'], eventPath);
+      return { type, text: parseString(record.text, `${eventPath}.text`, 20) };
+    }
+    if (type === 'confirm_call') {
+      assertExactFields(record, ['type', 'quoteId', 'confirmed'], eventPath);
+      if (record.confirmed !== true) throw new Error(`${eventPath}.confirmed must be true`);
+      return {
+        type,
+        quoteId: parseString(record.quoteId, `${eventPath}.quoteId`),
+        confirmed: true,
+      };
+    }
+    throw new Error(`${eventPath}.type is unsupported`);
+  });
+}
 
 function asRecord(value: unknown, path: string): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -301,27 +366,35 @@ export function parseFixtureCorpus(value: unknown): ToolSelectionFixture[] {
   });
 }
 
-export function parseDecisionBundle(
+export function parseCuratedPolicyBundle(
   value: unknown,
   fixtures: readonly ToolSelectionFixture[]
-): RecordedDecision[] {
+): CuratedPolicyDecision[] {
   const bundle = asRecord(value, 'decision bundle');
-  const offlinePolicy = bundle.evidenceKind === 'offline-recorded-policy-decisions';
   assertExactFields(
     bundle,
-    offlinePolicy
-      ? ['version', 'evidenceKind', 'policyVersion', 'decisions']
-      : ['version', 'evidenceKind', 'decisions'],
+    ['version', 'evidenceKind', 'policyFingerprintSha256', 'provenance', 'decisions'],
     'decision bundle',
   );
-  if (offlinePolicy) {
-    if (bundle.version !== 2) throw new Error('offline decision bundle.version must be 2');
-    parseString(bundle.policyVersion, 'decision bundle.policyVersion');
-  } else {
-    if (bundle.version !== 1) throw new Error('host decision bundle.version must be 1');
-    if (bundle.evidenceKind !== 'sanitized-recorded-host-decisions') {
-      throw new Error('decision bundle.evidenceKind is unsupported');
-    }
+  if (bundle.evidenceKind !== 'curated-offline-policy-expectations') {
+    throw new Error('decision bundle must contain curated offline policy expectations');
+  }
+  if (bundle.version !== 3) throw new Error('curated policy bundle.version must be 3');
+  const fingerprint = parseString(
+    bundle.policyFingerprintSha256,
+    'decision bundle.policyFingerprintSha256'
+  );
+  if (!/^[a-f0-9]{64}$/.test(fingerprint)) {
+    throw new Error('decision bundle.policyFingerprintSha256 must be lowercase SHA-256');
+  }
+  const provenance = asRecord(bundle.provenance, 'decision bundle.provenance');
+  assertExactFields(provenance, ['kind', 'authoring', 'noRealHost'], 'decision bundle.provenance');
+  if (
+    provenance.kind !== 'curated_offline_policy' ||
+    provenance.authoring !== 'manual_reviewed' ||
+    provenance.noRealHost !== true
+  ) {
+    throw new Error('decision bundle.provenance must identify manual curated policy expectations');
   }
   if (!Array.isArray(bundle.decisions)) throw new Error('decision bundle.decisions must be an array');
 
@@ -330,34 +403,29 @@ export function parseDecisionBundle(
   return bundle.decisions.map((entry, index) => {
     const path = `decision bundle.decisions[${index}]`;
     const record = asRecord(entry, path);
-    assertExactFields(record, offlinePolicy ? OFFLINE_DECISION_FIELDS : DECISION_FIELDS, path);
+    assertExactFields(record, OFFLINE_DECISION_FIELDS, path, ['quoteTranscript']);
     const fixtureId = parseString(record.fixtureId, `${path}.fixtureId`);
     const fixture = fixtureById.get(fixtureId);
     if (!fixture) throw new Error(`${path}.fixtureId is unknown: ${fixtureId}`);
     const registryProfile = parseEnum(
-        record.registryProfile,
-        REGISTRY_PROFILES,
-        `${path}.registryProfile`
-      );
-    const decision: RecordedDecision = {
+      record.registryProfile,
+      REGISTRY_PROFILES,
+      `${path}.registryProfile`
+    );
+    if (record.source !== 'curated-offline-policy') {
+      throw new Error(`${path}.source must be curated-offline-policy`);
+    }
+    const hash = parseString(record.fixturePromptSha256, `${path}.fixturePromptSha256`);
+    if (!/^[a-f0-9]{64}$/.test(hash) || hash !== fixturePromptSha256(fixture.prompt)) {
+      throw new Error(`${path} is stale for fixture ${fixture.id}`);
+    }
+    if (!Array.isArray(record.toolCalls)) throw new Error(`${path}.toolCalls must be an array`);
+    const decision: CuratedPolicyDecision = {
       fixtureId,
+      source: 'curated-offline-policy',
       registryProfile,
-      capabilityClaims: parseEnumArray(
-        record.capabilityClaims,
-        CAPABILITY_CLAIMS,
-        `${path}.capabilityClaims`
-      ),
-    };
-    if (offlinePolicy) {
-      if (record.source !== 'offline-policy') throw new Error(`${path}.source must be offline-policy`);
-      const hash = parseString(record.fixturePromptSha256, `${path}.fixturePromptSha256`);
-      if (!/^[a-f0-9]{64}$/.test(hash) || hash !== fixturePromptSha256(fixture.prompt)) {
-        throw new Error(`${path} is stale for fixture ${fixture.id}`);
-      }
-      if (!Array.isArray(record.toolCalls)) throw new Error(`${path}.toolCalls must be an array`);
-      decision.source = 'offline-policy';
-      decision.fixturePromptSha256 = hash;
-      decision.toolCalls = record.toolCalls.map((toolCall, toolIndex) => {
+      fixturePromptSha256: hash,
+      toolCalls: record.toolCalls.map((toolCall, toolIndex) => {
         const toolPath = `${path}.toolCalls[${toolIndex}]`;
         const toolRecord = asRecord(toolCall, toolPath);
         assertExactFields(toolRecord, ['name', 'arguments'], toolPath);
@@ -365,22 +433,28 @@ export function parseDecisionBundle(
           name: parseEnum(toolRecord.name, ALL_EVALUATION_TOOL_NAMES, `${toolPath}.name`),
           arguments: parseToolArguments(toolRecord.arguments, `${toolPath}.arguments`),
         };
-      });
-      decision.assistantText = parseString(record.assistantText, `${path}.assistantText`, 20);
-    } else {
-      decision.host = parseEnum(record.host, RECORDED_HOSTS, `${path}.host`);
-      decision.selectedTools = parseEnumArray(
-        record.selectedTools,
-        ALL_EVALUATION_TOOL_NAMES,
-        `${path}.selectedTools`,
-        { allowDuplicates: true },
+      }),
+      assistantText: parseString(record.assistantText, `${path}.assistantText`, 20),
+      capabilityClaims: parseEnumArray(
+        record.capabilityClaims,
+        CAPABILITY_CLAIMS,
+        `${path}.capabilityClaims`
+      ),
+    };
+    const hasPrepare = decision.toolCalls.some((call) => call.name === 'prepare_generation');
+    if (hasPrepare) {
+      decision.quoteTranscript = parseQuoteTranscript(
+        record.quoteTranscript,
+        `${path}.quoteTranscript`
       );
+    } else if (record.quoteTranscript !== undefined) {
+      throw new Error(`${path}.quoteTranscript is allowed only with prepare_generation`);
     }
     if (decision.registryProfile !== fixture.registryProfile) {
       throw new Error(`${path}.registryProfile does not match fixture ${fixture.id}`);
     }
-    const decisionKey = `${decision.source ?? decision.host}:${decision.fixtureId}`;
-    if (decisionKeys.has(decisionKey)) throw new Error(`duplicate recorded decision ${decisionKey}`);
+    const decisionKey = decision.fixtureId;
+    if (decisionKeys.has(decisionKey)) throw new Error(`duplicate curated policy decision ${decisionKey}`);
     decisionKeys.add(decisionKey);
     return decision;
   });
