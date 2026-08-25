@@ -31,9 +31,9 @@ function clientActions(
 const COPY: Record<AppLocale, McpPageCopy> = {
   en: {
     meta: {
-      title: 'AI Video Generator for Claude & Codex | MaxVideoAI MCP',
+      title: 'MaxVideoAI MCP for Claude, ChatGPT & Codex',
       description:
-        'Plan prompts and reference images in Claude or Codex, compare AI video models, see the price before generation, and create through MaxVideoAI.',
+        'Model advice, budgets, private references, and tools to prepare and generate through the integration. Preview — host validation in progress; local implementation verified.',
     },
     breadcrumb: { home: 'Home', current: 'MaxVideoAI MCP' },
     hero: {
@@ -42,17 +42,17 @@ const COPY: Record<AppLocale, McpPageCopy> = {
         budget: 'LOW-COST MODELS FIRST',
         price: 'PRICE BEFORE YOU GENERATE',
       },
-      title: 'Turn your brief into the right model, prompt and budget.',
+      title: 'From brief to rendered video, inside your AI assistant.',
       intro:
-        'Start in Claude or Codex, shape a useful prompt, plan reference images, compare suitable AI video models, and review the price before MaxVideoAI generates.',
+        'MaxVideoAI helps Claude and Codex choose the right video model, prepare prompts and references, quote the exact cost, and generate only after you approve. Preview — host validation in progress; local implementation verified.',
       previewIntro:
-        'Explore how a brief can become a prompt, model shortlist and budget. Public connection and connected generation are not available yet.',
+        'MaxVideoAI helps Claude and Codex choose the right video model, prepare prompts and references, quote the exact cost, and generate only after you approve. Preview — host validation in progress; local implementation verified.',
       trialDisclosure:
         'One video is included for an eligible verified account: Seedance 2 Mini, 5 seconds, 480p. This promotion is separate from wallet funds and the regular balance.',
       actions: clientActions('en', {
-        claude: 'Start with Claude',
-        codex: 'Start with Codex',
-        supporting: 'Open setup guide',
+        claude: 'Preview Claude setup',
+        codex: 'Preview Codex setup',
+        supporting: 'Review unverified setup',
       }),
       connectActions: {
         endpointLabel: 'Connection endpoint',
@@ -66,7 +66,7 @@ const COPY: Record<AppLocale, McpPageCopy> = {
       steps: [
         'Describe your video',
         'Compare the best low-cost routes',
-        'Confirm price & generate',
+        'Review budget and next steps',
       ],
     },
     budget: {
@@ -95,7 +95,7 @@ const COPY: Record<AppLocale, McpPageCopy> = {
       intro:
         'Reference images can anchor a character, product or composition when the chosen MaxVideoAI model accepts them.',
       planningBody:
-        'Claude and Codex can help you plan the visual reference and formulate the prompt. That does not mean the client creates an image or that every model accepts the same files.',
+        'The locally verified contract can help you plan prompts and visual references for a compatible client. Preview — host validation in progress; no Claude or Codex file behavior is verified.',
       liveBody:
         'When reference access is enabled, choose an account-owned image, an allowed web image, or a secure MaxVideoAI upload handoff, then review the selected asset before confirmation.',
       gatedBody:
@@ -108,15 +108,15 @@ const COPY: Record<AppLocale, McpPageCopy> = {
     },
     answers: {
       eyebrow: 'Direct answers',
-      title: 'How the Claude and Codex workflow works',
+      title: 'What the local MCP preview verifies',
       updatedLabel: 'Local evidence checkpoint',
       items: {
         integration: {
           title: 'What does the MaxVideoAI integration do?',
           liveBody:
-            'MaxVideoAI MCP lets Claude or Codex help clarify an AI video brief, formulate the prompt, compare compatible public models and prepare the selected route for MaxVideoAI. The assistant owns the conversation; MaxVideoAI remains the source for model facts, price calculation, account rules, generation and saved results.',
+            'After separate host validation and publication, the MaxVideoAI MCP design could let a compatible client clarify an AI video brief, formulate the prompt and compare public models. This is intended behavior, not current Claude or Codex evidence.',
           gatedBody:
-            'MaxVideoAI MCP is currently a controlled, read-only integration for Claude and Codex. Recorded tests cover account status, public model facts and factual recommendations; public connection, exact MCP quotes, reference transfer and generation remain disabled. Claude or Codex can still help shape the brief and prompt, while the MaxVideoAI web product remains the place to review prices and generate.',
+            'MaxVideoAI MCP is a local preview of planning, model comparison, budget, private-reference and quote contracts. It is designed for compatible AI clients, including Claude and Codex after host validation. Host connection and generation remain unverified, and the MaxVideoAI web product remains the place to review prices and generate.',
         },
         price: {
           title: 'How is the generation price calculated?',
@@ -128,9 +128,9 @@ const COPY: Record<AppLocale, McpPageCopy> = {
         references: {
           title: 'Which reference images work?',
           liveBody:
-            'A reference can come from an account-owned MaxVideoAI asset, an allowed HTTPS image or a secure MaxVideoAI upload handoff. MaxVideoAI validates ownership and file support, and the chosen model must advertise the required reference mode. Claude or Codex may help plan the image and prompt, but that planning is not proof that a file was created or transferred.',
+            'After separate host validation and publication, a reference could come from an account-owned MaxVideoAI asset, an allowed HTTPS image or a secure upload handoff. No Claude or Codex file behavior is currently verified.',
           gatedBody:
-            'Connected reference transfer is not publicly enabled. In the MaxVideoAI web product, a person may add a reference image only when the selected model supports that reference mode. Claude or Codex can help describe the subject, composition and consistency goal, but the assistant must not claim it created or transferred an image without a live, verified file flow.',
+            'Connected reference transfer is not publicly enabled. The local contract covers subject, composition and consistency planning, but no Claude or Codex creation or transfer behavior is verified. Use the MaxVideoAI web product for supported references.',
         },
         confirmation: {
           title: 'Why is confirmation a separate step?',
@@ -151,9 +151,9 @@ const COPY: Record<AppLocale, McpPageCopy> = {
     trust: {
       definition: {
         eyebrow: 'What it is',
-        title: 'A model and execution layer for an agent-assisted brief',
+        title: 'The conversational continuation of MaxVideoAI',
         body:
-          'MaxVideoAI MCP is designed to let a compatible assistant read current model facts, help shortlist a suitable route, prepare a price for review, and return accepted results to MaxVideoAI. The assistant handles the conversation; MaxVideoAI remains responsible for catalog facts, pricing and generation.',
+          'Continue from MaxVideoAI comparison pages, examples, live pricing and pay-as-you-go credits into an assistant conversation. The assistant carries the brief; MaxVideoAI remains responsible for executable model facts, prices, validation, generation and results.',
       },
       availability: {
         title: 'Availability',
@@ -193,19 +193,19 @@ const COPY: Record<AppLocale, McpPageCopy> = {
         ],
       },
       capabilities: {
-        title: 'What the workflow can help with',
-        body: 'Capabilities remain deliberately limited and appear only after their release checks, so a planning answer cannot be mistaken for a completed generation.',
+        title: 'Four safeguards from decision to result',
+        body: 'MCP installation, discovery, recommendations and estimates are free. Generation uses your existing MaxVideoAI credits at pay-as-you-go prices, with no separate MCP subscription. Preview — host validation in progress.',
         items: [
-          'Compare current public model capabilities and availability.',
-          'Shortlist models from structured creative and budget constraints.',
-          'Review account-scoped status without exposing credentials or payment details.',
-          'Prepare and confirm generation only when those capabilities are live.',
+          'Choose the best executable model for each shot from current model facts.',
+          'See the exact price before any credit is spent.',
+          'Validate parameters and private references before submission.',
+          'Require explicit confirmation, then track job status and recovery; credits for definitive failed jobs are refunded automatically.',
         ],
       },
       setup: {
-        title: 'Choose a client-specific setup guide',
+        title: 'Review a client-specific setup preview',
         body:
-          'Claude and Codex have different connection behavior. Each guide records the tested version, current limitation, browser authorization flow, reference behavior, troubleshooting and disconnect path.',
+          'The Claude and Codex guides document intended setup procedures only. No hosted-client evidence for browser authorization, refresh, rendering, revocation or generation is claimed before Task 10 validation.',
       },
       faq: {
         title: 'Questions before you connect',
@@ -229,9 +229,9 @@ const COPY: Record<AppLocale, McpPageCopy> = {
   },
   fr: {
     meta: {
-      title: 'Générateur vidéo IA pour Claude et Codex | MCP MaxVideoAI',
+      title: 'MCP MaxVideoAI pour Claude, ChatGPT et Codex',
       description:
-        'Préparez des prompts et des images de référence dans Claude ou Codex, comparez les modèles vidéo IA, vérifiez le prix avant la génération et créez avec MaxVideoAI.',
+        'Conseils sur les modèles, budgets et références privées pour préparer et générer via l’intégration. Préversion — validation des hôtes en cours ; implémentation locale vérifiée.',
     },
     breadcrumb: { home: 'Accueil', current: 'MCP MaxVideoAI' },
     hero: {
@@ -240,17 +240,17 @@ const COPY: Record<AppLocale, McpPageCopy> = {
         budget: 'MODÈLES ÉCONOMIQUES EN PREMIER',
         price: 'PRIX AVANT DE GÉNÉRER',
       },
-      title: 'Transformez votre brief en modèle, prompt et budget adaptés.',
+      title: 'Du brief à la vidéo rendue, directement dans votre assistant IA.',
       intro:
-        'Commencez dans Claude ou Codex, affinez un prompt utile, préparez vos images de référence, comparez les modèles vidéo IA adaptés et vérifiez le prix avant la génération dans MaxVideoAI.',
+        'MaxVideoAI aide Claude et Codex à choisir le bon modèle vidéo, préparer les prompts et les références, calculer le prix exact et générer uniquement après votre approbation. Préversion — validation des hôtes en cours ; implémentation locale vérifiée.',
       previewIntro:
-        'Découvrez comment passer d’un brief à un prompt, une sélection de modèles et un budget. La connexion publique et la génération connectée ne sont pas encore disponibles.',
+        'MaxVideoAI aide Claude et Codex à choisir le bon modèle vidéo, préparer les prompts et les références, calculer le prix exact et générer uniquement après votre approbation. Préversion — validation des hôtes en cours ; implémentation locale vérifiée.',
       trialDisclosure:
         'Une vidéo est incluse pour un compte admissible et vérifié : Seedance 2 Mini, 5 secondes, 480p. Cette offre promotionnelle est distincte des fonds du portefeuille et du solde habituel.',
       actions: clientActions('fr', {
-        claude: 'Commencer avec Claude',
-        codex: 'Commencer avec Codex',
-        supporting: 'Ouvrir le guide de configuration',
+        claude: 'Voir la configuration Claude',
+        codex: 'Voir la configuration Codex',
+        supporting: 'Consulter la configuration non vérifiée',
       }),
       connectActions: {
         endpointLabel: 'Adresse de connexion',
@@ -264,7 +264,7 @@ const COPY: Record<AppLocale, McpPageCopy> = {
       steps: [
         'Décrivez votre vidéo',
         'Comparez les meilleures options économiques',
-        'Confirmez le prix et générez',
+        'Vérifiez le budget et les étapes suivantes',
       ],
     },
     budget: {
@@ -293,7 +293,7 @@ const COPY: Record<AppLocale, McpPageCopy> = {
       intro:
         'Les images de référence peuvent ancrer un personnage, un produit ou une composition lorsque le modèle MaxVideoAI choisi les accepte.',
       planningBody:
-        'Claude et Codex peuvent vous aider à préparer la référence visuelle et à formuler le prompt. Cela ne signifie pas que le client crée une image ni que tous les modèles acceptent les mêmes fichiers.',
+        'Le contrat vérifié localement définit la planification du prompt et des références visuelles pour un client compatible après validation des hôtes. Aucun comportement de fichier Claude ou Codex n’est vérifié.',
       liveBody:
         'Lorsque l’accès aux références est activé, choisissez une image liée à votre compte, une image web autorisée ou un transfert sécurisé MaxVideoAI, puis vérifiez la ressource avant confirmation.',
       gatedBody:
@@ -306,15 +306,15 @@ const COPY: Record<AppLocale, McpPageCopy> = {
     },
     answers: {
       eyebrow: 'Réponses directes',
-      title: 'Fonctionnement du parcours avec Claude et Codex',
+      title: 'Ce que vérifie la préversion MCP locale',
       updatedLabel: 'Point de contrôle local',
       items: {
         integration: {
           title: 'Que fait l’intégration MaxVideoAI ?',
           liveBody:
-            'Le MCP MaxVideoAI permet à Claude ou Codex de clarifier un brief vidéo IA, de formuler le prompt, de comparer les modèles publics compatibles et de préparer le parcours retenu dans MaxVideoAI. L’assistant gère la conversation ; MaxVideoAI reste la source des données modèles, du calcul du prix, des règles de compte, de la génération et des résultats enregistrés.',
+            'Après validation des hôtes et publication distinctes, le MCP MaxVideoAI pourrait permettre à un client compatible de clarifier un brief, de formuler le prompt et de comparer les modèles publics. Il s’agit d’un comportement prévu, pas d’une preuve Claude ou Codex actuelle.',
           gatedBody:
-            'Le MCP MaxVideoAI est actuellement une intégration contrôlée en lecture seule pour Claude et Codex. Les tests enregistrés couvrent l’état du compte, les données des modèles publics et les recommandations factuelles ; la connexion publique, les devis MCP exacts, le transfert de références et la génération restent désactivés. Le produit web MaxVideoAI reste l’endroit où vérifier les prix et générer.',
+            'Le MCP MaxVideoAI est une préversion locale des contrats de planification, de comparaison des modèles, de budget, de références privées et de devis. Il est conçu pour des clients IA compatibles, dont Claude et Codex après validation des hôtes. La connexion aux hôtes et la génération restent non vérifiées ; le produit web MaxVideoAI reste l’endroit où vérifier les prix et générer.',
         },
         price: {
           title: 'Comment le prix de génération est-il calculé ?',
@@ -326,9 +326,9 @@ const COPY: Record<AppLocale, McpPageCopy> = {
         references: {
           title: 'Quelles images de référence sont acceptées ?',
           liveBody:
-            'Une référence peut provenir d’une ressource MaxVideoAI liée au compte, d’une image HTTPS autorisée ou d’un transfert sécurisé MaxVideoAI. MaxVideoAI vérifie la propriété et le format, et le modèle choisi doit prendre en charge le mode de référence demandé. Claude ou Codex peut aider à préparer l’image et le prompt, sans prétendre qu’un fichier a été créé ou transféré sans preuve.',
+            'Après validation des hôtes et publication distinctes, une référence pourrait provenir d’une ressource MaxVideoAI liée au compte, d’une image HTTPS autorisée ou d’un transfert sécurisé. Aucun comportement de fichier Claude ou Codex n’est actuellement vérifié.',
           gatedBody:
-            'Le transfert connecté de références n’est pas activé publiquement. Dans le produit web MaxVideoAI, une image peut être ajoutée uniquement si le modèle choisi prend en charge ce mode de référence. Claude ou Codex peut aider à décrire le sujet, la composition et l’objectif de cohérence, mais ne doit pas prétendre avoir créé ou transféré un fichier sans parcours vérifié.',
+            'Le transfert connecté de références n’est pas activé publiquement. Le contrat local couvre la planification du sujet, de la composition et de la cohérence, mais aucun comportement de création ou de transfert Claude ou Codex n’est vérifié. Utilisez le produit web MaxVideoAI.',
         },
         confirmation: {
           title: 'Pourquoi la confirmation est-elle séparée ?',
@@ -349,9 +349,9 @@ const COPY: Record<AppLocale, McpPageCopy> = {
     trust: {
       definition: {
         eyebrow: 'Définition',
-        title: 'Une couche de choix et d’exécution pour un brief assisté par un agent',
+        title: 'La continuité conversationnelle de MaxVideoAI',
         body:
-          'Le MCP MaxVideoAI est conçu pour permettre à un assistant compatible de consulter les données actuelles des modèles, de proposer une sélection adaptée, de préparer un prix à vérifier et de renvoyer les résultats acceptés vers MaxVideoAI. L’assistant gère la conversation ; MaxVideoAI reste responsable du catalogue, des prix et de la génération.',
+          'Passez des comparatifs, exemples, tarifs en direct et crédits à l’usage de MaxVideoAI à une conversation dans votre assistant. L’assistant poursuit le brief ; MaxVideoAI reste responsable des modèles exécutables, des prix, de la validation, de la génération et des résultats.',
       },
       availability: {
         title: 'Disponibilité',
@@ -390,19 +390,19 @@ const COPY: Record<AppLocale, McpPageCopy> = {
         ],
       },
       capabilities: {
-        title: 'Ce que le parcours peut faciliter',
-        body: 'Les fonctions restent volontairement limitées et ne sont affichées qu’après leurs vérifications de mise en ligne, afin de ne jamais confondre une recommandation avec une génération terminée.',
+        title: 'Quatre garanties, de la décision au résultat',
+        body: 'L’installation MCP, la découverte, les recommandations et les estimations sont gratuites. La génération utilise vos crédits MaxVideoAI existants avec une tarification à l’usage, sans aucun abonnement MCP distinct. Préversion — validation des hôtes en cours.',
         items: [
-          'Comparer les capacités et la disponibilité des modèles publics actuels.',
-          'Sélectionner des modèles selon des contraintes créatives et budgétaires structurées.',
-          'Consulter un état lié au compte sans exposer d’identifiants ni de données de paiement.',
-          'Préparer et confirmer une génération uniquement lorsque ces fonctions sont actives.',
+          'Choisir le meilleur modèle exécutable pour chaque plan à partir des données actuelles.',
+          'Voir le prix exact avant de dépenser le moindre crédit.',
+          'Valider les paramètres et les références privées avant l’envoi.',
+          'Exiger une confirmation explicite, puis suivre l’état et la récupération ; les crédits des échecs définitifs sont remboursés automatiquement.',
         ],
       },
       setup: {
-        title: 'Choisissez le guide adapté à votre client',
+        title: 'Consultez un aperçu de configuration par client',
         body:
-          'Claude et Codex n’ont pas le même comportement de connexion. Chaque guide indique la version testée, la limite actuelle, le parcours d’autorisation dans le navigateur, les références, le dépannage et la déconnexion.',
+          'Les guides Claude et Codex décrivent uniquement des procédures prévues. Aucune preuve en client hébergé pour l’autorisation, l’actualisation, le rendu, la révocation ou la génération n’est revendiquée avant la validation Task 10.',
       },
       faq: {
         title: 'Questions avant la connexion',
@@ -417,9 +417,9 @@ const COPY: Record<AppLocale, McpPageCopy> = {
   },
   es: {
     meta: {
-      title: 'Generador de video con IA: Claude y Codex | MCP MaxVideoAI',
+      title: 'MCP de MaxVideoAI para Claude, ChatGPT y Codex',
       description:
-        'Prepara prompts e imágenes de referencia en Claude o Codex, compara modelos de video con IA, revisa el precio antes de generar y crea con MaxVideoAI.',
+        'Asesoramiento sobre modelos, presupuestos, referencias privadas y herramientas para preparar y generar mediante la integración. Vista previa — validación de clientes en curso; implementación local verificada.',
     },
     breadcrumb: { home: 'Inicio', current: 'MCP de MaxVideoAI' },
     hero: {
@@ -428,17 +428,17 @@ const COPY: Record<AppLocale, McpPageCopy> = {
         budget: 'MODELOS DE BAJO COSTO PRIMERO',
         price: 'PRECIO ANTES DE GENERAR',
       },
-      title: 'Convierte tu idea en el modelo, el prompt y el presupuesto adecuados.',
+      title: 'Del brief al video renderizado, directamente en tu asistente de IA.',
       intro:
-        'Empieza en Claude o Codex, mejora un prompt útil, prepara imágenes de referencia, compara modelos de video con IA adecuados y revisa el precio antes de generar en MaxVideoAI.',
+        'MaxVideoAI ayuda a Claude y Codex a elegir el modelo de video adecuado, preparar prompts y referencias, calcular el precio exacto y generar solo después de tu aprobación. Vista previa — validación de clientes en curso; implementación local verificada.',
       previewIntro:
-        'Explora cómo convertir una idea en un prompt, una selección de modelos y un presupuesto. La conexión pública y la generación conectada aún no están disponibles.',
+        'MaxVideoAI ayuda a Claude y Codex a elegir el modelo de video adecuado, preparar prompts y referencias, calcular el precio exacto y generar solo después de tu aprobación. Vista previa — validación de clientes en curso; implementación local verificada.',
       trialDisclosure:
         'Se incluye un video para una cuenta apta y verificada: Seedance 2 Mini, 5 segundos, 480p. Esta promoción es independiente de los fondos de la cartera y del saldo habitual.',
       actions: clientActions('es', {
-        claude: 'Empezar con Claude',
-        codex: 'Empezar con Codex',
-        supporting: 'Abrir guía de configuración',
+        claude: 'Ver configuración de Claude',
+        codex: 'Ver configuración de Codex',
+        supporting: 'Revisar configuración sin verificar',
       }),
       connectActions: {
         endpointLabel: 'Dirección de conexión',
@@ -452,7 +452,7 @@ const COPY: Record<AppLocale, McpPageCopy> = {
       steps: [
         'Describe tu video',
         'Compara las mejores opciones de bajo costo',
-        'Confirma el precio y genera',
+        'Revisa el presupuesto y los siguientes pasos',
       ],
     },
     budget: {
@@ -481,7 +481,7 @@ const COPY: Record<AppLocale, McpPageCopy> = {
       intro:
         'Las imágenes de referencia pueden fijar un personaje, producto o composición cuando el modelo elegido de MaxVideoAI las admite.',
       planningBody:
-        'Claude y Codex pueden ayudarte a planificar la referencia visual y formular el prompt. Eso no significa que el cliente cree una imagen ni que todos los modelos acepten los mismos archivos.',
+        'El contrato verificado localmente define la planificación del prompt y las referencias visuales para un cliente compatible después de validar los hosts. No se ha verificado ningún comportamiento de archivos de Claude o Codex.',
       liveBody:
         'Cuando el acceso a referencias esté habilitado, elige una imagen de tu cuenta, una imagen web permitida o una transferencia segura de MaxVideoAI y revísala antes de confirmar.',
       gatedBody:
@@ -494,15 +494,15 @@ const COPY: Record<AppLocale, McpPageCopy> = {
     },
     answers: {
       eyebrow: 'Respuestas directas',
-      title: 'Cómo funciona el flujo con Claude y Codex',
+      title: 'Qué verifica la vista previa MCP local',
       updatedLabel: 'Control local de evidencia',
       items: {
         integration: {
           title: '¿Qué hace la integración de MaxVideoAI?',
           liveBody:
-            'El MCP de MaxVideoAI permite que Claude o Codex ayude a aclarar una idea de video con IA, formular el prompt, comparar modelos públicos compatibles y preparar la ruta elegida en MaxVideoAI. El agente lleva la conversación; MaxVideoAI sigue siendo la fuente de los datos de modelos, el cálculo del precio, las reglas de la cuenta, la generación y los resultados guardados.',
+            'Después de validar los hosts y publicar por separado, el diseño MCP de MaxVideoAI podría permitir que un cliente compatible aclare una idea, formule el prompt y compare modelos públicos. Es un comportamiento previsto, no evidencia actual de Claude o Codex.',
           gatedBody:
-            'El MCP de MaxVideoAI es actualmente una integración controlada de solo lectura para Claude y Codex. Las pruebas registradas cubren el estado de la cuenta, los datos de modelos públicos y las recomendaciones factuales; la conexión pública, las cotizaciones MCP exactas, la transferencia de referencias y la generación siguen deshabilitadas. El producto web de MaxVideoAI sigue siendo el lugar para revisar precios y generar.',
+            'El MCP de MaxVideoAI es una vista previa local de los contratos de planificación, comparación de modelos, presupuesto, referencias privadas y cotizaciones. Está diseñado para clientes de IA compatibles, incluidos Claude y Codex cuando termine la validación de los hosts. La conexión con hosts y la generación siguen sin verificar; el producto web de MaxVideoAI sigue siendo el lugar para revisar precios y generar.',
         },
         price: {
           title: '¿Cómo se calcula el precio de generación?',
@@ -514,9 +514,9 @@ const COPY: Record<AppLocale, McpPageCopy> = {
         references: {
           title: '¿Qué imágenes de referencia funcionan?',
           liveBody:
-            'Una referencia puede provenir de un recurso de MaxVideoAI asociado a la cuenta, una imagen HTTPS permitida o una transferencia segura de MaxVideoAI. MaxVideoAI valida la propiedad y el archivo, y el modelo elegido debe admitir el modo de referencia necesario. Claude o Codex puede ayudar a planificar la imagen y el prompt, sin afirmar que creó o transfirió un archivo sin evidencia.',
+            'Después de validar los hosts y publicar por separado, una referencia podría proceder de un recurso de MaxVideoAI asociado a la cuenta, una imagen HTTPS permitida o una transferencia segura. No se ha verificado ningún comportamiento de archivos de Claude o Codex.',
           gatedBody:
-            'La transferencia conectada de referencias no está habilitada públicamente. En el producto web de MaxVideoAI, una persona puede agregar una imagen solo cuando el modelo elegido admite ese modo de referencia. Claude o Codex puede ayudar a describir el sujeto, la composición y el objetivo de consistencia, pero no debe afirmar que creó o transfirió un archivo sin un flujo verificado.',
+            'La transferencia conectada de referencias no está habilitada públicamente. El contrato local cubre la planificación del sujeto, la composición y la consistencia, pero no se ha verificado ningún comportamiento de creación o transferencia de Claude o Codex. Usa el producto web de MaxVideoAI.',
         },
         confirmation: {
           title: '¿Por qué la confirmación es un paso separado?',
@@ -537,9 +537,9 @@ const COPY: Record<AppLocale, McpPageCopy> = {
     trust: {
       definition: {
         eyebrow: 'Qué es',
-        title: 'Una capa de decisión y ejecución para una idea asistida por un agente',
+        title: 'La continuación conversacional de MaxVideoAI',
         body:
-          'El MCP de MaxVideoAI está diseñado para que un agente compatible consulte datos actuales de modelos, ayude a seleccionar una opción adecuada, prepare un precio para revisión y devuelva resultados aceptados a MaxVideoAI. El agente lleva la conversación; MaxVideoAI sigue a cargo del catálogo, los precios y la generación.',
+          'Pasa de las comparativas, ejemplos, precios en vivo y créditos de pago por uso de MaxVideoAI a una conversación en tu asistente. El asistente continúa el brief; MaxVideoAI sigue a cargo de los modelos ejecutables, los precios, la validación, la generación y los resultados.',
       },
       availability: {
         title: 'Disponibilidad',
@@ -578,19 +578,19 @@ const COPY: Record<AppLocale, McpPageCopy> = {
         ],
       },
       capabilities: {
-        title: 'En qué puede ayudar el flujo',
-        body: 'Las funciones se mantienen acotadas y solo aparecen después de sus comprobaciones de lanzamiento, para no confundir una recomendación con una generación terminada.',
+        title: 'Cuatro garantías, de la decisión al resultado',
+        body: 'La instalación MCP, el descubrimiento, las recomendaciones y las estimaciones son gratis. La generación usa tus créditos existentes de MaxVideoAI con precios de pago por uso, sin una suscripción MCP independiente. Vista previa — validación de clientes en curso.',
         items: [
-          'Comparar capacidades y disponibilidad de los modelos públicos actuales.',
-          'Seleccionar modelos a partir de restricciones creativas y de presupuesto estructuradas.',
-          'Consultar el estado de la cuenta sin exponer credenciales ni datos de pago.',
-          'Preparar y confirmar una generación solo cuando esas funciones estén activas.',
+          'Elegir el mejor modelo ejecutable para cada toma a partir de datos actuales.',
+          'Ver el precio exacto antes de gastar ningún crédito.',
+          'Validar los parámetros y las referencias privadas antes del envío.',
+          'Exigir una confirmación explícita y después seguir el estado y la recuperación; los créditos de fallos definitivos se reembolsan automáticamente.',
         ],
       },
       setup: {
-        title: 'Elige la guía específica para tu cliente',
+        title: 'Revisa una vista previa de configuración por cliente',
         body:
-          'Claude y Codex tienen comportamientos de conexión diferentes. Cada guía registra la versión probada, el límite actual, el flujo de autorización en el navegador, las referencias, la solución de problemas y la desconexión.',
+          'Las guías de Claude y Codex describen solo procedimientos previstos. No se afirma evidencia en clientes alojados sobre autorización, renovación, renderizado, revocación o generación antes de la validación de Task 10.',
       },
       faq: {
         title: 'Preguntas antes de conectar',

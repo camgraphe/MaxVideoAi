@@ -488,7 +488,9 @@ test('MCP staging deploy wrapper gates an unaliased candidate before promotion',
   }
   assert.match(runbook, /BYTEPLUS_ARK_API_KEY[\s\S]{0,400}dedicated staging credential/i);
   assert.match(runbook, /CREDENTIAL_BLOCKED/);
-  assert.match(runbook, /migration 37[\s\S]{0,400}(?:before|prerequisite)/i);
+  assert.match(runbook, /migration files 30–37 are present locally/i);
+  assert.match(runbook, /staging application remains unverified pending Task 10/i);
+  assert.doesNotMatch(runbook, /already applied|remains unapplied|migrations? 30–32 (?:are )?absent/i);
   assert.match(runbook, /zero cron|zero-cron/i);
   assert.doesNotMatch(runbook, /BYTEPLUS_ARK_API_KEY\s*=/);
 });

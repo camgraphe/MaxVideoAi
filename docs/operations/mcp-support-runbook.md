@@ -8,6 +8,15 @@ availability announcement or a legal policy. The only registered tools are the r
 `list_models`, `get_model_details`, `recommend_models`, and `calculate_project_budget`. Production transport, OAuth,
 discovery, generation, trial, and reference upload publication remain disabled.
 
+| Tool profile | Exact tool inventory |
+| --- | --- |
+| Default discovery | `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget` |
+| Operational staging | `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`, `list_media`, `create_reference_upload_link`, `prepare_generation`, `confirm_generation`, `get_generation_status`, `list_recent_generations`, `create_topup_link` |
+
+The operational inventory is checked-in and locally tested; it is not public or
+proof that any staging deployment, database schema, host connection, provider
+submission, or spend path is operational.
+
 ## Authoritative checked-in state
 
 | Publication flag | Value | Support consequence |
@@ -23,16 +32,15 @@ discovery, generation, trial, and reference upload publication remain disabled.
 
 Additional deployment blockers:
 
-- migrations 30–32 are absent;
-- migration 33 is unapplied and fails before DDL while those prerequisite tables are absent;
-- Task 8 marks the funnel, receipts, provider costs, polling, upload, and restoration producers unavailable;
-- Task 9 has no recorded real Codex, Claude, or other-host tool-selection evidence;
-- the Codex default OAuth flow still requests the extra `phone` scope;
-- Claude Desktop token-expiry refresh remains pending.
+- migration files 30–37 are present locally; staging application remains unverified and is pending Task 10;
+- the funnel, receipts, provider costs, polling, upload, and restoration producers are locally tested but not verified in staging;
+- Claude and Codex OAuth, revocation, refresh, rendering, and tool selection remain unverified;
+- no real Codex, Claude, or other-host installation or tool-selection evidence is recorded.
 
-Checked-in authorities: `frontend/config/mcp-publication.json`, `frontend/src/server/mcp/server.ts`,
-`frontend/src/server/agent-api/errors.ts`, `docs/marketing/mcp-public-claims-matrix.md`,
-`docs/operations/mcp-host-compatibility-matrix.md`, and the Task 4, 7, 8, and 9 reports.
+Checked-in authorities remain separate: the public claims matrix owns permissible and prohibited public claims; the
+host compatibility matrix owns local-versus-real-host evidence; this support runbook owns support procedures and
+escalation. Runtime flags and tool registration remain owned by `frontend/config/mcp-publication.json`,
+`frontend/src/server/mcp/server.ts`, and `frontend/src/server/agent-api/errors.ts`.
 
 ## Safe case intake
 
@@ -82,8 +90,8 @@ future application code `PARAMETER_INVALID`. Ask the user to correct only the do
 An unexpected operation inside a registered tool returns **`INTERNAL_ERROR`** with a redacted message and a generated
 `correlationId`. Retain that identifier, stop repeated calls, and escalate if the failure persists.
 
-Every uppercase application code used below is a **reserved contract code; not observable from the three-tool
-registry**. It exists in the checked-in agent error type for future generation work. Do not tell a user that the current
+Every uppercase application code used below is a **reserved contract code; not observable from the default five-tool
+discovery registry**. It exists in the checked-in agent error type for future generation work. Do not tell a user that the current
 MCP emitted one of these codes unless a later live tool and test prove it.
 
 ## Support decision trees
@@ -95,12 +103,11 @@ Availability: controlled foundation only; production OAuth is off.
 1. If the client receives HTTP 401 / JSON-RPC `-32001`, let it follow protected-resource discovery and open browser
    authorization. Never paste a token into the endpoint URL.
 2. If consent is denied, leave the connection unauthenticated; do not describe denial as a product failure.
-3. If Codex requests `phone`, stop or deny that consent. The only recorded least-privilege path used
-   `openid,email,profile` explicitly. The default Codex add flow remains a release blocker.
+3. The intended least-privilege scopes are `openid,email,profile`. Stop or deny any consent that requests additional
+   access; no Claude or Codex OAuth scope behavior is verified.
 4. If consent completes but the protected call still fails, capture the client/version, UTC time, and correlation ID,
    then escalate to Auth + MCP engineering. Do not repeatedly reauthorize.
-5. If the host is the Codex app/library or another unrecorded host, classify compatibility as unverified rather than
-   assuming the Codex CLI evidence applies.
+5. Classify every Claude, Codex, and other-host path as unverified until Task 10 records the exact host and behavior.
 
 ### Email verification
 
@@ -110,12 +117,12 @@ future-gated.
 1. If account status is unverified, send the user to the MaxVideoAI web account verification flow.
 2. Do not bypass verification, manually toggle entitlement state, or accept an emailed identity document in support.
 3. A future trial or generation tool may return `EMAIL_VERIFICATION_REQUIRED`; this is a reserved code, not a current
-   three-tool failure.
+   default five-tool discovery failure.
 4. If verification is complete in the web account but remains stale after a fresh connection, escalate to Auth.
 
 ### Quote expiry
 
-Availability: no quote tool or migration exists in this branch.
+Availability: no quote tool is public. Local migration files do not prove a staging schema or live quote producer.
 
 1. Do not inspect or repair a quote because no public MCP quote can exist today.
 2. When a later live quote returns `QUOTE_EXPIRED`, require a new server-priced quote. Never extend an expired quote or
@@ -147,7 +154,8 @@ Availability: current account limit fields are nullable and no spending action i
 
 ### Upload handoff
 
-Availability: `create_reference_upload_link` is absent and `referenceUploads=false`.
+Availability: `create_reference_upload_link` is absent from the default/public profile, present only in the gated local
+operational profile, and `referenceUploads=false`.
 
 1. Do not ask the user to put a local path, base64 file, private URL, or credential into a tool argument.
 2. A future upload handoff must be short-lived, user-scoped, and limited to the accepted image contract.
@@ -193,7 +201,8 @@ refund-status producer.
 
 ### Trial restoration
 
-Availability: trial entitlements and migration 31 are absent; `trial=false`.
+Availability: migration 31 is present locally, its staging state is unverified, no live trial entitlement is proven,
+and `trial=false`.
 
 1. Do not promise, grant, consume, or restore an MCP trial today.
 2. The future design releases a reserved entitlement only after qualifying pre-acceptance submission failure or a
@@ -204,8 +213,8 @@ Availability: trial entitlements and migration 31 are absent; `trial=false`.
 
 ### Revoked connection
 
-Availability: account grant revocation passed controlled Claude checks, but production OAuth is off and no once-only
-funnel revocation producer exists.
+Availability: Claude and Codex revocation behavior remains unverified, production OAuth is off, and no staging funnel
+revocation producer is proven.
 
 1. Remove or disconnect the connector in the client.
 2. Revoke the grant at `/account/connections` when that gated account surface is available.
@@ -229,11 +238,11 @@ and telemetry data, prompts, inputs, outputs, uploads, consent, and preferences 
 audit schema is narrower: user and OAuth client identifiers, event/tool name, success/failure, optional surface/engine,
 coarse error, and timestamp.
 
-If migration 33 is eventually approved and applied, its explicit funnel fields add time, stage, opaque acquisition,
+The local migration 33 schema defines funnel fields for time, stage, opaque acquisition,
 quote/job identifiers, coarse source/campaign/client, applicable amount/currency, idempotency key, and an irreversible
 receipt hash. The **MCP funnel ledger excludes prompts, email addresses, access tokens, raw reference URLs, provider
-bodies, payment details or methods, secrets, and fraud signals**. Migration 33 is currently unapplied, so this is a
-schema boundary, not a claim that live funnel rows exist.
+bodies, payment details or methods, secrets, and fraud signals**. Its staging state remains unverified pending Task 10,
+so this is a schema boundary, not a claim that live funnel rows exist.
 
 This minimization does not mean MaxVideoAI avoids content processing: the normal service still processes prompts,
 inputs, outputs, and uploads when a user requests a web generation. Those service categories and the minimized MCP
@@ -252,7 +261,8 @@ Security, Media, and Operations approval plus an implemented deletion job before
 The proposed trial requires verified identity, one entitlement per user, account restrictions, rate limits, and
 privacy-preserving risk signals. It must not copy raw IP addresses, prompts, or reference URLs into analytics. The
 actual signal categories, lawful basis, access rules, retention, appeal/support path, and deletion exceptions are an
-owner decision. No entitlement table or live trial exists, so no public eligibility or restoration promise is allowed.
+owner decision. A local migration file does not prove a staging entitlement table or live trial, so no public
+eligibility or restoration promise is allowed.
 
 ### Spending confirmation
 
@@ -262,7 +272,7 @@ MaxVideoAI web product through Stripe. A host’s “always allow” setting is 
 
 ### Provider processing
 
-The three read-only tools do not submit prompts or media to an inference provider. A future generation flow would send
+The five default discovery tools do not submit prompts or media to an inference provider. A future generation flow would send
 the necessary prompt, settings, and owned reference assets to the selected provider under the published Privacy Policy
 and current subprocessor list. Legal/Privacy must verify that every actual provider, region, data category, onward
 transfer, retention rule, and user choice is current before enabling a generation tool.

@@ -144,12 +144,12 @@ SMTP credentials, or any production database URL to this project.
 
 ### Schema and cleanup prerequisite
 
-Neon migration 37 is a deployment prerequisite and must be confirmed as
-already applied to the exact `preview/mcp-staging` branch before this binary is
-deployed. The deployment wrapper does not run migrations or mutate the live
-database. If the required schema is unavailable or its status cannot be
-established without revealing credentials, stop with `SCHEMA_BLOCKED`; do not
-deploy and do not attempt an in-band repair.
+Migration files 30–37 are present locally. The staging application remains unverified pending Task 10.
+This includes its database state. Migration 37 remains a
+deployment prerequisite, but the deployment wrapper does not run migrations or
+mutate the live database. If the required schema state cannot be established
+without revealing credentials, stop with `SCHEMA_BLOCKED`; do not deploy and do
+not attempt an in-band repair.
 
 The approved MCP staging package remains zero-cron: do not add the Task 5
 cleanup schedule to `frontend/vercel.mcp-staging.json`. Cleanup is instead an
@@ -329,11 +329,11 @@ Expected results:
 - JWKS exposes a public EC key with `alg` equal to `ES256`;
 - no production project setting or user has changed.
 
-### Hosted protocol evidence
+### Historical protocol capture
 
-The credential-free hosted smoke test passed on 2026-07-12. No Vercel
-authentication cookie, share link, protection-bypass credential, Supabase
-session, or MCP bearer token was sent.
+A credential-free protocol capture was recorded on 2026-07-12. It predates the
+current operational inventory and is not current staging or host-validation
+evidence. Staging application behavior remains unverified pending Task 10.
 
 | Check | Sanitized result |
 | --- | --- |
@@ -352,48 +352,19 @@ hostname does not resolve, rather than an application HTTP response. This is
 the existing disabled rollout state, not a staging test failure. Do not add the
 hostname or enable production MCP flags as part of staging validation.
 
-### Hosted client evidence
+### Host validation status
 
-Claude Desktop 1.20186.1 completed the hosted read-only lifecycle on
-2026-07-12. Dynamic registration reached only the documented staging Supabase
-project. The consent page showed exactly `openid`, `email`, and `profile`, plus
-the expected `https://claude.ai/api/mcp/auth_callback` return address.
+The current evidence checkpoint is local and dated 2026-08-24. It verifies the
+package structure, protocol contracts, the five default discovery tools, and
+the twelve-tool operational profile. It does not verify any real hosted client,
+staging deployment, staging database state, provider call, or spend.
 
-The connector rendered exactly three read-only tools. Sanitized results were:
-
-| Check | Result |
-| --- | --- |
-| `list_models` | 39 public models; response limited to the requested count and first three IDs |
-| `recommend_models` | Three factual text-to-video recommendations with duration, audio, resolution, and reference-support trade-offs |
-| `get_account_status` | Email omitted; wallet `$0.00`; no pending funds; trial disabled; staging account-connections URL |
-| Prompt and references | Claude drafted the text-to-video prompt and a three-part reference-image plan without generating or submitting media |
-| Revocation | Staging account page changed to no connected applications; the next approved tool call returned `Authentication required` |
-| Reconnect | A fresh consent page and explicit approval were required; a subsequent read-only `list_models` call succeeded |
-
-An early `get_account_status` call exposed the canonical production account
-handoff because the stable alias still served an older runtime revision. The
-staging promotion guard rejected the first replacement candidate when its
-direct deployment returned an authentication interstitial. After the guard was
-corrected, the READY candidate passed anonymous access, noindex, zero-cron,
-OAuth, stable-alias, and production-project invariants before promotion. The
-repeated account call then returned exactly:
-
-```text
-https://maxvideoai-mcp-staging.vercel.app/account/connections
-```
-
-Codex CLI 0.144.1 was also registered persistently against the exact staging
-MCP URL. Its current `mcp add` command automatically began OAuth and requested
-`openid profile email phone`, despite the resource advertising only
-`openid email profile`. The flow was stopped before approval or token exchange.
-The registered entry was then authenticated with explicit
-`mcp login --scopes openid,email,profile`. That second authorization request and
-the MaxVideoAI consent page both showed only the three requested scopes, used a
-loopback callback, and completed PKCE successfully. An ephemeral Codex session
-running in a read-only sandbox called only `list_models` and returned 42 public
-models. Treat the broader automatic `mcp add` request as a production onboarding
-blocker; do not weaken the server scopes or approve `phone` merely to make the
-default flow continue.
+Claude and Codex OAuth, revocation, refresh, rendering, and tool selection
+remain unverified. Historical exact-version captures predate the current tool
+inventory and evidence policy and must not be presented as current compatibility
+proof. Task 10 must record fresh, sanitized evidence for each host lifecycle and
+must independently verify the authorized staging database state for migration
+files 30–37, which are present locally.
 
 ## Cleanup
 

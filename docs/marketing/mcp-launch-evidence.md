@@ -124,13 +124,13 @@ exited successfully.
 
 | Gate | State | Exact blocker or next evidence |
 | --- | --- | --- |
-| Codex default first-run | Blocked | The default OAuth request still includes `phone`; only the explicit `openid,email,profile` login path has safe evidence. |
-| Claude Desktop refresh | Blocked | Revocation/reconnect passes, but token-expiry refresh still needs exact-version hosted evidence. |
+| Codex host lifecycle | Not run | OAuth, revocation, refresh, rendering, and tool selection remain unverified; Task 10 must capture fresh host evidence. |
+| Claude host lifecycle | Not run | OAuth, revocation, refresh, rendering, and tool selection remain unverified; Task 10 must capture fresh host evidence. |
 | Real-host decision bundle | Not run | No clean-account Codex/Claude quote, confirmation, result, recovery, or host-selection bundle was produced in Task 11. |
 | Paid generation | Blocked | No public mutation tool, current quote/confirmation decision evidence, spending-limit recovery, provider result, or receipt reconciliation. |
 | Trial | Blocked | No live allocation, abuse control, failed-job restoration, or deterministic end-to-end host evidence. |
 | Reference workflow | Blocked | No live upload handoff, model compatibility, retention/deletion, or client transfer evidence. |
-| Funnel/admin reconciliation | Blocked | Migrations 30–32 are absent and migration 33 remains unapplied; Task 11 did not query or mutate any database. |
+| Funnel/admin reconciliation | Blocked | Migration files 30–37 are present locally; staging application remains unverified pending Task 10. Task 11 did not query or mutate any database. |
 | Owned proof | Blocked | No publishable MCP generation proof with model, settings, price, date, consent, and provenance. |
 | Legal/support approval | Blocked | Owner approval for any MCP-specific legal wording and directory terms is still required. |
 | Hosted performance and SEO | Not run | Run the same audits on a controlled preview, then verify post-deployment GSC indexation and canonical selection. |

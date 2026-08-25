@@ -10,7 +10,7 @@ This runbook records dashboard settings only. Never copy project secrets, access
 - Enable authorization-code flow with PKCE.
 - Enable dynamic client registration only in the controlled environment until Codex and Claude-compatible redirect URI behavior has been reviewed.
 - Require user consent and verify that the consent screen displays the registered client name, redirect URI, and requested scopes.
-- Supabase currently advertises `openid`, `email`, `profile`, and `phone` as standard authorization-server scopes. Codex CLI 0.144.1 requested all four during local testing even though the MCP protected resource advertises only the first three. Keep production discovery disabled until the extra `phone` scope is accepted as policy or removed from the host flow.
+- The MCP protected resource is intended to request only `openid`, `email`, and `profile`. Codex and Claude OAuth, refresh, revocation, and requested-scope behavior remain unverified. Keep production discovery disabled until Task 10 records fresh, sanitized host evidence.
 - Use an asymmetric JWT signing key before requesting `openid`; publish and verify the project JWKS endpoint.
 - Keep access-token lifetime short enough for account revocation requirements and verify refresh-token rotation.
 

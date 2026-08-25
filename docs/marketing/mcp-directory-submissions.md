@@ -204,7 +204,7 @@ version; Growth approves factual copy; an authorized owner runs the publisher on
 ## Global release checklist
 
 - [ ] All eight checked-in publication flags are reviewed in a separate explicitly approved release change.
-- [ ] Migrations 30–32 exist, migration 33 is reviewed/applied in the approved environment, and live producers exist.
+- [ ] Migration files 30–37 remain present locally; Task 10 records their staging state before any live producer claim.
 - [ ] OAuth least privilege, token refresh, revocation, reconnect, and no-extra-scope behavior pass claimed hosts.
 - [ ] Legal approves EN/FR/ES privacy/terms/AUP changes, versions, re-consent, processors, and retention.
 - [ ] Support, monitoring, incident/status ownership, security intake, and rollback/kill switches are operational.

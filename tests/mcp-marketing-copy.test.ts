@@ -26,20 +26,24 @@ test('English above-fold acquisition copy matches the approved wording exactly',
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
   const copy = getMcpPageCopy('en');
-  assert.equal(copy.hero.title, 'Turn your brief into the right model, prompt and budget.');
+  assert.equal(copy.hero.title, 'From brief to rendered video, inside your AI assistant.');
+  assert.equal(
+    copy.hero.previewIntro,
+    'MaxVideoAI helps Claude and Codex choose the right video model, prepare prompts and references, quote the exact cost, and generate only after you approve. Preview — host validation in progress; local implementation verified.',
+  );
   assert.deepEqual(copy.hero.eyebrows, {
     trial: 'FIRST VIDEO INCLUDED',
     budget: 'LOW-COST MODELS FIRST',
     price: 'PRICE BEFORE YOU GENERATE',
   });
   assert.deepEqual(copy.hero.actions.map((action: { label: string }) => action.label), [
-    'Start with Claude',
-    'Start with Codex',
+    'Preview Claude setup',
+    'Preview Codex setup',
   ]);
   assert.deepEqual(copy.workflow.steps, [
     'Describe your video',
     'Compare the best low-cost routes',
-    'Confirm price & generate',
+    'Review budget and next steps',
   ]);
 });
 
@@ -50,29 +54,59 @@ test('French and Spanish use complete natural copy rather than English fallback'
   );
   const fr = getMcpPageCopy('fr');
   const es = getMcpPageCopy('es');
-  assert.equal(fr.hero.title, 'Transformez votre brief en modèle, prompt et budget adaptés.');
+  assert.equal(fr.hero.title, 'Du brief à la vidéo rendue, directement dans votre assistant IA.');
+  assert.match(fr.hero.previewIntro, /MaxVideoAI aide Claude et Codex.*choisir le bon modèle vidéo.*préparer les prompts et les références.*prix exact.*générer uniquement après votre approbation.*Préversion — validation des hôtes en cours/i);
   assert.deepEqual(fr.workflow.steps, [
     'Décrivez votre vidéo',
     'Comparez les meilleures options économiques',
-    'Confirmez le prix et générez',
+    'Vérifiez le budget et les étapes suivantes',
   ]);
-  assert.equal(es.hero.title, 'Convierte tu idea en el modelo, el prompt y el presupuesto adecuados.');
+  assert.equal(es.hero.title, 'Del brief al video renderizado, directamente en tu asistente de IA.');
+  assert.match(es.hero.previewIntro, /MaxVideoAI ayuda a Claude y Codex.*elegir el modelo de video adecuado.*preparar prompts y referencias.*precio exacto.*generar solo después de tu aprobación.*Vista previa — validación de clientes en curso/i);
   assert.deepEqual(es.workflow.steps, [
     'Describe tu video',
     'Compara las mejores opciones de bajo costo',
-    'Confirma el precio y genera',
+    'Revisa el presupuesto y los siguientes pasos',
   ]);
   assert.notDeepEqual(fr, getMcpPageCopy('en'));
   assert.notDeepEqual(es, getMcpPageCopy('en'));
 });
 
-test('metadata carries natural AI video generator intent in every locale', async () => {
+test('metadata carries natural AI video MCP intent in every locale', async () => {
   const { getMcpPageCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
-  assert.match(getMcpPageCopy('en').meta.title, /AI Video Generator/);
-  assert.match(getMcpPageCopy('fr').meta.title, /Générateur vidéo IA/);
-  assert.match(getMcpPageCopy('es').meta.title, /Generador de video con IA/);
+  assert.equal(getMcpPageCopy('en').meta.title, 'MaxVideoAI MCP for Claude, ChatGPT & Codex');
+  assert.equal(getMcpPageCopy('fr').meta.title, 'MCP MaxVideoAI pour Claude, ChatGPT et Codex');
+  assert.equal(getMcpPageCopy('es').meta.title, 'MCP de MaxVideoAI para Claude, ChatGPT y Codex');
+  const { getIntegrationCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
+  );
+  const expectations = {
+    en: [/for Claude, ChatGPT (?:&|and) Codex/i, /model advice/i, /budgets/i, /private references/i, /prepare and generate through the integration/i, /local implementation verified/i, /Preview — host validation in progress/i],
+    fr: [/pour Claude, ChatGPT et Codex/i, /conseils sur les modèles/i, /budgets/i, /références privées/i, /préparer et générer via l’intégration/i, /implémentation locale vérifiée/i, /Préversion — validation des hôtes en cours/i],
+    es: [/para Claude, ChatGPT y Codex/i, /asesoramiento sobre modelos/i, /presupuestos/i, /referencias privadas/i, /preparar y generar mediante la integración/i, /implementación local verificada/i, /Vista previa — validación de clientes en curso/i],
+  } as const;
+  const forbidden = /tested host version|version d’hôte testée|versión de cliente probada|recorded client version|version client enregistrée|versión registrada del cliente|validated OAuth|OAuth validé|OAuth validado|revocation (?:passed|validated)|révocation validée|revocación validada|rendering (?:passed|validated)|rendu validé|renderizado validado|certified compatibility|compatibilité certifiée|compatibilidad certificada|live compatibility|compatibilité en production|compatibilidad en producción/i;
+
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const page = getMcpPageCopy(locale);
+    const integrations = [getIntegrationCopy(locale, 'claude'), getIntegrationCopy(locale, 'codex')];
+    const text = JSON.stringify({ page, integrations });
+    for (const pattern of expectations[locale]) assert.match(text, pattern);
+    assert.doesNotMatch(text, forbidden);
+    assert.doesNotMatch(text, /hosted[^.]{0,100}passed|héberg[^.]{0,100}réussi|alojad[^.]{0,100}pasaron/i);
+  }
+
+  const proofExpectations = {
+    en: [/best executable model for each shot/i, /exact price before any credit is spent/i, /validate parameters and private references/i, /explicit confirmation.*job status and recovery.*failed.*refunded automatically/i, /comparison pages, examples, live pricing and pay-as-you-go credits/i, /installation, discovery, recommendations and estimates are free/i, /no separate MCP subscription/i],
+    fr: [/meilleur modèle exécutable pour chaque plan/i, /prix exact avant de dépenser le moindre crédit/i, /valider les paramètres et les références privées/i, /confirmation explicite.*état et la récupération.*échecs définitifs.*remboursés automatiquement/i, /comparatifs, exemples, tarifs en direct et crédits à l’usage/i, /installation MCP, la découverte, les recommandations et les estimations sont gratuites/i, /aucun abonnement MCP distinct/i],
+    es: [/mejor modelo ejecutable para cada toma/i, /precio exacto antes de gastar ningún crédito/i, /validar los parámetros y las referencias privadas/i, /confirmación explícita.*estado y la recuperación.*fallos definitivos.*reembolsan automáticamente/i, /comparativas, ejemplos, precios en vivo y créditos de pago por uso/i, /instalación MCP, el descubrimiento, las recomendaciones y las estimaciones son gratis/i, /suscripción MCP independiente/i],
+  } as const;
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const trust = JSON.stringify(getMcpPageCopy(locale).trust);
+    for (const pattern of proofExpectations[locale]) assert.match(trust, pattern);
+  }
 });
 
 test('trial and proof claims disappear when their evidence gates are false', async () => {
@@ -217,7 +251,9 @@ test('integration guides cover the full factual setup journey and explicit unpub
       }
       assert.ok(html.includes(copy.hero.unavailable));
       assert.match(html, /OAuth/i);
+      assert.match(html, locale === 'fr' ? /non vérifi/i : locale === 'es' ? /sin verificar/i : /unverified/i);
       assert.doesNotMatch(html, /one[- ]click|available in the Codex (?:app|library)|directory listing/i);
+      assert.doesNotMatch(html, /recorded client version|version client enregistrée|versión registrada del cliente/i);
     }
   }
 });

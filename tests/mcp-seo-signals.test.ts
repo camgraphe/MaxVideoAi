@@ -156,21 +156,17 @@ test('MCP metadata matches the approved intent and canonical locale routes', asy
   const { getMcpPageCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
-  assert.deepEqual(getMcpPageCopy('en').meta, {
-    title: 'AI Video Generator for Claude & Codex | MaxVideoAI MCP',
-    description:
-      'Plan prompts and reference images in Claude or Codex, compare AI video models, see the price before generation, and create through MaxVideoAI.',
-  });
-  assert.deepEqual(getMcpPageCopy('fr').meta, {
-    title: 'Générateur vidéo IA pour Claude et Codex | MCP MaxVideoAI',
-    description:
-      'Préparez des prompts et des images de référence dans Claude ou Codex, comparez les modèles vidéo IA, vérifiez le prix avant la génération et créez avec MaxVideoAI.',
-  });
-  assert.deepEqual(getMcpPageCopy('es').meta, {
-    title: 'Generador de video con IA: Claude y Codex | MCP MaxVideoAI',
-    description:
-      'Prepara prompts e imágenes de referencia en Claude o Codex, compara modelos de video con IA, revisa el precio antes de generar y crea con MaxVideoAI.',
-  });
+  const metadata = (['en', 'fr', 'es'] as const).map((locale) => getMcpPageCopy(locale).meta);
+  assert.equal(metadata[0]?.title, 'MaxVideoAI MCP for Claude, ChatGPT & Codex');
+  assert.equal(metadata[1]?.title, 'MCP MaxVideoAI pour Claude, ChatGPT et Codex');
+  assert.equal(metadata[2]?.title, 'MCP de MaxVideoAI para Claude, ChatGPT y Codex');
+  assert.match(metadata[0]?.description ?? '', /model advice.*budgets.*private references.*prepare and generate through the integration.*Preview — host validation in progress/i);
+  assert.match(metadata[1]?.description ?? '', /conseils sur les modèles.*budgets.*références privées.*préparer et générer via l’intégration.*Préversion — validation des hôtes en cours/i);
+  assert.match(metadata[2]?.description ?? '', /asesoramiento sobre modelos.*presupuestos.*referencias privadas.*preparar y generar mediante la integración.*Vista previa — validación de clientes en curso/i);
+  for (const meta of metadata) {
+    assert.doesNotMatch(`${meta.title} ${meta.description}`, /tested host version|version d’hôte testée|versión de cliente probada|validated OAuth|OAuth validé|OAuth validado|certified compatibility|compatibilité certifiée|compatibilidad certificada/i);
+    assert.match(meta.description, /(?:preview|préversion|vista previa)/i);
+  }
   assert.ok(
     (['en', 'fr', 'es'] as const).every((locale) => [...getMcpPageCopy(locale).meta.title].length <= 60),
     'localized MCP titles should remain within the 60-character search-result target'

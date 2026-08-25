@@ -143,10 +143,12 @@ test('launch evidence records local states, artifacts, exact limitations, and fu
   assert.match(evidence, /JavaScript disabled/i);
   assert.match(evidence, /Lighthouse/i);
   assert.match(evidence, /Core Web Vitals|lab metrics/i);
-  assert.match(evidence, /Codex[^\n]+phone/i);
-  assert.match(evidence, /Claude[^\n]+refresh/i);
-  assert.match(evidence, /migrations? 30[^\n]+32/i);
-  assert.match(evidence, /migration 33[^\n]+unapplied/i);
+  assert.match(evidence, /Codex host lifecycle[^\n]+unverified[^\n]+Task 10/i);
+  assert.match(evidence, /Claude host lifecycle[^\n]+unverified[^\n]+Task 10/i);
+  assert.doesNotMatch(evidence, /Revocation\/reconnect passes|explicit[^\n]+login path has safe evidence/i);
+  assert.match(evidence, /migration files 30–37 are present locally/i);
+  assert.match(evidence, /staging application remains unverified[^\n]*Task 10/i);
+  assert.doesNotMatch(evidence, /migrations? 30–32 (?:are )?absent|migration[^\n]*\b(?:applied|unapplied)\b/i);
   assert.match(evidence, /no publishable MCP (?:proof|demonstration)/i);
   assert.match(evidence, /GSC[^\n]+post-deployment/i);
   assert.match(evidence, /no production|production[^\n]+not probed/i);

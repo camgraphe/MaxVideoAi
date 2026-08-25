@@ -80,15 +80,15 @@ function englishCopy(client: McpClientId): IntegrationPageCopy {
     client,
     clientLabel: label,
     meta: {
-      title: `${label} setup guide for MaxVideoAI MCP`,
-      description: `Review the recorded ${label} compatibility status, connection steps, browser authorization, reference behavior, troubleshooting, and disconnect path for MaxVideoAI.`,
+      title: `MaxVideoAI MCP for ${label} — Preview`,
+      description: `Get model advice, compare budgets, use private references, and prepare and generate through ${label}. Preview — host validation in progress; local implementation verified.`,
     },
     hero: {
       eyebrow: 'CLIENT SETUP GUIDE',
-      title: `Plan your MaxVideoAI workflow with ${label}.`,
-      intro: `Use ${label} to clarify an AI video brief, formulate a prompt, plan references, and compare model and budget choices before continuing in MaxVideoAI.`,
-      unavailable: 'Public connection is not available yet. This guide documents local package evidence and an intended, host-unverified setup path.',
-      liveStatus: 'Public access is enabled for the capabilities shown in this guide.',
+      title: `MaxVideoAI MCP for ${label}`,
+      intro: `Get model advice, compare budgets, use private references, and prepare and generate through the integration in ${label}. Preview — host validation in progress; local implementation verified, while hosted OAuth, rendering, refresh and revocation remain unverified.`,
+      unavailable: 'Public connection is not available. This guide documents local package evidence and an intended, host-unverified setup path.',
+      liveStatus: 'Any future public state still requires separate host evidence and publication approval.',
       backLabel: 'Back to the MaxVideoAI workflow hub',
       backHref: '/mcp',
     },
@@ -102,7 +102,7 @@ function englishCopy(client: McpClientId): IntegrationPageCopy {
     },
     setup: {
       eyebrow: 'Connection',
-      title: `Connect ${label} to MaxVideoAI`,
+      title: `Review the intended ${label} setup`,
       intro: claude
         ? 'Claude Desktop and Claude Code have different intended connection paths. Both remain unverified in a real host; use these steps only for a separately approved test.'
         : 'The intended path uses Codex CLI with explicit least-privilege scopes. Real-host installation and OAuth remain unverified, and the default first-run add flow is not approved for public use.',
@@ -111,11 +111,11 @@ function englishCopy(client: McpClientId): IntegrationPageCopy {
             {
               hostId: 'claudeDesktop',
               title: 'Claude Desktop remote connector',
-              intro: 'Create a custom remote connector in Claude Desktop with the MaxVideoAI server address.',
+              intro: 'This candidate procedure would configure a custom remote connector with the MaxVideoAI server address after approval.',
               steps: [
                 { title: 'Open remote connector settings', body: 'In Claude Desktop, create a custom remote connector.' },
                 { title: 'Add the MaxVideoAI server address', body: 'Use the documented remote address exactly; do not paste a user credential into the configuration.' },
-                { title: 'Complete browser approval', body: 'Sign in to MaxVideoAI, review the requested account access, and return to Claude Desktop only after approval.' },
+                { title: 'Review browser approval', body: 'A future authorized test must verify sign-in, requested access, denial, approval and return behavior.' },
               ],
               commands: [],
               setupValues: [{ label: 'MCP server URL', value: MCP_PRODUCTION_RESOURCE_URL }],
@@ -124,13 +124,13 @@ function englishCopy(client: McpClientId): IntegrationPageCopy {
             {
               hostId: 'claudeCode',
               title: 'Claude Code HTTP connection',
-              intro: 'Register the HTTP server from Claude Code, then start authorization from its MCP panel.',
+              intro: 'This candidate procedure would register the HTTP server and start authorization from the MCP panel after approval.',
               steps: [
-                { title: 'Add the HTTP connection', body: 'Run the recorded command below to register MaxVideoAI.' },
+                { title: 'Add the HTTP connection', body: 'Use the candidate command below only during a separately approved host test.' },
                 { title: 'Open the MCP panel', body: 'Open /mcp in Claude Code and choose the MaxVideoAI connection to start browser authorization.' },
                 { title: 'Complete browser approval', body: 'Review the requested identity access, approve it, and return to Claude Code.' },
               ],
-              commandLabel: 'Recorded Claude Code commands',
+              commandLabel: 'Candidate Claude Code commands',
               commands: [`claude mcp add --transport http maxvideoai ${MCP_PRODUCTION_RESOURCE_URL}`, 'claude mcp get maxvideoai'],
               setupValues: [],
               authTrigger: 'After adding the server, open /mcp in Claude Code to authenticate.',
@@ -140,14 +140,14 @@ function englishCopy(client: McpClientId): IntegrationPageCopy {
         : [
             {
               hostId: 'codexCli',
-              title: 'Codex CLI explicit-scope connection',
-              intro: 'Register the remote server, then use the explicit least-privilege login path.',
+              title: 'Codex CLI explicit-scope connection preview',
+              intro: 'This candidate procedure would register the remote server and request the intended least-privilege scopes after approval.',
               steps: [
                 { title: 'Add the remote connection', body: 'Use the current Codex CLI command below to register the MaxVideoAI server address.' },
-                { title: 'Start explicit login', body: 'Use the separate login command with only the three recorded identity permissions.' },
-                { title: 'Verify read-only access', body: 'Confirm the registered connection and test model discovery before relying on any later workflow.' },
+                { title: 'Start explicit login', body: 'A future authorized test must request only the three intended identity scopes.' },
+                { title: 'Verify read-only access', body: 'A future authorized test must verify the connection and model discovery before any later workflow claim.' },
               ],
-              commandLabel: 'Recorded Codex CLI commands',
+              commandLabel: 'Candidate Codex CLI commands',
               commands: [
                 `codex mcp add maxvideoai --url ${MCP_PRODUCTION_RESOURCE_URL}`,
                 'codex mcp login maxvideoai --scopes openid,email,profile',
@@ -164,12 +164,12 @@ function englishCopy(client: McpClientId): IntegrationPageCopy {
     },
     workflow: {
       eyebrow: 'Example workflow',
-      title: `From a ${label} brief to a reviewed MaxVideoAI decision`,
-      intro: 'The host can organize the creative reasoning; MaxVideoAI remains the source for current model facts, price and execution status.',
+      title: 'Local planning and model comparison preview',
+      intro: `Local contracts cover planning, model comparison and budgets. No workflow behavior in ${label} is verified.`,
       previewSteps: [
-        { title: 'Clarify the brief', body: `${label} can ask about subject, motion, format, style, audio intent and budget.` },
-        { title: 'Formulate the prompt and references', body: `${label} can draft text and help plan a useful reference without implying that the host created the image.` },
-        { title: 'Compare read-only model facts', body: 'Controlled evidence covers model discovery and factual trade-offs only.' },
+        { title: 'Clarify the brief', body: 'The local planning contract captures subject, motion, format, style, audio intent and budget.' },
+        { title: 'Formulate the prompt and references', body: 'The local contract supports prompt and private-reference planning without claiming host file creation.' },
+        { title: 'Compare read-only model facts', body: 'Locally verified evidence covers model discovery and factual trade-offs only.' },
         { title: 'Continue in MaxVideoAI', body: 'Until generation access is published, review the model and displayed price in the web product.' },
       ],
       liveSteps: [
@@ -181,29 +181,29 @@ function englishCopy(client: McpClientId): IntegrationPageCopy {
     },
     references: {
       title: 'Files and reference images',
-      planningBody: `${label} can help formulate prompts and prepare a reference plan. It should not claim to have created or transferred a file unless the active client capability actually did so.`,
+      planningBody: `Local contracts support prompt and private-reference planning. No creation or transfer behavior in ${label} is verified.`,
       liveBody: 'When enabled, use an account-owned image, an allowed web image, or a secure MaxVideoAI upload handoff. The selected model must support the reference mode.',
       gatedBody: 'Connected file and reference transfer is not publicly enabled. Add supported reference images in the MaxVideoAI web product instead.',
     },
     troubleshooting: {
       eyebrow: 'Troubleshooting',
-      title: `${label} connection checks`,
-      intro: 'Work from the recorded client version and fail closed when the requested access or visible capability differs from this guide.',
+      title: `${label} pre-validation checklist`,
+      intro: 'No host version is tested or recorded as compatible. Fail closed until Task 10 verifies the requested access and visible behavior.',
       items: claude
         ? [
-            { question: 'Claude says authentication is required', answer: 'Open the connection again and complete a fresh MaxVideoAI approval. A revoked grant correctly requires reapproval.' },
-            { question: 'The connector shows only read-only actions', answer: 'That matches the current recorded evidence. Do not infer generation, upload or trial availability.' },
-            { question: 'The connection stops after access expires', answer: 'Token-expiry refresh is still pending verification. Remove and reconnect only in an approved preview account.' },
+            { question: 'Claude says authentication is required', answer: 'No Claude OAuth behavior is verified. Stop and record the exact host/version for an approved Task 10 test.' },
+            { question: 'The connector shows only read-only actions', answer: 'No rendered host inventory is verified. Do not infer generation, upload or trial availability.' },
+            { question: 'The connection stops after access expires', answer: 'Refresh and reconnect behavior is unverified. Do not present a workaround as supported behavior.' },
           ]
         : [
-            { question: 'The default add flow asks for extra access', answer: 'Stop the flow. The default path remains blocked; do not approve access beyond the recorded explicit login command.' },
-            { question: 'Codex cannot call generation actions', answer: 'That matches the current read-only evidence. Generation is not publicly enabled.' },
-            { question: 'Login no longer works after revocation', answer: 'Run a fresh explicit login and approve the connection again with the intended MaxVideoAI account.' },
+            { question: 'The default add flow asks for extra access', answer: 'Stop the flow. No Codex scope behavior is verified; never approve more than the intended least-privilege scopes.' },
+            { question: 'Codex cannot call generation actions', answer: 'No Codex rendering or generation behavior is verified, and generation is not publicly enabled.' },
+            { question: 'Login no longer works after revocation', answer: 'Revocation and reapproval are unverified. Record this only in an approved Task 10 host test.' },
           ],
     },
     disconnect: {
       title: `Disconnect ${label}`,
-      body: 'Remove the connection in the client and revoke its grant from MaxVideoAI account connections. Revocation should require a fresh approval before access returns.',
+      body: 'This is an intended future procedure only: remove the client connection and revoke its MaxVideoAI grant. Task 10 must verify every host-specific result.',
       steps: [`Remove or clear the MaxVideoAI connection in ${label}`, 'Open MaxVideoAI account connections and revoke the grant', 'Verify that the next protected action requires authentication'],
     },
     support: { label: 'Contact MaxVideoAI support', href: '/contact' },
@@ -217,15 +217,15 @@ function frenchCopy(client: McpClientId): IntegrationPageCopy {
   return {
     ...copy,
     meta: {
-      title: `Guide de configuration ${label} pour le MCP MaxVideoAI`,
-      description: `Consultez l’état de compatibilité enregistré pour ${label}, la connexion, l’autorisation dans le navigateur, les références, le dépannage et la déconnexion de MaxVideoAI.`,
+      title: `MCP MaxVideoAI pour ${label} — Préversion`,
+      description: `Obtenez des conseils sur les modèles, comparez les budgets, utilisez des références privées, puis préparez et générez via ${label}. Préversion — validation des hôtes en cours ; implémentation locale vérifiée.`,
     },
     hero: {
       eyebrow: 'GUIDE DE CONFIGURATION CLIENT',
-      title: `Préparez votre parcours MaxVideoAI avec ${label}.`,
-      intro: `Utilisez ${label} pour préciser un brief vidéo IA, formuler un prompt, préparer les références et comparer les modèles et budgets avant de poursuivre dans MaxVideoAI.`,
-      unavailable: 'La connexion publique n’est pas encore disponible. Ce guide décrit les preuves locales du paquet et un parcours prévu, non vérifié dans un hôte réel.',
-      liveStatus: 'L’accès public est activé pour les fonctions présentées dans ce guide.',
+      title: `MCP MaxVideoAI pour ${label}`,
+      intro: `Obtenez des conseils sur les modèles, comparez les budgets, utilisez des références privées, puis préparez et générez via l’intégration dans ${label}. Préversion — validation des hôtes en cours ; implémentation locale vérifiée, tandis que l’OAuth, le rendu, le renouvellement et la révocation dans les hôtes restent non vérifiés.`,
+      unavailable: 'La connexion publique n’est pas disponible. Ce guide décrit les preuves locales du paquet et un parcours prévu, non vérifié dans un hôte réel.',
+      liveStatus: 'Tout état public futur exige encore des preuves d’hôte distinctes et une autorisation de publication.',
       backLabel: 'Retour au parcours MaxVideoAI',
       backHref: '/fr/mcp',
     },
@@ -239,7 +239,7 @@ function frenchCopy(client: McpClientId): IntegrationPageCopy {
     },
     setup: {
       eyebrow: 'Connexion',
-      title: `Connecter ${label} à MaxVideoAI`,
+      title: `Consulter la configuration ${label} prévue`,
       intro: claude
         ? 'Claude Desktop et Claude Code ont deux parcours de connexion prévus différents. Les deux restent non vérifiés dans un hôte réel ; utilisez ces étapes uniquement pour un test approuvé séparément.'
         : 'Le parcours prévu utilise Codex CLI avec des autorisations explicites et minimales. L’installation et OAuth dans un hôte réel restent non vérifiés, et le premier parcours d’ajout par défaut n’est pas approuvé pour le public.',
@@ -300,12 +300,12 @@ function frenchCopy(client: McpClientId): IntegrationPageCopy {
     },
     workflow: {
       eyebrow: 'Exemple de parcours',
-      title: `Du brief ${label} à une décision MaxVideoAI vérifiée`,
-      intro: 'Le client peut structurer la réflexion créative ; MaxVideoAI reste la source des données modèles, du prix et de l’état d’exécution.',
+      title: 'Préversion locale de planification et de comparaison',
+      intro: `Les contrats locaux couvrent la planification, la comparaison des modèles et les budgets. Aucun comportement de parcours dans ${label} n’est vérifié.`,
       previewSteps: [
-        { title: 'Précisez le brief', body: `${label} peut poser des questions sur le sujet, le mouvement, le format, le style, l’intention audio et le budget.` },
-        { title: 'Formulez le prompt et les références', body: `${label} peut rédiger le texte et préparer une référence sans laisser entendre que le client a créé l’image.` },
-        { title: 'Comparez les données en lecture seule', body: 'Les preuves contrôlées couvrent uniquement la découverte des modèles et leurs compromis factuels.' },
+        { title: 'Précisez le brief', body: 'Le contrat local de planification couvre le sujet, le mouvement, le format, le style, l’intention audio et le budget.' },
+        { title: 'Formulez le prompt et les références', body: 'Le contrat local couvre le prompt et les références privées sans revendiquer la création d’un fichier par l’hôte.' },
+        { title: 'Comparez les données en lecture seule', body: 'Les preuves vérifiées localement couvrent uniquement la découverte des modèles et leurs compromis factuels.' },
         { title: 'Poursuivez dans MaxVideoAI', body: 'Tant que la génération connectée n’est pas publiée, vérifiez le modèle et le prix affiché dans le produit web.' },
       ],
       liveSteps: [
@@ -317,29 +317,29 @@ function frenchCopy(client: McpClientId): IntegrationPageCopy {
     },
     references: {
       title: 'Fichiers et images de référence',
-      planningBody: `${label} peut aider à formuler les prompts et à préparer une référence. Il ne doit pas prétendre avoir créé ou transféré un fichier sans que la fonction active du client l’ait réellement fait.`,
+      planningBody: `Les contrats locaux couvrent les prompts et les références privées. Aucun comportement de création ou de transfert dans ${label} n’est vérifié.`,
       liveBody: 'Lorsque cette fonction est active, utilisez une image liée au compte, une image web autorisée ou un transfert sécurisé MaxVideoAI. Le modèle choisi doit prendre en charge le mode de référence.',
       gatedBody: 'Le transfert connecté de fichiers et de références n’est pas activé publiquement. Ajoutez plutôt les images compatibles dans le produit web MaxVideoAI.',
     },
     troubleshooting: {
       eyebrow: 'Dépannage',
-      title: `Vérifications de connexion ${label}`,
-      intro: 'Partez de la version client enregistrée et interrompez le parcours si l’accès demandé ou les fonctions visibles diffèrent de ce guide.',
+      title: `Liste de prévalidation ${label}`,
+      intro: 'Aucune version d’hôte n’est testée ni enregistrée comme compatible. Interrompez le parcours jusqu’à la vérification Task 10 des accès et comportements visibles.',
       items: claude
         ? [
-            { question: 'Claude demande une authentification', answer: 'Rouvrez la connexion et approuvez de nouveau MaxVideoAI. Une autorisation révoquée doit exiger une nouvelle approbation.' },
-            { question: 'Le connecteur ne propose que la lecture', answer: 'Cela correspond aux preuves actuelles. N’en déduisez pas que la génération, le transfert ou l’essai sont disponibles.' },
-            { question: 'La connexion s’arrête après expiration', answer: 'L’actualisation après expiration reste à vérifier. Ne reconnectez qu’un compte de prévisualisation approuvé.' },
+            { question: 'Claude demande une authentification', answer: 'Aucun comportement OAuth Claude n’est vérifié. Arrêtez-vous et relevez l’hôte et la version exacts pour un test Task 10 approuvé.' },
+            { question: 'Le connecteur ne propose que la lecture', answer: 'Aucun inventaire rendu par l’hôte n’est vérifié. N’en déduisez pas que la génération, le transfert ou l’essai sont disponibles.' },
+            { question: 'La connexion s’arrête après expiration', answer: 'L’actualisation et la reconnexion restent non vérifiées. Ne présentez pas de contournement comme un comportement pris en charge.' },
           ]
         : [
-            { question: 'Le parcours par défaut demande un accès supplémentaire', answer: 'Interrompez-le. Le parcours par défaut reste bloqué ; n’approuvez aucun accès au-delà de la commande explicite enregistrée.' },
-            { question: 'Codex ne peut pas lancer une génération', answer: 'Cela correspond aux preuves en lecture seule. La génération n’est pas activée publiquement.' },
-            { question: 'La connexion ne fonctionne plus après révocation', answer: 'Relancez la connexion explicite et approuvez-la avec le compte MaxVideoAI prévu.' },
+            { question: 'Le parcours par défaut demande un accès supplémentaire', answer: 'Interrompez-le. Aucun comportement d’autorisation Codex n’est vérifié ; ne dépassez jamais les autorisations minimales prévues.' },
+            { question: 'Codex ne peut pas lancer une génération', answer: 'Aucun comportement de rendu ou de génération Codex n’est vérifié, et la génération n’est pas activée publiquement.' },
+            { question: 'La connexion ne fonctionne plus après révocation', answer: 'La révocation et la nouvelle approbation restent non vérifiées. Consignez-les uniquement dans un test d’hôte Task 10 approuvé.' },
           ],
     },
     disconnect: {
       title: `Déconnecter ${label}`,
-      body: 'Supprimez la connexion dans le client et révoquez son autorisation dans les connexions du compte MaxVideoAI. Un nouvel accès doit ensuite exiger une nouvelle approbation.',
+      body: 'Il s’agit uniquement d’une procédure future prévue : supprimez la connexion du client et révoquez son autorisation MaxVideoAI. Task 10 doit vérifier chaque résultat propre à l’hôte.',
       steps: [`Supprimez ou effacez la connexion MaxVideoAI dans ${label}`, 'Ouvrez les connexions du compte MaxVideoAI et révoquez l’autorisation', 'Vérifiez que la prochaine action protégée demande une authentification'],
     },
     support: { label: 'Contacter l’assistance MaxVideoAI', href: '/fr/contact' },
@@ -353,15 +353,15 @@ function spanishCopy(client: McpClientId): IntegrationPageCopy {
   return {
     ...copy,
     meta: {
-      title: `Guía de configuración de ${label} para el MCP de MaxVideoAI`,
-      description: `Revisa el estado registrado de compatibilidad con ${label}, la conexión, la autorización en el navegador, las referencias, la solución de problemas y la desconexión de MaxVideoAI.`,
+      title: `MCP de MaxVideoAI para ${label} — Vista previa`,
+      description: `Obtén asesoramiento sobre modelos, compara presupuestos, usa referencias privadas y prepara y genera mediante ${label}. Vista previa — validación de clientes en curso; implementación local verificada.`,
     },
     hero: {
       eyebrow: 'GUÍA DE CONFIGURACIÓN DEL CLIENTE',
-      title: `Planifica tu flujo de MaxVideoAI con ${label}.`,
-      intro: `Usa ${label} para aclarar una idea de video con IA, formular un prompt, planificar referencias y comparar modelos y presupuestos antes de continuar en MaxVideoAI.`,
-      unavailable: 'La conexión pública aún no está disponible. Esta guía documenta evidencia local del paquete y un flujo previsto, sin verificar en un host real.',
-      liveStatus: 'El acceso público está habilitado para las funciones que aparecen en esta guía.',
+      title: `MCP de MaxVideoAI para ${label}`,
+      intro: `Obtén asesoramiento sobre modelos, compara presupuestos, usa referencias privadas y prepara y genera mediante la integración en ${label}. Vista previa — validación de clientes en curso; implementación local verificada, mientras que OAuth, renderizado, renovación y revocación en clientes alojados siguen sin verificar.`,
+      unavailable: 'La conexión pública no está disponible. Esta guía documenta evidencia local del paquete y un flujo previsto, sin verificar en un host real.',
+      liveStatus: 'Cualquier estado público futuro todavía requiere evidencia separada del host y aprobación de publicación.',
       backLabel: 'Volver al centro de flujos de MaxVideoAI',
       backHref: '/es/mcp',
     },
@@ -375,7 +375,7 @@ function spanishCopy(client: McpClientId): IntegrationPageCopy {
     },
     setup: {
       eyebrow: 'Conexión',
-      title: `Conecta ${label} con MaxVideoAI`,
+      title: `Revisa la configuración prevista de ${label}`,
       intro: claude
         ? 'Claude Desktop y Claude Code tienen rutas de conexión previstas diferentes. Ambas siguen sin verificar en un host real; usa estos pasos solo en una prueba aprobada por separado.'
         : 'La ruta prevista usa Codex CLI con permisos explícitos y mínimos. La instalación y OAuth en un host real siguen sin verificar, y el flujo predeterminado inicial no está aprobado para uso público.',
@@ -436,12 +436,12 @@ function spanishCopy(client: McpClientId): IntegrationPageCopy {
     },
     workflow: {
       eyebrow: 'Flujo de ejemplo',
-      title: `De una idea en ${label} a una decisión revisada en MaxVideoAI`,
-      intro: 'El cliente puede organizar el razonamiento creativo; MaxVideoAI sigue siendo la fuente de los datos actuales de modelos, el precio y el estado de ejecución.',
+      title: 'Vista previa local de planificación y comparación',
+      intro: `Los contratos locales cubren la planificación, la comparación de modelos y los presupuestos. No se ha verificado ningún comportamiento de flujo en ${label}.`,
       previewSteps: [
-        { title: 'Aclara la idea', body: `${label} puede preguntar por el sujeto, el movimiento, el formato, el estilo, la intención de audio y el presupuesto.` },
-        { title: 'Formula el prompt y las referencias', body: `${label} puede redactar el texto y ayudar a planificar una referencia sin insinuar que el cliente creó la imagen.` },
-        { title: 'Compara datos de solo lectura', body: 'La evidencia controlada cubre únicamente el descubrimiento de modelos y sus diferencias factuales.' },
+        { title: 'Aclara la idea', body: 'El contrato local de planificación cubre el sujeto, el movimiento, el formato, el estilo, la intención de audio y el presupuesto.' },
+        { title: 'Formula el prompt y las referencias', body: 'El contrato local cubre prompts y referencias privadas sin afirmar que el host creó un archivo.' },
+        { title: 'Compara datos de solo lectura', body: 'La evidencia verificada localmente cubre únicamente el descubrimiento de modelos y sus diferencias factuales.' },
         { title: 'Continúa en MaxVideoAI', body: 'Hasta que se publique la generación conectada, revisa el modelo y el precio mostrado en el producto web.' },
       ],
       liveSteps: [
@@ -453,29 +453,29 @@ function spanishCopy(client: McpClientId): IntegrationPageCopy {
     },
     references: {
       title: 'Archivos e imágenes de referencia',
-      planningBody: `${label} puede ayudar a formular prompts y preparar un plan de referencias. No debe afirmar que creó o transfirió un archivo salvo que la función activa del cliente lo haya hecho realmente.`,
+      planningBody: `Los contratos locales cubren prompts y referencias privadas. No se ha verificado ningún comportamiento de creación o transferencia en ${label}.`,
       liveBody: 'Cuando esté habilitado, usa una imagen de tu cuenta, una imagen web permitida o una transferencia segura de MaxVideoAI. El modelo elegido debe admitir el modo de referencia.',
       gatedBody: 'La transferencia conectada de archivos y referencias no está habilitada públicamente. Agrega las imágenes compatibles en el producto web de MaxVideoAI.',
     },
     troubleshooting: {
       eyebrow: 'Solución de problemas',
-      title: `Comprobaciones de conexión de ${label}`,
-      intro: 'Parte de la versión registrada del cliente y detén el flujo si el acceso solicitado o las funciones visibles no coinciden con esta guía.',
+      title: `Lista de prevalidación de ${label}`,
+      intro: 'Ninguna versión de host está probada ni registrada como compatible. Detén el flujo hasta que Task 10 verifique el acceso solicitado y el comportamiento visible.',
       items: claude
         ? [
-            { question: 'Claude indica que hace falta autenticación', answer: 'Abre la conexión de nuevo y completa una nueva aprobación de MaxVideoAI. Un acceso revocado debe exigir una aprobación nueva.' },
-            { question: 'El conector solo muestra acciones de lectura', answer: 'Eso coincide con la evidencia actual. No supongas que la generación, la transferencia o la prueba están disponibles.' },
-            { question: 'La conexión se detiene al vencer el acceso', answer: 'La renovación tras el vencimiento sigue pendiente de verificación. Reconecta únicamente una cuenta de vista previa aprobada.' },
+            { question: 'Claude indica que hace falta autenticación', answer: 'No se ha verificado ningún comportamiento OAuth de Claude. Detente y registra el host y la versión exactos para una prueba Task 10 aprobada.' },
+            { question: 'El conector solo muestra acciones de lectura', answer: 'No se ha verificado ningún inventario renderizado por el host. No supongas que la generación, la transferencia o la prueba están disponibles.' },
+            { question: 'La conexión se detiene al vencer el acceso', answer: 'La renovación y la reconexión siguen sin verificar. No presentes una solución alternativa como comportamiento compatible.' },
           ]
         : [
-            { question: 'El flujo predeterminado pide acceso adicional', answer: 'Detén el flujo. La ruta predeterminada sigue bloqueada; no apruebes acceso más allá del comando explícito registrado.' },
-            { question: 'Codex no puede iniciar acciones de generación', answer: 'Eso coincide con la evidencia actual de solo lectura. La generación no está habilitada públicamente.' },
-            { question: 'El acceso deja de funcionar después de revocarlo', answer: 'Inicia una nueva sesión explícita y aprueba la conexión con la cuenta prevista de MaxVideoAI.' },
+            { question: 'El flujo predeterminado pide acceso adicional', answer: 'Detén el flujo. No se ha verificado ningún comportamiento de permisos de Codex; no superes los permisos mínimos previstos.' },
+            { question: 'Codex no puede iniciar acciones de generación', answer: 'No se ha verificado ningún comportamiento de renderizado o generación de Codex, y la generación no está habilitada públicamente.' },
+            { question: 'El acceso deja de funcionar después de revocarlo', answer: 'La revocación y la nueva aprobación siguen sin verificar. Regístralas solo en una prueba de host Task 10 aprobada.' },
           ],
     },
     disconnect: {
       title: `Desconecta ${label}`,
-      body: 'Elimina la conexión en el cliente y revoca su acceso desde las conexiones de la cuenta de MaxVideoAI. La conexión posterior debe exigir una aprobación nueva.',
+      body: 'Este es solo un procedimiento futuro previsto: elimina la conexión del cliente y revoca su acceso a MaxVideoAI. Task 10 debe verificar cada resultado específico del host.',
       steps: [`Elimina o borra la conexión de MaxVideoAI en ${label}`, 'Abre las conexiones de la cuenta de MaxVideoAI y revoca el acceso', 'Comprueba que la siguiente acción protegida solicite autenticación'],
     },
     support: { label: 'Contactar al soporte de MaxVideoAI', href: '/es/contact' },

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
 
@@ -22,6 +22,10 @@ const supportPath = join(root, 'docs/operations/mcp-support-runbook.md');
 const directoryPath = join(root, 'docs/marketing/mcp-directory-submissions.md');
 const claimsPath = join(root, 'docs/marketing/mcp-public-claims-matrix.md');
 const compatibilityPath = join(root, 'docs/operations/mcp-host-compatibility-matrix.md');
+const stagingDeploymentPath = join(root, 'docs/operations/mcp-staging-deployment.md');
+const paidRunbookPath = join(root, 'docs/operations/mcp-paid-generation-runbook.md');
+const oauthRunbookPath = join(root, 'docs/operations/mcp-oauth-configuration.md');
+const launchEvidencePath = join(root, 'docs/marketing/mcp-launch-evidence.md');
 const publicationPath = join(root, 'frontend/config/mcp-publication.json');
 const statusPagePath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/status/page.tsx');
 const changelogPagePath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/changelog/page.tsx');
@@ -34,9 +38,31 @@ const support = readIfPresent(supportPath);
 const directory = readIfPresent(directoryPath);
 const claims = readFileSync(claimsPath, 'utf8');
 const compatibility = readFileSync(compatibilityPath, 'utf8');
+const stagingDeployment = readFileSync(stagingDeploymentPath, 'utf8');
+const paidRunbook = readFileSync(paidRunbookPath, 'utf8');
+const oauthRunbook = readFileSync(oauthRunbookPath, 'utf8');
+const launchEvidence = readFileSync(launchEvidencePath, 'utf8');
 const publication = JSON.parse(readFileSync(publicationPath, 'utf8')) as Record<string, boolean>;
 const statusPage = readFileSync(statusPagePath, 'utf8');
 const changelogPage = readFileSync(changelogPagePath, 'utf8');
+
+const DEFAULT_DISCOVERY_TOOLS = [
+  'get_account_status',
+  'list_models',
+  'get_model_details',
+  'recommend_models',
+  'calculate_project_budget',
+];
+const OPERATIONAL_TOOLS = [
+  ...DEFAULT_DISCOVERY_TOOLS,
+  'list_media',
+  'create_reference_upload_link',
+  'prepare_generation',
+  'confirm_generation',
+  'get_generation_status',
+  'list_recent_generations',
+  'create_topup_link',
+];
 
 const principal: AgentPrincipal = {
   userId: 'task-10-readiness-user',
@@ -174,7 +200,7 @@ test('support runbook covers every requested current and gated decision tree', (
   ]) {
     assert.match(support, new RegExp('`' + code + '`'));
   }
-  assert.match(support, /reserved contract code; not observable from the three-tool\s+registry/i);
+  assert.match(support, /reserved contract code; not observable from the default five-tool\s+discovery registry/i);
 });
 
 test('runbook protocol envelopes are produced by the real handler and stay separate from tool failures', async () => {
@@ -303,8 +329,8 @@ test('status and changelog stay unchanged without MCP operational evidence', () 
   assert.doesNotMatch(changelogPage, /\bMCP\b/);
   assert.match(support, /No MCP status component was added/);
   assert.match(support, /No MCP changelog entry was added/);
-  assert.match(support, /migrations 30–32 are absent/i);
-  assert.match(support, /migration 33 is unapplied/i);
+  assert.match(support, /migration files 30–37 are present locally/i);
+  assert.match(support, /staging application remains unverified[^\n]*Task 10/i);
   assert.match(support, /That live MCP-specific\s+health source is currently absent/i);
 });
 
@@ -451,6 +477,40 @@ test('readiness packages follow the live registry and canonical localized route 
     localeUrls('/legal/acceptable-use'),
   );
   assert.deepEqual(httpsUrls(markdownRow(directory, 'Support URLs')), localeUrls('/contact'));
+
+  const toolNames = (value: string): string[] =>
+    Array.from(value.matchAll(/`([a-z][a-z0-9_]+)`/g), (match) => match[1] as string);
+  assert.deepEqual(toolNames(markdownRow(support, 'Default discovery')), DEFAULT_DISCOVERY_TOOLS);
+  assert.deepEqual(toolNames(markdownRow(support, 'Operational staging')), OPERATIONAL_TOOLS);
+
+  const migrations = readdirSync(join(root, 'neon/migrations'));
+  for (let id = 30; id <= 37; id += 1) {
+    assert.ok(migrations.some((name) => name.startsWith(`${id}_`)), `migration ${id} should exist locally`);
+  }
+  assert.match(support, /migration files 30–37 are present locally/i);
+  assert.match(support, /staging application remains unverified[^\n]*Task 10/i);
+  assert.doesNotMatch(support, /migrations? 30–32 (?:are )?absent|migration 31 (?:is|are) absent/i);
+  assert.doesNotMatch(support, /migration[^\n]*\b(?:applied|unapplied)\b/i);
+
+  assert.match(support, /Claude and Codex OAuth, revocation, refresh, rendering, and tool selection remain unverified/i);
+  assert.doesNotMatch(support, /revocation passed|recorded least-privilege path used|explicit login path[^\n]*passed/i);
+  assert.match(support, /public claims matrix owns permissible and prohibited public claims/i);
+  assert.match(support, /host compatibility matrix owns local-versus-real-host evidence/i);
+  assert.match(support, /support runbook owns support procedures and\s+escalation/i);
+
+  assert.match(paidRunbook, /registry returns to the five default\s+discovery tools/i);
+  assert.doesNotMatch(paidRunbook, /three read-only tools|three-tool/i);
+  assert.match(stagingDeployment, /Claude and Codex OAuth, revocation, refresh, rendering, and tool selection\s+remain unverified/i);
+  assert.match(stagingDeployment, /migration files 30–37 are present locally/i);
+  assert.match(stagingDeployment, /staging application remains unverified pending Task 10/i);
+  assert.doesNotMatch(stagingDeployment, /already applied|remains unapplied|migrations? 30–32 (?:are )?absent/i);
+  assert.doesNotMatch(stagingDeployment, /hosted smoke test passed|controlled-host passed/i);
+  assert.doesNotMatch(stagingDeployment, /Claude Desktop \d|rendered exactly three read-only tools|Revocation \|.*Authentication required|Reconnect \|.*succeeded/i);
+  assert.match(oauthRunbook, /Codex and Claude OAuth, refresh, revocation, and requested-scope behavior remain unverified/i);
+  assert.doesNotMatch(oauthRunbook, /Codex CLI \d|requested all four during local testing/i);
+  assert.match(launchEvidence, /migration files 30–37 are present locally/i);
+  assert.match(launchEvidence, /staging application remains unverified[^\n]*Task 10/i);
+  assert.doesNotMatch(launchEvidence, /migrations? 30–32 (?:are )?absent|migration[^\n]*\b(?:applied|unapplied)\b/i);
 });
 
 test('directory facts do not outrun checked-in claims or host evidence', () => {
@@ -461,11 +521,9 @@ test('directory facts do not outrun checked-in claims or host evidence', () => {
     directory,
     /No real Codex,[\s\S]{0,120}Claude,[\s\S]{0,120}other-host[\s\S]{0,120}tool-selection bundle is recorded/i,
   );
-  assert.match(support, /Codex default OAuth flow[^\n]*`phone` scope/i);
-  assert.match(support, /default Codex add flow remains a release blocker/i);
-  assert.match(support, /Claude Desktop token-expiry refresh remains pending/i);
-  assert.match(support, /migrations 30–32 are absent/i);
-  assert.match(support, /migration 33 is unapplied/i);
+  assert.match(support, /Claude and Codex OAuth, revocation, refresh, rendering, and tool selection remain unverified/i);
+  assert.match(support, /migration files 30–37 are present locally/i);
+  assert.match(support, /staging application remains unverified[^\n]*Task 10/i);
   assert.match(directory, /https:\/\/modelcontextprotocol\.io\/registry\/moderation-policy/);
   assert.match(
     directory,
