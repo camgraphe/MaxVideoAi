@@ -450,6 +450,140 @@ test('bounded finalization aborts timed-out media work and leaves the lease retr
   assert.equal(failures, 1);
 });
 
+test('completion heartbeat renews the durable lease while a database-backed store is stalled beyond the base lease', async () => {
+  let fakeNow = now;
+  let heartbeat: (() => Promise<void>) | undefined;
+  let releaseStore: (() => void) | undefined;
+  let markStoreStarted: (() => void) | undefined;
+  const storeStarted = new Promise<void>((resolve) => { markStoreStarted = resolve; });
+  const storeReleased = new Promise<void>((resolve) => { releaseStore = resolve; });
+  const renewalTimes: number[] = [];
+  let completed = 0;
+  const handler = createReferenceUploadCompleteHandler({
+    ...common,
+    now: () => fakeNow,
+    scheduleLeaseHeartbeat(callback) {
+      heartbeat = callback;
+      return () => undefined;
+    },
+    async getOwnedReferenceUploadAttempt() { return attempt(); },
+    async acquireReferenceUploadCompletionLease() {
+      return attempt({ state: 'processing', leaseId, leaseExpiresAt: new Date(fakeNow.getTime() + 5 * 60_000) });
+    },
+    async renewReferenceUploadCompletionLease(input) {
+      renewalTimes.push(fakeNow.getTime());
+      return { ...input.attempt, leaseExpiresAt: new Date(fakeNow.getTime() + 5 * 60_000) };
+    },
+    async listReferenceUploadParts() {
+      return [
+        { partNumber: 1, storageKey: 'part-1', sizeBytes: 4, contentSha256: createHash('sha256').update('abcd').digest('hex') },
+        { partNumber: 2, storageKey: 'part-2', sizeBytes: 1, contentSha256: createHash('sha256').update('e').digest('hex') },
+      ];
+    },
+    async getStorageObjectBuffer(key: string) { return Buffer.from(key === 'part-1' ? 'abcd' : 'e'); },
+    async storeVideoUpload(input) {
+      markStoreStarted?.();
+      await storeReleased;
+      input.signal?.throwIfAborted();
+      return { assetId: publicAssetId } as never;
+    },
+    async stageReferenceUploadAttempt() {
+      return attempt({ state: 'staged', leaseId, stagedAssetId: publicAssetId, contentSha256: attempt().fileSha256 });
+    },
+    async completeUploadSession() { return session({ state: 'uploaded', assetId: publicAssetId }) as never; },
+    async completeReferenceUploadAttempt() {
+      completed += 1;
+      return attempt({ state: 'completed', stagedAssetId: publicAssetId });
+    },
+    async cleanupReferenceUploadParts() { return 2; },
+  } as never);
+
+  const responsePromise = handler(jsonRequest('/complete', { uploadId }), { params: Promise.resolve({ token }) });
+  await storeStarted;
+  const scheduledHeartbeat = heartbeat;
+  if (scheduledHeartbeat) {
+    fakeNow = new Date(now.getTime() + 4 * 60_000);
+    await scheduledHeartbeat();
+    fakeNow = new Date(now.getTime() + 8 * 60_000);
+    await scheduledHeartbeat();
+  }
+  releaseStore?.();
+  const response = await responsePromise;
+  assert.ok(scheduledHeartbeat, 'the lease heartbeat must remain scheduled while persistence is stalled');
+  assert.equal(response.status, 200);
+  assert.deepEqual(renewalTimes, [now.getTime() + 4 * 60_000, now.getTime() + 8 * 60_000]);
+  assert.equal(completed, 1);
+});
+
+test('timeout keeps heartbeating through delayed compensation and fence loss aborts before later persistence effects', async () => {
+  let fakeNow = now;
+  let heartbeat: (() => Promise<void>) | undefined;
+  let markAborted: (() => void) | undefined;
+  let releaseCompensation: (() => void) | undefined;
+  const aborted = new Promise<void>((resolve) => { markAborted = resolve; });
+  const compensationReleased = new Promise<void>((resolve) => { releaseCompensation = resolve; });
+  let heartbeatLost = false;
+  let stages = 0;
+  let completions = 0;
+  let failures = 0;
+  const handler = createReferenceUploadCompleteHandler({
+    ...common,
+    now: () => fakeNow,
+    finalizationTimeoutMs: 10,
+    scheduleLeaseHeartbeat(callback) {
+      heartbeat = callback;
+      return () => undefined;
+    },
+    async getOwnedReferenceUploadAttempt() { return attempt(); },
+    async acquireReferenceUploadCompletionLease() {
+      return attempt({ state: 'processing', leaseId, leaseExpiresAt: new Date(fakeNow.getTime() + 5 * 60_000) });
+    },
+    async renewReferenceUploadCompletionLease(input) {
+      if (heartbeatLost) throw new AgentApiError('UPLOAD_ALREADY_USED', 'Reference upload lease was lost.');
+      return { ...input.attempt, leaseExpiresAt: new Date(fakeNow.getTime() + 5 * 60_000) };
+    },
+    async listReferenceUploadParts() {
+      return [
+        { partNumber: 1, storageKey: 'part-1', sizeBytes: 4, contentSha256: createHash('sha256').update('abcd').digest('hex') },
+        { partNumber: 2, storageKey: 'part-2', sizeBytes: 1, contentSha256: createHash('sha256').update('e').digest('hex') },
+      ];
+    },
+    async getStorageObjectBuffer(key: string) { return Buffer.from(key === 'part-1' ? 'abcd' : 'e'); },
+    async storeVideoUpload(input) {
+      await new Promise<void>((resolve) => input.signal?.addEventListener('abort', () => {
+        markAborted?.();
+        resolve();
+      }, { once: true }));
+      await compensationReleased;
+      input.signal?.throwIfAborted();
+      throw new Error('unreachable');
+    },
+    async stageReferenceUploadAttempt() { stages += 1; throw new Error('must not stage after fence loss'); },
+    async completeUploadSession() { completions += 1; throw new Error('must not complete after fence loss'); },
+    async completeReferenceUploadAttempt() { completions += 1; throw new Error('must not complete after fence loss'); },
+    async failReferenceUploadAttempt() { failures += 1; return true; },
+  } as never);
+
+  const responsePromise = handler(jsonRequest('/complete', { uploadId }), { params: Promise.resolve({ token }) });
+  await aborted;
+  const scheduledHeartbeat = heartbeat;
+  if (scheduledHeartbeat) {
+    fakeNow = new Date(now.getTime() + 4 * 60_000);
+    await scheduledHeartbeat();
+    heartbeatLost = true;
+    fakeNow = new Date(now.getTime() + 8 * 60_000);
+    await assert.rejects(() => scheduledHeartbeat(), /lease was lost/iu);
+  }
+  assert.equal(failures, 0, 'the completion lease must not release before compensation settles');
+  releaseCompensation?.();
+  const response = await responsePromise;
+  assert.ok(scheduledHeartbeat, 'timeout compensation must retain an active heartbeat owner');
+  assert.equal(response.status, 500);
+  assert.equal(stages, 0);
+  assert.equal(completions, 0);
+  assert.equal(failures, 1);
+});
+
 test('abort and expired attempts clean all server-owned parts and make the upload unusable', async () => {
   const deleted: string[] = [];
   const handler = createReferenceUploadAbortHandler({

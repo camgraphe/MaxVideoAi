@@ -103,3 +103,12 @@ test('recovery migration versions rolling uploads and owns a durable scoped clea
   assert.doesNotMatch(source, /object_key\s+TEXT\s+NOT\s+NULL\s+UNIQUE/iu);
   assert.doesNotMatch(source, /ALTER COLUMN\s+protocol_version\s+DROP DEFAULT/iu);
 });
+
+test('recovery migration shares a durable producer fence with workspace uploads and canonical rows', () => {
+  const migration = readFileSync('neon/migrations/37_mcp_reference_upload_recovery_state.sql', 'utf8');
+  assert.match(migration, /producer_claim_id/);
+  assert.match(migration, /producer_lease_expires_at/);
+  assert.match(migration, /state\s+IN\s*\([^)]*producing[^)]*orphaned/isu);
+  assert.match(migration, /CREATE TRIGGER[\s\S]*user_assets[\s\S]*fence/isu);
+  assert.match(migration, /CREATE TRIGGER[\s\S]*media_assets[\s\S]*fence/isu);
+});

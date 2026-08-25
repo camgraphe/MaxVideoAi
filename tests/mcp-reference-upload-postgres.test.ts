@@ -27,6 +27,10 @@ import {
   createUploadSession,
 } from '../frontend/src/server/agent-api/reference-upload-sessions';
 import {
+  claimStorageObjectProducer,
+  settleStorageObjectProducer,
+} from '../frontend/src/server/storage-object-producer-claims';
+import {
   missingDisposablePostgresCommand,
   startDisposablePostgres,
 } from './helpers/disposable-postgres';
@@ -558,6 +562,91 @@ test('real PostgreSQL upload recovery and interleavings preserve one terminal as
     assert.equal((await database.pool.query<{ state: string }>(
       'SELECT state FROM mcp_reference_upload_cleanup_objects WHERE object_key = $1', [thumbnailKey],
     )).rows[0]?.state, 'retained');
+  });
+
+  await t.test('workspace producer claim closes the PUT-to-canonical-row cleanup gap', async () => {
+    await reset(database.pool);
+    const { attempt: expiredAttempt } = await createClaimedAttempt(
+      database.pool, new Date(now.getTime() - 14 * 60_000),
+    );
+    const finalKey = `user-assets/by-content/${'7'.repeat(32)}/${fileSha256}.mp4`;
+    await transaction(database.pool, (executor) => registerReferenceUploadCleanupObject(
+      { attempt: expiredAttempt, objectKey: finalKey, objectRole: 'final', safeToDelete: false }, { executor, now },
+    ));
+    const producer = await transaction(database.pool, (executor) => claimStorageObjectProducer(
+      { objectKey: finalKey }, {
+        executor, now, claimId: '00000000-0000-4000-8000-000000000701',
+      },
+    ));
+    let deletes = 0;
+    assert.deepEqual(await cleanupExpiredReferenceUploadAttempts({}, {
+      executor: createQueryExecutor(database.pool), now: () => new Date(now.getTime() + 2_000),
+      async deleteStorageObjectKey() { deletes += 1; },
+    }), { selected: 0, deleted: 0 });
+    assert.equal(deletes, 0);
+
+    await database.pool.query(
+      'INSERT INTO user_assets (asset_id, user_id, url) VALUES ($1,$2,$3)',
+      ['workspace-winner', 'user-a', `https://assets.maxvideo.ai/${finalKey}`],
+    );
+    await transaction(database.pool, (executor) => settleStorageObjectProducer(
+      { claim: producer, outcome: 'persisted' }, { executor, now: new Date(now.getTime() + 3_000) },
+    ));
+    assert.deepEqual(await cleanupExpiredReferenceUploadAttempts({}, {
+      executor: createQueryExecutor(database.pool), now: () => new Date(now.getTime() + 4_000),
+      async deleteStorageObjectKey() { deletes += 1; },
+    }), { selected: 0, deleted: 0 });
+    assert.equal(deletes, 0);
+  });
+
+  await t.test('deleting rejects new workspace producers and canonical inserts until deletion settles', async () => {
+    await reset(database.pool);
+    const { attempt: expiredAttempt } = await createClaimedAttempt(
+      database.pool, new Date(now.getTime() - 14 * 60_000),
+    );
+    const finalKey = `user-assets/by-content/${'8'.repeat(32)}/${fileSha256}.mp4`;
+    await transaction(database.pool, (executor) => registerReferenceUploadCleanupObject(
+      { attempt: expiredAttempt, objectKey: finalKey, objectRole: 'final', safeToDelete: false }, { executor, now },
+    ));
+    let releaseDelete: (() => void) | undefined;
+    let markDeleteStarted: (() => void) | undefined;
+    const deleteStarted = new Promise<void>((resolve) => { markDeleteStarted = resolve; });
+    const deleteReleased = new Promise<void>((resolve) => { releaseDelete = resolve; });
+    const cleanup = cleanupExpiredReferenceUploadAttempts({}, {
+      executor: createQueryExecutor(database.pool), now: () => new Date(now.getTime() + 2_000),
+      async deleteStorageObjectKey() { markDeleteStarted?.(); await deleteReleased; },
+    });
+    await deleteStarted;
+    await assert.rejects(() => transaction(database.pool, (executor) => claimStorageObjectProducer(
+      { objectKey: finalKey }, {
+        executor, now: new Date(now.getTime() + 2_001), claimId: '00000000-0000-4000-8000-000000000702',
+      },
+    )), /delet|retry/iu);
+    await assert.rejects(() => database.pool.query(
+      'INSERT INTO media_assets (id, public_id, user_id, url) VALUES ($1,$2,$3,$4)',
+      ['late-winner', 'ma_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'user-a', `https://assets.maxvideo.ai/${finalKey}`],
+    ), /delet|retry/iu);
+    releaseDelete?.();
+    assert.deepEqual(await cleanup, { selected: 1, deleted: 1 });
+  });
+
+  await t.test('failed workspace persistence leaves an orphaned producer fence for durable cleanup', async () => {
+    await reset(database.pool);
+    const finalKey = `user-assets/by-content/${'6'.repeat(32)}/${fileSha256}.mp4`;
+    const producer = await transaction(database.pool, (executor) => claimStorageObjectProducer(
+      { objectKey: finalKey }, {
+        executor, now, claimId: '00000000-0000-4000-8000-000000000703',
+      },
+    ));
+    await transaction(database.pool, (executor) => settleStorageObjectProducer(
+      { claim: producer, outcome: 'abandoned' }, { executor, now: new Date(now.getTime() + 1_000) },
+    ));
+    const deleted: string[] = [];
+    assert.deepEqual(await cleanupExpiredReferenceUploadAttempts({}, {
+      executor: createQueryExecutor(database.pool), now: () => new Date(now.getTime() + 2_000),
+      async deleteStorageObjectKey(key) { deleted.push(key); },
+    }), { selected: 1, deleted: 1 });
+    assert.deepEqual(deleted, [finalKey]);
   });
 });
 

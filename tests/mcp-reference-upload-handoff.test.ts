@@ -632,6 +632,77 @@ test('multimedia storage registers final and thumbnail keys before upload and re
   ]);
 });
 
+test('workspace media storage holds the shared object producer claim through both canonical writes', async () => {
+  const events: string[] = [];
+  let claimHeld = false;
+  const key = 'user-assets/by-content/owner/content.mp4';
+  const service = createStoreVideoUploadService({
+    async probeMediaBuffer() {
+      return { kind: 'video', durationSec: 1, canonicalMime: 'video/mp4', detectedMime: 'video/mp4' } as never;
+    },
+    async claimStorageObjectProducer(input: { objectKey: string }) {
+      assert.equal(input.objectKey, key);
+      claimHeld = true;
+      events.push('claim');
+      return { objectKey: key, claimId: '00000000-0000-4000-8000-000000000777' } as never;
+    },
+    async settleStorageObjectProducer(_input: unknown, options: { outcome: string }) {
+      events.push(`settle:${options.outcome}`);
+      claimHeld = false;
+    },
+    async uploadFileBuffer(input) {
+      await input.beforeUpload?.(key);
+      assert.equal(claimHeld, true);
+      events.push('upload');
+      return { key, url: `https://assets.maxvideo.ai/${key}` };
+    },
+    async createUploadVideoThumbnail() { return null; },
+    async recordUserAsset() {
+      assert.equal(claimHeld, true);
+      events.push('legacy');
+      return 'ua_asset';
+    },
+    async ensureReusableAsset() {
+      assert.equal(claimHeld, true);
+      events.push('canonical');
+      return { publicId: 'ma_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' } as never;
+    },
+  } as never);
+
+  await service({ userId: 'user-a', fileName: 'clip.mp4', declaredMime: 'video/mp4', bytes: Buffer.from('video') });
+  assert.deepEqual(events, ['claim', 'upload', 'legacy', 'canonical', 'settle:persisted']);
+  assert.equal(claimHeld, false);
+});
+
+test('workspace media persistence failure durably abandons the producer claim for later cleanup', async () => {
+  const events: string[] = [];
+  const key = 'user-assets/by-content/owner/failed.mp4';
+  const service = createStoreVideoUploadService({
+    async probeMediaBuffer() {
+      return { kind: 'video', durationSec: 1, canonicalMime: 'video/mp4', detectedMime: 'video/mp4' } as never;
+    },
+    async claimStorageObjectProducer() {
+      events.push('claim');
+      return { objectKey: key, claimId: '00000000-0000-4000-8000-000000000778' } as never;
+    },
+    async settleStorageObjectProducer(_input: unknown, options: { outcome: string }) {
+      events.push(`settle:${options.outcome}`);
+    },
+    async uploadFileBuffer(input) {
+      await input.beforeUpload?.(key);
+      events.push('upload');
+      return { key, url: `https://assets.maxvideo.ai/${key}` };
+    },
+    async createUploadVideoThumbnail() { return null; },
+    async recordUserAsset() { throw new Error('database unavailable'); },
+  } as never);
+
+  await assert.rejects(() => service({
+    userId: 'user-a', fileName: 'clip.mp4', declaredMime: 'video/mp4', bytes: Buffer.from('video'),
+  }), /could not be recorded/iu);
+  assert.deepEqual(events, ['claim', 'upload', 'settle:abandoned']);
+});
+
 test('browser handoff rejects cross-origin, oversized, expired, and replayed requests before storage', async () => {
   let authCalls = 0;
   let storeCalls = 0;
