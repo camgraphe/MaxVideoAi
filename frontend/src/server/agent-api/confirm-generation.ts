@@ -9,7 +9,7 @@ import {
 import { getUserMembershipStatus, type MembershipPricingContext } from '@/server/membership/user-membership-status';
 
 import { computeGenerationCatalogRevision } from './catalog-revision';
-import { AgentApiError } from './errors';
+import { AgentApiError, withMediaNeutralReferenceMessage } from './errors';
 import {
   GenerationCapabilityError,
   validateCanonicalGenerationCapabilities,
@@ -100,7 +100,10 @@ export type ConfirmGenerationDependencies = {
   priceGeneration(
     request: McpGenerationQuote['request'],
     membershipTier: MembershipPricingContext['tier'],
-    dependencies: ExecutorDependencies & { candidate: AgentPublicGenerationEngine },
+    dependencies: ExecutorDependencies & {
+      candidate: AgentPublicGenerationEngine;
+      resolvedReferences?: readonly ResolvedReference[];
+    },
   ): Promise<GenerationPricingResult>;
   checkSpendingLimits(
     input: { userId: string; priceCents: number; currency: string },
@@ -358,7 +361,11 @@ async function confirmationTransaction(
           if (includedTrial) trialNotEligible();
           staleQuote();
         }
-        if (error instanceof AgentApiError) throw error;
+        if (error instanceof AgentApiError) {
+          throw quote.request.mode === 'v2v' || quote.request.mode === 'extend'
+            ? withMediaNeutralReferenceMessage(error)
+            : error;
+        }
         throw new AgentApiError('INTERNAL_ERROR', 'The reference media could not be verified.');
       }
     }
@@ -378,7 +385,7 @@ async function confirmationTransaction(
       pricing = await dependencies.priceGeneration(
         quote.request,
         membership.tier,
-        { executor, candidate },
+        { executor, candidate, resolvedReferences },
       );
     } catch (error) {
       if (error instanceof AgentApiError) throw error;

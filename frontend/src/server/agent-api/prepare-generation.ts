@@ -7,7 +7,7 @@ import {
 import { getWalletSummary, type WalletSummary } from '@/server/wallet-summary';
 
 import { computeGenerationCatalogRevision } from './catalog-revision';
-import { AgentApiError } from './errors';
+import { AgentApiError, withMediaNeutralReferenceMessage } from './errors';
 import {
   GenerationCapabilityError,
   validateCanonicalGenerationCapabilities,
@@ -18,6 +18,7 @@ import {
 } from './generation-normalization';
 import {
   priceCanonicalGeneration,
+  type GenerationPricingReferenceContext,
   type GenerationPricingResult,
 } from './generation-pricing';
 import type {
@@ -97,6 +98,7 @@ export type PrepareGenerationDependencies = {
   priceGeneration(
     request: CanonicalGenerationRequest,
     membershipTier: MembershipPricingContext['tier'],
+    referenceContext: GenerationPricingReferenceContext,
   ): Promise<GenerationPricingResult>;
   getWalletSummary(userId: string): Promise<WalletSummary>;
   withTransaction<TResult>(
@@ -137,7 +139,8 @@ const defaultDependencies: Omit<PrepareGenerationDependencies, 'trialRiskContext
   getAccountRestriction: getActiveAccountRestriction,
   listPublicEngines: () => listPublicAgentGenerationEngines(),
   resolveMembershipPricing: async (userId) => (await getUserMembershipStatus(userId)).pricing,
-  priceGeneration: priceCanonicalGeneration,
+  priceGeneration: (request, membershipTier, referenceContext) =>
+    priceCanonicalGeneration(request, membershipTier, undefined, referenceContext),
   getWalletSummary,
   withTransaction: (callback) => withDbTransaction((executor) => callback(executor)),
   checkSpendingLimits: checkMcpSpendingLimits,
@@ -416,15 +419,20 @@ export async function prepareGeneration(
   }
   validateCapabilities(request, candidate);
   validateRepresentablePricingFacts(request);
+  let resolvedReferences: ResolvedReference[] = [];
   if (request.references.some((reference) => reference.kind === 'asset')) {
     try {
       const resolveReferences = dependencies.resolveGenerationReferences
         ?? ((currentRequest, currentPrincipal) =>
           resolveGenerationReferences(currentRequest, currentPrincipal));
-      const resolvedReferences = await resolveReferences(request, principal);
+      resolvedReferences = await resolveReferences(request, principal);
       validateCapabilities(request, candidate, resolvedReferences);
     } catch (error) {
-      if (error instanceof AgentApiError) throw error;
+      if (error instanceof AgentApiError) {
+        throw request.mode === 'v2v' || request.mode === 'extend'
+          ? withMediaNeutralReferenceMessage(error)
+          : error;
+      }
       throw new AgentApiError('INTERNAL_ERROR', 'The reference media could not be verified.');
     }
   }
@@ -441,7 +449,11 @@ export async function prepareGeneration(
   }
   let pricing: GenerationPricingResult;
   try {
-    pricing = await dependencies.priceGeneration(request, membership.tier);
+    pricing = await dependencies.priceGeneration(
+      request,
+      membership.tier,
+      { resolvedReferences },
+    );
   } catch {
     throw new AgentApiError(
       'PARAMETER_INVALID',

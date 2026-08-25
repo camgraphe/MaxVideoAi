@@ -189,7 +189,7 @@ test('budgets real H3 and Seedance 2.5 i2v lines with source-derived framing', a
   ]);
 });
 
-test('budgets real Seedance 2.5 v2v and extend lines through canonical pricing', async () => {
+test('budgets source-video modes without inventing a ref2v media kind', async () => {
   const candidate = registryCapability('seedance-2-5');
   const pricedModes: string[] = [];
   const billingInputTypes: unknown[] = [];
@@ -208,6 +208,12 @@ test('budgets real Seedance 2.5 v2v and extend lines through canonical pricing',
         settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9', audio: true },
         referenceRoles: ['source', 'source', 'source'],
       }),
+      line({
+        purpose: 'Unspecified reference media',
+        mode: 'ref2v',
+        settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9', audio: true },
+        referenceRoles: ['reference'],
+      }),
     ],
   }]), principal, {
     listPublicEngines: async () => [candidate],
@@ -223,10 +229,13 @@ test('budgets real Seedance 2.5 v2v and extend lines through canonical pricing',
     },
   });
 
-  assert.deepEqual(pricedModes, ['v2v', 'extend']);
-  assert.deepEqual(billingInputTypes, ['video_input', 'video_input']);
-  assert.deepEqual(result.proposals[0]?.lines.map((budgetLine) => budgetLine.mode), ['v2v', 'extend']);
-  assert.deepEqual(result.proposals[0]?.lines.map((budgetLine) => budgetLine.referenceCount), [1, 3]);
+  assert.deepEqual(pricedModes, ['v2v', 'extend', 'ref2v']);
+  assert.deepEqual(billingInputTypes, ['video_input', 'video_input', 'no_video_input']);
+  assert.deepEqual(
+    result.proposals[0]?.lines.map((budgetLine) => budgetLine.mode),
+    ['v2v', 'extend', 'ref2v'],
+  );
+  assert.deepEqual(result.proposals[0]?.lines.map((budgetLine) => budgetLine.referenceCount), [1, 3, 1]);
 });
 
 test('returns an exact safe line location when a project capability is invalid', async () => {

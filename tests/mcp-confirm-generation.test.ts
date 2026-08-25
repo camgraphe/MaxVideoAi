@@ -122,6 +122,142 @@ test('confirmation pricing preserves the prepared Seedance video-input tier', as
   assert.equal(confirmed.currency, prepared.currency);
 });
 
+test('confirmation pricing distinguishes ref2v video, image, and DB-verified video references', async () => {
+  const entry = listFalEngines().find((candidate) => candidate.id === 'seedance-2-5');
+  assert.ok(entry);
+  const candidate: AgentPublicGenerationEngine = {
+    engine: entry.engine,
+    surface: 'video',
+    publicModes: ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'],
+    modeCaps: Object.fromEntries(entry.modes.map((mode) => [mode.mode, mode.ui])),
+  };
+  const baseRequest: CanonicalGenerationRequest = {
+    schemaVersion: 1,
+    surface: 'video',
+    engineId: 'seedance-2-5',
+    mode: 'ref2v',
+    prompt: 'Follow the reference motion.',
+    settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9', audio: true },
+    references: [],
+    outputCount: 1,
+  };
+  const cases = [
+    {
+      label: 'https video',
+      references: [{
+        kind: 'https' as const,
+        url: 'https://cdn.example.com/reference.mp4',
+        role: 'reference' as const,
+        mediaKind: 'video' as const,
+      }],
+      resolvedReferences: [],
+      expected: 'video_input',
+    },
+    {
+      label: 'https image',
+      references: [{
+        kind: 'https' as const,
+        url: 'https://cdn.example.com/reference.png',
+        role: 'reference' as const,
+        mediaKind: 'image' as const,
+      }],
+      resolvedReferences: [],
+      expected: 'no_video_input',
+    },
+    {
+      label: 'resolved asset video',
+      references: [{ kind: 'asset' as const, assetId: 'video-asset', role: 'reference' as const }],
+      resolvedReferences: [{
+        assetId: 'video-asset',
+        role: 'reference' as const,
+        mediaKind: 'video' as const,
+        storageUrl: 'https://assets.example.com/reference.mp4',
+        width: 1920,
+        height: 1080,
+        mimeType: 'video/mp4',
+      }],
+      expected: 'video_input',
+    },
+  ];
+
+  for (const scenario of cases) {
+    const request = { ...baseRequest, references: scenario.references };
+    const prepared = await priceCanonicalGeneration(
+      request,
+      'member',
+      undefined,
+      { resolvedReferences: scenario.resolvedReferences },
+    );
+    const confirmed = await priceCanonicalGenerationInExecutor(request, 'member', {
+      candidate,
+      executor: { async query() { return []; } } as TransactionQueryExecutor,
+      resolvedReferences: scenario.resolvedReferences,
+    });
+    for (const pricing of [prepared, confirmed]) {
+      assert.equal(
+        (pricing.pricingSnapshot.meta as Record<string, unknown>).byteplus_billing_input_type,
+        scenario.expected,
+        scenario.label,
+      );
+    }
+    assert.equal(confirmed.priceCents, prepared.priceCents, scenario.label);
+  }
+});
+
+test('confirmation passes DB-verified ref2v video media into transactional pricing', async () => {
+  const entry = listFalEngines().find((candidate) => candidate.id === 'seedance-2-5');
+  assert.ok(entry);
+  const candidate: AgentPublicGenerationEngine = {
+    engine: entry.engine,
+    surface: 'video',
+    publicModes: ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'],
+    modeCaps: Object.fromEntries(entry.modes.map((mode) => [mode.mode, mode.ui])),
+  };
+  const request: CanonicalGenerationRequest = {
+    schemaVersion: 1,
+    surface: 'video',
+    engineId: 'seedance-2-5',
+    mode: 'ref2v',
+    prompt: 'Follow the private reference motion.',
+    settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9', audio: true },
+    references: [{ kind: 'asset', assetId: 'video-asset', role: 'reference' }],
+    outputCount: 1,
+  };
+  const resolvedReferences = [{
+    assetId: 'video-asset',
+    role: 'reference' as const,
+    mediaKind: 'video' as const,
+    storageUrl: 'https://assets.example.com/reference.mp4',
+    width: 1920,
+    height: 1080,
+    mimeType: 'video/mp4',
+  }];
+  const catalogRevision = computeGenerationCatalogRevision([candidate]);
+  const stored = quoteFor(request, { catalogRevision });
+  let billingInputType: unknown;
+  const { dependencies } = baseDependencies(request, {
+    lockOwnedQuote: async () => ({ quote: stored, databaseNow: NOW }),
+    listPublicEngines: async () => [candidate],
+    resolveGenerationReferences: async () => resolvedReferences,
+    priceGeneration: async (canonicalRequest, tier, input) => {
+      const pricing = await priceCanonicalGenerationInExecutor(canonicalRequest, tier, {
+        executor: { async query() { return []; } } as TransactionQueryExecutor,
+        candidate,
+        resolvedReferences: input.resolvedReferences,
+      });
+      billingInputType = (pricing.pricingSnapshot.meta as Record<string, unknown>)
+        .byteplus_billing_input_type;
+      return pricing;
+    },
+  });
+
+  await expectAgentError(
+    confirmGeneration({ quoteId: QUOTE_ID, confirmed: true }, principal, dependencies),
+    'QUOTE_EXPIRED',
+  );
+  assert.equal(billingInputType, 'video_input');
+});
+
 function capability(request: CanonicalGenerationRequest): AgentPublicGenerationEngine {
   const video = request.surface === 'video';
   const modeCaps: EngineModeUiCaps = {
@@ -502,6 +638,55 @@ test('missing ownership, current restriction, and post-lock expiry fail before s
       'QUOTE_EXPIRED',
     );
     assert.equal(captures.expiredMarks, 1);
+    assert.equal(captures.providerCalls, 0);
+  }
+});
+
+test('confirmation preserves resolver error details but neutralizes extend asset wording', async () => {
+  const candidateEntry = listFalEngines().find((entry) => entry.id === 'seedance-2-5');
+  assert.ok(candidateEntry);
+  const candidate: AgentPublicGenerationEngine = {
+    engine: candidateEntry.engine,
+    surface: 'video',
+    publicModes: ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'],
+    modeCaps: Object.fromEntries(candidateEntry.modes.map((mode) => [mode.mode, mode.ui])),
+  };
+  const request: CanonicalGenerationRequest = {
+    schemaVersion: 1,
+    surface: 'video',
+    engineId: 'seedance-2-5',
+    mode: 'extend',
+    prompt: 'Extend this private clip.',
+    settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9', audio: true },
+    references: [{ kind: 'asset', assetId: 'private-source', role: 'source' }],
+    outputCount: 1,
+  };
+  const cases = [
+    ['REFERENCE_NOT_FOUND', 'Reference image not found.', 'Reference media not found.'],
+    ['REFERENCE_INVALID', 'Reference image is not usable.', 'Reference media is not usable.'],
+  ] as const;
+
+  for (const [code, privateMessage, publicMessage] of cases) {
+    const nextAction = { type: 'select_reference_media', mode: 'extend' };
+    const { dependencies, captures } = baseDependencies(request, {
+      listPublicEngines: async () => [candidate],
+      resolveGenerationReferences: async () => {
+        throw new AgentApiError(code, privateMessage, true, nextAction);
+      },
+    });
+    await assert.rejects(
+      confirmGeneration({ quoteId: QUOTE_ID, confirmed: true }, principal, dependencies),
+      (error: unknown) => {
+        assert.ok(error instanceof AgentApiError);
+        assert.equal(error.code, code);
+        assert.equal(error.message, publicMessage);
+        assert.equal(error.retryable, true);
+        assert.deepEqual(error.nextAction, nextAction);
+        assert.doesNotMatch(error.message, /image/iu);
+        return true;
+      },
+    );
+    assert.equal(captures.events.includes('pricing'), false);
     assert.equal(captures.providerCalls, 0);
   }
 });

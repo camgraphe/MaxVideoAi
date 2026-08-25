@@ -476,6 +476,44 @@ test('prepare rejects a DB-verified image asset in a source-video slot with neut
   assert.equal(captures.events.includes('pricing'), false);
 });
 
+test('prepare preserves resolver error details but neutralizes v2v asset wording', async () => {
+  const candidate = registryCapability('seedance-2-5');
+  const input: PrepareGenerationInput = {
+    surface: 'video',
+    engineId: 'seedance-2-5',
+    mode: 'v2v',
+    prompt: 'Edit this source clip.',
+    settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9', audio: true },
+    references: [{ kind: 'asset', assetId: 'private-source', role: 'source' }],
+    outputCount: 1,
+  };
+  const cases = [
+    ['missing', 'REFERENCE_NOT_FOUND', 'Reference image not found.', 'Reference media not found.'],
+    ['wrong-kind', 'REFERENCE_INVALID', 'Reference image is not usable.', 'Reference media is not usable.'],
+    ['not-ready', 'REFERENCE_INVALID', 'Reference image is not ready.', 'Reference media is not usable.'],
+  ] as const;
+
+  for (const [label, code, privateMessage, publicMessage] of cases) {
+    const nextAction = { type: 'select_reference_media', label };
+    const { deps, captures } = baseDependencies({
+      listPublicEngines: async () => [candidate],
+      resolveGenerationReferences: async () => {
+        throw new AgentApiError(code, privateMessage, true, nextAction);
+      },
+    });
+    await assert.rejects(prepareGeneration(input, principal, deps), (error: unknown) => {
+      assert.ok(error instanceof AgentApiError);
+      assert.equal(error.code, code);
+      assert.equal(error.message, publicMessage);
+      assert.equal(error.retryable, true);
+      assert.deepEqual(error.nextAction, nextAction);
+      assert.doesNotMatch(error.message, /image/iu);
+      return true;
+    });
+    assert.equal(captures.events.includes('pricing'), false, label);
+  }
+});
+
 test('surface validation rejects semantically mistyped canonical settings before pricing', async () => {
   for (const settings of [
     { ...videoInput.settings, cameraFixed: 'yes' },
@@ -877,6 +915,46 @@ test('prepare pricing uses the real Seedance video-input tier for source-video m
     const meta = pricing.pricingSnapshot.meta as Record<string, unknown>;
     assert.equal(meta.byteplus_billing_input_type, 'video_input');
   }
+});
+
+test('prepare pricing classifies canonical ref2v video references without trusting asset input', async () => {
+  const candidate = registryCapability('seedance-2-5');
+  const request: PrepareGenerationInput = {
+    surface: 'video',
+    engineId: 'seedance-2-5',
+    mode: 'ref2v',
+    prompt: 'Follow the reference motion.',
+    settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9', audio: true },
+    references: [{ kind: 'asset', assetId: 'verified-video', role: 'reference' }],
+    outputCount: 1,
+  };
+  let billingInputType: unknown;
+  const { deps } = baseDependencies({
+    listPublicEngines: async () => [candidate],
+    resolveGenerationReferences: async () => [{
+      assetId: 'verified-video',
+      role: 'reference',
+      mediaKind: 'video',
+      storageUrl: 'https://assets.example.com/reference.mp4',
+      width: 1920,
+      height: 1080,
+      mimeType: 'video/mp4',
+    }],
+    priceGeneration: async (canonicalRequest, membershipTier, referenceContext) => {
+      const pricing = await priceCanonicalGeneration(
+        canonicalRequest,
+        membershipTier,
+        undefined,
+        referenceContext,
+      );
+      billingInputType = (pricing.pricingSnapshot.meta as Record<string, unknown>)
+        .byteplus_billing_input_type;
+      return pricing;
+    },
+  });
+
+  await prepareGeneration(request, principal, deps);
+  assert.equal(billingInputType, 'video_input');
 });
 
 test('canonical video pricing leaves source-derived i2v framing unset', async () => {

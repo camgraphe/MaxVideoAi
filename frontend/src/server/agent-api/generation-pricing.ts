@@ -15,6 +15,7 @@ import type { ImageGenerationMode, ImageGenerationRequest } from '@/types/image-
 
 import type { CanonicalGenerationRequest } from './generation-types';
 import type { AgentPublicGenerationEngine } from './model-catalog';
+import type { ResolvedReference } from './reference-types';
 import type { AuthoritativeMembershipTier } from '../membership/user-membership-status';
 
 export type GenerationPricingResult = {
@@ -34,9 +35,14 @@ export type GenerationPricingDependencies = {
 export type ExecutorGenerationPricingDependencies = {
   executor: TransactionQueryExecutor;
   candidate: AgentPublicGenerationEngine;
+  resolvedReferences?: readonly ResolvedReference[];
   /** Test-only seam; production always uses the canonical billing snapshot. */
   computeBillingSnapshot?: typeof computeCanonicalBillingSnapshot;
 };
+
+export type GenerationPricingReferenceContext = Readonly<{
+  resolvedReferences?: readonly ResolvedReference[];
+}>;
 
 const defaultDependencies: GenerationPricingDependencies = {
   computeVideoPreflight: computeConfiguredPreflight,
@@ -80,8 +86,21 @@ function pricingRecord(snapshot: PricingSnapshot): Record<string, unknown> {
   return snapshot as unknown as Record<string, unknown>;
 }
 
-function hasCanonicalVideoInput(request: CanonicalGenerationRequest): boolean {
-  return request.surface === 'video' && (request.mode === 'v2v' || request.mode === 'extend');
+function hasCanonicalVideoInput(
+  request: CanonicalGenerationRequest,
+  context: GenerationPricingReferenceContext,
+): boolean {
+  if (request.surface !== 'video') return false;
+  if (request.mode === 'v2v' || request.mode === 'extend') return true;
+  if (request.mode !== 'ref2v') return false;
+  return request.references.some((reference) => {
+    if (reference.role !== 'reference') return false;
+    if (reference.kind === 'https') return reference.mediaKind === 'video';
+    return context.resolvedReferences?.some((resolved) =>
+      resolved.assetId === reference.assetId
+      && resolved.role === reference.role
+      && resolved.mediaKind === 'video') === true;
+  });
 }
 
 function validatePricingResult(
@@ -110,6 +129,7 @@ export async function priceCanonicalGeneration(
   request: CanonicalGenerationRequest,
   membershipTier: AuthoritativeMembershipTier,
   dependencies: GenerationPricingDependencies = defaultDependencies,
+  referenceContext: GenerationPricingReferenceContext = {},
 ): Promise<GenerationPricingResult> {
   if (request.surface === 'video') {
     const settings = request.settings;
@@ -125,7 +145,7 @@ export async function priceCanonicalGeneration(
       fps: typeof settings.fps === 'number' ? settings.fps : 24,
       ...(typeof settings.loop === 'boolean' ? { loop: settings.loop } : {}),
       ...(typeof settings.audio === 'boolean' ? { audio: settings.audio } : {}),
-      hasVideoInput: hasCanonicalVideoInput(request),
+      hasVideoInput: hasCanonicalVideoInput(request, referenceContext),
       extraInputValues: { referenceImageCount: request.references.length },
       user: { memberTier: membershipTier },
     });
@@ -188,7 +208,7 @@ export async function priceCanonicalGenerationInExecutor(
       resolution,
       aspectRatio: optionalString(request.settings, 'aspectRatio'),
       mode: request.mode,
-      hasVideoInput: hasCanonicalVideoInput(request),
+      hasVideoInput: hasCanonicalVideoInput(request, dependencies),
       referenceImageCount: request.references.length,
       membershipTier,
       loop: isLumaRay2EngineId(engine.id) && request.settings.loop === true,

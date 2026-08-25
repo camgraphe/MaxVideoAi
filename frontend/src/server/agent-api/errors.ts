@@ -50,6 +50,25 @@ export class AgentApiError extends Error {
   }
 }
 
+const [,
+  REFERENCE_INVALID_CODE,
+  REFERENCE_NOT_FOUND_CODE,
+  REFERENCE_FORBIDDEN_CODE,
+] = REFERENCE_ERROR_CODES;
+
+const MEDIA_NEUTRAL_REFERENCE_MESSAGES: Partial<Record<AgentApiErrorCode, string>> = {
+  [REFERENCE_INVALID_CODE]: 'Reference media is not usable.',
+  [REFERENCE_NOT_FOUND_CODE]: 'Reference media not found.',
+  [REFERENCE_FORBIDDEN_CODE]: 'Reference media is not available.',
+};
+
+export function withMediaNeutralReferenceMessage(error: AgentApiError): AgentApiError {
+  const message = MEDIA_NEUTRAL_REFERENCE_MESSAGES[error.code];
+  return message
+    ? new AgentApiError(error.code, message, error.retryable, error.nextAction)
+    : error;
+}
+
 export function toAgentApiFailure(error: AgentApiError): AgentApiFailure {
   return {
     ok: false,
