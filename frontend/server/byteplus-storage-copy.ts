@@ -63,6 +63,18 @@ export function isBytePlusStorageCopyRetryDue(
   return nowMs >= nextRetryAtMs;
 }
 
+export function shouldApplyBytePlusProviderTimeout(params: {
+  createdAt: string;
+  settingsSnapshot: unknown;
+  nowMs?: number;
+  maxDurationMs: number;
+}): boolean {
+  const createdAtMs = Date.parse(params.createdAt);
+  if (!Number.isFinite(createdAtMs)) return false;
+  if ((params.nowMs ?? Date.now()) - createdAtMs <= params.maxDurationMs) return false;
+  return getBytePlusStorageCopyState(params.settingsSnapshot).attempts === 0;
+}
+
 export function shouldRetryBytePlusStorageCopy(params: {
   state: Pick<BytePlusStorageCopyState, 'attempts'>;
   createdAt: string;

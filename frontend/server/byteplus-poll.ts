@@ -32,6 +32,7 @@ import {
   getBytePlusStorageCopyState,
   isBytePlusStorageCopyRetryDue,
   resolveBytePlusStorageCopyMaxAttempts,
+  shouldApplyBytePlusProviderTimeout,
   shouldRetryBytePlusStorageCopy,
   type BytePlusStorageCopyState,
 } from './byteplus-storage-copy';
@@ -46,6 +47,7 @@ export {
   getBytePlusStorageCopyState,
   isBytePlusStorageCopyRetryDue,
   resolveBytePlusStorageCopyMaxAttempts,
+  shouldApplyBytePlusProviderTimeout,
   shouldRetryBytePlusStorageCopy,
 } from './byteplus-storage-copy';
 
@@ -110,8 +112,12 @@ export async function runBytePlusPoll() {
     if (Number.isFinite(updatedAtMs) && now - updatedAtMs < POLL_INITIAL_DELAY_MS) {
       continue;
     }
-    const createdAtMs = Date.parse(job.created_at);
-    if (Number.isFinite(createdAtMs) && now - createdAtMs > POLL_MAX_DURATION_MS) {
+    if (shouldApplyBytePlusProviderTimeout({
+      createdAt: job.created_at,
+      settingsSnapshot: job.settings_snapshot,
+      nowMs: now,
+      maxDurationMs: POLL_MAX_DURATION_MS,
+    })) {
       await markBytePlusJobFailed(
         job,
         'Render exceeded the expected processing window.',
