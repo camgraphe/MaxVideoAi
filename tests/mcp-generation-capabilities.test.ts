@@ -270,6 +270,60 @@ test('MiniMax H3 provider constraints receive references in their canonical medi
   }, minimax));
 });
 
+test('H3, image, and Seedance capabilities allow the same media in distinct authored roles', () => {
+  for (const [engineId, durationSec, resolution] of [
+    ['minimax-h3', 5, '2K'],
+    ['seedance-2-5', 4, '480p'],
+  ] as const) {
+    const candidate = registryCapability(engineId);
+    const url = `https://cdn.example.com/${engineId}-shared-frame.png`;
+    assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(request({
+      engineId,
+      mode: 'i2v',
+      settings: { durationSec, resolution },
+      references: [
+        { kind: 'https', url, role: 'first_frame', mediaKind: 'image' },
+        { kind: 'https', url, role: 'last_frame', mediaKind: 'image' },
+      ],
+    }), candidate));
+  }
+
+  const imageFields: EngineInputField[] = [
+    { id: 'prompt', type: 'text', label: 'Prompt' },
+    { id: 'resolution', type: 'enum', label: 'Size', values: ['1k'] },
+    { id: 'aspect_ratio', type: 'enum', label: 'Ratio', values: ['1:1'] },
+    { id: 'image_urls', type: 'image', label: 'Images', modes: ['i2i'], requiredInModes: ['i2i'], minCount: 1, maxCount: 2 },
+  ];
+  const imageCandidate = capability({
+    surface: 'image',
+    publicModes: ['i2i'],
+    engine: engine({
+      id: 'image-engine',
+      modes: ['i2i'],
+      maxDurationSec: 0,
+      resolutions: ['1k'],
+      aspectRatios: ['1:1'],
+      fps: [1],
+      audio: false,
+      inputSchema: { required: [imageFields[0]], optional: imageFields.slice(1) },
+    }),
+    modeCaps: { i2i: { modes: ['i2i'], resolution: ['1k'], aspectRatio: ['1:1'] } },
+  });
+  assert.doesNotThrow(() => validateCanonicalGenerationCapabilities({
+    schemaVersion: 1,
+    surface: 'image',
+    engineId: 'image-engine',
+    mode: 'i2i',
+    prompt: 'Use the shared image twice intentionally.',
+    settings: { resolution: '1k', aspectRatio: '1:1' },
+    references: [
+      { kind: 'asset', assetId: 'shared-image', role: 'source' },
+      { kind: 'asset', assetId: 'shared-image', role: 'reference' },
+    ],
+    outputCount: 1,
+  }, imageCandidate));
+});
+
 test('video reference validation enforces the registry-owned aggregate budget', () => {
   const candidate = capability({
     engine: engine({

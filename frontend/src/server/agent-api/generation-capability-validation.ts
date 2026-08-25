@@ -346,7 +346,9 @@ function resolvedMediaKind(
   if (reference.kind === 'https') return reference.mediaKind;
   if (!options.resolvedReferences) return null;
   const resolved = options.resolvedReferences.find((candidate) =>
-    candidate.assetId === reference.assetId && candidate.role === reference.role);
+    candidate.assetId === reference.assetId
+    && candidate.role === reference.role
+    && candidate.slot === reference.slot);
   if (!resolved) fail('references', 'reference_invalid');
   return resolved.mediaKind;
 }
@@ -390,22 +392,17 @@ function validateReferences(
       fail('references', request.references.length < constraints.min ? 'reference_required' : 'reference_invalid');
     }
   }
-  const sourceIdentities = new Set<string>();
-  for (const reference of request.references) {
-    const identity = referenceSourceIdentity(reference);
-    if (sourceIdentities.has(identity)) fail('references', 'reference_invalid');
-    sourceIdentities.add(identity);
-  }
   if (options.resolvedReferences) {
     const resolvedKeys = new Set<string>();
     for (const resolved of options.resolvedReferences) {
-      const key = `${resolved.assetId}\u0000${resolved.role}`;
+      const key = `${resolved.assetId}\u0000${resolved.role}\u0000${resolved.slot ?? ''}`;
       if (resolvedKeys.has(key)) fail('references', 'reference_invalid');
       resolvedKeys.add(key);
       const matchingReferences = request.references.filter((reference) =>
         reference.kind === 'asset'
         && reference.assetId === resolved.assetId
-        && reference.role === resolved.role);
+        && reference.role === resolved.role
+        && reference.slot === resolved.slot);
       if (matchingReferences.length !== 1) fail('references', 'reference_invalid');
     }
   }

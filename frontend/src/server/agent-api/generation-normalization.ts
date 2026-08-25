@@ -9,13 +9,17 @@ import type {
   CanonicalGenerationSettingValue,
   CanonicalGenerationSurface,
 } from './generation-types';
+import {
+  MAX_CONTROLLED_REFERENCE_URL_CHARS,
+  normalizeControlledHttpsReferenceUrl,
+} from './controlled-reference-url';
 
 export const MAX_CANONICAL_PROMPT_CHARS = 12_000;
 export const MAX_CANONICAL_SETTING_COUNT = 64;
 export const MAX_CANONICAL_SETTING_STRING_CHARS = 4_096;
 export const MAX_CANONICAL_SETTINGS_JSON_BYTES = 16_384;
 export const MAX_CANONICAL_REFERENCES = 16;
-export const MAX_CANONICAL_REFERENCE_URL_CHARS = 4_096;
+export const MAX_CANONICAL_REFERENCE_URL_CHARS = MAX_CONTROLLED_REFERENCE_URL_CHARS;
 
 const MAX_ENGINE_ID_CHARS = 128;
 const MAX_ASSET_ID_CHARS = 256;
@@ -50,10 +54,11 @@ const TOP_LEVEL_FIELDS = new Set([
 ]);
 const ASSET_REFERENCE_FIELDS = new Set(['kind', 'assetId', 'role']);
 const HTTPS_REFERENCE_FIELDS = new Set(['kind', 'url', 'role', 'mediaKind']);
+const ORDERED_ASSET_REFERENCE_FIELDS = new Set([...ASSET_REFERENCE_FIELDS, 'slot']);
+const ORDERED_HTTPS_REFERENCE_FIELDS = new Set([...HTTPS_REFERENCE_FIELDS, 'slot']);
 const SAFE_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]*$/;
 const SAFE_SETTING_KEY_PATTERN = /^[A-Za-z][A-Za-z0-9._-]*$/;
 const UNSAFE_CONTROL_CHARACTER_PATTERN = /[\u0000-\u001f\u007f-\u009f]/u;
-const EMBEDDED_WHITESPACE_PATTERN = /\s/u;
 const VIDEO_SETTING_KEYS = new Set([
   'aspectRatio',
   'audio',
@@ -305,43 +310,36 @@ function normalizeAssetId(value: unknown, index: number): string {
 function normalizeHttpsUrl(value: unknown, index: number): string {
   const field = `references[${index}].url`;
   const rawUrl = normalizeText(value, field, MAX_CANONICAL_REFERENCE_URL_CHARS, false);
-  if (EMBEDDED_WHITESPACE_PATTERN.test(rawUrl)) {
-    fail(field, 'reference URL must not contain whitespace.');
-  }
-
-  let parsed: URL;
   try {
-    parsed = new URL(rawUrl);
+    return normalizeControlledHttpsReferenceUrl(rawUrl);
   } catch {
-    fail(field, 'reference URL must be a valid HTTPS URL.');
+    fail(field, 'reference URL must use the controlled HTTPS format.');
   }
-  if (
-    parsed.protocol !== 'https:' ||
-    !parsed.hostname ||
-    parsed.username.length > 0 ||
-    parsed.password.length > 0 ||
-    parsed.hash.length > 0
-  ) {
-    fail(field, 'reference URL must use HTTPS without credentials or a fragment.');
-  }
-  const canonicalUrl = parsed.toString();
-  if (canonicalUrl.length > MAX_CANONICAL_REFERENCE_URL_CHARS) {
-    fail(field, 'reference URL exceeds the canonical size limit.');
-  }
-  return canonicalUrl;
 }
 
-function normalizeReference(value: unknown, index: number): CanonicalGenerationReference {
+function normalizeReference(
+  value: unknown,
+  index: number,
+  orderedSourceMode: boolean,
+): CanonicalGenerationReference {
   const field = `references[${index}]`;
   assertPlainDataObject(value, field);
   const kind = normalizeToken(value.kind, `${field}.kind`);
   const role = normalizeReferenceRole(value.role, index);
   if (kind === 'asset') {
-    assertExactFields(value, ASSET_REFERENCE_FIELDS, field);
+    assertExactFields(
+      value,
+      orderedSourceMode && role === 'source' ? ORDERED_ASSET_REFERENCE_FIELDS : ASSET_REFERENCE_FIELDS,
+      field,
+    );
     return { kind, assetId: normalizeAssetId(value.assetId, index), role };
   }
   if (kind === 'https') {
-    assertExactFields(value, HTTPS_REFERENCE_FIELDS, field);
+    assertExactFields(
+      value,
+      orderedSourceMode && role === 'source' ? ORDERED_HTTPS_REFERENCE_FIELDS : HTTPS_REFERENCE_FIELDS,
+      field,
+    );
     return {
       kind,
       url: normalizeHttpsUrl(value.url, index),
@@ -355,7 +353,7 @@ function normalizeReference(value: unknown, index: number): CanonicalGenerationR
 function referenceIdentity(reference: CanonicalGenerationReference): string {
   const source = reference.kind === 'asset' ? reference.assetId : reference.url;
   const mediaKind = reference.kind === 'https' ? reference.mediaKind : '';
-  return `${reference.role}\u0000${reference.kind}\u0000${mediaKind}\u0000${source}`;
+  return `${reference.role}\u0000${reference.kind}\u0000${mediaKind}\u0000${source}\u0000${reference.slot ?? ''}`;
 }
 
 function compareCodeUnits(left: string, right: string): number {
@@ -366,13 +364,30 @@ function compareCodeUnits(left: string, right: string): number {
 
 function compareReferences(left: CanonicalGenerationReference, right: CanonicalGenerationReference): number {
   const roleDifference = ROLE_ORDER[left.role] - ROLE_ORDER[right.role];
+  if (!roleDifference && left.slot !== undefined && right.slot !== undefined) {
+    return left.slot - right.slot;
+  }
   return roleDifference || compareCodeUnits(referenceIdentity(left), referenceIdentity(right));
 }
 
-function normalizeReferences(value: unknown): CanonicalGenerationReference[] {
+function normalizeReferences(
+  value: unknown,
+  mode: CanonicalGenerationMode,
+): CanonicalGenerationReference[] {
   if (value === undefined) return [];
   assertDenseDataArray(value, 'references', MAX_CANONICAL_REFERENCES);
-  const references = value.map((reference, index) => normalizeReference(reference, index)).sort(compareReferences);
+  let nextSourceSlot = 0;
+  const references = value.map((reference, index) => {
+    const normalized = normalizeReference(reference, index, mode === 'extend');
+    if (mode !== 'extend' || normalized.role !== 'source') return normalized;
+    const slot = nextSourceSlot;
+    nextSourceSlot += 1;
+    const authoredSlot = (reference as Record<string, unknown>).slot;
+    if (authoredSlot !== undefined && authoredSlot !== slot) {
+      fail(`references[${index}].slot`, 'ordered reference slot does not match caller order.');
+    }
+    return { ...normalized, slot };
+  }).sort(compareReferences);
   const identities = new Set<string>();
   for (const reference of references) {
     const identity = referenceIdentity(reference);
@@ -417,7 +432,7 @@ export function normalizeGenerationRequest(input: unknown): CanonicalGenerationR
     mode,
     prompt: normalizeText(input.prompt, 'prompt', MAX_CANONICAL_PROMPT_CHARS, false),
     settings: normalizeSettings(input.settings, mode),
-    references: normalizeReferences(input.references),
+    references: normalizeReferences(input.references, mode),
     outputCount: normalizeOutputCount(input.outputCount),
   };
 }

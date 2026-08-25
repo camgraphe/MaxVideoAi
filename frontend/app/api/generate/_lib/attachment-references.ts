@@ -159,11 +159,11 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
   const normalizedReferenceImages = Array.from(
     new Set([...normalizeStringList(referenceImagesInput), ...attachmentReferenceImageUrls])
   );
-  const videoUrls = uniqueNonEmpty(
-    params.attachments
-      .filter((attachment) => attachment.kind === 'video' && typeof attachment.url === 'string')
-      .map((attachment) => attachment.url!.trim())
-  );
+  const rawVideoUrls = params.attachments
+    .filter((attachment) => attachment.kind === 'video' && typeof attachment.url === 'string')
+    .map((attachment) => attachment.url!.trim())
+    .filter((url) => url.length > 0);
+  const videoUrls = params.mode === 'extend' ? rawVideoUrls : uniqueNonEmpty(rawVideoUrls);
   const audioUrls = uniqueNonEmpty(
     params.attachments
       .filter((attachment) => attachment.kind === 'audio' && typeof attachment.url === 'string')

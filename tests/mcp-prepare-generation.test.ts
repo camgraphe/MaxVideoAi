@@ -442,6 +442,31 @@ test('canonical, public-engine, mode, surface, and reference validation fail clo
   assert.equal(forbiddenReference.captures.events.includes('pricing'), false);
 });
 
+test('prepare rejects non-default HTTPS reference ports before catalog, pricing, quote, or reservation work', async () => {
+  const invalidUrl = baseDependencies({
+    listPublicEngines: async () => [registryCapability('seedance-2-5')],
+  });
+  await expectAgentError(prepareGeneration({
+    surface: 'video',
+    engineId: 'seedance-2-5',
+    mode: 'i2v',
+    prompt: 'Animate this controlled source.',
+    settings: { durationSec: 4, resolution: '480p', audio: true },
+    references: [{
+      kind: 'https',
+      url: 'https://host:8443/source',
+      role: 'source',
+      mediaKind: 'image',
+    }],
+    outputCount: 1,
+  }, principal, invalidUrl.deps), 'PARAMETER_INVALID');
+
+  assert.deepEqual(invalidUrl.captures.events, ['feature', 'restriction']);
+  assert.equal(invalidUrl.captures.inserted.length, 0);
+  assert.equal(invalidUrl.captures.priced.length, 0);
+  assert.equal(invalidUrl.captures.spendingExecutors.length, 0);
+});
+
 test('prepare rejects a DB-verified image asset in a source-video slot with neutral wording', async () => {
   const candidate = registryCapability('seedance-2-5');
   const input: PrepareGenerationInput = {

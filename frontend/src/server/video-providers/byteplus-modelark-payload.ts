@@ -50,14 +50,14 @@ const BYTEPLUS_PRIMARY_IMAGE_FIELD_IDS = [
   'image',
 ] as const;
 
+function nonEmptyUrls(values: Array<string | null | undefined> | undefined): string[] {
+  return (values ?? [])
+    .map((value) => (typeof value === 'string' ? value.trim() : ''))
+    .filter(Boolean);
+}
+
 function uniqueNonEmptyUrls(values: Array<string | null | undefined> | undefined): string[] {
-  return Array.from(
-    new Set(
-      (values ?? [])
-        .map((value) => (typeof value === 'string' ? value.trim() : ''))
-        .filter(Boolean)
-    )
-  );
+  return Array.from(new Set(nonEmptyUrls(values)));
 }
 
 export function buildBytePlusSeedancePayload(params: {
@@ -115,7 +115,9 @@ export function buildBytePlusSeedancePayload(params: {
     kind: ReferenceBudgetMediaItem['kind'],
     requestedUrls: string[] | undefined
   ) => {
-    const requested = uniqueNonEmptyUrls(requestedUrls);
+    const requested = mode === 'extend' && kind === 'video'
+      ? nonEmptyUrls(requestedUrls)
+      : uniqueNonEmptyUrls(requestedUrls);
     if (!referenceMediaItems) return requested;
     const typedByUrl = new Map(
       referenceMediaItems
@@ -137,9 +139,10 @@ export function buildBytePlusSeedancePayload(params: {
   const referenceImageUrls = uniqueNonEmptyUrls(
     resolveTypedPayloadUrls('image', params.referenceImageUrls)
   );
-  const referenceVideoUrls = uniqueNonEmptyUrls(
-    resolveTypedPayloadUrls('video', params.referenceVideoUrls)
-  );
+  const resolvedReferenceVideoUrls = resolveTypedPayloadUrls('video', params.referenceVideoUrls);
+  const referenceVideoUrls = mode === 'extend'
+    ? resolvedReferenceVideoUrls
+    : uniqueNonEmptyUrls(resolvedReferenceVideoUrls);
   const referenceAudioUrls = uniqueNonEmptyUrls(
     resolveTypedPayloadUrls('audio', params.referenceAudioUrls)
   );

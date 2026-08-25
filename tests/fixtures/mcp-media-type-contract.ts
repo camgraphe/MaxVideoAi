@@ -81,6 +81,7 @@ type ExpectedReferenceMediaKind = 'image' | 'video' | 'audio';
 type ExpectedResolvedReference = {
   assetId: string;
   role: ExpectedReferenceRole;
+  slot?: number;
   mediaKind: ExpectedReferenceMediaKind;
   storageUrl: string;
   width: number | null;
@@ -91,6 +92,7 @@ type ExpectedResolvedReference = {
 type ExpectedResolvedReferenceKeys =
   | 'assetId'
   | 'role'
+  | 'slot'
   | 'mediaKind'
   | 'storageUrl'
   | 'width'

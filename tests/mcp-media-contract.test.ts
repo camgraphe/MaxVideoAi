@@ -24,7 +24,7 @@ function typeBody(moduleSource: string, typeName: string): string {
 }
 
 function fieldNames(body: string): string[] {
-  return Array.from(body.matchAll(/^\s*([A-Za-z][A-Za-z0-9]*):/gmu), (match) => match[1]!);
+  return Array.from(body.matchAll(/^\s*([A-Za-z][A-Za-z0-9]*)\??:/gmu), (match) => match[1]!);
 }
 
 test('R1 owns separate public media and internal reference type modules', () => {
@@ -78,6 +78,7 @@ test('ResolvedReference is an internal storage DTO using the canonical role owne
   assert.deepEqual(fieldNames(body), [
     'assetId',
     'role',
+    'slot',
     'mediaKind',
     'storageUrl',
     'width',
@@ -90,6 +91,7 @@ test('ResolvedReference is an internal storage DTO using the canonical role owne
   );
   assert.match(body, /assetId:\s*string;/u);
   assert.match(body, /role:\s*CanonicalGenerationReferenceRole;/u);
+  assert.match(body, /slot\?:\s*number;/u);
   assert.match(body, /mediaKind:\s*CanonicalReferenceMediaKind;/u);
   assert.match(body, /storageUrl:\s*string;/u);
   assert.match(body, /width:\s*number\s*\|\s*null;/u);

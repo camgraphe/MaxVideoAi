@@ -691,7 +691,7 @@ test('confirmation preserves resolver error details but neutralizes extend asset
   }
 });
 
-test('duplicate canonical media fails before pricing, wallet reservation, or provider submission', async () => {
+test('Seedance accepts one frame URL in distinct first and last roles through reservation and submission', async () => {
   const candidateEntry = listFalEngines().find((entry) => entry.id === 'seedance-2-5');
   assert.ok(candidateEntry);
   const candidate: AgentPublicGenerationEngine = {
@@ -706,7 +706,7 @@ test('duplicate canonical media fails before pricing, wallet reservation, or pro
     surface: 'video',
     engineId: 'seedance-2-5',
     mode: 'i2v',
-    prompt: 'Animate one canonical frame without duplicating it.',
+    prompt: 'Animate one intentionally repeated frame.',
     settings: { durationSec: 4, resolution: '480p', audio: true },
     references: [
       { kind: 'https', url: duplicateUrl, role: 'first_frame', mediaKind: 'image' },
@@ -715,20 +715,26 @@ test('duplicate canonical media fails before pricing, wallet reservation, or pro
     outputCount: 1,
   };
   const catalogRevision = computeGenerationCatalogRevision([candidate]);
-  const stored = quoteFor(request, { catalogRevision });
+  const baseStored = quoteFor(request, { catalogRevision });
+  const stored = {
+    ...baseStored,
+    pricingSnapshot: { ...baseStored.pricingSnapshot, catalogRevision },
+  };
   const { dependencies, captures } = baseDependencies(request, {
     lockOwnedQuote: async () => ({ quote: stored, databaseNow: NOW }),
     listPublicEngines: async () => [candidate],
   });
 
-  await expectAgentError(
-    confirmGeneration({ quoteId: QUOTE_ID, confirmed: true }, principal, dependencies),
-    'QUOTE_EXPIRED',
+  const result = await confirmGeneration(
+    { quoteId: QUOTE_ID, confirmed: true },
+    principal,
+    dependencies,
   );
-  assert.equal(captures.events.includes('pricing'), false);
-  assert.equal(captures.events.includes('spending'), false);
-  assert.equal(captures.events.includes('reserve_video'), false);
-  assert.equal(captures.providerCalls, 0);
+  assert.deepEqual(result, safeStatus(request));
+  assert.equal(captures.events.includes('pricing'), true);
+  assert.equal(captures.events.includes('spending'), true);
+  assert.equal(captures.events.includes('reserve_video'), true);
+  assert.equal(captures.providerCalls, 1);
 });
 
 test('Seedance ref2v audio-only input fails before pricing, wallet reservation, or provider submission', async () => {

@@ -103,6 +103,28 @@ test('sorts references deterministically within an explicit semantic role order'
   assert.deepEqual(first, second);
 });
 
+test('preserves ordered extend source slots in canonical serialization and hashing', () => {
+  const firstUrl = 'https://cdn.example.com/z-first.mp4';
+  const secondUrl = 'https://cdn.example.com/a-second.mp4';
+  const extend = (urls: string[]) => normalizeGenerationRequest(request({
+    engineId: 'seedance-2-5',
+    mode: 'extend',
+    references: urls.map((url) => ({ kind: 'https', url, role: 'source', mediaKind: 'video' })),
+  }));
+  const forward = extend([firstUrl, secondUrl]);
+  const reverse = extend([secondUrl, firstUrl]);
+
+  assert.deepEqual(forward.references, [
+    { kind: 'https', url: firstUrl, role: 'source', mediaKind: 'video', slot: 0 },
+    { kind: 'https', url: secondUrl, role: 'source', mediaKind: 'video', slot: 1 },
+  ]);
+  assert.notEqual(serializeCanonicalGenerationRequest(forward), serializeCanonicalGenerationRequest(reverse));
+  assert.notEqual(hashCanonicalGenerationRequest(forward), hashCanonicalGenerationRequest(reverse));
+
+  const duplicateSlots = extend([firstUrl, firstUrl]);
+  assert.deepEqual(duplicateSlots.references.map((reference) => reference.slot), [0, 1]);
+});
+
 test('serializes every object level with stable keys and hashes schema version plus canonical JSON', () => {
   const canonical = normalizeGenerationRequest(
     request({
@@ -498,6 +520,7 @@ test('validates asset identifiers and HTTPS references without credentials or fr
     { kind: 'https', url: 'http://cdn.example.com/image.png', role: 'reference', mediaKind: 'image' },
     { kind: 'https', url: 'https://user:secret@cdn.example.com/image.png', role: 'reference', mediaKind: 'image' },
     { kind: 'https', url: 'https://cdn.example.com/image.png#private', role: 'reference', mediaKind: 'image' },
+    { kind: 'https', url: 'https://cdn.example.com:8443/image.png', role: 'reference', mediaKind: 'image' },
     { kind: 'audio', url: 'https://cdn.example.com/audio.wav', role: 'reference' },
     { kind: 'https', url: 'https://cdn.example.com/image.png', role: 'audio', mediaKind: 'image' },
     { kind: 'https', url: 'https://cdn.example.com/image.png', role: 'reference' },
@@ -506,6 +529,22 @@ test('validates asset identifiers and HTTPS references without credentials or fr
   ]) {
     assert.throws(() => normalizeGenerationRequest(request({ references: [reference] })), /reference|asset|https|role/i);
   }
+});
+
+test('keeps the same media in distinct semantic roles as distinct canonical identities', () => {
+  const url = 'https://cdn.example.com/shared-frame.png';
+  const canonical = normalizeGenerationRequest(request({
+    mode: 'i2v',
+    references: [
+      { kind: 'https', url, role: 'first_frame', mediaKind: 'image' },
+      { kind: 'https', url, role: 'last_frame', mediaKind: 'image' },
+    ],
+  }));
+
+  assert.equal(canonical.references.length, 2);
+  assert.notDeepEqual(canonical.references[0], canonical.references[1]);
+  assert.match(serializeCanonicalGenerationRequest(canonical), /first_frame/u);
+  assert.match(serializeCanonicalGenerationRequest(canonical), /last_frame/u);
 });
 
 test('includes declared HTTPS media kind in canonical identity, serialization, and hashing', () => {

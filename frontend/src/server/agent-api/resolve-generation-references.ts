@@ -26,7 +26,7 @@ export async function resolveGenerationReferences(
   for (const reference of request.references) {
     if (reference.kind !== 'asset') continue;
     const asset = await dependencies.resolveOwnedReferenceAsset(principal, reference.assetId);
-    resolved.push({ ...asset, role: reference.role });
+    resolved.push({ ...asset, role: reference.role, ...(reference.slot === undefined ? {} : { slot: reference.slot }) });
   }
   return resolved;
 }

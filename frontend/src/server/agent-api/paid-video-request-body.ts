@@ -6,6 +6,7 @@ import type {
   CanonicalReferenceMediaKind,
 } from './generation-types';
 import type { ResolvedReference } from './reference-types';
+import { normalizeControlledHttpsReferenceUrl } from './controlled-reference-url';
 
 export type PaidVideoRequestBodyExecution = {
   quoteId: string;
@@ -19,29 +20,15 @@ type MaterializedReference = {
   kind: CanonicalReferenceMediaKind;
   role: CanonicalGenerationReference['role'];
   url: string;
+  slot?: number;
 };
 
 function controlledHttpsUrl(value: unknown): string {
-  if (typeof value !== 'string' || !value || value.length > 4_096) {
-    throw new Error('A controlled HTTPS reference URL is required before provider submission.');
-  }
-  let parsed: URL;
   try {
-    parsed = new URL(value);
+    return normalizeControlledHttpsReferenceUrl(value);
   } catch {
     throw new Error('A controlled HTTPS reference URL is required before provider submission.');
   }
-  if (
-    parsed.protocol !== 'https:'
-    || !parsed.hostname
-    || parsed.username.length > 0
-    || parsed.password.length > 0
-    || parsed.hash.length > 0
-    || (parsed.port.length > 0 && parsed.port !== '443')
-  ) {
-    throw new Error('A controlled HTTPS reference URL is required before provider submission.');
-  }
-  return parsed.toString();
 }
 
 function canonicalMediaKind(value: unknown): CanonicalReferenceMediaKind {
@@ -51,14 +38,18 @@ function canonicalMediaKind(value: unknown): CanonicalReferenceMediaKind {
   return value;
 }
 
-function resolvedKey(assetId: string, role: CanonicalGenerationReference['role']): string {
-  return `${assetId}\u0000${role}`;
+function resolvedKey(
+  assetId: string,
+  role: CanonicalGenerationReference['role'],
+  slot: number | undefined,
+): string {
+  return `${assetId}\u0000${role}\u0000${slot ?? ''}`;
 }
 
 function materializeReferences(execution: PaidVideoRequestBodyExecution): MaterializedReference[] {
   const resolvedByKey = new Map<string, ResolvedReference>();
   for (const resolved of execution.resolvedReferences ?? []) {
-    const key = resolvedKey(resolved.assetId, resolved.role);
+    const key = resolvedKey(resolved.assetId, resolved.role, resolved.slot);
     if (resolvedByKey.has(key)) {
       throw new Error('Each private reference must resolve exactly once before provider submission.');
     }
@@ -72,9 +63,10 @@ function materializeReferences(execution: PaidVideoRequestBodyExecution): Materi
         kind: canonicalMediaKind(reference.mediaKind),
         role: reference.role,
         url: controlledHttpsUrl(reference.url),
+        ...(reference.slot === undefined ? {} : { slot: reference.slot }),
       };
     }
-    const key = resolvedKey(reference.assetId, reference.role);
+    const key = resolvedKey(reference.assetId, reference.role, reference.slot);
     const resolved = resolvedByKey.get(key);
     if (!resolved) {
       throw new Error('A verified resolved reference is required before provider submission.');
@@ -84,6 +76,7 @@ function materializeReferences(execution: PaidVideoRequestBodyExecution): Materi
       kind: canonicalMediaKind(resolved.mediaKind),
       role: reference.role,
       url: controlledHttpsUrl(resolved.storageUrl),
+      ...(reference.slot === undefined ? {} : { slot: reference.slot }),
     };
   });
 

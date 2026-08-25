@@ -27,12 +27,14 @@ export type CanonicalGenerationReference =
       kind: 'asset';
       assetId: string;
       role: CanonicalGenerationReferenceRole;
+      slot?: number;
     }
   | {
       kind: 'https';
       url: string;
       role: CanonicalGenerationReferenceRole;
       mediaKind: CanonicalReferenceMediaKind;
+      slot?: number;
     };
 
 export type GenerationFundingMode = 'wallet' | 'trial';
