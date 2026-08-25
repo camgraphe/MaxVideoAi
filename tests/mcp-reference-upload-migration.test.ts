@@ -5,6 +5,7 @@ import test from 'node:test';
 const migrationPath = 'neon/migrations/32_mcp_reference_uploads.sql';
 const mediaKindMigrationPath = 'neon/migrations/34_mcp_reference_upload_media_kind.sql';
 const hardeningMigrationPath = 'neon/migrations/35_mcp_reference_upload_hardening.sql';
+const replaySafetyMigrationPath = 'neon/migrations/36_mcp_reference_upload_replay_safety.sql';
 
 test('migration 32 owns short-lived single-use reference upload sessions', () => {
   assert.equal(existsSync(migrationPath), true, `${migrationPath} should exist`);
@@ -67,5 +68,22 @@ test('upload hardening migration adds opaque public IDs and durable session-boun
   assert.match(source, /staged_asset_id\s+TEXT/i);
   assert.match(source, /FOREIGN KEY\s*\(session_id,\s*user_id,\s*media_kind\)/i);
   assert.match(source, /mcp_reference_upload_attempts identity is immutable/i);
+  assert.doesNotMatch(source, /supabase/i);
+});
+
+test('replay safety migration adds immutable parts and versioned completion lease state', () => {
+  assert.equal(existsSync(replaySafetyMigrationPath), true, `${replaySafetyMigrationPath} should exist`);
+  const source = readFileSync(replaySafetyMigrationPath, 'utf8');
+  assert.match(source, /ALTER TABLE\s+mcp_reference_upload_attempts/i);
+  assert.match(source, /state\s+TEXT[\s\S]*pending[\s\S]*processing[\s\S]*staged[\s\S]*completed[\s\S]*aborted/i);
+  assert.match(source, /lease_id\s+UUID/i);
+  assert.match(source, /lease_expires_at\s+TIMESTAMPTZ/i);
+  assert.match(source, /version\s+(?:BIG)?INT/i);
+  assert.match(source, /file_sha256\s+TEXT/i);
+  assert.match(source, /total_parts\s+INTEGER/i);
+  assert.match(source, /CREATE TABLE IF NOT EXISTS\s+mcp_reference_upload_parts/i);
+  assert.match(source, /part_number\s+INTEGER/i);
+  assert.match(source, /content_sha256\s+TEXT/i);
+  assert.match(source, /UNIQUE\s*\(upload_id,\s*part_number\)/i);
   assert.doesNotMatch(source, /supabase/i);
 });

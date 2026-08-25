@@ -18,6 +18,8 @@ import {
   createStoreAudioUploadService,
   createStoreVideoUploadService,
 } from '../frontend/src/server/uploads/store-media-upload';
+import { resolveProbedMediaMetadata } from '../frontend/server/media/detect-has-audio';
+import { resolveSupportedReferenceMedia } from '../frontend/src/server/agent-api/reference-media-policy';
 
 const principal: AgentPrincipal = {
   userId: 'user-a',
@@ -497,6 +499,26 @@ test('server metadata rejects audio-only bytes mislabeled as a video before pers
     (error: unknown) => error instanceof MediaUploadError && error.code === 'METADATA_UNVERIFIED',
   );
   assert.equal(uploadCalls, 0);
+});
+
+test('primary stream probing ignores attached cover art and keeps broad workspace containers out of strict MCP eligibility', () => {
+  assert.deepEqual(resolveProbedMediaMetadata({
+    streams: [
+      { codec_type: 'video', disposition: { attached_pic: 1 } },
+      { codec_type: 'audio', duration: '3' },
+    ],
+    format: { format_name: 'mp3', duration: '3' },
+  }), { kind: 'audio', canonicalMime: 'audio/mpeg', durationSec: 3 });
+  assert.deepEqual(resolveProbedMediaMetadata({
+    streams: [{ codec_type: 'video', duration: '2' }],
+    format: { format_name: 'matroska,webm', duration: '2' },
+  }), { kind: 'video', canonicalMime: 'video/webm', durationSec: 2 });
+  assert.deepEqual(resolveProbedMediaMetadata({
+    streams: [{ codec_type: 'audio', duration: '2' }],
+    format: { format_name: 'ogg', duration: '2' },
+  }), { kind: 'audio', canonicalMime: 'audio/ogg', durationSec: 2 });
+  assert.equal(resolveSupportedReferenceMedia('video', 'video/webm'), null);
+  assert.equal(resolveSupportedReferenceMedia('audio', 'audio/ogg'), null);
 });
 
 test('browser handoff rejects cross-origin, oversized, expired, and replayed requests before storage', async () => {

@@ -34,28 +34,44 @@ export function ReferenceUploadClient({
     if (!file || submitting || assetId) return;
     setSubmitting(true);
     setError(null);
+    let activeUploadId: string | null = null;
     try {
+      const fileSha256 = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', await file.arrayBuffer())))
+        .map((byte) => byte.toString(16).padStart(2, '0')).join('');
       const startResponse = await fetch(`/api/mcp/reference-upload/${encodeURIComponent(token)}/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileName: file.name, declaredMime: file.type, sizeBytes: file.size }),
+        body: JSON.stringify({ fileName: file.name, declaredMime: file.type, sizeBytes: file.size, fileSha256 }),
         credentials: 'same-origin',
       });
       const start = await startResponse.json() as {
-        ok?: boolean; uploadId?: string; uploadUrl?: string; headers?: Record<string, string>; error?: string;
+        ok?: boolean; uploadId?: string; chunkBytes?: number; totalParts?: number; error?: string;
       };
-      if (!startResponse.ok || start.ok !== true || !start.uploadId || !start.uploadUrl || !start.headers) {
+      if (!startResponse.ok || start.ok !== true || !start.uploadId || !start.chunkBytes || !start.totalParts) {
         if (start.error === 'FILE_TOO_LARGE') throw new Error(`This ${mediaLabel} is larger than ${maxMB} MB.`);
         if (start.error === 'UPLOAD_EXPIRED') throw new Error('This upload link has expired. Ask your assistant for a new one.');
         if (start.error === 'UPLOAD_ALREADY_USED') throw new Error('This upload link has already been used.');
         throw new Error(`The ${mediaLabel} could not be uploaded. Please try again.`);
       }
-      const putResponse = await fetch(start.uploadUrl, {
-        method: 'PUT',
-        headers: start.headers,
-        body: file,
-      });
-      if (!putResponse.ok) throw new Error(`The ${mediaLabel} could not be uploaded. Please try again.`);
+      activeUploadId = start.uploadId;
+      for (let partNumber = 1; partNumber <= start.totalParts; partNumber += 1) {
+        const chunk = file.slice((partNumber - 1) * start.chunkBytes, Math.min(partNumber * start.chunkBytes, file.size));
+        const chunkBuffer = await chunk.arrayBuffer();
+        const chunkSha256 = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', chunkBuffer)))
+          .map((byte) => byte.toString(16).padStart(2, '0')).join('');
+        const partResponse = await fetch(`/api/mcp/reference-upload/${encodeURIComponent(token)}/part`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/octet-stream',
+            'x-upload-id': start.uploadId,
+            'x-part-number': String(partNumber),
+            'x-content-sha256': chunkSha256,
+          },
+          body: chunkBuffer,
+          credentials: 'same-origin',
+        });
+        if (!partResponse.ok) throw new Error(`The ${mediaLabel} could not be uploaded. Please try again.`);
+      }
       const response = await fetch(`/api/mcp/reference-upload/${encodeURIComponent(token)}/complete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -73,7 +89,14 @@ export function ReferenceUploadClient({
         throw new Error(`The ${mediaLabel} could not be uploaded. Please try again.`);
       }
       setAssetId(payload.assetId);
+      activeUploadId = null;
     } catch (uploadError) {
+      if (activeUploadId) {
+        await fetch(`/api/mcp/reference-upload/${encodeURIComponent(token)}/abort`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uploadId: activeUploadId }), credentials: 'same-origin',
+        }).catch(() => undefined);
+      }
       setError(uploadError instanceof Error ? uploadError.message : `The ${mediaLabel} could not be uploaded.`);
     } finally {
       setSubmitting(false);
