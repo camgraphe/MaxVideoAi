@@ -20,6 +20,7 @@ const REQUIRED_OPERATIONAL_ENVIRONMENT = [
   'MCP_STAGING_OPERATIONAL_ENABLED',
   'BYTEPLUS_ARK_ENABLED',
   'BYTEPLUS_ARK_API_KEY',
+  'BYTEPLUS_LAS_API_KEY',
   'SEEDANCE_2_5_BYTEPLUS_ENABLED',
   'SEEDANCE_2_5_PROVIDER',
   'SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY',
@@ -112,7 +113,9 @@ function operationalEnvironmentPayload(overrides: Partial<Record<typeof REQUIRED
     envs: REQUIRED_OPERATIONAL_ENVIRONMENT.map((name) => ({
       key: overrides[name]?.key ?? name,
       target: overrides[name]?.target ?? ['production'],
-      value: name === 'BYTEPLUS_ARK_API_KEY' ? PROVIDER_SECRET_FIXTURE : `non-secret-${name}`,
+      value: name === 'BYTEPLUS_ARK_API_KEY' || name === 'BYTEPLUS_LAS_API_KEY'
+        ? PROVIDER_SECRET_FIXTURE
+        : `non-secret-${name}`,
     })),
   });
 }
@@ -217,19 +220,21 @@ test('non-dry deployment preflight behavior fails closed before every Vercel mut
     const validPayload = JSON.parse(operationalEnvironmentPayload()) as {
       envs: Array<{ key: string; target: string[]; value: string }>;
     };
-    const missingKeyPayload = JSON.stringify({
-      envs: validPayload.envs.filter((entry) => entry.key !== 'BYTEPLUS_ARK_API_KEY'),
-    });
-    for (const envPayload of [
-      missingKeyPayload,
-      operationalEnvironmentPayload({ BYTEPLUS_ARK_API_KEY: { key: 'BYTEPLUS_ARK_API_KEY_RENAMED' } }),
-      operationalEnvironmentPayload({ BYTEPLUS_ARK_API_KEY: { target: ['preview'] } }),
-    ]) {
-      const blocked = runStubbedDeploy(fixture, { envPayload });
-      assert.equal(blocked.status, 66, blocked.stderr);
-      assert.equal(blocked.stderr, 'CREDENTIAL_BLOCKED\n');
-      assert.doesNotMatch(`${blocked.stdout}${blocked.stderr}`, new RegExp(PROVIDER_SECRET_FIXTURE));
-      assert.doesNotMatch(blocked.stderr, /SAFE_LINK_SENTINEL/);
+    for (const credentialName of ['BYTEPLUS_ARK_API_KEY', 'BYTEPLUS_LAS_API_KEY'] as const) {
+      const missingKeyPayload = JSON.stringify({
+        envs: validPayload.envs.filter((entry) => entry.key !== credentialName),
+      });
+      for (const envPayload of [
+        missingKeyPayload,
+        operationalEnvironmentPayload({ [credentialName]: { key: `${credentialName}_RENAMED` } }),
+        operationalEnvironmentPayload({ [credentialName]: { target: ['preview'] } }),
+      ]) {
+        const blocked = runStubbedDeploy(fixture, { envPayload });
+        assert.equal(blocked.status, 66, blocked.stderr);
+        assert.equal(blocked.stderr, 'CREDENTIAL_BLOCKED\n');
+        assert.doesNotMatch(`${blocked.stdout}${blocked.stderr}`, new RegExp(PROVIDER_SECRET_FIXTURE));
+        assert.doesNotMatch(blocked.stderr, /SAFE_LINK_SENTINEL/);
+      }
     }
 
     const missingRenderPrefix = runStubbedDeploy(fixture, {

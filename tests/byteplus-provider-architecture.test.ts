@@ -9,12 +9,14 @@ import {
   getBytePlusUserSafeErrorMessage,
   getBytePlusUserSafeTaskFailureMessage,
   getBytePlusTaskFailureCode,
+  getBytePlusModelArkClient,
   getBytePlusSeedanceAllowedResolutions,
   normalizeBytePlusTask,
   shouldRoutePublicSeedanceFastToBytePlus,
   shouldRoutePublicSeedanceMiniToBytePlus,
 } from '../frontend/src/server/video-providers/byteplus-modelark';
 import { listFalEngines } from '../frontend/src/config/falEngines';
+import { ENV } from '../frontend/src/lib/env';
 import {
   isBytePlusSeedanceHiddenEngine,
   requiresBytePlusSeedanceEarlyGate,
@@ -89,6 +91,69 @@ test('BytePlus ModelArk provider delegates payload and response normalization', 
   assert.match(responseSource, /export function scrubBytePlusError/);
   assert.match(responseSource, /recognizable person/);
   assert.match(responseSource, /export async function parseJsonResponse/);
+});
+
+test('Seedance 2.5 uses the LAS transport while existing BytePlus engines stay on ModelArk', { concurrency: false }, async () => {
+  const mutableEnv = ENV as typeof ENV & Record<string, string | undefined>;
+  const original = {
+    arkApiKey: mutableEnv.BYTEPLUS_ARK_API_KEY,
+    arkBaseUrl: mutableEnv.BYTEPLUS_ARK_BASE_URL,
+    lasApiKey: mutableEnv.BYTEPLUS_LAS_API_KEY,
+    lasBaseUrl: mutableEnv.BYTEPLUS_LAS_BASE_URL,
+    fetch: globalThis.fetch,
+  };
+  const calls: Array<{ url: string; authorization: string | null }> = [];
+  const payload = {
+    model: 'dreamina-seedance-2-5-260628',
+    content: [{ type: 'text', text: 'A cinematic landscape.' }],
+    resolution: '480p',
+    ratio: '16:9',
+    duration: 4,
+    generate_audio: false,
+    watermark: false,
+  };
+
+  try {
+    mutableEnv.BYTEPLUS_ARK_API_KEY = 'ark-test-key';
+    mutableEnv.BYTEPLUS_ARK_BASE_URL = 'https://ark.example.test/api/v3';
+    mutableEnv.BYTEPLUS_LAS_API_KEY = 'las-test-key';
+    mutableEnv.BYTEPLUS_LAS_BASE_URL = 'https://operator.las.example.test/api/v1';
+    globalThis.fetch = async (input, init) => {
+      const headers = new Headers(init?.headers);
+      calls.push({
+        url: String(input),
+        authorization: headers.get('authorization'),
+      });
+      return new Response(JSON.stringify({ id: `task_${calls.length}`, status: 'queued' }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      });
+    };
+
+    await (getBytePlusModelArkClient as unknown as (engineId: string) => ReturnType<typeof getBytePlusModelArkClient>)(
+      'seedance-2-5'
+    ).createSeedanceFastTask(payload as never);
+    await (getBytePlusModelArkClient as unknown as (engineId: string) => ReturnType<typeof getBytePlusModelArkClient>)(
+      'seedance-2-0'
+    ).createSeedanceFastTask(payload as never);
+
+    assert.deepEqual(calls, [
+      {
+        url: 'https://operator.las.example.test/api/v1/contents/generations/tasks',
+        authorization: 'Bearer las-test-key',
+      },
+      {
+        url: 'https://ark.example.test/api/v3/contents/generations/tasks',
+        authorization: 'Bearer ark-test-key',
+      },
+    ]);
+  } finally {
+    mutableEnv.BYTEPLUS_ARK_API_KEY = original.arkApiKey;
+    mutableEnv.BYTEPLUS_ARK_BASE_URL = original.arkBaseUrl;
+    mutableEnv.BYTEPLUS_LAS_API_KEY = original.lasApiKey;
+    mutableEnv.BYTEPLUS_LAS_BASE_URL = original.lasBaseUrl;
+    globalThis.fetch = original.fetch;
+  }
 });
 
 test('BytePlus ModelArk safety failures use precise Seedance customer copy', () => {

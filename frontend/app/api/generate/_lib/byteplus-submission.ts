@@ -155,7 +155,7 @@ export async function submitBytePlusGenerateTask(params: {
         ? { referenceBudget, referenceMediaItems: referenceMediaItems ?? [] }
         : {}),
     });
-    const providerTask = await getBytePlusModelArkClientFn().createSeedanceFastTask(payload);
+    const providerTask = await getBytePlusModelArkClientFn(params.engineId).createSeedanceFastTask(payload);
     const providerJobId = providerTask.providerJobId;
     await persistProviderJobIdFn?.(providerJobId);
     const status = providerTask.status === 'running' ? 'running' : 'queued';

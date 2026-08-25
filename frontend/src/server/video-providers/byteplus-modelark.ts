@@ -3,9 +3,11 @@ import type { NormalizedVideoProviderTask } from '@/server/video-providers/types
 import {
   BYTEPLUS_SEEDANCE_DEFAULT_MODEL_ID,
   BYTEPLUS_SEEDANCE_2_5_DEFAULT_MODEL_ID,
+  BYTEPLUS_SEEDANCE_2_5_DEFAULT_BASE_URL,
   BYTEPLUS_SEEDANCE_FAST_DEFAULT_BASE_URL,
   BYTEPLUS_SEEDANCE_FAST_DEFAULT_MODEL_ID,
   BYTEPLUS_SEEDANCE_MINI_DEFAULT_MODEL_ID,
+  SEEDANCE_2_5_ENGINE_ID,
 } from './byteplus-modelark-constants';
 import { BytePlusModelArkError } from './byteplus-modelark-error';
 import type { BytePlusSeedanceFastPayload } from './byteplus-modelark-payload';
@@ -19,6 +21,7 @@ import {
 export {
   BYTEPLUS_MODELARK_PROVIDER,
   BYTEPLUS_SEEDANCE_2_5_DEFAULT_MODEL_ID,
+  BYTEPLUS_SEEDANCE_2_5_DEFAULT_BASE_URL,
   BYTEPLUS_SEEDANCE_ASPECT_RATIOS,
   BYTEPLUS_SEEDANCE_DEFAULT_MODEL_ID,
   BYTEPLUS_SEEDANCE_DURATION_OPTIONS,
@@ -96,8 +99,10 @@ export function isBytePlusModelArkEnabled(): boolean {
 export function getBytePlusArkConfig() {
   return {
     apiKey: ENV.BYTEPLUS_ARK_API_KEY,
+    lasApiKey: ENV.BYTEPLUS_LAS_API_KEY,
     region: ENV.BYTEPLUS_ARK_REGION ?? 'ap-southeast-1',
     baseUrl: trimTrailingSlash(ENV.BYTEPLUS_ARK_BASE_URL ?? BYTEPLUS_SEEDANCE_FAST_DEFAULT_BASE_URL),
+    lasBaseUrl: trimTrailingSlash(ENV.BYTEPLUS_LAS_BASE_URL ?? BYTEPLUS_SEEDANCE_2_5_DEFAULT_BASE_URL),
     seedanceModelId: ENV.BYTEPLUS_ARK_SEEDANCE_MODEL_ID ?? BYTEPLUS_SEEDANCE_DEFAULT_MODEL_ID,
     seedanceFastModelId: ENV.BYTEPLUS_ARK_SEEDANCE_FAST_MODEL_ID ?? BYTEPLUS_SEEDANCE_FAST_DEFAULT_MODEL_ID,
     seedanceMiniModelId: ENV.BYTEPLUS_ARK_SEEDANCE_MINI_MODEL_ID ?? BYTEPLUS_SEEDANCE_MINI_DEFAULT_MODEL_ID,
@@ -181,12 +186,15 @@ export class BytePlusModelArkClient {
   }
 }
 
-export function getBytePlusModelArkClient(): BytePlusModelArkClient {
+export function getBytePlusModelArkClient(engineId?: string | null): BytePlusModelArkClient {
   const config = getBytePlusArkConfig();
-  if (!config.apiKey) {
-    throw new BytePlusModelArkError('BytePlus ModelArk API key is not configured.', {
-      code: 'BYTEPLUS_API_KEY_MISSING',
+  const usesLasTransport = engineId?.trim() === SEEDANCE_2_5_ENGINE_ID;
+  const apiKey = usesLasTransport ? config.lasApiKey : config.apiKey;
+  const baseUrl = usesLasTransport ? config.lasBaseUrl : config.baseUrl;
+  if (!apiKey) {
+    throw new BytePlusModelArkError('BytePlus video provider API key is not configured.', {
+      code: usesLasTransport ? 'BYTEPLUS_LAS_API_KEY_MISSING' : 'BYTEPLUS_API_KEY_MISSING',
     });
   }
-  return new BytePlusModelArkClient({ apiKey: config.apiKey, baseUrl: config.baseUrl });
+  return new BytePlusModelArkClient({ apiKey, baseUrl });
 }

@@ -102,7 +102,6 @@ export async function runBytePlusPoll() {
     return NextResponse.json({ ok: true, enabled: true, checked: 0, updates: 0 });
   }
 
-  const client = getBytePlusModelArkClient();
   const config = getBytePlusArkConfig();
   let updates = 0;
 
@@ -130,6 +129,7 @@ export async function runBytePlusPoll() {
     }
 
     try {
+      const client = getBytePlusModelArkClient(job.engine_id);
       const task = await client.retrieveTask(job.provider_job_id);
       await recordBytePlusPollEvent(job, 'poll:status', {
         providerStatus: task.rawStatus,

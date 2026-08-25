@@ -238,6 +238,7 @@ test('catalog mirrors real execution gates for newly registered video models', {
     seedance25Provider: ENV.SEEDANCE_2_5_PROVIDER,
     seedance25AdminOnly: ENV.SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY,
     seedance25Modes: ENV.SEEDANCE_2_5_BYTEPLUS_MODES,
+    seedance25LasApiKey: ENV.BYTEPLUS_LAS_API_KEY,
   };
   const registryDeps = realRegistryDeps();
 
@@ -280,6 +281,14 @@ test('catalog mirrors real execution gates for newly registered video models', {
     ENV.SEEDANCE_2_5_PROVIDER = 'byteplus_modelark';
     ENV.SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY = 'false';
     ENV.SEEDANCE_2_5_BYTEPLUS_MODES = 't2v,i2v,ref2v,v2v,extend';
+    ENV.BYTEPLUS_LAS_API_KEY = '';
+
+    assert.equal(
+      (await listAgentModels({ id: 'seedance-2-5' }, registryDeps))[0]?.generationEnabled,
+      false,
+    );
+
+    ENV.BYTEPLUS_LAS_API_KEY = 'las-test-key';
 
     assert.deepEqual(
       (await listAgentModels({ id: 'seedance-2-5' }, registryDeps))[0],
@@ -303,6 +312,7 @@ test('catalog mirrors real execution gates for newly registered video models', {
     ENV.SEEDANCE_2_5_PROVIDER = original.seedance25Provider;
     ENV.SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY = original.seedance25AdminOnly;
     ENV.SEEDANCE_2_5_BYTEPLUS_MODES = original.seedance25Modes;
+    ENV.BYTEPLUS_LAS_API_KEY = original.seedance25LasApiKey;
   }
 });
 

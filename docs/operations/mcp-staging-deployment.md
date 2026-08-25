@@ -105,6 +105,7 @@ provider names, or additional modes:
 ```text
 MCP_STAGING_OPERATIONAL_ENABLED=true
 BYTEPLUS_ARK_ENABLED=true
+BYTEPLUS_LAS_BASE_URL=https://operator.las.ap-southeast-1.bytepluses.com/api/v1
 SEEDANCE_2_5_BYTEPLUS_ENABLED=true
 SEEDANCE_2_5_PROVIDER=byteplus_modelark
 SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY=false
@@ -114,13 +115,16 @@ MCP_STAGING_REFERENCE_STORAGE_PREFIX=mcp-reference-staging/
 VIDEO_RENDER_STORAGE_PREFIX=mcp-render-staging/
 ```
 
-`BYTEPLUS_ARK_API_KEY` is also required on the Production target, but its value
-must be a dedicated staging credential supplied out of band and stored only in
-the dedicated `maxvideoai-mcp-staging` Vercel project. Never write it to Git,
-the shell command line, logs, reports, or a downloaded environment file. The
+`BYTEPLUS_ARK_API_KEY` and `BYTEPLUS_LAS_API_KEY` are both required on the
+Production target. They are separate credentials for separate BytePlus data
+planes: ModelArk `/api/v3` remains available to the existing direct engines,
+while Seedance 2.5 submission and polling use LAS `/api/v1`. Each value must be
+a dedicated staging credential supplied out of band and stored only in the
+dedicated `maxvideoai-mcp-staging` Vercel project. Never write either value to
+Git, the shell command line, logs, reports, or a downloaded environment file. The
 deployment wrapper requests non-decrypted Vercel metadata and retains only
 environment-variable names and targets; it never reads, pulls, compares, or
-prints the credential value. If the dedicated credential does not exist, stop
+prints credential values. If either dedicated credential does not exist, stop
 with `CREDENTIAL_BLOCKED`. Do not substitute a production credential and do
 not weaken or bypass the metadata preflight.
 
@@ -149,7 +153,8 @@ documented above. Vercel does not accept empty environment-variable values, so
 `COOKIE_DOMAIN` and `NEXT_PUBLIC_COOKIE_DOMAIN` are intentionally absent; the
 application treats absence as an unset, host-only cookie domain.
 
-Except for the dedicated staging-only `BYTEPLUS_ARK_API_KEY`, dedicated
+Except for the dedicated staging-only `BYTEPLUS_ARK_API_KEY` and
+`BYTEPLUS_LAS_API_KEY`, dedicated
 prefix-scoped staging storage credential, and cleanup-only `CRON_SECRET`, do not add
 provider keys, Stripe secrets, a Supabase secret or legacy `service_role` key,
 SMTP credentials, or any production database URL to this project.
@@ -264,7 +269,7 @@ without contacting Vercel.
 The real invocation repeats those checks, resolves the exact dedicated Vercel
 project, then queries its non-decrypted Production-target environment metadata.
 It reduces the response to names and targets only and requires the complete
-operational inventory, including `BYTEPLUS_ARK_API_KEY` and the durable-storage
+operational inventory, including both BytePlus API-key names and the durable-storage
 variables, before any link or deploy
 command. It does not add, remove, pull, decrypt, or print an environment value.
 After that sanitized preflight, it links only the temporary directory and

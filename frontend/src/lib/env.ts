@@ -69,6 +69,11 @@ export const ENV = {
   BYTEPLUS_ARK_API_KEY: getOptionalEnv('BYTEPLUS_ARK_API_KEY'),
   BYTEPLUS_ARK_REGION: getOptionalEnv('BYTEPLUS_ARK_REGION', 'ap-southeast-1'),
   BYTEPLUS_ARK_BASE_URL: getOptionalEnv('BYTEPLUS_ARK_BASE_URL', 'https://ark.ap-southeast.bytepluses.com/api/v3'),
+  BYTEPLUS_LAS_API_KEY: getOptionalEnv('BYTEPLUS_LAS_API_KEY'),
+  BYTEPLUS_LAS_BASE_URL: getOptionalEnv(
+    'BYTEPLUS_LAS_BASE_URL',
+    'https://operator.las.ap-southeast-1.bytepluses.com/api/v1'
+  ),
   BYTEPLUS_ARK_SEEDANCE_FAST_MODEL_ID: getOptionalEnv(
     'BYTEPLUS_ARK_SEEDANCE_FAST_MODEL_ID',
     'dreamina-seedance-2-0-fast-260128'

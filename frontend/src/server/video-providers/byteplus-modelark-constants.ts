@@ -10,6 +10,7 @@ export const BYTEPLUS_SEEDANCE_DEFAULT_MODEL_ID = 'dreamina-seedance-2-0-260128'
 export const BYTEPLUS_SEEDANCE_FAST_DEFAULT_MODEL_ID = 'dreamina-seedance-2-0-fast-260128';
 export const BYTEPLUS_SEEDANCE_MINI_DEFAULT_MODEL_ID = 'dreamina-seedance-2-0-mini-260615';
 export const BYTEPLUS_SEEDANCE_2_5_DEFAULT_MODEL_ID = 'dreamina-seedance-2-5-260628';
+export const BYTEPLUS_SEEDANCE_2_5_DEFAULT_BASE_URL = 'https://operator.las.ap-southeast-1.bytepluses.com/api/v1';
 export const BYTEPLUS_SEEDANCE_FAST_DEFAULT_BASE_URL = 'https://ark.ap-southeast.bytepluses.com/api/v3';
 export const BYTEPLUS_SEEDANCE_MODES: Mode[] = ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'];
 export const BYTEPLUS_SEEDANCE_2_5_MODES: Mode[] = ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'];

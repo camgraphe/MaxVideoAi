@@ -38,6 +38,7 @@ They are intentionally documented here rather than copied into
 
 ```dotenv
 BYTEPLUS_ARK_ENABLED=true
+BYTEPLUS_LAS_BASE_URL=https://operator.las.ap-southeast-1.bytepluses.com/api/v1
 BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID=dreamina-seedance-2-5-260628
 SEEDANCE_2_5_BYTEPLUS_ENABLED=true
 SEEDANCE_2_5_PROVIDER=byteplus_modelark
@@ -45,8 +46,10 @@ SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY=false
 SEEDANCE_2_5_BYTEPLUS_MODES=t2v,i2v,ref2v,v2v,extend
 ```
 
-`BYTEPLUS_ARK_ENABLED=true` is the production prerequisite for ModelArk
-submission, polling, durable copying, and terminal reconciliation. The
+`BYTEPLUS_ARK_ENABLED=true` remains the shared direct-provider kill switch.
+Seedance 2.5 submission and polling require a separate server-only
+`BYTEPLUS_LAS_API_KEY` and use the LAS `/api/v1` base URL above; the existing
+`BYTEPLUS_ARK_API_KEY` continues to serve ModelArk `/api/v3`. The
 Seedance-specific switch below remains the first rollback control.
 
 `SEEDANCE_2_5_BYTEPLUS_ENABLED=false` is the hard kill switch. It stops new
@@ -57,11 +60,11 @@ for public generation and is not a substitute for the kill switch.
 ### Checked-in local and review defaults — fail closed
 
 `frontend/.env.local.example` must stay deliberately different from the
-production matrix: it has the factual model ID, but sets the provider to
-`disabled`, execution to `false`, administrator-only to `true`, and modes to
-`t2v`. Fresh local and review environments therefore cannot accidentally submit
-to ModelArk. Credentials remain in existing secret variables and are never
-committed here.
+production matrix: it has the factual model ID and both empty credential
+placeholders, but sets the provider to `disabled`, execution to `false`,
+administrator-only to `true`, and modes to `t2v`. Fresh local and review
+environments therefore cannot accidentally submit to either BytePlus data
+plane. Credential values are never committed here.
 
 ## Phase status
 

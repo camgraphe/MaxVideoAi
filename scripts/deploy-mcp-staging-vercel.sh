@@ -16,6 +16,7 @@ REQUIRED_OPERATIONAL_ENVIRONMENT=(
   'MCP_STAGING_OPERATIONAL_ENABLED'
   'BYTEPLUS_ARK_ENABLED'
   'BYTEPLUS_ARK_API_KEY'
+  'BYTEPLUS_LAS_API_KEY'
   'SEEDANCE_2_5_BYTEPLUS_ENABLED'
   'SEEDANCE_2_5_PROVIDER'
   'SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY'
@@ -222,12 +223,14 @@ assert_staging_operational_environment() {
 
   capture_staging_environment_metadata "$metadata"
 
-  if ! jq -e --arg name 'BYTEPLUS_ARK_API_KEY' \
-    'any(.[]; .key == $name and .target == ["production"])' \
-    "$metadata" >/dev/null; then
-    printf 'CREDENTIAL_BLOCKED\n' >&2
-    exit 66
-  fi
+  for name in 'BYTEPLUS_ARK_API_KEY' 'BYTEPLUS_LAS_API_KEY'; do
+    if ! jq -e --arg name "$name" \
+      'any(.[]; .key == $name and .target == ["production"])' \
+      "$metadata" >/dev/null; then
+      printf 'CREDENTIAL_BLOCKED\n' >&2
+      exit 66
+    fi
+  done
 
   if ! jq -e --arg name 'CRON_SECRET' \
     'any(.[]; .key == $name and .target == ["production"])' \

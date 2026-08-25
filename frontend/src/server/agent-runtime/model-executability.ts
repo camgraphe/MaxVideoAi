@@ -10,6 +10,7 @@ import {
   resolveBytePlusSeedreamReadiness,
 } from '@/server/images/byteplus-seedream-policy';
 import { ENV } from '@/lib/env';
+import { SEEDANCE_2_5_ENGINE_ID } from '@/server/video-providers/byteplus-modelark-constants';
 
 export type AgentGenerationExecutabilityDecision = Readonly<{
   executable: boolean;
@@ -24,12 +25,14 @@ export type AgentGenerationExecutabilityDecision = Readonly<{
 export type AgentGenerationExecutabilityEnvironment = Readonly<{
   bytePlusEnabled: boolean;
   bytePlusApiKey: string | undefined;
+  bytePlusLasApiKey?: string | undefined;
 }>;
 
 function defaultEnvironment(): AgentGenerationExecutabilityEnvironment {
   return {
     bytePlusEnabled: isBytePlusModelArkEnabled(),
     bytePlusApiKey: ENV.BYTEPLUS_ARK_API_KEY,
+    bytePlusLasApiKey: ENV.BYTEPLUS_LAS_API_KEY,
   };
 }
 
@@ -53,6 +56,12 @@ export function resolveAgentGenerationEngineExecutability(
     if (!bytePlusProfile) return { executable: true, reason: 'available' };
     if (!environment.bytePlusEnabled || !isBytePlusSeedanceSubmissionEnabled(engine.id)) {
       return { executable: false, reason: 'provider_disabled' };
+    }
+    if (
+      bytePlusProfile.engineId === SEEDANCE_2_5_ENGINE_ID &&
+      !environment.bytePlusLasApiKey?.trim()
+    ) {
+      return { executable: false, reason: 'provider_credentials_missing' };
     }
     if (isBytePlusSeedanceAdminOnly(engine.id)) {
       return { executable: false, reason: 'provider_admin_only' };
