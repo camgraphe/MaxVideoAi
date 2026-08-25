@@ -26,6 +26,12 @@ const REQUIRED_OPERATIONAL_ENVIRONMENT = [
   'SEEDANCE_2_5_BYTEPLUS_MODES',
   'MCP_STAGING_REFERENCE_CLEANUP_ENABLED',
   'MCP_STAGING_REFERENCE_STORAGE_PREFIX',
+  'S3_BUCKET',
+  'S3_REGION',
+  'S3_ACCESS_KEY_ID',
+  'S3_SECRET_ACCESS_KEY',
+  'S3_PUBLIC_BASE_URL',
+  'VIDEO_RENDER_STORAGE_PREFIX',
   'CRON_SECRET',
 ] as const;
 
@@ -221,6 +227,18 @@ test('non-dry deployment preflight behavior fails closed before every Vercel mut
       assert.doesNotMatch(`${blocked.stdout}${blocked.stderr}`, new RegExp(PROVIDER_SECRET_FIXTURE));
       assert.doesNotMatch(blocked.stderr, /SAFE_LINK_SENTINEL/);
     }
+
+    const missingRenderPrefix = runStubbedDeploy(fixture, {
+      envPayload: JSON.stringify({
+        envs: validPayload.envs.filter((entry) => entry.key !== 'VIDEO_RENDER_STORAGE_PREFIX'),
+      }),
+    });
+    assert.equal(missingRenderPrefix.status, 66, missingRenderPrefix.stderr);
+    assert.equal(
+      missingRenderPrefix.stderr,
+      'ENVIRONMENT_BLOCKED name=VIDEO_RENDER_STORAGE_PREFIX target=production\n',
+    );
+    assert.doesNotMatch(missingRenderPrefix.stderr, /SAFE_LINK_SENTINEL/);
 
     const wrongProject = runStubbedDeploy(fixture, { projectName: 'maxvideoai' });
     assert.notEqual(wrongProject.status, 79);

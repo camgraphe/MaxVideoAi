@@ -166,7 +166,7 @@ export async function ensureFastStartVideo(
       data: optimized,
       mime: 'video/mp4',
       userId: options.userId ?? undefined,
-      prefix: 'renders',
+      prefix: process.env.VIDEO_RENDER_STORAGE_PREFIX?.trim() || 'renders',
       fileName: `${options.jobId}-faststart.mp4`,
       cacheControl: 'public, max-age=5184000, immutable',
     });

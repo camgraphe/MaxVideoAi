@@ -111,6 +111,7 @@ SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY=false
 SEEDANCE_2_5_BYTEPLUS_MODES=t2v,i2v,ref2v,v2v,extend
 MCP_STAGING_REFERENCE_CLEANUP_ENABLED=true
 MCP_STAGING_REFERENCE_STORAGE_PREFIX=mcp-reference-staging/
+VIDEO_RENDER_STORAGE_PREFIX=mcp-render-staging/
 ```
 
 `BYTEPLUS_ARK_API_KEY` is also required on the Production target, but its value
@@ -122,6 +123,16 @@ environment-variable names and targets; it never reads, pulls, compares, or
 prints the credential value. If the dedicated credential does not exist, stop
 with `CREDENTIAL_BLOCKED`. Do not substitute a production credential and do
 not weaken or bypass the metadata preflight.
+
+Durable video delivery also requires `S3_BUCKET`, `S3_REGION`,
+`S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, and `S3_PUBLIC_BASE_URL` on the
+Production target. Use a staging-only bucket or a staging IAM credential whose
+write scope is restricted to the literal `mcp-render-staging/` and
+`mcp-reference-staging/` namespaces. Do not copy the production S3 credential
+into staging. The deployment wrapper checks only the variable names and target;
+it never reads or prints their values. Without this storage profile, a provider
+may complete a render while MaxVideoAI correctly keeps it unavailable because
+the temporary provider URL has not been copied to durable storage.
 
 `CRON_SECRET` is also required on the Production target. For this project it is
 a dedicated staging cleanup-auth credential, not a schedule declaration. Supply
@@ -137,8 +148,8 @@ documented above. Vercel does not accept empty environment-variable values, so
 `COOKIE_DOMAIN` and `NEXT_PUBLIC_COOKIE_DOMAIN` are intentionally absent; the
 application treats absence as an unset, host-only cookie domain.
 
-Except for the dedicated staging-only `BYTEPLUS_ARK_API_KEY` and cleanup-only
-`CRON_SECRET`, do not add
+Except for the dedicated staging-only `BYTEPLUS_ARK_API_KEY`, dedicated
+prefix-scoped staging storage credential, and cleanup-only `CRON_SECRET`, do not add
 provider keys, Stripe secrets, a Supabase secret or legacy `service_role` key,
 SMTP credentials, or any production database URL to this project.
 
@@ -248,8 +259,9 @@ without contacting Vercel.
 
 The real invocation repeats those checks, resolves the exact dedicated Vercel
 project, then queries its non-decrypted Production-target environment metadata.
-It reduces the response to names and targets only and requires all ten
-operational names, including `BYTEPLUS_ARK_API_KEY`, before any link or deploy
+It reduces the response to names and targets only and requires the complete
+operational inventory, including `BYTEPLUS_ARK_API_KEY` and the durable-storage
+variables, before any link or deploy
 command. It does not add, remove, pull, decrypt, or print an environment value.
 After that sanitized preflight, it links only the temporary directory and
 creates a production-target candidate with `--skip-domain`. The stable alias is
