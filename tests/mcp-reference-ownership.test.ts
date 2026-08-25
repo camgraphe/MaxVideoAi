@@ -23,6 +23,7 @@ type ReferenceAssetsModule = {
     dependencies: { executor: QueryExecutor },
   ): Promise<{
     assetId: string;
+    mediaKind: 'image' | 'video' | 'audio';
     storageUrl: string;
     width: number | null;
     height: number | null;
@@ -80,6 +81,7 @@ test('resolveOwnedReferenceAsset performs one exact-user media_assets read and r
 
   assert.deepEqual(resolved, {
     assetId: 'asset-owned',
+    mediaKind: 'image',
     storageUrl: 'https://cdn.maxvideoai.com/users/owner-user/reference.png',
     width: 1024,
     height: 768,
@@ -89,7 +91,7 @@ test('resolveOwnedReferenceAsset performs one exact-user media_assets read and r
   assert.match(calls[0]?.sql ?? '', /FROM\s+media_assets/iu);
   assert.match(calls[0]?.sql ?? '', /id\s*=\s*\$1[\s\S]*user_id\s*=\s*\$2/iu);
   assert.deepEqual(calls[0]?.params, ['asset-owned', principal.userId]);
-  assert.deepEqual(Object.keys(resolved), ['assetId', 'storageUrl', 'width', 'height', 'mimeType']);
+  assert.deepEqual(Object.keys(resolved), ['assetId', 'mediaKind', 'storageUrl', 'width', 'height', 'mimeType']);
 });
 
 test('resolveOwnedReferenceAsset accepts the exact shared raster MIME set and canonicalizes JPEG aliases', async () => {

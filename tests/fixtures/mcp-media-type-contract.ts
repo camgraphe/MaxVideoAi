@@ -67,10 +67,12 @@ type _AgentMediaHasNoSymbolIndex = Assert<
 >;
 
 type ExpectedReferenceRole = 'source' | 'reference' | 'first_frame' | 'last_frame';
+type ExpectedReferenceMediaKind = 'image' | 'video' | 'audio';
 
 type ExpectedResolvedReference = {
   assetId: string;
   role: ExpectedReferenceRole;
+  mediaKind: ExpectedReferenceMediaKind;
   storageUrl: string;
   width: number | null;
   height: number | null;
@@ -80,6 +82,7 @@ type ExpectedResolvedReference = {
 type ExpectedResolvedReferenceKeys =
   | 'assetId'
   | 'role'
+  | 'mediaKind'
   | 'storageUrl'
   | 'width'
   | 'height'
@@ -100,6 +103,9 @@ type _ResolvedReferenceKeysAreExact = Assert<
 >;
 type _ResolvedReferenceRoleIsExact = Assert<
   Equal<ResolvedReference['role'], ExpectedReferenceRole>
+>;
+type _ResolvedReferenceMediaKindIsExact = Assert<
+  Equal<ResolvedReference['mediaKind'], ExpectedReferenceMediaKind>
 >;
 type _ResolvedReferenceHasNoForbiddenField = Assert<
   Equal<Extract<keyof ResolvedReference, ForbiddenResolvedReferenceKeys>, never>

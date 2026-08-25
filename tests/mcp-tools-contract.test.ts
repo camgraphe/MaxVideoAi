@@ -345,7 +345,7 @@ test('tools return structured content and pass validated filters to facade servi
   const accountResult = await connected.client.callTool({ name: 'get_account_status', arguments: {} });
   const modelsResult = await connected.client.callTool({
     name: 'list_models',
-    arguments: { surface: 'video', mode: 't2v', audio: true, limit: 3 },
+    arguments: { surface: 'video', mode: 'v2v', audio: true, limit: 3 },
   });
   const detailsResult = await connected.client.callTool({
     name: 'get_model_details',
@@ -358,7 +358,7 @@ test('tools return structured content and pass validated filters to facade servi
   const recommendationResult = await connected.client.callTool({
     name: 'recommend_models',
     arguments: {
-      mode: 't2v',
+      mode: 'extend',
       useCase: 'product_video',
       priorities: ['speed', 'reference_control'],
       preferredModelIds: ['seedance-2-mini', 'seedance-2-mini'],
@@ -471,10 +471,10 @@ test('tools return structured content and pass validated filters to facade servi
     nextAction: 'clarify_requirements',
   });
   assert.deepEqual(budgetResult.structuredContent, projectBudget);
-  assert.deepEqual(listFilter, { surface: 'video', mode: 't2v', audio: true, limit: 3 });
+  assert.deepEqual(listFilter, { surface: 'video', mode: 'v2v', audio: true, limit: 3 });
   assert.equal(modelDetailId, 'minimax-h3');
   assert.deepEqual(recommendationInput, {
-    mode: 't2v',
+    mode: 'extend',
     useCase: 'product_video',
     priorities: ['speed', 'reference_control'],
     preferredModelIds: ['seedance-2-mini', 'seedance-2-mini'],

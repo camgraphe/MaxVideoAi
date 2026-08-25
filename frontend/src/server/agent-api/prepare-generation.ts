@@ -213,6 +213,31 @@ function invalidParameter(): never {
   );
 }
 
+function validateCapabilities(
+  request: CanonicalGenerationRequest,
+  candidate: AgentPublicGenerationEngine,
+  resolvedReferences?: readonly ResolvedReference[],
+): void {
+  try {
+    validateCanonicalGenerationCapabilities(
+      request,
+      candidate,
+      resolvedReferences ? { resolvedReferences } : {},
+    );
+  } catch (error) {
+    if (error instanceof GenerationCapabilityError) {
+      if (error.kind === 'reference_required') {
+        throw new AgentApiError('REFERENCE_REQUIRED', 'This generation mode requires reference media.');
+      }
+      if (error.kind === 'reference_invalid') {
+        throw new AgentApiError('REFERENCE_INVALID', 'The reference media is invalid for this model mode.');
+      }
+      invalidParameter();
+    }
+    throw error;
+  }
+}
+
 function validateRepresentablePricingFacts(request: CanonicalGenerationRequest): void {
   const resolution = request.settings.resolution;
   if (
@@ -389,30 +414,18 @@ export async function prepareGeneration(
   if (!candidate.publicModes.includes(request.mode)) {
     throw new AgentApiError('MODE_UNSUPPORTED', 'The selected model does not support this mode.');
   }
-  try {
-    validateCanonicalGenerationCapabilities(request, candidate);
-  } catch (error) {
-    if (error instanceof GenerationCapabilityError) {
-      if (error.kind === 'reference_required') {
-        throw new AgentApiError('REFERENCE_REQUIRED', 'This generation mode requires an image reference.');
-      }
-      if (error.kind === 'reference_invalid') {
-        throw new AgentApiError('REFERENCE_INVALID', 'The image references are invalid for this model mode.');
-      }
-      invalidParameter();
-    }
-    throw error;
-  }
+  validateCapabilities(request, candidate);
   validateRepresentablePricingFacts(request);
   if (request.references.some((reference) => reference.kind === 'asset')) {
     try {
       const resolveReferences = dependencies.resolveGenerationReferences
         ?? ((currentRequest, currentPrincipal) =>
           resolveGenerationReferences(currentRequest, currentPrincipal));
-      await resolveReferences(request, principal);
+      const resolvedReferences = await resolveReferences(request, principal);
+      validateCapabilities(request, candidate, resolvedReferences);
     } catch (error) {
       if (error instanceof AgentApiError) throw error;
-      throw new AgentApiError('INTERNAL_ERROR', 'The reference image could not be verified.');
+      throw new AgentApiError('INTERNAL_ERROR', 'The reference media could not be verified.');
     }
   }
 

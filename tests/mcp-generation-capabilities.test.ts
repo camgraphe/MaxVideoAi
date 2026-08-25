@@ -200,6 +200,71 @@ test('real Seedance 2.5 v2v and extend modes require bounded source references',
   rejectsCapability(seedance, { ...extendRequest, references: [...extendRequest.references, source('clip-4')] });
 });
 
+test('Seedance source and reference fields enforce canonical HTTPS media kinds', () => {
+  const seedance = registryCapability('seedance-2-5');
+  const httpsReference = (
+    id: string,
+    role: 'source' | 'reference',
+    mediaKind: 'image' | 'video' | 'audio',
+  ) => ({
+    kind: 'https' as const,
+    url: `https://cdn.example.com/${id}`,
+    role,
+    mediaKind,
+  });
+  const v2v = request({
+    engineId: 'seedance-2-5',
+    mode: 'v2v',
+    settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9' },
+    references: [httpsReference('source-video', 'source', 'video')],
+  });
+  assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(v2v, seedance));
+  rejectsCapability(seedance, {
+    ...v2v,
+    references: [httpsReference('source-image', 'source', 'image')],
+  });
+
+  const ref2v = request({
+    engineId: 'seedance-2-5',
+    mode: 'ref2v',
+    settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9' },
+    references: [
+      ...Array.from({ length: 10 }, (_, index) =>
+        httpsReference(`audio-${index + 1}`, 'reference', 'audio')),
+    ],
+  });
+  assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(ref2v, seedance));
+  rejectsCapability(seedance, {
+    ...ref2v,
+    references: [
+      ...ref2v.references,
+      httpsReference('audio-11', 'reference', 'audio'),
+    ],
+  });
+});
+
+test('MiniMax H3 provider constraints receive references in their canonical media fields', () => {
+  const minimax = registryCapability('minimax-h3');
+  const reference = (id: string, mediaKind: 'image' | 'video' | 'audio') => ({
+    kind: 'https' as const,
+    url: `https://cdn.example.com/${id}`,
+    role: 'reference' as const,
+    mediaKind,
+  });
+  const ref2v = request({
+    engineId: 'minimax-h3',
+    mode: 'ref2v',
+    settings: { durationSec: 5, resolution: '768P', aspectRatio: '16:9' },
+    references: [reference('voice.mp3', 'audio')],
+  });
+
+  rejectsCapability(minimax, ref2v);
+  assert.doesNotThrow(() => validateCanonicalGenerationCapabilities({
+    ...ref2v,
+    references: [reference('subject.png', 'image'), reference('voice.mp3', 'audio')],
+  }, minimax));
+});
+
 test('video reference validation enforces the registry-owned aggregate budget', () => {
   const candidate = capability({
     engine: engine({

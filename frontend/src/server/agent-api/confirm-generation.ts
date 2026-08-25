@@ -348,9 +348,18 @@ async function confirmationTransaction(
                 resolveOwnedReferenceAsset(ownedPrincipal, assetId, { executor: currentExecutor }),
             }));
         resolvedReferences = await resolveReferences(quote.request, principal, { executor });
+        validateCanonicalGenerationCapabilities(
+          quote.request,
+          candidate,
+          { resolvedReferences },
+        );
       } catch (error) {
+        if (error instanceof GenerationCapabilityError) {
+          if (includedTrial) trialNotEligible();
+          staleQuote();
+        }
         if (error instanceof AgentApiError) throw error;
-        throw new AgentApiError('INTERNAL_ERROR', 'The reference image could not be verified.');
+        throw new AgentApiError('INTERNAL_ERROR', 'The reference media could not be verified.');
       }
     }
     const catalogRevision = computeGenerationCatalogRevision(publicEngines);

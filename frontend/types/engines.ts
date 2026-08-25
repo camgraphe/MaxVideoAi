@@ -278,6 +278,7 @@ export interface PreflightRequest {
   seedLocked?: boolean;
   loop?: boolean;
   audio?: boolean;
+  hasVideoInput?: boolean;
   voiceControl?: boolean;
   extraInputValues?: Record<string, unknown>;
   user?: {

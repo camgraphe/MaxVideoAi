@@ -80,6 +80,10 @@ function pricingRecord(snapshot: PricingSnapshot): Record<string, unknown> {
   return snapshot as unknown as Record<string, unknown>;
 }
 
+function hasCanonicalVideoInput(request: CanonicalGenerationRequest): boolean {
+  return request.surface === 'video' && (request.mode === 'v2v' || request.mode === 'extend');
+}
+
 function validatePricingResult(
   snapshot: PricingSnapshot,
   membershipTier: AuthoritativeMembershipTier,
@@ -121,6 +125,7 @@ export async function priceCanonicalGeneration(
       fps: typeof settings.fps === 'number' ? settings.fps : 24,
       ...(typeof settings.loop === 'boolean' ? { loop: settings.loop } : {}),
       ...(typeof settings.audio === 'boolean' ? { audio: settings.audio } : {}),
+      hasVideoInput: hasCanonicalVideoInput(request),
       extraInputValues: { referenceImageCount: request.references.length },
       user: { memberTier: membershipTier },
     });
@@ -183,6 +188,7 @@ export async function priceCanonicalGenerationInExecutor(
       resolution,
       aspectRatio: optionalString(request.settings, 'aspectRatio'),
       mode: request.mode,
+      hasVideoInput: hasCanonicalVideoInput(request),
       referenceImageCount: request.references.length,
       membershipTier,
       loop: isLumaRay2EngineId(engine.id) && request.settings.loop === true,

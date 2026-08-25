@@ -1,13 +1,16 @@
 export type CanonicalGenerationSurface = 'video' | 'image';
 
-export type CanonicalGenerationMode =
-  | 't2v'
-  | 'i2v'
-  | 'ref2v'
-  | 'v2v'
-  | 'extend'
-  | 't2i'
-  | 'i2i';
+export const CANONICAL_GENERATION_MODES = [
+  't2v',
+  'i2v',
+  'ref2v',
+  'v2v',
+  'extend',
+  't2i',
+  'i2i',
+] as const;
+
+export type CanonicalGenerationMode = (typeof CANONICAL_GENERATION_MODES)[number];
 
 export type CanonicalGenerationSettingValue = string | number | boolean | null;
 

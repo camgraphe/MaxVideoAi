@@ -5,6 +5,7 @@ import test from 'node:test';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 
+import { listFalEngines } from '../frontend/src/config/falEngines';
 import type { TransactionQueryExecutor } from '../frontend/src/lib/db';
 import {
   computeGenerationCatalogRevision,
@@ -18,6 +19,10 @@ import {
   hashCanonicalGenerationRequest,
 } from '../frontend/src/server/agent-api/generation-normalization';
 import type { CanonicalGenerationRequest } from '../frontend/src/server/agent-api/generation-types';
+import {
+  priceCanonicalGeneration,
+  priceCanonicalGenerationInExecutor,
+} from '../frontend/src/server/agent-api/generation-pricing';
 import type { AgentPublicGenerationEngine } from '../frontend/src/server/agent-api/model-catalog';
 import type { AgentPrincipal } from '../frontend/src/server/agent-api/principal';
 import {
@@ -75,6 +80,47 @@ const imageRequest: CanonicalGenerationRequest = {
   references: [],
   outputCount: 1,
 };
+
+test('confirmation pricing preserves the prepared Seedance video-input tier', async () => {
+  const entry = listFalEngines().find((candidate) => candidate.id === 'seedance-2-5');
+  assert.ok(entry);
+  const candidate: AgentPublicGenerationEngine = {
+    engine: entry.engine,
+    surface: 'video',
+    publicModes: ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'],
+    modeCaps: Object.fromEntries(entry.modes.map((mode) => [mode.mode, mode.ui])),
+  };
+  const request: CanonicalGenerationRequest = {
+    schemaVersion: 1,
+    surface: 'video',
+    engineId: 'seedance-2-5',
+    mode: 'v2v',
+    prompt: 'Edit the source video.',
+    settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9', audio: true },
+    references: [{
+      kind: 'https',
+      url: 'https://cdn.example.com/source.mp4',
+      role: 'source',
+      mediaKind: 'video',
+    }],
+    outputCount: 1,
+  };
+  const prepared = await priceCanonicalGeneration(request, 'member');
+  const confirmed = await priceCanonicalGenerationInExecutor(request, 'member', {
+    candidate,
+    executor: { async query() { return []; } } as TransactionQueryExecutor,
+  });
+  assert.equal(
+    (prepared.pricingSnapshot.meta as Record<string, unknown>).byteplus_billing_input_type,
+    'video_input',
+  );
+  assert.equal(
+    (confirmed.pricingSnapshot.meta as Record<string, unknown>).byteplus_billing_input_type,
+    'video_input',
+  );
+  assert.equal(confirmed.priceCents, prepared.priceCents);
+  assert.equal(confirmed.currency, prepared.currency);
+});
 
 function capability(request: CanonicalGenerationRequest): AgentPublicGenerationEngine {
   const video = request.surface === 'video';

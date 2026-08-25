@@ -68,6 +68,7 @@ test('ResolvedReference is an internal storage DTO using the canonical role owne
   assert.deepEqual(fieldNames(body), [
     'assetId',
     'role',
+    'mediaKind',
     'storageUrl',
     'width',
     'height',
@@ -75,10 +76,11 @@ test('ResolvedReference is an internal storage DTO using the canonical role owne
   ]);
   assert.match(
     moduleSource,
-    /import type \{ CanonicalGenerationReferenceRole \} from ['"]\.\/generation-types['"];/u,
+    /import type \{[\s\S]*CanonicalGenerationReferenceRole,[\s\S]*CanonicalReferenceMediaKind,[\s\S]*\} from ['"]\.\/generation-types['"];/u,
   );
   assert.match(body, /assetId:\s*string;/u);
   assert.match(body, /role:\s*CanonicalGenerationReferenceRole;/u);
+  assert.match(body, /mediaKind:\s*CanonicalReferenceMediaKind;/u);
   assert.match(body, /storageUrl:\s*string;/u);
   assert.match(body, /width:\s*number\s*\|\s*null;/u);
   assert.match(body, /height:\s*number\s*\|\s*null;/u);

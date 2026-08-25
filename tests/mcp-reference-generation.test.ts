@@ -57,6 +57,7 @@ test('owned asset references resolve to private internal URLs without changing t
       calls.push({ userId: currentPrincipal.userId, assetId });
       return {
         assetId,
+        mediaKind: 'image',
         storageUrl: 'https://media.maxvideoai.com/private/reference.png',
         width: 1280,
         height: 720,
@@ -69,6 +70,7 @@ test('owned asset references resolve to private internal URLs without changing t
   assert.deepEqual(resolved, [{
     assetId: 'asset-image-1',
     role: 'source',
+    mediaKind: 'image',
     storageUrl: 'https://media.maxvideoai.com/private/reference.png',
     width: 1280,
     height: 720,
@@ -97,6 +99,7 @@ test('paid execution materializes a verified asset URL only in the ephemeral pro
     resolvedReferences: [{
       assetId: 'asset-image-1',
       role: 'source',
+      mediaKind: 'image',
       storageUrl: 'https://media.maxvideoai.com/private/reference.png',
       width: 1280,
       height: 720,

@@ -15,8 +15,13 @@ import {
   validateProviderSpecificConstraints,
 } from '@/server/video-generation/execution-constraints';
 
-import type { CanonicalGenerationRequest } from './generation-types';
+import type {
+  CanonicalGenerationReference,
+  CanonicalGenerationRequest,
+  CanonicalReferenceMediaKind,
+} from './generation-types';
 import type { AgentPublicGenerationEngine } from './model-catalog';
+import type { ResolvedReference } from './reference-types';
 
 const VIDEO_FIELD_BY_SETTING: Record<string, string> = {
   cameraFixed: 'camera_fixed',
@@ -181,6 +186,8 @@ function validateVideoModeCaps(
 
 function buildProviderConstraintPayload(
   request: CanonicalGenerationRequest,
+  candidate: AgentPublicGenerationEngine,
+  options: GenerationCapabilityValidationOptions,
 ): Record<string, unknown> {
   const payload: Record<string, unknown> = {
     prompt: request.prompt,
@@ -195,31 +202,33 @@ function buildProviderConstraintPayload(
   if (request.settings.safetyChecker !== undefined) {
     payload.enable_safety_checker = request.settings.safetyChecker;
   }
-  const referencesByRole = new Map<string, string[]>();
-  for (const reference of request.references) {
-    const values = referencesByRole.get(reference.role) ?? [];
-    values.push(`mcp-${reference.role}-${values.length + 1}`);
-    referencesByRole.set(reference.role, values);
+  const valuesByField = new Map<string, string[]>();
+  for (const [index, reference] of request.references.entries()) {
+    const fields = fieldsForReference(
+      request,
+      candidate,
+      reference,
+      resolvedMediaKind(reference, options),
+    );
+    const field = fields[0];
+    if (!field) continue;
+    const values = valuesByField.get(field.id) ?? [];
+    values.push(`mcp-${reference.role}-${index + 1}`);
+    valuesByField.set(field.id, values);
   }
-  const source = referencesByRole.get('source')?.[0];
-  const firstFrame = referencesByRole.get('first_frame')?.[0];
-  const lastFrame = referencesByRole.get('last_frame')?.[0];
-  const references = referencesByRole.get('reference');
-  if (source) payload.image_url = source;
-  if (firstFrame) payload.first_frame_url = firstFrame;
-  if (lastFrame) {
-    payload.last_frame_url = lastFrame;
-    payload.end_image_url = lastFrame;
-  }
-  if (references?.length) {
-    if (request.engineId === 'minimax-h3') payload.reference_image_urls = references;
-    else payload.image_urls = references;
+  for (const [fieldId, values] of valuesByField) {
+    const field = applicableField(candidate, fieldId, request.mode);
+    payload[fieldId] = (field?.maxCount ?? 1) > 1 ? values : values[0];
   }
   return payload;
 }
 
-function validateVideoExecutionConstraints(request: CanonicalGenerationRequest): void {
-  const payload = buildProviderConstraintPayload(request);
+function validateVideoExecutionConstraints(
+  request: CanonicalGenerationRequest,
+  candidate: AgentPublicGenerationEngine,
+  options: GenerationCapabilityValidationOptions,
+): void {
+  const payload = buildProviderConstraintPayload(request, candidate, options);
   const provider = validateProviderSpecificConstraints({
     engineId: request.engineId,
     normalizedMode: request.mode,
@@ -267,47 +276,79 @@ function validateImageSettings(
   }
 }
 
-function fieldsForRole(
+export type GenerationCapabilityValidationOptions = {
+  resolvedReferences?: readonly ResolvedReference[];
+};
+
+const REFERENCE_FIELD_TYPES = new Set<EngineInputField['type']>(['image', 'video', 'audio']);
+
+function fieldIdsForRole(
   request: CanonicalGenerationRequest,
-  candidate: AgentPublicGenerationEngine,
-): Map<CanonicalGenerationRequest['references'][number]['role'], EngineInputField | null> {
+  role: CanonicalGenerationReference['role'],
+): readonly string[] {
   if (request.mode === 'i2v') {
-    return new Map([
-      ['source', applicableField(candidate, 'image_url', request.mode)],
-      ['first_frame', applicableField(candidate, 'first_frame_url', request.mode)
-        ?? applicableField(candidate, 'start_image_url', request.mode)
-        ?? applicableField(candidate, 'image_url', request.mode)],
-      ['last_frame', applicableField(candidate, 'end_image_url', request.mode)
-        ?? applicableField(candidate, 'last_frame_url', request.mode)],
-      ['reference', applicableField(candidate, 'image_urls', request.mode)
-        ?? applicableField(candidate, 'reference_image_urls', request.mode)],
-    ]);
+    if (role === 'source') return ['image_url'];
+    if (role === 'first_frame') return ['first_frame_url', 'start_image_url', 'image_url'];
+    if (role === 'last_frame') return ['end_image_url', 'last_frame_url'];
+    return ['image_urls', 'reference_image_urls'];
+  }
+  if (request.mode === 'ref2v') {
+    return role === 'reference'
+      ? [
+        'image_urls',
+        'reference_image_urls',
+        'video_urls',
+        'reference_video_urls',
+        'audio_urls',
+        'reference_audio_urls',
+      ]
+      : [];
   }
   if (request.mode === 'v2v') {
-    return new Map([
-      ['source', applicableField(candidate, 'video_url', request.mode)],
-      ['first_frame', null],
-      ['last_frame', null],
-      ['reference', applicableField(candidate, 'image_urls', request.mode)
-        ?? applicableField(candidate, 'audio_urls', request.mode)],
-    ]);
+    if (role === 'source') return ['video_url'];
+    return role === 'reference'
+      ? ['image_urls', 'reference_image_urls', 'audio_urls', 'reference_audio_urls']
+      : [];
   }
   if (request.mode === 'extend') {
-    return new Map([
-      ['source', applicableField(candidate, 'extension_source_videos', request.mode)],
-      ['first_frame', null],
-      ['last_frame', null],
-      ['reference', null],
-    ]);
+    return role === 'source' ? ['extension_source_videos'] : [];
   }
-  const plural = applicableField(candidate, 'image_urls', request.mode)
-    ?? applicableField(candidate, 'reference_image_urls', request.mode);
-  return new Map([
-    ['source', request.mode === 'i2i' ? plural : applicableField(candidate, 'start_image_url', request.mode)],
-    ['first_frame', applicableField(candidate, 'start_image_url', request.mode)],
-    ['last_frame', applicableField(candidate, 'end_image_url', request.mode)],
-    ['reference', plural],
-  ]);
+  if (request.mode === 'i2i') {
+    return role === 'source' || role === 'reference'
+      ? ['image_urls', 'reference_image_urls']
+      : [];
+  }
+  if (role === 'source' || role === 'first_frame') return ['start_image_url'];
+  if (role === 'last_frame') return ['end_image_url'];
+  return ['image_urls', 'reference_image_urls'];
+}
+
+function fieldsForReference(
+  request: CanonicalGenerationRequest,
+  candidate: AgentPublicGenerationEngine,
+  reference: CanonicalGenerationReference,
+  mediaKind: CanonicalReferenceMediaKind | null,
+): EngineInputField[] {
+  const byKind = new Map<CanonicalReferenceMediaKind, EngineInputField>();
+  for (const fieldId of fieldIdsForRole(request, reference.role)) {
+    const field = applicableField(candidate, fieldId, request.mode);
+    if (!field || !REFERENCE_FIELD_TYPES.has(field.type)) continue;
+    const kind = field.type as CanonicalReferenceMediaKind;
+    if (!byKind.has(kind)) byKind.set(kind, field);
+  }
+  return mediaKind ? [byKind.get(mediaKind)].filter((field): field is EngineInputField => Boolean(field)) : [...byKind.values()];
+}
+
+function resolvedMediaKind(
+  reference: CanonicalGenerationReference,
+  options: GenerationCapabilityValidationOptions,
+): CanonicalReferenceMediaKind | null {
+  if (reference.kind === 'https') return reference.mediaKind;
+  if (!options.resolvedReferences) return null;
+  const resolved = options.resolvedReferences.find((candidate) =>
+    candidate.assetId === reference.assetId && candidate.role === reference.role);
+  if (!resolved) fail('references', 'reference_invalid');
+  return resolved.mediaKind;
 }
 
 function referenceSourceIdentity(
@@ -321,18 +362,13 @@ function referenceSourceIdentity(
 function validateReferenceBudget(
   request: CanonicalGenerationRequest,
   candidate: AgentPublicGenerationEngine,
-  roleFields: ReadonlyMap<
-    CanonicalGenerationRequest['references'][number]['role'],
-    EngineInputField | null
-  >,
+  selectedFields: readonly (readonly EngineInputField[])[],
 ): void {
   const budget = candidate.engine.inputSchema?.referenceBudget;
   if (!budget || (budget.modes?.length && !budget.modes.includes(request.mode))) return;
   const budgetFieldIds = new Set(budget.fieldIds);
-  const budgetReferences = request.references.filter((reference) => {
-    const field = roleFields.get(reference.role);
-    return field ? budgetFieldIds.has(field.id) : false;
-  });
+  const budgetReferences = request.references.filter((_, index) =>
+    selectedFields[index]?.some((field) => budgetFieldIds.has(field.id)));
   const count = budget.countUniqueUrls
     ? new Set(budgetReferences.map(referenceSourceIdentity)).size
     : budgetReferences.length;
@@ -342,6 +378,7 @@ function validateReferenceBudget(
 function validateReferences(
   request: CanonicalGenerationRequest,
   candidate: AgentPublicGenerationEngine,
+  options: GenerationCapabilityValidationOptions,
 ): void {
   if (request.mode === 't2v' || request.mode === 't2i') {
     if (request.references.length) fail('references', 'reference_invalid');
@@ -353,27 +390,56 @@ function validateReferences(
       fail('references', request.references.length < constraints.min ? 'reference_required' : 'reference_invalid');
     }
   }
-  const roleFields = fieldsForRole(request, candidate);
+  const selectedFields: EngineInputField[][] = [];
   const counts = new Map<EngineInputField, number>();
   for (const reference of request.references) {
-    const field = roleFields.get(reference.role);
-    if (!field) fail('references', 'reference_invalid');
-    counts.set(field, (counts.get(field) ?? 0) + 1);
+    const fields = fieldsForReference(
+      request,
+      candidate,
+      reference,
+      resolvedMediaKind(reference, options),
+    );
+    if (!fields.length) fail('references', 'reference_invalid');
+    selectedFields.push(fields);
+    if (fields.length === 1) {
+      const field = fields[0]!;
+      counts.set(field, (counts.get(field) ?? 0) + 1);
+    }
   }
-  for (const field of new Set([...roleFields.values()].filter((value): value is EngineInputField => Boolean(value)))) {
+  const possibleFields = new Set(
+    request.references.flatMap((reference) =>
+      fieldsForReference(request, candidate, reference, null)),
+  );
+  for (const role of ['source', 'reference', 'first_frame', 'last_frame'] as const) {
+    const placeholder: CanonicalGenerationReference = {
+      kind: 'asset',
+      assetId: 'capability-placeholder',
+      role,
+    };
+    for (const field of fieldsForReference(request, candidate, placeholder, null)) {
+      possibleFields.add(field);
+    }
+  }
+  for (const field of possibleFields) {
     const count = counts.get(field) ?? 0;
     const required = Boolean(field.requiredInModes?.includes(request.mode));
     const minimum = required ? Math.max(1, field.minCount ?? 1) : 0;
     const maximum = field.maxCount ?? 1;
-    if (count < minimum) fail('references', 'reference_required');
+    const hasDeferredAsset = request.references.some((reference, index) =>
+      reference.kind === 'asset'
+      && !options.resolvedReferences
+      && selectedFields[index]?.length !== 1
+      && selectedFields[index]?.includes(field));
+    if (count < minimum && !hasDeferredAsset) fail('references', 'reference_required');
     if (count > maximum) fail('references', 'reference_invalid');
   }
-  validateReferenceBudget(request, candidate, roleFields);
+  validateReferenceBudget(request, candidate, selectedFields);
 }
 
 export function validateCanonicalGenerationCapabilities(
   request: CanonicalGenerationRequest,
   candidate: AgentPublicGenerationEngine,
+  options: GenerationCapabilityValidationOptions = {},
 ): void {
   if (
     candidate.engine.id !== request.engineId
@@ -392,6 +458,6 @@ export function validateCanonicalGenerationCapabilities(
   if (!modeCaps) fail('mode');
   if (request.surface === 'video') validateVideoModeCaps(request, modeCaps, candidate);
   else validateImageSettings(request, candidate);
-  validateReferences(request, candidate);
-  if (request.surface === 'video') validateVideoExecutionConstraints(request);
+  validateReferences(request, candidate, options);
+  if (request.surface === 'video') validateVideoExecutionConstraints(request, candidate, options);
 }

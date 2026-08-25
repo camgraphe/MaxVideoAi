@@ -139,7 +139,7 @@ function registryCapability(engineId: string): AgentPublicGenerationEngine {
   const publicModes = entry.modes
     .map((mode) => mode.mode)
     .filter((mode): mode is AgentPublicGenerationEngine['publicModes'][number] =>
-      ['t2v', 'i2v', 'ref2v', 't2i', 'i2i'].includes(mode));
+      ['t2v', 'i2v', 'ref2v', 'v2v', 'extend', 't2i', 'i2i'].includes(mode));
   return {
     engine: entry.engine,
     surface: entry.category === 'image' ? 'image' : 'video',
@@ -442,6 +442,40 @@ test('canonical, public-engine, mode, surface, and reference validation fail clo
   assert.equal(forbiddenReference.captures.events.includes('pricing'), false);
 });
 
+test('prepare rejects a DB-verified image asset in a source-video slot with neutral wording', async () => {
+  const candidate = registryCapability('seedance-2-5');
+  const input: PrepareGenerationInput = {
+    surface: 'video',
+    engineId: 'seedance-2-5',
+    mode: 'v2v',
+    prompt: 'Edit this source clip.',
+    settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9', audio: true },
+    references: [{ kind: 'asset', assetId: 'image-asset', role: 'source' }],
+    outputCount: 1,
+  };
+  const { deps, captures } = baseDependencies({
+    listPublicEngines: async () => [candidate],
+    resolveGenerationReferences: async () => [{
+      assetId: 'image-asset',
+      role: 'source',
+      mediaKind: 'image',
+      storageUrl: 'https://assets.example.com/image.png',
+      width: 1024,
+      height: 1024,
+      mimeType: 'image/png',
+    }],
+  });
+
+  await assert.rejects(prepareGeneration(input, principal, deps), (error: unknown) => {
+    assert.ok(error instanceof AgentApiError);
+    assert.equal(error.code, 'REFERENCE_INVALID');
+    assert.match(error.message, /reference media/i);
+    assert.doesNotMatch(error.message, /image reference/i);
+    return true;
+  });
+  assert.equal(captures.events.includes('pricing'), false);
+});
+
 test('surface validation rejects semantically mistyped canonical settings before pricing', async () => {
   for (const settings of [
     { ...videoInput.settings, cameraFixed: 'yes' },
@@ -702,6 +736,7 @@ test('generation pricing delegates video and image formulas to the existing cano
     aspectRatio: '16:9',
     fps: 24,
     audio: true,
+    hasVideoInput: false,
     extraInputValues: { referenceImageCount: 0 },
     user: { memberTier: 'member' },
   });
@@ -818,6 +853,29 @@ test('generation pricing forwards MiniMax H3 reference counts to both canonical 
       },
     });
     assert.equal(count, mode === 'ref2v' ? 6 : 0);
+  }
+});
+
+test('prepare pricing uses the real Seedance video-input tier for source-video modes', async () => {
+  for (const mode of ['v2v', 'extend'] as const) {
+    const request: CanonicalGenerationRequest = {
+      schemaVersion: 1,
+      surface: 'video',
+      engineId: 'seedance-2-5',
+      mode,
+      prompt: 'Continue the source video.',
+      settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9', audio: true },
+      references: [{
+        kind: 'https',
+        url: `https://cdn.example.com/${mode}-source.mp4`,
+        role: 'source',
+        mediaKind: 'video',
+      }],
+      outputCount: 1,
+    };
+    const pricing = await priceCanonicalGeneration(request, 'member');
+    const meta = pricing.pricingSnapshot.meta as Record<string, unknown>;
+    assert.equal(meta.byteplus_billing_input_type, 'video_input');
   }
 });
 

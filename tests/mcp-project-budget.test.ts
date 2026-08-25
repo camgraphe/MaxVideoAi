@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import { listFalEngines } from '../frontend/src/config/falEngines';
 import { AgentApiError } from '../frontend/src/server/agent-api/errors';
+import { priceCanonicalGeneration } from '../frontend/src/server/agent-api/generation-pricing';
 import {
   calculateAgentProjectBudget,
   type AgentProjectBudgetDependencies,
@@ -191,6 +192,7 @@ test('budgets real H3 and Seedance 2.5 i2v lines with source-derived framing', a
 test('budgets real Seedance 2.5 v2v and extend lines through canonical pricing', async () => {
   const candidate = registryCapability('seedance-2-5');
   const pricedModes: string[] = [];
+  const billingInputTypes: unknown[] = [];
   const result = await calculateAgentProjectBudget(input([{
     name: 'Source video workflows',
     lines: [
@@ -211,18 +213,18 @@ test('budgets real Seedance 2.5 v2v and extend lines through canonical pricing',
     listPublicEngines: async () => [candidate],
     getMembershipStatus: async () => ({ pricing: { tier: 'member' } }),
     computeCatalogRevision: () => 'mcp-catalog-v2:full-video-modes',
-    priceGeneration: async (request) => {
+    priceGeneration: async (request, membershipTier) => {
       pricedModes.push(request.mode);
-      return {
-        priceCents: 125,
-        currency: 'USD',
-        membershipTier: 'member',
-        pricingSnapshot: { totalCents: 125, currency: 'USD', membershipTier: 'member' },
-      };
+      const pricing = await priceCanonicalGeneration(request, membershipTier);
+      billingInputTypes.push(
+        (pricing.pricingSnapshot.meta as Record<string, unknown>).byteplus_billing_input_type,
+      );
+      return pricing;
     },
   });
 
   assert.deepEqual(pricedModes, ['v2v', 'extend']);
+  assert.deepEqual(billingInputTypes, ['video_input', 'video_input']);
   assert.deepEqual(result.proposals[0]?.lines.map((budgetLine) => budgetLine.mode), ['v2v', 'extend']);
   assert.deepEqual(result.proposals[0]?.lines.map((budgetLine) => budgetLine.referenceCount), [1, 3]);
 });

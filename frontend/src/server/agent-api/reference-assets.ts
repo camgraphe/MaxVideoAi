@@ -117,6 +117,7 @@ export async function resolveOwnedReferenceAsset(
 
   return {
     assetId: row.id,
+    mediaKind: 'image',
     storageUrl: row.url,
     width: row.width,
     height: row.height,

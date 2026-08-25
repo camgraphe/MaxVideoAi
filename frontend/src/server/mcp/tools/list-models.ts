@@ -2,10 +2,11 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod/v4';
 
 import type { AgentPrincipal } from '@/server/agent-api/principal';
+import { CANONICAL_GENERATION_MODES } from '@/server/agent-api/generation-types';
 import type { MaxVideoAiMcpServices } from '@/server/mcp/server';
 import { runAgentTool } from '@/server/mcp/tool-result';
 
-const generationMode = z.enum(['t2v', 'i2v', 'ref2v', 't2i', 'i2i']);
+const generationMode = z.enum(CANONICAL_GENERATION_MODES);
 
 export function registerListModelsTool(
   server: McpServer,

@@ -441,6 +441,7 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
       mode: request.mode,
       membershipTier: memberTier,
       loop,
+      hasVideoInput: request.hasVideoInput,
       durationOption: durationInfo?.label,
       addons: Object.keys(pricingAddons).length ? pricingAddons : undefined,
       referenceImageCount,
