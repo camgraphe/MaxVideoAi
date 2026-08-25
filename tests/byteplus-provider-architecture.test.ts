@@ -114,6 +114,72 @@ test('BytePlus ModelArk non-safety start failures stay specific without provider
   );
 });
 
+test('BytePlus Seedance makes video edit and extension intent explicit without rewriting creative prompts', () => {
+  const base = {
+    modelId: 'dreamina-seedance-2-5-260628',
+    durationSec: 4,
+    referenceVideoUrls: ['https://cdn.maxvideoai.com/source.mp4'],
+    resolution: '480p',
+    ratio: '16:9',
+    allowedResolutions: ['480p'] as const,
+    allowedDurationOptions: [4] as const,
+  };
+
+  const edit = buildBytePlusSeedancePayload({
+    ...base,
+    prompt: 'Create a subtle cinematic variation while preserving the composition.',
+    mode: 'v2v',
+  });
+  assert.equal(
+    edit.content[0]?.type === 'text' ? edit.content[0].text : null,
+    'Edit Video 1 according to this instruction: Create a subtle cinematic variation while preserving the composition.'
+  );
+
+  const explicitEditPrompt = 'Strictly edit Video 1 and replace its background with a moonlit studio.';
+  const explicitEdit = buildBytePlusSeedancePayload({
+    ...base,
+    prompt: explicitEditPrompt,
+    mode: 'v2v',
+  });
+  assert.equal(
+    explicitEdit.content[0]?.type === 'text' ? explicitEdit.content[0].text : null,
+    explicitEditPrompt
+  );
+
+  const extension = buildBytePlusSeedancePayload({
+    ...base,
+    prompt: 'Continue the camera move into the next shot.',
+    mode: 'extend',
+  });
+  assert.equal(
+    extension.content[0]?.type === 'text' ? extension.content[0].text : null,
+    'Extend or continue Video 1 according to this instruction: Continue the camera move into the next shot.'
+  );
+
+  const referencePrompt = 'Use the motion as inspiration for a new product shot.';
+  const reference = buildBytePlusSeedancePayload({
+    ...base,
+    prompt: referencePrompt,
+    mode: 'ref2v',
+  });
+  assert.equal(
+    reference.content[0]?.type === 'text' ? reference.content[0].text : null,
+    referencePrompt
+  );
+});
+
+test('BytePlus Seedance maps provider task-type constraints to safe actionable guidance', () => {
+  const providerCode = 'InvalidParameter.TaskTypeConstraint';
+  assert.equal(
+    getBytePlusTaskFailureCode(null, providerCode),
+    'seedance_task_type_constraint'
+  );
+  assert.equal(
+    getBytePlusUserSafeTaskFailureMessage(null, providerCode),
+    'Seedance could not identify the intended video edit or extension. Refer to the source directly as Video 1, then prepare a new quote before retrying.'
+  );
+});
+
 test('BytePlus ModelArk explains provider pixel-floor and inherited-ratio rejections precisely', () => {
   const pixelMessage =
     'The parameter content[1] video pixel count must be >= 407696 for model dreamina-seedance-2-5 in r2v.';

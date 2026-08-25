@@ -32,6 +32,7 @@ export type AgentGenerationStatus = {
   priceCents: number | null;
   currency: string | null;
   paymentStatus: string | null;
+  failureCode?: string;
   funding?: 'included_trial';
   entitlementState?: 'reserved' | 'consumed' | 'released';
   result: AgentGenerationResult | null;

@@ -1,6 +1,13 @@
 import { deriveJobSurface } from '@/lib/job-surface';
 import { extractRenderIds, extractRenderThumbUrls, parseStoredImageRenders } from '@/lib/image-renders';
 import { isStablePublicMediaUrl, normalizeMediaUrl } from '@/lib/media';
+import {
+  getVideoFailureCodeFromSettingsSnapshot,
+  SEEDANCE_I2V_RATIO_REJECTED,
+  SEEDANCE_INPUT_VIDEO_TOO_SMALL,
+  SEEDANCE_OUTPUT_COPYRIGHT_RESTRICTED,
+  SEEDANCE_TASK_TYPE_CONSTRAINT,
+} from '@/lib/video-failure-codes';
 
 import type {
   AgentGenerationResult,
@@ -57,7 +64,21 @@ const AGENT_FAILURE_COPY = {
   timeout: 'This render exceeded the expected processing window. Please retry in a few moments.',
   unsupported: 'This request is not supported with the selected inputs. Adjust the prompt, media, or settings and try again.',
   pollingStalled: 'This render needs manual review. Contact MaxVideoAI support with your request ID before retrying.',
+  seedanceTaskType:
+    'Seedance could not identify the intended video edit or extension. Refer to the source directly as Video 1, then prepare a new quote before retrying.',
 } as const;
+
+const SAFE_AGENT_FAILURE_CODES = new Set([
+  SEEDANCE_I2V_RATIO_REJECTED,
+  SEEDANCE_INPUT_VIDEO_TOO_SMALL,
+  SEEDANCE_OUTPUT_COPYRIGHT_RESTRICTED,
+  SEEDANCE_TASK_TYPE_CONSTRAINT,
+]);
+
+function safeAgentFailureCode(settingsSnapshot: unknown): string | null {
+  const failureCode = getVideoFailureCodeFromSettingsSnapshot(settingsSnapshot);
+  return failureCode && SAFE_AGENT_FAILURE_CODES.has(failureCode) ? failureCode : null;
+}
 
 function normalizeAgentSurface(record: GenerationStatusRecord): 'video' | 'image' | null {
   const surface = deriveJobSurface({
@@ -203,11 +224,15 @@ function buildAgentResult(
 function buildAgentMessage(
   status: AgentGenerationStatus['status'],
   rawMessage: string | null,
-  rawStatus: string | null
+  rawStatus: string | null,
+  failureCode: string | null
 ): string | null {
   if (status === 'accepted') return 'Generation accepted.';
   if (status === 'running') return 'Generation in progress.';
   if (status === 'failed') {
+    if (failureCode === SEEDANCE_TASK_TYPE_CONSTRAINT) {
+      return AGENT_FAILURE_COPY.seedanceTaskType;
+    }
     if (rawStatus?.trim().toLowerCase() === 'provider_polling_stalled') {
       return AGENT_FAILURE_COPY.pollingStalled;
     }
@@ -244,12 +269,15 @@ export function mapGenerationStatusRecordToAgent(
   const surface = normalizeAgentSurface(record);
   if (!surface) return null;
   const status = normalizeAgentStatus(record.status);
+  const failureCode = status === 'failed'
+    ? safeAgentFailureCode(record.settings_snapshot)
+    : null;
   return {
     jobId: record.job_id,
     surface,
     status,
     progress: normalizeProgress(record.progress, status),
-    message: buildAgentMessage(status, record.message, record.status),
+    message: buildAgentMessage(status, record.message, record.status, failureCode),
     priceCents:
       typeof record.final_price_cents === 'number' &&
       Number.isSafeInteger(record.final_price_cents) &&
@@ -258,6 +286,7 @@ export function mapGenerationStatusRecordToAgent(
         : null,
     currency: normalizeCurrency(record.currency),
     paymentStatus: normalizePaymentStatus(record.payment_status),
+    ...(failureCode ? { failureCode } : {}),
     result: buildAgentResult(record, surface, status),
     retryAfterSeconds: status === 'accepted' || status === 'running' ? 5 : null,
   };

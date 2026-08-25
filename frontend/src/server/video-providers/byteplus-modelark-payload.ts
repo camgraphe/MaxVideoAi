@@ -60,6 +60,22 @@ function uniqueNonEmptyUrls(values: Array<string | null | undefined> | undefined
   return Array.from(new Set(nonEmptyUrls(values)));
 }
 
+const BYTEPLUS_EXPLICIT_VIDEO_ONE_PATTERN = /(?:<\s*)?video[\s_-]*1(?:\s*>)?/iu;
+
+function makeBytePlusTaskIntentExplicit(
+  prompt: string,
+  mode: Extract<Mode, 't2v' | 'i2v' | 'ref2v' | 'v2v' | 'extend'>
+): string {
+  if (BYTEPLUS_EXPLICIT_VIDEO_ONE_PATTERN.test(prompt)) return prompt;
+  if (mode === 'v2v') {
+    return `Edit Video 1 according to this instruction: ${prompt}`;
+  }
+  if (mode === 'extend') {
+    return `Extend or continue Video 1 according to this instruction: ${prompt}`;
+  }
+  return prompt;
+}
+
 export function buildBytePlusSeedancePayload(params: {
   modelId: string;
   prompt: string;
@@ -286,7 +302,9 @@ export function buildBytePlusSeedancePayload(params: {
     });
   }
 
-  const content: BytePlusContentItem[] = [{ type: 'text', text: prompt }];
+  const content: BytePlusContentItem[] = [
+    { type: 'text', text: makeBytePlusTaskIntentExplicit(prompt, mode) },
+  ];
   if (mode === 'i2v') {
     content.push({
       type: 'image_url',

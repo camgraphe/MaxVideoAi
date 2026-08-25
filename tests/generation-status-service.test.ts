@@ -234,6 +234,35 @@ test('agent status sanitizes terminal failures and preserves refunded state', as
   assert.equal(result?.retryAfterSeconds, null);
 });
 
+test('agent status exposes only the safe Seedance task-type code and actionable retry guidance', () => {
+  const result = mapGenerationStatusRecordToAgent(
+    generationRecord({
+      status: 'failed',
+      progress: 0,
+      payment_status: 'refunded_wallet',
+      message: 'opaque provider failure request_id=secret-value',
+      settings_snapshot: {
+        providerFailure: {
+          provider: 'byteplus_modelark',
+          providerErrorCode: 'InvalidParameter.TaskTypeConstraint',
+          failureCode: 'seedance_task_type_constraint',
+        },
+        privateReferenceUrl: 'https://provider.example/private.mp4',
+      },
+    })
+  );
+
+  assert.equal(result?.failureCode, 'seedance_task_type_constraint');
+  assert.equal(
+    result?.message,
+    'Seedance could not identify the intended video edit or extension. Refer to the source directly as Video 1, then prepare a new quote before retrying.'
+  );
+  assert.doesNotMatch(
+    JSON.stringify(result),
+    /InvalidParameter|request_id|secret-value|privateReferenceUrl|provider\.example/i
+  );
+});
+
 test('agent failure messages never echo arbitrary secrets, identities, or opaque bodies', () => {
   const expected =
     'MaxVideoAI could not complete this render. Please retry in a few moments. If this keeps happening, contact support with your request ID.';

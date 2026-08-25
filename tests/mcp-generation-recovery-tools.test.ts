@@ -297,6 +297,34 @@ test('completed video recovery exposes bounded stable links while non-terminal j
   assert.deepEqual(buildGenerationResourceLinks(buildAgentGenerationRecovery(status())), []);
 });
 
+test('failed recovery gives Claude and Codex a stable actionable code without provider details', async (t) => {
+  const recovery = buildAgentGenerationRecovery(status({
+    status: 'failed',
+    progress: 0,
+    paymentStatus: 'refunded_wallet',
+    retryAfterSeconds: null,
+    failureCode: 'seedance_task_type_constraint',
+    message:
+      'Seedance could not identify the intended video edit or extension. Refer to the source directly as Video 1, then prepare a new quote before retrying.',
+  }));
+  const session = await connected({
+    async getGenerationStatus() {
+      return recovery;
+    },
+  });
+  t.after(() => session.close());
+
+  const result = await session.client.callTool({
+    name: 'get_generation_status',
+    arguments: { jobId: 'legacy-job_42' },
+  });
+  const serialized = JSON.stringify(result);
+  assert.match(serialized, /seedance_task_type_constraint/);
+  assert.match(serialized, /Refer to the source directly as Video 1/);
+  assert.match(serialized, /refunded_wallet/);
+  assert.doesNotMatch(serialized, /InvalidParameter|TaskTypeConstraint|provider_job|reference\.mp4/i);
+});
+
 test('resource link MIME types never label extensionless image output as video', () => {
   const recovery = buildAgentGenerationRecovery(status({
     surface: 'image',

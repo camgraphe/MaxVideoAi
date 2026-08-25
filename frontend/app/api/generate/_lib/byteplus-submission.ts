@@ -242,7 +242,7 @@ export async function submitBytePlusGenerateTask(params: {
         : errorCode === 'BYTEPLUS_ENGINE_PROFILE_MISSING'
         ? 'This engine is not configured for BytePlus.'
         : toUserFacingFailureMessage(
-            getBytePlusUserSafeErrorMessageFn(providerMessage)
+            getBytePlusUserSafeErrorMessageFn(providerMessage, providerErrorCode)
           );
     const responseStatus =
       error instanceof BytePlusModelArkError && error.code === 'BYTEPLUS_ENGINE_DISABLED'

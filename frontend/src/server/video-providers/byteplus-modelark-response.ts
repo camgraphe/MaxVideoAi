@@ -3,6 +3,7 @@ import {
   SEEDANCE_I2V_RATIO_REJECTED,
   SEEDANCE_INPUT_VIDEO_TOO_SMALL,
   SEEDANCE_OUTPUT_COPYRIGHT_RESTRICTED,
+  SEEDANCE_TASK_TYPE_CONSTRAINT,
 } from '@/lib/video-failure-codes';
 
 export type BytePlusTaskResponse = Record<string, unknown>;
@@ -115,6 +116,8 @@ const SEEDANCE_TASK_FAILURE_MESSAGE =
   'Seedance started this render but did not deliver a video. Retry with a simpler prompt or fewer reference assets.';
 const SEEDANCE_COPYRIGHT_FAILURE_MESSAGE =
   'Seedance stopped this render after it started because its output checks detected possible copyright-restricted content. Change recognizable characters, brands, logos, franchise references, or source media before trying again.';
+const SEEDANCE_TASK_TYPE_FAILURE_MESSAGE =
+  'Seedance could not identify the intended video edit or extension. Refer to the source directly as Video 1, then prepare a new quote before retrying.';
 
 function isBytePlusCopyrightFailure(providerMessage: string, providerErrorCode?: string | null): boolean {
   const normalizedMessage = providerMessage.toLowerCase();
@@ -140,12 +143,19 @@ function isBytePlusInheritedRatioFailure(providerMessage: string): boolean {
   );
 }
 
+function isBytePlusTaskTypeConstraint(providerErrorCode?: string | null): boolean {
+  return providerErrorCode?.trim().toLowerCase() === 'invalidparameter.tasktypeconstraint';
+}
+
 function getBytePlusUserSafeFailureMessage(
   providerMessage: string,
   fallbackMessage: string,
   providerErrorCode?: string | null
 ): string {
   const normalized = providerMessage.toLowerCase();
+  if (isBytePlusTaskTypeConstraint(providerErrorCode)) {
+    return SEEDANCE_TASK_TYPE_FAILURE_MESSAGE;
+  }
   if (isBytePlusCopyrightFailure(providerMessage, providerErrorCode)) {
     return SEEDANCE_COPYRIGHT_FAILURE_MESSAGE;
   }
@@ -192,8 +202,15 @@ function getBytePlusUserSafeFailureMessage(
   return fallbackMessage;
 }
 
-export function getBytePlusUserSafeErrorMessage(providerMessage: string): string {
-  return getBytePlusUserSafeFailureMessage(providerMessage, SEEDANCE_START_FAILURE_MESSAGE);
+export function getBytePlusUserSafeErrorMessage(
+  providerMessage: string,
+  providerErrorCode?: string | null
+): string {
+  return getBytePlusUserSafeFailureMessage(
+    providerMessage,
+    SEEDANCE_START_FAILURE_MESSAGE,
+    providerErrorCode
+  );
 }
 
 export function getBytePlusUserSafeTaskFailureMessage(
@@ -208,6 +225,9 @@ export function getBytePlusTaskFailureCode(
   providerErrorCode?: string | null
 ): string | null {
   const message = providerMessage ?? '';
+  if (isBytePlusTaskTypeConstraint(providerErrorCode)) {
+    return SEEDANCE_TASK_TYPE_CONSTRAINT;
+  }
   if (isBytePlusCopyrightFailure(message, providerErrorCode)) {
     return SEEDANCE_OUTPUT_COPYRIGHT_RESTRICTED;
   }
