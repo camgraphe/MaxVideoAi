@@ -127,3 +127,55 @@ Required fidelity surfaces:
 - Source visual captures contain older media and the superseded Browse row, so exact pixel comparison is limited to stable hierarchy, spacing, typography, and control treatment.
 
 final result: passed
+
+---
+
+# MCP Inline Video Proof Design QA
+
+## Evidence
+
+- Source visual truth: `/Users/adrienmillot/.codex/generated_images/019f510a-3ce2-72c2-8836-ed267d24d5ec/exec-be36ca23-a3a9-461a-bd1c-f4b32dee5f01.png`
+- Rendered implementation: `/Users/adrienmillot/.codex/visualizations/2026/07/11/019f510a-3ce2-72c2-8836-ed267d24d5ec/maxvideoai-claude-inline-video-proof.png`
+- Source pixels: 1505 x 1045.
+- Implementation pixels and viewport: 1152 x 768 at the Claude desktop app's native capture density.
+- Density normalization: none. The source is a broader landing-page art direction while the implementation is host-owned Claude UI; the comparison therefore targets the shared inline-result surface rather than pixel identity of the surrounding frame.
+- State: completed MaxVideoAI generation displayed inside a real Claude conversation, with native video controls, result type, exact price, library confirmation, and MaxVideoAI CTA visible.
+
+## Findings
+
+No actionable P0, P1, or P2 findings remain for the requested proof asset.
+
+- Fonts and typography: Claude owns the surrounding type system; the embedded card uses a compact, readable hierarchy consistent with the source intent.
+- Spacing and layout rhythm: the real iframe is correctly sized and the complete result surface fits above Claude's composer without clipping the controls, price, library state, or CTA.
+- Colors and visual tokens: the embedded card stays neutral and product-aligned, while the completed state and primary action retain clear semantic contrast.
+- Image quality and asset fidelity: the screenshot contains an actual generated video frame and native playback controls, not a fabricated UI or placeholder image.
+- Copy and content: `Video`, `$0.95`, `Saved to your MaxVideoAI library`, and `Open in MaxVideoAI` explain the outcome and continuation path without technical MCP language.
+- Interaction and accessibility: Claude exposes the embedded result as `MaxVideoAI generation result`; Play was activated successfully and changed to Pause, proving real inline playback.
+
+## Full-view Comparison Evidence
+
+The source direction calls for an assistant conversation containing a completed MaxVideoAI video result. The real Claude capture delivers that core proof and adds production evidence the mock could not provide: native playback controls, an actual four-second video, the charged price, persistence in the MaxVideoAI library, and a working continuation CTA.
+
+The surrounding UI is intentionally not pixel-matched because Claude owns it. This is preferable for the marketing proof: it demonstrates the integration in the genuine host rather than presenting another simulated assistant frame.
+
+## Focused Region Comparison Evidence
+
+The inline result card was readable at full-view scale, so no extra crop was needed. Its visible video player, price row, library confirmation, and CTA are the decisive comparison region.
+
+## Comparison History
+
+### Iteration 1
+
+- [P1] Claude created the MCP App iframe but did not display it at a usable height.
+  - Fix: implemented the MCP Apps lifecycle (`ui/initialize`, `ui/notifications/initialized`, and `ui/notifications/size-changed`) and live resize reporting.
+  - Post-fix evidence: the final Claude capture shows the full interactive video result in the conversation.
+- [P2] An earlier capture showed only the top of the video because Claude's composer covered the lower result metadata.
+  - Fix: reframed the live conversation so playback controls, price, library message, and CTA are all visible in one capture.
+  - Post-fix evidence: `maxvideoai-claude-inline-video-proof.png`.
+
+## Follow-up Polish
+
+- [P3] Replace the staging connector label with the production integration name only when the production connector is deliberately published; the retained proof crop already avoids presenting staging as a production claim.
+- ChatGPT host playback remains a separate live-host verification and is not claimed by this Claude proof.
+
+final result: passed
