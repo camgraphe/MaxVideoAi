@@ -9,6 +9,7 @@ import {
   AiVideoToolbox,
   ComparisonPreview,
   HomeFaq,
+  HomeAssistantWorkflow,
   HomeHero,
   RealExamplesPreview,
   ReferenceWorkflow,
@@ -17,6 +18,7 @@ import {
   WorkflowSeoSummary,
   type WorkflowSeoSummaryCopy,
 } from '@/components/marketing/home/HomeRedesignSections';
+import { getMcpInternalLink } from '@/lib/mcp-internal-links';
 import {
   BEST_FOR_MAIN_SLUGS,
   buildBestForGuideCards,
@@ -71,6 +73,7 @@ export default async function HomePage(props: { params: Promise<{ locale: AppLoc
   const comparisons = await buildComparisonCardsWithExampleMedia(content, examples);
   const providers = filterProviderItems(content);
   const tools = filterToolCards(content, stats);
+  const mcpLink = getMcpInternalLink(locale, 'home');
   const softwareSchema = buildSoftwareSchema(content);
   const faqSchema = buildFaqSchema(content.faq.items);
   const itemListSchema = buildItemListSchema(content, providers);
@@ -87,6 +90,11 @@ export default async function HomePage(props: { params: Promise<{ locale: AppLoc
       <DeferredMarketingContent>
         <ComparisonPreview copy={content.comparisons} comparisons={comparisons} />
       </DeferredMarketingContent>
+      {mcpLink ? (
+        <DeferredMarketingContent>
+          <HomeAssistantWorkflow locale={locale} href={mcpLink.href} />
+        </DeferredMarketingContent>
+      ) : null}
       <DeferredMarketingContent>
         <ReferenceWorkflow copy={content.workflow} steps={content.workflow.steps} />
       </DeferredMarketingContent>

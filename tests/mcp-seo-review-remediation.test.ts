@@ -33,6 +33,11 @@ const localizedMcpUrls = {
     fr: 'https://maxvideoai.com/fr/mcp',
     es: 'https://maxvideoai.com/es/mcp',
   },
+  '/integrations/chatgpt': {
+    en: 'https://maxvideoai.com/integrations/chatgpt',
+    fr: 'https://maxvideoai.com/fr/integrations/chatgpt',
+    es: 'https://maxvideoai.com/es/integraciones/chatgpt',
+  },
   '/integrations/claude': {
     en: 'https://maxvideoai.com/integrations/claude',
     fr: 'https://maxvideoai.com/fr/integrations/claude',
@@ -105,17 +110,17 @@ function extractAlternates(block: string) {
   );
 }
 
-test('enabled postbuild XML contains all 12 localized MCP owners with reciprocal absolute alternates', () => {
+test('enabled postbuild XML contains all 15 localized MCP owners with reciprocal absolute alternates', () => {
   const xml = buildEnabledPostbuildSitemap();
   const expectedUrls = Object.values(localizedMcpUrls).flatMap((locales) => Object.values(locales));
   const expectedUrlSet = new Set(expectedUrls);
-  assert.equal(expectedUrlSet.size, 12);
+  assert.equal(expectedUrlSet.size, 15);
 
   const sourceBlocks = extractUrlBlocks(xml).filter((block) => {
     const loc = extractLoc(block);
     return loc != null && expectedUrlSet.has(loc);
   });
-  assert.equal(sourceBlocks.length, 12, 'every localized source URL should be a sitemap <loc> exactly once');
+  assert.equal(sourceBlocks.length, 15, 'every localized source URL should be a sitemap <loc> exactly once');
   assert.deepEqual(new Set(sourceBlocks.map(extractLoc)), expectedUrlSet);
 
   for (const block of sourceBlocks) {
@@ -142,10 +147,11 @@ test('llms response is built deterministically from publication state without a 
   sourceUrls.forEach((url) => assert.equal(enabledText.split(url).length - 1, 1));
   assert.match(falseText, /MCP acquisition sources are omitted because the shared publication gate is closed\./);
   assert.doesNotMatch(enabledText, /publication gate is closed/i);
-  assert.match(enabledText, /Product and model-comparison workflow/);
-  assert.match(enabledText, /Claude-specific setup and revocation/);
+  assert.match(enabledText, /AI video plugin workflow for ChatGPT, Claude, and Codex/);
+  assert.match(enabledText, /ChatGPT plugin and direct MCP setup/);
+  assert.match(enabledText, /Claude connector setup and revocation/);
   assert.match(enabledText, /Codex-specific setup and revocation/);
-  assert.match(enabledText, /Protocol, OAuth, tools, security, and troubleshooting reference/);
+  assert.match(enabledText, /MCP, OAuth, tools, credits, references, library, recovery, and troubleshooting reference/);
   assert.doesNotMatch(falseText, /api\.maxvideoai\.com\/mcp/);
   assert.doesNotMatch(enabledText, /api\.maxvideoai\.com\/mcp/);
 

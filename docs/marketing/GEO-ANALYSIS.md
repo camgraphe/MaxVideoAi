@@ -21,25 +21,25 @@ Primary terminology references to recheck before publication:
 - Claude custom remote connectors: https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp
 - Model Context Protocol introduction: https://modelcontextprotocol.io/docs/2026-07-28/getting-started/intro
 
-## GEO Readiness Score: 55/100
+## GEO Readiness Score: 74/100
 
-This is an implementation-readiness score, not an organic-traffic forecast. The public MCP routes are currently excluded by checked-in publication flags, so their present production discoverability is intentionally zero. The source architecture is reasonably strong, but the product pages still contain stale preview language, there is no ChatGPT route, proof media is absent, and the external distribution/entity story is incomplete.
+This is an implementation-readiness score, not an organic-traffic forecast. The public routes remain excluded by checked-in publication flags, so production discoverability is intentionally zero. The branch now has five localized intent owners, prospect-facing copy, credit/library/reference answers, a homepage entry and a live-catalog architecture. The largest remaining gaps are honest job-backed proof, final ChatGPT host evidence, a public GitHub release, and production publication.
 
 | Criterion | Score | Current evidence |
 | --- | ---: | --- |
-| Passage-level citability | 11/25 | Server-rendered direct-answer sections exist, but many answers lead with internal “preview/unverified” wording and do not yet explain credits/library continuity. |
-| Structural readability | 16/20 | Clear H1/H2 sections, workflow blocks, visible questions, breadcrumbs, and localized route owners already exist. |
+| Passage-level citability | 21/25 | Server-rendered answers now define the product, price/approval, credits/top-up, gallery continuity, references, failures, and disconnect without internal rollout language. |
+| Structural readability | 18/20 | Five distinct localized intent owners, clear headings, visible questions, breadcrumbs, client guides, and an indexable technical reference. |
 | Multi-modal proof | 2/15 | The proof component exists, but getMcpProof currently returns null and the previous provider-example candidate was correctly rejected. |
-| Authority and brand signals | 8/20 | Evidence dates, editorial/site entities, LinkedIn/X/GitHub/Product Hunt sameAs values, and GSC data exist. A dedicated public plugin repository, verified demo, directory presence, and cross-platform mentions are not established. |
-| Technical accessibility | 18/20 | Pages are React Server Components, search/user-request AI crawlers can access public marketing, private routes are blocked, and llms.txt/sitemap gating exists. The ChatGPT route and final five-page source set are missing. |
+| Authority and brand signals | 13/20 | Exact hosted Claude/Codex evidence, editorial/site entities, GitHub-ready plugin files, profiles, and GSC data exist. A public release, job-backed demo, and earned mentions are not established. |
+| Technical accessibility | 20/20 | Server-rendered pages, five-page sitemap/llms source set, crawler controls, ChatGPT route, publication gates, localized paths, and contextual-link architecture are implemented. |
 
 ## Platform Breakdown
 
 | Platform | Readiness | Main strength | Main gap |
 | --- | ---: | --- | --- |
-| Google AI Overviews | 58/100 | Existing domain visibility, server-rendered comparison/model content, structured localized routes, and contextual-link foundations. | Acquisition pages are gated and their copy/evidence is stale. |
-| ChatGPT search and app discovery | 52/100 | OAI-SearchBot and ChatGPT-User are allowed on public content; plugin package and remote MCP foundation exist. | No dedicated /integrations/chatgpt page, final app submission artifact, or verified public install path. |
-| Perplexity | 43/100 | PerplexityBot and Perplexity-User are allowed; concise answer sections and comparison data are available. | No recorded community validation, public plugin repository/release, or publishable proof media. |
+| Google AI Overviews | 76/100 | Existing domain visibility, server-rendered answer passages, localized routes, and contextual links from strong product pages. | Pages remain gated; no job-backed proof or observed search performance yet. |
+| ChatGPT search and app discovery | 72/100 | Dedicated ChatGPT intent owner, OpenAI-oriented terminology, allowed retrieval crawlers, plugin package, and remote MCP foundation. | Final ChatGPT desktop host test and public installation/release are still required. |
+| Perplexity | 60/100 | Concise answers, localized technical guide, live-model architecture, and crawler access are ready. | No public repository release, community validation, or publishable proof media. |
 
 ## AI Crawler Access Status
 
@@ -89,9 +89,9 @@ External brand mentions must be earned through useful releases, demos, documenta
 - Compatibility dates are data-driven rather than typed into JSX.
 - The technical docs have a dedicated canonical route and TechArticle-style architecture.
 
-### Passages to replace
+### Implemented answer passages
 
-The current answer content repeatedly begins with internal status language. That makes individual extracts technically cautious but commercially unusable. Replace it with self-contained product answers:
+The branch now uses self-contained product answers suitable for extraction:
 
 - “MaxVideoAI for ChatGPT and Claude connects your AI assistant to MaxVideoAI’s current video and image models, prices, references, and generation workflow.”
 - “Model recommendations are free; MaxVideoAI returns an exact quote before a paid generation and waits for your explicit approval.”
@@ -118,11 +118,11 @@ Risks to prevent:
 
 ## Top 5 Highest-Impact Changes
 
-1. Replace preview/internal language with the validated commercial promise and complete account/credit/library explanations.
-2. Add /integrations/chatgpt and make ChatGPT plus Claude the equal primary acquisition actions.
-3. Publish one job-backed, checksum-backed proof flow showing brief, recommendation, quote, approval, result, and library continuity.
-4. Insert a compact conversation-led module on the high-authority homepage and add varied contextual links from existing model, comparison, example, and pricing winners.
-5. Publish a safe GitHub plugin package and verified installation documentation, then pursue directories only where current rules permit the full product.
+1. Publish one job-backed, checksum-backed proof flow showing brief, recommendation, quote, approval, result, and library continuity.
+2. Complete the ChatGPT desktop install/OAuth/tool-selection check and record the exact client version.
+3. Publish the GitHub plugin package and a tagged release with links back to the five owned source pages.
+4. Activate production flags only after transport, OAuth, generation, references, monitoring, legal, and rollback gates pass.
+5. Earn external mentions through a useful demo and documentation; pursue only directories whose current rules permit the complete product.
 
 ## Schema Recommendations
 
@@ -147,12 +147,12 @@ Risks to prevent:
 
 The latest read-only three-month GSC view observed during this design work showed:
 
-- 6,321 clicks;
-- 495,014 impressions;
+- 6,314 clicks;
+- 491,440 impressions;
 - 1.3% CTR;
 - average position 10.2;
-- 27,715 impressions associated with the displayed generative-AI feature view;
-- 4,801 homepage impressions in that same displayed feature view.
+- 27,759 impressions associated with the displayed generative-AI feature view;
+- 4,835 homepage impressions in that same displayed feature view.
 
 The homepage, LTX/Kling examples, Veo model content, Seedance comparisons, Wan examples, and existing comparison/model pages are the strongest internal-link sources. GSC’s query and feature tables can be partial, so these figures are a baseline for prioritization, not an attribution claim for the future plugin.
 

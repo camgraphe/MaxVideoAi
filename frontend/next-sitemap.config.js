@@ -18,10 +18,10 @@ const mcpIndexable =
   mcpPublication.oauth &&
   mcpPublication.discovery &&
   mcpPublication.paidGeneration &&
-  mcpPublication.trial &&
   mcpPublication.referenceUploads;
 const MCP_PUBLIC_INDEXABLE_PATHS = [
   '/mcp',
+  '/integrations/chatgpt',
   '/integrations/claude',
   '/integrations/codex',
   '/docs/mcp',

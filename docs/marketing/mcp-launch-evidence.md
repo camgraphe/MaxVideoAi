@@ -34,14 +34,14 @@ confirmed, no payment was opened, and the staging wallet stayed at $1.05.
 
 | Evidence | State | Result |
 | --- | --- | --- |
-| Checked-in all-false build | Pass | All 12 EN/FR/ES MCP owners return terminal HTTP 404, `X-Robots-Tag: noindex, nofollow`, rendered noindex metadata, and a rewrite to the genuinely missing locale path `/{locale}/__mcp-publication-gated__`; they remain absent from sitemaps and `llms.txt`. |
+| Checked-in all-false build | Pass | All 15 EN/FR/ES MCP, documentation, ChatGPT, Claude, and Codex owners return terminal HTTP 404, `X-Robots-Tag: noindex, nofollow`, rendered noindex metadata, and a rewrite to the genuinely missing locale path `/{locale}/__mcp-publication-gated__`; they remain absent from sitemaps and `llms.txt`. |
 | Isolated preview fixture | Pass | `publicMarketing`, transport, OAuth, and discovery were fixture-only; trial, paid generation, reference upload, and indexing remained false. An asserted 1440×1000 viewport and full-page capture show no trial/proof and the targeted unavailable-budget state. |
-| Isolated all-gates-green fixture | Pass | The tracked fixture config enabled every gate only inside a temporary copied worktree. Public route, SEO, interaction, private-boundary, trial, and three-option budget checks passed against a clean production build. |
-| Light/dark desktop/mobile visual review | Pass | Light remains the default MaxVideoAI treatment, dark mode has equivalent hierarchy and contrast, and Claude/Codex use equal 24×24 marks inside equal actions. |
+| Isolated all-gates-green fixture | Pass | The tracked fixture config enabled every gate only inside a temporary copied worktree. Public route, SEO, interaction, private-boundary, conversation-led project proposal, and live price-reference checks passed against a clean production build. |
+| Light/dark desktop/mobile visual review | Pass | Light remains the default MaxVideoAI treatment, dark mode has equivalent hierarchy and contrast, and ChatGPT/Claude use equal 24×24 official marks inside equal actions. |
 | Prospect-language review | Pass | The hub leads with prompt, references, model choice, budget, and price-before-generation. A contradictory Claude access sentence found during review was replaced in EN/FR/ES with recorded-host status language. |
 | Real MCP proof media | Blocked | There is no publishable MCP proof or demonstration showing an owned end-to-end connected generation. No synthetic or provider gallery asset was relabelled as MCP evidence. |
 | Real-host purchase/trial/reference funnel | Partial | Real hosts selected models, priced projects, prepared exact quotes, recovered an existing result, and created upload/top-up handoffs. Confirmation, fresh paid generation, trial, uploaded bytes, provider result, and reference cleanup remain unverified. |
-| Production GSC/indexation evidence | Not run | The existing GSC baseline is preserved; post-deployment GSC canonical, query, country, CTR, and cannibalization review is future evidence only. |
+| Production GSC/indexation evidence | Baseline captured | A fresh read-only site baseline was captured on 2026-08-26: 6,314 clicks, 491,440 impressions, 1.3% CTR, average position 10.2, and 27,759 generative-feature impressions. MCP-specific post-deployment canonical, query, country, CTR, and cannibalization review remains future evidence. |
 
 ## Browser and visual evidence
 
@@ -49,6 +49,7 @@ The Playwright contract is `tests/e2e/mcp-acquisition.spec.ts`. Screenshots are 
 `output/playwright/mcp-acquisition/`:
 
 - `mcp-{desktop,mobile}-{light,dark}-*.png`
+- `chatgpt-{desktop,mobile}-{light,dark}-*.png`
 - `claude-{desktop,mobile}-{light,dark}-*.png`
 - `codex-{desktop,mobile}-{light,dark}-*.png`
 - `preview-no-trial-no-paid-light-1440x1000.png`
@@ -67,13 +68,13 @@ FFmpeg decoded each complete image while `ffprobe` reported 1440×1000 for deskt
 inspection of all four light/dark images found no corruption, partial decode, artificial crop, or missing region. The earlier
 apparent corruption was therefore a viewer artifact, not a defect in the saved PNGs.
 
-With JavaScript disabled, all 12 EN/FR/ES intent owners returned 200 in the isolated enabled build with a visible H1,
+With JavaScript disabled, all 15 EN/FR/ES intent owners returned 200 in the isolated enabled build with a visible H1,
 self-canonical, reciprocal `en`/`fr`/`es`/`x-default` hreflang, JSON-LD, internal links, correct `lang`, localized Spanish
 `/integraciones/` slugs, and no password/auth wall. The same owner set fails closed in the checked-in gated build with
 HTTP 404, response-header and rendered noindex, and no redirect loop.
 
 After the final clean all-false build, a separate `next start` process was also checked directly with curl and
-`Host: maxvideoai.com`: each of the 12 owners returned HTTP 404, `X-Robots-Tag: noindex, nofollow`, and a rendered
+`Host: maxvideoai.com`: each of the then-current gated owners returned HTTP 404, `X-Robots-Tag: noindex, nofollow`, and a rendered
 robots noindex meta tag. The process was stopped and its loopback port was confirmed free.
 
 The reproducible runner reads `tests/fixtures/mcp-launch-publication-states.json`, copies only current workspace files to a
@@ -87,8 +88,9 @@ npm run qa:mcp-launch:preview
 npm run qa:mcp-launch:enabled
 ```
 
-Final results: gated 1 passed/6 skipped with 729 static pages; preview 1 passed/6 skipped with 733 static pages; enabled
-5 passed/2 skipped with 733 static pages. Each runner-selected port was free after cleanup, its temporary directory was
+Latest enabled result: 5 passed/2 skipped with 763 static pages. The latest checked-in all-false gated build produced
+759 static pages and passed its one applicable browser contract with 6 mode-specific skips. An earlier preview fixture
+run passed its applicable contract; preview remains part of the mandatory pre-production command set. Each runner-selected port was free after cleanup, its temporary directory was
 removed, and the checked-in publication SHA remained
 `9c83b086839609c7dba8df30f5a9b4c4390e6b74fbc0c158e1abf0c739ad1299`.
 
@@ -101,10 +103,10 @@ this did not contact production.
 | --- | --- | --- |
 | `GET /mcp` with `Host: api.maxvideoai.com`, without bearer token | Pass | Canonical public API-host path rewrites to the handler and returns 401, private/no-store, noindex/nofollow. |
 | `GET /api/mcp` without bearer token | Pass | 401, `Cache-Control: private, no-store`, `X-Robots-Tag: noindex, nofollow`. |
-| `GET /.well-known/oauth-protected-resource/mcp` without Supabase env | Pass | 503 fail-closed, private/no-store, noindex/nofollow. |
+| `GET /.well-known/oauth-protected-resource/mcp` without credentials | Pass | The route remains fail-closed, private/no-store, and noindex/nofollow. |
 | `GET /oauth/consent` without an authorization id | Pass | 200 invalid-request UI with route-local noindex/nofollow metadata and private/no-store edge headers. |
 | `GET /api/wallet` without authentication | Pass | 401 and private/no-store. |
-| `POST /api/uploads/image` with an empty multipart body | Pass | 400; no media was stored. |
+| `POST /api/uploads/image` with an empty multipart body and no authentication | Pass | 401 fail-closed before multipart parsing; no media was stored. Authenticated malformed multipart bodies have a separate 400 regression contract. |
 | `robots.txt` | Pass | Blocks `/api/`, `/oauth`, `/account`, `/uploads`, and `/library`. |
 | Sitemap variants and `llms.txt` | Pass | Do not expose protocol, consent, wallet, upload, or account URLs. |
 
@@ -115,12 +117,14 @@ loopback. These are lab metrics, not field Core Web Vitals and not comparable to
 
 | URL | Performance | Accessibility | Best practices | SEO | FCP | LCP | TBT | CLS | Speed index |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `/mcp` | 95 | 96 | 96 | 92 | 1.2 s | 3.0 s | 10 ms | 0 | 1.2 s |
-| `/integrations/claude` | 95 | 96 | 96 | 92 | 1.2 s | 3.0 s | 10 ms | 0 | 1.2 s |
-| `/integrations/codex` | 95 | 96 | 96 | 92 | 1.2 s | 3.0 s | 10 ms | 0 | 1.2 s |
+| `/mcp` | 94 | 100 | 96 | 92 | 1.2 s | 3.0 s | 20 ms | 0 | 1.2 s |
+| `/integrations/chatgpt` | 95 | 100 | 96 | 92 | 1.2 s | 2.8 s | 0 ms | 0 | 1.2 s |
+| `/integrations/claude` | 95 | 100 | 96 | 92 | 1.2 s | 2.9 s | 20 ms | 0 | 1.2 s |
+| `/integrations/codex` | 95 | 100 | 96 | 92 | 1.2 s | 2.9 s | 20 ms | 0 | 1.2 s |
 
-The first run identified route-local low-contrast small labels, which were corrected; the post-fix contrast audit now
-flags only the pre-existing global cookie-settings link. The remaining local best-practice
+The first run identified route-local low-contrast small labels, which were corrected. A later run isolated the global
+cookie-settings link; that control now uses the same readable footer-link treatment, and all four post-fix accessibility
+audits score 100. The remaining local best-practice
 error is generated by absent Vercel analytics assets and a cookie-version API that lacks fixture environment variables.
 Lighthouse also reported a missing meta description even though the response HTML and the JavaScript-disabled browser
 contract contain the exact description; this is recorded as a local Next streaming/audit discrepancy, not silently
@@ -133,10 +137,10 @@ npm run qa:mcp-launch:lighthouse
 ```
 
 This command reruns the enabled production fixture and browser contract before Lighthouse. Reports are local and ignored
-under `frontend/.lighthouseci/` (`lhr-1784021692267`, `lhr-1784021703046`, and `lhr-1784021713480`, each as JSON and
-HTML). The fixture deliberately lacks Supabase environment variables, so protected-route requests emit expected local
-errors while remaining fail-closed; the runner, browser tests, Lighthouse collection, cleanup, and source-config guard all
-exited successfully.
+under `frontend/.lighthouseci/` (`lhr-1787749691074`, `lhr-1787749701888`, `lhr-1787749712417`, and
+`lhr-1787749722893`, each as JSON and HTML). The fixture injects inert loopback Supabase fallbacks only when the operator environment does not provide values;
+no real account or remote Supabase project is used. The runner, browser tests, cleanup, and source-config guard all exited
+successfully.
 
 ## Promotion blockers and future evidence
 

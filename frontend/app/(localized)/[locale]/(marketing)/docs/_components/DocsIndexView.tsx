@@ -1,4 +1,6 @@
 import type { buildMetadataUrls } from '@/lib/metadataUrls';
+import type { AppLocale } from '@/i18n/locales';
+import { getMcpInternalLink } from '@/lib/mcp-internal-links';
 import type { DocsContent, DocsEntry } from '../_lib/docs-index-data';
 import { buildDocsIndexViewModel } from '../_lib/docs-index-data';
 import { DocsFeedbackSection } from './DocsFeedbackSection';
@@ -12,12 +14,14 @@ type DocsMetadataUrls = ReturnType<typeof buildMetadataUrls>;
 type DocsIndexViewProps = {
   content: DocsContent;
   docs: DocsEntry[];
+  locale: AppLocale;
   metadataUrls: DocsMetadataUrls;
   site: string;
 };
 
-export function DocsIndexView({ content, docs, metadataUrls, site }: DocsIndexViewProps) {
+export function DocsIndexView({ content, docs, locale, metadataUrls, site }: DocsIndexViewProps) {
   const viewModel = buildDocsIndexViewModel(content, docs);
+  const mcpProductLink = getMcpInternalLink(locale, 'docs');
 
   return (
     <div id="top" className="scroll-smooth">
@@ -35,6 +39,7 @@ export function DocsIndexView({ content, docs, metadataUrls, site }: DocsIndexVi
               apiNoticeLabel={viewModel.apiNoticeLabel}
               content={content}
               mcpGuide={viewModel.mcpGuide}
+              mcpProductLink={mcpProductLink}
               sectionOrder={viewModel.sectionOrder}
               seeAlsoLinks={viewModel.seeAlsoLinks}
             />

@@ -74,6 +74,34 @@ test('unauthorized requests stop before multipart parsing and preserve canonical
   assert.equal(stored, false);
 });
 
+test('authentication helper failures fail closed before multipart parsing', async () => {
+  const route = await loadRouteHandler();
+  let parsed = false;
+  const request = {
+    headers: new Headers(),
+    formData: async () => {
+      parsed = true;
+      return new FormData();
+    },
+  } as unknown as NextRequest;
+  const handler = route.createImageUploadPostHandler({
+    getRouteAuthContext: async () => {
+      throw new Error('authentication backend unavailable');
+    },
+    storeImageUpload: async () => {
+      throw new Error('must not store');
+    },
+    loadStoredImageUploadRouteAsset: async () => {
+      throw new Error('must not load');
+    },
+  });
+
+  const response = await handler(request);
+  assert.equal(response.status, 401);
+  assert.deepEqual(await response.json(), { ok: false, error: 'UNAUTHORIZED' });
+  assert.equal(parsed, false);
+});
+
 test('oversized Content-Length stops before multipart parsing', async () => {
   const route = await loadRouteHandler();
   let parsed = false;
@@ -104,6 +132,28 @@ test('oversized Content-Length stops before multipart parsing', async () => {
   assert.deepEqual(await response.json(), { ok: false, error: 'FILE_TOO_LARGE', maxMB: 1 });
   assert.equal(parsed, false);
   assert.equal(stored, false);
+});
+
+test('authenticated malformed multipart uploads return a stable client error', async () => {
+  const route = await loadRouteHandler();
+  const request = new NextRequest('https://maxvideoai.com/api/uploads/image', {
+    method: 'POST',
+    headers: { 'content-type': 'multipart/form-data' },
+    body: 'not-a-valid-multipart-body',
+  });
+  const handler = route.createImageUploadPostHandler({
+    getRouteAuthContext: async () => ({ userId: 'user_1' }),
+    storeImageUpload: async () => {
+      throw new Error('must not store');
+    },
+    loadStoredImageUploadRouteAsset: async () => {
+      throw new Error('must not load');
+    },
+  });
+
+  const response = await handler(request);
+  assert.equal(response.status, 400);
+  assert.deepEqual(await response.json(), { ok: false, error: 'INVALID_MULTIPART' });
 });
 
 test('authenticated upload preserves the existing route response projection', async () => {

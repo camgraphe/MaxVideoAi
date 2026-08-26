@@ -12,6 +12,11 @@ const CLIENT_MARKS: Record<
     dark: '/brand/partners/anthropic/claude-mark-dark.svg',
     alt: 'Claude',
   },
+  chatgpt: {
+    light: '/brand/partners/openai/openai-mark-light.svg',
+    dark: '/brand/partners/openai/openai-mark-dark.svg',
+    alt: 'ChatGPT',
+  },
   codex: {
     light: '/brand/partners/openai/openai-mark-light.svg',
     dark: '/brand/partners/openai/openai-mark-dark.svg',

@@ -7,6 +7,7 @@ type DocsSectionsGridProps = {
   apiNoticeLabel?: string;
   content: DocsContent;
   mcpGuide: DocsContent['mcpGuide'] | null;
+  mcpProductLink: { href: string; label: string } | null;
   sectionOrder: readonly DocsSectionId[];
   seeAlsoLinks: DocsSeeAlsoLinks;
 };
@@ -15,6 +16,7 @@ export function DocsSectionsGrid({
   apiNoticeLabel,
   content,
   mcpGuide,
+  mcpProductLink,
   sectionOrder,
   seeAlsoLinks,
 }: DocsSectionsGridProps) {
@@ -47,6 +49,11 @@ export function DocsSectionsGrid({
               >
                 <h3 className="text-sm font-semibold text-text-primary">{mcpGuide.title}</h3>
                 <p className="mt-1 text-xs leading-relaxed text-text-muted">{mcpGuide.description}</p>
+              </Link>
+            ) : null}
+            {sectionId === 'api' && mcpProductLink ? (
+              <Link href={mcpProductLink.href} className="mt-3 inline-flex min-h-10 items-center border-b border-hairline text-sm font-semibold text-text-primary hover:border-text-primary">
+                {mcpProductLink.label} <span aria-hidden="true" className="ml-1">→</span>
               </Link>
             ) : null}
             {sectionId === 'onboarding' ? (

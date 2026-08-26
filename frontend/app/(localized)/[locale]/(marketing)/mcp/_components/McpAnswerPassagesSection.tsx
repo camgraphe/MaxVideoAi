@@ -10,6 +10,8 @@ const LIVE_GATE: Record<AnswerKey, keyof McpPublicationState> = {
   price: 'showPaidGenerationClaim',
   references: 'showReferenceClaim',
   confirmation: 'showPaidGenerationClaim',
+  credits: 'connectionAvailable',
+  library: 'connectionAvailable',
   disconnect: 'connectionAvailable',
 };
 

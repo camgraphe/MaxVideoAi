@@ -4,6 +4,7 @@ import type { McpPageCopy } from '../_lib/mcp-page-types';
 import type { McpProof } from '../_lib/mcp-proof';
 import { McpConnectActions } from './McpConnectActions.client';
 import { McpEvidenceSection } from './McpEvidenceSection';
+import { McpConversationPreview } from './McpConversationPreview';
 
 export function McpHeroSection({
   copy,
@@ -28,7 +29,7 @@ export function McpHeroSection({
 
   return (
     <header className="border-b border-hairline bg-bg text-text-primary dark:border-white/[0.1] dark:bg-bg dark:text-white">
-      <div className={`container-page grid max-w-[1220px] gap-8 py-14 sm:py-18 ${proof ? 'lg:grid-cols-[1fr_0.9fr] lg:items-center' : ''}`}>
+      <div className="container-page grid max-w-[1220px] gap-8 py-14 sm:py-18 lg:grid-cols-[1fr_0.9fr] lg:items-center">
         <div className="max-w-[760px]">
           <div className="flex flex-wrap gap-2">
             {labels.map((label) => (
@@ -57,7 +58,7 @@ export function McpHeroSection({
             />
           </div>
         </div>
-        {evidenceCopy ? <McpEvidenceSection copy={evidenceCopy} proof={proof} /> : null}
+        {proof && evidenceCopy ? <McpEvidenceSection copy={evidenceCopy} proof={proof} /> : <McpConversationPreview locale={locale} />}
       </div>
     </header>
   );

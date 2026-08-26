@@ -35,6 +35,7 @@ const IGNORED_ROUTE_TEMPLATES = new Set([
 const MCP_PUBLIC_INDEXABLE_PATHS = new Set([
   '/mcp',
   '/integrations/claude',
+  '/integrations/chatgpt',
   '/integrations/codex',
   '/docs/mcp',
 ]);

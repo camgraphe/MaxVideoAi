@@ -72,12 +72,13 @@ Spec: https://llmstxt.org/
 * https://maxvideoai.com/legal/terms
 * https://maxvideoai.com/legal/acceptable-use`;
 
-const MCP_SOURCE_SECTION = `## MCP integration
+const MCP_SOURCE_SECTION = `## AI video plugin and MCP integration
 
-* https://maxvideoai.com/mcp - Product and model-comparison workflow for Claude and Codex.
-* https://maxvideoai.com/integrations/claude - Claude-specific setup and revocation.
+* https://maxvideoai.com/mcp - AI video plugin workflow for ChatGPT, Claude, and Codex.
+* https://maxvideoai.com/integrations/chatgpt - ChatGPT plugin and direct MCP setup.
+* https://maxvideoai.com/integrations/claude - Claude connector setup and revocation.
 * https://maxvideoai.com/integrations/codex - Codex-specific setup and revocation.
-* https://maxvideoai.com/docs/mcp - Protocol, OAuth, tools, security, and troubleshooting reference.`;
+* https://maxvideoai.com/docs/mcp - MCP, OAuth, tools, credits, references, library, recovery, and troubleshooting reference.`;
 
 const COMMON_NOTES = `## Notes
 

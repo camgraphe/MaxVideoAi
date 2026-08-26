@@ -121,23 +121,22 @@ test('official staging config reaches the real default top-up service while cust
     },
   );
   const result = await services.createTopupLink?.({ quoteId: quote.quoteId }, principal);
-  assert.ok(result && 'url' in result);
-  assert.equal(new URL(result.url).origin, 'https://maxvideoai-mcp-staging.vercel.app');
+  assert.ok(result && 'destination' in result);
+  assert.equal(new URL(result.destination.url).origin, 'https://maxvideoai-mcp-staging.vercel.app');
   assert.deepEqual(events, ['transaction', 'lock', 'wallet', 'invalidate']);
 
   const customConfig = config('https://custom-preview.example');
-  const custom = createDefaultMaxVideoAiMcpServices(
-    customConfig,
-    { clientIp: null, userAgent: null },
-    disabledCapabilities,
-    undefined,
-    {
-      secret: '0123456789abcdef0123456789abcdef',
-      withTransaction: async () => { throw new Error('must not start a transaction'); },
-    },
-  );
-  await assert.rejects(
-    custom.createTopupLink?.({ quoteId: quote.quoteId }, principal) ?? Promise.resolve(),
-    /unexpected origin/i,
+  assert.throws(
+    () => createDefaultMaxVideoAiMcpServices(
+      customConfig,
+      { clientIp: null, userAgent: null },
+      disabledCapabilities,
+      undefined,
+      {
+        secret: '0123456789abcdef0123456789abcdef',
+        withTransaction: async () => { throw new Error('must not start a transaction'); },
+      },
+    ),
+    /trusted MaxVideoAI account URL|unexpected origin/i,
   );
 });

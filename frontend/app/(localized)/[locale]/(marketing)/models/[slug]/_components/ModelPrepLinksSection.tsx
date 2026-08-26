@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/locales';
+import { getMcpInternalLink } from '@/lib/mcp-internal-links';
 import { PREP_LINK_VISUALS } from '../_lib/model-page-static';
 import { FULL_BLEED_SECTION, SECTION_BG_A, SECTION_PAD, SECTION_SCROLL_MARGIN } from '../_lib/model-page-specs';
 
@@ -17,6 +18,7 @@ type ModelPrepLinksSectionProps = {
 };
 
 export function ModelPrepLinksSection({ prepLinksSection, locale }: ModelPrepLinksSectionProps) {
+  const mcpLink = getMcpInternalLink(locale, 'model');
   return prepLinksSection ? (
           <section
             className={`${FULL_BLEED_SECTION} ${SECTION_BG_A} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
@@ -67,6 +69,13 @@ export function ModelPrepLinksSection({ prepLinksSection, locale }: ModelPrepLin
                   );
                 })}
               </div>
+              {mcpLink ? (
+                <div className="mt-5 text-center">
+                  <Link href={mcpLink.href} prefetch={false} className="inline-flex min-h-10 items-center border-b border-hairline text-sm font-semibold text-text-primary hover:border-text-primary">
+                    {mcpLink.label} <span aria-hidden="true" className="ml-1">→</span>
+                  </Link>
+                </div>
+              ) : null}
             </div>
           </section>
   ) : null;

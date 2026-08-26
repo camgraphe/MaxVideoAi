@@ -401,7 +401,7 @@ test('each distribution evidence record is sourced, dated, qualified, and owner-
   );
 });
 
-test('listing payload is exact, localized, read-only, and contains negative cases', () => {
+test('owned-site launch payload is exact, localized, complete, and contains negative cases', () => {
   for (const field of [
     'Product name',
     'Canonical landing page',
@@ -448,7 +448,8 @@ test('listing payload is exact, localized, read-only, and contains negative case
     directory,
     /`get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`/,
   );
-  assert.match(directory, /No generation, exact quote, upload, trial, payment, or polling tool is currently public/);
+  assert.match(directory, /Production publication remains gated/);
+  for (const tool of OPERATIONAL_TOOLS) assert.match(directory, new RegExp(`\\b${tool}\\b`));
   assert.match(directory, /real screenshots and end-to-end demo: NOT AVAILABLE/);
   assert.match(directory, /Owner checklist[\s\S]*Legal[\s\S]*Security[\s\S]*MCP engineering[\s\S]*Growth/);
 });
@@ -465,7 +466,8 @@ test('readiness packages follow the live registry and canonical localized route 
     (match) => match[1],
   ).sort();
   assert.deepEqual(supportTools, liveTools);
-  assert.deepEqual(directoryTools, liveTools);
+  assert.deepEqual(liveTools, [...DEFAULT_DISCOVERY_TOOLS].sort());
+  assert.deepEqual(directoryTools, [...OPERATIONAL_TOOLS].sort());
 
   const localeUrls = (englishPath: string) =>
     (['en', 'fr', 'es'] as const).map((locale) => getLocalizedUrl(locale, englishPath)).sort();
@@ -527,7 +529,7 @@ test('directory facts do not outrun checked-in claims or host evidence', () => {
   assert.match(compatibility, /ChatGPT Apps directory[\s\S]+Not run/i);
   assert.match(
     directory,
-    /Controlled staging has a 12-tool profile[\s\S]{0,180}Claude Desktop 1\.37937\.1[\s\S]{0,180}Codex CLI/i,
+    /launch product is a 12-tool[\s\S]{0,300}Claude Desktop\s+1\.37937\.1[\s\S]{0,180}Codex CLI/i,
   );
   assert.match(support, /graphical\s+ChatGPT\/Codex installation, Claude Code, and other hosts remain unverified/i);
   assert.match(support, /migration files 30–37 are present locally/i);

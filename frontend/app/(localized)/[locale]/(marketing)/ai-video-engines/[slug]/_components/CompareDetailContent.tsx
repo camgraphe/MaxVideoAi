@@ -205,7 +205,7 @@ export function CompareDetailContent({
             showdownSubtitle={showdownSubtitle}
             slug={slug}
           />
-          <CompareRelatedSection compareCopy={compareCopy} relatedLinks={relatedLinks} />
+          <CompareRelatedSection compareCopy={compareCopy} locale={activeLocale} relatedLinks={relatedLinks} />
           <CompareFaqSection
             breadcrumbJsonLd={breadcrumbJsonLd}
             compareCopy={compareCopy}

@@ -163,8 +163,8 @@ test('top-up handoff invalidation and ledger non-mutation execute atomically in 
       && outcome.reason.code === 'QUOTE_EXPIRED',
   ).length, 1);
   const fulfilled = outcomes.find((outcome) => outcome.status === 'fulfilled');
-  assert.ok(fulfilled && fulfilled.status === 'fulfilled' && 'url' in fulfilled.value);
-  if (!fulfilled || fulfilled.status !== 'fulfilled' || !('url' in fulfilled.value)) {
+  assert.ok(fulfilled && fulfilled.status === 'fulfilled' && 'destination' in fulfilled.value);
+  if (!fulfilled || fulfilled.status !== 'fulfilled' || !('destination' in fulfilled.value)) {
     assert.fail('expected exactly one signed handoff');
   }
   assert.equal(fulfilled.value.amountCents, 1500);

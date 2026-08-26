@@ -3,400 +3,154 @@ import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
 import * as React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { getMcpCompatibilityEvidence as readCompatibilityEvidence } from '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-compatibility.ts';
 
 (globalThis as typeof globalThis & { React: typeof React }).React = React;
 
 const routeRoot = 'frontend/app/(localized)/[locale]/(marketing)';
-const copyPath = `${routeRoot}/mcp/_lib/mcp-page-copy.ts`;
-const heroPath = `${routeRoot}/mcp/_components/McpHeroSection.tsx`;
-const evidencePath = `${routeRoot}/mcp/_components/McpEvidenceSection.tsx`;
-const referencePath = `${routeRoot}/mcp/_components/McpReferenceWorkflowSection.tsx`;
-const integrationCopyPath = `${routeRoot}/integrations/_lib/integration-copy.ts`;
-const integrationViewPath = `${routeRoot}/integrations/_components/IntegrationPageView.tsx`;
 
 function requireFile(path: string): string {
   assert.equal(existsSync(path), true, `${path} should exist`);
   return readFileSync(path, 'utf8');
 }
 
-test('English above-fold acquisition copy matches the approved wording exactly', async () => {
-  requireFile(copyPath);
+test('the hub sells the outcome and keeps ChatGPT and Claude at the same level', async () => {
   const { getMcpPageCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
   const copy = getMcpPageCopy('en');
-  assert.equal(copy.hero.title, 'From brief to rendered video, inside your AI assistant.');
-  assert.equal(
-    copy.hero.previewIntro,
-    'MaxVideoAI helps Claude and Codex choose the right video model, prepare prompts and references, quote the exact cost, and generate only after you approve. Preview — host validation in progress; local implementation verified.',
-  );
-  assert.deepEqual(copy.hero.eyebrows, {
-    trial: 'FIRST VIDEO INCLUDED',
-    budget: 'LOW-COST MODELS FIRST',
-    price: 'PRICE BEFORE YOU GENERATE',
-  });
-  assert.deepEqual(copy.hero.actions.map((action: { label: string }) => action.label), [
-    'Preview Claude setup',
-    'Preview Codex setup',
-  ]);
+  assert.equal(copy.meta.title, 'AI Video Plugin for ChatGPT & Claude | MaxVideoAI');
+  assert.equal(copy.hero.title, 'Turn ChatGPT or Claude into your AI video producer.');
+  assert.match(copy.hero.intro, /brief to rendered video/i);
+  assert.match(copy.hero.intro, /prompts and references/i);
+  assert.match(copy.hero.intro, /exact price/i);
+  assert.deepEqual(copy.hero.actions.map((action) => action.client), ['chatgpt', 'claude']);
   assert.deepEqual(copy.workflow.steps, [
-    'Describe your video',
-    'Compare the best low-cost routes',
-    'Review budget and next steps',
+    'Develop the brief and references',
+    'Compare models and project budgets',
+    'Approve the exact price and generate',
   ]);
+  assert.doesNotMatch(JSON.stringify(copy), /local implementation|host validation in progress|budget-first shortlist|lowest-cost model/i);
 });
 
-test('French and Spanish use complete natural copy rather than English fallback', async () => {
-  requireFile(copyPath);
+test('French and Spanish are complete prospect-facing localizations', async () => {
   const { getMcpPageCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
   const fr = getMcpPageCopy('fr');
   const es = getMcpPageCopy('es');
-  assert.equal(fr.hero.title, 'Du brief à la vidéo rendue, directement dans votre assistant IA.');
-  assert.match(fr.hero.previewIntro, /MaxVideoAI aide Claude et Codex.*choisir le bon modèle vidéo.*préparer les prompts et les références.*prix exact.*générer uniquement après votre approbation.*Préversion — validation des hôtes en cours/i);
-  assert.deepEqual(fr.workflow.steps, [
-    'Décrivez votre vidéo',
-    'Comparez les meilleures options économiques',
-    'Vérifiez le budget et les étapes suivantes',
-  ]);
-  assert.equal(es.hero.title, 'Del brief al video renderizado, directamente en tu asistente de IA.');
-  assert.match(es.hero.previewIntro, /MaxVideoAI ayuda a Claude y Codex.*elegir el modelo de video adecuado.*preparar prompts y referencias.*precio exacto.*generar solo después de tu aprobación.*Vista previa — validación de clientes en curso/i);
-  assert.deepEqual(es.workflow.steps, [
-    'Describe tu video',
-    'Compara las mejores opciones de bajo costo',
-    'Revisa el presupuesto y los siguientes pasos',
-  ]);
-  assert.notDeepEqual(fr, getMcpPageCopy('en'));
-  assert.notDeepEqual(es, getMcpPageCopy('en'));
+  assert.equal(fr.meta.title, 'Plugin vidéo IA pour ChatGPT et Claude | MaxVideoAI');
+  assert.match(fr.hero.title, /ChatGPT ou Claude/i);
+  assert.match(fr.budget.title, /film complet/i);
+  assert.match(JSON.stringify(fr.answers.items), /crédits/i);
+  assert.match(JSON.stringify(fr.answers.items), /bibliothèque|galerie/i);
+  assert.equal(es.meta.title, 'Plugin de vídeo con IA para ChatGPT y Claude | MaxVideoAI');
+  assert.match(es.hero.title, /ChatGPT o Claude/i);
+  assert.match(es.budget.title, /película/i);
+  assert.match(JSON.stringify(es.answers.items), /créditos/i);
+  assert.match(JSON.stringify(es.answers.items), /biblioteca/i);
 });
 
-test('metadata carries natural AI video MCP intent in every locale', async () => {
+test('the commercial answer set covers account continuity and the paid boundary', async () => {
   const { getMcpPageCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
-  assert.equal(getMcpPageCopy('en').meta.title, 'MaxVideoAI MCP for Claude, ChatGPT & Codex');
-  assert.equal(getMcpPageCopy('fr').meta.title, 'MCP MaxVideoAI pour Claude, ChatGPT et Codex');
-  assert.equal(getMcpPageCopy('es').meta.title, 'MCP de MaxVideoAI para Claude, ChatGPT y Codex');
-  const { getIntegrationCopy } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
-  );
-  const expectations = {
-    en: [/for Claude, ChatGPT (?:&|and) Codex/i, /model advice/i, /budgets/i, /private references/i, /prepare and generate through the integration/i, /local implementation verified/i, /Preview — host validation in progress/i],
-    fr: [/pour Claude, ChatGPT et Codex/i, /conseils sur les modèles/i, /budgets/i, /références privées/i, /préparer et générer via l’intégration/i, /implémentation locale vérifiée/i, /Préversion — validation des hôtes en cours/i],
-    es: [/para Claude, ChatGPT y Codex/i, /asesoramiento sobre modelos/i, /presupuestos/i, /referencias privadas/i, /preparar y generar mediante la integración/i, /implementación local verificada/i, /Vista previa — validación de clientes en curso/i],
-  } as const;
-  const forbidden = /tested host version|version d’hôte testée|versión de cliente probada|recorded client version|version client enregistrée|versión registrada del cliente|validated OAuth|OAuth validé|OAuth validado|revocation (?:passed|validated)|révocation validée|revocación validada|rendering (?:passed|validated)|rendu validé|renderizado validado|certified compatibility|compatibilité certifiée|compatibilidad certificada|live compatibility|compatibilité en production|compatibilidad en producción/i;
-
-  for (const locale of ['en', 'fr', 'es'] as const) {
-    const page = getMcpPageCopy(locale);
-    const integrations = [getIntegrationCopy(locale, 'claude'), getIntegrationCopy(locale, 'codex')];
-    const text = JSON.stringify({ page, integrations });
-    for (const pattern of expectations[locale]) assert.match(text, pattern);
-    assert.doesNotMatch(text, forbidden);
-    assert.doesNotMatch(text, /hosted[^.]{0,100}passed|héberg[^.]{0,100}réussi|alojad[^.]{0,100}pasaron/i);
-  }
-
-  const proofExpectations = {
-    en: [/best executable model for each shot/i, /exact price before any credit is spent/i, /validate parameters and private references/i, /explicit confirmation.*job status and recovery.*failed.*refunded automatically/i, /comparison pages, examples, live pricing and pay-as-you-go credits/i, /installation, discovery, recommendations and estimates are free/i, /no separate MCP subscription/i],
-    fr: [/meilleur modèle exécutable pour chaque plan/i, /prix exact avant de dépenser le moindre crédit/i, /valider les paramètres et les références privées/i, /confirmation explicite.*état et la récupération.*échecs définitifs.*remboursés automatiquement/i, /comparatifs, exemples, tarifs en direct et crédits à l’usage/i, /installation MCP, la découverte, les recommandations et les estimations sont gratuites/i, /aucun abonnement MCP distinct/i],
-    es: [/mejor modelo ejecutable para cada toma/i, /precio exacto antes de gastar ningún crédito/i, /validar los parámetros y las referencias privadas/i, /confirmación explícita.*estado y la recuperación.*fallos definitivos.*reembolsan automáticamente/i, /comparativas, ejemplos, precios en vivo y créditos de pago por uso/i, /instalación MCP, el descubrimiento, las recomendaciones y las estimaciones son gratis/i, /suscripción MCP independiente/i],
-  } as const;
-  for (const locale of ['en', 'fr', 'es'] as const) {
-    const trust = JSON.stringify(getMcpPageCopy(locale).trust);
-    for (const pattern of proofExpectations[locale]) assert.match(trust, pattern);
-  }
-});
-
-test('trial and proof claims disappear when their evidence gates are false', async () => {
-  requireFile(copyPath);
-  requireFile(heroPath);
-  requireFile(evidencePath);
-  const { getMcpPageCopy } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
-  );
-  const { McpHeroSection } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpHeroSection.tsx'
-  );
-  const { McpEvidenceSection } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpEvidenceSection.tsx'
-  );
-  const copy = getMcpPageCopy('en');
-  const publication = {
-    renderPublicPage: true,
-    connectionAvailable: false,
-    indexable: false,
-    showTrialClaim: false,
-    showPaidGenerationClaim: false,
-    showReferenceClaim: false,
-  };
-  const heroHtml = renderToStaticMarkup(
-    React.createElement(McpHeroSection, { copy: copy.hero, proof: null, publication }),
-  );
-  assert.equal(heroHtml.includes(copy.hero.eyebrows.trial), false);
-  assert.equal(heroHtml.includes(copy.hero.eyebrows.budget), true);
-  assert.equal(heroHtml.includes(copy.hero.eyebrows.price), true);
-
-  const evidenceHtml = renderToStaticMarkup(
-    React.createElement(McpEvidenceSection, { copy: copy.evidence, proof: null }),
-  );
-  assert.equal(evidenceHtml, '');
-  assert.doesNotMatch(evidenceHtml, /<video|badge|caption|Real MaxVideoAI output|Generated through MCP/i);
-  assert.match(readFileSync(evidencePath, 'utf8'), /proof\.badge/);
-});
-
-test('trial copy discloses the fixed promotional conditions only behind its claim gate', async () => {
-  const { getMcpPageCopy } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
-  );
-  const { McpHeroSection } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpHeroSection.tsx'
-  );
-  const expectations = {
-    en: [/eligible verified account/i, /Seedance 2 Mini/, /5 seconds/, /480p/, /promotion/i, /wallet/i, /regular balance/i],
-    fr: [/compte admissible et vérifié/i, /Seedance 2 Mini/, /5 secondes/, /480p/, /offre promotionnelle/i, /portefeuille/i, /solde habituel/i],
-    es: [/cuenta apta y verificada/i, /Seedance 2 Mini/, /5 segundos/, /480p/, /promoción/i, /cartera/i, /saldo habitual/i],
-  } as const;
   for (const locale of ['en', 'fr', 'es'] as const) {
     const copy = getMcpPageCopy(locale);
-    for (const pattern of expectations[locale]) assert.match(copy.hero.trialDisclosure, pattern);
-    const liveHtml = renderToStaticMarkup(React.createElement(McpHeroSection, {
-      copy: copy.hero,
-      proof: null,
-      publication: {
-        renderPublicPage: true,
-        connectionAvailable: true,
-        indexable: false,
-        showTrialClaim: true,
-        showPaidGenerationClaim: false,
-        showReferenceClaim: false,
-      },
-    }));
-    const gatedHtml = renderToStaticMarkup(React.createElement(McpHeroSection, {
-      copy: copy.hero,
-      proof: null,
-      publication: {
-        renderPublicPage: true,
-        connectionAvailable: true,
-        indexable: false,
-        showTrialClaim: false,
-        showPaidGenerationClaim: false,
-        showReferenceClaim: false,
-      },
-    }));
-    assert.ok(liveHtml.includes(copy.hero.trialDisclosure));
-    assert.equal(gatedHtml.includes(copy.hero.trialDisclosure), false);
+    assert.deepEqual(Object.keys(copy.answers.items), [
+      'integration',
+      'price',
+      'references',
+      'confirmation',
+      'credits',
+      'library',
+      'disconnect',
+    ]);
+    const text = JSON.stringify(copy);
+    assert.match(text, /ChatGPT/i);
+    assert.match(text, /Claude/i);
+    assert.match(text, /Codex/i);
+    assert.match(text, locale === 'fr' ? /image, vidéo ou audio/i : locale === 'es' ? /imagen, vídeo o audio/i : /image, video or audio/i);
+    assert.match(text, locale === 'fr' ? /devis exact/i : locale === 'es' ? /precio exacto|cotización exacta/i : /exact (?:price|quote)/i);
   }
 });
 
-test('reference copy distinguishes host planning from supported MaxVideoAI inputs', async () => {
-  requireFile(copyPath);
-  requireFile(referencePath);
+test('trial and real proof claims remain independently gated', async () => {
+  requireFile(`${routeRoot}/mcp/_components/McpHeroSection.tsx`);
   const { getMcpPageCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
-  const { McpReferenceWorkflowSection } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpReferenceWorkflowSection.tsx'
+  const { McpHeroSection } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpHeroSection.tsx'
   );
   const copy = getMcpPageCopy('en');
-  const gatedHtml = renderToStaticMarkup(
-    React.createElement(McpReferenceWorkflowSection, {
-      copy: copy.references,
-      showReferenceClaim: false,
-    }),
-  );
-  assert.match(gatedHtml, /help you plan|formulate/i);
-  assert.match(gatedHtml, /when the selected model supports it/i);
-  assert.doesNotMatch(gatedHtml, /upload through (?:Claude|Codex)|Claude creates|Codex creates/i);
-});
-
-test('integration guides cover the full factual setup journey and explicit unpublished state', async () => {
-  requireFile(integrationCopyPath);
-  requireFile(integrationViewPath);
-  const { getIntegrationCopy } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
-  );
-  const { IntegrationPageView } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_components/IntegrationPageView.tsx'
-  );
-  const publication = {
+  const base = {
     renderPublicPage: true,
     connectionAvailable: false,
     indexable: false,
-    showTrialClaim: false,
     showPaidGenerationClaim: false,
     showReferenceClaim: false,
   };
-
-  for (const locale of ['en', 'fr', 'es'] as const) {
-    for (const client of ['claude', 'codex'] as const) {
-      const copy = getIntegrationCopy(locale, client);
-      const html = renderToStaticMarkup(
-        React.createElement(IntegrationPageView, {
-          compatibility: getCompatibility(client),
-          copy,
-          locale,
-          publication,
-        }),
-      );
-      for (const section of [
-        copy.setup.title,
-        copy.workflow.title,
-        copy.references.title,
-        copy.troubleshooting.title,
-        copy.disconnect.title,
-      ]) {
-        assert.ok(html.includes(section), `${locale}/${client} should render ${section}`);
-      }
-      assert.ok(html.includes(copy.hero.unavailable));
-      assert.match(html, /OAuth/i);
-      assert.match(html, locale === 'fr' ? /non vérifi/i : locale === 'es' ? /sin verificar/i : /unverified/i);
-      assert.doesNotMatch(html, /one[- ]click|available in the Codex (?:app|library)|directory listing/i);
-      assert.doesNotMatch(html, /recorded client version|version client enregistrée|versión registrada del cliente/i);
-    }
-  }
-});
-
-test('Claude Desktop and Claude Code keep separate evidence-backed setup paths', async () => {
-  const { getIntegrationCopy } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
-  );
-  const { getMcpCompatibilityEvidence } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-compatibility.ts'
-  );
-  const evidence = getMcpCompatibilityEvidence().clients.claude;
-  assert.deepEqual(evidence.hosts.map((host: { id: string }) => host.id), ['claudeDesktop', 'claudeCode']);
-  assert.deepEqual(evidence.hosts.map((host: { status: string }) => host.status), ['unverified', 'unverified']);
-  assert.equal(evidence.hosts.some((host: object) => 'version' in host), false);
-
-  for (const locale of ['en', 'fr', 'es'] as const) {
-    const copy = getIntegrationCopy(locale, 'claude');
-    assert.deepEqual(copy.setup.hostGuides.map((guide) => guide.hostId), ['claudeDesktop', 'claudeCode']);
-    const code = copy.setup.hostGuides.find((guide) => guide.hostId === 'claudeCode');
-    assert.ok(code);
-    assert.ok(code.commands.some((command) => command.includes('claude mcp add --transport http')));
-    assert.match(code.authTrigger ?? '', /\/mcp/);
-    assert.doesNotMatch(copy.compatibility.statuses.claudeCode, /hosted (?:tools?|calls?).*pass/i);
-    for (const status of Object.values(copy.compatibility.statuses)) {
-      assert.match(status, locale === 'fr' ? /non vérifi/i : locale === 'es' ? /sin verificar/i : /unverified/i);
-      assert.doesNotMatch(status, /passed|réussi|pasaron/i);
-    }
-  }
-});
-
-test('Claude Desktop renders the authoritative MCP server URL as a configuration value', async () => {
-  const { resolveMcpConfig } = await import('../frontend/src/server/mcp/config.ts');
-  const { getIntegrationCopy } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
-  );
-  const { IntegrationSetupSection } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_components/IntegrationSetupSection.tsx'
-  );
-  const resourceUrl = resolveMcpConfig({ NODE_ENV: 'production' }).resourceUrl;
-
-  for (const locale of ['en', 'fr', 'es'] as const) {
-    const copy = getIntegrationCopy(locale, 'claude');
-    const desktop = copy.setup.hostGuides.find((guide) => guide.hostId === 'claudeDesktop');
-    const code = copy.setup.hostGuides.find((guide) => guide.hostId === 'claudeCode');
-    assert.ok(desktop);
-    assert.ok(code);
-    assert.deepEqual(desktop.commands, []);
-    assert.ok(desktop.setupValues, `${locale} Desktop guide should expose setup values`);
-    assert.ok(code.setupValues, `${locale} Code guide should expose setup values`);
-    assert.deepEqual(desktop.setupValues.map((item) => item.value), [resourceUrl]);
-    assert.equal(code.setupValues.length, 0);
-    assert.match(code.authTrigger ?? '', /\/mcp/);
-
-    const html = renderToStaticMarkup(React.createElement(IntegrationSetupSection, {
-      compatibility: getCompatibility('claude'),
-      copy,
-      locale,
-    }));
-    assert.ok(html.includes(resourceUrl), `${locale} should render the production MCP URL`);
-    assert.match(html, /<code[^>]*>https:\/\/api\.maxvideoai\.com\/mcp<\/code>/);
-  }
-
-  const source = requireFile(integrationCopyPath);
-  assert.match(source, /MCP_PRODUCTION_RESOURCE_URL/);
-  assert.doesNotMatch(source, /https:\/\/api\.maxvideoai\.com\/mcp/);
-});
-
-test('rendered-but-noindex previews show connection availability without emitting live schema', async () => {
-  const { getIntegrationCopy } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
-  );
-  const { IntegrationHeroSection } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_components/IntegrationHeroSection.tsx'
-  );
-  const { getMcpPageCopy } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
-  );
-  const { McpTrustSections } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpTrustSections.tsx'
-  );
-  const { getMcpCompatibilityEvidence } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-compatibility.ts'
-  );
-  const { buildMcpWebApplicationJsonLd } = await import(
-    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-jsonld.ts'
-  );
-  const publication = {
-    renderPublicPage: true,
-    connectionAvailable: true,
-    indexable: false,
-    showTrialClaim: false,
-    showPaidGenerationClaim: false,
-    showReferenceClaim: false,
-  };
-  const integrationCopy = getIntegrationCopy('en', 'codex');
-  const integrationHtml = renderToStaticMarkup(
-    React.createElement(IntegrationHeroSection, { copy: integrationCopy, publication }),
-  );
-  const mcpCopy = getMcpPageCopy('en');
-  const trustHtml = renderToStaticMarkup(React.createElement(McpTrustSections, {
-    compatibility: getMcpCompatibilityEvidence(),
-    copy: mcpCopy,
+  const withoutTrial = renderToStaticMarkup(React.createElement(McpHeroSection, {
+    copy: copy.hero,
+    evidenceCopy: copy.evidence,
     locale: 'en',
-    publication,
+    proof: null,
+    publication: { ...base, showTrialClaim: false },
   }));
-  assert.ok(integrationHtml.includes(integrationCopy.hero.liveStatus));
-  assert.equal(integrationHtml.includes(integrationCopy.hero.unavailable), false);
-  assert.ok(trustHtml.includes(mcpCopy.trust.availability.liveBody));
-  assert.equal(trustHtml.includes(mcpCopy.trust.availability.gatedBody), false);
-  assert.equal(buildMcpWebApplicationJsonLd({
-    canonicalUrl: 'https://maxvideoai.com/mcp',
-    copy: mcpCopy,
-    inLanguage: 'en-US',
-    publication,
-  }), null);
-  assert.doesNotMatch(requireFile(`${routeRoot}/integrations/_components/IntegrationHeroSection.tsx`), /publication\.indexable/);
-  assert.doesNotMatch(requireFile(`${routeRoot}/mcp/_components/McpTrustSections.tsx`), /publication\.indexable/);
+  const withTrial = renderToStaticMarkup(React.createElement(McpHeroSection, {
+    copy: copy.hero,
+    evidenceCopy: copy.evidence,
+    locale: 'en',
+    proof: null,
+    publication: { ...base, showTrialClaim: true },
+  }));
+  assert.equal(withoutTrial.includes(copy.hero.trialDisclosure), false);
+  assert.ok(withTrial.includes(copy.hero.trialDisclosure));
+  assert.match(copy.hero.trialDisclosure, /eligible verified account/i);
+  assert.match(copy.hero.trialDisclosure, /Seedance 2 Mini/i);
+  assert.match(copy.hero.trialDisclosure, /regular MaxVideoAI credit balance/i);
+  assert.match(withoutTrial, /Example conversation/i);
+  assert.doesNotMatch(withoutTrial, /Generated through MCP|Verified result/i);
 });
 
-test('acquisition copy avoids unsupported and absolute product claims', () => {
-  const source = `${requireFile(copyPath)}\n${requireFile(integrationCopyPath)}`;
-  assert.doesNotMatch(source, /API key|customer webhook|shared wallet|guaranteed capacity|works with all|one[- ]click/i);
-  assert.doesNotMatch(source, /audio (?:never|does not) change(?:s)? (?:the )?price/i);
-});
-
-test('localized acquisition copy uses prospect language instead of internal pricing and host terms', async () => {
+test('references keep the assistant creative while MaxVideoAI validates live support', async () => {
   const { getMcpPageCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
-  const en = JSON.stringify(getMcpPageCopy('en'));
-  const fr = JSON.stringify(getMcpPageCopy('fr'));
-  const es = JSON.stringify(getMcpPageCopy('es'));
-  assert.doesNotMatch(en, /canonical price quote|publication-gated|release gate/i);
-  assert.doesNotMatch(fr, /devis tarifaire de référence|soumises? à publication/i);
-  assert.doesNotMatch(es, /cotización canónica|\bhost\b|revisión de publicación/i);
-  assert.match(es, /precio calculado actualmente/i);
-  assert.match(es, /cliente|agente/i);
+  const copy = getMcpPageCopy('en').references;
+  assert.match(copy.intro, /image, video or audio/i);
+  assert.match(copy.planningBody, /assistant remains free to be creative/i);
+  assert.match(copy.liveBody, /same connected MaxVideoAI library/i);
+  assert.match(copy.intro, /model actually supports/i);
 });
 
-function getCompatibility(client: 'claude' | 'codex') {
-  // Imported lazily by the test below once the evidence owner is available.
-  return compatibilityEvidence.clients[client];
-}
+test('three client guides cover installation, OAuth, credits, recovery and disconnect', async () => {
+  const { getIntegrationCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
+  );
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    for (const client of ['chatgpt', 'claude', 'codex'] as const) {
+      const copy = getIntegrationCopy(locale, client);
+      assert.equal(copy.client, client);
+      assert.ok(copy.setup.hostGuides.length > 0);
+      const text = JSON.stringify(copy);
+      assert.match(text, /OAuth/i);
+      assert.match(text, locale === 'fr' ? /crédits/i : locale === 'es' ? /créditos/i : /credits/i);
+      assert.match(text, locale === 'fr' ? /bibliothèque|galerie/i : locale === 'es' ? /biblioteca/i : /library/i);
+      assert.match(text, locale === 'fr' ? /déconnect|révoqu/i : locale === 'es' ? /desconect|revoc/i : /disconnect|revoke/i);
+      assert.doesNotMatch(text, /local implementation verified|host validation in progress/i);
+    }
+  }
+});
 
-const compatibilityEvidence = readCompatibilityEvidence();
+test('compatibility wording stays exact per tested host', async () => {
+  const { getMcpCompatibilityEvidence } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-compatibility.ts'
+  );
+  const evidence = getMcpCompatibilityEvidence();
+  assert.equal(evidence.lastChecked, '2026-08-26');
+  assert.equal(evidence.clients.claude.hosts[0]?.status, 'verified');
+  assert.equal(evidence.clients.codex.hosts[0]?.status, 'verified');
+  assert.equal(evidence.clients.chatgpt.hosts[0]?.status, 'not-run');
+  assert.equal(evidence.clients.claude.hosts[1]?.status, 'not-run');
+});

@@ -1,22 +1,27 @@
 {
-  "evidenceKind": "local-checkpoint",
-  "lastChecked": "2026-08-24",
+  "evidenceKind": "hosted-checkpoint",
+  "lastChecked": "2026-08-26",
   "sourceEvidence": "docs/operations/mcp-host-compatibility-matrix.md",
   "hosts": {
     "claudeDesktop": {
       "client": "claude",
       "hostLabel": "Claude Desktop",
-      "status": "unverified"
+      "status": "verified"
     },
     "claudeCode": {
       "client": "claude",
       "hostLabel": "Claude Code",
-      "status": "unverified"
+      "status": "not-run"
+    },
+    "chatgptDesktop": {
+      "client": "chatgpt",
+      "hostLabel": "ChatGPT desktop",
+      "status": "not-run"
     },
     "codexCli": {
       "client": "codex",
       "hostLabel": "Codex CLI",
-      "status": "unverified"
+      "status": "verified"
     }
   }
 }

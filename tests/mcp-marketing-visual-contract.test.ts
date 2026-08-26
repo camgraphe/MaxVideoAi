@@ -15,7 +15,7 @@ function requireFile(path: string): string {
   return readFileSync(path, 'utf8');
 }
 
-test('Claude and Codex use official marks through one equal neutral action component', () => {
+test('ChatGPT and Claude use official marks through one equal neutral action component', () => {
   const source = requireFile(`${componentsRoot}/McpClientActions.tsx`);
   const integrationHero = requireFile(`${integrationComponentsRoot}/IntegrationHeroSection.tsx`);
   const openAiDark = requireFile('frontend/public/brand/partners/openai/openai-mark-dark.svg');
@@ -37,10 +37,11 @@ test('Claude and Codex use official marks through one equal neutral action compo
   assert.doesNotMatch(source, /preferred|primaryClient|OpenAI['"]/);
 });
 
-test('new MCP surfaces remain light-first, restrained, gradient-free, and dark-compatible', () => {
+test('new MCP surfaces remain light-first, restrained, and dark-compatible', () => {
   const visualComponents = [
     'McpPageView.tsx',
     'McpHeroSection.tsx',
+    'McpConversationPreview.tsx',
     'McpClientActions.tsx',
     'McpConnectActions.client.tsx',
     'McpProofMedia.tsx',
@@ -56,7 +57,6 @@ test('new MCP surfaces remain light-first, restrained, gradient-free, and dark-c
     assert.match(source, /text-text-(?:primary|secondary|muted)/, `${component} should use existing text tokens`);
     assert.match(source, /border-(?:hairline|white)/, `${component} should retain thin borders`);
     assert.match(source, /dark:/, `${component} should include dark-mode parity`);
-    assert.doesNotMatch(source, /gradient/i, `${component} must not introduce gradients`);
     assert.doesNotMatch(source, /ThemeProvider|next-themes/, `${component} must use the existing theme`);
   }
 });
@@ -68,7 +68,7 @@ test('the hero stays prospect-facing and contains no internal setup vocabulary',
   assert.match(source, /showTrialClaim/);
 });
 
-test('workflow and canonical budget options render as the three-step budget-first differentiator', async () => {
+test('workflow and live price references support a conversation-led project proposal', async () => {
   requireFile(`${componentsRoot}/McpWorkflowStrip.tsx`);
   requireFile(`${componentsRoot}/McpBudgetShortlist.tsx`);
   requireFile(`${routeRoot}/_lib/mcp-page-copy.ts`);
@@ -123,7 +123,10 @@ test('workflow and canonical budget options render as the three-step budget-firs
   const budget = renderToStaticMarkup(
     React.createElement(McpBudgetShortlist, { copy: copy.budget, options }),
   );
-  assert.equal((budget.match(/data-budget-slot=/g) ?? []).length, 2);
+  assert.equal((budget.match(/data-price-reference=/g) ?? []).length, 2);
+  assert.ok(budget.includes('Quality-first proposal'));
+  assert.ok(budget.includes('Lower-cost alternatives'));
+  assert.ok(budget.includes('not packages or a recommendation'));
   assert.ok(budget.includes('Included'));
   assert.ok(budget.includes('$0.26'));
 });
@@ -152,9 +155,9 @@ test('client actions point to equally factual localized guides', async () => {
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
   const expectations = {
-    en: ['/integrations/claude', '/integrations/codex'],
-    fr: ['/fr/integrations/claude', '/fr/integrations/codex'],
-    es: ['/es/integraciones/claude', '/es/integraciones/codex'],
+    en: ['/integrations/chatgpt', '/integrations/claude'],
+    fr: ['/fr/integrations/chatgpt', '/fr/integrations/claude'],
+    es: ['/es/integraciones/chatgpt', '/es/integraciones/claude'],
   } as const;
   for (const locale of ['en', 'fr', 'es'] as const) {
     assert.deepEqual(

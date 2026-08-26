@@ -1,5 +1,5 @@
-export type McpClientId = 'claude' | 'codex';
-export type McpCompatibilityHostId = 'claudeDesktop' | 'claudeCode' | 'codexCli';
+export type McpClientId = 'claude' | 'chatgpt' | 'codex';
+export type McpCompatibilityHostId = 'claudeDesktop' | 'claudeCode' | 'chatgptDesktop' | 'codexCli';
 
 export type McpClientActionCopy = {
   client: McpClientId;
@@ -45,6 +45,15 @@ export type McpPageCopy = {
     eyebrow: string;
     title: string;
     intro: string;
+    exampleLabel: string;
+    examplePrompt: string;
+    qualityLabel: string;
+    qualityBody: string;
+    valueLabel: string;
+    valueBody: string;
+    attemptsNote: string;
+    priceReferencesLabel: string;
+    priceReferencesBody: string;
     slotLabels: Record<'included_trial' | 'lowest_paid' | 'affordable_upgrade', string>;
     modelLinkLabel: string;
     emptyTitle: string;
@@ -69,7 +78,7 @@ export type McpPageCopy = {
     title: string;
     updatedLabel: string;
     items: Record<
-      'integration' | 'price' | 'references' | 'confirmation' | 'disconnect',
+      'integration' | 'price' | 'references' | 'confirmation' | 'credits' | 'library' | 'disconnect',
       { title: string; liveBody: string; gatedBody: string }
     >;
   };

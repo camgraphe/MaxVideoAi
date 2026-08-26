@@ -21,6 +21,27 @@
 - Do not add FAQ structured data to commercial pages; visible Q&A and supported application/breadcrumb/media schemas are sufficient.
 - Do not request indexing or change production flags during this implementation plan.
 
+## Implementation status — 2026-08-26
+
+| Task | State | Current result / remaining gate |
+| --- | --- | --- |
+| 1. Vocabulary and copy | Complete | Outcome-first EN/FR/ES copy leads with ChatGPT and Claude, exact price and creative freedom. Internal rollout language is absent from the hero and buying answers. |
+| 2. ChatGPT route | Implementation complete; host evidence pending | The localized intent owner, setup, metadata, sitemap and compatibility record exist. A real graphical ChatGPT connection still needs to be recorded before claiming that exact host as verified. |
+| 3. Conversation and proposals | Complete except real media proof | The hub shows a user conversation, a quality-first proposal, validated cheaper alternatives and creative-attempt policy. Live per-shot prices remain as clearly labelled references, not packages or static recommendation tiers. |
+| 4. Homepage module | Complete | The light-first/dark-compatible module sits after comparisons and before reference workflow with equal official ChatGPT and Claude marks. |
+| 5. Real product proof | Pending | No provider sample or synthetic testimonial is used. One deliberately small, owned, job-backed generation may fill this gate after budget approval. |
+| 6. Publication semantics | Complete | Trial is independent from indexation and every checked-in publication flag remains false. |
+| 7. Internal linking | Complete | Homepage, footer, pay-as-you-go, model hub, selected model pages, comparisons, examples and docs use localized gate-aware anchors. |
+| 8. SEO/GEO/docs | Complete for branch | Five localized intent owners, `llms.txt`, sitemap, answer passages, 12-tool docs, live GSC baseline and GEO review are implemented. Production indexation remains deliberately off. |
+| 9. Revenue measurement | Implemented; production observation pending | Bounded attribution and funnel events cover landing through funding/generation without storing prompts, tokens or private URLs. Real conversion data starts only after publication. |
+| 10. Verification | Complete for branch | The isolated production fixture passes 5 applicable browser tests (2 fixture-mode scenarios skipped), renders 763 static pages, captures responsive light/dark evidence, and scores 94–95 performance and 100 accessibility in Lighthouse. TypeScript, ESLint, i18n, SEO, exposure, registry, contract, and diff checks pass. |
+
+The original draft proposed deleting `mcp-budget-options.ts`. The implementation
+keeps its canonical live-price derivation only for small “per-shot price
+reference” links. It no longer controls the recommendation hierarchy: the
+conversation presents the best current fit first and cheaper alternatives only
+when they answer the user’s budget request.
+
 ---
 
 ## Task 1: Replace the prospect-facing vocabulary and copy model
@@ -225,7 +246,7 @@
 - [ ] Derive model counts and freshness. Use visible primary-source/provenance links for platform claims.
 - [ ] Use only supported SoftwareApplication/WebApplication, BreadcrumbList, and VideoObject data that matches visible content. No FAQ schema.
 - [ ] Rewrite the docs around the twelve-tool contract, credits, library, references, recovery, and revocation.
-- [ ] Update the GSC baseline with the observed three-month capture: 6,321 clicks, 495,014 impressions, 1.3% CTR, position 10.2, plus generative-feature observations and limitations.
+- [ ] Update the GSC baseline with the verified three-month capture: 6,314 clicks, 491,440 impressions, 1.3% CTR, position 10.2, plus 27,759 generative-feature impressions and limitations.
 - [ ] Re-score GEO readiness after implementation.
 - [ ] Run SEO/docs checks and commit.
 

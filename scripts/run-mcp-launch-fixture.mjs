@@ -171,10 +171,10 @@ async function findAvailablePort(requestedPort) {
   });
 }
 
-function startFixtureServer(fixtureRoot, port, mode) {
+function startFixtureServer(fixtureRoot, port, mode, env) {
   const server = spawn('npm', ['--prefix', 'frontend', 'run', 'start', '--', '-p', String(port)], {
     cwd: fixtureRoot,
-    env: process.env,
+    env,
     detached: true,
     stdio: ['ignore', 'pipe', 'pipe'],
   });
@@ -229,6 +229,13 @@ if (runLighthouse && mode !== 'enabled') {
 }
 const sourcePublicationHash = sha256(publicationPath);
 assertCommittedPublicationIsGated('before fixture');
+const fixtureEnv = {
+  ...process.env,
+  NEXT_PUBLIC_SUPABASE_URL:
+    process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || 'http://127.0.0.1:54321',
+  NEXT_PUBLIC_SUPABASE_ANON_KEY:
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() || 'mcp-launch-fixture-anon-key',
+};
 
 let fixtureRoot = null;
 let server = null;
@@ -257,8 +264,8 @@ try {
   port = await findAvailablePort(argumentValue('--port'));
   const baseURL = `http://127.0.0.1:${port}`;
   process.stdout.write(`[mcp-launch:${mode}] fixture=${fixtureRoot} port=${port}\n`);
-  run('npm', ['--prefix', 'frontend', 'run', 'build'], { cwd: fixtureRoot });
-  server = startFixtureServer(fixtureRoot, port, mode);
+  run('npm', ['--prefix', 'frontend', 'run', 'build'], { cwd: fixtureRoot, env: fixtureEnv });
+  server = startFixtureServer(fixtureRoot, port, mode, fixtureEnv);
   await waitForReady(server, baseURL);
   mkdirSync(artifactDir, { recursive: true });
   run(
@@ -267,7 +274,7 @@ try {
     {
       cwd: fixtureRoot,
       env: {
-        ...process.env,
+        ...fixtureEnv,
         MCP_E2E_MODE: mode,
         MCP_E2E_BASE_URL: baseURL,
         MCP_E2E_ARTIFACT_DIR: artifactDir,
@@ -280,6 +287,7 @@ try {
       [
         'collect',
         `--url=${baseURL}/mcp`,
+        `--url=${baseURL}/integrations/chatgpt`,
         `--url=${baseURL}/integrations/claude`,
         `--url=${baseURL}/integrations/codex`,
         '--numberOfRuns=1',

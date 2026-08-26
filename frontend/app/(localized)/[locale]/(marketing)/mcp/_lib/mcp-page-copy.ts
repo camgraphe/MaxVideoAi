@@ -9,601 +9,333 @@ function localizedPath(locale: AppLocale, ...segments: string[]): string {
 
 function clientActions(
   locale: AppLocale,
-  labels: { claude: string; codex: string; supporting: string },
+  labels: { chatgpt: string; claude: string; supporting: string },
 ): McpClientActionCopy[] {
   const integrations = localizedSlugs[locale].integrations;
   return [
+    {
+      client: 'chatgpt',
+      href: localizedPath(locale, integrations, 'chatgpt'),
+      label: labels.chatgpt,
+      supportingLabel: labels.supporting,
+    },
     {
       client: 'claude',
       href: localizedPath(locale, integrations, 'claude'),
       label: labels.claude,
       supportingLabel: labels.supporting,
     },
-    {
-      client: 'codex',
-      href: localizedPath(locale, integrations, 'codex'),
-      label: labels.codex,
-      supportingLabel: labels.supporting,
-    },
   ];
 }
 
-const COPY: Record<AppLocale, McpPageCopy> = {
-  en: {
-    meta: {
-      title: 'MaxVideoAI MCP for Claude, ChatGPT & Codex',
-      description:
-        'Model advice, budgets, private references, and tools to prepare and generate through the integration. Preview — host validation in progress; local implementation verified.',
+const EN: McpPageCopy = {
+  meta: {
+    title: 'AI Video Plugin for ChatGPT & Claude | MaxVideoAI',
+    description: 'Turn ChatGPT, Claude or Codex into an AI video producer: prompts, references, live model advice, project budgets, exact price, approval and generation.',
+  },
+  breadcrumb: { home: 'Home', current: 'AI video plugin' },
+  hero: {
+    eyebrows: {
+      trial: 'INTRODUCTORY CREDIT WHEN ELIGIBLE',
+      budget: 'THE RIGHT MODEL FOR EACH SHOT',
+      price: 'PRICE BEFORE YOU GENERATE',
     },
-    breadcrumb: { home: 'Home', current: 'MaxVideoAI MCP' },
-    hero: {
-      eyebrows: {
-        trial: 'FIRST VIDEO INCLUDED',
-        budget: 'LOW-COST MODELS FIRST',
-        price: 'PRICE BEFORE YOU GENERATE',
-      },
-      title: 'From brief to rendered video, inside your AI assistant.',
-      intro:
-        'MaxVideoAI helps Claude and Codex choose the right video model, prepare prompts and references, quote the exact cost, and generate only after you approve. Preview — host validation in progress; local implementation verified.',
-      previewIntro:
-        'MaxVideoAI helps Claude and Codex choose the right video model, prepare prompts and references, quote the exact cost, and generate only after you approve. Preview — host validation in progress; local implementation verified.',
-      trialDisclosure:
-        'One video is included for an eligible verified account: Seedance 2 Mini, 5 seconds, 480p. This promotion is separate from wallet funds and the regular balance.',
-      actions: clientActions('en', {
-        claude: 'Preview Claude setup',
-        codex: 'Preview Codex setup',
-        supporting: 'Review unverified setup',
-      }),
-      connectActions: {
-        endpointLabel: 'Connection endpoint',
-        copyEndpoint: 'Copy endpoint',
-        copied: 'Endpoint copied. Continue with the setup guide for this client.',
-        copyError: 'Unable to copy. Select the endpoint above and copy it manually.',
-      },
-    },
-    workflow: {
-      ariaLabel: 'AI video planning workflow',
-      steps: [
-        'Describe your video',
-        'Compare the best low-cost routes',
-        'Review budget and next steps',
-      ],
-    },
-    budget: {
-      eyebrow: 'Budget-first shortlist',
-      title: 'Start with the lowest-cost model that fits the brief',
-      intro:
-        'These text-to-video scenarios use the current public model catalog and currently calculated price. Duration, resolution and audio behavior stay visible because they affect the choice.',
-      slotLabels: {
-        included_trial: 'Included trial',
-        lowest_paid: 'Lowest paid route',
-        affordable_upgrade: 'Affordable upgrade',
-      },
-      modelLinkLabel: 'Review model details',
-      emptyTitle: 'Connected pricing is not published',
-      emptyBody:
-        'Use the MaxVideoAI web app to compare current public models and review the displayed price before generation.',
-    },
-    evidence: {
-      eyebrow: 'Verified evidence',
-      title: 'A result with settings, price and provenance',
-      verifiedLabel: 'Last verified',
-    },
-    references: {
-      eyebrow: 'Reference-aware planning',
-      title: 'Carry the visual direction into a supported model',
-      intro:
-        'Reference images can anchor a character, product or composition when the chosen MaxVideoAI model accepts them.',
-      planningBody:
-        'The locally verified contract can help you plan prompts and visual references for a compatible client. Preview — host validation in progress; no Claude or Codex file behavior is verified.',
-      liveBody:
-        'When reference access is enabled, choose an account-owned image, an allowed web image, or a secure MaxVideoAI upload handoff, then review the selected asset before confirmation.',
-      gatedBody:
-        'Connected reference transfer is not publicly available. In the MaxVideoAI web app, add a reference image only when the selected model supports it.',
-      steps: [
-        { title: 'Define the visual anchor', body: 'Describe the subject, composition and details that should stay consistent.' },
-        { title: 'Check model support', body: 'Compare only models whose current public facts support the required reference mode.' },
-        { title: 'Review before generation', body: 'Confirm the chosen image, prompt, model settings and displayed price together.' },
-      ],
-    },
-    answers: {
-      eyebrow: 'Direct answers',
-      title: 'What the local MCP preview verifies',
-      updatedLabel: 'Local evidence checkpoint',
-      items: {
-        integration: {
-          title: 'What does the MaxVideoAI integration do?',
-          liveBody:
-            'After separate host validation and publication, the MaxVideoAI MCP design could let a compatible client clarify an AI video brief, formulate the prompt and compare public models. This is intended behavior, not current Claude or Codex evidence.',
-          gatedBody:
-            'MaxVideoAI MCP is a local preview of planning, model comparison, budget, private-reference and quote contracts. It is designed for compatible AI clients, including Claude and Codex after host validation. Host connection and generation remain unverified, and the MaxVideoAI web product remains the place to review prices and generate.',
-        },
-        price: {
-          title: 'How is the generation price calculated?',
-          liveBody:
-            'MaxVideoAI calculates a short-lived exact quote from the selected model, mode, duration, resolution, audio choice and supported reference inputs, using the current public pricing rules. The quote shows the settings and total before generation. A recommendation only compares model fit; it is not an exact quote and cannot spend the wallet.',
-          gatedBody:
-            'The MaxVideoAI web product calculates the displayed price from the selected model, mode, duration, resolution, audio choice and supported inputs before generation. The controlled MCP preview does not expose an exact quote or generation tool. A model recommendation is not an exact quote, so the current price must be reviewed in the web product.',
-        },
-        references: {
-          title: 'Which reference images work?',
-          liveBody:
-            'After separate host validation and publication, a reference could come from an account-owned MaxVideoAI asset, an allowed HTTPS image or a secure upload handoff. No Claude or Codex file behavior is currently verified.',
-          gatedBody:
-            'Connected reference transfer is not publicly enabled. The local contract covers subject, composition and consistency planning, but no Claude or Codex creation or transfer behavior is verified. Use the MaxVideoAI web product for supported references.',
-        },
-        confirmation: {
-          title: 'Why is confirmation a separate step?',
-          liveBody:
-            'A separate confirmation keeps model selection and spending distinct. MaxVideoAI first returns the exact settings, total and projected account effect; only a later confirmation may accept the generation. The server still applies ownership, spending-limit and idempotency checks, so reviewing a recommendation or quote cannot start a paid job by itself.',
-          gatedBody:
-            'Separate confirmation is the approved safety design for future paid MCP generation: first review the model, settings and exact price, then explicitly approve the spend. Paid MCP generation is not publicly enabled today. In the current web product, the displayed price is reviewed before the person submits the generation.',
-        },
-        disconnect: {
-          title: 'How do I disconnect MaxVideoAI?',
-          liveBody:
-            'Remove MaxVideoAI from the client, then open MaxVideoAI account connections and revoke that client authorization. Revocation ends the saved grant; a later protected action must start a new browser approval. Removing the client entry and revoking the account grant are separate actions, so complete both steps.',
-          gatedBody:
-            'For a future controlled test connection, the documented procedure is to remove MaxVideoAI from the client and revoke its authorization from MaxVideoAI account connections. A later protected action should then require a new approval. Actual host behavior remains unverified; this local procedure is not a claim that public connection is available in any client.',
-        },
-      },
-    },
-    trust: {
-      definition: {
-        eyebrow: 'What it is',
-        title: 'The conversational continuation of MaxVideoAI',
-        body:
-          'Continue from MaxVideoAI comparison pages, examples, live pricing and pay-as-you-go credits into an assistant conversation. The assistant carries the brief; MaxVideoAI remains responsible for executable model facts, prices, validation, generation and results.',
-      },
-      availability: {
-        title: 'Availability',
-        liveBody:
-          'The public workflow is enabled for the capabilities shown on this page. Client-specific limitations still apply.',
-        gatedBody:
-          'The public connection is disabled while generation, trial and reference flows complete their release checks. The setup guides document controlled evidence, not general availability.',
-      },
-      compatibility: {
-        title: 'Client compatibility checkpoint',
-        body:
-          'Local package and protocol checks are recorded. Hosted installation, OAuth, rendering, refresh and tool selection remain unverified for every listed client.',
-        checkpointLabel: 'Local evidence checkpoint',
-        sourceLabel: 'Compatibility evidence',
-        statuses: {
-          claudeDesktop: 'Hosted compatibility is unverified. Only local package structure and protocol contracts are recorded.',
-          claudeCode: 'Hosted compatibility is unverified. Only local adapter structure and protocol contracts are recorded.',
-          codexCli: 'Hosted compatibility is unverified. Only local package structure and protocol contracts are recorded.',
-        },
-      },
-      confirmation: {
-        title: 'Price review and explicit confirmation',
-        liveBody:
-          'MaxVideoAI prepares an exact, short-lived quote for the chosen prompt, model, settings and references. Generation starts only after a separate confirmation, then the accepted job and result remain available in MaxVideoAI.',
-        gatedBody:
-          'The web product already shows the price before generation. Connected quote and confirmation are not publicly enabled, so this page does not present them as available actions.',
-        steps: ['Compare model trade-offs', 'Review the exact price and settings', 'Confirm once, then follow the result in MaxVideoAI'],
-      },
-      controls: {
-        title: 'Permissions, privacy and spending control',
-        body:
-          'A connection should expose only the account access needed for the selected workflow. MaxVideoAI enforces ownership and account rules on every request.',
-        items: [
-          'Private prompts and reference URLs stay out of acquisition analytics.',
-          'A separate confirmation protects each paid generation; account spending limits remain an additional safeguard.',
-          'Connections can be removed from MaxVideoAI account settings after public access is enabled.',
-        ],
-      },
-      capabilities: {
-        title: 'Four safeguards from decision to result',
-        body: 'MCP installation, discovery, recommendations and estimates are free. Generation uses your existing MaxVideoAI credits at pay-as-you-go prices, with no separate MCP subscription. Preview — host validation in progress.',
-        items: [
-          'Choose the best executable model for each shot from current model facts.',
-          'See the exact price before any credit is spent.',
-          'Validate parameters and private references before submission.',
-          'Require explicit confirmation, then track job status and recovery; credits for definitive failed jobs are refunded automatically.',
-        ],
-      },
-      setup: {
-        title: 'Review a client-specific setup preview',
-        body:
-          'The Claude and Codex guides document intended setup procedures only. No hosted-client evidence for browser authorization, refresh, rendering, revocation or generation is claimed before Task 10 validation.',
-      },
-      faq: {
-        title: 'Questions before you connect',
-        items: [
-          {
-            question: 'Does the assistant choose the model automatically?',
-            answer: 'It can help compare a shortlist, but the recommendation must use current MaxVideoAI facts and you can choose a different compatible model.',
-          },
-          {
-            question: 'Will I see the price first?',
-            answer: 'The MaxVideoAI web product shows the displayed price before generation. The connected flow will offer the same review-and-confirm pattern only after it is publicly available.',
-          },
-          {
-            question: 'Can every model use reference images or audio?',
-            answer: 'No. Reference and audio support depend on the selected model and scenario, and the visible settings should state what is included.',
-          },
-        ],
-      },
-      support: { label: 'Contact MaxVideoAI support', href: '/contact' },
+    title: 'Turn ChatGPT or Claude into your AI video producer.',
+    intro: 'From brief to rendered video, inside your AI assistant. It can develop prompts and references, compare the best current models, budget a complete film and generate through MaxVideoAI only after you approve the exact price.',
+    previewIntro: 'From brief to rendered video, inside your AI assistant. Develop prompts and references, compare current models and budget a complete film now; direct production access opens with the public connection.',
+    trialDisclosure: 'An eligible verified account may receive one introductory Seedance 2 Mini generation. The offer is separate from your regular MaxVideoAI credit balance.',
+    actions: clientActions('en', {
+      chatgpt: 'Use MaxVideoAI with ChatGPT',
+      claude: 'Use MaxVideoAI with Claude',
+      supporting: 'See connection and workflow',
+    }),
+    connectActions: {
+      endpointLabel: 'Manual MCP setup',
+      copyEndpoint: 'Copy server address',
+      copied: 'Server address copied. Continue with the setup guide for your assistant.',
+      copyError: 'Unable to copy. Select the server address and copy it manually.',
     },
   },
-  fr: {
-    meta: {
-      title: 'MCP MaxVideoAI pour Claude, ChatGPT et Codex',
-      description:
-        'Conseils sur les modèles, budgets et références privées pour préparer et générer via l’intégration. Préversion — validation des hôtes en cours ; implémentation locale vérifiée.',
+  workflow: {
+    ariaLabel: 'AI video production workflow',
+    steps: ['Develop the brief and references', 'Compare models and project budgets', 'Approve the exact price and generate'],
+  },
+  budget: {
+    eyebrow: 'Conversation-led budgeting',
+    title: 'Ask for a budget for the whole film—not a preset tier',
+    intro: 'Tell the assistant whether quality, budget, speed, audio or reference fidelity matters most. It can price one to four concrete proposals, including a quality-first route and credible lower-cost alternatives, with creative attempts shown separately.',
+    exampleLabel: 'Example conversation',
+    examplePrompt: '“Budget a 60-second film. Quality comes first, but show me credible ways to reduce the total.”',
+    qualityLabel: 'Quality-first proposal',
+    qualityBody: 'Use the strongest currently executable model for each shot—often Seedance 2.5 when its live capabilities fit—then total every shot with its settings and references.',
+    valueLabel: 'Lower-cost alternatives',
+    valueBody: 'Keep the same creative brief and compare only validated options, such as Happy Horse, H3 or LTX when they fit. Explain the quality, motion, audio and reference trade-offs shot by shot.',
+    attemptsNote: 'The proposal separates the planned renders from an optional creative-retry allowance. A technical failure is tracked and refunded; a creative retry is a new choice.',
+    priceReferencesLabel: 'Live per-shot price references',
+    priceReferencesBody: 'These are current examples—not packages or a recommendation. Your assistant builds the real project budget from the selected shots.',
+    slotLabels: {
+      included_trial: 'Eligible introductory credit',
+      lowest_paid: 'Current price reference',
+      affordable_upgrade: 'Current creative alternative',
     },
-    breadcrumb: { home: 'Accueil', current: 'MCP MaxVideoAI' },
-    hero: {
-      eyebrows: {
-        trial: 'PREMIÈRE VIDÉO INCLUSE',
-        budget: 'MODÈLES ÉCONOMIQUES EN PREMIER',
-        price: 'PRIX AVANT DE GÉNÉRER',
+    modelLinkLabel: 'See current model details',
+    emptyTitle: 'Build a project proposal in the conversation',
+    emptyBody: 'Describe the finished video, total duration, shot count and priorities. MaxVideoAI validates each proposed model and returns a comparable budget from current prices.',
+  },
+  evidence: {
+    eyebrow: 'Real workflow evidence',
+    title: 'Result, settings, price and provenance together',
+    verifiedLabel: 'Verified',
+  },
+  references: {
+    eyebrow: 'Reference-aware production',
+    title: 'Keep visual and audio direction consistent across shots',
+    intro: 'The assistant can help create reference ideas or choose an existing image, video or audio asset. MaxVideoAI checks which reference kinds and limits the selected model actually supports.',
+    planningBody: 'Plan the subject, composition, motion, voice and continuity in the conversation. The assistant remains free to be creative while MaxVideoAI supplies current model constraints.',
+    liveBody: 'Choose an account-owned private asset or open a secure MaxVideoAI upload handoff. The asset and completed result remain in the same connected MaxVideoAI library as the website.',
+    gatedBody: 'Plan the references in the conversation, then use the MaxVideoAI website for final upload and generation until direct production access opens.',
+    steps: [
+      { title: 'Create the direction', body: 'Develop the character, product, composition, motion and audio intention with your assistant.' },
+      { title: 'Match the model', body: 'MaxVideoAI checks live image, video and audio reference support for the selected mode.' },
+      { title: 'Review everything together', body: 'Confirm prompt, ordered references, settings and exact price before generation.' },
+    ],
+  },
+  answers: {
+    eyebrow: 'Direct answers',
+    title: 'How the MaxVideoAI AI video plugin works',
+    updatedLabel: 'Capability review',
+    items: {
+      integration: {
+        title: 'What does MaxVideoAI add to ChatGPT or Claude?',
+        liveBody: 'MaxVideoAI connects the creative conversation to current video and image models, real capabilities, pricing, private references and generation. The assistant can still write, reason and create freely; MaxVideoAI supplies the changing product facts and executes the approved job.',
+        gatedBody: 'MaxVideoAI is the execution layer for a creative conversation: current models, real capabilities, budgets, exact pricing, references and generation. Direct production connection opens after the final launch checks.',
       },
-      title: 'Du brief à la vidéo rendue, directement dans votre assistant IA.',
-      intro:
-        'MaxVideoAI aide Claude et Codex à choisir le bon modèle vidéo, préparer les prompts et les références, calculer le prix exact et générer uniquement après votre approbation. Préversion — validation des hôtes en cours ; implémentation locale vérifiée.',
-      previewIntro:
-        'MaxVideoAI aide Claude et Codex à choisir le bon modèle vidéo, préparer les prompts et les références, calculer le prix exact et générer uniquement après votre approbation. Préversion — validation des hôtes en cours ; implémentation locale vérifiée.',
-      trialDisclosure:
-        'Une vidéo est incluse pour un compte admissible et vérifié : Seedance 2 Mini, 5 secondes, 480p. Cette offre promotionnelle est distincte des fonds du portefeuille et du solde habituel.',
-      actions: clientActions('fr', {
-        claude: 'Voir la configuration Claude',
-        codex: 'Voir la configuration Codex',
-        supporting: 'Consulter la configuration non vérifiée',
-      }),
-      connectActions: {
-        endpointLabel: 'Adresse de connexion',
-        copyEndpoint: 'Copier l’adresse',
-        copied: 'Adresse copiée. Poursuivez avec le guide de configuration de ce client.',
-        copyError: 'Copie impossible. Sélectionnez l’adresse ci-dessus et copiez-la manuellement.',
+      price: {
+        title: 'Do I see the exact price before generating?',
+        liveBody: 'Yes. Project budgets are free estimates. When you choose a concrete request, MaxVideoAI validates the model, mode, duration, resolution, audio and references, returns a short-lived exact quote, and waits for your explicit approval before spending credits.',
+        gatedBody: 'Project planning and model comparisons are free. Until direct production access opens, review the exact current price in the MaxVideoAI website before generating.',
       },
-    },
-    workflow: {
-      ariaLabel: 'Parcours de préparation d’une vidéo IA',
-      steps: [
-        'Décrivez votre vidéo',
-        'Comparez les meilleures options économiques',
-        'Vérifiez le budget et les étapes suivantes',
-      ],
-    },
-    budget: {
-      eyebrow: 'Sélection axée sur le budget',
-      title: 'Commencez par le modèle le moins cher adapté au brief',
-      intro:
-        'Ces scénarios texte-vers-vidéo utilisent le catalogue public actuel et le prix actuellement calculé. La durée, la résolution et le comportement audio restent visibles pour éclairer le choix.',
-      slotLabels: {
-        included_trial: 'Essai inclus',
-        lowest_paid: 'Option payante la moins chère',
-        affordable_upgrade: 'Alternative accessible',
-      },
-      modelLinkLabel: 'Voir les détails du modèle',
-      emptyTitle: 'Les tarifs connectés ne sont pas publiés',
-      emptyBody:
-        'Utilisez l’application web MaxVideoAI pour comparer les modèles publics actuels et vérifier le prix affiché avant la génération.',
-    },
-    evidence: {
-      eyebrow: 'Preuve vérifiée',
-      title: 'Un résultat accompagné de ses réglages, de son prix et de sa provenance',
-      verifiedLabel: 'Dernière vérification',
-    },
-    references: {
-      eyebrow: 'Préparation avec références',
-      title: 'Conservez la direction visuelle avec un modèle compatible',
-      intro:
-        'Les images de référence peuvent ancrer un personnage, un produit ou une composition lorsque le modèle MaxVideoAI choisi les accepte.',
-      planningBody:
-        'Le contrat vérifié localement définit la planification du prompt et des références visuelles pour un client compatible après validation des hôtes. Aucun comportement de fichier Claude ou Codex n’est vérifié.',
-      liveBody:
-        'Lorsque l’accès aux références est activé, choisissez une image liée à votre compte, une image web autorisée ou un transfert sécurisé MaxVideoAI, puis vérifiez la ressource avant confirmation.',
-      gatedBody:
-        'Le transfert connecté de références n’est pas disponible publiquement. Dans l’application web MaxVideoAI, ajoutez une image de référence uniquement si le modèle choisi la prend en charge.',
-      steps: [
-        { title: 'Définissez le repère visuel', body: 'Décrivez le sujet, la composition et les détails qui doivent rester cohérents.' },
-        { title: 'Vérifiez la compatibilité', body: 'Comparez uniquement les modèles dont les données publiques prennent en charge le mode de référence requis.' },
-        { title: 'Relisez avant de générer', body: 'Confirmez ensemble l’image, le prompt, les réglages du modèle et le prix affiché.' },
-      ],
-    },
-    answers: {
-      eyebrow: 'Réponses directes',
-      title: 'Ce que vérifie la préversion MCP locale',
-      updatedLabel: 'Point de contrôle local',
-      items: {
-        integration: {
-          title: 'Que fait l’intégration MaxVideoAI ?',
-          liveBody:
-            'Après validation des hôtes et publication distinctes, le MCP MaxVideoAI pourrait permettre à un client compatible de clarifier un brief, de formuler le prompt et de comparer les modèles publics. Il s’agit d’un comportement prévu, pas d’une preuve Claude ou Codex actuelle.',
-          gatedBody:
-            'Le MCP MaxVideoAI est une préversion locale des contrats de planification, de comparaison des modèles, de budget, de références privées et de devis. Il est conçu pour des clients IA compatibles, dont Claude et Codex après validation des hôtes. La connexion aux hôtes et la génération restent non vérifiées ; le produit web MaxVideoAI reste l’endroit où vérifier les prix et générer.',
-        },
-        price: {
-          title: 'Comment le prix de génération est-il calculé ?',
-          liveBody:
-            'MaxVideoAI calcule un devis exact et temporaire à partir du modèle, du mode, de la durée, de la résolution, du choix audio et des références compatibles, selon les règles tarifaires publiques actuelles. Le devis affiche les réglages et le total avant la génération. Une recommandation compare seulement l’adéquation des modèles ; ce n’est pas un devis exact et elle ne peut pas débiter le portefeuille.',
-          gatedBody:
-            'Le produit web MaxVideoAI calcule le prix affiché à partir du modèle, du mode, de la durée, de la résolution, du choix audio et des entrées compatibles avant la génération. L’aperçu MCP contrôlé ne fournit ni devis exact ni outil de génération. Une recommandation de modèle n’est pas un devis exact ; le prix actuel doit donc être vérifié dans le produit web.',
-        },
-        references: {
-          title: 'Quelles images de référence sont acceptées ?',
-          liveBody:
-            'Après validation des hôtes et publication distinctes, une référence pourrait provenir d’une ressource MaxVideoAI liée au compte, d’une image HTTPS autorisée ou d’un transfert sécurisé. Aucun comportement de fichier Claude ou Codex n’est actuellement vérifié.',
-          gatedBody:
-            'Le transfert connecté de références n’est pas activé publiquement. Le contrat local couvre la planification du sujet, de la composition et de la cohérence, mais aucun comportement de création ou de transfert Claude ou Codex n’est vérifié. Utilisez le produit web MaxVideoAI.',
-        },
-        confirmation: {
-          title: 'Pourquoi la confirmation est-elle séparée ?',
-          liveBody:
-            'Une confirmation séparée distingue le choix du modèle de la dépense. MaxVideoAI présente d’abord les réglages exacts, le total et l’effet prévu sur le compte ; seule une confirmation ultérieure peut accepter la génération. Le serveur applique encore les contrôles de propriété, de limite de dépenses et d’idempotence, donc consulter un devis ne peut pas lancer seul un job payant.',
-          gatedBody:
-            'La confirmation séparée est la règle de sécurité prévue pour une future génération MCP payante : vérifiez d’abord le modèle, les réglages et le prix exact, puis approuvez explicitement la dépense. La génération MCP payante n’est pas activée publiquement. Dans le produit web actuel, le prix affiché est vérifié avant l’envoi de la génération.',
-        },
-        disconnect: {
-          title: 'Comment déconnecter MaxVideoAI ?',
-          liveBody:
-            'Supprimez MaxVideoAI du client, puis ouvrez les connexions du compte MaxVideoAI et révoquez l’autorisation du client. La révocation ferme l’accès enregistré ; une future action protégée doit ouvrir une nouvelle approbation dans le navigateur. La suppression côté client et la révocation côté compte sont deux actions distinctes, à effectuer toutes les deux.',
-          gatedBody:
-            'Pour une future connexion de test contrôlée, la procédure documentée consiste à supprimer MaxVideoAI du client puis à révoquer son autorisation depuis les connexions du compte MaxVideoAI. Une future action protégée doit ensuite demander une nouvelle approbation. Le comportement réel des hôtes reste non vérifié ; cette procédure locale ne signifie pas que la connexion publique est disponible dans un client.',
-        },
-      },
-    },
-    trust: {
-      definition: {
-        eyebrow: 'Définition',
-        title: 'La continuité conversationnelle de MaxVideoAI',
-        body:
-          'Passez des comparatifs, exemples, tarifs en direct et crédits à l’usage de MaxVideoAI à une conversation dans votre assistant. L’assistant poursuit le brief ; MaxVideoAI reste responsable des modèles exécutables, des prix, de la validation, de la génération et des résultats.',
-      },
-      availability: {
-        title: 'Disponibilité',
-        liveBody: 'Le parcours public est activé pour les fonctions présentées sur cette page. Des limites propres à chaque client subsistent.',
-        gatedBody:
-          'La connexion publique reste désactivée pendant la validation des parcours de génération, d’essai et de références. Les guides décrivent des preuves contrôlées, pas une disponibilité générale.',
-      },
-      compatibility: {
-        title: 'Point de contrôle de compatibilité client',
-        body:
-          'Les contrôles locaux du paquet et du protocole sont documentés. L’installation hébergée, OAuth, le rendu, l’actualisation et la sélection des outils restent non vérifiés pour chaque client affiché.',
-        checkpointLabel: 'Point de contrôle local',
-        sourceLabel: 'Preuve de compatibilité',
-        statuses: {
-          claudeDesktop: 'La compatibilité hébergée reste non vérifiée. Seuls la structure locale du paquet et les contrats de protocole sont documentés.',
-          claudeCode: 'La compatibilité hébergée reste non vérifiée. Seuls la structure locale de l’adaptateur et les contrats de protocole sont documentés.',
-          codexCli: 'La compatibilité hébergée reste non vérifiée. Seuls la structure locale du paquet et les contrats de protocole sont documentés.',
-        },
+      references: {
+        title: 'Can I use image, video or audio references?',
+        liveBody: 'Yes, when the selected model and mode support them. The assistant can select an existing private MaxVideoAI asset or open a secure upload handoff; MaxVideoAI returns the allowed kinds, roles, order and limits.',
+        gatedBody: 'Reference support is model-dependent. Plan image, video or audio references with the assistant, then add supported assets in MaxVideoAI before generation.',
       },
       confirmation: {
-        title: 'Vérification du prix et confirmation explicite',
-        liveBody:
-          'MaxVideoAI prépare un devis exact et temporaire pour le prompt, le modèle, les réglages et les références choisis. La génération commence après une confirmation séparée, puis la tâche et le résultat restent accessibles dans MaxVideoAI.',
-        gatedBody:
-          'Le produit web affiche déjà le prix avant la génération. Le devis et la confirmation connectés ne sont pas activés publiquement et ne sont donc pas présentés comme des actions disponibles.',
-        steps: ['Comparez les compromis entre modèles', 'Vérifiez le prix exact et les réglages', 'Confirmez une fois, puis suivez le résultat dans MaxVideoAI'],
+        title: 'Can the assistant spend credits by itself?',
+        liveBody: 'No. Recommendations, project estimates and exact-quote preparation do not start a job. MaxVideoAI requires a separate, explicit approval of the returned exact quote and still enforces ownership, spending limits and duplicate protection.',
+        gatedBody: 'No. The product separates advice from paid execution: review the exact request and price, then approve the generation yourself.',
       },
-      controls: {
-        title: 'Autorisations, confidentialité et contrôle des dépenses',
-        body:
-          'Une connexion ne doit donner accès qu’aux éléments nécessaires au parcours choisi. MaxVideoAI applique les règles de propriété et de compte à chaque requête.',
-        items: [
-          'Les prompts privés et les URL de références restent exclus des mesures d’acquisition.',
-          'Une confirmation séparée protège chaque génération payante ; les limites de dépenses du compte ajoutent une protection.',
-          'Les connexions pourront être supprimées dans les réglages du compte MaxVideoAI après l’ouverture publique.',
-        ],
+      credits: {
+        title: 'How do I add MaxVideoAI credits?',
+        liveBody: 'If the balance is too low, the assistant can open a secure MaxVideoAI top-up page for the missing amount. Payment stays on MaxVideoAI. After funding, it checks the balance and prepares a fresh quote because the previous quote has expired.',
+        gatedBody: 'Credits are purchased securely on MaxVideoAI and work across the website and connected assistant. After any top-up, prepare a new quote before generating.',
       },
-      capabilities: {
-        title: 'Quatre garanties, de la décision au résultat',
-        body: 'L’installation MCP, la découverte, les recommandations et les estimations sont gratuites. La génération utilise vos crédits MaxVideoAI existants avec une tarification à l’usage, sans aucun abonnement MCP distinct. Préversion — validation des hôtes en cours.',
-        items: [
-          'Choisir le meilleur modèle exécutable pour chaque plan à partir des données actuelles.',
-          'Voir le prix exact avant de dépenser le moindre crédit.',
-          'Valider les paramètres et les références privées avant l’envoi.',
-          'Exiger une confirmation explicite, puis suivre l’état et la récupération ; les crédits des échecs définitifs sont remboursés automatiquement.',
-        ],
+      library: {
+        title: 'Where are my generated images and videos saved?',
+        liveBody: 'Completed images and videos are saved to the connected MaxVideoAI account and remain available in its private media library. The assistant can recover recent jobs and return the official library or workspace destination.',
+        gatedBody: 'Everything generated on MaxVideoAI is saved to the same account library. The connected workflow uses that same library for references, results and job recovery.',
       },
-      setup: {
-        title: 'Consultez un aperçu de configuration par client',
-        body:
-          'Les guides Claude et Codex décrivent uniquement des procédures prévues. Aucune preuve en client hébergé pour l’autorisation, l’actualisation, le rendu, la révocation ou la génération n’est revendiquée avant la validation Task 10.',
+      disconnect: {
+        title: 'How do I disconnect MaxVideoAI?',
+        liveBody: 'Remove MaxVideoAI from the assistant, then revoke the saved grant in MaxVideoAI account connections. A later protected action will require a new browser approval.',
+        gatedBody: 'When connection access opens, you can disconnect in two steps: remove MaxVideoAI from the assistant and revoke its authorization in your MaxVideoAI account.',
       },
-      faq: {
-        title: 'Questions avant la connexion',
-        items: [
-          { question: 'L’assistant choisit-il automatiquement le modèle ?', answer: 'Il peut aider à comparer une sélection, mais la recommandation doit reposer sur les données actuelles de MaxVideoAI et vous pouvez choisir un autre modèle compatible.' },
-          { question: 'Vais-je voir le prix avant ?', answer: 'Le produit web MaxVideoAI affiche le prix avant la génération. Le parcours connecté reprendra cette vérification et cette confirmation uniquement après validation de sa mise en ligne.' },
-          { question: 'Tous les modèles acceptent-ils les références ou l’audio ?', answer: 'Non. La prise en charge des références et de l’audio dépend du modèle et du scénario, et les réglages visibles doivent préciser ce qui est inclus.' },
-        ],
-      },
-      support: { label: 'Contacter l’assistance MaxVideoAI', href: '/fr/contact' },
     },
   },
-  es: {
-    meta: {
-      title: 'MCP de MaxVideoAI para Claude, ChatGPT y Codex',
-      description:
-        'Asesoramiento sobre modelos, presupuestos, referencias privadas y herramientas para preparar y generar mediante la integración. Vista previa — validación de clientes en curso; implementación local verificada.',
+  trust: {
+    definition: {
+      eyebrow: 'One conversation, many models',
+      title: 'The conversational way to use MaxVideoAI',
+      body: 'Instead of opening and comparing many model interfaces yourself, describe the result you want. Your assistant develops the production plan; MaxVideoAI returns executable model facts, current prices, validation, generation and recovery.',
     },
-    breadcrumb: { home: 'Inicio', current: 'MCP de MaxVideoAI' },
-    hero: {
-      eyebrows: {
-        trial: 'PRIMER VIDEO INCLUIDO',
-        budget: 'MODELOS DE BAJO COSTO PRIMERO',
-        price: 'PRECIO ANTES DE GENERAR',
-      },
-      title: 'Del brief al video renderizado, directamente en tu asistente de IA.',
-      intro:
-        'MaxVideoAI ayuda a Claude y Codex a elegir el modelo de video adecuado, preparar prompts y referencias, calcular el precio exacto y generar solo después de tu aprobación. Vista previa — validación de clientes en curso; implementación local verificada.',
-      previewIntro:
-        'MaxVideoAI ayuda a Claude y Codex a elegir el modelo de video adecuado, preparar prompts y referencias, calcular el precio exacto y generar solo después de tu aprobación. Vista previa — validación de clientes en curso; implementación local verificada.',
-      trialDisclosure:
-        'Se incluye un video para una cuenta apta y verificada: Seedance 2 Mini, 5 segundos, 480p. Esta promoción es independiente de los fondos de la cartera y del saldo habitual.',
-      actions: clientActions('es', {
-        claude: 'Ver configuración de Claude',
-        codex: 'Ver configuración de Codex',
-        supporting: 'Revisar configuración sin verificar',
-      }),
-      connectActions: {
-        endpointLabel: 'Dirección de conexión',
-        copyEndpoint: 'Copiar dirección',
-        copied: 'Dirección copiada. Continúa con la guía de configuración de este cliente.',
-        copyError: 'No se pudo copiar. Selecciona la dirección anterior y cópiala manualmente.',
+    availability: {
+      title: 'How it is priced',
+      liveBody: 'The plugin, model advice and project estimates are free. Generation uses your existing pay-as-you-go MaxVideoAI credits, with no separate plugin subscription.',
+      gatedBody: 'Model advice and project estimates are free. Paid generation continues on MaxVideoAI until direct production access opens.',
+    },
+    compatibility: {
+      title: 'Tested connection paths',
+      body: 'The core server is shared across assistants. Compatibility is recorded per host so one successful test is never used to imply every surface behaves identically.',
+      checkpointLabel: 'Hosted capability review',
+      sourceLabel: 'Compatibility evidence',
+      statuses: {
+        claudeDesktop: 'Claude Desktop 1.37937.1 completed the controlled OAuth, catalog, budget, exact-quote, private-media, recovery, upload-handoff and top-up-handoff checks.',
+        claudeCode: 'Claude Code uses the same remote server and skill package; its final host-specific production check remains separate.',
+        chatgptDesktop: 'ChatGPT desktop supports direct remote MCP connections; the final MaxVideoAI production path will be checked on this exact surface before launch.',
+        codexCli: 'Codex CLI 0.149.0-alpha.4.3 completed the controlled OAuth, account, catalog, budget, exact-quote and top-up-handoff checks.',
       },
     },
-    workflow: {
-      ariaLabel: 'Flujo de preparación de video con IA',
-      steps: [
-        'Describe tu video',
-        'Compara las mejores opciones de bajo costo',
-        'Revisa el presupuesto y los siguientes pasos',
+    confirmation: {
+      title: 'Your approval is the spending boundary',
+      liveBody: 'MaxVideoAI first validates the complete request and returns a short-lived exact quote. Only your clear approval starts the generation; the accepted job and result remain recoverable from the connected account.',
+      gatedBody: 'Review the complete request and exact price in MaxVideoAI, then submit it yourself. The same separate-confirmation pattern is built into the connected workflow.',
+      steps: ['Compare the best fit and alternatives', 'Review exact settings, references and price', 'Approve once, then follow the result in MaxVideoAI'],
+    },
+    controls: {
+      title: 'Private media and spending stay account-owned',
+      body: 'OAuth connects one MaxVideoAI account without giving the assistant your password, payment details or direct database access.',
+      items: [
+        'Private prompts and reference URLs stay out of acquisition analytics.',
+        'Every paid job needs a separate confirmation; optional account spending limits add another safeguard.',
+        'Remove the client and revoke its MaxVideoAI grant whenever you want to disconnect.',
       ],
     },
-    budget: {
-      eyebrow: 'Selección centrada en el presupuesto',
-      title: 'Empieza con el modelo de menor costo que se ajuste a la idea',
-      intro:
-        'Estos escenarios de texto a video usan el catálogo público actual y el precio calculado actualmente. La duración, la resolución y el comportamiento del audio siguen visibles porque influyen en la decisión.',
-      slotLabels: {
-        included_trial: 'Prueba incluida',
-        lowest_paid: 'Ruta pagada de menor costo',
-        affordable_upgrade: 'Mejora accesible',
-      },
-      modelLinkLabel: 'Revisar detalles del modelo',
-      emptyTitle: 'Los precios conectados no están publicados',
-      emptyBody:
-        'Usa la aplicación web de MaxVideoAI para comparar los modelos públicos actuales y revisar el precio mostrado antes de generar.',
-    },
-    evidence: {
-      eyebrow: 'Evidencia verificada',
-      title: 'Un resultado con ajustes, precio y procedencia',
-      verifiedLabel: 'Última verificación',
-    },
-    references: {
-      eyebrow: 'Planificación con referencias',
-      title: 'Lleva la dirección visual a un modelo compatible',
-      intro:
-        'Las imágenes de referencia pueden fijar un personaje, producto o composición cuando el modelo elegido de MaxVideoAI las admite.',
-      planningBody:
-        'El contrato verificado localmente define la planificación del prompt y las referencias visuales para un cliente compatible después de validar los hosts. No se ha verificado ningún comportamiento de archivos de Claude o Codex.',
-      liveBody:
-        'Cuando el acceso a referencias esté habilitado, elige una imagen de tu cuenta, una imagen web permitida o una transferencia segura de MaxVideoAI y revísala antes de confirmar.',
-      gatedBody:
-        'La transferencia conectada de referencias no está disponible públicamente. En la aplicación web de MaxVideoAI, agrega una imagen de referencia solo cuando el modelo elegido la admita.',
-      steps: [
-        { title: 'Define el ancla visual', body: 'Describe el sujeto, la composición y los detalles que deben mantenerse consistentes.' },
-        { title: 'Comprueba la compatibilidad', body: 'Compara solo modelos cuyos datos públicos admitan el modo de referencia requerido.' },
-        { title: 'Revisa antes de generar', body: 'Confirma en conjunto la imagen, el prompt, los ajustes del modelo y el precio mostrado.' },
+    capabilities: {
+      title: 'From decision to finished media',
+      body: 'A plugin combines the creative guidance and the live MaxVideoAI connection. The remote MCP server is the technical layer that keeps model facts, prices, account state and generation current.',
+      items: [
+        'Recommend the best executable model for each shot and explain credible alternatives.',
+        'Budget complete films with one model or a reasoned shot-by-shot mix.',
+        'Validate prompts, parameters, image, video and audio references before submission.',
+        'Show the exact price, require approval, track the job and recover completed or refunded outcomes.',
       ],
     },
-    answers: {
-      eyebrow: 'Respuestas directas',
-      title: 'Qué verifica la vista previa MCP local',
-      updatedLabel: 'Control local de evidencia',
-      items: {
-        integration: {
-          title: '¿Qué hace la integración de MaxVideoAI?',
-          liveBody:
-            'Después de validar los hosts y publicar por separado, el diseño MCP de MaxVideoAI podría permitir que un cliente compatible aclare una idea, formule el prompt y compare modelos públicos. Es un comportamiento previsto, no evidencia actual de Claude o Codex.',
-          gatedBody:
-            'El MCP de MaxVideoAI es una vista previa local de los contratos de planificación, comparación de modelos, presupuesto, referencias privadas y cotizaciones. Está diseñado para clientes de IA compatibles, incluidos Claude y Codex cuando termine la validación de los hosts. La conexión con hosts y la generación siguen sin verificar; el producto web de MaxVideoAI sigue siendo el lugar para revisar precios y generar.',
-        },
-        price: {
-          title: '¿Cómo se calcula el precio de generación?',
-          liveBody:
-            'MaxVideoAI calcula una cotización exacta y temporal a partir del modelo, modo, duración, resolución, opción de audio y referencias compatibles, según las reglas públicas de precios vigentes. La cotización muestra los ajustes y el total antes de generar. Una recomendación solo compara la adecuación de modelos; no es una cotización exacta y no puede gastar fondos de la billetera.',
-          gatedBody:
-            'El producto web de MaxVideoAI calcula el precio mostrado a partir del modelo, modo, duración, resolución, opción de audio y entradas compatibles antes de generar. La vista previa controlada del MCP no ofrece una cotización exacta ni una herramienta de generación. Una recomendación de modelo no es una cotización exacta, así que el precio actual debe revisarse en el producto web.',
-        },
-        references: {
-          title: '¿Qué imágenes de referencia funcionan?',
-          liveBody:
-            'Después de validar los hosts y publicar por separado, una referencia podría proceder de un recurso de MaxVideoAI asociado a la cuenta, una imagen HTTPS permitida o una transferencia segura. No se ha verificado ningún comportamiento de archivos de Claude o Codex.',
-          gatedBody:
-            'La transferencia conectada de referencias no está habilitada públicamente. El contrato local cubre la planificación del sujeto, la composición y la consistencia, pero no se ha verificado ningún comportamiento de creación o transferencia de Claude o Codex. Usa el producto web de MaxVideoAI.',
-        },
-        confirmation: {
-          title: '¿Por qué la confirmación es un paso separado?',
-          liveBody:
-            'Una confirmación separada distingue la elección del modelo del gasto. MaxVideoAI muestra primero los ajustes exactos, el total y el efecto previsto en la cuenta; solo una confirmación posterior puede aceptar la generación. El servidor todavía aplica controles de propiedad, límite de gasto e idempotencia, por lo que revisar una cotización no inicia por sí solo un trabajo pagado.',
-          gatedBody:
-            'La confirmación separada es el diseño de seguridad aprobado para una futura generación MCP pagada: primero revisa el modelo, los ajustes y el precio exacto, y después aprueba el gasto de forma explícita. La generación MCP pagada no está habilitada públicamente. En el producto web actual, el precio mostrado se revisa antes de enviar la generación.',
-        },
-        disconnect: {
-          title: '¿Cómo desconecto MaxVideoAI?',
-          liveBody:
-            'Elimina MaxVideoAI del cliente y después abre las conexiones de la cuenta de MaxVideoAI para revocar la autorización de ese cliente. La revocación termina el acceso guardado; una acción protegida posterior debe abrir una nueva aprobación en el navegador. Eliminar la entrada del cliente y revocar el acceso en la cuenta son acciones distintas, por lo que debes completar ambas.',
-          gatedBody:
-            'Para una futura conexión de prueba controlada, el procedimiento documentado consiste en eliminar MaxVideoAI del cliente y revocar su autorización desde las conexiones de la cuenta de MaxVideoAI. Una acción protegida posterior deberá solicitar una aprobación nueva. El comportamiento real de los hosts sigue sin verificar; este procedimiento local no implica que la conexión pública esté disponible en ningún cliente.',
-        },
-      },
+    setup: {
+      title: 'Start with ChatGPT or Claude; use Codex when you want the technical path',
+      body: 'ChatGPT and Claude are the main setup routes. Codex uses the same MaxVideoAI plugin and remote MCP server, with a dedicated CLI guide for developers and agent workflows.',
     },
-    trust: {
-      definition: {
-        eyebrow: 'Qué es',
-        title: 'La continuación conversacional de MaxVideoAI',
-        body:
-          'Pasa de las comparativas, ejemplos, precios en vivo y créditos de pago por uso de MaxVideoAI a una conversación en tu asistente. El asistente continúa el brief; MaxVideoAI sigue a cargo de los modelos ejecutables, los precios, la validación, la generación y los resultados.',
-      },
-      availability: {
-        title: 'Disponibilidad',
-        liveBody: 'El flujo público está habilitado para las funciones que aparecen en esta página. Todavía pueden aplicarse límites específicos de cada cliente.',
-        gatedBody:
-          'La conexión pública permanece deshabilitada mientras terminan las revisiones de generación, prueba y referencias. Las guías documentan evidencia controlada, no disponibilidad general.',
-      },
-      compatibility: {
-        title: 'Control de compatibilidad del cliente',
-        body:
-          'Están documentadas las comprobaciones locales del paquete y del protocolo. La instalación alojada, OAuth, el renderizado, la renovación y la selección de herramientas siguen sin verificar para todos los clientes mostrados.',
-        checkpointLabel: 'Control local de evidencia',
-        sourceLabel: 'Evidencia de compatibilidad',
-        statuses: {
-          claudeDesktop: 'La compatibilidad alojada sigue sin verificar. Solo están documentados la estructura local del paquete y los contratos de protocolo.',
-          claudeCode: 'La compatibilidad alojada sigue sin verificar. Solo están documentados la estructura local del adaptador y los contratos de protocolo.',
-          codexCli: 'La compatibilidad alojada sigue sin verificar. Solo están documentados la estructura local del paquete y los contratos de protocolo.',
-        },
-      },
-      confirmation: {
-        title: 'Revisión del precio y confirmación explícita',
-        liveBody:
-          'MaxVideoAI calcula un precio exacto y temporal para el prompt, el modelo, los ajustes y las referencias elegidos. La generación comienza después de una confirmación separada; el trabajo aceptado y el resultado quedan disponibles en MaxVideoAI.',
-        gatedBody:
-          'El producto web ya muestra el precio antes de generar. El precio calculado y la confirmación conectada no están habilitados públicamente, por lo que esta página no los presenta como acciones disponibles.',
-        steps: ['Compara las ventajas y límites de los modelos', 'Revisa el precio exacto y los ajustes', 'Confirma una vez y sigue el resultado en MaxVideoAI'],
-      },
-      controls: {
-        title: 'Permisos, privacidad y control del gasto',
-        body:
-          'Una conexión debe exponer solo el acceso necesario para el flujo elegido. MaxVideoAI aplica las reglas de propiedad y de la cuenta en cada solicitud.',
-        items: [
-          'Los prompts privados y las URL de referencias se excluyen de las métricas de adquisición.',
-          'Una confirmación separada protege cada generación pagada; los límites de gasto de la cuenta añaden otra protección.',
-          'Las conexiones se podrán eliminar desde la configuración de la cuenta de MaxVideoAI cuando se habilite el acceso público.',
-        ],
-      },
-      capabilities: {
-        title: 'Cuatro garantías, de la decisión al resultado',
-        body: 'La instalación MCP, el descubrimiento, las recomendaciones y las estimaciones son gratis. La generación usa tus créditos existentes de MaxVideoAI con precios de pago por uso, sin una suscripción MCP independiente. Vista previa — validación de clientes en curso.',
-        items: [
-          'Elegir el mejor modelo ejecutable para cada toma a partir de datos actuales.',
-          'Ver el precio exacto antes de gastar ningún crédito.',
-          'Validar los parámetros y las referencias privadas antes del envío.',
-          'Exigir una confirmación explícita y después seguir el estado y la recuperación; los créditos de fallos definitivos se reembolsan automáticamente.',
-        ],
-      },
-      setup: {
-        title: 'Revisa una vista previa de configuración por cliente',
-        body:
-          'Las guías de Claude y Codex describen solo procedimientos previstos. No se afirma evidencia en clientes alojados sobre autorización, renovación, renderizado, revocación o generación antes de la validación de Task 10.',
-      },
-      faq: {
-        title: 'Preguntas antes de conectar',
-        items: [
-          { question: '¿El agente elige el modelo automáticamente?', answer: 'Puede ayudar a comparar una selección, pero la recomendación debe usar datos actuales de MaxVideoAI y puedes elegir otro modelo compatible.' },
-          { question: '¿Veré el precio primero?', answer: 'El producto web de MaxVideoAI muestra el precio antes de generar. El flujo conectado ofrecerá la misma revisión y confirmación solo cuando esté disponible públicamente.' },
-          { question: '¿Todos los modelos aceptan referencias o audio?', answer: 'No. La compatibilidad con referencias y audio depende del modelo y del escenario, y los ajustes visibles deben indicar qué se incluye.' },
-        ],
-      },
-      support: { label: 'Contactar al soporte de MaxVideoAI', href: '/es/contact' },
+    faq: {
+      title: 'Questions before you connect',
+      items: [
+        { question: 'Does the assistant always choose the model?', answer: 'No. It asks only for missing priorities, proposes concrete options and lets you keep a preferred compatible model. MaxVideoAI supplies facts; you keep the decision.' },
+        { question: 'Will Seedance 2.5 always be recommended?', answer: 'It can lead a quality-first proposal when its current capabilities fit the brief. The assistant should also show credible lower-cost alternatives when budget matters, based on live prices rather than a fixed ranking.' },
+        { question: 'What happens if a generation fails?', answer: 'The assistant recovers the existing job instead of creating a duplicate. Definitive technical failures expose their refund or recredit state; a creative retry is a new quote and needs new approval.' },
+      ],
     },
+    support: { label: 'Contact MaxVideoAI support', href: '/contact' },
   },
 };
+
+function frenchCopy(): McpPageCopy {
+  return {
+    ...EN,
+    meta: {
+      title: 'Plugin vidéo IA pour ChatGPT et Claude | MaxVideoAI',
+      description: 'Transformez ChatGPT, Claude ou Codex en producteur vidéo IA : prompts, références, modèles actuels, budgets, prix exact, validation et génération.',
+    },
+    breadcrumb: { home: 'Accueil', current: 'Plugin vidéo IA' },
+    hero: {
+      ...EN.hero,
+      eyebrows: { trial: 'CRÉDIT DE DÉCOUVERTE SI ÉLIGIBLE', budget: 'LE BON MODÈLE POUR CHAQUE PLAN', price: 'LE PRIX AVANT DE GÉNÉRER' },
+      title: 'Transformez ChatGPT ou Claude en producteur vidéo IA.',
+      intro: 'Du brief à la vidéo rendue, dans votre assistant IA. Il développe prompts et références, compare les meilleurs modèles actuels, budgète un film complet et génère via MaxVideoAI uniquement après votre validation du prix exact.',
+      previewIntro: 'Du brief à la vidéo rendue, dans votre assistant IA. Préparez prompts, références, comparaisons et budget complet ; l’accès direct à la production ouvrira avec la connexion publique.',
+      trialDisclosure: 'Un compte vérifié et éligible peut recevoir une génération Seedance 2 Mini de découverte, distincte du solde habituel de crédits MaxVideoAI.',
+      actions: clientActions('fr', { chatgpt: 'Utiliser MaxVideoAI avec ChatGPT', claude: 'Utiliser MaxVideoAI avec Claude', supporting: 'Voir la connexion et le parcours' }),
+      connectActions: { endpointLabel: 'Configuration MCP manuelle', copyEndpoint: 'Copier l’adresse du serveur', copied: 'Adresse copiée. Continuez avec le guide de votre assistant.', copyError: 'Copie impossible. Sélectionnez puis copiez manuellement l’adresse.' },
+    },
+    workflow: { ariaLabel: 'Parcours de production vidéo IA', steps: ['Développer le brief et les références', 'Comparer modèles et budgets du projet', 'Valider le prix exact et générer'] },
+    budget: {
+      ...EN.budget,
+      eyebrow: 'Budget construit dans la discussion',
+      title: 'Demandez le budget du film complet, pas une formule prédéfinie',
+      intro: 'Indiquez si la qualité, le budget, la vitesse, l’audio ou la fidélité des références compte le plus. L’assistant peut chiffrer jusqu’à quatre propositions concrètes, dont une route qualité et des alternatives moins chères crédibles.',
+      exampleLabel: 'Exemple de discussion',
+      examplePrompt: '« Budgète un film de 60 secondes. La qualité passe en premier, mais montre-moi des moyens crédibles de réduire le total. »',
+      qualityLabel: 'Proposition qualité',
+      qualityBody: 'Utiliser le meilleur modèle actuellement exécutable pour chaque plan — souvent Seedance 2.5 lorsque ses capacités conviennent — puis totaliser chaque plan avec ses réglages et références.',
+      valueLabel: 'Alternatives moins chères',
+      valueBody: 'Conserver le même brief et comparer uniquement des options validées, comme Happy Horse, H3 ou LTX lorsqu’elles conviennent. Expliquer plan par plan les compromis de qualité, mouvement, audio et références.',
+      attemptsNote: 'La proposition sépare les rendus prévus d’une marge facultative pour les reprises créatives. Un échec technique est suivi et remboursé ; une nouvelle tentative créative reste un nouveau choix.',
+      priceReferencesLabel: 'Repères de prix actuels par plan',
+      priceReferencesBody: 'Ce sont des exemples actuels, ni des formules ni une recommandation. L’assistant construit le vrai budget du projet à partir des plans retenus.',
+      slotLabels: { included_trial: 'Crédit de découverte éligible', lowest_paid: 'Repère de prix actuel', affordable_upgrade: 'Alternative créative actuelle' },
+      modelLinkLabel: 'Voir les détails actuels',
+      emptyTitle: 'Construisez une proposition dans la discussion',
+      emptyBody: 'Décrivez la vidéo finie, la durée, les plans et les priorités. MaxVideoAI valide chaque modèle proposé et calcule un budget comparable avec les prix actuels.',
+    },
+    references: {
+      ...EN.references,
+      eyebrow: 'Production avec références',
+      title: 'Conserver la direction visuelle et audio entre les plans',
+      intro: 'L’assistant peut créer des idées de référence ou choisir un média image, vidéo ou audio existant. MaxVideoAI vérifie les types et limites réellement acceptés par le modèle.',
+      planningBody: 'Préparez sujet, composition, mouvement, voix et continuité dans la discussion. L’assistant reste créatif ; MaxVideoAI apporte les contraintes actuelles.',
+      liveBody: 'Choisissez un média privé du compte ou ouvrez un envoi MaxVideoAI sécurisé. Références et résultats restent dans la même galerie MaxVideoAI que sur le site.',
+      gatedBody: 'Préparez les références dans la discussion puis utilisez le site MaxVideoAI pour l’envoi final et la génération avant l’ouverture de la production connectée.',
+      steps: [
+        { title: 'Créer la direction', body: 'Développez personnage, produit, composition, mouvement et intention audio.' },
+        { title: 'Choisir le modèle', body: 'MaxVideoAI vérifie les références image, vidéo et audio du mode choisi.' },
+        { title: 'Tout vérifier ensemble', body: 'Validez prompt, ordre des références, réglages et prix exact.' },
+      ],
+    },
+    answers: {
+      eyebrow: 'Réponses directes', title: 'Comment fonctionne le plugin vidéo IA MaxVideoAI', updatedLabel: 'Revue des capacités',
+      items: {
+        integration: { title: 'Que fait MaxVideoAI dans ChatGPT ou Claude ?', liveBody: 'MaxVideoAI relie la discussion créative aux modèles vidéo et image actuels, aux capacités, prix, références privées et à la génération. L’assistant reste libre de créer ; MaxVideoAI fournit les faits qui changent et exécute le job approuvé.', gatedBody: 'MaxVideoAI est la couche d’exécution de la discussion : modèles actuels, capacités, budgets, prix exact, références et génération. La connexion directe à la production ouvrira après les derniers contrôles.' },
+        price: { title: 'Vois-je le prix exact avant de générer ?', liveBody: 'Oui. Les budgets sont des estimations gratuites. Pour une demande concrète, MaxVideoAI valide modèle, mode, durée, résolution, audio et références, renvoie un devis exact temporaire et attend votre accord explicite.', gatedBody: 'La planification et les comparaisons sont gratuites. Avant l’ouverture directe, vérifiez le prix exact actuel sur le site MaxVideoAI.' },
+        references: { title: 'Puis-je utiliser des références image, vidéo ou audio ?', liveBody: 'Oui, selon le modèle et le mode. L’assistant choisit un média privé existant ou ouvre un envoi sécurisé ; MaxVideoAI renvoie types, rôles, ordre et limites.', gatedBody: 'Le support dépend du modèle. Préparez les références dans la discussion puis ajoutez les médias compatibles dans MaxVideoAI.' },
+        confirmation: { title: 'L’assistant peut-il dépenser seul ?', liveBody: 'Non. Conseils, budgets et préparation du devis ne lancent aucun job. MaxVideoAI exige une validation séparée du devis exact et applique propriété, limites de dépense et protection contre les doublons.', gatedBody: 'Non. Le produit sépare le conseil de l’exécution payante : contrôlez demande et prix, puis validez vous-même.' },
+        credits: { title: 'Comment ajouter des crédits MaxVideoAI ?', liveBody: 'Si le solde est trop faible, l’assistant ouvre une recharge MaxVideoAI sécurisée du montant manquant. Le paiement reste sur MaxVideoAI. Ensuite il vérifie le solde et prépare un nouveau devis, car l’ancien a expiré.', gatedBody: 'Les crédits se rechargent sur MaxVideoAI et servent sur le site comme dans l’assistant connecté. Après recharge, préparez toujours un nouveau devis.' },
+        library: { title: 'Où sont enregistrées mes images et vidéos ?', liveBody: 'Les médias terminés sont enregistrés dans le compte MaxVideoAI connecté et restent dans sa galerie privée. L’assistant peut récupérer les jobs récents et renvoyer la galerie ou l’espace de travail officiel.', gatedBody: 'Tout média généré est conservé dans la galerie du même compte MaxVideoAI, utilisée aussi pour les références et la récupération.' },
+        disconnect: { title: 'Comment déconnecter MaxVideoAI ?', liveBody: 'Supprimez MaxVideoAI de l’assistant puis révoquez l’autorisation dans les connexions du compte. Toute action protégée future demandera une nouvelle approbation.', gatedBody: 'À l’ouverture, déconnectez en deux étapes : retirez MaxVideoAI de l’assistant et révoquez l’autorisation dans votre compte.' },
+      },
+    },
+    trust: {
+      ...EN.trust,
+      definition: { eyebrow: 'Une discussion, plusieurs modèles', title: 'La façon conversationnelle d’utiliser MaxVideoAI', body: 'Décrivez le résultat voulu au lieu de jongler entre plusieurs interfaces. L’assistant construit le plan ; MaxVideoAI apporte modèles exécutables, prix actuels, validation, génération et récupération.' },
+      availability: { title: 'Combien cela coûte', liveBody: 'Le plugin, les conseils et budgets sont gratuits. La génération utilise vos crédits MaxVideoAI existants en paiement à l’usage, sans abonnement séparé.', gatedBody: 'Conseils et budgets restent gratuits. La génération payante continue sur MaxVideoAI avant l’ouverture directe.' },
+      compatibility: { ...EN.trust.compatibility, title: 'Parcours de connexion testés', body: 'Le serveur est partagé entre assistants, mais chaque hôte est vérifié séparément.', checkpointLabel: 'Revue hébergée', statuses: {
+        claudeDesktop: 'Claude Desktop 1.37937.1 a validé OAuth, catalogue, budget, devis exact, médias privés, récupération, envoi et recharge.',
+        claudeCode: 'Claude Code utilise le même serveur et skill ; son contrôle final reste distinct.',
+        chatgptDesktop: 'ChatGPT desktop accepte les connexions MCP distantes ; le parcours production MaxVideoAI sera vérifié sur cette surface avant lancement.',
+        codexCli: 'Codex CLI 0.149.0-alpha.4.3 a validé OAuth, compte, catalogue, budget, devis exact et recharge.',
+      } },
+      confirmation: { title: 'Votre validation protège la dépense', liveBody: 'MaxVideoAI valide d’abord la demande et renvoie un devis exact temporaire. Seul votre accord clair lance la génération.', gatedBody: 'Vérifiez la demande et le prix exact dans MaxVideoAI puis soumettez vous-même. La connexion conserve cette validation séparée.', steps: ['Comparer le meilleur choix et ses alternatives', 'Vérifier réglages, références et prix exact', 'Valider une fois puis suivre le résultat'] },
+      controls: { title: 'Médias privés et dépenses restent liés au compte', body: 'OAuth relie un compte sans fournir mot de passe, paiement ou accès direct à la base.', items: ['Prompts privés et URL de références restent hors analytics d’acquisition.', 'Chaque job payant demande une validation séparée ; les limites du compte ajoutent une protection.', 'Retirez le client et révoquez son autorisation MaxVideoAI à tout moment.'] },
+      capabilities: { title: 'De la décision au média terminé', body: 'Le plugin combine guide créatif et connexion MaxVideoAI. Le serveur MCP distant maintient modèles, prix, compte et génération à jour.', items: ['Recommander le meilleur modèle exécutable par plan et expliquer les alternatives.', 'Budgéter un film avec un modèle ou un mix raisonné.', 'Valider prompts, réglages et références image, vidéo et audio.', 'Afficher le prix exact, demander votre accord, suivre le job et récupérer résultat ou remboursement.'] },
+      setup: { title: 'Commencez avec ChatGPT ou Claude ; utilisez Codex pour le parcours technique', body: 'ChatGPT et Claude sont les entrées principales. Codex utilise le même plugin MaxVideoAI et le même serveur MCP, avec un guide CLI dédié.' },
+      faq: { title: 'Questions avant connexion', items: [
+        { question: 'L’assistant choisit-il toujours le modèle ?', answer: 'Non. Il demande les priorités manquantes, propose des options concrètes et respecte votre modèle préféré s’il est compatible.' },
+        { question: 'Seedance 2.5 sera-t-il toujours conseillé ?', answer: 'Il peut mener une proposition qualité si ses capacités actuelles correspondent au brief. Si le budget compte, l’assistant montre aussi des alternatives crédibles selon les prix actuels.' },
+        { question: 'Que se passe-t-il si une génération échoue ?', answer: 'L’assistant récupère le job existant au lieu de créer un doublon. Un échec technique définitif expose son remboursement ; une nouvelle tentative créative exige un nouveau devis et un nouvel accord.' },
+      ] },
+      support: { label: 'Contacter le support MaxVideoAI', href: '/fr/contact' },
+    },
+  };
+}
+
+function spanishCopy(): McpPageCopy {
+  return {
+    ...EN,
+    meta: { title: 'Plugin de vídeo con IA para ChatGPT y Claude | MaxVideoAI', description: 'Convierte ChatGPT, Claude o Codex en productor de vídeo con IA: prompts, referencias, modelos actuales, presupuestos, precio exacto, aprobación y generación.' },
+    breadcrumb: { home: 'Inicio', current: 'Plugin de vídeo con IA' },
+    hero: {
+      ...EN.hero,
+      eyebrows: { trial: 'CRÉDITO INICIAL SI CUMPLES LOS REQUISITOS', budget: 'EL MODELO ADECUADO PARA CADA PLANO', price: 'PRECIO ANTES DE GENERAR' },
+      title: 'Convierte ChatGPT o Claude en tu productor de vídeo con IA.',
+      intro: 'Del brief al vídeo renderizado dentro de tu asistente de IA. Desarrolla prompts y referencias, compara modelos actuales, presupuesta la película completa y genera con MaxVideoAI solo después de aprobar el precio exacto.',
+      previewIntro: 'Del brief al vídeo renderizado dentro de tu asistente. Prepara prompts, referencias, comparaciones y presupuesto; el acceso directo se abrirá con la conexión pública.',
+      trialDisclosure: 'Una cuenta verificada y elegible puede recibir una generación inicial con Seedance 2 Mini, separada del saldo normal de créditos.',
+      actions: clientActions('es', { chatgpt: 'Usar MaxVideoAI con ChatGPT', claude: 'Usar MaxVideoAI con Claude', supporting: 'Ver conexión y flujo' }),
+      connectActions: { endpointLabel: 'Configuración MCP manual', copyEndpoint: 'Copiar dirección del servidor', copied: 'Dirección copiada. Continúa con la guía de tu asistente.', copyError: 'No se pudo copiar. Selecciona y copia la dirección manualmente.' },
+    },
+    workflow: { ariaLabel: 'Flujo de producción de vídeo con IA', steps: ['Desarrollar brief y referencias', 'Comparar modelos y presupuestos', 'Aprobar el precio exacto y generar'] },
+    budget: { ...EN.budget, eyebrow: 'Presupuesto en la conversación', title: 'Pide un presupuesto para toda la película, no un paquete predefinido', intro: 'Indica si importan más calidad, presupuesto, velocidad, audio o fidelidad de referencias. El asistente puede valorar propuestas concretas, una ruta de calidad y alternativas más baratas creíbles.', exampleLabel: 'Ejemplo de conversación', examplePrompt: '«Presupuesta una película de 60 segundos. La calidad es lo primero, pero muéstrame formas creíbles de reducir el total.»', qualityLabel: 'Propuesta de máxima calidad', qualityBody: 'Usar el mejor modelo ejecutable actual para cada plano —a menudo Seedance 2.5 cuando sus capacidades encajan— y sumar cada plano con sus ajustes y referencias.', valueLabel: 'Alternativas más baratas', valueBody: 'Mantener el mismo brief y comparar solo opciones validadas, como Happy Horse, H3 o LTX cuando encajen. Explicar por plano los compromisos de calidad, movimiento, audio y referencias.', attemptsNote: 'La propuesta separa los renders previstos de un margen opcional para reintentos creativos. Un fallo técnico se sigue y reembolsa; un nuevo intento creativo sigue siendo una decisión nueva.', priceReferencesLabel: 'Referencias de precio actuales por plano', priceReferencesBody: 'Son ejemplos actuales, no paquetes ni una recomendación. El asistente construye el presupuesto real a partir de los planos elegidos.', slotLabels: { included_trial: 'Crédito inicial elegible', lowest_paid: 'Referencia de precio actual', affordable_upgrade: 'Alternativa creativa actual' }, modelLinkLabel: 'Ver detalles actuales', emptyTitle: 'Crea una propuesta en la conversación', emptyBody: 'Describe el vídeo, duración, planos y prioridades. MaxVideoAI valida cada modelo y devuelve un presupuesto comparable con precios actuales.' },
+    references: { ...EN.references, eyebrow: 'Producción con referencias', title: 'Mantén la dirección visual y de audio entre planos', intro: 'El asistente puede crear ideas o elegir una referencia de imagen, vídeo o audio. MaxVideoAI comprueba los tipos y límites reales del modelo.', planningBody: 'Planifica sujeto, composición, movimiento, voz y continuidad en la conversación. El asistente conserva libertad creativa y MaxVideoAI aporta restricciones actuales.', liveBody: 'Elige un medio privado o abre una carga segura. Las referencias y resultados permanecen en la misma biblioteca MaxVideoAI que el sitio.', gatedBody: 'Planifica las referencias en la conversación y usa el sitio MaxVideoAI para la carga y generación finales hasta que se abra la producción conectada.', steps: [{ title: 'Crear la dirección', body: 'Desarrolla personaje, producto, composición, movimiento e intención de audio.' }, { title: 'Elegir el modelo', body: 'MaxVideoAI comprueba referencias de imagen, vídeo y audio del modo.' }, { title: 'Revisar todo', body: 'Aprueba prompt, orden de referencias, ajustes y precio exacto.' }] },
+    answers: { eyebrow: 'Respuestas directas', title: 'Cómo funciona el plugin de vídeo con IA MaxVideoAI', updatedLabel: 'Revisión de capacidades', items: {
+      integration: { title: '¿Qué añade MaxVideoAI a ChatGPT o Claude?', liveBody: 'MaxVideoAI conecta la conversación creativa con modelos actuales, capacidades, precios, referencias privadas y generación. El asistente crea libremente; MaxVideoAI aporta los datos cambiantes y ejecuta el trabajo aprobado.', gatedBody: 'MaxVideoAI es la capa de ejecución: modelos, capacidades, presupuestos, precio exacto, referencias y generación. La conexión directa abrirá tras las comprobaciones finales.' },
+      price: { title: '¿Veo el precio exacto antes de generar?', liveBody: 'Sí. Los presupuestos son estimaciones gratuitas. Para una solicitud concreta, MaxVideoAI valida modelo, modo, duración, resolución, audio y referencias, devuelve un precio exacto temporal y espera tu aprobación.', gatedBody: 'La planificación y comparación son gratuitas. Hasta la apertura directa, revisa el precio exacto en el sitio MaxVideoAI.' },
+      references: { title: '¿Puedo usar referencias de imagen, vídeo o audio?', liveBody: 'Sí, cuando el modelo y modo lo admiten. El asistente selecciona un medio privado o abre una carga segura; MaxVideoAI devuelve tipos, funciones, orden y límites.', gatedBody: 'El soporte depende del modelo. Planifica referencias con el asistente y añade los medios compatibles en MaxVideoAI.' },
+      confirmation: { title: '¿Puede el asistente gastar créditos solo?', liveBody: 'No. Recomendaciones, presupuestos y preparación del precio no crean un trabajo. MaxVideoAI exige aprobar el precio exacto por separado y aplica propiedad, límites y protección contra duplicados.', gatedBody: 'No. El producto separa asesoramiento y ejecución: revisa la solicitud y el precio y aprueba tú mismo.' },
+      credits: { title: '¿Cómo añado créditos MaxVideoAI?', liveBody: 'Si falta saldo, el asistente abre una recarga segura de MaxVideoAI por la cantidad necesaria. El pago queda en MaxVideoAI. Después comprueba el saldo y prepara un precio nuevo porque el anterior ha caducado.', gatedBody: 'Los créditos se compran en MaxVideoAI y funcionan en el sitio y el asistente conectado. Tras recargar, prepara un precio nuevo.' },
+      library: { title: '¿Dónde se guardan mis imágenes y vídeos?', liveBody: 'Los medios terminados se guardan en la cuenta MaxVideoAI conectada y permanecen en su biblioteca privada. El asistente puede recuperar trabajos recientes y devolver la biblioteca o espacio oficial.', gatedBody: 'Todo lo generado queda en la biblioteca de la misma cuenta MaxVideoAI, también usada para referencias y recuperación.' },
+      disconnect: { title: '¿Cómo desconecto MaxVideoAI?', liveBody: 'Elimina MaxVideoAI del asistente y revoca la autorización en conexiones de la cuenta. Una acción protegida futura requerirá una aprobación nueva.', gatedBody: 'Al abrir el acceso, desconecta en dos pasos: elimina MaxVideoAI del asistente y revoca la autorización en tu cuenta.' },
+    } },
+    trust: { ...EN.trust,
+      definition: { eyebrow: 'Una conversación, muchos modelos', title: 'La forma conversacional de usar MaxVideoAI', body: 'Describe el resultado en vez de alternar entre interfaces. El asistente diseña el plan; MaxVideoAI aporta modelos ejecutables, precios, validación, generación y recuperación.' },
+      availability: { title: 'Cuánto cuesta', liveBody: 'El plugin, asesoramiento y presupuestos son gratuitos. La generación usa tus créditos MaxVideoAI de pago por uso sin suscripción adicional.', gatedBody: 'El asesoramiento y los presupuestos son gratuitos. La generación de pago sigue en MaxVideoAI hasta la apertura directa.' },
+      compatibility: { ...EN.trust.compatibility, title: 'Rutas de conexión probadas', body: 'El servidor se comparte entre asistentes, pero cada cliente se comprueba por separado.', checkpointLabel: 'Revisión alojada', statuses: { claudeDesktop: 'Claude Desktop 1.37937.1 completó OAuth, catálogo, presupuesto, precio exacto, medios, recuperación, carga y recarga.', claudeCode: 'Claude Code usa el mismo servidor y skill; su comprobación final sigue separada.', chatgptDesktop: 'ChatGPT desktop admite MCP remoto; el flujo de producción MaxVideoAI se comprobará en esta superficie antes del lanzamiento.', codexCli: 'Codex CLI 0.149.0-alpha.4.3 completó OAuth, cuenta, catálogo, presupuesto, precio exacto y recarga.' } },
+      confirmation: { title: 'Tu aprobación protege el gasto', liveBody: 'MaxVideoAI valida la solicitud y devuelve un precio exacto temporal. Solo tu aprobación clara inicia la generación.', gatedBody: 'Revisa la solicitud y el precio en MaxVideoAI y envíala tú mismo. La conexión mantiene esta aprobación separada.', steps: ['Comparar la mejor opción y alternativas', 'Revisar ajustes, referencias y precio', 'Aprobar una vez y seguir el resultado'] },
+      controls: { title: 'Medios privados y gasto pertenecen a la cuenta', body: 'OAuth enlaza una cuenta sin entregar contraseña, datos de pago ni acceso directo a la base.', items: ['Prompts privados y URL de referencias quedan fuera de analítica de adquisición.', 'Cada trabajo de pago exige aprobación; los límites de cuenta añaden protección.', 'Elimina el cliente y revoca su autorización cuando quieras.'] },
+      capabilities: { title: 'De la decisión al medio terminado', body: 'El plugin combina guía creativa y conexión MaxVideoAI. El servidor MCP remoto mantiene modelos, precios, cuenta y generación al día.', items: ['Recomendar el mejor modelo ejecutable por plano y explicar alternativas.', 'Presupuestar una película con un modelo o mezcla razonada.', 'Validar prompts, ajustes y referencias de imagen, vídeo y audio.', 'Mostrar precio exacto, pedir aprobación, seguir el trabajo y recuperar resultado o reembolso.'] },
+      setup: { title: 'Empieza con ChatGPT o Claude; usa Codex para el recorrido técnico', body: 'ChatGPT y Claude son las entradas principales. Codex utiliza el mismo plugin y servidor MCP con una guía CLI específica.' },
+      faq: { title: 'Preguntas antes de conectar', items: [{ question: '¿El asistente elige siempre el modelo?', answer: 'No. Pregunta solo prioridades faltantes, propone opciones concretas y respeta tu modelo preferido si es compatible.' }, { question: '¿Siempre recomendará Seedance 2.5?', answer: 'Puede liderar una propuesta de calidad si sus capacidades actuales encajan. Cuando importa el presupuesto, también muestra alternativas creíbles con precios actuales.' }, { question: '¿Qué ocurre si una generación falla?', answer: 'El asistente recupera el trabajo existente. Un fallo técnico definitivo muestra su reembolso; un nuevo intento creativo requiere precio y aprobación nuevos.' }] },
+      support: { label: 'Contactar con soporte de MaxVideoAI', href: '/es/contact' },
+    },
+  };
+}
+
+const COPY: Record<AppLocale, McpPageCopy> = { en: EN, fr: frenchCopy(), es: spanishCopy() };
 
 export function getMcpPageCopy(locale: AppLocale): McpPageCopy {
   return COPY[locale];

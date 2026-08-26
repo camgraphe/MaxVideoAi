@@ -67,7 +67,8 @@ export function createImageUploadPostHandler(
   const limits = { ...defaultLimits, ...limitOverrides };
 
   return async function imageUploadPost(req: NextRequest): Promise<NextResponse> {
-    const { userId } = await dependencies.getRouteAuthContext(req);
+    const authContext = await dependencies.getRouteAuthContext(req).catch(() => null);
+    const userId = authContext?.userId ?? null;
     if (!userId) {
       return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
     }
@@ -79,7 +80,10 @@ export function createImageUploadPostHandler(
       );
     }
 
-    const form = await req.formData();
+    const form = await req.formData().catch(() => null);
+    if (!form) {
+      return NextResponse.json({ ok: false, error: 'INVALID_MULTIPART' }, { status: 400 });
+    }
     const blob = form.get('file');
     if (!(blob instanceof File)) {
       return NextResponse.json({ ok: false, error: 'FILE_REQUIRED' }, { status: 400 });

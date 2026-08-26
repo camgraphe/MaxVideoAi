@@ -188,6 +188,11 @@ export const routing = defineRouting({
       fr: '/integrations/claude',
       es: '/integraciones/claude',
     },
+    '/integrations/chatgpt': {
+      en: '/integrations/chatgpt',
+      fr: '/integrations/chatgpt',
+      es: '/integraciones/chatgpt',
+    },
     '/integrations/codex': {
       en: '/integrations/codex',
       fr: '/integrations/codex',

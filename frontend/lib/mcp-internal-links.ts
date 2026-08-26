@@ -2,28 +2,48 @@ import mcpPublication from '@/config/mcp-publication.json';
 import { localePathnames, type AppLocale } from '@/i18n/locales';
 import { getMcpPublicationState } from '@/lib/mcp-publication';
 
-export type McpInternalLinkPlacement = 'footer' | 'payg' | 'models' | 'examples';
+export type McpInternalLinkPlacement =
+  | 'home'
+  | 'footer'
+  | 'payg'
+  | 'models'
+  | 'model'
+  | 'comparison'
+  | 'examples'
+  | 'docs';
 
 type McpPublicationInputs = Parameters<typeof getMcpPublicationState>[0];
 
 const LABELS: Record<AppLocale, Record<McpInternalLinkPlacement, string>> = {
   en: {
-    footer: 'Claude & Codex workflow',
-    payg: 'Plan a video budget in Claude or Codex',
+    home: 'Explore the AI video plugin',
+    footer: 'AI video plugin for ChatGPT & Claude',
+    payg: 'Plan a video budget in ChatGPT or Claude',
     models: 'Compare models from an agent-assisted brief',
-    examples: 'Plan your next result with Claude or Codex',
+    model: 'Ask ChatGPT or Claude to budget this model in your film',
+    comparison: 'Turn this comparison into a complete video budget',
+    examples: 'Plan your next result with ChatGPT or Claude',
+    docs: 'See the ChatGPT and Claude video workflow',
   },
   fr: {
-    footer: 'Parcours Claude et Codex',
-    payg: 'Préparer un budget vidéo avec Claude ou Codex',
+    home: 'Découvrir le plugin vidéo IA',
+    footer: 'Plugin vidéo IA pour ChatGPT et Claude',
+    payg: 'Préparer un budget vidéo avec ChatGPT ou Claude',
     models: 'Comparer les modèles depuis un brief assisté',
-    examples: 'Préparer le prochain résultat avec Claude ou Codex',
+    model: 'Demander à ChatGPT ou Claude de budgéter ce modèle dans votre film',
+    comparison: 'Transformer ce comparatif en budget vidéo complet',
+    examples: 'Préparer le prochain résultat avec ChatGPT ou Claude',
+    docs: 'Voir le parcours vidéo avec ChatGPT et Claude',
   },
   es: {
-    footer: 'Flujo con Claude y Codex',
-    payg: 'Planifica un presupuesto de video con Claude o Codex',
+    home: 'Descubrir el plugin de vídeo con IA',
+    footer: 'Plugin de vídeo con IA para ChatGPT y Claude',
+    payg: 'Planifica un presupuesto de vídeo con ChatGPT o Claude',
     models: 'Compara modelos desde una idea asistida',
-    examples: 'Planifica tu próximo resultado con Claude o Codex',
+    model: 'Pide a ChatGPT o Claude que presupueste este modelo en tu película',
+    comparison: 'Convierte esta comparativa en un presupuesto de vídeo completo',
+    examples: 'Planifica tu próximo resultado con ChatGPT o Claude',
+    docs: 'Ver el flujo de vídeo con ChatGPT y Claude',
   },
 };
 

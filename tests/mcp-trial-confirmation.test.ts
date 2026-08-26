@@ -12,6 +12,7 @@ import {
 } from '../frontend/src/server/agent-api/confirm-generation';
 import { AgentApiError } from '../frontend/src/server/agent-api/errors';
 import { hashCanonicalGenerationRequest, stableJson } from '../frontend/src/server/agent-api/generation-normalization';
+import { buildAgentGenerationRecovery } from '../frontend/src/server/agent-api/generation-status';
 import type { CanonicalGenerationRequest } from '../frontend/src/server/agent-api/generation-types';
 import type { AgentPublicGenerationEngine } from '../frontend/src/server/agent-api/model-catalog';
 import {
@@ -268,7 +269,7 @@ async function expectAgentError(operation: Promise<unknown>, code: AgentApiError
 test('trial confirmation locks first, then atomically revalidates risk, entitlement, job, and claim before provider', async () => {
   const { value, captures } = dependencies();
   const result = await confirmGeneration({ quoteId: QUOTE_ID, confirmed: true }, principal, value);
-  assert.deepEqual(result, status());
+  assert.deepEqual(result, buildAgentGenerationRecovery(status(), value.accountUrl));
   assert.deepEqual(captures.events, [
     'transaction', 'lock_quote', 'trial_gate', 'account', 'catalog', 'membership', 'pricing',
     'risk', 'lock_entitlement', 'reserve_entitlement', 'create_trial_job', 'claim_quote',

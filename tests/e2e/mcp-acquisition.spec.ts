@@ -14,6 +14,7 @@ test.describe.configure({ mode: 'serial' });
 
 const marketingOwners = [
   '/mcp',
+  '/integrations/chatgpt',
   '/integrations/claude',
   '/integrations/codex',
 ] as const;
@@ -22,6 +23,21 @@ const localizedOwners = [
   { path: '/mcp', canonical: 'https://maxvideoai.com/mcp', locale: 'en' },
   { path: '/fr/mcp', canonical: 'https://maxvideoai.com/fr/mcp', locale: 'fr' },
   { path: '/es/mcp', canonical: 'https://maxvideoai.com/es/mcp', locale: 'es' },
+  {
+    path: '/integrations/chatgpt',
+    canonical: 'https://maxvideoai.com/integrations/chatgpt',
+    locale: 'en',
+  },
+  {
+    path: '/fr/integrations/chatgpt',
+    canonical: 'https://maxvideoai.com/fr/integrations/chatgpt',
+    locale: 'fr',
+  },
+  {
+    path: '/es/integraciones/chatgpt',
+    canonical: 'https://maxvideoai.com/es/integraciones/chatgpt',
+    locale: 'es',
+  },
   {
     path: '/integrations/claude',
     canonical: 'https://maxvideoai.com/integrations/claude',
@@ -117,11 +133,11 @@ test('checked-in gated build returns noindex 404s and emits no MCP discovery ent
   for (const discoveryPath of ['/sitemap-en.xml', '/sitemap-fr.xml', '/sitemap-es.xml', '/llms.txt']) {
     const response = await request.get(discoveryPath);
     expect(response.ok(), discoveryPath).toBeTruthy();
-    expect(await response.text()).not.toMatch(/(?:\/mcp|integrations\/(?:claude|codex)|integraciones\/(?:claude|codex))/i);
+    expect(await response.text()).not.toMatch(/(?:\/mcp|integrations\/(?:chatgpt|claude|codex)|integraciones\/(?:chatgpt|claude|codex))/i);
   }
 });
 
-test('renderable preview is noindex and hides trial, paid budget cards, and proof', async ({ page }) => {
+test('renderable preview is noindex and hides trial, live price references, and proof', async ({ page }) => {
   onlyMode('preview');
 
   await page.setViewportSize({ width: 1440, height: 1000 });
@@ -135,11 +151,11 @@ test('renderable preview is noindex and hides trial, paid budget cards, and proo
   await dismissCookieBanner(page);
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/i);
   await expect(page.getByText('FIRST VIDEO INCLUDED')).toHaveCount(0);
-  await expect(page.locator('[data-budget-slot]')).toHaveCount(0);
+  await expect(page.locator('[data-price-reference]')).toHaveCount(0);
   const unavailableBudget = page.locator('section').filter({
-    has: page.getByRole('heading', { name: 'Start with the lowest-cost model that fits the brief' }),
+    has: page.getByRole('heading', { name: 'Ask for a budget for the whole film—not a preset tier' }),
   });
-  await expect(unavailableBudget.getByText('Connected pricing is not published')).toBeVisible();
+  await expect(unavailableBudget.getByText('Describe the finished video, total duration, shot count and priorities.')).toBeVisible();
   await expectNoFakeProof(page);
   mkdirSync(artifactDir, { recursive: true });
   await page.screenshot({
@@ -151,7 +167,7 @@ test('renderable preview is noindex and hides trial, paid budget cards, and proo
   });
 });
 
-test('enabled fixture captures MCP, Claude, and Codex at desktop/mobile in light/dark', async ({ browser }) => {
+test('enabled fixture captures MCP, ChatGPT, Claude, and Codex at desktop/mobile in light/dark', async ({ browser }) => {
   onlyMode('enabled');
   test.setTimeout(120_000);
   mkdirSync(artifactDir, { recursive: true });
@@ -173,7 +189,7 @@ test('enabled fixture captures MCP, Claude, and Codex at desktop/mobile in light
           if (theme === 'dark') await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
           else await expect(page.locator('html')).not.toHaveAttribute('data-theme', 'dark');
           await expectNoFakeProof(page);
-          const slug = path === '/mcp' ? 'mcp' : path.endsWith('claude') ? 'claude' : 'codex';
+          const slug = path === '/mcp' ? 'mcp' : path.split('/').at(-1) ?? 'integration';
           await page.screenshot({
             path: resolve(artifactDir, `${slug}-${viewport.name}-${theme}-${viewport.width}x${viewport.height}.png`),
             animations: 'disabled',
@@ -186,7 +202,7 @@ test('enabled fixture captures MCP, Claude, and Codex at desktop/mobile in light
   }
 });
 
-test('landing presents equal official client actions and honest budget-first content', async ({ page }) => {
+test('landing presents equal official client actions and conversation-led project budgets', async ({ page }) => {
   onlyMode('enabled');
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/mcp', { waitUntil: 'load' });
@@ -194,42 +210,51 @@ test('landing presents equal official client actions and honest budget-first con
 
   await expect(page.getByRole('heading', {
     level: 1,
-    name: 'Turn your brief into the right model, prompt and budget.',
+    name: 'Turn ChatGPT or Claude into your AI video producer.',
   })).toBeVisible();
   await expect(page.getByText('PRICE BEFORE YOU GENERATE')).toBeVisible();
-  await expect(page.getByText('FIRST VIDEO INCLUDED')).toBeVisible();
-  await expect(page.locator('[data-budget-slot="included_trial"]')).toBeVisible();
-  await expect(page.locator('[data-budget-slot="lowest_paid"]')).toBeVisible();
-  await expect(page.locator('[data-budget-slot="affordable_upgrade"]')).toBeVisible();
+  await expect(page.getByText('INTRODUCTORY CREDIT WHEN ELIGIBLE')).toBeVisible();
+  await expect(page.locator('[data-project-proposal="quality"]')).toBeVisible();
+  await expect(page.locator('[data-project-proposal="lower-cost"]')).toBeVisible();
+  await expect(page.locator('[data-price-reference="included_trial"]')).toBeVisible();
+  await expect(page.locator('[data-price-reference="lowest_paid"]')).toBeVisible();
+  await expect(page.locator('[data-price-reference="affordable_upgrade"]')).toBeVisible();
   await expectNoFakeProof(page);
   const availableBudget = page.locator('section').filter({
-    has: page.getByRole('heading', { name: 'Start with the lowest-cost model that fits the brief' }),
+    has: page.getByRole('heading', { name: 'Ask for a budget for the whole film—not a preset tier' }),
   });
   await availableBudget.screenshot({
     path: resolve(artifactDir, 'enabled-budget-trial-paid-light-1440x1000.png'),
   });
 
+  const chatgpt = page.locator('main [data-client="chatgpt"]').first();
   const claude = page.locator('main [data-client="claude"]').first();
-  const codex = page.locator('main [data-client="codex"]').first();
-  const [claudeBox, codexBox] = await Promise.all([claude.boundingBox(), codex.boundingBox()]);
+  const [chatgptBox, claudeBox] = await Promise.all([chatgpt.boundingBox(), claude.boundingBox()]);
+  expect(chatgptBox).not.toBeNull();
   expect(claudeBox).not.toBeNull();
-  expect(codexBox).not.toBeNull();
-  expect(Math.abs(claudeBox!.width - codexBox!.width)).toBeLessThanOrEqual(1);
-  expect(Math.abs(claudeBox!.height - codexBox!.height)).toBeLessThanOrEqual(1);
+  expect(Math.abs(chatgptBox!.width - claudeBox!.width)).toBeLessThanOrEqual(1);
+  expect(Math.abs(chatgptBox!.height - claudeBox!.height)).toBeLessThanOrEqual(1);
 
-  const [claudeMark, codexMark] = await Promise.all([
+  const [chatgptMark, claudeMark] = await Promise.all([
+    chatgpt.locator('img:visible').boundingBox(),
     claude.locator('img:visible').boundingBox(),
-    codex.locator('img:visible').boundingBox(),
   ]);
+  expect(chatgptMark).not.toBeNull();
   expect(claudeMark).not.toBeNull();
-  expect(codexMark).not.toBeNull();
-  expect(Math.abs(claudeMark!.width - codexMark!.width)).toBeLessThanOrEqual(1);
-  expect(Math.abs(claudeMark!.height - codexMark!.height)).toBeLessThanOrEqual(1);
+  expect(Math.abs(chatgptMark!.width - claudeMark!.width)).toBeLessThanOrEqual(1);
+  expect(Math.abs(chatgptMark!.height - claudeMark!.height)).toBeLessThanOrEqual(1);
 });
 
-test('Claude and Codex actions support keyboard focus and activation', async ({ page }) => {
+test('ChatGPT and Claude actions support keyboard focus and activation', async ({ page }) => {
   onlyMode('enabled');
   await page.route('**/api/mcp/acquisition', (route) => route.fulfill({ status: 204 }));
+
+  await page.goto('/mcp', { waitUntil: 'load' });
+  const chatgpt = page.locator('main [data-client="chatgpt"]').first();
+  await chatgpt.focus();
+  await expect(chatgpt).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/\/integrations\/chatgpt$/);
 
   await page.goto('/mcp', { waitUntil: 'load' });
   const claude = page.locator('main [data-client="claude"]').first();
@@ -237,13 +262,6 @@ test('Claude and Codex actions support keyboard focus and activation', async ({ 
   await expect(claude).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/\/integrations\/claude$/);
-
-  await page.goto('/mcp', { waitUntil: 'load' });
-  const codex = page.locator('main [data-client="codex"]').first();
-  await codex.focus();
-  await expect(codex).toBeFocused();
-  await page.keyboard.press('Enter');
-  await expect(page).toHaveURL(/\/integrations\/codex$/);
 });
 
 test('EN, FR, and ES intent owners remain server-readable with JavaScript disabled', async ({ browser }) => {
@@ -307,7 +325,7 @@ test('protocol and discovery responses stay private and absent from public disco
   expect(wallet.headers()['cache-control']).toBe('private, no-store');
 
   const upload = await request.post('/api/uploads/image', { multipart: {} });
-  expect(upload.status()).toBe(400);
+  expect(upload.status()).toBe(401);
 
   const robots = await request.get('/robots.txt');
   const robotsText = await robots.text();

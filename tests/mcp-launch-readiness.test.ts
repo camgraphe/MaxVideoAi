@@ -31,6 +31,9 @@ test('the MCP browser contract covers localized no-JS SEO, visual states, and pr
     '/mcp',
     '/fr/mcp',
     '/es/mcp',
+    '/integrations/chatgpt',
+    '/fr/integrations/chatgpt',
+    '/es/integraciones/chatgpt',
     '/integrations/claude',
     '/fr/integrations/claude',
     '/es/integraciones/claude',
@@ -122,7 +125,7 @@ test('tracked fixture config and runner reproduce all launch modes without mutat
   assert.match(runner, /MCP_E2E_BASE_URL/);
   assert.match(runner, /playwright[\s\S]*?mcp-acquisition\.spec\.ts/);
   assert.match(runner, /--lighthouse/);
-  assert.match(runner, /lhci[\s\S]*?\/mcp[\s\S]*?\/integrations\/claude[\s\S]*?\/integrations\/codex/);
+  assert.match(runner, /lhci[\s\S]*?\/mcp[\s\S]*?\/integrations\/chatgpt[\s\S]*?\/integrations\/claude[\s\S]*?\/integrations\/codex/);
   assert.match(runner, /process\.kill\(-server\.pid/);
   assert.match(runner, /rmSync\(fixtureRoot/);
   assert.doesNotMatch(runner, /frontend\/\.tmp\/mcp-launch/);

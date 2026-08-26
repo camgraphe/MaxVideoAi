@@ -8,6 +8,10 @@ const MARKS = {
     light: '/brand/partners/anthropic/claude-mark-light.svg',
     dark: '/brand/partners/anthropic/claude-mark-dark.svg',
   },
+  chatgpt: {
+    light: '/brand/partners/openai/openai-mark-light.svg',
+    dark: '/brand/partners/openai/openai-mark-dark.svg',
+  },
   codex: {
     light: '/brand/partners/openai/openai-mark-light.svg',
     dark: '/brand/partners/openai/openai-mark-dark.svg',

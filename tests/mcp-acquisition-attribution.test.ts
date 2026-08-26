@@ -433,11 +433,12 @@ test('Task 5 reports durable Task 7 binding through acquisitionId rather than th
 
 test('client deep links remain disabled and localized setup plus endpoint copy always render', async () => {
   const flags = JSON.parse(requireFile(actionFlagsPath)) as Record<
-    'claude' | 'codex',
+    'claude' | 'chatgpt' | 'codex',
     { deepLinkEnabled: boolean; deepLink: string | null }
   >;
   assert.deepEqual(flags, {
     claude: { deepLinkEnabled: false, deepLink: null },
+    chatgpt: { deepLinkEnabled: false, deepLink: null },
     codex: { deepLinkEnabled: false, deepLink: null },
   });
 
@@ -449,9 +450,9 @@ test('client deep links remain disabled and localized setup plus endpoint copy a
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
   for (const [locale, expectedHrefs] of [
-    ['en', ['/integrations/claude', '/integrations/codex']],
-    ['fr', ['/fr/integrations/claude', '/fr/integrations/codex']],
-    ['es', ['/es/integraciones/claude', '/es/integraciones/codex']],
+    ['en', ['/integrations/chatgpt', '/integrations/claude']],
+    ['fr', ['/fr/integrations/chatgpt', '/fr/integrations/claude']],
+    ['es', ['/es/integraciones/chatgpt', '/es/integraciones/claude']],
   ] as const) {
     const copy = getMcpPageCopy(locale);
     const html = renderToStaticMarkup(React.createElement(McpConnectActions, {

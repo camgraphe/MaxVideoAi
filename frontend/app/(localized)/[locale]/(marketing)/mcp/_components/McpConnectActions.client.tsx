@@ -55,7 +55,7 @@ async function recordAcquisition(client: McpClientId, action: 'connect' | 'copy_
         source: 'mcp_landing',
         medium: 'owned',
         campaign: 'mcp_connect',
-        client,
+        client: client === 'chatgpt' ? 'codex' : client,
       }),
     });
   } catch {
@@ -157,11 +157,12 @@ export function McpConnectActions({
   return (
     <div className="rounded-[12px] border border-hairline bg-bg p-3 text-text-primary dark:border-white/[0.12] dark:bg-bg dark:text-white">
       <McpClientActions actions={renderedActions} onActionClick={handleActionClick} />
-      <div className="mt-3 rounded-[10px] border border-hairline bg-surface p-3 dark:border-white/[0.12] dark:bg-white/[0.045]">
-        <p className="text-xs font-semibold text-text-secondary dark:text-white/70">
+      <details className="group mt-3 rounded-[10px] border border-hairline bg-surface p-3 dark:border-white/[0.12] dark:bg-white/[0.045]">
+        <summary className="flex cursor-pointer list-none items-center justify-between text-xs font-semibold text-text-secondary marker:content-none dark:text-white/70">
           {copy.endpointLabel}
-        </p>
-        <code className="mt-1 block select-all overflow-x-auto text-xs text-text-primary dark:text-white">
+          <span aria-hidden="true" className="transition group-open:rotate-180">⌄</span>
+        </summary>
+        <code className="mt-3 block select-all overflow-x-auto rounded-[8px] bg-bg px-3 py-2 text-xs text-text-primary dark:bg-black/20 dark:text-white">
           {resourceUrl}
         </code>
         <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -173,7 +174,7 @@ export function McpConnectActions({
               onClick={() => void copyEndpoint(action.client)}
               className="min-h-10 rounded-[10px] border border-hairline bg-bg px-3 text-sm font-semibold text-text-primary transition hover:border-border-hover hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg dark:border-white/[0.14] dark:bg-neutral-900 dark:text-white dark:hover:border-white/[0.28]"
             >
-              {copy.copyEndpoint} · {action.client === 'claude' ? 'Claude' : 'Codex'}
+              {copy.copyEndpoint} · {action.client === 'claude' ? 'Claude' : action.client === 'chatgpt' ? 'ChatGPT' : 'Codex'}
             </button>
           ))}
         </div>
@@ -184,7 +185,7 @@ export function McpConnectActions({
         >
           {copyStatus ? (copyStatus.state === 'copied' ? copy.copied : copy.copyError) : ''}
         </p>
-      </div>
+      </details>
     </div>
   );
 }

@@ -21,8 +21,10 @@ type McpPublicationInputs = {
 const MCP_PUBLIC_SOURCE_PATHS = new Set([
   '/mcp',
   '/docs/mcp',
+  '/integrations/chatgpt',
   '/integrations/claude',
   '/integrations/codex',
+  '/integraciones/chatgpt',
   '/integraciones/claude',
   '/integraciones/codex',
 ]);
@@ -53,7 +55,6 @@ export function getMcpPublicationState({
       oauth &&
       discovery &&
       paidGeneration &&
-      trial &&
       referenceUploads,
     showTrialClaim: trial,
     showPaidGenerationClaim: paidGeneration,

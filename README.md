@@ -19,6 +19,17 @@ Explore model pages, specs, workflows, and pricing across the full engine catalo
 
 https://maxvideoai.com/models
 
+### AI video plugin for ChatGPT, Claude and Codex
+
+Use MaxVideoAI from an AI assistant to prepare prompts and image, video or
+audio references, compare current models, budget a complete project, review
+the exact price, then generate only after explicit approval. The connection
+uses the existing MaxVideoAI account, credits and private media library.
+
+- Product and setup: https://maxvideoai.com/mcp
+- Repository package: [`plugins/maxvideoai`](plugins/maxvideoai)
+- Architecture and maintenance: [`docs/engineering/mcp-architecture.md`](docs/engineering/mcp-architecture.md)
+
 ### Add a new model page
 
 Use the onboarding flow instead of starting from a thin template:

@@ -60,11 +60,11 @@ test('the sitemap composes every publication prerequisite from the common build-
   assert.match(sitemapConfig, /require\('\.\/config\/mcp-publication\.json'\)/);
   assert.match(
     sitemapConfig,
-    /const mcpIndexable =\s*mcpPublication\.publicIndexing &&\s*mcpPublication\.transport &&\s*mcpPublication\.oauth &&\s*mcpPublication\.discovery &&\s*mcpPublication\.paidGeneration &&\s*mcpPublication\.trial &&\s*mcpPublication\.referenceUploads;/
+    /const mcpIndexable =\s*mcpPublication\.publicIndexing &&\s*mcpPublication\.transport &&\s*mcpPublication\.oauth &&\s*mcpPublication\.discovery &&\s*mcpPublication\.paidGeneration &&\s*mcpPublication\.referenceUploads;/
   );
   assert.match(
     sitemapConfig,
-    /const MCP_PUBLIC_INDEXABLE_PATHS = \[\s*'\/mcp',\s*'\/integrations\/claude',\s*'\/integrations\/codex',\s*'\/docs\/mcp',\s*\];/
+    /const MCP_PUBLIC_INDEXABLE_PATHS = \[\s*'\/mcp',\s*'\/integrations\/chatgpt',\s*'\/integrations\/claude',\s*'\/integrations\/codex',\s*'\/docs\/mcp',\s*\];/
   );
   assert.match(
     sitemapConfig,

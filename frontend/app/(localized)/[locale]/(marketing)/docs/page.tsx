@@ -46,5 +46,5 @@ export default async function DocsIndexPage(props: { params: Promise<{ locale: A
   const metadataUrls = buildMetadataUrls(locale, DOCS_SLUG_MAP, { englishPath: '/docs' });
   const docs = await getDocsEntries(locale);
 
-  return <DocsIndexView content={dictionary.docs} docs={docs} metadataUrls={metadataUrls} site={SITE} />;
+  return <DocsIndexView content={dictionary.docs} docs={docs} locale={locale} metadataUrls={metadataUrls} site={SITE} />;
 }
