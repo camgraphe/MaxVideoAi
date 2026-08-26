@@ -244,6 +244,10 @@ export function buildGenerationResultAppHtml(): string {
       const openButton = document.getElementById('open');
       let openUrl = null;
       let requestId = 1;
+      let initialized = false;
+      let lastWidth = 0;
+      let lastHeight = 0;
+      const pendingRequests = new Map();
 
       function record(value) {
         return value && typeof value === 'object' && !Array.isArray(value) ? value : null;
@@ -318,20 +322,77 @@ export function buildGenerationResultAppHtml(): string {
             : 'This generation is not completed yet.';
           empty.hidden = false;
         }
+
+        scheduleSizeChanged();
       }
 
       function request(method, params) {
-        window.parent.postMessage({ jsonrpc: '2.0', id: requestId++, method, params }, '*');
+        const id = requestId++;
+        window.parent.postMessage({ jsonrpc: '2.0', id, method, params }, '*');
+        return new Promise((resolve, reject) => pendingRequests.set(id, { resolve, reject }));
+      }
+
+      function notify(method, params) {
+        const message = { jsonrpc: '2.0', method };
+        if (params !== undefined) message.params = params;
+        window.parent.postMessage(message, '*');
+      }
+
+      function scheduleSizeChanged() {
+        if (!initialized) return;
+        requestAnimationFrame(() => {
+          const html = document.documentElement;
+          const originalHeight = html.style.height;
+          html.style.height = 'max-content';
+          const width = Math.ceil(window.innerWidth);
+          const height = Math.ceil(html.getBoundingClientRect().height);
+          html.style.height = originalHeight;
+          if (width === lastWidth && height === lastHeight) return;
+          lastWidth = width;
+          lastHeight = height;
+          notify('ui/notifications/size-changed', { width, height });
+        });
+      }
+
+      function setupSizeChangedNotifications() {
+        scheduleSizeChanged();
+        if (!('ResizeObserver' in window)) return;
+        const observer = new ResizeObserver(scheduleSizeChanged);
+        observer.observe(document.documentElement);
+        observer.observe(document.body);
       }
 
       window.addEventListener('message', (event) => {
         if (event.source !== window.parent) return;
         const message = record(event.data);
         if (!message || message.jsonrpc !== '2.0') return;
+        if (pendingRequests.has(message.id)) {
+          const pending = pendingRequests.get(message.id);
+          pendingRequests.delete(message.id);
+          if (message.error) pending.reject(new Error(String(record(message.error)?.message || 'MCP App request failed')));
+          else pending.resolve(message.result);
+          return;
+        }
         if (message.method === 'ui/notifications/tool-result') {
           render(record(message.params)?.structuredContent);
+          return;
+        }
+        if (message.method === 'ui/resource-teardown' && message.id !== undefined) {
+          video.pause();
+          window.parent.postMessage({ jsonrpc: '2.0', id: message.id, result: {} }, '*');
         }
       }, { passive: true });
+
+      async function connectMcpApp() {
+        await request('ui/initialize', {
+          appInfo: { name: 'MaxVideoAI generation result', version: '1.0.0' },
+          appCapabilities: { availableDisplayModes: ['inline'] },
+          protocolVersion: '2026-01-26',
+        });
+        notify('ui/notifications/initialized');
+        initialized = true;
+        setupSizeChangedNotifications();
+      }
 
       openButton.addEventListener('click', async () => {
         if (!openUrl) return;
@@ -339,10 +400,13 @@ export function buildGenerationResultAppHtml(): string {
           await window.openai.openExternal({ href: openUrl, redirectUrl: false });
           return;
         }
-        request('ui/open-link', { url: openUrl });
+        void request('ui/open-link', { url: openUrl });
       });
 
       if (window.openai?.toolOutput) render(window.openai.toolOutput);
+      void connectMcpApp().catch(() => {
+        initialized = false;
+      });
     </script>
   </body>
 </html>`;

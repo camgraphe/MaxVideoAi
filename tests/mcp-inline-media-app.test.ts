@@ -119,6 +119,13 @@ test('generation presenter resource is a portable light and dark MCP App with na
   assert.equal(typeof content?.text, 'string');
   const html = content?.text ?? '';
   assert.match(html, /<video\b[^>]*controls[^>]*playsinline/is);
+  assert.match(html, /request\(['"]ui\/initialize['"]/);
+  assert.match(html, /appInfo:\s*\{[^}]*name:\s*['"]MaxVideoAI generation result['"]/s);
+  assert.match(html, /appCapabilities:\s*\{[^}]*availableDisplayModes:\s*\[['"]inline['"]\]/s);
+  assert.match(html, /protocolVersion:\s*['"]2026-01-26['"]/);
+  assert.match(html, /ui\/notifications\/initialized/);
+  assert.match(html, /ui\/notifications\/size-changed/);
+  assert.match(html, /new ResizeObserver\(/);
   assert.match(html, /ui\/notifications\/tool-result/);
   assert.match(html, /ui\/open-link/);
   assert.match(html, /prefers-color-scheme:\s*dark/);
