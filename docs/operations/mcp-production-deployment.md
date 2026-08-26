@@ -44,6 +44,30 @@ discovery endpoint returning 404, and the production JWKS containing no key.
 It also found required production variable names missing. Treat that as a dated
 baseline, not current evidence; rerun every gate below.
 
+## Production environment checkpoint — 2026-08-26
+
+After owner approval, seven Production-targeted variables were added to Vercel
+project `maxvideoai`: the four non-secret names `MCP_API_HOST`,
+`MCP_RESOURCE_URL`, `SUPABASE_SITE_URL`, and `VIDEO_RENDER_STORAGE_PREFIX`, plus
+independent sensitive values for `MCP_ACQUISITION_SIGNING_SECRET`,
+`MCP_TOPUP_HANDOFF_SECRET`, and `FAL_WEBHOOK_TOKEN`. The render prefix was set to
+`renders`, preserving the existing production S3/gallery namespace. No value
+was printed, pulled, or committed.
+
+The clean-branch read-only preflight then passed for project identity, all 22
+required names, Production targeting, all eight checked-false publication
+flags, and the existing normalized `FAL_KEY` alias. No deployment, alias,
+domain, DNS, OAuth, migration, provider call, wallet spend, or flag change was
+performed.
+
+Immediate follow-up public checks remained blocked exactly as follows:
+
+- Supabase OAuth authorization-server discovery: HTTP 404.
+- Supabase JWKS: HTTP 200 with zero keys.
+- `api.maxvideoai.com`: no A, AAAA, or CNAME record.
+- Vercel project domains: `maxvideoai.com`, `www.maxvideoai.com`,
+  `blog.maxvideoai.com`, and `maxvideoai.vercel.app`; no API subdomain.
+
 ## Gate matrix
 
 | Gate | Pass evidence | Failure / rollback |
