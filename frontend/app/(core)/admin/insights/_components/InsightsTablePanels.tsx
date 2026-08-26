@@ -248,9 +248,21 @@ export function DailyLedgerTable({ rows }: { rows: LedgerRow[] }) {
     },
     {
       key: 'charges',
-      header: 'Charges',
+      header: 'Gross charges',
       cellClassName: 'font-medium text-text-primary',
-      render: (row) => formatCurrency(row.chargesUsd),
+      render: (row) => formatCurrency(row.grossChargesUsd),
+    },
+    {
+      key: 'refunds',
+      header: 'Refunds',
+      cellClassName: 'font-medium text-text-primary',
+      render: (row) => formatCurrency(row.refundsUsd),
+    },
+    {
+      key: 'netSpend',
+      header: 'Net spend',
+      cellClassName: 'font-medium text-text-primary',
+      render: (row) => formatCurrency(row.netSpendUsd),
     },
   ];
 
@@ -268,7 +280,14 @@ export function DailyLedgerTable({ rows }: { rows: LedgerRow[] }) {
 export function MonthlyRollupTable({
   rows,
 }: {
-  rows: Array<{ month: string; signups: number; topupsUsd: number; chargesUsd: number }>;
+  rows: Array<{
+    month: string;
+    signups: number;
+    topupsUsd: number;
+    grossChargesUsd: number;
+    refundsUsd: number;
+    netSpendUsd: number;
+  }>;
 }) {
   if (!rows.length) {
     return <EmptyStateCard>No monthly aggregates yet.</EmptyStateCard>;
@@ -295,9 +314,21 @@ export function MonthlyRollupTable({
     },
     {
       key: 'charges',
-      header: 'Charges',
+      header: 'Gross charges',
       cellClassName: 'font-medium text-text-primary',
-      render: (row) => formatCurrency(row.chargesUsd),
+      render: (row) => formatCurrency(row.grossChargesUsd),
+    },
+    {
+      key: 'refunds',
+      header: 'Refunds',
+      cellClassName: 'font-medium text-text-primary',
+      render: (row) => formatCurrency(row.refundsUsd),
+    },
+    {
+      key: 'netSpend',
+      header: 'Net spend',
+      cellClassName: 'font-medium text-text-primary',
+      render: (row) => formatCurrency(row.netSpendUsd),
     },
   ];
 

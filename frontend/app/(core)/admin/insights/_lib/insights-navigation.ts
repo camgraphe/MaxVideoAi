@@ -5,7 +5,7 @@ export const FOCUS_OPTIONS: Array<{ key: FocusMetric; label: string }> = [
   { key: 'signups', label: 'Signups' },
   { key: 'active', label: 'Active' },
   { key: 'topups', label: 'Top-ups' },
-  { key: 'charges', label: 'Charges' },
+  { key: 'charges', label: 'Gross charges' },
 ];
 
 export function resolveFocusParam(value: string | string[] | undefined): FocusMetric {

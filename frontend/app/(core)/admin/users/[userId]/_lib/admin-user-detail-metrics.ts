@@ -10,6 +10,8 @@ export function buildMemberPulseItems({
   usage,
   lifetimeTopupsUsd,
   lifetimeChargesUsd,
+  lifetimeRefundsUsd,
+  lifetimeNetSpendUsd,
 }: {
   userId: string;
   profile: AdminUserProfile | null;
@@ -17,6 +19,8 @@ export function buildMemberPulseItems({
   usage: AdminUserUsage | null;
   lifetimeTopupsUsd: number;
   lifetimeChargesUsd: number;
+  lifetimeRefundsUsd: number;
+  lifetimeNetSpendUsd: number;
 }): AdminMetricItem[] {
   return [
     {
@@ -41,8 +45,26 @@ export function buildMemberPulseItems({
     {
       label: 'Lifetime top-ups',
       value: wallet ? formatCurrency(lifetimeTopupsUsd) : '—',
-      helper: wallet ? `Charges ${formatCurrency(lifetimeChargesUsd)}` : 'No receipt aggregate',
+      helper: wallet ? 'Credits loaded into the wallet' : 'No receipt aggregate',
       icon: BadgeDollarSign,
+    },
+    {
+      label: 'Gross charges',
+      value: wallet ? formatCurrency(lifetimeChargesUsd) : '—',
+      helper: wallet ? 'All render debits before refunds' : 'No receipt aggregate',
+      icon: BadgeDollarSign,
+    },
+    {
+      label: 'Refunds',
+      value: wallet ? formatCurrency(lifetimeRefundsUsd) : '—',
+      helper: wallet ? 'Credits returned to the wallet' : 'No receipt aggregate',
+      icon: History,
+    },
+    {
+      label: 'Net render spend',
+      value: wallet ? formatCurrency(lifetimeNetSpendUsd) : '—',
+      helper: wallet ? 'Gross charges minus refunds' : 'No receipt aggregate',
+      icon: Wallet,
     },
     {
       label: 'Completed renders',
