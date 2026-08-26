@@ -47,6 +47,7 @@ if [[ -z "$REPO_ROOT" ]]; then
   REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 fi
 PUBLICATION_CONFIG="$REPO_ROOT/frontend/config/mcp-publication.json"
+VERCEL_CONFIG="$REPO_ROOT/frontend/vercel.json"
 
 if ! jq -e '
   . == {
@@ -63,6 +64,20 @@ if ! jq -e '
   printf 'PUBLICATION_BLOCKED expected=all-eight-false\n' >&2
   exit 67
 fi
+
+if ! jq -e '
+  all((.crons // [])[]; (.path | startswith("/api/cron/mcp-") | not))
+' "$VERCEL_CONFIG" >/dev/null; then
+  printf 'CRON_INVENTORY_BLOCKED expected=no-mcp-crons-while-all-eight-false\n' >&2
+  exit 70
+fi
+
+for package_path in 'package.json' 'frontend/package.json'; do
+  if ! jq -e '.engines.node == "22.x"' "$REPO_ROOT/$package_path" >/dev/null; then
+    printf 'NODE_RUNTIME_BLOCKED expected=22.x package=%s\n' "$package_path" >&2
+    exit 71
+  fi
+done
 
 if [[ -n "$(git -C "$REPO_ROOT" status --porcelain --untracked-files=all)" ]]; then
   printf 'WORKTREE_BLOCKED expected=clean-tracked-head\n' >&2
@@ -144,6 +159,8 @@ fi
 
 printf 'PROJECT_OK name=%s rootDirectory=frontend\n' "$PRODUCTION_PROJECT"
 printf 'PUBLICATION_OK all_eight=false\n'
+printf 'CRON_INVENTORY_OK mcp_schedules=0\n'
+printf 'NODE_RUNTIME_OK version=22.x\n'
 printf 'ENVIRONMENT_OK required=%s fal=%s target=production\n' \
   "${#REQUIRED_PRODUCTION_ENVIRONMENT[@]}" \
   "$FAL_CREDENTIAL"

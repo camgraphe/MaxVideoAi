@@ -52,9 +52,11 @@ economics.
 
 ## Reconciliation schedule and authentication
 
-Vercel is configured to call `/api/cron/mcp-trial-reconcile` every 10 minutes.
-GET and POST use the same handler. The handler fails closed unless one of these
-explicit credentials is valid:
+While `trial=false`, the reconciliation schedule is not registered in
+`frontend/vercel.json`. The activation revision that sets `trial=true` must add
+`/api/cron/mcp-trial-reconcile` on its 10-minute schedule and receive separate
+production approval. GET and POST use the same handler. The handler fails
+closed unless one of these explicit credentials is valid:
 
 - `CRON_SECRET`, sent as a Bearer authorization token by the scheduled job;
 - `MCP_TRIAL_RECONCILE_TOKEN`, sent locally in

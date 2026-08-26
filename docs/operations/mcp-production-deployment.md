@@ -65,8 +65,40 @@ Immediate follow-up public checks remained blocked exactly as follows:
 - Supabase OAuth authorization-server discovery: HTTP 404.
 - Supabase JWKS: HTTP 200 with zero keys.
 - `api.maxvideoai.com`: no A, AAAA, or CNAME record.
-- Vercel project domains: `maxvideoai.com`, `www.maxvideoai.com`,
-  `blog.maxvideoai.com`, and `maxvideoai.vercel.app`; no API subdomain.
+- Vercel project domains included the apex, `www`, the existing legacy content
+  alias, and `maxvideoai.vercel.app`; no API subdomain.
+
+## Dark-candidate checkpoint — 2026-08-26
+
+Owner-approved revision `8333fbfaf3f6638a12d215dc03dd56b3da07d802`
+was deployed with `--prod --skip-domain` as protected deployment
+`dpl_C75cjmTmSLBdnyR4bFBshn6fESoH`. The build reached `READY`; the public
+domains remained on `dpl_J4Ub34jN5Avk9UCqskNvb2QjYFjZ`. Vercel briefly
+assigned its technical project alias despite `--skip-domain`; the alias was
+removed from the candidate and restored to the unchanged public deployment.
+The candidate is reachable only through its protected unique deployment URL.
+
+Authenticated smoke checks returned 404 with `noindex` for `/mcp`,
+`/api/mcp`, the ChatGPT and Claude integration pages, and protected-resource
+discovery. No provider generation, wallet charge, OAuth activation, DNS
+change, custom-domain promotion, public indexing, or customer traffic was
+performed.
+
+The checkpoint exposed two pre-promotion defects and is therefore not
+promotable:
+
+- Vercel selected Node 24 because both package manifests used the floating
+  `>=22` engine even though the project setting said Node 22.
+- A staged Production deployment registered all 11 cron entries project-wide.
+  Both disabled MCP schedules ran against the protected candidate: trial
+  reconciliation completed with `schema_unavailable`, while reference cleanup
+  returned HTTP 500. No successful cleanup or trial mutation was observed.
+
+The corrective revision pins `22.x`, keeps both MCP schedules out of the dark
+candidate, and extends the preflight to reject either regression. Restoring the
+live nine-cron inventory requires a separately approved Production-targeted
+replacement candidate; a Vercel Instant Rollback is insufficient because its
+cron inventory is not updated reliably.
 
 ## Gate matrix
 
@@ -285,12 +317,16 @@ Other providers remain independent:
 - Luma Agents requires `LUMA_AGENTS_API_KEY`, explicit route/admin gates, and
   `LUMA_AGENTS_POLL_TOKEN`.
 
-`frontend/vercel.json` currently declares 11 cron routes. Before promotion,
-compare the candidate's actual cron inventory to that file, call each enabled
-route without credentials to prove rejection, then run one authenticated
-bounded canary. A disabled provider's cron may safely do no work; do not enable
-that provider to make the cron look active. Roll back only the failing provider
-or capability, not a working ModelArk mode because LAS fails.
+`frontend/vercel.json` declares the nine existing production cron routes while
+all MCP capabilities are false. The revisions that activate `trial` and
+`referenceUploads` must add their respective 10-minute MCP schedules only when
+the matching schema, storage, authentication, and bounded canaries pass. Before
+promotion, compare the candidate's actual cron inventory to that file, call
+only side-effect-free rejection checks, then run one explicitly approved
+authenticated bounded canary. A disabled provider's cron may safely do no
+work; do not enable that provider to make the cron look active. Roll back only
+the failing provider or capability, not a working ModelArk mode because LAS
+fails.
 
 ## Reversible rollout order
 

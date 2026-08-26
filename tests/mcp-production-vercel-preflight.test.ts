@@ -56,6 +56,9 @@ function createFixture(): string {
     join(process.cwd(), 'frontend/config/mcp-publication.json'),
     join(fixture, 'frontend/config/mcp-publication.json'),
   );
+  copyFileSync(join(process.cwd(), 'package.json'), join(fixture, 'package.json'));
+  copyFileSync(join(process.cwd(), 'frontend/package.json'), join(fixture, 'frontend/package.json'));
+  copyFileSync(join(process.cwd(), 'frontend/vercel.json'), join(fixture, 'frontend/vercel.json'));
 
   const fakeNpx = join(fixture, 'bin/npx');
   writeFileSync(fakeNpx, `#!/usr/bin/env bash
@@ -90,6 +93,16 @@ fi
     assert.equal(result.status, 0, result.stderr);
   }
   return fixture;
+}
+
+function commitFixture(fixture: string, message: string): void {
+  for (const args of [
+    ['add', '.'],
+    ['-c', 'user.email=mcp-preflight@example.invalid', '-c', 'user.name=MCP Preflight', 'commit', '-qm', message],
+  ]) {
+    const result = spawnSync('git', args, { cwd: fixture, encoding: 'utf8' });
+    assert.equal(result.status, 0, result.stderr);
+  }
 }
 
 function environmentPayload(options: {
@@ -217,6 +230,48 @@ test('production Vercel preflight requires the first candidate to keep all eight
     assert.equal(result.status, 67, result.stderr);
     assert.equal(result.stderr, 'PUBLICATION_BLOCKED expected=all-eight-false\n');
     assert.doesNotMatch(`${result.stdout}${result.stderr}`, new RegExp(SECRET_SENTINEL));
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
+test('production Vercel preflight refuses MCP schedules while the dark-candidate flags are false', () => {
+  const fixture = createFixture();
+  try {
+    const vercelPath = join(fixture, 'frontend/vercel.json');
+    const vercel = JSON.parse(readFileSync(vercelPath, 'utf8')) as {
+      crons?: Array<{ path: string; schedule: string }>;
+    };
+    vercel.crons ??= [];
+    vercel.crons.push({
+      path: '/api/cron/mcp-trial-reconcile',
+      schedule: '*/10 * * * *',
+    });
+    writeFileSync(vercelPath, `${JSON.stringify(vercel, null, 2)}\n`);
+    commitFixture(fixture, 'add unsafe dark-candidate cron');
+
+    const result = runPreflight(fixture);
+    assert.equal(result.status, 70, result.stderr);
+    assert.equal(result.stderr, 'CRON_INVENTORY_BLOCKED expected=no-mcp-crons-while-all-eight-false\n');
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
+test('production Vercel preflight refuses a floating major Node runtime', () => {
+  const fixture = createFixture();
+  try {
+    const packagePath = join(fixture, 'package.json');
+    const manifest = JSON.parse(readFileSync(packagePath, 'utf8')) as {
+      engines?: { node?: string };
+    };
+    manifest.engines = { ...manifest.engines, node: '>=22' };
+    writeFileSync(packagePath, `${JSON.stringify(manifest, null, 2)}\n`);
+    commitFixture(fixture, 'float unsafe production node runtime');
+
+    const result = runPreflight(fixture);
+    assert.equal(result.status, 71, result.stderr);
+    assert.equal(result.stderr, 'NODE_RUNTIME_BLOCKED expected=22.x package=package.json\n');
   } finally {
     rmSync(fixture, { recursive: true, force: true });
   }

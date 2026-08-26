@@ -967,15 +967,12 @@ test('admin manual release action accepts exact same-origin form input only', as
   assert.throws(() => helpers.normalizeManualReleaseFormData!(formData), /input/i);
 });
 
-test('reconciliation schedule and operations runbook keep launch disabled and document safe recovery', () => {
+test('dark-candidate reconciliation stays unscheduled and the operations runbook documents safe recovery', () => {
   const vercel = JSON.parse(readFileSync('frontend/vercel.json', 'utf8')) as {
     crons?: Array<{ path?: string; schedule?: string }>;
   };
   const scheduled = vercel.crons?.find(({ path }) => path === '/api/cron/mcp-trial-reconcile');
-  assert.deepEqual(scheduled, {
-    path: '/api/cron/mcp-trial-reconcile',
-    schedule: '*/10 * * * *',
-  });
+  assert.equal(scheduled, undefined);
 
   const runbookPath = 'docs/operations/mcp-trial-runbook.md';
   const runbook = existsSync(runbookPath) ? readFileSync(runbookPath, 'utf8') : '';
@@ -988,6 +985,8 @@ test('reconciliation schedule and operations runbook keep launch disabled and do
     '30 minutes',
     '50',
     '100',
+    'not registered',
+    'trial=true',
     'completed',
     'missing job',
     'immutable support audit',

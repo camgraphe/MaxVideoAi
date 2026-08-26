@@ -10,7 +10,7 @@ test('root and frontend packages require the supported Node 22 runtime', () => {
     const manifest = JSON.parse(readFileSync(join(root, packagePath), 'utf8')) as {
       engines?: { node?: string };
     };
-    assert.equal(manifest.engines?.node, '>=22', `${packagePath} must require Node >=22`);
+    assert.equal(manifest.engines?.node, '22.x', `${packagePath} must pin Node 22.x`);
   }
 });
 

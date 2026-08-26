@@ -6,7 +6,7 @@
   "license": "BUSL-1.1",
   "author": "MaxVideoAI",
   "engines": {
-    "node": ">=22"
+    "node": "22.x"
   },
   "dependencies": {
     "lucide-react": "^0.553.0",
