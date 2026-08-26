@@ -17,6 +17,7 @@ import {
   getBytePlusTaskFailureCode,
   getBytePlusUserSafeErrorMessage,
   requireBytePlusSeedanceProfile,
+  resolveBytePlusTransport,
   resolveBytePlusSeedanceModelId,
   scrubBytePlusError,
 } from '@/server/video-providers/byteplus-modelark';
@@ -155,7 +156,8 @@ export async function submitBytePlusGenerateTask(params: {
         ? { referenceBudget, referenceMediaItems: referenceMediaItems ?? [] }
         : {}),
     });
-    const providerTask = await getBytePlusModelArkClientFn(params.engineId).createSeedanceFastTask(payload);
+    const transport = resolveBytePlusTransport(params.engineId, params.mode);
+    const providerTask = await getBytePlusModelArkClientFn(transport).createSeedanceFastTask(payload);
     const providerJobId = providerTask.providerJobId;
     await persistProviderJobIdFn?.(providerJobId);
     const status = providerTask.status === 'running' ? 'running' : 'queued';
@@ -168,6 +170,12 @@ export async function submitBytePlusGenerateTask(params: {
            message = $4,
            provider = $5,
            provider_job_id = $6,
+           settings_snapshot = jsonb_set(
+             COALESCE(settings_snapshot, '{}'::jsonb),
+             '{byteplusTransport}',
+             to_jsonb($7::text),
+             true
+           ),
            mcp_trial_outcome_disposition = CASE
              WHEN payment_status = 'included_mcp_trial'
                AND mcp_trial_outcome_disposition IS NULL THEN 'accepted'
@@ -176,13 +184,14 @@ export async function submitBytePlusGenerateTask(params: {
            provisional = FALSE,
            updated_at = NOW()
        WHERE job_id = $1`,
-      [params.jobId, status, progress, 'Render submitted.', BYTEPLUS_MODELARK_PROVIDER, providerJobId]
+      [params.jobId, status, progress, 'Render submitted.', BYTEPLUS_MODELARK_PROVIDER, providerJobId, transport]
     );
     logMetricFn?.('accepted', {
       jobId: params.jobId,
       meta: {
         providerJobId,
         provider: BYTEPLUS_MODELARK_PROVIDER,
+        transport,
         inputSummary: {
           mode: params.mode,
           promptLength: params.prompt.length,

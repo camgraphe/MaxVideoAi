@@ -302,6 +302,7 @@ test('public configured Seedance 2.5 resolves without admin or hidden-engine acc
   assert.ok(engine);
   const original = {
     bytePlusEnabled: ENV.BYTEPLUS_ARK_ENABLED,
+    arkApiKey: ENV.BYTEPLUS_ARK_API_KEY,
     modelId: ENV.BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID,
     seedance25Enabled: ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED,
     seedance25Provider: ENV.SEEDANCE_2_5_PROVIDER,
@@ -309,6 +310,7 @@ test('public configured Seedance 2.5 resolves without admin or hidden-engine acc
   };
   const boundaryCalls: string[] = [];
   ENV.BYTEPLUS_ARK_ENABLED = 'true';
+  ENV.BYTEPLUS_ARK_API_KEY = 'ark-test-key';
   ENV.BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID = BYTEPLUS_SEEDANCE_2_5_DEFAULT_MODEL_ID;
   ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = 'true';
   ENV.SEEDANCE_2_5_PROVIDER = 'byteplus_modelark';
@@ -344,6 +346,7 @@ test('public configured Seedance 2.5 resolves without admin or hidden-engine acc
     assert.deepEqual(boundaryCalls, ['getConfiguredEngine']);
   } finally {
     ENV.BYTEPLUS_ARK_ENABLED = original.bytePlusEnabled;
+    ENV.BYTEPLUS_ARK_API_KEY = original.arkApiKey;
     ENV.BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID = original.modelId;
     ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = original.seedance25Enabled;
     ENV.SEEDANCE_2_5_PROVIDER = original.seedance25Provider;
@@ -408,7 +411,8 @@ test('the production handoff records the public flagship matrix, safe local defa
     'SEEDANCE_2_5_BYTEPLUS_ENABLED=true',
     'SEEDANCE_2_5_PROVIDER=byteplus_modelark',
     'SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY=false',
-    'SEEDANCE_2_5_BYTEPLUS_MODES=t2v,i2v,ref2v,v2v,extend',
+    'SEEDANCE_2_5_BYTEPLUS_MODES=t2v',
+    'SEEDANCE_2_5_LAS_ENABLED=false',
     'kill switch',
     'no automated retry',
     'rollback',
@@ -429,6 +433,7 @@ test('the production handoff records the public flagship matrix, safe local defa
     'SEEDANCE_2_5_PROVIDER=disabled',
     'SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY=true',
     'SEEDANCE_2_5_BYTEPLUS_MODES=t2v',
+    'SEEDANCE_2_5_LAS_ENABLED=false',
   ]) {
     assert.match(localEnvironment, new RegExp(required.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
@@ -436,9 +441,8 @@ test('the production handoff records the public flagship matrix, safe local defa
   assert.match(packet, /City[\s\S]*Train[\s\S]*Dialogue[\s\S]*private/i);
   assert.match(packet, /public flagship launch/i);
   assert.match(packet, /no additional pre-launch paid generation/i);
-  assert.match(packet, /Prior phases:\s*complete/i);
-  assert.match(packet, /Current phase:\s*`public_flagship_launch`/i);
-  assert.match(packet, /Next phase:\s*`post_launch_monitoring`/i);
+  assert.match(packet, /ModelArk T2V execution is the current proven direct route/i);
+  assert.match(packet, /LAS advanced execution is pending exact pricing\/accounting/i);
   assert.match(packet, /BYTEPLUS_ARK_ENABLED=true[\s\S]*existing jobs[\s\S]*(?:poll|reconcil)/i);
   assert.match(packet, /publication\.app\.published=false/);
   assert.match(packet, /publication\.pricing\.published=false/);
@@ -451,8 +455,8 @@ test('the production handoff records the public flagship matrix, safe local defa
     '/fr/modeles/seedance-2-5',
     '/es/modelos/seedance-2-5',
     'engine=seedance-2-5',
-    'all five visible modes',
-    'T2V and V2V',
+    'only T2V is executable',
+    'T2V',
     'self-canonical metadata',
     'all three comparison pages',
     'Benchmark Lab',
@@ -466,15 +470,16 @@ test('the production handoff records the public flagship matrix, safe local defa
 
   assert.match(stub, /runtimeEntryAllowed:\s*true/);
   assert.match(stub, /documentationOnly:\s*true/);
-  assert.match(stub, /currentPhase:\s*'public_flagship_launch'/);
-  assert.match(stub, /nextRequiredPhase:\s*'post_launch_monitoring'/);
+  assert.match(stub, /currentPhase:\s*'t2v_operational_las_gated'/);
+  assert.match(stub, /nextRequiredPhase:\s*'las_pricing_and_canary'/);
   assert.match(stub, /publicGenerationAllowed:\s*true/);
   assert.match(stub, /publicMarketingPageAllowed:\s*true/);
   assert.match(stub, /publicDiscoveryAllowed:\s*true/);
-  assert.match(stub, /modes:\s*\['t2v', 'i2v', 'ref2v', 'v2v', 'extend'\]/);
-  assert.match(stub, /references:\s*true/);
-  assert.match(stub, /editing:\s*true/);
-  assert.match(stub, /extension:\s*true/);
+  assert.match(stub, /targetModes:\s*\['t2v', 'i2v', 'ref2v', 'v2v', 'extend'\]/);
+  assert.match(stub, /executableModes:\s*\['t2v'\]/);
+  assert.match(stub, /references:\s*false/);
+  assert.match(stub, /editing:\s*false/);
+  assert.match(stub, /extension:\s*false/);
 });
 
 test('the LinkedIn launch package confines approved Seedance 2.5 copy to City and Train', () => {

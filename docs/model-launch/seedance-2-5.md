@@ -6,15 +6,19 @@ price, provider route, or rollback state. It documents a target configuration;
 it does not authorize or perform an environment, provider, generation, payment,
 push, or deployment mutation.
 
-## Current state — public flagship launch
+## Current state — public flagship, staged direct execution
 
 - Updated: 2026-08-08
 - Canonical MaxVideoAI ID: `seedance-2-5`
 - ModelArk model ID: `dreamina-seedance-2-5-260628`
 - ModelArk region: `ap-southeast-1`; release status: GA
-- Approved target: **public flagship launch** with all five modes:
+- Product target: **public flagship launch** with all five modes:
   text-to-video, image-to-video, reference-to-video, video-to-video, and
   extension.
+- Proven direct execution: text-to-video uses ModelArk `/api/v3`. The four
+  advanced modes target LAS `/api/v1`, but remain execution-gated until their
+  LAS-specific quote and accounting are approved and an authenticated canary
+  passes.
 - Public surfaces are open: app discovery, pricing, examples, comparison,
   sitemap, and indexation. The model page is indexable and keeps its localized
   self-canonical and hreflang metadata.
@@ -43,14 +47,18 @@ BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID=dreamina-seedance-2-5-260628
 SEEDANCE_2_5_BYTEPLUS_ENABLED=true
 SEEDANCE_2_5_PROVIDER=byteplus_modelark
 SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY=false
-SEEDANCE_2_5_BYTEPLUS_MODES=t2v,i2v,ref2v,v2v,extend
+SEEDANCE_2_5_BYTEPLUS_MODES=t2v
+SEEDANCE_2_5_LAS_ENABLED=false
 ```
 
 `BYTEPLUS_ARK_ENABLED=true` remains the shared direct-provider kill switch.
-Seedance 2.5 submission and polling require a separate server-only
-`BYTEPLUS_LAS_API_KEY` and use the LAS `/api/v1` base URL above; the existing
-`BYTEPLUS_ARK_API_KEY` continues to serve ModelArk `/api/v3`. The
-Seedance-specific switch below remains the first rollback control.
+Seedance 2.5 text-to-video submission and polling use the existing server-only
+`BYTEPLUS_ARK_API_KEY` and ModelArk `/api/v3`. Image-to-video,
+reference-to-video, video-to-video, and extension use LAS `/api/v1` and require
+a separate server-only `BYTEPLUS_LAS_API_KEY`. The LAS credential alone does
+not enable those modes: `SEEDANCE_2_5_LAS_ENABLED=true` is allowed only after
+the LAS quote, charge, reconciliation, refund, and canary checks are approved.
+The Seedance-specific switch below remains the first rollback control.
 
 `SEEDANCE_2_5_BYTEPLUS_ENABLED=false` is the hard kill switch. It stops new
 Seedance 2.5 submissions before provider work; it is not a reason to remove
@@ -68,22 +76,24 @@ plane. Credential values are never committed here.
 
 ## Phase status
 
-- Prior phases: complete — implementation, authenticated canaries, public
-  publication surfaces, and launch documentation are recorded.
-- Current phase: `public_flagship_launch`.
-- Next phase: `post_launch_monitoring`.
+- Public model and marketing surfaces remain launched.
+- ModelArk T2V execution is the current proven direct route.
+- LAS advanced execution is pending exact pricing/accounting and a bounded
+  authenticated canary; it is not authorized by this document.
 
 These values match the documentation-only evidence stub. Post-launch monitoring
 does not authorize new paid canaries or a production mutation.
 
 ## Runtime and publication contract
 
-The public runtime contract has five modes: `t2v`, `i2v`, `ref2v`, `v2v`, and
-`extend`. It supports 4–30 seconds, 480p or 720p, all six explicit aspect ratios
+The product capability contract has five modes: `t2v`, `i2v`, `ref2v`, `v2v`,
+and `extend`. The executable direct-provider contract currently exposes `t2v`
+only. It supports 4–30 seconds, 480p or 720p, all six explicit aspect ratios
 (`21:9`, `16:9`, `4:3`, `1:1`, `3:4`, and `9:16`), 24 FPS, generated audio, and
 up to 50 combined references (30 images, 10 videos, 10 audio files). The
-corresponding payload, polling, storage, accounting, and refund paths are the
-existing executable owners; this document is documentation-only.
+payload and transport owners exist for all five modes, but LAS pricing and
+accounting remain the release gate for the four advanced modes. Polling keeps
+the transport persisted at submission so ModelArk and LAS jobs cannot be mixed.
 
 Publication is public and coherent across the product:
 
@@ -131,11 +141,24 @@ technical and sampled-frame QA. They each have durable video, preview, and
 poster assets with media range responses. Dialogue has durable generated-audio
 infrastructure but remains private for the manual review stated above.
 
-The factual provider rates remain USD 0.0107 per 1,000 tokens without video
-input and USD 0.0064 per 1,000 tokens with video input. Customer pricing stays
-owned by `frontend/src/config/fal-engines/launch-config.ts`; provider accounting
-stays owned by `frontend/server/byteplus-accounting.ts`. Do not copy a Seedance
-2.0 rate or alter the approved 2.5× policy in this handoff.
+The factual ModelArk provider rates remain USD 0.0107 per 1,000 tokens without
+video input and USD 0.0064 per 1,000 tokens with video input. Those rates apply
+to the current ModelArk route; they are not a valid quote for LAS advanced
+modes. Customer pricing stays owned by
+`frontend/src/config/fal-engines/launch-config.ts`; provider accounting stays
+owned by `frontend/server/byteplus-accounting.ts`. Do not copy a Seedance 2.0
+rate or alter the approved 2.5× policy in this handoff.
+
+### LAS pricing release gate
+
+The official [BytePlus LAS enhanced video generation documentation](https://docs.byteplus.com/en/docs/byteplus_las/video_gen_enhanced)
+uses a different billing model. Its published coefficients distinguish 480p
+and 720p and whether a video is supplied; for video-input jobs, billed duration
+includes both input and output duration. Before enabling LAS execution, the
+quote owner must therefore store and price every billed source-video second,
+the terminal accounting owner must reconcile the same formula, and refund
+tests must prove that the stored customer charge remains authoritative on
+failure. Reusing the current ModelArk token quote for LAS is prohibited.
 
 ## Read-only production smoke checks
 
@@ -150,11 +173,11 @@ release identifier, and redacted result in the private launch record.
    default. Switching away and back to Seedance 2.5 must restore that engine
    default; the user must still be able to turn audio off afterward.
 3. Verify the selector puts Seedance 2.5 first in its family and shows `New`.
-4. Verify all five visible modes and their expected upload fields: image input
-   for I2V, reference image/video/audio fields for Ref2V, video input for V2V,
-   and extension source video for Extend.
-5. Request read-only live quotes for T2V and V2V; both must be positive. Do not
-   accept a quote or submit a generation.
+4. Verify all five product modes are described, but only T2V is executable
+   under the current environment matrix. I2V, Ref2V, V2V, and Extend must not be
+   advertised as executable by the MCP catalog.
+5. Request a read-only live quote for T2V; it must be positive. Do not accept a
+   quote or submit a generation.
 6. Verify sitemap inclusion, self-canonical metadata, and indexable model-page
    robots metadata for all three localized model URLs.
 7. Request HTTP 200 for all three comparison pages: Seedance 2.5 vs Seedance

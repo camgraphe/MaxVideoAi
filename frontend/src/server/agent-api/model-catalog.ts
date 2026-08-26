@@ -5,7 +5,10 @@ import {
   getPublicConfiguredEnginesByCategory,
   getPublicConfiguredEnginesByCategoryInExecutor,
 } from '@/server/engines';
-import { isAgentGenerationEngineExecutable } from '@/server/agent-runtime/model-executability';
+import {
+  isAgentGenerationEngineExecutable,
+  isAgentGenerationModeExecutable,
+} from '@/server/agent-runtime/model-executability';
 import { normalizeVideoDurationOption } from '@/server/video-generation/execution-constraints';
 import type { EngineCaps, EngineModeUiCaps } from '@/types/engines';
 
@@ -42,6 +45,7 @@ export type AgentModelCatalogDeps = {
   listEngines(): Promise<EngineCaps[]>;
   surfaceByEngineId(engineId: string): 'video' | 'image' | null;
   isEngineExecutable?(engine: EngineCaps): boolean;
+  isModeExecutable?(engine: EngineCaps, mode: AgentGenerationMode): boolean;
 };
 
 export type AgentModelCandidate = {
@@ -61,6 +65,7 @@ const defaultDeps: AgentModelCatalogDeps = {
     return SURFACE_BY_ENGINE_ID.get(engineId) ?? null;
   },
   isEngineExecutable: isAgentGenerationEngineExecutable,
+  isModeExecutable: isAgentGenerationModeExecutable,
 };
 
 function referenceImagesSupported(modes: AgentGenerationMode[]): boolean {
@@ -132,14 +137,19 @@ export async function listPublicAgentCatalogEngines(
         return caps ? [[mode, caps]] : [];
       }),
     ) as AgentPublicGenerationEngine['modeCaps'];
-    const executableModes = modes.filter((mode) => Boolean(modeCaps[mode]));
-    if (!executableModes.length) return [];
+    const configuredModes = modes.filter((mode) => Boolean(modeCaps[mode]));
+    if (!configuredModes.length) return [];
+    const executableModes = configuredModes.filter((mode) =>
+      deps.isModeExecutable?.(engine, mode) !== false
+    );
+    const generationEnabled = deps.isEngineExecutable?.(engine) !== false
+      && executableModes.length > 0;
     return [{
       engine,
       surface,
-      publicModes: executableModes,
+      publicModes: generationEnabled ? executableModes : configuredModes,
       modeCaps,
-      generationEnabled: deps.isEngineExecutable?.(engine) !== false,
+      generationEnabled,
     }];
   });
 }
@@ -161,6 +171,7 @@ export async function listPublicAgentGenerationEnginesInExecutor(
       return SURFACE_BY_ENGINE_ID.get(engineId) ?? null;
     },
     isEngineExecutable: isAgentGenerationEngineExecutable,
+    isModeExecutable: isAgentGenerationModeExecutable,
   });
 }
 
@@ -189,6 +200,7 @@ export async function listAgentModelCandidates(
   const engines = await listPublicAgentCatalogEngines(deps);
   return engines.flatMap(({ engine, surface, publicModes: modes, modeCaps, generationEnabled }) => {
     if (options.generationEnabledOnly && !generationEnabled) return [];
+    if (filter.mode && !modes.includes(filter.mode)) return [];
     const selectedModeCaps = filter.mode ? modeCaps[filter.mode] : undefined;
     if (filter.mode && !selectedModeCaps) return [];
     const candidate = toCandidate(

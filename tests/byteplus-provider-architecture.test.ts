@@ -10,6 +10,7 @@ import {
   getBytePlusUserSafeTaskFailureMessage,
   getBytePlusTaskFailureCode,
   getBytePlusModelArkClient,
+  resolveBytePlusPollTransport,
   getBytePlusSeedanceAllowedResolutions,
   normalizeBytePlusTask,
   shouldRoutePublicSeedanceFastToBytePlus,
@@ -93,7 +94,21 @@ test('BytePlus ModelArk provider delegates payload and response normalization', 
   assert.match(responseSource, /export async function parseJsonResponse/);
 });
 
-test('Seedance 2.5 uses the LAS transport while existing BytePlus engines stay on ModelArk', { concurrency: false }, async () => {
+test('BytePlus selects ModelArk for proven Seedance 2.5 T2V and LAS for advanced modes', { concurrency: false }, async () => {
+  const providerModule = await import('../frontend/src/server/video-providers/byteplus-modelark');
+  const resolveTransport = (
+    providerModule as unknown as {
+      resolveBytePlusTransport?: (engineId: string, mode: string) => 'modelark' | 'las';
+    }
+  ).resolveBytePlusTransport;
+  assert.equal(typeof resolveTransport, 'function');
+  assert.equal(resolveTransport?.('seedance-2-5', 't2v'), 'modelark');
+  assert.equal(resolveTransport?.('seedance-2-5', 'i2v'), 'las');
+  assert.equal(resolveTransport?.('seedance-2-5', 'ref2v'), 'las');
+  assert.equal(resolveTransport?.('seedance-2-5', 'v2v'), 'las');
+  assert.equal(resolveTransport?.('seedance-2-5', 'extend'), 'las');
+  assert.equal(resolveTransport?.('seedance-2-0', 'v2v'), 'modelark');
+
   const mutableEnv = ENV as typeof ENV & Record<string, string | undefined>;
   const original = {
     arkApiKey: mutableEnv.BYTEPLUS_ARK_API_KEY,
@@ -130,21 +145,21 @@ test('Seedance 2.5 uses the LAS transport while existing BytePlus engines stay o
       });
     };
 
-    await (getBytePlusModelArkClient as unknown as (engineId: string) => ReturnType<typeof getBytePlusModelArkClient>)(
-      'seedance-2-5'
+    await (getBytePlusModelArkClient as unknown as (transport: string) => ReturnType<typeof getBytePlusModelArkClient>)(
+      'modelark'
     ).createSeedanceFastTask(payload as never);
-    await (getBytePlusModelArkClient as unknown as (engineId: string) => ReturnType<typeof getBytePlusModelArkClient>)(
-      'seedance-2-0'
+    await (getBytePlusModelArkClient as unknown as (transport: string) => ReturnType<typeof getBytePlusModelArkClient>)(
+      'las'
     ).createSeedanceFastTask(payload as never);
 
     assert.deepEqual(calls, [
       {
-        url: 'https://operator.las.example.test/api/v1/contents/generations/tasks',
-        authorization: 'Bearer las-test-key',
-      },
-      {
         url: 'https://ark.example.test/api/v3/contents/generations/tasks',
         authorization: 'Bearer ark-test-key',
+      },
+      {
+        url: 'https://operator.las.example.test/api/v1/contents/generations/tasks',
+        authorization: 'Bearer las-test-key',
       },
     ]);
   } finally {
@@ -154,6 +169,25 @@ test('Seedance 2.5 uses the LAS transport while existing BytePlus engines stay o
     mutableEnv.BYTEPLUS_LAS_BASE_URL = original.lasBaseUrl;
     globalThis.fetch = original.fetch;
   }
+});
+
+test('BytePlus polling reuses the persisted transport and safely classifies legacy task ids', () => {
+  assert.equal(resolveBytePlusPollTransport({
+    providerJobId: 'lsd-new-task',
+    settingsSnapshot: { byteplusTransport: 'modelark' },
+  }), 'modelark');
+  assert.equal(resolveBytePlusPollTransport({
+    providerJobId: 'cgt-old-task',
+    settingsSnapshot: { byteplusTransport: 'las' },
+  }), 'las');
+  assert.equal(resolveBytePlusPollTransport({
+    providerJobId: 'lsd-legacy-las-task',
+    settingsSnapshot: {},
+  }), 'las');
+  assert.equal(resolveBytePlusPollTransport({
+    providerJobId: 'cgt-legacy-modelark-task',
+    settingsSnapshot: null,
+  }), 'modelark');
 });
 
 test('BytePlus ModelArk safety failures use precise Seedance customer copy', () => {

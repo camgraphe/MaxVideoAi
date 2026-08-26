@@ -89,6 +89,7 @@ test('BytePlus submission helper creates task, updates job, logs, and returns qu
   const persistedProviderIds: string[] = [];
   const logs: Array<{ kind: string; options: Record<string, unknown> }> = [];
   const builtPayloads: Record<string, unknown>[] = [];
+  const clientTransports: string[] = [];
 
   const result = await submitBytePlusGenerateTask({
     ...baseParams,
@@ -98,9 +99,12 @@ test('BytePlus submission helper creates task, updates job, logs, and returns qu
         builtPayloads.push(payload);
         return { ...payload, normalized: true };
       },
-      getBytePlusModelArkClientFn: () => ({
-        createSeedanceFastTask: async () => ({ providerJobId: 'provider_123', status: 'queued' }),
-      }),
+      getBytePlusModelArkClientFn: (transport) => {
+        clientTransports.push(transport);
+        return {
+          createSeedanceFastTask: async () => ({ providerJobId: 'provider_123', status: 'queued' }),
+        };
+      },
       getBytePlusSeedanceAllowedResolutionsFn: () => ['720p', '1080p'] as never,
       getBytePlusSeedanceDurationOptionsFn: () => [8] as never,
       queryFn: async (sql, params) => {
@@ -116,6 +120,7 @@ test('BytePlus submission helper creates task, updates job, logs, and returns qu
   });
 
   assert.equal(result.ok, true);
+  assert.deepEqual(clientTransports, ['modelark']);
   assert.deepEqual(builtPayloads[0], {
     modelId: 'model-public',
     prompt: 'A cinematic mountain shot',
@@ -143,7 +148,9 @@ test('BytePlus submission helper creates task, updates job, logs, and returns qu
     'Render submitted.',
     'byteplus_modelark',
     'provider_123',
+    'modelark',
   ]);
+  assert.match(queries[0]?.sql ?? '', /byteplusTransport/);
   assert.equal(logs[0]?.kind, 'accepted');
   assert.deepEqual(result.body, {
     ok: true,
@@ -165,6 +172,68 @@ test('BytePlus submission helper creates task, updates job, logs, and returns qu
     heroRenderId: 'job_123',
     localKey: 'local_123',
   });
+});
+
+test('Seedance 2.5 submission routes T2V to ModelArk and advanced modes to LAS', { concurrency: false }, async () => {
+  const original = {
+    bytePlusEnabled: ENV.BYTEPLUS_ARK_ENABLED,
+    seedance25Enabled: ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED,
+    seedance25Provider: ENV.SEEDANCE_2_5_PROVIDER,
+  };
+  const transports: Array<{ mode: string; transport: string }> = [];
+
+  ENV.BYTEPLUS_ARK_ENABLED = 'true';
+  ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = 'true';
+  ENV.SEEDANCE_2_5_PROVIDER = 'byteplus_modelark';
+
+  try {
+    for (const mode of ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'] as const) {
+      const result = await submitBytePlusGenerateTask({
+        ...baseParams,
+        engineId: 'seedance-2-5',
+        engineLabel: 'Seedance 2.5',
+        mode,
+        initialImageUrl: mode === 'i2v' ? 'https://cdn.maxvideoai.com/start.png' : null,
+        normalizedReferenceImages:
+          mode === 'ref2v' || mode === 'v2v' ? ['https://cdn.maxvideoai.com/reference.png'] : [],
+        videoUrls:
+          mode === 'ref2v' || mode === 'v2v' || mode === 'extend'
+            ? ['https://cdn.maxvideoai.com/source.mp4']
+            : [],
+        resolvedAudioUrl: null,
+        audioUrls: [],
+        inputSchema: undefined,
+        referenceValuesByField: undefined,
+        pendingReceipt: null,
+        deps: {
+          getBytePlusArkConfigFn: () => ({ seedance25ModelId: 'seedance-25-id' }) as never,
+          getBytePlusModelArkClientFn: (transport) => {
+            transports.push({ mode, transport });
+            return {
+              createSeedanceFastTask: async () => ({
+                providerJobId: `provider_seedance_25_${mode}`,
+                status: 'queued',
+              }),
+            };
+          },
+          queryFn: async () => undefined,
+        },
+      });
+      assert.equal(result.ok, true, mode);
+    }
+
+    assert.deepEqual(transports, [
+      { mode: 't2v', transport: 'modelark' },
+      { mode: 'i2v', transport: 'las' },
+      { mode: 'ref2v', transport: 'las' },
+      { mode: 'v2v', transport: 'las' },
+      { mode: 'extend', transport: 'las' },
+    ]);
+  } finally {
+    ENV.BYTEPLUS_ARK_ENABLED = original.bytePlusEnabled;
+    ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = original.seedance25Enabled;
+    ENV.SEEDANCE_2_5_PROVIDER = original.seedance25Provider;
+  }
 });
 
 test('BytePlus submission helper chooses the Mini model id for Seedance 2.0 Mini', async () => {

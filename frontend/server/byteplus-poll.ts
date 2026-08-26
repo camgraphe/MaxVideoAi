@@ -12,6 +12,7 @@ import {
   isBytePlusModelArkEnabled,
   getBytePlusTaskFailureCode,
   getBytePlusUserSafeTaskFailureMessage,
+  resolveBytePlusPollTransport,
   resolveBytePlusSeedanceModelId,
   scrubBytePlusError,
 } from '@/server/video-providers/byteplus-modelark';
@@ -129,10 +130,15 @@ export async function runBytePlusPoll() {
     }
 
     try {
-      const client = getBytePlusModelArkClient(job.engine_id);
+      const transport = resolveBytePlusPollTransport({
+        providerJobId: job.provider_job_id,
+        settingsSnapshot: job.settings_snapshot,
+      });
+      const client = getBytePlusModelArkClient(transport);
       const task = await client.retrieveTask(job.provider_job_id);
       await recordBytePlusPollEvent(job, 'poll:status', {
         providerStatus: task.rawStatus,
+        transport,
         providerErrorCode: task.errorCode ?? null,
         normalizedStatus: task.status,
         totalTokens: task.usage?.totalTokens ?? null,

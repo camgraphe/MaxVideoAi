@@ -9,6 +9,7 @@ import {
   BYTEPLUS_MODELARK_PROVIDER,
   BytePlusModelArkError,
   assertBytePlusSeedanceSubmissionEnabled,
+  assertBytePlusTransportConfigured,
   getBytePlusArkConfig,
   getBytePlusSeedanceAllowedModes,
   isBytePlusModelArkEnabled,
@@ -83,6 +84,7 @@ export function resolveTrustedPaidGenerateRouteContext(params: {
       }
       assertBytePlusSeedanceSubmissionEnabled(engine.id);
       resolveBytePlusSeedanceModelId(engine.id, getBytePlusArkConfig());
+      assertBytePlusTransportConfigured(engine.id, mode);
     }
   } catch (error) {
     if (error instanceof BytePlusModelArkError) {
@@ -243,6 +245,25 @@ export async function resolveGenerateRouteContext(params: {
 
   if (isBytePlusV1a && !isBytePlusModelArkEnabled()) {
     return { ok: false, status: 404, body: { ok: false, error: 'Engine unavailable' } };
+  }
+
+  if (isBytePlusV1a) {
+    try {
+      assertBytePlusTransportConfigured(engine.id, mode);
+    } catch (error) {
+      if (error instanceof BytePlusModelArkError) {
+        return {
+          ok: false,
+          status: 503,
+          body: {
+            ok: false,
+            error: error.code ?? 'BYTEPLUS_PROFILE_PREFLIGHT_FAILED',
+            message: 'This engine is temporarily unavailable.',
+          },
+        };
+      }
+      throw error;
+    }
   }
 
   if (!boundaries.isDatabaseConfigured()) {

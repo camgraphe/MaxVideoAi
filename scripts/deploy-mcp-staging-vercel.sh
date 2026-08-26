@@ -16,11 +16,11 @@ REQUIRED_OPERATIONAL_ENVIRONMENT=(
   'MCP_STAGING_OPERATIONAL_ENABLED'
   'BYTEPLUS_ARK_ENABLED'
   'BYTEPLUS_ARK_API_KEY'
-  'BYTEPLUS_LAS_API_KEY'
   'SEEDANCE_2_5_BYTEPLUS_ENABLED'
   'SEEDANCE_2_5_PROVIDER'
   'SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY'
   'SEEDANCE_2_5_BYTEPLUS_MODES'
+  'SEEDANCE_2_5_LAS_ENABLED'
   'MCP_STAGING_REFERENCE_CLEANUP_ENABLED'
   'MCP_STAGING_REFERENCE_STORAGE_PREFIX'
   'S3_BUCKET'
@@ -223,7 +223,7 @@ assert_staging_operational_environment() {
 
   capture_staging_environment_metadata "$metadata"
 
-  for name in 'BYTEPLUS_ARK_API_KEY' 'BYTEPLUS_LAS_API_KEY'; do
+  for name in 'BYTEPLUS_ARK_API_KEY'; do
     if ! jq -e --arg name "$name" \
       'any(.[]; .key == $name and .target == ["production"])' \
       "$metadata" >/dev/null; then

@@ -20,11 +20,11 @@ const REQUIRED_OPERATIONAL_ENVIRONMENT = [
   'MCP_STAGING_OPERATIONAL_ENABLED',
   'BYTEPLUS_ARK_ENABLED',
   'BYTEPLUS_ARK_API_KEY',
-  'BYTEPLUS_LAS_API_KEY',
   'SEEDANCE_2_5_BYTEPLUS_ENABLED',
   'SEEDANCE_2_5_PROVIDER',
   'SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY',
   'SEEDANCE_2_5_BYTEPLUS_MODES',
+  'SEEDANCE_2_5_LAS_ENABLED',
   'MCP_STAGING_REFERENCE_CLEANUP_ENABLED',
   'MCP_STAGING_REFERENCE_STORAGE_PREFIX',
   'S3_BUCKET',
@@ -113,7 +113,7 @@ function operationalEnvironmentPayload(overrides: Partial<Record<typeof REQUIRED
     envs: REQUIRED_OPERATIONAL_ENVIRONMENT.map((name) => ({
       key: overrides[name]?.key ?? name,
       target: overrides[name]?.target ?? ['production'],
-      value: name === 'BYTEPLUS_ARK_API_KEY' || name === 'BYTEPLUS_LAS_API_KEY'
+      value: name === 'BYTEPLUS_ARK_API_KEY'
         ? PROVIDER_SECRET_FIXTURE
         : `non-secret-${name}`,
     })),
@@ -220,7 +220,7 @@ test('non-dry deployment preflight behavior fails closed before every Vercel mut
     const validPayload = JSON.parse(operationalEnvironmentPayload()) as {
       envs: Array<{ key: string; target: string[]; value: string }>;
     };
-    for (const credentialName of ['BYTEPLUS_ARK_API_KEY', 'BYTEPLUS_LAS_API_KEY'] as const) {
+    for (const credentialName of ['BYTEPLUS_ARK_API_KEY'] as const) {
       const missingKeyPayload = JSON.stringify({
         envs: validPayload.envs.filter((entry) => entry.key !== credentialName),
       });
@@ -530,7 +530,8 @@ test('MCP staging deploy wrapper gates an unaliased candidate before promotion',
     'SEEDANCE_2_5_BYTEPLUS_ENABLED=true',
     'SEEDANCE_2_5_PROVIDER=byteplus_modelark',
     'SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY=false',
-    'SEEDANCE_2_5_BYTEPLUS_MODES=t2v,i2v,ref2v,v2v,extend',
+    'SEEDANCE_2_5_BYTEPLUS_MODES=t2v',
+    'SEEDANCE_2_5_LAS_ENABLED=false',
   ]) {
     assert.match(runbook, new RegExp(`^${setting}$`, 'm'));
   }

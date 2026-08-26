@@ -109,24 +109,31 @@ BYTEPLUS_LAS_BASE_URL=https://operator.las.ap-southeast-1.bytepluses.com/api/v1
 SEEDANCE_2_5_BYTEPLUS_ENABLED=true
 SEEDANCE_2_5_PROVIDER=byteplus_modelark
 SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY=false
-SEEDANCE_2_5_BYTEPLUS_MODES=t2v,i2v,ref2v,v2v,extend
+SEEDANCE_2_5_BYTEPLUS_MODES=t2v
+SEEDANCE_2_5_LAS_ENABLED=false
 MCP_STAGING_REFERENCE_CLEANUP_ENABLED=true
 MCP_STAGING_REFERENCE_STORAGE_PREFIX=mcp-reference-staging/
 VIDEO_RENDER_STORAGE_PREFIX=mcp-render-staging/
 ```
 
-`BYTEPLUS_ARK_API_KEY` and `BYTEPLUS_LAS_API_KEY` are both required on the
-Production target. They are separate credentials for separate BytePlus data
-planes: ModelArk `/api/v3` remains available to the existing direct engines,
-while Seedance 2.5 submission and polling use LAS `/api/v1`. Each value must be
-a dedicated staging credential supplied out of band and stored only in the
-dedicated `maxvideoai-mcp-staging` Vercel project. Never write either value to
-Git, the shell command line, logs, reports, or a downloaded environment file. The
-deployment wrapper requests non-decrypted Vercel metadata and retains only
-environment-variable names and targets; it never reads, pulls, compares, or
-prints credential values. If either dedicated credential does not exist, stop
-with `CREDENTIAL_BLOCKED`. Do not substitute a production credential and do
-not weaken or bypass the metadata preflight.
+`BYTEPLUS_ARK_API_KEY` is required on the Production target for the first
+operational MCP profile. Seedance 2.5 text-to-video submission and polling use
+the already-proven ModelArk `/api/v3` route. Use a dedicated staging credential,
+supplied out of band and stored only in the dedicated
+`maxvideoai-mcp-staging` Vercel project. Never write it to Git, the shell command
+line, logs, reports, or a downloaded environment file. The deployment wrapper
+requests non-decrypted Vercel metadata and retains only environment-variable
+names and targets; it never reads, pulls, compares, or prints credential values.
+If the dedicated Ark credential does not exist, stop with `CREDENTIAL_BLOCKED`.
+Do not substitute a production credential and do not weaken or bypass the
+metadata preflight.
+
+`BYTEPLUS_LAS_API_KEY` is not required for this T2V-only profile and does not
+block its deployment. LAS `/api/v1` is reserved for Seedance 2.5 image,
+reference, edit, and extension modes. Keep `SEEDANCE_2_5_LAS_ENABLED=false` and
+do not add those modes to `SEEDANCE_2_5_BYTEPLUS_MODES` until their LAS-specific
+quote, accounting, failure, and canary evidence have passed review. A LAS key by
+itself never publishes or enables those modes.
 
 Durable video delivery also requires `S3_BUCKET`, `S3_REGION`,
 `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, and `S3_PUBLIC_BASE_URL` on the
@@ -153,8 +160,7 @@ documented above. Vercel does not accept empty environment-variable values, so
 `COOKIE_DOMAIN` and `NEXT_PUBLIC_COOKIE_DOMAIN` are intentionally absent; the
 application treats absence as an unset, host-only cookie domain.
 
-Except for the dedicated staging-only `BYTEPLUS_ARK_API_KEY` and
-`BYTEPLUS_LAS_API_KEY`, dedicated
+Except for the dedicated staging-only `BYTEPLUS_ARK_API_KEY`, dedicated
 prefix-scoped staging storage credential, and cleanup-only `CRON_SECRET`, do not add
 provider keys, Stripe secrets, a Supabase secret or legacy `service_role` key,
 SMTP credentials, or any production database URL to this project.

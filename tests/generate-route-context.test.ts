@@ -6,7 +6,11 @@ import test from 'node:test';
 import { NextRequest } from 'next/server';
 
 import { ENV } from '../frontend/src/lib/env';
-import { resolveGenerateRouteContext } from '../frontend/app/api/generate/_lib/route-context';
+import { getFalEngineById } from '../frontend/src/config/falEngines';
+import {
+  resolveGenerateRouteContext,
+  resolveTrustedPaidGenerateRouteContext,
+} from '../frontend/app/api/generate/_lib/route-context';
 
 const root = process.cwd();
 const routePath = join(root, 'frontend/app/api/generate/route.ts');
@@ -166,6 +170,82 @@ test('Seedance 2.5 hard-disable and routing gates run before database and billin
     ENV.BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID = original.modelId;
     ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = original.seedance25Enabled;
     ENV.SEEDANCE_2_5_PROVIDER = original.seedance25Provider;
+  }
+});
+
+test('Seedance 2.5 accepts proven T2V with the Ark key but rejects LAS modes before execution when the LAS key is absent', { concurrency: false }, () => {
+  const extendedEnv = ENV as typeof ENV & { SEEDANCE_2_5_LAS_ENABLED?: string };
+  const entry = getFalEngineById('seedance-2-5');
+  assert.ok(entry);
+  const original = {
+    bytePlusEnabled: ENV.BYTEPLUS_ARK_ENABLED,
+    arkApiKey: ENV.BYTEPLUS_ARK_API_KEY,
+    lasApiKey: ENV.BYTEPLUS_LAS_API_KEY,
+    seedance25Enabled: ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED,
+    seedance25Provider: ENV.SEEDANCE_2_5_PROVIDER,
+    seedance25AdminOnly: ENV.SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY,
+    seedance25Modes: ENV.SEEDANCE_2_5_BYTEPLUS_MODES,
+    seedance25LasEnabled: extendedEnv.SEEDANCE_2_5_LAS_ENABLED,
+  };
+
+  ENV.BYTEPLUS_ARK_ENABLED = 'true';
+  ENV.BYTEPLUS_ARK_API_KEY = 'ark-test-key';
+  ENV.BYTEPLUS_LAS_API_KEY = '';
+  ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = 'true';
+  ENV.SEEDANCE_2_5_PROVIDER = 'byteplus_modelark';
+  ENV.SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY = 'false';
+  ENV.SEEDANCE_2_5_BYTEPLUS_MODES = 't2v,i2v,ref2v,v2v,extend';
+  extendedEnv.SEEDANCE_2_5_LAS_ENABLED = 'true';
+
+  try {
+    const t2v = resolveTrustedPaidGenerateRouteContext({
+      body: {},
+      engine: entry.engine,
+      jobId: 'job_t2v',
+      mode: 't2v',
+    });
+    assert.equal(t2v.ok, true);
+
+    const v2v = resolveTrustedPaidGenerateRouteContext({
+      body: {},
+      engine: entry.engine,
+      jobId: 'job_v2v',
+      mode: 'v2v',
+    });
+    assert.deepEqual(v2v, {
+      ok: false,
+      status: 503,
+      body: {
+        ok: false,
+        error: 'BYTEPLUS_LAS_API_KEY_MISSING',
+      },
+    });
+
+    ENV.BYTEPLUS_LAS_API_KEY = 'las-test-key';
+    extendedEnv.SEEDANCE_2_5_LAS_ENABLED = 'false';
+    const gatedV2v = resolveTrustedPaidGenerateRouteContext({
+      body: {},
+      engine: entry.engine,
+      jobId: 'job_v2v_gated',
+      mode: 'v2v',
+    });
+    assert.deepEqual(gatedV2v, {
+      ok: false,
+      status: 503,
+      body: {
+        ok: false,
+        error: 'BYTEPLUS_LAS_EXECUTION_DISABLED',
+      },
+    });
+  } finally {
+    ENV.BYTEPLUS_ARK_ENABLED = original.bytePlusEnabled;
+    ENV.BYTEPLUS_ARK_API_KEY = original.arkApiKey;
+    ENV.BYTEPLUS_LAS_API_KEY = original.lasApiKey;
+    ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = original.seedance25Enabled;
+    ENV.SEEDANCE_2_5_PROVIDER = original.seedance25Provider;
+    ENV.SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY = original.seedance25AdminOnly;
+    ENV.SEEDANCE_2_5_BYTEPLUS_MODES = original.seedance25Modes;
+    extendedEnv.SEEDANCE_2_5_LAS_ENABLED = original.seedance25LasEnabled;
   }
 });
 

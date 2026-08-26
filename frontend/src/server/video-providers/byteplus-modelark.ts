@@ -1,5 +1,6 @@
 import { ENV } from '@/lib/env';
 import type { NormalizedVideoProviderTask } from '@/server/video-providers/types';
+import type { Mode } from '@/types/engines';
 import {
   BYTEPLUS_SEEDANCE_DEFAULT_MODEL_ID,
   BYTEPLUS_SEEDANCE_2_5_DEFAULT_MODEL_ID,
@@ -90,9 +91,40 @@ function trimTrailingSlash(value: string): string {
   return value.replace(/\/+$/, '');
 }
 
+export type BytePlusTransport = 'modelark' | 'las';
+
+export function resolveBytePlusTransport(
+  engineId: string | null | undefined,
+  mode: Mode | string | null | undefined,
+): BytePlusTransport {
+  if (engineId?.trim() !== SEEDANCE_2_5_ENGINE_ID) return 'modelark';
+  return mode?.trim().toLowerCase() === 't2v' ? 'modelark' : 'las';
+}
+
+export function resolveBytePlusPollTransport(input: {
+  providerJobId: string | null | undefined;
+  settingsSnapshot: unknown;
+}): BytePlusTransport {
+  if (
+    input.settingsSnapshot
+    && typeof input.settingsSnapshot === 'object'
+    && !Array.isArray(input.settingsSnapshot)
+  ) {
+    const stored = (input.settingsSnapshot as Record<string, unknown>).byteplusTransport;
+    if (stored === 'modelark' || stored === 'las') return stored;
+  }
+  return input.providerJobId?.trim().toLowerCase().startsWith('lsd-') ? 'las' : 'modelark';
+}
+
 export function isBytePlusModelArkEnabled(): boolean {
   return ['1', 'true', 'yes', 'on'].includes(
     (ENV.BYTEPLUS_ARK_ENABLED ?? '').trim().toLowerCase()
+  );
+}
+
+export function isBytePlusLasExecutionEnabled(): boolean {
+  return ['1', 'true', 'yes', 'on'].includes(
+    (ENV.SEEDANCE_2_5_LAS_ENABLED ?? '').trim().toLowerCase()
   );
 }
 
@@ -108,6 +140,26 @@ export function getBytePlusArkConfig() {
     seedanceMiniModelId: ENV.BYTEPLUS_ARK_SEEDANCE_MINI_MODEL_ID ?? BYTEPLUS_SEEDANCE_MINI_DEFAULT_MODEL_ID,
     seedance25ModelId: ENV.BYTEPLUS_ARK_SEEDANCE_2_5_MODEL_ID ?? BYTEPLUS_SEEDANCE_2_5_DEFAULT_MODEL_ID,
   };
+}
+
+export function assertBytePlusTransportConfigured(
+  engineId: string | null | undefined,
+  mode: Mode | string | null | undefined,
+): BytePlusTransport {
+  const transport = resolveBytePlusTransport(engineId, mode);
+  if (transport === 'las' && !isBytePlusLasExecutionEnabled()) {
+    throw new BytePlusModelArkError('BytePlus LAS execution is not enabled.', {
+      code: 'BYTEPLUS_LAS_EXECUTION_DISABLED',
+    });
+  }
+  const config = getBytePlusArkConfig();
+  const apiKey = transport === 'las' ? config.lasApiKey : config.apiKey;
+  if (!apiKey?.trim()) {
+    throw new BytePlusModelArkError('BytePlus video provider API key is not configured.', {
+      code: transport === 'las' ? 'BYTEPLUS_LAS_API_KEY_MISSING' : 'BYTEPLUS_API_KEY_MISSING',
+    });
+  }
+  return transport;
 }
 
 export class BytePlusModelArkClient {
@@ -186,12 +238,14 @@ export class BytePlusModelArkClient {
   }
 }
 
-export function getBytePlusModelArkClient(engineId?: string | null): BytePlusModelArkClient {
+export function getBytePlusModelArkClient(
+  transport: BytePlusTransport = 'modelark',
+): BytePlusModelArkClient {
   const config = getBytePlusArkConfig();
-  const usesLasTransport = engineId?.trim() === SEEDANCE_2_5_ENGINE_ID;
+  const usesLasTransport = transport === 'las';
   const apiKey = usesLasTransport ? config.lasApiKey : config.apiKey;
   const baseUrl = usesLasTransport ? config.lasBaseUrl : config.baseUrl;
-  if (!apiKey) {
+  if (!apiKey?.trim()) {
     throw new BytePlusModelArkError('BytePlus video provider API key is not configured.', {
       code: usesLasTransport ? 'BYTEPLUS_LAS_API_KEY_MISSING' : 'BYTEPLUS_API_KEY_MISSING',
     });

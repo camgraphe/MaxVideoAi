@@ -1,16 +1,18 @@
 import {
   isBytePlusModelArkEnabled,
+  isBytePlusLasExecutionEnabled,
   isBytePlusSeedanceAdminOnly,
   isBytePlusSeedanceSubmissionEnabled,
+  getBytePlusSeedanceAllowedModes,
+  resolveBytePlusTransport,
   resolveBytePlusSeedanceRouteProfile,
 } from '@/server/video-providers/byteplus-modelark';
-import type { EngineCaps } from '@/types/engines';
+import type { EngineCaps, Mode } from '@/types/engines';
 import {
   isBytePlusSeedreamEngine,
   resolveBytePlusSeedreamReadiness,
 } from '@/server/images/byteplus-seedream-policy';
 import { ENV } from '@/lib/env';
-import { SEEDANCE_2_5_ENGINE_ID } from '@/server/video-providers/byteplus-modelark-constants';
 
 export type AgentGenerationExecutabilityDecision = Readonly<{
   executable: boolean;
@@ -26,6 +28,7 @@ export type AgentGenerationExecutabilityEnvironment = Readonly<{
   bytePlusEnabled: boolean;
   bytePlusApiKey: string | undefined;
   bytePlusLasApiKey?: string | undefined;
+  bytePlusLasEnabled?: boolean;
 }>;
 
 function defaultEnvironment(): AgentGenerationExecutabilityEnvironment {
@@ -33,6 +36,7 @@ function defaultEnvironment(): AgentGenerationExecutabilityEnvironment {
     bytePlusEnabled: isBytePlusModelArkEnabled(),
     bytePlusApiKey: ENV.BYTEPLUS_ARK_API_KEY,
     bytePlusLasApiKey: ENV.BYTEPLUS_LAS_API_KEY,
+    bytePlusLasEnabled: isBytePlusLasExecutionEnabled(),
   };
 }
 
@@ -48,6 +52,23 @@ export function resolveAgentGenerationEngineExecutability(
     return { executable: readiness.executable, reason: readiness.reason };
   }
 
+  const decisions = engine.modes.map((mode) =>
+    resolveAgentGenerationModeExecutability(engine, mode, environment)
+  );
+  return decisions.find((decision) => decision.executable)
+    ?? decisions[0]
+    ?? { executable: false, reason: 'profile_invalid' };
+}
+
+export function resolveAgentGenerationModeExecutability(
+  engine: EngineCaps,
+  mode: Mode,
+  environment: AgentGenerationExecutabilityEnvironment = defaultEnvironment(),
+): AgentGenerationExecutabilityDecision {
+  if (isBytePlusSeedreamEngine(engine)) {
+    return resolveAgentGenerationEngineExecutability(engine, environment);
+  }
+
   try {
     const bytePlusProfile = resolveBytePlusSeedanceRouteProfile(
       engine.id,
@@ -58,9 +79,19 @@ export function resolveAgentGenerationEngineExecutability(
       return { executable: false, reason: 'provider_disabled' };
     }
     if (
-      bytePlusProfile.engineId === SEEDANCE_2_5_ENGINE_ID &&
-      !environment.bytePlusLasApiKey?.trim()
+      !bytePlusProfile.supportedModes.includes(mode)
+      || !getBytePlusSeedanceAllowedModes(engine.id).includes(mode)
     ) {
+      return { executable: false, reason: 'profile_invalid' };
+    }
+    const transport = resolveBytePlusTransport(engine.id, mode);
+    if (transport === 'las' && !environment.bytePlusLasEnabled) {
+      return { executable: false, reason: 'provider_disabled' };
+    }
+    const apiKey = transport === 'las'
+      ? environment.bytePlusLasApiKey
+      : environment.bytePlusApiKey;
+    if (!apiKey?.trim()) {
       return { executable: false, reason: 'provider_credentials_missing' };
     }
     if (isBytePlusSeedanceAdminOnly(engine.id)) {
@@ -74,4 +105,8 @@ export function resolveAgentGenerationEngineExecutability(
 
 export function isAgentGenerationEngineExecutable(engine: EngineCaps): boolean {
   return resolveAgentGenerationEngineExecutability(engine).executable;
+}
+
+export function isAgentGenerationModeExecutable(engine: EngineCaps, mode: Mode): boolean {
+  return resolveAgentGenerationModeExecutability(engine, mode).executable;
 }
