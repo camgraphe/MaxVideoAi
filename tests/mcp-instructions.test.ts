@@ -76,6 +76,8 @@ test('instructions never advertise paid generation when its gate is closed', asy
   assert.match(instructions, /creative attempts are explicit billable scenarios/i);
   assert.match(instructions, /technical failures follow the returned job and refund state/i);
   assert.match(instructions, /project estimates do not reserve price/i);
+  assert.match(instructions, /get_account_status.*credit balance.*trial.*spending limit/i);
+  assert.match(instructions, /same connected MaxVideoAI (?:account|library)/i);
   assert.match(instructions, /connected environment.*may differ.*staging.*production/i);
   assert.match(instructions, /always_generated.*omit settings\.audio/i);
   assert.match(instructions, /optional.*settings\.audio/i);
@@ -111,6 +113,14 @@ test('instructions describe the exact quote and confirmation flow when paid gene
   assert.match(instructions, /ambiguous.*(?:reply|approval|assent).*not.*confirmation/i);
   assert.match(instructions, /get_generation_status.*list_recent_generations.*rather than.*second paid/i);
   assert.match(instructions, /returned.*(?:account|upload|top-up|approval).*URL/i);
+  assert.match(instructions, /insufficient.*credits.*create_topup_link/i);
+  assert.match(instructions, /payment.*MaxVideoAI (?:website|site)/i);
+  assert.match(instructions, /old.*quote.*invalid/i);
+  assert.match(instructions, /after.*fund.*get_account_status.*prepare_generation/is);
+  assert.match(instructions, /fresh exact quote.*explicit.*approval/i);
+  assert.match(instructions, /technical failure.*refund.*not.*resubmit/is);
+  assert.match(instructions, /creative retry.*new paid attempt.*prepare_generation.*approval/is);
+  assert.match(instructions, /completed.*saved.*same connected.*library/is);
 });
 
 test('instructions cover all video workflows and distinguish private media selection from upload', async () => {
@@ -126,6 +136,7 @@ test('instructions cover all video workflows and distinguish private media selec
   assert.match(instructions, /requested (?:image|media) kind/i);
   assert.match(instructions, /short-lived.*browser handoff/i);
   assert.match(instructions, /does not create reference (?:images|media)/i);
+  assert.match(instructions, /upload.*saved.*same connected MaxVideoAI library.*list_media/is);
 });
 
 test('instructions recommend from live executable facts without hardcoded model hype', async () => {

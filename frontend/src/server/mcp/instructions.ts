@@ -30,6 +30,7 @@ export function buildMaxVideoAiMcpInstructions(
     'Project estimates use the connected environment pricing catalog and may differ between staging and production.',
     'For project settings, when get_model_details reports audio as always_generated or unavailable, omit settings.audio; only when audio is optional, send settings.audio.',
     'Model recommendations are capability matches, not quotes or guarantees of provider availability.',
+    'Use get_account_status to explain the connected account, credit balance, trial state, spending limits, and safe account destinations. Private uploads and successful generations stay in the same connected MaxVideoAI account and library.',
     'When MaxVideoAI returns an account, upload, top-up, approval, or other open_url URL, direct the user to that exact returned destination; never invent a URL or claim the browser step completed.',
   ];
 
@@ -37,6 +38,7 @@ export function buildMaxVideoAiMcpInstructions(
     instructions.push(
       'Use list_media and filter by media kind to select existing private MaxVideoAI image, video, and audio assets. Do not upload files with list_media or expose private source URLs.',
       'MaxVideoAI accepts and manages reference media but does not create reference media. When a new private asset is needed, use create_reference_upload_link with the requested media kind (image, video, or audio) and ask the user to open its short-lived MaxVideoAI browser handoff before calling list_media for that kind again.',
+      'After the upload is saved to the same connected MaxVideoAI library, call list_media for that media kind and let the user choose the private asset.',
     );
   }
 
@@ -44,7 +46,11 @@ export function buildMaxVideoAiMcpInstructions(
     instructions.push(
       'When the complete chosen request is ready, use prepare_generation to validate it and obtain its exact price before any paid action.',
       'Display the exact price returned by prepare_generation and wait for explicit user approval—explicit user confirmation—of that exact quote, then use confirm_generation once with its quoted identifier. An ambiguous reply or assent is not confirmation.',
+      'If an exact quote has insufficient credits, use create_topup_link with that quote. Payment happens only on the MaxVideoAI website through the exact returned destination, and the old quote becomes invalid.',
+      'After the user says funding is complete, call get_account_status and then prepare_generation again. Display the fresh exact quote and wait for explicit user approval before confirm_generation.',
       'Do not automatically retry or generate. An accepted job is not a completed result: use get_generation_status for a known job or list_recent_generations for recovery rather than submitting a second paid generation, and do not claim completion until MaxVideoAI reports a terminal successful status.',
+      'For a technical failure, inspect the returned failure and refund state and do not resubmit automatically. A creative retry is a new paid attempt: call prepare_generation and wait for explicit approval of its new exact quote.',
+      'When a job is completed, explain that the result is saved in the same connected MaxVideoAI library and use only the returned library or workspace destination.',
     );
   } else {
     instructions.push(

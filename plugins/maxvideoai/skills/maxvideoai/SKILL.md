@@ -1,6 +1,6 @@
 ---
 name: maxvideoai
-description: Plan, compare, budget, and generate AI video or images through MaxVideoAI from Codex or Claude. Use when a user mentions MaxVideoAI, wants current AI model advice or pricing, needs prompts or references for a generation, or wants to create and follow a MaxVideoAI job.
+description: Plan, compare, budget, and generate AI video or images through MaxVideoAI from ChatGPT, Claude, or Codex. Use when a user mentions MaxVideoAI, wants current AI model advice or pricing, needs prompts or references for a generation, or wants to create and follow a MaxVideoAI job.
 ---
 
 # MaxVideoAI
@@ -28,7 +28,9 @@ may create reference images yourself or help the user make them; this MCP does
 not create reference media. Use `list_media` by media kind to inspect
 existing private image, video, or audio assets when available. Use
 `create_reference_upload_link` with the requested media kind only for a browser
-handoff when an asset must be added, then list that kind again after upload.
+handoff when an asset must be added. The upload is saved to the same connected
+MaxVideoAI library; after the user completes it, call `list_media` for that kind
+again and let the user select the private asset.
 
 ## Follow the user's decision state
 
@@ -70,7 +72,10 @@ recommendation, not a fixed quality ranking or availability claim.
   this from the mode name or copy settings from another mode.
 - Use `recommend_models` when the user is open to suggestions or needs an
   evidence-backed match to their creative priorities.
-- Use `get_account_status` when account context matters to the conversation.
+- Use `get_account_status` to explain the connected account, credit balance,
+  trial state, spending limits, and safe destinations. Existing credits apply
+  here, and private uploads plus successful generations stay in the same
+  connected MaxVideoAI library used by the website.
 
 Keep the host free to make a creative recommendation. Explain factual tradeoffs
 from the returned results rather than inventing a static model ranking. A model
@@ -124,19 +129,24 @@ After confirmation, use `get_generation_status` for a known job or
 `list_recent_generations` for recovery, including after a stale or lost client
 response. Use recovery rather than submitting a second paid generation. Let
 the returned job and refund state distinguish a technical outcome from a
-creative iteration. Read
+creative iteration. For a technical failure, inspect the refund state and do
+not resubmit automatically. A creative retry is a new paid attempt that needs
+`prepare_generation` and explicit approval of its new exact quote. When a job
+is completed, explain that it is saved in the same connected MaxVideoAI library
+and use only its returned library or workspace destination. Read
 [generation safety](references/generation-safety.md) for the confirmation,
 recovery, trial, and top-up rules.
 
 ## Keep boundaries clear
 
 Do not claim a job has completed until its live status says so. Do not retry or
-start a new generation automatically. If the account needs a funding handoff,
-use `create_topup_link` only when that capability is available and direct the
-user through the returned destination. For an account, upload, top-up,
-approval, or other handoff, use the exact returned URL; do not invent one or
-claim the browser step completed.
+start a new generation automatically. When an exact quote reports insufficient
+credits, use `create_topup_link` with that quote and direct the user through its
+returned destination. Payment happens only on the MaxVideoAI website, and the
+old quote becomes invalid. After the user says funding is complete, call
+`get_account_status`, then `prepare_generation` again, display the fresh exact
+quote, and wait for explicit user approval before `confirm_generation`.
 
-This package describes a shared remote connection intended for OAuth-backed
-access. Local package validation does not verify an online connection or host
-loading.
+For an account, upload, top-up, approval, library, workspace, or other handoff,
+use the exact returned destination URL; do not invent one or claim the browser
+step completed.

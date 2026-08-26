@@ -9,16 +9,26 @@ Show the relevant result and wait for the user's clear approval. Only then call
 `confirm_generation`. Never turn a prior estimate, an ambiguous assent, or a
 creative discussion into confirmation.
 
+Use `get_account_status` to explain the current credit balance, trial state,
+spending limits, and returned account destinations. Existing MaxVideoAI credits
+belong to the connected account; do not guess a balance or payment state.
+
 After confirmation, use `get_generation_status` for a known job or
 `list_recent_generations` to recover recent work. Report only the status and
 links returned by the service. Do not claim success early and do not start a
-replacement automatically.
+replacement automatically. A completed result is saved in the same connected
+MaxVideoAI library; use only the returned library or workspace destination.
 
-Creative dissatisfaction is a decision to make another explicit attempt. A
-technical failure follows the returned job state and any returned refund or
-recredit information. Keep those outcomes distinct in the conversation.
+For a technical failure, inspect the returned failure and refund or recredit
+state and do not resubmit automatically. A creative retry is a new paid attempt:
+use `prepare_generation`, show the new exact quote, and wait for explicit user
+approval before `confirm_generation`.
 
-If the returned account context requires a funding handoff, use
-`create_topup_link` only when available. If a trial condition appears in live
-results, explain it as returned and ask before changing the request. Do not
-guess account eligibility or invent an account action.
+If an exact quote reports insufficient credits, use `create_topup_link` with
+that quote and direct the user to its exact returned destination. Payment takes
+place only on the MaxVideoAI website. The old quote is invalid after the funding
+handoff. After the user says funding is complete, call `get_account_status`, then
+`prepare_generation` again, show the fresh exact quote, and wait for explicit
+approval before confirmation. If a trial condition appears in live results,
+explain it as returned and ask before changing the request. Do not guess account
+eligibility, invent an account URL, or claim the browser step completed.
