@@ -111,7 +111,7 @@ export function ReferenceUploadClient({
           <p className="font-semibold">Reference {mediaLabel} ready</p>
         </div>
         <p className="mt-3 text-sm leading-6 text-text-secondary">
-          Return to Claude or Codex. It can call <code className="font-mono text-text-primary">list_media</code> and use this private {mediaLabel} in your next request.
+          This private {mediaLabel} is saved to your connected MaxVideoAI library. Return to ChatGPT, Claude, or Codex so it can call <code className="font-mono text-text-primary">list_media</code> and use the file in your next request.
         </p>
         <p className="mt-3 break-all rounded-input bg-bg p-3 font-mono text-xs text-text-muted">
           {assetId}
@@ -125,7 +125,7 @@ export function ReferenceUploadClient({
       <div className="rounded-card border border-border bg-surface p-5">
         <p className="font-semibold text-text-primary">This upload link is no longer available.</p>
         <p className="mt-2 text-sm leading-6 text-text-secondary">
-          Return to Claude or Codex and ask it to create a new reference upload link.
+          Return to ChatGPT, Claude, or Codex and ask it to create a new reference upload link.
         </p>
       </div>
     );

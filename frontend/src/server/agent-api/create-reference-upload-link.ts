@@ -13,6 +13,8 @@ import {
   createUploadSession,
   type CreatedReferenceUploadSession,
 } from './reference-upload-sessions';
+import { buildAgentAccountDestinations } from './account-destinations';
+import type { AgentOpenUrlDestination } from './types';
 
 export const REFERENCE_UPLOAD_ACCEPTED_MIME_TYPES = {
   image: ['image/jpeg', 'image/png', 'image/webp', 'image/avif'],
@@ -42,12 +44,16 @@ export function getReferenceUploadPolicy(
 }
 
 export type ReferenceUploadLink = {
-  uploadUrl: string;
+  destination: AgentOpenUrlDestination;
   expiresAt: string;
   mediaKind: CanonicalReferenceMediaKind;
   accepted: string[];
   maxBytes: number;
-  nextAction: string;
+  library: AgentOpenUrlDestination;
+  nextAction: {
+    tool: 'list_media';
+    arguments: { kind: CanonicalReferenceMediaKind };
+  };
 };
 
 type CreateReferenceUploadLinkDependencies = {
@@ -58,23 +64,6 @@ type CreateReferenceUploadLinkDependencies = {
     mediaKind: CanonicalReferenceMediaKind;
   }): Promise<CreatedReferenceUploadSession>;
 };
-
-function requireOrigin(value: string): string {
-  let parsed: URL;
-  try {
-    parsed = new URL(value);
-  } catch {
-    throw new Error('Invalid reference upload base URL.');
-  }
-  if (
-    (parsed.protocol !== 'https:' && !(parsed.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(parsed.hostname)))
-    || parsed.username
-    || parsed.password
-  ) {
-    throw new Error('Invalid reference upload base URL.');
-  }
-  return parsed.origin;
-}
 
 function requirePrincipal(principal: AgentPrincipal): void {
   if (
@@ -97,7 +86,8 @@ function requirePrincipal(principal: AgentPrincipal): void {
 export function createReferenceUploadLinkService(
   dependencies: CreateReferenceUploadLinkDependencies,
 ): (input: CreateReferenceUploadLinkInput, principal: AgentPrincipal) => Promise<ReferenceUploadLink> {
-  const origin = requireOrigin(dependencies.baseUrl);
+  const destinations = buildAgentAccountDestinations(dependencies.baseUrl);
+  const origin = new URL(destinations.connections.url).origin;
   return async (input, principal) => {
     requirePrincipal(principal);
     if (!input || (input.kind !== 'image' && input.kind !== 'video' && input.kind !== 'audio')) {
@@ -113,12 +103,18 @@ export function createReferenceUploadLinkService(
       throw new Error('Reference upload session kind mismatch.');
     }
     return {
-      uploadUrl: `${origin}/mcp/reference-upload/${created.token}`,
+      destination: {
+        type: 'open_url',
+        purpose: 'reference_upload',
+        label: `Upload a private ${input.kind} reference to MaxVideoAI`,
+        url: `${origin}/mcp/reference-upload/${created.token}`,
+      },
       expiresAt: created.session.expiresAt.toISOString(),
       mediaKind: input.kind,
       accepted: [...policy.accepted],
       maxBytes: policy.maxBytes,
-      nextAction: `Open the URL, upload one ${input.kind === 'audio' ? 'audio file' : input.kind}, then call list_media.`,
+      library: destinations.library,
+      nextAction: { tool: 'list_media', arguments: { kind: input.kind } },
     };
   };
 }

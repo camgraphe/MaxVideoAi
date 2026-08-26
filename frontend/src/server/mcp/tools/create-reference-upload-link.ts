@@ -22,7 +22,7 @@ export function registerCreateReferenceUploadLinkTool(
     {
       title: 'Upload private reference media',
       description:
-        'Use this when the user needs to add one private reference by requested media kind: image, video, or audio. It creates a short-lived browser handoff. Do not use it as proof that the file was uploaded, to start generation, or to modify an existing asset.',
+        'Use this when the user needs to add one private reference by requested media kind: image, video, or audio. It creates a short-lived browser handoff; after upload the file is saved to the connected MaxVideoAI library and list_media can select it. Do not use the handoff alone as proof that upload completed, to start generation, or to modify an existing asset.',
       inputSchema: createReferenceUploadLinkInputSchema,
       annotations: {
         readOnlyHint: false,

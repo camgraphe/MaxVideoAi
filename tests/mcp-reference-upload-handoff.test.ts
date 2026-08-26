@@ -70,23 +70,45 @@ test('link service creates one private 15-minute browser handoff for the OAuth p
   });
 
   assert.deepEqual(await createLink({ kind: 'video' }, principal), {
-    uploadUrl: `https://maxvideoai.com/mcp/reference-upload/${token}`,
+    destination: {
+      type: 'open_url',
+      purpose: 'reference_upload',
+      label: 'Upload a private video reference to MaxVideoAI',
+      url: `https://maxvideoai.com/mcp/reference-upload/${token}`,
+    },
     expiresAt: expiresAt.toISOString(),
     mediaKind: 'video',
     accepted: ['video/mp4', 'video/quicktime'],
     maxBytes: 52_428_800,
-    nextAction: 'Open the URL, upload one video, then call list_media.',
+    library: {
+      type: 'open_url',
+      purpose: 'media_library',
+      label: 'Open the MaxVideoAI media library',
+      url: 'https://maxvideoai.com/app/library',
+    },
+    nextAction: { tool: 'list_media', arguments: { kind: 'video' } },
   });
 });
 
 test('create_reference_upload_link is gated, strict, non-destructive, and open-world', async (t) => {
   const expected = {
-    uploadUrl: `https://maxvideoai.com/mcp/reference-upload/${token}`,
+    destination: {
+      type: 'open_url' as const,
+      purpose: 'reference_upload' as const,
+      label: 'Upload a private audio reference to MaxVideoAI',
+      url: `https://maxvideoai.com/mcp/reference-upload/${token}`,
+    },
     expiresAt: expiresAt.toISOString(),
     mediaKind: 'audio' as const,
     accepted: ['audio/mpeg', 'audio/wav', 'audio/x-wav', 'audio/mp4'],
     maxBytes: 31_457_280,
-    nextAction: 'Open the URL, upload one audio file, then call list_media.',
+    library: {
+      type: 'open_url' as const,
+      purpose: 'media_library' as const,
+      label: 'Open the MaxVideoAI media library',
+      url: 'https://maxvideoai.com/app/library',
+    },
+    nextAction: { tool: 'list_media' as const, arguments: { kind: 'audio' as const } },
   };
   const services: MaxVideoAiMcpServices = {
     async getAccountStatus() { throw new Error('unused'); },
@@ -125,6 +147,7 @@ test('create_reference_upload_link is gated, strict, non-destructive, and open-w
     arguments: { kind: 'audio' },
   });
   assert.deepEqual(result.structuredContent, expected);
+  assert.equal('uploadUrl' in (result.structuredContent ?? {}), false);
 
   for (const arguments_ of [{}, { kind: 'document' }, { kind: 'image', extra: true }]) {
     const invalid = await client.callTool({
@@ -133,6 +156,21 @@ test('create_reference_upload_link is gated, strict, non-destructive, and open-w
     });
     assert.equal(invalid.isError, true);
   }
+});
+
+test('reference handoffs keep staging uploads and library links on the same trusted origin', async () => {
+  const createLink = createReferenceUploadLinkService({
+    baseUrl: 'https://maxvideoai-mcp-staging.vercel.app/account/connections',
+    createUploadSession: async () => ({ token, session }),
+  });
+
+  const result = await createLink({ kind: 'image' }, principal);
+  assert.equal(
+    result.destination.url,
+    `https://maxvideoai-mcp-staging.vercel.app/mcp/reference-upload/${token}`,
+  );
+  assert.equal(result.library.url, 'https://maxvideoai-mcp-staging.vercel.app/app/library');
+  assert.deepEqual(result.nextAction, { tool: 'list_media', arguments: { kind: 'image' } });
 });
 
 function uploadRequest(overrides: {
