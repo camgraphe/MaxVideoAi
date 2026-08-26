@@ -9,6 +9,11 @@ Show the relevant result and wait for the user's clear approval. Only then call
 `confirm_generation`. Never turn a prior estimate, an ambiguous assent, or a
 creative discussion into confirmation.
 
+That confirmation authorizes exactly one paid attempt. It is consumed whether
+the job is accepted, failed, or refunded. A refund or recredit does not restore
+the authorization. Every replacement attempt requires `prepare_generation`, a
+fresh exact quote, and new explicit approval.
+
 Use `get_account_status` to explain the current credit balance, trial state,
 spending limits, and returned account destinations. Existing MaxVideoAI credits
 belong to the connected account; do not guess a balance or payment state.

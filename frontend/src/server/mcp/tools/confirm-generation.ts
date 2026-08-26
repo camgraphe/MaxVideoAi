@@ -24,7 +24,7 @@ export function registerConfirmGenerationTool(
     {
       title: 'Confirm a MaxVideoAI generation',
       description:
-        'Confirms one exact prepared quote using the funding locked into the quote and contacts an external generation provider. Wallet quotes may spend wallet funds; an included trial does not. Repeating the same confirmation safely returns the same generation job.',
+        'Confirms one exact prepared quote using the funding locked into the quote and contacts an external generation provider. Wallet quotes may spend wallet funds; an included trial does not. A confirmation authorizes exactly one paid attempt. Duplicate delivery of the identical confirmed request returns the existing job; never use this to retry a failed generation. A new paid attempt requires a fresh exact quote and new explicit user approval.',
       inputSchema: confirmGenerationInputSchema,
       annotations: {
         readOnlyHint: false,

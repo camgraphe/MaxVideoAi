@@ -53,6 +53,9 @@ function generationRecord(overrides: Partial<GenerationStatusRecord> = {}): Gene
   };
 }
 
+const FAILED_ATTEMPT_BOUNDARY =
+  'No new generation was started after this failure. A refund or recredit does not restore the previous authorization. To try again, prepare a fresh exact quote and wait for explicit user approval.';
+
 test('owned status lookup scopes the SQL by job and user before returning a record', async () => {
   const calls: Array<{ sql: string; params?: ReadonlyArray<unknown> }> = [];
   const record = generationRecord();
@@ -228,7 +231,7 @@ test('agent status sanitizes terminal failures and preserves refunded state', as
   assert.equal(result?.paymentStatus, 'refunded_wallet');
   assert.equal(
     result?.message,
-    'The render finished without a usable output. Please retry or contact support with your request ID if it happens again.'
+    `The render finished without a usable output. ${FAILED_ATTEMPT_BOUNDARY}`
   );
   assert.equal(result?.result, null);
   assert.equal(result?.retryAfterSeconds, null);
@@ -255,7 +258,7 @@ test('agent status exposes only the safe Seedance task-type code and actionable 
   assert.equal(result?.failureCode, 'seedance_task_type_constraint');
   assert.equal(
     result?.message,
-    'Seedance could not identify the intended video edit or extension. Refer to the source directly as Video 1, then prepare a new quote before retrying.'
+    `Seedance could not identify the intended video edit or extension. Refer to the source directly as Video 1 before preparing a new request. ${FAILED_ATTEMPT_BOUNDARY}`
   );
   assert.doesNotMatch(
     JSON.stringify(result),
@@ -265,7 +268,7 @@ test('agent status exposes only the safe Seedance task-type code and actionable 
 
 test('agent failure messages never echo arbitrary secrets, identities, or opaque bodies', () => {
   const expected =
-    'MaxVideoAI could not complete this render. Please retry in a few moments. If this keeps happening, contact support with your request ID.';
+    `MaxVideoAI could not complete this render. ${FAILED_ATTEMPT_BOUNDARY}`;
   for (const message of [
     'Stripe key sk_live_supersecret belongs to alice@example.com',
     'api_token=tok_123456789 short_secret=abc123',
@@ -285,16 +288,15 @@ test('agent failure messages map recognized categories to fixed public copy', ()
   const cases = [
     {
       raw: 'content policy safety moderation rejected',
-      expected: 'This request was blocked by safety checks. Try rephrasing it with safer, more neutral wording.',
+      expected: `This request was blocked by safety checks. Rephrase it with safer, more neutral wording before preparing a new request. ${FAILED_ATTEMPT_BOUNDARY}`,
     },
     {
       raw: 'processing timeout exceeded expected window',
-      expected: 'This render exceeded the expected processing window. Please retry in a few moments.',
+      expected: `This render exceeded the expected processing window. ${FAILED_ATTEMPT_BOUNDARY}`,
     },
     {
       raw: 'provider returned no video output',
-      expected:
-        'The render finished without a usable output. Please retry or contact support with your request ID if it happens again.',
+      expected: `The render finished without a usable output. ${FAILED_ATTEMPT_BOUNDARY}`,
     },
   ];
   for (const fixture of cases) {
@@ -303,6 +305,30 @@ test('agent failure messages map recognized categories to fixed public copy', ()
     );
     assert.equal(result?.message, fixture.expected);
     assert.notEqual(result?.message, fixture.raw);
+  }
+});
+
+test('agent technical failures terminate the paid authorization and require a newly approved quote', () => {
+  for (const rawMessage of [
+    'processing timeout exceeded expected window',
+    'provider queue is temporarily busy',
+    'request failed before provider start',
+  ]) {
+    const result = mapGenerationStatusRecordToAgent(
+      generationRecord({
+        status: 'failed',
+        payment_status: 'refunded_wallet',
+        message: rawMessage,
+      })
+    );
+
+    assert.equal(result?.status, 'failed');
+    assert.equal(result?.paymentStatus, 'refunded_wallet');
+    assert.equal(result?.retryAfterSeconds, null);
+    assert.match(result?.message ?? '', /no new generation was started/i);
+    assert.match(result?.message ?? '', /fresh exact quote/i);
+    assert.match(result?.message ?? '', /explicit user approval/i);
+    assert.doesNotMatch(result?.message ?? '', /please retry(?![^.]*fresh exact quote)/i);
   }
 });
 
@@ -419,7 +445,7 @@ test('provider polling stalled is a terminal safe public failure without retry',
     surface: 'video',
     status: 'failed',
     progress: 90,
-    message: 'This render needs manual review. Contact MaxVideoAI support with your request ID before retrying.',
+    message: `This render needs manual review. Contact MaxVideoAI support with your request ID before preparing another attempt. ${FAILED_ATTEMPT_BOUNDARY}`,
     priceCents: 42,
     currency: 'USD',
     paymentStatus: 'paid_wallet',

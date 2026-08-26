@@ -53,20 +53,21 @@ const DEFAULT_PUBLIC_MEDIA_HOSTS = new Set([
 ]);
 
 const AGENT_FAILURE_COPY = {
-  default:
-    'MaxVideoAI could not complete this render. Please retry in a few moments. If this keeps happening, contact support with your request ID.',
-  busy: 'The render queue is temporarily busy. Please retry in a few moments.',
-  noOutput:
-    'The render finished without a usable output. Please retry or contact support with your request ID if it happens again.',
-  safety: 'This request was blocked by safety checks. Try rephrasing it with safer, more neutral wording.',
-  start: 'MaxVideoAI could not start this render. Please retry in a few moments.',
-  storage: 'The render finished, but MaxVideoAI could not prepare the output for download. Please retry.',
-  timeout: 'This render exceeded the expected processing window. Please retry in a few moments.',
-  unsupported: 'This request is not supported with the selected inputs. Adjust the prompt, media, or settings and try again.',
-  pollingStalled: 'This render needs manual review. Contact MaxVideoAI support with your request ID before retrying.',
+  default: 'MaxVideoAI could not complete this render.',
+  busy: 'The render queue is temporarily busy.',
+  noOutput: 'The render finished without a usable output.',
+  safety: 'This request was blocked by safety checks. Rephrase it with safer, more neutral wording before preparing a new request.',
+  start: 'MaxVideoAI could not start this render.',
+  storage: 'The render finished, but MaxVideoAI could not prepare the output for download.',
+  timeout: 'This render exceeded the expected processing window.',
+  unsupported: 'This request is not supported with the selected inputs. Adjust the prompt, media, or settings before preparing a new request.',
+  pollingStalled: 'This render needs manual review. Contact MaxVideoAI support with your request ID before preparing another attempt.',
   seedanceTaskType:
-    'Seedance could not identify the intended video edit or extension. Refer to the source directly as Video 1, then prepare a new quote before retrying.',
+    'Seedance could not identify the intended video edit or extension. Refer to the source directly as Video 1 before preparing a new request.',
 } as const;
+
+const FAILED_ATTEMPT_BOUNDARY =
+  'No new generation was started after this failure. A refund or recredit does not restore the previous authorization. To try again, prepare a fresh exact quote and wait for explicit user approval.';
 
 const SAFE_AGENT_FAILURE_CODES = new Set([
   SEEDANCE_I2V_RATIO_REJECTED,
@@ -230,35 +231,32 @@ function buildAgentMessage(
   if (status === 'accepted') return 'Generation accepted.';
   if (status === 'running') return 'Generation in progress.';
   if (status === 'failed') {
+    let failureMessage: string;
     if (failureCode === SEEDANCE_TASK_TYPE_CONSTRAINT) {
-      return AGENT_FAILURE_COPY.seedanceTaskType;
+      failureMessage = AGENT_FAILURE_COPY.seedanceTaskType;
+    } else if (rawStatus?.trim().toLowerCase() === 'provider_polling_stalled') {
+      failureMessage = AGENT_FAILURE_COPY.pollingStalled;
+    } else {
+      const message = rawMessage?.trim().toLowerCase() ?? '';
+      if (/responsible ai|sensitive words|content policy|policy violation|safety|moderation|prohibited|blocked/iu.test(message)) {
+        failureMessage = AGENT_FAILURE_COPY.safety;
+      } else if (/unsupported|not supported|invalid request|unprocessable|does not support/iu.test(message)) {
+        failureMessage = AGENT_FAILURE_COPY.unsupported;
+      } else if (/no result|no video|no usable output|returned no|without a usable output/iu.test(message)) {
+        failureMessage = AGENT_FAILURE_COPY.noOutput;
+      } else if (/copy|copied|storage|download|fast-start|faststart/iu.test(message)) {
+        failureMessage = AGENT_FAILURE_COPY.storage;
+      } else if (/timeout|timed out|processing window|expected window|grace period|exceeded/iu.test(message)) {
+        failureMessage = AGENT_FAILURE_COPY.timeout;
+      } else if (/rate limit|temporarily unavailable|temporarily busy|quota|credits exhausted|too many requests|queue is/iu.test(message)) {
+        failureMessage = AGENT_FAILURE_COPY.busy;
+      } else if (/could not start|start failed|request failed|sync failed|missing provider_job_id|status unavailable|not found|expired/iu.test(message)) {
+        failureMessage = AGENT_FAILURE_COPY.start;
+      } else {
+        failureMessage = AGENT_FAILURE_COPY.default;
+      }
     }
-    if (rawStatus?.trim().toLowerCase() === 'provider_polling_stalled') {
-      return AGENT_FAILURE_COPY.pollingStalled;
-    }
-    const message = rawMessage?.trim().toLowerCase() ?? '';
-    if (/responsible ai|sensitive words|content policy|policy violation|safety|moderation|prohibited|blocked/iu.test(message)) {
-      return AGENT_FAILURE_COPY.safety;
-    }
-    if (/unsupported|not supported|invalid request|unprocessable|does not support/iu.test(message)) {
-      return AGENT_FAILURE_COPY.unsupported;
-    }
-    if (/no result|no video|no usable output|returned no|without a usable output/iu.test(message)) {
-      return AGENT_FAILURE_COPY.noOutput;
-    }
-    if (/copy|copied|storage|download|fast-start|faststart/iu.test(message)) {
-      return AGENT_FAILURE_COPY.storage;
-    }
-    if (/timeout|timed out|processing window|expected window|grace period|exceeded/iu.test(message)) {
-      return AGENT_FAILURE_COPY.timeout;
-    }
-    if (/rate limit|temporarily unavailable|temporarily busy|quota|credits exhausted|too many requests|queue is/iu.test(message)) {
-      return AGENT_FAILURE_COPY.busy;
-    }
-    if (/could not start|start failed|request failed|sync failed|missing provider_job_id|status unavailable|not found|expired/iu.test(message)) {
-      return AGENT_FAILURE_COPY.start;
-    }
-    return AGENT_FAILURE_COPY.default;
+    return `${failureMessage} ${FAILED_ATTEMPT_BOUNDARY}`;
   }
   return null;
 }

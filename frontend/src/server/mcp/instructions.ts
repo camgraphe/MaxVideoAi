@@ -46,6 +46,7 @@ export function buildMaxVideoAiMcpInstructions(
     instructions.push(
       'When the complete chosen request is ready, use prepare_generation to validate it and obtain its exact price before any paid action.',
       'Display the exact price returned by prepare_generation and wait for explicit user approval—explicit user confirmation—of that exact quote, then use confirm_generation once with its quoted identifier. An ambiguous reply or assent is not confirmation.',
+      'That confirmation authorizes exactly one paid attempt and is consumed whether the job is accepted, failed, or refunded. A refund or recredit does not restore the authorization. Every replacement attempt requires prepare_generation, a fresh exact quote, and new explicit user approval.',
       'If an exact quote has insufficient credits, use create_topup_link with that quote. Payment happens only on the MaxVideoAI website through the exact returned destination, and the old quote becomes invalid.',
       'After the user says funding is complete, call get_account_status and then prepare_generation again. Display the fresh exact quote and wait for explicit user approval before confirm_generation.',
       'Do not automatically retry or generate. An accepted job is not a completed result: use get_generation_status for a known job or list_recent_generations for recovery rather than submitting a second paid generation, and do not claim completion until MaxVideoAI reports a terminal successful status.',

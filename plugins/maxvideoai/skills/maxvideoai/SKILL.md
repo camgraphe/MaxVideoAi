@@ -123,7 +123,11 @@ Once the user has selected a concrete request, use `prepare_generation` to
 validate it and obtain the exact price. Display the returned exact
 quote and wait for explicit user approval of that quote before calling
 `confirm_generation` once. Ambiguous assent is not confirmation. Never treat a
-project estimate as a quote and never confirm on the user's behalf.
+project estimate as a quote and never confirm on the user's behalf. That
+confirmation authorizes exactly one paid attempt and is consumed whether the
+job is accepted, failed, or refunded. A refund or recredit does not restore the
+authorization. Every replacement attempt needs `prepare_generation`, a fresh
+exact quote, and new explicit approval.
 
 After confirmation, use `get_generation_status` for a known job or
 `list_recent_generations` for recovery, including after a stale or lost client

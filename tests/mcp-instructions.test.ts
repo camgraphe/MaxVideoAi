@@ -121,6 +121,10 @@ test('instructions describe the exact quote and confirmation flow when paid gene
   assert.match(instructions, /fresh exact quote.*explicit.*approval/i);
   assert.match(instructions, /technical failure.*refund.*not.*resubmit/is);
   assert.match(instructions, /creative retry.*new paid attempt.*prepare_generation.*approval/is);
+  assert.match(instructions, /confirmation.*authorizes exactly one.*paid attempt/is);
+  assert.match(instructions, /consumed.*(?:accepted|failed|refunded)/is);
+  assert.match(instructions, /refund.*does not.*restore.*authorization/is);
+  assert.match(instructions, /replacement attempt.*fresh exact quote.*new explicit user approval/is);
   assert.match(instructions, /completed.*saved.*same connected.*library/is);
   assert.match(instructions, /completed.*present_generation|present_generation.*completed/is);
   assert.match(instructions, /inline.*(?:video|image).*compatible.*host/is);

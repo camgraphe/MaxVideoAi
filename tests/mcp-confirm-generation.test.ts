@@ -1133,5 +1133,8 @@ test('default registry remains five discovery tools and the explicit paid gate e
   assert.match(confirm?.description ?? '', /included trial does not/i);
   assert.doesNotMatch(confirm?.description ?? '', /this spends wallet funds/i);
   assert.match(confirm?.description ?? '', /external generation provider/i);
+  assert.match(confirm?.description ?? '', /duplicate delivery.*identical confirmed request.*existing job/i);
+  assert.match(confirm?.description ?? '', /never.*retry.*failed generation/i);
+  assert.match(confirm?.description ?? '', /new paid attempt.*fresh exact quote.*new explicit user approval/i);
   assert.deepEqual(Object.keys(confirm?.inputSchema.properties ?? {}).sort(), ['confirmed', 'quoteId']);
 });

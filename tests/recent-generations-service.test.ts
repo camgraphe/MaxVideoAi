@@ -113,7 +113,7 @@ test('recent failed filter includes provider polling stalled as a terminal state
   assert.equal(result.items[0]?.retryAfterSeconds, null);
   assert.equal(
     result.items[0]?.message,
-    'This render needs manual review. Contact MaxVideoAI support with your request ID before retrying.'
+    'This render needs manual review. Contact MaxVideoAI support with your request ID before preparing another attempt. No new generation was started after this failure. A refund or recredit does not restore the previous authorization. To try again, prepare a fresh exact quote and wait for explicit user approval.'
   );
 });
 

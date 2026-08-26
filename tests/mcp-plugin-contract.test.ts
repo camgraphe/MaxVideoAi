@@ -134,6 +134,10 @@ test('the shared skill gives hosts conversational, factual guardrails', () => {
   assert.match(skill, /same connected MaxVideoAI library/is);
   assert.match(skill, /technical failure.*refund.*not.*resubmit/is);
   assert.match(skill, /creative retry.*new paid attempt/is);
+  assert.match(skill, /confirmation.*authorizes exactly one.*paid attempt/is);
+  assert.match(skill, /consumed.*(?:accepted|failed|refunded)/is);
+  assert.match(skill, /refund.*does not.*restore.*authorization/is);
+  assert.match(skill, /replacement attempt.*fresh\s+exact\s+quote.*new explicit approval/is);
   assert.doesNotMatch(skill, /economy|balanced|premium/i);
   assert.doesNotMatch(skill, /highest quality|best model|state-of-the-art|publicly available/i);
 
@@ -159,6 +163,9 @@ test('the package explains the customer-facing account and library journey', () 
   assert.match(safety, /completed.*same connected\s+MaxVideoAI\s+library/is);
   assert.match(safety, /technical failure.*refund.*not.*resubmit/is);
   assert.match(safety, /creative retry.*new paid attempt.*prepare_generation.*approval/is);
+  assert.match(safety, /confirmation.*authorizes exactly one.*paid attempt/is);
+  assert.match(safety, /refund.*does not.*restore.*authorization/is);
+  assert.match(safety, /replacement attempt.*fresh exact quote.*new explicit approval/is);
 });
 
 test('the packaged Skill and plugin pass the repository authoring validators', () => {

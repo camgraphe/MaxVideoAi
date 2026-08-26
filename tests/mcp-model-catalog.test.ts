@@ -6,10 +6,12 @@ import { ENV } from '../frontend/src/lib/env';
 import {
   listAgentModels,
   listPublicAgentGenerationEngines,
-  isAgentGenerationEngineExecutable,
   type AgentModelCatalogDeps,
 } from '../frontend/src/server/agent-api/model-catalog';
-import { isAgentGenerationModeExecutable } from '../frontend/src/server/agent-runtime/model-executability';
+import {
+  resolveAgentGenerationEngineExecutability,
+  resolveAgentGenerationModeExecutability,
+} from '../frontend/src/server/agent-runtime/model-executability';
 import type { EngineCaps, Mode } from '../frontend/types/engines';
 
 function engine(
@@ -60,8 +62,15 @@ function deps(engines: EngineCaps[], surfaces: Record<string, 'video' | 'image' 
   };
 }
 
-function realRegistryDeps(): AgentModelCatalogDeps {
+function realRegistryDeps(falApiKey = ENV.FAL_API_KEY): AgentModelCatalogDeps {
   const entries = listFalEngines();
+  const environment = () => ({
+    bytePlusEnabled: ENV.BYTEPLUS_ARK_ENABLED === 'true',
+    bytePlusApiKey: ENV.BYTEPLUS_ARK_API_KEY,
+    bytePlusLasApiKey: ENV.BYTEPLUS_LAS_API_KEY,
+    bytePlusLasEnabled: (ENV as typeof ENV & { SEEDANCE_2_5_LAS_ENABLED?: string }).SEEDANCE_2_5_LAS_ENABLED === 'true',
+    falApiKey,
+  });
   return {
     async listEngines() {
       return entries.map((entry) => entry.engine);
@@ -71,8 +80,10 @@ function realRegistryDeps(): AgentModelCatalogDeps {
       if (!entry) return null;
       return entry.category === 'image' ? 'image' : 'video';
     },
-    isEngineExecutable: isAgentGenerationEngineExecutable,
-    isModeExecutable: isAgentGenerationModeExecutable,
+    isEngineExecutable: (engine) =>
+      resolveAgentGenerationEngineExecutability(engine, environment()).executable,
+    isModeExecutable: (engine, mode) =>
+      resolveAgentGenerationModeExecutability(engine, mode, environment()).executable,
   };
 }
 
@@ -214,7 +225,7 @@ test('mode-scoped catalog filtering uses modeCaps while aggregate discovery stay
 });
 
 test('real Sora 2 Pro never publishes ref2v without an executable mode capability', async () => {
-  const registryDeps = realRegistryDeps();
+  const registryDeps = realRegistryDeps('test-fal-key');
   const [soraModel] = await listAgentModels({ id: 'sora-2-pro' }, registryDeps);
   const soraCapability = (await listPublicAgentGenerationEngines(registryDeps))
     .find((candidate) => candidate.engine.id === 'sora-2-pro');
@@ -222,6 +233,16 @@ test('real Sora 2 Pro never publishes ref2v without an executable mode capabilit
   assert.ok(soraCapability);
   assert.deepEqual(soraModel.modes, ['t2v', 'i2v']);
   assert.deepEqual(soraCapability.publicModes, ['t2v', 'i2v']);
+});
+
+test('catalog never advertises H3 generation without an effective Fal credential', async () => {
+  const [closedH3] = await listAgentModels({ id: 'minimax-h3' }, realRegistryDeps(''));
+  const [readyH3] = await listAgentModels({ id: 'minimax-h3' }, realRegistryDeps('test-fal-key'));
+
+  assert.ok(closedH3);
+  assert.ok(readyH3);
+  assert.equal(closedH3.generationEnabled, false);
+  assert.equal(readyH3.generationEnabled, true);
 });
 
 test('catalog applies the requested result limit after capability filtering', async () => {
@@ -245,7 +266,7 @@ test('catalog mirrors real execution gates for newly registered video models', {
     seedance25LasApiKey: ENV.BYTEPLUS_LAS_API_KEY,
     seedance25LasEnabled: extendedEnv.SEEDANCE_2_5_LAS_ENABLED,
   };
-  const registryDeps = realRegistryDeps();
+  const registryDeps = realRegistryDeps('test-fal-key');
 
   try {
     ENV.BYTEPLUS_ARK_ENABLED = 'false';

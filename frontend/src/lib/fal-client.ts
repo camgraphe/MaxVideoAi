@@ -1,12 +1,11 @@
 import { createFalClient, type FalClient } from '@fal-ai/client';
+import { ENV } from '@/lib/env';
 
 let client: FalClient | null = null;
 
 export function getFalClient(): FalClient {
   if (!client) {
-    const falKey =
-      process.env.FAL_KEY ??
-      process.env.FAL_API_KEY;
+    const falKey = ENV.FAL_API_KEY;
 
     const config: Parameters<typeof createFalClient>[0] = {};
 
