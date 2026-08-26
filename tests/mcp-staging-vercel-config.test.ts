@@ -25,6 +25,7 @@ const REQUIRED_OPERATIONAL_ENVIRONMENT = [
   'SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY',
   'SEEDANCE_2_5_BYTEPLUS_MODES',
   'SEEDANCE_2_5_LAS_ENABLED',
+  'MCP_TOPUP_HANDOFF_SECRET',
   'MCP_STAGING_REFERENCE_CLEANUP_ENABLED',
   'MCP_STAGING_REFERENCE_STORAGE_PREFIX',
   'S3_BUCKET',
@@ -220,7 +221,7 @@ test('non-dry deployment preflight behavior fails closed before every Vercel mut
     const validPayload = JSON.parse(operationalEnvironmentPayload()) as {
       envs: Array<{ key: string; target: string[]; value: string }>;
     };
-    for (const credentialName of ['BYTEPLUS_ARK_API_KEY'] as const) {
+    for (const credentialName of ['BYTEPLUS_ARK_API_KEY', 'MCP_TOPUP_HANDOFF_SECRET'] as const) {
       const missingKeyPayload = JSON.stringify({
         envs: validPayload.envs.filter((entry) => entry.key !== credentialName),
       });

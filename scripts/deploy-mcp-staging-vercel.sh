@@ -21,6 +21,7 @@ REQUIRED_OPERATIONAL_ENVIRONMENT=(
   'SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY'
   'SEEDANCE_2_5_BYTEPLUS_MODES'
   'SEEDANCE_2_5_LAS_ENABLED'
+  'MCP_TOPUP_HANDOFF_SECRET'
   'MCP_STAGING_REFERENCE_CLEANUP_ENABLED'
   'MCP_STAGING_REFERENCE_STORAGE_PREFIX'
   'S3_BUCKET'
@@ -223,7 +224,7 @@ assert_staging_operational_environment() {
 
   capture_staging_environment_metadata "$metadata"
 
-  for name in 'BYTEPLUS_ARK_API_KEY'; do
+  for name in 'BYTEPLUS_ARK_API_KEY' 'MCP_TOPUP_HANDOFF_SECRET'; do
     if ! jq -e --arg name "$name" \
       'any(.[]; .key == $name and .target == ["production"])' \
       "$metadata" >/dev/null; then

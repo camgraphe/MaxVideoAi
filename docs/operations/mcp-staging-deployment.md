@@ -136,6 +136,13 @@ Keep `SEEDANCE_2_5_LAS_ENABLED=false` and do not add `v2v` to
 and canary evidence have passed review. A LAS key by itself never publishes or
 enables V2V.
 
+`MCP_TOPUP_HANDOFF_SECRET` is required on the Production target of the dedicated
+staging project. It must contain 32–256 random printable ASCII characters and is
+used only to sign short-lived MaxVideoAI billing handoffs. Store it as a Vercel
+secret and never copy its value into Git, documentation, logs, or a command-line
+argument. The deployment wrapper verifies only its name and target and stops
+with `CREDENTIAL_BLOCKED` when it is absent.
+
 Durable video delivery also requires `S3_BUCKET`, `S3_REGION`,
 `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, and `S3_PUBLIC_BASE_URL` on the
 Production target. Use a staging-only bucket or a staging IAM credential whose
@@ -161,10 +168,11 @@ documented above. Vercel does not accept empty environment-variable values, so
 `COOKIE_DOMAIN` and `NEXT_PUBLIC_COOKIE_DOMAIN` are intentionally absent; the
 application treats absence as an unset, host-only cookie domain.
 
-Except for the dedicated staging-only `BYTEPLUS_ARK_API_KEY`, dedicated
-prefix-scoped staging storage credential, and cleanup-only `CRON_SECRET`, do not add
-provider keys, Stripe secrets, a Supabase secret or legacy `service_role` key,
-SMTP credentials, or any production database URL to this project.
+Except for the dedicated staging-only `BYTEPLUS_ARK_API_KEY`,
+`MCP_TOPUP_HANDOFF_SECRET`, dedicated prefix-scoped staging storage credential,
+and cleanup-only `CRON_SECRET`, do not add provider keys, Stripe secrets, a
+Supabase secret or legacy `service_role` key, SMTP credentials, or any production
+database URL to this project.
 
 ### Schema and cleanup prerequisite
 
