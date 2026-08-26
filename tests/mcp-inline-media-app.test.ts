@@ -95,6 +95,7 @@ test('paid MCP profile exposes one decoupled inline generation presenter', async
   assert.deepEqual(Object.keys(presenter.inputSchema.properties ?? {}), ['jobId']);
   assert.match(presenter.description ?? '', /completed.*inline.*video|inline.*completed.*video/is);
   assert.equal((presenter._meta?.ui as { resourceUri?: string } | undefined)?.resourceUri, TEMPLATE_URI);
+  assert.equal(presenter._meta?.['ui/resourceUri'], TEMPLATE_URI);
   assert.equal(presenter._meta?.['openai/outputTemplate'], TEMPLATE_URI);
 });
 
@@ -103,7 +104,14 @@ test('generation presenter resource is a portable light and dark MCP App with na
   t.after(() => session.close());
 
   const resources = await session.client.listResources();
-  assert.ok(resources.resources.some((resource) => resource.uri === TEMPLATE_URI));
+  const listedResource = resources.resources.find((resource) => resource.uri === TEMPLATE_URI);
+  assert.ok(listedResource);
+  const listedUi = (listedResource._meta?.ui ?? {}) as {
+    prefersBorder?: boolean;
+    csp?: { resourceDomains?: string[] };
+  };
+  assert.equal(listedUi.prefersBorder, true);
+  assert.ok(listedUi.csp?.resourceDomains?.includes('https://media.maxvideoai.com'));
   const result = await session.client.readResource({ uri: TEMPLATE_URI });
   assert.equal(result.contents.length, 1);
   const content = result.contents[0];

@@ -29,6 +29,7 @@ export function registerPresentGenerationTool(
       },
       _meta: {
         ui: { resourceUri: GENERATION_RESULT_APP_URI },
+        'ui/resourceUri': GENERATION_RESULT_APP_URI,
         'openai/outputTemplate': GENERATION_RESULT_APP_URI,
         'openai/toolInvocation/invoking': 'Loading generation…',
         'openai/toolInvocation/invoked': 'Generation ready',
@@ -40,4 +41,3 @@ export function registerPresentGenerationTool(
     ),
   );
 }
-

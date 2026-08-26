@@ -358,6 +358,12 @@ export function registerGenerationResultApp(server: McpServer): void {
       title: 'MaxVideoAI generation result',
       description: 'Inline player for one completed MaxVideoAI generation.',
       mimeType: 'text/html;profile=mcp-app',
+      _meta: {
+        ui: {
+          prefersBorder: true,
+          csp: { connectDomains: [], resourceDomains },
+        },
+      },
     },
     async () => ({
       contents: [{
@@ -381,4 +387,3 @@ export function registerGenerationResultApp(server: McpServer): void {
     }),
   );
 }
-
