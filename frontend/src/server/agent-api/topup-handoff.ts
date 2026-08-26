@@ -9,6 +9,7 @@ import { getWalletSummary, type WalletSummary } from '@/server/wallet-summary';
 
 import { AgentApiError } from './errors';
 import type { AgentPrincipal } from './principal';
+import type { AgentOpenUrlDestination } from './types';
 import {
   invalidatePreparedQuote,
   lockOwnedQuote,
@@ -37,8 +38,13 @@ export type McpTopupHandoffPayload = {
 };
 
 export type McpTopupHandoff = McpTopupHandoffPayload & {
-  url: string;
+  topupRequired: true;
+  destination: AgentOpenUrlDestination;
   freshQuoteRequired: true;
+  nextActionAfterFunding: {
+    tool: 'get_account_status';
+    then: 'prepare_generation';
+  };
 };
 
 export type McpTopupNotRequired = {
@@ -329,9 +335,19 @@ export async function createMcpTopupHandoff(
     return {
       kind: 'handoff',
       value: {
-        url: billingUrl.toString(),
+        topupRequired: true,
         ...payload,
+        destination: {
+          type: 'open_url',
+          purpose: 'billing',
+          label: 'Add credits securely on MaxVideoAI',
+          url: billingUrl.toString(),
+        },
         freshQuoteRequired: true,
+        nextActionAfterFunding: {
+          tool: 'get_account_status',
+          then: 'prepare_generation',
+        },
       },
     };
   });

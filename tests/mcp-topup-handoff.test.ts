@@ -113,6 +113,11 @@ function payloadFromToken(token: string): Record<string, unknown> {
   return JSON.parse(Buffer.from(parts[1]!, 'base64url').toString('utf8')) as Record<string, unknown>;
 }
 
+function record(value: unknown): Record<string, unknown> {
+  assert.ok(value && typeof value === 'object' && !Array.isArray(value));
+  return value as Record<string, unknown>;
+}
+
 const BASE64URL_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
 
 function changeOnlyBase64urlPaddingBits(value: string): string {
@@ -280,14 +285,32 @@ test('handoff locks quote and wallet in one transaction, recommends exact shortf
   const result = await createMcpTopupHandoff({ quoteId: QUOTE_ID }, principal, deps);
   assert.deepEqual(events, ['transaction', 'lock_quote', 'wallet', 'invalidate_quote']);
   assert.deepEqual(Object.keys(result), [
-    'url', 'amountCents', 'currency', 'quoteIntentId', 'expiresAt', 'freshQuoteRequired',
+    'topupRequired', 'amountCents', 'currency', 'quoteIntentId', 'expiresAt',
+    'destination', 'freshQuoteRequired', 'nextActionAfterFunding',
   ]);
+  assert.equal(result.topupRequired, true);
   assert.equal(result.amountCents, 1500);
   assert.equal(result.currency, 'USD');
   assert.equal(result.quoteIntentId, INTENT_ID);
   assert.equal(result.expiresAt, Math.floor(NOW.getTime() / 1000) + 600);
   assert.equal(result.freshQuoteRequired, true);
-  const url = new URL(result.url);
+  assert.deepEqual(result.nextActionAfterFunding, {
+    tool: 'get_account_status',
+    then: 'prepare_generation',
+  });
+  assert.deepEqual(
+    {
+      type: result.destination.type,
+      purpose: result.destination.purpose,
+      label: result.destination.label,
+    },
+    {
+      type: 'open_url',
+      purpose: 'billing',
+      label: 'Add credits securely on MaxVideoAI',
+    },
+  );
+  const url = new URL(result.destination.url);
   assert.equal(url.origin, 'https://maxvideoai.com');
   assert.equal(url.pathname, '/billing');
   assert.deepEqual(Array.from(url.searchParams.keys()), ['mcp_topup']);
@@ -300,7 +323,7 @@ test('handoff locks quote and wallet in one transaction, recommends exact shortf
       expiresAt: Math.floor(NOW.getTime() / 1000) + 600,
     },
   );
-  assert.doesNotMatch(result.url, /owner-user|codex-client|private|seedance|stripe/i);
+  assert.doesNotMatch(result.destination.url, /owner-user|codex-client|private|seedance|stripe/i);
 });
 
 test('top-up recommendation applies the existing ten-dollar minimum', async () => {
@@ -445,12 +468,22 @@ test('create_topup_link has exact UUID input, annotations, and explicit non-paym
     async createTopupLink(input) {
       captured = input;
       return {
-        url: 'https://maxvideoai.com/billing?mcp_topup=opaque',
+        topupRequired: true,
         amountCents: 1500,
         currency: 'USD',
         quoteIntentId: INTENT_ID,
         expiresAt: Math.floor(NOW.getTime() / 1000) + 600,
+        destination: {
+          type: 'open_url',
+          purpose: 'billing',
+          label: 'Add credits securely on MaxVideoAI',
+          url: 'https://maxvideoai.com/billing?mcp_topup=opaque',
+        },
         freshQuoteRequired: true,
+        nextActionAfterFunding: {
+          tool: 'get_account_status',
+          then: 'prepare_generation',
+        },
       };
     },
   }), { paidGeneration: true });
@@ -478,8 +511,17 @@ test('create_topup_link has exact UUID input, annotations, and explicit non-paym
   assert.match(tool.description ?? '', /invalidates the old short-lived quote/i);
   assert.match(tool.description ?? '', /fresh prepare_generation/i);
 
-  await client.callTool({ name: 'create_topup_link', arguments: { quoteId: QUOTE_ID } });
+  const response = await client.callTool({
+    name: 'create_topup_link',
+    arguments: { quoteId: QUOTE_ID },
+  });
   assert.deepEqual(captured, { quoteId: QUOTE_ID });
+  assert.deepEqual(record(response.structuredContent).nextActionAfterFunding, {
+    tool: 'get_account_status',
+    then: 'prepare_generation',
+  });
+  assert.equal(record(record(response.structuredContent).destination).purpose, 'billing');
+  assert.equal('url' in record(response.structuredContent), false);
 });
 
 test('billing page resolves MCP intent on the server and preserves the exact signed login target', () => {
