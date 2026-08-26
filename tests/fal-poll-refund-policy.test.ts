@@ -32,3 +32,26 @@ test('Fal poll timeout failures remain wallet-refund eligible', () => {
     'missing-result timeout failures should use the timeout refund helper'
   );
 });
+
+test('Fal poll repairs recent completed jobs that still point at Fal media', () => {
+  assert.match(
+    falPollSource,
+    /import \{ linkFalJob \} from '@\/server\/admin-job-tools';/,
+    'the cron should reuse the normal Fal resync path'
+  );
+  assert.match(
+    falPollSource,
+    /status = 'completed'[\s\S]*video_url ILIKE '%\.fal\.media\/%'[\s\S]*updated_at > NOW\(\) - INTERVAL '7 days'[\s\S]*LIMIT 5/,
+    'the repair scan must stay limited to recent completed provider-hosted outputs'
+  );
+  assert.match(
+    falPollSource,
+    /await linkFalJob\(\{ jobId: recoverable\.job_id \}\)/,
+    'each recoverable job should enter the idempotent durable-copy and persistence path'
+  );
+  assert.match(
+    falPollSource,
+    /durableRecoveries/,
+    'the cron response should report durable recovery activity'
+  );
+});

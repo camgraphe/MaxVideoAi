@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { resolveFalModelId } from '@/lib/fal-catalog';
 import { getFalClient } from '@/lib/fal-client';
+import { linkFalJob } from '@/server/admin-job-tools';
 import { updateJobFromFalWebhook } from '@/server/fal-webhook-handler';
 import { toUserFacingFailureMessage } from '@/server/user-facing-failure-messages';
 
@@ -20,7 +21,7 @@ const POLL_INITIAL_DELAY_MS = 5_000;
 const POLL_MAX_DURATION_MS = 35 * 60_000;
 const POLL_TIMEOUT_GRACE_MS = 20 * 60_000;
 const FAILURE_STATES = new Set(['FAILED', 'FAIL', 'ERROR', 'ERRORED', 'CANCELLED', 'CANCELED', 'NOT_FOUND', 'MISSING', 'UNKNOWN']);
-const COMPLETED_STATES = new Set(['COMPLETED', 'FINISHED', 'SUCCESS', 'SUCCEEDED']);
+const COMPLETED_STATES = new Set(['COMPLETED', 'FINISHED', 'SUCCESS', 'SUCCEEDED', 'OK']);
 
 export async function runFalPoll() {
   const rows = await query<FalPendingJob>(
@@ -32,10 +33,6 @@ export async function runFalPoll() {
      ORDER BY updated_at ASC
      LIMIT 10`
   );
-
-  if (!rows.length) {
-    return NextResponse.json({ ok: true, checked: 0, updates: 0 });
-  }
 
   const falClient = getFalClient();
   let updates = 0;
@@ -327,6 +324,36 @@ export async function runFalPoll() {
     }
   }
 
+  let durableRecoveries = 0;
+  let durableRecoveryFailures = 0;
+  const recoverableCompletedJobs = await query<{ job_id: string }>(
+    `SELECT job_id
+       FROM app_jobs
+      WHERE provider_job_id IS NOT NULL
+        AND COALESCE(provider, 'fal') = 'fal'
+        AND status = 'completed'
+        AND video_url ILIKE '%.fal.media/%'
+        AND updated_at > NOW() - INTERVAL '7 days'
+      ORDER BY updated_at ASC
+      LIMIT 5`
+  );
+
+  for (const recoverable of recoverableCompletedJobs) {
+    try {
+      await linkFalJob({ jobId: recoverable.job_id });
+      durableRecoveries += 1;
+      console.info('[fal-poll] recovered durable media for completed job', {
+        jobId: recoverable.job_id,
+      });
+    } catch (error) {
+      durableRecoveryFailures += 1;
+      console.warn('[fal-poll] durable media recovery deferred', {
+        jobId: recoverable.job_id,
+        error,
+      });
+    }
+  }
+
   let provisionalFailures = 0;
   const staleProvisionals = await query<{ job_id: string; created_at: string }>(
     `SELECT job_id, created_at
@@ -375,5 +402,12 @@ export async function runFalPoll() {
     }
   }
 
-  return NextResponse.json({ ok: true, checked: rows.length, updates, provisionalFailures });
+  return NextResponse.json({
+    ok: true,
+    checked: rows.length,
+    updates,
+    durableRecoveries,
+    durableRecoveryFailures,
+    provisionalFailures,
+  });
 }
