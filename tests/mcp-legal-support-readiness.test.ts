@@ -202,7 +202,7 @@ test('support runbook covers every requested current and gated decision tree', (
   ]) {
     assert.match(support, new RegExp('`' + code + '`'));
   }
-  assert.match(support, /reserved contract code; not observable from the default five-tool\s+discovery registry/i);
+  assert.match(support, /contract code that is not\s+observable from the default five-tool discovery registry/i);
 });
 
 test('runbook protocol envelopes are produced by the real handler and stay separate from tool failures', async () => {
@@ -326,13 +326,13 @@ test('legal changes remain an explicit three-locale owner-review patch plan', ()
   assert.match(support, /approved sufficiency rationale/i);
 });
 
-test('status and changelog stay unchanged without MCP operational evidence', () => {
+test('status and changelog stay unchanged without a public MCP release or health feed', () => {
   assert.doesNotMatch(statusPage, /\bMCP\b/);
   assert.doesNotMatch(changelogPage, /\bMCP\b/);
   assert.match(support, /No MCP status component was added/);
   assert.match(support, /No MCP changelog entry was added/);
   assert.match(support, /migration files 30–37 are present locally/i);
-  assert.match(support, /staging application remains unverified[^\n]*Task 10/i);
+  assert.match(support, /hosted application used quote,[\s\S]{0,120}media,[\s\S]{0,120}recovery,[\s\S]{0,120}handoff paths/i);
   assert.match(support, /That live MCP-specific\s+health source is currently absent/i);
 });
 
@@ -382,7 +382,7 @@ test('OpenAI and Anthropic directory blockers are explicit while direct MCP rema
 
 test('each distribution evidence record is sourced, dated, qualified, and owner-actionable', () => {
   assert.ok((directory.match(/\| Source URL \|/g) ?? []).length >= 5);
-  assert.ok((directory.match(/\| Checked \| 2026-07-14 \|/g) ?? []).length >= 5);
+  assert.ok((directory.match(/\| Checked \| 2026-08-26 \|/g) ?? []).length >= 5);
   assert.ok((directory.match(/\| Evidence state \|/g) ?? []).length >= 5);
   assert.ok((directory.match(/\| Uncertainty \|/g) ?? []).length >= 5);
 
@@ -455,9 +455,7 @@ test('listing payload is exact, localized, read-only, and contains negative case
 
 test('readiness packages follow the live registry and canonical localized route owners', async () => {
   const liveTools = await getLiveToolNames();
-  const supportRegistryBlock = support.match(
-    /The only registered tools are[\s\S]*?Production transport/,
-  )?.[0] ?? '';
+  const supportRegistryBlock = markdownRow(support, 'Default discovery');
   const supportTools = Array.from(
     supportRegistryBlock.matchAll(/`([a-z][a-z0-9_]*)`/g),
     (match) => match[1],
@@ -490,11 +488,11 @@ test('readiness packages follow the live registry and canonical localized route 
     assert.ok(migrations.some((name) => name.startsWith(`${id}_`)), `migration ${id} should exist locally`);
   }
   assert.match(support, /migration files 30–37 are present locally/i);
-  assert.match(support, /staging application remains unverified[^\n]*Task 10/i);
+  assert.match(support, /hosted application used quote,[\s\S]{0,120}media,[\s\S]{0,120}recovery,[\s\S]{0,120}handoff paths/i);
   assert.doesNotMatch(support, /migrations? 30–32 (?:are )?absent|migration 31 (?:is|are) absent/i);
   assert.doesNotMatch(support, /migration[^\n]*\b(?:applied|unapplied)\b/i);
 
-  assert.match(support, /Claude and Codex OAuth, revocation, refresh, rendering, and tool selection remain unverified/i);
+  assert.match(support, /Claude Desktop 1\.37937\.1 and Codex CLI 0\.149\.0-alpha\.4\.3 have controlled\s+staging OAuth and tool-rendering evidence/i);
   assert.doesNotMatch(support, /revocation passed|recorded least-privilege path used|explicit login path[^\n]*passed/i);
   assert.match(support, /public claims matrix owns permissible and prohibited public claims/i);
   assert.match(support, /host compatibility matrix owns local-versus-real-host evidence/i);
@@ -502,12 +500,11 @@ test('readiness packages follow the live registry and canonical localized route 
 
   assert.match(paidRunbook, /registry returns to the five default\s+discovery tools/i);
   assert.doesNotMatch(paidRunbook, /three read-only tools|three-tool/i);
-  assert.match(stagingDeployment, /Claude and Codex OAuth, revocation, refresh, rendering, and tool selection\s+remain unverified/i);
+  assert.match(stagingDeployment, /Claude Desktop 1\.37937\.1 and Codex CLI 0\.149\.0-alpha\.4\.3 completed controlled\s+OAuth-backed staging sessions/i);
   assert.match(stagingDeployment, /migration files 30–37 are present locally/i);
-  assert.match(stagingDeployment, /staging application remains unverified pending Task 10/i);
+  assert.match(stagingDeployment, /hosted checkpoint\s+exercised account, quote, media, recovery, upload-handoff, and top-up-handoff/i);
   assert.doesNotMatch(stagingDeployment, /already applied|remains unapplied|migrations? 30–32 (?:are )?absent/i);
-  assert.doesNotMatch(stagingDeployment, /hosted smoke test passed|controlled-host passed/i);
-  assert.doesNotMatch(stagingDeployment, /Claude Desktop \d|rendered exactly three read-only tools|Revocation \|.*Authentication required|Reconnect \|.*succeeded/i);
+  assert.doesNotMatch(stagingDeployment, /Revocation \|.*Authentication required|Reconnect \|.*succeeded/i);
   assert.match(oauthRunbook, /Codex and Claude OAuth, refresh, revocation, and requested-scope behavior remain unverified/i);
   assert.doesNotMatch(oauthRunbook, /Codex CLI \d|requested all four during local testing/i);
   const smokeInventory = foundationSmoke
@@ -520,21 +517,21 @@ test('readiness packages follow the live registry and canonical localized route 
     .join('\n');
   assert.doesNotMatch(activeRunbooks, /three-tool|three tools|three read-only tools/i);
   assert.match(launchEvidence, /migration files 30–37 are present locally/i);
-  assert.match(launchEvidence, /staging application remains unverified[^\n]*Task 10/i);
+  assert.match(launchEvidence, /staging application exercised quote, media, recovery, and handoff producers/i);
   assert.doesNotMatch(launchEvidence, /migrations? 30–32 (?:are )?absent|migration[^\n]*\b(?:applied|unapplied)\b/i);
 });
 
 test('directory facts do not outrun checked-in claims or host evidence', () => {
-  assert.match(claims, /Codex app compatibility is unverified/);
-  assert.match(compatibility, /Last local checkpoint: 2026-08-24/);
-  assert.match(compatibility, /Hosted OAuth and refresh \| Not run/);
+  assert.match(claims, /graphical Codex\/ChatGPT directory install has not been recorded/i);
+  assert.match(compatibility, /Last hosted checkpoint: 2026-08-26/);
+  assert.match(compatibility, /ChatGPT Apps directory[\s\S]+Not run/i);
   assert.match(
     directory,
-    /No real Codex,[\s\S]{0,120}Claude,[\s\S]{0,120}other-host[\s\S]{0,120}tool-selection bundle is recorded/i,
+    /Controlled staging has a 12-tool profile[\s\S]{0,180}Claude Desktop 1\.37937\.1[\s\S]{0,180}Codex CLI/i,
   );
-  assert.match(support, /Claude and Codex OAuth, revocation, refresh, rendering, and tool selection remain unverified/i);
+  assert.match(support, /graphical\s+ChatGPT\/Codex installation, Claude Code, and other hosts remain unverified/i);
   assert.match(support, /migration files 30–37 are present locally/i);
-  assert.match(support, /staging application remains unverified[^\n]*Task 10/i);
+  assert.match(support, /hosted application used quote,[\s\S]{0,120}media,[\s\S]{0,120}recovery,[\s\S]{0,120}handoff paths/i);
   assert.match(directory, /https:\/\/modelcontextprotocol\.io\/registry\/moderation-policy/);
   assert.match(
     directory,

@@ -1,16 +1,34 @@
 # MaxVideoAI MCP launch evidence
 
-Checked: 2026-07-14
+Checked: 2026-08-26
 
 ## Decision
 
-**Not ready for public promotion, indexation, directory submission, paid generation, or production enablement.** Local
-rendering, fail-closed publication, privacy boundaries, and the read-only protocol foundation are substantially verified,
-but the real-host, migration, funnel, paid/trial/reference, legal, operational, and owned-proof gates below remain
-Blocked or Not run. The checked-in `frontend/config/mcp-publication.json` keeps all eight publication gates false.
+**Not ready for public promotion, indexation, directory submission, paid public
+generation, or production enablement.** The controlled staging endpoint and its
+OAuth, account, catalog, budgeting, quote, media, recovery, upload-handoff, and
+top-up-handoff paths now have real Claude Desktop and Codex CLI evidence. The
+remaining refresh/revocation, fresh private upload, fresh paid render,
+failure/refund, legal, directory, and public-rollout gates still block launch.
+The checked-in `frontend/config/mcp-publication.json` keeps all eight publication gates false.
 
-No production or staging endpoint was probed, no account was authorized, no provider was called, no credit was spent,
-and no user-wide Codex or Claude configuration was changed during Task 11.
+The exact reviewed staging revision is
+`33d9e3a498c1fe8947bbb6a4c957d19ca805be25`, deployed as
+`dpl_45cqkwyW3U3LAL4pF1D6YUJLoVkH` at
+`https://maxvideoai-mcp-staging.vercel.app`. Production was not changed. LAS
+and direct Seedance 2.5 video-to-video remained disabled. No new generation was
+confirmed, no payment was opened, and the staging wallet stayed at $1.05.
+
+## Controlled hosted evidence
+
+| Evidence | State | Result |
+| --- | --- | --- |
+| Claude Desktop 1.37937.1 | Pass | OAuth connection, account status, live catalog/details, 60-second budget comparison, exact Seedance 2.5 quote, private media listing, completed-job recovery, private upload handoff, and signed top-up handoff with ISO expiry all rendered in the host. |
+| Codex CLI 0.149.0-alpha.4.3 | Pass | The installed MaxVideoAI plugin used an ephemeral staging endpoint override and completed account, catalog, model-detail, budget, exact-quote, and top-up-handoff calls. A non-blocking MCP shutdown warning appeared only after completed turns. |
+| Account and library continuity | Pass | The tools returned first-party billing, connections, workspace, library, and support destinations; an existing completed video was recovered from the same MaxVideoAI staging account. |
+| Spend boundary | Pass | Quote preparation and top-up handoffs did not debit the wallet or call a provider. `confirm_generation` was not called. |
+| Reference boundary | Partial | A private temporary upload handoff was created without uploading bytes. A fresh uploaded reference, provider use, and cleanup still need controlled evidence. |
+| ChatGPT app directory / Codex graphical library | Not run | No submission, approval, directory install, or graphical ChatGPT app evidence exists yet. |
 
 ## Local state matrix
 
@@ -22,7 +40,7 @@ and no user-wide Codex or Claude configuration was changed during Task 11.
 | Light/dark desktop/mobile visual review | Pass | Light remains the default MaxVideoAI treatment, dark mode has equivalent hierarchy and contrast, and Claude/Codex use equal 24×24 marks inside equal actions. |
 | Prospect-language review | Pass | The hub leads with prompt, references, model choice, budget, and price-before-generation. A contradictory Claude access sentence found during review was replaced in EN/FR/ES with recorded-host status language. |
 | Real MCP proof media | Blocked | There is no publishable MCP proof or demonstration showing an owned end-to-end connected generation. No synthetic or provider gallery asset was relabelled as MCP evidence. |
-| Real-host purchase/trial/reference funnel | Not run | Safe local QA cannot establish real client selection, quote, confirmation, trial restoration, top-up, paid generation, provider result, or reference transfer. |
+| Real-host purchase/trial/reference funnel | Partial | Real hosts selected models, priced projects, prepared exact quotes, recovered an existing result, and created upload/top-up handoffs. Confirmation, fresh paid generation, trial, uploaded bytes, provider result, and reference cleanup remain unverified. |
 | Production GSC/indexation evidence | Not run | The existing GSC baseline is preserved; post-deployment GSC canonical, query, country, CTR, and cannibalization review is future evidence only. |
 
 ## Browser and visual evidence
@@ -124,16 +142,16 @@ exited successfully.
 
 | Gate | State | Exact blocker or next evidence |
 | --- | --- | --- |
-| Codex host lifecycle | Not run | OAuth, revocation, refresh, rendering, and tool selection remain unverified; Task 10 must capture fresh host evidence. |
-| Claude host lifecycle | Not run | OAuth, revocation, refresh, rendering, and tool selection remain unverified; Task 10 must capture fresh host evidence. |
-| Real-host decision bundle | Not run | No clean-account Codex/Claude quote, confirmation, result, recovery, or host-selection bundle was produced in Task 11. |
-| Paid generation | Blocked | No public mutation tool, current quote/confirmation decision evidence, spending-limit recovery, provider result, or receipt reconciliation. |
+| Codex host lifecycle | Partial pass | Codex CLI 0.149.0-alpha.4.3 completed OAuth-backed discovery, budgeting, quote, and top-up behavior. Refresh, revocation, reconnect, and a graphical ChatGPT/Codex install remain unverified. |
+| Claude host lifecycle | Partial pass | Claude Desktop 1.37937.1 completed OAuth-backed discovery, budgeting, quote, media, recovery, upload-handoff, and top-up behavior. Refresh, revocation, reconnect, and fresh provider use remain unverified. |
+| Real-host decision bundle | Pass without spend | Both hosts produced current model advice, a named project budget, and a fresh exact quote. Claude also recovered an existing completed result. Neither host confirmed a new generation. |
+| Paid generation | Blocked | Exact quote and insufficient-balance/top-up recovery are proven in staging, but no newly confirmed provider result or receipt reconciliation was recorded. |
 | Trial | Blocked | No live allocation, abuse control, failed-job restoration, or deterministic end-to-end host evidence. |
-| Reference workflow | Blocked | No live upload handoff, model compatibility, retention/deletion, or client transfer evidence. |
-| Funnel/admin reconciliation | Blocked | Migration files 30–37 are present locally; staging application remains unverified pending Task 10. Task 11 did not query or mutate any database. |
+| Reference workflow | Blocked | Live private media listing and upload handoff are proven; uploaded bytes, reference use, retention/deletion, and cleanup evidence remain missing. |
+| Funnel/admin reconciliation | Blocked | Migration files 30–37 are present locally. The staging application exercised quote, media, recovery, and handoff producers, but the full migration inventory and admin/ledger reconciliation still require a sanitized operator review. |
 | Owned proof | Blocked | No publishable MCP generation proof with model, settings, price, date, consent, and provenance. |
 | Legal/support approval | Blocked | Owner approval for any MCP-specific legal wording and directory terms is still required. |
-| Hosted performance and SEO | Not run | Run the same audits on a controlled preview, then verify post-deployment GSC indexation and canonical selection. |
+| Hosted performance and SEO | Not run | Run the public marketing audits only after an explicit enablement decision, then verify GSC indexation and canonical selection after production publication. |
 
 No publication flag should change until a separate reviewed enablement decision closes every claim, host, safety,
 support, legal, cost, funnel, and proof gate and the user explicitly approves the change.

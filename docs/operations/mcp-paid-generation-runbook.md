@@ -1,8 +1,10 @@
 # MCP paid generation controlled-test runbook
 
-This runbook is for a future controlled staging or production validation of the
-MaxVideoAI paid generation facade. It is not authorization to enable a public
-flag, publish a directory listing, spend a customer wallet, or call a provider.
+This runbook owns controlled staging or production validation of the MaxVideoAI
+paid generation facade. The 2026-08-26 hosted checkpoint completed the no-spend
+planning, quote, recovery, private-media listing, upload-handoff, and top-up
+portions. It is not authorization to enable a public flag, publish a directory
+listing, spend a customer wallet, or call a provider.
 
 ## Release boundary
 
@@ -67,6 +69,8 @@ hosted Codex or Claude evidence.
 2. Open only the signed MaxVideoAI web handoff. Payment happens on MaxVideoAI;
    MCP never accepts card data, creates a Stripe session, or receives a client
    secret.
+   Display `expiresAtIso` as the authoritative human-readable expiry; do not
+   reinterpret the raw Unix `expiresAt` value in a different unit or timezone.
 3. The handoff invalidates the old quote. After the authorized top-up completes,
    verify the ledger and call `prepare_generation` again.
 4. Confirm only the fresh quote. An old quote succeeding after top-up is a
@@ -84,10 +88,12 @@ hosted Codex or Claude evidence.
   charge, polling, and output remain equivalent to the web path.
 - Repeat the known-rejection/refund and ambiguous-timeout checks for one image
   and one video adapter where the provider contract differs.
-- Private `kind: 'asset'` transfer is not releasable yet. Do not convert an asset
-  ID into a provider URL, claim private-reference support, or enable reference
-  publication until the Reference Media plan verifies authorization, retention,
-  transfer, deletion, and host behavior.
+- Controlled staging now supports private `list_media` results and a short-lived,
+  user-scoped `create_reference_upload_link` handoff for image, video, or audio.
+  The 2026-08-26 host checkpoint created a handoff but uploaded no bytes. Do not
+  claim complete private-reference support or enable public reference
+  publication until one disposable upload proves ownership, model-compatible
+  transfer, provider use, retention, deletion, cleanup, and host behavior.
 
 ## Failure matrix
 
@@ -178,7 +184,7 @@ missing value, count drift, or cent mismatch blocks release.
 1. Turn off the server-side paid kill switch first.
 2. Keep the checked-in/public paid flag off; if a controlled deployment flag was
    enabled, disable it and verify the registry returns to the five default
-   discovery tools.
+   discovery tools instead of the 12-tool controlled operational profile.
 3. Stop new provider submissions without deleting jobs, receipts, quotes, logs,
    or idempotency records.
 4. Reconcile all `claimed` and `accepted` quotes, provider outcomes, charges, and
@@ -196,7 +202,7 @@ For Codex and separately for one Claude-compatible exact version, record:
 - host name, exact version, OS, controlled environment, and test account label;
 - OAuth discovery, exact scopes, consent denial/approval, refresh, revocation,
   authentication loss, reconnect, and fresh approval;
-- exact eight-tool list and annotations behind the controlled paid gate;
+- exact 12-tool list and annotations behind the controlled operational gate;
 - canonical quote rendering and a separate explicit confirmation interaction;
 - image and video accepted/running/completed rendering and bounded public links;
 - insufficient-funds/top-up/fresh-quote behavior;
@@ -205,6 +211,9 @@ For Codex and separately for one Claude-compatible exact version, record:
 - reconciliation counts/cents and redaction review;
 - sanitized screenshot/log references stored in the approved evidence location.
 
-Do not mark a host compatible from a local SDK run, and do not promote public or
-SEO/GEO claims until paid, trial, private references, hosted OAuth refresh, real
-provider/refund, and exact-host rendering are all verified and approved.
+The 2026-08-26 checkpoint records a controlled staging pass for Claude Desktop
+1.37937.1 and Codex CLI 0.149.0-alpha.4.3 through exact quote and top-up
+handoff, with no new spend. Do not promote public or SEO/GEO availability claims
+until the remaining paid confirmation, trial, private-reference transfer,
+hosted OAuth refresh/revocation, provider/refund, and final install evidence are
+verified and approved.

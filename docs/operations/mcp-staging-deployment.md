@@ -176,12 +176,13 @@ database URL to this project.
 
 ### Schema and cleanup prerequisite
 
-Migration files 30–37 are present locally. The staging application remains unverified pending Task 10.
-This includes its database state. Migration 37 remains a
-deployment prerequisite, but the deployment wrapper does not run migrations or
-mutate the live database. If the required schema state cannot be established
-without revealing credentials, stop with `SCHEMA_BLOCKED`; do not deploy and do
-not attempt an in-band repair.
+Migration files 30–37 are present locally. The 2026-08-26 hosted checkpoint
+exercised account, quote, media, recovery, upload-handoff, and top-up-handoff
+database paths, but did not perform a sanitized migration-inventory or admin
+ledger reconciliation. Migration 37 remains a deployment prerequisite, and the
+deployment wrapper does not run migrations or mutate the live database. If the
+required schema state cannot be established without revealing credentials, stop
+with `SCHEMA_BLOCKED`; do not deploy and do not attempt an in-band repair.
 
 The operational MCP staging package registers exactly one schedule:
 `/api/cron/byteplus-poll` every five minutes. It is required to advance accepted
@@ -371,8 +372,8 @@ Expected results:
 ### Historical protocol capture
 
 A credential-free protocol capture was recorded on 2026-07-12. It predates the
-current operational inventory and is not current staging or host-validation
-evidence. Staging application behavior remains unverified pending Task 10.
+current operational inventory and is retained only as historical transport
+evidence. Current hosted behavior is recorded in the host compatibility matrix.
 
 | Check | Sanitized result |
 | --- | --- |
@@ -393,17 +394,17 @@ hostname or enable production MCP flags as part of staging validation.
 
 ### Host validation status
 
-The current evidence checkpoint is local and dated 2026-08-24. It verifies the
-package structure, protocol contracts, the five default discovery tools, and
-the twelve-tool operational profile. It does not verify any real hosted client,
-staging deployment, staging database state, provider call, or spend.
+The current checkpoint is hosted and dated 2026-08-26. The exact reviewed
+revision, deployment, host versions, tested calls, spend boundary, and remaining
+gaps are recorded in `docs/operations/mcp-host-compatibility-matrix.md`.
 
-Claude and Codex OAuth, revocation, refresh, rendering, and tool selection
-remain unverified. Historical exact-version captures predate the current tool
-inventory and evidence policy and must not be presented as current compatibility
-proof. Task 10 must record fresh, sanitized evidence for each host lifecycle and
-must independently verify the authorized staging database state for migration
-files 30–37, which are present locally.
+Claude Desktop 1.37937.1 and Codex CLI 0.149.0-alpha.4.3 completed controlled
+OAuth-backed staging sessions through live model planning, exact quote, and
+top-up handoff. Claude also exercised private media listing, completed-job
+recovery, and upload-handoff creation. No new generation was confirmed and no
+wallet cents changed. OAuth denial, refresh, revocation, reconnect, a fresh
+private upload, a fresh paid provider result, failure/refund reconciliation,
+and public ChatGPT/Codex/Claude installation still require sanitized evidence.
 
 ## Cleanup
 

@@ -1,6 +1,6 @@
 # MaxVideoAI MCP distribution packages
 
-Checked: 2026-07-14
+Checked: 2026-08-26
 Overall state: **NOT SUBMITTED — NOT READY FOR EXTERNAL DISTRIBUTION**
 
 This file prepares evidence and owner decisions only. It does not authorize a submission, account creation, listing,
@@ -10,9 +10,12 @@ linked primary sources on the day an owner authorizes a submission.
 Current repository truth: `publicMarketing=false`, `publicIndexing=false`, `transport=false`, `oauth=false`,
 `discovery=false`, `paidGeneration=false`, `trial=false`, and `referenceUploads=false`.
 
-The local, unpublished package has five read-only discovery tools and no public generation workflow. No real Codex,
-Claude, or other-host installation, OAuth, rendering, or tool-selection bundle is recorded. Hosted OAuth refresh and
-the production endpoint remain unverified.
+The unpublished production package defaults to five read-only discovery tools
+and has no public generation workflow. Controlled staging has a 12-tool profile
+and real OAuth/tool evidence for Claude Desktop 1.37937.1 and Codex CLI
+0.149.0-alpha.4.3. Hosted refresh, revocation, reconnect, graphical
+ChatGPT/Codex installation, public directory installation, and the production
+endpoint remain unverified.
 
 ## Canonical listing payload
 
@@ -31,7 +34,7 @@ legal document, URL, or publication flag changes.
 | Terms URLs | EN `https://maxvideoai.com/legal/terms`; FR `https://maxvideoai.com/fr/legal/terms`; ES `https://maxvideoai.com/es/legal/terms`. Directory-specific acceptance remains an authorized-owner action. |
 | Acceptable use URLs | EN `https://maxvideoai.com/legal/acceptable-use`; FR `https://maxvideoai.com/fr/legal/acceptable-use`; ES `https://maxvideoai.com/es/legal/acceptable-use`. The MCP-specific candidate patch remains Legal-owner pending. |
 | Support URLs | EN `https://maxvideoai.com/contact`; FR `https://maxvideoai.com/fr/contact`; ES `https://maxvideoai.com/es/contact`; operational email `support@maxvideoai.com`. Do not add a response-time guarantee. |
-| Current tools | `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`. All are local-only, read-only, non-destructive, closed-world, authenticated, and idempotent with respect to account state. |
+| Current tools | `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`. These are the default/publicly proposed discovery tools: read-only, non-destructive, authenticated, and idempotent with respect to account state. Controlled staging has seven additional gated operational tools; they are not part of this submission payload. |
 | Negative cases | No generation, exact quote, upload, trial, payment, or polling tool is currently public. `calculate_project_budget` is an estimate, not a quote, reservation, debit, or provider submission; a real generation still needs `prepare_generation` and explicit `confirm_generation` when those gated tools are released. The account email and payment details are not returned. Do not use MaxVideoAI for coding, research, local file editing, or unsupported source-video/audio/document work. |
 | Screenshots and demo | **real screenshots and end-to-end demo: NOT AVAILABLE**. `getMcpProof()` is null and no current proof asset may be substituted with provider marketing media or a synthetic testimonial. |
 | Changelog and status | EN `/changelog` and `/status`; FR `/fr/changelog` and `/fr/statut`; ES `/es/changelog` and `/es/estado`. Neither has an MCP-specific entry/component because no live release or monitored MCP health feed exists. |
@@ -60,9 +63,9 @@ Package state: **NOT SUBMITTED**. Direct MCP configuration is a user setup path,
 | Evidence field | Value |
 | --- | --- |
 | Source URL | [OpenAI MCP documentation for ChatGPT desktop and Codex clients](https://learn.chatgpt.com/docs/extend/mcp) |
-| Checked | 2026-07-14 |
-| Evidence state | Official documentation is a packaging reference only. The local MaxVideoAI package has not been loaded by Codex, and no production publication occurred. |
-| Uncertainty | Codex installation, OAuth, refresh, rendering, and real host tool-selection decisions are unverified for this branch. Client behavior and commands may change. |
+| Checked | 2026-08-26 |
+| Evidence state | The MaxVideoAI plugin loaded in Codex CLI 0.149.0-alpha.4.3 with an ephemeral staging endpoint override and completed OAuth-backed account, catalog, budget, exact-quote, and top-up-handoff calls. No production publication occurred. |
+| Uncertainty | Refresh, revocation, reconnect, the default production endpoint, graphical ChatGPT/Codex installation, and future client behavior remain unverified. |
 
 OpenAI documents direct host configuration independently from plugin publication. Codex MCP compatibility does not
 establish plugin eligibility. It also does not prove that Codex will choose the right tool for real prompts. Publish
@@ -83,7 +86,7 @@ Package state: **DO NOT SUBMIT — CURRENT COMMERCE ELIGIBILITY BLOCKER**.
 | Evidence field | Value |
 | --- | --- |
 | Source URL | [OpenAI app preparation](https://developers.openai.com/apps-sdk/deploy/submission), [OpenAI plugin submission](https://learn.chatgpt.com/docs/submit-plugins), and [OpenAI app guidelines](https://developers.openai.com/apps-sdk/app-guidelines) |
-| Checked | 2026-07-14 |
+| Checked | 2026-08-26 |
 | Evidence state | Verified official documentation says MCP-backed apps are submitted as plugins. The current App Guidelines allow app commerce only for physical goods and disallow selling digital products or services, including digital content, tokens, or credits, directly or indirectly. No MaxVideoAI draft or submission was created. |
 | Uncertainty | **This is a MaxVideoAI eligibility inference, not an OpenAI eligibility decision:** wallet-funded media generation produces digital content/services, and web top-ups fund credits that would indirectly enable that workflow. Whether a permanently read-only comparison connector could qualify is not established. Portal fields, review policy, packaging, and distribution surfaces can change. |
 
@@ -103,8 +106,11 @@ The current blockers are all release-critical:
 - every publication flag is false and the public landing/docs/endpoint are fail-closed;
 - Legal has not approved the MCP-specific disclosure patch;
 - there is no real proof media, complete public demo, or review-ready test account procedure;
-- the five local read-only tools have no hosted rendering or real-host decision evidence, while the intended generation/trial/reference product is unimplemented;
-- Codex/Claude/other host-selection scorecards have no real decision evidence;
+- controlled Claude Desktop and Codex CLI decisions exist, but no public
+  ChatGPT/Codex plugin install, fresh paid generation, trial, or completed
+  private-reference transfer has been recorded;
+- Claude Code, graphical ChatGPT/Codex, and other host-selection scorecards have
+  no real decision evidence;
 - production monitoring, status ownership, refresh evidence, and migration prerequisites are incomplete.
 - written OpenAI clarification or a policy change has not resolved the commerce eligibility inference.
 
@@ -124,9 +130,9 @@ Connectors Directory listing.
 | Evidence field | Value |
 | --- | --- |
 | Source URL | [Claude custom remote connectors](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp) |
-| Checked | 2026-07-14 |
-| Evidence state | Official documentation is a packaging reference only. The local MaxVideoAI package has not been loaded by Claude, and no production publication occurred. |
-| Uncertainty | Claude custom connectors remain a distinct beta/client capability. Claude OAuth, tool rendering, refresh, revocation, and tool-selection evidence are unverified for this branch. Plan/admin availability and UI steps may change. |
+| Checked | 2026-08-26 |
+| Evidence state | Claude Desktop 1.37937.1 loaded the custom staging connector and completed OAuth-backed account, catalog, budget, exact-quote, media, recovery, upload-handoff, and top-up-handoff calls. No production publication occurred. |
+| Uncertainty | Refresh, revocation, reconnect, Claude Code, plan/admin availability, production setup, and future UI steps remain unverified. |
 
 Claude custom-connector compatibility does not establish directory eligibility. The direct setup package may be
 published on MaxVideoAI's own site after gates pass even if no directory accepts MaxVideoAI. It must state the exact
@@ -143,7 +149,7 @@ Package state: **DO NOT SUBMIT — CURRENT POLICY BLOCKER**.
 | Evidence field | Value |
 | --- | --- |
 | Source URL | [Anthropic Software Directory Policy](https://support.claude.com/en/articles/13145358-anthropic-software-directory-policy), [Anthropic directory submission guide](https://claude.com/docs/connectors/building/submission), [Anthropic pre-submission checklist](https://claude.com/docs/connectors/building/review-criteria), and [Anthropic Software Directory Terms](https://support.claude.com/en/articles/13145338-anthropic-software-directory-terms) |
-| Checked | 2026-07-14 |
+| Checked | 2026-08-26 |
 | Evidence state | Verified official policy says software that uses AI models to generate images, video, or audio is not accepted, except limited design-focused visual aids. MaxVideoAI's intended core workflow generates AI image/video media. No submission was attempted. |
 | Uncertainty | The current MCP exposes only read-only discovery, but submitting that narrow facade for a product whose intended connector workflow is AI media generation risks evading the stated policy. Only a future published policy change or written Anthropic determination can remove this blocker. |
 
@@ -168,7 +174,7 @@ Package state: **NOT SUBMITTED — BLOCKED**.
 | Evidence field | Value |
 | --- | --- |
 | Source URL | [Official registry overview](https://modelcontextprotocol.io/registry/about), [remote-server metadata](https://modelcontextprotocol.io/registry/remote-servers), [namespace authentication](https://modelcontextprotocol.io/registry/authentication), [registry terms](https://modelcontextprotocol.io/registry/terms-of-service), [registry FAQ](https://modelcontextprotocol.io/registry/faq), and [registry moderation policy](https://modelcontextprotocol.io/registry/moderation-policy) |
-| Checked | 2026-07-14 |
+| Checked | 2026-08-26 |
 | Evidence state | Verified owner documentation describes a preview centralized metadata registry for publicly accessible MCP servers. It supports Streamable HTTP remote URLs and reverse-DNS/domain ownership. No `server.json`, registry login, DNS/HTTP challenge, publication, or API lookup was performed for MaxVideoAI. |
 | Uncertainty | The registry is in preview, is primarily a source for downstream aggregators, and does not guarantee discovery in Codex, Claude, ChatGPT, or another host. Metadata versions are immutable; the FAQ says publisher unpublish/delete is not currently available. Separately, the moderation policy says a registry removal normally sets status to `"deleted"` while the metadata remains accessible through the API, except that metadata may be overwritten or erased in extreme cases. |
 

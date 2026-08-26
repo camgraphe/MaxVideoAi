@@ -131,11 +131,11 @@ test('tracked fixture config and runner reproduce all launch modes without mutat
   assert.match(packageJson, /"qa:mcp-launch:lighthouse":\s*"node scripts\/run-mcp-launch-fixture\.mjs --mode enabled --lighthouse"/);
 });
 
-test('launch evidence records local states, artifacts, exact limitations, and future evidence', () => {
+test('launch evidence records local and hosted states, exact limitations, and future evidence', () => {
   assert.equal(existsSync(launchEvidencePath), true, `${launchEvidencePath} should exist`);
   const evidence = readFileSync(launchEvidencePath, 'utf8');
 
-  assert.match(evidence, /Checked:\s*2026-07-14/);
+  assert.match(evidence, /Checked:\s*2026-08-26/);
   for (const state of ['Pass', 'Blocked', 'Not run']) assert.match(evidence, new RegExp(`\\b${state}\\b`));
   assert.match(evidence, /all eight[^\n]+false/i);
   assert.match(evidence, /isolated[^\n]+all-gates-green/i);
@@ -143,15 +143,15 @@ test('launch evidence records local states, artifacts, exact limitations, and fu
   assert.match(evidence, /JavaScript disabled/i);
   assert.match(evidence, /Lighthouse/i);
   assert.match(evidence, /Core Web Vitals|lab metrics/i);
-  assert.match(evidence, /Codex host lifecycle[^\n]+unverified[^\n]+Task 10/i);
-  assert.match(evidence, /Claude host lifecycle[^\n]+unverified[^\n]+Task 10/i);
+  assert.match(evidence, /Codex host lifecycle[^\n]+Partial pass[^\n]+0\.149\.0-alpha\.4\.3/i);
+  assert.match(evidence, /Claude host lifecycle[^\n]+Partial pass[^\n]+1\.37937\.1/i);
   assert.doesNotMatch(evidence, /Revocation\/reconnect passes|explicit[^\n]+login path has safe evidence/i);
   assert.match(evidence, /migration files 30–37 are present locally/i);
-  assert.match(evidence, /staging application remains unverified[^\n]*Task 10/i);
+  assert.match(evidence, /staging application exercised quote, media, recovery, and handoff producers/i);
   assert.doesNotMatch(evidence, /migrations? 30–32 (?:are )?absent|migration[^\n]*\b(?:applied|unapplied)\b/i);
   assert.match(evidence, /no publishable MCP (?:proof|demonstration)/i);
   assert.match(evidence, /GSC[^\n]+post-deployment/i);
-  assert.match(evidence, /no production|production[^\n]+not probed/i);
+  assert.match(evidence, /no production|production was not changed|production[^\n]+not probed/i);
   assert.match(evidence, /not ready for public promotion/i);
   assert.match(evidence, /qa:mcp-launch:gated/);
   assert.match(evidence, /qa:mcp-launch:preview/);
@@ -159,7 +159,7 @@ test('launch evidence records local states, artifacts, exact limitations, and fu
   assert.doesNotMatch(evidence, /frontend\/\.tmp\/mcp-launch/);
 });
 
-test('the compatibility matrix keeps the local five-tool profile distinct from unverified host evidence', () => {
+test('the compatibility matrix records exact controlled hosts without overstating public evidence', () => {
   const compatibility = readFileSync(compatibilityPath, 'utf8');
   for (const tool of [
     'get_account_status',
@@ -168,9 +168,10 @@ test('the compatibility matrix keeps the local five-tool profile distinct from u
     'recommend_models',
     'calculate_project_budget',
   ]) assert.match(compatibility, new RegExp(`\\\`${tool}\\\``));
-  assert.match(compatibility, /OAuth.*unverified/i);
-  assert.match(compatibility, /Codex.*unverified/i);
-  assert.match(compatibility, /Claude.*unverified/i);
+  assert.match(compatibility, /Claude Desktop 1\.37937\.1[\s\S]+Controlled staging pass/i);
+  assert.match(compatibility, /Codex CLI 0\.149\.0-alpha\.4\.3[\s\S]+Controlled staging pass/i);
+  assert.match(compatibility, /OAuth refresh\/revocation is proven|OAuth denial, refresh, revocation/i);
+  assert.match(compatibility, /ChatGPT Apps directory[\s\S]+Not run/i);
   assert.match(compatibility, /project estimate/i);
   assert.match(compatibility, /prepare_generation.*confirm_generation/is);
   assert.match(compatibility, /all eight[^\n]+false/i);

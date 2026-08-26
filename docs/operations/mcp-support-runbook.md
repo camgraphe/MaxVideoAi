@@ -1,21 +1,23 @@
 # MaxVideoAI MCP support and disclosure readiness
 
-Checked: 2026-07-14
+Checked: 2026-08-26
 Readiness: **NOT READY FOR PUBLIC PROMOTION**
 
 This runbook is the support and disclosure boundary for the controlled MaxVideoAI MCP foundation. It is not a public
-availability announcement or a legal policy. The only registered tools are the read-only `get_account_status`,
-`list_models`, `get_model_details`, `recommend_models`, and `calculate_project_budget`. Production transport, OAuth,
-discovery, generation, trial, and reference upload publication remain disabled.
+availability announcement or a legal policy. Production defaults to the five
+read-only discovery tools; the isolated staging profile registers the 12 tools
+listed below. Production transport, OAuth, discovery, generation, trial, and
+reference-upload publication remain disabled.
 
 | Tool profile | Exact tool inventory |
 | --- | --- |
 | Default discovery | `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget` |
 | Operational staging | `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`, `list_media`, `create_reference_upload_link`, `prepare_generation`, `confirm_generation`, `get_generation_status`, `list_recent_generations`, `create_topup_link` |
 
-The operational inventory is checked-in and locally tested; it is not public or
-proof that any staging deployment, database schema, host connection, provider
-submission, or spend path is operational.
+The operational inventory is checked-in and tested on the hosted staging
+revision recorded in the host compatibility matrix. This is evidence for the
+tested Claude Desktop and Codex CLI versions only; it is not public-production,
+directory, provider-submission, or fresh-spend evidence.
 
 ## Authoritative checked-in state
 
@@ -32,10 +34,16 @@ submission, or spend path is operational.
 
 Additional deployment blockers:
 
-- migration files 30–37 are present locally; staging application remains unverified and is pending Task 10;
-- the funnel, receipts, provider costs, polling, upload, and restoration producers are locally tested but not verified in staging;
-- Claude and Codex OAuth, revocation, refresh, rendering, and tool selection remain unverified;
-- no real Codex, Claude, or other-host installation or tool-selection evidence is recorded.
+- migration files 30–37 are present locally; the hosted application used quote,
+  media, recovery, and handoff paths, but a sanitized schema/admin reconciliation
+  is still required;
+- a prior completed provider result and library recovery were observed, but no
+  fresh provider submission, charge/refund reconciliation, or uploaded file was
+  performed in the 2026-08-26 checkpoint;
+- Claude Desktop 1.37937.1 and Codex CLI 0.149.0-alpha.4.3 have controlled
+  staging OAuth and tool-rendering evidence;
+- OAuth denial, refresh, revocation, authentication loss, reconnect, graphical
+  ChatGPT/Codex installation, Claude Code, and other hosts remain unverified.
 
 Checked-in authorities remain separate: the public claims matrix owns permissible and prohibited public claims; the
 host compatibility matrix owns local-versus-real-host evidence; this support runbook owns support procedures and
@@ -90,24 +98,29 @@ future application code `PARAMETER_INVALID`. Ask the user to correct only the do
 An unexpected operation inside a registered tool returns **`INTERNAL_ERROR`** with a redacted message and a generated
 `correlationId`. Retain that identifier, stop repeated calls, and escalate if the failure persists.
 
-Every uppercase application code used below is a **reserved contract code; not observable from the default five-tool
-discovery registry**. It exists in the checked-in agent error type for future generation work. Do not tell a user that the current
-MCP emitted one of these codes unless a later live tool and test prove it.
+Every uppercase application code used below is a **contract code that is not
+observable from the default five-tool discovery registry**. Some are reachable
+only in the controlled 12-tool profile. Do not tell a user that a specific code
+occurred unless the live tool actually returned it.
 
 ## Support decision trees
 
 ### OAuth connection and consent
 
-Availability: controlled foundation only; production OAuth is off.
+Availability: controlled Claude Desktop and Codex CLI staging evidence only;
+production OAuth is off.
 
 1. If the client receives HTTP 401 / JSON-RPC `-32001`, let it follow protected-resource discovery and open browser
    authorization. Never paste a token into the endpoint URL.
 2. If consent is denied, leave the connection unauthenticated; do not describe denial as a product failure.
 3. The intended least-privilege scopes are `openid,email,profile`. Stop or deny any consent that requests additional
-   access; no Claude or Codex OAuth scope behavior is verified.
+   access. The tested hosts completed authorization with the intended staging
+   policy, but additional host/version behavior still requires separate evidence.
 4. If consent completes but the protected call still fails, capture the client/version, UTC time, and correlation ID,
    then escalate to Auth + MCP engineering. Do not repeatedly reauthorize.
-5. Classify every Claude, Codex, and other-host path as unverified until Task 10 records the exact host and behavior.
+5. Classify only Claude Desktop 1.37937.1 and Codex CLI
+   0.149.0-alpha.4.3 as controlled staging passes. Treat every other host or
+   version as unverified until it has its own record.
 
 ### Email verification
 
@@ -144,7 +157,9 @@ Availability: no MCP wallet mutation, quote confirmation, or top-up tool is publ
 
 ### Spending limit
 
-Availability: current account limit fields are nullable and no spending action is live.
+Availability: no spending action is public. Controlled staging can prepare and
+confirm an exact quote, but the 2026-08-26 checkpoint stopped before
+confirmation and left the wallet unchanged.
 
 1. Treat a null limit as “no connected spending capability,” not as unlimited spending.
 2. A future `SPENDING_LIMIT_EXCEEDED` response must stop confirmation and use the server-provided web approval or
@@ -154,14 +169,18 @@ Availability: current account limit fields are nullable and no spending action i
 
 ### Upload handoff
 
-Availability: `create_reference_upload_link` is absent from the default/public profile, present only in the gated local
-operational profile, and `referenceUploads=false`.
+Availability: `create_reference_upload_link` is absent from the default/public
+profile, present in controlled staging, and `referenceUploads=false` in the
+checked-in public configuration.
 
 1. Do not ask the user to put a local path, base64 file, private URL, or credential into a tool argument.
-2. A future upload handoff must be short-lived, user-scoped, and limited to the accepted image contract.
-3. A future malformed or unsupported request may use `PARAMETER_INVALID`; return the accepted type/size constraints
+2. The staged handoff is short-lived, user-scoped, and selects the requested
+   image, video, or audio kind. A handoff is not proof that bytes were uploaded.
+3. A malformed or unsupported request may use `PARAMETER_INVALID`; return the accepted type/size constraints
    only when those constraints are backed by the live upload implementation.
-4. For the current product, use the web upload/library flow. Do not claim that the connected client transferred it.
+4. The user completes the upload on the first-party MaxVideoAI web handoff; the
+   assistant then calls `list_media` again. Do not claim that the connected
+   client transferred it or that upload completed from handoff creation alone.
 
 ### Reference validation
 
@@ -238,11 +257,12 @@ and telemetry data, prompts, inputs, outputs, uploads, consent, and preferences 
 audit schema is narrower: user and OAuth client identifiers, event/tool name, success/failure, optional surface/engine,
 coarse error, and timestamp.
 
-The local migration 33 schema defines funnel fields for time, stage, opaque acquisition,
+The migration 33 schema defines funnel fields for time, stage, opaque acquisition,
 quote/job identifiers, coarse source/campaign/client, applicable amount/currency, idempotency key, and an irreversible
 receipt hash. The **MCP funnel ledger excludes prompts, email addresses, access tokens, raw reference URLs, provider
-bodies, payment details or methods, secrets, and fraud signals**. Its staging state remains unverified pending Task 10,
-so this is a schema boundary, not a claim that live funnel rows exist.
+bodies, payment details or methods, secrets, and fraud signals**. A sanitized
+staging ledger reconciliation is still pending, so this remains a schema
+boundary rather than a public analytics claim.
 
 This minimization does not mean MaxVideoAI avoids content processing: the normal service still processes prompts,
 inputs, outputs, and uploads when a user requests a web generation. Those service categories and the minimized MCP
@@ -250,7 +270,9 @@ analytics ledgers must be disclosed separately.
 
 ### Media and reference retention
 
-MCP media listing and reference upload are disabled. The current Privacy Policy describes content processing and
+MCP media listing and reference upload are disabled in production. Controlled
+staging listed private account media and created a temporary upload handoff
+without uploading bytes. The current Privacy Policy describes content processing and
 high-level account/log retention, but it does not provide a specific MCP upload-session, copied-reference, generated
 media, signed-link, audit-event, OAuth-binding, or funnel-event retention period. Do not invent “ephemeral,” “never
 stored,” or a day count. The retention period for each category is an owner decision requiring Legal, Privacy,
@@ -266,13 +288,15 @@ eligibility or restoration promise is allowed.
 
 ### Spending confirmation
 
-No current MCP tool spends money. The future contract requires a short-lived server-owned quote, a separate explicit
-confirmation, idempotency, server limits, and web approval above configured thresholds. Wallet funding remains on the
-MaxVideoAI web product through Stripe. A host’s “always allow” setting is not a substitute for MaxVideoAI confirmation.
+No default/public MCP tool spends money. The controlled operational contract
+uses a short-lived server-owned quote, a separate explicit confirmation,
+idempotency, server limits, and web approval above configured thresholds.
+Wallet funding remains on the MaxVideoAI web product through Stripe. A host’s
+“always allow” setting is not a substitute for MaxVideoAI confirmation.
 
 ### Provider processing
 
-The five default discovery tools do not submit prompts or media to an inference provider. A future generation flow would send
+The five default discovery tools do not submit prompts or media to an inference provider. A confirmed operational generation sends
 the necessary prompt, settings, and owned reference assets to the selected provider under the published Privacy Policy
 and current subprocessor list. Legal/Privacy must verify that every actual provider, region, data category, onward
 transfer, retention rule, and user choice is current before enabling a generation tool.
