@@ -265,9 +265,14 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
   assert.notEqual(handoff.isError, true);
   const handoffValue = structured(handoff);
   assert.equal(handoffValue.freshQuoteRequired, true);
-  assert.match(String(handoffValue.url), /^https:\/\/maxvideoai\.com\/billing\?mcp_topup=v1\./u);
+  assert.equal(
+    handoffValue.expiresAtIso,
+    new Date(Number(handoffValue.expiresAt) * 1_000).toISOString(),
+  );
+  const handoffDestination = record(handoffValue.destination);
+  assert.match(String(handoffDestination.url), /^https:\/\/maxvideoai\.com\/billing\?mcp_topup=v1\./u);
   assert.equal(JSON.stringify(handoff).includes(TOPUP_SECRET), false);
-  const handoffToken = new URL(String(handoffValue.url)).searchParams.get('mcp_topup');
+  const handoffToken = new URL(String(handoffDestination.url)).searchParams.get('mcp_topup');
   assert.deepEqual(
     verifyMcpTopupHandoff(handoffToken, { secret: TOPUP_SECRET, now: new Date() }),
     {

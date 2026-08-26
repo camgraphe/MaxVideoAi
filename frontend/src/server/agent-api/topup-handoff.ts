@@ -39,6 +39,7 @@ export type McpTopupHandoffPayload = {
 
 export type McpTopupHandoff = McpTopupHandoffPayload & {
   topupRequired: true;
+  expiresAtIso: string;
   destination: AgentOpenUrlDestination;
   freshQuoteRequired: true;
   nextActionAfterFunding: {
@@ -337,6 +338,7 @@ export async function createMcpTopupHandoff(
       value: {
         topupRequired: true,
         ...payload,
+        expiresAtIso: new Date(expiresAt * 1_000).toISOString(),
         destination: {
           type: 'open_url',
           purpose: 'billing',

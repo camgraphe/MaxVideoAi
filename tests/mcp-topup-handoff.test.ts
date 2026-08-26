@@ -285,7 +285,7 @@ test('handoff locks quote and wallet in one transaction, recommends exact shortf
   const result = await createMcpTopupHandoff({ quoteId: QUOTE_ID }, principal, deps);
   assert.deepEqual(events, ['transaction', 'lock_quote', 'wallet', 'invalidate_quote']);
   assert.deepEqual(Object.keys(result), [
-    'topupRequired', 'amountCents', 'currency', 'quoteIntentId', 'expiresAt',
+    'topupRequired', 'amountCents', 'currency', 'quoteIntentId', 'expiresAt', 'expiresAtIso',
     'destination', 'freshQuoteRequired', 'nextActionAfterFunding',
   ]);
   assert.equal(result.topupRequired, true);
@@ -293,6 +293,7 @@ test('handoff locks quote and wallet in one transaction, recommends exact shortf
   assert.equal(result.currency, 'USD');
   assert.equal(result.quoteIntentId, INTENT_ID);
   assert.equal(result.expiresAt, Math.floor(NOW.getTime() / 1000) + 600);
+  assert.equal(result.expiresAtIso, '2026-07-16T12:10:00.000Z');
   assert.equal(result.freshQuoteRequired, true);
   assert.deepEqual(result.nextActionAfterFunding, {
     tool: 'get_account_status',
@@ -473,6 +474,7 @@ test('create_topup_link has exact UUID input, annotations, and explicit non-paym
         currency: 'USD',
         quoteIntentId: INTENT_ID,
         expiresAt: Math.floor(NOW.getTime() / 1000) + 600,
+        expiresAtIso: '2026-07-16T12:10:00.000Z',
         destination: {
           type: 'open_url',
           purpose: 'billing',
