@@ -171,32 +171,44 @@ test('model details project one executable public model into the exact safe shap
     modes: [
       {
         mode: 't2v',
+        durationPolicy: 'requested',
         duration: { options: [5, 10], range: null },
         resolutions: ['768P', '2K'],
         aspectRatios: ['16:9', '9:16'],
         fps: [24],
         audio: 'always_generated',
+        outputCount: { min: 1, max: 1, default: 1 },
+        settings: [],
         references: [],
       },
       {
         mode: 'i2v',
+        durationPolicy: 'requested',
         duration: { options: null, range: { min: 5, max: 15 } },
         resolutions: ['768P'],
         aspectRatios: [],
         fps: [24],
         audio: 'optional',
-        references: [{ id: 'image_url', type: 'image', required: true, min: 1, max: 1 }],
+        outputCount: { min: 1, max: 1, default: 1 },
+        settings: [],
+        references: [{
+          type: 'image', roles: ['source', 'first_frame'], assetRequired: false,
+          required: true, min: 1, max: 1,
+        }],
       },
       {
         mode: 'ref2v',
+        durationPolicy: 'requested',
         duration: { options: [5, 10], range: null },
         resolutions: ['2K'],
         aspectRatios: ['16:9'],
         fps: [24],
         audio: 'always_generated',
+        outputCount: { min: 1, max: 1, default: 1 },
+        settings: [],
         references: [
-          { id: 'reference_image_urls', type: 'image', required: false, min: 0, max: 9 },
-          { id: 'reference_audio_urls', type: 'audio', required: false, min: 0, max: 3 },
+          { type: 'image', roles: ['reference'], assetRequired: false, required: false, min: 0, max: 9 },
+          { type: 'audio', roles: ['reference'], assetRequired: false, required: false, min: 0, max: 3 },
         ],
       },
     ],
@@ -228,7 +240,6 @@ test('model details project one executable public model into the exact safe shap
     'apiAvailability',
     'Internal provider note',
     'Private upload source',
-    'source',
     'unknownPrivateConstraint',
     'do-not-expose',
   ]) {
@@ -266,15 +277,86 @@ test('real i2i model details honor requiredInModes even when the field is stored
 
   assert.ok(textMode);
   assert.ok(editMode);
+  assert.deepEqual(textMode.outputCount, { min: 1, max: 8, default: 1 });
+  assert.deepEqual(editMode.outputCount, { min: 1, max: 8, default: 1 });
+  assert.deepEqual(textMode.resolutions, ['square_hd', 'landscape_hd', 'portrait_hd']);
   assert.deepEqual(textMode.references, []);
   assert.deepEqual(editMode.references, [
-    { id: 'image_urls', type: 'image', required: true, min: 1, max: 4 },
+    { type: 'image', roles: ['reference'], assetRequired: false, required: true, min: 1, max: 4 },
   ]);
   assert.equal(Object.isFrozen(editMode.references), true);
   assert.doesNotMatch(
     JSON.stringify(details),
     /google_vertex_image|providerMeta|pricingDetails|source|acceptedMimeTypes/i,
   );
+});
+
+test('real image model details publish canonical controls Claude and ChatGPT can send', async () => {
+  const details = await getAgentModelDetails('nano-banana-2', realRegistryDetailsDeps());
+  const mode = details.modes.find((candidate) => candidate.mode === 't2i');
+  assert.ok(mode);
+  assert.deepEqual(mode.outputCount, { min: 1, max: 4, default: 1 });
+  assert.deepEqual(mode.resolutions, ['0.5k', '1k', '2k', '4k']);
+  assert.deepEqual(mode.settings, [
+    { key: 'seed', type: 'number', required: false, values: null, min: null, max: null, default: null },
+    { key: 'outputFormat', type: 'enum', required: false, values: ['jpeg', 'png', 'webp'], min: null, max: null, default: 'jpeg' },
+    { key: 'enableWebSearch', type: 'boolean', required: false, values: null, min: null, max: null, default: false },
+    { key: 'thinkingLevel', type: 'enum', required: false, values: ['minimal', 'high'], min: null, max: null, default: 'minimal' },
+    { key: 'limitGenerations', type: 'boolean', required: false, values: null, min: null, max: null, default: false },
+  ]);
+});
+
+test('GPT Image 2 details explain that auto edit sizing requires an owned asset', async () => {
+  const details = await getAgentModelDetails('gpt-image-2', realRegistryDetailsDeps());
+  const mode = details.modes.find((candidate) => candidate.mode === 'i2i');
+  assert.ok(mode);
+  const source = mode.references.find((reference) => reference.roles.includes('reference'));
+  assert.ok(source);
+  assert.equal(source.assetRequired, false);
+  assert.deepEqual(source.assetRequiredWhen, {
+    setting: 'resolution',
+    values: ['auto'],
+  });
+});
+
+test('LTX audio-to-video details expose trusted per-file duration limits', async () => {
+  const details = await getAgentModelDetails('ltx-2-3', realRegistryDetailsDeps());
+  const mode = details.modes.find((candidate) => candidate.mode === 'a2v');
+  assert.ok(mode);
+  const source = mode.references.find((reference) =>
+    reference.type === 'audio' && reference.roles.includes('source'));
+  assert.ok(source);
+  assert.equal(source.assetRequired, true);
+  assert.deepEqual(source.durationSec, { min: 2, max: 20, combinedMax: null });
+});
+
+test('Luma Ray 2 V2V details explain source-derived duration and fixed pricing resolution', async () => {
+  const details = await getAgentModelDetails('lumaRay2', realRegistryDetailsDeps());
+  const mode = details.modes.find((candidate) => candidate.mode === 'v2v');
+  assert.ok(mode);
+  assert.equal(mode.durationPolicy, 'source_video');
+  assert.equal(mode.duration, null);
+  assert.deepEqual(mode.resolutions, ['540p']);
+  assert.deepEqual(mode.aspectRatios, []);
+  assert.deepEqual(mode.references, [
+    { type: 'video', roles: ['source'], assetRequired: true, required: true, min: 1, max: 1 },
+    { type: 'image', roles: ['reference'], assetRequired: false, required: false, min: 1, max: 1 },
+  ]);
+});
+
+test('Luma Ray 3.2 V2V details distinguish one guide frame from ordered edit keyframes', async () => {
+  const details = await getAgentModelDetails('luma-ray-3-2', realRegistryDetailsDeps());
+  const mode = details.modes.find((candidate) => candidate.mode === 'v2v');
+  assert.ok(mode);
+  assert.deepEqual(mode.references, [
+    {
+      type: 'video', roles: ['source'], assetRequired: true,
+      durationSec: { min: null, max: 30, combinedMax: null },
+      required: true, min: 1, max: 1,
+    },
+    { type: 'image', roles: ['first_frame'], assetRequired: false, required: false, min: 0, max: 1 },
+    { type: 'image', roles: ['reference'], assetRequired: false, required: false, min: 0, max: 64 },
+  ]);
 });
 
 test('Seedream details mirror direct provider credential readiness', { concurrency: false }, async () => {

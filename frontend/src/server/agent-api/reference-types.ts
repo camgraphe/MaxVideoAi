@@ -11,5 +11,6 @@ export type ResolvedReference = {
   storageUrl: string;
   width: number | null;
   height: number | null;
+  durationSec: number | null;
   mimeType: string;
 };

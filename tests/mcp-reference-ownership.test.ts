@@ -90,6 +90,7 @@ test('resolveOwnedReferenceAsset resolves an opaque public alias without exposin
     storageUrl: 'https://cdn.maxvideoai.com/users/owner-user/reference.png',
     width: 1024,
     height: 768,
+    durationSec: null,
     mimeType: 'image/jpeg',
   });
   assert.equal(calls.length, 1);
@@ -97,7 +98,9 @@ test('resolveOwnedReferenceAsset resolves an opaque public alias without exposin
   assert.match(calls[0]?.sql ?? '', /public_id\s*=\s*\$1[\s\S]*user_id\s*=\s*\$2/iu);
   assert.deepEqual(calls[0]?.params, ['ma_0123456789abcdef0123456789abcdef', principal.userId]);
   assert.doesNotMatch(resolved.assetId, /asset-owned|owner-user|https?:|url:/u);
-  assert.deepEqual(Object.keys(resolved), ['assetId', 'mediaKind', 'storageUrl', 'width', 'height', 'mimeType']);
+  assert.deepEqual(Object.keys(resolved), [
+    'assetId', 'mediaKind', 'storageUrl', 'width', 'height', 'durationSec', 'mimeType',
+  ]);
 });
 
 test('resolveOwnedReferenceAsset accepts the exact shared raster MIME set and canonicalizes JPEG aliases', async () => {
@@ -141,6 +144,7 @@ test('resolveOwnedReferenceAsset derives video and audio kinds from exact owned-
     });
     assert.equal(resolved.mediaKind, kind);
     assert.equal(resolved.mimeType, canonicalMime);
+    assert.equal(resolved.durationSec, 4);
   }
 });
 

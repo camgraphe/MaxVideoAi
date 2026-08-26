@@ -70,6 +70,11 @@ recommendation, not a fixed quality ranking or availability claim.
   `aspectRatios` literally: include one supported `aspectRatio` when the list is
   non-empty, including for i2v, and omit it when the list is empty. Never infer
   this from the mode name or copy settings from another mode.
+  Follow each reference field’s returned canonical `roles`. If it reports
+  `assetRequired: true`, or its `assetRequiredWhen` condition matches the
+  chosen settings, select or upload a private MaxVideoAI asset; do not replace
+  it with an external URL because MaxVideoAI must verify its metadata. Respect
+  any returned per-file and combined `durationSec` limits.
 - Use `recommend_models` when the user is open to suggestions or needs an
   evidence-backed match to their creative priorities.
 - Use `get_account_status` to explain the connected account, credit balance,
@@ -85,11 +90,22 @@ priorities; do not turn that contextual lead into an all-purpose brand ranking.
 ## Route the selected video workflow
 
 Use only workflows and fields returned by live model details. `t2v` is text to
-video. `i2v` uses a first or start image and may accept a last or end frame.
+video. `i2v` uses a first or start image and may accept a last or end frame;
+`i2v_standard` is a published lower-cost Standard image-to-video route, not an
+image-editing mode.
 `ref2v` uses the supported image, video, and audio reference types. `fl2v`
 requires first and last frame images. `v2v` uses a required source video plus
 any supported image or audio references. `r2v` uses ordered reference videos.
 `extend` uses the allowed number of source clips in the user’s authored order.
+`a2v` follows verified source audio, `retake` replaces a selected part of a
+verified source clip, and `reframe` changes the canvas of a verified source
+clip. These duration-derived workflows require a private MaxVideoAI asset when
+live details say `assetRequired` or its `assetRequiredWhen` condition applies.
+
+For GPT Image 2 edits, use `source` or `reference` for edit images and `mask`
+for the optional mask. When its live resolution is `custom`, send both
+`imageWidth` and `imageHeight`; for `auto`, use a private owned reference so
+MaxVideoAI can verify dimensions before quoting.
 
 ## Turn a project into proposals
 

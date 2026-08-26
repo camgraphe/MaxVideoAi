@@ -1,4 +1,6 @@
 export const SEEDREAM_BASE_RESOLUTION_VALUES = ['2K', '3K', '4K'] as const;
+export const SEEDREAM_MAX_REFERENCE_IMAGES = 10;
+export const SEEDREAM_MAX_IMAGE_SET_IMAGES = 15;
 
 export const SEEDREAM_ASPECT_RATIO_VALUES = [
   'auto',

@@ -198,3 +198,64 @@ test('provider submission fails closed when an asset was not resolved during con
   );
   assert.equal(providerCalls, 0);
 });
+
+test('paid image execution keeps edit images and the GPT Image mask in separate site request fields', async () => {
+  const imageRequest: CanonicalGenerationRequest = {
+    schemaVersion: 1,
+    surface: 'image',
+    engineId: 'gpt-image-2',
+    mode: 'i2i',
+    prompt: 'Replace the masked background.',
+    settings: {
+      resolution: 'custom',
+      imageWidth: 1280,
+      imageHeight: 768,
+      quality: 'high',
+    },
+    references: [
+      { kind: 'asset', assetId: 'source-image', role: 'source' },
+      { kind: 'asset', assetId: 'mask-image', role: 'mask' },
+    ],
+    outputCount: 2,
+  };
+  const execution: PaidGenerationExecution = {
+    surface: 'image',
+    quoteId: '123e4567-e89b-42d3-a456-426614174010',
+    userId: 'user-a',
+    request: imageRequest,
+    resolvedReferences: [
+      {
+        assetId: 'source-image', role: 'source', mediaKind: 'image',
+        storageUrl: 'https://media.maxvideoai.com/private/source.png',
+        width: 1280, height: 768, mimeType: 'image/png',
+      },
+      {
+        assetId: 'mask-image', role: 'mask', mediaKind: 'image',
+        storageUrl: 'https://media.maxvideoai.com/private/mask.png',
+        width: 1280, height: 768, mimeType: 'image/png',
+      },
+    ],
+    engine: { ...engine, id: 'gpt-image-2', label: 'GPT Image 2', modes: ['t2i', 'i2i'] },
+    canonicalPricing: { membershipTier: 'member' },
+    trustedInitialState: {
+      kind: 'created',
+      jobId: '123e4567-e89b-42d3-a456-426614174010',
+      recoveredCharge: true,
+    },
+  };
+  let providerBody: Record<string, unknown> | null = null;
+  const outcome = await submitReservedPaidGeneration(execution, {
+    async executeVideo() { throw new Error('wrong surface'); },
+    async executeImage(options) {
+      providerBody = options.body;
+      return { ok: true };
+    },
+  });
+
+  assert.deepEqual(outcome, { kind: 'completed' });
+  assert.deepEqual(providerBody?.imageUrls, ['https://media.maxvideoai.com/private/source.png']);
+  assert.equal(providerBody?.maskUrl, 'https://media.maxvideoai.com/private/mask.png');
+  assert.deepEqual(providerBody?.customImageSize, { width: 1280, height: 768 });
+  assert.equal('imageWidth' in (providerBody ?? {}), false);
+  assert.equal('imageHeight' in (providerBody ?? {}), false);
+});

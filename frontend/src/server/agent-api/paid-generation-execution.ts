@@ -114,15 +114,6 @@ function record(value: unknown, message: string): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 
-function requiredSetting(
-  quote: McpGenerationQuote,
-  key: string,
-): string {
-  const value = quote.request.settings[key];
-  if (typeof value !== 'string' || !value) throw new Error('Invalid reserved generation setting.');
-  return value;
-}
-
 function optionalSetting(
   quote: McpGenerationQuote,
   key: string,
@@ -203,7 +194,9 @@ function videoInitialParams(
       prompt: quote.request.prompt,
       thumbUrl: placeholder,
       aspectRatio,
-      hasAudio: quote.request.settings.audio === true,
+      hasAudio: quote.request.settings.audio === true
+        || quote.request.mode === 'a2v'
+        || quote.request.mode === 'retake',
       canUpscale: Boolean(candidate.engine.upscale4k),
       previewFrame: placeholder,
       batchId: null,
@@ -255,7 +248,7 @@ function imageInitialParams(
     engineLabel: candidate.engine.label,
     durationSec: 0,
     prompt: quote.request.prompt,
-    aspectRatio: requiredSetting(quote, 'aspectRatio'),
+    aspectRatio: optionalSetting(quote, 'aspectRatio'),
     canUpscale: Boolean(candidate.engine.upscale4k),
     finalPriceCents: quote.priceCents,
     costBreakdownJson: null,
@@ -338,11 +331,17 @@ export async function reserveIncludedTrialGenerationInitialJob(
   return reserveIncludedTrialGenerationWithPricing(input, dependencies, pricing);
 }
 
-function imageReferenceUrls(execution: PaidGenerationExecution): string[] {
+function materializedImageReferenceUrls(
+  execution: PaidGenerationExecution,
+  role: 'generation' | 'mask',
+): string[] {
   return execution.request.references.flatMap((reference) => {
+    if ((reference.role === 'mask') !== (role === 'mask')) return [];
     if (reference.kind === 'https') return [reference.url];
     const resolved = (execution.resolvedReferences ?? []).find((candidate) =>
-      candidate.assetId === reference.assetId && candidate.role === reference.role);
+      candidate.assetId === reference.assetId
+      && candidate.role === reference.role
+      && candidate.slot === reference.slot);
     if (!resolved) throw new Error('A verified resolved reference is required before provider submission.');
     return [resolved.storageUrl];
   });
@@ -351,6 +350,12 @@ function imageReferenceUrls(execution: PaidGenerationExecution): string[] {
 function paidRequestBody(execution: PaidGenerationExecution): Record<string, unknown> {
   if (execution.surface === 'video') return buildPaidVideoRequestBody(execution);
   const settings = { ...execution.request.settings };
+  const imageWidth = settings.imageWidth;
+  const imageHeight = settings.imageHeight;
+  delete settings.imageWidth;
+  delete settings.imageHeight;
+  const masks = materializedImageReferenceUrls(execution, 'mask');
+  if (masks.length > 1) throw new Error('Only one verified image mask can be submitted.');
   return {
     engineId: execution.request.engineId,
     mode: execution.request.mode,
@@ -360,7 +365,11 @@ function paidRequestBody(execution: PaidGenerationExecution): Record<string, unk
     membershipTier: resolvePaidMembershipTier(execution.canonicalPricing),
     ...settings,
     numImages: execution.request.outputCount,
-    imageUrls: imageReferenceUrls(execution),
+    imageUrls: materializedImageReferenceUrls(execution, 'generation'),
+    ...(masks[0] ? { maskUrl: masks[0] } : {}),
+    ...(typeof imageWidth === 'number' && typeof imageHeight === 'number'
+      ? { customImageSize: { width: imageWidth, height: imageHeight } }
+      : {}),
   };
 }
 

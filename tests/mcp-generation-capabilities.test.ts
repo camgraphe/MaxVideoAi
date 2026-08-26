@@ -167,6 +167,30 @@ test('actual input schema owns reference roles, required counts, and maximums', 
   );
 });
 
+test('GPT Image 2 edit accepts one canonical mask separately from source images', () => {
+  const gptImage = registryCapability('gpt-image-2');
+  const source = { kind: 'asset' as const, assetId: 'source-image', role: 'source' as const };
+  const mask = { kind: 'asset' as const, assetId: 'edit-mask', role: 'mask' as const };
+  const value: CanonicalGenerationRequest = {
+    schemaVersion: 1,
+    surface: 'image',
+    engineId: 'gpt-image-2',
+    mode: 'i2i',
+    prompt: 'Replace only the masked background.',
+    settings: { resolution: '1024x1024', quality: 'high' },
+    references: [source, mask],
+    outputCount: 1,
+  };
+
+  assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(value, gptImage));
+  assert.doesNotThrow(() => validateCanonicalGenerationCapabilities({ ...value, references: [source] }, gptImage));
+  rejectsCapability(gptImage, { ...value, references: [mask] });
+  rejectsCapability(gptImage, {
+    ...value,
+    references: [mask, { ...mask, assetId: 'second-mask' }],
+  });
+});
+
 test('real Seedance 2.5 v2v and extend modes require bounded source references', () => {
   const seedance = registryCapability('seedance-2-5');
   const source = (id: string) => ({ kind: 'asset' as const, assetId: id, role: 'source' as const });
@@ -256,18 +280,34 @@ test('MiniMax H3 provider constraints receive references in their canonical medi
     role: 'reference' as const,
     mediaKind,
   });
+  const audio = { kind: 'asset' as const, assetId: 'owned-voice', role: 'reference' as const };
+  const resolvedAudio = [{
+    assetId: audio.assetId,
+    role: audio.role,
+    mediaKind: 'audio' as const,
+    storageUrl: 'https://assets.example.com/voice.mp3',
+    width: null,
+    height: null,
+    durationSec: 5,
+    mimeType: 'audio/mpeg',
+  }];
   const ref2v = request({
     engineId: 'minimax-h3',
     mode: 'ref2v',
     settings: { durationSec: 5, resolution: '768P', aspectRatio: '16:9' },
-    references: [reference('voice.mp3', 'audio')],
+    references: [audio],
   });
 
-  rejectsCapability(minimax, ref2v);
-  assert.doesNotThrow(() => validateCanonicalGenerationCapabilities({
-    ...ref2v,
-    references: [reference('subject.png', 'image'), reference('voice.mp3', 'audio')],
-  }, minimax));
+  assert.throws(() => validateCanonicalGenerationCapabilities(
+    ref2v,
+    minimax,
+    { resolvedReferences: resolvedAudio },
+  ));
+  assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(
+    { ...ref2v, references: [reference('subject.png', 'image'), audio] },
+    minimax,
+    { resolvedReferences: resolvedAudio },
+  ));
 });
 
 test('H3, image, and Seedance capabilities allow the same media in distinct authored roles', () => {
@@ -433,6 +473,133 @@ test('image capability validation uses execution input-schema enums and referenc
     { ...imageRequest, settings: { ...imageRequest.settings, style: 'unsupported' } },
   );
   rejectsCapability(imageCapability, { ...imageRequest, mode: 'i2i', references: [] });
+});
+
+test('real Luma Uni text-to-image accepts its optional reference-image workflow', () => {
+  const candidate = registryCapability('luma-uni-1');
+  const imageRequest: CanonicalGenerationRequest = {
+    schemaVersion: 1,
+    surface: 'image',
+    engineId: 'luma-uni-1',
+    mode: 't2i',
+    prompt: 'Use these products as visual references in a premium studio scene.',
+    settings: { resolution: '2K', aspectRatio: '16:9' },
+    references: [
+      {
+        kind: 'https',
+        url: 'https://cdn.example.com/product-a.png',
+        role: 'reference',
+        mediaKind: 'image',
+      },
+      {
+        kind: 'https',
+        url: 'https://cdn.example.com/product-b.png',
+        role: 'reference',
+        mediaKind: 'image',
+      },
+    ],
+    outputCount: 1,
+  };
+
+  assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(imageRequest, candidate));
+});
+
+test('real image model output limits accept the site batch size and reject overflow', () => {
+  const nano = registryCapability('nano-banana');
+  const seedream = registryCapability('seedream');
+  const imageRequest = (
+    engineId: string,
+    outputCount: number,
+    resolution: string,
+  ): CanonicalGenerationRequest => ({
+    schemaVersion: 1,
+    surface: 'image',
+    engineId,
+    mode: 't2i',
+    prompt: 'Create a consistent campaign image batch.',
+    settings: { resolution, aspectRatio: '1:1' },
+    references: [],
+    outputCount,
+  });
+
+  assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(
+    imageRequest('nano-banana', 8, 'square_hd'),
+    nano,
+  ));
+  rejectsCapability(nano, imageRequest('nano-banana', 9, 'square_hd'));
+  assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(
+    imageRequest('seedream', 15, '2K'),
+    seedream,
+  ));
+  rejectsCapability(seedream, imageRequest('seedream', 16, '2K'));
+});
+
+test('Seedream enforces the provider combined limit of references plus outputs', () => {
+  const seedream = registryCapability('seedream');
+  const reference = (index: number) => ({
+    kind: 'https' as const,
+    url: `https://cdn.example.com/seedream-${index}.png`,
+    role: 'reference' as const,
+    mediaKind: 'image' as const,
+  });
+  const request: CanonicalGenerationRequest = {
+    schemaVersion: 1,
+    surface: 'image',
+    engineId: 'seedream',
+    mode: 'i2i',
+    prompt: 'Create a coherent campaign image set.',
+    settings: { resolution: '2K', aspectRatio: '1:1' },
+    references: Array.from({ length: 10 }, (_, index) => reference(index)),
+    outputCount: 5,
+  };
+
+  assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(request, seedream));
+  rejectsCapability(seedream, { ...request, outputCount: 6 });
+});
+
+test('trusted H3 video references enforce the same per-request duration envelope as the site', () => {
+  const h3 = registryCapability('minimax-h3');
+  const references = ['video-a', 'video-b'].map((assetId) => ({
+    kind: 'asset' as const,
+    assetId,
+    role: 'reference' as const,
+  }));
+  const request: CanonicalGenerationRequest = {
+    schemaVersion: 1,
+    surface: 'video',
+    engineId: 'minimax-h3',
+    mode: 'ref2v',
+    prompt: 'Follow the pacing of both reference clips.',
+    settings: { durationSec: 5, resolution: '2K', aspectRatio: '16:9' },
+    references,
+    outputCount: 1,
+  };
+  const resolvedReferences = references.map((reference, index) => ({
+    assetId: reference.assetId,
+    role: reference.role,
+    mediaKind: 'video' as const,
+    storageUrl: `https://assets.example.com/video-${index}.mp4`,
+    width: 1920,
+    height: 1080,
+    durationSec: 10,
+    mimeType: 'video/mp4',
+  }));
+
+  assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(request, h3));
+  assert.throws(() => validateCanonicalGenerationCapabilities(
+    request,
+    h3,
+    { resolvedReferences },
+  ));
+  assert.throws(() => validateCanonicalGenerationCapabilities({
+    ...request,
+    references: [{
+      kind: 'https',
+      url: 'https://cdn.example.com/unverified-duration.mp4',
+      role: 'reference',
+      mediaKind: 'video',
+    }],
+  }, h3));
 });
 
 test('catalog revision covers every eligibility-determining capability and ignores ordering', () => {

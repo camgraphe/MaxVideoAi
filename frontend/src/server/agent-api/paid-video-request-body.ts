@@ -7,6 +7,7 @@ import type {
 } from './generation-types';
 import type { ResolvedReference } from './reference-types';
 import { normalizeControlledHttpsReferenceUrl } from './controlled-reference-url';
+import { toEngineGenerationMode } from './generation-mode-aliases';
 
 export type PaidVideoRequestBodyExecution = {
   quoteId: string;
@@ -21,6 +22,10 @@ type MaterializedReference = {
   role: CanonicalGenerationReference['role'];
   url: string;
   slot?: number;
+  width?: number | null;
+  height?: number | null;
+  durationSec?: number | null;
+  mimeType?: string;
 };
 
 function controlledHttpsUrl(value: unknown): string {
@@ -76,6 +81,10 @@ function materializeReferences(execution: PaidVideoRequestBodyExecution): Materi
       kind: canonicalMediaKind(resolved.mediaKind),
       role: reference.role,
       url: controlledHttpsUrl(resolved.storageUrl),
+      width: resolved.width,
+      height: resolved.height,
+      durationSec: resolved.durationSec,
+      mimeType: resolved.mimeType,
       ...(reference.slot === undefined ? {} : { slot: reference.slot }),
     };
   });
@@ -96,8 +105,16 @@ export function resolvePaidMembershipTier(
   return value;
 }
 
-function input(kind: CanonicalReferenceMediaKind, slotId: string, url: string) {
-  return { kind, slotId, url };
+function input(reference: MaterializedReference, slotId: string) {
+  return {
+    kind: reference.kind,
+    slotId,
+    url: reference.url,
+    ...(typeof reference.width === 'number' ? { width: reference.width } : {}),
+    ...(typeof reference.height === 'number' ? { height: reference.height } : {}),
+    ...(typeof reference.durationSec === 'number' ? { durationSec: reference.durationSec } : {}),
+    ...(reference.mimeType ? { type: reference.mimeType } : {}),
+  };
 }
 
 function supportsAspectRatio(execution: PaidVideoRequestBodyExecution): boolean {
@@ -106,11 +123,67 @@ function supportsAspectRatio(execution: PaidVideoRequestBodyExecution): boolean 
     ...(execution.engine.inputSchema?.optional ?? []),
   ];
   const field = fields.find((candidate) => candidate.id === 'aspect_ratio');
-  return !field?.modes?.length || field.modes.includes(execution.request.mode);
+  return !field?.modes?.length || field.modes.includes(
+    toEngineGenerationMode(execution.engine.id, execution.request.mode),
+  );
+}
+
+function activeReferenceFieldId(
+  execution: PaidVideoRequestBodyExecution,
+  type: CanonicalReferenceMediaKind,
+  candidates: readonly string[],
+): string | null {
+  const fields = [
+    ...(execution.engine.inputSchema?.required ?? []),
+    ...(execution.engine.inputSchema?.optional ?? []),
+  ];
+  const engineMode = toEngineGenerationMode(execution.engine.id, execution.request.mode);
+  return candidates.find((fieldId) => fields.some((field) =>
+    field.id === fieldId
+    && field.type === type
+    && (!field.modes?.length || field.modes.includes(engineMode)))) ?? null;
 }
 
 function invalidModeReferences(): never {
   throw new Error('The confirmed references do not match the selected video mode.');
+}
+
+const EXTRA_INPUT_FIELD_BY_SETTING: Readonly<Record<string, string>> = Object.freeze({
+  contextSec: 'context',
+  cropEndX: 'x_end',
+  cropEndY: 'y_end',
+  cropStartX: 'x_start',
+  cropStartY: 'y_start',
+  editDepthBlur: 'edit_depth_blur',
+  editFace: 'edit_face',
+  editKeyframeIndexes: 'edit_keyframe_indexes',
+  editNormalsAugmentation: 'edit_normals_augmentation',
+  editPoseStrength: 'edit_pose_strength',
+  editStrength: 'edit_strength',
+  editTrajectorySparsity: 'edit_trajectory_sparsity',
+  exrExport: 'exr_export',
+  extendPosition: 'mode',
+  guidanceScale: 'guidance_scale',
+  hdr: 'hdr',
+  modifyStrength: 'mode',
+  reframeGridPositionX: 'grid_position_x',
+  reframeGridPositionY: 'grid_position_y',
+  retakeMode: 'retake_mode',
+  sourcePositionHeight: 'source_position_h_norm',
+  sourcePositionWidth: 'source_position_w_norm',
+  sourcePositionX: 'source_position_x_norm',
+  sourcePositionY: 'source_position_y_norm',
+  startTimeSec: 'start_time',
+});
+
+function projectExtraInputValues(settings: Record<string, unknown>): Record<string, unknown> {
+  const extra: Record<string, unknown> = {};
+  for (const [setting, fieldId] of Object.entries(EXTRA_INPUT_FIELD_BY_SETTING)) {
+    const value = settings[setting];
+    delete settings[setting];
+    if (value !== undefined) extra[fieldId] = value;
+  }
+  return extra;
 }
 
 export function buildPaidVideoRequestBody(
@@ -121,15 +194,17 @@ export function buildPaidVideoRequestBody(
   }
   const settings = { ...execution.request.settings };
   if (!supportsAspectRatio(execution)) delete settings.aspectRatio;
+  const extraInputValues = projectExtraInputValues(settings);
   const references = materializeReferences(execution);
   const body: Record<string, unknown> = {
     engineId: execution.request.engineId,
-    mode: execution.request.mode,
+    mode: toEngineGenerationMode(execution.request.engineId, execution.request.mode),
     prompt: execution.request.prompt,
     jobId: execution.quoteId,
     payment: { mode: 'wallet' },
     membershipTier: resolvePaidMembershipTier(execution.canonicalPricing),
     ...settings,
+    ...(Object.keys(extraInputValues).length ? { extraInputValues } : {}),
     inputs: [],
   };
 
@@ -138,7 +213,7 @@ export function buildPaidVideoRequestBody(
     return body;
   }
 
-  if (execution.request.mode === 'i2v') {
+  if (execution.request.mode === 'i2v' || execution.request.mode === 'i2v_standard') {
     const start = references.filter((reference) =>
       reference.kind === 'image'
       && (reference.role === 'source' || reference.role === 'first_frame'));
@@ -163,24 +238,39 @@ export function buildPaidVideoRequestBody(
     body.imageUrl = first[0]!.url;
     body.endImageUrl = last[0]!.url;
     body.inputs = [
-      input('image', 'first_frame_url', first[0]!.url),
-      input('image', 'last_frame_url', last[0]!.url),
+      input(first[0]!, 'first_frame_url'),
+      input(last[0]!, 'last_frame_url'),
     ];
     return body;
   }
 
   if (execution.request.mode === 'ref2v') {
-    if (references.some((reference) => reference.role !== 'reference')) invalidModeReferences();
-    const images = references.filter((reference) => reference.kind === 'image').map(({ url }) => url);
-    const videos = references.filter((reference) => reference.kind === 'video').map(({ url }) => url);
-    const audio = references.filter((reference) => reference.kind === 'audio').map(({ url }) => url);
-    if (!images.length && !videos.length) invalidModeReferences();
+    const start = references.filter((reference) =>
+      reference.kind === 'image' && reference.role === 'first_frame');
+    const end = references.filter((reference) =>
+      reference.kind === 'image' && reference.role === 'last_frame');
+    const referenceMedia = references.filter((reference) => reference.role === 'reference');
+    if (
+      start.length > 1
+      || end.length > 1
+      || start.length + end.length + referenceMedia.length !== references.length
+    ) invalidModeReferences();
+    const images = referenceMedia.filter((reference) => reference.kind === 'image').map(({ url }) => url);
+    const videoReferences = referenceMedia.filter((reference) => reference.kind === 'video');
+    const audioReferences = referenceMedia.filter((reference) => reference.kind === 'audio');
+    const videos = videoReferences.map(({ url }) => url);
+    const audio = audioReferences.map(({ url }) => url);
+    if (!images.length && !videos.length && !start.length) invalidModeReferences();
+    if (start[0]) body.imageUrl = start[0].url;
+    if (end[0]) body.endImageUrl = end[0].url;
     if (images.length) body.referenceImages = images;
     if (videos.length) body.referenceVideos = videos;
     if (audio.length) body.referenceAudio = audio;
     body.inputs = [
-      ...videos.map((url) => input('video', 'video_urls', url)),
-      ...audio.map((url) => input('audio', 'audio_urls', url)),
+      ...(start[0] ? [input(start[0], 'start_image_url')] : []),
+      ...(end[0] ? [input(end[0], 'end_image_url')] : []),
+      ...videoReferences.map((reference) => input(reference, 'video_urls')),
+      ...audioReferences.map((reference) => input(reference, 'audio_urls')),
     ];
     return body;
   }
@@ -188,19 +278,49 @@ export function buildPaidVideoRequestBody(
   if (execution.request.mode === 'v2v') {
     const source = references.filter((reference) =>
       reference.kind === 'video' && reference.role === 'source');
-    const images = references.filter((reference) =>
-      reference.kind === 'image' && reference.role === 'reference').map(({ url }) => url);
-    const audio = references.filter((reference) =>
-      reference.kind === 'audio' && reference.role === 'reference').map(({ url }) => url);
-    if (source.length !== 1 || 1 + images.length + audio.length !== references.length) {
+    const guideFrames = references.filter((reference) =>
+      reference.kind === 'image' && reference.role === 'first_frame');
+    const imageReferences = references.filter((reference) =>
+      reference.kind === 'image' && reference.role === 'reference');
+    const audioReferences = references.filter((reference) =>
+      reference.kind === 'audio' && reference.role === 'reference');
+    const images = imageReferences.map(({ url }) => url);
+    const audio = audioReferences.map(({ url }) => url);
+    if (
+      source.length !== 1
+      || guideFrames.length > 1
+      || 1 + guideFrames.length + images.length + audio.length !== references.length
+    ) {
       invalidModeReferences();
     }
     body.videoUrl = source[0]!.url;
-    if (images.length) body.referenceImages = images;
+    const guideFieldId = activeReferenceFieldId(execution, 'image', ['start_image_url']);
+    if (guideFrames.length) {
+      if (!guideFieldId) invalidModeReferences();
+      body.imageUrl = guideFrames[0]!.url;
+    }
+    const imageFieldId = activeReferenceFieldId(
+      execution,
+      'image',
+      ['image_url', 'edit_keyframe_urls', 'image_urls', 'reference_image_urls'],
+    );
+    if (images.length) {
+      if (imageFieldId === 'start_image_url' || imageFieldId === 'image_url') {
+        if (images.length !== 1) invalidModeReferences();
+        body.imageUrl = images[0];
+      } else {
+        body.referenceImages = images;
+      }
+    }
     if (audio.length) body.referenceAudio = audio;
     body.inputs = [
-      input('video', 'video_url', source[0]!.url),
-      ...audio.map((url) => input('audio', 'audio_urls', url)),
+      input(source[0]!, 'video_url'),
+      ...(guideFrames[0] && guideFieldId ? [input(guideFrames[0], guideFieldId)] : []),
+      ...(imageFieldId === 'image_url'
+        || imageFieldId === 'edit_keyframe_urls'
+        ? imageReferences.map((reference) => input(reference, imageFieldId))
+        : []),
+      ...audioReferences.map((reference) => input(reference, 'audio_urls')),
     ];
     return body;
   }
@@ -213,7 +333,7 @@ export function buildPaidVideoRequestBody(
     }
     const urls = videos.map(({ url }) => url);
     body.referenceVideos = urls;
-    body.inputs = urls.map((url) => input('video', 'video_urls', url));
+    body.inputs = videos.map((reference) => input(reference, 'video_urls'));
     return body;
   }
 
@@ -224,8 +344,55 @@ export function buildPaidVideoRequestBody(
       invalidModeReferences();
     }
     const urls = sources.map(({ url }) => url);
-    body.extensionSourceVideos = urls;
-    body.inputs = urls.map((url) => input('video', 'extension_source_videos', url));
+    const fieldId = activeReferenceFieldId(
+      execution,
+      'video',
+      ['extension_source_videos', 'video_urls', 'video_url'],
+    );
+    if (!fieldId) invalidModeReferences();
+    if (fieldId === 'video_url') {
+      if (urls.length !== 1) invalidModeReferences();
+      body.videoUrl = urls[0];
+    } else if (fieldId === 'extension_source_videos') {
+      body.extensionSourceVideos = urls;
+    } else {
+      body.referenceVideos = urls;
+    }
+    body.inputs = sources.map((reference) => input(reference, fieldId));
+    return body;
+  }
+
+  if (execution.request.mode === 'a2v') {
+    const audio = references.filter((reference) =>
+      reference.kind === 'audio' && reference.role === 'source');
+    const firstFrame = references.filter((reference) =>
+      reference.kind === 'image' && reference.role === 'first_frame');
+    if (audio.length !== 1 || firstFrame.length > 1 || audio.length + firstFrame.length !== references.length) {
+      invalidModeReferences();
+    }
+    body.audioUrl = audio[0]!.url;
+    if (firstFrame[0]) body.imageUrl = firstFrame[0].url;
+    body.inputs = [
+      input(audio[0]!, 'audio_url'),
+      ...(firstFrame[0] ? [input(firstFrame[0], 'image_url')] : []),
+    ];
+    return body;
+  }
+
+  if (execution.request.mode === 'retake' || execution.request.mode === 'reframe') {
+    const source = references.filter((reference) =>
+      reference.kind === 'video' && reference.role === 'source');
+    const guide = references.filter((reference) =>
+      reference.kind === 'image' && reference.role === 'reference');
+    if (source.length !== 1 || guide.length > 1 || source.length + guide.length !== references.length) {
+      invalidModeReferences();
+    }
+    body.videoUrl = source[0]!.url;
+    if (guide[0]) body.imageUrl = guide[0].url;
+    body.inputs = [
+      input(source[0]!, 'video_url'),
+      ...(guide[0] ? [input(guide[0], 'image_url')] : []),
+    ];
     return body;
   }
 

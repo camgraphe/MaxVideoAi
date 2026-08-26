@@ -13,9 +13,9 @@ import { normalizeVideoDurationOption } from '@/server/video-generation/executio
 import type { EngineCaps, EngineModeUiCaps } from '@/types/engines';
 
 import type { AgentGenerationMode, AgentModel, AgentModelFilter } from './types';
+import { toCanonicalGenerationMode, toEngineGenerationMode } from './generation-mode-aliases';
 import {
   isPublicAgentEngine,
-  isPublicAgentGenerationMode,
   listPublicAgentModes,
   type AgentPublicGenerationEngine,
 } from './public-engine-policy';
@@ -34,9 +34,11 @@ const MODE_CAPS_BY_ENGINE_ID = new Map<string, Partial<Record<AgentGenerationMod
     entry.id,
     Object.fromEntries(
       entry.modes
-        .filter((mode): mode is typeof mode & { mode: AgentGenerationMode } =>
-          isPublicAgentGenerationMode(mode.mode))
-        .map((mode) => [mode.mode, mode.ui]),
+        .flatMap((mode) => {
+          const surface = entry.category === 'image' ? 'image' : 'video';
+          const canonical = toCanonicalGenerationMode(entry.id, surface, mode.mode);
+          return canonical ? [[canonical, mode.ui]] : [];
+        }),
     ) as Partial<Record<AgentGenerationMode, EngineModeUiCaps>>,
   ]),
 );
@@ -70,7 +72,7 @@ const defaultDeps: AgentModelCatalogDeps = {
 
 function referenceImagesSupported(modes: AgentGenerationMode[]): boolean {
   return modes.some((mode) =>
-    mode === 'i2v' || mode === 'ref2v' || mode === 'fl2v' || mode === 'i2i'
+    mode === 'i2v' || mode === 'i2v_standard' || mode === 'ref2v' || mode === 'fl2v' || mode === 'i2i'
   );
 }
 
@@ -131,18 +133,21 @@ export async function listPublicAgentCatalogEngines(
     const surface = deps.surfaceByEngineId(engine.id);
     if (!isPublicAgentEngine(engine, surface)) return [];
     const modes = listPublicAgentModes(engine, surface);
-    const configuredModeCaps = engine.modeCaps ?? {};
+    const configuredModeCaps = (engine.modeCaps ?? {}) as Partial<
+      Record<AgentGenerationMode, EngineModeUiCaps>
+    >;
     const registryModeCaps = MODE_CAPS_BY_ENGINE_ID.get(engine.id) ?? {};
     const modeCaps = Object.fromEntries(
       modes.flatMap((mode) => {
-        const caps = configuredModeCaps[mode] ?? registryModeCaps[mode];
+        const engineMode = toEngineGenerationMode(engine.id, mode) as AgentGenerationMode;
+        const caps = configuredModeCaps[mode] ?? configuredModeCaps[engineMode] ?? registryModeCaps[mode];
         return caps ? [[mode, caps]] : [];
       }),
     ) as AgentPublicGenerationEngine['modeCaps'];
     const configuredModes = modes.filter((mode) => Boolean(modeCaps[mode]));
     if (!configuredModes.length) return [];
     const executableModes = configuredModes.filter((mode) =>
-      deps.isModeExecutable?.(engine, mode) !== false
+      deps.isModeExecutable?.(engine, toEngineGenerationMode(engine.id, mode) as AgentGenerationMode) !== false
     );
     const generationEnabled = deps.isEngineExecutable?.(engine) !== false
       && executableModes.length > 0;

@@ -84,6 +84,7 @@ test('defaults optional canonical collections and the single output count', () =
 
 test('sorts references deterministically within an explicit semantic role order', () => {
   const references = [
+    { kind: 'asset', assetId: 'asset-mask', role: 'mask' },
     { kind: 'asset', assetId: 'asset-reference-z', role: 'reference' },
     { kind: 'https', url: 'https://CDN.Example.com/end.png', role: 'last_frame', mediaKind: 'image' },
     { kind: 'asset', assetId: 'asset-source', role: 'source' },
@@ -99,6 +100,7 @@ test('sorts references deterministically within an explicit semantic role order'
     { kind: 'https', url: 'https://cdn.example.com/end.png', role: 'last_frame', mediaKind: 'image' },
     { kind: 'asset', assetId: 'asset-reference-a', role: 'reference' },
     { kind: 'asset', assetId: 'asset-reference-z', role: 'reference' },
+    { kind: 'asset', assetId: 'asset-mask', role: 'mask' },
   ]);
   assert.deepEqual(first, second);
 });
@@ -156,7 +158,7 @@ test('serializes every object level with stable keys and hashes schema version p
 });
 
 test('rejects unsupported modes and surface-mode mismatches', () => {
-  for (const mode of ['retake']) {
+  for (const mode of ['lip_sync']) {
     assert.throws(() => normalizeGenerationRequest(request({ mode })), /mode/i);
   }
   assert.throws(
@@ -232,11 +234,28 @@ test('rejects excessive, empty, and non-string prompts after canonical whitespac
   assert.throws(() => normalizeGenerationRequest(request({ prompt: 42 })), /prompt/i);
 });
 
-test('accepts only the integer literal one as output count', () => {
+test('keeps video output singular and allows bounded image batches', () => {
   for (const outputCount of [0, 2, 1.5, Number.NaN, Number.POSITIVE_INFINITY, '1', null]) {
     assert.throws(() => normalizeGenerationRequest(request({ outputCount })), /outputCount|output count/i);
   }
   assert.equal(normalizeGenerationRequest(request({ outputCount: 1 })).outputCount, 1);
+
+  for (const outputCount of [1, 4, 8, 15]) {
+    assert.equal(normalizeGenerationRequest(request({
+      surface: 'image',
+      engineId: 'seedream',
+      mode: 't2i',
+      outputCount,
+    })).outputCount, outputCount);
+  }
+  for (const outputCount of [0, 16, 1.5, Number.NaN, '2']) {
+    assert.throws(() => normalizeGenerationRequest(request({
+      surface: 'image',
+      engineId: 'seedream',
+      mode: 't2i',
+      outputCount,
+    })), /outputCount|output count/i);
+  }
 });
 
 test('bounds settings and accepts only finite scalar values with safe unique keys', () => {
@@ -529,6 +548,35 @@ test('validates asset identifiers and HTTPS references without credentials or fr
   ]) {
     assert.throws(() => normalizeGenerationRequest(request({ references: [reference] })), /reference|asset|https|role/i);
   }
+});
+
+test('preserves the full Seedance 2.5 multimodal reference budget', () => {
+  const references = [
+    ...Array.from({ length: 30 }, (_, index) => ({
+      kind: 'https' as const,
+      url: `https://cdn.example.com/image-${index}.png`,
+      role: 'reference' as const,
+      mediaKind: 'image' as const,
+    })),
+    ...Array.from({ length: 10 }, (_, index) => ({
+      kind: 'https' as const,
+      url: `https://cdn.example.com/video-${index}.mp4`,
+      role: 'reference' as const,
+      mediaKind: 'video' as const,
+    })),
+    ...Array.from({ length: 10 }, (_, index) => ({
+      kind: 'https' as const,
+      url: `https://cdn.example.com/audio-${index}.wav`,
+      role: 'reference' as const,
+      mediaKind: 'audio' as const,
+    })),
+  ];
+  const normalized = normalizeGenerationRequest(request({
+    engineId: 'seedance-2-5',
+    mode: 'ref2v',
+    references,
+  }));
+  assert.equal(normalized.references.length, 50);
 });
 
 test('keeps the same media in distinct semantic roles as distinct canonical identities', () => {

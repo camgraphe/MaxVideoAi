@@ -1,5 +1,6 @@
 import type { AgentApiFailure } from './errors';
 import type { CanonicalGenerationMode } from './generation-types';
+import type { CanonicalGenerationReferenceRole } from './generation-types';
 import type { AgentModelGuidance, AgentModelUseCase } from './model-guidance';
 
 export type AgentApiResult<T> = { ok: true; data: T } | AgentApiFailure;
@@ -141,20 +142,49 @@ export type AgentModelDurationDetails = Readonly<{
 }>;
 
 export type AgentModelReferenceFieldDetails = Readonly<{
-  id: string;
   type: 'image' | 'video' | 'audio';
+  roles: readonly CanonicalGenerationReferenceRole[];
+  assetRequired: boolean;
+  assetRequiredWhen?: Readonly<{
+    setting: 'resolution';
+    values: readonly string[];
+  }>;
+  durationSec?: Readonly<{
+    min: number | null;
+    max: number | null;
+    combinedMax: number | null;
+  }>;
   required: boolean;
   min: number | null;
   max: number | null;
 }>;
 
+export type AgentModelOutputCountDetails = Readonly<{
+  min: number;
+  max: number;
+  default: number;
+}>;
+
+export type AgentModelSettingDetails = Readonly<{
+  key: string;
+  type: 'boolean' | 'number' | 'text' | 'enum';
+  required: boolean;
+  values: readonly (string | number | boolean)[] | null;
+  min: number | null;
+  max: number | null;
+  default: string | number | boolean | null;
+}>;
+
 export type AgentModelModeDetails = Readonly<{
   mode: AgentGenerationMode;
+  durationPolicy: 'requested' | 'source_video' | 'source_audio' | 'source_generation';
   duration: AgentModelDurationDetails | null;
   resolutions: readonly string[];
   aspectRatios: readonly string[];
   fps: readonly number[];
   audio: AgentModelAudioPolicy;
+  outputCount: AgentModelOutputCountDetails;
+  settings: readonly AgentModelSettingDetails[];
   references: readonly AgentModelReferenceFieldDetails[];
 }>;
 

@@ -8,10 +8,12 @@ import {
 } from './generation-capability-validation';
 import { priceCanonicalGeneration, type GenerationPricingResult } from './generation-pricing';
 import type {
-  CanonicalGenerationMode,
   CanonicalGenerationReference,
   CanonicalGenerationRequest,
+  CanonicalVideoGenerationMode,
 } from './generation-types';
+import { CANONICAL_VIDEO_GENERATION_MODES } from './generation-types';
+import { MAX_CANONICAL_REFERENCES } from './generation-normalization';
 import {
   listPublicAgentGenerationEngines,
   type AgentPublicGenerationEngine,
@@ -26,12 +28,9 @@ export const MAX_PROJECT_ATTEMPTS_PER_CLIP = 10;
 export const MAX_PROJECT_TOTAL_ATTEMPTS = 500;
 
 const PROJECT_PROMPT = 'Project pricing scenario';
-type ProjectVideoMode = Extract<
-  CanonicalGenerationMode,
-  't2v' | 'i2v' | 'ref2v' | 'v2v' | 'extend'
->;
+type ProjectVideoMode = CanonicalVideoGenerationMode;
 
-const VIDEO_MODES = new Set<ProjectVideoMode>(['t2v', 'i2v', 'ref2v', 'v2v', 'extend']);
+const VIDEO_MODES = new Set<ProjectVideoMode>(CANONICAL_VIDEO_GENERATION_MODES);
 const REFERENCE_ROLES = new Set(['source', 'first_frame', 'last_frame', 'reference']);
 const CURRENCY_PATTERN = /^[A-Z]{3}$/u;
 
@@ -210,9 +209,12 @@ function safeCapabilityField(field: string): string {
     aspect_ratio: 'aspectRatio',
     generate_audio: 'audio',
     image_url: 'references',
+    first_frame_url: 'references',
+    last_frame_url: 'references',
     image_urls: 'references',
     reference_image_urls: 'references',
     video_url: 'references',
+    video_urls: 'references',
     extension_source_videos: 'references',
   };
   const normalized = aliases[field] ?? field;
@@ -328,7 +330,7 @@ function normalizeReferenceRoles(
   lineIndex: number,
 ): readonly ProjectReferenceRole[] {
   if (value === undefined) return [];
-  if (Array.isArray(value) && value.length > 16) {
+  if (Array.isArray(value) && value.length > MAX_CANONICAL_REFERENCES) {
     editProjectLine(
       'REFERENCE_INVALID',
       'The project includes too many references for one line.',

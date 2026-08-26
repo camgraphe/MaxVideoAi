@@ -410,6 +410,7 @@ test('same-quote video/image races, distinct-quote cap race, and expiry wait exe
     const userId = `jsonb-${surface}`;
     const clientId = `jsonb-client-${surface}`;
     const request = requestFor(surface, `jsonb-${index}`);
+    if (surface === 'image') delete request.settings.aspectRatio;
     const candidate = capability(request);
     const catalogRevision = computeGenerationCatalogRevision([candidate]);
     const authoritativePricing = pricingSnapshot(request, 60, catalogRevision);
@@ -431,12 +432,17 @@ test('same-quote video/image races, distinct-quote cap race, and expiry wait exe
     });
     assert.equal(reservation.surface, surface);
     assert.equal(reservation.jobId, quoteId);
-    const persisted = await pool.query<{ jobs: string; charges: string }>(`
+    const persisted = await pool.query<{ jobs: string; charges: string; aspect_ratio: string | null }>(`
       SELECT
         (SELECT count(*) FROM app_jobs WHERE job_id = $1)::text AS jobs,
-        (SELECT count(*) FROM app_receipts WHERE job_id = $1 AND type = 'charge')::text AS charges
+        (SELECT count(*) FROM app_receipts WHERE job_id = $1 AND type = 'charge')::text AS charges,
+        (SELECT aspect_ratio FROM app_jobs WHERE job_id = $1) AS aspect_ratio
     `, [quoteId]);
-    assert.deepEqual(persisted.rows[0], { jobs: '1', charges: '1' });
+    assert.deepEqual(persisted.rows[0], {
+      jobs: '1',
+      charges: '1',
+      aspect_ratio: surface === 'image' ? null : '16:9',
+    });
   }
 
   for (const [index, surface] of (['video', 'image'] as const).entries()) {

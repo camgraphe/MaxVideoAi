@@ -19,29 +19,31 @@ them executable:
 - `v2v`: source-video editing with supported references;
 - `r2v`: one or more ordered reference videos;
 - `extend`: ordered source-video extension;
+- `a2v`: audio-driven video using the verified source-audio duration;
+- `retake`: replacement of a bounded source-video time range;
+- `reframe`: source-video reframing using verified source dimensions and duration;
+- `i2v_standard`: the lower-cost Kling 2.5 Standard image-to-video tier, exposed
+  without reusing the image-only `i2i` name;
 - `t2i` and `i2i`: text and reference-image generation.
 
 Seedance 2.5 uses ModelArk for `t2v`, `i2v`, `ref2v`, and `extend`. Its `v2v`
-mode remains hidden from executable MCP discovery until the separate LAS price,
-accounting, failure, refund, and canary contract is approved.
+mode is represented by the same canonical contract but remains hidden from
+executable discovery in environments without the separate LAS access and key.
+This does not restrict its image-to-video, multimodal-reference, or extension
+workflows.
 
 ## Specialized workflows still closed
 
-Seven public model-mode pairs remain intentionally absent from MCP execution:
+One public model-mode pair remains intentionally absent from MCP execution:
 
 | Model | Mode | Why it remains closed |
 | --- | --- | --- |
 | Gemini Omni Flash | `retake` | Requires a stored provider interaction identifier; exposing a raw provider identifier would break the transport-neutral contract. |
-| Kling 2.5 Turbo | internal `i2i` Standard tier | This is a legacy code for lower-cost image-to-video, while `i2i` means image-to-image in the public MCP contract. It needs a non-ambiguous video-mode alias before exposure. |
-| LTX 2.3 | `a2v` | Output duration follows verified source-audio duration; the current resolved-reference DTO does not carry duration into quote validation. |
-| LTX 2.3 | `retake` | Needs source-time and replacement controls plus a mode-specific pricing/projection contract. |
-| Luma Ray 2 | `reframe` | Price and output duration depend on source-video metadata that is not yet represented in the canonical quote. |
-| Luma Ray 2 Flash | `reframe` | Same source-duration requirement as Ray 2. |
-| Luma Ray 3.2 | `reframe` | Requires source-video duration plus reframe-specific output controls and provider constraints. |
 
-These modes remain available on the MaxVideoAI website. They must not appear as
-MCP-executable until the agent contract can return an exact quote and project a
-confirmed request without hidden defaults or provider-only state.
+LTX 2.3 audio-to-video and retake, the Luma Ray reframe modes, and Kling 2.5
+Standard now use verified MaxVideoAI assets, exact canonical pricing, and the
+existing website execution pipeline. They therefore remain subject to the same
+provider configuration and runtime availability as the website.
 
 `tests/mcp-special-video-modes.test.ts` is the drift guard. It fails when a new
 app-published mode is not represented by the canonical MCP contract or by the

@@ -33,7 +33,9 @@ export type ImageEstimateInput = Pick<
 > & {
   referenceImageCount?: number;
   referenceImageSizes?: Array<{ width: number; height: number }>;
+  customImageSize?: GptImage2ImageSize | null;
   membershipTier?: PublicPricingMembershipTier;
+  enableWebSearch?: boolean;
 };
 
 export type ImageEstimateNormalized = {
@@ -77,7 +79,6 @@ export class ImageEstimateError extends Error {
 }
 
 type WebImageEstimateInput = ImageEstimateInput & {
-  customImageSize?: GptImage2ImageSize | null;
   enableWebSearch?: boolean;
   metadata?: ImageGenerationRequest['metadata'];
   source?: ImageGenerationRequest['source'];
@@ -250,8 +251,9 @@ export async function estimateImageGeneration(
       referenceImageCount: input.referenceImageCount,
       referenceImageSizes: input.referenceImageSizes,
       membershipTier: input.membershipTier,
+      enableWebSearch: input.enableWebSearch,
     },
-    false
+    true
   );
 }
 

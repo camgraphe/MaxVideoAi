@@ -67,7 +67,7 @@ export type PrepareGenerationInput = Omit<
   schemaVersion?: 1;
   settings?: CanonicalGenerationRequest['settings'];
   references?: CanonicalGenerationRequest['references'];
-  outputCount?: 1;
+  outputCount?: number;
 };
 
 export type PreparedGeneration = {
@@ -245,11 +245,10 @@ function validateRepresentablePricingFacts(request: CanonicalGenerationRequest):
   const resolution = request.settings.resolution;
   if (
     request.surface === 'image'
-    && (
-      request.settings.enableWebSearch === true
-      || resolution === 'custom'
-      || (request.engineId === 'gpt-image-2' && request.mode === 'i2i' && resolution === 'auto')
-    )
+    && request.engineId === 'gpt-image-2'
+    && request.mode === 'i2i'
+    && resolution === 'auto'
+    && request.references.some((reference) => reference.role !== 'mask' && reference.kind !== 'asset')
   ) {
     invalidParameter();
   }

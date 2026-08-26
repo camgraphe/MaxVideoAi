@@ -10,6 +10,11 @@ import type {
   CanonicalGenerationSurface,
 } from './generation-types';
 import {
+  CANONICAL_GENERATION_MODES,
+  CANONICAL_IMAGE_GENERATION_MODES,
+  CANONICAL_VIDEO_GENERATION_MODES,
+} from './generation-types';
+import {
   MAX_CONTROLLED_REFERENCE_URL_CHARS,
   normalizeControlledHttpsReferenceUrl,
 } from './controlled-reference-url';
@@ -18,31 +23,29 @@ export const MAX_CANONICAL_PROMPT_CHARS = 12_000;
 export const MAX_CANONICAL_SETTING_COUNT = 64;
 export const MAX_CANONICAL_SETTING_STRING_CHARS = 4_096;
 export const MAX_CANONICAL_SETTINGS_JSON_BYTES = 16_384;
-export const MAX_CANONICAL_REFERENCES = 16;
+export const MAX_CANONICAL_REFERENCES = 50;
 export const MAX_CANONICAL_REFERENCE_URL_CHARS = MAX_CONTROLLED_REFERENCE_URL_CHARS;
 
 const MAX_ENGINE_ID_CHARS = 128;
 const MAX_ASSET_ID_CHARS = 256;
 const MAX_SETTING_KEY_CHARS = 64;
-const MODE_SET = new Set<CanonicalGenerationMode>([
-  't2v', 'i2v', 'ref2v', 'fl2v', 'v2v', 'r2v', 'extend', 't2i', 'i2i',
-]);
-const VIDEO_MODE_SET = new Set<CanonicalGenerationMode>([
-  't2v', 'i2v', 'ref2v', 'fl2v', 'v2v', 'r2v', 'extend',
-]);
-const IMAGE_MODE_SET = new Set<CanonicalGenerationMode>(['t2i', 'i2i']);
+const MODE_SET = new Set<CanonicalGenerationMode>(CANONICAL_GENERATION_MODES);
+const VIDEO_MODE_SET = new Set<CanonicalGenerationMode>(CANONICAL_VIDEO_GENERATION_MODES);
+const IMAGE_MODE_SET = new Set<CanonicalGenerationMode>(CANONICAL_IMAGE_GENERATION_MODES);
 const REFERENCE_MEDIA_KIND_SET = new Set<CanonicalReferenceMediaKind>(['image', 'video', 'audio']);
 const ROLE_SET = new Set<CanonicalGenerationReferenceRole>([
   'source',
   'reference',
   'first_frame',
   'last_frame',
+  'mask',
 ]);
 const ROLE_ORDER: Record<CanonicalGenerationReferenceRole, number> = {
   source: 0,
   first_frame: 1,
   last_frame: 2,
   reference: 3,
+  mask: 4,
 };
 const TOP_LEVEL_FIELDS = new Set([
   'schemaVersion',
@@ -66,20 +69,47 @@ const VIDEO_SETTING_KEYS = new Set([
   'audio',
   'cameraFixed',
   'cfgScale',
+  'contextSec',
+  'cropEndX',
+  'cropEndY',
+  'cropStartX',
+  'cropStartY',
   'durationSec',
   'fps',
+  'guidanceScale',
+  'hdr',
   'loop',
   'negativePrompt',
   'numFrames',
   'resolution',
+  'reframeGridPositionX',
+  'reframeGridPositionY',
+  'retakeMode',
   'safetyChecker',
   'seed',
   'shotType',
+  'sourcePositionHeight',
+  'sourcePositionWidth',
+  'sourcePositionX',
+  'sourcePositionY',
+  'startTimeSec',
+  'extendPosition',
+  'modifyStrength',
+  'exrExport',
+  'editDepthBlur',
+  'editFace',
+  'editKeyframeIndexes',
+  'editNormalsAugmentation',
+  'editPoseStrength',
+  'editStrength',
+  'editTrajectorySparsity',
 ]);
 const IMAGE_SETTING_KEYS = new Set([
   'aspectRatio',
   'enableWebSearch',
   'limitGenerations',
+  'imageHeight',
+  'imageWidth',
   'outputFormat',
   'quality',
   'resolution',
@@ -91,11 +121,15 @@ const IMAGE_SETTING_KEYS = new Set([
 const SETTING_KEYS_BY_MODE: Record<CanonicalGenerationMode, ReadonlySet<string>> = {
   t2v: VIDEO_SETTING_KEYS,
   i2v: VIDEO_SETTING_KEYS,
+  i2v_standard: VIDEO_SETTING_KEYS,
   ref2v: VIDEO_SETTING_KEYS,
   fl2v: VIDEO_SETTING_KEYS,
   v2v: VIDEO_SETTING_KEYS,
   r2v: VIDEO_SETTING_KEYS,
   extend: VIDEO_SETTING_KEYS,
+  a2v: VIDEO_SETTING_KEYS,
+  retake: VIDEO_SETTING_KEYS,
+  reframe: VIDEO_SETTING_KEYS,
   t2i: IMAGE_SETTING_KEYS,
   i2i: IMAGE_SETTING_KEYS,
 };
@@ -380,7 +414,11 @@ function normalizeReferences(
 ): CanonicalGenerationReference[] {
   if (value === undefined) return [];
   assertDenseDataArray(value, 'references', MAX_CANONICAL_REFERENCES);
-  const orderedRole = mode === 'extend' ? 'source' : mode === 'r2v' ? 'reference' : null;
+  const orderedRole = mode === 'extend'
+    ? 'source'
+    : mode === 'r2v' || mode === 'v2v'
+      ? 'reference'
+      : null;
   let nextOrderedSlot = 0;
   const references = value.map((reference, index) => {
     const normalized = normalizeReference(reference, index, orderedRole);
@@ -411,12 +449,21 @@ function assertSurfaceMode(surface: CanonicalGenerationSurface, mode: CanonicalG
   }
 }
 
-function normalizeOutputCount(value: unknown): 1 {
+function normalizeOutputCount(
+  value: unknown,
+  surface: CanonicalGenerationSurface,
+): number {
   if (value === undefined) return 1;
-  if (typeof value !== 'number' || !Number.isInteger(value) || value !== 1) {
-    fail('outputCount', 'outputCount must be the integer 1.');
+  const maximum = surface === 'image' ? 15 : 1;
+  if (
+    typeof value !== 'number'
+    || !Number.isSafeInteger(value)
+    || value < 1
+    || value > maximum
+  ) {
+    fail('outputCount', `outputCount must be an integer from 1 to ${maximum}.`);
   }
-  return 1;
+  return value;
 }
 
 export function normalizeGenerationRequest(input: unknown): CanonicalGenerationRequest {
@@ -438,7 +485,7 @@ export function normalizeGenerationRequest(input: unknown): CanonicalGenerationR
     prompt: normalizeText(input.prompt, 'prompt', MAX_CANONICAL_PROMPT_CHARS, false),
     settings: normalizeSettings(input.settings, mode),
     references: normalizeReferences(input.references, mode),
-    outputCount: normalizeOutputCount(input.outputCount),
+    outputCount: normalizeOutputCount(input.outputCount, surface),
   };
 }
 

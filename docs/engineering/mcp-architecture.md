@@ -42,7 +42,9 @@ Because clients discover capabilities through the hosted server, a valid catalog
 
 Expose only modes backed by the same executable path as the MaxVideoAI website. A provider-specific credential or unavailable transport must disable only its dependent mode; it must not hide supported modes from the same model.
 
-Seedance 2.5 currently uses the working ModelArk path for text-to-video, image-to-video, reference-to-video, and extension. Direct video-to-video that depends on BytePlus LAS remains unavailable until LAS access exists. The tool response must state that precise mode-level limitation without weakening the supported modes.
+Seedance 2.5 currently uses the working ModelArk path for text-to-video, image-to-video, reference-to-video, and extension. Direct video-to-video is represented by the canonical contract but remains unavailable in environments without BytePlus LAS access. The tool response must state that precise mode-level limitation without weakening the supported modes.
+
+Specialized website workflows are part of the same rule: LTX audio-to-video and retake, Luma reframe, and the lower-cost Kling 2.5 Standard image-to-video tier are exposed only through canonical names and verified MaxVideoAI media. Gemini Omni retake stays closed until an owned source job can be translated server-side to its private provider interaction identifier.
 
 For every model, verify:
 

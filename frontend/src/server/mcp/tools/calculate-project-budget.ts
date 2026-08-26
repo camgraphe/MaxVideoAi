@@ -3,6 +3,8 @@ import * as z from 'zod/v4';
 
 import { AgentApiError } from '@/server/agent-api/errors';
 import type { AgentPrincipal } from '@/server/agent-api/principal';
+import { CANONICAL_VIDEO_GENERATION_MODES } from '@/server/agent-api/generation-types';
+import { MAX_CANONICAL_REFERENCES } from '@/server/agent-api/generation-normalization';
 import type { MaxVideoAiMcpServices } from '@/server/mcp/server';
 import { runAgentTool } from '@/server/mcp/tool-result';
 
@@ -38,11 +40,11 @@ const lineSchema = z.object({
   engineId: z.string().trim().min(1).max(128).describe(
     'Exact public MaxVideoAI video model ID returned by list_models or get_model_details.',
   ),
-  mode: z.enum(['t2v', 'i2v', 'ref2v', 'v2v', 'extend']).describe(
-    'Video creation mode: text, image, reference, source-video edit, or clip extension.',
+  mode: z.enum(CANONICAL_VIDEO_GENERATION_MODES).describe(
+    'Video creation mode: text, image, multimodal reference, first/last frame, source-video edit, ordered reference videos, or clip extension.',
   ),
   settings: settingsSchema,
-  referenceRoles: z.array(referenceRole).max(16).optional().describe(
+  referenceRoles: z.array(referenceRole).max(MAX_CANONICAL_REFERENCES).optional().describe(
     'Optional declared roles for the reference inputs needed by this model and mode; no media is uploaded or generated.',
   ),
   clipCount: z.number().int().min(1).max(100).describe(

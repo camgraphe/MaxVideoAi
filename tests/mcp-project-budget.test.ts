@@ -11,13 +11,14 @@ import {
 } from '../frontend/src/server/agent-api/project-budget';
 import type { AgentPublicGenerationEngine } from '../frontend/src/server/agent-api/model-catalog';
 import type { AgentPrincipal } from '../frontend/src/server/agent-api/principal';
+import { calculateProjectBudgetInputSchema } from '../frontend/src/server/mcp/tools/calculate-project-budget';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps } from '../frontend/types/engines';
 
 const principal: AgentPrincipal = {
   userId: 'budget-user', clientId: 'codex-client', emailVerified: true, authMethod: 'oauth',
 };
 
-type VideoBudgetMode = 't2v' | 'i2v' | 'ref2v' | 'v2v' | 'extend';
+type VideoBudgetMode = 't2v' | 'i2v' | 'ref2v' | 'fl2v' | 'v2v' | 'r2v' | 'extend';
 
 function engine(id: string, modes: readonly VideoBudgetMode[], durations: readonly number[]): AgentPublicGenerationEngine {
   const inputFields: EngineInputField[] = [
@@ -27,8 +28,11 @@ function engine(id: string, modes: readonly VideoBudgetMode[], durations: readon
     { id: 'aspect_ratio', type: 'enum', label: 'Ratio', values: ['16:9', '9:16'], modes: [...modes] },
     { id: 'generate_audio', type: 'boolean', label: 'Audio', modes: [...modes] },
     { id: 'image_url', type: 'image', label: 'Source', modes: ['i2v'], requiredInModes: ['i2v'], minCount: 1, maxCount: 1 },
+    { id: 'first_frame_url', type: 'image', label: 'First frame', modes: ['fl2v'], requiredInModes: ['fl2v'], minCount: 1, maxCount: 1 },
+    { id: 'last_frame_url', type: 'image', label: 'Last frame', modes: ['fl2v'], requiredInModes: ['fl2v'], minCount: 1, maxCount: 1 },
     { id: 'reference_image_urls', type: 'image', label: 'References', modes: ['ref2v'], requiredInModes: ['ref2v'], minCount: 1, maxCount: 9 },
     { id: 'video_url', type: 'video', label: 'Source video', modes: ['v2v'], requiredInModes: ['v2v'], minCount: 1, maxCount: 1 },
+    { id: 'video_urls', type: 'video', label: 'Reference videos', modes: ['r2v'], requiredInModes: ['r2v'], minCount: 1, maxCount: 3 },
     { id: 'extension_source_videos', type: 'video', label: 'Source clips', modes: ['extend'], requiredInModes: ['extend'], minCount: 1, maxCount: 3 },
   ];
   const caps: EngineCaps = {
@@ -55,7 +59,7 @@ function registryCapability(engineId: string): AgentPublicGenerationEngine {
   const publicModes = entry.modes
     .map((mode) => mode.mode)
     .filter((mode): mode is AgentPublicGenerationEngine['publicModes'][number] =>
-      ['t2v', 'i2v', 'ref2v', 'v2v', 'extend', 't2i', 'i2i'].includes(mode));
+      ['t2v', 'i2v', 'ref2v', 'fl2v', 'v2v', 'r2v', 'extend', 't2i', 'i2i'].includes(mode));
   return {
     engine: entry.engine,
     surface: entry.category === 'image' ? 'image' : 'video',
@@ -238,6 +242,50 @@ test('budgets source-video modes without inventing a ref2v media kind', async ()
   assert.deepEqual(result.proposals[0]?.lines.map((budgetLine) => budgetLine.referenceCount), [1, 3, 1]);
 });
 
+test('budgets first/last-frame and ordered reference-video workflows exposed by the MCP', async () => {
+  const candidates = [registryCapability('veo-3-1'), registryCapability('wan-2-6')];
+  const value = input([
+    {
+      name: 'First and last frame plan',
+      lines: [line({
+        engineId: 'veo-3-1',
+        mode: 'fl2v',
+        settings: { durationSec: 8, resolution: '1080p', aspectRatio: '16:9', audio: true },
+        referenceRoles: ['first_frame', 'last_frame'],
+      })],
+    },
+    {
+      name: 'Reference video plan',
+      lines: [line({
+        engineId: 'wan-2-6',
+        mode: 'r2v',
+        settings: { durationSec: 5, resolution: '1080p', aspectRatio: '16:9' },
+        referenceRoles: ['reference', 'reference'],
+      })],
+    },
+  ]);
+
+  assert.equal(calculateProjectBudgetInputSchema.safeParse(value).success, true);
+  const pricedModes: string[] = [];
+  const result = await calculateAgentProjectBudget(value, principal, {
+    listPublicEngines: async () => candidates,
+    getMembershipStatus: async () => ({ pricing: { tier: 'member' } }),
+    computeCatalogRevision: () => 'mcp-catalog-v2:framed-video-budget',
+    priceGeneration: async (request) => {
+      pricedModes.push(request.mode);
+      return {
+        priceCents: 100,
+        currency: 'USD',
+        membershipTier: 'member',
+        pricingSnapshot: { totalCents: 100, currency: 'USD', membershipTier: 'member' },
+      };
+    },
+  });
+
+  assert.deepEqual(pricedModes, ['fl2v', 'r2v']);
+  assert.deepEqual(result.proposals.map((proposal) => proposal.total.amountCents), [100, 100]);
+});
+
 test('returns an exact safe line location when a project capability is invalid', async () => {
   const proposals = [
     { name: 'Valid alternative', lines: [line()] },
@@ -310,6 +358,34 @@ test('preserves named mixed-model proposals, line order, and creative attempt al
   assert.equal(deps.calls[1]?.prompt, 'Project pricing scenario');
 });
 
+test('project budgets accept the full canonical reference envelope when the model does', async () => {
+  const candidate = registryCapability('seedance-2-5');
+  const references = Array.from({ length: 17 }, () => 'reference' as const);
+  const value = input([{
+    name: 'Reference-rich Seedance plan',
+    lines: [line({
+      engineId: 'seedance-2-5',
+      mode: 'ref2v',
+      settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9', audio: true },
+      referenceRoles: references,
+    })],
+  }]);
+  assert.equal(calculateProjectBudgetInputSchema.safeParse(value).success, true);
+
+  const result = await calculateAgentProjectBudget(value, principal, {
+    listPublicEngines: async () => [candidate],
+    getMembershipStatus: async () => ({ pricing: { tier: 'member' } }),
+    priceGeneration: async () => ({
+      priceCents: 100,
+      currency: 'USD',
+      membershipTier: 'member',
+      pricingSnapshot: { totalCents: 100, currency: 'USD', membershipTier: 'member' },
+    }),
+    computeCatalogRevision: () => 'mcp-catalog-v2:reference-envelope',
+  });
+  assert.equal(result.proposals[0]?.lines[0]?.referenceCount, 17);
+});
+
 test('fails closed for invalid catalog, capability, reference, quantity, pricing, and overflow conditions', async () => {
   await assertError(calculateAgentProjectBudget(input([{ name: 'Missing', lines: [line({ engineId: 'hidden-model' })] }]), principal, makeDeps()), 'ENGINE_UNAVAILABLE');
   await assertError(calculateAgentProjectBudget(input([{ name: 'Mode', lines: [line({ mode: 'i2v', referenceRoles: [] })] }]), principal, makeDeps()), 'REFERENCE_REQUIRED');
@@ -320,7 +396,7 @@ test('fails closed for invalid catalog, capability, reference, quantity, pricing
   await assertError(calculateAgentProjectBudget(input([{ name: 'Attempts below range', lines: [line({ attemptsPerClip: 0 })] }]), principal, makeDeps()), 'PARAMETER_INVALID');
   await assertError(calculateAgentProjectBudget(input(Array.from({ length: 5 }, (_, index) => ({ name: `P${index}`, lines: [line()] }))), principal, makeDeps()), 'PARAMETER_INVALID');
   await assertError(calculateAgentProjectBudget(input([{ name: 'Lines', lines: Array.from({ length: 13 }, () => line()) }]), principal, makeDeps()), 'PARAMETER_INVALID');
-  await assertError(calculateAgentProjectBudget(input([{ name: 'References', lines: [line({ mode: 'ref2v', referenceRoles: Array.from({ length: 17 }, () => 'reference') })] }]), principal, makeDeps()), 'REFERENCE_INVALID');
+  await assertError(calculateAgentProjectBudget(input([{ name: 'References', lines: [line({ mode: 'ref2v', referenceRoles: Array.from({ length: 51 }, () => 'reference') })] }]), principal, makeDeps()), 'REFERENCE_INVALID');
   await assertError(calculateAgentProjectBudget(input([{ name: 'Attempts', lines: [line({ clipCount: 100, attemptsPerClip: 10 })] }]), principal, makeDeps()), 'PARAMETER_INVALID');
   let currencyCalls = 0;
   await assertError(calculateAgentProjectBudget(input([{ name: 'Currency', lines: [line(), line({ engineId: 'minimax-h3', settings: { durationSec: 10, resolution: '2K', aspectRatio: '16:9' } })] }]), principal, makeDeps({ priceGeneration: async () => {

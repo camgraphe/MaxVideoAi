@@ -12,11 +12,16 @@ import {
 } from '@/server/images/estimate-image-generation';
 import type { PreflightRequest, PreflightResponse, PricingSnapshot } from '@/types/engines';
 import type { ImageGenerationMode, ImageGenerationRequest } from '@/types/image-generation';
+import {
+  resolveGptImage2AutoInputImageSize,
+  type GptImage2ImageSize,
+} from '@/lib/image/gptImage2';
 
 import type { CanonicalGenerationRequest } from './generation-types';
 import type { AgentPublicGenerationEngine } from './model-catalog';
 import type { ResolvedReference } from './reference-types';
 import type { AuthoritativeMembershipTier } from '../membership/user-membership-status';
+import { toEngineGenerationMode } from './generation-mode-aliases';
 
 export type GenerationPricingResult = {
   priceCents: number;
@@ -91,7 +96,13 @@ function hasCanonicalVideoInput(
   context: GenerationPricingReferenceContext,
 ): boolean {
   if (request.surface !== 'video') return false;
-  if (request.mode === 'v2v' || request.mode === 'r2v' || request.mode === 'extend') return true;
+  if (
+    request.mode === 'v2v'
+    || request.mode === 'r2v'
+    || request.mode === 'extend'
+    || request.mode === 'retake'
+    || request.mode === 'reframe'
+  ) return true;
   if (request.mode !== 'ref2v') return false;
   return request.references.some((reference) => {
     if (reference.role !== 'reference') return false;
@@ -101,6 +112,78 @@ function hasCanonicalVideoInput(
       && resolved.role === reference.role
       && resolved.mediaKind === 'video') === true;
   });
+}
+
+function canonicalReferenceImageCount(
+  request: CanonicalGenerationRequest,
+  context: GenerationPricingReferenceContext,
+): number {
+  return request.references.reduce((count, reference) => {
+    if (reference.role !== 'reference') return count;
+    if (reference.kind === 'https') {
+      return count + (reference.mediaKind === 'image' ? 1 : 0);
+    }
+    const resolved = context.resolvedReferences?.find((candidate) =>
+      candidate.assetId === reference.assetId
+      && candidate.role === reference.role
+      && candidate.slot === reference.slot);
+    // Preparation resolves private assets before pricing. Keep the unresolved
+    // fallback conservative so a non-standard caller can never underquote.
+    return count + (!resolved || resolved.mediaKind === 'image' ? 1 : 0);
+  }, 0);
+}
+
+function canonicalImageReferences(request: CanonicalGenerationRequest) {
+  return request.references.filter((reference) => reference.role !== 'mask');
+}
+
+function canonicalImageReferenceSizes(
+  request: CanonicalGenerationRequest,
+  context: GenerationPricingReferenceContext,
+): GptImage2ImageSize[] {
+  const included = new Set(canonicalImageReferences(request)
+    .filter((reference) => reference.kind === 'asset')
+    .map((reference) => `${reference.assetId}\u0000${reference.role}\u0000${reference.slot ?? ''}`));
+  return (context.resolvedReferences ?? []).flatMap((reference) => {
+    const key = `${reference.assetId}\u0000${reference.role}\u0000${reference.slot ?? ''}`;
+    return included.has(key)
+      && typeof reference.width === 'number'
+      && typeof reference.height === 'number'
+      ? [{ width: reference.width, height: reference.height }]
+      : [];
+  });
+}
+
+function canonicalCustomImageSize(request: CanonicalGenerationRequest): GptImage2ImageSize | null {
+  return typeof request.settings.imageWidth === 'number'
+    && typeof request.settings.imageHeight === 'number'
+    ? { width: request.settings.imageWidth, height: request.settings.imageHeight }
+    : null;
+}
+
+function canonicalEffectiveCustomImageSize(
+  request: CanonicalGenerationRequest,
+  context: GenerationPricingReferenceContext,
+): GptImage2ImageSize | null {
+  const explicit = canonicalCustomImageSize(request);
+  if (explicit) return explicit;
+  if (
+    request.engineId !== 'gpt-image-2'
+    || request.mode !== 'i2i'
+    || request.settings.resolution !== 'auto'
+  ) return null;
+  return resolveGptImage2AutoInputImageSize(canonicalImageReferenceSizes(request, context));
+}
+
+function canonicalVideoExtraInputValues(
+  request: CanonicalGenerationRequest,
+  context: GenerationPricingReferenceContext,
+): Record<string, number | boolean> {
+  return {
+    referenceImageCount: canonicalReferenceImageCount(request, context),
+    ...(request.settings.hdr === true ? { hdr: true } : {}),
+    ...(request.settings.exrExport === true ? { exr_export: true } : {}),
+  };
 }
 
 function validatePricingResult(
@@ -133,10 +216,11 @@ export async function priceCanonicalGeneration(
 ): Promise<GenerationPricingResult> {
   if (request.surface === 'video') {
     const settings = request.settings;
+    const engineMode = toEngineGenerationMode(request.engineId, request.mode);
     const aspectRatio = optionalString(settings, 'aspectRatio');
     const result = await dependencies.computeVideoPreflight({
       engine: request.engineId,
-      mode: request.mode,
+      mode: engineMode,
       durationSec: requiredPositiveInteger(settings, 'durationSec'),
       resolution: requiredString(settings, 'resolution') as PreflightRequest['resolution'],
       ...(aspectRatio === undefined
@@ -146,7 +230,7 @@ export async function priceCanonicalGeneration(
       ...(typeof settings.loop === 'boolean' ? { loop: settings.loop } : {}),
       ...(typeof settings.audio === 'boolean' ? { audio: settings.audio } : {}),
       hasVideoInput: hasCanonicalVideoInput(request, referenceContext),
-      extraInputValues: { referenceImageCount: request.references.length },
+      extraInputValues: canonicalVideoExtraInputValues(request, referenceContext),
       user: { memberTier: membershipTier },
     });
     if (!result.ok || !result.pricing || result.total === undefined || !result.currency) {
@@ -156,6 +240,7 @@ export async function priceCanonicalGeneration(
   }
 
   const settings = request.settings;
+  const customImageSize = canonicalEffectiveCustomImageSize(request, referenceContext);
   const result = await dependencies.estimateImage({
     engineId: request.engineId,
     mode: request.mode as ImageGenerationMode,
@@ -163,8 +248,10 @@ export async function priceCanonicalGeneration(
     resolution: requiredString(settings, 'resolution'),
     quality: optionalString(settings, 'quality') as ImageGenerationRequest['quality'],
     aspectRatio: optionalString(settings, 'aspectRatio'),
-    referenceImageCount: request.references.length,
-    referenceImageSizes: [],
+    referenceImageCount: canonicalImageReferences(request).length,
+    referenceImageSizes: canonicalImageReferenceSizes(request, referenceContext),
+    ...(customImageSize ? { customImageSize } : {}),
+    enableWebSearch: request.settings.enableWebSearch === true,
     membershipTier,
   });
   return validatePricingResult(result.pricing, membershipTier);
@@ -196,40 +283,53 @@ export async function priceCanonicalGenerationInExecutor(
   const engine = dependencies.candidate.engine;
   let snapshot: PricingSnapshot;
   if (request.surface === 'video') {
-    const pricingEngine = applyEngineVariantPricing(engine, request.mode);
+    const engineMode = toEngineGenerationMode(engine.id, request.mode);
+    const pricingEngine = applyEngineVariantPricing(engine, engineMode);
     const durationSec = requiredPositiveInteger(request.settings, 'durationSec');
     const resolution = requiredString(request.settings, 'resolution');
     const audioEnabled = typeof request.settings.audio === 'boolean'
       ? request.settings.audio
       : undefined;
+    const baseAddons = buildEngineAddonInput(pricingEngine, { audioEnabled });
+    const addons = {
+      ...(baseAddons ?? {}),
+      ...(request.settings.hdr === true ? { hdr: true } : {}),
+      ...(request.settings.exrExport === true ? { exr_export: true } : {}),
+    };
     snapshot = await computeBillingSnapshot({
       engine: pricingEngine,
       durationSec,
       resolution,
       aspectRatio: optionalString(request.settings, 'aspectRatio'),
-      mode: request.mode,
+      mode: engineMode,
       hasVideoInput: hasCanonicalVideoInput(request, dependencies),
-      referenceImageCount: request.references.length,
+      referenceImageCount: canonicalReferenceImageCount(request, dependencies),
       membershipTier,
       loop: isLumaRay2EngineId(engine.id) && request.settings.loop === true,
       durationOption: isLumaRay2EngineId(engine.id)
         ? getLumaRay2DurationInfo(durationSec)?.label
         : undefined,
-      addons: buildEngineAddonInput(pricingEngine, { audioEnabled }),
+      addons: Object.keys(addons).length ? addons : undefined,
     }, { pricingPolicy, membershipDiscounts });
   } else {
+    const imageReferences = canonicalImageReferences(request);
+    const customImageSize = canonicalEffectiveCustomImageSize(request, dependencies);
     const referenceImageCount = isLumaAgentsImageEngineId(engine.id)
       ? request.mode === 'i2i'
-        ? Math.max(0, request.references.length - 1)
-        : request.references.length
+        ? Math.max(0, imageReferences.length - 1)
+        : imageReferences.length
       : undefined;
     snapshot = await computeBillingSnapshot({
       engine,
       durationSec: request.outputCount,
       resolution: requiredString(request.settings, 'resolution'),
       aspectRatio: optionalString(request.settings, 'aspectRatio'),
-      mode: request.mode,
+      mode: request.mode as ImageGenerationMode,
+      ...(customImageSize ? { customImageSize } : {}),
       quality: optionalString(request.settings, 'quality'),
+      addons: request.settings.enableWebSearch === true
+        ? { enable_web_search: true }
+        : undefined,
       referenceImageCount,
       membershipTier,
       currency: engine.pricing?.currency ?? 'USD',

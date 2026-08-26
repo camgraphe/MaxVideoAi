@@ -77,11 +77,17 @@ function validStorageUrl(value: unknown): value is string {
   }
 }
 
-function hasValidDurationMetadata(value: unknown): boolean {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return true;
-  if (!Object.hasOwn(value, 'durationSec')) return true;
-  const durationSec = (value as Record<string, unknown>).durationSec;
-  return normalizeSupportedReferenceDuration('video', durationSec).valid;
+function durationMetadata(
+  kind: ResolvedReference['mediaKind'],
+  value: unknown,
+): { valid: boolean; durationSec: number | null } {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return normalizeSupportedReferenceDuration(kind, null);
+  }
+  const durationSec = Object.hasOwn(value, 'durationSec')
+    ? (value as Record<string, unknown>).durationSec
+    : null;
+  return normalizeSupportedReferenceDuration(kind, durationSec);
 }
 
 function invalidReference(): never {
@@ -113,6 +119,7 @@ export async function resolveOwnedReferenceAsset(
   }
 
   const media = resolveSupportedReferenceMedia(row.kind, row.mime_type);
+  const duration = media ? durationMetadata(media.kind, row.metadata) : null;
   if (
     row.public_id !== normalizedAssetId
     || row.status?.trim().toLowerCase() !== 'ready'
@@ -121,7 +128,7 @@ export async function resolveOwnedReferenceAsset(
     || !validStorageUrl(row.url)
     || !validDimension(row.width)
     || !validDimension(row.height)
-    || !hasValidDurationMetadata(row.metadata)
+    || !duration?.valid
   ) invalidReference();
 
   return {
@@ -130,6 +137,7 @@ export async function resolveOwnedReferenceAsset(
     storageUrl: row.url,
     width: row.width,
     height: row.height,
+    durationSec: duration.durationSec,
     mimeType: media.canonicalMime,
   };
 }

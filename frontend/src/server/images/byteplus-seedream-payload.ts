@@ -1,5 +1,9 @@
 import type { ImageGenerationMode } from '@/types/image-generation';
-import { resolveSeedreamProviderSize } from '@/lib/image/seedream';
+import {
+  resolveSeedreamProviderSize,
+  SEEDREAM_MAX_IMAGE_SET_IMAGES,
+  SEEDREAM_MAX_REFERENCE_IMAGES,
+} from '@/lib/image/seedream';
 import { BytePlusSeedreamError } from './byteplus-seedream-error';
 
 export type BytePlusSeedreamPayload = {
@@ -16,9 +20,6 @@ export type BytePlusSeedreamPayload = {
     max_images: number;
   };
 };
-
-const SEEDREAM_MAX_REFERENCE_IMAGES = 10;
-const SEEDREAM_MAX_IMAGE_SET_IMAGES = 15;
 
 function isSeedreamProModel(modelId: string): boolean {
   return /seedream-5-0-pro/i.test(modelId);

@@ -1,7 +1,7 @@
 {
   "name": "maxvideoai",
   "version": "0.1.0",
-  "description": "Plan and generate AI video with current MaxVideoAI models and prices from Claude.",
+  "description": "Plan, price, and generate AI video or images with current MaxVideoAI models from Claude.",
   "author": { "name": "MaxVideoAI" },
   "homepage": "https://maxvideoai.com/mcp",
   "license": "BUSL-1.1"

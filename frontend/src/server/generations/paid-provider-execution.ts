@@ -14,9 +14,19 @@ import type {
   PaidGenerationSubmissionDependencies,
   PaidVideoContinuationOptions,
 } from '@/server/agent-api/paid-generation-execution';
+import {
+  CANONICAL_VIDEO_GENERATION_MODES,
+  type CanonicalVideoGenerationMode,
+} from '@/server/agent-api/generation-types';
 import { executeImageGeneration } from '@/server/images/execute-image-generation';
 import { executeVideoGeneration } from '@/server/video-generation/execute-video-generation';
-import type { PricingSnapshot } from '@/types/engines';
+import type { Mode, PricingSnapshot } from '@/types/engines';
+
+const PAID_VIDEO_CONTINUATION_MODES = new Set<string>(CANONICAL_VIDEO_GENERATION_MODES);
+
+export function isPaidVideoContinuationMode(mode: unknown): mode is CanonicalVideoGenerationMode {
+  return typeof mode === 'string' && PAID_VIDEO_CONTINUATION_MODES.has(mode);
+}
 
 async function executePaidVideoContinuation(
   options: PaidVideoContinuationOptions | IncludedTrialVideoContinuationOptions,
@@ -25,10 +35,12 @@ async function executePaidVideoContinuation(
     method: 'POST',
     headers: { 'content-type': 'application/json' },
   });
-  const mode = options.body.mode;
-  if (mode !== 't2v' && mode !== 'i2v' && mode !== 'ref2v' && mode !== 'v2v' && mode !== 'extend') {
+  const rawMode = options.body.mode;
+  const isKlingStandardSiteMode = options.engine.id === 'kling-2-5-turbo' && rawMode === 'i2i';
+  if (!isPaidVideoContinuationMode(rawMode) && !isKlingStandardSiteMode) {
     return { status: 400, body: { ok: false, error: 'Unsupported paid video mode' } };
   }
+  const mode = rawMode as Mode;
   const jobId = String(options.body.jobId ?? '');
   const routeContext = resolveTrustedPaidGenerateRouteContext({
     body: options.body,

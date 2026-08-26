@@ -96,6 +96,11 @@ function publicEngine(model: AgentModel): AgentPublicGenerationEngine {
         { id: 'output_format', type: 'enum', label: 'Format', values: ['png', 'jpeg', 'webp'] },
         { id: 'enable_web_search', type: 'boolean', label: 'Web search' },
         { id: 'image_urls', type: 'image', label: 'References', modes: ['i2i'], requiredInModes: ['i2i'], minCount: 1, maxCount: 4 },
+        ...(model.id === 'gpt-image-2' ? [
+          { id: 'image_width', type: 'number', label: 'Width', modes: ['t2i', 'i2i'], min: 16, max: 3840, step: 16 },
+          { id: 'image_height', type: 'number', label: 'Height', modes: ['t2i', 'i2i'], min: 16, max: 3840, step: 16 },
+          { id: 'mask_url', type: 'image', label: 'Mask', modes: ['i2i'], minCount: 0, maxCount: 1 },
+        ] satisfies EngineInputField[] : []),
       ];
   const modeCaps = Object.fromEntries(model.modes.map((mode) => [mode, {
     modes: [mode],
@@ -559,17 +564,15 @@ test('image requests fail closed when canonical input cannot represent exact pri
     {
       input: {
         ...imageInput,
-        settings: { ...imageInput.settings, enableWebSearch: true },
-      },
-      capability: imageCapability,
-    },
-    {
-      input: {
-        ...imageInput,
         engineId: gptImageModel.id,
         mode: 'i2i',
         settings: { ...imageInput.settings, resolution: 'auto' },
-        references: [{ kind: 'asset', assetId: 'asset-1', role: 'source' }],
+        references: [{
+          kind: 'https',
+          url: 'https://assets.example.com/source.png',
+          role: 'source',
+          mediaKind: 'image',
+        }],
       },
       capability: gptImageCapability,
     },
@@ -577,7 +580,7 @@ test('image requests fail closed when canonical input cannot represent exact pri
       input: {
         ...imageInput,
         engineId: gptImageModel.id,
-        settings: { ...imageInput.settings, resolution: 'custom' },
+        settings: { ...imageInput.settings, resolution: 'custom', imageWidth: 1280 },
       },
       capability: gptImageCapability,
     },
@@ -590,6 +593,41 @@ test('image requests fail closed when canonical input cannot represent exact pri
     await expectAgentError(prepareGeneration(unsafe.input, principal, deps), 'PARAMETER_INVALID');
     assert.equal(captures.events.includes('pricing'), false);
     assert.equal(captures.inserted.length, 0);
+  }
+});
+
+test('GPT Image 2 custom dimensions and owned-reference auto sizing are exact and quotable', async () => {
+  const cases: PrepareGenerationInput[] = [
+    {
+      ...imageInput,
+      engineId: gptImageModel.id,
+      settings: {
+        ...imageInput.settings,
+        resolution: 'custom',
+        imageWidth: 1280,
+        imageHeight: 768,
+      },
+    },
+    {
+      ...imageInput,
+      engineId: gptImageModel.id,
+      mode: 'i2i',
+      settings: { ...imageInput.settings, resolution: 'auto' },
+      references: [{ kind: 'asset', assetId: 'asset-1', role: 'source' }],
+    },
+  ];
+  for (const input of cases) {
+    const { deps, captures } = baseDependencies({
+      listPublicEngines: async () => [gptImageCapability],
+      resolveGenerationReferences: async () => [{
+        assetId: 'asset-1', role: 'source', mediaKind: 'image',
+        storageUrl: 'https://assets.example.com/source.png',
+        width: 1536, height: 1024, mimeType: 'image/png',
+      }],
+    });
+    const prepared = await prepareGeneration(input, principal, deps);
+    assert.equal(prepared.confirmationRequired, true);
+    assert.equal(captures.inserted.length, 1);
   }
 });
 
@@ -755,7 +793,11 @@ test('generation pricing delegates video and image formulas to the existing cano
   let videoPayload: Record<string, unknown> | null = null;
   let imagePayload: Record<string, unknown> | null = null;
   const videoRequest = { ...videoInput, schemaVersion: 1, prompt: videoInput.prompt.trim() } as CanonicalGenerationRequest;
-  const imageRequest = { ...imageInput, schemaVersion: 1 } as CanonicalGenerationRequest;
+  const imageRequest = {
+    ...imageInput,
+    schemaVersion: 1,
+    settings: { ...imageInput.settings, enableWebSearch: true },
+  } as CanonicalGenerationRequest;
   const deps = {
     computeVideoPreflight: async (payload: Record<string, unknown>) => {
       videoPayload = payload;
@@ -812,8 +854,133 @@ test('generation pricing delegates video and image formulas to the existing cano
     aspectRatio: '1:1',
     referenceImageCount: 0,
     referenceImageSizes: [],
+    enableWebSearch: true,
     membershipTier: 'member',
   });
+});
+
+test('transaction image pricing preserves the canonical web-search addon', async () => {
+  const candidate = registryCapability('nano-banana-2');
+  const request: CanonicalGenerationRequest = {
+    schemaVersion: 1,
+    surface: 'image',
+    engineId: 'nano-banana-2',
+    mode: 't2i',
+    prompt: 'Use current web context for an editorial visual.',
+    settings: { resolution: '1k', aspectRatio: '1:1', enableWebSearch: true },
+    references: [],
+    outputCount: 1,
+  };
+  let captured: Record<string, unknown> | null = null;
+  await priceCanonicalGenerationInExecutor(request, 'member', {
+    executor: {
+      async query() { return []; },
+    } as TransactionQueryExecutor,
+    candidate,
+    computeBillingSnapshot: async (context) => {
+      captured = context as unknown as Record<string, unknown>;
+      return { totalCents: 100, currency: 'USD', membershipTier: 'member' } as never;
+    },
+  });
+  assert.deepEqual(captured?.addons, { enable_web_search: true });
+});
+
+test('Luma HDR and EXR addons reach both canonical video pricing paths', async () => {
+  const candidate = registryCapability('luma-ray-3-2');
+  const request: CanonicalGenerationRequest = {
+    schemaVersion: 1,
+    surface: 'video',
+    engineId: 'luma-ray-3-2',
+    mode: 't2v',
+    prompt: 'A high-dynamic-range cinematic landscape.',
+    settings: {
+      durationSec: 5,
+      resolution: '720p',
+      aspectRatio: '16:9',
+      hdr: true,
+      exrExport: true,
+    },
+    references: [],
+    outputCount: 1,
+  };
+
+  let preflight: Record<string, unknown> | null = null;
+  await priceCanonicalGeneration(request, 'member', {
+    computeVideoPreflight: async (payload: Record<string, unknown>) => {
+      preflight = payload;
+      return {
+        ok: true,
+        total: 100,
+        currency: 'USD',
+        pricing: { totalCents: 100, currency: 'USD', membershipTier: 'member' },
+      };
+    },
+    estimateImage: async () => { throw new Error('unused'); },
+  });
+  assert.deepEqual(preflight?.extraInputValues, {
+    referenceImageCount: 0,
+    hdr: true,
+    exr_export: true,
+  });
+
+  let transaction: Record<string, unknown> | null = null;
+  await priceCanonicalGenerationInExecutor(request, 'member', {
+    executor: { async query() { return []; } } as TransactionQueryExecutor,
+    candidate,
+    computeBillingSnapshot: async (context) => {
+      transaction = context as unknown as Record<string, unknown>;
+      return { totalCents: 100, currency: 'USD', membershipTier: 'member' } as never;
+    },
+  });
+  assert.deepEqual(transaction?.addons, { hdr: true, exr_export: true });
+});
+
+test('GPT Image 2 auto edit pricing keeps the same owned-reference size at confirmation', async () => {
+  const candidate = registryCapability('gpt-image-2');
+  const request: CanonicalGenerationRequest = {
+    schemaVersion: 1,
+    surface: 'image',
+    engineId: 'gpt-image-2',
+    mode: 'i2i',
+    prompt: 'Edit this source image without changing its framing.',
+    settings: { resolution: 'auto', quality: 'high' },
+    references: [{ kind: 'asset', assetId: 'owned-source', role: 'source' }],
+    outputCount: 1,
+  };
+  const resolvedReferences = [{
+    assetId: 'owned-source',
+    role: 'source' as const,
+    mediaKind: 'image' as const,
+    storageUrl: 'https://assets.example.com/owned-source.png',
+    width: 1536,
+    height: 1024,
+    mimeType: 'image/png',
+  }];
+
+  let prepared: Record<string, unknown> | null = null;
+  await priceCanonicalGeneration(request, 'member', {
+    computeVideoPreflight: async () => { throw new Error('unused'); },
+    estimateImage: async (payload: Record<string, unknown>) => {
+      prepared = payload;
+      return {
+        pricing: { totalCents: 100, currency: 'USD', membershipTier: 'member' },
+        normalized: {},
+      };
+    },
+  }, { resolvedReferences });
+
+  let confirmed: Record<string, unknown> | null = null;
+  await priceCanonicalGenerationInExecutor(request, 'member', {
+    executor: { async query() { return []; } } as TransactionQueryExecutor,
+    candidate,
+    resolvedReferences,
+    computeBillingSnapshot: async (context) => {
+      confirmed = context as unknown as Record<string, unknown>;
+      return { totalCents: 100, currency: 'USD', membershipTier: 'member' } as never;
+    },
+  });
+  assert.deepEqual(prepared?.customImageSize, { width: 1536, height: 1024 });
+  assert.deepEqual(confirmed?.customImageSize, prepared?.customImageSize);
 });
 
 test('generation pricing passes the authoritative tier to both canonical pricing owners', async () => {
@@ -845,11 +1012,34 @@ test('generation pricing passes the authoritative tier to both canonical pricing
 
 test('generation pricing forwards MiniMax H3 reference counts to both canonical pricing paths', async () => {
   const candidate = registryCapability('minimax-h3');
-  const references = Array.from({ length: 6 }, (_, index) => ({
-    kind: 'asset' as const,
-    assetId: `reference-${index + 1}`,
-    role: 'reference' as const,
-  }));
+  const references: CanonicalGenerationRequest['references'] = [
+    { kind: 'https', url: 'https://cdn.example.com/image-a.png', role: 'reference', mediaKind: 'image' },
+    { kind: 'https', url: 'https://cdn.example.com/image-b.png', role: 'reference', mediaKind: 'image' },
+    { kind: 'https', url: 'https://cdn.example.com/video-a.mp4', role: 'reference', mediaKind: 'video' },
+    { kind: 'https', url: 'https://cdn.example.com/audio-a.wav', role: 'reference', mediaKind: 'audio' },
+    { kind: 'asset', assetId: 'private-image', role: 'reference' },
+    { kind: 'asset', assetId: 'private-video', role: 'reference' },
+  ];
+  const resolvedReferences = [
+    {
+      assetId: 'private-image',
+      role: 'reference' as const,
+      mediaKind: 'image' as const,
+      storageUrl: 'https://assets.example.com/private-image.png',
+      width: 1024,
+      height: 1024,
+      mimeType: 'image/png',
+    },
+    {
+      assetId: 'private-video',
+      role: 'reference' as const,
+      mediaKind: 'video' as const,
+      storageUrl: 'https://assets.example.com/private-video.mp4',
+      width: 1920,
+      height: 1080,
+      mimeType: 'video/mp4',
+    },
+  ];
   const ref2vRequest: CanonicalGenerationRequest = {
     schemaVersion: 1,
     surface: 'video',
@@ -874,8 +1064,8 @@ test('generation pricing forwards MiniMax H3 reference counts to both canonical 
     estimateImage: async () => {
       throw new Error('unused');
     },
-  });
-  assert.equal((capturedPreflight?.extraInputValues as { referenceImageCount?: number } | undefined)?.referenceImageCount, 6);
+  }, { resolvedReferences });
+  assert.equal((capturedPreflight?.extraInputValues as { referenceImageCount?: number } | undefined)?.referenceImageCount, 3);
 
   let capturedBillingContext: Record<string, unknown> | null = null;
   const pricingExecutor = {
@@ -887,12 +1077,13 @@ test('generation pricing forwards MiniMax H3 reference counts to both canonical 
   await priceCanonicalGenerationInExecutor(ref2vRequest, 'member', {
     executor: pricingExecutor,
     candidate,
+    resolvedReferences,
     computeBillingSnapshot: async (context) => {
       capturedBillingContext = context as unknown as Record<string, unknown>;
       return { totalCents: 100, currency: 'USD', membershipTier: 'member' } as never;
     },
   });
-  assert.equal(capturedBillingContext?.referenceImageCount, 6);
+  assert.equal(capturedBillingContext?.referenceImageCount, 3);
 
   for (const mode of ['t2v', 'ref2v'] as const) {
     const request: CanonicalGenerationRequest = {
@@ -914,8 +1105,8 @@ test('generation pricing forwards MiniMax H3 reference counts to both canonical 
       estimateImage: async () => {
         throw new Error('unused');
       },
-    });
-    assert.equal(count, mode === 'ref2v' ? 6 : 0);
+    }, mode === 'ref2v' ? { resolvedReferences } : {});
+    assert.equal(count, mode === 'ref2v' ? 3 : 0);
   }
 });
 

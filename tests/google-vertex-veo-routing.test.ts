@@ -18,6 +18,7 @@ import {
 import { buildGoogleVertexVeoPayload } from '../frontend/src/server/video-providers/google-vertex-veo/payload';
 import { resolveVideoProviderRoutingPlan } from '../frontend/src/server/video-providers/router';
 import { normalizeProviderRoutedResolution } from '../frontend/app/api/generate/_lib/provider-resolution';
+import { submitGoogleVertexVeoGenerateTask } from '../frontend/app/api/generate/_lib/google-vertex-veo-submission';
 
 test('Google Vertex Veo router selects admin-only direct routing for all public Veo 3.1 slugs', () => {
   const engineIds = ['veo-3-1', 'veo-3-1-fast', 'veo-3-1-lite'];
@@ -554,6 +555,63 @@ test('Google Vertex Veo fallback classification is submit-only and safe before o
     }),
     false
   );
+});
+
+test('Google Vertex Veo never substitutes Fal when fallback is disabled', async () => {
+  let falCalls = 0;
+  const queries: Array<{ sql: string; params?: unknown[] }> = [];
+  const result = await submitGoogleVertexVeoGenerateTask({
+    jobId: 'job-veo-no-fallback',
+    userId: 'user-1',
+    engineId: 'veo-3-1-lite',
+    engineLabel: 'Veo 3.1 Lite',
+    mode: 'ref2v',
+    prompt: 'A controlled reference-led product shot.',
+    durationSec: 8,
+    aspectRatio: '16:9',
+    audioEnabled: true,
+    effectiveResolution: '720p',
+    placeholderThumb: '/placeholder.svg',
+    pricing: { totalCents: 100, currency: 'USD', membershipTier: 'member' } as never,
+    paymentStatus: 'paid_wallet',
+    pendingReceipt: null,
+    paymentMode: 'wallet',
+    walletChargeReserved: false,
+    fallbackToFalEnabled: false,
+    falPayload: {
+      engineId: 'veo-3-1-lite',
+      mode: 'ref2v',
+      prompt: 'A controlled reference-led product shot.',
+      durationSec: 8,
+      resolution: '720p',
+      aspectRatio: '16:9',
+      referenceImages: ['https://cdn.example.com/reference.png'],
+    },
+    falInputSummary: {} as never,
+    isLumaRay2: false,
+    batchId: null,
+    groupId: null,
+    iterationIndex: null,
+    iterationCount: null,
+    renderIds: null,
+    heroRenderId: null,
+    localKey: null,
+    logMetricFn: () => undefined,
+    deps: {
+      queryFn: async (sql, params) => {
+        queries.push({ sql, params });
+        return [];
+      },
+      submitFalGenerateTaskFn: async () => {
+        falCalls += 1;
+        throw new Error('Fal must not be called when fallback is disabled.');
+      },
+    },
+  });
+
+  assert.equal(result.ok, false);
+  assert.equal(falCalls, 0);
+  assert.ok(queries.some((entry) => /SET status = 'failed'/i.test(entry.sql)));
 });
 
 test('Google Vertex Veo provider cost estimates use Agent Platform public pricing', () => {

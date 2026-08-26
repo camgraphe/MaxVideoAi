@@ -1,14 +1,16 @@
 import type { EngineCaps, EngineModeUiCaps } from '@/types/engines';
 
 import type { AgentGenerationMode } from './types';
+import {
+  CANONICAL_GENERATION_MODES,
+  CANONICAL_IMAGE_GENERATION_MODES,
+  CANONICAL_VIDEO_GENERATION_MODES,
+} from './generation-types';
+import { toCanonicalGenerationMode } from './generation-mode-aliases';
 
-const PUBLIC_MODES = new Set<AgentGenerationMode>([
-  't2v', 'i2v', 'ref2v', 'fl2v', 'v2v', 'r2v', 'extend', 't2i', 'i2i',
-]);
-const VIDEO_MODES = new Set<AgentGenerationMode>([
-  't2v', 'i2v', 'ref2v', 'fl2v', 'v2v', 'r2v', 'extend',
-]);
-const IMAGE_MODES = new Set<AgentGenerationMode>(['t2i', 'i2i']);
+const PUBLIC_MODES = new Set<AgentGenerationMode>(CANONICAL_GENERATION_MODES);
+const VIDEO_MODES = new Set<AgentGenerationMode>(CANONICAL_VIDEO_GENERATION_MODES);
+const IMAGE_MODES = new Set<AgentGenerationMode>(CANONICAL_IMAGE_GENERATION_MODES);
 const NON_PUBLIC_API_MARKERS = /\b(admin|internal|private|hidden|disabled|unavailable)\b/i;
 
 export type AgentPublicGenerationEngine = {
@@ -27,10 +29,10 @@ export function listPublicAgentModes(
   surface: 'video' | 'image',
 ): AgentGenerationMode[] {
   const allowedForSurface = surface === 'video' ? VIDEO_MODES : IMAGE_MODES;
-  return engine.modes.filter(
-    (mode): mode is AgentGenerationMode =>
-      isPublicAgentGenerationMode(mode) && allowedForSurface.has(mode),
-  );
+  return engine.modes.flatMap((mode) => {
+    const canonical = toCanonicalGenerationMode(engine.id, surface, mode);
+    return canonical && allowedForSurface.has(canonical) ? [canonical] : [];
+  });
 }
 
 export function isPublicAgentEngine(

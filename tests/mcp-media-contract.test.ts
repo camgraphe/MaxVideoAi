@@ -83,6 +83,7 @@ test('ResolvedReference is an internal storage DTO using the canonical role owne
     'storageUrl',
     'width',
     'height',
+    'durationSec',
     'mimeType',
   ]);
   assert.match(
@@ -96,6 +97,7 @@ test('ResolvedReference is an internal storage DTO using the canonical role owne
   assert.match(body, /storageUrl:\s*string;/u);
   assert.match(body, /width:\s*number\s*\|\s*null;/u);
   assert.match(body, /height:\s*number\s*\|\s*null;/u);
+  assert.match(body, /durationSec:\s*number\s*\|\s*null;/u);
   assert.match(body, /mimeType:\s*string;/u);
   assert.doesNotMatch(body, /previewUrl|resourceUrl|originUrl|providerUrl/iu);
 });

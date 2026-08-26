@@ -75,7 +75,7 @@ type _AgentMediaHasNoSymbolIndex = Assert<
   Equal<symbol extends keyof AgentMediaItem ? true : false, false>
 >;
 
-type ExpectedReferenceRole = 'source' | 'reference' | 'first_frame' | 'last_frame';
+type ExpectedReferenceRole = 'source' | 'reference' | 'first_frame' | 'last_frame' | 'mask';
 type ExpectedReferenceMediaKind = 'image' | 'video' | 'audio';
 
 type ExpectedResolvedReference = {
@@ -86,6 +86,7 @@ type ExpectedResolvedReference = {
   storageUrl: string;
   width: number | null;
   height: number | null;
+  durationSec: number | null;
   mimeType: string;
 };
 
@@ -97,6 +98,7 @@ type ExpectedResolvedReferenceKeys =
   | 'storageUrl'
   | 'width'
   | 'height'
+  | 'durationSec'
   | 'mimeType';
 
 type ForbiddenResolvedReferenceKeys =

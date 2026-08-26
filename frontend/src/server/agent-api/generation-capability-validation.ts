@@ -9,6 +9,9 @@ import {
 } from '@/lib/image/inputSchema';
 import type { EngineInputField, EngineModeUiCaps } from '@/types/engines';
 import type { ImageGenerationMode } from '@/types/image-generation';
+import { isLumaRay2EngineId } from '@/lib/luma-ray2';
+import { validateGptImage2CustomImageSize } from '@/lib/image/gptImage2';
+import { SEEDREAM_MAX_IMAGE_SET_IMAGES } from '@/lib/image/seedream';
 import {
   isVideoDurationSupported,
   validateProviderControls,
@@ -22,17 +25,45 @@ import type {
 } from './generation-types';
 import type { AgentPublicGenerationEngine } from './model-catalog';
 import type { ResolvedReference } from './reference-types';
+import { toEngineGenerationMode } from './generation-mode-aliases';
 
 const VIDEO_FIELD_BY_SETTING: Record<string, string> = {
   cameraFixed: 'camera_fixed',
   cfgScale: 'cfg_scale',
+  contextSec: 'context',
+  cropEndX: 'x_end',
+  cropEndY: 'y_end',
+  cropStartX: 'x_start',
+  cropStartY: 'y_start',
+  editDepthBlur: 'edit_depth_blur',
+  editFace: 'edit_face',
+  editKeyframeIndexes: 'edit_keyframe_indexes',
+  editNormalsAugmentation: 'edit_normals_augmentation',
+  editPoseStrength: 'edit_pose_strength',
+  editStrength: 'edit_strength',
+  editTrajectorySparsity: 'edit_trajectory_sparsity',
+  exrExport: 'exr_export',
+  extendPosition: 'mode',
+  guidanceScale: 'guidance_scale',
+  hdr: 'hdr',
+  modifyStrength: 'mode',
   negativePrompt: 'negative_prompt',
+  reframeGridPositionX: 'grid_position_x',
+  reframeGridPositionY: 'grid_position_y',
+  retakeMode: 'retake_mode',
   safetyChecker: 'enable_safety_checker',
   seed: 'seed',
   shotType: 'shot_type',
+  sourcePositionHeight: 'source_position_h_norm',
+  sourcePositionWidth: 'source_position_w_norm',
+  sourcePositionX: 'source_position_x_norm',
+  sourcePositionY: 'source_position_y_norm',
+  startTimeSec: 'start_time',
 };
 const IMAGE_FIELD_BY_SETTING: Record<string, string> = {
   enableWebSearch: 'enable_web_search',
+  imageHeight: 'image_height',
+  imageWidth: 'image_width',
   limitGenerations: 'limit_generations',
   outputFormat: 'output_format',
   quality: 'quality',
@@ -64,13 +95,14 @@ function applicableField(
   fieldId: string,
   mode: CanonicalGenerationRequest['mode'],
 ): EngineInputField | null {
+  const engineMode = toEngineGenerationMode(candidate.engine.id, mode);
   const fields = [
     ...(candidate.engine.inputSchema?.required ?? []),
     ...(candidate.engine.inputSchema?.optional ?? []),
   ];
   return fields.find((field) =>
     field.id === fieldId
-    && (!field.modes?.length || field.modes.includes(mode))) ?? null;
+    && (!field.modes?.length || field.modes.includes(engineMode))) ?? null;
 }
 
 function validateFieldValue(field: EngineInputField, value: unknown): void {
@@ -115,25 +147,30 @@ function validateVideoModeCaps(
 ): void {
   const duration = request.settings.durationSec;
   if (!Number.isSafeInteger(duration) || (duration as number) < 1) fail('durationSec');
-  if (!caps.duration || caps.frames) fail('durationSec');
-  if (!isVideoDurationSupported(duration, caps.duration, candidate.engine.maxDurationSec)) {
+  if (caps.frames) fail('durationSec');
+  if (caps.duration && !isVideoDurationSupported(duration, caps.duration, candidate.engine.maxDurationSec)) {
     fail('durationSec');
   }
+  if (!caps.duration && (duration as number) > candidate.engine.maxDurationSec) fail('durationSec');
   const durationField = applicableField(candidate, 'duration', request.mode);
   if (durationField) {
-    if (
-      durationField.type !== 'enum'
-      || !durationField.values?.length
-      || !isVideoDurationSupported(duration, { options: durationField.values })
-    ) {
-      fail('durationSec');
-    }
+    if (durationField.type === 'enum') {
+      if (
+        !durationField.values?.length
+        || !isVideoDurationSupported(duration, { options: durationField.values })
+      ) fail('durationSec');
+    } else if (durationField.type === 'number') {
+      validateFieldValue(durationField, duration);
+    } else fail('durationSec');
   }
 
   const resolution = request.settings.resolution;
+  const supportedResolutions = caps.resolution?.length
+    ? caps.resolution
+    : candidate.engine.resolutions.filter((value) => value !== 'auto').slice(0, 1);
   if (
     typeof resolution !== 'string'
-    || !caps.resolution?.includes(resolution)
+    || !supportedResolutions.includes(resolution as never)
     || !candidate.engine.resolutions.includes(resolution as never)
   ) {
     fail('resolution');
@@ -184,6 +221,74 @@ function validateVideoModeCaps(
   if (request.settings.numFrames !== undefined) fail('numFrames');
 }
 
+function validateDerivedSourceFacts(
+  request: CanonicalGenerationRequest,
+  candidate: AgentPublicGenerationEngine,
+  options: GenerationCapabilityValidationOptions,
+): void {
+  if (
+    request.engineId === 'gpt-image-2'
+    && request.mode === 'i2i'
+    && request.settings.resolution === 'auto'
+    && options.resolvedReferences
+  ) {
+    for (const reference of request.references) {
+      if (reference.role === 'mask') continue;
+      if (reference.kind !== 'asset') fail('references', 'reference_invalid');
+      const resolved = options.resolvedReferences.find((candidate) =>
+        candidate.assetId === reference.assetId
+        && candidate.role === reference.role
+        && candidate.slot === reference.slot);
+      if (!resolved || typeof resolved.width !== 'number' || typeof resolved.height !== 'number') {
+        fail('references', 'reference_invalid');
+      }
+    }
+  }
+  if (request.mode === 'a2v' || request.mode === 'retake' || request.mode === 'reframe') {
+    const source = request.references.find((reference) => reference.role === 'source');
+    if (!source || source.kind !== 'asset') fail('references', 'reference_invalid');
+    if (options.resolvedReferences) {
+      const resolved = options.resolvedReferences.find((reference) =>
+        reference.assetId === source.assetId
+        && reference.role === source.role
+        && reference.slot === source.slot);
+      const expectedKind = request.mode === 'a2v' ? 'audio' : 'video';
+      if (
+        !resolved
+        || resolved.mediaKind !== expectedKind
+        || typeof resolved.durationSec !== 'number'
+      ) fail('references', 'reference_invalid');
+      if (
+        (request.mode === 'a2v' || request.mode === 'reframe')
+        && request.settings.durationSec !== Math.max(1, Math.ceil(resolved.durationSec))
+      ) fail('durationSec');
+      if (request.mode === 'retake') {
+        const startTimeSec = request.settings.startTimeSec;
+        if (
+          typeof startTimeSec !== 'number'
+          || startTimeSec + Number(request.settings.durationSec) > resolved.durationSec + 0.01
+        ) fail('startTimeSec');
+      }
+    }
+  }
+  if (!isLumaRay2EngineId(request.engineId) || request.mode !== 'v2v') return;
+  const source = request.references.find((reference) => reference.role === 'source');
+  if (!source || source.kind !== 'asset') fail('references', 'reference_invalid');
+  if (!options.resolvedReferences) return;
+  const resolved = options.resolvedReferences?.find((reference) =>
+    reference.assetId === source.assetId
+    && reference.role === source.role
+    && reference.slot === source.slot);
+  if (!resolved || resolved.mediaKind !== 'video' || typeof resolved.durationSec !== 'number') {
+    fail('references', 'reference_invalid');
+  }
+  if (request.settings.durationSec !== Math.max(1, Math.ceil(resolved.durationSec))) {
+    fail('durationSec');
+  }
+  const fixedResolution = candidate.engine.resolutions.find((value) => value !== 'auto');
+  if (fixedResolution && request.settings.resolution !== fixedResolution) fail('resolution');
+}
+
 function buildProviderConstraintPayload(
   request: CanonicalGenerationRequest,
   candidate: AgentPublicGenerationEngine,
@@ -201,6 +306,10 @@ function buildProviderConstraintPayload(
   if (request.settings.seed !== undefined) payload.seed = request.settings.seed;
   if (request.settings.safetyChecker !== undefined) {
     payload.enable_safety_checker = request.settings.safetyChecker;
+  }
+  for (const [setting, fieldId] of Object.entries(VIDEO_FIELD_BY_SETTING)) {
+    const value = request.settings[setting];
+    if (value !== undefined) payload[fieldId] = value;
   }
   const valuesByField = new Map<string, string[]>();
   for (const [index, reference] of request.references.entries()) {
@@ -231,7 +340,7 @@ function validateVideoExecutionConstraints(
   const payload = buildProviderConstraintPayload(request, candidate, options);
   const provider = validateProviderSpecificConstraints({
     engineId: request.engineId,
-    normalizedMode: request.mode,
+    normalizedMode: toEngineGenerationMode(request.engineId, request.mode),
     payload,
   });
   if (!provider.ok) fail(provider.error.field ?? 'settings');
@@ -274,6 +383,17 @@ function validateImageSettings(
       validateFieldValue(field, value);
     }
   }
+  const hasCustomWidth = request.settings.imageWidth !== undefined;
+  const hasCustomHeight = request.settings.imageHeight !== undefined;
+  if (resolution === 'custom') {
+    const customSize = validateGptImage2CustomImageSize({
+      width: request.settings.imageWidth,
+      height: request.settings.imageHeight,
+    });
+    if (!customSize.ok) fail(!hasCustomWidth ? 'imageWidth' : 'imageHeight');
+  } else if (hasCustomWidth || hasCustomHeight) {
+    fail(hasCustomWidth ? 'imageWidth' : 'imageHeight');
+  }
 }
 
 export type GenerationCapabilityValidationOptions = {
@@ -286,16 +406,19 @@ function fieldIdsForRole(
   request: CanonicalGenerationRequest,
   role: CanonicalGenerationReference['role'],
 ): readonly string[] {
-  if (request.mode === 'i2v') {
+  if (request.mode === 'i2v' || request.mode === 'i2v_standard') {
     if (role === 'source') return ['image_url'];
     if (role === 'first_frame') return ['first_frame_url', 'start_image_url', 'image_url'];
     if (role === 'last_frame') return ['end_image_url', 'last_frame_url'];
     return ['image_urls', 'reference_image_urls'];
   }
   if (request.mode === 'ref2v') {
+    if (role === 'first_frame') return ['start_image_url', 'image_url'];
+    if (role === 'last_frame') return ['end_image_url'];
     return role === 'reference'
       ? [
         'image_urls',
+        'reference_images',
         'reference_image_urls',
         'video_urls',
         'reference_video_urls',
@@ -311,17 +434,38 @@ function fieldIdsForRole(
   }
   if (request.mode === 'v2v') {
     if (role === 'source') return ['video_url'];
+    if (role === 'first_frame') return ['start_image_url'];
     return role === 'reference'
-      ? ['image_urls', 'reference_image_urls', 'audio_urls', 'reference_audio_urls']
+      ? [
+        'image_url',
+        'edit_keyframe_urls',
+        'image_urls',
+        'reference_image_urls',
+        'audio_urls',
+        'reference_audio_urls',
+      ]
       : [];
   }
   if (request.mode === 'r2v') {
     return role === 'reference' ? ['video_urls'] : [];
   }
   if (request.mode === 'extend') {
-    return role === 'source' ? ['extension_source_videos'] : [];
+    return role === 'source' ? ['extension_source_videos', 'video_urls', 'video_url'] : [];
+  }
+  if (request.mode === 'a2v') {
+    if (role === 'source') return ['audio_url'];
+    if (role === 'first_frame') return ['image_url'];
+    return [];
+  }
+  if (request.mode === 'retake') {
+    return role === 'source' ? ['video_url'] : [];
+  }
+  if (request.mode === 'reframe') {
+    if (role === 'source') return ['video_url'];
+    return role === 'reference' ? ['image_url'] : [];
   }
   if (request.mode === 'i2i') {
+    if (role === 'mask') return ['mask_url'];
     return role === 'source' || role === 'reference'
       ? ['image_urls', 'reference_image_urls']
       : [];
@@ -361,6 +505,78 @@ function resolvedMediaKind(
   return resolved.mediaKind;
 }
 
+function resolvedReference(
+  reference: CanonicalGenerationReference,
+  options: GenerationCapabilityValidationOptions,
+): ResolvedReference | null {
+  if (reference.kind !== 'asset' || !options.resolvedReferences) return null;
+  return options.resolvedReferences.find((candidate) =>
+    candidate.assetId === reference.assetId
+    && candidate.role === reference.role
+    && candidate.slot === reference.slot) ?? null;
+}
+
+function validateTrustedReferenceDuration(
+  reference: CanonicalGenerationReference,
+  fields: readonly EngineInputField[],
+  candidate: AgentPublicGenerationEngine,
+  options: GenerationCapabilityValidationOptions,
+): void {
+  if (fields.length !== 1) return;
+  const field = fields[0]!;
+  const constraints = candidate.engine.inputSchema?.constraints;
+  const combinedLimit = field.type === 'video'
+    ? constraints?.maxCombinedVideoDurationSec
+    : field.type === 'audio'
+      ? constraints?.maxCombinedAudioDurationSec
+      : undefined;
+  if (
+    field.minDurationSec === undefined
+    && field.maxDurationSec === undefined
+    && combinedLimit === undefined
+  ) return;
+  if (reference.kind !== 'asset') fail('references', 'reference_invalid');
+  if (!options.resolvedReferences) return;
+  const resolved = resolvedReference(reference, options);
+  if (!resolved) fail('references', 'reference_invalid');
+  const durationSec = resolved.durationSec;
+  if (
+    typeof durationSec !== 'number'
+    || !Number.isFinite(durationSec)
+    || durationSec <= 0
+    || (typeof field.minDurationSec === 'number' && durationSec < field.minDurationSec)
+    || (typeof field.maxDurationSec === 'number' && durationSec > field.maxDurationSec)
+  ) fail('references', 'reference_invalid');
+}
+
+function validateCombinedReferenceDurations(
+  candidate: AgentPublicGenerationEngine,
+  options: GenerationCapabilityValidationOptions,
+): void {
+  if (!options.resolvedReferences) return;
+  const constraints = candidate.engine.inputSchema?.constraints;
+  const limits = {
+    video: constraints?.maxCombinedVideoDurationSec,
+    audio: constraints?.maxCombinedAudioDurationSec,
+  } as const;
+  for (const kind of ['video', 'audio'] as const) {
+    const limit = limits[kind];
+    if (typeof limit !== 'number' || !Number.isFinite(limit)) continue;
+    const durations = new Map<string, number>();
+    for (const resolved of options.resolvedReferences) {
+      if (resolved.mediaKind !== kind) continue;
+      if (
+        typeof resolved.durationSec !== 'number'
+        || !Number.isFinite(resolved.durationSec)
+        || resolved.durationSec <= 0
+      ) fail('references', 'reference_invalid');
+      durations.set(resolved.storageUrl, resolved.durationSec);
+    }
+    const total = [...durations.values()].reduce((sum, durationSec) => sum + durationSec, 0);
+    if (total > limit) fail('references', 'reference_invalid');
+  }
+}
+
 function referenceSourceIdentity(
   reference: CanonicalGenerationRequest['references'][number],
 ): string {
@@ -375,7 +591,8 @@ function validateReferenceBudget(
   selectedFields: readonly (readonly EngineInputField[])[],
 ): void {
   const budget = candidate.engine.inputSchema?.referenceBudget;
-  if (!budget || (budget.modes?.length && !budget.modes.includes(request.mode))) return;
+  const engineMode = toEngineGenerationMode(candidate.engine.id, request.mode);
+  if (!budget || (budget.modes?.length && !budget.modes.includes(engineMode))) return;
   const budgetFieldIds = new Set(budget.fieldIds);
   const budgetReferences = request.references.filter((_, index) =>
     selectedFields[index]?.some((field) => budgetFieldIds.has(field.id)));
@@ -390,15 +607,20 @@ function validateReferences(
   candidate: AgentPublicGenerationEngine,
   options: GenerationCapabilityValidationOptions,
 ): void {
-  if (request.mode === 't2v' || request.mode === 't2i') {
+  if (request.mode === 't2v') {
     if (request.references.length) fail('references', 'reference_invalid');
     return;
   }
   if (candidate.surface === 'image') {
     const constraints = getReferenceConstraints(candidate.engine, request.mode as ImageGenerationMode);
-    if (request.references.length < constraints.min || request.references.length > constraints.max) {
-      fail('references', request.references.length < constraints.min ? 'reference_required' : 'reference_invalid');
+    const generationReferences = request.references.filter((reference) => reference.role !== 'mask');
+    if (generationReferences.length < constraints.min || generationReferences.length > constraints.max) {
+      fail('references', generationReferences.length < constraints.min ? 'reference_required' : 'reference_invalid');
     }
+    if (
+      (request.engineId === 'seedream' || request.engineId === 'seedream-5-0-pro')
+      && generationReferences.length + request.outputCount > SEEDREAM_MAX_IMAGE_SET_IMAGES
+    ) fail('references', 'reference_invalid');
   }
   if (options.resolvedReferences) {
     const resolvedKeys = new Set<string>();
@@ -424,6 +646,7 @@ function validateReferences(
       resolvedMediaKind(reference, options),
     );
     if (!fields.length) fail('references', 'reference_invalid');
+    validateTrustedReferenceDuration(reference, fields, candidate, options);
     selectedFields.push(fields);
     if (fields.length === 1) {
       const field = fields[0]!;
@@ -434,7 +657,7 @@ function validateReferences(
     request.references.flatMap((reference) =>
       fieldsForReference(request, candidate, reference, null)),
   );
-  for (const role of ['source', 'reference', 'first_frame', 'last_frame'] as const) {
+  for (const role of ['source', 'reference', 'first_frame', 'last_frame', 'mask'] as const) {
     const placeholder: CanonicalGenerationReference = {
       kind: 'asset',
       assetId: 'capability-placeholder',
@@ -446,7 +669,9 @@ function validateReferences(
   }
   for (const field of possibleFields) {
     const count = counts.get(field) ?? 0;
-    const required = Boolean(field.requiredInModes?.includes(request.mode));
+    const required = Boolean(field.requiredInModes?.includes(
+      toEngineGenerationMode(candidate.engine.id, request.mode),
+    ));
     const minimum = required ? Math.max(1, field.minCount ?? 1) : 0;
     const maximum = field.maxCount ?? 1;
     const hasDeferredAsset = request.references.some((reference, index) =>
@@ -458,6 +683,7 @@ function validateReferences(
     if (count > maximum) fail('references', 'reference_invalid');
   }
   validateReferenceBudget(request, candidate, selectedFields);
+  validateCombinedReferenceDurations(candidate, options);
 }
 
 export function validateCanonicalGenerationCapabilities(
@@ -483,5 +709,6 @@ export function validateCanonicalGenerationCapabilities(
   if (request.surface === 'video') validateVideoModeCaps(request, modeCaps, candidate);
   else validateImageSettings(request, candidate);
   validateReferences(request, candidate, options);
+  validateDerivedSourceFacts(request, candidate, options);
   if (request.surface === 'video') validateVideoExecutionConstraints(request, candidate, options);
 }

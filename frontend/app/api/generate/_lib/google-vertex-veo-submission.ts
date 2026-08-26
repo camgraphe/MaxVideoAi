@@ -279,6 +279,40 @@ export async function submitGoogleVertexVeoGenerateTask(params: {
     falPayload: params.falPayload,
   });
   if (!support.supported) {
+    if (!params.fallbackToFalEnabled) {
+      const message = userSafeGoogleVertexVeoMessage('unsupported_params');
+      console.warn('[google-vertex-veo] unsupported direct request failed without fallback', {
+        jobId: params.jobId,
+        engineId: params.engineId,
+        mode: params.mode,
+        reason: support.reason,
+      });
+      await markJobFailedBeforeFallback({
+        jobId: params.jobId,
+        engineLabel: params.engineLabel,
+        durationSec: params.durationSec,
+        message,
+        pendingReceipt: params.pendingReceipt,
+        paymentMode: params.paymentMode,
+        walletChargeReserved: params.walletChargeReserved,
+        queryFn,
+        rollbackPendingPaymentFn,
+      });
+      params.logMetricFn('rejected', {
+        jobId: params.jobId,
+        errorCode: support.reason,
+        meta: { provider: GOOGLE_VERTEX_VEO_PROVIDER, errorClass: 'unsupported_params' },
+      });
+      return {
+        ok: false,
+        status: 400,
+        body: {
+          ok: false,
+          error: support.reason,
+          message,
+        },
+      };
+    }
     console.info('[google-vertex-veo] routing unsupported direct request to Fal', {
       jobId: params.jobId,
       engineId: params.engineId,
