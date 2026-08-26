@@ -4,6 +4,7 @@ import { resolveFalModelId } from '@/lib/fal-catalog';
 import { getFalClient } from '@/lib/fal-client';
 import { linkFalJob } from '@/server/admin-job-tools';
 import { updateJobFromFalWebhook } from '@/server/fal-webhook-handler';
+import { backfillCompletedMcpJobOutputs } from '@/server/media-library/mcp-output-assets';
 import { toUserFacingFailureMessage } from '@/server/user-facing-failure-messages';
 
 type FalPendingJob = {
@@ -354,6 +355,17 @@ export async function runFalPoll() {
     }
   }
 
+  let mcpLibraryPromotions = 0;
+  let mcpLibraryPromotionFailures = 0;
+  try {
+    const promotion = await backfillCompletedMcpJobOutputs({ limit: 5 });
+    mcpLibraryPromotions = promotion.promoted;
+    mcpLibraryPromotionFailures = promotion.failed;
+  } catch (error) {
+    mcpLibraryPromotionFailures = 1;
+    console.warn('[fal-poll] MCP output library backfill deferred', { error });
+  }
+
   let provisionalFailures = 0;
   const staleProvisionals = await query<{ job_id: string; created_at: string }>(
     `SELECT job_id, created_at
@@ -408,6 +420,8 @@ export async function runFalPoll() {
     updates,
     durableRecoveries,
     durableRecoveryFailures,
+    mcpLibraryPromotions,
+    mcpLibraryPromotionFailures,
     provisionalFailures,
   });
 }

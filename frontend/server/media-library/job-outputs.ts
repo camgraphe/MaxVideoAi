@@ -8,6 +8,7 @@ import {
   type JobOutputRecord,
   type LegacyJobMediaRow,
 } from '../media-library-records';
+import { promoteCompletedMcpJobOutputs } from './mcp-output-assets';
 
 export async function upsertJobOutputs(outputs: JobOutputRecord[]): Promise<void> {
   if (!outputs.length) return;
@@ -54,7 +55,14 @@ export async function upsertJobOutputs(outputs: JobOutputRecord[]): Promise<void
 }
 
 export async function upsertLegacyJobOutputs(row: LegacyJobMediaRow): Promise<void> {
-  await upsertJobOutputs(mapLegacyJobRowToOutputs(row));
+  const outputs = mapLegacyJobRowToOutputs(row);
+  await upsertJobOutputs(outputs);
+  await promoteCompletedMcpJobOutputs(outputs).catch((error) => {
+    console.warn('[media-library] failed to promote completed MCP job outputs', {
+      jobId: row.job_id,
+      error,
+    });
+  });
 }
 
 export async function listJobOutputsByJobIds(jobIds: string[]): Promise<Map<string, JobOutputRecord[]>> {
