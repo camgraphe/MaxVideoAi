@@ -178,6 +178,24 @@ test('factual priorities and reviewed use cases provide deterministic ranking re
   }
 });
 
+test('recommendation reasons stay unique when requested capabilities are also priorities', async () => {
+  const result = await recommendAgentModels(
+    {
+      surface: 'video',
+      mode: 'ref2v',
+      audio: true,
+      referenceImages: true,
+      priorities: ['native_audio', 'reference_control'],
+    },
+    deps([candidate('audio-reference', { modes: ['ref2v'], audio: true })]),
+  );
+
+  const reasons = result.recommendations[0]?.reasons ?? [];
+  assert.equal(reasons.filter((reason) => reason === 'Supports generated audio.').length, 1);
+  assert.equal(reasons.filter((reason) => reason === 'Accepts reference image input.').length, 1);
+  assert.equal(new Set(reasons).size, reasons.length);
+});
+
 test('reviewed quality fits use the authored discovery order as a deterministic tie-breaker', async () => {
   const result = await recommendAgentModels(
     { surface: 'video', mode: 'ref2v', useCase: 'multi_shot', referenceImages: true },

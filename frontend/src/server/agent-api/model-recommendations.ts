@@ -89,8 +89,16 @@ function describeCandidate(
   if (priorities.has('highest_resolution') && resolutionQuality(model.resolutions) >= 3) {
     reasons.push('Offers a 4K-class output option.');
   }
-  if (priorities.has('native_audio') && model.audio) reasons.push('Supports generated audio.');
-  if (priorities.has('reference_control') && model.referenceImages) reasons.push('Accepts reference image input.');
+  if (priorities.has('native_audio') && model.audio && input.audio !== true) {
+    reasons.push('Supports generated audio.');
+  }
+  if (
+    priorities.has('reference_control')
+    && model.referenceImages
+    && input.referenceImages !== true
+  ) {
+    reasons.push('Accepts reference image input.');
+  }
   if (priorities.has('longer_clips') && model.maxDurationSec != null) {
     reasons.push(`Offers a longer clip limit of up to ${model.maxDurationSec} seconds.`);
   }
