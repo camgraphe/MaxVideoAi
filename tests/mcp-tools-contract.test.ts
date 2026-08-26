@@ -38,6 +38,44 @@ const account: AgentAccountStatus = {
   trial: { status: 'disabled' },
   spendingLimits: { perGenerationCents: null, dailyCents: null, webApprovalAboveCents: null },
   accountUrl: 'https://maxvideoai.com/account/connections',
+  destinations: {
+    connections: {
+      type: 'open_url',
+      purpose: 'account_connections',
+      label: 'Manage the MaxVideoAI connection',
+      url: 'https://maxvideoai.com/account/connections',
+    },
+    billing: {
+      type: 'open_url',
+      purpose: 'billing',
+      label: 'Add MaxVideoAI credits',
+      url: 'https://maxvideoai.com/billing',
+    },
+    library: {
+      type: 'open_url',
+      purpose: 'media_library',
+      label: 'Open the MaxVideoAI media library',
+      url: 'https://maxvideoai.com/app/library',
+    },
+    videoWorkspace: {
+      type: 'open_url',
+      purpose: 'video_workspace',
+      label: 'Open the MaxVideoAI video workspace',
+      url: 'https://maxvideoai.com/app',
+    },
+    imageWorkspace: {
+      type: 'open_url',
+      purpose: 'image_workspace',
+      label: 'Open the MaxVideoAI image workspace',
+      url: 'https://maxvideoai.com/app/image',
+    },
+    support: {
+      type: 'open_url',
+      purpose: 'support',
+      label: 'Contact MaxVideoAI support',
+      url: 'https://maxvideoai.com/contact',
+    },
+  },
 };
 
 const model: AgentModel = {
@@ -144,6 +182,9 @@ function assertAccountStatus(value: unknown): asserts value is AgentAccountStatu
   assert.equal(typeof record(status.wallet).amountCents, 'number');
   assert.equal(record(status.trial).status, 'disabled');
   assert.equal(typeof status.accountUrl, 'string');
+  const destinations = record(status.destinations);
+  assert.equal(record(destinations.billing).url, 'https://maxvideoai.com/billing');
+  assert.equal(record(destinations.library).url, 'https://maxvideoai.com/app/library');
   assert.equal('email' in status, false);
 }
 
@@ -210,9 +251,17 @@ test('server advertises only the five read-only discovery tools with narrow guid
     assert.equal(tool.annotations?.readOnlyHint, true);
     assert.equal(tool.annotations?.destructiveHint, false);
     assert.equal(tool.annotations?.openWorldHint, false);
+    assert.equal(tool.inputSchema.type, 'object');
+  }
+  const accountTool = result.tools.find((tool) => tool.name === 'get_account_status');
+  assert.ok(accountTool);
+  assert.equal(
+    accountTool.description,
+    'Use this to check the connected MaxVideoAI account, current credit balance, trial state, spending limits, and safe account destinations. It never reveals payment details or changes the wallet.',
+  );
+  for (const tool of result.tools.filter((candidate) => candidate.name !== 'get_account_status')) {
     assert.match(tool.description ?? '', /Use this when/i);
     assert.match(tool.description ?? '', /Do not use/i);
-    assert.equal(tool.inputSchema.type, 'object');
   }
   const detailTool = result.tools.find((tool) => tool.name === 'get_model_details');
   assert.ok(detailTool);

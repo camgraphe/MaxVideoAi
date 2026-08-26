@@ -1,6 +1,7 @@
 import { getWalletSummary, type WalletSummary } from '@/server/wallet-summary';
 
 import type { AgentPrincipal } from './principal';
+import { buildAgentAccountDestinations } from './account-destinations';
 import {
   getTrialEligibility as resolveTrialEligibility,
   type TrialEligibilityDependencies,
@@ -71,5 +72,6 @@ export async function getAgentAccountStatus(
       webApprovalAboveCents: null,
     },
     accountUrl: deps.accountUrl,
+    destinations: buildAgentAccountDestinations(deps.accountUrl),
   };
 }

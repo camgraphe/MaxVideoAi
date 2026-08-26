@@ -39,6 +39,44 @@ test('account status is read-only, uses the shared wallet summary, and omits ema
       webApprovalAboveCents: null,
     },
     accountUrl: 'https://maxvideoai.com/account/connections',
+    destinations: {
+      connections: {
+        type: 'open_url',
+        purpose: 'account_connections',
+        label: 'Manage the MaxVideoAI connection',
+        url: 'https://maxvideoai.com/account/connections',
+      },
+      billing: {
+        type: 'open_url',
+        purpose: 'billing',
+        label: 'Add MaxVideoAI credits',
+        url: 'https://maxvideoai.com/billing',
+      },
+      library: {
+        type: 'open_url',
+        purpose: 'media_library',
+        label: 'Open the MaxVideoAI media library',
+        url: 'https://maxvideoai.com/app/library',
+      },
+      videoWorkspace: {
+        type: 'open_url',
+        purpose: 'video_workspace',
+        label: 'Open the MaxVideoAI video workspace',
+        url: 'https://maxvideoai.com/app',
+      },
+      imageWorkspace: {
+        type: 'open_url',
+        purpose: 'image_workspace',
+        label: 'Open the MaxVideoAI image workspace',
+        url: 'https://maxvideoai.com/app/image',
+      },
+      support: {
+        type: 'open_url',
+        purpose: 'support',
+        label: 'Contact MaxVideoAI support',
+        url: 'https://maxvideoai.com/contact',
+      },
+    },
   });
   assert.equal('email' in status, false);
   assert.equal('hasCompletedTopUp' in status.wallet, false);
@@ -58,4 +96,5 @@ test('account status preserves unverified state without exposing identity claims
   assert.equal(status.emailVerified, false);
   assert.equal(status.clientId, null);
   assert.doesNotMatch(JSON.stringify(status), /email@|claims|token/i);
+  assert.equal(status.destinations.billing.url, 'https://maxvideoai.com/billing');
 });

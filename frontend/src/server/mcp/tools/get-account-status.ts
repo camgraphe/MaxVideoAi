@@ -17,7 +17,7 @@ export function registerGetAccountStatusTool(
     {
       title: 'Get MaxVideoAI account status',
       description:
-        'Use this when the user asks whether MaxVideoAI is connected, verified, or funded. Do not use it to charge the wallet, start a trial, reveal an email address, or generate media.',
+        'Use this to check the connected MaxVideoAI account, current credit balance, trial state, spending limits, and safe account destinations. It never reveals payment details or changes the wallet.',
       inputSchema: getAccountStatusInputSchema,
       annotations: {
         readOnlyHint: true,

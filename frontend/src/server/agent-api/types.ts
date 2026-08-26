@@ -72,6 +72,7 @@ export type AgentAccountStatus = {
     webApprovalAboveCents: number | null;
   };
   accountUrl: string;
+  destinations: AgentAccountDestinations;
 };
 
 export type AgentGenerationMode = CanonicalGenerationMode;
