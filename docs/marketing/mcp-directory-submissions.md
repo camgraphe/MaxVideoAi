@@ -10,7 +10,7 @@ linked primary sources on the day an owner authorizes a submission.
 Current repository truth: `publicMarketing=false`, `publicIndexing=false`, `transport=false`, `oauth=false`,
 `discovery=false`, `paidGeneration=false`, `trial=false`, and `referenceUploads=false`.
 
-The launch product is a 12-tool conversational production profile: free model
+The launch product is a 13-tool conversational production profile: free model
 advice and project budgets, private image/video/audio references, exact quotes,
 explicitly approved generation, job recovery, MaxVideoAI top-up, and gallery
 continuity. Controlled staging has real OAuth/tool evidence for Claude Desktop
@@ -57,7 +57,7 @@ legal document, URL, or publication flag changes.
 | Terms URLs | EN `https://maxvideoai.com/legal/terms`; FR `https://maxvideoai.com/fr/legal/terms`; ES `https://maxvideoai.com/es/legal/terms`. Directory-specific acceptance remains an authorized-owner action. |
 | Acceptable use URLs | EN `https://maxvideoai.com/legal/acceptable-use`; FR `https://maxvideoai.com/fr/legal/acceptable-use`; ES `https://maxvideoai.com/es/legal/acceptable-use`. The MCP-specific candidate patch remains Legal-owner pending. |
 | Support URLs | EN `https://maxvideoai.com/contact`; FR `https://maxvideoai.com/fr/contact`; ES `https://maxvideoai.com/es/contact`; operational email `support@maxvideoai.com`. Do not add a response-time guarantee. |
-| Current tools | Discovery: `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`. Media and production: `list_media`, `create_reference_upload_link`, `prepare_generation`, `confirm_generation`, `get_generation_status`, `list_recent_generations`, `create_topup_link`. Production publication remains gated. |
+| Current tools | Discovery: `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`. Media and production: `list_media`, `create_reference_upload_link`, `prepare_generation`, `confirm_generation`, `get_generation_status`, `list_recent_generations`, `present_generation`, `create_topup_link`. The presenter is read-only and keeps result-link/library fallback when a host does not render its MCP App. Production publication remains gated. |
 | Negative cases | A project estimate is not an exact quote; `prepare_generation` does not debit; `confirm_generation` requires explicit approval of that quote. Payment data never enters chat. The assistant must recover an accepted job instead of submitting a duplicate and must not retry a creative result automatically. Unsupported model modes remain unavailable without disabling supported modes. |
 | Screenshots and demo | **real screenshots and end-to-end demo: NOT AVAILABLE**. `getMcpProof()` is null and no current proof asset may be substituted with provider marketing media or a synthetic testimonial. |
 | Changelog and status | EN `/changelog` and `/status`; FR `/fr/changelog` and `/fr/statut`; ES `/es/changelog` and `/es/estado`. Neither has an MCP-specific entry/component because no live release or monitored MCP health feed exists. |

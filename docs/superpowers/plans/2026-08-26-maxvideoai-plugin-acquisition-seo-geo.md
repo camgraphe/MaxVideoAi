@@ -32,7 +32,7 @@
 | 5. Real product proof | Pending | No provider sample or synthetic testimonial is used. One deliberately small, owned, job-backed generation may fill this gate after budget approval. |
 | 6. Publication semantics | Complete | Trial is independent from indexation and every checked-in publication flag remains false. |
 | 7. Internal linking | Complete | Homepage, footer, pay-as-you-go, model hub, selected model pages, comparisons, examples and docs use localized gate-aware anchors. |
-| 8. SEO/GEO/docs | Complete for branch | Five localized intent owners, `llms.txt`, sitemap, answer passages, 12-tool docs, live GSC baseline and GEO review are implemented. Production indexation remains deliberately off. |
+| 8. SEO/GEO/docs | Complete for branch | Five localized intent owners, `llms.txt`, sitemap, answer passages, 13-tool docs, live GSC baseline and GEO review are implemented. Production indexation remains deliberately off. |
 | 9. Revenue measurement | Implemented; production observation pending | Bounded attribution and funnel events cover landing through funding/generation without storing prompts, tokens or private URLs. Real conversion data starts only after publication. |
 | 10. Verification | Complete for branch | The isolated production fixture passes 5 applicable browser tests (2 fixture-mode scenarios skipped), renders 763 static pages, captures responsive light/dark evidence, and scores 94–95 performance and 100 accessibility in Lighthouse. TypeScript, ESLint, i18n, SEO, exposure, registry, contract, and diff checks pass. |
 

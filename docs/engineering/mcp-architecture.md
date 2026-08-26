@@ -6,13 +6,15 @@ This guide is the operating reference for the MaxVideoAI AI video plugin, its re
 
 The public product is an **AI video plugin for ChatGPT**, a **MaxVideoAI connector for Claude**, and a technical **Codex plugin** for creator workflows. MCP is the shared transport, not the lead marketing promise.
 
-The first release deliberately has no custom chat UI. The assistant owns the conversation and creative reasoning. MaxVideoAI supplies the facts and actions that change over time:
+The assistant owns the conversation and creative reasoning. MaxVideoAI supplies the facts and actions that change over time:
 
 - account, balance, credits, top-up, and library continuity;
 - current executable models, modes, capabilities, limitations, and pricing;
 - project budgets and exact expiring generation quotes;
 - validation of image, video, and audio references;
 - explicit approval, job creation, polling, recovery, and refund state.
+
+The only custom chat UI is a decoupled result presenter for an already completed owned generation. `present_generation` renders a native video player or image card in MCP Apps-compatible hosts. It never owns creative input, model choice, pricing, approval, generation, polling, or retries. Existing text, resource links, and MaxVideoAI library destinations remain the universal fallback.
 
 One hosted OAuth-protected MCP server serves every client. Client-specific plugin or skill packages add installation instructions and workflow guidance; they must not fork business logic or the model catalogue.
 
@@ -73,7 +75,8 @@ Browsing models, asking for recommendations, and building budgets are free read-
 3. obtain explicit user approval for that quote;
 4. create exactly one job using the idempotency contract;
 5. poll or recover the existing job rather than creating a duplicate;
-6. expose the saved media or the final failure/refund state.
+6. expose the saved media or the final failure/refund state;
+7. optionally call `present_generation` once to render the completed result inline in a compatible host.
 
 Creative retries are new paid attempts and require a new quote and approval. Provider failures follow the existing MaxVideoAI refund contract.
 

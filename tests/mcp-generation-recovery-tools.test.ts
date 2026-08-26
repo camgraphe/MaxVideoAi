@@ -392,7 +392,7 @@ test('recent facade delegates strict cursor pagination and exact surface/status 
   );
 });
 
-test('operational gate registers the exact twelve-tool order and default registry remains five tools', async (t) => {
+test('operational gate registers the exact thirteen-tool order and default registry remains five tools', async (t) => {
   const gated = await connected({}, { paidGeneration: true, referenceUploads: true });
   const defaults = await connected({}, { paidGeneration: false, referenceUploads: false });
   t.after(async () => {
@@ -411,6 +411,7 @@ test('operational gate registers the exact twelve-tool order and default registr
     'confirm_generation',
     'get_generation_status',
     'list_recent_generations',
+    'present_generation',
     'create_topup_link',
   ]);
   assert.deepEqual((await defaults.client.listTools()).tools.map((tool) => tool.name), [
@@ -457,7 +458,7 @@ test('recovery tools expose exact annotations and schemas and cap response resou
     tools.find((tool) => tool.name === 'list_recent_generations')?.description ?? '',
     /same connected user.*MaxVideoAI library/i,
   );
-  for (const name of ['get_generation_status', 'list_recent_generations']) {
+  for (const name of ['get_generation_status', 'list_recent_generations', 'present_generation']) {
     const tool = tools.find((candidate) => candidate.name === name);
     assert.ok(tool);
     assert.deepEqual(tool.annotations, {

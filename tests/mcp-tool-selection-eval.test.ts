@@ -106,7 +106,7 @@ test('curated policy artifact has manual provenance and a guidance fingerprint w
   );
 });
 
-test('evaluator validates curated arguments with all twelve authoritative runtime schemas', async () => {
+test('evaluator validates curated arguments with all thirteen authoritative runtime schemas', async () => {
   const validate = (evaluatorApi as any).validateCuratedToolArguments;
   const schemaNames = (evaluatorApi as any).authoritativeToolSchemaNames;
   assert.equal(typeof validate, 'function');
@@ -123,6 +123,7 @@ test('evaluator validates curated arguments with all twelve authoritative runtim
     'confirm_generation',
     'get_generation_status',
     'list_recent_generations',
+    'present_generation',
     'create_topup_link',
   ]);
 
@@ -158,6 +159,7 @@ test('evaluator validates curated arguments with all twelve authoritative runtim
     },
     get_generation_status: { jobId: 'job-one' },
     list_recent_generations: { limit: 10 },
+    present_generation: { jobId: 'job-one' },
     create_topup_link: { quoteId: '11111111-1111-4111-8111-111111111111' },
   };
   for (const [tool, args] of Object.entries(validSamples)) {

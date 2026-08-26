@@ -92,6 +92,7 @@ const AUDITABLE_TOOL_NAMES = new Set([
   'confirm_generation',
   'get_generation_status',
   'list_recent_generations',
+  'present_generation',
   'create_topup_link',
   'list_media',
   'create_reference_upload_link',

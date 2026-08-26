@@ -27,7 +27,7 @@
 
 | Area | What already works on the dedicated branch | What still blocks a public production launch |
 | --- | --- | --- |
-| Remote product | A hosted staging MCP, OAuth connection, twelve tools, live catalog reads, model advice, project estimates, exact quotes, explicit confirmation, job recovery, private media listing, upload and top-up handoffs. | Production DNS/OAuth/flags, exact output schemas, final host evidence, operational/legal review, and controlled rollout. |
+| Remote product | A hosted staging MCP, OAuth connection, thirteen tools, live catalog reads, model advice, project estimates, exact quotes, explicit confirmation, job recovery, inline result presentation, private media listing, upload and top-up handoffs. | Production DNS/OAuth/flags, exact output schemas, final host evidence, operational/legal review, and controlled rollout. |
 | Account continuity | MCP jobs use the same owned job/media system as the MaxVideoAI site; `/app`, `/app/image`, and `/app/library` are the canonical customer surfaces. | Every relevant tool must return typed account, billing, workspace, and library destinations and teach the mandatory top-up → balance refresh → fresh quote flow. |
 | Model coverage | Forty-two app-published models are discovered from the shared registry. Common text/image/reference/video modes already use the canonical agent path; Seedance 2.5 ModelArk modes are not blocked by LAS. | Close the seven specialized model-mode gaps, support every canonical mode in project budgets, finish LAS-only Seedance 2.5 V2V, and make drift fail CI. |
 | Acquisition | Localized MCP, Claude, Codex, and technical-doc routes plus reusable marketing components already exist. | Add ChatGPT intent ownership, replace preview/internal copy, remove generic budget boxes, add homepage/internal links, publish real proof, and independently enable route visibility/indexing. |
@@ -57,7 +57,7 @@ Checked-in production publication flags are all false at this baseline. That is 
 - [ ] ChatGPT and Claude are equal primary acquisition surfaces; Codex remains a supported and indexable technical surface.
 - [ ] `/mcp`, `/integrations/chatgpt`, `/integrations/claude`, `/integrations/codex`, and `/docs/mcp` have distinct search intent and reciprocal localized URLs.
 - [ ] Public pages render useful answer passages server-side, include current evidence dates, and contain no internal release vocabulary.
-- [ ] All twelve tools declare accurate side-effect annotations and explicit output schemas before ChatGPT submission packaging.
+- [ ] All thirteen tools declare accurate side-effect annotations and explicit output schemas before ChatGPT submission packaging.
 - [ ] Production capability flags, marketing visibility, and indexing are separate deliberate decisions with a tested rollback path.
 
 ## Completion Gate

@@ -393,7 +393,7 @@ test('paid prepare schema exposes canonical settings and accepts full video refe
   assert.deepEqual(preparedInputs.map((input) => record(input).mode), ['v2v', 'extend']);
 });
 
-test('all twelve operational tools expose strict schemas and reject unknown keys before handlers', async (t) => {
+test('all thirteen operational tools expose strict schemas and reject unknown keys before handlers', async (t) => {
   const calls = new Map<string, number>();
   const called = (name: string) => calls.set(name, (calls.get(name) ?? 0) + 1);
   const operationalServices = services({
@@ -475,6 +475,7 @@ test('all twelve operational tools expose strict schemas and reject unknown keys
     },
     get_generation_status: { jobId: 'job-1' },
     list_recent_generations: {},
+    present_generation: { jobId: 'job-1' },
     create_topup_link: { quoteId: '00000000-0000-4000-8000-000000000001' },
   };
   assert.deepEqual([...tools.keys()], Object.keys(validArguments));

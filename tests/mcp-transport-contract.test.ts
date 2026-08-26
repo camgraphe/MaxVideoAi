@@ -205,6 +205,7 @@ test('exact hosted staging exposes the complete operational tool inventory', asy
       'list_models',
       'list_recent_generations',
       'prepare_generation',
+      'present_generation',
       'recommend_models',
     ]);
   });

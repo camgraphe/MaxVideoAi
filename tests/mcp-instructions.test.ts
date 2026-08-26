@@ -93,6 +93,7 @@ test('instructions never advertise paid generation when its gate is closed', asy
   assert.match(instructions, /aspectRatios.*non-empty.*supported aspectRatio/i);
   assert.match(instructions, /generation is not available/i);
   assert.doesNotMatch(instructions, /use prepare_generation/i);
+  assert.doesNotMatch(instructions, /present_generation/i);
   assert.doesNotMatch(instructions, /use list_media/i);
   assert.doesNotMatch(instructions, /economy|balanced|premium/i);
   assert.doesNotMatch(instructions, /fixed questionnaire|automatic retr(?:y|ies)|automatic generation|custom ui/i);
@@ -121,6 +122,9 @@ test('instructions describe the exact quote and confirmation flow when paid gene
   assert.match(instructions, /technical failure.*refund.*not.*resubmit/is);
   assert.match(instructions, /creative retry.*new paid attempt.*prepare_generation.*approval/is);
   assert.match(instructions, /completed.*saved.*same connected.*library/is);
+  assert.match(instructions, /completed.*present_generation|present_generation.*completed/is);
+  assert.match(instructions, /inline.*(?:video|image).*compatible.*host/is);
+  assert.match(instructions, /(?:resource link|library).*fallback.*(?:without|does not).*UI/is);
 });
 
 test('instructions cover all video workflows and distinguish private media selection from upload', async () => {

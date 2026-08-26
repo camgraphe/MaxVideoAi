@@ -14,19 +14,21 @@ production, noindexed, and restricted to its disposable staging account.
 - Transport: MCP Streamable HTTP with stateless JSON responses
 - Authentication: OAuth 2.1 authorization code with PKCE through the isolated
   MaxVideoAI Staging Supabase Auth project
-- Operational profile: 12 authenticated tools
+- Operational profile: 13 authenticated tools
 - Provider boundary: Seedance 2.5 uses ModelArk for `t2v`, `i2v`, `ref2v`, and
   `extend`; LAS and direct `v2v` remain disabled
 
-The 12-tool profile contains `get_account_status`, `list_models`,
+The 13-tool profile contains `get_account_status`, `list_models`,
 `get_model_details`, `recommend_models`, `calculate_project_budget`,
 `list_media`, `create_reference_upload_link`, `prepare_generation`,
-`confirm_generation`, `get_generation_status`, `list_recent_generations`, and
-`create_topup_link`. It covers live model discovery, factual model details,
+`confirm_generation`, `get_generation_status`, `list_recent_generations`,
+`present_generation`, and `create_topup_link`. It covers live model discovery, factual model details,
 model recommendations, named project estimates, exact generation preparation,
 confirmation, generation status and recovery, private media, private
 reference-upload handoff, and a signed MaxVideoAI top-up handoff. Spending still
 requires a separate explicit confirmation of a fresh quote.
+
+The `present_generation` descriptor and its versioned MCP Apps resource are covered by local contracts. Inline rendering and playback are not yet part of the hosted Claude Desktop or ChatGPT evidence below; until those checks are recorded, resource links and the MaxVideoAI library remain the verified fallback.
 
 ## Compatibility matrix
 

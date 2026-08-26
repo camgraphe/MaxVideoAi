@@ -184,7 +184,7 @@ missing value, count drift, or cent mismatch blocks release.
 1. Turn off the server-side paid kill switch first.
 2. Keep the checked-in/public paid flag off; if a controlled deployment flag was
    enabled, disable it and verify the registry returns to the five default
-   discovery tools instead of the 12-tool controlled operational profile.
+   discovery tools instead of the 13-tool controlled operational profile.
 3. Stop new provider submissions without deleting jobs, receipts, quotes, logs,
    or idempotency records.
 4. Reconcile all `claimed` and `accepted` quotes, provider outcomes, charges, and
@@ -202,7 +202,7 @@ For Codex and separately for one Claude-compatible exact version, record:
 - host name, exact version, OS, controlled environment, and test account label;
 - OAuth discovery, exact scopes, consent denial/approval, refresh, revocation,
   authentication loss, reconnect, and fresh approval;
-- exact 12-tool list and annotations behind the controlled operational gate;
+- exact 13-tool list and annotations behind the controlled operational gate;
 - canonical quote rendering and a separate explicit confirmation interaction;
 - image and video accepted/running/completed rendering and bounded public links;
 - insufficient-funds/top-up/fresh-quote behavior;

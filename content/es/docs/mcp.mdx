@@ -66,6 +66,7 @@ La calidad no es una caja «económico/equilibrado/premium». En proyectos con v
 | `confirm_generation` | Aprobar una cotización exacta y enviar su trabajo de manera idempotente. | Sí, solo tras aprobación explícita. |
 | `get_generation_status` | Leer progreso, resultado, fallo y reembolso de un trabajo. | No. |
 | `list_recent_generations` | Recuperar trabajos recientes sin crear duplicados. | No. |
+| `present_generation` | Mostrar una imagen terminada o un vídeo reproducible dentro de clientes compatibles. | No. El enlace y la biblioteca son la alternativa. |
 | `create_topup_link` | Abrir una recarga segura de créditos MaxVideoAI por el importe necesario. | El pago ocurre en MaxVideoAI. |
 
 Los flags de publicación de producción deciden qué herramientas con escritura se exponen. La respuesta `tools/list` del cliente es la fuente autorizada.
@@ -98,7 +99,7 @@ El plugin, los consejos y los presupuestos no requieren una suscripción adicion
 
 ## Trabajos, biblioteca, fallos y reintentos
 
-Un trabajo aceptado todavía no está terminado. Usa `get_generation_status` para uno conocido o `list_recent_generations` para recuperarlo. No vuelvas a enviar una generación pagada por un simple timeout.
+Un trabajo aceptado todavía no está terminado. Usa `get_generation_status` para uno conocido o `list_recent_generations` para recuperarlo. Cuando termine, `present_generation` puede integrar la imagen o el vídeo reproducible en un cliente compatible con MCP Apps. En los demás clientes, el enlace del resultado y la biblioteca MaxVideoAI siguen siendo la alternativa universal. No vuelvas a enviar una generación pagada por un simple timeout.
 
 Las imágenes y vídeos correctos se guardan en la misma biblioteca privada MaxVideoAI del sitio. Usa únicamente el destino de resultado, workspace o biblioteca devuelto por MaxVideoAI.
 

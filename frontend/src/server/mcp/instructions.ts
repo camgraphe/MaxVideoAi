@@ -49,6 +49,8 @@ export function buildMaxVideoAiMcpInstructions(
       'If an exact quote has insufficient credits, use create_topup_link with that quote. Payment happens only on the MaxVideoAI website through the exact returned destination, and the old quote becomes invalid.',
       'After the user says funding is complete, call get_account_status and then prepare_generation again. Display the fresh exact quote and wait for explicit user approval before confirm_generation.',
       'Do not automatically retry or generate. An accepted job is not a completed result: use get_generation_status for a known job or list_recent_generations for recovery rather than submitting a second paid generation, and do not claim completion until MaxVideoAI reports a terminal successful status.',
+      'After MaxVideoAI reports a completed job, use present_generation once when the user asks to view it or when the completed result should be delivered. This presents inline video or image in a compatible UI host. Use the returned resource link and MaxVideoAI library destination as the fallback when the host does not render MCP Apps UI.',
+      'Never use present_generation to poll, generate, retry, confirm, or charge. It only re-reads and presents an owned generation.',
       'For a technical failure, inspect the returned failure and refund state and do not resubmit automatically. A creative retry is a new paid attempt: call prepare_generation and wait for explicit approval of its new exact quote.',
       'When a job is completed, explain that the result is saved in the same connected MaxVideoAI library and use only the returned library or workspace destination.',
     );

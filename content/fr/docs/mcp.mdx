@@ -66,6 +66,7 @@ La qualité n’est pas une box « économique/équilibré/premium ». Pour un f
 | `confirm_generation` | Valider un devis exact et soumettre son job de manière idempotente. | Oui, uniquement après accord explicite. |
 | `get_generation_status` | Lire l’avancement, le résultat, l’échec et le remboursement d’un job connu. | Non. |
 | `list_recent_generations` | Retrouver les jobs récents sans créer de doublon. | Non. |
+| `present_generation` | Afficher une image terminée ou une vidéo lisible directement dans les clients compatibles. | Non. Le lien résultat et la galerie restent le repli. |
 | `create_topup_link` | Ouvrir une recharge de crédits MaxVideoAI sécurisée pour le montant manquant. | Le paiement reste sur MaxVideoAI. |
 
 Les flags de publication de production déterminent les outils d’écriture réellement exposés. La réponse `tools/list` du client fait foi.
@@ -98,7 +99,7 @@ Le plugin, les conseils et les budgets ne demandent aucun abonnement supplément
 
 ## Jobs, galerie, échecs et nouvelles tentatives
 
-Un job accepté n’est pas encore terminé. Utilisez `get_generation_status` pour un job connu ou `list_recent_generations` pour le retrouver. Ne resoumettez pas une génération payante à cause d’un simple timeout.
+Un job accepté n’est pas encore terminé. Utilisez `get_generation_status` pour un job connu ou `list_recent_generations` pour le retrouver. Une fois terminé, `present_generation` peut intégrer l’image ou la vidéo lisible dans un client compatible MCP Apps. Dans les autres clients, le lien résultat et la galerie MaxVideoAI restent l’alternative universelle. Ne resoumettez pas une génération payante à cause d’un simple timeout.
 
 Les images et vidéos réussies sont enregistrées dans la même galerie privée MaxVideoAI que celle du site. N’utilisez que la destination résultat, workspace ou galerie renvoyée par MaxVideoAI.
 

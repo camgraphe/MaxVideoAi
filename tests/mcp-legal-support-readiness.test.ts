@@ -63,6 +63,7 @@ const OPERATIONAL_TOOLS = [
   'confirm_generation',
   'get_generation_status',
   'list_recent_generations',
+  'present_generation',
   'create_topup_link',
 ];
 
@@ -529,7 +530,7 @@ test('directory facts do not outrun checked-in claims or host evidence', () => {
   assert.match(compatibility, /ChatGPT Apps directory[\s\S]+Not run/i);
   assert.match(
     directory,
-    /launch product is a 12-tool[\s\S]{0,300}Claude Desktop\s+1\.37937\.1[\s\S]{0,180}Codex CLI/i,
+    /launch product is a 13-tool[\s\S]{0,300}Claude Desktop\s+1\.37937\.1[\s\S]{0,180}Codex CLI/i,
   );
   assert.match(support, /graphical\s+ChatGPT\/Codex installation, Claude Code, and other hosts remain unverified/i);
   assert.match(support, /migration files 30–37 are present locally/i);

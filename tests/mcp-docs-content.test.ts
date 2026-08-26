@@ -20,6 +20,7 @@ const TOOLS = [
   'confirm_generation',
   'get_generation_status',
   'list_recent_generations',
+  'present_generation',
   'create_topup_link',
 ] as const;
 
@@ -47,7 +48,7 @@ test('localized guides expose current metadata, OAuth, and the copyable producti
   }
 });
 
-test('all twelve tools and their safety boundaries are documented in every locale', () => {
+test('all thirteen tools and their safety boundaries are documented in every locale', () => {
   for (const path of Object.values(DOCS)) {
     const markdown = source(path);
     for (const tool of TOOLS) assert.match(markdown, new RegExp('`' + tool + '`'));
@@ -58,6 +59,8 @@ test('all twelve tools and their safety boundaries are documented in every local
     assert.match(markdown, /idempotent/i);
     assert.match(markdown, /recover|récupér|recuper/i);
     assert.match(markdown, /refund|rembours|reembols/i);
+    assert.match(markdown, /inline|intégr|integr/i);
+    assert.match(markdown, /fallback|repli|alternativ/i);
   }
 });
 

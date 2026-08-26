@@ -19,6 +19,7 @@ const allowedTools = new Set([
   'confirm_generation',
   'get_generation_status',
   'list_recent_generations',
+  'present_generation',
   'create_topup_link',
 ]);
 
@@ -121,6 +122,9 @@ test('the shared skill gives hosts conversational, factual guardrails', () => {
   assert.match(skill, /exact (?:price|quote).*explicit.*approval/is);
   assert.match(skill, /ambiguous.*not.*confirmation/is);
   assert.match(skill, /get_generation_status.*list_recent_generations.*second paid/is);
+  assert.match(skill, /completed.*present_generation|present_generation.*completed/is);
+  assert.match(skill, /inline.*(?:video|image).*compatible.*host/is);
+  assert.match(skill, /(?:resource link|library).*fallback.*(?:without|does not).*UI/is);
   assert.match(skill, /returned.*URL/i);
   assert.match(skill, /get_account_status.*credit balance.*trial.*spending limit/is);
   assert.match(skill, /insufficient.*credits.*create_topup_link/is);
@@ -133,7 +137,7 @@ test('the shared skill gives hosts conversational, factual guardrails', () => {
   assert.doesNotMatch(skill, /economy|balanced|premium/i);
   assert.doesNotMatch(skill, /highest quality|best model|state-of-the-art|publicly available/i);
 
-  const toolNames = skill.match(/\b(?:get_account_status|list_models|get_model_details|recommend_models|calculate_project_budget|list_media|create_reference_upload_link|prepare_generation|confirm_generation|get_generation_status|list_recent_generations|create_topup_link)\b/g) ?? [];
+  const toolNames = skill.match(/\b(?:get_account_status|list_models|get_model_details|recommend_models|calculate_project_budget|list_media|create_reference_upload_link|prepare_generation|confirm_generation|get_generation_status|list_recent_generations|present_generation|create_topup_link)\b/g) ?? [];
   assert.ok(toolNames.length > 0);
   for (const tool of toolNames) assert.ok(allowedTools.has(tool), `unknown tool ${tool}`);
 });

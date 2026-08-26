@@ -132,8 +132,13 @@ the returned job and refund state distinguish a technical outcome from a
 creative iteration. For a technical failure, inspect the refund state and do
 not resubmit automatically. A creative retry is a new paid attempt that needs
 `prepare_generation` and explicit approval of its new exact quote. When a job
-is completed, explain that it is saved in the same connected MaxVideoAI library
-and use only its returned library or workspace destination. Read
+is completed, call `present_generation` once when the user asks to view it or
+when the result should be delivered. It presents inline video or image in a
+compatible UI host. Use the returned resource link and MaxVideoAI library
+destination as the fallback when the host does not render MCP Apps UI. Never use `present_generation`
+to poll, generate, retry, confirm, or charge. Explain that the result is saved
+in the same connected MaxVideoAI library and use only its returned library or
+workspace destination. Read
 [generation safety](references/generation-safety.md) for the confirmation,
 recovery, trial, and top-up rules.
 

@@ -44,7 +44,7 @@
 - Create: tests/mcp-output-schemas.test.ts
 
 - [ ] Write a failing inventory test requiring every registered tool to declare inputSchema, outputSchema, readOnlyHint, destructiveHint, and openWorldHint.
-- [ ] Define strict Zod output schemas for all twelve success DTOs. Reuse smaller money, destination, model, reference, quote, status, pagination, and error schemas; do not use z.any(), passthrough, or an invented generic object.
+- [ ] Define strict Zod output schemas for all thirteen success DTOs. Reuse smaller money, destination, model, reference, quote, status, pagination, and error schemas; do not use z.any(), passthrough, or an invented generic object.
 - [ ] Ensure structuredContent validates before returning success. If an internal DTO violates its declared schema, log a correlation ID and return the existing sanitized INTERNAL_ERROR rather than leaking the invalid object.
 - [ ] Audit annotations against implementations:
 
@@ -58,6 +58,7 @@
 | list_media | true | false | false | Reads owned private media metadata |
 | get_generation_status | true | false | false | Reads one owned job |
 | list_recent_generations | true | false | false | Reads owned recent jobs |
+| present_generation | true | false | false | Re-reads and presents one owned completed result without mutating it |
 | prepare_generation | false | false | false | Persists a short-lived quote |
 | create_reference_upload_link | false | false | false | Creates a private MaxVideoAI upload session |
 | create_topup_link | false | false | false | Invalidates one quote and creates a private billing handoff |
@@ -97,7 +98,7 @@
     python3 /Users/adrienmillot/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py plugins/maxvideoai
 
 - [ ] Use the plugin cachebuster helper for local updates and reinstall. Do not edit the personal marketplace file by hand.
-- [ ] Start a new Codex task after reinstall and verify the twelve tools and new output schemas load.
+- [ ] Start a new Codex task after reinstall and verify the thirteen tools and new output schemas load.
 - [ ] Commit.
 
     git add plugins/maxvideoai tests/mcp-plugin-contract.test.ts
@@ -110,14 +111,14 @@
 - Create: tests/chatgpt-app-submission.test.ts
 - Modify: docs/marketing/mcp-directory-submissions.md
 
-- [ ] Run the ChatGPT app submission inspection against the final twelve-tool server, following every service far enough to verify reads, writes, provider submission, quote invalidation, and browser handoffs.
+- [ ] Run the ChatGPT app submission inspection against the final thirteen-tool server, following every service far enough to verify reads, writes, provider submission, quote invalidation, inline result presentation, and browser handoffs.
 - [ ] Block generation if any annotation is missing or mismatched; fix source in Task 1 first.
 - [ ] Generate exactly one root chatgpt-app-submission.json with:
   - schema_version 1 and current official schema URL;
   - display name MaxVideoAI;
   - subtitle no longer than 30 characters;
   - category DESIGN unless the current submission taxonomy dictates another reviewed choice;
-  - all twelve tools with exact annotations and one-sentence justifications;
+  - all thirteen tools with exact annotations and one-sentence justifications;
   - exactly five positive test cases;
   - exactly three unrelated negative test cases.
 - [ ] Cover these positive review journeys across the five cases: model/budget advice, private reference selection/upload, exact quote with explicit confirmation, top-up plus mandatory fresh quote, and generation recovery/library.

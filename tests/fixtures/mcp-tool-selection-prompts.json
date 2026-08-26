@@ -54,7 +54,7 @@
     "prompt": "Rewrite my idea as a concise cinematic prompt; do not choose a model or use MaxVideoAI.",
     "expectedTools": [],
     "allowedAlternatives": [],
-    "prohibitedTools": ["get_account_status", "list_models", "get_model_details", "recommend_models", "calculate_project_budget", "list_media", "create_reference_upload_link", "prepare_generation", "confirm_generation", "get_generation_status", "list_recent_generations", "create_topup_link"],
+    "prohibitedTools": ["get_account_status", "list_models", "get_model_details", "recommend_models", "calculate_project_budget", "list_media", "create_reference_upload_link", "prepare_generation", "confirm_generation", "get_generation_status", "list_recent_generations", "present_generation", "create_topup_link"],
     "expectedCapabilityClaims": ["host_prompt_drafting_only"],
     "prohibitedClaims": ["generation_live", "exact_quote_live"],
     "reason": "Prompt drafting belongs to the host agent and the user explicitly excluded model selection."
@@ -66,7 +66,7 @@
     "prompt": "Trim my local source video, replace its background, preserve the original motion, and export it.",
     "expectedTools": [],
     "allowedAlternatives": [],
-    "prohibitedTools": ["get_account_status", "list_models", "get_model_details", "recommend_models", "calculate_project_budget", "list_media", "create_reference_upload_link", "prepare_generation", "confirm_generation", "get_generation_status", "list_recent_generations", "create_topup_link"],
+    "prohibitedTools": ["get_account_status", "list_models", "get_model_details", "recommend_models", "calculate_project_budget", "list_media", "create_reference_upload_link", "prepare_generation", "confirm_generation", "get_generation_status", "list_recent_generations", "present_generation", "create_topup_link"],
     "expectedCapabilityClaims": ["unsupported_by_live_registry"],
     "prohibitedClaims": ["generation_live", "universal_model_support"],
     "reason": "The live read-only registry exposes no source-video editing, upload, export, or generation tool."
@@ -78,7 +78,7 @@
     "prompt": "Remove room noise from this podcast recording and return a mastered WAV file.",
     "expectedTools": [],
     "allowedAlternatives": [],
-    "prohibitedTools": ["get_account_status", "list_models", "get_model_details", "recommend_models", "calculate_project_budget", "list_media", "create_reference_upload_link", "prepare_generation", "confirm_generation", "get_generation_status", "list_recent_generations", "create_topup_link"],
+    "prohibitedTools": ["get_account_status", "list_models", "get_model_details", "recommend_models", "calculate_project_budget", "list_media", "create_reference_upload_link", "prepare_generation", "confirm_generation", "get_generation_status", "list_recent_generations", "present_generation", "create_topup_link"],
     "expectedCapabilityClaims": ["unsupported_by_live_registry"],
     "prohibitedClaims": ["audio_editing_live", "generation_live"],
     "reason": "Model audio capability metadata does not provide audio cleanup, mastering, or file export."
@@ -90,7 +90,7 @@
     "prompt": "Turn this contract PDF into a redlined Word document and preserve every tracked change.",
     "expectedTools": [],
     "allowedAlternatives": [],
-    "prohibitedTools": ["get_account_status", "list_models", "get_model_details", "recommend_models", "calculate_project_budget", "list_media", "create_reference_upload_link", "prepare_generation", "confirm_generation", "get_generation_status", "list_recent_generations", "create_topup_link"],
+    "prohibitedTools": ["get_account_status", "list_models", "get_model_details", "recommend_models", "calculate_project_budget", "list_media", "create_reference_upload_link", "prepare_generation", "confirm_generation", "get_generation_status", "list_recent_generations", "present_generation", "create_topup_link"],
     "expectedCapabilityClaims": ["unsupported_by_live_registry"],
     "prohibitedClaims": ["document_processing_live", "generation_live"],
     "reason": "Document conversion and redlining are outside the live MaxVideoAI MCP tool registry."
@@ -401,7 +401,7 @@
     "prompt": "Find the TypeScript type error in this reducer and suggest the smallest safe code fix.",
     "expectedTools": [],
     "allowedAlternatives": [],
-    "prohibitedTools": ["get_account_status", "list_models", "get_model_details", "recommend_models", "calculate_project_budget", "list_media", "create_reference_upload_link", "prepare_generation", "confirm_generation", "get_generation_status", "list_recent_generations", "create_topup_link"],
+    "prohibitedTools": ["get_account_status", "list_models", "get_model_details", "recommend_models", "calculate_project_budget", "list_media", "create_reference_upload_link", "prepare_generation", "confirm_generation", "get_generation_status", "list_recent_generations", "present_generation", "create_topup_link"],
     "expectedCapabilityClaims": ["no_maxvideoai_tool_needed"],
     "prohibitedClaims": ["generation_live", "universal_model_support"],
     "reason": "A local coding task has no video, image, account, catalog, pricing, or generation intent."
@@ -413,7 +413,7 @@
     "prompt": "Research current European accessibility rules and cite the primary legal sources.",
     "expectedTools": [],
     "allowedAlternatives": [],
-    "prohibitedTools": ["get_account_status", "list_models", "get_model_details", "recommend_models", "calculate_project_budget", "list_media", "create_reference_upload_link", "prepare_generation", "confirm_generation", "get_generation_status", "list_recent_generations", "create_topup_link"],
+    "prohibitedTools": ["get_account_status", "list_models", "get_model_details", "recommend_models", "calculate_project_budget", "list_media", "create_reference_upload_link", "prepare_generation", "confirm_generation", "get_generation_status", "list_recent_generations", "present_generation", "create_topup_link"],
     "expectedCapabilityClaims": ["no_maxvideoai_tool_needed"],
     "prohibitedClaims": ["generation_live", "document_processing_live"],
     "reason": "General legal research requires authoritative sources, not a MaxVideoAI model-catalog tool."
@@ -425,7 +425,7 @@
     "prompt": "Crop this local PNG to 1200 by 630 pixels and remove the white border without generating a new image.",
     "expectedTools": [],
     "allowedAlternatives": [],
-    "prohibitedTools": ["get_account_status", "list_models", "get_model_details", "recommend_models", "calculate_project_budget", "list_media", "create_reference_upload_link", "prepare_generation", "confirm_generation", "get_generation_status", "list_recent_generations", "create_topup_link"],
+    "prohibitedTools": ["get_account_status", "list_models", "get_model_details", "recommend_models", "calculate_project_budget", "list_media", "create_reference_upload_link", "prepare_generation", "confirm_generation", "get_generation_status", "list_recent_generations", "present_generation", "create_topup_link"],
     "expectedCapabilityClaims": ["no_maxvideoai_tool_needed"],
     "prohibitedClaims": ["generation_live", "reference_upload_live"],
     "reason": "Deterministic local pixel editing does not require any live MaxVideoAI MCP capability."

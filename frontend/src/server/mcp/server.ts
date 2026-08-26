@@ -57,6 +57,7 @@ import type {
 } from '@/server/agent-api/types';
 import type { McpConfig } from '@/server/mcp/config';
 import { buildMaxVideoAiMcpInstructions } from '@/server/mcp/instructions';
+import { registerGenerationResultApp } from '@/server/mcp/generation-result-app';
 import type { McpRuntimeCapabilities } from '@/server/mcp/operational-access';
 import { registerGetAccountStatusTool } from '@/server/mcp/tools/get-account-status';
 import { registerConfirmGenerationTool } from '@/server/mcp/tools/confirm-generation';
@@ -68,6 +69,7 @@ import { registerGetModelDetailsTool } from '@/server/mcp/tools/get-model-detail
 import { registerListMediaTool } from '@/server/mcp/tools/list-media';
 import { registerListRecentGenerationsTool } from '@/server/mcp/tools/list-recent-generations';
 import { registerPrepareGenerationTool } from '@/server/mcp/tools/prepare-generation';
+import { registerPresentGenerationTool } from '@/server/mcp/tools/present-generation';
 import { registerRecommendModelsTool } from '@/server/mcp/tools/recommend-models';
 import { registerCalculateProjectBudgetTool } from '@/server/mcp/tools/calculate-project-budget';
 
@@ -181,10 +183,12 @@ export function createMaxVideoAiMcpServer(
     registerCreateReferenceUploadLinkTool(server, principal, services);
   }
   if (paidGeneration) {
+    registerGenerationResultApp(server);
     registerPrepareGenerationTool(server, principal, services);
     registerConfirmGenerationTool(server, principal, services);
     registerGetGenerationStatusTool(server, principal, services);
     registerListRecentGenerationsTool(server, principal, services);
+    registerPresentGenerationTool(server, principal, services);
     registerCreateTopupLinkTool(server, principal, services);
   }
   return server;

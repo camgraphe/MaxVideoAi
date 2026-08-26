@@ -66,6 +66,7 @@ Quality is not a single preset. For multi-shot work, the assistant may compare a
 | `confirm_generation` | Approve one exact quote and submit its job idempotently. | Yes, only after explicit approval. |
 | `get_generation_status` | Read a known job, completion, output, failure, and refund state. | No. |
 | `list_recent_generations` | Recover recent jobs instead of accidentally submitting duplicates. | No. |
+| `present_generation` | Present a completed owned image or playable video inline in compatible hosts. | No. Uses the result link and library as fallback. |
 | `create_topup_link` | Open a secure MaxVideoAI credit top-up handoff for the missing amount. | Payment happens only on MaxVideoAI. |
 
 Production publication flags decide which write-capable tools are exposed. A client must not infer availability from this reference alone; its live `tools/list` response is authoritative.
@@ -98,7 +99,7 @@ The plugin itself, model advice, and project budgets require no separate subscri
 
 ## Jobs, gallery, failures, and retries
 
-An accepted job is not yet a completed video. Poll `get_generation_status` for a known job or call `list_recent_generations` to recover it. Do not submit the same paid generation again merely because the first call timed out.
+An accepted job is not yet a completed video. Poll `get_generation_status` for a known job or call `list_recent_generations` to recover it. Once it is completed, `present_generation` can render the image or playable video inline in an MCP Apps-compatible host. Other clients keep the returned result link and MaxVideoAI library destination as the universal fallback. Do not submit the same paid generation again merely because the first call timed out.
 
 Successful images and videos are saved to the same private MaxVideoAI account library used by the website. Return only the official result, workspace, or library destination supplied by MaxVideoAI.
 

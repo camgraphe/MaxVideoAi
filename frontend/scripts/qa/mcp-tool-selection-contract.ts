@@ -33,6 +33,7 @@ export const FUTURE_GATED_TOOL_NAMES = [
   'confirm_generation',
   'get_generation_status',
   'list_recent_generations',
+  'present_generation',
   'create_topup_link',
 ] as const;
 
