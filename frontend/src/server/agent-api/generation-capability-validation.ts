@@ -98,7 +98,7 @@ function validateFieldValue(field: EngineInputField, value: unknown): void {
   }
   if (field.type === 'enum') {
     if (
-      (typeof value !== 'string' && typeof value !== 'number')
+      (typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean')
       || (field.values?.length && !field.values.some((allowed) => String(allowed) === String(value)))
     ) {
       fail(field.id);
@@ -304,11 +304,19 @@ function fieldIdsForRole(
       ]
       : [];
   }
+  if (request.mode === 'fl2v') {
+    if (role === 'first_frame') return ['first_frame_url'];
+    if (role === 'last_frame') return ['last_frame_url'];
+    return [];
+  }
   if (request.mode === 'v2v') {
     if (role === 'source') return ['video_url'];
     return role === 'reference'
       ? ['image_urls', 'reference_image_urls', 'audio_urls', 'reference_audio_urls']
       : [];
+  }
+  if (request.mode === 'r2v') {
+    return role === 'reference' ? ['video_urls'] : [];
   }
   if (request.mode === 'extend') {
     return role === 'source' ? ['extension_source_videos'] : [];

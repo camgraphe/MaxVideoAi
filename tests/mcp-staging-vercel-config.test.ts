@@ -530,7 +530,7 @@ test('MCP staging deploy wrapper gates an unaliased candidate before promotion',
     'SEEDANCE_2_5_BYTEPLUS_ENABLED=true',
     'SEEDANCE_2_5_PROVIDER=byteplus_modelark',
     'SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY=false',
-    'SEEDANCE_2_5_BYTEPLUS_MODES=t2v',
+    'SEEDANCE_2_5_BYTEPLUS_MODES=t2v,i2v,ref2v,extend',
     'SEEDANCE_2_5_LAS_ENABLED=false',
   ]) {
     assert.match(runbook, new RegExp(`^${setting}$`, 'm'));

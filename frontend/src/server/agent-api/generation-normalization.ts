@@ -25,9 +25,11 @@ const MAX_ENGINE_ID_CHARS = 128;
 const MAX_ASSET_ID_CHARS = 256;
 const MAX_SETTING_KEY_CHARS = 64;
 const MODE_SET = new Set<CanonicalGenerationMode>([
-  't2v', 'i2v', 'ref2v', 'v2v', 'extend', 't2i', 'i2i',
+  't2v', 'i2v', 'ref2v', 'fl2v', 'v2v', 'r2v', 'extend', 't2i', 'i2i',
 ]);
-const VIDEO_MODE_SET = new Set<CanonicalGenerationMode>(['t2v', 'i2v', 'ref2v', 'v2v', 'extend']);
+const VIDEO_MODE_SET = new Set<CanonicalGenerationMode>([
+  't2v', 'i2v', 'ref2v', 'fl2v', 'v2v', 'r2v', 'extend',
+]);
 const IMAGE_MODE_SET = new Set<CanonicalGenerationMode>(['t2i', 'i2i']);
 const REFERENCE_MEDIA_KIND_SET = new Set<CanonicalReferenceMediaKind>(['image', 'video', 'audio']);
 const ROLE_SET = new Set<CanonicalGenerationReferenceRole>([
@@ -90,7 +92,9 @@ const SETTING_KEYS_BY_MODE: Record<CanonicalGenerationMode, ReadonlySet<string>>
   t2v: VIDEO_SETTING_KEYS,
   i2v: VIDEO_SETTING_KEYS,
   ref2v: VIDEO_SETTING_KEYS,
+  fl2v: VIDEO_SETTING_KEYS,
   v2v: VIDEO_SETTING_KEYS,
+  r2v: VIDEO_SETTING_KEYS,
   extend: VIDEO_SETTING_KEYS,
   t2i: IMAGE_SETTING_KEYS,
   i2i: IMAGE_SETTING_KEYS,
@@ -320,7 +324,7 @@ function normalizeHttpsUrl(value: unknown, index: number): string {
 function normalizeReference(
   value: unknown,
   index: number,
-  orderedSourceMode: boolean,
+  orderedRole: CanonicalGenerationReferenceRole | null,
 ): CanonicalGenerationReference {
   const field = `references[${index}]`;
   assertPlainDataObject(value, field);
@@ -329,7 +333,7 @@ function normalizeReference(
   if (kind === 'asset') {
     assertExactFields(
       value,
-      orderedSourceMode && role === 'source' ? ORDERED_ASSET_REFERENCE_FIELDS : ASSET_REFERENCE_FIELDS,
+      role === orderedRole ? ORDERED_ASSET_REFERENCE_FIELDS : ASSET_REFERENCE_FIELDS,
       field,
     );
     return { kind, assetId: normalizeAssetId(value.assetId, index), role };
@@ -337,7 +341,7 @@ function normalizeReference(
   if (kind === 'https') {
     assertExactFields(
       value,
-      orderedSourceMode && role === 'source' ? ORDERED_HTTPS_REFERENCE_FIELDS : HTTPS_REFERENCE_FIELDS,
+      role === orderedRole ? ORDERED_HTTPS_REFERENCE_FIELDS : HTTPS_REFERENCE_FIELDS,
       field,
     );
     return {
@@ -376,12 +380,13 @@ function normalizeReferences(
 ): CanonicalGenerationReference[] {
   if (value === undefined) return [];
   assertDenseDataArray(value, 'references', MAX_CANONICAL_REFERENCES);
-  let nextSourceSlot = 0;
+  const orderedRole = mode === 'extend' ? 'source' : mode === 'r2v' ? 'reference' : null;
+  let nextOrderedSlot = 0;
   const references = value.map((reference, index) => {
-    const normalized = normalizeReference(reference, index, mode === 'extend');
-    if (mode !== 'extend' || normalized.role !== 'source') return normalized;
-    const slot = nextSourceSlot;
-    nextSourceSlot += 1;
+    const normalized = normalizeReference(reference, index, orderedRole);
+    if (normalized.role !== orderedRole) return normalized;
+    const slot = nextOrderedSlot;
+    nextOrderedSlot += 1;
     const authoredSlot = (reference as Record<string, unknown>).slot;
     if (authoredSlot !== undefined && authoredSlot !== slot) {
       fail(`references[${index}].slot`, 'ordered reference slot does not match caller order.');

@@ -94,7 +94,7 @@ test('BytePlus ModelArk provider delegates payload and response normalization', 
   assert.match(responseSource, /export async function parseJsonResponse/);
 });
 
-test('BytePlus selects ModelArk for proven Seedance 2.5 T2V and LAS for advanced modes', { concurrency: false }, async () => {
+test('BytePlus keeps production-proven Seedance 2.5 modes on ModelArk and reserves LAS for V2V', { concurrency: false }, async () => {
   const providerModule = await import('../frontend/src/server/video-providers/byteplus-modelark');
   const resolveTransport = (
     providerModule as unknown as {
@@ -103,10 +103,10 @@ test('BytePlus selects ModelArk for proven Seedance 2.5 T2V and LAS for advanced
   ).resolveBytePlusTransport;
   assert.equal(typeof resolveTransport, 'function');
   assert.equal(resolveTransport?.('seedance-2-5', 't2v'), 'modelark');
-  assert.equal(resolveTransport?.('seedance-2-5', 'i2v'), 'las');
-  assert.equal(resolveTransport?.('seedance-2-5', 'ref2v'), 'las');
+  assert.equal(resolveTransport?.('seedance-2-5', 'i2v'), 'modelark');
+  assert.equal(resolveTransport?.('seedance-2-5', 'ref2v'), 'modelark');
   assert.equal(resolveTransport?.('seedance-2-5', 'v2v'), 'las');
-  assert.equal(resolveTransport?.('seedance-2-5', 'extend'), 'las');
+  assert.equal(resolveTransport?.('seedance-2-5', 'extend'), 'modelark');
   assert.equal(resolveTransport?.('seedance-2-0', 'v2v'), 'modelark');
 
   const mutableEnv = ENV as typeof ENV & Record<string, string | undefined>;

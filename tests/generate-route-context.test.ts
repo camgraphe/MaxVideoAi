@@ -173,7 +173,7 @@ test('Seedance 2.5 hard-disable and routing gates run before database and billin
   }
 });
 
-test('Seedance 2.5 accepts proven T2V with the Ark key but rejects LAS modes before execution when the LAS key is absent', { concurrency: false }, () => {
+test('Seedance 2.5 accepts proven ModelArk modes with the Ark key but rejects V2V before LAS execution is ready', { concurrency: false }, () => {
   const extendedEnv = ENV as typeof ENV & { SEEDANCE_2_5_LAS_ENABLED?: string };
   const entry = getFalEngineById('seedance-2-5');
   assert.ok(entry);
@@ -198,13 +198,15 @@ test('Seedance 2.5 accepts proven T2V with the Ark key but rejects LAS modes bef
   extendedEnv.SEEDANCE_2_5_LAS_ENABLED = 'true';
 
   try {
-    const t2v = resolveTrustedPaidGenerateRouteContext({
-      body: {},
-      engine: entry.engine,
-      jobId: 'job_t2v',
-      mode: 't2v',
-    });
-    assert.equal(t2v.ok, true);
+    for (const mode of ['t2v', 'i2v', 'ref2v', 'extend'] as const) {
+      const result = resolveTrustedPaidGenerateRouteContext({
+        body: {},
+        engine: entry.engine,
+        jobId: `job_${mode}`,
+        mode,
+      });
+      assert.equal(result.ok, true, mode);
+    }
 
     const v2v = resolveTrustedPaidGenerateRouteContext({
       body: {},

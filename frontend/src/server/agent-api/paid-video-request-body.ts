@@ -152,6 +152,23 @@ export function buildPaidVideoRequestBody(
     return body;
   }
 
+  if (execution.request.mode === 'fl2v') {
+    const first = references.filter((reference) =>
+      reference.kind === 'image' && reference.role === 'first_frame');
+    const last = references.filter((reference) =>
+      reference.kind === 'image' && reference.role === 'last_frame');
+    if (first.length !== 1 || last.length !== 1 || references.length !== 2) {
+      invalidModeReferences();
+    }
+    body.imageUrl = first[0]!.url;
+    body.endImageUrl = last[0]!.url;
+    body.inputs = [
+      input('image', 'first_frame_url', first[0]!.url),
+      input('image', 'last_frame_url', last[0]!.url),
+    ];
+    return body;
+  }
+
   if (execution.request.mode === 'ref2v') {
     if (references.some((reference) => reference.role !== 'reference')) invalidModeReferences();
     const images = references.filter((reference) => reference.kind === 'image').map(({ url }) => url);
@@ -185,6 +202,18 @@ export function buildPaidVideoRequestBody(
       input('video', 'video_url', source[0]!.url),
       ...audio.map((url) => input('audio', 'audio_urls', url)),
     ];
+    return body;
+  }
+
+  if (execution.request.mode === 'r2v') {
+    const videos = references.filter((reference) =>
+      reference.kind === 'video' && reference.role === 'reference');
+    if (videos.length < 1 || videos.length !== references.length) {
+      invalidModeReferences();
+    }
+    const urls = videos.map(({ url }) => url);
+    body.referenceVideos = urls;
+    body.inputs = urls.map((url) => input('video', 'video_urls', url));
     return body;
   }
 

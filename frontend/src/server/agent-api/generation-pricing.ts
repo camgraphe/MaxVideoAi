@@ -91,7 +91,7 @@ function hasCanonicalVideoInput(
   context: GenerationPricingReferenceContext,
 ): boolean {
   if (request.surface !== 'video') return false;
-  if (request.mode === 'v2v' || request.mode === 'extend') return true;
+  if (request.mode === 'v2v' || request.mode === 'r2v' || request.mode === 'extend') return true;
   if (request.mode !== 'ref2v') return false;
   return request.references.some((reference) => {
     if (reference.role !== 'reference') return false;

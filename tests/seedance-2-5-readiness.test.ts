@@ -411,7 +411,7 @@ test('the production handoff records the public flagship matrix, safe local defa
     'SEEDANCE_2_5_BYTEPLUS_ENABLED=true',
     'SEEDANCE_2_5_PROVIDER=byteplus_modelark',
     'SEEDANCE_2_5_BYTEPLUS_ADMIN_ONLY=false',
-    'SEEDANCE_2_5_BYTEPLUS_MODES=t2v',
+    'SEEDANCE_2_5_BYTEPLUS_MODES=t2v,i2v,ref2v,extend',
     'SEEDANCE_2_5_LAS_ENABLED=false',
     'kill switch',
     'no automated retry',
@@ -441,8 +441,8 @@ test('the production handoff records the public flagship matrix, safe local defa
   assert.match(packet, /City[\s\S]*Train[\s\S]*Dialogue[\s\S]*private/i);
   assert.match(packet, /public flagship launch/i);
   assert.match(packet, /no additional pre-launch paid generation/i);
-  assert.match(packet, /ModelArk T2V execution is the current proven direct route/i);
-  assert.match(packet, /LAS advanced execution is pending exact pricing\/accounting/i);
+  assert.match(packet, /ModelArk text, image, reference, and extension execution is the current proven direct route/i);
+  assert.match(packet, /LAS V2V execution is pending exact pricing\/accounting/i);
   assert.match(packet, /BYTEPLUS_ARK_ENABLED=true[\s\S]*existing jobs[\s\S]*(?:poll|reconcil)/i);
   assert.match(packet, /publication\.app\.published=false/);
   assert.match(packet, /publication\.pricing\.published=false/);
@@ -455,8 +455,8 @@ test('the production handoff records the public flagship matrix, safe local defa
     '/fr/modeles/seedance-2-5',
     '/es/modelos/seedance-2-5',
     'engine=seedance-2-5',
-    'only T2V is executable',
-    'T2V',
+    'T2V, I2V, Ref2V, and Extend are executable',
+    'V2V remains gated',
     'self-canonical metadata',
     'all three comparison pages',
     'Benchmark Lab',
@@ -470,16 +470,16 @@ test('the production handoff records the public flagship matrix, safe local defa
 
   assert.match(stub, /runtimeEntryAllowed:\s*true/);
   assert.match(stub, /documentationOnly:\s*true/);
-  assert.match(stub, /currentPhase:\s*'t2v_operational_las_gated'/);
+  assert.match(stub, /currentPhase:\s*'modelark_reference_modes_operational_las_v2v_gated'/);
   assert.match(stub, /nextRequiredPhase:\s*'las_pricing_and_canary'/);
   assert.match(stub, /publicGenerationAllowed:\s*true/);
   assert.match(stub, /publicMarketingPageAllowed:\s*true/);
   assert.match(stub, /publicDiscoveryAllowed:\s*true/);
   assert.match(stub, /targetModes:\s*\['t2v', 'i2v', 'ref2v', 'v2v', 'extend'\]/);
-  assert.match(stub, /executableModes:\s*\['t2v'\]/);
-  assert.match(stub, /references:\s*false/);
+  assert.match(stub, /executableModes:\s*\['t2v', 'i2v', 'ref2v', 'extend'\]/);
+  assert.match(stub, /references:\s*true/);
   assert.match(stub, /editing:\s*false/);
-  assert.match(stub, /extension:\s*false/);
+  assert.match(stub, /extension:\s*true/);
 });
 
 test('the LinkedIn launch package confines approved Seedance 2.5 copy to City and Train', () => {

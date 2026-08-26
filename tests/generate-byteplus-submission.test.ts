@@ -174,7 +174,7 @@ test('BytePlus submission helper creates task, updates job, logs, and returns qu
   });
 });
 
-test('Seedance 2.5 submission routes T2V to ModelArk and advanced modes to LAS', { concurrency: false }, async () => {
+test('Seedance 2.5 submission keeps proven reference workflows on ModelArk and routes only V2V to LAS', { concurrency: false }, async () => {
   const original = {
     bytePlusEnabled: ENV.BYTEPLUS_ARK_ENABLED,
     seedance25Enabled: ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED,
@@ -224,10 +224,10 @@ test('Seedance 2.5 submission routes T2V to ModelArk and advanced modes to LAS',
 
     assert.deepEqual(transports, [
       { mode: 't2v', transport: 'modelark' },
-      { mode: 'i2v', transport: 'las' },
-      { mode: 'ref2v', transport: 'las' },
+      { mode: 'i2v', transport: 'modelark' },
+      { mode: 'ref2v', transport: 'modelark' },
       { mode: 'v2v', transport: 'las' },
-      { mode: 'extend', transport: 'las' },
+      { mode: 'extend', transport: 'modelark' },
     ]);
   } finally {
     ENV.BYTEPLUS_ARK_ENABLED = original.bytePlusEnabled;

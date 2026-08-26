@@ -98,7 +98,7 @@ export function resolveBytePlusTransport(
   mode: Mode | string | null | undefined,
 ): BytePlusTransport {
   if (engineId?.trim() !== SEEDANCE_2_5_ENGINE_ID) return 'modelark';
-  return mode?.trim().toLowerCase() === 't2v' ? 'modelark' : 'las';
+  return mode?.trim().toLowerCase() === 'v2v' ? 'las' : 'modelark';
 }
 
 export function resolveBytePlusPollTransport(input: {

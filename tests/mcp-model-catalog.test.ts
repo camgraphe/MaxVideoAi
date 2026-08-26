@@ -296,12 +296,12 @@ test('catalog mirrors real execution gates for newly registered video models', {
         id: 'seedance-2-5',
         label: 'Seedance 2.5',
         surface: 'video',
-        modes: ['t2v'],
+        modes: ['t2v', 'i2v', 'ref2v', 'extend'],
         aspectRatios: ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
         resolutions: ['480p', '720p'],
         maxDurationSec: 30,
         audio: true,
-        referenceImages: false,
+        referenceImages: true,
         availability: 'available',
         generationEnabled: true,
       },
@@ -315,8 +315,8 @@ test('catalog mirrors real execution gates for newly registered video models', {
 
     assert.deepEqual(
       (await listAgentModels({ id: 'seedance-2-5' }, registryDeps))[0]?.modes,
-      ['t2v'],
-      'a LAS credential alone must not publish advanced modes before pricing is approved',
+      ['t2v', 'i2v', 'ref2v', 'extend'],
+      'a LAS credential alone must not publish V2V before pricing is approved',
     );
 
     extendedEnv.SEEDANCE_2_5_LAS_ENABLED = 'true';

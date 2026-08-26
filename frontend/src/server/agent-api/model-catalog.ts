@@ -69,7 +69,9 @@ const defaultDeps: AgentModelCatalogDeps = {
 };
 
 function referenceImagesSupported(modes: AgentGenerationMode[]): boolean {
-  return modes.some((mode) => mode === 'i2v' || mode === 'ref2v' || mode === 'i2i');
+  return modes.some((mode) =>
+    mode === 'i2v' || mode === 'ref2v' || mode === 'fl2v' || mode === 'i2i'
+  );
 }
 
 function maximumModeDurationSec(

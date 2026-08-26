@@ -23,7 +23,7 @@ export function buildMaxVideoAiMcpInstructions(
     'For multi-shot work, the host may compose one or more named single- or mixed-model proposals and use calculate_project_budget.',
     'Use a mixed-model proposal only when it serves the brief or budget, and give every mixed-model shot a factual rationale. Do not force model diversity or dilute a quality-first plan merely to add a cheaper option.',
     'Read get_model_details for the selected mode and use its exact required fields, settings, reference counts, media kinds, and limits; never copy them from another model or mode.',
-    'For video modes exposed by live details: t2v is text to video; i2v uses a first or start image and may support a last or end image; ref2v uses supported image, video, and audio references; v2v uses a required source video plus any supported image or audio references; extend uses the allowed number of ordered source clips.',
+    'For video modes exposed by live details: t2v is text to video; i2v uses a first or start image and may support a last or end image; ref2v uses supported image, video, and audio references; fl2v requires first_frame and last_frame images; v2v uses a required source video plus any supported image or audio references; r2v uses ordered reference videos; extend uses the allowed number of ordered source clips.',
     'When get_model_details reports that the selected mode’s aspectRatios list is empty, omit aspectRatio; when it is non-empty, include a supported aspectRatio. Never infer this rule from the mode name or another mode.',
     'Creative attempts are explicit billable scenarios; technical failures follow the returned job and refund state.',
     'Project estimates do not reserve price.',
