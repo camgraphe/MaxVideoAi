@@ -81,8 +81,8 @@ export function buildFocusMetricData(
   if (focus === 'charges') {
     return {
       key: 'charges',
-      label: 'Render charges',
-      description: 'Consommation par jour. Les pics restent visibles, mais la comparaison n’oblige plus à faire le calcul mental.',
+      label: 'Gross render charges',
+      description: 'Débits bruts par jour avant remboursements. Les tableaux de wallet affichent séparément refunds et net spend.',
       theme: CHART_THEMES.charges,
       currentPoints: comparison.current.chargesDaily.map((point) => ({
         label: formatDay(point.date),
@@ -92,7 +92,7 @@ export function buildFocusMetricData(
         label: formatDay(point.date),
         value: point.amountCents / 100,
       })),
-      stats: buildAmountSeriesStats(comparison.current.chargesDaily, comparison.previous.chargesDaily, humanRange, 'charges'),
+      stats: buildAmountSeriesStats(comparison.current.chargesDaily, comparison.previous.chargesDaily, humanRange, 'gross debits'),
       axisFormatter: formatAxisCurrency,
       tooltipFormatter: (value) => formatCurrency(value, { precise: value < 100 }),
     };
@@ -215,6 +215,29 @@ export function sumAmountSeries(points: AmountSeriesPoint[]): { amountUsd: numbe
     }),
     { amountUsd: 0, count: 0 }
   );
+}
+
+export function summarizeWalletFlow({
+  topups,
+  grossCharges,
+  refunds,
+}: {
+  topups: AmountSeriesPoint[];
+  grossCharges: AmountSeriesPoint[];
+  refunds: AmountSeriesPoint[];
+}) {
+  const topupTotals = sumAmountSeries(topups);
+  const grossChargeTotals = sumAmountSeries(grossCharges);
+  const refundTotals = sumAmountSeries(refunds);
+  const netSpendUsd = grossChargeTotals.amountUsd - refundTotals.amountUsd;
+
+  return {
+    topups: topupTotals,
+    grossCharges: grossChargeTotals,
+    refunds: refundTotals,
+    netSpendUsd,
+    walletBalanceDeltaUsd: topupTotals.amountUsd - netSpendUsd,
+  };
 }
 
 export function findPeakTimeSeriesPoint(points: TimeSeriesPoint[]): TimeSeriesPoint | null {

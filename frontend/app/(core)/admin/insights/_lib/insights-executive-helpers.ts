@@ -1,4 +1,4 @@
-import { Activity, AlertTriangle, ChartLine, TrendingUp, Users, Wallet } from 'lucide-react';
+import { Activity, AlertTriangle, BadgeDollarSign, ChartLine, RotateCcw, TrendingUp, Users, Wallet } from 'lucide-react';
 import type { AdminMetricItem } from '@/components/admin-system/surfaces/AdminMetricGrid';
 import type { AdminMetrics, AdminMetricsComparison } from '@/lib/admin/types';
 import type { FocusMetric, PrioritySignal } from './insights-types';
@@ -12,7 +12,7 @@ import {
   resolveDeltaTone,
 } from './insights-formatters';
 import { buildInsightsHref, describeRange, FOCUS_OPTIONS } from './insights-navigation';
-import { compareValues, sumAmountSeries, sumTimeSeries } from './insights-series-helpers';
+import { compareValues, summarizeWalletFlow, sumAmountSeries, sumTimeSeries } from './insights-series-helpers';
 
 export function buildExecutiveMetrics(
   metrics: AdminMetrics,
@@ -22,15 +22,21 @@ export function buildExecutiveMetrics(
   const signupsCurrent = sumTimeSeries(comparison.current.signupsDaily);
   const signupsPrevious = sumTimeSeries(comparison.previous.signupsDaily);
   const signupsDelta = compareValues(signupsCurrent, signupsPrevious);
-  const topupsCurrent = sumAmountSeries(comparison.current.topupsDaily);
-  const topupsPrevious = sumAmountSeries(comparison.previous.topupsDaily);
-  const topupsDelta = compareValues(topupsCurrent.amountUsd, topupsPrevious.amountUsd);
-  const chargesCurrent = sumAmountSeries(comparison.current.chargesDaily);
-  const chargesPrevious = sumAmountSeries(comparison.previous.chargesDaily);
-  const chargesDelta = compareValues(chargesCurrent.amountUsd, chargesPrevious.amountUsd);
-  const netCurrent = topupsCurrent.amountUsd - chargesCurrent.amountUsd;
-  const netPrevious = topupsPrevious.amountUsd - chargesPrevious.amountUsd;
-  const netDelta = compareValues(netCurrent, netPrevious);
+  const currentFlow = summarizeWalletFlow({
+    topups: comparison.current.topupsDaily,
+    grossCharges: comparison.current.chargesDaily,
+    refunds: comparison.current.refundsDaily,
+  });
+  const previousFlow = summarizeWalletFlow({
+    topups: comparison.previous.topupsDaily,
+    grossCharges: comparison.previous.chargesDaily,
+    refunds: comparison.previous.refundsDaily,
+  });
+  const topupsDelta = compareValues(currentFlow.topups.amountUsd, previousFlow.topups.amountUsd);
+  const chargesDelta = compareValues(currentFlow.grossCharges.amountUsd, previousFlow.grossCharges.amountUsd);
+  const refundsDelta = compareValues(currentFlow.refunds.amountUsd, previousFlow.refunds.amountUsd);
+  const netSpendDelta = compareValues(currentFlow.netSpendUsd, previousFlow.netSpendUsd);
+  const balanceDelta = compareValues(currentFlow.walletBalanceDeltaUsd, previousFlow.walletBalanceDeltaUsd);
   const activationGap = Math.max(0, metrics.funnels.totalTopupUsers - metrics.funnels.convertedWithin30dUsers);
 
   return [
@@ -43,23 +49,37 @@ export function buildExecutiveMetrics(
     },
     {
       label: 'Wallet top-ups',
-      value: formatCurrency(topupsCurrent.amountUsd),
-      helper: `${formatNumber(topupsCurrent.count)} loads · ${formatDeltaLabel(topupsDelta)} vs previous`,
+      value: formatCurrency(currentFlow.topups.amountUsd),
+      helper: `${formatNumber(currentFlow.topups.count)} loads · ${formatDeltaLabel(topupsDelta)} vs previous`,
       tone: resolveDeltaTone(topupsDelta),
       icon: Wallet,
     },
     {
-      label: 'Render charges',
-      value: formatCurrency(chargesCurrent.amountUsd),
-      helper: `${formatNumber(chargesCurrent.count)} charges · ${formatDeltaLabel(chargesDelta)} vs previous`,
+      label: 'Gross render charges',
+      value: formatCurrency(currentFlow.grossCharges.amountUsd),
+      helper: `${formatNumber(currentFlow.grossCharges.count)} debits · ${formatDeltaLabel(chargesDelta)} vs previous`,
       tone: resolveDeltaTone(chargesDelta),
       icon: ChartLine,
     },
     {
-      label: 'Net flow',
-      value: formatSignedCurrency(netCurrent),
-      helper: `Top-ups minus charges · previous ${formatSignedCurrency(netPrevious)}`,
-      tone: resolveDeltaTone(netDelta),
+      label: 'Refunds',
+      value: formatCurrency(currentFlow.refunds.amountUsd),
+      helper: `${formatNumber(currentFlow.refunds.count)} credits · ${formatDeltaLabel(refundsDelta)} vs previous`,
+      tone: resolveDeltaTone(refundsDelta, false),
+      icon: RotateCcw,
+    },
+    {
+      label: 'Net render spend',
+      value: formatCurrency(currentFlow.netSpendUsd),
+      helper: `Gross charges minus refunds · previous ${formatCurrency(previousFlow.netSpendUsd)}`,
+      tone: resolveDeltaTone(netSpendDelta),
+      icon: BadgeDollarSign,
+    },
+    {
+      label: 'Wallet balance delta',
+      value: formatSignedCurrency(currentFlow.walletBalanceDeltaUsd),
+      helper: `Top-ups + refunds − gross charges · previous ${formatSignedCurrency(previousFlow.walletBalanceDeltaUsd)}`,
+      tone: resolveDeltaTone(balanceDelta),
       icon: TrendingUp,
     },
     {
@@ -86,9 +106,11 @@ export function buildPrioritySignals(
   comparison: AdminMetricsComparison,
   humanRange: string
 ): PrioritySignal[] {
-  const topupsCurrent = sumAmountSeries(comparison.current.topupsDaily);
-  const chargesCurrent = sumAmountSeries(comparison.current.chargesDaily);
-  const netUsd = topupsCurrent.amountUsd - chargesCurrent.amountUsd;
+  const walletFlow = summarizeWalletFlow({
+    topups: comparison.current.topupsDaily,
+    grossCharges: comparison.current.chargesDaily,
+    refunds: comparison.current.refundsDaily,
+  });
   const activationGap = Math.max(0, metrics.funnels.totalTopupUsers - metrics.funnels.convertedWithin30dUsers);
   const flaggedEngines = metrics.health.failedByEngine30d.filter((row) => row.failedCount30d > 0);
   const topEngine = metrics.engines[0];
@@ -96,10 +118,10 @@ export function buildPrioritySignals(
   return [
     {
       label: 'Revenue balance',
-      value: formatSignedCurrency(netUsd),
-      helper: `${formatCurrency(topupsCurrent.amountUsd)} in top-ups vs ${formatCurrency(chargesCurrent.amountUsd)} in charges across ${humanRange}.`,
+      value: formatSignedCurrency(walletFlow.walletBalanceDeltaUsd),
+      helper: `${formatCurrency(walletFlow.topups.amountUsd)} top-ups + ${formatCurrency(walletFlow.refunds.amountUsd)} refunds − ${formatCurrency(walletFlow.grossCharges.amountUsd)} gross charges across ${humanRange}.`,
       href: '/admin/transactions',
-      tone: netUsd >= 0 ? 'success' : 'warning',
+      tone: walletFlow.walletBalanceDeltaUsd >= 0 ? 'success' : 'warning',
     },
     {
       label: 'Activation leak',
@@ -156,15 +178,17 @@ export function buildQuickInsights(metrics: AdminMetrics, comparison: AdminMetri
   const insights: string[] = [];
   const humanRange = describeRange(metrics.range.label);
   const signupsDelta = compareValues(sumTimeSeries(comparison.current.signupsDaily), sumTimeSeries(comparison.previous.signupsDaily));
-  const topupsCurrent = sumAmountSeries(comparison.current.topupsDaily);
-  const chargesCurrent = sumAmountSeries(comparison.current.chargesDaily);
-  const netUsd = topupsCurrent.amountUsd - chargesCurrent.amountUsd;
+  const walletFlow = summarizeWalletFlow({
+    topups: comparison.current.topupsDaily,
+    grossCharges: comparison.current.chargesDaily,
+    refunds: comparison.current.refundsDaily,
+  });
   const topEngine = metrics.engines[0];
   const flaggedEngines = metrics.health.failedByEngine30d.filter((row) => row.failedCount30d > 0);
 
   insights.push(`Signups are ${formatNarrativeDelta(signupsDelta)} versus the previous ${humanRange}.`);
   insights.push(
-    `Wallet flow in the current ${humanRange}: ${formatCurrency(topupsCurrent.amountUsd)} in top-ups against ${formatCurrency(chargesCurrent.amountUsd)} in charges (${netUsd >= 0 ? '+' : ''}${formatCurrency(netUsd)} net).`
+    `Wallet flow in the current ${humanRange}: ${formatCurrency(walletFlow.topups.amountUsd)} top-ups, ${formatCurrency(walletFlow.grossCharges.amountUsd)} gross charges, ${formatCurrency(walletFlow.refunds.amountUsd)} refunds, and ${formatCurrency(walletFlow.netSpendUsd)} net render spend (${formatSignedCurrency(walletFlow.walletBalanceDeltaUsd)} wallet delta).`
   );
   insights.push(
     `Funnel today: ${formatPercent(metrics.funnels.signupToTopUpConversion)} signup → top-up, then ${formatPercent(metrics.funnels.topUpToRenderConversion30d)} top-up → first render within 30 days.`

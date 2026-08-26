@@ -21,6 +21,19 @@ export type AmountRow = CountRow & {
   amount_cents: number | string | null;
 };
 
+export type ReceiptFlowRow = {
+  bucket: Date | string;
+  charge_count: number | string | null;
+  charge_cents: number | string | null;
+  refund_count: number | string | null;
+  refund_cents: number | string | null;
+};
+
+export type ReceiptFlowSummaryRow = {
+  charge_cents: number | string | null;
+  refund_cents: number | string | null;
+};
+
 export type SummaryRow = {
   total: number | string | null;
 };
@@ -226,6 +239,28 @@ export function mapAmountRows(rows: AmountRow[]): AmountSeriesPoint[] {
     .sort((a, b) => a.date.localeCompare(b.date));
 }
 
+export function mapReceiptFlowRows(rows: ReceiptFlowRow[]): {
+  charges: AmountSeriesPoint[];
+  refunds: AmountSeriesPoint[];
+} {
+  return {
+    charges: rows
+      .map((row) => ({
+        date: toISO(row.bucket),
+        count: coerceNumber(row.charge_count),
+        amountCents: coerceNumber(row.charge_cents),
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date)),
+    refunds: rows
+      .map((row) => ({
+        date: toISO(row.bucket),
+        count: coerceNumber(row.refund_count),
+        amountCents: coerceNumber(row.refund_cents),
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date)),
+  };
+}
+
 export function fillDailySeries(points: TimeSeriesPoint[], range: MetricsRange): TimeSeriesPoint[] {
   if (range.days === 1) {
     return [
@@ -278,6 +313,8 @@ export function buildEmptyMetrics(range: MetricsRange): AdminMetrics {
       activeAccounts30d: 0,
       allTimeTopUpsUsd: 0,
       allTimeRenderChargesUsd: 0,
+      allTimeRefundsUsd: 0,
+      allTimeNetRenderSpendUsd: 0,
     },
     range,
     timeseries: {
@@ -285,11 +322,13 @@ export function buildEmptyMetrics(range: MetricsRange): AdminMetrics {
       activeAccountsDaily: fillDailySeries([], range),
       topupsDaily: fillAmountSeries([], range),
       chargesDaily: fillAmountSeries([], range),
+      refundsDaily: fillAmountSeries([], range),
     },
     monthly: {
       signupsMonthly: [],
       topupsMonthly: [],
       chargesMonthly: [],
+      refundsMonthly: [],
     },
     engines: [],
     funnels: {

@@ -10,21 +10,30 @@ export function AdminUserWalletLedgerSection({
   topups,
   lifetimeTopupsUsd,
   lifetimeChargesUsd,
+  lifetimeRefundsUsd,
+  lifetimeNetSpendUsd,
 }: {
   wallet: AdminUserWallet | null;
   topups: AdminUserTopup[];
   lifetimeTopupsUsd: number;
   lifetimeChargesUsd: number;
+  lifetimeRefundsUsd: number;
+  lifetimeNetSpendUsd: number;
 }) {
   return (
     <AdminSection
       title="Wallet Ledger"
-      description="Historique des top-ups appliqués à ce membre. Conserve la lecture transactionnelle, sans noyer le support dans des cartes."
+      description="Historique des top-ups avec synthèse explicite des débits bruts, remboursements et dépenses nettes."
       action={
         wallet ? (
           <AdminSectionMeta
             title={formatCurrency(lifetimeTopupsUsd)}
-            lines={[`Charges ${formatCurrency(lifetimeChargesUsd)}`, `${topups.length} recent top-ups`]}
+            lines={[
+              `Gross charges ${formatCurrency(lifetimeChargesUsd)}`,
+              `Refunds ${formatCurrency(lifetimeRefundsUsd)}`,
+              `Net render spend ${formatCurrency(lifetimeNetSpendUsd)}`,
+              `${topups.length} recent top-ups`,
+            ]}
           />
         ) : undefined
       }

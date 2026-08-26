@@ -72,7 +72,9 @@ export type LedgerRow = {
   signups: number;
   active: number;
   topupsUsd: number;
-  chargesUsd: number;
+  grossChargesUsd: number;
+  refundsUsd: number;
+  netSpendUsd: number;
 };
 
 export type FocusMetricData = {

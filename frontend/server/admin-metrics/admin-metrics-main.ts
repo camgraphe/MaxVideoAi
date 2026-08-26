@@ -16,6 +16,7 @@ import {
   mapAmountRows,
   mapCountRows,
   mapEngineUsage,
+  mapReceiptFlowRows,
   resolveRange,
   safeQuery,
   unresolvedFailedCondition,
@@ -28,6 +29,8 @@ import {
   type FunnelRow,
   type HealthRow,
   type ReturningRow,
+  type ReceiptFlowRow,
+  type ReceiptFlowSummaryRow,
   type SummaryRow,
   type WhaleRow,
 } from '@/server/admin-metrics/admin-metrics-helpers';
@@ -58,15 +61,15 @@ export async function fetchAdminMetrics(
     signupDailyRows,
     activeDailyRows,
     topupDailyRows,
-    chargeDailyRows,
+    receiptFlowDailyRows,
     signupMonthlyRows,
     topupMonthlyRows,
-    chargeMonthlyRows,
+    receiptFlowMonthlyRows,
     totalUsersRow,
     payingAccountsRow,
     activeAccountsRow,
     topupSummaryRow,
-    chargeSummaryRow,
+    receiptFlowSummaryRow,
     engineRows,
     funnelRows,
     signupTopupDurationRow,
@@ -117,14 +120,16 @@ export async function fetchAdminMetrics(
       `,
       exclusionParams
     ),
-    safeQuery<AmountRow>(
+    safeQuery<ReceiptFlowRow>(
       `
         SELECT
           date_trunc('day', created_at) AS bucket,
-          COUNT(*)::bigint AS count,
-          COALESCE(SUM(amount_cents), 0)::bigint AS amount_cents
+          COUNT(*) FILTER (WHERE type = 'charge')::bigint AS charge_count,
+          COALESCE(SUM(amount_cents) FILTER (WHERE type = 'charge'), 0)::bigint AS charge_cents,
+          COUNT(*) FILTER (WHERE type = 'refund')::bigint AS refund_count,
+          COALESCE(SUM(amount_cents) FILTER (WHERE type = 'refund'), 0)::bigint AS refund_cents
         FROM app_receipts
-        WHERE type = 'charge'
+        WHERE type IN ('charge', 'refund')
           AND created_at >= NOW() - INTERVAL '${range.days} days'
           ${excludeUserIdClause('user_id', { allowNulls: true })}
         GROUP BY bucket
@@ -159,14 +164,16 @@ export async function fetchAdminMetrics(
       `,
       exclusionParams
     ),
-    safeQuery<AmountRow>(
+    safeQuery<ReceiptFlowRow>(
       `
         SELECT
           date_trunc('month', created_at) AS bucket,
-          COUNT(*)::bigint AS count,
-          COALESCE(SUM(amount_cents), 0)::bigint AS amount_cents
+          COUNT(*) FILTER (WHERE type = 'charge')::bigint AS charge_count,
+          COALESCE(SUM(amount_cents) FILTER (WHERE type = 'charge'), 0)::bigint AS charge_cents,
+          COUNT(*) FILTER (WHERE type = 'refund')::bigint AS refund_count,
+          COALESCE(SUM(amount_cents) FILTER (WHERE type = 'refund'), 0)::bigint AS refund_cents
         FROM app_receipts
-        WHERE type = 'charge'
+        WHERE type IN ('charge', 'refund')
           AND created_at >= NOW() - INTERVAL '12 months'
           ${excludeUserIdClause('user_id', { allowNulls: true })}
         GROUP BY bucket
@@ -213,11 +220,13 @@ export async function fetchAdminMetrics(
       `,
       exclusionParams
     ),
-    safeQuery<SummaryRow>(
+    safeQuery<ReceiptFlowSummaryRow>(
       `
-        SELECT COALESCE(SUM(amount_cents), 0)::bigint AS total
+        SELECT
+          COALESCE(SUM(amount_cents) FILTER (WHERE type = 'charge'), 0)::bigint AS charge_cents,
+          COALESCE(SUM(amount_cents) FILTER (WHERE type = 'refund'), 0)::bigint AS refund_cents
         FROM app_receipts
-        WHERE type = 'charge'
+        WHERE type IN ('charge', 'refund')
           ${excludeUserIdClause('user_id', { allowNulls: true })}
       `,
       exclusionParams
@@ -431,13 +440,18 @@ export async function fetchAdminMetrics(
   const signupDaily = fillDailySeries(mapCountRows(signupDailyRows), range);
   const activeDaily = fillDailySeries(mapCountRows(activeDailyRows), range);
   const topupsDaily = fillAmountSeries(mapAmountRows(topupDailyRows), range);
-  const chargesDaily = fillAmountSeries(mapAmountRows(chargeDailyRows), range);
+  const dailyFlow = mapReceiptFlowRows(receiptFlowDailyRows);
+  const chargesDaily = fillAmountSeries(dailyFlow.charges, range);
+  const refundsDaily = fillAmountSeries(dailyFlow.refunds, range);
+  const monthlyFlow = mapReceiptFlowRows(receiptFlowMonthlyRows);
 
   const totalAccounts = coerceNumber(totalUsersRow[0]?.total ?? 0);
   const payingAccounts = coerceNumber(payingAccountsRow[0]?.total ?? 0);
   const activeAccounts30d = coerceNumber(activeAccountsRow[0]?.total ?? 0);
   const allTimeTopUpsUsd = coerceNumber(topupSummaryRow[0]?.total ?? 0) / 100;
-  const allTimeRenderChargesUsd = coerceNumber(chargeSummaryRow[0]?.total ?? 0) / 100;
+  const allTimeRenderChargesUsd = coerceNumber(receiptFlowSummaryRow[0]?.charge_cents ?? 0) / 100;
+  const allTimeRefundsUsd = coerceNumber(receiptFlowSummaryRow[0]?.refund_cents ?? 0) / 100;
+  const allTimeNetRenderSpendUsd = allTimeRenderChargesUsd - allTimeRefundsUsd;
 
   const engines = mapEngineUsage(engineRows);
   const funnels = buildFunnelMetrics({
@@ -457,6 +471,8 @@ export async function fetchAdminMetrics(
       activeAccounts30d,
       allTimeTopUpsUsd,
       allTimeRenderChargesUsd,
+      allTimeRefundsUsd,
+      allTimeNetRenderSpendUsd,
     },
     range,
     timeseries: {
@@ -464,11 +480,13 @@ export async function fetchAdminMetrics(
       activeAccountsDaily: activeDaily,
       topupsDaily,
       chargesDaily,
+      refundsDaily,
     },
     monthly: {
       signupsMonthly: mapCountRows(signupMonthlyRows),
       topupsMonthly: mapAmountRows(topupMonthlyRows),
-      chargesMonthly: mapAmountRows(chargeMonthlyRows),
+      chargesMonthly: monthlyFlow.charges,
+      refundsMonthly: monthlyFlow.refunds,
     },
     engines,
     funnels,

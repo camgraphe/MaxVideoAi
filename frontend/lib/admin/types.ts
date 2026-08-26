@@ -78,6 +78,8 @@ export type AdminMetrics = {
     activeAccounts30d: number;
     allTimeTopUpsUsd: number;
     allTimeRenderChargesUsd: number;
+    allTimeRefundsUsd: number;
+    allTimeNetRenderSpendUsd: number;
   };
   range: MetricsRange;
   timeseries: {
@@ -85,11 +87,13 @@ export type AdminMetrics = {
     activeAccountsDaily: TimeSeriesPoint[];
     topupsDaily: AmountSeriesPoint[];
     chargesDaily: AmountSeriesPoint[];
+    refundsDaily: AmountSeriesPoint[];
   };
   monthly: {
     signupsMonthly: MonthlyPoint[];
     topupsMonthly: MonthlyAmountPoint[];
     chargesMonthly: MonthlyAmountPoint[];
+    refundsMonthly: MonthlyAmountPoint[];
   };
   engines: EngineUsage[];
   funnels: FunnelMetrics;
@@ -104,12 +108,14 @@ export type AdminMetricsComparison = {
     activeAccountsDaily: TimeSeriesPoint[];
     topupsDaily: AmountSeriesPoint[];
     chargesDaily: AmountSeriesPoint[];
+    refundsDaily: AmountSeriesPoint[];
   };
   previous: {
     signupsDaily: TimeSeriesPoint[];
     activeAccountsDaily: TimeSeriesPoint[];
     topupsDaily: AmountSeriesPoint[];
     chargesDaily: AmountSeriesPoint[];
+    refundsDaily: AmountSeriesPoint[];
   };
 };
 

@@ -18,6 +18,8 @@ export function AdminUserDetailView({ userId, overview }: AdminUserDetailViewPro
   const usage = overview.usage;
   const lifetimeTopupsUsd = wallet ? (wallet.stats.topup ?? 0) / 100 : 0;
   const lifetimeChargesUsd = wallet ? (wallet.stats.charge ?? 0) / 100 : 0;
+  const lifetimeRefundsUsd = wallet ? (wallet.stats.refund ?? 0) / 100 : 0;
+  const lifetimeNetSpendUsd = lifetimeChargesUsd - lifetimeRefundsUsd;
   const metrics = buildMemberPulseItems({
     userId,
     profile,
@@ -25,6 +27,8 @@ export function AdminUserDetailView({ userId, overview }: AdminUserDetailViewPro
     usage,
     lifetimeTopupsUsd,
     lifetimeChargesUsd,
+    lifetimeRefundsUsd,
+    lifetimeNetSpendUsd,
   });
   const profileMetaLines = [
     profile?.createdAt ? `Created ${formatShortDate(profile.createdAt)}` : null,
@@ -89,6 +93,8 @@ export function AdminUserDetailView({ userId, overview }: AdminUserDetailViewPro
             topups={overview.topups}
             lifetimeTopupsUsd={lifetimeTopupsUsd}
             lifetimeChargesUsd={lifetimeChargesUsd}
+            lifetimeRefundsUsd={lifetimeRefundsUsd}
+            lifetimeNetSpendUsd={lifetimeNetSpendUsd}
           />
         </div>
 

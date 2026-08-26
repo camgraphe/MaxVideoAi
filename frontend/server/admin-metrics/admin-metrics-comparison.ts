@@ -1,17 +1,19 @@
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
-import type { AdminMetricsComparison } from '@/lib/admin/types';
+import type { AdminMetricsComparison, AmountSeriesPoint } from '@/lib/admin/types';
 import {
   buildRange,
   fillAmountSeries,
   fillDailySeries,
   mapAmountRows,
   mapCountRows,
+  mapReceiptFlowRows,
   resolveRange,
   safeQuery,
   type AdminMetricsOptions,
   type AmountRow,
   type CountRow,
+  type ReceiptFlowRow,
 } from '@/server/admin-metrics/admin-metrics-helpers';
 
 type DailyComparisonSeries = AdminMetricsComparison['current'];
@@ -39,6 +41,7 @@ export async function fetchAdminMetricsComparison(
       activeAccountsDaily: fillDailySeries([], currentRange),
       topupsDaily: fillAmountSeries([], currentRange),
       chargesDaily: fillAmountSeries([], currentRange),
+      refundsDaily: fillAmountSeries([], currentRange),
     };
     return {
       range: currentRange,
@@ -49,7 +52,7 @@ export async function fetchAdminMetricsComparison(
 
   await ensureBillingSchema();
 
-  const [signupDailyRows, activeDailyRows, topupDailyRows, chargeDailyRows] = await Promise.all([
+  const [signupDailyRows, activeDailyRows, topupDailyRows, receiptFlowDailyRows] = await Promise.all([
     safeQuery<CountRow>(
       `
         SELECT date_trunc('day', created_at) AS bucket, COUNT(*)::bigint AS count
@@ -90,14 +93,16 @@ export async function fetchAdminMetricsComparison(
       `,
       exclusionParams
     ),
-    safeQuery<AmountRow>(
+    safeQuery<ReceiptFlowRow>(
       `
         SELECT
           date_trunc('day', created_at) AS bucket,
-          COUNT(*)::bigint AS count,
-          COALESCE(SUM(amount_cents), 0)::bigint AS amount_cents
+          COUNT(*) FILTER (WHERE type = 'charge')::bigint AS charge_count,
+          COALESCE(SUM(amount_cents) FILTER (WHERE type = 'charge'), 0)::bigint AS charge_cents,
+          COUNT(*) FILTER (WHERE type = 'refund')::bigint AS refund_count,
+          COALESCE(SUM(amount_cents) FILTER (WHERE type = 'refund'), 0)::bigint AS refund_cents
         FROM app_receipts
-        WHERE type = 'charge'
+        WHERE type IN ('charge', 'refund')
           AND created_at >= NOW() - INTERVAL '${doubledRange.days} days'
           ${excludeUserIdClause('user_id', { allowNulls: true })}
         GROUP BY bucket
@@ -115,18 +120,21 @@ export async function fetchAdminMetricsComparison(
     };
   };
 
-  const splitAmountSeries = (rows: AmountRow[]) => {
-    const filled = fillAmountSeries(mapAmountRows(rows), doubledRange);
+  const splitAmountPoints = (points: AmountSeriesPoint[]) => {
+    const filled = fillAmountSeries(points, doubledRange);
     return {
       previous: filled.slice(0, currentRange.days),
       current: filled.slice(-currentRange.days),
     };
   };
+  const splitAmountSeries = (rows: AmountRow[]) => splitAmountPoints(mapAmountRows(rows));
 
   const signupSeries = splitCountSeries(signupDailyRows);
   const activeSeries = splitCountSeries(activeDailyRows);
   const topupSeries = splitAmountSeries(topupDailyRows);
-  const chargeSeries = splitAmountSeries(chargeDailyRows);
+  const receiptFlow = mapReceiptFlowRows(receiptFlowDailyRows);
+  const chargeSeries = splitAmountPoints(receiptFlow.charges);
+  const refundSeries = splitAmountPoints(receiptFlow.refunds);
 
   return {
     range: currentRange,
@@ -135,12 +143,14 @@ export async function fetchAdminMetricsComparison(
       activeAccountsDaily: activeSeries.current,
       topupsDaily: topupSeries.current,
       chargesDaily: chargeSeries.current,
+      refundsDaily: refundSeries.current,
     },
     previous: {
       signupsDaily: signupSeries.previous,
       activeAccountsDaily: activeSeries.previous,
       topupsDaily: topupSeries.previous,
       chargesDaily: chargeSeries.previous,
+      refundsDaily: refundSeries.previous,
     },
   };
 }

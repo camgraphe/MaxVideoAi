@@ -11,19 +11,30 @@ import {
   resolveDeltaTone,
 } from './insights-formatters';
 import { describeRange } from './insights-navigation';
-import { compareValues, findPeakAmountSeriesPoint, findPeakTimeSeriesPoint, sumAmountSeries, sumTimeSeries } from './insights-series-helpers';
+import {
+  compareValues,
+  findPeakAmountSeriesPoint,
+  findPeakTimeSeriesPoint,
+  summarizeWalletFlow,
+  sumAmountSeries,
+  sumTimeSeries,
+} from './insights-series-helpers';
 
 export function buildRevenueBoardRows(comparison: AdminMetricsComparison): RevenueBoardRow[] {
   const signupsCurrent = sumTimeSeries(comparison.current.signupsDaily);
   const signupsPrevious = sumTimeSeries(comparison.previous.signupsDaily);
   const activeCurrent = sumTimeSeries(comparison.current.activeAccountsDaily);
   const activePrevious = sumTimeSeries(comparison.previous.activeAccountsDaily);
-  const topupsCurrent = sumAmountSeries(comparison.current.topupsDaily);
-  const topupsPrevious = sumAmountSeries(comparison.previous.topupsDaily);
-  const chargesCurrent = sumAmountSeries(comparison.current.chargesDaily);
-  const chargesPrevious = sumAmountSeries(comparison.previous.chargesDaily);
-  const netCurrent = topupsCurrent.amountUsd - chargesCurrent.amountUsd;
-  const netPrevious = topupsPrevious.amountUsd - chargesPrevious.amountUsd;
+  const currentFlow = summarizeWalletFlow({
+    topups: comparison.current.topupsDaily,
+    grossCharges: comparison.current.chargesDaily,
+    refunds: comparison.current.refundsDaily,
+  });
+  const previousFlow = summarizeWalletFlow({
+    topups: comparison.previous.topupsDaily,
+    grossCharges: comparison.previous.chargesDaily,
+    refunds: comparison.previous.refundsDaily,
+  });
 
   const rows: Array<{
     label: string;
@@ -49,36 +60,51 @@ export function buildRevenueBoardRows(comparison: AdminMetricsComparison): Reven
     },
     {
       label: 'Wallet top-ups',
-      current: topupsCurrent.amountUsd,
-      previous: topupsPrevious.amountUsd,
+      current: currentFlow.topups.amountUsd,
+      previous: previousFlow.topups.amountUsd,
       formatValue: (value) => formatCurrency(value),
-      helper: `${formatNumber(topupsCurrent.count)} current loads vs ${formatNumber(topupsPrevious.count)} previous`,
+      helper: `${formatNumber(currentFlow.topups.count)} current loads vs ${formatNumber(previousFlow.topups.count)} previous`,
     },
     {
-      label: 'Render charges',
-      current: chargesCurrent.amountUsd,
-      previous: chargesPrevious.amountUsd,
+      label: 'Gross render charges',
+      current: currentFlow.grossCharges.amountUsd,
+      previous: previousFlow.grossCharges.amountUsd,
       formatValue: (value) => formatCurrency(value),
-      helper: `${formatNumber(chargesCurrent.count)} current charges vs ${formatNumber(chargesPrevious.count)} previous`,
+      helper: `${formatNumber(currentFlow.grossCharges.count)} current debits vs ${formatNumber(previousFlow.grossCharges.count)} previous`,
     },
     {
-      label: 'Net flow',
-      current: netCurrent,
-      previous: netPrevious,
+      label: 'Refunds',
+      current: currentFlow.refunds.amountUsd,
+      previous: previousFlow.refunds.amountUsd,
+      formatValue: (value) => formatCurrency(value),
+      helper: `${formatNumber(currentFlow.refunds.count)} current credits vs ${formatNumber(previousFlow.refunds.count)} previous`,
+      positiveIsGood: false,
+    },
+    {
+      label: 'Net render spend',
+      current: currentFlow.netSpendUsd,
+      previous: previousFlow.netSpendUsd,
+      formatValue: (value) => formatCurrency(value),
+      helper: 'Gross render charges minus refunds within each comparison window',
+    },
+    {
+      label: 'Wallet balance delta',
+      current: currentFlow.walletBalanceDeltaUsd,
+      previous: previousFlow.walletBalanceDeltaUsd,
       formatValue: (value) => formatSignedCurrency(value),
-      helper: 'Top-ups minus charges within each comparison window',
+      helper: 'Top-ups plus refunds minus gross charges within each comparison window',
     },
     {
       label: 'Avg wallet ticket',
-      current: topupsCurrent.count ? topupsCurrent.amountUsd / topupsCurrent.count : 0,
-      previous: topupsPrevious.count ? topupsPrevious.amountUsd / topupsPrevious.count : 0,
+      current: currentFlow.topups.count ? currentFlow.topups.amountUsd / currentFlow.topups.count : 0,
+      previous: previousFlow.topups.count ? previousFlow.topups.amountUsd / previousFlow.topups.count : 0,
       formatValue: (value) => (value ? formatCurrency(value, { precise: true }) : '—'),
       helper: 'Average amount per wallet load',
     },
     {
       label: 'Avg charge ticket',
-      current: chargesCurrent.count ? chargesCurrent.amountUsd / chargesCurrent.count : 0,
-      previous: chargesPrevious.count ? chargesPrevious.amountUsd / chargesPrevious.count : 0,
+      current: currentFlow.grossCharges.count ? currentFlow.grossCharges.amountUsd / currentFlow.grossCharges.count : 0,
+      previous: previousFlow.grossCharges.count ? previousFlow.grossCharges.amountUsd / previousFlow.grossCharges.count : 0,
       formatValue: (value) => (value ? formatCurrency(value, { precise: true }) : '—'),
       helper: 'Average amount per render charge event',
     },
@@ -104,8 +130,16 @@ export function buildPulseCards(metrics: AdminMetrics, comparison: AdminMetricsC
   const activePrevious = sumTimeSeries(comparison.previous.activeAccountsDaily);
   const topupsCurrent = sumAmountSeries(comparison.current.topupsDaily);
   const topupsPrevious = sumAmountSeries(comparison.previous.topupsDaily);
-  const chargesCurrent = sumAmountSeries(comparison.current.chargesDaily);
-  const chargesPrevious = sumAmountSeries(comparison.previous.chargesDaily);
+  const currentFlow = summarizeWalletFlow({
+    topups: comparison.current.topupsDaily,
+    grossCharges: comparison.current.chargesDaily,
+    refunds: comparison.current.refundsDaily,
+  });
+  const previousFlow = summarizeWalletFlow({
+    topups: comparison.previous.topupsDaily,
+    grossCharges: comparison.previous.chargesDaily,
+    refunds: comparison.previous.refundsDaily,
+  });
 
   const signupsPeak = findPeakTimeSeriesPoint(comparison.current.signupsDaily);
   const activePeak = findPeakTimeSeriesPoint(comparison.current.activeAccountsDaily);
@@ -140,12 +174,12 @@ export function buildPulseCards(metrics: AdminMetrics, comparison: AdminMetricsC
         : 'No wallet loads in the current range',
     }),
     createPulseCard({
-      label: 'Render charges',
-      current: chargesCurrent.amountUsd,
-      previous: chargesPrevious.amountUsd,
+      label: 'Gross render charges',
+      current: currentFlow.grossCharges.amountUsd,
+      previous: previousFlow.grossCharges.amountUsd,
       formatValue: (value) => formatCurrency(value),
       helper: chargesPeak
-        ? `${formatNumber(chargesCurrent.count)} charges · peak ${formatDay(chargesPeak.date)}`
+        ? `${formatNumber(currentFlow.grossCharges.count)} debits · ${formatCurrency(currentFlow.refunds.amountUsd)} refunded · ${formatCurrency(currentFlow.netSpendUsd)} net spend · peak ${formatDay(chargesPeak.date)}`
         : 'No render charges in the current range',
     }),
   ];
@@ -182,6 +216,7 @@ export function buildRecentLedgerRows(metrics: AdminMetrics): LedgerRow[] {
   const activeMap = new Map(metrics.timeseries.activeAccountsDaily.map((point) => [point.date.slice(0, 10), point.value]));
   const topupsMap = new Map(metrics.timeseries.topupsDaily.map((point) => [point.date.slice(0, 10), point.amountCents / 100]));
   const chargesMap = new Map(metrics.timeseries.chargesDaily.map((point) => [point.date.slice(0, 10), point.amountCents / 100]));
+  const refundsMap = new Map(metrics.timeseries.refundsDaily.map((point) => [point.date.slice(0, 10), point.amountCents / 100]));
 
   const dates = Array.from(
     new Set([
@@ -189,19 +224,26 @@ export function buildRecentLedgerRows(metrics: AdminMetrics): LedgerRow[] {
       ...metrics.timeseries.activeAccountsDaily.map((point) => point.date.slice(0, 10)),
       ...metrics.timeseries.topupsDaily.map((point) => point.date.slice(0, 10)),
       ...metrics.timeseries.chargesDaily.map((point) => point.date.slice(0, 10)),
+      ...metrics.timeseries.refundsDaily.map((point) => point.date.slice(0, 10)),
     ])
   )
     .sort((a, b) => a.localeCompare(b))
     .slice(-7)
     .reverse();
 
-  return dates.map((date) => ({
-    date,
-    signups: signupsMap.get(date) ?? 0,
-    active: activeMap.get(date) ?? 0,
-    topupsUsd: topupsMap.get(date) ?? 0,
-    chargesUsd: chargesMap.get(date) ?? 0,
-  }));
+  return dates.map((date) => {
+    const grossChargesUsd = chargesMap.get(date) ?? 0;
+    const refundsUsd = refundsMap.get(date) ?? 0;
+    return {
+      date,
+      signups: signupsMap.get(date) ?? 0,
+      active: activeMap.get(date) ?? 0,
+      topupsUsd: topupsMap.get(date) ?? 0,
+      grossChargesUsd,
+      refundsUsd,
+      netSpendUsd: grossChargesUsd - refundsUsd,
+    };
+  });
 }
 
 export function buildMonthlyRows(metrics: AdminMetrics) {
@@ -211,28 +253,48 @@ export function buildMonthlyRows(metrics: AdminMetrics) {
       month: string;
       signups: number;
       topupsUsd: number;
-      chargesUsd: number;
+      grossChargesUsd: number;
+      refundsUsd: number;
+      netSpendUsd: number;
     }
   >();
 
+  const emptyRow = (month: string) => ({
+    month,
+    signups: 0,
+    topupsUsd: 0,
+    grossChargesUsd: 0,
+    refundsUsd: 0,
+    netSpendUsd: 0,
+  });
+
   metrics.monthly.signupsMonthly.forEach((point) => {
     const key = point.date.slice(0, 7);
-    const existing = map.get(key) ?? { month: point.date, signups: 0, topupsUsd: 0, chargesUsd: 0 };
+    const existing = map.get(key) ?? emptyRow(point.date);
     existing.signups = point.value;
     map.set(key, existing);
   });
 
   metrics.monthly.topupsMonthly.forEach((point) => {
     const key = point.date.slice(0, 7);
-    const existing = map.get(key) ?? { month: point.date, signups: 0, topupsUsd: 0, chargesUsd: 0 };
+    const existing = map.get(key) ?? emptyRow(point.date);
     existing.topupsUsd = point.amountCents / 100;
     map.set(key, existing);
   });
 
   metrics.monthly.chargesMonthly.forEach((point) => {
     const key = point.date.slice(0, 7);
-    const existing = map.get(key) ?? { month: point.date, signups: 0, topupsUsd: 0, chargesUsd: 0 };
-    existing.chargesUsd = point.amountCents / 100;
+    const existing = map.get(key) ?? emptyRow(point.date);
+    existing.grossChargesUsd = point.amountCents / 100;
+    existing.netSpendUsd = existing.grossChargesUsd - existing.refundsUsd;
+    map.set(key, existing);
+  });
+
+  metrics.monthly.refundsMonthly.forEach((point) => {
+    const key = point.date.slice(0, 7);
+    const existing = map.get(key) ?? emptyRow(point.date);
+    existing.refundsUsd = point.amountCents / 100;
+    existing.netSpendUsd = existing.grossChargesUsd - existing.refundsUsd;
     map.set(key, existing);
   });
 
