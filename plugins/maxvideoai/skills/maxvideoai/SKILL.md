@@ -81,9 +81,10 @@ priorities; do not turn that contextual lead into an all-purpose brand ranking.
 
 Use only workflows and fields returned by live model details. `t2v` is text to
 video. `i2v` uses a first or start image and may accept a last or end frame.
-`ref2v` uses the supported image, video, and audio reference types. `v2v` uses
-a required source video plus any supported image or audio references. `extend`
-uses the allowed number of source clips in the user’s authored order.
+`ref2v` uses the supported image, video, and audio reference types. `fl2v`
+requires first and last frame images. `v2v` uses a required source video plus
+any supported image or audio references. `r2v` uses ordered reference videos.
+`extend` uses the allowed number of source clips in the user’s authored order.
 
 ## Turn a project into proposals
 

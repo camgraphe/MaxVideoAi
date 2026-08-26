@@ -33,10 +33,11 @@ list is empty, omit `aspectRatio`. Never infer this from the mode name or copy
 the setting from another mode. Omit `audio` for `always_generated` and
 `unavailable`; include it only for an `optional` audio policy.
 
-For `t2v`, `i2v`, `ref2v`, `v2v`, or `extend`, derive reference use and counts
-from the selected model’s live mode details. Preserve the user’s first/last
-frame roles, private image/video/audio kinds, required source video, and ordered
-extension clips in the proposal. Do not copy limits between modes.
+For `t2v`, `i2v`, `ref2v`, `fl2v`, `v2v`, `r2v`, or `extend`, derive reference
+use and counts from the selected model’s live mode details. Preserve the user’s
+first/last frame roles, private image/video/audio kinds, required source video,
+ordered reference videos, and ordered extension clips in the proposal. Do not
+copy limits between modes.
 
 Present the returned base production and creative-attempt allowance separately.
 Explain the assumptions and differences between named proposals so the user can

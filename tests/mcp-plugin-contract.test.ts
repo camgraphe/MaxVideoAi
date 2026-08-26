@@ -114,6 +114,8 @@ test('the shared skill gives hosts conversational, factual guardrails', () => {
   assert.match(skill, /prepare_generation.*confirm_generation/is);
   assert.match(skill, /Seedance 2\.5.*best executable fit.*live/is);
   assert.match(skill, /t2v.*i2v.*ref2v.*v2v.*extend/is);
+  assert.match(skill, /fl2v.*first.*last.*frame/is);
+  assert.match(skill, /r2v.*ordered.*reference videos/is);
   assert.match(skill, /first.*last.*frame/is);
   assert.match(skill, /image.*video.*audio.*reference/is);
   assert.match(skill, /exact (?:price|quote).*explicit.*approval/is);
