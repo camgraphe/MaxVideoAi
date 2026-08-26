@@ -9,6 +9,32 @@ export type AgentMoney = {
   currency: string;
 };
 
+export type AgentDestinationPurpose =
+  | 'account_connections'
+  | 'billing'
+  | 'media_library'
+  | 'video_workspace'
+  | 'image_workspace'
+  | 'support'
+  | 'generation'
+  | 'reference_upload';
+
+export type AgentOpenUrlDestination = Readonly<{
+  type: 'open_url';
+  purpose: AgentDestinationPurpose;
+  label: string;
+  url: string;
+}>;
+
+export type AgentAccountDestinations = Readonly<{
+  connections: AgentOpenUrlDestination;
+  billing: AgentOpenUrlDestination;
+  library: AgentOpenUrlDestination;
+  videoWorkspace: AgentOpenUrlDestination;
+  imageWorkspace: AgentOpenUrlDestination;
+  support: AgentOpenUrlDestination;
+}>;
+
 export type TrialPresetSummary = Readonly<{
   engineId: string;
   surface: 'video';
