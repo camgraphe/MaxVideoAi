@@ -62,6 +62,7 @@ export const FUNNEL_SQL = `/* admin-mcp:funnel */
     COUNT(DISTINCT user_id) FILTER (WHERE stage = 'repeat_paid_generation')::bigint AS repeat_paid_generation,
     (SELECT COUNT(*)::bigint FROM trial_cohort) AS completed_trial_users,
     (SELECT count FROM funded_after_trial) AS funded_after_trial_users,
+    COUNT(*) FILTER (WHERE event_type = 'oauth_connection_completed' AND acquisition_client = 'chatgpt')::bigint AS chatgpt_connections,
     COUNT(*) FILTER (WHERE event_type = 'oauth_connection_completed' AND acquisition_client = 'claude')::bigint AS claude_connections,
     COUNT(*) FILTER (WHERE event_type = 'oauth_connection_completed' AND acquisition_client = 'codex')::bigint AS codex_connections,
     COUNT(*) FILTER (WHERE event_type = 'oauth_connection_completed' AND acquisition_client = 'other')::bigint AS other_connections,

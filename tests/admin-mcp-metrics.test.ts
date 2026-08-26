@@ -75,6 +75,7 @@ function createMetricsHarness(options: {
           repeat_paid_generation: options.zeroDenominators ? 0 : 1,
           completed_trial_users: options.zeroDenominators ? 0 : 6,
           funded_after_trial_users: options.zeroDenominators ? 0 : 3,
+          chatgpt_connections: options.zeroDenominators ? 0 : 5,
           claude_connections: options.zeroDenominators ? 0 : 7,
           codex_connections: options.zeroDenominators ? 0 : 2,
           other_connections: options.zeroDenominators ? 0 : 1,
@@ -162,6 +163,7 @@ test('loads every available funnel, cohort, client, economics, error, polling, a
   });
   assert.equal(metrics.trialToWalletRate, 0.5);
   assert.deepEqual(metrics.clientSplit, [
+    { client: 'chatgpt', connections: 5 },
     { client: 'claude', connections: 7 },
     { client: 'codex', connections: 2 },
     { client: 'other', connections: 1 },

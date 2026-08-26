@@ -23,7 +23,7 @@ const SIGNED_KEYS = new Set([
   'expiresAt',
 ]);
 
-export type McpAcquisitionClient = 'claude' | 'codex';
+export type McpAcquisitionClient = 'chatgpt' | 'claude' | 'codex';
 export type McpAcquisitionAction = 'connect' | 'copy_endpoint';
 export type McpLandingAcquisition = {
   source: 'mcp_landing';
@@ -75,7 +75,7 @@ function isLandingAcquisition<TRecord extends Record<string, unknown>>(
     record.source === 'mcp_landing' &&
     record.medium === 'owned' &&
     record.campaign === 'mcp_connect' &&
-    (record.client === 'claude' || record.client === 'codex')
+    (record.client === 'chatgpt' || record.client === 'claude' || record.client === 'codex')
   );
 }
 

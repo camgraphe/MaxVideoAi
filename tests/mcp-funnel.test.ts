@@ -19,6 +19,10 @@ import type { QueryExecutor } from '../frontend/src/lib/db';
 const root = process.cwd();
 const migrationDirectory = join(root, 'neon/migrations');
 const migrationPath = join(migrationDirectory, '33_mcp_acquisition_funnel.sql');
+const chatgptAttributionMigrationPath = join(
+  migrationDirectory,
+  '38_mcp_chatgpt_acquisition_attribution.sql',
+);
 const consentPagePath = join(root, 'frontend/app/(core)/oauth/consent/page.tsx');
 const decisionRoutePath = join(root, 'frontend/app/api/oauth/decision/route.ts');
 const migrationRunnerPath = join(root, 'scripts/apply-neon-migrations.sh');
@@ -157,6 +161,14 @@ test('funnel migration has exact event and stage allowlists, indexes, and databa
   assert.doesNotMatch(migration, /^\s*(?:authorization_id|access_token|binding_token)\s+/im);
 });
 
+test('the additive funnel migration admits ChatGPT without merging it into Codex', () => {
+  assert.equal(existsSync(chatgptAttributionMigrationPath), true);
+  const migration = readFileSync(chatgptAttributionMigrationPath, 'utf8');
+  assert.match(migration, /acquisition_client IN \('chatgpt', 'claude', 'codex'\)/i);
+  assert.match(migration, /mcp_funnel_events_attribution_allowlist/i);
+  assert.match(migration, /mcp_oauth_connection_bindings_attribution/i);
+});
+
 test('recordMcpFunnelEvent validates an exact DTO and inserts only positional explicit columns', async () => {
   const { recordMcpFunnelEvent } = await loadFunnel();
   let capturedSql = '';
@@ -188,6 +200,11 @@ test('recordMcpFunnelEvent validates an exact DTO and inserts only positional ex
   };
 
   assert.equal(await recordMcpFunnelEvent(base, { executor }), true);
+  assert.equal(await recordMcpFunnelEvent({
+    ...base,
+    client: 'chatgpt',
+    idempotencyKey: 'trial-completed:job-chatgpt',
+  }, { executor }), true);
   assert.match(capturedSql, /INSERT INTO mcp_funnel_events/i);
   assert.match(capturedSql, /ON CONFLICT \(idempotency_key\) WHERE idempotency_key IS NOT NULL DO NOTHING/i);
   assert.doesNotMatch(capturedSql, /metadata|prompt|token|stripe_/i);
@@ -227,6 +244,8 @@ test('KPI uses distinct trial users and only funding after trial inside the UTC 
     ['wallet_funded', 'wallet_funded', 'u3', '2026-07-02T10:00:00Z', 'mcp_landing', 'codex', 'acq-c'],
     ['trial_generation_completed', 'trial_completed', 'u4', '2026-07-03T10:00:00Z', 'mcp_landing', 'codex', 'acq-d'],
     ['wallet_funded', 'wallet_funded', 'u4', '2026-07-04T10:00:00Z', 'direct_mcp', 'other', null],
+    ['trial_generation_completed', 'trial_completed', 'u6', '2026-07-03T11:00:00Z', 'mcp_landing', 'chatgpt', 'acq-f'],
+    ['wallet_funded', 'wallet_funded', 'u6', '2026-07-04T11:00:00Z', 'mcp_landing', 'chatgpt', 'acq-f'],
     ['trial_generation_completed', 'trial_completed', 'u5', '2026-06-30T10:00:00Z', 'mcp_landing', 'claude', 'acq-e'],
     ['wallet_funded', 'wallet_funded', 'u5', '2026-07-02T10:00:00Z', 'mcp_landing', 'claude', 'acq-e'],
   ].map(([event_type, stage, user_id, occurred_at, source, acquisition_client, acquisition_id]) => ({
@@ -250,9 +269,9 @@ test('KPI uses distinct trial users and only funding after trial inside the UTC 
   assert.match(capturedSql, /SELECT[\s\S]*event_type[\s\S]*occurred_at[\s\S]*FROM mcp_funnel_events/i);
   assert.match(capturedSql, /occurred_at\s*>=\s*\$1[\s\S]*occurred_at\s*<\s*\$2/i);
   assert.equal(capturedParams?.length, 2);
-  assert.equal(summary.completedTrialUsers, 3);
-  assert.equal(summary.fundedAfterTrialUsers, 2);
-  assert.equal(summary.trialToWalletRate, 2 / 3);
+  assert.equal(summary.completedTrialUsers, 4);
+  assert.equal(summary.fundedAfterTrialUsers, 3);
+  assert.equal(summary.trialToWalletRate, 3 / 4);
   assert.deepEqual(summary.window, {
     from: '2026-07-01T00:00:00.000Z', to: '2026-07-08T00:00:00.000Z',
     conversionWindowSeconds: 604800, timeZone: 'UTC',
@@ -262,6 +281,7 @@ test('KPI uses distinct trial users and only funding after trial inside the UTC 
     cohort.trialToWalletRate,
   ]), [
     ['direct_mcp', 'other', 1, 0, 0],
+    ['mcp_landing', 'chatgpt', 1, 1, 1],
     ['mcp_landing', 'claude', 1, 1, 1],
     ['mcp_landing', 'codex', 1, 1, 1],
   ]);
@@ -361,6 +381,20 @@ test('approval binding token is authorization/user/client specific without persi
   assert.match(createSql, /oauth_connection_started/);
   assert.doesNotMatch(createSql, /authorization_id|access_token|binding_token/i);
   assert.equal(createParams?.includes('authz_approval_specific_A'), false);
+
+  const chatgptToken = await funnel.createMcpOAuthApprovalBinding({
+    authorizationId: 'authz_chatgpt_specific_A',
+    userId: 'user-chatgpt-approval',
+    oauthClientId: 'client-chatgpt-approval',
+    acquisition: { ...acquisition, client: 'chatgpt' },
+  }, {
+    executor: createExecutor,
+    secret: bindingSecret,
+    now: new Date('2026-07-14T10:00:00.000Z'),
+    bindingId: 'mcpb_ZYXWVUTSRQPONMLKJIHGFEDC',
+  });
+  assert.match(chatgptToken ?? '', /^mcpb1\./);
+  assert.equal(createParams?.includes('chatgpt'), true);
 
   let approvalQueries = 0;
   let approvalSql = '';

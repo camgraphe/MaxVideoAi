@@ -111,6 +111,40 @@ test('trial and real proof claims remain independently gated', async () => {
   assert.match(copy.hero.trialDisclosure, /regular MaxVideoAI credit balance/i);
   assert.match(withoutTrial, /Example conversation/i);
   assert.doesNotMatch(withoutTrial, /Generated through MCP|Verified result/i);
+  assert.doesNotMatch(
+    withoutTrial,
+    /production access (?:opens?|will open)|final (?:launch )?checks|until direct production/i,
+  );
+});
+
+test('integration heroes sell the workflow without displaying a pre-launch limitation card', async () => {
+  const { getIntegrationCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
+  );
+  const { IntegrationHeroSection } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_components/IntegrationHeroSection.tsx'
+  );
+  const copy = getIntegrationCopy('en', 'chatgpt');
+  const base = {
+    renderPublicPage: true,
+    connectionAvailable: false,
+    indexable: false,
+    showPaidGenerationClaim: false,
+    showTrialClaim: false,
+    showReferenceClaim: false,
+  };
+  const preview = renderToStaticMarkup(React.createElement(IntegrationHeroSection, {
+    copy,
+    publication: base,
+  }));
+  const live = renderToStaticMarkup(React.createElement(IntegrationHeroSection, {
+    copy,
+    publication: { ...base, connectionAvailable: true },
+  }));
+
+  assert.doesNotMatch(preview, /final launch checks|production access will open/i);
+  assert.equal(preview.includes(copy.hero.unavailable), false);
+  assert.equal(live.includes(copy.hero.liveStatus), true);
 });
 
 test('references keep the assistant creative while MaxVideoAI validates live support', async () => {

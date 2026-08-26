@@ -73,7 +73,7 @@ export type AdminMcpMetrics = {
   };
   funnel: Record<McpFunnelStage, number> | null;
   trialToWalletRate: number | null;
-  clientSplit: Array<{ client: 'claude' | 'codex' | 'other'; connections: number }> | null;
+  clientSplit: Array<{ client: 'chatgpt' | 'claude' | 'codex' | 'other'; connections: number }> | null;
   quoteToConfirmRate: number | null;
   recommendationToQuoteRate: number | null;
   firstPaidUsers: number | null;
@@ -112,6 +112,7 @@ type FunnelRow = Record<
   | McpFunnelStage
   | 'completed_trial_users'
   | 'funded_after_trial_users'
+  | 'chatgpt_connections'
   | 'claude_connections'
   | 'codex_connections'
   | 'other_connections'
@@ -134,7 +135,6 @@ type RecommendationCohortRow = {
   recommended_users: number | string | null;
   recommended_to_quote_users: number | string | null;
 };
-
 type ReceiptRow = {
   revenue_cents: number | string | null;
   refunds_cents: number | string | null;
@@ -291,6 +291,7 @@ export async function loadAdminMcpMetrics(
       metrics.funnel = funnel;
       metrics.trialToWalletRate = rate(fundedAfterTrial, completedTrials);
       metrics.clientSplit = [
+        { client: 'chatgpt', connections: count(row.chatgpt_connections) },
         { client: 'claude', connections: count(row.claude_connections) },
         { client: 'codex', connections: count(row.codex_connections) },
         { client: 'other', connections: count(row.other_connections) },

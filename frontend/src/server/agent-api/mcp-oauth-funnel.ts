@@ -61,7 +61,7 @@ function isSignedLandingAcquisition(value: unknown): value is SignedMcpAcquisiti
     && value.source === 'mcp_landing'
     && value.medium === 'owned'
     && value.campaign === 'mcp_connect'
-    && (value.client === 'claude' || value.client === 'codex')
+    && (value.client === 'chatgpt' || value.client === 'claude' || value.client === 'codex')
     && Number.isSafeInteger(value.issuedAt)
     && Number.isSafeInteger(value.expiresAt);
 }

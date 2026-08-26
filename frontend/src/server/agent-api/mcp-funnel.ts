@@ -38,7 +38,7 @@ export type McpFunnelEventType =
   | 'tool_failed';
 
 export type McpFunnelSource = 'mcp_landing' | 'direct_mcp';
-export type McpFunnelClient = 'claude' | 'codex' | 'other';
+export type McpFunnelClient = 'chatgpt' | 'claude' | 'codex' | 'other';
 
 export type McpFunnelEvent = {
   eventType: McpFunnelEventType;
@@ -120,7 +120,7 @@ function attributionMatches(event: McpFunnelEvent): boolean {
   if (event.source === 'mcp_landing') {
     return event.medium === 'owned'
       && event.campaign === 'mcp_connect'
-      && (event.client === 'claude' || event.client === 'codex')
+      && (event.client === 'chatgpt' || event.client === 'claude' || event.client === 'codex')
       && typeof event.acquisitionId === 'string'
       && ACQUISITION_ID_PATTERN.test(event.acquisitionId);
   }
@@ -275,7 +275,11 @@ function summarizeRows(rows: FunnelSummaryRow[], config: McpFunnelSummaryConfig)
           time,
           source: row.source === 'mcp_landing' ? 'mcp_landing' : 'direct_mcp',
           client: row.source === 'mcp_landing'
-            ? (row.acquisition_client === 'codex' ? 'codex' : 'claude')
+            ? row.acquisition_client === 'chatgpt'
+              ? 'chatgpt'
+              : row.acquisition_client === 'codex'
+                ? 'codex'
+                : 'claude'
             : 'other',
         });
       }

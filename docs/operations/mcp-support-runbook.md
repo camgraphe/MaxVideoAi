@@ -241,6 +241,29 @@ revocation producer is proven.
 4. If a revoked token still succeeds, treat it as a security incident: stop testing, retain sanitized timestamps and
    client ID, and escalate immediately to Security + Auth.
 
+## Post-launch journey review
+
+Use `/admin/mcp` as the authoritative first view of the connected-product funnel. Review aggregate behavior by
+ChatGPT, Claude, Codex, and unattributed compatible clients without collecting prompts, private media URLs, access
+tokens, email addresses, or provider payloads.
+
+Read the journey in this order:
+
+1. landing CTA to completed OAuth connection;
+2. connection to model recommendation and prepared quote;
+3. prepared quote to explicit generation acceptance;
+4. accepted generation to completed media or a coarse failure/refund outcome;
+5. completed trial to funded wallet;
+6. first paid generation to repeat paid generation.
+
+Use client split, quote-confirmation rate, trial-to-wallet rate, repeat generation, refund rate, provider cost, polling,
+upload failures, and coarse error codes to find the largest drop-off. Pair the aggregate with opt-in support feedback;
+never reconstruct a user prompt or private creative brief from analytics.
+
+Improve one decision point at a time. Record the page/plugin version, client, model/mode, coarse outcome, and UTC
+comparison window; change copy, tool guidance, or the workflow behind an independent release flag; then compare the
+same authoritative stages. A missing aggregate stays unavailable rather than becoming a fabricated zero.
+
 ## Disclosure inventory
 
 ### User-facing permissions
@@ -257,7 +280,7 @@ and telemetry data, prompts, inputs, outputs, uploads, consent, and preferences 
 audit schema is narrower: user and OAuth client identifiers, event/tool name, success/failure, optional surface/engine,
 coarse error, and timestamp.
 
-The migration 33 schema defines funnel fields for time, stage, opaque acquisition,
+Migrations 33 and 38 define funnel fields for time, stage, opaque acquisition,
 quote/job identifiers, coarse source/campaign/client, applicable amount/currency, idempotency key, and an irreversible
 receipt hash. The **MCP funnel ledger excludes prompts, email addresses, access tokens, raw reference URLs, provider
 bodies, payment details or methods, secrets, and fraud signals**. A sanitized

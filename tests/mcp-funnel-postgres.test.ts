@@ -19,7 +19,7 @@ function commandFailure(result: CommandResult): string {
   return `${result.stdout ?? ''}\n${result.stderr ?? ''}`.trim();
 }
 
-test('migration 33 and funnel helpers enforce constraints, canonical receipt replay, and OAuth races in real PostgreSQL', async (t) => {
+test('funnel migrations and helpers enforce constraints, canonical receipt replay, and OAuth races in real PostgreSQL', async (t) => {
   for (const command of ['initdb', 'pg_ctl', 'psql']) {
     if (!commandExists(command)) {
       t.skip(`${command} is unavailable`);
@@ -71,6 +71,29 @@ test('migration 33 and funnel helpers enforce constraints, canonical receipt rep
     '-f', join(root, 'neon/migrations/33_mcp_acquisition_funnel.sql'),
   );
   assert.equal(migration.status, 0, commandFailure(migration));
+
+  const chatgptAttributionMigration = psql(
+    '--single-transaction',
+    '-v', 'ON_ERROR_STOP=1',
+    '-f', join(root, 'neon/migrations/38_mcp_chatgpt_acquisition_attribution.sql'),
+  );
+  assert.equal(
+    chatgptAttributionMigration.status,
+    0,
+    commandFailure(chatgptAttributionMigration),
+  );
+
+  const validChatgptAttribution = psql('-v', 'ON_ERROR_STOP=1', '-c', `
+    INSERT INTO mcp_funnel_events (
+      event_type, stage, user_id, oauth_client_id, source, medium, campaign,
+      acquisition_client, acquisition_id, idempotency_key
+    ) VALUES (
+      'oauth_connection_started', NULL, 'user-chatgpt', 'client-chatgpt',
+      'mcp_landing', 'owned', 'mcp_connect', 'chatgpt',
+      'acq_ABCDEFGHIJKLMNOPQRSTUVWX', 'valid-chatgpt-attribution'
+    )
+  `);
+  assert.equal(validChatgptAttribution.status, 0, commandFailure(validChatgptAttribution));
 
   const valid = psql('-v', 'ON_ERROR_STOP=1', '-c', `
     INSERT INTO mcp_funnel_events (

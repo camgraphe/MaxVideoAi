@@ -58,6 +58,10 @@ test('landing acquisition accepts only the exact coarse allowlist and rejects ex
     parseMcpAcquisitionRequest({ ...validInput, action: 'copy_endpoint', client: 'codex' }),
     { ...validInput, action: 'copy_endpoint', client: 'codex' },
   );
+  assert.deepEqual(
+    parseMcpAcquisitionRequest({ ...validInput, client: 'chatgpt' }),
+    { ...validInput, client: 'chatgpt' },
+  );
 
   for (const invalid of [
     { ...validInput, source: 'newsletter' },
@@ -141,6 +145,31 @@ test('signed acquisition cookies verify exact context and fail closed on tamper,
       token,
     );
   }
+});
+
+test('ChatGPT attribution stays distinct from Codex through the signed acquisition boundary', async () => {
+  const {
+    createSignedMcpAcquisitionCookie,
+    verifySignedMcpAcquisitionCookie,
+  } = await import('../frontend/lib/mcp-acquisition.ts');
+  const signed = createSignedMcpAcquisitionCookie(
+    {
+      source: 'mcp_landing',
+      medium: 'owned',
+      campaign: 'mcp_connect',
+      client: 'chatgpt',
+    },
+    {
+      secret,
+      nowSeconds: 3_000,
+      acquisitionId: 'acq_ABCDEFGHIJKLMNOPQRSTUVWX',
+    },
+  );
+
+  assert.equal(
+    verifySignedMcpAcquisitionCookie(signed.value, { secret, nowSeconds: 3_001 })?.client,
+    'chatgpt',
+  );
 });
 
 test('acquisition signing requires a dedicated strong secret and produces an opaque id', async () => {

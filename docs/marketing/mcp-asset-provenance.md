@@ -1,6 +1,11 @@
 # MCP marketing asset provenance
 
-Verified on 2026-07-14. Only partner marks currently satisfy the publication bar. Checksums in the manifest cover the exact committed bytes.
+Verified on 2026-08-26. Only partner marks currently satisfy the publication bar. Checksums in the manifest cover the exact committed bytes.
+
+Marketing usage keeps both marks unchanged and at equal optical size, while MaxVideoAI remains the primary brand.
+The surrounding copy describes compatibility only; it never claims partnership, sponsorship, certification, or
+endorsement. Visible ChatGPT and Claude labels carry the prospect and SEO meaning, so decorative marks keep empty alt
+text rather than repeating keywords.
 
 ## Partner marks
 
@@ -18,7 +23,7 @@ The archive supplied one Clay-colored Spark SVG. Its bytes, path geometry, and c
 
 ### OpenAI
 
-The compact monochrome OpenAI marks already existed in this repository and were introduced by commit `1d15c9f9`. Their original retrieval date and download artifact are not recoverable from repository history. The files were verified on 2026-07-14 against the repository copy and the current [OpenAI brand guidelines](https://openai.com/brand/); the manifest therefore records `verifiedAt`, not an invented retrieval date.
+The compact monochrome OpenAI marks already existed in this repository and were introduced by commit `1d15c9f9`. Their original retrieval date and download artifact are not recoverable from repository history. The files were verified on 2026-08-26 against the repository copy and the current [OpenAI brand guidelines](https://openai.com/brand/); the manifest therefore records `verifiedAt`, not an invented retrieval date.
 
 ## Rejected result candidate
 
@@ -43,7 +48,7 @@ The previously derived local MP4 (`df66302c8b34f3a79dcc39d906b69ed30184a8299e179
       "sourceUrl": "https://www.anthropic.com/press-kit",
       "sourceArchivePath": "Anthropic media resources/Anthropic logos/Claude logos/3 Claude Spark/SVG/Claude Spark - Clay.svg",
       "sourceArchiveSha256": "c68ac92df86c825f95177e24016fcc9a8863a3fd4ca344fe6f0700b2c1e07151",
-      "verifiedAt": "2026-07-14",
+      "verifiedAt": "2026-08-26",
       "usageNote": "Use the unchanged official Clay Spark on a neutral theme-safe tile; the same bytes serve both themes.",
       "sha256": "6d53db4be375e899c937c26cf16684a80d6e869b1928d72b37748bef2560e219"
     },
@@ -54,7 +59,7 @@ The previously derived local MP4 (`df66302c8b34f3a79dcc39d906b69ed30184a8299e179
       "sourceUrl": "https://www.anthropic.com/press-kit",
       "sourceArchivePath": "Anthropic media resources/Anthropic logos/Claude logos/3 Claude Spark/SVG/Claude Spark - Clay.svg",
       "sourceArchiveSha256": "c68ac92df86c825f95177e24016fcc9a8863a3fd4ca344fe6f0700b2c1e07151",
-      "verifiedAt": "2026-07-14",
+      "verifiedAt": "2026-08-26",
       "usageNote": "Use the unchanged official Clay Spark on a neutral theme-safe tile; the same bytes serve both themes.",
       "sha256": "6d53db4be375e899c937c26cf16684a80d6e869b1928d72b37748bef2560e219"
     },
@@ -64,7 +69,7 @@ The previously derived local MP4 (`df66302c8b34f3a79dcc39d906b69ed30184a8299e179
       "origin": "repository-reuse",
       "sourceUrl": "https://openai.com/brand/",
       "sourceArchivePath": null,
-      "verifiedAt": "2026-07-14",
+      "verifiedAt": "2026-08-26",
       "usageNote": "Reuse the existing compact monochrome repository mark and follow OpenAI's current partner-brand guidance.",
       "sha256": "a8bae4b4f9561295cfb4d7a619ca837b1e41b6a6a634ed29b12bdee85b804bd6"
     },
@@ -74,7 +79,7 @@ The previously derived local MP4 (`df66302c8b34f3a79dcc39d906b69ed30184a8299e179
       "origin": "repository-reuse",
       "sourceUrl": "https://openai.com/brand/",
       "sourceArchivePath": null,
-      "verifiedAt": "2026-07-14",
+      "verifiedAt": "2026-08-26",
       "usageNote": "Reuse the existing compact monochrome repository mark and follow OpenAI's current partner-brand guidance.",
       "sha256": "5cfb761d9532e49cf26008a287df7a781647aa9cf6044b7c62f4f626fb74f850"
     }

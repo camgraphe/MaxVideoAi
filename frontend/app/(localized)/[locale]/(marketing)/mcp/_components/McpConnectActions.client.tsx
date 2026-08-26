@@ -55,7 +55,7 @@ async function recordAcquisition(client: McpClientId, action: 'connect' | 'copy_
         source: 'mcp_landing',
         medium: 'owned',
         campaign: 'mcp_connect',
-        client: client === 'chatgpt' ? 'codex' : client,
+        client,
       }),
     });
   } catch {

@@ -40,7 +40,7 @@ export function AdminMcpView({ metrics, selectedRange }: AdminMcpViewProps) {
       <AdminPageHeader
         eyebrow="Analytics"
         title="MCP acquisition"
-        description="Authoritative acquisition, conversion and operating signals for Codex, Claude and other MCP clients. All windows use UTC [from, to)."
+        description="Authoritative acquisition, conversion and operating signals for ChatGPT, Claude, Codex and other MCP clients. All windows use UTC [from, to)."
         actions={
           <div className="flex flex-wrap gap-2" aria-label="MCP reporting range">
             {ADMIN_MCP_RANGE_OPTIONS.map((option) => (

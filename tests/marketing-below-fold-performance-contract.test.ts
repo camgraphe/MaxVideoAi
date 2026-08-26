@@ -28,7 +28,7 @@ test('marketing heroes remain outside deferred rendering while long content is c
   const modelContentSource = readSource(modelContentPath);
 
   assert.match(homeSource, /<HomeHero[\s\S]*?<\/HomeHero>|<HomeHero[\s\S]*?\/>[\s\S]*?<DeferredMarketingContent/);
-  assert.equal((homeSource.match(/<DeferredMarketingContent>/g) ?? []).length, 7, 'home should contain each long section independently');
+  assert.equal((homeSource.match(/<DeferredMarketingContent>/g) ?? []).length, 8, 'home should contain each long section, including the AI assistant workflow, independently');
   assert.equal((pricingSource.match(/<DeferredMarketingContent>/g) ?? []).length, 5, 'pricing should contain each long section independently');
   assert.doesNotMatch(modelSource, /<DeferredMarketingContent>[\s\S]*?<ModelPageContentSections/, 'model layout should not reserve one inaccurate page-height placeholder');
   assert.ok((modelContentSource.match(/<DeferredMarketingContent>/g) ?? []).length >= 5, 'model content should contain long sections independently');
