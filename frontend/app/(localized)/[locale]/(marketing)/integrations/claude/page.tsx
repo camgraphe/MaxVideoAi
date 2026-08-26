@@ -6,6 +6,7 @@ import { getMcpPublicationState } from '@/lib/mcp-publication';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { getMcpCompatibilityEvidence } from '../../mcp/_lib/mcp-compatibility';
+import { getMcpHostProof } from '../../mcp/_lib/mcp-host-proof';
 import { IntegrationJsonLdScripts } from '../_components/IntegrationJsonLdScripts';
 import { IntegrationPageView } from '../_components/IntegrationPageView';
 import { getIntegrationCopy } from '../_lib/integration-copy';
@@ -37,11 +38,18 @@ export default async function ClaudeIntegrationPage({ params }: { params: Promis
   if (!publication.renderPublicPage) notFound();
   const copy = getIntegrationCopy(locale, 'claude');
   const compatibility = getMcpCompatibilityEvidence().clients.claude;
+  const hostProof = getMcpHostProof('claude', locale);
   const canonicalUrl = buildMetadataUrls(locale, undefined, { englishPath: '/integrations/claude' }).canonical;
   const breadcrumb = buildIntegrationBreadcrumbJsonLd({ canonicalUrl, copy });
   return (
     <>
-      <IntegrationPageView compatibility={compatibility} copy={copy} locale={locale} publication={publication} />
+      <IntegrationPageView
+        compatibility={compatibility}
+        copy={copy}
+        locale={locale}
+        publication={publication}
+        hostProof={hostProof}
+      />
       <IntegrationJsonLdScripts breadcrumb={breadcrumb} />
     </>
   );

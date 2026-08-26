@@ -12,18 +12,25 @@ remaining refresh/revocation, fresh private upload, fresh paid render,
 failure/refund, legal, directory, and public-rollout gates still block launch.
 The checked-in `frontend/config/mcp-publication.json` keeps all eight publication gates false.
 
-The exact reviewed staging revision is
+The primary account, catalog, budgeting, quote, media, recovery, upload-handoff,
+and top-up-handoff checkpoint used staging revision
 `33d9e3a498c1fe8947bbb6a4c957d19ca805be25`, deployed as
 `dpl_45cqkwyW3U3LAL4pF1D6YUJLoVkH` at
-`https://maxvideoai-mcp-staging.vercel.app`. Production was not changed. LAS
-and direct Seedance 2.5 video-to-video remained disabled. No new generation was
-confirmed, no payment was opened, and the staging wallet stayed at $1.05.
+`https://maxvideoai-mcp-staging.vercel.app`. A later, narrower inline-host UI
+checkpoint used revision `621881dae621e9aec1d68a2a86f5065c6325cdb8`,
+deployment `dpl_3i6XgnZ6KVCZmQPhhKBrHDVrm1TD`, and the same staging origin; it
+recovered an existing completed result and recorded native controls, a manual
+playback exercise, library state, and the first-party CTA. It did not confirm a
+new generation. Production was not changed. LAS and direct Seedance 2.5
+video-to-video remained disabled. During the primary checkpoint no new
+generation was confirmed, no payment was opened, and the staging wallet stayed
+at $1.05.
 
 ## Controlled hosted evidence
 
 | Evidence | State | Result |
 | --- | --- | --- |
-| Claude Desktop 1.37937.1 | Pass | OAuth connection, account status, live catalog/details, 60-second budget comparison, exact Seedance 2.5 quote, private media listing, completed-job recovery, private upload handoff, and signed top-up handoff with ISO expiry all rendered in the host. |
+| Claude Desktop 1.37937.1 | Pass | OAuth connection, account status, live catalog/details, 60-second budget comparison, exact Seedance 2.5 quote, private media listing, completed-job recovery, native inline playback, first-party CTA, private upload handoff, and signed top-up handoff with ISO expiry all rendered in the host. |
 | Codex CLI 0.149.0-alpha.4.3 | Pass | The installed MaxVideoAI plugin used an ephemeral staging endpoint override and completed account, catalog, model-detail, budget, exact-quote, and top-up-handoff calls. A non-blocking MCP shutdown warning appeared only after completed turns. |
 | Account and library continuity | Pass | The tools returned first-party billing, connections, workspace, library, and support destinations; an existing completed video was recovered from the same MaxVideoAI staging account. |
 | Spend boundary | Pass | Quote preparation and top-up handoffs did not debit the wallet or call a provider. `confirm_generation` was not called. |
@@ -39,7 +46,7 @@ confirmed, no payment was opened, and the staging wallet stayed at $1.05.
 | Isolated all-gates-green fixture | Pass | The tracked fixture config enabled every gate only inside a temporary copied worktree. Public route, SEO, interaction, private-boundary, conversation-led project proposal, and live price-reference checks passed against a clean production build. |
 | Light/dark desktop/mobile visual review | Pass | Light remains the default MaxVideoAI treatment, dark mode has equivalent hierarchy and contrast, and ChatGPT/Claude use equal 24×24 official marks inside equal actions. |
 | Prospect-language review | Pass | The hub leads with prompt, references, model choice, budget, and price-before-generation. A contradictory Claude access sentence found during review was replaced in EN/FR/ES with recorded-host status language. |
-| Real MCP proof media | Blocked | There is no publishable MCP proof or demonstration showing an owned end-to-end connected generation. No synthetic or provider gallery asset was relabelled as MCP evidence. |
+| Real MCP proof media | Partial | A reviewed Claude Desktop capture proves inline host rendering, native video controls, library state, and the first-party CTA. A manual playback exercise was recorded separately during the controlled test; the still image alone does not demonstrate playback. It is labelled as Claude-specific controlled evidence with a historical capture amount. A job-backed newly generated result bundle remains blocked; no provider gallery asset was relabelled. |
 | Real-host purchase/trial/reference funnel | Partial | Real hosts selected models, priced projects, prepared exact quotes, recovered an existing result, and created upload/top-up handoffs. Confirmation, fresh paid generation, trial, uploaded bytes, provider result, and reference cleanup remain unverified. |
 | Production GSC/indexation evidence | Baseline captured | A fresh read-only site baseline was captured on 2026-08-26: 6,314 clicks, 491,440 impressions, 1.3% CTR, average position 10.2, and 27,759 generative-feature impressions. MCP-specific post-deployment canonical, query, country, CTR, and cannibalization review remains future evidence. |
 
@@ -147,7 +154,7 @@ successfully.
 | Gate | State | Exact blocker or next evidence |
 | --- | --- | --- |
 | Codex host lifecycle | Partial pass | Codex CLI 0.149.0-alpha.4.3 completed OAuth-backed discovery, budgeting, quote, and top-up behavior. Refresh, revocation, reconnect, and a graphical ChatGPT/Codex install remain unverified. |
-| Claude host lifecycle | Partial pass | Claude Desktop 1.37937.1 completed OAuth-backed discovery, budgeting, quote, media, recovery, upload-handoff, and top-up behavior. Refresh, revocation, reconnect, and fresh provider use remain unverified. |
+| Claude host lifecycle | Partial pass | Claude Desktop 1.37937.1 completed OAuth-backed discovery, budgeting, quote, media, recovery, inline playback, first-party continuation, upload-handoff, and top-up behavior. Refresh, revocation, reconnect, and fresh successful provider use remain unverified. |
 | Real-host decision bundle | Pass without spend | Both hosts produced current model advice, a named project budget, and a fresh exact quote. Claude also recovered an existing completed result. Neither host confirmed a new generation. |
 | Paid generation | Blocked | Exact quote and insufficient-balance/top-up recovery are proven in staging, but no newly confirmed provider result or receipt reconciliation was recorded. |
 | Trial | Blocked | No live allocation, abuse control, failed-job restoration, or deterministic end-to-end host evidence. |

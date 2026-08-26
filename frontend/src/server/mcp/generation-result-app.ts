@@ -10,7 +10,6 @@ const FIXED_MEDIA_ORIGINS = [
 
 const FIXED_APP_ORIGINS = [
   'https://maxvideoai.com',
-  'https://www.maxvideoai.com',
   'https://maxvideoai-mcp-staging.vercel.app',
 ] as const;
 

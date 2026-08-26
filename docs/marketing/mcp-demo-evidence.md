@@ -1,14 +1,18 @@
 # MCP demonstration evidence
 
-Test date: 2026-07-14
+Last evidence update: 2026-08-26
 
 Publication status: gated
 
-Permitted public proof: none
+Permitted public proof: Claude Desktop host-UI capture only
 
 ## Evidence decision
 
-A controlled, approved MCP generation session was not available for this task. No brief, reference, quote, or result capture satisfies the publication bar, so all proof media remains absent and `getMcpProof(locale)` returns `null`.
+A controlled Claude Desktop session now records that the read-only `present_generation` app displayed a completed MaxVideoAI video inline, preserved the MaxVideoAI library handoff, and exposed the first-party CTA. A separate manual interaction in the same test recorded native playback; the published still image itself proves the rendered player and controls, not the Play action. This host-UI capture is publishable as Claude-specific rendering evidence. It is not a job-backed result proof, does not establish ChatGPT rendering, and does not change `getMcpProof(locale)`, which remains `null`.
+
+The `$0.95` visible in the capture is the historical amount recorded in that test. It is never presented as a current price or quote.
+
+A controlled, approved newly generated MCP result was not available for this task. No brief, reference, quote, or result bundle satisfies the end-to-end publication bar, so the owned result video remains absent.
 
 The previously selected result candidate was rejected after stream-level comparison showed that it contains the same encoded video and audio streams as a public provider example. A MaxVideoAI registry entry or CDN URL does not establish generation ownership and cannot replace job-backed and audit-backed provenance.
 
@@ -27,6 +31,7 @@ No result badge, engine, mode, price, or media instance is publishable. In parti
 | Exact pre-confirmation quote | Not recorded | `mcp-quote.webp` absent |
 | Explicit confirmation | Not available | Withheld |
 | Completed job with audit-backed provenance | Not available | Result media absent; proof is `null` |
+| Claude inline host rendering | Claude Desktop 1.37937.1, controlled staging deployment, native controls and first-party CTA; manual playback recorded separately | Publishable only as Claude host-UI evidence |
 
 ## Rejected candidate verification
 
@@ -58,6 +63,29 @@ Future proof requires all of the following together: a publishable result, a job
     "auditEvidenceReference": null,
     "sourceUrl": null,
     "sourceSha256": null
+  },
+  "hostUiProof": {
+    "status": "verified-host-ui",
+    "host": "claudeDesktop",
+    "assetPath": "frontend/public/media/mcp/claude-inline-video-proof.jpg",
+    "mimeType": "image/jpeg",
+    "width": 1152,
+    "height": 768,
+    "sha256": "2f54400a0287e7930295718beabb7c51b93cc927eb4abdd2dd9108d268a0780e",
+    "capturedAt": "2026-08-26T16:31:42+02:00",
+    "hostVersion": "Claude Desktop 1.37937.1",
+    "hostLocale": "fr-FR",
+    "operatingSystem": "macOS 26.5.1 (25F80)",
+    "environment": "controlled-staging",
+    "serverOrigin": "https://maxvideoai-mcp-staging.vercel.app",
+    "deploymentId": "dpl_3i6XgnZ6KVCZmQPhhKBrHDVrm1TD",
+    "sourceRevision": "621881dae621e9aec1d68a2a86f5065c6325cdb8",
+    "resourceUri": "ui://maxvideoai/generation-result-v1.html",
+    "manualPlaybackExerciseRecorded": true,
+    "firstPartyCtaVerified": true,
+    "marketingPermission": true,
+    "privacyReview": "passed-no-visible-account-identifier",
+    "evidenceReference": "host-ui-claude-2026-08-26-v1"
   },
   "rejectedCandidate": {
     "reasonCode": "provider-example-not-job-backed",

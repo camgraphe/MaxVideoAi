@@ -3,6 +3,7 @@ import type { McpPublicationState } from '@/lib/mcp-publication';
 import { MCP_PRODUCTION_RESOURCE_URL } from '@/server/mcp/config';
 import type { McpBudgetOption } from '../_lib/mcp-budget-options';
 import type { McpCompatibilityEvidence } from '../_lib/mcp-compatibility';
+import type { McpHostProof } from '../_lib/mcp-host-proof';
 import type { McpPageCopy } from '../_lib/mcp-page-types';
 import type { McpProof } from '../_lib/mcp-proof';
 import { McpAnswerPassagesSection } from './McpAnswerPassagesSection';
@@ -18,6 +19,7 @@ export function McpPageView({
   copy,
   locale,
   proof,
+  hostProof = null,
   publication,
 }: {
   budgetOptions: McpBudgetOption[];
@@ -25,6 +27,7 @@ export function McpPageView({
   copy: McpPageCopy;
   locale: AppLocale;
   proof: McpProof | null;
+  hostProof?: McpHostProof | null;
   publication: McpPublicationState;
 }) {
   return (
@@ -33,6 +36,7 @@ export function McpPageView({
         copy={copy.hero}
         evidenceCopy={copy.evidence}
         proof={proof}
+        hostProof={hostProof}
         publication={publication}
         locale={locale}
         resourceUrl={MCP_PRODUCTION_RESOURCE_URL}

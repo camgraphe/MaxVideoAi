@@ -152,7 +152,11 @@ test('launch evidence records local and hosted states, exact limitations, and fu
   assert.match(evidence, /migration files 30–37 are present locally/i);
   assert.match(evidence, /staging application exercised quote, media, recovery, and handoff producers/i);
   assert.doesNotMatch(evidence, /migrations? 30–32 (?:are )?absent|migration[^\n]*\b(?:applied|unapplied)\b/i);
-  assert.match(evidence, /no publishable MCP (?:proof|demonstration)/i);
+  assert.match(evidence, /Claude Desktop capture proves inline host rendering/i);
+  assert.match(evidence, /job-backed newly generated result bundle remains blocked/i);
+  assert.match(evidence, /primary[\s\S]+33d9e3a498c1fe8947bbb6a4c957d19ca805be25[\s\S]+dpl_45cqkwyW3U3LAL4pF1D6YUJLoVkH/i);
+  assert.match(evidence, /later[\s\S]+inline-host UI[\s\S]+621881dae621e9aec1d68a2a86f5065c6325cdb8[\s\S]+dpl_3i6XgnZ6KVCZmQPhhKBrHDVrm1TD/i);
+  assert.match(evidence, /still image alone does not demonstrate playback/i);
   assert.match(evidence, /GSC[^\n]+post-deployment/i);
   assert.match(evidence, /no production|production was not changed|production[^\n]+not probed/i);
   assert.match(evidence, /not ready for public promotion/i);

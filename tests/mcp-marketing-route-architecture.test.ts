@@ -19,10 +19,12 @@ const requiredFiles = [
   `${mcpRoot}/_lib/mcp-page-copy.ts`,
   `${mcpRoot}/_lib/mcp-jsonld.ts`,
   `${mcpRoot}/_lib/mcp-compatibility.ts`,
+  `${mcpRoot}/_lib/mcp-host-proof.ts`,
   `${mcpRoot}/_components/McpPageView.tsx`,
   `${mcpRoot}/_components/McpHeroSection.tsx`,
   `${mcpRoot}/_components/McpClientActions.tsx`,
   `${mcpRoot}/_components/McpProofMedia.tsx`,
+  `${mcpRoot}/_components/McpHostProofCard.tsx`,
   `${mcpRoot}/_components/McpWorkflowStrip.tsx`,
   `${mcpRoot}/_components/McpBudgetShortlist.tsx`,
   `${mcpRoot}/_components/McpEvidenceSection.tsx`,
@@ -61,6 +63,7 @@ test('MCP acquisition routes have focused server-rendered owners', () => {
   assert.match(page, /FEATURES\.mcp/);
   assert.match(page, /buildMcpBudgetOptions/);
   assert.match(page, /getMcpProof/);
+  assert.match(page, /getMcpHostProof/);
   assert.match(page, /notFound\(\)/);
   assert.match(page, /McpPageView/);
   assert.match(page, /McpJsonLdScripts/);
@@ -93,6 +96,14 @@ test('ChatGPT, Claude, and Codex guides are equal thin server orchestrators', ()
     assert.doesNotMatch(page, /['"]use client['"]/);
     assert.ok(page.split('\n').length <= 250, `${client} page should stay below 250 lines`);
   }
+
+  const claudePage = requireFile(`${integrationsRoot}/claude/page.tsx`);
+  const chatgptPage = requireFile(`${integrationsRoot}/chatgpt/page.tsx`);
+  const codexPage = requireFile(`${integrationsRoot}/codex/page.tsx`);
+  assert.match(claudePage, /getMcpHostProof\(['"]claude['"]/);
+  assert.match(claudePage, /hostProof=\{hostProof\}/);
+  assert.doesNotMatch(chatgptPage, /getMcpHostProof|McpHostProofCard|claude-inline-video-proof/);
+  assert.doesNotMatch(codexPage, /getMcpHostProof|McpHostProofCard|claude-inline-video-proof/);
 
   for (const component of [
     'IntegrationPageView',

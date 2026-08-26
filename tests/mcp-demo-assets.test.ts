@@ -57,6 +57,29 @@ type DemoEvidenceManifest = {
     sourceUrl: string | null;
     sourceSha256: string | null;
   };
+  hostUiProof: {
+    status: string;
+    host: string;
+    assetPath: string;
+    mimeType: string;
+    width: number;
+    height: number;
+    sha256: string;
+    capturedAt: string;
+    hostVersion: string;
+    hostLocale: string;
+    operatingSystem: string;
+    environment: string;
+    serverOrigin: string;
+    deploymentId: string;
+    sourceRevision: string;
+    resourceUri: string;
+    manualPlaybackExerciseRecorded: boolean;
+    firstPartyCtaVerified: boolean;
+    marketingPermission: boolean;
+    privacyReview: string;
+    evidenceReference: string;
+  };
   rejectedCandidate: {
     reasonCode: string;
     candidateSourceUrl: string;
@@ -171,6 +194,33 @@ test('unverified MCP captures and result proof fail closed as absent and null', 
     sourceUrl: null,
     sourceSha256: null,
   });
+  assert.deepEqual(evidence.hostUiProof, {
+    status: 'verified-host-ui',
+    host: 'claudeDesktop',
+    assetPath: 'frontend/public/media/mcp/claude-inline-video-proof.jpg',
+    mimeType: 'image/jpeg',
+    width: 1152,
+    height: 768,
+    sha256: '2f54400a0287e7930295718beabb7c51b93cc927eb4abdd2dd9108d268a0780e',
+    capturedAt: '2026-08-26T16:31:42+02:00',
+    hostVersion: 'Claude Desktop 1.37937.1',
+    hostLocale: 'fr-FR',
+    operatingSystem: 'macOS 26.5.1 (25F80)',
+    environment: 'controlled-staging',
+    serverOrigin: 'https://maxvideoai-mcp-staging.vercel.app',
+    deploymentId: 'dpl_3i6XgnZ6KVCZmQPhhKBrHDVrm1TD',
+    sourceRevision: '621881dae621e9aec1d68a2a86f5065c6325cdb8',
+    resourceUri: 'ui://maxvideoai/generation-result-v1.html',
+    manualPlaybackExerciseRecorded: true,
+    firstPartyCtaVerified: true,
+    marketingPermission: true,
+    privacyReview: 'passed-no-visible-account-identifier',
+    evidenceReference: 'host-ui-claude-2026-08-26-v1',
+  });
+  const hostProofBytes = readFileSync(evidence.hostUiProof.assetPath);
+  assert.equal(sha256(hostProofBytes), evidence.hostUiProof.sha256);
+  assert.equal(getMcpProof('en') instanceof Promise, true);
+  assert.doesNotMatch(JSON.stringify(evidence.hostUiProof), /job[_-]?id|audit[_-]?id|oauth|@|private.*url/i);
 
   const publicEvidence = `${readFileSync(evidencePath, 'utf8')}\n${readFileSync(provenancePath, 'utf8')}\n${source}`;
   assert.doesNotMatch(publicEvidence, /Real MaxVideoAI output|MaxVideoAI-owned proof|product-owned-production-registry/i);

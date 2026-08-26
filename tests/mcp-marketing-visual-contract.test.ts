@@ -45,6 +45,7 @@ test('new MCP surfaces remain light-first, restrained, and dark-compatible', () 
     'McpClientActions.tsx',
     'McpConnectActions.client.tsx',
     'McpProofMedia.tsx',
+    'McpHostProofCard.tsx',
     'McpWorkflowStrip.tsx',
     'McpBudgetShortlist.tsx',
     'McpEvidenceSection.tsx',
@@ -147,6 +148,19 @@ test('proof media is poster-backed, controlled, captioned, and never auto-plays'
   const proofContract = requireFile(`${routeRoot}/_lib/mcp-proof.ts`);
   assert.match(proofContract, /captionsSrc: string/);
   assert.match(proofContract, /captionsLocale: AppLocale/);
+});
+
+test('Claude host proof is a captioned light-first image, not a simulated video claim', () => {
+  const source = requireFile(`${componentsRoot}/McpHostProofCard.tsx`);
+  assert.doesNotMatch(source, /['"]use client['"]/);
+  assert.match(source, /<figure/);
+  assert.match(source, /<Image/);
+  assert.match(source, /src=\{proof\.assetSrc\}/);
+  assert.match(source, /alt=\{proof\.alt\}/);
+  assert.match(source, /<figcaption/);
+  assert.match(source, /bg-white/);
+  assert.match(source, /dark:/);
+  assert.doesNotMatch(source, /<video|autoPlay/);
 });
 
 test('client actions point to equally factual localized guides', async () => {

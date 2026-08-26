@@ -9,8 +9,8 @@ production, noindexed, and restricted to its disposable staging account.
 ## Reviewed staging revision
 
 - Stable origin: `https://maxvideoai-mcp-staging.vercel.app`
-- Deployment: `dpl_45cqkwyW3U3LAL4pF1D6YUJLoVkH`
-- Git revision: `33d9e3a498c1fe8947bbb6a4c957d19ca805be25`
+- Deployment: `dpl_3i6XgnZ6KVCZmQPhhKBrHDVrm1TD`
+- Git revision: `621881dae621e9aec1d68a2a86f5065c6325cdb8`
 - Transport: MCP Streamable HTTP with stateless JSON responses
 - Authentication: OAuth 2.1 authorization code with PKCE through the isolated
   MaxVideoAI Staging Supabase Auth project
@@ -28,14 +28,14 @@ confirmation, generation status and recovery, private media, private
 reference-upload handoff, and a signed MaxVideoAI top-up handoff. Spending still
 requires a separate explicit confirmation of a fresh quote.
 
-The `present_generation` descriptor and its versioned MCP Apps resource are covered by local contracts. Inline rendering and playback are not yet part of the hosted Claude Desktop or ChatGPT evidence below; until those checks are recorded, resource links and the MaxVideoAI library remain the verified fallback.
+The `present_generation` descriptor and its versioned MCP Apps resource are covered by local contracts. Claude Desktop 1.37937.1 rendered the completed-video card and native controls. A manual Play action changed the control to Pause during the controlled test; that interaction is recorded in the QA evidence but is not demonstrated by the published still image alone. Resource links and the MaxVideoAI library remain the universal fallback. ChatGPT inline rendering remains a separate, unrecorded host check.
 
 ## Compatibility matrix
 
 | Host or surface | Hosted evidence | Status |
 | --- | --- | --- |
 | MCP TypeScript SDK 1.29.0 | Automated contracts cover initialization, tool discovery, schemas, annotations, authorization boundaries, and sanitized errors. | Contract pass. |
-| Claude Desktop 1.37937.1 on macOS | Loaded the custom staging connector through OAuth; read account/catalog/model data; compared 60-second budgets; prepared an exact Seedance 2.5 quote without spending; listed private media; recovered a completed generation; created a private reference-upload handoff without uploading bytes; and created a signed top-up handoff with an exact ISO expiry. | Controlled staging pass. Refresh, revocation, reconnect, fresh uploaded bytes, and a new paid generation remain to be recorded. |
+| Claude Desktop 1.37937.1 on macOS | Loaded the custom staging connector through OAuth; read account/catalog/model data; compared 60-second budgets; prepared an exact Seedance 2.5 quote; listed private media; recovered a completed generation; rendered and played that result inline; opened the first-party continuation CTA; created a private reference-upload handoff; and created a signed top-up handoff with an exact ISO expiry. | Controlled staging pass including inline playback. Refresh, revocation, reconnect, fresh uploaded bytes, and a newly successful paid generation remain to be recorded. |
 | Codex CLI 0.149.0-alpha.4.3 on macOS | Loaded the installed MaxVideoAI plugin with an ephemeral staging URL override; completed OAuth-backed account, catalog, model-detail, budgeting, exact-quote, and top-up-handoff calls. The final wallet remained unchanged. | Controlled staging pass. The normal plugin endpoint remains production and intentionally unavailable. A non-blocking MCP-client shutdown warning followed completed turns. |
 | Codex desktop / ChatGPT app surface | The bundled Codex CLI path and plugin package were exercised, but no fresh graphical Codex task or ChatGPT app-directory installation was recorded. | Partial; do not claim ChatGPT app-directory availability. |
 | ChatGPT Apps directory | No submission, review, install, or tool-rendering evidence. | Not run. |

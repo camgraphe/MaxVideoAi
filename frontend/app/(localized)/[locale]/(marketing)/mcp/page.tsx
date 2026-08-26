@@ -10,6 +10,7 @@ import { McpPageView } from './_components/McpPageView';
 import { buildMcpBudgetOptions } from './_lib/mcp-budget-options';
 import { getMcpCompatibilityEvidence } from './_lib/mcp-compatibility';
 import { buildMcpBreadcrumbJsonLd, buildMcpWebApplicationJsonLd } from './_lib/mcp-jsonld';
+import { getMcpHostProof } from './_lib/mcp-host-proof';
 import { getMcpPageCopy } from './_lib/mcp-page-copy';
 import { getMcpProof } from './_lib/mcp-proof';
 
@@ -51,6 +52,7 @@ export default async function McpPage({
 
   const copy = getMcpPageCopy(locale);
   const [proof] = await Promise.all([getMcpProof(locale)]);
+  const hostProof = getMcpHostProof('claude', locale);
   const budgetOptions = buildMcpBudgetOptions(locale, publication);
   const compatibility = getMcpCompatibilityEvidence();
   const canonicalUrl = buildMetadataUrls(locale, undefined, { englishPath: '/mcp' }).canonical;
@@ -70,6 +72,7 @@ export default async function McpPage({
         copy={copy}
         locale={locale}
         proof={proof}
+        hostProof={hostProof}
         publication={publication}
       />
       <McpJsonLdScripts application={application} breadcrumb={breadcrumb} />
