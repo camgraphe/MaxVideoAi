@@ -76,7 +76,8 @@ export function shouldApplyBytePlusProviderTimeout(params: {
 }
 
 export function shouldRetryBytePlusStorageCopy(params: {
-  state: Pick<BytePlusStorageCopyState, 'attempts'>;
+  state: Pick<BytePlusStorageCopyState, 'attempts'>
+    & Partial<Pick<BytePlusStorageCopyState, 'firstFailedAt'>>;
   createdAt: string;
   nowMs?: number;
   maxAttempts?: number;
@@ -84,8 +85,8 @@ export function shouldRetryBytePlusStorageCopy(params: {
 }): boolean {
   const maxAttempts = params.maxAttempts ?? resolveBytePlusStorageCopyMaxAttempts();
   if (params.state.attempts >= maxAttempts) return false;
-  const createdAtMs = Date.parse(params.createdAt);
-  if (!Number.isFinite(createdAtMs)) return true;
+  const retryWindowStartedAtMs = Date.parse(params.state.firstFailedAt ?? params.createdAt);
+  if (!Number.isFinite(retryWindowStartedAtMs)) return true;
   const copyWindowMs = params.copyWindowMs ?? BYTEPLUS_OUTPUT_COPY_WINDOW_MS;
-  return (params.nowMs ?? Date.now()) - createdAtMs < copyWindowMs;
+  return (params.nowMs ?? Date.now()) - retryWindowStartedAtMs < copyWindowMs;
 }
