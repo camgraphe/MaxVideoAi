@@ -8,7 +8,8 @@ STAGING_SCOPE='camgraphes-projects'
 STABLE_HOST='maxvideoai-mcp-staging.vercel.app'
 STAGING_SUPABASE_ORIGIN='https://gecrywjztpbwbrlnomti.supabase.co'
 EXPECTED_ROBOTS='noindex, nofollow, noarchive'
-EXPECTED_CRON_PATH='/api/cron/byteplus-poll'
+EXPECTED_BYTEPLUS_CRON_PATH='/api/cron/byteplus-poll'
+EXPECTED_FAL_CRON_PATH='/api/cron/fal-poll'
 EXPECTED_CRON_SCHEDULE='*/5 * * * *'
 VERCEL_VERSION='55.0.0'
 DEPLOYMENT_REF_FILTER='.deployment.url // .deployment.deploymentUrl // .deployment.id // .url // .deploymentUrl // .id'
@@ -31,6 +32,8 @@ REQUIRED_OPERATIONAL_ENVIRONMENT=(
   'S3_PUBLIC_BASE_URL'
   'VIDEO_RENDER_STORAGE_PREFIX'
   'CRON_SECRET'
+  'FAL_WEBHOOK_TOKEN'
+  'FAL_POLL_TOKEN'
 )
 
 usage() {
@@ -92,9 +95,13 @@ if [[ -z "$RESUME_CANDIDATE_ID" ]]; then
 
   jq -e \
     --arg expected "$EXPECTED_ROBOTS" \
-    --arg cron_path "$EXPECTED_CRON_PATH" \
+    --arg byteplus_cron_path "$EXPECTED_BYTEPLUS_CRON_PATH" \
+    --arg fal_cron_path "$EXPECTED_FAL_CRON_PATH" \
     --arg cron_schedule "$EXPECTED_CRON_SCHEDULE" '
-    .crons == [{path: $cron_path, schedule: $cron_schedule}] and
+    .crons == [
+      {path: $byteplus_cron_path, schedule: $cron_schedule},
+      {path: $fal_cron_path, schedule: $cron_schedule}
+    ] and
     .headers == [
       {
         "source": "/(.*)",
@@ -240,6 +247,16 @@ assert_staging_operational_environment() {
     exit 66
   fi
 
+  if ! jq -e '
+    any(.[];
+      (.key == "FAL_API_KEY" or .key == "FAL_KEY") and
+      .target == ["production"]
+    )
+  ' "$metadata" >/dev/null; then
+    printf 'ENVIRONMENT_BLOCKED one_of=FAL_API_KEY,FAL_KEY target=production\n' >&2
+    exit 66
+  fi
+
   for name in "${REQUIRED_OPERATIONAL_ENVIRONMENT[@]}"; do
     if ! jq -e --arg name "$name" \
       'any(.[]; .key == $name and .target == ["production"])' \
@@ -327,7 +344,8 @@ jq -e \
   --arg stable "$STABLE_HOST" \
   --arg approved_head "$APPROVED_HEAD" \
   --arg archive_sha256 "$TRACKED_ARCHIVE_SHA256" \
-  --arg cron_path "$EXPECTED_CRON_PATH" \
+  --arg byteplus_cron_path "$EXPECTED_BYTEPLUS_CRON_PATH" \
+  --arg fal_cron_path "$EXPECTED_FAL_CRON_PATH" \
   --arg cron_schedule "$EXPECTED_CRON_SCHEDULE" '
     .projectId == $project_id and
     .readyState == "READY" and
@@ -336,7 +354,10 @@ jq -e \
     .meta.mcpTrackedArchiveSha256 == $archive_sha256 and
     has("crons") and
     (.crons | type == "array") and
-    .crons == [{path: $cron_path, schedule: $cron_schedule}] and
+    .crons == [
+      {path: $byteplus_cron_path, schedule: $cron_schedule},
+      {path: $fal_cron_path, schedule: $cron_schedule}
+    ] and
     ([.alias[]?, .automaticAliases[]?] | index($stable) | not)
   ' "$ARTIFACTS/candidate-api.json" >/dev/null
 

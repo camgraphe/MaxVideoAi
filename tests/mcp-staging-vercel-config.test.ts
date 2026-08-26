@@ -35,10 +35,13 @@ const REQUIRED_OPERATIONAL_ENVIRONMENT = [
   'S3_PUBLIC_BASE_URL',
   'VIDEO_RENDER_STORAGE_PREFIX',
   'CRON_SECRET',
+  'FAL_WEBHOOK_TOKEN',
+  'FAL_POLL_TOKEN',
 ] as const;
 
 const EXPECTED_STAGING_CRONS = [
   { path: '/api/cron/byteplus-poll', schedule: '*/5 * * * *' },
+  { path: '/api/cron/fal-poll', schedule: '*/5 * * * *' },
 ] as const;
 
 const PROVIDER_SECRET_FIXTURE = 'provider-secret-must-never-appear';
@@ -106,18 +109,26 @@ fi
   return fixture;
 }
 
-function operationalEnvironmentPayload(overrides: Partial<Record<typeof REQUIRED_OPERATIONAL_ENVIRONMENT[number], {
-  key?: string;
-  target?: string[];
-}>> = {}): string {
+function operationalEnvironmentPayload(
+  overrides: Partial<Record<typeof REQUIRED_OPERATIONAL_ENVIRONMENT[number], {
+    key?: string;
+    target?: string[];
+  }>> = {},
+  falCredential: 'FAL_API_KEY' | 'FAL_KEY' | null = 'FAL_KEY',
+): string {
   return JSON.stringify({
-    envs: REQUIRED_OPERATIONAL_ENVIRONMENT.map((name) => ({
-      key: overrides[name]?.key ?? name,
-      target: overrides[name]?.target ?? ['production'],
-      value: name === 'BYTEPLUS_ARK_API_KEY'
-        ? PROVIDER_SECRET_FIXTURE
-        : `non-secret-${name}`,
-    })),
+    envs: [
+      ...REQUIRED_OPERATIONAL_ENVIRONMENT.map((name) => ({
+        key: overrides[name]?.key ?? name,
+        target: overrides[name]?.target ?? ['production'],
+        value: name === 'BYTEPLUS_ARK_API_KEY'
+          ? PROVIDER_SECRET_FIXTURE
+          : `non-secret-${name}`,
+      })),
+      ...(falCredential
+        ? [{ key: falCredential, target: ['production'], value: PROVIDER_SECRET_FIXTURE }]
+        : []),
+    ],
   });
 }
 
@@ -194,7 +205,7 @@ printf '200'
   return fixture;
 }
 
-test('MCP staging schedules only the authenticated BytePlus poll and blocks indexing', () => {
+test('MCP staging schedules only the authenticated provider polls and blocks indexing', () => {
   const path = join(process.cwd(), 'frontend/vercel.mcp-staging.json');
   assert.equal(existsSync(path), true);
   const config = JSON.parse(readFileSync(path, 'utf8')) as {
@@ -237,6 +248,30 @@ test('non-dry deployment preflight behavior fails closed before every Vercel mut
         assert.doesNotMatch(blocked.stderr, /SAFE_LINK_SENTINEL/);
       }
     }
+
+    const missingFalCredential = runStubbedDeploy(fixture, {
+      envPayload: operationalEnvironmentPayload({}, null),
+    });
+    assert.equal(missingFalCredential.status, 66, missingFalCredential.stderr);
+    assert.equal(
+      missingFalCredential.stderr,
+      'ENVIRONMENT_BLOCKED one_of=FAL_API_KEY,FAL_KEY target=production\n',
+    );
+    assert.doesNotMatch(
+      `${missingFalCredential.stdout}${missingFalCredential.stderr}`,
+      new RegExp(PROVIDER_SECRET_FIXTURE),
+    );
+    assert.doesNotMatch(missingFalCredential.stderr, /SAFE_LINK_SENTINEL/);
+
+    const falApiKeyAlias = runStubbedDeploy(fixture, {
+      envPayload: operationalEnvironmentPayload({}, 'FAL_API_KEY'),
+    });
+    assert.equal(falApiKeyAlias.status, 79, falApiKeyAlias.stderr);
+    assert.match(falApiKeyAlias.stderr, /SAFE_LINK_SENTINEL/);
+    assert.doesNotMatch(
+      `${falApiKeyAlias.stdout}${falApiKeyAlias.stderr}`,
+      new RegExp(PROVIDER_SECRET_FIXTURE),
+    );
 
     const missingRenderPrefix = runStubbedDeploy(fixture, {
       envPayload: JSON.stringify({
@@ -482,7 +517,7 @@ test('MCP staging deploy wrapper gates an unaliased candidate before promotion',
     const fixtureConfig = JSON.parse(fixtureConfigSource) as { crons?: unknown[] };
     fixtureConfig.crons = [
       ...EXPECTED_STAGING_CRONS,
-      { path: '/api/cron/fal-poll', schedule: '*/5 * * * *' },
+      { path: '/api/cron/kling-direct-poll', schedule: '*/5 * * * *' },
     ];
     writeFileSync(fixtureConfigPath, `${JSON.stringify(fixtureConfig, null, 2)}\n`);
     runGit(fixture, ['add', 'frontend/vercel.mcp-staging.json']);

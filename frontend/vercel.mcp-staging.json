@@ -4,6 +4,10 @@
     {
       "path": "/api/cron/byteplus-poll",
       "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/fal-poll",
+      "schedule": "*/5 * * * *"
     }
   ],
   "headers": [
