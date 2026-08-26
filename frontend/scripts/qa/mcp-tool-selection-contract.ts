@@ -40,6 +40,7 @@ const ALL_EVALUATION_TOOL_NAMES = [...LIVE_TOOL_NAMES, ...FUTURE_GATED_TOOL_NAME
 export const REGISTRY_PROFILES = ['live-read-only', 'future-generation-evaluation'] as const;
 const CAPABILITY_CLAIMS = [
   'account_status_read_only',
+  'account_destinations_read_only',
   'public_model_catalog_read_only',
   'model_details_read_only',
   'model_recommendations_read_only',
@@ -52,6 +53,10 @@ const CAPABILITY_CLAIMS = [
   'future_exact_quote_gated',
   'future_confirmation_gated',
   'future_generation_status_gated',
+  'future_topup_handoff_gated',
+  'future_reference_upload_handoff_gated',
+  'private_media_library_read_only',
+  'generation_library_recovery',
   'model_specific_reference_support',
   'model_specific_audio_support',
   'generation_live',
@@ -74,6 +79,15 @@ export const POLICY_CHECKS = [
   'confirmed_exact_quote_once',
   'ambiguous_approval_no_confirm',
   'recovery_without_resubmit',
+  'account_destination_without_invention',
+  'topup_from_prepared_quote',
+  'funding_requote_before_confirm',
+  'library_recovery_without_resubmit',
+  'private_media_kind_selection',
+  'reference_upload_then_list',
+  'failure_status_without_resubmit',
+  'no_payment_data_or_invented_url',
+  'stale_quote_no_confirm',
 ] as const;
 
 type FixtureCategory = (typeof ALL_FIXTURE_CATEGORIES)[number];

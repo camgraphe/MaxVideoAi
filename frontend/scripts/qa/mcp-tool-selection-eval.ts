@@ -94,8 +94,8 @@ export function computeFixtureContractSha256(
 }
 
 const REQUIRED_POLICY_COVERAGE = {
-  fixtureCount: 35,
-  policyCheckCount: 22,
+  fixtureCount: 46,
+  policyCheckCount: 39,
   requiredChecks: {
     selected_seedance_details: 7,
     i2v_first_last_images: 1,
@@ -103,10 +103,19 @@ const REQUIRED_POLICY_COVERAGE = {
     v2v_source_and_guidance: 1,
     extend_ordered_sources: 1,
     budget_only_no_quote_or_confirm: 3,
-    quote_only_waits_for_approval: 5,
+    quote_only_waits_for_approval: 7,
     confirmed_exact_quote_once: 1,
     ambiguous_approval_no_confirm: 1,
-    recovery_without_resubmit: 1,
+    recovery_without_resubmit: 4,
+    account_destination_without_invention: 2,
+    topup_from_prepared_quote: 1,
+    funding_requote_before_confirm: 1,
+    library_recovery_without_resubmit: 2,
+    private_media_kind_selection: 1,
+    reference_upload_then_list: 1,
+    failure_status_without_resubmit: 1,
+    no_payment_data_or_invented_url: 2,
+    stale_quote_no_confirm: 1,
   },
 } as const;
 
@@ -130,7 +139,9 @@ function assertFixtureContractAndCoverage(
 ): void {
   const expectedHash = computeFixtureContractSha256(fixtures);
   if (bundle.fixtureContractSha256 !== expectedHash) {
-    throw new Error('stale curated fixture contract fingerprint');
+    throw new Error(
+      `stale curated fixture contract fingerprint: expected ${String(bundle.fixtureContractSha256)}, current ${expectedHash}`
+    );
   }
   const actualCoverage = policyCoverage(fixtures);
   if (
@@ -298,7 +309,7 @@ export async function inspectLiveMcpMetadata(): Promise<RegistryEvidence> {
     assertToolDescription(
       'get_account_status',
       toolByName.get('get_account_status')?.description,
-      /charge.*trial.*email.*generate/i
+      /trial.*email.*charge.*generate/i
     );
     assertToolDescription(
       'list_models',

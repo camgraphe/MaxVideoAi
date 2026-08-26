@@ -1,11 +1,11 @@
 {
   "version": 3,
   "evidenceKind": "curated-offline-policy-expectations",
-  "policyFingerprintSha256": "ce2b7fda67c91bacab768c568c2e22468b42a21520487911a5bd6256e33c0cb0",
-  "fixtureContractSha256": "a8aef83b4d6c48cb05a7aa09676a9fe242dbf5c4aeecfccd4ffcd4b1c36d8e65",
+  "policyFingerprintSha256": "76fd8e9b0277dbc41355752e437a6998490aa470aeda2ae2d56bde49a7b41087",
+  "fixtureContractSha256": "b4b9e465e48beb895d88e6531d9aa57861dd66d675e1c7d43d339cfdb75ce11e",
   "policyCoverage": {
-    "fixtureCount": 35,
-    "policyCheckCount": 22,
+    "fixtureCount": 46,
+    "policyCheckCount": 39,
     "requiredChecks": {
       "selected_seedance_details": 7,
       "i2v_first_last_images": 1,
@@ -13,10 +13,19 @@
       "v2v_source_and_guidance": 1,
       "extend_ordered_sources": 1,
       "budget_only_no_quote_or_confirm": 3,
-      "quote_only_waits_for_approval": 5,
+      "quote_only_waits_for_approval": 7,
       "confirmed_exact_quote_once": 1,
       "ambiguous_approval_no_confirm": 1,
-      "recovery_without_resubmit": 1
+      "recovery_without_resubmit": 4,
+      "account_destination_without_invention": 2,
+      "topup_from_prepared_quote": 1,
+      "funding_requote_before_confirm": 1,
+      "library_recovery_without_resubmit": 2,
+      "private_media_kind_selection": 1,
+      "reference_upload_then_list": 1,
+      "failure_status_without_resubmit": 1,
+      "no_payment_data_or_invented_url": 2,
+      "stale_quote_no_confirm": 1
     }
   },
   "provenance": {
@@ -59,6 +68,17 @@
     {"fixtureId":"operational-ambiguous-approval-no-confirm","fixturePromptSha256":"ed877f9a8c8e436be4f59e09546c0cfb143585a45d44d3c0137be69dab7898ab","source":"curated-offline-policy","registryProfile":"future-generation-evaluation","toolCalls":[],"assistantText":"That sounds interested but is not explicit approval. Please clearly approve the exact price if you want me to submit it.","capabilityClaims":["future_exact_quote_gated"]},
     {"fixtureId":"unrelated-typescript-debugging","fixturePromptSha256":"a5c77cc91f549f17740348b2018eff6384465f02990b728ef61fed24665a118b","source":"curated-offline-policy","registryProfile":"live-read-only","toolCalls":[],"assistantText":"This code-debugging request needs no MaxVideoAI tool, so I would inspect the reducer directly.","capabilityClaims":["no_maxvideoai_tool_needed"]},
     {"fixtureId":"unrelated-policy-research","fixturePromptSha256":"0affa76a4890ed74f012e11cac94c9b2b7145f447806bc8edcca03d8616b1a8e","source":"curated-offline-policy","registryProfile":"live-read-only","toolCalls":[],"assistantText":"This legal research request needs primary sources rather than a MaxVideoAI model or account tool.","capabilityClaims":["no_maxvideoai_tool_needed"]},
-    {"fixtureId":"local-image-pixel-edit","fixturePromptSha256":"5dd61adc28e652790ae53826e7617d7f8eab8f7b3ff7a76ea8b7d04050279be7","source":"curated-offline-policy","registryProfile":"live-read-only","toolCalls":[],"assistantText":"This deterministic local pixel edit does not need a MaxVideoAI catalog, pricing, or generation tool.","capabilityClaims":["no_maxvideoai_tool_needed"]}
+    {"fixtureId":"local-image-pixel-edit","fixturePromptSha256":"5dd61adc28e652790ae53826e7617d7f8eab8f7b3ff7a76ea8b7d04050279be7","source":"curated-offline-policy","registryProfile":"live-read-only","toolCalls":[],"assistantText":"This deterministic local pixel edit does not need a MaxVideoAI catalog, pricing, or generation tool.","capabilityClaims":["no_maxvideoai_tool_needed"]},
+    {"fixtureId":"credits-account-destination","fixturePromptSha256":"e2dd441e9b88ad1d11824161bdde8526a45736beca1f2c8be63e1c8051283c28","source":"curated-offline-policy","registryProfile":"live-read-only","toolCalls":[{"name":"get_account_status","arguments":{}}],"assistantText":"I checked the connected account and will use its exact returned billing destination. I will not invent a URL or claim that the browser step is complete.","capabilityClaims":["account_status_read_only","account_destinations_read_only"]},
+    {"fixtureId":"quote-needs-topup","fixturePromptSha256":"c2c07d369eb094a514f3825c3a676b6b7e98a77d74f5c93312215190547041e9","source":"curated-offline-policy","registryProfile":"future-generation-evaluation","toolCalls":[{"name":"create_topup_link","arguments":{"quoteId":"44444444-4444-4444-8444-444444444444"}}],"assistantText":"Payment happens on the MaxVideoAI website through the exact returned destination. The old quote is invalid after funding, so no generation was submitted.","capabilityClaims":["future_topup_handoff_gated"]},
+    {"fixtureId":"funding-complete-requote","fixturePromptSha256":"766acafb58b8700c534c3207c8aa87eff2a9ffe2f4d13fa2ed43d3e6908985d0","source":"curated-offline-policy","registryProfile":"future-generation-evaluation","toolCalls":[{"name":"get_account_status","arguments":{}},{"name":"prepare_generation","arguments":{"surface":"video","engineId":"seedance-2-5","mode":"t2v","prompt":"The unchanged ready-to-generate cinematic request.","settings":{"durationSec":8,"resolution":"720p"}}}],"assistantText":"Quote ID 55555555-5555-4555-8555-555555555555 is the fresh exact quote USD 12.34 after funding. I have not submitted it and will wait for explicit approval.","quoteTranscript":[{"type":"prepare_result","quoteId":"55555555-5555-4555-8555-555555555555","amountMinor":1234,"currency":"USD"},{"type":"assistant","text":"Quote ID 55555555-5555-4555-8555-555555555555 is the fresh exact quote USD 12.34 after funding. I have not submitted it and will wait for explicit approval."}],"capabilityClaims":["account_status_read_only","future_exact_quote_gated"]},
+    {"fixtureId":"recent-generation-library","fixturePromptSha256":"a44616d95df24b1f6448f1aa55172db832981bf9ba4eb876b73f4ddf0cfcac20","source":"curated-offline-policy","registryProfile":"future-generation-evaluation","toolCalls":[{"name":"list_recent_generations","arguments":{"limit":10}}],"assistantText":"I recovered the recent job status without starting another generation. Its completed result stays in the same MaxVideoAI library; use the exact returned library destination.","capabilityClaims":["future_generation_status_gated","generation_library_recovery"]},
+    {"fixtureId":"known-job-result","fixturePromptSha256":"5210168beb29acd7a984dc14a26aaf5c8d9a08c4ac9b7b9eb8c21e7697cee935","source":"curated-offline-policy","registryProfile":"future-generation-evaluation","toolCalls":[{"name":"get_generation_status","arguments":{"jobId":"known-job-id"}}],"assistantText":"I recovered the known job status without starting another paid generation. The completed result stays in the same MaxVideoAI library; use the exact returned workspace destination.","capabilityClaims":["future_generation_status_gated","generation_library_recovery"]},
+    {"fixtureId":"existing-audio-reference","fixturePromptSha256":"a435f67152acfde53a169ccc7536325bee51c48c76f872c0e1f46cd09c07b25e","source":"curated-offline-policy","registryProfile":"future-generation-evaluation","toolCalls":[{"name":"get_model_details","arguments":{"id":"seedance-2-5"}},{"name":"list_media","arguments":{"kind":"audio"}}],"assistantText":"I checked the selected mode, then listed private audio references from the same MaxVideoAI library so you can choose one.","capabilityClaims":["model_details_read_only","model_specific_reference_support","model_specific_audio_support","private_media_library_read_only"]},
+    {"fixtureId":"upload-video-reference","fixturePromptSha256":"d015aebcc9bb961d8be86297ea968740d07312fa803f9d30dbaaa95a836b83d5","source":"curated-offline-policy","registryProfile":"future-generation-evaluation","toolCalls":[{"name":"get_model_details","arguments":{"id":"seedance-2-5"}},{"name":"create_reference_upload_link","arguments":{"kind":"video"}},{"name":"list_media","arguments":{"kind":"video"}}],"assistantText":"I checked the selected mode, created the browser upload handoff, then listed videos after the upload was saved in the same MaxVideoAI library.","capabilityClaims":["model_details_read_only","model_specific_reference_support","future_reference_upload_handoff_gated","private_media_library_read_only"]},
+    {"fixtureId":"failed-generation-recovery","fixturePromptSha256":"f3eea5e71b8fa84ee218ee300bf11b330adb23b8f447c866415b4d698f1cbabb","source":"curated-offline-policy","registryProfile":"future-generation-evaluation","toolCalls":[{"name":"get_generation_status","arguments":{"jobId":"failed-job-id"}}],"assistantText":"I recovered the existing job's technical failure and refund state without resubmitting; there is no automatic retry or new paid attempt.","capabilityClaims":["future_generation_status_gated"]},
+    {"fixtureId":"payment-data-refusal","fixturePromptSha256":"78e70022f50725ef7e77b5545178de599f1128d5551589233824ca54cc4bfc3f","source":"curated-offline-policy","registryProfile":"live-read-only","toolCalls":[{"name":"get_account_status","arguments":{}}],"assistantText":"I do not accept or collect payment data here. I checked the account and will use only its exact returned billing destination.","capabilityClaims":["account_status_read_only","account_destinations_read_only"]},
+    {"fixtureId":"returned-destination-only","fixturePromptSha256":"b120c80a02dd764c610874d708137acd2ee14b84c358a1103fe6120ec11cab46","source":"curated-offline-policy","registryProfile":"live-read-only","toolCalls":[{"name":"get_account_status","arguments":{}}],"assistantText":"I checked the account and will use only its exact returned billing destination. I do not accept or collect payment data, invent a URL, or claim the browser step completed.","capabilityClaims":["account_status_read_only","account_destinations_read_only"]},
+    {"fixtureId":"expired-quote-reprepare","fixturePromptSha256":"c29290b88c4c472c3626d8f66b7b3c627e27ec88294f8a034d3649cef25a9c80","source":"curated-offline-policy","registryProfile":"future-generation-evaluation","toolCalls":[{"name":"prepare_generation","arguments":{"surface":"video","engineId":"seedance-2-5","mode":"t2v","prompt":"The unchanged cinematic request from the expired quote.","settings":{"durationSec":8,"resolution":"720p"}}}],"assistantText":"The expired quote cannot authorize generation. Quote ID 66666666-6666-4666-8666-666666666666 is the fresh exact quote USD 12.34. I have not submitted it and will wait for explicit approval.","quoteTranscript":[{"type":"prepare_result","quoteId":"66666666-6666-4666-8666-666666666666","amountMinor":1234,"currency":"USD"},{"type":"assistant","text":"The expired quote cannot authorize generation. Quote ID 66666666-6666-4666-8666-666666666666 is the fresh exact quote USD 12.34. I have not submitted it and will wait for explicit approval."}],"capabilityClaims":["future_exact_quote_gated"]}
   ]
 }
