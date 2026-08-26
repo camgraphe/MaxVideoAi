@@ -383,6 +383,36 @@ function safeStatus(request: CanonicalGenerationRequest, state = 'accepted'): Ag
   };
 }
 
+function expectedRecovery(request: CanonicalGenerationRequest, state = 'accepted') {
+  const raw = safeStatus(request, state);
+  const { retryAfterSeconds: _retryAfterSeconds, ...safe } = raw;
+  const path = request.surface === 'image' ? '/app/image' : '/app';
+  return {
+    ...safe,
+    result: null,
+    library: {
+      type: 'open_url',
+      purpose: 'media_library',
+      label: 'Open the MaxVideoAI media library',
+      url: 'https://maxvideoai.com/app/library',
+    },
+    workspace: {
+      type: 'open_url',
+      purpose: 'generation',
+      label: `Open this ${request.surface} in MaxVideoAI`,
+      url: `https://maxvideoai.com${path}?job=${QUOTE_ID}`,
+    },
+    savedToLibrary: state === 'completed',
+    retry: state === 'accepted'
+      ? {
+          tool: 'get_generation_status',
+          arguments: { jobId: QUOTE_ID },
+          afterSeconds: 5,
+        }
+      : null,
+  };
+}
+
 type Captures = {
   events: string[];
   providerCalls: number;
@@ -583,7 +613,7 @@ test('confirmed must be literal true and input exact before auth, transaction, w
 test('confirmation performs the binding transaction order and submits video only after commit', async () => {
   const { dependencies, captures } = baseDependencies(videoRequest);
   const result = await confirmGeneration({ quoteId: QUOTE_ID, confirmed: true }, principal, dependencies);
-  assert.deepEqual(result, safeStatus(videoRequest));
+  assert.deepEqual(result, expectedRecovery(videoRequest));
   assert.deepEqual(captures.events, [
     'transaction', 'lock_quote', 'feature', 'restriction', 'catalog', 'membership', 'pricing',
     'spending', 'reserve_video', 'claim_quote', 'provider', 'accepted_quote', 'status',
@@ -595,7 +625,7 @@ test('confirmation performs the binding transaction order and submits video only
 test('image confirmation uses the same atomic path and returns only the safe job DTO', async () => {
   const { dependencies, captures } = baseDependencies(imageRequest);
   const result = await confirmGeneration({ quoteId: QUOTE_ID, confirmed: true }, principal, dependencies);
-  assert.deepEqual(result, safeStatus(imageRequest));
+  assert.deepEqual(result, expectedRecovery(imageRequest));
   assert.equal(captures.events.includes('reserve_image'), true);
   const serialized = JSON.stringify(result);
   for (const forbidden of [
@@ -730,7 +760,7 @@ test('Seedance accepts one frame URL in distinct first and last roles through re
     principal,
     dependencies,
   );
-  assert.deepEqual(result, safeStatus(request));
+  assert.deepEqual(result, expectedRecovery(request));
   assert.equal(captures.events.includes('pricing'), true);
   assert.equal(captures.events.includes('spending'), true);
   assert.equal(captures.events.includes('reserve_video'), true);

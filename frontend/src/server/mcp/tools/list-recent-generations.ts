@@ -26,7 +26,7 @@ export function registerListRecentGenerationsTool(
     {
       title: 'List recent MaxVideoAI generations',
       description:
-        'Use this to recover a bounded page of the connected user’s recent image or video generations and safe public result links.',
+        'Use this to recover a bounded page from the same connected user’s MaxVideoAI library, with recent image or video generations, workspace links, and safe public result links.',
       inputSchema: listRecentGenerationsInputSchema,
       annotations: {
         readOnlyHint: true,

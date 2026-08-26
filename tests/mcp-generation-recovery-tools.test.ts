@@ -127,9 +127,16 @@ test('status facade trims bounded legacy job IDs and rejects invalid input befor
       reads.push(jobId);
       return status({ jobId });
     },
+    accountUrl: 'https://maxvideoai-mcp-staging.vercel.app/account/connections',
   });
   assert.equal(value.jobId, 'legacy-job_42');
   assert.deepEqual(reads, ['legacy-job_42']);
+  assert.equal(value.library.url, 'https://maxvideoai-mcp-staging.vercel.app/app/library');
+  assert.equal(
+    value.workspace.url,
+    'https://maxvideoai-mcp-staging.vercel.app/app?job=legacy-job_42',
+  );
+  assert.equal(value.savedToLibrary, false);
 
   for (const jobId of ['', '   ', 'x'.repeat(257)]) {
     await assert.rejects(
@@ -213,13 +220,15 @@ test('accepted and running recoveries include bounded deterministic status retry
       afterSeconds: expected,
     });
     assert.equal('retryAfterSeconds' in recovery, false);
+    assert.equal(recovery.library.url, 'https://maxvideoai.com/app/library');
+    assert.equal(recovery.workspace.url, 'https://maxvideoai.com/app?job=legacy-job_42');
+    assert.equal(recovery.savedToLibrary, false);
   }
 
   for (const terminal of ['completed', 'failed'] as const) {
-    assert.equal(
-      buildAgentGenerationRecovery(status({ status: terminal, retryAfterSeconds: 5 })).retry,
-      null,
-    );
+    const recovery = buildAgentGenerationRecovery(status({ status: terminal, retryAfterSeconds: 5 }));
+    assert.equal(recovery.retry, null);
+    assert.equal(recovery.savedToLibrary, terminal === 'completed');
   }
 });
 
@@ -243,6 +252,9 @@ test('completed image recoveries bound, deduplicate, and length-limit public URL
   if (recovery.result?.surface !== 'image') assert.fail('expected image result');
   assert.deepEqual(recovery.result.imageUrls, primary.slice(0, 4));
   assert.deepEqual(recovery.result.thumbnailUrls, thumbnails.slice(0, 4));
+  assert.equal(recovery.savedToLibrary, true);
+  assert.equal(recovery.library.url, 'https://maxvideoai.com/app/library');
+  assert.equal(recovery.workspace.url, 'https://maxvideoai.com/app/image?job=legacy-job_42');
   const links = buildGenerationResourceLinks(recovery);
   assert.equal(links.length, 8);
   assert.ok(links.every((link) => link.uri.length <= 2048 && link.uri.startsWith('https://')));
@@ -354,6 +366,7 @@ test('recent facade delegates strict cursor pagination and exact surface/status 
           nextCursor: '2026-07-16T09:00:00.000Z|41',
         };
       },
+      accountUrl: 'https://maxvideoai-mcp-staging.vercel.app/account/connections',
     },
   );
   assert.deepEqual(captured, {
@@ -364,6 +377,11 @@ test('recent facade delegates strict cursor pagination and exact surface/status 
     status: 'completed',
   });
   assert.equal(result.items[0]?.jobId, 'image-job');
+  assert.equal(
+    result.items[0]?.workspace.url,
+    'https://maxvideoai-mcp-staging.vercel.app/app/image?job=image-job',
+  );
+  assert.equal(result.items[0]?.library.url, 'https://maxvideoai-mcp-staging.vercel.app/app/library');
   assert.equal(result.nextCursor, '2026-07-16T09:00:00.000Z|41');
 
   await assert.rejects(
@@ -431,6 +449,14 @@ test('recovery tools expose exact annotations and schemas and cap response resou
   });
   t.after(() => session.close());
   const tools = (await session.client.listTools()).tools;
+  assert.match(
+    tools.find((tool) => tool.name === 'get_generation_status')?.description ?? '',
+    /MaxVideoAI library/i,
+  );
+  assert.match(
+    tools.find((tool) => tool.name === 'list_recent_generations')?.description ?? '',
+    /same connected user.*MaxVideoAI library/i,
+  );
   for (const name of ['get_generation_status', 'list_recent_generations']) {
     const tool = tools.find((candidate) => candidate.name === name);
     assert.ok(tool);
@@ -452,6 +478,10 @@ test('recovery tools expose exact annotations and schemas and cap response resou
   });
   assert.deepEqual(statusInput, { jobId: 'legacy-job_42' });
   assert.equal(statusResult.content.filter((block) => block.type === 'resource_link').length, 4);
+  assert.equal(
+    (statusResult.structuredContent as { library?: { url?: string } })?.library?.url,
+    'https://maxvideoai.com/app/library',
+  );
 
   const recentResult = await session.client.callTool({
     name: 'list_recent_generations',

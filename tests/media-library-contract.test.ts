@@ -65,6 +65,27 @@ test('media library keeps record mapping helpers outside server orchestration', 
   assert.match(recordsSource, /normalizeMediaUrl/);
 });
 
+test('web history and MCP recovery keep one user-owned app_jobs source', () => {
+  const statusSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/src/server/generations/generation-status.ts'),
+    'utf8',
+  );
+  const recentSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/src/server/generations/recent-generations.ts'),
+    'utf8',
+  );
+  const agentSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/src/server/agent-api/generation-status.ts'),
+    'utf8',
+  );
+
+  assert.match(statusSource, /FROM app_jobs[\s\S]*job_id = \$1[\s\S]*user_id = \$2/);
+  assert.match(recentSource, /FROM app_jobs[\s\S]*user_id = \$1/);
+  assert.match(agentSource, /getGenerationStatus/);
+  assert.match(agentSource, /listRecentGenerations/);
+  assert.doesNotMatch(agentSource, /mcp_jobs|agent_jobs/);
+});
+
 test('media library source constraint refresh is serialized in one transaction', () => {
   const source = fs.readFileSync(
     path.join(process.cwd(), 'frontend/src/lib/schema/media-library-schema.ts'),

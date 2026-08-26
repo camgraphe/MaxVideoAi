@@ -90,7 +90,7 @@ export type MaxVideoAiMcpServices = {
   confirmGeneration?(
     input: ConfirmGenerationInput,
     principal: AgentPrincipal,
-  ): Promise<import('@/server/generations/generation-status').AgentGenerationStatus>;
+  ): Promise<AgentGenerationRecovery>;
   getGenerationStatus?(
     input: GetAgentGenerationStatusInput,
     principal: AgentPrincipal,
@@ -137,8 +137,12 @@ export function createDefaultMaxVideoAiMcpServices(
     confirmGeneration: createConfirmGenerationService(config.accountUrl, trialRiskContext, {
       paidGenerationEnabled: () => capabilities.paidGeneration,
     }),
-    getGenerationStatus: (input, principal) => getAgentGenerationStatus(input, principal),
-    listRecentGenerations: (input, principal) => listAgentRecentGenerations(input, principal),
+    getGenerationStatus: (input, principal) => getAgentGenerationStatus(input, principal, {
+      accountUrl: config.accountUrl,
+    }),
+    listRecentGenerations: (input, principal) => listAgentRecentGenerations(input, principal, {
+      accountUrl: config.accountUrl,
+    }),
     createTopupLink: createMcpTopupHandoffService({
       billingBaseUrl: new URL(config.accountUrl).origin,
       ...topupHandoffDeps,

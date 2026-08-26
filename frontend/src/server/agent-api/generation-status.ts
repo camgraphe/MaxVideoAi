@@ -10,7 +10,12 @@ import {
 } from '@/server/generations/recent-generations';
 
 import { AgentApiError } from './errors';
+import {
+  buildAgentAccountDestinations,
+  buildAgentGenerationDestination,
+} from './account-destinations';
 import type { AgentPrincipal } from './principal';
+import type { AgentOpenUrlDestination } from './types';
 import { readTrialJobStatus } from './trial-outcomes';
 
 const MAX_JOB_ID_CHARS = 256;
@@ -22,6 +27,7 @@ const MAX_THUMBNAILS = 4;
 const MAX_RESOURCE_URI_CHARS = 2048;
 const MIN_RETRY_SECONDS = 5;
 const MAX_RETRY_SECONDS = 30;
+const DEFAULT_ACCOUNT_URL = 'https://maxvideoai.com/account/connections';
 
 export type AgentGenerationRetry = {
   tool: 'get_generation_status';
@@ -31,6 +37,9 @@ export type AgentGenerationRetry = {
 
 export type AgentGenerationRecovery = Omit<AgentGenerationStatus, 'retryAfterSeconds' | 'result'> & {
   result: AgentGenerationResult | null;
+  library: AgentOpenUrlDestination;
+  workspace: AgentOpenUrlDestination;
+  savedToLibrary: boolean;
   retry: AgentGenerationRetry | null;
 };
 
@@ -62,11 +71,13 @@ type TrialStatusReader = typeof readTrialJobStatus;
 export type AgentGenerationStatusDependencies = {
   readStatus?: StatusReader;
   readTrialStatus?: TrialStatusReader;
+  accountUrl?: string;
 };
 
 export type AgentRecentGenerationsDependencies = {
   listRecent?: RecentReader;
   readTrialStatus?: TrialStatusReader;
+  accountUrl?: string;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -195,8 +206,12 @@ async function enrichIncludedTrialStatus(
   return { ...status, paymentStatus: 'included_trial', ...trial };
 }
 
-export function buildAgentGenerationRecovery(status: AgentGenerationStatus): AgentGenerationRecovery {
+export function buildAgentGenerationRecovery(
+  status: AgentGenerationStatus,
+  accountUrl = DEFAULT_ACCOUNT_URL,
+): AgentGenerationRecovery {
   const { retryAfterSeconds, ...safeStatus } = status;
+  const destinations = buildAgentAccountDestinations(accountUrl);
   const retry = status.status === 'accepted' || status.status === 'running'
     ? {
         tool: 'get_generation_status' as const,
@@ -207,6 +222,9 @@ export function buildAgentGenerationRecovery(status: AgentGenerationStatus): Age
   return {
     ...safeStatus,
     result: status.status === 'completed' ? boundedResult(status.result) : null,
+    library: destinations.library,
+    workspace: buildAgentGenerationDestination(accountUrl, status.surface, status.jobId),
+    savedToLibrary: status.status === 'completed',
     retry,
   };
 }
@@ -280,11 +298,14 @@ export async function getAgentGenerationStatus(
     jobId,
   });
   if (!status) throw new AgentApiError('JOB_FAILED', 'Generation not found.');
-  return buildAgentGenerationRecovery(await enrichIncludedTrialStatus(
-    status,
-    principal.userId,
-    dependencies.readTrialStatus ?? readTrialJobStatus,
-  ));
+  return buildAgentGenerationRecovery(
+    await enrichIncludedTrialStatus(
+      status,
+      principal.userId,
+      dependencies.readTrialStatus ?? readTrialJobStatus,
+    ),
+    dependencies.accountUrl ?? DEFAULT_ACCOUNT_URL,
+  );
 }
 
 function normalizeRecentInput(input: ListAgentRecentGenerationsInput): Required<
@@ -345,7 +366,10 @@ export async function listAgentRecentGenerations(
     dependencies.readTrialStatus ?? readTrialJobStatus,
   )));
   return {
-    items: enrichedItems.map(buildAgentGenerationRecovery),
+    items: enrichedItems.map((status) => buildAgentGenerationRecovery(
+      status,
+      dependencies.accountUrl ?? DEFAULT_ACCOUNT_URL,
+    )),
     nextCursor: page.nextCursor,
   };
 }

@@ -1,9 +1,10 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod/v4';
 
+import { buildGenerationResourceLinks } from '@/server/agent-api/generation-status';
 import type { AgentPrincipal } from '@/server/agent-api/principal';
 import type { MaxVideoAiMcpServices } from '@/server/mcp/server';
-import { runAgentTool } from '@/server/mcp/tool-result';
+import { runAgentToolWithResourceLinks } from '@/server/mcp/tool-result';
 
 export const confirmGenerationInputSchema = z.object({
   quoteId: z.string().uuid(),
@@ -32,6 +33,9 @@ export function registerConfirmGenerationTool(
         openWorldHint: true,
       },
     },
-    async (input) => runAgentTool(() => services.confirmGeneration!(input, principal)),
+    async (input) => runAgentToolWithResourceLinks(
+      () => services.confirmGeneration!(input, principal),
+      buildGenerationResourceLinks,
+    ),
   );
 }

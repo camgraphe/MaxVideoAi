@@ -16,6 +16,10 @@ import {
 } from './generation-capability-validation';
 import { hashCanonicalGenerationRequest, stableJson } from './generation-normalization';
 import {
+  buildAgentGenerationRecovery,
+  type AgentGenerationRecovery,
+} from './generation-status';
+import {
   assertCanonicalTrialRequest,
   isValidConfirmationMembership,
   requireTrialPrincipal,
@@ -463,19 +467,19 @@ async function readSafeStatus(
   userId: string,
   jobId: string,
   dependencies: ConfirmGenerationDependencies,
-): Promise<AgentGenerationStatus> {
+): Promise<AgentGenerationRecovery> {
   const status = await dependencies.readGenerationStatus({ userId, jobId });
   if (!status || status.jobId !== jobId) {
     throw new AgentApiError('INTERNAL_ERROR', 'The confirmed generation status is unavailable.');
   }
-  return status;
+  return buildAgentGenerationRecovery(status, dependencies.accountUrl);
 }
 
 export async function confirmGeneration(
   input: ConfirmGenerationInput,
   principal: AgentPrincipal,
   dependencies: ConfirmGenerationDependencies,
-): Promise<AgentGenerationStatus> {
+): Promise<AgentGenerationRecovery> {
   assertInput(input);
   requirePrincipal(principal);
 
@@ -530,7 +534,7 @@ export function createConfirmGenerationService(
   accountUrl: string,
   trialRiskContext: TrialRiskRequestContext,
   dependencies: Partial<Omit<ConfirmGenerationDependencies, 'trialRiskContext'>> = {},
-): (input: ConfirmGenerationInput, principal: AgentPrincipal) => Promise<AgentGenerationStatus> {
+): (input: ConfirmGenerationInput, principal: AgentPrincipal) => Promise<AgentGenerationRecovery> {
   const requestContext = requireTrialRiskRequestContext(trialRiskContext);
   const resolved: ConfirmGenerationDependencies = {
     ...defaultDependencies,

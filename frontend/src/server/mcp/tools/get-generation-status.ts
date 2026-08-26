@@ -23,7 +23,7 @@ export function registerGetGenerationStatusTool(
     {
       title: 'Get a MaxVideoAI generation status',
       description:
-        'Use this to recover the safe current state and public result links for one owned generation. It never returns prompts, provider details, or private media.',
+        'Use this to recover the safe current state, MaxVideoAI library destination, workspace link, and public result links for one owned generation. It never returns prompts, provider details, or private media.',
       inputSchema: getGenerationStatusInputSchema,
       annotations: {
         readOnlyHint: true,
