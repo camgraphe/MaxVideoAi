@@ -65,7 +65,7 @@ export function shouldFailVideoJobOnProviderCopyMiss(params: {
   copiedUrl: string | null | undefined;
   currentJobStatus?: string | null | undefined;
 }): boolean {
-  if (params.provider !== 'fal') return false;
+  if (params.provider?.trim().toLowerCase() !== 'fal') return false;
   if (!requireFalProviderVideoCopy()) return false;
   if (params.currentJobStatus?.trim().toLowerCase() === 'completed') return false;
   if (!params.sourceUrl || !/^https?:\/\//i.test(params.sourceUrl)) return false;

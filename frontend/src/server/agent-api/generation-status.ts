@@ -211,6 +211,7 @@ export function buildAgentGenerationRecovery(
   accountUrl = DEFAULT_ACCOUNT_URL,
 ): AgentGenerationRecovery {
   const { retryAfterSeconds, ...safeStatus } = status;
+  const result = status.status === 'completed' ? boundedResult(status.result) : null;
   const destinations = buildAgentAccountDestinations(accountUrl);
   const retry = status.status === 'accepted' || status.status === 'running'
     ? {
@@ -221,10 +222,10 @@ export function buildAgentGenerationRecovery(
     : null;
   return {
     ...safeStatus,
-    result: status.status === 'completed' ? boundedResult(status.result) : null,
+    result,
     library: destinations.library,
     workspace: buildAgentGenerationDestination(accountUrl, status.surface, status.jobId),
-    savedToLibrary: status.status === 'completed',
+    savedToLibrary: result !== null,
     retry,
   };
 }

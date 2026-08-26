@@ -228,7 +228,7 @@ test('accepted and running recoveries include bounded deterministic status retry
   for (const terminal of ['completed', 'failed'] as const) {
     const recovery = buildAgentGenerationRecovery(status({ status: terminal, retryAfterSeconds: 5 }));
     assert.equal(recovery.retry, null);
-    assert.equal(recovery.savedToLibrary, terminal === 'completed');
+    assert.equal(recovery.savedToLibrary, false);
   }
 });
 

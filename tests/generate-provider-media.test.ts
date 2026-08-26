@@ -8,6 +8,7 @@ import {
   resolveProviderMediaState,
 } from '../frontend/app/api/generate/_lib/provider-media';
 import type { GenerateResult } from '../frontend/src/lib/fal';
+import { shouldFailVideoJobOnProviderCopyMiss } from '../frontend/server/provider-output-policy';
 
 const root = process.cwd();
 const routePath = join(root, 'frontend/app/api/generate/route.ts');
@@ -63,6 +64,18 @@ test('provider media helper builds initial state from provider result fallbacks'
       progress: 100,
       providerJobId: 'batch_123',
     }
+  );
+});
+
+test('provider copy policy recognizes the uppercase FAL result-provider mode', () => {
+  assert.equal(
+    shouldFailVideoJobOnProviderCopyMiss({
+      provider: 'FAL',
+      sourceUrl: 'https://v3b.fal.media/files/generated.mp4',
+      copiedUrl: null,
+      currentJobStatus: 'running',
+    }),
+    true,
   );
 });
 
