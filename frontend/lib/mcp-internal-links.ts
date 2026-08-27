@@ -1,6 +1,6 @@
 import mcpPublication from '@/config/mcp-publication.json';
 import { localePathnames, type AppLocale } from '@/i18n/locales';
-import { getMcpPublicationState } from '@/lib/mcp-publication';
+import { getMcpPublicationState, type McpPublicationState } from '@/lib/mcp-publication';
 
 export type McpInternalLinkPlacement =
   | 'home'
@@ -11,6 +11,8 @@ export type McpInternalLinkPlacement =
   | 'comparison'
   | 'examples'
   | 'docs';
+
+export type McpDocsLinkPlacement = 'footer' | 'hub' | 'integration';
 
 type McpPublicationInputs = Parameters<typeof getMcpPublicationState>[0];
 
@@ -47,6 +49,26 @@ const LABELS: Record<AppLocale, Record<McpInternalLinkPlacement, string>> = {
   },
 };
 
+const DOCS_LABELS: Record<AppLocale, Record<McpDocsLinkPlacement, string>> = {
+  en: {
+    footer: 'MCP technical documentation',
+    hub: 'Read the complete MCP technical guide',
+    integration: 'Read the MCP technical guide',
+  },
+  fr: {
+    footer: 'Documentation technique MCP',
+    hub: 'Consulter le guide technique MCP complet',
+    integration: 'Consulter le guide technique MCP',
+  },
+  es: {
+    footer: 'Documentación técnica MCP',
+    hub: 'Consultar la guía técnica MCP completa',
+    integration: 'Consultar la guía técnica MCP',
+  },
+};
+
+const DEFAULT_MCP_PUBLICATION_STATE = getMcpPublicationState(mcpPublication);
+
 export function getMcpInternalLink(
   locale: AppLocale,
   placement: McpInternalLinkPlacement,
@@ -59,5 +81,20 @@ export function getMcpInternalLink(
   return {
     href: `/${[prefix, 'mcp'].filter(Boolean).join('/')}`,
     label: LABELS[locale][placement],
+  };
+}
+
+export function getMcpDocsLink(
+  locale: AppLocale,
+  placement: McpDocsLinkPlacement,
+  publication: McpPublicationState = DEFAULT_MCP_PUBLICATION_STATE,
+): { href: string; label: string } | null {
+  if (!publication.indexable) {
+    return null;
+  }
+  const prefix = localePathnames[locale];
+  return {
+    href: `/${[prefix, 'docs', 'mcp'].filter(Boolean).join('/')}`,
+    label: DOCS_LABELS[locale][placement],
   };
 }

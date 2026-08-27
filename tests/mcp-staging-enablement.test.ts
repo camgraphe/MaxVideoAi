@@ -20,17 +20,26 @@ const operationalStagingEnv = {
   CRON_SECRET: 'test-only-cleanup-secret',
 };
 
+const closedPublication = {
+  transport: false,
+  oauth: false,
+  discovery: false,
+  paidGeneration: false,
+  referenceUploads: false,
+};
+
 test('hosted staging enables only foundation features on the exact staging host', () => {
   const requestHost = 'maxvideoai-mcp-staging.vercel.app';
-  assert.equal(isMcpFoundationFeatureEnabled('transport', stagingEnv, requestHost), true);
-  assert.equal(isMcpFoundationFeatureEnabled('oauth', stagingEnv, requestHost), true);
-  assert.equal(isMcpFoundationFeatureEnabled('discovery', stagingEnv, requestHost), true);
+  assert.equal(isMcpFoundationFeatureEnabled('transport', stagingEnv, requestHost, closedPublication), true);
+  assert.equal(isMcpFoundationFeatureEnabled('oauth', stagingEnv, requestHost, closedPublication), true);
+  assert.equal(isMcpFoundationFeatureEnabled('discovery', stagingEnv, requestHost, closedPublication), true);
 });
 
 test('operational capabilities enable only on the exact hosted staging authority', () => {
   const enabled = resolveMcpRuntimeCapabilities(
     operationalStagingEnv,
     'maxvideoai-mcp-staging.vercel.app',
+    closedPublication,
   );
 
   assert.deepEqual(enabled, { paidGeneration: true, referenceUploads: true });
@@ -39,7 +48,7 @@ test('operational capabilities enable only on the exact hosted staging authority
   for (const host of ['maxvideoai.com', 'www.maxvideoai.com', 'api.maxvideoai.com', 'other.vercel.app']) {
     assert.deepEqual(resolveMcpRuntimeCapabilities({
       ...operationalStagingEnv,
-    }, host), { paidGeneration: false, referenceUploads: false });
+    }, host, closedPublication), { paidGeneration: false, referenceUploads: false });
   }
 });
 
@@ -56,7 +65,7 @@ test('operational staging keeps reference uploads closed without the authenticat
     assert.deepEqual(resolveMcpRuntimeCapabilities({
       ...operationalStagingEnv,
       ...overrides,
-    }, host), { paidGeneration: true, referenceUploads: false });
+    }, host, closedPublication), { paidGeneration: true, referenceUploads: false });
   }
 });
 
@@ -69,7 +78,7 @@ test('operational capabilities reject a differently configured non-production ho
     MCP_STAGING_OPERATIONAL_ENABLED: 'true',
   };
 
-  assert.deepEqual(resolveMcpRuntimeCapabilities(otherHostEnv, 'other.vercel.app'), {
+  assert.deepEqual(resolveMcpRuntimeCapabilities(otherHostEnv, 'other.vercel.app', closedPublication), {
     paidGeneration: false,
     referenceUploads: false,
   });
@@ -82,7 +91,7 @@ test('the operational staging flag cannot widen the local development bypass', (
     MCP_API_HOST: '127.0.0.1:3000',
     MCP_RESOURCE_URL: 'http://127.0.0.1:3000/mcp',
     MCP_STAGING_OPERATIONAL_ENABLED: 'true',
-  }, '127.0.0.1:3000'), {
+  }, '127.0.0.1:3000', closedPublication), {
     paidGeneration: false,
     referenceUploads: false,
   });
@@ -90,23 +99,23 @@ test('the operational staging flag cannot widen the local development bypass', (
 
 test('hosted staging fails closed when the request host is missing, production, or mismatched', () => {
   for (const requestHost of [undefined, null, '', 'maxvideoai.com', 'api.maxvideoai.com', 'other.vercel.app']) {
-    assert.equal(isMcpFoundationFeatureEnabled('transport', stagingEnv, requestHost), false);
+    assert.equal(isMcpFoundationFeatureEnabled('transport', stagingEnv, requestHost, closedPublication), false);
   }
 });
 
 test('hosted staging fails closed without an explicit staging host', () => {
   const { MCP_STAGING_HOST: _stagingHost, ...envWithoutStagingHost } = stagingEnv;
   assert.equal(
-    isMcpFoundationFeatureEnabled('transport', envWithoutStagingHost, 'maxvideoai-mcp-staging.vercel.app'),
+    isMcpFoundationFeatureEnabled('transport', envWithoutStagingHost, 'maxvideoai-mcp-staging.vercel.app', closedPublication),
     false,
   );
 });
 
 test('hosted staging fails closed for missing, mismatched, insecure, and production hosts', () => {
   const requestHost = 'maxvideoai-mcp-staging.vercel.app';
-  assert.equal(isMcpFoundationFeatureEnabled('transport', { ...stagingEnv, MCP_STAGING_ENABLED: 'false' }, requestHost), false);
-  assert.equal(isMcpFoundationFeatureEnabled('transport', { ...stagingEnv, MCP_API_HOST: 'other.vercel.app' }, requestHost), false);
-  assert.equal(isMcpFoundationFeatureEnabled('transport', { ...stagingEnv, MCP_RESOURCE_URL: 'http://maxvideoai-mcp-staging.vercel.app/mcp' }, requestHost), false);
+  assert.equal(isMcpFoundationFeatureEnabled('transport', { ...stagingEnv, MCP_STAGING_ENABLED: 'false' }, requestHost, closedPublication), false);
+  assert.equal(isMcpFoundationFeatureEnabled('transport', { ...stagingEnv, MCP_API_HOST: 'other.vercel.app' }, requestHost, closedPublication), false);
+  assert.equal(isMcpFoundationFeatureEnabled('transport', { ...stagingEnv, MCP_RESOURCE_URL: 'http://maxvideoai-mcp-staging.vercel.app/mcp' }, requestHost, closedPublication), false);
 
   for (const host of ['maxvideoai.com', 'www.maxvideoai.com', 'api.maxvideoai.com']) {
     assert.equal(
@@ -115,7 +124,7 @@ test('hosted staging fails closed for missing, mismatched, insecure, and product
         MCP_STAGING_HOST: host,
         MCP_API_HOST: host,
         MCP_RESOURCE_URL: `https://${host}/mcp`,
-      }, requestHost),
+      }, requestHost, closedPublication),
       false
     );
   }
@@ -129,7 +138,7 @@ test('hosted staging rejects production hosts with a terminal DNS dot', () => {
         MCP_STAGING_HOST: host,
         MCP_API_HOST: host,
         MCP_RESOURCE_URL: `https://${host}/mcp`,
-      }, 'maxvideoai-mcp-staging.vercel.app'),
+      }, 'maxvideoai-mcp-staging.vercel.app', closedPublication),
       false
     );
   }

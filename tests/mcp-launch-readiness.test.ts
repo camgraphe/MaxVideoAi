@@ -9,17 +9,17 @@ const publicationPath = 'frontend/config/mcp-publication.json';
 const fixtureConfigPath = 'tests/fixtures/mcp-launch-publication-states.json';
 const fixtureRunnerPath = 'scripts/run-mcp-launch-fixture.mjs';
 
-test('Task 11 keeps every MCP publication gate fail closed', () => {
+test('the owner-approved production launch publishes MCP while keeping the trial closed', () => {
   const publication = JSON.parse(readFileSync(publicationPath, 'utf8')) as Record<string, boolean>;
   assert.deepEqual(publication, {
-    publicMarketing: false,
-    publicIndexing: false,
-    transport: false,
-    oauth: false,
-    discovery: false,
-    paidGeneration: false,
+    publicMarketing: true,
+    publicIndexing: true,
+    transport: true,
+    oauth: true,
+    discovery: true,
+    paidGeneration: true,
     trial: false,
-    referenceUploads: false,
+    referenceUploads: true,
   });
 });
 

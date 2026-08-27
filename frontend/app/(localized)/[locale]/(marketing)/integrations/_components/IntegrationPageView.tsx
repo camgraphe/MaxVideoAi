@@ -26,7 +26,7 @@ export function IntegrationPageView({
       <IntegrationHeroSection copy={copy} publication={publication} locale={locale} hostProof={hostProof} />
       <IntegrationSetupSection compatibility={compatibility} copy={copy} locale={locale} />
       <IntegrationWorkflowSection copy={copy} publication={publication} />
-      <IntegrationTroubleshootingSection copy={copy} />
+      <IntegrationTroubleshootingSection copy={copy} locale={locale} publication={publication} />
     </div>
   );
 }

@@ -1,10 +1,10 @@
 {
-  "publicMarketing": false,
-  "publicIndexing": false,
-  "transport": false,
-  "oauth": false,
-  "discovery": false,
-  "paidGeneration": false,
+  "publicMarketing": true,
+  "publicIndexing": true,
+  "transport": true,
+  "oauth": true,
+  "discovery": true,
+  "paidGeneration": true,
   "trial": false,
-  "referenceUploads": false
+  "referenceUploads": true
 }

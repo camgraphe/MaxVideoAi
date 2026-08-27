@@ -967,7 +967,7 @@ test('admin manual release action accepts exact same-origin form input only', as
   assert.throws(() => helpers.normalizeManualReleaseFormData!(formData), /input/i);
 });
 
-test('dark-candidate reconciliation stays unscheduled and the operations runbook documents safe recovery', () => {
+test('production release keeps the disabled trial unscheduled and documents safe recovery', () => {
   const vercel = JSON.parse(readFileSync('frontend/vercel.json', 'utf8')) as {
     crons?: Array<{ path?: string; schedule?: string }>;
   };
@@ -1000,6 +1000,14 @@ test('dark-candidate reconciliation stays unscheduled and the operations runbook
   assert.match(runbook, /prompt|media URL|IP|user-agent|fingerprint|OAuth client/i);
 
   const publication = JSON.parse(readFileSync('frontend/config/mcp-publication.json', 'utf8')) as Record<string, unknown>;
-  assert.equal(Object.keys(publication).length, 8);
-  assert.equal(Object.values(publication).every((value) => value === false), true);
+  assert.deepEqual(publication, {
+    publicMarketing: true,
+    publicIndexing: true,
+    transport: true,
+    oauth: true,
+    discovery: true,
+    paidGeneration: true,
+    trial: false,
+    referenceUploads: true,
+  });
 });

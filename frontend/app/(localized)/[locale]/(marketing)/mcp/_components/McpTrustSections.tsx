@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { AppLocale } from '@/i18n/locales';
+import { getMcpDocsLink } from '@/lib/mcp-internal-links';
 import type { McpPublicationState } from '@/lib/mcp-publication';
 import type { McpCompatibilityEvidence } from '../_lib/mcp-compatibility';
 import { formatMcpCheckpointDate } from '../_lib/mcp-compatibility';
@@ -18,6 +19,7 @@ export function McpTrustSections({
   publication: McpPublicationState;
 }) {
   const checkpoint = formatMcpCheckpointDate(locale, compatibility.lastChecked);
+  const docsLink = getMcpDocsLink(locale, 'hub', publication);
   return (
     <div className="border-b border-hairline bg-bg text-text-primary dark:border-white/[0.1] dark:bg-bg dark:text-white">
       <section className="container-page grid max-w-[1120px] gap-4 py-12 lg:grid-cols-2">
@@ -93,7 +95,10 @@ export function McpTrustSections({
           <div className="mt-5 space-y-3">
             {copy.trust.faq.items.map((item) => <details key={item.question} className="rounded-[12px] border border-hairline bg-bg p-4 dark:border-white/[0.14] dark:bg-white/[0.04]"><summary className="cursor-pointer font-semibold text-text-primary dark:text-white">{item.question}</summary><p className="mt-3 text-sm leading-6 text-text-secondary dark:text-white/68">{item.answer}</p></details>)}
           </div>
-          <Link href={copy.trust.support.href} className="mt-6 inline-flex min-h-10 items-center border-b border-hairline text-sm font-semibold text-text-primary hover:border-text-primary dark:border-white/30 dark:text-white dark:hover:border-white">{copy.trust.support.label} →</Link>
+          <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2">
+            {docsLink ? <Link href={docsLink.href} className="inline-flex min-h-10 items-center border-b border-hairline text-sm font-semibold text-text-primary hover:border-text-primary dark:border-white/30 dark:text-white dark:hover:border-white">{docsLink.label} →</Link> : null}
+            <Link href={copy.trust.support.href} className="inline-flex min-h-10 items-center border-b border-hairline text-sm font-semibold text-text-primary hover:border-text-primary dark:border-white/30 dark:text-white dark:hover:border-white">{copy.trust.support.label} →</Link>
+          </div>
         </div>
       </section>
     </div>

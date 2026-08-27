@@ -60,6 +60,28 @@ function createFixture(): string {
   copyFileSync(join(process.cwd(), 'frontend/package.json'), join(fixture, 'frontend/package.json'));
   copyFileSync(join(process.cwd(), 'frontend/vercel.json'), join(fixture, 'frontend/vercel.json'));
 
+  writeFileSync(
+    join(fixture, 'frontend/config/mcp-publication.json'),
+    `${JSON.stringify({
+      publicMarketing: false,
+      publicIndexing: false,
+      transport: false,
+      oauth: false,
+      discovery: false,
+      paidGeneration: false,
+      trial: false,
+      referenceUploads: false,
+    }, null, 2)}\n`,
+  );
+  const fixtureVercelPath = join(fixture, 'frontend/vercel.json');
+  const fixtureVercel = JSON.parse(readFileSync(fixtureVercelPath, 'utf8')) as {
+    crons?: Array<{ path: string; schedule: string }>;
+  };
+  fixtureVercel.crons = (fixtureVercel.crons ?? []).filter(
+    ({ path }) => !path.startsWith('/api/cron/mcp-'),
+  );
+  writeFileSync(fixtureVercelPath, `${JSON.stringify(fixtureVercel, null, 2)}\n`);
+
   const fakeNpx = join(fixture, 'bin/npx');
   writeFileSync(fakeNpx, `#!/usr/bin/env bash
 set -euo pipefail
@@ -129,8 +151,12 @@ function environmentPayload(options: {
 function runPreflight(fixture: string, options: {
   envPayload?: string;
   projectPayload?: string;
+  args?: string[];
 } = {}) {
-  return spawnSync('bash', [join(fixture, 'scripts/preflight-mcp-production-vercel.sh')], {
+  return spawnSync('bash', [
+    join(fixture, 'scripts/preflight-mcp-production-vercel.sh'),
+    ...(options.args ?? []),
+  ], {
     cwd: fixture,
     encoding: 'utf8',
     env: {
@@ -143,6 +169,33 @@ function runPreflight(fixture: string, options: {
   });
 }
 
+function setReleasePublication(fixture: string): void {
+  writeFileSync(
+    join(fixture, 'frontend/config/mcp-publication.json'),
+    `${JSON.stringify({
+      publicMarketing: true,
+      publicIndexing: true,
+      transport: true,
+      oauth: true,
+      discovery: true,
+      paidGeneration: true,
+      trial: false,
+      referenceUploads: true,
+    }, null, 2)}\n`,
+  );
+  const vercelPath = join(fixture, 'frontend/vercel.json');
+  const vercel = JSON.parse(readFileSync(vercelPath, 'utf8')) as {
+    crons?: Array<{ path: string; schedule: string }>;
+  };
+  vercel.crons ??= [];
+  vercel.crons.push({
+    path: '/api/cron/mcp-reference-upload-cleanup',
+    schedule: '*/10 * * * *',
+  });
+  writeFileSync(vercelPath, `${JSON.stringify(vercel, null, 2)}\n`);
+  commitFixture(fixture, 'prepare approved production release');
+}
+
 test('production Vercel preflight checks metadata without leaking environment values', () => {
   const fixture = createFixture();
   try {
@@ -151,6 +204,43 @@ test('production Vercel preflight checks metadata without leaking environment va
     assert.match(result.stdout, /PRODUCTION_VERCEL_PREFLIGHT_OK/);
     assert.doesNotMatch(`${result.stdout}${result.stderr}`, new RegExp(SECRET_SENTINEL));
     assert.doesNotMatch(`${result.stdout}${result.stderr}`, /MUTATION_ATTEMPTED/);
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
+test('production Vercel preflight accepts the approved full release with reference cleanup', () => {
+  const fixture = createFixture();
+  try {
+    setReleasePublication(fixture);
+    const result = runPreflight(fixture, { args: ['--release'] });
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /PUBLICATION_OK mode=release/);
+    assert.match(result.stdout, /CRON_INVENTORY_OK mcp_schedules=1/);
+    assert.match(result.stdout, /PRODUCTION_VERCEL_PREFLIGHT_OK/);
+    assert.doesNotMatch(`${result.stdout}${result.stderr}`, new RegExp(SECRET_SENTINEL));
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
+test('production Vercel release preflight requires the reference cleanup schedule', () => {
+  const fixture = createFixture();
+  try {
+    setReleasePublication(fixture);
+    const vercelPath = join(fixture, 'frontend/vercel.json');
+    const vercel = JSON.parse(readFileSync(vercelPath, 'utf8')) as {
+      crons?: Array<{ path: string; schedule: string }>;
+    };
+    vercel.crons = (vercel.crons ?? []).filter(
+      ({ path }) => path !== '/api/cron/mcp-reference-upload-cleanup',
+    );
+    writeFileSync(vercelPath, `${JSON.stringify(vercel, null, 2)}\n`);
+    commitFixture(fixture, 'remove required reference cleanup');
+
+    const result = runPreflight(fixture, { args: ['--release'] });
+    assert.equal(result.status, 70, result.stderr);
+    assert.equal(result.stderr, 'CRON_INVENTORY_BLOCKED expected=release-reference-cleanup-only\n');
   } finally {
     rmSync(fixture, { recursive: true, force: true });
   }

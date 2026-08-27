@@ -1,24 +1,34 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import mcpPublication from '../frontend/config/mcp-publication.json';
 import { FEATURES } from '../frontend/content/feature-flags';
 import { resolveMcpConfig } from '../frontend/src/server/mcp/config';
 
-test('the common MCP publication source owns every disabled rollout flag', () => {
+test('the common MCP publication source owns the approved production launch state', () => {
   const expected = {
-    publicMarketing: false,
-    publicIndexing: false,
-    transport: false,
-    oauth: false,
-    discovery: false,
-    paidGeneration: false,
+    publicMarketing: true,
+    publicIndexing: true,
+    transport: true,
+    oauth: true,
+    discovery: true,
+    paidGeneration: true,
     trial: false,
-    referenceUploads: false,
+    referenceUploads: true,
   };
 
   assert.deepEqual(mcpPublication, expected);
   assert.deepEqual(FEATURES.mcp, expected);
+});
+
+test('Supabase OAuth server is enabled for the production MCP consent flow', () => {
+  const config = readFileSync('supabase/config.toml', 'utf8');
+  const oauthServer = config.match(/\[auth\.oauth_server\]([\s\S]*?)(?=\n\[|$)/)?.[1] ?? '';
+
+  assert.match(oauthServer, /^enabled = true$/m);
+  assert.match(oauthServer, /^authorization_url_path = "\/oauth\/consent"$/m);
+  assert.match(oauthServer, /^allow_dynamic_registration = true$/m);
 });
 
 test('public REST API references stay disabled while MCP is the only protocol integration', () => {

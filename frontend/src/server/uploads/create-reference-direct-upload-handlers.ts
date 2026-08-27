@@ -38,6 +38,7 @@ type RouteContext = { params: Promise<{ token: string }> };
 const REQUEST_METADATA_LIMIT_BYTES = 16 * 1024;
 const DEFAULT_FINALIZATION_TIMEOUT_MS = 90_000;
 export const MCP_REFERENCE_UPLOAD_CHUNK_BYTES = 3_500_000;
+export const MCP_REFERENCE_PRODUCTION_STORAGE_PREFIX = 'mcp-reference-production/';
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 const SHA_PATTERN = /^[a-f0-9]{64}$/u;
 
@@ -98,12 +99,14 @@ function safeError(error: unknown): NextResponse {
 type CommonDependencies = {
   isEnabled(request: NextRequest): boolean;
   isSameOriginRequest(request: NextRequest): boolean;
+  getStoragePrefix(request: NextRequest): string;
   getRouteAuthContext: typeof getRouteAuthContext;
   withTransaction<T>(callback: (executor: TransactionQueryExecutor) => Promise<T>): Promise<T>;
   now(): Date;
 };
 const commonDefaults: CommonDependencies = {
   isEnabled: () => false, isSameOriginRequest: isSameOriginConsentRequest, getRouteAuthContext,
+  getStoragePrefix: () => MCP_REFERENCE_PRODUCTION_STORAGE_PREFIX,
   withTransaction: (callback) => withDbTransaction(callback), now: () => new Date(),
 };
 
@@ -142,12 +145,13 @@ export function createReferenceUploadStartHandler(overrides: Partial<CommonDepen
       }
       if (sizeBytes > policy.maxBytes) return json({ ok: false, error: 'FILE_TOO_LARGE', maxBytes: policy.maxBytes }, 413);
       const uploadId = randomUUID();
+      const storagePrefix = dependencies.getStoragePrefix(request);
       const attempt = await dependencies.withTransaction(async (executor) => {
         const claimed = await dependencies.claimUploadSessionForUpload({ token, userId }, { executor, randomUUID });
         if (claimed.sessionId !== owned.sessionId || claimed.mediaKind !== owned.mediaKind) throw new Error('Reference upload session changed.');
         const owner = createHash('sha256').update(userId).digest('hex').slice(0, 32);
         return dependencies.createReferenceUploadAttempt({
-          session: claimed, uploadId, storageKey: `mcp-reference-staging/${owner}/${uploadId}`,
+          session: claimed, uploadId, storageKey: `${storagePrefix}${owner}/${uploadId}`,
           fileName, declaredMime, declaredSize: sizeBytes, fileSha256,
           chunkBytes: MCP_REFERENCE_UPLOAD_CHUNK_BYTES,
           totalParts: Math.ceil(sizeBytes / MCP_REFERENCE_UPLOAD_CHUNK_BYTES), mediaKind: claimed.mediaKind,

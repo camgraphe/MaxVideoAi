@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Link, usePathname, type LocalizedLinkHref } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
-import { getMcpInternalLink } from '@/lib/mcp-internal-links';
+import { getMcpDocsLink, getMcpInternalLink } from '@/lib/mcp-internal-links';
 import engineCatalog from '@/config/engine-catalog.json';
 import { MARKETING_FOOTER_EXAMPLES, MARKETING_NAV_BEST_FOR_HUB, MARKETING_NAV_BEST_FOR_USE_CASES } from '@/config/navigation';
 
@@ -171,6 +171,7 @@ export function MarketingFooter() {
   ];
 
   const mcpLink = getMcpInternalLink(locale, 'footer');
+  const mcpDocsLink = getMcpDocsLink(locale, 'footer');
 
   const productLinks: FooterLink[] = [
     {
@@ -191,6 +192,7 @@ export function MarketingFooter() {
     },
     { key: 'models', label: labelFor('footer.sections.product.items.models', 'All models'), href: { pathname: '/models' } },
     ...(mcpLink ? [{ key: 'mcp', label: mcpLink.label, href: mcpLink.href }] : []),
+    ...(mcpDocsLink ? [{ key: 'mcpDocs', label: mcpDocsLink.label, href: mcpDocsLink.href }] : []),
   ];
 
   const companyLinks: FooterLink[] = [

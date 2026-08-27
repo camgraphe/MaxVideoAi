@@ -140,7 +140,17 @@ test('llms response is built deterministically from publication state without a 
   assert.equal(existsSync('frontend/public/llms.txt'), false, 'a static file must not shadow the state-aware route');
 
   const { buildLlmsText } = await import('../frontend/lib/seo/llms-text.ts');
-  const falseText = buildLlmsText(mcpPublication);
+  const falseText = buildLlmsText({
+    publicMarketing: false,
+    publicIndexing: false,
+    transport: false,
+    oauth: false,
+    discovery: false,
+    paidGeneration: false,
+    trial: false,
+    referenceUploads: false,
+  });
+  const releaseText = buildLlmsText(mcpPublication);
   const enabledText = buildLlmsText(enabledPublication);
   const sourceUrls = Object.values(localizedMcpUrls).map(({ en }) => en);
   sourceUrls.forEach((url) => assert.equal(falseText.includes(url), false));
@@ -162,7 +172,7 @@ test('llms response is built deterministically from publication state without a 
   const response = GET();
   assert.equal(response.status, 200);
   assert.match(response.headers.get('content-type') ?? '', /^text\/plain/);
-  assert.equal(await response.text(), falseText);
+  assert.equal(await response.text(), releaseText);
 });
 
 test('host-aware robots blocks the API protocol host and preserves explicit public crawler roles', async () => {

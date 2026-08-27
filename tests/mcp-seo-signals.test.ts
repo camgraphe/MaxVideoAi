@@ -31,6 +31,17 @@ const enabledPublication = {
   referenceUploads: true,
 };
 
+const disabledPublication = {
+  publicMarketing: false,
+  publicIndexing: false,
+  transport: false,
+  oauth: false,
+  discovery: false,
+  paidGeneration: false,
+  trial: false,
+  referenceUploads: false,
+};
+
 type SitemapConfig = {
   additionalPaths: (config: SitemapConfig) => Promise<Array<{ loc: string; alternateRefs?: Array<{ href: string; hreflang: string; hrefIsAbsolute?: boolean }> }>>;
   exclude: string[];
@@ -85,8 +96,8 @@ function parseRobotsGroups(source: string) {
   return groups;
 }
 
-test('checked-in false publication removes every MCP source page from generated sitemap candidates', async () => {
-  const config = loadSitemapConfig(mcpPublication);
+test('disabled publication removes every MCP source page from generated sitemap candidates', async () => {
+  const config = loadSitemapConfig(disabledPublication);
   const entries = await config.additionalPaths(config);
   const sourcePages = entries.filter((entry) => /\/(?:mcp|integrations\/(?:chatgpt|claude|codex)|docs\/mcp)$/.test(entry.loc));
   assert.equal(sourcePages.length, 0);
@@ -207,15 +218,15 @@ test('SSR answer passages cover the integration, price, references, confirmation
   );
   for (const item of Object.values(copy.answers.items)) {
     assert.ok(html.includes(item.title));
-    assert.ok(html.includes(item.gatedBody));
+    assert.ok(html.includes(item.liveBody));
   }
   assert.match(html, /<time[^>]*dateTime="2026-08-26"/);
-  assert.match(html, /current models, real capabilities, budgets, exact pricing/i);
-  assert.match(html, /project planning and model comparisons are free/i);
-  assert.match(html, /review the exact request and price/i);
+  assert.match(html, /current video and image models, real capabilities, pricing/i);
+  assert.match(html, /project budgets are free estimates/i);
+  assert.match(html, /explicit approval of the returned exact quote/i);
   assert.match(html, /remove MaxVideoAI from the assistant/i);
   assert.match(html, /top-up/i);
-  assert.match(html, /same account library/i);
+  assert.match(html, /connected MaxVideoAI account.*private media library/i);
   assert.doesNotMatch(html, /FAQPage|HowTo/);
 
   const viewSource = readFileSync(`${routeRoot}/mcp/_components/McpPageView.tsx`, 'utf8');
@@ -240,8 +251,8 @@ test('AI search crawlers can read public content while training crawlers and pri
   }
 });
 
-test('served llms text stays aligned with the false promotion gate', () => {
-  const source = buildLlmsText(mcpPublication);
+test('served llms text stays aligned with a closed promotion gate', () => {
+  const source = buildLlmsText(disabledPublication);
   for (const path of ['/mcp', '/integrations/chatgpt', '/integrations/claude', '/integrations/codex', '/docs/mcp']) {
     assert.equal(source.includes(`https://maxvideoai.com${path}`), false, `${path} must remain absent while indexable=false`);
   }
@@ -255,7 +266,7 @@ test('contextual MCP links are localized, varied, and absent until the shared ga
   const placements = ['home', 'footer', 'payg', 'models', 'model', 'comparison', 'examples', 'docs'] as const;
   for (const locale of ['en', 'fr', 'es'] as const) {
     for (const placement of placements) {
-      assert.equal(getMcpInternalLink(locale, placement, mcpPublication), null);
+      assert.equal(getMcpInternalLink(locale, placement, disabledPublication), null);
     }
     const links = placements.map((placement) => getMcpInternalLink(locale, placement, enabledPublication));
     assert.ok(links.every(Boolean));
@@ -282,6 +293,57 @@ test('contextual MCP links are localized, varied, and absent until the shared ga
   const navigationSource = readFileSync('frontend/config/navigation.ts', 'utf8');
   assert.match(navigationSource, /getMcpPublicationState\(mcpPublication\)\.indexable/);
   assert.match(navigationSource, /key:\s*['"]ai-video-assistant['"]/);
+});
+
+test('technical MCP documentation is linked from contextual help only after the indexation gate opens', async () => {
+  const { getIntegrationCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
+  );
+  const { IntegrationTroubleshootingSection } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_components/IntegrationTroubleshootingSection.tsx'
+  );
+  const { getMcpPageCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
+  );
+  const { getMcpCompatibilityEvidence } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-compatibility.ts'
+  );
+  const { McpTrustSections } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpTrustSections.tsx'
+  );
+  const hiddenPublication = getMcpPublicationState(disabledPublication);
+  const visiblePublication = getMcpPublicationState(enabledPublication);
+
+  const hiddenIntegration = renderToStaticMarkup(React.createElement(IntegrationTroubleshootingSection, {
+    copy: getIntegrationCopy('fr', 'claude'),
+    locale: 'fr',
+    publication: hiddenPublication,
+  }));
+  const visibleIntegration = renderToStaticMarkup(React.createElement(IntegrationTroubleshootingSection, {
+    copy: getIntegrationCopy('fr', 'claude'),
+    locale: 'fr',
+    publication: visiblePublication,
+  }));
+  assert.equal(hiddenIntegration.includes('/fr/docs/mcp'), false);
+  assert.match(visibleIntegration, /href="\/fr\/docs\/mcp"/);
+  assert.match(visibleIntegration, /guide technique MCP/i);
+
+  const trustProps = {
+    compatibility: getMcpCompatibilityEvidence(),
+    copy: getMcpPageCopy('es'),
+    locale: 'es' as const,
+  };
+  const hiddenHub = renderToStaticMarkup(React.createElement(McpTrustSections, {
+    ...trustProps,
+    publication: hiddenPublication,
+  }));
+  const visibleHub = renderToStaticMarkup(React.createElement(McpTrustSections, {
+    ...trustProps,
+    publication: visiblePublication,
+  }));
+  assert.equal(hiddenHub.includes('/es/docs/mcp'), false);
+  assert.match(visibleHub, /href="\/es\/docs\/mcp"/);
+  assert.match(visibleHub, /Consultar la guía técnica MCP completa/i);
 });
 
 test('GSC baseline records the measured scope, limitations, query groups, and non-overlapping intent owners', () => {

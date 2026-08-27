@@ -1,6 +1,19 @@
 # MCP production deployment runbook
 
-Checked: 2026-08-26
+Checked: 2026-08-27
+
+## Owner-approved direct cutover — 2026-08-27
+
+The product owner approved one complete production cutover instead of the earlier staged dark-release sequence. The
+release state is `publicMarketing=true`, `publicIndexing=true`, `transport=true`, `oauth=true`, `discovery=true`,
+`paidGeneration=true`, `referenceUploads=true`, and `trial=false`. The release must use the production reference-storage
+prefix `mcp-reference-production/`, schedule only the reference-upload cleanup cron, and keep the trial reconciliation cron
+unscheduled. Users must create or connect a MaxVideoAI account and have credits before confirming generation.
+
+This exception changes the order of publication gates, not the safety boundary: record the current production deployment
+before promotion, apply the additive Neon migrations, enable Supabase OAuth, attach `api.maxvideoai.com`, deploy an
+unaliased candidate, then promote that exact candidate. A rollback restores the recorded previous Vercel deployment; do
+not reverse the additive database migrations during an application rollback.
 
 This runbook prepares a reversible production release of the MaxVideoAI remote
 MCP server. It does not authorize a deployment, Vercel alias, DNS change,

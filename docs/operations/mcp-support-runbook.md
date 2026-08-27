@@ -1,13 +1,13 @@
 # MaxVideoAI MCP support and disclosure readiness
 
-Checked: 2026-08-26
-Readiness: **NOT READY FOR PUBLIC PROMOTION**
+Checked: 2026-08-27
+Readiness: **DIRECT PRODUCTION RELEASE APPROVED — CUTOVER IN PROGRESS**
 
-This runbook is the support and disclosure boundary for the controlled MaxVideoAI MCP foundation. It is not a public
-availability announcement or a legal policy. Production defaults to the five
-read-only discovery tools; the isolated staging profile registers 13 user-facing tools
-plus one app-only download-refresh helper listed separately below. Production transport, OAuth, discovery, generation, trial, and
-reference-upload publication remain disabled.
+This runbook is the support and disclosure boundary for the MaxVideoAI MCP production release. It is not a directory
+approval or a legal policy. Production registers 13 user-facing tools plus one app-only download-refresh helper listed
+separately below. Marketing, indexation, transport, OAuth, discovery, paid generation, and reference uploads are approved
+for direct first-party publication. The promotional trial remains disabled: users must sign in and use their MaxVideoAI
+credit balance before confirming a paid generation.
 
 | Tool profile | Exact tool inventory |
 | --- | --- |
@@ -15,25 +15,24 @@ reference-upload publication remain disabled.
 | Operational staging | `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`, `list_media`, `create_reference_upload_link`, `prepare_generation`, `confirm_generation`, `get_generation_status`, `list_recent_generations`, `present_generation`, `create_topup_link` |
 | App-only helper | `get_generation_download` |
 
-The operational inventory is checked-in and tested on the hosted staging
-revision recorded in the host compatibility matrix. This is evidence for the
-tested Claude Desktop and Codex CLI versions only; it is not public-production,
-directory, provider-submission, or fresh-spend evidence.
+The operational inventory is checked-in and tested on the hosted staging revision recorded in the host compatibility
+matrix. This evidence covers the tested Claude Desktop and Codex CLI versions; directory approval and a fresh-spend
+production test remain separate post-cutover evidence.
 
 ## Authoritative checked-in state
 
 | Publication flag | Value | Support consequence |
 | --- | --- | --- |
-| `publicMarketing` | false | Do not direct prospects to the gated acquisition page as a live connection surface. |
-| `publicIndexing` | false | Do not claim that MCP pages are indexed or generally available. |
-| `transport` | false | The production MCP resource is not a live public service. |
-| `oauth` | false | OAuth is controlled-test evidence only. |
-| `discovery` | false | Do not promise automatic client discovery. |
-| `paidGeneration` | false | No connected quote, debit, or generation flow is public. |
+| `publicMarketing` | true | The owned-site MCP and integration pages are part of the production release. |
+| `publicIndexing` | true | Canonical localized MCP pages may be crawled and included in sitemaps. |
+| `transport` | true | The canonical production resource is `https://api.maxvideoai.com/mcp`. |
+| `oauth` | true | Users connect a MaxVideoAI account through the OAuth consent flow. |
+| `discovery` | true | Account, model, recommendation, and budgeting tools are public. |
+| `paidGeneration` | true | Exact quotes and explicitly confirmed wallet-funded generations are public. |
 | `trial` | false | No promotional MCP trial is available. |
-| `referenceUploads` | false | No connected upload or reference-ingestion flow is public. |
+| `referenceUploads` | true | Private reference-upload handoffs are public and use the production storage namespace. |
 
-Additional deployment blockers:
+Post-cutover validation items:
 
 - migration files 30–37 are present locally; the hosted application used quote,
   media, recovery, and handoff paths, but a sanitized schema/admin reconciliation

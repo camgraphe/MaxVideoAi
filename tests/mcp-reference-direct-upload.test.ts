@@ -114,6 +114,67 @@ test('start accepts the exact maximum, rejects one byte over, and returns no rep
   assert.equal(attempts, 1);
 });
 
+test('production reference uploads use the isolated production storage namespace', async () => {
+  let storageKey = '';
+  const handler = createReferenceUploadStartHandler({
+    ...common,
+    async getOwnedUploadSession() { return session({ claimId: null, claimedAt: null }); },
+    async claimUploadSessionForUpload() { return session(); },
+    async createReferenceUploadAttempt(input) {
+      storageKey = input.storageKey;
+      return attempt({ uploadId: input.uploadId, storageKey: input.storageKey });
+    },
+  } as never);
+
+  const response = await handler(jsonRequest('/start', {
+    fileName: 'reference.mp4', declaredMime: 'video/mp4', sizeBytes: 5,
+    fileSha256: 'a'.repeat(64),
+  }), { params: Promise.resolve({ token }) });
+
+  assert.equal(response.status, 200);
+  assert.match(
+    storageKey,
+    /^mcp-reference-production\/[a-f0-9]{32}\/[0-9a-f-]{36}$/u,
+  );
+});
+
+test('hosted staging can inject its dedicated reference storage namespace', async () => {
+  let storageKey = '';
+  const handler = createReferenceUploadStartHandler({
+    ...common,
+    getStoragePrefix: () => 'mcp-reference-staging-isolated/',
+    async getOwnedUploadSession() { return session({ claimId: null, claimedAt: null }); },
+    async claimUploadSessionForUpload() { return session(); },
+    async createReferenceUploadAttempt(input) {
+      storageKey = input.storageKey;
+      return attempt({ uploadId: input.uploadId, storageKey: input.storageKey });
+    },
+  } as never);
+
+  const response = await handler(jsonRequest('/start', {
+    fileName: 'reference.mp4', declaredMime: 'video/mp4', sizeBytes: 5,
+    fileSha256: 'a'.repeat(64),
+  }), { params: Promise.resolve({ token }) });
+
+  assert.equal(response.status, 200);
+  assert.match(storageKey, /^mcp-reference-staging-isolated\//u);
+});
+
+test('production schedules reference cleanup whenever reference uploads are public', () => {
+  const publication = JSON.parse(readFileSync('frontend/config/mcp-publication.json', 'utf8')) as {
+    referenceUploads: boolean;
+  };
+  const vercel = JSON.parse(readFileSync('frontend/vercel.json', 'utf8')) as {
+    crons?: Array<{ path?: string; schedule?: string }>;
+  };
+
+  assert.equal(publication.referenceUploads, true);
+  assert.deepEqual(
+    vercel.crons?.find(({ path }) => path === '/api/cron/mcp-reference-upload-cleanup'),
+    { path: '/api/cron/mcp-reference-upload-cleanup', schedule: '*/10 * * * *' },
+  );
+});
+
 test('JSON metadata is bounded from actual bytes with missing or malformed Content-Length', async () => {
   let claims = 0;
   const handler = createReferenceUploadStartHandler({

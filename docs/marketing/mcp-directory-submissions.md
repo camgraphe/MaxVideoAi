@@ -1,22 +1,22 @@
 # MaxVideoAI MCP distribution packages
 
-Checked: 2026-08-26
-Overall state: **OWNED-SITE LAUNCH CANDIDATE — EXTERNAL DIRECTORIES NOT SUBMITTED**
+Checked: 2026-08-27
+Overall state: **OWNED-SITE DIRECT RELEASE APPROVED — EXTERNAL DIRECTORIES NOT SUBMITTED**
 
 This file prepares evidence and owner decisions only. It does not authorize a submission, account creation, listing,
 deployment, feature-flag change, or use of a third party's marks. Directory rules are current and unstable; recheck all
 linked primary sources on the day an owner authorizes a submission.
 
-Current repository truth: `publicMarketing=false`, `publicIndexing=false`, `transport=false`, `oauth=false`,
-`discovery=false`, `paidGeneration=false`, `trial=false`, and `referenceUploads=false`.
+Current repository truth: `publicMarketing=true`, `publicIndexing=true`, `transport=true`, `oauth=true`,
+`discovery=true`, `paidGeneration=true`, `trial=false`, and `referenceUploads=true`.
 
 The launch product is a 13-tool conversational production profile: free model
 advice and project budgets, private image/video/audio references, exact quotes,
 explicitly approved generation, job recovery, MaxVideoAI top-up, and gallery
 continuity. Controlled staging has real OAuth/tool evidence for Claude Desktop
-1.37937.1 and Codex CLI 0.149.0-alpha.4.3. Final refresh, revocation,
-reconnect, graphical ChatGPT installation, a deliberately small paid result,
-and the production endpoint remain release gates.
+1.37937.1 and Codex CLI 0.149.0-alpha.4.3. Refresh, revocation, reconnect,
+graphical ChatGPT installation, and a deliberately small paid result remain
+post-cutover validation, not blockers to the owner-approved direct release.
 
 ## Acquisition decision
 
@@ -48,8 +48,8 @@ legal document, URL, or publication flag changes.
 | Field | Exact prepared value / state |
 | --- | --- |
 | Product name | **MaxVideoAI**. Do not add “official,” “for Claude,” “for Codex,” or a platform endorsement to the product name. |
-| Canonical landing page | EN `https://maxvideoai.com/mcp`; FR `https://maxvideoai.com/fr/mcp`; ES `https://maxvideoai.com/es/mcp`. All are gated, so they are not submission-ready URLs today. |
-| Canonical endpoint | `https://api.maxvideoai.com/mcp`, a universal Streamable HTTP resource. `transport=false`; it is not presented as live. |
+| Canonical landing page | EN `https://maxvideoai.com/mcp`; FR `https://maxvideoai.com/fr/mcp`; ES `https://maxvideoai.com/es/mcp`. These are enabled for the owned-site direct release; external directory submission remains separate. |
+| Canonical endpoint | `https://api.maxvideoai.com/mcp`, the enabled universal Streamable HTTP production resource. |
 | Domain ownership | Proposed first-party namespace is `com.maxvideoai/maxvideoai`. Ownership of `maxvideoai.com`/the API subdomain must be proven inside each directory's required account, DNS, HTTP, or organization-verification flow. No external verification evidence is recorded here. |
 | Concise description | **Turn ChatGPT, Claude, or Codex into an AI video producer: prepare prompts and references, compare current models, budget a film, approve the exact MaxVideoAI price, generate, and recover the result in your account library.** |
 | Requested scopes | Intended least-privilege identity scopes: `openid`, `email`, `profile`. Never present the Codex default request for `phone` as approved. |
@@ -57,7 +57,7 @@ legal document, URL, or publication flag changes.
 | Terms URLs | EN `https://maxvideoai.com/legal/terms`; FR `https://maxvideoai.com/fr/legal/terms`; ES `https://maxvideoai.com/es/legal/terms`. Directory-specific acceptance remains an authorized-owner action. |
 | Acceptable use URLs | EN `https://maxvideoai.com/legal/acceptable-use`; FR `https://maxvideoai.com/fr/legal/acceptable-use`; ES `https://maxvideoai.com/es/legal/acceptable-use`. The MCP-specific candidate patch remains Legal-owner pending. |
 | Support URLs | EN `https://maxvideoai.com/contact`; FR `https://maxvideoai.com/fr/contact`; ES `https://maxvideoai.com/es/contact`; operational email `support@maxvideoai.com`. Do not add a response-time guarantee. |
-| Current tools | Discovery: `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`. Media and production: `list_media`, `create_reference_upload_link`, `prepare_generation`, `confirm_generation`, `get_generation_status`, `list_recent_generations`, `present_generation`, `create_topup_link`. The presenter is read-only and keeps result-link/library fallback when a host does not render its MCP App. Production publication remains gated. |
+| Current tools | Discovery: `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`. Media and production: `list_media`, `create_reference_upload_link`, `prepare_generation`, `confirm_generation`, `get_generation_status`, `list_recent_generations`, `present_generation`, `create_topup_link`. The presenter is read-only and keeps result-link/library fallback when a host does not render its MCP App. Production publication is enabled for direct installation. |
 | Negative cases | A project estimate is not an exact quote; `prepare_generation` does not debit; `confirm_generation` requires explicit approval of that quote. Payment data never enters chat. The assistant must recover an accepted job instead of submitting a duplicate and must not retry a creative result automatically. Unsupported model modes remain unavailable without disabling supported modes. |
 | Screenshots and demo | **real screenshots and end-to-end demo: NOT AVAILABLE**. `getMcpProof()` is null and no current proof asset may be substituted with provider marketing media or a synthetic testimonial. |
 | Changelog and status | EN `/changelog` and `/status`; FR `/fr/changelog` and `/fr/statut`; ES `/es/changelog` and `/es/estado`. Neither has an MCP-specific entry/component because no live release or monitored MCP health feed exists. |

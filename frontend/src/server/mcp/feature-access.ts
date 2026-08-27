@@ -4,6 +4,7 @@ import { resolveMcpConfig } from '@/server/mcp/config';
 
 export type McpFoundationFeature = 'transport' | 'oauth' | 'discovery';
 export type FeatureEnv = Readonly<Record<string, string | undefined>>;
+export type McpFoundationPublication = Readonly<Record<McpFoundationFeature, boolean>>;
 
 const HOSTED_STAGING_HOST = 'maxvideoai-mcp-staging.vercel.app';
 
@@ -47,8 +48,9 @@ export function isMcpFoundationFeatureEnabled(
   feature: McpFoundationFeature,
   env: FeatureEnv = process.env,
   requestHost?: string | null,
+  publication: McpFoundationPublication = FEATURES.mcp,
 ): boolean {
-  if (FEATURES.mcp[feature]) return true;
+  if (publication[feature]) return true;
   if (isHostedStagingEnabled(env, requestHost)) return true;
   if (env.NODE_ENV === 'production' || env.MCP_LOCAL_ENABLED !== 'true') return false;
 

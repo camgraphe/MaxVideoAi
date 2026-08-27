@@ -126,7 +126,10 @@ async function getLiveToolNames(): Promise<string[]> {
     listModels: unavailable,
     recommendModels: unavailable,
   };
-  const server = createMaxVideoAiMcpServer(principal, services);
+  const server = createMaxVideoAiMcpServer(principal, services, {
+    paidGeneration: false,
+    referenceUploads: false,
+  });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   const client = new Client({ name: 'task-10-readiness', version: '1.0.0' });
   await server.connect(serverTransport);
@@ -157,26 +160,25 @@ test('Task 10 creates separate support and distribution readiness owners', () =>
   assert.match(directory, /^# MaxVideoAI MCP distribution packages/m);
 });
 
-test('readiness remains fail closed and records every checked-false publication gate', () => {
-  const expectedFlags = [
-    'publicMarketing',
-    'publicIndexing',
-    'transport',
-    'oauth',
-    'discovery',
-    'paidGeneration',
-    'trial',
-    'referenceUploads',
-  ];
+test('readiness records the owner-approved direct production publication state', () => {
+  const expected = {
+    publicMarketing: true,
+    publicIndexing: true,
+    transport: true,
+    oauth: true,
+    discovery: true,
+    paidGeneration: true,
+    trial: false,
+    referenceUploads: true,
+  };
 
-  assert.deepEqual(Object.keys(publication), expectedFlags);
-  expectedFlags.forEach((flag) => {
-    assert.equal(publication[flag], false, `${flag} must remain false`);
-    assert.match(support, new RegExp('\\| `' + flag + '` \\| false \\|'));
-    assert.match(directory, new RegExp(`\\b${flag}=false\\b`));
+  assert.deepEqual(publication, expected);
+  Object.entries(expected).forEach(([flag, value]) => {
+    assert.match(support, new RegExp('\\| `' + flag + '` \\| ' + value + ' \\|'));
+    assert.match(directory, new RegExp(`\\b${flag}=${value}\\b`));
   });
 
-  assert.match(support, /NOT READY FOR PUBLIC PROMOTION/);
+  assert.match(support, /DIRECT PRODUCTION RELEASE APPROVED/);
   assert.match(directory, /NOT SUBMITTED/);
   assert.doesNotMatch(directory, /(?:Status|State):\s*(?:approved|listed|live|published)\b/i);
 });
@@ -460,7 +462,7 @@ test('owned-site launch payload is exact, localized, complete, and contains nega
     directory,
     /`get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`/,
   );
-  assert.match(directory, /Production publication remains gated/);
+  assert.match(directory, /Production publication is enabled for direct installation/);
   for (const tool of OPERATIONAL_TOOLS) assert.match(directory, new RegExp(`\\b${tool}\\b`));
   assert.match(directory, /real screenshots and end-to-end demo: NOT AVAILABLE/);
   assert.match(directory, /Owner checklist[\s\S]*Legal[\s\S]*Security[\s\S]*MCP engineering[\s\S]*Growth/);

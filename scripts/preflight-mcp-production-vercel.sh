@@ -30,8 +30,11 @@ REQUIRED_PRODUCTION_ENVIRONMENT=(
   'FAL_POLL_TOKEN'
 )
 
-if (($#)); then
-  printf 'Usage: %s\n' "$0" >&2
+PREFLIGHT_MODE='dark'
+if (($# == 1)) && [[ "$1" == '--release' ]]; then
+  PREFLIGHT_MODE='release'
+elif (($#)); then
+  printf 'Usage: %s [--release]\n' "$0" >&2
   exit 64
 fi
 
@@ -49,27 +52,51 @@ fi
 PUBLICATION_CONFIG="$REPO_ROOT/frontend/config/mcp-publication.json"
 VERCEL_CONFIG="$REPO_ROOT/frontend/vercel.json"
 
-if ! jq -e '
-  . == {
-    "publicMarketing": false,
-    "publicIndexing": false,
-    "transport": false,
-    "oauth": false,
-    "discovery": false,
-    "paidGeneration": false,
-    "trial": false,
-    "referenceUploads": false
-  }
-' "$PUBLICATION_CONFIG" >/dev/null; then
-  printf 'PUBLICATION_BLOCKED expected=all-eight-false\n' >&2
-  exit 67
-fi
-
-if ! jq -e '
-  all((.crons // [])[]; (.path | startswith("/api/cron/mcp-") | not))
-' "$VERCEL_CONFIG" >/dev/null; then
-  printf 'CRON_INVENTORY_BLOCKED expected=no-mcp-crons-while-all-eight-false\n' >&2
-  exit 70
+if [[ "$PREFLIGHT_MODE" == 'dark' ]]; then
+  if ! jq -e '
+    . == {
+      "publicMarketing": false,
+      "publicIndexing": false,
+      "transport": false,
+      "oauth": false,
+      "discovery": false,
+      "paidGeneration": false,
+      "trial": false,
+      "referenceUploads": false
+    }
+  ' "$PUBLICATION_CONFIG" >/dev/null; then
+    printf 'PUBLICATION_BLOCKED expected=all-eight-false\n' >&2
+    exit 67
+  fi
+  if ! jq -e '
+    all((.crons // [])[]; (.path | startswith("/api/cron/mcp-") | not))
+  ' "$VERCEL_CONFIG" >/dev/null; then
+    printf 'CRON_INVENTORY_BLOCKED expected=no-mcp-crons-while-all-eight-false\n' >&2
+    exit 70
+  fi
+else
+  if ! jq -e '
+    . == {
+      "publicMarketing": true,
+      "publicIndexing": true,
+      "transport": true,
+      "oauth": true,
+      "discovery": true,
+      "paidGeneration": true,
+      "trial": false,
+      "referenceUploads": true
+    }
+  ' "$PUBLICATION_CONFIG" >/dev/null; then
+    printf 'PUBLICATION_BLOCKED expected=approved-release\n' >&2
+    exit 67
+  fi
+  if ! jq -e '
+    [(.crons // [])[] | select(.path | startswith("/api/cron/mcp-"))]
+      == [{"path":"/api/cron/mcp-reference-upload-cleanup","schedule":"*/10 * * * *"}]
+  ' "$VERCEL_CONFIG" >/dev/null; then
+    printf 'CRON_INVENTORY_BLOCKED expected=release-reference-cleanup-only\n' >&2
+    exit 70
+  fi
 fi
 
 for package_path in 'package.json' 'frontend/package.json'; do
@@ -158,8 +185,13 @@ if ((ENVIRONMENT_FAILURES)); then
 fi
 
 printf 'PROJECT_OK name=%s rootDirectory=frontend\n' "$PRODUCTION_PROJECT"
-printf 'PUBLICATION_OK all_eight=false\n'
-printf 'CRON_INVENTORY_OK mcp_schedules=0\n'
+if [[ "$PREFLIGHT_MODE" == 'dark' ]]; then
+  printf 'PUBLICATION_OK mode=dark all_eight=false\n'
+  printf 'CRON_INVENTORY_OK mcp_schedules=0\n'
+else
+  printf 'PUBLICATION_OK mode=release trial=false\n'
+  printf 'CRON_INVENTORY_OK mcp_schedules=1\n'
+fi
 printf 'NODE_RUNTIME_OK version=22.x\n'
 printf 'ENVIRONMENT_OK required=%s fal=%s target=production\n' \
   "${#REQUIRED_PRODUCTION_ENVIRONMENT[@]}" \
