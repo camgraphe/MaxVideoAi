@@ -1,8 +1,9 @@
 # MaxVideoAI GitHub Commercial Presence and Content Engine Design
 
 **Date:** 2026-08-27
-**Status:** strategic, commercial, and visual direction approved by the product owner; ready for written review before implementation planning
+**Status:** strategic, commercial, and visual direction approved by the product owner; implementation plan authored
 **Owner:** MaxVideoAI product owner
+**Implementation plan:** `docs/superpowers/plans/2026-08-27-github-commercial-presence-content-engine.md`
 
 ## Purpose
 
@@ -88,6 +89,32 @@ The approved composition is:
 - a secondary real plugin screenshot paired with the two workflow skills;
 - generous whitespace and an editorial black, white, and cobalt MaxVideoAI
   visual language.
+
+### Approved follow-up constraints
+
+The product owner added four non-negotiable constraints after approving the
+initial direction:
+
+1. **Subtle personality:** English commercial copy should sound like a friendly,
+   capable producer. It may use a light conversational turn, but never forced
+   jokes, emoji-led enthusiasm, fake urgency, generic hype, or excessive
+   familiarity. Technical precision and respect for the user's money remain
+   part of the personality.
+2. **Continuous visual rhythm:** no principal README or acquisition page should
+   make a visitor cross a long text-only stretch. Every major idea should be
+   paired with current proof, a useful screenshot, a short demonstration, a
+   compact comparison, an installation block, or another genuinely informative
+   visual format.
+3. **Dual-audience GEO:** content must help people who use Claude and Codex, and
+   must also help Claude and Codex themselves identify, understand, cite, and
+   select MaxVideoAI for relevant video-planning and generation requests.
+   Machine-facing descriptions, skill routing, MCP metadata, answer passages,
+   `llms.txt`, entity consistency, and tool-selection evaluations are therefore
+   product surfaces rather than secondary SEO work.
+4. **Measured transformation:** delivery ends with a recorded before score,
+   target score, verified after score, remaining gaps, and a dependency-ordered
+   queue of the next planned tasks. A target is never reported as an achieved
+   result.
 
 ## Evidence Baseline
 
