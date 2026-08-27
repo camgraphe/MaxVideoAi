@@ -138,9 +138,17 @@ test('launch evidence records local and hosted states, exact limitations, and fu
   assert.equal(existsSync(launchEvidencePath), true, `${launchEvidencePath} should exist`);
   const evidence = readFileSync(launchEvidencePath, 'utf8');
 
-  assert.match(evidence, /Checked:\s*2026-08-26/);
+  assert.match(evidence, /Checked:\s*2026-08-27/);
   for (const state of ['Pass', 'Blocked', 'Not run']) assert.match(evidence, new RegExp(`\\b${state}\\b`));
-  assert.match(evidence, /all eight[^\n]+false/i);
+  assert.match(evidence, /owner-approved direct Production release is live/i);
+  assert.match(evidence, /included trial remains disabled/i);
+  assert.match(evidence, /74b87c25ba735ad8537a3dd84723550459ac13f8/);
+  assert.match(evidence, /dpl_7it4qhV6FfVcf7yjsPsNVnJZQjKa/);
+  assert.match(evidence, /migrations 29–38 were verified/i);
+  assert.match(evidence, /30 and 31 were already present/i);
+  assert.match(evidence, /29 and 32–38 were[\s\S]+applied as one targeted transaction/i);
+  assert.match(evidence, /api\.maxvideoai\.com\/mcp[^\n]+expected HTTP 401/i);
+  assert.match(evidence, /no HTTP 500/i);
   assert.match(evidence, /isolated[^\n]+all-gates-green/i);
   assert.match(evidence, /output\/playwright\//);
   assert.match(evidence, /JavaScript disabled/i);
@@ -149,8 +157,6 @@ test('launch evidence records local and hosted states, exact limitations, and fu
   assert.match(evidence, /Codex host lifecycle[^\n]+Partial pass[^\n]+0\.149\.0-alpha\.4\.3/i);
   assert.match(evidence, /Claude host lifecycle[^\n]+Partial pass[^\n]+1\.37937\.1/i);
   assert.doesNotMatch(evidence, /Revocation\/reconnect passes|explicit[^\n]+login path has safe evidence/i);
-  assert.match(evidence, /migration files 30–37 are present locally/i);
-  assert.match(evidence, /staging application exercised quote, media, recovery, and handoff producers/i);
   assert.doesNotMatch(evidence, /migrations? 30–32 (?:are )?absent|migration[^\n]*\b(?:applied|unapplied)\b/i);
   assert.match(evidence, /Claude Desktop capture proves inline host rendering/i);
   assert.match(evidence, /job-backed newly generated result bundle remains blocked/i);
@@ -158,8 +164,6 @@ test('launch evidence records local and hosted states, exact limitations, and fu
   assert.match(evidence, /later[\s\S]+inline-host UI[\s\S]+621881dae621e9aec1d68a2a86f5065c6325cdb8[\s\S]+dpl_3i6XgnZ6KVCZmQPhhKBrHDVrm1TD/i);
   assert.match(evidence, /still image alone does not demonstrate playback/i);
   assert.match(evidence, /GSC[^\n]+post-deployment/i);
-  assert.match(evidence, /no production|production was not changed|production[^\n]+not probed/i);
-  assert.match(evidence, /not ready for public promotion/i);
   assert.match(evidence, /qa:mcp-launch:gated/);
   assert.match(evidence, /qa:mcp-launch:preview/);
   assert.match(evidence, /qa:mcp-launch:enabled/);
