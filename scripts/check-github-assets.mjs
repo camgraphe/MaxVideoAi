@@ -154,13 +154,21 @@ function addUsage(collected, assetReference, metadata, readmePath, rootDirectory
   collected.set(assetPath, entry);
 }
 
+function normalizeReferenceLabel(label) {
+  return label.trim().replace(/\s+/g, ' ').toLowerCase();
+}
+
 export function findReadmeImageUsages(markdown, readmePath, rootDirectory = repositoryRoot) {
   const collected = new Map();
   const definitions = new Map();
-  for (const match of markdown.matchAll(/^\s*\[([^\]]+)\]:\s*(<[^>]+>|\S+)(?:\s+.*)?$/gm)) definitions.set(match[1].trim().toLowerCase(), match[2]);
+  for (const match of markdown.matchAll(/^\s*\[([^\]]+)\]:\s*(<[^>]+>|\S+)(?:\s+.*)?$/gm)) definitions.set(normalizeReferenceLabel(match[1]), match[2]);
   for (const match of markdown.matchAll(/!\[([^\]]*)\]\((<[^>]+>|[^\s)]+)(?:\s+[^)]*)?\)/g)) addUsage(collected, match[2], { source: 'markdown_inline', alt: match[1], role: null }, readmePath, rootDirectory);
   for (const match of markdown.matchAll(/!\[([^\]]*)\]\[([^\]]*)\]/g)) {
-    const id = (match[2] || match[1]).trim().toLowerCase();
+    const id = normalizeReferenceLabel(match[2] || match[1]);
+    if (definitions.has(id)) addUsage(collected, definitions.get(id), { source: 'markdown_reference', alt: match[1], role: null }, readmePath, rootDirectory);
+  }
+  for (const match of markdown.matchAll(/!\[([^\]]+)\](?![\[(])/g)) {
+    const id = normalizeReferenceLabel(match[1]);
     if (definitions.has(id)) addUsage(collected, definitions.get(id), { source: 'markdown_reference', alt: match[1], role: null }, readmePath, rootDirectory);
   }
   for (const match of markdown.matchAll(/<(img|source)\b[\s\S]*?>/gi)) {

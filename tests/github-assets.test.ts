@@ -59,17 +59,44 @@ function jpeg(width = 7, height = 5): Buffer {
   return Buffer.concat([Buffer.from([0xff, 0xd8]), sof, sos, Buffer.from([0x7f, 0xff, 0xd9])]);
 }
 
-function webp(width = 9, height = 4): Buffer {
-  const chunk = Buffer.alloc(14);
-  chunk.write('VP8L', 0, 'ascii');
-  chunk.writeUInt32LE(5, 4);
-  chunk[8] = 0x2f;
-  chunk.writeUInt32LE(((height - 1) << 14) | (width - 1), 9);
+function webpChunk(type: string, data: Buffer): Buffer {
+  const chunk = Buffer.alloc(8 + data.length + (data.length % 2));
+  chunk.write(type, 0, 'ascii');
+  chunk.writeUInt32LE(data.length, 4);
+  data.copy(chunk, 8);
+  return chunk;
+}
+
+function webpContainer(...chunks: Buffer[]): Buffer {
+  const payload = Buffer.concat(chunks);
   const buffer = Buffer.alloc(12);
   buffer.write('RIFF', 0, 'ascii');
-  buffer.writeUInt32LE(18, 4);
+  buffer.writeUInt32LE(payload.length + 4, 4);
   buffer.write('WEBP', 8, 'ascii');
-  return Buffer.concat([buffer, chunk]);
+  return Buffer.concat([buffer, payload]);
+}
+
+function webp(width = 9, height = 4, payload = Buffer.from([0])): Buffer {
+  const header = Buffer.alloc(5);
+  header[0] = 0x2f;
+  header.writeUInt32LE(((height - 1) << 14) | (width - 1), 1);
+  return webpContainer(webpChunk('VP8L', Buffer.concat([header, payload])));
+}
+
+function webpVp8(width = 7, height = 5, partition = Buffer.from([0])): Buffer {
+  const frame = Buffer.alloc(10);
+  frame[0] = 0x30;
+  frame.set([0, 0, 0x9d, 0x01, 0x2a], 1);
+  frame.writeUInt16LE(width, 6);
+  frame.writeUInt16LE(height, 8);
+  return webpContainer(webpChunk('VP8 ', Buffer.concat([frame, partition])));
+}
+
+function webpVp8X(width = 9, height = 4, payload = webp(width, height).subarray(12)): Buffer {
+  const header = Buffer.alloc(10);
+  header.writeUIntLE(width - 1, 4, 3);
+  header.writeUIntLE(height - 1, 7, 3);
+  return webpContainer(webpChunk('VP8X', header), payload);
 }
 
 function runGit(root: string, argumentsList: string[]): string {
@@ -139,13 +166,18 @@ test('reads structurally complete PNG, JPEG, and WebP dimensions and rejects mal
   assert.deepEqual(readImageDimensions(png()), { width: 3, height: 2, format: 'png' });
   assert.deepEqual(readImageDimensions(jpeg()), { width: 7, height: 5, format: 'jpeg' });
   assert.deepEqual(readImageDimensions(webp()), { width: 9, height: 4, format: 'webp' });
+  assert.deepEqual(readImageDimensions(webpVp8()), { width: 7, height: 5, format: 'webp' });
+  assert.deepEqual(readImageDimensions(webpVp8X()), { width: 9, height: 4, format: 'webp' });
   assert.throws(() => readImageDimensions(Buffer.from('not-an-image')), /unsupported|malformed/i);
   assert.throws(() => readImageDimensions(png().subarray(0, -12)), /missing|malformed/i);
   const corruptPng = png();
   corruptPng[corruptPng.length - 1] ^= 0xff;
   assert.throws(() => readImageDimensions(corruptPng), /malformed/i);
   assert.throws(() => readImageDimensions(jpeg().subarray(0, 21)), /malformed/i);
-  assert.throws(() => readImageDimensions(Buffer.concat([Buffer.from('RIFF\x0a\0\0\0WEBPVP8X', 'binary'), Buffer.alloc(10)])), /malformed/i);
+  assert.throws(() => readImageDimensions(webp(9, 4, Buffer.alloc(0))), /malformed/i);
+  assert.throws(() => readImageDimensions(webpVp8(7, 5, Buffer.alloc(0))), /malformed/i);
+  assert.throws(() => readImageDimensions(webpVp8X(9, 4, Buffer.alloc(0))), /malformed/i);
+  assert.throws(() => readImageDimensions(webp().subarray(0, -1)), /malformed/i);
 });
 
 test('requires current, review-signed proof provenance from real ancestor revisions', () => {
@@ -247,6 +279,8 @@ test('scans both production README paths, reference Markdown, HTML, and every sr
     fixture.rootAsset.placements.push('plugin_readme');
     assert.deepEqual(validateReleaseReadmeAssets(manifest, { repositoryRoot: fixture.root, now }), []);
 
+    writeFileSync(rootReadme, '![Hero]\n\n[hero]: assets/unregistered.png\n');
+    assert.match(validateReleaseReadmeAssets(manifest, { repositoryRoot: fixture.root, now }).join('\n'), /README.md.*unregistered/i);
     writeFileSync(rootReadme, '![Missing root visual](assets/unregistered.png)\n');
     assert.match(validateReleaseReadmeAssets(manifest, { repositoryRoot: fixture.root, now }).join('\n'), /README.md.*unregistered/i);
     writeFileSync(rootReadme, '![Workflow proof][workflow]\n\n[workflow]: assets/workflow.png\n');
