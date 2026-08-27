@@ -34,6 +34,8 @@ Every route connects to `https://api.maxvideoai.com/mcp`. Add the URL exactly as
 
 **Live model choice.** Ask for current model facts and comparable, named production budgets before spending credits. MaxVideoAI reads the live catalogue instead of shipping a copied model list or static prices.
 
+**Reviewed prompting guidance, grounded in live product truth.** When a reviewed official provider prompting guide is available for the selected model, the assistant can use it to shape a stronger request. MaxVideoAI's live model details still remain authoritative for current capabilities, settings, availability, and pricing.
+
 **An exact-price approval boundary.** A project budget helps you choose a direction. A prepared generation returns the exact quote for the selected model and settings. Nothing is submitted as paid work until you explicitly approve that quote. One approval authorizes exactly one paid attempt.
 
 **Recovery with Library continuity.** If a response is interrupted after submission, check the accepted job before doing anything new. Recover the completed result or refunded outcome without creating a duplicate paid attempt. Private references and completed work remain in the connected MaxVideoAI Library.

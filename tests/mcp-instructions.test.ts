@@ -91,6 +91,10 @@ test('instructions never advertise paid generation when its gate is closed', asy
   assert.match(instructions, /mixed-model.*shot.*rationale/i);
   assert.match(instructions, /aspectRatios.*empty.*omit aspectRatio/i);
   assert.match(instructions, /aspectRatios.*non-empty.*supported aspectRatio/i);
+  assert.match(instructions, /promptingSources.*official provider.*prompt/i);
+  assert.match(instructions, /promptingSources.*empty.*do not invent/i);
+  assert.match(instructions, /promptingSources.*empty.*(?:web search|browse)/i);
+  assert.match(instructions, /provider.*(?:guide|source).*not.*MaxVideoAI.*(?:availability|pricing)/i);
   assert.match(instructions, /generation is not available/i);
   assert.doesNotMatch(instructions, /use prepare_generation/i);
   assert.doesNotMatch(instructions, /present_generation/i);
@@ -111,6 +115,8 @@ test('instructions describe the exact quote and confirmation flow when paid gene
   assert.match(instructions, /do not automatically retry/i);
   assert.match(instructions, /complete.*chosen request.*prepare_generation/i);
   assert.match(instructions, /display.*exact (?:price|quote).*wait.*explicit.*approval/i);
+  assert.match(instructions, /required.*private.*(?:reference|asset).*missing.*exact quote.*estimate/i);
+  assert.match(instructions, /expiresAt.*UTC.*QUOTE_EXPIRED/i);
   assert.match(instructions, /ambiguous.*(?:reply|approval|assent).*not.*confirmation/i);
   assert.match(instructions, /get_generation_status.*list_recent_generations.*rather than.*second paid/i);
   assert.match(instructions, /returned.*(?:account|upload|top-up|approval).*URL/i);
@@ -143,6 +149,7 @@ test('instructions cover all video workflows and distinguish private media selec
   assert.match(instructions, /use create_reference_upload_link/i);
   assert.match(instructions, /requested (?:image|media) kind/i);
   assert.match(instructions, /short-lived.*browser handoff/i);
+  assert.match(instructions, /create_reference_upload_link.*(?:fails|denied|unavailable).*?(?:host attachment|local attachment)/i);
   assert.match(instructions, /does not create reference (?:images|media)/i);
   assert.match(instructions, /upload.*saved.*same connected MaxVideoAI library.*list_media/is);
 });

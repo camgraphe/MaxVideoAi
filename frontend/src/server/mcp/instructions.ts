@@ -23,6 +23,9 @@ export function buildMaxVideoAiMcpInstructions(
     'For multi-shot work, the host may compose one or more named single- or mixed-model proposals and use calculate_project_budget.',
     'Use a mixed-model proposal only when it serves the brief or budget, and give every mixed-model shot a factual rationale. Do not force model diversity or dilute a quality-first plan merely to add a cheaper option.',
     'Read get_model_details for the selected mode and use its exact required fields, settings, reference counts, media kinds, per-file and combined reference durations, and limits; never copy them from another model or mode.',
+    'When get_model_details returns promptingSources and the user asks for prompt help, use only the relevant reviewed official provider source and share its returned URL when useful.',
+    'When promptingSources is empty, say that no reviewed official source was returned; do not invent a provider guide or URL and do not substitute web search or browsing.',
+    'A provider guide informs prompt craft; it is not authoritative for MaxVideoAI availability, settings, pricing, or execution. Live MaxVideoAI details remain authoritative for those facts.',
     'For video modes exposed by live details: t2v is text to video; i2v and i2v_standard animate a first or source image and may accept a last or end frame, with i2v_standard identifying a lower-cost Standard route when published; ref2v uses supported image, video, and audio references; fl2v requires first_frame and last_frame images; v2v edits a source video; r2v uses ordered reference videos; extend uses ordered source clips; a2v follows owned source audio; retake replaces part of an owned source clip; reframe changes the canvas of an owned source clip.',
     'Read every returned reference field’s canonical roles, assetRequired value, and optional assetRequiredWhen condition. When either requirement applies to the chosen settings, select or upload a private MaxVideoAI asset and never substitute a public HTTPS URL.',
     'For GPT Image 2 edits, send ordinary edit images with source or reference roles and an optional mask image with the mask role. When resolution is custom, send both imageWidth and imageHeight from the live model constraints.',
@@ -40,6 +43,7 @@ export function buildMaxVideoAiMcpInstructions(
     instructions.push(
       'Use list_media and filter by media kind to select existing private MaxVideoAI image, video, and audio assets. Do not upload files with list_media or expose private source URLs.',
       'MaxVideoAI accepts and manages reference media but does not create reference media. When a new private asset is needed, use create_reference_upload_link with the requested media kind (image, video, or audio) and ask the user to open its short-lived MaxVideoAI browser handoff before calling list_media for that kind again.',
+      'If create_reference_upload_link fails, is denied, or is unavailable, explain that the MaxVideoAI upload handoff could not be created and ask the user to authorize or retry it; never substitute a host attachment or local attachment.',
       'After the upload is saved to the same connected MaxVideoAI library, call list_media for that media kind and let the user choose the private asset.',
     );
   }
@@ -47,6 +51,8 @@ export function buildMaxVideoAiMcpInstructions(
   if (capabilities.paidGeneration) {
     instructions.push(
       'When the complete chosen request is ready, use prepare_generation to validate it and obtain its exact price before any paid action.',
+      'When a required private reference or asset is missing, an exact quote cannot be created yet. A project budget may be shown only as an estimate and never as the exact quote.',
+      'Treat the returned expiresAt timestamp as UTC. Do not declare a quote expired from a local-date comparison; report definitive expiry only when MaxVideoAI returns QUOTE_EXPIRED.',
       'Display the exact price returned by prepare_generation and wait for explicit user approval—explicit user confirmation—of that exact quote, then use confirm_generation once with its quoted identifier. An ambiguous reply or assent is not confirmation.',
       'That confirmation authorizes exactly one paid attempt and is consumed whether the job is accepted, failed, or refunded. A refund or recredit does not restore the authorization. Every replacement attempt requires prepare_generation, a fresh exact quote, and new explicit user approval.',
       'If an exact quote has insufficient credits, use create_topup_link with that quote. Payment happens only on the MaxVideoAI website through the exact returned destination, and the old quote becomes invalid.',

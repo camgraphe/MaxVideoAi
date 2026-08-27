@@ -1,7 +1,7 @@
 ---
 name: plan
 description: |
-  Plan, compare, and budget AI video or image production with live MaxVideoAI model facts. Use when: "which model should I use", "compare AI video models", "plan a short film", "budget these shots", "give me quality and lower-cost options", or when a creative brief needs an executable model shortlist before generation. Chain to generate only after the user selects a concrete request. NOT for: confirming a paid quote, launching a generation, following an existing job, or recovering a prior attempt (use generate).
+  Plan, compare, and budget AI video or image production with live MaxVideoAI model facts. Use when: "which model should I use", "compare AI video models", "plan a short film", "budget these shots", "give me quality and lower-cost options", or when a creative brief needs an executable model shortlist before generation. Chain to generate after the user selects a concrete request. NOT for: an exact single-request price or quote, confirming a paid quote, launching a generation, following an existing job, or recovering a prior attempt (use generate).
 ---
 
 # Plan with MaxVideoAI
@@ -35,6 +35,13 @@ If this skill conflicts with a live result, the live result wins.
 - **Multi-shot project:** define named proposals, then validate each with
   `calculate_project_budget` using the same intended output and attempt
   assumptions.
+- **Exact single-request price or quote:** use `generate`. A project estimate is
+  not an exact quote and must not be presented as one.
+
+When a local image, video, or audio file is needed as a typed input for the
+intended generation, use `generate` for the private MaxVideoAI upload workflow,
+even if model selection is still open. Do not suggest a host attachment as the
+generation input.
 
 Quality is not a single setting. Clarify only the dimension that changes the
 choice: story coherence, motion, identity or reference fidelity, audio,
@@ -50,6 +57,14 @@ environmental distinction instead of calling the model retired everywhere.
 Use `get_model_details` before relying on modes, required fields, settings,
 reference roles or counts, audio policy, aspect ratios, duration, or limits.
 Never copy a setting from a sibling model or another mode.
+
+When the user wants help writing or improving a prompt, use `promptingSources`
+from the selected model details. These are reviewed official provider sources;
+share only the relevant returned link. If `promptingSources` is empty, say that
+no reviewed source was returned; do not invent one or substitute web search or
+browsing. A provider guide informs
+prompt craft, not MaxVideoAI availability, settings, pricing, or execution; the
+live MaxVideoAI details remain authoritative for those facts.
 
 Treat any model as the best executable fit only when the live recommendation
 and details support the user's priorities. This is a contextual decision, not

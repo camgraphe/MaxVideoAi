@@ -168,10 +168,18 @@ test('planning and execution skills preserve distinct decisions and paid-action 
   assert.match(plan, /best\s+executable\s+fit[\s\S]{0,80}first/i);
   assert.match(plan, /distinct model famil/i);
   assert.match(plan, /calculate_project_budget.*before.*(?:cheaper|lower-cost)/is);
+  assert.match(plan, /exact.*(?:price|quote).*generate/is);
+  assert.match(plan, /local.*(?:image|video|audio).*generate.*host attachment/is);
+  assert.match(plan, /promptingSources.*official provider/is);
+  assert.match(plan, /promptingSources.*empty.*(?:do not invent|no reviewed source)/is);
+  assert.match(plan, /promptingSources.*empty.*(?:web search|browse)/is);
   assert.doesNotMatch(plan, /\bconfirm_generation\b/);
 
   assert.match(generate, /get_model_details/);
   assert.match(generate, /list_media.*create_reference_upload_link/is);
+  assert.match(generate, /create_reference_upload_link.*(?:fails|denied|unavailable).*?(?:host attachment|local attachment)/is);
+  assert.match(generate, /required.*(?:reference|asset).*missing.*exact quote.*estimate/is);
+  assert.match(generate, /expiresAt.*UTC.*QUOTE_EXPIRED/is);
   assert.match(generate, /image.*video.*audio.*reference/is);
   assert.match(generate, /prepare_generation.*confirm_generation/is);
   assert.match(generate, /exact (?:price|quote).*explicit.*approval/is);
@@ -185,6 +193,9 @@ test('planning and execution skills preserve distinct decisions and paid-action 
   assert.match(generate, /insufficient.*credits.*create_topup_link/is);
   assert.match(generate, /after.*fund.*get_account_status.*prepare_generation/is);
   assert.match(generate, /same connected MaxVideoAI library/is);
+  assert.match(generate, /promptingSources.*official provider/is);
+  assert.match(generate, /promptingSources.*(?:empty|none).*?(?:web search|browse)/is);
+  assert.match(generate, /provider.*(?:guide|source).*not.*(?:availability|price|pricing)/is);
 });
 
 test('the package explains the customer-facing account and library journey', () => {

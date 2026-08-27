@@ -1,0 +1,101 @@
+[
+  {
+    "id": "google-gemini-omni-video",
+    "provider": "Google",
+    "title": "Generate and edit videos with Gemini Omni Flash",
+    "url": "https://ai.google.dev/gemini-api/docs/omni",
+    "modelIds": ["gemini-omni-flash"],
+    "modes": ["t2v", "i2v", "ref2v", "fl2v", "v2v", "extend"],
+    "reviewedAt": "2026-08-28"
+  },
+  {
+    "id": "google-veo-3-1-prompting",
+    "provider": "Google",
+    "title": "Ultimate prompting guide for Veo 3.1",
+    "url": "https://cloud.google.com/blog/products/ai-machine-learning/ultimate-prompting-guide-for-veo-3-1",
+    "modelIds": ["veo-3-1", "veo-3-1-fast", "veo-3-1-lite"],
+    "modes": ["t2v", "i2v", "ref2v", "fl2v", "extend"],
+    "reviewedAt": "2026-08-28"
+  },
+  {
+    "id": "google-gemini-image-generation",
+    "provider": "Google",
+    "title": "Gemini image generation guide",
+    "url": "https://ai.google.dev/gemini-api/docs/image-generation",
+    "modelIds": ["nano-banana", "nano-banana-lite", "nano-banana-pro", "nano-banana-2"],
+    "modes": ["t2i", "i2i"],
+    "reviewedAt": "2026-08-28"
+  },
+  {
+    "id": "openai-gpt-image-prompting",
+    "provider": "OpenAI",
+    "title": "GPT Image prompting guide",
+    "url": "https://developers.openai.com/cookbook/examples/multimodal/image-gen-models-prompting-guide",
+    "modelIds": ["gpt-image-2"],
+    "modes": ["t2i", "i2i"],
+    "reviewedAt": "2026-08-28"
+  },
+  {
+    "id": "openai-sora-video-generation",
+    "provider": "OpenAI",
+    "title": "Sora video generation guide",
+    "url": "https://developers.openai.com/api/docs/guides/video-generation",
+    "modelIds": ["sora-2", "sora-2-pro"],
+    "modes": ["t2v", "i2v"],
+    "reviewedAt": "2026-08-28"
+  },
+  {
+    "id": "byteplus-seedance-2-0-prompting",
+    "provider": "BytePlus",
+    "title": "Dreamina Seedance 2.0 series prompt guide",
+    "url": "https://docs.byteplus.com/api/docs/ModelArk/2222480",
+    "modelIds": ["seedance-2-0", "seedance-2-0-fast", "seedance-2-0-mini"],
+    "modes": ["t2v", "i2v", "ref2v", "v2v", "r2v", "extend"],
+    "reviewedAt": "2026-08-28"
+  },
+  {
+    "id": "byteplus-seedance-2-5-prompting",
+    "provider": "BytePlus",
+    "title": "Dreamina Seedance 2.5 prompt guide",
+    "url": "https://docs.byteplus.com/en/docs/ModelArk/2607689",
+    "modelIds": ["seedance-2-5"],
+    "modes": ["t2v", "i2v", "ref2v", "v2v", "r2v", "extend"],
+    "reviewedAt": "2026-08-28"
+  },
+  {
+    "id": "byteplus-seedream-prompting",
+    "provider": "BytePlus",
+    "title": "Seedream 4.0–5.0 prompt guide",
+    "url": "https://docs.byteplus.com/en/docs/ModelArk/1829186",
+    "modelIds": ["seedream", "seedream-5-0-pro"],
+    "modes": ["t2i", "i2i"],
+    "reviewedAt": "2026-08-28"
+  },
+  {
+    "id": "minimax-video-generation",
+    "provider": "MiniMax",
+    "title": "MiniMax video generation guide",
+    "url": "https://platform.minimax.io/docs/guides/video-generation",
+    "modelIds": ["minimax-h3", "minimax-hailuo-02-text"],
+    "modes": ["t2v", "i2v", "fl2v", "ref2v"],
+    "reviewedAt": "2026-08-28"
+  },
+  {
+    "id": "ltx-video-prompting",
+    "provider": "LTX",
+    "title": "LTX prompting guide",
+    "url": "https://docs.ltx.io/api-documentation/implementation-guides/prompting-guide",
+    "modelIds": ["ltx-2", "ltx-2-fast", "ltx-2-3", "ltx-2-3-fast"],
+    "modes": ["t2v", "i2v", "a2v", "retake", "extend", "reframe"],
+    "reviewedAt": "2026-08-28"
+  },
+  {
+    "id": "luma-video-generation",
+    "provider": "Luma",
+    "title": "Luma video generation guide",
+    "url": "https://docs.lumalabs.ai/docs/video-generation",
+    "modelIds": ["lumaRay2", "lumaRay2_flash", "luma-ray-3-2"],
+    "modes": ["t2v", "i2v", "fl2v", "v2v", "extend", "reframe"],
+    "reviewedAt": "2026-08-28"
+  }
+]

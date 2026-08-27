@@ -100,6 +100,7 @@ const modelDetails: AgentModelDetails = {
   generationEnabled: true,
   modes: [],
   guidance: null,
+  promptingSources: [],
   links: {
     model: 'https://maxvideoai.com/models/minimax-h3',
     pricing: 'https://maxvideoai.com/pricing',
