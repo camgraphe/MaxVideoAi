@@ -206,6 +206,14 @@ test('verified integration setup steps use small, captioned, real-host captures'
     assert.equal(claudeCode?.steps.some((step) => step.proof), false);
     const chatgpt = getIntegrationCopy(locale, 'chatgpt').setup.hostGuides[0];
     assert.equal(chatgpt?.steps.some((step) => step.proof), false);
+
+    const codex = getIntegrationCopy(locale, 'codex').setup.hostGuides[0];
+    assert.equal(codex?.steps.length, 3);
+    assert.equal(codex?.steps.every((step) => step.proof), true);
+    for (const step of codex?.steps ?? []) {
+      assert.equal(existsSync(`frontend/public${step.proof?.src}`), true);
+      assert.match(step.proof?.caption ?? '', /production|producción/i);
+    }
   }
 });
 

@@ -141,6 +141,64 @@ function claudeDesktopProofs(locale: AppLocale): [IntegrationStepProof, Integrat
   ];
 }
 
+function codexPluginProofs(locale: AppLocale): [IntegrationStepProof, IntegrationStepProof, IntegrationStepProof] {
+  if (locale === 'fr') {
+    return [
+      {
+        src: '/media/mcp/codex-plugin-page.jpg',
+        alt: 'Fiche réelle du plugin MaxVideoAI ouverte dans Codex.',
+        caption: 'Capture réelle de la fiche du plugin public dans Codex, en production, le 27 août 2026.',
+      },
+      {
+        src: '/media/mcp/codex-plugin-installed.jpg',
+        alt: 'Serveur MCP et skills MaxVideoAI réellement installés dans Codex.',
+        caption: 'Même capture réelle de production, recadrée : serveur MCP, deux skills actifs et version 0.2.0.',
+      },
+      {
+        src: '/media/mcp/codex-plugin-account.jpg',
+        alt: 'Fiche Codex indiquant que les générations utilisent un compte MaxVideoAI requis.',
+        caption: 'Même capture réelle de production : Codex indique que le compte MaxVideoAI est requis ; OAuth démarre au premier usage.',
+      },
+    ];
+  }
+  if (locale === 'es') {
+    return [
+      {
+        src: '/media/mcp/codex-plugin-page.jpg',
+        alt: 'Ficha real del plugin MaxVideoAI abierta en Codex.',
+        caption: 'Captura real de la ficha del plugin público en Codex, en producción, el 27 de agosto de 2026.',
+      },
+      {
+        src: '/media/mcp/codex-plugin-installed.jpg',
+        alt: 'Servidor MCP y skills de MaxVideoAI realmente instalados en Codex.',
+        caption: 'La misma captura real de producción, recortada: servidor MCP, dos skills activos y versión 0.2.0.',
+      },
+      {
+        src: '/media/mcp/codex-plugin-account.jpg',
+        alt: 'Ficha de Codex que indica que las generaciones requieren una cuenta MaxVideoAI.',
+        caption: 'La misma captura real de producción: Codex indica que la cuenta MaxVideoAI es obligatoria; OAuth empieza con el primer uso.',
+      },
+    ];
+  }
+  return [
+    {
+      src: '/media/mcp/codex-plugin-page.jpg',
+      alt: 'Real MaxVideoAI plugin page opened in Codex.',
+      caption: 'Real public plugin page captured in Codex production, 27 August 2026.',
+    },
+    {
+      src: '/media/mcp/codex-plugin-installed.jpg',
+      alt: 'MaxVideoAI MCP server and skills actually installed in Codex.',
+      caption: 'The same real production capture, recropped: MCP server, two enabled skills and version 0.2.0.',
+    },
+    {
+      src: '/media/mcp/codex-plugin-account.jpg',
+      alt: 'Codex plugin page stating that generations require a MaxVideoAI account.',
+      caption: 'The same real production capture: Codex states that a MaxVideoAI account is required; OAuth starts on first use.',
+    },
+  ];
+}
+
 function englishGuides(client: McpClientId): IntegrationHostGuide[] {
   if (client === 'claude') {
     const proofs = claudeDesktopProofs('en');
@@ -194,15 +252,16 @@ function englishGuides(client: McpClientId): IntegrationHostGuide[] {
     ];
   }
 
+  const proofs = codexPluginProofs('en');
   return [
     {
       hostId: 'codexCli',
       title: 'Install the MaxVideoAI plugin in Codex',
       intro: 'Add the tagged MaxVideoAI marketplace, install the plugin, then authorize your account from a new Codex conversation.',
       steps: [
-        { title: 'Add the marketplace', body: 'Register the public MaxVideoAI repository at the reviewed 0.2.0 release tag.' },
-        { title: 'Install the plugin', body: 'Install MaxVideoAI once to get the plan and generate skills plus the production MCP connection.' },
-        { title: 'Start a new task', body: 'Open a new Codex conversation, use $plan or $generate, and complete OAuth when prompted.' },
+        { title: 'Add the marketplace', body: 'Register the public MaxVideoAI repository at the reviewed 0.2.0 release tag.', proof: proofs[0] },
+        { title: 'Install the plugin', body: 'Install MaxVideoAI once to get the plan and generate skills plus the production MCP connection.', proof: proofs[1] },
+        { title: 'Start a new task', body: 'Open a new Codex conversation, use $plan or $generate, and complete OAuth when prompted.', proof: proofs[2] },
       ],
       commandLabel: 'Codex plugin commands',
       commands: [
@@ -269,15 +328,16 @@ function frenchGuides(client: McpClientId): IntegrationHostGuide[] {
     ];
   }
 
+  const proofs = codexPluginProofs('fr');
   return [
     {
       hostId: 'codexCli',
       title: 'Installer le plugin MaxVideoAI dans Codex',
       intro: 'Ajoutez la marketplace MaxVideoAI taguée, installez le plugin puis autorisez votre compte depuis une nouvelle conversation Codex.',
       steps: [
-        { title: 'Ajouter la marketplace', body: 'Enregistrez le dépôt public MaxVideoAI sur le tag de version 0.2.0 contrôlé.' },
-        { title: 'Installer le plugin', body: 'Installez MaxVideoAI une fois pour recevoir les skills plan et generate ainsi que la connexion MCP de production.' },
-        { title: 'Démarrer une nouvelle tâche', body: 'Ouvrez une nouvelle conversation Codex, utilisez $plan ou $generate, puis terminez OAuth à la demande.' },
+        { title: 'Ajouter la marketplace', body: 'Enregistrez le dépôt public MaxVideoAI sur le tag de version 0.2.0 contrôlé.', proof: proofs[0] },
+        { title: 'Installer le plugin', body: 'Installez MaxVideoAI une fois pour recevoir les skills plan et generate ainsi que la connexion MCP de production.', proof: proofs[1] },
+        { title: 'Démarrer une nouvelle tâche', body: 'Ouvrez une nouvelle conversation Codex, utilisez $plan ou $generate, puis terminez OAuth à la demande.', proof: proofs[2] },
       ],
       commandLabel: 'Commandes du plugin Codex',
       commands: [
@@ -344,15 +404,16 @@ function spanishGuides(client: McpClientId): IntegrationHostGuide[] {
     ];
   }
 
+  const proofs = codexPluginProofs('es');
   return [
     {
       hostId: 'codexCli',
       title: 'Instalar el plugin MaxVideoAI en Codex',
       intro: 'Añade el marketplace etiquetado de MaxVideoAI, instala el plugin y autoriza tu cuenta desde una nueva conversación de Codex.',
       steps: [
-        { title: 'Añadir el marketplace', body: 'Registra el repositorio público de MaxVideoAI en la etiqueta revisada de la versión 0.2.0.' },
-        { title: 'Instalar el plugin', body: 'Instala MaxVideoAI una vez para obtener los skills plan y generate y la conexión MCP de producción.' },
-        { title: 'Iniciar una nueva tarea', body: 'Abre una nueva conversación de Codex, usa $plan o $generate y completa OAuth cuando se solicite.' },
+        { title: 'Añadir el marketplace', body: 'Registra el repositorio público de MaxVideoAI en la etiqueta revisada de la versión 0.2.0.', proof: proofs[0] },
+        { title: 'Instalar el plugin', body: 'Instala MaxVideoAI una vez para obtener los skills plan y generate y la conexión MCP de producción.', proof: proofs[1] },
+        { title: 'Iniciar una nueva tarea', body: 'Abre una nueva conversación de Codex, usa $plan o $generate y completa OAuth cuando se solicite.', proof: proofs[2] },
       ],
       commandLabel: 'Comandos del plugin de Codex',
       commands: [
