@@ -53,8 +53,10 @@ function isExpectedProbeRejection(status: number, payload: unknown): boolean {
   if (status !== 400 && status !== 422) return false;
   const error = asRecord(asRecord(payload)?.error);
   const providerStatus = typeof error?.status === 'string' ? error.status.trim().toUpperCase() : '';
+  const providerCode = typeof error?.code === 'string' ? error.code.trim().toUpperCase() : '';
   const message = typeof error?.message === 'string' ? error.message.trim().toLowerCase() : '';
-  return providerStatus === 'INVALID_ARGUMENT' && !message.includes('unsupported location');
+  const expectedCode = providerStatus === 'INVALID_ARGUMENT' || providerCode === 'INVALID_REQUEST';
+  return expectedCode && !message.includes('unsupported location');
 }
 
 function imageModel(engineId: string): ReadinessModel {

@@ -42,7 +42,13 @@ test('Google Vertex readiness verifies OAuth, private GCS round-trip, and all ei
     if (url.includes('/v1/publishers/google/models/') && method === 'GET') {
       return new Response('{}', { status: 200, headers: { 'content-type': 'application/json' } });
     }
-    if (url.endsWith(':generateContent') || url.endsWith(':predictLongRunning') || url.endsWith('/interactions')) {
+    if (url.endsWith('/interactions')) {
+      return new Response(
+        JSON.stringify({ error: { code: 'invalid_request', message: "Provide a 'agent', or 'model' parameter." } }),
+        { status: 400 },
+      );
+    }
+    if (url.endsWith(':generateContent') || url.endsWith(':predictLongRunning')) {
       return new Response(JSON.stringify({ error: { status: 'INVALID_ARGUMENT' } }), { status: 400 });
     }
     if (url.endsWith(':fetchPredictOperation') || url.includes('/interactions/maxvideoai-readiness-does-not-exist')) {
