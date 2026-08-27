@@ -181,8 +181,8 @@ Future proof requires all of the following together: a publishable result, a job
       {
         "path": "plugins/maxvideoai/assets/screenshots/maxvideoai-library-continuity-production.jpg",
         "width": 1010,
-        "height": 650,
-        "sha256": "6680f4b889464662f0be34d1628a21b4c9b0d900ce950b806f38df1315efe8e1",
+        "height": 595,
+        "sha256": "f55edf446261983352b15ac1ddff55f6eaf587195efda1025aaae061938d1ce7",
         "capturedAt": "2026-08-27T22:09:32Z"
       }
     ],

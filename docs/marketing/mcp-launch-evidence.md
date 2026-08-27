@@ -79,8 +79,8 @@ banner. The accepted product evidence is:
   — 1450×525, SHA-256
   `fceb27abb935eada8b040232d8f0006bf3a3f4c19acccd11fb4ae6e3eaf697d6`;
 - `plugins/maxvideoai/assets/screenshots/maxvideoai-library-continuity-production.jpg`
-  — 1010×650, SHA-256
-  `6680f4b889464662f0be34d1628a21b4c9b0d900ce950b806f38df1315efe8e1`.
+  — 1010×595, SHA-256
+  `f55edf446261983352b15ac1ddff55f6eaf587195efda1025aaae061938d1ce7`.
 
 Exact-host publication proof remains deliberately narrower than service and
 product verification. The macOS Screen Recording preflight failed before a
