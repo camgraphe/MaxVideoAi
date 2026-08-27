@@ -9,24 +9,19 @@ import {
 import { resolveGoogleVertexOmniModelRoute } from '@/server/video-providers/google-vertex-omni/model-map';
 import { resolveGoogleVertexVeoModelRoute } from '@/server/video-providers/google-vertex-veo/model-map';
 
+type ReadinessModelKind = 'image' | 'veo' | 'omni';
+
 type ReadinessModel = {
   engineId: string;
   providerModel: string;
+  kind: ReadinessModelKind;
 };
 
 type ReadinessModelResult = ReadinessModel & {
   ok: boolean;
-  status: number | null;
-};
-
-type ReadinessIamResult = {
-  ok: boolean;
-  status: number | null;
-  permissions: {
-    predict: boolean;
-    endpointGet: boolean;
-    serviceUsage: boolean;
-  };
+  metadataStatus: number | null;
+  submitStatus: number | null;
+  pollStatus: number | null;
 };
 
 export type GoogleVertexReadinessResult = {
@@ -35,7 +30,6 @@ export type GoogleVertexReadinessResult = {
   location: string;
   checks: {
     oauth: { ok: boolean };
-    iam: ReadinessIamResult;
     gcs: { upload: boolean; read: boolean; delete: boolean };
     models: ReadinessModelResult[];
   };
@@ -49,24 +43,11 @@ type GoogleVertexReadinessDependencies = {
 };
 
 const PROBE_BODY = 'maxvideoai-vertex-readiness-v1';
-const REQUIRED_PROJECT_PERMISSIONS = [
-  'aiplatform.endpoints.predict',
-  'aiplatform.endpoints.get',
-  'serviceusage.services.use',
-] as const;
-
-function emptyIamResult(): ReadinessIamResult {
-  return {
-    ok: false,
-    status: null,
-    permissions: { predict: false, endpointGet: false, serviceUsage: false },
-  };
-}
 
 function imageModel(engineId: string): ReadinessModel {
   const providerModel = getFalEngineById(engineId)?.engine.providerMeta?.modelSlug?.trim();
   if (!providerModel) throw new Error(`Missing Google Vertex image model mapping for ${engineId}.`);
-  return { engineId, providerModel };
+  return { engineId, providerModel, kind: 'image' };
 }
 
 function readinessModels(): ReadinessModel[] {
@@ -78,18 +59,22 @@ function readinessModels(): ReadinessModel[] {
     {
       engineId: 'veo-3-1-lite',
       providerModel: resolveGoogleVertexVeoModelRoute('veo-3-1-lite').providerModel,
+      kind: 'veo',
     },
     {
       engineId: 'veo-3-1-fast',
       providerModel: resolveGoogleVertexVeoModelRoute('veo-3-1-fast').providerModel,
+      kind: 'veo',
     },
     {
       engineId: 'veo-3-1',
       providerModel: resolveGoogleVertexVeoModelRoute('veo-3-1').providerModel,
+      kind: 'veo',
     },
     {
       engineId: 'gemini-omni-flash',
       providerModel: resolveGoogleVertexOmniModelRoute('gemini-omni-flash').providerModel,
+      kind: 'omni',
     },
   ];
 }
@@ -161,66 +146,83 @@ async function probeModel(params: {
   apiBaseUrl: string;
   projectId: string;
   location: string;
+  omniLocation: string;
   model: ReadinessModel;
   fetchFn: typeof fetch;
 }): Promise<ReadinessModelResult> {
   const base = params.apiBaseUrl.replace(/\/+$/, '');
-  try {
-    const response = await params.fetchFn(
-      `${base}/v1/publishers/google/models/${encodeURIComponent(
-        params.model.providerModel,
-      )}?view=PUBLISHER_MODEL_VERSION_VIEW_BASIC`,
-      {
-        headers: {
-          authorization: `Bearer ${params.accessToken}`,
-          'x-goog-user-project': params.projectId,
-        },
-      },
-    );
-    return { ...params.model, ok: response.ok, status: response.status };
-  } catch {
-    return { ...params.model, ok: false, status: null };
-  }
-}
+  const authorization = `Bearer ${params.accessToken}`;
+  const project = encodeURIComponent(params.projectId);
+  const location = encodeURIComponent(params.location);
+  const model = encodeURIComponent(params.model.providerModel);
+  const modelEndpoint = `${base}/v1/projects/${project}/locations/${location}/publishers/google/models/${model}`;
+  const interactionsEndpoint = `${base}/v1beta1/projects/${project}/locations/${encodeURIComponent(
+    params.omniLocation,
+  )}/interactions`;
+  const headers = {
+    authorization,
+    'content-type': 'application/json',
+    'x-goog-user-project': params.projectId,
+  };
 
-async function probeProjectPermissions(params: {
-  accessToken: string;
-  projectId: string;
-  fetchFn: typeof fetch;
-}): Promise<ReadinessIamResult> {
-  try {
-    const response = await params.fetchFn(
-      `https://cloudresourcemanager.googleapis.com/v1/projects/${encodeURIComponent(
-        params.projectId,
-      )}:testIamPermissions`,
-      {
-        method: 'POST',
-        headers: {
-          authorization: `Bearer ${params.accessToken}`,
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify({ permissions: REQUIRED_PROJECT_PERMISSIONS }),
-      },
-    );
-    const payload = (await response.json().catch(() => null)) as Record<string, unknown> | null;
-    const granted = new Set(
-      Array.isArray(payload?.permissions)
-        ? payload.permissions.filter((permission): permission is string => typeof permission === 'string')
-        : [],
-    );
-    const permissions = {
-      predict: granted.has('aiplatform.endpoints.predict'),
-      endpointGet: granted.has('aiplatform.endpoints.get'),
-      serviceUsage: granted.has('serviceusage.services.use'),
-    };
-    return {
-      ok: response.ok && permissions.predict && permissions.endpointGet && permissions.serviceUsage,
-      status: response.status,
-      permissions,
-    };
-  } catch {
-    return emptyIamResult();
+  let metadataStatus: number | null = null;
+  if (params.model.kind !== 'veo') {
+    try {
+      const metadata = await params.fetchFn(
+        `${base}/v1/publishers/google/models/${model}?view=PUBLISHER_MODEL_VERSION_VIEW_BASIC`,
+        { headers },
+      );
+      metadataStatus = metadata.status;
+    } catch {
+      metadataStatus = null;
+    }
   }
+
+  let submitStatus: number | null = null;
+  try {
+    const submitUrl =
+      params.model.kind === 'image'
+        ? `${modelEndpoint}:generateContent`
+        : params.model.kind === 'veo'
+          ? `${modelEndpoint}:predictLongRunning`
+          : interactionsEndpoint;
+    const submit = await params.fetchFn(submitUrl, {
+      method: 'POST',
+      headers,
+      body: '{}',
+    });
+    submitStatus = submit.status;
+  } catch {
+    submitStatus = null;
+  }
+
+  const submitOk = submitStatus === 400 || submitStatus === 422;
+  let pollStatus: number | null = null;
+  if (submitOk && params.model.kind !== 'image') {
+    try {
+      const poll =
+        params.model.kind === 'veo'
+          ? await params.fetchFn(`${modelEndpoint}:fetchPredictOperation`, {
+              method: 'POST',
+              headers,
+              body: '{}',
+            })
+          : await params.fetchFn(`${interactionsEndpoint}/maxvideoai-readiness-does-not-exist`, { headers });
+      pollStatus = poll.status;
+    } catch {
+      pollStatus = null;
+    }
+  }
+
+  const metadataOk = params.model.kind === 'veo' || metadataStatus === 200;
+  const pollOk = params.model.kind === 'image' || pollStatus === 400 || pollStatus === 404 || pollStatus === 422;
+  return {
+    ...params.model,
+    ok: metadataOk && submitOk && pollOk,
+    metadataStatus,
+    submitStatus,
+    pollStatus,
+  };
 }
 
 export async function runGoogleVertexReadinessProbe(
@@ -230,6 +232,7 @@ export async function runGoogleVertexReadinessProbe(
   const fetchFn = dependencies.fetchFn ?? fetch;
   const projectId = (env.GOOGLE_VERTEX_PROJECT_ID ?? '').trim();
   const location = (env.GOOGLE_VERTEX_LOCATION ?? 'global').trim() || 'global';
+  const omniLocation = (env.GOOGLE_VERTEX_OMNI_LOCATION ?? location).trim() || 'global';
   const apiBaseUrl = (env.GOOGLE_VERTEX_API_BASE_URL ?? 'https://aiplatform.googleapis.com').trim();
   const emptyResult: GoogleVertexReadinessResult = {
     ok: false,
@@ -237,7 +240,6 @@ export async function runGoogleVertexReadinessProbe(
     location,
     checks: {
       oauth: { ok: false },
-      iam: emptyIamResult(),
       gcs: { upload: false, read: false, delete: false },
       models: [],
     },
@@ -263,18 +265,17 @@ export async function runGoogleVertexReadinessProbe(
     fetchFn,
     randomId: (dependencies.randomIdFn ?? randomUUID)(),
   }).catch(() => ({ upload: false, read: false, delete: false }));
-  const iam = await probeProjectPermissions({ accessToken, projectId, fetchFn });
   const models = await Promise.all(
     readinessModels().map((model) =>
-      probeModel({ accessToken, apiBaseUrl, projectId, location, model, fetchFn }),
+      probeModel({ accessToken, apiBaseUrl, projectId, location, omniLocation, model, fetchFn }),
     ),
   );
   const oauth = { ok: true };
-  const ok = oauth.ok && iam.ok && gcs.upload && gcs.read && gcs.delete && models.every((model) => model.ok);
+  const ok = oauth.ok && gcs.upload && gcs.read && gcs.delete && models.every((model) => model.ok);
   return {
     ok,
     projectId,
     location,
-    checks: { oauth, iam, gcs, models },
+    checks: { oauth, gcs, models },
   };
 }

@@ -10,6 +10,7 @@ const secretAccessToken = 'google-access-token-must-never-appear';
 const env = {
   GOOGLE_VERTEX_PROJECT_ID: 'maxvideoai-mcp-staging-260827',
   GOOGLE_VERTEX_LOCATION: 'global',
+  GOOGLE_VERTEX_OMNI_LOCATION: 'global',
   GOOGLE_VERTEX_API_BASE_URL: 'https://aiplatform.googleapis.com',
   GOOGLE_VERTEX_INPUT_GCS_URI: 'gs://maxvideoai-mcp-staging-inputs-260827/mcp-inputs',
   GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON: JSON.stringify({
@@ -19,12 +20,12 @@ const env = {
   }),
 } as NodeJS.ProcessEnv;
 
-test('Google Vertex readiness verifies OAuth, private GCS round-trip, and all eight models without generation', async () => {
-  const calls: Array<{ url: string; method: string }> = [];
+test('Google Vertex readiness verifies OAuth, private GCS round-trip, and all eight execution routes without generation', async () => {
+  const calls: Array<{ url: string; method: string; body: BodyInit | null | undefined }> = [];
   const fetchFn: typeof fetch = async (input, init) => {
     const url = String(input);
     const method = init?.method ?? 'GET';
-    calls.push({ url, method });
+    calls.push({ url, method, body: init?.body });
 
     if (url.includes('/upload/storage/v1/')) {
       return new Response(JSON.stringify({ generation: '7' }), {
@@ -38,17 +39,14 @@ test('Google Vertex readiness verifies OAuth, private GCS round-trip, and all ei
     if (url.includes('storage.googleapis.com/storage/v1/') && method === 'DELETE') {
       return new Response(null, { status: 204 });
     }
-    if (url.includes('cloudresourcemanager.googleapis.com/v1/projects/')) {
-      return new Response(JSON.stringify({
-        permissions: [
-          'aiplatform.endpoints.predict',
-          'aiplatform.endpoints.get',
-          'serviceusage.services.use',
-        ],
-      }), { status: 200 });
-    }
     if (url.includes('/v1/publishers/google/models/') && method === 'GET') {
       return new Response('{}', { status: 200, headers: { 'content-type': 'application/json' } });
+    }
+    if (url.endsWith(':generateContent') || url.endsWith(':predictLongRunning') || url.endsWith('/interactions')) {
+      return new Response(JSON.stringify({ error: { status: 'INVALID_ARGUMENT' } }), { status: 400 });
+    }
+    if (url.endsWith(':fetchPredictOperation') || url.includes('/interactions/maxvideoai-readiness-does-not-exist')) {
+      return new Response(JSON.stringify({ error: { status: 'NOT_FOUND' } }), { status: 404 });
     }
     throw new Error(`Unexpected readiness URL: ${url}`);
   };
@@ -62,14 +60,9 @@ test('Google Vertex readiness verifies OAuth, private GCS round-trip, and all ei
 
   assert.equal(result.ok, true);
   assert.deepEqual(result.checks.oauth, { ok: true });
-  assert.deepEqual(result.checks.iam, {
-    ok: true,
-    status: 200,
-    permissions: { predict: true, endpointGet: true, serviceUsage: true },
-  });
   assert.deepEqual(result.checks.gcs, { upload: true, read: true, delete: true });
   assert.equal(result.checks.models.length, 8);
-  assert.equal(result.checks.models.every((model) => model.ok && model.status === 200), true);
+  assert.equal(result.checks.models.every((model) => model.ok && model.submitStatus === 400), true);
   assert.deepEqual(
     result.checks.models.map((model) => model.engineId),
     [
@@ -83,8 +76,20 @@ test('Google Vertex readiness verifies OAuth, private GCS round-trip, and all ei
       'gemini-omni-flash',
     ],
   );
-  assert.equal(calls.filter((call) => call.url.includes('/v1/publishers/google/models/')).length, 8);
+  assert.equal(calls.filter((call) => call.url.includes('/v1/publishers/google/models/')).length, 5);
+  assert.equal(calls.filter((call) => call.url.endsWith(':generateContent')).length, 4);
+  assert.equal(calls.filter((call) => call.url.endsWith(':predictLongRunning')).length, 3);
+  assert.equal(calls.filter((call) => call.url.endsWith(':fetchPredictOperation')).length, 3);
+  assert.equal(calls.filter((call) => call.url.endsWith('/interactions') && call.method === 'POST').length, 1);
+  assert.equal(calls.filter((call) => call.url.includes('/interactions/maxvideoai-readiness-does-not-exist')).length, 1);
   assert.equal(calls.some((call) => call.url.endsWith(':getIamPolicy')), false);
+  assert.equal(calls.some((call) => call.url.includes('cloudresourcemanager.googleapis.com')), false);
+  assert.equal(
+    calls
+      .filter((call) => call.url.endsWith(':generateContent') || call.url.endsWith(':predictLongRunning') || call.url.endsWith('/interactions'))
+      .every((call) => call.body === '{}'),
+    true,
+  );
   assert.equal(calls.some((call) => call.method === 'POST' && call.url.includes('/upload/storage/v1/')), true);
   assert.equal(calls.some((call) => call.method === 'GET' && call.url.includes('generation=7')), true);
   assert.equal(calls.some((call) => call.method === 'DELETE' && call.url.includes('generation=7')), true);
@@ -106,20 +111,17 @@ test('Google Vertex readiness cleans up its probe object when one model is unava
     if (url.includes('storage.googleapis.com/storage/v1/') && method === 'DELETE') {
       return new Response(null, { status: 204 });
     }
-    if (url.includes('cloudresourcemanager.googleapis.com/v1/projects/')) {
-      return new Response(JSON.stringify({
-        permissions: [
-          'aiplatform.endpoints.predict',
-          'aiplatform.endpoints.get',
-          'serviceusage.services.use',
-        ],
-      }), { status: 200 });
-    }
-    if (url.includes('veo-3.1-lite-generate-001')) {
-      return new Response('{}', { status: 404 });
-    }
     if (url.includes('/v1/publishers/google/models/') && method === 'GET') {
       return new Response('{}', { status: 200 });
+    }
+    if (url.includes('veo-3.1-lite-generate-001') && url.endsWith(':predictLongRunning')) {
+      return new Response(JSON.stringify({ error: { status: 'PERMISSION_DENIED' } }), { status: 403 });
+    }
+    if (url.endsWith(':generateContent') || url.endsWith(':predictLongRunning') || url.endsWith('/interactions')) {
+      return new Response(JSON.stringify({ error: { status: 'INVALID_ARGUMENT' } }), { status: 400 });
+    }
+    if (url.endsWith(':fetchPredictOperation') || url.includes('/interactions/maxvideoai-readiness-does-not-exist')) {
+      return new Response('{}', { status: 404 });
     }
     throw new Error(`Unexpected readiness URL: ${url}`);
   };
@@ -135,7 +137,15 @@ test('Google Vertex readiness cleans up its probe object when one model is unava
   assert.deepEqual(result.checks.gcs, { upload: true, read: true, delete: true });
   assert.deepEqual(
     result.checks.models.find((model) => model.engineId === 'veo-3-1-lite'),
-    { engineId: 'veo-3-1-lite', providerModel: 'veo-3.1-lite-generate-001', ok: false, status: 404 },
+    {
+      engineId: 'veo-3-1-lite',
+      providerModel: 'veo-3.1-lite-generate-001',
+      kind: 'veo',
+      ok: false,
+      metadataStatus: null,
+      submitStatus: 403,
+      pollStatus: null,
+    },
   );
   assert.equal(calls.some((call) => call.method === 'DELETE'), true);
 });
