@@ -73,6 +73,7 @@ type GoogleVertexOmniPollDeps = {
 const POLL_INITIAL_DELAY_MS = 5_000;
 const POLL_MAX_DURATION_MS = 45 * 60_000;
 const ACTIVE_JOB_STATUSES = ['pending', 'queued', 'running', 'processing', 'in_progress'];
+const POLL_QUERY_STATUSES = [...ACTIVE_JOB_STATUSES, 'provider_polling_stalled'];
 const POLL_TIMEOUT_MESSAGE = 'Google did not return this render within 45 minutes.';
 
 async function recordWalletRefundOnce(job: GoogleVertexOmniPendingJob, reason: string, queryFn: QueryFn) {
@@ -142,7 +143,7 @@ async function markJobFailed(
       WHERE job_id = $1
         AND status = ANY($3::text[])
       RETURNING job_id`,
-    [job.job_id, userMessage, ACTIVE_JOB_STATUSES]
+    [job.job_id, userMessage, POLL_QUERY_STATUSES]
   );
   if (!rows.length) return false;
   const refunded = await recordWalletRefundOnce(job, userMessage, queryFn);
@@ -279,7 +280,7 @@ export async function runGoogleVertexOmniPoll(options: { deps?: GoogleVertexOmni
         AND status = ANY($2::text[])
       ORDER BY updated_at ASC
       LIMIT 10`,
-    [GOOGLE_VERTEX_OMNI_PROVIDER, ACTIVE_JOB_STATUSES]
+    [GOOGLE_VERTEX_OMNI_PROVIDER, POLL_QUERY_STATUSES]
   );
 
   if (!rows.length) {
@@ -306,6 +307,7 @@ export async function runGoogleVertexOmniPoll(options: { deps?: GoogleVertexOmni
       if (failed) updates += 1;
       continue;
     }
+    if (job.status === 'provider_polling_stalled') continue;
 
     try {
       const attempt = await findProviderAttemptForJob({

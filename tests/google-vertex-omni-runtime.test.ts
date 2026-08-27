@@ -378,7 +378,7 @@ test('Gemini Omni Flash poll fails and refunds an accepted job when Google canno
   assert.ok(queries.some((entry) => /UPDATE provider_attempts/.test(entry.sql)));
 });
 
-test('Gemini Omni Flash poll fails and refunds jobs still unresolved after 45 minutes', async () => {
+test('Gemini Omni Flash poll recovers and refunds legacy stalled jobs after 45 minutes', async () => {
   const queries: Array<{ sql: string; params?: unknown[] }> = [];
   let fetchCalls = 0;
 
@@ -387,7 +387,11 @@ test('Gemini Omni Flash poll fails and refunds jobs still unresolved after 45 mi
       queryFn: async (sql, params) => {
         queries.push({ sql, params });
         if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {
-          return [{ ...baseJob, created_at: new Date(Date.now() - 46 * 60_000).toISOString() }] as never;
+          return [{
+            ...baseJob,
+            status: 'provider_polling_stalled',
+            created_at: new Date(Date.now() - 46 * 60_000).toISOString(),
+          }] as never;
         }
         if (/UPDATE app_jobs/.test(sql) && /RETURNING job_id/.test(sql)) {
           return [{ job_id: baseJob.job_id }] as never;
