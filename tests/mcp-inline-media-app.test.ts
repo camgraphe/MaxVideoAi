@@ -128,6 +128,12 @@ test('generation presenter resource is a portable light and dark MCP App with na
   assert.match(html, /new ResizeObserver\(/);
   assert.match(html, /ui\/notifications\/tool-result/);
   assert.match(html, /ui\/open-link/);
+  assert.match(html, /<button\b[^>]*id=["']download["'][^>]*>Download<\/button>/is);
+  assert.match(html, /const libraryUrl\s*=\s*safeUrl\(library\?\.url\)/);
+  assert.match(html, /const destination\s*=\s*libraryUrl\s*\|\|\s*safeUrl\(workspace\?\.url\)/);
+  assert.match(html, /pathname\s*=\s*['"]\/api\/download['"]/);
+  assert.match(html, /searchParams\.set\(['"]url['"],\s*mediaUrl\)/);
+  assert.match(html, /downloadButton\.addEventListener\(['"]click['"]/);
   assert.match(html, /prefers-color-scheme:\s*dark/);
   assert.match(html, /MaxVideoAI/);
   assert.doesNotMatch(html, /dangerouslySetInnerHTML|eval\(|new Function\(|document\.write\(/);

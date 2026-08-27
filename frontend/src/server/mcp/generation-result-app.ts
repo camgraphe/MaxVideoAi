@@ -169,6 +169,12 @@ export function buildGenerationResultAppHtml(): string {
 
       .saved { color: var(--muted); font-size: 12px; }
 
+      .action-buttons {
+        align-items: center;
+        display: flex;
+        gap: 8px;
+      }
+
       button {
         appearance: none;
         background: var(--text);
@@ -181,6 +187,14 @@ export function buildGenerationResultAppHtml(): string {
         font-weight: 700;
         padding: 10px 14px;
       }
+
+      button.secondary {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text);
+      }
+
+      button:disabled { cursor: not-allowed; opacity: 0.5; }
 
       button:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 35%, transparent); outline-offset: 2px; }
 
@@ -197,12 +211,15 @@ export function buildGenerationResultAppHtml(): string {
 
         .card { box-shadow: none; }
         button { color: #111827; background: #f7f8fb; }
+        button.secondary { background: transparent; color: var(--text); }
       }
 
       @media (max-width: 520px) {
         .header, .details, .actions { gap: 8px; }
         .details { align-items: flex-start; }
-        .saved { max-width: 55%; }
+        .actions { align-items: stretch; flex-direction: column; }
+        .action-buttons { width: 100%; }
+        .action-buttons button { flex: 1; }
       }
     </style>
   </head>
@@ -229,7 +246,10 @@ export function buildGenerationResultAppHtml(): string {
       </section>
       <footer class="actions">
         <span class="saved" id="saved">Saved to your MaxVideoAI library</span>
-        <button type="button" id="open" disabled>Open in MaxVideoAI</button>
+        <div class="action-buttons">
+          <button class="secondary" type="button" id="download" disabled>Download</button>
+          <button type="button" id="open" disabled>Open in MaxVideoAI</button>
+        </div>
       </footer>
     </article>
     <script>
@@ -240,7 +260,9 @@ export function buildGenerationResultAppHtml(): string {
       const surface = document.getElementById('surface');
       const price = document.getElementById('price');
       const saved = document.getElementById('saved');
+      const downloadButton = document.getElementById('download');
       const openButton = document.getElementById('open');
+      let downloadUrl = null;
       let openUrl = null;
       let requestId = 1;
       let initialized = false;
@@ -276,13 +298,48 @@ export function buildGenerationResultAppHtml(): string {
         }
       }
 
+      function downloadFilename(mediaUrl, jobId, resultSurface) {
+        const safeJobId = typeof jobId === 'string'
+          ? jobId.replace(/[^a-z0-9._-]+/gi, '-').replace(/-+/g, '-').slice(0, 96)
+          : 'generation';
+        let extension = resultSurface === 'video' ? 'mp4' : 'jpg';
+        try {
+          const match = new URL(mediaUrl).pathname.match(/\\.([a-z0-9]{2,5})$/i);
+          if (match) extension = match[1].toLowerCase();
+        } catch {
+          // safeUrl already validates mediaUrl; keep the surface fallback.
+        }
+        return 'maxvideoai-' + (safeJobId || 'generation') + '.' + extension;
+      }
+
+      function buildDownloadUrl(libraryUrl, mediaUrl, jobId, resultSurface) {
+        if (!libraryUrl || !mediaUrl) return null;
+        try {
+          const destination = new URL(libraryUrl);
+          destination.pathname = '/api/download';
+          destination.search = '';
+          destination.searchParams.set('url', mediaUrl);
+          destination.searchParams.set('filename', downloadFilename(mediaUrl, jobId, resultSurface));
+          return safeUrl(destination.toString());
+        } catch {
+          return null;
+        }
+      }
+
       function render(value) {
         const result = record(value);
         const media = record(result?.result);
         const workspace = record(result?.workspace);
         const library = record(result?.library);
         const isComplete = result?.status === 'completed';
-        const destination = safeUrl(workspace?.url) || safeUrl(library?.url);
+        const libraryUrl = safeUrl(library?.url);
+        const destination = libraryUrl || safeUrl(workspace?.url);
+        const videoUrl = media?.surface === 'video' ? safeUrl(media.videoUrl) : null;
+        const posterUrl = media?.surface === 'video' ? safeUrl(media.thumbnailUrl) : null;
+        const imageUrl = media?.surface === 'image' && Array.isArray(media.imageUrls)
+          ? safeUrl(media.imageUrls[0])
+          : null;
+        const primaryMediaUrl = videoUrl || imageUrl;
 
         status.textContent = isComplete ? 'Completed' : String(result?.status || 'Ready');
         surface.textContent = result?.surface === 'image' ? 'Image' : 'Video';
@@ -292,12 +349,10 @@ export function buildGenerationResultAppHtml(): string {
           : 'Available in your connected MaxVideoAI account';
         openUrl = destination;
         openButton.disabled = !openUrl;
-
-        const videoUrl = media?.surface === 'video' ? safeUrl(media.videoUrl) : null;
-        const posterUrl = media?.surface === 'video' ? safeUrl(media.thumbnailUrl) : null;
-        const imageUrl = media?.surface === 'image' && Array.isArray(media.imageUrls)
-          ? safeUrl(media.imageUrls[0])
+        downloadUrl = isComplete
+          ? buildDownloadUrl(libraryUrl || destination, primaryMediaUrl, result?.jobId, result?.surface)
           : null;
+        downloadButton.disabled = !downloadUrl;
 
         video.pause();
         video.removeAttribute('src');
@@ -400,6 +455,15 @@ export function buildGenerationResultAppHtml(): string {
           return;
         }
         void request('ui/open-link', { url: openUrl });
+      });
+
+      downloadButton.addEventListener('click', async () => {
+        if (!downloadUrl) return;
+        if (window.openai?.openExternal) {
+          await window.openai.openExternal({ href: downloadUrl, redirectUrl: false });
+          return;
+        }
+        void request('ui/open-link', { url: downloadUrl });
       });
 
       if (window.openai?.toolOutput) render(window.openai.toolOutput);
