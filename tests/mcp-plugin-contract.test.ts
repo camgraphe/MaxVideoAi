@@ -229,6 +229,36 @@ test('the package ships current setup, privacy, workflow, and recovery guides', 
     'troubleshooting.md',
     'how-it-works.md',
   ];
+  const guideJourneyContracts: Record<string, { expectedBehavior: RegExp; disconnectPath: RegExp }> = {
+    'chatgpt.md': {
+      expectedBehavior: /Example[\s\S]{0,240}stop before any paid generation/i,
+      disconnectPath: /Settings[^\n]*Apps[\s\S]{0,260}disconnect[\s\S]{0,260}revoke[^.]*OAuth connection/i,
+    },
+    'claude.md': {
+      expectedBehavior: /Example[\s\S]{0,240}do not prepare or approve a generation/i,
+      disconnectPath: /Customize[^\n]*Connectors[\s\S]{0,260}Remove[\s\S]{0,320}revoke[^.]*OAuth connection/i,
+    },
+    'codex.md': {
+      expectedBehavior: /no-spend plan[\s\S]{0,260}Example/i,
+      disconnectPath: /plugin manager[\s\S]{0,220}remove `maxvideoai@maxvideoai`[\s\S]{0,320}Revoke[^.]*OAuth connection/i,
+    },
+    'generic-mcp.md': {
+      expectedBehavior: /Example[\s\S]{0,240}do not prepare or approve paid work/i,
+      disconnectPath: /Remove or disable[^.]*server[\s\S]{0,220}Revoke[^.]*OAuth connection/i,
+    },
+    'privacy-and-permissions.md': {
+      expectedBehavior: /Example[\s\S]{0,220}Do not confirm generation/i,
+      disconnectPath: /Disconnect or remove[^.]*host[\s\S]{0,240}revoke[^.]*OAuth connection/i,
+    },
+    'troubleshooting.md': {
+      expectedBehavior: /Example[\s\S]{0,220}recover its result[\s\S]{0,100}Do not create another paid attempt/i,
+      disconnectPath: /disconnect[^\n]*revoke[\s\S]{0,300}host[^.]*connector or plugin[\s\S]{0,300}OAuth connection/i,
+    },
+    'how-it-works.md': {
+      expectedBehavior: /\$plan[^.]*without spending credits[\s\S]{0,220}\$generate[^.]*exact quote/i,
+      disconnectPath: /disconnect[^\n]*revoke[\s\S]{0,300}host[^.]*connector or plugin[\s\S]{0,300}OAuth connection/i,
+    },
+  };
 
   for (const guideName of guideNames) {
     const guidePath = path.join(pluginRoot, 'docs', guideName);
@@ -237,6 +267,9 @@ test('the package ships current setup, privacy, workflow, and recovery guides', 
     assert.match(guide, /Last reviewed: 2026-08-28/);
     assert.match(guide, /!\[[^\]]{12,}\]\(\.\.\/assets\//, `${guideName} needs a useful visual`);
     assert.match(guide, /not (?:a )?native[^.\n]{0,40}(?:capture|proof)/i, `${guideName} must label the visual boundary`);
+    assert.match(guide, /\*\*Example\*\*:\s*“[^”]{20,}”/, `${guideName} needs a concrete first prompt`);
+    assert.match(guide, guideJourneyContracts[guideName].expectedBehavior, `${guideName} must state the expected safe behavior`);
+    assert.match(guide, guideJourneyContracts[guideName].disconnectPath, `${guideName} must explain disconnect plus OAuth revocation`);
   }
 
   const claude = read('docs/claude.md');
@@ -254,6 +287,7 @@ test('the package ships current setup, privacy, workflow, and recovery guides', 
   assert.match(chatgpt, /Pro[^\n]*(?:read\/fetch|read and fetch)/i);
   assert.match(chatgpt, /setup guide to validate|validate this setup/i);
   assert.match(chatgpt, /https:\/\/help\.openai\.com\/en\/articles\/12584461-developer-mode-apps-and-full-mcp-connectors-in-chatgpt-beta/);
+  assert.match(chatgpt, /https:\/\/help\.openai\.com\/en\/articles\/11487775-connectors-in-chatgpt/);
   assert.doesNotMatch(chatgpt, /Designed for ChatGPT|works with ChatGPT|available in ChatGPT/i);
 
   const codex = read('docs/codex.md');

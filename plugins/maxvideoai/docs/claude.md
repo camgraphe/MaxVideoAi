@@ -49,7 +49,7 @@ If tools are missing, reopen **Customize → Connectors**, confirm MaxVideoAI is
 
 ## How do I disconnect or revoke access?
 
-Open **Customize → Connectors**, find MaxVideoAI, then use **Remove** or the adjacent menu to disconnect it. Team and Enterprise owners can remove the organization entry from **Organization settings → Connectors**. To end the authorization as well, revoke the Claude connection from your MaxVideoAI account connection settings. Reconnect through OAuth if you need it later.
+Open **Customize → Connectors**, find MaxVideoAI, then use **Remove** or the adjacent menu to disconnect it. Team and Enterprise owners can remove the organization entry from **Organization settings → Connectors**. To end the authorization as well, revoke the matching Claude OAuth connection from your MaxVideoAI account connection settings. Reconnect through OAuth if you need it later.
 
 ## Sources
 

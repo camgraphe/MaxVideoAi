@@ -30,6 +30,15 @@ A technical failure reported as refunded closes the original attempt. The refund
 
 Private image, video, or audio references stay in the connected MaxVideoAI Library and are used only where the selected workflow supports them. Completed generations return to that same Library, so a later conversation can recover or reuse the owned result without exposing raw internal identifiers as the main experience.
 
+## How do I disconnect and revoke access?
+
+Remove or disable MaxVideoAI in the host's connector or plugin settings. Then revoke the matching OAuth connection in your MaxVideoAI account connection settings. These are two separate controls: removing the host integration stops that host from invoking MaxVideoAI, while OAuth revocation closes the account authorization. Reconnecting later requires a fresh browser OAuth flow.
+
+```text
+Host: remove or disable the MaxVideoAI connector or plugin
+MaxVideoAI: revoke the matching OAuth connection
+```
+
 ## Sources
 
 - [MaxVideoAI connection guide](https://maxvideoai.com/docs/mcp)

@@ -40,6 +40,16 @@ If credits are insufficient, use the secure MaxVideoAI top-up destination return
 
 Confirm the reference belongs to the connected MaxVideoAI Library and that the selected model mode accepts that image, video, or audio type. If it is not yet in the Library, request a secure upload destination. Never replace a rejected reference with unrelated media or expose raw private identifiers in public reports.
 
+## How do I disconnect and revoke access cleanly?
+
+First stop any new approval attempt. Remove or disable MaxVideoAI in the host's connector or plugin settings, then revoke the matching OAuth connection in your MaxVideoAI account connection settings. On a managed workspace, ask an admin to disable the organization entry as well. If you reconnect, use a fresh browser OAuth flow and start with a no-spend planning check.
+
+```text
+1. Host: remove or disable MaxVideoAI
+2. MaxVideoAI: revoke the matching OAuth connection
+3. Reconnect only through a fresh OAuth flow
+```
+
 ## Where can I get help?
 
 Use the [MaxVideoAI contact page](https://maxvideoai.com/contact) or email [support@maxvideoai.com](mailto:support@maxvideoai.com). Include the host, package version, approximate time, and whether a quote was merely prepared or explicitly approved. Send vulnerability reports privately to [security@maxvideoai.com](mailto:security@maxvideoai.com).

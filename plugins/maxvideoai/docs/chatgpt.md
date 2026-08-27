@@ -50,11 +50,12 @@ If the draft cannot scan or call tools, do not treat the setup as verified. Chec
 
 ## How do I disable or disconnect it?
 
-Disable or remove the draft/custom app from **Settings → Apps** or your workspace Apps area. Then revoke the corresponding OAuth connection in your MaxVideoAI account connection settings. Workspace admins should also remove published access or action permissions when the app is no longer approved.
+Users can open **Settings → Apps**, select the MaxVideoAI app, and choose **Disconnect**. Workspace admins or owners can disable it from **Workspace settings → Apps** and remove draft or published access when it is no longer approved. Then revoke the corresponding OAuth connection in your MaxVideoAI account connection settings; disabling the app in ChatGPT does not replace that MaxVideoAI-side revocation.
 
 ## Sources
 
 - [OpenAI: Developer mode and MCP apps in ChatGPT](https://help.openai.com/en/articles/12584461-developer-mode-apps-and-full-mcp-connectors-in-chatgpt-beta)
+- [OpenAI: Apps in ChatGPT](https://help.openai.com/en/articles/11487775-connectors-in-chatgpt)
 - [MaxVideoAI compatibility evidence](https://maxvideoai.com/docs/mcp)
 
 Last reviewed: 2026-08-28.
