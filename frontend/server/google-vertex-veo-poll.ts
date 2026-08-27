@@ -305,9 +305,7 @@ export async function runGoogleVertexVeoPoll(options: { deps?: GoogleVertexVeoPo
   const generateAndPersistJobKeyframesFn =
     deps.generateAndPersistJobKeyframesFn ?? generateAndPersistJobKeyframes;
 
-  if ((process.env.GOOGLE_VERTEX_VEO_ENABLED ?? '').trim().toLowerCase() !== 'true' && !deps.queryFn) {
-    return NextResponse.json({ ok: true, enabled: false, checked: 0, updates: 0 });
-  }
+  const submissionsEnabled = (process.env.GOOGLE_VERTEX_VEO_ENABLED ?? '').trim().toLowerCase() === 'true';
 
   const rows = await queryFn<GoogleVertexVeoPendingJob>(
     `SELECT job_id, user_id, engine_id, engine_label, provider_job_id, status, duration_sec, thumb_url,
@@ -324,7 +322,7 @@ export async function runGoogleVertexVeoPoll(options: { deps?: GoogleVertexVeoPo
   );
 
   if (!rows.length) {
-    return NextResponse.json({ ok: true, enabled: true, checked: 0, updates: 0 });
+    return NextResponse.json({ ok: true, enabled: submissionsEnabled, checked: 0, updates: 0 });
   }
 
   const client = getGoogleVertexVeoClientFn();
@@ -511,5 +509,5 @@ export async function runGoogleVertexVeoPoll(options: { deps?: GoogleVertexVeoPo
     }
   }
 
-  return NextResponse.json({ ok: true, enabled: true, checked: rows.length, updates });
+  return NextResponse.json({ ok: true, enabled: submissionsEnabled, checked: rows.length, updates });
 }

@@ -32,6 +32,60 @@ const baseJob = {
   created_at: new Date(Date.now() - 60_000).toISOString(),
 };
 
+test('Google Vertex Veo poll finishes accepted jobs after public submissions are disabled', { concurrency: false }, async () => {
+  const originalEnabled = process.env.GOOGLE_VERTEX_VEO_ENABLED;
+  process.env.GOOGLE_VERTEX_VEO_ENABLED = 'false';
+  const queries: string[] = [];
+
+  try {
+    const response = await runGoogleVertexVeoPoll({
+      deps: {
+        queryFn: async (sql) => {
+          queries.push(sql);
+          if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {
+            return [baseJob] as never;
+          }
+          if (/FROM provider_attempts/.test(sql)) {
+            return [{ id: 17, attempt_index: 1 }] as never;
+          }
+          return [] as never;
+        },
+        getGoogleVertexVeoClientFn: () => ({
+          fetchOperation: async () => ({
+            name: baseJob.provider_job_id,
+            done: false,
+          }),
+          downloadGcsUri: async () => {
+            throw new Error('not used');
+          },
+        }),
+        isStorageConfiguredFn: () => true,
+        uploadFileBufferFn: async () => {
+          throw new Error('not used');
+        },
+        ensureJobThumbnailFn: async () => null,
+        upsertLegacyJobOutputsFn: async () => undefined,
+        generateAndPersistJobPreviewVideoFn: async () => null,
+        generateAndPersistJobKeyframesFn: async () => [],
+      },
+    });
+
+    assert.deepEqual(await response.json(), {
+      ok: true,
+      enabled: false,
+      checked: 1,
+      updates: 1,
+    });
+    assert.ok(
+      queries.some((sql) => /SET status = 'running'/.test(sql)),
+      'an already accepted job should still be advanced while public submissions stay disabled',
+    );
+  } finally {
+    if (originalEnabled === undefined) delete process.env.GOOGLE_VERTEX_VEO_ENABLED;
+    else process.env.GOOGLE_VERTEX_VEO_ENABLED = originalEnabled;
+  }
+});
+
 test('Google Vertex Veo poll copies provider output before marking the job completed', async () => {
   const queries: Array<{ sql: string; params?: unknown[] }> = [];
   const uploads: Array<{ data: Buffer; mime: string; fileName?: string | null }> = [];
