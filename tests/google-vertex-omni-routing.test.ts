@@ -14,7 +14,7 @@ test('Gemini Omni Flash model map uses the Vertex Agent Platform preview model i
   assert.equal(isGoogleVertexOmniEngine('gemini-omni-flash'), true);
 
   const route = resolveGoogleVertexOmniModelRoute('gemini-omni-flash');
-  assert.equal(route.providerModel, 'gemini-omni-1.1-flash-preview');
+  assert.equal(route.providerModel, 'gemini-omni-flash-preview');
   assert.equal(route.launchStage, 'preview');
   assert.deepEqual(route.supportedModes, ['t2v', 'i2v', 'ref2v', 'v2v', 'retake']);
   assert.deepEqual(route.aspectRatios, ['16:9', '9:16']);

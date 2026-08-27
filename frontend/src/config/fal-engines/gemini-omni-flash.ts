@@ -7,7 +7,7 @@ const GEMINI_OMNI_FLASH_ENGINE: EngineCaps = {
   id: 'gemini-omni-flash',
   label: 'Gemini Omni Flash',
   provider: 'Google',
-  version: '1.1 Preview',
+  version: 'Preview',
   status: 'early_access',
   latencyTier: 'fast',
   queueDepth: 0,
@@ -163,13 +163,13 @@ const GEMINI_OMNI_FLASH_ENGINE: EngineCaps = {
       '720p': 0.1,
     },
     currency: 'USD',
-    notes: 'MaxVideoAI customer rate for the direct Google Vertex Gemini Omni Flash 1.1 route.',
+    notes: 'MaxVideoAI customer rate for the direct Google Vertex Gemini Omni Flash preview route.',
   },
   updatedAt: '2026-06-30T00:00:00Z',
   ttlSec: 600,
   providerMeta: {
     provider: 'google_vertex_omni',
-    modelSlug: 'gemini-omni-1.1-flash-preview',
+    modelSlug: 'gemini-omni-flash-preview',
   },
   availability: 'limited',
   brandId: 'google-gemini',
@@ -182,15 +182,15 @@ export const GEMINI_OMNI_FLASH_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     cardTitle: 'Gemini Omni Flash - conversational video generation',
     provider: 'Google',
     brandId: 'google-gemini',
-    versionLabel: '1.1 Preview',
+    versionLabel: 'Preview',
     availability: 'limited',
     logoPolicy: 'textOnly',
-    billingNote: 'Google Vertex Gemini Omni Flash 1.1 direct route. No Fal fallback is used.',
+    billingNote: 'Google Vertex Gemini Omni Flash preview direct route. No Fal fallback is used.',
     engine: GEMINI_OMNI_FLASH_ENGINE,
     modes: [
       {
         mode: 't2v',
-        falModelId: 'gemini-omni-1.1-flash-preview',
+        falModelId: 'gemini-omni-flash-preview',
         ui: {
           modes: ['t2v'],
           duration: { options: ['4s', '6s', '8s', '10s'], default: '10s' },
@@ -203,7 +203,7 @@ export const GEMINI_OMNI_FLASH_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       },
       {
         mode: 'i2v',
-        falModelId: 'gemini-omni-1.1-flash-preview',
+        falModelId: 'gemini-omni-flash-preview',
         ui: {
           modes: ['i2v'],
           duration: { options: ['4s', '6s', '8s', '10s'], default: '10s' },
@@ -218,7 +218,7 @@ export const GEMINI_OMNI_FLASH_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       },
       {
         mode: 'ref2v',
-        falModelId: 'gemini-omni-1.1-flash-preview',
+        falModelId: 'gemini-omni-flash-preview',
         ui: {
           modes: ['ref2v'],
           duration: { options: ['4s', '6s', '8s', '10s'], default: '10s' },
@@ -233,7 +233,7 @@ export const GEMINI_OMNI_FLASH_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       },
       {
         mode: 'v2v',
-        falModelId: 'gemini-omni-1.1-flash-preview',
+        falModelId: 'gemini-omni-flash-preview',
         ui: {
           modes: ['v2v'],
           resolution: ['720p'],
@@ -244,7 +244,7 @@ export const GEMINI_OMNI_FLASH_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       },
       {
         mode: 'retake',
-        falModelId: 'gemini-omni-1.1-flash-preview',
+        falModelId: 'gemini-omni-flash-preview',
         ui: {
           modes: ['retake'],
           resolution: ['720p'],
@@ -254,7 +254,7 @@ export const GEMINI_OMNI_FLASH_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         },
       },
     ],
-    defaultFalModelId: 'gemini-omni-1.1-flash-preview',
+    defaultFalModelId: 'gemini-omni-flash-preview',
     seo: {
       title: 'Gemini Omni Flash Video Generator - Vertex AI Preview',
       description:
@@ -294,7 +294,7 @@ export const GEMINI_OMNI_FLASH_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       {
         question: 'Is Gemini Omni Flash available through Vertex AI?',
         answer:
-          'Yes. MaxVideoAI routes Gemini Omni Flash directly through Google Vertex Agent Platform Interactions using the gemini-omni-1.1-flash-preview model id. No Fal fallback is used.',
+          'Yes. MaxVideoAI routes Gemini Omni Flash directly through Google Vertex Agent Platform Interactions using the gemini-omni-flash-preview model id. No Fal fallback is used.',
       },
       {
         question: 'What resolution and duration does Gemini Omni Flash support?',

@@ -6,7 +6,7 @@ This guide covers the MaxVideoAI direct integration for Gemini Omni Flash throug
 
 - Engine id: `gemini-omni-flash`
 - Provider key: `google_vertex_omni_direct`
-- Google model id: `gemini-omni-1.1-flash-preview`
+- Google model id: `gemini-omni-flash-preview`
 - API family: Interactions API, not Veo `predictLongRunning`
 - Public status: preview / limited
 
@@ -50,7 +50,7 @@ Fallbacks:
 - `GOOGLE_VERTEX_OMNI_SERVICE_ACCOUNT_JSON` falls back to `GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON`.
 - `GOOGLE_VERTEX_OMNI_LOCATION` defaults to `global` and never inherits `GOOGLE_VERTEX_LOCATION`, which may use a Veo-only regional value.
 - `GOOGLE_VERTEX_OMNI_INPUT_GCS_URI` and `GOOGLE_VERTEX_OMNI_OUTPUT_GCS_URI` fall back to the shared `GOOGLE_VERTEX_INPUT_GCS_URI`; media inputs and generated output stay on Google Cloud Storage.
-- The current `gemini-omni-1.1-flash-preview` Vertex route is global-only. Any explicit value other than `global` is rejected before provider submission.
+- The current `gemini-omni-flash-preview` Vertex route is global-only. Any explicit value other than `global` is rejected before provider submission.
 
 Do not commit service account JSON. Configure it only through deployment secrets.
 

@@ -17,7 +17,7 @@ const completedInteraction = {
   id: 'v1_omni_123',
   status: 'completed',
   object: 'interaction',
-  model: 'gemini-omni-1.1-flash-preview',
+  model: 'gemini-omni-flash-preview',
   steps: [
     {
       type: 'model_output',

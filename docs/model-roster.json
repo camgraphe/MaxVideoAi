@@ -213,7 +213,7 @@
     "brandId": "google-gemini",
     "modelSlug": "gemini-omni-flash",
     "family": "veo",
-    "versionLabel": "1.1 Preview",
+    "versionLabel": "Preview",
     "availability": "limited",
     "logoPolicy": "textOnly",
     "surfaces": {

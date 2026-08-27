@@ -31,7 +31,7 @@ test('Gemini Omni client calls the Vertex Interactions API with bearer auth', as
   });
 
   const response = await client.createInteraction({
-    model: 'gemini-omni-1.1-flash-preview',
+    model: 'gemini-omni-flash-preview',
     input: [{ role: 'user', content: [{ type: 'text', text: 'Generate a cinematic product shot' }] }],
     generation_config: { video_config: { task: 'text_to_video', aspect_ratio: '16:9' } },
     response_format: [{ type: 'video', aspect_ratio: '16:9', delivery: 'uri', duration: '4s', resolution: '720p' }],
@@ -43,7 +43,7 @@ test('Gemini Omni client calls the Vertex Interactions API with bearer auth', as
   assert.match(requests[0]?.url ?? '', /\/v1beta1\/projects\/demo-project\/locations\/global\/interactions$/);
   assert.equal(requests[0]?.method, 'POST');
   assert.equal(requests[0]?.headers.get('authorization'), 'Bearer test-token');
-  assert.equal((requests[0]?.body as Record<string, unknown>).model, 'gemini-omni-1.1-flash-preview');
+  assert.equal((requests[0]?.body as Record<string, unknown>).model, 'gemini-omni-flash-preview');
 });
 
 test('Gemini Omni client fetches stored interactions by id', async () => {
@@ -140,7 +140,7 @@ test('Gemini Omni client preserves HTTP status and never marks direct Google err
   await assert.rejects(
     () =>
       client.createInteraction({
-        model: 'gemini-omni-1.1-flash-preview',
+        model: 'gemini-omni-flash-preview',
         input: [{ role: 'user', content: [{ type: 'text', text: 'Generate a cinematic product shot' }] }],
         generation_config: { video_config: { task: 'text_to_video' } },
         response_format: [{ type: 'video', aspect_ratio: '16:9', delivery: 'uri', duration: '4s', resolution: '720p' }],

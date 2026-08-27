@@ -29,7 +29,7 @@ test('Omni text-to-video payload uses Interactions video_config task and video r
     },
   });
 
-  assert.equal(payload.model, 'gemini-omni-1.1-flash-preview');
+  assert.equal(payload.model, 'gemini-omni-flash-preview');
   assert.deepEqual(payload.response_format, [
     {
       type: 'video',
