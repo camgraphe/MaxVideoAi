@@ -29,6 +29,7 @@ The cross-plan MCP migrations are reserved in this order:
 3. `32_mcp_reference_uploads.sql`
 4. `33_mcp_acquisition_funnel.sql`
 5. `38_mcp_chatgpt_acquisition_attribution.sql`
+6. `39_mcp_quote_lifetime.sql`
 
 Migration 33 is intentionally present but unapplied while 30–32 are absent. It contains a
 database prerequisite guard and must not be promoted or applied until all three prerequisite
@@ -36,3 +37,7 @@ tables exist. Do not create placeholder migrations to bypass that guard.
 
 Migration 38 keeps ChatGPT acquisition distinct from Codex in the signed landing context,
 OAuth binding, immutable funnel ledger, and admin reporting. It must run after migration 33.
+
+Migration 39 extends newly prepared MCP generation quotes to 45 minutes while retaining the
+historical 10-minute constraint form for immutable existing rows. Apply it before deploying the
+runtime that creates 45-minute quotes.

@@ -12,7 +12,8 @@ import type {
 } from '@/server/agent-api/generation-types';
 import { getAuthoritativeTrialProviderCostCents } from '@/server/agent-api/trial-provider-cost';
 
-export const MCP_QUOTE_LIFETIME_SECONDS = 10 * 60;
+export const MCP_QUOTE_LIFETIME_SECONDS = 45 * 60;
+const MCP_LEGACY_QUOTE_LIFETIME_SECONDS = 10 * 60;
 export const MCP_QUOTE_EXPIRATION_BATCH_SIZE = 100;
 
 export type McpGenerationQuoteState =
@@ -348,7 +349,10 @@ function parseQuoteRow(row: QuoteRow): McpGenerationQuote {
     || !createdAt
     || !updatedAt
     || (row.claimed_at !== null && !claimedAt)
-    || expiresAt.getTime() - createdAt.getTime() !== MCP_QUOTE_LIFETIME_SECONDS * 1000
+    || ![
+      MCP_LEGACY_QUOTE_LIFETIME_SECONDS,
+      MCP_QUOTE_LIFETIME_SECONDS,
+    ].includes((expiresAt.getTime() - createdAt.getTime()) / 1000)
     || updatedAt < createdAt
     || (claimedAt !== null
       && (claimedAt < createdAt || claimedAt >= expiresAt || claimedAt > updatedAt))) {

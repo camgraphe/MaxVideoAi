@@ -11,6 +11,7 @@ import { hashCanonicalGenerationRequest } from '../frontend/src/server/agent-api
 import type { CanonicalGenerationRequest } from '../frontend/src/server/agent-api/generation-types';
 
 const migrationPath = 'neon/migrations/30_mcp_paid_generation.sql';
+const quoteLifetimeMigrationPath = 'neon/migrations/39_mcp_quote_lifetime.sql';
 const referenceUploadMigrationPath = 'neon/migrations/32_mcp_reference_uploads.sql';
 const runtimeSchemaPath = 'frontend/src/lib/schema/mcp-schema.ts';
 
@@ -78,6 +79,21 @@ test('migration 30 defines private versioned quotes, NULL-safe limits, transitio
   assert.doesNotMatch(quoteTable, /\bprompt\b|reference_url|source_url|provider_body|access_token/i);
 });
 
+test('migration 39 extends new MCP quotes to forty-five minutes while preserving legacy rows', () => {
+  assert.equal(
+    existsSync(quoteLifetimeMigrationPath),
+    true,
+    `${quoteLifetimeMigrationPath} should exist`,
+  );
+  const source = readFileSync(quoteLifetimeMigrationPath, 'utf8');
+
+  assert.match(source, /DROP CONSTRAINT IF EXISTS mcp_generation_quotes_lifetime/i);
+  assert.match(source, /ADD CONSTRAINT mcp_generation_quotes_lifetime/i);
+  assert.match(source, /INTERVAL\s*'10 minutes'/i);
+  assert.match(source, /INTERVAL\s*'45 minutes'/i);
+  assert.doesNotMatch(source, /UPDATE\s+mcp_generation_quotes/i);
+});
+
 test('migration 30 constraints, state machine, immutability, indexes, row locks, and rollback execute in local PostgreSQL', async (t) => {
   for (const command of ['initdb', 'pg_ctl', 'psql']) {
     if (!commandExists(command)) {
@@ -121,6 +137,10 @@ test('migration 30 constraints, state machine, immutability, indexes, row locks,
       '--single-transaction', '-v', 'ON_ERROR_STOP=1', '-f', join(root, referenceUploadMigrationPath),
     );
     assert.equal(referenceUploadMigration.status, 0, commandFailure(referenceUploadMigration));
+    const quoteLifetimeMigration = psql(
+      '--single-transaction', '-v', 'ON_ERROR_STOP=1', '-f', join(root, quoteLifetimeMigrationPath),
+    );
+    assert.equal(quoteLifetimeMigration.status, 0, commandFailure(quoteLifetimeMigration));
   }
 
   const baseValues = `
@@ -136,6 +156,16 @@ test('migration 30 constraints, state machine, immutability, indexes, row locks,
       pricing_snapshot, price_cents, currency, funding_mode, state,
       expires_at, created_at, updated_at
     ) VALUES (${baseValues});
+    INSERT INTO mcp_generation_quotes (
+      quote_id, user_id, oauth_client_id, request_json, request_hash, catalog_revision,
+      pricing_snapshot, price_cents, currency, funding_mode, state,
+      expires_at, created_at, updated_at
+    ) VALUES (
+      '00000000-0000-4000-8000-000000000009', 'forty-five-user', 'client-a',
+      '{"schemaVersion":1}'::jsonb, repeat('e', 64), 'catalog-1', '{}'::jsonb,
+      25, 'USD', 'wallet', 'prepared',
+      '2026-07-16T10:45:00Z', '2026-07-16T10:00:00Z', '2026-07-16T10:00:00Z'
+    );
     INSERT INTO mcp_spending_limits (
       user_id, paid_generation_enabled, per_generation_cents, daily_cents, web_approval_above_cents
     ) VALUES ('user-a', FALSE, NULL, 500, 100);
@@ -188,6 +218,14 @@ test('migration 30 constraints, state machine, immutability, indexes, row locks,
       '2026-07-16T10:00:00Z', '2026-07-16T10:02:00Z'
     )`],
     ['lifetime', `UPDATE mcp_generation_quotes SET expires_at = expires_at + INTERVAL '1 second' WHERE user_id = 'user-a'`],
+    ['unsupported lifetime', `INSERT INTO mcp_generation_quotes (
+      quote_id, user_id, request_json, request_hash, catalog_revision, pricing_snapshot,
+      price_cents, currency, funding_mode, state, expires_at, created_at, updated_at
+    ) VALUES (
+      '00000000-0000-4000-8000-000000000014', 'bad-lifetime', '{"schemaVersion":1}',
+      repeat('b',64), 'catalog', '{}', 1, 'USD', 'wallet', 'prepared',
+      '2026-07-16T10:20:00Z', '2026-07-16T10:00:00Z', '2026-07-16T10:00:00Z'
+    )`],
     ['negative per generation', `UPDATE mcp_spending_limits SET per_generation_cents = -1 WHERE user_id = 'user-a'`],
     ['negative daily', `UPDATE mcp_spending_limits SET daily_cents = -1 WHERE user_id = 'user-a'`],
     ['negative approval', `UPDATE mcp_spending_limits SET web_approval_above_cents = -1 WHERE user_id = 'user-a'`],

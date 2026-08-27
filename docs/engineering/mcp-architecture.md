@@ -86,6 +86,8 @@ Browsing models, asking for recommendations, and building budgets are free read-
 
 Creative retries are new paid attempts and require a new quote and approval. Provider failures follow the existing MaxVideoAI refund contract.
 
+New prepared generation quotes use a server-owned 45-minute confirmation window. Clients cannot choose or extend that lifetime. Migration 39 keeps the historical 10-minute shape readable and database-valid without rewriting immutable quotes created before the change; all newly prepared quotes use 45 minutes.
+
 ## Public surfaces and maintenance
 
 - `/mcp`: commercial product and acquisition hub.

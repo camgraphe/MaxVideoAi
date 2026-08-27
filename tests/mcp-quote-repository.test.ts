@@ -38,7 +38,7 @@ function storedRow(overrides: Record<string, unknown> = {}) {
     funding_mode: 'wallet',
     state: 'prepared',
     job_id: null,
-    expires_at: new Date('2026-07-16T12:10:00.000Z'),
+    expires_at: new Date('2026-07-16T12:45:00.000Z'),
     claimed_at: null,
     created_at: now,
     updated_at: now,
@@ -74,7 +74,7 @@ test('transaction executors are branded by withDbTransaction and ordinary query 
   );
 });
 
-test('insertPreparedQuote creates a random UUID and exact server-owned ten-minute expiry', async () => {
+test('insertPreparedQuote creates a random UUID and exact server-owned forty-five-minute expiry', async () => {
   const { insertPreparedQuote, MCP_QUOTE_LIFETIME_SECONDS } = await import(
     '../frontend/src/server/agent-api/quote-repository'
   );
@@ -102,15 +102,15 @@ test('insertPreparedQuote creates a random UUID and exact server-owned ten-minut
     randomUUID: () => quoteId,
   });
 
-  assert.equal(MCP_QUOTE_LIFETIME_SECONDS, 600);
+  assert.equal(MCP_QUOTE_LIFETIME_SECONDS, 2_700);
   assert.equal(created.quoteId, quoteId);
-  assert.equal(created.expiresAt.toISOString(), '2026-07-16T12:10:00.000Z');
+  assert.equal(created.expiresAt.toISOString(), '2026-07-16T12:45:00.000Z');
   assert.equal(calls.length, 1);
   assert.match(calls[0].sql, /INSERT INTO mcp_generation_quotes/i);
   assert.match(calls[0].sql, /VALUES\s*\(\$1,\s*\$2,\s*\$3/i);
   assert.doesNotMatch(calls[0].sql, /private launch prompt|seedance-2-0-mini/);
   assert.ok(calls[0].params?.includes(quoteId));
-  assert.ok(calls[0].params?.some((value) => value instanceof Date && value.toISOString() === '2026-07-16T12:10:00.000Z'));
+  assert.ok(calls[0].params?.some((value) => value instanceof Date && value.toISOString() === '2026-07-16T12:45:00.000Z'));
   assert.ok(calls[0].params?.includes('wallet'));
   assert.ok(calls[0].params?.includes('prepared'));
 
@@ -173,7 +173,7 @@ test('lockOwnedPreparedQuote evaluates expiry only after the row lock returns', 
       }
       if (/clock_timestamp\(\)/i.test(sql)) {
         order.push('fresh-clock');
-        return [{ current_time: new Date('2026-07-16T12:10:00.000Z') }] as TRecord[];
+        return [{ current_time: new Date('2026-07-16T12:45:00.000Z') }] as TRecord[];
       }
       throw new Error('unexpected query');
     },
