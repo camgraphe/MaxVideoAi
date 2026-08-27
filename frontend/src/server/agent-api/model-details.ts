@@ -11,6 +11,10 @@ import {
 import { AgentApiError } from './errors';
 import { getAgentModelGuidance, type AgentModelGuidance } from './model-guidance';
 import {
+  getAgentModelPromptingSources,
+  type AgentModelPromptingSource,
+} from './model-prompting-sources';
+import {
   listPublicAgentCatalogEngines,
   type AgentModelCatalogDeps,
   type AgentPublicCatalogEngine,
@@ -29,6 +33,7 @@ import { toEngineGenerationMode } from './generation-mode-aliases';
 
 export type AgentModelDetailsDeps = AgentModelCatalogDeps & {
   getGuidance?(engineId: string): AgentModelGuidance | null;
+  getPromptingSources?(engineId: string): readonly AgentModelPromptingSource[];
 };
 
 function isReferenceField(
@@ -143,6 +148,26 @@ function projectGuidance(guidance: AgentModelGuidance | null): AgentModelGuidanc
     evidenceUrls: Object.freeze([...guidance.evidenceUrls]),
     reviewedAt: guidance.reviewedAt,
   });
+}
+
+function projectPromptingSources(
+  sources: readonly AgentModelPromptingSource[],
+  publicModes: readonly AgentGenerationMode[],
+): readonly AgentModelPromptingSource[] {
+  const publicModeSet = new Set<AgentGenerationMode>(publicModes);
+  return Object.freeze(sources.flatMap((source) => {
+    const modes = source.modes.filter((mode) => publicModeSet.has(mode));
+    if (!modes.length) return [];
+    return [Object.freeze({
+      id: source.id,
+      kind: source.kind,
+      provider: source.provider,
+      title: source.title,
+      url: source.url,
+      modes: Object.freeze([...modes]),
+      reviewedAt: source.reviewedAt,
+    })];
+  }));
 }
 
 function projectDuration(caps: EngineModeUiCaps, engine: EngineCaps): AgentModelDurationDetails | null {
@@ -305,6 +330,10 @@ export async function getAgentModelDetails(
   }
 
   const guidance = projectGuidance((deps?.getGuidance ?? getAgentModelGuidance)(candidate.engine.id));
+  const promptingSources = projectPromptingSources(
+    (deps?.getPromptingSources ?? getAgentModelPromptingSources)(candidate.engine.id),
+    candidate.publicModes,
+  );
   const examples = guidance?.evidenceUrls.find((url) => new URL(url).pathname.includes('/examples/')) ?? null;
   return Object.freeze({
     id: candidate.engine.id,
@@ -314,6 +343,7 @@ export async function getAgentModelDetails(
     generationEnabled: candidate.generationEnabled,
     modes: Object.freeze(candidate.publicModes.map((mode) => projectMode(candidate, mode))),
     guidance,
+    promptingSources,
     links: Object.freeze({
       model: `https://maxvideoai.com/models/${encodeURIComponent(candidate.engine.id)}`,
       pricing: 'https://maxvideoai.com/pricing',

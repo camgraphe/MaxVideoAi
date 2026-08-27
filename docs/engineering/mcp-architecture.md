@@ -28,6 +28,8 @@ One hosted OAuth-protected MCP server serves every client. Client-specific plugi
 
 The MCP tools `list_models` and `get_model_details` read the same live registry, runtime capabilities, and pricing services used by MaxVideoAI. A connected assistant must call them instead of relying on model memory. Project budgets and generation quotes therefore use current executable modes and current prices.
 
+Reviewed manufacturer prompting references are authored separately in `frontend/config/agent-model-prompting-sources.json`. `get_model_details` projects at most three matching `promptingSources` and removes modes the public model does not expose. Every entry must use an allowlisted official HTTPS host, name explicit model IDs and canonical modes, and carry a review date. These links inform prompt craft only: the live MaxVideoAI model details remain authoritative for availability, settings, pricing, references, and execution. Do not add a guessed provider URL when no reviewed source exists.
+
 Marketing copy may name strategic models as examples, but model counts, capabilities, exact prices, and rankings must come from the live services. Do not hard-code those facts into prose or UI cards.
 
 ## Adding or changing a model
@@ -39,6 +41,8 @@ Follow `docs/engineering/model-registry.md` for every addition, rename, retireme
 3. Regenerate the registry projections with the documented commands.
 4. Run `pnpm model:registry:check` and the focused provider, pricing, registry, and MCP capability tests.
 5. Exercise `list_models`, `get_model_details`, project budgeting, and quote preparation against the updated model before publication.
+
+When a model receives an official prompting source, update the separate source registry and run `tests/mcp-model-prompting-sources.test.ts`. Do not put external provider links in `agent-model-guidance.json`; its evidence URLs remain first-party MaxVideoAI evidence.
 
 Because clients discover capabilities through the hosted server, a valid catalogue update becomes available to ChatGPT, Claude, and Codex without editing or redistributing their plugin guidance. Update the skill only when the workflow itself changes, not when a routine model or price is added.
 

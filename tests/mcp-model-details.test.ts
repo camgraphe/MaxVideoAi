@@ -138,6 +138,19 @@ function detailsDeps(
           }
         : null;
     },
+    getPromptingSources(id) {
+      return id === 'minimax-h3'
+        ? [{
+            id: 'minimax-video-generation',
+            kind: 'official_provider',
+            provider: 'MiniMax',
+            title: 'MiniMax video generation guide',
+            url: 'https://platform.minimax.io/docs/guides/video-generation',
+            modes: ['t2v', 'i2v', 'fl2v', 'ref2v'],
+            reviewedAt: '2026-08-28',
+          }]
+        : [];
+    },
   };
 }
 
@@ -223,6 +236,15 @@ test('model details project one executable public model into the exact safe shap
       ],
       reviewedAt: '2026-08-24',
     },
+    promptingSources: [{
+      id: 'minimax-video-generation',
+      kind: 'official_provider',
+      provider: 'MiniMax',
+      title: 'MiniMax video generation guide',
+      url: 'https://platform.minimax.io/docs/guides/video-generation',
+      modes: ['t2v', 'i2v', 'ref2v'],
+      reviewedAt: '2026-08-28',
+    }],
     links: {
       model: 'https://maxvideoai.com/models/minimax-h3',
       pricing: 'https://maxvideoai.com/pricing',
@@ -233,7 +255,7 @@ test('model details project one executable public model into the exact safe shap
 
   const serialized = JSON.stringify(details);
   for (const privateValue of [
-    'provider',
+    'private-provider',
     'providerMeta',
     'vendorAccountId',
     'pricingDetails',
@@ -287,7 +309,7 @@ test('real i2i model details honor requiredInModes even when the field is stored
   assert.equal(Object.isFrozen(editMode.references), true);
   assert.doesNotMatch(
     JSON.stringify(details),
-    /google_vertex_image|providerMeta|pricingDetails|source|acceptedMimeTypes/i,
+    /google_vertex_image|providerMeta|pricingDetails|acceptedMimeTypes/i,
   );
 });
 
@@ -412,4 +434,28 @@ test('custom guidance is projected into an immutable detached public DTO', async
     'https://maxvideoai.com/models/minimax-h3',
     'https://maxvideoai.com/examples/minimax-h3',
   ]);
+});
+
+test('prompting sources are filtered to public modes and projected as detached immutable DTOs', async () => {
+  const mutableSource = {
+    id: 'minimax-video-generation',
+    kind: 'official_provider' as const,
+    provider: 'MiniMax',
+    title: 'MiniMax video generation guide',
+    url: 'https://platform.minimax.io/docs/guides/video-generation',
+    modes: ['t2v', 'i2v', 'fl2v'] as const,
+    reviewedAt: '2026-08-28',
+  };
+  const deps = detailsDeps([engine('minimax-h3', ['t2v', 'i2v'])]);
+  deps.getPromptingSources = () => [mutableSource];
+
+  const details = await getAgentModelDetails('minimax-h3', deps);
+  const [projected] = details.promptingSources;
+  assert.ok(projected);
+  assert.notEqual(projected, mutableSource);
+  assert.notEqual(projected.modes, mutableSource.modes);
+  assert.deepEqual(projected.modes, ['t2v', 'i2v']);
+  assert.equal(Object.isFrozen(details.promptingSources), true);
+  assert.equal(Object.isFrozen(projected), true);
+  assert.equal(Object.isFrozen(projected.modes), true);
 });

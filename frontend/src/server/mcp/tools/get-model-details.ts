@@ -21,7 +21,7 @@ export function registerGetModelDetailsTool(
     {
       title: 'Get MaxVideoAI model details',
       description:
-        'Use this when the user needs exact current capabilities, constraints, evidence, or links for one known public MaxVideoAI model. Do not use it for pricing, generation, hidden models, or provider guarantees.',
+        'Use this when the user needs exact current capabilities, constraints, evidence, reviewed official prompting sources, or links for one known public MaxVideoAI model. Do not use it for pricing, generation, hidden models, or provider guarantees.',
       inputSchema: getModelDetailsInputSchema,
       annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
     },

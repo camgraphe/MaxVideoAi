@@ -28,10 +28,20 @@ Call `get_model_details` for the selected model and mode before relying on
 required fields, settings, aspect ratios, reference roles, counts, audio policy,
 or duration limits. Send only fields supported by that exact live contract.
 
+When prompt help is useful, use `promptingSources` from those details and share
+only the relevant reviewed official provider link. If none is returned, do not
+invent one or substitute web search or browsing. A provider guide informs prompt
+craft; it is not evidence of current
+MaxVideoAI availability, settings, pricing, or execution. The live contract is
+authoritative for those facts.
+
 For references, first call `list_media` by image, video, or audio kind. When an
 asset is missing, call `create_reference_upload_link` for that kind and send the
 exact returned browser destination. Wait for the user to say the upload is
 complete, then call `list_media` again and let them select the private asset.
+If `create_reference_upload_link` fails, is denied, or is unavailable, explain
+that the MaxVideoAI handoff could not be created and ask the user to authorize or
+retry it. Do not offer a host attachment or local attachment as a substitute.
 
 Required typed references must be private MaxVideoAI assets so their metadata
 can be verified. Do not replace them with an arbitrary external URL. Read
@@ -43,6 +53,12 @@ source video, ordered references, edits, extensions, and conditional assets.
 Call `prepare_generation` only after the model, mode, prompt, settings, and
 references are concrete. Present the exact price and relevant validated request,
 then stop and wait for explicit approval of that quote.
+When a required private reference or asset is missing, say that an exact quote
+cannot be created yet. A budget calculation may be shown only as an estimate,
+never as the exact quote.
+Treat the returned `expiresAt` as UTC and display it without converting the date
+incorrectly. Do not call a quote expired merely from a local-date comparison;
+report expiry as definitive only when MaxVideoAI returns `QUOTE_EXPIRED`.
 
 Ambiguous assent is not confirmation. Do not interpret discussion, a project
 estimate, silence, an old approval, or approval of another quote as permission.

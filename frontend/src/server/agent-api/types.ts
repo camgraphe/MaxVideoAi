@@ -2,6 +2,7 @@ import type { AgentApiFailure } from './errors';
 import type { CanonicalGenerationMode } from './generation-types';
 import type { CanonicalGenerationReferenceRole } from './generation-types';
 import type { AgentModelGuidance, AgentModelUseCase } from './model-guidance';
+import type { AgentModelPromptingSource } from './model-prompting-sources';
 
 export type AgentApiResult<T> = { ok: true; data: T } | AgentApiFailure;
 
@@ -196,6 +197,7 @@ export type AgentModelDetails = Readonly<{
   generationEnabled: boolean;
   modes: readonly AgentModelModeDetails[];
   guidance: AgentModelGuidance | null;
+  promptingSources: readonly AgentModelPromptingSource[];
   links: Readonly<{
     model: string;
     pricing: string;

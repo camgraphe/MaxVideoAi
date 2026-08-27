@@ -14,6 +14,8 @@ plugin for Codex. The remote MCP server is the shared technical connection.
   credible lower-cost alternatives.
 - Budget a complete film with one model or a deliberate shot-by-shot mix.
 - Validate prompts, settings, and private image, video, or audio references.
+- Use a reviewed official provider prompting guide when one is available for
+  the selected model, while keeping MaxVideoAI live details authoritative.
 - Show the exact price and wait for explicit approval before generation.
 - Track a job, present compatible results in the conversation, and recover
   completed or refunded outcomes without creating duplicate paid work.
