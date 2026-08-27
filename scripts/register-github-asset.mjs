@@ -13,7 +13,11 @@ const jpegStartOfFrameMarkers = new Set([0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc
 let sharpDecoder;
 
 function dimensions(width, height, format) {
-  if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1) throw new Error(`Malformed ${format} image dimensions`);
+  const valid =
+    format === 'svg'
+      ? Number.isFinite(width) && Number.isFinite(height) && width > 0 && height > 0
+      : Number.isInteger(width) && Number.isInteger(height) && width >= 1 && height >= 1;
+  if (!valid) throw new Error(`Malformed ${format} image dimensions`);
   return { width, height, format };
 }
 
@@ -172,7 +176,48 @@ export function readImageDimensions(bytes) {
   if (bytes.subarray(0, 8).equals(pngSignature)) return readPngDimensions(bytes);
   if (bytes[0] === 0xff && bytes[1] === 0xd8) return readJpegDimensions(bytes);
   if (bytes.toString('ascii', 0, 4) === 'RIFF' && bytes.toString('ascii', 8, 12) === 'WEBP') return readWebpDimensions(bytes);
-  throw new Error('Unsupported image format; expected PNG, JPEG, or WebP');
+  const firstNonWhitespace = bytes.find((byte) => ![0x09, 0x0a, 0x0d, 0x20, 0xef, 0xbb, 0xbf].includes(byte));
+  if (firstNonWhitespace === 0x3c) return readSvgDimensions(bytes);
+  throw new Error('Unsupported image format; expected PNG, JPEG, WebP, or safe SVG');
+}
+
+function readSvgDimensions(bytes) {
+  if (bytes.length === 0 || bytes.length > 256 * 1024) {
+    throw new Error('Unsafe SVG: file must be between 1 byte and 256 KiB');
+  }
+  let source;
+  try {
+    source = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+  } catch {
+    throw new Error('Unsafe SVG: source must be valid UTF-8');
+  }
+  const trimmed = source.replace(/^\uFEFF/, '').trim();
+  const root = trimmed.match(/^(?:<\?xml\s+[^?]*\?>\s*)?<svg\b([^>]*)>[\s\S]*<\/svg>\s*$/i);
+  if (!root) throw new Error('Unsafe SVG: expected one complete svg document');
+
+  const unsafeRules = [
+    /<!DOCTYPE|<!ENTITY/i,
+    /<(?:[A-Za-z_][\w.-]*:)?(?:script|foreignObject|iframe|object|embed|image|audio|video|style|link|a|use|animate|animateMotion|animateTransform|set|discard|mpath)\b/i,
+    /\bon[a-z]+\s*=/i,
+    /\bstyle\s*=/i,
+    /\b(?:href|xlink:href|src)\s*=/i,
+    /(?:url\s*\(|@import|javascript:|data:)/i,
+    /<\?(?!xml\b)/i,
+  ];
+  if (unsafeRules.some((pattern) => pattern.test(trimmed))) {
+    throw new Error('Unsafe SVG: active content or external references are not allowed');
+  }
+  if (!/\bxmlns\s*=\s*(["'])http:\/\/www\.w3\.org\/2000\/svg\1/i.test(root[1])) {
+    throw new Error('Unsafe SVG: the standard SVG namespace is required');
+  }
+
+  const viewBox = root[1].match(/\bviewBox\s*=\s*(["'])([^"']+)\1/i)?.[2];
+  if (!viewBox) throw new Error('Unsafe SVG: a finite positive viewBox is required');
+  const values = viewBox.trim().split(/[\s,]+/).map(Number);
+  if (values.length !== 4 || values.some((value) => !Number.isFinite(value)) || values[2] <= 0 || values[3] <= 0) {
+    throw new Error('Unsafe SVG: a finite positive viewBox is required');
+  }
+  return dimensions(values[2], values[3], 'svg');
 }
 
 function getSharpDecoder() {
@@ -190,6 +235,7 @@ function getSharpDecoder() {
 
 export async function validateImageDecode(bytes) {
   if (!Buffer.isBuffer(bytes)) throw new Error('Image bytes must be a Buffer');
+  if (readImageDimensions(bytes).format === 'svg') return;
   const sharp = getSharpDecoder();
   try {
     await sharp(bytes, { failOn: 'warning' }).raw().toBuffer();
@@ -210,7 +256,7 @@ export async function describeGithubAsset(assetPath, { rootDirectory = repositor
 
 async function runRegistration(argumentsList = process.argv.slice(2)) {
   const [assetPath, ...unsupported] = argumentsList.filter((argument) => argument !== '--');
-  if (!assetPath || unsupported.length > 0) throw new Error('Usage: node scripts/register-github-asset.mjs <repository-relative PNG, JPEG, or WebP path>');
+  if (!assetPath || unsupported.length > 0) throw new Error('Usage: node scripts/register-github-asset.mjs <repository-relative PNG, JPEG, WebP, or safe SVG path>');
   process.stdout.write(`${JSON.stringify(await describeGithubAsset(assetPath), null, 2)}\n`);
 }
 

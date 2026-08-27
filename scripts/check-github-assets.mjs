@@ -62,6 +62,7 @@ function validateRequiredProvenance(record, state, rootDirectory, now, prefix, e
 async function validateRecord(record, rootDirectory, now, seenIds, seenPaths) {
   if (!record || typeof record !== 'object' || Array.isArray(record)) return ['Asset record must be an object'];
   const errors = [];
+  let detectedFormat = null;
   const prefix = isNonEmptyString(record.id) ? record.id : 'asset';
   if (!semanticIdPattern.test(record.id ?? '')) errors.push(`${prefix}: id must be a semantic kebab-case identifier`);
   if (seenIds.has(record.id)) errors.push(`${prefix}: duplicate asset id`);
@@ -76,18 +77,23 @@ async function validateRecord(record, rootDirectory, now, seenIds, seenPaths) {
       try {
         const bytes = readFileSync(absolutePath);
         const image = readImageDimensions(bytes);
+        detectedFormat = image.format;
         await validateImageDecode(bytes);
         if (record.width !== image.width || record.height !== image.height) errors.push(`${prefix}: dimensions do not match current ${image.format.toUpperCase()} bytes`);
         if (record.sha256 !== createHash('sha256').update(bytes).digest('hex')) errors.push(`${prefix}: sha256 does not match current bytes`);
       } catch (error) {
-        errors.push(`${prefix}: image must be a supported, well-formed PNG, JPEG, or WebP (${error.message})`);
+        errors.push(`${prefix}: image must be a supported, well-formed PNG, JPEG, WebP, or safe SVG (${error.message})`);
       }
     }
   }
   if (!kinds.has(record.kind)) errors.push(`${prefix}: kind must be host_proof, product_proof, or editorial`);
   if (!states.has(record.state)) errors.push(`${prefix}: state must be reference_only, draft_editorial, publishable_proof, or retired`);
   if (!environments.has(record.sourceEnvironment)) errors.push(`${prefix}: sourceEnvironment is invalid`);
-  if (!Number.isInteger(record.width) || record.width < 1 || !Number.isInteger(record.height) || record.height < 1) errors.push(`${prefix}: dimensions must be positive integers`);
+  const validDimensions =
+    detectedFormat === 'svg'
+      ? Number.isFinite(record.width) && record.width > 0 && Number.isFinite(record.height) && record.height > 0
+      : Number.isInteger(record.width) && record.width >= 1 && Number.isInteger(record.height) && record.height >= 1;
+  if (!validDimensions) errors.push(`${prefix}: dimensions must be positive integers for raster assets or positive finite numbers for SVG assets`);
   if (!sha256Pattern.test(record.sha256 ?? '')) errors.push(`${prefix}: sha256 must be a 64-character lowercase hexadecimal hash`);
   if (!isNonEmptyString(record.claim)) errors.push(`${prefix}: claim is required`);
   if (!Array.isArray(record.placements) || record.placements.length === 0 || record.placements.some((placement) => !isNonEmptyString(placement))) errors.push(`${prefix}: placements must contain one or more non-empty values`);

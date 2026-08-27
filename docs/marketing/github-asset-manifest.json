@@ -116,6 +116,28 @@
       "approvedBy": null
     },
     {
+      "id": "maxvideoai-logo-mark",
+      "path": "plugins/maxvideoai/assets/logo-mark.svg",
+      "kind": "editorial",
+      "state": "publishable_proof",
+      "capturedAt": "2026-08-27",
+      "sourceEnvironment": "production",
+      "host": null,
+      "hostVersion": null,
+      "maxvideoaiRevision": "cd69c8cb82948cd65cf00e601108dae943ee761b",
+      "width": 548.74,
+      "height": 548.74,
+      "sha256": "42b5247999993eb56effaf768fc51f59a2d82c5382f1b7f2b8e4963cd5e8bc91",
+      "claim": "Official MaxVideoAI brand mark for public plugin identity; it is a brand asset, not product or native host proof.",
+      "placements": ["plugin_manifest", "repository_brand"],
+      "alt": "MaxVideoAI white monogram on a dark rounded square",
+      "reviewTrigger": "Refresh after an approved MaxVideoAI identity or plugin-icon change.",
+      "approvedBy": "MaxVideoAI owner",
+      "lastReviewedAt": "2026-08-27",
+      "lastReviewedRevision": "eaf5f3c158b377b983d92140e2985f1cd17a05a1",
+      "freshnessStatus": "current"
+    },
+    {
       "id": "maxvideoai-workspace-production",
       "path": "plugins/maxvideoai/assets/screenshots/maxvideoai-workspace-production.jpg",
       "kind": "product_proof",

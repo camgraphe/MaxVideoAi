@@ -61,6 +61,12 @@ function png(width = 3, height = 2): Buffer {
   return Buffer.concat([signature, pngChunk('IHDR', ihdr), pngChunk('IDAT', deflateSync(rows)), pngChunk('IEND', Buffer.alloc(0))]);
 }
 
+function svg(width = 12.5, height = 9.25): Buffer {
+  return Buffer.from(
+    `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Safe test mark"><rect width="${width}" height="${height}" fill="#111827"/></svg>\n`,
+  );
+}
+
 function jpeg(width = 7, height = 5): Buffer {
   const sof = Buffer.alloc(19);
   sof.set([0xff, 0xc0, 0, 17, 8]);
@@ -176,6 +182,61 @@ test('keeps structural parsing synchronous and rejects malformed image container
   assert.throws(() => readImageDimensions(verifiedVp8L.subarray(0, -1)), /malformed/i);
   assert.throws(() => readImageDimensions(verifiedVp8.subarray(0, -1)), /malformed/i);
   assert.throws(() => readImageDimensions(webpVp8X(15, 16)), /canvas|malformed/i);
+});
+
+test('accepts strict self-contained SVG assets and rejects active or external content', async () => {
+  assert.deepEqual(readImageDimensions(svg()), { width: 12.5, height: 9.25, format: 'svg' });
+  await assert.doesNotReject(validateImageDecode(svg()));
+
+  const unsafe = [
+    '<!DOCTYPE svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"></svg>',
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><script>alert(1)</script></svg>',
+    '<svg xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><svg:script>alert(1)</svg:script></svg>',
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><set attributeName="onload" to="alert(1)"/></svg>',
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><path style="fill:&#x75;rl(https://example.com/a.png)"/></svg>',
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><image href="https://example.com/a.png"/></svg>',
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1" onload="alert(1)"></svg>',
+  ];
+  for (const source of unsafe) {
+    assert.throws(() => readImageDimensions(Buffer.from(source)), /unsafe svg/i);
+  }
+  assert.throws(
+    () => readImageDimensions(Buffer.from([0x3c, 0x73, 0x76, 0x67, 0xc3, 0x28, 0x3e])),
+    /utf-8|svg/i,
+  );
+});
+
+test('validates a publishable SVG manifest record with fractional viewBox dimensions', async () => {
+  const fixture = createFixtureRepository();
+  try {
+    const bytes = svg();
+    const assetPath = 'plugins/maxvideoai/assets/logo-mark.svg';
+    writeFileSync(path.join(fixture.root, assetPath), bytes);
+    const record = {
+      ...fixture.pluginAsset,
+      id: 'maxvideoai-logo-mark',
+      path: assetPath,
+      width: 12.5,
+      height: 9.25,
+      sha256: createHash('sha256').update(bytes).digest('hex'),
+      claim: 'Official MaxVideoAI brand mark for public plugin identity; it is not product or host proof.',
+      alt: 'MaxVideoAI white monogram on a dark square',
+      placements: ['plugin_manifest'],
+    };
+    assert.deepEqual(
+      await validateGithubAssetManifest({ version: 1, assets: [record] }, { repositoryRoot: fixture.root, now }),
+      [],
+    );
+    assert.deepEqual(await describeGithubAsset(assetPath, { rootDirectory: fixture.root }), {
+      path: assetPath,
+      width: 12.5,
+      height: 9.25,
+      format: 'svg',
+      sha256: record.sha256,
+    });
+  } finally {
+    rmSync(fixture.root, { recursive: true, force: true });
+  }
 });
 
 test('decodes tiny and repository WebP assets while rejecting corrupt VP8L and VP8 entropy', async () => {
