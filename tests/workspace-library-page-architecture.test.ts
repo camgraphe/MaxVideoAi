@@ -88,3 +88,23 @@ test('workspace library helpers own static copy, fetchers, keys, and href helper
   assert.match(helpersSource, /export function getAssetJobHref/);
   assert.match(helpersSource, /export function inferKind/);
 });
+
+test('workspace library honors a recent-render deep link from the MCP result card', async () => {
+  const helpers = await import(
+    '../frontend/app/(core)/(workspace)/app/library/_lib/library-page-helpers.ts'
+  ) as unknown as Record<string, unknown>;
+  const resolveLibraryEntry = helpers.resolveLibraryEntry;
+  assert.equal(typeof resolveLibraryEntry, 'function');
+  if (typeof resolveLibraryEntry !== 'function') return;
+
+  assert.deepEqual(
+    (resolveLibraryEntry as (params: URLSearchParams) => unknown)(
+      new URLSearchParams('view=review&kind=video&job=completed-video-job'),
+    ),
+    { view: 'review', kind: 'video', jobId: 'completed-video-job' },
+  );
+
+  const clientSource = readFileSync(clientPath, 'utf8');
+  assert.match(clientSource, /useSearchParams\(\)/);
+  assert.match(clientSource, /resolveLibraryEntry\(searchParams\)/);
+});

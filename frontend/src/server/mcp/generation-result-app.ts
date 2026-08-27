@@ -1,6 +1,6 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
-export const GENERATION_RESULT_APP_URI = 'ui://maxvideoai/generation-result-v1.html';
+export const GENERATION_RESULT_APP_URI = 'ui://maxvideoai/generation-result-v2.html';
 
 const FIXED_MEDIA_ORIGINS = [
   'https://cdn.maxvideoai.com',
@@ -263,6 +263,7 @@ export function buildGenerationResultAppHtml(): string {
       const downloadButton = document.getElementById('download');
       const openButton = document.getElementById('open');
       let downloadUrl = null;
+      let downloadName = 'maxvideoai-generation';
       let openUrl = null;
       let requestId = 1;
       let initialized = false;
@@ -298,28 +299,21 @@ export function buildGenerationResultAppHtml(): string {
         }
       }
 
-      function downloadFilename(mediaUrl, jobId, resultSurface) {
-        const safeJobId = typeof jobId === 'string'
-          ? jobId.replace(/[^a-z0-9._-]+/gi, '-').replace(/-+/g, '-').slice(0, 96)
-          : 'generation';
-        let extension = resultSurface === 'video' ? 'mp4' : 'jpg';
-        try {
-          const match = new URL(mediaUrl).pathname.match(/\\.([a-z0-9]{2,5})$/i);
-          if (match) extension = match[1].toLowerCase();
-        } catch {
-          // safeUrl already validates mediaUrl; keep the surface fallback.
-        }
-        return 'maxvideoai-' + (safeJobId || 'generation') + '.' + extension;
-      }
-
-      function buildDownloadUrl(libraryUrl, mediaUrl, jobId, resultSurface) {
-        if (!libraryUrl || !mediaUrl) return null;
+      function buildResultLibraryUrl(libraryUrl, jobId, resultSurface) {
+        if (
+          !libraryUrl
+          || typeof jobId !== 'string'
+          || !jobId.trim()
+          || jobId.length > 256
+          || (resultSurface !== 'video' && resultSurface !== 'image')
+        ) return null;
         try {
           const destination = new URL(libraryUrl);
-          destination.pathname = '/api/download';
+          destination.pathname = '/app/library';
           destination.search = '';
-          destination.searchParams.set('url', mediaUrl);
-          destination.searchParams.set('filename', downloadFilename(mediaUrl, jobId, resultSurface));
+          destination.searchParams.set('view', 'review');
+          destination.searchParams.set('kind', resultSurface);
+          destination.searchParams.set('job', jobId);
           return safeUrl(destination.toString());
         } catch {
           return null;
@@ -331,15 +325,17 @@ export function buildGenerationResultAppHtml(): string {
         const media = record(result?.result);
         const workspace = record(result?.workspace);
         const library = record(result?.library);
+        const download = record(result?.download);
         const isComplete = result?.status === 'completed';
         const libraryUrl = safeUrl(library?.url);
-        const destination = libraryUrl || safeUrl(workspace?.url);
+        const destination = buildResultLibraryUrl(libraryUrl, result?.jobId, result?.surface)
+          || safeUrl(workspace?.url)
+          || libraryUrl;
         const videoUrl = media?.surface === 'video' ? safeUrl(media.videoUrl) : null;
         const posterUrl = media?.surface === 'video' ? safeUrl(media.thumbnailUrl) : null;
         const imageUrl = media?.surface === 'image' && Array.isArray(media.imageUrls)
           ? safeUrl(media.imageUrls[0])
           : null;
-        const primaryMediaUrl = videoUrl || imageUrl;
 
         status.textContent = isComplete ? 'Completed' : String(result?.status || 'Ready');
         surface.textContent = result?.surface === 'image' ? 'Image' : 'Video';
@@ -349,9 +345,10 @@ export function buildGenerationResultAppHtml(): string {
           : 'Available in your connected MaxVideoAI account';
         openUrl = destination;
         openButton.disabled = !openUrl;
-        downloadUrl = isComplete
-          ? buildDownloadUrl(libraryUrl || destination, primaryMediaUrl, result?.jobId, result?.surface)
-          : null;
+        downloadUrl = isComplete ? safeUrl(download?.url) : null;
+        downloadName = typeof download?.filename === 'string' && download.filename.length <= 160
+          ? download.filename
+          : 'maxvideoai-generation';
         downloadButton.disabled = !downloadUrl;
 
         video.pause();
@@ -459,11 +456,14 @@ export function buildGenerationResultAppHtml(): string {
 
       downloadButton.addEventListener('click', async () => {
         if (!downloadUrl) return;
-        if (window.openai?.openExternal) {
-          await window.openai.openExternal({ href: downloadUrl, redirectUrl: false });
-          return;
-        }
-        void request('ui/open-link', { url: downloadUrl });
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = downloadName;
+        link.rel = 'noopener noreferrer';
+        link.hidden = true;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
       });
 
       if (window.openai?.toolOutput) render(window.openai.toolOutput);

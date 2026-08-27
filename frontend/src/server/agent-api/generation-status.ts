@@ -43,6 +43,12 @@ export type AgentGenerationRecovery = Omit<AgentGenerationStatus, 'retryAfterSec
   retry: AgentGenerationRetry | null;
 };
 
+export type AgentGenerationDownload = {
+  url: string;
+  filename: string;
+  expiresAt: string;
+};
+
 export type AgentGenerationRecoveryPage = {
   items: AgentGenerationRecovery[];
   nextCursor: string | null;

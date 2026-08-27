@@ -6,6 +6,27 @@ export type LibraryView = 'saved' | 'review';
 export type LibraryKind = 'image' | 'video' | 'audio';
 export type SavedAssetSource = 'all' | 'upload' | 'generated' | 'storyboard' | 'character' | 'angle' | 'upscale';
 
+export type LibraryEntry = {
+  view: LibraryView;
+  kind: LibraryKind;
+  jobId: string | null;
+};
+
+export function resolveLibraryEntry(params: Pick<URLSearchParams, 'get'> | null): LibraryEntry {
+  const view = params?.get('view') === 'review' ? 'review' : 'saved';
+  const requestedKind = params?.get('kind');
+  const kind: LibraryKind = requestedKind === 'video' || requestedKind === 'audio'
+    ? requestedKind
+    : 'image';
+  const requestedJobId = params?.get('job');
+  const jobId = requestedJobId
+    && requestedJobId === requestedJobId.trim()
+    && requestedJobId.length <= 256
+    ? requestedJobId
+    : null;
+  return { view, kind, jobId };
+}
+
 export type UserAsset = {
   id: string;
   url: string;

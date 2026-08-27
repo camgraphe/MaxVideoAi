@@ -725,11 +725,29 @@ export async function getStorageObjectBuffer(key: string, options: { signal?: Ab
   return storageBodyToBuffer(response.Body, options.signal);
 }
 
-export async function createSignedDownloadUrl(key: string, { expiresInSeconds }: { expiresInSeconds: number }): Promise<string> {
+export async function createSignedDownloadUrl(
+  key: string,
+  {
+    expiresInSeconds,
+    downloadFilename,
+  }: {
+    expiresInSeconds: number;
+    downloadFilename?: string;
+  },
+): Promise<string> {
   const client = getS3Client();
+  const safeDownloadFilename = downloadFilename
+    ?.trim()
+    .replace(/[^a-zA-Z0-9._-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 160);
   const command = new GetObjectCommand({
     Bucket: S3_BUCKET,
     Key: key,
+    ...(safeDownloadFilename
+      ? { ResponseContentDisposition: `attachment; filename="${safeDownloadFilename}"` }
+      : {}),
   });
   return getSignedUrl(client, command, { expiresIn: expiresInSeconds });
 }

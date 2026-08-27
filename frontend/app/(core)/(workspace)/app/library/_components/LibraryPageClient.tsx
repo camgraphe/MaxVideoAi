@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import deepmerge from 'deepmerge';
 import { CheckCircle2, Download, History, Plus, Trash2 } from 'lucide-react';
 import { HeaderBar } from '@/components/HeaderBar';
@@ -21,6 +22,7 @@ import {
   formatTemplate,
   getAssetJobHref,
   LIBRARY_PAGE_SIZE,
+  resolveLibraryEntry,
   type LibraryCopy,
   type LibraryKind,
   type LibraryView,
@@ -28,6 +30,8 @@ import {
 } from '../_lib/library-page-helpers';
 
 export function LibraryPageClient() {
+  const searchParams = useSearchParams();
+  const libraryEntry = useMemo(() => resolveLibraryEntry(searchParams), [searchParams]);
   const toolsEnabled = FEATURES.workflows.toolsSection;
   const { t } = useI18n();
   const { user, loading: authLoading } = useRequireAuth({ redirectIfLoggedOut: false });
@@ -35,8 +39,8 @@ export function LibraryPageClient() {
   const copy = useMemo<LibraryCopy>(() => {
     return deepmerge<LibraryCopy>(DEFAULT_LIBRARY_COPY, (rawCopy ?? {}) as Partial<LibraryCopy>);
   }, [rawCopy]);
-  const [activeView, setActiveView] = useState<LibraryView>('saved');
-  const [activeKind, setActiveKind] = useState<LibraryKind>('image');
+  const [activeView, setActiveView] = useState<LibraryView>(libraryEntry.view);
+  const [activeKind, setActiveKind] = useState<LibraryKind>(libraryEntry.kind);
   const [activeSource, setActiveSource] = useState<SavedAssetSource>('all');
   const [savedAssetLimit, setSavedAssetLimit] = useState(LIBRARY_PAGE_SIZE);
   const [recentOutputLimit, setRecentOutputLimit] = useState(LIBRARY_PAGE_SIZE);
@@ -62,6 +66,14 @@ export function LibraryPageClient() {
     recentOutputLimit,
     toolsEnabled,
   });
+  const displayedAssets = useMemo(() => {
+    if (activeView !== 'review' || activeKind !== libraryEntry.kind || !libraryEntry.jobId) {
+      return currentAssets;
+    }
+    const targetIndex = currentAssets.findIndex((asset) => asset.jobId === libraryEntry.jobId);
+    if (targetIndex <= 0) return currentAssets;
+    return [currentAssets[targetIndex]!, ...currentAssets.slice(0, targetIndex), ...currentAssets.slice(targetIndex + 1)];
+  }, [activeKind, activeView, currentAssets, libraryEntry.jobId, libraryEntry.kind]);
   const {
     importInputRef,
     deletingId,
@@ -217,7 +229,7 @@ export function LibraryPageClient() {
                 subtitle={activeView === 'review' ? copy.review.subtitle : copy.hero.subtitle}
                 countLabel={assetCountLabel}
                 assetType={activeKind}
-                assets={currentAssets}
+                assets={displayedAssets}
                 isLoading={
                   activeView === 'review'
                     ? recentLoading && currentAssets.length === 0

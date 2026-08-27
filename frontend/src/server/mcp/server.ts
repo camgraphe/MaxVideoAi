@@ -44,6 +44,7 @@ import {
   getAgentGenerationStatus,
   listAgentRecentGenerations,
   type AgentGenerationRecovery,
+  type AgentGenerationDownload,
   type AgentGenerationRecoveryPage,
   type GetAgentGenerationStatusInput,
   type ListAgentRecentGenerationsInput,
@@ -106,6 +107,10 @@ export type MaxVideoAiMcpServices = {
     input: GetAgentGenerationStatusInput,
     principal: AgentPrincipal,
   ): Promise<AgentGenerationRecovery>;
+  createGenerationDownload?(
+    recovery: AgentGenerationRecovery,
+    principal: AgentPrincipal,
+  ): Promise<AgentGenerationDownload | null>;
   listRecentGenerations?(
     input: ListAgentRecentGenerationsInput,
     principal: AgentPrincipal,
