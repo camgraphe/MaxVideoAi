@@ -121,7 +121,10 @@ test('create_reference_upload_link is gated, strict, non-destructive, and open-w
       return expected;
     },
   };
-  const server = createMaxVideoAiMcpServer(principal, services, { referenceUploads: true });
+  const server = createMaxVideoAiMcpServer(principal, services, {
+    paidGeneration: false,
+    referenceUploads: true,
+  });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   await server.connect(serverTransport);
   const client = new Client({ name: 'reference-upload-contract', version: '1.0.0' });

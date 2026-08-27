@@ -218,7 +218,10 @@ function assertRecommendationResult(value: unknown): void {
 }
 
 async function connectedClient(serviceOverrides: Partial<MaxVideoAiMcpServices> = {}) {
-  const server = createMaxVideoAiMcpServer(principal, services(serviceOverrides));
+  const server = createMaxVideoAiMcpServer(principal, services(serviceOverrides), {
+    paidGeneration: false,
+    referenceUploads: false,
+  });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   await server.connect(serverTransport);
   const client = new Client({ name: 'contract-client', version: '1.0.0' });
@@ -314,7 +317,10 @@ test('paid prepare schema exposes canonical settings and accepts full video refe
     listRecentGenerations: async () => ({ items: [], nextCursor: null }) as never,
     createTopupLink: async () => ({}) as never,
   });
-  const server = createMaxVideoAiMcpServer(principal, operationalServices, { paidGeneration: true });
+  const server = createMaxVideoAiMcpServer(principal, operationalServices, {
+    paidGeneration: true,
+    referenceUploads: false,
+  });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   await server.connect(serverTransport);
   const client = new Client({ name: 'paid-schema-contract', version: '1.0.0' });

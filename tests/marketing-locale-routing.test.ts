@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
 import { NextRequest } from 'next/server';
 import registry from '../frontend/config/model-registry.json' with { type: 'json' };
+import { shouldHandleLocale } from '../frontend/lib/middleware/routing-locale.ts';
 import { handleMarketingSlug } from '../frontend/lib/middleware/routing-marketing.ts';
 import { config as middlewareConfig, middleware } from '../frontend/middleware.ts';
 
@@ -104,6 +105,14 @@ test('public marketing URLs remain authoritative over browser locale detection',
 
   assert.match(routingLocaleSource, /localeDetection:\s*false/);
   assert.doesNotMatch(middlewareSource, /getPreferredLocale\(req\)/);
+});
+
+test('private MCP reference-upload handoffs bypass marketing locale routing', () => {
+  assert.equal(
+    shouldHandleLocale(`/mcp/reference-upload/mru_${'A'.repeat(43)}`),
+    false,
+    'private upload links must reach their non-localized account route for human browsers'
+  );
 });
 
 test('model-shaped compatibility redirects are not owned by marketing middleware', () => {

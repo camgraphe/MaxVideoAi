@@ -133,10 +133,10 @@ function englishGuides(client: McpClientId): IntegrationHostGuide[] {
     {
       hostId: 'codexCli',
       title: 'Connect from Codex CLI',
-      intro: 'Register the remote server, authorize MaxVideoAI in the browser, then use the plugin from your conversation.',
+      intro: 'Register the remote server, authorize MaxVideoAI in the browser, then use MaxVideoAI from your conversation.',
       steps: [
-        { title: 'Add MaxVideoAI', body: 'Register the remote MCP server with the command below.' },
-        { title: 'Authorize the account', body: 'Start OAuth login with the minimal identity scopes.' },
+        { title: 'Add MaxVideoAI', body: 'Register the remote MCP server. Current Codex versions normally open OAuth automatically.' },
+        { title: 'Authorize the account', body: 'Complete browser sign-in. Use the manual login command only if OAuth did not open or needs renewal.' },
         { title: 'Check the connection', body: 'Read the saved connection, then ask Codex for current models or a project budget.' },
       ],
       commandLabel: 'Codex CLI commands',
@@ -146,7 +146,8 @@ function englishGuides(client: McpClientId): IntegrationHostGuide[] {
         'codex mcp get maxvideoai',
       ],
       setupValues: [],
-      limitation: 'Codex uses the same MaxVideoAI account, current model catalog, exact quotes and confirmation boundary.',
+      authTrigger: 'The first command normally starts OAuth automatically; use the second only if browser authorization did not start or must be renewed.',
+      limitation: 'These commands install the MCP connection, which is enough to use MaxVideoAI. They do not install the separate plan and generate skill package; that package must be distributed and installed independently.',
     },
   ];
 }
@@ -207,10 +208,10 @@ function frenchGuides(client: McpClientId): IntegrationHostGuide[] {
     {
       hostId: 'codexCli',
       title: 'Connecter MaxVideoAI depuis Codex CLI',
-      intro: 'Enregistrez le serveur distant, autorisez MaxVideoAI dans le navigateur, puis utilisez le plugin dans la conversation.',
+      intro: 'Enregistrez le serveur distant, autorisez MaxVideoAI dans le navigateur, puis utilisez MaxVideoAI dans la conversation.',
       steps: [
-        { title: 'Ajouter MaxVideoAI', body: 'Enregistrez le serveur MCP distant avec la commande ci-dessous.' },
-        { title: 'Autoriser le compte', body: 'Lancez OAuth avec les autorisations d’identité minimales.' },
+        { title: 'Ajouter MaxVideoAI', body: 'Enregistrez le serveur MCP distant. Les versions actuelles de Codex ouvrent normalement OAuth automatiquement.' },
+        { title: 'Autoriser le compte', body: 'Terminez la connexion dans le navigateur. Utilisez la commande de connexion manuelle uniquement si OAuth ne s’est pas ouvert ou doit être renouvelé.' },
         { title: 'Vérifier la connexion', body: 'Relisez la connexion puis demandez les modèles actuels ou un budget de projet.' },
       ],
       commandLabel: 'Commandes Codex CLI',
@@ -220,7 +221,8 @@ function frenchGuides(client: McpClientId): IntegrationHostGuide[] {
         'codex mcp get maxvideoai',
       ],
       setupValues: [],
-      limitation: 'Codex retrouve le même compte, le catalogue actuel, les devis exacts et la validation avant dépense.',
+      authTrigger: 'La première commande démarre normalement OAuth automatiquement ; utilisez la deuxième uniquement si l’autorisation ne s’est pas ouverte ou doit être renouvelée.',
+      limitation: 'Ces commandes installent la connexion MCP, suffisante pour utiliser MaxVideoAI. Elles n’installent pas le package séparé des skills plan et generate ; ce package doit être distribué et installé indépendamment.',
     },
   ];
 }
@@ -281,10 +283,10 @@ function spanishGuides(client: McpClientId): IntegrationHostGuide[] {
     {
       hostId: 'codexCli',
       title: 'Conectar MaxVideoAI desde Codex CLI',
-      intro: 'Registra el servidor remoto, autoriza MaxVideoAI en el navegador y usa el plugin en la conversación.',
+      intro: 'Registra el servidor remoto, autoriza MaxVideoAI en el navegador y usa MaxVideoAI en la conversación.',
       steps: [
-        { title: 'Añadir MaxVideoAI', body: 'Registra el servidor MCP remoto con el comando siguiente.' },
-        { title: 'Autorizar la cuenta', body: 'Inicia OAuth con los permisos mínimos de identidad.' },
+        { title: 'Añadir MaxVideoAI', body: 'Registra el servidor MCP remoto. Las versiones actuales de Codex normalmente abren OAuth automáticamente.' },
+        { title: 'Autorizar la cuenta', body: 'Completa el acceso en el navegador. Usa el comando de inicio manual solo si OAuth no se abrió o debe renovarse.' },
         { title: 'Comprobar la conexión', body: 'Lee la conexión y consulta los modelos actuales o un presupuesto de proyecto.' },
       ],
       commandLabel: 'Comandos de Codex CLI',
@@ -294,7 +296,8 @@ function spanishGuides(client: McpClientId): IntegrationHostGuide[] {
         'codex mcp get maxvideoai',
       ],
       setupValues: [],
-      limitation: 'Codex usa la misma cuenta, catálogo actual, precios exactos y aprobación antes de gastar.',
+      authTrigger: 'El primer comando normalmente inicia OAuth automáticamente; usa el segundo solo si la autorización no se abrió o debe renovarse.',
+      limitation: 'Estos comandos instalan la conexión MCP, suficiente para usar MaxVideoAI. No instalan el paquete separado de skills plan y generate; ese paquete debe distribuirse e instalarse de forma independiente.',
     },
   ];
 }
@@ -328,9 +331,9 @@ function englishCopy(client: McpClientId): IntegrationPageCopy {
       checkpointLabel: 'Compatibility checked',
       statuses: {
         claudeDesktop: 'Claude Desktop 1.37937.1 completed OAuth, model discovery, budgeting, exact quote, media, recovery, upload-handoff and top-up-handoff checks on controlled staging.',
-        claudeCode: 'The shared plugin and MCP configuration are ready; a separate Claude Code host check is still scheduled before a broad compatibility claim.',
-        chatgptDesktop: 'ChatGPT desktop supports direct remote MCP setup. The final MaxVideoAI production connection will be checked on this exact surface before launch.',
-        codexCli: 'Codex CLI 0.149.0-alpha.4.3 completed OAuth, account, catalog, budgeting, exact-quote and top-up-handoff checks on controlled staging.',
+        claudeCode: 'The shared connector configuration is ready, but a direct Claude Code production check has not yet been recorded.',
+        chatgptDesktop: 'ChatGPT desktop supports direct remote MCP setup, but a direct MaxVideoAI installation and output-rendering check has not yet been recorded on this exact surface.',
+        codexCli: 'Codex CLI 0.150.0-alpha.8 completed production installation, OAuth, account, catalog, recommendation, budgeting, exact-quote, paid-generation, recovery and inline-player contract checks.',
       },
     },
     setup: {
@@ -414,9 +417,9 @@ function frenchCopy(client: McpClientId): IntegrationPageCopy {
       checkpointLabel: 'Compatibilité vérifiée le',
       statuses: {
         claudeDesktop: 'Claude Desktop 1.37937.1 a validé sur le staging contrôlé OAuth, catalogue, budgets, devis exact, médias, récupération, envoi et recharge.',
-        claudeCode: 'Le plugin et la configuration MCP partagés sont prêts ; un contrôle Claude Code distinct reste prévu avant toute promesse large.',
-        chatgptDesktop: 'ChatGPT desktop permet une connexion MCP distante directe. Le serveur MaxVideoAI de production sera validé sur cette surface précise avant lancement.',
-        codexCli: 'Codex CLI 0.149.0-alpha.4.3 a validé sur le staging contrôlé OAuth, compte, catalogue, budgets, devis exact et recharge.',
+        claudeCode: 'La configuration du connecteur partagé est prête, mais aucun contrôle direct de Claude Code en production n’a encore été enregistré.',
+        chatgptDesktop: 'ChatGPT desktop accepte les connexions MCP distantes, mais aucune installation MaxVideoAI ni aucun rendu de résultat n’a encore été enregistré sur cette surface précise.',
+        codexCli: 'Codex CLI 0.150.0-alpha.8 a validé en production installation, OAuth, compte, catalogue, recommandations, budgets, devis exact, génération payante, récupération et contrat du lecteur intégré.',
       },
     },
     setup: {
@@ -502,9 +505,9 @@ function spanishCopy(client: McpClientId): IntegrationPageCopy {
       checkpointLabel: 'Compatibilidad comprobada',
       statuses: {
         claudeDesktop: 'Claude Desktop 1.37937.1 completó en staging controlado OAuth, catálogo, presupuestos, precio exacto, medios, recuperación, carga y recarga.',
-        claudeCode: 'El plugin y la configuración MCP compartidos están listos; falta una comprobación específica de Claude Code antes de una promesa amplia.',
-        chatgptDesktop: 'ChatGPT desktop admite una conexión MCP remota directa. El servidor de producción MaxVideoAI se validará en esta superficie antes del lanzamiento.',
-        codexCli: 'Codex CLI 0.149.0-alpha.4.3 completó en staging controlado OAuth, cuenta, catálogo, presupuestos, precio exacto y recarga.',
+        claudeCode: 'La configuración del conector compartido está lista, pero todavía no se ha registrado una comprobación directa de Claude Code en producción.',
+        chatgptDesktop: 'ChatGPT desktop admite MCP remoto, pero todavía no se ha registrado en esta superficie una instalación directa de MaxVideoAI ni el renderizado del resultado.',
+        codexCli: 'Codex CLI 0.150.0-alpha.8 completó en producción la instalación, OAuth, cuenta, catálogo, recomendaciones, presupuestos, precio exacto, generación de pago, recuperación y contrato del reproductor integrado.',
       },
     },
     setup: {

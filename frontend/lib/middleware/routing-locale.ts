@@ -23,6 +23,7 @@ const NON_LOCALIZED_PREFIXES = [
   '/login',
   '/auth',
   '/oauth',
+  '/mcp/reference-upload',
   '/settings',
   '/video',
   '/sitemap-video-pages.xml',

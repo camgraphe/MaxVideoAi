@@ -1,6 +1,6 @@
 {
   "evidenceKind": "hosted-checkpoint",
-  "lastChecked": "2026-08-26",
+  "lastChecked": "2026-08-27",
   "sourceEvidence": "docs/operations/mcp-host-compatibility-matrix.md",
   "hosts": {
     "claudeDesktop": {

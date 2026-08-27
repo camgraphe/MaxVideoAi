@@ -229,13 +229,52 @@ test('three client guides cover installation, OAuth, credits, recovery and disco
 });
 
 test('compatibility wording stays exact per tested host', async () => {
+  const { getIntegrationCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
+  );
+  const { getMcpPageCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
+  );
   const { getMcpCompatibilityEvidence } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-compatibility.ts'
   );
   const evidence = getMcpCompatibilityEvidence();
-  assert.equal(evidence.lastChecked, '2026-08-26');
+  assert.equal(evidence.lastChecked, '2026-08-27');
   assert.equal(evidence.clients.claude.hosts[0]?.status, 'verified');
   assert.equal(evidence.clients.codex.hosts[0]?.status, 'verified');
   assert.equal(evidence.clients.chatgpt.hosts[0]?.status, 'not-run');
   assert.equal(evidence.clients.claude.hosts[1]?.status, 'not-run');
+
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const integrationCopy = JSON.stringify(getIntegrationCopy(locale, 'codex'));
+    const hubCopy = JSON.stringify(getMcpPageCopy(locale));
+    assert.match(integrationCopy, /Codex CLI 0\.150\.0-alpha\.8/);
+    assert.match(hubCopy, /Codex CLI 0\.150\.0-alpha\.8/);
+    assert.doesNotMatch(
+      `${integrationCopy}\n${hubCopy}`,
+      /before launch|avant lancement|antes del lanzamiento/i,
+    );
+  }
+});
+
+test('Codex setup explains automatic OAuth and keeps manual login as fallback', async () => {
+  const { getIntegrationCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
+  );
+
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const guide = getIntegrationCopy(locale, 'codex').setup.hostGuides[0];
+    assert.ok(guide);
+    assert.match(
+      `${guide.steps.map((step) => step.body).join(' ')} ${guide.authTrigger ?? ''}`,
+      /automatically|automatiquement|automáticamente/i,
+    );
+    assert.match(
+      guide.authTrigger ?? '',
+      /only if|uniquement si|solo si/i,
+    );
+    assert.equal(guide.commands[0]?.startsWith('codex mcp add maxvideoai --url '), true);
+    assert.equal(guide.commands[1], 'codex mcp login maxvideoai --scopes openid,email,profile');
+    assert.equal(guide.commands[2], 'codex mcp get maxvideoai');
+  }
 });

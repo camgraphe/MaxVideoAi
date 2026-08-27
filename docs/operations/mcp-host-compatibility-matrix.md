@@ -1,6 +1,31 @@
 # MaxVideoAI MCP host compatibility matrix
 
-Last hosted checkpoint: 2026-08-26
+Last hosted checkpoint: 2026-08-27
+
+## Production checkpoint
+
+- Origin: `https://api.maxvideoai.com/mcp`
+- Vercel deployment: `dpl_Gf2b6Q5KHFvpRcuqYfHsHdt6YjNQ`
+- Git revision: `65522be9`
+- Publication: transport, OAuth, discovery, paid generation, reference uploads,
+  public marketing, and indexing enabled; introductory trial disabled
+- Operational profile: 14 tools, including the app-only fresh-download helper
+
+Codex CLI `0.150.0-alpha.8` registered the production endpoint under a disposable
+client name, discovered OAuth, opened browser authorization automatically, and
+completed account, catalogue, model-detail, recommendation, comparable-budget,
+exact-quote, recent-generation, status-recovery, and result-presentation calls.
+The disposable local MCP entry was removed after the installation check without
+changing the existing MaxVideoAI connections.
+
+One explicitly approved Luma Ray 3.2 image-to-video quote charged `$0.62`, was
+accepted after approximately 51 seconds without a gateway timeout, completed,
+and was saved to the connected production library. The MCP Apps v4 resource
+advertised native video, image, download, library, and workspace behavior; the
+returned output, preview, and thumbnail origins all accepted byte-range requests.
+The final production wallet was `$14.31` with no pending amount. Direct ChatGPT
+desktop and Claude Code production checks remain unrecorded and are not implied
+by this Codex evidence.
 
 This matrix separates verified staging behavior from production and directory
 claims. The controlled environment is public on the internet but isolated from
