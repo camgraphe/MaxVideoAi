@@ -19,12 +19,23 @@ type ReadinessModelResult = ReadinessModel & {
   status: number | null;
 };
 
+type ReadinessIamResult = {
+  ok: boolean;
+  status: number | null;
+  permissions: {
+    predict: boolean;
+    endpointGet: boolean;
+    serviceUsage: boolean;
+  };
+};
+
 export type GoogleVertexReadinessResult = {
   ok: boolean;
   projectId: string;
   location: string;
   checks: {
     oauth: { ok: boolean };
+    iam: ReadinessIamResult;
     gcs: { upload: boolean; read: boolean; delete: boolean };
     models: ReadinessModelResult[];
   };
@@ -38,6 +49,19 @@ type GoogleVertexReadinessDependencies = {
 };
 
 const PROBE_BODY = 'maxvideoai-vertex-readiness-v1';
+const REQUIRED_PROJECT_PERMISSIONS = [
+  'aiplatform.endpoints.predict',
+  'aiplatform.endpoints.get',
+  'serviceusage.services.use',
+] as const;
+
+function emptyIamResult(): ReadinessIamResult {
+  return {
+    ok: false,
+    status: null,
+    permissions: { predict: false, endpointGet: false, serviceUsage: false },
+  };
+}
 
 function imageModel(engineId: string): ReadinessModel {
   const providerModel = getFalEngineById(engineId)?.engine.providerMeta?.modelSlug?.trim();
@@ -141,17 +165,61 @@ async function probeModel(params: {
   fetchFn: typeof fetch;
 }): Promise<ReadinessModelResult> {
   const base = params.apiBaseUrl.replace(/\/+$/, '');
-  const resource = `projects/${encodeURIComponent(params.projectId)}/locations/${encodeURIComponent(
-    params.location,
-  )}/publishers/google/models/${encodeURIComponent(params.model.providerModel)}`;
   try {
-    const response = await params.fetchFn(`${base}/v1beta1/${resource}:getIamPolicy`, {
-      method: 'POST',
-      headers: { authorization: `Bearer ${params.accessToken}` },
-    });
+    const response = await params.fetchFn(
+      `${base}/v1/publishers/google/models/${encodeURIComponent(
+        params.model.providerModel,
+      )}?view=PUBLISHER_MODEL_VERSION_VIEW_BASIC`,
+      {
+        headers: {
+          authorization: `Bearer ${params.accessToken}`,
+          'x-goog-user-project': params.projectId,
+        },
+      },
+    );
     return { ...params.model, ok: response.ok, status: response.status };
   } catch {
     return { ...params.model, ok: false, status: null };
+  }
+}
+
+async function probeProjectPermissions(params: {
+  accessToken: string;
+  projectId: string;
+  fetchFn: typeof fetch;
+}): Promise<ReadinessIamResult> {
+  try {
+    const response = await params.fetchFn(
+      `https://cloudresourcemanager.googleapis.com/v1/projects/${encodeURIComponent(
+        params.projectId,
+      )}:testIamPermissions`,
+      {
+        method: 'POST',
+        headers: {
+          authorization: `Bearer ${params.accessToken}`,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({ permissions: REQUIRED_PROJECT_PERMISSIONS }),
+      },
+    );
+    const payload = (await response.json().catch(() => null)) as Record<string, unknown> | null;
+    const granted = new Set(
+      Array.isArray(payload?.permissions)
+        ? payload.permissions.filter((permission): permission is string => typeof permission === 'string')
+        : [],
+    );
+    const permissions = {
+      predict: granted.has('aiplatform.endpoints.predict'),
+      endpointGet: granted.has('aiplatform.endpoints.get'),
+      serviceUsage: granted.has('serviceusage.services.use'),
+    };
+    return {
+      ok: response.ok && permissions.predict && permissions.endpointGet && permissions.serviceUsage,
+      status: response.status,
+      permissions,
+    };
+  } catch {
+    return emptyIamResult();
   }
 }
 
@@ -169,6 +237,7 @@ export async function runGoogleVertexReadinessProbe(
     location,
     checks: {
       oauth: { ok: false },
+      iam: emptyIamResult(),
       gcs: { upload: false, read: false, delete: false },
       models: [],
     },
@@ -194,17 +263,18 @@ export async function runGoogleVertexReadinessProbe(
     fetchFn,
     randomId: (dependencies.randomIdFn ?? randomUUID)(),
   }).catch(() => ({ upload: false, read: false, delete: false }));
+  const iam = await probeProjectPermissions({ accessToken, projectId, fetchFn });
   const models = await Promise.all(
     readinessModels().map((model) =>
       probeModel({ accessToken, apiBaseUrl, projectId, location, model, fetchFn }),
     ),
   );
   const oauth = { ok: true };
-  const ok = oauth.ok && gcs.upload && gcs.read && gcs.delete && models.every((model) => model.ok);
+  const ok = oauth.ok && iam.ok && gcs.upload && gcs.read && gcs.delete && models.every((model) => model.ok);
   return {
     ok,
     projectId,
     location,
-    checks: { oauth, gcs, models },
+    checks: { oauth, iam, gcs, models },
   };
 }

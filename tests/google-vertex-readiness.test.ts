@@ -38,7 +38,16 @@ test('Google Vertex readiness verifies OAuth, private GCS round-trip, and all ei
     if (url.includes('storage.googleapis.com/storage/v1/') && method === 'DELETE') {
       return new Response(null, { status: 204 });
     }
-    if (url.endsWith(':getIamPolicy')) {
+    if (url.includes('cloudresourcemanager.googleapis.com/v1/projects/')) {
+      return new Response(JSON.stringify({
+        permissions: [
+          'aiplatform.endpoints.predict',
+          'aiplatform.endpoints.get',
+          'serviceusage.services.use',
+        ],
+      }), { status: 200 });
+    }
+    if (url.includes('/v1/publishers/google/models/') && method === 'GET') {
       return new Response('{}', { status: 200, headers: { 'content-type': 'application/json' } });
     }
     throw new Error(`Unexpected readiness URL: ${url}`);
@@ -53,6 +62,11 @@ test('Google Vertex readiness verifies OAuth, private GCS round-trip, and all ei
 
   assert.equal(result.ok, true);
   assert.deepEqual(result.checks.oauth, { ok: true });
+  assert.deepEqual(result.checks.iam, {
+    ok: true,
+    status: 200,
+    permissions: { predict: true, endpointGet: true, serviceUsage: true },
+  });
   assert.deepEqual(result.checks.gcs, { upload: true, read: true, delete: true });
   assert.equal(result.checks.models.length, 8);
   assert.equal(result.checks.models.every((model) => model.ok && model.status === 200), true);
@@ -69,7 +83,8 @@ test('Google Vertex readiness verifies OAuth, private GCS round-trip, and all ei
       'gemini-omni-flash',
     ],
   );
-  assert.equal(calls.filter((call) => call.url.endsWith(':getIamPolicy')).length, 8);
+  assert.equal(calls.filter((call) => call.url.includes('/v1/publishers/google/models/')).length, 8);
+  assert.equal(calls.some((call) => call.url.endsWith(':getIamPolicy')), false);
   assert.equal(calls.some((call) => call.method === 'POST' && call.url.includes('/upload/storage/v1/')), true);
   assert.equal(calls.some((call) => call.method === 'GET' && call.url.includes('generation=7')), true);
   assert.equal(calls.some((call) => call.method === 'DELETE' && call.url.includes('generation=7')), true);
@@ -91,10 +106,19 @@ test('Google Vertex readiness cleans up its probe object when one model is unava
     if (url.includes('storage.googleapis.com/storage/v1/') && method === 'DELETE') {
       return new Response(null, { status: 204 });
     }
+    if (url.includes('cloudresourcemanager.googleapis.com/v1/projects/')) {
+      return new Response(JSON.stringify({
+        permissions: [
+          'aiplatform.endpoints.predict',
+          'aiplatform.endpoints.get',
+          'serviceusage.services.use',
+        ],
+      }), { status: 200 });
+    }
     if (url.includes('veo-3.1-lite-generate-001')) {
       return new Response('{}', { status: 404 });
     }
-    if (url.endsWith(':getIamPolicy')) {
+    if (url.includes('/v1/publishers/google/models/') && method === 'GET') {
       return new Response('{}', { status: 200 });
     }
     throw new Error(`Unexpected readiness URL: ${url}`);
