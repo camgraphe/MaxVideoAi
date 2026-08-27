@@ -109,7 +109,7 @@ export function registerPrepareGenerationTool(
         'Use this when the user has selected an image model or a supported video workflow (t2v, i2v, i2v_standard, ref2v, fl2v, v2v, r2v, extend, a2v, retake, or reframe) and needs validation plus an exact short-lived quote. For video duration, send settings.durationSec in seconds, never settings.duration. It saves the quote but does not spend or generate. Do not use it as confirmation or skip the selected mode’s live model details.',
       inputSchema: prepareGenerationInputSchema,
       annotations: {
-        readOnlyHint: true,
+        readOnlyHint: false,
         destructiveHint: false,
         openWorldHint: false,
       },

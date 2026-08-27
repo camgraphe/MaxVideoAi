@@ -488,7 +488,7 @@ test('create_topup_link has exact UUID input, annotations, and explicit non-paym
         },
       };
     },
-  }), { paidGeneration: true });
+  }), { paidGeneration: true, referenceUploads: false });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   await server.connect(serverTransport);
   const client = new Client({ name: 'p9-topup', version: '1.0.0' });
@@ -504,7 +504,7 @@ test('create_topup_link has exact UUID input, annotations, and explicit non-paym
     readOnlyHint: false,
     destructiveHint: false,
     idempotentHint: false,
-    openWorldHint: true,
+    openWorldHint: false,
   });
   assert.deepEqual(tool.inputSchema.required, ['quoteId']);
   assert.deepEqual(Object.keys(tool.inputSchema.properties ?? {}), ['quoteId']);

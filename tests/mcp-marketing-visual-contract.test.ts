@@ -183,6 +183,32 @@ test('integration heroes lead with visual product evidence and link directly to 
   assert.doesNotMatch(preview, /autoPlay/);
 });
 
+test('verified integration setup steps use small, captioned, real-host captures', async () => {
+  const setup = requireFile(`${integrationComponentsRoot}/IntegrationSetupSection.tsx`);
+  assert.match(setup, /import Image from ['"]next\/image['"]/);
+  assert.match(setup, /step\.proof/);
+  assert.match(setup, /<figcaption/);
+  assert.match(setup, /loading="lazy"/);
+
+  const { getIntegrationCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
+  );
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const claudeDesktop = getIntegrationCopy(locale, 'claude').setup.hostGuides[0];
+    assert.equal(claudeDesktop?.steps.length, 3);
+    assert.equal(claudeDesktop?.steps.every((step) => step.proof), true);
+    for (const step of claudeDesktop?.steps ?? []) {
+      assert.equal(existsSync(`frontend/public${step.proof?.src}`), true);
+      assert.match(step.proof?.caption ?? '', /staging|préproduction|preproducción/i);
+    }
+
+    const claudeCode = getIntegrationCopy(locale, 'claude').setup.hostGuides[1];
+    assert.equal(claudeCode?.steps.some((step) => step.proof), false);
+    const chatgpt = getIntegrationCopy(locale, 'chatgpt').setup.hostGuides[0];
+    assert.equal(chatgpt?.steps.some((step) => step.proof), false);
+  }
+});
+
 test('homepage assistant workflow localizes the live catalog label and uses account library language', () => {
   const source = requireFile('frontend/components/marketing/home/HomeAssistantWorkflow.tsx');
   assert.match(source, /catalogLabel/);

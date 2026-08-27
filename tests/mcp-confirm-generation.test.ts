@@ -1138,8 +1138,14 @@ test('default registry remains five discovery tools and the explicit paid gate e
       tool: 'confirm_generation', arguments: { quoteId: QUOTE_ID, confirmed: true },
     } }),
   } as unknown as MaxVideoAiMcpServices;
-  const defaultServer = createMaxVideoAiMcpServer(principal, services);
-  const enabledServer = createMaxVideoAiMcpServer(principal, services, { paidGeneration: true });
+  const defaultServer = createMaxVideoAiMcpServer(principal, services, {
+    paidGeneration: false,
+    referenceUploads: false,
+  });
+  const enabledServer = createMaxVideoAiMcpServer(principal, services, {
+    paidGeneration: true,
+    referenceUploads: false,
+  });
   const defaultClient = new Client({ name: 'default-confirm-test', version: '1.0.0' });
   const enabledClient = new Client({ name: 'enabled-confirm-test', version: '1.0.0' });
   const [defaultClientTransport, defaultServerTransport] = InMemoryTransport.createLinkedPair();
@@ -1167,7 +1173,7 @@ test('default registry remains five discovery tools and the explicit paid gate e
   const confirm = tools.find((tool) => tool.name === 'confirm_generation');
   assert.deepEqual(confirm?.annotations, {
     readOnlyHint: false,
-    destructiveHint: false,
+    destructiveHint: true,
     idempotentHint: true,
     openWorldHint: true,
   });

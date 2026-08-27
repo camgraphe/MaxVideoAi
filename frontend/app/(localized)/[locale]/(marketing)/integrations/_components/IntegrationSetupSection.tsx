@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import type { AppLocale } from '@/i18n/locales';
 import type { McpCompatibilityClientEvidence } from '../../mcp/_lib/mcp-compatibility';
 import { formatMcpCheckpointDate } from '../../mcp/_lib/mcp-compatibility';
@@ -34,6 +35,22 @@ export function IntegrationSetupSection({
                 <ol className="mt-4 grid gap-3 md:grid-cols-3">
                   {guide.steps.map((step, index) => (
                     <li key={step.title} className="rounded-[12px] border border-hairline bg-surface p-4 dark:border-white/[0.14] dark:bg-white/[0.04]">
+                      {step.proof ? (
+                        <figure className="mb-4 overflow-hidden rounded-[8px] border border-hairline bg-white dark:border-white/[0.14] dark:bg-neutral-900">
+                          <Image
+                            src={step.proof.src}
+                            alt={step.proof.alt}
+                            width={576}
+                            height={384}
+                            sizes="(min-width: 768px) 30vw, 100vw"
+                            loading="lazy"
+                            className="aspect-[3/2] w-full object-cover object-top"
+                          />
+                          <figcaption className="border-t border-hairline px-3 py-2 text-[11px] leading-4 text-text-secondary dark:border-white/[0.12] dark:text-white/62">
+                            {step.proof.caption}
+                          </figcaption>
+                        </figure>
+                      ) : null}
                       <span className="text-xs font-semibold text-text-secondary dark:text-white/68">0{index + 1}</span>
                       <h4 className="mt-2 font-semibold text-text-primary dark:text-white">{step.title}</h4>
                       <p className="mt-2 text-sm leading-6 text-text-secondary dark:text-white/68">{step.body}</p>

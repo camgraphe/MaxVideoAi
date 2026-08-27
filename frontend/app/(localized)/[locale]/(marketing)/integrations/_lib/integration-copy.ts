@@ -4,11 +4,17 @@ import type { McpClientId, McpCompatibilityHostId } from '../../mcp/_lib/mcp-pag
 
 type IntegrationSetupValue = { label: string; value: string };
 
+type IntegrationStepProof = {
+  src: string;
+  alt: string;
+  caption: string;
+};
+
 type IntegrationHostGuide = {
   hostId: McpCompatibilityHostId;
   title: string;
   intro: string;
-  steps: Array<{ title: string; body: string }>;
+  steps: Array<{ title: string; body: string; proof?: IntegrationStepProof }>;
   commandLabel?: string;
   commands: string[];
   setupValues: IntegrationSetupValue[];
@@ -77,17 +83,76 @@ function label(client: McpClientId): IntegrationPageCopy['clientLabel'] {
   return client === 'claude' ? 'Claude' : 'Codex';
 }
 
+function claudeDesktopProofs(locale: AppLocale): [IntegrationStepProof, IntegrationStepProof, IntegrationStepProof] {
+  if (locale === 'fr') {
+    return [
+      {
+        src: '/media/mcp/claude-connectors-settings.jpg',
+        alt: 'Réglages réels des connecteurs dans Claude Desktop.',
+        caption: 'Capture réelle des réglages Claude sur le staging contrôlé, le 27 août 2026.',
+      },
+      {
+        src: '/media/mcp/claude-connector-connected-staging.jpg',
+        alt: 'Détail réel du connecteur MaxVideoAI dans Claude Desktop.',
+        caption: 'Connecteur, adresse et permissions vérifiés sur le staging contrôlé avant publication.',
+      },
+      {
+        src: '/media/mcp/claude-connector-connected-staging.jpg',
+        alt: 'État connecté et permissions du connecteur MaxVideoAI dans Claude.',
+        caption: 'État connecté réellement observé sur le staging contrôlé ; la production utilise api.maxvideoai.com.',
+      },
+    ];
+  }
+  if (locale === 'es') {
+    return [
+      {
+        src: '/media/mcp/claude-connectors-settings.jpg',
+        alt: 'Ajustes reales de conectores en Claude Desktop.',
+        caption: 'Captura real de los ajustes de Claude en la preproducción controlada, el 27 de agosto de 2026.',
+      },
+      {
+        src: '/media/mcp/claude-connector-connected-staging.jpg',
+        alt: 'Detalle real del conector MaxVideoAI en Claude Desktop.',
+        caption: 'Conector, dirección y permisos verificados en la preproducción controlada antes de publicar.',
+      },
+      {
+        src: '/media/mcp/claude-connector-connected-staging.jpg',
+        alt: 'Estado conectado y permisos del conector MaxVideoAI en Claude.',
+        caption: 'Estado conectado observado en la preproducción controlada; producción usa api.maxvideoai.com.',
+      },
+    ];
+  }
+  return [
+    {
+      src: '/media/mcp/claude-connectors-settings.jpg',
+      alt: 'Real connector settings in Claude Desktop.',
+      caption: 'Real Claude settings capture on controlled staging, 27 August 2026.',
+    },
+    {
+      src: '/media/mcp/claude-connector-connected-staging.jpg',
+      alt: 'Real MaxVideoAI connector details in Claude Desktop.',
+      caption: 'Connector, address and permissions verified on controlled staging before publication.',
+    },
+    {
+      src: '/media/mcp/claude-connector-connected-staging.jpg',
+      alt: 'Connected state and permissions for the MaxVideoAI connector in Claude.',
+      caption: 'Connected state observed on controlled staging; production uses api.maxvideoai.com.',
+    },
+  ];
+}
+
 function englishGuides(client: McpClientId): IntegrationHostGuide[] {
   if (client === 'claude') {
+    const proofs = claudeDesktopProofs('en');
     return [
       {
         hostId: 'claudeDesktop',
         title: 'Connect MaxVideoAI to Claude',
         intro: 'Add MaxVideoAI as a custom remote connector, then authorize your account in the browser.',
         steps: [
-          { title: 'Open connector settings', body: 'In Claude, add a custom connector using a remote MCP server.' },
-          { title: 'Add MaxVideoAI', body: 'Paste the server address below. Never paste an API key or account password.' },
-          { title: 'Approve the connection', body: 'Sign in to MaxVideoAI, review access, then return to Claude.' },
+          { title: 'Open connector settings', body: 'In Claude, add a custom connector using a remote MCP server.', proof: proofs[0] },
+          { title: 'Add MaxVideoAI', body: 'Paste the server address below. Never paste an API key or account password.', proof: proofs[1] },
+          { title: 'Approve the connection', body: 'Sign in to MaxVideoAI, review access, then return to Claude.', proof: proofs[2] },
         ],
         commands: [],
         setupValues: [{ label: 'MaxVideoAI server', value: MCP_PRODUCTION_RESOURCE_URL }],
@@ -132,37 +197,37 @@ function englishGuides(client: McpClientId): IntegrationHostGuide[] {
   return [
     {
       hostId: 'codexCli',
-      title: 'Connect from Codex CLI',
-      intro: 'Register the remote server, authorize MaxVideoAI in the browser, then use MaxVideoAI from your conversation.',
+      title: 'Install the MaxVideoAI plugin in Codex',
+      intro: 'Add the tagged MaxVideoAI marketplace, install the plugin, then authorize your account from a new Codex conversation.',
       steps: [
-        { title: 'Add MaxVideoAI', body: 'Register the remote MCP server. Current Codex versions normally open OAuth automatically.' },
-        { title: 'Authorize the account', body: 'Complete browser sign-in. Use the manual login command only if OAuth did not open or needs renewal.' },
-        { title: 'Check the connection', body: 'Read the saved connection, then ask Codex for current models or a project budget.' },
+        { title: 'Add the marketplace', body: 'Register the public MaxVideoAI repository at the reviewed 0.2.0 release tag.' },
+        { title: 'Install the plugin', body: 'Install MaxVideoAI once to get the plan and generate skills plus the production MCP connection.' },
+        { title: 'Start a new task', body: 'Open a new Codex conversation, use $plan or $generate, and complete OAuth when prompted.' },
       ],
-      commandLabel: 'Codex CLI commands',
+      commandLabel: 'Codex plugin commands',
       commands: [
-        `codex mcp add maxvideoai --url ${MCP_PRODUCTION_RESOURCE_URL}`,
-        'codex mcp login maxvideoai --scopes openid,email,profile',
-        'codex mcp get maxvideoai',
+        'codex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.2.0',
+        'codex plugin add maxvideoai@maxvideoai',
       ],
       setupValues: [],
-      authTrigger: 'The first command normally starts OAuth automatically; use the second only if browser authorization did not start or must be renewed.',
-      limitation: 'These commands install the MCP connection, which is enough to use MaxVideoAI. They do not install the separate plan and generate skill package; that package must be distributed and installed independently.',
+      authTrigger: 'OAuth starts when the new conversation first uses MaxVideoAI. Sign in or create the MaxVideoAI account you want to connect.',
+      limitation: 'The tagged GitHub package includes both plan and generate skills and the production MCP connection. Generation still waits for an exact quote and explicit approval.',
     },
   ];
 }
 
 function frenchGuides(client: McpClientId): IntegrationHostGuide[] {
   if (client === 'claude') {
+    const proofs = claudeDesktopProofs('fr');
     return [
       {
         hostId: 'claudeDesktop',
         title: 'Connecter MaxVideoAI à Claude',
         intro: 'Ajoutez MaxVideoAI comme connecteur distant personnalisé, puis autorisez votre compte dans le navigateur.',
         steps: [
-          { title: 'Ouvrir les réglages', body: 'Dans Claude, ajoutez un connecteur personnalisé utilisant un serveur MCP distant.' },
-          { title: 'Ajouter MaxVideoAI', body: 'Collez l’adresse ci-dessous. Ne collez jamais une clé API ou votre mot de passe.' },
-          { title: 'Approuver la connexion', body: 'Connectez-vous ou créez votre compte MaxVideoAI, approuvez l’accès, puis revenez dans Claude.' },
+          { title: 'Ouvrir les réglages', body: 'Dans Claude, ajoutez un connecteur personnalisé utilisant un serveur MCP distant.', proof: proofs[0] },
+          { title: 'Ajouter MaxVideoAI', body: 'Collez l’adresse ci-dessous. Ne collez jamais une clé API ou votre mot de passe.', proof: proofs[1] },
+          { title: 'Approuver la connexion', body: 'Connectez-vous ou créez votre compte MaxVideoAI, approuvez l’accès, puis revenez dans Claude.', proof: proofs[2] },
         ],
         commands: [],
         setupValues: [{ label: 'Serveur MaxVideoAI', value: MCP_PRODUCTION_RESOURCE_URL }],
@@ -207,37 +272,37 @@ function frenchGuides(client: McpClientId): IntegrationHostGuide[] {
   return [
     {
       hostId: 'codexCli',
-      title: 'Connecter MaxVideoAI depuis Codex CLI',
-      intro: 'Enregistrez le serveur distant, autorisez MaxVideoAI dans le navigateur, puis utilisez MaxVideoAI dans la conversation.',
+      title: 'Installer le plugin MaxVideoAI dans Codex',
+      intro: 'Ajoutez la marketplace MaxVideoAI taguée, installez le plugin puis autorisez votre compte depuis une nouvelle conversation Codex.',
       steps: [
-        { title: 'Ajouter MaxVideoAI', body: 'Enregistrez le serveur MCP distant. Les versions actuelles de Codex ouvrent normalement OAuth automatiquement.' },
-        { title: 'Autoriser le compte', body: 'Terminez la connexion dans le navigateur. Utilisez la commande de connexion manuelle uniquement si OAuth ne s’est pas ouvert ou doit être renouvelé.' },
-        { title: 'Vérifier la connexion', body: 'Relisez la connexion puis demandez les modèles actuels ou un budget de projet.' },
+        { title: 'Ajouter la marketplace', body: 'Enregistrez le dépôt public MaxVideoAI sur le tag de version 0.2.0 contrôlé.' },
+        { title: 'Installer le plugin', body: 'Installez MaxVideoAI une fois pour recevoir les skills plan et generate ainsi que la connexion MCP de production.' },
+        { title: 'Démarrer une nouvelle tâche', body: 'Ouvrez une nouvelle conversation Codex, utilisez $plan ou $generate, puis terminez OAuth à la demande.' },
       ],
-      commandLabel: 'Commandes Codex CLI',
+      commandLabel: 'Commandes du plugin Codex',
       commands: [
-        `codex mcp add maxvideoai --url ${MCP_PRODUCTION_RESOURCE_URL}`,
-        'codex mcp login maxvideoai --scopes openid,email,profile',
-        'codex mcp get maxvideoai',
+        'codex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.2.0',
+        'codex plugin add maxvideoai@maxvideoai',
       ],
       setupValues: [],
-      authTrigger: 'La première commande démarre normalement OAuth automatiquement ; utilisez la deuxième uniquement si l’autorisation ne s’est pas ouverte ou doit être renouvelée.',
-      limitation: 'Ces commandes installent la connexion MCP, suffisante pour utiliser MaxVideoAI. Elles n’installent pas le package séparé des skills plan et generate ; ce package doit être distribué et installé indépendamment.',
+      authTrigger: 'OAuth démarre lorsque la nouvelle conversation utilise MaxVideoAI pour la première fois. Connectez-vous ou créez le compte à relier.',
+      limitation: 'Le package GitHub tagué inclut les skills plan et generate et la connexion MCP de production. Toute génération attend toujours un devis exact et votre accord explicite.',
     },
   ];
 }
 
 function spanishGuides(client: McpClientId): IntegrationHostGuide[] {
   if (client === 'claude') {
+    const proofs = claudeDesktopProofs('es');
     return [
       {
         hostId: 'claudeDesktop',
         title: 'Conectar MaxVideoAI con Claude',
         intro: 'Añade MaxVideoAI como conector remoto personalizado y autoriza tu cuenta en el navegador.',
         steps: [
-          { title: 'Abrir los ajustes', body: 'En Claude, añade un conector personalizado mediante un servidor MCP remoto.' },
-          { title: 'Añadir MaxVideoAI', body: 'Pega la dirección siguiente. No pegues nunca una clave API ni tu contraseña.' },
-          { title: 'Aprobar la conexión', body: 'Inicia sesión o crea tu cuenta MaxVideoAI, aprueba el acceso y vuelve a Claude.' },
+          { title: 'Abrir los ajustes', body: 'En Claude, añade un conector personalizado mediante un servidor MCP remoto.', proof: proofs[0] },
+          { title: 'Añadir MaxVideoAI', body: 'Pega la dirección siguiente. No pegues nunca una clave API ni tu contraseña.', proof: proofs[1] },
+          { title: 'Aprobar la conexión', body: 'Inicia sesión o crea tu cuenta MaxVideoAI, aprueba el acceso y vuelve a Claude.', proof: proofs[2] },
         ],
         commands: [],
         setupValues: [{ label: 'Servidor MaxVideoAI', value: MCP_PRODUCTION_RESOURCE_URL }],
@@ -282,22 +347,21 @@ function spanishGuides(client: McpClientId): IntegrationHostGuide[] {
   return [
     {
       hostId: 'codexCli',
-      title: 'Conectar MaxVideoAI desde Codex CLI',
-      intro: 'Registra el servidor remoto, autoriza MaxVideoAI en el navegador y usa MaxVideoAI en la conversación.',
+      title: 'Instalar el plugin MaxVideoAI en Codex',
+      intro: 'Añade el marketplace etiquetado de MaxVideoAI, instala el plugin y autoriza tu cuenta desde una nueva conversación de Codex.',
       steps: [
-        { title: 'Añadir MaxVideoAI', body: 'Registra el servidor MCP remoto. Las versiones actuales de Codex normalmente abren OAuth automáticamente.' },
-        { title: 'Autorizar la cuenta', body: 'Completa el acceso en el navegador. Usa el comando de inicio manual solo si OAuth no se abrió o debe renovarse.' },
-        { title: 'Comprobar la conexión', body: 'Lee la conexión y consulta los modelos actuales o un presupuesto de proyecto.' },
+        { title: 'Añadir el marketplace', body: 'Registra el repositorio público de MaxVideoAI en la etiqueta revisada de la versión 0.2.0.' },
+        { title: 'Instalar el plugin', body: 'Instala MaxVideoAI una vez para obtener los skills plan y generate y la conexión MCP de producción.' },
+        { title: 'Iniciar una nueva tarea', body: 'Abre una nueva conversación de Codex, usa $plan o $generate y completa OAuth cuando se solicite.' },
       ],
-      commandLabel: 'Comandos de Codex CLI',
+      commandLabel: 'Comandos del plugin de Codex',
       commands: [
-        `codex mcp add maxvideoai --url ${MCP_PRODUCTION_RESOURCE_URL}`,
-        'codex mcp login maxvideoai --scopes openid,email,profile',
-        'codex mcp get maxvideoai',
+        'codex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.2.0',
+        'codex plugin add maxvideoai@maxvideoai',
       ],
       setupValues: [],
-      authTrigger: 'El primer comando normalmente inicia OAuth automáticamente; usa el segundo solo si la autorización no se abrió o debe renovarse.',
-      limitation: 'Estos comandos instalan la conexión MCP, suficiente para usar MaxVideoAI. No instalan el paquete separado de skills plan y generate; ese paquete debe distribuirse e instalarse de forma independiente.',
+      authTrigger: 'OAuth comienza cuando la nueva conversación usa MaxVideoAI por primera vez. Inicia sesión o crea la cuenta que quieras conectar.',
+      limitation: 'El paquete etiquetado de GitHub incluye los skills plan y generate y la conexión MCP de producción. La generación siempre espera un precio exacto y tu aprobación explícita.',
     },
   ];
 }

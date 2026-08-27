@@ -181,7 +181,7 @@ test('the MCP publication boundary recognizes exact localized source routes', ()
   assert.equal(isMcpPublicSourcePath('/es/integraciones/not-a-client'), false);
 });
 
-test('checked-false publication returns a terminal localized 404 instead of redirecting rewritten integration paths', async () => {
+test('published MCP routes pass the middleware boundary without a gated rewrite', async () => {
   for (const path of [
     '/mcp',
     '/fr/mcp',
@@ -196,13 +196,12 @@ test('checked-false publication returns a terminal localized 404 instead of redi
     '/es/docs/mcp',
   ]) {
     const response = await middleware(new NextRequest(`https://maxvideoai.com${path}`));
-    assert.equal(response.status, 404, `${path} should fail closed at the middleware boundary`);
-    assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow');
-    assert.equal(response.headers.get('location'), null, `${path} must not enter a redirect loop`);
-    assert.match(
+    assert.equal(response.status, 200, `${path} should pass the published middleware boundary`);
+    assert.equal(response.headers.get('x-robots-tag'), null);
+    assert.doesNotMatch(
       response.headers.get('x-middleware-rewrite') ?? '',
-      /\/(?:en|fr|es)\/__mcp-publication-gated__(?:$|\?)/,
-      `${path} should rewrite to a genuinely missing locale-owned path`,
+      /__mcp-publication-gated__/,
+      `${path} must not rewrite to the publication gate while live`,
     );
   }
 });
@@ -257,7 +256,7 @@ test('route views preserve the single marketing-layout main landmark in server o
   assert.doesNotMatch(integrationHtml, /<main\b/);
 });
 
-test('metadata is reciprocal but fails closed while publication gates are false', async () => {
+test('metadata is reciprocal and indexable while publication gates are live', async () => {
   requireFile(`${mcpRoot}/page.tsx`);
   requireFile(`${integrationsRoot}/claude/page.tsx`);
   requireFile(`${integrationsRoot}/chatgpt/page.tsx`);
@@ -312,7 +311,7 @@ test('metadata is reciprocal but fails closed while publication gates are false'
         es: route.paths.es,
         'x-default': route.paths.en,
       });
-      assert.equal(typeof metadata.robots === 'object' ? metadata.robots?.index : metadata.robots, false);
+      assert.equal(typeof metadata.robots === 'object' ? metadata.robots?.index : metadata.robots, true);
     }
   }
 });
@@ -387,7 +386,7 @@ test('visible compatibility dates are sourced from the recorded evidence config'
     hosts: Record<string, { status: string; version?: string }>;
   };
   assert.equal(config.evidenceKind, 'hosted-checkpoint');
-  assert.equal(config.lastChecked, '2026-08-26');
+  assert.equal(config.lastChecked, '2026-08-27');
   assert.equal(config.sourceEvidence, 'docs/operations/mcp-host-compatibility-matrix.md');
   assert.match(requireFile(config.sourceEvidence), new RegExp(config.lastChecked));
   assert.equal('lastVerified' in config, false);

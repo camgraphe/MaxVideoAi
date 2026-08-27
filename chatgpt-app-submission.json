@@ -1,0 +1,192 @@
+{
+  "$schema": "https://developers.openai.com/apps-sdk/schemas/chatgpt-app-submission.v1.json",
+  "schema_version": 1,
+  "app_info": {
+    "display_name": "MaxVideoAI",
+    "subtitle": "Plan and generate AI media",
+    "description": "MaxVideoAI helps users compare current AI video and image models, calculate project budgets, select private references, receive exact quotes, explicitly approve paid generations, recover jobs, and open completed media in their MaxVideoAI library.",
+    "category": "DESIGN"
+  },
+  "tools": {
+    "get_account_status": {
+      "annotations": { "readOnlyHint": true, "openWorldHint": false, "destructiveHint": false },
+      "justifications": {
+        "read_only_justification": "Reads the connected account's verification, wallet, trial, spending-limit, and destination metadata without changing it.",
+        "open_world_justification": "Returns private MaxVideoAI account information and controlled MaxVideoAI destinations without changing external systems.",
+        "destructive_justification": "Does not charge credits, alter the wallet, delete data, or revoke access."
+      }
+    },
+    "list_models": {
+      "annotations": { "readOnlyHint": true, "openWorldHint": false, "destructiveHint": false },
+      "justifications": {
+        "read_only_justification": "Reads and filters the current public MaxVideoAI model catalog without changing catalog or account state.",
+        "open_world_justification": "Returns first-party catalog metadata and does not publish or submit anything externally.",
+        "destructive_justification": "Does not modify models, accounts, media, quotes, or generations."
+      }
+    },
+    "get_model_details": {
+      "annotations": { "readOnlyHint": true, "openWorldHint": false, "destructiveHint": false },
+      "justifications": {
+        "read_only_justification": "Retrieves current capabilities, constraints, evidence, and links for one public MaxVideoAI model.",
+        "open_world_justification": "Only reads first-party catalog information and does not contact a generation provider.",
+        "destructive_justification": "Does not alter the selected model, account, or any owned media."
+      }
+    },
+    "recommend_models": {
+      "annotations": { "readOnlyHint": true, "openWorldHint": false, "destructiveHint": false },
+      "justifications": {
+        "read_only_justification": "Computes factual matches from the current executable model catalog without reserving or generating media.",
+        "open_world_justification": "Recommendations remain inside the conversation and do not change public or third-party state.",
+        "destructive_justification": "Does not spend credits, create jobs, or modify private assets."
+      }
+    },
+    "calculate_project_budget": {
+      "annotations": { "readOnlyHint": true, "openWorldHint": false, "destructiveHint": false },
+      "justifications": {
+        "read_only_justification": "Calculates current project estimates from explicit production lines without persisting a payable quote.",
+        "open_world_justification": "Performs a private first-party calculation and does not submit work to any provider.",
+        "destructive_justification": "Does not reserve prices, debit credits, or create generation jobs."
+      }
+    },
+    "list_media": {
+      "annotations": { "readOnlyHint": true, "openWorldHint": false, "destructiveHint": false },
+      "justifications": {
+        "read_only_justification": "Lists bounded safe metadata for the connected user's private MaxVideoAI media library.",
+        "open_world_justification": "Reads private first-party assets and does not expose storage URLs or publish media.",
+        "destructive_justification": "Does not upload, update, delete, or generate any media."
+      }
+    },
+    "create_reference_upload_link": {
+      "annotations": { "readOnlyHint": false, "openWorldHint": false, "destructiveHint": false },
+      "justifications": {
+        "read_only_justification": "Creates a short-lived private upload session in the connected MaxVideoAI account.",
+        "open_world_justification": "The session and eventual upload remain private inside MaxVideoAI and do not publish external content.",
+        "destructive_justification": "Creates a new one-use handoff without overwriting or deleting an existing asset."
+      }
+    },
+    "prepare_generation": {
+      "annotations": { "readOnlyHint": false, "openWorldHint": false, "destructiveHint": false },
+      "justifications": {
+        "read_only_justification": "Validates a request and persists a short-lived exact quote in the connected MaxVideoAI account.",
+        "open_world_justification": "Creates only a private first-party quote and does not contact a generation provider.",
+        "destructive_justification": "Does not spend credits or submit generation work and an unused quote expires automatically."
+      }
+    },
+    "confirm_generation": {
+      "annotations": { "readOnlyHint": false, "openWorldHint": true, "destructiveHint": true },
+      "justifications": {
+        "read_only_justification": "Consumes an explicitly approved exact quote, may debit MaxVideoAI credits, and creates one generation job.",
+        "open_world_justification": "Submits the approved request to an external AI generation provider through MaxVideoAI.",
+        "destructive_justification": "Authorizes one paid provider attempt whose consumed authorization and possible debit cannot be undone."
+      }
+    },
+    "get_generation_status": {
+      "annotations": { "readOnlyHint": true, "openWorldHint": false, "destructiveHint": false },
+      "justifications": {
+        "read_only_justification": "Reads the current state and safe result destinations for one owned MaxVideoAI generation.",
+        "open_world_justification": "Retrieves existing first-party job state without creating another provider request.",
+        "destructive_justification": "Does not retry, cancel, delete, or charge for a generation."
+      }
+    },
+    "list_recent_generations": {
+      "annotations": { "readOnlyHint": true, "openWorldHint": false, "destructiveHint": false },
+      "justifications": {
+        "read_only_justification": "Reads a bounded page of the connected user's recent MaxVideoAI generation records.",
+        "open_world_justification": "Returns existing private job metadata and controlled links without external writes.",
+        "destructive_justification": "Does not create, retry, cancel, or delete generation jobs."
+      }
+    },
+    "get_generation_download": {
+      "annotations": { "readOnlyHint": true, "openWorldHint": false, "destructiveHint": false },
+      "justifications": {
+        "read_only_justification": "Re-reads an owned completed generation and returns a fresh short-lived download descriptor.",
+        "open_world_justification": "Provides private access to an existing MaxVideoAI result without publishing or submitting content.",
+        "destructive_justification": "Does not alter the generation, library asset, wallet, or provider state."
+      }
+    },
+    "present_generation": {
+      "annotations": { "readOnlyHint": true, "openWorldHint": false, "destructiveHint": false },
+      "justifications": {
+        "read_only_justification": "Re-reads one completed owned generation and presents its existing video or image result.",
+        "open_world_justification": "Displays an existing MaxVideoAI result privately and does not publish it to another service.",
+        "destructive_justification": "Does not poll, retry, generate, delete, or charge credits."
+      }
+    },
+    "create_topup_link": {
+      "annotations": { "readOnlyHint": false, "openWorldHint": false, "destructiveHint": false },
+      "justifications": {
+        "read_only_justification": "Invalidates one insufficient quote and creates a short-lived private MaxVideoAI billing handoff.",
+        "open_world_justification": "Payment remains on MaxVideoAI and the tool neither collects payment details nor submits an external form.",
+        "destructive_justification": "Does not charge the user, and a fresh quote can replace the invalidated short-lived quote after funding."
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "description": "Compare current models and budget two production approaches.",
+      "user_prompt": "Compare the best current models for a 30-second product film and budget a quality-first plan plus a lower-cost alternative.",
+      "file_attachment_urls": null,
+      "tools_triggered": "list_models, get_model_details, recommend_models, calculate_project_budget",
+      "expected_output": "Returns current capability-based recommendations and two comparable project budgets without creating a payable quote or generation.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Select or upload a private first-frame image.",
+      "user_prompt": "Use an image from my MaxVideoAI library as the first frame; if none is suitable, give me a private upload link.",
+      "file_attachment_urls": null,
+      "tools_triggered": "list_media, create_reference_upload_link",
+      "expected_output": "Lists safe private image metadata or returns the exact one-use MaxVideoAI upload destination, then waits for upload completion.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Quote and explicitly confirm one paid generation.",
+      "user_prompt": "Validate this image-to-video request, show the exact price, and only after I explicitly approve that quote create one generation and show its result.",
+      "file_attachment_urls": null,
+      "tools_triggered": "get_model_details, prepare_generation, confirm_generation, get_generation_status, present_generation",
+      "expected_output": "Shows an exact expiring quote, waits for explicit approval, submits it once, tracks the owned job, and presents the completed result.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Recover from insufficient credits through a safe billing handoff.",
+      "user_prompt": "Check my credits and quote the selected request. If funds are insufficient, give me the MaxVideoAI top-up link and require a fresh quote after I fund the account.",
+      "file_attachment_urls": null,
+      "tools_triggered": "get_account_status, prepare_generation, create_topup_link",
+      "expected_output": "Explains the connected balance, returns only the MaxVideoAI billing destination, and does not reuse or confirm the invalidated quote.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Recover and download an interrupted completed generation.",
+      "user_prompt": "Find my recent completed generation, verify its status, present it here, and provide a fresh download when the result app asks for one.",
+      "file_attachment_urls": null,
+      "tools_triggered": "list_recent_generations, get_generation_status, present_generation, get_generation_download",
+      "expected_output": "Finds the existing owned job without resubmitting it, presents the saved result, and refreshes its short-lived download safely.",
+      "expected_output_url": null
+    }
+  ],
+  "negative_test_cases": [
+    {
+      "description": "Do not trigger for generic editing advice.",
+      "user_prompt": "How can I improve the pacing of a travel video in my editing software?",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "The app should not be invoked because the user only wants general editing advice and no MaxVideoAI action.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Do not trigger for calendar scheduling.",
+      "user_prompt": "Schedule a creative review meeting for tomorrow afternoon.",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "The app should not be invoked because calendar management is outside MaxVideoAI's supported workflows.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Do not collect payment credentials in conversation.",
+      "user_prompt": "Take my payment credentials here and add credits to my account.",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "The app should not collect financial credentials and should explain that funding is handled only on the secure MaxVideoAI website.",
+      "expected_output_url": null
+    }
+  ]
+}

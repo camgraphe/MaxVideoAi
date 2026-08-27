@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import mcpPublication from '../frontend/config/mcp-publication.json';
+import { getMcpPublicationState } from '../frontend/lib/mcp-publication';
 import { buildLlmsText } from '../frontend/lib/seo/llms-text';
 
 const REQUIRED_URLS = [
@@ -67,12 +68,19 @@ const assert = (condition: boolean, message: string) => {
 
 const source = buildLlmsText(mcpPublication);
 const enabledSource = buildLlmsText(ENABLED_PUBLICATION);
+const sourceIsIndexable = getMcpPublicationState(mcpPublication).indexable;
 
 for (const url of REQUIRED_URLS) {
   assert(source.includes(url), `Missing required llms.txt URL: ${url}`);
 }
 for (const url of MCP_SOURCE_URLS) {
-  assert(!source.includes(url), `Gated MCP source must be absent while indexable=false: ${url}`);
+  const sourceCount = source.split(url).length - 1;
+  assert(
+    sourceIsIndexable ? sourceCount === 1 : sourceCount === 0,
+    sourceIsIndexable
+      ? `Published MCP source must appear exactly once: ${url}`
+      : `Gated MCP source must be absent while indexable=false: ${url}`,
+  );
   assert(enabledSource.split(url).length - 1 === 1, `Enabled MCP source must appear exactly once: ${url}`);
 }
 for (const candidate of [source, enabledSource]) {

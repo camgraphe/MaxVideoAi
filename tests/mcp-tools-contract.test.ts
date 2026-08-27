@@ -439,12 +439,24 @@ test('all fourteen operational tools expose strict schemas and reject unknown ke
     readOnlyHint: false,
     destructiveHint: false,
     idempotentHint: false,
-    openWorldHint: true,
+    openWorldHint: false,
   });
   assert.deepEqual(tools.get('prepare_generation')?.annotations, {
-    readOnlyHint: true,
+    readOnlyHint: false,
     destructiveHint: false,
     openWorldHint: false,
+  });
+  assert.deepEqual(tools.get('create_topup_link')?.annotations, {
+    readOnlyHint: false,
+    destructiveHint: false,
+    idempotentHint: false,
+    openWorldHint: false,
+  });
+  assert.deepEqual(tools.get('confirm_generation')?.annotations, {
+    readOnlyHint: false,
+    destructiveHint: true,
+    idempotentHint: true,
+    openWorldHint: true,
   });
   assert.match(tools.get('list_media')?.description ?? '', /image, video, or audio.*filter.*kind/is);
   assert.match(tools.get('create_reference_upload_link')?.description ?? '', /requested.*media kind/i);

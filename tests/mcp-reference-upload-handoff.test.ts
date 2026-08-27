@@ -144,7 +144,7 @@ test('create_reference_upload_link is gated, strict, non-destructive, and open-w
   assert.equal(tool.inputSchema.additionalProperties, false);
   assert.equal(tool.annotations?.readOnlyHint, false);
   assert.equal(tool.annotations?.destructiveHint, false);
-  assert.equal(tool.annotations?.openWorldHint, true);
+  assert.equal(tool.annotations?.openWorldHint, false);
   const result = await client.callTool({
     name: 'create_reference_upload_link',
     arguments: { kind: 'audio' },

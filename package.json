@@ -37,6 +37,7 @@
     "qa:mcp-launch:preview": "node scripts/run-mcp-launch-fixture.mjs --mode preview",
     "qa:mcp-launch:enabled": "node scripts/run-mcp-launch-fixture.mjs --mode enabled",
     "qa:mcp-launch:lighthouse": "node scripts/run-mcp-launch-fixture.mjs --mode enabled --lighthouse",
+    "plugin:release:build": "node scripts/build-maxvideoai-plugin-release.mjs",
     "db:migrate:neon": "bash scripts/apply-neon-migrations.sh",
     "neon:branches:check": "node scripts/neon-branch-guard.mjs",
     "neon:branches:prune": "node scripts/neon-branch-guard.mjs --delete-archived",

@@ -108,6 +108,21 @@ test('the MaxVideoAI plugin has thin Codex and Claude package adapters', () => {
   }
 });
 
+test('the public repository exposes MaxVideoAI as an installable Codex marketplace plugin', () => {
+  const marketplacePath = path.join(root, '.agents', 'plugins', 'marketplace.json');
+  const marketplace = JSON.parse(readFileSync(marketplacePath, 'utf8')) as Record<string, unknown>;
+  assert.equal(marketplace.name, 'maxvideoai');
+  assert.deepEqual(marketplace.interface, { displayName: 'MaxVideoAI' });
+  assert.deepEqual(marketplace.plugins, [
+    {
+      name: 'maxvideoai',
+      source: { source: 'local', path: './plugins/maxvideoai' },
+      policy: { installation: 'AVAILABLE', authentication: 'ON_INSTALL' },
+      category: 'Creativity',
+    },
+  ]);
+});
+
 test('the plugin packages self-contained outcome skills with explicit routing boundaries', () => {
   const skillsRoot = path.join(pluginRoot, 'skills');
   const skillNames = readdirSync(skillsRoot, { withFileTypes: true })
@@ -185,6 +200,8 @@ test('the package explains the customer-facing account and library journey', () 
   assert.match(readme, /\/maxvideoai:plan/i);
   assert.match(readme, /\/maxvideoai:generate/i);
   assert.match(readme, /Try asking/i);
+  assert.match(readme, /codex plugin marketplace add camgraphe\/MaxVideoAi --ref maxvideoai-plugin-v0\.2\.0/);
+  assert.match(readme, /codex plugin add maxvideoai@maxvideoai/);
   assert.doesNotMatch(readme, /does not establish online availability|does not verify an online connection|branch package/i);
 
   assert.match(safety, /get_account_status.*credit balance.*trial.*spending limit/is);

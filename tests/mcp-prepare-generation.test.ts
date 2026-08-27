@@ -1326,7 +1326,7 @@ test('paid generation tools can be gated out and prepare is accurately annotated
     'get_generation_status', 'list_recent_generations', 'get_generation_download', 'present_generation', 'create_topup_link',
   ]);
   const prepareTool = tools.find((tool) => tool.name === 'prepare_generation');
-  assert.equal(prepareTool?.annotations?.readOnlyHint, true);
+  assert.equal(prepareTool?.annotations?.readOnlyHint, false);
   assert.equal(prepareTool?.annotations?.destructiveHint, false);
   assert.equal(prepareTool?.annotations?.openWorldHint, false);
   assert.match(prepareTool?.description ?? '', /does not spend or generate/i);
@@ -1340,7 +1340,7 @@ test('paid generation tools can be gated out and prepare is accurately annotated
 test('MCP tool adapter cannot import providers, wallet mutation, or job creation', () => {
   const source = readFileSync('frontend/src/server/mcp/tools/prepare-generation.ts', 'utf8');
   assert.doesNotMatch(source, /video-providers|image-providers|provider|reserveWallet|app_receipts|create.*Job/i);
-  assert.match(source, /readOnlyHint:\s*true/);
+  assert.match(source, /readOnlyHint:\s*false/);
   assert.match(source, /destructiveHint:\s*false/);
   assert.match(source, /openWorldHint:\s*false/);
 });

@@ -28,7 +28,7 @@ export function registerConfirmGenerationTool(
       inputSchema: confirmGenerationInputSchema,
       annotations: {
         readOnlyHint: false,
-        destructiveHint: false,
+        destructiveHint: true,
         idempotentHint: true,
         openWorldHint: true,
       },

@@ -26,7 +26,7 @@ export function registerCreateTopupLinkTool(
         readOnlyHint: false,
         destructiveHint: false,
         idempotentHint: false,
-        openWorldHint: true,
+        openWorldHint: false,
       },
     },
     async (input) => runAgentTool(() => services.createTopupLink!(input, principal)),

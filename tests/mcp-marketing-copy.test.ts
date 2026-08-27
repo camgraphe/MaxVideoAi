@@ -257,7 +257,7 @@ test('compatibility wording stays exact per tested host', async () => {
   }
 });
 
-test('Codex setup explains automatic OAuth and keeps manual login as fallback', async () => {
+test('Codex setup installs the tagged public plugin package before OAuth', async () => {
   const { getIntegrationCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
   );
@@ -267,14 +267,18 @@ test('Codex setup explains automatic OAuth and keeps manual login as fallback', 
     assert.ok(guide);
     assert.match(
       `${guide.steps.map((step) => step.body).join(' ')} ${guide.authTrigger ?? ''}`,
-      /automatically|automatiquement|automáticamente/i,
+      /new (?:conversation|task)|nouvelle (?:conversation|tâche)|nueva (?:conversación|tarea)/i,
     );
     assert.match(
       guide.authTrigger ?? '',
-      /only if|uniquement si|solo si/i,
+      /OAuth/i,
     );
-    assert.equal(guide.commands[0]?.startsWith('codex mcp add maxvideoai --url '), true);
-    assert.equal(guide.commands[1], 'codex mcp login maxvideoai --scopes openid,email,profile');
-    assert.equal(guide.commands[2], 'codex mcp get maxvideoai');
+    assert.equal(
+      guide.commands[0],
+      'codex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.2.0',
+    );
+    assert.equal(guide.commands[1], 'codex plugin add maxvideoai@maxvideoai');
+    assert.equal(guide.commands.length, 2);
+    assert.match(guide.limitation, /plan.*generate|plan.*génér|plan.*gener/i);
   }
 });

@@ -28,7 +28,7 @@ export function registerCreateReferenceUploadLinkTool(
         readOnlyHint: false,
         destructiveHint: false,
         idempotentHint: false,
-        openWorldHint: true,
+        openWorldHint: false,
       },
     },
     async (input) => runAgentTool(() => services.createReferenceUploadLink!(input, principal)),
