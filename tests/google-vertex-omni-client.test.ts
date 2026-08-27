@@ -47,7 +47,7 @@ test('Gemini Omni client calls the Vertex Interactions API with bearer auth', as
 });
 
 test('Gemini Omni client fetches stored interactions by id', async () => {
-  const urls: string[] = [];
+  const requests: Array<{ url: string; method: string; body: BodyInit | null | undefined }> = [];
   const client = new GoogleVertexOmniClient({
     projectId: 'demo-project',
     location: 'global',
@@ -57,8 +57,12 @@ test('Gemini Omni client fetches stored interactions by id', async () => {
       private_key: 'unused-in-test',
     },
     getAccessTokenFn: async () => 'test-token',
-    fetchFn: async (url) => {
-      urls.push(String(url));
+    fetchFn: async (url, init) => {
+      requests.push({
+        url: String(url),
+        method: init?.method ?? 'GET',
+        body: init?.body,
+      });
       return new Response(JSON.stringify({ name: 'interactions/abc123', status: 'SUCCEEDED' }), { status: 200 });
     },
   });
@@ -66,7 +70,12 @@ test('Gemini Omni client fetches stored interactions by id', async () => {
   const response = await client.fetchInteraction('interactions/abc123');
 
   assert.equal(response.status, 'SUCCEEDED');
-  assert.equal(urls[0], 'https://aiplatform.googleapis.com/v1beta1/projects/demo-project/locations/global/interactions/abc123');
+  assert.equal(
+    requests[0]?.url,
+    'https://aiplatform.googleapis.com/v1beta1/projects/demo-project/locations/global/interactions/abc123'
+  );
+  assert.equal(requests[0]?.method, 'POST');
+  assert.equal(requests[0]?.body, undefined);
 });
 
 test('Gemini Omni client times out suspended polling requests', async () => {

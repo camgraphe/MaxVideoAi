@@ -346,7 +346,7 @@ export class GoogleVertexOmniClient {
     const json = await requestJson({
       fetchFn: this.fetchFn(),
       url: `${this.interactionsUrl()}/${encodeURIComponent(interactionId(nameOrId))}`,
-      method: 'GET',
+      method: 'POST',
       token: await this.token(),
       action: 'interaction fetch',
       timeoutMs: this.pollTimeoutMs,
