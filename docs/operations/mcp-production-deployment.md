@@ -15,6 +15,39 @@ before promotion, apply the additive Neon migrations, enable Supabase OAuth, att
 unaliased candidate, then promote that exact candidate. A rollback restores the recorded previous Vercel deployment; do
 not reverse the additive database migrations during an application rollback.
 
+## Production cutover evidence — 2026-08-27
+
+Owner-approved revision `74b87c25ba735ad8537a3dd84723550459ac13f8`
+was built as protected Production candidate
+`dpl_7it4qhV6FfVcf7yjsPsNVnJZQjKa`, verified, then promoted unchanged to the
+public domains. Vercel promotion status identifies that deployment as the
+current `maxvideoai` release. The previous public application revision is
+tagged `pre-mcp-production-20260827`; the corresponding deployment was
+`dpl_5VzS6GPaLXAzXdGZ246b4Q84hDYU`.
+
+Neon project `shy-flower-71253790`, database `neondb`, already contained
+migrations 30 and 31. The missing migrations 29 and 32–38 were rehearsed on
+branch `br-rough-shadow-aednr6qf`, then applied to Production branch
+`br-late-term-aeo22xpz` as one targeted transaction. Metadata verification
+reported migrations 29–38 present, 19 MCP triggers, and zero rows in every new
+MCP relation at the launch checkpoint. Recovery branch
+`br-spring-salad-aetlaqmq` preserves the pre-migration Production state. The
+full repository runner was not used on Production because rehearsal showed
+that it also replays unrelated historical media backfills.
+
+Production Supabase OAuth discovery exposes authorization, token, and dynamic
+registration endpoints, and its JWKS contains one ES256 key. Cloudflare DNS
+resolves `api.maxvideoai.com` to `76.76.21.21`; the unauthenticated MCP endpoint
+returns HTTP 401 with the protected-resource challenge, while the protected
+resource metadata returns HTTP 200.
+
+Immediately after promotion, the homepage, MCP hub, EN/FR/ES MCP pages,
+Claude/ChatGPT/Codex integration pages, MCP documentation, `llms.txt`, and the
+sitemap index returned HTTP 200. The reference-upload cleanup cron, which had
+returned HTTP 500 before the missing schema was applied, returned HTTP 200 at
+14:00:06 UTC. The first five-minute Production runtime sample contained 24
+HTTP 200 responses, one expected unauthenticated HTTP 401, and no HTTP 500.
+
 This runbook prepares a reversible production release of the MaxVideoAI remote
 MCP server. It does not authorize a deployment, Vercel alias, DNS change,
 Supabase change, database migration, secret change, publication-flag change,
@@ -27,7 +60,11 @@ response, payment identifier, prompt, or private media URL. Record only names,
 targets, deployment IDs, commit SHAs, public endpoint statuses, safe object
 counts, and sanitized evidence IDs.
 
-## Fail-closed launch state
+## Historical fail-closed launch state
+
+This was the original staged-release policy and is retained for incident and
+rollback context. The owner-approved direct cutover above superseded its
+all-false candidate requirement for the 2026-08-27 release.
 
 The first production candidate must contain exactly this checked-in state:
 

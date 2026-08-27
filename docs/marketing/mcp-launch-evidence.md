@@ -1,16 +1,14 @@
 # MaxVideoAI MCP launch evidence
 
-Checked: 2026-08-26
+Checked: 2026-08-27
 
 ## Decision
 
-**Not ready for public promotion, indexation, directory submission, paid public
-generation, or production enablement.** The controlled staging endpoint and its
-OAuth, account, catalog, budgeting, quote, media, recovery, upload-handoff, and
-top-up-handoff paths now have real Claude Desktop and Codex CLI evidence. The
-remaining refresh/revocation, fresh private upload, fresh paid render,
-failure/refund, legal, directory, and public-rollout gates still block launch.
-The checked-in `frontend/config/mcp-publication.json` keeps all eight publication gates false.
+**The owner-approved direct Production release is live.** Public marketing,
+indexation, discovery, OAuth, transport, paid generation, and reference uploads
+are enabled; the included trial remains disabled. Directory submission and the
+post-launch host, payment, reference-retention, failure/refund, and conversion
+evidence remain separate follow-up work and are not implied by the cutover.
 
 The primary account, catalog, budgeting, quote, media, recovery, upload-handoff,
 and top-up-handoff checkpoint used staging revision
@@ -26,6 +24,24 @@ video-to-video remained disabled. During the primary checkpoint no new
 generation was confirmed, no payment was opened, and the staging wallet stayed
 at $1.05.
 
+## Production launch checkpoint
+
+Production revision `74b87c25ba735ad8537a3dd84723550459ac13f8` was
+promoted unchanged as Vercel deployment
+`dpl_7it4qhV6FfVcf7yjsPsNVnJZQjKa`. Neon migrations 29–38 were verified on the
+Production branch; 30 and 31 were already present, while 29 and 32–38 were
+applied as one targeted transaction after rehearsal. At the launch checkpoint,
+all new MCP relations had zero rows.
+
+Public smoke evidence returned HTTP 200 for the homepage, MCP hub, EN/FR/ES MCP
+pages, Claude/ChatGPT/Codex integration pages, MCP documentation, `llms.txt`,
+and the sitemap index. `api.maxvideoai.com/mcp` returned the expected HTTP 401
+OAuth challenge without credentials, protected-resource discovery returned
+HTTP 200, Supabase discovery exposed dynamic registration, and the public JWKS
+contained one ES256 key. The first post-promotion five-minute Vercel sample had
+24 HTTP 200 responses, one expected HTTP 401, and no HTTP 500. The reference
+cleanup cron also returned HTTP 200 after the schema update.
+
 ## Controlled hosted evidence
 
 | Evidence | State | Result |
@@ -37,7 +53,7 @@ at $1.05.
 | Reference boundary | Partial | A private temporary upload handoff was created without uploading bytes. A fresh uploaded reference, provider use, and cleanup still need controlled evidence. |
 | ChatGPT app directory / Codex graphical library | Not run | No submission, approval, directory install, or graphical ChatGPT app evidence exists yet. |
 
-## Local state matrix
+## Pre-launch local state matrix
 
 | Evidence | State | Result |
 | --- | --- | --- |
@@ -149,20 +165,21 @@ under `frontend/.lighthouseci/` (`lhr-1787749691074`, `lhr-1787749701888`, `lhr-
 no real account or remote Supabase project is used. The runner, browser tests, cleanup, and source-config guard all exited
 successfully.
 
-## Promotion blockers and future evidence
+## Post-launch evidence backlog
 
 | Gate | State | Exact blocker or next evidence |
 | --- | --- | --- |
 | Codex host lifecycle | Partial pass | Codex CLI 0.149.0-alpha.4.3 completed OAuth-backed discovery, budgeting, quote, and top-up behavior. Refresh, revocation, reconnect, and a graphical ChatGPT/Codex install remain unverified. |
 | Claude host lifecycle | Partial pass | Claude Desktop 1.37937.1 completed OAuth-backed discovery, budgeting, quote, media, recovery, inline playback, first-party continuation, upload-handoff, and top-up behavior. Refresh, revocation, reconnect, and fresh successful provider use remain unverified. |
 | Real-host decision bundle | Pass without spend | Both hosts produced current model advice, a named project budget, and a fresh exact quote. Claude also recovered an existing completed result. Neither host confirmed a new generation. |
-| Paid generation | Blocked | Exact quote and insufficient-balance/top-up recovery are proven in staging, but no newly confirmed provider result or receipt reconciliation was recorded. |
-| Trial | Blocked | No live allocation, abuse control, failed-job restoration, or deterministic end-to-end host evidence. |
-| Reference workflow | Blocked | Live private media listing and upload handoff are proven; uploaded bytes, reference use, retention/deletion, and cleanup evidence remain missing. |
-| Funnel/admin reconciliation | Blocked | Migration files 30–37 are present locally. The staging application exercised quote, media, recovery, and handoff producers, but the full migration inventory and admin/ledger reconciliation still require a sanitized operator review. |
+| Paid generation | Enabled; monitor | Exact quote and insufficient-balance/top-up recovery are proven in staging, but the first newly confirmed Production provider result and receipt reconciliation still need to be recorded. |
+| Trial | Disabled intentionally | No public trial is scheduled or advertised in the launch configuration. |
+| Reference workflow | Enabled; monitor | Live private media listing and upload handoff are proven; the first Production upload, provider use, retention/deletion, and cleanup evidence still need to be recorded. |
+| Funnel/admin reconciliation | Schema ready | Migrations 29–38 are present in Production and new MCP relations started empty; post-launch funnel and ledger reconciliation remains an operator task. |
 | Owned proof | Blocked | No publishable MCP generation proof with model, settings, price, date, consent, and provenance. |
-| Legal/support approval | Blocked | Owner approval for any MCP-specific legal wording and directory terms is still required. |
-| Hosted performance and SEO | Not run | Run the public marketing audits only after an explicit enablement decision, then verify GSC indexation and canonical selection after production publication. |
+| Legal/support approval | Site launch accepted; directory separate | Directory-specific terms and any external submission remain separately reviewable. |
+| Hosted performance and SEO | Initial smoke pass | Public routes, canonical MCP page, `llms.txt`, and sitemap index are live; GSC indexation, canonical selection, CTR, and cannibalization require the scheduled post-launch review. |
 
-No publication flag should change until a separate reviewed enablement decision closes every claim, host, safety,
-support, legal, cost, funnel, and proof gate and the user explicitly approves the change.
+Do not enable the trial or submit to a third-party directory without a separate
+reviewed decision. Post-launch evidence must distinguish verified Production
+behavior from the earlier controlled staging results above.
