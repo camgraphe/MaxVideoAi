@@ -1,13 +1,13 @@
-# Generation safety and recovery
+# Paid generation safety and recovery
 
-Use this reference when a user is ready to generate, asks about an existing job,
-needs more account funding, or asks about an unsuccessful result.
+Load this reference when a user is ready to generate, asks about an existing
+job, needs more account funding, or asks about an unsuccessful result.
 
 First use `prepare_generation` with the selected model, prompt, settings, and
 references. It returns validation and the exact current quote for that request.
 Show the relevant result and wait for the user's clear approval. Only then call
-`confirm_generation`. Never turn a prior estimate, an ambiguous assent, or a
-creative discussion into confirmation.
+`confirm_generation`. Never turn a prior estimate, ambiguous assent, or creative
+discussion into confirmation.
 
 That confirmation authorizes exactly one paid attempt. It is consumed whether
 the job is accepted, failed, or refunded. A refund or recredit does not restore

@@ -1,17 +1,32 @@
 {
   "name": "maxvideoai",
-  "version": "0.1.0",
-  "description": "Plan, price, and generate AI video or images from Codex. A MaxVideoAI account is required.",
-  "author": { "name": "MaxVideoAI" },
+  "version": "0.2.0",
+  "description": "Plan and generate AI video or images with live model facts, exact quotes, and approval before paid work. A MaxVideoAI account is required.",
+  "author": { "name": "MaxVideoAI", "url": "https://maxvideoai.com" },
   "homepage": "https://maxvideoai.com/mcp",
   "repository": "https://github.com/camgraphe/MaxVideoAi",
   "license": "BUSL-1.1",
+  "keywords": [
+    "maxvideoai",
+    "ai-video-generation",
+    "ai-image-generation",
+    "video-model-comparison",
+    "ai-video-budget",
+    "text-to-video",
+    "image-to-video",
+    "reference-to-video",
+    "creative-production",
+    "chatgpt",
+    "claude",
+    "codex",
+    "mcp"
+  ],
   "skills": "./skills/",
   "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "MaxVideoAI",
-    "shortDescription": "Plan and generate AI video or images from your conversation.",
-    "longDescription": "Free to connect with no separate subscription. Use current MaxVideoAI model facts, project budgets, exact quotes, references, and generation tools while Codex remains your creative partner.",
+    "shortDescription": "Plan and generate with live AI video models.",
+    "longDescription": "Turn a creative brief into current model recommendations, comparable project budgets, exact quotes, reference-guided generations, and recoverable results. Free to connect with no separate subscription; generations use credits from the required MaxVideoAI account.",
     "developerName": "MaxVideoAI",
     "category": "Creativity",
     "brandColor": "#111827",
@@ -23,9 +38,9 @@
     "privacyPolicyURL": "https://maxvideoai.com/legal/privacy",
     "termsOfServiceURL": "https://maxvideoai.com/legal/terms",
     "defaultPrompt": [
-      "Help me plan a short product film with MaxVideoAI.",
-      "Compare current MaxVideoAI models for my brief.",
-      "Build a few named video production proposals."
+      "Plan a 30-second product film and compare current models.",
+      "Quote this image-to-video request, then wait for my approval.",
+      "Use my MaxVideoAI references to create a video."
     ]
   }
 }

@@ -53,7 +53,7 @@ export type { ProfileScore } from './mcp-tool-selection-scoring';
 
 export type PolicyFingerprintInput = {
   instructions: string;
-  packagedSkill: string;
+  packagedSkills: Record<string, string>;
   references: Record<string, string>;
   tools: Array<{
     name: string;
@@ -241,17 +241,27 @@ export async function collectPolicyFingerprintInput(): Promise<PolicyFingerprint
     }
     return {
       instructions: client.getInstructions() ?? '',
-      packagedSkill: readFileSync(fileURLToPath(new URL(
-        '../../../plugins/maxvideoai/skills/maxvideoai/SKILL.md',
-        import.meta.url
-      )), 'utf8'),
-      references: {
-        'budget-planning.md': readFileSync(fileURLToPath(new URL(
-          '../../../plugins/maxvideoai/skills/maxvideoai/references/budget-planning.md',
+      packagedSkills: {
+        'generate/SKILL.md': readFileSync(fileURLToPath(new URL(
+          '../../../plugins/maxvideoai/skills/generate/SKILL.md',
           import.meta.url
         )), 'utf8'),
-        'generation-safety.md': readFileSync(fileURLToPath(new URL(
-          '../../../plugins/maxvideoai/skills/maxvideoai/references/generation-safety.md',
+        'plan/SKILL.md': readFileSync(fileURLToPath(new URL(
+          '../../../plugins/maxvideoai/skills/plan/SKILL.md',
+          import.meta.url
+        )), 'utf8'),
+      },
+      references: {
+        'generate/generation-safety.md': readFileSync(fileURLToPath(new URL(
+          '../../../plugins/maxvideoai/skills/generate/references/generation-safety.md',
+          import.meta.url
+        )), 'utf8'),
+        'generate/reference-inputs.md': readFileSync(fileURLToPath(new URL(
+          '../../../plugins/maxvideoai/skills/generate/references/reference-inputs.md',
+          import.meta.url
+        )), 'utf8'),
+        'plan/budget-planning.md': readFileSync(fileURLToPath(new URL(
+          '../../../plugins/maxvideoai/skills/plan/references/budget-planning.md',
           import.meta.url
         )), 'utf8'),
       },

@@ -1,0 +1,13 @@
+interface:
+  display_name: "MaxVideoAI Plan"
+  short_description: "Compare live models and budget video projects"
+  default_prompt: "Use $plan to compare current models and budget my video brief."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "maxvideoai"
+      description: "Live MaxVideoAI model, capability, and project budget tools"
+      transport: "streamable_http"
+      url: "https://api.maxvideoai.com/mcp"
+policy:
+  allow_implicit_invocation: true

@@ -18,6 +18,35 @@ plugin for Codex. The remote MCP server is the shared technical connection.
 - Track a job, present compatible results in the conversation, and recover
   completed or refunded outcomes without creating duplicate paid work.
 
+## Workflow skills
+
+- **`plan`** turns a creative brief into a live model shortlist and
+  comparable, named project budgets. It is for deciding what to make and how
+  to allocate a multi-shot production before requesting a paid quote.
+- **`generate`** handles a concrete image or video request from
+  references through an exact quote, explicit approval, generation, result
+  presentation, and recovery. It also handles account credit and top-up
+  handoffs without exposing payment details to the conversation.
+
+The skills are split by user outcome, not by internal tool calls. Reference
+selection stays inside the generation workflow because it is an input to a
+result, not a separate customer job.
+
+Claude Code exposes these workflows as `/maxvideoai:plan` and
+`/maxvideoai:generate`. Claude can also route to them from a natural-language
+request. Codex discovers the same two skills from the installed plugin.
+
+## Try asking
+
+- “Compare the best current models for a cinematic product reveal.”
+- “Build two comparable budgets for a 30-second launch film.”
+- “Plan a quality-first version and a lower-cost alternative.”
+- “Use my existing product image as the first frame of a video.”
+- “Give me the exact quote, but do not generate until I approve it.”
+- “Show me the status of my latest generation.”
+- “Recover the job if the previous response was interrupted.”
+- “Present the completed result in this conversation.”
+
 ## Account and credits
 
 MaxVideoAI is free to connect and has no separate plugin subscription. Sign in or create a MaxVideoAI account during setup. Model advice and project budgets do not spend credits; approved generations use your existing MaxVideoAI credits on a pay-as-you-go basis.

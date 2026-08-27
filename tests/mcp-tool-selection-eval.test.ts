@@ -204,6 +204,15 @@ test('policy fingerprint changes with instructions or tool metadata and stale ar
   assert.equal(typeof assertCurrent, 'function');
 
   const current = await collect();
+  assert.deepEqual(Object.keys(current.packagedSkills).sort(), [
+    'generate/SKILL.md',
+    'plan/SKILL.md',
+  ]);
+  assert.deepEqual(Object.keys(current.references).sort(), [
+    'generate/generation-safety.md',
+    'generate/reference-inputs.md',
+    'plan/budget-planning.md',
+  ]);
   const expected = rawPolicyBundle().policyFingerprintSha256;
   assert.equal(compute(current), expected);
 

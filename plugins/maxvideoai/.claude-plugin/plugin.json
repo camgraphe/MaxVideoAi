@@ -1,8 +1,24 @@
 {
   "name": "maxvideoai",
-  "version": "0.1.0",
-  "description": "Plan, price, and generate AI video or images from Claude. A MaxVideoAI account is required and free to connect.",
-  "author": { "name": "MaxVideoAI" },
+  "version": "0.2.0",
+  "description": "Plan and generate AI video or images with live model facts, exact quotes, and approval before paid work. A MaxVideoAI account is required and free to connect.",
+  "author": { "name": "MaxVideoAI", "url": "https://maxvideoai.com" },
   "homepage": "https://maxvideoai.com/mcp",
+  "repository": "https://github.com/camgraphe/MaxVideoAi",
+  "keywords": [
+    "maxvideoai",
+    "ai-video-generation",
+    "ai-image-generation",
+    "video-model-comparison",
+    "ai-video-budget",
+    "text-to-video",
+    "image-to-video",
+    "reference-to-video",
+    "creative-production",
+    "chatgpt",
+    "claude",
+    "codex",
+    "mcp"
+  ],
   "license": "BUSL-1.1"
 }

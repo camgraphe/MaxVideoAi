@@ -90,12 +90,14 @@ test('the homepage and contextual links own a prospect-facing assistant workflow
 });
 
 test('the plugin stays live-catalog driven and documents model-registry maintenance', () => {
-  const skill = source('plugins/maxvideoai/skills/maxvideoai/SKILL.md');
+  const planSkill = source('plugins/maxvideoai/skills/plan/SKILL.md');
+  const generateSkill = source('plugins/maxvideoai/skills/generate/SKILL.md');
   const guide = source('docs/engineering/mcp-architecture.md');
 
-  assert.match(skill, /Do not rely on model memory/);
-  assert.match(skill, /list_models/);
-  assert.match(skill, /get_model_details/);
+  assert.match(planSkill, /Do not rely on model memory/);
+  assert.match(planSkill, /list_models/);
+  assert.match(planSkill, /get_model_details/);
+  assert.match(generateSkill, /get_model_details/);
   assert.match(guide, /model-registry\.json/);
   assert.match(guide, /pnpm model:registry:check/);
   assert.match(guide, /list_models/);
