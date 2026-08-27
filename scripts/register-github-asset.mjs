@@ -1,13 +1,16 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { inflateSync } from 'node:zlib';
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(scriptDirectory, '..');
+const requireFromFrontend = createRequire(path.join(repositoryRoot, 'frontend', 'package.json'));
 const pngSignature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 const jpegStartOfFrameMarkers = new Set([0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc7, 0xc9, 0xca, 0xcb, 0xcd, 0xce, 0xcf]);
+let sharpDecoder;
 
 function dimensions(width, height, format) {
   if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1) throw new Error(`Malformed ${format} image dimensions`);
@@ -149,11 +152,9 @@ function readWebpDimensions(bytes) {
       if (foundExtendedHeader) foundPayloadAfterExtendedHeader = true;
     } else if (type === 'VP8L') {
       if (foundImagePayload) throw new Error('Unsupported WebP multiple image payloads');
-      if (length < 17 || bytes[dataStart] !== 0x2f) throw new Error('Malformed WebP VP8L chunk');
+      if (length <= 5 || bytes[dataStart] !== 0x2f) throw new Error('Malformed WebP VP8L chunk');
       const packed = bytes.readUInt32LE(dataStart + 1);
       if ((packed >>> 29) !== 0) throw new Error('Malformed WebP VP8L header');
-      const compressedPayload = bytes.subarray(dataStart + 5, dataEnd);
-      if (!compressedPayload.some((byte) => byte !== 0)) throw new Error('Malformed WebP VP8L payload');
       payloadDimensions = dimensions((packed & 0x3fff) + 1, ((packed >>> 14) & 0x3fff) + 1, 'webp');
       imageDimensions ??= payloadDimensions;
       foundImagePayload = true;
@@ -174,21 +175,48 @@ export function readImageDimensions(bytes) {
   throw new Error('Unsupported image format; expected PNG, JPEG, or WebP');
 }
 
-export function describeGithubAsset(assetPath, { rootDirectory = repositoryRoot } = {}) {
+function getSharpDecoder() {
+  if (sharpDecoder) return sharpDecoder;
+  try {
+    const sharpModulePath = requireFromFrontend.resolve('sharp');
+    const sharpModule = requireFromFrontend(sharpModulePath);
+    sharpDecoder = sharpModule.default ?? sharpModule;
+  } catch (error) {
+    throw new Error(`Sharp decode-integrity gate is unavailable from the frontend workspace (${error.message})`);
+  }
+  if (typeof sharpDecoder !== 'function') throw new Error('Sharp decode-integrity gate is unavailable from the frontend workspace (invalid module export)');
+  return sharpDecoder;
+}
+
+export async function validateImageDecode(bytes) {
+  if (!Buffer.isBuffer(bytes)) throw new Error('Image bytes must be a Buffer');
+  const sharp = getSharpDecoder();
+  try {
+    await sharp(bytes, { failOn: 'warning' }).raw().toBuffer();
+  } catch (error) {
+    throw new Error(`Image failed decode-integrity validation with frontend Sharp (${error.message})`);
+  }
+}
+
+export async function describeGithubAsset(assetPath, { rootDirectory = repositoryRoot } = {}) {
   if (typeof assetPath !== 'string' || path.isAbsolute(assetPath) || assetPath.includes('\\') || assetPath.split('/').includes('..')) throw new Error(`Asset path must be a safe repository-relative path: ${assetPath}`);
   const absolutePath = path.resolve(rootDirectory, assetPath);
   if (!absolutePath.startsWith(`${rootDirectory}${path.sep}`)) throw new Error(`Asset path escapes the repository: ${assetPath}`);
   const bytes = readFileSync(absolutePath);
   const { width, height, format } = readImageDimensions(bytes);
+  await validateImageDecode(bytes);
   return { path: assetPath, width, height, format, sha256: createHash('sha256').update(bytes).digest('hex') };
 }
 
-function runRegistration(argumentsList = process.argv.slice(2)) {
+async function runRegistration(argumentsList = process.argv.slice(2)) {
   const [assetPath, ...unsupported] = argumentsList.filter((argument) => argument !== '--');
   if (!assetPath || unsupported.length > 0) throw new Error('Usage: node scripts/register-github-asset.mjs <repository-relative PNG, JPEG, or WebP path>');
-  process.stdout.write(`${JSON.stringify(describeGithubAsset(assetPath), null, 2)}\n`);
+  process.stdout.write(`${JSON.stringify(await describeGithubAsset(assetPath), null, 2)}\n`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  try { runRegistration(); } catch (error) { process.stderr.write(`${error.message}\n`); process.exitCode = 1; }
+  runRegistration().catch((error) => {
+    process.stderr.write(`${error.message}\n`);
+    process.exitCode = 1;
+  });
 }

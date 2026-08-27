@@ -4,7 +4,7 @@ import { existsSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-import { readImageDimensions } from './register-github-asset.mjs';
+import { readImageDimensions, validateImageDecode } from './register-github-asset.mjs';
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(scriptDirectory, '..');
@@ -59,7 +59,7 @@ function validateRequiredProvenance(record, state, rootDirectory, now, prefix, e
   }
 }
 
-function validateRecord(record, rootDirectory, now, seenIds, seenPaths) {
+async function validateRecord(record, rootDirectory, now, seenIds, seenPaths) {
   if (!record || typeof record !== 'object' || Array.isArray(record)) return ['Asset record must be an object'];
   const errors = [];
   const prefix = isNonEmptyString(record.id) ? record.id : 'asset';
@@ -76,6 +76,7 @@ function validateRecord(record, rootDirectory, now, seenIds, seenPaths) {
       try {
         const bytes = readFileSync(absolutePath);
         const image = readImageDimensions(bytes);
+        await validateImageDecode(bytes);
         if (record.width !== image.width || record.height !== image.height) errors.push(`${prefix}: dimensions do not match current ${image.format.toUpperCase()} bytes`);
         if (record.sha256 !== createHash('sha256').update(bytes).digest('hex')) errors.push(`${prefix}: sha256 does not match current bytes`);
       } catch (error) {
@@ -112,7 +113,7 @@ function validateRecord(record, rootDirectory, now, seenIds, seenPaths) {
   return errors;
 }
 
-export function validateGithubAssetManifest(manifest, { repositoryRoot: rootDirectory = repositoryRoot, now = new Date() } = {}) {
+export async function validateGithubAssetManifest(manifest, { repositoryRoot: rootDirectory = repositoryRoot, now = new Date() } = {}) {
   if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) return ['Asset manifest must be an object'];
   if (!(now instanceof Date) || Number.isNaN(now.getTime())) return ['Validation now must be a valid Date'];
   const errors = [];
@@ -120,7 +121,10 @@ export function validateGithubAssetManifest(manifest, { repositoryRoot: rootDire
   if (!Array.isArray(manifest.assets)) return [...errors, 'Asset manifest assets must be an array'];
   const seenIds = new Set();
   const seenPaths = new Set();
-  for (const record of manifest.assets) errors.push(...validateRecord(record, rootDirectory, now, seenIds, seenPaths));
+  for (const record of manifest.assets) {
+    const recordErrors = await validateRecord(record, rootDirectory, now, seenIds, seenPaths);
+    errors.push(...recordErrors);
+  }
   return errors;
 }
 
@@ -198,8 +202,8 @@ function validateEditorialUsage(record, usage, prefix, errors) {
   }
 }
 
-export function validateReleaseReadmeAssets(manifest, { repositoryRoot: rootDirectory = repositoryRoot, now = new Date(), readmePaths = [path.join(rootDirectory, 'README.md'), path.join(rootDirectory, 'plugins/maxvideoai', 'README.md')] } = {}) {
-  const errors = validateGithubAssetManifest(manifest, { repositoryRoot: rootDirectory, now });
+export async function validateReleaseReadmeAssets(manifest, { repositoryRoot: rootDirectory = repositoryRoot, now = new Date(), readmePaths = [path.join(rootDirectory, 'README.md'), path.join(rootDirectory, 'plugins/maxvideoai', 'README.md')] } = {}) {
+  const errors = await validateGithubAssetManifest(manifest, { repositoryRoot: rootDirectory, now });
   const recordsByPath = new Map((manifest?.assets ?? []).map((record) => [record.path, record]));
   for (const readmePath of readmePaths) {
     if (!existsSync(readmePath)) { errors.push(`Release README does not exist: ${path.relative(rootDirectory, readmePath)}`); continue; }
@@ -227,14 +231,17 @@ function parseArguments(argumentsList) {
   return { release: releaseCount === 1 };
 }
 
-export function runGithubAssetCheck(argumentsList = process.argv.slice(2)) {
+export async function runGithubAssetCheck(argumentsList = process.argv.slice(2)) {
   const { release } = parseArguments(argumentsList);
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
-  const errors = release ? validateReleaseReadmeAssets(manifest) : validateGithubAssetManifest(manifest);
+  const errors = release ? await validateReleaseReadmeAssets(manifest) : await validateGithubAssetManifest(manifest);
   if (errors.length > 0) throw new Error(`Invalid GitHub asset manifest:\n- ${errors.join('\n- ')}`);
   process.stdout.write(`GitHub asset manifest passed ${release ? 'release' : 'default'} validation.\n`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  try { runGithubAssetCheck(); } catch (error) { process.stderr.write(`${error.message}\n`); process.exitCode = 1; }
+  runGithubAssetCheck().catch((error) => {
+    process.stderr.write(`${error.message}\n`);
+    process.exitCode = 1;
+  });
 }

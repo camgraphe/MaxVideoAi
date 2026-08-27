@@ -14,7 +14,11 @@ import {
   validateGithubAssetManifest,
   validateReleaseReadmeAssets,
 } from '../scripts/check-github-assets.mjs';
-import { readImageDimensions } from '../scripts/register-github-asset.mjs';
+import {
+  describeGithubAsset,
+  readImageDimensions,
+  validateImageDecode,
+} from '../scripts/register-github-asset.mjs';
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const manifestPath = path.join(repositoryRoot, 'docs/marketing/github-asset-manifest.json');
@@ -26,6 +30,8 @@ const verifiedVp8XPath = path.join(repositoryRoot, 'frontend/public/assets/marke
 const verifiedVp8X = readFileSync(verifiedVp8XPath);
 // Decoder-valid 16×16 lossless WebP sample: RIFF/WEBP VP8L, encoded by libwebp.
 const verifiedVp8L = Buffer.from('UklGRqQAAABXRUJQVlA4TJgAAAAvD8ADEJ+gJmAaJv6NIgB+OkwQZNvMH/QHGMCMtm3T/v/oyjMcAkGI/q8wkQV60LyFNhFN+mjHIsLii69k4KEjAykcRpIUN8u/fAvG+UcLSAohov8TsKYezzX0cupDes+N3nPLACgRQNxEAKXglioBY56YSgCwFwVTCYRyiQymxaBbBkORHoigninHLqk6x9Pz8ea3xrPxBw==', 'base64');
+// Decoder-valid 1×1 lossless WebP whose VP8L chunk is 15 bytes.
+const tinyVp8L = Buffer.from('UklGRhwAAABXRUJQVlA4TA8AAAAvAAAAAAcQEf0PRET/AwAA', 'base64');
 
 function crc32(bytes: Buffer): number {
   let crc = 0xffffffff;
@@ -152,11 +158,13 @@ function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
-test('reads structurally complete PNG, JPEG, and WebP dimensions and rejects malformed containers', () => {
+test('keeps structural parsing synchronous and rejects malformed image containers', () => {
   assert.deepEqual(readImageDimensions(png()), { width: 3, height: 2, format: 'png' });
   assert.deepEqual(readImageDimensions(jpeg()), { width: 7, height: 5, format: 'jpeg' });
   assert.deepEqual(readImageDimensions(verifiedVp8), { width: 1679, height: 1127, format: 'webp' });
   assert.deepEqual(readImageDimensions(verifiedVp8L), { width: 16, height: 16, format: 'webp' });
+  assert.equal(tinyVp8L.readUInt32LE(16), 15);
+  assert.deepEqual(readImageDimensions(tinyVp8L), { width: 1, height: 1, format: 'webp' });
   assert.deepEqual(readImageDimensions(verifiedVp8X), { width: 1280, height: 853, format: 'webp' });
   assert.deepEqual(readImageDimensions(webpVp8X()), { width: 16, height: 16, format: 'webp' });
   assert.throws(() => readImageDimensions(Buffer.from('not-an-image')), /unsupported|malformed/i);
@@ -166,23 +174,62 @@ test('reads structurally complete PNG, JPEG, and WebP dimensions and rejects mal
   assert.throws(() => readImageDimensions(corruptPng), /malformed/i);
   assert.throws(() => readImageDimensions(jpeg().subarray(0, 21)), /malformed/i);
   assert.throws(() => readImageDimensions(verifiedVp8L.subarray(0, -1)), /malformed/i);
-  const corruptVp8L = Buffer.from(verifiedVp8L);
-  corruptVp8L[20] ^= 1;
-  assert.throws(() => readImageDimensions(corruptVp8L), /malformed/i);
-  const zeroedVp8LPayload = Buffer.from(verifiedVp8L);
-  zeroedVp8LPayload.fill(0, 25);
-  assert.throws(() => readImageDimensions(zeroedVp8LPayload), /malformed/i);
   assert.throws(() => readImageDimensions(verifiedVp8.subarray(0, -1)), /malformed/i);
-  const corruptVp8 = Buffer.from(verifiedVp8);
-  corruptVp8[23] ^= 1;
-  assert.throws(() => readImageDimensions(corruptVp8), /malformed/i);
   assert.throws(() => readImageDimensions(webpVp8X(15, 16)), /canvas|malformed/i);
 });
 
-test('requires current, review-signed proof provenance from real ancestor revisions', () => {
+test('decodes tiny and repository WebP assets while rejecting corrupt VP8L and VP8 entropy', async () => {
+  await assert.doesNotReject(validateImageDecode(tinyVp8L));
+  await assert.doesNotReject(validateImageDecode(verifiedVp8L));
+  await assert.doesNotReject(validateImageDecode(verifiedVp8));
+  await assert.doesNotReject(validateImageDecode(verifiedVp8X));
+
+  const corruptVp8L = Buffer.from(verifiedVp8L);
+  corruptVp8L.fill(1, 25);
+  assert.deepEqual(readImageDimensions(corruptVp8L), { width: 16, height: 16, format: 'webp' });
+  await assert.rejects(validateImageDecode(corruptVp8L), /decode-integrity/i);
+
+  const corruptVp8 = Buffer.from(verifiedVp8);
+  corruptVp8.fill(1, 30);
+  assert.deepEqual(readImageDimensions(corruptVp8), { width: 1679, height: 1127, format: 'webp' });
+  await assert.rejects(validateImageDecode(corruptVp8), /decode-integrity/i);
+});
+
+test('registration and normal/release manifest validation fail closed on decode corruption', async () => {
   const fixture = createFixtureRepository();
   try {
-    assert.deepEqual(validateGithubAssetManifest({ version: 1, assets: [fixture.rootAsset] }, {
+    const corruptVp8L = Buffer.from(verifiedVp8L);
+    corruptVp8L.fill(1, 25);
+    writeFileSync(path.join(fixture.root, 'assets', 'corrupt.webp'), corruptVp8L);
+    await assert.rejects(describeGithubAsset('assets/corrupt.webp', {
+      rootDirectory: fixture.root,
+    }), /decode-integrity/i);
+
+    const corruptVp8 = Buffer.from(verifiedVp8);
+    corruptVp8.fill(1, 30);
+    writeFileSync(path.join(fixture.root, fixture.pluginAsset.path), corruptVp8);
+    fixture.pluginAsset.sha256 = createHash('sha256').update(corruptVp8).digest('hex');
+    assert.match((await validateGithubAssetManifest({ version: 1, assets: [fixture.pluginAsset] }, {
+      repositoryRoot: fixture.root,
+      now,
+    })).join('\n'), /decode-integrity/i);
+
+    const pluginReadme = path.join(fixture.root, 'plugins', 'maxvideoai', 'README.md');
+    writeFileSync(pluginReadme, '![Plugin launch proof](assets/launch.webp)\n');
+    assert.match((await validateReleaseReadmeAssets({ version: 1, assets: [fixture.pluginAsset] }, {
+      repositoryRoot: fixture.root,
+      now,
+      readmePaths: [pluginReadme],
+    })).join('\n'), /decode-integrity/i);
+  } finally {
+    rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test('requires current, review-signed proof provenance from real ancestor revisions', async () => {
+  const fixture = createFixtureRepository();
+  try {
+    assert.deepEqual(await validateGithubAssetManifest({ version: 1, assets: [fixture.rootAsset] }, {
       repositoryRoot: fixture.root,
       now,
     }), []);
@@ -195,10 +242,10 @@ test('requires current, review-signed proof provenance from real ancestor revisi
     invalid.claim = '';
     invalid.alt = 'screenshot';
     invalid.state = 'unapproved';
-    assert.match(validateGithubAssetManifest({ version: 1, assets: [invalid] }, {
+    assert.match((await validateGithubAssetManifest({ version: 1, assets: [invalid] }, {
       repositoryRoot: fixture.root,
       now,
-    }).join('\n'), /semantic|relative|sha256|dimensions|claim|alt|state/i);
+    })).join('\n'), /semantic|relative|sha256|dimensions|claim|alt|state/i);
 
     const stale = clone(fixture.rootAsset);
     stale.capturedAt = '2000-01-01';
@@ -206,16 +253,16 @@ test('requires current, review-signed proof provenance from real ancestor revisi
     stale.lastReviewedAt = '2000-01-01';
     stale.lastReviewedRevision = 'f'.repeat(40);
     stale.freshnessStatus = 'stale';
-    assert.match(validateGithubAssetManifest({ version: 1, assets: [stale] }, {
+    assert.match((await validateGithubAssetManifest({ version: 1, assets: [stale] }, {
       repositoryRoot: fixture.root,
       now,
-    }).join('\n'), /90 days|revision|30 days|freshnessStatus/i);
+    })).join('\n'), /90 days|revision|30 days|freshnessStatus/i);
   } finally {
     rmSync(fixture.root, { recursive: true, force: true });
   }
 });
 
-test('requires complete host and editorial provenance while preserving archival null provenance', () => {
+test('requires complete host and editorial provenance while preserving archival null provenance', async () => {
   const fixture = createFixtureRepository();
   try {
     const hostProof = clone(fixture.rootAsset);
@@ -223,27 +270,27 @@ test('requires complete host and editorial provenance while preserving archival 
     hostProof.kind = 'host_proof';
     hostProof.host = 'Claude Desktop';
     hostProof.hostVersion = null;
-    const hostErrors = validateGithubAssetManifest({ version: 1, assets: [hostProof] }, {
+    const hostErrors = (await validateGithubAssetManifest({ version: 1, assets: [hostProof] }, {
       repositoryRoot: fixture.root,
       now,
-    }).join('\n');
+    })).join('\n');
     assert.match(hostErrors, /hostVersion/i);
 
     const editorial = clone(fixture.pluginAsset);
     editorial.state = 'draft_editorial';
     editorial.sourceEnvironment = 'generated_editorial';
     editorial.claim = 'Editorial-only decorative visual; it is not product or host proof.';
-    assert.deepEqual(validateGithubAssetManifest({ version: 1, assets: [editorial] }, {
+    assert.deepEqual(await validateGithubAssetManifest({ version: 1, assets: [editorial] }, {
       repositoryRoot: fixture.root,
       now,
     }), []);
     editorial.capturedAt = null;
     editorial.maxvideoaiRevision = null;
     editorial.approvedBy = null;
-    assert.match(validateGithubAssetManifest({ version: 1, assets: [editorial] }, {
+    assert.match((await validateGithubAssetManifest({ version: 1, assets: [editorial] }, {
       repositoryRoot: fixture.root,
       now,
-    }).join('\n'), /draft_editorial requires capturedAt|maxvideoaiRevision|approvedBy/i);
+    })).join('\n'), /draft_editorial requires capturedAt|maxvideoaiRevision|approvedBy/i);
 
     hostProof.state = 'reference_only';
     hostProof.capturedAt = null;
@@ -252,7 +299,7 @@ test('requires complete host and editorial provenance while preserving archival 
     hostProof.lastReviewedAt = null;
     hostProof.lastReviewedRevision = null;
     hostProof.freshnessStatus = null;
-    assert.deepEqual(validateGithubAssetManifest({ version: 1, assets: [hostProof] }, {
+    assert.deepEqual(await validateGithubAssetManifest({ version: 1, assets: [hostProof] }, {
       repositoryRoot: fixture.root,
       now,
     }), []);
@@ -261,7 +308,7 @@ test('requires complete host and editorial provenance while preserving archival 
   }
 });
 
-test('scans both production README paths, reference Markdown, HTML, and every srcset candidate', () => {
+test('scans both production README paths, reference Markdown, HTML, and every srcset candidate', async () => {
   const fixture = createFixtureRepository();
   try {
     const rootReadme = path.join(fixture.root, 'README.md');
@@ -273,24 +320,24 @@ test('scans both production README paths, reference Markdown, HTML, and every sr
     assert.deepEqual(findReadmeImageReferences(readFileSync(rootReadme, 'utf8'), rootReadme, fixture.root), ['assets/workflow.png']);
     assert.equal(usages.length, 2);
     assert.equal(usages.find((usage) => usage.path === 'assets/workflow.png')?.usages.length, 2);
-    assert.match(validateReleaseReadmeAssets(manifest, { repositoryRoot: fixture.root, now }).join('\n'), /plugin_readme is not an approved placement/);
+    assert.match((await validateReleaseReadmeAssets(manifest, { repositoryRoot: fixture.root, now })).join('\n'), /plugin_readme is not an approved placement/);
 
     fixture.rootAsset.placements.push('plugin_readme');
-    assert.deepEqual(validateReleaseReadmeAssets(manifest, { repositoryRoot: fixture.root, now }), []);
+    assert.deepEqual(await validateReleaseReadmeAssets(manifest, { repositoryRoot: fixture.root, now }), []);
 
     writeFileSync(rootReadme, '![Hero]\n\n[hero]: assets/unregistered.png\n');
-    assert.match(validateReleaseReadmeAssets(manifest, { repositoryRoot: fixture.root, now }).join('\n'), /README.md.*unregistered/i);
+    assert.match((await validateReleaseReadmeAssets(manifest, { repositoryRoot: fixture.root, now })).join('\n'), /README.md.*unregistered/i);
     writeFileSync(rootReadme, '![Missing root visual](assets/unregistered.png)\n');
-    assert.match(validateReleaseReadmeAssets(manifest, { repositoryRoot: fixture.root, now }).join('\n'), /README.md.*unregistered/i);
+    assert.match((await validateReleaseReadmeAssets(manifest, { repositoryRoot: fixture.root, now })).join('\n'), /README.md.*unregistered/i);
     writeFileSync(rootReadme, '![Workflow proof][workflow]\n\n[workflow]: assets/workflow.png\n');
     writeFileSync(pluginReadme, '![Missing plugin visual](assets/unregistered.webp)\n');
-    assert.match(validateReleaseReadmeAssets(manifest, { repositoryRoot: fixture.root, now }).join('\n'), /plugins\/maxvideoai\/README.md.*unregistered/i);
+    assert.match((await validateReleaseReadmeAssets(manifest, { repositoryRoot: fixture.root, now })).join('\n'), /plugins\/maxvideoai\/README.md.*unregistered/i);
   } finally {
     rmSync(fixture.root, { recursive: true, force: true });
   }
 });
 
-test('permits draft editorial assets only as labeled HTML editorial illustrations', () => {
+test('permits draft editorial assets only as labeled HTML editorial illustrations', async () => {
   const fixture = createFixtureRepository();
   try {
     const readmePath = path.join(fixture.root, 'README.md');
@@ -304,14 +351,14 @@ test('permits draft editorial assets only as labeled HTML editorial illustration
     editorial.width = fixture.rootAsset.width;
     editorial.height = fixture.rootAsset.height;
     writeFileSync(readmePath, '![Editorial illustration: launch ambience](assets/workflow.png)\n');
-    assert.match(validateReleaseReadmeAssets({ version: 1, assets: [editorial] }, {
+    assert.match((await validateReleaseReadmeAssets({ version: 1, assets: [editorial] }, {
       repositoryRoot: fixture.root,
       now,
       readmePaths: [readmePath],
-    }).join('\n'), /HTML.*editorial/i);
+    })).join('\n'), /HTML.*editorial/i);
 
     writeFileSync(readmePath, '<img src="assets/workflow.png" data-asset-role="editorial" alt="Editorial illustration: launch ambience">\n');
-    assert.deepEqual(validateReleaseReadmeAssets({ version: 1, assets: [editorial] }, {
+    assert.deepEqual(await validateReleaseReadmeAssets({ version: 1, assets: [editorial] }, {
       repositoryRoot: fixture.root,
       now,
       readmePaths: [readmePath],
@@ -321,12 +368,12 @@ test('permits draft editorial assets only as labeled HTML editorial illustration
   }
 });
 
-test('ships archival MCP captures with real hashes and dimensions while production release mode scans both READMEs', () => {
+test('ships archival MCP captures with real hashes and dimensions while production release mode scans both READMEs', async () => {
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
   const mcpAssets = manifest.assets.filter((asset: { path: string }) => asset.path.startsWith('frontend/public/media/mcp/'));
   assert.equal(mcpAssets.length, 6);
   assert.ok(mcpAssets.every((asset: { state: string }) => asset.state === 'reference_only'));
-  assert.deepEqual(validateGithubAssetManifest(manifest, { repositoryRoot, now }), []);
+  assert.deepEqual(await validateGithubAssetManifest(manifest, { repositoryRoot, now }), []);
 
   const release = spawnSync(process.execPath, [checkCommandPath, '--release'], {
     cwd: repositoryRoot,
