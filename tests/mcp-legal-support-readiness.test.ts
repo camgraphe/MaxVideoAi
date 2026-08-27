@@ -132,7 +132,18 @@ async function getLiveToolNames(): Promise<string[]> {
   await server.connect(serverTransport);
   await client.connect(clientTransport);
   try {
-    return (await client.listTools()).tools.map((tool) => tool.name).sort();
+    return (await client.listTools()).tools
+      .filter((tool) => {
+        const ui = tool._meta?.ui;
+        const visibility = ui && typeof ui === 'object' && !Array.isArray(ui)
+          ? (ui as { visibility?: unknown }).visibility
+          : null;
+        return !Array.isArray(visibility)
+          || !visibility.includes('app')
+          || visibility.includes('model');
+      })
+      .map((tool) => tool.name)
+      .sort();
   } finally {
     await client.close();
     await server.close();
@@ -485,6 +496,7 @@ test('readiness packages follow the live registry and canonical localized route 
     Array.from(value.matchAll(/`([a-z][a-z0-9_]+)`/g), (match) => match[1] as string);
   assert.deepEqual(toolNames(markdownRow(support, 'Default discovery')), DEFAULT_DISCOVERY_TOOLS);
   assert.deepEqual(toolNames(markdownRow(support, 'Operational staging')), OPERATIONAL_TOOLS);
+  assert.deepEqual(toolNames(markdownRow(support, 'App-only helper')), ['get_generation_download']);
 
   const migrations = readdirSync(join(root, 'neon/migrations'));
   for (let id = 30; id <= 37; id += 1) {

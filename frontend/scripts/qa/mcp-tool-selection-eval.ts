@@ -155,7 +155,17 @@ function assertFixtureContractAndCoverage(
 }
 
 export function authoritativeToolSchemaNames(): string[] {
-  return Object.keys(MCP_TOOL_INPUT_SCHEMAS);
+  return [...LIVE_TOOL_NAMES, ...FUTURE_GATED_TOOL_NAMES];
+}
+
+function isAppOnlyTool(meta: unknown): boolean {
+  if (!meta || typeof meta !== 'object' || Array.isArray(meta)) return false;
+  const ui = (meta as { ui?: unknown }).ui;
+  if (!ui || typeof ui !== 'object' || Array.isArray(ui)) return false;
+  const visibility = (ui as { visibility?: unknown }).visibility;
+  return Array.isArray(visibility)
+    && visibility.includes('app')
+    && !visibility.includes('model');
 }
 
 export function validateCuratedToolArguments(
@@ -215,12 +225,14 @@ export async function collectPolicyFingerprintInput(): Promise<PolicyFingerprint
   const client = new Client({ name: 'offline-policy-fingerprint', version: '1.0.0' });
   await client.connect(clientTransport);
   try {
-    const tools = (await client.listTools()).tools.map((tool) => ({
-      name: tool.name,
-      description: tool.description ?? '',
-      annotations: (tool.annotations ?? {}) as Record<string, unknown>,
-      inputSchema: tool.inputSchema as Record<string, unknown>,
-    }));
+    const tools = (await client.listTools()).tools
+      .filter((tool) => !isAppOnlyTool(tool._meta))
+      .map((tool) => ({
+        name: tool.name,
+        description: tool.description ?? '',
+        annotations: (tool.annotations ?? {}) as Record<string, unknown>,
+        inputSchema: tool.inputSchema as Record<string, unknown>,
+      }));
     if (JSON.stringify(tools.map((tool) => tool.name)) !== JSON.stringify([
       ...LIVE_TOOL_NAMES,
       ...FUTURE_GATED_TOOL_NAMES,

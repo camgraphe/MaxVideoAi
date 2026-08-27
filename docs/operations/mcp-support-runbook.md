@@ -6,13 +6,14 @@ Readiness: **NOT READY FOR PUBLIC PROMOTION**
 This runbook is the support and disclosure boundary for the controlled MaxVideoAI MCP foundation. It is not a public
 availability announcement or a legal policy. Production defaults to the five
 read-only discovery tools; the isolated staging profile registers 13 user-facing tools
-plus one app-only download-refresh tool listed below. Production transport, OAuth, discovery, generation, trial, and
+plus one app-only download-refresh helper listed separately below. Production transport, OAuth, discovery, generation, trial, and
 reference-upload publication remain disabled.
 
 | Tool profile | Exact tool inventory |
 | --- | --- |
 | Default discovery | `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget` |
-| Operational staging | `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`, `list_media`, `create_reference_upload_link`, `prepare_generation`, `confirm_generation`, `get_generation_status`, `list_recent_generations`, `get_generation_download` (app-only), `present_generation`, `create_topup_link` |
+| Operational staging | `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`, `list_media`, `create_reference_upload_link`, `prepare_generation`, `confirm_generation`, `get_generation_status`, `list_recent_generations`, `present_generation`, `create_topup_link` |
+| App-only helper | `get_generation_download` |
 
 The operational inventory is checked-in and tested on the hosted staging
 revision recorded in the host compatibility matrix. This is evidence for the
