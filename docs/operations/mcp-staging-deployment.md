@@ -127,6 +127,22 @@ GOOGLE_VERTEX_IMAGE_MCP_PUBLIC_ROUTING_ENABLED=false
 GOOGLE_VERTEX_IMAGE_MCP_ENGINE_ALLOWLIST=nano-banana-lite
 ```
 
+Private provider canaries additionally require these sensitive Production-target
+values on the dedicated staging project:
+
+```text
+MCP_STAGING_CANARY_ACCOUNT_IDS=<comma-separated MaxVideoAI staging account IDs>
+MCP_STAGING_CANARY_CLIENT_IDS=<comma-separated hosted MCP OAuth client IDs>
+```
+
+Access is granted only when the exact account and the exact OAuth client both
+match, the request is served from `maxvideoai-mcp-staging.vercel.app`, and
+`MCP_STAGING_OPERATIONAL_ENABLED=true`. A partial match fails closed. These
+allowlists do not mutate the deployed provider configuration: all public routing
+flags stay `false` (closed), so another account or client continues to see the
+Google/Vertex engines as unavailable. Store the identifiers as Vercel sensitive
+values and never add their contents to Git or logs.
+
 `BYTEPLUS_ARK_API_KEY` is required on the Production target for the first
 operational MCP profile. Seedance 2.5 text-to-video, image-to-video,
 reference-to-video, and extension submission and polling use the proven

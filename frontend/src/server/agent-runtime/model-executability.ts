@@ -43,15 +43,21 @@ export type AgentGenerationExecutabilityEnvironment = Readonly<{
   providerEnv?: Readonly<Record<string, string | undefined>>;
 }>;
 
-function defaultEnvironment(): AgentGenerationExecutabilityEnvironment {
+export function createAgentGenerationExecutabilityEnvironment(
+  providerEnv: Readonly<Record<string, string | undefined>> = process.env,
+): AgentGenerationExecutabilityEnvironment {
   return {
     bytePlusEnabled: isBytePlusModelArkEnabled(),
     bytePlusApiKey: ENV.BYTEPLUS_ARK_API_KEY,
     bytePlusLasApiKey: ENV.BYTEPLUS_LAS_API_KEY,
     bytePlusLasEnabled: isBytePlusLasExecutionEnabled(),
     falApiKey: ENV.FAL_API_KEY,
-    providerEnv: process.env,
+    providerEnv,
   };
+}
+
+function defaultEnvironment(): AgentGenerationExecutabilityEnvironment {
+  return createAgentGenerationExecutabilityEnvironment();
 }
 
 function configured(value: string | undefined): boolean {

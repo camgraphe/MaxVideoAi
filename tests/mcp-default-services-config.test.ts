@@ -140,3 +140,40 @@ test('official staging config reaches the real default top-up service while cust
     /trusted MaxVideoAI account URL|unexpected origin/i,
   );
 });
+
+test('default MCP services scope Google canary executability to the exact staging principal', async () => {
+  const runtimeEnv = {
+    NODE_ENV: 'production',
+    MCP_STAGING_OPERATIONAL_ENABLED: 'true',
+    MCP_STAGING_CANARY_ACCOUNT_IDS: principal.userId,
+    MCP_STAGING_CANARY_CLIENT_IDS: principal.clientId,
+    GOOGLE_VERTEX_PROJECT_ID: 'staging-project',
+    GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON: '{"client_email":"staging@example.com","private_key":"key"}',
+    GOOGLE_VERTEX_INPUT_GCS_URI: 'gs://staging-inputs/mcp',
+    GOOGLE_VERTEX_IMAGE_MCP_ENABLED: 'false',
+    GOOGLE_VERTEX_IMAGE_MCP_PUBLIC_ROUTING_ENABLED: 'false',
+    GOOGLE_VERTEX_IMAGE_MCP_ENGINE_ALLOWLIST: 'nano-banana-lite',
+    GOOGLE_VERTEX_VEO_ENABLED: 'false',
+    GOOGLE_VERTEX_VEO_PUBLIC_ROUTING_ENABLED: 'false',
+    GOOGLE_VERTEX_VEO_ADMIN_ONLY: 'true',
+  } as NodeJS.ProcessEnv;
+  const services = createDefaultMaxVideoAiMcpServices(
+    config('https://maxvideoai-mcp-staging.vercel.app'),
+    { clientIp: null, userAgent: null },
+    operationalCapabilities,
+    undefined,
+    undefined,
+    runtimeEnv,
+  );
+
+  const allowedImage = await services.getModelDetails('nano-banana-lite', principal);
+  const allowedVeo = await services.getModelDetails('veo-3-1-lite', principal);
+  const blockedImage = await services.getModelDetails('nano-banana-lite', {
+    ...principal,
+    clientId: 'another-client',
+  });
+
+  assert.equal(allowedImage.generationEnabled, true);
+  assert.equal(allowedVeo.generationEnabled, true);
+  assert.equal(blockedImage.generationEnabled, false);
+});

@@ -6,11 +6,14 @@ import {
   getPublicConfiguredEnginesByCategoryInExecutor,
 } from '@/server/engines';
 import {
+  resolveAgentGenerationEngineExecutability,
+  resolveAgentGenerationModeExecutability,
   isAgentGenerationEngineExecutable,
   isAgentGenerationModeExecutable,
+  type AgentGenerationExecutabilityEnvironment,
 } from '@/server/agent-runtime/model-executability';
 import { normalizeVideoDurationOption } from '@/server/video-generation/execution-constraints';
-import type { EngineCaps, EngineModeUiCaps } from '@/types/engines';
+import type { EngineCaps, EngineModeUiCaps, Mode } from '@/types/engines';
 
 import type { AgentGenerationMode, AgentModel, AgentModelFilter } from './types';
 import { toCanonicalGenerationMode, toEngineGenerationMode } from './generation-mode-aliases';
@@ -47,7 +50,7 @@ export type AgentModelCatalogDeps = {
   listEngines(): Promise<EngineCaps[]>;
   surfaceByEngineId(engineId: string): 'video' | 'image' | null;
   isEngineExecutable?(engine: EngineCaps): boolean;
-  isModeExecutable?(engine: EngineCaps, mode: AgentGenerationMode): boolean;
+  isModeExecutable?(engine: EngineCaps, mode: Mode): boolean;
 };
 
 export type AgentModelCandidate = {
@@ -61,14 +64,24 @@ export type AgentPublicCatalogEngine = AgentPublicGenerationEngine & {
   generationEnabled: boolean;
 };
 
-const defaultDeps: AgentModelCatalogDeps = {
-  listEngines: () => getPublicConfiguredEnginesByCategory('all'),
-  surfaceByEngineId(engineId) {
-    return SURFACE_BY_ENGINE_ID.get(engineId) ?? null;
-  },
-  isEngineExecutable: isAgentGenerationEngineExecutable,
-  isModeExecutable: isAgentGenerationModeExecutable,
-};
+export function createAgentModelCatalogDeps(
+  environment?: AgentGenerationExecutabilityEnvironment,
+): AgentModelCatalogDeps {
+  return {
+    listEngines: () => getPublicConfiguredEnginesByCategory('all'),
+    surfaceByEngineId(engineId) {
+      return SURFACE_BY_ENGINE_ID.get(engineId) ?? null;
+    },
+    isEngineExecutable: environment
+      ? (engine) => resolveAgentGenerationEngineExecutability(engine, environment).executable
+      : isAgentGenerationEngineExecutable,
+    isModeExecutable: environment
+      ? (engine, mode) => resolveAgentGenerationModeExecutability(engine, mode, environment).executable
+      : isAgentGenerationModeExecutable,
+  };
+}
+
+const defaultDeps: AgentModelCatalogDeps = createAgentModelCatalogDeps();
 
 function referenceImagesSupported(modes: AgentGenerationMode[]): boolean {
   return modes.some((mode) =>
@@ -147,7 +160,7 @@ export async function listPublicAgentCatalogEngines(
     const configuredModes = modes.filter((mode) => Boolean(modeCaps[mode]));
     if (!configuredModes.length) return [];
     const executableModes = configuredModes.filter((mode) =>
-      deps.isModeExecutable?.(engine, toEngineGenerationMode(engine.id, mode) as AgentGenerationMode) !== false
+      deps.isModeExecutable?.(engine, toEngineGenerationMode(engine.id, mode)) !== false
     );
     const generationEnabled = deps.isEngineExecutable?.(engine) !== false
       && executableModes.length > 0;
@@ -171,14 +184,19 @@ export async function listPublicAgentGenerationEngines(
 
 export async function listPublicAgentGenerationEnginesInExecutor(
   executor: TransactionQueryExecutor,
+  environment?: AgentGenerationExecutabilityEnvironment,
 ): Promise<AgentPublicGenerationEngine[]> {
   return listPublicAgentGenerationEngines({
     listEngines: () => getPublicConfiguredEnginesByCategoryInExecutor('all', executor),
     surfaceByEngineId(engineId) {
       return SURFACE_BY_ENGINE_ID.get(engineId) ?? null;
     },
-    isEngineExecutable: isAgentGenerationEngineExecutable,
-    isModeExecutable: isAgentGenerationModeExecutable,
+    isEngineExecutable: environment
+      ? (engine) => resolveAgentGenerationEngineExecutability(engine, environment).executable
+      : isAgentGenerationEngineExecutable,
+    isModeExecutable: environment
+      ? (engine, mode) => resolveAgentGenerationModeExecutability(engine, mode, environment).executable
+      : isAgentGenerationModeExecutable,
   });
 }
 

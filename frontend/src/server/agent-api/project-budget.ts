@@ -15,6 +15,7 @@ import type {
 import { CANONICAL_VIDEO_GENERATION_MODES } from './generation-types';
 import { MAX_CANONICAL_REFERENCES } from './generation-normalization';
 import {
+  type AgentModelCatalogDeps,
   listPublicAgentGenerationEngines,
   type AgentPublicGenerationEngine,
 } from './model-catalog';
@@ -117,6 +118,15 @@ const defaultDependencies: AgentProjectBudgetDependencies = {
   priceGeneration: priceCanonicalGeneration,
   computeCatalogRevision: computeGenerationCatalogRevision,
 };
+
+export function createAgentProjectBudgetDependencies(
+  catalogDeps: AgentModelCatalogDeps,
+): AgentProjectBudgetDependencies {
+  return {
+    ...defaultDependencies,
+    listPublicEngines: () => listPublicAgentGenerationEngines(catalogDeps),
+  };
+}
 
 function invalidParameter(): never {
   throw new AgentApiError('PARAMETER_INVALID', 'The project budget request contains invalid settings.');

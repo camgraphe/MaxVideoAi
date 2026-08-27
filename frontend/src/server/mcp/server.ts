@@ -6,7 +6,12 @@ import {
   createAgentAccountStatusService,
   type AgentAccountStatusWalletDeps,
 } from '@/server/agent-api/account-status';
-import { listAgentModels } from '@/server/agent-api/model-catalog';
+import {
+  createAgentModelCatalogDeps,
+  listAgentModels,
+  listPublicAgentGenerationEngines,
+  listPublicAgentGenerationEnginesInExecutor,
+} from '@/server/agent-api/model-catalog';
 import { getAgentModelDetails } from '@/server/agent-api/model-details';
 import {
   listAgentMedia,
@@ -20,6 +25,7 @@ import {
 import { recommendAgentModels } from '@/server/agent-api/model-recommendations';
 import {
   calculateAgentProjectBudget,
+  createAgentProjectBudgetDependencies,
   type AgentProjectBudgetInput,
   type AgentProjectBudgetResult,
 } from '@/server/agent-api/project-budget';
@@ -59,6 +65,8 @@ import type { McpConfig } from '@/server/mcp/config';
 import { buildMaxVideoAiMcpInstructions } from '@/server/mcp/instructions';
 import { registerGenerationResultApp } from '@/server/mcp/generation-result-app';
 import type { McpRuntimeCapabilities } from '@/server/mcp/operational-access';
+import { resolveMcpStagingCanaryGenerationEnvironment } from '@/server/mcp/provider-canary-access';
+import { resolveAgentGenerationRequestExecutability } from '@/server/agent-runtime/model-executability';
 import { registerGetAccountStatusTool } from '@/server/mcp/tools/get-account-status';
 import { registerConfirmGenerationTool } from '@/server/mcp/tools/confirm-generation';
 import { registerCreateTopupLinkTool } from '@/server/mcp/tools/create-topup-link';
@@ -126,19 +134,55 @@ export function createDefaultMaxVideoAiMcpServices(
   capabilities: McpRuntimeCapabilities,
   accountStatusDeps?: AgentAccountStatusWalletDeps,
   topupHandoffDeps?: Partial<Omit<McpTopupHandoffDependencies, 'billingBaseUrl'>>,
+  runtimeEnv: NodeJS.ProcessEnv = process.env,
 ): MaxVideoAiMcpServices {
+  const generationEnvironmentFor = (principal: AgentPrincipal) =>
+    resolveMcpStagingCanaryGenerationEnvironment(principal, config.accountUrl, runtimeEnv);
+  const catalogDepsFor = (principal: AgentPrincipal) =>
+    createAgentModelCatalogDeps(generationEnvironmentFor(principal));
   return {
     getAccountStatus: createAgentAccountStatusService(config.accountUrl, accountStatusDeps),
-    listModels: (filter) => listAgentModels(filter),
-    getModelDetails: (engineId) => getAgentModelDetails(engineId),
-    recommendModels: (input) => recommendAgentModels(input),
-    calculateProjectBudget: (input, principal) => calculateAgentProjectBudget(input, principal),
-    prepareGeneration: createPrepareGenerationService(config.accountUrl, trialRiskContext, {
-      paidGenerationEnabled: () => capabilities.paidGeneration,
-    }),
-    confirmGeneration: createConfirmGenerationService(config.accountUrl, trialRiskContext, {
-      paidGenerationEnabled: () => capabilities.paidGeneration,
-    }),
+    listModels: (filter, principal) => listAgentModels(filter, catalogDepsFor(principal)),
+    getModelDetails: (engineId, principal) => getAgentModelDetails(engineId, catalogDepsFor(principal)),
+    recommendModels: (input, principal) => recommendAgentModels(input, catalogDepsFor(principal)),
+    calculateProjectBudget: (input, principal) => calculateAgentProjectBudget(
+      input,
+      principal,
+      createAgentProjectBudgetDependencies(catalogDepsFor(principal)),
+    ),
+    prepareGeneration: (input, principal) => createPrepareGenerationService(
+      config.accountUrl,
+      trialRiskContext,
+      {
+        paidGenerationEnabled: () => capabilities.paidGeneration,
+        listPublicEngines: () => listPublicAgentGenerationEngines(catalogDepsFor(principal)),
+        resolveRequestExecutability: (request, candidate, resolvedReferences) =>
+          resolveAgentGenerationRequestExecutability(
+            request,
+            candidate.engine,
+            resolvedReferences,
+            generationEnvironmentFor(principal),
+          ),
+      },
+    )(input, principal),
+    confirmGeneration: (input, principal) => createConfirmGenerationService(
+      config.accountUrl,
+      trialRiskContext,
+      {
+        paidGenerationEnabled: () => capabilities.paidGeneration,
+        listPublicEngines: ({ executor }) => listPublicAgentGenerationEnginesInExecutor(
+          executor,
+          generationEnvironmentFor(principal),
+        ),
+        resolveRequestExecutability: (request, candidate, resolvedReferences) =>
+          resolveAgentGenerationRequestExecutability(
+            request,
+            candidate.engine,
+            resolvedReferences,
+            generationEnvironmentFor(principal),
+          ),
+      },
+    )(input, principal),
     getGenerationStatus: (input, principal) => getAgentGenerationStatus(input, principal, {
       accountUrl: config.accountUrl,
     }),
