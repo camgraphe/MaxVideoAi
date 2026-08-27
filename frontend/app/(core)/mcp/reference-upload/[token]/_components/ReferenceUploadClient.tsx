@@ -27,6 +27,7 @@ export function ReferenceUploadClient({
   const [error, setError] = useState<string | null>(null);
   const [assetId, setAssetId] = useState<string | null>(null);
   const mediaLabel = mediaKind === 'audio' ? 'audio file' : mediaKind;
+  const mediaArticle = mediaKind === 'video' ? 'a' : 'an';
   const maxMB = Math.floor(maxBytes / (1024 * 1024));
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -145,7 +146,7 @@ export function ReferenceUploadClient({
       >
         <Upload className="h-7 w-7 text-brand" aria-hidden="true" />
         <span className="mt-2 text-sm font-medium text-text-primary">
-          {file ? file.name : `Select a ${mediaLabel}`}
+          {file ? file.name : `Select ${mediaArticle} ${mediaLabel}`}
         </span>
         {file ? <span className="mt-1 text-xs text-text-muted">{Math.ceil(file.size / 1024)} KB</span> : null}
       </label>

@@ -322,6 +322,7 @@ test('service uploads, records, mirrors, and returns the exact public projection
     fileName: 'reference.webp',
     userId: 'user_1',
     prefix: 'user-assets',
+    contentAddressed: true,
   });
   assert.deepEqual(calls[2][1].metadata, {
     originalName: 'reference.tiff',

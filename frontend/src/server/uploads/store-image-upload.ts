@@ -448,6 +448,7 @@ export function createStoreImageUploadService(
         fileName: normalized.fileName,
         userId: params.userId,
         prefix: 'user-assets',
+        contentAddressed: true,
         ...(params.cleanupObjects ? {
           beforeUpload: (objectKey: string) => params.cleanupObjects!.beforeUpload({ objectRole: 'final', objectKey, safeToDelete: true }),
         } : {}),

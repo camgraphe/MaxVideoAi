@@ -261,16 +261,23 @@ export async function uploadImageToStorage(params: {
   userId?: string | null;
   fileName?: string | null;
   prefix?: string;
+  contentAddressed?: boolean;
   beforeUpload?: (key: string) => Promise<void>;
   signal?: AbortSignal;
 }): Promise<UploadResult> {
   const client = getS3Client();
   const safeMime = params.mime && params.mime.startsWith('image/') ? params.mime : 'image/png';
-  const key = buildObjectKey({
-    prefix: params.prefix,
-    userId: params.userId,
-    leafName: buildStorageLeafName({ mime: safeMime, fileName: params.fileName }),
-  });
+  const key = params.contentAddressed
+    ? buildObjectKey({
+        prefix: `${params.prefix ?? 'uploads'}/by-content`,
+        userId: createHash('sha256').update(params.userId ?? 'anonymous').digest('hex').slice(0, 32),
+        leafName: `${createHash('sha256').update(params.data).digest('hex')}.${inferExtension(safeMime)}`,
+      })
+    : buildObjectKey({
+        prefix: params.prefix,
+        userId: params.userId,
+        leafName: buildStorageLeafName({ mime: safeMime, fileName: params.fileName }),
+      });
 
   const putCommand = new PutObjectCommand({
     Bucket: S3_BUCKET,
