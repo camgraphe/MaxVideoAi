@@ -6,9 +6,11 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { deflateSync } from 'node:zlib';
 
 import {
   findReadmeImageReferences,
+  findReadmeImageUsages,
   validateGithubAssetManifest,
   validateReleaseReadmeAssets,
 } from '../scripts/check-github-assets.mjs';
@@ -17,89 +19,144 @@ import { readImageDimensions } from '../scripts/register-github-asset.mjs';
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const manifestPath = path.join(repositoryRoot, 'docs/marketing/github-asset-manifest.json');
 const checkCommandPath = path.join(repositoryRoot, 'scripts/check-github-assets.mjs');
+const now = new Date('2026-08-27T12:00:00Z');
+
+function crc32(bytes: Buffer): number {
+  let crc = 0xffffffff;
+  for (const byte of bytes) {
+    crc ^= byte;
+    for (let bit = 0; bit < 8; bit += 1) crc = (crc >>> 1) ^ (crc & 1 ? 0xedb88320 : 0);
+  }
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+function pngChunk(type: string, data: Buffer): Buffer {
+  const chunk = Buffer.alloc(12 + data.length);
+  chunk.writeUInt32BE(data.length, 0);
+  chunk.write(type, 4, 'ascii');
+  data.copy(chunk, 8);
+  chunk.writeUInt32BE(crc32(chunk.subarray(4, 8 + data.length)), 8 + data.length);
+  return chunk;
+}
 
 function png(width = 3, height = 2): Buffer {
-  const buffer = Buffer.alloc(45);
-  buffer.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52]);
-  buffer.writeUInt32BE(width, 16);
-  buffer.writeUInt32BE(height, 20);
-  buffer.write('IEND', 37, 'ascii');
-  return buffer;
+  const signature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(width, 0);
+  ihdr.writeUInt32BE(height, 4);
+  ihdr.set([8, 2, 0, 0, 0], 8);
+  const rows = Buffer.alloc(height * (1 + (width * 3)));
+  return Buffer.concat([signature, pngChunk('IHDR', ihdr), pngChunk('IDAT', deflateSync(rows)), pngChunk('IEND', Buffer.alloc(0))]);
 }
 
 function jpeg(width = 7, height = 5): Buffer {
-  const data = Buffer.alloc(23);
-  data.set([0xff, 0xd8, 0xff, 0xc0, 0, 17, 8]);
-  data.writeUInt16BE(height, 7);
-  data.writeUInt16BE(width, 9);
-  data.set([3, 1, 0x11, 0, 2, 0x11, 0, 3, 0x11, 0], 11);
-  data.set([0xff, 0xd9], 21);
-  return data;
+  const sof = Buffer.alloc(19);
+  sof.set([0xff, 0xc0, 0, 17, 8]);
+  sof.writeUInt16BE(height, 5);
+  sof.writeUInt16BE(width, 7);
+  sof.set([3, 1, 0x11, 0, 2, 0x11, 0, 3, 0x11, 0], 9);
+  const sos = Buffer.from([0xff, 0xda, 0, 12, 3, 1, 0, 2, 0x11, 3, 0x11, 0, 0x3f, 0]);
+  return Buffer.concat([Buffer.from([0xff, 0xd8]), sof, sos, Buffer.from([0x7f, 0xff, 0xd9])]);
 }
 
 function webp(width = 9, height = 4): Buffer {
-  const buffer = Buffer.alloc(30);
+  const chunk = Buffer.alloc(14);
+  chunk.write('VP8L', 0, 'ascii');
+  chunk.writeUInt32LE(5, 4);
+  chunk[8] = 0x2f;
+  chunk.writeUInt32LE(((height - 1) << 14) | (width - 1), 9);
+  const buffer = Buffer.alloc(12);
   buffer.write('RIFF', 0, 'ascii');
-  buffer.writeUInt32LE(22, 4);
-  buffer.write('WEBPVP8X', 8, 'ascii');
-  buffer.writeUInt32LE(10, 16);
-  buffer[20] = 0;
-  buffer.writeUIntLE(width - 1, 24, 3);
-  buffer.writeUIntLE(height - 1, 27, 3);
-  return buffer;
+  buffer.writeUInt32LE(18, 4);
+  buffer.write('WEBP', 8, 'ascii');
+  return Buffer.concat([buffer, chunk]);
+}
+
+function runGit(root: string, argumentsList: string[]): string {
+  const result = spawnSync('git', ['-C', root, ...argumentsList], { encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+  return result.stdout.trim();
 }
 
 function createFixtureRepository() {
   const root = mkdtempSync(path.join(os.tmpdir(), 'github-assets-'));
   mkdirSync(path.join(root, 'assets'), { recursive: true });
-  const imagePath = path.join(root, 'assets', 'workflow.png');
-  const bytes = png();
-  writeFileSync(imagePath, bytes);
+  mkdirSync(path.join(root, 'plugins', 'maxvideoai', 'assets'), { recursive: true });
+  const rootBytes = png();
+  const pluginBytes = webp();
+  writeFileSync(path.join(root, 'assets', 'workflow.png'), rootBytes);
+  writeFileSync(path.join(root, 'plugins', 'maxvideoai', 'assets', 'launch.webp'), pluginBytes);
+  runGit(root, ['init', '--quiet']);
+  runGit(root, ['config', 'user.email', 'tests@maxvideoai.local']);
+  runGit(root, ['config', 'user.name', 'MaxVideoAI tests']);
+  runGit(root, ['add', '.']);
+  runGit(root, ['commit', '--quiet', '-m', 'fixture assets']);
+  const revision = runGit(root, ['rev-parse', 'HEAD']);
 
-  const asset = {
-    id: 'maxvideoai-workflow-proof',
-    path: 'assets/workflow.png',
-    kind: 'product_proof',
+  const shared = {
     state: 'publishable_proof',
-    capturedAt: '2026-08-27',
+    capturedAt: '2026-08-20',
     sourceEnvironment: 'production',
     host: null,
     hostVersion: null,
-    maxvideoaiRevision: 'a'.repeat(40),
-    width: 3,
-    height: 2,
-    sha256: createHash('sha256').update(bytes).digest('hex'),
+    maxvideoaiRevision: revision,
     claim: 'MaxVideoAI shows a completed workflow with safe sample data.',
-    placements: ['root_readme'],
     alt: 'MaxVideoAI workflow showing a completed generation with safe sample data',
     reviewTrigger: 'Refresh after a meaningful workflow release.',
     approvedBy: 'MaxVideoAI owner',
+    lastReviewedAt: '2026-08-25',
+    lastReviewedRevision: revision,
+    freshnessStatus: 'current',
   };
-
-  return { root, asset };
+  const rootAsset = {
+    id: 'maxvideoai-workflow-proof',
+    path: 'assets/workflow.png',
+    kind: 'product_proof',
+    width: 3,
+    height: 2,
+    sha256: createHash('sha256').update(rootBytes).digest('hex'),
+    placements: ['root_readme'],
+    ...shared,
+  };
+  const pluginAsset = {
+    id: 'maxvideoai-launch-editorial',
+    path: 'plugins/maxvideoai/assets/launch.webp',
+    kind: 'editorial',
+    width: 9,
+    height: 4,
+    sha256: createHash('sha256').update(pluginBytes).digest('hex'),
+    placements: ['plugin_readme'],
+    ...shared,
+  };
+  return { root, rootAsset, pluginAsset, revision };
 }
 
 function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
-test('reads deterministic PNG, JPEG, and WebP dimensions and rejects malformed bytes', () => {
+test('reads structurally complete PNG, JPEG, and WebP dimensions and rejects malformed containers', () => {
   assert.deepEqual(readImageDimensions(png()), { width: 3, height: 2, format: 'png' });
   assert.deepEqual(readImageDimensions(jpeg()), { width: 7, height: 5, format: 'jpeg' });
   assert.deepEqual(readImageDimensions(webp()), { width: 9, height: 4, format: 'webp' });
   assert.throws(() => readImageDimensions(Buffer.from('not-an-image')), /unsupported|malformed/i);
-  assert.throws(() => readImageDimensions(png().subarray(0, 24)), /malformed/i);
-  assert.throws(() => readImageDimensions(jpeg().subarray(0, -2)), /malformed/i);
+  assert.throws(() => readImageDimensions(png().subarray(0, -12)), /missing|malformed/i);
+  const corruptPng = png();
+  corruptPng[corruptPng.length - 1] ^= 0xff;
+  assert.throws(() => readImageDimensions(corruptPng), /malformed/i);
+  assert.throws(() => readImageDimensions(jpeg().subarray(0, 21)), /malformed/i);
+  assert.throws(() => readImageDimensions(Buffer.concat([Buffer.from('RIFF\x0a\0\0\0WEBPVP8X', 'binary'), Buffer.alloc(10)])), /malformed/i);
 });
 
-test('validates publishable proof provenance against the current committed image bytes', () => {
+test('requires current, review-signed proof provenance from real ancestor revisions', () => {
   const fixture = createFixtureRepository();
   try {
-    assert.deepEqual(validateGithubAssetManifest({ version: 1, assets: [fixture.asset] }, {
+    assert.deepEqual(validateGithubAssetManifest({ version: 1, assets: [fixture.rootAsset] }, {
       repositoryRoot: fixture.root,
+      now,
     }), []);
 
-    const invalid = clone(fixture.asset);
+    const invalid = clone(fixture.rootAsset);
     invalid.id = 'asset 1';
     invalid.path = '../outside.png';
     invalid.sha256 = 'invalid';
@@ -109,92 +166,134 @@ test('validates publishable proof provenance against the current committed image
     invalid.state = 'unapproved';
     assert.match(validateGithubAssetManifest({ version: 1, assets: [invalid] }, {
       repositoryRoot: fixture.root,
+      now,
     }).join('\n'), /semantic|relative|sha256|dimensions|claim|alt|state/i);
+
+    const stale = clone(fixture.rootAsset);
+    stale.capturedAt = '2000-01-01';
+    stale.maxvideoaiRevision = '0'.repeat(40);
+    stale.lastReviewedAt = '2000-01-01';
+    stale.lastReviewedRevision = 'f'.repeat(40);
+    stale.freshnessStatus = 'stale';
+    assert.match(validateGithubAssetManifest({ version: 1, assets: [stale] }, {
+      repositoryRoot: fixture.root,
+      now,
+    }).join('\n'), /90 days|revision|30 days|freshnessStatus/i);
   } finally {
     rmSync(fixture.root, { recursive: true, force: true });
   }
 });
 
-test('requires complete approved provenance and host version for publishable host proof', () => {
+test('requires complete host and editorial provenance while preserving archival null provenance', () => {
   const fixture = createFixtureRepository();
   try {
-    const hostProof = clone(fixture.asset);
+    const hostProof = clone(fixture.rootAsset);
     hostProof.id = 'claude-inline-video-proof';
     hostProof.kind = 'host_proof';
     hostProof.host = 'Claude Desktop';
     hostProof.hostVersion = null;
+    const hostErrors = validateGithubAssetManifest({ version: 1, assets: [hostProof] }, {
+      repositoryRoot: fixture.root,
+      now,
+    }).join('\n');
+    assert.match(hostErrors, /hostVersion/i);
+
+    const editorial = clone(fixture.pluginAsset);
+    editorial.state = 'draft_editorial';
+    editorial.sourceEnvironment = 'generated_editorial';
+    editorial.claim = 'Editorial-only decorative visual; it is not product or host proof.';
+    assert.deepEqual(validateGithubAssetManifest({ version: 1, assets: [editorial] }, {
+      repositoryRoot: fixture.root,
+      now,
+    }), []);
+    editorial.capturedAt = null;
+    editorial.maxvideoaiRevision = null;
+    editorial.approvedBy = null;
+    assert.match(validateGithubAssetManifest({ version: 1, assets: [editorial] }, {
+      repositoryRoot: fixture.root,
+      now,
+    }).join('\n'), /draft_editorial requires capturedAt|maxvideoaiRevision|approvedBy/i);
+
+    hostProof.state = 'reference_only';
     hostProof.capturedAt = null;
     hostProof.maxvideoaiRevision = null;
     hostProof.approvedBy = null;
-    const errors = validateGithubAssetManifest({ version: 1, assets: [hostProof] }, {
-      repositoryRoot: fixture.root,
-    }).join('\n');
-    assert.match(errors, /capturedAt|hostVersion|maxvideoaiRevision|approvedBy/i);
-
-    hostProof.state = 'reference_only';
+    hostProof.lastReviewedAt = null;
+    hostProof.lastReviewedRevision = null;
+    hostProof.freshnessStatus = null;
     assert.deepEqual(validateGithubAssetManifest({ version: 1, assets: [hostProof] }, {
       repositoryRoot: fixture.root,
+      now,
     }), []);
   } finally {
     rmSync(fixture.root, { recursive: true, force: true });
   }
 });
 
-test('release mode accepts approved proof and explicitly labeled decorative editorial assets only', () => {
+test('scans both production README paths, reference Markdown, HTML, and every srcset candidate', () => {
+  const fixture = createFixtureRepository();
+  try {
+    const rootReadme = path.join(fixture.root, 'README.md');
+    const pluginReadme = path.join(fixture.root, 'plugins', 'maxvideoai', 'README.md');
+    writeFileSync(rootReadme, '![Workflow proof][workflow]\n\n[workflow]: assets/workflow.png "proof"\n');
+    writeFileSync(pluginReadme, `<picture>\n  <source\n    srcset="assets/launch.webp 1x, ../../assets/workflow.png 2x"\n  >\n  <img src="assets/launch.webp" srcset="assets/launch.webp 1x, ../../assets/workflow.png 2x" alt="Plugin release visual">\n</picture>\n`);
+    const manifest = { version: 1, assets: [fixture.rootAsset, fixture.pluginAsset] };
+    const usages = findReadmeImageUsages(readFileSync(pluginReadme, 'utf8'), pluginReadme, fixture.root);
+    assert.deepEqual(findReadmeImageReferences(readFileSync(rootReadme, 'utf8'), rootReadme, fixture.root), ['assets/workflow.png']);
+    assert.equal(usages.length, 2);
+    assert.equal(usages.find((usage) => usage.path === 'assets/workflow.png')?.usages.length, 2);
+    assert.match(validateReleaseReadmeAssets(manifest, { repositoryRoot: fixture.root, now }).join('\n'), /plugin_readme is not an approved placement/);
+
+    fixture.rootAsset.placements.push('plugin_readme');
+    assert.deepEqual(validateReleaseReadmeAssets(manifest, { repositoryRoot: fixture.root, now }), []);
+
+    writeFileSync(rootReadme, '![Missing root visual](assets/unregistered.png)\n');
+    assert.match(validateReleaseReadmeAssets(manifest, { repositoryRoot: fixture.root, now }).join('\n'), /README.md.*unregistered/i);
+    writeFileSync(rootReadme, '![Workflow proof][workflow]\n\n[workflow]: assets/workflow.png\n');
+    writeFileSync(pluginReadme, '![Missing plugin visual](assets/unregistered.webp)\n');
+    assert.match(validateReleaseReadmeAssets(manifest, { repositoryRoot: fixture.root, now }).join('\n'), /plugins\/maxvideoai\/README.md.*unregistered/i);
+  } finally {
+    rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test('permits draft editorial assets only as labeled HTML editorial illustrations', () => {
   const fixture = createFixtureRepository();
   try {
     const readmePath = path.join(fixture.root, 'README.md');
-    writeFileSync(readmePath, '![Workflow proof](assets/workflow.png)\n');
-    assert.deepEqual(findReadmeImageReferences(readFileSync(readmePath, 'utf8'), readmePath, fixture.root), ['assets/workflow.png']);
-    assert.deepEqual(validateReleaseReadmeAssets({ version: 1, assets: [fixture.asset] }, {
-      repositoryRoot: fixture.root,
-      readmePaths: [readmePath],
-    }), []);
-
-    const referenceOnly = clone(fixture.asset);
-    referenceOnly.state = 'reference_only';
-    assert.match(validateReleaseReadmeAssets({ version: 1, assets: [referenceOnly] }, {
-      repositoryRoot: fixture.root,
-      readmePaths: [readmePath],
-    }).join('\n'), /publishable_proof|draft_editorial/i);
-
-    const editorial = clone(fixture.asset);
-    editorial.id = 'launch-editorial-card';
-    editorial.kind = 'editorial';
+    const editorial = clone(fixture.pluginAsset);
     editorial.state = 'draft_editorial';
     editorial.sourceEnvironment = 'generated_editorial';
-    editorial.capturedAt = '2026-08-27';
-    editorial.maxvideoaiRevision = 'b'.repeat(40);
     editorial.claim = 'Editorial-only decorative visual; it is not product or host proof.';
     editorial.placements = ['root_readme'];
-    editorial.approvedBy = 'MaxVideoAI owner';
-    assert.deepEqual(validateReleaseReadmeAssets({ version: 1, assets: [editorial] }, {
-      repositoryRoot: fixture.root,
-      readmePaths: [readmePath],
-    }), []);
-
-    editorial.claim = 'Workflow proof';
+    editorial.path = 'assets/workflow.png';
+    editorial.sha256 = fixture.rootAsset.sha256;
+    editorial.width = fixture.rootAsset.width;
+    editorial.height = fixture.rootAsset.height;
+    writeFileSync(readmePath, '![Editorial illustration: launch ambience](assets/workflow.png)\n');
     assert.match(validateReleaseReadmeAssets({ version: 1, assets: [editorial] }, {
       repositoryRoot: fixture.root,
+      now,
       readmePaths: [readmePath],
-    }).join('\n'), /editorial-only/i);
+    }).join('\n'), /HTML.*editorial/i);
 
-    writeFileSync(readmePath, '![Unverified remote proof](https://example.com/workflow.png)\n');
-    assert.match(validateReleaseReadmeAssets({ version: 1, assets: [fixture.asset] }, {
+    writeFileSync(readmePath, '<img src="assets/workflow.png" data-asset-role="editorial" alt="Editorial illustration: launch ambience">\n');
+    assert.deepEqual(validateReleaseReadmeAssets({ version: 1, assets: [editorial] }, {
       repositoryRoot: fixture.root,
+      now,
       readmePaths: [readmePath],
-    }).join('\n'), /remote image path/i);
+    }), []);
   } finally {
     rmSync(fixture.root, { recursive: true, force: true });
   }
 });
 
-test('ships archival MCP captures with real hashes and dimensions while release mode scans both production READMEs', () => {
+test('ships archival MCP captures with real hashes and dimensions while production release mode scans both READMEs', () => {
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
   const mcpAssets = manifest.assets.filter((asset: { path: string }) => asset.path.startsWith('frontend/public/media/mcp/'));
   assert.equal(mcpAssets.length, 6);
   assert.ok(mcpAssets.every((asset: { state: string }) => asset.state === 'reference_only'));
-  assert.deepEqual(validateGithubAssetManifest(manifest, { repositoryRoot }), []);
+  assert.deepEqual(validateGithubAssetManifest(manifest, { repositoryRoot, now }), []);
 
   const release = spawnSync(process.execPath, [checkCommandPath, '--release'], {
     cwd: repositoryRoot,

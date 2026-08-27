@@ -10,6 +10,13 @@ only. They are registered as `reference_only`; no historical image becomes
 publication proof until a current capture has complete provenance and explicit
 `publishable_proof` approval in the manifest.
 
+A `publishable_proof` also needs a current `freshnessStatus`, a capture no more
+than 90 days old, a review no more than 30 days old, and capture/review
+revisions that resolve to ancestors of the checked repository `HEAD`. Draft
+editorial art must carry complete provenance but is accepted in a README only as
+an HTML image explicitly marked `data-asset-role="editorial"` with alt text that
+begins `Editorial illustration:`.
+
 Verified on 2026-08-26. The partner-mark records below preserve their distinct
 publication provenance. Their checksums cover the exact committed bytes; this
 historical record does not make any screenshot publishable in a GitHub README.
