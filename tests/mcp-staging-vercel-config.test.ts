@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import {
   chmodSync,
   copyFileSync,
@@ -94,7 +95,31 @@ if [[ " $* " != *" --scope camgraphes-projects "* ]]; then
   printf 'SCOPE_BLOCKED\\n' >&2
   exit 68
 fi
-if [[ "$*" == *'/v9/projects/maxvideoai-mcp-staging/domains'* ]]; then
+if [[ "\${STUB_COMPLETE_CANDIDATE:-}" == '1' ]] && [[ "$*" == *'/v9/projects/maxvideoai-mcp-staging/domains'* ]]; then
+  printf '%s\\n' "\${STUB_STAGING_DOMAINS_JSON}"
+elif [[ "\${STUB_COMPLETE_CANDIDATE:-}" == '1' ]] && [[ "$*" == *'/v9/projects/maxvideoai-mcp-staging'* ]] && [[ "$*" != *'/env?'* ]]; then
+  printf '{"id":"project-staging","name":"maxvideoai-mcp-staging"}\\n'
+elif [[ "\${STUB_COMPLETE_CANDIDATE:-}" == '1' ]] && [[ "$*" == *'/v10/projects/maxvideoai-mcp-staging/env?'* ]]; then
+  printf '%s\\n' "\${STUB_ENV_JSON}"
+elif [[ "\${STUB_COMPLETE_CANDIDATE:-}" == '1' ]] && [[ "$*" == *'/v9/projects/maxvideoai/domains'* ]]; then
+  printf '{"domains":[]}\\n'
+elif [[ "\${STUB_COMPLETE_CANDIDATE:-}" == '1' ]] && [[ "$*" == *'/v9/projects/maxvideoai'* ]]; then
+  printf '{"id":"project-production","name":"maxvideoai"}\\n'
+elif [[ "\${STUB_COMPLETE_CANDIDATE:-}" == '1' ]] && [[ "$*" == *'project protection maxvideoai'* ]]; then
+  printf '{}\\n'
+elif [[ "\${STUB_COMPLETE_CANDIDATE:-}" == '1' ]] && [[ "$*" == *" inspect \${STUB_CANDIDATE_ID} "* ]]; then
+  printf '{"id":"%s","url":"candidate-with-google-crons.vercel.app","readyState":"READY","target":"production","name":"maxvideoai-mcp-staging"}\\n' "\${STUB_CANDIDATE_ID}"
+elif [[ "\${STUB_COMPLETE_CANDIDATE:-}" == '1' ]] && [[ "$*" == *"/v13/deployments/\${STUB_CANDIDATE_ID}"* ]]; then
+  printf '{"id":"%s","projectId":"project-staging","readyState":"READY","target":"production","meta":{"mcpApprovedGitSha":"%s","mcpTrackedArchiveSha256":"%s"},"crons":%s,"alias":[],"automaticAliases":[]}\\n' \
+    "\${STUB_CANDIDATE_ID}" \
+    "\${STUB_APPROVED_HEAD}" \
+    "\${STUB_ARCHIVE_SHA256}" \
+    "\${STUB_CANDIDATE_CRONS_JSON}"
+elif [[ "\${STUB_COMPLETE_CANDIDATE:-}" == '1' ]] && [[ "$*" == *" promote \${STUB_CANDIDATE_ID} "* ]]; then
+  printf 'promoted' >"\${STUB_COUNTER_ROOT}/promoted"
+elif [[ "\${STUB_COMPLETE_CANDIDATE:-}" == '1' ]] && [[ "$*" == *' inspect maxvideoai-mcp-staging.vercel.app '* ]]; then
+  printf '{"id":"%s","url":"maxvideoai-mcp-staging.vercel.app","readyState":"READY","target":"production","name":"maxvideoai-mcp-staging"}\\n' "\${STUB_CANDIDATE_ID}"
+elif [[ "$*" == *'/v9/projects/maxvideoai-mcp-staging/domains'* ]]; then
   printf '%s\\n' "\${STUB_STAGING_DOMAINS_JSON}"
 elif [[ "$*" == *'/v9/projects/maxvideoai-mcp-staging'* ]] && [[ "$*" != *'/env?'* ]]; then
   printf '{"id":"project-staging","name":"%s"}\\n' "\${STUB_PROJECT_NAME:-maxvideoai-mcp-staging}"
@@ -119,6 +144,42 @@ else
 fi
 `);
   chmodSync(fakeNpx, 0o755);
+  const fakeCurl = join(fixture, 'bin/curl');
+  writeFileSync(fakeCurl, `#!/usr/bin/env bash
+set -euo pipefail
+headers=''
+output=''
+url=''
+previous=''
+for argument in "$@"; do
+  if [[ "$previous" == '--dump-header' ]]; then headers="$argument"; fi
+  if [[ "$previous" == '--output' ]]; then output="$argument"; fi
+  if [[ "$argument" == https://* ]]; then url="$argument"; fi
+  previous="$argument"
+done
+status=''
+body=''
+extra_headers=''
+case "$url" in
+  'https://candidate-with-google-crons.vercel.app/') status='200' ;;
+  'https://candidate-with-google-crons.vercel.app/.well-known/oauth-protected-resource/mcp') status='404' ;;
+  'https://candidate-with-google-crons.vercel.app/api/mcp') status='404' ;;
+  'https://maxvideoai-mcp-staging.vercel.app/') status='200' ;;
+  'https://maxvideoai-mcp-staging.vercel.app/.well-known/oauth-protected-resource/mcp')
+    status='200'
+    body='{"resource":"https://maxvideoai-mcp-staging.vercel.app/mcp","authorization_servers":["https://gecrywjztpbwbrlnomti.supabase.co/auth/v1"]}'
+    ;;
+  'https://maxvideoai-mcp-staging.vercel.app/mcp')
+    status='401'
+    extra_headers=$'cache-control: private, no-store\\nwww-authenticate: Bearer resource_metadata="https://maxvideoai-mcp-staging.vercel.app/.well-known/oauth-protected-resource/mcp"\\n'
+    ;;
+  *) printf 'UNEXPECTED_CURL_URL %s\\n' "$url" >&2; exit 77 ;;
+esac
+printf 'HTTP/2 %s\\nx-robots-tag: noindex, nofollow, noarchive\\n%s\\n' "$status" "$extra_headers" >"$headers"
+if [[ "$output" != '/dev/null' ]]; then printf '%s' "$body" >"$output"; fi
+printf '%s' "$status"
+`);
+  chmodSync(fakeCurl, 0o755);
   runGit(fixture, ['init', '--quiet']);
   runGit(fixture, ['config', 'user.email', 'test@example.invalid']);
   runGit(fixture, ['config', 'user.name', 'MCP deploy test']);
@@ -154,8 +215,18 @@ function runStubbedDeploy(fixture: string, options: {
   envPayload?: string;
   projectName?: string;
   domains?: string[];
+  completeCandidate?: boolean;
+  candidateCrons?: ReadonlyArray<{ path: string; schedule: string }>;
 } = {}) {
-  return spawnSync('bash', [join(fixture, 'scripts/deploy-mcp-staging-vercel.sh')], {
+  const candidateId = 'dpl_E8nXLZ2WH6jrmrvcm5AnBzdKoZos';
+  const head = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: fixture, encoding: 'utf8' });
+  assert.equal(head.status, 0, head.stderr);
+  const archive = spawnSync('git', ['archive', 'HEAD'], { cwd: fixture });
+  assert.equal(archive.status, 0, archive.stderr?.toString());
+  const archiveSha256 = createHash('sha256').update(archive.stdout).digest('hex');
+  const args = [join(fixture, 'scripts/deploy-mcp-staging-vercel.sh')];
+  if (options.completeCandidate) args.push('--candidate', candidateId);
+  return spawnSync('bash', args, {
     cwd: fixture,
     encoding: 'utf8',
     env: {
@@ -166,6 +237,12 @@ function runStubbedDeploy(fixture: string, options: {
       STUB_STAGING_DOMAINS_JSON: JSON.stringify({
         domains: (options.domains ?? ['maxvideoai-mcp-staging.vercel.app']).map((name) => ({ name })),
       }),
+      STUB_COMPLETE_CANDIDATE: options.completeCandidate ? '1' : '',
+      STUB_CANDIDATE_ID: candidateId,
+      STUB_APPROVED_HEAD: head.stdout.trim(),
+      STUB_ARCHIVE_SHA256: archiveSha256,
+      STUB_CANDIDATE_CRONS_JSON: JSON.stringify(options.candidateCrons ?? EXPECTED_STAGING_CRONS),
+      STUB_COUNTER_ROOT: fixture,
     },
   });
 }
@@ -237,6 +314,22 @@ test('MCP staging schedules only the authenticated provider polls and blocks ind
       headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' }],
     },
   ]);
+});
+
+test('deployment accepts the exact four-cron candidate before promotion', () => {
+  const fixture = createDeployFixture();
+  try {
+    const result = runStubbedDeploy(fixture, { completeCandidate: true });
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(
+      result.stdout,
+      /SAFE_DEPLOY_OK project=maxvideoai-mcp-staging deployment=dpl_E8nXLZ2WH6jrmrvcm5AnBzdKoZos/,
+    );
+    assert.equal(readFileSync(join(fixture, 'promoted'), 'utf8'), 'promoted');
+    assert.doesNotMatch(`${result.stdout}${result.stderr}`, new RegExp(PROVIDER_SECRET_FIXTURE));
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
 });
 
 test('non-dry deployment preflight behavior fails closed before every Vercel mutation', () => {

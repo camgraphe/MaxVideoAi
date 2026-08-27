@@ -368,6 +368,8 @@ jq -e \
   --arg archive_sha256 "$TRACKED_ARCHIVE_SHA256" \
   --arg byteplus_cron_path "$EXPECTED_BYTEPLUS_CRON_PATH" \
   --arg fal_cron_path "$EXPECTED_FAL_CRON_PATH" \
+  --arg google_vertex_veo_cron_path "$EXPECTED_GOOGLE_VERTEX_VEO_CRON_PATH" \
+  --arg google_vertex_omni_cron_path "$EXPECTED_GOOGLE_VERTEX_OMNI_CRON_PATH" \
   --arg cron_schedule "$EXPECTED_CRON_SCHEDULE" '
     .projectId == $project_id and
     .readyState == "READY" and
@@ -378,7 +380,9 @@ jq -e \
     (.crons | type == "array") and
     .crons == [
       {path: $byteplus_cron_path, schedule: $cron_schedule},
-      {path: $fal_cron_path, schedule: $cron_schedule}
+      {path: $fal_cron_path, schedule: $cron_schedule},
+      {path: $google_vertex_veo_cron_path, schedule: $cron_schedule},
+      {path: $google_vertex_omni_cron_path, schedule: $cron_schedule}
     ] and
     ([.alias[]?, .automaticAliases[]?] | index($stable) | not)
   ' "$ARTIFACTS/candidate-api.json" >/dev/null
