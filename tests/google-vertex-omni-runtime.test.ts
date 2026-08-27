@@ -378,7 +378,7 @@ test('Gemini Omni Flash poll fails and refunds an accepted job when Google canno
   assert.ok(queries.some((entry) => /UPDATE provider_attempts/.test(entry.sql)));
 });
 
-test('Gemini Omni Flash poll recovers and refunds legacy stalled jobs after 45 minutes', async () => {
+test('Gemini Omni Flash poll marks unresolved jobs for manual review after 45 minutes without refunding', async () => {
   const queries: Array<{ sql: string; params?: unknown[] }> = [];
   let fetchCalls = 0;
 
@@ -387,17 +387,7 @@ test('Gemini Omni Flash poll recovers and refunds legacy stalled jobs after 45 m
       queryFn: async (sql, params) => {
         queries.push({ sql, params });
         if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {
-          return [{
-            ...baseJob,
-            status: 'provider_polling_stalled',
-            created_at: new Date(Date.now() - 46 * 60_000).toISOString(),
-          }] as never;
-        }
-        if (/UPDATE app_jobs/.test(sql) && /RETURNING job_id/.test(sql)) {
-          return [{ job_id: baseJob.job_id }] as never;
-        }
-        if (/INSERT INTO app_receipts/.test(sql)) {
-          return [{ id: 'refund_omni_timeout' }] as never;
+          return [{ ...baseJob, created_at: new Date(Date.now() - 46 * 60_000).toISOString() }] as never;
         }
         if (/FROM provider_attempts/.test(sql)) {
           return [{ id: 45, attempt_index: 1 }] as never;
@@ -422,9 +412,9 @@ test('Gemini Omni Flash poll recovers and refunds legacy stalled jobs after 45 m
   const body = await response.json();
   assert.equal(body.updates, 1);
   assert.equal(fetchCalls, 0);
-  assert.ok(queries.some((entry) => /SET status = 'failed'/.test(entry.sql)));
-  assert.ok(queries.some((entry) => /INSERT INTO app_receipts/.test(entry.sql)));
-  assert.ok(queries.some((entry) => /SET payment_status = 'refunded_wallet'/.test(entry.sql)));
+  assert.ok(queries.some((entry) => /SET status = 'provider_polling_stalled'/.test(entry.sql)));
+  assert.equal(queries.some((entry) => /INSERT INTO app_receipts/.test(entry.sql)), false);
+  assert.equal(queries.some((entry) => /refunded_wallet/.test(entry.sql)), false);
 });
 
 test('Gemini Omni Flash polling is isolated and exposed through a cron route', () => {

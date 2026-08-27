@@ -93,7 +93,7 @@ Poller responsibilities:
 - Download `gs://` or URI video output through the Google client.
 - Copy the final video into MaxVideoAI storage.
 - Complete the `app_jobs` row and update the latest `provider_attempts` snapshot.
-- Fail and refund unresolved wallet jobs after 45 minutes; never retry or reroute a paid Omni job automatically.
+- Mark unresolved jobs for manual review after 45 minutes without retrying, rerouting, or automatically refunding them. Confirmed terminal provider failures still use the standard idempotent wallet refund flow.
 
 ## Pricing And Cost Estimate
 
