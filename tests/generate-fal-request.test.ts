@@ -598,6 +598,26 @@ test('Fal request body sends Luma Ray 3.2 public controls and reference image UR
   assert.equal(result.requestBody.reference_images, undefined);
 });
 
+test('Fal request body serializes numeric MCP durations for Luma Ray 3.2', () => {
+  const payload = {
+    engineId: 'luma-ray-3-2',
+    prompt: 'Animate the supplied first frame',
+    mode: 'i2v',
+    durationSec: 5,
+    resolution: '540p',
+    aspectRatio: '16:9',
+    imageUrl: 'https://cdn.maxvideoai.com/start.png',
+  };
+
+  const result = buildFalGenerationRequest(
+    payload,
+    'luma/agent/ray/v3.2/image-to-video',
+  );
+
+  assert.equal(result.requestBody.duration, '5s');
+  assert.equal(result.requestBody.image_url, 'https://cdn.maxvideoai.com/start.png');
+});
+
 test('Fal request helper includes Luma Ray 3.2 loop in fal payload', () => {
   const result = baseFalRequest({
     engineId: 'luma-ray-3-2',

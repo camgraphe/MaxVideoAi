@@ -88,6 +88,8 @@ Creative retries are new paid attempts and require a new quote and approval. Pro
 
 New prepared generation quotes use a server-owned 45-minute confirmation window. Clients cannot choose or extend that lifetime. Migration 39 keeps the historical 10-minute shape readable and database-valid without rewriting immutable quotes created before the change; all newly prepared quotes use 45 minutes.
 
+The MCP HTTP route reserves the idempotent job before contacting a provider and allows up to 120 seconds for provider acceptance. If a client connection still ends ambiguously, recover that same job with `get_generation_status`; never resubmit the confirmed quote as a creative retry.
+
 ## Public surfaces and maintenance
 
 - `/mcp`: commercial product and acquisition hub.

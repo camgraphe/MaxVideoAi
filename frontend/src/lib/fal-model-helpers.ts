@@ -1,5 +1,6 @@
 import { listFalEngines } from '@/config/falEngines';
 import type { GeneratePayload } from '@/lib/fal-types';
+import { isLumaRay32EngineId } from '@/lib/luma-agents';
 
 const ENGINE_MODE_MODEL_MAP = (() => {
   const map = new Map<string, Map<string, string>>();
@@ -31,11 +32,22 @@ function normalizeStringEnumDurationValue(duration: number | string): string {
   return trimmed;
 }
 
+function normalizeLumaRay32DurationValue(duration: number | string): string {
+  const normalized = typeof duration === 'number'
+    ? Math.round(duration)
+    : Number(duration.trim().replace(/s$/iu, ''));
+  if (normalized === 5 || normalized === 10) return `${normalized}s`;
+  return String(duration).trim();
+}
+
 export function normalizeFalDurationValueForModel(
   engineId: string,
   modelSlug: string,
   duration: number | string
 ): number | string {
+  if (isLumaRay32EngineId(engineId)) {
+    return normalizeLumaRay32DurationValue(duration);
+  }
   if (
     STRING_ENUM_DURATION_MODEL_PATTERN.test(modelSlug) ||
     engineId === 'seedance-1-5-pro' ||
