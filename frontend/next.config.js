@@ -105,6 +105,7 @@ const nextConfig = {
       { pathname: '/hero/**' },
       { pathname: '/icons/**' },
       { pathname: '/images/**' },
+      { pathname: '/media/mcp/**' },
       { pathname: '/og/**' },
       { pathname: '/assets/tools/character-builder-workspace.png', search: '?hero=1' },
     ],

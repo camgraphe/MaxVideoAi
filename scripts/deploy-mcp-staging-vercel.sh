@@ -10,6 +10,8 @@ STAGING_SUPABASE_ORIGIN='https://gecrywjztpbwbrlnomti.supabase.co'
 EXPECTED_ROBOTS='noindex, nofollow, noarchive'
 EXPECTED_BYTEPLUS_CRON_PATH='/api/cron/byteplus-poll'
 EXPECTED_FAL_CRON_PATH='/api/cron/fal-poll'
+EXPECTED_GOOGLE_VERTEX_VEO_CRON_PATH='/api/cron/google-vertex-veo-poll'
+EXPECTED_GOOGLE_VERTEX_OMNI_CRON_PATH='/api/cron/google-vertex-omni-poll'
 EXPECTED_CRON_SCHEDULE='*/5 * * * *'
 VERCEL_VERSION='55.0.0'
 DEPLOYMENT_REF_FILTER='.deployment.url // .deployment.deploymentUrl // .deployment.id // .url // .deploymentUrl // .id'
@@ -34,6 +36,22 @@ REQUIRED_OPERATIONAL_ENVIRONMENT=(
   'CRON_SECRET'
   'FAL_WEBHOOK_TOKEN'
   'FAL_POLL_TOKEN'
+  'GOOGLE_VERTEX_PROJECT_ID'
+  'GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON'
+  'GOOGLE_VERTEX_LOCATION'
+  'GOOGLE_VERTEX_API_BASE_URL'
+  'GOOGLE_VERTEX_INPUT_GCS_URI'
+  'GOOGLE_VERTEX_VEO_ENABLED'
+  'GOOGLE_VERTEX_VEO_PUBLIC_ROUTING_ENABLED'
+  'GOOGLE_VERTEX_VEO_ADMIN_ONLY'
+  'GOOGLE_VERTEX_VEO_POLL_TOKEN'
+  'GOOGLE_VERTEX_OMNI_ENABLED'
+  'GOOGLE_VERTEX_OMNI_PUBLIC_ROUTING_ENABLED'
+  'GOOGLE_VERTEX_OMNI_ADMIN_ONLY'
+  'GOOGLE_VERTEX_OMNI_POLL_TOKEN'
+  'GOOGLE_VERTEX_IMAGE_MCP_ENABLED'
+  'GOOGLE_VERTEX_IMAGE_MCP_PUBLIC_ROUTING_ENABLED'
+  'GOOGLE_VERTEX_IMAGE_MCP_ENGINE_ALLOWLIST'
 )
 
 usage() {
@@ -97,10 +115,14 @@ if [[ -z "$RESUME_CANDIDATE_ID" ]]; then
     --arg expected "$EXPECTED_ROBOTS" \
     --arg byteplus_cron_path "$EXPECTED_BYTEPLUS_CRON_PATH" \
     --arg fal_cron_path "$EXPECTED_FAL_CRON_PATH" \
+    --arg google_vertex_veo_cron_path "$EXPECTED_GOOGLE_VERTEX_VEO_CRON_PATH" \
+    --arg google_vertex_omni_cron_path "$EXPECTED_GOOGLE_VERTEX_OMNI_CRON_PATH" \
     --arg cron_schedule "$EXPECTED_CRON_SCHEDULE" '
     .crons == [
       {path: $byteplus_cron_path, schedule: $cron_schedule},
-      {path: $fal_cron_path, schedule: $cron_schedule}
+      {path: $fal_cron_path, schedule: $cron_schedule},
+      {path: $google_vertex_veo_cron_path, schedule: $cron_schedule},
+      {path: $google_vertex_omni_cron_path, schedule: $cron_schedule}
     ] and
     .headers == [
       {

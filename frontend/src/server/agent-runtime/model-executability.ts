@@ -13,8 +13,16 @@ import {
   resolveBytePlusSeedreamReadiness,
 } from '@/server/images/byteplus-seedream-policy';
 import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
+import type { GeneratePayload } from '@/lib/fal';
+import {
+  isLumaAgentsVideoEngine,
+  resolveLumaAgentsVideoSupport,
+} from '@/server/video-providers/luma-agents/model-map';
 import { resolveVideoProviderRoutingPlan } from '@/server/video-providers/router';
 import { ENV } from '@/lib/env';
+import type { CanonicalGenerationRequest } from '@/server/agent-api/generation-types';
+import type { ResolvedReference } from '@/server/agent-api/reference-types';
+import { parseGoogleVertexServiceAccount } from '@/server/video-providers/google-vertex-auth';
 
 export type AgentGenerationExecutabilityDecision = Readonly<{
   executable: boolean;
@@ -71,7 +79,13 @@ function googleVertexCredentialsConfigured(
     ? providerEnv.GOOGLE_VERTEX_OMNI_SERVICE_ACCOUNT_JSON
       ?? providerEnv.GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON
     : providerEnv.GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON;
-  return configured(projectId) && configured(serviceAccount);
+  if (!configured(projectId) || !configured(serviceAccount)) return false;
+  try {
+    parseGoogleVertexServiceAccount(serviceAccount);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function googleVertexImageConfigured(
@@ -82,6 +96,23 @@ function googleVertexImageConfigured(
       providerEnv.GOOGLE_VERTEX_INPUT_GCS_URI
       ?? providerEnv.GOOGLE_VERTEX_VEO_INPUT_GCS_URI,
     );
+}
+
+function googleVertexImageMcpEnabled(
+  engineId: string,
+  providerEnv: Readonly<Record<string, string | undefined>>,
+): boolean {
+  if (
+    !flagEnabled(providerEnv.GOOGLE_VERTEX_IMAGE_MCP_ENABLED)
+    || !flagEnabled(providerEnv.GOOGLE_VERTEX_IMAGE_MCP_PUBLIC_ROUTING_ENABLED)
+  ) return false;
+  const allowlist = new Set(
+    (providerEnv.GOOGLE_VERTEX_IMAGE_MCP_ENGINE_ALLOWLIST ?? '')
+      .split(',')
+      .map((value) => value.trim())
+      .filter(Boolean),
+  );
+  return allowlist.has(engineId);
 }
 
 function lumaImageDirectEnabled(
@@ -127,6 +158,9 @@ export function resolveAgentGenerationModeExecutability(
   if (engine.providerMeta?.provider === 'google_vertex_image') {
     if (!configured(engine.providerMeta.modelSlug)) {
       return { executable: false, reason: 'profile_invalid' };
+    }
+    if (!googleVertexImageMcpEnabled(engine.id, providerEnv)) {
+      return { executable: false, reason: 'provider_disabled' };
     }
     return credentialDecision(googleVertexImageConfigured(providerEnv));
   }
@@ -199,6 +233,67 @@ export function resolveAgentGenerationModeExecutability(
   } catch {
     return { executable: false, reason: 'profile_invalid' };
   }
+}
+
+function lumaRequestPayload(
+  request: CanonicalGenerationRequest,
+  resolvedReferences: readonly ResolvedReference[],
+): GeneratePayload {
+  const settings = request.settings;
+  const mediaKind = (reference: CanonicalGenerationRequest['references'][number]) => {
+    if (reference.kind === 'https') return reference.mediaKind;
+    return resolvedReferences.find((candidate) =>
+      candidate.assetId === reference.assetId
+      && candidate.role === reference.role
+      && candidate.slot === reference.slot)?.mediaKind ?? null;
+  };
+  const referenceImages = request.references.filter((reference) =>
+    reference.role === 'reference' && mediaKind(reference) === 'image');
+  const hasEndImage = request.references.some((reference) =>
+    reference.role === 'last_frame' && mediaKind(reference) === 'image');
+  const durationSec = typeof settings.durationSec === 'number' ? settings.durationSec : undefined;
+  const extraInputValues: Record<string, unknown> = {};
+  if (typeof settings.hdr === 'boolean') extraInputValues.hdr = settings.hdr;
+  if (typeof settings.exrExport === 'boolean') extraInputValues.exr_export = settings.exrExport;
+  return {
+    engineId: request.engineId,
+    prompt: request.prompt,
+    mode: request.mode as GeneratePayload['mode'],
+    ...(durationSec === undefined ? {} : { durationSec, durationOption: `${durationSec}s` }),
+    ...(typeof settings.aspectRatio === 'string' ? { aspectRatio: settings.aspectRatio } : {}),
+    ...(typeof settings.resolution === 'string' ? { resolution: settings.resolution } : {}),
+    ...(typeof settings.loop === 'boolean' ? { loop: settings.loop } : {}),
+    ...(referenceImages.length
+      ? { referenceImages: referenceImages.map((_, index) => `https://references.invalid/${index}.png`) }
+      : {}),
+    ...(hasEndImage ? { endImageUrl: 'https://references.invalid/end.png' } : {}),
+    ...(Object.keys(extraInputValues).length ? { extraInputValues } : {}),
+  };
+}
+
+export function resolveAgentGenerationRequestExecutability(
+  request: CanonicalGenerationRequest,
+  engine: EngineCaps,
+  resolvedReferences: readonly ResolvedReference[] = [],
+  environment: AgentGenerationExecutabilityEnvironment = defaultEnvironment(),
+): AgentGenerationExecutabilityDecision {
+  if (request.surface === 'video' && isLumaAgentsVideoEngine(engine.id)) {
+    const providerEnv = environment.providerEnv ?? process.env;
+    const support = resolveLumaAgentsVideoSupport({
+      engineId: engine.id,
+      mode: request.mode,
+      falPayload: lumaRequestPayload(request, resolvedReferences),
+      advancedDirectOnlyEnabled: flagEnabled(
+        providerEnv.LUMA_AGENTS_ADVANCED_DIRECT_ONLY_ENABLED,
+      ),
+    });
+    if (!support.supported) {
+      return support.fallbackCompatible
+        ? credentialDecision(configured(environment.falApiKey))
+        : { executable: false, reason: 'profile_invalid' };
+    }
+  }
+  return resolveAgentGenerationModeExecutability(engine, request.mode as Mode, environment);
 }
 
 export function isAgentGenerationEngineExecutable(engine: EngineCaps): boolean {

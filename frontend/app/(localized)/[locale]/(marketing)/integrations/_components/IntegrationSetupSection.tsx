@@ -13,7 +13,7 @@ export function IntegrationSetupSection({
   locale: AppLocale;
 }) {
   return (
-    <section className="border-b border-hairline bg-surface py-12 text-text-primary dark:border-white/[0.1] dark:bg-white/[0.025] dark:text-white">
+    <section id="setup" className="scroll-mt-24 border-b border-hairline bg-surface py-12 text-text-primary dark:border-white/[0.1] dark:bg-white/[0.025] dark:text-white">
       <div className="container-page max-w-[1060px]">
         <p className="text-xs font-semibold uppercase tracking-micro text-text-secondary dark:text-white/68">{copy.setup.eyebrow}</p>
         <h2 className="mt-2 text-3xl font-semibold text-text-primary dark:text-white">{copy.setup.title}</h2>

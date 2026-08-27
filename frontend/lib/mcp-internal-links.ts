@@ -16,8 +16,8 @@ type McpPublicationInputs = Parameters<typeof getMcpPublicationState>[0];
 
 const LABELS: Record<AppLocale, Record<McpInternalLinkPlacement, string>> = {
   en: {
-    home: 'Explore the AI video plugin',
-    footer: 'AI video plugin for ChatGPT & Claude',
+    home: 'Use MaxVideoAI with ChatGPT or Claude',
+    footer: 'MaxVideoAI for ChatGPT & Claude',
     payg: 'Plan a video budget in ChatGPT or Claude',
     models: 'Compare models from an agent-assisted brief',
     model: 'Ask ChatGPT or Claude to budget this model in your film',
@@ -26,8 +26,8 @@ const LABELS: Record<AppLocale, Record<McpInternalLinkPlacement, string>> = {
     docs: 'See the ChatGPT and Claude video workflow',
   },
   fr: {
-    home: 'Découvrir le plugin vidéo IA',
-    footer: 'Plugin vidéo IA pour ChatGPT et Claude',
+    home: 'Utiliser MaxVideoAI avec ChatGPT ou Claude',
+    footer: 'MaxVideoAI pour ChatGPT et Claude',
     payg: 'Préparer un budget vidéo avec ChatGPT ou Claude',
     models: 'Comparer les modèles depuis un brief assisté',
     model: 'Demander à ChatGPT ou Claude de budgéter ce modèle dans votre film',
@@ -36,8 +36,8 @@ const LABELS: Record<AppLocale, Record<McpInternalLinkPlacement, string>> = {
     docs: 'Voir le parcours vidéo avec ChatGPT et Claude',
   },
   es: {
-    home: 'Descubrir el plugin de vídeo con IA',
-    footer: 'Plugin de vídeo con IA para ChatGPT y Claude',
+    home: 'Usar MaxVideoAI con ChatGPT o Claude',
+    footer: 'MaxVideoAI para ChatGPT y Claude',
     payg: 'Planifica un presupuesto de vídeo con ChatGPT o Claude',
     models: 'Compara modelos desde una idea asistida',
     model: 'Pide a ChatGPT o Claude que presupueste este modelo en tu película',

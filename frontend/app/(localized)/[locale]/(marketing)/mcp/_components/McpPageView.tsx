@@ -9,6 +9,7 @@ import type { McpProof } from '../_lib/mcp-proof';
 import { McpAnswerPassagesSection } from './McpAnswerPassagesSection';
 import { McpBudgetShortlist } from './McpBudgetShortlist';
 import { McpHeroSection } from './McpHeroSection';
+import { McpHostProofCard } from './McpHostProofCard';
 import { McpReferenceWorkflowSection } from './McpReferenceWorkflowSection';
 import { McpTrustSections } from './McpTrustSections';
 import { McpWorkflowStrip } from './McpWorkflowStrip';
@@ -36,12 +37,18 @@ export function McpPageView({
         copy={copy.hero}
         evidenceCopy={copy.evidence}
         proof={proof}
-        hostProof={hostProof}
         publication={publication}
         locale={locale}
         resourceUrl={MCP_PRODUCTION_RESOURCE_URL}
       />
       <McpWorkflowStrip copy={copy.workflow} />
+      {hostProof ? (
+        <section className="border-b border-hairline bg-surface py-12 dark:border-white/[0.08] dark:bg-white/[0.025]">
+          <div className="container-page max-w-[1040px]">
+            <McpHostProofCard proof={hostProof} />
+          </div>
+        </section>
+      ) : null}
       <McpBudgetShortlist copy={copy.budget} options={budgetOptions} />
       <McpReferenceWorkflowSection copy={copy.references} showReferenceClaim={publication.showReferenceClaim} />
       <McpAnswerPassagesSection

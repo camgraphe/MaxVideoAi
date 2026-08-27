@@ -1,18 +1,15 @@
 import type { McpPublicationState } from '@/lib/mcp-publication';
 import type { AppLocale } from '@/i18n/locales';
 import type { McpPageCopy } from '../_lib/mcp-page-types';
-import type { McpHostProof } from '../_lib/mcp-host-proof';
 import type { McpProof } from '../_lib/mcp-proof';
 import { McpConnectActions } from './McpConnectActions.client';
 import { McpEvidenceSection } from './McpEvidenceSection';
 import { McpConversationPreview } from './McpConversationPreview';
-import { McpHostProofCard } from './McpHostProofCard';
 
 export function McpHeroSection({
   copy,
   evidenceCopy,
   proof,
-  hostProof,
   publication,
   locale = 'en',
   resourceUrl = '',
@@ -20,7 +17,6 @@ export function McpHeroSection({
   copy: McpPageCopy['hero'];
   evidenceCopy?: McpPageCopy['evidence'];
   proof: McpProof | null;
-  hostProof: McpHostProof | null;
   publication: McpPublicationState;
   locale?: AppLocale;
   resourceUrl?: string;
@@ -64,8 +60,6 @@ export function McpHeroSection({
         </div>
         {proof && evidenceCopy ? (
           <McpEvidenceSection copy={evidenceCopy} proof={proof} />
-        ) : hostProof ? (
-          <McpHostProofCard proof={hostProof} priority />
         ) : (
           <McpConversationPreview locale={locale} />
         )}

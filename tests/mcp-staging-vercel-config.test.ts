@@ -37,11 +37,29 @@ const REQUIRED_OPERATIONAL_ENVIRONMENT = [
   'CRON_SECRET',
   'FAL_WEBHOOK_TOKEN',
   'FAL_POLL_TOKEN',
+  'GOOGLE_VERTEX_PROJECT_ID',
+  'GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON',
+  'GOOGLE_VERTEX_LOCATION',
+  'GOOGLE_VERTEX_API_BASE_URL',
+  'GOOGLE_VERTEX_INPUT_GCS_URI',
+  'GOOGLE_VERTEX_VEO_ENABLED',
+  'GOOGLE_VERTEX_VEO_PUBLIC_ROUTING_ENABLED',
+  'GOOGLE_VERTEX_VEO_ADMIN_ONLY',
+  'GOOGLE_VERTEX_VEO_POLL_TOKEN',
+  'GOOGLE_VERTEX_OMNI_ENABLED',
+  'GOOGLE_VERTEX_OMNI_PUBLIC_ROUTING_ENABLED',
+  'GOOGLE_VERTEX_OMNI_ADMIN_ONLY',
+  'GOOGLE_VERTEX_OMNI_POLL_TOKEN',
+  'GOOGLE_VERTEX_IMAGE_MCP_ENABLED',
+  'GOOGLE_VERTEX_IMAGE_MCP_PUBLIC_ROUTING_ENABLED',
+  'GOOGLE_VERTEX_IMAGE_MCP_ENGINE_ALLOWLIST',
 ] as const;
 
 const EXPECTED_STAGING_CRONS = [
   { path: '/api/cron/byteplus-poll', schedule: '*/5 * * * *' },
   { path: '/api/cron/fal-poll', schedule: '*/5 * * * *' },
+  { path: '/api/cron/google-vertex-veo-poll', schedule: '*/5 * * * *' },
+  { path: '/api/cron/google-vertex-omni-poll', schedule: '*/5 * * * *' },
 ] as const;
 
 const PROVIDER_SECRET_FIXTURE = 'provider-secret-must-never-appear';

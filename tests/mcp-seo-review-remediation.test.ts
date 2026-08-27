@@ -145,10 +145,10 @@ test('llms response is built deterministically from publication state without a 
   const sourceUrls = Object.values(localizedMcpUrls).map(({ en }) => en);
   sourceUrls.forEach((url) => assert.equal(falseText.includes(url), false));
   sourceUrls.forEach((url) => assert.equal(enabledText.split(url).length - 1, 1));
-  assert.match(falseText, /MCP acquisition sources are omitted because the shared publication gate is closed\./);
+  assert.doesNotMatch(falseText, /publication gate|acquisition sources are omitted|shared.*closed/i);
   assert.doesNotMatch(enabledText, /publication gate is closed/i);
-  assert.match(enabledText, /AI video plugin workflow for ChatGPT, Claude, and Codex/);
-  assert.match(enabledText, /ChatGPT plugin and direct MCP setup/);
+  assert.match(enabledText, /MaxVideoAI workflow for ChatGPT, Claude, and Codex/);
+  assert.match(enabledText, /ChatGPT app and direct MCP setup/);
   assert.match(enabledText, /Claude connector setup and revocation/);
   assert.match(enabledText, /Codex-specific setup and revocation/);
   assert.match(enabledText, /MCP, OAuth, tools, credits, references, library, recovery, and troubleshooting reference/);

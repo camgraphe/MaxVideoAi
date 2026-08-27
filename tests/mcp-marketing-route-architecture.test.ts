@@ -38,6 +38,7 @@ const requiredFiles = [
   `${integrationsRoot}/_lib/integration-copy.ts`,
   `${integrationsRoot}/_components/IntegrationPageView.tsx`,
   `${integrationsRoot}/_components/IntegrationHeroSection.tsx`,
+  `${integrationsRoot}/_components/IntegrationConversationPreview.tsx`,
   `${integrationsRoot}/_components/IntegrationSetupSection.tsx`,
   `${integrationsRoot}/_components/IntegrationWorkflowSection.tsx`,
   `${integrationsRoot}/_components/IntegrationTroubleshootingSection.tsx`,
@@ -108,6 +109,7 @@ test('ChatGPT, Claude, and Codex guides are equal thin server orchestrators', ()
   for (const component of [
     'IntegrationPageView',
     'IntegrationHeroSection',
+    'IntegrationConversationPreview',
     'IntegrationSetupSection',
     'IntegrationWorkflowSection',
     'IntegrationTroubleshootingSection',

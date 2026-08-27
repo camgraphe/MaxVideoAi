@@ -8,6 +8,14 @@
     {
       "path": "/api/cron/fal-poll",
       "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/google-vertex-veo-poll",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/google-vertex-omni-poll",
+      "schedule": "*/5 * * * *"
     }
   ],
   "headers": [

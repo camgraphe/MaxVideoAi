@@ -163,6 +163,42 @@ test('Claude host proof is a captioned light-first image, not a simulated video 
   assert.doesNotMatch(source, /<video|autoPlay/);
 });
 
+test('integration heroes lead with visual product evidence and link directly to setup', () => {
+  const hero = requireFile(`${integrationComponentsRoot}/IntegrationHeroSection.tsx`);
+  const view = requireFile(`${integrationComponentsRoot}/IntegrationPageView.tsx`);
+  const preview = requireFile(`${integrationComponentsRoot}/IntegrationConversationPreview.tsx`);
+  const setup = requireFile(`${integrationComponentsRoot}/IntegrationSetupSection.tsx`);
+
+  assert.match(hero, /hostProof/);
+  assert.match(hero, /McpHostProofCard/);
+  assert.match(hero, /IntegrationConversationPreview/);
+  assert.match(hero, /href="#setup"/);
+  assert.match(view, /hostProof=\{hostProof\}/);
+  assert.doesNotMatch(view, /hostProof \? \(/);
+  assert.match(setup, /id="setup"/);
+  assert.match(preview, /<video/);
+  assert.match(preview, /controls/);
+  assert.match(preview, /preload="metadata"/);
+  assert.match(preview, /poster=/);
+  assert.doesNotMatch(preview, /autoPlay/);
+});
+
+test('homepage assistant workflow localizes the live catalog label and uses account library language', () => {
+  const source = requireFile('frontend/components/marketing/home/HomeAssistantWorkflow.tsx');
+  assert.match(source, /catalogLabel/);
+  assert.doesNotMatch(source, /> Live catalog</);
+  assert.doesNotMatch(source, /galerie MaxVideoAI/);
+});
+
+test('the shared hub stays host-neutral before showing the controlled Claude capture', () => {
+  const hero = requireFile(`${componentsRoot}/McpHeroSection.tsx`);
+  const view = requireFile(`${componentsRoot}/McpPageView.tsx`);
+  assert.match(hero, /McpConversationPreview/);
+  assert.doesNotMatch(hero, /McpHostProofCard/);
+  assert.match(view, /McpHostProofCard/);
+  assert.match(view, /hostProof \? \(/);
+});
+
 test('client actions point to equally factual localized guides', async () => {
   requireFile(`${routeRoot}/_lib/mcp-page-copy.ts`);
   const { getMcpPageCopy } = await import(

@@ -1,8 +1,8 @@
 ---
-title: "Guide du plugin vidéo IA et du MCP MaxVideoAI"
+title: "Guide de l’app MaxVideoAI pour ChatGPT, du connecteur Claude et du MCP"
 description: "Connectez MaxVideoAI à ChatGPT, Claude ou Codex avec OAuth : modèles actuels, budget de film, références, prix exact, validation et galerie."
 date: "2026-07-14"
-updatedAt: "2026-08-26"
+updatedAt: "2026-08-27"
 authorId: "adrien-millot"
 image: "/og/price-before.png"
 keywords:
@@ -24,16 +24,16 @@ Utilisez cette ressource Streamable HTTP lorsqu’un client demande une adresse 
 https://api.maxvideoai.com/mcp
 ```
 
-N’ajoutez ni token, ni paramètre, ni mot de passe, ni clé API. Le client ouvre MaxVideoAI dans le navigateur pour la connexion et le consentement OAuth 2.1 avec `openid,email,profile`. MCP est le mécanisme technique ; le produit destiné aux utilisateurs est le plugin ou connecteur vidéo IA MaxVideoAI.
+N’ajoutez ni token, ni paramètre, ni mot de passe, ni clé API. Le client ouvre MaxVideoAI dans le navigateur pour la connexion et le consentement OAuth 2.1 avec `openid,email,profile`. MCP est le mécanisme technique ; MaxVideoAI est présenté comme une app pour ChatGPT, un connecteur pour Claude et un plugin pour Codex.
 
 ## Connecter son compte
 
 1. Choisissez MaxVideoAI dans ChatGPT ou Codex, ajoutez-le comme connecteur personnalisé dans Claude, ou saisissez manuellement l’adresse MCP distante.
-2. Connectez-vous à votre compte MaxVideoAI dans le navigateur.
-3. Vérifiez puis autorisez la connexion.
+2. Connectez-vous ou créez votre compte MaxVideoAI dans le navigateur, puis confirmez votre e-mail si nécessaire.
+3. Vérifiez puis autorisez la connexion ; la connexion est gratuite et n’ajoute aucun abonnement.
 4. Revenez dans l’assistant et demandez-lui de vérifier votre compte MaxVideoAI.
 
-OAuth ne communique jamais votre mot de passe, vos données de paiement ou un accès à la base. Le site et l’assistant connecté partagent le même portefeuille utilisateur et la même galerie privée.
+OAuth ne communique jamais votre mot de passe, vos données de paiement ou un accès à la base. Le site et l’assistant connecté partagent le même portefeuille utilisateur et la même bibliothèque MaxVideoAI privée.
 
 La compatibilité est vérifiée séparément pour chaque client. Claude Desktop `1.37937.1` a validé OAuth, compte, catalogue, budgets, devis exact, médias, récupération, envoi et recharge. Codex CLI `0.149.0-alpha.4.3` a validé OAuth, compte, catalogue, budgets, devis exact et recharge. ChatGPT desktop et Claude Code conservent leur propre contrôle final avant lancement.
 
@@ -75,7 +75,7 @@ Les flags de publication de production déterminent les outils d’écriture ré
 
 L’assistant peut imaginer, créer ou sélectionner des références. MaxVideoAI les accepte et les conserve sans limiter le rôle créatif de ChatGPT, Claude ou Codex.
 
-Utilisez `list_media` pour un média déjà présent dans la galerie MaxVideoAI. Pour un nouveau fichier, appelez `create_reference_upload_link` avec `image`, `video` ou `audio` ; l’utilisateur ouvre la page HTTPS renvoyée, effectue l’envoi, puis l’assistant relance la liste de ce type de média.
+Utilisez `list_media` pour un média déjà présent dans la bibliothèque MaxVideoAI. Pour un nouveau fichier, appelez `create_reference_upload_link` avec `image`, `video` ou `audio` ; l’utilisateur ouvre la page HTTPS renvoyée, effectue l’envoi, puis l’assistant relance la liste de ce type de média.
 
 Appelez toujours `get_model_details` pour le mode choisi. Il précise types, rôles, ordre, quantités, formats, tailles et durées acceptés. Ne transposez jamais les règles d’un autre modèle. Les URL privées et les `assetId` stables restent dans le périmètre du compte.
 
@@ -97,11 +97,11 @@ Si les crédits manquent :
 
 Le plugin, les conseils et les budgets ne demandent aucun abonnement supplémentaire. Les générations utilisent les crédits MaxVideoAI pay-as-you-go existants.
 
-## Jobs, galerie, échecs et nouvelles tentatives
+## Jobs, bibliothèque, échecs et nouvelles tentatives
 
-Un job accepté n’est pas encore terminé. Utilisez `get_generation_status` pour un job connu ou `list_recent_generations` pour le retrouver. Une fois terminé, `present_generation` peut intégrer l’image ou la vidéo lisible dans un client compatible MCP Apps. Dans les autres clients, le lien résultat et la galerie MaxVideoAI restent l’alternative universelle. Ne resoumettez pas une génération payante à cause d’un simple timeout.
+Un job accepté n’est pas encore terminé. Utilisez `get_generation_status` pour un job connu ou `list_recent_generations` pour le retrouver. Une fois terminé, `present_generation` peut intégrer l’image ou la vidéo lisible dans un client compatible MCP Apps. Dans les autres clients, le lien résultat et la bibliothèque MaxVideoAI restent l’alternative universelle. Ne resoumettez pas une génération payante à cause d’un simple timeout.
 
-Les images et vidéos réussies sont enregistrées dans la même galerie privée MaxVideoAI que celle du site. N’utilisez que la destination résultat, workspace ou galerie renvoyée par MaxVideoAI.
+Les images et vidéos réussies sont enregistrées dans la même bibliothèque privée MaxVideoAI que celle du site. N’utilisez que la destination résultat, workspace ou bibliothèque renvoyée par MaxVideoAI.
 
 Pour un échec technique définitif, expliquez l’état d’échec et de remboursement renvoyé. Ne relancez pas automatiquement. Une nouvelle tentative créative est payante et exige un nouveau devis et un nouvel accord.
 

@@ -73,6 +73,10 @@ import {
 } from './trial-entitlement-repository';
 import { acceptTrialRisk, type TrialRiskDecision, type TrialRiskInput } from './trial-risk';
 import { applyTrialJobOutcome } from './trial-outcomes';
+import {
+  resolveAgentGenerationRequestExecutability,
+  type AgentGenerationExecutabilityDecision,
+} from '../agent-runtime/model-executability';
 
 export type ConfirmGenerationInput = {
   quoteId: string;
@@ -164,6 +168,11 @@ export type ConfirmGenerationDependencies = {
     principal: AgentPrincipal,
     dependencies: ExecutorDependencies,
   ): Promise<ResolvedReference[]>;
+  resolveRequestExecutability?(
+    request: McpGenerationQuote['request'],
+    candidate: AgentPublicGenerationEngine,
+    resolvedReferences: readonly ResolvedReference[],
+  ): AgentGenerationExecutabilityDecision;
   accountUrl: string;
 };
 
@@ -205,6 +214,12 @@ const defaultDependencies: Omit<ConfirmGenerationDependencies, 'trialRiskContext
       resolveOwnedReferenceAsset: (currentPrincipal, assetId) =>
         resolveOwnedReferenceAsset(currentPrincipal, assetId, { executor }),
     }),
+  resolveRequestExecutability: (request, candidate, resolvedReferences) =>
+    resolveAgentGenerationRequestExecutability(
+      request,
+      candidate.engine,
+      resolvedReferences,
+    ),
   accountUrl: 'https://maxvideoai.com/account/connections',
 };
 
@@ -372,6 +387,18 @@ async function confirmationTransaction(
         }
         throw new AgentApiError('INTERNAL_ERROR', 'The reference media could not be verified.');
       }
+    }
+    const executionReadiness = dependencies.resolveRequestExecutability?.(
+      quote.request,
+      candidate,
+      resolvedReferences,
+    );
+    if (executionReadiness && !executionReadiness.executable) {
+      if (includedTrial) trialNotEligible();
+      throw new AgentApiError(
+        'ENGINE_UNAVAILABLE',
+        'The selected model cannot execute these settings right now.',
+      );
     }
     const catalogRevision = computeGenerationCatalogRevision(publicEngines);
     if (catalogRevision !== quote.catalogRevision) {

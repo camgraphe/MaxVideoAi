@@ -35,7 +35,7 @@ test('localized guides expose current metadata, OAuth, and the copyable producti
     assert.match(markdown, /^title:\s*['"].+['"]$/m);
     assert.match(markdown, /^description:\s*['"].+['"]$/m);
     assert.match(markdown, /^date:\s*['"]2026-07-14['"]$/m);
-    assert.match(markdown, /^updatedAt:\s*['"]2026-08-26['"]$/m);
+    assert.match(markdown, /^updatedAt:\s*['"]2026-08-27['"]$/m);
     assert.match(markdown, /^authorId:\s*['"]adrien-millot['"]$/m);
     assert.match(markdown, /^slug:\s*['"]mcp['"]$/m);
     assert.match(markdown, /```text\s+https:\/\/api\.maxvideoai\.com\/mcp\s+```/);
@@ -44,6 +44,8 @@ test('localized guides expose current metadata, OAuth, and the copyable producti
     assert.match(markdown, /ChatGPT/i);
     assert.match(markdown, /Claude/i);
     assert.match(markdown, /Codex/i);
+    assert.match(markdown, /sign in or create|connectez-vous ou créez|inicia sesión o crea/i);
+    assert.match(markdown, /free to connect|connexion.*gratuite|conectar.*gratis/i);
     assert.doesNotMatch(markdown, /localhost|staging[^\n]*\/mcp/i, `${locale} must not publish a non-production endpoint`);
   }
 });
@@ -67,7 +69,7 @@ test('all thirteen tools and their safety boundaries are documented in every loc
 test('references cover image, video, audio, account ownership, and the precise LAS boundary', () => {
   const patterns = {
     en: [/images?, video, and audio/i, /MaxVideoAI library/i, /assetId/i],
-    fr: [/références image, vidéo et audio/i, /galerie MaxVideoAI/i, /assetId/i],
+    fr: [/références image, vidéo et audio/i, /bibliothèque MaxVideoAI/i, /assetId/i],
     es: [/referencias de imagen, vídeo y audio/i, /biblioteca MaxVideoAI/i, /assetId/i],
   } as const;
   for (const locale of Object.keys(DOCS) as Array<keyof typeof DOCS>) {
@@ -86,7 +88,7 @@ test('references cover image, video, audio, account ownership, and the precise L
 test('credits, top-up, fresh quote, and gallery continuity are unambiguous', () => {
   const expectations = {
     en: [/same user wallet/i, /pay-as-you-go/i, /previous quote is no longer valid/i, /same private MaxVideoAI account library/i],
-    fr: [/même portefeuille utilisateur/i, /pay-as-you-go/i, /ancien devis n’est plus valide/i, /même galerie privée MaxVideoAI/i],
+    fr: [/même portefeuille utilisateur/i, /pay-as-you-go/i, /ancien devis n’est plus valide/i, /même bibliothèque privée MaxVideoAI/i],
     es: [/misma billetera de usuario/i, /pay-as-you-go/i, /cotización anterior ya no es válida/i, /misma biblioteca privada MaxVideoAI/i],
   } as const;
   for (const locale of Object.keys(DOCS) as Array<keyof typeof DOCS>) {

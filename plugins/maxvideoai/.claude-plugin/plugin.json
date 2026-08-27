@@ -1,7 +1,7 @@
 {
   "name": "maxvideoai",
   "version": "0.1.0",
-  "description": "Plan, price, and generate AI video or images with current MaxVideoAI models from Claude.",
+  "description": "Plan, price, and generate AI video or images from Claude. A MaxVideoAI account is required and free to connect.",
   "author": { "name": "MaxVideoAI" },
   "homepage": "https://maxvideoai.com/mcp",
   "license": "BUSL-1.1"

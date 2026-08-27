@@ -16,6 +16,7 @@ const COPY: Record<
     claude: string;
     prompt: string;
     answer: string;
+    catalogLabel: string;
     facts: string[];
   }
 > = {
@@ -23,33 +24,36 @@ const COPY: Record<
     eyebrow: 'FROM CONVERSATION TO RENDER',
     title: 'Let ChatGPT or Claude plan the video. Generate it with MaxVideoAI.',
     body: 'Describe the result once. Your assistant can develop the prompts and references, compare quality-first and lower-cost routes, budget the complete film, then ask before any credits are spent.',
-    cta: 'Explore the AI video plugin',
+    cta: 'Use MaxVideoAI with ChatGPT or Claude',
     chatgpt: 'ChatGPT',
     claude: 'Claude',
     prompt: 'I need a 60-second product film. Show me the best route and a credible lower-cost option.',
     answer: 'I’ll break it into shots, check live model capabilities and price both plans before we generate.',
+    catalogLabel: 'Current catalog',
     facts: ['Live model advice', 'Exact price before generation', 'Results in your MaxVideoAI library'],
   },
   fr: {
     eyebrow: 'DE LA CONVERSATION AU RENDU',
     title: 'Laissez ChatGPT ou Claude préparer la vidéo. Générez-la avec MaxVideoAI.',
     body: 'Décrivez le résultat une seule fois. Votre assistant peut développer les prompts et références, comparer une approche qualité et des alternatives moins chères, budgéter le film complet puis demander votre accord avant toute dépense.',
-    cta: 'Découvrir le plugin vidéo IA',
+    cta: 'Utiliser MaxVideoAI avec ChatGPT ou Claude',
     chatgpt: 'ChatGPT',
     claude: 'Claude',
     prompt: 'Je veux un film produit de 60 secondes. Propose le meilleur rendu et une alternative crédible moins chère.',
     answer: 'Je vais le découper en plans, vérifier les capacités actuelles des modèles et chiffrer les deux options avant de générer.',
-    facts: ['Conseils selon les modèles actuels', 'Prix exact avant génération', 'Résultats dans votre galerie MaxVideoAI'],
+    catalogLabel: 'Catalogue actuel',
+    facts: ['Conseils selon les modèles actuels', 'Prix exact avant génération', 'Résultats dans votre bibliothèque MaxVideoAI'],
   },
   es: {
     eyebrow: 'DE LA CONVERSACIÓN AL RESULTADO',
     title: 'Deja que ChatGPT o Claude prepare el vídeo. Genéralo con MaxVideoAI.',
     body: 'Describe el resultado una vez. Tu asistente desarrolla prompts y referencias, compara una ruta de máxima calidad con alternativas más baratas, presupuesta la película y pide permiso antes de gastar créditos.',
-    cta: 'Descubrir el plugin de vídeo con IA',
+    cta: 'Usar MaxVideoAI con ChatGPT o Claude',
     chatgpt: 'ChatGPT',
     claude: 'Claude',
     prompt: 'Necesito un vídeo de producto de 60 segundos. Dame la mejor ruta y una alternativa más económica creíble.',
     answer: 'Lo dividiré en planos, comprobaré las capacidades actuales y calcularé ambas opciones antes de generar.',
+    catalogLabel: 'Catálogo actual',
     facts: ['Modelos y precios actuales', 'Precio exacto antes de generar', 'Resultados en tu biblioteca MaxVideoAI'],
   },
 };
@@ -102,7 +106,7 @@ export function HomeAssistantWorkflow({ locale, href }: { locale: AppLocale; hre
               MaxVideoAI
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Live catalog
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> {copy.catalogLabel}
             </span>
           </div>
           <div className="space-y-4 py-5">

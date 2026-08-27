@@ -808,6 +808,24 @@ test('Seedance ref2v audio-only input fails before pricing, wallet reservation, 
   assert.equal(captures.providerCalls, 0);
 });
 
+test('confirmation rechecks request-aware provider readiness before wallet reservation', async () => {
+  const { dependencies, captures } = baseDependencies(videoRequest, {
+    resolveRequestExecutability: () => ({
+      executable: false,
+      reason: 'provider_credentials_missing',
+    }),
+  } as Partial<ConfirmGenerationDependencies>);
+
+  await expectAgentError(
+    confirmGeneration({ quoteId: QUOTE_ID, confirmed: true }, principal, dependencies),
+    'ENGINE_UNAVAILABLE',
+  );
+  assert.equal(captures.events.includes('membership'), false);
+  assert.equal(captures.events.includes('spending'), false);
+  assert.equal(captures.events.includes('reserve_video'), false);
+  assert.equal(captures.providerCalls, 0);
+});
+
 test('claimed, accepted, and failed repeats return their linked job without revalidation, charge, or submission', async () => {
   for (const state of ['claimed', 'accepted', 'failed'] as const) {
     const repeatQuote = quoteFor(videoRequest, {

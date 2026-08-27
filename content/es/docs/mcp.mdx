@@ -1,8 +1,8 @@
 ---
-title: "Guía del plugin de vídeo con IA y MCP de MaxVideoAI"
+title: "Guía de la app MaxVideoAI para ChatGPT, el conector Claude y MCP"
 description: "Conecta MaxVideoAI con ChatGPT, Claude o Codex mediante OAuth: modelos actuales, presupuestos, referencias, precio exacto, aprobación y biblioteca."
 date: "2026-07-14"
-updatedAt: "2026-08-26"
+updatedAt: "2026-08-27"
 authorId: "adrien-millot"
 image: "/og/price-before.png"
 keywords:
@@ -24,13 +24,13 @@ Usa este recurso Streamable HTTP cuando un cliente solicite una dirección MCP m
 https://api.maxvideoai.com/mcp
 ```
 
-No agregues tokens, parámetros, contraseñas ni claves API. El cliente abre MaxVideoAI en el navegador para iniciar sesión y dar consentimiento OAuth 2.1 con `openid,email,profile`. MCP es el mecanismo técnico; para el cliente es el plugin o conector de vídeo con IA de MaxVideoAI.
+No agregues tokens, parámetros, contraseñas ni claves API. El cliente abre MaxVideoAI en el navegador para iniciar sesión y dar consentimiento OAuth 2.1 con `openid,email,profile`. MCP es el mecanismo técnico; MaxVideoAI se presenta como una app para ChatGPT, un conector para Claude y un plugin para Codex.
 
 ## Conectar la cuenta
 
 1. Elige MaxVideoAI en ChatGPT o Codex, añádelo como conector personalizado en Claude o introduce la dirección MCP remota.
-2. Inicia sesión en tu cuenta MaxVideoAI desde el navegador.
-3. Revisa y aprueba la conexión.
+2. Inicia sesión o crea tu cuenta MaxVideoAI en el navegador y confirma tu correo si es necesario.
+3. Revisa y aprueba la conexión; conectar MaxVideoAI es gratis y no añade otra suscripción.
 4. Vuelve al asistente y pídele que compruebe tu cuenta MaxVideoAI.
 
 OAuth nunca entrega tu contraseña, datos de pago ni acceso a la base de datos. El sitio y el asistente conectado utilizan la misma billetera de usuario y la misma biblioteca privada.

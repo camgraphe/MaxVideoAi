@@ -18,7 +18,7 @@ test('the hub sells the outcome and keeps ChatGPT and Claude at the same level',
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
   const copy = getMcpPageCopy('en');
-  assert.equal(copy.meta.title, 'AI Video Plugin for ChatGPT & Claude | MaxVideoAI');
+  assert.equal(copy.meta.title, 'MaxVideoAI for ChatGPT & Claude | AI Video App');
   assert.equal(copy.hero.title, 'Turn ChatGPT or Claude into your AI video producer.');
   assert.match(copy.hero.intro, /brief to rendered video/i);
   assert.match(copy.hero.intro, /prompts and references/i);
@@ -38,12 +38,12 @@ test('French and Spanish are complete prospect-facing localizations', async () =
   );
   const fr = getMcpPageCopy('fr');
   const es = getMcpPageCopy('es');
-  assert.equal(fr.meta.title, 'Plugin vidéo IA pour ChatGPT et Claude | MaxVideoAI');
+  assert.equal(fr.meta.title, 'MaxVideoAI pour ChatGPT et Claude | Vidéo IA');
   assert.match(fr.hero.title, /ChatGPT ou Claude/i);
   assert.match(fr.budget.title, /film complet/i);
   assert.match(JSON.stringify(fr.answers.items), /crédits/i);
   assert.match(JSON.stringify(fr.answers.items), /bibliothèque|galerie/i);
-  assert.equal(es.meta.title, 'Plugin de vídeo con IA para ChatGPT y Claude | MaxVideoAI');
+  assert.equal(es.meta.title, 'MaxVideoAI para ChatGPT y Claude | Vídeo con IA');
   assert.match(es.hero.title, /ChatGPT o Claude/i);
   assert.match(es.budget.title, /película/i);
   assert.match(JSON.stringify(es.answers.items), /créditos/i);
@@ -147,6 +147,55 @@ test('integration heroes sell the workflow without displaying a pre-launch limit
   assert.equal(live.includes(copy.hero.liveStatus), true);
 });
 
+test('integration copy explains free setup, account creation, credits and current product vocabulary', async () => {
+  const { getIntegrationCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
+  );
+
+  const expectations = {
+    en: {
+      free: /free to (?:add|connect)|no (?:added|separate) subscription/i,
+      account: /sign in or create/i,
+      credits: /pay-as-you-go credits/i,
+      library: /MaxVideoAI Library/i,
+    },
+    fr: {
+      free: /gratuit|sans abonnement supplémentaire/i,
+      account: /connectez-vous ou créez/i,
+      credits: /crédits.*à l'usage|crédits.*à la consommation|crédits MaxVideoAI/i,
+      library: /bibliothèque MaxVideoAI/i,
+    },
+    es: {
+      free: /gratis|sin suscripción adicional/i,
+      account: /inicia sesión o crea/i,
+      credits: /créditos.*pago por uso|créditos de MaxVideoAI/i,
+      library: /biblioteca de MaxVideoAI|biblioteca MaxVideoAI/i,
+    },
+  } as const;
+
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const chatgpt = getIntegrationCopy(locale, 'chatgpt');
+    const claude = getIntegrationCopy(locale, 'claude');
+    const chatgptText = JSON.stringify(chatgpt);
+    const claudeText = JSON.stringify(claude);
+
+    assert.match(chatgpt.meta.title, /ChatGPT/i);
+    assert.match(chatgpt.hero.title, /ChatGPT/i);
+    assert.match(claude.meta.title, /Claude/i);
+    assert.match(claude.hero.title, /Claude/i);
+    assert.match(chatgptText, expectations[locale].free);
+    assert.match(chatgptText, expectations[locale].account);
+    assert.match(chatgptText, expectations[locale].credits);
+    assert.match(chatgptText, expectations[locale].library);
+    assert.match(claudeText, expectations[locale].free);
+    assert.match(claudeText, expectations[locale].account);
+  }
+
+  assert.match(getIntegrationCopy('en', 'chatgpt').meta.title, /App for ChatGPT/i);
+  assert.match(getIntegrationCopy('en', 'claude').meta.title, /Connector for Claude/i);
+  assert.match(getIntegrationCopy('en', 'codex').meta.title, /Plugin for Codex/i);
+});
+
 test('references keep the assistant creative while MaxVideoAI validates live support', async () => {
   const { getMcpPageCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
@@ -173,6 +222,8 @@ test('three client guides cover installation, OAuth, credits, recovery and disco
       assert.match(text, locale === 'fr' ? /bibliothèque|galerie/i : locale === 'es' ? /biblioteca/i : /library/i);
       assert.match(text, locale === 'fr' ? /déconnect|révoqu/i : locale === 'es' ? /desconect|revoc/i : /disconnect|revoke/i);
       assert.doesNotMatch(text, /local implementation verified|host validation in progress/i);
+      if (locale === 'fr') assert.doesNotMatch(JSON.stringify(copy.setup.hostGuides), /Open connector settings|Add the server|Sign in to MaxVideoAI/i);
+      if (locale === 'es') assert.doesNotMatch(JSON.stringify(copy.setup.hostGuides), /Open connector settings|Add the server|Sign in to MaxVideoAI/i);
     }
   }
 });

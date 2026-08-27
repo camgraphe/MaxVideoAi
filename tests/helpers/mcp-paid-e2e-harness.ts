@@ -20,6 +20,7 @@ import {
   type PaidGenerationProviderOutcome,
 } from '../../frontend/src/server/agent-api/paid-generation-execution';
 import { createPrepareGenerationService } from '../../frontend/src/server/agent-api/prepare-generation';
+import type { AgentGenerationExecutabilityDecision } from '../../frontend/src/server/agent-runtime/model-executability';
 import type { AgentPrincipal } from '../../frontend/src/server/agent-api/principal';
 import { createMcpTopupHandoffService } from '../../frontend/src/server/agent-api/topup-handoff';
 import { paidProviderSubmissionDependencies } from '../../frontend/src/server/generations/paid-provider-execution';
@@ -81,6 +82,7 @@ export function createServices(options: {
   submitPaidGeneration?: (execution: PaidGenerationExecution) => Promise<PaidGenerationProviderOutcome>;
   prepareNow?: () => Date;
   publicEngines?: readonly AgentPublicGenerationEngine[];
+  resolveRequestExecutability?: () => AgentGenerationExecutabilityDecision;
 } = {}): MaxVideoAiMcpServices {
   const publicEngines = options.publicEngines ?? catalog;
   const publicCatalogDependencies = {
@@ -102,6 +104,8 @@ export function createServices(options: {
       {
         paidGenerationEnabled: () => true,
         listPublicEngines: async () => [...publicEngines],
+        resolveRequestExecutability: options.resolveRequestExecutability
+          ?? (() => ({ executable: true, reason: 'available' })),
         ...(options.prepareNow ? { now: options.prepareNow } : {}),
       },
     ),
@@ -111,6 +115,8 @@ export function createServices(options: {
       {
         paidGenerationEnabled: () => true,
         listPublicEngines: async () => [...publicEngines],
+        resolveRequestExecutability: options.resolveRequestExecutability
+          ?? (() => ({ executable: true, reason: 'available' })),
         submitPaidGeneration: options.submitPaidGeneration ?? (async () => ({ kind: 'accepted' })),
       },
     ),

@@ -79,6 +79,8 @@ test('the MaxVideoAI plugin has thin Codex and Claude package adapters', () => {
   assert.equal(interfaceMetadata.privacyPolicyURL, 'https://maxvideoai.com/legal/privacy');
   assert.equal(interfaceMetadata.termsOfServiceURL, 'https://maxvideoai.com/legal/terms');
   assert.equal((interfaceMetadata.defaultPrompt as unknown[]).length, 3);
+  assert.match(String(codex.description), /account.*required|requires.*account/i);
+  assert.match(String(interfaceMetadata.longDescription), /free to connect|no separate subscription/i);
   assert.equal('screenshots' in interfaceMetadata, false);
 
   for (const field of ['composerIcon', 'logo', 'logoDark'] as const) {
@@ -153,6 +155,9 @@ test('the package explains the customer-facing account and library journey', () 
   assert.match(readme, /plan and generate from ChatGPT, Claude, or Codex/i);
   assert.match(readme, /existing MaxVideoAI credits/i);
   assert.match(readme, /same MaxVideoAI\s+library/i);
+  assert.match(readme, /sign in or create/i);
+  assert.match(readme, /free to connect/i);
+  assert.match(readme, /ChatGPT app|connector for Claude|plugin for Codex/i);
   assert.doesNotMatch(readme, /does not establish online availability|does not verify an online connection|branch package/i);
 
   assert.match(safety, /get_account_status.*credit balance.*trial.*spending limit/is);

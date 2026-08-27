@@ -46,3 +46,8 @@ test('the host proof contract carries public-safe capture provenance without cla
   }
   assert.doesNotMatch(source, /mcpGenerationVerified:\s*true|jobEvidenceReference|auditEvidenceReference/);
 });
+
+test('the owned MCP proof asset is allowed by the Next image loader', () => {
+  const config = readFileSync('frontend/next.config.js', 'utf8');
+  assert.match(config, /pathname:\s*['"]\/media\/mcp\/\*\*['"]/);
+});

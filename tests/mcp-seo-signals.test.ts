@@ -162,9 +162,9 @@ test('MCP metadata matches the approved intent and canonical locale routes', asy
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
   const metadata = (['en', 'fr', 'es'] as const).map((locale) => getMcpPageCopy(locale).meta);
-  assert.equal(metadata[0]?.title, 'AI Video Plugin for ChatGPT & Claude | MaxVideoAI');
-  assert.equal(metadata[1]?.title, 'Plugin vidéo IA pour ChatGPT et Claude | MaxVideoAI');
-  assert.equal(metadata[2]?.title, 'Plugin de vídeo con IA para ChatGPT y Claude | MaxVideoAI');
+  assert.equal(metadata[0]?.title, 'MaxVideoAI for ChatGPT & Claude | AI Video App');
+  assert.equal(metadata[1]?.title, 'MaxVideoAI pour ChatGPT et Claude | Vidéo IA');
+  assert.equal(metadata[2]?.title, 'MaxVideoAI para ChatGPT y Claude | Vídeo con IA');
   assert.match(metadata[0]?.description ?? '', /ChatGPT.*Claude.*Codex.*prompts.*references.*budgets.*exact price.*generation/i);
   assert.match(metadata[1]?.description ?? '', /ChatGPT.*Claude.*Codex.*prompts.*références.*budgets.*prix exact.*génération/i);
   assert.match(metadata[2]?.description ?? '', /ChatGPT.*Claude.*Codex.*prompts.*referencias.*presupuestos.*precio exacto.*generación/i);
@@ -246,7 +246,7 @@ test('served llms text stays aligned with the false promotion gate', () => {
     assert.equal(source.includes(`https://maxvideoai.com${path}`), false, `${path} must remain absent while indexable=false`);
   }
   assert.doesNotMatch(source, /api\.maxvideoai\.com\/mcp/);
-  assert.match(source, /MCP acquisition sources are omitted because the shared publication gate is closed\./);
+  assert.doesNotMatch(source, /publication gate|acquisition sources are omitted|shared.*closed/i);
 });
 
 test('contextual MCP links are localized, varied, and absent until the shared gate is enabled', async () => {
@@ -278,6 +278,10 @@ test('contextual MCP links are localized, varied, and absent until the shared ga
   }
   const docsIndexSource = readFileSync(`${routeRoot}/docs/_lib/docs-index-data.ts`, 'utf8');
   assert.match(docsIndexSource, /mcpGuide:\s*publication\.indexable\s*\?/);
+
+  const navigationSource = readFileSync('frontend/config/navigation.ts', 'utf8');
+  assert.match(navigationSource, /getMcpPublicationState\(mcpPublication\)\.indexable/);
+  assert.match(navigationSource, /key:\s*['"]ai-video-assistant['"]/);
 });
 
 test('GSC baseline records the measured scope, limitations, query groups, and non-overlapping intent owners', () => {

@@ -74,8 +74,8 @@ Spec: https://llmstxt.org/
 
 const MCP_SOURCE_SECTION = `## AI video plugin and MCP integration
 
-* https://maxvideoai.com/mcp - AI video plugin workflow for ChatGPT, Claude, and Codex.
-* https://maxvideoai.com/integrations/chatgpt - ChatGPT plugin and direct MCP setup.
+* https://maxvideoai.com/mcp - MaxVideoAI workflow for ChatGPT, Claude, and Codex.
+* https://maxvideoai.com/integrations/chatgpt - ChatGPT app and direct MCP setup.
 * https://maxvideoai.com/integrations/claude - Claude connector setup and revocation.
 * https://maxvideoai.com/integrations/codex - Codex-specific setup and revocation.
 * https://maxvideoai.com/docs/mcp - MCP, OAuth, tools, credits, references, library, recovery, and troubleshooting reference.`;
@@ -89,6 +89,6 @@ const COMMON_NOTES = `## Notes
 export function buildLlmsText(publication: McpPublicationInputs): string {
   const publicationSection = getMcpPublicationState(publication).indexable
     ? MCP_SOURCE_SECTION
-    : '## MCP integration\n\nMCP acquisition sources are omitted because the shared publication gate is closed.';
-  return `${BASE_LLMS_TEXT}\n\n${publicationSection}\n\n${COMMON_NOTES}\n`;
+    : null;
+  return `${BASE_LLMS_TEXT}${publicationSection ? `\n\n${publicationSection}` : ''}\n\n${COMMON_NOTES}\n`;
 }

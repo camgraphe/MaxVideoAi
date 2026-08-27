@@ -114,6 +114,7 @@
       },
       "tools": {
         "items": {
+          "ai-video-assistant": "ChatGPT & Claude video assistant",
           "character-builder": "Consistent Character AI",
           "angle": "Change Camera Angle",
           "image": "Generate image"

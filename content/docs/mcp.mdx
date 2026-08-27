@@ -1,8 +1,8 @@
 ---
-title: "MaxVideoAI AI video plugin and MCP guide"
+title: "MaxVideoAI app for ChatGPT, Claude connector, and MCP guide"
 description: "Connect MaxVideoAI to ChatGPT, Claude or Codex with OAuth, compare live video models, budget a film, use references, approve the exact price and recover results."
 date: "2026-07-14"
-updatedAt: "2026-08-26"
+updatedAt: "2026-08-27"
 authorId: "adrien-millot"
 image: "/og/price-before.png"
 keywords:
@@ -24,16 +24,16 @@ Use the remote Streamable HTTP resource when a client asks for a manual MCP addr
 https://api.maxvideoai.com/mcp
 ```
 
-Do not add a token, query string, password, or API key. The client opens MaxVideoAI in the browser for OAuth 2.1 sign-in and consent with `openid,email,profile`. MCP is the technical connection; the customer-facing product is the MaxVideoAI AI video plugin or connector.
+Do not add a token, query string, password, or API key. The client opens MaxVideoAI in the browser for OAuth 2.1 sign-in and consent with `openid,email,profile`. MCP is the technical connection. In product language, MaxVideoAI is an app for ChatGPT, a connector for Claude, and a plugin for Codex.
 
 ## Connect your account
 
 1. Choose MaxVideoAI in ChatGPT or Codex, add it as a custom connector in Claude, or add the remote MCP address manually.
-2. Sign in to your existing MaxVideoAI account in the browser.
-3. Review and approve the connection.
+2. Sign in or create your MaxVideoAI account in the browser, then confirm your email if needed.
+3. Review and approve the connection; MaxVideoAI is free to connect and adds no separate subscription.
 4. Return to the assistant and ask it to check your MaxVideoAI account.
 
-OAuth never gives the assistant your password, payment details, or database access. The same user wallet and private library are used on the website and through the connection.
+OAuth never gives the assistant your password, payment details, or database access. The same user wallet and private MaxVideoAI Library are used on the website and through the connection.
 
 Hosted compatibility is recorded per client rather than inferred from the protocol. Claude Desktop `1.37937.1` has completed OAuth, account, catalogue, budgeting, exact quote, media, recovery, upload, and top-up checks. Codex CLI `0.149.0-alpha.4.3` has completed OAuth, account, catalogue, budgeting, exact quote, and top-up checks. ChatGPT desktop and Claude Code require their own final launch check.
 
@@ -97,7 +97,7 @@ If credits are insufficient:
 
 The plugin itself, model advice, and project budgets require no separate subscription. Paid generations use the existing pay-as-you-go MaxVideoAI credit balance.
 
-## Jobs, gallery, failures, and retries
+## Jobs, library, failures, and retries
 
 An accepted job is not yet a completed video. Poll `get_generation_status` for a known job or call `list_recent_generations` to recover it. Once it is completed, `present_generation` can render the image or playable video inline in an MCP Apps-compatible host. Other clients keep the returned result link and MaxVideoAI library destination as the universal fallback. Do not submit the same paid generation again merely because the first call timed out.
 

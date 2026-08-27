@@ -672,6 +672,35 @@ test('real provider cross-field constraints reject Hailuo end-frame 512P and Lum
   }
 });
 
+test('request-aware provider readiness rejects an unavailable routed provider before pricing', async () => {
+  const candidate = registryCapability('luma-ray-3-2');
+  const input: PrepareGenerationInput = {
+    surface: 'video',
+    engineId: 'luma-ray-3-2',
+    mode: 'i2v',
+    prompt: 'Animate this still image for ten seconds.',
+    settings: { durationSec: 10, resolution: '720p', aspectRatio: '16:9', loop: false },
+    references: [{
+      kind: 'https',
+      url: 'https://cdn.maxvideoai.com/source.png',
+      mediaKind: 'image',
+      role: 'source',
+    }],
+    outputCount: 1,
+  };
+  const { deps, captures } = baseDependencies({
+    listPublicEngines: async () => [candidate],
+    resolveRequestExecutability: () => ({
+      executable: false,
+      reason: 'provider_credentials_missing',
+    }),
+  } as Partial<PrepareGenerationDependencies>);
+
+  await expectAgentError(prepareGeneration(input, principal, deps), 'ENGINE_UNAVAILABLE');
+  assert.equal(captures.events.includes('pricing'), false);
+  assert.equal(captures.inserted.length, 0);
+});
+
 test('insufficient funds still persist a quote and expose a non-negative projected balance', async () => {
   const { deps, captures } = baseDependencies({
     getWalletSummary: async () => ({

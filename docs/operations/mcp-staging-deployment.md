@@ -114,6 +114,17 @@ SEEDANCE_2_5_LAS_ENABLED=false
 MCP_STAGING_REFERENCE_CLEANUP_ENABLED=true
 MCP_STAGING_REFERENCE_STORAGE_PREFIX=mcp-reference-staging/
 VIDEO_RENDER_STORAGE_PREFIX=mcp-render-staging/
+GOOGLE_VERTEX_LOCATION=global
+GOOGLE_VERTEX_API_BASE_URL=https://aiplatform.googleapis.com
+GOOGLE_VERTEX_VEO_ENABLED=false
+GOOGLE_VERTEX_VEO_PUBLIC_ROUTING_ENABLED=false
+GOOGLE_VERTEX_VEO_ADMIN_ONLY=true
+GOOGLE_VERTEX_OMNI_ENABLED=false
+GOOGLE_VERTEX_OMNI_PUBLIC_ROUTING_ENABLED=false
+GOOGLE_VERTEX_OMNI_ADMIN_ONLY=true
+GOOGLE_VERTEX_IMAGE_MCP_ENABLED=false
+GOOGLE_VERTEX_IMAGE_MCP_PUBLIC_ROUTING_ENABLED=false
+GOOGLE_VERTEX_IMAGE_MCP_ENGINE_ALLOWLIST=nano-banana-lite
 ```
 
 `BYTEPLUS_ARK_API_KEY` is required on the Production target for the first
@@ -145,6 +156,21 @@ Keep `SEEDANCE_2_5_LAS_ENABLED=false` and do not add `v2v` to
 and canary evidence have passed review. A LAS key by itself never publishes or
 enables V2V.
 
+The eight Google/Vertex engines use one isolated staging identity: a dedicated
+billed Google Cloud project, service account, and private GCS input prefix with
+no access to production resources. The Production target requires
+`GOOGLE_VERTEX_PROJECT_ID`, `GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON`,
+`GOOGLE_VERTEX_INPUT_GCS_URI`, `GOOGLE_VERTEX_VEO_POLL_TOKEN`, and
+`GOOGLE_VERTEX_OMNI_POLL_TOKEN`. Keep every public routing flag false when the
+identity is first installed. The four image engines are additionally held by
+`GOOGLE_VERTEX_IMAGE_MCP_ENABLED`,
+`GOOGLE_VERTEX_IMAGE_MCP_PUBLIC_ROUTING_ENABLED`, and the explicit
+comma-separated `GOOGLE_VERTEX_IMAGE_MCP_ENGINE_ALLOWLIST`; credentials alone
+never expose them through MCP. Enable one image engine at a time, then Veo Lite,
+Veo Fast, Veo, and Omni after non-generation OAuth, GCS, and model-access probes
+succeed. Never copy the production Google project, service-account JSON, or
+bucket credential into staging.
+
 `MCP_TOPUP_HANDOFF_SECRET` is required on the Production target of the dedicated
 staging project. It must contain 32–256 random printable ASCII characters and is
 used only to sign short-lived MaxVideoAI billing handoffs. Store it as a Vercel
@@ -163,8 +189,8 @@ may complete a render while MaxVideoAI correctly keeps it unavailable because
 the temporary provider URL has not been copied to durable storage.
 
 `CRON_SECRET` is also required on the Production target. For this project it is
-the dedicated staging credential used to authenticate the scheduled BytePlus
-and Fal polls and the attended reference-cleanup route. Supply it out of band,
+the dedicated staging credential used to authenticate the scheduled BytePlus,
+Fal, Veo, and Omni polls and the attended reference-cleanup route. Supply it out of band,
 store it only in Vercel, and never include its value in a shell command, Git
 file, log, report, or downloaded environment file. The wrapper checks only that
 the name exists on the exact target. At runtime,
@@ -177,10 +203,10 @@ documented above. Vercel does not accept empty environment-variable values, so
 `COOKIE_DOMAIN` and `NEXT_PUBLIC_COOKIE_DOMAIN` are intentionally absent; the
 application treats absence as an unset, host-only cookie domain.
 
-Except for the dedicated staging-only `BYTEPLUS_ARK_API_KEY`, the marketplace-
-managed `FAL_KEY`, the two staging-only Fal tokens, `MCP_TOPUP_HANDOFF_SECRET`,
-the dedicated prefix-scoped staging storage credential, and cleanup-only
-`CRON_SECRET`, do not add other provider keys, Stripe secrets, a
+Except for the dedicated staging-only BytePlus and Google identities, the
+marketplace-managed `FAL_KEY`, the staging-only provider poll/callback tokens,
+`MCP_TOPUP_HANDOFF_SECRET`, the dedicated prefix-scoped staging storage
+credential, and cleanup-only `CRON_SECRET`, do not add other provider keys, Stripe secrets, a
 Supabase secret or legacy `service_role` key, SMTP credentials, or any production
 database URL to this project.
 
@@ -194,10 +220,12 @@ deployment wrapper does not run migrations or mutate the live database. If the
 required schema state cannot be established without revealing credentials, stop
 with `SCHEMA_BLOCKED`; do not deploy and do not attempt an in-band repair.
 
-The operational MCP staging package registers exactly two schedules:
-`/api/cron/byteplus-poll` and `/api/cron/fal-poll`, both every five minutes.
-They advance accepted Seedance 2.5 and Fal-backed jobs and persist their
-terminal outputs. Do not add the Task 5 cleanup schedule or any other production
+The operational MCP staging package registers exactly four schedules:
+`/api/cron/byteplus-poll`, `/api/cron/fal-poll`,
+`/api/cron/google-vertex-veo-poll`, and
+`/api/cron/google-vertex-omni-poll`, all every five minutes. They advance
+accepted Seedance 2.5, Fal-backed, Veo, and Omni jobs and persist their terminal
+outputs. Do not add the Task 5 cleanup schedule or any other production
 cron to `frontend/vercel.mcp-staging.json`.
 Cleanup remains an attended, authenticated one-shot operation using the same
 route and bounded Task 5 ledger owner as production. A secret name without a
@@ -273,8 +301,9 @@ Vercel also resolves deployment configuration from the effective project-root
 not sufficient: Vercel used the production config, including its cron list.
 The current staging deployment is produced with
 `frontend/vercel.mcp-staging.json` as the effective project-root config and must
-contain exactly the five-minute BytePlus and Fal poll registrations—no inherited
-Kling, Vertex, Luma, reconciliation, cleanup, retention, or alert schedules.
+contain exactly the five-minute BytePlus, Fal, Veo, and Omni poll
+registrations—no inherited Kling, Luma, reconciliation, cleanup, retention, or
+alert schedules.
 
 Do not run Vercel deployment commands directly against this linked staging
 project. Commit the exact revision to validate, make sure the worktree contains
@@ -297,7 +326,8 @@ The real invocation repeats those checks, resolves the exact dedicated Vercel
 project, then queries its non-decrypted Production-target environment metadata.
 It reduces the response to names and targets only and requires the complete
 operational inventory, including the BytePlus API key, one normalized Fal API
-key alias, both Fal callback/poll tokens, and the durable-storage variables,
+key alias, the dedicated Google identity and gates, all provider poll/callback
+tokens, and the durable-storage variables,
 before any link or deploy
 command. It does not add, remove, pull, decrypt, or print an environment value.
 After that sanitized preflight, it links only the temporary directory and
@@ -308,7 +338,7 @@ The deployment receives only two sanitized provenance metadata values:
 `mcpTrackedArchiveSha256`, containing the SHA-256 digest of `git archive HEAD`.
 The wrapper waits for `READY` and rejects the candidate unless all pre-promotion
 checks pass: the deployment belongs to `maxvideoai-mcp-staging`, the API cron
-list contains only the exact five-minute BytePlus and Fal polls, both metadata values
+list contains only the exact five-minute BytePlus, Fal, Veo, and Omni polls, both metadata values
 exactly match the current clean approved `HEAD`, and the direct candidate origin
 is anonymous and carries the exact global noindex header. It also calls the
 candidate discovery and direct MCP route with the unaliased host: both must fail
@@ -336,8 +366,9 @@ The acceptance conditions are all mandatory:
 - the deployment belongs to `maxvideoai-mcp-staging`;
 - `mcpApprovedGitSha` and `mcpTrackedArchiveSha256` match the current clean
   tracked revision exactly;
-- its cron list contains only `/api/cron/byteplus-poll` and
-  `/api/cron/fal-poll`, both on `*/5 * * * *`;
+- its cron list contains only `/api/cron/byteplus-poll`,
+  `/api/cron/fal-poll`, `/api/cron/google-vertex-veo-poll`, and
+  `/api/cron/google-vertex-omni-poll`, all on `*/5 * * * *`;
 - the tested root, protected-resource discovery, and MCP protocol responses
   include exact `X-Robots-Tag: noindex, nofollow, noarchive`;
 - the stable alias resolves directly without Vercel Authentication;
@@ -353,7 +384,7 @@ reconciliation. Every request returned HTTP `401`. No cron secret, provider
 credential, payment credential, or production database was present, and no
 side effect is evidenced. The corrected deployment at that time had an empty
 cron list. The current operational staging contract intentionally permits only
-the authenticated BytePlus and Fal polls; the candidate-before-promotion
+the authenticated BytePlus, Fal, Veo, and Omni polls; the candidate-before-promotion
 wrapper prevents every other schedule from recurring.
 
 ## Verification

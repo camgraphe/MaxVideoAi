@@ -45,6 +45,10 @@ import {
 } from './spending-limits';
 import { getTrialEligibility } from './trial-eligibility';
 import {
+  resolveAgentGenerationRequestExecutability,
+  type AgentGenerationExecutabilityDecision,
+} from '../agent-runtime/model-executability';
+import {
   normalizeTrialCandidate,
   TrialCandidateError,
 } from './trial-preset';
@@ -122,6 +126,11 @@ export type PrepareGenerationDependencies = {
     request: CanonicalGenerationRequest,
     principal: AgentPrincipal,
   ): Promise<ResolvedReference[]>;
+  resolveRequestExecutability?(
+    request: CanonicalGenerationRequest,
+    candidate: AgentPublicGenerationEngine,
+    resolvedReferences: readonly ResolvedReference[],
+  ): AgentGenerationExecutabilityDecision;
   trialRiskContext: TrialRiskRequestContext;
   accountUrl: string;
   now(): Date;
@@ -149,6 +158,12 @@ const defaultDependencies: Omit<PrepareGenerationDependencies, 'trialRiskContext
   checkTrialRisk: (input) => checkTrialRisk(input),
   recordTrialQuotePreparedAudit,
   resolveGenerationReferences: (request, principal) => resolveGenerationReferences(request, principal),
+  resolveRequestExecutability: (request, candidate, resolvedReferences) =>
+    resolveAgentGenerationRequestExecutability(
+      request,
+      candidate.engine,
+      resolvedReferences,
+    ),
   accountUrl: 'https://maxvideoai.com/account/connections',
   now: () => new Date(),
 };
@@ -434,6 +449,18 @@ export async function prepareGeneration(
       }
       throw new AgentApiError('INTERNAL_ERROR', 'The reference media could not be verified.');
     }
+  }
+  const executionReadiness = dependencies.resolveRequestExecutability?.(
+    request,
+    candidate,
+    resolvedReferences,
+  );
+  if (executionReadiness && !executionReadiness.executable) {
+    if (executionReadiness.reason === 'profile_invalid') invalidParameter();
+    throw new AgentApiError(
+      'ENGINE_UNAVAILABLE',
+      'The selected model cannot execute these settings right now.',
+    );
   }
 
   const catalogRevision = computeGenerationCatalogRevision(publicEngines);

@@ -4,8 +4,10 @@ import test from 'node:test';
 import { listFalEngines } from '../frontend/src/config/falEngines';
 import {
   resolveAgentGenerationEngineExecutability,
+  resolveAgentGenerationRequestExecutability,
   type AgentGenerationExecutabilityEnvironment,
 } from '../frontend/src/server/agent-runtime/model-executability';
+import type { CanonicalGenerationRequest } from '../frontend/src/server/agent-api/generation-types';
 
 function getSeedreamEngine() {
   const engine = listFalEngines().find((entry) => entry.id === 'seedream')?.engine;
@@ -156,9 +158,72 @@ test('direct video providers require their own effective credentials', () => {
   }
 });
 
+test('Google video readiness rejects malformed service-account JSON before quoting', () => {
+  const engine = getEngine('veo-3-1');
+  assert.deepEqual(
+    resolveAgentGenerationEngineExecutability(engine, environment({
+      providerEnv: {
+        GOOGLE_VERTEX_VEO_ENABLED: 'true',
+        GOOGLE_VERTEX_VEO_PUBLIC_ROUTING_ENABLED: 'true',
+        GOOGLE_VERTEX_VEO_ADMIN_ONLY: 'false',
+        GOOGLE_VERTEX_PROJECT_ID: 'project',
+        GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON: 'not-json',
+      },
+    })),
+    { executable: false, reason: 'provider_credentials_missing' },
+  );
+});
+
+test('Luma requests routed directly to Fal require Fal before a quote can be prepared', () => {
+  const engine = getEngine('luma-ray-3-2');
+  const request: CanonicalGenerationRequest = {
+    schemaVersion: 1,
+    surface: 'video',
+    engineId: 'luma-ray-3-2',
+    mode: 'i2v',
+    prompt: 'Animate this still image for ten seconds.',
+    settings: {
+      durationSec: 10,
+      resolution: '720p',
+      aspectRatio: '16:9',
+      loop: false,
+    },
+    references: [{ kind: 'asset', assetId: 'source-image', role: 'source' }],
+    outputCount: 1,
+  };
+  const directReady = {
+    LUMA_AGENTS_ENABLED: 'true',
+    LUMA_AGENTS_VIDEO_DIRECT_ENABLED: 'true',
+    LUMA_AGENTS_PUBLIC_ROUTING_ENABLED: 'true',
+    LUMA_AGENTS_ADMIN_ONLY: 'false',
+    LUMA_AGENTS_API_KEY: 'luma-key',
+  };
+
+  assert.deepEqual(
+    resolveAgentGenerationRequestExecutability(request, engine, [], environment({
+      falApiKey: '',
+      providerEnv: directReady,
+    })),
+    { executable: false, reason: 'provider_credentials_missing' },
+  );
+  assert.deepEqual(
+    resolveAgentGenerationRequestExecutability(request, engine, [], environment({
+      falApiKey: 'fal-key',
+      providerEnv: directReady,
+    })),
+    { executable: true, reason: 'available' },
+  );
+});
+
 test('Google image models follow their forced direct provider instead of Fal readiness', () => {
   const engine = getEngine('nano-banana-2');
+  const googleFlags = {
+    GOOGLE_VERTEX_IMAGE_MCP_ENABLED: 'true',
+    GOOGLE_VERTEX_IMAGE_MCP_PUBLIC_ROUTING_ENABLED: 'true',
+    GOOGLE_VERTEX_IMAGE_MCP_ENGINE_ALLOWLIST: 'nano-banana-2',
+  };
   const googleCredentials = {
+    ...googleFlags,
     GOOGLE_VERTEX_PROJECT_ID: 'project',
     GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON: '{"client_email":"test@example.com","private_key":"key"}',
     GOOGLE_VERTEX_INPUT_GCS_URI: 'gs://maxvideoai-inputs/images',
@@ -174,9 +239,19 @@ test('Google image models follow their forced direct provider instead of Fal rea
   assert.deepEqual(
     resolveAgentGenerationEngineExecutability(engine, environment({
       falApiKey: 'fal-key',
-      providerEnv: {},
+      providerEnv: googleFlags,
     })),
     { executable: false, reason: 'provider_credentials_missing' },
+  );
+  assert.deepEqual(
+    resolveAgentGenerationEngineExecutability(engine, environment({
+      falApiKey: '',
+      providerEnv: {
+        ...googleCredentials,
+        GOOGLE_VERTEX_IMAGE_MCP_ENGINE_ALLOWLIST: 'nano-banana-pro',
+      },
+    })),
+    { executable: false, reason: 'provider_disabled' },
   );
 });
 
