@@ -88,7 +88,7 @@ The cron route accepts Vercel Cron auth and the optional `x-google-vertex-omni-p
 
 Poller responsibilities:
 
-- Fetch the stored interaction id.
+- Fetch the stored `gemini-omni-flash-preview` interaction with `GET /interactions/{id}`. Do not use the empty-body `POST` shown on some Google video task pages: a production probe on August 28, 2026 returned `200` for `GET` and `404` for `POST` against the same completed `video-*` interaction.
 - Normalize Interactions responses, including `steps[].content` and SDK-style `output_video`.
 - Download `gs://` or URI video output through the Google client.
 - Copy the final video into MaxVideoAI storage.

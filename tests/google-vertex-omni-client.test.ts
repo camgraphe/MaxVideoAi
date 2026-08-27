@@ -46,7 +46,7 @@ test('Gemini Omni client calls the Vertex Interactions API with bearer auth', as
   assert.equal((requests[0]?.body as Record<string, unknown>).model, 'gemini-omni-flash-preview');
 });
 
-test('Gemini Omni client fetches stored interactions by id', async () => {
+test('Gemini Omni client retrieves stored preview video interactions with GET', async () => {
   const requests: Array<{ url: string; method: string; body: BodyInit | null | undefined }> = [];
   const client = new GoogleVertexOmniClient({
     projectId: 'demo-project',
@@ -74,7 +74,7 @@ test('Gemini Omni client fetches stored interactions by id', async () => {
     requests[0]?.url,
     'https://aiplatform.googleapis.com/v1beta1/projects/demo-project/locations/global/interactions/abc123'
   );
-  assert.equal(requests[0]?.method, 'POST');
+  assert.equal(requests[0]?.method, 'GET');
   assert.equal(requests[0]?.body, undefined);
 });
 
