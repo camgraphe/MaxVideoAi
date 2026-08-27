@@ -1,0 +1,98 @@
+name: Feature request
+description: Propose a customer outcome for the MaxVideoAI plugin, examples, or public package.
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This issue is public. Remove tokens, passwords, cookies, authorization codes, email addresses, billing and payment data, private media and private URLs, full proprietary prompts, internal IDs, and customer information. Use a synthetic example when useful.
+  - type: textarea
+    id: customer-outcome
+    attributes:
+      label: Customer outcome or problem
+      description: Describe the result a producer or contributor cannot reach today.
+    validations:
+      required: true
+  - type: input
+    id: package-version
+    attributes:
+      label: Plugin package version or tag
+      placeholder: maxvideoai-plugin-v…
+    validations:
+      required: true
+  - type: input
+    id: host-client-version
+    attributes:
+      label: Host/client and exact version
+      placeholder: Product name and exact version
+    validations:
+      required: true
+  - type: input
+    id: operating-system
+    attributes:
+      label: Operating system and version
+      placeholder: OS name and version
+    validations:
+      required: true
+  - type: dropdown
+    id: setup-method
+    attributes:
+      label: Setup or installation path
+      options:
+        - Tagged Codex package path
+        - Claude custom connector
+        - ChatGPT developer-mode setup
+        - Generic remote MCP setup
+        - Documentation or package-only request
+    validations:
+      required: true
+  - type: textarea
+    id: intended-workflow
+    attributes:
+      label: Intended workflow
+      description: Give sanitized steps from intent to outcome.
+    validations:
+      required: true
+  - type: textarea
+    id: current-behavior
+    attributes:
+      label: Current behavior and workflow gap
+      description: Explain why the existing plan or generate flow does not cover the outcome.
+    validations:
+      required: true
+  - type: textarea
+    id: expected-outcome
+    attributes:
+      label: Expected outcome
+      description: Describe the safe user-visible result.
+    validations:
+      required: true
+  - type: dropdown
+    id: privacy-spend-impact
+    attributes:
+      label: Privacy or spend implications
+      description: Select the closest impact; explain safe design boundaries in the workflow field.
+      options:
+        - No new privacy or paid-action boundary
+        - Changes read-only planning or account access
+        - Changes reference or Library handling
+        - Changes quote, approval, generation, or recovery
+        - Unsure
+    validations:
+      required: true
+  - type: textarea
+    id: safe-example
+    attributes:
+      label: Optional safe example
+      description: Use synthetic details only.
+    validations:
+      required: false
+  - type: checkboxes
+    id: code-of-conduct
+    attributes:
+      label: Code of Conduct
+      options:
+        - label: I agree to follow the repository Code of Conduct and have removed sensitive information.
+          required: true
+    validations:
+      required: true

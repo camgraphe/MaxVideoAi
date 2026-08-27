@@ -1,0 +1,127 @@
+name: Compatibility report
+description: Share sanitized installation and workflow evidence for a specific host/client version.
+title: "[Compatibility]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This issue is public. Remove tokens, passwords, cookies, authorization codes, email addresses, billing and payment data, private media and private URLs, full proprietary prompts, internal IDs, and customer information. Generation and approval evidence is optional. Review the current evidence first: https://maxvideoai.com/docs/mcp
+  - type: input
+    id: package-version
+    attributes:
+      label: Plugin package version or tag
+      placeholder: maxvideoai-plugin-v…
+    validations:
+      required: true
+  - type: input
+    id: host-client-version
+    attributes:
+      label: Host/client and exact version
+      placeholder: Product name and exact version
+    validations:
+      required: true
+  - type: input
+    id: operating-system
+    attributes:
+      label: Operating system and version
+      placeholder: OS name and version
+    validations:
+      required: true
+  - type: dropdown
+    id: account-plan-category
+    attributes:
+      label: Account and plan category
+      description: Choose a broad category without personal account details.
+      options:
+        - Individual paid plan
+        - Individual free plan
+        - Business or team workspace
+        - Enterprise or education workspace
+        - Other or unknown
+    validations:
+      required: true
+  - type: textarea
+    id: setup-install-path
+    attributes:
+      label: Setup or install path
+      description: Give sanitized setup steps and note whether an admin policy was involved.
+    validations:
+      required: true
+  - type: dropdown
+    id: oauth-outcome
+    attributes:
+      label: OAuth outcome
+      options:
+        - Completed
+        - Opened but did not complete
+        - Did not open
+        - Not reached
+    validations:
+      required: true
+  - type: dropdown
+    id: tool-discovery
+    attributes:
+      label: Tool discovery result
+      options:
+        - MaxVideoAI tools were visible
+        - Connection visible but tools missing
+        - Connection not visible
+        - Not checked
+    validations:
+      required: true
+  - type: textarea
+    id: planning-result
+    attributes:
+      label: Planning result
+      description: Describe the sanitized no-spend planning outcome.
+    validations:
+      required: true
+  - type: textarea
+    id: exact-quote-result
+    attributes:
+      label: Exact-quote result
+      description: Describe whether quote preparation stopped at the approval boundary; omit amounts.
+    validations:
+      required: true
+  - type: dropdown
+    id: optional-approval-generation
+    attributes:
+      label: Optional approval and generation check
+      description: Approval and generation are explicitly optional for compatibility reports.
+      options:
+        - Not attempted
+        - Approval boundary checked without generation
+        - One attempt approved and outcome observed
+        - Unknown
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+      description: What did the current setup guide lead you to expect?
+    validations:
+      required: true
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual behavior
+      description: Summarize the observed outcome and any visible safe error.
+    validations:
+      required: true
+  - type: textarea
+    id: sanitized-evidence
+    attributes:
+      label: Optional sanitized screenshot or evidence
+      description: Attach only sanitized evidence you have permission to publish; crop unrelated content.
+    validations:
+      required: false
+  - type: checkboxes
+    id: code-of-conduct
+    attributes:
+      label: Code of Conduct
+      options:
+        - label: I agree to follow the repository Code of Conduct and have removed sensitive information.
+          required: true
+    validations:
+      required: true
