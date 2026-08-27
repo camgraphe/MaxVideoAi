@@ -20,6 +20,12 @@ const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url))
 const manifestPath = path.join(repositoryRoot, 'docs/marketing/github-asset-manifest.json');
 const checkCommandPath = path.join(repositoryRoot, 'scripts/check-github-assets.mjs');
 const now = new Date('2026-08-27T12:00:00Z');
+const verifiedVp8Path = path.join(repositoryRoot, 'frontend/public/assets/marketing/app-dashboard.webp');
+const verifiedVp8 = readFileSync(verifiedVp8Path);
+const verifiedVp8XPath = path.join(repositoryRoot, 'frontend/public/assets/marketing/comparison-scorecard-transparent.webp');
+const verifiedVp8X = readFileSync(verifiedVp8XPath);
+// Decoder-valid 16×16 lossless WebP sample: RIFF/WEBP VP8L, encoded by libwebp.
+const verifiedVp8L = Buffer.from('UklGRqQAAABXRUJQVlA4TJgAAAAvD8ADEJ+gJmAaJv6NIgB+OkwQZNvMH/QHGMCMtm3T/v/oyjMcAkGI/q8wkQV60LyFNhFN+mjHIsLii69k4KEjAykcRpIUN8u/fAvG+UcLSAohov8TsKYezzX0cupDes+N3nPLACgRQNxEAKXglioBY56YSgCwFwVTCYRyiQymxaBbBkORHoigninHLqk6x9Pz8ea3xrPxBw==', 'base64');
 
 function crc32(bytes: Buffer): number {
   let crc = 0xffffffff;
@@ -76,23 +82,7 @@ function webpContainer(...chunks: Buffer[]): Buffer {
   return Buffer.concat([buffer, payload]);
 }
 
-function webp(width = 9, height = 4, payload = Buffer.from([0])): Buffer {
-  const header = Buffer.alloc(5);
-  header[0] = 0x2f;
-  header.writeUInt32LE(((height - 1) << 14) | (width - 1), 1);
-  return webpContainer(webpChunk('VP8L', Buffer.concat([header, payload])));
-}
-
-function webpVp8(width = 7, height = 5, partition = Buffer.from([0])): Buffer {
-  const frame = Buffer.alloc(10);
-  frame[0] = 0x30;
-  frame.set([0, 0, 0x9d, 0x01, 0x2a], 1);
-  frame.writeUInt16LE(width, 6);
-  frame.writeUInt16LE(height, 8);
-  return webpContainer(webpChunk('VP8 ', Buffer.concat([frame, partition])));
-}
-
-function webpVp8X(width = 9, height = 4, payload = webp(width, height).subarray(12)): Buffer {
+function webpVp8X(width = 16, height = 16, payload = verifiedVp8L.subarray(12)): Buffer {
   const header = Buffer.alloc(10);
   header.writeUIntLE(width - 1, 4, 3);
   header.writeUIntLE(height - 1, 7, 3);
@@ -110,7 +100,7 @@ function createFixtureRepository() {
   mkdirSync(path.join(root, 'assets'), { recursive: true });
   mkdirSync(path.join(root, 'plugins', 'maxvideoai', 'assets'), { recursive: true });
   const rootBytes = png();
-  const pluginBytes = webp();
+  const pluginBytes = verifiedVp8;
   writeFileSync(path.join(root, 'assets', 'workflow.png'), rootBytes);
   writeFileSync(path.join(root, 'plugins', 'maxvideoai', 'assets', 'launch.webp'), pluginBytes);
   runGit(root, ['init', '--quiet']);
@@ -149,8 +139,8 @@ function createFixtureRepository() {
     id: 'maxvideoai-launch-editorial',
     path: 'plugins/maxvideoai/assets/launch.webp',
     kind: 'editorial',
-    width: 9,
-    height: 4,
+    width: 1679,
+    height: 1127,
     sha256: createHash('sha256').update(pluginBytes).digest('hex'),
     placements: ['plugin_readme'],
     ...shared,
@@ -165,19 +155,28 @@ function clone<T>(value: T): T {
 test('reads structurally complete PNG, JPEG, and WebP dimensions and rejects malformed containers', () => {
   assert.deepEqual(readImageDimensions(png()), { width: 3, height: 2, format: 'png' });
   assert.deepEqual(readImageDimensions(jpeg()), { width: 7, height: 5, format: 'jpeg' });
-  assert.deepEqual(readImageDimensions(webp()), { width: 9, height: 4, format: 'webp' });
-  assert.deepEqual(readImageDimensions(webpVp8()), { width: 7, height: 5, format: 'webp' });
-  assert.deepEqual(readImageDimensions(webpVp8X()), { width: 9, height: 4, format: 'webp' });
+  assert.deepEqual(readImageDimensions(verifiedVp8), { width: 1679, height: 1127, format: 'webp' });
+  assert.deepEqual(readImageDimensions(verifiedVp8L), { width: 16, height: 16, format: 'webp' });
+  assert.deepEqual(readImageDimensions(verifiedVp8X), { width: 1280, height: 853, format: 'webp' });
+  assert.deepEqual(readImageDimensions(webpVp8X()), { width: 16, height: 16, format: 'webp' });
   assert.throws(() => readImageDimensions(Buffer.from('not-an-image')), /unsupported|malformed/i);
   assert.throws(() => readImageDimensions(png().subarray(0, -12)), /missing|malformed/i);
   const corruptPng = png();
   corruptPng[corruptPng.length - 1] ^= 0xff;
   assert.throws(() => readImageDimensions(corruptPng), /malformed/i);
   assert.throws(() => readImageDimensions(jpeg().subarray(0, 21)), /malformed/i);
-  assert.throws(() => readImageDimensions(webp(9, 4, Buffer.alloc(0))), /malformed/i);
-  assert.throws(() => readImageDimensions(webpVp8(7, 5, Buffer.alloc(0))), /malformed/i);
-  assert.throws(() => readImageDimensions(webpVp8X(9, 4, Buffer.alloc(0))), /malformed/i);
-  assert.throws(() => readImageDimensions(webp().subarray(0, -1)), /malformed/i);
+  assert.throws(() => readImageDimensions(verifiedVp8L.subarray(0, -1)), /malformed/i);
+  const corruptVp8L = Buffer.from(verifiedVp8L);
+  corruptVp8L[20] ^= 1;
+  assert.throws(() => readImageDimensions(corruptVp8L), /malformed/i);
+  const zeroedVp8LPayload = Buffer.from(verifiedVp8L);
+  zeroedVp8LPayload.fill(0, 25);
+  assert.throws(() => readImageDimensions(zeroedVp8LPayload), /malformed/i);
+  assert.throws(() => readImageDimensions(verifiedVp8.subarray(0, -1)), /malformed/i);
+  const corruptVp8 = Buffer.from(verifiedVp8);
+  corruptVp8[23] ^= 1;
+  assert.throws(() => readImageDimensions(corruptVp8), /malformed/i);
+  assert.throws(() => readImageDimensions(webpVp8X(15, 16)), /canvas|malformed/i);
 });
 
 test('requires current, review-signed proof provenance from real ancestor revisions', () => {

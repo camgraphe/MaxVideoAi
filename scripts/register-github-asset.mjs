@@ -121,6 +121,7 @@ function readWebpDimensions(bytes) {
   if (bytes.length < 20 || bytes.toString('ascii', 0, 4) !== 'RIFF' || bytes.toString('ascii', 8, 12) !== 'WEBP' || bytes.readUInt32LE(4) + 8 !== bytes.length) throw new Error('Malformed WebP image');
   let offset = 12;
   let imageDimensions = null;
+  let payloadDimensions = null;
   let foundImagePayload = false;
   let foundExtendedHeader = false;
   let foundPayloadAfterExtendedHeader = false;
@@ -137,24 +138,31 @@ function readWebpDimensions(bytes) {
       imageDimensions = dimensions(bytes.readUIntLE(dataStart + 4, 3) + 1, bytes.readUIntLE(dataStart + 7, 3) + 1, 'webp');
       foundExtendedHeader = true;
     } else if (type === 'VP8 ') {
+      if (foundImagePayload) throw new Error('Unsupported WebP multiple image payloads');
       if (length <= 10 || !bytes.subarray(dataStart + 3, dataStart + 6).equals(Buffer.from([0x9d, 0x01, 0x2a]))) throw new Error('Malformed WebP VP8 chunk');
       const frameTag = bytes.readUIntLE(dataStart, 3);
       const firstPartitionSize = frameTag >>> 5;
-      if ((frameTag & 1) !== 0 || ((frameTag >>> 1) & 7) > 3 || (frameTag & 0x10) === 0 || firstPartitionSize === 0 || firstPartitionSize > length - 10) throw new Error('Malformed WebP VP8 frame header');
-      imageDimensions ??= dimensions(bytes.readUInt16LE(dataStart + 6) & 0x3fff, bytes.readUInt16LE(dataStart + 8) & 0x3fff, 'webp');
+      if ((frameTag & 1) !== 0 || ((frameTag >>> 1) & 7) > 3 || (frameTag & 0x10) === 0 || firstPartitionSize === 0 || firstPartitionSize >= length - 10) throw new Error('Malformed WebP VP8 frame header');
+      payloadDimensions = dimensions(bytes.readUInt16LE(dataStart + 6) & 0x3fff, bytes.readUInt16LE(dataStart + 8) & 0x3fff, 'webp');
+      imageDimensions ??= payloadDimensions;
       foundImagePayload = true;
       if (foundExtendedHeader) foundPayloadAfterExtendedHeader = true;
     } else if (type === 'VP8L') {
-      if (length <= 5 || bytes[dataStart] !== 0x2f) throw new Error('Malformed WebP VP8L chunk');
+      if (foundImagePayload) throw new Error('Unsupported WebP multiple image payloads');
+      if (length < 17 || bytes[dataStart] !== 0x2f) throw new Error('Malformed WebP VP8L chunk');
       const packed = bytes.readUInt32LE(dataStart + 1);
       if ((packed >>> 29) !== 0) throw new Error('Malformed WebP VP8L header');
-      imageDimensions ??= dimensions((packed & 0x3fff) + 1, ((packed >>> 14) & 0x3fff) + 1, 'webp');
+      const compressedPayload = bytes.subarray(dataStart + 5, dataEnd);
+      if (!compressedPayload.some((byte) => byte !== 0)) throw new Error('Malformed WebP VP8L payload');
+      payloadDimensions = dimensions((packed & 0x3fff) + 1, ((packed >>> 14) & 0x3fff) + 1, 'webp');
+      imageDimensions ??= payloadDimensions;
       foundImagePayload = true;
       if (foundExtendedHeader) foundPayloadAfterExtendedHeader = true;
     }
     offset = paddedEnd;
   }
   if (offset !== bytes.length || !imageDimensions || !foundImagePayload || (foundExtendedHeader && !foundPayloadAfterExtendedHeader)) throw new Error('Malformed WebP image structure');
+  if (foundExtendedHeader && (imageDimensions.width !== payloadDimensions.width || imageDimensions.height !== payloadDimensions.height)) throw new Error('Malformed WebP VP8X canvas dimensions');
   return imageDimensions;
 }
 
