@@ -6,6 +6,7 @@ import {
   parseGoogleVertexServiceAccount,
   type GoogleVertexServiceAccount,
 } from '@/server/video-providers/google-vertex-auth';
+import { resolveGoogleVertexOmniLocation } from '@/server/video-providers/google-vertex-omni/location';
 import { resolveGoogleVertexOmniModelRoute } from '@/server/video-providers/google-vertex-omni/model-map';
 import { resolveGoogleVertexVeoModelRoute } from '@/server/video-providers/google-vertex-veo/model-map';
 
@@ -43,6 +44,18 @@ type GoogleVertexReadinessDependencies = {
 };
 
 const PROBE_BODY = 'maxvideoai-vertex-readiness-v1';
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+}
+
+function isExpectedProbeRejection(status: number, payload: unknown): boolean {
+  if (status !== 400 && status !== 422) return false;
+  const error = asRecord(asRecord(payload)?.error);
+  const providerStatus = typeof error?.status === 'string' ? error.status.trim().toUpperCase() : '';
+  const message = typeof error?.message === 'string' ? error.message.trim().toLowerCase() : '';
+  return providerStatus === 'INVALID_ARGUMENT' && !message.includes('unsupported location');
+}
 
 function imageModel(engineId: string): ReadinessModel {
   const providerModel = getFalEngineById(engineId)?.engine.providerMeta?.modelSlug?.trim();
@@ -179,6 +192,7 @@ async function probeModel(params: {
   }
 
   let submitStatus: number | null = null;
+  let submitPayload: unknown = null;
   try {
     const submitUrl =
       params.model.kind === 'image'
@@ -192,11 +206,12 @@ async function probeModel(params: {
       body: '{}',
     });
     submitStatus = submit.status;
+    submitPayload = await submit.json().catch(() => null);
   } catch {
     submitStatus = null;
   }
 
-  const submitOk = submitStatus === 400 || submitStatus === 422;
+  const submitOk = submitStatus !== null && isExpectedProbeRejection(submitStatus, submitPayload);
   let pollStatus: number | null = null;
   if (submitOk && params.model.kind !== 'image') {
     try {
@@ -232,7 +247,7 @@ export async function runGoogleVertexReadinessProbe(
   const fetchFn = dependencies.fetchFn ?? fetch;
   const projectId = (env.GOOGLE_VERTEX_PROJECT_ID ?? '').trim();
   const location = (env.GOOGLE_VERTEX_LOCATION ?? 'global').trim() || 'global';
-  const omniLocation = (env.GOOGLE_VERTEX_OMNI_LOCATION ?? location).trim() || 'global';
+  const omniLocation = resolveGoogleVertexOmniLocation(env.GOOGLE_VERTEX_OMNI_LOCATION);
   const apiBaseUrl = (env.GOOGLE_VERTEX_API_BASE_URL ?? 'https://aiplatform.googleapis.com').trim();
   const emptyResult: GoogleVertexReadinessResult = {
     ok: false,

@@ -46,7 +46,8 @@ Fallbacks:
 
 - `GOOGLE_VERTEX_OMNI_PROJECT_ID` falls back to `GOOGLE_VERTEX_PROJECT_ID`.
 - `GOOGLE_VERTEX_OMNI_SERVICE_ACCOUNT_JSON` falls back to `GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON`.
-- `GOOGLE_VERTEX_OMNI_LOCATION` defaults to `global`.
+- `GOOGLE_VERTEX_OMNI_LOCATION` defaults to `global` and never inherits `GOOGLE_VERTEX_LOCATION`, which may use a Veo-only regional value.
+- The current `gemini-omni-flash-preview` Vertex route is global-only. Any explicit value other than `global` is rejected before provider submission.
 
 Do not commit service account JSON. Configure it only through deployment secrets.
 

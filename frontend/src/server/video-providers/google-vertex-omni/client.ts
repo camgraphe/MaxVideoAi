@@ -1,5 +1,6 @@
 import { createSign } from 'node:crypto';
 import { GoogleVertexOmniError } from './errors';
+import { resolveGoogleVertexOmniLocation } from './location';
 
 type GoogleServiceAccount = {
   client_email: string;
@@ -108,7 +109,7 @@ function getConfig(env: GoogleVertexOmniEnv = process.env as GoogleVertexOmniEnv
 
   return {
     projectId,
-    location: readEnv(env, 'GOOGLE_VERTEX_OMNI_LOCATION', 'GOOGLE_VERTEX_LOCATION') || 'global',
+    location: resolveGoogleVertexOmniLocation(env.GOOGLE_VERTEX_OMNI_LOCATION),
     apiBaseUrl:
       readEnv(env, 'GOOGLE_VERTEX_OMNI_API_BASE_URL', 'GOOGLE_VERTEX_API_BASE_URL') ||
       'https://aiplatform.googleapis.com',

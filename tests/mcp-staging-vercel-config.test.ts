@@ -50,6 +50,7 @@ const REQUIRED_OPERATIONAL_ENVIRONMENT = [
   'GOOGLE_VERTEX_VEO_ADMIN_ONLY',
   'GOOGLE_VERTEX_VEO_POLL_TOKEN',
   'GOOGLE_VERTEX_OMNI_ENABLED',
+  'GOOGLE_VERTEX_OMNI_LOCATION',
   'GOOGLE_VERTEX_OMNI_PUBLIC_ROUTING_ENABLED',
   'GOOGLE_VERTEX_OMNI_ADMIN_ONLY',
   'GOOGLE_VERTEX_OMNI_POLL_TOKEN',
@@ -415,6 +416,18 @@ test('non-dry deployment preflight behavior fails closed before every Vercel mut
       'ENVIRONMENT_BLOCKED name=VIDEO_RENDER_STORAGE_PREFIX target=production\n',
     );
     assert.doesNotMatch(missingRenderPrefix.stderr, /SAFE_LINK_SENTINEL/);
+
+    const missingOmniLocation = runStubbedDeploy(fixture, {
+      envPayload: JSON.stringify({
+        envs: validPayload.envs.filter((entry) => entry.key !== 'GOOGLE_VERTEX_OMNI_LOCATION'),
+      }),
+    });
+    assert.equal(missingOmniLocation.status, 66, missingOmniLocation.stderr);
+    assert.equal(
+      missingOmniLocation.stderr,
+      'ENVIRONMENT_BLOCKED name=GOOGLE_VERTEX_OMNI_LOCATION target=production\n',
+    );
+    assert.doesNotMatch(missingOmniLocation.stderr, /SAFE_LINK_SENTINEL/);
 
     const wrongProject = runStubbedDeploy(fixture, { projectName: 'maxvideoai' });
     assert.notEqual(wrongProject.status, 79);

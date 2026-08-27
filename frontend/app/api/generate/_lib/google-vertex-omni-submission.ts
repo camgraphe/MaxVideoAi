@@ -9,6 +9,7 @@ import {
   GoogleVertexOmniError,
   shouldFallbackFromGoogleVertexOmniSubmit,
 } from '@/server/video-providers/google-vertex-omni/errors';
+import { resolveGoogleVertexOmniLocation } from '@/server/video-providers/google-vertex-omni/location';
 import {
   GOOGLE_VERTEX_OMNI_PROVIDER,
   resolveGoogleVertexOmniSupport,
@@ -357,7 +358,7 @@ export async function submitGoogleVertexOmniGenerateTask(params: {
       mode: params.mode,
       providerModel: route.providerModel,
       launchStage: route.launchStage,
-      location: (process.env.GOOGLE_VERTEX_OMNI_LOCATION ?? process.env.GOOGLE_VERTEX_LOCATION ?? 'global').trim() || 'global',
+      location: resolveGoogleVertexOmniLocation(process.env.GOOGLE_VERTEX_OMNI_LOCATION),
       durationSec: params.durationSec,
       aspectRatio: params.aspectRatio,
       audioEnabled: params.audioEnabled !== false,

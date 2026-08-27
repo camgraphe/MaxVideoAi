@@ -150,6 +150,127 @@ test('Google Vertex readiness cleans up its probe object when one model is unava
   assert.equal(calls.some((call) => call.method === 'DELETE'), true);
 });
 
+test('Google Vertex readiness keeps Omni on global when the shared Vertex location is regional', async () => {
+  const calls: string[] = [];
+  const productionLikeEnv = {
+    ...env,
+    GOOGLE_VERTEX_LOCATION: 'us-central1',
+  } as NodeJS.ProcessEnv;
+  delete productionLikeEnv.GOOGLE_VERTEX_OMNI_LOCATION;
+
+  const fetchFn: typeof fetch = async (input, init) => {
+    const url = String(input);
+    const method = init?.method ?? 'GET';
+    calls.push(url);
+    if (url.includes('/upload/storage/v1/')) {
+      return new Response(JSON.stringify({ generation: '9' }), { status: 200 });
+    }
+    if (url.includes('storage.googleapis.com/storage/v1/') && method === 'GET') {
+      return new Response('maxvideoai-vertex-readiness-v1', { status: 200 });
+    }
+    if (url.includes('storage.googleapis.com/storage/v1/') && method === 'DELETE') {
+      return new Response(null, { status: 204 });
+    }
+    if (url.includes('/v1/publishers/google/models/') && method === 'GET') {
+      return new Response('{}', { status: 200 });
+    }
+    if (url.endsWith(':generateContent') || url.endsWith(':predictLongRunning') || url.endsWith('/interactions')) {
+      return new Response(JSON.stringify({ error: { status: 'INVALID_ARGUMENT' } }), { status: 400 });
+    }
+    if (url.endsWith(':fetchPredictOperation') || url.includes('/interactions/maxvideoai-readiness-does-not-exist')) {
+      return new Response('{}', { status: 404 });
+    }
+    throw new Error(`Unexpected readiness URL: ${url}`);
+  };
+
+  const result = await runGoogleVertexReadinessProbe({
+    env: productionLikeEnv,
+    fetchFn,
+    getAccessTokenFn: async () => secretAccessToken,
+    randomIdFn: () => 'probe-regional-shared-location',
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(calls.some((url) => url.includes('/locations/global/interactions')), true);
+  assert.equal(calls.some((url) => url.includes('/locations/us-central1/interactions')), false);
+});
+
+test('Google Vertex readiness rejects an unsupported-location response even when the provider returns 400', async () => {
+  const fetchFn: typeof fetch = async (input, init) => {
+    const url = String(input);
+    const method = init?.method ?? 'GET';
+    if (url.includes('/upload/storage/v1/')) {
+      return new Response(JSON.stringify({ generation: '10' }), { status: 200 });
+    }
+    if (url.includes('storage.googleapis.com/storage/v1/') && method === 'GET') {
+      return new Response('maxvideoai-vertex-readiness-v1', { status: 200 });
+    }
+    if (url.includes('storage.googleapis.com/storage/v1/') && method === 'DELETE') {
+      return new Response(null, { status: 204 });
+    }
+    if (url.includes('/v1/publishers/google/models/') && method === 'GET') {
+      return new Response('{}', { status: 200 });
+    }
+    if (url.endsWith('/interactions')) {
+      return new Response(
+        JSON.stringify({
+          error: {
+            code: 400,
+            status: 'INVALID_ARGUMENT',
+            message: 'Unsupported location: global.',
+          },
+        }),
+        { status: 400 },
+      );
+    }
+    if (url.endsWith(':generateContent') || url.endsWith(':predictLongRunning')) {
+      return new Response(JSON.stringify({ error: { status: 'INVALID_ARGUMENT' } }), { status: 400 });
+    }
+    if (url.endsWith(':fetchPredictOperation') || url.includes('/interactions/maxvideoai-readiness-does-not-exist')) {
+      return new Response('{}', { status: 404 });
+    }
+    throw new Error(`Unexpected readiness URL: ${url}`);
+  };
+
+  const result = await runGoogleVertexReadinessProbe({
+    env,
+    fetchFn,
+    getAccessTokenFn: async () => secretAccessToken,
+    randomIdFn: () => 'probe-unsupported-location',
+  });
+
+  const omni = result.checks.models.find((model) => model.engineId === 'gemini-omni-flash');
+  assert.equal(result.ok, false);
+  assert.deepEqual(omni, {
+    engineId: 'gemini-omni-flash',
+    providerModel: 'gemini-omni-flash-preview',
+    kind: 'omni',
+    ok: false,
+    metadataStatus: 200,
+    submitStatus: 400,
+    pollStatus: null,
+  });
+});
+
+test('Google Vertex readiness rejects an explicitly regional Omni location before probing providers', async () => {
+  const invalidEnv = {
+    ...env,
+    GOOGLE_VERTEX_OMNI_LOCATION: 'us-central1',
+  } as NodeJS.ProcessEnv;
+
+  await assert.rejects(
+    () =>
+      runGoogleVertexReadinessProbe({
+        env: invalidEnv,
+        fetchFn: async () => {
+          throw new Error('Provider calls must not start with an invalid Omni location.');
+        },
+        getAccessTokenFn: async () => secretAccessToken,
+      }),
+    /GOOGLE_VERTEX_OMNI_LOCATION must be global/,
+  );
+});
+
 test('Google Vertex readiness is exposed only through an authenticated unscheduled route', () => {
   const routePath = join(process.cwd(), 'frontend/app/api/cron/google-vertex-readiness/route.ts');
   assert.equal(existsSync(routePath), true);
