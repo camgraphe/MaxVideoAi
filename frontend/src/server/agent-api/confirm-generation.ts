@@ -277,6 +277,18 @@ function staleQuote(): never {
   );
 }
 
+function stableConfirmationPricingSnapshot(snapshot: Record<string, unknown>): string {
+  const membership = snapshot.membership;
+  if (!isRecord(membership)) return stableJson(snapshot);
+  const priceRelevantMembership = Object.fromEntries(
+    Object.entries(membership).filter(([key]) => key !== 'spent30Cents'),
+  );
+  return stableJson({
+    ...snapshot,
+    membership: priceRelevantMembership,
+  });
+}
+
 function spendingError(dependencies: ConfirmGenerationDependencies): AgentApiError {
   let url: string;
   try {
@@ -449,7 +461,8 @@ async function confirmationTransaction(
     } else {
       if (pricing.priceCents !== quote.priceCents
         || pricing.currency !== quote.currency
-        || stableJson(pricingSnapshot) !== stableJson(quote.pricingSnapshot)) staleQuote();
+        || stableConfirmationPricingSnapshot(pricingSnapshot)
+          !== stableConfirmationPricingSnapshot(quote.pricingSnapshot)) staleQuote();
       const spending = await dependencies.checkSpendingLimits(
         { userId: principal.userId, priceCents: quote.priceCents, currency: quote.currency },
         { executor },

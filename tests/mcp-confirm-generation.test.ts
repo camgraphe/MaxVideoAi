@@ -847,6 +847,25 @@ test('claimed, accepted, and failed repeats return their linked job without reva
   }
 });
 
+test('rolling spend within the same membership price does not invalidate another prepared quote', async () => {
+  const { dependencies, captures } = baseDependencies(videoRequest, {
+    resolveMembershipPricing: async () => ({
+      ...membership,
+      spent30Cents: 31,
+    }),
+  });
+
+  const result = await confirmGeneration(
+    { quoteId: QUOTE_ID, confirmed: true },
+    principal,
+    dependencies,
+  );
+
+  assert.equal(result.jobId, QUOTE_ID);
+  assert.equal(captures.events.includes('reserve_video'), true);
+  assert.equal(captures.providerCalls, 1);
+});
+
 test('stale request/catalog/membership/price/currency/snapshot fail closed before wallet reservation', async () => {
   const cases: Array<[string, Partial<ConfirmGenerationDependencies>]> = [
     ['request hash', {
