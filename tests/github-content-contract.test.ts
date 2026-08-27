@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -16,6 +16,72 @@ function checkFixture(name: string) {
     encoding: 'utf8',
   });
 }
+
+test('the plugin README is a proof-led conversion surface with safe compatibility language', () => {
+  const readmePath = path.join(repositoryRoot, 'plugins', 'maxvideoai', 'README.md');
+  const readme = readFileSync(readmePath, 'utf8');
+  const lines = readme.split(/\r?\n/);
+  const words = readme.match(/[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*/gu) ?? [];
+  const opening = lines.slice(0, 60).join('\n');
+  const definition = readme.split(/\n{2,}/)[1] ?? '';
+  const definitionWords = definition.match(/[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*/gu) ?? [];
+
+  assert.equal(lines[0], '# MaxVideoAI for ChatGPT, Claude & Codex');
+  assert.ok(words.length < 1_800, `README must stay under 1,800 words; found ${words.length}`);
+  assert.ok(definitionWords.length >= 40 && definitionWords.length <= 60, `opening definition must be 40–60 words; found ${definitionWords.length}`);
+  assert.match(definition, /MaxVideoAI is a multi-model AI video production service exposed through a remote MCP server and packaged for agent workflows/i);
+  assert.match(opening, /assets\/demos\/readme-proof-hero\.webp/);
+  assert.match(opening, /codex plugin marketplace add camgraphe\/MaxVideoAi --ref maxvideoai-plugin-v0\.2\.0/);
+  assert.match(opening, /https:\/\/maxvideoai\.com\/docs\/mcp/);
+  for (const canonicalUrl of [
+    'https://maxvideoai.com/mcp',
+    'https://maxvideoai.com/models',
+    'https://maxvideoai.com/pricing',
+    'https://maxvideoai.com/app/library',
+    'https://maxvideoai.com/legal/privacy',
+    'https://maxvideoai.com/legal/terms',
+    'https://maxvideoai.com/contact',
+  ]) {
+    assert.match(readme, new RegExp(canonicalUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
+  assert.match(readme, /assets\/demos\/brief-to-video-workflow\.webp/);
+  assert.match(readme, /assets\/demos\/model-choice-and-budget\.webp/);
+  assert.match(readme, /assets\/(?:demos\/library-continuity\.webp|screenshots\/maxvideoai-library-continuity-production\.jpg)/);
+  assert.match(readme, /image shows[^\n]*(?:selection|product)[^\n]*result[^\n]*not[^\n]*(?:quote|approval|budget)/i);
+  assert.doesNotMatch(readme, /Designed for ChatGPT|works with ChatGPT|available in ChatGPT|verified today in Claude and Codex/i);
+
+  const result = spawnSync(process.execPath, [checkerPath, readmePath], {
+    cwd: repositoryRoot,
+    encoding: 'utf8',
+  });
+  assert.equal(result.status, 0, result.stderr);
+});
+
+test('all plugin guides exist and preserve the no-Markdown-table safety invariant', () => {
+  const docsRoot = path.join(repositoryRoot, 'plugins', 'maxvideoai', 'docs');
+  const guideNames = [
+    'chatgpt.md',
+    'claude.md',
+    'codex.md',
+    'generic-mcp.md',
+    'privacy-and-permissions.md',
+    'troubleshooting.md',
+    'how-it-works.md',
+  ];
+
+  for (const guideName of guideNames) {
+    const guidePath = path.join(docsRoot, guideName);
+    assert.ok(existsSync(guidePath), `${guideName} must exist`);
+    const guide = readFileSync(guidePath, 'utf8');
+    assert.doesNotMatch(guide, /^\|.*\|$/m, `${guideName} must not use Markdown tables`);
+    assert.match(guide, /## Sources\n[\s\S]*https:\/\//, `${guideName} must cite a live source`);
+    const result = spawnSync(process.execPath, [checkerPath, guidePath], {
+      cwd: repositoryRoot,
+      encoding: 'utf8',
+    });
+    assert.equal(result.status, 0, result.stderr);
+  }
+});
 
 test('accepts a README fixture with concrete proof and an editorial rhythm', () => {
   const result = checkFixture('compliant.md');

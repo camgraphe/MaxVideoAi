@@ -191,17 +191,19 @@ test('the package explains the customer-facing account and library journey', () 
   const readme = read('README.md');
   const safety = read('skills/generate/references/generation-safety.md');
 
-  assert.match(readme, /plan and generate from ChatGPT, Claude, or Codex/i);
+  assert.match(readme, /^# MaxVideoAI for ChatGPT, Claude & Codex$/m);
+  assert.match(readme, /MaxVideoAI is a multi-model AI video production service exposed through a remote MCP server and packaged for agent workflows/i);
+  assert.match(readme, /Plan\. Compare\. Price\. Approve\. Generate\./);
   assert.match(readme, /existing MaxVideoAI credits/i);
-  assert.match(readme, /same MaxVideoAI\s+library/i);
+  assert.match(readme, /MaxVideoAI\s+Library/i);
   assert.match(readme, /sign in or create/i);
   assert.match(readme, /free to connect/i);
-  assert.match(readme, /ChatGPT app|connector for Claude|plugin for Codex/i);
-  assert.match(readme, /\/maxvideoai:plan/i);
-  assert.match(readme, /\/maxvideoai:generate/i);
+  assert.match(readme, /Setup guides: \[Claude\][^\n]*· \[Codex\][^\n]*· \[ChatGPT\]/i);
+  assert.match(readme, /https:\/\/maxvideoai\.com\/docs\/mcp/);
   assert.match(readme, /Try asking/i);
   assert.match(readme, /codex plugin marketplace add camgraphe\/MaxVideoAi --ref maxvideoai-plugin-v0\.2\.0/);
   assert.match(readme, /codex plugin add maxvideoai@maxvideoai/);
+  assert.doesNotMatch(readme, /Designed for ChatGPT|works with ChatGPT|available in ChatGPT|verified today in Claude and Codex/i);
   assert.doesNotMatch(readme, /does not establish online availability|does not verify an online connection|branch package/i);
 
   assert.match(safety, /get_account_status.*credit balance.*trial.*spending limit/is);
@@ -215,6 +217,79 @@ test('the package explains the customer-facing account and library journey', () 
   assert.match(safety, /confirmation.*authorizes exactly one.*paid attempt/is);
   assert.match(safety, /refund.*does not.*restore.*authorization/is);
   assert.match(safety, /replacement attempt.*fresh exact quote.*new explicit approval/is);
+});
+
+test('the package ships current setup, privacy, workflow, and recovery guides', () => {
+  const guideNames = [
+    'chatgpt.md',
+    'claude.md',
+    'codex.md',
+    'generic-mcp.md',
+    'privacy-and-permissions.md',
+    'troubleshooting.md',
+    'how-it-works.md',
+  ];
+
+  for (const guideName of guideNames) {
+    const guidePath = path.join(pluginRoot, 'docs', guideName);
+    assert.ok(existsSync(guidePath), `${guideName} must exist`);
+    const guide = read(`docs/${guideName}`);
+    assert.match(guide, /Last reviewed: 2026-08-28/);
+    assert.match(guide, /!\[[^\]]{12,}\]\(\.\.\/assets\//, `${guideName} needs a useful visual`);
+    assert.match(guide, /not (?:a )?native[^.\n]{0,40}(?:capture|proof)/i, `${guideName} must label the visual boundary`);
+  }
+
+  const claude = read('docs/claude.md');
+  assert.match(claude, /Free, Pro, Max, Team, and Enterprise/i);
+  assert.match(claude, /Free users?[^.]*limited to one custom connector/i);
+  assert.match(claude, /Customize[^\n]*Connectors[^\n]*\+[^\n]*Add custom connector/i);
+  assert.match(claude, /Organization settings[^\n]*Connectors[^\n]*Add[^\n]*Custom[^\n]*Web/i);
+  assert.match(claude, /members?[\s\S]*Customize[^\n]*Connectors[^\n]*Connect/i);
+  assert.match(claude, /https:\/\/support\.claude\.com\/en\/articles\/11175166-get-started-with-custom-connectors-using-remote-mcp/);
+  assert.doesNotMatch(claude, /support\.anthropic\.com|11503834/);
+  assert.doesNotMatch(claude, /claude_desktop_config\.json/);
+
+  const chatgpt = read('docs/chatgpt.md');
+  assert.match(chatgpt, /Business and Enterprise\/Edu/i);
+  assert.match(chatgpt, /Pro[^\n]*(?:read\/fetch|read and fetch)/i);
+  assert.match(chatgpt, /setup guide to validate|validate this setup/i);
+  assert.match(chatgpt, /https:\/\/help\.openai\.com\/en\/articles\/12584461-developer-mode-apps-and-full-mcp-connectors-in-chatgpt-beta/);
+  assert.doesNotMatch(chatgpt, /Designed for ChatGPT|works with ChatGPT|available in ChatGPT/i);
+
+  const codex = read('docs/codex.md');
+  assert.match(codex, /codex plugin marketplace add camgraphe\/MaxVideoAi --ref maxvideoai-plugin-v0\.2\.0/);
+  assert.match(codex, /codex plugin add maxvideoai@maxvideoai/);
+  assert.match(codex, /package\/repository installation instructions/i);
+  assert.match(codex, /not external marketplace approval/i);
+  assert.match(codex, /\$plan/);
+  assert.match(codex, /\$generate/);
+
+  const genericMcp = read('docs/generic-mcp.md');
+  assert.match(genericMcp, /https:\/\/api\.maxvideoai\.com\/mcp/);
+  assert.match(genericMcp, /Streamable HTTP/i);
+  assert.match(genericMcp, /client-specific compatibility must be verified independently/i);
+  assert.match(genericMcp, /Do not (?:add|append)[^.\n]*token[^.\n]*query string[^.\n]*password[^.\n]*API key/i);
+  assert.doesNotMatch(genericMcp, /https:\/\/api\.maxvideoai\.com\/mcp[?&]/);
+
+  const privacy = read('docs/privacy-and-permissions.md');
+  assert.match(privacy, /What can MaxVideoAI read/i);
+  assert.match(privacy, /What can it write/i);
+  assert.match(privacy, /What spends credits/i);
+  assert.match(privacy, /Planning[^.]*do not spend credits/i);
+  assert.match(privacy, /explicit approval[^.]*exact prepared quote[^.]*exactly one paid generation attempt/i);
+  assert.match(privacy, /private references[^.]*MaxVideoAI Library/i);
+  assert.match(privacy, /revoke[^.]*OAuth connection/i);
+
+  const troubleshooting = read('docs/troubleshooting.md');
+  assert.match(troubleshooting, /response (?:stopped|times out)[\s\S]*do not (?:create|submit|approve)[^\n]*(?:another|fresh|again)/i);
+  assert.match(troubleshooting, /refund[^.]*does not authorize[^.]*replacement/i);
+  assert.match(troubleshooting, /fresh exact quote[^.]*new explicit approval/i);
+  assert.match(troubleshooting, /support@maxvideoai\.com/);
+
+  const howItWorks = read('docs/how-it-works.md');
+  assert.match(howItWorks, /\$plan[^.]*without spending credits/i);
+  assert.match(howItWorks, /\$generate[^.]*exact quote[^.]*explicit approval[^.]*exactly one paid attempt/i);
+  assert.match(howItWorks, /recover[^.]*accepted job[^.]*instead of[^.]*submitting another/i);
 });
 
 test('the packaged Skill and plugin pass the repository authoring validators', () => {
@@ -270,9 +345,9 @@ test('the plugin is a local thin package without stale facts or an embedded UI',
   for (const file of filesAt(pluginRoot)) {
     assert.ok(statSync(file).isFile());
     assert.doesNotMatch(path.extname(file), /^\.(?:tsx?|jsx?|css|html)$/i, file);
-    if (path.basename(file) === 'LICENSE') continue;
+    if (path.basename(file) === 'LICENSE' || /\.(?:gif|jpe?g|png|webp)$/i.test(file)) continue;
     const contents = readFileSync(file, 'utf8');
-    assert.doesNotMatch(contents, /(?:\$\s*\d|€\s*\d|api[_ -]?key|client[_ -]?secret|bearer\s+\S+|provider credential|localhost|127\.0\.0\.1)/i, file);
+    assert.doesNotMatch(contents, /(?:\$\s*\d|€\s*\d|(?:api[_ -]?key|client[_ -]?secret)\s*[:=]\s*\S+|bearer\s+\S+|provider credential|localhost|127\.0\.0\.1)/i, file);
     assert.doesNotMatch(contents, /(?:marketplace (?:submission|listing)|publicly available|live in (?:Codex|Claude)|installed and verified)/i, file);
     assert.doesNotMatch(contents, /^\|.*\|$/m, file);
   }
