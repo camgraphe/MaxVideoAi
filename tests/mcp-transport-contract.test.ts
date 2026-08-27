@@ -199,6 +199,7 @@ test('exact hosted staging exposes the complete operational tool inventory', asy
       'create_reference_upload_link',
       'create_topup_link',
       'get_account_status',
+      'get_generation_download',
       'get_generation_status',
       'get_model_details',
       'list_media',

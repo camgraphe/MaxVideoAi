@@ -15,7 +15,11 @@ import {
   type MaxVideoAiMcpServices,
 } from '../frontend/src/server/mcp/server';
 
-const TEMPLATE_URI = 'ui://maxvideoai/generation-result-v2.html';
+const TEMPLATE_URI = 'ui://maxvideoai/generation-result-v3.html';
+const LEGACY_TEMPLATE_URIS = [
+  'ui://maxvideoai/generation-result-v1.html',
+  'ui://maxvideoai/generation-result-v2.html',
+] as const;
 
 const principal: AgentPrincipal = {
   userId: 'inline-viewer-owner',
@@ -70,8 +74,11 @@ function services(onStatusRead?: (jobId: string) => void): MaxVideoAiMcpServices
   };
 }
 
-async function connected(onStatusRead?: (jobId: string) => void) {
-  const server = createMaxVideoAiMcpServer(principal, services(onStatusRead), {
+async function connected(
+  onStatusRead?: (jobId: string) => void,
+  overrides: Partial<MaxVideoAiMcpServices> = {},
+) {
+  const server = createMaxVideoAiMcpServer(principal, { ...services(onStatusRead), ...overrides }, {
     paidGeneration: true,
     referenceUploads: false,
   });
@@ -144,6 +151,7 @@ test('generation presenter resource is a portable light and dark MCP App with na
   assert.match(html, /searchParams\.set\(['"]kind['"],\s*resultSurface\)/);
   assert.match(html, /searchParams\.set\(['"]job['"],\s*jobId\)/);
   assert.match(html, /const download\s*=\s*record\(result\?\.download\)/);
+  assert.match(html, /name:\s*['"]get_generation_download['"]/);
   assert.match(html, /downloadButton\.addEventListener\(['"]click['"]/);
   assert.match(html, /prefers-color-scheme:\s*dark/);
   assert.match(html, /MaxVideoAI/);
@@ -155,6 +163,68 @@ test('generation presenter resource is a portable light and dark MCP App with na
   assert.ok(ui?.csp?.resourceDomains?.includes('https://media.maxvideoai.com'));
   assert.ok(ui?.csp?.resourceDomains?.includes('https://cdn.maxvideoai.com'));
   assert.ok(ui?.csp?.resourceDomains?.every((origin) => !origin.includes('*')));
+});
+
+test('generation presenter keeps previous resource versions readable for existing conversations', async (t) => {
+  const session = await connected();
+  t.after(() => session.close());
+
+  const resources = await session.client.listResources();
+  for (const uri of LEGACY_TEMPLATE_URIS) {
+    assert.ok(resources.resources.some((resource) => resource.uri === uri));
+    const result = await session.client.readResource({ uri });
+    assert.equal(result.contents.length, 1);
+    assert.equal(result.contents[0]?.uri, uri);
+    assert.equal(result.contents[0]?.mimeType, 'text/html;profile=mcp-app');
+    assert.match(result.contents[0]?.text ?? '', /MaxVideoAI generation result/);
+  }
+});
+
+test('generation download refresh is app-only and signs a fresh attachment on every call', async (t) => {
+  const statusReads: string[] = [];
+  let downloadReads = 0;
+  const session = await connected(
+    (jobId) => statusReads.push(jobId),
+    {
+      async createGenerationDownload() {
+        downloadReads += 1;
+        return {
+          url: `https://videohub-uploads-us.s3.amazonaws.com/signed/completed-video.mp4?signature=fresh-${downloadReads}`,
+          filename: 'maxvideoai-completed-video-job.mp4',
+          expiresAt: `2026-08-2${7 + downloadReads}T10:00:00.000Z`,
+        };
+      },
+    },
+  );
+  t.after(() => session.close());
+
+  const tools = await session.client.listTools();
+  const refresh = tools.tools.find((tool) => tool.name === 'get_generation_download');
+  assert.ok(refresh);
+  assert.deepEqual(refresh.annotations, {
+    readOnlyHint: true,
+    destructiveHint: false,
+    openWorldHint: false,
+    idempotentHint: true,
+  });
+  assert.deepEqual((refresh._meta?.ui as { visibility?: string[] } | undefined)?.visibility, ['app']);
+  assert.equal(refresh._meta?.['openai/visibility'], 'private');
+
+  const first = await session.client.callTool({
+    name: 'get_generation_download',
+    arguments: { jobId: 'completed-video-job' },
+  });
+  const second = await session.client.callTool({
+    name: 'get_generation_download',
+    arguments: { jobId: 'completed-video-job' },
+  });
+
+  assert.equal(first.isError, undefined);
+  assert.equal(second.isError, undefined);
+  assert.match(String(first.structuredContent?.download && JSON.stringify(first.structuredContent.download)), /fresh-1/);
+  assert.match(String(second.structuredContent?.download && JSON.stringify(second.structuredContent.download)), /fresh-2/);
+  assert.deepEqual(statusReads, ['completed-video-job', 'completed-video-job']);
+  assert.equal(downloadReads, 2);
 });
 
 test('generation presenter reuses the owned recovery service and preserves non-UI links', async (t) => {
@@ -182,6 +252,7 @@ test('generation presenter reuses the owned recovery service and preserves non-U
 test('generation presenter opens the targeted recent render and downloads without an external handoff', async () => {
   const externalOpens: Array<{ href: string; redirectUrl: boolean }> = [];
   const nativeDownloads: Array<{ href: string; filename: string }> = [];
+  const toolCalls: Array<{ name: string; arguments: { jobId: string } }> = [];
   const toolOutput = {
     ...buildAgentGenerationRecovery(completedVideoStatus(), 'https://maxvideoai-mcp-staging.vercel.app/account/connections'),
     download: {
@@ -194,6 +265,34 @@ test('generation presenter opens the targeted recent render and downloads withou
     runScripts: 'dangerously',
     url: 'https://web-sandbox.oaiusercontent.com/',
     beforeParse(window) {
+      Object.defineProperty(window, 'postMessage', {
+        configurable: true,
+        value(message: { id?: number; method?: string; params?: { name?: string; arguments?: { jobId?: string } } }) {
+          if (message.method !== 'tools/call' || message.id === undefined) return;
+          toolCalls.push({
+            name: String(message.params?.name),
+            arguments: { jobId: String(message.params?.arguments?.jobId) },
+          });
+          window.setTimeout(() => {
+            window.dispatchEvent(new window.MessageEvent('message', {
+              source: window,
+              data: {
+                jsonrpc: '2.0',
+                id: message.id,
+                result: {
+                  structuredContent: {
+                    download: {
+                      url: 'https://videohub-uploads-us.s3.amazonaws.com/signed/completed-video.mp4?signature=fresh-click',
+                      filename: 'maxvideoai-completed-video-job.mp4',
+                      expiresAt: '2026-08-28T10:00:00.000Z',
+                    },
+                  },
+                },
+              },
+            }));
+          }, 0);
+        },
+      });
       Object.defineProperty(window, 'openai', {
         configurable: true,
         value: {
@@ -229,9 +328,13 @@ test('generation presenter opens the targeted recent render and downloads withou
   assert.equal(externalOpens[0]?.redirectUrl, false);
 
   downloadButton.click();
-  await new Promise((resolve) => setImmediate(resolve));
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  assert.deepEqual(toolCalls, [{
+    name: 'get_generation_download',
+    arguments: { jobId: 'completed-video-job' },
+  }]);
   assert.deepEqual(nativeDownloads, [{
-    href: 'https://videohub-uploads-us.s3.amazonaws.com/signed/completed-video.mp4?signature=valid',
+    href: 'https://videohub-uploads-us.s3.amazonaws.com/signed/completed-video.mp4?signature=fresh-click',
     filename: 'maxvideoai-completed-video-job.mp4',
   }]);
   assert.equal(externalOpens.length, 1);

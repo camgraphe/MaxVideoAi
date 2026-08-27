@@ -16,6 +16,10 @@ The assistant owns the conversation and creative reasoning. MaxVideoAI supplies 
 
 The only custom chat UI is a decoupled result presenter for an already completed owned generation. `present_generation` renders a native video player or image card in MCP Apps-compatible hosts. It never owns creative input, model choice, pricing, approval, generation, polling, or retries. Existing text, resource links, and MaxVideoAI library destinations remain the universal fallback.
 
+The current presenter template uses `ui://maxvideoai/generation-result-v3.html`. Because hosts and existing conversations may cache a tool descriptor, the server must keep every previously published presenter URI readable; `v1` and `v2` are compatibility resources, not the current template. A widget change publishes a new URI instead of replacing the bytes behind the current cache key.
+
+Generated media is durable in the connected MaxVideoAI account. Direct S3 attachment URLs remain short-lived credentials. The result widget calls the app-only, read-only `get_generation_download` tool when the user clicks **Download**, revalidates ownership, and creates a fresh attachment URL at that moment. Do not solve return visits by publishing a multi-day storage credential: preserve the job/library destination and refresh the download on demand.
+
 One hosted OAuth-protected MCP server serves every client. Client-specific plugin or skill packages add installation instructions and workflow guidance; they must not fork business logic or the model catalogue.
 
 ## Source-of-truth rule

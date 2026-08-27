@@ -72,7 +72,7 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
   assert.deepEqual(paidTools.map((tool) => tool.name), [
     'get_account_status', 'list_models', 'get_model_details', 'recommend_models',
     'calculate_project_budget', 'prepare_generation',
-    'confirm_generation', 'get_generation_status', 'list_recent_generations', 'present_generation', 'create_topup_link',
+    'confirm_generation', 'get_generation_status', 'list_recent_generations', 'get_generation_download', 'present_generation', 'create_topup_link',
   ]);
   const annotations = Object.fromEntries(paidTools.map((tool) => [tool.name, tool.annotations]));
   assert.deepEqual(annotations.confirm_generation, {
@@ -83,7 +83,7 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
   });
   for (const name of [
     'get_account_status', 'list_models', 'get_model_details', 'recommend_models',
-    'calculate_project_budget', 'prepare_generation', 'get_generation_status', 'list_recent_generations', 'present_generation',
+    'calculate_project_budget', 'prepare_generation', 'get_generation_status', 'list_recent_generations', 'get_generation_download', 'present_generation',
   ]) {
     assert.equal(record(annotations[name]).readOnlyHint, true);
     assert.equal(record(annotations[name]).destructiveHint, false);

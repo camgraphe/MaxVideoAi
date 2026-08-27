@@ -1,6 +1,10 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
-export const GENERATION_RESULT_APP_URI = 'ui://maxvideoai/generation-result-v2.html';
+export const GENERATION_RESULT_APP_URI = 'ui://maxvideoai/generation-result-v3.html';
+export const LEGACY_GENERATION_RESULT_APP_URIS = [
+  'ui://maxvideoai/generation-result-v1.html',
+  'ui://maxvideoai/generation-result-v2.html',
+] as const;
 
 const FIXED_MEDIA_ORIGINS = [
   'https://cdn.maxvideoai.com',
@@ -264,6 +268,8 @@ export function buildGenerationResultAppHtml(): string {
       const openButton = document.getElementById('open');
       let downloadUrl = null;
       let downloadName = 'maxvideoai-generation';
+      let downloadExpiresAt = null;
+      let currentJobId = null;
       let openUrl = null;
       let requestId = 1;
       let initialized = false;
@@ -349,7 +355,11 @@ export function buildGenerationResultAppHtml(): string {
         downloadName = typeof download?.filename === 'string' && download.filename.length <= 160
           ? download.filename
           : 'maxvideoai-generation';
-        downloadButton.disabled = !downloadUrl;
+        downloadExpiresAt = typeof download?.expiresAt === 'string' ? download.expiresAt : null;
+        currentJobId = typeof result?.jobId === 'string' && result.jobId.length <= 256
+          ? result.jobId
+          : null;
+        downloadButton.disabled = !isComplete || !currentJobId;
 
         video.pause();
         video.removeAttribute('src');
@@ -454,16 +464,56 @@ export function buildGenerationResultAppHtml(): string {
         void request('ui/open-link', { url: openUrl });
       });
 
-      downloadButton.addEventListener('click', async () => {
-        if (!downloadUrl) return;
+      function usableDownloadUrl() {
+        if (!downloadUrl) return null;
+        const expiresAt = Date.parse(downloadExpiresAt || '');
+        return Number.isFinite(expiresAt) && expiresAt > Date.now() + 10_000
+          ? downloadUrl
+          : null;
+      }
+
+      function startDownload(url, filename) {
         const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = downloadName;
+        link.href = url;
+        link.download = filename;
         link.rel = 'noopener noreferrer';
         link.hidden = true;
         document.body.appendChild(link);
         link.click();
         link.remove();
+      }
+
+      async function refreshDownload() {
+        if (!currentJobId) return null;
+        const result = await request('tools/call', {
+          name: 'get_generation_download',
+          arguments: { jobId: currentJobId },
+        });
+        const structured = record(record(result)?.structuredContent);
+        const download = record(structured?.download);
+        const freshUrl = safeUrl(download?.url);
+        if (!freshUrl) return null;
+        downloadUrl = freshUrl;
+        downloadName = typeof download?.filename === 'string' && download.filename.length <= 160
+          ? download.filename
+          : downloadName;
+        downloadExpiresAt = typeof download?.expiresAt === 'string' ? download.expiresAt : null;
+        return freshUrl;
+      }
+
+      downloadButton.addEventListener('click', async () => {
+        if (!currentJobId) return;
+        downloadButton.disabled = true;
+        const previousLabel = downloadButton.textContent;
+        downloadButton.textContent = 'Preparing…';
+        try {
+          const freshUrl = await refreshDownload().catch(() => null);
+          const url = freshUrl || usableDownloadUrl();
+          if (url) startDownload(url, downloadName);
+        } finally {
+          downloadButton.textContent = previousLabel;
+          downloadButton.disabled = false;
+        }
       });
 
       if (window.openai?.toolOutput) render(window.openai.toolOutput);
@@ -478,39 +528,42 @@ export function buildGenerationResultAppHtml(): string {
 export function registerGenerationResultApp(server: McpServer): void {
   const resourceDomains = generationResultAppResourceDomains();
   const redirectDomains = generationResultAppRedirectDomains();
-  server.registerResource(
-    'maxvideoai-generation-result',
-    GENERATION_RESULT_APP_URI,
-    {
-      title: 'MaxVideoAI generation result',
-      description: 'Inline player for one completed MaxVideoAI generation.',
-      mimeType: 'text/html;profile=mcp-app',
-      _meta: {
-        ui: {
-          prefersBorder: true,
-          csp: { connectDomains: [], resourceDomains },
-        },
-      },
-    },
-    async () => ({
-      contents: [{
-        uri: GENERATION_RESULT_APP_URI,
+  const resourceUris = [GENERATION_RESULT_APP_URI, ...LEGACY_GENERATION_RESULT_APP_URIS];
+  for (const [index, resourceUri] of resourceUris.entries()) {
+    server.registerResource(
+      `maxvideoai-generation-result-${index + 1}`,
+      resourceUri,
+      {
+        title: 'MaxVideoAI generation result',
+        description: 'Inline player for one completed MaxVideoAI generation.',
         mimeType: 'text/html;profile=mcp-app',
-        text: buildGenerationResultAppHtml(),
         _meta: {
           ui: {
             prefersBorder: true,
             csp: { connectDomains: [], resourceDomains },
           },
-          'openai/widgetDescription': 'A playable MaxVideoAI generation saved in the connected account.',
-          'openai/widgetPrefersBorder': true,
-          'openai/widgetCSP': {
-            connect_domains: [],
-            resource_domains: resourceDomains,
-            redirect_domains: redirectDomains,
-          },
         },
-      }],
-    }),
-  );
+      },
+      async () => ({
+        contents: [{
+          uri: resourceUri,
+          mimeType: 'text/html;profile=mcp-app',
+          text: buildGenerationResultAppHtml(),
+          _meta: {
+            ui: {
+              prefersBorder: true,
+              csp: { connectDomains: [], resourceDomains },
+            },
+            'openai/widgetDescription': 'A playable MaxVideoAI generation saved in the connected account.',
+            'openai/widgetPrefersBorder': true,
+            'openai/widgetCSP': {
+              connect_domains: [],
+              resource_domains: resourceDomains,
+              redirect_domains: redirectDomains,
+            },
+          },
+        }],
+      }),
+    );
+  }
 }

@@ -1143,7 +1143,7 @@ test('default registry remains five discovery tools and the explicit paid gate e
   assert.deepEqual(tools.map((tool) => tool.name), [
     'get_account_status', 'list_models', 'get_model_details', 'recommend_models',
     'calculate_project_budget', 'prepare_generation', 'confirm_generation',
-    'get_generation_status', 'list_recent_generations', 'present_generation', 'create_topup_link',
+    'get_generation_status', 'list_recent_generations', 'get_generation_download', 'present_generation', 'create_topup_link',
   ]);
   const confirm = tools.find((tool) => tool.name === 'confirm_generation');
   assert.deepEqual(confirm?.annotations, {

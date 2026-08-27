@@ -23,6 +23,8 @@ type GenerationDownloadDependencies = {
   createSignedDownloadUrl?: typeof createSignedDownloadUrl;
 };
 
+type GenerationDownloadServices = Pick<MaxVideoAiMcpServices, 'createGenerationDownload'>;
+
 function primaryOutputUrl(recovery: AgentGenerationRecovery): string | null {
   if (recovery.status !== 'completed' || !recovery.result) return null;
   return recovery.result.surface === 'video'
@@ -72,6 +74,16 @@ export async function createGenerationDownloadDescriptor(
   };
 }
 
+export async function resolveGenerationDownload(
+  recovery: AgentGenerationRecovery,
+  principal: AgentPrincipal,
+  services: GenerationDownloadServices,
+): Promise<AgentGenerationDownload | null> {
+  return services.createGenerationDownload
+    ? services.createGenerationDownload(recovery, principal)
+    : createGenerationDownloadDescriptor(recovery);
+}
+
 export function registerPresentGenerationTool(
   server: McpServer,
   principal: AgentPrincipal,
@@ -105,9 +117,7 @@ export function registerPresentGenerationTool(
         const recovery = await services.getGenerationStatus!(input, principal);
         let download: AgentGenerationDownload | null = null;
         try {
-          download = services.createGenerationDownload
-            ? await services.createGenerationDownload(recovery, principal)
-            : await createGenerationDownloadDescriptor(recovery);
+          download = await resolveGenerationDownload(recovery, principal, services);
         } catch {
           console.error('[mcp] failed to prepare a direct generation download', {
             jobId: recovery.jobId,

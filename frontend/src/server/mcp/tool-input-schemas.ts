@@ -22,6 +22,7 @@ export const MCP_TOOL_INPUT_SCHEMAS = {
   prepare_generation: prepareGenerationInputSchema,
   confirm_generation: confirmGenerationInputSchema,
   get_generation_status: getGenerationStatusInputSchema,
+  get_generation_download: getGenerationStatusInputSchema,
   list_recent_generations: listRecentGenerationsInputSchema,
   present_generation: getGenerationStatusInputSchema,
   create_topup_link: createTopupLinkInputSchema,

@@ -392,7 +392,7 @@ test('recent facade delegates strict cursor pagination and exact surface/status 
   );
 });
 
-test('operational gate registers the exact thirteen-tool order and default registry remains five tools', async (t) => {
+test('operational gate registers the exact fourteen-tool order and default registry remains five tools', async (t) => {
   const gated = await connected({}, { paidGeneration: true, referenceUploads: true });
   const defaults = await connected({}, { paidGeneration: false, referenceUploads: false });
   t.after(async () => {
@@ -411,6 +411,7 @@ test('operational gate registers the exact thirteen-tool order and default regis
     'confirm_generation',
     'get_generation_status',
     'list_recent_generations',
+    'get_generation_download',
     'present_generation',
     'create_topup_link',
   ]);

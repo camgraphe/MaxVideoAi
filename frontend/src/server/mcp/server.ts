@@ -74,6 +74,7 @@ import { registerConfirmGenerationTool } from '@/server/mcp/tools/confirm-genera
 import { registerCreateTopupLinkTool } from '@/server/mcp/tools/create-topup-link';
 import { registerCreateReferenceUploadLinkTool } from '@/server/mcp/tools/create-reference-upload-link';
 import { registerGetGenerationStatusTool } from '@/server/mcp/tools/get-generation-status';
+import { registerGetGenerationDownloadTool } from '@/server/mcp/tools/get-generation-download';
 import { registerListModelsTool } from '@/server/mcp/tools/list-models';
 import { registerGetModelDetailsTool } from '@/server/mcp/tools/get-model-details';
 import { registerListMediaTool } from '@/server/mcp/tools/list-media';
@@ -243,6 +244,7 @@ export function createMaxVideoAiMcpServer(
     registerConfirmGenerationTool(server, principal, services);
     registerGetGenerationStatusTool(server, principal, services);
     registerListRecentGenerationsTool(server, principal, services);
+    registerGetGenerationDownloadTool(server, principal, services);
     registerPresentGenerationTool(server, principal, services);
     registerCreateTopupLinkTool(server, principal, services);
   }

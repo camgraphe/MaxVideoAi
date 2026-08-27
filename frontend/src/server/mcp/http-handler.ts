@@ -90,6 +90,7 @@ const AUDITABLE_TOOL_NAMES = new Set([
   'calculate_project_budget',
   'prepare_generation',
   'confirm_generation',
+  'get_generation_download',
   'get_generation_status',
   'list_recent_generations',
   'present_generation',
