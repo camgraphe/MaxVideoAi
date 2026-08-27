@@ -33,6 +33,7 @@ import {
   createConfirmGenerationService,
   type ConfirmGenerationInput,
 } from '@/server/agent-api/confirm-generation';
+import { submitReservedPaidGeneration } from '@/server/agent-api/paid-generation-execution';
 import {
   createPrepareGenerationService,
   type PreparedGeneration,
@@ -181,6 +182,11 @@ export function createDefaultMaxVideoAiMcpServices(
             resolvedReferences,
             generationEnvironmentFor(principal),
           ),
+        submitPaidGeneration: (execution) => submitReservedPaidGeneration(
+          execution,
+          undefined,
+          { providerEnv: generationEnvironmentFor(principal).providerEnv },
+        ),
       },
     )(input, principal),
     getGenerationStatus: (input, principal) => getAgentGenerationStatus(input, principal, {

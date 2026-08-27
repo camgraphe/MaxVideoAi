@@ -1002,6 +1002,11 @@ test('P7 paid continuation receives quoteId idempotency and immutable quoted bil
   });
 
   let videoCalls = 0;
+  const providerEnv = Object.freeze({
+    GOOGLE_VERTEX_VEO_ENABLED: 'true',
+    GOOGLE_VERTEX_VEO_PUBLIC_ROUTING_ENABLED: 'true',
+    GOOGLE_VERTEX_VEO_ADMIN_ONLY: 'false',
+  });
   const videoOutcome = await submitReservedPaidGeneration(execution(videoRequest, videoQuote), {
     executeVideo: async (options) => {
       videoCalls += 1;
@@ -1010,10 +1015,11 @@ test('P7 paid continuation receives quoteId idempotency and immutable quoted bil
       assert.equal(options.walletReservation, 'already_reserved');
       assert.equal(options.preReservedInitialState.jobId, QUOTE_ID);
       assert.equal(options.trustedQuotedBilling.pricing, videoQuote.pricingSnapshot.canonicalPricing);
+      assert.equal(options.providerEnv, providerEnv);
       return { body: { ok: true, jobId: QUOTE_ID, status: 'pending' } };
     },
     executeImage: async () => assert.fail('video must not enter image execution'),
-  });
+  }, { providerEnv });
   assert.deepEqual(videoOutcome, { kind: 'accepted' });
   assert.equal(videoCalls, 1);
 

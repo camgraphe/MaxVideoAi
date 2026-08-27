@@ -7,7 +7,7 @@ import {
   isLumaAgentsVideoModeSupported,
 } from './luma-agents/model-map';
 
-type RoutingEnv = Partial<Record<
+export type VideoProviderRoutingEnv = Readonly<Partial<Record<
   | 'KLING_DIRECT_ENABLED'
   | 'KLING_DIRECT_PUBLIC_ROUTING_ENABLED'
   | 'KLING_DIRECT_FALLBACK_TO_FAL_ENABLED'
@@ -29,7 +29,7 @@ type RoutingEnv = Partial<Record<
   | 'GOOGLE_VERTEX_OMNI_PUBLIC_ROUTING_ENABLED'
   | 'GOOGLE_VERTEX_OMNI_ADMIN_ONLY',
   string | undefined
->>;
+>>>;
 
 export type VideoProviderRoutingPlan =
   | {
@@ -69,7 +69,10 @@ function flagEnabled(value: string | undefined): boolean {
   return ['1', 'true', 'yes', 'on'].includes((value ?? '').trim().toLowerCase());
 }
 
-function readEnv(env: RoutingEnv | undefined, key: keyof RoutingEnv): string | undefined {
+function readEnv(
+  env: VideoProviderRoutingEnv | undefined,
+  key: keyof VideoProviderRoutingEnv,
+): string | undefined {
   return env?.[key] ?? process.env[key];
 }
 
@@ -81,7 +84,7 @@ export function resolveVideoProviderRoutingPlan(params: {
   engineId: string;
   mode: Mode | string;
   isAdmin: boolean;
-  env?: RoutingEnv;
+  env?: VideoProviderRoutingEnv;
 }): VideoProviderRoutingPlan {
   const falOnly: VideoProviderRoutingPlan = { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false };
   if (isGoogleVertexOmniEngine(params.engineId)) {

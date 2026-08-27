@@ -251,6 +251,51 @@ test('Seedance 2.5 accepts proven ModelArk modes with the Ark key but rejects V2
   }
 });
 
+test('trusted paid routing honors a principal-scoped Veo environment while public routing stays closed', { concurrency: false }, () => {
+  const entry = getFalEngineById('veo-3-1-lite');
+  assert.ok(entry);
+  const original = {
+    enabled: process.env.GOOGLE_VERTEX_VEO_ENABLED,
+    publicRouting: process.env.GOOGLE_VERTEX_VEO_PUBLIC_ROUTING_ENABLED,
+    adminOnly: process.env.GOOGLE_VERTEX_VEO_ADMIN_ONLY,
+  };
+  process.env.GOOGLE_VERTEX_VEO_ENABLED = 'false';
+  process.env.GOOGLE_VERTEX_VEO_PUBLIC_ROUTING_ENABLED = 'false';
+  process.env.GOOGLE_VERTEX_VEO_ADMIN_ONLY = 'true';
+
+  try {
+    const result = resolveTrustedPaidGenerateRouteContext({
+      body: {},
+      engine: entry.engine,
+      jobId: 'job_private_veo_canary',
+      mode: 't2v',
+      providerEnv: {
+        GOOGLE_VERTEX_VEO_ENABLED: 'true',
+        GOOGLE_VERTEX_VEO_PUBLIC_ROUTING_ENABLED: 'true',
+        GOOGLE_VERTEX_VEO_ADMIN_ONLY: 'false',
+      },
+    });
+
+    assert.equal(result.ok, true);
+    if (!result.ok) return;
+    assert.equal(result.context.providerKey, 'google_vertex_veo_direct');
+    assert.deepEqual(result.context.providerRoutingPlan, {
+      kind: 'google_vertex_veo_primary',
+      primaryProvider: 'google_vertex_veo_direct',
+    });
+    assert.equal(process.env.GOOGLE_VERTEX_VEO_ENABLED, 'false');
+    assert.equal(process.env.GOOGLE_VERTEX_VEO_PUBLIC_ROUTING_ENABLED, 'false');
+    assert.equal(process.env.GOOGLE_VERTEX_VEO_ADMIN_ONLY, 'true');
+  } finally {
+    if (original.enabled === undefined) delete process.env.GOOGLE_VERTEX_VEO_ENABLED;
+    else process.env.GOOGLE_VERTEX_VEO_ENABLED = original.enabled;
+    if (original.publicRouting === undefined) delete process.env.GOOGLE_VERTEX_VEO_PUBLIC_ROUTING_ENABLED;
+    else process.env.GOOGLE_VERTEX_VEO_PUBLIC_ROUTING_ENABLED = original.publicRouting;
+    if (original.adminOnly === undefined) delete process.env.GOOGLE_VERTEX_VEO_ADMIN_ONLY;
+    else process.env.GOOGLE_VERTEX_VEO_ADMIN_ONLY = original.adminOnly;
+  }
+});
+
 test('every enabled admin-only Seedance profile rejects a non-admin before every config and billing boundary', { concurrency: false }, async () => {
   const original = {
     bytePlusEnabled: ENV.BYTEPLUS_ARK_ENABLED,

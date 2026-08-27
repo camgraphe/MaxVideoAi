@@ -24,6 +24,7 @@ import { requiresBytePlusSeedanceEarlyGate } from '@/server/video-providers/byte
 import {
   resolveVideoProviderRoutingPlan,
   shouldRouteKlingDirectSourceElementsToFal,
+  type VideoProviderRoutingEnv,
   type VideoProviderRoutingPlan,
 } from '@/server/video-providers/router';
 import { isGoogleVertexOmniEngine } from '@/server/video-providers/google-vertex-omni/model-map';
@@ -69,8 +70,9 @@ export function resolveTrustedPaidGenerateRouteContext(params: {
   engine: EngineCaps;
   jobId: string;
   mode: Mode;
+  providerEnv?: VideoProviderRoutingEnv;
 }): GenerateRouteContextResult {
-  const { body, engine, jobId, mode } = params;
+  const { body, engine, jobId, mode, providerEnv } = params;
   let bytePlusProfile: BytePlusSeedanceProfile | null;
 
   try {
@@ -111,7 +113,7 @@ export function resolveTrustedPaidGenerateRouteContext(params: {
 
   let providerRoutingPlan: VideoProviderRoutingPlan = isBytePlusV1a
     ? { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false }
-    : resolveVideoProviderRoutingPlan({ engineId: engine.id, mode, isAdmin: false });
+    : resolveVideoProviderRoutingPlan({ engineId: engine.id, mode, isAdmin: false, env: providerEnv });
   if (shouldRouteKlingDirectSourceElementsToFal({
     providerRoutingPlan,
     elementCount: Array.isArray(body.elements) ? body.elements.length : 0,

@@ -13,6 +13,7 @@ import {
 } from '@/server/images/image-initial-job';
 import type { TrustedQuotedBilling } from '@/server/generations/initial-job-reservation';
 import { paidProviderSubmissionDependencies } from '@/server/generations/paid-provider-execution';
+import type { VideoProviderRoutingEnv } from '@/server/video-providers/router';
 
 import {
   reserveIncludedTrialGenerationInitialJob as reserveIncludedTrialGenerationWithPricing,
@@ -69,6 +70,11 @@ export type PaidVideoContinuationOptions = {
   walletReservation: 'already_reserved';
   preReservedInitialState: Extract<PaidGenerationExecution['trustedInitialState'], { walletChargeReserved: true }>;
   trustedQuotedBilling: TrustedQuotedBilling;
+  providerEnv?: VideoProviderRoutingEnv;
+};
+
+export type PaidGenerationSubmissionOptions = {
+  providerEnv?: VideoProviderRoutingEnv;
 };
 
 export type PaidImageContinuationOptions = {
@@ -401,6 +407,7 @@ async function rejectedOutcome(
 export async function submitReservedPaidGeneration(
   execution: PaidGenerationExecution,
   dependencies: PaidGenerationSubmissionDependencies = defaultSubmissionDependencies,
+  submissionOptions: PaidGenerationSubmissionOptions = {},
 ): Promise<PaidGenerationProviderOutcome> {
   const trustedQuotedBilling: TrustedQuotedBilling = {
     pricing: execution.canonicalPricing as unknown as PricingSnapshot,
@@ -420,6 +427,7 @@ export async function submitReservedPaidGeneration(
         walletReservation: 'already_reserved',
         preReservedInitialState: execution.trustedInitialState,
         trustedQuotedBilling,
+        providerEnv: submissionOptions.providerEnv,
       });
       if (result.body.ok === true) {
         return typeof result.body.videoUrl === 'string'

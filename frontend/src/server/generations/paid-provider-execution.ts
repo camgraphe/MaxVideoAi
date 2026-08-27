@@ -47,6 +47,7 @@ async function executePaidVideoContinuation(
     engine: options.engine,
     jobId,
     mode,
+    providerEnv: 'providerEnv' in options ? options.providerEnv : undefined,
   });
   if (!routeContext.ok) return { status: routeContext.status, body: routeContext.body };
   const requestOptions = buildGenerateRequestOptions({
