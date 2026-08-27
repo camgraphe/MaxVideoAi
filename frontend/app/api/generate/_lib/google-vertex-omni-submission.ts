@@ -1,14 +1,14 @@
-import type { GeneratePayload, GenerateResult } from '@/lib/fal';
+import type { GeneratePayload } from '@/lib/fal';
 import { query } from '@/lib/db';
 import type { Mode, PricingSnapshot } from '@/types/engines';
-import { buildGoogleVertexOmniPayload } from '@/server/video-providers/google-vertex-omni/payload';
-import { getGoogleVertexOmniClient } from '@/server/video-providers/google-vertex-omni/client';
-import { estimateGoogleVertexOmniCost } from '@/server/video-providers/google-vertex-omni/cost';
 import {
-  classifyGoogleVertexOmniError,
-  GoogleVertexOmniError,
-  shouldFallbackFromGoogleVertexOmniSubmit,
-} from '@/server/video-providers/google-vertex-omni/errors';
+  buildGoogleVertexOmniOutputGcsUri,
+  buildGoogleVertexOmniPayload,
+} from '@/server/video-providers/google-vertex-omni/payload';
+import { getGoogleVertexOmniClient } from '@/server/video-providers/google-vertex-omni/client';
+import { stageGoogleVertexOmniPayloadMedia } from '@/server/video-providers/google-vertex-omni/media-input';
+import { estimateGoogleVertexOmniCost } from '@/server/video-providers/google-vertex-omni/cost';
+import { classifyGoogleVertexOmniError, GoogleVertexOmniError } from '@/server/video-providers/google-vertex-omni/errors';
 import { resolveGoogleVertexOmniLocation } from '@/server/video-providers/google-vertex-omni/location';
 import {
   GOOGLE_VERTEX_OMNI_PROVIDER,
@@ -16,16 +16,11 @@ import {
 } from '@/server/video-providers/google-vertex-omni/model-map';
 import {
   createProviderAttempt,
-  linkProviderFallbackAttempt,
   markProviderAttemptAccepted,
   markProviderAttemptFailed,
-  markProviderAttemptFinished,
 } from '@/server/video-providers/provider-attempts';
 import { rollbackPendingPayment } from './payment-rollback';
 import { buildUserFacingRefundDescription } from '@/server/user-facing-failure-messages';
-import { createProviderJobTracker } from './provider-job-tracker';
-import { submitFalGenerateTask, type FalGenerateSubmissionResult } from './fal-submission';
-import type { FalInputSummary } from './fal-request';
 import type { PaymentMode, PendingReceipt } from './initial-video-job';
 
 type QueryFn = <T = unknown>(sql: string, params?: unknown[]) => Promise<T[]>;
@@ -42,9 +37,10 @@ type LogMetricFn = (
 
 type GoogleVertexOmniSubmissionDeps = {
   getGoogleVertexOmniClientFn?: typeof getGoogleVertexOmniClient;
-  submitFalGenerateTaskFn?: typeof submitFalGenerateTask;
   queryFn?: QueryFn;
   rollbackPendingPaymentFn?: typeof rollbackPendingPayment;
+  inputGcsPrefix?: string;
+  outputGcsPrefix?: string;
 };
 
 export type GoogleVertexOmniGenerateSubmissionResult =
@@ -52,11 +48,6 @@ export type GoogleVertexOmniGenerateSubmissionResult =
       ok: true;
       kind: 'accepted';
       body: Record<string, unknown>;
-    }
-  | {
-      ok: true;
-      kind: 'fal_result';
-      generationResult: GenerateResult;
     }
   | {
       ok: false;
@@ -77,7 +68,7 @@ function userSafeGoogleVertexOmniMessage(errorClass: string): string {
   return 'The render could not start. Please retry later.';
 }
 
-async function markJobFailedBeforeFallback(params: {
+async function markJobFailedBeforeSubmit(params: {
   jobId: string;
   engineLabel: string;
   durationSec: number;
@@ -118,121 +109,6 @@ async function markJobFailedBeforeFallback(params: {
   }
 }
 
-function falProviderJobIdFromResult(result: FalGenerateSubmissionResult, getLastProviderJobId: () => string | null): string | null {
-  if (result.ok) {
-    return result.generationResult.providerJobId ?? getLastProviderJobId() ?? null;
-  }
-  const bodyProviderJobId = result.body.providerJobId;
-  return typeof bodyProviderJobId === 'string' && bodyProviderJobId.trim() ? bodyProviderJobId.trim() : getLastProviderJobId();
-}
-
-async function submitFalFromGoogleOmni(params: {
-  attemptIndex: number | null;
-  fallbackFromAttemptId: number | null;
-  fallbackReason?: string | null;
-  fallbackErrorCode?: string | null;
-  jobId: string;
-  engineId: string;
-  engineLabel: string;
-  prompt: string;
-  falPayload: GeneratePayload;
-  falInputSummary: FalInputSummary;
-  isLumaRay2: boolean;
-  batchId: string | null;
-  durationSec: number;
-  pendingReceipt: PendingReceipt | null;
-  paymentMode: PaymentMode;
-  walletChargeReserved: boolean;
-  queryFn: QueryFn;
-  submitFalGenerateTaskFn: typeof submitFalGenerateTask;
-  logMetricFn: LogMetricFn;
-}): Promise<GoogleVertexOmniGenerateSubmissionResult> {
-  const falAttempt =
-    params.attemptIndex === null
-      ? null
-      : await createProviderAttempt({
-          publicJobId: params.jobId,
-          attemptIndex: params.attemptIndex,
-          provider: 'fal',
-          providerModel: params.falPayload.engineId,
-          status: 'fallback_started',
-          requestSnapshot: {
-            fallbackFrom: GOOGLE_VERTEX_OMNI_PROVIDER,
-            fallbackReason: params.fallbackReason ?? null,
-            fallbackErrorCode: params.fallbackErrorCode ?? null,
-          },
-          queryFn: params.queryFn,
-        });
-  if (falAttempt && params.fallbackFromAttemptId) {
-    await linkProviderFallbackAttempt({
-      fromAttemptId: params.fallbackFromAttemptId,
-      toAttemptId: falAttempt.id,
-      queryFn: params.queryFn,
-    });
-  }
-  await params.queryFn(`UPDATE app_jobs SET provider = 'fal', updated_at = NOW() WHERE job_id = $1`, [params.jobId]);
-
-  const falTracker = createProviderJobTracker({
-    jobId: params.jobId,
-    providerKey: 'fal',
-    engineId: params.engineId,
-    prompt: params.prompt,
-    inputSummary: params.falInputSummary,
-    queryFn: params.queryFn,
-  });
-  const falSubmission = await params.submitFalGenerateTaskFn({
-    falPayload: params.falPayload,
-    jobId: params.jobId,
-    engineId: params.engineId,
-    engineLabel: params.engineLabel,
-    isLumaRay2: params.isLumaRay2,
-    batchId: params.batchId,
-    durationSec: params.durationSec,
-    pendingReceipt: params.pendingReceipt,
-    paymentMode: params.paymentMode,
-    walletChargeReserved: params.walletChargeReserved,
-    getLastProviderJobId: falTracker.getLastProviderJobId,
-    setLastProviderJobId: falTracker.setLastProviderJobId,
-    persistProviderJobId: falTracker.persistProviderJobId,
-    logMetricFn: params.logMetricFn,
-  });
-  const falProviderJobId = falProviderJobIdFromResult(falSubmission, falTracker.getLastProviderJobId);
-  if (falAttempt && falProviderJobId) {
-    await markProviderAttemptAccepted({
-      attemptId: falAttempt.id,
-      providerJobId: falProviderJobId,
-      responseSnapshot: falSubmission.ok ? falSubmission.generationResult : falSubmission.body,
-      queryFn: params.queryFn,
-    });
-  }
-  if (!falSubmission.ok) {
-    if (falAttempt) {
-      await markProviderAttemptFailed({
-        attemptId: falAttempt.id,
-        errorCode: typeof falSubmission.body.error === 'string' ? falSubmission.body.error : null,
-        errorClass: 'fal_fallback_failed',
-        fallbackEligible: false,
-        responseSnapshot: falSubmission.body,
-        queryFn: params.queryFn,
-      });
-    }
-    return falSubmission;
-  }
-  if (falAttempt && falSubmission.generationResult.status === 'completed') {
-    await markProviderAttemptFinished({
-      attemptId: falAttempt.id,
-      status: 'completed',
-      responseSnapshot: falSubmission.generationResult,
-      queryFn: params.queryFn,
-    });
-  }
-  return {
-    ok: true,
-    kind: 'fal_result',
-    generationResult: falSubmission.generationResult,
-  };
-}
-
 export async function submitGoogleVertexOmniGenerateTask(params: {
   jobId: string;
   userId: string;
@@ -250,10 +126,7 @@ export async function submitGoogleVertexOmniGenerateTask(params: {
   pendingReceipt: PendingReceipt | null;
   paymentMode: PaymentMode;
   walletChargeReserved: boolean;
-  fallbackToFalEnabled: boolean;
   falPayload: GeneratePayload;
-  falInputSummary: FalInputSummary;
-  isLumaRay2: boolean;
   batchId: string | null;
   groupId: string | null;
   iterationIndex: number | null;
@@ -266,7 +139,6 @@ export async function submitGoogleVertexOmniGenerateTask(params: {
 }): Promise<GoogleVertexOmniGenerateSubmissionResult> {
   const deps = params.deps ?? {};
   const getGoogleVertexOmniClientFn = deps.getGoogleVertexOmniClientFn ?? getGoogleVertexOmniClient;
-  const submitFalGenerateTaskFn = deps.submitFalGenerateTaskFn ?? submitFalGenerateTask;
   const queryFn = deps.queryFn ?? query;
   const rollbackPendingPaymentFn = deps.rollbackPendingPaymentFn ?? rollbackPendingPayment;
 
@@ -278,66 +150,34 @@ export async function submitGoogleVertexOmniGenerateTask(params: {
     falPayload: params.falPayload,
   });
   if (!support.supported) {
-    if (!params.fallbackToFalEnabled) {
-      const message = userSafeGoogleVertexOmniMessage('unsupported_params');
-      console.warn('[google-vertex-omni] unsupported direct request failed without fallback', {
-        jobId: params.jobId,
-        engineId: params.engineId,
-        mode: params.mode,
-        reason: support.reason,
-      });
-      await markJobFailedBeforeFallback({
-        jobId: params.jobId,
-        engineLabel: params.engineLabel,
-        durationSec: params.durationSec,
-        message,
-        pendingReceipt: params.pendingReceipt,
-        paymentMode: params.paymentMode,
-        walletChargeReserved: params.walletChargeReserved,
-        queryFn,
-        rollbackPendingPaymentFn,
-      });
-      params.logMetricFn('rejected', {
-        jobId: params.jobId,
-        errorCode: support.reason,
-        meta: { provider: GOOGLE_VERTEX_OMNI_PROVIDER, errorClass: 'unsupported_params' },
-      });
-      return {
-        ok: false,
-        status: 400,
-        body: {
-          ok: false,
-          error: support.reason,
-          message,
-        },
-      };
-    }
-    console.info('[google-vertex-omni] routing unsupported direct request to Fal', {
+    const message = userSafeGoogleVertexOmniMessage('unsupported_params');
+    console.warn('[google-vertex-omni] unsupported direct Google request', {
       jobId: params.jobId,
       engineId: params.engineId,
       mode: params.mode,
       reason: support.reason,
     });
-    return submitFalFromGoogleOmni({
-      attemptIndex: null,
-      fallbackFromAttemptId: null,
-      fallbackReason: support.reason,
+    await markJobFailedBeforeSubmit({
       jobId: params.jobId,
-      engineId: params.engineId,
       engineLabel: params.engineLabel,
-      prompt: params.prompt,
-      falPayload: params.falPayload,
-      falInputSummary: params.falInputSummary,
-      isLumaRay2: params.isLumaRay2,
-      batchId: params.batchId,
       durationSec: params.durationSec,
+      message,
       pendingReceipt: params.pendingReceipt,
       paymentMode: params.paymentMode,
       walletChargeReserved: params.walletChargeReserved,
       queryFn,
-      submitFalGenerateTaskFn,
-      logMetricFn: params.logMetricFn,
+      rollbackPendingPaymentFn,
     });
+    params.logMetricFn('rejected', {
+      jobId: params.jobId,
+      errorCode: support.reason,
+      meta: { provider: GOOGLE_VERTEX_OMNI_PROVIDER, errorClass: 'unsupported_params' },
+    });
+    return {
+      ok: false,
+      status: 400,
+      body: { ok: false, error: support.reason, message },
+    };
   }
 
   const route = support.route;
@@ -376,15 +216,45 @@ export async function submitGoogleVertexOmniGenerateTask(params: {
   });
 
   try {
+    const googleClient = getGoogleVertexOmniClientFn();
+    const inputGcsPrefix = (deps.inputGcsPrefix ?? (
+      process.env.GOOGLE_VERTEX_OMNI_INPUT_GCS_URI
+        ?? process.env.GOOGLE_VERTEX_INPUT_GCS_URI
+        ?? process.env.GOOGLE_VERTEX_VEO_INPUT_GCS_URI
+        ?? ''
+    )).trim();
+    const outputGcsPrefix = (deps.outputGcsPrefix ?? (
+      process.env.GOOGLE_VERTEX_OMNI_OUTPUT_GCS_URI
+        ?? process.env.GOOGLE_VERTEX_INPUT_GCS_URI
+        ?? process.env.GOOGLE_VERTEX_VEO_OUTPUT_GCS_URI
+        ?? process.env.GOOGLE_VERTEX_VEO_INPUT_GCS_URI
+        ?? ''
+    )).trim();
+    const hasMediaInputs = Boolean(
+      params.falPayload.imageUrl
+      || params.falPayload.videoUrl
+      || params.falPayload.referenceImages?.length
+    );
+    const googleFalPayload = hasMediaInputs
+      ? await stageGoogleVertexOmniPayloadMedia({
+          falPayload: params.falPayload,
+          inputGcsPrefix,
+          objectNamespace: `omni-inputs/${params.jobId}`,
+          accessToken: await googleClient.accessToken(),
+        })
+      : params.falPayload;
     const payload = await buildGoogleVertexOmniPayload({
       engineId: params.engineId,
       mode: params.mode,
       prompt: params.prompt,
       negativePrompt: params.negativePrompt,
       aspectRatio: params.aspectRatio,
-      falPayload: params.falPayload,
+      durationSec: params.durationSec,
+      resolution: '720p',
+      outputGcsUri: buildGoogleVertexOmniOutputGcsUri(outputGcsPrefix, params.jobId),
+      falPayload: googleFalPayload,
     });
-    const interaction = await getGoogleVertexOmniClientFn().createInteraction(payload);
+    const interaction = await googleClient.createInteraction(payload);
     const interactionId =
       typeof interaction.id === 'string' && interaction.id.trim()
         ? interaction.id.trim()
@@ -451,81 +321,52 @@ export async function submitGoogleVertexOmniGenerateTask(params: {
     };
   } catch (error) {
     const normalized = classifyGoogleVertexOmniError(error);
-    const fallbackEligible = shouldFallbackFromGoogleVertexOmniSubmit({
-      acceptedProviderJobId: null,
-      error,
-      fallbackToFalEnabled: params.fallbackToFalEnabled,
-    });
     await markProviderAttemptFailed({
       attemptId: googleAttempt.id,
       errorCode: normalized.code,
       errorClass: normalized.errorClass,
-      fallbackEligible,
+      fallbackEligible: false,
       responseSnapshot: normalized.raw,
       queryFn,
     });
 
-    if (!fallbackEligible) {
-      const message = userSafeGoogleVertexOmniMessage(normalized.errorClass);
-      console.warn('[google-vertex-omni] submit failed without fallback', {
-        jobId: params.jobId,
-        engineId: params.engineId,
-        status: normalized.status,
-        code: normalized.code,
-        errorClass: normalized.errorClass,
-      });
-      await markJobFailedBeforeFallback({
-        jobId: params.jobId,
-        engineLabel: params.engineLabel,
-        durationSec: params.durationSec,
-        message,
-        pendingReceipt: params.pendingReceipt,
-        paymentMode: params.paymentMode,
-        walletChargeReserved: params.walletChargeReserved,
-        queryFn,
-        rollbackPendingPaymentFn,
-      });
-      params.logMetricFn('failed', {
-        jobId: params.jobId,
-        errorCode: normalized.code ?? normalized.errorClass,
-        meta: { provider: GOOGLE_VERTEX_OMNI_PROVIDER, errorClass: normalized.errorClass },
-      });
-      return {
-        ok: false,
-        status:
-          normalized.errorClass === 'invalid_request' ||
-          normalized.errorClass === 'moderation' ||
-          normalized.errorClass === 'unsupported_params'
-            ? 400
-            : 503,
-        body: {
-          ok: false,
-          error: normalized.code ?? 'GOOGLE_VERTEX_OMNI_SUBMIT_FAILED',
-          message,
-        },
-      };
-    }
-
-    return submitFalFromGoogleOmni({
-      attemptIndex: 2,
-      fallbackFromAttemptId: googleAttempt.id,
-      fallbackReason: normalized.errorClass,
-      fallbackErrorCode: normalized.code,
+    const message = userSafeGoogleVertexOmniMessage(normalized.errorClass);
+    console.warn('[google-vertex-omni] direct Google submit failed', {
       jobId: params.jobId,
       engineId: params.engineId,
+      status: normalized.status,
+      code: normalized.code,
+      errorClass: normalized.errorClass,
+    });
+    await markJobFailedBeforeSubmit({
+      jobId: params.jobId,
       engineLabel: params.engineLabel,
-      prompt: params.prompt,
-      falPayload: params.falPayload,
-      falInputSummary: params.falInputSummary,
-      isLumaRay2: params.isLumaRay2,
-      batchId: params.batchId,
       durationSec: params.durationSec,
+      message,
       pendingReceipt: params.pendingReceipt,
       paymentMode: params.paymentMode,
       walletChargeReserved: params.walletChargeReserved,
       queryFn,
-      submitFalGenerateTaskFn,
-      logMetricFn: params.logMetricFn,
+      rollbackPendingPaymentFn,
     });
+    params.logMetricFn('failed', {
+      jobId: params.jobId,
+      errorCode: normalized.code ?? normalized.errorClass,
+      meta: { provider: GOOGLE_VERTEX_OMNI_PROVIDER, errorClass: normalized.errorClass },
+    });
+    return {
+      ok: false,
+      status:
+        normalized.errorClass === 'invalid_request' ||
+        normalized.errorClass === 'moderation' ||
+        normalized.errorClass === 'unsupported_params'
+          ? 400
+          : 503,
+      body: {
+        ok: false,
+        error: normalized.code ?? 'GOOGLE_VERTEX_OMNI_SUBMIT_FAILED',
+        message,
+      },
+    };
   }
 }

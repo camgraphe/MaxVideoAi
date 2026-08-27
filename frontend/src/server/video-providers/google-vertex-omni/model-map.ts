@@ -21,7 +21,7 @@ export type GoogleVertexOmniSupportResult =
 const GOOGLE_VERTEX_OMNI_ROUTES: Record<GoogleVertexOmniEngineId, GoogleVertexOmniModelRoute> = {
   'gemini-omni-flash': {
     engineId: 'gemini-omni-flash',
-    providerModel: 'gemini-omni-flash-preview',
+    providerModel: 'gemini-omni-1.1-flash-preview',
     launchStage: 'preview',
     supportedModes: ['t2v', 'i2v', 'ref2v', 'v2v', 'retake'],
     aspectRatios: ['16:9', '9:16'],

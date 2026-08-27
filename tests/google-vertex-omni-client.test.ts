@@ -31,10 +31,10 @@ test('Gemini Omni client calls the Vertex Interactions API with bearer auth', as
   });
 
   const response = await client.createInteraction({
-    model: 'gemini-omni-flash-preview',
+    model: 'gemini-omni-1.1-flash-preview',
     input: [{ role: 'user', content: [{ type: 'text', text: 'Generate a cinematic product shot' }] }],
     generation_config: { video_config: { task: 'text_to_video', aspect_ratio: '16:9' } },
-    response_format: { type: 'video', aspect_ratio: '16:9', delivery: 'uri' },
+    response_format: [{ type: 'video', aspect_ratio: '16:9', delivery: 'uri', duration: '4s', resolution: '720p' }],
     background: true,
     store: true,
   });
@@ -43,7 +43,7 @@ test('Gemini Omni client calls the Vertex Interactions API with bearer auth', as
   assert.match(requests[0]?.url ?? '', /\/v1beta1\/projects\/demo-project\/locations\/global\/interactions$/);
   assert.equal(requests[0]?.method, 'POST');
   assert.equal(requests[0]?.headers.get('authorization'), 'Bearer test-token');
-  assert.equal((requests[0]?.body as Record<string, unknown>).model, 'gemini-omni-flash-preview');
+  assert.equal((requests[0]?.body as Record<string, unknown>).model, 'gemini-omni-1.1-flash-preview');
 });
 
 test('Gemini Omni client fetches stored interactions by id', async () => {
@@ -114,7 +114,7 @@ test('Gemini Omni client times out suspended polling requests', async () => {
   );
 });
 
-test('Gemini Omni client preserves HTTP status and payload for fallback classification', async () => {
+test('Gemini Omni client preserves HTTP status and never marks direct Google errors for fallback', async () => {
   const client = new GoogleVertexOmniClient({
     projectId: 'demo-project',
     location: 'global',
@@ -140,10 +140,10 @@ test('Gemini Omni client preserves HTTP status and payload for fallback classifi
   await assert.rejects(
     () =>
       client.createInteraction({
-        model: 'gemini-omni-flash-preview',
+        model: 'gemini-omni-1.1-flash-preview',
         input: [{ role: 'user', content: [{ type: 'text', text: 'Generate a cinematic product shot' }] }],
         generation_config: { video_config: { task: 'text_to_video' } },
-        response_format: { type: 'video', aspect_ratio: '16:9', delivery: 'uri' },
+        response_format: [{ type: 'video', aspect_ratio: '16:9', delivery: 'uri', duration: '4s', resolution: '720p' }],
         background: true,
       }),
     (error) => {
@@ -152,7 +152,7 @@ test('Gemini Omni client preserves HTTP status and payload for fallback classifi
       assert.equal(normalized.status, 429);
       assert.equal(normalized.code, 'RESOURCE_EXHAUSTED');
       assert.equal(normalized.errorClass, 'rate_limited');
-      assert.equal(normalized.fallbackEligible, true);
+      assert.equal(normalized.fallbackEligible, false);
       assert.match(normalized.message, /Quota exceeded/);
       return true;
     }

@@ -71,9 +71,9 @@ type GoogleVertexOmniPollDeps = {
 };
 
 const POLL_INITIAL_DELAY_MS = 5_000;
-const POLL_MAX_DURATION_MS = 35 * 60_000;
+const POLL_MAX_DURATION_MS = 45 * 60_000;
 const ACTIVE_JOB_STATUSES = ['pending', 'queued', 'running', 'processing', 'in_progress'];
-const STALLED_MESSAGE = 'This render needs manual review before retrying or refunding.';
+const POLL_TIMEOUT_MESSAGE = 'Google did not return this render within 45 minutes.';
 
 async function recordWalletRefundOnce(job: GoogleVertexOmniPendingJob, reason: string, queryFn: QueryFn) {
   if (job.payment_status !== 'paid_wallet' || !job.user_id || !job.final_price_cents) return false;
@@ -170,37 +170,6 @@ async function markJobFailed(
     });
   }
   return true;
-}
-
-async function markJobPollingStalled(job: GoogleVertexOmniPendingJob, queryFn: QueryFn) {
-  await queryFn(
-    `UPDATE app_jobs
-        SET status = 'provider_polling_stalled',
-            progress = GREATEST(progress, 90),
-            message = $2,
-            provisional = FALSE,
-            updated_at = NOW()
-      WHERE job_id = $1
-        AND status = ANY($3::text[])`,
-    [job.job_id, STALLED_MESSAGE, ACTIVE_JOB_STATUSES]
-  );
-  const attempt = await findProviderAttemptForJob({
-    publicJobId: job.job_id,
-    provider: GOOGLE_VERTEX_OMNI_PROVIDER,
-    providerJobId: job.provider_job_id,
-    queryFn,
-  });
-  if (attempt) {
-    await markProviderAttemptFailed({
-      attemptId: attempt.id,
-      errorCode: 'GOOGLE_VERTEX_OMNI_POLLING_STALLED',
-      errorClass: 'polling_stalled',
-      fallbackEligible: false,
-      responseSnapshot: { message: STALLED_MESSAGE },
-      status: 'polling_stalled',
-      queryFn,
-    });
-  }
 }
 
 async function deferStorageCopyRetry(
@@ -328,8 +297,13 @@ export async function runGoogleVertexOmniPoll(options: { deps?: GoogleVertexOmni
     }
     const createdAtMs = Date.parse(job.created_at);
     if (Number.isFinite(createdAtMs) && now - createdAtMs > POLL_MAX_DURATION_MS) {
-      await markJobPollingStalled(job, queryFn);
-      updates += 1;
+      const failed = await markJobFailed(
+        job,
+        POLL_TIMEOUT_MESSAGE,
+        'GOOGLE_VERTEX_OMNI_POLL_TIMEOUT',
+        queryFn
+      );
+      if (failed) updates += 1;
       continue;
     }
 
@@ -493,6 +467,24 @@ export async function runGoogleVertexOmniPoll(options: { deps?: GoogleVertexOmni
         errorClass: normalized.errorClass,
         code: normalized.code,
       });
+      const terminalFetchFailure =
+        normalized.errorClass === 'invalid_request'
+        || normalized.errorClass === 'auth_error'
+        || normalized.errorClass === 'billing_or_access'
+        || normalized.status === 400
+        || normalized.status === 401
+        || normalized.status === 403
+        || normalized.status === 404
+        || normalized.status === 422;
+      if (terminalFetchFailure) {
+        const failed = await markJobFailed(
+          job,
+          'Google could not retrieve this render after accepting it.',
+          normalized.code ?? (normalized.status ? String(normalized.status) : null),
+          queryFn
+        );
+        if (failed) updates += 1;
+      }
     }
   }
 

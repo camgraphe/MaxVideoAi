@@ -1,5 +1,6 @@
 import type { GeneratePayload } from '@/lib/fal';
 import type { Mode } from '@/types/engines';
+import { parseGoogleVertexGcsPrefix } from '../google-vertex-gcs';
 import { resolveGoogleVertexOmniModelRoute, type GoogleVertexOmniMode } from './model-map';
 import {
   buildOmniReferenceImageInputs,
@@ -18,11 +19,14 @@ export type GoogleVertexOmniPayload = {
       task: GoogleVertexOmniTask;
     };
   };
-  response_format: {
+  response_format: Array<{
     type: 'video';
-    aspect_ratio: '16:9' | '9:16';
     delivery: 'uri';
-  };
+    gcs_uri: string;
+    resolution: '720p';
+    aspect_ratio?: '16:9' | '9:16';
+    duration?: `${number}s`;
+  }>;
   background: true;
   store: boolean;
   previous_interaction_id?: string;
@@ -34,6 +38,9 @@ type BuildGoogleVertexOmniPayloadParams = {
   prompt: string;
   negativePrompt?: string | null;
   aspectRatio: string | null;
+  durationSec: number;
+  resolution: string;
+  outputGcsUri: string;
   falPayload: GeneratePayload;
 };
 
@@ -73,6 +80,34 @@ function booleanFromExtra(extra: Record<string, unknown>, ...keys: string[]): bo
 function normalizeAspectRatio(value: string | null | undefined): '16:9' | '9:16' {
   if (value === '16:9' || value === '9:16') return value;
   throw new Error('Gemini Omni Flash supports only 16:9 and 9:16 aspect ratios.');
+}
+
+function normalizeDuration(value: number): `${number}s` {
+  if (!Number.isInteger(value) || value < 3 || value > 10) {
+    throw new Error('Gemini Omni Flash supports integer durations from 3 to 10 seconds.');
+  }
+  return `${value}s`;
+}
+
+function normalizeResolution(value: string): '720p' {
+  if (value !== '720p') throw new Error('Gemini Omni Flash is currently enabled at 720p on MaxVideoAI.');
+  return value;
+}
+
+function normalizeOutputGcsUri(value: string): string {
+  const normalized = value.trim();
+  if (!/^gs:\/\/[^/]+\/.+\/$/.test(normalized)) {
+    throw new Error('Google Vertex Omni output GCS URI is missing or invalid.');
+  }
+  return normalized;
+}
+
+export function buildGoogleVertexOmniOutputGcsUri(prefix: string, jobId: string): string {
+  const parsed = parseGoogleVertexGcsPrefix(prefix);
+  if (!parsed) throw new Error('Google Vertex Omni output GCS prefix is missing or invalid.');
+  const safeJobId = jobId.trim().replace(/[^a-zA-Z0-9_-]+/g, '-');
+  if (!safeJobId) throw new Error('Google Vertex Omni output job id is invalid.');
+  return `gs://${parsed.bucket}/${parsed.prefix}omni-outputs/${safeJobId}/`;
 }
 
 function appendPromptDirective(lines: string[], label: string, value: string | null) {
@@ -153,6 +188,22 @@ export async function buildGoogleVertexOmniPayload(
     throw new Error('Gemini Omni Flash refine mode requires a previous interaction id.');
   }
 
+  const outputGcsUri = normalizeOutputGcsUri(params.outputGcsUri);
+  const resolution = normalizeResolution(params.resolution);
+  const responseFormat: GoogleVertexOmniPayload['response_format'] =
+    task === 'edit'
+      ? [{ type: 'video', delivery: 'uri', gcs_uri: outputGcsUri, resolution }]
+      : [
+          {
+            type: 'video',
+            aspect_ratio: normalizeAspectRatio(params.aspectRatio ?? params.falPayload.aspectRatio ?? '16:9'),
+            delivery: 'uri',
+            gcs_uri: outputGcsUri,
+            resolution,
+            duration: normalizeDuration(params.durationSec),
+          },
+        ];
+
   const payload: GoogleVertexOmniPayload = {
     model: route.providerModel,
     input,
@@ -161,11 +212,7 @@ export async function buildGoogleVertexOmniPayload(
         task,
       },
     },
-    response_format: {
-      type: 'video',
-      aspect_ratio: normalizeAspectRatio(params.aspectRatio ?? params.falPayload.aspectRatio ?? '16:9'),
-      delivery: 'uri',
-    },
+    response_format: responseFormat,
     background: true,
     store: booleanFromExtra(extra, 'store_interaction', 'storeInteraction') ?? true,
   };

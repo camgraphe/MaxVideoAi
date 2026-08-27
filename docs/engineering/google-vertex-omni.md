@@ -6,7 +6,7 @@ This guide covers the MaxVideoAI direct integration for Gemini Omni Flash throug
 
 - Engine id: `gemini-omni-flash`
 - Provider key: `google_vertex_omni_direct`
-- Google model id: `gemini-omni-flash-preview`
+- Google model id: `gemini-omni-1.1-flash-preview`
 - API family: Interactions API, not Veo `predictLongRunning`
 - Public status: preview / limited
 
@@ -40,6 +40,8 @@ GOOGLE_VERTEX_OMNI_LOCATION=global
 GOOGLE_VERTEX_OMNI_API_BASE_URL=
 GOOGLE_VERTEX_OMNI_SERVICE_ACCOUNT_JSON=
 GOOGLE_VERTEX_OMNI_POLL_TOKEN=
+GOOGLE_VERTEX_OMNI_INPUT_GCS_URI=
+GOOGLE_VERTEX_OMNI_OUTPUT_GCS_URI=
 ```
 
 Fallbacks:
@@ -47,7 +49,8 @@ Fallbacks:
 - `GOOGLE_VERTEX_OMNI_PROJECT_ID` falls back to `GOOGLE_VERTEX_PROJECT_ID`.
 - `GOOGLE_VERTEX_OMNI_SERVICE_ACCOUNT_JSON` falls back to `GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON`.
 - `GOOGLE_VERTEX_OMNI_LOCATION` defaults to `global` and never inherits `GOOGLE_VERTEX_LOCATION`, which may use a Veo-only regional value.
-- The current `gemini-omni-flash-preview` Vertex route is global-only. Any explicit value other than `global` is rejected before provider submission.
+- `GOOGLE_VERTEX_OMNI_INPUT_GCS_URI` and `GOOGLE_VERTEX_OMNI_OUTPUT_GCS_URI` fall back to the shared `GOOGLE_VERTEX_INPUT_GCS_URI`; media inputs and generated output stay on Google Cloud Storage.
+- The current `gemini-omni-1.1-flash-preview` Vertex route is global-only. Any explicit value other than `global` is rejected before provider submission.
 
 Do not commit service account JSON. Configure it only through deployment secrets.
 
@@ -69,7 +72,7 @@ The payload builder maps app modes to documented Interactions tasks:
 
 Media blocks should use the documented Interactions content fields only, such as `type`, `uri`, `data`, and `mime_type`.
 Do not add internal media role fields to the JSON body. Image roles are expressed in the prompt text with Google Omni tags such as `<FIRST_FRAME>` and `<IMAGE_REF_N>`.
-The video response format requests `delivery: "uri"` to reduce large response payload risk, while polling must still handle inline base64 data because Google does not guarantee URI delivery on later `GET /interactions/{id}` calls.
+For text, image, and reference generation, the video response format is a list containing the documented duration, aspect ratio, 720p resolution, and an isolated `gcs_uri` output prefix. Edit/refine requests omit duration and aspect ratio so Google inherits them from the source interaction. The service stages HTTP media inputs into the configured Google Vertex input bucket before submission and rejects images above the documented 30 MB limit. Polling must still handle inline base64 data because Google can return bytes instead of a URI.
 
 Do not add negative prompt, seed, first/last-frame, extend, or 4K controls unless Google changes the Omni docs and the payload contract tests are updated.
 
@@ -90,6 +93,7 @@ Poller responsibilities:
 - Download `gs://` or URI video output through the Google client.
 - Copy the final video into MaxVideoAI storage.
 - Complete the `app_jobs` row and update the latest `provider_attempts` snapshot.
+- Fail and refund unresolved wallet jobs after 45 minutes; never retry or reroute a paid Omni job automatically.
 
 ## Pricing And Cost Estimate
 

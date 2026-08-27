@@ -7,7 +7,7 @@ const GEMINI_OMNI_FLASH_ENGINE: EngineCaps = {
   id: 'gemini-omni-flash',
   label: 'Gemini Omni Flash',
   provider: 'Google',
-  version: 'Preview',
+  version: '1.1 Preview',
   status: 'early_access',
   latencyTier: 'fast',
   queueDepth: 0,
@@ -24,7 +24,7 @@ const GEMINI_OMNI_FLASH_ENGINE: EngineCaps = {
   keyframes: false,
   params: {},
   inputLimits: {
-    imageMaxMB: 20480,
+    imageMaxMB: 30,
     videoMaxDurationSec: 10,
     promptMaxChars: 12000,
     promptMaxCharsSource: 'observed',
@@ -89,7 +89,7 @@ const GEMINI_OMNI_FLASH_ENGINE: EngineCaps = {
         label: 'Duration',
         values: ['4s', '6s', '8s', '10s'],
         default: '10s',
-        modes: ['t2v', 'i2v', 'ref2v', 'v2v'],
+        modes: ['t2v', 'i2v', 'ref2v'],
         min: 4,
         max: 10,
       },
@@ -99,6 +99,7 @@ const GEMINI_OMNI_FLASH_ENGINE: EngineCaps = {
         label: 'Aspect ratio',
         values: ['16:9', '9:16'],
         default: '16:9',
+        modes: ['t2v', 'i2v', 'ref2v'],
       },
       {
         id: 'resolution',
@@ -139,7 +140,7 @@ const GEMINI_OMNI_FLASH_ENGINE: EngineCaps = {
     ],
     constraints: {
       supportedFormats: ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif', 'mp4', 'webm', 'mov', 'mpeg', 'mpg', 'wmv', '3gpp'],
-      maxImageSizeMB: 20480,
+      maxImageSizeMB: 30,
       maxVideoDurationSec: 10,
       maxReferenceImages: 10,
       maxVideosPerPrompt: 3,
@@ -162,13 +163,13 @@ const GEMINI_OMNI_FLASH_ENGINE: EngineCaps = {
       '720p': 0.1,
     },
     currency: 'USD',
-    notes: 'Competitive MaxVideoAI preview estimate aligned near Fal.ai public Gemini Omni Flash rates.',
+    notes: 'MaxVideoAI customer rate for the direct Google Vertex Gemini Omni Flash 1.1 route.',
   },
   updatedAt: '2026-06-30T00:00:00Z',
   ttlSec: 600,
   providerMeta: {
     provider: 'google_vertex_omni',
-    modelSlug: 'gemini-omni-flash-preview',
+    modelSlug: 'gemini-omni-1.1-flash-preview',
   },
   availability: 'limited',
   brandId: 'google-gemini',
@@ -181,15 +182,15 @@ export const GEMINI_OMNI_FLASH_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     cardTitle: 'Gemini Omni Flash - conversational video generation',
     provider: 'Google',
     brandId: 'google-gemini',
-    versionLabel: 'Preview',
+    versionLabel: '1.1 Preview',
     availability: 'limited',
     logoPolicy: 'textOnly',
-    billingNote: 'Google Vertex Omni direct preview route. Provider pricing is tracked separately until public SKU pricing is stable.',
+    billingNote: 'Google Vertex Gemini Omni Flash 1.1 direct route. No Fal fallback is used.',
     engine: GEMINI_OMNI_FLASH_ENGINE,
     modes: [
       {
         mode: 't2v',
-        falModelId: 'gemini-omni-flash-preview',
+        falModelId: 'gemini-omni-1.1-flash-preview',
         ui: {
           modes: ['t2v'],
           duration: { options: ['4s', '6s', '8s', '10s'], default: '10s' },
@@ -202,7 +203,7 @@ export const GEMINI_OMNI_FLASH_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       },
       {
         mode: 'i2v',
-        falModelId: 'gemini-omni-flash-preview',
+        falModelId: 'gemini-omni-1.1-flash-preview',
         ui: {
           modes: ['i2v'],
           duration: { options: ['4s', '6s', '8s', '10s'], default: '10s' },
@@ -211,13 +212,13 @@ export const GEMINI_OMNI_FLASH_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
           aspectRatio: ['16:9', '9:16'],
           audioToggle: true,
           acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif'],
-          maxUploadMB: 20480,
+          maxUploadMB: 30,
           notes: 'Animate one source image with optional sound and camera direction.',
         },
       },
       {
         mode: 'ref2v',
-        falModelId: 'gemini-omni-flash-preview',
+        falModelId: 'gemini-omni-1.1-flash-preview',
         ui: {
           modes: ['ref2v'],
           duration: { options: ['4s', '6s', '8s', '10s'], default: '10s' },
@@ -226,38 +227,34 @@ export const GEMINI_OMNI_FLASH_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
           aspectRatio: ['16:9', '9:16'],
           audioToggle: true,
           acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif'],
-          maxUploadMB: 20480,
+          maxUploadMB: 30,
           notes: 'Use up to 10 reference images for reference-to-video prompts.',
         },
       },
       {
         mode: 'v2v',
-        falModelId: 'gemini-omni-flash-preview',
+        falModelId: 'gemini-omni-1.1-flash-preview',
         ui: {
           modes: ['v2v'],
-          duration: { options: ['4s', '6s', '8s', '10s'], default: '10s' },
           resolution: ['720p'],
           resolutionLocked: true,
-          aspectRatio: ['16:9', '9:16'],
           audioToggle: true,
-          maxUploadMB: 20480,
           notes: 'Edit a short source video with text, sound, and camera instructions.',
         },
       },
       {
         mode: 'retake',
-        falModelId: 'gemini-omni-flash-preview',
+        falModelId: 'gemini-omni-1.1-flash-preview',
         ui: {
           modes: ['retake'],
           resolution: ['720p'],
           resolutionLocked: true,
-          aspectRatio: ['16:9', '9:16'],
           audioToggle: true,
           notes: 'Refine a stored Gemini Omni interaction by passing its previous interaction id.',
         },
       },
     ],
-    defaultFalModelId: 'gemini-omni-flash-preview',
+    defaultFalModelId: 'gemini-omni-1.1-flash-preview',
     seo: {
       title: 'Gemini Omni Flash Video Generator - Vertex AI Preview',
       description:
@@ -297,7 +294,7 @@ export const GEMINI_OMNI_FLASH_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       {
         question: 'Is Gemini Omni Flash available through Vertex AI?',
         answer:
-          'Yes. MaxVideoAI routes Gemini Omni Flash through Google Vertex Agent Platform Interactions using the gemini-omni-flash-preview model id when the direct route is enabled.',
+          'Yes. MaxVideoAI routes Gemini Omni Flash directly through Google Vertex Agent Platform Interactions using the gemini-omni-1.1-flash-preview model id. No Fal fallback is used.',
       },
       {
         question: 'What resolution and duration does Gemini Omni Flash support?',

@@ -13,9 +13,11 @@ test('Gemini Omni Flash is exposed as a Vertex-backed Google video engine', () =
   assert.ok(entry, 'Gemini Omni Flash catalog entry should exist');
   assert.equal(entry.provider, 'Google');
   assert.equal(entry.family, 'veo');
-  assert.equal(entry.defaultFalModelId, 'gemini-omni-flash-preview');
+  assert.equal(entry.defaultFalModelId, 'gemini-omni-1.1-flash-preview');
   assert.equal(entry.engine.providerMeta?.provider, 'google_vertex_omni');
-  assert.equal(entry.engine.providerMeta?.modelSlug, 'gemini-omni-flash-preview');
+  assert.equal(entry.engine.providerMeta?.modelSlug, 'gemini-omni-1.1-flash-preview');
+  assert.equal(entry.engine.inputLimits?.imageMaxMB, 30);
+  assert.equal(entry.engine.inputSchema?.constraints?.maxImageSizeMB, 30);
   assert.deepEqual(entry.engine.modes, ['t2v', 'i2v', 'ref2v', 'v2v', 'retake']);
   assert.deepEqual(entry.engine.aspectRatios, ['16:9', '9:16']);
   assert.deepEqual(entry.engine.resolutions, ['720p']);

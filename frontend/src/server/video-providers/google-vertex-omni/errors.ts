@@ -118,17 +118,6 @@ function classify(status: number | null, code: string | null, message: string): 
   return status ? 'provider_error' : 'unknown';
 }
 
-export function isGoogleVertexOmniSubmitFallbackSafe(errorClass: string, status: number | null): boolean {
-  return (
-    errorClass === 'timeout' ||
-    errorClass === 'rate_limited' ||
-    errorClass === 'provider_unavailable' ||
-    errorClass === 'invalid_response' ||
-    status === 429 ||
-    Boolean(status && status >= 500)
-  );
-}
-
 export function classifyGoogleVertexOmniError(error: unknown): NormalizedProviderError {
   if (error instanceof GoogleVertexOmniError) {
     const rawCode = extractCode(error.raw);
@@ -141,7 +130,7 @@ export function classifyGoogleVertexOmniError(error: unknown): NormalizedProvide
       status: error.status,
       code,
       errorClass,
-      fallbackEligible: isGoogleVertexOmniSubmitFallbackSafe(errorClass, error.status),
+      fallbackEligible: false,
       raw: error.raw,
     };
   }
@@ -157,17 +146,7 @@ export function classifyGoogleVertexOmniError(error: unknown): NormalizedProvide
     status,
     code,
     errorClass,
-    fallbackEligible: isGoogleVertexOmniSubmitFallbackSafe(errorClass, status),
+    fallbackEligible: false,
     raw: payload ?? error,
   };
-}
-
-export function shouldFallbackFromGoogleVertexOmniSubmit(params: {
-  acceptedProviderJobId: string | null;
-  error: unknown;
-  fallbackToFalEnabled: boolean;
-}): boolean {
-  if (!params.fallbackToFalEnabled || params.acceptedProviderJobId) return false;
-  const normalized = classifyGoogleVertexOmniError(params.error);
-  return isGoogleVertexOmniSubmitFallbackSafe(normalized.errorClass, normalized.status);
 }
