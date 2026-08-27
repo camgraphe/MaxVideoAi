@@ -1229,7 +1229,7 @@ test('canonical video pricing leaves source-derived i2v framing unset', async ()
   assert.equal(Object.hasOwn(captured!, 'aspectRatio'), false);
 });
 
-test('paid generation tools are gated out by default and prepare is accurately annotated when injected on', async (t) => {
+test('paid generation tools can be gated out and prepare is accurately annotated when injected on', async (t) => {
   const prepared = {
     quoteId,
     expiresAt: expiresAt.toISOString(),
@@ -1294,8 +1294,14 @@ test('paid generation tools are gated out by default and prepare is accurately a
       };
     },
   };
-  const defaultServer = createMaxVideoAiMcpServer(principal, services);
-  const enabledServer = createMaxVideoAiMcpServer(principal, services, { paidGeneration: true });
+  const defaultServer = createMaxVideoAiMcpServer(principal, services, {
+    paidGeneration: false,
+    referenceUploads: false,
+  });
+  const enabledServer = createMaxVideoAiMcpServer(principal, services, {
+    paidGeneration: true,
+    referenceUploads: false,
+  });
   const [defaultClientTransport, defaultServerTransport] = InMemoryTransport.createLinkedPair();
   const [enabledClientTransport, enabledServerTransport] = InMemoryTransport.createLinkedPair();
   await defaultServer.connect(defaultServerTransport);

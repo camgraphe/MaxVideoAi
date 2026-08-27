@@ -4,6 +4,8 @@ import { join } from 'node:path';
 import test from 'node:test';
 
 import { FEATURES } from '../frontend/content/feature-flags';
+import { ENV } from '../frontend/src/lib/env';
+import * as oauthMetadataModule from '../frontend/src/server/mcp/oauth-resource-metadata';
 import { buildProtectedResourceMetadata } from '../frontend/src/server/mcp/oauth-resource-metadata';
 import { GET as getProtectedResourceMetadata } from '../frontend/app/.well-known/oauth-protected-resource/mcp/route';
 
@@ -48,6 +50,86 @@ test('protected resource metadata permits explicit loopback HTTP for local OAuth
       scopes_supported: ['openid', 'email', 'profile'],
     }
   );
+});
+
+test('authorization-server compatibility metadata sends legacy MCP clients to Supabase OAuth endpoints', () => {
+  const buildAuthorizationServerCompatibilityMetadata = (
+    oauthMetadataModule as Record<string, unknown>
+  ).buildAuthorizationServerCompatibilityMetadata;
+
+  assert.equal(typeof buildAuthorizationServerCompatibilityMetadata, 'function');
+  assert.deepEqual(
+    (buildAuthorizationServerCompatibilityMetadata as (input: {
+      resourceUrl: string;
+      supabaseUrl: string;
+    }) => unknown)({
+      resourceUrl: 'https://api.maxvideoai.com/mcp',
+      supabaseUrl: 'https://project-ref.supabase.co',
+    }),
+    {
+      issuer: 'https://api.maxvideoai.com',
+      authorization_endpoint: 'https://project-ref.supabase.co/auth/v1/oauth/authorize',
+      token_endpoint: 'https://project-ref.supabase.co/auth/v1/oauth/token',
+      registration_endpoint: 'https://project-ref.supabase.co/auth/v1/oauth/clients/register',
+      scopes_supported: ['openid', 'email', 'profile', 'offline_access'],
+      response_types_supported: ['code'],
+      response_modes_supported: ['query'],
+      grant_types_supported: ['authorization_code', 'refresh_token'],
+      token_endpoint_auth_methods_supported: ['client_secret_basic', 'client_secret_post', 'none'],
+      code_challenge_methods_supported: ['S256'],
+    }
+  );
+});
+
+test('authorization-server compatibility route exposes the Supabase endpoints on the MCP API host', async () => {
+  const routePath = join(
+    process.cwd(),
+    'frontend/app/.well-known/oauth-authorization-server/route.ts'
+  );
+  assert.equal(existsSync(routePath), true);
+
+  const route = await import('../frontend/app/.well-known/oauth-authorization-server/route');
+  const mutableEnv = ENV as { NEXT_PUBLIC_SUPABASE_URL?: string };
+  const previous = {
+    nodeEnv: process.env.NODE_ENV,
+    apiHost: process.env.MCP_API_HOST,
+    resourceUrl: process.env.MCP_RESOURCE_URL,
+    supabaseUrl: mutableEnv.NEXT_PUBLIC_SUPABASE_URL,
+  };
+  process.env.NODE_ENV = 'production';
+  process.env.MCP_API_HOST = 'api.maxvideoai.com';
+  process.env.MCP_RESOURCE_URL = 'https://api.maxvideoai.com/mcp';
+  mutableEnv.NEXT_PUBLIC_SUPABASE_URL = 'https://project-ref.supabase.co';
+
+  try {
+    const response = route.GET(new Request(
+      'https://api.maxvideoai.com/.well-known/oauth-authorization-server',
+      { headers: { host: 'api.maxvideoai.com' } }
+    ));
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get('cache-control'), 'public, max-age=300');
+    assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow');
+    assert.deepEqual(await response.json(), {
+      issuer: 'https://api.maxvideoai.com',
+      authorization_endpoint: 'https://project-ref.supabase.co/auth/v1/oauth/authorize',
+      token_endpoint: 'https://project-ref.supabase.co/auth/v1/oauth/token',
+      registration_endpoint: 'https://project-ref.supabase.co/auth/v1/oauth/clients/register',
+      scopes_supported: ['openid', 'email', 'profile', 'offline_access'],
+      response_types_supported: ['code'],
+      response_modes_supported: ['query'],
+      grant_types_supported: ['authorization_code', 'refresh_token'],
+      token_endpoint_auth_methods_supported: ['client_secret_basic', 'client_secret_post', 'none'],
+      code_challenge_methods_supported: ['S256'],
+    });
+  } finally {
+    if (previous.nodeEnv === undefined) delete process.env.NODE_ENV;
+    else process.env.NODE_ENV = previous.nodeEnv;
+    if (previous.apiHost === undefined) delete process.env.MCP_API_HOST;
+    else process.env.MCP_API_HOST = previous.apiHost;
+    if (previous.resourceUrl === undefined) delete process.env.MCP_RESOURCE_URL;
+    else process.env.MCP_RESOURCE_URL = previous.resourceUrl;
+    mutableEnv.NEXT_PUBLIC_SUPABASE_URL = previous.supabaseUrl;
+  }
 });
 
 test('protected resource route is flag-gated and publicly cacheable only when enabled', () => {

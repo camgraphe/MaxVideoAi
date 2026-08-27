@@ -67,7 +67,7 @@ export type RegistryEvidence = {
   liveTools: string[];
   resourcesAdvertised: boolean;
   generationAvailable: boolean;
-  publicationFlagsAllFalse: boolean;
+  productionPublicationActive: boolean;
   instructions: string;
 };
 
@@ -307,7 +307,10 @@ export async function inspectLiveMcpMetadata(): Promise<RegistryEvidence> {
     getModelDetails: unavailable,
     recommendModels: unavailable,
   };
-  const server = createMaxVideoAiMcpServer(principal, services);
+  const server = createMaxVideoAiMcpServer(principal, services, {
+    paidGeneration: false,
+    referenceUploads: false,
+  });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   await server.connect(serverTransport);
   const client = new Client({ name: 'offline-tool-selection-evaluator', version: '1.0.0' });
@@ -398,15 +401,23 @@ export async function inspectLiveMcpMetadata(): Promise<RegistryEvidence> {
       FUTURE_GATED_TOOL_NAMES.includes(tool as (typeof FUTURE_GATED_TOOL_NAMES)[number])
     );
     if (generationAvailable) throw new Error('future generation tools must not be live');
-    const publicationFlagsAllFalse = Object.values(mcpPublication).every((value) => value === false);
-    if (!publicationFlagsAllFalse) {
-      throw new Error('Task 9 evidence assumes the checked-in MCP publication gates remain false');
+    const productionPublicationActive =
+      mcpPublication.publicMarketing === true &&
+      mcpPublication.publicIndexing === true &&
+      mcpPublication.transport === true &&
+      mcpPublication.oauth === true &&
+      mcpPublication.discovery === true &&
+      mcpPublication.paidGeneration === true &&
+      mcpPublication.referenceUploads === true &&
+      mcpPublication.trial === false;
+    if (!productionPublicationActive) {
+      throw new Error('offline read-only evidence requires the approved production publication state');
     }
     return {
       liveTools,
       resourcesAdvertised,
       generationAvailable,
-      publicationFlagsAllFalse,
+      productionPublicationActive,
       instructions,
     };
   } finally {

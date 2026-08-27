@@ -480,14 +480,14 @@ test('public fixture corpus covers every approved intent with strict labels and 
   ]);
   assert.ok(byId.get('expired-quote-reprepare')?.prohibitedTools.includes('confirm_generation'));
   assert.deepEqual(mcpPublication, {
-    publicMarketing: false,
-    publicIndexing: false,
-    transport: false,
-    oauth: false,
-    discovery: false,
-    paidGeneration: false,
+    publicMarketing: true,
+    publicIndexing: true,
+    transport: true,
+    oauth: true,
+    discovery: true,
+    paidGeneration: true,
     trial: false,
-    referenceUploads: false,
+    referenceUploads: true,
   });
 });
 
@@ -639,7 +639,7 @@ test('fixture-contract fingerprint and mandatory policy coverage reject disappea
   });
 });
 
-test('live MCP metadata validation observes five read-only discovery tools and no resources', async () => {
+test('read-only MCP baseline observes five discovery tools while production publication remains active', async () => {
   const evidence = await inspectLiveMcpMetadata();
   assert.deepEqual(evidence.liveTools, [
     'get_account_status',
@@ -650,7 +650,7 @@ test('live MCP metadata validation observes five read-only discovery tools and n
   ]);
   assert.equal(evidence.resourcesAdvertised, false);
   assert.equal(evidence.generationAvailable, false);
-  assert.equal(evidence.publicationFlagsAllFalse, true);
+  assert.equal(evidence.productionPublicationActive, true);
   assert.match(evidence.instructions, /generation is not available/i);
 });
 
