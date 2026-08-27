@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
-import { homedir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { parse as parseYaml } from 'yaml';
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const pluginRoot = path.join(repositoryRoot, 'plugins', 'maxvideoai');
@@ -58,40 +58,8 @@ function read(relativePath: string): string {
   return readFileSync(path.join(pluginRoot, relativePath), 'utf8');
 }
 
-function findCachedPyYamlPath(): string | null {
-  const archiveRoot = path.join(homedir(), '.cache', 'uv', 'archive-v0');
-  if (!existsSync(archiveRoot)) return null;
-  for (const archive of readdirSync(archiveRoot)) {
-    const libRoot = path.join(archiveRoot, archive, 'lib');
-    if (!existsSync(libRoot)) continue;
-    for (const pythonDirectory of readdirSync(libRoot)) {
-      const sitePackages = path.join(libRoot, pythonDirectory, 'site-packages');
-      if (existsSync(path.join(sitePackages, 'yaml', '__init__.py'))) return sitePackages;
-    }
-  }
-  return null;
-}
-
 function parseYamlFiles(relativePaths: readonly string[]): Record<string, unknown> {
-  const cachedPyYamlPath = findCachedPyYamlPath();
-  assert.ok(cachedPyYamlPath, 'a cached PyYAML installation is required for issue-form validation');
-  const pythonPath = [cachedPyYamlPath, process.env.PYTHONPATH].filter(Boolean).join(':');
-  const script = [
-    'import json, pathlib, sys, yaml',
-    'root = pathlib.Path(sys.argv[1])',
-    'result = {}',
-    'for relative in sys.argv[2:]:',
-    '    with (root / relative).open(encoding="utf-8") as handle:',
-    '        result[relative] = yaml.safe_load(handle)',
-    'print(json.dumps(result))',
-  ].join('\n');
-  const result = spawnSync('python3', ['-c', script, pluginRoot, ...relativePaths], {
-    cwd: repositoryRoot,
-    encoding: 'utf8',
-    env: { ...process.env, PYTHONPATH: pythonPath },
-  });
-  assert.equal(result.status, 0, result.stderr);
-  return JSON.parse(result.stdout) as Record<string, unknown>;
+  return Object.fromEntries(relativePaths.map((relativePath) => [relativePath, parseYaml(read(relativePath)) as unknown]));
 }
 
 function fieldText(item: FormBodyItem): string {
@@ -167,13 +135,29 @@ test('issue forms are valid structured YAML with safe public-report fields', () 
     /saniti[sz]ed[^\n]*(?:screenshot|evidence)/i,
     /https:\/\/maxvideoai\.com\/docs\/mcp/i,
   ]) assert.match(compatibilityText, requirement);
+  assert.doesNotMatch(compatibilityText, /not applicable/i, 'compatibility evidence must retain exact technical fields');
+
+  for (const relativePath of ['.github/ISSUE_TEMPLATE/bug-report.yml', '.github/ISSUE_TEMPLATE/feature-request.yml'] as const) {
+    const form = parsed[relativePath] as IssueForm;
+    const body = form.body ?? [];
+    for (const fieldId of ['host-client-version', 'operating-system']) {
+      const text = fieldText(body.find((item) => item.id === fieldId) ?? {});
+      assert.match(text, /not applicable[^\n]*documentation\/package only/i, `${relativePath}:${fieldId} needs an honest docs/package-only path`);
+    }
+    const setupText = fieldText(body.find((item) => item.id === 'setup-method') ?? {});
+    assert.match(setupText, /not applicable[^\n]*documentation\/package only/i, `${relativePath}:setup-method needs an honest docs/package-only path`);
+  }
 
   const config = parsed['.github/ISSUE_TEMPLATE/config.yml'] as Record<string, unknown>;
   assert.equal(config.blank_issues_enabled, false);
-  const contactLinks = JSON.stringify(config.contact_links ?? []);
-  assert.match(contactLinks, /https:\/\/maxvideoai\.com\/contact/);
-  assert.match(contactLinks, /https:\/\/github\.com\/camgraphe\/MaxVideoAi\/security\/policy/);
-  assert.doesNotMatch(contactLinks, /mailto:/i);
+  const contactLinks = config.contact_links as Array<Record<string, unknown>>;
+  assert.ok(Array.isArray(contactLinks));
+  const privateSupport = contactLinks.find((link) => /support/i.test(String(link.name)));
+  const privateSecurity = contactLinks.find((link) => /security/i.test(String(link.name)));
+  assert.equal(privateSupport?.url, 'https://maxvideoai.com/contact');
+  assert.equal(privateSecurity?.url, 'https://maxvideoai.com/contact');
+  assert.match(String(privateSecurity?.about), /private[^.]*SECURITY\.md[^.]*security@maxvideoai\.com/i);
+  assert.doesNotMatch(JSON.stringify(contactLinks), /github\.com\/camgraphe\/MaxVideoAi\/security\/policy|mailto:/i);
 });
 
 test('examples answer producer intents without inventing spend or host proof', () => {

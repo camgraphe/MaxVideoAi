@@ -4,5 +4,5 @@ contact_links:
     url: https://maxvideoai.com/contact
     about: Use for account, billing, private media, customer prompts, and other sensitive context.
   - name: Private security disclosure
-    url: https://github.com/camgraphe/MaxVideoAi/security/policy
-    about: Read the existing product security policy before reporting a vulnerability privately.
+    url: https://maxvideoai.com/contact
+    about: Use the private contact form; SECURITY.md gives security@maxvideoai.com for vulnerability disclosures.
