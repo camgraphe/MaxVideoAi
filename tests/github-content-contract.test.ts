@@ -37,6 +37,15 @@ test('rejects non-descriptive image alt text', () => {
 
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /descriptive alt text.*demo/i);
+  assert.match(result.stderr, /descriptive alt text.*photo/i);
+  assert.match(result.stderr, /descriptive alt text.*graphic/i);
+  assert.match(result.stderr, /descriptive alt text.*\(empty\)/i);
+});
+
+test('does not treat fenced code identifiers as commercial superlatives', () => {
+  const result = checkFixture('compliant.md');
+
+  assert.equal(result.status, 0, result.stderr);
 });
 
 test('rejects a text wall that exceeds cadence limits', () => {

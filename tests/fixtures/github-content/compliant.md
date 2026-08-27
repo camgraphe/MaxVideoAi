@@ -10,6 +10,7 @@ Bring the brief. MaxVideoAI turns it into a project plan with model choices that
 
 ```bash
 npx maxvideoai install
+const best = chooseModel()
 ```
 
 ## Keep the budget visible
