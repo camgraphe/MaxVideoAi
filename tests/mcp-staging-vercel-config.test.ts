@@ -216,6 +216,7 @@ function runStubbedDeploy(fixture: string, options: {
   projectName?: string;
   domains?: string[];
   completeCandidate?: boolean;
+  candidateOnly?: boolean;
   candidateCrons?: ReadonlyArray<{ path: string; schedule: string }>;
 } = {}) {
   const candidateId = 'dpl_E8nXLZ2WH6jrmrvcm5AnBzdKoZos';
@@ -226,6 +227,7 @@ function runStubbedDeploy(fixture: string, options: {
   const archiveSha256 = createHash('sha256').update(archive.stdout).digest('hex');
   const args = [join(fixture, 'scripts/deploy-mcp-staging-vercel.sh')];
   if (options.completeCandidate) args.push('--candidate', candidateId);
+  if (options.candidateOnly) args.push('--candidate-only');
   return spawnSync('bash', args, {
     cwd: fixture,
     encoding: 'utf8',
@@ -326,6 +328,22 @@ test('deployment accepts the exact four-cron candidate before promotion', () => 
       /SAFE_DEPLOY_OK project=maxvideoai-mcp-staging deployment=dpl_E8nXLZ2WH6jrmrvcm5AnBzdKoZos/,
     );
     assert.equal(readFileSync(join(fixture, 'promoted'), 'utf8'), 'promoted');
+    assert.doesNotMatch(`${result.stdout}${result.stderr}`, new RegExp(PROVIDER_SECRET_FIXTURE));
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
+test('candidate-only deployment verifies the candidate without promoting it', () => {
+  const fixture = createDeployFixture();
+  try {
+    const result = runStubbedDeploy(fixture, { completeCandidate: true, candidateOnly: true });
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(
+      result.stdout,
+      /SAFE_CANDIDATE_OK project=maxvideoai-mcp-staging deployment=dpl_E8nXLZ2WH6jrmrvcm5AnBzdKoZos/,
+    );
+    assert.equal(existsSync(join(fixture, 'promoted')), false);
     assert.doesNotMatch(`${result.stdout}${result.stderr}`, new RegExp(PROVIDER_SECRET_FIXTURE));
   } finally {
     rmSync(fixture, { recursive: true, force: true });

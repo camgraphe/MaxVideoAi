@@ -55,10 +55,11 @@ REQUIRED_OPERATIONAL_ENVIRONMENT=(
 )
 
 usage() {
-  printf 'Usage: %s [--candidate dpl_ID] [--dry-run]\n' "$0" >&2
+  printf 'Usage: %s [--candidate dpl_ID] [--candidate-only] [--dry-run]\n' "$0" >&2
 }
 
 DRY_RUN=false
+CANDIDATE_ONLY=false
 RESUME_CANDIDATE_ID=''
 while (($#)); do
   case "$1" in
@@ -73,6 +74,10 @@ while (($#)); do
       fi
       RESUME_CANDIDATE_ID="$2"
       shift 2
+      ;;
+    --candidate-only)
+      CANDIDATE_ONLY=true
+      shift
       ;;
     *)
       usage
@@ -476,6 +481,18 @@ assert_protocol_endpoints() {
 
 assert_public_noindex "${CANDIDATE_URL}/" "$ARTIFACTS/candidate-root"
 assert_protocol_endpoints "$CANDIDATE_URL" "$ARTIFACTS/candidate-protocol" candidate
+
+if "$CANDIDATE_ONLY"; then
+  capture_production_baseline "$ARTIFACTS/production-after"
+  diff -u "$ARTIFACTS/production-before.project.json" "$ARTIFACTS/production-after.project.json" >/dev/null
+  diff -u "$ARTIFACTS/production-before.domains.json" "$ARTIFACTS/production-after.domains.json" >/dev/null
+  diff -u "$ARTIFACTS/production-before.protection.sorted.json" "$ARTIFACTS/production-after.protection.sorted.json" >/dev/null
+  printf 'SAFE_CANDIDATE_OK project=%s deployment=%s url=%s stable_unchanged=true\n' \
+    "$STAGING_PROJECT" \
+    "$CANDIDATE_ID" \
+    "$CANDIDATE_URL"
+  exit 0
+fi
 
 run_staging_mutation promote "$CANDIDATE_ID" \
   --scope "$STAGING_SCOPE" \
