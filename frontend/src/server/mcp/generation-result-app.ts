@@ -1,9 +1,10 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
-export const GENERATION_RESULT_APP_URI = 'ui://maxvideoai/generation-result-v3.html';
+export const GENERATION_RESULT_APP_URI = 'ui://maxvideoai/generation-result-v4.html';
 export const LEGACY_GENERATION_RESULT_APP_URIS = [
   'ui://maxvideoai/generation-result-v1.html',
   'ui://maxvideoai/generation-result-v2.html',
+  'ui://maxvideoai/generation-result-v3.html',
 ] as const;
 
 const FIXED_MEDIA_ORIGINS = [
@@ -56,7 +57,7 @@ export function generationResultAppResourceDomains(): string[] {
 }
 
 export function generationResultAppRedirectDomains(): string[] {
-  return uniqueOrigins([...FIXED_APP_ORIGINS, ...configuredOrigins()]);
+  return uniqueOrigins([...FIXED_MEDIA_ORIGINS, ...FIXED_APP_ORIGINS, ...configuredOrigins()]);
 }
 
 export function buildGenerationResultAppHtml(): string {
@@ -472,15 +473,12 @@ export function buildGenerationResultAppHtml(): string {
           : null;
       }
 
-      function startDownload(url, filename) {
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = filename;
-        link.rel = 'noopener noreferrer';
-        link.hidden = true;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
+      async function startDownload(url) {
+        if (window.openai?.openExternal) {
+          await window.openai.openExternal({ href: url, redirectUrl: false });
+          return;
+        }
+        await request('ui/open-link', { url });
       }
 
       async function refreshDownload() {
@@ -509,7 +507,7 @@ export function buildGenerationResultAppHtml(): string {
         try {
           const freshUrl = await refreshDownload().catch(() => null);
           const url = freshUrl || usableDownloadUrl();
-          if (url) startDownload(url, downloadName);
+          if (url) await startDownload(url);
         } finally {
           downloadButton.textContent = previousLabel;
           downloadButton.disabled = false;

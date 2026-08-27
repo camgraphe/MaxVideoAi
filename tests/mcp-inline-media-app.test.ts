@@ -15,10 +15,11 @@ import {
   type MaxVideoAiMcpServices,
 } from '../frontend/src/server/mcp/server';
 
-const TEMPLATE_URI = 'ui://maxvideoai/generation-result-v3.html';
+const TEMPLATE_URI = 'ui://maxvideoai/generation-result-v4.html';
 const LEGACY_TEMPLATE_URIS = [
   'ui://maxvideoai/generation-result-v1.html',
   'ui://maxvideoai/generation-result-v2.html',
+  'ui://maxvideoai/generation-result-v3.html',
 ] as const;
 
 const principal: AgentPrincipal = {
@@ -117,6 +118,12 @@ test('paid MCP profile exposes one decoupled inline generation presenter', async
 });
 
 test('generation presenter resource is a portable light and dark MCP App with native video', async (t) => {
+  const previousStorageBaseUrl = process.env.S3_PUBLIC_BASE_URL;
+  process.env.S3_PUBLIC_BASE_URL = 'https://videohub-uploads-us.s3.amazonaws.com';
+  t.after(() => {
+    if (previousStorageBaseUrl === undefined) delete process.env.S3_PUBLIC_BASE_URL;
+    else process.env.S3_PUBLIC_BASE_URL = previousStorageBaseUrl;
+  });
   const session = await connected();
   t.after(() => session.close());
 
@@ -159,10 +166,13 @@ test('generation presenter resource is a portable light and dark MCP App with na
 
   const meta = (content?._meta ?? {}) as Record<string, unknown>;
   const ui = meta.ui as { prefersBorder?: boolean; csp?: { resourceDomains?: string[] } } | undefined;
+  const openAiCsp = meta['openai/widgetCSP'] as { redirect_domains?: string[] } | undefined;
   assert.equal(ui?.prefersBorder, true);
   assert.ok(ui?.csp?.resourceDomains?.includes('https://media.maxvideoai.com'));
   assert.ok(ui?.csp?.resourceDomains?.includes('https://cdn.maxvideoai.com'));
   assert.ok(ui?.csp?.resourceDomains?.every((origin) => !origin.includes('*')));
+  assert.ok(openAiCsp?.redirect_domains?.includes('https://videohub-uploads-us.s3.amazonaws.com'));
+  assert.ok(openAiCsp?.redirect_domains?.every((origin) => !origin.includes('*')));
 });
 
 test('generation presenter keeps previous resource versions readable for existing conversations', async (t) => {
@@ -249,9 +259,8 @@ test('generation presenter reuses the owned recovery service and preserves non-U
   assert.doesNotMatch(JSON.stringify(result), /prompt|provider_job|storage key|wallet balance/i);
 });
 
-test('generation presenter opens the targeted recent render and downloads without an external handoff', async () => {
+test('generation presenter opens the targeted render and hands a fresh attachment to the host', async () => {
   const externalOpens: Array<{ href: string; redirectUrl: boolean }> = [];
-  const nativeDownloads: Array<{ href: string; filename: string }> = [];
   const toolCalls: Array<{ name: string; arguments: { jobId: string } }> = [];
   const toolOutput = {
     ...buildAgentGenerationRecovery(completedVideoStatus(), 'https://maxvideoai-mcp-staging.vercel.app/account/connections'),
@@ -304,12 +313,6 @@ test('generation presenter opens the targeted recent render and downloads withou
       });
       Object.defineProperty(window.HTMLMediaElement.prototype, 'pause', { configurable: true, value() {} });
       Object.defineProperty(window.HTMLMediaElement.prototype, 'load', { configurable: true, value() {} });
-      Object.defineProperty(window.HTMLAnchorElement.prototype, 'click', {
-        configurable: true,
-        value(this: HTMLAnchorElement) {
-          nativeDownloads.push({ href: this.href, filename: this.download });
-        },
-      });
     },
   });
 
@@ -333,11 +336,16 @@ test('generation presenter opens the targeted recent render and downloads withou
     name: 'get_generation_download',
     arguments: { jobId: 'completed-video-job' },
   }]);
-  assert.deepEqual(nativeDownloads, [{
-    href: 'https://videohub-uploads-us.s3.amazonaws.com/signed/completed-video.mp4?signature=fresh-click',
-    filename: 'maxvideoai-completed-video-job.mp4',
-  }]);
-  assert.equal(externalOpens.length, 1);
+  assert.deepEqual(externalOpens.map(({ href, redirectUrl }) => ({ href, redirectUrl })), [
+    {
+      href: 'https://maxvideoai-mcp-staging.vercel.app/app/library?view=review&kind=video&job=completed-video-job',
+      redirectUrl: false,
+    },
+    {
+      href: 'https://videohub-uploads-us.s3.amazonaws.com/signed/completed-video.mp4?signature=fresh-click',
+      redirectUrl: false,
+    },
+  ]);
   dom.window.close();
 });
 
