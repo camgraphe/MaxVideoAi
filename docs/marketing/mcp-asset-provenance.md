@@ -1,6 +1,18 @@
 # MCP marketing asset provenance
 
-Verified on 2026-08-26. Partner marks and the Claude-specific controlled host capture satisfy their distinct publication bars. Checksums in the manifest cover the exact committed bytes.
+`github-asset-manifest.json` is the machine-readable source of truth for
+GitHub-facing screenshot state, hashes, dimensions, claims, placements, and
+release approval. Run `pnpm github:assets:check` for record and byte integrity,
+or `pnpm github:assets:release-check` before publishing a production README.
+
+The existing files under `frontend/public/media/mcp/` are shot-list references
+only. They are registered as `reference_only`; no historical image becomes
+publication proof until a current capture has complete provenance and explicit
+`publishable_proof` approval in the manifest.
+
+Verified on 2026-08-26. The partner-mark records below preserve their distinct
+publication provenance. Their checksums cover the exact committed bytes; this
+historical record does not make any screenshot publishable in a GitHub README.
 
 Marketing usage keeps both marks unchanged and at equal optical size, while MaxVideoAI remains the primary brand.
 The surrounding copy describes compatibility only; it never claims partnership, sponsorship, certification, or
@@ -38,7 +50,7 @@ The previously derived local MP4 (`df66302c8b34f3a79dcc39d906b69ed30184a8299e179
 
 ## Claude inline host capture
 
-`frontend/public/media/mcp/claude-inline-video-proof.jpg` preserves the exact JPEG bytes captured from Claude Desktop 1.37937.1 on macOS 26.5.1. A controlled staging session exercised native playback, the MaxVideoAI library state, and the first-party CTA. The capture was reviewed for visible account identifiers and approved by the MaxVideoAI owner for marketing use.
+`frontend/public/media/mcp/claude-inline-video-proof.jpg` preserves the exact JPEG bytes captured from Claude Desktop 1.37937.1 on macOS 26.5.1. A controlled staging session exercised native playback, the MaxVideoAI library state, and the first-party CTA. The capture was reviewed for visible account identifiers and approved by the MaxVideoAI owner for marketing use. It remains `reference_only` in the GitHub asset manifest until it is freshly revalidated for the intended README placement.
 
 This image is used nominatively to show the tested Claude surface. It does not imply Anthropic partnership or endorsement, cannot support a ChatGPT rendering claim, and does not satisfy the separate job-backed MaxVideoAI result-proof gate. The visible `$0.95` is described only as the historical capture amount.
 
