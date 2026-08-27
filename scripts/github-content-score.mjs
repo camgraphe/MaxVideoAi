@@ -141,8 +141,8 @@ export function validateScorecard(scorecard, { repositoryRoot: rootDirectory = r
     if (dimension.after !== null && dimension.afterEvidence.length === 0) {
       errors.push(`${expected.id}: after evidence is required for an after score`);
     }
-    if (dimension.after === dimension.target && !dimension.afterEvidence.some((evidence) => !dimension.beforeEvidence.includes(evidence))) {
-      errors.push(`${expected.id}: a target after score requires independent after evidence`);
+    if (dimension.after !== null && !dimension.afterEvidence.some((evidence) => !dimension.beforeEvidence.includes(evidence))) {
+      errors.push(`${expected.id}: an after score requires independent after evidence`);
     }
   }
 

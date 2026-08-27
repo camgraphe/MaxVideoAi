@@ -105,6 +105,16 @@ test('fails closed for unsupported after scores and external benchmark labeling'
     /independent after evidence/i,
   );
 
+  const nonTargetWithoutIndependentEvidence = cloneScorecard(scorecard);
+  nonTargetWithoutIndependentEvidence.dimensions[0].after = 55;
+  nonTargetWithoutIndependentEvidence.dimensions[0].afterEvidence = [
+    ...nonTargetWithoutIndependentEvidence.dimensions[0].beforeEvidence,
+  ];
+  assert.match(
+    validateScorecard(nonTargetWithoutIndependentEvidence, { repositoryRoot }).join('\n'),
+    /independent after evidence/i,
+  );
+
   const externalBenchmark = cloneScorecard(scorecard);
   externalBenchmark.rubric.benchmark = 'External benchmark';
   assert.match(
