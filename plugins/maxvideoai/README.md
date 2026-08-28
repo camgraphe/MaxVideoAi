@@ -1,14 +1,14 @@
-# MaxVideoAI for ChatGPT, Claude & Codex
+# MaxVideoAI for Claude, ChatGPT or Codex
 
 MaxVideoAI is a multi-model AI video production service exposed through a remote MCP server and packaged for agent workflows. Bring a brief, compare current models, see the exact price, approve one paid attempt, generate, then recover the finished result in the MaxVideoAI Library—without turning production into a chain of disconnected tabs.
 
 **Plan. Compare. Price. Approve. Generate.**
 
-Setup guides: [Claude](docs/claude.md) · [Codex](docs/codex.md) · [ChatGPT](docs/chatgpt.md) — see [current compatibility evidence](https://maxvideoai.com/docs/mcp).
+Setup guides: [Claude](docs/claude.md) · [ChatGPT](docs/chatgpt.md) · [Codex](docs/codex.md) — see [current compatibility evidence](https://maxvideoai.com/docs/mcp).
 
 ![MaxVideoAI production workspace showing the completed glass-ribbon video as the dominant proof](assets/demos/readme-proof-hero.webp)
 
-*Current MaxVideoAI product proof. The editorial layer is decorative; this is not native ChatGPT, Claude, or Codex host proof.*
+*Current MaxVideoAI product proof. The editorial layer is decorative; this is not native Claude, ChatGPT, or Codex host proof.*
 
 ### Start with the repository-validated Codex package path
 
@@ -22,8 +22,8 @@ Start a new Codex task, then ask `$plan` to compare AI video models or `$generat
 ## Choose your setup
 
 - [Claude connector setup](docs/claude.md) — add the remote MCP URL from Claude's connector settings and complete OAuth.
+- [ChatGPT setup](docs/chatgpt.md) — install the shared plugin after public-directory approval, or use the developer MCP URL fallback.
 - [Codex plugin setup](docs/codex.md) — install the tagged package, start a new task, and invoke `$plan` or `$generate`.
-- [ChatGPT setup](docs/chatgpt.md) — validate the beta developer-mode route in an eligible workspace.
 - [Generic remote MCP setup](docs/generic-mcp.md) — connect a client that explicitly supports remote Streamable HTTP and OAuth.
 
 Every route connects to `https://api.maxvideoai.com/mcp`. Add the URL exactly as written: no token, query string, password, or API key. Host availability and permissions can change, so use the guide for your surface before connecting.

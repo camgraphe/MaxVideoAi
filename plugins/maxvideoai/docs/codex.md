@@ -48,6 +48,10 @@ If `$plan` is not discovered, verify the tagged marketplace and package are enab
 
 Use the plugin manager in the Codex build that installed MaxVideoAI and remove `maxvideoai@maxvideoai`. If your build offers CLI removal, check its own `codex plugin --help` output rather than guessing a command. Revoke the Codex OAuth connection in your MaxVideoAI account connection settings to end account access.
 
+```text
+Remove the package in Codex → revoke the Codex OAuth connection in MaxVideoAI → reconnect only when needed
+```
+
 ## Which practical examples should I use?
 
 - [Compare current AI video models](../examples/compare-ai-video-models.md) before selecting a route.

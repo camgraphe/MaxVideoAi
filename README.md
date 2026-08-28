@@ -6,13 +6,13 @@
 
 MaxVideoAI is a multi-model AI video production platform for planning, comparing, pricing, generating, and organizing video work in one place. Bring a brief, choose among current model options, review the price before generation, and keep finished results and reusable references together in your MaxVideoAI Library.
 
-[Plan a video with MaxVideoAI](https://maxvideoai.com/mcp?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=hero_try) · [Compare current models](https://maxvideoai.com/models?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=models) · [Use MaxVideoAI from ChatGPT, Claude & Codex](https://maxvideoai.com/mcp?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=plugin_callout)
+[Plan a video with MaxVideoAI](https://maxvideoai.com/mcp?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=hero_try) · [Compare current models](https://maxvideoai.com/models?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=models) · [Use MaxVideoAI from Claude, ChatGPT or Codex](https://maxvideoai.com/mcp?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=plugin_callout)
 
 [Plugin repository preview — release pending](https://github.com/camgraphe/maxvideoai-plugin)
 
 ![MaxVideoAI production workspace showing the completed glass-ribbon video as the dominant README proof](plugins/maxvideoai/assets/demos/readme-proof-hero.webp)
 
-*Current MaxVideoAI web-product proof. The editorial frame is decorative; this image does not claim a verified native flow inside ChatGPT, Claude, or Codex.*
+*Current MaxVideoAI web-product proof. The editorial frame is decorative; this image does not claim a verified native flow inside Claude, ChatGPT, or Codex.*
 
 ## What can you make with MaxVideoAI?
 
@@ -61,13 +61,13 @@ This current production composite proves that the same completed result continue
 
 Pick up where the production left off: open the [Library](https://maxvideoai.com/app/library), review the saved result, and reuse only the media that belongs in the next request.
 
-## Can ChatGPT, Claude, and Codex use MaxVideoAI?
+## Can Claude, ChatGPT or Codex use MaxVideoAI?
 
 MaxVideoAI exposes a remote MCP service and a checked-in plugin package for assistant-led planning and generation workflows. The package includes setup guides, model-planning and generation skills, privacy boundaries, examples, and recovery guidance. Its dedicated public distribution repository remains a preview until the first release lands.
 
 [Read the active product setup](https://maxvideoai.com/mcp) · [Inspect the source package](plugins/maxvideoai) · [Public repository preview — release pending](https://github.com/camgraphe/maxvideoai-plugin)
 
-Platform availability and setup can change. Follow the guide for your ChatGPT, Claude, Codex, or compatible MCP surface and treat the linked compatibility evidence as current only for the state it documents. The product proof in this README is MaxVideoAI web-app proof, not native host proof.
+Platform availability and setup can change. Follow the guide for your Claude, ChatGPT, Codex, or compatible MCP surface and treat the linked compatibility evidence as current only for the state it documents. The product proof in this README is MaxVideoAI web-app proof, not native host proof.
 
 ```text
 Brief → compare current models → prepare exact request → review price → approve one attempt → recover result

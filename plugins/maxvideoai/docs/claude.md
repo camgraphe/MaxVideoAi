@@ -51,6 +51,10 @@ If tools are missing, reopen **Customize → Connectors**, confirm MaxVideoAI is
 
 Open **Customize → Connectors**, find MaxVideoAI, then use **Remove** or the adjacent menu to disconnect it. Team and Enterprise owners can remove the organization entry from **Organization settings → Connectors**. To end the authorization as well, revoke the matching Claude OAuth connection from your MaxVideoAI account connection settings. Reconnect through OAuth if you need it later.
 
+```text
+Disconnect in Claude → revoke the Claude OAuth connection in MaxVideoAI → reconnect only when needed
+```
+
 ## Which practical examples should I use?
 
 - [Compare current AI video models](../examples/compare-ai-video-models.md) before selecting a route.

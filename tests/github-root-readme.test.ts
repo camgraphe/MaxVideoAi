@@ -28,9 +28,19 @@ test('the flagship README opens with the product outcome, three destinations, an
   assert.match(readme, /^# MaxVideoAI\s*$/m);
   assert.doesNotMatch(opening, /Generate Page Mock & Frontend/i);
   assert.match(opening, /multi-model AI video production/i);
-  assert.match(opening, /\[Try MaxVideoAI\]\(https:\/\/maxvideoai\.com\/app\)/);
-  assert.match(opening, /\[Explore models\]\(https:\/\/maxvideoai\.com\/models\)/);
-  assert.match(opening, /\[Use MaxVideoAI from ChatGPT, Claude & Codex\]\(https:\/\/maxvideoai\.com\/mcp\)/);
+  const trackedDestinations = [
+    '[Plan a video with MaxVideoAI](https://maxvideoai.com/mcp?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=hero_try)',
+    '[Compare current models](https://maxvideoai.com/models?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=models)',
+    '[Use MaxVideoAI from Claude, ChatGPT or Codex](https://maxvideoai.com/mcp?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=plugin_callout)',
+  ];
+  let previousDestination = -1;
+  for (const destination of trackedDestinations) {
+    const currentDestination = opening.indexOf(destination);
+    assert.ok(currentDestination > previousDestination, `${destination} must appear in the reviewed opening order`);
+    previousDestination = currentDestination;
+  }
+  assert.doesNotMatch(opening, /\[Try MaxVideoAI\]\(https:\/\/maxvideoai\.com\/app\)/);
+  assert.doesNotMatch(opening, /\[Explore models\]\(https:\/\/maxvideoai\.com\/models\)/);
   assert.match(opening, /\[Plugin repository preview — release pending\]\(https:\/\/github\.com\/camgraphe\/maxvideoai-plugin\)/);
   assert.doesNotMatch(opening, /\[Use[^\]]*ChatGPT[^\]]*\]\(https:\/\/github\.com\/camgraphe\/maxvideoai-plugin\)/i);
   assert.match(opening, /<img src="plugins\/maxvideoai\/assets\/logo-mark\.svg"[^>]+>/);
@@ -75,7 +85,7 @@ test('the flagship README tells the commercial story before contributor setup', 
     'How do you compare current AI video models?',
     'How do project pricing and approval work?',
     'How do references and continuity work?',
-    'Can ChatGPT, Claude, and Codex use MaxVideoAI?',
+    'Can Claude, ChatGPT or Codex use MaxVideoAI?',
     'How is MaxVideoAI built?',
     'Local development',
     'Contributing, security, and license',

@@ -26,7 +26,7 @@ test('the plugin README is a proof-led conversion surface with safe compatibilit
   const definition = readme.split(/\n{2,}/)[1] ?? '';
   const definitionWords = definition.match(/[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*/gu) ?? [];
 
-  assert.equal(lines[0], '# MaxVideoAI for ChatGPT, Claude & Codex');
+  assert.equal(lines[0], '# MaxVideoAI for Claude, ChatGPT or Codex');
   assert.ok(words.length < 1_800, `README must stay under 1,800 words; found ${words.length}`);
   assert.ok(definitionWords.length >= 40 && definitionWords.length <= 60, `opening definition must be 40–60 words; found ${definitionWords.length}`);
   assert.match(definition, /MaxVideoAI is a multi-model AI video production service exposed through a remote MCP server and packaged for agent workflows/i);
@@ -50,7 +50,48 @@ test('the plugin README is a proof-led conversion surface with safe compatibilit
   assert.match(readme, /image shows[^\n]*(?:selection|product)[^\n]*result[^\n]*not[^\n]*(?:quote|approval|budget)/i);
   assert.doesNotMatch(readme, /Designed for ChatGPT|works with ChatGPT|available in ChatGPT|verified today in Claude and Codex/i);
 
+  const setupGuideOrder = [
+    '[Claude](docs/claude.md)',
+    '[ChatGPT](docs/chatgpt.md)',
+    '[Codex](docs/codex.md)',
+  ];
+  let previousGuide = -1;
+  for (const setupGuide of setupGuideOrder) {
+    const currentGuide = opening.indexOf(setupGuide);
+    assert.ok(currentGuide > previousGuide, `${setupGuide} must appear in the reviewed host order`);
+    previousGuide = currentGuide;
+  }
+
   const result = spawnSync(process.execPath, [checkerPath, readmePath], {
+    cwd: repositoryRoot,
+    encoding: 'utf8',
+  });
+  assert.equal(result.status, 0, result.stderr);
+});
+
+test('the ChatGPT guide presents the shared plugin journey with qualified proof and fallback', () => {
+  const guide = readFileSync(path.join(repositoryRoot, 'plugins', 'maxvideoai', 'docs', 'chatgpt.md'), 'utf8');
+  const officialSources = [
+    'https://help.openai.com/en/articles/12584461-developer-mode-apps-and-full-mcp-connectors-in-chatgpt-beta',
+    'https://help.openai.com/en/articles/11487775-connectors-in-chatgpt',
+    'https://maxvideoai.com/docs/mcp',
+  ];
+
+  assert.match(guide, /^# Use MaxVideoAI with ChatGPT\s*$/m);
+  assert.match(guide, /ChatGPT and Codex use the same MaxVideoAI plugin and (?:the same )?MCP connection/i);
+  assert.match(guide, /install or connect[\s\S]*OAuth on the first use/i);
+  assert.match(guide, /public directory availability[\s\S]{0,80}listing is approved/i);
+  assert.match(guide, /developer MCP URL fallback[\s\S]*`https:\/\/api\.maxvideoai\.com\/mcp`/i);
+  assert.match(guide, /Full MCP beta: Business and Enterprise\/Edu on ChatGPT web[\s\S]*Pro: read\/fetch MCP permissions in developer mode/i);
+  assert.match(guide, /!\[Completed MaxVideoAI video continuing from the production workspace into the Library\]\(\.\.\/assets\/demos\/brief-to-video-workflow\.webp\)/);
+  assert.match(guide, /MaxVideoAI product proof[\s\S]*workspace[\s\S]*Library[\s\S]*not native ChatGPT host proof/i);
+  assert.match(guide, /Install or connect → OAuth on first use → review tools → plan without spending → approve one quoted attempt → recover from the Library/i);
+  assert.doesNotMatch(guide, /unverified|not yet recorded|setup guide to validate|not an availability promise/i);
+  for (const source of officialSources) {
+    assert.match(guide, new RegExp(source.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
+
+  const result = spawnSync(process.execPath, [checkerPath, path.join(repositoryRoot, 'plugins', 'maxvideoai', 'docs', 'chatgpt.md')], {
     cwd: repositoryRoot,
     encoding: 'utf8',
   });
