@@ -9,6 +9,7 @@ import {
   type McpMetricProducerCapabilities,
   type McpOperationsAlertThresholds,
 } from '../frontend/server/admin-mcp-metrics.ts';
+import { buildMcpOverviewCards } from '../frontend/app/(core)/admin/mcp/_lib/admin-mcp-helpers.ts';
 
 const RANGE = {
   from: new Date('2026-07-01T00:00:00.000Z'),
@@ -90,6 +91,13 @@ function createMetricsHarness(options: {
       }
       if (sql.includes('admin-mcp:audit-summary')) {
         return [{
+          connected_users: options.zeroDenominators ? 0 : 9,
+          new_connected_users: options.zeroDenominators ? 0 : 4,
+          connection_events: options.zeroDenominators ? 0 : 14,
+          active_tool_users: options.zeroDenominators ? 0 : 7,
+          tool_calls: options.zeroDenominators ? 0 : 20,
+          successful_tool_calls: options.zeroDenominators ? 0 : 17,
+          failed_tool_calls: options.zeroDenominators ? 0 : 3,
           recommendation_calls: options.zeroDenominators ? 0 : 10,
           polling_calls: options.zeroDenominators ? 0 : 12,
           auth_errors: options.zeroDenominators ? 0 : 3,
@@ -110,6 +118,14 @@ function createMetricsHarness(options: {
           : [
               { code: 'AUTH_INVALID', count: 3 },
               { code: 'UPLOAD_FAILED', count: 2 },
+            ] as T[];
+      }
+      if (sql.includes('admin-mcp:tool-usage')) {
+        return options.zeroDenominators
+          ? [] as T[]
+          : [
+              { tool: 'list_models', calls: 12, users: 6, failures: 1 },
+              { tool: 'recommend_models', calls: 8, users: 4, failures: 2 },
             ] as T[];
       }
       if (sql.includes('admin-mcp:receipts')) {
@@ -149,6 +165,78 @@ async function loadHarnessMetrics(
     producerCapabilities,
   });
 }
+
+test('live audit events expose authenticated MCP activity even while the commercial funnel stays disabled', async () => {
+  const metrics = await loadHarnessMetrics(createMetricsHarness(), {
+    funnel: false,
+    audit: true,
+    recommendationToQuote: false,
+    receipts: false,
+    providerCosts: false,
+    polling: false,
+    uploads: false,
+    restorations: false,
+  });
+
+  assert.equal(metrics.funnel, null);
+  assert.deepEqual(metrics.activity, {
+    connectedUsers: 9,
+    newConnectedUsers: 4,
+    returningConnectedUsers: 5,
+    connectionEvents: 14,
+    activeToolUsers: 7,
+    toolCalls: 20,
+    successfulToolCalls: 17,
+    failedToolCalls: 3,
+    toolSuccessRate: 0.85,
+  });
+  assert.equal(metrics.availability.audit.status, 'available');
+  assert.equal(metrics.availability.funnel.status, 'unavailable');
+  assert.deepEqual(metrics.toolUsage, [
+    { tool: 'list_models', calls: 12, users: 6, failures: 1, successRate: 11 / 12 },
+    { tool: 'recommend_models', calls: 8, users: 4, failures: 2, successRate: 0.75 },
+  ]);
+});
+
+test('the decision overview leads with live connection and tool activity instead of unavailable funnel cards', async () => {
+  const metrics = await loadHarnessMetrics(createMetricsHarness(), {
+    funnel: false,
+    audit: true,
+    recommendationToQuote: false,
+    receipts: false,
+    providerCosts: false,
+    polling: false,
+    uploads: false,
+    restorations: false,
+  });
+
+  assert.deepEqual(
+    buildMcpOverviewCards(metrics).slice(0, 5).map(({ label, value }) => ({ label, value })),
+    [
+      { label: 'Connected users', value: '9' },
+      { label: 'New connections', value: '4' },
+      { label: 'Active tool users', value: '7' },
+      { label: 'Tool calls', value: '20' },
+      { label: 'Tool success', value: '85.0%' },
+    ],
+  );
+});
+
+test('status polling is available from the live audit producer without requiring the commercial funnel', async () => {
+  const metrics = await loadHarnessMetrics(createMetricsHarness(), {
+    funnel: false,
+    audit: true,
+    recommendationToQuote: false,
+    receipts: false,
+    providerCosts: false,
+    polling: true,
+    uploads: false,
+    restorations: false,
+  });
+
+  assert.equal(metrics.pollingCalls, 12);
+  assert.equal(metrics.availability.polling.status, 'available');
+});
 
 test('loads every available funnel, cohort, client, economics, error, polling, and revocation metric', async () => {
   const metrics = await loadHarnessMetrics();
@@ -231,12 +319,13 @@ test('missing prerequisite migrations and tables are explicit unavailable states
   assert.equal(metrics.refundsCents, null);
   assert.equal(metrics.providerCostCents, null);
   assert.equal(metrics.trialCostCents, null);
-  assert.equal(metrics.pollingCalls, null, 'future polling stays unavailable without paid-generation prerequisites');
+  assert.equal(metrics.pollingCalls, 12, 'authenticated polling remains available from the audit ledger');
+  assert.equal(metrics.availability.polling.status, 'available');
   assert.equal(metrics.uploadFailures, null, 'future upload metrics stay unavailable without reference prerequisites');
   assert.equal(metrics.refundRestorationFailures, null, 'future restoration metrics stay unavailable without trial prerequisites');
   assert.equal(metrics.authErrors, null, 'unsupported authentication error measurement remains unavailable');
   assert.deepEqual(metrics.featureFlags, FLAGS);
-  assert.equal(harness.calls.length, 3, 'only relation and available audit queries may run');
+  assert.equal(harness.calls.length, 4, 'only relation and available audit queries may run');
   assert.ok(harness.calls.every((call) => !call.sql.includes('admin-mcp:funnel')));
 });
 

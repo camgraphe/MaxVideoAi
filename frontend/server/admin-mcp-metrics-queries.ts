@@ -74,13 +74,43 @@ export const FUNNEL_SQL = `/* admin-mcp:funnel */
   FROM window_events`;
 
 export const AUDIT_SUMMARY_SQL = `/* admin-mcp:audit-summary */
+  WITH first_connections AS (
+    SELECT MIN(created_at) AS first_connected_at, user_id
+      FROM mcp_audit_events
+     WHERE event_type = 'connection_initialized'
+     GROUP BY user_id
+  ), window_events AS (
+    SELECT audit.event_type, audit.user_id, audit.tool_name, audit.outcome,
+           audit.error_code, first_connections.first_connected_at
+      FROM mcp_audit_events audit
+      LEFT JOIN first_connections ON first_connections.user_id = audit.user_id
+     WHERE audit.created_at >= $1 AND audit.created_at < $2
+  )
   SELECT
-    COUNT(*) FILTER (WHERE tool_name = 'get_generation_status')::bigint AS polling_calls,
-    COUNT(*) FILTER (WHERE tool_name = 'create_reference_upload_link' AND outcome = 'failure')::bigint AS upload_failures,
-    COUNT(*) FILTER (WHERE outcome = 'failure' AND COALESCE(error_code, '') ~* '(refund|restore|restoration|release)')::bigint AS refund_restoration_failures
-  FROM mcp_audit_events
-  WHERE event_type = 'tool_call'
-    AND created_at >= $1 AND created_at < $2`;
+    COUNT(DISTINCT user_id) FILTER (WHERE event_type = 'connection_initialized')::bigint AS connected_users,
+    COUNT(DISTINCT user_id) FILTER (
+      WHERE event_type = 'connection_initialized'
+        AND first_connected_at >= $1 AND first_connected_at < $2
+    )::bigint AS new_connected_users,
+    COUNT(*) FILTER (WHERE event_type = 'connection_initialized')::bigint AS connection_events,
+    COUNT(DISTINCT user_id) FILTER (WHERE event_type = 'tool_call')::bigint AS active_tool_users,
+    COUNT(*) FILTER (WHERE event_type = 'tool_call')::bigint AS tool_calls,
+    COUNT(*) FILTER (WHERE event_type = 'tool_call' AND outcome = 'success')::bigint AS successful_tool_calls,
+    COUNT(*) FILTER (WHERE event_type = 'tool_call' AND outcome = 'failure')::bigint AS failed_tool_calls,
+    COUNT(*) FILTER (
+      WHERE event_type = 'tool_call' AND tool_name = 'get_generation_status'
+    )::bigint AS polling_calls,
+    COUNT(*) FILTER (
+      WHERE event_type = 'tool_call'
+        AND tool_name = 'create_reference_upload_link'
+        AND outcome = 'failure'
+    )::bigint AS upload_failures,
+    COUNT(*) FILTER (
+      WHERE event_type = 'tool_call'
+        AND outcome = 'failure'
+        AND COALESCE(error_code, '') ~* '(refund|restore|restoration|release)'
+    )::bigint AS refund_restoration_failures
+  FROM window_events`;
 
 export const RECOMMENDATION_TO_QUOTE_SQL = `/* admin-mcp:recommendation-to-quote */
   WITH recommendations AS (
@@ -114,6 +144,20 @@ export const ERROR_SQL = `/* admin-mcp:errors */
     AND outcome = 'failure'
   GROUP BY COALESCE(error_code, 'UNKNOWN')
   ORDER BY count DESC, code ASC
+  LIMIT 20`;
+
+export const TOOL_USAGE_SQL = `/* admin-mcp:tool-usage */
+  SELECT
+    tool_name AS tool,
+    COUNT(*)::bigint AS calls,
+    COUNT(DISTINCT user_id)::bigint AS users,
+    COUNT(*) FILTER (WHERE outcome = 'failure')::bigint AS failures
+  FROM mcp_audit_events
+  WHERE event_type = 'tool_call'
+    AND created_at >= $1 AND created_at < $2
+    AND tool_name IS NOT NULL
+  GROUP BY tool_name
+  ORDER BY calls DESC, tool_name ASC
   LIMIT 20`;
 
 export const RECEIPTS_SQL = `/* admin-mcp:receipts */

@@ -15,7 +15,7 @@ export const MCP_METRIC_PRODUCER_CAPABILITIES: McpMetricProducerCapabilities = O
   recommendationToQuote: false,
   receipts: false,
   providerCosts: false,
-  polling: false,
+  polling: true,
   uploads: false,
   restorations: false,
 });

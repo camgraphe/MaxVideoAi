@@ -13,6 +13,7 @@ import {
   PROVIDER_COST_SQL,
   RECEIPTS_SQL,
   RECOMMENDATION_TO_QUOTE_SQL,
+  TOOL_USAGE_SQL,
 } from '../frontend/server/admin-mcp-metrics-queries.ts';
 
 type CommandResult = ReturnType<typeof spawnSync>;
@@ -126,6 +127,10 @@ test('admin MCP aggregates enforce causal ordering, canonical UTC windows, and t
     INSERT INTO mcp_audit_events
       (event_type, user_id, tool_name, outcome, error_code, created_at)
     VALUES
+      ('connection_initialized', 'new-connection', NULL, 'success', NULL, '2026-07-02 08:00Z'),
+      ('connection_initialized', 'new-connection', NULL, 'success', NULL, '2026-07-03 08:00Z'),
+      ('connection_initialized', 'returning-connection', NULL, 'success', NULL, '2026-06-30 08:00Z'),
+      ('connection_initialized', 'returning-connection', NULL, 'success', NULL, '2026-07-04 08:00Z'),
       ('tool_call', 'rec-one', 'recommend_models', 'success', NULL, '2026-07-02 10:00Z'),
       ('tool_call', 'rec-two', 'recommend_models', 'success', NULL, '2026-07-03 10:00Z'),
       ('connection_initialized', 'noise-poll', 'get_generation_status', 'success', NULL, '2026-07-02 10:00Z'),
@@ -180,9 +185,30 @@ test('admin MCP aggregates enforce causal ordering, canonical UTC windows, and t
   await t.test('audit aggregates and error groups include tool_call events only', async () => {
     const summary = (await client.query(AUDIT_SUMMARY_SQL, params)).rows[0];
     const errors = (await client.query(ERROR_SQL, params)).rows;
+    assert.equal(Number(summary.connected_users), 5);
+    assert.equal(Number(summary.new_connected_users), 4);
+    assert.equal(Number(summary.connection_events), 6);
+    assert.equal(Number(summary.active_tool_users), 5);
+    assert.equal(Number(summary.tool_calls), 5);
+    assert.equal(Number(summary.successful_tool_calls), 3);
+    assert.equal(Number(summary.failed_tool_calls), 2);
     assert.equal(Number(summary.polling_calls), 1);
     assert.equal(Number(summary.refund_restoration_failures), 1);
     assert.deepEqual(errors.map((row) => row.code), ['RESTORE_FAILED', 'TOOL_FAILURE']);
+  });
+
+  await t.test('tool usage groups privacy-safe call, user, and failure totals by tool', async () => {
+    const rows = (await client.query(TOOL_USAGE_SQL, params)).rows;
+    assert.deepEqual(rows.map((row) => ({
+      tool: row.tool,
+      calls: Number(row.calls),
+      users: Number(row.users),
+      failures: Number(row.failures),
+    })), [
+      { tool: 'list_models', calls: 2, users: 2, failures: 2 },
+      { tool: 'recommend_models', calls: 2, users: 2, failures: 0 },
+      { tool: 'get_generation_status', calls: 1, users: 1, failures: 0 },
+    ]);
   });
 
   await t.test('receipt timestamps own the UTC window while MCP job provenance is range-independent', async () => {
