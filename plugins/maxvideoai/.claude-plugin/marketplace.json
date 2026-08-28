@@ -1,6 +1,6 @@
 {
   "name": "maxvideoai",
-  "description": "Official MaxVideoAI plugin catalog for creative planning and AI media generation.",
+  "description": "MaxVideoAI catalog, packaged for Claude, ChatGPT, Codex, and other MCP hosts.",
   "owner": {
     "name": "MaxVideoAI",
     "url": "https://maxvideoai.com"
@@ -9,12 +9,12 @@
     {
       "name": "maxvideoai",
       "source": "./",
-      "description": "Plan, compare, budget, and generate AI video or images with live MaxVideoAI models, exact quotes, and explicit approval before paid work.",
+      "description": "MaxVideoAI is a multi-model AI video production service for planning shots, comparing current models, estimating project budgets, preparing exact quotes, approving paid generations, recovering results, and keeping media in one account library.",
       "author": {
         "name": "MaxVideoAI"
       },
       "homepage": "https://maxvideoai.com/mcp",
-      "repository": "https://github.com/camgraphe/MaxVideoAi",
+      "repository": "https://github.com/camgraphe/maxvideoai-plugin",
       "license": "BUSL-1.1",
       "category": "creativity",
       "keywords": [

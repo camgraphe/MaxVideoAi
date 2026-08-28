@@ -23,6 +23,10 @@ const curatedPolicyPath = new URL(
   './fixtures/mcp-tool-selection-curated-policy.json',
   import.meta.url
 );
+const conversationCasesPath = new URL(
+  '../plugins/maxvideoai/evals/conversation-cases.json',
+  import.meta.url
+);
 
 function fixtures() {
   return parseFixtureCorpus(JSON.parse(readFileSync(fixturePath, 'utf8')));
@@ -30,6 +34,32 @@ function fixtures() {
 
 function rawPolicyBundle(): any {
   return JSON.parse(readFileSync(curatedPolicyPath, 'utf8'));
+}
+
+function frontmatterRouting(source: string): { positive: string; negative: string } {
+  const frontmatter = source.match(/^---\n([\s\S]*?)\n---(?:\n|$)/)?.[1] ?? '';
+  const block = frontmatter.match(/^description:\s*\|\s*\n((?: {2,}.*(?:\n|$))+)/m)?.[1] ?? '';
+  const description = block.replace(/^ {2}/gm, ' ').replace(/\s+/g, ' ').trim();
+  const [positive = '', negative = ''] = description.split(/\bNOT for:\s*/i);
+  return { positive, negative };
+}
+
+function routingSignalScore(prompt: string, routing: { positive: string; negative: string }): number {
+  const concepts = [
+    /\bimages?\b/i,
+    /\bvideos?\b/i,
+    /\bquote|exact price\b/i,
+    /\bgenerat(?:e|ion)\b/i,
+    /\bstatus\b|\bcheck.*job\b/i,
+    /\brecover(?:y|ing)?\b/i,
+    /\bcompare|comparison\b/i,
+    /\bbudget|pricing estimate\b/i,
+    /\bplan|planning\b/i,
+  ];
+  return concepts.reduce((score, concept) => {
+    if (!concept.test(prompt)) return score;
+    return score + (concept.test(routing.positive) ? 1 : 0) - (concept.test(routing.negative) ? 1 : 0);
+  }, 0);
 }
 
 async function withMutatedPolicyBundle(
@@ -213,6 +243,28 @@ test('policy fingerprint changes with instructions or tool metadata and stale ar
     'generate/reference-inputs.md',
     'plan/budget-planning.md',
   ]);
+  const planRouting = frontmatterRouting(current.packagedSkills['plan/SKILL.md']);
+  const generateRouting = frontmatterRouting(current.packagedSkills['generate/SKILL.md']);
+  assert.match(planRouting.positive, /AI video or image/i);
+  assert.match(generateRouting.positive, /AI video or image/i);
+  assert.match(planRouting.positive, /image project planning.*model comparison.*image budget/is);
+  assert.match(generateRouting.positive, /image request.*exact (?:price|quote).*generation action.*job status.*result (?:presentation|recovery)/is);
+  assert.match(planRouting.positive, /project planning.*model comparison.*(?:budget|pricing estimate).*shot list.*reference strategy/i);
+  assert.match(planRouting.negative, /exact (?:price|quote).*generat.*recover/i);
+  assert.match(generateRouting.positive, /exact (?:price|quote).*explicit approval.*generat.*(?:status|follow).*present.*recover/i);
+  assert.match(generateRouting.negative, /open-ended.*planning.*model comparison.*(?:budget|pricing estimate)/i);
+  const imageQuoteCase = (JSON.parse(readFileSync(conversationCasesPath, 'utf8')) as Array<{
+    id: string;
+    prompt: string;
+    expectedSkill: string;
+  }>).find((entry) => entry.id === 'en-gpt-image-quote-only');
+  assert.ok(imageQuoteCase);
+  assert.equal(imageQuoteCase.expectedSkill, 'generate');
+  assert.ok(
+    routingSignalScore(imageQuoteCase.prompt, generateRouting) >
+      routingSignalScore(imageQuoteCase.prompt, planRouting),
+    'the reviewed image quote request must resolve to the execution skill by intent signals'
+  );
   const expected = rawPolicyBundle().policyFingerprintSha256;
   assert.equal(compute(current), expected);
 

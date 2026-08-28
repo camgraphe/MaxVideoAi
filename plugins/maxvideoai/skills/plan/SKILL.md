@@ -1,7 +1,7 @@
 ---
 name: plan
 description: |
-  Plan, compare, and budget AI video or image production with live MaxVideoAI model facts. Use when: "which model should I use", "compare AI video models", "plan a short film", "budget these shots", "give me quality and lower-cost options", or when a creative brief needs an executable model shortlist before generation. Chain to generate after the user selects a concrete request. NOT for: an exact single-request price or quote, confirming a paid quote, launching a generation, following an existing job, or recovering a prior attempt (use generate).
+  Plan AI video or image projects with live MaxVideoAI model facts. Use when: AI video or image project planning, model comparison, a video or image budget or pricing estimate, shot list or key-visual list design, or reference strategy. Turn an open brief into an executable model shortlist and production plan. NOT for: an exact price or exact quote, generation or paid approval, job status or result presentation, or result recovery (use generate).
 ---
 
 # Plan with MaxVideoAI

@@ -1,7 +1,7 @@
 ---
 name: generate
 description: |
-  Prepare, approve, generate, present, and recover AI video or images through the connected MaxVideoAI account. Use when: "generate this", "animate this image", "use my reference", "quote this request", "create the video", "check my job", "show my result", or when a selected MaxVideoAI request is ready for exact pricing. Chain from plan after a model is chosen, or use directly when the request is already concrete. NOT for: open-ended model comparison or multi-shot project budgeting before a request is selected (use plan).
+  Execute a concrete AI video or image request through the connected MaxVideoAI account. Use when: a selected AI video or image request needs an exact price or exact quote, explicit approval of a fresh quote, a generation action, job status, result presentation, or result recovery. Chain from plan after a model is chosen, or use directly when the request is already concrete. NOT for: open-ended project planning, model comparison, or a budget or pricing estimate before a request is selected (use plan).
 ---
 
 # Generate with MaxVideoAI

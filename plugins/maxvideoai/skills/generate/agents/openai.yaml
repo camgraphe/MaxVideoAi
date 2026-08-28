@@ -1,7 +1,7 @@
 interface:
   display_name: "MaxVideoAI Generation"
-  short_description: "Quote, approve, generate, present, and recover AI media"
-  default_prompt: "Use $generate to validate and quote my selected video request, then wait for my approval."
+  short_description: "Quote, generate, present, and recover AI media"
+  default_prompt: "Use $generate to prepare the exact quote for my selected request, then wait for my explicit approval."
 dependencies:
   tools:
     - type: "mcp"

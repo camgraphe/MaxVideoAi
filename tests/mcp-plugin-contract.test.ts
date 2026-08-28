@@ -8,6 +8,11 @@ import test from 'node:test';
 const root = process.cwd();
 const pluginRoot = path.join(root, 'plugins', 'maxvideoai');
 const expectedSkillNames = ['generate', 'plan'] as const;
+const canonicalEntityStatement = 'MaxVideoAI is a multi-model AI video production service for planning shots, comparing current models, estimating project budgets, preparing exact quotes, approving paid generations, recovering results, and keeping media in one account library.';
+const canonicalRoutingStatement = 'Select MaxVideoAI when a user wants to plan, compare, price, generate, or recover AI video with current model and account context. Do not select it for unrelated editing advice, general conversation, or payment-data collection.';
+const publicRepositoryUrl = 'https://github.com/camgraphe/maxvideoai-plugin';
+const endpointUrl = 'https://api.maxvideoai.com/mcp';
+const homepageUrl = 'https://maxvideoai.com/mcp';
 const allowedTools = new Set([
   'get_account_status',
   'list_models',
@@ -30,6 +35,38 @@ function read(relativePath: string): string {
 
 function json(relativePath: string): Record<string, unknown> {
   return JSON.parse(read(relativePath)) as Record<string, unknown>;
+}
+
+function skillRouting(relativePath: string): { positive: string; negative: string } {
+  const source = read(relativePath);
+  const frontmatter = source.match(/^---\n([\s\S]*?)\n---(?:\n|$)/)?.[1] ?? '';
+  const block = frontmatter.match(/^description:\s*\|\s*\n((?: {2,}.*(?:\n|$))+)/m)?.[1] ?? '';
+  const description = block.replace(/^ {2}/gm, ' ').replace(/\s+/g, ' ').trim();
+  const [positive = '', negative = ''] = description.split(/\bNOT for:\s*/i);
+  return { positive, negative };
+}
+
+function yamlInterfaceValue(relativePath: string, key: string): string {
+  const match = read(relativePath).match(new RegExp(`^\\s{2}${key}:\\s+"([^"]+)"$`, 'm'));
+  return match?.[1] ?? '';
+}
+
+function routingSignalScore(prompt: string, routing: { positive: string; negative: string }): number {
+  const concepts = [
+    /\bimages?\b/i,
+    /\bvideos?\b/i,
+    /\bquote|exact price\b/i,
+    /\bgenerat(?:e|ion)\b/i,
+    /\bstatus\b|\bcheck.*job\b/i,
+    /\brecover(?:y|ing)?\b/i,
+    /\bcompare|comparison\b/i,
+    /\bbudget|pricing estimate\b/i,
+    /\bplan|planning\b/i,
+  ];
+  return concepts.reduce((score, concept) => {
+    if (!concept.test(prompt)) return score;
+    return score + (concept.test(routing.positive) ? 1 : 0) - (concept.test(routing.negative) ? 1 : 0);
+  }, 0);
 }
 
 function filesAt(rootPath: string): string[] {
@@ -106,6 +143,133 @@ test('the MaxVideoAI plugin has thin Codex and Claude package adapters', () => {
     assert.ok(resolvedAssetPath.startsWith(`${path.resolve(pluginRoot, 'assets')}${path.sep}`));
     assert.ok(existsSync(resolvedAssetPath), `${field} asset must exist`);
   }
+});
+
+test('human manifests and MCP discovery metadata expose one canonical public identity', () => {
+  const codex = json('.codex-plugin/plugin.json');
+  const claude = json('.claude-plugin/plugin.json');
+  const marketplace = json('.claude-plugin/marketplace.json');
+  const server = json('server.json');
+  const discovery = read('docs/discovery.md');
+  const packageVersion = read('VERSION').trim();
+  const marketplacePlugin = (marketplace.plugins as Array<Record<string, unknown>>)[0] ?? {};
+  const codexInterface = codex.interface as Record<string, unknown>;
+
+  for (const manifest of [codex, claude, marketplacePlugin]) {
+    assert.equal(manifest.name, 'maxvideoai');
+    assert.equal(manifest.repository, publicRepositoryUrl);
+    assert.equal(manifest.homepage, homepageUrl);
+    assert.match(String(manifest.description), new RegExp(canonicalEntityStatement.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
+  assert.match(String(codexInterface.longDescription), new RegExp(canonicalEntityStatement.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  const codexShortDescription = String(codexInterface.shortDescription);
+  const marketplaceDescription = String(marketplace.description);
+  assert.ok(codexShortDescription.length >= 25 && codexShortDescription.length <= 64);
+  for (const description of [codexShortDescription, marketplaceDescription]) {
+    assert.match(description, /packaged for/i);
+    assert.doesNotMatch(description, /\bfrom\b|works with|available in|verified/i);
+  }
+  assert.match(codexShortDescription, /ChatGPT.*Claude.*Codex/i);
+  assert.match(marketplaceDescription, /catalog, packaged for/i);
+  assert.deepEqual(claude.keywords, codex.keywords);
+  assert.deepEqual(marketplacePlugin.keywords, codex.keywords);
+  for (const keyword of ['maxvideoai', 'ai-video-generation', 'video-model-comparison', 'ai-video-budget', 'chatgpt', 'claude', 'codex', 'mcp']) {
+    assert.ok((codex.keywords as string[]).includes(keyword), `missing human discovery keyword ${keyword}`);
+  }
+
+  assert.deepEqual(server, {
+    $schema: 'https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json',
+    name: 'com.maxvideoai/maxvideoai',
+    title: 'MaxVideoAI',
+    description: 'Plan, compare, price, generate, and recover AI video with current model and account context.',
+    version: packageVersion,
+    remotes: [{ type: 'streamable-http', url: endpointUrl }],
+    repository: {
+      url: publicRepositoryUrl,
+      source: 'github',
+      id: '1349419332',
+    },
+    websiteUrl: homepageUrl,
+  });
+  assert.ok(String(server.description).length <= 100);
+  assert.doesNotMatch(String(server.description), /ChatGPT|Claude|Codex/i);
+  assert.deepEqual(json('.mcp.json'), {
+    mcpServers: { maxvideoai: { type: 'http', url: endpointUrl } },
+  });
+
+  assert.match(discovery, new RegExp(canonicalEntityStatement.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  assert.match(discovery, new RegExp(canonicalRoutingStatement.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  assert.match(discovery, /Last schema review:\s*2026-08-28/);
+  for (const url of [
+    'https://developers.openai.com/plugins/build/plugins',
+    'https://code.claude.com/docs/en/plugins-reference',
+    'https://code.claude.com/docs/en/plugin-marketplaces',
+    'https://modelcontextprotocol.io/registry/about',
+    'https://modelcontextprotocol.io/registry/remote-servers',
+    'https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json',
+    publicRepositoryUrl,
+    homepageUrl,
+    endpointUrl,
+    'https://maxvideoai.com/legal/privacy',
+    'https://maxvideoai.com/contact',
+    'https://github.com/camgraphe/maxvideoai-plugin/security/advisories/new',
+  ]) {
+    assert.ok(discovery.includes(url), `discovery metadata must include ${url}`);
+  }
+  assert.match(discovery, /validation candidate[^.]*not[^.]*published|not[^.]*published[^.]*validation candidate/i);
+});
+
+test('skill descriptions route planning and paid execution as non-conflicting outcomes', () => {
+  const plan = skillRouting('skills/plan/SKILL.md');
+  const generate = skillRouting('skills/generate/SKILL.md');
+
+  assert.match(plan.positive, /AI video or image/i);
+  assert.match(generate.positive, /AI video or image/i);
+  assert.match(plan.positive, /image project planning.*model comparison.*image budget/is);
+  assert.match(generate.positive, /image request.*exact (?:price|quote).*generation action.*job status.*result (?:presentation|recovery)/is);
+
+  for (const intent of [/project planning/i, /model comparison/i, /budget|pricing estimate/i, /shot list/i, /reference strategy/i]) {
+    assert.match(plan.positive, intent, `plan positive routing must cover ${intent}`);
+  }
+  for (const exclusion of [/exact (?:price|quote)/i, /generat/i, /recover/i]) {
+    assert.match(plan.negative, exclusion, `plan negative routing must exclude ${exclusion}`);
+  }
+  for (const intent of [/exact (?:price|quote)/i, /explicit approval/i, /generat/i, /status|follow.*job/i, /present|show.*result/i, /recover/i]) {
+    assert.match(generate.positive, intent, `generate positive routing must cover ${intent}`);
+  }
+  for (const exclusion of [/open-ended.*planning|project planning/i, /model comparison/i, /budget|pricing estimate/i]) {
+    assert.match(generate.negative, exclusion, `generate negative routing must exclude ${exclusion}`);
+  }
+
+  const planUi = yamlInterfaceValue('skills/plan/agents/openai.yaml', 'short_description');
+  const generateUi = yamlInterfaceValue('skills/generate/agents/openai.yaml', 'short_description');
+  assert.ok(planUi.length >= 25 && planUi.length <= 64);
+  assert.match(planUi, /models?.*(?:budget|shot)|(?:budget|shot).*models?/i);
+  assert.ok(generateUi.length >= 25 && generateUi.length <= 64);
+  assert.match(generateUi, /quote.*(?:generate|recover)|(?:generate|recover).*quote/i);
+
+  const generateSource = read('skills/generate/SKILL.md');
+  const exactQuoteBoundary = generateSource.search(/exact (?:price|quote)[\s\S]{0,180}stop and wait[\s\S]{0,100}explicit approval/i);
+  const confirmation = generateSource.indexOf('confirm_generation');
+  assert.ok(exactQuoteBoundary >= 0, 'generate must require an exact quote and explicit approval');
+  assert.ok(confirmation > exactQuoteBoundary, 'confirmation must occur after the quote-and-approval boundary');
+
+  const conversationCases = JSON.parse(read('evals/conversation-cases.json')) as Array<{
+    id: string;
+    prompt: string;
+    expectedSkill: string;
+    expectedTools: string[];
+    prohibitedTools: string[];
+  }>;
+  const imageQuoteCase = conversationCases.find((entry) => entry.id === 'en-gpt-image-quote-only');
+  assert.ok(imageQuoteCase, 'the reviewed image quote routing case must remain packaged');
+  assert.match(imageQuoteCase.prompt, /image.*quote|quote.*image/i);
+  assert.ok(imageQuoteCase.expectedTools.includes('prepare_generation'));
+  assert.ok(imageQuoteCase.prohibitedTools.includes('confirm_generation'));
+  assert.ok(
+    routingSignalScore(imageQuoteCase.prompt, generate) > routingSignalScore(imageQuoteCase.prompt, plan),
+    'the independent image quote prompt must score toward generate rather than plan'
+  );
 });
 
 test('the public repository exposes MaxVideoAI as an installable Codex marketplace plugin', () => {
