@@ -103,7 +103,7 @@ function markdownLinks(markdown: string): string[] {
 }
 
 const requiredOutreachProhibition = 'Do not buy links, exchange links at scale, submit bulk forms, automate unsolicited messages';
-const unsafeOutreachTactics = /\b(?:buy\s+(?:links?|backlinks?)|pay\s+for\s+(?:links?|backlinks?)|(?:exchange\s+)?(?:links?|backlinks?)\s+at\s+scale|(?:scaled|bulk|mass)\s+reciprocal\s+(?:links?|backlinks?|outreach)|reciprocal\s+(?:links?|backlinks?|outreach)\s+(?:at\s+scale|in\s+bulk)|submit\s+bulk\s+forms|automat(?:e|ed|ing)\s+(?:cold\s+)?(?:dms?|direct\s+messages)|automat(?:e|ed|ing)\s+(?:unsolicited|bulk)\s+(?:messages?|outreach))\b/i;
+const unsafeOutreachTactics = /\b(?:(?:buy|bought|purchase|purchased)\s+(?:links?|backlinks?)(?:\s+placement)?|paid\s+(?:for\s+)?(?:links?|backlinks?)(?:\s+placement)?|(?:exchange\s+)?(?:links?|backlinks?)\s+at\s+scale|(?:scaled|bulk|mass)\s+reciprocal\s+(?:links?|backlinks?|outreach)|reciprocal\s+(?:links?|backlinks?|outreach)\s+(?:at\s+scale|in\s+bulk)|submit\s+bulk\s+forms|automat(?:e|ed|ing)\s+(?:(?:cold|unsolicited|bulk)\s+)?(?:dms?|direct\s+messages|messages?|outreach|campaigns?|sequences?|sequencing))\b/i;
 
 function assertNoUnsafeOutreachAdvocacy(text: string, label: string): void {
   const withoutAllowedPolicy = text.replace(requiredOutreachProhibition, '');
@@ -210,7 +210,13 @@ test('GitHub content engine parses contextual outreach rows without unsafe solic
 test('content-engine adversarial helpers reject unsafe outreach and URL escape routes', () => {
   assert.doesNotThrow(() => assertUnsafeOutreachPolicy(`${requiredOutreachProhibition}.`));
   assert.throws(() => assertNoUnsafeOutreachAdvocacy('Offer to buy backlinks for placement.', 'adversarial outreach'), /unsafe outreach tactics/i);
+  assert.throws(() => assertNoUnsafeOutreachAdvocacy('We bought backlinks after a review.', 'adversarial outreach'), /unsafe outreach tactics/i);
+  assert.throws(() => assertNoUnsafeOutreachAdvocacy('They purchased backlink placement.', 'adversarial outreach'), /unsafe outreach tactics/i);
+  assert.throws(() => assertNoUnsafeOutreachAdvocacy('Use paid backlink placement.', 'adversarial outreach'), /unsafe outreach tactics/i);
   assert.throws(() => assertNoUnsafeOutreachAdvocacy('Automate cold DMs after a review.', 'adversarial outreach'), /unsafe outreach tactics/i);
+  assert.throws(() => assertNoUnsafeOutreachAdvocacy('Use automated cold outreach.', 'adversarial outreach'), /unsafe outreach tactics/i);
+  assert.throws(() => assertNoUnsafeOutreachAdvocacy('Automate cold campaigns.', 'adversarial outreach'), /unsafe outreach tactics/i);
+  assert.throws(() => assertNoUnsafeOutreachAdvocacy('Use automated unsolicited sequencing.', 'adversarial outreach'), /unsafe outreach tactics/i);
 
   assert.doesNotThrow(() => assertPlainCanonical('https://maxvideoai.com/models.', 'valid canonical'));
   assert.throws(() => assertPlainCanonical('https://maxvideoai.com/models https://maxvideoai.com/pricing', 'two URLs'), /exactly one HTTPS URL/i);
