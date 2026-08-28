@@ -23,6 +23,10 @@ Start a new Codex task, then ask `$maxvideoai:plan` to compare AI video models o
 
 ChatGPT imports authorized attachments and generated files as private assets. Compatible ChatGPT or Claude surfaces accept up to eight ordered files in-chat; Codex and Claude Code use the local helper. No public URL or Computer Use is needed. Files stay in the private MaxVideoAI Library; single-use links expire automatically.
 
+![Completed production video saved in the private MaxVideoAI Library](assets/screenshots/maxvideoai-library-continuity-production.jpg)
+
+*Real Library continuity proof. This capture does not claim that an in-chat file import was exercised.*
+
 ## Choose your setup
 
 - [Claude connector setup](docs/claude.md) — add the remote MCP URL from Claude's connector settings and complete OAuth.
