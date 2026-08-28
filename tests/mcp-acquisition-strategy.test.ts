@@ -53,17 +53,17 @@ test('the commercial copy leads with the outcome and removes stale internal prev
   }
 });
 
-test('ChatGPT and Claude are the two equal primary actions while Codex remains discoverable', () => {
+test('Claude, ChatGPT, and Codex are three equal primary actions', () => {
   const copy = source(copyPath);
-  assert.match(copy, /clientActions\('en',[\s\S]*chatgpt:[\s\S]*claude:/);
+  assert.match(copy, /clientActions\('en',[\s\S]*claude:[\s\S]*chatgpt:[\s\S]*codex:/);
   assert.match(copy, /integrations, 'chatgpt'/);
   assert.match(copy, /integrations, 'claude'/);
-  assert.match(copy, /Codex/);
+  assert.match(copy, /integrations, 'codex'/);
 
   const actions = source(`${marketingRoot}/mcp/_components/McpClientActions.tsx`);
   assert.match(actions, /openai-mark-light\.svg/);
   assert.match(actions, /claude-mark-light\.svg/);
-  assert.match(actions, /sm:grid-cols-2/);
+  assert.match(actions, /sm:grid-cols-3/);
 });
 
 test('public indexation is not blocked by the optional introductory trial', () => {
@@ -87,6 +87,7 @@ test('the homepage and contextual links own a prospect-facing assistant workflow
   assert.match(internalLinks, /'home'/);
   assert.match(internalLinks, /ChatGPT/);
   assert.match(internalLinks, /Claude/);
+  assert.match(internalLinks, /Codex/);
 });
 
 test('the plugin stays live-catalog driven and documents model-registry maintenance', () => {

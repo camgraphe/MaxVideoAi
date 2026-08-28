@@ -201,7 +201,7 @@ const MARKETING_COMPARE_DECISION_GUIDES_SECTION: MarketingNavSection = {
 
 export const MARKETING_NAV_TOOLS: MarketingNavItem[] = [
   ...(getMcpPublicationState(mcpPublication).indexable
-    ? [{ key: 'ai-video-assistant', label: 'ChatGPT & Claude video assistant', href: '/mcp', badge: 'new' as const }]
+    ? [{ key: 'ai-video-assistant', label: 'Claude, ChatGPT & Codex video assistant', href: '/mcp', badge: 'new' as const }]
     : []),
   { key: 'character-builder', label: 'Consistent Character AI', href: toolLink('character-builder') },
   { key: 'angle', label: 'Change Camera Angle', href: toolLink('angle') },

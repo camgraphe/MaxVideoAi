@@ -479,9 +479,9 @@ test('client deep links remain disabled and localized setup plus endpoint copy a
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
   for (const [locale, expectedHrefs] of [
-    ['en', ['/integrations/chatgpt', '/integrations/claude']],
-    ['fr', ['/fr/integrations/chatgpt', '/fr/integrations/claude']],
-    ['es', ['/es/integraciones/chatgpt', '/es/integraciones/claude']],
+    ['en', ['/integrations/claude', '/integrations/chatgpt', '/integrations/codex']],
+    ['fr', ['/fr/integrations/claude', '/fr/integrations/chatgpt', '/fr/integrations/codex']],
+    ['es', ['/es/integraciones/claude', '/es/integraciones/chatgpt', '/es/integraciones/codex']],
   ] as const) {
     const copy = getMcpPageCopy(locale);
     const html = renderToStaticMarkup(React.createElement(McpConnectActions, {
@@ -492,7 +492,7 @@ test('client deep links remain disabled and localized setup plus endpoint copy a
     }));
     for (const href of expectedHrefs) assert.match(html, new RegExp(`href="${href}"`));
     assert.match(html, /https:\/\/api\.maxvideoai\.com\/mcp/);
-    assert.equal((html.match(/data-copy-endpoint=/g) ?? []).length, 2);
+    assert.equal((html.match(/data-copy-endpoint=/g) ?? []).length, 3);
   }
 
   const en = getMcpPageCopy('en').hero.connectActions;

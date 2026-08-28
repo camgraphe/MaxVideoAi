@@ -165,7 +165,7 @@ export function McpConnectActions({
         <code className="mt-3 block select-all overflow-x-auto rounded-[8px] bg-bg px-3 py-2 text-xs text-text-primary dark:bg-black/20 dark:text-white">
           {resourceUrl}
         </code>
-        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+        <div className="mt-3 grid gap-2 sm:grid-cols-3">
           {renderedActions.map((action) => (
             <button
               key={action.client}

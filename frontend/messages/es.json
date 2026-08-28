@@ -136,7 +136,7 @@
       },
       "tools": {
         "items": {
-          "ai-video-assistant": "Asistente de vídeo para ChatGPT y Claude",
+          "ai-video-assistant": "Asistente de vídeo para Claude, ChatGPT y Codex",
           "character-builder": "Personajes IA consistentes",
           "angle": "Cambiar ángulo de cámara",
           "upscale": "Upscale con IA",

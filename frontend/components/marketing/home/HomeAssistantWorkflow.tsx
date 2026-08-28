@@ -12,8 +12,9 @@ const COPY: Record<
     title: string;
     body: string;
     cta: string;
-    chatgpt: string;
     claude: string;
+    chatgpt: string;
+    codex: string;
     prompt: string;
     answer: string;
     catalogLabel: string;
@@ -22,11 +23,12 @@ const COPY: Record<
 > = {
   en: {
     eyebrow: 'FROM CONVERSATION TO RENDER',
-    title: 'Let ChatGPT or Claude plan the video. Generate it with MaxVideoAI.',
+    title: 'Let Claude, ChatGPT or Codex plan the video. Generate it with MaxVideoAI.',
     body: 'Describe the result once. Your assistant can develop the prompts and references, compare quality-first and lower-cost routes, budget the complete film, then ask before any credits are spent.',
-    cta: 'Use MaxVideoAI with ChatGPT or Claude',
-    chatgpt: 'ChatGPT',
+    cta: 'Use MaxVideoAI with Claude, ChatGPT or Codex',
     claude: 'Claude',
+    chatgpt: 'ChatGPT',
+    codex: 'Codex',
     prompt: 'I need a 60-second product film. Show me the best route and a credible lower-cost option.',
     answer: 'I’ll break it into shots, check live model capabilities and price both plans before we generate.',
     catalogLabel: 'Current catalog',
@@ -34,11 +36,12 @@ const COPY: Record<
   },
   fr: {
     eyebrow: 'DE LA CONVERSATION AU RENDU',
-    title: 'Laissez ChatGPT ou Claude préparer la vidéo. Générez-la avec MaxVideoAI.',
+    title: 'Laissez Claude, ChatGPT ou Codex préparer la vidéo. Générez-la avec MaxVideoAI.',
     body: 'Décrivez le résultat une seule fois. Votre assistant peut développer les prompts et références, comparer une approche qualité et des alternatives moins chères, budgéter le film complet puis demander votre accord avant toute dépense.',
-    cta: 'Utiliser MaxVideoAI avec ChatGPT ou Claude',
-    chatgpt: 'ChatGPT',
+    cta: 'Utiliser MaxVideoAI avec Claude, ChatGPT ou Codex',
     claude: 'Claude',
+    chatgpt: 'ChatGPT',
+    codex: 'Codex',
     prompt: 'Je veux un film produit de 60 secondes. Propose le meilleur rendu et une alternative crédible moins chère.',
     answer: 'Je vais le découper en plans, vérifier les capacités actuelles des modèles et chiffrer les deux options avant de générer.',
     catalogLabel: 'Catalogue actuel',
@@ -46,11 +49,12 @@ const COPY: Record<
   },
   es: {
     eyebrow: 'DE LA CONVERSACIÓN AL RESULTADO',
-    title: 'Deja que ChatGPT o Claude prepare el vídeo. Genéralo con MaxVideoAI.',
+    title: 'Deja que Claude, ChatGPT o Codex prepare el vídeo. Genéralo con MaxVideoAI.',
     body: 'Describe el resultado una vez. Tu asistente desarrolla prompts y referencias, compara una ruta de máxima calidad con alternativas más baratas, presupuesta la película y pide permiso antes de gastar créditos.',
-    cta: 'Usar MaxVideoAI con ChatGPT o Claude',
-    chatgpt: 'ChatGPT',
+    cta: 'Usar MaxVideoAI con Claude, ChatGPT o Codex',
     claude: 'Claude',
+    chatgpt: 'ChatGPT',
+    codex: 'Codex',
     prompt: 'Necesito un vídeo de producto de 60 segundos. Dame la mejor ruta y una alternativa más económica creíble.',
     answer: 'Lo dividiré en planos, comprobaré las capacidades actuales y calcularé ambas opciones antes de generar.',
     catalogLabel: 'Catálogo actual',
@@ -59,13 +63,14 @@ const COPY: Record<
 };
 
 const MARKS = [
-  { id: 'chatgpt', light: '/brand/partners/openai/openai-mark-light.svg', dark: '/brand/partners/openai/openai-mark-dark.svg' },
   { id: 'claude', light: '/brand/partners/anthropic/claude-mark-light.svg', dark: '/brand/partners/anthropic/claude-mark-dark.svg' },
+  { id: 'chatgpt', light: '/brand/partners/openai/openai-mark-light.svg', dark: '/brand/partners/openai/openai-mark-dark.svg' },
+  { id: 'codex', light: '/brand/partners/openai/openai-mark-light.svg', dark: '/brand/partners/openai/openai-mark-dark.svg' },
 ] as const;
 
 export function HomeAssistantWorkflow({ locale, href }: { locale: AppLocale; href: string }) {
   const copy = COPY[locale];
-  const labels = { chatgpt: copy.chatgpt, claude: copy.claude };
+  const labels = { claude: copy.claude, chatgpt: copy.chatgpt, codex: copy.codex };
 
   return (
     <section className="dark-section-neon relative overflow-hidden border-b border-hairline bg-bg section">
@@ -73,7 +78,7 @@ export function HomeAssistantWorkflow({ locale, href }: { locale: AppLocale; hre
       <div className="container-page relative grid max-w-[1280px] gap-10 lg:grid-cols-[0.88fr_1.12fr] lg:items-center lg:gap-16">
         <div className="max-w-[590px]">
           <p className="text-xs font-semibold uppercase tracking-micro text-brand">{copy.eyebrow}</p>
-          <div className="mt-5 flex items-center gap-2" aria-label={`${copy.chatgpt} and ${copy.claude}`}>
+          <div className="mt-5 flex flex-wrap items-center gap-2" aria-label={`${copy.claude}, ${copy.chatgpt}, ${copy.codex}`}>
             {MARKS.map((mark) => (
               <span key={mark.id} className="inline-flex h-11 items-center gap-2 rounded-full border border-hairline bg-surface px-3 text-sm font-semibold text-text-primary shadow-sm dark:border-white/[0.14] dark:bg-white/[0.05] dark:text-white">
                 <Image src={mark.light} alt="" width={21} height={21} className="h-[21px] w-[21px] dark:hidden" />
