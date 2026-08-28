@@ -88,7 +88,7 @@ Manage the workspace plugin → disconnect the app connection → revoke the Max
 
 - [OpenAI: Developer mode and MCP apps in ChatGPT](https://help.openai.com/en/articles/12584461-developer-mode-apps-and-full-mcp-connectors-in-chatgpt-beta)
 - [OpenAI: Apps in ChatGPT](https://help.openai.com/en/articles/11487775-connectors-in-chatgpt)
-- [OpenAI: Plugins in Codex](https://help.openai.com/en/articles/20001256-plugins-in-codex)
+- [OpenAI: Plugins in ChatGPT and Codex](https://help.openai.com/en/articles/20001256-plugins-in-codex)
 - [MaxVideoAI compatibility evidence](https://maxvideoai.com/docs/mcp)
 
 Last reviewed: 2026-08-28.

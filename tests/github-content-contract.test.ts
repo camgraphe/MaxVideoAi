@@ -86,6 +86,10 @@ test('the ChatGPT guide presents the shared plugin journey with qualified proof 
   assert.match(guide, /install or connect[\s\S]*OAuth on the first use/i);
   assert.match(guide, /public directory availability[\s\S]{0,80}listing is approved/i);
   assert.match(guide, /developer MCP URL fallback[\s\S]*`https:\/\/api\.maxvideoai\.com\/mcp`/i);
+  assert.match(
+    guide,
+    /\[OpenAI: Plugins in ChatGPT and Codex\]\(https:\/\/help\.openai\.com\/en\/articles\/20001256-plugins-in-codex\)/,
+  );
   assert.match(publicPluginPath, /\*\*Plugins\*\* in ChatGPT[\s\S]*\*\*Apps\*\* if (?:that is|it is) shown[\s\S]*select MaxVideoAI[\s\S]*\*\*Install plugin\*\* if shown[\s\S]*\*\*Connect\*\* if prompted[\s\S]*complete OAuth/i);
   assert.match(publicPluginPath, /@MaxVideoAI[\s\S]*\+ → More[\s\S]*when (?:those controls|the control) (?:are|is) available/i);
   assert.match(developerFallbackPath, /developer mode[\s\S]*Apps → Create[\s\S]*`https:\/\/api\.maxvideoai\.com\/mcp`[\s\S]*Scan Tools/i);
