@@ -4012,6 +4012,7 @@
       "title": "Configuración",
       "tabs": {
         "account": "Cuenta",
+        "connections": "Aplicaciones conectadas",
         "team": "Equipo",
         "privacy": "Privacidad y seguridad",
         "notifications": "Notificaciones"

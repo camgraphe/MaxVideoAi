@@ -3985,6 +3985,7 @@
       "title": "Settings",
       "tabs": {
         "account": "Account",
+        "connections": "Connected apps",
         "team": "Team",
         "privacy": "Privacy & Safety",
         "notifications": "Notifications"

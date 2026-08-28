@@ -4020,6 +4020,7 @@
       "title": "Paramètres",
       "tabs": {
         "account": "Compte",
+        "connections": "Applications connectées",
         "team": "Équipe",
         "privacy": "Confidentialité & sécurité",
         "notifications": "Notifications"
