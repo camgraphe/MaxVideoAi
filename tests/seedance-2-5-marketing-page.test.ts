@@ -37,7 +37,7 @@ const priorityComparisonModels = {
 
 const expectedLaunchCopy = {
   en: {
-    badge: 'New · Up to 30 seconds · 720p · Native audio',
+    badge: 'New · Up to 30 seconds · 1080p · Native audio',
     primaryCta: 'Generate with Seedance 2.5',
     secondaryCta: 'View Seedance examples',
     compareCta: 'Compare with Seedance 2.0',
@@ -46,7 +46,7 @@ const expectedLaunchCopy = {
     pricingHref: '/pricing#seedance-2-5-pricing',
   },
   fr: {
-    badge: 'Nouveau · Jusqu’à 30 secondes · 720p · Audio natif',
+    badge: 'Nouveau · Jusqu’à 30 secondes · 1080p · Audio natif',
     primaryCta: 'Générer avec Seedance 2.5',
     secondaryCta: 'Voir les exemples Seedance',
     compareCta: 'Comparer avec Seedance 2.0',
@@ -55,7 +55,7 @@ const expectedLaunchCopy = {
     pricingHref: '/fr/tarifs#seedance-2-5-pricing',
   },
   es: {
-    badge: 'Nuevo · Hasta 30 segundos · 720p · Audio nativo',
+    badge: 'Nuevo · Hasta 30 segundos · 1080p · Audio nativo',
     primaryCta: 'Generar con Seedance 2.5',
     secondaryCta: 'Ver ejemplos de Seedance',
     compareCta: 'Comparar con Seedance 2.0',
@@ -79,7 +79,13 @@ test('Seedance 2.5 uses the public conversion template with pricing and comparis
   assert.equal(template.pricing.anchorHref, '#pricing');
   assert.deepEqual(
     template.pricing.presets.map(({ id }) => id),
-    ['4s-480p', '15s-720p-audio', '24s-720p', 'max-duration'],
+    ['4s-480p', '15s-720p-audio', '24s-1080p', 'max-duration'],
+  );
+  assert.equal(
+    template.pricing.presets.some(
+      (preset) => 'resolution' in preset && preset.resolution === '1080p'
+    ),
+    true,
   );
   assert.equal(template.sections.examples, true);
   assert.equal(template.sections.prompting, true);
@@ -104,6 +110,7 @@ test('Seedance 2.5 launches with three localized, indexable comparison decisions
     for (const locale of locales) {
       const override = getComparePageOverride(locale, comparisonSlug);
       assert.ok(override?.quickVerdict?.body, `${locale} ${comparisonSlug} quick verdict`);
+      assert.match(JSON.stringify(override), /1080p/i, `${locale} ${comparisonSlug} 1080p capability`);
       const expectedLinks = priorityComparisonModels[comparisonSlug].flatMap((modelSlug) => [
         locale === 'en'
           ? `/models/${modelSlug}`
@@ -203,6 +210,8 @@ test('Seedance 2.5 localized marketing content converts in EN, FR, and ES withou
     });
     assert.equal(decision.modelSlug, slug);
     assert.equal(decision.hero.eyebrow, launchCopy.badge);
+    assert.match(decision.hero.subtitle, /1080p/i);
+    assert.match(decision.features[0]?.body ?? '', /1080p/i);
     assert.doesNotMatch(
       decision.hero.subtitle,
       /coherent motion|mouvement cohérent|movimiento coherente/i,

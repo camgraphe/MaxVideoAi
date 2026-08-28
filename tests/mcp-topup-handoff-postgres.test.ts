@@ -21,6 +21,7 @@ import { createMcpTopupHandoff } from '../frontend/src/server/agent-api/topup-ha
 import { getWalletSummary } from '../frontend/src/server/wallet-summary';
 
 const migrationPath = join(process.cwd(), 'neon/migrations/30_mcp_paid_generation.sql');
+const quoteLifetimeMigrationPath = join(process.cwd(), 'neon/migrations/39_mcp_quote_lifetime.sql');
 const SECRET = '0123456789abcdef0123456789abcdef';
 const principal: AgentPrincipal = {
   userId: 'p9-pg-user',
@@ -106,6 +107,10 @@ test('top-up handoff invalidation and ledger non-mutation execute atomically in 
   ], { encoding: 'utf8' });
   const migration = psql('--single-transaction', '-v', 'ON_ERROR_STOP=1', '-f', migrationPath);
   assert.equal(migration.status, 0, failure(migration));
+  const quoteLifetimeMigration = psql(
+    '--single-transaction', '-v', 'ON_ERROR_STOP=1', '-f', quoteLifetimeMigrationPath,
+  );
+  assert.equal(quoteLifetimeMigration.status, 0, failure(quoteLifetimeMigration));
   const schema = psql('-v', 'ON_ERROR_STOP=1', '-c', `
     CREATE TABLE app_receipts (
       id bigserial PRIMARY KEY,

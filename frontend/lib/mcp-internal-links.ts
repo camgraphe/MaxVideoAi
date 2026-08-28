@@ -40,7 +40,7 @@ const LABELS: Record<AppLocale, Record<McpInternalLinkPlacement, string>> = {
   es: {
     home: 'Usar MaxVideoAI con ChatGPT o Claude',
     footer: 'MaxVideoAI para ChatGPT y Claude',
-    payg: 'Planifica un presupuesto de vídeo con ChatGPT o Claude',
+    payg: 'Planifica un presupuesto de video con ChatGPT o Claude',
     models: 'Compara modelos desde una idea asistida',
     model: 'Pide a ChatGPT o Claude que presupueste este modelo en tu película',
     comparison: 'Convierte esta comparativa en un presupuesto de vídeo completo',

@@ -297,7 +297,10 @@ test('prepare_generation SDK validation rejects unknown top-level routing and fu
     async listRecentGenerations() { throw new Error('unused'); },
     async createTopupLink() { throw new Error('unused'); },
   };
-  const server = createMaxVideoAiMcpServer(principal, services, { paidGeneration: true });
+  const server = createMaxVideoAiMcpServer(principal, services, {
+    paidGeneration: true,
+    referenceUploads: false,
+  });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   const client = new Client({ name: 'trial-strict-input-contract', version: '1.0.0' });
   await server.connect(serverTransport);

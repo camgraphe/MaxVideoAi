@@ -2,15 +2,15 @@
   "marketingName": "Seedance 2.5",
   "versionLabel": "2.5",
   "seo": {
-    "title": "Générateur vidéo IA Seedance 2.5 : 30 s, 720p et audio",
-    "description": "Générez des vidéos Seedance 2.5 de 4 à 30 secondes en 480p ou 720p à partir de texte, d’images de départ et de fin, de références multimodales, du montage vidéo, de la prolongation et d’un audio optionnel.",
+    "title": "Générateur vidéo IA Seedance 2.5 : 30 s, 1080p et audio",
+    "description": "Générez des vidéos Seedance 2.5 de 4 à 30 secondes jusqu’en 1080p à partir de texte, d’images de départ et de fin, de références multimodales, du montage vidéo, de la prolongation et d’un audio optionnel.",
     "image": "/models/seedance-2-5-launch.jpg"
   },
-  "overview": "Créez des vidéos de 4 à 30 secondes aux formats paysage, carré ou vertical, en 480p ou 720p à 24 FPS. Partez d’un texte ou d’images, dirigez le résultat avec des références multimodales, montez ou prolongez une vidéo et ajoutez un audio généré selon les besoins du projet.",
+  "overview": "Créez des vidéos de 4 à 30 secondes aux formats paysage, carré ou vertical, en 480p, 720p ou 1080p à 24 FPS. Partez d’un texte ou d’images, dirigez le résultat avec des références multimodales, montez ou prolongez une vidéo et ajoutez un audio généré selon les besoins du projet.",
   "hero": {
     "title": "Seedance 2.5 — créez des vidéos IA plus longues avec un contrôle multimodal",
-    "intro": "Transformez un prompt, des images ou des références en vidéo cohérente de 4 à 30 secondes, en 480p ou 720p, avec un audio généré optionnel.",
-    "badge": "Nouveau · Jusqu’à 30 secondes · 720p · Audio natif",
+    "intro": "Transformez un prompt, des images ou des références en vidéo cohérente de 4 à 30 secondes, jusqu’en 1080p, avec un audio généré optionnel.",
+    "badge": "Nouveau · Jusqu’à 30 secondes · 1080p · Audio natif",
     "ctaPrimary": {
       "label": "Générer avec Seedance 2.5",
       "href": "/app?engine=seedance-2-5"
@@ -55,7 +55,7 @@
     },
     {
       "label": "Sortie",
-      "body": "480p ou 720p · 21:9, 16:9, 4:3, 1:1, 3:4 ou 9:16 · 24 FPS"
+      "body": "480p, 720p ou 1080p · 21:9, 16:9, 4:3, 1:1, 3:4 ou 9:16 · 24 FPS"
     },
     {
       "label": "Entrées de création",
@@ -100,9 +100,9 @@
   "decision": {
     "modelSlug": "seedance-2-5",
     "hero": {
-      "eyebrow": "Nouveau · Jusqu’à 30 secondes · 720p · Audio natif",
+      "eyebrow": "Nouveau · Jusqu’à 30 secondes · 1080p · Audio natif",
       "title": "Seedance 2.5",
-      "subtitle": "Créez des vidéos de 4 à 30 secondes à partir de texte, d’images de départ et de fin, de références multimodales ou d’une vidéo source, en 480p/720p avec un audio généré optionnel.",
+      "subtitle": "Créez des vidéos de 4 à 30 secondes à partir de texte, d’images de départ et de fin, de références multimodales ou d’une vidéo source, jusqu’en 1080p avec un audio généré optionnel.",
       "subtitleHighlights": [
         "vidéos de 4 à 30 secondes",
         "références multimodales",
@@ -146,7 +146,7 @@
     "features": [
       {
         "title": "Vidéo de 4 à 30 secondes",
-        "body": "Choisissez la durée adaptée au récit et générez en 480p ou 720p à 24 FPS.",
+        "body": "Choisissez la durée adaptée au récit et générez en 480p, 720p ou 1080p à 24 FPS.",
         "tone": "duration"
       },
       {
@@ -217,8 +217,8 @@
       "ctaHref": "/app?engine=seedance-2-5"
     },
     "meta": {
-      "title": "Générateur vidéo IA Seedance 2.5 : 30 s, 720p et audio",
-      "description": "Générez des vidéos Seedance 2.5 de 4 à 30 secondes en 480p ou 720p à partir de texte, d’images, de références multimodales, du montage vidéo, de la prolongation et d’un audio optionnel."
+      "title": "Générateur vidéo IA Seedance 2.5 : 30 s, 1080p et audio",
+      "description": "Générez des vidéos Seedance 2.5 de 4 à 30 secondes jusqu’en 1080p à partir de texte, d’images, de références multimodales, du montage vidéo, de la prolongation et d’un audio optionnel."
     }
   },
   "prompting": {

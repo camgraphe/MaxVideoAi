@@ -18,7 +18,10 @@ import {
 import type { ResolvedReference } from '../frontend/src/server/agent-api/reference-types';
 import { resolveGenerationReferences } from '../frontend/src/server/agent-api/resolve-generation-references';
 import { deriveGenerationAttachmentReferences } from '../frontend/app/api/generate/_lib/attachment-references';
-import { buildBytePlusSeedancePayload } from '../frontend/src/server/video-providers/byteplus-modelark';
+import {
+  buildBytePlusSeedancePayload,
+  getBytePlusSeedanceAllowedResolutions,
+} from '../frontend/src/server/video-providers/byteplus-modelark';
 
 const engine = listFalEngines().find((candidate) => candidate.id === 'seedance-2-5')?.engine;
 assert.ok(engine);
@@ -50,7 +53,7 @@ function canonicalRequest(
     prompt: `Exercise ${mode} projection`,
     settings: {
       durationSec: 4,
-      resolution: '480p',
+      resolution: '1080p',
       ...(mode === 'i2v' ? {} : { aspectRatio: '16:9' }),
       audio: true,
     },
@@ -311,12 +314,12 @@ test('normalized private references reach actual BytePlus payloads for every See
       referenceImageUrls: attachments.normalizedReferenceImages,
       referenceVideoUrls: attachments.videoUrls,
       referenceAudioUrls: attachments.audioUrls,
-      resolution: '480p',
+      resolution: '1080p',
       ratio: body.aspectRatio as string | undefined,
       generateAudio: true,
       allowedModes: ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'],
       allowedAspectRatios: ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
-      allowedResolutions: ['480p', '720p'],
+      allowedResolutions: getBytePlusSeedanceAllowedResolutions('seedance-2-5'),
       allowedDurationOptions: [4],
     });
     const media = payload.content.slice(1).map((item) => ({

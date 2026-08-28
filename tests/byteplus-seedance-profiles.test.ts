@@ -89,7 +89,7 @@ const expected = [
     defaultResolution: '480p',
     defaultAspectRatio: '16:9',
     motionControls: false,
-    resolutions: ['480p', '720p'],
+    resolutions: ['480p', '720p', '1080p'],
     durations: Array.from({ length: 27 }, (_, index) => index + 4),
     alwaysDirect: false,
     providerOverrideKey: 'SEEDANCE_2_5_PROVIDER',
@@ -185,7 +185,7 @@ test('admin-only policy preserves profile defaults and treats malformed values a
   }
 });
 
-test('Seedance 2.5 runtime keeps the smallest confirmed canary defaults', () => {
+test('Seedance 2.5 runtime keeps its canary defaults while accepting 1080p output', () => {
   const entry = getFalEngineById('seedance-2-5');
   assert.ok(entry);
   const profile = requireBytePlusSeedanceProfile('seedance-2-5');
@@ -211,6 +211,11 @@ test('Seedance 2.5 runtime keeps the smallest confirmed canary defaults', () => 
     '9:16',
   ]);
   assert.deepEqual(runtime.modes, ['t2v']);
+  assert.deepEqual(runtime.resolutions, ['480p', '720p', '1080p']);
+  assert.deepEqual(
+    fields.find((field) => field.id === 'resolution')?.values,
+    ['480p', '720p', '1080p']
+  );
   assert.equal(profile.generatedAudio, true);
   assert.equal(runtime.audio, true);
   assert.equal(runtime.extend, false);
@@ -220,13 +225,13 @@ test('Seedance 2.5 runtime keeps the smallest confirmed canary defaults', () => 
     normalizeBytePlusOptions({
       engineId: 'seedance-2-5',
       durationSec: 15,
-      requestedResolution: '720p',
+      requestedResolution: '1080p',
       aspectRatio: '9:16',
     }),
     {
       ok: true,
       durationSec: 15,
-      resolution: '720p',
+      resolution: '1080p',
       aspectRatio: '9:16',
       generatedAudio: true,
     },

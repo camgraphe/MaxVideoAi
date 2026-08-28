@@ -126,6 +126,7 @@ export const enPayAsYouGoContent = {
     ],
   },
   mcpPlanning: {
+    title: 'Plan the model mix before generation',
     body: 'Starting from a creative brief? Compare suitable models and review the budget before a connected generation.',
   },
   quoteFactors: {

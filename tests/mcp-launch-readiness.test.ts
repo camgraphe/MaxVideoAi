@@ -185,5 +185,10 @@ test('the compatibility matrix records exact controlled hosts without overstatin
   assert.match(compatibility, /ChatGPT Apps directory[\s\S]+Not run/i);
   assert.match(compatibility, /project estimate/i);
   assert.match(compatibility, /prepare_generation.*confirm_generation/is);
-  assert.match(compatibility, /all eight[^\n]+false/i);
+  assert.match(
+    compatibility,
+    /Publication: transport, OAuth, discovery, paid generation, reference uploads,[\s\S]{0,100}enabled/i,
+  );
+  assert.match(compatibility, /introductory\s+trial remains disabled/i);
+  assert.doesNotMatch(compatibility, /all eight[^\n]+false/i);
 });

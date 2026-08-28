@@ -29,6 +29,7 @@ import {
   markQuoteAccepted,
   markQuoteExpired,
   markQuoteFailed,
+  MCP_QUOTE_LIFETIME_SECONDS,
 } from '../frontend/src/server/agent-api/quote-repository';
 import { checkMcpConfirmationSpendingLimits } from '../frontend/src/server/agent-api/spending-limits';
 import { getGenerationStatus } from '../frontend/src/server/generations/generation-status';
@@ -37,6 +38,7 @@ import type { EngineCaps, EngineModeUiCaps } from '../frontend/types/engines';
 
 const root = process.cwd();
 const migrationPath = join(root, 'neon/migrations/30_mcp_paid_generation.sql');
+const quoteLifetimeMigrationPath = join(root, 'neon/migrations/39_mcp_quote_lifetime.sql');
 
 function commandExists(command: string): boolean {
   return spawnSync('sh', ['-c', `command -v ${command}`], { encoding: 'utf8' }).status === 0;
@@ -360,6 +362,10 @@ test('same-quote video/image races, distinct-quote cap race, and expiry wait exe
   ], { encoding: 'utf8' });
   const migration = psql('--single-transaction', '-v', 'ON_ERROR_STOP=1', '-f', migrationPath);
   assert.equal(migration.status, 0, commandFailure(migration));
+  const quoteLifetimeMigration = psql(
+    '--single-transaction', '-v', 'ON_ERROR_STOP=1', '-f', quoteLifetimeMigrationPath,
+  );
+  assert.equal(quoteLifetimeMigration.status, 0, commandFailure(quoteLifetimeMigration));
   const schema = psql('-v', 'ON_ERROR_STOP=1', '-c', `
     CREATE TABLE app_receipts (
       id bigserial PRIMARY KEY, user_id text NOT NULL, type text NOT NULL, amount_cents integer NOT NULL,
@@ -554,7 +560,7 @@ test('same-quote video/image races, distinct-quote cap race, and expiry wait exe
   const expiryClient = 'expiry-client';
   const expiryQuote = '00000000-0000-4000-8000-000000000131';
   const expiryRequest = requestFor('video', 'expiry');
-  const createdAt = new Date(Date.now() - 9 * 60_000 - 59_500);
+  const createdAt = new Date(Date.now() - MCP_QUOTE_LIFETIME_SECONDS * 1000 + 500);
   await pool.query(
     `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description)
      VALUES ($1, 'topup', 1000, 'USD', 'local expiry topup')`,

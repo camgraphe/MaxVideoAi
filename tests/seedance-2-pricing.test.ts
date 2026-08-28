@@ -74,6 +74,15 @@ test('Seedance 2.5 public quotes cover no-video and video-input generation', asy
       expectedInputType: 'no_video_input',
     },
     {
+      id: 't2v-10s-1080p-audio-on',
+      mode: 't2v' as const,
+      durationSec: 10,
+      resolution: '1080p',
+      audio: true,
+      hasVideoInput: false,
+      expectedInputType: 'no_video_input',
+    },
+    {
       id: 'i2v-24s-720p-audio-off',
       mode: 'i2v' as const,
       durationSec: 24,
@@ -162,6 +171,11 @@ test('Seedance 2.5 public quotes cover no-video and video-input generation', asy
 
   assert.equal(quotes.get('t2v-4s-480p-audio-off')?.totalCents, 103);
   assert.equal(quotes.get('t2v-15s-720p-audio-on')?.totalCents, 867);
+  assert.ok(
+    Number(quotes.get('t2v-10s-1080p-audio-on')?.totalCents) >
+      Number(quotes.get('t2v-15s-720p-audio-on')?.totalCents),
+    'a 10-second 1080p render should cost more than a 15-second 720p render at the same input rate'
+  );
   assert.ok(
     Number(quotes.get('v2v-15s-720p-audio-on')?.totalCents) <
       Number(quotes.get('t2v-15s-720p-audio-on')?.totalCents),

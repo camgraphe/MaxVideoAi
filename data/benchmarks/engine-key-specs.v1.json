@@ -814,13 +814,15 @@
     },
     {
       "modelSlug": "seedance-2-5",
-      "sources": [],
+      "sources": [
+        "https://ai.byteplus.com/ark"
+      ],
       "provenance": {
         "basis": "maxvideoai-production-route-contract",
         "mechanicsSources": [
           "https://docs.byteplus.com/en/docs/modelark/1520757"
         ],
-        "note": "Generic ModelArk asynchronous video task mechanics only; not evidence for Seedance 2.5 limits."
+        "note": "The live ModelArk product announcement is the source for Seedance 2.5 1080p availability; the documentation URL covers generic asynchronous video task mechanics only."
       },
       "keySpecs": {
         "textToVideo": "Supported",
@@ -840,7 +842,7 @@
         "referenceImageStyle": "Up to 30 image references",
         "referenceVideo": "Up to 10 video references",
         "referenceAudio": "Up to 10 audio references",
-        "maxResolution": "480p / 720p",
+        "maxResolution": "480p / 720p / 1080p",
         "maxDuration": "4-30s",
         "aspectRatios": [
           "21:9",

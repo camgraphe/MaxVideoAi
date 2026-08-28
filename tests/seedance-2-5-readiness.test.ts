@@ -159,7 +159,7 @@ test('Seedance 2.5 owns a dedicated fail-closed ModelArk profile', () => {
   assert.equal(profile.modelConfigKey, 'seedance25ModelId');
   assert.equal(profile.pricingProfileKey, 'seedance25');
   assert.deepEqual(profile.supportedModes, ['t2v', 'i2v', 'ref2v', 'v2v', 'extend']);
-  assert.deepEqual(profile.resolutions, ['480p', '720p']);
+  assert.deepEqual(profile.resolutions, ['480p', '720p', '1080p']);
   assert.deepEqual(profile.aspectRatios, supportedAspectRatios);
   assert.deepEqual(profile.durationOptions, Array.from({ length: 27 }, (_, index) => index + 4));
   assert.equal(profile.defaultDurationSec, 4);

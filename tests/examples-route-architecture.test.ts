@@ -190,6 +190,10 @@ test('Seedance examples landing leads with Seedance 2.5 while retaining the fami
     assert.match(localizedLanding.intro, /Seedance 2\.0/);
     assert.match(localizedLanding.intro, /Fast/);
     assert.match(localizedLanding.intro, /Mini/);
+    assert.match(
+      [localizedLanding.intro, localizedLanding.summary, localizedLanding.strengthsLimits].join(' '),
+      /1080p/i,
+    );
 
     const localizedMetadata = buildSeoMetadata({
       locale,

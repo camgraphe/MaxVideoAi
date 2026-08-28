@@ -396,8 +396,14 @@ test('list_media is feature-gated, strict, read-only, non-destructive, and close
       return { items: [], nextCursor: null, hasMore: false };
     },
   });
-  const disabled = createMaxVideoAiMcpServer(principal, services, { referenceUploads: false } as never);
-  const enabled = createMaxVideoAiMcpServer(principal, services, { referenceUploads: true } as never);
+  const disabled = createMaxVideoAiMcpServer(principal, services, {
+    paidGeneration: false,
+    referenceUploads: false,
+  });
+  const enabled = createMaxVideoAiMcpServer(principal, services, {
+    paidGeneration: false,
+    referenceUploads: true,
+  });
   const [disabledClientTransport, disabledServerTransport] = InMemoryTransport.createLinkedPair();
   const [enabledClientTransport, enabledServerTransport] = InMemoryTransport.createLinkedPair();
   const disabledClient = new Client({ name: 'r2-disabled', version: '1.0.0' });

@@ -5228,13 +5228,25 @@
       "id": "pricing-hub-video:seedance-2-5:10s-1080p",
       "surface": "pricing-hub-video",
       "engineId": "seedance-2-5",
-      "status": "unavailable"
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 1300,
+      "unit": "scenario",
+      "quantity": 1,
+      "displayedAmount": "$13.00",
+      "compatibilityProfile": "standard"
     },
     {
       "id": "pricing-hub-video:seedance-2-5:10s-1080p-audio",
       "surface": "pricing-hub-video",
       "engineId": "seedance-2-5",
-      "status": "unavailable"
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 1300,
+      "unit": "scenario",
+      "quantity": 1,
+      "displayedAmount": "$13.00",
+      "compatibilityProfile": "standard"
     },
     {
       "id": "pricing-hub-video:seedance-2-5:10s-720p",
@@ -5270,7 +5282,13 @@
       "id": "pricing-hub-video:seedance-2-5:8s-1080p",
       "surface": "pricing-hub-video",
       "engineId": "seedance-2-5",
-      "status": "unavailable"
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 1040,
+      "unit": "scenario",
+      "quantity": 1,
+      "displayedAmount": "$10.40",
+      "compatibilityProfile": "standard"
     },
     {
       "id": "pricing-hub-video:seedance-2-5:entry-route",

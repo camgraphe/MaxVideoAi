@@ -9,7 +9,7 @@
     "heroIntro": "Choose Seedance 2.5 when the production needs up to 30 seconds, a large multimodal reference set, video editing, or extension in one broad workflow. Choose Veo 3.1 when the brief prioritizes its premium prompt-adherence and realism positioning, 4K delivery, or a tightly defined eight-second cinematic shot.",
     "quickVerdict": {
       "title": "Quick verdict",
-      "body": "Seedance 2.5 offers the longer and more reference-rich workflow: 4 to 30 seconds, up to 50 combined image, video, and audio references, editing, extension, and optional generated audio at up to 720p. Veo 3.1 is the premium short-form choice for prompt adherence, photorealistic finish, native audio, first-and-last-frame control, and output up to 4K, with clips up to eight seconds."
+      "body": "Seedance 2.5 offers the longer and more reference-rich workflow: 4 to 30 seconds, up to 50 combined image, video, and audio references, editing, extension, and optional generated audio at up to 1080p. Veo 3.1 is the premium short-form choice for prompt adherence, photorealistic finish, native audio, first-and-last-frame control, and output up to 4K, with clips up to eight seconds."
     },
     "topCards": [
       {
@@ -66,7 +66,7 @@
         },
         {
           "question": "Which model should I choose for 4K output?",
-          "answer": "Choose Veo 3.1 when 4K delivery is required. Seedance 2.5 currently outputs at 480p or 720p and should be chosen for its longer, broader control workflow instead."
+          "answer": "Choose Veo 3.1 when 4K delivery is required. Seedance 2.5 outputs at 480p, 720p or 1080p and should be chosen for its longer, broader control workflow."
         },
         {
           "question": "How do Seedance 2.5 and Veo 3.1 prices compare?",
@@ -84,7 +84,7 @@
     "heroIntro": "Choisissez Seedance 2.5 lorsque la production demande jusqu’à 30 secondes, un grand ensemble de références multimodales, du montage vidéo ou de l’extension dans un même workflow. Choisissez Veo 3.1 lorsque le brief privilégie son positionnement premium sur le respect du prompt et le réalisme, une livraison en 4K ou un plan cinématographique très défini de huit secondes.",
     "quickVerdict": {
       "title": "Verdict rapide",
-      "body": "Seedance 2.5 propose le workflow le plus long et le plus riche en références : de 4 à 30 secondes, jusqu’à 50 références image, vidéo et audio combinées, montage, extension et audio généré optionnel, jusqu’au 720p. Veo 3.1 est le choix premium en format court pour le respect du prompt, le rendu photoréaliste, l’audio natif, le contrôle de première et dernière image et une sortie jusqu’en 4K, sur des clips de huit secondes maximum."
+      "body": "Seedance 2.5 propose le workflow le plus long et le plus riche en références : de 4 à 30 secondes, jusqu’à 50 références image, vidéo et audio combinées, montage, extension et audio généré optionnel, jusqu’au 1080p. Veo 3.1 est le choix premium en format court pour le respect du prompt, le rendu photoréaliste, l’audio natif, le contrôle de première et dernière image et une sortie jusqu’en 4K, sur des clips de huit secondes maximum."
     },
     "topCards": [
       {
@@ -141,7 +141,7 @@
         },
         {
           "question": "Quel modèle choisir pour une sortie en 4K ?",
-          "answer": "Choisissez Veo 3.1 si la livraison en 4K est obligatoire. Seedance 2.5 sort actuellement en 480p ou 720p et doit plutôt être choisi pour son workflow plus long et son contrôle plus large."
+          "answer": "Choisissez Veo 3.1 si la livraison en 4K est obligatoire. Seedance 2.5 propose des sorties en 480p, 720p ou 1080p et doit être choisi pour son workflow plus long et son contrôle plus large."
         },
         {
           "question": "Comment comparer le prix de Seedance 2.5 et Veo 3.1 ?",
@@ -159,7 +159,7 @@
     "heroIntro": "Elige Seedance 2.5 cuando la producción necesite hasta 30 segundos, un conjunto amplio de referencias multimodales, edición de vídeo o extensión dentro de un solo flujo. Elige Veo 3.1 cuando el brief priorice su posicionamiento prémium en fidelidad al prompt y realismo, una entrega en 4K o una toma cinematográfica muy definida de ocho segundos.",
     "quickVerdict": {
       "title": "Veredicto rápido",
-      "body": "Seedance 2.5 ofrece el flujo más largo y rico en referencias: de 4 a 30 segundos, hasta 50 referencias combinadas de imagen, vídeo y audio, edición, extensión y audio generado opcional, con salida hasta 720p. Veo 3.1 es la opción prémium de formato corto para fidelidad al prompt, acabado fotorrealista, audio nativo, control de primer y último fotograma y salida hasta 4K, con clips de hasta ocho segundos."
+      "body": "Seedance 2.5 ofrece el flujo más largo y rico en referencias: de 4 a 30 segundos, hasta 50 referencias combinadas de imagen, vídeo y audio, edición, extensión y audio generado opcional, con salida hasta 1080p. Veo 3.1 es la opción prémium de formato corto para fidelidad al prompt, acabado fotorrealista, audio nativo, control de primer y último fotograma y salida hasta 4K, con clips de hasta ocho segundos."
     },
     "topCards": [
       {
@@ -216,7 +216,7 @@
         },
         {
           "question": "¿Qué modelo debería elegir para salida en 4K?",
-          "answer": "Elige Veo 3.1 cuando la entrega en 4K sea obligatoria. Seedance 2.5 genera actualmente en 480p o 720p y conviene por su flujo más largo y su control más amplio."
+          "answer": "Elige Veo 3.1 cuando la entrega en 4K sea obligatoria. Seedance 2.5 genera en 480p, 720p o 1080p y conviene por su flujo más largo y su control más amplio."
         },
         {
           "question": "¿Cómo comparo el precio de Seedance 2.5 y Veo 3.1?",

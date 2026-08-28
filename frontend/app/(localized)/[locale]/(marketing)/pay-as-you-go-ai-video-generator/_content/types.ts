@@ -102,7 +102,7 @@ export type PayAsYouGoContent = {
     rows: Array<{ label: string; payg: string; subscription: string }>;
   };
   workflow: { header: PaygHeaderCopy; items: Array<PaygCard & { icon: PaygIconId }> };
-  mcpPlanning: { body: string };
+  mcpPlanning: { title: string; body: string };
   quoteFactors: { header: PaygHeaderCopy; items: Array<PaygCard & { icon: PaygIconId }> };
   pricing: {
     header: PaygHeaderCopy;

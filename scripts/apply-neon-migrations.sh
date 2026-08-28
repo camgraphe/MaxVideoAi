@@ -3,20 +3,28 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-load_env_file() {
-  local file="$1"
-  if [[ -f "$file" ]]; then
-    set -a
-    # shellcheck disable=SC1090
-    source "$file"
-    set +a
-  fi
-}
-
-load_env_file "$ROOT_DIR/.env.local"
-load_env_file "$ROOT_DIR/frontend/.env.local"
-
 MIGRATION_DATABASE_URL="${DATABASE_URL_UNPOOLED:-${DATABASE_URL:-}}"
+
+if [[ -z "$MIGRATION_DATABASE_URL" ]]; then
+  for env_file in "$ROOT_DIR/.env.local" "$ROOT_DIR/frontend/.env.local"; do
+    [[ -f "$env_file" ]] || continue
+    candidate_url="$(node - "$env_file" <<'NODE'
+try {
+  process.loadEnvFile(process.argv[2]);
+  process.stdout.write(process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL || '');
+} catch {
+  process.exit(1);
+}
+NODE
+)" || {
+      echo "Unable to parse $env_file as an environment file." >&2
+      exit 1
+    }
+    if [[ -n "$candidate_url" ]]; then
+      MIGRATION_DATABASE_URL="$candidate_url"
+    fi
+  done
+fi
 
 if [[ -z "$MIGRATION_DATABASE_URL" ]]; then
   echo "DATABASE_URL_UNPOOLED or DATABASE_URL is required. It must point to Neon, not Supabase." >&2

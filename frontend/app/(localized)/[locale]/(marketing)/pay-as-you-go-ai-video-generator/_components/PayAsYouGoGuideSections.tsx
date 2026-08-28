@@ -126,7 +126,10 @@ export function PayAsYouGoMcpPlanningSection({ data }: PayAsYouGoPageDataProps) 
   return (
     <section className="border-b border-hairline bg-surface">
       <div className={`${PAYG_CONTAINER_CLASS_NAME} flex flex-col gap-3 py-8 sm:flex-row sm:items-center sm:justify-between`}>
-        <p className="max-w-3xl text-sm leading-6 text-text-secondary">{data.mcpPlanning.body}</p>
+        <div className="max-w-3xl">
+          <h2 className="text-xl font-semibold tracking-normal text-text-primary">{data.mcpPlanning.title}</h2>
+          <p className="mt-2 text-sm leading-6 text-text-secondary">{data.mcpPlanning.body}</p>
+        </div>
         <Link href={data.mcpPlanning.href} className="shrink-0 text-sm font-semibold text-brand hover:text-brandHover">
           {data.mcpPlanning.label} →
         </Link>

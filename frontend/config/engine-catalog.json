@@ -12604,7 +12604,8 @@
       "maxDurationSec": 30,
       "resolutions": [
         "480p",
-        "720p"
+        "720p",
+        "1080p"
       ],
       "aspectRatios": [
         "21:9",
@@ -12728,7 +12729,8 @@
             "label": "Resolution",
             "values": [
               "480p",
-              "720p"
+              "720p",
+              "1080p"
             ],
             "default": "480p"
           },
@@ -12922,6 +12924,32 @@
                 "width": 720,
                 "height": 1280
               }
+            },
+            "1080p": {
+              "21:9": {
+                "width": 2520,
+                "height": 1080
+              },
+              "16:9": {
+                "width": 1920,
+                "height": 1080
+              },
+              "4:3": {
+                "width": 1440,
+                "height": 1080
+              },
+              "1:1": {
+                "width": 1080,
+                "height": 1080
+              },
+              "3:4": {
+                "width": 1080,
+                "height": 1440
+              },
+              "9:16": {
+                "width": 1080,
+                "height": 1920
+              }
             }
           },
           "rounding": "ceil_cent"
@@ -12932,7 +12960,7 @@
         "currency": "USD",
         "notes": "Price is calculated before generation based on duration, resolution, and whether a source video is used."
       },
-      "updatedAt": "2026-08-07T00:00:00Z",
+      "updatedAt": "2026-08-28T00:00:00Z",
       "ttlSec": 600,
       "providerMeta": {
         "provider": "byteplus_modelark",
@@ -12983,7 +13011,8 @@
           },
           "resolution": [
             "480p",
-            "720p"
+            "720p",
+            "1080p"
           ],
           "aspectRatio": [
             "21:9",
@@ -12994,7 +13023,7 @@
             "9:16"
           ],
           "audioToggle": true,
-          "notes": "Create 4-30 second 480p or 720p videos in landscape, square, or vertical formats with generated audio available."
+          "notes": "Create 4-30 second videos up to 1080p in landscape, square, or vertical formats with generated audio available."
         }
       },
       {
@@ -13038,7 +13067,8 @@
           },
           "resolution": [
             "480p",
-            "720p"
+            "720p",
+            "1080p"
           ],
           "acceptsImageFormats": [
             "jpg",
@@ -13048,7 +13078,7 @@
           ],
           "maxUploadMB": 30,
           "audioToggle": true,
-          "notes": "Animate one start image with an optional end image; 4-30 seconds, 480p/720p, landscape, square, or vertical, with generated audio. images: jpg, jpeg, png, webp"
+          "notes": "Animate one start image with an optional end image; 4-30 seconds, up to 1080p, landscape, square, or vertical, with generated audio. images: jpg, jpeg, png, webp"
         }
       },
       {
@@ -13092,7 +13122,8 @@
           },
           "resolution": [
             "480p",
-            "720p"
+            "720p",
+            "1080p"
           ],
           "aspectRatio": [
             "21:9",
@@ -13154,7 +13185,8 @@
           },
           "resolution": [
             "480p",
-            "720p"
+            "720p",
+            "1080p"
           ],
           "aspectRatio": [
             "21:9",
@@ -13172,7 +13204,7 @@
           ],
           "maxUploadMB": 50,
           "audioToggle": true,
-          "notes": "Edit one source video with optional image and audio references; 4-30 seconds, 480p/720p, landscape, square, or vertical, with generated audio. images: jpg, jpeg, png, webp; video: mp4, mov; audio: mp3, wav"
+          "notes": "Edit one source video with optional image and audio references; 4-30 seconds, up to 1080p, landscape, square, or vertical, with generated audio. images: jpg, jpeg, png, webp; video: mp4, mov; audio: mp3, wav"
         }
       },
       {
@@ -13216,7 +13248,8 @@
           },
           "resolution": [
             "480p",
-            "720p"
+            "720p",
+            "1080p"
           ],
           "aspectRatio": [
             "21:9",
@@ -13228,7 +13261,7 @@
           ],
           "maxUploadMB": 50,
           "audioToggle": true,
-          "notes": "Continue one to three source clips; 4-30 seconds, 480p/720p, landscape, square, or vertical, with generated audio. video: mp4, mov"
+          "notes": "Continue one to three source clips; 4-30 seconds, up to 1080p, landscape, square, or vertical, with generated audio. video: mp4, mov"
         }
       }
     ],
