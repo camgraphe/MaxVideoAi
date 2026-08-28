@@ -14,6 +14,7 @@ type IntegrationHostGuide = {
   hostId: McpCompatibilityHostId;
   title: string;
   intro: string;
+  installInstruction: string;
   steps: Array<{ title: string; body: string; proof?: IntegrationStepProof }>;
   commandLabel?: string;
   commands: string[];
@@ -45,6 +46,19 @@ export type IntegrationPageCopy = {
     eyebrow: string;
     title: string;
     intro: string;
+    installAction: {
+      eyebrow: string;
+      title: string;
+      body: string;
+      showInstruction: string;
+      copyInstruction: string;
+      copiedInstruction: string;
+      copyEndpoint: string;
+      copiedEndpoint: string;
+      copyError: string;
+      detailEyebrow: string;
+      detailTitle: string;
+    };
     hostGuides: IntegrationHostGuide[];
     oauthTitle: string;
     oauthBody: string;
@@ -141,23 +155,23 @@ function claudeDesktopProofs(locale: AppLocale): [IntegrationStepProof, Integrat
   ];
 }
 
-function openAiPluginProofs(locale: AppLocale): [IntegrationStepProof, IntegrationStepProof, IntegrationStepProof] {
+function codexPluginProofs(locale: AppLocale): [IntegrationStepProof, IntegrationStepProof, IntegrationStepProof] {
   if (locale === 'fr') {
     return [
       {
         src: '/media/mcp/codex-plugin-page.jpg',
-        alt: 'Fiche réelle du plugin MaxVideoAI dans le répertoire de plugins OpenAI partagé.',
-        caption: 'Capture réelle de la fiche MaxVideoAI dans le répertoire de plugins partagé entre ChatGPT et Codex, le 27 août 2026.',
+        alt: 'Fiche réelle du plugin MaxVideoAI dans Codex.',
+        caption: 'Capture réelle de la fiche MaxVideoAI dans Codex, le 27 août 2026.',
       },
       {
         src: '/media/mcp/codex-plugin-installed.jpg',
-        alt: 'Serveur MCP et skills MaxVideoAI affichés dans la fiche de plugin OpenAI partagée.',
-        caption: 'Même fiche partagée, recadrée : serveur MCP, deux skills actifs et version 0.2.0.',
+        alt: 'Serveur MCP et skills MaxVideoAI affichés dans la fiche du plugin Codex.',
+        caption: 'Fiche Codex recadrée : serveur MCP, deux skills actifs et version 0.2.0.',
       },
       {
         src: '/media/mcp/codex-plugin-account.jpg',
-        alt: 'Fiche de plugin OpenAI partagée indiquant que les générations utilisent un compte MaxVideoAI requis.',
-        caption: 'La fiche partagée indique que le compte MaxVideoAI est requis ; OAuth démarre au premier usage.',
+        alt: 'Fiche du plugin Codex indiquant qu’un compte MaxVideoAI est requis.',
+        caption: 'La fiche Codex indique que le compte MaxVideoAI est requis ; OAuth démarre au premier usage.',
       },
     ];
   }
@@ -165,38 +179,141 @@ function openAiPluginProofs(locale: AppLocale): [IntegrationStepProof, Integrati
     return [
       {
         src: '/media/mcp/codex-plugin-page.jpg',
-        alt: 'Ficha real del plugin MaxVideoAI en el directorio de plugins compartido de OpenAI.',
-        caption: 'Captura real de la ficha de MaxVideoAI en el directorio de plugins compartido entre ChatGPT y Codex, el 27 de agosto de 2026.',
+        alt: 'Ficha real del plugin MaxVideoAI en Codex.',
+        caption: 'Captura real de la ficha de MaxVideoAI en Codex, el 27 de agosto de 2026.',
       },
       {
         src: '/media/mcp/codex-plugin-installed.jpg',
-        alt: 'Servidor MCP y skills de MaxVideoAI mostrados en la ficha compartida del plugin de OpenAI.',
-        caption: 'La misma ficha compartida, recortada: servidor MCP, dos skills activos y versión 0.2.0.',
+        alt: 'Servidor MCP y skills de MaxVideoAI mostrados en la ficha del plugin de Codex.',
+        caption: 'Ficha de Codex recortada: servidor MCP, dos skills activos y versión 0.2.0.',
       },
       {
         src: '/media/mcp/codex-plugin-account.jpg',
-        alt: 'Ficha compartida del plugin de OpenAI que indica que las generaciones requieren una cuenta MaxVideoAI.',
-        caption: 'La ficha compartida indica que la cuenta MaxVideoAI es obligatoria; OAuth empieza con el primer uso.',
+        alt: 'Ficha del plugin de Codex que indica que las generaciones requieren una cuenta MaxVideoAI.',
+        caption: 'La ficha de Codex indica que la cuenta MaxVideoAI es obligatoria; OAuth empieza con el primer uso.',
       },
     ];
   }
   return [
     {
       src: '/media/mcp/codex-plugin-page.jpg',
-      alt: 'Real MaxVideoAI plugin page in the shared OpenAI plugin directory.',
-      caption: 'Real MaxVideoAI listing in the plugin directory shared by ChatGPT and Codex, captured 27 August 2026.',
+      alt: 'Real MaxVideoAI plugin page in Codex.',
+      caption: 'Real MaxVideoAI plugin page in Codex, captured 27 August 2026.',
     },
     {
       src: '/media/mcp/codex-plugin-installed.jpg',
-      alt: 'MaxVideoAI MCP server and skills shown in the shared OpenAI plugin listing.',
-      caption: 'The same shared listing, recropped: MCP server, two enabled skills and version 0.2.0.',
+      alt: 'MaxVideoAI MCP server and skills shown on the Codex plugin page.',
+      caption: 'Codex plugin page, recropped: MCP server, two enabled skills and version 0.2.0.',
     },
     {
       src: '/media/mcp/codex-plugin-account.jpg',
-      alt: 'Shared OpenAI plugin page stating that generations require a MaxVideoAI account.',
-      caption: 'The shared listing states that a MaxVideoAI account is required; OAuth starts on first use.',
+      alt: 'Codex plugin page stating that generations require a MaxVideoAI account.',
+      caption: 'The Codex plugin page states that a MaxVideoAI account is required; OAuth starts on first use.',
     },
   ];
+}
+
+function chatgptPluginProofs(locale: AppLocale): [IntegrationStepProof, IntegrationStepProof, IntegrationStepProof] {
+  const sources = [
+    '/media/mcp/codex-plugin-page.jpg',
+    '/media/mcp/codex-plugin-installed.jpg',
+    '/media/mcp/codex-plugin-account.jpg',
+  ] as const;
+  if (locale === 'fr') {
+    return [
+      { src: sources[0], alt: 'Fiche MaxVideoAI ouverte depuis les Plugins de ChatGPT.', caption: 'Ouvrez la fiche MaxVideoAI depuis le répertoire Plugins de ChatGPT.' },
+      { src: sources[1], alt: 'Serveur MCP et capacités MaxVideoAI affichés pendant l’ajout dans ChatGPT.', caption: 'ChatGPT affiche le serveur MCP et les capacités MaxVideoAI avant la connexion.' },
+      { src: sources[2], alt: 'Étape de connexion du compte MaxVideoAI dans ChatGPT.', caption: 'ChatGPT demande ensuite de relier le compte MaxVideoAI lors du premier usage.' },
+    ];
+  }
+  if (locale === 'es') {
+    return [
+      { src: sources[0], alt: 'Ficha de MaxVideoAI abierta desde Plugins de ChatGPT.', caption: 'Abre la ficha de MaxVideoAI desde el directorio Plugins de ChatGPT.' },
+      { src: sources[1], alt: 'Servidor MCP y capacidades de MaxVideoAI durante la instalación en ChatGPT.', caption: 'ChatGPT muestra el servidor MCP y las capacidades de MaxVideoAI antes de conectar.' },
+      { src: sources[2], alt: 'Paso de conexión de la cuenta MaxVideoAI en ChatGPT.', caption: 'ChatGPT pide conectar la cuenta MaxVideoAI durante el primer uso.' },
+    ];
+  }
+  return [
+    { src: sources[0], alt: 'MaxVideoAI page opened from ChatGPT Plugins.', caption: 'Open the MaxVideoAI page from the ChatGPT Plugins directory.' },
+    { src: sources[1], alt: 'MaxVideoAI MCP server and capabilities shown while adding it to ChatGPT.', caption: 'ChatGPT shows the MCP server and MaxVideoAI capabilities before connection.' },
+    { src: sources[2], alt: 'MaxVideoAI account connection step in ChatGPT.', caption: 'ChatGPT then asks you to connect your MaxVideoAI account on first use.' },
+  ];
+}
+
+function installInstruction(locale: AppLocale, hostId: McpCompatibilityHostId): string {
+  if (hostId === 'codexCli') {
+    if (locale === 'fr') {
+      return 'Installe le plugin MaxVideoAI pour moi avec ces commandes, puis guide-moi pour connecter mon compte :\ncodex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.2.0\ncodex plugin add maxvideoai@maxvideoai';
+    }
+    if (locale === 'es') {
+      return 'Instala el plugin MaxVideoAI por mí con estos comandos y guíame para conectar mi cuenta:\ncodex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.2.0\ncodex plugin add maxvideoai@maxvideoai';
+    }
+    return 'Install the MaxVideoAI plugin for me with these commands, then guide me through connecting my account:\ncodex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.2.0\ncodex plugin add maxvideoai@maxvideoai';
+  }
+
+  const host = hostId === 'claudeCode' ? 'Claude Code' : hostId === 'claudeDesktop' ? 'Claude' : 'ChatGPT';
+  if (locale === 'fr') {
+    return `Connecte MaxVideoAI dans ${host} avec ce serveur MCP et guide-moi jusqu’à la connexion : ${MCP_PRODUCTION_RESOURCE_URL}`;
+  }
+  if (locale === 'es') {
+    return `Conecta MaxVideoAI en ${host} con este servidor MCP y guíame hasta completar la conexión: ${MCP_PRODUCTION_RESOURCE_URL}`;
+  }
+  return `Connect MaxVideoAI in ${host} with this MCP server and guide me through the connection: ${MCP_PRODUCTION_RESOURCE_URL}`;
+}
+
+function installAction(locale: AppLocale, clientLabel: IntegrationPageCopy['clientLabel']): IntegrationPageCopy['setup']['installAction'] {
+  if (locale === 'fr') {
+    const isCodex = clientLabel === 'Codex';
+    return {
+      eyebrow: 'INSTALLATION RAPIDE',
+      title: isCodex ? 'Copiez, Codex installe le plugin' : `Copiez, ${clientLabel} vous guide`,
+      body: isCodex
+        ? 'Collez la demande dans Codex : il peut exécuter les commandes après votre autorisation.'
+        : `Collez la demande dans ${clientLabel} : il vous indique exactement où ajouter MaxVideoAI et terminer la connexion.`,
+      showInstruction: 'Voir ce qui sera copié',
+      copyInstruction: isCodex ? 'Copier et installer dans Codex' : `Copier pour être guidé dans ${clientLabel}`,
+      copiedInstruction: `Copié — collez maintenant dans ${clientLabel}.`,
+      copyEndpoint: 'Copier l’adresse MCP',
+      copiedEndpoint: 'Adresse MCP copiée.',
+      copyError: 'Copie impossible. Sélectionnez le texte puis copiez-le manuellement.',
+      detailEyebrow: 'INSTALLATION DÉTAILLÉE',
+      detailTitle: `Les 3 étapes dans ${clientLabel}`,
+    };
+  }
+  if (locale === 'es') {
+    const isCodex = clientLabel === 'Codex';
+    return {
+      eyebrow: 'INSTALACIÓN RÁPIDA',
+      title: isCodex ? 'Copia y Codex instala el plugin' : `Copia y ${clientLabel} te guía`,
+      body: isCodex
+        ? 'Pega la petición en Codex: podrá ejecutar los comandos después de tu autorización.'
+        : `Pega la petición en ${clientLabel}: te indicará exactamente dónde añadir MaxVideoAI y completar la conexión.`,
+      showInstruction: 'Ver qué se copiará',
+      copyInstruction: isCodex ? 'Copiar e instalar en Codex' : `Copiar para recibir ayuda en ${clientLabel}`,
+      copiedInstruction: `Copiado — pégalo ahora en ${clientLabel}.`,
+      copyEndpoint: 'Copiar dirección MCP',
+      copiedEndpoint: 'Dirección MCP copiada.',
+      copyError: 'No se pudo copiar. Selecciona el texto y cópialo manualmente.',
+      detailEyebrow: 'INSTALACIÓN DETALLADA',
+      detailTitle: `Los 3 pasos en ${clientLabel}`,
+    };
+  }
+  const isCodex = clientLabel === 'Codex';
+  return {
+    eyebrow: 'FAST SETUP',
+    title: isCodex ? 'Copy it, and Codex installs the plugin' : `Copy it, and ${clientLabel} guides you`,
+    body: isCodex
+      ? 'Paste the request into Codex. It can run the commands after you approve them.'
+      : `Paste the request into ${clientLabel}. It will show you exactly where to add MaxVideoAI and finish connecting.`,
+    showInstruction: 'See what will be copied',
+    copyInstruction: isCodex ? 'Copy and install in Codex' : `Copy for guidance in ${clientLabel}`,
+    copiedInstruction: `Copied — paste it into ${clientLabel}.`,
+    copyEndpoint: 'Copy MCP address',
+    copiedEndpoint: 'MCP address copied.',
+    copyError: 'Unable to copy. Select the text and copy it manually.',
+    detailEyebrow: 'DETAILED SETUP',
+    detailTitle: `The 3 steps in ${clientLabel}`,
+  };
 }
 
 function englishGuides(client: McpClientId): IntegrationHostGuide[] {
@@ -207,6 +324,7 @@ function englishGuides(client: McpClientId): IntegrationHostGuide[] {
         hostId: 'claudeDesktop',
         title: 'Connect MaxVideoAI to Claude',
         intro: 'Add MaxVideoAI as a custom remote connector, then authorize your account in the browser.',
+        installInstruction: installInstruction('en', 'claudeDesktop'),
         steps: [
           { title: 'Open connector settings', body: 'In Claude, add a custom connector using a remote MCP server.', proof: proofs[0] },
           { title: 'Add MaxVideoAI', body: 'Paste the server address below. Never paste an API key or account password.', proof: proofs[1] },
@@ -220,6 +338,7 @@ function englishGuides(client: McpClientId): IntegrationHostGuide[] {
         hostId: 'claudeCode',
         title: 'Use the same connector in Claude Code',
         intro: 'Register the remote server, then authenticate from Claude Code’s MCP panel.',
+        installInstruction: installInstruction('en', 'claudeCode'),
         steps: [
           { title: 'Add the server', body: 'Run the command below once from the project or user scope you prefer.' },
           { title: 'Open the MCP panel', body: 'Open /mcp and select MaxVideoAI to start browser authorization.' },
@@ -235,31 +354,33 @@ function englishGuides(client: McpClientId): IntegrationHostGuide[] {
   }
 
   if (client === 'chatgpt') {
-    const proofs = openAiPluginProofs('en');
+    const proofs = chatgptPluginProofs('en');
     return [
       {
         hostId: 'chatgptDesktop',
-        title: 'Install MaxVideoAI from ChatGPT’s shared plugin directory',
-        intro: 'ChatGPT and Codex use the same shared plugin directory. Open MaxVideoAI from a marketplace available to your account, install it, then authorize the MaxVideoAI account you want to use.',
+        title: 'Connect MaxVideoAI to ChatGPT',
+        intro: 'Add the MaxVideoAI MCP connection in ChatGPT developer mode, then authorize the MaxVideoAI account you want to use.',
+        installInstruction: installInstruction('en', 'chatgptDesktop'),
         steps: [
-          { title: 'Open the Plugins directory', body: 'In ChatGPT, open Plugins and select MaxVideoAI from your configured marketplace.', proof: proofs[0] },
-          { title: 'Install MaxVideoAI', body: 'Use the plus button, then review the bundled MCP server and the plan and generate skills.', proof: proofs[1] },
-          { title: 'Start a new chat', body: 'Ask ChatGPT to use MaxVideoAI and complete OAuth when prompted.', proof: proofs[2] },
+          { title: 'Enable developer mode', body: 'In ChatGPT settings, open Security and login, then enable developer mode.', proof: proofs[0] },
+          { title: 'Add MaxVideoAI', body: 'Open Plugins, use the plus button and add a connection named MaxVideoAI with the MCP address below.', proof: proofs[1] },
+          { title: 'Start a new chat', body: 'Enable MaxVideoAI from the tools menu, then complete OAuth when prompted.', proof: proofs[2] },
         ],
         commands: [],
-        setupValues: [{ label: 'Developer-mode MCP fallback', value: MCP_PRODUCTION_RESOURCE_URL }],
+        setupValues: [{ label: 'MaxVideoAI MCP address', value: MCP_PRODUCTION_RESOURCE_URL }],
         authTrigger: 'OAuth starts when the new ChatGPT conversation first uses MaxVideoAI. Sign in or create the MaxVideoAI account you want to connect.',
-        limitation: 'These real captures show the shared OpenAI plugin listing from a configured marketplace. Public directory availability still depends on OpenAI approval and account or workspace policy; until then, developer mode can use the MCP address above.',
+        limitation: 'Your credits, private references and completed videos stay attached to the same MaxVideoAI account used on the website.',
       },
     ];
   }
 
-  const proofs = openAiPluginProofs('en');
+  const proofs = codexPluginProofs('en');
   return [
     {
       hostId: 'codexCli',
       title: 'Install the MaxVideoAI plugin in Codex',
       intro: 'Add the tagged MaxVideoAI marketplace, install the plugin, then authorize your account from a new Codex conversation.',
+      installInstruction: installInstruction('en', 'codexCli'),
       steps: [
         { title: 'Add the marketplace', body: 'Register the public MaxVideoAI repository at the reviewed 0.2.0 release tag.', proof: proofs[0] },
         { title: 'Install the plugin', body: 'Install MaxVideoAI once to get the plan and generate skills plus the production MCP connection.', proof: proofs[1] },
@@ -285,6 +406,7 @@ function frenchGuides(client: McpClientId): IntegrationHostGuide[] {
         hostId: 'claudeDesktop',
         title: 'Connecter MaxVideoAI à Claude',
         intro: 'Ajoutez MaxVideoAI comme connecteur distant personnalisé, puis autorisez votre compte dans le navigateur.',
+        installInstruction: installInstruction('fr', 'claudeDesktop'),
         steps: [
           { title: 'Ouvrir les réglages', body: 'Dans Claude, ajoutez un connecteur personnalisé utilisant un serveur MCP distant.', proof: proofs[0] },
           { title: 'Ajouter MaxVideoAI', body: 'Collez l’adresse ci-dessous. Ne collez jamais une clé API ou votre mot de passe.', proof: proofs[1] },
@@ -298,6 +420,7 @@ function frenchGuides(client: McpClientId): IntegrationHostGuide[] {
         hostId: 'claudeCode',
         title: 'Utiliser le même connecteur dans Claude Code',
         intro: 'Enregistrez le serveur distant puis authentifiez-vous depuis le panneau MCP de Claude Code.',
+        installInstruction: installInstruction('fr', 'claudeCode'),
         steps: [
           { title: 'Ajouter le serveur', body: 'Exécutez une fois la commande ci-dessous avec la portée projet ou utilisateur.' },
           { title: 'Ouvrir le panneau MCP', body: 'Ouvrez /mcp et sélectionnez MaxVideoAI pour lancer l’autorisation dans le navigateur.' },
@@ -313,31 +436,33 @@ function frenchGuides(client: McpClientId): IntegrationHostGuide[] {
   }
 
   if (client === 'chatgpt') {
-    const proofs = openAiPluginProofs('fr');
+    const proofs = chatgptPluginProofs('fr');
     return [
       {
         hostId: 'chatgptDesktop',
-        title: 'Installer MaxVideoAI depuis le répertoire de plugins partagé de ChatGPT',
-        intro: 'ChatGPT et Codex utilisent le même répertoire de plugins partagé. Ouvrez MaxVideoAI depuis une marketplace disponible pour votre compte, installez-le puis autorisez le compte MaxVideoAI voulu.',
+        title: 'Connecter MaxVideoAI à ChatGPT',
+        intro: 'Ajoutez la connexion MCP MaxVideoAI dans le mode développeur de ChatGPT, puis autorisez le compte MaxVideoAI voulu.',
+        installInstruction: installInstruction('fr', 'chatgptDesktop'),
         steps: [
-          { title: 'Ouvrir le répertoire Plugins', body: 'Dans ChatGPT, ouvrez Plugins puis choisissez MaxVideoAI dans votre marketplace configurée.', proof: proofs[0] },
-          { title: 'Installer MaxVideoAI', body: 'Utilisez le bouton plus, puis vérifiez le serveur MCP et les skills plan et generate inclus.', proof: proofs[1] },
-          { title: 'Démarrer une nouvelle discussion', body: 'Demandez à ChatGPT d’utiliser MaxVideoAI et terminez OAuth lorsqu’il vous le propose.', proof: proofs[2] },
+          { title: 'Activer le mode développeur', body: 'Dans les réglages ChatGPT, ouvrez Sécurité et connexion puis activez le mode développeur.', proof: proofs[0] },
+          { title: 'Ajouter MaxVideoAI', body: 'Ouvrez Plugins, utilisez le bouton plus et ajoutez une connexion MaxVideoAI avec l’adresse MCP ci-dessous.', proof: proofs[1] },
+          { title: 'Démarrer une nouvelle discussion', body: 'Activez MaxVideoAI dans le menu des outils puis terminez OAuth lorsqu’il vous le propose.', proof: proofs[2] },
         ],
         commands: [],
-        setupValues: [{ label: 'Solution MCP en mode développeur', value: MCP_PRODUCTION_RESOURCE_URL }],
+        setupValues: [{ label: 'Adresse MCP MaxVideoAI', value: MCP_PRODUCTION_RESOURCE_URL }],
         authTrigger: 'OAuth démarre lorsque la nouvelle discussion ChatGPT utilise MaxVideoAI pour la première fois. Connectez-vous ou créez le compte MaxVideoAI à relier.',
-        limitation: 'Ces captures réelles montrent la fiche OpenAI partagée depuis une marketplace configurée. La disponibilité dans le répertoire public dépend encore de l’approbation d’OpenAI et de la politique du compte ou de l’espace ; en attendant, le mode développeur peut utiliser l’adresse MCP ci-dessus.',
+        limitation: 'Vos crédits, références privées et vidéos terminées restent liés au même compte MaxVideoAI que sur le site.',
       },
     ];
   }
 
-  const proofs = openAiPluginProofs('fr');
+  const proofs = codexPluginProofs('fr');
   return [
     {
       hostId: 'codexCli',
       title: 'Installer le plugin MaxVideoAI dans Codex',
       intro: 'Ajoutez la marketplace MaxVideoAI taguée, installez le plugin puis autorisez votre compte depuis une nouvelle conversation Codex.',
+      installInstruction: installInstruction('fr', 'codexCli'),
       steps: [
         { title: 'Ajouter la marketplace', body: 'Enregistrez le dépôt public MaxVideoAI sur le tag de version 0.2.0 contrôlé.', proof: proofs[0] },
         { title: 'Installer le plugin', body: 'Installez MaxVideoAI une fois pour recevoir les skills plan et generate ainsi que la connexion MCP de production.', proof: proofs[1] },
@@ -363,6 +488,7 @@ function spanishGuides(client: McpClientId): IntegrationHostGuide[] {
         hostId: 'claudeDesktop',
         title: 'Conectar MaxVideoAI con Claude',
         intro: 'Añade MaxVideoAI como conector remoto personalizado y autoriza tu cuenta en el navegador.',
+        installInstruction: installInstruction('es', 'claudeDesktop'),
         steps: [
           { title: 'Abrir los ajustes', body: 'En Claude, añade un conector personalizado mediante un servidor MCP remoto.', proof: proofs[0] },
           { title: 'Añadir MaxVideoAI', body: 'Pega la dirección siguiente. No pegues nunca una clave API ni tu contraseña.', proof: proofs[1] },
@@ -376,6 +502,7 @@ function spanishGuides(client: McpClientId): IntegrationHostGuide[] {
         hostId: 'claudeCode',
         title: 'Usar el mismo conector en Claude Code',
         intro: 'Registra el servidor remoto y autentícate desde el panel MCP de Claude Code.',
+        installInstruction: installInstruction('es', 'claudeCode'),
         steps: [
           { title: 'Añadir el servidor', body: 'Ejecuta una vez el comando siguiente con el alcance de proyecto o usuario que prefieras.' },
           { title: 'Abrir el panel MCP', body: 'Abre /mcp y selecciona MaxVideoAI para iniciar la autorización en el navegador.' },
@@ -391,31 +518,33 @@ function spanishGuides(client: McpClientId): IntegrationHostGuide[] {
   }
 
   if (client === 'chatgpt') {
-    const proofs = openAiPluginProofs('es');
+    const proofs = chatgptPluginProofs('es');
     return [
       {
         hostId: 'chatgptDesktop',
-        title: 'Instalar MaxVideoAI desde el directorio de plugins compartido de ChatGPT',
-        intro: 'ChatGPT y Codex usan el mismo directorio de plugins compartido. Abre MaxVideoAI desde un marketplace disponible para tu cuenta, instálalo y autoriza la cuenta MaxVideoAI que quieras usar.',
+        title: 'Conectar MaxVideoAI con ChatGPT',
+        intro: 'Añade la conexión MCP de MaxVideoAI en el modo desarrollador de ChatGPT y autoriza la cuenta MaxVideoAI que quieras usar.',
+        installInstruction: installInstruction('es', 'chatgptDesktop'),
         steps: [
-          { title: 'Abrir el directorio Plugins', body: 'En ChatGPT, abre Plugins y elige MaxVideoAI en tu marketplace configurado.', proof: proofs[0] },
-          { title: 'Instalar MaxVideoAI', body: 'Usa el botón más y revisa el servidor MCP y los skills plan y generate incluidos.', proof: proofs[1] },
-          { title: 'Iniciar un chat nuevo', body: 'Pide a ChatGPT que use MaxVideoAI y completa OAuth cuando aparezca.', proof: proofs[2] },
+          { title: 'Activar el modo desarrollador', body: 'En los ajustes de ChatGPT, abre Seguridad e inicio de sesión y activa el modo desarrollador.', proof: proofs[0] },
+          { title: 'Añadir MaxVideoAI', body: 'Abre Plugins, usa el botón más y añade una conexión llamada MaxVideoAI con la dirección MCP siguiente.', proof: proofs[1] },
+          { title: 'Iniciar un chat nuevo', body: 'Activa MaxVideoAI en el menú de herramientas y completa OAuth cuando aparezca.', proof: proofs[2] },
         ],
         commands: [],
-        setupValues: [{ label: 'Alternativa MCP para el modo desarrollador', value: MCP_PRODUCTION_RESOURCE_URL }],
+        setupValues: [{ label: 'Dirección MCP de MaxVideoAI', value: MCP_PRODUCTION_RESOURCE_URL }],
         authTrigger: 'OAuth empieza cuando el chat nuevo usa MaxVideoAI por primera vez. Inicia sesión o crea la cuenta MaxVideoAI que quieras conectar.',
-        limitation: 'Estas capturas reales muestran la ficha compartida de OpenAI desde un marketplace configurado. La disponibilidad en el directorio público depende todavía de la aprobación de OpenAI y de la política de la cuenta o del espacio; mientras tanto, el modo desarrollador puede usar la dirección MCP anterior.',
+        limitation: 'Tus créditos, referencias privadas y vídeos terminados siguen vinculados a la misma cuenta MaxVideoAI que usas en la web.',
       },
     ];
   }
 
-  const proofs = openAiPluginProofs('es');
+  const proofs = codexPluginProofs('es');
   return [
     {
       hostId: 'codexCli',
       title: 'Instalar el plugin MaxVideoAI en Codex',
       intro: 'Añade el marketplace etiquetado de MaxVideoAI, instala el plugin y autoriza tu cuenta desde una nueva conversación de Codex.',
+      installInstruction: installInstruction('es', 'codexCli'),
       steps: [
         { title: 'Añadir el marketplace', body: 'Registra el repositorio público de MaxVideoAI en la etiqueta revisada de la versión 0.2.0.', proof: proofs[0] },
         { title: 'Instalar el plugin', body: 'Instala MaxVideoAI una vez para obtener los skills plan y generate y la conexión MCP de producción.', proof: proofs[1] },
@@ -463,7 +592,7 @@ function englishCopy(client: McpClientId): IntegrationPageCopy {
       statuses: {
         claudeDesktop: 'Claude Desktop 1.37937.1 completed OAuth, model discovery, budgeting, exact quote, media, recovery, upload-handoff and top-up-handoff checks on controlled staging.',
         claudeCode: 'The shared connector configuration is ready, but a direct Claude Code production check has not yet been recorded.',
-        chatgptDesktop: 'ChatGPT and Codex use the same plugin and MCP connection. Install MaxVideoAI, then connect your account through OAuth at first use.',
+        chatgptDesktop: 'Add the MaxVideoAI MCP address in ChatGPT developer mode, then connect your account through OAuth at first use.',
         codexCli: 'Codex CLI 0.150.0-alpha.8 completed production installation, OAuth, account, catalog, recommendation, budgeting, exact-quote, paid-generation, recovery and inline-player contract checks.',
       },
     },
@@ -471,6 +600,7 @@ function englishCopy(client: McpClientId): IntegrationPageCopy {
       eyebrow: 'CONNECT YOUR ACCOUNT',
       title: `Set up MaxVideoAI in ${clientLabel}`,
       intro: 'Sign in or create your MaxVideoAI account during setup. One secure OAuth connection links the assistant to your pay-as-you-go credits, private media and completed generations in MaxVideoAI Library.',
+      installAction: installAction('en', clientLabel),
       hostGuides: englishGuides(client),
       oauthTitle: 'What happens when you connect',
       oauthBody: 'The browser opens MaxVideoAI sign-in and consent. Approval identifies the connected account; the assistant never receives your password, payment details or direct database access.',
@@ -549,7 +679,7 @@ function frenchCopy(client: McpClientId): IntegrationPageCopy {
       statuses: {
         claudeDesktop: 'Claude Desktop 1.37937.1 a validé sur le staging contrôlé OAuth, catalogue, budgets, devis exact, médias, récupération, envoi et recharge.',
         claudeCode: 'La configuration du connecteur partagé est prête, mais aucun contrôle direct de Claude Code en production n’a encore été enregistré.',
-        chatgptDesktop: 'ChatGPT et Codex utilisent le même plugin et la même connexion MCP. Installez MaxVideoAI puis connectez votre compte par OAuth lors de la première utilisation.',
+        chatgptDesktop: 'Ajoutez l’adresse MCP MaxVideoAI dans le mode développeur de ChatGPT puis connectez votre compte par OAuth lors de la première utilisation.',
         codexCli: 'Codex CLI 0.150.0-alpha.8 a validé en production installation, OAuth, compte, catalogue, recommandations, budgets, devis exact, génération payante, récupération et contrat du lecteur intégré.',
       },
     },
@@ -558,6 +688,7 @@ function frenchCopy(client: McpClientId): IntegrationPageCopy {
       eyebrow: 'CONNECTEZ VOTRE COMPTE',
       title: `Configurer MaxVideoAI dans ${clientLabel}`,
       intro: 'Connectez-vous ou créez votre compte MaxVideoAI pendant la configuration. OAuth relie ensuite l’assistant à vos crédits, vos médias privés et vos générations dans la bibliothèque MaxVideoAI.',
+      installAction: installAction('fr', clientLabel),
       hostGuides: frenchGuides(client),
       oauthTitle: 'Ce qui se passe lors de la connexion',
       oauthBody: 'Le navigateur ouvre la connexion et le consentement MaxVideoAI. L’assistant ne reçoit jamais votre mot de passe, vos données de paiement ni un accès direct à la base.',
@@ -637,7 +768,7 @@ function spanishCopy(client: McpClientId): IntegrationPageCopy {
       statuses: {
         claudeDesktop: 'Claude Desktop 1.37937.1 completó en staging controlado OAuth, catálogo, presupuestos, precio exacto, medios, recuperación, carga y recarga.',
         claudeCode: 'La configuración del conector compartido está lista, pero todavía no se ha registrado una comprobación directa de Claude Code en producción.',
-        chatgptDesktop: 'ChatGPT y Codex usan el mismo plugin y la misma conexión MCP. Instala MaxVideoAI y conecta tu cuenta mediante OAuth en el primer uso.',
+        chatgptDesktop: 'Añade la dirección MCP de MaxVideoAI en el modo desarrollador de ChatGPT y conecta tu cuenta mediante OAuth en el primer uso.',
         codexCli: 'Codex CLI 0.150.0-alpha.8 completó en producción la instalación, OAuth, cuenta, catálogo, recomendaciones, presupuestos, precio exacto, generación de pago, recuperación y contrato del reproductor integrado.',
       },
     },
@@ -646,6 +777,7 @@ function spanishCopy(client: McpClientId): IntegrationPageCopy {
       eyebrow: 'CONECTA TU CUENTA',
       title: `Configura MaxVideoAI en ${clientLabel}`,
       intro: 'Inicia sesión o crea tu cuenta MaxVideoAI durante la configuración. OAuth enlaza el asistente con tus créditos, medios privados y resultados en la biblioteca MaxVideoAI.',
+      installAction: installAction('es', clientLabel),
       hostGuides: spanishGuides(client),
       oauthTitle: 'Qué ocurre al conectar',
       oauthBody: 'El navegador abre el acceso y consentimiento de MaxVideoAI. El asistente nunca recibe tu contraseña, datos de pago ni acceso directo a la base.',
