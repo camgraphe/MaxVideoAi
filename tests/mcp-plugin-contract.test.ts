@@ -509,7 +509,7 @@ test('the package ships current setup, privacy, workflow, and recovery guides', 
   assert.match(howItWorks, /recover[^.]*accepted job[^.]*instead of[^.]*submitting another/i);
 });
 
-test('the packaged Skill and plugin pass the repository authoring validators', () => {
+test('the packaged Skill and plugin pass the repository authoring validators', (t) => {
   const cachedPyYamlPath = findCachedPyYamlPath();
   const pythonPath = [
     cachedPyYamlPath,
@@ -517,15 +517,36 @@ test('the packaged Skill and plugin pass the repository authoring validators', (
   ].filter(Boolean).join(':');
   const environment = { ...process.env, PYTHONPATH: pythonPath };
   const codexHome = process.env.CODEX_HOME ?? path.join(homedir(), '.codex');
+  const skillValidator = path.join(
+    codexHome,
+    'skills',
+    '.system',
+    'skill-creator',
+    'scripts',
+    'quick_validate.py',
+  );
+  const pluginValidator = path.join(
+    codexHome,
+    'skills',
+    '.system',
+    'plugin-creator',
+    'scripts',
+    'validate_plugin.py',
+  );
+
+  if (!existsSync(skillValidator) || !existsSync(pluginValidator)) {
+    t.skip('Codex authoring validators are not installed in this environment');
+    return;
+  }
 
   for (const skillName of expectedSkillNames) {
     execFileSync('python3', [
-      path.join(codexHome, 'skills', '.system', 'skill-creator', 'scripts', 'quick_validate.py'),
+      skillValidator,
       path.join(pluginRoot, 'skills', skillName),
     ], { cwd: root, env: environment, stdio: 'pipe' });
   }
   execFileSync('python3', [
-    path.join(codexHome, 'skills', '.system', 'plugin-creator', 'scripts', 'validate_plugin.py'),
+    pluginValidator,
     pluginRoot,
   ], { cwd: root, env: environment, stdio: 'pipe' });
 });
