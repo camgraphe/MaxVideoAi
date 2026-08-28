@@ -210,31 +210,113 @@ function findHtmlImageTags(markdown) {
   return tags;
 }
 
+function maskMarkdownCodeAndEscapedImages(markdown) {
+  const characters = markdown.split('');
+  const hidden = new Uint8Array(markdown.length);
+  const mask = (start, end) => {
+    for (let index = start; index < end; index += 1) {
+      hidden[index] = 1;
+      if (characters[index] !== '\n' && characters[index] !== '\r') characters[index] = ' ';
+    }
+  };
+
+  let fence = null;
+  let lineStart = 0;
+  while (lineStart < markdown.length) {
+    const newline = markdown.indexOf('\n', lineStart);
+    const lineEnd = newline === -1 ? markdown.length : newline + 1;
+    const contentEnd = newline === -1 ? markdown.length : markdown[newline - 1] === '\r' ? newline - 1 : newline;
+    const line = markdown.slice(lineStart, contentEnd);
+    if (fence === null) {
+      const opening = line.match(/^ {0,3}(`{3,}|~{3,})([^\r\n]*)$/);
+      if (opening && (opening[1][0] === '~' || !opening[2].includes('`'))) {
+        fence = { character: opening[1][0], length: opening[1].length };
+        mask(lineStart, lineEnd);
+      }
+    } else {
+      mask(lineStart, lineEnd);
+      const closing = line.match(/^ {0,3}([`~]+)[ \t]*$/);
+      if (
+        closing &&
+        closing[1][0] === fence.character &&
+        [...closing[1]].every((character) => character === fence.character) &&
+        closing[1].length >= fence.length
+      ) {
+        fence = null;
+      }
+    }
+    lineStart = lineEnd;
+  }
+
+  for (let index = 0; index < markdown.length; index += 1) {
+    if (hidden[index] || markdown[index] !== '`') continue;
+    let openingEnd = index;
+    while (markdown[openingEnd] === '`' && !hidden[openingEnd]) openingEnd += 1;
+    const delimiterLength = openingEnd - index;
+    let search = openingEnd;
+    let closingEnd = -1;
+    while (search < markdown.length) {
+      if (hidden[search] || markdown[search] !== '`') {
+        search += 1;
+        continue;
+      }
+      let runEnd = search;
+      while (markdown[runEnd] === '`' && !hidden[runEnd]) runEnd += 1;
+      if (runEnd - search === delimiterLength) {
+        closingEnd = runEnd;
+        break;
+      }
+      search = runEnd;
+    }
+    if (closingEnd !== -1) {
+      mask(index, closingEnd);
+      index = closingEnd - 1;
+    } else {
+      index = openingEnd - 1;
+    }
+  }
+
+  for (let index = 0; index + 1 < markdown.length; index += 1) {
+    if (hidden[index] || markdown[index] !== '!' || markdown[index + 1] !== '[') continue;
+    let backslashes = 0;
+    for (let previous = index - 1; previous >= 0 && markdown[previous] === '\\' && !hidden[previous]; previous -= 1) {
+      backslashes += 1;
+    }
+    if (backslashes % 2 === 1) mask(index, index + 1);
+  }
+
+  return characters.join('');
+}
+
 export function findReadmeImageUsages(markdown, readmePath, rootDirectory = repositoryRoot) {
+  const searchableMarkdown = maskMarkdownCodeAndEscapedImages(markdown);
   const collected = new Map();
   const definitions = new Map();
-  for (const match of markdown.matchAll(/^\s*\[([^\]]+)\]:\s*(<[^>]+>|\S+)(?:\s+.*)?$/gm)) definitions.set(normalizeReferenceLabel(match[1]), match[2]);
-  for (const match of markdown.matchAll(/!\[([^\]]*)\]\(\s*(?:<\s*>)?\s*\)/g)) {
+  for (const match of searchableMarkdown.matchAll(/^[ \t]*\[([^\]\r\n]+)\]:[ \t]*(<[^>\r\n]+>|[^ \t\r\n]+)(?:[ \t]+[^\r\n]*)?[ \t]*\r?$/gm)) {
+    const id = normalizeReferenceLabel(match[1]);
+    if (!definitions.has(id)) definitions.set(id, match[2]);
+  }
+  for (const match of searchableMarkdown.matchAll(/!\[([^\]]*)\]\(\s*(?:<\s*>)?\s*\)/g)) {
     addInvalidUsage(
       collected,
       `Markdown image has an empty destination: ${match[0]}`,
       { source: 'markdown_inline', alt: match[1], role: null },
     );
   }
-  for (const match of markdown.matchAll(/!\[([^\]]*)\]\((<[^>]+>|[^\s)]+)(?:\s+[^)]*)?\)/g)) addUsage(collected, match[2], { source: 'markdown_inline', alt: match[1], role: null }, readmePath, rootDirectory);
-  for (const match of markdown.matchAll(/!\[([^\]]*)\]\[([^\]]*)\]/g)) {
+  for (const match of searchableMarkdown.matchAll(/!\[([^\]]*)\]\((<[^>]+>|[^\s)]+)(?:\s+[^)]*)?\)/g)) addUsage(collected, match[2], { source: 'markdown_inline', alt: match[1], role: null }, readmePath, rootDirectory);
+  for (const match of searchableMarkdown.matchAll(/!\[([^\]]*)\]\[([^\]]*)\]/g)) {
     const id = normalizeReferenceLabel(match[2] || match[1]);
     const metadata = { source: 'markdown_reference', alt: match[1], role: null };
     if (definitions.has(id)) addUsage(collected, definitions.get(id), metadata, readmePath, rootDirectory);
     else addInvalidUsage(collected, `unresolved Markdown image reference: ${match[0]}`, metadata);
   }
-  for (const match of markdown.matchAll(/!\[([^\]]+)\](?![\[(])/g)) {
+  for (const match of searchableMarkdown.matchAll(/!\[([^\]]+)\](?![\[(])/g)) {
     const id = normalizeReferenceLabel(match[1]);
     const metadata = { source: 'markdown_reference', alt: match[1], role: null };
     if (definitions.has(id)) addUsage(collected, definitions.get(id), metadata, readmePath, rootDirectory);
     else addInvalidUsage(collected, `unresolved Markdown image reference: ${match[0]}`, metadata);
   }
-  for (const tag of findHtmlImageTags(markdown)) {
+  for (const tag of findHtmlImageTags(searchableMarkdown)) {
     const metadata = { source: tag.tagName === 'img' ? 'html_img' : 'html_source', alt: '', role: null };
     if (tag.source === null) {
       addInvalidUsage(collected, `unterminated HTML ${tag.tagName} tag`, metadata);

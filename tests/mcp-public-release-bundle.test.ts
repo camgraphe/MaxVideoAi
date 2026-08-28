@@ -442,6 +442,29 @@ test('non-exported evaluation notes may retain internal diagnostic identifiers',
   assert.equal(result.status, 0, result.stderr || result.stdout);
 });
 
+test('release builder ignores image-like syntax in escaped and code examples', (t) => {
+  const temporary = mkdtempSync(join(safeTemporaryRoot, 'maxvideoai-plugin-markdown-code-'));
+  t.after(() => rmSync(temporary, { recursive: true, force: true }));
+  const fixture = join(temporary, 'source-copy');
+  cpSync(source, fixture, { recursive: true });
+  appendText(
+    join(fixture, 'README.md'),
+    [
+      '\\![Escaped example](https://example.com/escaped.png)',
+      '`![Inline example](https://example.com/inline.png)`![Live proof](assets/demos/readme-proof-hero.webp)',
+      '```md',
+      '![Fenced example][missing-definition]',
+      '```',
+      '~~~html',
+      '<img src="https://example.com/fenced-html.png" alt="Fenced example">',
+      '~~~',
+    ].join('\n'),
+  );
+
+  const result = runBuilder(fixture, join(temporary, 'out'), defaultAssetManifest);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+});
+
 test('release builder fails closed for unsafe source content and assets', async (t) => {
   const temporary = mkdtempSync(join(safeTemporaryRoot, 'maxvideoai-plugin-reject-'));
   t.after(() => rmSync(temporary, { recursive: true, force: true }));

@@ -417,6 +417,95 @@ test('scans both production README paths, reference Markdown, HTML, and every sr
   }
 });
 
+test('keeps consecutive reference definitions line-bound and preserves the first normalized label', () => {
+  const fixture = createFixtureRepository();
+  try {
+    const readmePath = path.join(fixture.root, 'README.md');
+    const markdown = [
+      '![First][ FIRST   LABEL ]',
+      '![Second][second]',
+      '![Third][third]',
+      '',
+      '[First Label]: assets/first.png "First title"',
+      '[second]: assets/second.png',
+      "[third]: assets/third.png 'Third title'",
+      '[first   label]: assets/ignored-duplicate.png',
+      '',
+    ].join('\n');
+
+    assert.deepEqual(findReadmeImageReferences(markdown, readmePath, fixture.root), [
+      'assets/first.png',
+      'assets/second.png',
+      'assets/third.png',
+    ]);
+  } finally {
+    rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test('masks fenced, inline, and escaped image examples while retaining adjacent live syntax', () => {
+  const fixture = createFixtureRepository();
+  try {
+    const readmePath = path.join(fixture.root, 'README.md');
+    const markdown = [
+      '\\![Escaped](https://example.com/escaped.png)![Live inline](assets/live-inline.png)',
+      '`![Inline code](https://example.com/inline.png)`![Live reference][live-reference]',
+      '```md',
+      '![Backtick fence](https://example.com/backtick.png)',
+      '<img src="https://example.com/fenced-html.png" alt="Fenced HTML">',
+      '```',
+      '~~~markdown',
+      '![Tilde fence][missing-definition]',
+      '~~~',
+      '<img src="assets/live-html.png" alt="Live > HTML">',
+      '',
+      '[live-reference]: assets/live-reference.png',
+      '',
+    ].join('\n');
+
+    assert.deepEqual(findReadmeImageReferences(markdown, readmePath, fixture.root), [
+      'assets/live-inline.png',
+      'assets/live-reference.png',
+      'assets/live-html.png',
+    ]);
+  } finally {
+    rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test('honors backtick info and exact closing-marker rules for fenced code', () => {
+  const fixture = createFixtureRepository();
+  try {
+    const readmePath = path.join(fixture.root, 'README.md');
+    assert.deepEqual(
+      findReadmeImageReferences(
+        '```invalid`info\n![Live after invalid opener](assets/live-invalid-opener.png)\n',
+        readmePath,
+        fixture.root,
+      ),
+      ['assets/live-invalid-opener.png'],
+    );
+    assert.deepEqual(
+      findReadmeImageReferences(
+        [
+          '~~~',
+          '![Hidden](https://example.com/hidden.png)',
+          '~`~',
+          '![Still hidden](https://example.com/still-hidden.png)',
+          '~~~',
+          '![Live after fence](assets/live-after-fence.png)',
+          '',
+        ].join('\n'),
+        readmePath,
+        fixture.root,
+      ),
+      ['assets/live-after-fence.png'],
+    );
+  } finally {
+    rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
 test('rejects duplicate HTML attributes and image tags without a usable destination', async () => {
   const fixture = createFixtureRepository();
   try {
