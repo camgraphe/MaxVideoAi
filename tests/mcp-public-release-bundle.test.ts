@@ -16,7 +16,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { basename, join, relative, resolve } from 'node:path';
+import { basename, dirname, join, relative, resolve } from 'node:path';
 import test from 'node:test';
 
 const root = process.cwd();
@@ -67,7 +67,11 @@ const baseExpectedPublicFiles = [
   'docs/privacy-and-permissions.md',
   'docs/troubleshooting.md',
   'examples/README.md',
+  'examples/claude-video-production.md',
+  'examples/codex-video-production.md',
+  'examples/compare-ai-video-models.md',
   'examples/creator-budget-comparison.md',
+  'examples/price-a-video-project.md',
   'examples/product-launch-plan.md',
   'examples/recover-a-generation.md',
   'examples/reference-to-video.md',
@@ -105,6 +109,19 @@ function filesAt(path: string): string[] {
     const entryPath = join(path, entry.name);
     return entry.isDirectory() ? filesAt(entryPath) : [entryPath];
   });
+}
+
+function relativeMarkdownLinks(markdown: string): string[] {
+  return [...markdown.matchAll(/(?<!!)\[[^\]\n]+\]\(([^)]+)\)/g)]
+    .map((match) => match[1].trim().replace(/^<|>$/g, '').split(/\s+["']/)[0])
+    .filter(
+      (target) =>
+        target.length > 0 &&
+        !target.startsWith('#') &&
+        !target.startsWith('/') &&
+        !/^[a-z][a-z0-9+.-]*:/i.test(target),
+    )
+    .map((target) => target.split(/[?#]/, 1)[0]);
 }
 
 function expectedPublicFilesForVersion(version: string): string[] {
@@ -214,6 +231,16 @@ test('release builder exports the exact deterministic public surface with checks
   const bundleRoot = join(firstOut, 'maxvideoai-plugin');
   const relativeFiles = filesAt(bundleRoot).map((path) => relative(bundleRoot, path)).sort();
   assert.deepEqual(relativeFiles, [...expectedPublicFiles, 'checksums.json'].sort());
+
+  for (const markdownPath of relativeFiles.filter((path) => path.endsWith('.md'))) {
+    const absoluteMarkdownPath = join(bundleRoot, markdownPath);
+    for (const target of relativeMarkdownLinks(readFileSync(absoluteMarkdownPath, 'utf8'))) {
+      assert.ok(
+        existsSync(resolve(dirname(absoluteMarkdownPath), target)),
+        `${markdownPath} links to missing public file ${target}`,
+      );
+    }
+  }
 
   const version = readFileSync(join(bundleRoot, 'VERSION'), 'utf8').trim();
   const codex = JSON.parse(readFileSync(join(bundleRoot, '.codex-plugin/plugin.json'), 'utf8'));
