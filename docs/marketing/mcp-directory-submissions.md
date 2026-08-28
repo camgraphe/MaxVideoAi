@@ -1,11 +1,30 @@
 # MaxVideoAI MCP distribution packages
 
-Checked: 2026-08-27
+Checked: 2026-08-28
 Overall state: **OWNED-SITE DIRECT RELEASE APPROVED — EXTERNAL DIRECTORIES NOT SUBMITTED**
 
 This file prepares evidence and owner decisions only. It does not authorize a submission, account creation, listing,
 deployment, feature-flag change, or use of a third party's marks. Directory rules are current and unstable; recheck all
 linked primary sources on the day an owner authorizes a submission.
+
+## Implementation-date primary-source recheck
+
+Checked: **2026-08-28**. This recheck records distribution decisions, not
+approval by a platform or a statement about MaxVideoAI's eligibility.
+
+| Target | Primary source and factual rule | Result | Evidence before a status change | Owner and next trigger |
+| --- | --- | --- | --- | --- |
+| Official MCP Registry | [Registry overview](https://modelcontextprotocol.io/registry/about) says the registry is in preview, stores standardized metadata for public servers, and is primarily consumed by downstream aggregators. [Terms](https://modelcontextprotocol.io/registry/terms-of-service) dedicate submitted metadata to CC0, publicly and on a perpetual, irrevocable basis. The [FAQ](https://modelcontextprotocol.io/registry/faq) says a publisher cannot currently delete or unpublish a server. | **prepared_not_submitted**. Metadata may be validated locally only. | Legal acceptance of current terms, CC0 implications, and unpublish limitation; domain/namespace proof; production endpoint and release evidence; an authorized owner action. | Legal owner. Recheck when Legal accepts, the terms/FAQ change, or release approval is requested. |
+| ChatGPT/OpenAI directory | [OpenAI plugin guidelines](https://developers.openai.com/plugins/app-guidelines) permit commerce only for physical goods and prohibit digital products or services, including subscriptions, digital content, tokens, and credits, whether direct or indirect. [Plugin submission](https://developers.openai.com/plugins/deploy/submission) describes portal review requirements for an MCP-backed plugin. | **do_not_submit**. Applying this commerce rule to MaxVideoAI's credit-funded digital-media workflow is a MaxVideoAI inference, not an OpenAI decision about MaxVideoAI. | Written OpenAI clarification covering the intended scope, or a policy change plus Legal review; then all portal and exact-host review evidence. | Legal and Product owners. Recheck on written clarification or a policy change. |
+| Anthropic Connectors Directory | [Anthropic's submission guide](https://claude.com/docs/connectors/building/submission) requires directory-policy compliance and identifies an AI-media-generation compliance acknowledgement. The current [Software Directory Policy](https://support.claude.com/en/articles/13145358-anthropic-software-directory-policy) remains the controlling policy source for AI image/video/audio generation. | **do_not_submit**. The existing policy conclusion remains that MaxVideoAI's intended AI media-generation workflow is outside the directory policy; this is a MaxVideoAI interpretation until Anthropic gives a written determination. | A published policy change or written Anthropic clarification covering the full intended workflow, followed by a fresh technical, legal, security, and review-evidence check. | Legal and Product owners. Recheck on the policy change or written clarification. |
+
+Direct configuration remains separate from directory distribution. Current
+official instructions document local Codex configuration and ChatGPT plugins in
+[OpenAI's MCP guide](https://learn.chatgpt.com/docs/extend/mcp), and custom
+remote Claude connectors in [Anthropic's custom-connector guide](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp).
+Those instructions do not verify MaxVideoAI on an exact host. Record a
+clean-account install, consent, tool behavior, revocation, and recovery result
+for each claimed host before publishing host-specific compatibility copy.
 
 Current repository truth: `publicMarketing=true`, `publicIndexing=true`, `transport=true`, `oauth=true`,
 `discovery=true`, `paidGeneration=true`, `trial=false`, and `referenceUploads=true`.
