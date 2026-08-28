@@ -35,6 +35,12 @@ const namedLaunchUnits = [
   'Compatibility report: what is verified, what is compatible, and what is not claimed',
 ] as const;
 
+const publicPluginReleases = [
+  'https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.0',
+  'https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.1',
+] as const;
+const closedCandidateVersion = '0.3.2';
+
 type Section = { title: string; body: string };
 
 function read(relativePath: string): string {
@@ -165,9 +171,9 @@ test('GitHub content engine parses every proof-led calendar unit and release dra
     );
 
     const releaseVersion = /\b(?:release|version)\s+(\d+\.\d+\.\d+)\b/i.exec(unit.title)?.[1];
-    if (releaseVersion && releaseVersion !== read('plugins/maxvideoai/VERSION').trim()) {
+    if (releaseVersion === closedCandidateVersion) {
       assert.match(fields.get('Status')!, /^draft_not_publishable\.?$/, `${unit.title} must be explicitly non-publishable`);
-      assert.match(fields.get('Direct answer')!, /no\s+0\.3\.0\s+release, source tag, built checksum, or install proof is claimed/i);
+      assert.match(fields.get('Direct answer')!, /v0\.3\.0[\s\S]*v0\.3\.1[\s\S]*public[\s\S]*0\.3\.2[\s\S]*(?:closed|unpublished)[\s\S]*candidate/i);
       assert.match(fields.get('Publication gate')!, /VERSION[\s\S]*CHANGELOG[\s\S]*local and public source tag[\s\S]*built checksum evidence[\s\S]*current visual[\s\S]*clean install/i);
       assert.doesNotMatch(fields.get('GitHub surface')!, /GitHub Release|published release/i, `${unit.title} must not claim a published release`);
       assert.doesNotMatch(fields.get('Source URL')!, /\/releases\b/i, `${unit.title} must not point at an unmade release`);
@@ -181,6 +187,16 @@ test('GitHub content engine parses every proof-led calendar unit and release dra
   assert.match(releaseTemplate, /\[current-release-visual-path\]/, 'release template must use a current-version visual placeholder');
   assert.doesNotMatch(releaseTemplate, /release-0\.3\.0/i, 'release template must not freeze a future version asset');
   assert.match(releaseTemplate, /codex plugin/i, 'release template needs an install/update command');
+  assert.match(releaseTemplate, /\$maxvideoai:plan/);
+  assert.match(releaseTemplate, /\$maxvideoai:generate/);
+  assert.doesNotMatch(releaseTemplate, /(?<!maxvideoai:)\$(?:plan|generate)\b/);
+
+  const publication = read('docs/operations/maxvideoai-plugin-publication.md');
+  for (const releaseUrl of publicPluginReleases) {
+    assert.match(publication, new RegExp(releaseUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
+  assert.match(publication, /0\.3\.2[\s\S]*(?:closed|unpublished)[\s\S]*candidate/i);
+  assert.doesNotMatch(publication, /public package, tag, workflow run, release[^\n]*not published/i);
 });
 
 test('GitHub content engine parses contextual outreach rows without unsafe solicitation or attribution', () => {

@@ -44,11 +44,11 @@ This is an eight-week, proof-led publication queue. It contains the twelve named
 
 ### Unit 05: Codex workflow: install → compare → budget → generate → recover
 
-**Rhythm:** Outcome/proof. **Owner:** Plugin Release Owner + Developer Relations. **Human search question:** How do I use the MaxVideoAI Codex package safely? **Agent question:** What is the checked-in Codex package path and recovery sequence? **Direct answer:** Install the reviewed package, use `$plan` before spending, and recover an accepted job rather than sending a duplicate paid request.
+**Rhythm:** Outcome/proof. **Owner:** Plugin Release Owner + Developer Relations. **Human search question:** How do I use the MaxVideoAI Codex package safely? **Agent question:** What is the checked-in Codex package path and recovery sequence? **Direct answer:** Install the reviewed package, use `$maxvideoai:plan` before spending, and recover an accepted job rather than sending a duplicate paid request.
 
 ![MaxVideoAI workspace with a completed glass-ribbon result](../../plugins/maxvideoai/assets/demos/readme-proof-hero.webp)
 
-**Proof visual:** `readme-proof-hero.webp`; it proves current MaxVideoAI product state, not native Codex execution. **First-party MaxVideoAI fact or workflow:** the package path is checked in; first live action opens browser OAuth, and approval authorizes one attempt. **Source URL:** https://github.com/camgraphe/MaxVideoAi/blob/main/plugins/maxvideoai/docs/codex.md. **GitHub surface:** `docs/codex.md` and `examples/codex-video-production.md`. **Website counterpart:** https://maxvideoai.com/docs/mcp. **Outreach class:** Codex plugin workflow resource. **Canonical backlink:** https://maxvideoai.com/docs/mcp. **CTA:** Install the tagged package, then ask for a no-spend comparison. **Publication gate:** release tag, package metadata, command, and support path verified. **Refresh trigger:** package tag or Codex installation behavior changes. **Measurement:** package installs, guide referrals, and `$plan` discovery reports.
+**Proof visual:** `readme-proof-hero.webp`; it proves current MaxVideoAI product state, not native Codex execution. **First-party MaxVideoAI fact or workflow:** the package path is checked in; first live action opens browser OAuth, and approval authorizes one attempt. **Source URL:** https://github.com/camgraphe/MaxVideoAi/blob/main/plugins/maxvideoai/docs/codex.md. **GitHub surface:** `docs/codex.md` and `examples/codex-video-production.md`. **Website counterpart:** https://maxvideoai.com/docs/mcp. **Outreach class:** Codex plugin workflow resource. **Canonical backlink:** https://maxvideoai.com/docs/mcp. **CTA:** Install the tagged package, then ask for a no-spend comparison. **Publication gate:** release tag, package metadata, command, and support path verified. **Refresh trigger:** package tag or Codex installation behavior changes. **Measurement:** package installs, guide referrals, and `$maxvideoai:plan` discovery reports.
 
 ### Unit 06: What “price before generation” protects
 
@@ -98,7 +98,7 @@ This is an eight-week, proof-led publication queue. It contains the twelve named
 
 ### Unit 11: Plugin release 0.3.2: current proof, platform guides, and public checksums
 
-**Rhythm:** Outcome/proof. **Status:** draft_not_publishable. **Owner:** Plugin Release Owner. **Human search question:** What will change in MaxVideoAI plugin release 0.3.2 once its evidence is complete? **Agent question:** Identify the missing release evidence without treating a draft as a release. **Direct answer:** This is a draft-only 0.3.2 unit: no 0.3.2 release, source tag, built checksum, or install proof is claimed until the complete gate is met.
+**Rhythm:** Outcome/proof. **Status:** draft_not_publishable. **Owner:** Plugin Release Owner. **Human search question:** What will change in MaxVideoAI plugin release 0.3.2 once its evidence is complete? **Agent question:** Identify the missing release evidence without treating a draft as a release. **Direct answer:** Releases v0.3.0 and v0.3.1 are public with checksum assets; the checked-in 0.3.2 package is a closed, unpublished candidate until its complete gate is met.
 
 ![MaxVideoAI release card with a completed workspace video](../../plugins/maxvideoai/assets/social/release-0.3.2.png)
 
@@ -134,7 +134,7 @@ This is an eight-week, proof-led publication queue. It contains the twelve named
 
 ### Follow-up 15: Release-install evidence refresh
 
-**Rhythm:** Outcome/proof. **Owner:** Plugin Release Owner. **Human search question:** Is the installation command still the reviewed path for a publishable release? **Agent question:** Revalidate the command, tag, checksum, and docs links only after a release gate is complete. **Direct answer:** Draft an install refresh only when its versioned tag, package path, checksum, and setup guide have evidence; otherwise keep the existing documentation unchanged.
+**Rhythm:** Outcome/proof. **Owner:** Plugin Release Owner. **Human search question:** Is the installation command still the reviewed path for a publishable release? **Agent question:** Revalidate the command, tag, checksum, and docs links only after a release gate is complete. **Direct answer:** Public v0.3.0 and v0.3.1 remain the installable, checksum-backed releases; draft a 0.3.2 install refresh only when that closed candidate has its own tag, checksum, package path, and clean-install evidence.
 
 ![MaxVideoAI release card with a current completed-result proof](../../plugins/maxvideoai/assets/social/release-0.3.2.png)
 

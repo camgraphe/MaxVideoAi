@@ -2,6 +2,8 @@
 
 Use this only for a reviewed, releasable tag. Replace every bracketed field with current evidence; remove a section rather than guessing.
 
+Release v0.3.0 and release v0.3.1 are public in the focused plugin repository. The checked-in 0.3.2 package remains a closed, unpublished candidate until its own gate is complete; this reusable template does not change that status.
+
 ## Outcome
 
 **Short answer:** [State the production or package outcome in one evidence-qualified sentence.]
@@ -34,7 +36,7 @@ codex plugin marketplace add camgraphe/MaxVideoAi --ref <reviewed-release-tag>
 codex plugin add maxvideoai@maxvideoai
 ```
 
-Then start a new Codex task and use `$plan` for a no-spend comparison. Command availability varies by host build; check the [Codex guide](../../plugins/maxvideoai/docs/codex.md) for the current boundary.
+Then start a new Codex task and use `$maxvideoai:plan` for a no-spend comparison. Use `$maxvideoai:generate` only when you are ready to prepare a concrete request and review its exact quote. Command availability varies by host build; check the [Codex guide](../../plugins/maxvideoai/docs/codex.md) for the current boundary.
 
 [Plan the connected workflow](https://maxvideoai.com/mcp?utm_source=github&utm_medium=release&utm_campaign=assistant_video_plugin_0_3_2&utm_content=release_connect) only after the reviewed release is published; this template itself does not announce a release.
 

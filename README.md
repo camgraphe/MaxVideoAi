@@ -8,7 +8,7 @@ MaxVideoAI is a multi-model AI video production platform for planning, comparing
 
 [Plan a video with MaxVideoAI](https://maxvideoai.com/mcp?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=hero_try) · [Compare current models](https://maxvideoai.com/models?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=models) · [Use MaxVideoAI from Claude, ChatGPT or Codex](https://maxvideoai.com/mcp?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=plugin_callout)
 
-[Plugin repository preview — release pending](https://github.com/camgraphe/maxvideoai-plugin)
+[Plugin repository](https://github.com/camgraphe/maxvideoai-plugin) · [Latest public release: v0.3.1](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.1)
 
 ![MaxVideoAI production workspace showing the completed glass-ribbon video as the dominant README proof](plugins/maxvideoai/assets/demos/readme-proof-hero.webp)
 
@@ -63,9 +63,11 @@ Pick up where the production left off: open the [Library](https://maxvideoai.com
 
 ## Can Claude, ChatGPT or Codex use MaxVideoAI?
 
-MaxVideoAI exposes a remote MCP service and a checked-in plugin package for assistant-led planning and generation workflows. The package includes setup guides, model-planning and generation skills, privacy boundaries, examples, and recovery guidance. Its dedicated public distribution repository remains a preview until the first release lands.
+MaxVideoAI exposes a remote MCP service and a checked-in plugin package for assistant-led planning and generation workflows. The package includes setup guides, model-planning and generation skills, privacy boundaries, examples, and recovery guidance. Release v0.3.0 is public and release v0.3.1 is public in the dedicated distribution repository. The checked-in 0.3.2 package is a closed, unpublished candidate until its own source tag, checksum, clean-install evidence, and owner gate are complete.
 
-[Read the active product setup](https://maxvideoai.com/mcp) · [Inspect the source package](plugins/maxvideoai) · [Public repository preview — release pending](https://github.com/camgraphe/maxvideoai-plugin)
+![Current MaxVideoAI workspace and Library proof for the assistant-led production path](plugins/maxvideoai/assets/demos/library-continuity.webp)
+
+[Read the active product setup](https://maxvideoai.com/mcp) · [Inspect the source package](plugins/maxvideoai) · [Open the public plugin repository](https://github.com/camgraphe/maxvideoai-plugin) · [Download v0.3.1](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.1)
 
 Platform availability and setup can change. Follow the guide for your Claude, ChatGPT, Codex, or compatible MCP surface and treat the linked compatibility evidence as current only for the state it documents. The product proof in this README is MaxVideoAI web-app proof, not native host proof.
 

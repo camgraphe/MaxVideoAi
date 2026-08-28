@@ -1,9 +1,13 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
 import { readFileSync, statSync } from 'node:fs';
 import test from 'node:test';
 
 import { readImageDimensions, validateImageDecode } from '../scripts/register-github-asset.mjs';
+
+const requireFromFrontend = createRequire(new URL('../frontend/package.json', import.meta.url));
+const sharp = requireFromFrontend('sharp');
 
 const manifest = JSON.parse(readFileSync('docs/marketing/github-asset-manifest.json', 'utf8')) as {
   assets: Array<{
@@ -20,7 +24,7 @@ const manifest = JSON.parse(readFileSync('docs/marketing/github-asset-manifest.j
 const outputDimensions = new Map([
   ['plugins/maxvideoai/assets/demos/readme-proof-hero.webp', [1600, 900]],
   ['plugins/maxvideoai/assets/demos/brief-to-video-workflow.webp', [1600, 900]],
-  ['plugins/maxvideoai/assets/demos/model-choice-and-budget.webp', [800, 450]],
+  ['plugins/maxvideoai/assets/demos/model-choice-and-budget.webp', [480, 640]],
   ['plugins/maxvideoai/assets/demos/library-continuity.webp', [1600, 900]],
   ['plugins/maxvideoai/assets/social/github-social-preview.png', [1280, 640]],
   ['plugins/maxvideoai/assets/social/release-0.3.0.png', [1200, 630]],
@@ -35,6 +39,13 @@ const allowedProofIds = new Set([
 
 function sha256(bytes: Buffer) {
   return createHash('sha256').update(bytes).digest('hex');
+}
+
+function meanAbsoluteDifference(left: Buffer, right: Buffer): number {
+  assert.equal(left.length, right.length);
+  let difference = 0;
+  for (let index = 0; index < left.length; index += 1) difference += Math.abs(left[index] - right[index]);
+  return difference / left.length;
 }
 
 test('ships the eight visual-system outputs at their exact target dimensions', async () => {
@@ -87,4 +98,29 @@ test('composition code uses only the accepted proof sources and makes no native 
 
   const modelRecord = manifest.assets.find((asset) => asset.id === 'model-choice-and-budget');
   assert.match(modelRecord?.claim ?? '', /does not show or prove a budget, quote, price, approval, or native host execution/i);
+});
+
+test('the narrow model-choice proof keeps the real selector readable around a 390px GitHub viewport', async () => {
+  const assetPath = 'plugins/maxvideoai/assets/demos/model-choice-and-budget.webp';
+  const workspacePath = 'plugins/maxvideoai/assets/screenshots/maxvideoai-workspace-production.jpg';
+  const asset = readFileSync(assetPath);
+  const expectedSelector = await sharp(workspacePath)
+    .extract({ left: 220, top: 86, width: 380, height: 75 })
+    .removeAlpha()
+    .raw()
+    .toBuffer();
+  const renderedSelector = await sharp(asset)
+    .extract({ left: 50, top: 55, width: 380, height: 75 })
+    .removeAlpha()
+    .raw()
+    .toBuffer();
+
+  assert.ok(
+    meanAbsoluteDifference(expectedSelector, renderedSelector) < 18,
+    'the selector region must remain a real native-scale crop, not redrawn or materially resampled UI',
+  );
+
+  const githubContentWidthAt390 = 358;
+  const renderedSelectorHeight = 75 * (githubContentWidthAt390 / 480);
+  assert.ok(renderedSelectorHeight >= 55, 'the selector must stay at least 55px tall in the narrow README render');
 });

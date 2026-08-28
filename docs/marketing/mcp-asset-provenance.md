@@ -79,7 +79,7 @@ MaxVideoAI web-app proof only.
       {
         "path": "plugins/maxvideoai/assets/demos/model-choice-and-budget.webp",
         "sourceProofIds": ["maxvideoai-workspace-production"],
-        "proofBoundary": "Visible Luma Ray 2 Flash selection and completed result only; no budget, price, quote, approval, or native host execution."
+        "proofBoundary": "Visible Luma Ray 2 Flash selection and completed result only; the real 380×75 selector crop stays at native scale on a narrow stacked canvas, with no redrawn UI, budget, price, quote, approval, or native host execution."
       },
       {
         "path": "plugins/maxvideoai/assets/demos/library-continuity.webp",

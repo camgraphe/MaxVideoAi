@@ -172,18 +172,20 @@ async function briefToVideoWorkflow() {
 }
 
 async function modelChoiceAndBudget() {
-  const width = 800;
-  const height = 450;
+  const width = 480;
+  const height = 640;
   const canvas = await base(width, height, 'light', 0.32);
-  const layers = [{ input: await solid(260, 5, colors.cobalt), left: 34, top: 42 }];
+  const layers = [{ input: await solid(380, 5, colors.cobalt), left: 50, top: 28 }];
+  const selector = await croppedImage(paths.workspace, { left: 220, top: 86, width: 380, height: 75 });
   const result = await fittedImage(
     (await croppedImage(paths.workspace, { left: 650, top: 145, width: 620, height: 360 })).buffer,
-    440,
-    255,
+    420,
+    244,
   );
-  const selector = await croppedImage(paths.workspace, { left: 220, top: 86, width: 380, height: 75 });
-  await addProof(layers, result, 320, 70, { border: '#DDE5F0', shadowOpacity: 0.24 });
-  await addProof(layers, selector, 36, 330, { border: '#DDE5F0', shadowOpacity: 0.2 });
+  const workspace = await fittedImage(paths.workspace, 420, 152);
+  await addProof(layers, selector, 50, 55, { border: '#DDE5F0', shadowOpacity: 0.2 });
+  await addProof(layers, result, 30, 172, { border: '#DDE5F0', shadowOpacity: 0.24 });
+  await addProof(layers, workspace, 30, 445, { border: '#DDE5F0', shadowOpacity: 0.18 });
   await writeOutput(canvas.composite(layers), path.join(paths.demos, 'model-choice-and-budget.webp'), 'webp');
 }
 

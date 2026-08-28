@@ -7,7 +7,7 @@
     "weightedTotals": {
       "before": 46,
       "target": 85,
-      "after": 77
+      "after": 82
     }
   },
   "dimensions": [
@@ -17,17 +17,18 @@
       "weight": 15,
       "before": 30,
       "target": 80,
-      "after": 76,
+      "after": 82,
       "beforeEvidence": [
         "README.md",
         "plugins/maxvideoai/README.md"
       ],
       "afterEvidence": [
         "plugins/maxvideoai/README.md",
-        "https://github.com/camgraphe/maxvideoai-plugin"
+        "https://github.com/camgraphe/maxvideoai-plugin",
+        "https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.1"
       ],
-      "afterRationale": "The reviewed plugin README now opens with outcomes, proof, three equal host paths, and a direct install path; this independently supports the 46-point gain from the development-first baseline.",
-      "remainingGap": "The dedicated public repository still has no README, while the public product repository continues to open on stale, text-first mock-generation copy."
+      "afterRationale": "The focused public repository now opens with the reviewed outcome-led README, three equal host paths, a direct install path, and public checksum-backed releases; this independently supports the 52-point gain from the development-first baseline.",
+      "remainingGap": "No clean acquisition cohort or observed first-screen conversion evidence yet shows which public repository path converts qualified visitors."
     },
     {
       "id": "voice",
@@ -35,17 +36,18 @@
       "weight": 10,
       "before": 42,
       "target": 85,
-      "after": 86,
+      "after": 88,
       "beforeEvidence": [
         "README.md",
         "plugins/maxvideoai/README.md"
       ],
       "afterEvidence": [
         "docs/marketing/github-editorial-voice.md",
-        "plugins/maxvideoai/README.md"
+        "plugins/maxvideoai/README.md",
+        "https://github.com/camgraphe/maxvideoai-plugin"
       ],
-      "afterRationale": "The checked-in voice contract and reviewed flagship copy replace default-heavy explanation with concise, producer-minded guidance and a restrained friendly tone.",
-      "remainingGap": "The branch clears the target, but the public product repository's older first-screen voice still needs a separate evidence-led refresh."
+      "afterRationale": "The checked-in voice contract and now-public flagship copy replace default-heavy explanation with concise, producer-minded guidance and a restrained friendly tone.",
+      "remainingGap": "No external support or user-language review has yet tested whether the voice remains equally clear outside the authored repository surfaces."
     },
     {
       "id": "visual",
@@ -53,7 +55,7 @@
       "weight": 15,
       "before": 28,
       "target": 85,
-      "after": 80,
+      "after": 86,
       "beforeEvidence": [
         "docs/marketing/mcp-demo-evidence.md",
         "frontend/public/media/mcp/claude-inline-video-proof.jpg",
@@ -64,8 +66,8 @@
         "plugins/maxvideoai/assets/social/github-social-preview.png",
         "https://github.com/camgraphe/maxvideoai-plugin"
       ],
-      "afterRationale": "Fresh product-proof composites, registered provenance, narrow-render checks, and the live 1280×640 plugin social preview support the 52-point improvement without treating editorial art as host proof.",
-      "remainingGap": "The dedicated public repository has no README in which to establish the planned visual rhythm, and the product repository remains generic and text-heavy above the fold."
+      "afterRationale": "The public plugin README establishes a proof-led visual rhythm and uses the live 1280×640 social preview; the reviewed source refresh adds a registered selector/result proof designed for a readable narrow render without treating editorial art as host proof.",
+      "remainingGap": "No independently archived native-host result packet exists, so every published visual must remain explicitly bounded to MaxVideoAI web-product proof."
     },
     {
       "id": "seo",
@@ -73,7 +75,7 @@
       "weight": 10,
       "before": 62,
       "target": 85,
-      "after": 82,
+      "after": 88,
       "beforeEvidence": [
         "README.md",
         "plugins/maxvideoai/README.md",
@@ -82,10 +84,12 @@
       "afterEvidence": [
         "plugins/maxvideoai/README.md",
         "docs/marketing/github-distribution-matrix.md",
-        "https://github.com/camgraphe/maxvideoai-plugin"
+        "https://github.com/camgraphe/maxvideoai-plugin",
+        "https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.0",
+        "https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.1"
       ],
-      "afterRationale": "Focused assistant-video copy, canonical entity links, eight relevant public topics, and repository-specific distribution metadata make the intended search entity substantially clearer.",
-      "remainingGap": "The dedicated repository has no indexable README or tagged release, so its strongest query passages are not yet part of the public repository surface."
+      "afterRationale": "The indexable focused README, canonical entity links, eight relevant topics, and two public tagged releases make the assistant-video product entity and maintained release history substantially clearer.",
+      "remainingGap": "No authoritative external directory listing or post-change search observation yet demonstrates discovery beyond MaxVideoAI-owned GitHub and website surfaces."
     },
     {
       "id": "human_geo",
@@ -132,7 +136,7 @@
       "weight": 10,
       "before": 64,
       "target": 90,
-      "after": 82,
+      "after": 88,
       "beforeEvidence": [
         "docs/marketing/mcp-demo-evidence.md",
         "docs/licensing/dual-license.md"
@@ -140,10 +144,11 @@
       "afterEvidence": [
         "docs/marketing/mcp-launch-evidence.md",
         "docs/marketing/github-asset-manifest.json",
-        "https://github.com/camgraphe/MaxVideoAi/releases/tag/maxvideoai-plugin-v0.2.0"
+        "https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.0",
+        "https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.1"
       ],
-      "afterRationale": "Proof provenance, paid-action safety gates, public support/security files, and a real 0.2.0 product-repository release establish a reviewable trust chain.",
-      "remainingGap": "The dedicated public repository has no tagged release, checksum, or archived real-host result packet of its own."
+      "afterRationale": "Proof provenance, paid-action safety gates, public support/security files, and focused v0.3.0 and v0.3.1 releases with checksum attachments establish a reviewable public trust chain.",
+      "remainingGap": "There is still no archived real-host result packet, and the separate checked-in 0.3.2 candidate has not completed its own source-tag, checksum, and clean-install gate."
     },
     {
       "id": "distribution",
@@ -151,7 +156,7 @@
       "weight": 10,
       "before": 18,
       "target": 75,
-      "after": 42,
+      "after": 58,
       "beforeEvidence": [
         "README.md",
         "plugins/maxvideoai/README.md"
@@ -161,8 +166,8 @@
         "https://github.com/camgraphe/MaxVideoAi",
         "https://github.com/camgraphe/maxvideoai-plugin"
       ],
-      "afterRationale": "A second focused public repository, owned-site acquisition paths, and ten evidence-gated distribution decisions support the 24-point gain without inventing a directory acceptance or backlink.",
-      "remainingGap": "The plugin repository remains bootstrap-only and no authoritative external listing, contextual referring domain, or approved directory backlink has been verified."
+      "afterRationale": "A focused public repository with two checksum-backed releases, owned-site acquisition paths, and ten evidence-gated distribution decisions supports the 40-point gain without inventing a directory acceptance or backlink.",
+      "remainingGap": "No authoritative external listing, contextual referring domain, or approved directory backlink has been verified."
     },
     {
       "id": "measurement",

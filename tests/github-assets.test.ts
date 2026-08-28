@@ -23,7 +23,7 @@ import {
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const manifestPath = path.join(repositoryRoot, 'docs/marketing/github-asset-manifest.json');
 const checkCommandPath = path.join(repositoryRoot, 'scripts/check-github-assets.mjs');
-const now = new Date('2026-08-27T12:00:00Z');
+const now = new Date('2026-08-28T12:00:00Z');
 const verifiedVp8Path = path.join(repositoryRoot, 'frontend/public/assets/marketing/app-dashboard.webp');
 const verifiedVp8 = readFileSync(verifiedVp8Path);
 const verifiedVp8XPath = path.join(repositoryRoot, 'frontend/public/assets/marketing/comparison-scorecard-transparent.webp');

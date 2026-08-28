@@ -13,14 +13,14 @@ const scoreCommandPath = path.join(repositoryRoot, 'scripts/github-content-score
 const nextTaskQueuePath = path.join(repositoryRoot, 'docs/marketing/github-next-task-queue.md');
 
 const expectedAfterScores = {
-  conversion: 76,
-  voice: 86,
-  visual: 80,
-  seo: 82,
+  conversion: 82,
+  voice: 88,
+  visual: 86,
+  seo: 88,
   human_geo: 84,
   agent_discovery: 84,
-  trust: 82,
-  distribution: 42,
+  trust: 88,
+  distribution: 58,
   measurement: 62,
 } as const;
 
@@ -36,7 +36,7 @@ const allowedQueueStatuses = new Set(['planned', 'blocked', 'ready', 'in_progres
 
 const expectedQueueTaskNames = [
   'Add a privacy-reviewed opaque GitHub landing-to-MCP association and cover every real funnel emitter, including Library opens.',
-  'Reconcile this branch with the approved public copy wave without overwriting its host wording or shared ChatGPT/Codex visual proof.',
+  'Reconcile this branch with the approved public copy wave without overwriting its host wording or the distinction between public listing and developer MCP.',
   'Build and verify the focused repository README and tagged release from the exact reviewed public bundle.',
   'Recheck every distribution policy and legal gate against its primary source.',
   'Open the clean acquisition cohort and preserve raw exclusions.',
@@ -151,6 +151,10 @@ function removeQueueTask(markdown: string, taskName: string): string {
   return markdown.split('\n').filter((line) => !line.startsWith(`| ${taskName} |`)).join('\n');
 }
 
+function queueTaskRow(markdown: string, taskName: string): string[] {
+  return queueTaskRows(markdown).find((row) => row[0] === taskName) ?? [];
+}
+
 function validateNextTaskQueue(markdown: string): string[] {
   const errors: string[] = [];
   const groupMatches = [...markdown.matchAll(/^## (.+)$/gm)];
@@ -218,7 +222,7 @@ test('preserves the approved baseline and records the independently judged verif
   assert.equal(scorecard.rubric.weightedTotals.before, 46);
   assert.equal(scorecard.rubric.weightedTotals.target, 85);
   assert.equal(scorecard.verifiedAfterAt, '2026-08-28');
-  assert.equal(scorecard.rubric.weightedTotals.after, 77);
+  assert.equal(scorecard.rubric.weightedTotals.after, 82);
   assert.deepEqual(
     scorecard.dimensions.map(({ id, weight, before, target }) => ({ id, weight, before, target })),
     Object.entries(expected).map(([id, values]) => ({ id, ...values })),
@@ -293,7 +297,7 @@ test('reports the verified after score in markdown and JSON and satisfies the re
   assert.match(markdown.stdout, /Current after/i);
   assert.match(markdown.stdout, /46/);
   assert.match(markdown.stdout, /85/);
-  assert.match(markdown.stdout, /77/);
+  assert.match(markdown.stdout, /82/);
 
   const json = spawnSync(process.execPath, [scoreCommandPath, '--format', 'json'], {
     cwd: repositoryRoot,
@@ -301,14 +305,14 @@ test('reports the verified after score in markdown and JSON and satisfies the re
   });
   assert.equal(json.status, 0, json.stderr);
   const report = JSON.parse(json.stdout) as { weightedTotals: { before: number; target: number; after: number } };
-  assert.deepEqual(report.weightedTotals, { before: 46, target: 85, after: 77 });
+  assert.deepEqual(report.weightedTotals, { before: 46, target: 85, after: 82 });
 
   const requireAfter = spawnSync(process.execPath, [scoreCommandPath, '--require-after'], {
     cwd: repositoryRoot,
     encoding: 'utf8',
   });
   assert.equal(requireAfter.status, 0, requireAfter.stderr);
-  assert.match(requireAfter.stdout, /77/);
+  assert.match(requireAfter.stdout, /82/);
 });
 
 test('rejects unsupported closeout evidence, unexplained jumps, missing gaps, and target auto-fill', () => {
@@ -329,7 +333,7 @@ test('rejects unsupported closeout evidence, unexplained jumps, missing gaps, an
   assert.match(validateCloseoutContract(missingLargeDeltaRationale).join('\n'), /delta above 20.*rationale/i);
 
   const missingBelowTargetGap = cloneScorecard(scorecard);
-  missingBelowTargetGap.dimensions[0].remainingGap = '';
+  missingBelowTargetGap.dimensions[4].remainingGap = '';
   assert.match(validateCloseoutContract(missingBelowTargetGap).join('\n'), /below-target.*remaining gap/i);
 
   const targetAutoFill = cloneScorecard(scorecard);
@@ -341,6 +345,13 @@ test('rejects unsupported closeout evidence, unexplained jumps, missing gaps, an
 test('requires a dependency-ordered operational queue with complete non-automated tasks', () => {
   const markdown = readFileSync(nextTaskQueuePath, 'utf8');
   assert.deepEqual(validateNextTaskQueue(markdown), []);
+
+  const reconciliation = queueTaskRow(markdown, expectedQueueTaskNames[1]);
+  const publicRelease = queueTaskRow(markdown, expectedQueueTaskNames[2]);
+  assert.equal(reconciliation[7], 'complete');
+  assert.equal(publicRelease[7], 'in_progress');
+  assert.match(publicRelease.join(' '), /v0\.3\.0[\s\S]*v0\.3\.1[\s\S]*public/i);
+  assert.match(publicRelease.join(' '), /0\.3\.2[\s\S]*(?:closed|unpublished)[\s\S]*candidate/i);
 
   assert.match(validateNextTaskQueue(markdown.replace('| planned |', '| queued |')).join('\n'), /unsupported status/i);
   assert.match(
