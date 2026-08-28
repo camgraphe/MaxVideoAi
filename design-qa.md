@@ -130,6 +130,84 @@ final result: passed
 
 ---
 
+# GitHub Product Story V2 Design QA
+
+## Evidence
+
+- Source visual truth: `/Users/adrienmillot/.codex/generated_images/01a044d1-b433-75b3-bb24-19fb46ee0e2f/exec-2556e7f9-b176-4a8d-b706-db0de227bbd0.png`.
+- Final editorial hero: `/Users/adrienmillot/.codex/generated_images/01a044d1-b433-75b3-bb24-19fb46ee0e2f/exec-b043be47-bf80-4a59-a7d4-9d137e8cb25d.png`.
+- Rendered root implementation: `/tmp/maxvideoai-root-readme-render-v2.png` from `http://127.0.0.1:4173/maxvideoai-root-readme-preview.html`.
+- Rendered plugin implementation: `/tmp/maxvideoai-plugin-readme-preview.html`, final top capture `/tmp/maxvideoai-plugin-qa-final.png`, and focused captures under `/tmp/maxvideoai-plugin-qa-*.png`.
+- Combined comparison input: `/tmp/maxvideoai-design-qa-comparison-v2.png`.
+- Focused root evidence: `/tmp/maxvideoai-root-readme-top-v2.png`, `/tmp/maxvideoai-root-qa-middle.png`, `/tmp/maxvideoai-root-qa-proof.png`, `/tmp/maxvideoai-root-qa-scoreboard.png`, `/tmp/maxvideoai-root-qa-architecture.png`, and `/tmp/maxvideoai-root-qa-stack.png`.
+- Source pixels: 864 × 1821.
+- Implementation pixels: 1280 × 8698 for the complete root README.
+- CSS viewport: 1280 × 720 at device density 1 for the focused browser captures.
+- Density normalization: the complete source and implementation were compared in two equal-width, independently scrollable columns; focused captures were then reviewed at the implementation's native viewport. The source is a composed GitHub direction while the implementation is native GitHub Markdown, so the comparison targets hierarchy, image rhythm, palette, product sequence, and density rather than impossible pixel identity.
+- State: light-theme static GitHub README presentation with current public MaxVideoAI product captures and no authenticated data.
+
+## Findings
+
+No actionable P0, P1, or P2 findings remain.
+
+- Fonts and typography: the implementation keeps the native GitHub type system for trust and readability. Headings use a clear question-led GEO hierarchy; technical tables and code blocks remain optically distinct from the commercial story.
+- Spacing and layout rhythm: the final root README alternates short explanatory passages with eight distinct visual beats before moving into architecture, stack, repository map, setup, and contribution. The focused plugin README starts with assistant value and installation, then alternates product proof with progressively deeper technical material.
+- Colors and visual tokens: the dedicated hero matches the selected warm-ivory, charcoal, cool-gray, and restrained cobalt direction. Current product screenshots keep the real MaxVideoAI neutral interface rather than applying a false decorative recolor.
+- Image quality and asset fidelity: the hero is a dedicated 1600 × 587 WebP, not a crop of the selected design or a fake UI. Six new product screenshots are current 1268 × 713 production captures with unique hashes; the existing Library proof is used once. No legacy repeated-demo composite remains in either primary README.
+- Copy and content: the root README explicitly identifies the web workspace as the main product and the plugin as its assistant extension. Product value precedes engineering depth, while the complete Next.js, React, TypeScript, Tailwind, Supabase Auth, Neon Postgres, S3, Stripe, MCP, testing, and repository-ownership material remains present.
+- Accessibility and semantics: every image has descriptive alt text, headings follow a navigable hierarchy, code remains selectable text, and the generated editorial hero is explicitly classified in the asset manifest as brand material rather than product or host proof.
+
+## Full-view Comparison Evidence
+
+The selected direction establishes a cinematic hero followed by discover, compare, price, create, continue, and assistant-workflow chapters. The final native README preserves that order while expanding it with a current model directory, explicit workspace explanation, real pricing proof, Library continuity, and the full engineering half requested by the owner. The GitHub-native column is narrower and more text-forward than the visual mock by design; it remains readable, searchable, copyable, and maintainable in Markdown.
+
+## Focused Region Comparison Evidence
+
+- Hero and opening: `/tmp/maxvideoai-root-readme-top-v2.png` confirms the new cinema-camera hero is visible above the fold and the three tracked destinations remain readable.
+- Workspace to examples: `/tmp/maxvideoai-root-qa-middle.png` confirms the main app is presented before the examples gallery.
+- Examples to decision support: `/tmp/maxvideoai-root-qa-proof.png` and `/tmp/maxvideoai-root-qa-scoreboard.png` confirm three visibly different example cards lead into the side-by-side scoreboard.
+- Product to engineering: `/tmp/maxvideoai-root-qa-architecture.png` and `/tmp/maxvideoai-root-qa-stack.png` confirm the assistant proof transitions into architecture, stack ownership, and repository responsibilities instead of ending at marketing copy.
+- Plugin path: `/tmp/maxvideoai-plugin-qa-top.png`, `/tmp/maxvideoai-plugin-qa-install-order.png`, `/tmp/maxvideoai-plugin-qa-guides.png`, and `/tmp/maxvideoai-plugin-qa-technical.png` confirm that Claude, ChatGPT, and Codex stay equal, Codex installation remains copyable, screenshots are varied, and packaging details remain visible.
+
+## Comparison History
+
+### Iteration 1
+
+- [P2] The native README opened with a small logo and current workspace capture but did not carry enough of the selected cinematic visual identity above the fold.
+  - Fix: generated a dedicated text-free editorial hero for the exact wide slot, registered it as editorial rather than product proof, and placed the current app capture immediately after a direct workspace definition.
+  - Post-fix evidence: `/tmp/maxvideoai-root-readme-top-v2.png` and `/tmp/maxvideoai-design-qa-comparison-v2.png`.
+- [P2] The boundary between the MaxVideoAI web product and its GitHub plugin was visually clear later in the page but not explicit enough in the opening sequence.
+  - Fix: added `What does the MaxVideoAI workspace bring together?` and stated that the workspace is the main product while the plugin extends the same production path to Claude, ChatGPT, and Codex.
+  - Post-fix evidence: the focused top and workspace-to-examples captures show the distinction before the first product proof.
+
+### Iteration 2
+
+- No actionable P0, P1, or P2 differences remained. The final comparison retains the source's cinematic/product-journey intent while respecting GitHub Markdown's native one-column constraints and preserving more technical depth than the mock.
+
+## Technical Verification
+
+- Full repository validation: `pnpm test:validate` passed with 3,727 tests and 0 failures on the final content.
+- GitHub content, asset, release-asset, score, acquisition-attribution, plugin-contract, public-bundle, exposure, frontend lint, and patch-hygiene checks passed.
+- Deterministic 0.3.2 bundle build included the six new current product screenshots; no tag, release, public-repository sync, or external submission was performed.
+
+## Implementation Checklist
+
+- [x] Dedicated, non-deceptive editorial hero.
+- [x] Current app, examples, scoreboard, model directory, pricing, Library, and assistant-workflow proofs.
+- [x] No repeated legacy demo composite in either primary README.
+- [x] Product-first copy followed by architecture, stack, setup, security, and contribution.
+- [x] Equal Claude, ChatGPT, and Codex positioning.
+- [x] Manifest provenance, hashes, placements, alt text, and automated visual contracts.
+
+## Follow-up Polish
+
+- [P3] Refresh the public repository social preview only after the README branch is integrated; that asset is outside this local README handoff and must not be published from an unmerged candidate.
+- [P3] Re-capture host-native approval or marketplace views when those channels are deliberately published; current product claims do not rely on them.
+
+final result: passed
+
+---
+
 # MCP Inline Video Proof Design QA
 
 ## Evidence

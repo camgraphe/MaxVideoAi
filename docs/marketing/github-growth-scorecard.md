@@ -5,31 +5,33 @@ GitHub commercial presence. It is a planning and verification aid, not an
 external benchmark or a claim about third-party performance.
 
 The 2026-08-27 baseline is **46**, rounded from 45.55. The planned target is
-**85**, rounded from 84.80. The evidence review completed on 2026-08-28 records
-a verified implementation-readiness score of **82**, rounded from 81.50.
+**85**, rounded from 84.80. The evidence review completed on 2026-08-29 records
+a verified implementation-readiness score of **84**, rounded from 84.05.
 
-That 36-point gain reflects the live focused README, public checksum-backed
-v0.3.0 and v0.3.1 releases, better proof discipline, GEO surfaces,
+That 38-point gain reflects the current source and focused-plugin READMEs, six
+fresh non-repeating product captures, public checksum-backed v0.3.0 and v0.3.1
+releases, stronger GitHub SEO/GEO passages, preserved engineering depth,
 agent-selection coverage, and acquisition contracts. It does not claim traffic
-or conversion lift. The result stays below target because authoritative
-distribution and referring domains are unverified, real Claude/Codex host
-columns remain `null`, the separate 0.3.2 candidate is unpublished, and the
-clean 14-day measurement window has not started.
+or conversion lift. The result stays below target because the refreshed public
+bundle is not synchronized, authoritative distribution and referring domains
+are unverified, real Claude/Codex host columns remain `null`, the separate 0.3.2
+candidate is unpublished, and the clean 14-day measurement window has not
+started.
 
 ## Verified closeout
 
 | Dimension | Weight | Before | Target | Verified after | Delta | Evidence | Remaining gap |
 | --- | ---: | ---: | ---: | ---: | ---: | --- | --- |
-| Conversion clarity | 15% | 30 | 80 | 82 | +52 | [Focused public README](https://github.com/camgraphe/maxvideoai-plugin) and [latest public release](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.1) | No clean acquisition cohort or observed first-screen conversion evidence. |
-| Editorial personality | 10% | 42 | 85 | 88 | +46 | Editorial voice contract and now-public plugin README | No external support or user-language review has tested the voice beyond authored surfaces. |
-| Visual proof and rhythm | 15% | 28 | 85 | 86 | +58 | Public proof-led README and social preview; reviewed source manifest and narrow selector/result composite | The source refresh is not yet in a later public release, and no independently archived native-host result packet exists. |
-| GitHub SEO | 10% | 62 | 85 | 88 | +26 | Indexable focused README, eight live topics, canonical links, and [two](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.0) [public releases](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.1) | No authoritative external listing or post-change search observation. |
-| Human-facing GEO | 10% | 58 | 88 | 84 | +26 | [Public MCP hub](https://maxvideoai.com/mcp), localized intent owners, and GEO review | No earned citation or post-change answer-engine observation window. |
+| Conversion clarity | 15% | 30 | 80 | 86 | +56 | Source and plugin READMEs, first-screen/product-journey contracts, [focused public repository](https://github.com/camgraphe/maxvideoai-plugin), and [latest public release](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.1) | Refreshed plugin bundle is not synchronized; no clean acquisition cohort or observed first-screen conversion evidence. |
+| Editorial personality | 10% | 42 | 85 | 90 | +48 | Editorial voice contract plus the producer-led source and plugin READMEs | No external support or user-language review has tested the voice beyond authored surfaces. |
+| Visual proof and rhythm | 15% | 28 | 85 | 93 | +65 | Six fresh product captures, separate Library proof, registered provenance, unique-byte checks, and release inclusion | Refreshed plugin bundle is not synchronized; no independently archived native-host result packet exists. |
+| GitHub SEO | 10% | 62 | 85 | 90 | +28 | Question-led source and plugin READMEs, descriptive image alternatives, canonical links, technical stack coverage, and [two](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.0) [public releases](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.1) | No authoritative external listing or post-change search observation. |
+| Human-facing GEO | 10% | 58 | 88 | 89 | +31 | [Public MCP hub](https://maxvideoai.com/mcp), localized intent owners, self-contained GitHub answers, multimodal proof, and GEO review | No earned citation or post-change answer-engine observation window. |
 | Agent discovery and selection | 15% | 68 | 90 | 84 | +16 | Curated policy corpus, discovery guide, and agent-discovery scorecard | Curated discovery is 100%; `claude_host` and `codex_host` remain `null`. |
-| Trust and evidence | 10% | 64 | 90 | 88 | +24 | Proof manifest, safety gates, community files, and public [v0.3.0](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.0) / [v0.3.1](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.1) checksum assets | No archived real-host result packet; the separate 0.3.2 candidate has not completed its own gate. |
+| Trust and evidence | 10% | 64 | 90 | 89 | +25 | Fresh proof provenance, decode and unique-byte gates, safety contracts, community files, and public [v0.3.0](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.0) / [v0.3.1](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.1) checksum assets | No archived real-host result packet; the separate 0.3.2 candidate has not completed its own gate. |
 | Distribution and backlinks | 10% | 18 | 75 | 58 | +40 | [Two](https://github.com/camgraphe/MaxVideoAi) [public repositories](https://github.com/camgraphe/maxvideoai-plugin), two focused releases, and ten gated channel decisions | No authoritative listing, contextual referring domain, or approved directory backlink is verified. |
 | Measurement and iteration | 5% | 45 | 85 | 62 | +17 | Attribution map, privacy tests, and cohort definitions | No server-side GitHub→MCP association, `library_opened` emitter, complete emitter coverage, or clean 14-day cohort. |
-| **Weighted total** | **100%** | **46** | **85** | **82** | **+36** | **Nine independently scored dimensions** | **Distribution, host evidence, the 0.3.2 candidate gate, and measured cohort gaps remain.** |
+| **Weighted total** | **100%** | **46** | **85** | **84** | **+38** | **Nine independently scored dimensions** | **Public-bundle sync, distribution, host evidence, the 0.3.2 candidate gate, and measured cohort gaps remain.** |
 
 Run `pnpm github:score -- --require-after --format markdown` to reproduce the
 recorded totals. The machine-readable scorecard links every after value to

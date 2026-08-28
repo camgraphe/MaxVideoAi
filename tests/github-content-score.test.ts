@@ -13,13 +13,13 @@ const scoreCommandPath = path.join(repositoryRoot, 'scripts/github-content-score
 const nextTaskQueuePath = path.join(repositoryRoot, 'docs/marketing/github-next-task-queue.md');
 
 const expectedAfterScores = {
-  conversion: 82,
-  voice: 88,
-  visual: 86,
-  seo: 88,
-  human_geo: 84,
+  conversion: 86,
+  voice: 90,
+  visual: 93,
+  seo: 90,
+  human_geo: 89,
   agent_discovery: 84,
-  trust: 88,
+  trust: 89,
   distribution: 58,
   measurement: 62,
 } as const;
@@ -102,8 +102,8 @@ function weightedAfter(scorecard: Scorecard): number | null {
 function validateCloseoutContract(scorecard: Scorecard): string[] {
   const errors = validateScorecard(scorecard, { repositoryRoot });
 
-  if (scorecard.verifiedAfterAt !== '2026-08-28') {
-    errors.push('Scorecard verifiedAfterAt must identify the 2026-08-28 evidence review');
+  if (scorecard.verifiedAfterAt !== '2026-08-29') {
+    errors.push('Scorecard verifiedAfterAt must identify the 2026-08-29 evidence review');
   }
 
   for (const dimension of scorecard.dimensions) {
@@ -221,8 +221,8 @@ test('preserves the approved baseline and records the independently judged verif
   assert.equal(scorecard.assessedAt, '2026-08-27');
   assert.equal(scorecard.rubric.weightedTotals.before, 46);
   assert.equal(scorecard.rubric.weightedTotals.target, 85);
-  assert.equal(scorecard.verifiedAfterAt, '2026-08-28');
-  assert.equal(scorecard.rubric.weightedTotals.after, 82);
+  assert.equal(scorecard.verifiedAfterAt, '2026-08-29');
+  assert.equal(scorecard.rubric.weightedTotals.after, 84);
   assert.deepEqual(
     scorecard.dimensions.map(({ id, weight, before, target }) => ({ id, weight, before, target })),
     Object.entries(expected).map(([id, values]) => ({ id, ...values })),
@@ -297,7 +297,7 @@ test('reports the verified after score in markdown and JSON and satisfies the re
   assert.match(markdown.stdout, /Current after/i);
   assert.match(markdown.stdout, /46/);
   assert.match(markdown.stdout, /85/);
-  assert.match(markdown.stdout, /82/);
+  assert.match(markdown.stdout, /84/);
 
   const json = spawnSync(process.execPath, [scoreCommandPath, '--format', 'json'], {
     cwd: repositoryRoot,
@@ -305,14 +305,14 @@ test('reports the verified after score in markdown and JSON and satisfies the re
   });
   assert.equal(json.status, 0, json.stderr);
   const report = JSON.parse(json.stdout) as { weightedTotals: { before: number; target: number; after: number } };
-  assert.deepEqual(report.weightedTotals, { before: 46, target: 85, after: 82 });
+  assert.deepEqual(report.weightedTotals, { before: 46, target: 85, after: 84 });
 
   const requireAfter = spawnSync(process.execPath, [scoreCommandPath, '--require-after'], {
     cwd: repositoryRoot,
     encoding: 'utf8',
   });
   assert.equal(requireAfter.status, 0, requireAfter.stderr);
-  assert.match(requireAfter.stdout, /82/);
+  assert.match(requireAfter.stdout, /84/);
 });
 
 test('rejects unsupported closeout evidence, unexplained jumps, missing gaps, and target auto-fill', () => {
@@ -333,7 +333,7 @@ test('rejects unsupported closeout evidence, unexplained jumps, missing gaps, an
   assert.match(validateCloseoutContract(missingLargeDeltaRationale).join('\n'), /delta above 20.*rationale/i);
 
   const missingBelowTargetGap = cloneScorecard(scorecard);
-  missingBelowTargetGap.dimensions[4].remainingGap = '';
+  missingBelowTargetGap.dimensions[5].remainingGap = '';
   assert.match(validateCloseoutContract(missingBelowTargetGap).join('\n'), /below-target.*remaining gap/i);
 
   const targetAutoFill = cloneScorecard(scorecard);
