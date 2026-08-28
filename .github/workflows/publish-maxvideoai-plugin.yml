@@ -27,8 +27,8 @@ jobs:
       version: ${{ steps.release.outputs.version }}
     env:
       PUBLIC_REPOSITORY: camgraphe/maxvideoai-plugin
-      PUBLIC_CHECKOUT: ${{ runner.temp }}/maxvideoai-plugin-public
-      RELEASE_OUTPUT: ${{ runner.temp }}/maxvideoai-plugin-release
+      PUBLIC_CHECKOUT: ${{ github.workspace }}/../maxvideoai-plugin-public
+      RELEASE_OUTPUT: ${{ github.workspace }}/../maxvideoai-plugin-release
       SOURCE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.source_tag || github.ref_name }}
     steps:
       - name: Checkout the tagged source
@@ -148,8 +148,8 @@ jobs:
       PREPARED_SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
       PREPARED_TREE: ${{ needs.prepare.outputs.tree }}
       PUBLIC_REPOSITORY: camgraphe/maxvideoai-plugin
-      PUBLIC_CHECKOUT: ${{ runner.temp }}/maxvideoai-plugin-public
-      RELEASE_OUTPUT: ${{ runner.temp }}/maxvideoai-plugin-release
+      PUBLIC_CHECKOUT: ${{ github.workspace }}/../maxvideoai-plugin-public
+      RELEASE_OUTPUT: ${{ github.workspace }}/../maxvideoai-plugin-release
       SOURCE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.source_tag || github.ref_name }}
       VERSION: ${{ needs.prepare.outputs.version }}
     steps:

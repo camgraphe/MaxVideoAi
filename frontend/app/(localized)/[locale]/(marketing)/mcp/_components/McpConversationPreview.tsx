@@ -41,8 +41,8 @@ export function McpConversationPreview({ locale }: { locale: AppLocale }) {
             ['/brand/partners/anthropic/claude-mark-light.svg', '/brand/partners/anthropic/claude-mark-dark.svg'],
           ].map(([light, dark]) => (
             <span key={light} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-hairline bg-white dark:border-white/[0.14] dark:bg-neutral-900">
-              <Image src={light} alt="" width={18} height={18} className="dark:hidden" />
-              <Image src={dark} alt="" width={18} height={18} className="hidden dark:block" />
+              <Image src={light} alt="" aria-hidden="true" width={18} height={18} className="dark:hidden" />
+              <Image src={dark} alt="" aria-hidden="true" width={18} height={18} className="hidden dark:block" />
             </span>
           ))}
         </div>

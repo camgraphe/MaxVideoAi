@@ -41,8 +41,8 @@ function McpClientAction({
       onClick={onActionClick?.(action)}
     >
       <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[10px] border border-hairline bg-white dark:border-white/[0.14] dark:bg-neutral-900">
-        <Image className="h-6 w-6 object-contain dark:hidden" src={mark.light} alt="" width={24} height={24} />
-        <Image className="hidden h-6 w-6 object-contain dark:block" src={mark.dark} alt="" width={24} height={24} />
+        <Image className="h-6 w-6 object-contain dark:hidden" src={mark.light} alt="" aria-hidden="true" width={24} height={24} />
+        <Image className="hidden h-6 w-6 object-contain dark:block" src={mark.dark} alt="" aria-hidden="true" width={24} height={24} />
       </span>
       <span className="min-w-0">
         <span className="block text-sm font-semibold text-text-primary dark:text-white">{action.label}</span>

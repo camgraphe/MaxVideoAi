@@ -39,8 +39,8 @@ export function IntegrationHeroSection({
       <div className="container-page grid max-w-[1220px] gap-9 py-12 sm:py-16 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-12">
         <div className="max-w-[650px]">
           <div className="flex h-14 w-14 items-center justify-center rounded-[12px] border border-hairline bg-white shadow-card dark:border-white/[0.16] dark:bg-neutral-900">
-            <Image src={mark.light} alt="" width={28} height={28} className="h-7 w-7 object-contain dark:hidden" />
-            <Image src={mark.dark} alt="" width={28} height={28} className="hidden h-7 w-7 object-contain dark:block" />
+            <Image src={mark.light} alt="" aria-hidden="true" width={28} height={28} className="h-7 w-7 object-contain dark:hidden" />
+            <Image src={mark.dark} alt="" aria-hidden="true" width={28} height={28} className="hidden h-7 w-7 object-contain dark:block" />
           </div>
           <p className="mt-5 text-xs font-semibold uppercase tracking-micro text-text-secondary dark:text-white/68">{copy.hero.eyebrow}</p>
           <h1 className="mt-3 text-[38px] font-semibold leading-[1.04] tracking-tight text-text-primary dark:text-white sm:text-[52px]">{copy.hero.title}</h1>

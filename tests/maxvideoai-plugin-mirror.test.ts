@@ -37,6 +37,7 @@ type WorkflowStep = {
 };
 
 type WorkflowJob = {
+  env?: Record<string, string>;
   environment?: string;
   needs?: string;
   outputs?: Record<string, string>;
@@ -382,6 +383,16 @@ test('publication workflow is manual only, pinned, and binds dispatch to its tag
   const shell = Object.values(workflow.jobs).map(shellFor).join('\n');
   assert.match(shell, /GITHUB_EVENT_NAME.*workflow_dispatch/);
   assert.match(shell, /GITHUB_REF.*refs\/tags\/\$SOURCE_TAG/);
+});
+
+test('publication workflow uses only contexts available in job-level env', () => {
+  const { workflow } = loadWorkflow();
+
+  for (const job of Object.values(workflow.jobs)) {
+    for (const value of Object.values(job.env ?? {})) {
+      assert.doesNotMatch(value, /\$\{\{\s*runner\./);
+    }
+  }
 });
 
 test('public release accepts an existing tag only when it resolves to the prepared public commit', () => {
