@@ -195,16 +195,28 @@ const JOURNEY_PAYLOAD_KEYS = [
   'funnel_stage',
 ] as const;
 
-const PRIVATE_ANALYTICS_KEY_PREFIX = /^(?:prompt|media|asset|reference|token|authorization|auth|account|user|email|referrer|url|href|secret|password|apikey)/;
+const PRIVATE_ANALYTICS_KEY_PREFIX = /^(?:prompt|media|asset|reference|token|authorization|auth|account|user|uid|customer|profile|email|mail|referrer|url|href|secret|password|apikey)/;
 const URL_SCHEME_PATTERN = /^[a-z][a-z0-9+.-]*:/i;
+const MAX_PERCENT_DECODE_PASSES = 3;
+
+function decodePercentEncoded(value: string): string | null {
+  let decoded = value;
+  for (let pass = 0; pass < MAX_PERCENT_DECODE_PASSES; pass += 1) {
+    if (!decoded.includes('%')) return decoded;
+    try {
+      const next = decodeURIComponent(decoded);
+      if (next === decoded) return null;
+      decoded = next;
+    } catch {
+      return null;
+    }
+  }
+  return decoded.includes('%') ? null : decoded;
+}
 
 function normalizedAnalyticsPayloadKey(key: string): string | null {
-  let decoded = key;
-  try {
-    decoded = decodeURIComponent(key);
-  } catch {
-    // Keep the original key when percent decoding is malformed.
-  }
+  const decoded = decodePercentEncoded(key);
+  if (decoded === null) return null;
   const normalized = decoded.normalize('NFKC').toLowerCase();
   const compact = normalized.replace(/[^a-z0-9]/g, '');
   if (!compact || PRIVATE_ANALYTICS_KEY_PREFIX.test(compact)) return null;
@@ -214,8 +226,27 @@ function normalizedAnalyticsPayloadKey(key: string): string | null {
 
 function analyticsPrimitive(value: unknown): string | number | boolean | undefined {
   if (typeof value === 'string') {
-    const normalized = value.normalize('NFKC');
-    return normalized.length <= 120 && !URL_SCHEME_PATTERN.test(normalized) ? normalized : undefined;
+    if (value.length > 360) return undefined;
+    const decoded = decodePercentEncoded(value.normalize('NFKC').trim());
+    if (decoded === null) return undefined;
+    const normalized = decoded.normalize('NFKC').trim();
+    const isSafeInternalPath = normalized.startsWith('/')
+      && !normalized.startsWith('//')
+      && !normalized.includes('?')
+      && !normalized.includes('#')
+      && !normalized.includes('\\');
+    if (
+      !normalized
+      || normalized.length > 120
+      || URL_SCHEME_PATTERN.test(normalized)
+      || normalized.startsWith('//')
+      || (normalized.startsWith('/') && !isSafeInternalPath)
+      || normalized.includes('?')
+      || normalized.includes('#')
+    ) {
+      return undefined;
+    }
+    return normalized;
   }
   if (typeof value === 'number') return Number.isFinite(value) ? value : undefined;
   return typeof value === 'boolean' ? value : undefined;

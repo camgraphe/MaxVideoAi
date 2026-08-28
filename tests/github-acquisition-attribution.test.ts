@@ -202,8 +202,11 @@ test('browser journey projection preserves the GitHub tuple without private or n
   const inherited = { inherited_value: 'never projected' };
   const payload = Object.assign(Object.create(inherited), {
     local_key: 'local-1', price_cents: 250, amount: 2.5, currency: 'USD', route: '/mcp', payment_status: 'quoted',
-    prompt: 'private brief', 'p%72ompt': 'encoded private brief', 'e-mail': 'person@example.com',
+    prompt: 'private brief', 'p%72ompt': 'encoded private brief', 'p%2572ompt': 'double-encoded private brief',
+    'e-mail': 'person@example.com', uid: 'user-1', customer_id: 'customer-1', profile_id: 'profile-1', mail: 'person@example.com',
     Reference_URL: 'https://private.example/media', authorization: 'Bearer secret', 'api key': 'secret',
+    leading_url: ' https://private.example/media', protocol_relative: '//private.example/media',
+    encoded_url: 'https%3A%2F%2Fprivate.example%2Fmedia', query_path: '/mcp?token=secret', fragment_path: '/mcp#private',
     nested: { prompt: 'private' }, array: ['private'], callable: () => undefined, symbol: Symbol('private'),
     infinity: Infinity, nan: Number.NaN, first_touch_source: 'forged',
   });
@@ -218,8 +221,9 @@ test('browser journey projection preserves the GitHub tuple without private or n
     { local_key: 'local-1', price_cents: 250, amount: 2.5, currency: 'USD', route: '/mcp', payment_status: 'quoted' },
   );
   for (const privateKey of [
-    'prompt', 'p%72ompt', 'e-mail', 'Reference_URL', 'authorization', 'api key', 'nested', 'array',
-    'callable', 'symbol', 'infinity', 'nan', 'inherited_value',
+    'prompt', 'p%72ompt', 'p%2572ompt', 'e-mail', 'uid', 'customer_id', 'profile_id', 'mail',
+    'Reference_URL', 'authorization', 'api key', 'leading_url', 'protocol_relative', 'encoded_url', 'query_path',
+    'fragment_path', 'nested', 'array', 'callable', 'symbol', 'infinity', 'nan', 'inherited_value',
   ]) {
     assert.equal(privateKey in eventPayload, false, `${privateKey} should not be projected`);
   }
