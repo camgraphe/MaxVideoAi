@@ -34,6 +34,29 @@ const requiredQueueGroups = [
 
 const allowedQueueStatuses = new Set(['planned', 'blocked', 'ready', 'in_progress', 'complete']);
 
+const expectedQueueTaskNames = [
+  'Add a privacy-reviewed opaque GitHub landing-to-MCP association and cover every real funnel emitter, including Library opens.',
+  'Reconcile this branch with the approved public copy wave without overwriting its host wording or shared ChatGPT/Codex visual proof.',
+  'Build and verify the focused repository README and tagged release from the exact reviewed public bundle.',
+  'Recheck every distribution policy and legal gate against its primary source.',
+  'Open the clean acquisition cohort and preserve raw exclusions.',
+  'Fix the highest verified full-funnel drop-off.',
+  'Triage public issues and discussions with proof-first answers.',
+  'Review first-screen copy only against observed narrow-render and click behavior.',
+  'Submit only authoritative channels that are newly eligible and verified.',
+  'Publish four proof or decision pieces from the reviewed eight-week calendar.',
+  'Earn the first three contextual referring domains through useful documentation and examples.',
+  'Record real Claude and Codex discovery evaluations separately from curated policy.',
+  'Publish the first data-backed model decision report and project-budget breakdown.',
+  'Expand the best-converting example into a deeper workflow.',
+  'Review license and installation friction from real support evidence.',
+  'Improve the weakest verified score dimension.',
+  'Compare host and source cohorts without merging unknown identities.',
+  'Retain high-value listings and remove low-value directory work from the plan.',
+  'Refresh visual assets only when a registered trigger fires.',
+  'Set the next commercial-presence target from observed conversion data.',
+] as const;
+
 type Scorecard = {
   version: number;
   assessedAt: string;
@@ -91,8 +114,8 @@ function validateCloseoutContract(scorecard: Scorecard): string[] {
     if (dimension.after === dimension.target) {
       errors.push(`${dimension.id}: after must not be auto-filled from target`);
     }
-    if (dimension.after > 90 && dimension.afterEvidence.length < 2) {
-      errors.push(`${dimension.id}: after scores above 90 require at least two evidence items`);
+    if (dimension.after > 90 && new Set(dimension.afterEvidence).size < 2) {
+      errors.push(`${dimension.id}: after scores above 90 require at least two distinct evidence items`);
     }
     if (dimension.after - dimension.before > 20 && !dimension.afterRationale?.trim()) {
       errors.push(`${dimension.id}: a delta above 20 requires an evidence-backed rationale`);
@@ -117,6 +140,17 @@ function splitMarkdownRow(row: string): string[] {
   return row.slice(1, -1).split('|').map((cell) => cell.trim());
 }
 
+function queueTaskRows(markdown: string): string[][] {
+  return markdown.split('\n')
+    .filter((line) => /^\|.*\|$/.test(line.trim()))
+    .map((line) => splitMarkdownRow(line.trim()))
+    .filter((cells) => cells[0] !== 'Task' && !cells.every((cell) => /^:?-+:?$/.test(cell)));
+}
+
+function removeQueueTask(markdown: string, taskName: string): string {
+  return markdown.split('\n').filter((line) => !line.startsWith(`| ${taskName} |`)).join('\n');
+}
+
 function validateNextTaskQueue(markdown: string): string[] {
   const errors: string[] = [];
   const groupMatches = [...markdown.matchAll(/^## (.+)$/gm)];
@@ -128,15 +162,20 @@ function validateNextTaskQueue(markdown: string): string[] {
     errors.push('Queue must state that it does not create recurring automation');
   }
 
+  const allTaskRows = queueTaskRows(markdown);
+  const taskNames = allTaskRows.map((row) => row[0]);
+  if (taskNames.length !== expectedQueueTaskNames.length
+    || new Set(taskNames).size !== expectedQueueTaskNames.length
+    || taskNames.join('\n') !== expectedQueueTaskNames.join('\n')) {
+    errors.push(`Queue must contain exactly ${expectedQueueTaskNames.length} unique required tasks in dependency order`);
+  }
+
   groupMatches.forEach((match, groupIndex) => {
     if (!requiredQueueGroups.includes(match[1] as typeof requiredQueueGroups[number])) return;
     const sectionStart = (match.index ?? 0) + match[0].length;
     const sectionEnd = groupMatches[groupIndex + 1]?.index ?? markdown.length;
     const section = markdown.slice(sectionStart, sectionEnd);
-    const rows = section.split('\n')
-      .filter((line) => /^\|.*\|$/.test(line.trim()))
-      .map((line) => splitMarkdownRow(line.trim()))
-      .filter((cells) => cells[0] !== 'Task' && !cells.every((cell) => /^:?-+:?$/.test(cell)));
+    const rows = queueTaskRows(section);
 
     if (rows.length === 0) {
       errors.push(`${match[1]}: at least one task is required`);
@@ -278,7 +317,12 @@ test('rejects unsupported closeout evidence, unexplained jumps, missing gaps, an
   const oneEvidenceAboveNinety = cloneScorecard(scorecard);
   oneEvidenceAboveNinety.dimensions[1].after = 91;
   oneEvidenceAboveNinety.dimensions[1].afterEvidence = ['README.md'];
-  assert.match(validateCloseoutContract(oneEvidenceAboveNinety).join('\n'), /above 90.*two evidence/i);
+  assert.match(validateCloseoutContract(oneEvidenceAboveNinety).join('\n'), /above 90.*two distinct evidence/i);
+
+  const duplicateEvidenceAboveNinety = cloneScorecard(scorecard);
+  duplicateEvidenceAboveNinety.dimensions[1].after = 91;
+  duplicateEvidenceAboveNinety.dimensions[1].afterEvidence = ['README.md', 'README.md'];
+  assert.match(validateCloseoutContract(duplicateEvidenceAboveNinety).join('\n'), /above 90.*two distinct evidence/i);
 
   const missingLargeDeltaRationale = cloneScorecard(scorecard);
   missingLargeDeltaRationale.dimensions[0].afterRationale = '';
@@ -304,6 +348,14 @@ test('requires a dependency-ordered operational queue with complete non-automate
     /eight queue fields/i,
   );
   assert.match(validateNextTaskQueue(markdown.replace('## Days 31–60', '## Later')).join('\n'), /five required dependency groups/i);
+  assert.match(
+    validateNextTaskQueue(removeQueueTask(markdown, expectedQueueTaskNames[1])).join('\n'),
+    /exactly 20 unique required tasks/i,
+  );
+  assert.match(
+    validateNextTaskQueue(removeQueueTask(markdown, expectedQueueTaskNames[5])).join('\n'),
+    /exactly 20 unique required tasks/i,
+  );
   assert.match(
     validateNextTaskQueue(markdown.replace('| planned |', '| cron automation |')).join('\n'),
     /must not prescribe automation/i,
