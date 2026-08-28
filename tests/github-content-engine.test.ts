@@ -64,10 +64,16 @@ function requireNonemptyFields(fields: Map<string, string>, required: readonly s
   }
 }
 
+function parseExactHttpsUrl(urlText: string, label: string): URL {
+  const trimmed = urlText.trim();
+  assert.match(trimmed, /^https:\/\/\S+[.,;]?$/, `${label} must be exactly one HTTPS URL with optional terminal punctuation`);
+  const url = new URL(trimmed.replace(/[.,;]$/, ''));
+  assert.equal(url.protocol, 'https:', `${label} must use HTTPS`);
+  return url;
+}
+
 function assertPlainCanonical(urlText: string, label: string): void {
-  const urlMatch = /https:\/\/[^\s]+/.exec(urlText);
-  assert.ok(urlMatch, `${label} needs an HTTPS canonical URL`);
-  const url = new URL(urlMatch![0].replace(/[.,;]+$/, ''));
+  const url = parseExactHttpsUrl(urlText, label);
   assert.equal(url.origin, 'https://maxvideoai.com', `${label} must use MaxVideoAI's canonical domain`);
   assert.equal(url.search, '', `${label} must not add unapproved attribution parameters`);
   assert.equal(url.hash, '', `${label} must not add a fragment`);
@@ -77,26 +83,37 @@ function assertPlainCanonical(urlText: string, label: string): void {
   );
 }
 
+function assertSourceUrl(urlText: string, label: string): void {
+  const url = parseExactHttpsUrl(urlText, label);
+  assert.equal(url.search, '', `${label} must not add a query`);
+  assert.equal(url.hash, '', `${label} must not add a fragment`);
+  if (url.origin === 'https://maxvideoai.com') {
+    assert.ok(
+      new Set(['/mcp', '/models', '/pricing', '/docs/mcp', '/app/library']).has(url.pathname),
+      `${label} must use an approved MaxVideoAI canonical path`,
+    );
+    return;
+  }
+  assert.equal(url.origin, 'https://github.com', `${label} must be a first-party MaxVideoAI or repository URL`);
+  assert.match(url.pathname, /^\/camgraphe\/MaxVideoAi\/blob\/main\/.+/, `${label} must point to the main MaxVideoAI repository blob`);
+}
+
 function markdownLinks(markdown: string): string[] {
   return [...markdown.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)].map((match) => match[1]);
 }
 
+const requiredOutreachProhibition = 'Do not buy links, exchange links at scale, submit bulk forms, automate unsolicited messages';
+const unsafeOutreachTactics = /\b(?:buy\s+(?:links?|backlinks?)|pay\s+for\s+(?:links?|backlinks?)|(?:exchange\s+)?(?:links?|backlinks?)\s+at\s+scale|(?:scaled|bulk|mass)\s+reciprocal\s+(?:links?|backlinks?|outreach)|reciprocal\s+(?:links?|backlinks?|outreach)\s+(?:at\s+scale|in\s+bulk)|submit\s+bulk\s+forms|automat(?:e|ed|ing)\s+(?:cold\s+)?(?:dms?|direct\s+messages)|automat(?:e|ed|ing)\s+(?:unsolicited|bulk)\s+(?:messages?|outreach))\b/i;
+
 function assertNoUnsafeOutreachAdvocacy(text: string, label: string): void {
-  const unsafeTactics = /\b(?:buy links|exchange links at scale|submit bulk forms|automate unsolicited messages)\b/gi;
-  for (const match of text.matchAll(unsafeTactics)) {
-    const before = text.slice(0, match.index);
-    const sentenceStart = Math.max(before.lastIndexOf('.'), before.lastIndexOf('!'), before.lastIndexOf('?')) + 1;
-    const after = text.slice((match.index ?? 0) + match[0].length);
-    const sentenceEndOffset = after.search(/[.!?]/);
-    const sentence = text.slice(sentenceStart, sentenceEndOffset === -1 ? undefined : (match.index ?? 0) + match[0].length + sentenceEndOffset);
-    assert.match(sentence, /\b(?:do not|never|no|not)\b/i, `${label} may document an unsafe tactic only as a prohibition`);
-  }
+  const withoutAllowedPolicy = text.replace(requiredOutreachProhibition, '');
+  assert.doesNotMatch(withoutAllowedPolicy, unsafeOutreachTactics, `${label} must not advocate unsafe outreach tactics`);
 }
 
 function assertUnsafeOutreachPolicy(ledger: string): void {
   assert.match(
     ledger,
-    /Do not buy links, exchange links at scale, submit bulk forms, automate unsolicited messages/i,
+    new RegExp(requiredOutreachProhibition, 'i'),
     'the ledger must explicitly prohibit unsafe outreach tactics',
   );
   assertNoUnsafeOutreachAdvocacy(ledger, 'the outreach ledger');
@@ -104,8 +121,8 @@ function assertUnsafeOutreachPolicy(ledger: string): void {
 
 test('GitHub content engine parses every proof-led calendar unit and release draft gate', () => {
   const calendar = read('docs/marketing/github-editorial-calendar.md');
-  const manifest = JSON.parse(read('docs/marketing/github-asset-manifest.json')) as { assets: Array<{ path: string }> };
-  const manifestPaths = new Set(manifest.assets.map((asset) => asset.path));
+  const manifest = JSON.parse(read('docs/marketing/github-asset-manifest.json')) as { assets: Array<{ path: string; kind: string; state: string }> };
+  const manifestAssets = new Map(manifest.assets.map((asset) => [asset.path, asset]));
   const weeks = parseSections(calendar, /^## Week \d+:\s*(.+)$/gm);
   assert.equal(weeks.length, 8, 'the calendar needs eight publication weeks');
 
@@ -126,6 +143,8 @@ test('GitHub content engine parses every proof-led calendar unit and release dra
     const fields = parseFields(unit.body);
     requireNonemptyFields(fields, calendarFields, unit.title);
     assertPlainCanonical(fields.get('Canonical backlink')!, `${unit.title} canonical backlink`);
+    assertPlainCanonical(fields.get('Website counterpart')!, `${unit.title} website counterpart`);
+    assertSourceUrl(fields.get('Source URL')!, `${unit.title} source URL`);
 
     const image = /!\[[^\]]{12,}\]\(([^)]+)\)/.exec(unit.body);
     assert.ok(image, `${unit.title} needs a descriptive proof image`);
@@ -133,7 +152,10 @@ test('GitHub content engine parses every proof-led calendar unit and release dra
     assert.ok(resolvedAsset.startsWith(`${repositoryRoot}${path.sep}`), `${unit.title} proof image must remain inside the repository`);
     assert.ok(existsSync(resolvedAsset), `${unit.title} proof image must exist`);
     const relativeAsset = path.relative(repositoryRoot, resolvedAsset).split(path.sep).join('/');
-    assert.ok(manifestPaths.has(relativeAsset), `${unit.title} proof image must be declared in github-asset-manifest.json`);
+    const manifestAsset = manifestAssets.get(relativeAsset);
+    assert.ok(manifestAsset, `${unit.title} proof image must be declared in github-asset-manifest.json`);
+    assert.equal(manifestAsset!.kind, 'product_proof', `${unit.title} proof image must be product proof`);
+    assert.equal(manifestAsset!.state, 'publishable_proof', `${unit.title} proof image must be publishable proof`);
 
     const adjacentBoundary = unit.body.slice((image!.index ?? 0) + image![0].length, (image!.index ?? 0) + image![0].length + 750);
     assert.match(
@@ -183,6 +205,20 @@ test('GitHub content engine parses contextual outreach rows without unsafe solic
     );
     assertNoUnsafeOutreachAdvocacy(entry.body, entry.title);
   }
+});
+
+test('content-engine adversarial helpers reject unsafe outreach and URL escape routes', () => {
+  assert.doesNotThrow(() => assertUnsafeOutreachPolicy(`${requiredOutreachProhibition}.`));
+  assert.throws(() => assertNoUnsafeOutreachAdvocacy('Offer to buy backlinks for placement.', 'adversarial outreach'), /unsafe outreach tactics/i);
+  assert.throws(() => assertNoUnsafeOutreachAdvocacy('Automate cold DMs after a review.', 'adversarial outreach'), /unsafe outreach tactics/i);
+
+  assert.doesNotThrow(() => assertPlainCanonical('https://maxvideoai.com/models.', 'valid canonical'));
+  assert.throws(() => assertPlainCanonical('https://maxvideoai.com/models https://maxvideoai.com/pricing', 'two URLs'), /exactly one HTTPS URL/i);
+  assert.throws(() => assertPlainCanonical('https://maxvideoai.com/models?utm_source=unapproved', 'query bypass'), /must not add unapproved attribution parameters/i);
+  assert.throws(() => assertPlainCanonical('https://maxvideoai.com/models#pricing', 'fragment bypass'), /must not add a fragment/i);
+  assert.throws(() => assertPlainCanonical('https://maxvideoai.com/models for producers', 'trailing prose'), /exactly one HTTPS URL/i);
+  assert.throws(() => assertSourceUrl('not-a-url', 'invalid source'), /exactly one HTTPS URL/i);
+  assert.throws(() => assertSourceUrl('https://github.com/camgraphe/MaxVideoAi/blob/main/README.md https://maxvideoai.com/mcp', 'two source URLs'), /exactly one HTTPS URL/i);
 });
 
 test('new workflow examples are actionable and host guides keep contextual link mappings', () => {
