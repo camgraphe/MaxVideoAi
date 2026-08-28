@@ -218,7 +218,10 @@ test('the package explains the customer-facing account and library journey', () 
   assert.match(readme, /private.*(?:attachment|generated result).*asset/is);
   assert.match(readme, /Codex.*Claude Code.*local helper|local helper.*Codex.*Claude Code/is);
   assert.match(readme, /without.*public URL.*Computer Use/is);
-  assert.match(readme, /codex plugin marketplace add camgraphe\/MaxVideoAi --ref maxvideoai-plugin-v0\.3\.0/);
+  assert.match(readme, /\$maxvideoai:plan/);
+  assert.match(readme, /\$maxvideoai:generate/);
+  assert.doesNotMatch(readme, /with `\$(?:plan|generate)`/);
+  assert.match(readme, /codex plugin marketplace add camgraphe\/MaxVideoAi --ref maxvideoai-plugin-v0\.3\.1/);
   assert.match(readme, /codex plugin add maxvideoai@maxvideoai/);
   assert.doesNotMatch(readme, /does not establish online availability|does not verify an online connection|branch package/i);
 

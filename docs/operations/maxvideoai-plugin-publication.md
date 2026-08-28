@@ -15,7 +15,7 @@ the first external mutation.
 The release chain is intentionally narrow:
 
 ```text
-maxvideoai-plugin-v0.3.0 source tag
+maxvideoai-plugin-v0.3.1 source tag
   -> deterministic bundle and SHA-256 manifest
   -> temporary checkout of camgraphe/maxvideoai-plugin
   -> exact-file synchronization and visible Git diff
@@ -116,8 +116,8 @@ all of them by design.
    ```bash
    gh workflow run publish-maxvideoai-plugin.yml \
      --repo camgraphe/MaxVideoAi \
-     --ref maxvideoai-plugin-v0.3.0 \
-     -f source_tag=maxvideoai-plugin-v0.3.0
+     --ref maxvideoai-plugin-v0.3.1 \
+     -f source_tag=maxvideoai-plugin-v0.3.1
    ```
 
    Dispatching from `main` while naming a tag only in the input is rejected.
@@ -152,11 +152,11 @@ migration is implemented and exercised.
 
 ## Release creation
 
-For source tag `maxvideoai-plugin-v0.3.0`, the workflow creates destination release
-`v0.3.0` at the newly published commit. It attaches:
+For source tag `maxvideoai-plugin-v0.3.1`, the workflow creates destination release
+`v0.3.1` at the newly published commit. It attaches:
 
-- `maxvideoai-plugin-0.3.0.zip`;
-- `maxvideoai-plugin-0.3.0.zip.sha256`.
+- `maxvideoai-plugin-0.3.1.zip`;
+- `maxvideoai-plugin-0.3.1.zip.sha256`.
 
 The ZIP is the deterministic archive from the source build, while the public tree
 contains the same release files plus `checksums.json`. Verify the attached archive
@@ -191,12 +191,12 @@ The verified bootstrap state is:
 | Social preview | [GitHub-hosted repository image](https://repository-images.githubusercontent.com/1349419332/e5459224-cdf9-433c-9ccb-44034079a51f) from `assets/social/github-social-preview.png`, 1280×640, SHA-256 `a77684b5c02980246a50df2ae6ae5247d9bd6c03b1dd1f4a2d997c89fee98e07` |
 | Source Environment | `maxvideoai-plugin-publication`; owner review required; deployments restricted to `maxvideoai-plugin-v*` tags |
 | Publication secret | `MAXVIDEOAI_PLUGIN_REPO_TOKEN` not configured: the active CLI credential is broader than the required single-repository token and was deliberately not reused |
-| Public package, tag, workflow run, release | Not published; `0.3.0` remains gated on the coordinated metadata, version, content, token, and final review |
+| Public package, tag, workflow run, release | `v0.3.0` published manually after exact-tree verification; `v0.3.1` is the current patch release |
 
-The welcome Discussion, release pin, destination required checks, and first mirror
-run remain deferred until the reviewed `0.3.0` package is ready. This bootstrap is
-public infrastructure evidence, not an installable-release or host-compatibility
-claim.
+The welcome Discussion, release pin, and destination required checks remain
+deferred. Publication stays manual until the dedicated single-repository token is
+configured; the reviewed public package and checksums are now installable release
+evidence, while host behavior remains verified separately.
 
 ## Failure and rollback
 

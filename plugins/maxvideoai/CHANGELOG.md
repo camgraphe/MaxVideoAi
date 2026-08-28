@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.1 — 2026-08-28
+
+- Document the namespaced Codex skill invocations as `$maxvideoai:plan` and
+  `$maxvideoai:generate` so explicit skill routing works in a fresh session.
+
 ## 0.3.0 — 2026-08-28
 
 - Import private reference images and videos into the MaxVideoAI media library

@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       source_tag:
-        description: Source tag to publish (for example maxvideoai-plugin-v0.3.0)
+        description: Source tag to publish (for example maxvideoai-plugin-v0.3.1)
         required: true
         type: string
 

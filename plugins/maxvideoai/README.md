@@ -65,13 +65,14 @@ Use the reviewed release tag so the marketplace definition, skills, and MCP
 connection stay on the same version:
 
 ```sh
-codex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.3.0
+codex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.3.1
 codex plugin add maxvideoai@maxvideoai
 ```
 
-Start a new Codex conversation after installation. Ask with `$plan` to compare
-models or `$generate` for a concrete request. The first live MaxVideoAI action
-opens OAuth so you can sign in or create the account you want to connect.
+Start a new Codex conversation after installation. Ask with `$maxvideoai:plan`
+to compare models or `$maxvideoai:generate` for a concrete request. The first
+live MaxVideoAI action opens OAuth so you can sign in or create the account you
+want to connect.
 
 ## Try asking
 
