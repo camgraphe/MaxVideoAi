@@ -145,12 +145,14 @@ function toRepositoryPath(assetReference, readmePath, rootDirectory) {
 
 function parseAttributes(tag) {
   const attributes = {};
+  const duplicates = new Set();
   for (const match of tag.matchAll(/([:\w-]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g)) {
     const name = match[1].toLowerCase();
     if (name === 'img' || name === 'source' || name === 'picture') continue;
+    if (Object.hasOwn(attributes, name)) duplicates.add(name);
     attributes[name] = match[2] ?? match[3] ?? match[4] ?? '';
   }
-  return attributes;
+  return { attributes, duplicates: [...duplicates].sort() };
 }
 
 function srcsetCandidates(srcset) {
@@ -212,6 +214,13 @@ export function findReadmeImageUsages(markdown, readmePath, rootDirectory = repo
   const collected = new Map();
   const definitions = new Map();
   for (const match of markdown.matchAll(/^\s*\[([^\]]+)\]:\s*(<[^>]+>|\S+)(?:\s+.*)?$/gm)) definitions.set(normalizeReferenceLabel(match[1]), match[2]);
+  for (const match of markdown.matchAll(/!\[([^\]]*)\]\(\s*(?:<\s*>)?\s*\)/g)) {
+    addInvalidUsage(
+      collected,
+      `Markdown image has an empty destination: ${match[0]}`,
+      { source: 'markdown_inline', alt: match[1], role: null },
+    );
+  }
   for (const match of markdown.matchAll(/!\[([^\]]*)\]\((<[^>]+>|[^\s)]+)(?:\s+[^)]*)?\)/g)) addUsage(collected, match[2], { source: 'markdown_inline', alt: match[1], role: null }, readmePath, rootDirectory);
   for (const match of markdown.matchAll(/!\[([^\]]*)\]\[([^\]]*)\]/g)) {
     const id = normalizeReferenceLabel(match[2] || match[1]);
@@ -231,11 +240,28 @@ export function findReadmeImageUsages(markdown, readmePath, rootDirectory = repo
       addInvalidUsage(collected, `unterminated HTML ${tag.tagName} tag`, metadata);
       continue;
     }
-    const attributes = parseAttributes(tag.source);
+    const parsed = parseAttributes(tag.source);
+    const attributes = parsed.attributes;
     metadata.alt = attributes.alt ?? '';
     metadata.role = attributes['data-asset-role'] ?? null;
-    if (attributes.src) addUsage(collected, attributes.src, metadata, readmePath, rootDirectory);
-    if (attributes.srcset) for (const candidate of srcsetCandidates(attributes.srcset)) addUsage(collected, candidate, metadata, readmePath, rootDirectory);
+    if (parsed.duplicates.length > 0) {
+      addInvalidUsage(
+        collected,
+        `duplicate HTML image attribute: ${parsed.duplicates.join(', ')}`,
+        metadata,
+      );
+      continue;
+    }
+    const src = attributes.src?.trim() ?? '';
+    const srcset = attributes.srcset?.trim() ?? '';
+    const srcsetValues = srcsetCandidates(srcset);
+    const hasUsableDestination = tag.tagName === 'source' ? srcsetValues.length > 0 : src.length > 0 || srcsetValues.length > 0;
+    if (!hasUsableDestination) {
+      addInvalidUsage(collected, `HTML ${tag.tagName} tag has no usable destination`, metadata);
+      continue;
+    }
+    if (src) addUsage(collected, src, metadata, readmePath, rootDirectory);
+    for (const candidate of srcsetValues) addUsage(collected, candidate, metadata, readmePath, rootDirectory);
   }
   return [...collected.values()];
 }

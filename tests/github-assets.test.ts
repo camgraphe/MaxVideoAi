@@ -417,6 +417,50 @@ test('scans both production README paths, reference Markdown, HTML, and every sr
   }
 });
 
+test('rejects duplicate HTML attributes and image tags without a usable destination', async () => {
+  const fixture = createFixtureRepository();
+  try {
+    const readmePath = path.join(fixture.root, 'README.md');
+    const manifest = { version: 1, assets: [fixture.rootAsset] };
+    const cases = [
+      {
+        markdown: '<img src="https://example.com/remote.png" src="assets/workflow.png" alt="Workflow proof">\n',
+        expected: /duplicate html image attribute.*src/i,
+      },
+      {
+        markdown: '<img src="assets/workflow.png" ALT="Workflow proof" alt="Harmless duplicate">\n',
+        expected: /duplicate html image attribute.*alt/i,
+      },
+      {
+        markdown: '<img alt="Missing destination">\n',
+        expected: /html img.*usable destination/i,
+      },
+      {
+        markdown: '<source src="assets/workflow.png">\n',
+        expected: /html source.*usable destination/i,
+      },
+      {
+        markdown: '![Missing destination](   )\n',
+        expected: /markdown image.*empty destination/i,
+      },
+    ];
+
+    for (const fixtureCase of cases) {
+      writeFileSync(readmePath, fixtureCase.markdown);
+      assert.match(
+        (await validateReleaseReadmeAssets(manifest, {
+          repositoryRoot: fixture.root,
+          now,
+          readmePaths: [readmePath],
+        })).join('\n'),
+        fixtureCase.expected,
+      );
+    }
+  } finally {
+    rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
 test('permits draft editorial assets only as labeled HTML editorial illustrations', async () => {
   const fixture = createFixtureRepository();
   try {

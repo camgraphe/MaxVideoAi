@@ -575,6 +575,88 @@ test('release builder fails closed for unsafe source content and assets', async 
         ),
     },
     {
+      name: 'duplicate src with remote first and local second',
+      expected: /duplicate html image attribute.*src/i,
+      mutate: (fixture) =>
+        appendText(
+          join(fixture, 'README.md'),
+          '<img src="https://example.com/proof.png" src="assets/demos/readme-proof-hero.webp" alt="Proof">',
+        ),
+    },
+    {
+      name: 'duplicate src with local first and remote second',
+      expected: /duplicate html image attribute.*src/i,
+      mutate: (fixture) =>
+        appendText(
+          join(fixture, 'README.md'),
+          '<img src="assets/demos/readme-proof-hero.webp" src="https://example.com/proof.png" alt="Proof">',
+        ),
+    },
+    {
+      name: 'duplicate srcset',
+      expected: /duplicate html image attribute.*srcset/i,
+      mutate: (fixture) =>
+        appendText(
+          join(fixture, 'README.md'),
+          '<source srcset="https://example.com/proof.png 1x" srcset="assets/demos/readme-proof-hero.webp 1x">',
+        ),
+    },
+    {
+      name: 'case-insensitive duplicate alt',
+      expected: /duplicate html image attribute.*alt/i,
+      mutate: (fixture) =>
+        appendText(
+          join(fixture, 'README.md'),
+          '<img src="assets/demos/readme-proof-hero.webp" alt="Proof visual" ALT="Harmless duplicate">',
+        ),
+    },
+    {
+      name: 'empty inline Markdown image destination',
+      expected: /markdown image.*empty destination/i,
+      mutate: (fixture) => appendText(join(fixture, 'README.md'), '![Broken image]()'),
+    },
+    {
+      name: 'whitespace inline Markdown image destination',
+      expected: /markdown image.*empty destination/i,
+      mutate: (fixture) => appendText(join(fixture, 'README.md'), '![Broken image](   )'),
+    },
+    {
+      name: 'HTML img without a destination',
+      expected: /html img.*usable destination/i,
+      mutate: (fixture) => appendText(join(fixture, 'README.md'), '<img alt="Broken image">'),
+    },
+    {
+      name: 'HTML source without a destination',
+      expected: /html source.*usable destination/i,
+      mutate: (fixture) => appendText(join(fixture, 'README.md'), '<source>'),
+    },
+    {
+      name: 'HTML img with empty src',
+      expected: /html img.*usable destination/i,
+      mutate: (fixture) => appendText(join(fixture, 'README.md'), '<img src="" alt="Broken image">'),
+    },
+    {
+      name: 'HTML img with whitespace src',
+      expected: /html img.*usable destination/i,
+      mutate: (fixture) => appendText(join(fixture, 'README.md'), '<img src="   " alt="Broken image">'),
+    },
+    {
+      name: 'HTML source with empty srcset',
+      expected: /html source.*usable destination/i,
+      mutate: (fixture) => appendText(join(fixture, 'README.md'), '<source srcset="">'),
+    },
+    {
+      name: 'HTML source with separator-only srcset',
+      expected: /html source.*usable destination/i,
+      mutate: (fixture) => appendText(join(fixture, 'README.md'), '<source srcset=" , ">'),
+    },
+    {
+      name: 'HTML source with src but no srcset',
+      expected: /html source.*usable destination/i,
+      mutate: (fixture) =>
+        appendText(join(fixture, 'README.md'), '<source src="assets/demos/readme-proof-hero.webp">'),
+    },
+    {
       name: 'unresolved explicit image reference',
       expected: /unresolved markdown image reference/i,
       mutate: (fixture) => appendText(join(fixture, 'README.md'), '![Draft visual][missing]'),
