@@ -1,12 +1,13 @@
 {
   "version": 1,
   "assessedAt": "2026-08-27",
+  "verifiedAfterAt": "2026-08-28",
   "rubric": {
     "benchmark": "Evidence-based internal implementation-readiness assessment, not an external benchmark.",
     "weightedTotals": {
       "before": 46,
       "target": 85,
-      "after": null
+      "after": 77
     }
   },
   "dimensions": [
@@ -16,12 +17,17 @@
       "weight": 15,
       "before": 30,
       "target": 80,
-      "after": null,
+      "after": 76,
       "beforeEvidence": [
         "README.md",
         "plugins/maxvideoai/README.md"
       ],
-      "afterEvidence": []
+      "afterEvidence": [
+        "plugins/maxvideoai/README.md",
+        "https://github.com/camgraphe/maxvideoai-plugin"
+      ],
+      "afterRationale": "The reviewed plugin README now opens with outcomes, proof, three equal host paths, and a direct install path; this independently supports the 46-point gain from the development-first baseline.",
+      "remainingGap": "The dedicated public repository still has no README, while the public product repository continues to open on stale, text-first mock-generation copy."
     },
     {
       "id": "voice",
@@ -29,12 +35,17 @@
       "weight": 10,
       "before": 42,
       "target": 85,
-      "after": null,
+      "after": 86,
       "beforeEvidence": [
         "README.md",
         "plugins/maxvideoai/README.md"
       ],
-      "afterEvidence": []
+      "afterEvidence": [
+        "docs/marketing/github-editorial-voice.md",
+        "plugins/maxvideoai/README.md"
+      ],
+      "afterRationale": "The checked-in voice contract and reviewed flagship copy replace default-heavy explanation with concise, producer-minded guidance and a restrained friendly tone.",
+      "remainingGap": "The branch clears the target, but the public product repository's older first-screen voice still needs a separate evidence-led refresh."
     },
     {
       "id": "visual",
@@ -42,13 +53,19 @@
       "weight": 15,
       "before": 28,
       "target": 85,
-      "after": null,
+      "after": 80,
       "beforeEvidence": [
         "docs/marketing/mcp-demo-evidence.md",
         "frontend/public/media/mcp/claude-inline-video-proof.jpg",
         "frontend/public/media/mcp/codex-plugin-page.jpg"
       ],
-      "afterEvidence": []
+      "afterEvidence": [
+        "docs/marketing/github-asset-manifest.json",
+        "plugins/maxvideoai/assets/social/github-social-preview.png",
+        "https://github.com/camgraphe/maxvideoai-plugin"
+      ],
+      "afterRationale": "Fresh product-proof composites, registered provenance, narrow-render checks, and the live 1280×640 plugin social preview support the 52-point improvement without treating editorial art as host proof.",
+      "remainingGap": "The dedicated public repository has no README in which to establish the planned visual rhythm, and the product repository remains generic and text-heavy above the fold."
     },
     {
       "id": "seo",
@@ -56,13 +73,19 @@
       "weight": 10,
       "before": 62,
       "target": 85,
-      "after": null,
+      "after": 82,
       "beforeEvidence": [
         "README.md",
         "plugins/maxvideoai/README.md",
         "docs/marketing/GEO-ANALYSIS.md"
       ],
-      "afterEvidence": []
+      "afterEvidence": [
+        "plugins/maxvideoai/README.md",
+        "docs/marketing/github-distribution-matrix.md",
+        "https://github.com/camgraphe/maxvideoai-plugin"
+      ],
+      "afterRationale": "Focused assistant-video copy, canonical entity links, eight relevant public topics, and repository-specific distribution metadata make the intended search entity substantially clearer.",
+      "remainingGap": "The dedicated repository has no indexable README or tagged release, so its strongest query passages are not yet part of the public repository surface."
     },
     {
       "id": "human_geo",
@@ -70,12 +93,18 @@
       "weight": 10,
       "before": 58,
       "target": 88,
-      "after": null,
+      "after": 84,
       "beforeEvidence": [
         "docs/marketing/GEO-ANALYSIS.md",
         "docs/marketing/mcp-tool-selection-scorecard.md"
       ],
-      "afterEvidence": []
+      "afterEvidence": [
+        "docs/marketing/GEO-ANALYSIS.md",
+        "https://maxvideoai.com/mcp",
+        "https://maxvideoai.com/integrations/codex"
+      ],
+      "afterRationale": "Five public intent owners, extractable answer passages, host-neutral entity wording, and crawler-readable source declarations support the 26-point gain from the original first-party-only structure.",
+      "remainingGap": "No earned citation or clean post-change observation window yet shows that an external answer engine selects these passages."
     },
     {
       "id": "agent_discovery",
@@ -83,13 +112,19 @@
       "weight": 15,
       "before": 68,
       "target": 90,
-      "after": null,
+      "after": 84,
       "beforeEvidence": [
         "plugins/maxvideoai/README.md",
         "docs/marketing/mcp-tool-selection-scorecard.md",
         "frontend/public/media/mcp/codex-plugin-installed.jpg"
       ],
-      "afterEvidence": []
+      "afterEvidence": [
+        "tests/fixtures/mcp-tool-selection-curated-policy.json",
+        "plugins/maxvideoai/docs/discovery.md",
+        "docs/marketing/github-agent-discovery-scorecard.md"
+      ],
+      "afterRationale": "The reviewed 24-case discovery layer and 70-case selection corpus now cover named Claude and Codex discovery, negative routing, citations, safety, and recovery with deterministic policy results.",
+      "remainingGap": "Curated discovery is 100%, but the separately reviewed claude_host and codex_host evidence columns correctly remain null."
     },
     {
       "id": "trust",
@@ -97,12 +132,18 @@
       "weight": 10,
       "before": 64,
       "target": 90,
-      "after": null,
+      "after": 82,
       "beforeEvidence": [
         "docs/marketing/mcp-demo-evidence.md",
         "docs/licensing/dual-license.md"
       ],
-      "afterEvidence": []
+      "afterEvidence": [
+        "docs/marketing/mcp-launch-evidence.md",
+        "docs/marketing/github-asset-manifest.json",
+        "https://github.com/camgraphe/MaxVideoAi/releases/tag/maxvideoai-plugin-v0.2.0"
+      ],
+      "afterRationale": "Proof provenance, paid-action safety gates, public support/security files, and a real 0.2.0 product-repository release establish a reviewable trust chain.",
+      "remainingGap": "The dedicated public repository has no tagged release, checksum, or archived real-host result packet of its own."
     },
     {
       "id": "distribution",
@@ -110,12 +151,18 @@
       "weight": 10,
       "before": 18,
       "target": 75,
-      "after": null,
+      "after": 42,
       "beforeEvidence": [
         "README.md",
         "plugins/maxvideoai/README.md"
       ],
-      "afterEvidence": []
+      "afterEvidence": [
+        "docs/marketing/github-distribution-matrix.md",
+        "https://github.com/camgraphe/MaxVideoAi",
+        "https://github.com/camgraphe/maxvideoai-plugin"
+      ],
+      "afterRationale": "A second focused public repository, owned-site acquisition paths, and ten evidence-gated distribution decisions support the 24-point gain without inventing a directory acceptance or backlink.",
+      "remainingGap": "The plugin repository remains bootstrap-only and no authoritative external listing, contextual referring domain, or approved directory backlink has been verified."
     },
     {
       "id": "measurement",
@@ -123,12 +170,18 @@
       "weight": 5,
       "before": 45,
       "target": 85,
-      "after": null,
+      "after": 62,
       "beforeEvidence": [
         "docs/marketing/mcp-tool-selection-scorecard.md",
         "docs/marketing/mcp-gsc-baseline.md"
       ],
-      "afterEvidence": []
+      "afterEvidence": [
+        "docs/marketing/github-attribution-map.json",
+        "tests/github-acquisition-attribution.test.ts",
+        "docs/marketing/github-growth-scorecard.md"
+      ],
+      "afterRationale": "Fail-closed UTM maps, privacy-filtered browser projection, and clean cohort definitions establish implementation readiness without fabricating conversion performance.",
+      "remainingGap": "There is no privacy-reviewed server-side GitHub-to-MCP association, library_opened emitter, complete emitter coverage, or clean 14-day cohort."
     }
   ]
 }

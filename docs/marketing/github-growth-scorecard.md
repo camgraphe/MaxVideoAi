@@ -4,19 +4,35 @@ This scorecard records an evidence-based internal assessment of MaxVideoAI's
 GitHub commercial presence. It is a planning and verification aid, not an
 external benchmark or a claim about third-party performance.
 
-The 2026-08-27 baseline is **46**, rounded from a weighted score of 45.55.
-It reflects the current READMEs, GEO analysis, MCP selection scorecard,
-available screenshot inventory, and distribution evidence. The planned target
-is **85**, rounded from 84.80.
+The 2026-08-27 baseline is **46**, rounded from 45.55. The planned target is
+**85**, rounded from 84.80. The evidence review completed on 2026-08-28 records
+a verified implementation-readiness score of **77**, rounded from 76.70.
 
-The after score is deliberately unmeasured. Every dimension remains `null`
-until Task 18 validates independent repository-file or public-URL evidence.
-Completing intervening tasks does not itself establish an after score, and a
-target is never treated as after evidence.
+That 31-point gain reflects better repository composition, proof discipline,
+GEO surfaces, agent-selection coverage, and acquisition contracts. It does not
+claim traffic or conversion lift. The result stays below target because the
+focused public repository is still bootstrap-only, authoritative distribution
+is unverified, real Claude/Codex host columns remain `null`, and the clean
+14-day measurement window has not started.
 
-Run `pnpm github:score -- --format markdown` to inspect the recorded baseline.
-Use `pnpm github:score -- --require-after` only during the Task 18 closeout;
-it fails while any after score is absent or unsupported.
+## Verified closeout
+
+| Dimension | Weight | Before | Target | Verified after | Delta | Evidence | Remaining gap |
+| --- | ---: | ---: | ---: | ---: | ---: | --- | --- |
+| Conversion clarity | 15% | 30 | 80 | 76 | +46 | Flagship plugin README and [focused public repository](https://github.com/camgraphe/maxvideoai-plugin) | The public plugin repository has no README; the product README remains stale above the fold. |
+| Editorial personality | 10% | 42 | 85 | 86 | +44 | Editorial voice contract and reviewed plugin README | Public product-repository copy still trails the reviewed branch voice. |
+| Visual proof and rhythm | 15% | 28 | 85 | 80 | +52 | Asset manifest, registered proof composites, and live custom social preview | No public plugin README yet applies the planned visual rhythm; product social/README presentation remains generic. |
+| GitHub SEO | 10% | 62 | 85 | 82 | +20 | Focused metadata, eight live topics, canonical links, and distribution matrix | No indexable plugin README or tagged release in the focused repository. |
+| Human-facing GEO | 10% | 58 | 88 | 84 | +26 | [Public MCP hub](https://maxvideoai.com/mcp), localized intent owners, and GEO review | No earned citation or post-change answer-engine observation window. |
+| Agent discovery and selection | 15% | 68 | 90 | 84 | +16 | Curated policy corpus, discovery guide, and agent-discovery scorecard | Curated discovery is 100%; `claude_host` and `codex_host` remain `null`. |
+| Trust and evidence | 10% | 64 | 90 | 82 | +18 | Proof manifest, safety gates, community files, and [public 0.2.0 release](https://github.com/camgraphe/MaxVideoAi/releases/tag/maxvideoai-plugin-v0.2.0) | The focused repository has no release/checksum or archived real-host result packet. |
+| Distribution and backlinks | 10% | 18 | 75 | 42 | +24 | [Two](https://github.com/camgraphe/MaxVideoAi) [public repositories](https://github.com/camgraphe/maxvideoai-plugin) and ten gated channel decisions | No authoritative listing or contextual referring domain is verified; the focused repository is bootstrap-only. |
+| Measurement and iteration | 5% | 45 | 85 | 62 | +17 | Attribution map, privacy tests, and cohort definitions | No server-side GitHub→MCP association, `library_opened` emitter, complete emitter coverage, or clean 14-day cohort. |
+| **Weighted total** | **100%** | **46** | **85** | **77** | **+31** | **Nine independently scored dimensions** | **Launch, distribution, host evidence, and measured cohort gaps remain.** |
+
+Run `pnpm github:score -- --require-after --format markdown` to reproduce the
+recorded totals. The machine-readable scorecard links every after value to
+repository-file or public-URL evidence; no target value was copied into after.
 
 ## Clean 14-day observation — not yet observed
 
@@ -48,3 +64,7 @@ Do not turn a clone spike, CI download, crawler visit, or unverified referral
 into an adoption claim. Any later conversion interpretation must use the
 separated human and funnel evidence above, state its window and exclusions, and
 remain an evidence-only update rather than a score change by default.
+
+The dependency-ordered operating plan is maintained in
+`docs/marketing/github-next-task-queue.md`. It creates no scheduled task or
+recurring automation.

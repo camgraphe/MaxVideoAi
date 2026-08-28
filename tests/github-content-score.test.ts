@@ -10,10 +10,34 @@ import { validateScorecard } from '../scripts/github-content-score.mjs';
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const scorecardPath = path.join(repositoryRoot, 'docs/marketing/github-content-scorecard.json');
 const scoreCommandPath = path.join(repositoryRoot, 'scripts/github-content-score.mjs');
+const nextTaskQueuePath = path.join(repositoryRoot, 'docs/marketing/github-next-task-queue.md');
+
+const expectedAfterScores = {
+  conversion: 76,
+  voice: 86,
+  visual: 80,
+  seo: 82,
+  human_geo: 84,
+  agent_discovery: 84,
+  trust: 82,
+  distribution: 42,
+  measurement: 62,
+} as const;
+
+const requiredQueueGroups = [
+  'Immediate blockers',
+  'First 14 days',
+  'Days 15–30',
+  'Days 31–60',
+  'Days 61–90',
+] as const;
+
+const allowedQueueStatuses = new Set(['planned', 'blocked', 'ready', 'in_progress', 'complete']);
 
 type Scorecard = {
   version: number;
   assessedAt: string;
+  verifiedAfterAt?: string;
   rubric: {
     benchmark: string;
     weightedTotals: {
@@ -31,6 +55,8 @@ type Scorecard = {
     after: number | null;
     beforeEvidence: string[];
     afterEvidence: string[];
+    afterRationale?: string;
+    remainingGap?: string;
   }>;
 };
 
@@ -42,7 +68,99 @@ function cloneScorecard(scorecard: Scorecard): Scorecard {
   return JSON.parse(JSON.stringify(scorecard)) as Scorecard;
 }
 
-test('establishes the approved internal GitHub transformation baseline', () => {
+function weightedAfter(scorecard: Scorecard): number | null {
+  if (scorecard.dimensions.some((dimension) => dimension.after === null)) return null;
+  return Math.round(scorecard.dimensions.reduce(
+    (total, dimension) => total + dimension.weight * (dimension.after ?? 0),
+    0,
+  ) / 100);
+}
+
+function validateCloseoutContract(scorecard: Scorecard): string[] {
+  const errors = validateScorecard(scorecard, { repositoryRoot });
+
+  if (scorecard.verifiedAfterAt !== '2026-08-28') {
+    errors.push('Scorecard verifiedAfterAt must identify the 2026-08-28 evidence review');
+  }
+
+  for (const dimension of scorecard.dimensions) {
+    if (dimension.after === null) {
+      errors.push(`${dimension.id}: verified after score is required`);
+      continue;
+    }
+    if (dimension.after === dimension.target) {
+      errors.push(`${dimension.id}: after must not be auto-filled from target`);
+    }
+    if (dimension.after > 90 && dimension.afterEvidence.length < 2) {
+      errors.push(`${dimension.id}: after scores above 90 require at least two evidence items`);
+    }
+    if (dimension.after - dimension.before > 20 && !dimension.afterRationale?.trim()) {
+      errors.push(`${dimension.id}: a delta above 20 requires an evidence-backed rationale`);
+    }
+    if (dimension.after < dimension.target && !dimension.remainingGap?.trim()) {
+      errors.push(`${dimension.id}: a below-target score requires an explicit remaining gap`);
+    }
+  }
+
+  const computedAfter = weightedAfter(scorecard);
+  if (computedAfter !== scorecard.rubric.weightedTotals.after) {
+    errors.push(`Weighted after total must be ${computedAfter}`);
+  }
+  if (computedAfter !== null && computedAfter >= scorecard.rubric.weightedTotals.target) {
+    errors.push('Verified after must remain below target until launch, distribution, and the 14-day window are complete');
+  }
+
+  return errors;
+}
+
+function splitMarkdownRow(row: string): string[] {
+  return row.slice(1, -1).split('|').map((cell) => cell.trim());
+}
+
+function validateNextTaskQueue(markdown: string): string[] {
+  const errors: string[] = [];
+  const groupMatches = [...markdown.matchAll(/^## (.+)$/gm)];
+  const actualGroups = groupMatches.map((match) => match[1]);
+  if (actualGroups.join('\n') !== requiredQueueGroups.join('\n')) {
+    errors.push('Queue must contain the five required dependency groups in order');
+  }
+  if (!/This queue is an operational document only; it does not create recurring automation\./.test(markdown)) {
+    errors.push('Queue must state that it does not create recurring automation');
+  }
+
+  groupMatches.forEach((match, groupIndex) => {
+    if (!requiredQueueGroups.includes(match[1] as typeof requiredQueueGroups[number])) return;
+    const sectionStart = (match.index ?? 0) + match[0].length;
+    const sectionEnd = groupMatches[groupIndex + 1]?.index ?? markdown.length;
+    const section = markdown.slice(sectionStart, sectionEnd);
+    const rows = section.split('\n')
+      .filter((line) => /^\|.*\|$/.test(line.trim()))
+      .map((line) => splitMarkdownRow(line.trim()))
+      .filter((cells) => cells[0] !== 'Task' && !cells.every((cell) => /^:?-+:?$/.test(cell)));
+
+    if (rows.length === 0) {
+      errors.push(`${match[1]}: at least one task is required`);
+      return;
+    }
+
+    for (const row of rows) {
+      if (row.length !== 8 || row.some((cell) => cell.length === 0)) {
+        errors.push(`${match[1]}: every task requires all eight queue fields`);
+        continue;
+      }
+      if (!allowedQueueStatuses.has(row[7])) {
+        errors.push(`${match[1]}: unsupported status ${row[7]}`);
+      }
+      if (/\b(?:cron|rrule|heartbeat|automation_update|automatically scheduled|scheduled codex task)\b/i.test(row.join(' '))) {
+        errors.push(`${match[1]}: task rows must not prescribe automation`);
+      }
+    }
+  });
+
+  return errors;
+}
+
+test('preserves the approved baseline and records the independently judged verified after score', () => {
   const scorecard = loadScorecard();
   const expected = {
     conversion: { weight: 15, before: 30, target: 80 },
@@ -60,7 +178,8 @@ test('establishes the approved internal GitHub transformation baseline', () => {
   assert.equal(scorecard.assessedAt, '2026-08-27');
   assert.equal(scorecard.rubric.weightedTotals.before, 46);
   assert.equal(scorecard.rubric.weightedTotals.target, 85);
-  assert.equal(scorecard.rubric.weightedTotals.after, null);
+  assert.equal(scorecard.verifiedAfterAt, '2026-08-28');
+  assert.equal(scorecard.rubric.weightedTotals.after, 77);
   assert.deepEqual(
     scorecard.dimensions.map(({ id, weight, before, target }) => ({ id, weight, before, target })),
     Object.entries(expected).map(([id, values]) => ({ id, ...values })),
@@ -70,11 +189,11 @@ test('establishes the approved internal GitHub transformation baseline', () => {
   for (const dimension of scorecard.dimensions) {
     assert.ok(dimension.before >= 0 && dimension.before <= 100);
     assert.ok(dimension.target >= 0 && dimension.target <= 100);
-    assert.equal(dimension.after, null);
-    assert.deepEqual(dimension.afterEvidence, []);
+    assert.equal(dimension.after, expectedAfterScores[dimension.id as keyof typeof expectedAfterScores]);
+    assert.ok(dimension.afterEvidence.length >= 1);
   }
 
-  assert.deepEqual(validateScorecard(scorecard, { repositoryRoot }), []);
+  assert.deepEqual(validateCloseoutContract(scorecard), []);
 });
 
 test('fails closed for unsupported after scores and external benchmark labeling', () => {
@@ -82,6 +201,7 @@ test('fails closed for unsupported after scores and external benchmark labeling'
 
   const afterWithoutEvidence = cloneScorecard(scorecard);
   afterWithoutEvidence.dimensions[0].after = 55;
+  afterWithoutEvidence.dimensions[0].afterEvidence = [];
   assert.match(
     validateScorecard(afterWithoutEvidence, { repositoryRoot }).join('\n'),
     /after evidence/i,
@@ -123,7 +243,7 @@ test('fails closed for unsupported after scores and external benchmark labeling'
   );
 });
 
-test('reports the baseline in markdown and JSON without fabricating an after score', () => {
+test('reports the verified after score in markdown and JSON and satisfies the require-after gate', () => {
   const markdown = spawnSync(process.execPath, [scoreCommandPath, '--format', 'markdown'], {
     cwd: repositoryRoot,
     encoding: 'utf8',
@@ -134,22 +254,60 @@ test('reports the baseline in markdown and JSON without fabricating an after sco
   assert.match(markdown.stdout, /Current after/i);
   assert.match(markdown.stdout, /46/);
   assert.match(markdown.stdout, /85/);
-  assert.match(markdown.stdout, /Unmeasured/i);
+  assert.match(markdown.stdout, /77/);
 
   const json = spawnSync(process.execPath, [scoreCommandPath, '--format', 'json'], {
     cwd: repositoryRoot,
     encoding: 'utf8',
   });
   assert.equal(json.status, 0, json.stderr);
-  const report = JSON.parse(json.stdout) as { weightedTotals: { before: number; target: number; after: null } };
-  assert.deepEqual(report.weightedTotals, { before: 46, target: 85, after: null });
+  const report = JSON.parse(json.stdout) as { weightedTotals: { before: number; target: number; after: number } };
+  assert.deepEqual(report.weightedTotals, { before: 46, target: 85, after: 77 });
 
   const requireAfter = spawnSync(process.execPath, [scoreCommandPath, '--require-after'], {
     cwd: repositoryRoot,
     encoding: 'utf8',
   });
-  assert.notEqual(requireAfter.status, 0);
-  assert.match(requireAfter.stderr, /after.*unsupported|unsupported.*after/i);
+  assert.equal(requireAfter.status, 0, requireAfter.stderr);
+  assert.match(requireAfter.stdout, /77/);
+});
+
+test('rejects unsupported closeout evidence, unexplained jumps, missing gaps, and target auto-fill', () => {
+  const scorecard = loadScorecard();
+
+  const oneEvidenceAboveNinety = cloneScorecard(scorecard);
+  oneEvidenceAboveNinety.dimensions[1].after = 91;
+  oneEvidenceAboveNinety.dimensions[1].afterEvidence = ['README.md'];
+  assert.match(validateCloseoutContract(oneEvidenceAboveNinety).join('\n'), /above 90.*two evidence/i);
+
+  const missingLargeDeltaRationale = cloneScorecard(scorecard);
+  missingLargeDeltaRationale.dimensions[0].afterRationale = '';
+  assert.match(validateCloseoutContract(missingLargeDeltaRationale).join('\n'), /delta above 20.*rationale/i);
+
+  const missingBelowTargetGap = cloneScorecard(scorecard);
+  missingBelowTargetGap.dimensions[0].remainingGap = '';
+  assert.match(validateCloseoutContract(missingBelowTargetGap).join('\n'), /below-target.*remaining gap/i);
+
+  const targetAutoFill = cloneScorecard(scorecard);
+  targetAutoFill.dimensions[0].after = targetAutoFill.dimensions[0].target;
+  targetAutoFill.dimensions[0].afterEvidence = ['README.md', 'https://github.com/camgraphe/maxvideoai-plugin'];
+  assert.match(validateCloseoutContract(targetAutoFill).join('\n'), /auto-filled from target/i);
+});
+
+test('requires a dependency-ordered operational queue with complete non-automated tasks', () => {
+  const markdown = readFileSync(nextTaskQueuePath, 'utf8');
+  assert.deepEqual(validateNextTaskQueue(markdown), []);
+
+  assert.match(validateNextTaskQueue(markdown.replace('| planned |', '| queued |')).join('\n'), /unsupported status/i);
+  assert.match(
+    validateNextTaskQueue(markdown.replace('| Product Analytics + MCP Engineering |', '|  |')).join('\n'),
+    /eight queue fields/i,
+  );
+  assert.match(validateNextTaskQueue(markdown.replace('## Days 31–60', '## Later')).join('\n'), /five required dependency groups/i);
+  assert.match(
+    validateNextTaskQueue(markdown.replace('| planned |', '| cron automation |')).join('\n'),
+    /must not prescribe automation/i,
+  );
 });
 
 test("accepts pnpm's argument separator for the package score command", () => {

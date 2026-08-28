@@ -2,15 +2,15 @@
 
 Checked: 2026-08-28
 
-Scope: the public MCP/plugin acquisition surfaces, source contracts, and current production availability of `maxvideoai.com`. Organic rankings, earned citations, and complete end-to-end proof in every named assistant remain separate evidence gates.
+Scope: the public MCP/plugin acquisition surfaces, source contracts, current production availability of `maxvideoai.com`, and the shared documented plugin journey. Organic rankings, earned citations, directory approval, and separately scored real-host discovery remain independent evidence gates.
 
 ## Terminology Decision
 
-The commercial umbrella is **“MaxVideoAI for ChatGPT and Claude”** or **“AI video plugin”**. Client-specific installation copy uses the name shown by that client: **ChatGPT app/plugin**, **Claude plugin or custom connector**, and **Codex plugin**. **MCP server** remains the precise protocol term for technical documentation, developers, and long-tail search intent.
+The commercial umbrella is **“MaxVideoAI for Claude, ChatGPT or Codex”** or **“AI video plugin”**, with the three host entries composed as equals. Client-specific installation copy uses the name shown by that client: **Claude plugin or custom connector**, **ChatGPT app/plugin**, and **Codex plugin**. **MCP server** remains the precise protocol term for technical documentation, developers, and long-tail search intent.
 
 This prevents “MCP” from becoming a comprehension barrier without hiding the interoperable mechanism. It also avoids claiming that one tested OpenAI surface automatically proves every ChatGPT and Codex surface. Compatibility remains recorded per host and install path.
 
-OpenAI’s plugin packaging and Claude’s plugin/marketplace documentation support one portable package with host-facing metadata. The strategy can therefore name ChatGPT, Claude, and Codex as intended package surfaces while keeping technical MCP metadata host-neutral. That packaging statement is not proof of a completed installation or generation in every host; surface-by-surface evidence remains explicit.
+ChatGPT and Codex share the same MaxVideoAI plugin and MCP connection: the documented journey is installation followed by OAuth on first use. The public directory remains subject to approval, while the MCP URL stays available as the developer fallback. Claude uses the same host-neutral MCP core through its plugin or custom-connector presentation. Separately reviewed host-result evidence remains in internal measurement columns rather than visible acquisition warnings.
 
 Primary terminology references to recheck before publication:
 
@@ -24,24 +24,24 @@ Primary terminology references to recheck before publication:
 - Schema.org `sameAs`: https://schema.org/sameAs
 - `llms.txt` proposal: https://llmstxt.org/
 
-## GEO Readiness Score: 82/100
+## GEO Readiness Score: 84/100
 
-This is an implementation-readiness score, not an organic-traffic forecast. The five localized intent owners are now public and indexable, and the checked production deployment returns those routes successfully. The MCP hub adds three self-contained 45–90 word answer passages beside captioned evidence; `llms.txt` and JSON-LD now identify the dedicated plugin repository. The score remains below target because the public repository has no tagged package release yet, ChatGPT and Claude Code lack fresh end-to-end MaxVideoAI proof, and no earned citation or post-launch acquisition window has been observed.
+This is an implementation-readiness score, not an organic-traffic forecast. The five localized intent owners are public and indexable, and the checked production deployment returns those routes successfully. The MCP hub adds three self-contained 45–90 word answer passages beside captioned evidence; `llms.txt` and JSON-LD identify the dedicated plugin repository. The score remains below target because that public repository has no README or tagged package release, directory availability still depends on approval, and no earned citation or post-launch acquisition window has been observed.
 
 | Criterion | Score | Current evidence |
 | --- | ---: | --- |
 | Passage-level citability | 23/25 | Three server-rendered answers independently define the entity, selection boundary, differentiator, paid-action protection, and safe next action in EN/FR/ES. |
 | Structural readability | 19/20 | Five distinct localized intent owners, question-led passages, short supporting answers, breadcrumbs, client guides, and a technical reference are public; mobile source order interrupts the longer answers with proof. |
-| Multi-modal proof | 6/15 | The primary answer block is paired with a captioned Claude capture, placed after the first answer on mobile, and current MaxVideoAI workspace/library proof exists for GitHub. A fresh production job-backed assistant walkthrough is still missing. |
-| Authority and brand signals | 14/20 | A dedicated public plugin repository, canonical entity statement, current manifests, maintained profiles, compatibility records, and GSC baseline exist. A tagged public release and earned mentions do not. |
+| Multi-modal proof | 7/15 | The primary answer block is paired with captioned proof, three shared directory captures support the documented ChatGPT/Codex journey, and current MaxVideoAI workspace/library proof exists for GitHub. The focused public repository still has no README surface for that visual sequence. |
+| Authority and brand signals | 15/20 | A dedicated public plugin repository, canonical entity statement, current manifests, maintained profiles, compatibility records, and GSC baseline exist. A focused tagged release and earned mentions do not. |
 | Technical accessibility | 20/20 | Server-rendered answers, localized sitemap owners, index-aware `llms.txt` with v2 Markdown file lists, crawler controls, JSON-LD entity links, and private-route exclusions are implemented. |
 
 ## Platform Breakdown
 
 | Platform | Readiness | Main strength | Main gap |
 | --- | ---: | --- | --- |
-| Google AI Overviews | 84/100 | Public localized owners, server-rendered question passages, established domain visibility, structured data, and contextual links. | No post-change search window or fresh job-backed assistant walkthrough yet. |
-| ChatGPT search and app discovery | 81/100 | Dedicated intent owner, allowed retrieval crawlers, public plugin repository, entity/routing passages, and index-aware `llms.txt`. | A direct MaxVideoAI ChatGPT web installation and rendered-result check plus tagged release are still required. |
+| Google AI Overviews | 85/100 | Public localized owners, server-rendered question passages, established domain visibility, structured data, and contextual links. | No post-change search window or earned citation yet. |
+| ChatGPT search and app discovery | 83/100 | Dedicated intent owner, shared ChatGPT/Codex plugin journey, allowed retrieval crawlers, public plugin repository, entity/routing passages, and index-aware `llms.txt`. | Public-directory approval, a focused tagged release, and observed citation data remain outstanding; the MCP URL remains the developer fallback. |
 | Perplexity | 68/100 | Concise source passages, public repository identity, localized technical guide, and crawler access are ready. | No earned community validation, directory listing, or observed citation data. |
 
 ## AI Crawler Access Status
@@ -76,7 +76,7 @@ Repository evidence currently declares organization profiles for X, LinkedIn, Gi
 Current gaps:
 
 - the dedicated plugin repository is public but still bootstrap-only, with no tagged package release;
-- no publishable ChatGPT/Claude/Codex demo backed by a MaxVideoAI job;
+- no archived, separately reviewed real-host result packet for the internal host columns;
 - no recorded YouTube proof or plugin walkthrough;
 - no audited Reddit/community discussion;
 - no verified external directory listing.
@@ -96,7 +96,7 @@ External brand mentions must be earned through useful releases, demos, documenta
 
 The hub now owns three deliberately independent questions in English, French, and Spanish:
 
-1. “What is MaxVideoAI for Claude and Codex?” defines the entity, intended assistant audience, current-model workflow, account library, and low-risk first action.
+1. “What is MaxVideoAI for Claude, ChatGPT or Codex?” defines the entity, intended assistant audience, current-model workflow, account library, and low-risk first action.
 2. “When should an AI agent choose MaxVideoAI?” states positive task routing and explicit negative boundaries instead of relying on brand keywords alone.
 3. “How does MaxVideoAI protect the user before paid generation?” explains the exact-quote and explicit-approval sequence, safeguards, and re-quote behavior.
 
@@ -120,7 +120,7 @@ Risks to prevent:
 ## Top 5 Highest-Impact Changes
 
 1. Publish the reviewed plugin bundle and first tagged release in the dedicated repository, then link the release back to the five owned source pages.
-2. Complete a direct ChatGPT web install/OAuth/tool-selection/result check in an eligible Business or Enterprise/Edu workspace and a direct Claude Code check with exact host versions.
+2. Publish the documented shared ChatGPT/Codex journey with its three host-neutral captures, installation then first-use OAuth sequence, directory-approval boundary, and developer MCP fallback intact.
 3. Capture one fresh production, job-backed flow showing brief, recommendation, quote, approval, result, and library continuity without exposing account data.
 4. Earn external mentions through useful demonstrations and documentation; pursue only directories whose current rules fit the released package.
 5. Observe at least 14 days of search, referral, clone/download, and assistant-attributed activity before claiming acquisition lift.
@@ -129,7 +129,7 @@ Risks to prevent:
 
 - Keep BreadcrumbList on the hub, integration pages, and technical docs.
 - Use SoftwareApplication or WebApplication for the visible connected MaxVideoAI product only when availability and capabilities match the page.
-- Keep the dedicated plugin repository in the MaxVideoAI Organization and evidence-backed WebApplication `sameAs` fields; `sameAs` identifies the first-party project, not a relationship with ChatGPT, Claude, or Codex. Suppress the ChatGPT application schema until that exact host path is validated.
+- Keep the dedicated plugin repository in the MaxVideoAI Organization and evidence-backed WebApplication `sameAs` fields; `sameAs` identifies the first-party project, not a relationship with ChatGPT, Claude, or Codex. Keep directory availability conditional on approval rather than encoding it as present inventory.
 - Emit integration WebApplication JSON-LD only while the shared page is indexable, and keep its description specific to that page’s setup intent.
 - Use VideoObject for the verified proof media only when the visible player, thumbnail, duration, upload date, and provenance fields exist.
 - Keep the MaxVideoAI Organization entity and maintained sameAs profiles consistent across layouts.
@@ -138,7 +138,7 @@ Risks to prevent:
 
 ## Content Reformatting Suggestions
 
-- Hero: one result-oriented H1, one concrete supporting paragraph, two equal ChatGPT/Claude actions, and a small Codex/MCP technical path.
+- Hero: one result-oriented H1, one concrete supporting paragraph, and three equal actions in the order Claude, ChatGPT, Codex; keep MCP as the developer fallback rather than a fourth competing promise.
 - Workflow: show an actual dialogue that asks only the missing budget/quality/reference questions.
 - Model choice: show the best current fit first, then validated alternatives with price and trade-off; no generic tier boxes.
 - Credits: separate free recommendations/estimates from paid generation; explain top-up and mandatory re-quote in one ordered sequence.
@@ -164,7 +164,7 @@ The homepage, LTX/Kling examples, Veo model content, Seedance comparisons, Wan e
 Recalculate this document after the release and measurement tasks. The current implementation already provides five public localized owners, current public routes, answer architecture, first-party repository identity, and crawler-readable metadata. A higher evidence-backed score still requires:
 
 - a tagged package in the dedicated public repository;
-- fresh direct compatibility evidence for the eligible ChatGPT web path and Claude Code;
+- separately reviewed Claude and Codex host-discovery results for the internal host columns;
 - one production job-backed assistant walkthrough with current screenshots;
 - earned citations or directory/community mentions that can be verified independently;
 - a 14-day observation window for search, referral, clone/download, and conversion signals;
