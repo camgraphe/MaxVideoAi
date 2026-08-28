@@ -16,6 +16,16 @@ clean-account production check records installation, consent, tool behavior,
 revocation, recovery, and support reproduction. A direct URL is not a
 directory record.
 
+### Direct ChatGPT configuration
+
+Treat a direct ChatGPT route as its own evidence gate, separate from the
+ChatGPT/OpenAI directory. The [OpenAI MCP guide](https://learn.chatgpt.com/docs/extend/mcp)
+distinguishes ChatGPT web plugins from local Codex connections; it does not
+record a MaxVideoAI production setup on an exact ChatGPT host. Do not publish
+ChatGPT-specific setup or compatibility copy until MCP Engineering records the
+client/version, installation route, consent, tool behavior, revocation,
+recovery, and support reproduction.
+
 ## Verified clients
 
 No host is described here as verified for MaxVideoAI. A verified-client entry
