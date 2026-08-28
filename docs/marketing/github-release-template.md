@@ -6,7 +6,7 @@ Use this only for a reviewed, releasable tag. Replace every bracketed field with
 
 **Short answer:** [State the production or package outcome in one evidence-qualified sentence.]
 
-![MaxVideoAI release card with a completed workspace result](../../plugins/maxvideoai/assets/social/release-0.3.0.png)
+![Descriptive alt text for the reviewed release visual]([current-release-visual-path])
 
 *Current MaxVideoAI product proof; it does not prove native host installation or end-to-end host validation.*
 
@@ -21,7 +21,7 @@ Use this only for a reviewed, releasable tag. Replace every bracketed field with
 
 ## Current visual
 
-**Asset:** `plugins/maxvideoai/assets/social/release-0.3.0.png`.
+**Asset:** `[current-release-visual-path]`.
 
 **Evidence boundary:** [State exactly what the visual proves and what it does not prove.]
 
@@ -53,7 +53,7 @@ Planning and project budgets do not authorize paid work. A prepared request retu
 
 ## Sources and publication gate
 
-- Reviewed source tag: [URL]
-- Checksum asset: [URL and SHA-256]
+- Reviewed source tag: [current-version source-tag URL]
+- Checksum asset: [current-version checksum URL and SHA-256]
 - Platform guidance: https://maxvideoai.com/docs/mcp
 - Publication gate: source tag, checksums, clean install, current visual provenance, compatibility wording, safety boundary, and support links reviewed by the release owner.

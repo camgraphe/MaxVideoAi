@@ -56,8 +56,7 @@ Users can open **Settings → Apps**, select the MaxVideoAI app, and choose **Di
 
 - [Compare current AI video models](../examples/compare-ai-video-models.md) before selecting a route.
 - [Price an AI video project](../examples/price-a-video-project.md) before preparing a request.
-- [Plan a Claude video-production request](../examples/claude-video-production.md) for the no-spend workflow shape.
-- [Run a Codex video-production workflow](../examples/codex-video-production.md) for package and recovery context.
+- [Use this ChatGPT no-spend validation prompt](#how-do-i-verify-without-spending-credits) in an eligible workspace.
 
 ## Sources
 

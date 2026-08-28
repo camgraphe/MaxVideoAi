@@ -6,16 +6,18 @@ import { fileURLToPath } from 'node:url';
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const pluginRoot = path.join(repositoryRoot, 'plugins', 'maxvideoai');
+const calendarPath = path.join(repositoryRoot, 'docs', 'marketing', 'github-editorial-calendar.md');
 
-const requiredFiles = [
-  'docs/marketing/github-editorial-calendar.md',
-  'docs/marketing/github-outreach-ledger.md',
-  'docs/marketing/github-release-template.md',
-  'docs/marketing/github-content-brief-template.md',
-  'plugins/maxvideoai/examples/compare-ai-video-models.md',
-  'plugins/maxvideoai/examples/price-a-video-project.md',
-  'plugins/maxvideoai/examples/claude-video-production.md',
-  'plugins/maxvideoai/examples/codex-video-production.md',
+const calendarFields = [
+  'Owner', 'Human search question', 'Agent question', 'Direct answer', 'Proof visual',
+  'First-party MaxVideoAI fact or workflow', 'Source URL', 'GitHub surface',
+  'Website counterpart', 'Outreach class', 'Canonical backlink', 'CTA',
+  'Publication gate', 'Refresh trigger', 'Measurement',
+] as const;
+
+const ledgerFields = [
+  'Contact or surface', 'Relevance', 'Proposed useful asset', 'Canonical link',
+  'Disclosure', 'Status', 'Response', 'Next review',
 ] as const;
 
 const namedLaunchUnits = [
@@ -33,123 +35,194 @@ const namedLaunchUnits = [
   'Compatibility report: what is verified, what is compatible, and what is not claimed',
 ] as const;
 
-const calendarFields = [
-  'Owner',
-  'Human search question',
-  'Agent question',
-  'Direct answer',
-  'Proof visual',
-  'First-party MaxVideoAI fact or workflow',
-  'Source URL',
-  'GitHub surface',
-  'Website counterpart',
-  'Outreach class',
-  'Canonical backlink',
-  'CTA',
-  'Publication gate',
-  'Refresh trigger',
-  'Measurement',
-] as const;
+type Section = { title: string; body: string };
 
 function read(relativePath: string): string {
   return readFileSync(path.join(repositoryRoot, relativePath), 'utf8');
 }
 
-function assertUnsafeOutreachIsProhibited(ledger: string): void {
-  assert.match(
-    ledger,
-    /Do not buy links, exchange links at scale, submit bulk forms, automate unsolicited messages/i,
-    'the ledger must make its prohibited outreach practices explicit',
-  );
+function parseSections(markdown: string, heading: RegExp): Section[] {
+  const matches = [...markdown.matchAll(heading)];
+  return matches.map((match, index) => ({
+    title: match[1].trim(),
+    body: markdown.slice(match.index! + match[0].length, matches[index + 1]?.index).trim(),
+  }));
+}
 
-  const unsafeImperatives = [
-    /(?:^|[.!?]\s+)(?:we\s+)?(?:buy|purchase|pay for)\s+(?:bulk\s+)?(?:backlinks?|links?)\b/im,
-    /(?:^|[.!?]\s+)(?:we\s+)?exchange links at scale\b/im,
-    /(?:^|[.!?]\s+)(?:we\s+)?submit bulk forms\b/im,
-    /(?:^|[.!?]\s+)(?:we\s+)?automate unsolicited messages\b/im,
-  ];
-  for (const unsafeImperative of unsafeImperatives) {
-    assert.doesNotMatch(ledger, unsafeImperative, 'the ledger must not advocate an unsafe outreach practice');
+function parseFields(section: string): Map<string, string> {
+  const matches = [...section.matchAll(/\*\*([^*:\n]+):\*\*/g)];
+  return new Map(matches.map((match, index) => [
+    match[1].trim(),
+    section.slice(match.index! + match[0].length, matches[index + 1]?.index).trim(),
+  ]));
+}
+
+function requireNonemptyFields(fields: Map<string, string>, required: readonly string[], label: string): void {
+  for (const field of required) {
+    const value = fields.get(field);
+    assert.ok(value?.replace(/\s+/g, ' ').trim(), `${label} needs a nonempty ${field}`);
   }
 }
 
-test('GitHub content engine defines a proof-led eight-week publication contract', () => {
-  for (const relativePath of requiredFiles) {
-    assert.ok(existsSync(path.join(repositoryRoot, relativePath)), `${relativePath} must exist`);
-  }
+function assertPlainCanonical(urlText: string, label: string): void {
+  const urlMatch = /https:\/\/[^\s]+/.exec(urlText);
+  assert.ok(urlMatch, `${label} needs an HTTPS canonical URL`);
+  const url = new URL(urlMatch![0].replace(/[.,;]+$/, ''));
+  assert.equal(url.origin, 'https://maxvideoai.com', `${label} must use MaxVideoAI's canonical domain`);
+  assert.equal(url.search, '', `${label} must not add unapproved attribution parameters`);
+  assert.equal(url.hash, '', `${label} must not add a fragment`);
+  assert.ok(
+    new Set(['/mcp', '/models', '/pricing', '/docs/mcp', '/app/library']).has(url.pathname),
+    `${label} must use an approved Task 16 canonical path`,
+  );
+}
 
+function markdownLinks(markdown: string): string[] {
+  return [...markdown.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)].map((match) => match[1]);
+}
+
+function assertNoUnsafeOutreachAdvocacy(text: string, label: string): void {
+  const unsafeTactics = /\b(?:buy links|exchange links at scale|submit bulk forms|automate unsolicited messages)\b/gi;
+  for (const match of text.matchAll(unsafeTactics)) {
+    const before = text.slice(0, match.index);
+    const sentenceStart = Math.max(before.lastIndexOf('.'), before.lastIndexOf('!'), before.lastIndexOf('?')) + 1;
+    const after = text.slice((match.index ?? 0) + match[0].length);
+    const sentenceEndOffset = after.search(/[.!?]/);
+    const sentence = text.slice(sentenceStart, sentenceEndOffset === -1 ? undefined : (match.index ?? 0) + match[0].length + sentenceEndOffset);
+    assert.match(sentence, /\b(?:do not|never|no|not)\b/i, `${label} may document an unsafe tactic only as a prohibition`);
+  }
+}
+
+function assertUnsafeOutreachPolicy(ledger: string): void {
+  assert.match(
+    ledger,
+    /Do not buy links, exchange links at scale, submit bulk forms, automate unsolicited messages/i,
+    'the ledger must explicitly prohibit unsafe outreach tactics',
+  );
+  assertNoUnsafeOutreachAdvocacy(ledger, 'the outreach ledger');
+}
+
+test('GitHub content engine parses every proof-led calendar unit and release draft gate', () => {
   const calendar = read('docs/marketing/github-editorial-calendar.md');
-  for (const title of namedLaunchUnits) assert.match(calendar, new RegExp(title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
-
-  const weeks = [...calendar.matchAll(/^## Week \d+:/gm)];
+  const manifest = JSON.parse(read('docs/marketing/github-asset-manifest.json')) as { assets: Array<{ path: string }> };
+  const manifestPaths = new Set(manifest.assets.map((asset) => asset.path));
+  const weeks = parseSections(calendar, /^## Week \d+:\s*(.+)$/gm);
   assert.equal(weeks.length, 8, 'the calendar needs eight publication weeks');
+
+  const units: Section[] = [];
   for (const week of weeks) {
-    const weekText = calendar.slice(week.index, calendar.indexOf('\n## Week ', (week.index ?? 0) + 1) || undefined);
-    assert.equal((weekText.match(/^### (?:Unit|Follow-up) \d+:/gm) ?? []).length, 2, `${week[0]} needs two substantive units`);
-    assert.match(weekText, /Outcome\/proof/i, `${week[0]} needs an outcome/proof unit`);
-    assert.match(weekText, /Decision\/trust/i, `${week[0]} needs a decision/trust unit`);
+    const weekUnits = parseSections(week.body, /^### (?:Unit|Follow-up) \d+:\s*(.+)$/gm);
+    assert.equal(weekUnits.length, 2, `${week.title} needs exactly two substantive units`);
+    const rhythms = weekUnits.map((unit) => parseFields(unit.body).get('Rhythm'));
+    assert.equal(rhythms.filter((rhythm) => rhythm?.startsWith('Outcome/proof')).length, 1, `${week.title} needs one outcome/proof unit`);
+    assert.equal(rhythms.filter((rhythm) => rhythm?.startsWith('Decision/trust')).length, 1, `${week.title} needs one decision/trust unit`);
+    units.push(...weekUnits);
   }
 
-  const unitHeadings = [...calendar.matchAll(/^### (?:Unit|Follow-up) \d+:/gm)];
-  const units = unitHeadings.map((heading, index) => calendar.slice(heading.index, unitHeadings[index + 1]?.index));
-  assert.equal(units.length, 16, 'twelve launch units plus four substantive evidence follow-ups fill the eight-week rhythm');
+  assert.equal(units.length, 16, 'twelve named units plus four evidence refreshes fill the calendar');
+  for (const title of namedLaunchUnits) assert.ok(units.some((unit) => unit.title === title), `missing launch unit: ${title}`);
+
   for (const unit of units) {
-    const unitText = unit;
-    for (const field of calendarFields) assert.match(unitText, new RegExp(`\\*\\*${field}:\\*\\*`, 'i'), `${unitText.slice(0, 80)} needs ${field}`);
-    assert.match(unitText, /!\[[^\]]{12,}\]\([^\n)]+\)/, 'each unit needs a useful proof visual');
-    assert.match(unitText, /https:\/\/maxvideoai\.com\//, 'each unit needs a contextual canonical backlink');
+    const fields = parseFields(unit.body);
+    requireNonemptyFields(fields, calendarFields, unit.title);
+    assertPlainCanonical(fields.get('Canonical backlink')!, `${unit.title} canonical backlink`);
+
+    const image = /!\[[^\]]{12,}\]\(([^)]+)\)/.exec(unit.body);
+    assert.ok(image, `${unit.title} needs a descriptive proof image`);
+    const resolvedAsset = path.resolve(path.dirname(calendarPath), image![1]);
+    assert.ok(resolvedAsset.startsWith(`${repositoryRoot}${path.sep}`), `${unit.title} proof image must remain inside the repository`);
+    assert.ok(existsSync(resolvedAsset), `${unit.title} proof image must exist`);
+    const relativeAsset = path.relative(repositoryRoot, resolvedAsset).split(path.sep).join('/');
+    assert.ok(manifestPaths.has(relativeAsset), `${unit.title} proof image must be declared in github-asset-manifest.json`);
+
+    const adjacentBoundary = unit.body.slice((image!.index ?? 0) + image![0].length, (image!.index ?? 0) + image![0].length + 750);
+    assert.match(
+      adjacentBoundary,
+      /does not prove|not\s+(?:a|an|native|host|pricing|price|quote|approval|evidence|benchmark|release|released)|is not evidence/i,
+      `${unit.title} needs an adjacent negative proof boundary`,
+    );
+
+    const releaseVersion = /\b(?:release|version)\s+(\d+\.\d+\.\d+)\b/i.exec(unit.title)?.[1];
+    if (releaseVersion && releaseVersion !== read('plugins/maxvideoai/VERSION').trim()) {
+      assert.match(fields.get('Status')!, /^draft_not_publishable\.?$/, `${unit.title} must be explicitly non-publishable`);
+      assert.match(fields.get('Direct answer')!, /no\s+0\.3\.0\s+release, source tag, built checksum, or install proof is claimed/i);
+      assert.match(fields.get('Publication gate')!, /VERSION[\s\S]*CHANGELOG[\s\S]*local and public source tag[\s\S]*built checksum evidence[\s\S]*current visual[\s\S]*clean install/i);
+      assert.doesNotMatch(fields.get('GitHub surface')!, /GitHub Release|published release/i, `${unit.title} must not claim a published release`);
+      assert.doesNotMatch(fields.get('Source URL')!, /\/releases\b/i, `${unit.title} must not point at an unmade release`);
+    }
   }
 
   const releaseTemplate = read('docs/marketing/github-release-template.md');
-  for (const field of ['Outcome', 'What changed', 'Who benefits', 'Current visual', 'Install or update', 'Compatibility', 'Safety boundary', 'Full changelog']) {
-    assert.match(releaseTemplate, new RegExp(`^## ${field}`, 'mi'), `release template needs ${field}`);
+  for (const heading of ['Outcome', 'What changed', 'Who benefits', 'Current visual', 'Install or update', 'Compatibility', 'Safety boundary', 'Full changelog']) {
+    assert.match(releaseTemplate, new RegExp(`^## ${heading}`, 'mi'), `release template needs ${heading}`);
   }
+  assert.match(releaseTemplate, /\[current-release-visual-path\]/, 'release template must use a current-version visual placeholder');
+  assert.doesNotMatch(releaseTemplate, /release-0\.3\.0/i, 'release template must not freeze a future version asset');
   assert.match(releaseTemplate, /codex plugin/i, 'release template needs an install/update command');
-
-  const ledger = read('docs/marketing/github-outreach-ledger.md');
-  for (const field of ['Contact or surface', 'Relevance', 'Proposed useful asset', 'Canonical link', 'Disclosure', 'Status', 'Response', 'Next review']) {
-    assert.match(ledger, new RegExp(field, 'i'), `outreach ledger needs ${field}`);
-  }
-  for (const outreachClass of [/official or maintained registry/i, /curated MCP list/i, /AI-video resource page/i, /technical newsletter/i, /creator workflow/i, /benchmark citation/i]) {
-    assert.match(ledger, outreachClass, 'outreach ledger needs every permitted contextual-value class');
-  }
-  assert.match(ledger, /public professional contact/i);
-  assertUnsafeOutreachIsProhibited(ledger);
-
-  const briefTemplate = read('docs/marketing/github-content-brief-template.md');
-  for (const field of calendarFields) assert.match(briefTemplate, new RegExp(field, 'i'), `content brief template needs ${field}`);
-  assert.match(briefTemplate, /visual.*before.*prose|proof.*before.*prose/i);
 });
 
-test('new workflow examples are actionable, qualified, and linked from the acquisition surfaces', () => {
+test('GitHub content engine parses contextual outreach rows without unsafe solicitation or attribution', () => {
+  const ledger = read('docs/marketing/github-outreach-ledger.md');
+  assertUnsafeOutreachPolicy(ledger);
+  const entries = parseSections(ledger, /^## Entry:\s*(.+)$/gm);
+  assert.equal(entries.length, 6, 'the ledger needs each permitted contextual-value class');
+
+  for (const entry of entries) {
+    const fields = parseFields(entry.body);
+    requireNonemptyFields(fields, ledgerFields, entry.title);
+    assertPlainCanonical(fields.get('Canonical link')!, `${entry.title} canonical link`);
+    assert.match(
+      fields.get('Contact or surface')!,
+      /public[\s\S]*(?:professional|maintainer|editor|registry|contribution)|(?:professional|maintainer|editor|registry|contribution)[\s\S]*public/i,
+      `${entry.title} must remain a public-professional context`,
+    );
+    assert.doesNotMatch(
+      entry.body,
+      /\b(?:send|share|provide|paste|include|collect|request)\b[^.\n]{0,120}\b(?:personal (?:email|data)|phone|private (?:media|url)|token|password|billing|payment data)\b/i,
+      `${entry.title} must not solicit personal or private data`,
+    );
+    assertNoUnsafeOutreachAdvocacy(entry.body, entry.title);
+  }
+});
+
+test('new workflow examples are actionable and host guides keep contextual link mappings', () => {
   const examples = [
-    'examples/compare-ai-video-models.md',
-    'examples/price-a-video-project.md',
-    'examples/claude-video-production.md',
-    'examples/codex-video-production.md',
+    'compare-ai-video-models.md',
+    'price-a-video-project.md',
+    'claude-video-production.md',
+    'codex-video-production.md',
   ] as const;
+  const sharedExamples = ['compare-ai-video-models.md', 'price-a-video-project.md'];
 
-  for (const relativePath of examples) {
-    const content = read(path.join('plugins/maxvideoai', relativePath));
-    assert.match(content, /^# .+\n\n\*\*Short answer:\*\*/m, `${relativePath} needs a direct answer opening`);
-    assert.match(content, /!\[[^\]]{12,}\]\(\.\.\/assets\/demos\//, `${relativePath} needs a current MaxVideoAI proof visual`);
-    assert.match(content, /exact quote/i, `${relativePath} needs the exact-quote boundary`);
-    assert.match(content, /explicit approval/i, `${relativePath} needs the approval boundary`);
-    assert.match(content, /MaxVideoAI Library/i, `${relativePath} needs recovery continuity`);
-    assert.match(content, /https:\/\/maxvideoai\.com\/(?:mcp|models|pricing|docs\/mcp)/i, `${relativePath} needs a canonical next action`);
-    assert.match(content, /does not prove|not native/i, `${relativePath} must qualify its visual or host evidence`);
-    assert.doesNotMatch(content, /(?:[$€£]\s*\d|\d(?:[.,]\d+)?\s*(?:USD|EUR|GBP|dollars?|euros?|pounds?))/i, `${relativePath} must not freeze a price`);
+  for (const example of examples) {
+    const content = read(path.join('plugins/maxvideoai', 'examples', example));
+    assert.match(content, /^# .+\n\n\*\*Short answer:\*\*/m, `${example} needs a direct answer opening`);
+    assert.match(content, /!\[[^\]]{12,}\]\(\.\.\/assets\/demos\//, `${example} needs a current MaxVideoAI proof visual`);
+    assert.match(content, /exact quote/i, `${example} needs the exact-quote boundary`);
+    assert.match(content, /explicit approval/i, `${example} needs the approval boundary`);
+    assert.match(content, /MaxVideoAI Library/i, `${example} needs recovery continuity`);
+    assert.match(content, /https:\/\/maxvideoai\.com\/(?:mcp|models|pricing|docs\/mcp)/i, `${example} needs a canonical next action`);
+    assert.match(content, /does not prove|not native/i, `${example} must qualify visual or host evidence`);
+    assert.doesNotMatch(content, /(?:[$€£]\s*\d|\d(?:[.,]\d+)?\s*(?:USD|EUR|GBP|dollars?|euros?|pounds?))/i, `${example} must not freeze a price`);
   }
 
-  const acquisitionSurfaces = [
-    'README.md',
-    'docs/chatgpt.md',
-    'docs/claude.md',
-    'docs/codex.md',
-    'examples/README.md',
-  ] as const;
-  for (const relativePath of acquisitionSurfaces) {
-    const content = read(path.join('plugins/maxvideoai', relativePath));
-    for (const example of examples) assert.match(content, new RegExp(example.split('/').at(-1)?.replace('.', '\\.') ?? ''), `${relativePath} must link ${example}`);
+  for (const surface of ['README.md', 'examples/README.md'] as const) {
+    const links = markdownLinks(readFileSync(path.join(pluginRoot, surface), 'utf8'));
+    for (const example of examples) assert.ok(links.some((link) => link.endsWith(example)), `${surface} must retain ${example}`);
   }
+
+  const hostExampleLinks: Record<string, readonly string[]> = {
+    'docs/chatgpt.md': sharedExamples,
+    'docs/claude.md': [...sharedExamples, 'claude-video-production.md'],
+    'docs/codex.md': [...sharedExamples, 'codex-video-production.md'],
+  };
+  for (const [guide, expected] of Object.entries(hostExampleLinks)) {
+    const links = markdownLinks(readFileSync(path.join(pluginRoot, guide), 'utf8'));
+    const actual = links.filter((link) => link.startsWith('../examples/')).map((link) => path.posix.basename(link)).sort();
+    assert.deepEqual(actual, [...expected].sort(), `${guide} must link only its own host example and shared comparison/pricing examples`);
+  }
+  assert.ok(
+    markdownLinks(readFileSync(path.join(pluginRoot, 'docs/chatgpt.md'), 'utf8')).includes('#how-do-i-verify-without-spending-credits'),
+    'the ChatGPT guide must link its own host-specific validation example',
+  );
 });
