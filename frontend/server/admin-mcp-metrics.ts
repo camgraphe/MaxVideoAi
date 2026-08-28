@@ -1,5 +1,6 @@
 import mcpPublication from '@/config/mcp-publication.json';
 import { isDatabaseConfigured, query, type QueryExecutor } from '@/lib/db';
+import { buildMcpActivityMetrics, buildMcpToolUsage, type McpActivityMetrics, type McpActivitySummaryRow, type McpToolUsage, type McpToolUsageSummaryRow } from '@/server/admin-mcp-activity';
 import {
   AUDIT_SUMMARY_SQL,
   ERROR_SQL,
@@ -7,6 +8,7 @@ import {
   PROVIDER_COST_SQL,
   RECEIPTS_SQL,
   RECOMMENDATION_TO_QUOTE_SQL,
+  TOOL_USAGE_SQL,
 } from '@/server/admin-mcp-metrics-queries';
 import {
   MCP_METRIC_PRODUCER_CAPABILITIES,
@@ -71,6 +73,8 @@ export type AdminMcpMetrics = {
     revocation: MetricAvailability;
     authentication: MetricAvailability;
   };
+  activity: McpActivityMetrics | null;
+  toolUsage: McpToolUsage[] | null;
   funnel: Record<McpFunnelStage, number> | null;
   trialToWalletRate: number | null;
   clientSplit: Array<{ client: 'chatgpt' | 'claude' | 'codex' | 'other'; connections: number }> | null;
@@ -121,13 +125,6 @@ type FunnelRow = Record<
   | 'trial_volume'
   | 'trial_accepted'
   | 'trial_released',
-  number | string | null
->;
-
-type AuditSummaryRow = Record<
-  | 'polling_calls'
-  | 'upload_failures'
-  | 'refund_restoration_failures',
   number | string | null
 >;
 
@@ -209,6 +206,8 @@ function baseMetrics(range: AdminMcpRange, flags: Record<string, boolean>, reaso
       revocation: unavailable('No verified once-only MCP revocation event producer is live.'),
       authentication: unavailable('No privacy-safe pre-authentication error event producer is live.'),
     },
+    activity: null,
+    toolUsage: null,
     funnel: null,
     trialToWalletRate: null,
     clientSplit: null,
@@ -315,23 +314,24 @@ export async function loadAdminMcpMetrics(
     metrics.availability.restorations = unavailable('The MCP restoration producer capability is not live.');
   } else if (relations.mcp_audit_events) {
     try {
-      const [summaryRows, errorRows] = await Promise.all([
-        deps.executor.query<AuditSummaryRow>(AUDIT_SUMMARY_SQL, [range.from, range.to]),
+      const [summaryRows, errorRows, toolUsageRows] = await Promise.all([
+        deps.executor.query<McpActivitySummaryRow>(AUDIT_SUMMARY_SQL, [range.from, range.to]),
         deps.executor.query<{ code: string; count: number | string | null }>(ERROR_SQL, [range.from, range.to]),
+        deps.executor.query<McpToolUsageSummaryRow>(TOOL_USAGE_SQL, [range.from, range.to]),
       ]);
       const row = summaryRows[0];
       if (!row) throw new Error('Missing audit aggregate.');
       const durationMinutes = (range.to.getTime() - range.from.getTime()) / 60_000;
       metrics.availability.audit = available();
+      metrics.activity = buildMcpActivityMetrics(row);
+      metrics.toolUsage = buildMcpToolUsage(toolUsageRows);
       metrics.errors = errorRows.map((error) => ({ code: error.code, count: count(error.count) }));
       if (!producers.polling) {
         metrics.availability.polling = unavailable('The MCP polling producer capability is not live.');
-      } else if (relations.mcp_generation_quotes && producers.funnel) {
+      } else {
         metrics.availability.polling = available();
         metrics.pollingCalls = count(row.polling_calls);
         metrics.pollingCallsPerMinute = metrics.pollingCalls / durationMinutes;
-      } else {
-        metrics.availability.polling = unavailable('Paid-generation polling prerequisites are not present.');
       }
       if (!producers.uploads) {
         metrics.availability.uploads = unavailable('The MCP upload producer capability is not live.');

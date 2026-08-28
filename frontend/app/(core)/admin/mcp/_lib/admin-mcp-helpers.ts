@@ -69,24 +69,43 @@ export function formatMcpPercent(value: number | null): string {
 }
 
 export function buildMcpOverviewCards(metrics: AdminMcpMetrics): AdminMetricItem[] {
+  const activity = metrics.activity;
   return [
     {
-      label: 'OAuth connections',
-      value: formatMcpNumber(metrics.funnel?.oauth_connected ?? null),
-      helper: 'Distinct connected users in the selected UTC window',
-      tone: metrics.funnel === null ? 'warning' : 'info',
+      label: 'Connected users',
+      value: formatMcpNumber(activity?.connectedUsers ?? null),
+      helper: 'Distinct authenticated accounts that initialized MCP in this UTC window',
+      tone: activity === null ? 'warning' : 'info',
+    },
+    {
+      label: 'New connections',
+      value: formatMcpNumber(activity?.newConnectedUsers ?? null),
+      helper: 'Accounts whose first recorded MCP initialization occurred in this window',
+      tone: activity === null ? 'warning' : 'success',
+    },
+    {
+      label: 'Active tool users',
+      value: formatMcpNumber(activity?.activeToolUsers ?? null),
+      helper: 'Distinct connected accounts that called at least one MCP tool',
+      tone: activity === null ? 'warning' : 'info',
+    },
+    {
+      label: 'Tool calls',
+      value: formatMcpNumber(activity?.toolCalls ?? null),
+      helper: 'All authenticated MCP tool calls in the selected window',
+      tone: activity === null ? 'warning' : 'default',
+    },
+    {
+      label: 'Tool success',
+      value: formatMcpPercent(activity?.toolSuccessRate ?? null),
+      helper: 'Successful tool responses divided by all recorded MCP tool calls',
+      tone: activity?.toolSuccessRate === null || activity === null ? 'warning' : 'success',
     },
     {
       label: 'Completed trials',
       value: formatMcpNumber(metrics.funnel?.trial_completed ?? null),
       helper: 'Distinct users with an authoritative completed trial event',
       tone: metrics.funnel === null ? 'warning' : 'default',
-    },
-    {
-      label: 'Trial to wallet',
-      value: formatMcpPercent(metrics.trialToWalletRate),
-      helper: 'Wallet funded after trial completion inside the conversion window',
-      tone: metrics.trialToWalletRate === null ? 'warning' : 'success',
     },
     {
       label: 'First paid users',
@@ -99,12 +118,6 @@ export function buildMcpOverviewCards(metrics: AdminMcpMetrics): AdminMetricItem
       value: formatMcpMoney(metrics.revenueCents),
       helper: 'Authoritative charge receipts linked to MCP jobs',
       tone: metrics.revenueCents === null ? 'warning' : 'success',
-    },
-    {
-      label: 'Provider cost',
-      value: formatMcpMoney(metrics.providerCostCents),
-      helper: 'Recorded provider-attempt cost, including trial cost',
-      tone: metrics.providerCostCents === null ? 'warning' : 'default',
     },
   ];
 }
