@@ -246,7 +246,9 @@ test('mirror validates copied bytes against the manifest without rereading mutab
 
   const original = 'validated before synchronization\n';
   const changed = 'source changed after its copy completed\n';
-  writeFileSync(join(source, '000-first.txt'), original);
+  const sourceFile = join(source, '000-first.txt');
+  const targetFile = join(target, '000-first.txt');
+  writeFileSync(sourceFile, original);
   mkdirSync(join(source, 'padding'));
   const checksumPath = join(source, 'checksums.json');
   const manifest = JSON.parse(readFileSync(checksumPath, 'utf8')) as {
@@ -270,8 +272,13 @@ test('mirror validates copied bytes against the manifest without rereading mutab
   let sourceWasChanged = false;
   const targetWatcher = watch(target, (_event, filename) => {
     if (filename !== '000-first.txt' || sourceWasChanged) return;
+    try {
+      if (readFileSync(targetFile, 'utf8') !== original) return;
+    } catch {
+      return;
+    }
     sourceWasChanged = true;
-    writeFileSync(join(source, '000-first.txt'), changed);
+    writeFileSync(sourceFile, changed);
   });
   t.after(() => targetWatcher.close());
 
@@ -296,8 +303,8 @@ test('mirror validates copied bytes against the manifest without rereading mutab
 
   assert.ok(sourceWasChanged, 'fixture did not mutate the source after its target copy appeared');
   assert.equal(status, 0, stderr || stdout);
-  assert.equal(readFileSync(join(target, '000-first.txt'), 'utf8'), original);
-  assert.equal(readFileSync(join(source, '000-first.txt'), 'utf8'), changed);
+  assert.equal(readFileSync(targetFile, 'utf8'), original);
+  assert.equal(readFileSync(sourceFile, 'utf8'), changed);
 });
 
 test('publication preparation exposes the complete staged diff before environment approval', () => {
