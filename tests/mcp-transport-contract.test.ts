@@ -60,6 +60,18 @@ function protocolRequestWithoutAuthorization(body: object): Request {
   });
 }
 
+async function readProtocolPayload(response: Response): Promise<any> {
+  const contentType = response.headers.get('content-type') ?? '';
+  if (contentType.includes('application/json')) return response.json();
+
+  assert.match(contentType, /^text\/event-stream/u);
+  const dataLines = (await response.text())
+    .split('\n')
+    .filter((line) => line.startsWith('data: '));
+  assert.equal(dataLines.length, 1);
+  return JSON.parse(dataLines[0].slice('data: '.length));
+}
+
 function stagingProtocolRequest(body: object): Request {
   return new Request('https://maxvideoai-mcp-staging.vercel.app/mcp', {
     method: 'POST',
@@ -171,11 +183,12 @@ test('the real OAuth adapter produces the stable HTTP and JSON-RPC authenticatio
   );
 });
 
-test('authenticated initialize uses stateless Streamable HTTP and private caching', async () => {
+test('authenticated initialize uses uncompressed SSE Streamable HTTP and private caching', async () => {
   const response = await handleMcpHttpRequest(protocolRequest(initializeRequest), deps());
-  const payload = await response.json();
+  const payload = await readProtocolPayload(response);
 
   assert.equal(response.status, 200);
+  assert.match(response.headers.get('content-type') ?? '', /^text\/event-stream/u);
   assert.equal(response.headers.get('cache-control'), 'private, no-store, no-transform');
   assert.equal(response.headers.get('mcp-session-id'), null);
   assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow');
@@ -190,7 +203,7 @@ test('exact hosted staging exposes the complete operational tool inventory', asy
       stagingProtocolRequest({ jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} }),
       stagingDeps(),
     );
-    const payload = await response.json();
+    const payload = await readProtocolPayload(response);
 
     assert.equal(response.status, 200);
     assert.deepEqual(payload.result.tools.map((tool: { name: string }) => tool.name).sort(), [
@@ -270,8 +283,8 @@ test('successful initialize and tools/list responses are audited after SDK handl
 
   assert.equal(initializeResponse.status, 200);
   assert.equal(toolsListResponse.status, 200);
-  assert.equal((await initializeResponse.json()).error, undefined);
-  assert.equal((await toolsListResponse.json()).error, undefined);
+  assert.equal((await readProtocolPayload(initializeResponse)).error, undefined);
+  assert.equal((await readProtocolPayload(toolsListResponse)).error, undefined);
   assert.deepEqual(events.map((event) => event.eventType), [
     'connection_initialized',
     'tool_discovery',
@@ -402,7 +415,7 @@ test('rejected initialize responses never create success audit events', async ()
       },
     }),
   );
-  const payload = await response.json();
+  const payload = await readProtocolPayload(response);
 
   assert.ok(response.status >= 400 || payload.error, 'the malformed initialize request must be rejected');
   assert.deepEqual(events, []);
@@ -457,7 +470,7 @@ test('authenticated account tool uses the resolved staging account URL through d
       },
     }),
   );
-  const payload = await response.json();
+  const payload = await readProtocolPayload(response);
 
   assert.equal(response.status, 200);
   assert.equal(

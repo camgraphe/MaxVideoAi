@@ -108,6 +108,18 @@ function handlerRequest(body: string | object, init: { method?: string; contentL
   });
 }
 
+async function readHandlerPayload(response: Response): Promise<any> {
+  const contentType = response.headers.get('content-type') ?? '';
+  if (contentType.includes('application/json')) return response.json();
+
+  assert.match(contentType, /^text\/event-stream/u);
+  const dataLines = (await response.text())
+    .split('\n')
+    .filter((line) => line.startsWith('data: '));
+  assert.equal(dataLines.length, 1);
+  return JSON.parse(dataLines[0].slice('data: '.length));
+}
+
 function markdownRow(markdown: string, field: string): string {
   const row = markdown.match(new RegExp(`^\\| ${field} \\|.*$`, 'm'))?.[0];
   assert.ok(row, `missing markdown row: ${field}`);
@@ -259,7 +271,7 @@ test('runbook protocol envelopes are produced by the real handler and stay separ
     handlerRequest({ jsonrpc: '2.0', id: 2, method: 'unknown/method', params: {} }),
     handlerDeps(),
   );
-  assert.deepEqual(await unknownMethod.json(), {
+  assert.deepEqual(await readHandlerPayload(unknownMethod), {
     jsonrpc: '2.0',
     error: { code: -32601, message: 'Method not found' },
     id: 2,
@@ -274,7 +286,7 @@ test('runbook protocol envelopes are produced by the real handler and stay separ
     }),
     handlerDeps(),
   );
-  const invalidToolPayload = await invalidToolParams.json();
+  const invalidToolPayload = await readHandlerPayload(invalidToolParams);
   assert.equal(invalidToolPayload.jsonrpc, '2.0');
   assert.equal(invalidToolPayload.id, 3);
   assert.equal(invalidToolPayload.result.isError, true);

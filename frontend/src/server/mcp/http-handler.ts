@@ -100,16 +100,35 @@ const AUDITABLE_TOOL_NAMES = new Set([
   'import_reference_files',
 ]);
 
+function parseSseJsonRpcPayload(body: string): unknown {
+  for (const event of body.split(/\r?\n\r?\n/u)) {
+    const data = event
+      .split(/\r?\n/u)
+      .filter((line) => line.startsWith('data:'))
+      .map((line) => line.slice('data:'.length).trimStart())
+      .join('\n');
+    if (!data) continue;
+    try {
+      return JSON.parse(data);
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
 async function readJsonRpcResponse(response: Response): Promise<Record<string, unknown> | null> {
   try {
-    const payload = await response.clone().json();
+    const copy = response.clone();
+    const contentType = copy.headers.get('content-type') ?? '';
+    const payload = contentType.includes('text/event-stream')
+      ? parseSseJsonRpcPayload(await copy.text())
+      : await copy.json();
     return response.ok
-      && (
-      payload != null &&
-      typeof payload === 'object' &&
-      !Array.isArray(payload) &&
-      (payload as { jsonrpc?: unknown }).jsonrpc === '2.0'
-      )
+      && payload != null
+      && typeof payload === 'object'
+      && !Array.isArray(payload)
+      && (payload as { jsonrpc?: unknown }).jsonrpc === '2.0'
       ? payload as Record<string, unknown>
       : null;
   } catch {
@@ -268,7 +287,7 @@ export async function handleMcpHttpRequest(
   );
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
-    enableJsonResponse: true,
+    enableJsonResponse: false,
   });
 
   try {
