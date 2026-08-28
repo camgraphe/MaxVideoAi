@@ -21,7 +21,19 @@ Pro: read/fetch MCP permissions in developer mode
 
 ## How do I install or connect MaxVideoAI?
 
-The MaxVideoAI plugin is designed for the shared ChatGPT and Codex directory. Public directory availability begins after the listing is approved. Once it appears for your workspace, install MaxVideoAI from **Settings → Apps** and select it from the tools menu when you want to use it.
+The MaxVideoAI plugin is designed for the shared ChatGPT and Codex directory. Public directory availability begins after the listing is approved.
+
+### Public directory plugin
+
+After approval, go to **Plugins** in ChatGPT, or **Apps** if that is shown for your rollout or account:
+
+1. Select MaxVideoAI.
+2. Choose **Install plugin** if shown.
+3. Choose **Connect** if prompted, then complete OAuth in your browser.
+
+To invoke MaxVideoAI in ChatGPT, mention `@MaxVideoAI`, or choose **+ → More → MaxVideoAI**, when those controls are available for your account.
+
+### Direct developer MCP fallback
 
 For eligible workspaces that need a direct connection, the developer MCP URL fallback is `https://api.maxvideoai.com/mcp`:
 
@@ -62,18 +74,21 @@ Then move to a concrete request only when the model, prompt, settings, and suppo
 
 ## How do I disconnect and revoke access?
 
-Users can open **Settings → Apps**, select MaxVideoAI, and choose **Disconnect**. Workspace admins or owners can disable the app from **Workspace settings → Apps** and remove access when it is no longer approved.
+**Public plugin installation:** workspace admins manage the plugin under **Workspace settings → Plugins**.
 
-Then revoke the corresponding OAuth connection in your MaxVideoAI account connection settings. Disconnecting the app in ChatGPT does not replace that MaxVideoAI-side revocation.
+**Underlying app connection:** users manage the app connection or connected account from **Settings → Apps**, or from the connection surface where shown for their account, then choose **Disconnect** when available.
+
+**Authorization:** revoke the corresponding MaxVideoAI OAuth connection from your MaxVideoAI account connection settings. Disconnecting the app connection in ChatGPT does not replace that MaxVideoAI-side revocation.
 
 ```text
-Disconnect in ChatGPT → revoke the MaxVideoAI OAuth connection → reconnect only when needed
+Manage the workspace plugin → disconnect the app connection → revoke the MaxVideoAI OAuth connection
 ```
 
 ## Sources
 
 - [OpenAI: Developer mode and MCP apps in ChatGPT](https://help.openai.com/en/articles/12584461-developer-mode-apps-and-full-mcp-connectors-in-chatgpt-beta)
 - [OpenAI: Apps in ChatGPT](https://help.openai.com/en/articles/11487775-connectors-in-chatgpt)
+- [OpenAI: Plugins in Codex](https://help.openai.com/en/articles/20001256-plugins-in-codex)
 - [MaxVideoAI compatibility evidence](https://maxvideoai.com/docs/mcp)
 
 Last reviewed: 2026-08-28.

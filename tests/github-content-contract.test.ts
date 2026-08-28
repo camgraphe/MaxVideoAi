@@ -74,14 +74,25 @@ test('the ChatGPT guide presents the shared plugin journey with qualified proof 
   const officialSources = [
     'https://help.openai.com/en/articles/12584461-developer-mode-apps-and-full-mcp-connectors-in-chatgpt-beta',
     'https://help.openai.com/en/articles/11487775-connectors-in-chatgpt',
+    'https://help.openai.com/en/articles/20001256-plugins-in-codex',
     'https://maxvideoai.com/docs/mcp',
   ];
+  const publicPluginPath = guide.match(/### Public directory plugin\n([\s\S]*?)(?=\n### |\n## )/)?.[1] ?? '';
+  const developerFallbackPath = guide.match(/### Direct developer MCP fallback\n([\s\S]*?)(?=\n### |\n## )/)?.[1] ?? '';
+  const disconnectPath = guide.match(/## How do I disconnect and revoke access\?\n([\s\S]*?)(?=\n## )/)?.[1] ?? '';
 
   assert.match(guide, /^# Use MaxVideoAI with ChatGPT\s*$/m);
   assert.match(guide, /ChatGPT and Codex use the same MaxVideoAI plugin and (?:the same )?MCP connection/i);
   assert.match(guide, /install or connect[\s\S]*OAuth on the first use/i);
   assert.match(guide, /public directory availability[\s\S]{0,80}listing is approved/i);
   assert.match(guide, /developer MCP URL fallback[\s\S]*`https:\/\/api\.maxvideoai\.com\/mcp`/i);
+  assert.match(publicPluginPath, /\*\*Plugins\*\* in ChatGPT[\s\S]*\*\*Apps\*\* if (?:that is|it is) shown[\s\S]*select MaxVideoAI[\s\S]*\*\*Install plugin\*\* if shown[\s\S]*\*\*Connect\*\* if prompted[\s\S]*complete OAuth/i);
+  assert.match(publicPluginPath, /@MaxVideoAI[\s\S]*\+ → More[\s\S]*when (?:those controls|the control) (?:are|is) available/i);
+  assert.match(developerFallbackPath, /developer mode[\s\S]*Apps → Create[\s\S]*`https:\/\/api\.maxvideoai\.com\/mcp`[\s\S]*Scan Tools/i);
+  assert.match(disconnectPath, /workspace admins[\s\S]*Workspace settings → Plugins/i);
+  assert.match(disconnectPath, /users[\s\S]*app connection[\s\S]*connected account[\s\S]*where shown/i);
+  assert.match(disconnectPath, /revoke[\s\S]*MaxVideoAI OAuth/i);
+  assert.doesNotMatch(disconnectPath, /sync deletion|delete (?:the )?sync|delete synced|destructive removal/i);
   assert.match(guide, /Full MCP beta: Business and Enterprise\/Edu on ChatGPT web[\s\S]*Pro: read\/fetch MCP permissions in developer mode/i);
   assert.match(guide, /!\[Completed MaxVideoAI video continuing from the production workspace into the Library\]\(\.\.\/assets\/demos\/brief-to-video-workflow\.webp\)/);
   assert.match(guide, /MaxVideoAI product proof[\s\S]*workspace[\s\S]*Library[\s\S]*not native ChatGPT host proof/i);
