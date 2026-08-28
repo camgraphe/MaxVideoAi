@@ -1,6 +1,6 @@
 # Run a Codex video-production workflow with recovery in mind
 
-**Short answer:** Install the reviewed MaxVideoAI package, begin with `$plan`, then prepare one concrete request only when you are ready for its exact quote. Package discovery is not proof that every Codex build or the full production path is verified.
+**Short answer:** Install the reviewed MaxVideoAI package, begin with `$maxvideoai:plan`, then prepare one concrete request only when you are ready for its exact quote. Package discovery is not proof that every Codex build or the full production path is verified.
 
 ![MaxVideoAI production workspace showing the completed glass-ribbon video](../assets/demos/readme-proof-hero.webp)
 
@@ -10,11 +10,11 @@
 
 Use the checked-in package path, start a new Codex task, and let the first live MaxVideoAI action open browser OAuth for the account you choose.
 
-**Prompt to copy:** “Use `$plan` to compare current models for a cinematic product reveal. Give me a quality-first route and a lower-cost route with named project budgets. Do not prepare or approve a generation.”
+**Prompt to copy:** “Use `$maxvideoai:plan` to compare current models for a cinematic product reveal. Give me a quality-first route and a lower-cost route with named project budgets. Do not prepare or approve a generation.”
 
 ## What MaxVideoAI should do
 
-`$plan` returns current options and budgets without spending credits. When the shot is concrete, `$generate` prepares it and returns an exact quote. Only explicit approval authorizes one paid attempt.
+`$maxvideoai:plan` returns current options and budgets without spending credits. When the shot is concrete, `$maxvideoai:generate` prepares it and returns an exact quote. Only explicit approval authorizes one paid attempt.
 
 ```text
 Install → no-spend plan → compare routes → exact quote → explicit approval → recover if interrupted

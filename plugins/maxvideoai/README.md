@@ -17,7 +17,7 @@ codex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.3.2
 codex plugin add maxvideoai@maxvideoai
 ```
 
-Start a new Codex task, then ask `$plan` to compare AI video models or `$generate` to prepare a concrete request. The first live MaxVideoAI action opens OAuth in your browser so you can sign in or create the account you want to connect. These commands validate the checked-in package path; they are not a claim of external marketplace approval.
+Start a new Codex task, then ask `$maxvideoai:plan` to compare AI video models or `$maxvideoai:generate` to prepare a concrete request. The first live MaxVideoAI action opens OAuth in your browser so you can sign in or create the account you want to connect. These commands validate the checked-in package path; they are not a claim of external marketplace approval.
 
 ## Bring private references into the conversation
 
@@ -27,7 +27,7 @@ ChatGPT imports authorized attachments and generated files as private assets. Co
 
 - [Claude connector setup](docs/claude.md) — add the remote MCP URL from Claude's connector settings and complete OAuth.
 - [ChatGPT setup](docs/chatgpt.md) — install the shared plugin after public-directory approval, or use the developer MCP URL fallback.
-- [Codex plugin setup](docs/codex.md) — install the tagged package, start a new task, and invoke `$plan` or `$generate`.
+- [Codex plugin setup](docs/codex.md) — install the tagged package, start a new task, and invoke `$maxvideoai:plan` or `$maxvideoai:generate`.
 - [Generic remote MCP setup](docs/generic-mcp.md) — connect a client that explicitly supports remote Streamable HTTP and OAuth.
 
 Every route connects to `https://api.maxvideoai.com/mcp`. Add the URL exactly as written: no token, query string, password, or API key. Host availability and permissions can change, so use the guide for your surface before connecting.
@@ -58,7 +58,7 @@ The composite above proves a completed MaxVideoAI result continuing into the Lib
 
 ## How do you compare current AI video models?
 
-Use `$plan` before committing to a production route. It can recommend current executable options for each shot, explain trade-offs, and calculate comparable named budgets without authorizing generation.
+In Codex, use `$maxvideoai:plan` before committing to a production route. In Claude Code, use `/maxvideoai:plan`. The planning skill can recommend current executable options for each shot, explain trade-offs, and calculate comparable named budgets without authorizing generation.
 
 ![MaxVideoAI workspace showing the Luma Ray 2 Flash selector and completed glass-ribbon video](assets/demos/model-choice-and-budget.webp)
 
@@ -68,7 +68,7 @@ The image shows MaxVideoAI product selection and a completed result; it is not q
 
 ## How do exact quotes, approval, and result recovery work?
 
-Use `$generate` when the request is concrete. MaxVideoAI prepares the selected model, prompt, settings, and supported references, then returns an exact quote. You stay in control of the spend: an ambiguous reply is not approval, and an approval cannot silently authorize a second attempt.
+In Codex, use `$maxvideoai:generate` when the request is concrete. In Claude Code, use `/maxvideoai:generate`. MaxVideoAI prepares the selected model, prompt, settings, and supported references, then returns an exact quote. You stay in control of the spend: an ambiguous reply is not approval, and an approval cannot silently authorize a second attempt.
 
 ![Same completed glass-ribbon video shown in the MaxVideoAI workspace and saved Library asset](assets/demos/library-continuity.webp)
 

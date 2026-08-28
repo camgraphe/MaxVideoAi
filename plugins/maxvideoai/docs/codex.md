@@ -1,6 +1,6 @@
 # Install the MaxVideoAI package in Codex
 
-**Short answer:** add the tagged MaxVideoAI repository as a Codex plugin marketplace, install the package, then start a new task and invoke `$plan` or `$generate`. These are package/repository installation instructions validated against the current plugin creator tooling and checked-in package, not external marketplace approval or native Codex host proof.
+**Short answer:** add the tagged MaxVideoAI repository as a Codex plugin marketplace, install the package, then start a new task and invoke `$maxvideoai:plan` or `$maxvideoai:generate`. These are package/repository installation instructions validated against the current plugin creator tooling and checked-in package, not external marketplace approval or native Codex host proof.
 
 ## What does this guide prove today?
 
@@ -24,7 +24,7 @@ codex plugin add maxvideoai@maxvideoai
 Then:
 
 1. Start a new Codex task so it discovers the newly installed package.
-2. Invoke `$plan` for model comparison and project budgeting, or `$generate` for a concrete request.
+2. Invoke `$maxvideoai:plan` for model comparison and project budgeting, or `$maxvideoai:generate` for a concrete request.
 3. Complete MaxVideoAI OAuth in the browser when the first live action asks you to connect.
 4. Sign in or create the MaxVideoAI account whose credits and Library you want to use.
 
@@ -32,7 +32,7 @@ The tagged reference keeps the marketplace definition, two skills, and remote MC
 
 ## What OAuth and permissions should I expect?
 
-The package contains no embedded token, password, copied model catalogue, pricing table, or customer data. OAuth connects Codex to the MaxVideoAI account you choose. `$plan` reads current model facts and calculates budgets without spending credits. `$generate` can prepare an exact quote; only your explicit approval authorizes one paid attempt.
+The package contains no embedded token, password, copied model catalogue, pricing table, or customer data. OAuth connects Codex to the MaxVideoAI account you choose. `$maxvideoai:plan` reads current model facts and calculates budgets without spending credits. `$maxvideoai:generate` can prepare an exact quote; only your explicit approval authorizes one paid attempt.
 
 Review the request before approval. If a response is interrupted after submission, recover the accepted job instead of authorizing a duplicate.
 
@@ -40,9 +40,9 @@ Review the request before approval. If a response is interrupted after submissio
 
 Start a new task and ask for a no-spend plan. A valid response should compare current executable model options and produce named budgets without preparing paid work.
 
-**Example**: “Use `$plan` to compare current models for a cinematic product reveal. Give me a quality-first budget and a lower-cost budget.”
+**Example**: “Use `$maxvideoai:plan` to compare current models for a cinematic product reveal. Give me a quality-first budget and a lower-cost budget.”
 
-If `$plan` is not discovered, verify the tagged marketplace and package are enabled, then start another new task. Package discovery alone is not proof that OAuth or the full production path completed.
+If `$maxvideoai:plan` is not discovered, verify the tagged marketplace and package are enabled, then start another new task. Package discovery alone is not proof that OAuth or the full production path completed.
 
 ## How do I remove or disconnect it?
 

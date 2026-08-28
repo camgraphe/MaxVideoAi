@@ -477,8 +477,9 @@ test('the package ships current setup, privacy, workflow, and recovery guides', 
   assert.match(codex, /codex plugin add maxvideoai@maxvideoai/);
   assert.match(codex, /package\/repository installation instructions/i);
   assert.match(codex, /not external marketplace approval/i);
-  assert.match(codex, /\$plan/);
-  assert.match(codex, /\$generate/);
+  assert.match(codex, /\$maxvideoai:plan/);
+  assert.match(codex, /\$maxvideoai:generate/);
+  assert.doesNotMatch(codex, /with `\$(?:plan|generate)`/);
 
   const genericMcp = read('docs/generic-mcp.md');
   assert.match(genericMcp, /https:\/\/api\.maxvideoai\.com\/mcp/);

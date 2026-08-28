@@ -410,6 +410,7 @@ test('Codex setup installs the tagged public plugin package before OAuth', async
     );
     assert.equal(guide.commands[1], 'codex plugin add maxvideoai@maxvideoai');
     assert.equal(guide.commands.length, 2);
+    assert.match(guide.steps.map((step) => step.body).join(' '), /\$maxvideoai:plan.*\$maxvideoai:generate/i);
     assert.match(guide.limitation, /plan.*generate|plan.*génér|plan.*gener/i);
   }
 });

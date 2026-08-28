@@ -384,7 +384,7 @@ function englishGuides(client: McpClientId): IntegrationHostGuide[] {
       steps: [
         { title: 'Add the marketplace', body: 'Register the public MaxVideoAI repository at the reviewed 0.3.2 release tag.', proof: proofs[0] },
         { title: 'Install the plugin', body: 'Install MaxVideoAI once to get the plan and generate skills plus the production MCP connection.', proof: proofs[1] },
-        { title: 'Start a new task', body: 'Open a new Codex conversation, use $plan or $generate, and complete OAuth when prompted.', proof: proofs[2] },
+        { title: 'Start a new task', body: 'Open a new Codex conversation, use $maxvideoai:plan or $maxvideoai:generate, and complete OAuth when prompted.', proof: proofs[2] },
       ],
       commandLabel: 'Codex plugin commands',
       commands: [
@@ -466,7 +466,7 @@ function frenchGuides(client: McpClientId): IntegrationHostGuide[] {
       steps: [
         { title: 'Ajouter la marketplace', body: 'Enregistrez le dépôt public MaxVideoAI sur le tag de version 0.3.2 contrôlé.', proof: proofs[0] },
         { title: 'Installer le plugin', body: 'Installez MaxVideoAI une fois pour recevoir les skills plan et generate ainsi que la connexion MCP de production.', proof: proofs[1] },
-        { title: 'Démarrer une nouvelle tâche', body: 'Ouvrez une nouvelle conversation Codex, utilisez $plan ou $generate, puis terminez OAuth à la demande.', proof: proofs[2] },
+        { title: 'Démarrer une nouvelle tâche', body: 'Ouvrez une nouvelle conversation Codex, utilisez $maxvideoai:plan ou $maxvideoai:generate, puis terminez OAuth à la demande.', proof: proofs[2] },
       ],
       commandLabel: 'Commandes du plugin Codex',
       commands: [
@@ -548,7 +548,7 @@ function spanishGuides(client: McpClientId): IntegrationHostGuide[] {
       steps: [
         { title: 'Añadir el marketplace', body: 'Registra el repositorio público de MaxVideoAI en la etiqueta revisada de la versión 0.3.2.', proof: proofs[0] },
         { title: 'Instalar el plugin', body: 'Instala MaxVideoAI una vez para obtener los skills plan y generate y la conexión MCP de producción.', proof: proofs[1] },
-        { title: 'Iniciar una nueva tarea', body: 'Abre una nueva conversación de Codex, usa $plan o $generate y completa OAuth cuando se solicite.', proof: proofs[2] },
+        { title: 'Iniciar una nueva tarea', body: 'Abre una nueva conversación de Codex, usa $maxvideoai:plan o $maxvideoai:generate y completa OAuth cuando se solicite.', proof: proofs[2] },
       ],
       commandLabel: 'Comandos del plugin de Codex',
       commands: [
