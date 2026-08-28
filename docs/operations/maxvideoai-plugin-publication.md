@@ -171,6 +171,32 @@ allowed, but an existing GitHub release is still never replaced. Never move or
 recreate a published semantic version; fix the source and issue the next patch
 version.
 
+## Bootstrap evidence — 2026-08-28
+
+The owner approved the external repository mutation immediately before creation.
+The verified bootstrap state is:
+
+| Evidence | Verified state |
+| --- | --- |
+| Public repository | [`camgraphe/maxvideoai-plugin`](https://github.com/camgraphe/maxvideoai-plugin) |
+| Default branch | `main` |
+| Bootstrap commit | `82885191f0743641fd04c9ac5cd7a862087ed35a` |
+| Bootstrap tree | `.maxvideoai-public-repository` only |
+| Description and homepage | Approved commercial description; `https://maxvideoai.com/mcp` |
+| Topics | `ai-video`, `video-generation`, `mcp`, `model-context-protocol`, `chatgpt`, `claude`, `codex`, `ai-agents` |
+| Community settings | Issues and Discussions enabled; Wiki disabled; merge commits disabled; squash merge enabled; merged branches deleted |
+| Bootstrap `main` protection | Force pushes and branch deletion disabled; no invented required status check or pull-request gate |
+| Security | Secret scanning, push protection, and private vulnerability reporting enabled |
+| Social preview | [GitHub-hosted repository image](https://repository-images.githubusercontent.com/1349419332/e5459224-cdf9-433c-9ccb-44034079a51f) from `assets/social/github-social-preview.png`, 1280×640, SHA-256 `a77684b5c02980246a50df2ae6ae5247d9bd6c03b1dd1f4a2d997c89fee98e07` |
+| Source Environment | `maxvideoai-plugin-publication`; owner review required; deployments restricted to `maxvideoai-plugin-v*` tags |
+| Publication secret | `MAXVIDEOAI_PLUGIN_REPO_TOKEN` not configured: the active CLI credential is broader than the required single-repository token and was deliberately not reused |
+| Public package, tag, workflow run, release | Not published; `0.3.0` remains gated on the coordinated metadata, version, content, token, and final review |
+
+The welcome Discussion, release pin, destination required checks, and first mirror
+run remain deferred until the reviewed `0.3.0` package is ready. This bootstrap is
+public infrastructure evidence, not an installable-release or host-compatibility
+claim.
+
 ## Failure and rollback
 
 If validation, checkout, synchronization, or the remote-drift guard fails, nothing
