@@ -20,7 +20,7 @@ Offer a source that makes the reader’s page better: a current model-decision m
 
 ## Entry: technical newsletter
 
-**Contact or surface:** Public professional editorial inbox or contributor form. **Relevance:** a release with versioned checksums and a compatibility boundary can be a useful developer update after the evidence is public. **Proposed useful asset:** draft_not_publishable 0.3.0 release brief, contingent on its version, changelog, source tag, built checksum, visual, and clean-install gate. **Canonical link:** https://maxvideoai.com/docs/mcp. **Disclosure:** first-party draft; no release, performance, directory, or host-validation claim beyond cited evidence. **Status:** draft_not_publishable. **Response:** none. **Next review:** at complete release-gate review.
+**Contact or surface:** Public professional editorial inbox or contributor form. **Relevance:** a release with versioned checksums and a compatibility boundary can be a useful developer update after the evidence is public. **Proposed useful asset:** draft_not_publishable 0.3.2 release brief, contingent on its version, changelog, source tag, built checksum, visual, and clean-install gate. **Canonical link:** https://maxvideoai.com/docs/mcp. **Disclosure:** first-party draft; no release, performance, directory, or host-validation claim beyond cited evidence. **Status:** draft_not_publishable. **Response:** none. **Next review:** at complete release-gate review.
 
 ## Entry: creator workflow publication
 

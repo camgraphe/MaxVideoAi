@@ -15,7 +15,7 @@
     },
     "chatgptWeb": {
       "client": "chatgpt",
-      "hostLabel": "ChatGPT web",
+      "hostLabel": "ChatGPT",
       "status": "not-run"
     },
     "codexCli": {

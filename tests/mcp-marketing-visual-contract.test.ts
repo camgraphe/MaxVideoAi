@@ -70,6 +70,34 @@ test('the hero stays prospect-facing and contains no internal setup vocabulary',
   assert.match(source, /showTrialClaim/);
 });
 
+test('marketing setup surfaces prioritize copy-paste instructions and keep the MCP address secondary', () => {
+  const integrationSetup = requireFile(`${integrationComponentsRoot}/IntegrationSetupSection.tsx`);
+  const integrationCopy = requireFile(`${integrationComponentsRoot}/IntegrationInstallCopy.client.tsx`);
+  const hubCopy = requireFile(`${componentsRoot}/McpConnectActions.client.tsx`);
+
+  assert.match(integrationSetup, /IntegrationInstallCopy/);
+  assert.match(integrationCopy, /data-copy-install-instructions/);
+  assert.match(integrationCopy, /data-copy-endpoint/);
+  assert.match(integrationCopy, /navigator\.clipboard\.writeText/);
+  assert.match(integrationCopy, /aria-live="polite"/);
+  assert.match(integrationCopy, /<details/);
+  assert.match(integrationCopy, /copy\.showInstruction/);
+  assert.ok(
+    integrationCopy.indexOf('data-copy-install-instructions') < integrationCopy.indexOf('<details'),
+    'the primary copy action should appear before the expandable instruction text',
+  );
+  assert.match(integrationSetup, /copy\.setup\.installAction\.detailEyebrow/);
+  assert.match(integrationSetup, /copy\.setup\.installAction\.detailTitle/);
+  assert.ok(
+    integrationSetup.indexOf('IntegrationInstallCopy') < integrationSetup.indexOf('detailEyebrow'),
+    'fast setup should render before detailed setup',
+  );
+  assert.match(hubCopy, /data-copy-install-instructions/);
+  assert.match(hubCopy, /data-copy-endpoint/);
+  assert.match(hubCopy, /navigator\.clipboard\.writeText/);
+  assert.match(hubCopy, /aria-live="polite"/);
+});
+
 test('workflow and live price references support a conversation-led project proposal', async () => {
   requireFile(`${componentsRoot}/McpWorkflowStrip.tsx`);
   requireFile(`${componentsRoot}/McpBudgetShortlist.tsx`);
@@ -184,7 +212,7 @@ test('integration heroes lead with visual product evidence and link directly to 
   assert.doesNotMatch(preview, /autoPlay/);
 });
 
-test('ChatGPT and Codex reuse the same small, captioned OpenAI plugin captures', async () => {
+test('Claude, ChatGPT, and Codex setup steps use relevant compact proof', async () => {
   const setup = requireFile(`${integrationComponentsRoot}/IntegrationSetupSection.tsx`);
   assert.match(setup, /import Image from ['"]next\/image['"]/);
   assert.match(setup, /step\.proof/);
@@ -216,10 +244,15 @@ test('ChatGPT and Codex reuse the same small, captioned OpenAI plugin captures',
       chatgpt?.steps.map((step) => step.proof?.src),
       expectedOpenAiPluginCaptures,
     );
+    const chatgptProofText = (chatgpt?.steps ?? [])
+      .map((step) => `${step.proof?.alt ?? ''} ${step.proof?.caption ?? ''}`)
+      .join(' ');
     for (const step of chatgpt?.steps ?? []) {
       assert.equal(existsSync(`frontend/public${step.proof?.src}`), true);
-      assert.match(step.proof?.caption ?? '', /shared|partag|compartid/i);
     }
+    assert.match(chatgptProofText, /shared|partag|compartid/i);
+    assert.match(chatgptProofText, /Codex/i);
+    assert.match(chatgptProofText, /not native ChatGPT|pas une preuve[^.]*ChatGPT|no es una prueba[^.]*ChatGPT/i);
 
     const codex = getIntegrationCopy(locale, 'codex').setup.hostGuides[0];
     assert.equal(codex?.steps.length, 3);
@@ -229,7 +262,7 @@ test('ChatGPT and Codex reuse the same small, captioned OpenAI plugin captures',
     );
     for (const step of codex?.steps ?? []) {
       assert.equal(existsSync(`frontend/public${step.proof?.src}`), true);
-      assert.match(step.proof?.caption ?? '', /shared|partag|compartid/i);
+      assert.match(step.proof?.caption ?? '', /Codex/i);
     }
   }
 });

@@ -69,7 +69,6 @@ const CURRENT_PUBLIC_FILES = [
 ];
 
 const VERSION_0_3_PUBLIC_FILES = [
-  'assets/social/release-0.3.0.png',
   'docs/discovery.md',
   'server.json',
 ];
@@ -617,7 +616,7 @@ function versionAtLeast(version, minimum) {
 
 function publicFilesForVersion(version) {
   const files = versionAtLeast(version, '0.3.0')
-    ? [...CURRENT_PUBLIC_FILES, ...VERSION_0_3_PUBLIC_FILES]
+    ? [...CURRENT_PUBLIC_FILES, ...VERSION_0_3_PUBLIC_FILES, `assets/social/release-${version}.png`]
     : [...CURRENT_PUBLIC_FILES];
   return files.sort();
 }

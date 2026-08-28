@@ -373,6 +373,7 @@ test('compatibility wording stays exact per tested host', async () => {
   assert.equal(evidence.clients.claude.hosts[0]?.status, 'verified');
   assert.equal(evidence.clients.codex.hosts[0]?.status, 'verified');
   assert.equal(evidence.clients.chatgpt.hosts[0]?.status, 'not-run');
+  assert.equal(evidence.clients.chatgpt.hosts[0]?.hostLabel, 'ChatGPT');
   assert.equal(evidence.clients.claude.hosts[1]?.status, 'not-run');
 
   for (const locale of ['en', 'fr', 'es'] as const) {
@@ -405,7 +406,7 @@ test('Codex setup installs the tagged public plugin package before OAuth', async
     );
     assert.equal(
       guide.commands[0],
-      'codex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.2.0',
+      'codex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.3.2',
     );
     assert.equal(guide.commands[1], 'codex plugin add maxvideoai@maxvideoai');
     assert.equal(guide.commands.length, 2);
@@ -413,7 +414,7 @@ test('Codex setup installs the tagged public plugin package before OAuth', async
   }
 });
 
-test('ChatGPT explains the shared plugin directory and keeps the developer-mode MCP fallback honest', async () => {
+test('integration pages offer one truthful copy-paste setup instruction per host', async () => {
   const { getIntegrationCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
   );
@@ -421,45 +422,68 @@ test('ChatGPT explains the shared plugin directory and keeps the developer-mode 
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
 
-  const directoryTerms = {
-    en: /shared plugin directory/i,
-    fr: /répertoire de plugins partagé/i,
-    es: /directorio de plugins compartido/i,
-  } as const;
-  const approvalTerms = {
-    en: /public.*approval|approval.*public/i,
-    fr: /public.*approbation|approbation.*public/i,
-    es: /públic.*aprobación|aprobación.*públic/i,
-  } as const;
-  const positiveStatusTerms = {
-    en: /same plugin.*OAuth|OAuth.*same plugin/i,
-    fr: /même plugin.*OAuth|OAuth.*même plugin/i,
-    es: /mismo plugin.*OAuth|OAuth.*mismo plugin/i,
-  } as const;
-  const documentedLabels = {
-    en: /documented/i,
-    fr: /documenté/i,
-    es: /documentado/i,
-  } as const;
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    for (const client of ['claude', 'chatgpt', 'codex'] as const) {
+      const page = getIntegrationCopy(locale, client);
+      assert.match(page.setup.installAction.copyInstruction, /cop|copi/i);
+      assert.match(page.setup.installAction.copyEndpoint, /address|adresse|direcci/i);
+      for (const guide of page.setup.hostGuides) {
+        assert.match(guide.installInstruction, /MaxVideoAI/);
+        if (guide.hostId === 'codexCli') {
+          assert.match(guide.installInstruction, /codex plugin marketplace add/);
+          assert.match(guide.installInstruction, /codex plugin add/);
+        } else {
+          assert.match(guide.installInstruction, /https:\/\/api\.maxvideoai\.com\/mcp/);
+        }
+      }
+    }
+
+    const chatgptPage = getIntegrationCopy(locale, 'chatgpt');
+    const chatgptGuide = chatgptPage.setup.hostGuides[0];
+    assert.ok(chatgptGuide);
+    assert.equal(chatgptGuide.steps.length, 3);
+    assert.equal(chatgptGuide.steps.every((step) => Boolean(step.proof)), true);
+    assert.equal(chatgptGuide.setupValues[0]?.value, 'https://api.maxvideoai.com/mcp');
+    assert.match(chatgptGuide.setupValues[0]?.label ?? '', /MCP/i);
+    assert.match(chatgptGuide.authTrigger ?? '', /OAuth/i);
+    assert.match(chatgptPage.setup.installAction.detailEyebrow, /detailed|détaillée|detallada/i);
+    assert.match(chatgptPage.setup.installAction.detailTitle, /3|three|trois|tres/i);
+
+    const chatgptMarketing = JSON.stringify({
+      integration: chatgptPage,
+      hubStatus: getMcpPageCopy(locale).trust.compatibility.statuses[chatgptGuide.hostId],
+    });
+    assert.match(chatgptMarketing, /developer|développeur|desarrollador/i);
+    assert.match(
+      chatgptMarketing,
+      /shared plugin|plugin directory|répertoire de plugins partagé|directorio de plugins compartido/i,
+    );
+    assert.match(
+      chatgptMarketing,
+      /public.*approval|approval.*public|public.*approbation|approbation.*public|públic.*aprobación|aprobación.*públic/i,
+    );
+  }
+});
+
+test('the MCP hub carries a pasteable installation instruction for Claude, ChatGPT, and Codex', async () => {
+  const { getMcpPageCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
+  );
 
   for (const locale of ['en', 'fr', 'es'] as const) {
-    const guide = getIntegrationCopy(locale, 'chatgpt').setup.hostGuides[0];
-    assert.ok(guide);
-    assert.match(`${guide.title} ${guide.intro}`, directoryTerms[locale]);
-    assert.equal(guide.steps.length, 3);
-    assert.equal(guide.steps.every((step) => Boolean(step.proof)), true);
-    assert.equal(guide.setupValues[0]?.value, 'https://api.maxvideoai.com/mcp');
-    assert.match(guide.setupValues[0]?.label ?? '', /developer|développeur|desarrollador/i);
-    assert.match(guide.limitation, approvalTerms[locale]);
-    assert.match(guide.authTrigger ?? '', /OAuth/i);
-    const compatibility = getIntegrationCopy(locale, 'chatgpt').compatibility;
-    const compatibilityStatus = compatibility.statuses[guide.hostId];
-    assert.match(compatibility.checkpointLabel, documentedLabels[locale]);
-    assert.match(compatibilityStatus, positiveStatusTerms[locale]);
-    assert.doesNotMatch(compatibilityStatus, /not yet|has not|aucun|pas encore|todavía no|no se ha/i);
-    const hubStatus = getMcpPageCopy(locale).trust.compatibility.statuses[guide.hostId];
-    assert.match(hubStatus, positiveStatusTerms[locale]);
-    assert.doesNotMatch(hubStatus, /not yet|has not|aucun|pas encore|todavía no|no se ha/i);
+    const copy = getMcpPageCopy(locale);
+    assert.match(copy.hero.connectActions.copyInstruction, /cop|copi/i);
+    assert.match(copy.hero.connectActions.instructionBody, /paste|collez|p[eé]ga/i);
+    assert.equal(copy.hero.actions.length, 3);
+    for (const action of copy.hero.actions) {
+      assert.match(action.installInstruction, /MaxVideoAI/);
+      assert.match(
+        action.installInstruction,
+        action.client === 'codex'
+          ? /codex plugin marketplace add/
+          : /https:\/\/api\.maxvideoai\.com\/mcp/,
+      );
+    }
   }
 });
 

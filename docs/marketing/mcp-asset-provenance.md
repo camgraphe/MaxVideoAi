@@ -97,6 +97,11 @@ MaxVideoAI web-app proof only.
         "proofBoundary": "MaxVideoAI web-app result proof with release-gated setup-guide copy; no native host proof."
       },
       {
+        "path": "plugins/maxvideoai/assets/social/release-0.3.2.png",
+        "sourceProofIds": ["maxvideoai-workspace-production"],
+        "proofBoundary": "MaxVideoAI web-app result proof with release-gated setup-guide copy; no native host proof."
+      },
+      {
         "path": "plugins/maxvideoai/assets/social/directory-thumbnail.png",
         "sourceProofIds": ["maxvideoai-workspace-production", "maxvideoai-library-continuity-production"],
         "proofBoundary": "MaxVideoAI workspace and Library continuity proof with release-gated setup-guide copy; no native host proof."

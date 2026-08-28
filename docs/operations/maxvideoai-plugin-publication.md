@@ -15,12 +15,12 @@ the first external mutation.
 The release chain is intentionally narrow:
 
 ```text
-maxvideoai-plugin-v0.3.0 source tag
+maxvideoai-plugin-v0.3.2 source tag
   -> deterministic bundle and SHA-256 manifest
   -> temporary checkout of camgraphe/maxvideoai-plugin
   -> exact-file synchronization and visible Git diff
   -> normal, non-force commit and push
-  -> v0.3.0 public release with ZIP and SHA-256 attachment
+  -> v0.3.2 public release with ZIP and SHA-256 attachment
 ```
 
 `plugins/maxvideoai/` remains the only place to edit plugin content. Never edit a
@@ -108,15 +108,16 @@ all of them by design.
    content, asset, and release-bundle checks.
 5. Create the source tag only on the reviewed release commit. Its name must be
    `maxvideoai-plugin-v<semver>` and its version must equal `VERSION` exactly.
-6. Push the source tag or manually dispatch `Publish MaxVideoAI plugin repository`
-   with that existing tag. A manual dispatch must use the same tag as both its
+6. Push the source tag, then manually dispatch `Publish MaxVideoAI plugin repository`
+   with that existing tag. The explicit dispatch prevents an incomplete publication
+   when the cross-repository token is not configured. Use the same tag as both the
    workflow ref and input so the Environment's tag restriction remains effective:
 
    ```bash
    gh workflow run publish-maxvideoai-plugin.yml \
      --repo camgraphe/MaxVideoAi \
-     --ref maxvideoai-plugin-v0.3.0 \
-     -f source_tag=maxvideoai-plugin-v0.3.0
+     --ref maxvideoai-plugin-v0.3.2 \
+     -f source_tag=maxvideoai-plugin-v0.3.2
    ```
 
    Dispatching from `main` while naming a tag only in the input is rejected.
@@ -151,11 +152,11 @@ migration is implemented and exercised.
 
 ## Release creation
 
-For source tag `maxvideoai-plugin-v0.3.0`, the workflow creates destination release
-`v0.3.0` at the newly published commit. It attaches:
+For source tag `maxvideoai-plugin-v0.3.2`, the workflow creates destination release
+`v0.3.2` at the newly published commit. It attaches:
 
-- `maxvideoai-plugin-0.3.0.zip`;
-- `maxvideoai-plugin-0.3.0.zip.sha256`.
+- `maxvideoai-plugin-0.3.2.zip`;
+- `maxvideoai-plugin-0.3.2.zip.sha256`.
 
 The ZIP is the deterministic archive from the source build, while the public tree
 contains the same release files plus `checksums.json`. Verify the attached archive
@@ -190,10 +191,10 @@ The verified bootstrap state is:
 | Social preview | [GitHub-hosted repository image](https://repository-images.githubusercontent.com/1349419332/e5459224-cdf9-433c-9ccb-44034079a51f) from `assets/social/github-social-preview.png`, 1280×640, SHA-256 `a77684b5c02980246a50df2ae6ae5247d9bd6c03b1dd1f4a2d997c89fee98e07` |
 | Source Environment | `maxvideoai-plugin-publication`; owner review required; deployments restricted to `maxvideoai-plugin-v*` tags |
 | Publication secret | `MAXVIDEOAI_PLUGIN_REPO_TOKEN` not configured: the active CLI credential is broader than the required single-repository token and was deliberately not reused |
-| Public package, tag, workflow run, release | Not published; `0.3.0` remains gated on the coordinated metadata, version, content, token, and final review |
+| Public package, tag, workflow run, release | Not published; `0.3.2` remains gated on the coordinated metadata, version, content, token, and final review |
 
 The welcome Discussion, release pin, destination required checks, and first mirror
-run remain deferred until the reviewed `0.3.0` package is ready. This bootstrap is
+run remain deferred until the reviewed `0.3.2` package is ready. This bootstrap is
 public infrastructure evidence, not an installable-release or host-compatibility
 claim.
 

@@ -31,7 +31,7 @@ const namedLaunchUnits = [
   'Use reference images and video without losing account continuity',
   'Current AI video model decision report, backed by MaxVideoAI catalog data',
   'A real multi-shot campaign budget breakdown',
-  'Plugin release 0.3.0: current proof, platform guides, and public checksums',
+  'Plugin release 0.3.2: current proof, platform guides, and public checksums',
   'Compatibility report: what is verified, what is compatible, and what is not claimed',
 ] as const;
 

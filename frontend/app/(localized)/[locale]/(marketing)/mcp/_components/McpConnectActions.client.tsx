@@ -20,6 +20,10 @@ const clientActionFlags = clientActionFlagsJson as Record<
 
 type CopyStatus = { client: McpClientId; state: 'copied' | 'error' } | null;
 
+function clientLabel(client: McpClientId): string {
+  return client === 'claude' ? 'Claude' : client === 'chatgpt' ? 'ChatGPT' : 'Codex';
+}
+
 function resolvedActions(actions: McpClientActionCopy[]): McpClientActionCopy[] {
   return actions.map((action) => {
     const flag = clientActionFlags[action.client];
@@ -77,6 +81,7 @@ export function McpConnectActions({
   navigate?: (href: string) => void;
 }) {
   const [copyStatus, setCopyStatus] = useState<CopyStatus>(null);
+  const [instructionStatus, setInstructionStatus] = useState<CopyStatus>(null);
   const mountedRef = useRef(true);
   const pendingNavigationRef = useRef<{
     href: string;
@@ -154,9 +159,47 @@ export function McpConnectActions({
     }
   }
 
+  async function copyInstallInstruction(action: McpClientActionCopy) {
+    setInstructionStatus(null);
+    try {
+      await navigator.clipboard.writeText(action.installInstruction);
+      setInstructionStatus({ client: action.client, state: 'copied' });
+    } catch {
+      setInstructionStatus({ client: action.client, state: 'error' });
+    }
+  }
+
   return (
     <div className="rounded-[12px] border border-hairline bg-bg p-3 text-text-primary dark:border-white/[0.12] dark:bg-bg dark:text-white">
       <McpClientActions actions={renderedActions} onActionClick={handleActionClick} />
+      <div className="mt-3 rounded-[10px] border border-text-primary/20 bg-surface p-3 dark:border-white/[0.18] dark:bg-white/[0.045]">
+        <p className="text-[11px] font-semibold uppercase tracking-micro text-text-secondary dark:text-white/68">
+          {copy.instructionLabel}
+        </p>
+        <p className="mt-1 text-sm leading-6 text-text-secondary dark:text-white/68">
+          {copy.instructionBody}
+        </p>
+        <div className="mt-3 grid gap-2 sm:grid-cols-3">
+          {renderedActions.map((action) => (
+            <button
+              key={action.client}
+              type="button"
+              data-copy-install-instructions={action.client}
+              onClick={() => void copyInstallInstruction(action)}
+              className="min-h-11 rounded-[10px] bg-text-primary px-3 text-sm font-semibold text-bg transition hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg dark:bg-white dark:text-black"
+            >
+              {copy.copyInstruction} {clientLabel(action.client)}
+            </button>
+          ))}
+        </div>
+        <p className="mt-2 min-h-5 text-xs text-text-secondary dark:text-white/68" role="status" aria-live="polite">
+          {instructionStatus
+            ? instructionStatus.state === 'copied'
+              ? `${copy.instructionCopied} ${clientLabel(instructionStatus.client)}`
+              : copy.copyError
+            : ''}
+        </p>
+      </div>
       <details className="group mt-3 rounded-[10px] border border-hairline bg-surface p-3 dark:border-white/[0.12] dark:bg-white/[0.045]">
         <summary className="flex cursor-pointer list-none items-center justify-between text-xs font-semibold text-text-secondary marker:content-none dark:text-white/70">
           {copy.endpointLabel}
@@ -174,7 +217,7 @@ export function McpConnectActions({
               onClick={() => void copyEndpoint(action.client)}
               className="min-h-10 rounded-[10px] border border-hairline bg-bg px-3 text-sm font-semibold text-text-primary transition hover:border-border-hover hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg dark:border-white/[0.14] dark:bg-neutral-900 dark:text-white dark:hover:border-white/[0.28]"
             >
-              {copy.copyEndpoint} · {action.client === 'claude' ? 'Claude' : action.client === 'chatgpt' ? 'ChatGPT' : 'Codex'}
+              {copy.copyEndpoint} · {clientLabel(action.client)}
             </button>
           ))}
         </div>

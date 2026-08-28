@@ -75,7 +75,6 @@ const baseExpectedPublicFiles = [
   'skills/plan/references/budget-planning.md',
 ];
 const version03ExpectedPublicFiles = [
-  'assets/social/release-0.3.0.png',
   'docs/discovery.md',
   'server.json',
 ];
@@ -106,7 +105,9 @@ function expectedPublicFilesForVersion(version: string): string[] {
   const [major, minor] = version.split('.').map(Number);
   return [
     ...baseExpectedPublicFiles,
-    ...(major > 0 || minor >= 3 ? version03ExpectedPublicFiles : []),
+    ...(major > 0 || minor >= 3
+      ? [...version03ExpectedPublicFiles, `assets/social/release-${version}.png`]
+      : []),
   ].sort();
 }
 
@@ -211,7 +212,7 @@ test('release builder exports the exact deterministic public surface with checks
   const version = readFileSync(join(bundleRoot, 'VERSION'), 'utf8').trim();
   const codex = JSON.parse(readFileSync(join(bundleRoot, '.codex-plugin/plugin.json'), 'utf8'));
   const claude = JSON.parse(readFileSync(join(bundleRoot, '.claude-plugin/plugin.json'), 'utf8'));
-  assert.match(version, /^\d+\.\d+\.\d+$/);
+  assert.equal(version, '0.3.2');
   assert.equal(codex.version, version);
   assert.equal(claude.version, version);
   assert.equal(codex.skills, './skills/');
@@ -775,7 +776,7 @@ test('release builder rejects an output directory inside its source tree', (t) =
 test('version 0.3.0 requires discovery metadata and its release asset', async (t) => {
   const temporary = mkdtempSync(join(safeTemporaryRoot, 'maxvideoai-plugin-version-gate-'));
   t.after(() => rmSync(temporary, { recursive: true, force: true }));
-  const requiredFiles = version03ExpectedPublicFiles;
+  const requiredFiles = [...version03ExpectedPublicFiles, 'assets/social/release-0.3.0.png'];
 
   for (const [index, missingFile] of requiredFiles.entries()) {
     await t.test(missingFile, () => {

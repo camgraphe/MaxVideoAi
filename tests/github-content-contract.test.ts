@@ -31,7 +31,7 @@ test('the plugin README is a proof-led conversion surface with safe compatibilit
   assert.ok(definitionWords.length >= 40 && definitionWords.length <= 60, `opening definition must be 40–60 words; found ${definitionWords.length}`);
   assert.match(definition, /MaxVideoAI is a multi-model AI video production service exposed through a remote MCP server and packaged for agent workflows/i);
   assert.match(opening, /assets\/demos\/readme-proof-hero\.webp/);
-  assert.match(opening, /codex plugin marketplace add camgraphe\/MaxVideoAi --ref maxvideoai-plugin-v0\.2\.0/);
+  assert.match(opening, /codex plugin marketplace add camgraphe\/MaxVideoAi --ref maxvideoai-plugin-v0\.3\.2/);
   assert.match(opening, /https:\/\/maxvideoai\.com\/docs\/mcp/);
   for (const canonicalUrl of [
     'https://maxvideoai.com/mcp',

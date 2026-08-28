@@ -225,7 +225,7 @@ async function releaseCard() {
   const layers = [
     { input: await solid(460, 530, { r: 5, g: 11, b: 20, alpha: 0.76 }), left: 34, top: 44 },
     { input: await logoLayer(52), left: 58, top: 54 },
-    { input: await textLayer('RELEASE 0.3.0', { width: 330, height: 45, size: 18, color: colors.white, weight: 700 }), left: 132, top: 64 },
+    { input: await textLayer('RELEASE 0.3.2', { width: 330, height: 45, size: 18, color: colors.white, weight: 700 }), left: 132, top: 64 },
     { input: await textLayer(HEADLINE, { width: 420, height: 190, size: 34, color: colors.white, weight: 700 }), left: 58, top: 164 },
     { input: await textLayer(SETUP_GUIDES, { width: 420, height: 50, size: 15, color: '#CBD5E1', weight: 700 }), left: 58, top: 386 },
     { input: await textLayer(RHYTHM, { width: 420, height: 55, size: 15, color: '#CBD5E1', weight: 400 }), left: 58, top: 490 },
@@ -234,7 +234,7 @@ async function releaseCard() {
   const workspace = await fittedImage(paths.workspace, 610, 221);
   await addProof(layers, result, 530, 92, { border: '#15233A', shadowOpacity: 0.42 });
   await addProof(layers, workspace, 530, 376, { border: '#15233A', shadowOpacity: 0.36 });
-  await writeOutput(canvas.composite(layers), path.join(paths.social, 'release-0.3.0.png'), 'png');
+  await writeOutput(canvas.composite(layers), path.join(paths.social, 'release-0.3.2.png'), 'png');
 }
 
 async function directoryThumbnail() {

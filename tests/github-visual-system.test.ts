@@ -24,6 +24,7 @@ const outputDimensions = new Map([
   ['plugins/maxvideoai/assets/demos/library-continuity.webp', [1600, 900]],
   ['plugins/maxvideoai/assets/social/github-social-preview.png', [1280, 640]],
   ['plugins/maxvideoai/assets/social/release-0.3.0.png', [1200, 630]],
+  ['plugins/maxvideoai/assets/social/release-0.3.2.png', [1200, 630]],
   ['plugins/maxvideoai/assets/social/directory-thumbnail.png', [1200, 675]],
 ] as const);
 
@@ -36,7 +37,7 @@ function sha256(bytes: Buffer) {
   return createHash('sha256').update(bytes).digest('hex');
 }
 
-test('ships the seven visual-system outputs at their exact target dimensions', async () => {
+test('ships the eight visual-system outputs at their exact target dimensions', async () => {
   for (const [path, [expectedWidth, expectedHeight]] of outputDimensions) {
     const bytes = readFileSync(path);
     const { width, height } = readImageDimensions(bytes);

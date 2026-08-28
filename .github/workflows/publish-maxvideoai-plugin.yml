@@ -4,12 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       source_tag:
-        description: Source tag to publish (for example maxvideoai-plugin-v0.3.0)
+        description: Source tag to publish (for example maxvideoai-plugin-v0.3.2)
         required: true
         type: string
-  push:
-    tags:
-      - 'maxvideoai-plugin-v*'
 
 concurrency:
   group: maxvideoai-plugin-publication
@@ -98,6 +95,8 @@ jobs:
             tests/maxvideoai-plugin-mirror.test.ts \
             tests/mcp-public-release-bundle.test.ts \
             tests/mcp-plugin-contract.test.ts \
+            tests/mcp-reference-file-import.test.ts \
+            tests/mcp-reference-local-helper.test.ts \
             tests/github-content-contract.test.ts \
             tests/github-assets.test.ts
 

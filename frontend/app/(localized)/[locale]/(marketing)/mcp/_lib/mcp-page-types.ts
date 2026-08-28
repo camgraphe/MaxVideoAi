@@ -8,9 +8,14 @@ export type McpClientActionCopy = {
   href: string;
   label: string;
   supportingLabel: string;
+  installInstruction: string;
 };
 
 export type McpConnectActionsCopy = {
+  instructionLabel: string;
+  instructionBody: string;
+  copyInstruction: string;
+  instructionCopied: string;
   endpointLabel: string;
   copyEndpoint: string;
   copied: string;

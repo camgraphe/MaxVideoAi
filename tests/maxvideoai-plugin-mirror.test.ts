@@ -364,11 +364,10 @@ test('protected publication rebuilds the bundle and refuses a different base or 
   assert.equal(releaseStep?.env?.VERSION, '${{ needs.prepare.outputs.version }}');
 });
 
-test('publication workflow is tag/manual only, pinned, and binds manual dispatch to its tag ref', () => {
+test('publication workflow is manual only, pinned, and binds dispatch to its tag ref', () => {
   const { raw, workflow } = loadWorkflow();
 
-  assert.deepEqual(Object.keys(workflow.on).sort(), ['push', 'workflow_dispatch']);
-  assert.deepEqual((workflow.on.push as { tags: string[] }).tags, ['maxvideoai-plugin-v*']);
+  assert.deepEqual(Object.keys(workflow.on), ['workflow_dispatch']);
   assert.equal(workflow.permissions.contents, 'read');
 
   const actions = Object.values(workflow.jobs)

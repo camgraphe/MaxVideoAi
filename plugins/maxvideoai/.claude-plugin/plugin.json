@@ -1,7 +1,7 @@
 {
   "name": "maxvideoai",
   "displayName": "MaxVideoAI",
-  "version": "0.2.0",
+  "version": "0.3.2",
   "description": "MaxVideoAI is a multi-model AI video production service for planning shots, comparing current models, estimating project budgets, preparing exact quotes, approving paid generations, recovering results, and keeping media in one account library. Packaged for Claude, ChatGPT, Codex, and other MCP hosts; a free-to-connect MaxVideoAI account is required.",
   "author": { "name": "MaxVideoAI", "url": "https://maxvideoai.com" },
   "homepage": "https://maxvideoai.com/mcp",
