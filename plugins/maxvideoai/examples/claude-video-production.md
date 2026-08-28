@@ -24,4 +24,4 @@ Brief → no-spend plan → concrete request → exact quote → explicit approv
 
 If approval and submission already happened, ask for the accepted job’s status or recent generations before considering another paid request. Recover the completed result or refunded outcome from the MaxVideoAI Library. A replacement needs a fresh exact quote and new explicit approval.
 
-Follow the [Claude setup guide](../docs/claude.md), review the [current compatibility evidence](https://maxvideoai.com/docs/mcp), and keep private references in the approved MaxVideoAI workflow.
+Follow the [Claude setup guide](../docs/claude.md), review the [current compatibility evidence](https://maxvideoai.com/mcp?utm_source=github&utm_medium=example&utm_campaign=assistant_video_workflows&utm_content=claude_video_production), and keep private references in the approved MaxVideoAI workflow.

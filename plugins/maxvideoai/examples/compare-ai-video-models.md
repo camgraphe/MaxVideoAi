@@ -26,4 +26,4 @@ Compare named routes → select one concrete shot → receive its exact quote �
 
 If a request was already approved and submitted, check the accepted job or recent generations before preparing another request. Recover the completed result or refunded outcome through the MaxVideoAI Library; a replacement needs a fresh exact quote and new explicit approval.
 
-Read [how the workflow divides responsibility](../docs/how-it-works.md), then compare the [current public model information](https://maxvideoai.com/models). Bring the brief.
+Read [how the workflow divides responsibility](../docs/how-it-works.md), then compare the [current public model information](https://maxvideoai.com/models?utm_source=github&utm_medium=example&utm_campaign=assistant_video_workflows&utm_content=compare_ai_video_models). Bring the brief.

@@ -6,7 +6,7 @@
 
 MaxVideoAI is a multi-model AI video production platform for planning, comparing, pricing, generating, and organizing video work in one place. Bring a brief, choose among current model options, review the price before generation, and keep finished results and reusable references together in your MaxVideoAI Library.
 
-[Try MaxVideoAI](https://maxvideoai.com/app) · [Explore models](https://maxvideoai.com/models) · [Use MaxVideoAI from ChatGPT, Claude & Codex](https://maxvideoai.com/mcp)
+[Plan a video with MaxVideoAI](https://maxvideoai.com/mcp?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=hero_try) · [Compare current models](https://maxvideoai.com/models?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=models) · [Use MaxVideoAI from ChatGPT, Claude & Codex](https://maxvideoai.com/mcp?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=plugin_callout)
 
 [Plugin repository preview — release pending](https://github.com/camgraphe/maxvideoai-plugin)
 

@@ -36,6 +36,8 @@ codex plugin add maxvideoai@maxvideoai
 
 Then start a new Codex task and use `$plan` for a no-spend comparison. Command availability varies by host build; check the [Codex guide](../../plugins/maxvideoai/docs/codex.md) for the current boundary.
 
+[Plan the connected workflow](https://maxvideoai.com/mcp?utm_source=github&utm_medium=release&utm_campaign=assistant_video_plugin_0_3_0&utm_content=release_connect) only after the reviewed release is published; this template itself does not announce a release.
+
 ## Compatibility
 
 [List only a recorded client/version and the cited evidence. State “unverified” where evidence is absent. Protocol support, a package install, and a native-host generation are separate claims.]
@@ -55,5 +57,5 @@ Planning and project budgets do not authorize paid work. A prepared request retu
 
 - Reviewed source tag: [current-version source-tag URL]
 - Checksum asset: [current-version checksum URL and SHA-256]
-- Platform guidance: https://maxvideoai.com/docs/mcp
+- [Current MCP documentation](https://maxvideoai.com/mcp?utm_source=github&utm_medium=release&utm_campaign=assistant_video_plugin_0_3_0&utm_content=release_docs)
 - Publication gate: source tag, checksums, clean install, current visual provenance, compatibility wording, safety boundary, and support links reviewed by the release owner.

@@ -97,7 +97,7 @@ Read [privacy and permissions](docs/privacy-and-permissions.md) for the plain-la
 
 MaxVideoAI is free to connect and has no separate plugin subscription. Sign in or create a MaxVideoAI account during OAuth. Planning and project budgets do not spend credits; approved generations use existing MaxVideoAI credits on a pay-as-you-go basis.
 
-Explore: [MCP overview](https://maxvideoai.com/mcp) · [compare current models](https://maxvideoai.com/models) · [pricing](https://maxvideoai.com/pricing) · [MaxVideoAI Library](https://maxvideoai.com/app/library).
+Explore: [plan your assistant workflow](https://maxvideoai.com/mcp?utm_source=github&utm_medium=repository&utm_campaign=assistant_video_plugin&utm_content=hero_connect) · [compare current models](https://maxvideoai.com/models) · [review current pricing](https://maxvideoai.com/pricing?utm_source=github&utm_medium=repository&utm_campaign=assistant_video_plugin&utm_content=pricing) · [recover work in the MaxVideoAI Library](https://maxvideoai.com/app/library?utm_source=github&utm_medium=repository&utm_campaign=assistant_video_plugin&utm_content=library).
 
 Policies and help: [privacy](https://maxvideoai.com/legal/privacy) · [terms](https://maxvideoai.com/legal/terms) · [contact support](https://maxvideoai.com/contact) · [security](SECURITY.md) · [Business Source License 1.1](LICENSE). You can also email [support@maxvideoai.com](mailto:support@maxvideoai.com).
 

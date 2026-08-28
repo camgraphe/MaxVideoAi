@@ -104,7 +104,7 @@ const EN: McpPageCopy = {
     eyebrow: 'Direct answers',
     title: 'Three useful answers before you connect',
     updatedLabel: 'Capability review',
-    repositoryLabel: 'Inspect the public MaxVideoAI plugin repository',
+    repositoryLabel: 'Inspect the public MaxVideoAI plugin source on GitHub',
     repositoryHref: 'https://github.com/camgraphe/maxvideoai-plugin',
     featured: {
       identity: {
@@ -261,7 +261,7 @@ function frenchCopy(): McpPageCopy {
     },
     answers: {
       eyebrow: 'Réponses directes', title: 'Trois réponses utiles avant de connecter', updatedLabel: 'Revue des capacités',
-      repositoryLabel: 'Consulter le dépôt public du plugin MaxVideoAI',
+      repositoryLabel: 'Consulter le code source public du plugin MaxVideoAI sur GitHub',
       repositoryHref: 'https://github.com/camgraphe/maxvideoai-plugin',
       featured: {
         identity: {
@@ -327,7 +327,7 @@ function spanishCopy(): McpPageCopy {
     budget: { ...EN.budget, eyebrow: 'Presupuesto en la conversación', title: 'Pide un presupuesto para toda la película, no un paquete predefinido', intro: 'Indica si importan más calidad, presupuesto, velocidad, audio o fidelidad de referencias. El asistente puede valorar propuestas concretas, una ruta de calidad y alternativas más baratas creíbles.', exampleLabel: 'Ejemplo de conversación', examplePrompt: '«Presupuesta una película de 60 segundos. La calidad es lo primero, pero muéstrame formas creíbles de reducir el total.»', qualityLabel: 'Propuesta de máxima calidad', qualityBody: 'Usar el mejor modelo ejecutable actual para cada plano —a menudo Seedance 2.5 cuando sus capacidades encajan— y sumar cada plano con sus ajustes y referencias.', valueLabel: 'Alternativas más baratas', valueBody: 'Mantener el mismo brief y comparar solo opciones validadas, como Happy Horse, H3 o LTX cuando encajen. Explicar por plano los compromisos de calidad, movimiento, audio y referencias.', attemptsNote: 'La propuesta separa los renders previstos de un margen opcional para reintentos creativos. Un fallo técnico se sigue y reembolsa; un nuevo intento creativo sigue siendo una decisión nueva.', priceReferencesLabel: 'Referencias de precio actuales por plano', priceReferencesBody: 'Son ejemplos actuales, no paquetes ni una recomendación. El asistente construye el presupuesto real a partir de los planos elegidos.', slotLabels: { included_trial: 'Crédito inicial elegible', lowest_paid: 'Referencia de precio actual', affordable_upgrade: 'Alternativa creativa actual' }, modelLinkLabel: 'Ver detalles actuales', emptyTitle: 'Crea una propuesta en la conversación', emptyBody: 'Describe el vídeo, duración, planos y prioridades. MaxVideoAI valida cada modelo y devuelve un presupuesto comparable con precios actuales.' },
     references: { ...EN.references, eyebrow: 'Producción con referencias', title: 'Mantén la dirección visual y de audio entre planos', intro: 'El asistente puede crear ideas o elegir una referencia de imagen, vídeo o audio. MaxVideoAI comprueba los tipos y límites reales del modelo.', planningBody: 'Planifica sujeto, composición, movimiento, voz y continuidad en la conversación. El asistente conserva libertad creativa y MaxVideoAI aporta restricciones actuales.', liveBody: 'Elige un medio privado o abre una carga segura. Las referencias y resultados permanecen en la misma biblioteca MaxVideoAI que el sitio.', gatedBody: 'Planifica referencias de imagen, vídeo o audio en la conversación y reúne cargas, generación y resultados en tu cuenta MaxVideoAI.', steps: [{ title: 'Crear la dirección', body: 'Desarrolla personaje, producto, composición, movimiento e intención de audio.' }, { title: 'Elegir el modelo', body: 'MaxVideoAI comprueba referencias de imagen, vídeo y audio del modo.' }, { title: 'Revisar todo', body: 'Aprueba prompt, orden de referencias, ajustes y precio exacto.' }] },
     answers: { eyebrow: 'Respuestas directas', title: 'Tres respuestas útiles antes de conectar', updatedLabel: 'Revisión de capacidades',
-      repositoryLabel: 'Consultar el repositorio público del plugin MaxVideoAI',
+      repositoryLabel: 'Consultar el código fuente público del plugin MaxVideoAI en GitHub',
       repositoryHref: 'https://github.com/camgraphe/maxvideoai-plugin',
       featured: {
         identity: {

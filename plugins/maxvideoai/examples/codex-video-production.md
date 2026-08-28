@@ -24,4 +24,4 @@ Install → no-spend plan → compare routes → exact quote → explicit approv
 
 Check the accepted job or recent generations before submitting another paid request. Recover the result or refunded outcome from the MaxVideoAI Library. If the work needs replacing, request a fresh exact quote and give new explicit approval.
 
-Use the [Codex installation guide](../docs/codex.md), then check [current compatibility evidence](https://maxvideoai.com/docs/mcp). Pick up where the conversation left off.
+Use the [Codex installation guide](../docs/codex.md), then check [current compatibility evidence](https://maxvideoai.com/mcp?utm_source=github&utm_medium=example&utm_campaign=assistant_video_workflows&utm_content=codex_video_production). Pick up where the conversation left off.

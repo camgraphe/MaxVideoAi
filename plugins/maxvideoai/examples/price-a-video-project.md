@@ -24,4 +24,4 @@ Shot list → comparable project budgets → concrete request → exact quote �
 
 Change the brief or settings, then request a new quote. An earlier approval does not cover a different request. If a conversation is interrupted after submission, inspect the accepted job before another paid request and recover its result from the MaxVideoAI Library.
 
-Read the [pricing boundary](https://maxvideoai.com/pricing) and [privacy and permissions](../docs/privacy-and-permissions.md) before connecting a host.
+Read the [pricing boundary](https://maxvideoai.com/pricing?utm_source=github&utm_medium=example&utm_campaign=assistant_video_workflows&utm_content=price_a_video_project) and [privacy and permissions](../docs/privacy-and-permissions.md) before connecting a host.

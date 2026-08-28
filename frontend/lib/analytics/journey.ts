@@ -218,7 +218,9 @@ function mergeJourneyPayload(
   payload: Record<string, unknown>,
   owned: Record<string, unknown>,
 ): Record<string, unknown> {
-  const merged = { ...payload };
+  const merged = Object.fromEntries(
+    Object.entries(payload).filter(([key]) => !/(?:prompt|media|asset|token|account|user|email|referrer|url)/i.test(key)),
+  );
   for (const key of JOURNEY_PAYLOAD_KEYS) delete merged[key];
   return { ...merged, ...owned };
 }
