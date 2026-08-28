@@ -147,7 +147,7 @@ test('unauthenticated requests receive RFC 9728 resource metadata guidance', asy
     response.headers.get('www-authenticate'),
     'Bearer resource_metadata="https://api.maxvideoai.com/.well-known/oauth-protected-resource/mcp"'
   );
-  assert.equal(response.headers.get('cache-control'), 'private, no-store');
+  assert.equal(response.headers.get('cache-control'), 'private, no-store, no-transform');
   assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow');
   assert.doesNotMatch(await response.text(), /access-token|Bearer authentication is required/);
 });
@@ -176,7 +176,7 @@ test('authenticated initialize uses stateless Streamable HTTP and private cachin
   const payload = await response.json();
 
   assert.equal(response.status, 200);
-  assert.equal(response.headers.get('cache-control'), 'private, no-store');
+  assert.equal(response.headers.get('cache-control'), 'private, no-store, no-transform');
   assert.equal(response.headers.get('mcp-session-id'), null);
   assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow');
   assert.equal(payload.jsonrpc, '2.0');

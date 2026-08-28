@@ -313,12 +313,12 @@ test('protocol and discovery responses stay private and absent from public disco
   const apiHostHeaders = { Host: 'api.maxvideoai.com' };
   const canonicalProtocol = await request.get('/mcp', { headers: apiHostHeaders });
   expect(canonicalProtocol.status()).toBe(401);
-  expect(canonicalProtocol.headers()['cache-control']).toBe('private, no-store');
+  expect(canonicalProtocol.headers()['cache-control']).toBe('private, no-store, no-transform');
   expect(canonicalProtocol.headers()['x-robots-tag']).toBe('noindex, nofollow');
 
   const protocol = await request.get('/api/mcp', { headers: apiHostHeaders });
   expect(protocol.status()).toBe(401);
-  expect(protocol.headers()['cache-control']).toBe('private, no-store');
+  expect(protocol.headers()['cache-control']).toBe('private, no-store, no-transform');
   expect(protocol.headers()['x-robots-tag']).toBe('noindex, nofollow');
 
   const protectedResource = await request.get('/.well-known/oauth-protected-resource/mcp', {

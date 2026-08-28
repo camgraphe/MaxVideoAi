@@ -22,7 +22,7 @@ import { withMcpNoindexHeaders } from '@/server/mcp/response-headers';
 import type { TrialRiskRequestContext } from '@/server/agent-api/prepare-generation';
 
 const MAX_BODY_BYTES = 128 * 1024;
-const PRIVATE_CACHE_CONTROL = 'private, no-store';
+const PRIVATE_CACHE_CONTROL = 'private, no-store, no-transform';
 const SUPPORTED_METHODS = new Set(['GET', 'POST', 'DELETE']);
 
 export type McpHttpHandlerDeps = {
