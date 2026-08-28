@@ -243,12 +243,12 @@ function chatgptPluginProofs(locale: AppLocale): [IntegrationStepProof, Integrat
 function installInstruction(locale: AppLocale, hostId: McpCompatibilityHostId): string {
   if (hostId === 'codexCli') {
     if (locale === 'fr') {
-      return 'Installe le plugin MaxVideoAI pour moi avec ces commandes, puis guide-moi pour connecter mon compte :\ncodex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.2.0\ncodex plugin add maxvideoai@maxvideoai';
+      return 'Installe le plugin MaxVideoAI pour moi avec ces commandes, puis guide-moi pour connecter mon compte :\ncodex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.3.0\ncodex plugin add maxvideoai@maxvideoai';
     }
     if (locale === 'es') {
-      return 'Instala el plugin MaxVideoAI por mí con estos comandos y guíame para conectar mi cuenta:\ncodex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.2.0\ncodex plugin add maxvideoai@maxvideoai';
+      return 'Instala el plugin MaxVideoAI por mí con estos comandos y guíame para conectar mi cuenta:\ncodex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.3.0\ncodex plugin add maxvideoai@maxvideoai';
     }
-    return 'Install the MaxVideoAI plugin for me with these commands, then guide me through connecting my account:\ncodex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.2.0\ncodex plugin add maxvideoai@maxvideoai';
+    return 'Install the MaxVideoAI plugin for me with these commands, then guide me through connecting my account:\ncodex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.3.0\ncodex plugin add maxvideoai@maxvideoai';
   }
 
   const host = hostId === 'claudeCode' ? 'Claude Code' : hostId === 'claudeDesktop' ? 'Claude' : 'ChatGPT';
@@ -388,7 +388,7 @@ function englishGuides(client: McpClientId): IntegrationHostGuide[] {
       ],
       commandLabel: 'Codex plugin commands',
       commands: [
-        'codex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.2.0',
+        'codex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.3.0',
         'codex plugin add maxvideoai@maxvideoai',
       ],
       setupValues: [],
@@ -470,7 +470,7 @@ function frenchGuides(client: McpClientId): IntegrationHostGuide[] {
       ],
       commandLabel: 'Commandes du plugin Codex',
       commands: [
-        'codex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.2.0',
+        'codex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.3.0',
         'codex plugin add maxvideoai@maxvideoai',
       ],
       setupValues: [],
@@ -552,7 +552,7 @@ function spanishGuides(client: McpClientId): IntegrationHostGuide[] {
       ],
       commandLabel: 'Comandos del plugin de Codex',
       commands: [
-        'codex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.2.0',
+        'codex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.3.0',
         'codex plugin add maxvideoai@maxvideoai',
       ],
       setupValues: [],

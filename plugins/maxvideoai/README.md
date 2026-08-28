@@ -65,7 +65,7 @@ Use the reviewed release tag so the marketplace definition, skills, and MCP
 connection stay on the same version:
 
 ```sh
-codex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.2.0
+codex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.3.0
 codex plugin add maxvideoai@maxvideoai
 ```
 

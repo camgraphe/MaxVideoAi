@@ -75,7 +75,7 @@ test('release builder exports a deterministic public plugin archive with checksu
   const version = readFileSync(join(bundleRoot, 'VERSION'), 'utf8').trim();
   const codex = JSON.parse(readFileSync(join(bundleRoot, '.codex-plugin/plugin.json'), 'utf8'));
   const claude = JSON.parse(readFileSync(join(bundleRoot, '.claude-plugin/plugin.json'), 'utf8'));
-  assert.equal(version, '0.2.0');
+  assert.equal(version, '0.3.0');
   assert.equal(codex.version, version);
   assert.equal(claude.version, version);
   assert.equal(codex.skills, './skills/');

@@ -73,7 +73,7 @@ test('the MaxVideoAI plugin has thin Codex and Claude package adapters', () => {
   assert.equal(marketplacePlugins.length, 1);
   assert.equal(marketplacePlugins[0]?.name, 'maxvideoai');
   assert.equal(marketplacePlugins[0]?.source, './');
-  assert.equal(marketplacePlugins[0]?.version, undefined);
+  assert.equal(marketplacePlugins[0]?.version, packageVersion);
   assert.equal(marketplacePlugins[0]?.skills, undefined);
   assert.deepEqual(marketplacePlugins[0]?.keywords, codex.keywords);
   assert.deepEqual(claude.keywords, codex.keywords);
@@ -218,7 +218,7 @@ test('the package explains the customer-facing account and library journey', () 
   assert.match(readme, /private.*(?:attachment|generated result).*asset/is);
   assert.match(readme, /Codex.*Claude Code.*local helper|local helper.*Codex.*Claude Code/is);
   assert.match(readme, /without.*public URL.*Computer Use/is);
-  assert.match(readme, /codex plugin marketplace add camgraphe\/MaxVideoAi --ref maxvideoai-plugin-v0\.2\.0/);
+  assert.match(readme, /codex plugin marketplace add camgraphe\/MaxVideoAi --ref maxvideoai-plugin-v0\.3\.0/);
   assert.match(readme, /codex plugin add maxvideoai@maxvideoai/);
   assert.doesNotMatch(readme, /does not establish online availability|does not verify an online connection|branch package/i);
 

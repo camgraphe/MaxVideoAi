@@ -8,6 +8,7 @@
   "plugins": [
     {
       "name": "maxvideoai",
+      "version": "0.3.0",
       "source": "./",
       "description": "Plan, compare, budget, and generate AI video or images with live MaxVideoAI models, exact quotes, and explicit approval before paid work.",
       "author": {

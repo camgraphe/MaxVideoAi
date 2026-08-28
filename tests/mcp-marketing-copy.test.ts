@@ -294,7 +294,7 @@ test('Codex setup installs the tagged public plugin package before OAuth', async
     );
     assert.equal(
       guide.commands[0],
-      'codex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.2.0',
+      'codex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.3.0',
     );
     assert.equal(guide.commands[1], 'codex plugin add maxvideoai@maxvideoai');
     assert.equal(guide.commands.length, 2);

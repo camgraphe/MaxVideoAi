@@ -16,12 +16,12 @@ function clientActions(
   const instruction = (client: McpClientActionCopy['client']) => {
     if (client === 'codex') {
       if (locale === 'fr') {
-        return 'Installe le plugin MaxVideoAI pour moi avec ces commandes, puis guide-moi pour connecter mon compte :\ncodex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.2.0\ncodex plugin add maxvideoai@maxvideoai';
+        return 'Installe le plugin MaxVideoAI pour moi avec ces commandes, puis guide-moi pour connecter mon compte :\ncodex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.3.0\ncodex plugin add maxvideoai@maxvideoai';
       }
       if (locale === 'es') {
-        return 'Instala el plugin MaxVideoAI por mí con estos comandos y guíame para conectar mi cuenta:\ncodex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.2.0\ncodex plugin add maxvideoai@maxvideoai';
+        return 'Instala el plugin MaxVideoAI por mí con estos comandos y guíame para conectar mi cuenta:\ncodex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.3.0\ncodex plugin add maxvideoai@maxvideoai';
       }
-      return 'Install the MaxVideoAI plugin for me with these commands, then guide me through connecting my account:\ncodex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.2.0\ncodex plugin add maxvideoai@maxvideoai';
+      return 'Install the MaxVideoAI plugin for me with these commands, then guide me through connecting my account:\ncodex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.3.0\ncodex plugin add maxvideoai@maxvideoai';
     }
     const clientLabel = client === 'claude' ? 'Claude' : 'ChatGPT';
     if (locale === 'fr') return `Connecte MaxVideoAI dans ${clientLabel} avec ce serveur MCP et guide-moi jusqu’à la connexion : ${MCP_PRODUCTION_RESOURCE_URL}`;

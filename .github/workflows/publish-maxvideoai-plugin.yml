@@ -1,0 +1,292 @@
+name: Publish MaxVideoAI plugin repository
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_tag:
+        description: Source tag to publish (for example maxvideoai-plugin-v0.3.0)
+        required: true
+        type: string
+
+concurrency:
+  group: maxvideoai-plugin-publication
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    name: Prepare and expose public diff
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      base_sha: ${{ steps.prepared.outputs.base_sha }}
+      source_sha: ${{ steps.release.outputs.source_sha }}
+      tree: ${{ steps.prepared.outputs.tree }}
+      version: ${{ steps.release.outputs.version }}
+    env:
+      PUBLIC_REPOSITORY: camgraphe/maxvideoai-plugin
+      PUBLIC_CHECKOUT: ${{ runner.temp }}/maxvideoai-plugin-public
+      RELEASE_OUTPUT: ${{ runner.temp }}/maxvideoai-plugin-release
+      SOURCE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.source_tag || github.ref_name }}
+    steps:
+      - name: Checkout the tagged source
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.source_tag || github.ref }}
+
+      - name: Verify source tag and version parity
+        id: release
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && "$GITHUB_REF" != "refs/tags/$SOURCE_TAG" ]]; then
+            echo "Manual publication must be dispatched with --ref $SOURCE_TAG" >&2
+            exit 1
+          fi
+          if [[ ! "$SOURCE_TAG" =~ ^maxvideoai-plugin-v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            echo "Expected a maxvideoai-plugin-v<semver> source tag" >&2
+            exit 1
+          fi
+          VERSION="${BASH_REMATCH[1]}"
+          if ! git show-ref --verify --quiet "refs/tags/$SOURCE_TAG"; then
+            echo "The requested source tag does not exist in this checkout" >&2
+            exit 1
+          fi
+          SOURCE_SHA="$(git rev-parse HEAD)"
+          TAG_SHA="$(git rev-list -n 1 "$SOURCE_TAG")"
+          if [[ "$SOURCE_SHA" != "$TAG_SHA" ]]; then
+            echo "The checkout does not match the requested source tag" >&2
+            exit 1
+          fi
+          PACKAGE_VERSION="$(tr -d '\r\n' < plugins/maxvideoai/VERSION)"
+          if [[ "$PACKAGE_VERSION" != "$VERSION" ]]; then
+            echo "Tag version $VERSION does not match plugin VERSION $PACKAGE_VERSION" >&2
+            exit 1
+          fi
+          echo "source_sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+          package-manager-cache: false
+
+      - name: Enable pnpm
+        shell: bash
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.18.2 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify plugin and release contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
+            tests/maxvideoai-plugin-mirror.test.ts \
+            tests/mcp-public-release-bundle.test.ts \
+            tests/mcp-plugin-contract.test.ts \
+            tests/mcp-reference-file-import.test.ts \
+            tests/mcp-reference-local-helper.test.ts
+
+      - name: Build deterministic release bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/build-maxvideoai-plugin-release.mjs \
+            --source plugins/maxvideoai \
+            --out "$RELEASE_OUTPUT"
+
+      - name: Checkout dedicated public repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --branch main --single-branch \
+            "https://github.com/$PUBLIC_REPOSITORY.git" \
+            "$PUBLIC_CHECKOUT"
+
+      - name: Synchronize exact public file set
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/sync-maxvideoai-plugin-repository.mjs \
+            --source "$RELEASE_OUTPUT/maxvideoai-plugin" \
+            --target "$PUBLIC_CHECKOUT"
+
+      - name: Stage and expose the complete public diff
+        id: prepared
+        shell: bash
+        run: |
+          set -euo pipefail
+          git -C "$PUBLIC_CHECKOUT" status --short
+          git -C "$PUBLIC_CHECKOUT" add -A
+          git -C "$PUBLIC_CHECKOUT" diff --cached --check
+          git -C "$PUBLIC_CHECKOUT" diff --cached --stat
+          git -C "$PUBLIC_CHECKOUT" diff --cached
+          echo "base_sha=$(git -C "$PUBLIC_CHECKOUT" rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "tree=$(git -C "$PUBLIC_CHECKOUT" write-tree)" >> "$GITHUB_OUTPUT"
+
+  publish:
+    name: Publish approved public tree
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: maxvideoai-plugin-publication
+    env:
+      PREPARED_BASE_SHA: ${{ needs.prepare.outputs.base_sha }}
+      PREPARED_SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
+      PREPARED_TREE: ${{ needs.prepare.outputs.tree }}
+      PUBLIC_REPOSITORY: camgraphe/maxvideoai-plugin
+      PUBLIC_CHECKOUT: ${{ runner.temp }}/maxvideoai-plugin-public
+      RELEASE_OUTPUT: ${{ runner.temp }}/maxvideoai-plugin-release
+      SOURCE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.source_tag || github.ref_name }}
+      VERSION: ${{ needs.prepare.outputs.version }}
+    steps:
+      - name: Checkout the approved tagged source
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.source_tag || github.ref }}
+
+      - name: Verify approved source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && "$GITHUB_REF" != "refs/tags/$SOURCE_TAG" ]]; then
+            echo "Manual publication must be dispatched with --ref $SOURCE_TAG" >&2
+            exit 1
+          fi
+          if [[ "$(git rev-parse HEAD)" != "$PREPARED_SOURCE_SHA" ]]; then
+            echo "Source tag changed after preparation; refusing to publish" >&2
+            exit 1
+          fi
+          if [[ "$(tr -d '\r\n' < plugins/maxvideoai/VERSION)" != "$VERSION" ]]; then
+            echo "Plugin version changed after preparation; refusing to publish" >&2
+            exit 1
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+          package-manager-cache: false
+
+      - name: Rebuild deterministic release bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/build-maxvideoai-plugin-release.mjs \
+            --source plugins/maxvideoai \
+            --out "$RELEASE_OUTPUT"
+
+      - name: Re-checkout dedicated public repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --branch main --single-branch \
+            "https://github.com/$PUBLIC_REPOSITORY.git" \
+            "$PUBLIC_CHECKOUT"
+
+      - name: Re-synchronize and match approved tree
+        id: public_commit
+        shell: bash
+        env:
+          SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
+        run: |
+          set -euo pipefail
+          BASE_SHA="$(git -C "$PUBLIC_CHECKOUT" rev-parse HEAD)"
+          if [[ "$BASE_SHA" != "$PREPARED_BASE_SHA" ]]; then
+            echo "Public base changed after preparation; refusing to publish" >&2
+            exit 1
+          fi
+          node scripts/sync-maxvideoai-plugin-repository.mjs \
+            --source "$RELEASE_OUTPUT/maxvideoai-plugin" \
+            --target "$PUBLIC_CHECKOUT"
+          git -C "$PUBLIC_CHECKOUT" add -A
+          git -C "$PUBLIC_CHECKOUT" diff --cached --check
+          REBUILT_TREE="$(git -C "$PUBLIC_CHECKOUT" write-tree)"
+          if [[ "$REBUILT_TREE" != "$PREPARED_TREE" ]]; then
+            echo "Rebuilt public tree differs from the reviewed tree; refusing to publish" >&2
+            exit 1
+          fi
+          if git -C "$PUBLIC_CHECKOUT" diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git -C "$PUBLIC_CHECKOUT" config user.name "MaxVideoAI release bot"
+            git -C "$PUBLIC_CHECKOUT" config user.email "release-bot@users.noreply.github.com"
+            git -C "$PUBLIC_CHECKOUT" commit \
+              -m "chore: publish MaxVideoAI plugin v$VERSION" \
+              -m "Source: camgraphe/MaxVideoAi@$SOURCE_SHA"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+          echo "sha=$(git -C "$PUBLIC_CHECKOUT" rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Refuse remote drift and push public commit
+        shell: bash
+        env:
+          MAXVIDEOAI_PLUGIN_REPO_TOKEN: ${{ secrets.MAXVIDEOAI_PLUGIN_REPO_TOKEN }}
+          CHANGED: ${{ steps.public_commit.outputs.changed }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$MAXVIDEOAI_PLUGIN_REPO_TOKEN" ]]; then
+            echo "MAXVIDEOAI_PLUGIN_REPO_TOKEN is required" >&2
+            exit 1
+          fi
+          export GH_TOKEN="$MAXVIDEOAI_PLUGIN_REPO_TOKEN"
+          gh auth setup-git
+          git -C "$PUBLIC_CHECKOUT" fetch origin main
+          REMOTE_SHA="$(git -C "$PUBLIC_CHECKOUT" rev-parse origin/main)"
+          if [[ "$REMOTE_SHA" != "$PREPARED_BASE_SHA" ]]; then
+            echo "Public repository changed after checkout; refusing to publish" >&2
+            exit 1
+          fi
+          if [[ "$CHANGED" == "true" ]]; then
+            git -C "$PUBLIC_CHECKOUT" push origin HEAD:main
+          fi
+
+      - name: Create matching public release
+        shell: bash
+        env:
+          MAXVIDEOAI_PLUGIN_REPO_TOKEN: ${{ secrets.MAXVIDEOAI_PLUGIN_REPO_TOKEN }}
+          PUBLIC_SHA: ${{ steps.public_commit.outputs.sha }}
+          SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$MAXVIDEOAI_PLUGIN_REPO_TOKEN" ]]; then
+            echo "MAXVIDEOAI_PLUGIN_REPO_TOKEN is required" >&2
+            exit 1
+          fi
+          export GH_TOKEN="$MAXVIDEOAI_PLUGIN_REPO_TOKEN"
+          RELEASE_TAG="v$VERSION"
+          TAG_REFERENCES="$(git -C "$PUBLIC_CHECKOUT" ls-remote --tags origin \
+            "refs/tags/$RELEASE_TAG" \
+            "refs/tags/$RELEASE_TAG^{}")"
+          DIRECT_SHA="$(printf '%s\n' "$TAG_REFERENCES" | \
+            awk -v ref="refs/tags/$RELEASE_TAG" '$2 == ref { print $1; exit }')"
+          PEELED_SHA="$(printf '%s\n' "$TAG_REFERENCES" | \
+            awk -v ref="refs/tags/$RELEASE_TAG^{}" '$2 == ref { print $1; exit }')"
+          EXISTING_TAG_SHA="${PEELED_SHA:-$DIRECT_SHA}"
+          if [[ -n "$EXISTING_TAG_SHA" && "$EXISTING_TAG_SHA" != "$PUBLIC_SHA" ]]; then
+            echo "Public tag $RELEASE_TAG already points to another commit; refusing to publish" >&2
+            exit 1
+          fi
+          if gh release view "$RELEASE_TAG" --repo "$PUBLIC_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $RELEASE_TAG already exists; refusing to replace it" >&2
+            exit 1
+          fi
+          gh release create "$RELEASE_TAG" \
+            "$RELEASE_OUTPUT/maxvideoai-plugin-$VERSION.zip" \
+            "$RELEASE_OUTPUT/maxvideoai-plugin-$VERSION.zip.sha256" \
+            --repo "$PUBLIC_REPOSITORY" \
+            --target "$PUBLIC_SHA" \
+            --title "MaxVideoAI plugin v$VERSION" \
+            --notes "Generated from camgraphe/MaxVideoAi@$SOURCE_SHA. Verify the attached SHA-256 file before installation."

@@ -1,6 +1,6 @@
 {
   "name": "maxvideoai",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Plan and generate AI video or images with live model facts, exact quotes, and approval before paid work. A MaxVideoAI account is required and free to connect.",
   "author": { "name": "MaxVideoAI", "url": "https://maxvideoai.com" },
   "homepage": "https://maxvideoai.com/mcp",

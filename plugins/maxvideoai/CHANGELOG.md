@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0 — 2026-08-28
+
+- Import private reference images and videos into the MaxVideoAI media library
+  without publishing them on a public URL.
+- Add the reviewed `import_reference_files` workflow and local helper for Codex
+  and Claude Code, with multi-file support and returned library asset IDs.
+- Keep the browser upload handoff as a manual fallback for hosts that cannot pass
+  private files directly.
+- Preserve exact quotes and explicit approval before every paid generation.
+
 ## 0.2.0 — 2026-08-27
 
 - Add separate `plan` and `generate` workflow skills for Codex and Claude Code.
