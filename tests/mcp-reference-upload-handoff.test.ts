@@ -120,6 +120,13 @@ test('create_reference_upload_link is gated, strict, non-destructive, and open-w
       assert.equal(receivedPrincipal, principal);
       return expected;
     },
+    async importReferenceFiles() {
+      return {
+        assets: [],
+        failures: [],
+        library: expected.library,
+      };
+    },
   };
   const server = createMaxVideoAiMcpServer(principal, services, {
     paidGeneration: false,

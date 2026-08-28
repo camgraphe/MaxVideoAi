@@ -1,7 +1,7 @@
 ---
 name: generate
 description: |
-  Prepare, approve, generate, present, and recover AI video or images through the connected MaxVideoAI account. Use when: "generate this", "animate this image", "use my reference", "quote this request", "create the video", "check my job", "show my result", or when a selected MaxVideoAI request is ready for exact pricing. Chain from plan after a model is chosen, or use directly when the request is already concrete. NOT for: open-ended model comparison or multi-shot project budgeting before a request is selected (use plan).
+  Execute a concrete AI video or image request through the connected MaxVideoAI account. Use when: a selected AI video or image request needs an exact price or exact quote, explicit approval of a fresh quote, a generation action, job status, result presentation, or result recovery. Chain from plan after a model is chosen, or use directly when the request is already concrete. NOT for: open-ended project planning, model comparison, or a budget or pricing estimate before a request is selected (use plan).
 ---
 
 # Generate with MaxVideoAI
@@ -35,13 +35,22 @@ craft; it is not evidence of current
 MaxVideoAI availability, settings, pricing, or execution. The live contract is
 authoritative for those facts.
 
-For references, first call `list_media` by image, video, or audio kind. When an
-asset is missing, call `create_reference_upload_link` for that kind and send the
-exact returned browser destination. Wait for the user to say the upload is
-complete, then call `list_media` again and let them select the private asset.
-If `create_reference_upload_link` fails, is denied, or is unavailable, explain
-that the MaxVideoAI handoff could not be created and ask the user to authorize or
-retry it. Do not offer a host attachment or local attachment as a substitute.
+For an existing library reference, call `list_media` by image, video, or audio
+kind. For new user-authorized host attachments or an authorized generation
+result with temporary file handles, call `import_reference_files` once with up
+to eight files. Preserve input order and use its returned asset IDs directly;
+do not call `list_media` after a successful direct import. Keep successful IDs
+from a partial batch and retry only the failed files. Never invent a file URL.
+
+When the host cannot expose a file handle, call
+`create_reference_upload_link` for the required kind. A compatible UI host can
+render its short-lived in-chat multi-file importer; otherwise send the exact
+browser destination as the manual fallback. In Codex or Claude Code, create one
+link per local file and run the packaged local helper. It reads local bytes and
+returns asset IDs without sending a raw local path to the MCP server, publishing
+a public URL, or using Computer Use. After the browser fallback, call
+`list_media`; after the in-chat importer or helper, use returned IDs directly.
+If the link tool fails, ask the user to authorize or retry the handoff.
 
 Required typed references must be private MaxVideoAI assets so their metadata
 can be verified. Do not replace them with an arbitrary external URL. Read
@@ -107,3 +116,5 @@ show the fresh exact quote, and wait for explicit approval before confirmation.
 - Lost response or timeout: recover status; never duplicate a paid request.
 - Equivalent technical failure twice: stop and report the concrete live error.
 - Browser handoff: use the exact returned URL and never claim the user completed it.
+- Direct or local import: never expose capability links, local paths, or raw IDs
+  in normal chat; report the human file names and whether each reference is ready.

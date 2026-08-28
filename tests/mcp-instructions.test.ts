@@ -49,6 +49,9 @@ const services = {
   async createReferenceUploadLink() {
     throw new Error('unused');
   },
+  async importReferenceFiles() {
+    throw new Error('unused');
+  },
 } satisfies MaxVideoAiMcpServices;
 
 async function getInstructions(options: MaxVideoAiMcpServerOptions): Promise<string> {
@@ -146,12 +149,17 @@ test('instructions cover all video workflows and distinguish private media selec
   assert.match(instructions, /existing private.*image.*video.*audio/i);
   assert.match(instructions, /filter.*media kind/i);
   assert.match(instructions, /do not upload.*with list_media/i);
+  assert.match(instructions, /use import_reference_files/i);
+  assert.match(instructions, /host-(?:provided|authorized).*(?:file|attachment)|authorized generation result/i);
+  assert.match(instructions, /returned.*asset IDs.*(?:directly|without.*list_media)/i);
   assert.match(instructions, /use create_reference_upload_link/i);
   assert.match(instructions, /requested (?:image|media) kind/i);
-  assert.match(instructions, /short-lived.*browser handoff/i);
-  assert.match(instructions, /create_reference_upload_link.*(?:fails|denied|unavailable).*?(?:host attachment|local attachment)/i);
+  assert.match(instructions, /short-lived.*(?:in-chat|browser|local helper)/i);
+  assert.match(instructions, /local.*helper.*(?:raw local path|public URL)|(?:raw local path|public URL).*local.*helper/i);
+  assert.match(instructions, /create_reference_upload_link.*(?:fails|denied|unavailable).*authorize|authorize.*create_reference_upload_link/is);
   assert.match(instructions, /does not create reference (?:images|media)/i);
-  assert.match(instructions, /upload.*saved.*same connected MaxVideoAI library.*list_media/is);
+  assert.match(instructions, /fallback.*saved.*same connected MaxVideoAI library.*list_media/is);
+  assert.doesNotMatch(instructions, /never substitute a host attachment or local attachment/i);
 });
 
 test('instructions recommend from live executable facts without hardcoded model hype', async () => {

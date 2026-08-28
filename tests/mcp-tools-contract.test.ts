@@ -400,7 +400,7 @@ test('paid prepare schema exposes canonical settings and accepts full video refe
   assert.deepEqual(preparedInputs.map((input) => record(input).mode), ['v2v', 'extend']);
 });
 
-test('all fourteen operational tools expose strict schemas and reject unknown keys before handlers', async (t) => {
+test('all fifteen operational tools expose strict schemas and reject unknown keys before handlers', async (t) => {
   const calls = new Map<string, number>();
   const called = (name: string) => calls.set(name, (calls.get(name) ?? 0) + 1);
   const operationalServices = services({
@@ -411,6 +411,7 @@ test('all fourteen operational tools expose strict schemas and reject unknown ke
     calculateProjectBudget: async () => { called('calculate_project_budget'); return projectBudget; },
     listMedia: async () => { called('list_media'); return { items: [], nextCursor: null, hasMore: false }; },
     createReferenceUploadLink: async () => { called('create_reference_upload_link'); return {} as never; },
+    importReferenceFiles: async () => { called('import_reference_files'); return {} as never; },
     prepareGeneration: async () => { called('prepare_generation'); return {} as never; },
     confirmGeneration: async () => { called('confirm_generation'); return {} as never; },
     getGenerationStatus: async () => { called('get_generation_status'); return {} as never; },
@@ -442,6 +443,12 @@ test('all fourteen operational tools expose strict schemas and reject unknown ke
     idempotentHint: false,
     openWorldHint: false,
   });
+  assert.deepEqual(tools.get('import_reference_files')?.annotations, {
+    readOnlyHint: false,
+    destructiveHint: false,
+    idempotentHint: false,
+    openWorldHint: true,
+  });
   assert.deepEqual(tools.get('prepare_generation')?.annotations, {
     readOnlyHint: false,
     destructiveHint: false,
@@ -461,6 +468,7 @@ test('all fourteen operational tools expose strict schemas and reject unknown ke
   });
   assert.match(tools.get('list_media')?.description ?? '', /image, video, or audio.*filter.*kind/is);
   assert.match(tools.get('create_reference_upload_link')?.description ?? '', /requested.*media kind/i);
+  assert.match(tools.get('import_reference_files')?.description ?? '', /host.*(?:attachment|file handle).*asset IDs/is);
   assert.match(tools.get('prepare_generation')?.description ?? '', /t2v.*i2v.*ref2v.*v2v.*extend/is);
   const validArguments: Record<string, Record<string, unknown>> = {
     get_account_status: {},
@@ -482,6 +490,14 @@ test('all fourteen operational tools expose strict schemas and reject unknown ke
     },
     list_media: {},
     create_reference_upload_link: { kind: 'image' },
+    import_reference_files: {
+      files: [{
+        download_url: 'https://files.openai.example/private/reference',
+        file_id: 'file-reference',
+        mime_type: 'image/png',
+        file_name: 'reference.png',
+      }],
+    },
     prepare_generation: {
       surface: 'video',
       engineId: 'seedance-2-5',

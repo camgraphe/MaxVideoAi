@@ -28,7 +28,12 @@ import {
   stageReferenceUploadAttempt,
   type ReferenceUploadAttempt,
 } from '@/server/agent-api/reference-upload-attempts';
-import { claimUploadSessionForUpload, completeUploadSession, getOwnedUploadSession } from '@/server/agent-api/reference-upload-sessions';
+import {
+  claimUploadSessionForUpload,
+  completeUploadSession,
+  getOwnedUploadSession,
+  getUploadSessionByToken,
+} from '@/server/agent-api/reference-upload-sessions';
 import { isSameOriginConsentRequest } from '@/server/mcp/oauth-consent';
 import { deleteStorageObjectKey, getStorageObjectBuffer, uploadFileBufferToKey } from '@/server/storage';
 import { ImageUploadError, loadStoredImageUploadRouteAsset, storeImageUpload } from '@/server/uploads/store-image-upload';
@@ -43,9 +48,37 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0
 const SHA_PATTERN = /^[a-f0-9]{64}$/u;
 
 function headers(): HeadersInit {
-  return { 'Cache-Control': 'private, no-store', 'X-Robots-Tag': 'noindex, nofollow', 'X-Content-Type-Options': 'nosniff' };
+  return {
+    'Access-Control-Allow-Origin': '*',
+    'Cache-Control': 'private, no-store',
+    'X-Robots-Tag': 'noindex, nofollow',
+    'X-Content-Type-Options': 'nosniff',
+  };
 }
 function json(body: Record<string, unknown>, status: number): NextResponse { return NextResponse.json(body, { status, headers: headers() }); }
+
+export function createReferenceUploadOptionsHandler(
+  overrides: Pick<Partial<CommonDependencies>, 'isEnabled'> = {},
+) {
+  const isEnabled = overrides.isEnabled ?? commonDefaults.isEnabled;
+  return async (request: NextRequest): Promise<NextResponse> => {
+    if (!isEnabled(request)) return json({ ok: false, error: 'NOT_FOUND' }, 404);
+    return new NextResponse(null, {
+      status: 204,
+      headers: {
+        ...headers(),
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': [
+          'Authorization',
+          'Content-Type',
+          'X-Upload-ID',
+          'X-Part-Number',
+          'X-Content-SHA256',
+        ].join(', '),
+      },
+    });
+  };
+}
 
 class BoundedBodyError extends Error {}
 class MalformedJsonError extends Error {}
@@ -101,17 +134,27 @@ type CommonDependencies = {
   isSameOriginRequest(request: NextRequest): boolean;
   getStoragePrefix(request: NextRequest): string;
   getRouteAuthContext: typeof getRouteAuthContext;
+  getUploadSessionByToken: typeof getUploadSessionByToken;
   withTransaction<T>(callback: (executor: TransactionQueryExecutor) => Promise<T>): Promise<T>;
   now(): Date;
 };
 const commonDefaults: CommonDependencies = {
   isEnabled: () => false, isSameOriginRequest: isSameOriginConsentRequest, getRouteAuthContext,
+  getUploadSessionByToken,
   getStoragePrefix: () => MCP_REFERENCE_PRODUCTION_STORAGE_PREFIX,
   withTransaction: (callback) => withDbTransaction(callback), now: () => new Date(),
 };
 
-async function authorize(request: NextRequest, dependencies: CommonDependencies): Promise<string | NextResponse> {
+async function authorize(
+  request: NextRequest,
+  dependencies: CommonDependencies,
+  token: string,
+): Promise<string | NextResponse> {
   if (!dependencies.isEnabled(request)) return json({ ok: false, error: 'NOT_FOUND' }, 404);
+  if (request.headers.get('authorization') === `Bearer ${token}`) {
+    const session = await dependencies.getUploadSessionByToken(token);
+    return session?.userId ?? json({ ok: false, error: 'REFERENCE_NOT_FOUND' }, 404);
+  }
   if (!dependencies.isSameOriginRequest(request)) return json({ ok: false, error: 'FORBIDDEN' }, 403);
   const { userId } = await dependencies.getRouteAuthContext(request);
   return userId ?? json({ ok: false, error: 'AUTH_REQUIRED' }, 401);
@@ -124,10 +167,10 @@ export function createReferenceUploadStartHandler(overrides: Partial<CommonDepen
 }> = {}) {
   const dependencies = { ...commonDefaults, getOwnedUploadSession, claimUploadSessionForUpload, createReferenceUploadAttempt, ...overrides };
   return async (request: NextRequest, context: RouteContext): Promise<NextResponse> => {
-    const authorized = await authorize(request, dependencies);
+    const { token } = await context.params;
+    const authorized = await authorize(request, dependencies, token);
     if (typeof authorized !== 'string') return authorized;
     const userId = authorized;
-    const { token } = await context.params;
     try {
       const owned = await dependencies.getOwnedUploadSession({ token, userId });
       if (!owned) throw new AgentApiError('REFERENCE_NOT_FOUND', 'Reference upload session not found.');
@@ -195,10 +238,10 @@ export function createReferenceUploadPartHandler(overrides: Partial<PartDependen
     uploadFileBufferToKey, deleteStorageObjectKey, ...overrides,
   };
   return async (request: NextRequest, context: RouteContext): Promise<NextResponse> => {
-    const authorized = await authorize(request, dependencies);
+    const { token } = await context.params;
+    const authorized = await authorize(request, dependencies, token);
     if (typeof authorized !== 'string') return authorized;
     const userId = authorized;
-    const { token } = await context.params;
     try {
       const uploadId = request.headers.get('x-upload-id');
       const partNumber = Number(request.headers.get('x-part-number'));
@@ -292,10 +335,10 @@ export function createReferenceUploadCompleteHandler(overrides: Partial<Completi
     ...overrides,
   };
   return async (request: NextRequest, context: RouteContext): Promise<NextResponse> => {
-    const authorized = await authorize(request, dependencies);
+    const { token } = await context.params;
+    const authorized = await authorize(request, dependencies, token);
     if (typeof authorized !== 'string') return authorized;
     const userId = authorized;
-    const { token } = await context.params;
     let leased: ReferenceUploadAttempt | null = null;
     let stopLeaseHeartbeat: (() => Promise<void>) | null = null;
     try {
@@ -410,7 +453,7 @@ export function createReferenceUploadCompleteHandler(overrides: Partial<Completi
           if (leased!.session.mediaKind === 'image') {
             const stored = await dependencies.storeImageUpload({
               userId, fileName: leased!.fileName, declaredMime: leased!.declaredMime,
-              bytes, cleanupObjects, signal,
+              bytes, storageAcl: null, storageCacheControl: 'private, no-store', cleanupObjects, signal,
             });
             checkpoint();
             const image = await dependencies.loadStoredImageUploadRouteAsset({ userId, assetId: stored.assetId });
@@ -424,11 +467,13 @@ export function createReferenceUploadCompleteHandler(overrides: Partial<Completi
             const stored = leased!.session.mediaKind === 'video'
               ? await dependencies.storeVideoUpload({
                   userId, fileName: leased!.fileName, declaredMime: leased!.declaredMime,
-                  bytes, referenceEligibility: 'mcp', cleanupObjects, signal,
+                  bytes, referenceEligibility: 'mcp', storageAcl: null,
+                  storageCacheControl: 'private, no-store', cleanupObjects, signal,
                 })
               : await dependencies.storeAudioUpload({
                   userId, fileName: leased!.fileName, declaredMime: leased!.declaredMime,
-                  bytes, referenceEligibility: 'mcp', cleanupObjects, signal,
+                  bytes, referenceEligibility: 'mcp', storageAcl: null,
+                  storageCacheControl: 'private, no-store', cleanupObjects, signal,
                 });
             finalizedAssetId = stored.assetId;
           }
@@ -515,10 +560,10 @@ export function createReferenceUploadAbortHandler(overrides: Partial<PartDepende
     uploadFileBufferToKey, deleteStorageObjectKey, ...overrides,
   };
   return async (request: NextRequest, context: RouteContext): Promise<NextResponse> => {
-    const authorized = await authorize(request, dependencies);
+    const { token } = await context.params;
+    const authorized = await authorize(request, dependencies, token);
     if (typeof authorized !== 'string') return authorized;
     const userId = authorized;
-    const { token } = await context.params;
     try {
       const body = await readBoundedJson(request);
       if (typeof body.uploadId !== 'string' || !UUID_PATTERN.test(body.uploadId)) return json({ ok: false, error: 'REFERENCE_INVALID' }, 400);

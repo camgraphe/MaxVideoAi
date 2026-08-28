@@ -123,6 +123,7 @@ function baseServices(overrides: Record<string, unknown> = {}): MaxVideoAiMcpSer
     async listModels() { return []; },
     async recommendModels() { return { recommendations: [], nextAction: 'clarify_requirements' }; },
     async createReferenceUploadLink() { throw new Error('unused'); },
+    async importReferenceFiles() { return { assets: [], failures: [] }; },
     ...overrides,
   } as MaxVideoAiMcpServices;
 }

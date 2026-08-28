@@ -52,7 +52,11 @@ test('conversation eval corpus covers imperfect multilingual user journeys witho
     entry.category === 'recovery'
       && entry.expectedTools.includes('list_recent_generations')
   ));
-  assert.ok(cases.some((entry) => entry.checks.includes('does_not_substitute_host_attachment')));
+  assert.ok(cases.some((entry) =>
+    entry.expectedTools.includes('import_reference_files')
+      && entry.checks.includes('imports_host_files_privately')
+      && entry.checks.includes('uses_returned_asset_ids_without_relisting')
+  ));
   assert.ok(cases.some((entry) => entry.checks.includes('labels_missing_asset_price_as_estimate')));
   assert.ok(cases.some((entry) => entry.checks.includes('treats_expires_at_as_utc')));
 });

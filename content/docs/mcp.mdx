@@ -2,7 +2,7 @@
 title: "MaxVideoAI app for ChatGPT, Claude connector, and MCP guide"
 description: "Connect MaxVideoAI to ChatGPT, Claude or Codex with OAuth, compare live video models, budget a film, use references, approve the exact price and recover results."
 date: "2026-07-14"
-updatedAt: "2026-08-27"
+updatedAt: "2026-08-28"
 authorId: "adrien-millot"
 image: "/og/price-before.png"
 keywords:
@@ -62,6 +62,7 @@ Quality is not a single preset. For multi-shot work, the assistant may compare a
 | `calculate_project_budget` | Compare one to four complete project proposals at current prices. | No. An estimate is not a quote. |
 | `list_media` | List the connected user's ready private image, video, or audio assets. | No. |
 | `create_reference_upload_link` | Create a short-lived private MaxVideoAI browser upload handoff. | Creates a handoff, never a provider job. |
+| `import_reference_files` | Import up to eight user-authorized host attachments or generated file results into the private library. | Stores private assets; never starts a generation. |
 | `prepare_generation` | Validate model, settings, references, ownership, and balance; return an exact short-lived quote. | No charge and no generation. |
 | `confirm_generation` | Approve one exact quote and submit its job idempotently. | Yes, only after explicit approval. |
 | `get_generation_status` | Read a known job, completion, output, failure, and refund state. | No. |
@@ -75,7 +76,9 @@ Production publication flags decide which write-capable tools are exposed. A cli
 
 The assistant may help invent, create, or select reference media. MaxVideoAI accepts and stores the media but does not require the assistant to surrender its creative role.
 
-Use `list_media` for an asset already in the connected MaxVideoAI library. For a new file, call `create_reference_upload_link` with `image`, `video`, or `audio`; the user opens the returned HTTPS page, uploads there, and then asks the assistant to list that media kind again.
+Use `list_media` for an asset already in the connected MaxVideoAI library. When ChatGPT or another compatible host exposes user-authorized attachments or a generated file result, `import_reference_files` imports up to eight files and returns private `assetId` values ready for the request; no new library listing is needed.
+
+If the host does not expose file handles, call `create_reference_upload_link` with `image`, `video`, or `audio`. A compatible ChatGPT or Claude surface can display its in-chat multi-file importer. The returned HTTPS browser page remains the manual fallback. Codex and Claude Code can use one link per local file with the packaged helper. No path sends a raw local filename to the MCP server, publishes a public URL, or requires Computer Use.
 
 Always call `get_model_details` for the selected mode. It returns the accepted media kinds, roles, order, counts, formats, sizes, and duration limits. Do not copy reference rules from a different model. Private source URLs and stable `assetId` values stay inside the account boundary.
 

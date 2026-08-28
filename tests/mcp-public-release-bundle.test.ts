@@ -62,6 +62,7 @@ test('release builder exports a deterministic public plugin archive with checksu
     'VERSION',
     'assets/logo-mark.svg',
     'checksums.json',
+    'scripts/import-reference-files.mjs',
     'skills/generate/SKILL.md',
     'skills/generate/agents/openai.yaml',
     'skills/generate/references/generation-safety.md',

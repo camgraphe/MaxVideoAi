@@ -14,6 +14,8 @@ plugin for Codex. The remote MCP server is the shared technical connection.
   credible lower-cost alternatives.
 - Budget a complete film with one model or a deliberate shot-by-shot mix.
 - Validate prompts, settings, and private image, video, or audio references.
+- Import private host attachments and compatible generated results directly as
+  reusable MaxVideoAI assets, including ordered batches of up to eight files.
 - Use a reviewed official provider prompting guide when one is available for
   the selected model, while keeping MaxVideoAI live details authoritative.
 - Show the exact price and wait for explicit approval before generation.
@@ -37,6 +39,25 @@ result, not a separate customer job.
 Claude Code exposes these workflows as `/maxvideoai:plan` and
 `/maxvideoai:generate`. Claude can also route to them from a natural-language
 request. Codex discovers the same two skills from the installed plugin.
+
+## Private reference imports
+
+The generation skill chooses the shortest private path the current host can
+actually complete:
+
+- ChatGPT can pass user-authorized attachments or compatible generated file
+  results directly to MaxVideoAI. The returned private asset IDs are ready for
+  the quote without re-listing the library.
+- Compatible ChatGPT or Claude surfaces can render the short-lived in-chat
+  importer and accept up to eight files. The browser handoff remains available
+  when the host cannot render the app.
+- Codex and Claude Code can create one short-lived handoff per local file and
+  run the packaged local helper. The helper reads each file locally and sends
+  only its bytes and base filename to MaxVideoAI.
+
+These paths work without a public URL or Computer Use. Private source files
+remain in the connected MaxVideoAI library, and temporary upload links are
+single-use and expire automatically.
 
 ## Install in Codex
 

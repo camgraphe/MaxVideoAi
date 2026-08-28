@@ -29,6 +29,7 @@ export const LIVE_TOOL_NAMES = [
 export const FUTURE_GATED_TOOL_NAMES = [
   'list_media',
   'create_reference_upload_link',
+  'import_reference_files',
   'prepare_generation',
   'confirm_generation',
   'get_generation_status',

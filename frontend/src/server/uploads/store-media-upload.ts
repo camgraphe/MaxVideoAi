@@ -65,6 +65,8 @@ export type StoreMediaUploadInput = {
   declaredMime: string | null;
   bytes: Buffer;
   referenceEligibility?: 'workspace' | 'mcp';
+  storageAcl?: string | null;
+  storageCacheControl?: string;
   cleanupObjects?: {
     beforeUpload(entry: { objectRole: 'final' | 'thumbnail'; objectKey: string; safeToDelete: boolean }): Promise<void>;
     retain(objectKey: string): Promise<void>;
@@ -181,6 +183,8 @@ function createStoreMediaUploadService(
         userId: input.userId,
         prefix: 'user-assets',
         contentAddressed: true,
+        ...(input.storageAcl !== undefined ? { acl: input.storageAcl } : {}),
+        ...(input.storageCacheControl !== undefined ? { cacheControl: input.storageCacheControl } : {}),
         beforeUpload: async (objectKey: string) => {
           input.signal?.throwIfAborted();
           producerClaim = await dependencies.claimStorageObjectProducer({ objectKey });
@@ -221,6 +225,8 @@ function createStoreMediaUploadService(
             data: input.bytes,
             userId: input.userId,
             fileName: input.fileName,
+            ...(input.storageAcl !== undefined ? { acl: input.storageAcl } : {}),
+            ...(input.storageCacheControl !== undefined ? { cacheControl: input.storageCacheControl } : {}),
             ...(input.cleanupObjects ? {
               beforeUpload: async (objectKey: string) => {
                 cleanupThumbnailKey = objectKey;

@@ -16,6 +16,7 @@ const TOOLS = [
   'calculate_project_budget',
   'list_media',
   'create_reference_upload_link',
+  'import_reference_files',
   'prepare_generation',
   'confirm_generation',
   'get_generation_status',
@@ -35,7 +36,7 @@ test('localized guides expose current metadata, OAuth, and the copyable producti
     assert.match(markdown, /^title:\s*['"].+['"]$/m);
     assert.match(markdown, /^description:\s*['"].+['"]$/m);
     assert.match(markdown, /^date:\s*['"]2026-07-14['"]$/m);
-    assert.match(markdown, /^updatedAt:\s*['"]2026-08-27['"]$/m);
+    assert.match(markdown, /^updatedAt:\s*['"]2026-08-28['"]$/m);
     assert.match(markdown, /^authorId:\s*['"]adrien-millot['"]$/m);
     assert.match(markdown, /^slug:\s*['"]mcp['"]$/m);
     assert.match(markdown, /```text\s+https:\/\/api\.maxvideoai\.com\/mcp\s+```/);
@@ -50,7 +51,7 @@ test('localized guides expose current metadata, OAuth, and the copyable producti
   }
 });
 
-test('all thirteen tools and their safety boundaries are documented in every locale', () => {
+test('all fourteen model-visible tools and their safety boundaries are documented in every locale', () => {
   for (const path of Object.values(DOCS)) {
     const markdown = source(path);
     for (const tool of TOOLS) assert.match(markdown, new RegExp('`' + tool + '`'));
@@ -63,6 +64,9 @@ test('all thirteen tools and their safety boundaries are documented in every loc
     assert.match(markdown, /refund|rembours|reembols/i);
     assert.match(markdown, /inline|intégr|integr/i);
     assert.match(markdown, /fallback|repli|alternativ/i);
+    assert.match(markdown, /up to eight|jusqu[’']à huit|hasta ocho/i);
+    assert.match(markdown, /public URL|URL publique|URL pública/i);
+    assert.match(markdown, /Computer Use/i);
   }
 });
 

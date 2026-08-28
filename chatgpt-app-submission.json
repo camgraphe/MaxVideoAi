@@ -4,7 +4,7 @@
   "app_info": {
     "display_name": "MaxVideoAI",
     "subtitle": "Plan and generate AI media",
-    "description": "MaxVideoAI helps users compare current AI video and image models, calculate project budgets, select private references, receive exact quotes, explicitly approve paid generations, recover jobs, and open completed media in their MaxVideoAI library.",
+    "description": "MaxVideoAI helps users compare current AI video and image models, calculate project budgets, import private reference files, receive exact quotes, explicitly approve paid generations, recover jobs, and open completed media in their MaxVideoAI library.",
     "category": "DESIGN"
   },
   "tools": {
@@ -62,6 +62,14 @@
         "read_only_justification": "Creates a short-lived private upload session in the connected MaxVideoAI account.",
         "open_world_justification": "The session and eventual upload remain private inside MaxVideoAI and do not publish external content.",
         "destructive_justification": "Creates a new one-use handoff without overwriting or deleting an existing asset."
+      }
+    },
+    "import_reference_files": {
+      "annotations": { "readOnlyHint": false, "openWorldHint": true, "destructiveHint": false },
+      "justifications": {
+        "read_only_justification": "Downloads user-authorized temporary host file handles and creates reusable private assets in the connected MaxVideoAI library.",
+        "open_world_justification": "Retrieves only the attachment or generated file result explicitly supplied by ChatGPT, with bounded HTTPS and network-address validation.",
+        "destructive_justification": "Creates new private assets without overwriting or deleting existing media and never submits a generation or spends credits."
       }
     },
     "prepare_generation": {
@@ -136,6 +144,14 @@
       "file_attachment_urls": null,
       "tools_triggered": "list_media, create_reference_upload_link",
       "expected_output": "Lists safe private image metadata or returns the exact one-use MaxVideoAI upload destination, then waits for upload completion.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Import attached private references and prepare an exact quote.",
+      "user_prompt": "Use these attached private images as ordered references for the selected model, import them into my MaxVideoAI library, and show the exact quote without generating.",
+      "file_attachment_urls": null,
+      "tools_triggered": "get_model_details, import_reference_files, prepare_generation",
+      "expected_output": "Imports the authorized files, reuses the returned private asset IDs without re-listing the library, shows the exact quote, and stops before paid confirmation.",
       "expected_output_url": null
     },
     {

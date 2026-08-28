@@ -20,6 +20,8 @@ type UploadThumbnailParams = {
   data: Buffer;
   userId?: string | null;
   fileName?: string | null;
+  acl?: string | null;
+  cacheControl?: string;
   beforeUpload?: (key: string) => Promise<void>;
   signal?: AbortSignal;
 };
@@ -72,6 +74,8 @@ export async function createUploadImageThumbnail(params: UploadThumbnailParams):
       userId: params.userId ?? undefined,
       prefix: 'user-asset-thumbs',
       fileName: `${baseName(params.fileName)}-thumb.webp`,
+      ...(params.acl !== undefined ? { acl: params.acl } : {}),
+      ...(params.cacheControl !== undefined ? { cacheControl: params.cacheControl } : {}),
       beforeUpload: params.beforeUpload,
       ...(params.signal ? { signal: params.signal } : {}),
     });
@@ -109,6 +113,8 @@ export async function createUploadVideoThumbnail(params: UploadThumbnailParams):
       userId: params.userId ?? undefined,
       prefix: 'user-asset-thumbs',
       fileName: `${baseName(params.fileName)}-thumb.jpg`,
+      ...(params.acl !== undefined ? { acl: params.acl } : {}),
+      ...(params.cacheControl !== undefined ? { cacheControl: params.cacheControl } : {}),
       beforeUpload: params.beforeUpload,
       ...(params.signal ? { signal: params.signal } : {}),
     });

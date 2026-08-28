@@ -27,6 +27,16 @@ For GPT Image edits, use only the returned image roles such as `source`,
 dimensions. For `auto`, use a private owned reference so dimensions can be
 verified before quoting.
 
-When an asset is absent, request a browser upload destination for the correct
-media kind. Wait for the user to finish, re-list that kind, and let them select
-the asset. Never invent an upload URL or claim the browser step completed.
+When an asset is absent, prefer `import_reference_files` for user-authorized
+host attachments or generated results that expose temporary file handles. It
+accepts up to eight files and returns private asset IDs in input order. Keep
+successful IDs on a partial batch, retry only failed files, and do not re-list
+the library after a successful direct import.
+
+If the host cannot expose a file handle, request a short-lived upload
+destination for the correct media kind. A compatible host may render an in-chat
+multi-file importer. The browser page is the manual fallback. Codex and Claude
+Code may create one destination per local file and run the packaged helper so
+the local path never reaches the MCP server. Never publish private references
+at a public URL, invent an upload URL, or depend on Computer Use. Re-list only
+after the browser fallback; the in-chat importer and helper return usable IDs.

@@ -383,5 +383,27 @@
     "expectedTools": ["prepare_generation"],
     "prohibitedTools": ["confirm_generation"],
     "checks": ["treats_expires_at_as_utc", "does_not_falsely_label_fresh_quote_expired", "stops_before_paid_action"]
+  },
+  {
+    "id": "en-import-four-private-attachments",
+    "language": "en",
+    "style": "imperfect",
+    "category": "generate",
+    "prompt": "these 4 pngs are attached use them as private seedance refs then quote it dont generate yet",
+    "expectedSkill": "generate",
+    "expectedTools": ["get_model_details", "import_reference_files", "prepare_generation"],
+    "prohibitedTools": ["create_reference_upload_link", "list_media", "confirm_generation"],
+    "checks": ["imports_host_files_privately", "uses_returned_asset_ids_without_relisting", "stops_before_paid_action"]
+  },
+  {
+    "id": "fr-reutilise-image-generee",
+    "language": "fr",
+    "style": "natural",
+    "category": "generate",
+    "prompt": "Réutilise directement l'image que tu viens de générer comme référence privée MaxVideoAI, puis prépare seulement le devis.",
+    "expectedSkill": "generate",
+    "expectedTools": ["get_model_details", "import_reference_files", "prepare_generation"],
+    "prohibitedTools": ["create_reference_upload_link", "list_media", "confirm_generation"],
+    "checks": ["imports_authorized_generation_result", "uses_returned_asset_ids_without_relisting", "stops_before_paid_action"]
   }
 ]

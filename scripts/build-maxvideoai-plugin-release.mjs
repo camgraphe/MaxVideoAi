@@ -24,6 +24,7 @@ const PUBLIC_FILES = [
   'SECURITY.md',
   'VERSION',
   'assets/logo-mark.svg',
+  'scripts/import-reference-files.mjs',
   'skills/generate/SKILL.md',
   'skills/generate/agents/openai.yaml',
   'skills/generate/references/generation-safety.md',

@@ -16,6 +16,7 @@ const allowedTools = new Set([
   'calculate_project_budget',
   'list_media',
   'create_reference_upload_link',
+  'import_reference_files',
   'prepare_generation',
   'confirm_generation',
   'get_generation_status',
@@ -150,7 +151,7 @@ test('the plugin packages self-contained outcome skills with explicit routing bo
     const referenceFiles = readdirSync(referencesRoot).sort();
     assert.deepEqual([...new Set(linkedReferences)].sort(), referenceFiles, `${skillName} references must resolve without orphans`);
 
-    const toolNames = skill.match(/\b(?:get_account_status|list_models|get_model_details|recommend_models|calculate_project_budget|list_media|create_reference_upload_link|prepare_generation|confirm_generation|get_generation_status|list_recent_generations|present_generation|create_topup_link)\b/g) ?? [];
+    const toolNames = skill.match(/\b(?:get_account_status|list_models|get_model_details|recommend_models|calculate_project_budget|list_media|create_reference_upload_link|import_reference_files|prepare_generation|confirm_generation|get_generation_status|list_recent_generations|present_generation|create_topup_link)\b/g) ?? [];
     assert.ok(toolNames.length > 0);
     for (const tool of toolNames) assert.ok(allowedTools.has(tool), `unknown tool ${tool}`);
   }
@@ -176,8 +177,11 @@ test('planning and execution skills preserve distinct decisions and paid-action 
   assert.doesNotMatch(plan, /\bconfirm_generation\b/);
 
   assert.match(generate, /get_model_details/);
-  assert.match(generate, /list_media.*create_reference_upload_link/is);
-  assert.match(generate, /create_reference_upload_link.*(?:fails|denied|unavailable).*?(?:host attachment|local attachment)/is);
+  assert.match(generate, /list_media.*import_reference_files.*create_reference_upload_link/is);
+  assert.match(generate, /import_reference_files.*(?:host|attachment|generation result).*asset IDs/is);
+  assert.match(generate, /create_reference_upload_link.*(?:in-chat|browser|local helper)/is);
+  assert.match(generate, /local helper.*(?:raw local path|public URL)|(?:raw local path|public URL).*local helper/is);
+  assert.doesNotMatch(generate, /never substitute a host attachment or local attachment/i);
   assert.match(generate, /required.*(?:reference|asset).*missing.*exact quote.*estimate/is);
   assert.match(generate, /expiresAt.*UTC.*QUOTE_EXPIRED/is);
   assert.match(generate, /image.*video.*audio.*reference/is);
@@ -211,6 +215,9 @@ test('the package explains the customer-facing account and library journey', () 
   assert.match(readme, /\/maxvideoai:plan/i);
   assert.match(readme, /\/maxvideoai:generate/i);
   assert.match(readme, /Try asking/i);
+  assert.match(readme, /private.*(?:attachment|generated result).*asset/is);
+  assert.match(readme, /Codex.*Claude Code.*local helper|local helper.*Codex.*Claude Code/is);
+  assert.match(readme, /without.*public URL.*Computer Use/is);
   assert.match(readme, /codex plugin marketplace add camgraphe\/MaxVideoAi --ref maxvideoai-plugin-v0\.2\.0/);
   assert.match(readme, /codex plugin add maxvideoai@maxvideoai/);
   assert.doesNotMatch(readme, /does not establish online availability|does not verify an online connection|branch package/i);

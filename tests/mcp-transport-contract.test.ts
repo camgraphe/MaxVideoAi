@@ -202,6 +202,7 @@ test('exact hosted staging exposes the complete operational tool inventory', asy
       'get_generation_download',
       'get_generation_status',
       'get_model_details',
+      'import_reference_files',
       'list_media',
       'list_models',
       'list_recent_generations',
@@ -223,6 +224,7 @@ test('operational tool audit records only approved names and coarse failure outc
       'create_topup_link',
       'list_media',
       'create_reference_upload_link',
+      'import_reference_files',
     ];
     for (const [index, name] of operationalTools.entries()) {
       const response = await handleMcpHttpRequest(
