@@ -184,7 +184,7 @@ test('integration heroes lead with visual product evidence and link directly to 
   assert.doesNotMatch(preview, /autoPlay/);
 });
 
-test('verified integration setup steps use small, captioned, real-host captures', async () => {
+test('ChatGPT and Codex reuse the same small, captioned OpenAI plugin captures', async () => {
   const setup = requireFile(`${integrationComponentsRoot}/IntegrationSetupSection.tsx`);
   assert.match(setup, /import Image from ['"]next\/image['"]/);
   assert.match(setup, /step\.proof/);
@@ -205,15 +205,31 @@ test('verified integration setup steps use small, captioned, real-host captures'
 
     const claudeCode = getIntegrationCopy(locale, 'claude').setup.hostGuides[1];
     assert.equal(claudeCode?.steps.some((step) => step.proof), false);
+    const expectedOpenAiPluginCaptures = [
+      '/media/mcp/codex-plugin-page.jpg',
+      '/media/mcp/codex-plugin-installed.jpg',
+      '/media/mcp/codex-plugin-account.jpg',
+    ];
     const chatgpt = getIntegrationCopy(locale, 'chatgpt').setup.hostGuides[0];
-    assert.equal(chatgpt?.steps.some((step) => step.proof), false);
+    assert.equal(chatgpt?.steps.length, 3);
+    assert.deepEqual(
+      chatgpt?.steps.map((step) => step.proof?.src),
+      expectedOpenAiPluginCaptures,
+    );
+    for (const step of chatgpt?.steps ?? []) {
+      assert.equal(existsSync(`frontend/public${step.proof?.src}`), true);
+      assert.match(step.proof?.caption ?? '', /shared|partag|compartid/i);
+    }
 
     const codex = getIntegrationCopy(locale, 'codex').setup.hostGuides[0];
     assert.equal(codex?.steps.length, 3);
-    assert.equal(codex?.steps.every((step) => step.proof), true);
+    assert.deepEqual(
+      codex?.steps.map((step) => step.proof?.src),
+      expectedOpenAiPluginCaptures,
+    );
     for (const step of codex?.steps ?? []) {
       assert.equal(existsSync(`frontend/public${step.proof?.src}`), true);
-      assert.match(step.proof?.caption ?? '', /production|producción/i);
+      assert.match(step.proof?.caption ?? '', /shared|partag|compartid/i);
     }
   }
 });

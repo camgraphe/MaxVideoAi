@@ -300,3 +300,53 @@ test('Codex setup installs the tagged public plugin package before OAuth', async
     assert.match(guide.limitation, /plan.*generate|plan.*génér|plan.*gener/i);
   }
 });
+
+test('ChatGPT explains the shared plugin directory and keeps the developer-mode MCP fallback honest', async () => {
+  const { getIntegrationCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
+  );
+  const { getMcpPageCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
+  );
+
+  const directoryTerms = {
+    en: /shared plugin directory/i,
+    fr: /répertoire de plugins partagé/i,
+    es: /directorio de plugins compartido/i,
+  } as const;
+  const approvalTerms = {
+    en: /public.*approval|approval.*public/i,
+    fr: /public.*approbation|approbation.*public/i,
+    es: /públic.*aprobación|aprobación.*públic/i,
+  } as const;
+  const positiveStatusTerms = {
+    en: /same plugin.*OAuth|OAuth.*same plugin/i,
+    fr: /même plugin.*OAuth|OAuth.*même plugin/i,
+    es: /mismo plugin.*OAuth|OAuth.*mismo plugin/i,
+  } as const;
+  const documentedLabels = {
+    en: /documented/i,
+    fr: /documenté/i,
+    es: /documentado/i,
+  } as const;
+
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const guide = getIntegrationCopy(locale, 'chatgpt').setup.hostGuides[0];
+    assert.ok(guide);
+    assert.match(`${guide.title} ${guide.intro}`, directoryTerms[locale]);
+    assert.equal(guide.steps.length, 3);
+    assert.equal(guide.steps.every((step) => Boolean(step.proof)), true);
+    assert.equal(guide.setupValues[0]?.value, 'https://api.maxvideoai.com/mcp');
+    assert.match(guide.setupValues[0]?.label ?? '', /developer|développeur|desarrollador/i);
+    assert.match(guide.limitation, approvalTerms[locale]);
+    assert.match(guide.authTrigger ?? '', /OAuth/i);
+    const compatibility = getIntegrationCopy(locale, 'chatgpt').compatibility;
+    const compatibilityStatus = compatibility.statuses[guide.hostId];
+    assert.match(compatibility.checkpointLabel, documentedLabels[locale]);
+    assert.match(compatibilityStatus, positiveStatusTerms[locale]);
+    assert.doesNotMatch(compatibilityStatus, /not yet|has not|aucun|pas encore|todavía no|no se ha/i);
+    const hubStatus = getMcpPageCopy(locale).trust.compatibility.statuses[guide.hostId];
+    assert.match(hubStatus, positiveStatusTerms[locale]);
+    assert.doesNotMatch(hubStatus, /not yet|has not|aucun|pas encore|todavía no|no se ha/i);
+  }
+});
