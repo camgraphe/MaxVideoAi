@@ -34,6 +34,7 @@
     "pricing:audit": "tsx --tsconfig frontend/tsconfig.json scripts/pricing-audit.ts",
     "architecture:audit": "node scripts/audit-large-files.mjs",
     "github:score": "node scripts/github-content-score.mjs",
+    "github:content:check": "node scripts/check-github-content.mjs README.md plugins/maxvideoai/README.md",
     "github:assets:check": "node scripts/check-github-assets.mjs",
     "github:assets:release-check": "node scripts/check-github-assets.mjs --release",
     "qa:mcp-launch:gated": "node scripts/run-mcp-launch-fixture.mjs --mode gated",

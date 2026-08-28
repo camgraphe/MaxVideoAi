@@ -57,6 +57,16 @@ test('the plugin README is a proof-led conversion surface with safe compatibilit
   assert.equal(result.status, 0, result.stderr);
 });
 
+test('the root README passes the shared editorial-rhythm checker', () => {
+  const readmePath = path.join(repositoryRoot, 'README.md');
+  const result = spawnSync(process.execPath, [checkerPath, readmePath], {
+    cwd: repositoryRoot,
+    encoding: 'utf8',
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+});
+
 test('all plugin guides exist and preserve the no-Markdown-table safety invariant', () => {
   const docsRoot = path.join(repositoryRoot, 'plugins', 'maxvideoai', 'docs');
   const guideNames = [
