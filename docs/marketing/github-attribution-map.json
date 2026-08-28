@@ -27,7 +27,7 @@
     "github_release": {
       "source": "github",
       "medium": "release",
-      "campaign": "assistant_video_plugin_0_3_0",
+      "campaign": "assistant_video_plugin_0_3_2",
       "contents": ["release_connect", "release_docs"]
     },
     "github_examples": {

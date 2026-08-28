@@ -51,7 +51,7 @@ test('GitHub attribution uses only the approved campaign matrix and locale-aware
       contents: ['hero_connect', 'pricing', 'library'],
     },
     github_release: {
-      source: 'github', medium: 'release', campaign: 'assistant_video_plugin_0_3_0',
+      source: 'github', medium: 'release', campaign: 'assistant_video_plugin_0_3_2',
       contents: ['release_connect', 'release_docs'],
     },
     github_examples: {
@@ -203,7 +203,7 @@ test('browser journey projection preserves the GitHub tuple without private or n
   });
   const inherited = { inherited_value: 'never projected' };
   const payload = Object.assign(Object.create(inherited), {
-    local_key: 'local-1', price_cents: 250, amount: 2.5, currency: 'USD', route: '/mcp', payment_status: 'quoted',
+    local_key: 'local_batch_m123abcd_qwerty_1', price_cents: 250, amount: 2.5, currency: 'USD', route: '/mcp', payment_status: 'quoted',
     prompt: 'private brief', 'p%72ompt': 'encoded private brief', 'p%2572ompt': 'double-encoded private brief',
     'e-mail': 'person@example.com', uid: 'user-1', customer_id: 'customer-1', profile_id: 'profile-1', mail: 'person@example.com',
     Reference_URL: 'https://private.example/media', authorization: 'Bearer secret', 'api key': 'secret',
@@ -227,7 +227,7 @@ test('browser journey projection preserves the GitHub tuple without private or n
   );
   assert.deepEqual(
     Object.fromEntries(['local_key', 'price_cents', 'amount', 'currency', 'route', 'payment_status'].map((key) => [key, eventPayload[key]])),
-    { local_key: 'local-1', price_cents: 250, amount: 2.5, currency: 'USD', route: '/mcp', payment_status: 'quoted' },
+    { local_key: 'local_batch_m123abcd_qwerty_1', price_cents: 250, amount: 2.5, currency: 'USD', route: '/mcp', payment_status: 'quoted' },
   );
   for (const privateKey of [
     'prompt', 'p%72ompt', 'p%2572ompt', 'e-mail', 'uid', 'customer_id', 'profile_id', 'mail',
@@ -271,6 +271,56 @@ test('browser journey rejects unknown event names and unapproved UTM tuples', ()
   );
   assert.deepEqual(prepared.events, []);
   assert.deepEqual(prepared.record, journey);
+});
+
+test('browser journey drops private values even when they use approved analytics keys', () => {
+  const touch = resolveAnalyticsTouch({
+    href: 'https://maxvideoai.com/mcp',
+    referrer: '',
+    siteOrigin: 'https://maxvideoai.com',
+    landingRouteFamily: 'marketing',
+    landingSurface: '/mcp',
+    locale: 'en',
+  });
+  const journey = createAnalyticsJourneyRecord({
+    journeyId: '7df6d42a-4b70-4eca-82fe-3a320c4a6eb9',
+    now: Date.UTC(2026, 7, 28),
+    touch,
+  });
+
+  const generation = prepareJourneyEvents(journey, 'generation_started', {
+    route_family: 'private media brief',
+    local_key: 'account-123',
+    job_id: 'Bearer private-token',
+    batch_id: '4242 4242 4242 4242',
+    group_id: 'private_prompt',
+    engine: 'my-unreleased-model',
+    mode: 'my unreleased prompt',
+    payment_mode: 'private_wallet_token',
+    payment_status: 'card_4242424242424242',
+  }, Date.UTC(2026, 7, 28));
+  const generationPayload = generation.events.at(-1)?.payload ?? {};
+  for (const privateKey of [
+    'route_family', 'local_key', 'job_id', 'batch_id', 'group_id', 'engine', 'mode',
+    'payment_mode', 'payment_status',
+  ]) {
+    assert.equal(privateKey in generationPayload, false, `${privateKey} must fail closed on private content`);
+  }
+
+  const click = prepareJourneyEvents(generation.record, 'cta_click', {
+    route_family: 'private media brief',
+    cta_name: 'private_media_brief',
+    cta_location: 'Bearer private-token',
+    target_family: 'account_123',
+    tool_name: 'secret_tool',
+    tool_surface: 'my unreleased prompt',
+  }, Date.UTC(2026, 7, 28));
+  const clickPayload = click.events.at(-1)?.payload ?? {};
+  for (const privateKey of [
+    'route_family', 'cta_name', 'cta_location', 'target_family', 'tool_name', 'tool_surface',
+  ]) {
+    assert.equal(privateKey in clickPayload, false, `${privateKey} must fail closed on private content`);
+  }
 });
 
 test('growth scorecard marks browser projection, MCP association, and downstream emitter coverage as unresolved', () => {

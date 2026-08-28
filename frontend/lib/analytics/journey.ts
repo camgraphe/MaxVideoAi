@@ -49,7 +49,7 @@ const APPROVED_UTM_TOUCHES: readonly ApprovedUtmTouch[] = [
     contents: ['hero_connect', 'pricing', 'library'],
   },
   {
-    source: 'github', medium: 'release', campaign: 'assistant_video_plugin_0_3_0',
+    source: 'github', medium: 'release', campaign: 'assistant_video_plugin_0_3_2',
     contents: ['release_connect', 'release_docs'],
   },
   {
@@ -369,6 +369,164 @@ function analyticsPrimitive(value: unknown): string | number | boolean | undefin
   return typeof value === 'boolean' ? value : undefined;
 }
 
+type AnalyticsPrimitive = string | number | boolean;
+
+const ROUTE_FAMILIES = new Set([
+  'admin', 'auth', 'marketing', 'public_tools', 'app_tools', 'workspace', 'billing',
+]);
+const TOOL_NAMES = new Set([
+  'tools_hub', 'angle', 'background_removal', 'character_builder', 'storyboard', 'upscale', 'audio',
+]);
+const ENGINE_IDS = new Set([
+  'happy-horse-1-0', 'happy-horse-1-1', 'seedance-2-0-mini', 'seedance-1-5-pro',
+  'seedance-2-0', 'seedance-2-0-fast', 'seedance-2-5', 'seedream', 'seedream-5-0-pro',
+  'nano-banana', 'nano-banana-2', 'nano-banana-lite', 'nano-banana-pro', 'gemini-omni-flash',
+  'veo-3-1', 'veo-3-1-fast', 'veo-3-1-lite', 'kling-2-5-turbo', 'kling-2-6-pro',
+  'kling-3-4k', 'kling-3-pro', 'kling-3-standard', 'kling-o3-4k', 'kling-o3-pro',
+  'kling-o3-standard', 'ltx-2-3-fast', 'ltx-2-3', 'ltx-2-fast', 'ltx-2', 'lumaRay2',
+  'lumaRay2_flash', 'luma-ray-3-2', 'luma-uni-1', 'luma-uni-1-max', 'minimax-h3',
+  'minimax-hailuo-02-text', 'gpt-image-2', 'sora-2', 'sora-2-pro', 'pika-text-to-video',
+  'wan-2-5', 'wan-2-6', 'flux-multiple-angles', 'qwen-multiple-angles', 'seedvr-image',
+  'topaz-image', 'recraft-crisp', 'seedvr-video', 'flashvsr-video', 'topaz-video',
+  'bria-video-background-removal-v3',
+]);
+const CTA_NAMES = new Set([
+  'marketing_nav_login', 'marketing_nav_start_app', 'homepage_ai_video_plugin', 'all_comparisons',
+  'all_examples', 'all_models', 'browse_tools', 'open_workspace', 'view_pricing', 'compare_engines',
+  'see_examples', 'start_render', 'best-for-hub', 'angle_hub_hero_secondary',
+  'character_builder_hub_hero_primary', 'angle_try_tool_final', 'angle_try_tool_hero',
+  'angle_try_tool_examples', 'character_builder_try_tool_final', 'character_builder_try_tool_hero',
+  ...ENGINE_IDS,
+]);
+const CTA_LOCATIONS = new Set([
+  'marketing_nav_mobile', 'marketing_nav_desktop', 'home_assistant_workflow', 'comparison_intro',
+  'comparison_preview', 'reference_workflow', 'toolbox', 'toolbox_cta', 'transparent_pricing',
+  'home_hero', 'examples_preview', 'examples_preview_cta', 'examples_preview_featured_model',
+  'examples_preview_header', 'examples_preview_model', 'shot_type_hub_cta', 'shot_type_selector',
+  'tools_hub_hero', 'tool_angle_final', 'tool_angle_hero', 'tool_angle_examples',
+  'tool_character_builder_final', 'tool_character_builder_hero',
+]);
+const EXACT_STRING_VALUES: Readonly<Record<string, ReadonlySet<string>>> = {
+  route_family: ROUTE_FAMILIES,
+  tool_name: TOOL_NAMES,
+  tool_surface: new Set(['public', 'workspace']),
+  workspace_section: new Set(['home', 'image', 'audio', 'library', 'tools', 'billing', 'generate', 'dashboard', 'jobs', 'settings', 'connect', 'video']),
+  app_section: new Set(['workspace', 'home', 'image', 'audio', 'library', 'tools', 'generate', 'dashboard', 'jobs', 'settings', 'connect', 'video']),
+  cta_name: CTA_NAMES,
+  cta_location: CTA_LOCATIONS,
+  target_family: new Set(['auth', 'workspace', 'examples', 'compare', 'models', 'tools', 'pricing', 'mcp', 'best-for', 'public_tools', 'app_tools']),
+  action: new Set(['connect', 'copy_endpoint', 'generate', 'full_body_fix', 'lighting_variant', 'continue', 'refine', 'branch', 'copy', 'open']),
+  client: new Set(['claude', 'chatgpt', 'codex']),
+  destination: new Set(['verified_deep_link', 'setup_guide', 'manual_setup']),
+  locale: new Set(['en', 'fr', 'es']),
+  auth_surface: new Set(['login']),
+  method: new Set(['password', 'google']),
+  source_mode: new Set(['scratch', 'reference-image']),
+  output_mode: new Set(['portrait_reference', 'character_sheet']),
+  quality_mode: new Set(['draft', 'final']),
+  format_mode: new Set(['standard', '2k', '4k']),
+  engine: ENGINE_IDS,
+  mode: new Set(['t2v', 'i2v', 'ref2v', 'v2v', 'r2v', 'fl2v', 'a2v', 't2i', 'i2i', 'extend', 'retake', 'reframe']),
+  payment_mode: new Set(['wallet', 'platform']),
+  payment_status: new Set(['pending_payment', 'paid_wallet', 'paid_direct', 'refunded_wallet', 'included_mcp_trial', 'platform', 'quoted', 'curated', 'completed']),
+  payment_provider: new Set(['stripe']),
+  payment_flow: new Set(['checkout']),
+  topup_tier_id: new Set(['usd_10', 'usd_25', 'usd_50', 'usd_100', 'custom']),
+  topup_tier_label: new Set(['$10', '$25', '$50', '$100', 'Custom']),
+  failure_category: new Set(['authentication', 'validation', 'network', 'stripe', 'unknown', 'generation_request_failed', 'job_failed']),
+  error_code: new Set(['generation_request_failed', 'INSUFFICIENT_WALLET_FUNDS', 'INSUFFICIENT_FUNDS', 'auth_required', 'UNAUTHORIZED']),
+};
+
+const BOOLEAN_FIELDS = new Set([
+  'logged_in', 'marketing_opt_in', 'email_confirmation_required', 'generate_best_angles', 'has_audio',
+  'is_first_generation',
+]);
+const INTEGER_FIELDS: Readonly<Record<string, readonly [number, number]>> = {
+  generate_count: [0, 100],
+  result_count: [0, 100],
+  output_count: [0, 100],
+  iterations: [0, 100],
+  iteration_index: [0, 100],
+  iteration_count: [0, 100],
+  batch_size: [0, 100],
+  generation_sequence: [0, 1_000_000],
+  render_count: [0, 100],
+  version: [0, 10_000],
+  duration_sec: [0, 86_400],
+  latency_ms: [0, 86_400_000],
+  price_cents: [0, 1_000_000_000],
+  final_price_cents: [0, 1_000_000_000],
+  total_cents: [0, 1_000_000_000],
+  wallet_amount_cents: [0, 1_000_000_000],
+  topup_amount_cents: [0, 1_000_000_000],
+  settlement_amount_minor: [0, 1_000_000_000],
+};
+const DECIMAL_FIELDS: Readonly<Record<string, readonly [number, number]>> = {
+  amount: [0, 10_000_000],
+  estimated_cost_usd: [0, 10_000_000],
+  actual_cost_usd: [0, 10_000_000],
+  estimated_credits: [0, 10_000_000],
+  actual_credits: [0, 10_000_000],
+  wallet_amount_usd: [0, 10_000_000],
+  credits_amount: [0, 10_000_000],
+  topup_amount_usd: [0, 10_000_000],
+  settlement_amount_minor: [0, 1_000_000_000],
+  value: [0, 10_000_000],
+  rotation: [-360, 360],
+  tilt: [-90, 90],
+  zoom: [0, 100],
+};
+const CURRENCY_FIELDS = new Set(['currency', 'charge_currency', 'settlement_currency']);
+const CURRENCY_CODES = new Set(['USD', 'EUR', 'GBP', 'CHF']);
+const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}';
+const JOB_ID_PATTERN = new RegExp(`^(?:job|aud|img|tool_(?:angle|background_removal|upscale))_${UUID}$`, 'i');
+const BATCH_ID_PATTERN = /^batch_[a-z0-9]{4,20}_[a-z0-9]{4,16}$/;
+const LOCAL_KEY_PATTERN = /^local_batch_[a-z0-9]{4,20}_[a-z0-9]{4,16}_[1-9][0-9]{0,2}$/;
+const SAFE_STATIC_PATHS = new Set([
+  '/', '/mcp', '/models', '/examples', '/compare', '/pricing', '/best-for', '/tools', '/app',
+  '/app/image', '/app/audio', '/app/library', '/app/tools', '/billing', '/login', '/signup',
+  '/dashboard', '/generate', '/jobs', '/settings', '/connect', '/video/:video',
+]);
+
+function validateSafeAnalyticsPath(value: AnalyticsPrimitive): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  if (SAFE_STATIC_PATHS.has(value)) return value;
+  const segments = value.split('/').filter(Boolean);
+  if (segments.length === 2 && ['models', 'modeles', 'modelos'].includes(segments[0] ?? '') && ENGINE_IDS.has(segments[1] ?? '')) return value;
+  if (segments.length === 2 && ['integrations', 'integraciones'].includes(segments[0] ?? '') && ['claude', 'chatgpt', 'codex'].includes(segments[1] ?? '')) return value;
+  if (segments.length === 2 && segments[0] === 'tools' && TOOL_NAMES.has((segments[1] ?? '').replace(/-/g, '_'))) return value;
+  if (segments.length === 3 && segments[0] === 'app' && segments[1] === 'tools' && TOOL_NAMES.has((segments[2] ?? '').replace(/-/g, '_'))) return value;
+  return undefined;
+}
+
+function validateAnalyticsFieldValue(key: string, input: unknown): AnalyticsPrimitive | undefined {
+  const value = analyticsPrimitive(input);
+  if (value === undefined) return undefined;
+
+  const exactValues = EXACT_STRING_VALUES[key];
+  if (exactValues) return typeof value === 'string' && exactValues.has(value) ? value : undefined;
+  if (BOOLEAN_FIELDS.has(key)) return typeof value === 'boolean' ? value : undefined;
+  if (CURRENCY_FIELDS.has(key)) return typeof value === 'string' && CURRENCY_CODES.has(value) ? value : undefined;
+  if (key === 'page_path' || key === 'route') return validateSafeAnalyticsPath(value);
+  if (key === 'local_key') return typeof value === 'string' && LOCAL_KEY_PATTERN.test(value) ? value : undefined;
+  if (key === 'job_id') return typeof value === 'string' && JOB_ID_PATTERN.test(value) ? value : undefined;
+  if (key === 'batch_id' || key === 'group_id' || key === 'batchid') {
+    return typeof value === 'string' && BATCH_ID_PATTERN.test(value) ? value : undefined;
+  }
+
+  const integerRange = INTEGER_FIELDS[key];
+  if (integerRange) {
+    return typeof value === 'number' && Number.isInteger(value) && value >= integerRange[0] && value <= integerRange[1]
+      ? value
+      : undefined;
+  }
+  const decimalRange = DECIMAL_FIELDS[key];
+  if (decimalRange) {
+    return typeof value === 'number' && value >= decimalRange[0] && value <= decimalRange[1] ? value : undefined;
+  }
+  return undefined;
+}
+
 function projectAnalyticsPayload(
   event: AllowedAnalyticsEvent,
   payload: Record<string, unknown>,
@@ -381,13 +539,20 @@ function projectAnalyticsPayload(
       const normalizedKey = normalizedAnalyticsPayloadKey(key);
       const descriptor = Object.getOwnPropertyDescriptor(payload, key);
       if (!normalizedKey || !allowedKeys.has(normalizedKey) || !descriptor || !Object.hasOwn(descriptor, 'value')) continue;
-      const value = analyticsPrimitive(descriptor.value);
+      const value = validateAnalyticsFieldValue(normalizedKey, descriptor.value);
       if (value !== undefined) projected[normalizedKey] = value;
     }
   } catch {
     return {};
   }
   return projected;
+}
+
+export function projectAllowedAnalyticsPayload(
+  event: string,
+  payload: Record<string, unknown> = {},
+): Record<string, string | number | boolean> | null {
+  return isAllowedAnalyticsEvent(event) ? projectAnalyticsPayload(event, payload) : null;
 }
 
 function journeyPayload(record: AnalyticsJourneyRecordV1, now: number): Record<string, unknown> {

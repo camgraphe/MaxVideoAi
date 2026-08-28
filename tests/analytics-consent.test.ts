@@ -112,6 +112,78 @@ test('pending auth events are never stored without consent', () => {
   });
 });
 
+test('pending analytics storage projects approved fields before persistence and rejects unknown events', () => {
+  withBrowser({ consent: 'granted' }, ({ sessionStorage }) => {
+    persistPendingAnalyticsEvent('sign_up_completed', {
+      route_family: 'auth',
+      auth_surface: 'login',
+      method: 'google',
+      marketing_opt_in: true,
+      cta_name: 'private_media_brief',
+      credential: 'Bearer private-token',
+      prompt: 'my unreleased prompt',
+    });
+    const storedAuth = sessionStorage.getItem(PENDING_AUTH_EVENT_STORAGE_KEY);
+    assert.ok(storedAuth);
+    assert.doesNotMatch(storedAuth, /private|Bearer|prompt|credential/i);
+    assert.deepEqual(readPendingAnalyticsEvent()?.payload, {
+      route_family: 'auth',
+      auth_surface: 'login',
+      method: 'google',
+      marketing_opt_in: true,
+    });
+
+    persistPendingAnalyticsEvent('private_prompt_export', {
+      method: 'Bearer private-token',
+    });
+    assert.equal(sessionStorage.getItem(PENDING_AUTH_EVENT_STORAGE_KEY), null);
+
+    persistPendingTopupCancelledEvent({
+      route_family: 'billing',
+      payment_provider: 'stripe',
+      payment_flow: 'checkout',
+      charge_currency: 'USD',
+      topup_amount_cents: 1000,
+      topup_tier_id: 'private_token',
+      failure_category: '4242 4242 4242 4242',
+    });
+    const storedTopup = sessionStorage.getItem(PENDING_TOPUP_CANCELLED_STORAGE_KEY);
+    assert.ok(storedTopup);
+    assert.doesNotMatch(storedTopup, /private|4242/);
+    assert.deepEqual(readPendingTopupCancelledEvent(), {
+      route_family: 'billing',
+      payment_provider: 'stripe',
+      payment_flow: 'checkout',
+      charge_currency: 'USD',
+      topup_amount_cents: 1000,
+    });
+  });
+});
+
+test('pending analytics reads remove private fields from tampered session storage', () => {
+  withBrowser({ consent: 'granted' }, ({ sessionStorage }) => {
+    sessionStorage.setItem(PENDING_AUTH_EVENT_STORAGE_KEY, JSON.stringify({
+      event: 'sign_up_completed',
+      payload: { method: 'google', auth_surface: 'Bearer private-token', prompt: 'private brief' },
+      createdAt: Date.now(),
+    }));
+    assert.deepEqual(readPendingAnalyticsEvent()?.payload, { method: 'google' });
+    assert.doesNotMatch(sessionStorage.getItem(PENDING_AUTH_EVENT_STORAGE_KEY) ?? '', /private|Bearer|prompt/i);
+
+    sessionStorage.setItem(PENDING_TOPUP_CANCELLED_STORAGE_KEY, JSON.stringify({
+      route_family: 'billing',
+      topup_amount_cents: 1000,
+      topup_tier_id: 'account_123',
+      payment_status: 'card_4242424242424242',
+    }));
+    assert.deepEqual(readPendingTopupCancelledEvent(), {
+      route_family: 'billing',
+      topup_amount_cents: 1000,
+    });
+    assert.doesNotMatch(sessionStorage.getItem(PENDING_TOPUP_CANCELLED_STORAGE_KEY) ?? '', /account|4242|card/i);
+  });
+});
+
 test('pending topup cancellation persistence and replay are suppressed without analytics consent', () => {
   withBrowser({ consent: null }, ({ sessionStorage }) => {
     persistPendingTopupCancelledEvent({ topup_amount_cents: 1000 });
