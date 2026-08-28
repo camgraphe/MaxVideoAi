@@ -1,4 +1,9 @@
 import { localePathnames, type AppLocale } from '@/i18n/locales';
+import {
+  MAXVIDEOAI_CODEX_MARKETPLACE_ADD_COMMAND,
+  MAXVIDEOAI_CODEX_PLUGIN_ADD_COMMAND,
+  MAXVIDEOAI_PUBLIC_PLUGIN_VERSION,
+} from '@/config/maxvideoai-plugin-release';
 import { MCP_PRODUCTION_RESOURCE_URL } from '@/server/mcp/config';
 import type { McpClientId, McpCompatibilityHostId } from '../../mcp/_lib/mcp-page-types';
 
@@ -101,12 +106,12 @@ function label(client: McpClientId): IntegrationPageCopy['clientLabel'] {
 function installInstruction(locale: AppLocale, hostId: McpCompatibilityHostId): string {
   if (hostId === 'codexCli') {
     if (locale === 'fr') {
-      return 'Installe le plugin MaxVideoAI pour moi avec ces commandes, puis guide-moi pour connecter mon compte :\ncodex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.3.2\ncodex plugin add maxvideoai@maxvideoai';
+      return `Installe le plugin MaxVideoAI pour moi avec ces commandes, puis guide-moi pour connecter mon compte :\n${MAXVIDEOAI_CODEX_MARKETPLACE_ADD_COMMAND}\n${MAXVIDEOAI_CODEX_PLUGIN_ADD_COMMAND}`;
     }
     if (locale === 'es') {
-      return 'Instala el plugin MaxVideoAI por mí con estos comandos y guíame para conectar mi cuenta:\ncodex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.3.2\ncodex plugin add maxvideoai@maxvideoai';
+      return `Instala el plugin MaxVideoAI por mí con estos comandos y guíame para conectar mi cuenta:\n${MAXVIDEOAI_CODEX_MARKETPLACE_ADD_COMMAND}\n${MAXVIDEOAI_CODEX_PLUGIN_ADD_COMMAND}`;
     }
-    return 'Install the MaxVideoAI plugin for me with these commands, then guide me through connecting my account:\ncodex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.3.2\ncodex plugin add maxvideoai@maxvideoai';
+    return `Install the MaxVideoAI plugin for me with these commands, then guide me through connecting my account:\n${MAXVIDEOAI_CODEX_MARKETPLACE_ADD_COMMAND}\n${MAXVIDEOAI_CODEX_PLUGIN_ADD_COMMAND}`;
   }
 
   const host = hostId === 'claudeCode' ? 'Claude Code' : hostId === 'claudeDesktop' ? 'Claude' : 'ChatGPT';
@@ -237,14 +242,14 @@ function englishGuides(client: McpClientId): IntegrationHostGuide[] {
       intro: 'Add the tagged MaxVideoAI marketplace, install the plugin, then authorize your account from a new Codex conversation.',
       installInstruction: installInstruction('en', 'codexCli'),
       steps: [
-        { title: 'Add the marketplace', body: 'Register the public MaxVideoAI repository at the reviewed 0.3.2 release tag.' },
+        { title: 'Add the marketplace', body: `Register the public MaxVideoAI repository at the reviewed ${MAXVIDEOAI_PUBLIC_PLUGIN_VERSION} release tag.` },
         { title: 'Install the plugin', body: 'Install MaxVideoAI once to get the plan and generate skills plus the production MCP connection.' },
         { title: 'Start a new task', body: 'Open a new Codex conversation, use $maxvideoai:plan or $maxvideoai:generate, and complete OAuth when prompted.' },
       ],
       commandLabel: 'Codex plugin commands',
       commands: [
-        'codex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.3.2',
-        'codex plugin add maxvideoai@maxvideoai',
+        MAXVIDEOAI_CODEX_MARKETPLACE_ADD_COMMAND,
+        MAXVIDEOAI_CODEX_PLUGIN_ADD_COMMAND,
       ],
       setupValues: [],
       authTrigger: 'OAuth starts when the new conversation first uses MaxVideoAI. Sign in or create the MaxVideoAI account you want to connect.',
@@ -316,14 +321,14 @@ function frenchGuides(client: McpClientId): IntegrationHostGuide[] {
       intro: 'Ajoutez la marketplace MaxVideoAI taguée, installez le plugin puis autorisez votre compte depuis une nouvelle conversation Codex.',
       installInstruction: installInstruction('fr', 'codexCli'),
       steps: [
-        { title: 'Ajouter la marketplace', body: 'Enregistrez le dépôt public MaxVideoAI sur le tag de version 0.3.2 contrôlé.' },
+        { title: 'Ajouter la marketplace', body: `Enregistrez le dépôt public MaxVideoAI sur le tag de version ${MAXVIDEOAI_PUBLIC_PLUGIN_VERSION} contrôlé.` },
         { title: 'Installer le plugin', body: 'Installez MaxVideoAI une fois pour recevoir les skills plan et generate ainsi que la connexion MCP de production.' },
         { title: 'Démarrer une nouvelle tâche', body: 'Ouvrez une nouvelle conversation Codex, utilisez $maxvideoai:plan ou $maxvideoai:generate, puis terminez OAuth à la demande.' },
       ],
       commandLabel: 'Commandes du plugin Codex',
       commands: [
-        'codex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.3.2',
-        'codex plugin add maxvideoai@maxvideoai',
+        MAXVIDEOAI_CODEX_MARKETPLACE_ADD_COMMAND,
+        MAXVIDEOAI_CODEX_PLUGIN_ADD_COMMAND,
       ],
       setupValues: [],
       authTrigger: 'OAuth démarre lorsque la nouvelle conversation utilise MaxVideoAI pour la première fois. Connectez-vous ou créez le compte à relier.',
@@ -395,14 +400,14 @@ function spanishGuides(client: McpClientId): IntegrationHostGuide[] {
       intro: 'Añade el marketplace etiquetado de MaxVideoAI, instala el plugin y autoriza tu cuenta desde una nueva conversación de Codex.',
       installInstruction: installInstruction('es', 'codexCli'),
       steps: [
-        { title: 'Añadir el marketplace', body: 'Registra el repositorio público de MaxVideoAI en la etiqueta revisada de la versión 0.3.2.' },
+        { title: 'Añadir el marketplace', body: `Registra el repositorio público de MaxVideoAI en la etiqueta revisada de la versión ${MAXVIDEOAI_PUBLIC_PLUGIN_VERSION}.` },
         { title: 'Instalar el plugin', body: 'Instala MaxVideoAI una vez para obtener los skills plan y generate y la conexión MCP de producción.' },
         { title: 'Iniciar una nueva tarea', body: 'Abre una nueva conversación de Codex, usa $maxvideoai:plan o $maxvideoai:generate y completa OAuth cuando se solicite.' },
       ],
       commandLabel: 'Comandos del plugin de Codex',
       commands: [
-        'codex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.3.2',
-        'codex plugin add maxvideoai@maxvideoai',
+        MAXVIDEOAI_CODEX_MARKETPLACE_ADD_COMMAND,
+        MAXVIDEOAI_CODEX_PLUGIN_ADD_COMMAND,
       ],
       setupValues: [],
       authTrigger: 'OAuth comienza cuando la nueva conversación usa MaxVideoAI por primera vez. Inicia sesión o crea la cuenta que quieras conectar.',

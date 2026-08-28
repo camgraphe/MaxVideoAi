@@ -392,6 +392,11 @@ test('Codex setup installs the tagged public plugin package before OAuth', async
   const { getIntegrationCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
   );
+  const { getMcpPageCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
+  );
+  const publicMarketplaceCommand =
+    'codex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.3.1';
 
   for (const locale of ['en', 'fr', 'es'] as const) {
     const guide = getIntegrationCopy(locale, 'codex').setup.hostGuides[0];
@@ -406,12 +411,16 @@ test('Codex setup installs the tagged public plugin package before OAuth', async
     );
     assert.equal(
       guide.commands[0],
-      'codex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.3.2',
+      publicMarketplaceCommand,
     );
     assert.equal(guide.commands[1], 'codex plugin add maxvideoai@maxvideoai');
     assert.equal(guide.commands.length, 2);
     assert.match(guide.steps.map((step) => step.body).join(' '), /\$maxvideoai:plan.*\$maxvideoai:generate/i);
     assert.match(guide.limitation, /plan.*generate|plan.*génér|plan.*gener/i);
+
+    const liveCopy = `${JSON.stringify(getIntegrationCopy(locale, 'codex'))}\n${JSON.stringify(getMcpPageCopy(locale))}`;
+    assert.match(liveCopy, new RegExp(publicMarketplaceCommand.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+    assert.doesNotMatch(liveCopy, /maxvideoai-plugin-v0\.3\.2|(?:public|reviewed|contrôlé|revisad)[^\n]{0,80}0\.3\.2/i);
   }
 });
 

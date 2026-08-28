@@ -1,4 +1,8 @@
 import { localePathnames, type AppLocale } from '@/i18n/locales';
+import {
+  MAXVIDEOAI_CODEX_MARKETPLACE_ADD_COMMAND,
+  MAXVIDEOAI_CODEX_PLUGIN_ADD_COMMAND,
+} from '@/config/maxvideoai-plugin-release';
 import { localizedSlugs } from '@/lib/i18nSlugs';
 import { MCP_PRODUCTION_RESOURCE_URL } from '@/server/mcp/config';
 import type { McpClientActionCopy, McpPageCopy } from './mcp-page-types';
@@ -16,12 +20,12 @@ function clientActions(
   const instruction = (client: McpClientActionCopy['client']) => {
     if (client === 'codex') {
       if (locale === 'fr') {
-        return 'Installe le plugin MaxVideoAI pour moi avec ces commandes, puis guide-moi pour connecter mon compte :\ncodex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.3.2\ncodex plugin add maxvideoai@maxvideoai';
+        return `Installe le plugin MaxVideoAI pour moi avec ces commandes, puis guide-moi pour connecter mon compte :\n${MAXVIDEOAI_CODEX_MARKETPLACE_ADD_COMMAND}\n${MAXVIDEOAI_CODEX_PLUGIN_ADD_COMMAND}`;
       }
       if (locale === 'es') {
-        return 'Instala el plugin MaxVideoAI por mí con estos comandos y guíame para conectar mi cuenta:\ncodex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.3.2\ncodex plugin add maxvideoai@maxvideoai';
+        return `Instala el plugin MaxVideoAI por mí con estos comandos y guíame para conectar mi cuenta:\n${MAXVIDEOAI_CODEX_MARKETPLACE_ADD_COMMAND}\n${MAXVIDEOAI_CODEX_PLUGIN_ADD_COMMAND}`;
       }
-      return 'Install the MaxVideoAI plugin for me with these commands, then guide me through connecting my account:\ncodex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.3.2\ncodex plugin add maxvideoai@maxvideoai';
+      return `Install the MaxVideoAI plugin for me with these commands, then guide me through connecting my account:\n${MAXVIDEOAI_CODEX_MARKETPLACE_ADD_COMMAND}\n${MAXVIDEOAI_CODEX_PLUGIN_ADD_COMMAND}`;
     }
     const clientLabel = client === 'claude' ? 'Claude' : 'ChatGPT';
     if (locale === 'fr') return `Connecte MaxVideoAI dans ${clientLabel} avec ce serveur MCP et guide-moi jusqu’à la connexion : ${MCP_PRODUCTION_RESOURCE_URL}`;
