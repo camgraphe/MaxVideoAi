@@ -198,10 +198,12 @@ const JOURNEY_PAYLOAD_KEYS = [
 const PRIVATE_ANALYTICS_KEY_PREFIX = /^(?:prompt|media|asset|reference|token|authorization|auth|account|user|uid|customer|profile|email|mail|referrer|url|href|secret|password|apikey)/;
 const URL_SCHEME_PATTERN = /^[a-z][a-z0-9+.-]*:/i;
 const MAX_PERCENT_DECODE_PASSES = 3;
+const CONTROL_OR_BACKSLASH_PATTERN = /[\u0000-\u001F\u007F-\u009F\\]/;
 
 function decodePercentEncoded(value: string): string | null {
   let decoded = value;
   for (let pass = 0; pass < MAX_PERCENT_DECODE_PASSES; pass += 1) {
+    if (CONTROL_OR_BACKSLASH_PATTERN.test(decoded)) return null;
     if (!decoded.includes('%')) return decoded;
     try {
       const next = decodeURIComponent(decoded);
@@ -211,7 +213,7 @@ function decodePercentEncoded(value: string): string | null {
       return null;
     }
   }
-  return decoded.includes('%') ? null : decoded;
+  return decoded.includes('%') || CONTROL_OR_BACKSLASH_PATTERN.test(decoded) ? null : decoded;
 }
 
 function normalizedAnalyticsPayloadKey(key: string): string | null {
@@ -227,9 +229,10 @@ function normalizedAnalyticsPayloadKey(key: string): string | null {
 function analyticsPrimitive(value: unknown): string | number | boolean | undefined {
   if (typeof value === 'string') {
     if (value.length > 360) return undefined;
-    const decoded = decodePercentEncoded(value.normalize('NFKC').trim());
+    const decoded = decodePercentEncoded(value.normalize('NFKC'));
     if (decoded === null) return undefined;
     const normalized = decoded.normalize('NFKC').trim();
+    if (CONTROL_OR_BACKSLASH_PATTERN.test(normalized)) return undefined;
     const isSafeInternalPath = normalized.startsWith('/')
       && !normalized.startsWith('//')
       && !normalized.includes('?')

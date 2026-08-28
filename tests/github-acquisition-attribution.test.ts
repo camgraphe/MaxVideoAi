@@ -207,6 +207,10 @@ test('browser journey projection preserves the GitHub tuple without private or n
     Reference_URL: 'https://private.example/media', authorization: 'Bearer secret', 'api key': 'secret',
     leading_url: ' https://private.example/media', protocol_relative: '//private.example/media',
     encoded_url: 'https%3A%2F%2Fprivate.example%2Fmedia', query_path: '/mcp?token=secret', fragment_path: '/mcp#private',
+    raw_unc: '\\\\private.example\\token-secret', control_url: '\0https://private.example/media',
+    tab_url: '\thttps://private.example/media', newline_path: '\n/mcp', encoded_unc: '%5C%5Cprivate.example%5Ctoken-secret',
+    encoded_control_url: '%00https%3A%2F%2Fprivate.example%2Fmedia',
+    c1_url: '\u0085https://private.example/media', encoded_c1_url: '%C2%85https%3A%2F%2Fprivate.example%2Fmedia',
     nested: { prompt: 'private' }, array: ['private'], callable: () => undefined, symbol: Symbol('private'),
     infinity: Infinity, nan: Number.NaN, first_touch_source: 'forged',
   });
@@ -223,7 +227,8 @@ test('browser journey projection preserves the GitHub tuple without private or n
   for (const privateKey of [
     'prompt', 'p%72ompt', 'p%2572ompt', 'e-mail', 'uid', 'customer_id', 'profile_id', 'mail',
     'Reference_URL', 'authorization', 'api key', 'leading_url', 'protocol_relative', 'encoded_url', 'query_path',
-    'fragment_path', 'nested', 'array', 'callable', 'symbol', 'infinity', 'nan', 'inherited_value',
+    'fragment_path', 'raw_unc', 'control_url', 'tab_url', 'newline_path', 'encoded_unc', 'encoded_control_url',
+    'c1_url', 'encoded_c1_url', 'nested', 'array', 'callable', 'symbol', 'infinity', 'nan', 'inherited_value',
   ]) {
     assert.equal(privateKey in eventPayload, false, `${privateKey} should not be projected`);
   }
