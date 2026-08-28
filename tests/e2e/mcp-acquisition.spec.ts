@@ -210,7 +210,7 @@ test('landing presents equal official client actions and conversation-led projec
 
   await expect(page.getByRole('heading', {
     level: 1,
-    name: 'Turn ChatGPT or Claude into your AI video producer.',
+    name: 'Turn Claude, ChatGPT or Codex into your AI video producer.',
   })).toBeVisible();
   await expect(page.getByText('PRICE BEFORE YOU GENERATE')).toBeVisible();
   await expect(page.getByText('INTRODUCTORY CREDIT WHEN ELIGIBLE')).toBeVisible();
@@ -229,11 +229,19 @@ test('landing presents equal official client actions and conversation-led projec
 
   const chatgpt = page.locator('main [data-client="chatgpt"]').first();
   const claude = page.locator('main [data-client="claude"]').first();
-  const [chatgptBox, claudeBox] = await Promise.all([chatgpt.boundingBox(), claude.boundingBox()]);
+  const codex = page.locator('main [data-client="codex"]').first();
+  const [chatgptBox, claudeBox, codexBox] = await Promise.all([
+    chatgpt.boundingBox(),
+    claude.boundingBox(),
+    codex.boundingBox(),
+  ]);
   expect(chatgptBox).not.toBeNull();
   expect(claudeBox).not.toBeNull();
+  expect(codexBox).not.toBeNull();
   expect(Math.abs(chatgptBox!.width - claudeBox!.width)).toBeLessThanOrEqual(1);
   expect(Math.abs(chatgptBox!.height - claudeBox!.height)).toBeLessThanOrEqual(1);
+  expect(Math.abs(codexBox!.width - claudeBox!.width)).toBeLessThanOrEqual(1);
+  expect(Math.abs(codexBox!.height - claudeBox!.height)).toBeLessThanOrEqual(1);
 
   const [chatgptMark, claudeMark] = await Promise.all([
     chatgpt.locator('img:visible').boundingBox(),
@@ -245,7 +253,7 @@ test('landing presents equal official client actions and conversation-led projec
   expect(Math.abs(chatgptMark!.height - claudeMark!.height)).toBeLessThanOrEqual(1);
 });
 
-test('ChatGPT and Claude actions support keyboard focus and activation', async ({ page }) => {
+test('Claude, ChatGPT, and Codex actions support keyboard focus and activation', async ({ page }) => {
   onlyMode('enabled');
   await page.route('**/api/mcp/acquisition', (route) => route.fulfill({ status: 204 }));
 
@@ -262,6 +270,13 @@ test('ChatGPT and Claude actions support keyboard focus and activation', async (
   await expect(claude).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/\/integrations\/claude$/);
+
+  await page.goto('/mcp', { waitUntil: 'load' });
+  const codex = page.locator('main [data-client="codex"]').first();
+  await codex.focus();
+  await expect(codex).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/\/integrations\/codex$/);
 });
 
 test('EN, FR, and ES intent owners remain server-readable with JavaScript disabled', async ({ browser }) => {

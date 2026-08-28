@@ -63,6 +63,7 @@ export async function startDisposablePostgres(prefix: string): Promise<Disposabl
 
 export async function createPaidGenerationTestSchema(pool: Pool): Promise<void> {
   await pool.query(readFileSync('neon/migrations/30_mcp_paid_generation.sql', 'utf8'));
+  await pool.query(readFileSync('neon/migrations/39_mcp_quote_lifetime.sql', 'utf8'));
   await pool.query(`
     CREATE TABLE app_receipts (
       id bigserial PRIMARY KEY, user_id text NOT NULL, type text NOT NULL,

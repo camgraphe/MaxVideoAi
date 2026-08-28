@@ -262,6 +262,8 @@ export async function uploadImageToStorage(params: {
   fileName?: string | null;
   prefix?: string;
   contentAddressed?: boolean;
+  acl?: string | null;
+  cacheControl?: string;
   beforeUpload?: (key: string) => Promise<void>;
   signal?: AbortSignal;
 }): Promise<UploadResult> {
@@ -284,12 +286,13 @@ export async function uploadImageToStorage(params: {
     Key: key,
     Body: params.data,
     ContentType: safeMime,
-    CacheControl: S3_CACHE_CONTROL,
+    CacheControl: params.cacheControl ?? S3_CACHE_CONTROL,
   });
-  if (S3_UPLOAD_ACL) {
+  const acl = params.acl === undefined ? S3_UPLOAD_ACL : params.acl;
+  if (acl) {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore - ACL accepts specific string literals; keep runtime flexible via env
-    putCommand.input.ACL = S3_UPLOAD_ACL;
+    putCommand.input.ACL = acl;
   }
 
   try {

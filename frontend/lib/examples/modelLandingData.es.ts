@@ -166,13 +166,13 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     subtitle:
       'Ejemplos, prompts y ajustes de Seedance liderados por Seedance 2.5, con los workflows actuales y compatibles en contexto.',
     intro:
-      'Empieza con Seedance 2.5 para los workflows actuales de 4 a 30 segundos en 720p, con audio generado y referencias, y compara después ejemplos de Seedance 2.0, Fast y Mini sin presentar renders anteriores como salidas de Seedance 2.5. Abre primero un video para ver su prompt y ajustes; los enlaces de modelo y comparativa permanecen bajo la galería.',
+      'Empieza con Seedance 2.5 para los workflows actuales de 4 a 30 segundos hasta 1080p, con audio generado y referencias, y compara después ejemplos de Seedance 2.0, Fast y Mini sin presentar renders anteriores como salidas de Seedance 2.5. Abre primero un video para ver su prompt y ajustes; los enlaces de modelo y comparativa permanecen bajo la galería.',
     summary:
-      'Seedance 2.5 es la ruta principal para workflows más largos en 720p, audio generado, referencias, edición y extensión. Seedance 2.0 sigue disponible para necesidades de mayor resolución y 4K, Fast y Mini cubren borradores o lotes, y Seedance 1.5 Pro continúa compatible como referencia anterior.',
+      'Seedance 2.5 es la ruta principal para workflows más largos hasta 1080p, audio generado, referencias, edición y extensión. Seedance 2.0 sigue disponible para necesidades de 4K, Fast y Mini cubren borradores o lotes, y Seedance 1.5 Pro continúa compatible como referencia anterior.',
     promptPatterns:
       'Para Seedance 2.5, define una acción principal, la dirección de cámara y el papel de cada referencia antes de añadir detalles de escena. Mantén la misma estructura de prompt al comparar 2.5 con Seedance 2.0, Fast o Mini.',
     strengthsLimits:
-      'Usa Seedance 2.5 cuando importen una mayor duración, el audio generado, las referencias mixtas, la edición o la extensión. Su ruta pública de MaxVideoAI está actualmente en 16:9 a 480p o 720p; conserva Seedance 2.0 para necesidades de mayor resolución o 4K.',
+      'Usa Seedance 2.5 cuando importen una mayor duración, el audio generado, las referencias mixtas, la edición o la extensión. Su ruta pública de MaxVideoAI admite salida horizontal, cuadrada y vertical en 480p, 720p o 1080p; conserva Seedance 2.0 cuando necesites 4K.',
     pricingNotes:
       'La duración, el audio y el tipo de medio utilizado influyen en el precio. El generador muestra la tarifa antes de iniciar.',
     faq: [
@@ -184,7 +184,7 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
       {
         question: '¿Con qué modelo Seedance debería empezar para ejemplos y pruebas de prompt?',
         answer:
-          'Empieza con Seedance 2.5 para el workflow principal actual. Usa Seedance 2.0 para necesidades de mayor resolución o 4K, Fast para borradores más rápidos y Mini para variantes repetibles por lotes.',
+          'Empieza con Seedance 2.5 para el workflow principal actual hasta 1080p. Usa Seedance 2.0 para necesidades de 4K, Fast para borradores más rápidos y Mini para variantes repetibles por lotes.',
       },
       {
         question: '¿Qué ajustes afectan más al precio de un video Seedance?',

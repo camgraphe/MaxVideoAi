@@ -166,13 +166,13 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     subtitle:
       'Seedance examples, prompts and settings led by Seedance 2.5, with current and supported workflows kept in context.',
     intro:
-      'Start with Seedance 2.5 for current 4–30 second, 720p, audio-enabled and reference-guided workflows, then compare Seedance 2.0, Fast and Mini examples without treating older renders as Seedance 2.5 output. Open a video first for its prompt and settings; use the model and comparison links below the gallery when you need the right route.',
+      'Start with Seedance 2.5 for current 4–30 second, up-to-1080p, audio-enabled and reference-guided workflows, then compare Seedance 2.0, Fast and Mini examples without treating older renders as Seedance 2.5 output. Open a video first for its prompt and settings; use the model and comparison links below the gallery when you need the right route.',
     summary:
-      'Seedance 2.5 is the flagship route for longer 720p workflows, generated audio, references, editing and extension. Seedance 2.0 remains available for higher-resolution and 4K intent, Fast and Mini cover draft or batch workflows, and Seedance 1.5 Pro remains supported as an older reference.',
+      'Seedance 2.5 is the flagship route for longer workflows up to 1080p, generated audio, references, editing and extension. Seedance 2.0 remains available for 4K intent, Fast and Mini cover draft or batch workflows, and Seedance 1.5 Pro remains supported as an older reference.',
     promptPatterns:
       'For Seedance 2.5, define one core action, camera direction and reference role before adding scene detail. Keep the same prompt structure when comparing 2.5 with Seedance 2.0, Fast or Mini.',
     strengthsLimits:
-      'Use Seedance 2.5 when longer duration, generated audio, mixed references, editing or extension matter. Its public MaxVideoAI route is currently 16:9 at 480p or 720p, so keep Seedance 2.0 for higher-resolution or 4K intent.',
+      'Use Seedance 2.5 when longer duration, generated audio, mixed references, editing or extension matter. Its public MaxVideoAI route supports landscape, square and vertical output at 480p, 720p or 1080p; keep Seedance 2.0 when 4K delivery is required.',
     pricingNotes:
       'Duration, audio and the type of media used influence the price. The generator shows the current price before you launch.',
     faq: [
@@ -184,7 +184,7 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
       {
         question: 'Which Seedance model should I start with for examples and prompt testing?',
         answer:
-          'Start with Seedance 2.5 for the current flagship workflow. Use Seedance 2.0 for higher-resolution or 4K intent, Fast for quicker drafts, and Mini for repeatable batch variants.',
+          'Start with Seedance 2.5 for the current flagship workflow up to 1080p. Use Seedance 2.0 for 4K intent, Fast for quicker drafts, and Mini for repeatable batch variants.',
       },
       {
         question: 'What settings affect Seedance video pricing most?',

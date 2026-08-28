@@ -14,6 +14,7 @@ const expectedTools = [
   'calculate_project_budget',
   'list_media',
   'create_reference_upload_link',
+  'import_reference_files',
   'prepare_generation',
   'confirm_generation',
   'get_generation_status',
@@ -67,6 +68,11 @@ test('ChatGPT submission covers the complete production tool inventory with trut
     openWorldHint: true,
     destructiveHint: true,
   });
+  assert.deepEqual(record(record(tools.import_reference_files).annotations), {
+    readOnlyHint: false,
+    openWorldHint: true,
+    destructiveHint: false,
+  });
 });
 
 test('ChatGPT submission has review-ready positive and negative cases without sensitive data', () => {
@@ -74,7 +80,7 @@ test('ChatGPT submission has review-ready positive and negative cases without se
   const negative = submission.negative_test_cases;
   assert.ok(Array.isArray(positive));
   assert.ok(Array.isArray(negative));
-  assert.equal(positive.length, 5);
+  assert.equal(positive.length, 6);
   assert.equal(negative.length, 3);
 
   const tools = new Set(expectedTools);
@@ -90,6 +96,9 @@ test('ChatGPT submission has review-ready positive and negative cases without se
     const value = record(testCase);
     assert.equal(value.tools_triggered, null);
   }
+  assert.ok(positive.some((testCase) =>
+    String(record(testCase).tools_triggered).includes('import_reference_files')
+  ));
 
   const serialized = JSON.stringify(submission);
   assert.doesNotMatch(serialized, /(?:card number|cvv|mfa code|password|access token|private key|\/Users\/|request[-_ ]?id)/i);

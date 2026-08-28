@@ -365,7 +365,7 @@ test('direct service construction requires explicit risk context and injected pa
   const source = readFileSync('frontend/src/server/mcp/server.ts', 'utf8');
   assert.match(
     source,
-    /createConfirmGenerationService\(\s*config\.accountUrl,\s*trialRiskContext,\s*\{\s*paidGenerationEnabled:\s*\(\)\s*=>\s*capabilities\.paidGeneration,\s*\}\s*\)/,
+    /createConfirmGenerationService\(\s*config\.accountUrl,\s*trialRiskContext,\s*\{[\s\S]*?paidGenerationEnabled:\s*\(\)\s*=>\s*capabilities\.paidGeneration,/,
   );
 });
 

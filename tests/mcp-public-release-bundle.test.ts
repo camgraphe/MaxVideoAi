@@ -65,6 +65,7 @@ const baseExpectedPublicFiles = [
   'examples/product-launch-plan.md',
   'examples/recover-a-generation.md',
   'examples/reference-to-video.md',
+  'scripts/import-reference-files.mjs',
   'skills/generate/SKILL.md',
   'skills/generate/agents/openai.yaml',
   'skills/generate/references/generation-safety.md',

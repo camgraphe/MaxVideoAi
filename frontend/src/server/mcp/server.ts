@@ -22,6 +22,11 @@ import {
   createDefaultReferenceUploadLinkService,
   type ReferenceUploadLink,
 } from '@/server/agent-api/create-reference-upload-link';
+import type {
+  ImportReferenceFilesInput,
+  ImportReferenceFilesResult,
+} from '@/server/agent-api/reference-file-import';
+import { createDefaultReferenceFileImportService } from '@/server/agent-api/reference-file-import';
 import { recommendAgentModels } from '@/server/agent-api/model-recommendations';
 import {
   calculateAgentProjectBudget,
@@ -66,6 +71,7 @@ import type {
 import type { McpConfig } from '@/server/mcp/config';
 import { buildMaxVideoAiMcpInstructions } from '@/server/mcp/instructions';
 import { registerGenerationResultApp } from '@/server/mcp/generation-result-app';
+import { registerReferenceUploadApp } from '@/server/mcp/reference-upload-app';
 import type { McpRuntimeCapabilities } from '@/server/mcp/operational-access';
 import { resolveMcpStagingCanaryGenerationEnvironment } from '@/server/mcp/provider-canary-access';
 import { resolveAgentGenerationRequestExecutability } from '@/server/agent-runtime/model-executability';
@@ -73,6 +79,7 @@ import { registerGetAccountStatusTool } from '@/server/mcp/tools/get-account-sta
 import { registerConfirmGenerationTool } from '@/server/mcp/tools/confirm-generation';
 import { registerCreateTopupLinkTool } from '@/server/mcp/tools/create-topup-link';
 import { registerCreateReferenceUploadLinkTool } from '@/server/mcp/tools/create-reference-upload-link';
+import { registerImportReferenceFilesTool } from '@/server/mcp/tools/import-reference-files';
 import { registerGetGenerationStatusTool } from '@/server/mcp/tools/get-generation-status';
 import { registerGetGenerationDownloadTool } from '@/server/mcp/tools/get-generation-download';
 import { registerListModelsTool } from '@/server/mcp/tools/list-models';
@@ -128,6 +135,10 @@ export type MaxVideoAiMcpServices = {
     input: import('@/server/agent-api/create-reference-upload-link').CreateReferenceUploadLinkInput,
     principal: AgentPrincipal,
   ): Promise<ReferenceUploadLink>;
+  importReferenceFiles?(
+    input: ImportReferenceFilesInput,
+    principal: AgentPrincipal,
+  ): Promise<ImportReferenceFilesResult>;
 };
 
 export type MaxVideoAiMcpServerOptions = {
@@ -207,6 +218,7 @@ export function createDefaultMaxVideoAiMcpServices(
     }),
     listMedia: (input, principal) => listAgentMedia(input, principal),
     createReferenceUploadLink: createDefaultReferenceUploadLinkService(config.accountUrl),
+    importReferenceFiles: createDefaultReferenceFileImportService(config.accountUrl),
   };
 }
 
@@ -235,8 +247,10 @@ export function createMaxVideoAiMcpServer(
   registerRecommendModelsTool(server, principal, services);
   registerCalculateProjectBudgetTool(server, principal, services);
   if (referenceUploads) {
+    registerReferenceUploadApp(server);
     registerListMediaTool(server, principal, services);
     registerCreateReferenceUploadLinkTool(server, principal, services);
+    registerImportReferenceFilesTool(server, principal, services);
   }
   if (paidGeneration) {
     registerGenerationResultApp(server);

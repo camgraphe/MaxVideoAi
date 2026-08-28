@@ -15,7 +15,7 @@ function requireFile(path: string): string {
   return readFileSync(path, 'utf8');
 }
 
-test('ChatGPT and Claude use official marks through one equal neutral action component', () => {
+test('Claude, ChatGPT, and Codex use official marks through one equal neutral action component', () => {
   const source = requireFile(`${componentsRoot}/McpClientActions.tsx`);
   const integrationHero = requireFile(`${integrationComponentsRoot}/IntegrationHeroSection.tsx`);
   const openAiDark = requireFile('frontend/public/brand/partners/openai/openai-mark-dark.svg');
@@ -34,6 +34,7 @@ test('ChatGPT and Claude use official marks through one equal neutral action com
   assert.doesNotMatch(source, /bg-white[^"\n]*dark:bg-white/);
   assert.doesNotMatch(integrationHero, /bg-white[^"\n]*dark:bg-white/);
   assert.equal((source.match(/h-6 w-6 object-contain/g) ?? []).length, 2);
+  assert.match(source, /sm:grid-cols-3/);
   assert.doesNotMatch(source, /preferred|primaryClient|OpenAI['"]/);
 });
 
@@ -291,9 +292,9 @@ test('client actions point to equally factual localized guides', async () => {
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
   const expectations = {
-    en: ['/integrations/chatgpt', '/integrations/claude'],
-    fr: ['/fr/integrations/chatgpt', '/fr/integrations/claude'],
-    es: ['/es/integraciones/chatgpt', '/es/integraciones/claude'],
+    en: ['/integrations/claude', '/integrations/chatgpt', '/integrations/codex'],
+    fr: ['/fr/integrations/claude', '/fr/integrations/chatgpt', '/fr/integrations/codex'],
+    es: ['/es/integraciones/claude', '/es/integraciones/chatgpt', '/es/integraciones/codex'],
   } as const;
   for (const locale of ['en', 'fr', 'es'] as const) {
     assert.deepEqual(

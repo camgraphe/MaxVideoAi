@@ -59,6 +59,7 @@ const OPERATIONAL_TOOLS = [
   ...DEFAULT_DISCOVERY_TOOLS,
   'list_media',
   'create_reference_upload_link',
+  'import_reference_files',
   'prepare_generation',
   'confirm_generation',
   'get_generation_status',
@@ -533,14 +534,15 @@ test('readiness packages follow the live registry and canonical localized route 
     .map((name) => readFileSync(join(root, 'docs/operations', name), 'utf8'))
     .join('\n');
   assert.doesNotMatch(activeRunbooks, /three-tool|three tools|three read-only tools/i);
-  assert.match(launchEvidence, /migration files 30–37 are present locally/i);
-  assert.match(launchEvidence, /staging application exercised quote, media, recovery, and handoff producers/i);
-  assert.doesNotMatch(launchEvidence, /migrations? 30–32 (?:are )?absent|migration[^\n]*\b(?:applied|unapplied)\b/i);
+  assert.match(launchEvidence, /Neon migrations 29–38 were verified on the\s+Production branch/i);
+  assert.match(launchEvidence, /Public smoke evidence returned HTTP 200/i);
+  assert.doesNotMatch(launchEvidence, /migrations? 30–32 (?:are )?absent/i);
 });
 
 test('directory facts do not outrun checked-in claims or host evidence', () => {
   assert.match(claims, /graphical Codex\/ChatGPT directory install has not been recorded/i);
-  assert.match(compatibility, /Last hosted checkpoint: 2026-08-26/);
+  assert.match(compatibility, /Last hosted checkpoint: 2026-08-27/);
+  assert.match(compatibility, /Publication: transport, OAuth, discovery, paid generation, reference uploads,[\s\S]{0,100}enabled/i);
   assert.match(compatibility, /ChatGPT Apps directory[\s\S]+Not run/i);
   assert.match(
     directory,
@@ -555,4 +557,5 @@ test('directory facts do not outrun checked-in claims or host evidence', () => {
     /moderation policy[^\n]*status[^\n]*`"deleted"`[^\n]*metadata remains accessible/i,
   );
   assert.doesNotMatch(directory, /moderation may retain deleted metadata/i);
+  assert.doesNotMatch(compatibility, /All eight flags[^\n]*remain `false`/i);
 });

@@ -19,6 +19,10 @@ codex plugin add maxvideoai@maxvideoai
 
 Start a new Codex task, then ask `$plan` to compare AI video models or `$generate` to prepare a concrete request. The first live MaxVideoAI action opens OAuth in your browser so you can sign in or create the account you want to connect. These commands validate the checked-in package path; they are not a claim of external marketplace approval.
 
+## Bring private references into the conversation
+
+ChatGPT imports authorized attachments and generated files as private assets. Compatible ChatGPT or Claude surfaces accept up to eight ordered files in-chat; Codex and Claude Code use the local helper. No public URL or Computer Use is needed. Files stay in the private MaxVideoAI Library; single-use links expire automatically.
+
 ## Choose your setup
 
 - [Claude connector setup](docs/claude.md) — add the remote MCP URL from Claude's connector settings and complete OAuth.

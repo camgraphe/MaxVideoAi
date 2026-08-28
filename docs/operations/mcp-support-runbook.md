@@ -1,10 +1,10 @@
 # MaxVideoAI MCP support and disclosure readiness
 
-Checked: 2026-08-27
+Checked: 2026-08-28
 Readiness: **DIRECT PRODUCTION RELEASE APPROVED — CUTOVER IN PROGRESS**
 
 This runbook is the support and disclosure boundary for the MaxVideoAI MCP production release. It is not a directory
-approval or a legal policy. Production registers 13 user-facing tools plus one app-only download-refresh helper listed
+approval or a legal policy. Production registers 14 model-visible tools plus one app-only download-refresh helper listed
 separately below. Marketing, indexation, transport, OAuth, discovery, paid generation, and reference uploads are approved
 for direct first-party publication. The promotional trial remains disabled: users must sign in and use their MaxVideoAI
 credit balance before confirming a paid generation.
@@ -12,12 +12,13 @@ credit balance before confirming a paid generation.
 | Tool profile | Exact tool inventory |
 | --- | --- |
 | Default discovery | `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget` |
-| Operational staging | `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`, `list_media`, `create_reference_upload_link`, `prepare_generation`, `confirm_generation`, `get_generation_status`, `list_recent_generations`, `present_generation`, `create_topup_link` |
+| Operational staging | `get_account_status`, `list_models`, `get_model_details`, `recommend_models`, `calculate_project_budget`, `list_media`, `create_reference_upload_link`, `import_reference_files`, `prepare_generation`, `confirm_generation`, `get_generation_status`, `list_recent_generations`, `present_generation`, `create_topup_link` |
 | App-only helper | `get_generation_download` |
 
-The operational inventory is checked-in and tested on the hosted staging revision recorded in the host compatibility
-matrix. This evidence covers the tested Claude Desktop and Codex CLI versions; directory approval and a fresh-spend
-production test remain separate post-cutover evidence.
+The current inventory is checked in and covered by local contracts. The hosted
+staging revision in the host compatibility matrix predates
+`import_reference_files`; its Claude Desktop and Codex CLI evidence therefore
+covers the previous 13-tool profile rather than the new direct-file path.
 
 ## Authoritative checked-in state
 
@@ -169,22 +170,26 @@ confirmation and left the wallet unchanged.
 
 ### Upload handoff
 
-Availability: `create_reference_upload_link` is absent from the default/public
-profile, present in controlled staging, and `referenceUploads=false` in the
-checked-in public configuration.
+Availability: `import_reference_files` and `create_reference_upload_link` are
+registered when the public `referenceUploads` capability is enabled.
 
-1. Do not ask the user to put a local path, base64 file, private URL, or credential into a tool argument.
-2. The staged handoff is short-lived, user-scoped, and selects the requested
-   image, video, or audio kind. A handoff is not proof that bytes were uploaded.
-3. A malformed or unsupported request may use `PARAMETER_INVALID`; return the accepted type/size constraints
-   only when those constraints are backed by the live upload implementation.
-4. The user completes the upload on the first-party MaxVideoAI web handoff; the
-   assistant then calls `list_media` again. Do not claim that the connected
-   client transferred it or that upload completed from handoff creation alone.
+1. Use `import_reference_files` only with user-authorized host file handles.
+   Never invent a URL or pass a raw local path, base64 file, or credential.
+2. The direct tool imports up to eight files. Preserve successful `assetId`
+   values and retry only failed inputs; no `list_media` call is needed after a
+   successful direct import.
+3. The handoff is short-lived, user-scoped, and selects the requested image,
+   video, or audio kind. A compatible host may render its in-chat importer. The
+   first-party browser page remains the manual fallback.
+4. Codex and Claude Code may use one handoff per local file with the packaged
+   helper. The helper reads local bytes without publishing a public URL or using
+   Computer Use.
+5. A handoff alone is not proof that bytes were uploaded. Claim completion only
+   from the returned asset ID or a subsequent browser-fallback `list_media` result.
 
 ### Reference validation
 
-Availability: reference listing, ingestion, and reuse are not in the public registry.
+Availability: reference listing, bounded private ingestion, and reuse are in the public operational profile.
 
 1. Do not send an arbitrary URL to a provider or fetch loopback, private-network, metadata-service, redirected, or
    unsupported content.

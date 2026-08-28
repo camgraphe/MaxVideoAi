@@ -27,7 +27,7 @@ test('P11 wallet proof calls the MCP account tool and three independent ledger q
   }
 });
 
-test('operational staging proof remains isolated and publication stays closed', () => {
+test('operational staging proof remains isolated from the active production publication', () => {
   const script = readFileSync('scripts/deploy-mcp-staging-vercel.sh', 'utf8');
   const runbook = readFileSync('docs/operations/mcp-staging-deployment.md', 'utf8');
   const publication = JSON.parse(
@@ -35,14 +35,14 @@ test('operational staging proof remains isolated and publication stays closed', 
   ) as Record<string, boolean>;
 
   assert.deepEqual(publication, {
-    publicMarketing: false,
-    publicIndexing: false,
-    transport: false,
-    oauth: false,
-    discovery: false,
-    paidGeneration: false,
+    publicMarketing: true,
+    publicIndexing: true,
+    transport: true,
+    oauth: true,
+    discovery: true,
+    paidGeneration: true,
     trial: false,
-    referenceUploads: false,
+    referenceUploads: true,
   });
   assert.match(script, /capture_production_baseline "\$ARTIFACTS\/production-before"/);
   assert.match(script, /capture_production_baseline "\$ARTIFACTS\/production-after"/);

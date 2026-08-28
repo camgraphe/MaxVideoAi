@@ -218,6 +218,7 @@ export async function collectPolicyFingerprintInput(): Promise<PolicyFingerprint
     calculateProjectBudget: unavailable,
     listMedia: unavailable,
     createReferenceUploadLink: unavailable,
+    importReferenceFiles: unavailable,
     prepareGeneration: unavailable,
     confirmGeneration: unavailable,
     getGenerationStatus: unavailable,

@@ -63,6 +63,7 @@ function baseServices(overrides: Partial<MaxVideoAiMcpServices> = {}): MaxVideoA
     async calculateProjectBudget() { throw new Error('not used'); },
     async listMedia() { return { items: [], nextCursor: null, hasMore: false }; },
     async createReferenceUploadLink() { throw new Error('not used'); },
+    async importReferenceFiles() { throw new Error('not used'); },
     async prepareGeneration() { throw new Error('not used'); },
     async confirmGeneration() { throw new Error('not used'); },
     async getGenerationStatus() { return buildAgentGenerationRecovery(status()); },
@@ -392,7 +393,7 @@ test('recent facade delegates strict cursor pagination and exact surface/status 
   );
 });
 
-test('operational gate registers the exact fourteen-tool order and default registry remains five tools', async (t) => {
+test('operational gate registers the exact fifteen-tool order and default registry remains five tools', async (t) => {
   const gated = await connected({}, { paidGeneration: true, referenceUploads: true });
   const defaults = await connected({}, { paidGeneration: false, referenceUploads: false });
   t.after(async () => {
@@ -407,6 +408,7 @@ test('operational gate registers the exact fourteen-tool order and default regis
     'calculate_project_budget',
     'list_media',
     'create_reference_upload_link',
+    'import_reference_files',
     'prepare_generation',
     'confirm_generation',
     'get_generation_status',

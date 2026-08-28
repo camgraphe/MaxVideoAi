@@ -3,6 +3,7 @@ import * as z from 'zod/v4';
 
 import type { AgentPrincipal } from '@/server/agent-api/principal';
 import type { MaxVideoAiMcpServices } from '@/server/mcp/server';
+import { REFERENCE_UPLOAD_APP_URI } from '@/server/mcp/reference-upload-app';
 import { runAgentTool } from '@/server/mcp/tool-result';
 
 export const createReferenceUploadLinkInputSchema = z.object({
@@ -29,6 +30,13 @@ export function registerCreateReferenceUploadLinkTool(
         destructiveHint: false,
         idempotentHint: false,
         openWorldHint: false,
+      },
+      _meta: {
+        ui: { resourceUri: REFERENCE_UPLOAD_APP_URI },
+        'ui/resourceUri': REFERENCE_UPLOAD_APP_URI,
+        'openai/outputTemplate': REFERENCE_UPLOAD_APP_URI,
+        'openai/toolInvocation/invoking': 'Preparing private upload…',
+        'openai/toolInvocation/invoked': 'Private upload ready',
       },
     },
     async (input) => runAgentTool(() => services.createReferenceUploadLink!(input, principal)),

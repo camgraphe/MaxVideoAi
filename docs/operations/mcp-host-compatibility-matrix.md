@@ -61,7 +61,7 @@ The `present_generation` descriptor and its versioned MCP Apps resource are cove
 | --- | --- | --- |
 | MCP TypeScript SDK 1.29.0 | Automated contracts cover initialization, tool discovery, schemas, annotations, authorization boundaries, and sanitized errors. | Contract pass. |
 | Claude Desktop 1.37937.1 on macOS | Loaded the custom staging connector through OAuth; read account/catalog/model data; compared 60-second budgets; prepared an exact Seedance 2.5 quote; listed private media; recovered a completed generation; rendered and played that result inline; opened the first-party continuation CTA; created a private reference-upload handoff; and created a signed top-up handoff with an exact ISO expiry. | Controlled staging pass including inline playback. Refresh, revocation, reconnect, fresh uploaded bytes, and a newly successful paid generation remain to be recorded. |
-| Codex CLI 0.149.0-alpha.4.3 on macOS | Loaded the installed MaxVideoAI plugin with an ephemeral staging URL override; completed OAuth-backed account, catalog, model-detail, budgeting, exact-quote, and top-up-handoff calls. The final wallet remained unchanged. | Controlled staging pass. The normal plugin endpoint remains production and intentionally unavailable. A non-blocking MCP-client shutdown warning followed completed turns. |
+| Codex CLI 0.149.0-alpha.4.3 on macOS | Loaded the installed MaxVideoAI plugin with an ephemeral staging URL override; completed OAuth-backed account, catalog, model-detail, budgeting, exact-quote, and top-up-handoff calls. The final wallet remained unchanged. | Historical controlled staging pass. Production was verified later with Codex CLI 0.150.0-alpha.8 as recorded above. A non-blocking MCP-client shutdown warning followed the staging turns. |
 | Codex desktop / ChatGPT app surface | The bundled Codex CLI path and plugin package were exercised, but no fresh graphical Codex task or ChatGPT app-directory installation was recorded. | Partial; do not claim ChatGPT app-directory availability. |
 | ChatGPT web custom app / full MCP | OpenAI currently documents full MCP for eligible Business and Enterprise/Edu workspaces on ChatGPT web; Pro access is limited to read/fetch. No MaxVideoAI submission, install, OAuth, action, or tool-rendering evidence has been recorded on this path. | Not run; do not claim host validation. |
 | Claude Code | Shared Claude adapter and skill contracts exist, but this exact host was not exercised. | Not run. |
@@ -95,13 +95,13 @@ remain creative while the server supplies current capabilities, constraints,
 prices, safe destinations, and confirmation boundaries.
 
 This evidence does **not** establish that MaxVideoAI is listed or approved in a
-ChatGPT, Codex, or Claude directory; that production is enabled; that every host
-version is compatible; that OAuth refresh/revocation is proven; or that LAS
+ChatGPT, Codex, or Claude directory; that every host version is compatible; that
+OAuth refresh/revocation is proven; or that LAS
 video-to-video works. It also does not replace the final controlled tests for a
 fresh private upload, a newly paid render, provider failure/refund, and
 disconnect/reconnect.
 
-## Remaining release evidence
+## Remaining post-launch evidence
 
 1. Record OAuth denial, refresh, revocation, authentication loss, and reconnect
    on the exact public-launch host versions.
@@ -113,9 +113,9 @@ disconnect/reconnect.
    leaking prompt, media, payment, or credential data.
 5. Test the final public install instructions on the precise ChatGPT/Codex and
    Claude surfaces that will be named in marketing.
-6. Complete support, legal, observability, SEO/GEO, directory, and rollback
-   review before changing any checked-in publication flag.
+6. Continue support, legal, observability, SEO/GEO, directory, and rollback
+   review against the active production publication.
 
-All eight flags in `frontend/config/mcp-publication.json` remain `false`.
-Production, indexing, directory submission, paid public access, trial, and
-public reference uploads therefore remain closed.
+The production publication enables public marketing, indexing, transport,
+OAuth, discovery, paid generation, and reference uploads. The introductory
+trial remains disabled, and directory submission remains a separate process.

@@ -60,7 +60,7 @@ test('Seedance 2.5 specifications expose the factual public model card contract'
   assert.ok(spec?.keySpecs);
 
   assert.equal(spec.keySpecs.maxDuration, '4-30s');
-  assert.equal(spec.keySpecs.maxResolution, '480p / 720p');
+  assert.equal(spec.keySpecs.maxResolution, '480p / 720p / 1080p');
   assert.deepEqual(spec.keySpecs.aspectRatios, [
     '21:9',
     '16:9',
@@ -82,11 +82,11 @@ test('Seedance 2.5 specifications expose the factual public model card contract'
   assert.equal(spec.keySpecs.referenceImageStyle, 'Up to 30 image references');
   assert.equal(spec.keySpecs.referenceVideo, 'Up to 10 video references');
   assert.equal(spec.keySpecs.referenceAudio, 'Up to 10 audio references');
-  assert.deepEqual(spec.sources ?? [], []);
+  assert.deepEqual(spec.sources ?? [], ['https://ai.byteplus.com/ark']);
   assert.deepEqual(spec.provenance, {
     basis: 'maxvideoai-production-route-contract',
     mechanicsSources: ['https://docs.byteplus.com/en/docs/modelark/1520757'],
-    note: 'Generic ModelArk asynchronous video task mechanics only; not evidence for Seedance 2.5 limits.',
+    note: 'The live ModelArk product announcement is the source for Seedance 2.5 1080p availability; the documentation URL covers generic asynchronous video task mechanics only.',
   });
 });
 

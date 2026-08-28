@@ -114,7 +114,7 @@
       },
       "tools": {
         "items": {
-          "ai-video-assistant": "ChatGPT & Claude video assistant",
+          "ai-video-assistant": "Claude, ChatGPT & Codex video assistant",
           "character-builder": "Consistent Character AI",
           "angle": "Change Camera Angle",
           "image": "Generate image"
@@ -3985,6 +3985,7 @@
       "title": "Settings",
       "tabs": {
         "account": "Account",
+        "connections": "Connected apps",
         "team": "Team",
         "privacy": "Privacy & Safety",
         "notifications": "Notifications"

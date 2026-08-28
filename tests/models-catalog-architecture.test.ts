@@ -3,6 +3,11 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
 import { buildModelExamplesHref } from '../frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-decision-data.ts';
+import {
+  extractMaxResolution,
+  getCatalogBySlug,
+  loadEngineKeySpecs,
+} from '../frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-utils.ts';
 
 const root = process.cwd();
 const pagePath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/ModelsCatalogPage.tsx');
@@ -134,6 +139,19 @@ test('Seedance 2.5 model cards link to the shared Seedance examples family', () 
     pathname: '/examples/[model]',
     params: { model: 'seedance' },
   });
+});
+
+test('Seedance 2.5 model cards expose the current 1080p ceiling', async () => {
+  const keySpecs = await loadEngineKeySpecs();
+  const catalogEntry = getCatalogBySlug().get('seedance-2-5');
+  const authoredResolution = keySpecs.get('seedance-2-5')?.maxResolution;
+  const maxResolution = extractMaxResolution(
+    authoredResolution as string | undefined,
+    catalogEntry?.engine.resolutions,
+  );
+
+  assert.match(String(authoredResolution), /1080p/);
+  assert.deepEqual(maxResolution, { label: '1080p', value: 1080 });
 });
 
 test('models catalog JSON-LD helper owns schema payload construction', () => {

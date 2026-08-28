@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import test from 'node:test';
 
 import { normalizeGoogleVertexOmniInteraction } from '../frontend/src/server/video-providers/google-vertex-omni/response';
+import { GoogleVertexOmniError } from '../frontend/src/server/video-providers/google-vertex-omni/errors';
 import { submitGoogleVertexOmniGenerateTask } from '../frontend/app/api/generate/_lib/google-vertex-omni-submission';
 import { runGoogleVertexOmniPoll } from '../frontend/server/google-vertex-omni-poll';
 
@@ -107,7 +108,6 @@ test('Gemini Omni Flash direct submission stores the Interactions id and provide
     pendingReceipt: null,
     paymentMode: 'wallet',
     walletChargeReserved: false,
-    fallbackToFalEnabled: false,
     falPayload: {
       engineId: 'gemini-omni-flash',
       prompt: 'A documentary-style product demo with crisp synced audio',
@@ -117,8 +117,6 @@ test('Gemini Omni Flash direct submission stores the Interactions id and provide
       audio: true,
       extraInputValues: { store_interaction: true },
     },
-    falInputSummary: { hasImage: false, hasVideo: false, hasAudio: false, referenceImageCount: 0 },
-    isLumaRay2: false,
     batchId: null,
     groupId: null,
     iterationIndex: null,
@@ -130,6 +128,7 @@ test('Gemini Omni Flash direct submission stores the Interactions id and provide
       metrics.push({ kind, event });
     },
     deps: {
+      outputGcsPrefix: 'gs://maxvideoai-vertex/shared-inputs',
       queryFn: async (sql, params) => {
         queries.push({ sql, params });
         if (/INSERT INTO provider_attempts/.test(sql)) {
@@ -161,10 +160,9 @@ test('Gemini Omni Flash direct submission stores the Interactions id and provide
   assert.equal(metrics[0]?.kind, 'accepted');
 });
 
-test('Gemini Omni Flash unsupported direct input fails without Fal when fallback is disabled', async () => {
+test('Gemini Omni Flash unsupported direct input fails on Google without invoking another provider', async () => {
   const queries: Array<{ sql: string; params?: unknown[] }> = [];
   const metrics: Array<{ kind: string; event?: unknown }> = [];
-  let falCalls = 0;
 
   const result = await submitGoogleVertexOmniGenerateTask({
     jobId: 'job_omni_unsupported',
@@ -183,7 +181,6 @@ test('Gemini Omni Flash unsupported direct input fails without Fal when fallback
     pendingReceipt: null,
     paymentMode: 'wallet',
     walletChargeReserved: false,
-    fallbackToFalEnabled: false,
     falPayload: {
       engineId: 'gemini-omni-flash',
       prompt: 'A product launch video',
@@ -192,8 +189,6 @@ test('Gemini Omni Flash unsupported direct input fails without Fal when fallback
       aspectRatio: '16:9',
       audio: true,
     },
-    falInputSummary: { hasImage: false, hasVideo: false, hasAudio: false, referenceImageCount: 0 },
-    isLumaRay2: false,
     batchId: null,
     groupId: null,
     iterationIndex: null,
@@ -209,17 +204,12 @@ test('Gemini Omni Flash unsupported direct input fails without Fal when fallback
         queries.push({ sql, params });
         return [] as never;
       },
-      submitFalGenerateTaskFn: async () => {
-        falCalls += 1;
-        throw new Error('Fal fallback should not run');
-      },
     },
   });
 
   assert.equal(result.ok, false);
   assert.equal(result.status, 400);
   assert.equal(result.body.error, 'negative_prompt_not_supported');
-  assert.equal(falCalls, 0);
   assert.ok(queries.some((entry) => /SET status = 'failed'/.test(entry.sql)));
   assert.equal(metrics[0]?.kind, 'rejected');
 });
@@ -341,12 +331,104 @@ test('Gemini Omni Flash poll copies inline Interactions video data before markin
   assert.ok(queries.some((entry) => /SET status = 'completed'/.test(entry.sql)));
 });
 
+test('Gemini Omni Flash poll fails and refunds an accepted job when Google cannot retrieve its interaction', async () => {
+  const queries: Array<{ sql: string; params?: unknown[] }> = [];
+
+  const response = await runGoogleVertexOmniPoll({
+    deps: {
+      queryFn: async (sql, params) => {
+        queries.push({ sql, params });
+        if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {
+          return [baseJob] as never;
+        }
+        if (/UPDATE app_jobs/.test(sql) && /RETURNING job_id/.test(sql)) {
+          return [{ job_id: baseJob.job_id }] as never;
+        }
+        if (/INSERT INTO app_receipts/.test(sql)) {
+          return [{ id: 'refund_omni_123' }] as never;
+        }
+        if (/FROM provider_attempts/.test(sql)) {
+          return [{ id: 44, attempt_index: 1 }] as never;
+        }
+        return [] as never;
+      },
+      getGoogleVertexOmniClientFn: () => ({
+        createInteraction: async () => {
+          throw new Error('not used');
+        },
+        fetchInteraction: async () => {
+          throw new GoogleVertexOmniError('Request contains an invalid argument.', {
+            status: 400,
+            code: 'invalid_request',
+            errorClass: 'invalid_request',
+          });
+        },
+        downloadOutputUri: async () => {
+          throw new Error('not used');
+        },
+      }),
+    },
+  });
+
+  const body = await response.json();
+  assert.equal(body.updates, 1);
+  assert.ok(queries.some((entry) => /SET status = 'failed'/.test(entry.sql)));
+  assert.ok(queries.some((entry) => /INSERT INTO app_receipts/.test(entry.sql)));
+  assert.ok(queries.some((entry) => /SET payment_status = 'refunded_wallet'/.test(entry.sql)));
+  assert.ok(queries.some((entry) => /UPDATE provider_attempts/.test(entry.sql)));
+});
+
+test('Gemini Omni Flash poll marks unresolved jobs for manual review after 45 minutes without refunding', async () => {
+  const queries: Array<{ sql: string; params?: unknown[] }> = [];
+  let fetchCalls = 0;
+
+  const response = await runGoogleVertexOmniPoll({
+    deps: {
+      queryFn: async (sql, params) => {
+        queries.push({ sql, params });
+        if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {
+          return [{ ...baseJob, created_at: new Date(Date.now() - 46 * 60_000).toISOString() }] as never;
+        }
+        if (/FROM provider_attempts/.test(sql)) {
+          return [{ id: 45, attempt_index: 1 }] as never;
+        }
+        return [] as never;
+      },
+      getGoogleVertexOmniClientFn: () => ({
+        createInteraction: async () => {
+          throw new Error('not used');
+        },
+        fetchInteraction: async () => {
+          fetchCalls += 1;
+          throw new Error('expired jobs should not reach Google');
+        },
+        downloadOutputUri: async () => {
+          throw new Error('not used');
+        },
+      }),
+    },
+  });
+
+  const body = await response.json();
+  assert.equal(body.updates, 1);
+  assert.equal(fetchCalls, 0);
+  assert.ok(queries.some((entry) => /SET status = 'provider_polling_stalled'/.test(entry.sql)));
+  assert.equal(queries.some((entry) => /INSERT INTO app_receipts/.test(entry.sql)), false);
+  assert.equal(queries.some((entry) => /refunded_wallet/.test(entry.sql)), false);
+});
+
 test('Gemini Omni Flash polling is isolated and exposed through a cron route', () => {
   assert.ok(existsSync(pollPath), 'Gemini Omni Flash poller should exist');
   assert.ok(existsSync(routePath), 'Gemini Omni Flash cron route should exist');
   const source = readFileSync(pollPath, 'utf8');
   assert.doesNotMatch(source, /submitFalGenerateTask/);
   assert.doesNotMatch(source, /generateVideo/);
+  const submissionSource = readFileSync(
+    join(root, 'frontend/app/api/generate/_lib/google-vertex-omni-submission.ts'),
+    'utf8'
+  );
+  assert.doesNotMatch(submissionSource, /submitFalGenerateTask/);
+  assert.doesNotMatch(submissionSource, /submitFalFromGoogleOmni/);
   assert.match(readFileSync(routePath, 'utf8'), /x-google-vertex-omni-poll-token/);
   assert.match(readFileSync(vercelConfigPath, 'utf8'), /google-vertex-omni-poll/);
 });

@@ -56,6 +56,16 @@ test('default account service uses the resolved MCP account URL for production a
   }
 });
 
+test('operational default services include the direct private reference importer', () => {
+  const services = createDefaultMaxVideoAiMcpServices(
+    config('https://maxvideoai.com'),
+    { clientIp: null, userAgent: null },
+    operationalCapabilities,
+  );
+
+  assert.equal(typeof services.importReferenceFiles, 'function');
+});
+
 test('official staging config reaches the real default top-up service while custom HTTPS origins stay rejected', async () => {
   const stagingConfig = resolveMcpConfig({
     NODE_ENV: 'production',

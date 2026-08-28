@@ -17,6 +17,7 @@ import {
   MCP_REFERENCE_UPLOAD_CHUNK_BYTES,
   createReferenceUploadAbortHandler,
   createReferenceUploadCompleteHandler,
+  createReferenceUploadOptionsHandler,
   createReferenceUploadPartHandler,
   createReferenceUploadStartHandler,
 } from '../frontend/src/server/uploads/create-reference-direct-upload-handlers';
@@ -112,6 +113,72 @@ test('start accepts the exact maximum, rejects one byte over, and returns no rep
   }), { params: Promise.resolve({ token }) });
   assert.equal(over.status, 413);
   assert.equal(attempts, 1);
+});
+
+test('a short-lived upload capability lets an MCP App upload without a MaxVideoAI browser cookie', async () => {
+  let routeAuthReads = 0;
+  let capabilityReads = 0;
+  const handler = createReferenceUploadStartHandler({
+    ...common,
+    isSameOriginRequest: () => false,
+    async getRouteAuthContext() {
+      routeAuthReads += 1;
+      return { userId: null } as never;
+    },
+    async getUploadSessionByToken(receivedToken: string) {
+      capabilityReads += 1;
+      assert.equal(receivedToken, token);
+      return session({ claimId: null, claimedAt: null });
+    },
+    async getOwnedUploadSession() { return session({ claimId: null, claimedAt: null }); },
+    async claimUploadSessionForUpload() { return session(); },
+    async createReferenceUploadAttempt(input) {
+      return attempt({ uploadId: input.uploadId, declaredSize: input.declaredSize });
+    },
+  } as never);
+  const request = jsonRequest('/start', {
+    fileName: 'reference.mp4',
+    declaredMime: 'video/mp4',
+    sizeBytes: 5,
+    fileSha256: 'a'.repeat(64),
+  });
+  request.headers.set('origin', 'https://claude.ai');
+  request.headers.set('authorization', `Bearer ${token}`);
+
+  const response = await handler(request, { params: Promise.resolve({ token }) });
+
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('access-control-allow-origin'), '*');
+  assert.equal(routeAuthReads, 0);
+  assert.equal(capabilityReads, 1);
+});
+
+test('MCP Apps can preflight the private upload endpoints without cookies or exposing credentials', async () => {
+  const handler = createReferenceUploadOptionsHandler({ isEnabled: () => true });
+  const request = new NextRequest(
+    `https://maxvideoai.com/api/mcp/reference-upload/${token}/start`,
+    {
+      method: 'OPTIONS',
+      headers: {
+        origin: 'https://claude.ai',
+        'access-control-request-method': 'POST',
+        'access-control-request-headers': 'authorization,content-type,x-upload-id',
+      },
+    },
+  );
+
+  const response = await handler(request);
+
+  assert.equal(response.status, 204);
+  assert.equal(response.headers.get('access-control-allow-origin'), '*');
+  assert.equal(response.headers.get('access-control-allow-methods'), 'POST, OPTIONS');
+  assert.match(response.headers.get('access-control-allow-headers') ?? '', /Authorization/);
+  assert.match(response.headers.get('access-control-allow-headers') ?? '', /X-Content-SHA256/);
+  assert.equal(response.headers.get('access-control-allow-credentials'), null);
+  assert.equal(response.headers.get('cache-control'), 'private, no-store');
+
+  const disabled = await createReferenceUploadOptionsHandler({ isEnabled: () => false })(request);
+  assert.equal(disabled.status, 404);
 });
 
 test('production reference uploads use the isolated production storage namespace', async () => {
@@ -317,7 +384,12 @@ test('completion lease allows one persister and recovery reuses the staged canon
       ];
     },
     async getStorageObjectBuffer(key: string) { return Buffer.from(key === 'part-1' ? 'abcd' : 'e'); },
-    async storeVideoUpload() { stores += 1; return { assetId: publicAssetId } as never; },
+    async storeVideoUpload(input) {
+      assert.equal(input.storageAcl, null);
+      assert.equal(input.storageCacheControl, 'private, no-store');
+      stores += 1;
+      return { assetId: publicAssetId } as never;
+    },
     async stageReferenceUploadAttempt() { return attempt({ state: 'staged', leaseId, stagedAssetId: publicAssetId, contentSha256: attempt().fileSha256 }); },
     async completeUploadSession() { return session({ state: 'uploaded', assetId: publicAssetId }) as never; },
     async completeReferenceUploadAttempt() { return attempt({ state: 'completed', stagedAssetId: publicAssetId }); },
@@ -408,7 +480,9 @@ test('duplicate MCP image returns the existing opaque asset without inventing cl
       ];
     },
     async getStorageObjectBuffer(key: string) { return Buffer.from(key === 'part-1' ? 'abcd' : 'e'); },
-    async storeImageUpload() {
+    async storeImageUpload(input) {
+      assert.equal(input.storageAcl, null);
+      assert.equal(input.storageCacheControl, 'private, no-store');
       return { assetId: 'existing-image-row' } as never;
     },
     async loadStoredImageUploadRouteAsset() {
@@ -942,6 +1016,7 @@ test('browser and deployed routes use chunk relay and expose no signed PUT capab
     const source = readFileSync(`frontend/app/api/mcp/reference-upload/[token]/${route}/route.ts`, 'utf8');
     assert.match(source, /resolveMcpRuntimeCapabilities/u);
     assert.match(source, /getMcpRequestHost/u);
+    assert.match(source, /export const OPTIONS/u);
   }
   assert.match(client, /\/part/u);
   assert.match(client, /x-content-sha256/iu);

@@ -172,9 +172,9 @@ test('pay-as-you-go runtime data uses market-adapted Spanish and French copy', (
 
   assert.match(es, /Generador de video con IA de pago por uso/);
   assert.match(es, /cotización en tiempo real/);
-  assert.doesNotMatch(es, /vídeo|presupuesto en directo|price lookup|Example settings|Live quote/);
+  assert.doesNotMatch(es, /vídeo|presupuesto en directo|price lookup|Example settings|Live quote| as the | for alternate| for lighter| for lower-cost/);
 
   assert.match(fr, /Générateur de vidéos IA sans abonnement/);
   assert.match(fr, /paiement à l’usage/);
-  assert.doesNotMatch(fr, /price lookup|Example settings|Live quote/);
+  assert.doesNotMatch(fr, /price lookup|Example settings|Live quote| as the | for alternate| for lighter| for lower-cost/);
 });

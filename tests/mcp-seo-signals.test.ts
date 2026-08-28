@@ -177,12 +177,12 @@ test('MCP metadata matches the approved intent and canonical locale routes', asy
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
   const metadata = (['en', 'fr', 'es'] as const).map((locale) => getMcpPageCopy(locale).meta);
-  assert.equal(metadata[0]?.title, 'MaxVideoAI for ChatGPT & Claude | AI Video App');
-  assert.equal(metadata[1]?.title, 'MaxVideoAI pour ChatGPT et Claude | Vidéo IA');
-  assert.equal(metadata[2]?.title, 'MaxVideoAI para ChatGPT y Claude | Vídeo con IA');
-  assert.match(metadata[0]?.description ?? '', /ChatGPT.*Claude.*Codex.*prompts.*references.*budgets.*exact price.*generation/i);
-  assert.match(metadata[1]?.description ?? '', /ChatGPT.*Claude.*Codex.*prompts.*références.*budgets.*prix exact.*génération/i);
-  assert.match(metadata[2]?.description ?? '', /ChatGPT.*Claude.*Codex.*prompts.*referencias.*presupuestos.*precio exacto.*generación/i);
+  assert.equal(metadata[0]?.title, 'MaxVideoAI for Claude, ChatGPT & Codex | AI Video');
+  assert.equal(metadata[1]?.title, 'MaxVideoAI pour Claude, ChatGPT et Codex | Vidéo IA');
+  assert.equal(metadata[2]?.title, 'MaxVideoAI para Claude, ChatGPT y Codex | Vídeo IA');
+  assert.match(metadata[0]?.description ?? '', /Claude.*ChatGPT.*Codex.*prompts.*references.*budgets.*exact price.*generation/i);
+  assert.match(metadata[1]?.description ?? '', /Claude.*ChatGPT.*Codex.*prompts.*références.*budgets.*prix exact.*génération/i);
+  assert.match(metadata[2]?.description ?? '', /Claude.*ChatGPT.*Codex.*prompts.*referencias.*presupuestos.*precio exacto.*generación/i);
   for (const meta of metadata) {
     assert.doesNotMatch(`${meta.title} ${meta.description}`, /preview|préversion|vista previa|host validation|local implementation/i);
   }
@@ -364,6 +364,16 @@ test('contextual MCP links are localized, varied, and absent until the shared ga
     const links = placements.map((placement) => getMcpInternalLink(locale, placement, enabledPublication));
     assert.ok(links.every(Boolean));
     assert.equal(new Set(links.map((link) => link?.label)).size, placements.length);
+    const namedPlacements = new Set(['home', 'footer', 'payg', 'model', 'examples', 'docs']);
+    for (const [index, link] of links.entries()) {
+      if (!namedPlacements.has(placements[index])) continue;
+      const label = link?.label ?? '';
+      assert.match(label, /Claude/);
+      assert.match(label, /ChatGPT/);
+      assert.match(label, /Codex/);
+      assert.ok(label.indexOf('Claude') < label.indexOf('ChatGPT'));
+      assert.ok(label.indexOf('ChatGPT') < label.indexOf('Codex'));
+    }
     const expectedHref = locale === 'en' ? '/mcp' : `/${locale}/mcp`;
     links.forEach((link) => assert.equal(link?.href, expectedHref));
   }

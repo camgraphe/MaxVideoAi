@@ -21,6 +21,7 @@ const allowedTools = new Set([
   'calculate_project_budget',
   'list_media',
   'create_reference_upload_link',
+  'import_reference_files',
   'prepare_generation',
   'confirm_generation',
   'get_generation_status',
@@ -181,7 +182,7 @@ test('human manifests and MCP discovery metadata expose one canonical public ide
     $schema: 'https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json',
     name: 'com.maxvideoai/maxvideoai',
     title: 'MaxVideoAI',
-    description: 'Plan, compare, price, generate, and recover AI video with current model and account context.',
+    description: 'Plan, compare, price, generate, and recover AI video from compatible MCP clients.',
     version: packageVersion,
     remotes: [{ type: 'streamable-http', url: endpointUrl }],
     repository: {
@@ -314,7 +315,7 @@ test('the plugin packages self-contained outcome skills with explicit routing bo
     const referenceFiles = readdirSync(referencesRoot).sort();
     assert.deepEqual([...new Set(linkedReferences)].sort(), referenceFiles, `${skillName} references must resolve without orphans`);
 
-    const toolNames = skill.match(/\b(?:get_account_status|list_models|get_model_details|recommend_models|calculate_project_budget|list_media|create_reference_upload_link|prepare_generation|confirm_generation|get_generation_status|list_recent_generations|present_generation|create_topup_link)\b/g) ?? [];
+    const toolNames = skill.match(/\b(?:get_account_status|list_models|get_model_details|recommend_models|calculate_project_budget|list_media|create_reference_upload_link|import_reference_files|prepare_generation|confirm_generation|get_generation_status|list_recent_generations|present_generation|create_topup_link)\b/g) ?? [];
     assert.ok(toolNames.length > 0);
     for (const tool of toolNames) assert.ok(allowedTools.has(tool), `unknown tool ${tool}`);
   }
@@ -340,8 +341,11 @@ test('planning and execution skills preserve distinct decisions and paid-action 
   assert.doesNotMatch(plan, /\bconfirm_generation\b/);
 
   assert.match(generate, /get_model_details/);
-  assert.match(generate, /list_media.*create_reference_upload_link/is);
-  assert.match(generate, /create_reference_upload_link.*(?:fails|denied|unavailable).*?(?:host attachment|local attachment)/is);
+  assert.match(generate, /list_media.*import_reference_files.*create_reference_upload_link/is);
+  assert.match(generate, /import_reference_files.*(?:host|attachment|generation result).*asset IDs/is);
+  assert.match(generate, /create_reference_upload_link.*(?:in-chat|browser|local helper)/is);
+  assert.match(generate, /local helper.*(?:raw local path|public URL)|(?:raw local path|public URL).*local helper/is);
+  assert.doesNotMatch(generate, /never substitute a host attachment or local attachment/i);
   assert.match(generate, /required.*(?:reference|asset).*missing.*exact quote.*estimate/is);
   assert.match(generate, /expiresAt.*UTC.*QUOTE_EXPIRED/is);
   assert.match(generate, /image.*video.*audio.*reference/is);
@@ -366,16 +370,19 @@ test('the package explains the customer-facing account and library journey', () 
   const readme = read('README.md');
   const safety = read('skills/generate/references/generation-safety.md');
 
-  assert.match(readme, /^# MaxVideoAI for ChatGPT, Claude & Codex$/m);
+  assert.match(readme, /^# MaxVideoAI for Claude, ChatGPT or Codex$/m);
   assert.match(readme, /MaxVideoAI is a multi-model AI video production service exposed through a remote MCP server and packaged for agent workflows/i);
   assert.match(readme, /Plan\. Compare\. Price\. Approve\. Generate\./);
   assert.match(readme, /existing MaxVideoAI credits/i);
   assert.match(readme, /MaxVideoAI\s+Library/i);
   assert.match(readme, /sign in or create/i);
   assert.match(readme, /free to connect/i);
-  assert.match(readme, /Setup guides: \[Claude\][^\n]*· \[Codex\][^\n]*· \[ChatGPT\]/i);
+  assert.match(readme, /Setup guides: \[Claude\][^\n]*· \[ChatGPT\][^\n]*· \[Codex\]/i);
   assert.match(readme, /https:\/\/maxvideoai\.com\/docs\/mcp/);
   assert.match(readme, /Try asking/i);
+  assert.match(readme, /private.*(?:attachment|generated result).*asset/is);
+  assert.match(readme, /Codex.*Claude Code.*local helper|local helper.*Codex.*Claude Code/is);
+  assert.match(readme, /without.*public URL.*Computer Use/is);
   assert.match(readme, /codex plugin marketplace add camgraphe\/MaxVideoAi --ref maxvideoai-plugin-v0\.2\.0/);
   assert.match(readme, /codex plugin add maxvideoai@maxvideoai/);
   assert.doesNotMatch(readme, /Designed for ChatGPT|works with ChatGPT|available in ChatGPT|verified today in Claude and Codex/i);
@@ -460,7 +467,7 @@ test('the package ships current setup, privacy, workflow, and recovery guides', 
   const chatgpt = read('docs/chatgpt.md');
   assert.match(chatgpt, /Business and Enterprise\/Edu/i);
   assert.match(chatgpt, /Pro[^\n]*(?:read\/fetch|read and fetch)/i);
-  assert.match(chatgpt, /setup guide to validate|validate this setup/i);
+  assert.match(chatgpt, /Plugins[\s\S]{0,160}Apps[\s\S]{0,80}if[^.]*shown/i);
   assert.match(chatgpt, /https:\/\/help\.openai\.com\/en\/articles\/12584461-developer-mode-apps-and-full-mcp-connectors-in-chatgpt-beta/);
   assert.match(chatgpt, /https:\/\/help\.openai\.com\/en\/articles\/11487775-connectors-in-chatgpt/);
   assert.doesNotMatch(chatgpt, /Designed for ChatGPT|works with ChatGPT|available in ChatGPT/i);

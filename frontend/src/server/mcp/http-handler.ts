@@ -97,6 +97,7 @@ const AUDITABLE_TOOL_NAMES = new Set([
   'create_topup_link',
   'list_media',
   'create_reference_upload_link',
+  'import_reference_files',
 ]);
 
 async function readJsonRpcResponse(response: Response): Promise<Record<string, unknown> | null> {

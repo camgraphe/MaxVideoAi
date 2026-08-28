@@ -1,9 +1,11 @@
 "use client";
 
 import { useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { FlagPill } from '@/components/FlagPill';
+import { SettingsTabs } from '@/components/settings/SettingsTabs';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useMarketingPreference } from '@/hooks/useMarketingPreference';
 import { FEATURES } from '@/content/feature-flags';
@@ -13,13 +15,13 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import { authFetch } from '@/lib/authFetch';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 import { Button } from '@/components/ui/Button';
-
-type Tab = 'account' | 'privacy' | 'notifications';
+import { resolveSettingsContentTab } from '@/lib/settings-navigation';
 
 const DEFAULT_SETTINGS_COPY = {
   title: 'Settings',
   tabs: {
     account: 'Account',
+    connections: 'Connected apps',
     team: 'Team',
     privacy: 'Privacy & Safety',
     notifications: 'Notifications',
@@ -80,7 +82,8 @@ const DEFAULT_SETTINGS_COPY = {
 type SettingsCopy = typeof DEFAULT_SETTINGS_COPY;
 
 export default function SettingsPage() {
-  const [tab, setTab] = useState<Tab>('account');
+  const searchParams = useSearchParams();
+  const tab = resolveSettingsContentTab(searchParams?.get('tab'));
   const { loading: authLoading, user } = useRequireAuth({ redirectIfLoggedOut: false });
   const { t } = useI18n();
   const rawCopy = t('workspace.settings', DEFAULT_SETTINGS_COPY);
@@ -106,19 +109,13 @@ export default function SettingsPage() {
         <main className="flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
           <h1 className="mb-4 text-xl font-semibold text-text-primary">{copy.title}</h1>
 
-          <nav className="mb-4 flex flex-wrap gap-2" aria-label="Settings tabs">
-            <TabLink id="account" label={copy.tabs.account} active={tab === 'account'} onClick={() => setTab('account')} />
-            <TabLink id="privacy" label={copy.tabs.privacy} active={tab === 'privacy'} onClick={() => setTab('privacy')} />
-            <TabLink
-              id="notifications"
-              label={copy.tabs.notifications}
-              active={tab === 'notifications'}
-              onClick={() => setTab('notifications')}
-              badgeLive={notificationsLive}
-              badgeSrLive={copy.notifications.srLive}
-              badgeSrSoon={copy.notifications.srSoon}
-            />
-          </nav>
+          <SettingsTabs
+            activeTab={tab}
+            labels={copy.tabs}
+            notificationsLive={notificationsLive}
+            notificationsLiveLabel={copy.notifications.srLive}
+            notificationsSoonLabel={copy.notifications.srSoon}
+          />
 
           {tab === 'account' && <AccountTab user={user} copy={copy.account} />}
           {tab === 'privacy' && <PrivacyTab guest={isGuest} copy={copy.privacy} />}
@@ -126,48 +123,6 @@ export default function SettingsPage() {
         </main>
       </div>
     </div>
-  );
-}
-
-function TabLink({
-  id,
-  label,
-  active,
-  onClick,
-  badgeLive,
-  badgeSrLive,
-  badgeSrSoon,
-}: {
-  id: string;
-  label: string;
-  active: boolean;
-  onClick: () => void;
-  badgeLive?: boolean;
-  badgeSrLive?: string;
-  badgeSrSoon?: string;
-}) {
-  return (
-    <Button
-      type="button"
-      id={`settings-tab-${id}`}
-      onClick={onClick}
-      variant="outline"
-      size="sm"
-      className={`px-3 text-sm ${
-        active ? 'border-brand bg-surface text-text-primary shadow-card hover:border-brand' : 'border-border bg-bg text-text-secondary hover:bg-surface'
-      }`}
-      aria-current={active ? 'page' : undefined}
-    >
-      <span className="flex items-center gap-2">
-        {label}
-        {badgeLive === undefined ? null : (
-          <>
-            <FlagPill live={badgeLive} />
-            <span className="sr-only">{badgeLive ? badgeSrLive ?? 'Live' : badgeSrSoon ?? 'Coming soon'}</span>
-          </>
-        )}
-      </span>
-    </Button>
   );
 }
 

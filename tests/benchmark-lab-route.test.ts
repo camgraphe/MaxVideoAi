@@ -264,7 +264,7 @@ test('page builder preserves the complete editorial roster, including legacy vid
   assert.ok(pageData.scores.some((row) => row.modelSlug === 'ltx-2'));
 });
 
-test('page builder distinguishes Seedance 2.5 route-contract provenance from generic API mechanics', async () => {
+test('page builder preserves Seedance 2.5 official evidence while distinguishing route-contract provenance from API mechanics', async () => {
   const staticData = await loadBenchmarkLabStaticData();
   const pageData = buildBenchmarkPageData(staticData, { status: 'unavailable', windowDays: 30, asOf: null, rows: [] });
   const dreamina = pageData.specs.find((row) => row.modelSlug === 'dreamina-seedance-2-0-mini');
@@ -272,7 +272,7 @@ test('page builder distinguishes Seedance 2.5 route-contract provenance from gen
   const seedance = pageData.specs.find((row) => row.modelSlug === 'seedance-2-5');
 
   assert.equal(dreamina?.sourceUrl, 'https://maxvideoai.com/models/dreamina-seedance-2-0-mini');
-  assert.deepEqual(seedanceSource?.sources ?? [], []);
+  assert.deepEqual(seedanceSource?.sources ?? [], ['https://ai.byteplus.com/ark']);
   assert.equal(seedanceSource?.provenance?.basis, 'maxvideoai-production-route-contract');
   assert.equal(seedance?.sourceKind, 'route-contract');
   assert.equal(seedance?.sourceUrl, null);

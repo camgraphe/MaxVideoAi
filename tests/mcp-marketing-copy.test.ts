@@ -17,17 +17,17 @@ function wordCount(value: string): number {
   return value.trim().split(/\s+/).filter(Boolean).length;
 }
 
-test('the hub sells the outcome and keeps ChatGPT and Claude at the same level', async () => {
+test('the hub sells the outcome with Claude, ChatGPT, and Codex as equal entry points', async () => {
   const { getMcpPageCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
   const copy = getMcpPageCopy('en');
-  assert.equal(copy.meta.title, 'MaxVideoAI for ChatGPT & Claude | AI Video App');
-  assert.equal(copy.hero.title, 'Turn ChatGPT or Claude into your AI video producer.');
+  assert.equal(copy.meta.title, 'MaxVideoAI for Claude, ChatGPT & Codex | AI Video');
+  assert.equal(copy.hero.title, 'Turn Claude, ChatGPT or Codex into your AI video producer.');
   assert.match(copy.hero.intro, /brief to rendered video/i);
   assert.match(copy.hero.intro, /prompts and references/i);
   assert.match(copy.hero.intro, /exact price/i);
-  assert.deepEqual(copy.hero.actions.map((action) => action.client), ['chatgpt', 'claude']);
+  assert.deepEqual(copy.hero.actions.map((action) => action.client), ['claude', 'chatgpt', 'codex']);
   assert.deepEqual(copy.workflow.steps, [
     'Develop the brief and references',
     'Compare models and project budgets',
@@ -42,16 +42,34 @@ test('French and Spanish are complete prospect-facing localizations', async () =
   );
   const fr = getMcpPageCopy('fr');
   const es = getMcpPageCopy('es');
-  assert.equal(fr.meta.title, 'MaxVideoAI pour ChatGPT et Claude | Vidéo IA');
-  assert.match(fr.hero.title, /ChatGPT ou Claude/i);
+  assert.equal(fr.meta.title, 'MaxVideoAI pour Claude, ChatGPT et Codex | Vidéo IA');
+  assert.match(fr.hero.title, /Claude, ChatGPT ou Codex/i);
   assert.match(fr.budget.title, /film complet/i);
   assert.match(JSON.stringify(fr.answers.items), /crédits/i);
   assert.match(JSON.stringify(fr.answers.items), /bibliothèque|galerie/i);
-  assert.equal(es.meta.title, 'MaxVideoAI para ChatGPT y Claude | Vídeo con IA');
-  assert.match(es.hero.title, /ChatGPT o Claude/i);
+  assert.equal(es.meta.title, 'MaxVideoAI para Claude, ChatGPT y Codex | Vídeo IA');
+  assert.match(es.hero.title, /Claude, ChatGPT o Codex/i);
   assert.match(es.budget.title, /película/i);
   assert.match(JSON.stringify(es.answers.items), /créditos/i);
   assert.match(JSON.stringify(es.answers.items), /biblioteca/i);
+});
+
+test('the homepage presents Claude, ChatGPT, and Codex in the approved order', async () => {
+  const { HomeAssistantWorkflow } = await import(
+    '../frontend/components/marketing/home/HomeAssistantWorkflow.tsx'
+  );
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const html = renderToStaticMarkup(React.createElement(HomeAssistantWorkflow, {
+      locale,
+      href: locale === 'en' ? '/mcp' : `/${locale}/mcp`,
+    }));
+    const claudeIndex = html.indexOf('Claude');
+    const chatgptIndex = html.indexOf('ChatGPT');
+    const codexIndex = html.indexOf('Codex');
+    assert.ok(claudeIndex >= 0, `${locale} homepage should name Claude`);
+    assert.ok(chatgptIndex > claudeIndex, `${locale} homepage should place ChatGPT after Claude`);
+    assert.ok(codexIndex > chatgptIndex, `${locale} homepage should place Codex after ChatGPT`);
+  }
 });
 
 test('the commercial answer set covers account continuity and the paid boundary', async () => {

@@ -71,7 +71,7 @@ type GoogleVertexOmniPollDeps = {
 };
 
 const POLL_INITIAL_DELAY_MS = 5_000;
-const POLL_MAX_DURATION_MS = 35 * 60_000;
+const POLL_MAX_DURATION_MS = 45 * 60_000;
 const ACTIVE_JOB_STATUSES = ['pending', 'queued', 'running', 'processing', 'in_progress'];
 const STALLED_MESSAGE = 'This render needs manual review before retrying or refunding.';
 
@@ -493,6 +493,24 @@ export async function runGoogleVertexOmniPoll(options: { deps?: GoogleVertexOmni
         errorClass: normalized.errorClass,
         code: normalized.code,
       });
+      const terminalFetchFailure =
+        normalized.errorClass === 'invalid_request'
+        || normalized.errorClass === 'auth_error'
+        || normalized.errorClass === 'billing_or_access'
+        || normalized.status === 400
+        || normalized.status === 401
+        || normalized.status === 403
+        || normalized.status === 404
+        || normalized.status === 422;
+      if (terminalFetchFailure) {
+        const failed = await markJobFailed(
+          job,
+          'Google could not retrieve this render after accepting it.',
+          normalized.code ?? (normalized.status ? String(normalized.status) : null),
+          queryFn
+        );
+        if (failed) updates += 1;
+      }
     }
   }
 

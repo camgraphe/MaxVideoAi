@@ -67,7 +67,7 @@ export function McpClientActions({
 }) {
   const clients = actions;
   return (
-    <div className="grid gap-3 border-hairline bg-bg text-text-primary dark:border-white/[0.08] dark:bg-bg sm:grid-cols-2">
+    <div className="grid gap-3 border-hairline bg-bg text-text-primary dark:border-white/[0.08] dark:bg-bg sm:grid-cols-3">
       {clients.map((action) => (
         <McpClientAction key={action.client} action={action} onActionClick={onActionClick} />
       ))}

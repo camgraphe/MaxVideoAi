@@ -37,14 +37,15 @@ const emptySectionOpenings = [
   '<section class="border-b border-hairline bg-surface">',
   '<section class="border-b border-hairline bg-bg">',
   '<section class="border-b border-hairline bg-surface">',
+  '<section class="border-b border-hairline bg-surface">',
   '<section id="compare-price-per-model" class="border-b border-hairline bg-bg">',
   '<section class="border-b border-hairline bg-surface">',
   '<section class="border-b border-hairline bg-surface">',
   '<section class="border-b border-hairline bg-bg">',
   '<section class="bg-surface">',
 ] as const;
-const emptySectionHeadingCounts = [1, 6, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1] as const;
-const approvedHeadingsPerSection = [1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1] as const;
+const emptySectionHeadingCounts = [1, 6, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1] as const;
+const approvedHeadingsPerSection = [1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] as const;
 const showcaseVideo: PayAsYouGoShowcaseVideo = {
   id: 'parity-video',
   engineId: 'kling-3-pro',
@@ -68,6 +69,7 @@ const representative = {
       'Who uses pay-as-you-go AI video credits?',
       'Pay-as-you-go vs subscription',
       'How pay-as-you-go credits work',
+      'Plan the model mix before generation',
       'What changes the live quote',
       'Compare price per model',
       'Check prices for popular AI video models',
@@ -102,6 +104,7 @@ const representative = {
       'Qui utilise des crédits vidéo IA prépayés ?',
       'Paiement à l’usage ou abonnement',
       'Comment fonctionne le paiement à l’usage',
+      'Planifiez les modèles avant la génération',
       'Ce qui fait varier le devis en direct',
       'Comparez le prix par modèle',
       'Consultez les prix des modèles de vidéo IA populaires',
@@ -136,6 +139,7 @@ const representative = {
       '¿Quién usa créditos de video con IA de pago por uso?',
       'Pago por uso vs. suscripción',
       'Cómo funcionan los créditos de pago por uso',
+      'Planifica los modelos antes de generar',
       'Qué cambia la cotización en tiempo real',
       'Compara el precio por modelo',
       'Consulta precios de modelos de video con IA populares',
@@ -288,7 +292,7 @@ for (const locale of locales) {
     const { semantic } = render(locale, []);
     const expected = representative[locale];
     assertExactHeadingStructure(semantic.topLevelHeadings, expected.headings);
-    assert.equal(semantic.topLevelHeadings.length, 14);
+    assert.equal(semantic.topLevelHeadings.length, 15);
     assert.deepEqual(semantic.sectionOpenings, emptySectionOpenings);
     assert.ok(semantic.textNodes.includes(expected.heroIntro));
     assert.ok(semantic.headings.includes(expected.naturalQuestion));

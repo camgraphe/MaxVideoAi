@@ -136,7 +136,7 @@ test('curated policy artifact has manual provenance and a guidance fingerprint w
   );
 });
 
-test('evaluator validates curated arguments with all thirteen authoritative runtime schemas', async () => {
+test('evaluator validates curated arguments with all fourteen authoritative runtime schemas', async () => {
   const validate = (evaluatorApi as any).validateCuratedToolArguments;
   const schemaNames = (evaluatorApi as any).authoritativeToolSchemaNames;
   assert.equal(typeof validate, 'function');
@@ -149,6 +149,7 @@ test('evaluator validates curated arguments with all thirteen authoritative runt
     'calculate_project_budget',
     'list_media',
     'create_reference_upload_link',
+    'import_reference_files',
     'prepare_generation',
     'confirm_generation',
     'get_generation_status',
@@ -177,6 +178,14 @@ test('evaluator validates curated arguments with all thirteen authoritative runt
     },
     list_media: { kind: 'image' },
     create_reference_upload_link: { kind: 'video' },
+    import_reference_files: {
+      files: [{
+        download_url: 'https://files.openai.example/private/reference',
+        file_id: 'file-reference',
+        mime_type: 'image/png',
+        file_name: 'reference.png',
+      }],
+    },
     prepare_generation: {
       surface: 'video',
       engineId: 'seedance-2-5',

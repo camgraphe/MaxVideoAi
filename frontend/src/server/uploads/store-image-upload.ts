@@ -63,6 +63,8 @@ export type StoreImageUploadParams = {
   fileName: string;
   declaredMime: string | null;
   bytes: Buffer;
+  storageAcl?: string | null;
+  storageCacheControl?: string;
   cleanupObjects?: {
     beforeUpload(entry: { objectRole: 'final' | 'thumbnail'; objectKey: string; safeToDelete: boolean }): Promise<void>;
     retain(objectKey: string): Promise<void>;
@@ -449,6 +451,8 @@ export function createStoreImageUploadService(
         userId: params.userId,
         prefix: 'user-assets',
         contentAddressed: true,
+        ...(params.storageAcl !== undefined ? { acl: params.storageAcl } : {}),
+        ...(params.storageCacheControl !== undefined ? { cacheControl: params.storageCacheControl } : {}),
         ...(params.cleanupObjects ? {
           beforeUpload: (objectKey: string) => params.cleanupObjects!.beforeUpload({ objectRole: 'final', objectKey, safeToDelete: true }),
         } : {}),
@@ -465,6 +469,8 @@ export function createStoreImageUploadService(
         data: normalized.bytes,
         userId: params.userId,
         fileName: normalized.fileName,
+        ...(params.storageAcl !== undefined ? { acl: params.storageAcl } : {}),
+        ...(params.storageCacheControl !== undefined ? { cacheControl: params.storageCacheControl } : {}),
         ...(params.cleanupObjects ? {
           beforeUpload: async (objectKey: string) => {
             cleanupThumbnailKey = objectKey;
@@ -534,14 +540,7 @@ export function createStoreImageUploadService(
 
 const defaultStoreImageUpload = createStoreImageUploadService();
 
-export async function storeImageUpload(params: {
-  userId: string;
-  fileName: string;
-  declaredMime: string | null;
-  bytes: Buffer;
-  cleanupObjects?: StoreImageUploadParams['cleanupObjects'];
-  signal?: AbortSignal;
-}): Promise<{
+export async function storeImageUpload(params: StoreImageUploadParams): Promise<{
   assetId: string;
   width: number;
   height: number;

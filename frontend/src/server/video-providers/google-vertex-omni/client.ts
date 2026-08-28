@@ -13,11 +13,14 @@ export type GoogleVertexOmniInteractionRequest = {
   model: string;
   input: unknown[];
   generation_config?: Record<string, unknown>;
-  response_format?: {
+  response_format?: Array<{
     type?: string;
     aspect_ratio?: string;
     delivery?: string;
-  };
+    gcs_uri?: string;
+    resolution?: string;
+    duration?: string;
+  }>;
   background?: boolean;
   store?: boolean;
   previous_interaction_id?: string;
@@ -317,6 +320,10 @@ export class GoogleVertexOmniClient {
 
   private async token(): Promise<string> {
     return (this.config.getAccessTokenFn ?? getAccessToken)(this.config.serviceAccount);
+  }
+
+  async accessToken(): Promise<string> {
+    return this.token();
   }
 
   private baseUrl(): string {

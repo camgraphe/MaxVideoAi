@@ -42,9 +42,12 @@ export function buildMaxVideoAiMcpInstructions(
   if (capabilities.referenceUploads) {
     instructions.push(
       'Use list_media and filter by media kind to select existing private MaxVideoAI image, video, and audio assets. Do not upload files with list_media or expose private source URLs.',
-      'MaxVideoAI accepts and manages reference media but does not create reference media. When a new private asset is needed, use create_reference_upload_link with the requested media kind (image, video, or audio) and ask the user to open its short-lived MaxVideoAI browser handoff before calling list_media for that kind again.',
-      'If create_reference_upload_link fails, is denied, or is unavailable, explain that the MaxVideoAI upload handoff could not be created and ask the user to authorize or retry it; never substitute a host attachment or local attachment.',
-      'After the upload is saved to the same connected MaxVideoAI library, call list_media for that media kind and let the user choose the private asset.',
+      'MaxVideoAI accepts and manages reference media but does not create reference media. When the host provides user-authorized files, attachments, or an authorized generation result with temporary file handles, use import_reference_files for up to eight files in one call. Never invent or substitute a download URL.',
+      'Use the asset IDs returned by import_reference_files directly and preserve their input order; do not call list_media after a successful direct import. If part of a batch fails, keep the successful asset IDs and retry only the failed files.',
+      'When the host cannot expose a file handle, use create_reference_upload_link with the requested media kind (image, video, or audio). A compatible UI host can render its short-lived in-chat multi-file importer; the exact returned browser handoff remains the manual fallback.',
+      'For a local file in Codex or Claude Code, create one short-lived upload link per file and use the packaged local helper. The helper reads the local bytes itself: never send a raw local path to the MCP server, publish the media at a public URL, or depend on Computer Use.',
+      'After the browser fallback is saved to the same connected MaxVideoAI library, call list_media for that media kind. After the in-chat importer or local helper returns asset IDs, use those IDs directly without relisting.',
+      'If create_reference_upload_link fails, is denied, or is unavailable when a fallback is needed, explain that the MaxVideoAI upload handoff could not be created and ask the user to authorize or retry it.',
     );
   }
 

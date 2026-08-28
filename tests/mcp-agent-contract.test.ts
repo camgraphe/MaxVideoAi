@@ -56,7 +56,7 @@ test('agent facade types cover account, catalog, and recommendation results', ()
   }
 });
 
-test('agent facade stays independent from Next.js, MCP transport, and providers', () => {
+test('agent API stays independent from Next.js and MCP transport, with provider-neutral public contracts', () => {
   const files = readdirSync(facadeDirectory).filter((name) => name.endsWith('.ts'));
   assert.ok(files.length >= 4);
 
@@ -64,6 +64,10 @@ test('agent facade stays independent from Next.js, MCP transport, and providers'
     const source = readFileSync(join(facadeDirectory, file), 'utf8');
     assert.doesNotMatch(source, /from ['"]next\/server['"]/);
     assert.doesNotMatch(source, /@modelcontextprotocol\/sdk/);
+  }
+
+  for (const file of ['principal.ts', 'errors.ts', 'types.ts', 'generation-types.ts', 'media-types.ts', 'reference-types.ts']) {
+    const source = readFileSync(join(facadeDirectory, file), 'utf8');
     assert.doesNotMatch(source, /video-providers|fal-client|provider-client/);
   }
 });

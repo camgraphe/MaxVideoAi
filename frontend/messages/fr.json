@@ -136,7 +136,7 @@
       },
       "tools": {
         "items": {
-          "ai-video-assistant": "Assistant vidéo ChatGPT et Claude",
+          "ai-video-assistant": "Assistant vidéo Claude, ChatGPT et Codex",
           "character-builder": "Personnages IA cohérents",
           "angle": "Changer l’angle caméra",
           "upscale": "Upscale IA",
@@ -4020,6 +4020,7 @@
       "title": "Paramètres",
       "tabs": {
         "account": "Compte",
+        "connections": "Applications connectées",
         "team": "Équipe",
         "privacy": "Confidentialité & sécurité",
         "notifications": "Notifications"

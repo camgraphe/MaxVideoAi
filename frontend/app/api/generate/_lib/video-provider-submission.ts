@@ -207,10 +207,7 @@ export async function submitGenerateProviderTask(params: {
       pendingReceipt: params.pendingReceipt,
       paymentMode: params.paymentMode,
       walletChargeReserved: params.walletChargeReserved,
-      fallbackToFalEnabled: false,
       falPayload: params.falPayload,
-      falInputSummary: params.falInputSummary,
-      isLumaRay2: params.isLumaRay2,
       batchId: params.batchId,
       groupId: params.groupId,
       iterationIndex: params.iterationIndex,
@@ -223,10 +220,7 @@ export async function submitGenerateProviderTask(params: {
     if (!googleSubmission.ok) {
       return { kind: 'error_response', status: googleSubmission.status, body: googleSubmission.body };
     }
-    if (googleSubmission.kind === 'accepted') {
-      return { kind: 'accepted_response', body: googleSubmission.body };
-    }
-    return { kind: 'generation_result', generationResult: googleSubmission.generationResult };
+    return { kind: 'accepted_response', body: googleSubmission.body };
   }
 
   const providerJobTracker = createProviderJobTracker({

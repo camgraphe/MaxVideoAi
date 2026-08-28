@@ -4,6 +4,11 @@ import { notFound, redirect } from 'next/navigation';
 
 import { AppSidebar } from '@/components/AppSidebar';
 import { HeaderBar } from '@/components/HeaderBar';
+import {
+  DEFAULT_SETTINGS_TAB_LABELS,
+  SettingsTabs,
+} from '@/components/settings/SettingsTabs';
+import { FEATURES } from '@/content/feature-flags';
 import { query } from '@/lib/db';
 import { getMcpRequestHost } from '@/lib/mcp-host-routing';
 import { createSupabaseServerClient } from '@/lib/supabase-ssr';
@@ -57,28 +62,38 @@ export default async function McpConnectionsPage() {
         <AppSidebar />
         <main className="min-w-0 flex-1 overflow-y-auto p-5 lg:p-7">
           <div className="mx-auto max-w-5xl">
-            <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Account security</p>
-            <h1 className="mt-2 text-2xl font-semibold text-text-primary">Connected applications</h1>
-            <p className="mt-2 text-sm leading-6 text-text-secondary">
-              Review applications allowed to access MaxVideoAI. Disconnecting an application ends its access and requires a new approval before it can reconnect.
-            </p>
-            <div className="mt-6">
-              <McpSpendingControls
-                initialSettings={settings}
-                initialActivity={activity}
-                settingsUnavailable={settingsUnavailable}
-                activityUnavailable={activityUnavailable}
-              />
-            </div>
-            {error ? (
-              <p className="mt-6 rounded-input border border-danger/30 bg-danger/10 p-3 text-sm text-danger">
-                Unable to load connected applications right now.
+            <h1 className="mb-4 text-xl font-semibold text-text-primary">Settings</h1>
+            <SettingsTabs
+              activeTab="connections"
+              labels={DEFAULT_SETTINGS_TAB_LABELS}
+              notificationsLive={FEATURES.notifications.center}
+            />
+            <section aria-labelledby="connected-applications-title">
+              <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">Account security</p>
+              <h2 id="connected-applications-title" className="mt-2 text-2xl font-semibold text-text-primary">
+                Connected applications
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-text-secondary">
+                Review applications allowed to access MaxVideoAI. Disconnecting an application ends its access and requires a new approval before it can reconnect.
               </p>
-            ) : (
               <div className="mt-6">
-                <McpConnectionsClient initialGrants={grants} />
+                <McpSpendingControls
+                  initialSettings={settings}
+                  initialActivity={activity}
+                  settingsUnavailable={settingsUnavailable}
+                  activityUnavailable={activityUnavailable}
+                />
               </div>
-            )}
+              {error ? (
+                <p className="mt-6 rounded-input border border-danger/30 bg-danger/10 p-3 text-sm text-danger">
+                  Unable to load connected applications right now.
+                </p>
+              ) : (
+                <div className="mt-6">
+                  <McpConnectionsClient initialGrants={grants} />
+                </div>
+              )}
+            </section>
           </div>
         </main>
       </div>

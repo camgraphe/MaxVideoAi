@@ -22,6 +22,7 @@ import { UIIcon } from '@/components/ui/UIIcon';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { ButtonLink } from '@/components/ui/Button';
 import { FEATURES } from '@/content/feature-flags';
+import { isSettingsPath } from '@/lib/settings-navigation';
 
 type NavItemDefinition = {
   id: string;
@@ -74,7 +75,9 @@ export function AppSidebar() {
     const active =
       item.id === 'generate'
         ? matchesExact
-        : matchesExact || matchesSubroute || (item.id === 'generate-image' && normalizedPath === '/app/image');
+        : item.id === 'settings'
+          ? isSettingsPath(normalizedPath)
+          : matchesExact || matchesSubroute || (item.id === 'generate-image' && normalizedPath === '/app/image');
     const label = t(`workspace.sidebar.links.${item.id}`, item.label);
     const badgeLabel = item.badge
       ? t(`workspace.sidebar.badges.${item.badgeKey ?? item.id}`, item.badge)

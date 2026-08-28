@@ -63,12 +63,12 @@ export const frPayAsYouGoContent = {
     models: {
       'seedance-2-5': { family: 'Seedance 2.5', title: 'Seedance 2.5 pour la vidéo cinématique de 30 secondes', body: 'Consultez d’abord Seedance 2.5 pour les workflows cinématiques, image-to-video, guidés par références, multi-plans, produit et UGC, puis gardez Seedance 2.0 dans la sélection quand une sortie 4K est nécessaire.' },
       'seedance-2-0': { family: 'Seedance 2', title: 'Seedance 2.0 pour la livraison Seedance 4K', body: 'Gardez Seedance 2.0 comme alternative pour les workflows plus courts avec audio natif et références quand la sortie Seedance finale doit être en 4K.' },
-      'kling-3-pro': { family: 'Kling', title: 'Kling as the solid motion-control choice', body: 'Utilisez Kling pour des mouvements de caméra fiables, des plans produit, des éléments et de la vidéo guidée par image sans abonnement.' },
-      'veo-3-1': { family: 'Google Veo', title: 'Google Veo as the cinematic-quality choice', body: 'Comparez les variantes Veo lorsque l’interprétation du prompt, le rendu cinématographique, l’audio ou les options Google comptent plus que le coût minimal du brouillon.' },
-      'happy-horse-1-1': { family: 'Happy Horse 1.1', title: 'Happy Horse 1.1 for alternate visual output', body: 'Utilisez Happy Horse 1.1 pour comparer une option vidéo Alibaba récente avec Seedance, Kling, Google Veo et LTX.' },
-      'seedance-2-0-mini': { family: 'Seedance 2 Mini', title: 'Seedance 2.0 Mini for lighter multimodal tests', body: 'Utilisez Seedance 2 Mini pour les références, les vérifications rapides et les itérations adaptées au budget avant de déployer un prompt.' },
-      'ltx-2-3-fast': { family: 'LTX', title: 'LTX 2.3 Fast as the efficient strong option', body: 'Utilisez LTX 2.3 Fast lorsque vous avez besoin de bons brouillons, d’itérations rapides et d’un modèle économique qui mérite comparaison.' },
-      'wan-2-6': { family: 'Wan', title: 'Wan for lower-cost text and image-to-video exploration', body: 'Utilisez Wan pour tester des idées et comparer les résultats avant de dépenser pour des moteurs premium.' },
+      'kling-3-pro': { family: 'Kling', title: 'Kling pour un contrôle fiable du mouvement', body: 'Utilisez Kling pour des mouvements de caméra fiables, des plans produit, des éléments et de la vidéo guidée par image sans abonnement.' },
+      'veo-3-1': { family: 'Google Veo', title: 'Google Veo pour une qualité cinématographique', body: 'Comparez les variantes Veo lorsque l’interprétation du prompt, le rendu cinématographique, l’audio ou les options Google comptent plus que le coût minimal du brouillon.' },
+      'happy-horse-1-1': { family: 'Happy Horse 1.1', title: 'Happy Horse 1.1 pour un rendu visuel alternatif', body: 'Utilisez Happy Horse 1.1 pour comparer une option vidéo Alibaba récente avec Seedance, Kling, Google Veo et LTX.' },
+      'seedance-2-0-mini': { family: 'Seedance 2 Mini', title: 'Seedance 2.0 Mini pour des tests multimodaux légers', body: 'Utilisez Seedance 2 Mini pour les références, les vérifications rapides et les itérations adaptées au budget avant de déployer un prompt.' },
+      'ltx-2-3-fast': { family: 'LTX', title: 'LTX 2.3 Fast comme option performante et économique', body: 'Utilisez LTX 2.3 Fast lorsque vous avez besoin de bons brouillons, d’itérations rapides et d’un modèle économique qui mérite comparaison.' },
+      'wan-2-6': { family: 'Wan', title: 'Wan pour explorer le texte et l’image vers vidéo à moindre coût', body: 'Utilisez Wan pour tester des idées et comparer les résultats avant de dépenser pour des moteurs premium.' },
     },
   },
   meaning: {
@@ -126,6 +126,7 @@ export const frPayAsYouGoContent = {
     ],
   },
   mcpPlanning: {
+    title: 'Planifiez les modèles avant la génération',
     body: 'Vous partez d’un brief créatif ? Comparez les modèles adaptés et vérifiez le budget avant une génération connectée.',
   },
   quoteFactors: {

@@ -6,15 +6,15 @@
       "description": "Compare Seedance 2.0 and Seedance 2.5 by duration, resolution, references, editing, extension, live pricing, and the workflow each version fits best.",
       "titleBranding": "none"
     },
-    "heroIntro": "Seedance 2.0 and Seedance 2.5 serve different production decisions. Keep Seedance 2.0 when its established 15-second workflow or 1080p and 4K output path decides the brief. Choose Seedance 2.5 for the latest flagship workflow, clips up to 30 seconds, a much higher multimodal reference ceiling, video editing, and extension.",
+    "heroIntro": "Seedance 2.0 and Seedance 2.5 serve different production decisions. Keep Seedance 2.0 when its established 15-second workflow or 4K output path decides the brief. Choose Seedance 2.5 for the latest flagship workflow, clips up to 30 seconds and 1080p, a much higher multimodal reference ceiling, video editing, and extension.",
     "quickVerdict": {
       "title": "Quick verdict",
-      "body": "Choose Seedance 2.5 when you want the latest Seedance workflow, up to 30 seconds at 480p or 720p, more room for image, video, and audio references, or a source-video edit or extension. Choose Seedance 2.0 when a proven 15-second setup and its established 1080p or 4K delivery path matter more than the newer reference ceiling. Seedance 2.0 remains a valid production choice; it does not redirect to 2.5."
+      "body": "Choose Seedance 2.5 when you want the latest Seedance workflow, up to 30 seconds at 480p, 720p or 1080p, more room for image, video, and audio references, or a source-video edit or extension. Choose Seedance 2.0 when a proven 15-second setup and its established 4K delivery path matter more than the newer reference ceiling. Seedance 2.0 remains a valid production choice; it does not redirect to 2.5."
     },
     "topCards": [
       {
         "title": "Choose Seedance 2.0",
-        "body": "Use the established route for familiar 15-second prompt patterns and final delivery that specifically calls for 1080p or 4K output."
+        "body": "Use the established route for familiar 15-second prompt patterns and final delivery that specifically calls for 4K output."
       },
       {
         "title": "Choose Seedance 2.5",
@@ -22,7 +22,7 @@
       },
       {
         "title": "The resolution trade-off",
-        "body": "Seedance 2.5 currently tops out at 720p, while Seedance 2.0 keeps the established higher-resolution path. Decide whether duration and control or delivery resolution is the hard requirement."
+        "body": "Seedance 2.5 now reaches 1080p, while Seedance 2.0 keeps the established 4K path. Decide whether the newer duration and control workflow or 4K delivery is the hard requirement."
       },
       {
         "title": "Compare the current price",
@@ -54,11 +54,11 @@
       "items": [
         {
           "question": "Should I upgrade from Seedance 2.0 to Seedance 2.5?",
-          "answer": "Upgrade when 30-second clips, a larger multimodal reference set, video editing, or extension is central to the job. Stay with Seedance 2.0 when your validated 15-second workflow or 1080p and 4K delivery is the deciding requirement."
+          "answer": "Upgrade when 30-second clips, 1080p output, a larger multimodal reference set, video editing, or extension is central to the job. Stay with Seedance 2.0 when your validated 15-second workflow or 4K delivery is the deciding requirement."
         },
         {
           "question": "Does Seedance 2.5 replace Seedance 2.0?",
-          "answer": "No. Both model pages and generation routes remain available. Seedance 2.5 is the latest flagship choice, while Seedance 2.0 keeps an established production path with higher-resolution options."
+          "answer": "No. Both model pages and generation routes remain available. Seedance 2.5 is the latest flagship choice with output up to 1080p, while Seedance 2.0 keeps an established production path with 4K output."
         },
         {
           "question": "Which version supports longer video?",
@@ -81,15 +81,15 @@
       "description": "Comparez Seedance 2.0 et Seedance 2.5 sur la durée, la résolution, les références, le montage, l’extension, le prix en direct et leurs meilleurs usages.",
       "titleBranding": "none"
     },
-    "heroIntro": "Seedance 2.0 et Seedance 2.5 répondent à deux décisions de production différentes. Gardez Seedance 2.0 si son workflow éprouvé de 15 secondes ou sa sortie en 1080p et 4K détermine le brief. Choisissez Seedance 2.5 pour le workflow flagship le plus récent, les clips jusqu’à 30 secondes, un plafond de références multimodales bien supérieur, le montage vidéo et l’extension.",
+    "heroIntro": "Seedance 2.0 et Seedance 2.5 répondent à deux décisions de production différentes. Gardez Seedance 2.0 si son workflow éprouvé de 15 secondes ou sa sortie 4K détermine le brief. Choisissez Seedance 2.5 pour le workflow flagship le plus récent, les clips jusqu’à 30 secondes et 1080p, un plafond de références multimodales bien supérieur, le montage vidéo et l’extension.",
     "quickVerdict": {
       "title": "Verdict rapide",
-      "body": "Choisissez Seedance 2.5 pour le workflow Seedance le plus récent, jusqu’à 30 secondes en 480p ou 720p, davantage de références image, vidéo et audio, ou pour monter et prolonger une vidéo source. Choisissez Seedance 2.0 si un setup éprouvé de 15 secondes et sa sortie établie en 1080p ou 4K comptent plus que le nouveau plafond de références. Seedance 2.0 reste un vrai choix de production et ne redirige pas vers 2.5."
+      "body": "Choisissez Seedance 2.5 pour le workflow Seedance le plus récent, jusqu’à 30 secondes en 480p, 720p ou 1080p, davantage de références image, vidéo et audio, ou pour monter et prolonger une vidéo source. Choisissez Seedance 2.0 si un setup éprouvé de 15 secondes et sa sortie 4K établie comptent plus que le nouveau plafond de références. Seedance 2.0 reste un vrai choix de production et ne redirige pas vers 2.5."
     },
     "topCards": [
       {
         "title": "Choisir Seedance 2.0",
-        "body": "Utilisez la route établie pour vos prompts de 15 secondes déjà maîtrisés et une livraison finale qui exige précisément du 1080p ou de la 4K."
+        "body": "Utilisez la route établie pour vos prompts de 15 secondes déjà maîtrisés et une livraison finale qui exige précisément de la 4K."
       },
       {
         "title": "Choisir Seedance 2.5",
@@ -97,7 +97,7 @@
       },
       {
         "title": "Le compromis de résolution",
-        "body": "Seedance 2.5 est actuellement limité au 720p, tandis que Seedance 2.0 conserve la voie haute résolution établie. À vous de trancher entre durée et contrôle ou résolution de livraison."
+        "body": "Seedance 2.5 atteint désormais le 1080p, tandis que Seedance 2.0 conserve la voie 4K établie. À vous de trancher entre le workflow récent de durée et de contrôle ou la livraison 4K."
       },
       {
         "title": "Comparer le prix actuel",
@@ -129,7 +129,7 @@
       "items": [
         {
           "question": "Faut-il passer de Seedance 2.0 à Seedance 2.5 ?",
-          "answer": "Passez à 2.5 si les clips de 30 secondes, un grand ensemble de références multimodales, le montage vidéo ou l’extension sont au cœur du projet. Gardez 2.0 si votre workflow validé de 15 secondes ou la livraison en 1080p et 4K est décisive."
+          "answer": "Passez à 2.5 si les clips de 30 secondes, la sortie 1080p, un grand ensemble de références multimodales, le montage vidéo ou l’extension sont au cœur du projet. Gardez 2.0 si votre workflow validé de 15 secondes ou la livraison 4K est décisive."
         },
         {
           "question": "Seedance 2.5 remplace-t-il Seedance 2.0 ?",
@@ -156,15 +156,15 @@
       "description": "Compara Seedance 2.0 y Seedance 2.5 por duración, resolución, referencias, edición, extensión, precio en vivo y el flujo que mejor encaja en cada caso.",
       "titleBranding": "none"
     },
-    "heroIntro": "Seedance 2.0 y Seedance 2.5 responden a decisiones de producción distintas. Mantén Seedance 2.0 cuando su flujo probado de 15 segundos o la salida en 1080p y 4K sea el requisito decisivo. Elige Seedance 2.5 para el flujo insignia más reciente, clips de hasta 30 segundos, un límite de referencias multimodales mucho mayor, edición de vídeo y extensión.",
+    "heroIntro": "Seedance 2.0 y Seedance 2.5 responden a decisiones de producción distintas. Mantén Seedance 2.0 cuando su flujo probado de 15 segundos o la salida 4K sea el requisito decisivo. Elige Seedance 2.5 para el flujo insignia más reciente, clips de hasta 30 segundos y 1080p, un límite de referencias multimodales mucho mayor, edición de vídeo y extensión.",
     "quickVerdict": {
       "title": "Veredicto rápido",
-      "body": "Elige Seedance 2.5 para el flujo Seedance más reciente, hasta 30 segundos en 480p o 720p, más espacio para referencias de imagen, vídeo y audio, o para editar y extender un vídeo fuente. Elige Seedance 2.0 cuando un setup probado de 15 segundos y su camino establecido de entrega en 1080p o 4K importen más que el nuevo límite de referencias. Seedance 2.0 sigue siendo una opción real de producción y no redirige a 2.5."
+      "body": "Elige Seedance 2.5 para el flujo Seedance más reciente, hasta 30 segundos en 480p, 720p o 1080p, más espacio para referencias de imagen, vídeo y audio, o para editar y extender un vídeo fuente. Elige Seedance 2.0 cuando un setup probado de 15 segundos y su camino establecido de entrega 4K importen más que el nuevo límite de referencias. Seedance 2.0 sigue siendo una opción real de producción y no redirige a 2.5."
     },
     "topCards": [
       {
         "title": "Elegir Seedance 2.0",
-        "body": "Usa la ruta establecida para patrones de prompt de 15 segundos ya validados y una entrega final que requiera específicamente 1080p o 4K."
+        "body": "Usa la ruta establecida para patrones de prompt de 15 segundos ya validados y una entrega final que requiera específicamente 4K."
       },
       {
         "title": "Elegir Seedance 2.5",
@@ -172,7 +172,7 @@
       },
       {
         "title": "El equilibrio de resolución",
-        "body": "Seedance 2.5 llega actualmente a 720p, mientras Seedance 2.0 conserva el camino de mayor resolución. Decide si el requisito fijo es la duración y el control o la resolución de entrega."
+        "body": "Seedance 2.5 ahora llega a 1080p, mientras Seedance 2.0 conserva el camino 4K establecido. Decide si el requisito fijo es el flujo más reciente de duración y control o la entrega 4K."
       },
       {
         "title": "Comparar el precio actual",
@@ -204,7 +204,7 @@
       "items": [
         {
           "question": "¿Debería actualizar de Seedance 2.0 a Seedance 2.5?",
-          "answer": "Actualiza cuando los clips de 30 segundos, un conjunto amplio de referencias multimodales, la edición de vídeo o la extensión sean centrales. Mantén 2.0 cuando tu flujo validado de 15 segundos o la entrega en 1080p y 4K sea el requisito decisivo."
+          "answer": "Actualiza cuando los clips de 30 segundos, la salida 1080p, un conjunto amplio de referencias multimodales, la edición de vídeo o la extensión sean centrales. Mantén 2.0 cuando tu flujo validado de 15 segundos o la entrega 4K sea el requisito decisivo."
         },
         {
           "question": "¿Seedance 2.5 sustituye a Seedance 2.0?",

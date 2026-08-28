@@ -34,7 +34,7 @@ test('Gemini Omni client calls the Vertex Interactions API with bearer auth', as
     model: 'gemini-omni-flash-preview',
     input: [{ role: 'user', content: [{ type: 'text', text: 'Generate a cinematic product shot' }] }],
     generation_config: { video_config: { task: 'text_to_video', aspect_ratio: '16:9' } },
-    response_format: { type: 'video', aspect_ratio: '16:9', delivery: 'uri' },
+    response_format: [{ type: 'video', aspect_ratio: '16:9', delivery: 'uri', duration: '4s', resolution: '720p' }],
     background: true,
     store: true,
   });
@@ -46,8 +46,8 @@ test('Gemini Omni client calls the Vertex Interactions API with bearer auth', as
   assert.equal((requests[0]?.body as Record<string, unknown>).model, 'gemini-omni-flash-preview');
 });
 
-test('Gemini Omni client fetches stored interactions by id', async () => {
-  const urls: string[] = [];
+test('Gemini Omni client retrieves stored preview video interactions with GET', async () => {
+  const requests: Array<{ url: string; method: string; body: BodyInit | null | undefined }> = [];
   const client = new GoogleVertexOmniClient({
     projectId: 'demo-project',
     location: 'global',
@@ -57,8 +57,12 @@ test('Gemini Omni client fetches stored interactions by id', async () => {
       private_key: 'unused-in-test',
     },
     getAccessTokenFn: async () => 'test-token',
-    fetchFn: async (url) => {
-      urls.push(String(url));
+    fetchFn: async (url, init) => {
+      requests.push({
+        url: String(url),
+        method: init?.method ?? 'GET',
+        body: init?.body,
+      });
       return new Response(JSON.stringify({ name: 'interactions/abc123', status: 'SUCCEEDED' }), { status: 200 });
     },
   });
@@ -66,7 +70,12 @@ test('Gemini Omni client fetches stored interactions by id', async () => {
   const response = await client.fetchInteraction('interactions/abc123');
 
   assert.equal(response.status, 'SUCCEEDED');
-  assert.equal(urls[0], 'https://aiplatform.googleapis.com/v1beta1/projects/demo-project/locations/global/interactions/abc123');
+  assert.equal(
+    requests[0]?.url,
+    'https://aiplatform.googleapis.com/v1beta1/projects/demo-project/locations/global/interactions/abc123'
+  );
+  assert.equal(requests[0]?.method, 'GET');
+  assert.equal(requests[0]?.body, undefined);
 });
 
 test('Gemini Omni client times out suspended polling requests', async () => {
@@ -105,7 +114,7 @@ test('Gemini Omni client times out suspended polling requests', async () => {
   );
 });
 
-test('Gemini Omni client preserves HTTP status and payload for fallback classification', async () => {
+test('Gemini Omni client preserves HTTP status and never marks direct Google errors for fallback', async () => {
   const client = new GoogleVertexOmniClient({
     projectId: 'demo-project',
     location: 'global',
@@ -134,7 +143,7 @@ test('Gemini Omni client preserves HTTP status and payload for fallback classifi
         model: 'gemini-omni-flash-preview',
         input: [{ role: 'user', content: [{ type: 'text', text: 'Generate a cinematic product shot' }] }],
         generation_config: { video_config: { task: 'text_to_video' } },
-        response_format: { type: 'video', aspect_ratio: '16:9', delivery: 'uri' },
+        response_format: [{ type: 'video', aspect_ratio: '16:9', delivery: 'uri', duration: '4s', resolution: '720p' }],
         background: true,
       }),
     (error) => {
@@ -143,7 +152,7 @@ test('Gemini Omni client preserves HTTP status and payload for fallback classifi
       assert.equal(normalized.status, 429);
       assert.equal(normalized.code, 'RESOURCE_EXHAUSTED');
       assert.equal(normalized.errorClass, 'rate_limited');
-      assert.equal(normalized.fallbackEligible, true);
+      assert.equal(normalized.fallbackEligible, false);
       assert.match(normalized.message, /Quota exceeded/);
       return true;
     }

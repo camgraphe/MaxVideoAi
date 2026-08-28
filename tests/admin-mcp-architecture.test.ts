@@ -76,7 +76,7 @@ test('server metrics stay privacy-safe, read-only, and externally inert', () => 
   assert.ok(queries.split('\n').length <= 500, 'focused query owner should stay below 500 lines');
 });
 
-test('MCP acquisition is in Analytics navigation and every publication flag remains false', () => {
+test('MCP acquisition is in Analytics navigation and publication matches the production release', () => {
   const analytics = ADMIN_NAV_GROUPS.find((group) => group.id === 'analytics');
   assert.deepEqual(analytics?.items.find((item) => item.id === 'mcp'), {
     id: 'mcp',
@@ -86,5 +86,14 @@ test('MCP acquisition is in Analytics navigation and every publication flag rema
   });
 
   const publication = JSON.parse(readFileSync(publicationPath, 'utf8')) as Record<string, boolean>;
-  assert.ok(Object.values(publication).every((value) => value === false));
+  assert.deepEqual(publication, {
+    publicMarketing: true,
+    publicIndexing: true,
+    transport: true,
+    oauth: true,
+    discovery: true,
+    paidGeneration: true,
+    trial: false,
+    referenceUploads: true,
+  });
 });

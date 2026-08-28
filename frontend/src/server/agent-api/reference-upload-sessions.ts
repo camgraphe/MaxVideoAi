@@ -239,6 +239,21 @@ export async function getOwnedUploadSession(
   return parseOptionalSession(rows);
 }
 
+export async function getUploadSessionByToken(
+  token: string,
+  dependencies: ReadDependencies = { executor: defaultExecutor },
+): Promise<ReferenceUploadSession | null> {
+  const tokenHash = tokenDigest(token);
+  const rows = await dependencies.executor.query<SessionRow>(
+    `SELECT ${SESSION_COLUMNS}
+       FROM mcp_reference_upload_sessions
+      WHERE token_hash = $1
+      LIMIT 1`,
+    [tokenHash],
+  );
+  return parseOptionalSession(rows);
+}
+
 export async function claimUploadSessionForUpload(
   input: { token: string; userId: string },
   dependencies: ClaimDependencies,
