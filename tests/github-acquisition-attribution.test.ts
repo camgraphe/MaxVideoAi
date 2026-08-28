@@ -323,6 +323,39 @@ test('browser journey drops private values even when they use approved analytics
   }
 });
 
+test('journey-owned route fields are revalidated before any event is emitted', () => {
+  const touch = resolveAnalyticsTouch({
+    href: 'https://maxvideoai.com/mcp',
+    referrer: '',
+    siteOrigin: 'https://maxvideoai.com',
+    landingRouteFamily: 'marketing',
+    landingSurface: '/mcp',
+    locale: 'en',
+  });
+  const journey = createAnalyticsJourneyRecord({
+    journeyId: '7df6d42a-4b70-4eca-82fe-3a320c4a6eb9',
+    now: Date.UTC(2026, 7, 28),
+    touch,
+  });
+  const tampered = {
+    ...journey,
+    firstTouch: {
+      ...journey.firstTouch,
+      source: 'Bearer-private-token',
+      landingSurface: '/Bearer-private-token',
+      locale: 'account-123',
+    },
+    lastTouch: { ...journey.lastTouch, landingSurface: '/private/customer-123' },
+  };
+
+  const prepared = prepareJourneyEvents(tampered, 'page_view', {
+    route_family: 'marketing',
+  }, Date.UTC(2026, 7, 28));
+  const serialized = JSON.stringify(prepared.events);
+  assert.doesNotMatch(serialized, /Bearer|private|token|customer/i);
+  assert.equal(prepared.events.some(({ payload }) => 'landing_surface' in payload), false);
+});
+
 test('growth scorecard marks browser projection, MCP association, and downstream emitter coverage as unresolved', () => {
   const scorecard = readFileSync('docs/marketing/github-growth-scorecard.md', 'utf8');
   assert.match(scorecard, /browser journey projection/i);

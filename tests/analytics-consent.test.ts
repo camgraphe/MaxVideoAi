@@ -316,6 +316,54 @@ test('stored journeys with URL-shaped attribution are rejected and removed', () 
   });
 });
 
+test('arbitrary marketing paths are never stored or emitted as landing surfaces', () => {
+  withBrowser({
+    consent: 'granted',
+    href: 'https://maxvideoai.com/Bearer-private-token',
+  }, ({ localStorage }) => {
+    const events = prepareBrowserAnalyticsEvents('page_view', { route_family: 'marketing' });
+    const stored = localStorage.getItem(ANALYTICS_JOURNEY_STORAGE_KEY) ?? '';
+    const serializedEvents = JSON.stringify(events);
+
+    assert.doesNotMatch(stored, /Bearer|private|token/i);
+    assert.doesNotMatch(serializedEvents, /Bearer|private|token/i);
+    assert.equal(readAnalyticsJourney()?.firstTouch.landingSurface, undefined);
+    assert.equal(events.some(({ payload }) => 'landing_surface' in payload), false);
+  });
+});
+
+test('tampered stored journey landing surfaces are rejected and removed', () => {
+  withBrowser({ consent: 'granted' }, ({ localStorage }) => {
+    prepareBrowserAnalyticsEvents('sign_up_started');
+    const raw = localStorage.getItem(ANALYTICS_JOURNEY_STORAGE_KEY);
+    assert.ok(raw);
+    const record = JSON.parse(raw) as {
+      firstTouch: { landingSurface?: string };
+      lastTouch: { landingSurface?: string };
+    };
+    record.firstTouch.landingSurface = '/Bearer-private-token';
+    record.lastTouch.landingSurface = '/private/customer-123';
+    localStorage.setItem(ANALYTICS_JOURNEY_STORAGE_KEY, JSON.stringify(record));
+
+    assert.equal(readAnalyticsJourney(), null);
+    assert.equal(localStorage.getItem(ANALYTICS_JOURNEY_STORAGE_KEY), null);
+  });
+});
+
+test('stored journeys with extra private fields are rejected and removed', () => {
+  withBrowser({ consent: 'granted' }, ({ localStorage }) => {
+    prepareBrowserAnalyticsEvents('sign_up_started');
+    const raw = localStorage.getItem(ANALYTICS_JOURNEY_STORAGE_KEY);
+    assert.ok(raw);
+    const record = JSON.parse(raw) as Record<string, unknown>;
+    record.prompt = 'Bearer private-token';
+    localStorage.setItem(ANALYTICS_JOURNEY_STORAGE_KEY, JSON.stringify(record));
+
+    assert.equal(readAnalyticsJourney(), null);
+    assert.equal(localStorage.getItem(ANALYTICS_JOURNEY_STORAGE_KEY), null);
+  });
+});
+
 test('URL-shaped UTM values are absent from stored journeys and prepared payloads', () => {
   const url = new URL('https://maxvideoai.com/pricing');
   url.searchParams.set('utm_source', 'newsletter');

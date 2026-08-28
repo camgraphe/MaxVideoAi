@@ -67,6 +67,89 @@ const APPROVED_UTM_TOUCHES: readonly ApprovedUtmTouch[] = [
   },
 ];
 
+const ANALYTICS_ROUTE_FAMILIES = new Set([
+  'admin', 'auth', 'marketing', 'public_tools', 'app_tools', 'workspace', 'billing',
+]);
+const ANALYTICS_LOCALES = new Set(['en', 'fr', 'es']);
+const ANALYTICS_TOOL_NAMES = new Set([
+  'tools_hub', 'angle', 'background_removal', 'character_builder', 'storyboard', 'upscale', 'audio',
+]);
+const ANALYTICS_WORKSPACE_SECTIONS = new Set([
+  'home', 'image', 'audio', 'library', 'tools', 'billing', 'generate', 'dashboard', 'jobs',
+  'settings', 'connect', 'video',
+]);
+const SAFE_MARKETING_LANDING_SURFACES = new Set([
+  '/', '/about', '/ai-video-engines', '/benchmarks', '/best-for', '/blog', '/changelog',
+  '/company', '/compare', '/contact', '/docs', '/editorial-standards', '/examples',
+  '/integrations/chatgpt', '/integrations/claude', '/integrations/codex', '/legal',
+  '/legal/acceptable-use', '/legal/cookies', '/legal/cookies-list', '/legal/mentions',
+  '/legal/privacy', '/legal/subprocessors', '/legal/takedown', '/legal/terms', '/mcp',
+  '/models', '/pay-as-you-go-ai-video-generator', '/pricing', '/status', '/tools', '/workflows',
+]);
+const MARKETING_OWNER_SURFACES: Readonly<Record<string, string>> = {
+  '/ai-video-engines/': '/ai-video-engines',
+  '/blog/': '/blog',
+  '/docs/': '/docs',
+  '/examples/': '/examples',
+  '/modeles/': '/models',
+  '/modelos/': '/models',
+  '/models/': '/models',
+};
+const ORGANIC_SOURCES = new Set(['google', 'bing', 'yahoo', 'duckduckgo', 'ecosia', 'baidu', 'yandex']);
+const ANALYTICS_TOUCH_KEYS = new Set([
+  'source', 'medium', 'campaign', 'content', 'referrerHost', 'landingRouteFamily',
+  'landingSurface', 'locale',
+]);
+
+function safeMarketingLandingSurface(value: string): string | undefined {
+  if (SAFE_MARKETING_LANDING_SURFACES.has(value)) return value;
+  for (const [prefix, owner] of Object.entries(MARKETING_OWNER_SURFACES)) {
+    if (value.startsWith(prefix)) return owner;
+  }
+  return undefined;
+}
+
+export function projectAnalyticsLandingSurface(
+  routeFamily: string,
+  value: unknown,
+): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  const normalized = analyticsPrimitive(value);
+  if (typeof normalized !== 'string') return undefined;
+  if (routeFamily === 'marketing') return safeMarketingLandingSurface(normalized);
+  if (routeFamily === 'public_tools' || routeFamily === 'app_tools') {
+    return ANALYTICS_TOOL_NAMES.has(normalized) ? normalized : undefined;
+  }
+  if (routeFamily === 'workspace') {
+    return ANALYTICS_WORKSPACE_SECTIONS.has(normalized) ? normalized : undefined;
+  }
+  if (routeFamily === 'auth' || routeFamily === 'billing' || routeFamily === 'admin') {
+    return normalized === routeFamily ? normalized : undefined;
+  }
+  return undefined;
+}
+
+function isApprovedUtmTouch(input: {
+  source: string;
+  medium: string;
+  campaign?: string;
+  content?: string;
+}): boolean {
+  return APPROVED_UTM_TOUCHES.some((touch) => (
+    touch.source === input.source
+    && touch.medium === input.medium
+    && touch.campaign === input.campaign
+    && (touch.contents ? Boolean(input.content && touch.contents.includes(input.content)) : !input.content)
+  ));
+}
+
+function isSafeHostname(value: string): boolean {
+  return value.length <= 80
+    && value.includes('.')
+    && !value.includes('..')
+    && /^(?:[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?)(?:\.(?:[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?))*$/i.test(value);
+}
+
 type AnalyticsTouchInput = {
   href: string;
   referrer: string;
@@ -106,10 +189,105 @@ function safeUrl(value: string): URL | null {
 }
 
 function routeFields(input: AnalyticsTouchInput): Pick<AnalyticsTouch, 'landingRouteFamily' | 'landingSurface' | 'locale'> {
+  const landingRouteFamily = ANALYTICS_ROUTE_FAMILIES.has(input.landingRouteFamily)
+    ? input.landingRouteFamily
+    : 'marketing';
+  const landingSurface = projectAnalyticsLandingSurface(landingRouteFamily, input.landingSurface);
+  const locale = typeof input.locale === 'string' && ANALYTICS_LOCALES.has(input.locale)
+    ? input.locale
+    : undefined;
   return {
-    landingRouteFamily: input.landingRouteFamily,
-    ...(input.landingSurface ? { landingSurface: input.landingSurface } : {}),
-    ...(input.locale ? { locale: input.locale } : {}),
+    landingRouteFamily,
+    ...(landingSurface ? { landingSurface } : {}),
+    ...(locale ? { locale } : {}),
+  };
+}
+
+export function projectAnalyticsTouch(value: unknown): AnalyticsTouch | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const touch = value as Record<string, unknown>;
+  let keys: string[];
+  try {
+    keys = Object.keys(touch);
+  } catch {
+    return null;
+  }
+  if (keys.some((key) => !ANALYTICS_TOUCH_KEYS.has(key))) return null;
+
+  const ownValue = (key: string): unknown => {
+    const descriptor = Object.getOwnPropertyDescriptor(touch, key);
+    return descriptor && Object.hasOwn(descriptor, 'value') ? descriptor.value : undefined;
+  };
+  if (!Object.hasOwn(touch, 'source') || !Object.hasOwn(touch, 'medium') || !Object.hasOwn(touch, 'landingRouteFamily')) {
+    return null;
+  }
+
+  const sourceInput = ownValue('source');
+  const mediumInput = ownValue('medium');
+  const campaignInput = ownValue('campaign');
+  const contentInput = ownValue('content');
+  const referrerHostInput = ownValue('referrerHost');
+  const routeFamilyInput = ownValue('landingRouteFamily');
+  const landingSurfaceInput = ownValue('landingSurface');
+  const localeInput = ownValue('locale');
+  const source = sanitizeAttributionFieldValue(sourceInput, { lowercase: true });
+  const medium = sanitizeAttributionFieldValue(mediumInput, { lowercase: true });
+  const campaign = campaignInput === undefined
+    ? undefined
+    : sanitizeAttributionFieldValue(campaignInput) ?? undefined;
+  const content = contentInput === undefined
+    ? undefined
+    : sanitizeAttributionFieldValue(contentInput) ?? undefined;
+  const referrerHost = referrerHostInput === undefined
+    ? undefined
+    : sanitizeAttributionValue(referrerHostInput, { lowercase: true }) ?? undefined;
+  const landingRouteFamily = typeof routeFamilyInput === 'string'
+    && ANALYTICS_ROUTE_FAMILIES.has(routeFamilyInput)
+    ? routeFamilyInput
+    : null;
+  const landingSurface = landingRouteFamily
+    ? projectAnalyticsLandingSurface(landingRouteFamily, landingSurfaceInput)
+    : undefined;
+  const locale = localeInput === undefined
+    ? undefined
+    : typeof localeInput === 'string' && ANALYTICS_LOCALES.has(localeInput)
+      ? localeInput
+      : undefined;
+
+  if (
+    !source
+    || !medium
+    || !landingRouteFamily
+    || (Object.hasOwn(touch, 'campaign') && !campaign)
+    || (Object.hasOwn(touch, 'content') && !content)
+    || (Object.hasOwn(touch, 'referrerHost') && !referrerHost)
+    || (Object.hasOwn(touch, 'landingSurface') && !landingSurface)
+    || (Object.hasOwn(touch, 'locale') && !locale)
+  ) {
+    return null;
+  }
+
+  const isDirect = source === 'direct' && medium === 'none'
+    && campaign === undefined && content === undefined && referrerHost === undefined;
+  const isApprovedCampaign = referrerHost === undefined && isApprovedUtmTouch({
+    source, medium, ...(campaign ? { campaign } : {}), ...(content ? { content } : {}),
+  });
+  const isOrganic = medium === 'organic' && ORGANIC_SOURCES.has(source)
+    && Boolean(referrerHost && isSafeHostname(referrerHost));
+  const isReferral = medium === 'referral' && Boolean(
+    referrerHost && source === referrerHost && isSafeHostname(referrerHost),
+  );
+  if (!isDirect && !isApprovedCampaign && !isOrganic && !isReferral) return null;
+
+  return {
+    source,
+    medium,
+    ...(campaign ? { campaign } : {}),
+    ...(content ? { content } : {}),
+    ...(referrerHost ? { referrerHost } : {}),
+    landingRouteFamily,
+    ...(landingSurface ? { landingSurface } : {}),
+    ...(locale ? { locale } : {}),
   };
 }
 
@@ -194,14 +372,19 @@ export function createAnalyticsJourneyRecord(input: {
   now: number;
   touch: AnalyticsTouch;
 }): AnalyticsJourneyRecordV1 {
+  const touch = projectAnalyticsTouch(input.touch) ?? {
+    source: 'direct',
+    medium: 'none',
+    landingRouteFamily: 'marketing',
+  };
   return {
     version: ANALYTICS_JOURNEY_VERSION,
     journeyId: input.journeyId,
     createdAt: input.now,
     expiresAt: input.now + ANALYTICS_JOURNEY_TTL_MS,
     cohortWeek: isoCohortWeek(input.now),
-    firstTouch: input.touch,
-    lastTouch: input.touch,
+    firstTouch: touch,
+    lastTouch: touch,
     lastTouchAt: input.now,
     funnelEntrySent: false,
     generationStartedCount: 0,
@@ -214,13 +397,15 @@ export function applyAnalyticsTouch(
   touch: AnalyticsTouch,
   now: number,
 ): AnalyticsJourneyRecordV1 {
+  const projectedTouch = projectAnalyticsTouch(touch);
+  if (!projectedTouch) return record;
   if (
-    (touch.source === 'direct' && touch.medium === 'none')
-    || touchFingerprint(record.lastTouch) === touchFingerprint(touch)
+    (projectedTouch.source === 'direct' && projectedTouch.medium === 'none')
+    || touchFingerprint(record.lastTouch) === touchFingerprint(projectedTouch)
   ) {
     return record;
   }
-  return { ...record, lastTouch: touch, lastTouchAt: now };
+  return { ...record, lastTouch: projectedTouch, lastTouchAt: now };
 }
 
 const JOURNEY_PAYLOAD_KEYS = [
@@ -371,12 +556,6 @@ function analyticsPrimitive(value: unknown): string | number | boolean | undefin
 
 type AnalyticsPrimitive = string | number | boolean;
 
-const ROUTE_FAMILIES = new Set([
-  'admin', 'auth', 'marketing', 'public_tools', 'app_tools', 'workspace', 'billing',
-]);
-const TOOL_NAMES = new Set([
-  'tools_hub', 'angle', 'background_removal', 'character_builder', 'storyboard', 'upscale', 'audio',
-]);
 const ENGINE_IDS = new Set([
   'happy-horse-1-0', 'happy-horse-1-1', 'seedance-2-0-mini', 'seedance-1-5-pro',
   'seedance-2-0', 'seedance-2-0-fast', 'seedance-2-5', 'seedream', 'seedream-5-0-pro',
@@ -407,18 +586,18 @@ const CTA_LOCATIONS = new Set([
   'tool_character_builder_final', 'tool_character_builder_hero',
 ]);
 const EXACT_STRING_VALUES: Readonly<Record<string, ReadonlySet<string>>> = {
-  route_family: ROUTE_FAMILIES,
-  tool_name: TOOL_NAMES,
+  route_family: ANALYTICS_ROUTE_FAMILIES,
+  tool_name: ANALYTICS_TOOL_NAMES,
   tool_surface: new Set(['public', 'workspace']),
-  workspace_section: new Set(['home', 'image', 'audio', 'library', 'tools', 'billing', 'generate', 'dashboard', 'jobs', 'settings', 'connect', 'video']),
-  app_section: new Set(['workspace', 'home', 'image', 'audio', 'library', 'tools', 'generate', 'dashboard', 'jobs', 'settings', 'connect', 'video']),
+  workspace_section: ANALYTICS_WORKSPACE_SECTIONS,
+  app_section: new Set(['workspace', ...ANALYTICS_WORKSPACE_SECTIONS]),
   cta_name: CTA_NAMES,
   cta_location: CTA_LOCATIONS,
   target_family: new Set(['auth', 'workspace', 'examples', 'compare', 'models', 'tools', 'pricing', 'mcp', 'best-for', 'public_tools', 'app_tools']),
   action: new Set(['connect', 'copy_endpoint', 'generate', 'full_body_fix', 'lighting_variant', 'continue', 'refine', 'branch', 'copy', 'open']),
   client: new Set(['claude', 'chatgpt', 'codex']),
   destination: new Set(['verified_deep_link', 'setup_guide', 'manual_setup']),
-  locale: new Set(['en', 'fr', 'es']),
+  locale: ANALYTICS_LOCALES,
   auth_surface: new Set(['login']),
   method: new Set(['password', 'google']),
   source_mode: new Set(['scratch', 'reference-image']),
@@ -494,8 +673,8 @@ function validateSafeAnalyticsPath(value: AnalyticsPrimitive): string | undefine
   const segments = value.split('/').filter(Boolean);
   if (segments.length === 2 && ['models', 'modeles', 'modelos'].includes(segments[0] ?? '') && ENGINE_IDS.has(segments[1] ?? '')) return value;
   if (segments.length === 2 && ['integrations', 'integraciones'].includes(segments[0] ?? '') && ['claude', 'chatgpt', 'codex'].includes(segments[1] ?? '')) return value;
-  if (segments.length === 2 && segments[0] === 'tools' && TOOL_NAMES.has((segments[1] ?? '').replace(/-/g, '_'))) return value;
-  if (segments.length === 3 && segments[0] === 'app' && segments[1] === 'tools' && TOOL_NAMES.has((segments[2] ?? '').replace(/-/g, '_'))) return value;
+  if (segments.length === 2 && segments[0] === 'tools' && ANALYTICS_TOOL_NAMES.has((segments[1] ?? '').replace(/-/g, '_'))) return value;
+  if (segments.length === 3 && segments[0] === 'app' && segments[1] === 'tools' && ANALYTICS_TOOL_NAMES.has((segments[2] ?? '').replace(/-/g, '_'))) return value;
   return undefined;
 }
 
@@ -555,23 +734,75 @@ export function projectAllowedAnalyticsPayload(
   return isAllowedAnalyticsEvent(event) ? projectAnalyticsPayload(event, payload) : null;
 }
 
-function journeyPayload(record: AnalyticsJourneyRecordV1, now: number): Record<string, unknown> {
-  return {
+const FUNNEL_STAGE_VALUES = new Set(['entry', ...Object.values(FUNNEL_STAGES)]);
+const JOURNEY_SEQUENCE_FIELDS = new Set(['generation_sequence', 'topup_sequence']);
+const JOURNEY_BOOLEAN_FIELDS = new Set(['is_first_generation', 'is_first_topup_attempt']);
+
+function projectJourneyOwnedPayload(
+  payload: Record<string, unknown>,
+): Record<string, string | number | boolean> {
+  const projected: Record<string, string | number | boolean> = {};
+  const routeFamily = typeof payload.landing_route_family === 'string'
+    && ANALYTICS_ROUTE_FAMILIES.has(payload.landing_route_family)
+    ? payload.landing_route_family
+    : undefined;
+
+  for (const [key, input] of Object.entries(payload)) {
+    if (key === 'journey_id' && typeof input === 'string' && new RegExp(`^${UUID}$`, 'i').test(input)) {
+      projected[key] = input;
+    } else if (key === 'acquisition_cohort' && typeof input === 'string' && /^\d{4}-W(?:0[1-9]|[1-4]\d|5[0-3])$/.test(input)) {
+      projected[key] = input;
+    } else if (key === 'journey_age_days' && typeof input === 'number' && Number.isInteger(input) && input >= 0 && input <= 90) {
+      projected[key] = input;
+    } else if (key === 'landing_route_family' && routeFamily) {
+      projected[key] = routeFamily;
+    } else if (key === 'landing_surface' && routeFamily) {
+      const surface = projectAnalyticsLandingSurface(routeFamily, input);
+      if (surface) projected[key] = surface;
+    } else if (key === 'journey_locale' && typeof input === 'string' && ANALYTICS_LOCALES.has(input)) {
+      projected[key] = input;
+    } else if (key === 'funnel_stage' && typeof input === 'string' && FUNNEL_STAGE_VALUES.has(input)) {
+      projected[key] = input;
+    } else if (JOURNEY_SEQUENCE_FIELDS.has(key) && typeof input === 'number' && Number.isInteger(input) && input >= 1 && input <= 1_000_000) {
+      projected[key] = input;
+    } else if (JOURNEY_BOOLEAN_FIELDS.has(key) && typeof input === 'boolean') {
+      projected[key] = input;
+    } else if (/^(?:first|last)_touch_(?:source|medium|campaign|content)$/.test(key)) {
+      const value = sanitizeAttributionFieldValue(input, {
+        lowercase: key.endsWith('_source') || key.endsWith('_medium'),
+      });
+      if (value) projected[key] = value;
+    }
+  }
+  return projected;
+}
+
+function journeyPayload(
+  record: AnalyticsJourneyRecordV1,
+  now: number,
+): Record<string, string | number | boolean> {
+  const firstTouch = projectAnalyticsTouch(record.firstTouch);
+  const lastTouch = projectAnalyticsTouch(record.lastTouch);
+  return projectJourneyOwnedPayload({
     journey_id: record.journeyId,
     acquisition_cohort: record.cohortWeek,
-    first_touch_source: record.firstTouch.source,
-    first_touch_medium: record.firstTouch.medium,
-    ...(record.firstTouch.campaign ? { first_touch_campaign: record.firstTouch.campaign } : {}),
-    ...(record.firstTouch.content ? { first_touch_content: record.firstTouch.content } : {}),
-    last_touch_source: record.lastTouch.source,
-    last_touch_medium: record.lastTouch.medium,
-    ...(record.lastTouch.campaign ? { last_touch_campaign: record.lastTouch.campaign } : {}),
-    ...(record.lastTouch.content ? { last_touch_content: record.lastTouch.content } : {}),
+    ...(firstTouch ? {
+      first_touch_source: firstTouch.source,
+      first_touch_medium: firstTouch.medium,
+      ...(firstTouch.campaign ? { first_touch_campaign: firstTouch.campaign } : {}),
+      ...(firstTouch.content ? { first_touch_content: firstTouch.content } : {}),
+      landing_route_family: firstTouch.landingRouteFamily,
+      ...(firstTouch.landingSurface ? { landing_surface: firstTouch.landingSurface } : {}),
+      ...(firstTouch.locale ? { journey_locale: firstTouch.locale } : {}),
+    } : {}),
+    ...(lastTouch ? {
+      last_touch_source: lastTouch.source,
+      last_touch_medium: lastTouch.medium,
+      ...(lastTouch.campaign ? { last_touch_campaign: lastTouch.campaign } : {}),
+      ...(lastTouch.content ? { last_touch_content: lastTouch.content } : {}),
+    } : {}),
     journey_age_days: Math.max(0, Math.floor((now - record.createdAt) / DAY_MS)),
-    landing_route_family: record.firstTouch.landingRouteFamily,
-    ...(record.firstTouch.landingSurface ? { landing_surface: record.firstTouch.landingSurface } : {}),
-    ...(record.firstTouch.locale ? { journey_locale: record.firstTouch.locale } : {}),
-  };
+  });
 }
 
 function mergeJourneyPayload(
@@ -581,7 +812,7 @@ function mergeJourneyPayload(
 ): Record<string, unknown> {
   const merged = projectAnalyticsPayload(event, payload);
   for (const key of JOURNEY_PAYLOAD_KEYS) delete merged[key];
-  return { ...merged, ...owned };
+  return { ...merged, ...projectJourneyOwnedPayload(owned) };
 }
 
 export function prepareJourneyEvents(
@@ -613,7 +844,7 @@ export function prepareJourneyEvents(
     nextRecord = { ...nextRecord, funnelEntrySent: true };
     events.push({
       event: 'funnel_entry',
-      payload: { ...common, funnel_stage: 'entry' },
+      payload: projectJourneyOwnedPayload({ ...common, funnel_stage: 'entry' }),
     });
   }
 
