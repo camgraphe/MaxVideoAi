@@ -195,6 +195,49 @@ const JOURNEY_PAYLOAD_KEYS = [
   'funnel_stage',
 ] as const;
 
+const PRIVATE_ANALYTICS_KEY_PREFIX = /^(?:prompt|media|asset|reference|token|authorization|auth|account|user|email|referrer|url|href|secret|password|apikey)/;
+const URL_SCHEME_PATTERN = /^[a-z][a-z0-9+.-]*:/i;
+
+function normalizedAnalyticsPayloadKey(key: string): string | null {
+  let decoded = key;
+  try {
+    decoded = decodeURIComponent(key);
+  } catch {
+    // Keep the original key when percent decoding is malformed.
+  }
+  const normalized = decoded.normalize('NFKC').toLowerCase();
+  const compact = normalized.replace(/[^a-z0-9]/g, '');
+  if (!compact || PRIVATE_ANALYTICS_KEY_PREFIX.test(compact)) return null;
+  const gaKey = normalized.replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+  return gaKey && gaKey.length <= 40 ? gaKey : null;
+}
+
+function analyticsPrimitive(value: unknown): string | number | boolean | undefined {
+  if (typeof value === 'string') {
+    const normalized = value.normalize('NFKC');
+    return normalized.length <= 120 && !URL_SCHEME_PATTERN.test(normalized) ? normalized : undefined;
+  }
+  if (typeof value === 'number') return Number.isFinite(value) ? value : undefined;
+  return typeof value === 'boolean' ? value : undefined;
+}
+
+function projectAnalyticsPayload(payload: Record<string, unknown>): Record<string, string | number | boolean> {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return {};
+  const projected: Record<string, string | number | boolean> = {};
+  try {
+    for (const key of Object.keys(payload)) {
+      const normalizedKey = normalizedAnalyticsPayloadKey(key);
+      const descriptor = Object.getOwnPropertyDescriptor(payload, key);
+      if (!normalizedKey || !descriptor || !Object.hasOwn(descriptor, 'value')) continue;
+      const value = analyticsPrimitive(descriptor.value);
+      if (value !== undefined) projected[normalizedKey] = value;
+    }
+  } catch {
+    return {};
+  }
+  return projected;
+}
+
 function journeyPayload(record: AnalyticsJourneyRecordV1, now: number): Record<string, unknown> {
   return {
     journey_id: record.journeyId,
@@ -218,9 +261,7 @@ function mergeJourneyPayload(
   payload: Record<string, unknown>,
   owned: Record<string, unknown>,
 ): Record<string, unknown> {
-  const merged = Object.fromEntries(
-    Object.entries(payload).filter(([key]) => !/(?:prompt|media|asset|token|account|user|email|referrer|url)/i.test(key)),
-  );
+  const merged = projectAnalyticsPayload(payload);
   for (const key of JOURNEY_PAYLOAD_KEYS) delete merged[key];
   return { ...merged, ...owned };
 }
