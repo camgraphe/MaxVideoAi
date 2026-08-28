@@ -1,329 +1,133 @@
-# MaxVideoAI — Generate Page Mock & Frontend
+<p align="center"><img src="plugins/maxvideoai/assets/logo-mark.svg" width="88" alt="MaxVideoAI white monogram on a dark rounded square"></p>
 
-## 🌐 Live App
-👉 https://maxvideoai.com
+# MaxVideoAI
 
-## AI Video Models, Examples and Specs
+**Multi-model AI video production**
 
-MaxVideoAI is a multi-engine AI video platform for comparing and generating videos across models such as Sora, Veo, Kling, Seedance, and LTX.
+MaxVideoAI is a multi-model AI video production platform for planning, comparing, pricing, generating, and organizing video work in one place. Bring a brief, choose among current model options, review the price before generation, and keep finished results and reusable references together in your MaxVideoAI Library.
 
-Explore the main entry points below:
+[Plan a video with MaxVideoAI](https://maxvideoai.com/mcp?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=hero_try) · [Compare current models](https://maxvideoai.com/models?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=models) · [Use MaxVideoAI from Claude, ChatGPT or Codex](https://maxvideoai.com/mcp?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=plugin_callout)
 
-### Examples gallery
-Browse prompts, settings, and outputs across multiple AI video engines.
+[Plugin repository](https://github.com/camgraphe/maxvideoai-plugin) · [Latest public release: v0.3.1](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.1)
 
-https://maxvideoai.com/examples
+![MaxVideoAI production workspace showing the completed glass-ribbon video as the dominant README proof](plugins/maxvideoai/assets/demos/readme-proof-hero.webp)
 
-### Models overview
-Explore model pages, specs, workflows, and pricing across the full engine catalog.
+*Current MaxVideoAI web-product proof. The editorial frame is decorative; this image does not claim a verified native flow inside Claude, ChatGPT, or Codex.*
 
-https://maxvideoai.com/models
+## What can you make with MaxVideoAI?
 
-### AI video plugin for ChatGPT, Claude and Codex
+Turn a single prompt or supported media reference into a shot, build a coherent sequence, or explore several creative directions before committing spend. The workspace brings generation controls, outputs, and the Library into one production path, so the useful work does not vanish when an experiment ends.
 
-Use MaxVideoAI from an AI assistant to prepare prompts and image, video or
-audio references, compare current models, budget a complete project, review
-the exact price, then generate only after explicit approval. The connection
-uses the existing MaxVideoAI account, credits and private media library.
+| Production goal | MaxVideoAI path |
+| --- | --- |
+| Explore a visual direction | Test a prompt or supported reference with settings matched to the chosen workflow. |
+| Build a multi-shot project | Plan shots, compare model fit, and keep the creative brief visible across iterations. |
+| Control production spend | Check current pricing and review the generation price before launching paid work. |
+| Reuse finished work | Recover outputs and media from the MaxVideoAI Library for the next step. |
 
-- Product and setup: https://maxvideoai.com/mcp
-- Repository package: [`plugins/maxvideoai`](plugins/maxvideoai)
-- Architecture and maintenance: [`docs/engineering/mcp-architecture.md`](docs/engineering/mcp-architecture.md)
+See current prompts and outputs in the [examples gallery](https://maxvideoai.com/examples), or bring your own brief. It is usually the more interesting place to start.
 
-### Add a new model page
+## How do you compare current AI video models?
 
-Use the onboarding flow instead of starting from a thin template:
+MaxVideoAI lets creators compare current AI video models by capability, workflow, settings, and price before choosing a production route. Model families such as Sora, Veo, Kling, Seedance, and LTX are examples—not a fixed catalogue. Use the [live model directory](https://maxvideoai.com/models) for current availability and pricing.
 
-```bash
-npm run model:setup -- --from kling-3-pro --slug your-new-model --name "Your New Model" --family kling
-npm run engine:catalog
-npm run model:generate:write
-npm run models:audit
+![MaxVideoAI workspace with the Luma Ray 2 Flash selector and completed glass-ribbon video](plugins/maxvideoai/assets/demos/model-choice-and-budget.webp)
+
+The image proves the current MaxVideoAI selector and completed result. It does not prove a model ranking, budget, quote, approval, or native assistant-host execution.
+
+| Start with | Compare for |
+| --- | --- |
+| A text brief | Motion style, prompt control, duration, aspect ratio, and supported output options. |
+| An image or video reference | Reference type, framing control, continuity, and workflow-specific constraints. |
+| A sequence of shots | Visual consistency, turnaround needs, and an intentional model mix versus one-model continuity. |
+
+## How do project pricing and approval work?
+
+Current price information belongs beside the current model and settings—not frozen in a README. MaxVideoAI exposes the generation price before paid work begins. In the assistant workflow, a prepared request returns an exact quote and requires explicit approval for one paid attempt; planning and comparisons do not silently authorize generation.
+
+1. Choose the model, mode, duration, resolution, and supported extras.
+2. Review the current price or [project pricing](https://maxvideoai.com/pricing) before generation.
+3. Launch the web request, or explicitly approve the prepared assistant request when the production is ready.
+
+> You stay in control of the spend. A changed request needs a fresh price, and an interrupted assistant response should be recovered before another paid attempt is considered.
+
+## How do references and continuity work?
+
+Supported workflows can use image, video, or audio references to preserve framing, subject, motion, or sound direction. Reference support depends on the selected model and mode, so the live composer remains the source of truth. Completed work and reusable media stay connected through the MaxVideoAI Library.
+
+![Completed MaxVideoAI workspace result paired with the same saved video in the MaxVideoAI Library](plugins/maxvideoai/assets/demos/brief-to-video-workflow.webp)
+
+This current production composite proves that the same completed result continues from the MaxVideoAI workspace into the Library. It does not depict a verified brief, quote, approval, private upload, or native host flow.
+
+Pick up where the production left off: open the [Library](https://maxvideoai.com/app/library), review the saved result, and reuse only the media that belongs in the next request.
+
+## Can Claude, ChatGPT or Codex use MaxVideoAI?
+
+MaxVideoAI exposes a remote MCP service and a checked-in plugin package for assistant-led planning and generation workflows. The package includes setup guides, model-planning and generation skills, privacy boundaries, examples, and recovery guidance. Release v0.3.0 is public and release v0.3.1 is public in the dedicated distribution repository. The checked-in 0.3.2 package is a closed, unpublished candidate until its own source tag, checksum, clean-install evidence, and owner gate are complete.
+
+![Current MaxVideoAI workspace and Library proof for the assistant-led production path](plugins/maxvideoai/assets/demos/library-continuity.webp)
+
+[Read the active product setup](https://maxvideoai.com/mcp) · [Inspect the source package](plugins/maxvideoai) · [Open the public plugin repository](https://github.com/camgraphe/maxvideoai-plugin) · [Download v0.3.1](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.1)
+
+Platform availability and setup can change. Follow the guide for your Claude, ChatGPT, Codex, or compatible MCP surface and treat the linked compatibility evidence as current only for the state it documents. The product proof in this README is MaxVideoAI web-app proof, not native host proof.
+
+```text
+Brief → compare current models → prepare exact request → review price → approve one attempt → recover result
 ```
 
-`model:setup` writes the marketing JSON scaffold in `content/models/{en,fr,es}/your-new-model.json`, generates an engine stub, emits a family stub if needed, and writes a launch packet in `docs/model-launch/` with the manual Codex checklist for copy, translations, examples publication, compare publication, and pricing decisions.
+The assistant path uses the connected MaxVideoAI account, credits, and Library. It does not require a separate plugin subscription; paid generations still use the product's current pay-as-you-go pricing.
 
-If the model belongs to an existing family:
+## How is MaxVideoAI built?
 
-- add the engine in `frontend/src/config/falEngines.ts`
-- set its `family` and `surfaces` explicitly
-- app discovery and pricing estimator update automatically
-- examples family routing keeps working, but canonical `/examples/<family>` copy stays stable until `publishedModelSlugs` is updated intentionally
-- compare routes remain possible, but hub/sitemap publication only happens if `surfaces.compare` is filled intentionally
+The public application is a production Next.js system with a capability-driven model catalogue, server-owned provider orchestration, billing controls, a media Library, localized marketing surfaces, and remote MCP integration.
 
-If this is a brand new family:
-
-- add the engine in `frontend/src/config/falEngines.ts` with its new `family`
-- add one family entry in `frontend/config/model-families.ts`
-- keep `examplesPage.stage: "hidden"` by default to avoid accidental nav/sitemap/canonical expansion
-- promote the family later by switching `examplesPage.stage` and filling `publishedModelSlugs`
-
-### Example cluster: LTX pages
-
-#### LTX examples (prompts + settings)
-
-Browse real prompts, settings, and outputs across the LTX model family.
-
-https://maxvideoai.com/examples/ltx
-
-#### LTX 2.3 Fast model
-
-Specs, pricing, max clip length, and use cases for the fast iteration model.
-
-https://maxvideoai.com/models/ltx-2-3-fast
-
-#### LTX 2.3 Pro model
-
-Advanced workflows including audio-driven generation, Extend and Retake editing.
-
-https://maxvideoai.com/models/ltx-2-3-pro
-
-MaxVideoAI is a fully deployed multi-engine AI video generator running on Next.js + Vercel + Fal.ai.  
-
-This repo contains:
-
-- Product & UX spec (`max_video_ai_generate_page_spec_v_1.md`).
-- Mock API (`mock-server.js`) that serves deterministic responses for `/api/engines` and `/api/preflight` using `fixtures/`.
-- Docker support so the mock can run in isolation.
-- A Next.js frontend scaffold in `frontend/` that consumes the mock API and demonstrates the capability-driven UI skeleton.
-
-## 1. Prerequisites
-
-- Node.js 20+
-- Docker (optional but recommended for the mock API)
-
-## 2. Mock API
-
-### Local (Node)
-
-```bash
-npm install
-npm start
+```mermaid
+flowchart LR
+  B[Creative brief] --> W[Next.js workspace]
+  B --> A[Assistant via remote MCP]
+  A --> W
+  W --> C[Current model catalogue]
+  W --> P[Provider orchestration]
+  P --> L[Jobs and Library]
+  L --> W
 ```
 
-The server runs on `http://127.0.0.1:3333` by default.
+| Area | Repository owner |
+| --- | --- |
+| Routes, layouts, and UI | [`frontend/app`](frontend/app) and [`frontend/components`](frontend/components) |
+| Pure product and SEO logic | [`frontend/lib`](frontend/lib) |
+| Server orchestration | [`frontend/server`](frontend/server) and [`frontend/src/server`](frontend/src/server) |
+| Model identity and policy | [`frontend/config/model-registry.json`](frontend/config/model-registry.json) |
+| Public assistant package | [`plugins/maxvideoai`](plugins/maxvideoai) |
+| Application migrations | [`neon/migrations`](neon/migrations) |
 
-### Docker
+Supabase owns authentication, Neon owns relational application data, and Amazon S3 owns media bytes. See the [environment reference](docs/engineering/environment-reference.md) for the operational boundary.
 
-```bash
-docker build -t maxvideoai-mock .
-docker run --rm -p 3333:3333 -e CORS_ORIGIN="*" maxvideoai-mock
-```
+## Local development
 
-Or with Compose:
-
-```bash
-docker compose up --build
-```
-
-Health checks:
+The shortest contributor path uses the repository-pinned pnpm version and Node.js 22:
 
 ```bash
-curl -s http://127.0.0.1:3333/api/engines | jq
-curl -s http://127.0.0.1:3333/api/preflight \
-  -H "Content-Type: application/json" \
-  -d '{"engine":"veo3","mode":"t2v","durationSec":8,"resolution":"1080p","aspectRatio":"16:9","fps":24,"addons":{"upscale4k":false,"audio":true},"user":{"memberTier":"Plus"}}' | jq
+pnpm install
+cp frontend/.env.local.example frontend/.env.local
+pnpm dev
 ```
 
-## 3. Frontend (Next.js)
+Read [local development](docs/engineering/local-development.md) for the frontend, legacy mock contract server, Docker, model onboarding, migrations, scheduled jobs, and validation commands. Read the [environment reference](docs/engineering/environment-reference.md) for variables, health endpoints, and data ownership.
 
-## Compare AI Video Engines
+Before changing architecture or model policy, start with [`AGENTS.md`](AGENTS.md), the [LLM working guide](docs/engineering/llm-working-guide.md), and the closest area-specific instructions.
 
-MaxVideoAI helps developers and creators compare AI video engines such as Sora, Veo, Kling, Seedance, Wan, and LTX across different workflows.
+## Contributing, security, and license
 
-Examples gallery  
-https://maxvideoai.com/examples
+Contributions are welcome when they preserve the product contracts, public URLs, model-registry ownership, and server/client boundaries documented in the engineering guides.
 
-Models overview  
-https://maxvideoai.com/models
+| Need | Start here |
+| --- | --- |
+| Propose or implement a change | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
+| Report a vulnerability privately | Email [security@maxvideoai.com](mailto:security@maxvideoai.com); do not open a public issue. |
+| Ask for product or repository help | [Contact MaxVideoAI](https://maxvideoai.com/contact) |
+| Review public/private boundaries | [`docs/public-vs-private.md`](docs/public-vs-private.md) |
 
-AI video engine comparisons  
-https://maxvideoai.com/ai-video-engines
+The repository uses the [Business Source License 1.1](LICENSE), with the terms and change date defined in the license file. Commercial deployments require a separate licence; see the [dual-license guide](docs/licensing/dual-license.md), email [licensing@maxvideo.ai](mailto:licensing@maxvideo.ai), and review [`NOTICE`](NOTICE).
 
-Inside `frontend/`:
-
-```bash
-cd frontend
-cp .env.local.example .env.local
-npm install
-npm run dev
-```
-
-Set `NEXT_PUBLIC_API_BASE` in `.env.local` to match the mock base URL.
-
-Key behaviours implemented:
-
-- Engine selection updates capability-driven controls instantly.
-- Composer sits below the preview, with dropzones that appear only for `i2v` modes supported by the engine.
-- PRICE-BEFORE pill fed by `POST /preflight`, refreshes (<200 ms debounce) when core settings change.
-- Overlays for Upscale 4K & Audio respect engine capabilities.
-- Basic badges (PAY-AS-YOU-GO / PRICE-BEFORE) and membership hints inline with the spec.
-
-## Licensing & Repository Layout
-
-- **Licence**: Business Source License 1.1 (BUSL 1.1). See [`LICENSE`](LICENSE) and [`NOTICE`](NOTICE).  
-- **Change Date**: 10 October 2028 → Apache 2.0.  
-- **Usage**: Non-commercial evaluation of the software. Commercial deployments require a licence.
-
-## Engineering Guides
-
-Start here before large frontend, route, or architecture changes:
-
-- [`AGENTS.md`](AGENTS.md) — repository-wide rules for Codex, AI agents, and contributors.
-- [`docs/engineering/project-structure.md`](docs/engineering/project-structure.md) — where code should live.
-- [`docs/engineering/page-architecture.md`](docs/engineering/page-architecture.md) — how to keep `page.tsx` files focused.
-- [`docs/engineering/refactor-roadmap.md`](docs/engineering/refactor-roadmap.md) — phased cleanup plan for the largest pages.
-
-This repository hosts the full MaxVideoAI application. Review [`docs/public-vs-private.md`](docs/public-vs-private.md) before publishing to ensure no secrets or contractual data ship with the codebase.
-
-Before syncing the public mirror, run:
-
-```bash
-npm run lint:exposure
-```
-
-The script (`scripts/check-public-exposure.mjs`) fails if sensitive folders or `.env*` files are still present.
-
-### Commercial Licence Track
-
-MaxVideoAI offers a separate commercial licence for partners that need production rights, backend access, or support. The operating model and contract checklist are described in [`docs/licensing/dual-license.md`](docs/licensing/dual-license.md).  
-Contact `licensing@maxvideo.ai` to initiate the commercial process.
-
-## 4. Switching to Real Backend
-
-- Keep the same interface: `/api/engines`, `/api/preflight`.
-- Adjust `NEXT_PUBLIC_API_BASE` to the live endpoint.
-- Preserve the mock by running it on a different port (e.g. 3334) and toggling via env.
-
-## 5. Environment Variables & Health Checks
-
-The application expects the following environment variables (scoped per Vercel environment unless noted):
-
-| Variable | Scope | Purpose |
-| --- | --- | --- |
-| `FAL_KEY` / `FAL_API_KEY` | Server | Fal.ai API key injected into the edge proxy. Prefer `FAL_KEY` on Vercel. |
-| `GOOGLE_VERTEX_PROJECT_ID` / `GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON` | Server | Google Vertex AI project and service account used by direct Google providers such as Veo and Lyria 3. |
-| `GOOGLE_VERTEX_LYRIA_ENABLED` | Server (optional) | Enables Google Vertex Lyria 3 as the primary `generate audio` music provider when Vertex credentials are configured. Set to `0` to force Fal music providers. |
-| `GOOGLE_VERTEX_LYRIA_LOCATION` | Server (optional) | Vertex location for Lyria 3 interactions. Defaults to `global`. |
-| `NEXT_PUBLIC_SUPABASE_URL` | Public | Supabase Auth project URL used by the browser. |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public | Supabase Auth anon key. |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server (optional) | Service role key for backend operations. |
-| `DATABASE_URL` | Server | Neon Postgres connection string for application tables and API routes. |
-| `LEGAL_MIN_AGE` | Server | Minimum age (integer) required during signup consent. Defaults to 15 if unset. |
-| `NEXT_PUBLIC_LEGAL_MIN_AGE` | Public | Mirrors `LEGAL_MIN_AGE` so the UI can display the current requirement. |
-| `LEGAL_RECONSENT_MODE` | Server | `soft` (default) or `hard`, controls re-consent enforcement. |
-| `LEGAL_RECONSENT_GRACE_DAYS` | Server | Grace period in days when `LEGAL_RECONSENT_MODE=soft`. |
-| `CONSENT_MODE` | Server | Consent UI mode (`cmp`/`basic`) to toggle CMP experience. |
-| `GOOGLE_CONSENT_MODE` | Server | `true`/`false`/`auto` toggle for emitting Google Consent Mode v2 signals. |
-| `NEXT_PUBLIC_GOOGLE_CONSENT_MODE` | Public | Mirrors `GOOGLE_CONSENT_MODE` so the CMP can emit signals client-side. |
-| `MARKETING_DOUBLE_OPT_IN` | Server | Enables double opt-in flow for marketing emails when set to `true`. |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Public | Stripe publishable key. |
-| `STRIPE_SECRET_KEY` | Server | Stripe secret key for server-side operations. |
-| `STRIPE_WEBHOOK_SECRET` | Server (optional) | Stripe webhook signing secret. |
-| `GA4_MEASUREMENT_ID` | Server (optional) | GA4 Measurement ID used for server-side Measurement Protocol events. |
-| `GA4_API_SECRET` | Server (optional) | GA4 Measurement Protocol API secret for top-up completion tracking. |
-| `SLACK_BOT_TOKEN` / `SLACK_SIGNING_SECRET` / `SLACK_WEBHOOK_URL` | Server (optional) | Slack integration secrets if hooks/bots are enabled. |
-| `NEON_API_KEY` / `NEON_API_TOKEN` | Server (optional) | Enables `/admin/infra-costs` Neon usage estimates and branch guard alerts. |
-| `NEON_USAGE_ORG_ID` / `NEON_USAGE_PROJECT_IDS` | Server (optional) | Neon org and comma-separated project IDs for the infra cost report. Defaults to the production project IDs when unset. |
-| `VERCEL_TOKEN` / `VERCEL_API_TOKEN` | Server (optional) | Enables `/admin/infra-costs` Vercel billing charge reporting. |
-| `VERCEL_TEAM_ID` / `VERCEL_TEAM_SLUG` | Server (optional) | Scopes Vercel billing charge reporting to the team account when needed. |
-| `AWS_COST_EXPLORER_ACCESS_KEY_ID` / `AWS_COST_EXPLORER_SECRET_ACCESS_KEY` | Server (optional) | Enables `/admin/infra-costs` AWS S3 cost reporting via Cost Explorer. Falls back to `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY`; the IAM principal needs `ce:GetCostAndUsage`. |
-| `AWS_COST_EXPLORER_SESSION_TOKEN` | Server (optional) | Session token for temporary AWS billing credentials when using STS. |
-| `AWS_S3_COST_LINKED_ACCOUNT_IDS` | Server (optional) | Comma-separated linked AWS account IDs to include in S3 Cost Explorer reporting. Defaults to all accessible accounts. |
-| `AWS_S3_COST_TAG_KEY` / `AWS_S3_COST_TAG_VALUES` | Server (optional) | Optional Cost Explorer tag filter for S3 charges when AWS cost allocation tags are enabled. |
-| `INFRA_COST_MONTHLY_WARNING_USD` / `INFRA_COST_MONTHLY_CRITICAL_USD` | Server (optional) | Global projected month-end spend thresholds for the daily infra cost alert cron. |
-| `S3_USAGE_MONTHLY_WARNING_USD` / `S3_USAGE_MONTHLY_CRITICAL_USD` | Server (optional) | Projected month-end AWS S3 thresholds for infra cost alerts. |
-| `INFRA_COST_ALERT_EMAIL_TO` | Server (optional) | Email recipient for infra cost alerts when SMTP is configured. Slack alerts use `SLACK_WEBHOOK_URL`. |
-| `HEALTHCHECK_TOKEN` | Server (recommended) | Shared token required by protected health endpoints in Preview/Production. |
-
-### Health Endpoints
-
-Additional read-only endpoints help verify deployment wiring (Preview/Production):
-
-- `GET /api/health/env` — Edge runtime. Returns a JSON map of required env vars → boolean.
-- `GET /api/health/fal` — Edge runtime. Performs an `OPTIONS` call through the Fal proxy.
-- `GET /api/health/db` — Node runtime. Executes `SELECT 1` against the Neon database.
-- `GET /api/health/legal` — Node runtime. Verifies Neon connectivity and confirms legal document versions are seeded.
-- `GET /api/health/stripe` — Node runtime. Calls `stripe.prices.list(limit: 1)` to ensure the secret key is valid.
-
-Preview/Production health endpoints require `HEALTHCHECK_TOKEN` via `Authorization: Bearer ...` or `x-healthcheck-token`. Local development can remain open when the token is unset.
-
-### Data Ownership
-
-MaxVideoAI intentionally separates identity, relational data, and media storage:
-
-- Supabase is Auth only. Keep auth templates/config under [`supabase`](supabase), and do not use `supabase db push` for app tables.
-- Neon is the application Postgres database. Tables such as `app_jobs`, `job_outputs`, `media_assets`, `user_assets`, billing, admin, and workspace data live there.
-- Amazon S3 stores media bytes: uploads, generated images/videos/audio, thumbnails, previews, keyframes, and exports.
-
-See [`docs/data-platform.md`](docs/data-platform.md) for the detailed ownership rule.
-
-### Neon Migrations
-
-Neon (the primary application database) is managed via simple SQL migrations stored in [`neon/migrations`](neon/migrations).  
-Run them in order against the pooled connection string (`DATABASE_URL`, includes `-pooler` and `sslmode=require`):
-
-```bash
-pnpm db:migrate:neon
-```
-
-The scripts are idempotent and will seed the current legal document versions required by the consent system. Do not put application database migrations in `supabase/migrations`.
-
-### Fal Fixtures Utility
-
-Run `npx tsx scripts/dump-fal-models.ts` to regenerate:
-
-- `frontend/fixtures/fal-models.json`
-- `fixtures/fal-models.json`
-
-The script calls the Fal Platform API directly with `FAL_KEY` / `FAL_API_KEY`, so it no longer depends on the app proxy.
-
-## 6. Scheduled Jobs
-
-- Cron definitions live in `vercel.json`. Vercel reads this file on deploy, so any change requires a redeploy to propagate. 【vercel.json†L14-L19】
-- `/api/cron/fal-poll` is the scheduled entry-point. It proxies the call to `/api/fal/poll`, injects `X-Fal-Poll-Token` from `FAL_POLL_TOKEN`, et accepte uniquement les requêtes provenant du runtime Cron Vercel (en vérifiant `x-vercel-cron` ou le user-agent Vercel, plus l’ID de déploiement quand disponible).
-- IndexNow notifications are **change-based** (not periodic): GitHub Actions workflow `.github/workflows/indexnow.yml` runs on `main` push only when SEO/marketing files change, then submits sitemap URLs via `POST https://maxvideoai.com/api/indexnow`.
-- IndexNow rhythm: **one submission batch per qualifying push** (no 6-hour cron loop).
-- Vérification manuelle Fal poll :
-  ```bash
-  curl -H "X-Fal-Poll-Token: $FAL_POLL_TOKEN" https://<ton-domaine>/api/fal/poll
-  ```
-  Sans l’en-tête ou avec une valeur invalide, la route renvoie `401`. Avec le jeton correct, la réponse contient `{ ok: true, ... }`.
-- Rattrapage manuel IndexNow :
-  ```bash
-  pnpm --dir frontend run sitemap:ping -- --sitemaps
-  ```
-  Cette commande soumet les sitemaps à `/api/indexnow` (utile en rattrapage manuel).
-
-## 7. GitHub Automation & Guardrails
-
-- Workflows:
-  - `.github/workflows/quality.yml` runs on PRs and pushes to `main` (typecheck, lint, tests).
-  - `.github/workflows/lighthouse.yml` runs Lighthouse checks on `main`.
-  - `.github/workflows/indexnow.yml` submits sitemap URLs to IndexNow on SEO/marketing-related pushes.
-- Dependency maintenance:
-  - Dependabot security updates are enabled from repository settings (security fixes only, no bulk version-bump PR waves).
-- Branch safety policy (configured on `main`):
-  - Protect `main` with PRs + at least 1 approval.
-  - Require `Quality CI` to pass before merge.
-  - Disable force-push and branch deletion on `main`.
-
-## 8. Known Limitations
-
-- The mock API runs in-memory; persistence/job streaming left to the real backend.
-- No automated tests yet (awaiting backend contract confirmation).
-- Preview/gallery content is placeholder; real media wiring is pending asset APIs.
-
-## 9. Analytics & Session Replay
-
-- Microsoft Clarity loads through `frontend/components/analytics/Clarity.tsx`, which is mounted from the root layout once analytics consent (`mv-consent` cookie) is granted. The loader enforces production-only execution, honours `NEXT_PUBLIC_CLARITY_ALLOWED_HOSTS`, and registers SPA route changes via `clarity('set','page', ...)`.
-- Consent is persisted by the client CMP banner (`frontend/components/legal/CookieBanner.tsx`) and broadcast with a `consent:updated` custom event so analytics scripts remain gated behind `ConsentScriptGate`.
-- Wallet top-ups emit funnel events from `frontend/app/(core)/billing/page.tsx` (`topup_started`, `topup_checkout_opened`, `topup_failed`, `topup_cancelled`) and server events from `frontend/app/api/stripe/webhook/route.ts` (`topup_completed`, `purchase`, `topup_refunded`) via GA4 Measurement Protocol when analytics consent is granted and `GA4_MEASUREMENT_ID` + `GA4_API_SECRET` are configured.
-- For GA4 production setup (conversions, custom dimensions, unwanted Stripe referrals), follow [`docs/analytics/ga4-topups.md`](docs/analytics/ga4-topups.md).
-- A first-party visitor cookie (`mv-clarity-id`) keeps sessions stitched across SPA navigation. Authenticated sessions tag additional context from `frontend/src/hooks/useRequireAuth.ts` (Supabase UUID, plan/role/currency flags) while internal staff accounts (`@maxvideoai.com` / `@maxvideoai.ai`) are labelled for exclusion.
-- Enable/disable Clarity via `NEXT_PUBLIC_ENABLE_CLARITY`, `NEXT_PUBLIC_CLARITY_ID`, and `NEXT_PUBLIC_CLARITY_ALLOWED_HOSTS`. Optional dev logging is available with `NEXT_PUBLIC_CLARITY_DEBUG=true` (shows `_clck`/`_clsk` in the console).
-
-## Deployment Overview
-
-- **Application** → this repository → Vercel project `maxvideoai-app` (or alternative infrastructure).  
-- Deployment guidelines and checklists live in [`docs/deployment/github-vercel.md`](docs/deployment/github-vercel.md).
+Last reviewed: 2026-08-28.

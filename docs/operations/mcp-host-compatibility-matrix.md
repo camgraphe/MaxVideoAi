@@ -24,7 +24,7 @@ and was saved to the connected production library. The MCP Apps v4 resource
 advertised native video, image, download, library, and workspace behavior; the
 returned output, preview, and thumbnail origins all accepted byte-range requests.
 The final production wallet was `$14.31` with no pending amount. Direct ChatGPT
-desktop and Claude Code production checks remain unrecorded and are not implied
+web custom-app and Claude Code production checks remain unrecorded and are not implied
 by this Codex evidence.
 
 This matrix separates verified staging behavior from production and directory
@@ -63,7 +63,7 @@ The `present_generation` descriptor and its versioned MCP Apps resource are cove
 | Claude Desktop 1.37937.1 on macOS | Loaded the custom staging connector through OAuth; read account/catalog/model data; compared 60-second budgets; prepared an exact Seedance 2.5 quote; listed private media; recovered a completed generation; rendered and played that result inline; opened the first-party continuation CTA; created a private reference-upload handoff; and created a signed top-up handoff with an exact ISO expiry. | Controlled staging pass including inline playback. Refresh, revocation, reconnect, fresh uploaded bytes, and a newly successful paid generation remain to be recorded. |
 | Codex CLI 0.149.0-alpha.4.3 on macOS | Loaded the installed MaxVideoAI plugin with an ephemeral staging URL override; completed OAuth-backed account, catalog, model-detail, budgeting, exact-quote, and top-up-handoff calls. The final wallet remained unchanged. | Historical controlled staging pass. Production was verified later with Codex CLI 0.150.0-alpha.8 as recorded above. A non-blocking MCP-client shutdown warning followed the staging turns. |
 | Codex desktop / ChatGPT app surface | The bundled Codex CLI path and plugin package were exercised, but no fresh graphical Codex task or ChatGPT app-directory installation was recorded. | Partial; do not claim ChatGPT app-directory availability. |
-| ChatGPT Apps directory | No submission, review, install, or tool-rendering evidence. | Not run. |
+| ChatGPT web custom app / full MCP | OpenAI currently documents full MCP for eligible Business and Enterprise/Edu workspaces on ChatGPT web; Pro access is limited to read/fetch. No MaxVideoAI submission, install, OAuth, action, or tool-rendering evidence has been recorded on this path. | Not run; do not claim host validation. |
 | Claude Code | Shared Claude adapter and skill contracts exist, but this exact host was not exercised. | Not run. |
 | Other MCP hosts | The wire contract is host-neutral, but each host still needs its own installation, OAuth, rendering, confirmation, and recovery evidence. | Unverified. |
 

@@ -81,8 +81,8 @@ export function HomeAssistantWorkflow({ locale, href }: { locale: AppLocale; hre
           <div className="mt-5 flex flex-wrap items-center gap-2" aria-label={`${copy.claude}, ${copy.chatgpt}, ${copy.codex}`}>
             {MARKS.map((mark) => (
               <span key={mark.id} className="inline-flex h-11 items-center gap-2 rounded-full border border-hairline bg-surface px-3 text-sm font-semibold text-text-primary shadow-sm dark:border-white/[0.14] dark:bg-white/[0.05] dark:text-white">
-                <Image src={mark.light} alt="" width={21} height={21} className="h-[21px] w-[21px] dark:hidden" />
-                <Image src={mark.dark} alt="" width={21} height={21} className="hidden h-[21px] w-[21px] dark:block" />
+                <Image src={mark.light} alt="" aria-hidden="true" width={21} height={21} className="h-[21px] w-[21px] dark:hidden" />
+                <Image src={mark.dark} alt="" aria-hidden="true" width={21} height={21} className="hidden h-[21px] w-[21px] dark:block" />
                 {labels[mark.id]}
               </span>
             ))}

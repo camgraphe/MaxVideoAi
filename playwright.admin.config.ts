@@ -5,7 +5,7 @@ const baseURL = `http://localhost:${port}`;
 
 export default defineConfig({
   testDir: './tests/e2e',
-  testMatch: ['**/*.spec.ts'],
+  testMatch: ['**/admin-*.spec.ts'],
   expect: {
     timeout: 15_000,
   },

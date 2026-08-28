@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       source_tag:
-        description: Source tag to publish (for example maxvideoai-plugin-v0.3.1)
+        description: Source tag to publish (for example maxvideoai-plugin-v0.3.2)
         required: true
         type: string
 
@@ -27,8 +27,8 @@ jobs:
       version: ${{ steps.release.outputs.version }}
     env:
       PUBLIC_REPOSITORY: camgraphe/maxvideoai-plugin
-      PUBLIC_CHECKOUT: ${{ runner.temp }}/maxvideoai-plugin-public
-      RELEASE_OUTPUT: ${{ runner.temp }}/maxvideoai-plugin-release
+      PUBLIC_CHECKOUT: ${{ github.workspace }}/../maxvideoai-plugin-public
+      RELEASE_OUTPUT: ${{ github.workspace }}/../maxvideoai-plugin-release
       SOURCE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.source_tag || github.ref_name }}
     steps:
       - name: Checkout the tagged source
@@ -85,16 +85,20 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Verify plugin and release contracts
+      - name: Verify plugin, content, assets, and release contracts
         shell: bash
         run: |
           set -euo pipefail
+          pnpm github:assets:release-check
+          node scripts/check-github-content.mjs plugins/maxvideoai/README.md
           pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
             tests/maxvideoai-plugin-mirror.test.ts \
             tests/mcp-public-release-bundle.test.ts \
             tests/mcp-plugin-contract.test.ts \
             tests/mcp-reference-file-import.test.ts \
-            tests/mcp-reference-local-helper.test.ts
+            tests/mcp-reference-local-helper.test.ts \
+            tests/github-content-contract.test.ts \
+            tests/github-assets.test.ts
 
       - name: Build deterministic release bundle
         shell: bash
@@ -144,8 +148,8 @@ jobs:
       PREPARED_SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
       PREPARED_TREE: ${{ needs.prepare.outputs.tree }}
       PUBLIC_REPOSITORY: camgraphe/maxvideoai-plugin
-      PUBLIC_CHECKOUT: ${{ runner.temp }}/maxvideoai-plugin-public
-      RELEASE_OUTPUT: ${{ runner.temp }}/maxvideoai-plugin-release
+      PUBLIC_CHECKOUT: ${{ github.workspace }}/../maxvideoai-plugin-public
+      RELEASE_OUTPUT: ${{ github.workspace }}/../maxvideoai-plugin-release
       SOURCE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.source_tag || github.ref_name }}
       VERSION: ${{ needs.prepare.outputs.version }}
     steps:

@@ -138,8 +138,8 @@ test('launch evidence records local and hosted states, exact limitations, and fu
   assert.equal(existsSync(launchEvidencePath), true, `${launchEvidencePath} should exist`);
   const evidence = readFileSync(launchEvidencePath, 'utf8');
 
-  assert.match(evidence, /Checked:\s*2026-08-27/);
-  for (const state of ['Pass', 'Blocked', 'Not run']) assert.match(evidence, new RegExp(`\\b${state}\\b`));
+  assert.match(evidence, /Checked:\s*2026-08-28/);
+  for (const state of ['Pass', 'Partial', 'Not run']) assert.match(evidence, new RegExp(`\\b${state}\\b`));
   assert.match(evidence, /owner-approved direct Production release is live/i);
   assert.match(evidence, /included trial remains disabled/i);
   assert.match(evidence, /74b87c25ba735ad8537a3dd84723550459ac13f8/);
@@ -154,7 +154,7 @@ test('launch evidence records local and hosted states, exact limitations, and fu
   assert.match(evidence, /JavaScript disabled/i);
   assert.match(evidence, /Lighthouse/i);
   assert.match(evidence, /Core Web Vitals|lab metrics/i);
-  assert.match(evidence, /Codex host lifecycle[^\n]+Partial pass[^\n]+0\.149\.0-alpha\.4\.3/i);
+  assert.match(evidence, /Codex host lifecycle[^\n]+Production service pass; publication UI partial/i);
   assert.match(evidence, /Claude host lifecycle[^\n]+Partial pass[^\n]+1\.37937\.1/i);
   assert.doesNotMatch(evidence, /Revocation\/reconnect passes|explicit[^\n]+login path has safe evidence/i);
   assert.doesNotMatch(evidence, /migrations? 30–32 (?:are )?absent|migration[^\n]*\b(?:applied|unapplied)\b/i);
@@ -182,7 +182,7 @@ test('the compatibility matrix records exact controlled hosts without overstatin
   assert.match(compatibility, /Claude Desktop 1\.37937\.1[\s\S]+Controlled staging pass/i);
   assert.match(compatibility, /Codex CLI 0\.149\.0-alpha\.4\.3[\s\S]+Controlled staging pass/i);
   assert.match(compatibility, /OAuth refresh\/revocation is proven|OAuth denial, refresh, revocation/i);
-  assert.match(compatibility, /ChatGPT Apps directory[\s\S]+Not run/i);
+  assert.match(compatibility, /ChatGPT web custom app \/ full MCP[\s\S]+Not run/i);
   assert.match(compatibility, /project estimate/i);
   assert.match(compatibility, /prepare_generation.*confirm_generation/is);
   assert.match(

@@ -1,0 +1,51 @@
+{
+  "websiteOrigin": "https://maxvideoai.com",
+  "locales": {
+    "en": "",
+    "fr": "fr",
+    "es": "es"
+  },
+  "destinations": {
+    "mcp": { "localizedSlugs": { "en": "mcp", "fr": "mcp", "es": "mcp" } },
+    "models": { "localizedSlugs": { "en": "models", "fr": "modeles", "es": "modelos" } },
+    "pricing": { "localizedSlugs": { "en": "pricing", "fr": "tarifs", "es": "precios" } },
+    "library": { "path": "/app/library" }
+  },
+  "surfaces": {
+    "main_repository": {
+      "source": "github",
+      "medium": "repository",
+      "campaign": "maxvideoai_product",
+      "contents": ["hero_try", "models", "plugin_callout"]
+    },
+    "plugin_repository": {
+      "source": "github",
+      "medium": "repository",
+      "campaign": "assistant_video_plugin",
+      "contents": ["hero_connect", "pricing", "library"]
+    },
+    "github_release": {
+      "source": "github",
+      "medium": "release",
+      "campaign": "assistant_video_plugin_0_3_2",
+      "contents": ["release_connect", "release_docs"]
+    },
+    "github_examples": {
+      "source": "github",
+      "medium": "example",
+      "campaign": "assistant_video_workflows",
+      "contents": [
+        "compare_ai_video_models",
+        "price_a_video_project",
+        "claude_video_production",
+        "codex_video_production"
+      ]
+    },
+    "external_listing": {
+      "source": "canonical_target_name",
+      "medium": "directory",
+      "campaign": "assistant_video_plugin",
+      "contents": ["listing_connect"]
+    }
+  }
+}

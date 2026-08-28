@@ -1,4 +1,5 @@
 import { hasAnalyticsConsentInBrowser } from './analytics/consent-client';
+import { projectAllowedAnalyticsPayload } from './analytics/journey';
 
 export type AnalyticsPayload = Record<string, unknown>;
 
@@ -32,7 +33,11 @@ export function dispatchAnalyticsEvent(event: string, payload?: AnalyticsPayload
     return;
   }
   try {
-    window.dispatchEvent(new CustomEvent<AnalyticsClientEventDetail>('mvai:analytics', { detail: { event, payload } }));
+    const projectedPayload = projectAllowedAnalyticsPayload(event, payload);
+    if (!projectedPayload) return;
+    window.dispatchEvent(new CustomEvent<AnalyticsClientEventDetail>('mvai:analytics', {
+      detail: { event, payload: projectedPayload },
+    }));
   } catch {
     // Ignore analytics transport failures in the UI.
   }
@@ -44,9 +49,14 @@ export function persistPendingAnalyticsEvent(event: string, payload?: AnalyticsP
     return;
   }
   try {
+    const projectedPayload = projectAllowedAnalyticsPayload(event, payload);
+    if (!projectedPayload) {
+      clearPendingAnalyticsEvent();
+      return;
+    }
     const stored: StoredAnalyticsEvent = {
       event,
-      payload,
+      payload: projectedPayload,
       createdAt: Date.now(),
     };
     window.sessionStorage.setItem(PENDING_AUTH_EVENT_STORAGE_KEY, JSON.stringify(stored));
@@ -71,7 +81,14 @@ export function readPendingAnalyticsEvent(): StoredAnalyticsEvent | null {
       window.sessionStorage.removeItem(PENDING_AUTH_EVENT_STORAGE_KEY);
       return null;
     }
-    return parsed;
+    const payload = projectAllowedAnalyticsPayload(parsed.event, parsed.payload);
+    if (!payload) {
+      window.sessionStorage.removeItem(PENDING_AUTH_EVENT_STORAGE_KEY);
+      return null;
+    }
+    const sanitized = { event: parsed.event, payload, createdAt: parsed.createdAt };
+    window.sessionStorage.setItem(PENDING_AUTH_EVENT_STORAGE_KEY, JSON.stringify(sanitized));
+    return sanitized;
   } catch {
     return null;
   }
@@ -92,7 +109,12 @@ export function persistPendingTopupCancelledEvent(payload: AnalyticsPayload): vo
     return;
   }
   try {
-    window.sessionStorage.setItem(PENDING_TOPUP_CANCELLED_STORAGE_KEY, JSON.stringify(payload));
+    const projectedPayload = projectAllowedAnalyticsPayload('topup_cancelled', payload);
+    if (!projectedPayload) {
+      clearPendingTopupCancelledEvent();
+      return;
+    }
+    window.sessionStorage.setItem(PENDING_TOPUP_CANCELLED_STORAGE_KEY, JSON.stringify(projectedPayload));
   } catch {
     // Ignore storage failures.
   }
@@ -111,7 +133,13 @@ export function readPendingTopupCancelledEvent(): AnalyticsPayload | null {
       clearPendingTopupCancelledEvent();
       return null;
     }
-    return parsed as AnalyticsPayload;
+    const payload = projectAllowedAnalyticsPayload('topup_cancelled', parsed as AnalyticsPayload);
+    if (!payload) {
+      clearPendingTopupCancelledEvent();
+      return null;
+    }
+    window.sessionStorage.setItem(PENDING_TOPUP_CANCELLED_STORAGE_KEY, JSON.stringify(payload));
+    return payload;
   } catch {
     clearPendingTopupCancelledEvent();
     return null;

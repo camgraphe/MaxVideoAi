@@ -112,6 +112,78 @@ test('pending auth events are never stored without consent', () => {
   });
 });
 
+test('pending analytics storage projects approved fields before persistence and rejects unknown events', () => {
+  withBrowser({ consent: 'granted' }, ({ sessionStorage }) => {
+    persistPendingAnalyticsEvent('sign_up_completed', {
+      route_family: 'auth',
+      auth_surface: 'login',
+      method: 'google',
+      marketing_opt_in: true,
+      cta_name: 'private_media_brief',
+      credential: 'Bearer private-token',
+      prompt: 'my unreleased prompt',
+    });
+    const storedAuth = sessionStorage.getItem(PENDING_AUTH_EVENT_STORAGE_KEY);
+    assert.ok(storedAuth);
+    assert.doesNotMatch(storedAuth, /private|Bearer|prompt|credential/i);
+    assert.deepEqual(readPendingAnalyticsEvent()?.payload, {
+      route_family: 'auth',
+      auth_surface: 'login',
+      method: 'google',
+      marketing_opt_in: true,
+    });
+
+    persistPendingAnalyticsEvent('private_prompt_export', {
+      method: 'Bearer private-token',
+    });
+    assert.equal(sessionStorage.getItem(PENDING_AUTH_EVENT_STORAGE_KEY), null);
+
+    persistPendingTopupCancelledEvent({
+      route_family: 'billing',
+      payment_provider: 'stripe',
+      payment_flow: 'checkout',
+      charge_currency: 'USD',
+      topup_amount_cents: 1000,
+      topup_tier_id: 'private_token',
+      failure_category: '4242 4242 4242 4242',
+    });
+    const storedTopup = sessionStorage.getItem(PENDING_TOPUP_CANCELLED_STORAGE_KEY);
+    assert.ok(storedTopup);
+    assert.doesNotMatch(storedTopup, /private|4242/);
+    assert.deepEqual(readPendingTopupCancelledEvent(), {
+      route_family: 'billing',
+      payment_provider: 'stripe',
+      payment_flow: 'checkout',
+      charge_currency: 'USD',
+      topup_amount_cents: 1000,
+    });
+  });
+});
+
+test('pending analytics reads remove private fields from tampered session storage', () => {
+  withBrowser({ consent: 'granted' }, ({ sessionStorage }) => {
+    sessionStorage.setItem(PENDING_AUTH_EVENT_STORAGE_KEY, JSON.stringify({
+      event: 'sign_up_completed',
+      payload: { method: 'google', auth_surface: 'Bearer private-token', prompt: 'private brief' },
+      createdAt: Date.now(),
+    }));
+    assert.deepEqual(readPendingAnalyticsEvent()?.payload, { method: 'google' });
+    assert.doesNotMatch(sessionStorage.getItem(PENDING_AUTH_EVENT_STORAGE_KEY) ?? '', /private|Bearer|prompt/i);
+
+    sessionStorage.setItem(PENDING_TOPUP_CANCELLED_STORAGE_KEY, JSON.stringify({
+      route_family: 'billing',
+      topup_amount_cents: 1000,
+      topup_tier_id: 'account_123',
+      payment_status: 'card_4242424242424242',
+    }));
+    assert.deepEqual(readPendingTopupCancelledEvent(), {
+      route_family: 'billing',
+      topup_amount_cents: 1000,
+    });
+    assert.doesNotMatch(sessionStorage.getItem(PENDING_TOPUP_CANCELLED_STORAGE_KEY) ?? '', /account|4242|card/i);
+  });
+});
+
 test('pending topup cancellation persistence and replay are suppressed without analytics consent', () => {
   withBrowser({ consent: null }, ({ sessionStorage }) => {
     persistPendingTopupCancelledEvent({ topup_amount_cents: 1000 });
@@ -244,6 +316,54 @@ test('stored journeys with URL-shaped attribution are rejected and removed', () 
   });
 });
 
+test('arbitrary marketing paths are never stored or emitted as landing surfaces', () => {
+  withBrowser({
+    consent: 'granted',
+    href: 'https://maxvideoai.com/Bearer-private-token',
+  }, ({ localStorage }) => {
+    const events = prepareBrowserAnalyticsEvents('page_view', { route_family: 'marketing' });
+    const stored = localStorage.getItem(ANALYTICS_JOURNEY_STORAGE_KEY) ?? '';
+    const serializedEvents = JSON.stringify(events);
+
+    assert.doesNotMatch(stored, /Bearer|private|token/i);
+    assert.doesNotMatch(serializedEvents, /Bearer|private|token/i);
+    assert.equal(readAnalyticsJourney()?.firstTouch.landingSurface, undefined);
+    assert.equal(events.some(({ payload }) => 'landing_surface' in payload), false);
+  });
+});
+
+test('tampered stored journey landing surfaces are rejected and removed', () => {
+  withBrowser({ consent: 'granted' }, ({ localStorage }) => {
+    prepareBrowserAnalyticsEvents('sign_up_started');
+    const raw = localStorage.getItem(ANALYTICS_JOURNEY_STORAGE_KEY);
+    assert.ok(raw);
+    const record = JSON.parse(raw) as {
+      firstTouch: { landingSurface?: string };
+      lastTouch: { landingSurface?: string };
+    };
+    record.firstTouch.landingSurface = '/Bearer-private-token';
+    record.lastTouch.landingSurface = '/private/customer-123';
+    localStorage.setItem(ANALYTICS_JOURNEY_STORAGE_KEY, JSON.stringify(record));
+
+    assert.equal(readAnalyticsJourney(), null);
+    assert.equal(localStorage.getItem(ANALYTICS_JOURNEY_STORAGE_KEY), null);
+  });
+});
+
+test('stored journeys with extra private fields are rejected and removed', () => {
+  withBrowser({ consent: 'granted' }, ({ localStorage }) => {
+    prepareBrowserAnalyticsEvents('sign_up_started');
+    const raw = localStorage.getItem(ANALYTICS_JOURNEY_STORAGE_KEY);
+    assert.ok(raw);
+    const record = JSON.parse(raw) as Record<string, unknown>;
+    record.prompt = 'Bearer private-token';
+    localStorage.setItem(ANALYTICS_JOURNEY_STORAGE_KEY, JSON.stringify(record));
+
+    assert.equal(readAnalyticsJourney(), null);
+    assert.equal(localStorage.getItem(ANALYTICS_JOURNEY_STORAGE_KEY), null);
+  });
+});
+
 test('URL-shaped UTM values are absent from stored journeys and prepared payloads', () => {
   const url = new URL('https://maxvideoai.com/pricing');
   url.searchParams.set('utm_source', 'newsletter');
@@ -280,7 +400,7 @@ test('scheme-less UTM paths are absent from stored journeys and prepared payload
   }
 });
 
-test('plain controlled attribution values remain stored and emitted', () => {
+test('unapproved semantic attribution values are not stored or emitted', () => {
   const url = new URL('https://maxvideoai.com/pricing');
   url.searchParams.set('utm_source', 'newsletter');
   url.searchParams.set('utm_medium', 'email');
@@ -288,8 +408,9 @@ test('plain controlled attribution values remain stored and emitted', () => {
 
   withBrowser({ consent: 'granted', href: url.href }, ({ localStorage }) => {
     const events = prepareBrowserAnalyticsEvents('sign_up_started');
-    assert.equal(readAnalyticsJourney()?.firstTouch.campaign, 'partner.com');
-    assert.match(localStorage.getItem(ANALYTICS_JOURNEY_STORAGE_KEY) ?? '', /partner\.com/);
-    assert.match(JSON.stringify(events), /partner\.com/);
+    assert.equal(readAnalyticsJourney()?.firstTouch.source, 'direct');
+    assert.equal(readAnalyticsJourney()?.firstTouch.campaign, undefined);
+    assert.doesNotMatch(localStorage.getItem(ANALYTICS_JOURNEY_STORAGE_KEY) ?? '', /partner\.com/);
+    assert.doesNotMatch(JSON.stringify(events), /partner\.com/);
   });
 });

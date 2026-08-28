@@ -80,6 +80,57 @@ type DemoEvidenceManifest = {
     privacyReview: string;
     evidenceReference: string;
   };
+  productionCheckpoint: {
+    status: string;
+    evidenceReference: string;
+    host: string;
+    hostPublicationProof: string;
+    hostPublicationBlocker: string;
+    environment: string;
+    deploymentId: string;
+    sourceRevision: string;
+    captureReviewRevision: string;
+    pluginVersion: string;
+    browser: string;
+    accountLabel: string;
+    request: {
+      model: string;
+      mode: string;
+      durationSec: number;
+      resolution: string;
+      aspectRatio: string;
+      audio: boolean;
+      referenceCount: number;
+      outputCount: number;
+    };
+    quote: {
+      amountCents: number;
+      currency: string;
+      confirmationRequired: boolean;
+      ownerApprovalRecorded: boolean;
+      confirmationAttempts: number;
+    };
+    result: {
+      status: string;
+      paymentStatus: string;
+      savedToLibrary: boolean;
+      containerSha256: string;
+      mimeType: string;
+      videoCodec: string;
+      width: number;
+      height: number;
+      fps: number;
+      durationSec: number;
+    };
+    captureAssets: Array<{
+      path: string;
+      width: number;
+      height: number;
+      sha256: string;
+      capturedAt: string;
+    }>;
+    privacyReview: string;
+  };
   rejectedCandidate: {
     reasonCode: string;
     candidateSourceUrl: string;
@@ -219,6 +270,45 @@ test('unverified MCP captures and result proof fail closed as absent and null', 
   });
   const hostProofBytes = readFileSync(evidence.hostUiProof.assetPath);
   assert.equal(sha256(hostProofBytes), evidence.hostUiProof.sha256);
+  assert.deepEqual(
+    {
+      status: evidence.productionCheckpoint.status,
+      host: evidence.productionCheckpoint.host,
+      hostPublicationProof: evidence.productionCheckpoint.hostPublicationProof,
+      environment: evidence.productionCheckpoint.environment,
+      pluginVersion: evidence.productionCheckpoint.pluginVersion,
+      model: evidence.productionCheckpoint.request.model,
+      amountCents: evidence.productionCheckpoint.quote.amountCents,
+      confirmationRequired: evidence.productionCheckpoint.quote.confirmationRequired,
+      ownerApprovalRecorded: evidence.productionCheckpoint.quote.ownerApprovalRecorded,
+      resultStatus: evidence.productionCheckpoint.result.status,
+      paymentStatus: evidence.productionCheckpoint.result.paymentStatus,
+      savedToLibrary: evidence.productionCheckpoint.result.savedToLibrary,
+      privacyReview: evidence.productionCheckpoint.privacyReview,
+    },
+    {
+      status: 'verified-product-flow',
+      host: 'codex',
+      hostPublicationProof: 'not_verified',
+      environment: 'production',
+      pluginVersion: '0.2.0',
+      model: 'Luma Ray 2 Flash',
+      amountCents: 25,
+      confirmationRequired: true,
+      ownerApprovalRecorded: true,
+      resultStatus: 'completed',
+      paymentStatus: 'paid_wallet',
+      savedToLibrary: true,
+      privacyReview: 'passed-cropped-no-email-balance-internal-identifiers-private-urls-or-unrelated-media',
+    },
+  );
+  assert.match(evidence.productionCheckpoint.deploymentId, /^dpl_[A-Za-z0-9]+$/);
+  assert.match(evidence.productionCheckpoint.sourceRevision, /^[a-f0-9]{40}$/);
+  assert.match(evidence.productionCheckpoint.result.containerSha256, /^[a-f0-9]{64}$/);
+  for (const asset of evidence.productionCheckpoint.captureAssets) {
+    assert.equal(existsSync(asset.path), true, `${asset.path} should exist`);
+    assert.equal(sha256(readFileSync(asset.path)), asset.sha256, `${asset.path} should match its checkpoint hash`);
+  }
   assert.equal(getMcpProof('en') instanceof Promise, true);
   assert.doesNotMatch(JSON.stringify(evidence.hostUiProof), /job[_-]?id|audit[_-]?id|oauth|@|private.*url/i);
 

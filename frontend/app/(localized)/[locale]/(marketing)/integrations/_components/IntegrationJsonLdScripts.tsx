@@ -1,5 +1,16 @@
 import { JsonLd } from '@/components/SeoJsonLd';
 
-export function IntegrationJsonLdScripts({ breadcrumb }: { breadcrumb: object }) {
-  return <JsonLd json={breadcrumb} />;
+export function IntegrationJsonLdScripts({
+  application,
+  breadcrumb,
+}: {
+  application: object | null;
+  breadcrumb: object;
+}) {
+  return (
+    <>
+      {application ? <JsonLd json={application} /> : null}
+      <JsonLd json={breadcrumb} />
+    </>
+  );
 }

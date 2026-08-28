@@ -392,7 +392,8 @@ test('visible compatibility dates are sourced from the recorded evidence config'
   assert.equal('lastVerified' in config, false);
   assert.equal(config.hosts.claudeDesktop?.status, 'verified');
   assert.equal(config.hosts.codexCli?.status, 'verified');
-  assert.equal(config.hosts.chatgptDesktop?.status, 'not-run');
+  assert.equal(config.hosts.chatgptWeb?.status, 'not-run');
+  assert.equal('chatgptDesktop' in config.hosts, false);
   assert.equal(config.hosts.claudeCode?.status, 'not-run');
 
   const mcpCopy = requireFile(`${mcpRoot}/_lib/mcp-page-copy.ts`);
@@ -402,4 +403,26 @@ test('visible compatibility dates are sourced from the recorded evidence config'
     assert.doesNotMatch(source, /Hosted read-only[^\n]*passed|hébergé[^\n]*réussi|alojad[^\n]*pasaron/i);
     assert.match(source, /Hosted (?:evidence|checkpoint|capability review)|Compatibility checked/i);
   }
+});
+
+test('the ChatGPT setup renders its machine compatibility state discreetly', async () => {
+  const { IntegrationSetupSection } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_components/IntegrationSetupSection.tsx'
+  );
+  const { getIntegrationCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
+  );
+  const { getMcpCompatibilityEvidence } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-compatibility.ts'
+  );
+  const evidence = getMcpCompatibilityEvidence();
+  const html = renderToStaticMarkup(React.createElement(IntegrationSetupSection, {
+    compatibility: evidence.clients.chatgpt,
+    copy: getIntegrationCopy('en', 'chatgpt'),
+    locale: 'en',
+  }));
+
+  assert.match(html, />not-run</);
+  assert.match(html, /Public listing.*approval/is);
+  assert.match(html, /Developer.*MCP/is);
 });

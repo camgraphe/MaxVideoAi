@@ -499,3 +499,18 @@ test('client deep links remain disabled and localized setup plus endpoint copy a
   assert.notDeepEqual(en, getMcpPageCopy('fr').hero.connectActions);
   assert.notDeepEqual(en, getMcpPageCopy('es').hero.connectActions);
 });
+
+test('the public GitHub source callout stays useful and untracked from the MCP website', async () => {
+  const { getMcpPageCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
+  );
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const callout = getMcpPageCopy(locale).answers;
+    assert.equal(callout.repositoryHref, 'https://github.com/camgraphe/maxvideoai-plugin');
+    assert.doesNotMatch(callout.repositoryHref, /[?&]utm_/);
+  }
+  assert.equal(
+    getMcpPageCopy('en').answers.repositoryLabel,
+    'Inspect the public MaxVideoAI plugin source on GitHub',
+  );
+});

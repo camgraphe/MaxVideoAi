@@ -1,0 +1,93 @@
+name: Bug report
+description: Report a reproducible MaxVideoAI plugin or documentation problem with sanitized evidence.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This issue is public. Remove tokens, passwords, cookies, authorization codes, email addresses, billing and payment data, private media and private URLs, full proprietary prompts, internal IDs, and customer information. Use private support for sensitive context.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Bug summary
+      description: Describe the user-visible problem in one or two sentences.
+    validations:
+      required: true
+  - type: input
+    id: package-version
+    attributes:
+      label: Plugin package version or tag
+      placeholder: maxvideoai-plugin-v…
+    validations:
+      required: true
+  - type: input
+    id: host-client-version
+    attributes:
+      label: Host/client and exact version
+      description: Required for runtime bugs; documentation or package-only reports may enter Not applicable.
+      placeholder: Enter Not applicable — documentation/package only
+    validations:
+      required: true
+  - type: input
+    id: operating-system
+    attributes:
+      label: Operating system and version
+      description: Required for runtime bugs; documentation or package-only reports may enter Not applicable.
+      placeholder: Enter Not applicable — documentation/package only
+    validations:
+      required: true
+  - type: dropdown
+    id: setup-method
+    attributes:
+      label: Setup or installation method
+      options:
+        - Tagged Codex package path
+        - Claude custom connector
+        - ChatGPT developer-mode setup
+        - Generic remote MCP setup
+        - Other documented setup
+        - Not applicable — documentation/package only
+    validations:
+      required: true
+  - type: textarea
+    id: sanitized-steps
+    attributes:
+      label: Sanitized reproduction steps
+      description: Give the shortest safe sequence that reproduces the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+      description: What outcome did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual behavior
+      description: What happened instead? Quote only visible safe error text.
+    validations:
+      required: true
+  - type: dropdown
+    id: paid-action-state
+    attributes:
+      label: Paid-action state
+      description: Select the furthest point reached without sharing an amount or account detail.
+      options:
+        - Planning only
+        - Quote prepared
+        - Approval given
+        - Unknown
+    validations:
+      required: true
+  - type: checkboxes
+    id: code-of-conduct
+    attributes:
+      label: Code of Conduct
+      options:
+        - label: I agree to follow the repository Code of Conduct and have removed sensitive information.
+          required: true
+    validations:
+      required: true

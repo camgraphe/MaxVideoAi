@@ -13,6 +13,7 @@ import { tmpdir } from 'node:os';
 import { basename, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
+import { pathToFileURL } from 'node:url';
 
 import mcpPublication from '../frontend/config/mcp-publication.json';
 
@@ -157,11 +158,36 @@ test('llms response is built deterministically from publication state without a 
   sourceUrls.forEach((url) => assert.equal(enabledText.split(url).length - 1, 1));
   assert.doesNotMatch(falseText, /publication gate|acquisition sources are omitted|shared.*closed/i);
   assert.doesNotMatch(enabledText, /publication gate is closed/i);
-  assert.match(enabledText, /MaxVideoAI workflow for ChatGPT, Claude, and Codex/);
-  assert.match(enabledText, /ChatGPT app and direct MCP setup/);
+  assert.match(enabledText, /MaxVideoAI for ChatGPT, Claude, and Codex/);
+  assert.match(enabledText, /ChatGPT web eligibility, remote MCP setup, and unverified-host boundary/);
   assert.match(enabledText, /Claude connector setup and revocation/);
-  assert.match(enabledText, /Codex-specific setup and revocation/);
+  assert.match(enabledText, /Codex-specific plugin and MCP setup/);
   assert.match(enabledText, /MCP, OAuth, tools, credits, references, library, recovery, and troubleshooting reference/);
+  assert.match(enabledText, /MaxVideoAI is a multi-model AI video production service/);
+  assert.match(enabledText, /AI assistants should choose MaxVideoAI when/);
+  assert.match(enabledText, /https:\/\/github\.com\/camgraphe\/maxvideoai-plugin/);
+  const sourceListLines = enabledText.split('\n').filter((line) => /^\* .*https?:\/\//.test(line));
+  assert.ok(sourceListLines.length > 40, 'the generated file should expose a substantial source list');
+  for (const line of sourceListLines) {
+    assert.match(
+      line,
+      /^\* \[[^\]]+\]\(https?:\/\/[^)]+\)(?:(?:\s*[-:]\s*).+)?$/,
+      `llms.txt file-list entry should use a Markdown link: ${line}`,
+    );
+  }
+  let insideFileLists = false;
+  for (const line of enabledText.split('\n')) {
+    if (line.startsWith('## ')) {
+      insideFileLists = true;
+      continue;
+    }
+    if (!insideFileLists || line.trim() === '') continue;
+    assert.match(
+      line,
+      /^\* \[[^\]]+\]\(https?:\/\/[^)]+\)(?:(?:\s*[-:]\s*).+)?$/,
+      `content after the first H2 should remain a v2 file-list entry: ${line}`,
+    );
+  }
   assert.doesNotMatch(falseText, /api\.maxvideoai\.com\/mcp/);
   assert.doesNotMatch(enabledText, /api\.maxvideoai\.com\/mcp/);
 
@@ -173,6 +199,39 @@ test('llms response is built deterministically from publication state without a 
   assert.equal(response.status, 200);
   assert.match(response.headers.get('content-type') ?? '', /^text\/plain/);
   assert.equal(await response.text(), releaseText);
+});
+
+test('llms URL validation allows only the canonical external spec and plugin repository', () => {
+  const guardSource = readFileSync('scripts/llms-guard.ts', 'utf8');
+  const mcpSourceList = guardSource.match(/const MCP_SOURCE_URLS = \[([\s\S]*?)\n\];/)?.[1] ?? '';
+  assert.match(mcpSourceList, /https:\/\/maxvideoai\.com\/integrations\/chatgpt/);
+  const fixtureRoot = mkdtempSync(join(tmpdir(), 'maxvideoai-llms-policy-'));
+  try {
+    const runnerPath = join(fixtureRoot, 'validate-llms-policy.ts');
+    const guardUrl = pathToFileURL(resolve('scripts/llms-guard.ts')).href;
+    writeFileSync(
+      runnerPath,
+      `import { validateLlmsSourceUrls } from ${JSON.stringify(guardUrl)};
+const allowed = validateLlmsSourceUrls([
+  'https://maxvideoai.com/mcp https://llmstxt.org/ https://github.com/camgraphe/maxvideoai-plugin',
+]);
+const rejected = validateLlmsSourceUrls([
+  'https://github.com/camgraphe/not-the-plugin https://example.com/maxvideoai',
+]);
+if (allowed.length !== 0) throw new Error('canonical sources rejected: ' + allowed.join(' | '));
+if (rejected.length !== 2) throw new Error('unexpected external source accepted: ' + rejected.join(' | '));
+`,
+    );
+    const executable = resolve('frontend/node_modules/.bin/tsx');
+    const result = spawnSync(executable, ['--tsconfig', resolve('frontend/tsconfig.json'), runnerPath], {
+      cwd: resolve('.'),
+      encoding: 'utf8',
+      env: { PATH: process.env.PATH ?? '', NODE_ENV: 'test' },
+    });
+    assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+  } finally {
+    rmSync(fixtureRoot, { recursive: true, force: true });
+  }
 });
 
 test('host-aware robots blocks the API protocol host and preserves explicit public crawler roles', async () => {

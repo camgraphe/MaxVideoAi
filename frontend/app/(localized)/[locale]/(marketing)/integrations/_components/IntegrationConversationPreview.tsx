@@ -80,8 +80,8 @@ export function IntegrationConversationPreview({
       <figcaption className="flex items-center justify-between border-b border-hairline pb-4 dark:border-white/[0.1]">
         <span className="flex items-center gap-2.5 text-sm font-semibold text-text-primary dark:text-white">
           <span className="inline-flex h-10 w-10 items-center justify-center rounded-[11px] border border-hairline bg-white dark:border-white/[0.14] dark:bg-neutral-900">
-            <Image src={mark.light} alt="" width={21} height={21} className="dark:hidden" />
-            <Image src={mark.dark} alt="" width={21} height={21} className="hidden dark:block" />
+            <Image src={mark.light} alt="" aria-hidden="true" width={21} height={21} className="dark:hidden" />
+            <Image src={mark.dark} alt="" aria-hidden="true" width={21} height={21} className="hidden dark:block" />
           </span>
           {clientLabel(client)}
         </span>

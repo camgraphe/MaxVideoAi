@@ -1,5 +1,7 @@
 export type McpClientId = 'claude' | 'chatgpt' | 'codex';
-export type McpCompatibilityHostId = 'claudeDesktop' | 'claudeCode' | 'chatgptDesktop' | 'codexCli';
+export type McpCompatibilityHostId = 'claudeDesktop' | 'claudeCode' | 'chatgptWeb' | 'codexCli';
+export type McpFeaturedAnswerId = 'identity' | 'selection' | 'safety';
+export type McpAnswerDetailId = 'references' | 'credits' | 'library' | 'disconnect';
 
 export type McpClientActionCopy = {
   client: McpClientId;
@@ -82,10 +84,10 @@ export type McpPageCopy = {
     eyebrow: string;
     title: string;
     updatedLabel: string;
-    items: Record<
-      'integration' | 'price' | 'references' | 'confirmation' | 'credits' | 'library' | 'disconnect',
-      { title: string; liveBody: string; gatedBody: string }
-    >;
+    repositoryLabel: string;
+    repositoryHref: string;
+    featured: Record<McpFeaturedAnswerId, { title: string; body: string }>;
+    items: Record<McpAnswerDetailId, { title: string; liveBody: string; gatedBody: string }>;
   };
   trust: {
     definition: { eyebrow: string; title: string; body: string };

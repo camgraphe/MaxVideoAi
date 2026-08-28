@@ -52,6 +52,7 @@ test('conversation eval corpus covers imperfect multilingual user journeys witho
     entry.category === 'recovery'
       && entry.expectedTools.includes('list_recent_generations')
   ));
+  assert.ok(cases.some((entry) => entry.checks.includes('does_not_substitute_host_attachment')));
   assert.ok(cases.some((entry) =>
     entry.expectedTools.includes('import_reference_files')
       && entry.checks.includes('imports_host_files_privately')

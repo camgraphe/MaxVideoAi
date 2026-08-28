@@ -1,6 +1,6 @@
 # MaxVideoAI MCP launch evidence
 
-Checked: 2026-08-27
+Checked: 2026-08-28
 
 ## Decision
 
@@ -41,6 +41,68 @@ HTTP 200, Supabase discovery exposed dynamic registration, and the public JWKS
 contained one ES256 key. The first post-promotion five-minute Vercel sample had
 24 HTTP 200 responses, one expected HTTP 401, and no HTTP 500. The reference
 cleanup cron also returned HTTP 200 after the schema update.
+
+## 2026-08-28 production proof refresh
+
+The Production deployment serving the capture checkpoint was independently reported Ready at revision
+`1ef5f74760995822a570cab4716b0cdbc96ea059` as Vercel deployment
+`dpl_YZvhN3B6nxrBoPvAZjC1hwtr4YJF`. Fresh public checks returned HTTP 200 for
+`/mcp`, `/integrations/claude`, `/integrations/codex`, and
+`/integrations/chatgpt`.
+
+The installed MaxVideoAI 0.2.0 production connection in Codex then completed a
+single owner-approved paid checkpoint using the account recorded publicly only
+as `admin proof account`:
+
+- recommendation and comparable one-shot budgets were read-only;
+- an exact USD 0.25 quote was prepared for Luma Ray 2 Flash, `t2v`, 5 seconds,
+  540p, 16:9, silent, one output, with no reference media;
+- the owner approved that exact quote and one confirmation attempt was made;
+- the confirmation response was lost at the transport boundary, so it was not
+  repeated; recovery found the single job accepted and paid;
+- the job reached `completed`, was saved to MaxVideoAI Library, and was
+  presented once;
+- independent media inspection reported H.264, 960×544, 24 fps, 5.208333
+  seconds, 770,668 bytes, and SHA-256
+  `83fa287300d6a66b57caf8d2347527a9905c8b28e7c9cd8fb78f51044c31fa34`;
+- task spend was USD 0.25 against the owner-authorized aggregate USD 6.00 cap,
+  with no retry or second paid confirmation.
+
+Chrome was the owner-selected browser. The live MaxVideoAI workspace capture
+used a 2050×1037 CSS-pixel viewport at device-pixel ratio 2; the Library used
+2056×1234 at device-pixel ratio 2. Publication crops were independently opened
+at original resolution and exclude the account email, balance, internal
+identifiers, private URLs, unrelated media, and a separate stale progress
+banner. The accepted product evidence is:
+
+- `plugins/maxvideoai/assets/screenshots/maxvideoai-workspace-production.jpg`
+  — 1450×525, SHA-256
+  `fceb27abb935eada8b040232d8f0006bf3a3f4c19acccd11fb4ae6e3eaf697d6`;
+- `plugins/maxvideoai/assets/screenshots/maxvideoai-library-continuity-production.jpg`
+  — 1010×595, SHA-256
+  `f55edf446261983352b15ac1ddff55f6eaf587195efda1025aaae061938d1ce7`.
+
+Exact-host publication proof remains deliberately narrower than service and
+product verification. The macOS Screen Recording preflight failed before a
+privacy-reviewed Codex native capture could be taken, and permissions were not
+changed. Claude reached sign-in in an agent-created Chrome tab, so no
+credentials were entered and no Production connection flow was claimed.
+ChatGPT's plugin catalog search returned only the personal `MaxVideoAI Staging`
+plugin and no supported MaxVideoAI Production install; no staging plugin was
+opened or reused. Codex, Claude, and ChatGPT therefore remain `not_verified` for
+fresh exact-host screenshot bundles even though the Codex production service
+flow itself completed. No reference asset was used, so a fresh Production
+reference workflow remains unverified.
+
+After those screenshots were captured, a separate configuration-only
+checkpoint reported deployment `dpl_7FxAx4TYK8buMTCUqQCFJ2aJ1S1z` Ready on the
+same `https://maxvideoai.com` alias. Vertex readiness was green for OAuth and
+GCS, four Nano Banana image models, three Veo 3.1 video models, and
+`gemini-omni-1.1-flash-preview`; no Fal fallback was reported. The homepage,
+`/fr/integrations/claude`, `/mcp`, and `/models/gemini-omni-flash` returned HTTP
+200. This is evidence of configuration and public exposure only. It incurred no
+spend, produced no paid Gemini Omni result, created no Gemini Omni capture, and
+is not the deployment provenance assigned to the earlier Task 4 screenshots.
 
 ## Controlled hosted evidence
 
@@ -169,14 +231,14 @@ successfully.
 
 | Gate | State | Exact blocker or next evidence |
 | --- | --- | --- |
-| Codex host lifecycle | Partial pass | Codex CLI 0.149.0-alpha.4.3 completed OAuth-backed discovery, budgeting, quote, and top-up behavior. Refresh, revocation, reconnect, and a graphical ChatGPT/Codex install remain unverified. |
+| Codex host lifecycle | Production service pass; publication UI partial | MaxVideoAI 0.2.0 completed account, recommendation, comparable budgets, exact quote, one owner-approved USD 0.25 generation, recovery after a lost response, completion, Library continuity, and presentation. A privacy-reviewed native Codex screenshot bundle, refresh, revocation, and reconnect remain unverified. |
 | Claude host lifecycle | Partial pass | Claude Desktop 1.37937.1 completed OAuth-backed discovery, budgeting, quote, media, recovery, inline playback, first-party continuation, upload-handoff, and top-up behavior. Refresh, revocation, reconnect, and fresh successful provider use remain unverified. |
-| Real-host decision bundle | Pass without spend | Both hosts produced current model advice, a named project budget, and a fresh exact quote. Claude also recovered an existing completed result. Neither host confirmed a new generation. |
-| Paid generation | Enabled; monitor | Exact quote and insufficient-balance/top-up recovery are proven in staging, but the first newly confirmed Production provider result and receipt reconciliation still need to be recorded. |
+| Real-host decision bundle | Production pass in Codex | Codex produced a current recommendation, three comparable one-shot budgets, a fresh exact quote, explicit owner approval, one accepted generation, terminal completion, and Library continuity. Claude and ChatGPT did not repeat that complete Production flow. |
+| Paid generation | One Production pass | One USD 0.25 Luma Ray 2 Flash result completed, was independently decoded and hashed, and was saved to Library. Receipt/admin reconciliation and a second exact host remain follow-up evidence. |
 | Trial | Disabled intentionally | No public trial is scheduled or advertised in the launch configuration. |
 | Reference workflow | Enabled; monitor | Live private media listing and upload handoff are proven; the first Production upload, provider use, retention/deletion, and cleanup evidence still need to be recorded. |
 | Funnel/admin reconciliation | Schema ready | Migrations 29–38 are present in Production and new MCP relations started empty; post-launch funnel and ledger reconciliation remains an operator task. |
-| Owned proof | Blocked | No publishable MCP generation proof with model, settings, price, date, consent, and provenance. |
+| Owned proof | Partial product proof | Current workspace and Library screenshots are publishable MaxVideoAI product proof with model, date, approval, spend, and media checksum provenance. Exact-host Codex UI and a separately publishable audit record remain blocked, so the complete MCP host-and-result proof bundle stays gated. |
 | Legal/support approval | Site launch accepted; directory separate | Directory-specific terms and any external submission remain separately reviewable. |
 | Hosted performance and SEO | Initial smoke pass | Public routes, canonical MCP page, `llms.txt`, and sitemap index are live; GSC indexation, canonical selection, CTR, and cannibalization require the scheduled post-launch review. |
 

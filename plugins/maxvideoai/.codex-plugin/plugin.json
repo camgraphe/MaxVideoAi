@@ -1,10 +1,10 @@
 {
   "name": "maxvideoai",
-  "version": "0.3.1",
-  "description": "Plan and generate AI video or images with live model facts, exact quotes, and approval before paid work. A MaxVideoAI account is required.",
+  "version": "0.3.2",
+  "description": "MaxVideoAI is a multi-model AI video production service for planning shots, comparing current models, estimating project budgets, preparing exact quotes, approving paid generations, recovering results, and keeping media in one account library. A MaxVideoAI account is required.",
   "author": { "name": "MaxVideoAI", "url": "https://maxvideoai.com" },
   "homepage": "https://maxvideoai.com/mcp",
-  "repository": "https://github.com/camgraphe/MaxVideoAi",
+  "repository": "https://github.com/camgraphe/maxvideoai-plugin",
   "license": "BUSL-1.1",
   "keywords": [
     "maxvideoai",
@@ -25,8 +25,8 @@
   "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "MaxVideoAI",
-    "shortDescription": "Plan and generate with live AI video models.",
-    "longDescription": "Turn a creative brief into current model recommendations, comparable project budgets, exact quotes, reference-guided generations, and recoverable results. Free to connect with no separate subscription; generations use credits from the required MaxVideoAI account.",
+    "shortDescription": "AI video tools, packaged for ChatGPT, Claude & Codex.",
+    "longDescription": "MaxVideoAI is a multi-model AI video production service for planning shots, comparing current models, estimating project budgets, preparing exact quotes, approving paid generations, recovering results, and keeping media in one account library. Packaged for ChatGPT, Claude, Codex, and other MCP hosts. Free to connect with no separate subscription; generations use credits from the required MaxVideoAI account.",
     "developerName": "MaxVideoAI",
     "category": "Creativity",
     "brandColor": "#111827",

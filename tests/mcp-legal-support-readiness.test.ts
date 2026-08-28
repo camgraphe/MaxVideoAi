@@ -555,7 +555,7 @@ test('directory facts do not outrun checked-in claims or host evidence', () => {
   assert.match(claims, /graphical Codex\/ChatGPT directory install has not been recorded/i);
   assert.match(compatibility, /Last hosted checkpoint: 2026-08-27/);
   assert.match(compatibility, /Publication: transport, OAuth, discovery, paid generation, reference uploads,[\s\S]{0,100}enabled/i);
-  assert.match(compatibility, /ChatGPT Apps directory[\s\S]+Not run/i);
+  assert.match(compatibility, /ChatGPT web custom app \/ full MCP[\s\S]+Not run/i);
   assert.match(
     directory,
     /launch product is a 13-tool[\s\S]{0,300}Claude Desktop\s+1\.37937\.1[\s\S]{0,180}Codex CLI/i,

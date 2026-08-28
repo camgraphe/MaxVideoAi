@@ -13,7 +13,7 @@
       "hostLabel": "Claude Code",
       "status": "not-run"
     },
-    "chatgptDesktop": {
+    "chatgptWeb": {
       "client": "chatgpt",
       "hostLabel": "ChatGPT",
       "status": "not-run"

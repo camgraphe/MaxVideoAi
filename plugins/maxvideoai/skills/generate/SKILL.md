@@ -50,7 +50,9 @@ link per local file and run the packaged local helper. It reads local bytes and
 returns asset IDs without sending a raw local path to the MCP server, publishing
 a public URL, or using Computer Use. After the browser fallback, call
 `list_media`; after the in-chat importer or helper, use returned IDs directly.
-If the link tool fails, ask the user to authorize or retry the handoff.
+If the link tool fails, is refused, or is unavailable, ask the user to authorize
+or retry the handoff. Never substitute a local attachment when the upload link
+cannot be created.
 
 Required typed references must be private MaxVideoAI assets so their metadata
 can be verified. Do not replace them with an arbitrary external URL. Read

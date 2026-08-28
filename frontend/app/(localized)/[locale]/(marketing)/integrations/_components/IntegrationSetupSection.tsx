@@ -92,6 +92,9 @@ export function IntegrationSetupSection({
                   <p className="font-semibold text-text-primary dark:text-white">{evidence.hostLabel}</p>
                   <p>{copy.compatibility.checkpointLabel}: {formatMcpCheckpointDate(locale, evidence.lastChecked)}</p>
                   <p className="mt-1">{copy.compatibility.statuses[guide.hostId]}</p>
+                  <p className="mt-1 text-[11px]">
+                    {copy.compatibility.machineStatusLabel}: <code>{evidence.status}</code>
+                  </p>
                 </div>
               </article>
             );

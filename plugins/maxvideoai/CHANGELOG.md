@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.2 — 2026-08-28
+
+- Publish proof-led package and discovery metadata with reviewed setup guidance
+  for Claude, ChatGPT, Codex, and compatible MCP clients.
+- Keep the shared OpenAI plugin journey qualified by directory approval, with a
+  developer-mode MCP fallback and OAuth on first use.
+- Strengthen deterministic mirror publication with review-gated drift checks and
+  adversarial release, content, and asset validation.
+
 ## 0.3.1 — 2026-08-28
 
 - Document the namespaced Codex skill invocations as `$maxvideoai:plan` and

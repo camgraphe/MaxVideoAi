@@ -1,6 +1,119 @@
 # MCP marketing asset provenance
 
-Verified on 2026-08-26. Partner marks and the Claude-specific controlled host capture satisfy their distinct publication bars. Checksums in the manifest cover the exact committed bytes.
+`github-asset-manifest.json` is the machine-readable source of truth for
+GitHub-facing screenshot state, hashes, dimensions, claims, placements, and
+release approval. Run `pnpm github:assets:check` for record and byte integrity,
+or `pnpm github:assets:release-check` before publishing a production README.
+
+The existing files under `frontend/public/media/mcp/` are shot-list references
+only. They are registered as `reference_only`; no historical image becomes
+publication proof until a current capture has complete provenance and explicit
+`publishable_proof` approval in the manifest.
+
+A `publishable_proof` also needs a current `freshnessStatus`, a capture no more
+than 90 days old, a review no more than 30 days old, and capture/review
+revisions that resolve to ancestors of the checked repository `HEAD`. Draft
+editorial art must carry complete provenance but is accepted in a README only as
+an HTML image explicitly marked `data-asset-role="editorial"` with alt text that
+begins `Editorial illustration:`.
+
+## Proof-led GitHub visual system
+
+Task 5 uses one built-in ImageGen output as restrained editorial material and
+keeps the two owner-approved Task 4 JPEGs as the only product-proof sources.
+The generated source is never product UI, a host capture, or evidence of a
+ChatGPT, Claude, or Codex execution. The composition script performs only
+deterministic downscaling, bounded source crops, layering, neutral borders,
+shadows, raster copy, and PNG/WebP encoding. It never upscales a proof source,
+redraws UI, or adds platform chrome or marks.
+
+The platform names on the three social/release cards refer only to the setup
+guides required by the release plan. Those cards must not ship before the
+Task 6 Claude, Codex, and ChatGPT guides are present, and their imagery remains
+MaxVideoAI web-app proof only.
+
+<!-- github-visual-system-provenance:v1 -->
+```json
+{
+  "version": 1,
+  "generatedAt": "2026-08-28",
+  "imageGen": {
+    "method": "OpenAI built-in ImageGen",
+    "selectedOutputPath": "plugins/maxvideoai/assets/sources/maxvideoai-editorial-branch-converge-source.png",
+    "sha256": "ba358a9dfeb78552b6fbcfd50104a7fbbdbe8f07b0bbe5b4c04d5f9201210430",
+    "width": 1774,
+    "height": 887,
+    "state": "draft_editorial",
+    "inputImages": [
+      {
+        "path": "plugins/maxvideoai/assets/screenshots/maxvideoai-workspace-production.jpg",
+        "role": "palette and product-mood reference only; do not reproduce or redraw UI"
+      },
+      {
+        "path": "plugins/maxvideoai/assets/screenshots/maxvideoai-library-continuity-production.jpg",
+        "role": "palette and finished-result material reference only; do not reproduce or redraw UI"
+      }
+    ],
+    "prompt": "Use case: stylized-concept\nAsset type: editorial background source for MaxVideoAI GitHub launch assets\nInput images: Image 1 and Image 2 are verified MaxVideoAI product-proof screenshots used only to ground the restrained palette, real product mood, and finished glass-ribbon result; do not reproduce, redraw, or imitate their UI.\nPrimary request: one abstract visual idea — a single creative brief branching into several controlled AI video-production paths, then converging into one finished result.\nStyle/medium: premium editorial abstract image, crisp geometry, subtle cinematic depth, quiet confidence.\nComposition/framing: wide 2:1 landscape with generous negative space, designed to sit behind real screenshots and sparse copy; no device or UI framing.\nLighting/mood: subtle cinematic light, controlled contrast, calm and precise rather than futuristic spectacle.\nColor palette: clean black, white, and MaxVideoAI cobalt with restrained teal/peach accents inspired by the verified finished result.\nConstraints: no text, no letters, no numbers, no logos, no brand marks, no UI, no browser chrome, no platform marks, no fake screenshots, no price, no people presenting a product, no watermark.\nAvoid: neon sci-fi dashboard, glowing chat bubbles, robot imagery, generic AI brain/network clichés, busy particles, decorative clutter."
+  },
+  "composition": {
+    "method": "scripts/compose-github-visual-system.mjs with frontend Sharp 0.34.5",
+    "palette": {
+      "cobalt": "#2E63D8",
+      "accent": "#7CA3E8",
+      "ink": "#111827",
+      "dark": "#050B14",
+      "paper": "#F6F8FC"
+    },
+    "assets": [
+      {
+        "path": "plugins/maxvideoai/assets/demos/readme-proof-hero.webp",
+        "sourceProofIds": ["maxvideoai-workspace-production"],
+        "proofBoundary": "Completed MaxVideoAI workspace result only; no native host compatibility proof."
+      },
+      {
+        "path": "plugins/maxvideoai/assets/demos/brief-to-video-workflow.webp",
+        "sourceProofIds": ["maxvideoai-workspace-production", "maxvideoai-library-continuity-production"],
+        "proofBoundary": "Completed result and Library continuity only; no brief, quote, approval, or native host flow is shown."
+      },
+      {
+        "path": "plugins/maxvideoai/assets/demos/model-choice-and-budget.webp",
+        "sourceProofIds": ["maxvideoai-workspace-production"],
+        "proofBoundary": "Visible Luma Ray 2 Flash selection and completed result only; the real 380×75 selector crop stays at native scale on a narrow stacked canvas, with no redrawn UI, budget, price, quote, approval, or native host execution."
+      },
+      {
+        "path": "plugins/maxvideoai/assets/demos/library-continuity.webp",
+        "sourceProofIds": ["maxvideoai-workspace-production", "maxvideoai-library-continuity-production"],
+        "proofBoundary": "Same completed video in the MaxVideoAI workspace and Library only."
+      },
+      {
+        "path": "plugins/maxvideoai/assets/social/github-social-preview.png",
+        "sourceProofIds": ["maxvideoai-workspace-production"],
+        "proofBoundary": "MaxVideoAI web-app result proof with release-gated setup-guide copy; no native host proof."
+      },
+      {
+        "path": "plugins/maxvideoai/assets/social/release-0.3.0.png",
+        "sourceProofIds": ["maxvideoai-workspace-production"],
+        "proofBoundary": "MaxVideoAI web-app result proof with release-gated setup-guide copy; no native host proof."
+      },
+      {
+        "path": "plugins/maxvideoai/assets/social/release-0.3.2.png",
+        "sourceProofIds": ["maxvideoai-workspace-production"],
+        "proofBoundary": "MaxVideoAI web-app result proof with release-gated setup-guide copy; no native host proof."
+      },
+      {
+        "path": "plugins/maxvideoai/assets/social/directory-thumbnail.png",
+        "sourceProofIds": ["maxvideoai-workspace-production", "maxvideoai-library-continuity-production"],
+        "proofBoundary": "MaxVideoAI workspace and Library continuity proof with release-gated setup-guide copy; no native host proof."
+      }
+    ]
+  }
+}
+```
+
+Verified on 2026-08-26. The partner-mark records below preserve their distinct
+publication provenance. Their checksums cover the exact committed bytes; this
+historical record does not make any screenshot publishable in a GitHub README.
 
 Marketing usage keeps both marks unchanged and at equal optical size, while MaxVideoAI remains the primary brand.
 The surrounding copy describes compatibility only; it never claims partnership, sponsorship, certification, or
@@ -38,7 +151,7 @@ The previously derived local MP4 (`df66302c8b34f3a79dcc39d906b69ed30184a8299e179
 
 ## Claude inline host capture
 
-`frontend/public/media/mcp/claude-inline-video-proof.jpg` preserves the exact JPEG bytes captured from Claude Desktop 1.37937.1 on macOS 26.5.1. A controlled staging session exercised native playback, the MaxVideoAI library state, and the first-party CTA. The capture was reviewed for visible account identifiers and approved by the MaxVideoAI owner for marketing use.
+`frontend/public/media/mcp/claude-inline-video-proof.jpg` preserves the exact JPEG bytes captured from Claude Desktop 1.37937.1 on macOS 26.5.1. A controlled staging session exercised native playback, the MaxVideoAI library state, and the first-party CTA. The capture was reviewed for visible account identifiers and approved by the MaxVideoAI owner for marketing use. It remains `reference_only` in the GitHub asset manifest until it is freshly revalidated for the intended README placement.
 
 This image is used nominatively to show the tested Claude surface. It does not imply Anthropic partnership or endorsement, cannot support a ChatGPT rendering claim, and does not satisfy the separate job-backed MaxVideoAI result-proof gate. The visible `$0.95` is described only as the historical capture amount.
 

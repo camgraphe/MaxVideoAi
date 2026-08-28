@@ -1,0 +1,19 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.maxvideoai/maxvideoai",
+  "title": "MaxVideoAI",
+  "description": "Plan, compare, price, generate, and recover AI video from compatible MCP clients.",
+  "version": "0.3.2",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://api.maxvideoai.com/mcp"
+    }
+  ],
+  "repository": {
+    "url": "https://github.com/camgraphe/maxvideoai-plugin",
+    "source": "github",
+    "id": "1349419332"
+  },
+  "websiteUrl": "https://maxvideoai.com/mcp"
+}

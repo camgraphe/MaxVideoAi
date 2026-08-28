@@ -41,6 +41,10 @@ const actions = [
 ];
 
 const copy = {
+  instructionLabel: 'Quick installation',
+  instructionBody: 'Choose a client and copy its setup request.',
+  copyInstruction: 'Copy for',
+  instructionCopied: 'Copied. Paste it into',
   endpointLabel: 'Connection endpoint',
   copyEndpoint: 'Copy endpoint',
   copied: 'Endpoint copied. Continue with the setup guide for this client.',
@@ -402,7 +406,7 @@ test('endpoint copy emits only the distinct copy event and exposes accessible su
       value: { writeText: async () => undefined },
     });
     const button = harness.container.querySelector<HTMLButtonElement>('button[data-copy-endpoint="claude"]');
-    const status = harness.container.querySelector<HTMLElement>('[role="status"][aria-live="polite"]');
+    const status = harness.container.querySelector<HTMLElement>('details [role="status"][aria-live="polite"]');
     assert.ok(button && status);
     await dispatchClick(harness, button);
     await harness.flush();
@@ -425,7 +429,7 @@ test('clipboard rejection exposes accessible error feedback without inventing a 
       value: { writeText: async () => Promise.reject(new Error('clipboard denied')) },
     });
     const button = harness.container.querySelector<HTMLButtonElement>('button[data-copy-endpoint="claude"]');
-    const status = harness.container.querySelector<HTMLElement>('[role="status"][aria-live="polite"]');
+    const status = harness.container.querySelector<HTMLElement>('details [role="status"][aria-live="polite"]');
     assert.ok(button && status);
     await dispatchClick(harness, button);
     await harness.flush();

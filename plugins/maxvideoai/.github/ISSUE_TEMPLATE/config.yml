@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Private MaxVideoAI support
+    url: https://maxvideoai.com/contact
+    about: Use for account, billing, private media, customer prompts, and other sensitive context.
+  - name: Private security disclosure
+    url: https://maxvideoai.com/contact
+    about: Use the private contact form; SECURITY.md gives security@maxvideoai.com for vulnerability disclosures.

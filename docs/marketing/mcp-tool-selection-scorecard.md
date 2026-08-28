@@ -1,11 +1,11 @@
 # MaxVideoAI MCP tool-selection scorecard
 
-Status: deterministic offline policy evaluation, last checked 2026-08-26. This is a release gate for checked-in
+Status: deterministic offline policy evaluation, last checked 2026-08-28. This is a release gate for checked-in
 guidance, not evidence that any client integration or paid generation is publicly available.
 
 ## Evidence boundary
 
-The corpus contains 46 natural-language prospect requests across 15 intent categories: 24 use `live-read-only` and 22
+The corpus contains 70 natural-language prospect requests across 15 intent categories: 36 use `live-read-only` and 34
 use the hypothetical `future-generation-evaluation` profile. Fixture labels are expectations only. The fixture contract
 reports `null` metrics and does not turn fixture answers into host evidence.
 
@@ -14,18 +14,19 @@ The separate artifact contains **curated offline policy decisions/expectations**
 tool calls, arguments, assistant language, capability boundaries, and quote transcripts. The artifact makes no claim
 that a model, host, or producer executed those decisions.
 
-Real-host metrics for Codex and Claude are unavailable until Task 10 and remain explicit `null` values. Curated scores
+Real-host metrics for Codex and Claude are not recorded for this discovery evaluation and remain `null`. Curated scores
 must never be presented as Codex, Claude, compatibility, quality, or public-availability evidence.
 
 The live metadata inspection sees five read-only, non-destructive, closed-world discovery tools and no MCP resources.
-The future profile is not live, and all eight publication flags remain false.
+The `future-generation-evaluation` profile is not live host evidence. Production publication is active with trial disabled, but publication
+state is not evidence that either host executed these fixtures.
 
 ## Freshness and scoring
 
 Every fixture stores its prompt SHA-256. The artifact stores a fingerprint of the complete fixture contract and explicit
 required counts for every policy check, so removing one applicable check or reducing the global denominator fails. It
 also stores a deterministic policy fingerprint over the current server instructions, packaged Skill, budget and
-generation-safety references, and all 12 registered tool names, descriptions, annotations, and input schemas.
+generation-safety references, and all 13 registered tool names, descriptions, annotations, and input schemas.
 
 - Required tool order uses the longest common subsequence. Reversing required calls cannot earn full precision or
   recall. Alternatives may contribute to precision but not recall.
@@ -46,6 +47,8 @@ generation-safety references, and all 12 registered tool names, descriptions, an
   a required rate of 0. Selection precision, selection recall, capability recall, policy adherence, quote-before-confirm,
   and exact quote-display match all require 1.0 whenever their denominator is nonzero.
 - A zero denominator is serialized as `null`; it is not treated as a passing host metric.
+- The 24-case agent-discovery layer separately gates positive routing at 90%, negative safety at 100%, first useful tool
+  choice at 90%, and paid-confirmation and platform-claim safety at 100%. Citation and recovery cases must be perfect.
 
 The evaluator never mixes `live-read-only` and `future-generation-evaluation`. Any missing decision, stale policy,
 required tool/order/argument failure, forbidden confirmation, unsupported claim, policy-language failure, or quote
@@ -60,7 +63,7 @@ identity/display mismatch throws and makes the command exit nonzero.
   "policyFingerprintSha256": "<64 lowercase hex characters>",
   "fixtureContractSha256": "<64 lowercase hex characters>",
   "policyCoverage": {
-    "fixtureCount": 46,
+    "fixtureCount": 70,
     "policyCheckCount": 39,
     "requiredChecks": {
       "selected_seedance_details": 7,
@@ -124,4 +127,4 @@ npm --prefix frontend run qa:mcp-tool-selection
 The command is offline and deterministic. It calls no Codex, Claude, OpenAI, Anthropic, provider, database, analytics,
 or production service. It opens the checked-in MCP server through an in-memory transport only to inspect authoritative
 instructions and tool metadata. Successful output is labeled `curated offline policy decisions/expectations`; real-host
-metrics stay unavailable until Task 10.
+metrics remain `null` until separately recorded in Claude or Codex.

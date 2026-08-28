@@ -8,19 +8,31 @@ releases, discovery, issues, and Discussions.
 No command in this document authorizes creating the public repository, changing
 repository settings, adding a secret, pushing a tag, or publishing a release.
 Obtain the owner approval required by the GitHub commercial-presence plan before
-the first external mutation.
+each external mutation.
+
+## Current release state — 2026-08-28
+
+The focused repository now contains public package history:
+
+- [v0.3.0](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.0) is public with `maxvideoai-plugin-0.3.0.zip` and its `.sha256` attachment;
+- [v0.3.1](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.1) is public with `maxvideoai-plugin-0.3.1.zip` and its `.sha256` attachment;
+- `0.3.2` is checked in locally but remains a closed, unpublished candidate. It has no matching source tag or public release and must complete the gate below before any publication attempt.
+
+These facts prove public distribution for v0.3.0 and v0.3.1. They do not prove a
+successful publication-workflow run, a clean install in every host, or readiness
+of the separate 0.3.2 candidate.
 
 ## Publication contract
 
 The release chain is intentionally narrow:
 
 ```text
-maxvideoai-plugin-v0.3.1 source tag
+maxvideoai-plugin-v<version> source tag
   -> deterministic bundle and SHA-256 manifest
   -> temporary checkout of camgraphe/maxvideoai-plugin
   -> exact-file synchronization and visible Git diff
   -> normal, non-force commit and push
-  -> v0.3.0 public release with ZIP and SHA-256 attachment
+  -> v<version> public release with ZIP and SHA-256 attachment
 ```
 
 `plugins/maxvideoai/` remains the only place to edit plugin content. Never edit a
@@ -48,13 +60,13 @@ Create a fine-grained GitHub token limited to the single destination repository,
 - the implicit read-only metadata permission.
 
 Do not grant organization administration, workflows, issues, discussions, or
-access to other repositories. Store the token in the private source repository as
-the Actions secret `MAXVIDEOAI_PLUGIN_REPO_TOKEN`. Never place it in a local env
+access to other repositories. Store the token in the source repository's Actions
+settings as the secret `MAXVIDEOAI_PLUGIN_REPO_TOKEN`. Never place it in a local env
 file, workflow argument, release note, artifact, or public repository.
 
-The workflow uses the `maxvideoai-plugin-publication` GitHub Environment. Configure
-that environment with the intended owner/reviewer and restrict deployment branches
-to release tags before first publication. Its unprotected `prepare` job has no
+The workflow uses the `maxvideoai-plugin-publication` GitHub Environment. Recheck
+that environment's intended owner/reviewer and release-tag deployment restriction
+before the next workflow-driven publication. Its unprotected `prepare` job has no
 secret: it builds and synchronizes into a temporary checkout, stages the result,
 prints `git diff --cached --check`, the stat, and the complete diff, then records
 the public base SHA and Git tree. Only after those logs exist does the protected
@@ -91,18 +103,21 @@ exact marker above. Never point the synchronizer at the product repository, the
 workspace root, the home directory, a symlink, or an unresolved path. It refuses
 all of them by design.
 
-## First publication
+## Next candidate publication
 
-1. Complete the explicit external-mutation approval in Task 10. Confirm the owner,
-   repository name, public visibility, description, homepage, version, and exact
-   bundle inventory with the owner.
-2. Create `camgraphe/maxvideoai-plugin` with `main` as its default branch. Its first
-   commit must contain only `.maxvideoai-public-repository` with the exact content
-   above.
-3. Configure repository settings, the publication environment, and the scoped
+The following sequence applies to the closed 0.3.2 candidate only after its named
+gate is complete. The existence of public v0.3.0 and v0.3.1 releases does not waive
+any 0.3.2 evidence requirement.
+
+1. Complete the explicit external-mutation approval. Confirm the owner, repository
+   name, public visibility, description, homepage, version, and exact bundle
+   inventory with the owner.
+2. Confirm that `camgraphe/maxvideoai-plugin` still uses `main`, contains the exact
+   bootstrap marker, and has no unexpected files or remote drift.
+3. Recheck repository settings, the publication environment, and the scoped
    `MAXVIDEOAI_PLUGIN_REPO_TOKEN`. Apply the bootstrap protection stage described
-   below; do not invent a required check or use an administrator token to make the
-   first run pass.
+   below; do not invent a required check or use an administrator token to make a
+   run pass.
 4. Complete the coordinated release version in `plugins/maxvideoai/VERSION`, the
    Codex and Claude manifests, marketplace metadata, and changelog. Run the plugin,
    content, asset, and release-bundle checks.
@@ -116,8 +131,8 @@ all of them by design.
    ```bash
    gh workflow run publish-maxvideoai-plugin.yml \
      --repo camgraphe/MaxVideoAi \
-     --ref maxvideoai-plugin-v0.3.1 \
-     -f source_tag=maxvideoai-plugin-v0.3.1
+     --ref maxvideoai-plugin-v0.3.2 \
+     -f source_tag=maxvideoai-plugin-v0.3.2
    ```
 
    Dispatching from `main` while naming a tag only in the input is rejected.
@@ -133,16 +148,16 @@ push fallback.
 
 ## Main protection rollout
 
-The bootstrap repository contains only the marker and has no destination-side pull
-request workflow with an observed check yet. At this stage, do not claim required
-status checks are active and do not add a required check that GitHub has never run.
-Such a rule would block the mirror's normal direct fast-forward push without adding
-a valid review path.
+At original bootstrap, the repository contained only the marker. The current
+destination still has no pull-request workflow with an observed required check.
+Do not claim required status checks are active and do not add a required check that
+GitHub has never run. Such a rule would block the mirror's normal direct
+fast-forward push without adding a valid review path.
 
-For bootstrap releases, protect `main` against deletion and force pushes while
-allowing the scoped publication token's ordinary fast-forward push after Environment
-approval. This is not an administrator bypass: the token follows the configured
-rule and has no repository-administration permission.
+Until the pull-request validation path exists, protect `main` against deletion and
+force pushes while allowing the scoped publication token's ordinary fast-forward
+push after Environment approval. This is not an administrator bypass: the token
+follows the configured rule and has no repository-administration permission.
 
 Migrate to required checks only after the destination repository has a compatible
 pull-request validation workflow. Change publication to open a generated release
@@ -152,11 +167,12 @@ migration is implemented and exercised.
 
 ## Release creation
 
-For source tag `maxvideoai-plugin-v0.3.1`, the workflow creates destination release
-`v0.3.1` at the newly published commit. It attaches:
+If the closed candidate later passes every gate, source tag
+`maxvideoai-plugin-v0.3.2` makes the workflow create destination release `v0.3.2`
+at the newly published commit. It would attach:
 
-- `maxvideoai-plugin-0.3.1.zip`;
-- `maxvideoai-plugin-0.3.1.zip.sha256`.
+- `maxvideoai-plugin-0.3.2.zip`;
+- `maxvideoai-plugin-0.3.2.zip.sha256`.
 
 The ZIP is the deterministic archive from the source build, while the public tree
 contains the same release files plus `checksums.json`. Verify the attached archive
@@ -182,7 +198,7 @@ The verified bootstrap state is:
 | Public repository | [`camgraphe/maxvideoai-plugin`](https://github.com/camgraphe/maxvideoai-plugin) |
 | Default branch | `main` |
 | Bootstrap commit | `82885191f0743641fd04c9ac5cd7a862087ed35a` |
-| Bootstrap tree | `.maxvideoai-public-repository` only |
+| Original bootstrap tree | `.maxvideoai-public-repository` only |
 | Description and homepage | Approved commercial description; `https://maxvideoai.com/mcp` |
 | Topics | `ai-video`, `video-generation`, `mcp`, `model-context-protocol`, `chatgpt`, `claude`, `codex`, `ai-agents` |
 | Community settings | Issues and Discussions enabled; Wiki disabled; merge commits disabled; squash merge enabled; merged branches deleted |
@@ -190,13 +206,15 @@ The verified bootstrap state is:
 | Security | Secret scanning, push protection, and private vulnerability reporting enabled |
 | Social preview | [GitHub-hosted repository image](https://repository-images.githubusercontent.com/1349419332/e5459224-cdf9-433c-9ccb-44034079a51f) from `assets/social/github-social-preview.png`, 1280×640, SHA-256 `a77684b5c02980246a50df2ae6ae5247d9bd6c03b1dd1f4a2d997c89fee98e07` |
 | Source Environment | `maxvideoai-plugin-publication`; owner review required; deployments restricted to `maxvideoai-plugin-v*` tags |
-| Publication secret | `MAXVIDEOAI_PLUGIN_REPO_TOKEN` not configured: the active CLI credential is broader than the required single-repository token and was deliberately not reused |
-| Public package, tag, workflow run, release | `v0.3.0` published manually after exact-tree verification; `v0.3.1` is the current patch release |
+| Publication secret | No destination-scoped `MAXVIDEOAI_PLUGIN_REPO_TOKEN` was observed in the publication Environment; the active CLI credential is broader than the required single-repository token and was deliberately not reused |
+| Public releases | [v0.3.0](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.0) and [v0.3.1](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.1) are public, each with a ZIP and SHA-256 attachment |
+| Publication workflow evidence | No successful source-repository workflow run is recorded here; the public releases do not by themselves identify the publication mechanism |
+| Closed candidate | `0.3.2` remains unpublished and gated on a matching source tag, built checksum, clean-install evidence, current visual, coordinated metadata, and final owner review |
 
-The welcome Discussion, release pin, and destination required checks remain
-deferred. Publication stays manual until the dedicated single-repository token is
-configured; the reviewed public package and checksums are now installable release
-evidence, while host behavior remains verified separately.
+The welcome Discussion, destination required checks, and any 0.3.2 publication
+remain deferred until the reviewed candidate is ready. The public v0.3.0 and v0.3.1
+artifacts are installable-release evidence for those versions only, not native-host
+compatibility evidence and not evidence that 0.3.2 is ready.
 
 ## Failure and rollback
 

@@ -8,7 +8,6 @@ import {
   ISO_COHORT_WEEK_PATTERN,
   UUID_PATTERN,
   parseWalletAnalyticsJourney,
-  sanitizeAttributionFieldValue,
   sanitizeAttributionValue,
   type AnalyticsJourneyRecordV1,
   type AnalyticsTouch,
@@ -19,6 +18,8 @@ import {
   applyAnalyticsTouch,
   createAnalyticsJourneyRecord,
   prepareJourneyEvents,
+  projectAnalyticsLandingSurface,
+  projectAnalyticsTouch,
   resolveAnalyticsTouch,
 } from './journey';
 
@@ -26,38 +27,25 @@ function isNonNegativeInteger(value: unknown): value is number {
   return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
 }
 
-function isBoundedValue(value: unknown, options: { lowercase?: boolean } = {}): value is string {
-  return typeof value === 'string' && sanitizeAttributionValue(value, options) === value;
-}
-
-function isBoundedFieldValue(value: unknown, options: { lowercase?: boolean } = {}): value is string {
-  return typeof value === 'string' && sanitizeAttributionFieldValue(value, options) === value;
-}
-
-function isAnalyticsTouch(value: unknown): value is AnalyticsTouch {
+function hasExactOwnValues(value: unknown, projected: Record<string, unknown>): boolean {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
-  const touch = value as Record<string, unknown>;
-  if (
-    !isBoundedFieldValue(touch.source, { lowercase: true })
-    || !isBoundedFieldValue(touch.medium, { lowercase: true })
-    || !isBoundedValue(touch.landingRouteFamily, { lowercase: true })
-  ) {
+  const record = value as Record<string, unknown>;
+  let keys: string[];
+  try {
+    keys = Object.keys(record);
+  } catch {
     return false;
   }
-
-  for (const key of ['campaign', 'content'] as const) {
-    if (touch[key] !== undefined && !isBoundedFieldValue(touch[key])) return false;
-  }
-  if (touch.landingSurface !== undefined && !isBoundedValue(touch.landingSurface)) return false;
-  for (const key of ['referrerHost', 'locale'] as const) {
-    if (touch[key] !== undefined && !isBoundedValue(touch[key], { lowercase: true })) return false;
-  }
-  return true;
+  const projectedKeys = Object.keys(projected);
+  return keys.length === projectedKeys.length
+    && projectedKeys.every((key) => Object.hasOwn(record, key) && record[key] === projected[key]);
 }
 
 function parseAnalyticsJourney(value: unknown, now: number): AnalyticsJourneyRecordV1 | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   const record = value as Record<string, unknown>;
+  const firstTouch = projectAnalyticsTouch(record.firstTouch);
+  const lastTouch = projectAnalyticsTouch(record.lastTouch);
   if (
     record.version !== ANALYTICS_JOURNEY_VERSION
     || typeof record.journeyId !== 'string'
@@ -68,8 +56,10 @@ function parseAnalyticsJourney(value: unknown, now: number): AnalyticsJourneyRec
     || record.expiresAt <= now
     || typeof record.cohortWeek !== 'string'
     || !ISO_COHORT_WEEK_PATTERN.test(record.cohortWeek)
-    || !isAnalyticsTouch(record.firstTouch)
-    || !isAnalyticsTouch(record.lastTouch)
+    || !firstTouch
+    || !lastTouch
+    || !hasExactOwnValues(record.firstTouch, firstTouch)
+    || !hasExactOwnValues(record.lastTouch, lastTouch)
     || !isNonNegativeInteger(record.lastTouchAt)
     || record.lastTouchAt < record.createdAt
     || record.lastTouchAt >= record.expiresAt
@@ -79,7 +69,25 @@ function parseAnalyticsJourney(value: unknown, now: number): AnalyticsJourneyRec
   ) {
     return null;
   }
-  return record as AnalyticsJourneyRecordV1;
+  const parsed: AnalyticsJourneyRecordV1 = {
+    version: ANALYTICS_JOURNEY_VERSION,
+    journeyId: record.journeyId,
+    createdAt: record.createdAt,
+    expiresAt: record.expiresAt,
+    cohortWeek: record.cohortWeek,
+    firstTouch,
+    lastTouch,
+    lastTouchAt: record.lastTouchAt,
+    funnelEntrySent: record.funnelEntrySent,
+    generationStartedCount: record.generationStartedCount,
+    topupStartedCount: record.topupStartedCount,
+  };
+  const recordKeys = Object.keys(record);
+  const parsedKeys = Object.keys(parsed);
+  return recordKeys.length === parsedKeys.length
+    && parsedKeys.every((key) => Object.hasOwn(record, key))
+    ? parsed
+    : null;
 }
 
 function readStoredAnalyticsJourney(now: number): AnalyticsJourneyRecordV1 | null {
@@ -113,7 +121,7 @@ function landingSurface(context: AnalyticsRouteContext): string | undefined {
   } else {
     value = context.family;
   }
-  return sanitizeAttributionValue(value) ?? undefined;
+  return projectAnalyticsLandingSurface(context.family, value);
 }
 
 function resolveCurrentTouch(): AnalyticsTouch | null {
