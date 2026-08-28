@@ -212,7 +212,7 @@ test('integration heroes lead with visual product evidence and link directly to 
   assert.doesNotMatch(preview, /autoPlay/);
 });
 
-test('Claude, ChatGPT, and Codex setup steps use relevant compact proof', async () => {
+test('public integration setup steps render only currently publishable proof assets', async () => {
   const setup = requireFile(`${integrationComponentsRoot}/IntegrationSetupSection.tsx`);
   assert.match(setup, /import Image from ['"]next\/image['"]/);
   assert.match(setup, /step\.proof/);
@@ -222,47 +222,28 @@ test('Claude, ChatGPT, and Codex setup steps use relevant compact proof', async 
   const { getIntegrationCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
   );
+  const manifest = JSON.parse(requireFile('docs/marketing/github-asset-manifest.json')) as {
+    assets: Array<{ path: string; state: string }>;
+  };
+  const stateByPublicSrc = new Map(
+    manifest.assets
+      .filter((asset) => asset.path.startsWith('frontend/public/'))
+      .map((asset) => [asset.path.replace(/^frontend\/public/, ''), asset.state]),
+  );
+
   for (const locale of ['en', 'fr', 'es'] as const) {
-    const claudeDesktop = getIntegrationCopy(locale, 'claude').setup.hostGuides[0];
-    assert.equal(claudeDesktop?.steps.length, 3);
-    assert.equal(claudeDesktop?.steps.every((step) => step.proof), true);
-    for (const step of claudeDesktop?.steps ?? []) {
-      assert.equal(existsSync(`frontend/public${step.proof?.src}`), true);
-      assert.match(step.proof?.caption ?? '', /staging|préproduction|preproducción/i);
-    }
-
-    const claudeCode = getIntegrationCopy(locale, 'claude').setup.hostGuides[1];
-    assert.equal(claudeCode?.steps.some((step) => step.proof), false);
-    const expectedOpenAiPluginCaptures = [
-      '/media/mcp/codex-plugin-page.jpg',
-      '/media/mcp/codex-plugin-installed.jpg',
-      '/media/mcp/codex-plugin-account.jpg',
-    ];
-    const chatgpt = getIntegrationCopy(locale, 'chatgpt').setup.hostGuides[0];
-    assert.equal(chatgpt?.steps.length, 3);
-    assert.deepEqual(
-      chatgpt?.steps.map((step) => step.proof?.src),
-      expectedOpenAiPluginCaptures,
-    );
-    const chatgptProofText = (chatgpt?.steps ?? [])
-      .map((step) => `${step.proof?.alt ?? ''} ${step.proof?.caption ?? ''}`)
-      .join(' ');
-    for (const step of chatgpt?.steps ?? []) {
-      assert.equal(existsSync(`frontend/public${step.proof?.src}`), true);
-    }
-    assert.match(chatgptProofText, /shared|partag|compartid/i);
-    assert.match(chatgptProofText, /Codex/i);
-    assert.match(chatgptProofText, /not native ChatGPT|pas une preuve[^.]*ChatGPT|no es una prueba[^.]*ChatGPT/i);
-
-    const codex = getIntegrationCopy(locale, 'codex').setup.hostGuides[0];
-    assert.equal(codex?.steps.length, 3);
-    assert.deepEqual(
-      codex?.steps.map((step) => step.proof?.src),
-      expectedOpenAiPluginCaptures,
-    );
-    for (const step of codex?.steps ?? []) {
-      assert.equal(existsSync(`frontend/public${step.proof?.src}`), true);
-      assert.match(step.proof?.caption ?? '', /Codex/i);
+    for (const client of ['claude', 'chatgpt', 'codex'] as const) {
+      for (const guide of getIntegrationCopy(locale, client).setup.hostGuides) {
+        for (const step of guide.steps) {
+          if (!step.proof) continue;
+          assert.equal(existsSync(`frontend/public${step.proof.src}`), true);
+          assert.equal(
+            stateByPublicSrc.get(step.proof.src),
+            'publishable_proof',
+            `${locale}/${client}/${step.title} must not publish a reference-only capture`,
+          );
+        }
+      }
     }
   }
 });

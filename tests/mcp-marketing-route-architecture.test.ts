@@ -404,3 +404,25 @@ test('visible compatibility dates are sourced from the recorded evidence config'
     assert.match(source, /Hosted (?:evidence|checkpoint|capability review)|Compatibility checked/i);
   }
 });
+
+test('the ChatGPT setup renders its machine compatibility state discreetly', async () => {
+  const { IntegrationSetupSection } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_components/IntegrationSetupSection.tsx'
+  );
+  const { getIntegrationCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
+  );
+  const { getMcpCompatibilityEvidence } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-compatibility.ts'
+  );
+  const evidence = getMcpCompatibilityEvidence();
+  const html = renderToStaticMarkup(React.createElement(IntegrationSetupSection, {
+    compatibility: evidence.clients.chatgpt,
+    copy: getIntegrationCopy('en', 'chatgpt'),
+    locale: 'en',
+  }));
+
+  assert.match(html, />not-run</);
+  assert.match(html, /Public listing.*approval/is);
+  assert.match(html, /Developer.*MCP/is);
+});

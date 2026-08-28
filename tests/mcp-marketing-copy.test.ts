@@ -443,7 +443,7 @@ test('integration pages offer one truthful copy-paste setup instruction per host
     const chatgptGuide = chatgptPage.setup.hostGuides[0];
     assert.ok(chatgptGuide);
     assert.equal(chatgptGuide.steps.length, 3);
-    assert.equal(chatgptGuide.steps.every((step) => Boolean(step.proof)), true);
+    assert.equal(chatgptGuide.steps.some((step) => Boolean(step.proof)), false);
     assert.equal(chatgptGuide.setupValues[0]?.value, 'https://api.maxvideoai.com/mcp');
     assert.match(chatgptGuide.setupValues[0]?.label ?? '', /MCP/i);
     assert.match(chatgptGuide.authTrigger ?? '', /OAuth/i);
@@ -461,7 +461,27 @@ test('integration pages offer one truthful copy-paste setup instruction per host
     );
     assert.match(
       chatgptMarketing,
-      /public.*approval|approval.*public|public.*approbation|approbation.*public|públic.*aprobación|aprobación.*públic/i,
+      /public.*approval|approval.*public|publiq.*approbation|approbation.*publiq|públic.*aprobación|aprobación.*públic/i,
+    );
+
+    const [publicListing, developerFallback] = chatgptGuide.steps;
+    assert.ok(publicListing);
+    assert.ok(developerFallback);
+    assert.match(
+      `${publicListing.title} ${publicListing.body}`,
+      /public.*approval|approval.*public|publiq.*approbation|approbation.*publiq|públic.*aprobación|aprobación.*públic/i,
+    );
+    assert.doesNotMatch(
+      `${publicListing.title} ${publicListing.body}`,
+      /developer|développeur|desarrollador/i,
+    );
+    assert.match(
+      `${developerFallback.title} ${developerFallback.body}`,
+      /developer|développeur|desarrollador/i,
+    );
+    assert.doesNotMatch(
+      `${developerFallback.title} ${developerFallback.body}`,
+      /public.*approval|approval.*public|publiq.*approbation|approbation.*publiq|públic.*aprobación|aprobación.*públic/i,
     );
   }
 });
