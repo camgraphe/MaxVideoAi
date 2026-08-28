@@ -48,6 +48,13 @@ If `$plan` is not discovered, verify the tagged marketplace and package are enab
 
 Use the plugin manager in the Codex build that installed MaxVideoAI and remove `maxvideoai@maxvideoai`. If your build offers CLI removal, check its own `codex plugin --help` output rather than guessing a command. Revoke the Codex OAuth connection in your MaxVideoAI account connection settings to end account access.
 
+## Which practical examples should I use?
+
+- [Compare current AI video models](../examples/compare-ai-video-models.md) before selecting a route.
+- [Price an AI video project](../examples/price-a-video-project.md) before preparing a request.
+- [Plan a Claude video-production request](../examples/claude-video-production.md) for the no-spend workflow shape.
+- [Run a Codex video-production workflow](../examples/codex-video-production.md) for package and recovery context.
+
 ## Sources
 
 - [MaxVideoAI package repository](https://github.com/camgraphe/MaxVideoAi)

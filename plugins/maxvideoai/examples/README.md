@@ -12,6 +12,10 @@ These examples show how a producer can move from a brief to a deliberate, recove
 - [Compare models and price a creator project](creator-budget-comparison.md) — use live model facts and named budgets without spending credits.
 - [Turn a private reference into video](reference-to-video.md) — select from the Library first, or use the secure upload handoff when the asset is missing.
 - [Recover an approved generation](recover-a-generation.md) — find the accepted or recent job before considering another paid request.
+- [Compare current AI video models](compare-ai-video-models.md) — choose between named routes before a paid request is prepared.
+- [Price an AI video project](price-a-video-project.md) — turn a shot list into comparable budgets, then request one exact quote.
+- [Plan a Claude video-production request](claude-video-production.md) — validate the no-spend path in an eligible Claude account.
+- [Run a Codex video-production workflow](codex-video-production.md) — install the reviewed package, compare, and recover deliberately.
 
 **Example**: Start with the outcome closest to your project, copy its prompt, and keep the no-spend and paid-action boundaries intact.
 

@@ -51,6 +51,13 @@ If tools are missing, reopen **Customize → Connectors**, confirm MaxVideoAI is
 
 Open **Customize → Connectors**, find MaxVideoAI, then use **Remove** or the adjacent menu to disconnect it. Team and Enterprise owners can remove the organization entry from **Organization settings → Connectors**. To end the authorization as well, revoke the matching Claude OAuth connection from your MaxVideoAI account connection settings. Reconnect through OAuth if you need it later.
 
+## Which practical examples should I use?
+
+- [Compare current AI video models](../examples/compare-ai-video-models.md) before selecting a route.
+- [Price an AI video project](../examples/price-a-video-project.md) before preparing a request.
+- [Plan a Claude video-production request](../examples/claude-video-production.md) for the no-spend workflow shape.
+- [Run a Codex video-production workflow](../examples/codex-video-production.md) for package and recovery context.
+
 ## Sources
 
 - [Claude Help Center: Get started with custom connectors using remote MCP](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp)

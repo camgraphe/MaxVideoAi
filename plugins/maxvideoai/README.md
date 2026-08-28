@@ -80,6 +80,17 @@ This current production capture proves MaxVideoAI workspace-to-Library continuit
 - “Check the accepted job before you consider another paid submission.”
 - “Recover my completed result and point me to the same MaxVideoAI Library asset.”
 
+## Four practical workflow examples
+
+- [Compare current AI video models](examples/compare-ai-video-models.md) before selecting a route.
+- [Price an AI video project](examples/price-a-video-project.md) from a shot list before preparing work.
+- [Plan a Claude video-production request](examples/claude-video-production.md) with a no-spend validation prompt.
+- [Run a Codex video-production workflow](examples/codex-video-production.md) from installation through recovery.
+
+```text
+Brief → no-spend plan → exact quote → explicit approval → one paid attempt → Library recovery
+```
+
 ## What should you review before connecting?
 
 Read [privacy and permissions](docs/privacy-and-permissions.md) for the plain-language account, media, and spending boundaries. For setup problems, interrupted responses, refunds, or reconnection, use [troubleshooting](docs/troubleshooting.md).

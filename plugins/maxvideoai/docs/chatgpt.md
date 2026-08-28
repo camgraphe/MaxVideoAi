@@ -52,6 +52,13 @@ If the draft cannot scan or call tools, do not treat the setup as verified. Chec
 
 Users can open **Settings → Apps**, select the MaxVideoAI app, and choose **Disconnect**. Workspace admins or owners can disable it from **Workspace settings → Apps** and remove draft or published access when it is no longer approved. Then revoke the corresponding OAuth connection in your MaxVideoAI account connection settings; disabling the app in ChatGPT does not replace that MaxVideoAI-side revocation.
 
+## Which practical examples should I use?
+
+- [Compare current AI video models](../examples/compare-ai-video-models.md) before selecting a route.
+- [Price an AI video project](../examples/price-a-video-project.md) before preparing a request.
+- [Plan a Claude video-production request](../examples/claude-video-production.md) for the no-spend workflow shape.
+- [Run a Codex video-production workflow](../examples/codex-video-production.md) for package and recovery context.
+
 ## Sources
 
 - [OpenAI: Developer mode and MCP apps in ChatGPT](https://help.openai.com/en/articles/12584461-developer-mode-apps-and-full-mcp-connectors-in-chatgpt-beta)
