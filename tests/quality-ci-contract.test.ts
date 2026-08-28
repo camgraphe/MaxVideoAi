@@ -4,6 +4,8 @@ import path from 'node:path';
 import test from 'node:test';
 import YAML from 'yaml';
 
+import adminPlaywrightConfig from '../playwright.admin.config';
+
 type WorkflowStep = {
   name?: string;
   uses?: string;
@@ -25,4 +27,8 @@ test('quality CI checks out complete history for revision provenance tests', () 
   const checkout = workflow.jobs.quality.steps.find((step) => step.name === 'Checkout');
 
   assert.equal(checkout?.with?.['fetch-depth'], 0);
+});
+
+test('admin smoke configuration selects only admin end-to-end specs', () => {
+  assert.deepEqual(adminPlaywrightConfig.testMatch, ['**/admin-*.spec.ts']);
 });
