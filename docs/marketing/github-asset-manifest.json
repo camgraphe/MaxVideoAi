@@ -264,9 +264,9 @@
       "host": "MaxVideoAI web app",
       "hostVersion": null,
       "maxvideoaiRevision": "cfe82b11079fb80383e6557e72cfbd6a6c8603b2",
-      "width": 1600,
-      "height": 900,
-      "sha256": "45deeb57d46481c03d69b8e9a50a911dbbdbd9d18c0826a2fc5ea7591ed71563",
+      "width": 800,
+      "height": 450,
+      "sha256": "b9fddf5f50348f3b5d2b8be9d4185826db6336d17ba51fe91432b9a1ed835707",
       "claim": "Proof-led composite showing the verified MaxVideoAI Luma Ray 2 Flash selection and completed result; it does not show or prove a budget, quote, price, approval, or native host execution.",
       "placements": ["plugin_readme", "root_readme"],
       "alt": "MaxVideoAI workspace with the Luma Ray 2 Flash selector and completed glass-ribbon video",
@@ -277,7 +277,7 @@
       "freshnessStatus": "current",
       "sourceProofIds": ["maxvideoai-workspace-production"],
       "editorialSourceId": "maxvideoai-editorial-branch-converge-source",
-      "compositionMethod": "Deterministic Sharp composition; the full current workspace screenshot is preserved at native dimensions over a restrained editorial background, with no duplicated selector or budget annotation."
+      "compositionMethod": "Deterministic Sharp composition; native-resolution crops isolate the current model selector and completed result over a restrained editorial background, with no budget annotation or screenshot upscaling."
     },
     {
       "id": "library-continuity",

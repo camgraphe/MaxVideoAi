@@ -7,6 +7,7 @@ const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(scriptDirectory, '..');
 const requireFromFrontend = createRequire(path.join(repositoryRoot, 'frontend', 'package.json'));
 const sharp = requireFromFrontend('sharp');
+const typographyFont = requireFromFrontend.resolve('next/dist/compiled/@vercel/og/noto-sans-v27-latin-regular.ttf');
 
 const paths = {
   editorial: path.join(repositoryRoot, 'plugins/maxvideoai/assets/sources/maxvideoai-editorial-branch-converge-source.png'),
@@ -102,7 +103,9 @@ function escapeMarkup(value) {
 async function textLayer(text, { width, height, size, color, weight = 400, align = 'left' }) {
   return sharp({
     text: {
-      text: `<span foreground="${color}" font_family="Helvetica" font_size="${size}pt" font_weight="${weight}">${escapeMarkup(text)}</span>`,
+      text: `<span foreground="${color}" font_size="${size}pt" font_weight="${weight}">${escapeMarkup(text)}</span>`,
+      font: 'Noto Sans',
+      fontfile: typographyFont,
       width,
       height,
       align,
@@ -169,12 +172,18 @@ async function briefToVideoWorkflow() {
 }
 
 async function modelChoiceAndBudget() {
-  const width = 1600;
-  const height = 900;
+  const width = 800;
+  const height = 450;
   const canvas = await base(width, height, 'light', 0.32);
-  const layers = [{ input: await solid(580, 8, colors.cobalt), left: 75, top: 132 }];
-  const workspace = await fittedImage(paths.workspace, 1450, 525);
-  await addProof(layers, workspace, 75, 196, { border: '#DDE5F0', shadowOpacity: 0.24 });
+  const layers = [{ input: await solid(260, 5, colors.cobalt), left: 34, top: 42 }];
+  const result = await fittedImage(
+    (await croppedImage(paths.workspace, { left: 650, top: 145, width: 620, height: 360 })).buffer,
+    440,
+    255,
+  );
+  const selector = await croppedImage(paths.workspace, { left: 220, top: 86, width: 380, height: 75 });
+  await addProof(layers, result, 320, 70, { border: '#DDE5F0', shadowOpacity: 0.24 });
+  await addProof(layers, selector, 36, 330, { border: '#DDE5F0', shadowOpacity: 0.2 });
   await writeOutput(canvas.composite(layers), path.join(paths.demos, 'model-choice-and-budget.webp'), 'webp');
 }
 

@@ -43,20 +43,41 @@ function isNonProseLine(line) {
     || /^\s*(```|~~~)/.test(line);
 }
 
-function findInvalidAltText(line) {
+function isInvalidAltText(altText) {
+  return !altText || /^(?:(?:a|an|the)\s+)?(?:screenshot|image|demo|photo|graphic|picture|illustration|visual|artwork|media)(?:\s+(?:screenshot|image|demo|photo|graphic|picture|illustration|visual|artwork|media))?$/i.test(altText);
+}
+
+function findInvalidMarkdownAltText(line) {
   const altTexts = [];
   const imagePattern = /!\[([^\]]*)\]\([^\n)]+\)/g;
   for (const match of line.matchAll(imagePattern)) {
     altTexts.push(match[1].trim());
   }
 
-  const htmlImagePattern = /<img\b[^>]*>/gi;
-  for (const imageTag of line.matchAll(htmlImagePattern)) {
-    const altAttribute = /\balt\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i.exec(imageTag[0]);
-    altTexts.push((altAttribute?.[1] ?? altAttribute?.[2] ?? altAttribute?.[3] ?? '').trim());
-  }
+  return altTexts.filter(isInvalidAltText);
+}
 
-  return altTexts.filter((altText) => !altText || /^(?:(?:a|an|the)\s+)?(?:screenshot|image|demo|photo|graphic|picture|illustration|visual|artwork|media)(?:\s+(?:screenshot|image|demo|photo|graphic|picture|illustration|visual|artwork|media))?$/i.test(altText));
+function findInvalidHtmlAltText(markdown) {
+  const lines = markdown.split(/\r?\n/);
+  let inFence = false;
+  const visibleMarkdown = lines.map((line) => {
+    if (/^\s*(```|~~~)/.test(line)) {
+      inFence = !inFence;
+      return '';
+    }
+    return inFence ? '' : line;
+  }).join('\n');
+
+  const htmlImagePattern = /<img\b[^>]*>/gi;
+  const findings = [];
+  for (const imageTag of visibleMarkdown.matchAll(htmlImagePattern)) {
+    const altAttribute = /\balt\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i.exec(imageTag[0]);
+    const altText = (altAttribute?.[1] ?? altAttribute?.[2] ?? altAttribute?.[3] ?? '').trim();
+    if (!isInvalidAltText(altText)) continue;
+    const lineNumber = visibleMarkdown.slice(0, imageTag.index).split('\n').length;
+    findings.push({ altText, lineNumber });
+  }
+  return findings;
 }
 
 function findBannedLanguage(line) {
@@ -88,6 +109,9 @@ function findBannedLanguage(line) {
 
 export function checkGithubContent(markdown, { filePath = 'README.md' } = {}) {
   const errors = [];
+  for (const { altText, lineNumber } of findInvalidHtmlAltText(markdown)) {
+    errors.push(`${filePath}:${lineNumber}: every image needs descriptive alt text; "${altText || '(empty)'}" is not descriptive`);
+  }
   const lines = markdown.split(/\r?\n/);
   let hasOpeningBreak = false;
   let proseWords = 0;
@@ -115,7 +139,7 @@ export function checkGithubContent(markdown, { filePath = 'README.md' } = {}) {
     const h2Match = /^\s*##\s+(.+?)\s*#*\s*$/.exec(line);
 
     if (!inFence && !isFence) {
-      for (const altText of findInvalidAltText(line)) {
+      for (const altText of findInvalidMarkdownAltText(line)) {
         errors.push(`${filePath}:${lineNumber}: every image needs descriptive alt text; "${altText || '(empty)'}" is not descriptive`);
       }
       for (const finding of findBannedLanguage(line)) {

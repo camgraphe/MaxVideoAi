@@ -18,6 +18,7 @@ const markdownPaths = [
   'plugins/maxvideoai/examples/claude-video-production.md',
   'plugins/maxvideoai/examples/codex-video-production.md',
   'docs/marketing/github-release-template.md',
+  'docs/marketing/github-distribution-matrix.md',
 ] as const;
 
 type GithubAcquisitionLinks = {
@@ -167,6 +168,7 @@ test('GitHub Markdown links match the exact per-file campaign contract and keep 
     'plugins/maxvideoai/examples/claude-video-production.md': [exampleClaude],
     'plugins/maxvideoai/examples/codex-video-production.md': [exampleCodex],
     'docs/marketing/github-release-template.md': [releaseConnect, releaseDocs],
+    'docs/marketing/github-distribution-matrix.md': [],
   };
   for (const path of markdownPaths) assertTrackedUrlOrder(readFileSync(path, 'utf8'), expectedByPath[path]);
 
@@ -213,6 +215,9 @@ test('browser journey projection preserves the GitHub tuple without private or n
     c1_url: '\u0085https://private.example/media', encoded_c1_url: '%C2%85https%3A%2F%2Fprivate.example%2Fmedia',
     nested: { prompt: 'private' }, array: ['private'], callable: () => undefined, symbol: Symbol('private'),
     infinity: Infinity, nan: Number.NaN, first_touch_source: 'forged',
+    description: 'my unreleased prompt', message: 'Bearer private-token', input: 'private media brief',
+    payment_details: '4242 4242 4242 4242', card_number: '4242424242424242', cvv: '123',
+    credential: 'private-credential',
   });
   const prepared = prepareJourneyEvents(journey, 'generation_started', payload, Date.UTC(2026, 7, 28));
   const eventPayload = prepared.events.at(-1)?.payload ?? {};
@@ -229,10 +234,43 @@ test('browser journey projection preserves the GitHub tuple without private or n
     'Reference_URL', 'authorization', 'api key', 'leading_url', 'protocol_relative', 'encoded_url', 'query_path',
     'fragment_path', 'raw_unc', 'control_url', 'tab_url', 'newline_path', 'encoded_unc', 'encoded_control_url',
     'c1_url', 'encoded_c1_url', 'nested', 'array', 'callable', 'symbol', 'infinity', 'nan', 'inherited_value',
+    'description', 'message', 'input', 'payment_details', 'card_number', 'cvv', 'credential',
   ]) {
     assert.equal(privateKey in eventPayload, false, `${privateKey} should not be projected`);
   }
   assert.equal(prepared.record.generationStartedCount, 1);
+});
+
+test('browser journey rejects unknown event names and unapproved UTM tuples', () => {
+  const unapprovedTouch = resolveAnalyticsTouch({
+    href: 'https://maxvideoai.com/mcp?utm_source=github&utm_medium=repository&utm_campaign=plugin&utm_content=private_brief',
+    referrer: '',
+    siteOrigin: 'https://maxvideoai.com',
+    landingRouteFamily: 'marketing',
+    landingSurface: '/mcp',
+    locale: 'en',
+  });
+  assert.deepEqual(unapprovedTouch, {
+    source: 'direct',
+    medium: 'none',
+    landingRouteFamily: 'marketing',
+    landingSurface: '/mcp',
+    locale: 'en',
+  });
+
+  const journey = createAnalyticsJourneyRecord({
+    journeyId: '7df6d42a-4b70-4eca-82fe-3a320c4a6eb9',
+    now: Date.UTC(2026, 7, 28),
+    touch: unapprovedTouch,
+  });
+  const prepared = prepareJourneyEvents(
+    journey,
+    'private_prompt_export',
+    { description: 'my unreleased prompt', credential: 'Bearer private-token' },
+    Date.UTC(2026, 7, 28),
+  );
+  assert.deepEqual(prepared.events, []);
+  assert.deepEqual(prepared.record, journey);
 });
 
 test('growth scorecard marks browser projection, MCP association, and downstream emitter coverage as unresolved', () => {

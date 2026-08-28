@@ -14,6 +14,7 @@ import {
   clearBrowserAnalyticsState,
   prepareBrowserAnalyticsEvents,
 } from '@/lib/analytics/journey-browser';
+import { isAllowedAnalyticsEvent } from '@/lib/analytics/journey';
 import { sendPreparedAnalyticsEvents } from '@/lib/analytics/ordered-events';
 import { getAnalyticsRouteContext } from '@/lib/analytics-route';
 
@@ -128,7 +129,7 @@ export function GA4EventBridge() {
     const handleAnalyticsEvent = (event: Event) => {
       const detail = (event as CustomEvent<AnalyticsClientEventDetail>).detail;
       const eventName = typeof detail?.event === 'string' ? detail.event : '';
-      if (!eventName) return;
+      if (!eventName || !isAllowedAnalyticsEvent(eventName)) return;
       const eventPayload = detail?.payload && typeof detail.payload === 'object' ? detail.payload : undefined;
       const payload = eventName === 'generation_failed' && eventPayload
         ? mergeRequestGenerationFailureContext({
@@ -213,7 +214,7 @@ export function GA4EventBridge() {
       if (!target) return;
 
       const eventName = target.dataset.analyticsEvent?.trim();
-      if (!eventName) return;
+      if (!eventName || !isAllowedAnalyticsEvent(eventName)) return;
 
       const payload: AnalyticsPayload = {
         route_family: routeContext.family,

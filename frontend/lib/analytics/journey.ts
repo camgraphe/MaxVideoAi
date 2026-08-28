@@ -29,6 +29,44 @@ const ORGANIC_DOMAINS: ReadonlyArray<{ source: string; domains: readonly string[
   },
 ];
 
+type ApprovedUtmTouch = {
+  source: string;
+  medium: string;
+  campaign?: string;
+  contents?: readonly string[];
+};
+
+const APPROVED_UTM_TOUCHES: readonly ApprovedUtmTouch[] = [
+  { source: 'google', medium: 'cpc' },
+  { source: 'google', medium: 'cpc', campaign: 'Launch', contents: ['Hero'] },
+  { source: 'newsletter', medium: 'email' },
+  {
+    source: 'github', medium: 'repository', campaign: 'maxvideoai_product',
+    contents: ['hero_try', 'models', 'plugin_callout'],
+  },
+  {
+    source: 'github', medium: 'repository', campaign: 'assistant_video_plugin',
+    contents: ['hero_connect', 'pricing', 'library'],
+  },
+  {
+    source: 'github', medium: 'release', campaign: 'assistant_video_plugin_0_3_0',
+    contents: ['release_connect', 'release_docs'],
+  },
+  {
+    source: 'github', medium: 'example', campaign: 'assistant_video_workflows',
+    contents: [
+      'compare_ai_video_models',
+      'price_a_video_project',
+      'claude_video_production',
+      'codex_video_production',
+    ],
+  },
+  {
+    source: 'linkedin', medium: 'social', campaign: 'seedance_2_5_launch',
+    contents: ['announcement', 'city', 'train'],
+  },
+];
+
 type AnalyticsTouchInput = {
   href: string;
   referrer: string;
@@ -83,13 +121,21 @@ export function resolveAnalyticsTouch(input: AnalyticsTouchInput): AnalyticsTouc
   if (source && medium) {
     const campaign = sanitizeAttributionFieldValue(pageUrl.searchParams.get('utm_campaign'));
     const content = sanitizeAttributionFieldValue(pageUrl.searchParams.get('utm_content'));
-    return {
-      source,
-      medium,
-      ...(campaign ? { campaign } : {}),
-      ...(content ? { content } : {}),
-      ...routeFields(input),
-    };
+    const approved = APPROVED_UTM_TOUCHES.some((touch) => (
+      touch.source === source
+      && touch.medium === medium
+      && touch.campaign === (campaign ?? undefined)
+      && (touch.contents ? Boolean(content && touch.contents.includes(content)) : !content)
+    ));
+    if (approved) {
+      return {
+        source,
+        medium,
+        ...(campaign ? { campaign } : {}),
+        ...(content ? { content } : {}),
+        ...routeFields(input),
+      };
+    }
   }
 
   const referrerUrl = safeUrl(input.referrer);
@@ -195,7 +241,77 @@ const JOURNEY_PAYLOAD_KEYS = [
   'funnel_stage',
 ] as const;
 
-const PRIVATE_ANALYTICS_KEY_PREFIX = /^(?:prompt|media|asset|reference|token|authorization|auth|account|user|uid|customer|profile|email|mail|referrer|url|href|secret|password|apikey)/;
+const CLICK_PAYLOAD_KEYS = [
+  'route_family', 'cta_name', 'cta_location', 'target_family', 'tool_name', 'tool_surface',
+] as const;
+const AUTH_PAYLOAD_KEYS = [
+  'route_family', 'auth_surface', 'method', 'marketing_opt_in', 'email_confirmation_required',
+] as const;
+const TOOL_PAYLOAD_KEYS = [
+  'route_family', 'tool_name', 'tool_surface', 'logged_in', 'action', 'source_mode', 'output_mode',
+  'quality_mode', 'format_mode', 'generate_count', 'engine', 'generate_best_angles', 'rotation', 'tilt', 'zoom',
+] as const;
+const GENERATION_CONTEXT_PAYLOAD_KEYS = [
+  'route_family', 'local_key', 'job_id', 'batch_id', 'group_id', 'iteration_index', 'iteration_count',
+  'batch_size', 'engine', 'mode', 'duration_sec', 'payment_mode', 'has_audio', 'price_cents', 'amount',
+  'currency', 'route', 'payment_status', 'generation_sequence', 'is_first_generation',
+] as const;
+const TOPUP_PAYLOAD_KEYS = [
+  'route_family', 'payment_provider', 'payment_flow', 'charge_currency', 'wallet_amount_usd',
+  'wallet_amount_cents', 'credits_amount', 'topup_amount_usd', 'topup_amount_cents', 'topup_tier_id',
+  'topup_tier_label', 'settlement_currency', 'settlement_amount_minor', 'value', 'currency', 'failure_category',
+] as const;
+
+const ANALYTICS_EVENT_PAYLOAD_KEYS = {
+  page_view: [
+    'route_family', 'page_location', 'page_path', 'page_title', 'tool_name', 'tool_surface', 'workspace_section',
+  ],
+  tool_view: ['route_family', 'tool_name', 'tool_surface', 'logged_in'],
+  app_open: ['route_family', 'app_section'],
+  tool_cta_click: CLICK_PAYLOAD_KEYS,
+  cta_click: CLICK_PAYLOAD_KEYS,
+  hero_start_render_click: CLICK_PAYLOAD_KEYS,
+  hero_examples_click: CLICK_PAYLOAD_KEYS,
+  hero_compare_click: CLICK_PAYLOAD_KEYS,
+  model_card_click: CLICK_PAYLOAD_KEYS,
+  example_category_click: CLICK_PAYLOAD_KEYS,
+  comparison_card_click: CLICK_PAYLOAD_KEYS,
+  mcp_internal_link_click: CLICK_PAYLOAD_KEYS,
+  shot_type_card_click: CLICK_PAYLOAD_KEYS,
+  tool_card_click: CLICK_PAYLOAD_KEYS,
+  pricing_cta_click: CLICK_PAYLOAD_KEYS,
+  mcp_landing_cta_clicked: ['route_family', 'action', 'client', 'destination', 'locale'],
+  mcp_endpoint_copy_clicked: ['route_family', 'action', 'client', 'destination', 'locale'],
+  sign_up_started: AUTH_PAYLOAD_KEYS,
+  sign_up_completed: AUTH_PAYLOAD_KEYS,
+  login_completed: AUTH_PAYLOAD_KEYS,
+  tool_start: TOOL_PAYLOAD_KEYS,
+  tool_complete: [
+    ...TOOL_PAYLOAD_KEYS,
+    'result_count', 'latency_ms', 'estimated_cost_usd', 'actual_cost_usd', 'estimated_credits',
+    'actual_credits', 'output_count',
+  ],
+  group_render_initiated: ['route_family', 'batchid', 'iterations', 'engine', 'total_cents', 'currency'],
+  generation_started: GENERATION_CONTEXT_PAYLOAD_KEYS,
+  generation_completed: [
+    ...GENERATION_CONTEXT_PAYLOAD_KEYS, 'final_price_cents', 'render_count',
+  ],
+  generation_failed: [...GENERATION_CONTEXT_PAYLOAD_KEYS, 'error_code', 'failure_category'],
+  topup_started: TOPUP_PAYLOAD_KEYS,
+  topup_checkout_opened: TOPUP_PAYLOAD_KEYS,
+  topup_completed: TOPUP_PAYLOAD_KEYS,
+  topup_cancelled: TOPUP_PAYLOAD_KEYS,
+  topup_failed: TOPUP_PAYLOAD_KEYS,
+  tile_action: ['route_family', 'action', 'batchid', 'version'],
+  compare_used: ['route_family', 'batchid'],
+} as const satisfies Record<string, readonly string[]>;
+
+export type AllowedAnalyticsEvent = keyof typeof ANALYTICS_EVENT_PAYLOAD_KEYS;
+
+export function isAllowedAnalyticsEvent(event: string): event is AllowedAnalyticsEvent {
+  return Object.hasOwn(ANALYTICS_EVENT_PAYLOAD_KEYS, event);
+}
+
 const URL_SCHEME_PATTERN = /^[a-z][a-z0-9+.-]*:/i;
 const MAX_PERCENT_DECODE_PASSES = 3;
 const CONTROL_OR_BACKSLASH_PATTERN = /[\u0000-\u001F\u007F-\u009F\\]/;
@@ -220,8 +336,6 @@ function normalizedAnalyticsPayloadKey(key: string): string | null {
   const decoded = decodePercentEncoded(key);
   if (decoded === null) return null;
   const normalized = decoded.normalize('NFKC').toLowerCase();
-  const compact = normalized.replace(/[^a-z0-9]/g, '');
-  if (!compact || PRIVATE_ANALYTICS_KEY_PREFIX.test(compact)) return null;
   const gaKey = normalized.replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
   return gaKey && gaKey.length <= 40 ? gaKey : null;
 }
@@ -255,14 +369,18 @@ function analyticsPrimitive(value: unknown): string | number | boolean | undefin
   return typeof value === 'boolean' ? value : undefined;
 }
 
-function projectAnalyticsPayload(payload: Record<string, unknown>): Record<string, string | number | boolean> {
+function projectAnalyticsPayload(
+  event: AllowedAnalyticsEvent,
+  payload: Record<string, unknown>,
+): Record<string, string | number | boolean> {
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return {};
   const projected: Record<string, string | number | boolean> = {};
+  const allowedKeys = new Set<string>(ANALYTICS_EVENT_PAYLOAD_KEYS[event]);
   try {
     for (const key of Object.keys(payload)) {
       const normalizedKey = normalizedAnalyticsPayloadKey(key);
       const descriptor = Object.getOwnPropertyDescriptor(payload, key);
-      if (!normalizedKey || !descriptor || !Object.hasOwn(descriptor, 'value')) continue;
+      if (!normalizedKey || !allowedKeys.has(normalizedKey) || !descriptor || !Object.hasOwn(descriptor, 'value')) continue;
       const value = analyticsPrimitive(descriptor.value);
       if (value !== undefined) projected[normalizedKey] = value;
     }
@@ -292,10 +410,11 @@ function journeyPayload(record: AnalyticsJourneyRecordV1, now: number): Record<s
 }
 
 function mergeJourneyPayload(
+  event: AllowedAnalyticsEvent,
   payload: Record<string, unknown>,
   owned: Record<string, unknown>,
 ): Record<string, unknown> {
-  const merged = projectAnalyticsPayload(payload);
+  const merged = projectAnalyticsPayload(event, payload);
   for (const key of JOURNEY_PAYLOAD_KEYS) delete merged[key];
   return { ...merged, ...owned };
 }
@@ -306,6 +425,8 @@ export function prepareJourneyEvents(
   payload: Record<string, unknown> = {},
   now = Date.now(),
 ): { record: AnalyticsJourneyRecordV1; events: PreparedAnalyticsEvent[] } {
+  if (!isAllowedAnalyticsEvent(event)) return { record, events: [] };
+
   let nextRecord = record;
   const eventFields: Record<string, unknown> = {};
 
@@ -334,7 +455,7 @@ export function prepareJourneyEvents(
   const funnelStage = FUNNEL_STAGES[event];
   events.push({
     event,
-    payload: mergeJourneyPayload(payload, {
+    payload: mergeJourneyPayload(event, payload, {
       ...eventFields,
       ...common,
       ...(funnelStage ? { funnel_stage: funnelStage } : {}),

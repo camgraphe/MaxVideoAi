@@ -48,8 +48,8 @@ Create a fine-grained GitHub token limited to the single destination repository,
 - the implicit read-only metadata permission.
 
 Do not grant organization administration, workflows, issues, discussions, or
-access to other repositories. Store the token in the private source repository as
-the Actions secret `MAXVIDEOAI_PLUGIN_REPO_TOKEN`. Never place it in a local env
+access to other repositories. Store the token in the source repository's Actions
+settings as the secret `MAXVIDEOAI_PLUGIN_REPO_TOKEN`. Never place it in a local env
 file, workflow argument, release note, artifact, or public repository.
 
 The workflow uses the `maxvideoai-plugin-publication` GitHub Environment. Configure

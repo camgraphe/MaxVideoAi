@@ -174,6 +174,42 @@ test('rejects non-descriptive image alt text', () => {
   assert.match(result.stderr, /descriptive alt text.*\(empty\)/i);
 });
 
+test('rejects a multiline HTML image without descriptive alt text', () => {
+  const directory = mkdtempSync(path.join(tmpdir(), 'maxvideoai-content-'));
+  const fixturePath = path.join(directory, 'multiline-image.md');
+
+  try {
+    writeFileSync(
+      fixturePath,
+      [
+        '# MaxVideoAI',
+        '',
+        '<img',
+        '  src="proof.png"',
+        '  alt="screenshot"',
+        '>',
+        '',
+        '```html',
+        '<img',
+        '  src="example.png"',
+        '>',
+        '```',
+      ].join('\n'),
+      'utf8',
+    );
+    const result = spawnSync(process.execPath, [checkerPath, fixturePath], {
+      cwd: repositoryRoot,
+      encoding: 'utf8',
+    });
+
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /multiline-image\.md:3: every image needs descriptive alt text.*screenshot/i);
+    assert.doesNotMatch(result.stderr, /multiline-image\.md:9:/i);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 test('does not treat fenced code identifiers as commercial superlatives', () => {
   const result = checkFixture('compliant.md');
 

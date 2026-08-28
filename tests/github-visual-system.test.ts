@@ -20,7 +20,7 @@ const manifest = JSON.parse(readFileSync('docs/marketing/github-asset-manifest.j
 const outputDimensions = new Map([
   ['plugins/maxvideoai/assets/demos/readme-proof-hero.webp', [1600, 900]],
   ['plugins/maxvideoai/assets/demos/brief-to-video-workflow.webp', [1600, 900]],
-  ['plugins/maxvideoai/assets/demos/model-choice-and-budget.webp', [1600, 900]],
+  ['plugins/maxvideoai/assets/demos/model-choice-and-budget.webp', [800, 450]],
   ['plugins/maxvideoai/assets/demos/library-continuity.webp', [1600, 900]],
   ['plugins/maxvideoai/assets/social/github-social-preview.png', [1280, 640]],
   ['plugins/maxvideoai/assets/social/release-0.3.0.png', [1200, 630]],
@@ -76,6 +76,8 @@ test('composition code uses only the accepted proof sources and makes no native 
   assert.doesNotMatch(source, /AI video production inside\s+ChatGPT/i);
   assert.match(source, /AI video production\\nfor agent workflows/);
   assert.match(source, /withoutEnlargement: true/);
+  assert.match(source, /fontfile:/, 'text composition must pin a repository-resolved font file');
+  assert.doesNotMatch(source, /font_family="Helvetica"/, 'system Helvetica would make recomposition platform-dependent');
 
   const socialRecords = manifest.assets.filter((asset) => asset.path.startsWith('plugins/maxvideoai/assets/social/'));
   for (const record of socialRecords) {

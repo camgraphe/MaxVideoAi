@@ -280,7 +280,7 @@ test('scheme-less UTM paths are absent from stored journeys and prepared payload
   }
 });
 
-test('plain controlled attribution values remain stored and emitted', () => {
+test('unapproved semantic attribution values are not stored or emitted', () => {
   const url = new URL('https://maxvideoai.com/pricing');
   url.searchParams.set('utm_source', 'newsletter');
   url.searchParams.set('utm_medium', 'email');
@@ -288,8 +288,9 @@ test('plain controlled attribution values remain stored and emitted', () => {
 
   withBrowser({ consent: 'granted', href: url.href }, ({ localStorage }) => {
     const events = prepareBrowserAnalyticsEvents('sign_up_started');
-    assert.equal(readAnalyticsJourney()?.firstTouch.campaign, 'partner.com');
-    assert.match(localStorage.getItem(ANALYTICS_JOURNEY_STORAGE_KEY) ?? '', /partner\.com/);
-    assert.match(JSON.stringify(events), /partner\.com/);
+    assert.equal(readAnalyticsJourney()?.firstTouch.source, 'direct');
+    assert.equal(readAnalyticsJourney()?.firstTouch.campaign, undefined);
+    assert.doesNotMatch(localStorage.getItem(ANALYTICS_JOURNEY_STORAGE_KEY) ?? '', /partner\.com/);
+    assert.doesNotMatch(JSON.stringify(events), /partner\.com/);
   });
 });
