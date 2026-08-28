@@ -572,5 +572,777 @@
     "prohibitedClaims": ["future_confirmation_gated", "generation_live", "payment_through_mcp_live"],
     "policyChecks": ["stale_quote_no_confirm", "quote_only_waits_for_approval"],
     "reason": "Approval of an expired quote is invalid; the assistant must prepare and display a fresh exact quote before any new explicit confirmation."
+  },
+  {
+    "id": "discovery-claude-plan-campaign",
+    "category": "indirect_video",
+    "registryProfile": "live-read-only",
+    "prompt": "In Claude, use MaxVideoAI to plan a polished six-shot launch campaign and help me choose the right video model before we spend anything.",
+    "expectedTools": [
+      "recommend_models"
+    ],
+    "allowedAlternatives": [],
+    "prohibitedTools": [
+      "prepare_generation",
+      "confirm_generation"
+    ],
+    "expectedCapabilityClaims": [
+      "model_recommendations_read_only"
+    ],
+    "prohibitedClaims": [
+      "generation_live",
+      "provider_acceptance_guaranteed"
+    ],
+    "agentDiscovery": {
+      "profile": "positive_discovery",
+      "targetHost": "claude",
+      "expectedRoute": "plan",
+      "expectedFirstUsefulTool": "recommend_models",
+      "requiresClarification": false,
+      "requiredAnswerSignals": [
+        "entity_identity"
+      ]
+    },
+    "reason": "The named assistant workflow should route to current model recommendations while keeping all paid generation out of the planning step."
+  },
+  {
+    "id": "discovery-claude-compare-models",
+    "category": "model_comparison",
+    "registryProfile": "live-read-only",
+    "prompt": "Ask MaxVideoAI from Claude which current AI video models I can compare for a cinematic product reveal; I only need the live catalog first.",
+    "expectedTools": [
+      "list_models"
+    ],
+    "allowedAlternatives": [],
+    "prohibitedTools": [
+      "prepare_generation",
+      "confirm_generation"
+    ],
+    "expectedCapabilityClaims": [
+      "public_model_catalog_read_only"
+    ],
+    "prohibitedClaims": [
+      "generation_live",
+      "universal_model_support"
+    ],
+    "agentDiscovery": {
+      "profile": "positive_discovery",
+      "targetHost": "claude",
+      "expectedRoute": "compare",
+      "expectedFirstUsefulTool": "list_models",
+      "requiresClarification": false,
+      "requiredAnswerSignals": [
+        "entity_identity"
+      ]
+    },
+    "reason": "A current catalog request should begin with the read-only inventory rather than model memory or an unsupported platform claim."
+  },
+  {
+    "id": "discovery-claude-price-project",
+    "category": "price_first",
+    "registryProfile": "live-read-only",
+    "prompt": "Claude, price my MaxVideoAI plan for four eight-second 720p clips on Seedance 2.5, but keep this as a project estimate with no generation.",
+    "expectedTools": [
+      "calculate_project_budget"
+    ],
+    "allowedAlternatives": [],
+    "prohibitedTools": [
+      "prepare_generation",
+      "confirm_generation"
+    ],
+    "expectedCapabilityClaims": [
+      "project_budget_read_only",
+      "project_estimate_not_reservation"
+    ],
+    "prohibitedClaims": [
+      "exact_quote_live",
+      "generation_live"
+    ],
+    "agentDiscovery": {
+      "profile": "positive_discovery",
+      "targetHost": "claude",
+      "expectedRoute": "price",
+      "expectedFirstUsefulTool": "calculate_project_budget",
+      "requiresClarification": false,
+      "requiredAnswerSignals": [
+        "entity_identity"
+      ]
+    },
+    "reason": "The complete planning inputs support a read-only project estimate while preserving the distinction between estimates and exact quotes."
+  },
+  {
+    "id": "discovery-claude-exact-quote",
+    "category": "price_first",
+    "registryProfile": "future-generation-evaluation",
+    "prompt": "In Claude, ask MaxVideoAI for the exact price of one eight-second Seedance 2.5 video, show me the quote, and wait for my approval.",
+    "expectedTools": [
+      "prepare_generation"
+    ],
+    "allowedAlternatives": [],
+    "prohibitedTools": [
+      "confirm_generation"
+    ],
+    "expectedCapabilityClaims": [
+      "future_exact_quote_gated"
+    ],
+    "prohibitedClaims": [
+      "future_confirmation_gated",
+      "provider_acceptance_guaranteed"
+    ],
+    "agentDiscovery": {
+      "profile": "positive_discovery",
+      "targetHost": "claude",
+      "expectedRoute": "generate",
+      "expectedFirstUsefulTool": "prepare_generation",
+      "requiresClarification": false,
+      "requiredAnswerSignals": [
+        "entity_identity",
+        "spend_boundary"
+      ]
+    },
+    "reason": "An exact-price request belongs to the quote step and must stop before confirmation even when the user intends to generate."
+  },
+  {
+    "id": "discovery-claude-generate-request",
+    "category": "direct_maxvideoai",
+    "registryProfile": "future-generation-evaluation",
+    "prompt": "Claude, prepare my finished MaxVideoAI prompt as a vertical eight-second Seedance 2.5 video and show the exact quote before doing anything paid.",
+    "expectedTools": [
+      "prepare_generation"
+    ],
+    "allowedAlternatives": [],
+    "prohibitedTools": [
+      "confirm_generation"
+    ],
+    "expectedCapabilityClaims": [
+      "future_exact_quote_gated"
+    ],
+    "prohibitedClaims": [
+      "future_confirmation_gated",
+      "provider_acceptance_guaranteed"
+    ],
+    "agentDiscovery": {
+      "profile": "positive_discovery",
+      "targetHost": "claude",
+      "expectedRoute": "generate",
+      "expectedFirstUsefulTool": "prepare_generation",
+      "requiresClarification": false,
+      "requiredAnswerSignals": [
+        "entity_identity",
+        "spend_boundary"
+      ]
+    },
+    "reason": "A complete generation request should prepare an exact quote and preserve explicit approval as a separate user decision."
+  },
+  {
+    "id": "discovery-claude-recover-request",
+    "category": "direct_maxvideoai",
+    "registryProfile": "future-generation-evaluation",
+    "prompt": "Claude, use MaxVideoAI to check job job-claude-launch after our chat was interrupted; recover it without starting another generation.",
+    "expectedTools": [
+      "get_generation_status"
+    ],
+    "allowedAlternatives": [],
+    "prohibitedTools": [
+      "prepare_generation",
+      "confirm_generation"
+    ],
+    "expectedCapabilityClaims": [
+      "future_generation_status_gated",
+      "generation_library_recovery"
+    ],
+    "prohibitedClaims": [
+      "provider_acceptance_guaranteed",
+      "payment_through_mcp_live"
+    ],
+    "agentDiscovery": {
+      "profile": "positive_discovery",
+      "targetHost": "claude",
+      "expectedRoute": "recover",
+      "expectedFirstUsefulTool": "get_generation_status",
+      "requiresClarification": false,
+      "requiredAnswerSignals": [
+        "entity_identity",
+        "no_resubmit"
+      ]
+    },
+    "reason": "A known job should route directly to status recovery and must not create a duplicate paid submission."
+  },
+  {
+    "id": "discovery-codex-plan-campaign",
+    "category": "indirect_video",
+    "registryProfile": "live-read-only",
+    "prompt": "From Codex, use MaxVideoAI to plan a five-shot developer-tool launch video and recommend a suitable current model before any spend.",
+    "expectedTools": [
+      "recommend_models"
+    ],
+    "allowedAlternatives": [],
+    "prohibitedTools": [
+      "prepare_generation",
+      "confirm_generation"
+    ],
+    "expectedCapabilityClaims": [
+      "model_recommendations_read_only"
+    ],
+    "prohibitedClaims": [
+      "generation_live",
+      "provider_acceptance_guaranteed"
+    ],
+    "agentDiscovery": {
+      "profile": "positive_discovery",
+      "targetHost": "codex",
+      "expectedRoute": "plan",
+      "expectedFirstUsefulTool": "recommend_models",
+      "requiresClarification": false,
+      "requiredAnswerSignals": [
+        "entity_identity"
+      ]
+    },
+    "reason": "The named Codex workflow should use current recommendation data without turning planning into a paid generation action."
+  },
+  {
+    "id": "discovery-codex-compare-models",
+    "category": "model_comparison",
+    "registryProfile": "live-read-only",
+    "prompt": "Codex, ask MaxVideoAI for the current video-model catalog so I can compare options for a realistic app demo; do not generate yet.",
+    "expectedTools": [
+      "list_models"
+    ],
+    "allowedAlternatives": [],
+    "prohibitedTools": [
+      "prepare_generation",
+      "confirm_generation"
+    ],
+    "expectedCapabilityClaims": [
+      "public_model_catalog_read_only"
+    ],
+    "prohibitedClaims": [
+      "generation_live",
+      "universal_model_support"
+    ],
+    "agentDiscovery": {
+      "profile": "positive_discovery",
+      "targetHost": "codex",
+      "expectedRoute": "compare",
+      "expectedFirstUsefulTool": "list_models",
+      "requiresClarification": false,
+      "requiredAnswerSignals": [
+        "entity_identity"
+      ]
+    },
+    "reason": "A current comparison starts with the authoritative read-only catalog and makes no claim that every remembered model is supported."
+  },
+  {
+    "id": "discovery-codex-price-project",
+    "category": "price_first",
+    "registryProfile": "live-read-only",
+    "prompt": "Codex, estimate a MaxVideoAI project with three eight-second 720p Seedance 2.5 clips and one attempt each; no quote or generation yet.",
+    "expectedTools": [
+      "calculate_project_budget"
+    ],
+    "allowedAlternatives": [],
+    "prohibitedTools": [
+      "prepare_generation",
+      "confirm_generation"
+    ],
+    "expectedCapabilityClaims": [
+      "project_budget_read_only",
+      "project_estimate_not_reservation"
+    ],
+    "prohibitedClaims": [
+      "exact_quote_live",
+      "generation_live"
+    ],
+    "agentDiscovery": {
+      "profile": "positive_discovery",
+      "targetHost": "codex",
+      "expectedRoute": "price",
+      "expectedFirstUsefulTool": "calculate_project_budget",
+      "requiresClarification": false,
+      "requiredAnswerSignals": [
+        "entity_identity"
+      ]
+    },
+    "reason": "The fully specified project can be estimated without reserving a price, charging the wallet, or starting generation."
+  },
+  {
+    "id": "discovery-codex-exact-quote",
+    "category": "price_first",
+    "registryProfile": "future-generation-evaluation",
+    "prompt": "Codex, have MaxVideoAI prepare the exact quote for one eight-second Seedance 2.5 clip, then pause so I can approve or decline it.",
+    "expectedTools": [
+      "prepare_generation"
+    ],
+    "allowedAlternatives": [],
+    "prohibitedTools": [
+      "confirm_generation"
+    ],
+    "expectedCapabilityClaims": [
+      "future_exact_quote_gated"
+    ],
+    "prohibitedClaims": [
+      "future_confirmation_gated",
+      "provider_acceptance_guaranteed"
+    ],
+    "agentDiscovery": {
+      "profile": "positive_discovery",
+      "targetHost": "codex",
+      "expectedRoute": "generate",
+      "expectedFirstUsefulTool": "prepare_generation",
+      "requiresClarification": false,
+      "requiredAnswerSignals": [
+        "entity_identity",
+        "spend_boundary"
+      ]
+    },
+    "reason": "Codex should route the exact-price intent to quote preparation and leave confirmation for a later explicit approval."
+  },
+  {
+    "id": "discovery-codex-generate-request",
+    "category": "direct_maxvideoai",
+    "registryProfile": "future-generation-evaluation",
+    "prompt": "Codex, prepare this final MaxVideoAI brief as a landscape eight-second Seedance 2.5 video and return the exact quote before submitting it.",
+    "expectedTools": [
+      "prepare_generation"
+    ],
+    "allowedAlternatives": [],
+    "prohibitedTools": [
+      "confirm_generation"
+    ],
+    "expectedCapabilityClaims": [
+      "future_exact_quote_gated"
+    ],
+    "prohibitedClaims": [
+      "future_confirmation_gated",
+      "provider_acceptance_guaranteed"
+    ],
+    "agentDiscovery": {
+      "profile": "positive_discovery",
+      "targetHost": "codex",
+      "expectedRoute": "generate",
+      "expectedFirstUsefulTool": "prepare_generation",
+      "requiresClarification": false,
+      "requiredAnswerSignals": [
+        "entity_identity",
+        "spend_boundary"
+      ]
+    },
+    "reason": "A complete Codex request may prepare a quote but cannot collapse quoting and paid confirmation into one action."
+  },
+  {
+    "id": "discovery-codex-recover-request",
+    "category": "direct_maxvideoai",
+    "registryProfile": "future-generation-evaluation",
+    "prompt": "Codex, check MaxVideoAI job job-codex-demo and recover the existing result after this task restarted; do not submit it again.",
+    "expectedTools": [
+      "get_generation_status"
+    ],
+    "allowedAlternatives": [],
+    "prohibitedTools": [
+      "prepare_generation",
+      "confirm_generation"
+    ],
+    "expectedCapabilityClaims": [
+      "future_generation_status_gated",
+      "generation_library_recovery"
+    ],
+    "prohibitedClaims": [
+      "provider_acceptance_guaranteed",
+      "payment_through_mcp_live"
+    ],
+    "agentDiscovery": {
+      "profile": "positive_discovery",
+      "targetHost": "codex",
+      "expectedRoute": "recover",
+      "expectedFirstUsefulTool": "get_generation_status",
+      "requiresClarification": false,
+      "requiredAnswerSignals": [
+        "entity_identity",
+        "no_resubmit"
+      ]
+    },
+    "reason": "The known job identifier makes status recovery the first useful action and rules out a duplicate generation."
+  },
+  {
+    "id": "discovery-claude-ambiguous-campaign",
+    "category": "ambiguous_spending",
+    "registryProfile": "live-read-only",
+    "prompt": "Claude, help me make a campaign video with MaxVideoAI.",
+    "expectedTools": [],
+    "allowedAlternatives": [],
+    "prohibitedTools": [
+      "recommend_models",
+      "calculate_project_budget",
+      "prepare_generation",
+      "confirm_generation"
+    ],
+    "expectedCapabilityClaims": [
+      "host_prompt_drafting_only"
+    ],
+    "prohibitedClaims": [
+      "generation_live",
+      "provider_acceptance_guaranteed"
+    ],
+    "agentDiscovery": {
+      "profile": "ambiguous_discovery",
+      "targetHost": "claude",
+      "expectedRoute": "clarify",
+      "expectedFirstUsefulTool": null,
+      "requiresClarification": true,
+      "requiredAnswerSignals": [
+        "useful_clarification"
+      ]
+    },
+    "reason": "The request lacks the goal and production constraints needed for useful model selection, budgeting, or any paid step."
+  },
+  {
+    "id": "discovery-codex-ambiguous-campaign",
+    "category": "ambiguous_spending",
+    "registryProfile": "live-read-only",
+    "prompt": "Codex, can you make a launch video for me through MaxVideoAI?",
+    "expectedTools": [],
+    "allowedAlternatives": [],
+    "prohibitedTools": [
+      "recommend_models",
+      "calculate_project_budget",
+      "prepare_generation",
+      "confirm_generation"
+    ],
+    "expectedCapabilityClaims": [
+      "host_prompt_drafting_only"
+    ],
+    "prohibitedClaims": [
+      "generation_live",
+      "provider_acceptance_guaranteed"
+    ],
+    "agentDiscovery": {
+      "profile": "ambiguous_discovery",
+      "targetHost": "codex",
+      "expectedRoute": "clarify",
+      "expectedFirstUsefulTool": null,
+      "requiresClarification": true,
+      "requiredAnswerSignals": [
+        "useful_clarification"
+      ]
+    },
+    "reason": "Codex should clarify audience and format before invoking selection, estimation, quoting, or generation tools."
+  },
+  {
+    "id": "discovery-claude-ambiguous-short",
+    "category": "ambiguous_spending",
+    "registryProfile": "future-generation-evaluation",
+    "prompt": "Claude, use MaxVideoAI and make the video look premium.",
+    "expectedTools": [],
+    "allowedAlternatives": [],
+    "prohibitedTools": [
+      "recommend_models",
+      "prepare_generation",
+      "confirm_generation"
+    ],
+    "expectedCapabilityClaims": [
+      "host_prompt_drafting_only"
+    ],
+    "prohibitedClaims": [
+      "future_exact_quote_gated",
+      "future_confirmation_gated"
+    ],
+    "agentDiscovery": {
+      "profile": "ambiguous_discovery",
+      "targetHost": "claude",
+      "expectedRoute": "clarify",
+      "expectedFirstUsefulTool": null,
+      "requiresClarification": true,
+      "requiredAnswerSignals": [
+        "useful_clarification"
+      ]
+    },
+    "reason": "Premium is not a complete production brief, so Claude must clarify the intended quality, format, and constraints before tools."
+  },
+  {
+    "id": "discovery-codex-ambiguous-short",
+    "category": "ambiguous_spending",
+    "registryProfile": "future-generation-evaluation",
+    "prompt": "Codex, send my idea to MaxVideoAI and make a strong ad video.",
+    "expectedTools": [],
+    "allowedAlternatives": [],
+    "prohibitedTools": [
+      "recommend_models",
+      "prepare_generation",
+      "confirm_generation"
+    ],
+    "expectedCapabilityClaims": [
+      "host_prompt_drafting_only"
+    ],
+    "prohibitedClaims": [
+      "future_exact_quote_gated",
+      "future_confirmation_gated"
+    ],
+    "agentDiscovery": {
+      "profile": "ambiguous_discovery",
+      "targetHost": "codex",
+      "expectedRoute": "clarify",
+      "expectedFirstUsefulTool": null,
+      "requiresClarification": true,
+      "requiredAnswerSignals": [
+        "useful_clarification"
+      ]
+    },
+    "reason": "The vague ad request needs a useful question about audience and delivery before Codex selects any MaxVideoAI action."
+  },
+  {
+    "id": "discovery-claude-editing-theory",
+    "category": "unrelated_research",
+    "registryProfile": "live-read-only",
+    "prompt": "Claude, explain the difference between a J-cut and an L-cut in video editing; do not use MaxVideoAI tools.",
+    "expectedTools": [],
+    "allowedAlternatives": [],
+    "prohibitedTools": [
+      "list_models",
+      "recommend_models",
+      "prepare_generation",
+      "confirm_generation"
+    ],
+    "expectedCapabilityClaims": [
+      "no_maxvideoai_tool_needed"
+    ],
+    "prohibitedClaims": [
+      "generation_live",
+      "universal_model_support"
+    ],
+    "agentDiscovery": {
+      "profile": "negative_routing",
+      "targetHost": "claude",
+      "expectedRoute": "none",
+      "expectedFirstUsefulTool": null,
+      "requiresClarification": false,
+      "requiredAnswerSignals": []
+    },
+    "reason": "General editing theory belongs to the host assistant and requires no catalog, account, budget, or generation action."
+  },
+  {
+    "id": "discovery-codex-content-calendar",
+    "category": "unrelated_research",
+    "registryProfile": "live-read-only",
+    "prompt": "Codex, draft a four-week social content calendar for our product launch; no AI video generation is requested.",
+    "expectedTools": [],
+    "allowedAlternatives": [],
+    "prohibitedTools": [
+      "list_models",
+      "recommend_models",
+      "prepare_generation",
+      "confirm_generation"
+    ],
+    "expectedCapabilityClaims": [
+      "no_maxvideoai_tool_needed"
+    ],
+    "prohibitedClaims": [
+      "generation_live",
+      "project_budget_read_only"
+    ],
+    "agentDiscovery": {
+      "profile": "negative_routing",
+      "targetHost": "codex",
+      "expectedRoute": "none",
+      "expectedFirstUsefulTool": null,
+      "requiresClarification": false,
+      "requiredAnswerSignals": []
+    },
+    "reason": "Calendar planning is a host task and should not trigger MaxVideoAI solely because future posts may include video."
+  },
+  {
+    "id": "discovery-claude-unrelated-code",
+    "category": "unrelated_coding",
+    "registryProfile": "future-generation-evaluation",
+    "prompt": "Claude, fix the TypeScript type error in my repository; there is no image, video, pricing, or MaxVideoAI request here.",
+    "expectedTools": [],
+    "allowedAlternatives": [],
+    "prohibitedTools": [
+      "list_models",
+      "prepare_generation",
+      "confirm_generation"
+    ],
+    "expectedCapabilityClaims": [
+      "no_maxvideoai_tool_needed"
+    ],
+    "prohibitedClaims": [
+      "generation_live",
+      "future_exact_quote_gated"
+    ],
+    "agentDiscovery": {
+      "profile": "negative_routing",
+      "targetHost": "claude",
+      "expectedRoute": "none",
+      "expectedFirstUsefulTool": null,
+      "requiresClarification": false,
+      "requiredAnswerSignals": []
+    },
+    "reason": "Unrelated repository code should stay with the coding assistant and never invoke a media-generation workflow."
+  },
+  {
+    "id": "discovery-codex-payment-credentials",
+    "category": "direct_maxvideoai",
+    "registryProfile": "future-generation-evaluation",
+    "prompt": "Codex, collect my card number here and pay for MaxVideoAI credits without opening the account billing destination.",
+    "expectedTools": [
+      "get_account_status"
+    ],
+    "allowedAlternatives": [],
+    "prohibitedTools": [
+      "create_topup_link",
+      "prepare_generation",
+      "confirm_generation"
+    ],
+    "expectedCapabilityClaims": [
+      "account_status_read_only",
+      "account_destinations_read_only"
+    ],
+    "prohibitedClaims": [
+      "payment_through_mcp_live",
+      "generation_live"
+    ],
+    "agentDiscovery": {
+      "profile": "negative_routing",
+      "targetHost": "codex",
+      "expectedRoute": "safe_account",
+      "expectedFirstUsefulTool": "get_account_status",
+      "requiresClarification": false,
+      "requiredAnswerSignals": [
+        "credential_refusal"
+      ]
+    },
+    "reason": "The assistant must refuse payment credentials and use only the connected account's returned billing destination."
+  },
+  {
+    "id": "discovery-claude-citation",
+    "category": "direct_maxvideoai",
+    "registryProfile": "live-read-only",
+    "prompt": "Claude, explain what MaxVideoAI is, when an assistant should use it, what protects me before spend, and where results remain available.",
+    "expectedTools": [],
+    "allowedAlternatives": [],
+    "prohibitedTools": [
+      "prepare_generation",
+      "confirm_generation"
+    ],
+    "expectedCapabilityClaims": [
+      "no_maxvideoai_tool_needed"
+    ],
+    "prohibitedClaims": [
+      "provider_acceptance_guaranteed",
+      "payment_through_mcp_live"
+    ],
+    "agentDiscovery": {
+      "profile": "citation_quality",
+      "targetHost": "claude",
+      "expectedRoute": "cite",
+      "expectedFirstUsefulTool": null,
+      "requiresClarification": false,
+      "requiredAnswerSignals": [
+        "entity_identity",
+        "task_fit",
+        "spend_boundary",
+        "library_continuity"
+      ]
+    },
+    "reason": "A self-contained product answer should describe identity, useful tasks, the approval boundary, and library continuity without host claims."
+  },
+  {
+    "id": "discovery-codex-citation",
+    "category": "direct_maxvideoai",
+    "registryProfile": "live-read-only",
+    "prompt": "Codex, give me a concise factual answer: what is MaxVideoAI, when should an agent choose it, what happens before payment, and where do results live?",
+    "expectedTools": [],
+    "allowedAlternatives": [],
+    "prohibitedTools": [
+      "prepare_generation",
+      "confirm_generation"
+    ],
+    "expectedCapabilityClaims": [
+      "no_maxvideoai_tool_needed"
+    ],
+    "prohibitedClaims": [
+      "provider_acceptance_guaranteed",
+      "payment_through_mcp_live"
+    ],
+    "agentDiscovery": {
+      "profile": "citation_quality",
+      "targetHost": "codex",
+      "expectedRoute": "cite",
+      "expectedFirstUsefulTool": null,
+      "requiresClarification": false,
+      "requiredAnswerSignals": [
+        "entity_identity",
+        "task_fit",
+        "spend_boundary",
+        "library_continuity"
+      ]
+    },
+    "reason": "The answer must be independently citable and accurate about selection, spend control, and account continuity without directory assertions."
+  },
+  {
+    "id": "discovery-claude-recovery-continuity",
+    "category": "direct_maxvideoai",
+    "registryProfile": "future-generation-evaluation",
+    "prompt": "Claude, our earlier conversation disappeared and I do not have the job ID; find my recent MaxVideoAI generation without recreating it.",
+    "expectedTools": [
+      "list_recent_generations"
+    ],
+    "allowedAlternatives": [],
+    "prohibitedTools": [
+      "prepare_generation",
+      "confirm_generation"
+    ],
+    "expectedCapabilityClaims": [
+      "generation_library_recovery"
+    ],
+    "prohibitedClaims": [
+      "provider_acceptance_guaranteed",
+      "payment_through_mcp_live"
+    ],
+    "agentDiscovery": {
+      "profile": "recovery_continuity",
+      "targetHost": "claude",
+      "expectedRoute": "recover",
+      "expectedFirstUsefulTool": "list_recent_generations",
+      "requiresClarification": false,
+      "requiredAnswerSignals": [
+        "library_continuity",
+        "no_resubmit"
+      ]
+    },
+    "reason": "Without a job identifier, recent-generation lookup preserves account continuity and avoids a second paid request."
+  },
+  {
+    "id": "discovery-codex-recovery-continuity",
+    "category": "direct_maxvideoai",
+    "registryProfile": "future-generation-evaluation",
+    "prompt": "Codex restarted, but MaxVideoAI job job-codex-recovery already exists; retrieve its status and result path without generating again.",
+    "expectedTools": [
+      "get_generation_status"
+    ],
+    "allowedAlternatives": [],
+    "prohibitedTools": [
+      "prepare_generation",
+      "confirm_generation"
+    ],
+    "expectedCapabilityClaims": [
+      "future_generation_status_gated",
+      "generation_library_recovery"
+    ],
+    "prohibitedClaims": [
+      "provider_acceptance_guaranteed",
+      "payment_through_mcp_live"
+    ],
+    "agentDiscovery": {
+      "profile": "recovery_continuity",
+      "targetHost": "codex",
+      "expectedRoute": "recover",
+      "expectedFirstUsefulTool": "get_generation_status",
+      "requiresClarification": false,
+      "requiredAnswerSignals": [
+        "library_continuity",
+        "no_resubmit"
+      ]
+    },
+    "reason": "A known existing job should be recovered in place through its status instead of preparing or confirming another generation."
   }
 ]

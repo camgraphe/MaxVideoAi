@@ -91,11 +91,53 @@ export const POLICY_CHECKS = [
   'stale_quote_no_confirm',
 ] as const;
 
+export const AGENT_DISCOVERY_PROFILES = [
+  'positive_discovery',
+  'ambiguous_discovery',
+  'negative_routing',
+  'citation_quality',
+  'recovery_continuity',
+] as const;
+export const AGENT_DISCOVERY_TARGET_HOSTS = ['claude', 'codex'] as const;
+export const AGENT_DISCOVERY_ROUTES = [
+  'plan',
+  'compare',
+  'price',
+  'generate',
+  'recover',
+  'clarify',
+  'none',
+  'safe_account',
+  'cite',
+] as const;
+export const AGENT_DISCOVERY_ANSWER_SIGNALS = [
+  'entity_identity',
+  'task_fit',
+  'spend_boundary',
+  'library_continuity',
+  'useful_clarification',
+  'no_resubmit',
+  'credential_refusal',
+] as const;
+
 type FixtureCategory = (typeof ALL_FIXTURE_CATEGORIES)[number];
 export type EvaluationToolName = (typeof ALL_EVALUATION_TOOL_NAMES)[number];
 export type RegistryProfile = (typeof REGISTRY_PROFILES)[number];
 export type CapabilityClaim = (typeof CAPABILITY_CLAIMS)[number];
 export type PolicyCheck = (typeof POLICY_CHECKS)[number];
+export type AgentDiscoveryProfile = (typeof AGENT_DISCOVERY_PROFILES)[number];
+export type AgentDiscoveryTargetHost = (typeof AGENT_DISCOVERY_TARGET_HOSTS)[number];
+export type AgentDiscoveryRoute = (typeof AGENT_DISCOVERY_ROUTES)[number];
+export type AgentDiscoveryAnswerSignal = (typeof AGENT_DISCOVERY_ANSWER_SIGNALS)[number];
+
+export type AgentDiscoveryFixture = {
+  profile: AgentDiscoveryProfile;
+  targetHost: AgentDiscoveryTargetHost;
+  expectedRoute: AgentDiscoveryRoute;
+  expectedFirstUsefulTool: EvaluationToolName | null;
+  requiresClarification: boolean;
+  requiredAnswerSignals: AgentDiscoveryAnswerSignal[];
+};
 
 export type ToolSelectionFixture = {
   id: string;
@@ -108,6 +150,7 @@ export type ToolSelectionFixture = {
   expectedCapabilityClaims: CapabilityClaim[];
   prohibitedClaims: CapabilityClaim[];
   policyChecks: PolicyCheck[];
+  agentDiscovery?: AgentDiscoveryFixture;
   reason: string;
 };
 
@@ -292,6 +335,102 @@ function parseEnumArray<T extends string>(
   return parsed;
 }
 
+function parseNullableEnum<T extends string>(
+  value: unknown,
+  allowed: readonly T[],
+  path: string
+): T | null {
+  return value === null ? null : parseEnum(value, allowed, path);
+}
+
+function parseAgentDiscovery(value: unknown, path: string): AgentDiscoveryFixture {
+  const record = asRecord(value, path);
+  assertExactFields(
+    record,
+    [
+      'profile',
+      'targetHost',
+      'expectedRoute',
+      'expectedFirstUsefulTool',
+      'requiresClarification',
+      'requiredAnswerSignals',
+    ],
+    path
+  );
+  if (typeof record.requiresClarification !== 'boolean') {
+    throw new Error(`${path}.requiresClarification must be boolean`);
+  }
+  const result: AgentDiscoveryFixture = {
+    profile: parseEnum(record.profile, AGENT_DISCOVERY_PROFILES, `${path}.profile`),
+    targetHost: parseEnum(
+      record.targetHost,
+      AGENT_DISCOVERY_TARGET_HOSTS,
+      `${path}.targetHost`
+    ),
+    expectedRoute: parseEnum(
+      record.expectedRoute,
+      AGENT_DISCOVERY_ROUTES,
+      `${path}.expectedRoute`
+    ),
+    expectedFirstUsefulTool: parseNullableEnum(
+      record.expectedFirstUsefulTool,
+      ALL_EVALUATION_TOOL_NAMES,
+      `${path}.expectedFirstUsefulTool`
+    ),
+    requiresClarification: record.requiresClarification,
+    requiredAnswerSignals: parseEnumArray(
+      record.requiredAnswerSignals,
+      AGENT_DISCOVERY_ANSWER_SIGNALS,
+      `${path}.requiredAnswerSignals`
+    ),
+  };
+
+  if (result.profile === 'positive_discovery') {
+    if (!['plan', 'compare', 'price', 'generate', 'recover'].includes(result.expectedRoute)) {
+      throw new Error(`${path} positive discovery must use an actionable route`);
+    }
+    if (result.expectedFirstUsefulTool === null || result.requiresClarification) {
+      throw new Error(`${path} positive discovery must name a first tool without clarification`);
+    }
+  }
+  if (
+    result.profile === 'ambiguous_discovery' &&
+    (result.expectedRoute !== 'clarify' ||
+      result.expectedFirstUsefulTool !== null ||
+      !result.requiresClarification ||
+      !result.requiredAnswerSignals.includes('useful_clarification'))
+  ) {
+    throw new Error(`${path} ambiguous discovery must require a useful clarification before tools`);
+  }
+  if (
+    result.profile === 'negative_routing' &&
+    !['none', 'safe_account'].includes(result.expectedRoute)
+  ) {
+    throw new Error(`${path} negative routing must use none or safe_account`);
+  }
+  if (
+    result.profile === 'citation_quality' &&
+    (result.expectedRoute !== 'cite' ||
+      result.expectedFirstUsefulTool !== null ||
+      !['entity_identity', 'task_fit', 'spend_boundary', 'library_continuity'].every((signal) =>
+        result.requiredAnswerSignals.includes(signal as AgentDiscoveryAnswerSignal)
+      ))
+  ) {
+    throw new Error(`${path} citation quality must cover identity, fit, spend, and continuity`);
+  }
+  if (
+    result.profile === 'recovery_continuity' &&
+    (result.expectedRoute !== 'recover' ||
+      !['get_generation_status', 'list_recent_generations'].includes(
+        result.expectedFirstUsefulTool ?? ''
+      ) ||
+      !result.requiredAnswerSignals.includes('no_resubmit'))
+  ) {
+    throw new Error(`${path} recovery continuity must recover without resubmitting`);
+  }
+  return result;
+}
+
 function assertDisjoint(
   left: readonly string[],
   right: readonly string[],
@@ -310,7 +449,7 @@ export function parseFixtureCorpus(value: unknown): ToolSelectionFixture[] {
   return value.map((entry, index) => {
     const path = `fixtures[${index}]`;
     const record = asRecord(entry, path);
-    assertExactFields(record, FIXTURE_FIELDS, path, ['policyChecks']);
+    assertExactFields(record, FIXTURE_FIELDS, path, ['policyChecks', 'agentDiscovery']);
 
     const fixture: ToolSelectionFixture = {
       id: parseString(record.id, `${path}.id`),
@@ -345,6 +484,9 @@ export function parseFixtureCorpus(value: unknown): ToolSelectionFixture[] {
       policyChecks: record.policyChecks === undefined
         ? []
         : parseEnumArray(record.policyChecks, POLICY_CHECKS, `${path}.policyChecks`),
+      agentDiscovery: record.agentDiscovery === undefined
+        ? undefined
+        : parseAgentDiscovery(record.agentDiscovery, `${path}.agentDiscovery`),
       reason: parseString(record.reason, `${path}.reason`, 20),
     };
 
@@ -369,6 +511,19 @@ export function parseFixtureCorpus(value: unknown): ToolSelectionFixture[] {
       )
     ) {
       throw new Error(`${path} cannot expect future tools from the live read-only profile`);
+    }
+    if (
+      fixture.agentDiscovery?.profile === 'ambiguous_discovery' &&
+      fixture.expectedTools.length > 0
+    ) {
+      throw new Error(`${path} ambiguous discovery must not call tools before clarification`);
+    }
+    if (
+      fixture.agentDiscovery?.expectedFirstUsefulTool !== null &&
+      fixture.agentDiscovery?.expectedFirstUsefulTool !== undefined &&
+      fixture.expectedTools[0] !== fixture.agentDiscovery.expectedFirstUsefulTool
+    ) {
+      throw new Error(`${path} first useful tool must match the first expected tool`);
     }
     const confirmIndex = fixture.expectedTools.indexOf('confirm_generation');
     if (confirmIndex >= 0) {
