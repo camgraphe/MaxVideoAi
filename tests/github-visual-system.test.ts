@@ -13,9 +13,11 @@ const manifest = JSON.parse(readFileSync('docs/marketing/github-asset-manifest.j
   assets: Array<{
     id: string;
     path: string;
+    kind: string;
     state: string;
     sha256: string;
     claim: string;
+    placements?: string[];
     sourceProofIds?: string[];
     editorialSourceId?: string;
   }>;
@@ -31,6 +33,17 @@ const outputDimensions = new Map([
   ['plugins/maxvideoai/assets/social/release-0.3.2.png', [1200, 630]],
   ['plugins/maxvideoai/assets/social/directory-thumbnail.png', [1200, 675]],
 ] as const);
+
+const liveScreenshotDimensions = new Map([
+  ['plugins/maxvideoai/assets/screenshots/maxvideoai-assistant-workflow-live.webp', [1268, 713]],
+  ['plugins/maxvideoai/assets/screenshots/maxvideoai-engine-scoreboard-live.webp', [1268, 713]],
+  ['plugins/maxvideoai/assets/screenshots/maxvideoai-examples-gallery-live.webp', [1268, 713]],
+  ['plugins/maxvideoai/assets/screenshots/maxvideoai-model-directory-live.webp', [1268, 713]],
+  ['plugins/maxvideoai/assets/screenshots/maxvideoai-pricing-comparison-live.webp', [1268, 713]],
+  ['plugins/maxvideoai/assets/screenshots/maxvideoai-workspace-live.webp', [1268, 713]],
+] as const);
+
+const brandHeroPath = 'plugins/maxvideoai/assets/brand/maxvideoai-github-hero-v2.webp';
 
 const allowedProofIds = new Set([
   'maxvideoai-workspace-production',
@@ -67,6 +80,57 @@ test('ships the eight visual-system outputs at their exact target dimensions', a
     statSync('plugins/maxvideoai/assets/social/github-social-preview.png').size < 1_000_000,
     'GitHub social preview must remain under 1 MB'
   );
+});
+
+test('ships six distinct current product captures for the proof-led README journey', async () => {
+  const hashes = new Set<string>();
+  for (const [path, [expectedWidth, expectedHeight]] of liveScreenshotDimensions) {
+    const bytes = readFileSync(path);
+    const { width, height } = readImageDimensions(bytes);
+    await validateImageDecode(bytes);
+    assert.deepEqual([width, height], [expectedWidth, expectedHeight], path);
+
+    const digest = sha256(bytes);
+    assert.ok(!hashes.has(digest), `${path} must not duplicate another live screenshot`);
+    hashes.add(digest);
+
+    const record = manifest.assets.find((asset) => asset.path === path);
+    assert.ok(record, `${path} must be registered`);
+    assert.equal(record.kind, 'product_proof');
+    assert.equal(record.state, 'publishable_proof');
+    assert.equal(record.sha256, digest);
+    assert.ok(record.placements?.includes('root_readme'));
+    assert.ok(record.placements?.includes('plugin_readme'));
+  }
+
+  const rootReadme = readFileSync('README.md', 'utf8');
+  const pluginReadme = readFileSync('plugins/maxvideoai/README.md', 'utf8');
+  for (const obsoleteComposite of [
+    'assets/demos/readme-proof-hero.webp',
+    'assets/demos/brief-to-video-workflow.webp',
+    'assets/demos/model-choice-and-budget.webp',
+    'assets/demos/library-continuity.webp',
+  ]) {
+    assert.doesNotMatch(rootReadme, new RegExp(obsoleteComposite.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+    assert.doesNotMatch(pluginReadme, new RegExp(obsoleteComposite.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
+});
+
+test('ships a dedicated editorial hero without presenting it as product or host proof', async () => {
+  const bytes = readFileSync(brandHeroPath);
+  await validateImageDecode(bytes);
+  assert.deepEqual(readImageDimensions(bytes), { width: 1600, height: 587, format: 'webp' });
+
+  const record = manifest.assets.find((asset) => asset.path === brandHeroPath);
+  assert.ok(record);
+  assert.equal(record.kind, 'editorial');
+  assert.equal(record.state, 'publishable_proof');
+  assert.equal(record.sha256, sha256(bytes));
+  assert.deepEqual(record.placements, ['root_readme']);
+  assert.match(record.claim, /not product UI or native host proof/i);
+
+  const rootReadme = readFileSync('README.md', 'utf8');
+  assert.match(rootReadme, /maxvideoai-github-hero-v2\.webp/);
 });
 
 test('pins the built-in ImageGen source as draft editorial, never product proof', async () => {

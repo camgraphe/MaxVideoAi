@@ -1,13 +1,13 @@
 {
   "version": 1,
   "assessedAt": "2026-08-27",
-  "verifiedAfterAt": "2026-08-28",
+  "verifiedAfterAt": "2026-08-29",
   "rubric": {
     "benchmark": "Evidence-based internal implementation-readiness assessment, not an external benchmark.",
     "weightedTotals": {
       "before": 46,
       "target": 85,
-      "after": 82
+      "after": 84
     }
   },
   "dimensions": [
@@ -17,18 +17,20 @@
       "weight": 15,
       "before": 30,
       "target": 80,
-      "after": 82,
+      "after": 86,
       "beforeEvidence": [
         "README.md",
         "plugins/maxvideoai/README.md"
       ],
       "afterEvidence": [
+        "README.md",
         "plugins/maxvideoai/README.md",
+        "tests/github-root-readme.test.ts",
         "https://github.com/camgraphe/maxvideoai-plugin",
         "https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.1"
       ],
-      "afterRationale": "The focused public repository now opens with the reviewed outcome-led README, three equal host paths, a direct install path, and public checksum-backed releases; this independently supports the 52-point gain from the development-first baseline.",
-      "remainingGap": "No clean acquisition cohort or observed first-screen conversion evidence yet shows which public repository path converts qualified visitors."
+      "afterRationale": "The source and focused-plugin READMEs now open with a concrete product outcome, current app proof, equal Claude/ChatGPT/Codex paths, direct model and pricing destinations, and a complete contributor route; contract tests preserve that two-level commercial and technical journey.",
+      "remainingGap": "The refreshed focused README still needs to be synchronized to the public plugin repository, and no clean acquisition cohort or observed first-screen conversion evidence identifies which path converts qualified visitors."
     },
     {
       "id": "voice",
@@ -36,17 +38,18 @@
       "weight": 10,
       "before": 42,
       "target": 85,
-      "after": 88,
+      "after": 90,
       "beforeEvidence": [
         "README.md",
         "plugins/maxvideoai/README.md"
       ],
       "afterEvidence": [
         "docs/marketing/github-editorial-voice.md",
+        "README.md",
         "plugins/maxvideoai/README.md",
         "https://github.com/camgraphe/maxvideoai-plugin"
       ],
-      "afterRationale": "The checked-in voice contract and now-public flagship copy replace default-heavy explanation with concise, producer-minded guidance and a restrained friendly tone.",
+      "afterRationale": "The voice contract and both rewritten READMEs now lead with producer outcomes, use short direct answers and concrete prompts, and keep a restrained friendly personality without removing the engineering depth expected on GitHub.",
       "remainingGap": "No external support or user-language review has yet tested whether the voice remains equally clear outside the authored repository surfaces."
     },
     {
@@ -55,7 +58,7 @@
       "weight": 15,
       "before": 28,
       "target": 85,
-      "after": 86,
+      "after": 93,
       "beforeEvidence": [
         "docs/marketing/mcp-demo-evidence.md",
         "frontend/public/media/mcp/claude-inline-video-proof.jpg",
@@ -63,11 +66,14 @@
       ],
       "afterEvidence": [
         "docs/marketing/github-asset-manifest.json",
+        "plugins/maxvideoai/assets/screenshots/maxvideoai-workspace-live.webp",
+        "plugins/maxvideoai/assets/screenshots/maxvideoai-engine-scoreboard-live.webp",
+        "tests/github-visual-system.test.ts",
         "plugins/maxvideoai/assets/social/github-social-preview.png",
         "https://github.com/camgraphe/maxvideoai-plugin"
       ],
-      "afterRationale": "The public plugin README establishes a proof-led visual rhythm and uses the live 1280×640 social preview; the reviewed source refresh adds a registered selector/result proof designed for a readable narrow render without treating editorial art as host proof.",
-      "remainingGap": "No independently archived native-host result packet exists, so every published visual must remain explicitly bounded to MaxVideoAI web-product proof."
+      "afterRationale": "Six fresh, privacy-safe production captures now create a non-repeating app-to-examples-to-scoreboard-to-models-to-pricing-to-assistant sequence, with Library continuity as a separate seventh proof. The asset contract verifies unique bytes, dimensions, provenance, placement, decode integrity, and release inclusion.",
+      "remainingGap": "The public plugin repository still needs the refreshed bundle, and no independently archived native-host result packet exists for a host-specific visual claim."
     },
     {
       "id": "seo",
@@ -75,20 +81,22 @@
       "weight": 10,
       "before": 62,
       "target": 85,
-      "after": 88,
+      "after": 90,
       "beforeEvidence": [
         "README.md",
         "plugins/maxvideoai/README.md",
         "docs/marketing/GEO-ANALYSIS.md"
       ],
       "afterEvidence": [
+        "README.md",
         "plugins/maxvideoai/README.md",
+        "tests/github-root-readme.test.ts",
         "docs/marketing/github-distribution-matrix.md",
         "https://github.com/camgraphe/maxvideoai-plugin",
         "https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.0",
         "https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.1"
       ],
-      "afterRationale": "The indexable focused README, canonical entity links, eight relevant topics, and two public tagged releases make the assistant-video product entity and maintained release history substantially clearer.",
+      "afterRationale": "Question-led headings, direct product definitions, descriptive image alternatives, current model/comparison/pricing vocabulary, canonical product links, technical stack coverage, and two tagged releases make both the product entity and its agent integration easier to retrieve from GitHub.",
       "remainingGap": "No authoritative external directory listing or post-change search observation yet demonstrates discovery beyond MaxVideoAI-owned GitHub and website surfaces."
     },
     {
@@ -97,17 +105,19 @@
       "weight": 10,
       "before": 58,
       "target": 88,
-      "after": 84,
+      "after": 89,
       "beforeEvidence": [
         "docs/marketing/GEO-ANALYSIS.md",
         "docs/marketing/mcp-tool-selection-scorecard.md"
       ],
       "afterEvidence": [
         "docs/marketing/GEO-ANALYSIS.md",
+        "README.md",
+        "plugins/maxvideoai/README.md",
         "https://maxvideoai.com/mcp",
         "https://maxvideoai.com/integrations/codex"
       ],
-      "afterRationale": "Five public intent owners, extractable answer passages, host-neutral entity wording, and crawler-readable source declarations support the 26-point gain from the original first-party-only structure.",
+      "afterRationale": "Five public intent owners plus self-contained GitHub answers now define the product, model-comparison decision, pricing boundary, Library continuity, and equal Claude/ChatGPT/Codex routes alongside current multimodal proof and crawler-readable source declarations.",
       "remainingGap": "No earned citation or clean post-change observation window yet shows that an external answer engine selects these passages."
     },
     {
@@ -136,7 +146,7 @@
       "weight": 10,
       "before": 64,
       "target": 90,
-      "after": 88,
+      "after": 89,
       "beforeEvidence": [
         "docs/marketing/mcp-demo-evidence.md",
         "docs/licensing/dual-license.md"
@@ -144,10 +154,12 @@
       "afterEvidence": [
         "docs/marketing/mcp-launch-evidence.md",
         "docs/marketing/github-asset-manifest.json",
+        "tests/github-assets.test.ts",
+        "tests/github-visual-system.test.ts",
         "https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.0",
         "https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.1"
       ],
-      "afterRationale": "Proof provenance, paid-action safety gates, public support/security files, and focused v0.3.0 and v0.3.1 releases with checksum attachments establish a reviewable public trust chain.",
+      "afterRationale": "Fresh screenshot provenance, unique-byte and decode-integrity gates, paid-action safety boundaries, public support/security files, and checksum-backed v0.3.0 and v0.3.1 releases establish a reviewable trust chain without converting website proof into a host claim.",
       "remainingGap": "There is still no archived real-host result packet, and the separate checked-in 0.3.2 candidate has not completed its own source-tag, checksum, and clean-install gate."
     },
     {

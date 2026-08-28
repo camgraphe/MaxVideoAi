@@ -44,7 +44,7 @@ test('the flagship README opens with the product outcome, three destinations, an
   assert.match(opening, /\[Plugin repository\]\(https:\/\/github\.com\/camgraphe\/maxvideoai-plugin\)/);
   assert.match(opening, /\[Latest public release: v0\.3\.1\]\(https:\/\/github\.com\/camgraphe\/maxvideoai-plugin\/releases\/tag\/v0\.3\.1\)/);
   assert.doesNotMatch(opening, /\[Use[^\]]*ChatGPT[^\]]*\]\(https:\/\/github\.com\/camgraphe\/maxvideoai-plugin\)/i);
-  assert.doesNotMatch(opening, /preview|release pending/i);
+  assert.doesNotMatch(opening, /release pending/i);
   assert.match(opening, /<img src="plugins\/maxvideoai\/assets\/logo-mark\.svg"[^>]+>/);
   assert.doesNotMatch(opening, /logo-wordmark\.svg/);
   assert.ok(approvedProductProof, 'the first 60 lines must include manifest-approved current product proof');
@@ -83,6 +83,7 @@ test('every root README image is approved for root placement', () => {
 test('the flagship README tells the commercial story before contributor setup', () => {
   const readme = read('README.md');
   const orderedSections = [
+    'What does the MaxVideoAI workspace bring together?',
     'What can you make with MaxVideoAI?',
     'How do you compare current AI video models?',
     'How do project pricing and approval work?',
@@ -102,12 +103,49 @@ test('the flagship README tells the commercial story before contributor setup', 
 
   assert.match(readme, /Sora[\s\S]*Veo[\s\S]*Kling[\s\S]*Seedance[\s\S]*LTX/i);
   assert.match(readme, /current availability and pricing/i);
-  assert.match(readme, /Platform availability and setup can change/i);
-  assert.match(readme, /v0\.3\.0[^\n]*public[\s\S]*v0\.3\.1[^\n]*public/i);
-  assert.match(readme, /0\.3\.2[^\n]*(?:closed|unpublished)[^\n]*candidate/i);
+  assert.match(readme, /three equal entry points[\s\S]*Claude connector or plugin[\s\S]*ChatGPT app\/plugin[\s\S]*Codex plugin/i);
+  assert.match(readme, /current public plugin releases[\s\S]*v0\.3\.0[\s\S]*v0\.3\.1/i);
+  assert.match(readme, /0\.3\.2 package remains the next source candidate until its release gates are complete/i);
   assert.doesNotMatch(readme, /first release lands|bootstrap-only|no tagged release/i);
   assert.doesNotMatch(readme, /\b\d+\s+(?:current\s+)?(?:AI\s+)?video models\b/i);
   assert.doesNotMatch(readme, /\b(?:camgraphe@|gmail\.com)\b/i);
+});
+
+test('the flagship README keeps a varied product story before the engineering depth', () => {
+  const readme = read('README.md');
+  const expectedVisuals = [
+    'maxvideoai-github-hero-v2.webp',
+    'maxvideoai-workspace-live.webp',
+    'maxvideoai-examples-gallery-live.webp',
+    'maxvideoai-engine-scoreboard-live.webp',
+    'maxvideoai-model-directory-live.webp',
+    'maxvideoai-pricing-comparison-live.webp',
+    'maxvideoai-library-continuity-production.jpg',
+    'maxvideoai-assistant-workflow-live.webp',
+  ];
+  const positions = expectedVisuals.map((visual) => {
+    const position = readme.indexOf(visual);
+    assert.ok(position >= 0, `${visual} must appear in the flagship README`);
+    return position;
+  });
+  assert.equal(new Set(expectedVisuals).size, expectedVisuals.length);
+  assert.deepEqual([...positions].sort((left, right) => left - right), positions, 'visuals must follow the reviewed product journey');
+
+  for (const technicalSignal of [
+    'Next.js App Router',
+    'React',
+    'TypeScript',
+    'Tailwind CSS',
+    'Supabase Auth',
+    'Neon Postgres',
+    'Amazon S3',
+    'Stripe',
+    'Remote Streamable HTTP MCP',
+    'Playwright browser checks',
+  ]) {
+    assert.match(readme, new RegExp(technicalSignal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
+  assert.ok(headingOffset(readme, 'How is MaxVideoAI built?') > headingOffset(readme, 'Can Claude, ChatGPT or Codex use MaxVideoAI?'));
 });
 
 test('developer setup and environment operations live in dedicated engineering guides', () => {

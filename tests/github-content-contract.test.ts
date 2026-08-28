@@ -30,7 +30,7 @@ test('the plugin README is a proof-led conversion surface with safe compatibilit
   assert.ok(words.length < 1_800, `README must stay under 1,800 words; found ${words.length}`);
   assert.ok(definitionWords.length >= 40 && definitionWords.length <= 60, `opening definition must be 40–60 words; found ${definitionWords.length}`);
   assert.match(definition, /MaxVideoAI is a multi-model AI video production service exposed through a remote MCP server and packaged for agent workflows/i);
-  assert.match(opening, /assets\/demos\/readme-proof-hero\.webp/);
+  assert.match(opening, /assets\/screenshots\/maxvideoai-assistant-workflow-live\.webp/);
   assert.match(opening, /codex plugin marketplace add camgraphe\/MaxVideoAi --ref maxvideoai-plugin-v0\.3\.2/);
   assert.match(opening, /https:\/\/maxvideoai\.com\/docs\/mcp/);
   for (const canonicalUrl of [
@@ -44,10 +44,16 @@ test('the plugin README is a proof-led conversion surface with safe compatibilit
   ]) {
     assert.match(readme, new RegExp(canonicalUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
-  assert.match(readme, /assets\/demos\/brief-to-video-workflow\.webp/);
-  assert.match(readme, /assets\/demos\/model-choice-and-budget\.webp/);
-  assert.match(readme, /assets\/(?:demos\/library-continuity\.webp|screenshots\/maxvideoai-library-continuity-production\.jpg)/);
-  assert.match(readme, /image shows[^\n]*(?:selection|product)[^\n]*result[^\n]*not[^\n]*(?:quote|approval|budget)/i);
+  for (const visual of [
+    'assets/screenshots/maxvideoai-workspace-live.webp',
+    'assets/screenshots/maxvideoai-examples-gallery-live.webp',
+    'assets/screenshots/maxvideoai-engine-scoreboard-live.webp',
+    'assets/screenshots/maxvideoai-pricing-comparison-live.webp',
+    'assets/screenshots/maxvideoai-library-continuity-production.jpg',
+  ]) {
+    assert.match(readme, new RegExp(visual.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
+  assert.match(readme, /recommendation is a capability match[^\n]*not a guarantee[^\n]*paid quote/i);
   assert.doesNotMatch(readme, /Designed for ChatGPT|works with ChatGPT|available in ChatGPT|verified today in Claude and Codex/i);
 
   const setupGuideOrder = [
