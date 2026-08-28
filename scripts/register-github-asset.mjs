@@ -197,6 +197,7 @@ function readSvgDimensions(bytes) {
 
   const unsafeRules = [
     /<!DOCTYPE|<!ENTITY/i,
+    /&/,
     /<(?:[A-Za-z_][\w.-]*:)?(?:script|foreignObject|iframe|object|embed|image|audio|video|style|link|a|use|animate|animateMotion|animateTransform|set|discard|mpath)\b/i,
     /\bon[a-z]+\s*=/i,
     /\bstyle\s*=/i,

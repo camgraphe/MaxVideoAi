@@ -13,7 +13,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { deflateRawSync } from 'node:zlib';
-import { dirname, extname, isAbsolute, join, parse, relative, resolve, sep } from 'node:path';
+import { basename, dirname, extname, isAbsolute, join, parse, relative, resolve, sep } from 'node:path';
 import { homedir, tmpdir } from 'node:os';
 
 import { findReadmeImageUsages } from './check-github-assets.mjs';
@@ -133,11 +133,29 @@ function parseArguments(argv) {
     if (values.has(key)) fail(`duplicate argument: ${key}`);
     values.set(key, value);
   }
+  const requestedOut = resolve(values.get('--out') ?? 'dist/maxvideoai-plugin-release');
   return {
     source: resolve(values.get('--source') ?? 'plugins/maxvideoai'),
-    out: resolve(values.get('--out') ?? 'dist/maxvideoai-plugin-release'),
+    requestedOut,
+    out: canonicalizeThroughExistingAncestor(requestedOut),
     assetManifest: resolve(values.get('--asset-manifest') ?? DEFAULT_ASSET_MANIFEST),
   };
+}
+
+function canonicalizeThroughExistingAncestor(candidate) {
+  const missingSegments = [];
+  let current = resolve(candidate);
+  while (true) {
+    try {
+      return resolve(realpathSync(current), ...missingSegments.reverse());
+    } catch (error) {
+      if (error?.code !== 'ENOENT') throw error;
+      const parent = dirname(current);
+      if (parent === current) throw error;
+      missingSegments.push(basename(current));
+      current = parent;
+    }
+  }
 }
 
 function normalizedName(root, path) {
@@ -207,7 +225,33 @@ function protectedOutputPaths(source, out) {
   return paths;
 }
 
-function assertNoSymlinkedOutputAncestor(out) {
+function permittedSystemOutputAliases() {
+  const aliases = new Map();
+  if (process.platform !== 'darwin') return aliases;
+  const requestedTemporaryRoot = resolve(tmpdir());
+  const canonicalTemporaryRoot = canonicalizeThroughExistingAncestor(requestedTemporaryRoot);
+  if (requestedTemporaryRoot === canonicalTemporaryRoot) return aliases;
+
+  const root = parse(requestedTemporaryRoot).root;
+  const segments = relative(root, requestedTemporaryRoot).split(sep).filter(Boolean);
+  let current = root;
+  for (const segment of segments) {
+    current = join(current, segment);
+    let info;
+    try {
+      info = lstatSync(current);
+    } catch (error) {
+      if (error?.code === 'ENOENT') break;
+      throw error;
+    }
+    if (!info.isSymbolicLink()) continue;
+    const target = realpathSync(current);
+    if (info.uid === 0 && isInside(target, canonicalTemporaryRoot)) aliases.set(current, target);
+  }
+  return aliases;
+}
+
+function assertNoSymlinkedOutputAncestor(out, permittedAliases = new Map()) {
   const root = parse(out).root;
   const segments = relative(root, out).split(sep).filter(Boolean);
   let current = root;
@@ -221,18 +265,22 @@ function assertNoSymlinkedOutputAncestor(out) {
       throw error;
     }
     if (info.isSymbolicLink()) {
+      const permittedTarget = permittedAliases.get(current);
+      if (permittedTarget && realpathSync(current) === permittedTarget) continue;
       fail(`symlinked output ancestor found at ${current}`);
     }
   }
 }
 
-function validateOutput(source, out) {
+function validateOutput(source, out, requestedOut) {
+  assertNoSymlinkedOutputAncestor(requestedOut, permittedSystemOutputAliases());
   assertNoSymlinkedOutputAncestor(out);
   if (protectedOutputPaths(source, out).has(out)) fail('output path is protected or too broad');
-  if (isInside(source, out)) {
+  const canonicalSource = canonicalizeThroughExistingAncestor(source);
+  if (isInside(canonicalSource, out)) {
     fail('output path must not be inside the source directory');
   }
-  if (isInside(out, source)) {
+  if (isInside(out, canonicalSource)) {
     fail('output path must not contain the source directory');
   }
   try {
@@ -586,10 +634,15 @@ function validatePackageVersions(source, version) {
   if (Object.hasOwn(marketplace, 'version') && marketplace.version !== version) {
     fail(`${marketplaceName} marketplace version does not match maxvideoai@${version}`);
   }
-  for (const plugin of Array.isArray(marketplace.plugins) ? marketplace.plugins : []) {
-    if (Object.hasOwn(plugin, 'version') && plugin.version !== version) {
-      fail(`${marketplaceName} plugin marketplace version does not match maxvideoai@${version}`);
-    }
+  const marketplacePlugin = (Array.isArray(marketplace.plugins) ? marketplace.plugins : []).find(
+    (plugin) => plugin?.name === 'maxvideoai',
+  );
+  if (!marketplacePlugin) fail(`${marketplaceName} must contain a maxvideoai plugin entry`);
+  if (versionAtLeast(version, '0.3.0') && !Object.hasOwn(marketplacePlugin, 'version')) {
+    fail(`${marketplaceName} maxvideoai plugin requires an explicit version matching ${version}`);
+  }
+  if (Object.hasOwn(marketplacePlugin, 'version') && marketplacePlugin.version !== version) {
+    fail(`${marketplaceName} maxvideoai plugin version does not match maxvideoai@${version}`);
   }
 }
 
@@ -669,8 +722,8 @@ function createZip(entries) {
 }
 
 function main() {
-  const { source, out, assetManifest } = parseArguments(process.argv.slice(2));
-  validateOutput(source, out);
+  const { source, requestedOut, out, assetManifest } = parseArguments(process.argv.slice(2));
+  validateOutput(source, out, requestedOut);
 
   const version = readFileSync(join(source, 'VERSION'), 'utf8').trim();
   if (!/^\d+\.\d+\.\d+$/.test(version)) fail('VERSION must use semantic versioning');

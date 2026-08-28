@@ -159,13 +159,53 @@ function srcsetCandidates(srcset) {
 
 function addUsage(collected, assetReference, metadata, readmePath, rootDirectory) {
   const assetPath = toRepositoryPath(assetReference, readmePath, rootDirectory);
+  addCollectedUsage(collected, assetPath, metadata);
+}
+
+function addCollectedUsage(collected, assetPath, metadata) {
   const entry = collected.get(assetPath) ?? { path: assetPath, usages: [] };
   entry.usages.push(metadata);
   collected.set(assetPath, entry);
 }
 
+function addInvalidUsage(collected, reason, metadata) {
+  addCollectedUsage(collected, `INVALID:${reason}`, metadata);
+}
+
 function normalizeReferenceLabel(label) {
   return label.trim().replace(/\s+/g, ' ').toLowerCase();
+}
+
+function findHtmlImageTags(markdown) {
+  const tags = [];
+  const openingTag = /<(img|source)\b/gi;
+  let match;
+  while ((match = openingTag.exec(markdown)) !== null) {
+    let quote = null;
+    let end = -1;
+    for (let index = openingTag.lastIndex; index < markdown.length; index += 1) {
+      const character = markdown[index];
+      if (quote !== null) {
+        if (character === quote) quote = null;
+        continue;
+      }
+      if (character === '"' || character === "'") {
+        quote = character;
+        continue;
+      }
+      if (character === '>') {
+        end = index + 1;
+        break;
+      }
+    }
+    if (end === -1) {
+      tags.push({ tagName: match[1].toLowerCase(), source: null });
+      break;
+    }
+    tags.push({ tagName: match[1].toLowerCase(), source: markdown.slice(match.index, end) });
+    openingTag.lastIndex = end;
+  }
+  return tags;
 }
 
 export function findReadmeImageUsages(markdown, readmePath, rootDirectory = repositoryRoot) {
@@ -175,16 +215,25 @@ export function findReadmeImageUsages(markdown, readmePath, rootDirectory = repo
   for (const match of markdown.matchAll(/!\[([^\]]*)\]\((<[^>]+>|[^\s)]+)(?:\s+[^)]*)?\)/g)) addUsage(collected, match[2], { source: 'markdown_inline', alt: match[1], role: null }, readmePath, rootDirectory);
   for (const match of markdown.matchAll(/!\[([^\]]*)\]\[([^\]]*)\]/g)) {
     const id = normalizeReferenceLabel(match[2] || match[1]);
-    if (definitions.has(id)) addUsage(collected, definitions.get(id), { source: 'markdown_reference', alt: match[1], role: null }, readmePath, rootDirectory);
+    const metadata = { source: 'markdown_reference', alt: match[1], role: null };
+    if (definitions.has(id)) addUsage(collected, definitions.get(id), metadata, readmePath, rootDirectory);
+    else addInvalidUsage(collected, `unresolved Markdown image reference: ${match[0]}`, metadata);
   }
   for (const match of markdown.matchAll(/!\[([^\]]+)\](?![\[(])/g)) {
     const id = normalizeReferenceLabel(match[1]);
-    if (definitions.has(id)) addUsage(collected, definitions.get(id), { source: 'markdown_reference', alt: match[1], role: null }, readmePath, rootDirectory);
+    const metadata = { source: 'markdown_reference', alt: match[1], role: null };
+    if (definitions.has(id)) addUsage(collected, definitions.get(id), metadata, readmePath, rootDirectory);
+    else addInvalidUsage(collected, `unresolved Markdown image reference: ${match[0]}`, metadata);
   }
-  for (const match of markdown.matchAll(/<(img|source)\b[\s\S]*?>/gi)) {
-    const tagName = match[1].toLowerCase();
-    const attributes = parseAttributes(match[0]);
-    const metadata = { source: tagName === 'img' ? 'html_img' : 'html_source', alt: attributes.alt ?? '', role: attributes['data-asset-role'] ?? null };
+  for (const tag of findHtmlImageTags(markdown)) {
+    const metadata = { source: tag.tagName === 'img' ? 'html_img' : 'html_source', alt: '', role: null };
+    if (tag.source === null) {
+      addInvalidUsage(collected, `unterminated HTML ${tag.tagName} tag`, metadata);
+      continue;
+    }
+    const attributes = parseAttributes(tag.source);
+    metadata.alt = attributes.alt ?? '';
+    metadata.role = attributes['data-asset-role'] ?? null;
     if (attributes.src) addUsage(collected, attributes.src, metadata, readmePath, rootDirectory);
     if (attributes.srcset) for (const candidate of srcsetCandidates(attributes.srcset)) addUsage(collected, candidate, metadata, readmePath, rootDirectory);
   }

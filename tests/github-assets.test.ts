@@ -194,6 +194,8 @@ test('accepts strict self-contained SVG assets and rejects active or external co
     '<svg xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><svg:script>alert(1)</svg:script></svg>',
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><set attributeName="onload" to="alert(1)"/></svg>',
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><path style="fill:&#x75;rl(https://example.com/a.png)"/></svg>',
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><path fill="&#117;rl(https://example.com/a.png)"/></svg>',
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><path fill="&#x75;rl(https://example.com/a.png)"/></svg>',
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><image href="https://example.com/a.png"/></svg>',
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1" onload="alert(1)"></svg>',
   ];
@@ -379,12 +381,29 @@ test('scans both production README paths, reference Markdown, HTML, and every sr
     const manifest = { version: 1, assets: [fixture.rootAsset, fixture.pluginAsset] };
     const usages = findReadmeImageUsages(readFileSync(pluginReadme, 'utf8'), pluginReadme, fixture.root);
     assert.deepEqual(findReadmeImageReferences(readFileSync(rootReadme, 'utf8'), rootReadme, fixture.root), ['assets/workflow.png']);
+    assert.deepEqual(
+      findReadmeImageReferences('Ordinary [documentation label] and ! emphatic text.\n', rootReadme, fixture.root),
+      [],
+    );
     assert.equal(usages.length, 2);
     assert.equal(usages.find((usage) => usage.path === 'assets/workflow.png')?.usages.length, 2);
     assert.match((await validateReleaseReadmeAssets(manifest, { repositoryRoot: fixture.root, now })).join('\n'), /plugin_readme is not an approved placement/);
 
     fixture.rootAsset.placements.push('plugin_readme');
     assert.deepEqual(await validateReleaseReadmeAssets(manifest, { repositoryRoot: fixture.root, now }), []);
+
+    writeFileSync(pluginReadme, '<img alt="Draft > visual" src="../../assets/workflow.png">\n');
+    assert.deepEqual(
+      findReadmeImageReferences(readFileSync(pluginReadme, 'utf8'), pluginReadme, fixture.root),
+      ['assets/workflow.png'],
+    );
+    assert.deepEqual(await validateReleaseReadmeAssets(manifest, { repositoryRoot: fixture.root, now }), []);
+
+    writeFileSync(rootReadme, '![Unresolved workflow][missing]\n');
+    assert.match(
+      (await validateReleaseReadmeAssets(manifest, { repositoryRoot: fixture.root, now })).join('\n'),
+      /unresolved markdown image reference/i,
+    );
 
     writeFileSync(rootReadme, '![Hero]\n\n[hero]: assets/unregistered.png\n');
     assert.match((await validateReleaseReadmeAssets(manifest, { repositoryRoot: fixture.root, now })).join('\n'), /README.md.*unregistered/i);

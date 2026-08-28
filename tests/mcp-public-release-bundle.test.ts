@@ -415,6 +415,19 @@ test('release builder rejects a symlinked output ancestor without touching its t
   assert.equal(readFileSync(sentinel, 'utf8'), 'unrelated data\n');
 });
 
+test('release builder canonicalizes the ordinary macOS temp alias through existing ancestors', (t) => {
+  const requestedTemporaryRoot = resolve(tmpdir());
+  if (realpathSync(requestedTemporaryRoot) === requestedTemporaryRoot) {
+    t.skip('temporary root has no non-canonical alias on this platform');
+    return;
+  }
+  const temporary = mkdtempSync(join(requestedTemporaryRoot, 'maxvideoai-plugin-aliased-output-'));
+  t.after(() => rmSync(realpathSync(temporary), { recursive: true, force: true }));
+
+  const result = runBuilder(source, join(temporary, 'out'), defaultAssetManifest);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+});
+
 test('non-exported evaluation notes may retain internal diagnostic identifiers', (t) => {
   const temporary = mkdtempSync(join(safeTemporaryRoot, 'maxvideoai-plugin-internal-notes-'));
   t.after(() => rmSync(temporary, { recursive: true, force: true }));
@@ -553,6 +566,30 @@ test('release builder fails closed for unsafe source content and assets', async 
         appendText(join(fixture, 'README.md'), '![Mutable remote proof](https://example.com/proof.png)'),
     },
     {
+      name: 'remote HTML image hidden after quoted greater-than text',
+      expected: /remote markdown image reference/i,
+      mutate: (fixture) =>
+        appendText(
+          join(fixture, 'README.md'),
+          '<img alt="Draft > visual" src="https://example.com/proof.png">',
+        ),
+    },
+    {
+      name: 'unresolved explicit image reference',
+      expected: /unresolved markdown image reference/i,
+      mutate: (fixture) => appendText(join(fixture, 'README.md'), '![Draft visual][missing]'),
+    },
+    {
+      name: 'unresolved collapsed image reference',
+      expected: /unresolved markdown image reference/i,
+      mutate: (fixture) => appendText(join(fixture, 'README.md'), '![Draft visual][]'),
+    },
+    {
+      name: 'unresolved shortcut image reference',
+      expected: /unresolved markdown image reference/i,
+      mutate: (fixture) => appendText(join(fixture, 'README.md'), '![Draft visual]'),
+    },
+    {
       name: 'unallowlisted reference-style image',
       expected: /image reference is not allowlisted/i,
       mutate: (fixture) =>
@@ -676,6 +713,24 @@ test('a complete 0.3.0 fixture exports its version-aware metadata and release as
     readZipDirectory(join(out, 'maxvideoai-plugin-0.3.0.zip')).map((entry) => entry.name),
     [...expectedPublicFiles, 'checksums.json'].sort().map((path) => `maxvideoai/${path}`),
   );
+});
+
+test('version 0.3.0 requires an explicit marketplace plugin version', (t) => {
+  const temporary = mkdtempSync(join(safeTemporaryRoot, 'maxvideoai-plugin-marketplace-required-version-'));
+  t.after(() => rmSync(temporary, { recursive: true, force: true }));
+  const fixture = join(temporary, 'source-copy');
+  cpSync(source, fixture, { recursive: true });
+  addVersion03Metadata(fixture);
+  const marketplacePath = join(fixture, '.claude-plugin', 'marketplace.json');
+  const marketplace = JSON.parse(readFileSync(marketplacePath, 'utf8')) as {
+    plugins: Array<Record<string, unknown>>;
+  };
+  delete marketplace.plugins[0].version;
+  writeFileSync(marketplacePath, `${JSON.stringify(marketplace, null, 2)}\n`);
+
+  const result = runBuilder(fixture, join(temporary, 'out'), defaultAssetManifest);
+  assert.notEqual(result.status, 0, '0.3.0 package without a marketplace plugin version unexpectedly passed');
+  assert.match(`${result.stderr}\n${result.stdout}`, /marketplace.*explicit version.*0\.3\.0/i);
 });
 
 test('marketplace version must match when the schema carries one', (t) => {
