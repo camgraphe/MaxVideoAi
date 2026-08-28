@@ -13,6 +13,10 @@ function requireFile(path: string): string {
   return readFileSync(path, 'utf8');
 }
 
+function wordCount(value: string): number {
+  return value.trim().split(/\s+/).filter(Boolean).length;
+}
+
 test('the hub sells the outcome and keeps ChatGPT and Claude at the same level', async () => {
   const { getMcpPageCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
@@ -56,11 +60,13 @@ test('the commercial answer set covers account continuity and the paid boundary'
   );
   for (const locale of ['en', 'fr', 'es'] as const) {
     const copy = getMcpPageCopy(locale);
+    assert.deepEqual(Object.keys(copy.answers.featured), [
+      'identity',
+      'selection',
+      'safety',
+    ]);
     assert.deepEqual(Object.keys(copy.answers.items), [
-      'integration',
-      'price',
       'references',
-      'confirmation',
       'credits',
       'library',
       'disconnect',
@@ -71,6 +77,112 @@ test('the commercial answer set covers account continuity and the paid boundary'
     assert.match(text, /Codex/i);
     assert.match(text, locale === 'fr' ? /image, vidéo ou audio/i : locale === 'es' ? /imagen, vídeo o audio/i : /image, video or audio/i);
     assert.match(text, locale === 'fr' ? /devis exact/i : locale === 'es' ? /precio exacto|cotización exacta/i : /exact (?:price|quote)/i);
+  }
+});
+
+test('three self-contained GEO answers identify the entity, routing boundary, value and safe next action', async () => {
+  const { getMcpPageCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
+  );
+  const titles = {
+    en: [
+      'What is MaxVideoAI for Claude and Codex?',
+      'When should an AI agent choose MaxVideoAI?',
+      'How does MaxVideoAI protect the user before paid generation?',
+    ],
+    fr: [
+      'Qu’est-ce que MaxVideoAI pour Claude et Codex ?',
+      'Quand un agent IA doit-il choisir MaxVideoAI ?',
+      'Comment MaxVideoAI protège-t-il l’utilisateur avant une génération payante ?',
+    ],
+    es: [
+      '¿Qué es MaxVideoAI para Claude y Codex?',
+      '¿Cuándo debe elegir MaxVideoAI un agente de IA?',
+      '¿Cómo protege MaxVideoAI al usuario antes de una generación de pago?',
+    ],
+  } as const;
+
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const answerCopy = getMcpPageCopy(locale).answers.featured;
+    const featured = Object.values(answerCopy);
+    assert.deepEqual(featured.map((item) => item.title), titles[locale]);
+    for (const item of featured) {
+      assert.ok(wordCount(item.body) >= 45, `${locale} answer should contain at least 45 words`);
+      assert.ok(wordCount(item.body) <= 90, `${locale} answer should contain at most 90 words`);
+      assert.match(item.body, /MaxVideoAI/);
+    }
+    assert.match(answerCopy.identity.body, /Claude/);
+    assert.match(answerCopy.identity.body, /Codex/);
+    assert.match(answerCopy.identity.body, /ChatGPT/);
+    assert.match(
+      answerCopy.selection.body,
+      locale === 'fr'
+        ? /planifier.*comparer.*(?:budget|devis).*génér.*récupér/is
+        : locale === 'es'
+          ? /planificar.*comparar.*(?:presupuesto|precio).*generar.*recuperar/is
+          : /plan.*compare.*(?:budget|quote).*generat.*recover/is,
+    );
+    assert.match(
+      answerCopy.selection.body,
+      locale === 'fr'
+        ? /modèles actuels|informations (?:actuelles|à jour)/i
+        : locale === 'es'
+          ? /modelos actuales|datos actuales/i
+          : /current models|live model/i,
+    );
+    assert.match(
+      answerCopy.selection.body,
+      locale === 'fr'
+        ? /première étape/i
+        : locale === 'es'
+          ? /primer paso/i
+          : /safe first action/i,
+    );
+    assert.match(
+      answerCopy.safety.body,
+      locale === 'fr'
+        ? /accord explicite.*vérifiez.*nouveau devis/is
+        : locale === 'es'
+          ? /aprobación explícita.*revisa.*pide uno nuevo/is
+          : /approve that specific quote.*review.*fresh quote/is,
+    );
+  }
+});
+
+test('each integration page keeps one host-specific setup intent without affiliation claims', async () => {
+  const { getIntegrationCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
+  );
+  const setupSignals = {
+    chatgpt: /remote MCP|MCP distante|MCP remota/i,
+    claude: /remote connector|connecteur distant|conector remoto/i,
+    codex: /install.*plugin|installation.*plugin|installer.*plugin|instalación.*plugin|instalar.*plugin/i,
+  } as const;
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    for (const client of ['chatgpt', 'claude', 'codex'] as const) {
+      const copy = getIntegrationCopy(locale, client);
+      assert.match(`${copy.meta.description} ${copy.hero.intro}`, setupSignals[client]);
+      assert.ok(
+        [...copy.meta.description].length <= 160,
+        `${locale}/${client} metadata description should remain within the 160-character search-result target`,
+      );
+      assert.doesNotMatch(
+        `${copy.meta.description} ${copy.hero.intro}`,
+        /official (?:ChatGPT|Claude|Codex) partner|endorsed by|partenaire officiel|approuvé par|socio oficial|avalado por/i,
+      );
+      if (client === 'chatgpt') {
+        const setupText = JSON.stringify(copy.setup.hostGuides);
+        assert.match(`${copy.meta.description} ${copy.hero.intro}`, /ChatGPT web/i);
+        assert.match(
+          `${copy.meta.description} ${copy.hero.intro}`,
+          /(?:guide|tester|testing|probar).*(?:unverified|non vérifiée|sin verificar)/i,
+        );
+        assert.doesNotMatch(copy.meta.description, /approve exact quotes|approuver un devis|aprueba precios exactos/i);
+        assert.match(setupText, /Business.*Enterprise\/Edu/i);
+        assert.match(setupText, /Pro.*read\/fetch|Pro.*lecture.*consultation|Pro.*lectura.*consulta/i);
+        assert.doesNotMatch(`${copy.meta.description} ${copy.hero.intro} ${setupText}`, /ChatGPT desktop/i);
+      }
+    }
   }
 });
 

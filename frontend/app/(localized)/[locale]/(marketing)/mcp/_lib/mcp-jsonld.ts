@@ -1,6 +1,10 @@
 import { localePathnames, type AppLocale } from '@/i18n/locales';
 import type { McpPublicationState } from '@/lib/mcp-publication';
 import { SITE_BASE_URL } from '@/lib/metadataUrls';
+import {
+  buildSiteOrganizationReference,
+  MAXVIDEOAI_PLUGIN_REPOSITORY_URL,
+} from '@/lib/seo/site-organization-schema';
 import type { McpPageCopy } from './mcp-page-types';
 
 type McpSchemaInput = {
@@ -26,11 +30,8 @@ export function buildMcpWebApplicationJsonLd({
     applicationCategory: 'MultimediaApplication',
     inLanguage,
     url: canonicalUrl,
-    provider: {
-      '@type': 'Organization',
-      name: 'MaxVideoAI',
-      url: 'https://maxvideoai.com',
-    },
+    sameAs: MAXVIDEOAI_PLUGIN_REPOSITORY_URL,
+    provider: buildSiteOrganizationReference(),
   } as const;
 }
 

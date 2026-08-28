@@ -41,7 +41,7 @@ export function getMcpCompatibilityEvidence(): McpCompatibilityEvidence {
       },
       chatgpt: {
         client: 'chatgpt',
-        hosts: [host('chatgptDesktop')],
+        hosts: [host('chatgptWeb')],
       },
       codex: {
         client: 'codex',

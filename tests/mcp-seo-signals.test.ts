@@ -11,6 +11,10 @@ import { buildMetadataUrls } from '../frontend/lib/metadataUrls.ts';
 import { getMcpPublicationState } from '../frontend/lib/mcp-publication.ts';
 import { buildLlmsText } from '../frontend/lib/seo/llms-text.ts';
 import { buildRobotsText } from '../frontend/lib/seo/robots-text.ts';
+import {
+  buildSiteOrganizationSchema,
+  MAXVIDEOAI_PLUGIN_REPOSITORY_URL,
+} from '../frontend/lib/seo/site-organization-schema.ts';
 
 (globalThis as typeof globalThis & { React: typeof React }).React = React;
 
@@ -198,7 +202,7 @@ test('MCP metadata matches the approved intent and canonical locale routes', asy
   });
 });
 
-test('SSR answer passages cover the integration, price, references, confirmation, disconnect, and evidence date', async () => {
+test('SSR answer passages expose three self-contained GEO answers, account details, evidence and review date', async () => {
   assert.equal(existsSync(answerSectionPath), true, `${answerSectionPath} should exist`);
   const { getMcpPageCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
@@ -206,27 +210,36 @@ test('SSR answer passages cover the integration, price, references, confirmation
   const { McpAnswerPassagesSection } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpAnswerPassagesSection.tsx'
   );
+  const { getMcpHostProof } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-host-proof.ts'
+  );
   const copy = getMcpPageCopy('en');
   const publication = getMcpPublicationState(mcpPublication);
   const html = renderToStaticMarkup(
     React.createElement(McpAnswerPassagesSection, {
       copy: copy.answers,
-      lastChecked: '2026-08-26',
+      hostProof: getMcpHostProof('claude', 'en'),
+      lastChecked: '2026-08-28',
       locale: 'en',
       publication,
     }),
   );
+  for (const item of Object.values(copy.answers.featured)) {
+    assert.ok(html.includes(item.title));
+    assert.ok(html.includes(item.body));
+  }
   for (const item of Object.values(copy.answers.items)) {
     assert.ok(html.includes(item.title));
     assert.ok(html.includes(item.liveBody));
   }
-  assert.match(html, /<time[^>]*dateTime="2026-08-26"/);
-  assert.match(html, /current video and image models, real capabilities, pricing/i);
-  assert.match(html, /project budgets are free estimates/i);
-  assert.match(html, /explicit approval of the returned exact quote/i);
+  assert.match(html, /<time[^>]*dateTime="2026-08-28"/);
+  assert.match(html, /multi-model AI video production service/i);
+  assert.match(html, /AI agent should choose MaxVideoAI/i);
+  assert.match(html, /separates advice from spending/i);
   assert.match(html, /remove MaxVideoAI from the assistant/i);
   assert.match(html, /top-up/i);
   assert.match(html, /connected MaxVideoAI account.*private media library/i);
+  assert.match(html, /data-mcp-host-proof="claude"/);
   assert.doesNotMatch(html, /FAQPage|HowTo/);
 
   const viewSource = readFileSync(`${routeRoot}/mcp/_components/McpPageView.tsx`, 'utf8');
@@ -258,6 +271,86 @@ test('served llms text stays aligned with a closed promotion gate', () => {
   }
   assert.doesNotMatch(source, /api\.maxvideoai\.com\/mcp/);
   assert.doesNotMatch(source, /publication gate|acquisition sources are omitted|shared.*closed/i);
+});
+
+test('open llms discovery names the entity, assistant routing and dedicated repository without exposing the API endpoint', () => {
+  const source = buildLlmsText(enabledPublication);
+  assert.match(
+    source,
+    /MaxVideoAI is a multi-model AI video production service for planning shots, comparing current models, estimating project budgets, preparing exact quotes, approving paid generations, recovering results, and keeping media in one account library\./,
+  );
+  assert.match(source, /AI assistants should choose MaxVideoAI when/i);
+  assert.equal(source.split(MAXVIDEOAI_PLUGIN_REPOSITORY_URL).length - 1, 1);
+  assert.match(source, /Canonical public plugin repository/);
+  assert.doesNotMatch(source, /api\.maxvideoai\.com\/mcp/);
+});
+
+test('organization and application JSON-LD identify the dedicated plugin repository without host endorsement claims', async () => {
+  const { buildMcpWebApplicationJsonLd } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-jsonld.ts'
+  );
+  const { buildIntegrationWebApplicationJsonLd } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-jsonld.ts'
+  );
+  const { getMcpPageCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
+  );
+  const { getIntegrationCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
+  );
+
+  const organization = buildSiteOrganizationSchema();
+  assert.ok(organization.sameAs.includes(MAXVIDEOAI_PLUGIN_REPOSITORY_URL));
+
+  const publication = getMcpPublicationState(enabledPublication);
+  const mcp = buildMcpWebApplicationJsonLd({
+    canonicalUrl: 'https://maxvideoai.com/mcp',
+    copy: getMcpPageCopy('en'),
+    inLanguage: 'en-US',
+    publication,
+  });
+  assert.ok(mcp);
+  assert.equal(mcp.sameAs, MAXVIDEOAI_PLUGIN_REPOSITORY_URL);
+  assert.equal(mcp.provider['@id'], 'https://maxvideoai.com/#organization');
+  assert.ok(mcp.provider.sameAs.includes(MAXVIDEOAI_PLUGIN_REPOSITORY_URL));
+
+  assert.equal(
+    buildIntegrationWebApplicationJsonLd({
+      canonicalUrl: 'https://maxvideoai.com/integrations/chatgpt',
+      copy: getIntegrationCopy('en', 'chatgpt'),
+      inLanguage: 'en-US',
+      publication,
+    }),
+    null,
+    'ChatGPT WebApplication schema stays suppressed until the exact host path is validated',
+  );
+
+  for (const client of ['claude', 'codex'] as const) {
+    const application = buildIntegrationWebApplicationJsonLd({
+      canonicalUrl: `https://maxvideoai.com/integrations/${client}`,
+      copy: getIntegrationCopy('en', client),
+      inLanguage: 'en-US',
+      publication,
+    });
+    assert.ok(application);
+    assert.equal(application.sameAs, MAXVIDEOAI_PLUGIN_REPOSITORY_URL);
+    assert.equal(application.provider['@id'], 'https://maxvideoai.com/#organization');
+    assert.match(application.name, new RegExp(client === 'claude' ? 'Claude' : 'Codex'));
+    assert.doesNotMatch(
+      JSON.stringify(application),
+      /official (?:ChatGPT|Claude|Codex) partner|endorsed by|verified by/i,
+    );
+  }
+
+  assert.equal(
+    buildIntegrationWebApplicationJsonLd({
+      canonicalUrl: 'https://maxvideoai.com/integrations/claude',
+      copy: getIntegrationCopy('en', 'claude'),
+      inLanguage: 'en-US',
+      publication: getMcpPublicationState(disabledPublication),
+    }),
+    null,
+  );
 });
 
 test('contextual MCP links are localized, varied, and absent until the shared gate is enabled', async () => {

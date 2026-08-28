@@ -227,10 +227,62 @@ test('homepage assistant workflow localizes the live catalog label and uses acco
 test('the shared hub stays host-neutral before showing the controlled Claude capture', () => {
   const hero = requireFile(`${componentsRoot}/McpHeroSection.tsx`);
   const view = requireFile(`${componentsRoot}/McpPageView.tsx`);
+  const answers = requireFile(`${componentsRoot}/McpAnswerPassagesSection.tsx`);
   assert.match(hero, /McpConversationPreview/);
   assert.doesNotMatch(hero, /McpHostProofCard/);
-  assert.match(view, /McpHostProofCard/);
-  assert.match(view, /hostProof \? \(/);
+  assert.match(view, /hostProof=\{hostProof\}/);
+  assert.match(answers, /McpHostProofCard/);
+  assert.match(answers, /hostProof \? \(/);
+});
+
+test('the three GEO answer passages stay adjacent to current captioned evidence', async () => {
+  const { McpAnswerPassagesSection } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpAnswerPassagesSection.tsx'
+  );
+  const { getMcpHostProof } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-host-proof.ts'
+  );
+  const { getMcpPageCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
+  );
+  const hostProof = getMcpHostProof('claude', 'en');
+  assert.ok(hostProof);
+  const html = renderToStaticMarkup(React.createElement(McpAnswerPassagesSection, {
+    copy: getMcpPageCopy('en').answers,
+    hostProof,
+    lastChecked: '2026-08-28',
+    locale: 'en',
+    publication: {
+      renderPublicPage: true,
+      connectionAvailable: true,
+      indexable: true,
+      showTrialClaim: false,
+      showPaidGenerationClaim: true,
+      showReferenceClaim: true,
+    },
+  }));
+
+  assert.equal((html.match(/data-answer-passage=/g) ?? []).length, 3);
+  assert.equal((html.match(/data-answer-detail=/g) ?? []).length, 4);
+  assert.equal((html.match(/data-answer-evidence=/g) ?? []).length, 1);
+  assert.match(html, /data-answer-with-evidence=/);
+  assert.match(html, /data-mcp-host-proof="claude"/);
+  const identityIndex = html.indexOf('data-answer-passage="identity"');
+  const evidenceIndex = html.indexOf('data-answer-evidence=');
+  const selectionIndex = html.indexOf('data-answer-passage="selection"');
+  assert.ok(identityIndex < evidenceIndex, 'the first answer should introduce the evidence');
+  assert.ok(
+    evidenceIndex < selectionIndex,
+    'mobile source order should show evidence after one answer instead of after all three passages',
+  );
+  assert.ok(
+    html.indexOf('data-answer-evidence=') < html.indexOf('data-answer-detail='),
+    'compact supporting answers should follow the visual proof pair',
+  );
+
+  const view = requireFile(`${componentsRoot}/McpPageView.tsx`);
+  assert.match(view, /hostProof=\{hostProof\}/);
+  assert.doesNotMatch(view, /hostProof \? \(\s*<section/);
 });
 
 test('client actions point to equally factual localized guides', async () => {

@@ -91,7 +91,7 @@ Package state: **NOT SUBMITTED**. Direct MCP configuration is a user setup path,
 
 | Evidence field | Value |
 | --- | --- |
-| Source URL | [OpenAI MCP documentation for ChatGPT desktop and Codex clients](https://learn.chatgpt.com/docs/extend/mcp) |
+| Source URL | [OpenAI MCP documentation for ChatGPT web and Codex clients](https://learn.chatgpt.com/docs/extend/mcp) |
 | Checked | 2026-08-26 |
 | Evidence state | The MaxVideoAI plugin loaded in Codex CLI 0.149.0-alpha.4.3 with an ephemeral staging endpoint override and completed OAuth-backed account, catalog, budget, exact-quote, and top-up-handoff calls. No production publication occurred. |
 | Uncertainty | Refresh, revocation, reconnect, the default production endpoint, graphical ChatGPT/Codex installation, and future client behavior remain unverified. |

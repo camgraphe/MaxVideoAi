@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { FEATURES } from '@/content/feature-flags';
-import type { AppLocale } from '@/i18n/locales';
+import { localeRegions, type AppLocale } from '@/i18n/locales';
 import { getMcpPublicationState } from '@/lib/mcp-publication';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
@@ -10,7 +10,7 @@ import { getMcpHostProof } from '../../mcp/_lib/mcp-host-proof';
 import { IntegrationJsonLdScripts } from '../_components/IntegrationJsonLdScripts';
 import { IntegrationPageView } from '../_components/IntegrationPageView';
 import { getIntegrationCopy } from '../_lib/integration-copy';
-import { buildIntegrationBreadcrumbJsonLd } from '../_lib/integration-jsonld';
+import { buildIntegrationBreadcrumbJsonLd, buildIntegrationWebApplicationJsonLd } from '../_lib/integration-jsonld';
 
 export const revalidate = 3600;
 
@@ -40,6 +40,12 @@ export default async function ClaudeIntegrationPage({ params }: { params: Promis
   const compatibility = getMcpCompatibilityEvidence().clients.claude;
   const hostProof = getMcpHostProof('claude', locale);
   const canonicalUrl = buildMetadataUrls(locale, undefined, { englishPath: '/integrations/claude' }).canonical;
+  const application = buildIntegrationWebApplicationJsonLd({
+    canonicalUrl,
+    copy,
+    inLanguage: localeRegions[locale],
+    publication,
+  });
   const breadcrumb = buildIntegrationBreadcrumbJsonLd({ canonicalUrl, copy });
   return (
     <>
@@ -50,7 +56,7 @@ export default async function ClaudeIntegrationPage({ params }: { params: Promis
         publication={publication}
         hostProof={hostProof}
       />
-      <IntegrationJsonLdScripts breadcrumb={breadcrumb} />
+      <IntegrationJsonLdScripts application={application} breadcrumb={breadcrumb} />
     </>
   );
 }

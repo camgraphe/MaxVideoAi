@@ -237,11 +237,11 @@ function englishGuides(client: McpClientId): IntegrationHostGuide[] {
   if (client === 'chatgpt') {
     return [
       {
-        hostId: 'chatgptDesktop',
-        title: 'Connect from ChatGPT desktop',
-        intro: 'Add MaxVideoAI as a Streamable HTTP MCP connection, then authorize the MaxVideoAI account you want to use.',
+        hostId: 'chatgptWeb',
+        title: 'Connect from ChatGPT web',
+        intro: 'Use an eligible workspace to add MaxVideoAI as a remote MCP app, then authorize the MaxVideoAI account you want to use.',
         steps: [
-          { title: 'Open MCP settings', body: 'In ChatGPT desktop settings, add a remote MCP server.' },
+          { title: 'Check workspace access', body: 'Full MCP is currently available on ChatGPT web for Business and Enterprise/Edu; Pro access is limited to read/fetch.' },
           { title: 'Paste the server address', body: 'Use the MaxVideoAI address below; no API key is required in the client.' },
           { title: 'Authorize MaxVideoAI', body: 'Sign in, approve the connection, and return to the conversation.' },
         ],
@@ -313,11 +313,11 @@ function frenchGuides(client: McpClientId): IntegrationHostGuide[] {
   if (client === 'chatgpt') {
     return [
       {
-        hostId: 'chatgptDesktop',
-        title: 'Connecter MaxVideoAI depuis ChatGPT',
-        intro: 'Ajoutez MaxVideoAI comme connexion MCP distante, puis autorisez le compte que vous souhaitez utiliser.',
+        hostId: 'chatgptWeb',
+        title: 'Connecter MaxVideoAI depuis ChatGPT web',
+        intro: 'Dans un espace éligible, ajoutez MaxVideoAI comme app MCP distante puis autorisez le compte à utiliser.',
         steps: [
-          { title: 'Ouvrir les réglages MCP', body: 'Dans les réglages ChatGPT, ajoutez un serveur MCP distant.' },
+          { title: 'Vérifier l’accès', body: 'Le MCP complet est disponible sur ChatGPT web pour Business et Enterprise/Edu ; l’accès Pro reste limité à la lecture et à la consultation.' },
           { title: 'Coller l’adresse du serveur', body: 'Utilisez l’adresse MaxVideoAI ci-dessous ; aucune clé API n’est requise dans ChatGPT.' },
           { title: 'Autoriser MaxVideoAI', body: 'Connectez-vous ou créez votre compte, approuvez la connexion, puis revenez dans la conversation.' },
         ],
@@ -389,11 +389,11 @@ function spanishGuides(client: McpClientId): IntegrationHostGuide[] {
   if (client === 'chatgpt') {
     return [
       {
-        hostId: 'chatgptDesktop',
-        title: 'Conectar MaxVideoAI desde ChatGPT',
-        intro: 'Añade MaxVideoAI como conexión MCP remota y autoriza la cuenta que quieras utilizar.',
+        hostId: 'chatgptWeb',
+        title: 'Conectar MaxVideoAI desde ChatGPT web',
+        intro: 'En un espacio elegible, añade MaxVideoAI como app MCP remota y autoriza la cuenta que quieras utilizar.',
         steps: [
-          { title: 'Abrir los ajustes MCP', body: 'En los ajustes de ChatGPT, añade un servidor MCP remoto.' },
+          { title: 'Comprobar el acceso', body: 'MCP completo está disponible en ChatGPT web para Business y Enterprise/Edu; en Pro se limita a lectura y consulta.' },
           { title: 'Pegar la dirección', body: 'Usa la dirección MaxVideoAI siguiente; no necesitas una clave API en ChatGPT.' },
           { title: 'Autorizar MaxVideoAI', body: 'Inicia sesión o crea tu cuenta, aprueba la conexión y vuelve a la conversación.' },
         ],
@@ -434,21 +434,33 @@ function englishCopy(client: McpClientId): IntegrationPageCopy {
     : client === 'claude'
       ? 'MaxVideoAI Connector'
       : 'MaxVideoAI Plugin';
+  const setupDescription = client === 'chatgpt'
+    ? 'Guide to testing MaxVideoAI on ChatGPT web for Business or Enterprise/Edu; Pro MCP is read/fetch only, and direct MaxVideoAI execution is unverified.'
+    : client === 'claude'
+      ? 'Set up the remote connector in Claude to plan prompts and references, compare AI video models, review the exact quote, and approve generation with MaxVideoAI.'
+      : 'Install the Codex plugin to plan prompts and references, compare current AI video models, review the exact quote, and approve generation with MaxVideoAI.';
+  const setupIntro = client === 'chatgpt'
+    ? 'For eligible Business and Enterprise/Edu workspaces on ChatGPT web, this guide documents how to test remote MCP setup. Direct MaxVideoAI installation, OAuth, quote approval and generation have not yet been verified on this exact host path; Pro MCP remains limited to read/fetch.'
+    : client === 'claude'
+      ? 'This Claude route covers the remote connector setup and the complete creative handoff: develop the brief, compare current models and budgets, validate references, then approve an exact MaxVideoAI quote when the request is ready.'
+      : 'This Codex route covers plugin installation and the complete creative handoff: develop the brief, compare current models and budgets, validate references, then approve an exact MaxVideoAI quote when the request is ready.';
   return {
     client,
     clientLabel,
     meta: {
       title: `${productTerm.replace(/^./, (value) => value.toUpperCase())} for ${clientLabel} | MaxVideoAI`,
-      description: `Plan prompts and references, compare current AI video models, see the exact price, and generate through MaxVideoAI from ${clientLabel}.`,
+      description: setupDescription,
     },
     hero: {
       eyebrow: client === 'chatgpt' ? 'MAXVIDEOAI APP' : client === 'claude' ? 'MAXVIDEOAI CONNECTOR' : 'MAXVIDEOAI PLUGIN',
-      title: `Create AI video with MaxVideoAI in ${clientLabel}`,
-      intro: `Keep the creative conversation in ${clientLabel}. It can develop the brief, prompts and references while MaxVideoAI supplies current models, comparable budgets, exact quotes and generation.`,
+      title: client === 'chatgpt' ? 'Test MaxVideoAI with ChatGPT web' : `Create AI video with MaxVideoAI in ${clientLabel}`,
+      intro: setupIntro,
       unavailable: 'Plan prompts and references, compare current models, budget the project and review the exact MaxVideoAI production workflow.',
-      liveStatus: 'MaxVideoAI is free to connect, with no separate subscription. Sign in or create an account; advice and project estimates are free, and only an approved generation uses pay-as-you-go credits.',
+      liveStatus: client === 'chatgpt'
+        ? 'The MaxVideoAI server is live, but this ChatGPT web route remains a validation guide: direct installation, OAuth and generation have not yet been recorded on this host.'
+        : 'MaxVideoAI is free to connect, with no separate subscription. Sign in or create an account; advice and project estimates are free, and only an approved generation uses pay-as-you-go credits.',
       accountStatus: 'A MaxVideoAI account is required and free to create. Connect with no separate subscription; only approved generations use pay-as-you-go credits.',
-      setupLabel: `Set up MaxVideoAI in ${clientLabel}`,
+      setupLabel: client === 'chatgpt' ? 'Test MaxVideoAI in ChatGPT web' : `Set up MaxVideoAI in ${clientLabel}`,
       backLabel: 'See the complete AI assistant workflow',
       backHref: '/mcp',
     },
@@ -457,7 +469,7 @@ function englishCopy(client: McpClientId): IntegrationPageCopy {
       statuses: {
         claudeDesktop: 'Claude Desktop 1.37937.1 completed OAuth, model discovery, budgeting, exact quote, media, recovery, upload-handoff and top-up-handoff checks on controlled staging.',
         claudeCode: 'The shared connector configuration is ready, but a direct Claude Code production check has not yet been recorded.',
-        chatgptDesktop: 'ChatGPT desktop supports direct remote MCP setup, but a direct MaxVideoAI installation and output-rendering check has not yet been recorded on this exact surface.',
+        chatgptWeb: 'Full MCP is documented for eligible Business and Enterprise/Edu workspaces on ChatGPT web, but a direct MaxVideoAI installation and output-rendering check has not yet been recorded.',
         codexCli: 'Codex CLI 0.150.0-alpha.8 completed production installation, OAuth, account, catalog, recommendation, budgeting, exact-quote, paid-generation, recovery and inline-player contract checks.',
       },
     },
@@ -520,21 +532,33 @@ function frenchCopy(client: McpClientId): IntegrationPageCopy {
     : client === 'claude'
       ? 'Connecteur MaxVideoAI'
       : 'Plugin MaxVideoAI';
+  const setupDescription = client === 'chatgpt'
+    ? 'Guide pour tester MaxVideoAI sur ChatGPT web avec Business ou Enterprise/Edu ; le MCP Pro reste en lecture seule et l’exécution directe reste non vérifiée.'
+    : client === 'claude'
+      ? 'Configurez le connecteur distant dans Claude pour préparer prompts et références, comparer les modèles vidéo IA, vérifier le devis et approuver la génération.'
+      : 'Installez le plugin Codex pour préparer prompts et références, comparer les modèles vidéo IA, vérifier le devis exact et approuver la génération.';
+  const setupIntro = client === 'chatgpt'
+    ? 'Pour les espaces Business et Enterprise/Edu éligibles sur ChatGPT web, ce guide explique comment tester la configuration MCP distante. L’installation MaxVideoAI, OAuth, l’approbation du devis et la génération ne sont pas encore vérifiés sur ce parcours précis ; le MCP Pro reste en lecture et consultation.'
+    : client === 'claude'
+      ? 'Cette page Claude réunit la configuration du connecteur distant et le passage à la production : développez le brief, comparez modèles et budgets actuels, validez les références puis approuvez un devis MaxVideoAI exact lorsque la demande est prête.'
+      : 'Cette page Codex réunit l’installation du plugin et le passage à la production : développez le brief, comparez modèles et budgets actuels, validez les références puis approuvez un devis MaxVideoAI exact lorsque la demande est prête.';
   return {
     ...base,
     meta: {
       title: `${term} pour ${clientLabel} | MaxVideoAI`,
-      description: `Préparez prompts et références, comparez les modèles vidéo IA, voyez le prix exact et générez avec MaxVideoAI depuis ${clientLabel}.`,
+      description: setupDescription,
     },
     hero: {
       ...base.hero,
       eyebrow: client === 'chatgpt' ? 'APP MAXVIDEOAI' : client === 'claude' ? 'CONNECTEUR MAXVIDEOAI' : 'PLUGIN MAXVIDEOAI',
-      title: `Créez vos vidéos IA avec MaxVideoAI dans ${clientLabel}`,
-      intro: `Gardez la discussion créative dans ${clientLabel}. Il développe le brief, les prompts et les références ; MaxVideoAI fournit les modèles actuels, les budgets comparables, le devis exact et la génération.`,
+      title: client === 'chatgpt' ? 'Testez MaxVideoAI avec ChatGPT web' : `Créez vos vidéos IA avec MaxVideoAI dans ${clientLabel}`,
+      intro: setupIntro,
       unavailable: 'Préparez prompts et références, comparez les modèles, budgétez le projet et découvrez le parcours de production MaxVideoAI.',
-      liveStatus: 'La connexion MaxVideoAI est gratuite, sans abonnement supplémentaire. Connectez-vous ou créez un compte ; seuls les rendus approuvés utilisent vos crédits MaxVideoAI à la consommation.',
+      liveStatus: client === 'chatgpt'
+        ? 'Le serveur MaxVideoAI est actif, mais cette page ChatGPT web reste un guide de validation : installation, OAuth et génération n’ont pas encore été enregistrés sur cet hôte.'
+        : 'La connexion MaxVideoAI est gratuite, sans abonnement supplémentaire. Connectez-vous ou créez un compte ; seuls les rendus approuvés utilisent vos crédits MaxVideoAI à la consommation.',
       accountStatus: 'Un compte MaxVideoAI est requis et sa création est gratuite. La connexion n’ajoute aucun abonnement ; seuls les rendus approuvés utilisent vos crédits MaxVideoAI.',
-      setupLabel: `Configurer MaxVideoAI dans ${clientLabel}`,
+      setupLabel: client === 'chatgpt' ? 'Tester MaxVideoAI dans ChatGPT web' : `Configurer MaxVideoAI dans ${clientLabel}`,
       backLabel: 'Voir le parcours complet dans votre assistant IA',
       backHref: localized('fr', 'mcp'),
     },
@@ -543,7 +567,7 @@ function frenchCopy(client: McpClientId): IntegrationPageCopy {
       statuses: {
         claudeDesktop: 'Claude Desktop 1.37937.1 a validé sur le staging contrôlé OAuth, catalogue, budgets, devis exact, médias, récupération, envoi et recharge.',
         claudeCode: 'La configuration du connecteur partagé est prête, mais aucun contrôle direct de Claude Code en production n’a encore été enregistré.',
-        chatgptDesktop: 'ChatGPT desktop accepte les connexions MCP distantes, mais aucune installation MaxVideoAI ni aucun rendu de résultat n’a encore été enregistré sur cette surface précise.',
+        chatgptWeb: 'Le MCP complet est documenté pour les espaces Business et Enterprise/Edu éligibles sur ChatGPT web, mais aucune installation MaxVideoAI ni aucun rendu de résultat n’y a encore été enregistré.',
         codexCli: 'Codex CLI 0.150.0-alpha.8 a validé en production installation, OAuth, compte, catalogue, recommandations, budgets, devis exact, génération payante, récupération et contrat du lecteur intégré.',
       },
     },
@@ -608,21 +632,33 @@ function spanishCopy(client: McpClientId): IntegrationPageCopy {
     : client === 'claude'
       ? 'Conector MaxVideoAI'
       : 'Plugin MaxVideoAI';
+  const setupDescription = client === 'chatgpt'
+    ? 'Guía para probar MaxVideoAI en ChatGPT web con Business o Enterprise/Edu; MCP en Pro es de lectura y la ejecución directa sigue sin verificar.'
+    : client === 'claude'
+      ? 'Configura el conector remoto en Claude para preparar prompts y referencias, comparar modelos de vídeo con IA, revisar el precio y aprobar la generación.'
+      : 'Instala el plugin de Codex para preparar prompts y referencias, comparar modelos de vídeo con IA, revisar el precio exacto y aprobar la generación.';
+  const setupIntro = client === 'chatgpt'
+    ? 'Para espacios Business y Enterprise/Edu elegibles en ChatGPT web, esta guía explica cómo probar la configuración MCP remota. La instalación de MaxVideoAI, OAuth, la aprobación del precio y la generación todavía no se han verificado en esta ruta; MCP en Pro se limita a lectura y consulta.'
+    : client === 'claude'
+      ? 'Esta página de Claude reúne la configuración del conector remoto y el paso a producción: desarrolla el brief, compara modelos y presupuestos actuales, valida las referencias y aprueba un precio exacto de MaxVideoAI cuando la solicitud esté lista.'
+      : 'Esta página de Codex reúne la instalación del plugin y el paso a producción: desarrolla el brief, compara modelos y presupuestos actuales, valida las referencias y aprueba un precio exacto de MaxVideoAI cuando la solicitud esté lista.';
   return {
     ...base,
     meta: {
       title: `${term} para ${clientLabel} | MaxVideoAI`,
-      description: `Prepara prompts y referencias, compara modelos de vídeo con IA, revisa el precio exacto y genera con MaxVideoAI desde ${clientLabel}.`,
+      description: setupDescription,
     },
     hero: {
       ...base.hero,
       eyebrow: client === 'chatgpt' ? 'APP MAXVIDEOAI' : client === 'claude' ? 'CONECTOR MAXVIDEOAI' : 'PLUGIN MAXVIDEOAI',
-      title: `Crea vídeo con IA usando MaxVideoAI en ${clientLabel}`,
-      intro: `Mantén la conversación creativa en ${clientLabel}. Desarrolla el brief, los prompts y las referencias; MaxVideoAI aporta modelos actuales, presupuestos comparables, precio exacto y generación.`,
+      title: client === 'chatgpt' ? 'Prueba MaxVideoAI con ChatGPT web' : `Crea vídeo con IA usando MaxVideoAI en ${clientLabel}`,
+      intro: setupIntro,
       unavailable: 'Prepara prompts y referencias, compara modelos, presupuesta el proyecto y revisa el flujo de producción de MaxVideoAI.',
-      liveStatus: 'Conectar MaxVideoAI es gratis y no añade otra suscripción. Inicia sesión o crea una cuenta; solo los renders aprobados usan créditos de pago por uso.',
+      liveStatus: client === 'chatgpt'
+        ? 'El servidor MaxVideoAI está activo, pero esta página de ChatGPT web sigue siendo una guía de validación: aún no se han registrado instalación, OAuth ni generación en este host.'
+        : 'Conectar MaxVideoAI es gratis y no añade otra suscripción. Inicia sesión o crea una cuenta; solo los renders aprobados usan créditos de pago por uso.',
       accountStatus: 'Necesitas una cuenta MaxVideoAI, que puedes crear gratis. La conexión no añade otra suscripción; solo los renders aprobados usan créditos de MaxVideoAI.',
-      setupLabel: `Configurar MaxVideoAI en ${clientLabel}`,
+      setupLabel: client === 'chatgpt' ? 'Probar MaxVideoAI en ChatGPT web' : `Configurar MaxVideoAI en ${clientLabel}`,
       backLabel: 'Ver el flujo completo en tu asistente de IA',
       backHref: localized('es', 'mcp'),
     },
@@ -631,7 +667,7 @@ function spanishCopy(client: McpClientId): IntegrationPageCopy {
       statuses: {
         claudeDesktop: 'Claude Desktop 1.37937.1 completó en staging controlado OAuth, catálogo, presupuestos, precio exacto, medios, recuperación, carga y recarga.',
         claudeCode: 'La configuración del conector compartido está lista, pero todavía no se ha registrado una comprobación directa de Claude Code en producción.',
-        chatgptDesktop: 'ChatGPT desktop admite MCP remoto, pero todavía no se ha registrado en esta superficie una instalación directa de MaxVideoAI ni el renderizado del resultado.',
+        chatgptWeb: 'MCP completo está documentado para espacios Business y Enterprise/Edu elegibles en ChatGPT web, pero todavía no se ha registrado una instalación directa de MaxVideoAI ni el renderizado del resultado.',
         codexCli: 'Codex CLI 0.150.0-alpha.8 completó en producción la instalación, OAuth, cuenta, catálogo, recomendaciones, presupuestos, precio exacto, generación de pago, recuperación y contrato del reproductor integrado.',
       },
     },

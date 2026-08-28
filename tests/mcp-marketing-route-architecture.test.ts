@@ -392,7 +392,8 @@ test('visible compatibility dates are sourced from the recorded evidence config'
   assert.equal('lastVerified' in config, false);
   assert.equal(config.hosts.claudeDesktop?.status, 'verified');
   assert.equal(config.hosts.codexCli?.status, 'verified');
-  assert.equal(config.hosts.chatgptDesktop?.status, 'not-run');
+  assert.equal(config.hosts.chatgptWeb?.status, 'not-run');
+  assert.equal('chatgptDesktop' in config.hosts, false);
   assert.equal(config.hosts.claudeCode?.status, 'not-run');
 
   const mcpCopy = requireFile(`${mcpRoot}/_lib/mcp-page-copy.ts`);

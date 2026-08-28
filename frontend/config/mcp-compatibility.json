@@ -13,9 +13,9 @@
       "hostLabel": "Claude Code",
       "status": "not-run"
     },
-    "chatgptDesktop": {
+    "chatgptWeb": {
       "client": "chatgpt",
-      "hostLabel": "ChatGPT desktop",
+      "hostLabel": "ChatGPT web",
       "status": "not-run"
     },
     "codexCli": {
