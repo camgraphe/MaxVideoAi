@@ -42,7 +42,8 @@ test('the flagship README opens with the product outcome, three destinations, an
   assert.doesNotMatch(opening, /\[Try MaxVideoAI\]\(https:\/\/maxvideoai\.com\/app\)/);
   assert.doesNotMatch(opening, /\[Explore models\]\(https:\/\/maxvideoai\.com\/models\)/);
   assert.match(opening, /\[Plugin repository\]\(https:\/\/github\.com\/camgraphe\/maxvideoai-plugin\)/);
-  assert.match(opening, /\[Latest public release: v0\.3\.1\]\(https:\/\/github\.com\/camgraphe\/maxvideoai-plugin\/releases\/tag\/v0\.3\.1\)/);
+  assert.match(opening, /\[Plugin releases\]\(https:\/\/github\.com\/camgraphe\/maxvideoai-plugin\/releases\)/);
+  assert.doesNotMatch(opening, /Latest public release:/i);
   assert.doesNotMatch(opening, /\[Use[^\]]*ChatGPT[^\]]*\]\(https:\/\/github\.com\/camgraphe\/maxvideoai-plugin\)/i);
   assert.doesNotMatch(opening, /release pending/i);
   assert.match(opening, /<img src="plugins\/maxvideoai\/assets\/logo-mark\.svg"[^>]+>/);
@@ -104,8 +105,8 @@ test('the flagship README tells the commercial story before contributor setup', 
   assert.match(readme, /Sora[\s\S]*Veo[\s\S]*Kling[\s\S]*Seedance[\s\S]*LTX/i);
   assert.match(readme, /current availability and pricing/i);
   assert.match(readme, /three equal entry points[\s\S]*Claude connector or plugin[\s\S]*ChatGPT app\/plugin[\s\S]*Codex plugin/i);
-  assert.match(readme, /current public plugin releases[\s\S]*v0\.3\.0[\s\S]*v0\.3\.1/i);
-  assert.match(readme, /0\.3\.2 package remains the next source candidate until its release gates are complete/i);
+  assert.match(readme, /plugin repository[\s\S]*tagged, checksum-backed releases[\s\S]*release page for the current installable package/i);
+  assert.doesNotMatch(readme, /next source candidate|closed candidate/i);
   assert.doesNotMatch(readme, /first release lands|bootstrap-only|no tagged release/i);
   assert.doesNotMatch(readme, /\b\d+\s+(?:current\s+)?(?:AI\s+)?video models\b/i);
   assert.doesNotMatch(readme, /\b(?:camgraphe@|gmail\.com)\b/i);
