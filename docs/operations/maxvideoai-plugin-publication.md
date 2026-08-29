@@ -176,9 +176,11 @@ When a closed candidate passes every gate, source tag
 - `maxvideoai-plugin-<version>.zip`;
 - `maxvideoai-plugin-<version>.zip.sha256`.
 
-The ZIP is the deterministic archive from the source build, while the public tree
-contains the same release files plus `checksums.json`. Verify the attached archive
-against the `.sha256` file and verify sampled public files against
+The ZIP is the deterministic archive from the source build. New candidates store
+the exact file bytes instead of delegating Deflate output to the host runtime, so
+Node/zlib version changes cannot alter an otherwise identical archive digest. The
+public tree contains the same release files plus `checksums.json`. Verify the
+attached archive against the `.sha256` file and verify sampled public files against
 `checksums.json`. The synchronizer calculates every post-copy digest from the target
 checkout against the already validated manifest; it does not trust a second read of
 the mutable source directory.
@@ -206,12 +208,13 @@ The verified bootstrap state is:
 | Community settings | Issues and Discussions enabled; Wiki disabled; merge commits disabled; squash merge enabled; merged branches deleted |
 | Bootstrap `main` protection | Force pushes and branch deletion disabled; no invented required status check or pull-request gate |
 | Security | Secret scanning, push protection, and private vulnerability reporting enabled |
-| Social preview | [GitHub-hosted repository image](https://repository-images.githubusercontent.com/1349419332/e5459224-cdf9-433c-9ccb-44034079a51f) from `assets/social/github-social-preview.png`, 1280×640, SHA-256 `a77684b5c02980246a50df2ae6ae5247d9bd6c03b1dd1f4a2d997c89fee98e07` |
+| Social preview | [GitHub-hosted repository image](https://repository-images.githubusercontent.com/1349419332/36c70402-fce2-4eb0-91dc-8a7af6310b36) from `assets/social/github-social-preview.png`, 1280×640, SHA-256 `ef0bab5e8045c943bba97130732737f1167497db65c63321bfd101be59394368` |
 | Source Environment | `maxvideoai-plugin-publication`; owner review required; deployments restricted to `maxvideoai-plugin-v*` tags |
 | Publication secret | Repository Actions secret `MAXVIDEOAI_PLUGIN_REPO_TOKEN` was installed on 2026-08-29 from a fine-grained token limited to the destination repository with Contents read/write; the value is not recorded |
 | Public releases | [v0.3.0](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.0) through [v0.3.3](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.3) are public, each with a ZIP and SHA-256 attachment |
 | Latest publication workflow | Source workflow [run 33223071787](https://github.com/camgraphe/MaxVideoAi/actions/runs/33223071787) published source commit `c4045a55` to public commit `c677ed53` for v0.3.3 |
 | Latest release checksum | Public `maxvideoai-plugin-0.3.3.zip` SHA-256 is `af6d6f4e124e3c6abe95ada4cb0049fa9c843bb1eb58dd6b874abce5c4e5413b`; the attached checksum verifies successfully |
+| Future archive reproducibility | The post-v0.3.3 builder produced one byte-identical stored ZIP under Node 22.23.2, 23.9.0, and 24.19.0: SHA-256 `83b5a73b67c0247fc8695ceb787752cc3aa56a0864ba7e81d3e6a55500ad09f4`, 1,499,603 bytes, 60 valid entries. Published v0.3.3 remains immutable with its checksum above. |
 | Latest clean install | Codex CLI added `camgraphe/maxvideoai-plugin#v0.3.3`, installed `maxvideoai@maxvideoai` 0.3.3, and exposed the corrected README and guide |
 | Closed candidate | None after the v0.3.3 closeout; any future candidate requires a new coordinated version and complete gate |
 

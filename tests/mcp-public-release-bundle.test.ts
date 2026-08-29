@@ -190,7 +190,14 @@ function addVersion03Metadata(sourcePath: string): void {
   );
 }
 
-function readZipDirectory(path: string): Array<{ name: string; time: number; date: number }> {
+function readZipDirectory(path: string): Array<{
+  name: string;
+  method: number;
+  time: number;
+  date: number;
+  compressedSize: number;
+  uncompressedSize: number;
+}> {
   const archive = readFileSync(path);
   const endSignature = Buffer.from([0x50, 0x4b, 0x05, 0x06]);
   const endOffset = archive.lastIndexOf(endSignature);
@@ -206,8 +213,11 @@ function readZipDirectory(path: string): Array<{ name: string; time: number; dat
     const commentLength = archive.readUInt16LE(offset + 32);
     entries.push({
       name: archive.subarray(offset + 46, offset + 46 + nameLength).toString('utf8'),
+      method: archive.readUInt16LE(offset + 10),
       time: archive.readUInt16LE(offset + 12),
       date: archive.readUInt16LE(offset + 14),
+      compressedSize: archive.readUInt32LE(offset + 20),
+      uncompressedSize: archive.readUInt32LE(offset + 24),
     });
     offset += 46 + nameLength + extraLength + commentLength;
   }
@@ -277,6 +287,12 @@ test('release builder exports the exact deterministic public surface with checks
   assert.deepEqual(
     archiveEntries.map((entry) => entry.name),
     [...expectedPublicFiles, 'checksums.json'].sort().map((path) => `maxvideoai/${path}`),
+  );
+  assert.ok(
+    archiveEntries.every(
+      (entry) => entry.method === 0 && entry.compressedSize === entry.uncompressedSize,
+    ),
+    'ZIP entries must store exact bytes so archive digests do not depend on runtime deflate',
   );
   assert.ok(archiveEntries.every((entry) => entry.time === 0 && entry.date === 0x5021));
 });

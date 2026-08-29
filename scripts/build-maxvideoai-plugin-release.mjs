@@ -12,7 +12,6 @@ import {
   rmSync,
   writeFileSync,
 } from 'node:fs';
-import { deflateRawSync } from 'node:zlib';
 import { basename, dirname, extname, isAbsolute, join, parse, relative, resolve, sep } from 'node:path';
 import { homedir, tmpdir } from 'node:os';
 
@@ -680,32 +679,32 @@ function createZip(entries) {
 
   for (const entry of entries) {
     const name = Buffer.from(entry.name, 'utf8');
-    const compressed = deflateRawSync(entry.contents, { level: 9 });
+    const stored = entry.contents;
     const crc = crc32(entry.contents);
     const localHeader = Buffer.alloc(30);
     localHeader.writeUInt32LE(0x04034b50, 0);
     localHeader.writeUInt16LE(20, 4);
     localHeader.writeUInt16LE(0x0800, 6);
-    localHeader.writeUInt16LE(8, 8);
+    localHeader.writeUInt16LE(0, 8);
     localHeader.writeUInt16LE(0, 10);
     localHeader.writeUInt16LE(dosDate, 12);
     localHeader.writeUInt32LE(crc, 14);
-    localHeader.writeUInt32LE(compressed.length, 18);
+    localHeader.writeUInt32LE(stored.length, 18);
     localHeader.writeUInt32LE(entry.contents.length, 22);
     localHeader.writeUInt16LE(name.length, 26);
     localHeader.writeUInt16LE(0, 28);
-    localParts.push(localHeader, name, compressed);
+    localParts.push(localHeader, name, stored);
 
     const centralHeader = Buffer.alloc(46);
     centralHeader.writeUInt32LE(0x02014b50, 0);
     centralHeader.writeUInt16LE(0x0314, 4);
     centralHeader.writeUInt16LE(20, 6);
     centralHeader.writeUInt16LE(0x0800, 8);
-    centralHeader.writeUInt16LE(8, 10);
+    centralHeader.writeUInt16LE(0, 10);
     centralHeader.writeUInt16LE(0, 12);
     centralHeader.writeUInt16LE(dosDate, 14);
     centralHeader.writeUInt32LE(crc, 16);
-    centralHeader.writeUInt32LE(compressed.length, 20);
+    centralHeader.writeUInt32LE(stored.length, 20);
     centralHeader.writeUInt32LE(entry.contents.length, 24);
     centralHeader.writeUInt16LE(name.length, 28);
     centralHeader.writeUInt16LE(0, 30);
@@ -715,7 +714,7 @@ function createZip(entries) {
     centralHeader.writeUInt32LE((0o100644 << 16) >>> 0, 38);
     centralHeader.writeUInt32LE(offset, 42);
     centralParts.push(centralHeader, name);
-    offset += localHeader.length + name.length + compressed.length;
+    offset += localHeader.length + name.length + stored.length;
   }
 
   const centralDirectory = Buffer.concat(centralParts);
