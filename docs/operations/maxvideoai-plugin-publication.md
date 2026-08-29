@@ -17,11 +17,11 @@ The focused repository now contains public package history:
 - [v0.3.0](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.0) is public with `maxvideoai-plugin-0.3.0.zip` and its `.sha256` attachment;
 - [v0.3.1](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.1) is public with `maxvideoai-plugin-0.3.1.zip` and its `.sha256` attachment;
 - [v0.3.2](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.2) is public with `maxvideoai-plugin-0.3.2.zip` and its `.sha256` attachment;
-- `0.3.3` is the corrective candidate for durable release wording and the focused public-repository install path. It must complete the same gate below before publication.
+- [v0.3.3](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.3) is public with `maxvideoai-plugin-0.3.3.zip` and its `.sha256` attachment. It corrects the durable release wording and focused public-repository install path.
 
-These facts prove public distribution for v0.3.0 through v0.3.2. The successful
-v0.3.2 workflow and clean Codex package installation do not prove a clean install
-in every host or readiness of the separate 0.3.3 corrective candidate.
+These facts prove public distribution for v0.3.0 through v0.3.3. The successful
+v0.3.3 workflow and clean Codex package installation from the public tag do not
+prove a clean install or complete execution path in every host.
 
 ## Publication contract
 
@@ -106,9 +106,9 @@ all of them by design.
 
 ## Next candidate publication
 
-The following sequence applies to the closed 0.3.3 candidate only after its named
-gate is complete. The existence of earlier public releases does not waive any
-0.3.3 evidence requirement.
+The following sequence applies to every future candidate only after its named gate
+is complete. The existence of earlier public releases does not waive a new
+version's evidence requirements.
 
 1. Complete the explicit external-mutation approval. Confirm the owner, repository
    name, public visibility, description, homepage, version, and exact bundle
@@ -130,10 +130,11 @@ gate is complete. The existence of earlier public releases does not waive any
    workflow ref and input so the Environment's tag restriction remains effective:
 
    ```bash
+   release_version="<approved-semver>"
    gh workflow run publish-maxvideoai-plugin.yml \
      --repo camgraphe/MaxVideoAi \
-     --ref maxvideoai-plugin-v0.3.3 \
-     -f source_tag=maxvideoai-plugin-v0.3.3
+     --ref "maxvideoai-plugin-v${release_version}" \
+     -f "source_tag=maxvideoai-plugin-v${release_version}"
    ```
 
    Dispatching from `main` while naming a tag only in the input is rejected.
@@ -168,12 +169,12 @@ migration is implemented and exercised.
 
 ## Release creation
 
-If the closed candidate later passes every gate, source tag
-`maxvideoai-plugin-v0.3.3` makes the workflow create destination release `v0.3.3`
-at the newly published commit. It would attach:
+When a closed candidate passes every gate, source tag
+`maxvideoai-plugin-v<version>` makes the workflow create destination release
+`v<version>` at the newly published commit. It attaches:
 
-- `maxvideoai-plugin-0.3.3.zip`;
-- `maxvideoai-plugin-0.3.3.zip.sha256`.
+- `maxvideoai-plugin-<version>.zip`;
+- `maxvideoai-plugin-<version>.zip.sha256`.
 
 The ZIP is the deterministic archive from the source build, while the public tree
 contains the same release files plus `checksums.json`. Verify the attached archive
@@ -208,13 +209,15 @@ The verified bootstrap state is:
 | Social preview | [GitHub-hosted repository image](https://repository-images.githubusercontent.com/1349419332/e5459224-cdf9-433c-9ccb-44034079a51f) from `assets/social/github-social-preview.png`, 1280×640, SHA-256 `a77684b5c02980246a50df2ae6ae5247d9bd6c03b1dd1f4a2d997c89fee98e07` |
 | Source Environment | `maxvideoai-plugin-publication`; owner review required; deployments restricted to `maxvideoai-plugin-v*` tags |
 | Publication secret | Repository Actions secret `MAXVIDEOAI_PLUGIN_REPO_TOKEN` was installed on 2026-08-29 from a fine-grained token limited to the destination repository with Contents read/write; the value is not recorded |
-| Public releases | [v0.3.0](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.0), [v0.3.1](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.1), and [v0.3.2](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.2) are public, each with a ZIP and SHA-256 attachment |
-| Publication workflow evidence | Source workflow [run 33222600704](https://github.com/camgraphe/MaxVideoAi/actions/runs/33222600704) published source commit `2ec21ee2` to public commit `d44bb30a` for v0.3.2 |
-| Closed candidate | `0.3.3` remains gated on its matching source tag, built checksum, focused-repository clean install, current visual, coordinated metadata, and final owner review |
+| Public releases | [v0.3.0](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.0) through [v0.3.3](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.3) are public, each with a ZIP and SHA-256 attachment |
+| Latest publication workflow | Source workflow [run 33223071787](https://github.com/camgraphe/MaxVideoAi/actions/runs/33223071787) published source commit `c4045a55` to public commit `c677ed53` for v0.3.3 |
+| Latest release checksum | Public `maxvideoai-plugin-0.3.3.zip` SHA-256 is `af6d6f4e124e3c6abe95ada4cb0049fa9c843bb1eb58dd6b874abce5c4e5413b`; the attached checksum verifies successfully |
+| Latest clean install | Codex CLI added `camgraphe/maxvideoai-plugin#v0.3.3`, installed `maxvideoai@maxvideoai` 0.3.3, and exposed the corrected README and guide |
+| Closed candidate | None after the v0.3.3 closeout; any future candidate requires a new coordinated version and complete gate |
 
 The welcome Discussion and destination required checks remain separate follow-up
 work. Public artifacts are installable-release evidence for their versions only,
-not native-host compatibility evidence and not evidence that 0.3.3 is ready.
+not native-host compatibility or end-to-end generation evidence.
 
 ## Failure and rollback
 

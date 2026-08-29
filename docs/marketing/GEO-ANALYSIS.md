@@ -24,9 +24,9 @@ Primary terminology references to recheck before publication:
 - Schema.org `sameAs`: https://schema.org/sameAs
 - `llms.txt` proposal: https://llmstxt.org/
 
-## GEO Readiness Score: 89/100
+## GEO Readiness Score: 93/100
 
-This is a **reviewed-branch implementation-readiness score**, not an organic-traffic forecast or a claim that an answer engine already cites MaxVideoAI. Production exposes the localized MCP intent owners, and the live `/mcp` page now links people directly to the dedicated plugin repository. The focused repository is public with v0.3.0 and v0.3.1 releases. This reviewed branch adds a richer source README, a richer distributable plugin README, and six fresh non-repeating product captures. The score remains below 90 because the refreshed bundle is not synchronized to the focused public repository, authoritative external citations and listings are unverified, real-host evidence columns remain incomplete, and no clean post-change acquisition window has been observed.
+This is a **reviewed implementation-readiness score**, not an organic-traffic forecast or a claim that an answer engine already cites MaxVideoAI. Production exposes the localized MCP intent owners, and the live `/mcp` page links people directly to the dedicated plugin repository. The focused repository now carries the proof-led README, six distinct product captures, and checksum-backed releases through v0.3.3. The score remains below 100 because authoritative external citations and listings are unverified, real-host evidence columns remain incomplete, and no clean post-change acquisition window has been observed.
 
 ## Live production vs reviewed branch
 
@@ -37,16 +37,16 @@ Fresh read-only probes on 2026-08-28 establish this boundary:
 | `/llms.txt` | The deployed repository-aware change belongs to the current production line; retain a direct post-release re-probe before using it as external evidence. | Keeps the dedicated repository and five owned MCP pages as first-party sources. |
 | `/mcp` HTML | Public, reachable, and verified on 2026-08-29 with a people-visible link to `github.com/camgraphe/maxvideoai-plugin`. | Preserves the approved “Claude, ChatGPT or Codex” composition and adds no host-specific proof claim. |
 | `/integrations/chatgpt` HTML | Public and reachable with the shared ChatGPT/Codex journey, installation then first-use OAuth, directory-approval boundary, and developer MCP fallback. | The README refresh does not change the host journey or its availability boundary. |
-| Focused plugin repository | Public with a README and checksum-backed v0.3.0 and v0.3.1 releases; its current README is visually sparse. | The deterministic bundle adds the refreshed proof-led README and six current screenshots, pending synchronization and a separately gated release. |
+| Focused plugin repository | Public with the proof-led README, six current non-repeating product captures, and checksum-backed v0.3.0 through v0.3.3 releases. | The deterministic source bundle and public tree match with zero reported drift for v0.3.3. |
 
-Do not use the reviewed branch as evidence that the refreshed focused-repository README or its screenshots are public; that synchronization remains a separate release action.
+Treat the public v0.3.3 tree and release assets as installation and publication evidence only; they do not prove native-host execution or an end-to-end paid generation in every named host.
 
 | Criterion | Score | Current evidence |
 | --- | ---: | --- |
 | Passage-level citability | 24/25 | Server-rendered site answers and both GitHub READMEs independently define the entity, model-comparison decision, pricing boundary, Library continuity, technical architecture, and safe next action. |
 | Structural readability | 20/20 | Five localized intent owners, question-led GitHub sections, short supporting answers, visual interruptions, breadcrumbs, client guides, and a technical reference create distinct extractable passages. |
-| Multi-modal proof | 11/15 | Six fresh public-product captures cover the app, examples, comparison scoreboard, models, pricing, and assistant path without repeating one result; a separate Library capture closes the workflow. The focused repository still needs the refreshed bundle. |
-| Authority and brand signals | 14/20 | A dedicated public repository, v0.3.0 and v0.3.1 releases, current manifests, maintained profiles, compatibility records, and people-visible first-party source attribution exist. Earned mentions and authoritative listings remain unverified. |
+| Multi-modal proof | 14/15 | Six fresh public-product captures cover the app, examples, comparison scoreboard, models, pricing, and assistant path without repeating one result; a separate Library capture closes the workflow, and the complete sequence is public in v0.3.3. |
+| Authority and brand signals | 15/20 | A dedicated synchronized public repository, releases through v0.3.3, current manifests, maintained profiles, compatibility records, a protected publication trail, and people-visible first-party source attribution exist. Earned mentions and authoritative listings remain unverified. |
 | Technical accessibility | 20/20 | Server-rendered answers, localized sitemap owners, five-page `llms.txt`, repository-aware entity links, crawler controls, and private-route exclusions are covered by production surfaces and deterministic contracts. |
 
 ## Platform Breakdown
@@ -54,8 +54,8 @@ Do not use the reviewed branch as evidence that the refreshed focused-repository
 | Platform | Readiness | Main strength | Main gap |
 | --- | ---: | --- | --- |
 | Google AI Overviews | 88/100 | Public localized owners, server-rendered question passages, current GitHub answer blocks, established domain visibility, structured data, and contextual links. | No post-change search window or earned citation yet. |
-| ChatGPT search and app discovery | 89/100 | Dedicated live intent owner, allowed retrieval crawlers, public plugin repository, tagged releases, shared ChatGPT/Codex journey, and richer agent-readable GitHub passages. | Refreshed public bundle, public-directory approval, real-host evidence, and observed citation data remain outstanding. The MCP URL remains the developer fallback. |
-| Perplexity | 76/100 | Concise source passages, public repository identity, current visual evidence, localized technical guide, and crawler access are ready. | No earned community validation, authoritative listing, or observed citation data. |
+| ChatGPT search and app discovery | 91/100 | Dedicated live intent owner, allowed retrieval crawlers, synchronized public plugin repository, tagged releases, shared ChatGPT/Codex journey, and richer agent-readable GitHub passages. | Public-directory approval, real-host evidence, and observed citation data remain outstanding. The MCP URL remains the developer fallback. |
+| Perplexity | 78/100 | Concise source passages, synchronized public repository identity, current visual evidence, localized technical guide, and crawler access are ready. | No earned community validation, authoritative listing, or observed citation data. |
 
 ## AI Crawler Access Status
 
@@ -88,7 +88,7 @@ Repository evidence currently declares organization profiles for X, LinkedIn, Gi
 
 Current gaps:
 
-- the dedicated plugin repository is public with v0.3.0 and v0.3.1, but the refreshed visual README and bundle are not synchronized;
+- the dedicated plugin repository and proof-led bundle are public through v0.3.3, but no independent referring-domain authority has been observed;
 - no archived, separately reviewed real-host result packet for the internal host columns;
 - no recorded YouTube proof or plugin walkthrough;
 - no audited Reddit/community discussion;
