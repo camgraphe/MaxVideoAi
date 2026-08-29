@@ -1,15 +1,17 @@
 'use client';
 
 import clsx from 'clsx';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useMemo } from 'react';
 import {
   AudioWaveform,
-  Check,
+  ArrowRight,
   Clapperboard,
   Home,
   Images,
+  Info,
   LibraryBig,
   ListChecks,
   LucideIcon,
@@ -20,7 +22,6 @@ import {
 import { Chip } from '@/components/ui/Chip';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import { ButtonLink } from '@/components/ui/Button';
 import { FEATURES } from '@/content/feature-flags';
 import { isSettingsPath } from '@/lib/settings-navigation';
 
@@ -60,6 +61,101 @@ const NAV_ICON_MAP: Record<string, LucideIcon> = {
 };
 
 type NavItem = (typeof NAV_ITEMS)[number];
+
+const ASSISTANT_CONNECTIONS = [
+  {
+    id: 'claude',
+    href: '/integrations/claude',
+    lightMark: '/brand/partners/anthropic/claude-mark-light.svg',
+    darkMark: '/brand/partners/anthropic/claude-mark-dark.svg',
+    fallbackLabel: 'Claude',
+  },
+  {
+    id: 'chatgpt',
+    href: '/integrations/chatgpt',
+    lightMark: '/brand/partners/openai/openai-mark-light.svg',
+    darkMark: '/brand/partners/openai/openai-mark-dark.svg',
+    fallbackLabel: 'ChatGPT',
+  },
+  {
+    id: 'codex',
+    href: '/integrations/codex',
+    lightMark: '/brand/partners/openai/openai-mark-light.svg',
+    darkMark: '/brand/partners/openai/openai-mark-dark.svg',
+    fallbackLabel: 'Codex',
+  },
+] as const;
+
+type SidebarTranslate = (path: string, fallback: string) => string | undefined;
+
+export function AssistantConnectionsCard({ t }: { t: SidebarTranslate }) {
+  const tooltip = t(
+    'workspace.sidebar.assistantConnections.tooltip',
+    'Connect your account to use MaxVideoAI directly from your AI assistant.',
+  );
+
+  return (
+    <div className="rounded-card border border-hairline bg-surface shadow-sm">
+      <div className="flex items-center justify-between gap-2 px-3.5 py-3">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text-primary">
+          {t('workspace.sidebar.assistantConnections.label', 'Connect')}
+        </p>
+        <span className="group/assistant-tip relative inline-flex">
+          <button
+            type="button"
+            className="flex h-5 w-5 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label={tooltip}
+            aria-describedby="assistant-connections-tooltip"
+          >
+            <Info className="h-3.5 w-3.5" aria-hidden />
+          </button>
+          <span
+            id="assistant-connections-tooltip"
+            role="tooltip"
+            className="pointer-events-none absolute bottom-0 left-full z-50 ml-2 hidden w-56 rounded-input border border-border bg-surface px-3 py-2 text-left text-[11px] font-normal leading-4 normal-case tracking-normal text-text-secondary shadow-lg group-hover/assistant-tip:block group-focus-within/assistant-tip:block dark:border-white/12 dark:bg-[#111827] dark:text-white/78"
+          >
+            {tooltip}
+          </span>
+        </span>
+      </div>
+
+      <div className="overflow-hidden rounded-b-card border-t border-hairline divide-y divide-hairline">
+        {ASSISTANT_CONNECTIONS.map((connection) => (
+          <Link
+            key={connection.id}
+            href={connection.href}
+            prefetch={false}
+            className="group flex min-h-10 items-center gap-2.5 px-3.5 text-xs font-semibold text-text-secondary transition-colors hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+          >
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center" aria-hidden>
+              <Image
+                src={connection.lightMark}
+                alt=""
+                width={18}
+                height={18}
+                className="h-[18px] w-[18px] object-contain dark:hidden"
+              />
+              <Image
+                src={connection.darkMark}
+                alt=""
+                width={18}
+                height={18}
+                className="hidden h-[18px] w-[18px] object-contain dark:block"
+              />
+            </span>
+            <span className="min-w-0 flex-1 whitespace-nowrap text-[13px]">
+              {t(`workspace.sidebar.assistantConnections.${connection.id}`, connection.fallbackLabel)}
+            </span>
+            <ArrowRight
+              className="h-3.5 w-3.5 shrink-0 text-text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-brand"
+              aria-hidden
+            />
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function AppSidebar() {
   const { t } = useI18n();
@@ -138,36 +234,7 @@ export function AppSidebar() {
           </ul>
         </nav>
         <div className="mt-auto px-3 pb-5 pt-3">
-          <div className="rounded-card border border-hairline bg-surface p-4 shadow-sm">
-            <p className="text-xs text-text-secondary">
-              {t('workspace.sidebar.newModel.label', 'New model')}
-            </p>
-            <p className="mt-1 text-base font-semibold text-brand">
-              {t('workspace.sidebar.newModel.name', 'Seedance 2.5')}
-            </p>
-            <ul className="mt-3 space-y-2 text-xs text-text-secondary">
-              <li className="flex items-center gap-2">
-                <Check className="h-3.5 w-3.5 text-brand" aria-hidden />
-                {t('workspace.sidebar.newModel.quality1', 'Up to 30-second scenes')}
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-3.5 w-3.5 text-brand" aria-hidden />
-                {t('workspace.sidebar.newModel.quality2', 'Images, references and video editing')}
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-3.5 w-3.5 text-brand" aria-hidden />
-                {t('workspace.sidebar.newModel.quality3', 'Native audio workflow')}
-              </li>
-            </ul>
-            <ButtonLink
-              href="/app?engine=seedance-2-5"
-              prefetch={false}
-              size="sm"
-              className="mt-4 w-full"
-            >
-              {t('workspace.sidebar.newModel.cta', 'Try now')}
-            </ButtonLink>
-          </div>
+          <AssistantConnectionsCard t={t} />
         </div>
       </div>
     </aside>

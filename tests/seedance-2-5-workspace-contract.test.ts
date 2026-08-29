@@ -22,7 +22,6 @@ const workspaceComposerSource = readFileSync(
   'frontend/app/(core)/(workspace)/app/_components/WorkspaceComposerSurface.tsx',
   'utf8',
 );
-const sidebarSource = readFileSync('frontend/components/AppSidebar.tsx', 'utf8');
 
 function makeStoredForm(engineId: string): StoredFormState {
   return {
@@ -103,23 +102,4 @@ test('workspace hydration preserves URL and stored choices while empty sessions 
     effectiveRequestedMode: null,
   });
   assert.equal(empty.form?.engineId, 'seedance-2-5');
-});
-
-test('workspace sidebar promotes the localized Seedance 2.5 launch card', () => {
-  assert.match(sidebarSource, /href="\/app\?engine=seedance-2-5"/);
-
-  const expected = {
-    en: ['Seedance 2.5', 'Up to 30-second scenes', 'Images, references and video editing', 'Native audio workflow'],
-    fr: ['Seedance 2.5', 'Scènes jusqu’à 30 secondes', 'Images, références et montage vidéo', 'Workflow audio natif'],
-    es: ['Seedance 2.5', 'Escenas de hasta 30 segundos', 'Imágenes, referencias y edición de vídeo', 'Flujo de audio nativo'],
-  } as const;
-
-  for (const [locale, values] of Object.entries(expected)) {
-    const dictionary = JSON.parse(readFileSync(`frontend/messages/${locale}.json`, 'utf8'));
-    const launchCard = dictionary.workspace.sidebar.newModel;
-    assert.deepEqual(
-      [launchCard.name, launchCard.quality1, launchCard.quality2, launchCard.quality3],
-      values,
-    );
-  }
 });

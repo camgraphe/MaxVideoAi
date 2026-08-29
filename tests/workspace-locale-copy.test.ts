@@ -45,12 +45,11 @@ test('image preview and sidebar actions are localized in every workspace locale'
   const requiredPaths = [
     'workspace.image.preview.editImage',
     'workspace.image.preview.openModal',
-    'workspace.sidebar.newModel.label',
-    'workspace.sidebar.newModel.name',
-    'workspace.sidebar.newModel.quality1',
-    'workspace.sidebar.newModel.quality2',
-    'workspace.sidebar.newModel.quality3',
-    'workspace.sidebar.newModel.cta',
+    'workspace.sidebar.assistantConnections.label',
+    'workspace.sidebar.assistantConnections.tooltip',
+    'workspace.sidebar.assistantConnections.claude',
+    'workspace.sidebar.assistantConnections.chatgpt',
+    'workspace.sidebar.assistantConnections.codex',
   ];
 
   for (const [locale, messages] of Object.entries(localeMessages)) {

@@ -3082,13 +3082,12 @@
         "live": "LIVE",
         "toolsBeta": "BETA"
       },
-      "newModel": {
-        "label": "New model",
-        "name": "Seedance 2.5",
-        "quality1": "Up to 30-second scenes",
-        "quality2": "Images, references and video editing",
-        "quality3": "Native audio workflow",
-        "cta": "Try now"
+      "assistantConnections": {
+        "label": "Connect",
+        "tooltip": "Connect your account to use MaxVideoAI directly from your AI assistant.",
+        "claude": "Claude",
+        "chatgpt": "ChatGPT",
+        "codex": "Codex"
       }
     },
     "languageToggle": {
