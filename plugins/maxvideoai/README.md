@@ -13,13 +13,13 @@ Setup guides: [Claude](docs/claude.md) · [ChatGPT](docs/chatgpt.md) · [Codex](
 ### Install the repository-validated Codex package
 
 ```sh
-codex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.3.2
+codex plugin marketplace add camgraphe/maxvideoai-plugin --ref v0.3.3
 codex plugin add maxvideoai@maxvideoai
 ```
 
 Start a new Codex task, then ask `$maxvideoai:plan` to compare a production route or `$maxvideoai:generate` to prepare a concrete request. The plugin is free to connect. The first live MaxVideoAI action opens OAuth so you can sign in or create the account you want to connect.
 
-Public release: [v0.3.1](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.1). Checked-in source candidate: `0.3.2`.
+[Public releases](https://github.com/camgraphe/maxvideoai-plugin/releases) include a versioned ZIP and SHA-256 file. Match the selected public tag to `VERSION` before installation.
 
 ## What does MaxVideoAI add to an AI assistant?
 
@@ -33,7 +33,7 @@ The same connected account and Library are used on the website and through the p
 
 - **Claude:** add the remote connector/plugin, complete OAuth, then begin with a no-spend plan. Follow the [Claude guide](docs/claude.md).
 - **ChatGPT:** install the shared plugin when it is available in the public directory, or use the documented developer MCP fallback. Follow the [ChatGPT guide](docs/chatgpt.md).
-- **Codex:** install the tagged source package, open a new task, and call `$maxvideoai:plan` or `$maxvideoai:generate`. Follow the [Codex guide](docs/codex.md).
+- **Codex:** install the tagged public package, open a new task, and call `$maxvideoai:plan` or `$maxvideoai:generate`. Follow the [Codex guide](docs/codex.md).
 - **Another MCP client:** connect only if the client supports remote Streamable HTTP and OAuth. Follow the [generic MCP guide](docs/generic-mcp.md).
 
 Every route connects to `https://api.maxvideoai.com/mcp`. Add that URL exactly as written—without a token, query string, password, or API key.

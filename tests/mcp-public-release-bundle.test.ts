@@ -245,7 +245,7 @@ test('release builder exports the exact deterministic public surface with checks
   const version = readFileSync(join(bundleRoot, 'VERSION'), 'utf8').trim();
   const codex = JSON.parse(readFileSync(join(bundleRoot, '.codex-plugin/plugin.json'), 'utf8'));
   const claude = JSON.parse(readFileSync(join(bundleRoot, '.claude-plugin/plugin.json'), 'utf8'));
-  assert.equal(version, '0.3.2');
+  assert.equal(version, readFileSync(join(source, 'VERSION'), 'utf8').trim());
   assert.equal(codex.version, version);
   assert.equal(claude.version, version);
   assert.equal(codex.skills, './skills/');

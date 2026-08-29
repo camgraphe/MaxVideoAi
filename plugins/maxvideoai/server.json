@@ -3,7 +3,7 @@
   "name": "com.maxvideoai/maxvideoai",
   "title": "MaxVideoAI",
   "description": "Plan, compare, price, generate, and recover AI video from compatible MCP clients.",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "remotes": [
     {
       "type": "streamable-http",

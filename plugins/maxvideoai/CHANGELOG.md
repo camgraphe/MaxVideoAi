@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.3 — 2026-08-29
+
+- Point the Codex installation path at the focused public plugin repository and
+  its matching immutable release tag.
+- Replace stale candidate-versus-public wording with a durable releases link and
+  a version-parity check.
+- Derive the release-card version and filename from `VERSION` so future patch
+  releases cannot silently reuse an older label.
+
 ## 0.3.2 — 2026-08-28
 
 - Publish proof-led package and discovery metadata with reviewed setup guidance

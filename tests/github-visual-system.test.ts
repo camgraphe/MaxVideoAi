@@ -31,6 +31,7 @@ const outputDimensions = new Map([
   ['plugins/maxvideoai/assets/social/github-social-preview.png', [1280, 640]],
   ['plugins/maxvideoai/assets/social/release-0.3.0.png', [1200, 630]],
   ['plugins/maxvideoai/assets/social/release-0.3.2.png', [1200, 630]],
+  ['plugins/maxvideoai/assets/social/release-0.3.3.png', [1200, 630]],
   ['plugins/maxvideoai/assets/social/directory-thumbnail.png', [1200, 675]],
 ] as const);
 
@@ -61,7 +62,7 @@ function meanAbsoluteDifference(left: Buffer, right: Buffer): number {
   return difference / left.length;
 }
 
-test('ships the eight visual-system outputs at their exact target dimensions', async () => {
+test('ships the registered visual-system outputs at their exact target dimensions', async () => {
   for (const [path, [expectedWidth, expectedHeight]] of outputDimensions) {
     const bytes = readFileSync(path);
     const { width, height } = readImageDimensions(bytes);
@@ -151,9 +152,15 @@ test('composition code uses only the accepted proof sources and makes no native 
   assert.doesNotMatch(source, /frontend\/public\/media\/mcp|brand\/partners\/(?:openai|anthropic)|codex-plugin/i);
   assert.doesNotMatch(source, /AI video production inside\s+ChatGPT/i);
   assert.match(source, /AI video production\\nfor agent workflows/);
+  assert.match(source, /Claude · ChatGPT · Codex setup guides/);
+  assert.doesNotMatch(source, /Claude · Codex · ChatGPT setup guides/);
   assert.match(source, /withoutEnlargement: true/);
   assert.match(source, /fontfile:/, 'text composition must pin a repository-resolved font file');
   assert.doesNotMatch(source, /font_family="Helvetica"/, 'system Helvetica would make recomposition platform-dependent');
+  assert.match(source, /readFileSync\([^\n]*VERSION/);
+  assert.match(source, /`RELEASE \$\{pluginVersion\}`/);
+  assert.match(source, /`release-\$\{pluginVersion\}\.png`/);
+  assert.doesNotMatch(source, /RELEASE 0\.3\.2/);
 
   const socialRecords = manifest.assets.filter((asset) => asset.path.startsWith('plugins/maxvideoai/assets/social/'));
   for (const record of socialRecords) {

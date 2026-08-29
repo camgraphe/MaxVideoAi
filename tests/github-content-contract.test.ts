@@ -31,7 +31,7 @@ test('the plugin README is a proof-led conversion surface with safe compatibilit
   assert.ok(definitionWords.length >= 40 && definitionWords.length <= 60, `opening definition must be 40–60 words; found ${definitionWords.length}`);
   assert.match(definition, /MaxVideoAI is a multi-model AI video production service exposed through a remote MCP server and packaged for agent workflows/i);
   assert.match(opening, /assets\/screenshots\/maxvideoai-assistant-workflow-live\.webp/);
-  assert.match(opening, /codex plugin marketplace add camgraphe\/MaxVideoAi --ref maxvideoai-plugin-v0\.3\.2/);
+  assert.match(opening, /codex plugin marketplace add camgraphe\/maxvideoai-plugin --ref v\d+\.\d+\.\d+/);
   assert.match(opening, /https:\/\/maxvideoai\.com\/docs\/mcp/);
   for (const canonicalUrl of [
     'https://maxvideoai.com/mcp',
@@ -73,6 +73,25 @@ test('the plugin README is a proof-led conversion surface with safe compatibilit
     encoding: 'utf8',
   });
   assert.equal(result.status, 0, result.stderr);
+});
+
+test('release-facing install copy follows VERSION and the focused public repository', () => {
+  const pluginRoot = path.join(repositoryRoot, 'plugins', 'maxvideoai');
+  const version = readFileSync(path.join(pluginRoot, 'VERSION'), 'utf8').trim();
+  const expectedInstallCommand = `codex plugin marketplace add camgraphe/maxvideoai-plugin --ref v${version}`;
+  const pluginReadme = readFileSync(path.join(pluginRoot, 'README.md'), 'utf8');
+  const codexGuide = readFileSync(path.join(pluginRoot, 'docs', 'codex.md'), 'utf8');
+  const sourceReadme = readFileSync(path.join(repositoryRoot, 'README.md'), 'utf8');
+
+  for (const releaseSurface of [pluginReadme, codexGuide]) {
+    assert.match(releaseSurface, new RegExp(expectedInstallCommand.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+    assert.doesNotMatch(releaseSurface, /camgraphe\/MaxVideoAi --ref maxvideoai-plugin-v/i);
+  }
+
+  assert.match(pluginReadme, /\[Public releases\]\(https:\/\/github\.com\/camgraphe\/maxvideoai-plugin\/releases\)/);
+  assert.doesNotMatch(pluginReadme, /Checked-in source candidate|Public release:\s*\[v\d/i);
+  assert.match(sourceReadme, /\[Plugin releases\]\(https:\/\/github\.com\/camgraphe\/maxvideoai-plugin\/releases\)/);
+  assert.doesNotMatch(sourceReadme, /checked-in[^.\n]*candidate|Latest public release:\s*v\d/i);
 });
 
 test('the ChatGPT guide presents the shared plugin journey with qualified proof and fallback', () => {

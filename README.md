@@ -8,7 +8,7 @@ MaxVideoAI is a multi-model AI video production platform for turning a brief int
 
 [Plan a video with MaxVideoAI](https://maxvideoai.com/mcp?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=hero_try) · [Compare current models](https://maxvideoai.com/models?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=models) · [Use MaxVideoAI from Claude, ChatGPT or Codex](https://maxvideoai.com/mcp?utm_source=github&utm_medium=repository&utm_campaign=maxvideoai_product&utm_content=plugin_callout)
 
-[Plugin repository](https://github.com/camgraphe/maxvideoai-plugin) · [Latest public release: v0.3.1](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.1)
+[Plugin repository](https://github.com/camgraphe/maxvideoai-plugin) · [Plugin releases](https://github.com/camgraphe/maxvideoai-plugin/releases)
 
 ![Cinematic MaxVideoAI production direction with a professional camera and five distinct visual worlds](plugins/maxvideoai/assets/brand/maxvideoai-github-hero-v2.webp)
 
@@ -78,7 +78,7 @@ Yes. MaxVideoAI exposes one remote MCP production service with three equal entry
 Brief → compare models → budget shots → prepare exact quote → approve one attempt → recover result
 ```
 
-The current public plugin releases are [v0.3.0](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.0) and [v0.3.1](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.1). The checked-in 0.3.2 package remains the next source candidate until its release gates are complete.
+The focused [plugin repository](https://github.com/camgraphe/maxvideoai-plugin) carries tagged, checksum-backed releases. Use its release page for the current installable package; this product repository remains the authored source of the application and plugin bundle.
 
 ## How is MaxVideoAI built?
 

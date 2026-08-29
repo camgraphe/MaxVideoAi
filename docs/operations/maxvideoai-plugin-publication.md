@@ -10,17 +10,18 @@ repository settings, adding a secret, pushing a tag, or publishing a release.
 Obtain the owner approval required by the GitHub commercial-presence plan before
 each external mutation.
 
-## Current release state — 2026-08-28
+## Current release state — 2026-08-29
 
 The focused repository now contains public package history:
 
 - [v0.3.0](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.0) is public with `maxvideoai-plugin-0.3.0.zip` and its `.sha256` attachment;
 - [v0.3.1](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.1) is public with `maxvideoai-plugin-0.3.1.zip` and its `.sha256` attachment;
-- `0.3.2` is checked in locally but remains a closed, unpublished candidate. It has no matching source tag or public release and must complete the gate below before any publication attempt.
+- [v0.3.2](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.2) is public with `maxvideoai-plugin-0.3.2.zip` and its `.sha256` attachment;
+- `0.3.3` is the corrective candidate for durable release wording and the focused public-repository install path. It must complete the same gate below before publication.
 
-These facts prove public distribution for v0.3.0 and v0.3.1. They do not prove a
-successful publication-workflow run, a clean install in every host, or readiness
-of the separate 0.3.2 candidate.
+These facts prove public distribution for v0.3.0 through v0.3.2. The successful
+v0.3.2 workflow and clean Codex package installation do not prove a clean install
+in every host or readiness of the separate 0.3.3 corrective candidate.
 
 ## Publication contract
 
@@ -105,9 +106,9 @@ all of them by design.
 
 ## Next candidate publication
 
-The following sequence applies to the closed 0.3.2 candidate only after its named
-gate is complete. The existence of public v0.3.0 and v0.3.1 releases does not waive
-any 0.3.2 evidence requirement.
+The following sequence applies to the closed 0.3.3 candidate only after its named
+gate is complete. The existence of earlier public releases does not waive any
+0.3.3 evidence requirement.
 
 1. Complete the explicit external-mutation approval. Confirm the owner, repository
    name, public visibility, description, homepage, version, and exact bundle
@@ -131,8 +132,8 @@ any 0.3.2 evidence requirement.
    ```bash
    gh workflow run publish-maxvideoai-plugin.yml \
      --repo camgraphe/MaxVideoAi \
-     --ref maxvideoai-plugin-v0.3.2 \
-     -f source_tag=maxvideoai-plugin-v0.3.2
+     --ref maxvideoai-plugin-v0.3.3 \
+     -f source_tag=maxvideoai-plugin-v0.3.3
    ```
 
    Dispatching from `main` while naming a tag only in the input is rejected.
@@ -168,11 +169,11 @@ migration is implemented and exercised.
 ## Release creation
 
 If the closed candidate later passes every gate, source tag
-`maxvideoai-plugin-v0.3.2` makes the workflow create destination release `v0.3.2`
+`maxvideoai-plugin-v0.3.3` makes the workflow create destination release `v0.3.3`
 at the newly published commit. It would attach:
 
-- `maxvideoai-plugin-0.3.2.zip`;
-- `maxvideoai-plugin-0.3.2.zip.sha256`.
+- `maxvideoai-plugin-0.3.3.zip`;
+- `maxvideoai-plugin-0.3.3.zip.sha256`.
 
 The ZIP is the deterministic archive from the source build, while the public tree
 contains the same release files plus `checksums.json`. Verify the attached archive
@@ -206,15 +207,14 @@ The verified bootstrap state is:
 | Security | Secret scanning, push protection, and private vulnerability reporting enabled |
 | Social preview | [GitHub-hosted repository image](https://repository-images.githubusercontent.com/1349419332/e5459224-cdf9-433c-9ccb-44034079a51f) from `assets/social/github-social-preview.png`, 1280×640, SHA-256 `a77684b5c02980246a50df2ae6ae5247d9bd6c03b1dd1f4a2d997c89fee98e07` |
 | Source Environment | `maxvideoai-plugin-publication`; owner review required; deployments restricted to `maxvideoai-plugin-v*` tags |
-| Publication secret | No destination-scoped `MAXVIDEOAI_PLUGIN_REPO_TOKEN` was observed in the publication Environment; the active CLI credential is broader than the required single-repository token and was deliberately not reused |
-| Public releases | [v0.3.0](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.0) and [v0.3.1](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.1) are public, each with a ZIP and SHA-256 attachment |
-| Publication workflow evidence | No successful source-repository workflow run is recorded here; the public releases do not by themselves identify the publication mechanism |
-| Closed candidate | `0.3.2` remains unpublished and gated on a matching source tag, built checksum, clean-install evidence, current visual, coordinated metadata, and final owner review |
+| Publication secret | Repository Actions secret `MAXVIDEOAI_PLUGIN_REPO_TOKEN` was installed on 2026-08-29 from a fine-grained token limited to the destination repository with Contents read/write; the value is not recorded |
+| Public releases | [v0.3.0](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.0), [v0.3.1](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.1), and [v0.3.2](https://github.com/camgraphe/maxvideoai-plugin/releases/tag/v0.3.2) are public, each with a ZIP and SHA-256 attachment |
+| Publication workflow evidence | Source workflow [run 33222600704](https://github.com/camgraphe/MaxVideoAi/actions/runs/33222600704) published source commit `2ec21ee2` to public commit `d44bb30a` for v0.3.2 |
+| Closed candidate | `0.3.3` remains gated on its matching source tag, built checksum, focused-repository clean install, current visual, coordinated metadata, and final owner review |
 
-The welcome Discussion, destination required checks, and any 0.3.2 publication
-remain deferred until the reviewed candidate is ready. The public v0.3.0 and v0.3.1
-artifacts are installable-release evidence for those versions only, not native-host
-compatibility evidence and not evidence that 0.3.2 is ready.
+The welcome Discussion and destination required checks remain separate follow-up
+work. Public artifacts are installable-release evidence for their versions only,
+not native-host compatibility evidence and not evidence that 0.3.3 is ready.
 
 ## Failure and rollback
 

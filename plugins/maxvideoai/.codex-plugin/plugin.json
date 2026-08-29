@@ -1,6 +1,6 @@
 {
   "name": "maxvideoai",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "MaxVideoAI is a multi-model AI video production service for planning shots, comparing current models, estimating project budgets, preparing exact quotes, approving paid generations, recovering results, and keeping media in one account library. A MaxVideoAI account is required.",
   "author": { "name": "MaxVideoAI", "url": "https://maxvideoai.com" },
   "homepage": "https://maxvideoai.com/mcp",

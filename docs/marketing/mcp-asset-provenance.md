@@ -29,14 +29,14 @@ redraws UI, or adds platform chrome or marks.
 
 The platform names on the three social/release cards refer only to the setup
 guides required by the release plan. Those cards must not ship before the
-Task 6 Claude, Codex, and ChatGPT guides are present, and their imagery remains
+Task 6 Claude, ChatGPT, and Codex guides are present, and their imagery remains
 MaxVideoAI web-app proof only.
 
 <!-- github-visual-system-provenance:v1 -->
 ```json
 {
   "version": 1,
-  "generatedAt": "2026-08-28",
+  "generatedAt": "2026-08-29",
   "imageGen": {
     "method": "OpenAI built-in ImageGen",
     "selectedOutputPath": "plugins/maxvideoai/assets/sources/maxvideoai-editorial-branch-converge-source.png",
@@ -98,6 +98,11 @@ MaxVideoAI web-app proof only.
       },
       {
         "path": "plugins/maxvideoai/assets/social/release-0.3.2.png",
+        "sourceProofIds": ["maxvideoai-workspace-production"],
+        "proofBoundary": "MaxVideoAI web-app result proof with release-gated setup-guide copy; no native host proof."
+      },
+      {
+        "path": "plugins/maxvideoai/assets/social/release-0.3.3.png",
         "sourceProofIds": ["maxvideoai-workspace-production"],
         "proofBoundary": "MaxVideoAI web-app result proof with release-gated setup-guide copy; no native host proof."
       },
