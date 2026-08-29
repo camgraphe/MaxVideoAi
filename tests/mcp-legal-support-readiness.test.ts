@@ -409,7 +409,7 @@ test('OpenAI and Anthropic directory blockers are explicit while direct MCP rema
 
 test('each distribution evidence record is sourced, dated, qualified, and owner-actionable', () => {
   assert.ok((directory.match(/\| Source URL \|/g) ?? []).length >= 5);
-  assert.ok((directory.match(/\| Checked \| 2026-08-26 \|/g) ?? []).length >= 5);
+  assert.ok((directory.match(/\| Checked \| 2026-\d{2}-\d{2} \|/g) ?? []).length >= 5);
   assert.ok((directory.match(/\| Evidence state \|/g) ?? []).length >= 5);
   assert.ok((directory.match(/\| Uncertainty \|/g) ?? []).length >= 5);
 

@@ -1,20 +1,20 @@
 # MaxVideoAI MCP distribution packages
 
-Checked: 2026-08-28
-Overall state: **OWNED-SITE DIRECT RELEASE APPROVED — EXTERNAL DIRECTORIES NOT SUBMITTED**
+Checked: 2026-08-29
+Overall state: **OWNED-SITE DIRECT RELEASE + OFFICIAL MCP REGISTRY 0.3.3 ACTIVE — PLATFORM DIRECTORIES NOT SUBMITTED**
 
-This file prepares evidence and owner decisions only. It does not authorize a submission, account creation, listing,
+This file records evidence and owner decisions. It does not authorize another submission, account creation, listing,
 deployment, feature-flag change, or use of a third party's marks. Directory rules are current and unstable; recheck all
-linked primary sources on the day an owner authorizes a submission.
+linked primary sources on the day an owner authorizes a new submission.
 
 ## Implementation-date primary-source recheck
 
-Checked: **2026-08-28**. This recheck records distribution decisions, not
+Checked: **2026-08-29**. This recheck records distribution decisions, not
 approval by a platform or a statement about MaxVideoAI's eligibility.
 
 | Target | Primary source and factual rule | Result | Evidence before a status change | Owner and next trigger |
 | --- | --- | --- | --- | --- |
-| Official MCP Registry | [Registry overview](https://modelcontextprotocol.io/registry/about) says the registry is in preview, stores standardized metadata for public servers, and is primarily consumed by downstream aggregators. [Terms](https://modelcontextprotocol.io/registry/terms-of-service) dedicate submitted metadata to CC0, publicly and on a perpetual, irrevocable basis. The [FAQ](https://modelcontextprotocol.io/registry/faq) says a publisher cannot currently delete or unpublish a server. | **prepared_not_submitted**. Metadata may be validated locally only. | Legal acceptance of current terms, CC0 implications, and unpublish limitation; domain/namespace proof; production endpoint and release evidence; an authorized owner action. | Legal owner. Recheck when Legal accepts, the terms/FAQ change, or release approval is requested. |
+| Official MCP Registry | [Registry overview](https://modelcontextprotocol.io/registry/about) says the registry is in preview, stores standardized metadata for public servers, and is primarily consumed by downstream aggregators. [Terms](https://modelcontextprotocol.io/registry/terms-of-service) dedicate submitted metadata to CC0, publicly and on a perpetual, irrevocable basis. The [FAQ](https://modelcontextprotocol.io/registry/faq) and current publisher CLI describe lifecycle controls without making published metadata private. | **eligible_and_verified** for `com.maxvideoai/maxvideoai` 0.3.3. The active record was verified through the official Registry API after owner-authorized publication. | Revalidate the exact new `server.json`, namespace proof, public endpoint, matching public release, current terms, and Registry API response before every later version. | Product owner + MCP Engineering. Recheck on each release or Registry policy/schema change. |
 | ChatGPT/OpenAI directory | [OpenAI plugin guidelines](https://developers.openai.com/plugins/app-guidelines) permit commerce only for physical goods and prohibit digital products or services, including subscriptions, digital content, tokens, and credits, whether direct or indirect. [Plugin submission](https://developers.openai.com/plugins/deploy/submission) describes portal review requirements for an MCP-backed plugin. | **do_not_submit**. Applying this commerce rule to MaxVideoAI's credit-funded digital-media workflow is a MaxVideoAI inference, not an OpenAI decision about MaxVideoAI. | Written OpenAI clarification covering the intended scope, or a policy change plus Legal review; then all portal and exact-host review evidence. | Legal and Product owners. Recheck on written clarification or a policy change. |
 | Anthropic Connectors Directory | [Anthropic's submission guide](https://claude.com/docs/connectors/building/submission) requires directory-policy compliance and identifies an AI-media-generation compliance acknowledgement. The current [Software Directory Policy](https://support.claude.com/en/articles/13145358-anthropic-software-directory-policy) remains the controlling policy source for AI image/video/audio generation. | **do_not_submit**. The existing policy conclusion remains that MaxVideoAI's intended AI media-generation workflow is outside the directory policy; this is a MaxVideoAI interpretation until Anthropic gives a written determination. | A published policy change or written Anthropic clarification covering the full intended workflow, followed by a fresh technical, legal, security, and review-evidence check. | Legal and Product owners. Recheck on the policy change or written clarification. |
 
@@ -69,7 +69,7 @@ legal document, URL, or publication flag changes.
 | Product name | **MaxVideoAI**. Do not add “official,” “for Claude,” “for Codex,” or a platform endorsement to the product name. |
 | Canonical landing page | EN `https://maxvideoai.com/mcp`; FR `https://maxvideoai.com/fr/mcp`; ES `https://maxvideoai.com/es/mcp`. These are enabled for the owned-site direct release; external directory submission remains separate. |
 | Canonical endpoint | `https://api.maxvideoai.com/mcp`, the enabled universal Streamable HTTP production resource. |
-| Domain ownership | Proposed first-party namespace is `com.maxvideoai/maxvideoai`. Ownership of `maxvideoai.com`/the API subdomain must be proven inside each directory's required account, DNS, HTTP, or organization-verification flow. No external verification evidence is recorded here. |
+| Domain ownership | First-party namespace is `com.maxvideoai/maxvideoai`. The Official MCP Registry accepted the HTTPS proof at `https://maxvideoai.com/.well-known/mcp-registry-auth` on 2026-08-29. Other directories must still run their own ownership flow. |
 | Concise description | **Turn ChatGPT, Claude, or Codex into an AI video producer: prepare prompts and references, compare current models, budget a film, approve the exact MaxVideoAI price, generate, and recover the result in your account library.** |
 | Requested scopes | Intended least-privilege identity scopes: `openid`, `email`, `profile`. Never present the Codex default request for `phone` as approved. |
 | Privacy URLs | EN `https://maxvideoai.com/legal/privacy`; FR `https://maxvideoai.com/fr/legal/privacy`; ES `https://maxvideoai.com/es/legal/privacy`. MCP-specific disclosure patch remains Legal-owner pending. |
@@ -217,43 +217,51 @@ support, test-account, and host evidence review from scratch.
 
 ## Official MCP Registry
 
-Package state: **NOT SUBMITTED — BLOCKED**.
+Package state: **ACTIVE — VERSION 0.3.3**.
 
 | Evidence field | Value |
 | --- | --- |
 | Source URL | [Official registry overview](https://modelcontextprotocol.io/registry/about), [remote-server metadata](https://modelcontextprotocol.io/registry/remote-servers), [namespace authentication](https://modelcontextprotocol.io/registry/authentication), [registry terms](https://modelcontextprotocol.io/registry/terms-of-service), [registry FAQ](https://modelcontextprotocol.io/registry/faq), and [registry moderation policy](https://modelcontextprotocol.io/registry/moderation-policy) |
-| Checked | 2026-08-26 |
-| Evidence state | Verified owner documentation describes a preview centralized metadata registry for publicly accessible MCP servers. It supports Streamable HTTP remote URLs and reverse-DNS/domain ownership. No `server.json`, registry login, DNS/HTTP challenge, publication, or API lookup was performed for MaxVideoAI. |
-| Uncertainty | The registry is in preview, is primarily a source for downstream aggregators, and does not guarantee discovery in Codex, Claude, ChatGPT, or another host. Metadata versions are immutable; the FAQ says publisher unpublish/delete is not currently available. Separately, the moderation policy says a registry removal normally sets status to `"deleted"` while the metadata remains accessible through the API, except that metadata may be overwritten or erased in extreme cases. |
+| Checked | 2026-08-29 |
+| Evidence state | `mcp-publisher` 1.8.1 validated and published `plugins/maxvideoai/server.json`. The Registry accepted the HTTPS namespace proof for `maxvideoai.com`, and its API returned exactly one active record for `com.maxvideoai/maxvideoai` version 0.3.3 at `2026-08-29T16:51:36.852225Z`. The record points to the public Streamable HTTP endpoint, website, and GitHub repository. |
+| Uncertainty | The registry is in preview, is primarily a source for downstream aggregators, and does not guarantee discovery in Codex, Claude, ChatGPT, or another host. Published metadata remains public; lifecycle status changes do not make the historical metadata private. The moderation policy says a status change to `"deleted"` is possible while metadata remains accessible through the API. |
 
-The proposed neutral metadata identity is:
+The published metadata identity is:
 
 ```json
 {
   "name": "com.maxvideoai/maxvideoai",
   "title": "MaxVideoAI",
-  "description": "Compare public AI video and image model capabilities, get a factual model shortlist, and check your MaxVideoAI connection and wallet status from a compatible MCP client.",
-  "version": "UNASSIGNED",
+  "description": "Plan, compare, price, generate, and recover AI video from compatible MCP clients.",
+  "version": "0.3.3",
   "remotes": [
     {
       "type": "streamable-http",
       "url": "https://api.maxvideoai.com/mcp"
     }
-  ]
+  ],
+  "repository": {
+    "url": "https://github.com/camgraphe/maxvideoai-plugin",
+    "source": "github",
+    "id": "1349419332"
+  },
+  "websiteUrl": "https://maxvideoai.com/mcp"
 }
 ```
 
-This is a planning fragment, not a valid submission artifact. Version, schema URL, repository metadata, ownership
-method, and final description remain owner decisions. The endpoint must first be publicly reachable and release-ready.
+The exact source remains `plugins/maxvideoai/server.json`. The public record is
+available from the Registry API search for `com.maxvideoai/maxvideoai`; this is
+registry metadata evidence, not a platform endorsement.
 
 The Official MCP Registry is a metadata repository, not a curated endorsement. Its terms dedicate submitted registry
-metadata to CC0 on a perpetual/irrevocable basis, make it public, and permit downstream processing. Legal must approve
-that dedication and the current inability to unpublish before any owner authenticates or publishes. A registry record
-also does not create a Claude/Codex listing; downstream directories decide whether and how to ingest it.
+metadata to CC0 on a perpetual/irrevocable basis, make it public, and permit downstream processing. Those consequences
+were presented before this owner-authorized publication. A registry record does not create a Claude, ChatGPT, or Codex
+listing; downstream directories decide whether and how to ingest it.
 
-Owner action: Legal accepts registry terms/CC0 implications; the domain owner selects and proves the
-`com.maxvideoai/*` namespace; Security confirms the production remote; MCP engineering validates exact metadata and
-version; Growth approves factual copy; an authorized owner runs the publisher only after every launch gate passes.
+Completed owner action: on 2026-08-29, the owner authorized publication after the CC0/public-metadata and lifecycle
+constraints were presented. MCP Engineering validated the exact 0.3.3 metadata, matched it to the public GitHub
+release, verified the OAuth-protected production endpoint, deployed the HTTPS namespace proof, published once, and
+re-read the active Registry API record. Future versions require the same exact-payload approval and verification cycle.
 
 ## Global release checklist
 
@@ -267,5 +275,6 @@ version; Growth approves factual copy; an authorized owner runs the publisher on
 - [ ] Directory-specific identity, ownership, role, terms, privacy, countries, test account, and asset requirements pass.
 - [ ] The authorized owner rechecks every official source and explicitly approves that one distribution action.
 
-Until every applicable item passes, MaxVideoAI may document manual setup on its own site only after its own publication
-gates pass; it must not claim an external submission, listing, approval, verification, endorsement, or availability.
+Until every target-specific applicable item passes, MaxVideoAI must not claim a platform-directory submission,
+approval, partnership, endorsement, or exact-host verification. The active Official MCP Registry metadata record may
+be stated factually, but it must not be presented as a ChatGPT, Claude, or Codex marketplace listing.
