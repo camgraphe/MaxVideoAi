@@ -1,19 +1,21 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { createRequire } from 'node:module';
 import test from 'node:test';
 
-const root = process.cwd();
-const nextConfigPath = join(root, 'frontend/next.config.js');
+const require = createRequire(import.meta.url);
+const nextConfig = require('../frontend/next.config.js') as {
+  headers: () => Promise<Array<{ source: string; headers: Array<{ key: string; value: string }> }>>;
+};
 
-test('critical marketing pages use CDN caching without browser staleness', () => {
-  const source = readFileSync(nextConfigPath, 'utf8');
+test('unconditional route headers stay limited to established locale-safe cache paths', async () => {
+  const rules = await nextConfig.headers();
+  const expectedHeaders = [
+    { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' },
+    { key: 'Vercel-CDN-Cache-Control', value: 'max-age=300, stale-while-revalidate=60' },
+  ];
 
-  assert.match(source, /const MARKETING_CDN_CACHE_HEADERS = \[/);
-  assert.match(source, /key: 'Cache-Control',\s*value: 'public, max-age=0, must-revalidate'/s);
-  assert.match(source, /key: 'Vercel-CDN-Cache-Control',\s*value: 'max-age=300, stale-while-revalidate=60'/s);
-
-  for (const path of [
+  for (const source of [
+    '/',
     '/fr',
     '/es',
     '/fr/tarifs',
@@ -21,11 +23,19 @@ test('critical marketing pages use CDN caching without browser staleness', () =>
     '/fr/modeles/:path*',
     '/es/modelos/:path*',
   ]) {
-    assert.match(source, new RegExp(`'${path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}'`));
+    const rule = rules.find((candidate) => candidate.source === source);
+    assert.ok(rule, `missing cache rule for ${source}`);
+    assert.deepEqual(
+      rule.headers.filter((header) => expectedHeaders.some(({ key }) => key === header.key)),
+      expectedHeaders
+    );
   }
 
-  const cachePathsBlock = source.match(/const MARKETING_CDN_CACHE_PATHS = \[(.*?)\];/s)?.[1] ?? '';
-  assert.match(cachePathsBlock, /'\/',/);
-  assert.doesNotMatch(cachePathsBlock, /'\/pricing'/);
-  assert.doesNotMatch(cachePathsBlock, /'\/models\/:path\*'/);
+  for (const gatedSource of ['/pricing', '/models/:path*']) {
+    assert.equal(
+      rules.some((rule) => rule.source === gatedSource),
+      false,
+      `${gatedSource} must rely on request-aware middleware caching`
+    );
+  }
 });

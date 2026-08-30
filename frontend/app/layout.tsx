@@ -36,7 +36,6 @@ export default async function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://maxvideoai.com" />
         <link rel="preconnect" href="https://media.maxvideoai.com" crossOrigin="anonymous" />
         {themeStyle ? <style id="theme-tokens" dangerouslySetInnerHTML={{ __html: themeStyle }} /> : null}
         {GTM_ID ? (

@@ -7,11 +7,21 @@ const LOCAL_ADMIN_BYPASS_COOKIE = 'mva_local_admin_bypass';
 export const PROTECTED_PREFIXES = ['/app', '/dashboard', '/jobs', '/billing', '/settings', '/account', '/admin'];
 const MARKETING_EDGE_CACHE_CONTROL = 'public, max-age=0, must-revalidate';
 const MARKETING_VERCEL_CDN_CACHE_CONTROL = 'max-age=300, stale-while-revalidate=60';
-const CACHEABLE_MARKETING_PATHS = new Set(['/', '/fr', '/es', '/fr/tarifs', '/es/precios']);
+const CACHEABLE_MARKETING_PATHS = new Set([
+  '/',
+  '/pricing',
+  '/models',
+  '/fr',
+  '/es',
+  '/fr/tarifs',
+  '/es/precios',
+]);
 
 export function applyMarketingEdgeCacheHeaders(res: NextResponse, pathname: string): NextResponse {
   const isCacheableModelPath =
-    pathname.startsWith('/fr/modeles/') || pathname.startsWith('/es/modelos/');
+    pathname.startsWith('/models/') ||
+    pathname.startsWith('/fr/modeles/') ||
+    pathname.startsWith('/es/modelos/');
   if (!CACHEABLE_MARKETING_PATHS.has(pathname) && !isCacheableModelPath) {
     return res;
   }

@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
+import React from 'react';
 
 const root = process.cwd();
 const homeHeadPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/(home)/head.tsx');
@@ -9,17 +12,24 @@ const rootHomeHeadPath = join(root, 'frontend/app/(root)/head.tsx');
 const homeHeroPath = join(root, 'frontend/components/marketing/home/HomeHeroSection.tsx');
 const heroShowcasePath = join(root, 'frontend/components/marketing/home/HeroVideoShowcase.tsx');
 const homeLcpImagePath = join(root, 'frontend/components/marketing/home/home-lcp-image.ts');
-const nextConfigPath = join(root, 'frontend/next.config.js');
+const homeLcpPosterComponentPath = join(root, 'frontend/components/marketing/home/HomeLcpPoster.tsx');
+const desktopPosterPath = join(root, 'frontend/public/hero/showcase-seedance-2-0-business-workflow.webp');
+const mobilePosterPath = join(root, 'frontend/public/hero/showcase-seedance-2-0-business-workflow-mobile.webp');
+const require = createRequire(import.meta.url);
+const nextConfig = require('../frontend/next.config.js') as {
+  headers: () => Promise<Array<{ source: string; headers: Array<{ key: string; value: string }> }>>;
+};
 
 const readSource = (path: string) => readFileSync(path, 'utf8');
 
-test('homepage emits a deterministic responsive LCP preload without waiting for database content', () => {
-  const headSource = readSource(homeHeadPath);
+test('homepage keeps responsive LCP discovery in the initial markup without duplicate route heads', () => {
   const heroSource = readSource(homeHeroPath);
 
-  assert.doesNotMatch(headSource, /getHomepageSlotsCached|async function Head/);
-  assert.match(headSource, /getImageProps/);
-  assert.match(headSource, /unoptimized:\s*true/);
+  assert.equal(
+    existsSync(homeHeadPath),
+    false,
+    'the homepage route head must not create a second responsive image request'
+  );
   assert.equal(
     existsSync(rootHomeHeadPath),
     false,
@@ -37,20 +47,52 @@ test('homepage emits a deterministic responsive LCP preload without waiting for 
   );
 });
 
-test('homepage starts its exact unoptimized LCP poster from the HTTP response headers', () => {
-  const nextConfigSource = readSource(nextConfigPath);
+test('homepage renders a mobile source while preserving the exact desktop poster fallback', async () => {
+  assert.equal(existsSync(homeLcpPosterComponentPath), true);
+  const { HomeLcpPoster } = await import(
+    '../frontend/components/marketing/home/HomeLcpPoster.tsx'
+  );
+  const picture = HomeLcpPoster({ alt: 'Seedance business workflow' });
+  const [source, image] = React.Children.toArray(picture.props.children) as Array<
+    React.ReactElement<Record<string, unknown>>
+  >;
+
+  assert.equal(picture.type, 'picture');
+  assert.equal(source.type, 'source');
+  assert.equal(source.props.media, '(min-width: 768px)');
+  assert.equal(source.props.srcSet, '/hero/showcase-seedance-2-0-business-workflow.webp');
+  assert.equal(image.type, 'img');
+  assert.equal(image.props.src, '/hero/showcase-seedance-2-0-business-workflow-mobile.webp');
+  assert.equal(image.props.fetchPriority, 'high');
+});
+
+test('homepage mobile LCP asset is materially smaller than the unchanged desktop asset', () => {
+  assert.equal(existsSync(mobilePosterPath), true);
+  assert.equal(
+    createHash('sha256').update(readFileSync(desktopPosterPath)).digest('hex'),
+    '2a91f53522c6ffac0b82ba1bb929771936dadee6737ce2090bede76aea5e38bf',
+    'the desktop poster must stay byte-for-byte unchanged'
+  );
+  assert.ok(statSync(mobilePosterPath).size <= 26_000, 'the mobile poster should stay within 26 KB');
+  assert.ok(
+    statSync(mobilePosterPath).size <= statSync(desktopPosterPath).size * 0.7,
+    'the mobile poster should save at least 30% over the desktop poster'
+  );
+});
+
+test('homepage avoids HTTP image preloads that make mobile fetch both responsive posters', async () => {
   const homeHeroSource = readSource(homeHeroPath);
   const heroShowcaseSource = readSource(heroShowcasePath);
+  const headerRules = await nextConfig.headers();
+  const homepageLinkHeaders = headerRules
+    .filter((rule) => ['/', '/fr', '/es'].includes(rule.source))
+    .flatMap((rule) => rule.headers)
+    .filter((header) => header.key.toLowerCase() === 'link');
 
-  assert.match(
-    nextConfigSource,
-    /HOME_LCP_POSTER_SRC\s*=\s*['"]\/hero\/showcase-seedance-2-0-business-workflow\.webp['"]/
-  );
-  assert.match(nextConfigSource, /rel=preload;\s*as=image;\s*fetchpriority=high/);
-  assert.match(
-    nextConfigSource,
-    /HOME_LCP_PRELOAD_PATHS\s*=\s*\[['"]\/['"],\s*['"]\/fr['"],\s*['"]\/es['"]\]/,
+  assert.equal(
+    homepageLinkHeaders.some((header) => header.value.includes('showcase-seedance-2-0-business-workflow')),
+    false
   );
   assert.match(homeHeroSource, /unoptimizedPoster:\s*true/);
-  assert.match(heroShowcaseSource, /unoptimized=\{selected\.unoptimizedPoster\}/);
+  assert.match(heroShowcaseSource, /<HomeLcpPoster alt=\{selected\.imageAlt\}/);
 });

@@ -5,6 +5,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Maximize2, Pause, Play, Volume2, VolumeX } from 'lucide-react';
 import { Link, type LocalizedLinkHref } from '@/i18n/navigation';
 import { UIIcon } from '@/components/ui/UIIcon';
+import { HomeLcpPoster } from '@/components/marketing/home/HomeLcpPoster';
+import { HOME_LCP_POSTER_SRC } from '@/components/marketing/home/home-lcp-image';
 
 export type HeroVideoShowcaseItem = {
   id: string;
@@ -258,16 +260,20 @@ export function HeroVideoShowcase({
           className="relative z-10 overflow-hidden rounded-[22px] border border-white/24 bg-[#070b14] shadow-[0_30px_86px_-44px_rgba(15,23,42,0.95)] dark:border-[rgba(147,197,253,0.30)] dark:shadow-[0_0_0_1px_rgba(96,165,250,0.18),0_0_36px_-20px_rgba(59,130,246,0.62),22px_-18px_46px_-32px_rgba(217,70,239,0.74),-18px_6px_44px_-32px_rgba(96,165,250,0.58),0_30px_80px_-48px_rgba(0,0,0,0.95)]"
         >
           <div className="relative overflow-hidden bg-[#050912]" style={{ aspectRatio: '1.62 / 1' }}>
-            <Image
-              src={selected.posterSrc}
-              alt={selected.imageAlt}
-              fill
-              priority
-              fetchPriority="high"
-              unoptimized={selected.unoptimizedPoster}
-              sizes="(max-width: 767px) 100vw, (max-width: 1399px) 52vw, 710px"
-              className="object-cover"
-            />
+            {selected.posterSrc === HOME_LCP_POSTER_SRC && selected.unoptimizedPoster ? (
+              <HomeLcpPoster alt={selected.imageAlt} />
+            ) : (
+              <Image
+                src={selected.posterSrc}
+                alt={selected.imageAlt}
+                fill
+                priority
+                fetchPriority="high"
+                unoptimized={selected.unoptimizedPoster}
+                sizes="(max-width: 767px) 100vw, (max-width: 1399px) 52vw, 710px"
+                className="object-cover"
+              />
+            )}
             {selected.videoSrc && shouldLoadVideo ? (
               <video
                 ref={videoRef}
