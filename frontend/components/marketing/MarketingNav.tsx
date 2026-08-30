@@ -14,7 +14,8 @@ import { MarketingAccountMenu } from '@/components/marketing/MarketingAccountMen
 import { MarketingDesktopNav } from '@/components/marketing/MarketingDesktopNav';
 import { MarketingMobileMenu } from '@/components/marketing/MarketingMobileMenu';
 import { consumeLogoutIntent, setLogoutIntent } from '@/lib/logout-intent';
-import { clearLastKnownAccount, writeLastKnownUserId } from '@/lib/last-known';
+import { clearLastKnownAccount, readLastKnownUserId, writeLastKnownUserId } from '@/lib/last-known';
+import { hasSupabaseAuthCookie, installSupabaseAuthClientGate } from '@/lib/supabase-session-hint';
 import { MARKETING_TOP_NAV_LINKS } from '@/config/navigation';
 import { buildLoginHref } from '@/lib/auth-entry-href';
 
@@ -124,39 +125,51 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
 
     let unsubscribeAuth: (() => void) | null = null;
 
-    void import('@/lib/supabaseClient')
-      .then(({ supabase }) => supabase.auth.getSession().then(({ data }) => ({ supabase, data })))
-      .then(async ({ supabase, data }) => {
-        if (logoutIntentActive) {
-          await supabase.auth.signOut().catch(() => undefined);
-          return;
-        }
-        const session = data.session ?? null;
-        applySession(session);
-        if (!mounted) return;
-        void fetchAccountState(session?.access_token);
-
-        const { data: subscription } = supabase.auth.onAuthStateChange(async (event, session) => {
-          const eventType = event as string;
-          if (eventType === 'SIGNED_OUT' || eventType === 'USER_DELETED') {
-            markLoggedOut();
+    const startAuthClient = () => {
+      void import('@/lib/supabaseClient')
+        .then(({ supabase }) => supabase.auth.getSession().then(({ data }) => ({ supabase, data })))
+        .then(async ({ supabase, data }) => {
+          if (logoutIntentActive) {
+            await supabase.auth.signOut().catch(() => undefined);
             return;
           }
-          if (logoutIntentActive) return;
-          applySession(session ?? null);
+          const session = data.session ?? null;
+          applySession(session);
+          if (!mounted) return;
           void fetchAccountState(session?.access_token);
+
+          const { data: subscription } = supabase.auth.onAuthStateChange(async (event, session) => {
+            const eventType = event as string;
+            if (eventType === 'SIGNED_OUT' || eventType === 'USER_DELETED') {
+              markLoggedOut();
+              return;
+            }
+            if (logoutIntentActive) return;
+            applySession(session ?? null);
+            void fetchAccountState(session?.access_token);
+          });
+          unsubscribeAuth = () => subscription.subscription.unsubscribe();
+        })
+        .catch(() => {
+          if (mounted) {
+            setEmail(initialEmail);
+            setIsAdmin(Boolean(initialIsAdmin));
+          }
         });
-        unsubscribeAuth = () => subscription.subscription.unsubscribe();
-      })
-      .catch(() => {
-        if (mounted) {
-          setEmail(initialEmail);
-          setIsAdmin(Boolean(initialIsAdmin));
-        }
-      });
+    };
+
+    const stopAuthClientGate = installSupabaseAuthClientGate({
+      hasSessionHint: () =>
+        logoutIntentActive ||
+        Boolean(initialEmail) ||
+        Boolean(readLastKnownUserId()) ||
+        hasSupabaseAuthCookie(),
+      startAuthClient,
+    });
 
     return () => {
       mounted = false;
+      stopAuthClientGate();
       unsubscribeAuth?.();
     };
   }, [initialEmail, initialIsAdmin]);
