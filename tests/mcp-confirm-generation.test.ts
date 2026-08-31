@@ -1094,6 +1094,31 @@ test('paid continuation classifies refunded rejection and unrefunded timeout wit
   assert.equal(refundChecks, 1);
 });
 
+test('paid continuation rejects a success-shaped failed video response after its wallet refund', async () => {
+  const quote = quoteFor(videoRequest);
+  const execution: PaidGenerationExecution = {
+    surface: 'video', quoteId: quote.quoteId, userId: quote.userId, request: videoRequest,
+    engine: capability(videoRequest).engine,
+    canonicalPricing: quote.pricingSnapshot.canonicalPricing as Record<string, unknown>,
+    trustedInitialState: { kind: 'created', jobId: quote.quoteId, walletChargeReserved: true },
+  };
+
+  const outcome = await submitReservedPaidGeneration(execution, {
+    executeVideo: async () => ({
+      body: {
+        ok: true,
+        jobId: QUOTE_ID,
+        status: 'failed',
+        paymentStatus: 'refunded_wallet',
+        videoUrl: null,
+      },
+    }),
+    executeImage: async () => assert.fail('unexpected image'),
+  });
+
+  assert.deepEqual(outcome, { kind: 'rejected', refunded: true });
+});
+
 test('invalid image already-reserved runtime state fails before database or provider work', async () => {
   const { executeImageGeneration } = await import('../frontend/src/server/images/execute-image-generation');
   const previousDatabaseUrl = process.env.DATABASE_URL;

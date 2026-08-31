@@ -430,6 +430,10 @@ export async function submitReservedPaidGeneration(
         providerEnv: submissionOptions.providerEnv,
       });
       if (result.body.ok === true) {
+        const hasRefundMarker = refunded(result.body);
+        if (result.body.status === 'failed' || hasRefundMarker) {
+          return rejectedOutcome(execution, dependencies, hasRefundMarker);
+        }
         return typeof result.body.videoUrl === 'string'
           ? { kind: 'completed' }
           : { kind: 'accepted' };
