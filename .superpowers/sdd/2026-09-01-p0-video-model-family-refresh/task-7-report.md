@@ -89,7 +89,7 @@ The registry check emitted only the repository's existing Node-engine warning be
 
 ## Deviations and residual risks
 
-- There is no currently authored retired runtime engine, so retired behavior is implemented generically through the runtime replacement/public target path but cannot have a real production-fixture execution test until such an identity exists.
+- There is no currently authored retired runtime engine. Fix round 2 therefore exercises a schema-valid synthetic registry through the real repository validator, runtime projection/resolver, and exact MCP details owner without adding a fake production row.
 - Hidden confirmation reloads seven configured engines sequentially inside the transaction. This avoids concurrent queries on one executor and preserves the locked override snapshot, at the cost of a small staging-canary-only query overhead.
 - P0 guidance evidence URLs are authored now but stripped from prelaunch output. Task 14 publication will expose them automatically when app publication becomes true.
 - Public HTTPS duration fail-closed behavior is deliberately scoped to the reviewed MiniMax H3 contract. Other canonical workflows that permit public references without trusted duration metadata retain their Task 4 behavior; resolved owned assets still enforce every authored duration constraint.
@@ -190,3 +190,112 @@ git diff --check                            pass
 The only warning remains the local Node `v23.9.0` runtime versus the declared
 Node `22.x` engine. The fix-round commit hash is reported in the handoff because
 a commit cannot contain its own hash.
+
+---
+
+## Fix round 2 — authorable engine-less retired identities
+
+Base: `0fdb543a6979434a9a40d32383175cc5783f1b52`.
+
+### Finding closed
+
+The authored registry can now retain a fully retired replacement after its raw
+engine and generated engine-catalog entry are removed. This is a narrow
+registry rule, not a second catalog:
+
+- `current`, `legacy`, and `deep_legacy` identities still require an
+  engine-catalog owner;
+- an engine-less identity must be `retired`, point directly to a `current`
+  replacement with a published model page, disable every publication,
+  comparison, pricing, sitemap, rank, variant, and discovery field, and retain
+  a non-empty authored marketing `label`;
+- `presentationOnly` remains unchanged and cannot represent retirement;
+- the label remains optional for a retired identity that still has an
+  engine-catalog row.
+
+The actual runtime projection carries the authored label and flattened public
+target. `getAgentModelDetails` now resolves that target through the same
+injected runtime loader used for the retired identity. A schema-valid synthetic
+registry is validated against a synthetic repository, projected by
+`buildModelRuntimeProjection`, loaded by `createRuntimeModelResolver`, and then
+read through the real details path. It returns the original ID, label, slug,
+surface and retired lifecycle with the canonical replacement tuple, but no
+modes, guidance, prompting sources, public URLs, or executable state. Default
+list and recommendation omit it. No cast-built runtime entry and no fake
+production registry row remain.
+
+The round-1 budget, prepare, and transactional-confirmation spies are preserved:
+retired selection still fails before canonical pricing, quote persistence,
+wallet reservation, or provider submission.
+
+### RED evidence
+
+Before round-2 production edits:
+
+```text
+pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
+  tests/retired-model-runtime-identity.test.ts
+
+3 tests, 0 passed, 3 failed
+- the repository validator rejected the valid retired row as missing from engine-catalog
+- the missing-label negative reached the same generic missing-catalog guard
+- the initial standalone runtime-only negative did not fail
+```
+
+The last assertion above was intentionally removed: a runtime document does
+not know whether an identity is still catalog-backed, and a catalog-backed
+retired row is allowed to omit the optional label. Before correcting the
+over-strict implementation, that exact requirement was added as a second RED:
+
+```text
+tests/retired-model-runtime-identity.test.ts
+3 tests, 2 passed, 1 failed
+- catalog-backed retired identity without label was rejected by document validation
+```
+
+The final negative boundary now lives where ownership is known: repository
+validation rejects a missing label only when the retired engine-catalog row is
+absent.
+
+### GREEN evidence
+
+Focused registry/runtime plus MCP P0, budget, prepare, and confirm contracts:
+
+```text
+pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
+  tests/retired-model-runtime-identity.test.ts \
+  tests/model-registry-validation.test.ts \
+  tests/model-runtime-replacement-routing.test.ts \
+  tests/model-registry-parity.test.ts \
+  tests/mcp-p0-video-parity.test.ts \
+  tests/mcp-prepare-generation.test.ts \
+  tests/mcp-confirm-generation.test.ts
+
+99 tests, 99 passed, 0 failed
+```
+
+Broad MCP/P0 plus the new end-to-end retired projection contract:
+
+```text
+pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
+  tests/mcp-*.test.ts tests/p0-*.test.ts \
+  tests/retired-model-runtime-identity.test.ts
+
+953 tests, 953 passed, 0 failed
+```
+
+Deterministic gates:
+
+```text
+pnpm model:registry:check                    pass (50 models, 2 tombstones; projections current)
+pnpm --prefix frontend exec tsc --noEmit    pass
+npm --prefix frontend run lint              pass, 0 warnings
+npm run lint:exposure                       pass
+git diff --check                            pass
+```
+
+The production registry and every generated projection remained byte-stable;
+no schema-version change or production retired fixture was needed. The only
+warning remains Node `v23.9.0` versus the declared Node `22.x` engine. The
+round-2 commit hash is reported in the handoff because a commit cannot contain
+its own hash.

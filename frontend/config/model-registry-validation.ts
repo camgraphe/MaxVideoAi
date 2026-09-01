@@ -351,6 +351,9 @@ export function validateModelRegistryDocument(value: unknown): ModelRegistryDocu
         fail(`replacement model "${model.id}" must be retired on every publication surface`);
       }
       const replacement = byId.get(normalized(model.replacement))!;
+      if (replacement.lifecycle !== 'current') {
+        fail(`replacement target "${replacement.id}" must be current for "${model.id}"`);
+      }
       if (!replacement.publication.model.published) {
         fail(`replacement target "${replacement.id}" must publish a model page`);
       }
@@ -420,7 +423,12 @@ export function validateModelRegistryRepository(document: ModelRegistryDocument,
 
   for (const model of document.models) {
     if (!catalogIds.has(normalized(model.id)) && model.presentationOnly !== true) {
-      fail(`registry model is missing from engine catalog "${model.id}"`);
+      if (model.lifecycle !== 'retired' || !model.replacement || !isFullyRetiredPublication(model)) {
+        fail(`registry model is missing from engine catalog "${model.id}"`);
+      }
+      if (!model.label?.trim()) {
+        fail(`retired model "${model.id}" requires an authoritative label without engine catalog ownership`);
+      }
     }
 
     if (model.publication.model.published) {

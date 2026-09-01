@@ -30,11 +30,7 @@ import type {
 } from './types';
 import type { CanonicalGenerationReferenceRole } from './generation-types';
 import { toEngineGenerationMode } from './generation-mode-aliases';
-import {
-  getRuntimeModelById,
-  getRuntimeModelSuccessor,
-  type RuntimeModelEntry,
-} from '@/config/model-runtime';
+import { getRuntimeModelById, type RuntimeModelEntry } from '@/config/model-runtime';
 import type { AgentModelAccessContext } from './model-catalog';
 import { normalizeVideoDurationOption } from '@/server/video-generation/execution-constraints';
 
@@ -352,8 +348,9 @@ function resolveDetailsRuntimeSuccessor(
   deps?: AgentModelDetailsDeps,
 ): RuntimeModelEntry | null {
   if (deps?.resolveRuntimeSuccessor) return deps.resolveRuntimeSuccessor(runtime);
-  return getRuntimeModelSuccessor(runtime)
-    ?? (runtime.publicTargetId ? getRuntimeModelById(runtime.publicTargetId) : null);
+  const resolveRuntimeModel = deps?.resolveRuntimeModel ?? getRuntimeModelById;
+  return (runtime.successorId ? resolveRuntimeModel(runtime.successorId) : null)
+    ?? (runtime.publicTargetId ? resolveRuntimeModel(runtime.publicTargetId) : null);
 }
 
 function projectRetiredModelIdentity(

@@ -1,6 +1,6 @@
 # Model Registry Guide
 
-`frontend/config/model-registry.json` is the only authored source for model identity, aliases, family, category, lifecycle, successor, publication, replacement, and model-shaped tombstones.
+`frontend/config/model-registry.json` is the only authored source for model identity, optional authoritative marketing label, aliases, family, category, lifecycle, successor, publication, replacement, and model-shaped tombstones.
 
 The following files are generated projections and must not be edited directly:
 
@@ -68,9 +68,19 @@ Keep the old slug in `aliases.publicSlugs`, change `slug`, regenerate the projec
 
 ## Retire a model
 
-Set `replacement` to the canonical ID of the active destination model. A replacement entry is a retained URL identity, not a published model: turn off every publication surface, clear comparison relationships and ranks/labels, and keep its canonical slug plus all historical public aliases in the entry. The replacement target must publish a model page and cannot itself have a replacement. Chains, cycles, missing targets, and source collisions fail validation.
+Set `replacement` to the canonical ID of the active destination model. A replacement entry is a retained URL identity, not a published model: turn off every publication surface, clear comparison relationships and publication ranks/variant labels, and keep its canonical slug plus all historical public aliases in the entry. The replacement target must be `current`, publish a model page, and cannot itself have a replacement. Chains, cycles, missing targets, and source collisions fail validation.
 
-If the retired identity must remain inspectable after its executable engine module is removed, retain its authored marketing `label` in the registry. The runtime projection carries that optional identity field together with the canonical ID, slug, category, lifecycle, and flattened `publicTargetId`; it does not recreate provider capabilities, endpoints, prices, or public URLs.
+An engine-catalog row remains mandatory for every `current`, `legacy`, and
+`deep_legacy` identity. Only a fully unpublished `retired` replacement may omit
+that executable owner. In that state, author a non-empty marketing `label` in
+the registry; repository validation rejects an engine-less retired identity
+without it. The label stays optional for catalog-backed identities. Do not use
+or loosen `presentationOnly` for retirement: that contract remains a public
+noindex prelaunch route with no replacement.
+
+The runtime projection carries the authoritative label together with the
+canonical ID, slug, category, lifecycle, and flattened `publicTargetId`; it
+does not recreate provider capabilities, endpoints, prices, or public URLs.
 
 The Next.js redirect projection sends both the retired canonical slug and all of its historical public aliases directly to the replacement's canonical localized slug in English, French, and Spanish. The middleware applies the same flattened destination to wrong-English localized compatibility paths such as `/fr/models/*` and `/es/models/*`, including dotted historical aliases, while preserving the query string. Every generated rule is an explicit HTTP 301 and is one hop. Use a registry tombstone with `destination: "models-index"` only when the final destination is the localized catalogue. A tombstone is for a retired model-shaped URL, not a general redirect.
 

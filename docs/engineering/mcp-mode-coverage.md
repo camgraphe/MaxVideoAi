@@ -23,6 +23,13 @@ Exact deep-legacy or retired identities remain inspectable for migration and
 are rejected by budget, preparation, and confirmation before pricing or spend.
 Model links always use the registry slug.
 
+A fully retired replacement may outlive its engine-catalog row. Exact details
+then use the generated runtime identity (authored label, canonical ID/slug and
+surface, plus the flattened current replacement target) and expose no modes,
+capabilities, prompting sources, or URLs. Default list and recommendation still
+omit it. This is a registry/runtime projection rule, not an MCP-owned retired
+catalog.
+
 The MCP can discover, validate, quote, confirm, submit, and recover these
 transport-neutral modes when the selected model and connected environment mark
 them executable:

@@ -21,6 +21,11 @@ export function createRuntimeModelResolver(document: ModelRuntimeDocument) {
     typeof modelOrId === 'string' ? byId.get(modelOrId.trim().toLowerCase()) ?? null : modelOrId;
 
   for (const model of models) {
+    if (model.lifecycle === 'retired') {
+      if (!model.publicTargetId) {
+        throw new Error(`Model runtime retired identity requires a public target "${model.id}"`);
+      }
+    }
     if (model.presentationOnly !== true) {
       for (const value of [model.id, model.slug, ...model.aliases.internal]) {
         byEngineInput.set(value.trim().toLowerCase(), model);
@@ -29,6 +34,9 @@ export function createRuntimeModelResolver(document: ModelRuntimeDocument) {
     const targetId = model.publicTargetId ?? model.id;
     const target = byId.get(targetId.trim().toLowerCase());
     if (!target) throw new Error(`Model runtime public target is missing "${targetId}"`);
+    if (model.lifecycle === 'retired' && target.lifecycle !== 'current') {
+      throw new Error(`Model runtime retired identity target must be current "${targetId}"`);
+    }
     for (const value of [model.slug, ...model.aliases.publicSlugs]) {
       const key = value.trim().toLowerCase();
       const existing = byPublicSlug.get(key);
