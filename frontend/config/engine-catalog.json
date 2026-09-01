@@ -20075,7 +20075,10 @@
           ],
           "a2vPromptRequiredWithoutImage": true,
           "fastHighFpsMaxDurationSec": 10,
-          "fastHighResolutionMaxDurationSec": 10
+          "fastHighResolutionMaxDurationSec": 10,
+          "canonicalResolutionAliases": {
+            "4k": "2160p"
+          }
         }
       },
       "pricingDetails": {
@@ -20087,6 +20090,17 @@
             "1080p": 13,
             "1440p": 19,
             "2160p": 30
+          }
+        },
+        "byMode": {
+          "a2v": {
+            "perSecondCents": {
+              "default": 13,
+              "byResolution": {
+                "1080p": 13
+              }
+            },
+            "durationBasis": "input_audio"
           }
         }
       },
@@ -20100,7 +20114,7 @@
           "2160p": 0.3
         },
         "currency": "USD",
-        "notes": "Text/image provider cost is per output second. Audio-to-video is $0.13 per input-audio second at 1080p and requires the Task 5 exact calculator."
+        "notes": "Text/image provider cost is per output second. Audio-to-video is $0.13 per input-audio second at 1080p and uses canonical input-duration facts."
       },
       "updatedAt": "2026-09-01T12:00:20Z",
       "ttlSec": 600,
@@ -20662,6 +20676,17 @@
             "720p": 12,
             "1080p": 17
           }
+        },
+        "byMode": {
+          "a2v": {
+            "perSecondCents": {
+              "default": 17,
+              "byResolution": {
+                "1080p": 17
+              }
+            },
+            "durationBasis": "input_audio"
+          }
         }
       },
       "pricing": {
@@ -20672,7 +20697,7 @@
           "1080p": 0.17
         },
         "currency": "USD",
-        "notes": "Text/image provider cost is per output second. Audio-to-video is $0.17 per input-audio second at 1080p and requires the Task 5 exact calculator."
+        "notes": "Text/image provider cost is per output second. Audio-to-video is $0.17 per input-audio second at 1080p and uses canonical input-duration facts."
       },
       "updatedAt": "2026-09-01T12:00:20Z",
       "ttlSec": 600,
@@ -21100,6 +21125,23 @@
             "720p": 14,
             "1080p": 25
           }
+        },
+        "byMode": {
+          "ref2v": {
+            "perSecondCents": {
+              "byResolution": {
+                "480p": 8,
+                "720p": 14
+              }
+            }
+          }
+        },
+        "referenceImages": {
+          "unitCents": 1,
+          "minimumCount": 1,
+          "modes": [
+            "ref2v"
+          ]
         }
       },
       "pricing": {
@@ -21626,6 +21668,16 @@
           "byResolution": {
             "720p": 17,
             "1080p": 29
+          }
+        },
+        "byMode": {
+          "extend": {
+            "perSecondCents": {
+              "byResolution": {
+                "720p": 41,
+                "1080p": 53
+              }
+            }
           }
         }
       },
@@ -22341,6 +22393,15 @@
           "default": 6,
           "byResolution": {
             "720p": 6
+          }
+        },
+        "byMode": {
+          "extend": {
+            "perSecondCents": {
+              "byResolution": {
+                "720p": 12
+              }
+            }
           }
         }
       },

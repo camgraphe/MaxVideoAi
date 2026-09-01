@@ -44,6 +44,7 @@ test('workspace pricing and auth gate orchestration is owned by route-local modu
   assert.match(appSource, /import \{ useWorkspacePricingGate \} from '\.\/_hooks\/useWorkspacePricingGate';/);
   assert.match(appSource, /import \{ WorkspaceAppReadyView \} from '\.\/_components\/WorkspaceAppReadyView';/);
   assert.match(appSource, /useWorkspacePricingGate\(\{/);
+  assert.match(appSource, /inputAssets: assets\.inputAssets/);
   assert.doesNotMatch(appSource, /WorkspaceRuntimeModals/);
 
   assert.doesNotMatch(appSource, /const \[preflight, setPreflight\] = useState/);
@@ -54,6 +55,8 @@ test('workspace pricing and auth gate orchestration is owned by route-local modu
 
   assert.match(hookSource, /export function useWorkspacePricingGate/);
   assert.match(hookSource, /runPreflight/);
+  assert.match(hookSource, /inputs: buildWorkspacePreflightInputs\(inputAssets\)/);
+  assert.match(hookSource, /runPreflight\(payload, \{ accessToken \}\)/);
   assert.match(hookSource, /authFetch\('\/api\/member-status'\)/);
   assert.match(hookSource, /useHostedWalletCheckout\(\{/);
   assert.match(hookSource, /getSufficientTopUpAmountCents/);

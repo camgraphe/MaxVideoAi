@@ -280,11 +280,22 @@ export interface PreflightRequest {
   audio?: boolean;
   hasVideoInput?: boolean;
   voiceControl?: boolean;
+  inputs?: PreflightMediaInput[];
   extraInputValues?: Record<string, unknown>;
   user?: {
     memberTier?: string;
   };
 }
+
+export type PreflightMediaInput = {
+  assetId?: string;
+  slotId: string;
+  kind: 'image' | 'video' | 'audio';
+  name: string;
+  type: string;
+  size: number;
+  url: string;
+};
 
 export interface ItemizationLine {
   unit?: string;
@@ -356,5 +367,6 @@ export type ModePricingOverride = {
 export type ReferenceImagePricing = {
   unitCents: number;
   includedCount?: number;
+  minimumCount?: number;
   modes: Mode[];
 };

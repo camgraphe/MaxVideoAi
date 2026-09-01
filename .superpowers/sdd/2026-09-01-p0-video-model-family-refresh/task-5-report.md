@@ -5,8 +5,9 @@ Date: 2026-09-01
 ## Revision
 
 - Base: `165e24dacbc2d60e7f7a8afe55c607031b6d52bd`
-- Pre-commit HEAD while authoring this report: `165e24dacbc2d60e7f7a8afe55c607031b6d52bd`
-- Final implementation commit: reported in the Task 5 handoff because a commit cannot contain its own hash.
+- Initial Task 5 implementation: `5b85e47f278b3988bf8fb72b9b84a8f09a92a621`
+- Reviewer-fix base: `5b85e47f278b3988bf8fb72b9b84a8f09a92a621`
+- Final reviewer-fix commit: reported in the Task 5 handoff because a commit cannot contain its own hash.
 
 ## Outcome
 
@@ -54,6 +55,7 @@ The audit integration received a second focused RED before its implementation: 9
 - Mode rates resolve before the canonical quote. Missing resolution-specific mode facts fail closed.
 - `input_audio` duration requires an explicit positive finite source duration; requested output duration is never substituted on paid prepared/execution paths.
 - Reference counts must be non-negative safe integers. Grok's authored rule applies only to ref2v and charges every provided reference.
+- A reference-priced mode now requires an explicit count fact. Grok ref2v declares a minimum of one; zero remains valid only for definitions that explicitly permit it.
 - Billing and public facts adapters pass the same normalized mode, reference count, and input-audio duration into the package.
 - Pricing-detail merges and engine clones retain the new nested facts when database overrides omit them.
 
@@ -116,6 +118,9 @@ The repository-wide `pnpm test:validate` completed with 3,804/3,811 passing. Its
 - `tests/mcp-prepare-generation.test.ts`
 - `tests/mcp-project-budget.test.ts`
 - `tests/pricing-shadow.test.ts`
+- `tests/preflight-media-pricing.test.ts`
+- `tests/p0-video-workspace.test.ts`
+- `tests/workspace-pricing-gate-hook-contract.test.ts`
 
 ## Deviations and residual risks
 
@@ -124,3 +129,47 @@ The repository-wide `pnpm test:validate` completed with 3,804/3,811 passing. Its
 - The legacy wallet direct surface cannot validate attachment metadata, so exact media-priced modes are deliberately refused there. Normal T2V/I2V quotes continue unchanged.
 - Wan Prime facts preserve fractional cents, while the canonical compatibility profile still rounds the displayed/charged vendor subtotal and commercial components to integers. This is existing kernel policy, not a loss of provider-rate precision.
 - All P0 routing remains Fal-only. A future direct-provider agreement must be implemented and reviewed as a separate routing task.
+
+## Reviewer fix round 1 — trusted public preflight media facts
+
+The reviewer identified that the final debit was authoritative but the earlier workspace/public preflight still accepted pricing scalars from `extraInputValues`, while the real workspace payload carried no attachments. That could underquote Grok ref2v or make LTX A2V depend on a client duration. The fix keeps the final-generation and preview paths aligned:
+
+- `useWorkspacePricingGate` now sends ready attachment identity and provenance (`assetId`, `slotId`, `kind`, URL and file fields) through `PreflightRequest.inputs`; it never sends media duration or reference-count pricing scalars.
+- `/api/preflight` lazily authenticates only media-priced modes, then reuses `processAndValidateGenerationAttachments`, the same attachment normalization, reference derivation, ownership-aware media constraint validation and trusted metadata path as final execution.
+- Grok ref2v uses `normalizedReferenceImages.length`. LTX A2V uses `trustedDurationSecByField.audio_url[0]`, which comes from server-side media-library metadata; attachment/client duration is not projected.
+- Missing authentication, unresolved LTX audio metadata, or absent required facts fail closed with `PRICING_MEDIA_FACTS_UNVERIFIED`. Client-declared `referenceImageCount` or `inputAudioDurationSec` fails with `PRICING_MEDIA_FACTS_UNTRUSTED`.
+- `computeConfiguredPreflight` receives server facts through a separate internal options object. Agent/MCP pricing uses that same internal channel for already resolved reference/media facts; generic HDR/EXR inputs remain in `extraInputValues`.
+- Ordinary T2V/I2V public quotes remain anonymous and do not resolve an auth session.
+- The direct wallet route remains deliberately fail-closed for Grok ref2v and LTX A2V, so it cannot underquote either mode.
+
+### Reviewer-fix RED
+
+Before production edits:
+
+```bash
+pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
+  tests/p0-video-pricing-parity.test.ts \
+  tests/p0-video-workspace.test.ts \
+  tests/preflight-media-pricing.test.ts
+```
+
+Result: 17 tests, 11 passed and 6 failed as intended. The failures proved that missing Grok counts were coerced to zero, Grok had no minimum-count fact, the workspace had no safe preflight attachment projection, and no server media-aware resolver existed for Grok, LTX, or unresolved-fact refusal.
+
+### Reviewer-fix GREEN
+
+The focused pricing, preflight, workspace, attachment/media, MCP, wallet and authority run completed with **164/164 passing**. A further pricing/generation architecture run completed with **42/43 passing**; its sole failure is the pre-existing Task 4/6 `UNIFIED_VEO_FIRST_LAST_ENGINE_IDS` workspace split contract named in the initial report and outside this Task 5 owner set.
+
+The deterministic pricing gates remained unchanged:
+
+```text
+pnpm pricing:baseline                 immutable (178 rows)
+pnpm pricing:shadow-additions         current (40 rows)
+pnpm pricing:public-baseline          current (507 rows)
+pnpm pricing:audit                    218/218 matches, 0 mismatches
+```
+
+All three fixture blob hashes are identical to `5b85e47f`: immutable parity `200250226e2c1f7bd0292101920b4cdfc6730b11`, shadow additions `b60091c8d1c7cc4c9b81eb6fc675a44bdd1d0222`, and public projections `ab195dea3a91127ecc7b9338c85b5f6ce4d0c484`. No fixture or public P0 projection was regenerated.
+
+The official engine-catalog generator also repaired the pre-existing Task 5 projection lag. Its 67-line diff is limited to five P0 engines: LTX 2.5 Fast/Pro mode-duration facts and canonical 4K alias, Grok ref2v/reference facts, and FLUX.3/FLUX.3 Draft extend facts. `pnpm model:registry:check` is green with 50 models, 2 tombstones, a current 50-entry engine catalog and unchanged 42-entry roster.
+
+Final reviewer-fix gates include frontend TypeScript, frontend lint, exposure lint and `git diff --check`; exact final results are recorded in the handoff.

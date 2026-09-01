@@ -310,9 +310,23 @@ export async function getConfiguredEngineIncludingHidden(
   return configured;
 }
 
-export async function computeConfiguredPreflight(request: PreflightRequest): Promise<PreflightResponse> {
+export type TrustedPreflightMediaPricingFacts = Readonly<{
+  referenceImageCount?: number;
+  inputAudioDurationSec?: number;
+}>;
+
+export type ComputeConfiguredPreflightOptions = Readonly<{
+  resolvedEngine?: EngineCaps;
+  trustedMediaPricingFacts?: TrustedPreflightMediaPricingFacts;
+}>;
+
+export async function computeConfiguredPreflight(
+  request: PreflightRequest,
+  options: ComputeConfiguredPreflightOptions = {},
+): Promise<PreflightResponse> {
   const engineId = typeof request.engine === 'string' ? request.engine : '';
-  const engine = await getConfiguredEngine(engineId);
+  const resolvedEngine = options.resolvedEngine ?? await getConfiguredEngine(engineId);
+  const engine = resolvedEngine?.id === engineId ? resolvedEngine : undefined;
   if (!engine) {
     const disabledEngine = await getConfiguredEngine(engineId, true);
     if (disabledEngine) {
@@ -410,42 +424,20 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
     request.extraInputValues && typeof request.extraInputValues === 'object' && !Array.isArray(request.extraInputValues)
       ? request.extraInputValues
       : {};
-  const rawReferenceImageCount: unknown = rawExtraInputValues.referenceImageCount;
-  const rawInputAudioDurationSec: unknown = rawExtraInputValues.inputAudioDurationSec;
-  let referenceImageCount: number | undefined;
-  if (rawReferenceImageCount !== undefined) {
-    if (typeof rawReferenceImageCount !== 'number'
-      || !Number.isSafeInteger(rawReferenceImageCount)
-      || rawReferenceImageCount < 0) {
-      return {
-        ok: false,
-        messages: ['Unable to compute pricing'],
-        error: {
-          code: 'PRICING_ERROR',
-          message: 'Reference image count must be a non-negative safe integer.',
-        },
-      };
-    }
-    referenceImageCount = rawReferenceImageCount;
+  if (
+    Object.prototype.hasOwnProperty.call(rawExtraInputValues, 'referenceImageCount')
+    || Object.prototype.hasOwnProperty.call(rawExtraInputValues, 'inputAudioDurationSec')
+  ) {
+    return {
+      ok: false,
+      messages: ['Unable to verify media pricing facts'],
+      error: {
+        code: 'PRICING_MEDIA_FACTS_UNTRUSTED',
+        message: 'Client-declared media pricing facts are not accepted.',
+      },
+    };
   }
-  let inputAudioDurationSec: number | undefined;
-  if (rawInputAudioDurationSec !== undefined) {
-    if (
-      typeof rawInputAudioDurationSec !== 'number'
-      || !Number.isFinite(rawInputAudioDurationSec)
-      || rawInputAudioDurationSec <= 0
-    ) {
-      return {
-        ok: false,
-        messages: ['Unable to compute pricing'],
-        error: {
-          code: 'PRICING_ERROR',
-          message: 'Input-audio duration must be a positive finite number.',
-        },
-      };
-    }
-    inputAudioDurationSec = rawInputAudioDurationSec;
-  }
+  const { referenceImageCount, inputAudioDurationSec } = options.trustedMediaPricingFacts ?? {};
   const booleanExtraAddon = (value: unknown): boolean | undefined => {
     if (typeof value === 'boolean') return value;
     if (typeof value === 'string') {

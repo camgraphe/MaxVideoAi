@@ -1,4 +1,8 @@
-import { computeConfiguredPreflight } from '@/server/engines';
+import {
+  computeConfiguredPreflight,
+  type ComputeConfiguredPreflightOptions,
+  type TrustedPreflightMediaPricingFacts,
+} from '@/server/engines';
 import { computeCanonicalBillingSnapshot } from '@/server/pricing/quote-billing';
 import type { TransactionQueryExecutor } from '@/lib/db';
 import { loadMembershipTiersWithExecutor } from '@/lib/membership';
@@ -31,7 +35,10 @@ export type GenerationPricingResult = {
 };
 
 export type GenerationPricingDependencies = {
-  computeVideoPreflight(request: PreflightRequest): Promise<PreflightResponse>;
+  computeVideoPreflight(
+    request: PreflightRequest,
+    options?: ComputeConfiguredPreflightOptions,
+  ): Promise<PreflightResponse>;
   estimateImage(
     input: ImageEstimateInput,
   ): Promise<Awaited<ReturnType<typeof estimateImageGeneration>>>;
@@ -200,16 +207,21 @@ function canonicalEffectiveCustomImageSize(
 
 function canonicalVideoExtraInputValues(
   request: CanonicalGenerationRequest,
+): Record<string, boolean> {
+  return {
+    ...(request.settings.hdr === true ? { hdr: true } : {}),
+    ...(request.settings.exrExport === true ? { exr_export: true } : {}),
+  };
+}
+
+function canonicalVideoTrustedMediaPricingFacts(
+  request: CanonicalGenerationRequest,
   context: GenerationPricingReferenceContext,
-): Record<string, number | boolean> {
+): TrustedPreflightMediaPricingFacts {
   const inputAudioDurationSec = canonicalInputAudioDurationSec(request, context);
   return {
     referenceImageCount: canonicalReferenceImageCount(request, context),
-    ...(inputAudioDurationSec !== undefined
-      ? { inputAudioDurationSec }
-      : {}),
-    ...(request.settings.hdr === true ? { hdr: true } : {}),
-    ...(request.settings.exrExport === true ? { exr_export: true } : {}),
+    ...(inputAudioDurationSec !== undefined ? { inputAudioDurationSec } : {}),
   };
 }
 
@@ -245,6 +257,7 @@ export async function priceCanonicalGeneration(
     const settings = request.settings;
     const engineMode = toEngineGenerationMode(request.engineId, request.mode);
     const aspectRatio = optionalString(settings, 'aspectRatio');
+    const extraInputValues = canonicalVideoExtraInputValues(request);
     const result = await dependencies.computeVideoPreflight({
       engine: request.engineId,
       mode: engineMode,
@@ -257,8 +270,10 @@ export async function priceCanonicalGeneration(
       ...(typeof settings.loop === 'boolean' ? { loop: settings.loop } : {}),
       ...(typeof settings.audio === 'boolean' ? { audio: settings.audio } : {}),
       hasVideoInput: hasCanonicalVideoInput(request, referenceContext),
-      extraInputValues: canonicalVideoExtraInputValues(request, referenceContext),
+      ...(Object.keys(extraInputValues).length ? { extraInputValues } : {}),
       user: { memberTier: membershipTier },
+    }, {
+      trustedMediaPricingFacts: canonicalVideoTrustedMediaPricingFacts(request, referenceContext),
     });
     if (!result.ok || !result.pricing || result.total === undefined || !result.currency) {
       throw new Error('Canonical video pricing is unavailable.');

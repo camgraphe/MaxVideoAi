@@ -109,10 +109,16 @@ function toPrimitiveArray(value: unknown): PrimitiveValue[] | undefined {
   }, []);
 }
 
-export async function runPreflight(payload: PreflightRequest): Promise<PreflightResponse> {
+export async function runPreflight(
+  payload: PreflightRequest,
+  options?: { accessToken?: string | null },
+): Promise<PreflightResponse> {
   const response = await authFetch('/api/preflight', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options?.accessToken ? { Authorization: `Bearer ${options.accessToken}` } : {}),
+    },
     body: JSON.stringify(payload),
   });
   const data = (await response.json().catch(() => null)) as PreflightResponse | null;

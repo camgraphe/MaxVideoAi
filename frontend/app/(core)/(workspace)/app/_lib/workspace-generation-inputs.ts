@@ -1,6 +1,6 @@
 import type { MultiPromptScene } from '@/components/Composer';
 import type { KlingElementAsset, KlingElementState } from '@/components/KlingElementsBuilder';
-import type { EngineCaps, Mode } from '@/types/engines';
+import type { EngineCaps, Mode, PreflightMediaInput } from '@/types/engines';
 import {
   getKlingO3AssetState,
   isKlingO3FrameFieldId,
@@ -28,6 +28,25 @@ export type GenerationAttachmentPayload = {
   durationSec?: number | null;
   assetId?: string;
 };
+
+export function buildWorkspacePreflightInputs(
+  inputAssets: Record<string, (ReferenceAsset | null)[]>,
+): PreflightMediaInput[] {
+  return Object.entries(inputAssets).flatMap(([fieldId, assets]) =>
+    assets.flatMap((asset) => {
+      if (!asset || asset.status !== 'ready' || !asset.url) return [];
+      return [{
+        ...(asset.assetId ? { assetId: asset.assetId } : {}),
+        slotId: fieldId,
+        kind: asset.kind,
+        name: asset.name,
+        type: asset.type,
+        size: asset.size,
+        url: asset.url,
+      }];
+    })
+  );
+}
 
 export type GenerationKlingElementPayload = {
   id?: string;

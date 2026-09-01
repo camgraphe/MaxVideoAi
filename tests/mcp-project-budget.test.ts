@@ -389,7 +389,7 @@ test('project budgets accept the full canonical reference envelope when the mode
 
 test('project budget prices LTX A2V from the explicitly declared source-audio duration', async () => {
   const candidate = registryCapability('ltx-2-5-fast');
-  let capturedExtraInputValues: Record<string, unknown> | undefined;
+  let capturedTrustedMediaPricingFacts: Record<string, unknown> | undefined;
   const value = input([{
     name: 'LTX audio-led plan',
     lines: [line({
@@ -408,8 +408,8 @@ test('project budget prices LTX A2V from the explicitly declared source-audio du
       request,
       membershipTier,
       {
-        computeVideoPreflight: async (payload) => {
-          capturedExtraInputValues = payload.extraInputValues;
+        computeVideoPreflight: async (_payload, options) => {
+          capturedTrustedMediaPricingFacts = options?.trustedMediaPricingFacts;
           return {
             ok: true,
             total: 153,
@@ -422,7 +422,7 @@ test('project budget prices LTX A2V from the explicitly declared source-audio du
     ),
   });
 
-  assert.equal(capturedExtraInputValues?.inputAudioDurationSec, 9);
+  assert.equal(capturedTrustedMediaPricingFacts?.inputAudioDurationSec, 9);
   assert.equal(result.proposals[0]?.lines[0]?.unitPrice.amountCents, 153);
 });
 

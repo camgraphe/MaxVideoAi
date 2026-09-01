@@ -11,6 +11,7 @@ type GenerationAttachmentProcessingParams = Omit<
 > & {
   rawInputs: unknown;
   userId: string;
+  mediaConstraintDeps?: Parameters<typeof validateGenerationMediaConstraints>[0]['deps'];
 };
 
 type AttachmentProcessingFailure = Extract<
@@ -39,7 +40,7 @@ type GenerationAttachmentProcessingResult =
 export async function processAndValidateGenerationAttachments(
   params: GenerationAttachmentProcessingParams
 ): Promise<GenerationAttachmentProcessingResult> {
-  const { rawInputs, userId, ...referenceParams } = params;
+  const { rawInputs, userId, mediaConstraintDeps, ...referenceParams } = params;
   const attachmentProcessing = await processGenerationAttachments({ rawInputs, userId });
   if (!attachmentProcessing.ok) {
     return { ...attachmentProcessing, metric: undefined };
@@ -56,6 +57,7 @@ export async function processAndValidateGenerationAttachments(
     inputSchema: params.inputSchema,
     attachments: attachmentProcessing.attachments,
     referenceMediaItems: references.referenceMediaItems,
+    deps: mediaConstraintDeps,
   });
   if (!mediaConstraints.ok) return mediaConstraints;
 

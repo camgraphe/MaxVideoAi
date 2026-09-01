@@ -7,6 +7,7 @@ import { listFalEngines } from '../frontend/src/config/falEngines';
 import { buildFalGenerationRequest } from '../frontend/src/lib/fal-request-body';
 import { summarizeWorkspaceInputSchema } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-input-schema';
 import { prepareGenerationInputs } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-generation-inputs';
+import * as workspaceGenerationInputsModule from '../frontend/app/(core)/(workspace)/app/_lib/workspace-generation-inputs';
 import { getGenerationIterationGuardMessage } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-generation-guards';
 import { buildWorkspaceGeneratePayload } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-generation-payload';
 import type { ReferenceAsset } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-assets';
@@ -51,6 +52,46 @@ function imageAsset(id: string, fieldId: string): ReferenceAsset {
     assetId: id, status: 'ready',
   };
 }
+
+test('workspace preflight carries persisted asset identity and field provenance without client pricing scalars', () => {
+  const buildWorkspacePreflightInputs = (
+    workspaceGenerationInputsModule as unknown as {
+      buildWorkspacePreflightInputs?: (
+        assets: Record<string, (ReferenceAsset | null)[]>,
+      ) => Array<Record<string, unknown>>;
+    }
+  ).buildWorkspacePreflightInputs;
+  assert.equal(typeof buildWorkspacePreflightInputs, 'function');
+  if (!buildWorkspacePreflightInputs) return;
+
+  const inputs = buildWorkspacePreflightInputs({
+    reference_image_urls: [
+      { ...imageAsset('grok-ref', 'reference_image_urls'), durationSec: 999 },
+      null,
+    ],
+    audio_url: [{
+      id: 'ltx-audio', fieldId: 'audio_url', name: 'source.wav', kind: 'audio',
+      type: 'audio/wav', size: 2048, previewUrl: 'https://cdn.maxvideoai.com/source.wav',
+      url: 'https://cdn.maxvideoai.com/source.wav', assetId: 'audio-asset', durationSec: 999,
+      status: 'ready',
+    }],
+  });
+
+  assert.deepEqual(inputs, [
+    {
+      assetId: 'grok-ref', kind: 'image', name: 'grok-ref.png', size: 1,
+      slotId: 'reference_image_urls', type: 'image/png',
+      url: 'https://cdn.example.com/grok-ref.png',
+    },
+    {
+      assetId: 'audio-asset', kind: 'audio', name: 'source.wav', size: 2048,
+      slotId: 'audio_url', type: 'audio/wav',
+      url: 'https://cdn.maxvideoai.com/source.wav',
+    },
+  ]);
+  assert.equal(inputs.some((input) => 'durationSec' in input), false);
+  assert.equal(inputs.some((input) => 'referenceImageCount' in input), false);
+});
 
 function summarizeFluxWorkspace(
   engine: NonNullable<ReturnType<typeof listFalEngines>[number]>['engine'],

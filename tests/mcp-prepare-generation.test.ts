@@ -820,6 +820,7 @@ test('catalog revision and full versioned pricing snapshot are deterministic and
 
 test('generation pricing delegates video and image formulas to the existing canonical owners', async () => {
   let videoPayload: Record<string, unknown> | null = null;
+  let videoOptions: Record<string, unknown> | null = null;
   let imagePayload: Record<string, unknown> | null = null;
   const videoRequest = { ...videoInput, schemaVersion: 1, prompt: videoInput.prompt.trim() } as CanonicalGenerationRequest;
   const imageRequest = {
@@ -828,8 +829,9 @@ test('generation pricing delegates video and image formulas to the existing cano
     settings: { ...imageInput.settings, enableWebSearch: true },
   } as CanonicalGenerationRequest;
   const deps = {
-    computeVideoPreflight: async (payload: Record<string, unknown>) => {
+    computeVideoPreflight: async (payload: Record<string, unknown>, options: Record<string, unknown>) => {
       videoPayload = payload;
+      videoOptions = options;
       return {
         ok: true,
         total: 125,
@@ -871,8 +873,10 @@ test('generation pricing delegates video and image formulas to the existing cano
     fps: 24,
     audio: true,
     hasVideoInput: false,
-    extraInputValues: { referenceImageCount: 0 },
     user: { memberTier: 'member' },
+  });
+  assert.deepEqual(videoOptions, {
+    trustedMediaPricingFacts: { referenceImageCount: 0 },
   });
   assert.deepEqual(imagePayload, {
     engineId: imageModel.id,
@@ -947,7 +951,6 @@ test('Luma HDR and EXR addons reach both canonical video pricing paths', async (
     estimateImage: async () => { throw new Error('unused'); },
   });
   assert.deepEqual(preflight?.extraInputValues, {
-    referenceImageCount: 0,
     hdr: true,
     exr_export: true,
   });
@@ -1081,8 +1084,9 @@ test('generation pricing forwards MiniMax H3 reference counts to both canonical 
   };
   let capturedPreflight: Record<string, unknown> | null = null;
   await priceCanonicalGeneration(ref2vRequest, 'member', {
-    computeVideoPreflight: async (payload: Record<string, unknown>) => {
+    computeVideoPreflight: async (payload: Record<string, unknown>, options: Record<string, unknown>) => {
       capturedPreflight = payload;
+      capturedPreflight.options = options;
       return {
         ok: true,
         total: 100,
@@ -1094,7 +1098,12 @@ test('generation pricing forwards MiniMax H3 reference counts to both canonical 
       throw new Error('unused');
     },
   }, { resolvedReferences });
-  assert.equal((capturedPreflight?.extraInputValues as { referenceImageCount?: number } | undefined)?.referenceImageCount, 3);
+  assert.equal(
+    ((capturedPreflight?.options as { trustedMediaPricingFacts?: { referenceImageCount?: number } } | undefined)
+      ?.trustedMediaPricingFacts?.referenceImageCount),
+    3,
+  );
+  assert.equal(capturedPreflight?.extraInputValues, undefined);
 
   let capturedBillingContext: Record<string, unknown> | null = null;
   const pricingExecutor = {
@@ -1122,8 +1131,9 @@ test('generation pricing forwards MiniMax H3 reference counts to both canonical 
     };
     let count: number | undefined;
     await priceCanonicalGeneration(request, 'member', {
-      computeVideoPreflight: async (payload: Record<string, unknown>) => {
-        count = (payload.extraInputValues as { referenceImageCount?: number } | undefined)?.referenceImageCount;
+      computeVideoPreflight: async (_payload: Record<string, unknown>, options: Record<string, unknown>) => {
+        count = ((options.trustedMediaPricingFacts as { referenceImageCount?: number } | undefined)
+          ?.referenceImageCount);
         return {
           ok: true,
           total: 100,
@@ -1164,8 +1174,9 @@ test('generation pricing forwards resolved LTX source-audio duration to prepare 
 
   let capturedPreflight: Record<string, unknown> | null = null;
   await priceCanonicalGeneration(request, 'member', {
-    computeVideoPreflight: async (payload: Record<string, unknown>) => {
+    computeVideoPreflight: async (payload: Record<string, unknown>, options: Record<string, unknown>) => {
       capturedPreflight = payload;
+      capturedPreflight.options = options;
       return {
         ok: true,
         total: 100,
@@ -1176,9 +1187,11 @@ test('generation pricing forwards resolved LTX source-audio duration to prepare 
     estimateImage: async () => { throw new Error('unused'); },
   }, { resolvedReferences });
   assert.equal(
-    (capturedPreflight?.extraInputValues as { inputAudioDurationSec?: number } | undefined)?.inputAudioDurationSec,
+    ((capturedPreflight?.options as { trustedMediaPricingFacts?: { inputAudioDurationSec?: number } } | undefined)
+      ?.trustedMediaPricingFacts?.inputAudioDurationSec),
     9.25,
   );
+  assert.equal(capturedPreflight?.extraInputValues, undefined);
 
   let capturedBillingContext: Record<string, unknown> | null = null;
   await priceCanonicalGenerationInExecutor(request, 'member', {

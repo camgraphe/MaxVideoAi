@@ -26,6 +26,7 @@ export interface PricingModeRate {
 export interface PricingReferenceImageRule {
   unitCents: number;
   includedCount?: number;
+  minimumCount?: number;
   modes: string[];
 }
 

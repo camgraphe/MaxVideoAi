@@ -244,6 +244,39 @@ test('Grok reference pricing applies only to ref2v and has no invented free refe
   assert.deepEqual(referenceFacts.addons, [{ type: 'reference_images', amountCents: 1 }]);
 });
 
+test('Grok reference pricing rejects missing or invalid reference facts', () => {
+  const definition = buildPricingDefinition(engineFor('grok-imagine-video-1-5'));
+  assert.ok(definition);
+
+  for (const referenceImageCount of [undefined, -1, 0, 1.5, Number.NaN]) {
+    assert.throws(
+      () => computePricingDefinitionFacts(definition, {
+        durationSec: 6,
+        resolution: '720p',
+        mode: 'ref2v',
+        ...(referenceImageCount === undefined ? {} : { referenceImageCount }),
+      } as never),
+      /reference image count/i,
+      String(referenceImageCount),
+    );
+  }
+
+  const zeroPermittedDefinition = {
+    ...definition,
+    referenceImages: {
+      ...definition.referenceImages!,
+      minimumCount: 0,
+    },
+  };
+  const zeroFacts = computePricingDefinitionFacts(zeroPermittedDefinition, {
+    durationSec: 6,
+    resolution: '720p',
+    mode: 'ref2v',
+    referenceImageCount: 0,
+  });
+  assert.deepEqual(zeroFacts.addons, []);
+});
+
 test('LTX audio-to-video fails closed without explicit input-audio duration', () => {
   for (const engineId of ['ltx-2-5-fast', 'ltx-2-5-pro']) {
     const definition = buildPricingDefinition(engineFor(engineId));
@@ -269,7 +302,7 @@ test('mode-specific definition projection is data-driven and contains no P0 calc
     perSecondCents: { default: 13, byResolution: { '1080p': 13 } },
     durationBasis: 'input_audio',
   });
-  assert.deepEqual(grok.referenceImages, { unitCents: 1, modes: ['ref2v'] });
+  assert.deepEqual(grok.referenceImages, { unitCents: 1, minimumCount: 1, modes: ['ref2v'] });
   assert.deepEqual((flux.modePricing as Record<string, unknown>)?.extend, {
     perSecondCents: { byResolution: { '720p': 41, '1080p': 53 } },
   });

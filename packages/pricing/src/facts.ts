@@ -86,9 +86,13 @@ export function computePricingDefinitionFacts(
 
   const referenceRule = definition.referenceImages;
   if (input.mode && referenceRule?.modes.includes(input.mode)) {
-    const rawCount = input.referenceImageCount ?? 0;
-    if (!Number.isSafeInteger(rawCount) || rawCount < 0) {
-      throw new Error('Reference image count must be a non-negative safe integer.');
+    const rawCount = input.referenceImageCount;
+    if (typeof rawCount !== 'number' || !Number.isSafeInteger(rawCount) || rawCount < 0) {
+      throw new Error('Reference image count is required and must be a non-negative safe integer.');
+    }
+    const minimumCount = Math.max(0, referenceRule.minimumCount ?? 0);
+    if (rawCount < minimumCount) {
+      throw new Error(`Reference image count must be at least ${minimumCount} for this pricing mode.`);
     }
     const paidCount = Math.max(0, rawCount - Math.max(0, referenceRule.includedCount ?? 0));
     const amountCents = normaliseCents(paidCount * referenceRule.unitCents);

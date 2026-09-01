@@ -62,7 +62,7 @@ const engine: EngineCaps = {
     byMode: {
       ref2v: { perSecondCents: { byResolution: { '480p': 8, '720p': 14 } } },
     },
-    referenceImages: { unitCents: 1, modes: ['ref2v'] },
+    referenceImages: { unitCents: 1, minimumCount: 1, modes: ['ref2v'] },
   },
   pricing: {
     unit: 'USD/s', base: 0.14, byResolution: { '480p': 0.08, '720p': 0.14, '1080p': 0.25 }, currency: 'USD',
