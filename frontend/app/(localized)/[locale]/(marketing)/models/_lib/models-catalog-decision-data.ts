@@ -17,36 +17,37 @@ import type { AppLocale } from '@/i18n/locales';
 import type { LocalizedLinkHref } from '@/i18n/navigation';
 import type { ModelGalleryCard } from '@/components/marketing/ModelsGallery';
 import type { ModelsGalleryCompareHref } from '@/components/marketing/models-gallery/models-gallery-types';
+import { buildCanonicalCompareSlug, isPublishedComparisonSlug } from '@/lib/compare-hub/data';
+import { resolveExampleFamilyId } from '@/lib/model-families';
 
-const EXAMPLE_FAMILY_BY_MODEL: Record<string, string> = {
-  'seedance-2-5': 'seedance',
-  'seedance-2-0': 'seedance',
-  'seedance-2-0-fast': 'seedance',
-  'seedance-1-5-pro': 'seedance',
-  'kling-3-pro': 'kling',
-  'kling-3-standard': 'kling',
-  'kling-3-4k': 'kling',
-  'kling-2-6-pro': 'kling',
-  'kling-2-5-turbo': 'kling',
-  'veo-3-1': 'veo',
-  'veo-3-1-fast': 'veo',
-  'veo-3-1-lite': 'veo',
-  'ltx-2-3-fast': 'ltx',
-  'ltx-2-3-pro': 'ltx',
-  'ltx-2-fast': 'ltx',
-  'ltx-2': 'ltx',
-  'sora-2': 'sora',
-  'sora-2-pro': 'sora',
-  'wan-2-6': 'wan',
-  'wan-2-5': 'wan',
-  'pika-text-to-video': 'pika',
-  'happy-horse-1-1': 'happy-horse',
-  'happy-horse-1-0': 'happy-horse',
-  'minimax-hailuo-02-text': 'hailuo',
-};
-
-const TOP_PICK_IDS = ['seedance-2-5', 'seedance-2-0', 'kling-3-pro', 'veo-3-1', 'happy-horse-1-1'] as const;
-const RECOMMENDED_IDS = ['seedance-2-5', 'seedance-2-0', 'kling-3-pro', 'veo-3-1', 'happy-horse-1-1', 'ltx-2-3-fast', 'luma-ray-3-2'] as const;
+const TOP_PICK_IDS = [
+  'ltx-2-5-pro',
+  'wan-3-prime',
+  'grok-imagine-video-1-5',
+  'flux-3',
+  'seedance-2-5',
+  'seedance-2-0',
+  'kling-3-pro',
+  'veo-3-1',
+  'happy-horse-1-1',
+] as const;
+const RECOMMENDED_IDS = [
+  'wan-3',
+  'wan-3-prime',
+  'ltx-2-5-fast',
+  'ltx-2-5-pro',
+  'grok-imagine-video-1-5',
+  'flux-3',
+  'flux-3-draft',
+  'seedance-2-5',
+  'seedance-2-0',
+  'kling-3-pro',
+  'veo-3-1',
+  'happy-horse-1-1',
+  'ltx-2-3-fast',
+  'luma-ray-3-2',
+] as const;
+const SEEDANCE_FAST_COMPARISON_SLUG = 'seedance-2-0-vs-seedance-2-0-fast';
 
 export type ModelsCatalogDecisionBadge = {
   label: string;
@@ -116,11 +117,12 @@ export function buildDefaultModelCompareHref(modelSlug: string): ModelsGalleryCo
     return null;
   }
   const opponent = modelSlug === 'seedance-2-0' ? 'kling-3-pro' : 'seedance-2-0';
+  if (!isPublishedComparisonSlug(buildCanonicalCompareSlug(modelSlug, opponent))) return null;
   return buildModelCompareHref(modelSlug, opponent);
 }
 
 export function buildModelExamplesHref(modelSlug: string): LocalizedLinkHref | null {
-  const family = EXAMPLE_FAMILY_BY_MODEL[modelSlug];
+  const family = resolveExampleFamilyId(modelSlug);
   if (!family) return null;
   return { pathname: '/examples/[model]', params: { model: family } };
 }
@@ -143,9 +145,13 @@ function buildBadges(locale: AppLocale): ModelsCatalogDecisionBadge[] {
   ];
 }
 
-function buildTopPickCopy(locale: AppLocale) {
+function buildTopPickCopy(locale: AppLocale): Record<string, { reason: string; detail: string }> {
   return textByLocale(locale, {
     en: {
+      'ltx-2-5-pro': { reason: 'Latest LTX quality route', detail: 'Production-focused LTX 2.5 generation' },
+      'wan-3-prime': { reason: 'Latest Wan quality route', detail: 'Premium Wan 3 generation' },
+      'grok-imagine-video-1-5': { reason: 'Grok video route', detail: 'Text, opening-image, and reference workflows' },
+      'flux-3': { reason: 'FLUX video route', detail: 'Standard-quality generation and video extension' },
       'seedance-2-5': { reason: 'Current Seedance flagship', detail: '30-second cinematic, image, and reference workflows' },
       'seedance-2-0': { reason: 'Best native audio', detail: 'Native audio, lip sync, realistic motion' },
       'kling-3-pro': { reason: 'Best control', detail: 'Cinematic sequences and prompt control' },
@@ -153,6 +159,10 @@ function buildTopPickCopy(locale: AppLocale) {
       'happy-horse-1-1': { reason: 'Best Alibaba audio route', detail: 'Text, image, and references with native audio' },
     },
     fr: {
+      'ltx-2-5-pro': { reason: 'Dernière route qualité LTX', detail: 'Génération LTX 2.5 orientée production' },
+      'wan-3-prime': { reason: 'Dernière route qualité Wan', detail: 'Génération premium Wan 3' },
+      'grok-imagine-video-1-5': { reason: 'Route vidéo Grok', detail: 'Texte, image d’ouverture et références' },
+      'flux-3': { reason: 'Route vidéo FLUX', detail: 'Génération standard et prolongation vidéo' },
       'seedance-2-5': { reason: 'Flagship Seedance actuel', detail: 'Vidéo cinématique de 30 s, image et références' },
       'seedance-2-0': { reason: 'Meilleur audio natif', detail: 'Audio natif, lip sync, mouvement realiste' },
       'kling-3-pro': { reason: 'Meilleur controle', detail: 'Sequences cine et controle du prompt' },
@@ -160,6 +170,10 @@ function buildTopPickCopy(locale: AppLocale) {
       'happy-horse-1-1': { reason: 'Meilleure route audio Alibaba', detail: 'Texte, image et references avec audio natif' },
     },
     es: {
+      'ltx-2-5-pro': { reason: 'Última ruta de calidad LTX', detail: 'Generación LTX 2.5 orientada a producción' },
+      'wan-3-prime': { reason: 'Última ruta de calidad Wan', detail: 'Generación premium Wan 3' },
+      'grok-imagine-video-1-5': { reason: 'Ruta de vídeo Grok', detail: 'Texto, imagen inicial y referencias' },
+      'flux-3': { reason: 'Ruta de vídeo FLUX', detail: 'Generación estándar y ampliación de vídeo' },
       'seedance-2-5': { reason: 'Flagship actual de Seedance', detail: 'Video cinematográfico de 30 s, imagen y referencias' },
       'seedance-2-0': { reason: 'Mejor audio nativo', detail: 'Audio nativo, lip sync y movimiento realista' },
       'kling-3-pro': { reason: 'Mejor control', detail: 'Secuencias cinematicas y control de prompt' },
@@ -355,7 +369,15 @@ export function buildModelsCatalogDecisionData({
 }): ModelsCatalogDecisionData {
   const byId = cardMap(cards);
   const topPickCopy = buildTopPickCopy(activeLocale);
-  const topPickIcons = [Sparkles, Mic2, SlidersHorizontal, Bolt, Gauge] as const;
+  const topPickIcons = [Sparkles, Trophy, Camera, Film, Sparkles, Mic2, SlidersHorizontal, Bolt, Gauge] as const;
+  const comparisonCandidates = [
+    ['Seedance 2.0 vs Kling 3 Pro', 'seedance-2-0', 'kling-3-pro'],
+    ['Seedance 2.0 vs Seedance 2.0 Fast', 'seedance-2-0', 'seedance-2-0-fast', SEEDANCE_FAST_COMPARISON_SLUG],
+    ['Kling 3 Pro vs Veo 3.1', 'kling-3-pro', 'veo-3-1'],
+    ['Happy Horse 1.1 vs Seedance 2.0', 'happy-horse-1-1', 'seedance-2-0'],
+    ['Happy Horse 1.1 vs Veo 3.1', 'happy-horse-1-1', 'veo-3-1'],
+    ['Veo 3.1 Fast vs Veo 3.1 Lite', 'veo-3-1-fast', 'veo-3-1-lite'],
+  ] as const;
 
   return {
     badges: buildBadges(activeLocale),
@@ -374,17 +396,11 @@ export function buildModelsCatalogDecisionData({
     }),
     useCases: buildUseCases(activeLocale),
     recommendedCards: pickCards(cards, RECOMMENDED_IDS),
-    popularComparisons: [
-      { label: 'Seedance 2.0 vs Kling 3 Pro', href: buildModelCompareHref('seedance-2-0', 'kling-3-pro') },
-      {
-        label: 'Seedance 2.0 vs Seedance 2.0 Fast',
-        href: { pathname: '/ai-video-engines/[slug]', params: { slug: 'seedance-2-0-vs-seedance-2-0-fast' } },
-      },
-      { label: 'Kling 3 Pro vs Veo 3.1', href: buildModelCompareHref('kling-3-pro', 'veo-3-1') },
-      { label: 'Happy Horse 1.1 vs Seedance 2.0', href: buildModelCompareHref('happy-horse-1-1', 'seedance-2-0') },
-      { label: 'Happy Horse 1.1 vs Veo 3.1', href: buildModelCompareHref('happy-horse-1-1', 'veo-3-1') },
-      { label: 'Veo 3.1 Fast vs Veo 3.1 Lite', href: buildModelCompareHref('veo-3-1-fast', 'veo-3-1-lite') },
-    ],
+    popularComparisons: comparisonCandidates.flatMap(([label, left, right, authoredSlug]) => (
+      byId.has(left) && byId.has(right) && isPublishedComparisonSlug(authoredSlug ?? buildCanonicalCompareSlug(left, right))
+        ? [{ label, href: buildModelCompareHref(left, right) }]
+        : []
+    )),
     pricingLimits: buildPricingLimits(activeLocale),
     faqItems: buildDecisionFaqItems(activeLocale),
   };

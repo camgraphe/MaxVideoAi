@@ -2,7 +2,12 @@ import {
   normalizeFamilyExamplesPageConfig,
   type ModelFamilyExamplesPageConfig,
 } from './model-publication';
-import { getRuntimeModelById, listRuntimeModels } from './model-runtime';
+import {
+  MODEL_LAUNCH_READY_MODELS,
+  hasModelLaunchReadiness,
+  type ModelLaunchReadinessEntry,
+} from './model-launch-readiness';
+import { listRuntimeModels, type RuntimeModelEntry } from './model-runtime';
 
 export type ModelFamilyDefinition = {
   id: string;
@@ -19,8 +24,19 @@ export type ModelFamilyDefinition = {
 
 type ModelFamilySource = Omit<ModelFamilyDefinition, 'defaultModelSlug' | 'examplesPage'> & {
   defaultModelId?: string;
+  modelOrderIds?: readonly string[];
   examplesPage?: Pick<ModelFamilyExamplesPageConfig, 'stage' | 'showInNav'>;
 };
+
+const ASSET_GATED_LAUNCH_MODEL_IDS = new Set([
+  'wan-3',
+  'wan-3-prime',
+  'ltx-2-5-fast',
+  'ltx-2-5-pro',
+  'grok-imagine-video-1-5',
+  'flux-3',
+  'flux-3-draft',
+]);
 
 const MODEL_FAMILY_SOURCES = [
   {
@@ -107,6 +123,7 @@ const MODEL_FAMILY_SOURCES = [
     navLabel: 'Wan 2.6',
     brandId: 'wan',
     defaultModelId: 'wan-3-prime',
+    modelOrderIds: ['wan-3-prime', 'wan-3', 'wan-2-6', 'wan-2-5'],
     routeAliases: ['wan-2-5', 'wan-2-6'],
     aliases: ['wan-25', 'wan25', 'wan-26', 'wan26'],
     prefixes: ['wan', 'wan/'],
@@ -171,6 +188,7 @@ const MODEL_FAMILY_SOURCES = [
     navLabel: 'LTX',
     brandId: 'lightricks',
     defaultModelId: 'ltx-2-5-pro',
+    modelOrderIds: ['ltx-2-5-pro', 'ltx-2-5-fast', 'ltx-2-3', 'ltx-2-3-fast', 'ltx-2', 'ltx-2-fast'],
     routeAliases: ['ltx-2-3', 'ltx-2-3-pro', 'ltx-2-3-fast', 'ltx-2', 'ltx-2-fast'],
     aliases: ['ltx-23', 'ltx23', 'ltx-23-fast', 'ltx23-fast'],
     prefixes: ['ltx', 'fal-ai/ltx'],
@@ -185,9 +203,10 @@ const MODEL_FAMILY_SOURCES = [
     navLabel: 'Grok Imagine Video 1.5',
     brandId: 'xai',
     defaultModelId: 'grok-imagine-video-1-5',
+    modelOrderIds: ['grok-imagine-video-1-5'],
     examplesPage: {
-      stage: 'hidden',
-      showInNav: false,
+      stage: 'indexed',
+      showInNav: true,
     },
   },
   {
@@ -196,9 +215,10 @@ const MODEL_FAMILY_SOURCES = [
     navLabel: 'FLUX 3',
     brandId: 'black-forest-labs',
     defaultModelId: 'flux-3',
+    modelOrderIds: ['flux-3', 'flux-3-draft'],
     examplesPage: {
-      stage: 'hidden',
-      showInNav: false,
+      stage: 'indexed',
+      showInNav: true,
     },
   },
   {
@@ -232,39 +252,59 @@ const MODEL_FAMILY_SOURCES = [
   },
 ] as const satisfies readonly ModelFamilySource[];
 
-const FAMILY_MODELS = listRuntimeModels();
-
-function materializeFamily(source: ModelFamilySource): ModelFamilyDefinition {
-  const members = FAMILY_MODELS
+function materializeFamily(
+  source: ModelFamilySource,
+  models: readonly RuntimeModelEntry[],
+  readiness: readonly ModelLaunchReadinessEntry[],
+): ModelFamilyDefinition {
+  const presentationOrder = new Map(source.modelOrderIds?.map((id, index) => [id, index]) ?? []);
+  const members = models
     .filter((model) => model.family === source.id)
     .sort(
       (left, right) =>
+        (presentationOrder.get(left.id) ?? Number.MAX_SAFE_INTEGER) -
+          (presentationOrder.get(right.id) ?? Number.MAX_SAFE_INTEGER) ||
         (left.publication.examples.familyRank ?? Number.MAX_SAFE_INTEGER) -
-        (right.publication.examples.familyRank ?? Number.MAX_SAFE_INTEGER)
+          (right.publication.examples.familyRank ?? Number.MAX_SAFE_INTEGER)
     );
-  const defaultModel = source.defaultModelId ? getRuntimeModelById(source.defaultModelId) : null;
-  const published = members
-    .filter((model) => model.publication.examples.published)
-    .map((model) => model.slug);
-  const current = members
+  const eligibleMembers = members.filter(
+    (model) =>
+      model.publication.examples.published &&
+      (!ASSET_GATED_LAUNCH_MODEL_IDS.has(model.id) ||
+        (model.publication.model.published && hasModelLaunchReadiness(model.id, readiness))),
+  );
+  const defaultModel = members.find((model) => model.id === source.defaultModelId) ?? eligibleMembers[0];
+  const published = eligibleMembers.map((model) => model.slug);
+  const current = eligibleMembers
     .filter((model) => model.publication.examples.current)
     .map((model) => model.slug);
-  const { defaultModelId: _defaultModelId, ...presentation } = source;
+  const { defaultModelId: _defaultModelId, modelOrderIds: _modelOrderIds, ...presentation } = source;
+  const isVisible = published.length > 0 && source.examplesPage?.stage !== 'hidden';
 
   return {
     ...presentation,
     defaultModelSlug: defaultModel?.slug,
     examplesPage: {
-      stage: source.examplesPage?.stage ?? 'hidden',
-      showInNav: source.examplesPage?.showInNav ?? false,
+      stage: isVisible ? source.examplesPage?.stage ?? 'hidden' : 'hidden',
+      showInNav: isVisible && (source.examplesPage?.showInNav ?? false),
       publishedModelSlugs: published,
       currentModelSlugs: current.length ? current : published,
     },
   };
 }
 
+export function buildModelFamilyDefinitions(
+  models: readonly RuntimeModelEntry[],
+  readiness: readonly ModelLaunchReadinessEntry[] = MODEL_LAUNCH_READY_MODELS,
+): ModelFamilyDefinition[] {
+  return MODEL_FAMILY_SOURCES.map((source) => materializeFamily(source, models, readiness));
+}
+
 export type ModelFamilyId = (typeof MODEL_FAMILY_SOURCES)[number]['id'];
-export const MODEL_FAMILIES: readonly ModelFamilyDefinition[] = MODEL_FAMILY_SOURCES.map(materializeFamily);
+export const MODEL_FAMILIES: readonly ModelFamilyDefinition[] = buildModelFamilyDefinitions(
+  listRuntimeModels(),
+  MODEL_LAUNCH_READY_MODELS,
+);
 
 export const PUBLIC_MARKETING_EXAMPLE_CANONICAL_SLUGS = MODEL_FAMILIES.filter((family) => {
   const examplesPage = normalizeFamilyExamplesPageConfig(family.examplesPage);

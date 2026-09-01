@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "scripts/generate-p0-launch-assets.ts",
+  "sourceManifest": "docs/model-launch/p0-video-example-pack.json",
+  "sourceStatus": "missing",
+  "sourceDigest": null,
+  "assets": []
+}

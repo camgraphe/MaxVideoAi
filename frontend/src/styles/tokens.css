@@ -84,6 +84,10 @@
   --engine-runway-ink: #1F2633;
   --engine-lightricks-bg: #F2E9FF;
   --engine-lightricks-ink: #1F2633;
+  --engine-xai-bg: #E4E7EF;
+  --engine-xai-ink: #111827;
+  --engine-black-forest-labs-bg: #E6E8EC;
+  --engine-black-forest-labs-ink: #111827;
   --engine-google-bg: #DCE9FF;
   --engine-google-ink: #1F2633;
   --engine-alibaba-bg: #FFE3CC;
@@ -286,6 +290,10 @@
   --engine-runway-ink: #E7EDF5;
   --engine-lightricks-bg: #36284D;
   --engine-lightricks-ink: #EFE5FF;
+  --engine-xai-bg: #2F3542;
+  --engine-xai-ink: #F8FAFC;
+  --engine-black-forest-labs-bg: #30343B;
+  --engine-black-forest-labs-ink: #F8FAFC;
   --engine-google-bg: #243B5A;
   --engine-google-ink: #EAF2FF;
   --engine-alibaba-bg: #573013;

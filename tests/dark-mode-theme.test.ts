@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
 
 import engineCatalog from '../frontend/config/engine-catalog.json' with { type: 'json' };
+import { getEnginePictogram } from '../frontend/src/lib/engine-branding.ts';
 
 const tokensSource = readFileSync('frontend/src/styles/tokens.css', 'utf8');
 const themeTokensSource = readFileSync('frontend/lib/theme-tokens.ts', 'utf8');
@@ -56,6 +57,19 @@ test('engine brand ids used by catalog have theme tokens in light and dark modes
     assert.match(themeTokensSource, new RegExp(`key: 'engine-${escaped}-bg'`));
     assert.match(themeTokensSource, new RegExp(`key: 'engine-${escaped}-ink'`));
   }
+});
+
+test('xAI and Black Forest Labs cards consume their semantic theme tokens', () => {
+  assert.deepEqual(getEnginePictogram({ brandId: 'xai', label: 'Grok Imagine Video' }), {
+    code: 'Gr',
+    backgroundColor: 'var(--engine-xai-bg)',
+    textColor: 'var(--engine-xai-ink)',
+  });
+  assert.deepEqual(getEnginePictogram({ brandId: 'black-forest-labs', label: 'FLUX 3 Video' }), {
+    code: 'Fl',
+    backgroundColor: 'var(--engine-black-forest-labs-bg)',
+    textColor: 'var(--engine-black-forest-labs-ink)',
+  });
 });
 
 test('global dark background adds reference-style depth while light remains plain token background', () => {

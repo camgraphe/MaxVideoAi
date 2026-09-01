@@ -11,7 +11,17 @@ type ProofConfig = {
   items: Array<{ id: string; label: string }>;
 };
 
-export const HOMEPAGE_EXAMPLE_FAMILIES = ['seedance', 'kling', 'ltx', 'veo', 'hailuo', 'happy-horse'] as const;
+export const HOMEPAGE_EXAMPLE_FAMILIES = [
+  'seedance',
+  'kling',
+  'ltx',
+  'veo',
+  'hailuo',
+  'happy-horse',
+  'wan',
+  'grok',
+  'flux',
+] as const;
 export type HomepageExampleFamily = (typeof HOMEPAGE_EXAMPLE_FAMILIES)[number];
 
 export type FallbackExampleCard = {

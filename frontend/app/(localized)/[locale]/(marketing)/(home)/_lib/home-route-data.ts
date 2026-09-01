@@ -9,5 +9,5 @@ export {
   loadProgrammedHomepageHeroSlots,
   loadSuccessfulGenerationCount,
 } from './home-route-data/hero';
-export { loadHomepageExamples } from './home-route-data/examples';
+export { loadHomepageExamples, selectHomepageHeroPreviews } from './home-route-data/examples';
 export type { EngineStats, RedesignContent } from './home-route-data/types';
