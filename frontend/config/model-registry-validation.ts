@@ -311,8 +311,9 @@ export function validateModelRegistryDocument(value: unknown): ModelRegistryDocu
     for (const target of model.publication.compare.publishedPairIds) {
       requireId(model.id, target, 'publishedPairIds');
     }
-    if (model.lifecycle === 'retired' && model.replacement === null) {
-      fail(`retired model "${model.id}" requires a replacement`);
+    if (model.lifecycle === 'retired') {
+      if (!model.label?.trim()) fail(`retired model "${model.id}" requires an authoritative label`);
+      if (model.replacement === null) fail(`retired model "${model.id}" requires a replacement`);
     }
     if (model.replacement && model.lifecycle !== 'retired') {
       fail(`replacement model "${model.id}" must be retired with lifecycle "retired"`);

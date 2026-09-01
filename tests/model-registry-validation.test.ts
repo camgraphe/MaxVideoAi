@@ -65,6 +65,7 @@ function lifecycleDocument() {
 }
 
 function retire(model: any, replacement: string) {
+  model.label = `Retired ${model.id}`;
   model.lifecycle = 'retired';
   model.successorId = null;
   model.replacement = replacement;
@@ -199,6 +200,7 @@ test('deep-legacy models cannot publish current app, pricing, or example discove
 
 test('retired lifecycle and replacement retirement remain one canonical contract', () => {
   const missingReplacement = lifecycleDocument();
+  missingReplacement.models[0].label = `Retired ${missingReplacement.models[0].id}`;
   missingReplacement.models[0].lifecycle = 'retired';
   assert.throws(
     () => validateModelRegistryDocument(missingReplacement),
@@ -451,6 +453,7 @@ test('replacement models are fully retired and point directly to an active model
     () => validateModelRegistryDocument(mutate((copy) => {
       const retired = copy.models[0];
       const target = copy.models[1];
+      retired.label = `Retired ${retired.id}`;
       retired.lifecycle = 'retired';
       retired.replacement = target.id;
       retired.publication = {
@@ -471,6 +474,7 @@ test('replacement models are fully retired and point directly to an active model
 
 test('registry rejects replacement cycles as well as longer chains', () => {
   const retire = (model: any, replacement: string) => {
+    model.label = `Retired ${model.id}`;
     model.lifecycle = 'retired';
     model.successorId = null;
     model.replacement = replacement;

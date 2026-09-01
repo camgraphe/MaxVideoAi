@@ -299,3 +299,68 @@ no schema-version change or production retired fixture was needed. The only
 warning remains Node `v23.9.0` versus the declared Node `22.x` engine. The
 round-2 commit hash is reported in the handoff because a commit cannot contain
 its own hash.
+
+---
+
+## Fix round 3 — mandatory retired identity labels
+
+Base: `539ec770e1ac111304e6ac14976aa6b3f9780ab0`.
+
+This final schema rule supersedes the round-2 catalog-backed label exception.
+Every authored `lifecycle: "retired"` row now requires a non-empty authoritative
+marketing `label`, regardless of whether an engine-catalog row still exists.
+Catalog presence cannot waive identity completeness. The separate engine-less
+allowance remains narrow and unchanged: fully hidden publication, no discovery
+metadata, and a valid direct `current` replacement with a published model page.
+No `EngineCaps` fallback or production retired row was added.
+
+### RED evidence
+
+The catalog-backed exception test was replaced before production changes with
+the final negative contract:
+
+```text
+pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
+  tests/retired-model-runtime-identity.test.ts
+
+3 tests, 2 passed, 1 failed
+- a retired fixture without label still validated when both engine IDs were present in engine-catalog
+- failure: Missing expected exception
+```
+
+After the document validator changed, six historical registry/runtime fixtures
+correctly failed because they authored retirement without the newly required
+identity label. Those fixtures were updated with labels; their lifecycle,
+replacement, redirect, and execution assertions were not weakened.
+
+### GREEN evidence
+
+Retired end-to-end, registry/runtime, P0 lifecycle, prepare, and transactional
+confirmation contracts:
+
+```text
+pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
+  tests/retired-model-runtime-identity.test.ts \
+  tests/model-registry-validation.test.ts \
+  tests/model-runtime-replacement-routing.test.ts \
+  tests/model-registry-parity.test.ts \
+  tests/mcp-p0-video-parity.test.ts \
+  tests/mcp-prepare-generation.test.ts \
+  tests/mcp-confirm-generation.test.ts
+
+99 tests, 99 passed, 0 failed
+```
+
+Deterministic gates:
+
+```text
+pnpm model:registry:check                    pass (50 models, 2 tombstones; projections current)
+pnpm --prefix frontend exec tsc --noEmit    pass
+npm --prefix frontend run lint              pass, 0 warnings
+git diff --check                            pass
+```
+
+The production registry and generated projections remain byte-stable and
+`schemaVersion` remains `2`. The only warning is the existing local Node
+`v23.9.0` runtime versus the declared Node `22.x` engine. The round-3 commit
+hash is reported in the handoff because a commit cannot contain its own hash.

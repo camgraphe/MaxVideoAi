@@ -188,9 +188,11 @@ test('only a fully retired, labelled replacement identity may omit engine catalo
   assert.throws(() => validateRepository(missingTarget), /missing model reference/i);
 });
 
-test('a catalog-backed retired identity may omit the optional authoritative label', () => {
+test('engine catalog presence does not waive the retired authoritative label', () => {
   const fixture = registryFixture();
   delete fixture.models[1].label;
-  const document = validateRepository(fixture, ['active-video-fixture', 'retired-video-fixture']);
-  assert.doesNotThrow(() => createRuntimeModelResolver(buildModelRuntimeProjection(document)));
+  assert.throws(
+    () => validateRepository(fixture, ['active-video-fixture', 'retired-video-fixture']),
+    /retired.*label/i,
+  );
 });

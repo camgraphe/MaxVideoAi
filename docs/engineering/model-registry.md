@@ -1,6 +1,6 @@
 # Model Registry Guide
 
-`frontend/config/model-registry.json` is the only authored source for model identity, optional authoritative marketing label, aliases, family, category, lifecycle, successor, publication, replacement, and model-shaped tombstones.
+`frontend/config/model-registry.json` is the only authored source for model identity, authoritative marketing label, aliases, family, category, lifecycle, successor, publication, replacement, and model-shaped tombstones.
 
 The following files are generated projections and must not be edited directly:
 
@@ -72,11 +72,12 @@ Set `replacement` to the canonical ID of the active destination model. A replace
 
 An engine-catalog row remains mandatory for every `current`, `legacy`, and
 `deep_legacy` identity. Only a fully unpublished `retired` replacement may omit
-that executable owner. In that state, author a non-empty marketing `label` in
-the registry; repository validation rejects an engine-less retired identity
-without it. The label stays optional for catalog-backed identities. Do not use
-or loosen `presentationOnly` for retirement: that contract remains a public
-noindex prelaunch route with no replacement.
+that executable owner. Every `retired` identity must author a non-empty
+marketing `label` in the registry, whether or not its engine-catalog row still
+exists. Document validation enforces this identity contract before repository
+catalog checks. The label remains optional for non-retired identities. Do not
+use or loosen `presentationOnly` for retirement: that contract remains a
+public noindex prelaunch route with no replacement.
 
 The runtime projection carries the authoritative label together with the
 canonical ID, slug, category, lifecycle, and flattened `publicTargetId`; it

@@ -16,6 +16,7 @@ function replacementFixture() {
   const retired = fixture.models.find((model: any) => model.id === 'happy-horse-1-0');
   const target = fixture.models.find((model: any) => model.id === 'happy-horse-1-1');
   assert.ok(retired.aliases.publicSlugs.includes('happy-horse-1.0'));
+  retired.label = 'Happy Horse 1.0';
   retired.lifecycle = 'retired';
   retired.successorId = null;
   retired.replacement = target.id;
