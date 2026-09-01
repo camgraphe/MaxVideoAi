@@ -144,7 +144,7 @@ function registryCapability(engineId: string): AgentPublicGenerationEngine {
   const publicModes = entry.modes
     .map((mode) => mode.mode)
     .filter((mode): mode is AgentPublicGenerationEngine['publicModes'][number] =>
-      ['t2v', 'i2v', 'ref2v', 'v2v', 'extend', 't2i', 'i2i'].includes(mode));
+      ['t2v', 'i2v', 'ref2v', 'fl2v', 'v2v', 'r2v', 'extend', 'a2v', 't2i', 'i2i'].includes(mode));
   return {
     engine: entry.engine,
     surface: entry.category === 'image' ? 'image' : 'video',
@@ -1137,6 +1137,60 @@ test('generation pricing forwards MiniMax H3 reference counts to both canonical 
     }, mode === 'ref2v' ? { resolvedReferences } : {});
     assert.equal(count, mode === 'ref2v' ? 3 : 0);
   }
+});
+
+test('generation pricing forwards resolved LTX source-audio duration to prepare and confirmation pricing', async () => {
+  const candidate = registryCapability('ltx-2-5-fast');
+  const request: CanonicalGenerationRequest = {
+    schemaVersion: 1,
+    surface: 'video',
+    engineId: candidate.engine.id,
+    mode: 'a2v',
+    prompt: 'A source-audio-led character beat',
+    settings: { durationSec: 6, resolution: '1080p' },
+    references: [{ kind: 'asset', assetId: 'private-audio', role: 'source' }],
+    outputCount: 1,
+  };
+  const resolvedReferences = [{
+    assetId: 'private-audio',
+    role: 'source' as const,
+    mediaKind: 'audio' as const,
+    storageUrl: 'https://assets.example.com/private-audio.wav',
+    width: null,
+    height: null,
+    durationSec: 9.25,
+    mimeType: 'audio/wav',
+  }];
+
+  let capturedPreflight: Record<string, unknown> | null = null;
+  await priceCanonicalGeneration(request, 'member', {
+    computeVideoPreflight: async (payload: Record<string, unknown>) => {
+      capturedPreflight = payload;
+      return {
+        ok: true,
+        total: 100,
+        currency: 'USD',
+        pricing: { totalCents: 100, currency: 'USD', membershipTier: 'member' },
+      };
+    },
+    estimateImage: async () => { throw new Error('unused'); },
+  }, { resolvedReferences });
+  assert.equal(
+    (capturedPreflight?.extraInputValues as { inputAudioDurationSec?: number } | undefined)?.inputAudioDurationSec,
+    9.25,
+  );
+
+  let capturedBillingContext: Record<string, unknown> | null = null;
+  await priceCanonicalGenerationInExecutor(request, 'member', {
+    executor: { async query() { return []; } } as TransactionQueryExecutor,
+    candidate,
+    resolvedReferences,
+    computeBillingSnapshot: async (context) => {
+      capturedBillingContext = context as unknown as Record<string, unknown>;
+      return { totalCents: 100, currency: 'USD', membershipTier: 'member' } as never;
+    },
+  });
+  assert.equal(capturedBillingContext?.inputAudioDurationSec, 9.25);
 });
 
 test('prepare pricing uses the real Seedance video-input tier for source-video modes', async () => {

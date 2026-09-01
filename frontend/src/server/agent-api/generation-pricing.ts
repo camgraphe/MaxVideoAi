@@ -133,6 +133,29 @@ function canonicalReferenceImageCount(
   }, 0);
 }
 
+function canonicalInputAudioDurationSec(
+  request: CanonicalGenerationRequest,
+  context: GenerationPricingReferenceContext,
+): number | undefined {
+  if (request.surface !== 'video' || request.mode !== 'a2v') return undefined;
+  const resolved = context.resolvedReferences?.find((candidate) =>
+    candidate.role === 'source'
+    && candidate.mediaKind === 'audio'
+    && request.references.some((reference) =>
+      reference.role === 'source'
+      && reference.kind === 'asset'
+      && reference.assetId === candidate.assetId
+      && reference.slot === candidate.slot));
+  if (context.resolvedReferences !== undefined) {
+    return typeof resolved?.durationSec === 'number' && Number.isFinite(resolved.durationSec) && resolved.durationSec > 0
+      ? resolved.durationSec
+      : undefined;
+  }
+  // Project budgets have declared roles but no resolved media. For A2V only,
+  // durationSec is the caller's explicit intended source-audio/clip duration.
+  return requiredPositiveInteger(request.settings, 'durationSec');
+}
+
 function canonicalImageReferences(request: CanonicalGenerationRequest) {
   return request.references.filter((reference) => reference.role !== 'mask');
 }
@@ -179,8 +202,12 @@ function canonicalVideoExtraInputValues(
   request: CanonicalGenerationRequest,
   context: GenerationPricingReferenceContext,
 ): Record<string, number | boolean> {
+  const inputAudioDurationSec = canonicalInputAudioDurationSec(request, context);
   return {
     referenceImageCount: canonicalReferenceImageCount(request, context),
+    ...(inputAudioDurationSec !== undefined
+      ? { inputAudioDurationSec }
+      : {}),
     ...(request.settings.hdr === true ? { hdr: true } : {}),
     ...(request.settings.exrExport === true ? { exr_export: true } : {}),
   };
@@ -304,6 +331,7 @@ export async function priceCanonicalGenerationInExecutor(
       mode: engineMode,
       hasVideoInput: hasCanonicalVideoInput(request, dependencies),
       referenceImageCount: canonicalReferenceImageCount(request, dependencies),
+      inputAudioDurationSec: canonicalInputAudioDurationSec(request, dependencies),
       membershipTier,
       loop: isLumaRay2EngineId(engine.id) && request.settings.loop === true,
       durationOption: isLumaRay2EngineId(engine.id)

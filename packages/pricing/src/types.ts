@@ -13,6 +13,22 @@ export interface PricingAddonRule {
   flatCents?: number;
 }
 
+export type PricingDurationBasis = 'output' | 'input_audio';
+
+export interface PricingModeRate {
+  perSecondCents?: {
+    default?: number;
+    byResolution?: Record<string, number>;
+  };
+  durationBasis?: PricingDurationBasis;
+}
+
+export interface PricingReferenceImageRule {
+  unitCents: number;
+  includedCount?: number;
+  modes: string[];
+}
+
 export interface PricingEngineDefinition {
   engineId: string;
   label?: string;
@@ -24,6 +40,8 @@ export interface PricingEngineDefinition {
   minChargeCents?: number;
   taxPolicyHint?: string;
   addons?: Record<string, PricingAddonRule | undefined>;
+  modePricing?: Partial<Record<string, PricingModeRate>>;
+  referenceImages?: PricingReferenceImageRule;
   availability?: string;
   metadata?: Record<string, unknown>;
 }

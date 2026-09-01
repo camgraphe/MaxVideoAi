@@ -11,7 +11,6 @@ import { getSoraVariantForEngine, isSoraEngineId, parseSoraRequest, type SoraReq
 import { getUserPreferredCurrency, normalizeCurrencyCode, resolveCurrency, resolveEnabledCurrencies } from '@/lib/currency';
 import { convertCents } from '@/lib/exchange';
 import type { Currency } from '@/lib/currency';
-import type { Mode } from '@/types/engines';
 import { applyEngineVariantPricing } from '@/lib/pricing-addons';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { CONSENT_COOKIE_NAME, parseConsent } from '@/lib/consent';
@@ -33,6 +32,7 @@ import {
 import { findReusableExpressCheckoutSession } from '@/server/checkout-session-reuse';
 import { getWalletSummary } from '@/server/wallet-summary';
 import { buildCheckoutAttemptAttributionMetadata, buildWalletAttributionMetadata, normalizeWalletAttribution } from '@/server/wallet-attribution';
+import { resolveWalletDirectPricingGate } from '@/lib/wallet-direct-pricing';
 
 const WALLET_DISPLAY_CURRENCY = 'USD';
 const WALLET_DISPLAY_CURRENCY_LOWER = 'usd';
@@ -249,11 +249,10 @@ export async function POST(req: NextRequest) {
     if (!engine) {
       return NextResponse.json({ error: 'Unknown engine' }, { status: 400 });
     }
-
     let durationSec = Number(body.durationSec ?? engine.maxDurationSec ?? 4);
     let resolution = String(body.resolution || engine.resolutions?.[0] || '1080p');
-    const rawMode = typeof body.mode === 'string' ? body.mode.trim().toLowerCase() : 't2v';
-    const mode: Mode = engine.modes.includes(rawMode as Mode) ? (rawMode as Mode) : ('t2v' as Mode);
+    const { mode, refusal } = resolveWalletDirectPricingGate(engine, body.generationMode ?? body.engineMode ?? body.videoMode);
+    if (refusal) return NextResponse.json({ error: 'This mode must be quoted through validated generation preflight.', code: refusal }, { status: 422 });
     let soraRequest: SoraRequest | null = null;
 
     if (isSoraEngineId(engine.id)) {

@@ -55,7 +55,13 @@ const engine: EngineCaps = {
     optional: createFlux3CommonOptionalFields(),
     constraints: { draftResolution: '720p', resolutionFieldExposed: false, returnsDraftCache: true, extendVideoMaxMiB: 50 },
   },
-  pricingDetails: { currency: 'USD', perSecondCents: { default: 6, byResolution: { '720p': 6 } } },
+  pricingDetails: {
+    currency: 'USD',
+    perSecondCents: { default: 6, byResolution: { '720p': 6 } },
+    byMode: {
+      extend: { perSecondCents: { byResolution: { '720p': 12 } } },
+    },
+  },
   pricing: {
     unit: 'USD/s', base: 0.06, byResolution: { '720p': 0.06 }, currency: 'USD',
     notes: 'Draft text/image/frame generation costs $0.06/s. Draft extend costs $0.12/s; Task 5 owns exact mode-aware charging.',

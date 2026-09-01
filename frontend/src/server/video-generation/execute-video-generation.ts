@@ -159,6 +159,7 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
   }
   const {
     attachments: processedAttachments,
+    trustedDurationSecByField,
     references: {
       maxUploadedBytes,
       lastFrameUrl,
@@ -283,6 +284,8 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     isLumaRay2,
     loop,
     hasVideoInput,
+    referenceImageCount: normalizedReferenceImages.length,
+    inputAudioDurationSec: trustedDurationSecByField.audio_url?.[0],
     rawDurationOption,
     lumaDurationLabel: lumaDurationInfo?.label ?? null,
     audioEnabled,

@@ -119,10 +119,22 @@ export function createLtx25Engine(options: LtxVariant): EngineCaps {
       promptMaxCharsSource: 'official',
     },
     inputSchema: createInputSchema(options),
-    pricingDetails: { currency: 'USD', perSecondCents: { default: options.perSecondCents['1080p'], byResolution: options.perSecondCents } },
+    pricingDetails: {
+      currency: 'USD',
+      perSecondCents: { default: options.perSecondCents['1080p'], byResolution: options.perSecondCents },
+      byMode: {
+        a2v: {
+          perSecondCents: {
+            default: options.audioPerInputSecondUsd * 100,
+            byResolution: { '1080p': options.audioPerInputSecondUsd * 100 },
+          },
+          durationBasis: 'input_audio',
+        },
+      },
+    },
     pricing: {
       unit: 'USD/s', base: options.perSecondUsd['1080p'], byResolution: options.perSecondUsd, currency: 'USD',
-      notes: `Text/image provider cost is per output second. Audio-to-video is $${options.audioPerInputSecondUsd.toFixed(2)} per input-audio second at 1080p and requires the Task 5 exact calculator.`,
+      notes: `Text/image provider cost is per output second. Audio-to-video is $${options.audioPerInputSecondUsd.toFixed(2)} per input-audio second at 1080p and uses canonical input-duration facts.`,
     },
     updatedAt: '2026-09-01T12:00:20Z',
     ttlSec: 600,

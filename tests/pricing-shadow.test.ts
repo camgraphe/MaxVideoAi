@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
+import { spawnSync } from 'node:child_process';
 import test from 'node:test';
+
+import { P0_VIDEO_PRICING_SCENARIOS } from '../frontend/src/lib/pricing-audit/p0-video-scenarios.ts';
 
 const collectorPath = 'frontend/src/lib/pricing-audit/legacy-collectors.ts';
 const fixturePath = 'tests/fixtures/pricing-parity.v1.json';
@@ -62,15 +65,30 @@ test('committed pre-canonical pricing baseline is immutable after legacy deletio
     rows: Array<{ scenarioId: string }>;
   };
   assert.equal(additions.generatedFrom, 'registry-publication-shadow-additions');
-  assert.equal(additions.rows.length, 8);
+  assert.equal(additions.rows.length, 8 + P0_VIDEO_PRICING_SCENARIOS.length);
   assert.deepEqual(
-    additions.rows.reduce<Record<string, number>>((counts, row) => {
+    additions.rows.filter((row) => !row.scenarioId.startsWith('billing:p0:')).reduce<Record<string, number>>((counts, row) => {
       const engineId = row.scenarioId.includes('minimax-h3') ? 'minimax-h3' : 'seedance-2-5';
       counts[engineId] = (counts[engineId] ?? 0) + 1;
       return counts;
     }, {}),
     { 'seedance-2-5': 4, 'minimax-h3': 4 },
   );
+  assert.deepEqual(
+    additions.rows
+      .filter((row) => row.scenarioId.startsWith('billing:p0:'))
+      .map((row) => row.scenarioId)
+      .sort(),
+    P0_VIDEO_PRICING_SCENARIOS.map((scenario) => `billing:p0:${scenario.id}`).sort(),
+  );
+});
+
+test('P0 shadow additions are reproducible through the canonical audit generator', () => {
+  const result = spawnSync('pnpm', ['--silent', 'pricing:shadow-additions'], {
+    cwd: process.cwd(),
+    encoding: 'utf8',
+  });
+  assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
 });
 
 test('canonical shadow quotes match every frozen current output', async () => {

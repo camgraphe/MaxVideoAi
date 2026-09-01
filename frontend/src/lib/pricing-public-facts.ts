@@ -31,6 +31,7 @@ export type PublicPricingFactsContext = {
   resolution: string;
   mode?: Mode;
   durationOption?: number | string | null;
+  inputAudioDurationSec?: number;
   aspectRatio?: string | null;
   quality?: string | null;
   referenceImageCount?: number;
@@ -99,6 +100,13 @@ function buildStandardDefinitionFacts(
   const definitionFacts = computePricingDefinitionFacts(factualDefinition, {
     durationSec,
     resolution,
+    ...(context.mode ? { mode: context.mode } : {}),
+    ...(typeof context.inputAudioDurationSec === 'number'
+      ? { inputAudioDurationSec: context.inputAudioDurationSec }
+      : {}),
+    ...(typeof context.referenceImageCount === 'number'
+      ? { referenceImageCount: context.referenceImageCount }
+      : {}),
     ...(context.addons ? { addons: context.addons } : {}),
   });
   return {

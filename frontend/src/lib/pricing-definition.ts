@@ -222,6 +222,36 @@ export function buildPricingDefinition(engine: EngineCaps): PricingEngineDefinit
     minChargeCents: 0,
     taxPolicyHint: 'standard',
     addons: resolveAddonPricing(engine),
+    modePricing: engine.pricingDetails?.byMode
+      ? Object.fromEntries(
+          Object.entries(engine.pricingDetails.byMode).map(([mode, value]) => [
+            mode,
+            value
+              ? {
+                  ...(value.perSecondCents
+                    ? {
+                        perSecondCents: {
+                          ...(typeof value.perSecondCents.default === 'number'
+                            ? { default: value.perSecondCents.default }
+                            : {}),
+                          ...(value.perSecondCents.byResolution
+                            ? { byResolution: { ...value.perSecondCents.byResolution } }
+                            : {}),
+                        },
+                      }
+                    : {}),
+                  ...(value.durationBasis ? { durationBasis: value.durationBasis } : {}),
+                }
+              : value,
+          ]),
+        )
+      : undefined,
+    referenceImages: engine.pricingDetails?.referenceImages
+      ? {
+          ...engine.pricingDetails.referenceImages,
+          modes: [...engine.pricingDetails.referenceImages.modes],
+        }
+      : undefined,
     availability: engine.availability,
     metadata: {
       source: 'engine-caps',
@@ -235,10 +265,18 @@ export function applyEnginePricingOverride(
 ): EngineCaps {
   if (!override) return engine;
   const mergedOverride =
-    engine.pricingDetails?.tokenPricing && !override.tokenPricing
+    engine.pricingDetails
       ? {
           ...override,
-          tokenPricing: engine.pricingDetails.tokenPricing,
+          ...(!override.tokenPricing && engine.pricingDetails.tokenPricing
+            ? { tokenPricing: engine.pricingDetails.tokenPricing }
+            : {}),
+          ...(!override.byMode && engine.pricingDetails.byMode
+            ? { byMode: engine.pricingDetails.byMode }
+            : {}),
+          ...(!override.referenceImages && engine.pricingDetails.referenceImages
+            ? { referenceImages: engine.pricingDetails.referenceImages }
+            : {}),
         }
       : override;
   const pricing: EnginePricing = {

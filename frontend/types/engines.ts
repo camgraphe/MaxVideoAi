@@ -337,6 +337,24 @@ export interface EnginePricingDetails {
       | { perSecondCents?: number; perSecondCentsByResolution?: Record<string, number>; flatCents?: number }
       | undefined;
   };
+  byMode?: Partial<Record<Mode, ModePricingOverride>>;
+  referenceImages?: ReferenceImagePricing;
   maxDurationSec?: number;
   tokenPricing?: TokenVideoPricing;
 }
+
+export type PricingDurationBasis = 'output' | 'input_audio';
+
+export type ModePricingOverride = {
+  perSecondCents?: {
+    default?: number;
+    byResolution?: Record<string, number>;
+  };
+  durationBasis?: PricingDurationBasis;
+};
+
+export type ReferenceImagePricing = {
+  unitCents: number;
+  includedCount?: number;
+  modes: Mode[];
+};

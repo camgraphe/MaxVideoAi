@@ -37,7 +37,7 @@ type MediaConstraintError =
   | 'MEDIA_COMBINED_DURATION_EXCEEDED';
 
 export type GenerationMediaConstraintValidationResult =
-  | { ok: true }
+  | { ok: true; trustedDurationSecByField?: Record<string, number[]> }
   | {
       ok: false;
       status: 422;
@@ -385,5 +385,14 @@ export async function validateGenerationMediaConstraints(params: {
     });
   }
 
-  return { ok: true };
+  const trustedDurationSecByField = [...durationByKindAndUrl.values()].reduce<Record<string, number[]>>(
+    (result, entry) => {
+      (result[entry.fieldId] ??= []).push(entry.durationSec);
+      return result;
+    },
+    {},
+  );
+  return Object.keys(trustedDurationSecByField).length
+    ? { ok: true, trustedDurationSecByField }
+    : { ok: true };
 }

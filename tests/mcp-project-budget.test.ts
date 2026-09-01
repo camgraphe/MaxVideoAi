@@ -18,7 +18,7 @@ const principal: AgentPrincipal = {
   userId: 'budget-user', clientId: 'codex-client', emailVerified: true, authMethod: 'oauth',
 };
 
-type VideoBudgetMode = 't2v' | 'i2v' | 'ref2v' | 'fl2v' | 'v2v' | 'r2v' | 'extend';
+type VideoBudgetMode = 't2v' | 'i2v' | 'ref2v' | 'fl2v' | 'v2v' | 'r2v' | 'extend' | 'a2v';
 
 function engine(id: string, modes: readonly VideoBudgetMode[], durations: readonly number[]): AgentPublicGenerationEngine {
   const inputFields: EngineInputField[] = [
@@ -34,6 +34,7 @@ function engine(id: string, modes: readonly VideoBudgetMode[], durations: readon
     { id: 'video_url', type: 'video', label: 'Source video', modes: ['v2v'], requiredInModes: ['v2v'], minCount: 1, maxCount: 1 },
     { id: 'video_urls', type: 'video', label: 'Reference videos', modes: ['r2v'], requiredInModes: ['r2v'], minCount: 1, maxCount: 3 },
     { id: 'extension_source_videos', type: 'video', label: 'Source clips', modes: ['extend'], requiredInModes: ['extend'], minCount: 1, maxCount: 3 },
+    { id: 'audio_url', type: 'audio', label: 'Source audio', modes: ['a2v'], requiredInModes: ['a2v'], minCount: 1, maxCount: 1 },
   ];
   const caps: EngineCaps = {
     id, label: id, provider: 'test', status: 'live', latencyTier: 'standard', modes: [...modes],
@@ -59,7 +60,7 @@ function registryCapability(engineId: string): AgentPublicGenerationEngine {
   const publicModes = entry.modes
     .map((mode) => mode.mode)
     .filter((mode): mode is AgentPublicGenerationEngine['publicModes'][number] =>
-      ['t2v', 'i2v', 'ref2v', 'fl2v', 'v2v', 'r2v', 'extend', 't2i', 'i2i'].includes(mode));
+      ['t2v', 'i2v', 'ref2v', 'fl2v', 'v2v', 'r2v', 'extend', 'a2v', 't2i', 'i2i'].includes(mode));
   return {
     engine: entry.engine,
     surface: entry.category === 'image' ? 'image' : 'video',
@@ -384,6 +385,45 @@ test('project budgets accept the full canonical reference envelope when the mode
     computeCatalogRevision: () => 'mcp-catalog-v2:reference-envelope',
   });
   assert.equal(result.proposals[0]?.lines[0]?.referenceCount, 17);
+});
+
+test('project budget prices LTX A2V from the explicitly declared source-audio duration', async () => {
+  const candidate = registryCapability('ltx-2-5-fast');
+  let capturedExtraInputValues: Record<string, unknown> | undefined;
+  const value = input([{
+    name: 'LTX audio-led plan',
+    lines: [line({
+      engineId: 'ltx-2-5-fast',
+      mode: 'a2v',
+      settings: { durationSec: 9, resolution: '1080p', aspectRatio: 'auto' },
+      referenceRoles: ['source'],
+    })],
+  }]);
+
+  const result = await calculateAgentProjectBudget(value, principal, {
+    listPublicEngines: async () => [candidate],
+    getMembershipStatus: async () => ({ pricing: { tier: 'member' } }),
+    computeCatalogRevision: () => 'mcp-catalog-v2:ltx-a2v',
+    priceGeneration: (request, membershipTier) => priceCanonicalGeneration(
+      request,
+      membershipTier,
+      {
+        computeVideoPreflight: async (payload) => {
+          capturedExtraInputValues = payload.extraInputValues;
+          return {
+            ok: true,
+            total: 153,
+            currency: 'USD',
+            pricing: { totalCents: 153, currency: 'USD', membershipTier: 'member' },
+          };
+        },
+        estimateImage: async () => { throw new Error('unused'); },
+      },
+    ),
+  });
+
+  assert.equal(capturedExtraInputValues?.inputAudioDurationSec, 9);
+  assert.equal(result.proposals[0]?.lines[0]?.unitPrice.amountCents, 153);
 });
 
 test('fails closed for invalid catalog, capability, reference, quantity, pricing, and overflow conditions', async () => {

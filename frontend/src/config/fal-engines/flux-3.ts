@@ -75,7 +75,13 @@ const engine: EngineCaps = {
       extendVideoDurationExclusiveMaxSec: 15,
     },
   },
-  pricingDetails: { currency: 'USD', perSecondCents: { default: 17, byResolution: { '720p': 17, '1080p': 29 } } },
+  pricingDetails: {
+    currency: 'USD',
+    perSecondCents: { default: 17, byResolution: { '720p': 17, '1080p': 29 } },
+    byMode: {
+      extend: { perSecondCents: { byResolution: { '720p': 41, '1080p': 53 } } },
+    },
+  },
   pricing: {
     unit: 'USD/s', base: 0.17, byResolution: { '720p': 0.17, '1080p': 0.29 }, currency: 'USD',
     notes: 'Text/image/frame generation costs $0.17/s at 720p or $0.29/s at 1080p. Extend costs $0.41/$0.53; Task 5 owns exact mode-aware charging.',

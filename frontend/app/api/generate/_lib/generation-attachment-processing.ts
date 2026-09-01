@@ -31,6 +31,7 @@ type GenerationAttachmentProcessingResult =
         { ok: true }
       >['attachments'];
       references: ReturnType<typeof deriveGenerationAttachmentReferences>;
+      trustedDurationSecByField: Record<string, number[]>;
     }
   | AttachmentProcessingFailure
   | MediaConstraintFailure;
@@ -62,5 +63,6 @@ export async function processAndValidateGenerationAttachments(
     ok: true,
     attachments: attachmentProcessing.attachments,
     references,
+    trustedDurationSecByField: mediaConstraints.trustedDurationSecByField ?? {},
   };
 }

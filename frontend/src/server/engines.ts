@@ -38,7 +38,15 @@ import { applyGoogleVertexVeoRuntimeOptions } from '@/server/video-providers/goo
 
 function applyPricingDetails(engine: EngineCaps, pricing: EnginePricingDetails | null): void {
   if (!pricing) return;
-  engine.pricingDetails = pricing;
+  engine.pricingDetails = {
+    ...pricing,
+    ...(!pricing.byMode && engine.pricingDetails?.byMode
+      ? { byMode: engine.pricingDetails.byMode }
+      : {}),
+    ...(!pricing.referenceImages && engine.pricingDetails?.referenceImages
+      ? { referenceImages: engine.pricingDetails.referenceImages }
+      : {}),
+  };
   const byResolution = pricing.perSecondCents?.byResolution ?? null;
   const baseCents = pricing.perSecondCents?.default ?? null;
   const pricingData: EnginePricing = {
@@ -403,6 +411,7 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
       ? request.extraInputValues
       : {};
   const rawReferenceImageCount: unknown = rawExtraInputValues.referenceImageCount;
+  const rawInputAudioDurationSec: unknown = rawExtraInputValues.inputAudioDurationSec;
   let referenceImageCount: number | undefined;
   if (rawReferenceImageCount !== undefined) {
     if (typeof rawReferenceImageCount !== 'number'
@@ -418,6 +427,24 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
       };
     }
     referenceImageCount = rawReferenceImageCount;
+  }
+  let inputAudioDurationSec: number | undefined;
+  if (rawInputAudioDurationSec !== undefined) {
+    if (
+      typeof rawInputAudioDurationSec !== 'number'
+      || !Number.isFinite(rawInputAudioDurationSec)
+      || rawInputAudioDurationSec <= 0
+    ) {
+      return {
+        ok: false,
+        messages: ['Unable to compute pricing'],
+        error: {
+          code: 'PRICING_ERROR',
+          message: 'Input-audio duration must be a positive finite number.',
+        },
+      };
+    }
+    inputAudioDurationSec = rawInputAudioDurationSec;
   }
   const booleanExtraAddon = (value: unknown): boolean | undefined => {
     if (typeof value === 'boolean') return value;
@@ -445,6 +472,7 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
       durationOption: durationInfo?.label,
       addons: Object.keys(pricingAddons).length ? pricingAddons : undefined,
       referenceImageCount,
+      inputAudioDurationSec,
     });
   } catch (error) {
     return {
