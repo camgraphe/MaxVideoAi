@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, resolve } from 'node:path';
 import test from 'node:test';
 
@@ -18,6 +18,7 @@ import type { ModelGalleryCard } from '../frontend/components/marketing/ModelsGa
 import * as modelLandingData from '../frontend/lib/examples/modelLandingData.ts';
 import * as modelCatalog from '../frontend/lib/models/catalog.ts';
 import * as modelFamilies from '../frontend/lib/model-families.ts';
+import type { GalleryVideo } from '../frontend/server/videos-normalization.ts';
 
 const P0_IDS = [
   'wan-3',
@@ -144,22 +145,49 @@ function readinessFixture(): launchReadiness.ModelLaunchReadinessEntry[] {
   }).models;
 }
 
-function publicLaunchVideos(): Map<string, Array<{
+function galleryVideo({
+  id,
+  engineId,
+  aspectRatio = '16:9',
+}: {
   id: string;
   engineId: string;
-  thumbUrl: string;
-  videoUrl: string;
-  durationSec: number;
-  aspectRatio: string;
-}>> {
-  return new Map(P0_MENU_REPRESENTATIVES.map((modelId) => [modelId, [{
-    id: `public-${modelId}`,
-    engineId: modelId,
-    thumbUrl: `https://media.maxvideoai.com/rendersthumbs/public/${modelId}.webp`,
-    videoUrl: `https://media.maxvideoai.com/renders/public/${modelId}.mp4`,
+  aspectRatio?: string;
+}): GalleryVideo {
+  return {
+    id,
+    userId: null,
+    engineId,
+    engineLabel: engineId,
     durationSec: 6,
-    aspectRatio: '16:9',
-  }]]));
+    prompt: `Public example for ${engineId}`,
+    promptExcerpt: `Public example for ${engineId}`,
+    thumbUrl: `https://media.maxvideoai.com/rendersthumbs/public/${id}.webp`,
+    videoUrl: `https://media.maxvideoai.com/renders/public/${id}.mp4`,
+    aspectRatio,
+    createdAt: '2026-09-01T12:00:00.000Z',
+    visibility: 'public',
+    indexable: true,
+    hasAudio: true,
+    canUpscale: false,
+  };
+}
+
+function acceptedPublicLaunchVideos({ mixed = false }: { mixed?: boolean } = {}): Map<string, GalleryVideo[]> {
+  const pack = completeAcceptedPackAssets();
+  return new Map(P0_MENU_REPRESENTATIVES.map((modelId) => {
+    const accepted = pack.find((asset) => asset.modelId === modelId && asset.mode === 't2v');
+    assert.ok(accepted, modelId);
+    const exact = galleryVideo({ id: accepted.videoId, engineId: modelId, aspectRatio: mixed ? '4:3' : '16:9' });
+    const unrelated = galleryVideo({ id: `unrelated-${modelId}`, engineId: modelId, aspectRatio: '16:9' });
+    return [modelId, mixed ? [unrelated, exact] : [exact]];
+  }));
+}
+
+function unrelatedPublicLaunchVideos(): Map<string, GalleryVideo[]> {
+  return new Map(P0_MENU_REPRESENTATIVES.map((modelId) => [modelId, [
+    galleryVideo({ id: `unrelated-${modelId}`, engineId: modelId }),
+  ]]));
 }
 
 function completeAcceptedPackAssets(): AcceptedAsset[] {
@@ -171,6 +199,9 @@ function completeAcceptedPackAssets(): AcceptedAsset[] {
       videoId: `${asset.videoId}_second`,
       libraryAssetId: `${asset.libraryAssetId}_second`,
       jobId: `${asset.jobId}_second`,
+      mode: 'i2v',
+      sourceKind: 'image',
+      sourceAssetIds: [`source_image_${asset.modelId}`],
       videoUrl: asset.videoUrl.replace('.mp4', '-second.mp4'),
       thumbnailUrl: asset.thumbnailUrl.replace('.webp', '-second.webp'),
     },
@@ -200,6 +231,40 @@ test('the Task 12 pack is complete, unique and exact before it can project launc
     duplicated[1][field] = duplicated[0][field];
     assert.equal(validatePack({ schemaVersion: 1, assets: duplicated }).ok, false, field);
   }
+});
+
+test('Task 12 evidence modes and source attachments follow each canonical Fal input schema', () => {
+  const validatePack = launchAssets.validateP0VideoExamplePackDocument;
+  const complete = completeAcceptedPackAssets();
+
+  const invalidMode = structuredClone(complete);
+  invalidMode[0].mode = 'totally-invalid';
+  assert.equal(validatePack({ schemaVersion: 1, assets: invalidMode }).ok, false);
+
+  const unsupportedModelMode = structuredClone(complete);
+  unsupportedModelMode[0].mode = 'fl2v';
+  unsupportedModelMode[0].sourceKind = 'image';
+  unsupportedModelMode[0].sourceAssetIds = ['source_start', 'source_end'];
+  assert.equal(validatePack({ schemaVersion: 1, assets: unsupportedModelMode }).ok, false);
+
+  const wrongImageKind = structuredClone(complete);
+  wrongImageKind[1].sourceKind = 'video';
+  assert.equal(validatePack({ schemaVersion: 1, assets: wrongImageKind }).ok, false);
+
+  const wrongImageCount = structuredClone(complete);
+  wrongImageCount[1].sourceAssetIds = ['source_image_one', 'source_image_two'];
+  assert.equal(validatePack({ schemaVersion: 1, assets: wrongImageCount }).ok, false);
+
+  const textWithSource = structuredClone(complete);
+  textWithSource[0].sourceAssetIds = ['source_image_for_text_mode'];
+  assert.equal(validatePack({ schemaVersion: 1, assets: textWithSource }).ok, false);
+
+  const galleryWatchClaim = structuredClone(complete);
+  galleryWatchClaim[0].publicationState = 'gallery_only';
+  galleryWatchClaim[0].watchPageCandidate = true;
+  galleryWatchClaim[1].publicationState = 'gallery_only';
+  galleryWatchClaim[1].watchPageCandidate = false;
+  assert.equal(validatePack({ schemaVersion: 1, assets: galleryWatchClaim }).ok, false);
 });
 
 test('full Task 12 evidence stays server-only and projection freshness is release-gated', () => {
@@ -238,21 +303,75 @@ test('full Task 12 evidence stays server-only and projection freshness is releas
   assert.doesNotMatch(clientGraph, /model-launch-assets|ACCEPTED_DURABLE_MODEL_ASSETS|libraryAssetId|reviewStatus/);
 });
 
-test('test validation detects a stale readiness projection from the Task 12 source digest', () => {
+test('test validation compares both launch projections with source and detects isolated corruption', () => {
   const sourcePath = 'docs/model-launch/p0-video-example-pack.json';
-  const generated = JSON.parse(readFileSync('frontend/config/model-launch-readiness.generated.json', 'utf8')) as unknown;
-  if (!existsSync(sourcePath)) {
-    assert.deepEqual(generated, launchAssets.createMissingModelLaunchReadinessProjection());
-    return;
+  const fullProjectionPath = 'frontend/server/model-launch-assets.generated.json';
+  const readinessProjectionPath = 'frontend/config/model-launch-readiness.generated.json';
+  const buildProjections = (
+    launchAssets as typeof launchAssets & {
+      buildP0LaunchProjectionsFromSource?: (source: string | null) => {
+        full: launchAssets.ModelLaunchAssetProjection;
+        readiness: launchReadiness.ModelLaunchReadinessProjection;
+      };
+    }
+  ).buildP0LaunchProjectionsFromSource;
+  const checkFreshness = (
+    launchAssets as typeof launchAssets & {
+      checkP0LaunchProjectionFreshness?: (input: {
+        source: string | null;
+        full: unknown;
+        readiness: unknown;
+      }) => { ok: boolean; stale: Array<'full' | 'readiness'> };
+    }
+  ).checkP0LaunchProjectionFreshness;
+
+  assert.equal(typeof buildProjections, 'function');
+  assert.equal(typeof checkFreshness, 'function');
+  if (!buildProjections || !checkFreshness) return;
+
+  const source = existsSync(sourcePath) ? readFileSync(sourcePath, 'utf8') : null;
+  const expected = buildProjections(source);
+  const generatedFull = JSON.parse(readFileSync(fullProjectionPath, 'utf8')) as unknown;
+  const generatedReadiness = JSON.parse(readFileSync(readinessProjectionPath, 'utf8')) as unknown;
+  assert.deepEqual(generatedFull, expected.full);
+  assert.deepEqual(generatedReadiness, expected.readiness);
+  assert.deepEqual(checkFreshness({ source, full: generatedFull, readiness: generatedReadiness }), {
+    ok: true,
+    stale: [],
+  });
+
+  const fixtureDirectory = mkdtempSync(resolve(tmpdir(), 'maxvideoai-launch-assets-'));
+  try {
+    const validSource = `${JSON.stringify({ schemaVersion: 1, assets: completeAcceptedPackAssets() }, null, 2)}\n`;
+    const valid = buildProjections(validSource);
+    const temporarySourcePath = resolve(fixtureDirectory, 'source.json');
+    const temporaryFullPath = resolve(fixtureDirectory, 'full.json');
+    const temporaryReadinessPath = resolve(fixtureDirectory, 'readiness.json');
+    writeFileSync(temporarySourcePath, validSource, 'utf8');
+    writeFileSync(temporaryFullPath, `${JSON.stringify(valid.full, null, 2)}\n`, 'utf8');
+    writeFileSync(temporaryReadinessPath, `${JSON.stringify(valid.readiness, null, 2)}\n`, 'utf8');
+
+    const corruptedFull = structuredClone(valid.full);
+    corruptedFull.assets = corruptedFull.assets.slice(1);
+    writeFileSync(temporaryFullPath, `${JSON.stringify(corruptedFull, null, 2)}\n`, 'utf8');
+    assert.deepEqual(checkFreshness({
+      source: readFileSync(temporarySourcePath, 'utf8'),
+      full: JSON.parse(readFileSync(temporaryFullPath, 'utf8')),
+      readiness: JSON.parse(readFileSync(temporaryReadinessPath, 'utf8')),
+    }), { ok: false, stale: ['full'] });
+
+    writeFileSync(temporaryFullPath, `${JSON.stringify(valid.full, null, 2)}\n`, 'utf8');
+    const corruptedReadiness = structuredClone(valid.readiness);
+    corruptedReadiness.sourceDigest = '0'.repeat(64);
+    writeFileSync(temporaryReadinessPath, `${JSON.stringify(corruptedReadiness, null, 2)}\n`, 'utf8');
+    assert.deepEqual(checkFreshness({
+      source: readFileSync(temporarySourcePath, 'utf8'),
+      full: JSON.parse(readFileSync(temporaryFullPath, 'utf8')),
+      readiness: JSON.parse(readFileSync(temporaryReadinessPath, 'utf8')),
+    }), { ok: false, stale: ['readiness'] });
+  } finally {
+    rmSync(fixtureDirectory, { recursive: true, force: true });
   }
-  const source = readFileSync(sourcePath, 'utf8');
-  const validation = launchAssets.validateP0VideoExamplePackDocument(JSON.parse(source) as unknown);
-  assert.equal(validation.ok, true);
-  if (!validation.ok) return;
-  assert.deepEqual(generated, launchAssets.createModelLaunchReadinessProjection({
-    sourceDigest: createHash('sha256').update(source).digest('hex'),
-    assets: validation.assets,
-  }));
 });
 
 test('hidden P0 identities cannot leak into public discovery or generic comparisons', () => {
@@ -420,18 +539,20 @@ test('homepage P0 eligibility requires publication, safe readiness and exact pub
     content: { examples: { fallbackCards: []; viewPrompt: string } };
     globalCandidates: [];
     familyVideos: Map<never, never>;
-    modelVideos: ReturnType<typeof publicLaunchVideos>;
+    modelVideos: ReturnType<typeof acceptedPublicLaunchVideos>;
     models: readonly RuntimeModelEntry[];
     readiness: readonly launchReadiness.ModelLaunchReadinessEntry[];
+    acceptedAssets: readonly AcceptedAsset[];
   }) => Array<{ id: string; imageSrc: string }>;
   const cards = assemble({
     locale: 'en',
     content: { examples: { fallbackCards: [], viewPrompt: 'View prompt' } },
     globalCandidates: [],
     familyVideos: new Map(),
-    modelVideos: publicLaunchVideos(),
+    modelVideos: acceptedPublicLaunchVideos(),
     models: publishedFixture(),
     readiness: readinessFixture(),
+    acceptedAssets: completeAcceptedPackAssets(),
   });
   assert.deepEqual(cards, [], 'an empty homepage configuration owns no promotion slots');
 
@@ -443,15 +564,48 @@ test('homepage P0 eligibility requires publication, safe readiness and exact pub
     content: realContent,
     globalCandidates: [],
     familyVideos: new Map(),
-    modelVideos: publicLaunchVideos() as never,
+    modelVideos: acceptedPublicLaunchVideos({ mixed: true }),
     models: publishedFixture(),
     readiness: readinessFixture(),
+    acceptedAssets: completeAcceptedPackAssets(),
   });
   assert.deepEqual(rankedCards.map(({ id }) => id), [
     ...P0_MENU_REPRESENTATIVES.map((id) => `launch-${id}`),
     'fallback-seedance',
     'fallback-kling',
   ]);
+  for (const card of rankedCards.filter(({ id }) => id.startsWith('launch-'))) {
+    assert.match(card.imageSrc, /video_p0_accepted_/);
+    assert.equal('jobId' in card || 'libraryAssetId' in card || 'reviewStatus' in card, false);
+  }
+
+  const unrelatedCards = homepageExamples.assembleHomepageExampleCards({
+    locale: 'en',
+    content: realContent,
+    globalCandidates: [],
+    familyVideos: new Map(),
+    modelVideos: unrelatedPublicLaunchVideos(),
+    models: publishedFixture(),
+    readiness: readinessFixture(),
+    acceptedAssets: completeAcceptedPackAssets(),
+  });
+  assert.equal(unrelatedCards.some(({ id }) => id.startsWith('launch-')), false);
+
+  const wrongEngineVideos = acceptedPublicLaunchVideos();
+  const ltxAccepted = completeAcceptedPackAssets().find((asset) => asset.modelId === 'ltx-2-5-pro' && asset.mode === 't2v');
+  assert.ok(ltxAccepted);
+  wrongEngineVideos.set('ltx-2-5-pro', [galleryVideo({ id: ltxAccepted.videoId, engineId: 'wan-3-prime' })]);
+  const wrongEngineCards = homepageExamples.assembleHomepageExampleCards({
+    locale: 'en',
+    content: realContent,
+    globalCandidates: [],
+    familyVideos: new Map(),
+    modelVideos: wrongEngineVideos,
+    models: publishedFixture(),
+    readiness: readinessFixture(),
+    acceptedAssets: completeAcceptedPackAssets(),
+  });
+  assert.equal(wrongEngineCards.some(({ id }) => id === 'launch-ltx-2-5-pro'), false);
   const selectHeroPreviews = (
     homepageExamples as typeof homepageExamples & {
       selectHomepageHeroPreviews?: <T>(cards: readonly T[]) => T[];
@@ -477,9 +631,10 @@ test('homepage P0 eligibility requires publication, safe readiness and exact pub
     content: contentWithDuplicate,
     globalCandidates: [],
     familyVideos: new Map(),
-    modelVideos: publicLaunchVideos() as never,
+    modelVideos: acceptedPublicLaunchVideos(),
     models: publishedFixture(),
     readiness: readinessFixture(),
+    acceptedAssets: completeAcceptedPackAssets(),
   });
   assert.equal(deduplicatedCards.filter(({ engineId }) => engineId === 'flux-3').length, 1);
   assert.equal(deduplicatedCards.length, realContent.examples.fallbackCards.length);
@@ -492,6 +647,7 @@ test('homepage P0 eligibility requires publication, safe readiness and exact pub
     dependencies: {
       models: readonly RuntimeModelEntry[];
       readiness: readonly launchReadiness.ModelLaunchReadinessEntry[];
+      acceptedAssets: readonly AcceptedAsset[];
       listExamples: () => Promise<[]>;
       listExampleFamilyPage: (family: string) => Promise<{
         items: [];
@@ -500,12 +656,13 @@ test('homepage P0 eligibility requires publication, safe readiness and exact pub
         offset: number;
         hasMore: boolean;
       }>;
-      listPlaylistVideos: (slug: string) => Promise<ReturnType<typeof publicLaunchVideos> extends Map<string, infer V> ? V : never>;
+      listPlaylistVideos: (slug: string) => Promise<ReturnType<typeof acceptedPublicLaunchVideos> extends Map<string, infer V> ? V : never>;
     },
   ) => Promise<Array<{ id: string }>>;
   const loadedCards = await loadWithDependencies('en', realContent, {
     models: publishedFixture(),
     readiness: readinessFixture(),
+    acceptedAssets: completeAcceptedPackAssets(),
     listExamples: async () => [],
     listExampleFamilyPage: async (family) => {
       queriedFamilies.push(family);
@@ -513,7 +670,7 @@ test('homepage P0 eligibility requires publication, safe readiness and exact pub
     },
     listPlaylistVideos: async (slug) => {
       queriedModelPlaylists.push(slug);
-      return publicLaunchVideos().get(slug.replace('examples-', '')) ?? [];
+      return acceptedPublicLaunchVideos({ mixed: true }).get(slug.replace('examples-', '')) ?? [];
     },
   });
   assert.deepEqual(loadedCards.map(({ id }) => id), rankedCards.map(({ id }) => id));

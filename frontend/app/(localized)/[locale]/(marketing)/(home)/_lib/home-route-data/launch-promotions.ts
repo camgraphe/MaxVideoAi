@@ -6,6 +6,7 @@ import {
 import type { RuntimeModelEntry } from '@/config/model-runtime';
 import type { AppLocale } from '@/i18n/locales';
 import { normalizeEngineId } from '@/lib/engine-alias';
+import type { AcceptedDurableModelAsset } from '@/server/model-launch-assets-validation';
 import type { GalleryVideo } from '@/server/videos';
 import type { HomepageExampleFamily, RedesignContent } from './types';
 
@@ -44,11 +45,31 @@ export function buildHomepageP0PromotionTargets({
   });
 }
 
-function findPublicLaunchVideo(videos: readonly GalleryVideo[], modelId: string): GalleryVideo | null {
+function isDurablePublicMediaUrl(value: string | undefined): value is string {
+  if (!value) return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' && url.hostname === 'media.maxvideoai.com';
+  } catch {
+    return false;
+  }
+}
+
+function findPublicLaunchVideo(
+  videos: readonly GalleryVideo[],
+  modelId: string,
+  acceptedAssets: readonly AcceptedDurableModelAsset[],
+): GalleryVideo | null {
   const normalizedModelId = normalizeEngineId(modelId) ?? modelId;
+  const acceptedVideoIds = new Set(acceptedAssets
+    .filter((asset) => asset.modelId === modelId && asset.engineId === modelId)
+    .map(({ videoId }) => videoId));
   const matches = videos.filter((video) => (
-    video.thumbUrl &&
-    video.videoUrl &&
+    acceptedVideoIds.has(video.id) &&
+    video.visibility === 'public' &&
+    video.indexable &&
+    isDurablePublicMediaUrl(video.thumbUrl) &&
+    isDurablePublicMediaUrl(video.videoUrl) &&
     (normalizeEngineId(video.engineId) ?? video.engineId) === normalizedModelId
   ));
   return matches.find((video) => video.aspectRatio === '16:9') ?? matches[0] ?? null;
@@ -59,14 +80,20 @@ export function buildHomepageP0PromotionCards({
   content,
   targets,
   modelVideos,
+  acceptedAssets,
 }: {
   locale: AppLocale;
   content: RedesignContent;
   targets: readonly HomepageP0PromotionTarget[];
   modelVideos: ReadonlyMap<string, GalleryVideo[]>;
+  acceptedAssets: readonly AcceptedDurableModelAsset[];
 }): HomeExampleCard[] {
   return targets.flatMap<HomeExampleCard>((target) => {
-    const video = findPublicLaunchVideo(modelVideos.get(target.modelId) ?? [], target.modelId);
+    const video = findPublicLaunchVideo(
+      modelVideos.get(target.modelId) ?? [],
+      target.modelId,
+      acceptedAssets,
+    );
     if (!video?.thumbUrl || !video.videoUrl) return [];
     return [{
       id: `launch-${target.modelId}`,

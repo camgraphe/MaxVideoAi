@@ -4,6 +4,7 @@ import type { LocalizedLinkHref } from '@/i18n/navigation';
 import { MODEL_LAUNCH_READY_MODELS, type ModelLaunchReadinessEntry } from '@/config/model-launch-readiness';
 import { listRuntimeModels, type RuntimeModelEntry } from '@/config/model-runtime';
 import { normalizeEngineId } from '@/lib/engine-alias';
+import type { AcceptedDurableModelAsset } from '@/server/model-launch-assets-validation';
 import { listExampleFamilyPage, listExamples, listPlaylistVideos, type GalleryVideo } from '@/server/videos';
 import {
   DEFAULT_MODEL_BY_EXAMPLE_FAMILY,
@@ -65,6 +66,7 @@ export function assembleHomepageExampleCards({
   modelVideos = new Map(),
   models = listRuntimeModels(),
   readiness = MODEL_LAUNCH_READY_MODELS,
+  acceptedAssets = [],
 }: {
   locale: AppLocale;
   content: RedesignContent;
@@ -73,6 +75,7 @@ export function assembleHomepageExampleCards({
   modelVideos?: ReadonlyMap<string, GalleryVideo[]>;
   models?: readonly RuntimeModelEntry[];
   readiness?: readonly ModelLaunchReadinessEntry[];
+  acceptedAssets?: readonly AcceptedDurableModelAsset[];
 }): HomeExampleCard[] {
   const fallbackCards = content.examples.fallbackCards.flatMap<HomeExampleCard>((fallback) => {
     const family = fallback.examplesSlug;
@@ -115,6 +118,7 @@ export function assembleHomepageExampleCards({
     content,
     targets: buildHomepageP0PromotionTargets({ models, readiness }),
     modelVideos,
+    acceptedAssets,
   });
 
   const priority = new Map<string, number>(EXAMPLE_ENGINE_PRIORITY.map((id, index) => [id, index]));
@@ -140,6 +144,7 @@ export function selectHomepageHeroPreviews<T>(cards: readonly T[]): T[] {
 type HomepageExamplesLoaderDependencies = {
   models: readonly RuntimeModelEntry[];
   readiness: readonly ModelLaunchReadinessEntry[];
+  acceptedAssets: readonly AcceptedDurableModelAsset[];
   listExamples: typeof listExamples;
   listExampleFamilyPage: typeof listExampleFamilyPage;
   listPlaylistVideos: typeof listPlaylistVideos;
@@ -152,6 +157,9 @@ export async function loadHomepageExamples(
 ): Promise<HomeExampleCard[]> {
   const models = dependencies.models ?? listRuntimeModels();
   const readiness = dependencies.readiness ?? MODEL_LAUNCH_READY_MODELS;
+  const acceptedAssets = dependencies.acceptedAssets ?? (
+    await import('@/server/model-launch-assets')
+  ).ACCEPTED_DURABLE_MODEL_ASSETS;
   const loadExamples = dependencies.listExamples ?? listExamples;
   const loadExampleFamilyPage = dependencies.listExampleFamilyPage ?? listExampleFamilyPage;
   const loadPlaylistVideos = dependencies.listPlaylistVideos ?? listPlaylistVideos;
@@ -177,7 +185,7 @@ export async function loadHomepageExamples(
     ),
     Promise.all(promotionTargets.map(async (target) => [
       target.modelId,
-      await loadPlaylistVideos(target.readiness.modelPlaylistSlug, 2).catch(() => [] as GalleryVideo[]),
+      await loadPlaylistVideos(target.readiness.modelPlaylistSlug, 24).catch(() => [] as GalleryVideo[]),
     ] as const)),
   ]);
 
@@ -189,5 +197,6 @@ export async function loadHomepageExamples(
     modelVideos: new Map(modelPools),
     models,
     readiness,
+    acceptedAssets,
   });
 }

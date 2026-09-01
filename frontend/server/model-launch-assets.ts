@@ -7,6 +7,8 @@ import {
 } from './model-launch-assets-validation';
 
 export {
+  buildP0LaunchProjectionsFromSource,
+  checkP0LaunchProjectionFreshness,
   createMissingModelLaunchAssetProjection,
   createMissingModelLaunchReadinessProjection,
   createModelLaunchReadinessProjection,

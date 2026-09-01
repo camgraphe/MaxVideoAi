@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 import {
   P0_VIDEO_EXAMPLE_FAMILY_BY_MODEL_ID,
   P0_VIDEO_EXAMPLE_MODEL_IDS,
@@ -5,6 +7,7 @@ import {
   type P0VideoExampleModelId,
 } from '@/config/model-launch-readiness-schema';
 import { getRuntimeModelById } from '@/config/model-runtime';
+import { RAW_FAL_ENGINE_REGISTRY } from '@/src/config/fal-engines/registry';
 
 const SOURCE_MANIFEST = 'docs/model-launch/p0-video-example-pack.json' as const;
 export type AcceptedDurableModelAsset = {
@@ -46,6 +49,19 @@ type ValidationResult =
   | { ok: true; assets: AcceptedDurableModelAsset[] }
   | { ok: false; errors: string[] };
 
+export type P0LaunchProjections = {
+  full: ModelLaunchAssetProjection;
+  readiness: ModelLaunchReadinessProjection;
+};
+
+type LaunchSourceRule = {
+  sourceKind: AcceptedDurableModelAsset['sourceKind'];
+  minCount: number;
+  maxCount: number;
+};
+
+const PLANNED_LAUNCH_MODES = ['t2v', 'i2v'] as const;
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
@@ -70,6 +86,34 @@ function isDurableMediaUrl(value: unknown): value is string {
 
 function isP0ModelId(value: unknown): value is P0VideoExampleModelId {
   return typeof value === 'string' && P0_VIDEO_EXAMPLE_MODEL_IDS.includes(value as P0VideoExampleModelId);
+}
+
+function getCanonicalLaunchSourceRule(modelId: P0VideoExampleModelId, mode: string): LaunchSourceRule | null {
+  const entry = RAW_FAL_ENGINE_REGISTRY.find((candidate) => candidate.id === modelId);
+  if (
+    !entry ||
+    !PLANNED_LAUNCH_MODES.includes(mode as (typeof PLANNED_LAUNCH_MODES)[number])
+  ) {
+    return null;
+  }
+  const canonicalMode = entry.engine.modes.find((candidate) => candidate === mode);
+  if (!canonicalMode || !entry.modes.some((candidate) => candidate.mode === canonicalMode)) return null;
+
+  const requiredMediaFields = (entry.engine.inputSchema?.required ?? []).filter((field) => (
+    (field.type === 'image' || field.type === 'video' || field.type === 'audio') &&
+    (field.requiredInModes?.includes(canonicalMode) ?? field.modes?.includes(canonicalMode) ?? false)
+  ));
+  if (!requiredMediaFields.length) return { sourceKind: 'text', minCount: 0, maxCount: 0 };
+
+  const mediaTypes = new Set(requiredMediaFields.map(({ type }) => type));
+  if (mediaTypes.size !== 1 || mediaTypes.has('audio')) return null;
+  const mediaType = requiredMediaFields[0]?.type;
+  if (mediaType !== 'image' && mediaType !== 'video') return null;
+  return {
+    sourceKind: mediaType,
+    minCount: requiredMediaFields.reduce((total, field) => total + (field.minCount ?? 1), 0),
+    maxCount: requiredMediaFields.reduce((total, field) => total + (field.maxCount ?? field.minCount ?? 1), 0),
+  };
 }
 
 export function parseAcceptedDurableModelAsset(value: unknown): AcceptedDurableModelAsset | null {
@@ -106,17 +150,23 @@ export function parseAcceptedDurableModelAsset(value: unknown): AcceptedDurableM
 
   const model = getRuntimeModelById(value.modelId);
   const familyId = P0_VIDEO_EXAMPLE_FAMILY_BY_MODEL_ID[value.modelId];
+  const sourceRule = getCanonicalLaunchSourceRule(value.modelId, value.mode);
   if (
     !model ||
     value.engineId !== value.modelId ||
     model.family !== familyId ||
-    value.familyId !== familyId
+    value.familyId !== familyId ||
+    !sourceRule
   ) {
     return null;
   }
+  const uniqueSourceAssetIds = new Set(value.sourceAssetIds);
   if (
-    (value.sourceKind === 'text' && value.sourceAssetIds.length !== 0) ||
-    (value.sourceKind !== 'text' && value.sourceAssetIds.length === 0) ||
+    value.sourceKind !== sourceRule.sourceKind ||
+    value.sourceAssetIds.length < sourceRule.minCount ||
+    value.sourceAssetIds.length > sourceRule.maxCount ||
+    uniqueSourceAssetIds.size !== value.sourceAssetIds.length ||
+    (value.watchPageCandidate && value.publicationState !== 'pending_publication') ||
     value.familyPlaylistId === value.modelPlaylistId
   ) {
     return null;
@@ -141,7 +191,7 @@ export function parseAcceptedDurableModelAsset(value: unknown): AcceptedDurableM
     mode: value.mode,
     prompt: value.prompt,
     sourceKind: value.sourceKind,
-    sourceAssetIds: Array.from(new Set(value.sourceAssetIds)),
+    sourceAssetIds: [...value.sourceAssetIds],
     videoUrl: value.videoUrl,
     thumbnailUrl: value.thumbnailUrl,
     width: value.width,
@@ -186,7 +236,15 @@ export function validateP0VideoExamplePackDocument(input: unknown): ValidationRe
     if (new Set(modelAssets.map((asset) => asset.modelPlaylistId)).size > 1) {
       errors.push(`${modelId} must use one exact model playlist ID.`);
     }
-    if (modelAssets.length === 2 && !modelAssets.some((asset) => asset.watchPageCandidate)) {
+    if (
+      modelAssets.length === 2 &&
+      !PLANNED_LAUNCH_MODES.every((mode) => modelAssets.some((asset) => asset.mode === mode))
+    ) {
+      errors.push(`${modelId} must have one text-to-video and one image-to-video asset.`);
+    }
+    if (modelAssets.length === 2 && !modelAssets.some((asset) => (
+      asset.watchPageCandidate && asset.publicationState === 'pending_publication'
+    ))) {
       errors.push(`${modelId} must have at least one watch-page candidate.`);
     }
   }
@@ -249,6 +307,54 @@ export function createMissingModelLaunchReadinessProjection(): ModelLaunchReadin
     sourceDigest: null,
     models: [],
   };
+}
+
+export function buildP0LaunchProjectionsFromSource(source: string | null): P0LaunchProjections {
+  if (source === null) {
+    return {
+      full: createMissingModelLaunchAssetProjection(),
+      readiness: createMissingModelLaunchReadinessProjection(),
+    };
+  }
+
+  let document: unknown;
+  try {
+    document = JSON.parse(source) as unknown;
+  } catch {
+    throw new Error('Invalid Task 12 example pack: source manifest is not valid JSON.');
+  }
+  const validation = validateP0VideoExamplePackDocument(document);
+  if (!validation.ok) {
+    throw new Error(`Invalid Task 12 example pack:\n${validation.errors.join('\n')}`);
+  }
+  const sourceDigest = createHash('sha256').update(source).digest('hex');
+  return {
+    full: {
+      schemaVersion: 1,
+      generatedBy: 'scripts/generate-p0-launch-assets.ts',
+      sourceManifest: SOURCE_MANIFEST,
+      sourceStatus: 'validated',
+      sourceDigest,
+      assets: validation.assets,
+    },
+    readiness: createModelLaunchReadinessProjection({ sourceDigest, assets: validation.assets }),
+  };
+}
+
+export function checkP0LaunchProjectionFreshness({
+  source,
+  full,
+  readiness,
+}: {
+  source: string | null;
+  full: unknown;
+  readiness: unknown;
+}): { ok: boolean; stale: Array<'full' | 'readiness'> } {
+  const expected = buildP0LaunchProjectionsFromSource(source);
+  const stale: Array<'full' | 'readiness'> = [];
+  if (JSON.stringify(full) !== JSON.stringify(expected.full)) stale.push('full');
+  if (JSON.stringify(readiness) !== JSON.stringify(expected.readiness)) stale.push('readiness');
+  return { ok: stale.length === 0, stale };
 }
 
 export function projectAcceptedDurableModelAssets(input: unknown): AcceptedDurableModelAsset[] {
