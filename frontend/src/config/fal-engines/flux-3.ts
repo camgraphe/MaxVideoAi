@@ -49,7 +49,7 @@ const engine: EngineCaps = {
   upscale4k: false,
   extend: true,
   motionControls: false,
-  keyframes: true,
+  keyframes: false,
   params: {},
   inputLimits: {},
   inputSchema: {

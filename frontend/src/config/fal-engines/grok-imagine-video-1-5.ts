@@ -83,7 +83,7 @@ const engine: EngineCaps = {
     },
     ref2v: {
       modes: ['ref2v'], duration: { min: 1, default: 8 }, resolution: ['480p', '720p'],
-      aspectRatio: [...ASPECT_RATIOS], acceptsImageFormats: IMAGE_EXTENSIONS, audioToggle: false,
+      aspectRatio: [...ASPECT_RATIOS], audioToggle: false,
       notes: 'Requires 1–7 reference images. Reference audio is included by Fal but no audio input field is exposed.',
     },
   },

@@ -118,3 +118,25 @@ Modified:
 - Task 6 owns hidden aggregation after canonical identities exist. Until then, the new modules are intentionally unreachable through `RAW_FAL_ENGINE_REGISTRY`.
 - A paid-generation launch still requires the source and billing recheck called for by the frozen contract; this task defines pre-publication facts only.
 - Verification ran under the worktree's Node `v23.9.0`; the repository declares Node 22.x.
+
+## Fix round 1 — capability fact alignment
+
+Reviewer findings addressed without changing endpoints, aggregation, provider adapters, pricing, or direct-provider routing:
+
+- LTX 2.5 Fast/Pro now keep `upscale4k: false`; Fast's native provider `2160p` resolution remains in the exact schema and is not represented as a post-generation upscale capability.
+- LTX I2V mode caps no longer invent accepted image formats. The A2V `image_url` schema retains the Task 1-sourced `jpg/jpeg/png/webp/gif/avif` list.
+- Grok I2V keeps its sourced `jpg/jpeg/png/webp/gif/avif` mode restriction; Grok ref2v keeps the sourced 1–7 reference count but no unsourced format restriction.
+- FLUX 3 and FLUX 3 Draft now use `keyframes: false`; their canonical `fl2v` modes and exact `start_image_url`/`end_image_url` schemas are unchanged.
+- Grok remains distributed through its exact Fal endpoints. Direct P0 routing remains outside Task 3 and this fix.
+
+RED command:
+
+```bash
+pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/p0-video-engine-contracts.test.ts tests/fal-engine-catalog-architecture.test.ts
+```
+
+Expected RED: exit 1, 9 tests / 6 pass / 3 fail. Failures proved the current overclaims: LTX `true !== false` for `upscale4k`, Grok ref2v returned an image-format list instead of `undefined`, and FLUX `true !== false` for generic `keyframes`.
+
+GREEN command: the same focused command passed 9/9 after the four minimal raw-contract fixes. The added assertions also require LTX A2V and Grok I2V sourced formats to remain present while their unsourced neighboring mode caps remain absent.
+
+Final verification: 17/17 focused and ownership-architecture tests passed; `pnpm --prefix frontend exec tsc --noEmit --pretty false`, frontend ESLint, `npm run lint:exposure`, and `git diff --check` all exited 0.

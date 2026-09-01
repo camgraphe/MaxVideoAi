@@ -71,7 +71,6 @@ export function createLtx25ModeCaps(options: LtxVariant): NonNullable<EngineCaps
     aspectRatio: mode === 't2v' ? ['16:9', '9:16'] : [...LTX_2_5_ASPECT_RATIOS],
     fps: options.fps,
     audioToggle: true,
-    ...(mode === 'i2v' ? { acceptsImageFormats: LTX_2_5_IMAGE_EXTENSIONS } : {}),
     notes: options.providerResolutions.includes('2160p')
       ? 'Provider resolution 2160p is preserved; Task 4 owns any canonical 4k-to-2160p request mapping.'
       : 'Native-audio generation with provider-published duration, resolution, and fps controls.',
@@ -108,7 +107,7 @@ export function createLtx25Engine(options: LtxVariant): EngineCaps {
     aspectRatios: [...LTX_2_5_ASPECT_RATIOS],
     fps: options.fps,
     audio: true,
-    upscale4k: options.providerResolutions.includes('2160p'),
+    upscale4k: false,
     extend: false,
     motionControls: true,
     keyframes: false,

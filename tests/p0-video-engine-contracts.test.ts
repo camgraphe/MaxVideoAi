@@ -180,6 +180,13 @@ test('LTX 2.5 variants preserve mixed duration, 2160p, camera and audio schema f
     assert.match(field(id, 'a2v', 'prompt').description ?? '', /required.*image_url.*absent/i);
     assert.deepEqual(entry(id).engine.pricingDetails?.perSecondCents?.byResolution, expected[id].prices);
     assert.match(entry(id).billingNote ?? '', /input-audio/i);
+    assert.equal(entry(id).engine.upscale4k, false, `${id} exposes native resolution, not post-generation upscale`);
+    assert.equal(
+      entry(id).modes.find(({ mode }) => mode === 'i2v')?.ui.acceptsImageFormats,
+      undefined,
+      `${id}/i2v has no sourced format restriction`,
+    );
+    assert.deepEqual(field(id, 'a2v', 'image_url').acceptedFileExtensions, ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif']);
   }
 });
 
@@ -193,6 +200,8 @@ test('Grok exposes only its published references, controls, 15 second cap, and s
   assert.equal(field(id, 'ref2v', 'reference_image_urls').maxCount, 7);
   assert.equal(field(id, 'ref2v', 'duration').default, 8);
   assert.deepEqual(field(id, 'ref2v', 'resolution').values, ['480p', '720p']);
+  assert.deepEqual(entry(id).modes.find(({ mode }) => mode === 'i2v')?.ui.acceptsImageFormats, ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif']);
+  assert.equal(entry(id).modes.find(({ mode }) => mode === 'ref2v')?.ui.acceptsImageFormats, undefined);
   assert.match(entry(id).billingNote ?? '', /\$0\.01 per reference image/);
 });
 
@@ -210,6 +219,7 @@ test('FLUX standard and Draft preserve exact frame, extension, resolution, and p
     assert.deepEqual(field(id, 't2v', 'aspect_ratio').values, ['auto', '21:9', '2:1', '16:9', '4:3', '1:1', '3:4', '9:16']);
     assert.deepEqual({ min: field(id, 't2v', 'safety_tolerance').min, max: field(id, 't2v', 'safety_tolerance').max, default: field(id, 't2v', 'safety_tolerance').default }, { min: 0, max: 4, default: 2 });
     assert.ok(!fieldsFor(id, 'fl2v').some(({ id: fieldId }) => fieldId === 'keyframes'));
+    assert.equal(entry(id).engine.keyframes, false, `${id} uses explicit fl2v inputs, not generic keyframes`);
   }
 
   assert.deepEqual(field('flux-3', 't2v', 'resolution').values, ['720p', '1080p']);
