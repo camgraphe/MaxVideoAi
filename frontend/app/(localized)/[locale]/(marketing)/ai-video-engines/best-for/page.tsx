@@ -8,6 +8,7 @@ import { getContentEntries } from '@/lib/content/markdown';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import engineCatalog from '@/config/engine-catalog.json';
 import compareConfig from '@/config/compare-config.json';
+import { filterPublicCurrentModelSlugs } from '@/config/model-runtime';
 
 interface BestForEntry {
   slug: string;
@@ -22,7 +23,10 @@ type HubBestForEntry = BestForEntry & {
   displayDescription?: string;
 };
 
-const BEST_FOR_PAGES = compareConfig.bestForPages as BestForEntry[];
+const BEST_FOR_PAGES = (compareConfig.bestForPages as BestForEntry[]).map((entry) => ({
+  ...entry,
+  topPicks: filterPublicCurrentModelSlugs(entry.topPicks ?? []),
+}));
 const ENGINE_CATALOG = engineCatalog as Array<{
   modelSlug: string;
   marketingName: string;

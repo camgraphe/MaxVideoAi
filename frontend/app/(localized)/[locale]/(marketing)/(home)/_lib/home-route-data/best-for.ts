@@ -1,4 +1,5 @@
 import type { ShotTypeCard } from '@/components/marketing/home/HomeRedesignSections';
+import { filterPublicCurrentModelSlugs } from '@/config/model-runtime';
 import { BEST_FOR_BY_SLUG, ENGINE_BY_MODEL_SLUG } from './constants';
 import type { RedesignContent } from './types';
 
@@ -19,7 +20,7 @@ export function buildBestForGuideCards(content: RedesignContent, slugs: readonly
         cta: localized.cta,
         href: { pathname: '/ai-video-engines/best-for/[usecase]', params: { usecase: slug } },
         tier: entry.tier,
-        topPicks: (entry.topPicks ?? []).slice(0, 3).map((modelSlug) => {
+        topPicks: filterPublicCurrentModelSlugs(entry.topPicks ?? []).slice(0, 3).map((modelSlug) => {
           const engine = ENGINE_BY_MODEL_SLUG.get(modelSlug);
           return {
             slug: modelSlug,

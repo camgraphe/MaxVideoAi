@@ -75,6 +75,31 @@ export function listPublishedRuntimeModels(): readonly RuntimeModelEntry[] {
   return runtimeResolver.models.filter((model) => model.publication.model.published);
 }
 
+export function isRuntimeModelPublicCurrent(
+  model: RuntimeModelEntry | null | undefined,
+): boolean {
+  return Boolean(
+    model &&
+      model.lifecycle === 'current' &&
+      model.publication.model.published &&
+      model.publication.model.indexable,
+  );
+}
+
+export function listPublicCurrentRuntimeModels(
+  models: readonly RuntimeModelEntry[] = runtimeResolver.models,
+): RuntimeModelEntry[] {
+  return models.filter(isRuntimeModelPublicCurrent);
+}
+
+export function filterPublicCurrentModelSlugs(
+  slugs: readonly string[],
+  models: readonly RuntimeModelEntry[] = runtimeResolver.models,
+): string[] {
+  const publicCurrentSlugs = new Set(listPublicCurrentRuntimeModels(models).map((model) => model.slug));
+  return slugs.filter((slug) => publicCurrentSlugs.has(slug));
+}
+
 export function getRuntimeModelById(id: string): RuntimeModelEntry | null {
   return runtimeResolver.getById(id);
 }

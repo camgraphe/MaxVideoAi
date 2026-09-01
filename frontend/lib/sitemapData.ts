@@ -7,13 +7,16 @@ import {
   formatLastModified,
   getLatestEntryDate,
   getManualSitemapLastModified,
-  getModelLastModified,
   getModelsSitemapLastModified,
   getSitemapFileName,
   getVideoPagesSitemapLastModified,
   getVideoSitemapLastModified,
 } from './sitemap/lastmod';
-import { hasModelLocale } from './sitemap/model-locales';
+import {
+  buildModelRouteEntriesFromRoster,
+  type ModelRouteProjectionOptions,
+  type ModelSitemapRosterEntry,
+} from './sitemap/model-routes';
 import { LOCALES, LOCALE_SITEMAP_PATHS, type SitemapEntry } from './sitemap/types';
 import { buildAbsoluteUrl, escapeXml } from './sitemap/xml';
 
@@ -143,16 +146,16 @@ export async function buildSitemapIndexXml(): Promise<string> {
   return `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</sitemapindex>`;
 }
 
-export async function buildModelsSitemapXml(): Promise<string> {
+export async function buildModelsSitemapXmlFromRoster(
+  roster: readonly ModelSitemapRosterEntry[],
+  options: ModelRouteProjectionOptions = {},
+): Promise<string> {
   const entries: string[] = [];
 
-  modelRoster.forEach((model) => {
-    if (!model?.modelSlug || model?.surfaces?.modelPage?.includeInSitemap === false) {
-      return;
-    }
-    const englishPath = `/models/${model.modelSlug}`;
-    const lastModified = getModelLastModified(model.modelSlug);
-    const localizedEntries = LOCALES.filter((locale) => hasModelLocale(model.modelSlug, locale)).map((locale) => ({
+  buildModelRouteEntriesFromRoster(roster, options).forEach((modelRoute) => {
+    const englishPath = modelRoute.englishPath;
+    const lastModified = modelRoute.lastModified;
+    const localizedEntries = (modelRoute.locales ?? []).map((locale) => ({
       locale,
       url: buildAbsoluteUrl(localizePathFromEnglish(locale, englishPath)),
     }));
@@ -187,4 +190,8 @@ export async function buildModelsSitemapXml(): Promise<string> {
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${entries.join(
     '\n'
   )}\n</urlset>`;
+}
+
+export async function buildModelsSitemapXml(): Promise<string> {
+  return buildModelsSitemapXmlFromRoster(modelRoster);
 }

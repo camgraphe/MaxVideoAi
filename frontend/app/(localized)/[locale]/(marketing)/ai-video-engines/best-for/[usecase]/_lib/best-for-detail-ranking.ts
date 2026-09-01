@@ -2,6 +2,11 @@ import path from 'node:path';
 import { promises as fs } from 'node:fs';
 import type { AppLocale } from '@/i18n/locales';
 import {
+  isRuntimeModelPublicCurrent,
+  listRuntimeModels,
+  type RuntimeModelEntry,
+} from '@/config/model-runtime';
+import {
   ENGINE_BY_SLUG,
   ENGINE_CATALOG,
   type BestForDetailCopy,
@@ -35,6 +40,11 @@ export async function loadEngineScores(): Promise<Map<string, EngineScore>> {
   return new Map();
 }
 
+type BestForRankingSources = {
+  models?: readonly RuntimeModelEntry[];
+  catalog?: readonly (typeof ENGINE_CATALOG)[number][];
+};
+
 const USECASE_WEIGHTS: Record<string, Partial<Record<keyof EngineScore, number>>> = {
   'ugc-ads': { motion: 0.3, fidelity: 0.25, consistency: 0.2, lipsyncQuality: 0.15, textRendering: 0.1 },
   'product-videos': { fidelity: 0.35, consistency: 0.25, anatomy: 0.2, motion: 0.1, textRendering: 0.1 },
@@ -65,10 +75,27 @@ function scoreEngineForUsecase(score: EngineScore, weights: Partial<Record<keyof
   return total / weightSum;
 }
 
-export function resolveTopPicks(entry: BestForEntry, scores: Map<string, EngineScore>): string[] {
-  if (entry.topPicks?.length) return entry.topPicks;
+export function resolveTopPicks(
+  entry: BestForEntry,
+  scores: Map<string, EngineScore>,
+  sources: BestForRankingSources = {},
+): string[] {
+  const models = sources.models ?? listRuntimeModels();
+  const catalog = sources.catalog ?? ENGINE_CATALOG;
+  const publicCurrentSlugs = new Set(
+    models.filter(isRuntimeModelPublicCurrent).map((model) => model.slug),
+  );
+  const hasEvidence = (engine: (typeof catalog)[number]) =>
+    scores.has(engine.modelSlug) || Boolean(engine.engineId && scores.has(engine.engineId));
+  const eligibleCatalog = catalog.filter(
+    (engine) => publicCurrentSlugs.has(engine.modelSlug) && hasEvidence(engine),
+  );
+  const eligibleSlugs = new Set(eligibleCatalog.map((engine) => engine.modelSlug));
+  if (entry.topPicks?.length) {
+    return entry.topPicks.filter((slug) => eligibleSlugs.has(slug));
+  }
   const weights = USECASE_WEIGHTS[entry.slug] ?? {};
-  const ranked = ENGINE_CATALOG.map((engine) => {
+  return eligibleCatalog.map((engine) => {
     const score = scores.get(engine.modelSlug) ?? (engine.engineId ? scores.get(engine.engineId) : null) ?? null;
     const value = score ? scoreEngineForUsecase(score, weights) : 0;
     return { slug: engine.modelSlug, value };
@@ -76,7 +103,6 @@ export function resolveTopPicks(entry: BestForEntry, scores: Map<string, EngineS
     .sort((a, b) => b.value - a.value)
     .slice(0, 3)
     .map((entry) => entry.slug);
-  return ranked.length ? ranked : ENGINE_CATALOG.slice(0, 3).map((engine) => engine.modelSlug);
 }
 
 export function buildRankedPick({

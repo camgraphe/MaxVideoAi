@@ -24,6 +24,7 @@ const sitemapModulePaths = [
   'frontend/lib/sitemap/compare-paths.ts',
   'frontend/lib/sitemap/lastmod.ts',
   'frontend/lib/sitemap/model-locales.ts',
+  'frontend/lib/sitemap/model-routes.ts',
   'frontend/lib/sitemap/route-discovery.ts',
   'frontend/lib/sitemap/types.ts',
   'frontend/lib/sitemap/xml.ts',
@@ -62,7 +63,7 @@ test('sitemap data facade delegates route discovery, lastmod, locales, and XML h
   assert.ok(lineCount(sitemapFacadePath) < 260, `sitemapData.ts should stay focused, got ${lineCount(sitemapFacadePath)} lines`);
   assert.match(facadeSource, /getCanonicalPathEntries/);
   assert.match(facadeSource, /getVideoSitemapLastModified/);
-  assert.match(facadeSource, /hasModelLocale/);
+  assert.match(read('frontend/lib/sitemap/model-routes.ts'), /hasModelLocale/);
   assert.match(facadeSource, /escapeXml/);
   assert.doesNotMatch(facadeSource, /from 'node:fs'|from 'node:path'|spawnSync|discoverTemplatesFromFilesystem/);
 
@@ -130,4 +131,12 @@ test('models sitemap retains every localized H3, Seedance 2.5 and Seedance 2.0 c
       `${slug} x-default membership`,
     );
   }
+});
+
+test('model sitemap exposes a supplied-roster builder shared with localized route discovery', async () => {
+  const sitemap = await import('../frontend/lib/sitemapData.ts');
+  const routeDiscovery = await import('../frontend/lib/sitemap/route-discovery.ts');
+
+  assert.equal(typeof sitemap.buildModelsSitemapXmlFromRoster, 'function');
+  assert.equal(typeof routeDiscovery.buildModelRouteEntriesFromRoster, 'function');
 });

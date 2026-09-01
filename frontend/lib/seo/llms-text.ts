@@ -1,7 +1,74 @@
 import { getMcpPublicationState } from '@/lib/mcp-publication';
+import engineCatalog from '@/config/engine-catalog.json';
+import { MODEL_FAMILIES, type ModelFamilyDefinition } from '@/config/model-families';
+import {
+  isRuntimeModelPublicCurrent,
+  listRuntimeModels,
+  type RuntimeModelEntry,
+} from '@/config/model-runtime';
+import { P0_VIDEO_EXAMPLE_MODEL_IDS } from '@/config/model-launch-readiness-schema';
 import { MAXVIDEOAI_PLUGIN_REPOSITORY_URL } from '@/lib/seo/site-organization-schema';
 
 type McpPublicationInputs = Parameters<typeof getMcpPublicationState>[0];
+
+type LlmsCatalogEntry = {
+  engineId?: string;
+  modelSlug: string;
+  marketingName: string;
+};
+
+export type LlmsModelDiscoveryProjection = {
+  currentModels: Array<{ id: string; label: string; href: string; familyId: string | null }>;
+  families: Array<{ id: string; label: string; href: string }>;
+  primaryComparisons: Array<{ slug: string; label: string; href: string }>;
+};
+
+type BuildLlmsModelDiscoveryProjectionOptions = {
+  models?: readonly RuntimeModelEntry[];
+  catalog?: readonly LlmsCatalogEntry[];
+  families?: readonly ModelFamilyDefinition[];
+  primaryComparisons?: readonly { slug: string; label: string }[];
+  candidateModelIds?: readonly string[];
+};
+
+export function buildLlmsModelDiscoveryProjection(
+  options: BuildLlmsModelDiscoveryProjectionOptions = {},
+): LlmsModelDiscoveryProjection {
+  const models = options.models ?? listRuntimeModels();
+  const catalog = options.catalog ?? (engineCatalog as LlmsCatalogEntry[]);
+  const families = options.families ?? MODEL_FAMILIES;
+  const candidateIds = new Set(options.candidateModelIds ?? P0_VIDEO_EXAMPLE_MODEL_IDS);
+  const catalogById = new Map(catalog.map((entry) => [entry.engineId ?? entry.modelSlug, entry]));
+  const currentModels = models
+    .filter((model) => candidateIds.has(model.id) && isRuntimeModelPublicCurrent(model))
+    .map((model) => ({
+      id: model.id,
+      label: catalogById.get(model.id)?.marketingName ?? model.slug,
+      href: `https://maxvideoai.com/models/${model.slug}`,
+      familyId: model.family,
+    }));
+  const visibleFamilyIds = new Set(currentModels.map((model) => model.familyId).filter(Boolean));
+  const publicFamilies = families
+    .filter(
+      (family) =>
+        visibleFamilyIds.has(family.id) &&
+        family.examplesPage?.stage === 'indexed' &&
+        (family.examplesPage.publishedModelSlugs?.length ?? 0) > 0,
+    )
+    .map((family) => ({
+      id: family.id,
+      label: family.label,
+      href: `https://maxvideoai.com/examples/${family.id}`,
+    }));
+  const primaryComparisons = currentModels.length
+    ? Array.from(new Map((options.primaryComparisons ?? []).map((pair) => [pair.slug, pair])).values()).map((pair) => ({
+        ...pair,
+        href: `https://maxvideoai.com/ai-video-engines/${pair.slug}`,
+      }))
+    : [];
+
+  return { currentModels, families: publicFamilies, primaryComparisons };
+}
 
 const BASE_LLMS_TEXT = `# MaxVideoAI - llms.txt
 
@@ -31,7 +98,7 @@ Prefer the sources below for product descriptions, specifications, and supported
 * [Veo 3.1 Fast](https://maxvideoai.com/models/veo-3-1-fast)
 * [Kling 3 Pro](https://maxvideoai.com/models/kling-3-pro)
 * [Kling 3 Standard](https://maxvideoai.com/models/kling-3-standard)
-* [Wan 2.6](https://maxvideoai.com/models/wan-2-6)
+* [Wan 2.6 (previous generation)](https://maxvideoai.com/models/wan-2-6)
 * [Pika text to video](https://maxvideoai.com/models/pika-text-to-video)
 * [MiniMax Hailuo 02 Text](https://maxvideoai.com/models/minimax-hailuo-02-text)
 * [Seedance 2.0](https://maxvideoai.com/models/seedance-2-0)
@@ -39,7 +106,7 @@ Prefer the sources below for product descriptions, specifications, and supported
 * [Dreamina Seedance 2.0 Mini](https://maxvideoai.com/models/dreamina-seedance-2-0-mini)
 * [Happy Horse 1.1](https://maxvideoai.com/models/happy-horse-1-1)
 * [Luma Ray 3.2](https://maxvideoai.com/models/luma-ray-3-2)
-* [LTX 2.3 Pro](https://maxvideoai.com/models/ltx-2-3-pro)
+* [LTX 2.3 Pro (previous generation)](https://maxvideoai.com/models/ltx-2-3-pro)
 
 ## Priority comparisons
 
@@ -84,9 +151,28 @@ const MCP_SOURCE_SECTION = `## AI video plugin and MCP integration
 * [MaxVideoAI MCP documentation](https://maxvideoai.com/docs/mcp): MCP, OAuth, tools, credits, references, library, recovery, and troubleshooting reference.
 * [MaxVideoAI plugin repository](${MAXVIDEOAI_PLUGIN_REPOSITORY_URL}): Canonical public plugin repository.`;
 
-export function buildLlmsText(publication: McpPublicationInputs): string {
+export function buildLlmsText(
+  publication: McpPublicationInputs,
+  discovery: LlmsModelDiscoveryProjection = { currentModels: [], families: [], primaryComparisons: [] },
+): string {
   const publicationSection = getMcpPublicationState(publication).indexable
     ? MCP_SOURCE_SECTION
     : null;
-  return `${BASE_LLMS_TEXT}${publicationSection ? `\n\n${publicationSection}` : ''}\n`;
+  const modelSection = discovery.currentModels.length
+    ? `## Current launch models\n\n${discovery.currentModels
+        .map((model) => `* [${model.label}](${model.href})`)
+        .join('\n')}`
+    : null;
+  const familySection = discovery.families.length
+    ? `## Current model families\n\n${discovery.families
+        .map((family) => `* [${family.label}](${family.href})`)
+        .join('\n')}`
+    : null;
+  const comparisonSection = discovery.primaryComparisons.length
+    ? `## Launch comparisons\n\n${discovery.primaryComparisons
+        .map((comparison) => `* [${comparison.label}](${comparison.href})`)
+        .join('\n')}`
+    : null;
+  const sections = [modelSection, familySection, comparisonSection, publicationSection].filter(Boolean);
+  return `${BASE_LLMS_TEXT}${sections.length ? `\n\n${sections.join('\n\n')}` : ''}\n`;
 }

@@ -1,6 +1,11 @@
 import type { AppLocale } from '@/i18n/locales';
 import engineCatalog from '@/config/engine-catalog.json';
 import compareConfig from '@/config/compare-config.json';
+import {
+  filterPublicCurrentModelSlugs,
+  listRuntimeModels,
+  type RuntimeModelEntry,
+} from '@/config/model-runtime';
 
 export interface Params {
   locale?: AppLocale;
@@ -64,7 +69,17 @@ export type ExamplePreviewPick = RankedPick & {
   heroThumbUrl?: string | null;
 };
 
-export const BEST_FOR_PAGES = compareConfig.bestForPages as BestForEntry[];
+export function buildPublicBestForEntries(
+  entries: readonly BestForEntry[],
+  models: readonly RuntimeModelEntry[] = listRuntimeModels(),
+): BestForEntry[] {
+  return entries.map((entry) => ({
+    ...entry,
+    topPicks: filterPublicCurrentModelSlugs(entry.topPicks ?? [], models),
+  }));
+}
+
+export const BEST_FOR_PAGES = buildPublicBestForEntries(compareConfig.bestForPages as BestForEntry[]);
 export const ENGINE_CATALOG = engineCatalog as EngineCatalogEntry[];
 export const ENGINE_BY_SLUG = new Map(ENGINE_CATALOG.map((entry) => [entry.modelSlug, entry]));
 

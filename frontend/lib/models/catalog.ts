@@ -1,5 +1,5 @@
 import type { FalEngineEntry } from '@/config/falEngines';
-import type { RuntimeModelEntry } from '@/config/model-runtime';
+import { isRuntimeModelPublicCurrent, type RuntimeModelEntry } from '@/config/model-runtime';
 import type { EngineCaps, Mode } from '@/types/engines';
 
 export type ModelCatalogScope = 'all' | 'video' | 'image' | 'audio';
@@ -56,8 +56,13 @@ export function selectCurrentModelCatalogSlugs(
   );
 
   return models
-    .filter((model) => model.publication.model.published)
-    .filter((model) => model.lifecycle === 'current' || model.lifecycle === 'legacy')
+    .filter(
+      (model) =>
+        isRuntimeModelPublicCurrent(model) ||
+        (model.lifecycle === 'legacy' &&
+          model.publication.model.published &&
+          model.publication.model.indexable),
+    )
     .slice()
     .sort((left, right) => {
       const lifecycleDifference = Number(left.lifecycle === 'legacy') - Number(right.lifecycle === 'legacy');

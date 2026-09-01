@@ -1,3 +1,5 @@
+import { listRuntimeModels, type RuntimeModelEntry } from '@/config/model-runtime';
+
 export type GscSearchType = 'web' | 'image' | 'video';
 export type GscDimension = 'query' | 'page' | 'country' | 'device' | 'searchAppearance' | 'date' | 'hour';
 export type GscRangeKey = '24h' | '7d' | '28d' | '3m';
@@ -43,6 +45,8 @@ export type GscDateWindows = {
 };
 
 export type GscFamily =
+  | 'Grok'
+  | 'FLUX'
   | 'Seedance'
   | 'Kling'
   | 'Veo'
@@ -69,6 +73,7 @@ export type GscIntent =
   | 'pay-as-you-go'
   | 'specs'
   | 'tool'
+  | 'model'
   | 'generic';
 
 export type GscOpportunity = {
@@ -89,6 +94,7 @@ export type GscOpportunity = {
   family: GscFamily;
   intent: GscIntent;
   suggestedAction: string;
+  actionMode: 'actionable' | 'monitor_only';
   score: number;
 };
 
@@ -100,6 +106,8 @@ const RANGE_DAYS: Record<GscRangeKey, number> = {
 };
 
 const FAMILY_PATTERNS: Array<{ family: GscFamily; patterns: RegExp[] }> = [
+  { family: 'Grok', patterns: [/\bgrok\s+imagine\b/i, /\bgrok\b/i, /grok-imagine-video/i] },
+  { family: 'FLUX', patterns: [/\bflux[\s.-]*3\b/i, /\bflux\b/i, /black[\s-]+forest[\s-]+labs/i] },
   { family: 'Seedance', patterns: [/\bseedance\b/i, /\bsea\s*dance\b/i] },
   { family: 'Kling', patterns: [/\bkling\b/i] },
   { family: 'Veo', patterns: [/\bveo\b/i, /\bgoogle\s+veo\b/i] },
@@ -195,13 +203,22 @@ export function classifyGscModelFamily(query?: string | null, page?: string | nu
 
 export function classifyGscIntent(query?: string | null, page?: string | null): GscIntent {
   const queryText = (query ?? '').toLowerCase();
+  const pagePath = normalizeGscPagePath(page);
   const haystack = `${query ?? ''} ${page ?? ''}`.toLowerCase();
+  if (/(?:^|\/)pay-as-you-go-ai-video-generator(?:\/|$)/.test(pagePath)) return 'pay-as-you-go';
+  if (
+    /\/(?:ai-video-engines|comparatif|comparativa)\//.test(pagePath) &&
+    /-vs-/.test(pagePath)
+  ) return 'compare';
   if (/\bmax\s*video\s*ai\b|\bmaxvideoai\b|\bmaxvedio\b|\bmaxvideos?\b/.test(queryText)) return 'brand';
   if (/\bvs\b|\bversus\b|\bcompare\b|\bcomparison\b|\balternative\b|\balternatives\b/.test(haystack)) return 'compare';
   if (/\bpay\s*as\s*you\s*go\b|\bno\s+subscription\b|\bwithout\s+subscription\b|\bsubscription\b/.test(haystack)) return 'pay-as-you-go';
+  if (/\/(?:pricing|tarifs|precios)(?:\/|$)/.test(pagePath)) return 'pricing';
+  if (/\/(?:examples|galerie|galeria)(?:\/|$)/.test(pagePath)) return 'examples';
   if (/\bprompts?\b|\bprompt\s+guide\b|\bprompt\s+examples?\b/.test(haystack)) return 'prompt examples';
   if (/\bprice\b|\bpricing\b|\bcost\b|\bcheap\b|\bcredits?\b|\bfree\b/.test(haystack)) return 'pricing';
   if (/\bexamples?\b|\bsamples?\b|\bgallery\b|\/examples(?:\/|$)/.test(haystack)) return 'examples';
+  if (/\/(?:models|modeles|modelos)(?:\/|$)/.test(pagePath)) return 'model';
   if (/\bspecs?\b|\blimits?\b|\bmax\s+length\b|\bduration\b|\bresolution\b|\bapi\b/.test(haystack)) return 'specs';
   if (/\/tools(?:\/|$)|\btools?\b|\bgenerator\b/.test(haystack)) return 'tool';
   return 'generic';
@@ -214,9 +231,10 @@ export function findGscOpportunities(rows: GscPerformanceRow[]): GscOpportunity[
     if (row.impressions < 50) continue;
     const family = classifyGscModelFamily(row.query, row.page);
     const intent = classifyGscIntent(row.query, row.page);
+    const monitorOnly = isHiddenRuntimeModelDemand(row.query, row.page);
 
     if (row.impressions >= 250 && row.ctr <= 0.012) {
-      opportunities.push(buildOpportunity(row, {
+      opportunities.push(buildOpportunity(row, applyGscActionMode(monitorOnly, {
         issueType: 'high_impressions_low_ctr',
         priority: row.impressions >= 750 ? 'P1' : 'P2',
         family,
@@ -224,11 +242,11 @@ export function findGscOpportunities(rows: GscPerformanceRow[]): GscOpportunity[
         suggestedAction:
           'Improve title/meta and above-the-fold copy so the page mirrors the search phrase more clearly.',
         score: 95 + Math.min(25, row.impressions / 100),
-      }));
+      })));
     }
 
     if (row.position >= 4 && row.position <= 12 && row.impressions >= 100) {
-      opportunities.push(buildOpportunity(row, {
+      opportunities.push(buildOpportunity(row, applyGscActionMode(monitorOnly, {
         issueType: 'position_4_to_12',
         priority: row.impressions >= 500 ? 'P1' : 'P2',
         family,
@@ -236,11 +254,11 @@ export function findGscOpportunities(rows: GscPerformanceRow[]): GscOpportunity[
         suggestedAction:
           'Strengthen the ranking page with internal links, sharper headings, and a focused content block for this query.',
         score: 70 + Math.min(20, row.impressions / 120) + Math.max(0, 12 - row.position),
-      }));
+      })));
     }
 
     if (row.position <= 3 && row.clicks === 0 && row.impressions >= 100) {
-      opportunities.push(buildOpportunity(row, {
+      opportunities.push(buildOpportunity(row, applyGscActionMode(monitorOnly, {
         issueType: 'top_position_zero_clicks',
         priority: row.impressions >= 200 ? 'P1' : 'P2',
         family,
@@ -248,11 +266,11 @@ export function findGscOpportunities(rows: GscPerformanceRow[]): GscOpportunity[
         suggestedAction:
           'Audit the SERP intent and rewrite the snippet promise; this ranking should be earning clicks.',
         score: 88 + Math.min(12, row.impressions / 100),
-      }));
+      })));
     }
 
     if (intent === 'compare' && row.impressions >= 80 && !pageLooksDedicated(row.page, 'compare')) {
-      opportunities.push(buildOpportunity(row, {
+      opportunities.push(buildOpportunity(row, applyGscActionMode(monitorOnly, {
         issueType: 'dedicated_page_candidate',
         priority: row.impressions >= 300 ? 'P2' : 'P3',
         family,
@@ -260,11 +278,11 @@ export function findGscOpportunities(rows: GscPerformanceRow[]): GscOpportunity[
         suggestedAction:
           'Consider a dedicated comparison page or a stronger comparison section on the current ranking page.',
         score: 58 + Math.min(22, row.impressions / 80),
-      }));
+      })));
     }
 
     if (row.position >= 6 && row.position <= 15 && row.impressions >= 150) {
-      opportunities.push(buildOpportunity(row, {
+      opportunities.push(buildOpportunity(row, applyGscActionMode(monitorOnly, {
         issueType: 'internal_link_candidate',
         priority: row.impressions >= 500 ? 'P2' : 'P3',
         family,
@@ -272,7 +290,7 @@ export function findGscOpportunities(rows: GscPerformanceRow[]): GscOpportunity[
         suggestedAction:
           'Add internal links from the homepage, model hub, examples hub, or related engine pages with exact-match context.',
         score: 55 + Math.min(25, row.impressions / 100),
-      }));
+      })));
     }
   }
 
@@ -281,7 +299,7 @@ export function findGscOpportunities(rows: GscPerformanceRow[]): GscOpportunity[
 
 function buildOpportunity(
   row: GscPerformanceRow,
-  options: Pick<GscOpportunity, 'issueType' | 'priority' | 'family' | 'intent' | 'suggestedAction' | 'score'>
+  options: Pick<GscOpportunity, 'issueType' | 'priority' | 'family' | 'intent' | 'suggestedAction' | 'actionMode' | 'score'>
 ): GscOpportunity {
   return {
     id: [
@@ -299,6 +317,70 @@ function buildOpportunity(
     position: row.position,
     ...options,
   };
+}
+
+function applyGscActionMode<T extends { suggestedAction: string }>(
+  monitorOnly: boolean,
+  options: T,
+): T & Pick<GscOpportunity, 'actionMode'> {
+  return {
+    ...options,
+    actionMode: monitorOnly ? 'monitor_only' : 'actionable',
+    suggestedAction: monitorOnly
+      ? 'Monitor hidden-model demand until the canonical publication gate opens; do not add links or request indexing yet.'
+      : options.suggestedAction,
+  };
+}
+
+function normalizeGscPagePath(page?: string | null): string {
+  if (!page) return '';
+  try {
+    return new URL(page, 'https://maxvideoai.com').pathname.toLowerCase();
+  } catch {
+    return page.split(/[?#]/, 1)[0]?.toLowerCase() ?? '';
+  }
+}
+
+function normalizeModelDemandText(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
+export function isHiddenRuntimeModelDemand(
+  query?: string | null,
+  page?: string | null,
+  models: readonly RuntimeModelEntry[] = listRuntimeModels(),
+): boolean {
+  const haystack = normalizeModelDemandText(`${query ?? ''} ${normalizeGscPagePath(page)}`);
+  if (!haystack) return false;
+  const hiddenCurrent = models.filter(
+    (model) =>
+      model.lifecycle === 'current' &&
+      (!model.publication.model.published || !model.publication.model.indexable),
+  );
+  if (
+    hiddenCurrent.some((model) =>
+      [model.id, model.slug].some((identity) => haystack.includes(normalizeModelDemandText(identity))),
+    )
+  ) {
+    return true;
+  }
+  const publishedIdentityMatch = models.some(
+    (model) =>
+      model.publication.model.published &&
+      model.publication.model.indexable &&
+      [model.id, model.slug].some((identity) => haystack.includes(normalizeModelDemandText(identity))),
+  );
+  if (publishedIdentityMatch) return false;
+  const currentByFamily = new Map<string, RuntimeModelEntry[]>();
+  for (const model of models.filter((entry) => entry.lifecycle === 'current' && entry.family)) {
+    const family = model.family as string;
+    currentByFamily.set(family, [...(currentByFamily.get(family) ?? []), model]);
+  }
+  return Array.from(currentByFamily).some(
+    ([family, entries]) =>
+      entries.every((model) => !model.publication.model.published || !model.publication.model.indexable) &&
+      haystack.includes(normalizeModelDemandText(family)),
+  );
 }
 
 function dedupeOpportunities(opportunities: GscOpportunity[]) {

@@ -62,7 +62,16 @@ test('next config projects every model alias and tombstone in all locales as one
 test('replacement canonical slugs and aliases redirect directly to the localized replacement', () => {
   const fixture = structuredClone(registry) as any;
   const retired = fixture.models.find((model: any) => model.aliases.publicSlugs.length > 0);
-  const target = fixture.models.find((model: any) => model.id !== retired.id && model.replacement === null);
+  const target = fixture.models.find(
+    (model: any) =>
+      model.id !== retired.id &&
+      model.replacement === null &&
+      model.lifecycle === 'current' &&
+      model.publication.model.published,
+  );
+  retired.label = retired.label ?? `Retired ${retired.id}`;
+  retired.lifecycle = 'retired';
+  retired.successorId = null;
   retired.replacement = target.id;
   retired.publication = {
     model: { published: false, indexable: false },
@@ -89,5 +98,34 @@ test('replacement canonical slugs and aliases redirect directly to the localized
   const sources = new Set(redirects.map((rule: any) => rule.source));
   for (const rule of redirects) {
     assert.equal(sources.has(rule.destination), false, `${rule.source} must redirect in one hop`);
+  }
+});
+
+test('real P0, legacy and deep-legacy LTX/Wan identities remain self-canonical without replacement redirects', () => {
+  const redirects = buildModelRegistryRedirects(validateModelRegistryDocument(registry));
+  const sources = new Set(redirects.map((rule: any) => rule.source));
+  const preservedIds = [
+    'wan-3',
+    'wan-3-prime',
+    'ltx-2-5-fast',
+    'ltx-2-5-pro',
+    'grok-imagine-video-1-5',
+    'flux-3',
+    'flux-3-draft',
+    'ltx-2-3',
+    'ltx-2-3-fast',
+    'ltx-2',
+    'ltx-2-fast',
+    'wan-2-6',
+    'wan-2-5',
+  ];
+
+  for (const id of preservedIds) {
+    const model = registry.models.find((entry) => entry.id === id);
+    assert.ok(model, id);
+    assert.equal(model.replacement, null, `${id} must not author a replacement redirect`);
+    for (const route of Object.values(bases)) {
+      assert.equal(sources.has(`${route.prefix}/${model.slug}`), false, `${id} canonical route`);
+    }
   }
 });

@@ -193,7 +193,7 @@ test('llms response is built deterministically from publication state without a 
 
   const routeSource = readFileSync(routePath, 'utf8');
   assert.match(routeSource, /mcp-publication\.json/);
-  assert.match(routeSource, /buildLlmsText\(mcpPublication\)/);
+  assert.match(routeSource, /buildLlmsText\(mcpPublication, buildLlmsModelDiscoveryProjection\(\)\)/);
   const { GET } = await import('../frontend/app/llms.txt/route.ts');
   const response = GET();
   assert.equal(response.status, 200);

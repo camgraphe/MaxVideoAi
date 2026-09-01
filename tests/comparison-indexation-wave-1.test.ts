@@ -278,7 +278,7 @@ test('wave 1 metadata builder preserves order-query noindex and applies the loca
 
   assert.match(
     metadataSource,
-    /if\s*\(\s*!isComparisonIndexable\(\s*locale\s*,\s*canonicalSlug\s*\)\s*\)\s*\{\s*robots\s*=\s*\{\s*index:\s*false\s*,\s*follow:\s*true\s*\}\s*;\s*\}/,
+    /resolveComparePublicationRobots[\s\S]*!isPublishedComparisonSlug\(canonicalSlug\)[\s\S]*!isComparisonIndexable\(locale \?\? 'en', canonicalSlug\)[\s\S]*return \{ index: false, follow: true \}/,
   );
   assert.match(
     metadataSource,
