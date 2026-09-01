@@ -144,6 +144,14 @@ export function summarizeWorkspaceInputSchema({
       })
     : null;
   const appliesToMode = (field: EngineInputField) => {
+    if (
+      allowsUnifiedVeoFirstLast
+      && unifiedFirstFrameField
+      && unifiedFirstFrameField.id !== 'first_frame_url'
+      && field.type === 'image'
+      && field.modes?.includes('i2v')
+      && VIDEO_MEDIA_FIELD_CANDIDATES.firstFrame.includes(field.id as never)
+    ) return false;
     if (!field.modes || field.modes.includes(activeMode)) return true;
     if (
       isUnifiedKlingO3 &&
@@ -183,14 +191,6 @@ export function summarizeWorkspaceInputSchema({
       && field.modes.includes('fl2v')
     ) return true;
     if (allowsUnifiedVeoFirstLast && field.id === 'first_frame_url' && field.modes.includes('fl2v')) return false;
-    if (
-      allowsUnifiedVeoFirstLast
-      && unifiedFirstFrameField
-      && unifiedFirstFrameField.id !== 'first_frame_url'
-      && field.type === 'image'
-      && field.modes.includes('i2v')
-      && VIDEO_MEDIA_FIELD_CANDIDATES.firstFrame.includes(field.id as never)
-    ) return false;
     if (!allowsCrossModeAssets) return false;
     if (field.type === 'image' && field.modes.includes('i2v')) return true;
     if (

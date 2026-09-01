@@ -130,3 +130,43 @@ Before fix-round production edits:
 - Paid MCP canonical video requests cannot represent document or web references: the canonical reference union contains image, video, and audio media only. No unsafe bypass was added; Wan MCP requests without a canonical media reference continue to fail closed.
 - Wan's authored `minimumReferenceVideoFps: 16` cannot be enforced safely yet. Neither site `ReferenceAsset`/generation attachments nor MCP `ResolvedReference` carries trusted FPS metadata. This round does not guess FPS or silently invent it. A future contract change must add trusted media-probe FPS metadata and define fail-closed behavior when that fact is absent before enabling enforcement.
 - An additional non-gate run of `tests/mcp-generation-capabilities.test.ts` has one existing H3 assertion failure for an unverified public HTTPS video duration; Task 4 does not touch that H3 reference-duration behavior. All required Task 4 and directly affected suites pass.
+
+## Fix round 2 — automatic FLUX frame routing
+
+### Revision
+
+- Fix-round base: `0d99c99d71fc0ab49cd4857e594c154e479be5ee`
+- Fix-round implementation commit: reported in the handoff because a commit cannot contain its own hash.
+
+### Outcome
+
+The automatic workspace transition is now exercised through the real `useWorkspaceEngineModeState` hook. A FLUX `start_image_url` asset recalculates the implicit active mode to `i2v`; the schema summary then keeps only `start_image_url` and `end_image_url`. Adding `end_image_url` changes the actual submission mode to `fl2v`, without exposing or requiring a third `image_url` field.
+
+The mode owner distinguishes a schema-selected first-frame candidate from a normal i2v opening image. Consequently, a stored or selected FLUX `image_url` continues to expose the normal single-field i2v workflow. Veo's established `image_url` plus last-frame automatic workflow remains intact through the schema-selected `first_frame_url` compatibility rule. Kling, Luma, and other engines without this FLUX schema shape remain unchanged.
+
+### RED evidence
+
+- `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/p0-video-workspace.test.ts`
+  - Result: 1 pass, 1 fail.
+  - The React server-rendered hook produced real `activeMode: i2v` from a sole `start_image_url`, after which the real schema summary incorrectly returned `image_url`, `start_image_url`, and `end_image_url`.
+
+### GREEN evidence
+
+- Targeted automatic/manual FLUX behavior:
+  - `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/p0-video-workspace.test.ts`
+  - Result: 2 pass, 0 fail.
+- Veo/Kling/Luma and workspace regressions:
+  - `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/p0-video-workspace.test.ts tests/workspace-generation-inputs.test.ts tests/workspace-generation-request-helpers.test.ts tests/workspace-composer-surface-contract.test.ts tests/workspace-input-schema-hook-contract.test.ts tests/workspace-omni-ui-contract.test.ts tests/google-vertex-omni-engine-catalog.test.ts`
+  - Result: 51 pass, 0 fail.
+- Required Task 4 focused suite:
+  - `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/p0-video-request-bodies.test.ts tests/p0-video-validation.test.ts tests/p0-video-workspace.test.ts tests/generate-fal-request.test.ts tests/validate-request.test.ts tests/mcp-special-video-modes.test.ts tests/mcp-model-executability.test.ts tests/workspace-generation-inputs.test.ts tests/workspace-composer-surface-contract.test.ts tests/p0-provider-routing.test.ts tests/kling-provider-routing.test.ts tests/luma-agents-provider-routing.test.ts`
+  - Result: 207 pass, 0 fail.
+- TypeScript, frontend lint, exposure lint, and `git diff --check`: pass.
+
+### Fix-round owners changed
+
+- `frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceEngineModeState.ts`
+- `frontend/app/(core)/(workspace)/app/_lib/workspace-input-schema.ts`
+- `tests/p0-video-workspace.test.ts`
+
+No direct-provider, billing, polling, environment, request-body, or `AppClient.tsx` owner changed in this round.

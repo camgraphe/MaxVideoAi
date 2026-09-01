@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 import { listFalEngines } from '../frontend/src/config/falEngines';
 import { summarizeWorkspaceInputSchema } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-input-schema';
@@ -8,15 +10,59 @@ import { getGenerationIterationGuardMessage } from '../frontend/app/(core)/(work
 import { buildWorkspaceGeneratePayload } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-generation-payload';
 import type { ReferenceAsset } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-assets';
 import type { FormState } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-form-state';
+import { useWorkspaceEngineModeState } from '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceEngineModeState';
 
-test('FLUX first/last fields are visible from the default workspace mode for automatic fl2v', () => {
+function renderEngineModeState(
+  engine: NonNullable<ReturnType<typeof listFalEngines>[number]>['engine'],
+  inputAssets: Record<string, (ReferenceAsset | null)[]>,
+) {
+  let captured: ReturnType<typeof useWorkspaceEngineModeState> | null = null;
+  const form = {
+    engineId: engine.id, mode: 't2v', durationSec: 5, durationOption: 5,
+    resolution: '720p', aspectRatio: '2:1', fps: 24, iterations: 1,
+    seedLocked: false, loop: false, audio: true, extraInputValues: {},
+  } as FormState;
+  function Harness() {
+    captured = useWorkspaceEngineModeState({
+      engines: [engine], form, setForm: () => undefined, inputAssets, klingElements: [],
+      shotType: 'customize', setShotType: () => undefined, effectiveRequestedEngineToken: null,
+      authChecked: true, hydratedForScope: 'test', storageScope: 'test',
+      preserveStoredDraftRef: { current: false }, requestedEngineOverrideIdRef: { current: null },
+      requestedEngineOverrideTokenRef: { current: null }, requestedModeOverrideRef: { current: null },
+      writeStorage: () => undefined, uiLocale: 'en', showNotice: () => undefined,
+      workflowCopy: {
+        generateVideo: 'Generate video', removeAudioToUnlock: 'Remove audio',
+        audioUnsupported: 'Audio unsupported', audioLocked: 'Audio locked',
+        audioLockedFallback: 'Audio locked', removeAudioToUseEdit: 'Remove audio',
+      },
+    });
+    return null;
+  }
+  renderToStaticMarkup(createElement(Harness));
+  assert.ok(captured);
+  return captured;
+}
+
+function imageAsset(id: string, fieldId: string): ReferenceAsset {
+  return {
+    id, fieldId, name: `${id}.png`, kind: 'image', type: 'image/png', size: 1,
+    previewUrl: `https://cdn.example.com/${id}.png`, url: `https://cdn.example.com/${id}.png`,
+    assetId: id, status: 'ready',
+  };
+}
+
+test('FLUX automatic frame routing recalculates implicit i2v and never requires image_url', () => {
   for (const engineId of ['flux-3', 'flux-3-draft']) {
     const entry = listFalEngines().find((candidate) => candidate.id === engineId);
     assert.ok(entry);
+    const startOnly = { start_image_url: [imageAsset('start', 'start_image_url')] };
+    const afterStart = renderEngineModeState(entry.engine, startOnly);
+    assert.equal(afterStart.activeMode, 'i2v', engineId);
+    assert.equal(afterStart.submissionMode, 'i2v', engineId);
     const schema = summarizeWorkspaceInputSchema({
       selectedEngine: entry.engine,
-      activeMode: 't2v',
-      allowsUnifiedVeoFirstLast: true,
+      activeMode: afterStart.activeMode,
+      allowsUnifiedVeoFirstLast: afterStart.allowsUnifiedVeoFirstLast,
       isUnifiedHappyHorse: false,
       isUnifiedSeedance: false,
       isUnifiedGeminiOmni: false,
@@ -27,6 +73,29 @@ test('FLUX first/last fields are visible from the default workspace mode for aut
       ['start_image_url', 'end_image_url'],
       engineId,
     );
+
+    const withEnd = {
+      ...startOnly,
+      end_image_url: [imageAsset('end', 'end_image_url')],
+    };
+    const afterEnd = renderEngineModeState(entry.engine, withEnd);
+    assert.equal(afterEnd.activeMode, 'i2v', engineId);
+    assert.equal(afterEnd.submissionMode, 'fl2v', engineId);
+
+    const normalI2v = renderEngineModeState(entry.engine, {
+      image_url: [imageAsset('image', 'image_url')],
+    });
+    assert.equal(normalI2v.activeMode, 'i2v', engineId);
+    const normalSchema = summarizeWorkspaceInputSchema({
+      selectedEngine: entry.engine,
+      activeMode: normalI2v.activeMode,
+      allowsUnifiedVeoFirstLast: normalI2v.allowsUnifiedVeoFirstLast,
+      isUnifiedHappyHorse: false,
+      isUnifiedSeedance: false,
+      isUnifiedGeminiOmni: false,
+      uiLocale: 'en',
+    });
+    assert.deepEqual(normalSchema.assetFields.map(({ field }) => field.id), ['image_url'], engineId);
   }
 });
 
@@ -38,11 +107,7 @@ test('FLUX manual and automatic fl2v run preparation, guards, and payload with e
     resolution: '720p', aspectRatio: '2:1', fps: 24, iterations: 1,
     seedLocked: false, loop: false, audio: true, extraInputValues: {},
   } as FormState;
-  const asset = (id: string, fieldId: string): ReferenceAsset => ({
-    id, fieldId, name: `${id}.png`, kind: 'image', type: 'image/png', size: 1,
-    previewUrl: `https://cdn.example.com/${id}.png`, url: `https://cdn.example.com/${id}.png`,
-    assetId: id, status: 'ready',
-  });
+  const asset = imageAsset;
 
   for (const activeMode of ['t2v', 'fl2v'] as const) {
     const allowsUnifiedVeoFirstLast = activeMode === 't2v';

@@ -12,6 +12,7 @@ import {
   supportsHappyHorseVideoEdit,
 } from '@/lib/happy-horse-workflow';
 import type { EngineCaps, EngineModeUiCaps, Mode } from '@/types/engines';
+import { resolveActiveVideoInputField, VIDEO_MEDIA_FIELD_CANDIDATES } from '@/lib/video-input-schema';
 import {
   getKlingO3DisabledEngineReasons,
   getKlingO3UnsupportedVideoReason,
@@ -323,14 +324,47 @@ export function useWorkspaceEngineModeState({
   ]);
 
   const activeMode: Mode = activeManualMode ?? implicitMode;
+  const unifiedFirstFrameField = useMemo(
+    () => resolveActiveVideoInputField({
+      inputSchema: selectedEngine?.inputSchema,
+      mode: 'fl2v',
+      type: 'image',
+      candidateFieldIds: VIDEO_MEDIA_FIELD_CANDIDATES.firstFrame,
+    }),
+    [selectedEngine?.inputSchema]
+  );
+  const hasUnifiedFirstFrameInput = useMemo(
+    () => Boolean(
+      unifiedFirstFrameField
+      && hasInputAssetInSlots(inputAssets, [unifiedFirstFrameField.id], 'image')
+    ),
+    [inputAssets, unifiedFirstFrameField]
+  );
   const allowsUnifiedVeoFirstLast = useMemo(() => {
     return Boolean(
       selectedEngine &&
         selectedEngine.modes.includes('fl2v') &&
         activeManualMode === null &&
-        (activeMode === 't2v' || activeMode === 'i2v')
+        (
+          activeMode === 't2v'
+          || (
+            activeMode === 'i2v'
+            && (
+              unifiedFirstFrameField?.id === 'first_frame_url'
+              || hasUnifiedFirstFrameInput
+              || hasLastFrameInput
+            )
+          )
+        )
     );
-  }, [activeManualMode, activeMode, selectedEngine]);
+  }, [
+    activeManualMode,
+    activeMode,
+    hasLastFrameInput,
+    hasUnifiedFirstFrameInput,
+    selectedEngine,
+    unifiedFirstFrameField?.id,
+  ]);
   const submissionMode = useMemo<Mode>(() => {
     if (allowsUnifiedVeoFirstLast && hasPrimaryImageInput && hasLastFrameInput) {
       return 'fl2v';
