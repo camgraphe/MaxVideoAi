@@ -8,6 +8,10 @@ import type {
 import type { ResolvedReference } from './reference-types';
 import { normalizeControlledHttpsReferenceUrl } from './controlled-reference-url';
 import { toEngineGenerationMode } from './generation-mode-aliases';
+import {
+  resolveActiveVideoInputField,
+  VIDEO_MEDIA_FIELD_CANDIDATES,
+} from '@/lib/video-input-schema';
 
 export type PaidVideoRequestBodyExecution = {
   quoteId: string;
@@ -118,14 +122,12 @@ function input(reference: MaterializedReference, slotId: string) {
 }
 
 function supportsAspectRatio(execution: PaidVideoRequestBodyExecution): boolean {
-  const fields = [
-    ...(execution.engine.inputSchema?.required ?? []),
-    ...(execution.engine.inputSchema?.optional ?? []),
-  ];
-  const field = fields.find((candidate) => candidate.id === 'aspect_ratio');
-  return !field?.modes?.length || field.modes.includes(
-    toEngineGenerationMode(execution.engine.id, execution.request.mode),
-  );
+  if (!execution.engine.inputSchema) return true;
+  return Boolean(resolveActiveVideoInputField({
+    inputSchema: execution.engine.inputSchema,
+    mode: toEngineGenerationMode(execution.engine.id, execution.request.mode),
+    candidateFieldIds: ['aspect_ratio'],
+  }));
 }
 
 function activeReferenceFieldId(
@@ -133,15 +135,12 @@ function activeReferenceFieldId(
   type: CanonicalReferenceMediaKind,
   candidates: readonly string[],
 ): string | null {
-  const fields = [
-    ...(execution.engine.inputSchema?.required ?? []),
-    ...(execution.engine.inputSchema?.optional ?? []),
-  ];
-  const engineMode = toEngineGenerationMode(execution.engine.id, execution.request.mode);
-  return candidates.find((fieldId) => fields.some((field) =>
-    field.id === fieldId
-    && field.type === type
-    && (!field.modes?.length || field.modes.includes(engineMode)))) ?? null;
+  return resolveActiveVideoInputField({
+    inputSchema: execution.engine.inputSchema,
+    mode: toEngineGenerationMode(execution.engine.id, execution.request.mode),
+    candidateFieldIds: candidates,
+    type,
+  })?.id ?? null;
 }
 
 function invalidModeReferences(): never {
@@ -224,6 +223,15 @@ export function buildPaidVideoRequestBody(
     }
     body.imageUrl = start[0]!.url;
     if (end[0]) body.endImageUrl = end[0].url;
+    const startFieldId = activeReferenceFieldId(
+      execution, 'image', ['start_image_url', 'image_url', 'first_frame_url']);
+    const endFieldId = activeReferenceFieldId(
+      execution, 'image', ['end_image_url', 'last_frame_url']);
+    if (!startFieldId || (end[0] && !endFieldId)) invalidModeReferences();
+    body.inputs = [
+      input(start[0]!, startFieldId),
+      ...(end[0] && endFieldId ? [input(end[0], endFieldId)] : []),
+    ];
     return body;
   }
 
@@ -237,10 +245,12 @@ export function buildPaidVideoRequestBody(
     }
     body.imageUrl = first[0]!.url;
     body.endImageUrl = last[0]!.url;
-    body.inputs = [
-      input(first[0]!, 'first_frame_url'),
-      input(last[0]!, 'last_frame_url'),
-    ];
+    const firstFieldId = activeReferenceFieldId(
+      execution, 'image', VIDEO_MEDIA_FIELD_CANDIDATES.firstFrame);
+    const lastFieldId = activeReferenceFieldId(
+      execution, 'image', VIDEO_MEDIA_FIELD_CANDIDATES.lastFrame);
+    if (!firstFieldId || !lastFieldId) invalidModeReferences();
+    body.inputs = [input(first[0]!, firstFieldId), input(last[0]!, lastFieldId)];
     return body;
   }
 
@@ -260,17 +270,36 @@ export function buildPaidVideoRequestBody(
     const audioReferences = referenceMedia.filter((reference) => reference.kind === 'audio');
     const videos = videoReferences.map(({ url }) => url);
     const audio = audioReferences.map(({ url }) => url);
-    if (!images.length && !videos.length && !start.length) invalidModeReferences();
+    if (!referenceMedia.length && !start.length) invalidModeReferences();
     if (start[0]) body.imageUrl = start[0].url;
     if (end[0]) body.endImageUrl = end[0].url;
     if (images.length) body.referenceImages = images;
     if (videos.length) body.referenceVideos = videos;
     if (audio.length) body.referenceAudio = audio;
+    const startFieldId = activeReferenceFieldId(execution, 'image', ['start_image_url', 'image_url']);
+    const endFieldId = activeReferenceFieldId(execution, 'image', ['end_image_url']);
+    const imageFieldId = activeReferenceFieldId(
+      execution, 'image', VIDEO_MEDIA_FIELD_CANDIDATES.referenceImage);
+    const videoFieldId = activeReferenceFieldId(
+      execution, 'video', VIDEO_MEDIA_FIELD_CANDIDATES.referenceVideo);
+    const audioFieldId = activeReferenceFieldId(
+      execution, 'audio', VIDEO_MEDIA_FIELD_CANDIDATES.referenceAudio);
+    if (
+      (start.length && !startFieldId)
+      || (end.length && !endFieldId)
+      || (images.length && !imageFieldId)
+      || (videos.length && !videoFieldId)
+      || (audio.length && !audioFieldId)
+    ) invalidModeReferences();
     body.inputs = [
-      ...(start[0] ? [input(start[0], 'start_image_url')] : []),
-      ...(end[0] ? [input(end[0], 'end_image_url')] : []),
-      ...videoReferences.map((reference) => input(reference, 'video_urls')),
-      ...audioReferences.map((reference) => input(reference, 'audio_urls')),
+      ...(start[0] && startFieldId ? [input(start[0], startFieldId)] : []),
+      ...(end[0] && endFieldId ? [input(end[0], endFieldId)] : []),
+      ...(imageFieldId && imageFieldId !== 'image_urls'
+        ? referenceMedia.filter((reference) => reference.kind === 'image')
+          .map((reference) => input(reference, imageFieldId))
+        : []),
+      ...(videoFieldId ? videoReferences.map((reference) => input(reference, videoFieldId)) : []),
+      ...(audioFieldId ? audioReferences.map((reference) => input(reference, audioFieldId)) : []),
     ];
     return body;
   }

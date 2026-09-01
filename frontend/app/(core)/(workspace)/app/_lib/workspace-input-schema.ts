@@ -168,7 +168,11 @@ export function summarizeWorkspaceInputSchema({
     ) {
       return true;
     }
-    if (allowsUnifiedVeoFirstLast && field.id === 'last_frame_url' && field.modes.includes('fl2v')) return true;
+    if (
+      allowsUnifiedVeoFirstLast
+      && (field.id === 'last_frame_url' || field.id === 'end_image_url' || field.id === 'start_image_url')
+      && field.modes.includes('fl2v')
+    ) return true;
     if (allowsUnifiedVeoFirstLast && field.id === 'first_frame_url' && field.modes.includes('fl2v')) return false;
     if (!allowsCrossModeAssets) return false;
     if (field.type === 'image' && field.modes.includes('i2v')) return true;

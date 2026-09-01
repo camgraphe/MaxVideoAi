@@ -219,6 +219,24 @@ export function validateProviderSpecificConstraints(params: {
   normalizedMode: Mode;
   payload: Record<string, unknown>;
 }): VideoExecutionValidationResult {
+  if (
+    (params.engineId === 'wan-3' || params.engineId === 'wan-3-prime')
+    && params.normalizedMode === 'ref2v'
+  ) {
+    const hasFile = typeof params.payload.file_url === 'string' && params.payload.file_url.trim().length > 0;
+    const hasWeb = typeof params.payload.web_url === 'string' && params.payload.web_url.trim().length > 0;
+    if (hasFile && hasWeb) {
+      return minimaxH3Error('web_url', 'Wan file_url and web_url references are mutually exclusive.');
+    }
+    if ((hasFile || hasWeb) && params.payload.enable_thinking !== true) {
+      return minimaxH3Error(
+        'enable_thinking',
+        'Wan file_url and web_url references require enable_thinking=true.',
+        undefined,
+        params.payload.enable_thinking,
+      );
+    }
+  }
   if (isMinimaxH3EngineId(params.engineId)) {
     return validateMinimaxH3Constraints(params);
   }

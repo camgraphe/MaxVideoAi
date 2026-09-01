@@ -18,6 +18,8 @@ type Ref2vLimits = {
   maxVideoCount?: number;
   audioFieldId?: string;
   maxAudioCount?: number;
+  allowAudioOnly: boolean;
+  requiresAnyReference: boolean;
 };
 
 const ENGINE_REF2V_LIMITS = listFalEngines().reduce<Record<string, Ref2vLimits>>((acc, entry) => {
@@ -41,6 +43,10 @@ const ENGINE_REF2V_LIMITS = listFalEngines().reduce<Record<string, Ref2vLimits>>
     maxVideoCount: videoField?.maxCount,
     audioFieldId: audioField?.id,
     maxAudioCount: audioField?.maxCount,
+    allowAudioOnly: Array.isArray(entry.engine.inputSchema?.constraints?.atLeastOneReferenceField)
+      && entry.engine.inputSchema.constraints.atLeastOneReferenceField.includes(audioField?.id ?? ''),
+    requiresAnyReference: Array.isArray(entry.engine.inputSchema?.constraints?.atLeastOneReferenceField)
+      && entry.engine.inputSchema.constraints.atLeastOneReferenceField.length > 0,
   };
   return acc;
 }, {});
@@ -465,14 +471,21 @@ export function validateModeMediaInputs(params: {
   }
 
   if (normalizedMode === 'fl2v') {
-    const firstFrame = typeof payload['first_frame_url'] === 'string' ? payload['first_frame_url'].trim() : '';
-    const lastFrame = typeof payload['last_frame_url'] === 'string' ? payload['last_frame_url'].trim() : '';
+    const fields = [...(params.inputSchema?.required ?? []), ...(params.inputSchema?.optional ?? [])];
+    const activeImageField = (ids: readonly string[]) => ids.find((id) => fields.some((field) =>
+      field.id === id
+      && field.type === 'image'
+      && (!field.modes?.length || field.modes.includes(normalizedMode))));
+    const firstFieldId = activeImageField(['first_frame_url', 'start_image_url']) ?? 'first_frame_url';
+    const lastFieldId = activeImageField(['last_frame_url', 'end_image_url']) ?? 'last_frame_url';
+    const firstFrame = typeof payload[firstFieldId] === 'string' ? payload[firstFieldId].trim() : '';
+    const lastFrame = typeof payload[lastFieldId] === 'string' ? payload[lastFieldId].trim() : '';
     if (!firstFrame) {
       return {
         ok: false,
         error: {
           code: 'ENGINE_CONSTRAINT',
-          field: 'first_frame_url',
+          field: firstFieldId,
           message: 'First frame is required for this engine',
         },
       };
@@ -482,7 +495,7 @@ export function validateModeMediaInputs(params: {
         ok: false,
         error: {
           code: 'ENGINE_CONSTRAINT',
-          field: 'last_frame_url',
+          field: lastFieldId,
           message: 'Last frame is required for this engine',
         },
       };
@@ -492,7 +505,7 @@ export function validateModeMediaInputs(params: {
         ok: false,
         error: {
           code: 'ENGINE_CONSTRAINT',
-          field: 'last_frame_url',
+          field: lastFieldId,
           message: 'First and last frames must be different images',
         },
       };
@@ -500,14 +513,21 @@ export function validateModeMediaInputs(params: {
   } else if (normalizedMode === 'ref2v') {
     return validateRef2vInputs(engineId, payload);
   } else if (normalizedMode === 'i2v' || normalizedMode === 'i2i') {
+    const fields = [...(params.inputSchema?.required ?? []), ...(params.inputSchema?.optional ?? [])];
+    const imageFieldId = ['start_image_url', 'image_url', 'first_frame_url'].find((id) => fields.some((field) =>
+      field.id === id
+      && field.type === 'image'
+      && (!field.modes?.length || field.modes.includes(normalizedMode)))) ?? 'image_url';
     const imageUrl =
-      typeof payload['image_url'] === 'string' && payload['image_url'].trim().length ? payload['image_url'].trim() : null;
+      typeof payload[imageFieldId] === 'string' && payload[imageFieldId].trim().length
+        ? payload[imageFieldId].trim()
+        : null;
     if (!imageUrl) {
       return {
         ok: false,
         error: {
           code: 'ENGINE_CONSTRAINT',
-          field: 'image_url',
+          field: imageFieldId,
           message: 'Image URL is required for this engine mode',
         },
       };
@@ -527,6 +547,20 @@ export function validateModeMediaInputs(params: {
         },
       };
     }
+    if (
+      params.inputSchema?.constraints?.a2vPromptRequiredWithoutImage
+      && !(typeof payload['prompt'] === 'string' && payload['prompt'].trim())
+      && !(typeof payload['image_url'] === 'string' && payload['image_url'].trim())
+    ) {
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: 'prompt',
+          message: 'Prompt is required when no optional first frame is supplied',
+        },
+      };
+    }
   }
 
   return { ok: true };
@@ -541,6 +575,8 @@ function validateRef2vInputs(engineId: string, payload: Record<string, unknown>)
     maxVideoCount: 3,
     audioFieldId: 'audio_urls',
     maxAudioCount: 3,
+    allowAudioOnly: false,
+    requiresAnyReference: false,
   };
   const referenceImageUrls = normalizeStringArray(payload['reference_image_urls']);
   const genericImageUrls = normalizeStringArray(payload['image_urls']);
@@ -598,6 +634,23 @@ function validateRef2vInputs(engineId: string, payload: Record<string, unknown>)
       },
     };
   }
+  if (
+    configured.requiresAnyReference
+    && !imageUrls.length
+    && !videoUrls.length
+    && !audioUrls.length
+    && !normalizeStringArray(payload['file_url']).length
+    && !normalizeStringArray(payload['web_url']).length
+  ) {
+    return {
+      ok: false,
+      error: {
+        code: 'ENGINE_CONSTRAINT',
+        field: 'references',
+        message: 'At least one supported reference is required for this engine mode',
+      },
+    };
+  }
   if (imageUrls.length > configured.maxImageCount) {
     return {
       ok: false,
@@ -634,7 +687,7 @@ function validateRef2vInputs(engineId: string, payload: Record<string, unknown>)
       },
     };
   }
-  if (audioUrls.length && imageUrls.length === 0 && videoUrls.length === 0) {
+  if (!configured.allowAudioOnly && audioUrls.length && imageUrls.length === 0 && videoUrls.length === 0) {
     return {
       ok: false,
       error: {

@@ -49,7 +49,6 @@ import {
   supportsModeAudioControl,
 } from '../_lib/workspace-engine-helpers';
 import { STORAGE_KEYS } from '../_lib/workspace-storage';
-import { UNIFIED_VEO_FIRST_LAST_ENGINE_IDS } from '../_lib/workspace-client-helpers';
 
 type ShotType = 'customize' | 'intelligent';
 
@@ -223,11 +222,11 @@ export function useWorkspaceEngineModeState({
   const referenceInputStatus = useMemo(() => getReferenceInputStatus(inputAssets), [inputAssets]);
   const seedanceAssetState = useMemo(() => getSeedanceAssetState(inputAssets), [inputAssets]);
   const hasPrimaryImageInput = useMemo(
-    () => hasInputAssetInSlots(inputAssets, PRIMARY_IMAGE_SLOT_IDS, 'image'),
+    () => hasInputAssetInSlots(inputAssets, [...PRIMARY_IMAGE_SLOT_IDS, 'start_image_url'], 'image'),
     [inputAssets]
   );
   const hasLastFrameInput = useMemo(
-    () => hasInputAssetInSlots(inputAssets, ['last_frame_url'], 'image'),
+    () => hasInputAssetInSlots(inputAssets, ['last_frame_url', 'end_image_url'], 'image'),
     [inputAssets]
   );
 
@@ -305,6 +304,7 @@ export function useWorkspaceEngineModeState({
       (currentMode === 'v2v' ||
         currentMode === 'reframe' ||
         currentMode === 'ref2v' ||
+        currentMode === 'fl2v' ||
         currentMode === 'extend' ||
         currentMode === 'retake') &&
       isWorkspaceModeAvailable(selectedEngine, currentMode)
@@ -326,7 +326,7 @@ export function useWorkspaceEngineModeState({
   const allowsUnifiedVeoFirstLast = useMemo(() => {
     return Boolean(
       selectedEngine &&
-        UNIFIED_VEO_FIRST_LAST_ENGINE_IDS.has(selectedEngine.id) &&
+        selectedEngine.modes.includes('fl2v') &&
         activeManualMode === null &&
         (activeMode === 't2v' || activeMode === 'i2v')
     );
