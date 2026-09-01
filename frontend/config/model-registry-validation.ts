@@ -26,6 +26,7 @@ export type ModelRegistryPublication = {
 
 export type ModelRegistryEntry = {
   id: string;
+  label?: string;
   slug: string;
   family: string | null;
   category: ModelCategory;
@@ -161,6 +162,7 @@ export function validateModelRegistryDocument(value: unknown): ModelRegistryDocu
   for (const model of document.models) {
     if (!model || typeof model !== 'object') fail('model entry must be an object');
     if (!ID_PATTERN.test(model.id)) fail(`invalid canonical id "${model.id}"`);
+    requireOptionalNonBlankString(model.label, `${model.id}.label`);
     if (!SLUG_PATTERN.test(model.slug)) fail(`invalid canonical slug "${model.slug}"`);
     if (model.family !== null && (typeof model.family !== 'string' || !model.family.trim())) {
       fail(`invalid family for "${model.id}"`);

@@ -43,10 +43,11 @@ export function resolveMcpPrelaunchModelAccess(
   principal: AgentPrincipal,
   accountUrl: string,
   env: NodeJS.ProcessEnv = process.env,
+  resolveRuntimeModel: typeof getRuntimeModelById = getRuntimeModelById,
 ): McpPrelaunchModelAccess | null {
   if (!isExactStagingCanary(principal, accountUrl, env)) return null;
   const ids = P0_VIDEO_MODEL_IDS.filter((id) => {
-    const model = getRuntimeModelById(id);
+    const model = resolveRuntimeModel(id);
     return model?.lifecycle === 'current' && model.publication.app.published === false;
   });
   return ids.length === P0_VIDEO_MODEL_IDS.length

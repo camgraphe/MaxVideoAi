@@ -178,6 +178,7 @@ test('model details project one executable public model into the exact safe shap
   assert.deepEqual(details, {
     id: 'minimax-h3',
     label: 'MiniMax H3',
+    slug: 'minimax-h3',
     surface: 'video',
     availability: 'available',
     generationEnabled: true,

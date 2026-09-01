@@ -1,14 +1,15 @@
-import { query, type QueryExecutor } from '@/lib/db';
+import { query } from '@/lib/db';
 import { getBaseEngines } from '@/lib/engines';
 import type { EngineCaps, EngineAvailability, EngineStatus, LatencyTier } from '@/types/engines';
+import {
+  fetchEngineOverridesReadOnly,
+  fetchEngineOverridesReadOnlyWithExecutor,
+  type EngineOverride,
+} from '@/server/engine-configuration-read';
 
-export type EngineOverride = {
-  engine_id: string;
-  active: boolean;
-  availability: string | null;
-  status: string | null;
-  latency_tier: string | null;
-};
+export type { EngineOverride } from '@/server/engine-configuration-read';
+export const fetchEngineOverrides = fetchEngineOverridesReadOnly;
+export const fetchEngineOverridesWithExecutor = fetchEngineOverridesReadOnlyWithExecutor;
 
 function normalizeStatus(value: string | null | undefined, fallback: EngineStatus): EngineStatus {
   if (!value) return fallback;
@@ -30,23 +31,6 @@ function normalizeLatency(value: string | null | undefined, fallback: LatencyTie
   if (!value) return fallback;
   const normalized = value.toLowerCase();
   return ['fast', 'standard'].includes(normalized) ? (normalized as LatencyTier) : fallback;
-}
-
-export async function fetchEngineOverrides(): Promise<Map<string, EngineOverride>> {
-  if (!process.env.DATABASE_URL) return new Map();
-  const rows = await query<EngineOverride>(
-    `SELECT engine_id, active, availability, status, latency_tier FROM engine_overrides`
-  );
-  return new Map(rows.map((row) => [row.engine_id, row]));
-}
-
-export async function fetchEngineOverridesWithExecutor(
-  executor: QueryExecutor,
-): Promise<Map<string, EngineOverride>> {
-  const rows = await executor.query<EngineOverride>(
-    'SELECT engine_id, active, availability, status, latency_tier FROM engine_overrides',
-  );
-  return new Map(rows.map((row) => [row.engine_id, row]));
 }
 
 export async function upsertEngineOverride(

@@ -102,7 +102,7 @@
     "id": "alibaba-wan-video-prompting",
     "provider": "Alibaba",
     "title": "Wan video generation prompt guide",
-    "url": "https://docs.modelstudio.console.alibabacloud.com/en/video-generation/wan-video",
+    "url": "https://docs.modelstudio.console.alibabacloud.com/en/model-studio/wan3-video-generation-guide",
     "modelIds": ["wan-3", "wan-3-prime"],
     "modes": ["t2v", "i2v", "ref2v"],
     "reviewedAt": "2026-09-01"

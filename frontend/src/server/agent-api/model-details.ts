@@ -30,13 +30,19 @@ import type {
 } from './types';
 import type { CanonicalGenerationReferenceRole } from './generation-types';
 import { toEngineGenerationMode } from './generation-mode-aliases';
-import { getRuntimeModelById, getRuntimeModelSuccessor } from '@/config/model-runtime';
+import {
+  getRuntimeModelById,
+  getRuntimeModelSuccessor,
+  type RuntimeModelEntry,
+} from '@/config/model-runtime';
 import type { AgentModelAccessContext } from './model-catalog';
 import { normalizeVideoDurationOption } from '@/server/video-generation/execution-constraints';
 
 export type AgentModelDetailsDeps = AgentModelCatalogDeps & {
   getGuidance?(engineId: string): AgentModelGuidance | null;
   getPromptingSources?(engineId: string): readonly AgentModelPromptingSource[];
+  resolveRuntimeModel?(engineId: string): RuntimeModelEntry | null;
+  resolveRuntimeSuccessor?(model: RuntimeModelEntry): RuntimeModelEntry | null;
 };
 
 function isReferenceField(
@@ -334,22 +340,73 @@ function listPublicCandidates(
     : listPublicAgentCatalogEngines(undefined, { exactId: engineId, access });
 }
 
+function resolveDetailsRuntimeModel(
+  engineId: string,
+  deps?: AgentModelDetailsDeps,
+): RuntimeModelEntry | null {
+  return (deps?.resolveRuntimeModel ?? getRuntimeModelById)(engineId);
+}
+
+function resolveDetailsRuntimeSuccessor(
+  runtime: RuntimeModelEntry,
+  deps?: AgentModelDetailsDeps,
+): RuntimeModelEntry | null {
+  if (deps?.resolveRuntimeSuccessor) return deps.resolveRuntimeSuccessor(runtime);
+  return getRuntimeModelSuccessor(runtime)
+    ?? (runtime.publicTargetId ? getRuntimeModelById(runtime.publicTargetId) : null);
+}
+
+function projectRetiredModelIdentity(
+  runtime: RuntimeModelEntry,
+  deps?: AgentModelDetailsDeps,
+): AgentModelDetails | null {
+  const surface = runtime.category === 'video' || runtime.category === 'image'
+    ? runtime.category
+    : null;
+  if (runtime.lifecycle !== 'retired' || !surface || !runtime.label?.trim()) return null;
+  const successor = resolveDetailsRuntimeSuccessor(runtime, deps);
+  if (!successor) return null;
+  return Object.freeze({
+    id: runtime.id,
+    label: runtime.label,
+    slug: runtime.slug,
+    surface,
+    availability: 'retired',
+    generationEnabled: false,
+    lifecycle: 'retired',
+    successor: Object.freeze({ id: successor.id, slug: successor.slug }),
+    recommendedByDefault: false,
+    prelaunch: false,
+    modes: Object.freeze([]),
+    guidance: null,
+    promptingSources: Object.freeze([]),
+    links: Object.freeze({ model: null, pricing: null, examples: null }),
+    catalogUpdatedAt: null,
+  });
+}
+
 export async function getAgentModelDetails(
   engineId: string,
   deps?: AgentModelDetailsDeps,
   access?: AgentModelAccessContext,
 ): Promise<AgentModelDetails> {
+  const requestedRuntime = resolveDetailsRuntimeModel(engineId, deps);
+  const retiredIdentity = requestedRuntime
+    ? projectRetiredModelIdentity(requestedRuntime, deps)
+    : null;
+  if (retiredIdentity) return retiredIdentity;
+  if (requestedRuntime?.lifecycle === 'retired') {
+    throw new AgentApiError('ENGINE_UNAVAILABLE', 'This MaxVideoAI model is not currently available.');
+  }
+
   const candidates = await listPublicCandidates(engineId, deps, access);
   const candidate = candidates.find((entry) => entry.engine.id === engineId);
   if (!candidate) {
     throw new AgentApiError('ENGINE_UNAVAILABLE', 'This MaxVideoAI model is not currently available.');
   }
 
-  const runtime = getRuntimeModelById(candidate.engine.id);
-  const successor = runtime
-    ? getRuntimeModelSuccessor(runtime)
-      ?? (runtime.publicTargetId ? getRuntimeModelById(runtime.publicTargetId) : null)
-    : null;
+  const runtime = resolveDetailsRuntimeModel(candidate.engine.id, deps);
+  const successor = runtime ? resolveDetailsRuntimeSuccessor(runtime, deps) : null;
   const prelaunch = runtime?.publication.app.published === false
     && access?.allowedPrelaunchModelIds.has(candidate.engine.id) === true;
   const guidance = projectGuidance(
@@ -364,6 +421,7 @@ export async function getAgentModelDetails(
   return Object.freeze({
     id: candidate.engine.id,
     label: candidate.engine.label,
+    slug: runtime?.slug ?? candidate.engine.id,
     surface: candidate.surface,
     availability: candidate.engine.availability,
     generationEnabled: candidate.generationEnabled,

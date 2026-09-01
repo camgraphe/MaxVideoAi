@@ -8,6 +8,14 @@ of truth; this file explains the MCP projection and must not duplicate prices.
 
 Checked 2026-09-01 against the canonical runtime registry and engine schemas.
 
+MCP catalog and exact hidden-model resolution are read-only database paths. They
+use `frontend/src/server/agent-api/read-only-engine-catalog.ts`, whose transitive
+dependencies contain only configuration `SELECT` owners and pure projection.
+They never run billing-schema bootstrap or engine-settings seed writes. The
+transactional confirmation variant takes a share lock and reads the same two
+configuration tables through the caller executor before selection; quote,
+reservation, and provider mutations remain downstream of successful selection.
+
 Default discovery and recommendations contain only current, app-published
 models. An exact legacy ID remains available when its runtime route is ready,
 but is marked non-default and includes its canonical successor ID and slug.

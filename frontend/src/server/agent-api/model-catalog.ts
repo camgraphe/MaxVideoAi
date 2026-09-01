@@ -7,11 +7,12 @@ import {
 } from '@/config/model-runtime';
 import type { TransactionQueryExecutor } from '@/lib/db';
 import {
-  getPublicConfiguredEnginesByCategory,
-  getPublicConfiguredEnginesByCategoryInExecutor,
-  getConfiguredEngineIncludingHidden,
-  getConfiguredEngineIncludingHiddenInExecutor,
-} from '@/server/engines';
+  getReadOnlyConfiguredEnginesByCategory,
+  getReadOnlyConfiguredEnginesByCategoryInExecutor,
+  getReadOnlyConfiguredEngineIncludingHidden,
+  getReadOnlyConfiguredEngineIncludingHiddenInExecutor,
+  type ReadOnlyEngineCatalogDependencies,
+} from './read-only-engine-catalog';
 import {
   resolveAgentGenerationEngineExecutability,
   resolveAgentGenerationModeExecutability,
@@ -78,10 +79,12 @@ export type AgentPublicCatalogEngine = AgentPublicGenerationEngine & {
 
 export function createAgentModelCatalogDeps(
   environment?: AgentGenerationExecutabilityEnvironment,
+  readOnlyDependencies?: ReadOnlyEngineCatalogDependencies,
 ): AgentModelCatalogDeps {
   return {
-    listEngines: () => getPublicConfiguredEnginesByCategory('all'),
-    getEngineIncludingHidden: (engineId) => getConfiguredEngineIncludingHidden(engineId),
+    listEngines: () => getReadOnlyConfiguredEnginesByCategory('all', false, readOnlyDependencies),
+    getEngineIncludingHidden: (engineId) =>
+      getReadOnlyConfiguredEngineIncludingHidden(engineId, false, readOnlyDependencies),
     surfaceByEngineId(engineId) {
       return SURFACE_BY_ENGINE_ID.get(engineId) ?? null;
     },
@@ -252,8 +255,8 @@ export async function listPublicAgentGenerationEnginesInExecutor(
   access?: AgentModelAccessContext,
 ): Promise<AgentPublicGenerationEngine[]> {
   return listPublicAgentGenerationEngines({
-    listEngines: () => getPublicConfiguredEnginesByCategoryInExecutor('all', executor),
-    getEngineIncludingHidden: (engineId) => getConfiguredEngineIncludingHiddenInExecutor(engineId, executor),
+    listEngines: () => getReadOnlyConfiguredEnginesByCategoryInExecutor('all', executor),
+    getEngineIncludingHidden: (engineId) => getReadOnlyConfiguredEngineIncludingHiddenInExecutor(engineId, executor),
     surfaceByEngineId(engineId) {
       return SURFACE_BY_ENGINE_ID.get(engineId) ?? null;
     },

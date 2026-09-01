@@ -9,6 +9,7 @@ import { recommendAgentModels } from '../frontend/src/server/agent-api/model-rec
 import { resolveMcpPrelaunchModelAccess } from '../frontend/src/server/mcp/provider-canary-access';
 import { calculateAgentProjectBudget } from '../frontend/src/server/agent-api/project-budget';
 import { AgentApiError } from '../frontend/src/server/agent-api/errors';
+import type { RuntimeModelEntry } from '../frontend/config/model-runtime';
 
 const P0 = ['wan-3', 'wan-3-prime', 'ltx-2-5-fast', 'ltx-2-5-pro', 'grok-imagine-video-1-5', 'flux-3', 'flux-3-draft'] as const;
 const expectedModes = new Map<string, readonly string[]>([
@@ -83,22 +84,120 @@ test('all 23 P0 modes expose numeric duration choices from canonical engine sche
   assert.deepEqual((await listPublicAgentGenerationEngines(deps, access)).filter((entry) => P0.includes(entry.engine.id as never)).map((entry) => entry.engine.id).sort(), [...P0].sort());
 });
 
-test('deep-legacy spending selection fails before canonical pricing is called', async () => {
-  let pricingCalls = 0;
-  await assert.rejects(calculateAgentProjectBudget({ proposals: [{
-    name: 'Deprecated identity',
-    lines: [{
-      purpose: 'Migration check', engineId: 'ltx-2', mode: 't2v',
-      settings: { durationSec: 6, resolution: '1080p', aspectRatio: '16:9' },
-      clipCount: 1, attemptsPerClip: 1,
-    }],
-  }] }, {
-    userId: 'public-user', clientId: 'public-client', emailVerified: true, authMethod: 'oauth',
-  }, {
-    listPublicEngines: () => listPublicAgentGenerationEngines(deps),
-    getMembershipStatus: async () => ({ pricing: { tier: 'member' } }),
-    async priceGeneration() { pricingCalls += 1; throw new Error('must not price'); },
-    computeCatalogRevision: () => 'lifecycle-test',
+test('deep-legacy and retired spending selection fail before canonical pricing is called', async () => {
+  for (const engineId of ['ltx-2', 'retired-video-fixture']) {
+    let pricingCalls = 0;
+    await assert.rejects(calculateAgentProjectBudget({ proposals: [{
+      name: 'Deprecated identity',
+      lines: [{
+        purpose: 'Migration check', engineId, mode: 't2v',
+        settings: { durationSec: 6, resolution: '1080p', aspectRatio: '16:9' },
+        clipCount: 1, attemptsPerClip: 1,
+      }],
+    }] }, {
+      userId: 'public-user', clientId: 'public-client', emailVerified: true, authMethod: 'oauth',
+    }, {
+      listPublicEngines: () => listPublicAgentGenerationEngines(deps),
+      getMembershipStatus: async () => ({ pricing: { tier: 'member' } }),
+      async priceGeneration() { pricingCalls += 1; throw new Error('must not price'); },
+      computeCatalogRevision: () => 'lifecycle-test',
+    }), (error: unknown) => error instanceof AgentApiError && error.code === 'ENGINE_UNAVAILABLE');
+    assert.equal(pricingCalls, 0, engineId);
+  }
+});
+
+test('an authoritative retired runtime identity remains inspectable without executable caps or URLs', async () => {
+  const retired = {
+    id: 'retired-video-fixture',
+    label: 'Retired Video Fixture',
+    slug: 'retired-video-fixture',
+    family: 'fixture',
+    category: 'video',
+    lifecycle: 'retired',
+    successorId: null,
+    aliases: { internal: [], publicSlugs: [] },
+    publication: {
+      model: { published: false, indexable: false },
+      examples: { published: false, includeInFamilyCopy: false, current: false },
+      compare: { published: false, indexed: false, suggestedOpponentIds: [], publishedPairIds: [] },
+      app: { published: false },
+      pricing: { published: false },
+      sitemap: { published: false },
+    },
+    successorSlug: null,
+    publicTargetId: 'wan-3',
+  } as RuntimeModelEntry;
+  const successor = getRuntimeModelById('wan-3');
+  assert.ok(successor);
+  const retiredDeps = {
+    async listEngines() { return []; },
+    surfaceByEngineId() { return null; },
+    isEngineExecutable: () => false,
+    resolveRuntimeModel(id: string) { return id === retired.id ? retired : getRuntimeModelById(id); },
+    resolveRuntimeSuccessor(model: RuntimeModelEntry) {
+      return model.publicTargetId === successor.id ? successor : null;
+    },
+  };
+
+  assert.deepEqual(await listAgentModels({}, retiredDeps), []);
+  assert.deepEqual((await recommendAgentModels({}, retiredDeps)).recommendations, []);
+  const details = await getAgentModelDetails(retired.id, retiredDeps);
+  assert.deepEqual(details, {
+    id: retired.id,
+    label: retired.label,
+    slug: retired.slug,
+    surface: 'video',
+    availability: 'retired',
+    generationEnabled: false,
+    lifecycle: 'retired',
+    successor: { id: successor.id, slug: successor.slug },
+    recommendedByDefault: false,
+    prelaunch: false,
+    modes: [],
+    guidance: null,
+    promptingSources: [],
+    links: { model: null, pricing: null, examples: null },
+    catalogUpdatedAt: null,
+  });
+  assert.doesNotMatch(JSON.stringify(details), /provider|endpoint|capabilit|fal\.ai/iu);
+});
+
+test('an incomplete retired identity fails closed without consulting executable catalog owners', async () => {
+  let catalogCalls = 0;
+  const retiredWithoutLabel = {
+    id: 'retired-without-label',
+    slug: 'retired-without-label',
+    category: 'video',
+    lifecycle: 'retired',
+    publicTargetId: 'wan-3',
+  } as RuntimeModelEntry;
+  await assert.rejects(getAgentModelDetails(retiredWithoutLabel.id, {
+    async listEngines() { catalogCalls += 1; return []; },
+    async getEngineIncludingHidden() { catalogCalls += 1; return byId.get('wan-3'); },
+    surfaceByEngineId() { return 'video'; },
+    resolveRuntimeModel(id) { return id === retiredWithoutLabel.id ? retiredWithoutLabel : getRuntimeModelById(id); },
   }), (error: unknown) => error instanceof AgentApiError && error.code === 'ENGINE_UNAVAILABLE');
-  assert.equal(pricingCalls, 0);
+  assert.equal(catalogCalls, 0);
+});
+
+test('the P0 canary is all seven hidden current models or null when publication drifts', () => {
+  const principal = { userId: 'canary-user', clientId: 'canary-client', emailVerified: true, authMethod: 'oauth' as const };
+  const env = { NODE_ENV: 'production', MCP_STAGING_OPERATIONAL_ENABLED: 'true', MCP_STAGING_CANARY_ACCOUNT_IDS: principal.userId, MCP_STAGING_CANARY_CLIENT_IDS: principal.clientId } as NodeJS.ProcessEnv;
+  const accountUrl = 'https://maxvideoai-mcp-staging.vercel.app';
+  const current = resolveMcpPrelaunchModelAccess(principal, accountUrl, env);
+  assert.deepEqual([...current!.allowedModelIds].sort(), [...P0].sort());
+  assert.ok(P0.every((id) => {
+    const runtime = getRuntimeModelById(id);
+    return runtime?.lifecycle === 'current' && runtime.publication.app.published === false;
+  }));
+
+  const drifted = resolveMcpPrelaunchModelAccess(principal, accountUrl, env, (id) => {
+    const runtime = getRuntimeModelById(id);
+    if (!runtime || id !== P0[0]) return runtime;
+    return {
+      ...runtime,
+      publication: { ...runtime.publication, app: { ...runtime.publication.app, published: true } },
+    };
+  });
+  assert.equal(drifted, null);
 });

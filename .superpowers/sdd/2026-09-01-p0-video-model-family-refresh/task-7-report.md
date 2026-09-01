@@ -93,3 +93,100 @@ The registry check emitted only the repository's existing Node-engine warning be
 - Hidden confirmation reloads seven configured engines sequentially inside the transaction. This avoids concurrent queries on one executor and preserves the locked override snapshot, at the cost of a small staging-canary-only query overhead.
 - P0 guidance evidence URLs are authored now but stripped from prelaunch output. Task 14 publication will expose them automatically when app publication becomes true.
 - Public HTTPS duration fail-closed behavior is deliberately scoped to the reviewed MiniMax H3 contract. Other canonical workflows that permit public references without trusted duration metadata retain their Task 4 behavior; resolved owned assets still enforce every authored duration constraint.
+
+---
+
+## Fix round 1 — read-only catalog boundary and real retired identity
+
+Base: `6542013edd4ce80f5eaae2978c4d3b2d37988129`.
+
+### Findings closed
+
+1. MCP exact hidden resolution no longer reaches the mixed site engine owner
+   that may run `ensureBillingSchema` and `ensureEngineSettingsSeed`. The MCP
+   catalog now imports a dedicated read-only owner. Its ordinary path reads
+   settings and overrides without bootstrap; its confirmation path issues only
+   the existing share lock and two `SELECT` statements through the caller's
+   transaction executor. The normal website/admin configured-engine functions
+   retain their existing bootstrap behavior.
+2. Exact retired details now resolve from an injectable canonical runtime
+   identity even when no raw engine or `EngineCaps` remains. The generic runtime
+   schema can carry an authored optional `label`; the returned historical DTO
+   preserves ID, label, slug, video/image surface, retired lifecycle, and the
+   canonical replacement tuple while returning no modes, prompting sources,
+   guidance, public URLs, or catalog timestamp. A fixture-only runtime identity
+   exercises this behavior; no fake retired production row was added. If the
+   authoritative identity is incomplete, lookup fails before consulting any
+   executable catalog owner.
+3. The Wan prompting source is the exact frozen Task 1 owner URL:
+   `https://docs.modelstudio.console.alibabacloud.com/en/model-studio/wan3-video-generation-guide`.
+4. The staging prelaunch resolver now has a narrow runtime lookup seam. A drift
+   test proves the result is exactly all seven current app-unpublished P0 IDs or
+   `null` when any one publication record changes.
+
+Budget, prepare, and confirm continue to select only executable catalog
+candidates. Explicit retired requests are rejected before canonical pricing,
+quote persistence, wallet reservation, or provider submission.
+
+### RED evidence
+
+Before any fix-round production edit:
+
+```text
+pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
+  tests/mcp-read-only-engine-resolution.test.ts \
+  tests/mcp-model-prompting-sources.test.ts \
+  tests/mcp-p0-video-parity.test.ts
+
+12 tests: 6 passed, 6 failed
+- frozen WAN URL mismatch
+- retired exact details returned ENGINE_UNAVAILABLE
+- injected publication drift still returned all seven IDs
+- read-only owner/behavioral imports were absent
+```
+
+A second RED added after the read-only owner existed but before wiring the MCP
+catalog factory to its injectable read seam:
+
+```text
+tests/mcp-read-only-engine-resolution.test.ts
+4 tests: 3 passed, 1 failed
+get_model_details/project-budget read counters: expected 4, received 0
+```
+
+### GREEN evidence
+
+Focused lifecycle, read boundary, details, sources, P0, budget, prepare,
+confirmation, canary, request-body, and pricing suites:
+
+```text
+115 tests, 115 passed, 0 failed
+```
+
+Registry/runtime replacement and validation suites:
+
+```text
+36 tests, 36 passed, 0 failed
+```
+
+Broad MCP and P0 suite:
+
+```text
+pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
+  tests/mcp-*.test.ts tests/p0-*.test.ts
+952 tests, 952 passed, 0 failed
+```
+
+Deterministic gates:
+
+```text
+pnpm model:registry:check                    pass (50 models, 2 tombstones; 50 catalog entries; 42 roster entries)
+pnpm --prefix frontend exec tsc --noEmit    pass
+npm --prefix frontend run lint              pass, 0 warnings
+npm run lint:exposure                       pass
+git diff --check                            pass
+```
+
+The only warning remains the local Node `v23.9.0` runtime versus the declared
+Node `22.x` engine. The fix-round commit hash is reported in the handoff because
+a commit cannot contain its own hash.

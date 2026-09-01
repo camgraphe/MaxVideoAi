@@ -412,6 +412,15 @@ test('canonical, public-engine, mode, surface, and reference validation fail clo
   const disabledEngine = baseDependencies({ listPublicEngines: async () => [] });
   await expectAgentError(prepareGeneration(videoInput, principal, disabledEngine.deps), 'ENGINE_UNAVAILABLE');
 
+  const retiredEngine = baseDependencies({ listPublicEngines: async () => [] });
+  await expectAgentError(prepareGeneration({
+    ...videoInput,
+    engineId: 'retired-video-fixture',
+  }, principal, retiredEngine.deps), 'ENGINE_UNAVAILABLE');
+  assert.deepEqual(retiredEngine.captures.events, ['feature', 'restriction']);
+  assert.equal(retiredEngine.captures.priced.length, 0);
+  assert.equal(retiredEngine.captures.inserted.length, 0);
+
   const modeMismatch = baseDependencies();
   await expectAgentError(
     prepareGeneration({ ...videoInput, mode: 'i2v' }, principal, modeMismatch.deps),

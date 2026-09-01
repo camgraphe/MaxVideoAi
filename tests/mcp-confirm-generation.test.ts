@@ -622,6 +622,24 @@ test('confirmation performs the binding transaction order and submits video only
   assert.equal(captures.acceptedMarks, 1);
 });
 
+test('a prepared retired identity is rejected on catalog reload before price, reservation, or provider submission', async () => {
+  const retiredRequest = { ...videoRequest, engineId: 'retired-video-fixture' };
+  const { dependencies, captures } = baseDependencies(retiredRequest, {
+    listPublicEngines: async () => {
+      captures.events.push('catalog');
+      return [];
+    },
+  });
+  await expectAgentError(
+    confirmGeneration({ quoteId: QUOTE_ID, confirmed: true }, principal, dependencies),
+    'QUOTE_EXPIRED',
+  );
+  assert.equal(captures.events.includes('pricing'), false);
+  assert.equal(captures.events.includes('spending'), false);
+  assert.equal(captures.events.some((event) => event.startsWith('reserve_')), false);
+  assert.equal(captures.providerCalls, 0);
+});
+
 test('image confirmation uses the same atomic path and returns only the safe job DTO', async () => {
   const { dependencies, captures } = baseDependencies(imageRequest);
   const result = await confirmGeneration({ quoteId: QUOTE_ID, confirmed: true }, principal, dependencies);

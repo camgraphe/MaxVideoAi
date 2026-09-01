@@ -68,6 +68,17 @@ test('official prompting sources are reviewed, model-scoped, immutable, and free
   assert.deepEqual(getAgentModelPromptingSources('unknown-model'), []);
 });
 
+test('Wan prompting uses the exact frozen Task 1 owner URL, never a distributor URL', () => {
+  const wan = listAgentModelPromptingSourceRecords().find((record) =>
+    record.modelIds.includes('wan-3'));
+  assert.ok(wan);
+  assert.equal(
+    wan.url,
+    'https://docs.modelstudio.console.alibabacloud.com/en/model-studio/wan3-video-generation-guide',
+  );
+  assert.equal(new URL(wan.url).hostname, 'docs.modelstudio.console.alibabacloud.com');
+});
+
 test('prompting-source parser fails closed for unknown fields, models, modes, and domains', () => {
   const inheritedUnknownField = Object.assign(
     Object.create({ unsupported: true }),

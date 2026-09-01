@@ -199,6 +199,7 @@ export type AgentModelModeDetails = Readonly<{
 export type AgentModelDetails = Readonly<{
   id: string;
   label: string;
+  slug: string;
   surface: 'video' | 'image';
   availability: string;
   generationEnabled: boolean;
@@ -211,8 +212,8 @@ export type AgentModelDetails = Readonly<{
   promptingSources: readonly AgentModelPromptingSource[];
   links: Readonly<{
     model: string | null;
-    pricing: string;
+    pricing: string | null;
     examples: string | null;
   }>;
-  catalogUpdatedAt: string;
+  catalogUpdatedAt: string | null;
 }>;
