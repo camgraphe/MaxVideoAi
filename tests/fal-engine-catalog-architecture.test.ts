@@ -6,7 +6,7 @@ import test from 'node:test';
 const root = process.cwd();
 const facadePath = join(root, 'frontend/src/config/falEngines.ts');
 const modulesDir = join(root, 'frontend/src/config/fal-engines');
-const moduleNames = [
+const aggregatedModuleNames = [
   'types.ts',
   'launch-config.ts',
   'luma-ray-shared.ts',
@@ -50,6 +50,66 @@ const moduleNames = [
   'gpt-image-2.ts',
   'seedream.ts',
 ];
+const prelaunchModuleNames = [
+  'wan-3-shared.ts',
+  'wan-3.ts',
+  'wan-3-prime.ts',
+  'ltx-2-5-shared.ts',
+  'ltx-2-5-fast.ts',
+  'ltx-2-5-pro.ts',
+  'grok-imagine-video-1-5.ts',
+  'flux-3-shared.ts',
+  'flux-3.ts',
+  'flux-3-draft.ts',
+];
+const moduleNames = [...aggregatedModuleNames, ...prelaunchModuleNames];
+
+const aggregatedRegistryExports = [
+  'PIKA_FAL_ENGINE_REGISTRY',
+  'SORA_FAL_ENGINE_REGISTRY',
+  'VEO_3_1_FAL_ENGINE_REGISTRY',
+  'VEO_3_1_FAST_FAL_ENGINE_REGISTRY',
+  'VEO_3_1_LITE_FAL_ENGINE_REGISTRY',
+  'LUMA_RAY_2_FAL_ENGINE_REGISTRY',
+  'LUMA_RAY_2_FLASH_FAL_ENGINE_REGISTRY',
+  'LUMA_RAY_3_2_FAL_ENGINE_REGISTRY',
+  'LUMA_UNI_1_FAL_ENGINE_REGISTRY',
+  'LUMA_UNI_1_MAX_FAL_ENGINE_REGISTRY',
+  'KLING_2_5_FAL_ENGINE_REGISTRY',
+  'KLING_2_6_FAL_ENGINE_REGISTRY',
+  'KLING_3_PRO_FAL_ENGINE_REGISTRY',
+  'KLING_3_STANDARD_FAL_ENGINE_REGISTRY',
+  'KLING_3_4K_FAL_ENGINE_REGISTRY',
+  'KLING_O3_FAL_ENGINE_REGISTRY',
+  'HAPPY_HORSE_FAL_ENGINE_REGISTRY',
+  'SEEDANCE_1_5_FAL_ENGINE_REGISTRY',
+  'SEEDANCE_2_STANDARD_FAL_ENGINE_REGISTRY',
+  'SEEDANCE_2_FAST_FAL_ENGINE_REGISTRY',
+  'SEEDANCE_2_MINI_FAL_ENGINE_REGISTRY',
+  'SEEDANCE_2_BYTEPLUS_FAL_ENGINE_REGISTRY',
+  'WAN_2_5_FAL_ENGINE_REGISTRY',
+  'WAN_2_6_FAL_ENGINE_REGISTRY',
+  'HAILUO_FAL_ENGINE_REGISTRY',
+  'LTX_2_3_FAST_FAL_ENGINE_REGISTRY',
+  'LTX_2_3_FAL_ENGINE_REGISTRY',
+  'LTX_2_FAST_FAL_ENGINE_REGISTRY',
+  'LTX_2_FAL_ENGINE_REGISTRY',
+  'NANO_BANANA_FAL_ENGINE_REGISTRY',
+  'NANO_BANANA_LITE_FAL_ENGINE_REGISTRY',
+  'NANO_BANANA_PRO_FAL_ENGINE_REGISTRY',
+  'NANO_BANANA_2_FAL_ENGINE_REGISTRY',
+  'GPT_IMAGE_2_FAL_ENGINE_REGISTRY',
+  'SEEDREAM_FAL_ENGINE_REGISTRY',
+];
+const prelaunchRegistryExports = [
+  'WAN_3_FAL_ENGINE_REGISTRY',
+  'WAN_3_PRIME_FAL_ENGINE_REGISTRY',
+  'LTX_2_5_FAST_FAL_ENGINE_REGISTRY',
+  'LTX_2_5_PRO_FAL_ENGINE_REGISTRY',
+  'GROK_IMAGINE_VIDEO_1_5_FAL_ENGINE_REGISTRY',
+  'FLUX_3_FAL_ENGINE_REGISTRY',
+  'FLUX_3_DRAFT_FAL_ENGINE_REGISTRY',
+];
 
 const facadeSource = readFileSync(facadePath, 'utf8');
 
@@ -75,45 +135,13 @@ test('Fal engine catalog data is split into provider-family modules', () => {
   });
 
   const registrySource = readFileSync(join(modulesDir, 'registry.ts'), 'utf8');
-  [
-    'PIKA_FAL_ENGINE_REGISTRY',
-    'SORA_FAL_ENGINE_REGISTRY',
-    'VEO_3_1_FAL_ENGINE_REGISTRY',
-    'VEO_3_1_FAST_FAL_ENGINE_REGISTRY',
-    'VEO_3_1_LITE_FAL_ENGINE_REGISTRY',
-    'LUMA_RAY_2_FAL_ENGINE_REGISTRY',
-    'LUMA_RAY_2_FLASH_FAL_ENGINE_REGISTRY',
-    'LUMA_RAY_3_2_FAL_ENGINE_REGISTRY',
-    'LUMA_UNI_1_FAL_ENGINE_REGISTRY',
-    'LUMA_UNI_1_MAX_FAL_ENGINE_REGISTRY',
-    'KLING_2_5_FAL_ENGINE_REGISTRY',
-    'KLING_2_6_FAL_ENGINE_REGISTRY',
-    'KLING_3_PRO_FAL_ENGINE_REGISTRY',
-    'KLING_3_STANDARD_FAL_ENGINE_REGISTRY',
-    'KLING_3_4K_FAL_ENGINE_REGISTRY',
-    'KLING_O3_FAL_ENGINE_REGISTRY',
-    'HAPPY_HORSE_FAL_ENGINE_REGISTRY',
-    'SEEDANCE_1_5_FAL_ENGINE_REGISTRY',
-    'SEEDANCE_2_STANDARD_FAL_ENGINE_REGISTRY',
-    'SEEDANCE_2_FAST_FAL_ENGINE_REGISTRY',
-    'SEEDANCE_2_MINI_FAL_ENGINE_REGISTRY',
-    'SEEDANCE_2_BYTEPLUS_FAL_ENGINE_REGISTRY',
-    'WAN_2_5_FAL_ENGINE_REGISTRY',
-    'WAN_2_6_FAL_ENGINE_REGISTRY',
-    'HAILUO_FAL_ENGINE_REGISTRY',
-    'LTX_2_3_FAST_FAL_ENGINE_REGISTRY',
-    'LTX_2_3_FAL_ENGINE_REGISTRY',
-    'LTX_2_FAST_FAL_ENGINE_REGISTRY',
-    'LTX_2_FAL_ENGINE_REGISTRY',
-    'NANO_BANANA_FAL_ENGINE_REGISTRY',
-    'NANO_BANANA_LITE_FAL_ENGINE_REGISTRY',
-    'NANO_BANANA_PRO_FAL_ENGINE_REGISTRY',
-    'NANO_BANANA_2_FAL_ENGINE_REGISTRY',
-    'GPT_IMAGE_2_FAL_ENGINE_REGISTRY',
-    'SEEDREAM_FAL_ENGINE_REGISTRY',
-  ].forEach((exportName) => {
+  aggregatedRegistryExports.forEach((exportName) => {
     assert.match(registrySource, new RegExp(`import \\{ ${exportName} \\}`));
     assert.match(registrySource, new RegExp(`\\.\\.\\.${exportName}`));
+  });
+
+  prelaunchRegistryExports.forEach((exportName) => {
+    assert.doesNotMatch(registrySource, new RegExp(exportName));
   });
 });
 
