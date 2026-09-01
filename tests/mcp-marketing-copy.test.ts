@@ -396,7 +396,7 @@ test('Codex setup installs the tagged public plugin package before OAuth', async
     '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
   );
   const publicMarketplaceCommand =
-    'codex plugin marketplace add camgraphe/MaxVideoAi --ref maxvideoai-plugin-v0.3.1';
+    'codex plugin marketplace add camgraphe/maxvideoai-plugin --ref v0.3.3';
 
   for (const locale of ['en', 'fr', 'es'] as const) {
     const guide = getIntegrationCopy(locale, 'codex').setup.hostGuides[0];
@@ -420,7 +420,7 @@ test('Codex setup installs the tagged public plugin package before OAuth', async
 
     const liveCopy = `${JSON.stringify(getIntegrationCopy(locale, 'codex'))}\n${JSON.stringify(getMcpPageCopy(locale))}`;
     assert.match(liveCopy, new RegExp(publicMarketplaceCommand.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
-    assert.doesNotMatch(liveCopy, /maxvideoai-plugin-v0\.3\.2|(?:public|reviewed|contrôlé|revisad)[^\n]{0,80}0\.3\.2/i);
+    assert.doesNotMatch(liveCopy, /camgraphe\/MaxVideoAi(?=\s|")|(?:public|reviewed|contrôlé|revisad)[^\n]{0,80}0\.3\.[0-2]/i);
   }
 });
 
