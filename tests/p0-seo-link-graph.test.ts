@@ -9,7 +9,7 @@ import * as runtime from '../frontend/config/model-runtime.ts';
 import * as comparisons from '../frontend/lib/compare-hub/data.ts';
 import * as llms from '../frontend/lib/seo/llms-text.ts';
 import * as bestFor from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/best-for/[usecase]/_lib/best-for-detail-ranking.ts';
-import { buildPublicBestForEntries } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/best-for/[usecase]/_lib/best-for-detail-config.ts';
+import { buildPublicBestForEntries, DETAIL_COPY } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/best-for/[usecase]/_lib/best-for-detail-config.ts';
 import { buildSeoMetadata } from '../frontend/lib/seo/metadata.ts';
 import { buildModelDecisionData } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-data.ts';
 import { buildVideoPricingRowsFromEntries } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData.ts';
@@ -247,7 +247,14 @@ test('published fixtures have model, family, pricing and evidence-backed best-fo
   const families = buildModelFamilyDefinitions(models, readinessFixture());
   const familyResolver = createExampleFamilyResolver({ families, engines: publishedFalEntries() });
   const pricingRows = buildVideoPricingRowsFromEntries(publishedFalEntries(), 'en');
-  const scores = new Map(P0_IDS.map((id, index) => [id, { modelSlug: id, fidelity: 9 - index / 10, motion: 8 }]));
+  const scores = new Map(P0_IDS.map((id, index) => [id, {
+    modelSlug: id,
+    fidelity: 9 - index / 10,
+    motion: 8,
+    consistency: 8,
+    anatomy: 8,
+    textRendering: 8,
+  }]));
   const ranked = bestFor.resolveTopPicks(
     { slug: 'cinematic-realism', title: 'Fixture', tier: 1, topPicks: [...P0_IDS] },
     scores,
@@ -263,9 +270,21 @@ test('published fixtures have model, family, pricing and evidence-backed best-fo
   }
 });
 
-test('best-for explicit and fallback ranking rejects hidden, legacy, deep-legacy and unscored P0', () => {
+test('best-for explicit and fallback ranking require complete relevant numeric evidence', () => {
   const visible = publishedFixture();
-  const oneScore = new Map([[P0_IDS[0], { modelSlug: P0_IDS[0], fidelity: 9, motion: 9 }]]);
+  const oneScore = new Map([
+    [P0_IDS[0], {
+      modelSlug: P0_IDS[0],
+      fidelity: 9,
+      motion: 9,
+      consistency: 8,
+      anatomy: 8,
+      textRendering: 8,
+    }],
+    [P0_IDS[1], { modelSlug: P0_IDS[1] }],
+    [P0_IDS[2], { modelSlug: P0_IDS[2], fidelity: 9 }],
+    [P0_IDS[3], { modelSlug: P0_IDS[3], sequencingQuality: 9 }],
+  ]);
   const catalog = publishedFalEntries().map((entry) => ({ engineId: entry.id, modelSlug: entry.modelSlug, marketingName: entry.marketingName }));
   const explicit = bestFor.resolveTopPicks(
     { slug: 'cinematic-realism', title: 'Fixture', tier: 1, topPicks: [...P0_IDS, ...LEGACY_IDS, ...DEEP_LEGACY_IDS] },
@@ -279,6 +298,15 @@ test('best-for explicit and fallback ranking rejects hidden, legacy, deep-legacy
   );
   assert.deepEqual(explicit, [P0_IDS[0]]);
   assert.deepEqual(fallback, [P0_IDS[0]]);
+  assert.equal(bestFor.buildRankedPick({
+    usecaseSlug: 'cinematic-realism',
+    modelSlug: P0_IDS[1],
+    rank: 1,
+    scores: oneScore,
+    criteria: ['Fidelity'],
+    copy: DETAIL_COPY.en,
+    locale: 'en',
+  }).score, undefined);
   assert.deepEqual(
     buildPublicBestForEntries(
       [{ slug: 'cinematic-realism', title: 'Fixture', tier: 1, topPicks: [...P0_IDS, ...LEGACY_IDS, ...DEEP_LEGACY_IDS] }],
@@ -322,11 +350,115 @@ test('LLMS accepts a registry-derived projection while the real output stays P0-
   assert.match(realText, /LTX 2\.3 Pro \(previous generation\)/);
   assert.match(realText, /Wan 2\.6 \(previous generation\)/);
 
+  const wanOnlyModels = runtime.listRuntimeModels().map((model) => model.id === 'wan-3'
+    ? {
+        ...structuredClone(model),
+        publication: {
+          ...structuredClone(model.publication),
+          model: { published: true, indexable: true },
+        },
+      }
+    : structuredClone(model));
+  const unrelatedProjection = llms.buildLlmsModelDiscoveryProjection({
+    models: wanOnlyModels,
+    primaryComparisons: [{
+      slug: 'flux-3-vs-grok-imagine-video-1-5',
+      label: 'FLUX 3 vs Grok Imagine Video 1.5',
+    }],
+    isLocalizedScoreboardComplete: () => true,
+  });
+  assert.deepEqual(unrelatedProjection.primaryComparisons, []);
+
+  const wanUpgradeModels = wanOnlyModels.map((model) => {
+    if (model.id === 'wan-3') {
+      return {
+        ...model,
+        publication: {
+          ...model.publication,
+          compare: {
+            ...model.publication.compare,
+            published: true,
+            indexed: true,
+            publishedPairIds: ['wan-2-6'],
+          },
+        },
+      };
+    }
+    if (model.id === 'wan-2-6') {
+      return {
+        ...model,
+        publication: {
+          ...model.publication,
+          model: { published: true, indexable: true },
+          compare: {
+            ...model.publication.compare,
+            published: true,
+            indexed: true,
+          },
+        },
+      };
+    }
+    return model;
+  });
+  const upgradeProjection = llms.buildLlmsModelDiscoveryProjection({
+    models: wanUpgradeModels,
+    primaryComparisons: [{
+      slug: 'wan-2-6-vs-wan-3',
+      label: 'Wan 2.6 vs Wan 3',
+    }],
+    isLocalizedScoreboardComplete: () => true,
+  });
+  assert.deepEqual(upgradeProjection.primaryComparisons, [{
+    slug: 'wan-2-6-vs-wan-3',
+    label: 'Wan 2.6 vs Wan 3',
+    href: 'https://maxvideoai.com/ai-video-engines/wan-2-6-vs-wan-3',
+  }]);
+
+  const deepLegacyPairModels = wanOnlyModels.map((model) => model.id === 'wan-3'
+    ? {
+        ...model,
+        publication: {
+          ...model.publication,
+          compare: {
+            ...model.publication.compare,
+            published: true,
+            indexed: true,
+            publishedPairIds: ['wan-2-5'],
+          },
+        },
+      }
+    : model);
+  const deepLegacyProjection = llms.buildLlmsModelDiscoveryProjection({
+    models: deepLegacyPairModels,
+    primaryComparisons: [{
+      slug: 'wan-2-5-vs-wan-3',
+      label: 'Wan 2.5 vs Wan 3',
+    }],
+    isLocalizedScoreboardComplete: () => true,
+  });
+  assert.deepEqual(deepLegacyProjection.primaryComparisons, []);
+
+  const comparisonModels = publishedFixture().map((model) => model.id === 'flux-3'
+    ? {
+        ...model,
+        publication: {
+          ...model.publication,
+          compare: {
+            ...model.publication.compare,
+            publishedPairIds: ['grok-imagine-video-1-5'],
+          },
+        },
+      }
+    : model);
   const fixtureProjection = llms.buildLlmsModelDiscoveryProjection({
-    models: publishedFixture(),
+    models: comparisonModels,
     families: buildModelFamilyDefinitions(publishedFixture(), readinessFixture()),
     catalog: publishedFalEntries().map((entry) => ({ engineId: entry.id, modelSlug: entry.modelSlug, marketingName: entry.marketingName })),
-    primaryComparisons: [{ slug: 'fixture-alpha-vs-fixture-beta', label: 'Fixture Alpha vs Fixture Beta' }],
+    primaryComparisons: [{
+      slug: 'flux-3-vs-grok-imagine-video-1-5',
+      label: 'FLUX 3 vs Grok Imagine Video 1.5',
+    }],
+    isLocalizedScoreboardComplete: () => true,
   });
   const fixtureText = llms.buildLlmsText(mcpPublication, fixtureProjection);
   for (const id of P0_IDS) {
@@ -335,6 +467,6 @@ test('LLMS accepts a registry-derived projection while the real output stays P0-
   for (const family of ['ltx', 'wan', 'grok', 'flux']) {
     assert.equal(fixtureText.split(`/examples/${family}`).length - 1, 1, family);
   }
-  assert.equal(fixtureText.split('/ai-video-engines/fixture-alpha-vs-fixture-beta').length - 1, 1);
+  assert.equal(fixtureText.split('/ai-video-engines/flux-3-vs-grok-imagine-video-1-5').length - 1, 1);
   for (const id of DEEP_LEGACY_IDS) assert.doesNotMatch(fixtureText, new RegExp(`/models/${id}(?:\\)|$)`));
 });

@@ -7,6 +7,10 @@ import {
   type RuntimeModelEntry,
 } from '@/config/model-runtime';
 import { P0_VIDEO_EXAMPLE_MODEL_IDS } from '@/config/model-launch-readiness-schema';
+import {
+  buildCanonicalCompareSlug,
+  buildPublishedComparisonSlugsFromModels,
+} from '@/lib/compare-hub/data';
 import { MAXVIDEOAI_PLUGIN_REPOSITORY_URL } from '@/lib/seo/site-organization-schema';
 
 type McpPublicationInputs = Parameters<typeof getMcpPublicationState>[0];
@@ -29,6 +33,7 @@ type BuildLlmsModelDiscoveryProjectionOptions = {
   families?: readonly ModelFamilyDefinition[];
   primaryComparisons?: readonly { slug: string; label: string }[];
   candidateModelIds?: readonly string[];
+  isLocalizedScoreboardComplete?: (canonicalSlug: string) => boolean;
 };
 
 export function buildLlmsModelDiscoveryProjection(
@@ -39,8 +44,15 @@ export function buildLlmsModelDiscoveryProjection(
   const families = options.families ?? MODEL_FAMILIES;
   const candidateIds = new Set(options.candidateModelIds ?? P0_VIDEO_EXAMPLE_MODEL_IDS);
   const catalogById = new Map(catalog.map((entry) => [entry.engineId ?? entry.modelSlug, entry]));
-  const currentModels = models
-    .filter((model) => candidateIds.has(model.id) && isRuntimeModelPublicCurrent(model))
+  const publicCurrentModels = models.filter(isRuntimeModelPublicCurrent);
+  const publicModelPageModels = models.filter(
+    (model) =>
+      (model.lifecycle === 'current' || model.lifecycle === 'legacy') &&
+      model.publication.model.published &&
+      model.publication.model.indexable,
+  );
+  const launchModels = publicCurrentModels.filter((model) => candidateIds.has(model.id));
+  const currentModels = launchModels
     .map((model) => ({
       id: model.id,
       label: catalogById.get(model.id)?.marketingName ?? model.slug,
@@ -60,12 +72,28 @@ export function buildLlmsModelDiscoveryProjection(
       label: family.label,
       href: `https://maxvideoai.com/examples/${family.id}`,
     }));
-  const primaryComparisons = currentModels.length
-    ? Array.from(new Map((options.primaryComparisons ?? []).map((pair) => [pair.slug, pair])).values()).map((pair) => ({
-        ...pair,
-        href: `https://maxvideoai.com/ai-video-engines/${pair.slug}`,
-      }))
-    : [];
+  const qualifiedPublishedPairs = new Set(buildPublishedComparisonSlugsFromModels(
+    models,
+    options.isLocalizedScoreboardComplete ?? (() => false),
+  ));
+  const publicCurrentLaunchPairs = new Set<string>();
+  for (const launchModel of launchModels) {
+    for (const opponent of publicModelPageModels) {
+      if (launchModel.id === opponent.id) continue;
+      publicCurrentLaunchPairs.add(buildCanonicalCompareSlug(launchModel.slug, opponent.slug));
+    }
+  }
+  const primaryComparisons = Array.from(
+    new Map((options.primaryComparisons ?? []).map((pair) => [pair.slug, pair])).values(),
+  )
+    .filter(
+      (pair) =>
+        qualifiedPublishedPairs.has(pair.slug) && publicCurrentLaunchPairs.has(pair.slug),
+    )
+    .map((pair) => ({
+      ...pair,
+      href: `https://maxvideoai.com/ai-video-engines/${pair.slug}`,
+    }));
 
   return { currentModels, families: publicFamilies, primaryComparisons };
 }

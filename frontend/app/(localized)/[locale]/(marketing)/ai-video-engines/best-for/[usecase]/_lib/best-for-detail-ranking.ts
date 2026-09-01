@@ -61,18 +61,28 @@ const USECASE_WEIGHTS: Record<string, Partial<Record<keyof EngineScore, number>>
   ads: { fidelity: 0.3, consistency: 0.25, textRendering: 0.2, motion: 0.15, anatomy: 0.1 },
 };
 
-function scoreEngineForUsecase(score: EngineScore, weights: Partial<Record<keyof EngineScore, number>>) {
+function scoreEngineForUsecase(
+  score: EngineScore,
+  weights: Partial<Record<keyof EngineScore, number>>,
+): number | undefined {
+  const weightedCriteria = Object.entries(weights).filter(
+    (entry): entry is [keyof EngineScore, number] =>
+      typeof entry[1] === 'number' && Number.isFinite(entry[1]) && entry[1] > 0,
+  );
+  if (weightedCriteria.length === 0) return undefined;
+
   let total = 0;
   let weightSum = 0;
-  Object.entries(weights).forEach(([key, weight]) => {
-    const value = score[key as keyof EngineScore];
-    if (typeof value === 'number' && typeof weight === 'number') {
-      total += value * weight;
-      weightSum += weight;
-    }
-  });
-  if (weightSum === 0) return 0;
-  return total / weightSum;
+  for (const [key, weight] of weightedCriteria) {
+    const value = score[key];
+    if (typeof value !== 'number' || !Number.isFinite(value)) return undefined;
+    total += value * weight;
+    weightSum += weight;
+  }
+  const weightedScore = weightSum > 0 ? total / weightSum : undefined;
+  return typeof weightedScore === 'number' && Number.isFinite(weightedScore) && weightedScore > 0
+    ? weightedScore
+    : undefined;
 }
 
 export function resolveTopPicks(
@@ -85,21 +95,23 @@ export function resolveTopPicks(
   const publicCurrentSlugs = new Set(
     models.filter(isRuntimeModelPublicCurrent).map((model) => model.slug),
   );
-  const hasEvidence = (engine: (typeof catalog)[number]) =>
-    scores.has(engine.modelSlug) || Boolean(engine.engineId && scores.has(engine.engineId));
-  const eligibleCatalog = catalog.filter(
-    (engine) => publicCurrentSlugs.has(engine.modelSlug) && hasEvidence(engine),
-  );
-  const eligibleSlugs = new Set(eligibleCatalog.map((engine) => engine.modelSlug));
+  const weights = USECASE_WEIGHTS[entry.slug] ?? {};
+  const getEvidenceScore = (engine: (typeof catalog)[number]) => {
+    const score = scores.get(engine.modelSlug) ?? (engine.engineId ? scores.get(engine.engineId) : undefined);
+    return score ? scoreEngineForUsecase(score, weights) : undefined;
+  };
+  const eligibleCatalog = catalog
+    .filter((engine) => publicCurrentSlugs.has(engine.modelSlug))
+    .map((engine) => ({ engine, value: getEvidenceScore(engine) }))
+    .filter(
+      (candidate): candidate is { engine: (typeof catalog)[number]; value: number } =>
+        candidate.value !== undefined,
+    );
+  const eligibleSlugs = new Set(eligibleCatalog.map(({ engine }) => engine.modelSlug));
   if (entry.topPicks?.length) {
     return entry.topPicks.filter((slug) => eligibleSlugs.has(slug));
   }
-  const weights = USECASE_WEIGHTS[entry.slug] ?? {};
-  return eligibleCatalog.map((engine) => {
-    const score = scores.get(engine.modelSlug) ?? (engine.engineId ? scores.get(engine.engineId) : null) ?? null;
-    const value = score ? scoreEngineForUsecase(score, weights) : 0;
-    return { slug: engine.modelSlug, value };
-  })
+  return eligibleCatalog.map(({ engine, value }) => ({ slug: engine.modelSlug, value }))
     .sort((a, b) => b.value - a.value)
     .slice(0, 3)
     .map((entry) => entry.slug);
@@ -125,13 +137,12 @@ export function buildRankedPick({
   const engine = ENGINE_BY_SLUG.get(modelSlug);
   const score = getFitScore(usecaseSlug, scores.get(modelSlug) ?? (engine?.engineId ? scores.get(engine.engineId) : undefined));
   const criterion = criteria[(rank - 1) % criteria.length] ?? criteria[0] ?? copy.fit;
-  const fallbackScore = Math.max(6.8, 8.6 - rank * 0.22);
   return {
     slug: modelSlug,
     engine,
     rank,
     criterion,
-    score: score ?? fallbackScore,
+    score,
     accent: getEngineAccent(modelSlug),
     reason: buildPickReason(locale, usecaseSlug, criterion, rank),
     bullets: buildPickBullets(locale, criteria, rank),
@@ -227,9 +238,7 @@ function buildPickBullets(locale: AppLocale, criteria: string[], rank: number) {
 
 function getFitScore(slug: string, score?: EngineScore) {
   if (!score) return undefined;
-  const weights = USECASE_WEIGHTS[slug] ?? {};
-  const value = scoreEngineForUsecase(score, weights);
-  return value > 0 ? value : undefined;
+  return scoreEngineForUsecase(score, USECASE_WEIGHTS[slug] ?? {});
 }
 
 function getEngineAccent(slug: string) {
