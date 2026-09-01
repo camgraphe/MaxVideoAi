@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "models": [
     {
       "id": "gemini-omni-flash",
@@ -54,7 +54,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "gpt-image-2",
@@ -95,7 +97,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "happy-horse-1-0",
@@ -153,7 +157,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "legacy",
+      "successorId": null
     },
     {
       "id": "happy-horse-1-1",
@@ -224,7 +230,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "kling-2-5-turbo",
@@ -292,7 +300,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "legacy",
+      "successorId": null
     },
     {
       "id": "kling-2-6-pro",
@@ -352,7 +362,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "legacy",
+      "successorId": null
     },
     {
       "id": "kling-3-4k",
@@ -405,7 +417,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "kling-3-pro",
@@ -474,7 +488,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "kling-3-standard",
@@ -547,7 +563,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "kling-o3-4k",
@@ -601,7 +619,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "kling-o3-pro",
@@ -666,7 +686,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "kling-o3-standard",
@@ -722,7 +744,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "ltx-2",
@@ -773,16 +797,18 @@
           ]
         },
         "app": {
-          "published": true
+          "published": false
         },
         "pricing": {
-          "published": true
+          "published": false
         },
         "sitemap": {
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "deep_legacy",
+      "successorId": null
     },
     {
       "id": "ltx-2-3",
@@ -852,7 +878,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "legacy",
+      "successorId": null
     },
     {
       "id": "ltx-2-3-fast",
@@ -921,7 +949,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "legacy",
+      "successorId": null
     },
     {
       "id": "ltx-2-fast",
@@ -976,16 +1006,18 @@
           ]
         },
         "app": {
-          "published": true
+          "published": false
         },
         "pricing": {
-          "published": true
+          "published": false
         },
         "sitemap": {
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "deep_legacy",
+      "successorId": null
     },
     {
       "id": "luma-ray-3-2",
@@ -1039,7 +1071,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "luma-uni-1",
@@ -1079,7 +1113,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "luma-uni-1-max",
@@ -1119,7 +1155,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "lumaRay2",
@@ -1190,7 +1228,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "legacy",
+      "successorId": null
     },
     {
       "id": "lumaRay2_flash",
@@ -1261,7 +1301,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "legacy",
+      "successorId": null
     },
     {
       "id": "minimax-h3",
@@ -1312,7 +1354,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "minimax-hailuo-02-text",
@@ -1384,7 +1428,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "nano-banana",
@@ -1422,7 +1468,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "legacy",
+      "successorId": null
     },
     {
       "id": "nano-banana-2",
@@ -1460,7 +1508,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "nano-banana-lite",
@@ -1501,7 +1551,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "nano-banana-pro",
@@ -1539,7 +1591,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "pika-text-to-video",
@@ -1612,7 +1666,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "seedance-1-5-pro",
@@ -1680,7 +1736,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "seedance-2-0",
@@ -1756,7 +1814,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "seedance-2-0-fast",
@@ -1837,7 +1897,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "seedance-2-0-fast-byteplus",
@@ -1874,7 +1936,9 @@
           "published": false
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "seedance-2-0-mini",
@@ -1927,7 +1991,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "seedance-2-5",
@@ -1979,7 +2045,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "seedream",
@@ -2020,7 +2088,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "seedream-5-0-pro",
@@ -2061,7 +2131,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "sora-2",
@@ -2133,7 +2205,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "sora-2-pro",
@@ -2202,7 +2276,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "veo-3-1",
@@ -2280,7 +2356,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "veo-3-1-fast",
@@ -2357,7 +2435,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "veo-3-1-lite",
@@ -2432,7 +2512,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "wan-2-5",
@@ -2455,7 +2537,7 @@
         "examples": {
           "published": true,
           "includeInFamilyCopy": true,
-          "current": true,
+          "current": false,
           "familyRank": 1
         },
         "compare": {
@@ -2487,16 +2569,18 @@
           ]
         },
         "app": {
-          "published": true
+          "published": false
         },
         "pricing": {
-          "published": true
+          "published": false
         },
         "sitemap": {
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "deep_legacy",
+      "successorId": null
     },
     {
       "id": "wan-2-6",
@@ -2563,7 +2647,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "legacy",
+      "successorId": null
     }
   ],
   "tombstones": [

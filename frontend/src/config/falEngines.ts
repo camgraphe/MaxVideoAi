@@ -29,6 +29,10 @@ function materializeFalEngineEntry(entry: RawFalEngineEntry): FalEngineEntry {
     modelSlug: model.slug,
     family: model.family ?? undefined,
     category: model.category,
+    lifecycle: model.lifecycle,
+    successorId: model.successorId,
+    successorSlug: model.successorSlug,
+    isLegacy: model.lifecycle !== 'current',
     logoPolicy: partnerBrand?.policy.logoAllowed ? 'logoAllowed' : entry.logoPolicy,
     surfaces: toLegacyModelSurfaces(model),
   };

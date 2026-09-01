@@ -163,6 +163,8 @@ test('model setup dry run prints a complete canonical registry entry and command
   assert.match(result.stdout, /"slug": "task-ten-test-model"/);
   assert.match(result.stdout, /"family": "seedance"/);
   assert.match(result.stdout, /"category": "image"/);
+  assert.match(result.stdout, /"lifecycle": "current"/);
+  assert.match(result.stdout, /"successorId": null/);
   assert.match(result.stdout, /"internal": \[\]/);
   assert.match(result.stdout, /"publicSlugs": \[\]/);
   assert.match(result.stdout, /"replacement": null/);

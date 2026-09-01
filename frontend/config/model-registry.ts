@@ -19,7 +19,11 @@ for (const model of registry.models) {
   }
 }
 
-export type { ModelRegistryDocument, ModelRegistryEntry } from './model-registry-validation';
+export type {
+  ModelLifecycle,
+  ModelRegistryDocument,
+  ModelRegistryEntry,
+} from './model-registry-validation';
 export const MODEL_REGISTRY_SCHEMA_VERSION = registry.schemaVersion;
 
 export function getModelRegistryEntries(): readonly ModelRegistryEntry[] {

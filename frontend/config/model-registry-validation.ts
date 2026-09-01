@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 export type ModelCategory = 'video' | 'image' | 'audio' | 'multimodal';
+export type ModelLifecycle = 'current' | 'legacy' | 'deep_legacy' | 'retired';
 
 export type ModelRegistryPublication = {
   model: { published: boolean; indexable: boolean };
@@ -28,6 +29,8 @@ export type ModelRegistryEntry = {
   slug: string;
   family: string | null;
   category: ModelCategory;
+  lifecycle: ModelLifecycle;
+  successorId: string | null;
   presentationOnly?: boolean;
   aliases: { internal: string[]; publicSlugs: string[] };
   publication: ModelRegistryPublication;
@@ -35,7 +38,7 @@ export type ModelRegistryEntry = {
 };
 
 export type ModelRegistryDocument = {
-  schemaVersion: 1;
+  schemaVersion: 2;
   models: ModelRegistryEntry[];
   tombstones: Array<{ slug: string; destination: 'models-index' }>;
 };
@@ -62,6 +65,30 @@ function isPresentationOnlyPublication(model: ModelRegistryEntry): boolean {
     model.presentationOnly === true &&
     model.replacement === null &&
     publication.model.published &&
+    !publication.model.indexable &&
+    !publication.examples.published &&
+    !publication.examples.includeInFamilyCopy &&
+    !publication.examples.current &&
+    publication.examples.familyRank === undefined &&
+    !publication.compare.published &&
+    !publication.compare.indexed &&
+    publication.compare.suggestedOpponentIds.length === 0 &&
+    publication.compare.publishedPairIds.length === 0 &&
+    !publication.app.published &&
+    publication.app.discoveryRank === undefined &&
+    publication.app.variantGroup === undefined &&
+    publication.app.variantLabel === undefined &&
+    publication.app.launchBadge === undefined &&
+    !publication.pricing.published &&
+    publication.pricing.featuredScenario === undefined &&
+    !publication.sitemap.published
+  );
+}
+
+function isFullyRetiredPublication(model: ModelRegistryEntry): boolean {
+  const publication = model.publication;
+  return (
+    !publication.model.published &&
     !publication.model.indexable &&
     !publication.examples.published &&
     !publication.examples.includeInFamilyCopy &&
@@ -118,7 +145,7 @@ function rejectForbiddenFields(value: unknown, path = 'registry'): void {
 export function validateModelRegistryDocument(value: unknown): ModelRegistryDocument {
   if (!value || typeof value !== 'object') fail('document must be an object');
   const document = value as ModelRegistryDocument;
-  if (document.schemaVersion !== 1) fail('schemaVersion must equal 1');
+  if (document.schemaVersion !== 2) fail('schemaVersion must equal 2');
   if (!Array.isArray(document.models) || !Array.isArray(document.tombstones)) {
     fail('models and tombstones must be arrays');
   }
@@ -140,6 +167,15 @@ export function validateModelRegistryDocument(value: unknown): ModelRegistryDocu
     }
     if (!['video', 'image', 'audio', 'multimodal'].includes(model.category)) {
       fail(`invalid category for "${model.id}"`);
+    }
+    if (!['current', 'legacy', 'deep_legacy', 'retired'].includes(model.lifecycle)) {
+      fail(`invalid lifecycle for "${model.id}"`);
+    }
+    if (
+      model.successorId !== null &&
+      (typeof model.successorId !== 'string' || !model.successorId.trim())
+    ) {
+      fail(`invalid successorId for "${model.id}"`);
     }
     if (model.presentationOnly !== undefined) {
       requireBoolean(model.presentationOnly, `${model.id}.presentationOnly`);
@@ -273,30 +309,45 @@ export function validateModelRegistryDocument(value: unknown): ModelRegistryDocu
     for (const target of model.publication.compare.publishedPairIds) {
       requireId(model.id, target, 'publishedPairIds');
     }
+    if (model.lifecycle === 'retired' && model.replacement === null) {
+      fail(`retired model "${model.id}" requires a replacement`);
+    }
+    if (model.replacement && model.lifecycle !== 'retired') {
+      fail(`replacement model "${model.id}" must be retired with lifecycle "retired"`);
+    }
+    if (model.successorId) {
+      if (model.lifecycle === 'current' || model.lifecycle === 'retired') {
+        fail(`${model.lifecycle} model "${model.id}" cannot have a successor`);
+      }
+      requireId(model.id, model.successorId, 'successorId');
+      if (normalized(model.successorId) === normalized(model.id)) {
+        fail(`successor self-reference at "${model.id}"`);
+      }
+      const successor = byId.get(normalized(model.successorId))!;
+      if (successor.id !== model.successorId) {
+        fail(`successorId for "${model.id}" must use canonical id "${successor.id}"`);
+      }
+      if (successor.lifecycle !== 'current') {
+        fail(`successor target "${successor.id}" must be current for "${model.id}"`);
+      }
+      if (successor.category !== model.category) {
+        fail(`successor category mismatch for "${model.id}" and "${successor.id}"`);
+      }
+    }
+    if (
+      model.lifecycle === 'deep_legacy' &&
+      (model.publication.app.published ||
+        model.publication.pricing.published ||
+        model.publication.examples.current)
+    ) {
+      fail(`deep-legacy model "${model.id}" must disable app, pricing, and current examples`);
+    }
     if (model.replacement) {
       requireId(model.id, model.replacement, 'replacement');
       if (normalized(model.replacement) === normalized(model.id)) fail(`replacement self-reference at "${model.id}"`);
-      const publication = model.publication;
-      const fullyRetired =
-        !publication.model.published &&
-        !publication.model.indexable &&
-        !publication.examples.published &&
-        !publication.examples.includeInFamilyCopy &&
-        !publication.examples.current &&
-        publication.examples.familyRank === undefined &&
-        !publication.compare.published &&
-        !publication.compare.indexed &&
-        publication.compare.suggestedOpponentIds.length === 0 &&
-        publication.compare.publishedPairIds.length === 0 &&
-        !publication.app.published &&
-        publication.app.discoveryRank === undefined &&
-        publication.app.variantGroup === undefined &&
-        publication.app.variantLabel === undefined &&
-        publication.app.launchBadge === undefined &&
-        !publication.pricing.published &&
-        publication.pricing.featuredScenario === undefined &&
-        !publication.sitemap.published;
-      if (!fullyRetired) fail(`replacement model "${model.id}" must be retired on every publication surface`);
+      if (!isFullyRetiredPublication(model)) {
+        fail(`replacement model "${model.id}" must be retired on every publication surface`);
+      }
       const replacement = byId.get(normalized(model.replacement))!;
       if (!replacement.publication.model.published) {
         fail(`replacement target "${replacement.id}" must publish a model page`);

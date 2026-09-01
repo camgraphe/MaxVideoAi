@@ -109,7 +109,6 @@ export const NANO_BANANA_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     brandId: 'google',
     versionLabel: 'Nano',
     availability: 'available',
-    isLegacy: true,
     logoPolicy: 'textOnly',
     billingNote: '$0.039 per image via managed queue',
     engine: NANO_BANANA_ENGINE,

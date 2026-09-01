@@ -19,6 +19,9 @@
     "versionLabel": "2.2",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -339,6 +342,9 @@
     "versionLabel": "3.1",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -864,6 +870,9 @@
     "versionLabel": "3.1 Fast",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -1390,6 +1399,9 @@
     "versionLabel": "3.1 Lite",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -1860,6 +1872,9 @@
     "versionLabel": "Preview",
     "availability": "limited",
     "logoPolicy": "textOnly",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -2313,7 +2328,9 @@
     "versionLabel": "Ray 2",
     "availability": "available",
     "logoPolicy": "logoAllowed",
-    "isLegacy": true,
+    "lifecycle": "legacy",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -2806,7 +2823,9 @@
     "versionLabel": "Ray 2 Flash",
     "availability": "available",
     "logoPolicy": "logoAllowed",
-    "isLegacy": true,
+    "lifecycle": "legacy",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -3299,6 +3318,9 @@
     "versionLabel": "Ray 3.2",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -3888,6 +3910,9 @@
     "versionLabel": "Uni-1",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -4149,6 +4174,9 @@
     "versionLabel": "Uni-1 Max",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -4421,6 +4449,9 @@
     "versionLabel": "2",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -4697,6 +4728,9 @@
     "versionLabel": "Pro",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -4992,7 +5026,9 @@
     "versionLabel": "2.5 Turbo",
     "availability": "available",
     "logoPolicy": "logoAllowed",
-    "isLegacy": true,
+    "lifecycle": "legacy",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -5320,7 +5356,9 @@
     "versionLabel": "v2.6 Pro",
     "availability": "available",
     "logoPolicy": "logoAllowed",
-    "isLegacy": true,
+    "lifecycle": "legacy",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -5655,6 +5693,9 @@
     "versionLabel": "v3 Pro",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -6044,6 +6085,9 @@
     "versionLabel": "v3 Standard",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -6432,6 +6476,9 @@
     "versionLabel": "v3 4K",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -6782,6 +6829,9 @@
     "versionLabel": "3.0 Omni Standard",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -7417,6 +7467,9 @@
     "versionLabel": "3.0 Omni Pro",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -8054,6 +8107,9 @@
     "versionLabel": "3.0 Omni 4K",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -8563,6 +8619,9 @@
     "versionLabel": "1.1",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -9147,7 +9206,9 @@
     "versionLabel": "1.0",
     "availability": "available",
     "logoPolicy": "logoAllowed",
-    "isLegacy": true,
+    "lifecycle": "legacy",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -9796,6 +9857,9 @@
     "versionLabel": "v1.5 Pro",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -10178,6 +10242,9 @@
     "versionLabel": "2.0",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -10897,6 +10964,9 @@
     "versionLabel": "2.0 Fast",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -11598,6 +11668,9 @@
     "versionLabel": "2.0 Mini",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -12214,6 +12287,9 @@
     "versionLabel": "2.0 Fast Direct",
     "availability": "limited",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": false,
@@ -12549,6 +12625,9 @@
     "versionLabel": "2.5",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -13295,14 +13374,15 @@
         "wan-2-5"
       ],
       "currentModelSlugs": [
-        "wan-2-6",
-        "wan-2-5"
+        "wan-2-6"
       ]
     },
     "versionLabel": "Preview",
     "availability": "available",
     "logoPolicy": "logoAllowed",
-    "isLegacy": true,
+    "lifecycle": "deep_legacy",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -13340,10 +13420,10 @@
         "includeInHub": true
       },
       "app": {
-        "enabled": true
+        "enabled": false
       },
       "pricing": {
-        "includeInEstimator": true
+        "includeInEstimator": false
       }
     },
     "surfacesSource": "registry",
@@ -13613,13 +13693,15 @@
         "wan-2-5"
       ],
       "currentModelSlugs": [
-        "wan-2-6",
-        "wan-2-5"
+        "wan-2-6"
       ]
     },
     "versionLabel": "2.6",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "legacy",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -14009,7 +14091,9 @@
     "versionLabel": "Fast",
     "availability": "available",
     "logoPolicy": "logoAllowed",
-    "isLegacy": true,
+    "lifecycle": "deep_legacy",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -14051,10 +14135,10 @@
         "includeInHub": true
       },
       "app": {
-        "enabled": true
+        "enabled": false
       },
       "pricing": {
-        "includeInEstimator": true
+        "includeInEstimator": false
       }
     },
     "surfacesSource": "registry",
@@ -14326,7 +14410,9 @@
     "versionLabel": "Pro",
     "availability": "available",
     "logoPolicy": "logoAllowed",
-    "isLegacy": true,
+    "lifecycle": "deep_legacy",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -14364,10 +14450,10 @@
         "includeInHub": true
       },
       "app": {
-        "enabled": true
+        "enabled": false
       },
       "pricing": {
-        "includeInEstimator": true
+        "includeInEstimator": false
       }
     },
     "surfacesSource": "registry",
@@ -14624,6 +14710,9 @@
     "versionLabel": "2.3 Fast",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "legacy",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -14995,6 +15084,9 @@
     "versionLabel": "Pro",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "legacy",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -15545,6 +15637,9 @@
     "versionLabel": "H3",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -16076,6 +16171,9 @@
     "versionLabel": "Standard",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -16356,7 +16454,9 @@
     "versionLabel": "Nano",
     "availability": "available",
     "logoPolicy": "logoAllowed",
-    "isLegacy": true,
+    "lifecycle": "legacy",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -16613,6 +16713,9 @@
     "versionLabel": "Lite",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -16897,6 +17000,9 @@
     "versionLabel": "Pro",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -17223,6 +17329,9 @@
     "versionLabel": "2",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -17571,6 +17680,9 @@
     "versionLabel": "2",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -17951,6 +18063,9 @@
     "versionLabel": "5.0 Lite",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -18257,6 +18372,9 @@
     "versionLabel": "5.0 Pro",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
     "surfaces": {
       "modelPage": {
         "indexable": true,

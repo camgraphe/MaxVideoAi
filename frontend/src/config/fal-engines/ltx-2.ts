@@ -129,7 +129,6 @@ export const LTX_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     versionLabel: 'Pro',
     availability: 'available',
     logoPolicy: 'textOnly',
-    isLegacy: true,
     engine: LTX_2_ENGINE,
     modes: [
       {

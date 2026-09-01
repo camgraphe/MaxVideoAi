@@ -248,7 +248,6 @@ export const HAPPY_HORSE_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     provider: 'Alibaba',
     brandId: 'alibaba',
     versionLabel: '1.0',
-    isLegacy: true,
     availability: 'available',
     logoPolicy: 'logoAllowed',
     engine: HAPPY_HORSE_1_0_ENGINE,

@@ -156,7 +156,6 @@ export const KLING_2_6_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     versionLabel: 'v2.6 Pro',
     availability: 'available',
     logoPolicy: 'textOnly',
-    isLegacy: true,
     engine: KLING_2_6_PRO_ENGINE,
     modes: [
       {

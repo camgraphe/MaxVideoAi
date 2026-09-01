@@ -6,6 +6,7 @@ import { getModelFamilyExamplesPageConfig } from '../frontend/config/model-famil
 import { type ModelFamilyExamplesPageConfig } from '../frontend/config/model-publication';
 import { listFalEngines, type FalEngineEntry } from '../frontend/src/config/falEngines';
 import { getEngineCatalogOverrides, type EngineCatalogOverride, type EngineCatalogFeature } from '../frontend/src/config/engineCatalog.overrides';
+import type { ModelLifecycle } from '../frontend/config/model-registry-validation';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
@@ -22,7 +23,9 @@ type EngineCatalogEntry = {
   versionLabel?: string;
   availability: string;
   logoPolicy: string;
-  isLegacy?: boolean;
+  lifecycle: ModelLifecycle;
+  successorId: string | null;
+  successorSlug: string | null;
   surfaces: FalEngineEntry['surfaces'];
   surfacesSource: 'registry';
   engine: FalEngineEntry['engine'];
@@ -69,7 +72,9 @@ function toCatalogEntry(engine: FalEngineEntry, override?: EngineCatalogOverride
     versionLabel: override?.versionLabel ?? engine.versionLabel ?? undefined,
     availability: engine.availability,
     logoPolicy: engine.logoPolicy,
-    isLegacy: engine.isLegacy || undefined,
+    lifecycle: engine.lifecycle,
+    successorId: engine.successorId,
+    successorSlug: engine.successorSlug,
     surfaces: engine.surfaces,
     surfacesSource: 'registry',
     engine: engine.engine,

@@ -211,7 +211,6 @@ export const LUMA_RAY_2_FLASH_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     versionLabel: 'Ray 2 Flash',
     availability: 'available',
     logoPolicy: 'logoAllowed',
-    isLegacy: true,
     engine: LUMA_RAY2_FLASH_ENGINE,
     modes: [
       {

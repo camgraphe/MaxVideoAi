@@ -1,43 +1,43 @@
-engineId,marketingName,brandId,modelSlug,family,versionLabel,availability,logoPolicy,modelPageIndexable,modelPageInSitemap
-happy-horse-1-0,Happy Horse 1.0,alibaba,happy-horse-1-0,happy-horse,1.0,available,logoAllowed,true,true
-happy-horse-1-1,Happy Horse 1.1,alibaba,happy-horse-1-1,happy-horse,1.1,available,logoAllowed,true,true
-seedance-2-0-mini,Dreamina Seedance 2.0 Mini,bytedance,dreamina-seedance-2-0-mini,seedance,2.0 Mini,available,logoAllowed,true,true
-seedance-1-5-pro,Seedance 1.5 Pro,bytedance,seedance-1-5-pro,seedance,v1.5 Pro,available,logoAllowed,true,true
-seedance-2-0,Seedance 2.0,bytedance,seedance-2-0,seedance,2.0,available,logoAllowed,true,true
-seedance-2-0-fast,Seedance 2.0 Fast,bytedance,seedance-2-0-fast,seedance,2.0 Fast,available,logoAllowed,true,true
-seedance-2-5,Seedance 2.5,bytedance,seedance-2-5,seedance,2.5,available,logoAllowed,true,true
-seedream,Seedream,bytedance,seedream,seedream,5.0 Lite,available,logoAllowed,true,true
-seedream-5-0-pro,Seedream 5.0 Pro,bytedance,seedream-5-0-pro,seedream,5.0 Pro,available,logoAllowed,true,true
-nano-banana,Nano Banana (Image Generation),google,nano-banana,nano-banana,Nano,available,logoAllowed,true,true
-nano-banana-2,Nano Banana 2,google,nano-banana-2,nano-banana,2,available,logoAllowed,true,true
-nano-banana-lite,Nano Banana Lite,google,nano-banana-lite,nano-banana,Lite,available,logoAllowed,true,true
-nano-banana-pro,Nano Banana Pro,google,nano-banana-pro,nano-banana,Pro,available,logoAllowed,true,true
-gemini-omni-flash,Gemini Omni Flash,google-gemini,gemini-omni-flash,veo,Preview,limited,textOnly,true,true
-veo-3-1,Google Veo 3.1,google-veo,veo-3-1,veo,3.1,available,logoAllowed,true,true
-veo-3-1-fast,Google Veo 3.1 Fast,google-veo,veo-3-1-fast,veo,3.1 Fast,available,logoAllowed,true,true
-veo-3-1-lite,Google Veo 3.1 Lite,google-veo,veo-3-1-lite,veo,3.1 Lite,available,logoAllowed,true,true
-kling-2-5-turbo,Kling 2.5 Turbo,kling,kling-2-5-turbo,kling,2.5 Turbo,available,logoAllowed,true,true
-kling-2-6-pro,Kling 2.6 Pro,kling,kling-2-6-pro,kling,v2.6 Pro,available,logoAllowed,true,true
-kling-3-4k,Kling 3 4K,kling,kling-3-4k,kling,v3 4K,available,logoAllowed,true,true
-kling-3-pro,Kling 3 Pro,kling,kling-3-pro,kling,v3 Pro,available,logoAllowed,true,true
-kling-3-standard,Kling 3 Standard,kling,kling-3-standard,kling,v3 Standard,available,logoAllowed,true,true
-kling-o3-4k,Kling 3.0 Omni 4K,kling,kling-o3-4k,kling,3.0 Omni 4K,available,logoAllowed,true,true
-kling-o3-pro,Kling 3.0 Omni Pro,kling,kling-o3-pro,kling,3.0 Omni Pro,available,logoAllowed,true,true
-kling-o3-standard,Kling 3.0 Omni Standard,kling,kling-o3-standard,kling,3.0 Omni Standard,available,logoAllowed,true,true
-ltx-2-3-fast,LTX 2.3 Fast,lightricks,ltx-2-3-fast,ltx,2.3 Fast,available,logoAllowed,true,true
-ltx-2-3,LTX 2.3 Pro,lightricks,ltx-2-3-pro,ltx,Pro,available,logoAllowed,true,true
-ltx-2-fast,LTX Video 2.0 Fast,lightricks,ltx-2-fast,ltx,Fast,available,logoAllowed,true,true
-ltx-2,LTX Video 2.0 Pro,lightricks,ltx-2,ltx,Pro,available,logoAllowed,true,true
-lumaRay2,Luma Ray 2,luma,luma-ray-2,luma,Ray 2,available,logoAllowed,true,true
-lumaRay2_flash,Luma Ray 2 Flash,luma,luma-ray-2-flash,luma,Ray 2 Flash,available,logoAllowed,true,true
-luma-ray-3-2,Luma Ray 3.2,luma,luma-ray-3-2,luma,Ray 3.2,available,logoAllowed,true,true
-luma-uni-1,Luma Uni-1,luma,luma-uni-1,luma-uni,Uni-1,available,logoAllowed,true,true
-luma-uni-1-max,Luma Uni-1 Max,luma,luma-uni-1-max,luma-uni,Uni-1 Max,available,logoAllowed,true,true
-minimax-h3,MiniMax H3,minimax,minimax-h3,hailuo,H3,available,logoAllowed,true,true
-minimax-hailuo-02-text,MiniMax Hailuo 02 Standard,minimax,minimax-hailuo-02-text,hailuo,Standard,available,logoAllowed,true,true
-gpt-image-2,GPT Image 2,openai,gpt-image-2,gpt-image,2,available,logoAllowed,true,true
-sora-2,OpenAI Sora 2,openai,sora-2,sora,2,available,logoAllowed,true,true
-sora-2-pro,OpenAI Sora 2 Pro,openai,sora-2-pro,sora,Pro,available,logoAllowed,true,true
-pika-text-to-video,Pika 2.2 Text & Image to Video,pika,pika-text-to-video,pika,2.2,available,logoAllowed,true,true
-wan-2-5,Wan 2.5 Text & Image to Video,wan,wan-2-5,wan,Preview,available,logoAllowed,true,true
-wan-2-6,Wan 2.6 Text & Image to Video,wan,wan-2-6,wan,2.6,available,logoAllowed,true,true
+engineId,marketingName,brandId,modelSlug,family,lifecycle,successorId,successorSlug,versionLabel,availability,logoPolicy,modelPageIndexable,modelPageInSitemap
+happy-horse-1-0,Happy Horse 1.0,alibaba,happy-horse-1-0,happy-horse,legacy,,,1.0,available,logoAllowed,true,true
+happy-horse-1-1,Happy Horse 1.1,alibaba,happy-horse-1-1,happy-horse,current,,,1.1,available,logoAllowed,true,true
+seedance-2-0-mini,Dreamina Seedance 2.0 Mini,bytedance,dreamina-seedance-2-0-mini,seedance,current,,,2.0 Mini,available,logoAllowed,true,true
+seedance-1-5-pro,Seedance 1.5 Pro,bytedance,seedance-1-5-pro,seedance,current,,,v1.5 Pro,available,logoAllowed,true,true
+seedance-2-0,Seedance 2.0,bytedance,seedance-2-0,seedance,current,,,2.0,available,logoAllowed,true,true
+seedance-2-0-fast,Seedance 2.0 Fast,bytedance,seedance-2-0-fast,seedance,current,,,2.0 Fast,available,logoAllowed,true,true
+seedance-2-5,Seedance 2.5,bytedance,seedance-2-5,seedance,current,,,2.5,available,logoAllowed,true,true
+seedream,Seedream,bytedance,seedream,seedream,current,,,5.0 Lite,available,logoAllowed,true,true
+seedream-5-0-pro,Seedream 5.0 Pro,bytedance,seedream-5-0-pro,seedream,current,,,5.0 Pro,available,logoAllowed,true,true
+nano-banana,Nano Banana (Image Generation),google,nano-banana,nano-banana,legacy,,,Nano,available,logoAllowed,true,true
+nano-banana-2,Nano Banana 2,google,nano-banana-2,nano-banana,current,,,2,available,logoAllowed,true,true
+nano-banana-lite,Nano Banana Lite,google,nano-banana-lite,nano-banana,current,,,Lite,available,logoAllowed,true,true
+nano-banana-pro,Nano Banana Pro,google,nano-banana-pro,nano-banana,current,,,Pro,available,logoAllowed,true,true
+gemini-omni-flash,Gemini Omni Flash,google-gemini,gemini-omni-flash,veo,current,,,Preview,limited,textOnly,true,true
+veo-3-1,Google Veo 3.1,google-veo,veo-3-1,veo,current,,,3.1,available,logoAllowed,true,true
+veo-3-1-fast,Google Veo 3.1 Fast,google-veo,veo-3-1-fast,veo,current,,,3.1 Fast,available,logoAllowed,true,true
+veo-3-1-lite,Google Veo 3.1 Lite,google-veo,veo-3-1-lite,veo,current,,,3.1 Lite,available,logoAllowed,true,true
+kling-2-5-turbo,Kling 2.5 Turbo,kling,kling-2-5-turbo,kling,legacy,,,2.5 Turbo,available,logoAllowed,true,true
+kling-2-6-pro,Kling 2.6 Pro,kling,kling-2-6-pro,kling,legacy,,,v2.6 Pro,available,logoAllowed,true,true
+kling-3-4k,Kling 3 4K,kling,kling-3-4k,kling,current,,,v3 4K,available,logoAllowed,true,true
+kling-3-pro,Kling 3 Pro,kling,kling-3-pro,kling,current,,,v3 Pro,available,logoAllowed,true,true
+kling-3-standard,Kling 3 Standard,kling,kling-3-standard,kling,current,,,v3 Standard,available,logoAllowed,true,true
+kling-o3-4k,Kling 3.0 Omni 4K,kling,kling-o3-4k,kling,current,,,3.0 Omni 4K,available,logoAllowed,true,true
+kling-o3-pro,Kling 3.0 Omni Pro,kling,kling-o3-pro,kling,current,,,3.0 Omni Pro,available,logoAllowed,true,true
+kling-o3-standard,Kling 3.0 Omni Standard,kling,kling-o3-standard,kling,current,,,3.0 Omni Standard,available,logoAllowed,true,true
+ltx-2-3-fast,LTX 2.3 Fast,lightricks,ltx-2-3-fast,ltx,legacy,,,2.3 Fast,available,logoAllowed,true,true
+ltx-2-3,LTX 2.3 Pro,lightricks,ltx-2-3-pro,ltx,legacy,,,Pro,available,logoAllowed,true,true
+ltx-2-fast,LTX Video 2.0 Fast,lightricks,ltx-2-fast,ltx,deep_legacy,,,Fast,available,logoAllowed,true,true
+ltx-2,LTX Video 2.0 Pro,lightricks,ltx-2,ltx,deep_legacy,,,Pro,available,logoAllowed,true,true
+lumaRay2,Luma Ray 2,luma,luma-ray-2,luma,legacy,,,Ray 2,available,logoAllowed,true,true
+lumaRay2_flash,Luma Ray 2 Flash,luma,luma-ray-2-flash,luma,legacy,,,Ray 2 Flash,available,logoAllowed,true,true
+luma-ray-3-2,Luma Ray 3.2,luma,luma-ray-3-2,luma,current,,,Ray 3.2,available,logoAllowed,true,true
+luma-uni-1,Luma Uni-1,luma,luma-uni-1,luma-uni,current,,,Uni-1,available,logoAllowed,true,true
+luma-uni-1-max,Luma Uni-1 Max,luma,luma-uni-1-max,luma-uni,current,,,Uni-1 Max,available,logoAllowed,true,true
+minimax-h3,MiniMax H3,minimax,minimax-h3,hailuo,current,,,H3,available,logoAllowed,true,true
+minimax-hailuo-02-text,MiniMax Hailuo 02 Standard,minimax,minimax-hailuo-02-text,hailuo,current,,,Standard,available,logoAllowed,true,true
+gpt-image-2,GPT Image 2,openai,gpt-image-2,gpt-image,current,,,2,available,logoAllowed,true,true
+sora-2,OpenAI Sora 2,openai,sora-2,sora,current,,,2,available,logoAllowed,true,true
+sora-2-pro,OpenAI Sora 2 Pro,openai,sora-2-pro,sora,current,,,Pro,available,logoAllowed,true,true
+pika-text-to-video,Pika 2.2 Text & Image to Video,pika,pika-text-to-video,pika,current,,,2.2,available,logoAllowed,true,true
+wan-2-5,Wan 2.5 Text & Image to Video,wan,wan-2-5,wan,deep_legacy,,,Preview,available,logoAllowed,true,true
+wan-2-6,Wan 2.6 Text & Image to Video,wan,wan-2-6,wan,legacy,,,2.6,available,logoAllowed,true,true

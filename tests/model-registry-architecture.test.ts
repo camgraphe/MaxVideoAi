@@ -7,7 +7,16 @@ import test from 'node:test';
 const require = createRequire(import.meta.url);
 const ts = require('../frontend/node_modules/typescript');
 const engineDir = 'frontend/src/config/fal-engines';
-const registryOwnedProperties = new Set(['modelSlug', 'family', 'category', 'surfaces']);
+const registryOwnedProperties = new Set([
+  'modelSlug',
+  'family',
+  'category',
+  'lifecycle',
+  'successorId',
+  'successorSlug',
+  'isLegacy',
+  'surfaces',
+]);
 const ignoredSourceDirectories = new Set(['.next', 'node_modules', 'coverage', '.turbo']);
 
 function walk(directory: string): string[] {

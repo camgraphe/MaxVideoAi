@@ -139,7 +139,7 @@ test('Luma Ray 2 routes stay indexable but move behind current Ray 3.2 discovery
   assert.ok(ray2, 'Missing Luma Ray 2');
   assert.ok(ray2Flash, 'Missing Luma Ray 2 Flash');
 
-  assert.equal(ray32.isLegacy, undefined);
+  assert.equal(ray32.isLegacy, false);
   assert.equal(ray2.isLegacy, true);
   assert.equal(ray2Flash.isLegacy, true);
   assert.equal(ray2.seo.canonicalPath, '/models/luma-ray-2');

@@ -1,6 +1,6 @@
 # Model Registry Guide
 
-`frontend/config/model-registry.json` is the only authored source for model identity, aliases, family, category, publication, replacement, and model-shaped tombstones.
+`frontend/config/model-registry.json` is the only authored source for model identity, aliases, family, category, lifecycle, successor, publication, replacement, and model-shaped tombstones.
 
 The following files are generated projections and must not be edited directly:
 
@@ -13,6 +13,17 @@ The following files are generated projections and must not be edited directly:
 `pnpm model:registry:check` validates the authored registry and then compares every generated projection exactly: runtime JSON, engine catalog, frontend roster, docs roster JSON, and docs roster CSV. Check mode is read-only; it never regenerates files or changes timestamps.
 
 The browser-safe runtime projection omits the replacement graph. A retired replacement identity contains only an optional flattened `publicTargetId` for the final active model; active models need no extra field and resolve to themselves. Public-slug resolution uses that flattened target so middleware can send `/fr/models/*` and `/es/models/*` compatibility paths directly to the localized active canonical slug. Engine/input aliases still resolve to their original canonical product ID.
+
+Lifecycle successors are separate from retirement replacements. `legacy` and `deep_legacy` records may point directly to a same-category `current` model with `successorId`; generated projections derive `successorSlug` from that canonical target. A successor never changes engine-input ownership, public-slug resolution, redirects, or `publicTargetId`.
+
+## Change lifecycle
+
+- `current`: recommended by default.
+- `legacy`: still executable and public according to its publication fields, but not recommended by default.
+- `deep_legacy`: may keep its historical model page, examples, and comparison identity, but must disable app publication, pricing publication, and current-example membership.
+- `retired`: fully unpublished and governed by the existing direct `replacement` contract.
+
+Always author `successorId` explicitly, using `null` when there is no successor. Do not infer lifecycle from engine definitions or author `successorSlug`; the runtime, engine catalog, and rosters derive those fields from the registry.
 
 ## Add a model
 
