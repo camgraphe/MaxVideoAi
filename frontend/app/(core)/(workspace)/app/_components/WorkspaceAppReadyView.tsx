@@ -239,6 +239,7 @@ export function WorkspaceAppReadyView({
             price={price}
             currency={currency}
             isPricing={isPricing}
+            isSubmitting={generation.isSubmitting}
             preflightError={preflightError}
             preflight={preflight}
             composerRef={composerRef}

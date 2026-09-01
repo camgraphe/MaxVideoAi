@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { MultiPromptScene } from '@/components/Composer';
 import type { KlingElementState } from '@/components/KlingElementsBuilder';
@@ -178,6 +178,8 @@ export function useWorkspaceGenerationRunner({
   shotType,
   klingElements,
 }: UseWorkspaceGenerationRunnerOptions) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submissionGuardRef = useRef(false);
   const { presentInsufficientFunds, verifyWalletBalance } = useWorkspaceWalletPreflight({
     workspaceCopy,
     setTopUpModal,
@@ -190,142 +192,151 @@ export function useWorkspaceGenerationRunner({
       showComposerError(klingO3UnsupportedVideoReason);
       return;
     }
-    const { supabase } = await import('@/lib/supabaseClient');
-    const { data } = await supabase.auth.getSession();
-    const token = data.session?.access_token ?? null;
-    if (!token) {
-      setAuthModalOpen(true);
-      return;
-    }
-    setPreflightError(undefined);
-    const trimmedPrompt = effectivePrompt.trim();
-    const trimmedNegativePrompt = negativePrompt.trim();
-    const supportsNegativePrompt = supportsNegativePromptInput(inputSchemaSummary);
-    const lumaContext = getLumaRay2GenerationContext({
-      selectedEngineId: selectedEngine.id,
-      submissionMode,
-      form,
-    });
-    const validationMessage = getStartRenderValidationMessage({
-      audioWorkflowUnsupported,
-      audioUnsupportedMessage: workflowCopy.audioUnsupported,
-      multiPromptActive,
-      multiPromptInvalid,
-      multiPromptError,
-      promptLength,
-      promptCharLimitExceeded,
-      promptMaxChars,
-      selectedEngineLabel: selectedEngine.label,
-      trimmedPrompt,
-      trimmedNegativePrompt,
-      inputSchemaSummary,
-      inputAssets,
-      extraInputFields,
-      form,
-      lumaContext,
-    });
-    if (validationMessage) {
-      showComposerError(validationMessage);
-      return;
-    }
+    if (submissionGuardRef.current) return;
+    submissionGuardRef.current = true;
+    setIsSubmitting(true);
 
-    const iterationCount = Math.max(1, form.iterations ?? 1);
-    const batchId = `batch_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
-    if (iterationCount > 1) {
-      const totalCents =
-        typeof preflight?.pricing?.totalCents === 'number' ? preflight.pricing.totalCents * iterationCount : undefined;
-      emitClientMetric('group_render_initiated', {
-        batchId,
-        iterations: iterationCount,
-        engine: selectedEngine.id,
-        total_cents: totalCents ?? null,
-        currency: preflight?.pricing?.currency ?? preflight?.currency ?? 'USD',
-      });
-    }
-
-    const paymentMode: 'wallet' | 'platform' = token ? 'wallet' : 'platform';
-    const currencyCode = preflight?.pricing?.currency ?? preflight?.currency ?? 'USD';
-
-    if (paymentMode === 'wallet') {
-      const hasWalletBalance = await verifyWalletBalance({ preflight, iterationCount, currencyCode });
-      if (!hasWalletBalance) return;
-    }
-
-    const generationInputs = prepareGenerationInputs({
-      selectedEngineId: selectedEngine.id,
-      selectedEngineLabel: selectedEngine.label,
-      activeMode,
-      submissionMode,
-      form,
-      inputSchema: selectedEngine.inputSchema,
-      inputSchemaSummary,
-      extraInputFields,
-      inputAssets,
-      primaryAssetFieldIds,
-      referenceAssetFieldIds,
-      genericImageFieldIds,
-      frameAssetFieldIds,
-      referenceAudioFieldIds,
-      supportsKlingV3Controls,
-      klingElements,
-      multiPromptActive,
-      multiPromptScenes,
-    });
-    if (!generationInputs.ok) {
-      showComposerError(generationInputs.message);
-      return;
-    }
-
-    for (let iterationIndex = 0; iterationIndex < iterationCount; iterationIndex += 1) {
-      void runWorkspaceGenerationIteration({
-        activeMode,
-        allowsUnifiedVeoFirstLast,
-        batchId,
-        capability,
-        cfgScale,
-        currencyCode,
-        effectiveDurationSec,
-        effectivePrompt,
-        form,
-        formatTakeLabel,
-        generationInputs,
-        hasLastFrameInput,
-        isSeedance,
-        isUnifiedSeedance,
-        iterationCount,
-        iterationIndex,
-        lumaContext,
-        memberTier,
-        mutateLatestJobs,
-        paymentMode,
-        preflight,
-        presentInsufficientFunds,
-        primaryAssetFieldLabel,
-        rendersRef,
-        selectedEngine,
-        setActiveBatchId,
-        setActiveGroupId,
-        setBatchHeroes,
-        setRenders,
-        setSelectedPreview,
-        setViewMode,
-        shotType,
-        showComposerError,
+    try {
+      const { supabase } = await import('@/lib/supabaseClient');
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token ?? null;
+      if (!token) {
+        setAuthModalOpen(true);
+        return;
+      }
+      setPreflightError(undefined);
+      const trimmedPrompt = effectivePrompt.trim();
+      const trimmedNegativePrompt = negativePrompt.trim();
+      const supportsNegativePrompt = supportsNegativePromptInput(inputSchemaSummary);
+      const lumaContext = getLumaRay2GenerationContext({
+        selectedEngineId: selectedEngine.id,
         submissionMode,
-        supportsAudioToggle,
-        supportsKlingV3Controls,
-        supportsKlingV3VoiceControl,
-        supportsNegativePrompt,
-        token,
-        trimmedNegativePrompt,
-        trimmedPrompt,
-        uiLocale,
-        voiceControlEnabled,
-        voiceIds,
-        workflowCopy,
-        workspaceCopy,
-        writeScopedStorage,
+        form,
       });
+      const validationMessage = getStartRenderValidationMessage({
+        audioWorkflowUnsupported,
+        audioUnsupportedMessage: workflowCopy.audioUnsupported,
+        multiPromptActive,
+        multiPromptInvalid,
+        multiPromptError,
+        promptLength,
+        promptCharLimitExceeded,
+        promptMaxChars,
+        selectedEngineLabel: selectedEngine.label,
+        trimmedPrompt,
+        trimmedNegativePrompt,
+        inputSchemaSummary,
+        inputAssets,
+        extraInputFields,
+        form,
+        lumaContext,
+      });
+      if (validationMessage) {
+        showComposerError(validationMessage);
+        return;
+      }
+
+      const iterationCount = Math.max(1, form.iterations ?? 1);
+      const batchId = `batch_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+      if (iterationCount > 1) {
+        const totalCents =
+          typeof preflight?.pricing?.totalCents === 'number' ? preflight.pricing.totalCents * iterationCount : undefined;
+        emitClientMetric('group_render_initiated', {
+          batchId,
+          iterations: iterationCount,
+          engine: selectedEngine.id,
+          total_cents: totalCents ?? null,
+          currency: preflight?.pricing?.currency ?? preflight?.currency ?? 'USD',
+        });
+      }
+
+      const paymentMode: 'wallet' | 'platform' = token ? 'wallet' : 'platform';
+      const currencyCode = preflight?.pricing?.currency ?? preflight?.currency ?? 'USD';
+
+      if (paymentMode === 'wallet') {
+        const hasWalletBalance = await verifyWalletBalance({ preflight, iterationCount, currencyCode });
+        if (!hasWalletBalance) return;
+      }
+
+      const generationInputs = prepareGenerationInputs({
+        selectedEngineId: selectedEngine.id,
+        selectedEngineLabel: selectedEngine.label,
+        activeMode,
+        submissionMode,
+        form,
+        inputSchema: selectedEngine.inputSchema,
+        inputSchemaSummary,
+        extraInputFields,
+        inputAssets,
+        primaryAssetFieldIds,
+        referenceAssetFieldIds,
+        genericImageFieldIds,
+        frameAssetFieldIds,
+        referenceAudioFieldIds,
+        supportsKlingV3Controls,
+        klingElements,
+        multiPromptActive,
+        multiPromptScenes,
+      });
+      if (!generationInputs.ok) {
+        showComposerError(generationInputs.message);
+        return;
+      }
+
+      for (let iterationIndex = 0; iterationIndex < iterationCount; iterationIndex += 1) {
+        void runWorkspaceGenerationIteration({
+          activeMode,
+          allowsUnifiedVeoFirstLast,
+          batchId,
+          capability,
+          cfgScale,
+          currencyCode,
+          effectiveDurationSec,
+          effectivePrompt,
+          form,
+          formatTakeLabel,
+          generationInputs,
+          hasLastFrameInput,
+          isSeedance,
+          isUnifiedSeedance,
+          iterationCount,
+          iterationIndex,
+          lumaContext,
+          memberTier,
+          mutateLatestJobs,
+          paymentMode,
+          preflight,
+          presentInsufficientFunds,
+          primaryAssetFieldLabel,
+          rendersRef,
+          selectedEngine,
+          setActiveBatchId,
+          setActiveGroupId,
+          setBatchHeroes,
+          setRenders,
+          setSelectedPreview,
+          setViewMode,
+          shotType,
+          showComposerError,
+          submissionMode,
+          supportsAudioToggle,
+          supportsKlingV3Controls,
+          supportsKlingV3VoiceControl,
+          supportsNegativePrompt,
+          token,
+          trimmedNegativePrompt,
+          trimmedPrompt,
+          uiLocale,
+          voiceControlEnabled,
+          voiceIds,
+          workflowCopy,
+          workspaceCopy,
+          writeScopedStorage,
+        });
+      }
+    } finally {
+      submissionGuardRef.current = false;
+      setIsSubmitting(false);
     }
   }, [
     audioWorkflowUnsupported,
@@ -389,6 +400,7 @@ export function useWorkspaceGenerationRunner({
   ]);
 
   return {
+    isSubmitting,
     startRender,
   };
 }

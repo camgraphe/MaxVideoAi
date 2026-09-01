@@ -79,6 +79,7 @@ type WorkspaceComposerSurfaceProps = {
   price: ComposerProps['price'];
   currency: ComposerProps['currency'];
   isPricing: boolean;
+  isSubmitting: boolean;
   preflightError: ComposerProps['error'];
   preflight: ComposerProps['preflight'];
   composerRef: ComposerProps['textareaRef'];
@@ -205,6 +206,7 @@ export function WorkspaceComposerSurface({
   price,
   currency,
   isPricing,
+  isSubmitting,
   preflightError,
   preflight,
   composerRef,
@@ -485,7 +487,7 @@ export function WorkspaceComposerSurface({
         onNegativePromptChange={setNegativePrompt}
         price={price}
         currency={currency}
-        isLoading={isPricing}
+        isLoading={isPricing || isSubmitting}
         error={preflightError}
         messages={preflight?.ok ? preflight.messages : undefined}
         textareaRef={composerRef}
