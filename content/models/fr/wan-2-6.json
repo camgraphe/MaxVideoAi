@@ -298,8 +298,8 @@
           "href": "/fr/modeles/wan-3"
         },
         {
-          "label": "Comparer Wan 2.6 à Wan 3",
-          "href": "/fr/comparatif/wan-2-6-vs-wan-3?order=wan-3"
+        "label": "Comparer Wan 2.6 à Sora 2",
+        "href": "/fr/comparatif/sora-2-vs-wan-2-6?order=wan-2-6"
         },
         {
           "label": "Voir les tarifs",
@@ -359,8 +359,8 @@
         "title": "Rester sur Wan 2.6 ou passer à Wan 3 ?",
         "body": "Gardez Wan 2.6 pour un workflow legacy reproductible. Choisissez Wan 3 pour la production actuelle depuis texte, image ou références.",
         "cta": {
-          "label": "Comparer les générations Wan",
-          "href": "/fr/comparatif/wan-2-6-vs-wan-3?order=wan-3"
+          "label": "Voir le Wan 3 actuel",
+          "href": "/fr/modeles/wan-3"
         }
       },
       {

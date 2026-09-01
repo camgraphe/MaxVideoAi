@@ -36,9 +36,9 @@
       { "title": "Comparar como familia nueva", "body": "Evalúa movimiento, fidelidad, cámara y seguridad frente a modelos establecidos sin prometer una victoria general.", "cta": { "label": "Ver Grok frente a Sora 2", "href": "/es/comparativa/grok-imagine-video-1-5-vs-sora-2?order=grok-imagine-video-1-5" } }
     ],
     "referenceWorkflows": [
-      { "title": "Texto a video", "body": "Describe sujeto, acción, cámara, ambiente y plano final dentro de una progresión breve." },
-      { "title": "Referencia de identidad", "body": "Nombra la imagen que protege rostro, vestuario u objeto y los rasgos exactos que conserva." },
-      { "title": "Referencia de escena", "body": "Usa otra imagen para dirigir entorno, paleta o luz sin sustituir la identidad." },
+      { "title": "Texto a video", "body": "Elige una relación de aspecto compatible y describe sujeto, acción, cámara, ambiente y final para un clip de hasta 1080p." },
+      { "title": "Imagen a video", "body": "Anima una sola imagen inicial hasta 1080p; esa fuente fija el encuadre porque este modo funciona sin un control de relación de aspecto separado." },
+      { "title": "Referencias a video", "body": "Adjunta una a siete imágenes, dirígete a ellas desde <IMAGE_0>, nombra el rol de cada una y usa solo 480p o 720p." },
       { "title": "Revisión responsable", "body": "Confirma derechos de imágenes, consentimiento de personas y ausencia de texto o marcas no deseadas." }
     ],
     "pricingCopy": { "title": "Precios por escenario de Grok 1.5", "subtitle": "Compara un plano de texto de seis segundos en 720p con una escena de ocho segundos en 480p guiada por dos imágenes.", "footnote": "La cotización de referencias consume el número de imágenes declarado por el manifiesto; el contenido no incluye ningún total terminado.", "ctaLabel": "Generar con Grok 1.5", "ctaHref": "/app?engine=grok-imagine-video-1-5" },

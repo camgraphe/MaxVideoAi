@@ -317,8 +317,8 @@
           "href": "/fr/modeles/ltx-2-5-fast"
         },
         {
-          "label": "Comparer 2.3 Fast à 2.5 Fast",
-          "href": "/fr/comparatif/ltx-2-3-fast-vs-ltx-2-5-fast?order=ltx-2-5-fast"
+        "label": "Comparer LTX Fast à Seedance Fast",
+        "href": "/fr/comparatif/ltx-2-3-fast-vs-seedance-2-0-fast"
         },
         {
           "label": "Voir les tarifs",
@@ -378,8 +378,8 @@
         "title": "Rester sur 2.3 Fast ou passer à 2.5 Fast ?",
         "body": "Gardez 2.3 Fast pour un brouillon legacy reproductible. Choisissez LTX 2.5 Fast pour une nouvelle boucle d'itération.",
         "cta": {
-          "label": "Comparer les générations Fast",
-          "href": "/fr/comparatif/ltx-2-3-fast-vs-ltx-2-5-fast?order=ltx-2-5-fast"
+          "label": "Voir le LTX 2.5 Fast actuel",
+          "href": "/fr/modeles/ltx-2-5-fast"
         }
       },
       {

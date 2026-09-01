@@ -8,25 +8,25 @@
   },
   "overview": "LTX 2 conserva su URL canónica como perfil histórico de legado profundo. Sus características y ejemplos siguen documentados, mientras las nuevas generaciones deben comenzar con LTX 2.5 Pro.",
   "hero": {
-    "title": "LTX 2 — modelo LTX anterior aún compatible para clips cortos de alta fidelidad",
-    "intro": "LTX 2 sigue disponible para clips cortos de alta fidelidad y workflows legacy todavía útiles, mientras LTX 2.3 Pro es ahora el modelo LTX actual principal para workflows de audio, Extend y Retake.",
+    "title": "LTX 2 — modelo LTX histórico de legado profundo para clips cortos de alta fidelidad",
+    "intro": "LTX 2 se documenta aquí por su flujo histórico de clips cortos de alta fidelidad, mientras LTX 2.5 Pro es el sucesor actual de producción.",
     "badge": "1080p/1440p/4K · 6–10 s · Audio on/off · 25/50 fps",
     "ctaPrimary": {
-      "label": "Generar con LTX 2",
-      "href": "/app?engine=ltx-2"
+      "label": "Generar con LTX 2.5 Pro",
+      "href": "/app?engine=ltx-2-5-pro"
     },
     "secondaryLinks": [
       {
-        "label": "Ver LTX 2.3 Pro",
-        "href": "/models/ltx-2-3-pro"
+        "label": "Ver el LTX 2.5 Pro actual",
+        "href": "/es/modelos/ltx-2-5-pro"
       },
       {
         "label": "Ver ejemplos de LTX",
         "href": "/examples/ltx"
       },
       {
-        "label": "Ver LTX 2.3 Fast",
-        "href": "/models/ltx-2-3-fast"
+        "label": "Ver precios de LTX",
+        "href": "/es/precios#ltx-2-pricing"
       },
       {
         "label": "Comparar LTX 2.3 Fast vs LTX 2.3 Pro",
@@ -179,7 +179,7 @@
     "whatIntro2": "Usa Pro cuando necesitas el detalle más limpio y sonido sincronizado para trabajo premium.",
     "whatFlowTitle": "Workflow",
     "whatFlowSteps": [
-      "Selecciona LTX 2, luego Texto → Video o Imagen → Video",
+      "Flujo histórico de LTX 2: Texto → Video o Imagen → Video",
       "Ajusta duración (6–10 s) y 16:9",
       "Elige resolución (1080p/1440p/4K) y fps (25/50)",
       "Audio on/off, añade prompt y seed/negativo opcional",
@@ -229,33 +229,33 @@
     ],
     "comparisonTitle": "Cuándo elegir LTX 2",
     "comparisonPoints": [
-      "Usa Pro para spots pulidos; usa Fast para ideación rápida",
-      "Elige Pro si necesitas 4K/50 fps y máxima fidelidad",
+      "Usa LTX 2.5 Pro para spots pulidos y LTX 2.5 Fast para ideación rápida",
+      "Elige LTX 2.5 Pro cuando la producción actual requiera el flujo Pro",
       "Combínalo con Nano Banana para preparar keyframes fotorealistas"
     ],
     "comparisonCta": "Comparar LTX 2 vs Fast →",
-    "relatedTitle": "Versiones LTX 2.3 más nuevas",
-    "relatedSubtitle": "Usa LTX 2.3 Pro como la página LTX actual principal, o LTX 2.3 Fast para el workflow fast actual.",
+    "relatedTitle": "Versiones LTX 2.5 actuales",
+    "relatedSubtitle": "LTX 2.5 Pro es el sucesor actual de producción, mientras LTX 2.5 Fast cubre la iteración rápida actual.",
     "relatedItems": [
       {
         "brand": "ltx",
-        "title": "LTX 2.3 Pro",
-        "description": "Pasa a la página LTX actual principal para workflows de texto→video, imagen→video, audio→video, Extend y Retake desde una sola superficie.",
-        "modelSlug": "ltx-2-3-pro",
-        "ctaLabel": "Ver LTX 2.3 Pro ->"
+        "title": "LTX 2.5 Pro",
+        "description": "Pasa a la página de producción LTX actual para cualquier trabajo nuevo de video de alta fidelidad.",
+        "modelSlug": "ltx-2-5-pro",
+        "ctaLabel": "Ver LTX 2.5 Pro ->"
       },
       {
         "brand": "ltx",
-        "title": "LTX 2.3 Fast",
-        "description": "Usa la página LTX fast actual cuando quieras iteración más rápida de texto→video e imagen→video sobre el routing LTX 2.3.",
-        "modelSlug": "ltx-2-3-fast",
-        "ctaLabel": "Ver LTX 2.3 Fast ->"
+        "title": "LTX 2.5 Fast",
+        "description": "Usa la página LTX fast actual para una iteración más rápida de texto→video e imagen→video.",
+        "modelSlug": "ltx-2-5-fast",
+        "ctaLabel": "Ver LTX 2.5 Fast ->"
       }
     ],
-    "finalPara1": "¿Listo para renderizar en LTX 2? Revisa el chip de precio antes de lanzar.",
-    "finalPara2": "Itera en LTX 2 Fast y luego cambia a Pro para finalizar.",
-    "finalButton": "Abrir LTX 2 en Generate →",
-    "tipsIntro": "LTX‑2 Pro es un tier final‑take: úsalo cuando el concepto está cerrado y quieres el acabado más limpio.",
+    "finalPara1": "¿Listo para un render de producción actual? Abre LTX 2.5 Pro y revisa el precio antes de lanzar.",
+    "finalPara2": "Comienza la producción actual con LTX 2.5 Pro; LTX 2.5 Fast cubre la iteración actual de borradores.",
+    "finalButton": "Abrir LTX 2.5 Pro en Generate →",
+    "tipsIntro": "Históricamente, LTX 2 servía como tier final-take una vez cerrado el concepto; usa LTX 2.5 Pro para la producción actual.",
     "troubleshootingTitle": "Problemas comunes → soluciones rápidas",
     "troubleshootingItems": [
       "Se ve “cargado” o inestable → reduce a un solo movimiento de cámara y una acción principal; simplifica el fondo.",
@@ -276,7 +276,7 @@
         "texto a video o imagen a video",
         "checks de 1080p a 4K"
       ],
-      "paragraph": "Esta página histórica de LTX 2 conserva características, ejemplos y valor SEO de legado profundo sin redirigir. No inicies una generación nueva en la ruta retirada; LTX 2.5 Pro es el sucesor actual de producción.",
+      "paragraph": "Esta página histórica de LTX 2 conserva características, ejemplos y valor SEO de legado profundo sin redirigir. Toda generación nueva comienza en LTX 2.5 Pro, el sucesor actual de producción.",
       "primaryCta": {
         "label": "Ver el LTX 2.5 Pro actual",
         "href": "/es/modelos/ltx-2-5-pro"
@@ -314,7 +314,7 @@
     "features": [
       {
         "title": "Fidelidad 16:9",
-        "body": "Usa LTX 2 para clips landscape cortos con look premium limpio.",
+        "body": "Históricamente, LTX 2 cubría clips landscape cortos con un look premium limpio.",
         "tone": "quality"
       },
       {
@@ -354,10 +354,10 @@
       },
       {
         "title": "¿Necesitas un borrador LTX más rápido?",
-        "body": "Usa LTX 2 Fast para loops 16:9 más largos y de menor coste antes de decidir si la toma merece una pasada con más fidelidad.",
+        "body": "Para loops 16:9 actuales más largos y de menor coste, continúa con LTX 2.5 Fast antes de una pasada con más fidelidad.",
         "cta": {
-          "label": "Ver LTX 2 Fast",
-          "href": "/es/modelos/ltx-2-fast"
+          "label": "Ver LTX 2.5 Fast",
+          "href": "/es/modelos/ltx-2-5-fast"
         }
       },
       {
@@ -409,7 +409,7 @@
     },
     "meta": {
       "title": "LTX 2: precios, clips 4K y ejemplos | MaxVideoAI",
-      "description": "Usa LTX 2 para clips 16:9 de alta fidelidad aún compatibles, texto a video, imagen a video, checks de 1080p a 4K, precios y ejemplos."
+      "description": "Referencia histórica de LTX 2 para clips 16:9 de alta fidelidad, texto a video, imagen a video, checks de 1080p a 4K, precios y ejemplos."
     }
   },
   "prompting": {
@@ -548,7 +548,7 @@
       {
         "id": "proof-1",
         "title": "Resultados reales",
-        "body": "Mira qué es posible con LTX 2 — modelo LTX anterior aún compatible para clips cortos de alta fidelidad.",
+        "body": "Consulta ejemplos históricos de clips cortos de alta fidelidad de LTX 2 en esta página de legado profundo.",
         "icon": "sparkles"
       },
       {

@@ -5,7 +5,8 @@ Date: 2026-09-01
 ## Revision
 
 - Base: `ecbe8524aee7df49c54ecca5788fd9ddf13a8456`
-- Final implementation commit: reported in the Task 8 handoff because a commit cannot contain its own hash.
+- Initial implementation: `4713ad64f27f2148cee1bd163cafef5f5a935619`
+- Review-fix commit: reported in the Task 8 handoff because a commit cannot contain its own hash.
 
 ## Outcome
 
@@ -35,7 +36,7 @@ The pricing-page scenario adapter now forwards A2V `durationSec` as the trusted 
 - Each page retains at least 80% page-specific normalized sentences, and every locale has seven unique title/description pairs.
 - Every page contains localized best-fit, non-fit, workflow, constraints, prompting, family-position, attribution and safety copy.
 - Every page has seven or eight unique authored links including the locale-correct family examples, pricing anchor, app CTA, sibling/successor where applicable and two to four contextual editorial destinations.
-- Future comparison destinations exist only in localized content. The seven template quick-link arrays contain no future comparison route, so publication-backed template discovery remains gated for Task 13.
+- Future comparison destinations exist only in the seven hidden P0 documents. Currently published legacy documents contain no Task 13 upgrade-pair URL, and the rendered decision-data projection filters every comparison link through the canonical published-pair catalog. The seven template quick-link arrays still contain no future comparison route, so publication-backed discovery remains gated for Task 13.
 - Official prompt guidance uses only the reviewed owner URLs for Alibaba Model Studio, LTX, xAI and Black Forest Labs.
 - Content contracts reject authored prices, margins, blanket-superiority copy, fake media and direct-provider claims.
 
@@ -46,7 +47,7 @@ All 18 required EN/FR/ES lifecycle documents were updated:
 - legacy: LTX 2.3 Pro → LTX 2.5 Pro, LTX 2.3 Fast → LTX 2.5 Fast, Wan 2.6 → Wan 3;
 - deep legacy: LTX 2 → LTX 2.5 Pro, LTX 2 Fast → LTX 2.5 Fast, Wan 2.5 → Wan 3.
 
-Legacy pages keep the old executable engine CTA, their version-specific title and self-canonical indexable identity, while explaining the exact current successor and future upgrade scoreboard. Deep-legacy pages keep historical facts, examples, pricing presets and self-canonical identity, remove current/recommended generation language, and route new generation CTAs to the exact successor. No registry replacement, public redirect or tombstone was added; the 28-day Search Console redirect decision remains deferred.
+Legacy pages keep the old executable engine CTA, their version-specific title and self-canonical indexable identity, while linking the exact current successor and already-published contextual comparisons. Their Task 13 upgrade scoreboards remain absent until canonical pair publication. Deep-legacy pages keep historical facts, examples, pricing presets and self-canonical identity, remove current/recommended generation language and obsolete model links, and route every generation CTA to the exact successor. No registry replacement, public redirect or tombstone was added; the 28-day Search Console redirect decision remains deferred.
 
 ## Audit compatibility
 
@@ -56,7 +57,7 @@ The audit now:
 
 - still requires every published model document in every locale;
 - allows content only for canonical registry slugs, including hidden registered identities;
-- recognizes strict decision content as the current rendered marketing owner, without adding dead fields to the new JSON.
+- recognizes decision content as the current rendered marketing owner only after the shared strict parser validates every required nested block, without adding dead fields to the new JSON.
 
 `pnpm models:audit` passes with 49 documents per locale, zero critical findings and nine expected warnings for family-resolution-disabled hidden identities. Its mutation contract still produces exactly the 19 intentional critical Examples findings.
 
@@ -123,3 +124,40 @@ The repository-wide `pnpm test:validate` completed with 3,848/3,852 passing. Its
 - Future comparison destinations are authored but unresolved until Task 13 creates the reviewed scoreboard-only comparison records. They must not be promoted through template or hub discovery before then.
 - Galleries remain empty until Task 12 supplies two accepted durable videos per model. No fallback media was invented.
 - Local verification ran under Node 23.9.0 while the repository requests Node 22.x. All requested gates passed, but Task 15 still owns the release-runtime verification.
+
+## Review fix round 1
+
+The first independent review requested four corrections. Each received a failing contract before production edits:
+
+1. Published LTX 2.3 Pro, LTX 2.3 Fast and Wan 2.6 documents still authored Task 13 upgrade-pair URLs, and projected published content exposed another unpublished Kling pair. The new projection guard extracts comparison slugs from all EN/FR/ES route families and consults `isPublishedComparisonSlug`; optional quick links/cards are withheld and required CTA fields fall back to their safe template destinations. All published model decision projections are now checked recursively, while hidden P0 editorial comparison references remain authored but non-rendered.
+2. `models-audit` previously treated any object-shaped `decision` as complete. It now calls the same `parseModelDecisionContent` contract as the rendered page. A temporary-content mutation test proves `{}` and the absence of hero, media, features, decision cards, workflows, pricing copy or metadata each produce a critical `invalid_localized_decision_content` finding and cannot satisfy legacy marketing coverage.
+3. Every EN/FR/ES deep-legacy document now points all generation hrefs to its exact current successor, removes direct navigation to LTX 2, LTX 2 Fast and the 2.3 predecessor pages, and describes the old route as historical/deep-legacy rather than retired or currently recommended. Recursive href and visible-copy assertions cover the complete documents rather than spot fields.
+4. Grok EN/FR/ES workflow owners now explicitly cover canonical t2v, single-opening-image i2v through 1080p with source-fixed framing/no separate aspect-ratio control, and ref2v with one to seven references addressed from `<IMAGE_0>` at 480p/720p. The contract also locks the canonical runtime mode, resolution and reference-count facts without introducing a blend workflow or dead schema.
+
+Round-1 RED:
+
+```text
+14 tests: 8 passed, 6 failed across all four review findings
+```
+
+Round-1 focused GREEN:
+
+```text
+page/content/template/pricing/lifecycle/audit: 134/134 passed
+final changed-owner rerun:                   49/49 passed
+models:audit:                                49 documents per locale, 0 critical, 9 expected warnings
+```
+
+Round-1 gates:
+
+```text
+model:registry:check                          pass (50 models, 2 tombstones; 50 catalog, 42 roster)
+i18n:check                                    pass (FR 4,207; ES 4,201)
+seo:check                                     pass
+tsc --noEmit                                  pass
+frontend lint                                 pass, 0 warnings
+lint:exposure                                 pass
+git diff --check                              pass
+```
+
+The latest repository-wide `pnpm test:validate` completed with 3,852/3,857 passing. Four stable failures are unchanged upstream debt outside this diff: missing Black Forest Labs theme tokens, the generate attachment-delegation owner split, the synthetic replacement-redirect fixture, and the workspace `UNIFIED_VEO_FIRST_LAST_ENGINE_IDS` contract. A fifth architecture-audit failure was a concurrent temporary-file race (`internal-link-guard-unauthorized-company-link.test.ts` disappeared between discovery and read); its isolated rerun passed 2/2 immediately. No Task 8 owner failed the full run.

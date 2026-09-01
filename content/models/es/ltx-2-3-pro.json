@@ -327,8 +327,8 @@
           "href": "/es/modelos/ltx-2-5-pro"
         },
         {
-          "label": "Comparar 2.3 Pro con 2.5 Pro",
-          "href": "/es/comparativa/ltx-2-3-pro-vs-ltx-2-5-pro?order=ltx-2-5-pro"
+        "label": "Comparar 2.3 Pro con Veo 3.1",
+        "href": "/es/comparativa/ltx-2-3-pro-vs-veo-3-1"
         },
         {
           "label": "Ver precios",
@@ -388,8 +388,8 @@
         "title": "¿Seguir en 2.3 Pro o pasar a 2.5 Pro?",
         "body": "Mantén 2.3 Pro para un flujo de legado reproducible. Elige LTX 2.5 Pro al comenzar un brief de producción actual.",
         "cta": {
-          "label": "Comparar las generaciones Pro",
-          "href": "/es/comparativa/ltx-2-3-pro-vs-ltx-2-5-pro?order=ltx-2-5-pro"
+          "label": "Ver el LTX 2.5 Pro actual",
+          "href": "/es/modelos/ltx-2-5-pro"
         }
       },
       {

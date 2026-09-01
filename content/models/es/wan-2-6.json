@@ -330,8 +330,8 @@
           "href": "/es/modelos/wan-3"
         },
         {
-          "label": "Comparar Wan 2.6 con Wan 3",
-          "href": "/es/comparativa/wan-2-6-vs-wan-3?order=wan-3"
+        "label": "Comparar Wan 2.6 con Sora 2",
+        "href": "/es/comparativa/sora-2-vs-wan-2-6?order=wan-2-6"
         },
         {
           "label": "Ver precios",
@@ -391,8 +391,8 @@
         "title": "¿Seguir en Wan 2.6 o pasar a Wan 3?",
         "body": "Mantén Wan 2.6 para un flujo de legado reproducible. Elige Wan 3 para producción actual desde texto, imagen o referencias.",
         "cta": {
-          "label": "Comparar las generaciones Wan",
-          "href": "/es/comparativa/wan-2-6-vs-wan-3?order=wan-3"
+          "label": "Ver el Wan 3 actual",
+          "href": "/es/modelos/wan-3"
         }
       },
       {

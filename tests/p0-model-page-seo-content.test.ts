@@ -6,9 +6,11 @@ import test from 'node:test';
 import type { AppLocale } from '../frontend/i18n/locales.ts';
 import {
   getRuntimeModelByCanonicalSlug,
+  listPublishedRuntimeModels,
   resolveRuntimePublicSlug,
 } from '../frontend/config/model-runtime.ts';
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
+import { isPublishedComparisonSlug } from '../frontend/lib/compare-hub/data.ts';
 import { buildModelDecisionData } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-data.ts';
 import { parseModelDecisionContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-content.ts';
 import { parseModelExamplesContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-content.ts';
@@ -73,12 +75,18 @@ const SIBLING_SLUG = {
 } as const;
 
 const LIFECYCLE = {
-  'ltx-2-3-pro': { state: 'legacy', successor: 'ltx-2-5-pro', comparison: 'ltx-2-3-pro-vs-ltx-2-5-pro' },
-  'ltx-2-3-fast': { state: 'legacy', successor: 'ltx-2-5-fast', comparison: 'ltx-2-3-fast-vs-ltx-2-5-fast' },
-  'ltx-2': { state: 'deep_legacy', successor: 'ltx-2-5-pro', comparison: null },
-  'ltx-2-fast': { state: 'deep_legacy', successor: 'ltx-2-5-fast', comparison: null },
-  'wan-2-6': { state: 'legacy', successor: 'wan-3', comparison: 'wan-2-6-vs-wan-3' },
-  'wan-2-5': { state: 'deep_legacy', successor: 'wan-3', comparison: null },
+  'ltx-2-3-pro': { state: 'legacy', successor: 'ltx-2-5-pro', futureComparison: 'ltx-2-3-pro-vs-ltx-2-5-pro' },
+  'ltx-2-3-fast': { state: 'legacy', successor: 'ltx-2-5-fast', futureComparison: 'ltx-2-3-fast-vs-ltx-2-5-fast' },
+  'ltx-2': { state: 'deep_legacy', successor: 'ltx-2-5-pro', futureComparison: null },
+  'ltx-2-fast': { state: 'deep_legacy', successor: 'ltx-2-5-fast', futureComparison: null },
+  'wan-2-6': { state: 'legacy', successor: 'wan-3', futureComparison: 'wan-2-6-vs-wan-3' },
+  'wan-2-5': { state: 'deep_legacy', successor: 'wan-3', futureComparison: null },
+} as const;
+
+const DEEP_LEGACY = {
+  'ltx-2': { successor: 'ltx-2-5-pro', obsoleteModelSlugs: ['ltx-2', 'ltx-2-fast', 'ltx-2-3-pro', 'ltx-2-3-fast'] },
+  'ltx-2-fast': { successor: 'ltx-2-5-fast', obsoleteModelSlugs: ['ltx-2', 'ltx-2-fast', 'ltx-2-3-pro', 'ltx-2-3-fast'] },
+  'wan-2-5': { successor: 'wan-3', obsoleteModelSlugs: ['wan-2-5'] },
 } as const;
 
 type ModelDocument = {
@@ -137,6 +145,18 @@ function links(decision: ReturnType<typeof parseModelDecisionContent>): string[]
     ...decision.decisionCards.map(({ cta }) => cta.href),
     decision.pricingCopy.ctaHref,
   ];
+}
+
+function collectHrefs(value: unknown, key = ''): string[] {
+  if (key === 'href' && typeof value === 'string') return [value];
+  if (Array.isArray(value)) return value.flatMap((entry) => collectHrefs(entry, key));
+  if (!value || typeof value !== 'object') return [];
+  return Object.entries(value).flatMap(([nestedKey, nested]) => collectHrefs(nested, nestedKey));
+}
+
+function comparisonSlugFromHref(href: string): string | null {
+  const pathname = href.split(/[?#]/, 1)[0] ?? '';
+  return pathname.match(/^\/(?:ai-video-engines|fr\/comparatif|es\/comparativa)\/([^/]+)$/)?.[1] ?? null;
 }
 
 function localizedModelHref(locale: AppLocale, slug: string) {
@@ -246,6 +266,57 @@ test('P0 links are localized, decision-complete, and future comparison links sta
   }
 });
 
+test('rendered decision links expose only canonically published comparison pairs', () => {
+  const engines = new Map(listFalEngines().map((engine) => [engine.modelSlug, engine]));
+  for (const model of listPublishedRuntimeModels()) {
+    const engine = engines.get(model.slug);
+    if (!engine || !getModelPageTemplateConfig(model.slug)) continue;
+    for (const locale of LOCALES) {
+      const projected = buildModelDecisionData({
+        engine,
+        locale,
+        decisionContent: readDocument(locale, model.slug).decision,
+      });
+      assert.ok(projected, `${model.slug}/${locale}`);
+      for (const href of collectHrefs(projected)) {
+        const comparisonSlug = comparisonSlugFromHref(href);
+        if (comparisonSlug) {
+          assert.equal(
+            isPublishedComparisonSlug(comparisonSlug),
+            true,
+            `${model.slug}/${locale} rendered unpublished comparison ${comparisonSlug}`,
+          );
+        }
+      }
+    }
+  }
+});
+
+test('hidden P0 decision projection withholds authored future comparison links', () => {
+  const engines = new Map(listFalEngines().map((engine) => [engine.modelSlug, engine]));
+  for (const slug of P0_SLUGS) {
+    const engine = engines.get(slug);
+    assert.ok(engine, slug);
+    for (const locale of LOCALES) {
+      const raw = parseModelDecisionContent(readDocument(locale, slug).decision, slug, locale);
+      assert.ok(
+        links(raw).some((href) => comparisonSlugFromHref(href) !== null),
+        `${slug}/${locale} keeps future comparison editorial content`,
+      );
+      const projected = buildModelDecisionData({ engine, locale, decisionContent: raw });
+      assert.ok(projected, `${slug}/${locale}`);
+      assert.deepEqual(
+        collectHrefs(projected).filter((href) => {
+          const comparisonSlug = comparisonSlugFromHref(href);
+          return comparisonSlug !== null && !isPublishedComparisonSlug(comparisonSlug);
+        }),
+        [],
+        `${slug}/${locale} must not render an unpublished comparison`,
+      );
+    }
+  }
+});
+
 test('P0 galleries are authored but hidden and contain no placeholder media', () => {
   for (const slug of P0_SLUGS) {
     const runtime = getRuntimeModelByCanonicalSlug(slug);
@@ -315,11 +386,102 @@ test('legacy and deep-legacy page copy follows the canonical successor graph wit
       assert.ok(links(decision).includes(localizedModelHref(locale, policy.successor)), `${slug}/${locale} successor link`);
       if (policy.state === 'legacy') {
         assert.ok(links(decision).includes(`/app?engine=${runtime.id}`), `${slug}/${locale} remains executable`);
-        assert.ok(policy.comparison);
-        assert.ok(links(decision).some((href) => href.startsWith(localizedComparisonToken(locale, policy.comparison))), `${slug}/${locale} upgrade scoreboard`);
+        assert.ok(policy.futureComparison);
+        assert.equal(
+          links(decision).some((href) => href.startsWith(localizedComparisonToken(locale, policy.futureComparison))),
+          false,
+          `${slug}/${locale} future upgrade scoreboard stays unpublished`,
+        );
       } else {
         assert.equal(links(decision).includes(`/app?engine=${runtime.id}`), false, `${slug}/${locale} deep legacy must not generate on the old route`);
         assert.ok(links(decision).includes(`/app?engine=${policy.successor}`), `${slug}/${locale} generation goes to successor`);
+      }
+    }
+  }
+});
+
+test('deep-legacy documents contain no obsolete generation destination or active recommendation', () => {
+  const activeRecommendationPatterns = {
+    en: /\b(?:use|choose|generate|create|draft|start|switch|move|stay)\b[^.!?\n]{0,120}\b(?:LTX 2(?![.-]?5)|Wan 2[.,]5)\b/i,
+    fr: /\b(?:utilisez|choisissez|générez|créez|commencez|démarrez|lancez|passez|restez)\b[^.!?\n]{0,120}\b(?:LTX 2(?![.-]?5)|Wan 2[.,]5)\b/i,
+    es: /\b(?:usa|utiliza|elige|genera|crea|empieza|comienza|cambia|pasa|mantén)\b[^.!?\n]{0,120}\b(?:LTX 2(?![.-]?5)|Wan 2[.,]5)\b/i,
+  } as const;
+  const retiredWords = {
+    en: /\bretired\b/i,
+    fr: /\bretir(?:é|ée|és|ées)\b/i,
+    es: /\bretirad[oa]s?\b/i,
+  } as const;
+
+  for (const [slug, policy] of Object.entries(DEEP_LEGACY)) {
+    for (const locale of LOCALES) {
+      const document = readDocument(locale, slug);
+      const hrefs = collectHrefs(document);
+      const generationHrefs = hrefs.filter((href) => href.startsWith('/app?engine='));
+      assert.ok(generationHrefs.length > 0, `${slug}/${locale} should retain a successor generation CTA`);
+      assert.deepEqual(
+        [...new Set(generationHrefs)],
+        [`/app?engine=${policy.successor}`],
+        `${slug}/${locale} generation destinations`,
+      );
+      for (const obsoleteSlug of policy.obsoleteModelSlugs) {
+        assert.equal(
+          hrefs.some((href) => new RegExp(`/(?:models|modeles|modelos)/${obsoleteSlug}(?:[?#]|$)`).test(href)),
+          false,
+          `${slug}/${locale} links obsolete model ${obsoleteSlug}`,
+        );
+      }
+      for (const value of collectVisibleStrings(document)) {
+        assert.doesNotMatch(value, activeRecommendationPatterns[locale], `${slug}/${locale}: ${value}`);
+        assert.doesNotMatch(value, retiredWords[locale], `${slug}/${locale}: ${value}`);
+      }
+    }
+  }
+});
+
+test('Grok localized decision workflows mirror the three canonical mode contracts', () => {
+  const engine = listFalEngines().find((candidate) => candidate.modelSlug === 'grok-imagine-video-1-5');
+  assert.ok(engine);
+  assert.deepEqual(engine.engine.modes, ['t2v', 'i2v', 'ref2v']);
+  assert.deepEqual(engine.engine.modeCaps?.i2v?.resolution, ['480p', '720p', '1080p']);
+  assert.deepEqual(engine.engine.modeCaps?.ref2v?.resolution, ['480p', '720p']);
+  const imageField = engine.engine.inputSchema?.required.find((field) => field.id === 'image_url');
+  const referenceField = engine.engine.inputSchema?.required.find((field) => field.id === 'reference_image_urls');
+  assert.equal(imageField?.maxCount, 1);
+  assert.equal(referenceField?.minCount, 1);
+  assert.equal(referenceField?.maxCount, 7);
+
+  const expectations = {
+    en: {
+      titles: ['Text-to-video', 'Image-to-video', 'Reference-to-video'],
+      t2v: ['aspect ratio', '1080p'],
+      i2v: ['one opening image', '1080p', 'framing', 'no separate aspect-ratio control'],
+      ref2v: ['one to seven images', '<IMAGE_0>', '480p or 720p'],
+    },
+    fr: {
+      titles: ['Texte vers vidéo', 'Image vers vidéo', 'Références vers vidéo'],
+      t2v: ['ratio', '1080p'],
+      i2v: ["une seule image d’ouverture", '1080p', 'cadrage', 'aucun contrôle de ratio séparé'],
+      ref2v: ['une à sept images', '<IMAGE_0>', '480p ou 720p'],
+    },
+    es: {
+      titles: ['Texto a video', 'Imagen a video', 'Referencias a video'],
+      t2v: ['relación de aspecto', '1080p'],
+      i2v: ['una sola imagen inicial', '1080p', 'encuadre', 'sin un control de relación de aspecto separado'],
+      ref2v: ['una a siete imágenes', '<IMAGE_0>', '480p o 720p'],
+    },
+  } as const;
+
+  for (const locale of LOCALES) {
+    const decision = parseModelDecisionContent(
+      readDocument(locale, 'grok-imagine-video-1-5').decision,
+      'grok-imagine-video-1-5',
+      locale,
+    );
+    const workflows = decision.referenceWorkflows.slice(0, 3);
+    assert.deepEqual(workflows.map(({ title }) => title), expectations[locale].titles, `${locale} workflow owners`);
+    for (const [index, phrases] of [expectations[locale].t2v, expectations[locale].i2v, expectations[locale].ref2v].entries()) {
+      for (const phrase of phrases) {
+        assert.ok(workflows[index]?.body.includes(phrase), `${locale}/${workflows[index]?.title}: ${phrase}`);
       }
     }
   }

@@ -344,7 +344,7 @@ test('LTX 2 deep-legacy pages keep historical positioning and route new generati
   assert.equal(en.hero.primaryCta.href, '/models/ltx-2-5-pro');
   assert.equal(en.pricing.cta.href, '/app?engine=ltx-2-5-pro');
   assert.equal(en.hero.quickLinks[2]?.href, '#prompting');
-  assert.equal(en.decisionCards[1]?.cta.href, '/models/ltx-2-fast');
+  assert.equal(en.decisionCards[1]?.cta.href, '/models/ltx-2-5-fast');
   assert.doesNotMatch(visibleDecisionText(en), /audio-to-video|Extend|Retake|vertical\/social|9:16/i);
   assert.match(fr.hero.subtitle, /Clips 16:9 haute fidélité/);
 
@@ -354,6 +354,7 @@ test('LTX 2 deep-legacy pages keep historical positioning and route new generati
   assert.equal(fast.hero.primaryCta.href, '/models/ltx-2-5-fast');
   assert.equal(fast.pricing.cta.href, '/app?engine=ltx-2-5-fast');
   assert.equal(fast.hero.quickLinks[2]?.href, '#prompting');
+  assert.equal(fast.decisionCards[1]?.cta.href, '/models/ltx-2-5-pro');
   assert.doesNotMatch(visibleDecisionText(fast), /audio-to-video|Extend|Retake|vertical\/social|9:16/i);
   assert.match(es.hero.subtitle, /Borradores 16:9 rápidos/);
 });

@@ -1,5 +1,6 @@
 import type { AppLocale } from '@/i18n/locales';
 import type { FalEngineEntry } from '@/config/falEngines';
+import { isPublishedComparisonSlug } from '@/lib/compare-hub/data';
 
 import { buildDecisionPricingScenarios, type ModelDecisionPricingScenario } from './model-page-decision-pricing';
 import { parseModelDecisionContent } from './model-page-decision-content';
@@ -70,6 +71,20 @@ export function buildModelDecisionPricingScenarios(
   return buildDecisionPricingScenarios(entry, locale, presets);
 }
 
+function comparisonSlugFromHref(href: string): string | null {
+  const pathname = href.split(/[?#]/, 1)[0] ?? '';
+  return pathname.match(/^\/(?:ai-video-engines|fr\/comparatif|es\/comparativa)\/([^/]+)$/)?.[1] ?? null;
+}
+
+function isPublishedDecisionHref(href: string): boolean {
+  const comparisonSlug = comparisonSlugFromHref(href);
+  return comparisonSlug === null || isPublishedComparisonSlug(comparisonSlug);
+}
+
+function publishedLinkOrFallback(link: ModelDecisionLink, fallbackHref: string): ModelDecisionLink {
+  return isPublishedDecisionHref(link.href) ? link : { ...link, href: fallbackHref };
+}
+
 export function buildModelDecisionData({
   engine,
   locale,
@@ -96,17 +111,25 @@ export function buildModelDecisionData({
   );
 
   return {
-    hero: copy.hero,
+    hero: {
+      ...copy.hero,
+      primaryCta: publishedLinkOrFallback(copy.hero.primaryCta, template.hero.primaryCtaHref),
+      secondaryCta: publishedLinkOrFallback(copy.hero.secondaryCta, template.hero.secondaryCtaHref),
+      quickLinks: copy.hero.quickLinks.filter((link) => isPublishedDecisionHref(link.href)),
+    },
     media: copy.media,
     features: copy.features,
-    decisionCards: copy.decisionCards,
+    decisionCards: copy.decisionCards.filter((card) => isPublishedDecisionHref(card.cta.href)),
     referenceWorkflows: copy.referenceWorkflows,
     meta: copy.meta,
     pricing: {
       title: copy.pricingCopy.title,
       subtitle: copy.pricingCopy.subtitle,
       footnote: copy.pricingCopy.footnote,
-      cta: { label: copy.pricingCopy.ctaLabel, href: copy.pricingCopy.ctaHref },
+      cta: publishedLinkOrFallback(
+        { label: copy.pricingCopy.ctaLabel, href: copy.pricingCopy.ctaHref },
+        template.pricing.anchorHref
+      ),
       scenarios,
     },
   };

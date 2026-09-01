@@ -330,8 +330,8 @@
           "href": "/models/wan-3"
         },
         {
-          "label": "Compare Wan 2.6 with Wan 3",
-          "href": "/ai-video-engines/wan-2-6-vs-wan-3?order=wan-3"
+        "label": "Compare Wan 2.6 with Sora 2",
+        "href": "/ai-video-engines/sora-2-vs-wan-2-6?order=wan-2-6"
         },
         {
           "label": "View pricing",
@@ -391,8 +391,8 @@
         "title": "Stay on Wan 2.6 or move to Wan 3?",
         "body": "Keep Wan 2.6 for a repeatable legacy multi-shot workflow. Choose Wan 3 for current text, image and reference-led production.",
         "cta": {
-          "label": "Compare the Wan generations",
-          "href": "/ai-video-engines/wan-2-6-vs-wan-3?order=wan-3"
+          "label": "View current Wan 3",
+          "href": "/models/wan-3"
         }
       },
       {

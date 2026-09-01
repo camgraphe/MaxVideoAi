@@ -36,9 +36,9 @@
       { "title": "Comparer comme une nouvelle famille", "body": "Évaluez le mouvement, la fidélité, la caméra et la sécurité face aux modèles établis sans promettre une victoire générale.", "cta": { "label": "Voir Grok face à Sora 2", "href": "/fr/comparatif/grok-imagine-video-1-5-vs-sora-2?order=grok-imagine-video-1-5" } }
     ],
     "referenceWorkflows": [
-      { "title": "Texte vers vidéo", "body": "Décrivez sujet, action, caméra, ambiance et plan final dans une progression courte." },
-      { "title": "Référence d'identité", "body": "Nommez l'image qui protège visage, tenue ou objet et les traits exacts à conserver." },
-      { "title": "Référence de scène", "body": "Utilisez une autre image pour guider décor, palette ou lumière sans remplacer l'identité." },
+      { "title": "Texte vers vidéo", "body": "Choisissez un ratio pris en charge et décrivez sujet, action, caméra, ambiance et fin pour un clip jusqu’en 1080p." },
+      { "title": "Image vers vidéo", "body": "Animez une seule image d’ouverture jusqu’en 1080p ; cette source fixe le cadrage, car ce mode ne propose aucun contrôle de ratio séparé." },
+      { "title": "Références vers vidéo", "body": "Joignez une à sept images, adressez-les depuis <IMAGE_0>, nommez le rôle de chacune et utilisez uniquement 480p ou 720p." },
       { "title": "Revue responsable", "body": "Confirmez les droits des images, le consentement des personnes et l'absence de texte ou marques indésirables." }
     ],
     "pricingCopy": { "title": "Tarification par scénario Grok 1.5", "subtitle": "Comparez un plan texte de six secondes en 720p et une scène de huit secondes en 480p guidée par deux images.", "footnote": "Le devis de référence consomme le nombre d'images déclaré par le manifeste ; aucun total fini n'est écrit dans le contenu.", "ctaLabel": "Générer avec Grok 1.5", "ctaHref": "/app?engine=grok-imagine-video-1-5" },

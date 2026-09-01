@@ -327,8 +327,8 @@
           "href": "/models/ltx-2-5-pro"
         },
         {
-          "label": "Compare 2.3 Pro with 2.5 Pro",
-          "href": "/ai-video-engines/ltx-2-3-pro-vs-ltx-2-5-pro?order=ltx-2-5-pro"
+        "label": "Compare 2.3 Pro with Veo 3.1",
+        "href": "/ai-video-engines/ltx-2-3-pro-vs-veo-3-1"
         },
         {
           "label": "View pricing",
@@ -388,8 +388,8 @@
         "title": "Stay on 2.3 Pro or move to 2.5 Pro?",
         "body": "Keep 2.3 Pro for a repeatable legacy job or existing media. Use LTX 2.5 Pro when starting a current production brief.",
         "cta": {
-          "label": "Compare the Pro generations",
-          "href": "/ai-video-engines/ltx-2-3-pro-vs-ltx-2-5-pro?order=ltx-2-5-pro"
+          "label": "View current LTX 2.5 Pro",
+          "href": "/models/ltx-2-5-pro"
         }
       },
       {

@@ -3,8 +3,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import modelExamplesContent from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-content.ts';
+import modelDecisionContent from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-content.ts';
 
 const { parseModelExamplesContent } = modelExamplesContent;
+const { parseModelDecisionContent } = modelDecisionContent;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
@@ -259,9 +261,8 @@ async function runLocalizedExamplesChecks(catalogBySlug, issues, contentRoot) {
   }
 }
 
-function getMarketingCoverage(content) {
+function getMarketingCoverage(content, hasDecisionContent = false) {
   const custom = content?.custom && typeof content.custom === 'object' ? content.custom : {};
-  const hasDecisionContent = content?.decision && typeof content.decision === 'object';
 
   return {
     hero: Boolean(
@@ -324,7 +325,32 @@ async function runMarketingContentChecks(catalogBySlug, issues, contentRoot) {
       continue;
     }
 
-    const coverage = getMarketingCoverage(content);
+    let hasDecisionContent = false;
+    if (content?.decision !== undefined) {
+      try {
+        parseModelDecisionContent(
+          content.decision,
+          modelSlug,
+          'en',
+          `content/models/en/${modelSlug}.json#decision`,
+        );
+        hasDecisionContent = true;
+      } catch (error) {
+        addIssue(
+          issues,
+          'critical',
+          'invalid_localized_decision_content',
+          `Model "${modelSlug}" has invalid EN decision content: ${error instanceof Error ? error.message : String(error)}.`,
+          {
+            modelSlug,
+            locale: 'en',
+            error: error instanceof Error ? error.message : String(error),
+          },
+        );
+      }
+    }
+
+    const coverage = getMarketingCoverage(content, hasDecisionContent);
     const missingCriticalBlocks = Object.entries({
       hero: coverage.hero,
       useCases: coverage.useCases,
