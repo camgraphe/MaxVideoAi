@@ -13,6 +13,7 @@ import {
   analyticsConsentFromUpdateEvent,
   hasAnalyticsConsentCookieInBrowser,
 } from '@/lib/analytics/consent-client';
+import { readGa4SessionId } from '@/lib/analytics/ga-session-browser';
 import { readWalletAnalyticsJourney } from '@/lib/analytics/journey-browser';
 import {
   walletAnalyticsJourneyCacheKey,
@@ -176,7 +177,8 @@ export function WalletExpressCheckout({
         });
       }, EXPRESS_CHECKOUT_READY_TIMEOUT_MS);
       const analyticsJourney = readWalletAnalyticsJourney();
-      const attributionKey = `${analyticsConsentGranted ? 'analytics-granted' : 'analytics-denied'}:${walletAnalyticsJourneyCacheKey(analyticsJourney)}`;
+      const gaSessionId = analyticsConsentGranted ? await readGa4SessionId() : null;
+      const attributionKey = `${analyticsConsentGranted ? 'analytics-granted' : 'analytics-denied'}:${walletAnalyticsJourneyCacheKey(analyticsJourney)}:${gaSessionId ?? 'no-session'}`;
       const requestKey = buildWalletExpressCheckoutRequestKey({
         userId: sessionUserId,
         amountCents,
@@ -196,7 +198,7 @@ export function WalletExpressCheckout({
                 clientSecret: cachedCheckoutSession.clientSecret,
                 sessionId: cachedCheckoutSession.sessionId,
               }
-            : await getCheckoutSessionResult(requestKey, analyticsJourney);
+            : await getCheckoutSessionResult(requestKey, analyticsJourney, gaSessionId);
 
         if (readyTimedOut) return;
         if (checkoutSessionResult.type !== 'success') {
@@ -394,14 +396,15 @@ export function WalletExpressCheckout({
 
     async function getCheckoutSessionResult(
       requestKey: string,
-      analyticsJourney: WalletAnalyticsJourney | null
+      analyticsJourney: WalletAnalyticsJourney | null,
+      gaSessionId: string | null,
     ): Promise<CheckoutSessionResult> {
       const pendingCheckoutSession = pendingCheckoutSessionRef.current;
       if (pendingCheckoutSession?.key === requestKey) {
         return pendingCheckoutSession.promise;
       }
 
-      const promise = createCheckoutSessionResult(analyticsJourney);
+      const promise = createCheckoutSessionResult(analyticsJourney, gaSessionId);
       pendingCheckoutSessionRef.current = { key: requestKey, promise };
       const result = await promise;
       if (pendingCheckoutSessionRef.current?.key === requestKey) {
@@ -419,7 +422,8 @@ export function WalletExpressCheckout({
     }
 
     async function createCheckoutSessionResult(
-      analyticsJourney: WalletAnalyticsJourney | null
+      analyticsJourney: WalletAnalyticsJourney | null,
+      gaSessionId: string | null,
     ): Promise<CheckoutSessionResult> {
       const currentSession = sessionRef.current;
       const token = currentSession?.access_token ?? null;
@@ -435,6 +439,7 @@ export function WalletExpressCheckout({
           mode: 'express_checkout',
           locale,
           captchaToken: captchaToken ?? undefined,
+          ...(gaSessionId ? { gaSessionId } : {}),
           ...(analyticsJourney ? { analyticsJourney } : {}),
         }),
       });

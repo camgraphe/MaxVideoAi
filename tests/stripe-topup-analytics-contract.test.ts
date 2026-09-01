@@ -8,6 +8,8 @@ test('wallet validates once and copies attribution to Stripe metadata', () => {
   assert.match(source, /const walletAttribution = normalizeWalletAttribution/);
   assert.match(source, /Object\.assign\(sessionMetadata, walletAttributionMetadata\)/);
   assert.match(source, /findReusableExpressCheckoutSession\([\s\S]*attribution: walletAttribution/);
+  assert.match(source, /resolveWalletGa4CheckoutContext/);
+  assert.match(source, /Object\.assign\(sessionMetadata, walletGa4Context\.metadata\)/);
   assert.equal((source.match(/normalizeWalletAttribution\(/g) ?? []).length, 1);
 });
 
@@ -23,6 +25,7 @@ test('Stripe completion emits accepted attribution and first-topup state', () =>
   assert.doesNotMatch(source, /String\(metadataRecord\.first_wallet_topup/);
   assert.match(source, /name: 'topup_completed'/);
   assert.match(source, /name: 'purchase'/);
+  assert.match(source, /sessionId: gaSessionId/);
   assert.match(source, /await Promise\.allSettled\(\[/);
   assert.doesNotMatch(source, /attribution_fingerprint:\s*metadataRecord/);
 });

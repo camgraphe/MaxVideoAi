@@ -4,6 +4,7 @@ import type { Stripe } from '@stripe/stripe-js';
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import type { AppLocale } from '@/i18n/locales';
 import { recordCheckoutInteractionEvent, type CheckoutInteractionSource } from '@/lib/analytics/checkout-interaction-events';
+import { readGa4SessionId } from '@/lib/analytics/ga-session-browser';
 import { readWalletAnalyticsJourney } from '@/lib/analytics/journey-browser';
 import {
   beginHostedWalletCheckoutAttempt,
@@ -137,12 +138,14 @@ export function useHostedWalletCheckout({
 
     try {
       const analyticsJourney = readWalletAnalyticsJourney();
+      const gaSessionId = await readGa4SessionId();
       const result = await requestHostedWalletCheckout({
         amountCents,
         currency,
         locale,
         accessToken,
         captchaToken: submittedCaptchaToken ?? undefined,
+        gaSessionId,
         analyticsJourney,
       });
 

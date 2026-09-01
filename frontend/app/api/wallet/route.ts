@@ -16,7 +16,7 @@ import { applyEngineVariantPricing } from '@/lib/pricing-addons';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { CONSENT_COOKIE_NAME, parseConsent } from '@/lib/consent';
 import { findTopupTier } from '@/config/topupTiers';
-import { extractGaClientId } from '@/server/ga4';
+import { resolveWalletGa4CheckoutContext } from '@/server/wallet-ga4-session';
 import {
   buildWalletTopUpCheckoutSessionParams,
   normalizeWalletTopUpAmountCents,
@@ -185,6 +185,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
   const analyticsConsentGranted = hasAnalyticsConsent(req);
+  const walletGa4Context = resolveWalletGa4CheckoutContext({
+    analyticsConsentGranted,
+    gaClientCookie: req.cookies.get('_ga')?.value ?? null,
+    gaSessionId: body.gaSessionId,
+  });
   const walletAttribution = normalizeWalletAttribution(body.analyticsJourney, analyticsConsentGranted);
   const walletAttributionMetadata = buildWalletAttributionMetadata(walletAttribution);
 
@@ -403,6 +408,7 @@ export async function POST(req: NextRequest) {
         amountCents,
         attribution: walletAttribution,
         currency: resolvedCurrencyUpper,
+        gaSessionId: walletGa4Context.sessionId,
       });
       if (reusableSession) {
         console.info('[payments] reusable checkout session returned', {
@@ -499,12 +505,7 @@ export async function POST(req: NextRequest) {
       sessionMetadata.topup_tier_label = tier.label;
     }
     sessionMetadata.analytics_consent = analyticsConsentGranted ? 'granted' : 'denied';
-    if (analyticsConsentGranted) {
-      const gaClientId = extractGaClientId(req.cookies.get('_ga')?.value ?? null);
-      if (gaClientId) {
-        sessionMetadata.ga_client_id = gaClientId;
-      }
-    }
+    Object.assign(sessionMetadata, walletGa4Context.metadata);
     if (currencyResolution.country) {
       sessionMetadata.currency_country = currencyResolution.country;
     }

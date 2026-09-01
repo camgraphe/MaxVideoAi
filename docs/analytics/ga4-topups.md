@@ -1,6 +1,6 @@
 # GA4 Funnel and Top-Up Configuration (Production)
 
-MaxVideoAI measures the consented acquisition journey from entry through signup, first generation, and first wallet top-up. Client events use the browser GA4 transport; completed top-ups and purchases are emitted server-side by the Stripe webhook.
+MaxVideoAI measures the consented acquisition journey from entry through signup, first generation, and first wallet top-up. Client events use the browser GA4 transport; completed top-ups and purchases are emitted server-side by the Stripe webhook. When analytics consent is granted, checkout creation also captures the current GA4 `session_id` through `gtag('get', ...)`. The webhook returns that bounded identifier with its Measurement Protocol events so purchases join the originating browser session instead of reporting a landing page or channel as `(not set)`.
 
 Server-side events require:
 
@@ -152,6 +152,7 @@ Use a test campaign URL and verify:
 - `topup_started` increments `topup_sequence`, followed by `topup_checkout_opened` when checkout opens;
 - cancellation sends `topup_cancelled`, and a client-side failure sends `topup_failed`;
 - a successful Stripe test-mode top-up sends attributed `topup_completed` and `purchase` events from the webhook with authoritative `is_first_wallet_topup`;
+- the server-side completion events carry the same GA4 `session_id` as the browser session that opened checkout;
 - a refund sends `topup_refunded` with the refund metrics;
 - attribution and GA4 delivery failures never block receipt creation or wallet crediting.
 

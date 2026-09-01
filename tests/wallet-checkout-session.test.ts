@@ -172,6 +172,8 @@ test('wallet route validates and propagates consented journey attribution', () =
   assert.match(routeSource, /buildWalletAttributionMetadata/);
   assert.match(routeSource, /buildCheckoutAttemptAttributionMetadata/);
   assert.match(routeSource, /attribution: walletAttribution/);
+  assert.match(routeSource, /resolveWalletGa4CheckoutContext/);
+  assert.match(routeSource, /Object\.assign\(sessionMetadata, walletGa4Context\.metadata\)/);
   assert.equal((routeSource.match(/hasAnalyticsConsent\(req\)/g) ?? []).length, 1);
 });
 

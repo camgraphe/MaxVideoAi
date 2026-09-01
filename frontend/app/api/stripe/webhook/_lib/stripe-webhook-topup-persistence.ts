@@ -3,6 +3,7 @@ import { query, withDbTransaction, type QueryExecutor } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
 import { recordMockWalletTopUp } from '@/lib/wallet';
 import { extractGaClientId, sendGa4Event } from '@/server/ga4';
+import { normalizeGa4SessionId } from '@/lib/analytics/ga-session-id';
 import {
   recordConfirmedMcpWalletFunding,
   resolveMcpTrialToWalletWindowSeconds,
@@ -346,6 +347,7 @@ export async function recordStripeTopup(
       const gaClientId = extractGaClientId(
         typeof metadataRecord.ga_client_id === 'string' ? metadataRecord.ga_client_id : null
       );
+      const gaSessionId = normalizeGa4SessionId(metadataRecord.ga_session_id);
       const sourceEvent = typeof metadataRecord.source === 'string' ? metadataRecord.source : null;
       const topupTierId = typeof metadataRecord.topup_tier_id === 'string' ? metadataRecord.topup_tier_id : null;
       const topupTierLabel =
@@ -383,12 +385,14 @@ export async function recordStripeTopup(
         sendGa4Event({
           name: 'topup_completed',
           clientId: gaClientId,
+          sessionId: gaSessionId,
           userId,
           params: commonParams,
         }),
         sendGa4Event({
           name: 'purchase',
           clientId: gaClientId,
+          sessionId: gaSessionId,
           userId,
           params: {
             ...commonParams,

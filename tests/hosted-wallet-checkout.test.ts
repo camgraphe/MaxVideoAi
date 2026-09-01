@@ -14,6 +14,7 @@ const validInput: HostedWalletCheckoutInput = {
   locale: 'fr',
   accessToken: 'access-token',
   captchaToken: 'captcha-token',
+  gaSessionId: '1788255901',
   analyticsJourney: {
     version: 1,
     journeyId: '7df6d42a-4b70-4eca-82fe-3a320c4a6eb9',
@@ -51,6 +52,7 @@ test('hosted wallet request preserves amount, settlement currency, locale, auth,
     currency: 'eur',
     locale: 'fr',
     captchaToken: 'captcha-token',
+    gaSessionId: '1788255901',
     analyticsJourney: {
       version: 1,
       journeyId: '7df6d42a-4b70-4eca-82fe-3a320c4a6eb9',

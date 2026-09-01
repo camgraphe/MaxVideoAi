@@ -41,6 +41,7 @@ test('Checkout Session maps canonical amount, currency, FX, destination, and doc
       topup_tier_label: 'Checkout tier',
       analytics_consent: 'granted',
       ga_client_id: 'ga.checkout',
+      ga_session_id: '1788255901',
       first_wallet_topup: 'true',
     },
   } as unknown as Stripe.Checkout.Session;
@@ -69,6 +70,7 @@ test('Checkout Session maps canonical amount, currency, FX, destination, and doc
       topup_tier_label: 'Checkout tier',
       analytics_consent: 'granted',
       ga_client_id: 'ga.checkout',
+      ga_session_id: '1788255901',
       first_wallet_topup: 'true',
     },
     originalAmountCents: 2300,
@@ -114,6 +116,7 @@ test('PaymentIntent maps canonical amount, currency, FX, destination, and docume
       topup_tier_label: 'Intent tier',
       analytics_consent: 'granted',
       ga_client_id: 'ga.intent',
+      ga_session_id: '1788255902',
       first_wallet_topup: 'false',
     },
   } as unknown as Stripe.PaymentIntent;
@@ -141,6 +144,7 @@ test('PaymentIntent maps canonical amount, currency, FX, destination, and docume
       topup_tier_label: 'Intent tier',
       analytics_consent: 'granted',
       ga_client_id: 'ga.intent',
+      ga_session_id: '1788255902',
       first_wallet_topup: 'false',
     },
     originalAmountCents: 3700,

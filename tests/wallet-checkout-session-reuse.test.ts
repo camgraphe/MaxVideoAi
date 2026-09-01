@@ -26,6 +26,7 @@ const openSession = {
   paymentStatus: 'unpaid',
   status: 'open',
 };
+const gaSessionId = '1788255901';
 
 assert.equal(
   EXPRESS_CHECKOUT_REUSE_WINDOW_SECONDS,
@@ -107,6 +108,24 @@ assert.equal(
     attribution,
   }),
   false
+);
+assert.equal(
+  isReusableStripeCheckoutSession({
+    ...openSession,
+    metadata: { ga_session_id: gaSessionId },
+    gaSessionId,
+  }),
+  true,
+  'an open session from the same GA4 session can be reused'
+);
+assert.equal(
+  isReusableStripeCheckoutSession({
+    ...openSession,
+    metadata: { ga_session_id: '1788255000' },
+    gaSessionId,
+  }),
+  false,
+  'an Express Checkout session must not be reused across GA4 sessions'
 );
 assert.equal(isReusableStripeCheckoutSession({ ...openSession, metadata: {}, attribution: null }), true);
 assert.equal(
