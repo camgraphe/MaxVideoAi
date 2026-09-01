@@ -74,21 +74,36 @@ test('builds family dictionary from real app model families', () => {
   assert.ok(dictionary.find((family) => family.label === 'Happy Horse')?.modelSlugs.includes('happy-horse-1-0'));
 });
 
-test('hidden P0 family defaults do not become current or published SEO link targets', () => {
+test('hidden P0 family defaults resolve to safe SEO fallbacks or absence', () => {
   const dictionary = getSeoFamilyDictionary();
-  const expectedDefaults = {
-    ltx: 'ltx-2-5-pro',
-    wan: 'wan-3-prime',
-    grok: 'grok-imagine-video-1-5',
-    flux: 'flux-3',
+  const expectedSeoDefaults = {
+    ltx: 'ltx-2-3-pro',
+    wan: 'wan-2-6',
+    grok: null,
+    flux: null,
   } as const;
+  const hiddenP0Slugs = [
+    'wan-3',
+    'wan-3-prime',
+    'ltx-2-5-fast',
+    'ltx-2-5-pro',
+    'grok-imagine-video-1-5',
+    'flux-3',
+    'flux-3-draft',
+  ];
 
-  for (const [familyId, hiddenDefault] of Object.entries(expectedDefaults)) {
+  for (const [familyId, expectedDefault] of Object.entries(expectedSeoDefaults)) {
     const family = dictionary.find((entry) => entry.id === familyId);
     assert.ok(family, familyId);
-    assert.equal(family.defaultModelSlug, hiddenDefault, familyId);
-    assert.equal(family.currentModelSlugs.includes(hiddenDefault), false, familyId);
-    assert.equal(family.publishedModelSlugs.includes(hiddenDefault), false, familyId);
+    assert.equal(family.defaultModelSlug, expectedDefault, familyId);
+  }
+
+  for (const hiddenSlug of hiddenP0Slugs) {
+    for (const family of dictionary) {
+      assert.equal(family.modelSlugs.includes(hiddenSlug), false, `${family.id}:modelSlugs:${hiddenSlug}`);
+      assert.equal(family.aliases.includes(hiddenSlug), false, `${family.id}:aliases:${hiddenSlug}`);
+      assert.notEqual(family.defaultModelSlug, hiddenSlug, `${family.id}:defaultModelSlug`);
+    }
   }
 });
 

@@ -40,6 +40,15 @@ const SEEDANCE_25_BEST_FOR_SLUGS = [
   'product-videos',
   'ugc-ads',
 ] as const;
+const HIDDEN_P0_MODEL_CASES = [
+  ['wan-3', 'wan'],
+  ['wan-3-prime', 'wan'],
+  ['ltx-2-5-fast', 'ltx'],
+  ['ltx-2-5-pro', 'ltx'],
+  ['grok-imagine-video-1-5', 'grok'],
+  ['flux-3', 'flux'],
+  ['flux-3-draft', 'flux'],
+] as const;
 
 function readRepositoryFile(path: string) {
   return readFileSync(join(PROJECT_ROOT, path), 'utf8');
@@ -157,6 +166,27 @@ test('examples page recommends a current canonical model target instead of an al
   assert.match(link.suggestedAnchor, /LTX 2\.3 prompt examples and specs/i);
   assert.equal(link.verifyExistingLinkFirst, true);
   assert.equal(suggestions.some((item) => item.targetUrl === '/models/ltx-2-3'), false);
+});
+
+test('internal link selection never emits any hidden P0 model URL', () => {
+  const hiddenPaths = new Set(HIDDEN_P0_MODEL_CASES.map(([slug]) => `/models/${slug}`));
+  const leakedPaths = new Set<string>();
+
+  for (const [slug, family] of HIDDEN_P0_MODEL_CASES) {
+    const suggestions = buildInternalLinkSuggestions({
+      rows: [
+        gscRow(`${slug} prompt examples`, `https://maxvideoai.com/examples/${family}`, 24, 180, 0.133, 7.2),
+        gscRow(`${slug} prompting guide`, `https://maxvideoai.com/examples/${family}`, 8, 72, 0.111, 8.1),
+      ],
+    });
+
+    for (const suggestion of suggestions) {
+      if (hiddenPaths.has(suggestion.sourceUrl)) leakedPaths.add(suggestion.sourceUrl);
+      if (hiddenPaths.has(suggestion.targetUrl)) leakedPaths.add(suggestion.targetUrl);
+    }
+  }
+
+  assert.deepEqual([...leakedPaths].sort(), []);
 });
 
 test('model page to examples links are downgraded as expected-existing maintenance checks', () => {

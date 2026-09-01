@@ -7,6 +7,16 @@ import {
 } from '../frontend/lib/seo/missing-content';
 import { formatCodexActionQueueMarkdown } from '../frontend/lib/seo/codex-action-queue';
 
+const HIDDEN_P0_MODEL_CASES = [
+  ['wan-3', 'wan'],
+  ['wan-3-prime', 'wan'],
+  ['ltx-2-5-fast', 'ltx'],
+  ['ltx-2-5-pro', 'ltx'],
+  ['grok-imagine-video-1-5', 'grok'],
+  ['flux-3', 'flux'],
+  ['flux-3-draft', 'flux'],
+] as const;
+
 function gscRow(
   query: string,
   page: string | null,
@@ -99,6 +109,27 @@ test('Pika max length intent maps to specs candidates without fabricating a targ
   assert.equal(item.recommendationType, 'add_specs_block');
   assert.equal(item.targetUrl, null);
   assert.ok(item.likelyPageCandidates.includes('/models/pika-text-to-video'));
+});
+
+test('missing-content candidate selection never emits any hidden P0 model URL', () => {
+  const hiddenPaths = new Set(HIDDEN_P0_MODEL_CASES.map(([slug]) => `/models/${slug}`));
+  const leakedPaths = new Set<string>();
+
+  for (const [slug, family] of HIDDEN_P0_MODEL_CASES) {
+    const items = buildMissingContentItems([
+      gscRow(`${slug} prompt examples`, null, 0, 110, 0, 11.4),
+      gscRow(`${slug} prompting guide`, null, 0, 65, 0, 12.1),
+      gscRow(`${family} video prompts`, null, 0, 40, 0, 12.8),
+    ]);
+
+    for (const item of items) {
+      for (const candidate of item.likelyPageCandidates) {
+        if (hiddenPaths.has(candidate)) leakedPaths.add(candidate);
+      }
+    }
+  }
+
+  assert.deepEqual([...leakedPaths].sort(), []);
 });
 
 test('one-off low-volume query does not trigger create page', () => {

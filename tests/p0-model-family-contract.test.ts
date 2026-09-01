@@ -152,5 +152,8 @@ test('hidden P0 identities stay out of public model, workspace, MCP, roster, fam
     const seoFamily = seoFamilies.find((entry) => entry.id === familyId);
     assert.equal(seoFamily?.publishedModelSlugs.includes(id), false, `SEO publication leaked ${id}`);
     assert.equal(seoFamily?.currentModelSlugs.includes(id), false, `SEO current list leaked ${id}`);
+    assert.equal(seoFamily?.modelSlugs.includes(id), false, `SEO link target leaked ${id}`);
+    assert.equal(seoFamily?.aliases.includes(id), false, `SEO alias leaked ${id}`);
+    assert.notEqual(seoFamily?.defaultModelSlug, id, `SEO default leaked ${id}`);
   }
 });
