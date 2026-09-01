@@ -33,7 +33,11 @@ async function existingModulePath(basePath: string): Promise<string | null> {
 
 async function resolveRepositoryImport(fromPath: string, specifier: string): Promise<string | null> {
   if (specifier.startsWith('@/')) {
-    return existingModulePath(join(frontendRoot, specifier.slice(2)));
+    const aliasedPath = specifier.slice(2);
+    return (
+      await existingModulePath(join(frontendRoot, 'src', aliasedPath))
+      ?? await existingModulePath(join(frontendRoot, aliasedPath))
+    );
   }
   if (specifier === '@maxvideoai/pricing') {
     return existingModulePath(join(repositoryRoot, 'packages/pricing/src/index'));
@@ -301,6 +305,14 @@ test('the complete repository-local preflight import graph excludes attachment m
       'frontend/app/api/generate/_lib/normalized-generation-attachment-validation.ts',
     ),
     `missing shared read-only validation owner; graph:\n${relativePaths.sort().join('\n')}`,
+  );
+  assert.ok(
+    relativePaths.includes('frontend/src/lib/supabase-ssr.ts'),
+    'the graph must resolve @/lib/supabase-ssr through the first tsconfig alias root',
+  );
+  assert.ok(
+    relativePaths.includes('frontend/src/server/engines.ts'),
+    'the graph must resolve @/server/engines through the first tsconfig alias root',
   );
   assert.equal(relativePaths.includes('frontend/app/api/generate/_lib/attachments.ts'), false);
   assert.equal(relativePaths.includes('frontend/server/storage.ts'), false);

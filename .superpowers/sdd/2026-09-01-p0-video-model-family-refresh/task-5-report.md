@@ -231,7 +231,7 @@ The final ownership split is now explicit:
 - `generation-attachment-types.ts` owns `NormalizedAttachment`, preventing read-only validation dependencies from type-importing the mutable attachment processor. `attachments.ts` re-exports the type for compatibility with existing generation consumers.
 - `media-aware-preflight.ts` imports the read-only normalized validator directly.
 - `generation-attachment-processing.ts` separately imports both the mutable upload-capable normalizer and the read-only validator, preserving final execution behavior while keeping that graph out of preflight.
-- The architecture test now resolves all repository-local static imports, type imports, re-exports, literal dynamic imports, and literal `require` calls recursively from `app/api/preflight/route.ts`. It requires the shared read-only owner and rejects `attachments.ts`, `server/storage.ts`, and the mutation symbols anywhere in the complete local graph.
+- The architecture test now resolves repository-local static imports, type imports, re-exports, literal dynamic imports, and literal `require` calls recursively from `app/api/preflight/route.ts`. It requires the shared read-only owner and rejects `attachments.ts`, `server/storage.ts`, and the mutation symbols anywhere in the traversed local graph. Round 4 below corrects its initial `@/*` alias-root coverage.
 
 ### Round-3 RED/GREEN evidence
 
@@ -250,3 +250,17 @@ git diff --check                                           pass
 ```
 
 No pricing fact, provider route, engine catalog row, registry row, or pricing fixture changed in round 3. Round-3 base: `94eb7e9273ee4fc4b7133bdecac1d1a3dc7b33e5`. The final round-3 commit hash is reported in the Task 5 handoff because a commit cannot contain its own hash.
+
+## Reviewer fix round 4 — exact TypeScript alias traversal
+
+The fourth reviewer found that the round-3 import walker resolved `@/*` only under `frontend/*`, while `frontend/tsconfig.json` resolves that alias in the ordered roots `frontend/src/*` and then `frontend/*`. The test therefore missed real imports including `@/lib/supabase-ssr` and `@/server/engines`, making the transitive proof incomplete even though the production boundary was correctly extracted.
+
+The test-only correction now attempts both alias roots in the exact TypeScript order, with the existing file and index extension resolution for each root. The graph contract also explicitly requires `frontend/src/lib/supabase-ssr.ts` and `frontend/src/server/engines.ts`; this makes future alias-resolution regressions fail visibly instead of silently shrinking the graph.
+
+### Round-4 RED/GREEN evidence
+
+Before the test-walker correction, the preflight boundary suite completed with **8/9 passing and 1 failing** on the missing `frontend/src/lib/supabase-ssr.ts` graph owner. After correction, the boundary suite completed with **9/9 passing** and the focused architecture, preflight pricing, attachment/reference, and trusted-media run completed with **40/40 passing**.
+
+The expanded graph revealed no legitimate forbidden path: `attachments.ts`, `server/storage.ts`, and all four mutation symbols remain absent. No production file changed in round 4.
+
+Round-4 final gates: frontend TypeScript, frontend lint, and `git diff --check` pass. Round-4 base: `6f3f99a641dd3e8d931dd26d8d7b5ca1fcf4ae60`. The final round-4 commit hash is reported in the Task 5 handoff because a commit cannot contain its own hash.
