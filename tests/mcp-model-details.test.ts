@@ -181,6 +181,10 @@ test('model details project one executable public model into the exact safe shap
     surface: 'video',
     availability: 'available',
     generationEnabled: true,
+    lifecycle: 'current',
+    successor: null,
+    recommendedByDefault: true,
+    prelaunch: false,
     modes: [
       {
         mode: 't2v',

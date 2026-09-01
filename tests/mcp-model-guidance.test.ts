@@ -30,27 +30,31 @@ test('guidance exposes exactly the reviewed engine records without pricing data'
   const reviewed = listAgentModelGuidance();
 
   assert.deepEqual(reviewed.map((entry) => entry.engineId).sort(), [
+    'flux-3',
+    'flux-3-draft',
     'gemini-omni-flash',
+    'grok-imagine-video-1-5',
     'happy-horse-1-1',
     'kling-o3-pro',
+    'ltx-2-5-fast',
+    'ltx-2-5-pro',
     'minimax-h3',
     'seedance-2-5',
+    'wan-3',
+    'wan-3-prime',
   ]);
   for (const entry of reviewed) {
-    assert.match(entry.reviewedAt, /^2026-08-24$/);
+    assert.match(entry.reviewedAt, /^2026-(08-24|09-01)$/);
     assert.ok(entry.strengths.length >= 1 && entry.strengths.length <= 4);
     assert.ok(entry.bestFor.length >= 1 && entry.bestFor.length <= 5);
     assert.ok(entry.considerations.length >= 1 && entry.considerations.length <= 4);
     entry.evidenceUrls.forEach((url) => assert.match(url, /^https:\/\/maxvideoai\.com\//));
     assert.doesNotMatch(JSON.stringify(entry), /\$|€|£|priceCents|costTier|provider|0\.13/);
-    assert.doesNotMatch(
-      JSON.stringify(entry),
-      /native_audio|high_resolution|\baudio\b|\bsound\b|\bresolution\b/i,
-    );
     assert.ok(Object.isFrozen(entry));
     assert.ok(Object.isFrozen(entry.strengths));
   }
   assert.equal(getAgentModelGuidance('seedance-2-5')?.bestFor.includes('product_video'), false);
+  assert.equal(getAgentModelGuidance('ltx-2-5-fast')?.bestFor.includes('native_audio'), true);
   assert.equal(getAgentModelGuidance('unknown-model'), null);
 });
 

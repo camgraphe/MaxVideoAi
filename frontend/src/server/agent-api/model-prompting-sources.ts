@@ -1,5 +1,6 @@
 import promptingSourceDocument from '@/config/agent-model-prompting-sources.json' with { type: 'json' };
 import { getModelRegistryEntries } from '@/config/model-registry';
+import { listFalEngines } from '@/config/falEngines';
 
 import {
   CANONICAL_GENERATION_MODES,
@@ -36,6 +37,9 @@ const OFFICIAL_HOSTS = new Set([
   'docs.byteplus.com',
   'docs.ltx.io',
   'docs.lumalabs.ai',
+  'docs.modelstudio.console.alibabacloud.com',
+  'docs.x.ai',
+  'bfl.ai',
   'platform.minimax.io',
 ]);
 const GENERATION_MODES = new Set<string>(CANONICAL_GENERATION_MODES);
@@ -97,6 +101,7 @@ function requireReviewDate(value: unknown, path: string): string {
 export function parseAgentModelPromptingSources(
   value: unknown,
   knownEngineIds: ReadonlySet<string>,
+  supportedModesByModel?: ReadonlyMap<string, ReadonlySet<string>>,
 ): readonly AgentModelPromptingSourceRecord[] {
   if (!Array.isArray(value) || value.length < 1 || value.length > 24) {
     fail('document must contain between 1 and 24 records');
@@ -136,6 +141,14 @@ export function parseAgentModelPromptingSources(
     if (modes.some((mode) => !GENERATION_MODES.has(mode))) {
       fail(`${path}.modes contains an unsupported generation mode`);
     }
+    if (supportedModesByModel) {
+      const supported = new Set(modelIds.flatMap((modelId) => [
+        ...(supportedModesByModel.get(modelId) ?? []),
+      ]));
+      if (modes.some((mode) => !supported.has(mode))) {
+        fail(`${path}.modes contains a mode unsupported by its models`);
+      }
+    }
 
     return Object.freeze({
       id,
@@ -153,7 +166,11 @@ export function parseAgentModelPromptingSources(
 }
 
 const knownEngineIds = new Set(getModelRegistryEntries().map((entry) => entry.id));
-const records = parseAgentModelPromptingSources(promptingSourceDocument, knownEngineIds);
+const supportedModesByModel = new Map(listFalEngines().map((entry) => [
+  entry.id,
+  new Set(entry.modes.map((mode) => mode.mode)),
+]));
+const records = parseAgentModelPromptingSources(promptingSourceDocument, knownEngineIds, supportedModesByModel);
 const recordsByModelId = new Map<string, AgentModelPromptingSourceRecord[]>();
 for (const record of records) {
   for (const modelId of record.modelIds) {

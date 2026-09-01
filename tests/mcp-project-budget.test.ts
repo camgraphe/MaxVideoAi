@@ -435,7 +435,8 @@ test('fails closed for invalid catalog, capability, reference, quantity, pricing
   await assertError(calculateAgentProjectBudget(input([{ name: 'Unsafe count', lines: [line({ clipCount: Number.MAX_SAFE_INTEGER + 1 })] }]), principal, makeDeps()), 'PARAMETER_INVALID');
   await assertError(calculateAgentProjectBudget(input([{ name: 'Attempts below range', lines: [line({ attemptsPerClip: 0 })] }]), principal, makeDeps()), 'PARAMETER_INVALID');
   await assertError(calculateAgentProjectBudget(input(Array.from({ length: 5 }, (_, index) => ({ name: `P${index}`, lines: [line()] }))), principal, makeDeps()), 'PARAMETER_INVALID');
-  await assertError(calculateAgentProjectBudget(input([{ name: 'Lines', lines: Array.from({ length: 13 }, () => line()) }]), principal, makeDeps()), 'PARAMETER_INVALID');
+  assert.equal((await calculateAgentProjectBudget(input([{ name: 'Lines', lines: Array.from({ length: 14 }, () => line()) }]), principal, makeDeps())).proposals[0]?.lines.length, 14);
+  await assertError(calculateAgentProjectBudget(input([{ name: 'Lines', lines: Array.from({ length: 15 }, () => line()) }]), principal, makeDeps()), 'PARAMETER_INVALID');
   await assertError(calculateAgentProjectBudget(input([{ name: 'References', lines: [line({ mode: 'ref2v', referenceRoles: Array.from({ length: 51 }, () => 'reference') })] }]), principal, makeDeps()), 'REFERENCE_INVALID');
   await assertError(calculateAgentProjectBudget(input([{ name: 'Attempts', lines: [line({ clipCount: 100, attemptsPerClip: 10 })] }]), principal, makeDeps()), 'PARAMETER_INVALID');
   let currencyCalls = 0;

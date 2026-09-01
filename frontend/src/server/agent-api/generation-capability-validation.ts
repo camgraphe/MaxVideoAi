@@ -427,6 +427,7 @@ function validateImageSettings(
 
 export type GenerationCapabilityValidationOptions = {
   resolvedReferences?: readonly ResolvedReference[];
+  allowUnverifiedReferenceDuration?: boolean;
 };
 
 const REFERENCE_FIELD_TYPES = new Set<EngineInputField['type']>(['image', 'video', 'audio']);
@@ -567,8 +568,11 @@ function validateTrustedReferenceDuration(
     && combinedLimit === undefined
     && exclusiveMaximum === undefined
   ) return;
-  if (reference.kind !== 'asset') return;
-  if (!options.resolvedReferences) return;
+  if (reference.kind !== 'asset' || !options.resolvedReferences) {
+    if (options.allowUnverifiedReferenceDuration) return;
+    if (candidate.engine.id === 'minimax-h3') fail('references', 'reference_invalid');
+    return;
+  }
   const resolved = resolvedReference(reference, options);
   if (!resolved) fail('references', 'reference_invalid');
   const durationSec = resolved.durationSec;

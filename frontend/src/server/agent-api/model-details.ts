@@ -30,6 +30,9 @@ import type {
 } from './types';
 import type { CanonicalGenerationReferenceRole } from './generation-types';
 import { toEngineGenerationMode } from './generation-mode-aliases';
+import { getRuntimeModelById, getRuntimeModelSuccessor } from '@/config/model-runtime';
+import type { AgentModelAccessContext } from './model-catalog';
+import { normalizeVideoDurationOption } from '@/server/video-generation/execution-constraints';
 
 export type AgentModelDetailsDeps = AgentModelCatalogDeps & {
   getGuidance?(engineId: string): AgentModelGuidance | null;
@@ -138,14 +141,17 @@ function projectReferences(
   }));
 }
 
-function projectGuidance(guidance: AgentModelGuidance | null): AgentModelGuidance | null {
+function projectGuidance(
+  guidance: AgentModelGuidance | null,
+  includeEvidence = true,
+): AgentModelGuidance | null {
   if (!guidance) return null;
   return Object.freeze({
     engineId: guidance.engineId,
     strengths: Object.freeze([...guidance.strengths]),
     bestFor: Object.freeze([...guidance.bestFor]),
     considerations: Object.freeze([...guidance.considerations]),
-    evidenceUrls: Object.freeze([...guidance.evidenceUrls]),
+    evidenceUrls: Object.freeze(includeEvidence ? [...guidance.evidenceUrls] : []),
     reviewedAt: guidance.reviewedAt,
   });
 }
@@ -173,8 +179,11 @@ function projectPromptingSources(
 function projectDuration(caps: EngineModeUiCaps, engine: EngineCaps): AgentModelDurationDetails | null {
   if (!caps.duration) return null;
   if ('options' in caps.duration) {
+    const options = caps.duration.options
+      .map(normalizeVideoDurationOption)
+      .filter((value): value is number => typeof value === 'number');
     return Object.freeze({
-      options: Object.freeze([...caps.duration.options]),
+      options: Object.freeze(options),
       range: null,
     });
   }
@@ -315,21 +324,38 @@ function projectMode(
   });
 }
 
-function listPublicCandidates(deps?: AgentModelDetailsDeps): Promise<readonly AgentPublicCatalogEngine[]> {
-  return deps ? listPublicAgentCatalogEngines(deps) : listPublicAgentCatalogEngines();
+function listPublicCandidates(
+  engineId: string,
+  deps?: AgentModelDetailsDeps,
+  access?: AgentModelAccessContext,
+): Promise<readonly AgentPublicCatalogEngine[]> {
+  return deps
+    ? listPublicAgentCatalogEngines(deps, { exactId: engineId, access })
+    : listPublicAgentCatalogEngines(undefined, { exactId: engineId, access });
 }
 
 export async function getAgentModelDetails(
   engineId: string,
   deps?: AgentModelDetailsDeps,
+  access?: AgentModelAccessContext,
 ): Promise<AgentModelDetails> {
-  const candidates = await listPublicCandidates(deps);
+  const candidates = await listPublicCandidates(engineId, deps, access);
   const candidate = candidates.find((entry) => entry.engine.id === engineId);
   if (!candidate) {
     throw new AgentApiError('ENGINE_UNAVAILABLE', 'This MaxVideoAI model is not currently available.');
   }
 
-  const guidance = projectGuidance((deps?.getGuidance ?? getAgentModelGuidance)(candidate.engine.id));
+  const runtime = getRuntimeModelById(candidate.engine.id);
+  const successor = runtime
+    ? getRuntimeModelSuccessor(runtime)
+      ?? (runtime.publicTargetId ? getRuntimeModelById(runtime.publicTargetId) : null)
+    : null;
+  const prelaunch = runtime?.publication.app.published === false
+    && access?.allowedPrelaunchModelIds.has(candidate.engine.id) === true;
+  const guidance = projectGuidance(
+    (deps?.getGuidance ?? getAgentModelGuidance)(candidate.engine.id),
+    !prelaunch,
+  );
   const promptingSources = projectPromptingSources(
     (deps?.getPromptingSources ?? getAgentModelPromptingSources)(candidate.engine.id),
     candidate.publicModes,
@@ -341,11 +367,17 @@ export async function getAgentModelDetails(
     surface: candidate.surface,
     availability: candidate.engine.availability,
     generationEnabled: candidate.generationEnabled,
+    lifecycle: runtime?.lifecycle ?? 'current',
+    successor: successor ? Object.freeze({ id: successor.id, slug: successor.slug }) : null,
+    recommendedByDefault: runtime?.lifecycle === undefined || runtime.lifecycle === 'current',
+    prelaunch,
     modes: Object.freeze(candidate.publicModes.map((mode) => projectMode(candidate, mode))),
     guidance,
     promptingSources,
     links: Object.freeze({
-      model: `https://maxvideoai.com/models/${encodeURIComponent(candidate.engine.id)}`,
+      model: prelaunch
+        ? null
+        : `https://maxvideoai.com/models/${encodeURIComponent(runtime?.slug ?? candidate.engine.id)}`,
       pricing: 'https://maxvideoai.com/pricing',
       examples,
     }),

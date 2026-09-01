@@ -674,7 +674,7 @@ test('tools return structured content and pass validated filters to facade servi
     }),
     connected.client.callTool({
       name: 'calculate_project_budget',
-      arguments: { proposals: [{ ...budgetArguments.proposals[0], lines: Array.from({ length: 13 }, () => budgetArguments.proposals[0].lines[0]) }] },
+      arguments: { proposals: [{ ...budgetArguments.proposals[0], lines: Array.from({ length: 15 }, () => budgetArguments.proposals[0].lines[0]) }] },
     }),
     connected.client.callTool({
       name: 'calculate_project_budget',

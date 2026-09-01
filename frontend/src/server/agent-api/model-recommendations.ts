@@ -157,6 +157,7 @@ export async function recommendAgentModels(
   const preferredModelIds = normalizedIds(input.preferredModelIds);
   const excludedModelIds = normalizedIds(input.excludedModelIds);
   const candidates = (await listAgentModelCandidates(input, deps, { generationEnabledOnly: true }))
+    .filter((candidate) => candidate.model.recommendedByDefault)
     .filter((candidate) => !excludedModelIds.has(candidate.model.id));
 
   if (!candidates.length) {

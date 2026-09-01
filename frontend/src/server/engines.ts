@@ -310,6 +310,23 @@ export async function getConfiguredEngineIncludingHidden(
   return configured;
 }
 
+export async function getConfiguredEngineIncludingHiddenInExecutor(
+  engineId: string,
+  executor: TransactionQueryExecutor,
+): Promise<EngineCaps | undefined> {
+  if (!engineId) return undefined;
+  const hiddenBase = getBaseEngineIncludingHidden(engineId);
+  if (!hiddenBase) return undefined;
+  await executor.query('LOCK TABLE engine_settings, engine_overrides IN SHARE MODE');
+  const [settingsMap, overridesMap] = await Promise.all([
+    fetchEngineSettingsWithExecutor(executor),
+    fetchEngineOverridesWithExecutor(executor),
+  ]);
+  const merged = mergeEngine(hiddenBase, settingsMap, overridesMap);
+  if (merged.disabled) return undefined;
+  return applyGoogleVertexVeoRuntimeOptions(applyBytePlusSeedanceRuntimeOptions(merged.engine));
+}
+
 export type TrustedPreflightMediaPricingFacts = Readonly<{
   referenceImageCount?: number;
   inputAudioDurationSec?: number;

@@ -6,7 +6,14 @@ of truth; this file explains the MCP projection and must not duplicate prices.
 
 ## Current coverage
 
-Checked 2026-08-26 against the 42 app-published models.
+Checked 2026-09-01 against the canonical runtime registry and engine schemas.
+
+Default discovery and recommendations contain only current, app-published
+models. An exact legacy ID remains available when its runtime route is ready,
+but is marked non-default and includes its canonical successor ID and slug.
+Exact deep-legacy or retired identities remain inspectable for migration and
+are rejected by budget, preparation, and confirmation before pricing or spend.
+Model links always use the registry slug.
 
 The MCP can discover, validate, quote, confirm, submit, and recover these
 transport-neutral modes when the selected model and connected environment mark
@@ -48,3 +55,19 @@ provider configuration and runtime availability as the website.
 `tests/mcp-special-video-modes.test.ts` is the drift guard. It fails when a new
 app-published mode is not represented by the canonical MCP contract or by the
 explicit closed list above.
+
+## Prelaunch access
+
+The seven P0 video identities can be exercised before publication only by the
+existing production staging canary: exact staging host, allowlisted account ID,
+and allowlisted OAuth client ID must all match. The private access set is
+derived from the canonical P0 pricing scenarios and rechecks that every model
+is still current and app-unpublished. It is used only for an exact known ID in
+details, project budgeting, preparation, and confirmation. Public listing and
+recommendation never receive it, and prelaunch details omit unpublished model
+and example links.
+
+Mode details normalize provider duration labels to executable numeric seconds;
+provider-only values such as `auto` are never advertised as MCP inputs. The 23
+P0 modes continue to derive settings, references, prices, and paid request
+bodies from the shared engine, pricing, and site execution owners.

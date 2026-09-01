@@ -1,9 +1,16 @@
 import { listFalEngines } from '@/config/falEngines';
 import { getModelRegistryEntryById } from '@/config/model-registry';
+import {
+  getRuntimeModelById,
+  getRuntimeModelSuccessor,
+  type RuntimeModelEntry,
+} from '@/config/model-runtime';
 import type { TransactionQueryExecutor } from '@/lib/db';
 import {
   getPublicConfiguredEnginesByCategory,
   getPublicConfiguredEnginesByCategoryInExecutor,
+  getConfiguredEngineIncludingHidden,
+  getConfiguredEngineIncludingHiddenInExecutor,
 } from '@/server/engines';
 import {
   resolveAgentGenerationEngineExecutability,
@@ -48,10 +55,15 @@ const MODE_CAPS_BY_ENGINE_ID = new Map<string, Partial<Record<AgentGenerationMod
 
 export type AgentModelCatalogDeps = {
   listEngines(): Promise<EngineCaps[]>;
+  getEngineIncludingHidden?(engineId: string): Promise<EngineCaps | undefined>;
   surfaceByEngineId(engineId: string): 'video' | 'image' | null;
   isEngineExecutable?(engine: EngineCaps): boolean;
   isModeExecutable?(engine: EngineCaps, mode: Mode): boolean;
 };
+
+export type AgentModelAccessContext = Readonly<{
+  allowedPrelaunchModelIds: ReadonlySet<string>;
+}>;
 
 export type AgentModelCandidate = {
   model: AgentModel;
@@ -69,6 +81,7 @@ export function createAgentModelCatalogDeps(
 ): AgentModelCatalogDeps {
   return {
     listEngines: () => getPublicConfiguredEnginesByCategory('all'),
+    getEngineIncludingHidden: (engineId) => getConfiguredEngineIncludingHidden(engineId),
     surfaceByEngineId(engineId) {
       return SURFACE_BY_ENGINE_ID.get(engineId) ?? null;
     },
@@ -110,6 +123,11 @@ function toCandidate(
   scopedMode?: Readonly<{ mode: AgentGenerationMode; caps: EngineModeUiCaps }>,
 ): AgentModelCandidate {
   const registryEntry = getModelRegistryEntryById(engine.id);
+  const runtime = getRuntimeModelById(engine.id);
+  const successor = runtime
+    ? getRuntimeModelSuccessor(runtime)
+      ?? (runtime.publicTargetId ? getRuntimeModelById(runtime.publicTargetId) : null)
+    : null;
   const aspectRatios = scopedMode ? scopedMode.caps.aspectRatio ?? [] : engine.aspectRatios;
   const resolutions = scopedMode ? scopedMode.caps.resolution ?? [] : engine.resolutions;
   const maxDurationSec = surface === 'video'
@@ -130,6 +148,9 @@ function toCandidate(
       referenceImages: referenceImagesSupported(scopedMode ? [scopedMode.mode] : modes),
       availability: engine.availability,
       generationEnabled,
+      lifecycle: runtime?.lifecycle ?? 'current',
+      successor: successor ? { id: successor.id, slug: successor.slug } : null,
+      recommendedByDefault: runtime?.lifecycle === undefined || runtime.lifecycle === 'current',
     },
     latencyTier: engine.latencyTier,
     discoveryRank: registryEntry?.publication.app.discoveryRank ?? null,
@@ -138,11 +159,43 @@ function toCandidate(
   };
 }
 
+function isVisibleRuntimeModel(
+  runtime: RuntimeModelEntry | null,
+  exactId: string | undefined,
+  access: AgentModelAccessContext | undefined,
+  includeExecutableLegacy: boolean,
+): boolean {
+  if (!runtime) return true;
+  if (!exactId) return runtime.publication.app.published
+    && (runtime.lifecycle === 'current' || (includeExecutableLegacy && runtime.lifecycle === 'legacy'));
+  if (runtime.publication.app.published) return true;
+  if (runtime.lifecycle === 'deep_legacy' || runtime.lifecycle === 'retired') return true;
+  return runtime.lifecycle === 'current' && access?.allowedPrelaunchModelIds.has(runtime.id) === true;
+}
+
+function isExecutableLifecycle(runtime: RuntimeModelEntry | null): boolean {
+  return runtime?.lifecycle !== 'deep_legacy' && runtime?.lifecycle !== 'retired';
+}
+
 export async function listPublicAgentCatalogEngines(
   deps: AgentModelCatalogDeps = defaultDeps,
+  options: Readonly<{
+    exactId?: string;
+    access?: AgentModelAccessContext;
+    includeExecutableLegacy?: boolean;
+  }> = {},
 ): Promise<AgentPublicCatalogEngine[]> {
-  const engines = await deps.listEngines();
+  const listed = await deps.listEngines();
+  const exactRuntime = options.exactId ? getRuntimeModelById(options.exactId) : null;
+  const hidden = options.exactId
+    && !listed.some((engine) => engine.id === options.exactId)
+    && isVisibleRuntimeModel(exactRuntime, options.exactId, options.access, options.includeExecutableLegacy === true)
+    ? await deps.getEngineIncludingHidden?.(options.exactId)
+    : undefined;
+  const engines = hidden ? [...listed, hidden] : listed;
   return engines.flatMap((engine) => {
+    const runtime = getRuntimeModelById(engine.id);
+    if (!isVisibleRuntimeModel(runtime, options.exactId, options.access, options.includeExecutableLegacy === true)) return [];
     const surface = deps.surfaceByEngineId(engine.id);
     if (!isPublicAgentEngine(engine, surface)) return [];
     const modes = listPublicAgentModes(engine, surface);
@@ -162,7 +215,8 @@ export async function listPublicAgentCatalogEngines(
     const executableModes = configuredModes.filter((mode) =>
       deps.isModeExecutable?.(engine, toEngineGenerationMode(engine.id, mode)) !== false
     );
-    const generationEnabled = deps.isEngineExecutable?.(engine) !== false
+    const generationEnabled = isExecutableLifecycle(runtime)
+      && deps.isEngineExecutable?.(engine) !== false
       && executableModes.length > 0;
     return [{
       engine,
@@ -176,18 +230,30 @@ export async function listPublicAgentCatalogEngines(
 
 export async function listPublicAgentGenerationEngines(
   deps: AgentModelCatalogDeps = defaultDeps,
+  access?: AgentModelAccessContext,
 ): Promise<AgentPublicGenerationEngine[]> {
-  return (await listPublicAgentCatalogEngines(deps)).flatMap(({ generationEnabled, ...candidate }) =>
-    generationEnabled ? [candidate] : []
-  );
+  const listedEngines = await deps.listEngines();
+  const cachedDeps: AgentModelCatalogDeps = {
+    ...deps,
+    listEngines: async () => listedEngines,
+  };
+  const publicCandidates = await listPublicAgentCatalogEngines(cachedDeps, { includeExecutableLegacy: true });
+  const prelaunchCandidates: AgentPublicCatalogEngine[] = [];
+  for (const exactId of access?.allowedPrelaunchModelIds ?? []) {
+    prelaunchCandidates.push(...await listPublicAgentCatalogEngines(cachedDeps, { exactId, access }));
+  }
+  const byId = new Map([...publicCandidates, ...prelaunchCandidates].map((entry) => [entry.engine.id, entry]));
+  return [...byId.values()].flatMap(({ generationEnabled, ...candidate }) => generationEnabled ? [candidate] : []);
 }
 
 export async function listPublicAgentGenerationEnginesInExecutor(
   executor: TransactionQueryExecutor,
   environment?: AgentGenerationExecutabilityEnvironment,
+  access?: AgentModelAccessContext,
 ): Promise<AgentPublicGenerationEngine[]> {
   return listPublicAgentGenerationEngines({
     listEngines: () => getPublicConfiguredEnginesByCategoryInExecutor('all', executor),
+    getEngineIncludingHidden: (engineId) => getConfiguredEngineIncludingHiddenInExecutor(engineId, executor),
     surfaceByEngineId(engineId) {
       return SURFACE_BY_ENGINE_ID.get(engineId) ?? null;
     },
@@ -197,7 +263,7 @@ export async function listPublicAgentGenerationEnginesInExecutor(
     isModeExecutable: environment
       ? (engine, mode) => resolveAgentGenerationModeExecutability(engine, mode, environment).executable
       : isAgentGenerationModeExecutable,
-  });
+  }, access);
 }
 
 function matchesFilter(model: AgentModel, filter: AgentModelFilter): boolean {
@@ -221,8 +287,9 @@ export async function listAgentModelCandidates(
   filter: AgentModelFilter = {},
   deps: AgentModelCatalogDeps = defaultDeps,
   options: Readonly<{ generationEnabledOnly?: boolean }> = {},
+  access?: AgentModelAccessContext,
 ): Promise<AgentModelCandidate[]> {
-  const engines = await listPublicAgentCatalogEngines(deps);
+  const engines = await listPublicAgentCatalogEngines(deps, { exactId: filter.id, access });
   return engines.flatMap(({ engine, surface, publicModes: modes, modeCaps, generationEnabled }) => {
     if (options.generationEnabledOnly && !generationEnabled) return [];
     if (filter.mode && !modes.includes(filter.mode)) return [];

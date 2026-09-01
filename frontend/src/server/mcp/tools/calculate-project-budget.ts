@@ -60,7 +60,7 @@ export const calculateProjectBudgetInputSchema = z.object({
     name: z.string().trim().min(1).max(160).describe(
       'Your name for this concrete production proposal; names and order are preserved exactly.',
     ),
-    lines: z.array(lineSchema).min(1).max(12).describe(
+    lines: z.array(lineSchema).min(1).max(14).describe(
       'Concrete video production lines in the order they should be discussed.',
     ),
   }).strict()).min(1).max(4).describe(

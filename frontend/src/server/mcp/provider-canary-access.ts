@@ -3,6 +3,8 @@ import {
   createAgentGenerationExecutabilityEnvironment,
   type AgentGenerationExecutabilityEnvironment,
 } from '@/server/agent-runtime/model-executability';
+import { getRuntimeModelById } from '@/config/model-runtime';
+import { P0_VIDEO_MODEL_IDS } from '@/lib/pricing-audit/p0-video-scenarios';
 
 const STAGING_ACCOUNT_HOST = 'maxvideoai-mcp-staging.vercel.app';
 
@@ -31,6 +33,25 @@ function isExactStagingCanary(
     && principal.clientId !== null
     && csvIncludes(env.MCP_STAGING_CANARY_ACCOUNT_IDS, principal.userId)
     && csvIncludes(env.MCP_STAGING_CANARY_CLIENT_IDS, principal.clientId);
+}
+
+export type McpPrelaunchModelAccess = Readonly<{
+  allowedModelIds: ReadonlySet<string>;
+}>;
+
+export function resolveMcpPrelaunchModelAccess(
+  principal: AgentPrincipal,
+  accountUrl: string,
+  env: NodeJS.ProcessEnv = process.env,
+): McpPrelaunchModelAccess | null {
+  if (!isExactStagingCanary(principal, accountUrl, env)) return null;
+  const ids = P0_VIDEO_MODEL_IDS.filter((id) => {
+    const model = getRuntimeModelById(id);
+    return model?.lifecycle === 'current' && model.publication.app.published === false;
+  });
+  return ids.length === P0_VIDEO_MODEL_IDS.length
+    ? Object.freeze({ allowedModelIds: new Set(ids) })
+    : null;
 }
 
 export function resolveMcpStagingCanaryGenerationEnvironment(

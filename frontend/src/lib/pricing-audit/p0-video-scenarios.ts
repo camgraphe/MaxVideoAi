@@ -49,3 +49,7 @@ export const P0_VIDEO_PRICING_SCENARIOS = [
   { id: 'flux-3-draft:fl2v:6:720p', engineId: 'flux-3-draft', mode: 'fl2v', durationSec: 6, resolution: '720p' },
   { id: 'flux-3-draft:extend:6:720p', engineId: 'flux-3-draft', mode: 'extend', durationSec: 6, resolution: '720p' },
 ] as const satisfies readonly P0VideoPricingScenario[];
+
+export const P0_VIDEO_MODEL_IDS = Object.freeze(
+  Array.from(new Set(P0_VIDEO_PRICING_SCENARIOS.map((scenario) => scenario.engineId))),
+);

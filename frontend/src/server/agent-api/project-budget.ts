@@ -16,6 +16,7 @@ import { CANONICAL_VIDEO_GENERATION_MODES } from './generation-types';
 import { MAX_CANONICAL_REFERENCES } from './generation-normalization';
 import {
   type AgentModelCatalogDeps,
+  type AgentModelAccessContext,
   listPublicAgentGenerationEngines,
   type AgentPublicGenerationEngine,
 } from './model-catalog';
@@ -23,7 +24,7 @@ import type { AgentPrincipal } from './principal';
 import type { AuthoritativeMembershipTier } from '../membership/user-membership-status';
 
 export const MAX_PROJECT_PROPOSALS = 4;
-export const MAX_PROJECT_LINES = 12;
+export const MAX_PROJECT_LINES = 14;
 export const MAX_PROJECT_CLIPS_PER_LINE = 100;
 export const MAX_PROJECT_ATTEMPTS_PER_CLIP = 10;
 export const MAX_PROJECT_TOTAL_ATTEMPTS = 500;
@@ -121,10 +122,11 @@ const defaultDependencies: AgentProjectBudgetDependencies = {
 
 export function createAgentProjectBudgetDependencies(
   catalogDeps: AgentModelCatalogDeps,
+  access?: AgentModelAccessContext,
 ): AgentProjectBudgetDependencies {
   return {
     ...defaultDependencies,
-    listPublicEngines: () => listPublicAgentGenerationEngines(catalogDeps),
+    listPublicEngines: () => listPublicAgentGenerationEngines(catalogDeps, access),
   };
 }
 
@@ -521,7 +523,9 @@ export async function calculateAgentProjectBudget(
         outputCount: 1,
       };
       try {
-        validateCanonicalGenerationCapabilities(request, candidate);
+        validateCanonicalGenerationCapabilities(request, candidate, {
+          allowUnverifiedReferenceDuration: true,
+        });
       } catch (error) {
         mapCapabilityError(error, proposalIndex, lineIndex);
       }

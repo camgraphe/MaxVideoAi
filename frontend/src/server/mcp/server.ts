@@ -73,7 +73,10 @@ import { buildMaxVideoAiMcpInstructions } from '@/server/mcp/instructions';
 import { registerGenerationResultApp } from '@/server/mcp/generation-result-app';
 import { registerReferenceUploadApp } from '@/server/mcp/reference-upload-app';
 import type { McpRuntimeCapabilities } from '@/server/mcp/operational-access';
-import { resolveMcpStagingCanaryGenerationEnvironment } from '@/server/mcp/provider-canary-access';
+import {
+  resolveMcpPrelaunchModelAccess,
+  resolveMcpStagingCanaryGenerationEnvironment,
+} from '@/server/mcp/provider-canary-access';
 import { resolveAgentGenerationRequestExecutability } from '@/server/agent-runtime/model-executability';
 import { registerGetAccountStatusTool } from '@/server/mcp/tools/get-account-status';
 import { registerConfirmGenerationTool } from '@/server/mcp/tools/confirm-generation';
@@ -158,22 +161,33 @@ export function createDefaultMaxVideoAiMcpServices(
     resolveMcpStagingCanaryGenerationEnvironment(principal, config.accountUrl, runtimeEnv);
   const catalogDepsFor = (principal: AgentPrincipal) =>
     createAgentModelCatalogDeps(generationEnvironmentFor(principal));
+  const prelaunchAccessFor = (principal: AgentPrincipal) => {
+    const access = resolveMcpPrelaunchModelAccess(principal, config.accountUrl, runtimeEnv);
+    return access ? { allowedPrelaunchModelIds: access.allowedModelIds } : undefined;
+  };
   return {
     getAccountStatus: createAgentAccountStatusService(config.accountUrl, accountStatusDeps),
     listModels: (filter, principal) => listAgentModels(filter, catalogDepsFor(principal)),
-    getModelDetails: (engineId, principal) => getAgentModelDetails(engineId, catalogDepsFor(principal)),
+    getModelDetails: (engineId, principal) => getAgentModelDetails(
+      engineId,
+      catalogDepsFor(principal),
+      prelaunchAccessFor(principal),
+    ),
     recommendModels: (input, principal) => recommendAgentModels(input, catalogDepsFor(principal)),
     calculateProjectBudget: (input, principal) => calculateAgentProjectBudget(
       input,
       principal,
-      createAgentProjectBudgetDependencies(catalogDepsFor(principal)),
+      createAgentProjectBudgetDependencies(catalogDepsFor(principal), prelaunchAccessFor(principal)),
     ),
     prepareGeneration: (input, principal) => createPrepareGenerationService(
       config.accountUrl,
       trialRiskContext,
       {
         paidGenerationEnabled: () => capabilities.paidGeneration,
-        listPublicEngines: () => listPublicAgentGenerationEngines(catalogDepsFor(principal)),
+        listPublicEngines: () => listPublicAgentGenerationEngines(
+          catalogDepsFor(principal),
+          prelaunchAccessFor(principal),
+        ),
         resolveRequestExecutability: (request, candidate, resolvedReferences) =>
           resolveAgentGenerationRequestExecutability(
             request,
@@ -191,6 +205,7 @@ export function createDefaultMaxVideoAiMcpServices(
         listPublicEngines: ({ executor }) => listPublicAgentGenerationEnginesInExecutor(
           executor,
           generationEnvironmentFor(principal),
+          prelaunchAccessFor(principal),
         ),
         resolveRequestExecutability: (request, candidate, resolvedReferences) =>
           resolveAgentGenerationRequestExecutability(

@@ -103,5 +103,61 @@
       "https://maxvideoai.com/examples/kling"
     ],
     "reviewedAt": "2026-08-24"
+  },
+  {
+    "engineId": "wan-3",
+    "strengths": ["Reference-guided motion and subject consistency across image and video briefs."],
+    "bestFor": ["reference_guided", "cinematic_story"],
+    "considerations": ["Match each reference role to the fields shown for the selected mode."],
+    "evidenceUrls": ["https://maxvideoai.com/models/wan-3"],
+    "reviewedAt": "2026-09-01"
+  },
+  {
+    "engineId": "wan-3-prime",
+    "strengths": ["Reference-guided premium shots with controlled composition and motion."],
+    "bestFor": ["reference_guided", "product_video"],
+    "considerations": ["Use only the reference count and media types listed for the selected mode."],
+    "evidenceUrls": ["https://maxvideoai.com/models/wan-3-prime"],
+    "reviewedAt": "2026-09-01"
+  },
+  {
+    "engineId": "ltx-2-5-fast",
+    "strengths": ["Audio-led video generation from a source track as well as text and image direction."],
+    "bestFor": ["native_audio", "social_video"],
+    "considerations": ["A2V requires an owned source-audio asset so its duration can be verified."],
+    "evidenceUrls": ["https://maxvideoai.com/models/ltx-2-5-fast"],
+    "reviewedAt": "2026-09-01"
+  },
+  {
+    "engineId": "ltx-2-5-pro",
+    "strengths": ["Audio-led video generation with production-oriented text and image workflows."],
+    "bestFor": ["native_audio", "cinematic_story"],
+    "considerations": ["A2V requires an owned source-audio asset so its duration can be verified."],
+    "evidenceUrls": ["https://maxvideoai.com/models/ltx-2-5-pro"],
+    "reviewedAt": "2026-09-01"
+  },
+  {
+    "engineId": "grok-imagine-video-1-5",
+    "strengths": ["Image-reference direction for subject identity, appearance, and scene cues."],
+    "bestFor": ["reference_guided", "character_scene"],
+    "considerations": ["Use the model details to keep image references within the selected mode limit."],
+    "evidenceUrls": ["https://maxvideoai.com/models/grok-imagine-video-1-5"],
+    "reviewedAt": "2026-09-01"
+  },
+  {
+    "engineId": "flux-3",
+    "strengths": ["First-and-last-frame direction plus continuation from an existing source video."],
+    "bestFor": ["reference_guided", "source_edit", "product_video"],
+    "considerations": ["First/last-frame and extend modes use distinct canonical reference roles."],
+    "evidenceUrls": ["https://maxvideoai.com/models/flux-3"],
+    "reviewedAt": "2026-09-01"
+  },
+  {
+    "engineId": "flux-3-draft",
+    "strengths": ["Fast first-and-last-frame exploration and source-video continuation."],
+    "bestFor": ["reference_guided", "source_edit", "social_video"],
+    "considerations": ["Use Draft for iteration while preserving the exact first, last, or source reference role."],
+    "evidenceUrls": ["https://maxvideoai.com/models/flux-3-draft"],
+    "reviewedAt": "2026-09-01"
   }
 ]

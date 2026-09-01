@@ -104,10 +104,10 @@ test('the image canary remains bounded by the authored engine allowlist', () => 
 
 test('catalog, budget, quote preparation, confirmation, and paid submission share the same principal-scoped canary environment', () => {
   const source = readFileSync('frontend/src/server/mcp/server.ts', 'utf8');
-  assert.match(source, /calculateAgentProjectBudget\([\s\S]*createAgentProjectBudgetDependencies\(catalogDepsFor\(principal\)\)/);
-  assert.match(source, /prepareGeneration:\s*\(input, principal\)[\s\S]*listPublicAgentGenerationEngines\(catalogDepsFor\(principal\)\)/);
+  assert.match(source, /calculateAgentProjectBudget\([\s\S]*createAgentProjectBudgetDependencies\(catalogDepsFor\(principal\), prelaunchAccessFor\(principal\)\)/);
+  assert.match(source, /prepareGeneration:\s*\(input, principal\)[\s\S]*listPublicAgentGenerationEngines\([\s\S]*catalogDepsFor\(principal\),[\s\S]*prelaunchAccessFor\(principal\)/);
   assert.match(source, /resolveAgentGenerationRequestExecutability\([\s\S]*generationEnvironmentFor\(principal\)/);
-  assert.match(source, /confirmGeneration:\s*\(input, principal\)[\s\S]*listPublicAgentGenerationEnginesInExecutor\([\s\S]*generationEnvironmentFor\(principal\)/);
+  assert.match(source, /confirmGeneration:\s*\(input, principal\)[\s\S]*listPublicAgentGenerationEnginesInExecutor\([\s\S]*generationEnvironmentFor\(principal\),[\s\S]*prelaunchAccessFor\(principal\)/);
   assert.match(
     source,
     /submitPaidGeneration:\s*\(execution\)\s*=>\s*submitReservedPaidGeneration\([\s\S]*generationEnvironmentFor\(principal\)\.providerEnv/,
