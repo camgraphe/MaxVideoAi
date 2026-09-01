@@ -2,7 +2,7 @@
 
 **Date:** 2026-09-01
 
-**Status:** approved direction; awaiting written-spec review
+**Status:** approved; implementation plan ready
 
 **Owner:** MaxVideoAI product owner
 
@@ -108,10 +108,12 @@ deep_legacy   historical product identity; no current discovery or recommendatio
 retired       unpublished and permanently mapped to a replacement
 ```
 
-Legacy and deep-legacy records may include a direct `successorSlug`. A retired
-record uses the existing enforced replacement contract. Generated projections
-must preserve the distinction so the app, marketing routes, pricing, compare
-pages, admin tools, and MCP cannot disagree about a model's status.
+Legacy and deep-legacy records may include a direct canonical `successorId`;
+generated projections derive the public successor slug from that identity. A
+retired record uses the existing enforced replacement contract. Generated
+projections must preserve the distinction so the app, marketing routes,
+pricing, compare pages, admin tools, and MCP cannot disagree about a model's
+status.
 
 ## LTX lifecycle and SEO design
 
@@ -250,6 +252,21 @@ billing and public factual-pricing adapters. Required tests prove equivalence
 between wallet preflight, MCP exact quotes, receipts, pricing-page projections,
 and model-page estimates for the same normalized request.
 
+The pricing hub is not treated as an automatic side effect of catalog
+publication. Its authored display order, family order, highlight eligibility,
+and previous-generation grouping must be updated explicitly. Current P0
+variants appear before legacy variants within their family. LTX 2.3 and Wan
+2.6 are labeled as previous-generation choices, while LTX 2.0 and Wan 2.5 are
+excluded from the current pricing grid. The page's links, anchors, scenario
+quotes, cheapest-state calculations, and Product/Offer JSON-LD continue to
+consume the canonical public quote instead of authored totals.
+
+`/pay-as-you-go-ai-video-generator` is a separate decision and acquisition
+surface, not a duplicate of `/pricing`. Its supported-model list, preferred
+family rows, price lookups, example-cost cards, comparison allowlist, and
+English, French, and Spanish copy must be refreshed so it recommends current
+P0 representatives without erasing still-useful legacy context.
+
 ## Marketing page design
 
 Each of the seven identities receives complete English, French, and Spanish
@@ -276,6 +293,122 @@ relationship when execution is through Fal.
 
 No page may claim benchmark superiority, native audio, resolution, reference
 support, speed, or cost without a corresponding source or generated fact.
+
+## Discovery and propagation matrix
+
+The seven model pages are necessary but not sufficient. Publication requires
+an explicit update or an explicit evidence-backed decision for every manual
+discovery owner below:
+
+| Surface | Required P0 behavior |
+| --- | --- |
+| Homepage | Refresh current-example priorities and featured engine mappings only with accepted P0 assets; do not surface an empty or prelaunch family. |
+| Models catalogue | Add family mappings, top-pick/recommended eligibility, use-case cards, popular comparisons, and lifecycle-aware current/legacy presentation. |
+| Pricing hub | Add all executable P0 rows, exact canonical scenarios, explicit family/model order, and lifecycle grouping. |
+| Pay-as-you-go hub | Add current P0 representatives to supported models, price lookups, example-cost cards, comparison links, and localized decision copy. |
+| Examples hub | Add Grok and FLUX family cards, refresh promoted models/comparisons, and preserve the stable LTX and Wan family URLs. |
+| Family examples | Lead LTX with 2.5 and Wan with 3; create complete Grok and FLUX family pages; retain truthful historical labels and assets. |
+| Header and footer | Add one current representative for each new or upgraded family without listing every variant; remove deep-legacy models from current navigation. |
+| Compare hub | Add the eight P0 routes to popular/use-case/opponent ownership where relevant and keep older indexed comparisons available outside current recommendations. |
+| Best-for guides | Update only guides supported by live capability facts and accepted examples; never mass-insert every model into every guide. |
+| `llms.txt` | Promote current P0 engines and primary comparisons; retain legacy LTX context in an explicitly historical role rather than as a current recommendation. |
+| Brand/provider surfaces | Add xAI and Black Forest Labs attribution and licensed assets; update Wan and Lightricks engine membership. |
+| Agent guidance | Add model-selection and prompting sources for app and MCP recommendations without creating a second catalog. |
+| SEO cockpit | Add Grok and FLUX family classification so Search Console queries, opportunities, and post-launch monitoring are not reported as `Other`. |
+
+The main model dropdown promotes exactly one P0 representative per family:
+`ltx-2-5-pro`, `wan-3-prime`, `grok-imagine-video-1-5`, and `flux-3`.
+Fast, Draft, and sibling variants remain discoverable through the models hub,
+family page, pricing page, and comparison routes. This keeps the menu curated
+while giving every identity multiple crawlable entry points.
+
+Homepage promotion is evidence-gated. A P0 family may enter the homepage
+example priority only after it has an accepted, durable asset. The homepage
+does not need to display all seven variants simultaneously, but its authored
+priority and default-family maps must be reviewed and tested in the launch
+change rather than left stale accidentally.
+
+## SEO and internal-link design
+
+Existing URL ownership is preserved. The release does not rename the stable
+`/examples/ltx` or `/examples/wan` hubs, does not replace LTX 2.3 canonicals,
+and does not delete existing comparison or watch-page identities merely
+because a newer generation exists.
+
+Each new model page must receive crawlable inbound links from:
+
+- `/models`;
+- its family examples page;
+- its `/pricing` row;
+- at least one primary comparison or evidence-backed best-for guide.
+
+Each new model page must contain contextual links to its family examples,
+pricing anchor, workspace generation path, successor or sibling variant when
+relevant, and primary comparisons. Excluding persistent navigation and the
+generation CTA, each model page contains two to four unique contextual
+editorial links. Family/category pages link to every current child model and
+place legacy children in a separately labeled history or previous-generation
+section. No new indexable page may be orphaned, and no all-to-all model linking
+is introduced merely to increase link count.
+
+Localized model pages target at least 400 words of useful on-page copy with at
+least 80 percent page-specific content. New Grok and FLUX family pages target
+at least 400 words of unique family-level copy in each locale. Titles and meta
+descriptions remain unique by locale and generation; legacy pages retain their
+version-specific search intent instead of copying the successor page.
+
+The localized model, family-example, comparison, and relevant best-for routes
+must emit self-canonicals and reciprocal hreflang. New model routes enter the
+localized and model sitemaps only after their three locale files pass content
+validation. New comparison routes enter the sitemap only when their localized
+indexation policy and scoreboard are complete. Manual sitemap timestamps are
+updated for every materially changed acquisition route.
+
+`llms.txt` is refreshed in the same release so assistants see current engine
+pages, current family examples, and the primary P0 comparisons. It must not
+describe LTX 2.3, Wan 2.6, or deep-legacy models as current recommendations.
+
+## Video search and example indexation
+
+All fourteen accepted videos appear on their model pages and the matching
+family playlists. Individual watch-page indexation remains quality-gated:
+
+- at least one accepted asset per P0 model is prepared as a watch-page
+  candidate;
+- a watch page enters `sitemap-video.xml` and
+  `sitemap-video-pages.xml` only after editorial approval;
+- approval requires a durable public video URL, durable thumbnail, truthful
+  model and mode identity, a unique title/H1/description, sufficient prompt
+  context, valid canonical state, and internal-link targets;
+- a weak candidate remains accessible through the model/family gallery but is
+  not forced into the video sitemap.
+
+Existing LTX 2.3 and Wan historical watch pages keep their original engine
+labels, canonicals, and publication dates. The launch never relabels an older
+video as a P0 output.
+
+## SEO baseline and post-launch monitoring
+
+The P0 branch may not publish on top of a known failing SEO baseline. The
+2026-09-01 pre-plan check recorded:
+
+- canonical SEO guard: passing;
+- `llms.txt` guard: passing;
+- public-media-origin guard: passing across 1,630 scanned references;
+- French and Spanish message-key parity: passing;
+- internal-link guard: failing because
+  `frontend/lib/analytics/journey.ts` contains an unexpected `/company`
+  reference.
+
+The existing internal-link failure is corrected and committed separately
+before feature publication. Final acceptance requires the complete SEO guard
+suite to be green, not merely unchanged from the baseline.
+
+Search Console monitoring is recorded at launch and after 7, 14, and 28 days
+for the LTX, Wan, Grok, and FLUX families. The report separates model, examples,
+comparison, pricing, and generic-query intent. No LTX 2.0 or Wan redirect is
+activated before the destination has been indexed and at least one stable
+28-day window has been reviewed.
 
 ## Launch example pack
 
