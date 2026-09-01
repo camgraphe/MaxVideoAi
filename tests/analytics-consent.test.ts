@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import {
   PENDING_AUTH_EVENT_STORAGE_KEY,
@@ -23,6 +24,15 @@ import {
   readAnalyticsJourney,
   readWalletAnalyticsJourney,
 } from '../frontend/lib/analytics/journey-browser';
+
+test('treats the journey classifier as analytics data, not an authored public link', () => {
+  const result = spawnSync(process.execPath, ['scripts/internal-link-guard.mjs'], {
+    cwd: process.cwd(),
+    encoding: 'utf8',
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+});
 
 function createStorage(): Storage {
   const values = new Map<string, string>();

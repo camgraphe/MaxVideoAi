@@ -150,11 +150,14 @@ const companyAllowedFiles = new Set([
   'frontend/scripts/qa/hreflang-check.ts',
   'frontend/scripts/qa/locale-surface-check.ts',
 ]);
+const ALLOWED_NON_LINK_ROUTE_CLASSIFIERS = new Set([
+  'frontend/lib/analytics/journey.ts',
+]);
 
 const frontendRoot = path.join(ROOT, 'frontend');
 for (const file of walk(frontendRoot)) {
   const relativePath = relativeFromRoot(file);
-  if (companyAllowedFiles.has(relativePath)) continue;
+  if (companyAllowedFiles.has(relativePath) || ALLOWED_NON_LINK_ROUTE_CLASSIFIERS.has(relativePath)) continue;
   const source = fs.readFileSync(file, 'utf8');
   const hasInternalCompanyReference =
     /href\s*=\s*['"]\/company(?:[/"#?]|['"])/.test(source) ||
