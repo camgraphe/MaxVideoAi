@@ -32,7 +32,11 @@ test('generate route delegates attachment normalization and inline uploads', () 
 });
 
 test('attachment helper exposes the route contract', () => {
-  assert.match(helperSource, /export type NormalizedAttachment =/, 'NormalizedAttachment should be exported');
+  assert.match(
+    helperSource,
+    /export type \{ NormalizedAttachment \} from '\.\/generation-attachment-types'/,
+    'NormalizedAttachment should remain exported from the attachment helper compatibility boundary',
+  );
   assert.match(helperSource, /export async function processGenerationAttachments/, 'processGenerationAttachments should be exported');
   assert.match(helperSource, /function decodeDataUrl/, 'data URL decoding should stay private');
   assert.match(helperSource, /uploadImageToStorage/, 'inline upload should stay with attachment processing');

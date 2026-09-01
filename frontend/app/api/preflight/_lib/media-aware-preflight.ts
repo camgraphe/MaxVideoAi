@@ -1,4 +1,4 @@
-import { validateNormalizedGenerationAttachments } from '@/app/api/generate/_lib/generation-attachment-processing';
+import { validateNormalizedGenerationAttachments } from '@/app/api/generate/_lib/normalized-generation-attachment-validation';
 import {
   computeConfiguredPreflight,
   getConfiguredEngine,

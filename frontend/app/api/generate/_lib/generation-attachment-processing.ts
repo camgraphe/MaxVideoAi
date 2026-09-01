@@ -1,18 +1,9 @@
-import { deriveGenerationAttachmentReferences } from './attachment-references';
-import { processGenerationAttachments, type NormalizedAttachment } from './attachments';
+import { processGenerationAttachments } from './attachments';
 import {
-  validateGenerationMediaConstraints,
-  type GenerationMediaConstraintValidationResult,
-} from './generation-media-constraints';
-
-type NormalizedGenerationAttachmentValidationParams = Omit<
-  Parameters<typeof deriveGenerationAttachmentReferences>[0],
-  'attachments'
-> & {
-  attachments: NormalizedAttachment[];
-  userId: string;
-  mediaConstraintDeps?: Parameters<typeof validateGenerationMediaConstraints>[0]['deps'];
-};
+  validateNormalizedGenerationAttachments,
+  type NormalizedGenerationAttachmentValidationParams,
+  type NormalizedGenerationAttachmentValidationResult,
+} from './normalized-generation-attachment-validation';
 
 type GenerationAttachmentProcessingParams = Omit<
   NormalizedGenerationAttachmentValidationParams,
@@ -24,50 +15,9 @@ type AttachmentProcessingFailure = Extract<
   { ok: false }
 > & { metric?: undefined };
 
-type MediaConstraintFailure = Extract<
-  GenerationMediaConstraintValidationResult,
-  { ok: false }
->;
-
 type GenerationAttachmentProcessingResult =
-  | {
-      ok: true;
-      attachments: Extract<
-        Awaited<ReturnType<typeof processGenerationAttachments>>,
-        { ok: true }
-      >['attachments'];
-      references: ReturnType<typeof deriveGenerationAttachmentReferences>;
-      trustedDurationSecByField: Record<string, number[]>;
-    }
-  | AttachmentProcessingFailure
-  | MediaConstraintFailure;
-
-export async function validateNormalizedGenerationAttachments(
-  params: NormalizedGenerationAttachmentValidationParams,
-): Promise<Exclude<GenerationAttachmentProcessingResult, AttachmentProcessingFailure>> {
-  const { attachments, userId, mediaConstraintDeps, ...referenceParams } = params;
-  const references = deriveGenerationAttachmentReferences({
-    ...referenceParams,
-    attachments,
-  });
-  const mediaConstraints = await validateGenerationMediaConstraints({
-    engineId: params.engineId,
-    mode: params.mode,
-    userId,
-    inputSchema: params.inputSchema,
-    attachments,
-    referenceMediaItems: references.referenceMediaItems,
-    deps: mediaConstraintDeps,
-  });
-  if (!mediaConstraints.ok) return mediaConstraints;
-
-  return {
-    ok: true,
-    attachments,
-    references,
-    trustedDurationSecByField: mediaConstraints.trustedDurationSecByField ?? {},
-  };
-}
+  | NormalizedGenerationAttachmentValidationResult
+  | AttachmentProcessingFailure;
 
 export async function processAndValidateGenerationAttachments(
   params: GenerationAttachmentProcessingParams

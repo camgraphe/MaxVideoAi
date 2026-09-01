@@ -13,6 +13,10 @@ const root = process.cwd();
 const routePath = join(root, 'frontend/app/api/generate/route.ts');
 const helperPath = join(root, 'frontend/app/api/generate/_lib/attachment-references.ts');
 const processingPath = join(root, 'frontend/app/api/generate/_lib/generation-attachment-processing.ts');
+const normalizedValidationPath = join(
+  root,
+  'frontend/app/api/generate/_lib/normalized-generation-attachment-validation.ts',
+);
 
 const routeSource = readFileSync(routePath, 'utf8');
 const serviceSource = readFileSync(join(root, 'frontend/src/server/video-generation/execute-video-generation.ts'), 'utf8');
@@ -30,7 +34,11 @@ test('generate route delegates attachment reference derivation', () => {
   assert.ok(existsSync(processingPath), 'attachment reference orchestration should live in the generate route _lib folder');
   assert.match(serviceSource, /generate\/_lib\/generation-attachment-processing/);
   assert.match(serviceSource, /processAndValidateGenerationAttachments\(\{/);
-  assert.match(readFileSync(processingPath, 'utf8'), /from '\.\/attachment-references'/);
+  assert.match(
+    readFileSync(processingPath, 'utf8'),
+    /from '\.\/normalized-generation-attachment-validation'/,
+  );
+  assert.match(readFileSync(normalizedValidationPath, 'utf8'), /from '\.\/attachment-references'/);
   assert.doesNotMatch(routeSource, /attachmentPrimaryImageUrl/, 'primary image derivation belongs in attachment-references.ts');
   assert.doesNotMatch(routeSource, /requestedPrimaryImageUrl/, 'requested primary image fallback belongs in attachment-references.ts');
   assert.doesNotMatch(routeSource, /referenceImagesInput/, 'reference image input selection belongs in attachment-references.ts');

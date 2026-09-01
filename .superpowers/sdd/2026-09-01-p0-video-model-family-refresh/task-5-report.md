@@ -184,7 +184,7 @@ The fix makes the quote boundary structurally read-only:
 - One strict runtime schema rejects unknown or prototype-sensitive keys and bounds the complete request shape. Media arrays accept at most 16 exact persisted-reference records containing only `assetId`, `slotId`, `kind`, and an HTTP(S) URL. Execution fields such as `dataUrl`, duration aliases, dimensions, MIME, size, label, and file name are rejected with the generic `PREFLIGHT_REQUEST_INVALID` response.
 - The resolver checks each media slot and kind against the active engine input schema. Unresolved workspace references retain an empty asset identity in the request and are rejected, so they cannot disappear from the quote and under-count Grok references.
 - Workspace quote payloads now carry only persisted asset identity, field provenance, media kind, and URL. They carry no client MIME, size, dimensions, duration, or pricing scalar.
-- The preflight path no longer imports the mutation-capable `processGenerationAttachments` / `processAndValidateGenerationAttachments` owner. A new normalized-validation entry point shares the same reference derivation and canonical server media-constraint validator as final execution without exposing uploads or asset writes.
+- The round-2 preflight call site stopped calling the mutation-capable attachment processor and used a normalized-validation entry point. That function still lived in a module that statically imported the mutable processor; round 3 below completes the transitive import separation.
 - LTX A2V continues to obtain duration only from owned database metadata. Grok ref2v continues to use the normalized reference set. Missing auth or trusted media facts remains fail-closed.
 - Success and error responses use `Cache-Control: private, no-store`; invalid-request responses do not reflect submitted URLs, data URLs, or media metadata.
 
@@ -196,7 +196,7 @@ The independent security bypass review then found one additional CWE-400 path: `
 
 ### Round-2 GREEN evidence
 
-The final focused pricing, preflight security/runtime, workspace, attachment/media, generation, MCP, wallet, audit and public projection command completed with **237/237 passing**. It includes runtime proof that inline data reaches neither the resolver nor upload/asset-write spies, exact persisted Grok/LTX references remain accepted, malformed/unknown/oversized bodies fail deterministically, chunked overflow is cancelled early, media-priced requests require auth, quote/final facts match, and the preflight source graph imports no mutation sink.
+The final focused pricing, preflight security/runtime, workspace, attachment/media, generation, MCP, wallet, audit and public projection command completed with **237/237 passing**. It includes runtime proof that inline data reaches neither the resolver nor upload/asset-write spies, exact persisted Grok/LTX references remain accepted, malformed/unknown/oversized bodies fail deterministically, chunked overflow is cancelled early, media-priced requests require auth, and quote/final facts match. Its initial architecture assertion covered the direct preflight owners only; round 3 replaces it with a transitive import-graph guard.
 
 Final deterministic gates:
 
@@ -220,3 +220,33 @@ All pricing fixture hashes remain identical to the initial Task 5 implementation
 The required fresh read-only security review found no remaining bypass for `dataUrl`, execution-only or prototype fields, malformed shapes, slot/kind mismatch, URL/metadata reflection, authentication, or indirect mutation calls after the streaming fix. One advisory limitation remains: Grok image reference count uses the schema-valid normalized persisted-reference declarations even when image metadata is absent from the database; final paid execution independently normalizes and prices the actual attachments, so the debit remains authoritative. LTX A2V has no analogous fallback and fails closed without trusted owned metadata.
 
 Round-2 base: `c902e0c2c58a18b0f82731683f21eb958ca0edbe`. The final round-2 commit hash is reported in the Task 5 handoff because a commit cannot contain its own hash.
+
+## Reviewer fix round 3 — transitive read-only validation graph
+
+The third reviewer found that the round-2 behavior was read-only but its static module graph was not: `media-aware-preflight.ts` imported `generation-attachment-processing.ts`, which also imported `attachments.ts`, and that module imported `server/storage.ts` with `uploadImageToStorage` and `recordUserAsset`. The prior report and shallow three-file assertion overstated the architectural isolation.
+
+The final ownership split is now explicit:
+
+- `normalized-generation-attachment-validation.ts` owns only normalized reference derivation and canonical media-constraint validation. Its transitive dependencies are read-only and it imports neither `attachments.ts` nor storage/mutation helpers.
+- `generation-attachment-types.ts` owns `NormalizedAttachment`, preventing read-only validation dependencies from type-importing the mutable attachment processor. `attachments.ts` re-exports the type for compatibility with existing generation consumers.
+- `media-aware-preflight.ts` imports the read-only normalized validator directly.
+- `generation-attachment-processing.ts` separately imports both the mutable upload-capable normalizer and the read-only validator, preserving final execution behavior while keeping that graph out of preflight.
+- The architecture test now resolves all repository-local static imports, type imports, re-exports, literal dynamic imports, and literal `require` calls recursively from `app/api/preflight/route.ts`. It requires the shared read-only owner and rejects `attachments.ts`, `server/storage.ts`, and the mutation symbols anywhere in the complete local graph.
+
+### Round-3 RED/GREEN evidence
+
+Before production edits, the strengthened preflight boundary suite completed with **8/9 passing and 1 failing**. The failure printed the real transitive path containing `generation-attachment-processing.ts`, `attachments.ts`, and `server/storage.ts`, while the required read-only module was absent.
+
+After extraction, the focused pricing, preflight security/runtime, workspace, attachment/media, generation, MCP, wallet, audit and public projection command completed with **237/237 passing**. The updated generation architecture contracts verify that execution still normalizes uploads first, then enters the same extracted reference/media validator before billing.
+
+Final round-3 gates:
+
+```text
+pnpm --prefix frontend exec tsc --noEmit --pretty false    pass
+npm --prefix frontend run lint                             pass, 0 warnings
+npm run lint:exposure                                      pass
+pnpm model:registry:check                                  valid (50 models, 2 tombstones; 50 catalog, 42 roster)
+git diff --check                                           pass
+```
+
+No pricing fact, provider route, engine catalog row, registry row, or pricing fixture changed in round 3. Round-3 base: `94eb7e9273ee4fc4b7133bdecac1d1a3dc7b33e5`. The final round-3 commit hash is reported in the Task 5 handoff because a commit cannot contain its own hash.

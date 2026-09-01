@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
+import { dirname, join, relative, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { NextRequest } from 'next/server';
 
@@ -11,6 +13,71 @@ const MODULE_PATH = '../frontend/app/api/preflight/_lib/preflight-request.ts';
 
 async function loadBoundary(): Promise<BoundaryModule> {
   return import(MODULE_PATH) as Promise<BoundaryModule>;
+}
+
+const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
+const frontendRoot = join(repositoryRoot, 'frontend');
+
+async function existingModulePath(basePath: string): Promise<string | null> {
+  for (const candidate of [
+    basePath,
+    `${basePath}.ts`,
+    `${basePath}.tsx`,
+    join(basePath, 'index.ts'),
+    join(basePath, 'index.tsx'),
+  ]) {
+    if (await stat(candidate).then((value) => value.isFile()).catch(() => false)) return candidate;
+  }
+  return null;
+}
+
+async function resolveRepositoryImport(fromPath: string, specifier: string): Promise<string | null> {
+  if (specifier.startsWith('@/')) {
+    return existingModulePath(join(frontendRoot, specifier.slice(2)));
+  }
+  if (specifier === '@maxvideoai/pricing') {
+    return existingModulePath(join(repositoryRoot, 'packages/pricing/src/index'));
+  }
+  if (specifier.startsWith('@maxvideoai/pricing/')) {
+    return existingModulePath(join(
+      repositoryRoot,
+      'packages/pricing/src',
+      specifier.slice('@maxvideoai/pricing/'.length),
+    ));
+  }
+  if (specifier.startsWith('.')) {
+    return existingModulePath(resolve(dirname(fromPath), specifier));
+  }
+  return null;
+}
+
+function importedSpecifiers(source: string): string[] {
+  const specifiers: string[] = [];
+  const patterns = [
+    /\b(?:import|export)\s+(?:type\s+)?(?:[^'"]*?\s+from\s+)?['"]([^'"]+)['"]/gu,
+    /\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)/gu,
+    /\brequire\s*\(\s*['"]([^'"]+)['"]\s*\)/gu,
+  ];
+  for (const pattern of patterns) {
+    for (const match of source.matchAll(pattern)) specifiers.push(match[1]);
+  }
+  return specifiers;
+}
+
+async function collectRepositoryImportGraph(entryPath: string): Promise<Map<string, string>> {
+  const sources = new Map<string, string>();
+  const pending = [entryPath];
+  while (pending.length) {
+    const currentPath = pending.pop()!;
+    if (sources.has(currentPath)) continue;
+    const source = await readFile(currentPath, 'utf8');
+    sources.set(currentPath, source);
+    for (const specifier of importedSpecifiers(source)) {
+      const dependencyPath = await resolveRepositoryImport(currentPath, specifier);
+      if (dependencyPath && !sources.has(dependencyPath)) pending.push(dependencyPath);
+    }
+  }
+  return sources;
 }
 
 function validBody() {
@@ -226,16 +293,21 @@ test('runtime preflight route forwards only an allowed persisted-reference proje
   assert.equal(response.headers.get('cache-control'), 'private, no-store');
 });
 
-test('preflight read-only architecture cannot import generation attachment mutation sinks', async () => {
-  const sources = await Promise.all([
-    readFile(new URL('../frontend/app/api/preflight/route.ts', import.meta.url), 'utf8'),
-    readFile(new URL('../frontend/app/api/preflight/_lib/preflight-handler.ts', import.meta.url), 'utf8'),
-    readFile(new URL('../frontend/app/api/preflight/_lib/media-aware-preflight.ts', import.meta.url), 'utf8'),
-  ]);
-  const source = sources.join('\n');
-  assert.match(source, /validateNormalizedGenerationAttachments/);
-  assert.doesNotMatch(
-    source,
-    /processGenerationAttachments|processAndValidateGenerationAttachments|uploadImageToStorage|recordUserAsset/,
+test('the complete repository-local preflight import graph excludes attachment mutation owners', async () => {
+  const graph = await collectRepositoryImportGraph(join(frontendRoot, 'app/api/preflight/route.ts'));
+  const relativePaths = [...graph.keys()].map((filePath) => relative(repositoryRoot, filePath));
+  assert.ok(
+    relativePaths.includes(
+      'frontend/app/api/generate/_lib/normalized-generation-attachment-validation.ts',
+    ),
+    `missing shared read-only validation owner; graph:\n${relativePaths.sort().join('\n')}`,
   );
+  assert.equal(relativePaths.includes('frontend/app/api/generate/_lib/attachments.ts'), false);
+  assert.equal(relativePaths.includes('frontend/server/storage.ts'), false);
+
+  const forbiddenSymbols = /\b(?:processGenerationAttachments|processAndValidateGenerationAttachments|uploadImageToStorage|recordUserAsset)\b/u;
+  const symbolOwners = [...graph.entries()]
+    .filter(([, source]) => forbiddenSymbols.test(source))
+    .map(([filePath]) => relative(repositoryRoot, filePath));
+  assert.deepEqual(symbolOwners, []);
 });
