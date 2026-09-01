@@ -5,6 +5,7 @@ import type { ReferenceProvenanceIssue } from './attachment-references';
 import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
 import { validateRequest } from './validate';
 import {
+  projectVideoProviderFieldValue,
   resolveActiveVideoInputField,
   VIDEO_MEDIA_FIELD_CANDIDATES,
 } from '@/lib/video-input-schema';
@@ -47,6 +48,8 @@ export function buildGenerateValidationPayload(params: {
   audioEnabled: boolean | undefined;
   isBytePlusV1a: boolean;
   supportsDuration: boolean;
+  supportsFps?: boolean;
+  fps?: unknown;
   numFrames: number | null;
   validationDuration: number | string | null;
   maxUploadedBytes: number;
@@ -69,6 +72,7 @@ export function buildGenerateValidationPayload(params: {
   referenceValuesByField: ReferenceBudgetValuesByField<string>;
   referenceMediaItems: readonly ReferenceBudgetMediaItem[];
   referenceProvenanceIssues: readonly ReferenceProvenanceIssue[];
+  validatedExtraInputValues?: Readonly<Record<string, unknown>>;
   deps?: GenerateValidationDeps;
 }): GenerateValidationPayloadResult {
   const validateRequestFn = params.deps?.validateRequestFn ?? validateRequest;
@@ -82,7 +86,17 @@ export function buildGenerateValidationPayload(params: {
     payload.multi_prompt = params.multiPrompt;
   }
   if (params.supportsResolution) {
-    payload.resolution = params.effectiveResolution;
+    const resolutionField = resolveActiveVideoInputField({
+      inputSchema: params.inputSchema,
+      mode: params.mode,
+      type: 'enum',
+      candidateFieldIds: ['resolution'],
+    });
+    payload.resolution = projectVideoProviderFieldValue(
+      resolutionField,
+      params.effectiveResolution,
+      params.inputSchema,
+    );
   }
   if (params.supportsAspectRatio && params.aspectRatio) {
     payload.aspect_ratio = params.aspectRatio;
@@ -98,6 +112,9 @@ export function buildGenerateValidationPayload(params: {
       payload.duration = params.validationDuration;
     }
   }
+  if (params.supportsFps && params.fps !== undefined) {
+    payload.fps = params.fps;
+  }
 
   if (typeof params.loop === 'boolean') {
     payload.loop = params.loop;
@@ -107,6 +124,14 @@ export function buildGenerateValidationPayload(params: {
   }
   if (typeof params.safetyChecker === 'boolean') {
     payload.enable_safety_checker = params.safetyChecker;
+  }
+
+  for (const [fieldId, value] of Object.entries(params.validatedExtraInputValues ?? {})) {
+    const isActiveSchemaField = [
+      ...(params.inputSchema?.required ?? []),
+      ...(params.inputSchema?.optional ?? []),
+    ].some((field) => field.id === fieldId && (!field.modes?.length || field.modes.includes(params.mode)));
+    if (isActiveSchemaField && value !== undefined && value !== null) payload[fieldId] = value;
   }
 
   if (params.maxUploadedBytes > 0) {
@@ -224,6 +249,7 @@ export function buildGenerateValidationPayload(params: {
     startImageUrl: params.startImageUrl,
     endImageUrl: params.endImageUrl,
     inputSchema: params.inputSchema,
+    validatedExtraInputValues: params.validatedExtraInputValues,
   });
   if (requiredInputError) {
     return requiredInputError;
@@ -310,6 +336,7 @@ function validateRequiredInputs(params: {
   startImageUrl: string | null | undefined;
   endImageUrl: string | null | undefined;
   inputSchema: EngineInputSchema | null | undefined;
+  validatedExtraInputValues?: Readonly<Record<string, unknown>>;
 }): Extract<GenerateValidationPayloadResult, { ok: false }> | null {
   if (params.isLumaRay2 && params.mode === 'i2v') {
     if (!params.initialImageUrl) {
@@ -343,6 +370,10 @@ function validateRequiredInputs(params: {
         || params.videoUrls.length
         || params.audioUrls.length
         || params.resolvedAudioUrl
+        || params.inputSchema.constraints.atLeastOneReferenceField.some((fieldId) => {
+          const value = params.validatedExtraInputValues?.[fieldId];
+          return typeof value === 'string' ? value.trim().length > 0 : Array.isArray(value) && value.length > 0;
+        })
       )
     );
     if (

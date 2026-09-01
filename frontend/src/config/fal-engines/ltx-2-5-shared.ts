@@ -59,6 +59,7 @@ function createInputSchema(options: LtxVariant): EngineInputSchema {
       a2vPromptRequiredWithoutImage: true,
       fastHighFpsMaxDurationSec: options.variant === 'Fast' ? 10 : undefined,
       fastHighResolutionMaxDurationSec: options.variant === 'Fast' ? 10 : undefined,
+      canonicalResolutionAliases: options.variant === 'Fast' ? { '4k': '2160p' } : undefined,
     },
   };
 }

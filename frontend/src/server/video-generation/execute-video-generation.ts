@@ -203,6 +203,8 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     audioEnabled,
     isBytePlusV1a,
     supportsDuration,
+    supportsFps,
+    fps: body.fps,
     numFrames,
     validationDuration: lumaDurationInfo?.label ?? (Number.isFinite(effectiveDurationSec) ? effectiveDurationSec : null),
     maxUploadedBytes,
@@ -225,6 +227,7 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     referenceValuesByField,
     referenceMediaItems,
     referenceProvenanceIssues,
+    validatedExtraInputValues,
   });
   if (!validationPayloadResult.ok) {
     logMetric('rejected', validationPayloadResult.metric);

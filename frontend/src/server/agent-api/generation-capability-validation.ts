@@ -26,7 +26,10 @@ import type {
 import type { AgentPublicGenerationEngine } from './model-catalog';
 import type { ResolvedReference } from './reference-types';
 import { toEngineGenerationMode } from './generation-mode-aliases';
-import { projectVideoProviderFieldValue } from '@/lib/video-input-schema';
+import {
+  getVideoSchemaControlConstraintViolation,
+  projectVideoProviderFieldValue,
+} from '@/lib/video-input-schema';
 
 const VIDEO_FIELD_BY_SETTING: Record<string, string> = {
   cameraFixed: 'camera_fixed',
@@ -167,7 +170,11 @@ function validateVideoModeCaps(
 
   const resolution = request.settings.resolution;
   const resolutionField = applicableField(candidate, 'resolution', request.mode);
-  const providerResolution = projectVideoProviderFieldValue(resolutionField, resolution);
+  const providerResolution = projectVideoProviderFieldValue(
+    resolutionField,
+    resolution,
+    candidate.engine.inputSchema,
+  );
   const supportedResolutions = caps.resolution?.length
     ? caps.resolution
     : candidate.engine.resolutions.filter((value) => value !== 'auto').slice(0, 1);
@@ -181,7 +188,11 @@ function validateVideoModeCaps(
   }
   const aspectRatio = request.settings.aspectRatio;
   const aspectRatioField = applicableField(candidate, 'aspect_ratio', request.mode);
-  const providerAspectRatio = projectVideoProviderFieldValue(aspectRatioField, aspectRatio);
+  const providerAspectRatio = projectVideoProviderFieldValue(
+    aspectRatioField,
+    aspectRatio,
+    candidate.engine.inputSchema,
+  );
   const supportedAspectRatios = caps.aspectRatio ?? [];
   if (supportedAspectRatios.length > 0 && (
     typeof aspectRatio !== 'string'
@@ -213,7 +224,7 @@ function validateVideoModeCaps(
       .map((fieldId) => applicableField(candidate, fieldId, request.mode))
       .find((candidateField): candidateField is EngineInputField => Boolean(candidateField));
     if (value !== undefined && field) {
-      validateFieldValue(field, projectVideoProviderFieldValue(field, value));
+      validateFieldValue(field, projectVideoProviderFieldValue(field, value, candidate.engine.inputSchema));
     }
   }
 
@@ -230,6 +241,13 @@ function validateVideoModeCaps(
     validateFieldValue(field, request.settings.loop);
   }
   if (request.settings.numFrames !== undefined) fail('numFrames');
+
+  if (getVideoSchemaControlConstraintViolation({
+    inputSchema: candidate.engine.inputSchema,
+    duration,
+    resolution,
+    fps,
+  })) fail('durationSec');
 }
 
 function validateDerivedSourceFacts(

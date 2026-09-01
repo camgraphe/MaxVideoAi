@@ -70,3 +70,63 @@ A repository-wide `pnpm test:validate` run progressed through the broad applicat
 - The shared selector uses provider schema identity rather than an engine-ID field table.
 - Public HTTPS references with provider duration constraints remain accepted where the schema says `source: either`; trusted duration enforcement applies when a private asset is supplied. LTX a2v remains explicitly private on MCP.
 - Site media-library size/format checks continue to use the existing media-constraint owner; Task 4 did not alter that pipeline.
+
+## Fix round 1 — reviewer findings
+
+### Revision
+
+- Fix-round base: `b438bc2a7aedf272045392e767c393ff13775874`
+- Fix-round implementation commit: reported in the handoff because a commit cannot contain its own hash.
+
+### Outcome
+
+- The real site execution owner now passes schema-validated extra input values into validation before billing, reservation, or provider submission. Wan `file_url` and `web_url` therefore satisfy the any-supported-reference rule only after `validateExtraInputValues`, retain the thinking/exclusivity checks, and continue into the exact Fal body.
+- LTX 2.5 Fast consumes the authored high-FPS and high-resolution duration ceilings on both the site and paid MCP paths. The shared validator derives high values from the active schema fields, with no engine-ID table. The canonical `4k` alias is authored only by Fast and projects to provider `2160p`; Pro rejects `4k`.
+- FLUX first/last workspace handling uses shared schema candidates through field projection, preparation, guards, and workspace request payloads. Manual and automatic `fl2v` preserve only `start_image_url` and `end_image_url`, without duplicate top-level image fields.
+- All seven P0 engines remain Fal-only. Direct-provider adapters, environment configuration, polling, billing routes, and `AppClient.tsx` remain untouched.
+
+### RED evidence
+
+Before fix-round production edits:
+
+- `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/p0-video-validation.test.ts tests/p0-video-request-bodies.test.ts tests/p0-video-workspace.test.ts`
+  - Result: 17 pass, 4 fail.
+  - Evidence: the real validation payload rejected Wan file-only references; LTX Fast accepted 20s at 50 FPS; the FLUX default workspace schema exposed both `image_url` and `start_image_url`; and the first/last guard did not recognize `start_image_url`.
+
+### GREEN evidence
+
+- P0 fix slice:
+  - `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/p0-video-request-bodies.test.ts tests/p0-video-validation.test.ts tests/p0-video-workspace.test.ts`
+  - Result: 22 pass, 0 fail.
+- Required focused suite, including direct-provider routing regressions:
+  - `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/p0-video-request-bodies.test.ts tests/p0-video-validation.test.ts tests/p0-video-workspace.test.ts tests/generate-fal-request.test.ts tests/validate-request.test.ts tests/mcp-special-video-modes.test.ts tests/mcp-model-executability.test.ts tests/workspace-generation-inputs.test.ts tests/workspace-composer-surface-contract.test.ts tests/p0-provider-routing.test.ts tests/kling-provider-routing.test.ts tests/luma-agents-provider-routing.test.ts`
+  - Final fresh result: 207 pass, 0 fail.
+- P0 raw/registry/reference and execution-owner regressions:
+  - `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/p0-video-engine-contracts.test.ts tests/p0-video-engine-raw-contracts.test.ts tests/p0-model-family-contract.test.ts tests/reference-budget.test.ts tests/engine-reference-budget-propagation.test.ts tests/generate-validation-payload.test.ts tests/video-generation-service-parity.test.ts`
+  - Result: 39 pass, 0 fail.
+- Workspace behavioral regressions:
+  - `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/p0-video-workspace.test.ts tests/workspace-generation-inputs.test.ts tests/workspace-generation-request-helpers.test.ts tests/workspace-composer-surface-contract.test.ts`
+  - Result: 39 pass, 0 fail.
+- TypeScript, frontend lint, exposure lint, and `git diff --check`: pass.
+
+### Fix-round owners changed
+
+- `frontend/src/server/video-generation/execute-video-generation.ts`
+- `frontend/app/api/generate/_lib/validation-payload.ts`
+- `frontend/app/api/generate/_lib/validate.ts`
+- `frontend/src/lib/video-input-schema.ts`
+- `frontend/src/lib/fal-request-body.ts`
+- `frontend/src/config/fal-engines/ltx-2-5-shared.ts`
+- `frontend/src/server/agent-api/generation-capability-validation.ts`
+- `frontend/app/(core)/(workspace)/app/_lib/workspace-input-schema.ts`
+- `frontend/app/(core)/(workspace)/app/_lib/workspace-generation-inputs.ts`
+- `frontend/app/(core)/(workspace)/app/_lib/workspace-generation-guards.ts`
+- `tests/p0-video-request-bodies.test.ts`
+- `tests/p0-video-validation.test.ts`
+- `tests/p0-video-workspace.test.ts`
+
+### Fix-round deviations and residual risks
+
+- Paid MCP canonical video requests cannot represent document or web references: the canonical reference union contains image, video, and audio media only. No unsafe bypass was added; Wan MCP requests without a canonical media reference continue to fail closed.
+- Wan's authored `minimumReferenceVideoFps: 16` cannot be enforced safely yet. Neither site `ReferenceAsset`/generation attachments nor MCP `ResolvedReference` carries trusted FPS metadata. This round does not guess FPS or silently invent it. A future contract change must add trusted media-probe FPS metadata and define fail-closed behavior when that fact is absent before enabling enforcement.
+- An additional non-gate run of `tests/mcp-generation-capabilities.test.ts` has one existing H3 assertion failure for an unverified public HTTPS video duration; Task 4 does not touch that H3 reference-duration behavior. All required Task 4 and directly affected suites pass.

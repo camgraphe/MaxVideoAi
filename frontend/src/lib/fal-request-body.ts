@@ -67,7 +67,7 @@ export function buildFalGenerationRequest(
     }
     const resolutionField = activeField(['resolution']);
     if (resolution && (!schemaAware || resolutionField)) {
-      requestBody.resolution = projectVideoProviderFieldValue(resolutionField, resolution);
+      requestBody.resolution = projectVideoProviderFieldValue(resolutionField, resolution, inputSchema);
     }
     if (payload.prompt.trim().length) {
       requestBody.prompt = payload.prompt;
@@ -75,7 +75,7 @@ export function buildFalGenerationRequest(
     const shouldSendAspectRatio = !(isHappyHorseFalModelId(model) && payload.mode === 'i2v');
     const aspectRatioField = activeField(['aspect_ratio']);
     if (payload.aspectRatio && shouldSendAspectRatio && (!schemaAware || aspectRatioField)) {
-      requestBody.aspect_ratio = projectVideoProviderFieldValue(aspectRatioField, payload.aspectRatio);
+      requestBody.aspect_ratio = projectVideoProviderFieldValue(aspectRatioField, payload.aspectRatio, inputSchema);
     }
 
     const isKlingO3VideoToVideo = payload.engineId.startsWith('kling-o3') && payload.mode === 'v2v';

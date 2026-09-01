@@ -175,6 +175,32 @@ test('Wan ref2v preserves typed provider arrays in site and paid MCP bodies', ()
   });
 });
 
+test('Wan ref2v preserves validated document and web references in exact Fal bodies', () => {
+  for (const field of ['file_url', 'web_url'] as const) {
+    siteRequest({
+      engineId: 'wan-3',
+      mode: 'ref2v',
+      prompt,
+      durationOption: 5,
+      resolution: '720p',
+      aspectRatio: 'auto',
+      audio: true,
+      extraInputValues: {
+        [field]: `https://example.com/${field === 'file_url' ? 'reference.pdf' : 'reference'}`,
+        enable_thinking: true,
+      },
+    }, 'alibaba/wan-3.0/reference-to-video', {
+      prompt,
+      duration: 5,
+      resolution: '720p',
+      aspect_ratio: 'adaptive',
+      audio: true,
+      [field]: `https://example.com/${field === 'file_url' ? 'reference.pdf' : 'reference'}`,
+      enable_thinking: true,
+    });
+  }
+});
+
 test('LTX a2v sends source audio and optional image without output controls or audio toggle', () => {
   siteRequest({
     engineId: 'ltx-2-5-fast',
@@ -225,12 +251,12 @@ test('LTX a2v sends source audio and optional image without output controls or a
   });
 });
 
-test('LTX Pro maps canonical 4k to provider 2160p only in the site Fal body', () => {
+test('LTX Fast maps canonical 4k to provider 2160p only in the site Fal body', () => {
   siteRequest({
-    engineId: 'ltx-2-5-pro', mode: 'i2v', prompt,
+    engineId: 'ltx-2-5-fast', mode: 'i2v', prompt,
     durationOption: 6, resolution: '4k', aspectRatio: '16:9', audio: true,
     imageUrl: startUrl,
-  }, 'lightricks/ltx-2.5/image-to-video/pro', {
+  }, 'lightricks/ltx-2.5/image-to-video/fast', {
     prompt,
     duration: 6,
     resolution: '2160p',
@@ -241,10 +267,10 @@ test('LTX Pro maps canonical 4k to provider 2160p only in the site Fal body', ()
 
   const settings = { durationSec: 6, resolution: '4k', aspectRatio: '16:9', audio: true };
   paidRequest({
-    engineId: 'ltx-2-5-pro', mode: 'i2v', settings,
+    engineId: 'ltx-2-5-fast', mode: 'i2v', settings,
     references: [{ kind: 'https', url: startUrl, role: 'source', mediaKind: 'image' }],
     expected: {
-      ...paidBase('ltx-2-5-pro', 'i2v', settings),
+      ...paidBase('ltx-2-5-fast', 'i2v', settings),
       imageUrl: startUrl,
       inputs: [{ kind: 'image', slotId: 'image_url', url: startUrl }],
     },

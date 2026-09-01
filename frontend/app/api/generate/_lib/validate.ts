@@ -11,6 +11,7 @@ import type { ReferenceProvenanceIssue } from './attachment-references';
 import { validateModeMediaInputs } from './validate-media-inputs';
 import { validateProviderSpecificConstraints } from './validate-provider-constraints';
 import { validateProviderControls } from './validate-provider-controls';
+import { getVideoSchemaControlConstraintViolation } from '@/lib/video-input-schema';
 import type { ValidationResult } from './validate-types';
 export type RequestValidationContext = { inputSchema?: EngineInputSchema | null; referenceValuesByField?: ReferenceBudgetValuesByField<string>; referenceMediaItems?: readonly ReferenceBudgetMediaItem[]; referenceProvenanceIssues?: readonly ReferenceProvenanceIssue[] };
 const ENGINE_INPUT_LIMITS = listFalEngines().reduce<Record<string, { promptMaxChars?: number }>>((acc, entry) => {
@@ -91,6 +92,25 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
   const providerControlsValidation = validateProviderControls(payload);
   if (!providerControlsValidation.ok) {
     return providerControlsValidation;
+  }
+
+  const schemaControlViolation = getVideoSchemaControlConstraintViolation({
+    inputSchema: context.inputSchema,
+    duration: payload['duration'] ?? payload['duration_seconds'],
+    resolution: payload['resolution'],
+    fps: payload['fps'],
+  });
+  if (schemaControlViolation) {
+    return {
+      ok: false,
+      error: {
+        code: 'ENGINE_CONSTRAINT',
+        field: schemaControlViolation.field,
+        message: `Duration must be at most ${schemaControlViolation.maxDurationSec}s for these settings`,
+        allowed: [`<= ${schemaControlViolation.maxDurationSec}`],
+        value: payload['duration'] ?? payload['duration_seconds'],
+      },
+    };
   }
 
   if (caps.frames) {

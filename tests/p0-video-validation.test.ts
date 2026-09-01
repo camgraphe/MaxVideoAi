@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import { validateModeMediaInputs } from '../frontend/app/api/generate/_lib/validate-media-inputs';
 import { buildGenerateValidationPayload } from '../frontend/app/api/generate/_lib/validation-payload';
+import { validateExtraInputValues } from '../frontend/app/api/generate/_lib/extra-input-values';
 import { validateRequest } from '../frontend/app/api/generate/_lib/validate';
 import { listFalEngines } from '../frontend/src/config/falEngines';
 import {
@@ -108,6 +109,103 @@ test('Wan file and web references require thinking and remain mutually exclusive
       [field]: 'https://example.com/reference', enable_thinking: true,
     }, context), { ok: true });
   }
+});
+
+test('site generation pipeline validates and preserves schema-active Wan document and web references', () => {
+  const engine = candidate('wan-3').engine;
+  const base = {
+    engineId: engine.id, mode: 'ref2v' as const, prompt: 'P', multiPrompt: null,
+    supportsResolution: true, effectiveResolution: '720p', supportsAspectRatio: true,
+    aspectRatio: '16:9', audioEnabled: true, isBytePlusV1a: false,
+    supportsDuration: true, supportsFps: false, fps: undefined, numFrames: null,
+    validationDuration: 5, maxUploadedBytes: 0, resolvedFirstFrameUrl: null,
+    lastFrameUrl: null, normalizedReferenceImages: [] as string[], videoUrls: [] as string[],
+    audioUrls: [] as string[], resolvedAudioUrl: null, sourceInputVideoUrl: null,
+    elements: null, endImageUrl: null, startImageUrl: null, isLumaRay2: false,
+    initialImageUrl: null, inputSchema: engine.inputSchema, referenceValuesByField: {},
+    referenceMediaItems: [], referenceProvenanceIssues: [],
+  };
+  for (const field of ['file_url', 'web_url'] as const) {
+    const extra = validateExtraInputValues({
+      engine,
+      mode: 'ref2v',
+      rawExtraInputValues: { [field]: 'https://example.com/reference', enable_thinking: true },
+    });
+    assert.equal(extra.ok, true);
+    if (!extra.ok) continue;
+    const result = buildGenerateValidationPayload({ ...base, validatedExtraInputValues: extra.values });
+    assert.equal(result.ok, true, `${field}: ${JSON.stringify(result)}`);
+    if (result.ok) {
+      assert.equal(result.payload[field], 'https://example.com/reference');
+      assert.equal(result.payload.enable_thinking, true);
+    }
+  }
+
+  for (const rawExtraInputValues of [
+    { file_url: 'https://example.com/reference.pdf', enable_thinking: false },
+    { web_url: 'https://example.com/reference', enable_thinking: false },
+    {
+      file_url: 'https://example.com/reference.pdf',
+      web_url: 'https://example.com/reference',
+      enable_thinking: true,
+    },
+  ]) {
+    const extra = validateExtraInputValues({ engine, mode: 'ref2v', rawExtraInputValues });
+    assert.equal(extra.ok, true);
+    if (!extra.ok) continue;
+    assert.equal(buildGenerateValidationPayload({
+      ...base,
+      validatedExtraInputValues: extra.values,
+    }).ok, false);
+  }
+});
+
+test('LTX Fast enforces schema duration ceilings for high fps and high resolution on site and MCP', () => {
+  const fast = candidate('ltx-2-5-fast');
+  const fastSchema = fast.engine.inputSchema;
+  const site = (duration: number, resolution: string, fps: number) => buildGenerateValidationPayload({
+    engineId: fast.engine.id, mode: 't2v', prompt: 'P', multiPrompt: null,
+    supportsResolution: true, effectiveResolution: resolution, supportsAspectRatio: true,
+    aspectRatio: '16:9', audioEnabled: true, isBytePlusV1a: false,
+    supportsDuration: true, supportsFps: true, fps, numFrames: null,
+    validationDuration: duration, maxUploadedBytes: 0, resolvedFirstFrameUrl: null,
+    lastFrameUrl: null, normalizedReferenceImages: [], videoUrls: [], audioUrls: [],
+    resolvedAudioUrl: null, sourceInputVideoUrl: null, elements: null, endImageUrl: null,
+    startImageUrl: null, isLumaRay2: false, initialImageUrl: null, inputSchema: fastSchema,
+    referenceValuesByField: {}, referenceMediaItems: [], referenceProvenanceIssues: [],
+  });
+  assert.equal(site(20, '1080p', 50).ok, false);
+  assert.equal(site(20, '4k', 25).ok, false);
+  assert.equal(site(10, '1080p', 50).ok, true);
+  assert.equal(site(10, '4k', 25).ok, true);
+
+  const mcp = (durationSec: number, resolution: string, fps: number) => request('ltx-2-5-fast', 't2v', {
+    settings: { durationSec, resolution, aspectRatio: '16:9', fps, audio: true },
+  });
+  expectCapabilityFailure(mcp(20, '1080p', 50), 'durationSec');
+  expectCapabilityFailure(mcp(20, '4k', 25), 'durationSec');
+  assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(mcp(10, '1080p', 50), fast));
+  assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(mcp(10, '4k', 25), fast));
+});
+
+test('LTX Pro rejects canonical 4k on site and MCP', () => {
+  const pro = candidate('ltx-2-5-pro');
+  const site = buildGenerateValidationPayload({
+    engineId: pro.engine.id, mode: 't2v', prompt: 'P', multiPrompt: null,
+    supportsResolution: true, effectiveResolution: '4k', supportsAspectRatio: true,
+    aspectRatio: '16:9', audioEnabled: true, isBytePlusV1a: false,
+    supportsDuration: true, supportsFps: true, fps: 25, numFrames: null,
+    validationDuration: 6, maxUploadedBytes: 0, resolvedFirstFrameUrl: null,
+    lastFrameUrl: null, normalizedReferenceImages: [], videoUrls: [], audioUrls: [],
+    resolvedAudioUrl: null, sourceInputVideoUrl: null, elements: null, endImageUrl: null,
+    startImageUrl: null, isLumaRay2: false, initialImageUrl: null,
+    inputSchema: pro.engine.inputSchema, referenceValuesByField: {}, referenceMediaItems: [],
+    referenceProvenanceIssues: [],
+  });
+  assert.equal(site.ok, false);
+  expectCapabilityFailure(request('ltx-2-5-pro', 't2v', {
+    settings: { durationSec: 6, resolution: '4k', aspectRatio: '16:9', fps: 25, audio: true },
+  }), 'resolution');
 });
 
 test('site validation payload projects Wan and FLUX exact media field names', () => {

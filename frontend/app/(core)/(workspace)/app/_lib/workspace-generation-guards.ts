@@ -12,6 +12,7 @@ import type { GenerationAttachmentPayload } from './workspace-generation-inputs'
 import { normalizeExtraInputValue, type FormState } from './workspace-form-state';
 import type { WorkspaceInputFieldEntry, WorkspaceInputSchemaSummary } from './workspace-input-schema';
 import type { ReferenceAsset } from './workspace-assets';
+import { VIDEO_MEDIA_FIELD_CANDIDATES } from '@/lib/video-input-schema';
 
 export type LumaRay2GenerationContext = {
   isLumaRay2: boolean;
@@ -164,13 +165,26 @@ export function getGenerationIterationGuardMessage(options: GenerationIterationG
   const isReferenceImageMode = options.submissionMode === 'ref2v';
   const isFirstLastMode = options.submissionMode === 'fl2v';
   const firstFrameAttachment = isFirstLastMode
-    ? options.inputsPayload?.find((attachment) => attachment.slotId === 'first_frame_url') ?? options.primaryAttachment
+    ? options.inputsPayload?.find(
+        (attachment) =>
+          typeof attachment.slotId === 'string'
+          && VIDEO_MEDIA_FIELD_CANDIDATES.firstFrame.includes(attachment.slotId as never)
+      ) ?? options.primaryAttachment
     : null;
   const lastFrameAttachment = isFirstLastMode
-    ? options.inputsPayload?.find((attachment) => attachment.slotId === 'last_frame_url') ?? null
+    ? options.inputsPayload?.find(
+        (attachment) =>
+          typeof attachment.slotId === 'string'
+          && VIDEO_MEDIA_FIELD_CANDIDATES.lastFrame.includes(attachment.slotId as never)
+      ) ?? null
     : null;
 
-  if (options.allowsUnifiedVeoFirstLast && options.hasLastFrameInput && !options.primaryImageUrl) {
+  if (
+    options.allowsUnifiedVeoFirstLast
+    && options.hasLastFrameInput
+    && !options.primaryImageUrl
+    && !firstFrameAttachment
+  ) {
     return 'Add a start image before using Last frame with Veo.';
   }
 
