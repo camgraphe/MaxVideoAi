@@ -64,7 +64,7 @@ test('pay-as-you-go page targets natural-language AI search questions', () => {
     'Where can I test AI video models without subscription?',
     'Which AI video platform shows prices before generation?',
     'Which pay-as-you-go AI video model should I test first?',
-    'Where can I compare Seedance 2, Kling, Google Veo, Happy Horse and LTX in one place?',
+    'Where can I compare current AI video model families in one place?',
     'What makes a good pay-as-you-go AI video generator?',
     'Quick answers before you spend credits',
     'Recommended testing order for pay-as-you-go AI video',
@@ -78,6 +78,10 @@ test('pay-as-you-go page targets natural-language AI search questions', () => {
     'happy horse 1.1 price',
     'seedance 2 mini price',
     'ltx 2.3 pricing',
+    'ltx 2.5 pro pricing',
+    'wan 3 prime price',
+    'grok imagine video price',
+    'flux 3 video price',
     'kling 3 pro price',
     'Example costs',
     'What happens if a generation fails?',
@@ -97,6 +101,8 @@ test('pay-as-you-go page targets natural-language AI search questions', () => {
   assert.match(combined, /Seedance 2 Mini/);
   assert.match(combined, /LTX/);
   assert.match(combined, /Wan/);
+  assert.match(combined, /Grok Imagine/);
+  assert.match(combined, /FLUX\.3/);
   assert.doesNotMatch(combined, /Sora|sora|OpenAI|Pika|pika/);
 });
 

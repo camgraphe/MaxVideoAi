@@ -8,6 +8,7 @@ import { CHARACTER_FORMAT_OPTIONS } from '@/lib/character-builder';
 import type { AudioPackId, AudioVoiceMode } from '@/lib/audio-generation';
 import type { GptImage2Quality } from '@/lib/image/gptImage2';
 import { supportsImageGeneration, supportsVideoGeneration } from '@/lib/models/catalog';
+import { buildCanonicalCompareSlug, isPublishedComparisonSlug } from '@/lib/compare-hub/data';
 import {
   buildFixedPublicProductFacts,
   buildPublicPricingFacts,
@@ -37,9 +38,16 @@ const PRICING_DISPLAY_MODEL_ORDER = [
   'gemini-omni-flash',
   'veo-3-1-lite',
   'happy-horse-1-1',
+  'ltx-2-5-pro',
+  'ltx-2-5-fast',
   'ltx-2-3-fast',
   'ltx-2-3-pro',
+  'wan-3-prime',
+  'wan-3',
   'wan-2-6',
+  'grok-imagine-video-1-5',
+  'flux-3',
+  'flux-3-draft',
   'minimax-hailuo-02-text',
   'luma-ray-2',
   'luma-ray-2-flash',
@@ -47,7 +55,24 @@ const PRICING_DISPLAY_MODEL_ORDER = [
   'happy-horse-1-0',
 ] as const;
 
-const PRICING_DISPLAY_FAMILY_ORDER = ['seedance', 'kling', 'veo', 'happy-horse', 'ltx', 'wan', 'hailuo', 'luma'] as const;
+const PRICING_DISPLAY_FAMILY_ORDER = [
+  'seedance',
+  'kling',
+  'veo',
+  'happy-horse',
+  'ltx',
+  'wan',
+  'grok',
+  'flux',
+  'hailuo',
+  'luma',
+] as const;
+const PRICING_FAMILY_VARIANT_ORDER: Readonly<Record<string, readonly string[]>> = {
+  ltx: ['ltx-2-5-pro', 'ltx-2-5-fast', 'ltx-2-3', 'ltx-2-3-fast'],
+  wan: ['wan-3-prime', 'wan-3', 'wan-2-6'],
+  grok: ['grok-imagine-video-1-5'],
+  flux: ['flux-3', 'flux-3-draft'],
+};
 const PRICING_DISPLAY_MODEL_RANK = new Map<string, number>(
   PRICING_DISPLAY_MODEL_ORDER.map((slug, index) => [slug, index] as const)
 );
@@ -107,15 +132,6 @@ export type VideoPricePresetId = VideoPricePreset['id'];
 export const DEFAULT_VIDEO_PRICE_PRESET_ID: VideoPricePresetId = '10s-1080p';
 
 const PRICING_HIGHLIGHT_EXCLUDED_ENGINE_IDS = new Set(['seedance-1-5-pro']);
-const PREVIOUS_GENERATION_PRICING_ENGINE_IDS = new Set([
-  'seedance-1-5-pro',
-  'ltx-2',
-  'ltx-2-fast',
-  'kling-2-5-turbo',
-  'kling-2-6-pro',
-  'pika-text-to-video',
-  'wan-2-5',
-]);
 
 export type PricingHubLink = {
   href: string;
@@ -246,6 +262,12 @@ function anchorFromSlug(slug: string) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')}-pricing`;
+}
+
+export function isPricingDiscoveryEntry(entry: FalEngineEntry) {
+  if (entry.availability !== 'available' && entry.availability !== 'limited') return false;
+  if (entry.lifecycle !== 'current' && entry.lifecycle !== 'legacy') return false;
+  return entry.surfaces.pricing.includeInEstimator === true;
 }
 
 function isPublicMarketingEntry(entry: FalEngineEntry) {
@@ -526,11 +548,16 @@ function buildVideoLinks(entry: FalEngineEntry, locale: AppLocale): PricingHubLi
   if (entry.surfaces.examples.includeInFamilyResolver && entry.family) {
     links.push({ label: copy.links.examples, href: buildLocalizedMarketingHref(locale, 'gallery', entry.family) });
   }
-  const compareSlug = entry.surfaces.compare.suggestOpponents?.[0] ?? entry.surfaces.compare.publishedPairs?.[0];
+  const compareSlug = [
+    ...(entry.surfaces.compare.suggestOpponents ?? []),
+    ...(entry.surfaces.compare.publishedPairs ?? []),
+  ]
+    .map((opponentSlug) => buildCanonicalCompareSlug(entry.modelSlug, opponentSlug))
+    .find(isPublishedComparisonSlug);
   if (entry.surfaces.compare.includeInHub && compareSlug) {
     links.push({
       label: copy.links.compare,
-      href: buildLocalizedMarketingHref(locale, 'compare', `${entry.modelSlug}-vs-${compareSlug}`),
+      href: buildLocalizedMarketingHref(locale, 'compare', compareSlug),
     });
   }
   const appEngineId = entry.engine.id || entry.id || entry.modelSlug;
@@ -594,8 +621,7 @@ function getEntryPricingIdentity(entry: FalEngineEntry) {
 }
 
 function isLegacyPricingEngine(entry: FalEngineEntry) {
-  const identity = getEntryPricingIdentity(entry);
-  return Boolean(entry.isLegacy) || PREVIOUS_GENERATION_PRICING_ENGINE_IDS.has(identity);
+  return entry.lifecycle === 'legacy';
 }
 
 function isPricingHighlightEligible(entry: FalEngineEntry) {
@@ -636,9 +662,38 @@ function markCheapestQuotes(rows: VideoPricingRow[]) {
   return rows;
 }
 
-function buildVideoPricingRows(locale: AppLocale) {
-  const rows = listFalEngines()
-    .filter((entry) => supportsVideoGeneration(entry) && isPublicMarketingEntry(entry))
+function comparePricingRowsByQuote(first: VideoPricingRow, second: VideoPricingRow) {
+  return first.sortValue - second.sortValue
+    || first.engineName.localeCompare(second.engineName)
+    || first.id.localeCompare(second.id);
+}
+
+function orderPricingRows(rows: VideoPricingRow[]) {
+  let orderedRows = [...rows].sort(comparePricingRowsByQuote);
+  Object.entries(PRICING_FAMILY_VARIANT_ORDER).forEach(([family, variantOrder]) => {
+    const familyRows = orderedRows
+      .filter((row) => row.family === family)
+      .sort((first, second) => {
+        const groupRank = Number(first.pricingGroup === 'legacy') - Number(second.pricingGroup === 'legacy');
+        const firstRank = variantOrder.indexOf(first.id);
+        const secondRank = variantOrder.indexOf(second.id);
+        return groupRank
+          || (firstRank === -1 ? Number.MAX_SAFE_INTEGER : firstRank)
+            - (secondRank === -1 ? Number.MAX_SAFE_INTEGER : secondRank)
+          || comparePricingRowsByQuote(first, second);
+      });
+    let familyIndex = 0;
+    orderedRows = orderedRows.map((row) => row.family === family ? familyRows[familyIndex++] ?? row : row);
+  });
+  return orderedRows;
+}
+
+export function buildVideoPricingRowsFromEntries(
+  entries: readonly FalEngineEntry[],
+  locale: AppLocale,
+) {
+  const rows = entries
+    .filter((entry) => supportsVideoGeneration(entry) && isPricingDiscoveryEntry(entry))
     .map((entry): VideoPricingRow => {
       const quotes = Object.fromEntries(
         VIDEO_PRICE_PRESETS.map((preset) => [preset.id, getPresetQuote(entry, preset, locale)])
@@ -680,10 +735,13 @@ function buildVideoPricingRows(locale: AppLocale) {
           pricedRank * 100 +
           displayRank,
       };
-    })
-    .sort((a, b) => a.sortValue - b.sortValue || a.engineName.localeCompare(b.engineName));
+    });
 
-  return markCheapestQuotes(rows);
+  return markCheapestQuotes(orderPricingRows(rows));
+}
+
+function buildVideoPricingRows(locale: AppLocale) {
+  return buildVideoPricingRowsFromEntries(listFalEngines(), locale);
 }
 
 function cheapestExactRow(rows: VideoPricingRow[], presetId: VideoPricePresetId) {

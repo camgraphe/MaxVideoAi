@@ -4,6 +4,11 @@ import { getPayAsYouGoContent } from '../frontend/app/(localized)/[locale]/(mark
 import { buildPayAsYouGoPageData } from '../frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/_lib/payg-page-data.ts';
 import { buildPricingHubData } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData.ts';
 
+const hiddenP0Ids = new Set([
+  'ltx-2-5-pro', 'ltx-2-5-fast', 'wan-3-prime', 'wan-3',
+  'grok-imagine-video-1-5', 'flux-3', 'flux-3-draft',
+]);
+
 test('Pay-as-you-go data is render-ready and does not mutate content or pricing input', () => {
   const content = structuredClone(getPayAsYouGoContent('en'));
   const pricingHub = structuredClone(buildPricingHubData('en'));
@@ -17,6 +22,21 @@ test('Pay-as-you-go data is render-ready and does not mutate content or pricing 
   assert.equal(data.workflow.items[0].icon, 'engine');
   assert.ok(data.hero.quote.previewRows.length <= 4);
   assert.ok(data.pricing.rows.every((row) => row.priceCells.every((cell) => cell.displayValue.trim())));
+});
+
+test('unpublished P0 models have no PAYG row, lookup, example, preview, or fallback link', () => {
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const data = buildPayAsYouGoPageData({ locale, content: getPayAsYouGoContent(locale) });
+    const exposedIds = [
+      ...data.pricing.rows,
+      ...data.hero.quote.previewRows,
+      ...data.modelTesting.items,
+      ...data.priceLookups.items,
+      ...data.exampleCosts.items,
+    ].map((item) => item.id).filter((id) => hiddenP0Ids.has(id));
+    assert.deepEqual(exposedIds, []);
+    assert.doesNotMatch(JSON.stringify(data), /\/(?:models|modeles|modelos)\/(?:ltx-2-5|wan-3|grok-imagine-video-1-5|flux-3)/);
+  }
 });
 
 test('displayed pricing remains a live projection of the pricing hub', () => {
