@@ -8,23 +8,29 @@ const pagePath = join(root, 'frontend/app/(core)/admin/video-seo/page.tsx');
 const tablePath = join(root, 'frontend/app/(core)/admin/video-seo/_components/VideoSeoInventoryTable.tsx');
 const candidateFormPath = join(root, 'frontend/app/(core)/admin/video-seo/_components/VideoSeoCandidateForm.client.tsx');
 const editorPath = join(root, 'frontend/app/(core)/admin/video-seo/_components/VideoSeoEditorialEditor.client.tsx');
+const removalButtonPath = join(root, 'frontend/app/(core)/admin/video-seo/_components/VideoSeoRolloutRemovalButton.client.tsx');
 const thumbnailEditorPath = join(root, 'frontend/components/admin/VideoThumbnailEditor.client.tsx');
 const helpersPath = join(root, 'frontend/app/(core)/admin/video-seo/_lib/video-seo-admin-helpers.ts');
 const apiCreatePath = join(root, 'frontend/app/api/admin/video-seo/route.ts');
 const apiEditPath = join(root, 'frontend/app/api/admin/video-seo/[videoId]/route.ts');
 const serverEditorialPath = join(root, 'frontend/server/video-seo-editorial.ts');
 const migrationPath = join(root, 'neon/migrations/23_video_seo_pages.sql');
+const rolloutExclusionMigrationPath = join(root, 'neon/migrations/40_video_seo_rollout_exclusions.sql');
 
 const pageSource = readFileSync(pagePath, 'utf8');
 const tableSource = readFileSync(tablePath, 'utf8');
 const candidateFormSource = existsSync(candidateFormPath) ? readFileSync(candidateFormPath, 'utf8') : '';
 const editorSource = existsSync(editorPath) ? readFileSync(editorPath, 'utf8') : '';
+const removalButtonSource = existsSync(removalButtonPath) ? readFileSync(removalButtonPath, 'utf8') : '';
 const thumbnailEditorSource = existsSync(thumbnailEditorPath) ? readFileSync(thumbnailEditorPath, 'utf8') : '';
 const helpersSource = readFileSync(helpersPath, 'utf8');
 const apiCreateSource = existsSync(apiCreatePath) ? readFileSync(apiCreatePath, 'utf8') : '';
 const apiEditSource = existsSync(apiEditPath) ? readFileSync(apiEditPath, 'utf8') : '';
 const serverEditorialSource = existsSync(serverEditorialPath) ? readFileSync(serverEditorialPath, 'utf8') : '';
 const migrationSource = existsSync(migrationPath) ? readFileSync(migrationPath, 'utf8') : '';
+const rolloutExclusionMigrationSource = existsSync(rolloutExclusionMigrationPath)
+  ? readFileSync(rolloutExclusionMigrationPath, 'utf8')
+  : '';
 
 test('admin video SEO page delegates helpers and inventory table', () => {
   assert.ok(existsSync(pagePath), 'admin video SEO page should exist');
@@ -138,6 +144,13 @@ test('admin video SEO editing uses a dedicated table and guarded API', () => {
   assert.match(serverEditorialSource, /INSERT INTO video_seo_pages/, 'server module should persist to video_seo_pages');
   assert.match(serverEditorialSource, /buildDraftVideoSeoEditorialEntry/, 'server module should build safe draft candidates');
 
+  assert.ok(existsSync(rolloutExclusionMigrationPath), 'rollout removals should have a dedicated migration');
+  assert.match(
+    rolloutExclusionMigrationSource,
+    /rollout_excluded BOOLEAN NOT NULL DEFAULT FALSE/,
+    'rollout exclusion must be persisted independently from SEO status'
+  );
+
   assert.ok(existsSync(apiCreatePath), 'candidate creation API should exist');
   assert.ok(existsSync(apiEditPath), 'editor update API should exist');
   assert.match(apiCreateSource, /requireAdmin/, 'candidate API should require admin access');
@@ -145,6 +158,12 @@ test('admin video SEO editing uses a dedicated table and guarded API', () => {
   assert.match(apiEditSource, /requireAdmin/, 'editor API should require admin access');
   assert.match(apiEditSource, /validateVideoSeoEditorialUpdatePayload/, 'editor API should use strict server-side validation');
   assert.match(apiEditSource, /upsertVideoSeoEditorialEntry/, 'editor API should save editorial entries');
+  assert.match(apiEditSource, /export async function DELETE/, 'editor API should expose guarded rollout removal');
+  assert.match(
+    serverEditorialSource,
+    /removeVideoSeoEditorialEntryFromRollout/,
+    'server module should own rollout removal persistence and status guards'
+  );
 });
 
 test('admin video SEO client forms expose status-based editing without sitemap toggles', () => {
@@ -157,4 +176,17 @@ test('admin video SEO client forms expose status-based editing without sitemap t
   assert.match(editorSource, /authFetch\(`\/api\/admin\/video-seo\/\$\{encodeURIComponent\(draft\.id\)\}`/, 'editor should call the update API');
   assert.doesNotMatch(candidateFormSource, /Include in sitemap/i, 'candidate form should not expose sitemap toggles');
   assert.doesNotMatch(editorSource, /Include in sitemap/i, 'editor form should not expose sitemap toggles');
+});
+
+test('admin video SEO exposes a dedicated non-destructive rollout removal action', () => {
+  assert.ok(existsSync(removalButtonPath), 'rollout removal button should exist');
+  assert.match(tableSource, /VideoSeoRolloutRemovalButton/, 'inventory details should wire the removal action');
+  assert.match(removalButtonSource, /Retirer la candidature/, 'button should name the scoped rollout action');
+  assert.match(removalButtonSource, /method: 'DELETE'/, 'button should call the guarded removal API');
+  assert.match(removalButtonSource, /router\.refresh\(\)/, 'successful removal should refresh the server inventory');
+  assert.doesNotMatch(
+    removalButtonSource,
+    /\/visibility|\/thumbnail|indexable|noindex/i,
+    'rollout removal must not mutate video visibility, assets, or robots state'
+  );
 });

@@ -7,6 +7,7 @@ import { getSeoVideoById, type GalleryVideo } from '@/server/videos';
 import {
   listVideoSeoEditorialEntries,
   normalizeVideoSeoEditorialInput,
+  removeVideoSeoEditorialEntryFromRollout,
   upsertVideoSeoEditorialEntry,
   validateVideoSeoEditorialUpdatePayload,
 } from '@/server/video-seo-editorial';
@@ -94,6 +95,34 @@ export async function PUT(req: NextRequest, props: RouteParams) {
   } catch (error) {
     console.error('[api/admin/video-seo/:videoId] failed to save page', error);
     const message = error instanceof Error ? error.message : 'Failed to save video SEO page';
+    return NextResponse.json({ ok: false, error: message }, { status: 400 });
+  }
+}
+
+export async function DELETE(req: NextRequest, props: RouteParams) {
+  if (!isDatabaseConfigured()) {
+    return NextResponse.json({ ok: false, error: 'Database unavailable' }, { status: 503 });
+  }
+
+  let adminUserId: string;
+  try {
+    adminUserId = await requireAdmin(req);
+  } catch (error) {
+    return adminErrorToResponse(error);
+  }
+
+  const params = await props.params;
+  const videoId = params.videoId?.trim();
+  if (!videoId) {
+    return NextResponse.json({ ok: false, error: 'Missing video id' }, { status: 400 });
+  }
+
+  try {
+    const editorial = await removeVideoSeoEditorialEntryFromRollout(videoId, adminUserId);
+    return NextResponse.json({ ok: true, editorial });
+  } catch (error) {
+    console.error('[api/admin/video-seo/:videoId] failed to remove rollout candidate', error);
+    const message = error instanceof Error ? error.message : 'Failed to remove video SEO candidate';
     return NextResponse.json({ ok: false, error: message }, { status: 400 });
   }
 }

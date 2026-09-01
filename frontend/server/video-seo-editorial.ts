@@ -24,6 +24,7 @@ import type { GalleryVideo } from '@/server/videos';
 
 export type PersistedVideoSeoEditorialEntry = VideoSeoEditorialEntry & {
   source: 'code' | 'database';
+  rolloutExcluded: boolean;
   notes: string | null;
   updatedAt: string | null;
   updatedBy: string | null;
@@ -44,6 +45,7 @@ type VideoSeoPageRow = {
   examples_slug: string | null;
   canonical_slug: string | null;
   show_source_images: boolean | null;
+  rollout_excluded: boolean | null;
   notes: string | null;
   updated_at: string | null;
   updated_by: string | null;
@@ -154,6 +156,7 @@ function mapVideoSeoPageRow(row: VideoSeoPageRow): PersistedVideoSeoEditorialEnt
     canonicalSlug: row.canonical_slug ?? '',
     showSourceImages: Boolean(row.show_source_images),
     source: 'database' as const,
+    rolloutExcluded: Boolean(row.rollout_excluded),
     notes: row.notes ?? null,
     updatedAt: row.updated_at ?? null,
     updatedBy: row.updated_by ?? null,
@@ -169,6 +172,7 @@ function withCodeSource(entry: VideoSeoEditorialEntry): PersistedVideoSeoEditori
     ...entry,
     canonicalSlug: resolveCanonicalSlug(entry.id, entry, entry.canonicalSlug),
     source: 'code',
+    rolloutExcluded: false,
     notes: null,
     updatedAt: null,
     updatedBy: null,
@@ -190,6 +194,7 @@ export async function listVideoSeoEditorialEntries(): Promise<PersistedVideoSeoE
                target_keyword, intent, model_slug, examples_slug,
                to_jsonb(video_seo_pages)->>'canonical_slug' AS canonical_slug,
                COALESCE((to_jsonb(video_seo_pages)->>'show_source_images')::boolean, false) AS show_source_images,
+               COALESCE((to_jsonb(video_seo_pages)->>'rollout_excluded')::boolean, false) AS rollout_excluded,
                notes, updated_at::text AS updated_at, updated_by::text AS updated_by
         FROM video_seo_pages
         ORDER BY updated_at DESC, video_id ASC
@@ -216,6 +221,47 @@ export async function getResolvedVideoSeoEditorialEntry(id?: string | null): Pro
   if (!id) return null;
   const entries = await listVideoSeoEditorialEntryMap();
   return entries.get(id) ?? null;
+}
+
+export async function getResolvedVideoSeoEditorialEntryByIdentifier(
+  identifier?: string | null
+): Promise<PersistedVideoSeoEditorialEntry | null> {
+  if (!identifier) return null;
+  const entries = await listVideoSeoEditorialEntries();
+  const directMatch = entries.find((entry) => entry.id === identifier);
+  if (directMatch) return directMatch;
+  const requestedSlug = normalizeVideoSeoCanonicalSlug(identifier);
+  if (!requestedSlug) return null;
+  return entries.find((entry) => normalizeVideoSeoCanonicalSlug(entry.canonicalSlug) === requestedSlug) ?? null;
+}
+
+type VideoSeoRolloutEntry = {
+  id: string;
+  rolloutExcluded: boolean;
+};
+
+export function resolveVideoSeoRolloutIds(
+  baseIds: readonly string[],
+  editorialEntries: readonly VideoSeoRolloutEntry[]
+): string[] {
+  const ids = new Set(baseIds);
+  for (const entry of editorialEntries) {
+    if (entry.rolloutExcluded) {
+      ids.delete(entry.id);
+    } else {
+      ids.add(entry.id);
+    }
+  }
+  return [...ids];
+}
+
+export function canRemoveVideoSeoEditorialEntryFromRollout(
+  entry: Pick<PersistedVideoSeoEditorialEntry, 'seoStatus' | 'rolloutExcluded'>
+): boolean {
+  return (
+    !entry.rolloutExcluded &&
+    (entry.seoStatus === 'candidate' || entry.seoStatus === 'draft' || entry.seoStatus === 'needs_edits')
+  );
 }
 
 export function resolveCodeVideoSeoEditorialEntry(id?: string | null): PersistedVideoSeoEditorialEntry | null {
@@ -361,7 +407,7 @@ export function validateVideoSeoEditorialUpdatePayload({
 }
 
 export async function upsertVideoSeoEditorialEntry(
-  entry: VideoSeoEditorialEntry,
+  entry: VideoSeoEditorialEntry & { rolloutExcluded?: boolean },
   updatedBy?: string | null,
   notes?: string | null
 ): Promise<PersistedVideoSeoEditorialEntry> {
@@ -374,9 +420,9 @@ export async function upsertVideoSeoEditorialEntry(
       INSERT INTO video_seo_pages (
         video_id, seo_status, seo_title, meta_description, h1, video_object_name,
         short_description, editorial_prompt_breakdown, target_keyword, intent, model_slug,
-        examples_slug, canonical_slug, show_source_images, notes, updated_by
+        examples_slug, canonical_slug, show_source_images, rollout_excluded, notes, updated_by
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16::uuid)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17::uuid)
       ON CONFLICT (video_id) DO UPDATE SET
         seo_status = EXCLUDED.seo_status,
         seo_title = EXCLUDED.seo_title,
@@ -391,12 +437,13 @@ export async function upsertVideoSeoEditorialEntry(
         examples_slug = EXCLUDED.examples_slug,
         canonical_slug = EXCLUDED.canonical_slug,
         show_source_images = EXCLUDED.show_source_images,
+        rollout_excluded = EXCLUDED.rollout_excluded,
         notes = EXCLUDED.notes,
         updated_by = EXCLUDED.updated_by,
         updated_at = NOW()
       RETURNING video_id, seo_status, seo_title, meta_description, h1, video_object_name,
                 short_description, editorial_prompt_breakdown, target_keyword, intent, model_slug,
-                examples_slug, canonical_slug, show_source_images, notes,
+                examples_slug, canonical_slug, show_source_images, rollout_excluded, notes,
                 updated_at::text AS updated_at, updated_by::text AS updated_by
     `,
     [
@@ -414,6 +461,7 @@ export async function upsertVideoSeoEditorialEntry(
       entry.examplesSlug,
       entry.canonicalSlug ?? '',
       Boolean(entry.showSourceImages),
+      Boolean(entry.rolloutExcluded),
       notes ?? null,
       updatedBy ?? null,
     ]
@@ -423,4 +471,23 @@ export async function upsertVideoSeoEditorialEntry(
     throw new Error('Failed to save video SEO page');
   }
   return mapVideoSeoPageRow(rows[0]);
+}
+
+export async function removeVideoSeoEditorialEntryFromRollout(
+  videoId: string,
+  updatedBy?: string | null
+): Promise<PersistedVideoSeoEditorialEntry> {
+  const editorial = await getResolvedVideoSeoEditorialEntry(videoId);
+  if (!editorial) {
+    throw new Error('Video SEO candidate not found');
+  }
+  if (!canRemoveVideoSeoEditorialEntryFromRollout(editorial)) {
+    throw new Error('Only active candidate, draft, or needs_edits pages can be removed from the rollout');
+  }
+
+  return upsertVideoSeoEditorialEntry(
+    { ...editorial, rolloutExcluded: true },
+    updatedBy,
+    'Removed from the Video SEO rollout in admin'
+  );
 }

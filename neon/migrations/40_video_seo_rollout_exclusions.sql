@@ -1,0 +1,2 @@
+ALTER TABLE video_seo_pages
+  ADD COLUMN IF NOT EXISTS rollout_excluded BOOLEAN NOT NULL DEFAULT FALSE;

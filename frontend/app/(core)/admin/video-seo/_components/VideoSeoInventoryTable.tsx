@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { VideoThumbnailEditor } from '@/components/admin/VideoThumbnailEditor.client';
 import { Button } from '@/components/ui/Button';
 import { VideoSeoEditorialEditor } from './VideoSeoEditorialEditor.client';
+import { VideoSeoRolloutRemovalButton } from './VideoSeoRolloutRemovalButton.client';
 import {
   formatDate,
   formatDateTime,
@@ -363,6 +364,12 @@ function VideoSeoActionsPanel({ row }: { row: WatchRow }) {
           />
         </div>
       </details>
+
+      <VideoSeoRolloutRemovalButton
+        videoId={row.entry.id}
+        title={row.generatedTitle}
+        seoStatus={row.seoStatus}
+      />
     </section>
   );
 }

@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { validateVideoSeoEditorialUpdatePayload } from '../frontend/server/video-seo-editorial.ts';
+import {
+  canRemoveVideoSeoEditorialEntryFromRollout,
+  resolveVideoSeoRolloutIds,
+  validateVideoSeoEditorialUpdatePayload,
+} from '../frontend/server/video-seo-editorial.ts';
 
 const completeApprovedPayload = {
   seoStatus: 'approved',
@@ -60,6 +64,44 @@ test('video SEO update validation stays permissive for draft-style statuses', ()
     assert.equal(result.ok, true, `${seoStatus} should remain saveable while incomplete`);
     assert.equal(result.entry.seoStatus, seoStatus);
   }
+});
+
+test('video SEO rollout removal is limited to active unvalidated entries', () => {
+  for (const seoStatus of ['candidate', 'draft', 'needs_edits'] as const) {
+    assert.equal(
+      canRemoveVideoSeoEditorialEntryFromRollout({ seoStatus, rolloutExcluded: false }),
+      true,
+      `${seoStatus} should be removable from the rollout`
+    );
+  }
+
+  assert.equal(
+    canRemoveVideoSeoEditorialEntryFromRollout({ seoStatus: 'approved', rolloutExcluded: false }),
+    false,
+    'approved entries must not be removable from the rollout'
+  );
+  assert.equal(
+    canRemoveVideoSeoEditorialEntryFromRollout({ seoStatus: 'disabled', rolloutExcluded: false }),
+    false,
+    'disabled entries use the existing deindex archive flow'
+  );
+  assert.equal(
+    canRemoveVideoSeoEditorialEntryFromRollout({ seoStatus: 'draft', rolloutExcluded: true }),
+    false,
+    'already removed entries must not be removable twice'
+  );
+});
+
+test('video SEO rollout exclusions override config entries without hiding other candidates', () => {
+  const ids = resolveVideoSeoRolloutIds(
+    ['job_config_candidate', 'job_config_approved'],
+    [
+      { id: 'job_config_candidate', rolloutExcluded: true },
+      { id: 'job_database_draft', rolloutExcluded: false },
+    ]
+  );
+
+  assert.deepEqual(ids, ['job_config_approved', 'job_database_draft']);
 });
 
 test('video SEO update validation blocks approved pages with missing critical fields or failing QA', () => {

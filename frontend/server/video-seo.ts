@@ -6,7 +6,9 @@ import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
 import { normalizeVideoSeoCanonicalSlug } from '@/lib/video-seo-canonical';
 import { getDuplicateVideoObjectNames } from '@/lib/video-seo-editorial-qa';
 import {
+  getResolvedVideoSeoEditorialEntryByIdentifier,
   listVideoSeoEditorialEntryMap,
+  resolveVideoSeoRolloutIds,
   type PersistedVideoSeoEditorialEntry,
 } from '@/server/video-seo-editorial';
 import { getSeoVideoById, getSeoVideosByIds, type GalleryVideo } from '@/server/videos';
@@ -127,11 +129,10 @@ function buildMetaFromEditorial(options: {
 }
 
 function buildSeoWatchVideoIds(editorialMap: Map<string, PersistedVideoSeoEditorialEntry>): string[] {
-  const ids = new Set(BASE_WATCH_VIDEOS.map((entry) => entry.id));
-  for (const id of editorialMap.keys()) {
-    ids.add(id);
-  }
-  return [...ids];
+  return resolveVideoSeoRolloutIds(
+    BASE_WATCH_VIDEOS.map((entry) => entry.id),
+    [...editorialMap.values()]
+  );
 }
 
 export async function listSeoWatchVideos(): Promise<SeoWatchVideoMeta[]> {
@@ -145,7 +146,11 @@ const loadSeoWatchVideoRows = cache(async (): Promise<SeoWatchVideoRow[]> => {
   const editorialMap = await listVideoSeoEditorialEntryMap();
   const ids = buildSeoWatchVideoIds(editorialMap);
   const videoMap = await getSeoVideosByIds(ids);
-  const duplicateVideoObjectNames = getDuplicateVideoObjectNames([...editorialMap.values()]);
+  const activeEditorialEntries = ids.flatMap((id) => {
+    const editorial = editorialMap.get(id);
+    return editorial ? [editorial] : [];
+  });
+  const duplicateVideoObjectNames = getDuplicateVideoObjectNames(activeEditorialEntries);
   const entries = ids.map((id) =>
     buildMetaFromEditorial({
       id,
@@ -221,12 +226,24 @@ export async function getVideoWatchPageDataById(id: string): Promise<VideoWatchP
   const requestedSlug = normalizeVideoSeoCanonicalSlug(decodeIdentifier(id));
   const selectedRow =
     selectedRows.find((row) => row.entry.id === id || (requestedSlug && row.signals?.canonicalSlug === requestedSlug)) ?? null;
-  const resolvedId = selectedRow?.entry.id ?? id;
+  const excludedEditorialCandidate = selectedRow ? null : await getResolvedVideoSeoEditorialEntryByIdentifier(id);
+  const excludedEditorial = excludedEditorialCandidate?.rolloutExcluded ? excludedEditorialCandidate : null;
+  const resolvedId = selectedRow?.entry.id ?? excludedEditorial?.id ?? id;
   const video = selectedRow?.video ?? (await getSeoVideoById(resolvedId));
   if (!video) return null;
 
-  const entry = selectedRow?.entry ?? null;
-  const baseSignals = selectedRow?.signals ?? deriveWatchPageSignals({ entry, video });
+  const editorial = selectedRow?.editorial ?? excludedEditorial;
+  const entry =
+    selectedRow?.entry ??
+    (excludedEditorial
+      ? buildMetaFromEditorial({
+          id: resolvedId,
+          base: BASE_WATCH_VIDEO_MAP.get(resolvedId) ?? null,
+          editorial: excludedEditorial,
+          video,
+        })
+      : null);
+  const baseSignals = selectedRow?.signals ?? deriveWatchPageSignals({ entry, video, editorial });
   const sourceImages = await resolveWatchSourceImageOriginalUrls({ video, sourceImages: baseSignals.sourceImages });
   const signals = sourceImages === baseSignals.sourceImages ? baseSignals : { ...baseSignals, sourceImages };
   const candidateRows = selectedRows.flatMap((row) => {
