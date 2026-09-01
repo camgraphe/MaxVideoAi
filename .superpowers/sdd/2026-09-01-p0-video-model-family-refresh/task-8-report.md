@@ -6,7 +6,8 @@ Date: 2026-09-01
 
 - Base: `ecbe8524aee7df49c54ecca5788fd9ddf13a8456`
 - Initial implementation: `4713ad64f27f2148cee1bd163cafef5f5a935619`
-- Review-fix commit: reported in the Task 8 handoff because a commit cannot contain its own hash.
+- Review-fix round 1: `fa14c1e76795601ecd960fb5ea1b6b1dda8836fb`
+- Review-fix round 2: reported in the Task 8 handoff because a commit cannot contain its own hash.
 
 ## Outcome
 
@@ -160,4 +161,43 @@ lint:exposure                                 pass
 git diff --check                              pass
 ```
 
-The latest repository-wide `pnpm test:validate` completed with 3,852/3,857 passing. Four stable failures are unchanged upstream debt outside this diff: missing Black Forest Labs theme tokens, the generate attachment-delegation owner split, the synthetic replacement-redirect fixture, and the workspace `UNIFIED_VEO_FIRST_LAST_ENGINE_IDS` contract. A fifth architecture-audit failure was a concurrent temporary-file race (`internal-link-guard-unauthorized-company-link.test.ts` disappeared between discovery and read); its isolated rerun passed 2/2 immediately. No Task 8 owner failed the full run.
+The round-1 repository-wide `pnpm test:validate` exposed an additional deterministic-isolation defect in `analytics-consent.test.ts`: its unauthorized-link fixture was created and deleted inside the real `frontend/` source tree while architecture scanners could be walking that tree. Review fix round 2 below removes that race and supersedes the round-1 full-suite baseline.
+
+## Review fix round 2
+
+The internal-link guard now exposes a synchronous testable runner with a validated scan-root option. Calling it without an override always resolves and scans the canonical repository `frontend/` root, independent of the caller's current directory. The production `seo:check` command continues to invoke the guard with no override. An override must be explicit, absolute, resolvable and a directory; fixed navigation, dictionary and Company ownership contracts still read the canonical repository even when only the broad semantic walk is isolated.
+
+`analytics-consent.test.ts` now creates its unauthorized `/company` fixture with `mkdtempSync(tmpdir())`, builds only the minimal `frontend/lib/analytics` fixture tree outside the repository, invokes the guard with the explicit fixture root and recursively cleans the temporary directory. It asserts before and after the mutation that the former repository fixture path does not exist. No test writes into a repository scan root.
+
+Round-2 RED before production edits:
+
+```text
+20 concurrent analytics-consent + architecture-audit runs: 1 passed, 19 failed
+normal two-file run after adding contracts:               25 passed, 3 failed
+```
+
+The failures reproduced both race forms: architecture audit received `ENOENT` after discovering a fixture another process deleted, and a default guard observed an unauthorized fixture owned by another test process. The three new contract failures covered the absent testable runner, absent override validation and ignored CLI scan-root argument.
+
+Round-2 GREEN:
+
+```text
+20 concurrent analytics-consent + architecture-audit runs: 20/20 passed
+analytics, architecture, Company and return-policy tests:   36/36 passed
+Task 8 focused page/content/pricing/publication tests:       134/134 passed
+no repository fixture or temporary fixture directory leaked
+```
+
+Round-2 gates:
+
+```text
+model:registry:check                          pass (50 models, 2 tombstones; 50 catalog, 42 roster)
+models:audit                                  pass (49 documents per locale, 0 critical, 9 expected warnings)
+i18n:check                                    pass (FR 4,207; ES 4,201)
+seo:check                                     pass, including the default canonical internal-link scan
+tsc --noEmit                                  pass
+frontend lint                                 pass, 0 warnings
+lint:exposure                                 pass
+git diff --check                              pass
+```
+
+The latest repository-wide `pnpm test:validate` completed with 3,855/3,859 passing and no analytics or architecture-audit failure. Its four failures are the stable upstream debts outside the Task 8 diff: missing Black Forest Labs theme tokens, the generate attachment-delegation owner split, the synthetic replacement-redirect fixture, and the workspace `UNIFIED_VEO_FIRST_LAST_ENGINE_IDS` contract.

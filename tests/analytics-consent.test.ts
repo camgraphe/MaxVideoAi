@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { unlinkSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve, sep } from 'node:path';
 import test from 'node:test';
 import {
   PENDING_AUTH_EVENT_STORAGE_KEY,
@@ -27,13 +28,72 @@ import {
   readWalletAnalyticsJourney,
 } from '../frontend/lib/analytics/journey-browser';
 
+const ROOT = process.cwd();
+const INTERNAL_LINK_GUARD_PATH = join(ROOT, 'scripts/internal-link-guard.mjs');
+const FORBIDDEN_REPO_FIXTURE_PATH = join(
+  ROOT,
+  'frontend/lib/analytics/internal-link-guard-unauthorized-company-link.test.ts',
+);
+
 test('treats the journey classifier as analytics data, not an authored public link', () => {
-  const result = spawnSync(process.execPath, ['scripts/internal-link-guard.mjs'], {
-    cwd: process.cwd(),
+  const result = spawnSync(process.execPath, [INTERNAL_LINK_GUARD_PATH], {
+    cwd: ROOT,
     encoding: 'utf8',
   });
 
   assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout, 'internal-link-guard: OK\n');
+  assert.equal(result.stderr, '');
+});
+
+test('defaults to the canonical frontend scan root without an override', async () => {
+  const guard = await import('../scripts/internal-link-guard.mjs') as {
+    runInternalLinkGuard?: (options?: { scanRoot?: string }) => {
+      errors: string[];
+      scannedFileCount: number;
+      scanRoot: string;
+    };
+  };
+
+  assert.equal(typeof guard.runInternalLinkGuard, 'function');
+  const result = guard.runInternalLinkGuard?.();
+  assert.equal(result?.scanRoot, resolve(ROOT, 'frontend'));
+  assert.ok(
+    (result?.scannedFileCount ?? 0) > 1_000,
+    'default guard must walk the complete canonical frontend tree',
+  );
+  assert.deepEqual(result?.errors, []);
+
+  const frontendPackage = JSON.parse(readFileSync(join(ROOT, 'frontend/package.json'), 'utf8'));
+  assert.match(frontendPackage.scripts['seo:check'], /internal-link-guard\.mjs/);
+  assert.doesNotMatch(frontendPackage.scripts['seo:check'], /internal-link-guard\.mjs\s+--scan-root/);
+});
+
+test('requires an explicit absolute directory for scan-root overrides', async () => {
+  const guard = await import('../scripts/internal-link-guard.mjs') as {
+    runInternalLinkGuard?: (options?: { scanRoot?: string }) => unknown;
+  };
+
+  assert.equal(typeof guard.runInternalLinkGuard, 'function');
+  const sandboxRoot = mkdtempSync(join(tmpdir(), 'maxvideo-internal-link-validation-'));
+  const filePath = join(sandboxRoot, 'not-a-directory.ts');
+  try {
+    writeFileSync(filePath, 'export {};\n');
+    assert.throws(
+      () => guard.runInternalLinkGuard?.({ scanRoot: 'frontend' }),
+      /scan-root.*absolute/i,
+    );
+    assert.throws(
+      () => guard.runInternalLinkGuard?.({ scanRoot: join(sandboxRoot, 'missing') }),
+      /scan-root.*directory/i,
+    );
+    assert.throws(
+      () => guard.runInternalLinkGuard?.({ scanRoot: filePath }),
+      /scan-root.*directory/i,
+    );
+  } finally {
+    rmSync(sandboxRoot, { recursive: true, force: true });
+  }
 });
 
 test('limits the non-link route classifier exception to analytics ownership', async () => {
@@ -50,23 +110,36 @@ test('limits the non-link route classifier exception to analytics ownership', as
 });
 
 test('rejects an unauthorized authored company link outside the classifier', () => {
+  const sandboxRoot = mkdtempSync(join(tmpdir(), 'maxvideo-internal-link-guard-'));
+  const fixtureRoot = join(sandboxRoot, 'frontend');
   const fixturePath = join(
-    process.cwd(),
-    'frontend/lib/analytics/internal-link-guard-unauthorized-company-link.test.ts',
+    fixtureRoot,
+    'lib/analytics/internal-link-guard-unauthorized-company-link.test.ts',
   );
-  writeFileSync(fixturePath, "export const unauthorizedCompanyLink = '/company';\n");
-
   try {
-    const result = spawnSync(process.execPath, ['scripts/internal-link-guard.mjs'], {
-      cwd: process.cwd(),
-      encoding: 'utf8',
-    });
+    assert.equal(sandboxRoot.startsWith(`${ROOT}${sep}`), false);
+    assert.equal(existsSync(FORBIDDEN_REPO_FIXTURE_PATH), false);
+    mkdirSync(dirname(fixturePath), { recursive: true });
+    writeFileSync(fixturePath, "export const unauthorizedCompanyLink = '/company';\n");
+
+    const result = spawnSync(
+      process.execPath,
+      [INTERNAL_LINK_GUARD_PATH, '--scan-root', fixtureRoot],
+      {
+        cwd: ROOT,
+        encoding: 'utf8',
+      },
+    );
 
     assert.equal(result.status, 1);
-    assert.match(result.stderr, /internal-link-guard-unauthorized-company-link\.test\.ts/);
+    assert.match(
+      result.stderr,
+      /^internal-link-guard: FAILED\n- Found unexpected \/company reference outside allowed files: frontend\/lib\/analytics\/internal-link-guard-unauthorized-company-link\.test\.ts\n$/,
+    );
   } finally {
-    unlinkSync(fixturePath);
+    rmSync(sandboxRoot, { recursive: true, force: true });
   }
+  assert.equal(existsSync(FORBIDDEN_REPO_FIXTURE_PATH), false);
 });
 
 function createStorage(): Storage {
