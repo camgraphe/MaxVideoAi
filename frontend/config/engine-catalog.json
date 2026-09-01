@@ -13381,8 +13381,8 @@
     "availability": "available",
     "logoPolicy": "logoAllowed",
     "lifecycle": "deep_legacy",
-    "successorId": null,
-    "successorSlug": null,
+    "successorId": "wan-3",
+    "successorSlug": "wan-3",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -13700,8 +13700,8 @@
     "availability": "available",
     "logoPolicy": "logoAllowed",
     "lifecycle": "legacy",
-    "successorId": null,
-    "successorSlug": null,
+    "successorId": "wan-3",
+    "successorSlug": "wan-3",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -14092,8 +14092,8 @@
     "availability": "available",
     "logoPolicy": "logoAllowed",
     "lifecycle": "deep_legacy",
-    "successorId": null,
-    "successorSlug": null,
+    "successorId": "ltx-2-5-fast",
+    "successorSlug": "ltx-2-5-fast",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -14411,8 +14411,8 @@
     "availability": "available",
     "logoPolicy": "logoAllowed",
     "lifecycle": "deep_legacy",
-    "successorId": null,
-    "successorSlug": null,
+    "successorId": "ltx-2-5-pro",
+    "successorSlug": "ltx-2-5-pro",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -14711,8 +14711,8 @@
     "availability": "available",
     "logoPolicy": "logoAllowed",
     "lifecycle": "legacy",
-    "successorId": null,
-    "successorSlug": null,
+    "successorId": "ltx-2-5-fast",
+    "successorSlug": "ltx-2-5-fast",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -15085,8 +15085,8 @@
     "availability": "available",
     "logoPolicy": "logoAllowed",
     "lifecycle": "legacy",
-    "successorId": null,
-    "successorSlug": null,
+    "successorId": "ltx-2-5-pro",
+    "successorSlug": "ltx-2-5-pro",
     "surfaces": {
       "modelPage": {
         "indexable": true,
@@ -18648,6 +18648,4100 @@
       },
       "extend": {
         "value": false
+      }
+    }
+  },
+  {
+    "engineId": "wan-3",
+    "modelSlug": "wan-3",
+    "marketingName": "Wan 3",
+    "provider": "Alibaba",
+    "brandId": "wan",
+    "family": "wan",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "wan-2-6",
+        "wan-2-5"
+      ],
+      "currentModelSlugs": [
+        "wan-2-6"
+      ]
+    },
+    "versionLabel": "3.0",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "surfaces": {
+      "modelPage": {
+        "indexable": false,
+        "includeInSitemap": false
+      },
+      "examples": {
+        "includeInFamilyResolver": false,
+        "includeInFamilyCopy": false
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [],
+        "includeInHub": false
+      },
+      "app": {
+        "enabled": false
+      },
+      "pricing": {
+        "includeInEstimator": false
+      }
+    },
+    "surfacesSource": "registry",
+    "engine": {
+      "id": "wan-3",
+      "label": "Wan 3",
+      "provider": "Alibaba",
+      "version": "3.0",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v",
+        "ref2v"
+      ],
+      "maxDurationSec": 30,
+      "resolutions": [
+        "480p",
+        "720p",
+        "1080p"
+      ],
+      "aspectRatios": [
+        "auto",
+        "16:9",
+        "4:3",
+        "1:1",
+        "3:4",
+        "9:16"
+      ],
+      "fps": [
+        30
+      ],
+      "audio": true,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "promptMaxChars": 5000,
+        "promptMaxCharsSource": "official"
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "modes": [
+              "t2v"
+            ],
+            "requiredInModes": [
+              "t2v"
+            ],
+            "description": "Provider prompt length: 1–5000 characters."
+          },
+          {
+            "id": "start_image_url",
+            "type": "image",
+            "label": "Start image",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          }
+        ],
+        "optional": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "modes": [
+              "i2v",
+              "ref2v"
+            ],
+            "description": "Provider maximum: 5000 characters."
+          },
+          {
+            "id": "end_image_url",
+            "type": "image",
+            "label": "End image",
+            "modes": [
+              "i2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "either",
+            "description": "Only valid with start_image_url."
+          },
+          {
+            "id": "reference_image_urls",
+            "type": "image",
+            "label": "Reference images",
+            "modes": [
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 10,
+            "maxSizeMB": 20,
+            "source": "either"
+          },
+          {
+            "id": "reference_video_urls",
+            "type": "video",
+            "label": "Reference videos",
+            "modes": [
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 5,
+            "maxDurationSec": 15,
+            "maxSizeMB": 100,
+            "source": "either",
+            "description": "Combined video duration <=15 seconds; each video must be >=16 fps."
+          },
+          {
+            "id": "reference_audio_urls",
+            "type": "audio",
+            "label": "Reference audio",
+            "modes": [
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 5,
+            "maxDurationSec": 15,
+            "maxSizeMB": 15,
+            "source": "either",
+            "description": "Combined audio duration <=15 seconds."
+          },
+          {
+            "id": "file_url",
+            "type": "text",
+            "label": "Reference file URL",
+            "modes": [
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "url",
+            "description": "Requires enable_thinking=true and cannot combine with web_url."
+          },
+          {
+            "id": "web_url",
+            "type": "text",
+            "label": "Public web URL",
+            "modes": [
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "url",
+            "description": "Requires enable_thinking=true and cannot combine with file_url."
+          },
+          {
+            "id": "enable_thinking",
+            "type": "boolean",
+            "label": "Thinking",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "default": false
+          },
+          {
+            "id": "duration",
+            "type": "number",
+            "label": "Duration (seconds)",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "min": 2,
+            "max": 30,
+            "step": 1,
+            "default": 5,
+            "description": "Provider also accepts null for smart duration."
+          },
+          {
+            "id": "enable_safety_checker",
+            "type": "boolean",
+            "label": "Safety checker",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "default": true
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "values": [
+              "480p",
+              "720p",
+              "1080p"
+            ],
+            "default": "1080p"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "values": [
+              "adaptive",
+              "16:9",
+              "4:3",
+              "1:1",
+              "3:4",
+              "9:16"
+            ],
+            "default": "adaptive"
+          },
+          {
+            "id": "seed",
+            "type": "number",
+            "label": "Seed",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "min": 0,
+            "max": 2147483647,
+            "step": 1
+          },
+          {
+            "id": "audio",
+            "type": "boolean",
+            "label": "Generate audio",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "default": true
+          },
+          {
+            "id": "enable_prompt_expansion",
+            "type": "boolean",
+            "label": "Prompt expansion",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "default": true
+          }
+        ],
+        "constraints": {
+          "maxCombinedVideoDurationSec": 15,
+          "maxCombinedAudioDurationSec": 15,
+          "minimumReferenceVideoFps": 16,
+          "atLeastOneReferenceField": [
+            "reference_image_urls",
+            "reference_video_urls",
+            "reference_audio_urls",
+            "file_url",
+            "web_url"
+          ],
+          "fileOrWebRequiresThinking": true,
+          "fileAndWebMutuallyExclusive": true
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 20,
+          "byResolution": {
+            "480p": 5,
+            "720p": 10,
+            "1080p": 20
+          }
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.2,
+        "byResolution": {
+          "480p": 0.05,
+          "720p": 0.1,
+          "1080p": 0.2
+        },
+        "currency": "USD",
+        "notes": "Fal provider cost per generated output second, selected by resolution."
+      },
+      "updatedAt": "2026-09-01T12:00:20Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "alibaba"
+      },
+      "availability": "available",
+      "brandId": "wan",
+      "brandAssetPolicy": {
+        "logoAllowed": false,
+        "textOnly": true,
+        "usageNotes": "Use text-only Alibaba attribution until approved brand assets are present."
+      },
+      "modeCaps": {
+        "t2v": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "min": 2,
+            "default": 5
+          },
+          "resolution": [
+            "480p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "fps": 30,
+          "audioToggle": true,
+          "notes": "Provider aspect value adaptive is shown as Auto; Task 4 owns the explicit request mapping."
+        },
+        "i2v": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "min": 2,
+            "default": 5
+          },
+          "resolution": [
+            "480p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "fps": 30,
+          "audioToggle": true,
+          "notes": "One required start image and one optional end image; no upload-size limit is published."
+        },
+        "ref2v": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "min": 2,
+            "default": 5
+          },
+          "resolution": [
+            "480p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "fps": 30,
+          "audioToggle": true,
+          "maxUploadMB": 100,
+          "notes": "At least one image, video, audio, file, or public-web reference is required. File/web references require thinking and cannot be combined."
+        }
+      }
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "alibaba/wan-3.0/text-to-video",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "min": 2,
+            "default": 5
+          },
+          "resolution": [
+            "480p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "fps": 30,
+          "audioToggle": true,
+          "notes": "Provider aspect value adaptive is shown as Auto; Task 4 owns the explicit request mapping."
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "alibaba/wan-3.0/image-to-video",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "min": 2,
+            "default": 5
+          },
+          "resolution": [
+            "480p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "fps": 30,
+          "audioToggle": true,
+          "notes": "One required start image and one optional end image; no upload-size limit is published."
+        }
+      },
+      {
+        "mode": "ref2v",
+        "falModelId": "alibaba/wan-3.0/reference-to-video",
+        "ui": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "min": 2,
+            "default": 5
+          },
+          "resolution": [
+            "480p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "fps": 30,
+          "audioToggle": true,
+          "maxUploadMB": 100,
+          "notes": "At least one image, video, audio, file, or public-web reference is required. File/web references require thinking and cannot be combined."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": true
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    }
+  },
+  {
+    "engineId": "wan-3-prime",
+    "modelSlug": "wan-3-prime",
+    "marketingName": "Wan 3 Prime",
+    "provider": "Alibaba",
+    "brandId": "wan",
+    "family": "wan",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "wan-2-6",
+        "wan-2-5"
+      ],
+      "currentModelSlugs": [
+        "wan-2-6"
+      ]
+    },
+    "versionLabel": "3.0 Prime",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "surfaces": {
+      "modelPage": {
+        "indexable": false,
+        "includeInSitemap": false
+      },
+      "examples": {
+        "includeInFamilyResolver": false,
+        "includeInFamilyCopy": false
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [],
+        "includeInHub": false
+      },
+      "app": {
+        "enabled": false
+      },
+      "pricing": {
+        "includeInEstimator": false
+      }
+    },
+    "surfacesSource": "registry",
+    "engine": {
+      "id": "wan-3-prime",
+      "label": "Wan 3 Prime",
+      "provider": "Alibaba",
+      "version": "3.0 Prime",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v",
+        "ref2v"
+      ],
+      "maxDurationSec": 30,
+      "resolutions": [
+        "480p",
+        "720p",
+        "1080p"
+      ],
+      "aspectRatios": [
+        "auto",
+        "16:9",
+        "4:3",
+        "1:1",
+        "3:4",
+        "9:16"
+      ],
+      "fps": [
+        30
+      ],
+      "audio": true,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "promptMaxChars": 5000,
+        "promptMaxCharsSource": "official"
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "modes": [
+              "t2v"
+            ],
+            "requiredInModes": [
+              "t2v"
+            ],
+            "description": "Provider prompt length: 1–5000 characters."
+          },
+          {
+            "id": "start_image_url",
+            "type": "image",
+            "label": "Start image",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          }
+        ],
+        "optional": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "modes": [
+              "i2v",
+              "ref2v"
+            ],
+            "description": "Provider maximum: 5000 characters."
+          },
+          {
+            "id": "end_image_url",
+            "type": "image",
+            "label": "End image",
+            "modes": [
+              "i2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "either",
+            "description": "Only valid with start_image_url."
+          },
+          {
+            "id": "reference_image_urls",
+            "type": "image",
+            "label": "Reference images",
+            "modes": [
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 10,
+            "maxSizeMB": 20,
+            "source": "either"
+          },
+          {
+            "id": "reference_video_urls",
+            "type": "video",
+            "label": "Reference videos",
+            "modes": [
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 5,
+            "maxDurationSec": 15,
+            "maxSizeMB": 100,
+            "source": "either",
+            "description": "Combined video duration <=15 seconds; each video must be >=16 fps."
+          },
+          {
+            "id": "reference_audio_urls",
+            "type": "audio",
+            "label": "Reference audio",
+            "modes": [
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 5,
+            "maxDurationSec": 15,
+            "maxSizeMB": 15,
+            "source": "either",
+            "description": "Combined audio duration <=15 seconds."
+          },
+          {
+            "id": "file_url",
+            "type": "text",
+            "label": "Reference file URL",
+            "modes": [
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "url",
+            "description": "Requires enable_thinking=true and cannot combine with web_url."
+          },
+          {
+            "id": "web_url",
+            "type": "text",
+            "label": "Public web URL",
+            "modes": [
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "url",
+            "description": "Requires enable_thinking=true and cannot combine with file_url."
+          },
+          {
+            "id": "enable_thinking",
+            "type": "boolean",
+            "label": "Thinking",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "default": false
+          },
+          {
+            "id": "duration",
+            "type": "number",
+            "label": "Duration (seconds)",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "min": 2,
+            "max": 30,
+            "step": 1,
+            "default": 5,
+            "description": "Provider also accepts null for smart duration."
+          },
+          {
+            "id": "enable_safety_checker",
+            "type": "boolean",
+            "label": "Safety checker",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "default": true
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "values": [
+              "480p",
+              "720p",
+              "1080p"
+            ],
+            "default": "1080p"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "values": [
+              "adaptive",
+              "16:9",
+              "4:3",
+              "1:1",
+              "3:4",
+              "9:16"
+            ],
+            "default": "adaptive"
+          },
+          {
+            "id": "seed",
+            "type": "number",
+            "label": "Seed",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "min": 0,
+            "max": 2147483647,
+            "step": 1
+          },
+          {
+            "id": "audio",
+            "type": "boolean",
+            "label": "Generate audio",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "default": true
+          },
+          {
+            "id": "enable_prompt_expansion",
+            "type": "boolean",
+            "label": "Prompt expansion",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "default": true
+          }
+        ],
+        "constraints": {
+          "maxCombinedVideoDurationSec": 15,
+          "maxCombinedAudioDurationSec": 15,
+          "minimumReferenceVideoFps": 16,
+          "atLeastOneReferenceField": [
+            "reference_image_urls",
+            "reference_video_urls",
+            "reference_audio_urls",
+            "file_url",
+            "web_url"
+          ],
+          "fileOrWebRequiresThinking": true,
+          "fileAndWebMutuallyExclusive": true
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 28,
+          "byResolution": {
+            "480p": 6.8,
+            "720p": 14,
+            "1080p": 28
+          }
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.28,
+        "byResolution": {
+          "480p": 0.068,
+          "720p": 0.14,
+          "1080p": 0.28
+        },
+        "currency": "USD",
+        "notes": "Fal provider cost per generated output second, selected by resolution."
+      },
+      "updatedAt": "2026-09-01T12:00:20Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "alibaba"
+      },
+      "availability": "available",
+      "brandId": "wan",
+      "brandAssetPolicy": {
+        "logoAllowed": false,
+        "textOnly": true,
+        "usageNotes": "Use text-only Alibaba attribution until approved brand assets are present."
+      },
+      "modeCaps": {
+        "t2v": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "min": 2,
+            "default": 5
+          },
+          "resolution": [
+            "480p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "fps": 30,
+          "audioToggle": true,
+          "notes": "Provider aspect value adaptive is shown as Auto; Task 4 owns the explicit request mapping."
+        },
+        "i2v": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "min": 2,
+            "default": 5
+          },
+          "resolution": [
+            "480p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "fps": 30,
+          "audioToggle": true,
+          "notes": "One required start image and one optional end image; no upload-size limit is published."
+        },
+        "ref2v": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "min": 2,
+            "default": 5
+          },
+          "resolution": [
+            "480p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "fps": 30,
+          "audioToggle": true,
+          "maxUploadMB": 100,
+          "notes": "At least one image, video, audio, file, or public-web reference is required. File/web references require thinking and cannot be combined."
+        }
+      }
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "alibaba/wan-3.0-prime/text-to-video",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "min": 2,
+            "default": 5
+          },
+          "resolution": [
+            "480p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "fps": 30,
+          "audioToggle": true,
+          "notes": "Provider aspect value adaptive is shown as Auto; Task 4 owns the explicit request mapping."
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "alibaba/wan-3.0-prime/image-to-video",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "min": 2,
+            "default": 5
+          },
+          "resolution": [
+            "480p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "fps": 30,
+          "audioToggle": true,
+          "notes": "One required start image and one optional end image; no upload-size limit is published."
+        }
+      },
+      {
+        "mode": "ref2v",
+        "falModelId": "alibaba/wan-3.0-prime/reference-to-video",
+        "ui": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "min": 2,
+            "default": 5
+          },
+          "resolution": [
+            "480p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "fps": 30,
+          "audioToggle": true,
+          "maxUploadMB": 100,
+          "notes": "At least one image, video, audio, file, or public-web reference is required. File/web references require thinking and cannot be combined."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": true
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    }
+  },
+  {
+    "engineId": "ltx-2-5-fast",
+    "modelSlug": "ltx-2-5-fast",
+    "marketingName": "LTX 2.5 Fast",
+    "provider": "Lightricks",
+    "brandId": "lightricks",
+    "family": "ltx",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "ltx-2-3-pro",
+        "ltx-2-3-fast",
+        "ltx-2",
+        "ltx-2-fast"
+      ],
+      "currentModelSlugs": [
+        "ltx-2-3-pro",
+        "ltx-2-3-fast"
+      ]
+    },
+    "versionLabel": "2.5 Fast",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "surfaces": {
+      "modelPage": {
+        "indexable": false,
+        "includeInSitemap": false
+      },
+      "examples": {
+        "includeInFamilyResolver": false,
+        "includeInFamilyCopy": false
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [],
+        "includeInHub": false
+      },
+      "app": {
+        "enabled": false
+      },
+      "pricing": {
+        "includeInEstimator": false
+      }
+    },
+    "surfacesSource": "registry",
+    "engine": {
+      "id": "ltx-2-5-fast",
+      "label": "LTX 2.5 Fast",
+      "provider": "Lightricks",
+      "version": "2.5",
+      "variant": "Fast",
+      "status": "live",
+      "latencyTier": "fast",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v",
+        "a2v"
+      ],
+      "maxDurationSec": 20,
+      "resolutions": [
+        "720p",
+        "1080p",
+        "1440p",
+        "4k"
+      ],
+      "aspectRatios": [
+        "auto",
+        "16:9",
+        "9:16"
+      ],
+      "fps": [
+        24,
+        25,
+        48,
+        50
+      ],
+      "audio": true,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": true,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "audioMaxDurationSec": 20,
+        "promptMaxChars": 5000,
+        "promptMaxCharsSource": "official"
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "modes": [
+              "t2v",
+              "i2v"
+            ],
+            "requiredInModes": [
+              "t2v",
+              "i2v"
+            ],
+            "description": "Provider prompt length: 1–5000 characters."
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Start image",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "audio_url",
+            "type": "audio",
+            "label": "Source audio",
+            "modes": [
+              "a2v"
+            ],
+            "requiredInModes": [
+              "a2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "minDurationSec": 2,
+            "maxDurationSec": 20,
+            "source": "either",
+            "acceptedFileExtensions": [
+              "mp3",
+              "ogg",
+              "wav",
+              "m4a",
+              "aac"
+            ],
+            "acceptedMimeTypes": [
+              "audio/mpeg",
+              "audio/ogg",
+              "audio/wav",
+              "audio/x-m4a",
+              "audio/aac"
+            ],
+            "description": "Must be a public URL or base64 data URI."
+          }
+        ],
+        "optional": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "modes": [
+              "a2v"
+            ],
+            "description": "Required when image_url is absent; provider length 1–5000 characters."
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Optional first frame",
+            "modes": [
+              "a2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "either",
+            "acceptedFileExtensions": [
+              "jpg",
+              "jpeg",
+              "png",
+              "webp",
+              "gif",
+              "avif"
+            ]
+          },
+          {
+            "id": "end_image_url",
+            "type": "image",
+            "label": "End image",
+            "modes": [
+              "i2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration",
+            "modes": [
+              "t2v",
+              "i2v"
+            ],
+            "values": [
+              "6",
+              "8",
+              "10",
+              "12",
+              "14",
+              "16",
+              "18",
+              "20",
+              "auto"
+            ],
+            "default": "auto"
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "modes": [
+              "t2v",
+              "i2v"
+            ],
+            "values": [
+              "720p",
+              "1080p",
+              "1440p",
+              "2160p"
+            ],
+            "default": "1080p"
+          },
+          {
+            "id": "fps",
+            "type": "enum",
+            "label": "Frames per second",
+            "modes": [
+              "t2v",
+              "i2v"
+            ],
+            "values": [
+              "24",
+              "25",
+              "48",
+              "50"
+            ],
+            "default": "25"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "modes": [
+              "t2v"
+            ],
+            "values": [
+              "16:9",
+              "9:16"
+            ],
+            "default": "16:9"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "modes": [
+              "i2v",
+              "a2v"
+            ],
+            "values": [
+              "auto",
+              "16:9",
+              "9:16"
+            ],
+            "default": "auto",
+            "description": "For a2v, auto uses the image ratio or 16:9 when no image is supplied."
+          },
+          {
+            "id": "generate_audio",
+            "type": "boolean",
+            "label": "Generate audio",
+            "modes": [
+              "t2v",
+              "i2v"
+            ],
+            "default": true
+          },
+          {
+            "id": "camera_motion",
+            "type": "enum",
+            "label": "Camera motion",
+            "modes": [
+              "t2v",
+              "i2v"
+            ],
+            "values": [
+              "dolly_in",
+              "dolly_out",
+              "dolly_left",
+              "dolly_right",
+              "jib_up",
+              "jib_down",
+              "static",
+              "focus_shift"
+            ]
+          },
+          {
+            "id": "guidance_scale",
+            "type": "number",
+            "label": "Guidance scale",
+            "modes": [
+              "a2v"
+            ],
+            "min": 1,
+            "max": 50,
+            "description": "Provider conditional default: 5 without image_url, 9 with image_url."
+          }
+        ],
+        "constraints": {
+          "supportedAudioFormats": [
+            "mp3",
+            "ogg",
+            "wav",
+            "m4a",
+            "aac"
+          ],
+          "supportedA2vImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp",
+            "gif",
+            "avif"
+          ],
+          "a2vPromptRequiredWithoutImage": true,
+          "fastHighFpsMaxDurationSec": 10,
+          "fastHighResolutionMaxDurationSec": 10
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 13,
+          "byResolution": {
+            "720p": 9,
+            "1080p": 13,
+            "1440p": 19,
+            "2160p": 30
+          }
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.13,
+        "byResolution": {
+          "720p": 0.09,
+          "1080p": 0.13,
+          "1440p": 0.19,
+          "2160p": 0.3
+        },
+        "currency": "USD",
+        "notes": "Text/image provider cost is per output second. Audio-to-video is $0.13 per input-audio second at 1080p and requires the Task 5 exact calculator."
+      },
+      "updatedAt": "2026-09-01T12:00:20Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "lightricks"
+      },
+      "availability": "available",
+      "brandId": "lightricks",
+      "brandAssetPolicy": {
+        "logoAllowed": false,
+        "textOnly": true,
+        "usageNotes": "Use text-only Lightricks attribution until approved brand assets are present."
+      },
+      "modeCaps": {
+        "t2v": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              "6",
+              "8",
+              "10",
+              "12",
+              "14",
+              "16",
+              "18",
+              "20",
+              "auto"
+            ],
+            "default": "auto"
+          },
+          "resolution": [
+            "720p",
+            "1080p",
+            "1440p",
+            "2160p"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "9:16"
+          ],
+          "fps": [
+            24,
+            25,
+            48,
+            50
+          ],
+          "audioToggle": true,
+          "notes": "Provider resolution 2160p is preserved; Task 4 owns any canonical 4k-to-2160p request mapping."
+        },
+        "i2v": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              "6",
+              "8",
+              "10",
+              "12",
+              "14",
+              "16",
+              "18",
+              "20",
+              "auto"
+            ],
+            "default": "auto"
+          },
+          "resolution": [
+            "720p",
+            "1080p",
+            "1440p",
+            "2160p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "9:16"
+          ],
+          "fps": [
+            24,
+            25,
+            48,
+            50
+          ],
+          "audioToggle": true,
+          "notes": "Provider resolution 2160p is preserved; Task 4 owns any canonical 4k-to-2160p request mapping."
+        },
+        "a2v": {
+          "modes": [
+            "a2v"
+          ],
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "9:16"
+          ],
+          "audioToggle": false,
+          "notes": "Requires 2–20s source audio. Output duration, resolution, and fps are not provider controls."
+        }
+      }
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "lightricks/ltx-2.5/text-to-video/fast",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              "6",
+              "8",
+              "10",
+              "12",
+              "14",
+              "16",
+              "18",
+              "20",
+              "auto"
+            ],
+            "default": "auto"
+          },
+          "resolution": [
+            "720p",
+            "1080p",
+            "1440p",
+            "2160p"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "9:16"
+          ],
+          "fps": [
+            24,
+            25,
+            48,
+            50
+          ],
+          "audioToggle": true,
+          "notes": "Provider resolution 2160p is preserved; Task 4 owns any canonical 4k-to-2160p request mapping."
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "lightricks/ltx-2.5/image-to-video/fast",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              "6",
+              "8",
+              "10",
+              "12",
+              "14",
+              "16",
+              "18",
+              "20",
+              "auto"
+            ],
+            "default": "auto"
+          },
+          "resolution": [
+            "720p",
+            "1080p",
+            "1440p",
+            "2160p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "9:16"
+          ],
+          "fps": [
+            24,
+            25,
+            48,
+            50
+          ],
+          "audioToggle": true,
+          "notes": "Provider resolution 2160p is preserved; Task 4 owns any canonical 4k-to-2160p request mapping."
+        }
+      },
+      {
+        "mode": "a2v",
+        "falModelId": "lightricks/ltx-2.5/audio-to-video/fast",
+        "ui": {
+          "modes": [
+            "a2v"
+          ],
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "9:16"
+          ],
+          "audioToggle": false,
+          "notes": "Requires 2–20s source audio. Output duration, resolution, and fps are not provider controls."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": true
+      },
+      "motionControls": {
+        "value": true
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    }
+  },
+  {
+    "engineId": "ltx-2-5-pro",
+    "modelSlug": "ltx-2-5-pro",
+    "marketingName": "LTX 2.5 Pro",
+    "provider": "Lightricks",
+    "brandId": "lightricks",
+    "family": "ltx",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "ltx-2-3-pro",
+        "ltx-2-3-fast",
+        "ltx-2",
+        "ltx-2-fast"
+      ],
+      "currentModelSlugs": [
+        "ltx-2-3-pro",
+        "ltx-2-3-fast"
+      ]
+    },
+    "versionLabel": "2.5 Pro",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "surfaces": {
+      "modelPage": {
+        "indexable": false,
+        "includeInSitemap": false
+      },
+      "examples": {
+        "includeInFamilyResolver": false,
+        "includeInFamilyCopy": false
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [],
+        "includeInHub": false
+      },
+      "app": {
+        "enabled": false
+      },
+      "pricing": {
+        "includeInEstimator": false
+      }
+    },
+    "surfacesSource": "registry",
+    "engine": {
+      "id": "ltx-2-5-pro",
+      "label": "LTX 2.5 Pro",
+      "provider": "Lightricks",
+      "version": "2.5",
+      "variant": "Pro",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v",
+        "a2v"
+      ],
+      "maxDurationSec": 10,
+      "resolutions": [
+        "720p",
+        "1080p"
+      ],
+      "aspectRatios": [
+        "auto",
+        "16:9",
+        "9:16"
+      ],
+      "fps": [
+        24,
+        25,
+        50
+      ],
+      "audio": true,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": true,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "audioMaxDurationSec": 10,
+        "promptMaxChars": 5000,
+        "promptMaxCharsSource": "official"
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "modes": [
+              "t2v",
+              "i2v"
+            ],
+            "requiredInModes": [
+              "t2v",
+              "i2v"
+            ],
+            "description": "Provider prompt length: 1–5000 characters."
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Start image",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "audio_url",
+            "type": "audio",
+            "label": "Source audio",
+            "modes": [
+              "a2v"
+            ],
+            "requiredInModes": [
+              "a2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "minDurationSec": 2,
+            "maxDurationSec": 10,
+            "source": "either",
+            "acceptedFileExtensions": [
+              "mp3",
+              "ogg",
+              "wav",
+              "m4a",
+              "aac"
+            ],
+            "acceptedMimeTypes": [
+              "audio/mpeg",
+              "audio/ogg",
+              "audio/wav",
+              "audio/x-m4a",
+              "audio/aac"
+            ],
+            "description": "Must be a public URL or base64 data URI."
+          }
+        ],
+        "optional": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "modes": [
+              "a2v"
+            ],
+            "description": "Required when image_url is absent; provider length 1–5000 characters."
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Optional first frame",
+            "modes": [
+              "a2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "either",
+            "acceptedFileExtensions": [
+              "jpg",
+              "jpeg",
+              "png",
+              "webp",
+              "gif",
+              "avif"
+            ]
+          },
+          {
+            "id": "end_image_url",
+            "type": "image",
+            "label": "End image",
+            "modes": [
+              "i2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration",
+            "modes": [
+              "t2v",
+              "i2v"
+            ],
+            "values": [
+              "6",
+              "8",
+              "10",
+              "auto"
+            ],
+            "default": "auto"
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "modes": [
+              "t2v",
+              "i2v"
+            ],
+            "values": [
+              "720p",
+              "1080p"
+            ],
+            "default": "1080p"
+          },
+          {
+            "id": "fps",
+            "type": "enum",
+            "label": "Frames per second",
+            "modes": [
+              "t2v",
+              "i2v"
+            ],
+            "values": [
+              "24",
+              "25",
+              "50"
+            ],
+            "default": "25"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "modes": [
+              "t2v"
+            ],
+            "values": [
+              "16:9",
+              "9:16"
+            ],
+            "default": "16:9"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "modes": [
+              "i2v",
+              "a2v"
+            ],
+            "values": [
+              "auto",
+              "16:9",
+              "9:16"
+            ],
+            "default": "auto",
+            "description": "For a2v, auto uses the image ratio or 16:9 when no image is supplied."
+          },
+          {
+            "id": "generate_audio",
+            "type": "boolean",
+            "label": "Generate audio",
+            "modes": [
+              "t2v",
+              "i2v"
+            ],
+            "default": true
+          },
+          {
+            "id": "camera_motion",
+            "type": "enum",
+            "label": "Camera motion",
+            "modes": [
+              "t2v",
+              "i2v"
+            ],
+            "values": [
+              "dolly_in",
+              "dolly_out",
+              "dolly_left",
+              "dolly_right",
+              "jib_up",
+              "jib_down",
+              "static",
+              "focus_shift"
+            ]
+          },
+          {
+            "id": "guidance_scale",
+            "type": "number",
+            "label": "Guidance scale",
+            "modes": [
+              "a2v"
+            ],
+            "min": 1,
+            "max": 50,
+            "description": "Provider conditional default: 5 without image_url, 9 with image_url."
+          }
+        ],
+        "constraints": {
+          "supportedAudioFormats": [
+            "mp3",
+            "ogg",
+            "wav",
+            "m4a",
+            "aac"
+          ],
+          "supportedA2vImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp",
+            "gif",
+            "avif"
+          ],
+          "a2vPromptRequiredWithoutImage": true
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 17,
+          "byResolution": {
+            "720p": 12,
+            "1080p": 17
+          }
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.17,
+        "byResolution": {
+          "720p": 0.12,
+          "1080p": 0.17
+        },
+        "currency": "USD",
+        "notes": "Text/image provider cost is per output second. Audio-to-video is $0.17 per input-audio second at 1080p and requires the Task 5 exact calculator."
+      },
+      "updatedAt": "2026-09-01T12:00:20Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "lightricks"
+      },
+      "availability": "available",
+      "brandId": "lightricks",
+      "brandAssetPolicy": {
+        "logoAllowed": false,
+        "textOnly": true,
+        "usageNotes": "Use text-only Lightricks attribution until approved brand assets are present."
+      },
+      "modeCaps": {
+        "t2v": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              "6",
+              "8",
+              "10",
+              "auto"
+            ],
+            "default": "auto"
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "9:16"
+          ],
+          "fps": [
+            24,
+            25,
+            50
+          ],
+          "audioToggle": true,
+          "notes": "Native-audio generation with provider-published duration, resolution, and fps controls."
+        },
+        "i2v": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              "6",
+              "8",
+              "10",
+              "auto"
+            ],
+            "default": "auto"
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "9:16"
+          ],
+          "fps": [
+            24,
+            25,
+            50
+          ],
+          "audioToggle": true,
+          "notes": "Native-audio generation with provider-published duration, resolution, and fps controls."
+        },
+        "a2v": {
+          "modes": [
+            "a2v"
+          ],
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "9:16"
+          ],
+          "audioToggle": false,
+          "notes": "Requires 2–10s source audio. Output duration, resolution, and fps are not provider controls."
+        }
+      }
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "lightricks/ltx-2.5/text-to-video/pro",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              "6",
+              "8",
+              "10",
+              "auto"
+            ],
+            "default": "auto"
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "9:16"
+          ],
+          "fps": [
+            24,
+            25,
+            50
+          ],
+          "audioToggle": true,
+          "notes": "Native-audio generation with provider-published duration, resolution, and fps controls."
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "lightricks/ltx-2.5/image-to-video/pro",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              "6",
+              "8",
+              "10",
+              "auto"
+            ],
+            "default": "auto"
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "9:16"
+          ],
+          "fps": [
+            24,
+            25,
+            50
+          ],
+          "audioToggle": true,
+          "notes": "Native-audio generation with provider-published duration, resolution, and fps controls."
+        }
+      },
+      {
+        "mode": "a2v",
+        "falModelId": "lightricks/ltx-2.5/audio-to-video/pro",
+        "ui": {
+          "modes": [
+            "a2v"
+          ],
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "9:16"
+          ],
+          "audioToggle": false,
+          "notes": "Requires 2–10s source audio. Output duration, resolution, and fps are not provider controls."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": true
+      },
+      "motionControls": {
+        "value": true
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    }
+  },
+  {
+    "engineId": "grok-imagine-video-1-5",
+    "modelSlug": "grok-imagine-video-1-5",
+    "marketingName": "Grok Imagine Video 1.5",
+    "provider": "xAI",
+    "brandId": "xai",
+    "family": "grok",
+    "familyExamplesPage": {
+      "stage": "hidden",
+      "showInNav": false,
+      "publishedModelSlugs": [],
+      "currentModelSlugs": []
+    },
+    "versionLabel": "1.5",
+    "availability": "available",
+    "logoPolicy": "textOnly",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "surfaces": {
+      "modelPage": {
+        "indexable": false,
+        "includeInSitemap": false
+      },
+      "examples": {
+        "includeInFamilyResolver": false,
+        "includeInFamilyCopy": false
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [],
+        "includeInHub": false
+      },
+      "app": {
+        "enabled": false
+      },
+      "pricing": {
+        "includeInEstimator": false
+      }
+    },
+    "surfacesSource": "registry",
+    "engine": {
+      "id": "grok-imagine-video-1-5",
+      "label": "Grok Imagine Video 1.5",
+      "provider": "xAI",
+      "version": "1.5",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v",
+        "ref2v"
+      ],
+      "maxDurationSec": 15,
+      "resolutions": [
+        "480p",
+        "720p",
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "4:3",
+        "3:2",
+        "1:1",
+        "2:3",
+        "3:4",
+        "9:16"
+      ],
+      "fps": [],
+      "audio": true,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "promptMaxChars": 4096,
+        "promptMaxCharsSource": "official"
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "requiredInModes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "description": "Provider maximum: 4096 characters."
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "First-frame image",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either",
+            "acceptedFileExtensions": [
+              "jpg",
+              "jpeg",
+              "png",
+              "webp",
+              "gif",
+              "avif"
+            ]
+          },
+          {
+            "id": "reference_image_urls",
+            "type": "image",
+            "label": "Reference images",
+            "modes": [
+              "ref2v"
+            ],
+            "requiredInModes": [
+              "ref2v"
+            ],
+            "minCount": 1,
+            "maxCount": 7,
+            "source": "either",
+            "slotLabelPattern": "<IMAGE_{n}>",
+            "description": "Address references as <IMAGE_0>, <IMAGE_1>, and so on in the prompt."
+          }
+        ],
+        "optional": [
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "modes": [
+              "t2v",
+              "ref2v"
+            ],
+            "values": [
+              "16:9",
+              "4:3",
+              "3:2",
+              "1:1",
+              "2:3",
+              "3:4",
+              "9:16"
+            ],
+            "default": "16:9"
+          },
+          {
+            "id": "duration",
+            "type": "number",
+            "label": "Duration (seconds)",
+            "modes": [
+              "t2v",
+              "i2v"
+            ],
+            "min": 1,
+            "max": 15,
+            "step": 1,
+            "default": 6
+          },
+          {
+            "id": "duration",
+            "type": "number",
+            "label": "Duration (seconds)",
+            "modes": [
+              "ref2v"
+            ],
+            "min": 1,
+            "max": 15,
+            "step": 1,
+            "default": 8
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "modes": [
+              "t2v",
+              "i2v"
+            ],
+            "values": [
+              "480p",
+              "720p",
+              "1080p"
+            ],
+            "default": "720p"
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "modes": [
+              "ref2v"
+            ],
+            "values": [
+              "480p",
+              "720p"
+            ],
+            "default": "480p"
+          }
+        ],
+        "constraints": {
+          "supportedI2vImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp",
+            "gif",
+            "avif"
+          ]
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 14,
+          "byResolution": {
+            "480p": 8,
+            "720p": 14,
+            "1080p": 25
+          }
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.14,
+        "byResolution": {
+          "480p": 0.08,
+          "720p": 0.14,
+          "1080p": 0.25
+        },
+        "currency": "USD",
+        "notes": "Base Fal cost per output second. Reference-to-video adds $0.01 per reference image; Task 5 owns exact count-aware charging."
+      },
+      "updatedAt": "2026-09-01T12:00:20Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "xai"
+      },
+      "availability": "available",
+      "brandId": "xai",
+      "brandAssetPolicy": {
+        "logoAllowed": false,
+        "textOnly": true,
+        "usageNotes": "Use text-only xAI attribution until approved brand assets are present."
+      },
+      "modeCaps": {
+        "t2v": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "min": 1,
+            "default": 6
+          },
+          "resolution": [
+            "480p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "4:3",
+            "3:2",
+            "1:1",
+            "2:3",
+            "3:4",
+            "9:16"
+          ],
+          "audioToggle": false,
+          "notes": "Generated audio is native and fixed; Fal publishes no fps value."
+        },
+        "i2v": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "min": 1,
+            "default": 6
+          },
+          "resolution": [
+            "480p",
+            "720p",
+            "1080p"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp",
+            "gif",
+            "avif"
+          ],
+          "audioToggle": false,
+          "notes": "One first-frame image. This endpoint exposes no aspect-ratio control or fps value."
+        },
+        "ref2v": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "min": 1,
+            "default": 8
+          },
+          "resolution": [
+            "480p",
+            "720p"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "4:3",
+            "3:2",
+            "1:1",
+            "2:3",
+            "3:4",
+            "9:16"
+          ],
+          "audioToggle": false,
+          "notes": "Requires 1–7 reference images. Reference audio is included by Fal but no audio input field is exposed."
+        }
+      }
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "xai/grok-imagine-video/v1.5/text-to-video",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "min": 1,
+            "default": 6
+          },
+          "resolution": [
+            "480p",
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "4:3",
+            "3:2",
+            "1:1",
+            "2:3",
+            "3:4",
+            "9:16"
+          ],
+          "audioToggle": false,
+          "notes": "Generated audio is native and fixed; Fal publishes no fps value."
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "xai/grok-imagine-video/v1.5/image-to-video",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "min": 1,
+            "default": 6
+          },
+          "resolution": [
+            "480p",
+            "720p",
+            "1080p"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp",
+            "gif",
+            "avif"
+          ],
+          "audioToggle": false,
+          "notes": "One first-frame image. This endpoint exposes no aspect-ratio control or fps value."
+        }
+      },
+      {
+        "mode": "ref2v",
+        "falModelId": "xai/grok-imagine-video/v1.5/reference-to-video",
+        "ui": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "min": 1,
+            "default": 8
+          },
+          "resolution": [
+            "480p",
+            "720p"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "4:3",
+            "3:2",
+            "1:1",
+            "2:3",
+            "3:4",
+            "9:16"
+          ],
+          "audioToggle": false,
+          "notes": "Requires 1–7 reference images. Reference audio is included by Fal but no audio input field is exposed."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": true
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    }
+  },
+  {
+    "engineId": "flux-3",
+    "modelSlug": "flux-3",
+    "marketingName": "FLUX 3",
+    "provider": "Black Forest Labs",
+    "brandId": "black-forest-labs",
+    "family": "flux",
+    "familyExamplesPage": {
+      "stage": "hidden",
+      "showInNav": false,
+      "publishedModelSlugs": [],
+      "currentModelSlugs": []
+    },
+    "versionLabel": "3",
+    "availability": "available",
+    "logoPolicy": "textOnly",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "surfaces": {
+      "modelPage": {
+        "indexable": false,
+        "includeInSitemap": false
+      },
+      "examples": {
+        "includeInFamilyResolver": false,
+        "includeInFamilyCopy": false
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [],
+        "includeInHub": false
+      },
+      "app": {
+        "enabled": false
+      },
+      "pricing": {
+        "includeInEstimator": false
+      }
+    },
+    "surfacesSource": "registry",
+    "engine": {
+      "id": "flux-3",
+      "label": "FLUX 3",
+      "provider": "Black Forest Labs",
+      "version": "3",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v",
+        "fl2v",
+        "extend"
+      ],
+      "maxDurationSec": 20,
+      "resolutions": [
+        "720p",
+        "1080p"
+      ],
+      "aspectRatios": [
+        "auto",
+        "21:9",
+        "16:9",
+        "4:3",
+        "1:1",
+        "3:4",
+        "9:16"
+      ],
+      "fps": [],
+      "audio": true,
+      "upscale4k": false,
+      "extend": true,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {},
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "modes": [
+              "t2v",
+              "i2v",
+              "fl2v",
+              "extend"
+            ],
+            "requiredInModes": [
+              "t2v",
+              "i2v",
+              "fl2v",
+              "extend"
+            ]
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Opening image",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either",
+            "acceptedFileExtensions": [
+              "png",
+              "jpg",
+              "jpeg",
+              "webp"
+            ]
+          },
+          {
+            "id": "start_image_url",
+            "type": "image",
+            "label": "Start image",
+            "modes": [
+              "fl2v"
+            ],
+            "requiredInModes": [
+              "fl2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either",
+            "acceptedFileExtensions": [
+              "png",
+              "jpg",
+              "jpeg",
+              "webp"
+            ]
+          },
+          {
+            "id": "end_image_url",
+            "type": "image",
+            "label": "End image",
+            "modes": [
+              "fl2v"
+            ],
+            "requiredInModes": [
+              "fl2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either",
+            "acceptedFileExtensions": [
+              "png",
+              "jpg",
+              "jpeg",
+              "webp"
+            ]
+          },
+          {
+            "id": "video_url",
+            "type": "video",
+            "label": "Source video",
+            "modes": [
+              "extend"
+            ],
+            "requiredInModes": [
+              "extend"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either",
+            "maxSizeMB": 50,
+            "acceptedMimeTypes": [
+              "video/mp4"
+            ],
+            "acceptedFileExtensions": [
+              "mp4"
+            ],
+            "description": "Provider requires MP4 smaller than 50 MB and shorter than 15 seconds."
+          }
+        ],
+        "optional": [
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration",
+            "modes": [
+              "t2v",
+              "i2v",
+              "extend"
+            ],
+            "values": [
+              "auto",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "auto"
+          },
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration",
+            "modes": [
+              "fl2v"
+            ],
+            "values": [
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "5"
+          },
+          {
+            "id": "generate_audio",
+            "type": "boolean",
+            "label": "Generate audio",
+            "modes": [
+              "t2v",
+              "i2v",
+              "fl2v",
+              "extend"
+            ],
+            "default": true
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "modes": [
+              "t2v",
+              "i2v",
+              "fl2v",
+              "extend"
+            ],
+            "values": [
+              "auto",
+              "21:9",
+              "2:1",
+              "16:9",
+              "4:3",
+              "1:1",
+              "3:4",
+              "9:16"
+            ],
+            "default": "auto"
+          },
+          {
+            "id": "safety_tolerance",
+            "type": "number",
+            "label": "Safety tolerance",
+            "modes": [
+              "t2v",
+              "i2v",
+              "fl2v",
+              "extend"
+            ],
+            "min": 0,
+            "max": 4,
+            "step": 1,
+            "default": 2
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "modes": [
+              "t2v",
+              "i2v",
+              "fl2v",
+              "extend"
+            ],
+            "values": [
+              "720p",
+              "1080p"
+            ],
+            "default": "720p"
+          }
+        ],
+        "constraints": {
+          "standardImageFormats": [
+            "png",
+            "jpg",
+            "jpeg",
+            "webp"
+          ],
+          "extendVideoFormat": "mp4",
+          "extendVideoSizeExclusiveMaxMB": 50,
+          "extendVideoDurationExclusiveMaxSec": 15
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 17,
+          "byResolution": {
+            "720p": 17,
+            "1080p": 29
+          }
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.17,
+        "byResolution": {
+          "720p": 0.17,
+          "1080p": 0.29
+        },
+        "currency": "USD",
+        "notes": "Text/image/frame generation costs $0.17/s at 720p or $0.29/s at 1080p. Extend costs $0.41/$0.53; Task 5 owns exact mode-aware charging."
+      },
+      "updatedAt": "2026-09-01T12:00:20Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "blackforestlabs"
+      },
+      "availability": "available",
+      "brandId": "black-forest-labs",
+      "brandAssetPolicy": {
+        "logoAllowed": false,
+        "textOnly": true,
+        "usageNotes": "Use text-only Black Forest Labs attribution until approved brand assets are present."
+      },
+      "modeCaps": {
+        "t2v": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              "auto",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "auto"
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "2:1",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "audioToggle": true,
+          "notes": "Fal publishes no fps value."
+        },
+        "i2v": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              "auto",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "auto"
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "2:1",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "acceptsImageFormats": [
+            "png",
+            "jpg",
+            "jpeg",
+            "webp"
+          ],
+          "audioToggle": true,
+          "notes": "One PNG, JPEG, or WebP opening image; no upload-size limit is published."
+        },
+        "fl2v": {
+          "modes": [
+            "fl2v"
+          ],
+          "duration": {
+            "options": [
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "5"
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "2:1",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "acceptsImageFormats": [
+            "png",
+            "jpg",
+            "jpeg",
+            "webp"
+          ],
+          "audioToggle": true,
+          "notes": "Requires exactly one start image and one end image."
+        },
+        "extend": {
+          "modes": [
+            "extend"
+          ],
+          "duration": {
+            "options": [
+              "auto",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "auto"
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "2:1",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "maxUploadMB": 50,
+          "audioToggle": true,
+          "notes": "Requires an MP4 source smaller than 50 MB and shorter than 15 seconds."
+        }
+      }
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "blackforestlabs/flux-3/text-to-video",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              "auto",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "auto"
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "2:1",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "audioToggle": true,
+          "notes": "Fal publishes no fps value."
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "blackforestlabs/flux-3/image-to-video",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              "auto",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "auto"
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "2:1",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "acceptsImageFormats": [
+            "png",
+            "jpg",
+            "jpeg",
+            "webp"
+          ],
+          "audioToggle": true,
+          "notes": "One PNG, JPEG, or WebP opening image; no upload-size limit is published."
+        }
+      },
+      {
+        "mode": "fl2v",
+        "falModelId": "blackforestlabs/flux-3/first-last-frame-to-video",
+        "ui": {
+          "modes": [
+            "fl2v"
+          ],
+          "duration": {
+            "options": [
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "5"
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "2:1",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "acceptsImageFormats": [
+            "png",
+            "jpg",
+            "jpeg",
+            "webp"
+          ],
+          "audioToggle": true,
+          "notes": "Requires exactly one start image and one end image."
+        }
+      },
+      {
+        "mode": "extend",
+        "falModelId": "blackforestlabs/flux-3/extend-video",
+        "ui": {
+          "modes": [
+            "extend"
+          ],
+          "duration": {
+            "options": [
+              "auto",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "auto"
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "2:1",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "maxUploadMB": 50,
+          "audioToggle": true,
+          "notes": "Requires an MP4 source smaller than 50 MB and shorter than 15 seconds."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": true
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": true
+      }
+    }
+  },
+  {
+    "engineId": "flux-3-draft",
+    "modelSlug": "flux-3-draft",
+    "marketingName": "FLUX 3 Draft",
+    "provider": "Black Forest Labs",
+    "brandId": "black-forest-labs",
+    "family": "flux",
+    "familyExamplesPage": {
+      "stage": "hidden",
+      "showInNav": false,
+      "publishedModelSlugs": [],
+      "currentModelSlugs": []
+    },
+    "versionLabel": "3 Draft",
+    "availability": "available",
+    "logoPolicy": "textOnly",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "surfaces": {
+      "modelPage": {
+        "indexable": false,
+        "includeInSitemap": false
+      },
+      "examples": {
+        "includeInFamilyResolver": false,
+        "includeInFamilyCopy": false
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [],
+        "includeInHub": false
+      },
+      "app": {
+        "enabled": false
+      },
+      "pricing": {
+        "includeInEstimator": false
+      }
+    },
+    "surfacesSource": "registry",
+    "engine": {
+      "id": "flux-3-draft",
+      "label": "FLUX 3 Draft",
+      "provider": "Black Forest Labs",
+      "version": "3",
+      "variant": "Draft",
+      "status": "live",
+      "latencyTier": "fast",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v",
+        "fl2v",
+        "extend"
+      ],
+      "maxDurationSec": 20,
+      "resolutions": [
+        "720p"
+      ],
+      "aspectRatios": [
+        "auto",
+        "21:9",
+        "16:9",
+        "4:3",
+        "1:1",
+        "3:4",
+        "9:16"
+      ],
+      "fps": [],
+      "audio": true,
+      "upscale4k": false,
+      "extend": true,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {},
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "modes": [
+              "t2v",
+              "i2v",
+              "fl2v",
+              "extend"
+            ],
+            "requiredInModes": [
+              "t2v",
+              "i2v",
+              "fl2v",
+              "extend"
+            ]
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Opening image",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either",
+            "description": "Provider accepts a URL or data URI."
+          },
+          {
+            "id": "start_image_url",
+            "type": "image",
+            "label": "Start image",
+            "modes": [
+              "fl2v"
+            ],
+            "requiredInModes": [
+              "fl2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either",
+            "description": "Provider accepts a URL or data URI."
+          },
+          {
+            "id": "end_image_url",
+            "type": "image",
+            "label": "End image",
+            "modes": [
+              "fl2v"
+            ],
+            "requiredInModes": [
+              "fl2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either",
+            "description": "Provider accepts a URL or data URI."
+          },
+          {
+            "id": "video_url",
+            "type": "video",
+            "label": "Source video",
+            "modes": [
+              "extend"
+            ],
+            "requiredInModes": [
+              "extend"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either",
+            "maxSizeMB": 50,
+            "acceptedMimeTypes": [
+              "video/mp4"
+            ],
+            "acceptedFileExtensions": [
+              "mp4"
+            ],
+            "description": "Provider accepts a URL or data URI for an MP4 up to 50 MiB."
+          }
+        ],
+        "optional": [
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration",
+            "modes": [
+              "t2v",
+              "i2v",
+              "extend"
+            ],
+            "values": [
+              "auto",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "auto"
+          },
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration",
+            "modes": [
+              "fl2v"
+            ],
+            "values": [
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "5"
+          },
+          {
+            "id": "generate_audio",
+            "type": "boolean",
+            "label": "Generate audio",
+            "modes": [
+              "t2v",
+              "i2v",
+              "fl2v",
+              "extend"
+            ],
+            "default": true
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "modes": [
+              "t2v",
+              "i2v",
+              "fl2v",
+              "extend"
+            ],
+            "values": [
+              "auto",
+              "21:9",
+              "2:1",
+              "16:9",
+              "4:3",
+              "1:1",
+              "3:4",
+              "9:16"
+            ],
+            "default": "auto"
+          },
+          {
+            "id": "safety_tolerance",
+            "type": "number",
+            "label": "Safety tolerance",
+            "modes": [
+              "t2v",
+              "i2v",
+              "fl2v",
+              "extend"
+            ],
+            "min": 0,
+            "max": 4,
+            "step": 1,
+            "default": 2
+          }
+        ],
+        "constraints": {
+          "draftResolution": "720p",
+          "resolutionFieldExposed": false,
+          "returnsDraftCache": true,
+          "extendVideoMaxMiB": 50
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 6,
+          "byResolution": {
+            "720p": 6
+          }
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.06,
+        "byResolution": {
+          "720p": 0.06
+        },
+        "currency": "USD",
+        "notes": "Draft text/image/frame generation costs $0.06/s. Draft extend costs $0.12/s; Task 5 owns exact mode-aware charging."
+      },
+      "updatedAt": "2026-09-01T12:00:20Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "blackforestlabs"
+      },
+      "availability": "available",
+      "brandId": "black-forest-labs",
+      "brandAssetPolicy": {
+        "logoAllowed": false,
+        "textOnly": true,
+        "usageNotes": "Use text-only Black Forest Labs attribution until approved brand assets are present."
+      },
+      "modeCaps": {
+        "t2v": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              "auto",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "auto"
+          },
+          "resolution": [
+            "720p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "2:1",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "audioToggle": true,
+          "notes": "720p-only draft generation returning draft_cache; no fps value is published."
+        },
+        "i2v": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              "auto",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "auto"
+          },
+          "resolution": [
+            "720p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "2:1",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "audioToggle": true,
+          "notes": "Opening image accepts a URL or data URI. Returns draft_cache."
+        },
+        "fl2v": {
+          "modes": [
+            "fl2v"
+          ],
+          "duration": {
+            "options": [
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "5"
+          },
+          "resolution": [
+            "720p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "2:1",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "audioToggle": true,
+          "notes": "Exactly two URL/data-URI frames. Returns draft_cache."
+        },
+        "extend": {
+          "modes": [
+            "extend"
+          ],
+          "duration": {
+            "options": [
+              "auto",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "auto"
+          },
+          "resolution": [
+            "720p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "2:1",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "maxUploadMB": 50,
+          "audioToggle": true,
+          "notes": "URL/data-URI MP4 up to 50 MiB. Returns draft_cache."
+        }
+      }
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "blackforestlabs/flux-3/text-to-video/draft",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              "auto",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "auto"
+          },
+          "resolution": [
+            "720p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "2:1",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "audioToggle": true,
+          "notes": "720p-only draft generation returning draft_cache; no fps value is published."
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "blackforestlabs/flux-3/image-to-video/draft",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              "auto",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "auto"
+          },
+          "resolution": [
+            "720p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "2:1",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "audioToggle": true,
+          "notes": "Opening image accepts a URL or data URI. Returns draft_cache."
+        }
+      },
+      {
+        "mode": "fl2v",
+        "falModelId": "blackforestlabs/flux-3/first-last-frame-to-video/draft",
+        "ui": {
+          "modes": [
+            "fl2v"
+          ],
+          "duration": {
+            "options": [
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "5"
+          },
+          "resolution": [
+            "720p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "2:1",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "audioToggle": true,
+          "notes": "Exactly two URL/data-URI frames. Returns draft_cache."
+        }
+      },
+      {
+        "mode": "extend",
+        "falModelId": "blackforestlabs/flux-3/extend-video/draft",
+        "ui": {
+          "modes": [
+            "extend"
+          ],
+          "duration": {
+            "options": [
+              "auto",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "auto"
+          },
+          "resolution": [
+            "720p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "2:1",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "maxUploadMB": 50,
+          "audioToggle": true,
+          "notes": "URL/data-URI MP4 up to 50 MiB. Returns draft_cache."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": true
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": true
       }
     }
   }

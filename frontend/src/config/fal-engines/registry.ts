@@ -25,10 +25,17 @@ import { SEEDANCE_2_BYTEPLUS_FAL_ENGINE_REGISTRY } from './seedance-2-byteplus';
 import { SEEDANCE_2_5_FAL_ENGINE_REGISTRY } from './seedance-2-5';
 import { WAN_2_5_FAL_ENGINE_REGISTRY } from './wan-2-5';
 import { WAN_2_6_FAL_ENGINE_REGISTRY } from './wan-2-6';
+import { WAN_3_FAL_ENGINE_REGISTRY } from './wan-3';
+import { WAN_3_PRIME_FAL_ENGINE_REGISTRY } from './wan-3-prime';
 import { LTX_2_FAST_FAL_ENGINE_REGISTRY } from './ltx-2-fast';
 import { LTX_2_FAL_ENGINE_REGISTRY } from './ltx-2';
 import { LTX_2_3_FAST_FAL_ENGINE_REGISTRY } from './ltx-2-3-fast';
 import { LTX_2_3_FAL_ENGINE_REGISTRY } from './ltx-2-3';
+import { LTX_2_5_FAST_FAL_ENGINE_REGISTRY } from './ltx-2-5-fast';
+import { LTX_2_5_PRO_FAL_ENGINE_REGISTRY } from './ltx-2-5-pro';
+import { GROK_IMAGINE_VIDEO_1_5_FAL_ENGINE_REGISTRY } from './grok-imagine-video-1-5';
+import { FLUX_3_FAL_ENGINE_REGISTRY } from './flux-3';
+import { FLUX_3_DRAFT_FAL_ENGINE_REGISTRY } from './flux-3-draft';
 import { HAILUO_FAL_ENGINE_REGISTRY } from './hailuo';
 import { MINIMAX_H3_FAL_ENGINE_REGISTRY } from './minimax-h3';
 import { NANO_BANANA_FAL_ENGINE_REGISTRY } from './nano-banana';
@@ -77,4 +84,11 @@ export const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   ...NANO_BANANA_2_FAL_ENGINE_REGISTRY,
   ...GPT_IMAGE_2_FAL_ENGINE_REGISTRY,
   ...SEEDREAM_FAL_ENGINE_REGISTRY,
+  ...WAN_3_FAL_ENGINE_REGISTRY,
+  ...WAN_3_PRIME_FAL_ENGINE_REGISTRY,
+  ...LTX_2_5_FAST_FAL_ENGINE_REGISTRY,
+  ...LTX_2_5_PRO_FAL_ENGINE_REGISTRY,
+  ...GROK_IMAGINE_VIDEO_1_5_FAL_ENGINE_REGISTRY,
+  ...FLUX_3_FAL_ENGINE_REGISTRY,
+  ...FLUX_3_DRAFT_FAL_ENGINE_REGISTRY,
 ];

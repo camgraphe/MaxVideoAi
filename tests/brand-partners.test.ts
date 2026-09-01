@@ -50,3 +50,29 @@ test('Lightricks compact mark is optically scaled for small engine icons', () =>
 test('EngineIcon allows oversized brand marks without global image max-width distortion', () => {
   assert.match(engineIconSource, /maxWidth: 'none'/);
 });
+
+test('P0 engines resolve to their model owners and unlicensed owners stay text-only', () => {
+  const expectedOwners = {
+    'wan-3': 'wan',
+    'wan-3-prime': 'wan',
+    'ltx-2-5-fast': 'lightricks',
+    'ltx-2-5-pro': 'lightricks',
+    'grok-imagine-video-1-5': 'xai',
+    'flux-3': 'black-forest-labs',
+    'flux-3-draft': 'black-forest-labs',
+  } as const;
+
+  for (const [engineId, brandId] of Object.entries(expectedOwners)) {
+    assert.equal(getPartnerByEngineId(engineId)?.id, brandId, engineId);
+  }
+
+  for (const brandId of ['xai', 'black-forest-labs']) {
+    const brand = getPartnerByBrandId(brandId);
+    assert.ok(brand, brandId);
+    assert.equal(brand.policy.logoAllowed, false, brandId);
+    assert.equal(brand.policy.textOnly, true, brandId);
+    assert.equal(brand.compactMark, undefined, brandId);
+    assert.equal(brand.wordmark, undefined, brandId);
+    assert.equal(getPartnerBrandMark({ brandId }), undefined, brandId);
+  }
+});

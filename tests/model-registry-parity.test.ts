@@ -30,6 +30,14 @@ import {
 } from '../frontend/config/model-families.ts';
 
 const baseline = JSON.parse(readFileSync('tests/fixtures/model-registry-baseline.json', 'utf8'));
+const P0_SUCCESSORS = {
+  'ltx-2-3': 'ltx-2-5-pro',
+  'ltx-2-3-fast': 'ltx-2-5-fast',
+  'ltx-2': 'ltx-2-5-pro',
+  'ltx-2-fast': 'ltx-2-5-fast',
+  'wan-2-6': 'wan-3',
+  'wan-2-5': 'wan-3',
+} as const;
 
 test('runtime model projection matches every baseline identity and surface', () => {
   const runtimeById = new Map(listRuntimeModels().map((model) => [model.id, model]));
@@ -50,7 +58,10 @@ test('runtime model projection matches every baseline identity and surface', () 
     assert.equal(actual.family, expected.family);
     assert.equal(actual.category, expected.category);
     assert.equal(actual.lifecycle, expected.lifecycle);
-    assert.equal(actual.successorId, expected.successorId);
+    assert.equal(
+      actual.successorId,
+      P0_SUCCESSORS[expected.id as keyof typeof P0_SUCCESSORS] ?? expected.successorId,
+    );
     const actualPublication = toLegacyModelSurfaces(actual);
     if (reciprocalSeedance25PairOwners.has(expected.id)) {
       assert.equal(
@@ -108,7 +119,7 @@ test('runtime lifecycle helpers and Fal materialization share canonical recommen
     assert.equal(engine.successorSlug, model.successorSlug, engine.id);
     assert.equal(engine.isLegacy, model.lifecycle !== 'current', engine.id);
     assert.equal(isRuntimeModelRecommendedByDefault(model), model.lifecycle === 'current', engine.id);
-    assert.equal(getRuntimeModelSuccessor(model), null, engine.id);
+    assert.equal(getRuntimeModelSuccessor(model)?.id ?? null, model.successorId, engine.id);
   }
 });
 
@@ -126,17 +137,24 @@ test('generated catalog and rosters project registry lifecycle and successor ide
     /^engineId,marketingName,brandId,modelSlug,family,lifecycle,successorId,successorSlug,/,
   );
   assert.match(docsRosterCsv, /^happy-horse-1-0,[^\n]*,legacy,,,/m);
-  assert.match(docsRosterCsv, /^ltx-2,[^\n]*,deep_legacy,,,/m);
+  assert.match(
+    docsRosterCsv,
+    /^ltx-2,LTX Video 2\.0 Pro,lightricks,ltx-2,ltx,deep_legacy,ltx-2-5-pro,ltx-2-5-pro,/m,
+  );
   for (const entry of [...catalog, ...frontendRoster]) {
     const source = registryById.get(entry.engineId) as any;
     assert.ok(source, entry.engineId);
     assert.equal(entry.lifecycle, source.lifecycle, entry.engineId);
     assert.equal(entry.successorId, source.successorId, entry.engineId);
-    assert.equal(entry.successorSlug, null, entry.engineId);
+    assert.equal(
+      entry.successorSlug,
+      source.successorId ? registryById.get(source.successorId)?.slug ?? null : null,
+      entry.engineId,
+    );
   }
 });
 
-test('canonical migration classifies every approved non-current model and authors no successor yet', () => {
+test('canonical lifecycle classifies every approved non-current model and authors only the six P0 successors', () => {
   const nonCurrent = Object.fromEntries(
     listRuntimeModels()
       .filter((model) => model.lifecycle !== 'current')
@@ -156,7 +174,14 @@ test('canonical migration classifies every approved non-current model and author
     'wan-2-5': 'deep_legacy',
     'wan-2-6': 'legacy',
   });
-  assert.equal(listRuntimeModels().every((model) => model.successorId === null), true);
+  assert.deepEqual(
+    Object.fromEntries(
+      listRuntimeModels()
+        .filter((model) => model.successorId !== null)
+        .map((model) => [model.id, model.successorId]),
+    ),
+    P0_SUCCESSORS,
+  );
 });
 
 test('legacy app projection preserves registry-owned launch metadata', () => {
@@ -236,7 +261,13 @@ test('family model membership and current variants remain identical to baseline'
     assert.ok(actual, expected.id);
     assert.equal(
       actual.defaultModelSlug,
-      expected.id === 'hailuo' ? 'minimax-h3' : expected.defaultModelSlug,
+      expected.id === 'hailuo'
+        ? 'minimax-h3'
+        : expected.id === 'ltx'
+          ? 'ltx-2-5-pro'
+          : expected.id === 'wan'
+            ? 'wan-3-prime'
+            : expected.defaultModelSlug,
     );
     assert.deepEqual(
       actual.routeAliases,

@@ -1,4 +1,5 @@
 import { MODEL_FAMILIES, type ModelFamilyDefinition } from '../../config/model-families';
+import { getRuntimeModelByCanonicalSlug } from '../../config/model-runtime';
 import type {
   SeoFamilyDictionaryEntry,
   SeoFamilyStatus,
@@ -145,17 +146,21 @@ export function getSeoFamilyStatus(family: StrategicSeoFamily): SeoFamilyStatus 
 export function getSeoFamilyDictionary(): SeoFamilyDictionaryEntry[] {
   return (MODEL_FAMILIES as readonly ModelFamilyDefinition[]).map((family) => {
     const label = canonicalSeoFamilyLabel(family.id, family.label);
+    const publicDefaultModelSlug = family.defaultModelSlug
+      && getRuntimeModelByCanonicalSlug(family.defaultModelSlug)?.publication.model.published
+      ? family.defaultModelSlug
+      : undefined;
     const currentModelSlugs = Array.from(
       new Set([
         ...(family.examplesPage?.currentModelSlugs ?? []),
-        family.defaultModelSlug,
+        publicDefaultModelSlug,
       ].filter((value): value is string => Boolean(value)))
     );
     const publishedModelSlugs = Array.from(
       new Set([
         ...(family.examplesPage?.publishedModelSlugs ?? []),
         ...(family.routeAliases ?? []),
-        family.defaultModelSlug,
+        publicDefaultModelSlug,
       ].filter((value): value is string => Boolean(value)))
     );
     const modelSlugs = Array.from(

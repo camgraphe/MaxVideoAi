@@ -24,10 +24,10 @@ kling-3-standard,Kling 3 Standard,kling,kling-3-standard,kling,current,,,v3 Stan
 kling-o3-4k,Kling 3.0 Omni 4K,kling,kling-o3-4k,kling,current,,,3.0 Omni 4K,available,logoAllowed,true,true
 kling-o3-pro,Kling 3.0 Omni Pro,kling,kling-o3-pro,kling,current,,,3.0 Omni Pro,available,logoAllowed,true,true
 kling-o3-standard,Kling 3.0 Omni Standard,kling,kling-o3-standard,kling,current,,,3.0 Omni Standard,available,logoAllowed,true,true
-ltx-2-3-fast,LTX 2.3 Fast,lightricks,ltx-2-3-fast,ltx,legacy,,,2.3 Fast,available,logoAllowed,true,true
-ltx-2-3,LTX 2.3 Pro,lightricks,ltx-2-3-pro,ltx,legacy,,,Pro,available,logoAllowed,true,true
-ltx-2-fast,LTX Video 2.0 Fast,lightricks,ltx-2-fast,ltx,deep_legacy,,,Fast,available,logoAllowed,true,true
-ltx-2,LTX Video 2.0 Pro,lightricks,ltx-2,ltx,deep_legacy,,,Pro,available,logoAllowed,true,true
+ltx-2-3-fast,LTX 2.3 Fast,lightricks,ltx-2-3-fast,ltx,legacy,ltx-2-5-fast,ltx-2-5-fast,2.3 Fast,available,logoAllowed,true,true
+ltx-2-3,LTX 2.3 Pro,lightricks,ltx-2-3-pro,ltx,legacy,ltx-2-5-pro,ltx-2-5-pro,Pro,available,logoAllowed,true,true
+ltx-2-fast,LTX Video 2.0 Fast,lightricks,ltx-2-fast,ltx,deep_legacy,ltx-2-5-fast,ltx-2-5-fast,Fast,available,logoAllowed,true,true
+ltx-2,LTX Video 2.0 Pro,lightricks,ltx-2,ltx,deep_legacy,ltx-2-5-pro,ltx-2-5-pro,Pro,available,logoAllowed,true,true
 lumaRay2,Luma Ray 2,luma,luma-ray-2,luma,legacy,,,Ray 2,available,logoAllowed,true,true
 lumaRay2_flash,Luma Ray 2 Flash,luma,luma-ray-2-flash,luma,legacy,,,Ray 2 Flash,available,logoAllowed,true,true
 luma-ray-3-2,Luma Ray 3.2,luma,luma-ray-3-2,luma,current,,,Ray 3.2,available,logoAllowed,true,true
@@ -39,5 +39,5 @@ gpt-image-2,GPT Image 2,openai,gpt-image-2,gpt-image,current,,,2,available,logoA
 sora-2,OpenAI Sora 2,openai,sora-2,sora,current,,,2,available,logoAllowed,true,true
 sora-2-pro,OpenAI Sora 2 Pro,openai,sora-2-pro,sora,current,,,Pro,available,logoAllowed,true,true
 pika-text-to-video,Pika 2.2 Text & Image to Video,pika,pika-text-to-video,pika,current,,,2.2,available,logoAllowed,true,true
-wan-2-5,Wan 2.5 Text & Image to Video,wan,wan-2-5,wan,deep_legacy,,,Preview,available,logoAllowed,true,true
-wan-2-6,Wan 2.6 Text & Image to Video,wan,wan-2-6,wan,legacy,,,2.6,available,logoAllowed,true,true
+wan-2-5,Wan 2.5 Text & Image to Video,wan,wan-2-5,wan,deep_legacy,wan-3,wan-3,Preview,available,logoAllowed,true,true
+wan-2-6,Wan 2.6 Text & Image to Video,wan,wan-2-6,wan,legacy,wan-3,wan-3,2.6,available,logoAllowed,true,true

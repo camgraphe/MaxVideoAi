@@ -74,6 +74,24 @@ test('builds family dictionary from real app model families', () => {
   assert.ok(dictionary.find((family) => family.label === 'Happy Horse')?.modelSlugs.includes('happy-horse-1-0'));
 });
 
+test('hidden P0 family defaults do not become current or published SEO link targets', () => {
+  const dictionary = getSeoFamilyDictionary();
+  const expectedDefaults = {
+    ltx: 'ltx-2-5-pro',
+    wan: 'wan-3-prime',
+    grok: 'grok-imagine-video-1-5',
+    flux: 'flux-3',
+  } as const;
+
+  for (const [familyId, hiddenDefault] of Object.entries(expectedDefaults)) {
+    const family = dictionary.find((entry) => entry.id === familyId);
+    assert.ok(family, familyId);
+    assert.equal(family.defaultModelSlug, hiddenDefault, familyId);
+    assert.equal(family.currentModelSlugs.includes(hiddenDefault), false, familyId);
+    assert.equal(family.publishedModelSlugs.includes(hiddenDefault), false, familyId);
+  }
+});
+
 test('matches real app family aliases including Happy Horse', () => {
   assert.equal(detectStrategicModelFamily('happy horse 1.1 examples'), 'Happy Horse');
   assert.equal(detectStrategicModelFamily('happy horse 1.0 examples'), 'Happy Horse');

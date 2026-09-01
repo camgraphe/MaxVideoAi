@@ -808,7 +808,7 @@
       },
       "replacement": null,
       "lifecycle": "deep_legacy",
-      "successorId": null
+      "successorId": "ltx-2-5-pro"
     },
     {
       "id": "ltx-2-3",
@@ -880,7 +880,7 @@
       },
       "replacement": null,
       "lifecycle": "legacy",
-      "successorId": null
+      "successorId": "ltx-2-5-pro"
     },
     {
       "id": "ltx-2-3-fast",
@@ -951,7 +951,7 @@
       },
       "replacement": null,
       "lifecycle": "legacy",
-      "successorId": null
+      "successorId": "ltx-2-5-fast"
     },
     {
       "id": "ltx-2-fast",
@@ -1017,7 +1017,7 @@
       },
       "replacement": null,
       "lifecycle": "deep_legacy",
-      "successorId": null
+      "successorId": "ltx-2-5-fast"
     },
     {
       "id": "luma-ray-3-2",
@@ -2580,7 +2580,7 @@
       },
       "replacement": null,
       "lifecycle": "deep_legacy",
-      "successorId": null
+      "successorId": "wan-3"
     },
     {
       "id": "wan-2-6",
@@ -2649,6 +2649,279 @@
       },
       "replacement": null,
       "lifecycle": "legacy",
+      "successorId": "wan-3"
+    },
+    {
+      "id": "wan-3",
+      "slug": "wan-3",
+      "family": "wan",
+      "category": "video",
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": false,
+          "indexable": false
+        },
+        "examples": {
+          "published": false,
+          "includeInFamilyCopy": false,
+          "current": false
+        },
+        "compare": {
+          "published": false,
+          "indexed": false,
+          "suggestedOpponentIds": [],
+          "publishedPairIds": []
+        },
+        "app": {
+          "published": false
+        },
+        "pricing": {
+          "published": false
+        },
+        "sitemap": {
+          "published": false
+        }
+      },
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
+    },
+    {
+      "id": "wan-3-prime",
+      "slug": "wan-3-prime",
+      "family": "wan",
+      "category": "video",
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": false,
+          "indexable": false
+        },
+        "examples": {
+          "published": false,
+          "includeInFamilyCopy": false,
+          "current": false
+        },
+        "compare": {
+          "published": false,
+          "indexed": false,
+          "suggestedOpponentIds": [],
+          "publishedPairIds": []
+        },
+        "app": {
+          "published": false
+        },
+        "pricing": {
+          "published": false
+        },
+        "sitemap": {
+          "published": false
+        }
+      },
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
+    },
+    {
+      "id": "ltx-2-5-fast",
+      "slug": "ltx-2-5-fast",
+      "family": "ltx",
+      "category": "video",
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": false,
+          "indexable": false
+        },
+        "examples": {
+          "published": false,
+          "includeInFamilyCopy": false,
+          "current": false
+        },
+        "compare": {
+          "published": false,
+          "indexed": false,
+          "suggestedOpponentIds": [],
+          "publishedPairIds": []
+        },
+        "app": {
+          "published": false
+        },
+        "pricing": {
+          "published": false
+        },
+        "sitemap": {
+          "published": false
+        }
+      },
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
+    },
+    {
+      "id": "ltx-2-5-pro",
+      "slug": "ltx-2-5-pro",
+      "family": "ltx",
+      "category": "video",
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": false,
+          "indexable": false
+        },
+        "examples": {
+          "published": false,
+          "includeInFamilyCopy": false,
+          "current": false
+        },
+        "compare": {
+          "published": false,
+          "indexed": false,
+          "suggestedOpponentIds": [],
+          "publishedPairIds": []
+        },
+        "app": {
+          "published": false
+        },
+        "pricing": {
+          "published": false
+        },
+        "sitemap": {
+          "published": false
+        }
+      },
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
+    },
+    {
+      "id": "grok-imagine-video-1-5",
+      "slug": "grok-imagine-video-1-5",
+      "family": "grok",
+      "category": "video",
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": false,
+          "indexable": false
+        },
+        "examples": {
+          "published": false,
+          "includeInFamilyCopy": false,
+          "current": false
+        },
+        "compare": {
+          "published": false,
+          "indexed": false,
+          "suggestedOpponentIds": [],
+          "publishedPairIds": []
+        },
+        "app": {
+          "published": false
+        },
+        "pricing": {
+          "published": false
+        },
+        "sitemap": {
+          "published": false
+        }
+      },
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
+    },
+    {
+      "id": "flux-3",
+      "slug": "flux-3",
+      "family": "flux",
+      "category": "video",
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": false,
+          "indexable": false
+        },
+        "examples": {
+          "published": false,
+          "includeInFamilyCopy": false,
+          "current": false
+        },
+        "compare": {
+          "published": false,
+          "indexed": false,
+          "suggestedOpponentIds": [],
+          "publishedPairIds": []
+        },
+        "app": {
+          "published": false
+        },
+        "pricing": {
+          "published": false
+        },
+        "sitemap": {
+          "published": false
+        }
+      },
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
+    },
+    {
+      "id": "flux-3-draft",
+      "slug": "flux-3-draft",
+      "family": "flux",
+      "category": "video",
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": false,
+          "indexable": false
+        },
+        "examples": {
+          "published": false,
+          "includeInFamilyCopy": false,
+          "current": false
+        },
+        "compare": {
+          "published": false,
+          "indexed": false,
+          "suggestedOpponentIds": [],
+          "publishedPairIds": []
+        },
+        "app": {
+          "published": false
+        },
+        "pricing": {
+          "published": false
+        },
+        "sitemap": {
+          "published": false
+        }
+      },
+      "replacement": null,
+      "lifecycle": "current",
       "successorId": null
     }
   ],

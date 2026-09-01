@@ -50,7 +50,7 @@ const aggregatedModuleNames = [
   'gpt-image-2.ts',
   'seedream.ts',
 ];
-const prelaunchModuleNames = [
+const p0ModuleNames = [
   'wan-3-shared.ts',
   'wan-3.ts',
   'wan-3-prime.ts',
@@ -62,7 +62,7 @@ const prelaunchModuleNames = [
   'flux-3.ts',
   'flux-3-draft.ts',
 ];
-const moduleNames = [...aggregatedModuleNames, ...prelaunchModuleNames];
+const moduleNames = [...aggregatedModuleNames, ...p0ModuleNames];
 
 const aggregatedRegistryExports = [
   'PIKA_FAL_ENGINE_REGISTRY',
@@ -101,7 +101,7 @@ const aggregatedRegistryExports = [
   'GPT_IMAGE_2_FAL_ENGINE_REGISTRY',
   'SEEDREAM_FAL_ENGINE_REGISTRY',
 ];
-const prelaunchRegistryExports = [
+const p0RegistryExports = [
   'WAN_3_FAL_ENGINE_REGISTRY',
   'WAN_3_PRIME_FAL_ENGINE_REGISTRY',
   'LTX_2_5_FAST_FAL_ENGINE_REGISTRY',
@@ -140,8 +140,9 @@ test('Fal engine catalog data is split into provider-family modules', () => {
     assert.match(registrySource, new RegExp(`\\.\\.\\.${exportName}`));
   });
 
-  prelaunchRegistryExports.forEach((exportName) => {
-    assert.doesNotMatch(registrySource, new RegExp(exportName));
+  p0RegistryExports.forEach((exportName) => {
+    assert.match(registrySource, new RegExp(`import \\{ ${exportName} \\}`));
+    assert.match(registrySource, new RegExp(`\\.\\.\\.${exportName}`));
   });
 });
 

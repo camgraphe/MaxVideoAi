@@ -26,10 +26,12 @@ const EXTRA_FAL_PROXY_ENDPOINTS = [
 
 export const FAL_PROXY_ALLOWED_ENDPOINTS = Array.from(
   new Set([
-    ...listFalEngines().flatMap((engine) => [
-      engine.defaultFalModelId,
-      ...engine.modes.map((mode) => mode.falModelId),
-    ]),
+    ...listFalEngines()
+      .filter((engine) => engine.surfaces.app.enabled)
+      .flatMap((engine) => [
+        engine.defaultFalModelId,
+        ...engine.modes.map((mode) => mode.falModelId),
+      ]),
     ...listAngleToolEngines().map((engine) => engine.falModelId),
     ...listUpscaleToolEngines().map((engine) => engine.falModelId),
     ...EXTRA_FAL_PROXY_ENDPOINTS,
