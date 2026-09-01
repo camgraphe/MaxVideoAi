@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { unlinkSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import test from 'node:test';
 import {
   PENDING_AUTH_EVENT_STORAGE_KEY,
@@ -32,6 +34,39 @@ test('treats the journey classifier as analytics data, not an authored public li
   });
 
   assert.equal(result.status, 0, result.stderr);
+});
+
+test('limits the non-link route classifier exception to analytics ownership', async () => {
+  const { ALLOWED_NON_LINK_ROUTE_CLASSIFIERS } = await import('../scripts/internal-link-guard.mjs');
+
+  assert.equal(
+    ALLOWED_NON_LINK_ROUTE_CLASSIFIERS.has('frontend/lib/analytics/journey.ts'),
+    true,
+  );
+  assert.equal(
+    ALLOWED_NON_LINK_ROUTE_CLASSIFIERS.has('frontend/components/marketing/MarketingFooter.tsx'),
+    false,
+  );
+});
+
+test('rejects an unauthorized authored company link outside the classifier', () => {
+  const fixturePath = join(
+    process.cwd(),
+    'frontend/lib/analytics/internal-link-guard-unauthorized-company-link.test.ts',
+  );
+  writeFileSync(fixturePath, "export const unauthorizedCompanyLink = '/company';\n");
+
+  try {
+    const result = spawnSync(process.execPath, ['scripts/internal-link-guard.mjs'], {
+      cwd: process.cwd(),
+      encoding: 'utf8',
+    });
+
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /internal-link-guard-unauthorized-company-link\.test\.ts/);
+  } finally {
+    unlinkSync(fixturePath);
+  }
 });
 
 function createStorage(): Storage {

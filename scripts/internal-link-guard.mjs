@@ -150,7 +150,7 @@ const companyAllowedFiles = new Set([
   'frontend/scripts/qa/hreflang-check.ts',
   'frontend/scripts/qa/locale-surface-check.ts',
 ]);
-const ALLOWED_NON_LINK_ROUTE_CLASSIFIERS = new Set([
+export const ALLOWED_NON_LINK_ROUTE_CLASSIFIERS = new Set([
   'frontend/lib/analytics/journey.ts',
 ]);
 
