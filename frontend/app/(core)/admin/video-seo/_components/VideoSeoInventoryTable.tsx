@@ -68,35 +68,43 @@ function VideoSeoVideoCard({
       : 'border-warning-border/70 hover:border-warning-border';
 
   return (
-    <button
-      type="button"
-      aria-label={`Open video SEO details for ${row.generatedTitle}`}
-      onClick={onSelect}
-      className={`group min-w-0 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg ${selected ? 'ring-2 ring-ring ring-offset-2 ring-offset-bg' : ''}`}
-    >
-      <span className={`block overflow-hidden rounded-lg border bg-black transition ${frameClass}`}>
-        {row.video?.thumbUrl ? (
-          <Image
-            src={row.video.thumbUrl}
-            alt=""
-            width={360}
-            height={203}
-            unoptimized
-            className="aspect-video w-full object-contain transition group-hover:brightness-105"
-          />
-        ) : (
-          <span className="flex aspect-video items-center justify-center bg-bg text-xs font-medium text-text-muted">
-            No thumbnail
-          </span>
-        )}
-      </span>
-      <span className="mt-2 block line-clamp-2 text-sm font-semibold leading-5 text-text-primary group-hover:underline">
-        {row.generatedTitle}
-      </span>
-      <span className="sr-only">
-        {row.isReady ? 'Ready for sitemap' : 'Needs review'}, status {row.seoStatus}
-      </span>
-    </button>
+    <article className="group relative min-w-0">
+      <button
+        type="button"
+        aria-label={`Open video SEO details for ${row.generatedTitle}`}
+        onClick={onSelect}
+        className={`w-full min-w-0 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg ${selected ? 'ring-2 ring-ring ring-offset-2 ring-offset-bg' : ''}`}
+      >
+        <span className={`block overflow-hidden rounded-lg border bg-black transition ${frameClass}`}>
+          {row.video?.thumbUrl ? (
+            <Image
+              src={row.video.thumbUrl}
+              alt=""
+              width={360}
+              height={203}
+              unoptimized
+              className="aspect-video w-full object-contain transition group-hover:brightness-105"
+            />
+          ) : (
+            <span className="flex aspect-video items-center justify-center bg-bg text-xs font-medium text-text-muted">
+              No thumbnail
+            </span>
+          )}
+        </span>
+        <span className="mt-2 block line-clamp-2 text-sm font-semibold leading-5 text-text-primary group-hover:underline">
+          {row.generatedTitle}
+        </span>
+        <span className="sr-only">
+          {row.isReady ? 'Ready for sitemap' : 'Needs review'}, status {row.seoStatus}
+        </span>
+      </button>
+      <VideoSeoRolloutRemovalButton
+        videoId={row.entry.id}
+        title={row.generatedTitle}
+        seoStatus={row.seoStatus}
+        compact
+      />
+    </article>
   );
 }
 

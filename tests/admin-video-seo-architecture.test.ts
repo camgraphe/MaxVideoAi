@@ -181,6 +181,12 @@ test('admin video SEO client forms expose status-based editing without sitemap t
 test('admin video SEO exposes a dedicated non-destructive rollout removal action', () => {
   assert.ok(existsSync(removalButtonPath), 'rollout removal button should exist');
   assert.match(tableSource, /VideoSeoRolloutRemovalButton/, 'inventory details should wire the removal action');
+  assert.match(
+    tableSource,
+    /function VideoSeoVideoCard[\s\S]*<article[\s\S]*<VideoSeoRolloutRemovalButton[\s\S]*compact[\s\S]*<\/article>/,
+    'candidate cards should expose the removal action directly on each thumbnail'
+  );
+  assert.match(removalButtonSource, /compact\?: boolean/, 'removal action should support the thumbnail treatment');
   assert.match(removalButtonSource, /Retirer la candidature/, 'button should name the scoped rollout action');
   assert.match(removalButtonSource, /method: 'DELETE'/, 'button should call the guarded removal API');
   assert.match(removalButtonSource, /router\.refresh\(\)/, 'successful removal should refresh the server inventory');

@@ -9,6 +9,7 @@ type VideoSeoRolloutRemovalButtonProps = {
   videoId: string;
   title: string;
   seoStatus: string;
+  compact?: boolean;
 };
 
 const REMOVABLE_STATUSES = new Set(['candidate', 'draft', 'needs_edits']);
@@ -17,6 +18,7 @@ export function VideoSeoRolloutRemovalButton({
   videoId,
   title,
   seoStatus,
+  compact = false,
 }: VideoSeoRolloutRemovalButtonProps) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
@@ -47,6 +49,27 @@ export function VideoSeoRolloutRemovalButton({
     } finally {
       setPending(false);
     }
+  }
+
+  if (compact) {
+    return (
+      <div className="absolute right-2 top-2 z-10 flex flex-col items-end gap-1">
+        <button
+          type="button"
+          disabled={pending}
+          onClick={handleRemove}
+          aria-label={`Retirer la candidature ${title}`}
+          className="inline-flex min-h-8 items-center justify-center rounded-md border border-white/30 bg-black/75 px-2.5 text-[11px] font-semibold text-white shadow-lg backdrop-blur-sm transition hover:border-white/50 hover:bg-black/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {pending ? 'Retrait…' : 'Retirer'}
+        </button>
+        {error ? (
+          <p role="alert" className="max-w-[180px] rounded-md bg-error-bg px-2 py-1 text-[10px] font-medium leading-4 text-error shadow-lg">
+            {error}
+          </p>
+        ) : null}
+      </div>
+    );
   }
 
   return (
