@@ -1,0 +1,125 @@
+# Task 8 report — localized P0 model pages and lifecycle transitions
+
+Date: 2026-09-01
+
+## Revision
+
+- Base: `ecbe8524aee7df49c54ecca5788fd9ddf13a8456`
+- Final implementation commit: reported in the Task 8 handoff because a commit cannot contain its own hash.
+
+## Outcome
+
+Seven complete normal model-page templates and 21 exact EN/FR/ES content documents now exist for Wan 3, Wan 3 Prime, LTX 2.5 Fast, LTX 2.5 Pro, Grok Imagine Video 1.5, FLUX.3 and FLUX.3 Draft. The real registry publication flags remain false, so the routes, app engines, examples, pricing rows, comparison discovery and sitemap entries remain hidden until Task 14.
+
+The model-page template inventory is now 49. Every locale has 49 strict decision, prompting and Examples documents. Examples visibility is 35 visible and 14 hidden per locale, or 105 visible and 42 hidden across the three locales. Every new hidden gallery keeps `showWhenEmpty: false`, `fallbackItems: null`, template examples enabled and no placeholder media.
+
+All seven launch pages distinguish the model owner from distribution: Alibaba/Tongyi, Lightricks, xAI and Black Forest Labs own their respective model families, while Fal distributes these seven launch endpoints. No new direct-provider route, agreement claim, fallback, adapter or provider pricing owner was introduced. Existing direct routes remain unchanged.
+
+## Canonical pricing scenarios
+
+The page-template manifest is frozen and rendered through the existing Task 5 quote path:
+
+- every model: 6 seconds, 720p, T2V;
+- Wan 3, Wan 3 Prime, Grok and FLUX.3: 6 seconds, 1080p, T2V;
+- LTX 2.5 Fast: 6 seconds, 4K T2V plus 6 source-audio seconds at 1080p A2V;
+- LTX 2.5 Pro: 6 seconds, 1080p T2V plus 6 source-audio seconds at 1080p A2V;
+- Grok: 8 seconds, 480p ref2v with two reference images;
+- FLUX.3 and FLUX.3 Draft: 6 seconds, 720p extend.
+
+The pricing-page scenario adapter now forwards A2V `durationSec` as the trusted `inputAudioDurationSec` expected by the canonical pricing definition. The pages contain no finished total, provider rate or commercial formula; the rendered cards consume exact live canonical quote results.
+
+## Content and link audit
+
+- All 21 new documents parse through the strict decision, prompting and Examples contracts and have identical structural and semantic IDs across EN/FR/ES.
+- Useful localized copy ranges from 1,057 to 1,240 words per page, above the required 400-word threshold.
+- Each page retains at least 80% page-specific normalized sentences, and every locale has seven unique title/description pairs.
+- Every page contains localized best-fit, non-fit, workflow, constraints, prompting, family-position, attribution and safety copy.
+- Every page has seven or eight unique authored links including the locale-correct family examples, pricing anchor, app CTA, sibling/successor where applicable and two to four contextual editorial destinations.
+- Future comparison destinations exist only in localized content. The seven template quick-link arrays contain no future comparison route, so publication-backed template discovery remains gated for Task 13.
+- Official prompt guidance uses only the reviewed owner URLs for Alibaba Model Studio, LTX, xAI and Black Forest Labs.
+- Content contracts reject authored prices, margins, blanket-superiority copy, fake media and direct-provider claims.
+
+## Lifecycle and SEO audit
+
+All 18 required EN/FR/ES lifecycle documents were updated:
+
+- legacy: LTX 2.3 Pro → LTX 2.5 Pro, LTX 2.3 Fast → LTX 2.5 Fast, Wan 2.6 → Wan 3;
+- deep legacy: LTX 2 → LTX 2.5 Pro, LTX 2 Fast → LTX 2.5 Fast, Wan 2.5 → Wan 3.
+
+Legacy pages keep the old executable engine CTA, their version-specific title and self-canonical indexable identity, while explaining the exact current successor and future upgrade scoreboard. Deep-legacy pages keep historical facts, examples, pricing presets and self-canonical identity, remove current/recommended generation language, and route new generation CTAs to the exact successor. No registry replacement, public redirect or tombstone was added; the 28-day Search Console redirect decision remains deferred.
+
+## Audit compatibility
+
+The repository model audit previously used one published-slug set for both required and allowed content. That treated valid registered-but-unpublished page documents as unregistered extras. It also required obsolete root `hero`, `bestUseCases`, `technicalOverview` and `faqs` blocks even when the strict rendered `decision` schema owns those sections.
+
+The audit now:
+
+- still requires every published model document in every locale;
+- allows content only for canonical registry slugs, including hidden registered identities;
+- recognizes strict decision content as the current rendered marketing owner, without adding dead fields to the new JSON.
+
+`pnpm models:audit` passes with 49 documents per locale, zero critical findings and nine expected warnings for family-resolution-disabled hidden identities. Its mutation contract still produces exactly the 19 intentional critical Examples findings.
+
+## RED evidence
+
+Before production edits:
+
+```bash
+pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
+  tests/p0-model-page-seo-content.test.ts \
+  tests/model-page-template-registry.test.ts \
+  tests/model-decision-content-contract.test.ts \
+  tests/model-prompting-content-contract.test.ts \
+  tests/model-examples-content-contract.test.ts
+```
+
+Result: 51 tests, 37 passed and 14 failed. The failures covered the absent seven templates and 21 localized documents, old 42-template/35-visible-and-7-hidden invariants, missing canonical pricing presets, and lifecycle copy/CTA expectations.
+
+After the new content exposed the historical audit assumptions, `tests/models-audit-examples-contract.test.ts` was the second RED: the temporary audit reported 29 instead of the 19 intentional mutation findings because it added three unpublished-content parity findings and seven dead-schema completeness findings.
+
+## GREEN evidence
+
+Focused page/content/template/pricing/lifecycle/audit suites:
+
+```text
+103 tests, 103 passed, 0 failed
+```
+
+Publication, hidden-execution, registry, pricing, SEO and sitemap suites:
+
+```text
+97 tests, 97 passed, 0 failed
+```
+
+Model registry and content audit:
+
+```text
+pnpm model:registry:check  valid (50 models, 2 tombstones; 50 catalog entries; 42 roster entries)
+pnpm models:audit          pass (49 EN / 49 FR / 49 ES; 0 critical; 9 hidden-family warnings)
+```
+
+Final deterministic gates:
+
+```text
+pnpm --prefix frontend run i18n:check                  pass (FR 4,207; ES 4,201)
+pnpm --prefix frontend run seo:check                   pass
+pnpm --prefix frontend exec tsc --noEmit --pretty false pass
+npm --prefix frontend run lint                         pass, 0 warnings
+npm run lint:exposure                                  pass
+git diff --check                                       pass
+```
+
+The repository-wide `pnpm test:validate` completed with 3,848/3,852 passing. Its four failures are upstream contracts outside the Task 8 diff and were already documented by earlier task reports:
+
+1. Black Forest Labs theme tokens are absent from both light and dark CSS themes.
+2. The generate-route attachment-delegation contract still expects the older owner split.
+3. The synthetic retired-model redirect contract still expects replacement redirects not emitted by the current registry helper.
+4. The workspace composer split contract still expects `UNIFIED_VEO_FIRST_LAST_ENGINE_IDS` in the engine/mode hook.
+
+## Deviations and residual risks
+
+- `scripts/models-audit.mjs` was not in the initial file list, but the new valid hidden documents made its published-only assumption fail the full suite. The narrow correction preserves unknown-slug rejection and published-content requirements while avoiding dead content fields.
+- The seven P0 identities are deliberately absent from public model, app, Fal proxy, roster, family, pricing, comparison and SEO discovery. Task 14 must keep the registry flip atomic; deploying only the authored configuration is not a launch.
+- Future comparison destinations are authored but unresolved until Task 13 creates the reviewed scoreboard-only comparison records. They must not be promoted through template or hub discovery before then.
+- Galleries remain empty until Task 12 supplies two accepted durable videos per model. No fallback media was invented.
+- Local verification ran under Node 23.9.0 while the repository requests Node 22.x. All requested gates passed, but Task 15 still owns the release-runtime verification.

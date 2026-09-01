@@ -3,10 +3,10 @@
   "versionLabel": "Fast",
   "seo": {
     "title": "LTX 2 Fast | AI Video Model, Specs & Pricing | MaxVideoAI",
-    "description": "Use the supported LTX 2 Fast model on MaxVideoAI for quick audio-ready drafts, then move to LTX 2.3 Fast for the current fast LTX workflow.",
+    "description": "LTX 2 Fast is a historical deep-legacy profile retained for original search intent; start current draft work with LTX 2.5 Fast.",
     "image": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/1bd62e34-0e55-4f49-b434-295276b991d4-job_d895c3b0-562a-4e36-ae06-4ce083a47126.jpg"
   },
-  "overview": "LTX 2 Fast remains available on MaxVideoAI as a supported older fast LTX model for quick audio-ready drafts and legacy fast workflows.",
+  "overview": "LTX 2 Fast remains self-canonical as a historical deep-legacy profile. Its original specifications and examples stay documented, while new draft generation should begin with LTX 2.5 Fast.",
   "hero": {
     "title": "LTX 2 Fast — supported older LTX model for fast audio-ready drafts",
     "intro": "LTX 2 Fast remains available for quick audio-ready drafts and older fast workflows, while LTX 2.3 Fast is now the main current fast LTX option.",
@@ -275,7 +275,7 @@
   "decision": {
     "modelSlug": "ltx-2-fast",
     "hero": {
-      "eyebrow": "SUPPORTED LTX 2 FAST ROUTE",
+      "eyebrow": "HISTORICAL DEEP-LEGACY LTX 2 FAST ROUTE",
       "title": "LTX 2 Fast",
       "subtitle": "Fast 16:9 drafts up to 20s for text or image starts, audio-ready review passes, and 1080p to 4K checks.",
       "subtitleHighlights": [
@@ -283,10 +283,10 @@
         "up to 20s",
         "1080p to 4K checks"
       ],
-      "paragraph": "Use LTX 2 Fast for the supported older fast LTX route when you need low-cost 16:9 drafts, longer 20s timing checks, image starts and high-res review options. Use LTX 2.3 Fast for the current fast LTX workflow.",
+      "paragraph": "This historical LTX 2 Fast page preserves deep-legacy specifications, examples and search value without redirecting away. Do not start a new draft on the retired route; use LTX 2.5 Fast as the current speed-oriented successor.",
       "primaryCta": {
-        "label": "Draft with LTX 2 Fast",
-        "href": "/app?engine=ltx-2-fast"
+        "label": "View current LTX 2.5 Fast",
+        "href": "/models/ltx-2-5-fast"
       },
       "secondaryCta": {
         "label": "View examples",
@@ -294,8 +294,8 @@
       },
       "quickLinks": [
         {
-          "label": "View LTX 2.3 Fast",
-          "href": "/models/ltx-2-3-fast"
+          "label": "View LTX 2.5 Fast",
+          "href": "/models/ltx-2-5-fast"
         },
         {
           "label": "View pricing",
@@ -352,11 +352,11 @@
     ],
     "decisionCards": [
       {
-        "title": "LTX 2 Fast or LTX 2.3 Fast?",
-        "body": "Use LTX 2 Fast for supported older 16:9 draft loops. Use LTX 2.3 Fast for the current fast LTX route and broader format coverage.",
+        "title": "Historical LTX 2 Fast or current LTX 2.5 Fast?",
+        "body": "Keep this page for historical reference and existing drafts. Start a new iteration workflow with LTX 2.5 Fast.",
         "cta": {
-          "label": "View LTX 2.3 Fast",
-          "href": "/models/ltx-2-3-fast"
+          "label": "View LTX 2.5 Fast",
+          "href": "/models/ltx-2-5-fast"
         }
       },
       {
@@ -410,9 +410,9 @@
       "title": "LTX 2 Fast draft pricing",
       "subtitle": "Preset draft totals - see the exact live price in the app before you generate.",
       "footnote": "All prices are MaxVideoAI display prices in USD credits for preset scenarios.",
-      "ctaLabel": "View full pricing",
+      "ctaLabel": "Generate with LTX 2.5 Fast",
       "maxDurationNote": "20s at 1080p / 25 fps",
-      "ctaHref": "/pricing#ltx-2-fast-pricing"
+      "ctaHref": "/app?engine=ltx-2-5-fast"
     },
     "meta": {
       "title": "LTX 2 Fast: Pricing, 20s Drafts & Examples | MaxVideoAI",

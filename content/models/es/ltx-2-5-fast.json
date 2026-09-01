@@ -1,0 +1,87 @@
+{
+  "marketingName": "LTX 2.5 Fast",
+  "versionLabel": "2.5 Fast",
+  "seo": {
+    "title": "Generador de video con IA LTX 2.5 Fast para iteración rápida",
+    "description": "Usa LTX 2.5 Fast para iterar desde texto, imagen o audio fuente, con límites prácticos, consejos de prompt y cotizaciones canónicas."
+  },
+  "overview": "LTX 2.5 Fast es la ruta actual orientada a velocidad para exploración visual, pruebas de movimiento y borradores de la familia LTX. Lightricks es propietario de LTX; MaxVideoAI distribuye esta integración de lanzamiento mediante Fal. El modelo separa los flujos de texto a video, imagen a video y audio a video.",
+  "decision": {
+    "modelSlug": "ltx-2-5-fast",
+    "hero": {
+      "eyebrow": "RUTA LTX RÁPIDA ACTUAL",
+      "title": "LTX 2.5 Fast",
+      "subtitle": "Itera desde texto, una imagen inicial o audio fuente, con niveles nativos desde 720p hasta 4K y duraciones pensadas para revisión rápida.",
+      "subtitleHighlights": ["texto", "audio fuente", "720p hasta 4K"],
+      "paragraph": "Elige Fast mientras el equipo explora movimiento, ritmo, encuadre o variantes de prompt. Los modos de texto e imagen cubren varias resoluciones con audio generado nativo; audio a video es un flujo separado cuya cotización depende de la duración validada del archivo fuente. Lightricks posee el modelo y Fal distribuye su ejecución para esta versión.",
+      "primaryCta": { "label": "Generar con LTX 2.5 Fast", "href": "/app?engine=ltx-2-5-fast" },
+      "secondaryCta": { "label": "Explorar la galería LTX", "href": "/es/galeria/ltx" },
+      "quickLinks": [
+        { "label": "Descubrir LTX 2.5 Pro", "href": "/es/modelos/ltx-2-5-pro" },
+        { "label": "Comparar Fast con LTX 2.3 Fast", "href": "/es/comparativa/ltx-2-3-fast-vs-ltx-2-5-fast?order=ltx-2-5-fast" },
+        { "label": "Comparar Fast y Pro", "href": "/es/comparativa/ltx-2-5-fast-vs-ltx-2-5-pro?order=ltx-2-5-fast" },
+        { "label": "Consultar precios de Fast", "href": "/es/precios#ltx-2-5-fast-pricing" },
+        { "label": "Abrir el laboratorio Fast", "href": "#prompting" }
+      ]
+    },
+    "media": { "caption": "Galería de pruebas de LTX 2.5 Fast", "description": "Los borradores Fast aprobados aparecerán después de la revisión", "renderLabel": "Revisar el borrador aceptado", "badges": ["Fast", "Tres flujos", "Hasta 4K"], "altContext": "ejemplo de video LTX 2.5 Fast aceptado" },
+    "features": [
+      { "title": "Exploración rápida de prompts", "body": "Usa una pasada de seis segundos en 720p para comparar movimiento, composición y conducta antes de una salida más larga o definida. Cada variante debe medir un solo cambio.", "tone": "duration" },
+      { "title": "Resoluciones altas nativas", "body": "Los modos de texto e imagen avanzan por 720p, 1080p, 1440p y 4K. Los niveles elevados y algunas frecuencias tienen límites de duración más cortos.", "tone": "quality" },
+      { "title": "Pruebas de movimiento desde imagen", "body": "Anima una imagen inicial confiable y guía el final si hace falta. Describe la cámara y el cambio físico sin rediseñar la fuente.", "tone": "reference" },
+      { "title": "Actuación guiada por audio", "body": "Audio a video requiere un archivo sonoro privado y puede usar una imagen. La cotización canónica toma la duración validada por el servidor, nunca una duración editorial inventada.", "tone": "audio" }
+    ],
+    "decisionCards": [
+      { "title": "Ideal para iteración creativa rápida", "body": "Elige Fast para pruebas A/B de prompts, encuadres sociales, estudios de movimiento y primeros momentos de un guion visual.", "cta": { "label": "Iniciar un borrador Fast", "href": "/app?engine=ltx-2-5-fast" } },
+      { "title": "Menos adecuado para aprobación final predeterminada", "body": "Cuando el concepto esté fijado y la revisión pida el modelo LTX orientado a producción, traslada el mismo brief a Pro.", "cta": { "label": "Abrir LTX 2.5 Pro", "href": "/es/modelos/ltx-2-5-pro" } },
+      { "title": "Cambiar una variable por vez", "body": "Mantén sujeto, entorno y estilo mientras modificas cámara, acción o ritmo. Así la iteración rápida genera evidencia útil.", "cta": { "label": "Abrir el laboratorio", "href": "#prompting" } }
+    ],
+    "referenceWorkflows": [
+      { "title": "Borrador desde texto", "body": "Prueba una escena con sujeto claro, acción, recorrido de cámara y pose final." },
+      { "title": "Borrador desde imagen", "body": "Conserva identidad y encuadre de la fuente al pedir solo el movimiento necesario." },
+      { "title": "Borrador guiado por audio", "body": "Elige una fuente permitida y alinea las acciones visibles con su ritmo." },
+      { "title": "Iteración segura", "body": "Emplea medios propios y rechaza anatomía deformada, texto no deseado, contenido peligroso o semejanzas engañosas." }
+    ],
+    "pricingCopy": { "title": "Precios por escenario de LTX 2.5 Fast", "subtitle": "Compara un borrador de texto en 720p, una pasada de texto 4K nativa y seis segundos de audio fuente.", "footnote": "Cada importe procede de la cotización canónica. En audio a video, seis segundos significa seis segundos validados del audio fuente.", "ctaLabel": "Generar con LTX 2.5 Fast", "ctaHref": "/app?engine=ltx-2-5-fast" },
+    "meta": { "title": "Modelo de video con IA LTX 2.5 Fast, audio y precios", "description": "Evalúa LTX 2.5 Fast para texto, animación de imagen y video guiado por audio con resoluciones nativas, límites, prompts y cotizaciones canónicas." }
+  },
+  "prompting": {
+    "modelSlug": "ltx-2-5-fast",
+    "section": { "title": "Laboratorio de prompts — LTX 2.5 Fast", "intro": "Construye un ciclo repetible alrededor de una pregunta creativa y un criterio de éxito visible.", "tip": "Cambia una sola variable importante entre borradores para que el resultado aporte un aprendizaje.", "guide": { "label": "Leer la guía oficial de prompting de LTX", "href": "https://docs.ltx.io/api-documentation/implementation-guides/prompting-guide" }, "referencesTitle": "Dirigir borradores rápidos sin perder disciplina de evaluación" },
+    "tabs": [
+      { "id": "brief", "label": "Brief", "title": "Escribir la escena útil más pequeña", "description": "Define sujeto, acción y final que correspondan a la duración.", "copy": "Sujeto:\n[Apariencia y un detalle de identidad protegido]\n\nEntorno:\n[Lugar, momento y luz]\n\nAcción:\n[Un movimiento visible]\n\nPlano final:\n[Cómo se estabilizan sujeto y cámara]" },
+      { "id": "motion", "label": "Movimiento", "title": "Probar cámara y respuesta física", "description": "Usa movimientos concretos en vez de palabras genéricas de energía.", "copy": "Cámara:\n[Fija, travelling, acercamiento, retroceso o cambio de foco]\n\nRitmo del sujeto:\n[Inicio, aceleración, pausa y final]\n\nEntorno:\n[Tela, cabello, sombra, líquido o partículas]\n\nContinuidad:\n[Detalles que no pueden derivar]" },
+      { "id": "audio", "label": "Audio", "title": "Planificar la fuente de audio", "description": "Deja que duración y ritmo de la fuente definan la actuación visual.", "copy": "Audio fuente:\n[Archivo autorizado y duración validada]\n\nMapa rítmico:\n[Señal inicial, acento central y cierre]\n\nActuación visible:\n[Movimiento ligado a esas señales]\n\nEvitar:\n[Cortes sin relación, cambios de identidad, logotipos, subtítulos e imágenes peligrosas]" }
+    ],
+    "tabNotes": [
+      { "tabId": "brief", "body": "La iteración Fast funciona cuando la escena es pequeña para comparar varias variantes controladas." },
+      { "tabId": "motion", "body": "En 1440p, 4K o alta frecuencia, mantén la duración prevista bajo el límite activo del esquema." },
+      { "tabId": "audio", "body": "Audio a video usa la duración confiable de la fuente y no es un simple interruptor sonoro del modo texto." }
+    ],
+    "globalPrinciples": ["Mantén una acción principal en cada borrador corto.", "Reutiliza la misma estructura de prompt al comparar movimientos.", "Elige la resolución después de definir la pregunta creativa.", "Comprueba derechos, consentimiento y seguridad de marca antes de adjuntar medios."],
+    "engineWhy": ["Fast ofrece una escala amplia de resoluciones nativas para iteración.", "Los modos separados de texto, imagen y audio hacen explícitas las entradas obligatorias.", "Los ajustes compatibles permiten secuencias de borrador más largas cuando los límites lo admiten."],
+    "demo": {
+      "title": "Estudio de movimiento LTX 2.5 Fast",
+      "promptLabel": "Borrador controlado de imagen a video",
+      "prompt": "Animar la imagen editorial suministrada de una ciclista bajo un paso elevado de hormigón. Mira a la izquierda, desplaza el peso sobre un pedal y avanza mientras la cámara realiza un travelling paralelo suave. Conservar chaqueta, cuadro de bicicleta, rostro y reflejos del suelo mojado. Mantener el tráfico desenfocado y terminar cuando la ciclista cruce la zona de luz más intensa.",
+      "notes": ["El prompt protege la identidad de la fuente y pide una acción legible.", "Un recorrido lateral único facilita la comparación de borradores."],
+      "summary": { "subject": "Ciclista bajo un paso elevado de hormigón", "action": "Cambio de peso seguido de un inicio controlado", "camera": "Travelling paralelo suave", "style": "Estudio de movimiento editorial natural", "output": "Borrador Fast desde imagen con estado de audio tomado del render" },
+      "presentationOverrides": { "modeLabel": "Imagen a video", "outputLabel": "Ajustes de salida canónicos", "duration": null, "aspectRatio": null, "audioChipMode": "media", "audioChipLabel": null, "altContext": "prompt LTX 2.5 Fast para un estudio de ciclista" }
+    },
+    "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "ltx-2-5-fast",
+    "showWhenEmpty": false,
+    "section": { "title": "Ejemplos revisados de LTX 2.5 Fast", "intro": "La sección permanece oculta hasta que dos resultados Fast aceptados sean duraderos y estén vinculados a la lista correcta.", "defaultCtaLabel": "Ver todos los ejemplos de LTX", "recreateLabel": null },
+    "filters": [{ "id": "all", "label": "Todos" }, { "id": "action", "label": "Pruebas de movimiento" }, { "id": "audio", "label": "Guiados por audio" }],
+    "proofItems": [
+      { "id": "iteration", "icon": "zap", "title": "Iteración útil", "body": "Comparar una variable modificada con un brief estable." },
+      { "id": "source", "icon": "image", "title": "Fidelidad a la fuente", "body": "Revisar identidad, encuadre y detalles visuales protegidos." },
+      { "id": "rhythm", "icon": "audio", "title": "Ritmo del audio", "body": "Comprobar la alineación de acciones visibles con el clip fuente." },
+      { "id": "motion", "icon": "sparkles", "title": "Coherencia del movimiento", "body": "Controlar anatomía, contacto, cámara y estabilidad final." },
+      { "id": "safety", "icon": "shield", "title": "Seguridad editorial", "body": "Rechazar cualquier salida peligrosa, engañosa o contraria a derechos." }
+    ],
+    "fallbackItems": null
+  }
+}

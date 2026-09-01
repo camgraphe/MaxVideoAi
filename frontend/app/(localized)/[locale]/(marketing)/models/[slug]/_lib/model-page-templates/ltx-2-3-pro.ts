@@ -4,11 +4,16 @@ export const ltx23ProTemplateConfig: ModelPageTemplateConfig = {
   slug: 'ltx-2-3-pro',
   intent: 'production',
   hero: {
-    eyebrow: 'LTX PRODUCTION WORKFLOW ROUTE',
+    eyebrow: 'PREVIOUS-GENERATION LTX PRO LEGACY ROUTE',
     subtitleHighlightTerms: ['audio-led workflows', 'Extend and Retake', '4K generate passes'],
     primaryCtaHref: '/app?engine=ltx-2-3',
     secondaryCtaHref: '/examples/ltx',
     quickLinks: [
+      {
+        labelKey: 'comparePro',
+        href: '/models/ltx-2-5-pro',
+        icon: 'compare',
+      },
       {
         labelKey: 'compareFast',
         href: '/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro',

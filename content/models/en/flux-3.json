@@ -1,0 +1,87 @@
+{
+  "marketingName": "FLUX 3 Video",
+  "versionLabel": "3",
+  "seo": {
+    "title": "FLUX 3 Video Generator: Frames, Images and Extension",
+    "description": "Plan FLUX 3 Video text, image, first-and-last-frame and extension workflows with exact input boundaries, production prompting and canonical mode pricing."
+  },
+  "overview": "FLUX 3 Video is the current production route in the new FLUX video family. It supports prompt-only generation, opening-image animation, exact first-and-last-frame guidance and source-video extension. Black Forest Labs owns FLUX; MaxVideoAI distributes these launch endpoints through Fal rather than a direct Black Forest Labs route.",
+  "decision": {
+    "modelSlug": "flux-3",
+    "hero": {
+      "eyebrow": "CURRENT FLUX VIDEO PRODUCTION ROUTE",
+      "title": "FLUX 3 Video",
+      "subtitle": "Create from text or an image, bridge exact first and last frames, or extend a short source clip at 720p or 1080p.",
+      "subtitleHighlights": ["text or an image", "first and last frames", "extend a short source clip"],
+      "paragraph": "Choose FLUX 3 when a production brief needs one of four explicit workflows. First-and-last-frame mode requires both anchors; extend mode requires an eligible source video and uses its own canonical rate facts. Black Forest Labs owns the model family, while Fal distributes MaxVideoAI execution for this launch.",
+      "primaryCta": { "label": "Generate with FLUX 3", "href": "/app?engine=flux-3" },
+      "secondaryCta": { "label": "Explore the FLUX gallery", "href": "/examples/flux" },
+      "quickLinks": [
+        { "label": "Review FLUX 3 Draft", "href": "/models/flux-3-draft" },
+        { "label": "Compare FLUX 3 and Draft", "href": "/ai-video-engines/flux-3-vs-flux-3-draft?order=flux-3" },
+        { "label": "Compare FLUX 3 with Grok", "href": "/ai-video-engines/flux-3-vs-grok-imagine-video-1-5?order=flux-3" },
+        { "label": "Review FLUX 3 pricing", "href": "/pricing#flux-3-pricing" },
+        { "label": "Open FLUX Prompt Lab", "href": "#prompting" }
+      ]
+    },
+    "media": { "caption": "FLUX 3 production evidence", "description": "Accepted FLUX 3 outputs will appear after review", "renderLabel": "Review accepted output", "badges": ["Four workflows", "720p", "1080p"], "altContext": "accepted FLUX 3 Video production example" },
+    "features": [
+      { "title": "Four explicit generation modes", "body": "Text, image, first-and-last-frame and extension each keep their own required inputs. The product does not rename keyframes or draft enhancement as generic supported modes.", "tone": "reference" },
+      { "title": "Exact frame bridge", "body": "First-and-last-frame mode requires both a start and end image. Design compatible anchors and describe the motion that can plausibly connect them within five to twenty seconds.", "tone": "continuity" },
+      { "title": "Source-video extension", "body": "Extend accepts a short supported source clip. Continue its camera vector, subject trajectory, light and rhythm instead of restarting the scene with unrelated direction.", "tone": "duration" },
+      { "title": "Separate extension quote", "body": "The canonical calculator selects extension-specific pricing facts when mode is extend. A page scenario cannot quietly reuse the less expensive normal-generation rate.", "tone": "price" }
+    ],
+    "decisionCards": [
+      { "title": "Best fit: controlled production transitions", "body": "Use FLUX 3 for product movement, designed frame bridges, source-video continuation and scene work that benefits from explicit input ownership.", "cta": { "label": "Start a FLUX 3 render", "href": "/app?engine=flux-3" } },
+      { "title": "Not ideal: low-cost exploratory batches", "body": "When a team is still testing many directions at 720p, use Draft as the iteration sibling and reserve standard FLUX 3 for the selected brief.", "cta": { "label": "Open FLUX 3 Draft", "href": "/models/flux-3-draft" } },
+      { "title": "Prompt the transition, not two posters", "body": "For frame bridging, explain how pose, camera, materials and light evolve between anchors. Impossible geometry makes a stable connection less likely.", "cta": { "label": "Open Prompt Lab", "href": "#prompting" } }
+    ],
+    "referenceWorkflows": [
+      { "title": "Text generation", "body": "Define a compact scene, physical action, camera path and stable ending." },
+      { "title": "Image animation", "body": "Protect the opening composition and direct movement without redesigning the source." },
+      { "title": "First and last frames", "body": "Supply both required images and describe a physically plausible path between them." },
+      { "title": "Video extension", "body": "Use an eligible source clip and continue its established motion, camera, identity and atmosphere." }
+    ],
+    "pricingCopy": { "title": "FLUX 3 scenario pricing", "subtitle": "Compare six-second 720p and 1080p text scenes with a six-second 720p extension scenario.", "footnote": "The live canonical quote receives the selected mode, so extension uses its own factual rate and no amount is authored in this file.", "ctaLabel": "Generate with FLUX 3", "ctaHref": "/app?engine=flux-3" },
+    "meta": { "title": "FLUX 3 Video Model, Frame Control and Extend Pricing", "description": "Evaluate FLUX 3 text, image, first-last-frame and extend modes, source limits, prompt structure, safety and canonical mode-aware quotes." }
+  },
+  "prompting": {
+    "modelSlug": "flux-3",
+    "section": { "title": "Prompt Lab — FLUX 3 Video", "intro": "Choose the workflow first, then write motion that respects every required source and the physics between states.", "tip": "For frame bridging or extension, describe continuity before adding new scene elements.", "guide": { "label": "Read Black Forest Labs' FLUX 3 Video guide", "href": "https://bfl.ai/blog/flux-3-video" }, "referencesTitle": "Direct generation, frame bridges and continuation" },
+    "tabs": [
+      { "id": "mode", "label": "Mode", "title": "Select the correct source contract", "description": "Match the brief to text, image, two-frame or extension inputs.", "copy": "Workflow:\n[Text, image, first-last-frame, or extend]\n\nRequired source:\n[None, opening image, two anchors, or source video]\n\nSuccess state:\n[What reviewers must see]\n\nDuration:\n[Length that fits the action and source constraints]" },
+      { "id": "transition", "label": "Transition", "title": "Describe a plausible path", "description": "Connect pose, camera, materials and light between states.", "copy": "Opening state:\n[Subject pose, framing and environment]\n\nMotion path:\n[Primary action and camera movement]\n\nPhysical response:\n[Weight, contact, fabric, reflections or particles]\n\nEnding state:\n[Final frame or settled composition]" },
+      { "id": "continuation", "label": "Extend", "title": "Continue source-video momentum", "description": "Preserve established identity, direction and rhythm.", "copy": "Source ending:\n[Last visible action and camera vector]\n\nContinuation:\n[Next action without a reset]\n\nContinuity anchors:\n[Subject, wardrobe, props, light and location]\n\nAvoid:\n[Hard restart, new identity, abrupt lens change, text, logos and unsafe content]" }
+    ],
+    "tabNotes": [
+      { "tabId": "mode", "body": "The canonical launch supports fl2v, not a generic keyframe sequence with arbitrary intermediate frames." },
+      { "tabId": "transition", "body": "Start and end images should share compatible subject identity, perspective and scene logic." },
+      { "tabId": "continuation", "body": "Extend pricing is mode-specific, and the source clip must satisfy the published format, size and length rules." }
+    ],
+    "globalPrinciples": ["Choose a mode before composing the prompt.", "Make movement physically compatible with source media.", "Use one motivated camera path per short scene.", "Review rights, consent, safety, unintended text and watermarks before approval."],
+    "engineWhy": ["FLUX 3 separates first-last-frame control from ordinary image animation.", "A dedicated extension route preserves source-video ownership and pricing context.", "Standard output supports 720p and 1080p for review and production decisions."],
+    "demo": {
+      "title": "FLUX 3 first-last-frame bridge",
+      "promptLabel": "Controlled frame transition",
+      "prompt": "Begin from the supplied wide frame of a red fabric installation hanging motionless in a white gallery. A gentle airflow lifts the lower panels in sequence while the camera tracks slowly right. Transition naturally into the supplied final close frame where the fabric curves around a polished steel form. Preserve gallery geometry, fabric color and light direction. No visitors, signs or logos.",
+      "notes": ["The prompt names the physical force and compatible camera path.", "Both anchors share a location, material and lighting logic."],
+      "summary": { "subject": "Red fabric installation in a white gallery", "action": "Airflow lifts panels around a steel form", "camera": "Slow rightward track from wide to close", "style": "Minimal architectural art film", "output": "First-last-frame render with canonical settings" },
+      "presentationOverrides": { "modeLabel": "First-and-last-frame", "outputLabel": "Supported frame workflow", "duration": null, "aspectRatio": null, "audioChipMode": "media", "audioChipLabel": null, "altContext": "FLUX 3 red-fabric frame-bridge prompt" }
+    },
+    "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "flux-3",
+    "showWhenEmpty": false,
+    "section": { "title": "Reviewed FLUX 3 examples", "intro": "The gallery remains hidden until two accepted FLUX 3 assets are durable and correctly attached.", "defaultCtaLabel": "View all FLUX examples", "recreateLabel": null },
+    "filters": [{ "id": "all", "label": "All" }, { "id": "cinematic", "label": "Cinematic" }, { "id": "edit", "label": "Extension" }],
+    "proofItems": [
+      { "id": "anchors", "icon": "image", "title": "Anchor fidelity", "body": "Compare opening and ending compositions with their source frames." },
+      { "id": "physics", "icon": "zap", "title": "Transition physics", "body": "Inspect contact, material response and plausible motion." },
+      { "id": "continuity", "icon": "users", "title": "Source continuity", "body": "Check identity, camera vector and environment during extension." },
+      { "id": "delivery", "icon": "maximize", "title": "Delivery stability", "body": "Review detail, framing, temporal consistency and final beat." },
+      { "id": "safety", "icon": "shield", "title": "Editorial gate", "body": "Reject unsafe content, unwanted marks, text and rights problems." }
+    ],
+    "fallbackItems": null
+  }
+}

@@ -405,6 +405,7 @@ function quoteVideoScenarioCents(
       durationSec,
       resolution,
       mode,
+      ...(mode === 'a2v' ? { inputAudioDurationSec: durationSec } : {}),
       referenceImageCount,
       ...(audioMode === 'audio_off' ? { addons: { audio_off: true } } : {}),
       ...(Number.isFinite(lumaBasePriceUsd) && lumaBasePriceUsd > 0 ? { lumaRay2BasePriceUsd: lumaBasePriceUsd } : {}),

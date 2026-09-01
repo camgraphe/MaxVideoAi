@@ -3,10 +3,10 @@
   "versionLabel": "2",
   "seo": {
     "title": "LTX 2 | Modèle vidéo IA, specs et prix | MaxVideoAI",
-    "description": "Utilisez le modèle LTX 2 encore pris en charge sur MaxVideoAI pour des clips courts haute fidélité, puis passez à LTX 2.3 Pro pour le workflow LTX actuel.",
+    "description": "LTX 2 est un profil historique d'ancienne génération conservé pour son intention de recherche ; démarrez les productions actuelles avec LTX 2.5 Pro.",
     "image": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/f397ab6d-d0ef-44eb-977a-3419f494d17e-job_cda079d3-9895-45a0-866c-2dbf57593463.jpg"
   },
-  "overview": "LTX 2 reste disponible sur MaxVideoAI comme modèle LTX plus ancien encore pris en charge pour des clips courts haute fidélité et des workflows hérités encore utiles.",
+  "overview": "LTX 2 conserve son URL canonique comme profil historique d'ancienne génération. Ses caractéristiques et exemples restent documentés, tandis que les nouvelles générations doivent commencer sur LTX 2.5 Pro.",
   "hero": {
     "title": "LTX 2 — modèle LTX plus ancien encore pris en charge pour des clips courts haute fidélité",
     "intro": "LTX 2 reste disponible pour des clips courts haute fidélité et des workflows hérités encore utiles, tandis que LTX 2.3 Pro est désormais le modèle LTX actuel principal pour les workflows audio, Extend et Retake.",
@@ -268,7 +268,7 @@
   "decision": {
     "modelSlug": "ltx-2",
     "hero": {
-      "eyebrow": "ROUTE LTX 2 PRO ENCORE PRISE EN CHARGE",
+      "eyebrow": "ROUTE HISTORIQUE LTX 2 D'ANCIENNE GÉNÉRATION",
       "title": "LTX 2",
       "subtitle": "Clips 16:9 haute fidélité en text-to-video ou image-to-video, avec checks 1080p à 4K sur l’ancienne route LTX prise en charge.",
       "subtitleHighlights": [
@@ -276,10 +276,10 @@
         "text-to-video ou image-to-video",
         "checks 1080p à 4K"
       ],
-      "paragraph": "Utilisez LTX 2 pour l’ancienne route Pro LTX encore prise en charge : clips 16:9 courts de 6 à 10 s, image de départ, negative prompt, seed et vérifications haute résolution. Gardez LTX 2.3 Pro pour le workflow production actuel.",
+      "paragraph": "Cette page historique LTX 2 préserve les caractéristiques, exemples et acquis SEO de l'ancienne génération sans redirection. Ne lancez pas une nouvelle génération sur cette route retirée ; LTX 2.5 Pro est le successeur de production actuel.",
       "primaryCta": {
-        "label": "Générer avec LTX 2",
-        "href": "/app?engine=ltx-2"
+        "label": "Voir le LTX 2.5 Pro actuel",
+        "href": "/fr/modeles/ltx-2-5-pro"
       },
       "secondaryCta": {
         "label": "Voir les exemples",
@@ -287,8 +287,8 @@
       },
       "quickLinks": [
         {
-          "label": "Voir LTX 2.3 Pro",
-          "href": "/fr/modeles/ltx-2-3-pro"
+          "label": "Voir LTX 2.5 Pro",
+          "href": "/fr/modeles/ltx-2-5-pro"
         },
         {
           "label": "Voir les tarifs",
@@ -345,11 +345,11 @@
     ],
     "decisionCards": [
       {
-        "title": "LTX 2 ou LTX 2.3 Pro ?",
-        "body": "Utilisez LTX 2 pour des clips 16:9 haute fidélité sur l’ancienne route. Passez à LTX 2.3 Pro pour la route LTX production actuelle.",
+        "title": "LTX 2 historique ou LTX 2.5 Pro actuel ?",
+        "body": "Gardez cette page comme référence historique. Commencez un nouveau brief de production avec LTX 2.5 Pro.",
         "cta": {
-          "label": "Voir LTX 2.3 Pro",
-          "href": "/fr/modeles/ltx-2-3-pro"
+          "label": "Voir LTX 2.5 Pro",
+          "href": "/fr/modeles/ltx-2-5-pro"
         }
       },
       {
@@ -403,9 +403,9 @@
       "title": "Prix LTX 2 en un coup d’œil",
       "subtitle": "Totaux pour cette route prise en charge — prix exact affiché dans l’app avant génération.",
       "footnote": "Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.",
-      "ctaLabel": "Voir tous les tarifs",
+      "ctaLabel": "Générer avec LTX 2.5 Pro",
       "maxDurationNote": "Route 6-10 s ; jusqu’à 4K",
-      "ctaHref": "/fr/tarifs#ltx-2-pricing"
+      "ctaHref": "/app?engine=ltx-2-5-pro"
     },
     "meta": {
       "title": "LTX 2 : tarifs, clips 4K et exemples | MaxVideoAI",

@@ -3,10 +3,10 @@
   "versionLabel": "2",
   "seo": {
     "title": "LTX 2 | Modelo de video IA, specs y precios | MaxVideoAI",
-    "description": "Usa el modelo LTX 2 aún compatible en MaxVideoAI para clips cortos de alta fidelidad y luego pasa a LTX 2.3 Pro para el workflow LTX actual.",
+    "description": "LTX 2 es un perfil histórico de legado profundo conservado por su intención de búsqueda; inicia la producción actual con LTX 2.5 Pro.",
     "image": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/f397ab6d-d0ef-44eb-977a-3419f494d17e-job_cda079d3-9895-45a0-866c-2dbf57593463.jpg"
   },
-  "overview": "LTX 2 sigue disponible en MaxVideoAI como modelo LTX anterior aún compatible para clips cortos de alta fidelidad y workflows legacy todavía útiles.",
+  "overview": "LTX 2 conserva su URL canónica como perfil histórico de legado profundo. Sus características y ejemplos siguen documentados, mientras las nuevas generaciones deben comenzar con LTX 2.5 Pro.",
   "hero": {
     "title": "LTX 2 — modelo LTX anterior aún compatible para clips cortos de alta fidelidad",
     "intro": "LTX 2 sigue disponible para clips cortos de alta fidelidad y workflows legacy todavía útiles, mientras LTX 2.3 Pro es ahora el modelo LTX actual principal para workflows de audio, Extend y Retake.",
@@ -268,7 +268,7 @@
   "decision": {
     "modelSlug": "ltx-2",
     "hero": {
-      "eyebrow": "RUTA LTX 2 PRO AUN COMPATIBLE",
+      "eyebrow": "RUTA HISTÓRICA LTX 2 DE LEGADO PROFUNDO",
       "title": "LTX 2",
       "subtitle": "Clips 16:9 de alta fidelidad para texto a video o imagen a video, con checks de 1080p a 4K en la ruta LTX anterior compatible.",
       "subtitleHighlights": [
@@ -276,10 +276,10 @@
         "texto a video o imagen a video",
         "checks de 1080p a 4K"
       ],
-      "paragraph": "Usa LTX 2 cuando necesites la ruta Pro anterior de LTX: clips 16:9 cortos de 6 a 10 s, imagen inicial, negative prompt, seed y revisiones en alta resolución. Usa LTX 2.3 Pro para el flujo de producción actual.",
+      "paragraph": "Esta página histórica de LTX 2 conserva características, ejemplos y valor SEO de legado profundo sin redirigir. No inicies una generación nueva en la ruta retirada; LTX 2.5 Pro es el sucesor actual de producción.",
       "primaryCta": {
-        "label": "Generar con LTX 2",
-        "href": "/app?engine=ltx-2"
+        "label": "Ver el LTX 2.5 Pro actual",
+        "href": "/es/modelos/ltx-2-5-pro"
       },
       "secondaryCta": {
         "label": "Ver ejemplos",
@@ -287,8 +287,8 @@
       },
       "quickLinks": [
         {
-          "label": "Ver LTX 2.3 Pro",
-          "href": "/es/modelos/ltx-2-3-pro"
+          "label": "Ver LTX 2.5 Pro",
+          "href": "/es/modelos/ltx-2-5-pro"
         },
         {
           "label": "Ver precios",
@@ -345,11 +345,11 @@
     ],
     "decisionCards": [
       {
-        "title": "¿LTX 2 o LTX 2.3 Pro?",
-        "body": "Usa LTX 2 para clips 16:9 de alta fidelidad en la ruta anterior. Usa LTX 2.3 Pro cuando necesitas la ruta LTX de producción actual.",
+        "title": "¿LTX 2 histórico o LTX 2.5 Pro actual?",
+        "body": "Mantén esta página como referencia histórica. Comienza un brief de producción nuevo con LTX 2.5 Pro.",
         "cta": {
-          "label": "Ver LTX 2.3 Pro",
-          "href": "/es/modelos/ltx-2-3-pro"
+          "label": "Ver LTX 2.5 Pro",
+          "href": "/es/modelos/ltx-2-5-pro"
         }
       },
       {
@@ -403,9 +403,9 @@
       "title": "Precios de LTX 2 de un vistazo",
       "subtitle": "Totales para esta ruta compatible. Consulta el precio exacto en la app antes de generar.",
       "footnote": "Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.",
-      "ctaLabel": "Ver precios completos",
+      "ctaLabel": "Generar con LTX 2.5 Pro",
       "maxDurationNote": "Ruta de 6-10 s; hasta 4K",
-      "ctaHref": "/es/precios#ltx-2-pricing"
+      "ctaHref": "/app?engine=ltx-2-5-pro"
     },
     "meta": {
       "title": "LTX 2: precios, clips 4K y ejemplos | MaxVideoAI",

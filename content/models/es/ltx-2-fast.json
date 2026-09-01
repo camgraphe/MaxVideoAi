@@ -3,10 +3,10 @@
   "versionLabel": "Fast",
   "seo": {
     "title": "LTX 2 Fast | Modelo de video IA, specs y precios | MaxVideoAI",
-    "description": "Usa el modelo LTX 2 Fast aún compatible en MaxVideoAI para borradores rápidos con audio y luego pasa a LTX 2.3 Fast para el workflow fast LTX actual.",
+    "description": "LTX 2 Fast es un perfil histórico de legado profundo conservado por su intención de búsqueda; inicia los borradores actuales con LTX 2.5 Fast.",
     "image": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/1bd62e34-0e55-4f49-b434-295276b991d4-job_d895c3b0-562a-4e36-ae06-4ce083a47126.jpg"
   },
-  "overview": "LTX 2 Fast sigue disponible en MaxVideoAI como modelo fast LTX anterior aún compatible para borradores rápidos con audio y workflows fast legacy.",
+  "overview": "LTX 2 Fast conserva su URL canónica como perfil histórico de legado profundo. Sus características y ejemplos siguen documentados, mientras los nuevos borradores deben comenzar con LTX 2.5 Fast.",
   "hero": {
     "title": "LTX 2 Fast — modelo LTX anterior aún compatible para borradores rápidos con audio",
     "intro": "LTX 2 Fast sigue disponible para borradores rápidos con audio y workflows fast anteriores, mientras LTX 2.3 Fast es ahora la opción fast LTX actual principal.",
@@ -275,7 +275,7 @@
   "decision": {
     "modelSlug": "ltx-2-fast",
     "hero": {
-      "eyebrow": "RUTA LTX 2 FAST AUN COMPATIBLE",
+      "eyebrow": "RUTA HISTÓRICA LTX 2 FAST DE LEGADO PROFUNDO",
       "title": "LTX 2 Fast",
       "subtitle": "Borradores 16:9 rápidos de hasta 20 s para texto o imagen inicial, pases de revisión con audio y checks de 1080p a 4K.",
       "subtitleHighlights": [
@@ -283,10 +283,10 @@
         "hasta 20 s",
         "checks de 1080p a 4K"
       ],
-      "paragraph": "Usa LTX 2 Fast para la ruta fast anterior de LTX cuando necesitas borradores 16:9 de menor coste, checks de timing de hasta 20 s, imagen inicial y opciones de revisión en alta resolución. Usa LTX 2.3 Fast para el flujo fast actual.",
+      "paragraph": "Esta página histórica de LTX 2 Fast conserva características, ejemplos y valor SEO de legado profundo sin redirigir. No inicies un borrador nuevo en la ruta retirada; LTX 2.5 Fast es el sucesor rápido actual.",
       "primaryCta": {
-        "label": "Hacer draft con LTX 2 Fast",
-        "href": "/app?engine=ltx-2-fast"
+        "label": "Ver el LTX 2.5 Fast actual",
+        "href": "/es/modelos/ltx-2-5-fast"
       },
       "secondaryCta": {
         "label": "Ver ejemplos",
@@ -294,8 +294,8 @@
       },
       "quickLinks": [
         {
-          "label": "Ver LTX 2.3 Fast",
-          "href": "/es/modelos/ltx-2-3-fast"
+          "label": "Ver LTX 2.5 Fast",
+          "href": "/es/modelos/ltx-2-5-fast"
         },
         {
           "label": "Ver precios",
@@ -352,11 +352,11 @@
     ],
     "decisionCards": [
       {
-        "title": "¿LTX 2 Fast o LTX 2.3 Fast?",
-        "body": "Usa LTX 2 Fast para loops 16:9 anteriores aún compatibles. Usa LTX 2.3 Fast para la ruta fast actual y mayor cobertura de formatos.",
+        "title": "¿LTX 2 Fast histórico o LTX 2.5 Fast actual?",
+        "body": "Mantén esta página como referencia histórica. Comienza una iteración nueva con LTX 2.5 Fast.",
         "cta": {
-          "label": "Ver LTX 2.3 Fast",
-          "href": "/es/modelos/ltx-2-3-fast"
+          "label": "Ver LTX 2.5 Fast",
+          "href": "/es/modelos/ltx-2-5-fast"
         }
       },
       {
@@ -410,9 +410,9 @@
       "title": "Precios de drafts LTX 2 Fast",
       "subtitle": "Totales de borrador por escenario. Consulta el precio exacto en la app antes de generar.",
       "footnote": "Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.",
-      "ctaLabel": "Ver precios completos",
+      "ctaLabel": "Generar con LTX 2.5 Fast",
       "maxDurationNote": "20 s en 1080p / 25 fps",
-      "ctaHref": "/es/precios#ltx-2-fast-pricing"
+      "ctaHref": "/app?engine=ltx-2-5-fast"
     },
     "meta": {
       "title": "LTX 2 Fast: precios, borradores 20 s y ejemplos | MaxVideoAI",

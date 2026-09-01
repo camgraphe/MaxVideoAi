@@ -1,0 +1,86 @@
+{
+  "marketingName": "FLUX 3 Draft",
+  "versionLabel": "3 Draft",
+  "seo": {
+    "title": "Generador de video con IA FLUX 3 Draft para pruebas rápidas",
+    "description": "Prueba texto, imagen, transición o extensión en 720p con FLUX 3 Draft antes de producción, con prompts y cotizaciones canónicas."
+  },
+  "overview": "FLUX 3 Draft es la ruta de exploración rápida de la nueva generación de video FLUX. Repite los cuatro flujos de FLUX 3 en 720p para responder una pregunta creativa antes de una pasada estándar. Black Forest Labs es propietario del modelo y Fal distribuye los endpoints usados por MaxVideoAI en este lanzamiento.",
+  "decision": {
+    "modelSlug": "flux-3-draft",
+    "hero": {
+      "eyebrow": "RUTA FLUX DE EXPLORACIÓN",
+      "title": "FLUX 3 Draft",
+      "subtitle": "Prueba con rapidez un prompt, una animación de imagen, un puente entre dos cuadros o la extensión de un clip en 720p.",
+      "subtitleHighlights": ["con rapidez", "cuatro flujos", "720p"],
+      "paragraph": "Elige Draft para responder una pregunta concreta sobre la acción, la cámara, la compatibilidad de imágenes o la continuidad de una extensión antes de invertir en la ruta estándar. Las entradas siguen siendo las de los cuatro modos de FLUX 3. Black Forest Labs posee FLUX; Fal distribuye la ejecución de este modelo en MaxVideoAI durante el lanzamiento.",
+      "primaryCta": { "label": "Generar con FLUX 3 Draft", "href": "/app?engine=flux-3-draft" },
+      "secondaryCta": { "label": "Ver la galería FLUX", "href": "/es/galeria/flux" },
+      "quickLinks": [
+        { "label": "Pasar a FLUX 3", "href": "/es/modelos/flux-3" },
+        { "label": "Comparar FLUX 3 y Draft", "href": "/es/comparativa/flux-3-vs-flux-3-draft?order=flux-3-draft" },
+        { "label": "Consultar precios de Draft", "href": "/es/precios#flux-3-draft-pricing" },
+        { "label": "Abrir el laboratorio Draft", "href": "#prompting" }
+      ]
+    },
+    "media": { "caption": "Galería de pruebas de FLUX 3 Draft", "description": "Los borradores aceptados aparecerán después de la revisión", "renderLabel": "Revisar el borrador aceptado", "badges": ["Draft", "Cuatro flujos", "720p"], "altContext": "ejemplo de video FLUX 3 Draft aceptado" },
+    "features": [
+      { "title": "Un borrador para decidir", "body": "Cada generación debe responder una pregunta: ¿funciona el movimiento, son compatibles los cuadros o conserva la extensión la trayectoria?", "tone": "quality" },
+      { "title": "Fuentes preparadas para el traslado", "body": "Usa las mismas imágenes o videos autorizados previstos para producción y documenta su función. Así el paso a FLUX 3 puede reproducirse.", "tone": "reference" },
+      { "title": "Cuatro modos en 720p", "body": "Prueba texto, imagen, doble imagen o extensión con entradas distintas. Draft es una herramienta de iteración, no una promesa de entrega final.", "tone": "duration" },
+      { "title": "Extensión con precio canónico", "body": "La página compara un texto de seis segundos y una extensión de seis segundos en 720p. Ambos importes vienen del motor de precios activo.", "tone": "price" }
+    ],
+    "decisionCards": [
+      { "title": "Ideal para una pregunta creativa aislada", "body": "Usa Draft para elegir movimiento, encuadre o pareja de imágenes antes de la pasada de producción.", "cta": { "label": "Iniciar una prueba Draft", "href": "/app?engine=flux-3-draft" } },
+      { "title": "Menos adecuado para la entrega final", "body": "Cuando la dirección esté aprobada, conserva prompt y fuentes y continúa con FLUX 3 estándar.", "cta": { "label": "Abrir FLUX 3", "href": "/es/modelos/flux-3" } },
+      { "title": "Preparar el traslado desde el inicio", "body": "Anota pregunta, fuente, ajuste y resultado elegido para que la prueba siga siendo útil en producción.", "cta": { "label": "Abrir el laboratorio", "href": "#prompting" } }
+    ],
+    "referenceWorkflows": [
+      { "title": "Prueba desde texto", "body": "Aísla una acción o un movimiento de cámara para validarlo con rapidez." },
+      { "title": "Prueba desde imagen", "body": "Comprueba que identidad y composición sobrevivan al movimiento solicitado." },
+      { "title": "Prueba de transición", "body": "Controla la compatibilidad de dos cuadros antes de una pasada estándar." },
+      { "title": "Prueba de extensión", "body": "Prolonga el estado final de un clip sin corte, sujeto nuevo ni cambio de luz." }
+    ],
+    "pricingCopy": { "title": "Precios por escenario de FLUX 3 Draft", "subtitle": "Compara seis segundos de generación desde texto con seis segundos de extensión, ambos en 720p.", "footnote": "Los valores se calculan al mostrar la página; el contenido no fija ningún precio ni margen.", "ctaLabel": "Generar con FLUX 3 Draft", "ctaHref": "/app?engine=flux-3-draft" },
+    "meta": { "title": "FLUX 3 Draft, pruebas rápidas y precios canónicos", "description": "Usa FLUX 3 Draft para probar cuatro flujos en 720p, documentar el traslado a FLUX 3 y consultar cotizaciones canónicas." }
+  },
+  "prompting": {
+    "modelSlug": "flux-3-draft",
+    "section": { "title": "Laboratorio de prompts — FLUX 3 Draft", "intro": "Formula una pregunta creativa reducida, usa fuentes compatibles y prepara un traslado reproducible.", "tip": "Un borrador útil cambia una sola hipótesis y mantiene estable el resto del brief.", "guide": { "label": "Leer la presentación oficial de FLUX 3 Video", "href": "https://bfl.ai/blog/flux-3-video" }, "referencesTitle": "Pasar de una prueba rápida a un brief de producción" },
+    "tabs": [
+      { "id": "question", "label": "Pregunta", "title": "Definir qué debe enseñar el borrador", "description": "Convierte la incertidumbre en un criterio visible.", "copy": "Pregunta:\n[Movimiento, encuadre, transición o continuidad]\n\nConstantes:\n[Sujeto, entorno, luz y estilo]\n\nVariable:\n[Un solo elemento que debe probarse]\n\nÉxito:\n[Resultado observable que permite avanzar]" },
+      { "id": "sources", "label": "Fuentes", "title": "Preparar medios compatibles", "description": "Usa fuentes autorizadas que puedan continuar con el proyecto.", "copy": "Fuente inicial:\n[Imagen o clip y estado visible]\n\nFuente final:\n[Si hace falta, cuadro objetivo compatible]\n\nMovimiento:\n[Fuerza, acción y cámara]\n\nProteger:\n[Identidad, perspectiva, color y luz]" },
+      { "id": "handoff", "label": "Traslado", "title": "Documentar el paso a producción", "description": "Conserva los elementos que dieron una respuesta útil.", "copy": "Prompt elegido:\n[Versión exacta]\n\nFuentes elegidas:\n[Archivos y funciones]\n\nObservación:\n[Qué funciona o falla]\n\nPaso siguiente:\n[Ajuste que debe repetirse en FLUX 3]" }
+    ],
+    "tabNotes": [
+      { "tabId": "question", "body": "Si el resultado no puede responder sí o no a una pregunta, el borrador todavía es demasiado amplio." },
+      { "tabId": "sources", "body": "Los cuadros de una transición deben compartir suficiente identidad, perspectiva y luz." },
+      { "tabId": "handoff", "body": "Conserva el prompt y las fuentes exactos en vez de reconstruir la prueba de memoria." }
+    ],
+    "globalPrinciples": ["Prueba una hipótesis importante en cada generación.", "Mantén estables las otras variables para comparar resultados.", "Emplea fuentes reutilizables y autorizadas de manera explícita.", "Aplica la misma revisión de seguridad a borradores y salidas finales."],
+    "engineWhy": ["Draft ofrece los cuatro flujos FLUX dentro de una ruta de exploración en 720p.", "La pareja Draft y estándar hace explícito el paso de prueba a producción.", "Los escenarios canónicos comparan texto y extensión sin precios editoriales."],
+    "demo": {
+      "title": "Prueba de extensión FLUX 3 Draft",
+      "promptLabel": "Borrador de prolongación de video",
+      "prompt": "Continuar el clip desde su última imagen: la pequeña embarcación de investigación sigue de izquierda a derecha entre la niebla matinal mientras la cámara mantiene el mismo travelling aéreo lento. Una boya pasa bajo el encuadre y la estela se ensancha de forma natural. Conservar colores del casco, cantidad de personas, altura del horizonte y luz fría. No introducir corte, título, logotipo ni otro barco.",
+      "notes": ["El prompt parte del estado final del clip fuente.", "Los anclajes de continuidad hacen útil el borrador para el traslado."],
+      "summary": { "subject": "Pequeña embarcación de investigación entre la niebla", "action": "El barco supera una boya mientras se amplía la estela", "camera": "Travelling aéreo lento y continuo", "style": "Documental marítimo sobrio de tonos fríos", "output": "Extensión 720p con cotización adaptada al modo" },
+      "presentationOverrides": { "modeLabel": "Extensión", "outputLabel": "Ajustes Draft 720p", "duration": null, "aspectRatio": null, "audioChipMode": "media", "audioChipLabel": null, "altContext": "prompt FLUX 3 Draft para prolongar una embarcación de investigación" }
+    },
+    "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "flux-3-draft",
+    "showWhenEmpty": false,
+    "section": { "title": "Ejemplos revisados de FLUX 3 Draft", "intro": "Esta galería permanece oculta hasta que dos borradores duraderos sean aceptados y vinculados a la lista del modelo.", "defaultCtaLabel": "Ver todos los ejemplos de FLUX", "recreateLabel": null },
+    "filters": [{ "id": "all", "label": "Todos" }, { "id": "action", "label": "Pruebas de movimiento" }, { "id": "edit", "label": "Borradores de extensión" }],
+    "proofItems": [
+      { "id": "question", "icon": "zap", "title": "Valor de decisión", "body": "Comprobar si el borrador responde su pregunta creativa." },
+      { "id": "sources", "icon": "image", "title": "Compatibilidad de fuentes", "body": "Revisar identidad, perspectiva y lógica de transición." },
+      { "id": "motion", "icon": "sparkles", "title": "Legibilidad del movimiento", "body": "Controlar respuesta física, continuidad de cámara y estabilidad final." },
+      { "id": "handoff", "icon": "maximize", "title": "Traslado a producción", "body": "Anotar prompt y fuentes que deben pasar a FLUX 3 estándar." },
+      { "id": "safety", "icon": "shield", "title": "Seguridad del borrador", "body": "Una salida temporal sigue necesitando revisión de derechos y contenido." }
+    ],
+    "fallbackItems": null
+  }
+}

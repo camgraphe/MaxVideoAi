@@ -4,14 +4,14 @@ export const wan25TemplateConfig: ModelPageTemplateConfig = {
   slug: 'wan-2-5',
   intent: 'draft',
   hero: {
-    eyebrow: 'WAN SUPPORTED AUDIO DRAFT ROUTE',
+    eyebrow: 'HISTORICAL DEEP-LEGACY WAN ROUTE',
     subtitleHighlightTerms: ['audio-ready 5-10s clips', 'text or image starts', '480p to 1080p checks'],
-    primaryCtaHref: '/app?engine=wan-2-5',
+    primaryCtaHref: '/app?engine=wan-3',
     secondaryCtaHref: '/examples/wan',
     quickLinks: [
       {
         labelKey: 'compareSora',
-        href: '/ai-video-engines/sora-2-vs-wan-2-5?order=wan-2-5',
+        href: '/models/wan-3',
         icon: 'compare',
       },
       {

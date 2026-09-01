@@ -3,10 +3,10 @@
   "versionLabel": "Fast",
   "seo": {
     "title": "LTX 2 Fast | Modèle vidéo IA, specs et prix | MaxVideoAI",
-    "description": "Utilisez le modèle LTX 2 Fast encore pris en charge sur MaxVideoAI pour des tests audio rapides, puis passez à LTX 2.3 Fast pour le workflow fast LTX actuel.",
+    "description": "LTX 2 Fast est un profil historique d'ancienne génération conservé pour son intention de recherche ; démarrez les brouillons actuels avec LTX 2.5 Fast.",
     "image": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/1bd62e34-0e55-4f49-b434-295276b991d4-job_d895c3b0-562a-4e36-ae06-4ce083a47126.jpg"
   },
-  "overview": "LTX 2 Fast reste disponible sur MaxVideoAI comme modèle LTX fast plus ancien encore pris en charge pour des tests audio rapides et des workflows fast hérités.",
+  "overview": "LTX 2 Fast conserve son URL canonique comme profil historique d'ancienne génération. Ses caractéristiques et exemples restent documentés, tandis que les nouveaux brouillons doivent commencer sur LTX 2.5 Fast.",
   "hero": {
     "title": "LTX 2 Fast — modèle LTX plus ancien encore pris en charge pour des tests audio rapides",
     "intro": "LTX 2 Fast reste disponible pour des tests audio rapides et des workflows fast plus anciens, tandis que LTX 2.3 Fast est désormais l’option fast LTX actuelle principale.",
@@ -275,7 +275,7 @@
   "decision": {
     "modelSlug": "ltx-2-fast",
     "hero": {
-      "eyebrow": "ROUTE LTX 2 FAST ENCORE PRISE EN CHARGE",
+      "eyebrow": "ROUTE HISTORIQUE LTX 2 FAST D'ANCIENNE GÉNÉRATION",
       "title": "LTX 2 Fast",
       "subtitle": "Drafts 16:9 rapides jusqu’à 20 s pour texte ou image de départ, revues avec audio et checks 1080p à 4K.",
       "subtitleHighlights": [
@@ -283,10 +283,10 @@
         "jusqu’à 20 s",
         "checks 1080p à 4K"
       ],
-      "paragraph": "Utilisez LTX 2 Fast pour l’ancienne route fast LTX encore prise en charge : drafts 16:9 moins chers, tests de timing jusqu’à 20 s, image de départ et options haute résolution. Utilisez LTX 2.3 Fast pour le workflow fast LTX actuel.",
+      "paragraph": "Cette page historique LTX 2 Fast préserve les caractéristiques, exemples et acquis SEO de l'ancienne génération sans redirection. Ne lancez pas un nouveau brouillon sur cette route retirée ; LTX 2.5 Fast est le successeur rapide actuel.",
       "primaryCta": {
-        "label": "Drafter avec LTX 2 Fast",
-        "href": "/app?engine=ltx-2-fast"
+        "label": "Voir le LTX 2.5 Fast actuel",
+        "href": "/fr/modeles/ltx-2-5-fast"
       },
       "secondaryCta": {
         "label": "Voir les exemples",
@@ -294,8 +294,8 @@
       },
       "quickLinks": [
         {
-          "label": "Voir LTX 2.3 Fast",
-          "href": "/fr/modeles/ltx-2-3-fast"
+          "label": "Voir LTX 2.5 Fast",
+          "href": "/fr/modeles/ltx-2-5-fast"
         },
         {
           "label": "Voir les tarifs",
@@ -352,11 +352,11 @@
     ],
     "decisionCards": [
       {
-        "title": "LTX 2 Fast ou LTX 2.3 Fast ?",
-        "body": "Utilisez LTX 2 Fast pour d’anciens drafts 16:9 encore pris en charge. Choisissez LTX 2.3 Fast pour la route fast actuelle et plus de formats.",
+        "title": "LTX 2 Fast historique ou LTX 2.5 Fast actuel ?",
+        "body": "Gardez cette page comme référence historique. Commencez une nouvelle itération avec LTX 2.5 Fast.",
         "cta": {
-          "label": "Voir LTX 2.3 Fast",
-          "href": "/fr/modeles/ltx-2-3-fast"
+          "label": "Voir LTX 2.5 Fast",
+          "href": "/fr/modeles/ltx-2-5-fast"
         }
       },
       {
@@ -410,9 +410,9 @@
       "title": "Prix des drafts LTX 2 Fast",
       "subtitle": "Totaux de brouillon par scénario — prix exact affiché dans l’app avant génération.",
       "footnote": "Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.",
-      "ctaLabel": "Voir tous les tarifs",
+      "ctaLabel": "Générer avec LTX 2.5 Fast",
       "maxDurationNote": "20 s en 1080p / 25 fps",
-      "ctaHref": "/fr/tarifs#ltx-2-fast-pricing"
+      "ctaHref": "/app?engine=ltx-2-5-fast"
     },
     "meta": {
       "title": "LTX 2 Fast : tarifs, drafts 20 s et exemples | MaxVideoAI",

@@ -1,0 +1,86 @@
+{
+  "marketingName": "FLUX 3 Draft",
+  "versionLabel": "3 Draft",
+  "seo": {
+    "title": "Générateur vidéo IA FLUX 3 Draft pour les essais rapides",
+    "description": "Testez texte, image, transition ou extension en 720p avec FLUX 3 Draft avant un passage en production, avec prompts et devis canoniques."
+  },
+  "overview": "FLUX 3 Draft est la route d'exploration rapide de la nouvelle génération FLUX vidéo. Elle reprend les quatre workflows de FLUX 3 en 720p pour répondre à une question créative avant une passe standard. Black Forest Labs possède le modèle et Fal distribue les endpoints utilisés par MaxVideoAI pour ce lancement.",
+  "decision": {
+    "modelSlug": "flux-3-draft",
+    "hero": {
+      "eyebrow": "ROUTE FLUX D'EXPLORATION",
+      "title": "FLUX 3 Draft",
+      "subtitle": "Testez rapidement un prompt, une animation d'image, un pont entre deux cadres ou l'extension d'un clip en 720p.",
+      "subtitleHighlights": ["rapidement", "quatre workflows", "720p"],
+      "paragraph": "Choisissez Draft pour répondre à une question précise sur l'action, la caméra, la compatibilité des images ou la continuité d'une extension avant d'investir dans la route standard. Les entrées restent celles des quatre modes de FLUX 3. Black Forest Labs possède FLUX ; Fal distribue l'exécution de ce modèle sur MaxVideoAI au lancement.",
+      "primaryCta": { "label": "Générer avec FLUX 3 Draft", "href": "/app?engine=flux-3-draft" },
+      "secondaryCta": { "label": "Voir la galerie FLUX", "href": "/fr/galerie/flux" },
+      "quickLinks": [
+        { "label": "Passer à FLUX 3", "href": "/fr/modeles/flux-3" },
+        { "label": "Comparer FLUX 3 et Draft", "href": "/fr/comparatif/flux-3-vs-flux-3-draft?order=flux-3-draft" },
+        { "label": "Consulter les tarifs Draft", "href": "/fr/tarifs#flux-3-draft-pricing" },
+        { "label": "Ouvrir le laboratoire Draft", "href": "#prompting" }
+      ]
+    },
+    "media": { "caption": "Galerie de preuves FLUX 3 Draft", "description": "Les brouillons acceptés apparaîtront après revue", "renderLabel": "Examiner le brouillon accepté", "badges": ["Draft", "Quatre workflows", "720p"], "altContext": "exemple vidéo FLUX 3 Draft accepté" },
+    "features": [
+      { "title": "Un brouillon pour décider", "body": "Chaque génération doit répondre à une question : le mouvement fonctionne-t-il, les cadres sont-ils compatibles ou l'extension conserve-t-elle la trajectoire ?", "tone": "quality" },
+      { "title": "Sources préparées pour le transfert", "body": "Utilisez les mêmes images ou vidéos autorisées que celles envisagées en production et documentez leur rôle. Le passage à FLUX 3 devient alors reproductible.", "tone": "reference" },
+      { "title": "Quatre modes en 720p", "body": "Testez texte, image, double image ou extension avec des entrées distinctes. Le format Draft reste un outil d'itération et non une promesse de livraison finale.", "tone": "duration" },
+      { "title": "Extension tarifée par le calcul canonique", "body": "La page compare un texte de six secondes et une extension de six secondes en 720p. Les deux montants viennent du moteur tarifaire actif.", "tone": "price" }
+    ],
+    "decisionCards": [
+      { "title": "Idéal pour une question créative isolée", "body": "Utilisez Draft pour choisir un mouvement, un cadrage ou un couple d'images avant la passe de production.", "cta": { "label": "Lancer un test Draft", "href": "/app?engine=flux-3-draft" } },
+      { "title": "Moins adapté au livrable final", "body": "Quand la direction est approuvée, conservez le prompt et les sources puis poursuivez sur FLUX 3 standard.", "cta": { "label": "Ouvrir FLUX 3", "href": "/fr/modeles/flux-3" } },
+      { "title": "Préparer le transfert dès le départ", "body": "Notez la question, la source, le réglage et le résultat retenu afin que le test reste utile à la production.", "cta": { "label": "Ouvrir le laboratoire", "href": "#prompting" } }
+    ],
+    "referenceWorkflows": [
+      { "title": "Test depuis texte", "body": "Isolez une action ou un mouvement caméra à valider rapidement." },
+      { "title": "Test depuis image", "body": "Vérifiez que l'identité et la composition survivent au mouvement demandé." },
+      { "title": "Test de transition", "body": "Contrôlez la compatibilité de deux cadres avant une passe standard." },
+      { "title": "Test d'extension", "body": "Prolongez l'état final d'un clip sans coupe, nouveau sujet ni changement de lumière." }
+    ],
+    "pricingCopy": { "title": "Tarification par scénario FLUX 3 Draft", "subtitle": "Comparez six secondes de génération texte et six secondes d'extension vidéo, toutes deux en 720p.", "footnote": "Les valeurs sont calculées au moment de l'affichage ; le contenu ne fixe aucun prix ni marge.", "ctaLabel": "Générer avec FLUX 3 Draft", "ctaHref": "/app?engine=flux-3-draft" },
+    "meta": { "title": "FLUX 3 Draft, tests rapides et tarification canonique", "description": "Utilisez FLUX 3 Draft pour tester quatre workflows en 720p, documenter le transfert vers FLUX 3 et consulter des devis canoniques." }
+  },
+  "prompting": {
+    "modelSlug": "flux-3-draft",
+    "section": { "title": "Laboratoire de prompts — FLUX 3 Draft", "intro": "Formulez une question créative réduite, utilisez des sources compatibles et préparez un transfert reproductible.", "tip": "Un brouillon utile change une seule hypothèse et conserve le reste du brief stable.", "guide": { "label": "Lire la présentation officielle de FLUX 3 Video", "href": "https://bfl.ai/blog/flux-3-video" }, "referencesTitle": "Passer d'un test rapide à un brief de production" },
+    "tabs": [
+      { "id": "question", "label": "Question", "title": "Définir ce que le brouillon doit apprendre", "description": "Transformez l'incertitude en critère visible.", "copy": "Question :\n[Mouvement, cadrage, transition ou continuité]\n\nConstantes :\n[Sujet, décor, lumière et style]\n\nVariable :\n[Un seul élément à tester]\n\nRéussite :\n[Résultat observable qui autorise la suite]" },
+      { "id": "sources", "label": "Sources", "title": "Préparer des médias compatibles", "description": "Utilisez des sources autorisées qui peuvent suivre le projet.", "copy": "Source de départ :\n[Image ou clip et état visible]\n\nSource de fin :\n[Si nécessaire, cadre cible compatible]\n\nMouvement :\n[Force, action et caméra]\n\nÀ protéger :\n[Identité, perspective, couleur et lumière]" },
+      { "id": "handoff", "label": "Transfert", "title": "Documenter le passage en production", "description": "Conservez les éléments qui ont produit une réponse utile.", "copy": "Prompt retenu :\n[Version exacte]\n\nSources retenues :\n[Fichiers et rôles]\n\nObservation :\n[Ce qui fonctionne ou échoue]\n\nÉtape suivante :\n[Réglage à reprendre dans FLUX 3]" }
+    ],
+    "tabNotes": [
+      { "tabId": "question", "body": "Si le résultat ne peut pas répondre oui ou non à une question, le brouillon est encore trop large." },
+      { "tabId": "sources", "body": "Les cadres d'une transition doivent partager assez d'identité, de perspective et de lumière." },
+      { "tabId": "handoff", "body": "Conservez le prompt et les sources exacts au lieu de reconstruire le test de mémoire." }
+    ],
+    "globalPrinciples": ["Testez une hypothèse importante par génération.", "Gardez les autres variables stables pour comparer les résultats.", "Employez des sources réutilisables et explicitement autorisées.", "Appliquez la même revue de sécurité aux brouillons qu'aux sorties finales."],
+    "engineWhy": ["Draft offre les quatre workflows FLUX dans une route d'exploration 720p.", "Le couple Draft et standard rend le passage de l'essai à la production explicite.", "Les scénarios canoniques permettent de comparer texte et extension sans prix éditorial."],
+    "demo": {
+      "title": "Test d'extension FLUX 3 Draft",
+      "promptLabel": "Brouillon de prolongation vidéo",
+      "prompt": "Continuer le clip fourni depuis sa dernière image : le petit bateau de recherche poursuit sa route de gauche à droite dans la brume matinale tandis que la caméra garde le même lent travelling aérien. Une bouée passe sous le cadre et le sillage s'élargit naturellement. Préserver couleurs de coque, nombre de personnes, hauteur de l'horizon et lumière froide. Ne pas introduire de coupe, titre, logo ou autre bateau.",
+      "notes": ["Le prompt repart de l'état final du clip source.", "Les repères de continuité rendent le brouillon utile pour le transfert."],
+      "summary": { "subject": "Petit bateau de recherche dans la brume", "action": "Le bateau dépasse une bouée pendant que le sillage s'élargit", "camera": "Travelling aérien lent et continu", "style": "Documentaire maritime sobre aux tons froids", "output": "Extension 720p avec devis adapté au mode" },
+      "presentationOverrides": { "modeLabel": "Extension", "outputLabel": "Réglages Draft 720p", "duration": null, "aspectRatio": null, "audioChipMode": "media", "audioChipLabel": null, "altContext": "prompt FLUX 3 Draft pour prolonger un bateau de recherche" }
+    },
+    "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "flux-3-draft",
+    "showWhenEmpty": false,
+    "section": { "title": "Exemples FLUX 3 Draft vérifiés", "intro": "Cette galerie reste masquée jusqu'à ce que deux brouillons durables soient acceptés et attachés à la playlist du modèle.", "defaultCtaLabel": "Voir tous les exemples FLUX", "recreateLabel": null },
+    "filters": [{ "id": "all", "label": "Tous" }, { "id": "action", "label": "Tests de mouvement" }, { "id": "edit", "label": "Brouillons d'extension" }],
+    "proofItems": [
+      { "id": "question", "icon": "zap", "title": "Valeur de décision", "body": "Vérifier si le brouillon répond à sa question créative." },
+      { "id": "sources", "icon": "image", "title": "Compatibilité des sources", "body": "Examiner identité, perspective et logique de transition." },
+      { "id": "motion", "icon": "sparkles", "title": "Lisibilité du mouvement", "body": "Contrôler réponse physique, continuité caméra et stabilité finale." },
+      { "id": "handoff", "icon": "maximize", "title": "Transfert en production", "body": "Noter prompt et sources à reprendre dans FLUX 3 standard." },
+      { "id": "safety", "icon": "shield", "title": "Sécurité du brouillon", "body": "Une sortie temporaire exige toujours une revue des droits et du contenu." }
+    ],
+    "fallbackItems": null
+  }
+}

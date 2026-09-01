@@ -1,0 +1,86 @@
+{
+  "marketingName": "Grok Imagine Video 1.5",
+  "versionLabel": "1.5",
+  "seo": {
+    "title": "Grok Imagine Video 1.5 Generator and Reference Workflow",
+    "description": "Explore Grok Imagine Video 1.5 for text, image and image-reference video, with current limits, reference prompting, safety guidance and canonical quotes."
+  },
+  "overview": "Grok Imagine Video 1.5 introduces a new xAI video family to MaxVideoAI. The model supports prompt-only generation, opening-image animation and reference-to-video with one to seven images. xAI owns Grok Imagine; MaxVideoAI distributes the launch endpoints through Fal, and Grok remains Fal-only for this release.",
+  "decision": {
+    "modelSlug": "grok-imagine-video-1-5",
+    "hero": {
+      "eyebrow": "CURRENT GROK VIDEO ROUTE",
+      "title": "Grok Imagine Video 1.5",
+      "subtitle": "Generate one-to-fifteen-second video from text, an opening image or a named image-reference set, with mode-specific resolution and framing controls.",
+      "subtitleHighlights": ["one-to-fifteen-second", "opening image", "image-reference set"],
+      "paragraph": "Choose Grok Imagine Video 1.5 when the brief benefits from direct prompt generation, first-frame animation or explicit image references addressed inside the prompt. Reference mode supports 480p or 720p and adds a factual per-image pricing input; text and image modes also offer 1080p. xAI is the owner and Fal distributes this MaxVideoAI launch path.",
+      "primaryCta": { "label": "Generate with Grok Imagine Video 1.5", "href": "/app?engine=grok-imagine-video-1-5" },
+      "secondaryCta": { "label": "Explore the Grok gallery", "href": "/examples/grok" },
+      "quickLinks": [
+        { "label": "Compare Grok with Sora 2", "href": "/ai-video-engines/grok-imagine-video-1-5-vs-sora-2?order=grok-imagine-video-1-5" },
+        { "label": "Compare Grok with FLUX 3", "href": "/ai-video-engines/flux-3-vs-grok-imagine-video-1-5?order=grok-imagine-video-1-5" },
+        { "label": "Review Grok pricing", "href": "/pricing#grok-imagine-video-1-5-pricing" },
+        { "label": "Open Grok Prompt Lab", "href": "#prompting" }
+      ]
+    },
+    "media": { "caption": "Grok Imagine Video 1.5 evidence gallery", "description": "Accepted Grok examples will appear after launch review", "renderLabel": "Review accepted output", "badges": ["Text", "Image", "Up to 7 references"], "altContext": "accepted Grok Imagine Video 1.5 example" },
+    "features": [
+      { "title": "New first-class Grok family", "body": "Grok is not presented as a hidden variant of another provider. It receives its own family position, prompting advice, evidence gate and future comparison context while remaining unpublished until the complete launch graph is ready.", "tone": "quality" },
+      { "title": "Prompt and first-frame starts", "body": "Text mode controls framing with supported aspect ratios. Image mode animates one opening image and follows that source for framing, so the prompt should concentrate on movement, camera and scene response.", "tone": "reference" },
+      { "title": "Named image references", "body": "Reference mode accepts one to seven images and addresses them with ordered image tokens. State which source controls identity, wardrobe, object design or environment instead of asking the model to average every image.", "tone": "continuity" },
+      { "title": "Mode-aware quoting", "body": "The reference scenario supplies the exact image count to canonical pricing and uses a supported reference resolution. Text and image scenarios remain duration-and-resolution quotes without an invented reference surcharge.", "tone": "price" }
+    ],
+    "decisionCards": [
+      { "title": "Best fit: expressive concept scenes", "body": "Use Grok for short cinematic ideas, stylized character actions and image-led concepts where a clear prompt or a small identity reference set can guide the result.", "cta": { "label": "Start a Grok scene", "href": "/app?engine=grok-imagine-video-1-5" } },
+      { "title": "Not ideal: unsupported reference media", "body": "Reference mode is image-based in the canonical launch contract. Do not describe source video, source audio or a generic document as a supported Grok reference input.", "cta": { "label": "Compare Grok and FLUX", "href": "/ai-video-engines/flux-3-vs-grok-imagine-video-1-5?order=grok-imagine-video-1-5" } },
+      { "title": "Prompt references by role", "body": "Use the ordered image tokens in the prompt and say exactly what to preserve from each one. This reduces identity blending and makes the output easier to audit.", "cta": { "label": "Open Prompt Lab", "href": "#prompting" } }
+    ],
+    "referenceWorkflows": [
+      { "title": "Text-to-video", "body": "Describe subject, action, camera, setting and ending in a sequence that fits the selected duration." },
+      { "title": "Image-to-video", "body": "Preserve the first frame and direct the motion that should emerge from it." },
+      { "title": "Reference-to-video", "body": "Attach one to seven images, name their roles with ordered tokens, and choose only 480p or 720p." },
+      { "title": "Rights and safety", "body": "Use permitted sources, obtain likeness consent, avoid deceptive impersonation, and review accidental text or unsafe details." }
+    ],
+    "pricingCopy": { "title": "Grok Imagine Video 1.5 scenario pricing", "subtitle": "Compare six-second text scenes at 720p and 1080p with an eight-second 480p scenario using two image references.", "footnote": "Canonical pricing receives the actual scenario mode and reference count; no localized amount or provider rate is authored here.", "ctaLabel": "Generate with Grok Imagine Video 1.5", "ctaHref": "/app?engine=grok-imagine-video-1-5" },
+    "meta": { "title": "Grok Imagine Video 1.5 Model, References and Pricing", "description": "Review Grok Imagine Video 1.5 text, image and reference modes, duration, resolution, image-count pricing, prompt tokens, safety and future scoreboards." }
+  },
+  "prompting": {
+    "modelSlug": "grok-imagine-video-1-5",
+    "section": { "title": "Prompt Lab — Grok Imagine Video 1.5", "intro": "Write an observable scene and, in reference mode, identify exactly what each ordered image contributes.", "tip": "Use image tokens beside the trait they control instead of listing every reference at the end.", "guide": { "label": "Read xAI's Grok Imagine Video 1.5 guide", "href": "https://docs.x.ai/developers/models/grok-imagine-video-1.5" }, "referencesTitle": "Make reference roles explicit inside the prompt" },
+    "tabs": [
+      { "id": "story", "label": "Story", "title": "Define one visible story change", "description": "Give the scene an opening state, an action and a stable ending.", "copy": "Subject:\n[Appearance and protected details]\n\nOpening state:\n[Place, pose, light and composition]\n\nAction:\n[One clear performance or physical change]\n\nEnding:\n[Final pose, object state and camera framing]" },
+      { "id": "cinema", "label": "Camera", "title": "Direct camera and atmosphere", "description": "Choose movement that supports the action rather than competing with it.", "copy": "Framing:\n[Shot size and lens character]\n\nCamera path:\n[One pan, track, push, pull or orbit]\n\nTiming:\n[When action begins, peaks and settles]\n\nAtmosphere:\n[Light, weather, texture and expected sound context]" },
+      { "id": "images", "label": "Images", "title": "Address every image reference", "description": "Use ordered tokens and one role per source.", "copy": "<IMAGE_0>:\n[Identity, face, wardrobe or hero object]\n\n<IMAGE_1>:\n[Environment, palette or material detail]\n\nPriority:\n[Which source wins if details conflict]\n\nAvoid:\n[Blended identities, duplicates, malformed hands, logos, captions and watermarks]" }
+    ],
+    "tabNotes": [
+      { "tabId": "story", "body": "A short scene still needs a final beat so the result does not end mid-action." },
+      { "tabId": "cinema", "body": "Image-to-video has no separate aspect-ratio control in the canonical endpoint; frame the source accordingly." },
+      { "tabId": "images", "body": "Reference mode supports images only in this launch and the supplied count participates in its quote." }
+    ],
+    "globalPrinciples": ["Keep the main action physically observable.", "Protect identity with explicit traits and reference roles.", "Match narrative complexity to a maximum fifteen-second clip.", "Use sources with permission and avoid deceptive real-person imitation."],
+    "engineWhy": ["Three distinct modes cover prompt, first-frame and image-reference starts.", "Ordered reference tokens let the prompt connect a source to a specific trait.", "Mode-specific resolution rules keep reference scenarios inside the contract rather than borrowing unsupported 1080p."],
+    "demo": {
+      "title": "Grok reference-led night market",
+      "promptLabel": "Two-image reference prompt",
+      "prompt": "Use <IMAGE_0> for the chef's face, apron and copper pan; use <IMAGE_1> for the rain-lit night-market palette and lantern design. The chef flips noodles once, steam rises into the warm lantern light, and the camera makes a slow push from medium-wide to medium close. Preserve identity and pan shape. End as the noodles settle, with no signs, captions or logos.",
+      "notes": ["Each image controls a different visual layer.", "The action and final settling beat are easy to inspect."],
+      "summary": { "subject": "Night-market chef guided by the first image", "action": "Single noodle toss with rising steam", "camera": "Slow push toward a medium close view", "style": "Rain-lit market colors from the second image", "output": "Reference-led clip with actual image count in the canonical quote" },
+      "presentationOverrides": { "modeLabel": "Reference-to-video", "outputLabel": "Supported reference settings", "duration": null, "aspectRatio": null, "audioChipMode": "media", "audioChipLabel": null, "altContext": "Grok Imagine Video 1.5 two-image night-market prompt" }
+    },
+    "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "grok-imagine-video-1-5",
+    "showWhenEmpty": false,
+    "section": { "title": "Reviewed Grok Imagine Video 1.5 examples", "intro": "No empty gallery is shown; two accepted durable outputs must be attached before this section appears.", "defaultCtaLabel": "View all Grok examples", "recreateLabel": null },
+    "filters": [{ "id": "all", "label": "All" }, { "id": "character", "label": "Character" }, { "id": "reference", "label": "Image references" }],
+    "proofItems": [
+      { "id": "identity", "icon": "users", "title": "Identity fidelity", "body": "Compare the subject with the image role specified in the prompt." },
+      { "id": "reference", "icon": "image", "title": "Reference separation", "body": "Check whether identity and environment sources remain distinct." },
+      { "id": "motion", "icon": "zap", "title": "Coherent action", "body": "Inspect contact, anatomy, timing and the final settling beat." },
+      { "id": "composition", "icon": "maximize", "title": "Stable composition", "body": "Review camera intent, framing and temporal consistency." },
+      { "id": "safety", "icon": "shield", "title": "Responsible output", "body": "Reject unsafe imagery, deceptive likenesses, unwanted text and marks." }
+    ],
+    "fallbackItems": null
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "marketingName": "Wan 3",
+  "versionLabel": "3",
+  "seo": {
+    "title": "Wan 3 AI Video Generator: Text, Image and References",
+    "description": "Learn when to use Wan 3 for text-to-video, image animation or mixed reference direction, with current constraints, prompting guidance and canonical pricing."
+  },
+  "overview": "Wan 3 is the current standard route in the Wan family for teams that want one model across text, image and reference-led production. Alibaba/Tongyi owns the model; MaxVideoAI distributes these launch endpoints through Fal rather than claiming a direct Alibaba integration.",
+  "decision": {
+    "modelSlug": "wan-3",
+    "hero": {
+      "eyebrow": "CURRENT WAN STANDARD ROUTE",
+      "title": "Wan 3",
+      "subtitle": "Create from text, animate an opening image, or direct a clip with mixed references across 480p, 720p and 1080p outputs.",
+      "subtitleHighlights": ["text", "opening image", "mixed references"],
+      "paragraph": "Choose Wan 3 when a project needs a flexible current Wan workflow without automatically moving to the Prime tier. It accepts prompts, opening and optional ending frames, and a reference collection that can contain images, clips, audio, a file, or a public web page under the mode rules. Alibaba/Tongyi is the model owner, while Fal distributes execution for this MaxVideoAI launch.",
+      "primaryCta": { "label": "Generate with Wan 3", "href": "/app?engine=wan-3" },
+      "secondaryCta": { "label": "Explore the Wan family gallery", "href": "/examples/wan" },
+      "quickLinks": [
+        { "label": "See Wan 3 Prime", "href": "/models/wan-3-prime" },
+        { "label": "Compare Wan 3 with Wan 2.6", "href": "/ai-video-engines/wan-2-6-vs-wan-3?order=wan-3" },
+        { "label": "Review Wan 3 pricing", "href": "/pricing#wan-3-pricing" },
+        { "label": "Open the Wan 3 Prompt Lab", "href": "#prompting" }
+      ]
+    },
+    "media": {
+      "caption": "Wan 3 evidence gallery",
+      "description": "Accepted Wan 3 examples will appear after launch review",
+      "renderLabel": "Review accepted render",
+      "badges": ["Text", "Image", "References"],
+      "altContext": "reviewed Wan 3 video example using the selected generation mode"
+    },
+    "features": [
+      { "title": "Text direction for planned scenes", "body": "Describe the subject, setting, main action, camera path and final beat in a clear order. Wan 3 can render between two and thirty seconds, so the prompt should match the chosen length instead of overloading a short clip.", "tone": "duration" },
+      { "title": "Opening and ending frame control", "body": "Animate a start image and add an end image when the final composition matters. Keep the motion instruction focused on the transition between those two visual anchors.", "tone": "reference" },
+      { "title": "Mixed reference workflow", "body": "Reference mode can combine supported images, videos and audio, or use one eligible file or public page when thinking is enabled. Keep every source purposeful and within the documented count and duration limits.", "tone": "continuity" },
+      { "title": "Resolution chosen per delivery", "body": "Use 480p for inexpensive exploration, 720p for review, or 1080p when the approved composition needs a higher-resolution output. The displayed quote updates from the same canonical pricing calculation used at generation.", "tone": "quality" }
+    ],
+    "decisionCards": [
+      { "title": "Best fit: one flexible Wan route", "body": "Pick Wan 3 for storyboards, product motion and character scenes that may move between prompt-only, image-led and reference-led direction during iteration.", "cta": { "label": "Start a Wan 3 project", "href": "/app?engine=wan-3" } },
+      { "title": "Not ideal: an automatic premium choice", "body": "Do not assume Prime is required for every brief. Compare the siblings when procurement, review standards or a premium production path justify a separate choice.", "cta": { "label": "Review Wan 3 Prime", "href": "/models/wan-3-prime" } },
+      { "title": "Plan references before prompting", "body": "Assign each source a role such as identity, motion, rhythm or context. A smaller, intentional set is easier to diagnose than unrelated media gathered without hierarchy.", "cta": { "label": "Open Prompt Lab", "href": "#prompting" } }
+    ],
+    "referenceWorkflows": [
+      { "title": "Text-to-video", "body": "Build a readable scene around one subject, one primary action and one camera move, then state the closing beat." },
+      { "title": "Image-to-video", "body": "Protect the uploaded composition while describing only the movement, camera behavior and environmental response that should develop." },
+      { "title": "Reference-to-video", "body": "Use at least one valid reference and respect the separate limits for images, clips, audio, files and public pages." },
+      { "title": "Safety and rights", "body": "Use media you are allowed to process, avoid deceptive likeness use, and review every output for unintended text, identity drift or unsafe details." }
+    ],
+    "pricingCopy": {
+      "title": "Wan 3 scenario pricing",
+      "subtitle": "Compare a common 720p scene with a higher-resolution 1080p pass using canonical quote data.",
+      "footnote": "The amount is calculated at runtime from duration, resolution, mode and current commercial policy; this page does not author a customer total.",
+      "ctaLabel": "Generate with Wan 3",
+      "ctaHref": "/app?engine=wan-3"
+    },
+    "meta": {
+      "title": "Wan 3 AI Video Model, Workflows and Pricing",
+      "description": "Evaluate Wan 3 for text, image and mixed-reference video, including mode limits, prompting structure, safety, sibling choice and live canonical quotes."
+    }
+  },
+  "prompting": {
+    "modelSlug": "wan-3",
+    "section": {
+      "title": "Prompt Lab — Wan 3",
+      "intro": "Write a production brief that stays readable for the selected duration and gives every reference one job.",
+      "tip": "Put the must-have subject and action before style adjectives or optional atmosphere.",
+      "guide": { "label": "Read Alibaba Model Studio's Wan 3 guide", "href": "https://docs.modelstudio.console.alibabacloud.com/en/model-studio/wan3-video-generation-guide" },
+      "referencesTitle": "Structure text, frame and mixed-reference direction"
+    },
+    "tabs": [
+      { "id": "scene", "label": "Scene", "title": "Define a readable scene", "description": "Establish subject, place and visible change before adding camera language.", "copy": "Subject and setting:\n[Who or what is visible, where the scene takes place, and the defining details]\n\nPrimary action:\n[One observable action with a clear cause and result]\n\nFinal beat:\n[The composition or movement that closes the clip]" },
+      { "id": "camera", "label": "Camera", "title": "Direct motion and timing", "description": "Match camera complexity to the chosen duration.", "copy": "Camera start:\n[Framing, lens feel and starting position]\n\nCamera path:\n[One controlled pan, track, push or orbit]\n\nMotion rhythm:\n[Speed, pauses and environmental reaction]\n\nContinuity:\n[Identity, wardrobe, props, lighting and screen direction]" },
+      { "id": "references", "label": "References", "title": "Assign each reference a role", "description": "Explain what the model should take from every source.", "copy": "Identity source:\n[Reference and exact trait to preserve]\n\nMotion source:\n[Reference and movement to borrow]\n\nAudio or rhythm source:\n[Reference and timing role]\n\nAvoid:\n[Conflicting identities, unsupported combinations, unwanted text and watermarks]" }
+    ],
+    "tabNotes": [
+      { "tabId": "scene", "body": "A short prompt with a visible change is easier to evaluate than a list of unrelated events." },
+      { "tabId": "camera", "body": "Use one deliberate camera path for short clips and sequence additional beats only when duration allows." },
+      { "tabId": "references", "body": "Reference mode still needs a hierarchy: name the source that controls identity, motion or rhythm." }
+    ],
+    "globalPrinciples": [
+      "Describe observable actions instead of abstract mood alone.",
+      "Keep the subject count small when continuity matters.",
+      "State the final beat so motion settles rather than stopping abruptly.",
+      "Treat consent, likeness rights and source ownership as part of the production brief."
+    ],
+    "engineWhy": [
+      "Wan 3 unifies prompt-only, frame-led and mixed-reference choices under one current family route.",
+      "Longer duration options make it possible to plan a simple progression instead of compressing every beat.",
+      "Separate reference categories let a team diagnose which source controls identity, motion or sound."
+    ],
+    "demo": {
+      "title": "Wan 3 controlled product story",
+      "promptLabel": "Text-to-video production brief",
+      "prompt": "A ceramic desk lamp sits in a quiet design studio at dawn. A hand rotates its dimmer, warm light grows across the textured wall, and the camera makes one slow lateral track before settling on the illuminated shade. Preserve the lamp proportions, natural hand anatomy and soft blue morning ambience. No logo, caption or watermark.",
+      "notes": ["The action has one cause and a visible environmental response.", "The closing composition gives the clip a stable final beat."],
+      "summary": { "subject": "Ceramic desk lamp and one hand", "action": "Dimmer rotation changes the room light", "camera": "Slow lateral track ending on the shade", "style": "Quiet contemporary product film at dawn", "output": "A controlled landscape scene with generated audio status taken from the render" },
+      "presentationOverrides": { "modeLabel": "Text-to-video", "outputLabel": "Canonical output settings", "duration": null, "aspectRatio": null, "audioChipMode": "media", "audioChipLabel": null, "altContext": "Wan 3 ceramic lamp product-motion prompt demonstration" }
+    },
+    "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "wan-3",
+    "showWhenEmpty": false,
+    "section": { "title": "Reviewed Wan 3 examples", "intro": "This gallery stays hidden until two accepted Wan 3 assets are durable and attached to the model playlist.", "defaultCtaLabel": "View the Wan family gallery", "recreateLabel": null },
+    "filters": [{ "id": "all", "label": "All" }, { "id": "cinematic", "label": "Cinematic" }, { "id": "reference", "label": "Reference-led" }],
+    "proofItems": [
+      { "id": "identity", "icon": "users", "title": "Identity continuity", "body": "Check whether the main subject remains recognizable through motion and camera change." },
+      { "id": "motion", "icon": "zap", "title": "Readable motion", "body": "Review contact, weight, environmental response and the final settling beat." },
+      { "id": "references", "icon": "image", "title": "Reference fidelity", "body": "Compare the output with the intended identity, movement and context sources." },
+      { "id": "quality", "icon": "maximize", "title": "Delivery quality", "body": "Inspect composition, texture and temporal stability at the selected resolution." },
+      { "id": "safety", "icon": "shield", "title": "Editorial review", "body": "Reject unwanted text, watermarks, unsafe imagery or unapproved likeness use." }
+    ],
+    "fallbackItems": null
+  }
+}

@@ -3,10 +3,10 @@
   "versionLabel": "2.5",
   "seo": {
     "title": "Wan 2.5 – Texto o imagen a video con audio opcional (480p–1080p, 5–10 s)",
-    "description": "Clips con audio de 5–10 s en 480p/720p/1080p. Entrada de texto o imagen, carga WAV/MP3 opcional, audio nativo, toggle de expansión de prompt y pago por segundo en MaxVideoAI.",
+    "description": "Wan 2.5 es un perfil histórico de legado profundo conservado por su flujo de audio de 5 a 10 s; inicia los nuevos proyectos Wan con Wan 3.",
     "image": "/hero/wan-25.jpg"
   },
-  "overview": "Wan 2.5 en MaxVideoAI: clips con audio de 5–10 s desde texto o una imagen única, en 480p/720p/1080p. Carga WAV/MP3 opcional, audio nativo si no subes pista, toggle de expansión de prompt y precio por segundo según resolución.",
+  "overview": "Wan 2.5 conserva su URL canónica como perfil histórico de legado profundo para su antiguo flujo de audio y sus ejemplos. Las nuevas generaciones Wan deben comenzar con Wan 3.",
   "hero": {
     "title": "Wan 2.5 – Texto o imagen a video con audio opcional en MaxVideoAI (480p–1080p, 5–10 s)",
     "intro": "Beats cinematográficos con audio desde texto o un still — sincroniza con tu pista o deja que Wan genere el sonido.",
@@ -311,7 +311,7 @@
   "decision": {
     "modelSlug": "wan-2-5",
     "hero": {
-      "eyebrow": "RUTA WAN AUDIO DRAFT AUN COMPATIBLE",
+      "eyebrow": "RUTA HISTÓRICA WAN DE LEGADO PROFUNDO",
       "title": "Wan 2.5",
       "subtitle": "Clips con audio de 5 a 10 s para arranques con texto o imagen, expansión de prompt y checks de 480p a 1080p.",
       "subtitleHighlights": [
@@ -319,10 +319,10 @@
         "arranques con texto o imagen",
         "checks de 480p a 1080p"
       ],
-      "paragraph": "Usa Wan 2.5 cuando necesitas la ruta Wan anterior aún compatible para pruebas cortas con audio: texto a video, imagen a video, carga de audio opcional, expansión de prompt, seed y borradores en baja resolución.",
+      "paragraph": "Esta página histórica de Wan 2.5 conserva características, ejemplos y valor SEO de legado profundo sin redirigir. No inicies una generación nueva en la ruta retirada; Wan 3 es el sucesor estándar actual.",
       "primaryCta": {
-        "label": "Generar con Wan 2.5",
-        "href": "/app?engine=wan-2-5"
+        "label": "Ver el Wan 3 actual",
+        "href": "/es/modelos/wan-3"
       },
       "secondaryCta": {
         "label": "Ver ejemplos",
@@ -330,8 +330,8 @@
       },
       "quickLinks": [
         {
-          "label": "Comparar con Sora 2",
-          "href": "/es/comparativa/sora-2-vs-wan-2-5?order=wan-2-5"
+          "label": "Ver Wan 3",
+          "href": "/es/modelos/wan-3"
         },
         {
           "label": "Ver precios",
@@ -388,11 +388,11 @@
     ],
     "decisionCards": [
       {
-        "title": "¿Wan 2.5 o Wan 2.6?",
-        "body": "Usa Wan 2.5 para checks cortos con audio y borradores de menor resolución. Usa Wan 2.6 para 15 s, multi-shot o video de referencia.",
+        "title": "¿Wan 2.5 histórico o Wan 3 actual?",
+        "body": "Mantén esta página como referencia histórica. Comienza un brief Wan nuevo con Wan 3.",
         "cta": {
-          "label": "Ver Wan 2.6",
-          "href": "/es/modelos/wan-2-6"
+          "label": "Ver Wan 3",
+          "href": "/es/modelos/wan-3"
         }
       },
       {
@@ -438,9 +438,9 @@
       "title": "Precios de Wan 2.5 de un vistazo",
       "subtitle": "Totales de clips cortos. Consulta el precio exacto en la app antes de generar.",
       "footnote": "Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.",
-      "ctaLabel": "Ver precios completos",
+      "ctaLabel": "Generar con Wan 3",
       "maxDurationNote": "Hasta 1080p",
-      "ctaHref": "/es/precios#wan-2-5-pricing"
+      "ctaHref": "/app?engine=wan-3"
     },
     "meta": {
       "title": "Wan 2.5: precios, drafts con audio y ejemplos | MaxVideoAI",

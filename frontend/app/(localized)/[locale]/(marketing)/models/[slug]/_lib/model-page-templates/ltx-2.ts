@@ -4,14 +4,14 @@ export const ltx2TemplateConfig: ModelPageTemplateConfig = {
   slug: 'ltx-2',
   intent: 'specialized',
   hero: {
-    eyebrow: 'SUPPORTED LTX 2 PRO ROUTE',
+    eyebrow: 'HISTORICAL DEEP-LEGACY LTX 2 ROUTE',
     subtitleHighlightTerms: ['high-fidelity 16:9 clips', 'text-to-video or image-to-video', '1080p to 4K checks'],
-    primaryCtaHref: '/app?engine=ltx-2',
+    primaryCtaHref: '/app?engine=ltx-2-5-pro',
     secondaryCtaHref: '/examples/ltx',
     quickLinks: [
       {
         labelKey: 'comparePro',
-        href: '/models/ltx-2-3-pro',
+        href: '/models/ltx-2-5-pro',
         icon: 'compare',
       },
       {
