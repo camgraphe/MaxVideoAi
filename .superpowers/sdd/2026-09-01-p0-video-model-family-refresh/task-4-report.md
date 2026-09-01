@@ -170,3 +170,42 @@ The mode owner distinguishes a schema-selected first-frame candidate from a norm
 - `tests/p0-video-workspace.test.ts`
 
 No direct-provider, billing, polling, environment, request-body, or `AppClient.tsx` owner changed in this round.
+
+## Fix round 3 — executable automatic FLUX i2v
+
+### Revision
+
+- Fix-round base: `54163ee5240cf1f3eb3f2d1c8364fada8af87185`
+- Fix-round implementation commit: reported in the handoff because a commit cannot contain its own hash.
+
+### Outcome
+
+The real empty-workspace flow now remains executable after its first FLUX frame upload. The hook starts in `t2v` with only the unified `start_image_url` and `end_image_url` controls visible. Uploading `start_image_url` recalculates the real active and submission modes to `i2v`; preparation resolves the active i2v primary field from the engine schema, remaps that uploaded first-frame candidate to `image_url`, supplies `primaryImageUrl`, and produces an exact i2v Fal body with no foreign frame field.
+
+Adding `end_image_url` recalculates the real submission mode to `fl2v`. That path bypasses the i2v promotion and preserves the exact `start_image_url` and `end_image_url` provider fields without `image_url`. Existing normal FLUX i2v, manual fl2v, Veo, Kling, Luma, Vertex, and BytePlus behavior remains covered by regressions.
+
+### RED evidence
+
+- `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/p0-video-workspace.test.ts`
+  - Result: 1 pass, 1 fail.
+  - Starting from a real hook render with empty assets, the test observed the initial unified schema, added only `start_image_url`, rerendered to real `activeMode: i2v` and `submissionMode: i2v`, then failed because real preparation returned `primaryImageUrl: undefined` instead of the uploaded start URL.
+
+### GREEN evidence
+
+- Targeted automatic/manual FLUX behavior:
+  - `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/p0-video-workspace.test.ts`
+  - Result: 2 pass, 0 fail.
+- Workspace and direct-provider regressions:
+  - `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/p0-video-workspace.test.ts tests/workspace-generation-inputs.test.ts tests/workspace-generation-request-helpers.test.ts tests/workspace-composer-surface-contract.test.ts tests/workspace-input-schema-hook-contract.test.ts tests/workspace-omni-ui-contract.test.ts tests/google-vertex-omni-engine-catalog.test.ts tests/p0-provider-routing.test.ts tests/kling-provider-routing.test.ts tests/luma-agents-provider-routing.test.ts tests/google-vertex-veo-routing.test.ts tests/generate-byteplus-submission.test.ts`
+  - Result: 120 pass, 0 fail.
+- Required Task 4 focused suite:
+  - `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/p0-video-request-bodies.test.ts tests/p0-video-validation.test.ts tests/p0-video-workspace.test.ts tests/generate-fal-request.test.ts tests/validate-request.test.ts tests/mcp-special-video-modes.test.ts tests/mcp-model-executability.test.ts tests/workspace-generation-inputs.test.ts tests/workspace-composer-surface-contract.test.ts tests/p0-provider-routing.test.ts tests/kling-provider-routing.test.ts tests/luma-agents-provider-routing.test.ts`
+  - Result: 207 pass, 0 fail.
+- TypeScript, frontend lint, exposure lint, and `git diff --check`: pass.
+
+### Fix-round owners changed
+
+- `frontend/app/(core)/(workspace)/app/_lib/workspace-generation-inputs.ts`
+- `tests/p0-video-workspace.test.ts`
+
+No direct-provider adapter, billing, polling, environment, request-body, schema-summary, hook, or `AppClient.tsx` owner changed in this round.

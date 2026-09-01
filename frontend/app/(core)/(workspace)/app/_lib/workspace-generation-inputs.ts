@@ -13,7 +13,7 @@ import { evaluateReferenceBudget, resolveEngineReferenceBudget } from '@/lib/ref
 import type { ReferenceAsset } from './workspace-assets';
 import { normalizeExtraInputValue, type FormState } from './workspace-form-state';
 import type { WorkspaceInputFieldEntry, WorkspaceInputSchemaSummary } from './workspace-input-schema';
-import { VIDEO_MEDIA_FIELD_CANDIDATES } from '@/lib/video-input-schema';
+import { resolveActiveVideoInputField, VIDEO_MEDIA_FIELD_CANDIDATES } from '@/lib/video-input-schema';
 
 export type GenerationAttachmentPayload = {
   name: string;
@@ -241,6 +241,29 @@ export function prepareGenerationInputs(options: PrepareGenerationInputsOptions)
     });
   });
 
+  const activeI2vPrimaryField = options.submissionMode === 'i2v'
+    ? resolveActiveVideoInputField({
+        inputSchema: options.inputSchema,
+        mode: 'i2v',
+        type: 'image',
+        candidateFieldIds: VIDEO_MEDIA_FIELD_CANDIDATES.firstFrame,
+      })
+    : null;
+  const unifiedFirstFrameField = activeI2vPrimaryField
+    ? resolveActiveVideoInputField({
+        inputSchema: options.inputSchema,
+        mode: 'fl2v',
+        type: 'image',
+        candidateFieldIds: VIDEO_MEDIA_FIELD_CANDIDATES.firstFrame,
+      })
+    : null;
+  const shouldPromoteUnifiedFirstFrame = Boolean(
+    activeI2vPrimaryField
+    && unifiedFirstFrameField
+    && activeI2vPrimaryField.id !== unifiedFirstFrameField.id
+    && !orderedAttachments.some(({ field }) => field.id === activeI2vPrimaryField.id)
+  );
+
   let inputsPayload: GenerationAttachmentPayload[] | undefined;
   if (orderedAttachments.length) {
     const collected: GenerationAttachmentPayload[] = [];
@@ -263,7 +286,10 @@ export function prepareGenerationInputs(options: PrepareGenerationInputsOptions)
           return { ok: false, message: violation.message };
         }
       }
-      collected.push(buildAttachmentPayload(field, { ...asset, url: assetUrl }));
+      const payloadField = shouldPromoteUnifiedFirstFrame && field.id === unifiedFirstFrameField?.id
+        ? activeI2vPrimaryField
+        : field;
+      collected.push(buildAttachmentPayload(payloadField ?? field, { ...asset, url: assetUrl }));
     }
     if (collected.length) {
       inputsPayload = collected;
@@ -285,7 +311,12 @@ export function prepareGenerationInputs(options: PrepareGenerationInputsOptions)
       : referenceSlots;
   const schemaPrimaryAttachment =
     inputsPayload?.find(
-      (attachment) => typeof attachment.slotId === 'string' && options.primaryAssetFieldIds.has(attachment.slotId)
+      (attachment) =>
+        typeof attachment.slotId === 'string'
+        && (
+          options.primaryAssetFieldIds.has(attachment.slotId)
+          || attachment.slotId === activeI2vPrimaryField?.id
+        )
     ) ?? null;
   const firstFrameAttachment = options.submissionMode === 'fl2v'
     ? inputsPayload?.find(
