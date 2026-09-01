@@ -79,18 +79,28 @@ test('workspace preflight carries persisted asset identity and field provenance 
 
   assert.deepEqual(inputs, [
     {
-      assetId: 'grok-ref', kind: 'image', name: 'grok-ref.png', size: 1,
-      slotId: 'reference_image_urls', type: 'image/png',
+      assetId: 'grok-ref', kind: 'image', slotId: 'reference_image_urls',
       url: 'https://cdn.example.com/grok-ref.png',
     },
     {
-      assetId: 'audio-asset', kind: 'audio', name: 'source.wav', size: 2048,
-      slotId: 'audio_url', type: 'audio/wav',
+      assetId: 'audio-asset', kind: 'audio', slotId: 'audio_url',
       url: 'https://cdn.maxvideoai.com/source.wav',
     },
   ]);
   assert.equal(inputs.some((input) => 'durationSec' in input), false);
   assert.equal(inputs.some((input) => 'referenceImageCount' in input), false);
+
+  assert.deepEqual(buildWorkspacePreflightInputs({
+    reference_image_urls: [{
+      ...imageAsset('unresolved-ref', 'reference_image_urls'),
+      assetId: undefined,
+    }],
+  }), [{
+    assetId: '',
+    kind: 'image',
+    slotId: 'reference_image_urls',
+    url: 'https://cdn.example.com/unresolved-ref.png',
+  }]);
 });
 
 function summarizeFluxWorkspace(

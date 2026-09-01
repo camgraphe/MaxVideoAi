@@ -36,12 +36,11 @@ export function buildWorkspacePreflightInputs(
     assets.flatMap((asset) => {
       if (!asset || asset.status !== 'ready' || !asset.url) return [];
       return [{
-        ...(asset.assetId ? { assetId: asset.assetId } : {}),
+        // Preserve an unresolved reference in the quote payload so the strict
+        // server boundary fails closed instead of silently under-counting it.
+        assetId: asset.assetId ?? '',
         slotId: fieldId,
         kind: asset.kind,
-        name: asset.name,
-        type: asset.type,
-        size: asset.size,
         url: asset.url,
       }];
     })

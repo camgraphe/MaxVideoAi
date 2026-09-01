@@ -288,12 +288,9 @@ export interface PreflightRequest {
 }
 
 export type PreflightMediaInput = {
-  assetId?: string;
+  assetId: string;
   slotId: string;
   kind: 'image' | 'video' | 'audio';
-  name: string;
-  type: string;
-  size: number;
   url: string;
 };
 

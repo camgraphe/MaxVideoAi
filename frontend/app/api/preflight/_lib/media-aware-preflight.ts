@@ -1,4 +1,4 @@
-import { processAndValidateGenerationAttachments } from '@/app/api/generate/_lib/generation-attachment-processing';
+import { validateNormalizedGenerationAttachments } from '@/app/api/generate/_lib/generation-attachment-processing';
 import {
   computeConfiguredPreflight,
   getConfiguredEngine,
@@ -6,9 +6,10 @@ import {
   type TrustedPreflightMediaPricingFacts,
 } from '@/server/engines';
 import type { EngineCaps, PreflightRequest, PreflightResponse } from '@/types/engines';
+import { parsePreflightRequestPayload } from './preflight-request';
 
 type MediaConstraintDependencies = Parameters<
-  typeof processAndValidateGenerationAttachments
+  typeof validateNormalizedGenerationAttachments
 >[0]['mediaConstraintDeps'];
 
 type MediaAwarePreflightDependencies = {
@@ -17,7 +18,7 @@ type MediaAwarePreflightDependencies = {
     request: PreflightRequest,
     options?: ComputeConfiguredPreflightOptions,
   ) => Promise<PreflightResponse>;
-  processAttachmentsFn?: typeof processAndValidateGenerationAttachments;
+  processAttachmentsFn?: typeof validateNormalizedGenerationAttachments;
   mediaConstraintDeps?: MediaConstraintDependencies;
 };
 
@@ -53,6 +54,22 @@ function requiresInputAudioDuration(engine: EngineCaps, request: PreflightReques
   return engine.pricingDetails?.byMode?.[request.mode]?.durationBasis === 'input_audio';
 }
 
+function hasValidPersistedReferenceRoles(engine: EngineCaps, request: PreflightRequest): boolean {
+  if (!request.inputs?.length) return true;
+  const activeMediaFields = new Map(
+    [
+      ...(engine.inputSchema?.required ?? []),
+      ...(engine.inputSchema?.optional ?? []),
+    ]
+      .filter((field) =>
+        (field.type === 'image' || field.type === 'video' || field.type === 'audio')
+        && (!field.modes?.length || field.modes.includes(request.mode))
+      )
+      .map((field) => [field.id, field.type]),
+  );
+  return request.inputs.every((reference) => activeMediaFields.get(reference.slotId) === reference.kind);
+}
+
 export async function resolveMediaAwarePreflight(
   input: {
     request: PreflightRequest;
@@ -61,23 +78,33 @@ export async function resolveMediaAwarePreflight(
   },
   dependencies: MediaAwarePreflightDependencies = {},
 ): Promise<PreflightResponse> {
+  const parsedRequest = parsePreflightRequestPayload(input.request);
+  if (!parsedRequest.ok) return parsedRequest.response;
+  const request = parsedRequest.request;
   const getConfiguredEngineFn = dependencies.getConfiguredEngineFn ?? getConfiguredEngine;
   const computeConfiguredPreflightFn =
     dependencies.computeConfiguredPreflightFn ?? computeConfiguredPreflight;
-  const engine = await getConfiguredEngineFn(input.request.engine);
-  if (!engine) return computeConfiguredPreflightFn(input.request);
+  const engine = await getConfiguredEngineFn(request.engine);
+  if (!engine) return computeConfiguredPreflightFn(request);
 
-  if (hasClientDeclaredMediaPricingFacts(input.request)) {
+  if (hasClientDeclaredMediaPricingFacts(request)) {
     return mediaPricingFailure(
       'PRICING_MEDIA_FACTS_UNTRUSTED',
       'Client-declared media pricing facts are not accepted.',
     );
   }
 
-  const needsReferenceImageCount = requiresReferenceImageCount(engine, input.request);
-  const needsInputAudioDuration = requiresInputAudioDuration(engine, input.request);
+  if (!hasValidPersistedReferenceRoles(engine, request)) {
+    return mediaPricingFailure(
+      'PREFLIGHT_REQUEST_INVALID',
+      'Invalid preflight request.',
+    );
+  }
+
+  const needsReferenceImageCount = requiresReferenceImageCount(engine, request);
+  const needsInputAudioDuration = requiresInputAudioDuration(engine, request);
   if (!needsReferenceImageCount && !needsInputAudioDuration) {
-    return computeConfiguredPreflightFn(input.request, { resolvedEngine: engine });
+    return computeConfiguredPreflightFn(request, { resolvedEngine: engine });
   }
   const userId = input.userId === undefined
     ? await input.resolveUserId?.() ?? null
@@ -90,12 +117,17 @@ export async function resolveMediaAwarePreflight(
   }
 
   const processAttachmentsFn =
-    dependencies.processAttachmentsFn ?? processAndValidateGenerationAttachments;
+    dependencies.processAttachmentsFn ?? validateNormalizedGenerationAttachments;
   const processed = await processAttachmentsFn({
-    rawInputs: input.request.inputs,
+    attachments: (request.inputs ?? []).map((reference) => ({
+      name: 'persisted-reference',
+      type: 'application/octet-stream',
+      size: 0,
+      ...reference,
+    })),
     userId,
     engineId: engine.id,
-    mode: input.request.mode,
+    mode: request.mode,
     inputSchema: engine.inputSchema,
     mediaConstraintDeps: dependencies.mediaConstraintDeps,
   });
@@ -127,7 +159,7 @@ export async function resolveMediaAwarePreflight(
     );
   }
 
-  return computeConfiguredPreflightFn(input.request, {
+  return computeConfiguredPreflightFn(request, {
     resolvedEngine: engine,
     trustedMediaPricingFacts,
   });

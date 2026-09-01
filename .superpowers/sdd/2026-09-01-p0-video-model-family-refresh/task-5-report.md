@@ -173,3 +173,50 @@ All three fixture blob hashes are identical to `5b85e47f`: immutable parity `200
 The official engine-catalog generator also repaired the pre-existing Task 5 projection lag. Its 67-line diff is limited to five P0 engines: LTX 2.5 Fast/Pro mode-duration facts and canonical 4K alias, Grok ref2v/reference facts, and FLUX.3/FLUX.3 Draft extend facts. `pnpm model:registry:check` is green with 50 models, 2 tombstones, a current 50-entry engine catalog and unchanged 42-entry roster.
 
 Final reviewer-fix gates include frontend TypeScript, frontend lint, exposure lint and `git diff --check`; exact final results are recorded in the handoff.
+
+## Reviewer fix round 2 — read-only preflight boundary
+
+The second reviewer found that `/api/preflight` still accepted arbitrary runtime JSON and passed its `inputs` into the execution attachment processor. A TypeScript-only omission of `dataUrl` did not protect the runtime path: an authenticated quote request could upload an inline image and record a durable user asset before pricing.
+
+The fix makes the quote boundary structurally read-only:
+
+- `/api/preflight` reads at most 32 KiB with a byte-counted stream reader. Declared and chunked/no-length overflow is rejected with 413; the stream is cancelled as soon as the limit is crossed.
+- One strict runtime schema rejects unknown or prototype-sensitive keys and bounds the complete request shape. Media arrays accept at most 16 exact persisted-reference records containing only `assetId`, `slotId`, `kind`, and an HTTP(S) URL. Execution fields such as `dataUrl`, duration aliases, dimensions, MIME, size, label, and file name are rejected with the generic `PREFLIGHT_REQUEST_INVALID` response.
+- The resolver checks each media slot and kind against the active engine input schema. Unresolved workspace references retain an empty asset identity in the request and are rejected, so they cannot disappear from the quote and under-count Grok references.
+- Workspace quote payloads now carry only persisted asset identity, field provenance, media kind, and URL. They carry no client MIME, size, dimensions, duration, or pricing scalar.
+- The preflight path no longer imports the mutation-capable `processGenerationAttachments` / `processAndValidateGenerationAttachments` owner. A new normalized-validation entry point shares the same reference derivation and canonical server media-constraint validator as final execution without exposing uploads or asset writes.
+- LTX A2V continues to obtain duration only from owned database metadata. Grok ref2v continues to use the normalized reference set. Missing auth or trusted media facts remains fail-closed.
+- Success and error responses use `Cache-Control: private, no-store`; invalid-request responses do not reflect submitted URLs, data URLs, or media metadata.
+
+### Round-2 RED evidence
+
+Before production edits, the pricing/boundary run completed with **5/12 passing and 7 failing**. The failures proved that execution-only and malformed input records reached attachment processing and that no strict/bounded request projection existed.
+
+The independent security bypass review then found one additional CWE-400 path: `request.text()` could buffer an unbounded chunked request before the 32 KiB check. A second RED completed with **8/9 passing and 1 failing**: the no-content-length stream was fully buffered and returned 400 instead of being cancelled early with 413.
+
+### Round-2 GREEN evidence
+
+The final focused pricing, preflight security/runtime, workspace, attachment/media, generation, MCP, wallet, audit and public projection command completed with **237/237 passing**. It includes runtime proof that inline data reaches neither the resolver nor upload/asset-write spies, exact persisted Grok/LTX references remain accepted, malformed/unknown/oversized bodies fail deterministically, chunked overflow is cancelled early, media-priced requests require auth, quote/final facts match, and the preflight source graph imports no mutation sink.
+
+Final deterministic gates:
+
+```text
+pnpm pricing:baseline                 immutable (178 rows)
+pnpm pricing:shadow-additions         current (40 rows)
+pnpm pricing:public-baseline          current (507 rows)
+pnpm pricing:audit                    218/218 matches, 0 mismatches
+pnpm engine:catalog                   generated 50 entries; no diff
+pnpm model:registry:check             valid (50 models, 2 tombstones; 50 catalog, 42 roster)
+pnpm --prefix frontend exec tsc       pass
+npm --prefix frontend run lint        pass, 0 warnings
+npm run lint:exposure                 pass
+git diff --check                      pass
+```
+
+All pricing fixture hashes remain identical to the initial Task 5 implementation: immutable parity `200250226e2c1f7bd0292101920b4cdfc6730b11`, shadow additions `b60091c8d1c7cc4c9b81eb6fc675a44bdd1d0222`, and public projections `ab195dea3a91127ecc7b9338c85b5f6ce4d0c484`. No pricing fixture or public P0 projection changed in either fix round.
+
+### Independent review and residual risk
+
+The required fresh read-only security review found no remaining bypass for `dataUrl`, execution-only or prototype fields, malformed shapes, slot/kind mismatch, URL/metadata reflection, authentication, or indirect mutation calls after the streaming fix. One advisory limitation remains: Grok image reference count uses the schema-valid normalized persisted-reference declarations even when image metadata is absent from the database; final paid execution independently normalizes and prices the actual attachments, so the debit remains authoritative. LTX A2V has no analogous fallback and fails closed without trusted owned metadata.
+
+Round-2 base: `c902e0c2c58a18b0f82731683f21eb958ca0edbe`. The final round-2 commit hash is reported in the Task 5 handoff because a commit cannot contain its own hash.

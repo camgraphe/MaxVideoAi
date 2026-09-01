@@ -32,12 +32,10 @@ test('media-aware preflight resolves the normalized Grok reference count and mat
     inputs: [
       {
         assetId: 'ref-a', slotId: 'reference_image_urls', kind: 'image',
-        name: 'a.png', type: 'image/png', size: 100,
         url: 'https://cdn.maxvideoai.com/private/a.png',
       },
       {
         assetId: 'ref-b', slotId: 'reference_image_urls', kind: 'image',
-        name: 'b.png', type: 'image/png', size: 100,
         url: 'https://cdn.maxvideoai.com/private/b.png',
       },
     ],
@@ -78,7 +76,7 @@ test('media-aware preflight prices LTX A2V from trusted metadata, never client d
     resolution: '1080p',
     inputs: [{
       assetId: 'audio-asset', slotId: 'audio_url', kind: 'audio',
-      name: 'source.wav', type: 'audio/wav', size: 2_048, url: audioUrl,
+      url: audioUrl,
     }],
   };
   const preflight = await resolveMediaAwarePreflight(
@@ -176,4 +174,87 @@ test('ordinary public preflight stays anonymous and does not resolve an auth ses
   });
   assert.equal(result.ok, true);
   assert.equal(authCalls, 0);
+});
+
+test('media-aware preflight rejects execution-only attachment fields before attachment processing', async () => {
+  const engine = engineFor('grok-imagine-video-1-5');
+  const forbiddenInputs = [
+    { dataUrl: 'data:image/png;base64,c2VjcmV0' },
+    { durationSec: 9.25 },
+    { duration: 9.25 },
+    { mediaDurationSec: 9.25 },
+    { width: 1920 },
+    { height: 1080 },
+    { name: 'secret.png' },
+    { type: 'image/png' },
+    { size: 42 },
+    { label: 'execution-only' },
+    { unknownExecutionField: true },
+  ];
+
+  for (const forbidden of forbiddenInputs) {
+    let processCalls = 0;
+    const response = await resolveMediaAwarePreflight({
+      request: {
+        ...requestFor(engine, 'ref2v'),
+        inputs: [{
+          assetId: 'persisted-ref',
+          slotId: 'reference_image_urls',
+          kind: 'image',
+          url: 'https://cdn.maxvideoai.com/private/reference.png',
+          ...forbidden,
+        }],
+      } as unknown as PreflightRequest,
+      userId: 'pricing-user',
+    }, {
+      getConfiguredEngineFn: async () => engine,
+      processAttachmentsFn: async () => {
+        processCalls += 1;
+        return {
+          ok: true,
+          attachments: [],
+          references: { normalizedReferenceImages: [] },
+          trustedDurationSecByField: {},
+        } as never;
+      },
+    });
+
+    assert.equal(response.ok, false, `forbidden field ${Object.keys(forbidden)[0]} must fail`);
+    assert.equal(response.error?.code, 'PREFLIGHT_REQUEST_INVALID');
+    assert.equal(processCalls, 0, `forbidden field ${Object.keys(forbidden)[0]} reached processing`);
+    assert.doesNotMatch(JSON.stringify(response), /c2VjcmV0|reference\.png|secret\.png/);
+  }
+});
+
+test('media-aware preflight rejects malformed persisted references before attachment processing', async () => {
+  const engine = engineFor('grok-imagine-video-1-5');
+  const invalidInputs = [
+    null,
+    [],
+    { assetId: '', slotId: 'reference_image_urls', kind: 'image', url: 'https://cdn.maxvideoai.com/a.png' },
+    { assetId: 'asset', slotId: 'unknown_role', kind: 'image', url: 'https://cdn.maxvideoai.com/a.png' },
+    { assetId: 'asset', slotId: 'reference_image_urls', kind: 'audio', url: 'https://cdn.maxvideoai.com/a.png' },
+    { assetId: 'asset', slotId: 'reference_image_urls', kind: 'image', url: 'data:image/png;base64,c2VjcmV0' },
+  ];
+
+  for (const invalidInput of invalidInputs) {
+    let processCalls = 0;
+    const response = await resolveMediaAwarePreflight({
+      request: {
+        ...requestFor(engine, 'ref2v'),
+        inputs: [invalidInput],
+      } as unknown as PreflightRequest,
+      userId: 'pricing-user',
+    }, {
+      getConfiguredEngineFn: async () => engine,
+      processAttachmentsFn: async () => {
+        processCalls += 1;
+        return { ok: true } as never;
+      },
+    });
+
+    assert.equal(response.ok, false);
+    assert.equal(response.error?.code, 'PREFLIGHT_REQUEST_INVALID');
+    assert.equal(processCalls, 0);
+  }
 });
