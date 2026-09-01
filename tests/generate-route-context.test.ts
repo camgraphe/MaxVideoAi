@@ -17,6 +17,10 @@ const routePath = join(root, 'frontend/app/api/generate/route.ts');
 const helperPath = join(root, 'frontend/app/api/generate/_lib/route-context.ts');
 const sourceVideoContextPath = join(root, 'frontend/app/api/generate/_lib/source-video-context.ts');
 const attachmentProcessingPath = join(root, 'frontend/app/api/generate/_lib/generation-attachment-processing.ts');
+const normalizedAttachmentValidationPath = join(
+  root,
+  'frontend/app/api/generate/_lib/normalized-generation-attachment-validation.ts'
+);
 
 const routeSource = readFileSync(routePath, 'utf8');
 const serviceSource = readFileSync(join(root, 'frontend/src/server/video-generation/execute-video-generation.ts'), 'utf8');
@@ -97,21 +101,32 @@ test('generate route delegates source-video duration and input context', () => {
   assert.match(sourceVideoContextSource, /resolveSourceVideoDurationSec/);
 });
 
-test('generate route delegates attachment processing and trusted media validation', () => {
+test('generate route delegates attachment normalization and trusted media validation to their owners', () => {
   assert.ok(existsSync(attachmentProcessingPath), 'attachment processing should live in the generate route _lib folder');
+  assert.ok(
+    existsSync(normalizedAttachmentValidationPath),
+    'normalized attachment validation should live in the generate route _lib folder'
+  );
   const attachmentProcessingSource = readFileSync(attachmentProcessingPath, 'utf8');
+  const normalizedAttachmentValidationSource = readFileSync(normalizedAttachmentValidationPath, 'utf8');
 
   assert.match(serviceSource, /generate\/_lib\/generation-attachment-processing/);
   assert.match(serviceSource, /processAndValidateGenerationAttachments\(\{/);
   assert.doesNotMatch(routeSource, /processGenerationAttachments\(\{/);
   assert.doesNotMatch(routeSource, /deriveGenerationAttachmentReferences\(\{/);
   assert.doesNotMatch(routeSource, /validateGenerationMediaConstraints\(\{/);
+  assert.doesNotMatch(serviceSource, /processGenerationAttachments\(\{/);
+  assert.doesNotMatch(serviceSource, /deriveGenerationAttachmentReferences\(\{/);
+  assert.doesNotMatch(serviceSource, /validateGenerationMediaConstraints\(\{/);
   assert.match(attachmentProcessingSource, /processGenerationAttachments\(\{/);
-  assert.match(attachmentProcessingSource, /deriveGenerationAttachmentReferences\(\{/);
-  assert.match(attachmentProcessingSource, /validateGenerationMediaConstraints\(\{/);
+  assert.match(attachmentProcessingSource, /validateNormalizedGenerationAttachments\(\{/);
+  assert.doesNotMatch(attachmentProcessingSource, /deriveGenerationAttachmentReferences\(\{/);
+  assert.doesNotMatch(attachmentProcessingSource, /validateGenerationMediaConstraints\(\{/);
+  assert.match(normalizedAttachmentValidationSource, /deriveGenerationAttachmentReferences\(\{/);
+  assert.match(normalizedAttachmentValidationSource, /validateGenerationMediaConstraints\(\{/);
   assert.ok(
-    attachmentProcessingSource.indexOf('deriveGenerationAttachmentReferences') <
-      attachmentProcessingSource.indexOf('validateGenerationMediaConstraints'),
+    normalizedAttachmentValidationSource.indexOf('deriveGenerationAttachmentReferences({') <
+      normalizedAttachmentValidationSource.indexOf('validateGenerationMediaConstraints({'),
     'trusted media validation must run after attachment references are derived'
   );
 });
