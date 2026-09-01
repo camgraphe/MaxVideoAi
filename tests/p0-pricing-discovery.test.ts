@@ -192,6 +192,95 @@ test('sparse PAYG data never relabels generic checks as hidden P0 examples', () 
   assert.deepEqual(p0IdsIn(data.exampleCosts.items), []);
 });
 
+test('a future PAYG config fails closed until its canonical pricing row is visible', () => {
+  const futureId = 'future-video-model';
+  const content = structuredClone(getPayAsYouGoContent('en')) as any;
+  content.modelTesting.models[futureId] = {
+    family: 'Future',
+    title: 'Future Video Model',
+    body: 'Future model card.',
+  };
+  content.priceLookups.items[futureId] = {
+    query: 'How much does Future Video Model cost?',
+    title: 'Future Video Model pricing',
+    body: 'Future model lookup.',
+  };
+  content.exampleCosts.labels[futureId] = 'Future model example';
+
+  const discoveryConfigs = {
+    priceLookups: [{ id: futureId, presetId: '5s-720p' }],
+    examples: [{ id: futureId, presetId: '5s-720p' }],
+    supportedModels: [{ id: futureId, fallbackLabel: 'Future Video Model' }],
+  };
+  const hiddenPricingHub = structuredClone(buildPricingHubData('en'));
+  hiddenPricingHub.video.rows = [];
+  const hidden = buildPayAsYouGoPageData({
+    locale: 'en',
+    content,
+    pricingHub: hiddenPricingHub,
+    discoveryConfigs,
+  } as any);
+
+  assert.deepEqual(hidden.modelTesting.items, []);
+  assert.deepEqual(hidden.priceLookups.items, []);
+  assert.deepEqual(hidden.exampleCosts.items, []);
+  assert.doesNotMatch(JSON.stringify({
+    models: hidden.modelTesting.items,
+    lookups: hidden.priceLookups.items,
+    examples: hidden.exampleCosts.items,
+  }), /future-video-model|pricing#video-pricing/);
+
+  const visiblePricingHub = structuredClone(buildPricingHubData('en'));
+  const visibleRow = structuredClone(visiblePricingHub.video.rows.find((row) => row.id === 'seedance-2-0'));
+  assert.ok(visibleRow);
+  visibleRow.id = futureId;
+  visibleRow.engineName = 'Future Video Model';
+  visibleRow.family = 'future';
+  visibleRow.anchorId = `${futureId}-pricing`;
+  visibleRow.modelHref = `/models/${futureId}`;
+  visibleRow.links = [{ label: 'Future Video Model', href: `/models/${futureId}` }];
+  visiblePricingHub.video.rows = [visibleRow];
+
+  const visible = buildPayAsYouGoPageData({
+    locale: 'en',
+    content,
+    pricingHub: visiblePricingHub,
+    discoveryConfigs,
+  } as any);
+  assert.deepEqual(visible.modelTesting.items.map((item) => item.id), [futureId]);
+  assert.deepEqual(visible.priceLookups.items.map((item) => item.id), [futureId]);
+  assert.deepEqual(visible.exampleCosts.items.map((item) => item.id), [futureId]);
+  assert.equal(visible.modelTesting.items[0]?.href, `/models/${futureId}`);
+  assert.equal(visible.priceLookups.items[0]?.href, `/pricing#${futureId}-pricing`);
+  assert.equal(visible.exampleCosts.items[0]?.href, `/pricing#${futureId}-pricing`);
+});
+
+test('explicit published model fallbacks remain available without a pricing row', () => {
+  const pricingHub = structuredClone(buildPricingHubData('en'));
+  pricingHub.video.rows = [];
+  const data = buildPayAsYouGoPageData({
+    locale: 'en',
+    content: getPayAsYouGoContent('en'),
+    pricingHub,
+  });
+
+  assert.deepEqual(data.priceLookups.items, []);
+  assert.deepEqual(data.exampleCosts.items, []);
+  assert.deepEqual(
+    data.modelTesting.items.map((item) => item.id),
+    [
+      'seedance-2-5',
+      'seedance-2-0',
+      'kling-3-pro',
+      'veo-3-1',
+      'happy-horse-1-1',
+      'seedance-2-0-mini',
+      'ltx-2-3-fast',
+      'wan-2-6',
+    ],
+  );
+});
+
 test('unpublished comparison suggestions cannot leak a hidden P0 opponent', () => {
   const entriesWithHiddenSuggestion = entries.map((entry) => entry.id === 'ltx-2-3' ? {
     ...structuredClone(entry),
