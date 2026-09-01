@@ -309,14 +309,14 @@ export function prepareGenerationInputs(options: PrepareGenerationInputsOptions)
           ? new Set(['image_urls'])
           : referenceSlots
       : referenceSlots;
+  const effectivePrimaryAssetFieldIds = new Set(options.primaryAssetFieldIds);
+  if (activeI2vPrimaryField) effectivePrimaryAssetFieldIds.add(activeI2vPrimaryField.id);
+  if (unifiedFirstFrameField) effectivePrimaryAssetFieldIds.add(unifiedFirstFrameField.id);
   const schemaPrimaryAttachment =
     inputsPayload?.find(
       (attachment) =>
         typeof attachment.slotId === 'string'
-        && (
-          options.primaryAssetFieldIds.has(attachment.slotId)
-          || attachment.slotId === activeI2vPrimaryField?.id
-        )
+        && effectivePrimaryAssetFieldIds.has(attachment.slotId)
     ) ?? null;
   const firstFrameAttachment = options.submissionMode === 'fl2v'
     ? inputsPayload?.find(
@@ -332,11 +332,11 @@ export function prepareGenerationInputs(options: PrepareGenerationInputsOptions)
           .filter((attachment) => {
             if (attachment.kind !== 'image' || typeof attachment.url !== 'string') return false;
             const slotId = attachment.slotId;
-            if (slotId && options.primaryAssetFieldIds.has(slotId)) return false;
+            if (slotId && effectivePrimaryAssetFieldIds.has(slotId)) return false;
             if (slotId && options.frameAssetFieldIds.has(slotId)) return false;
             if (!slotId) return activeReferenceSlots.size === 0;
             if (activeReferenceSlots.size === 0) {
-              return !options.primaryAssetFieldIds.has(slotId);
+              return !effectivePrimaryAssetFieldIds.has(slotId);
             }
             return activeReferenceSlots.has(slotId);
           })

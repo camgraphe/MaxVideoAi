@@ -209,3 +209,42 @@ Adding `end_image_url` recalculates the real submission mode to `fl2v`. That pat
 - `tests/p0-video-workspace.test.ts`
 
 No direct-provider adapter, billing, polling, environment, request-body, schema-summary, hook, or `AppClient.tsx` owner changed in this round.
+
+## Escalation fix — deduplicated automatic FLUX i2v input
+
+### Revision
+
+- Escalation base: `9344bcf8a9a8ccd6e373db1f5dc729a992d1ee62`
+- Escalation implementation commit: reported in the handoff because a commit cannot contain its own hash.
+
+### Outcome
+
+The automatic start-only FLUX flow now classifies its schema-remapped `image_url` attachment as primary for both primary selection and reference collection. The effective primary field set contains the active i2v field and its schema-resolved fl2v provenance alias, so neither can be duplicated into `referenceImageUrls`. Real reference-role fields remain independent and continue through the existing reference collection.
+
+The regression fixture now mirrors `useWorkspaceInputSchemaState`: primary, reference, generic image, and frame sets are constructed by their exact roles. The complete provider-body assertion proves the start-only request contains `image_url` and no `reference_images`; adding the end frame still produces only `start_image_url` and `end_image_url`.
+
+### RED evidence
+
+- `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/p0-video-workspace.test.ts`
+  - Result: 1 pass, 1 fail.
+  - With production-accurate role sets, preparation returned `referenceImageUrls: [start.png]` instead of `[]` after remapping the start-only upload to `image_url`.
+
+### GREEN evidence
+
+- Targeted automatic/manual FLUX behavior:
+  - `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/p0-video-workspace.test.ts`
+  - Result: 2 pass, 0 fail.
+- Required Task 4 focused suite:
+  - `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/p0-video-request-bodies.test.ts tests/p0-video-validation.test.ts tests/p0-video-workspace.test.ts tests/generate-fal-request.test.ts tests/validate-request.test.ts tests/mcp-special-video-modes.test.ts tests/mcp-model-executability.test.ts tests/workspace-generation-inputs.test.ts tests/workspace-composer-surface-contract.test.ts tests/p0-provider-routing.test.ts tests/kling-provider-routing.test.ts tests/luma-agents-provider-routing.test.ts`
+  - Result: 207 pass, 0 fail.
+- Workspace and direct-provider regressions:
+  - `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/p0-video-workspace.test.ts tests/workspace-generation-inputs.test.ts tests/workspace-generation-request-helpers.test.ts tests/workspace-composer-surface-contract.test.ts tests/workspace-input-schema-hook-contract.test.ts tests/workspace-omni-ui-contract.test.ts tests/google-vertex-omni-engine-catalog.test.ts tests/p0-provider-routing.test.ts tests/kling-provider-routing.test.ts tests/luma-agents-provider-routing.test.ts tests/google-vertex-veo-routing.test.ts tests/generate-byteplus-submission.test.ts`
+  - Result: 120 pass, 0 fail.
+- TypeScript, frontend lint, exposure lint, and `git diff --check`: pass.
+
+### Escalation owners changed
+
+- `frontend/app/(core)/(workspace)/app/_lib/workspace-generation-inputs.ts`
+- `tests/p0-video-workspace.test.ts`
+
+No direct-provider adapter, billing, polling, environment, request-body, hook, schema-summary, or `AppClient.tsx` owner changed in this escalation.

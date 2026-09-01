@@ -87,7 +87,7 @@ function prepareFluxWorkspaceInputs(
       form, inputSchema: engine.inputSchema, inputSchemaSummary: summary, extraInputFields: [], inputAssets,
       primaryAssetFieldIds: new Set(summary.assetFields.filter(({ role }) => role === 'primary').map(({ field }) => field.id)),
       referenceAssetFieldIds: new Set(summary.assetFields.filter(({ role }) => role === 'reference').map(({ field }) => field.id)),
-      genericImageFieldIds: new Set(summary.assetFields.filter(({ field }) => field.type === 'image').map(({ field }) => field.id)),
+      genericImageFieldIds: new Set(summary.assetFields.filter(({ field, role }) => role === 'generic' && field.type === 'image').map(({ field }) => field.id)),
       frameAssetFieldIds: new Set(summary.assetFields.filter(({ role }) => role === 'frame').map(({ field }) => field.id)),
       referenceAudioFieldIds: new Set(), supportsKlingV3Controls: false, klingElements: [],
       multiPromptActive: false, multiPromptScenes: [],
@@ -127,6 +127,7 @@ test('FLUX automatic frame routing promotes a start-only upload to executable i2
       [{ slotId: 'image_url', url: 'https://cdn.example.com/start.png' }],
       engineId,
     );
+    assert.deepEqual(startPreparation.prepared.referenceImageUrls, [], engineId);
     assert.equal(getGenerationIterationGuardMessage({
       selectedEngineId: entry.engine.id, submissionMode: afterStart.submissionMode,
       allowsUnifiedVeoFirstLast: afterStart.allowsUnifiedVeoFirstLast, hasLastFrameInput: false,
