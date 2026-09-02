@@ -1,41 +1,39 @@
-export const P0_VIDEO_EXAMPLE_MODEL_IDS = [
-  'wan-3',
-  'wan-3-prime',
-  'ltx-2-5-fast',
-  'ltx-2-5-pro',
-  'grok-imagine-video-1-5',
-  'flux-3',
-  'flux-3-draft',
-] as const;
+import {
+  MODEL_LAUNCH_WAVES,
+  type ModelLaunchWaveId,
+} from './model-launch-waves';
 
-export type P0VideoExampleModelId = (typeof P0_VIDEO_EXAMPLE_MODEL_IDS)[number];
-export const P0_VIDEO_EXAMPLE_FAMILY_BY_MODEL_ID: Record<
-  P0VideoExampleModelId,
-  'wan' | 'ltx' | 'grok' | 'flux'
-> = {
-  'wan-3': 'wan',
-  'wan-3-prime': 'wan',
-  'ltx-2-5-fast': 'ltx',
-  'ltx-2-5-pro': 'ltx',
-  'grok-imagine-video-1-5': 'grok',
-  'flux-3': 'flux',
-  'flux-3-draft': 'flux',
-};
+const P0_LAUNCH_WAVE = MODEL_LAUNCH_WAVES[0];
+
+export const P0_VIDEO_EXAMPLE_MODEL_IDS = Object.freeze(P0_LAUNCH_WAVE.models.map(({ modelId }) => modelId)) as readonly (
+  (typeof P0_LAUNCH_WAVE.models)[number]['modelId']
+)[];
+export type P0VideoExampleModelId = (typeof P0_LAUNCH_WAVE.models)[number]['modelId'];
+export const P0_VIDEO_EXAMPLE_FAMILY_BY_MODEL_ID = Object.fromEntries(
+  P0_LAUNCH_WAVE.models.map(({ modelId, familyId }) => [modelId, familyId]),
+) as Record<P0VideoExampleModelId, (typeof P0_LAUNCH_WAVE.models)[number]['familyId']>;
 
 export type ModelLaunchReadinessEntry = {
-  modelId: P0VideoExampleModelId;
-  familyId: 'wan' | 'ltx' | 'grok' | 'flux';
+  waveId: ModelLaunchWaveId;
+  modelId: string;
+  familyId: string;
   acceptedAssetCount: 2;
   familyPlaylistSlug: string;
   modelPlaylistSlug: string;
 };
 
-export type ModelLaunchReadinessProjection = {
-  schemaVersion: 1;
-  generatedBy: 'scripts/generate-p0-launch-assets.ts';
-  sourceManifest: 'docs/model-launch/p0-video-example-pack.json';
+export type ModelLaunchWaveReadinessProjection = {
+  waveId: ModelLaunchWaveId;
+  sourceManifest: string;
   sourceStatus: 'missing' | 'validated';
   sourceDigest: string | null;
+  models: ModelLaunchReadinessEntry[];
+};
+
+export type ModelLaunchReadinessProjection = {
+  schemaVersion: 1;
+  generatedBy: 'scripts/generate-model-launch-assets.ts';
+  waves: ModelLaunchWaveReadinessProjection[];
   models: ModelLaunchReadinessEntry[];
 };
 
@@ -43,51 +41,93 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
 
+function createMissingWaveReadiness(wave: (typeof MODEL_LAUNCH_WAVES)[number]): ModelLaunchWaveReadinessProjection {
+  return {
+    waveId: wave.id,
+    sourceManifest: wave.sourceManifest,
+    sourceStatus: 'missing',
+    sourceDigest: null,
+    models: [],
+  };
+}
+
+function parseWaveReadiness(
+  value: unknown,
+  wave: (typeof MODEL_LAUNCH_WAVES)[number],
+): ModelLaunchWaveReadinessProjection {
+  const missing = createMissingWaveReadiness(wave);
+  if (
+    !isRecord(value) ||
+    value.waveId !== wave.id ||
+    value.sourceManifest !== wave.sourceManifest ||
+    !Array.isArray(value.models)
+  ) {
+    return missing;
+  }
+  if (value.sourceStatus === 'missing') return missing;
+  if (value.sourceStatus !== 'validated' || typeof value.sourceDigest !== 'string' || !/^[a-f0-9]{64}$/.test(value.sourceDigest)) {
+    return missing;
+  }
+
+  const models = value.models.flatMap<ModelLaunchReadinessEntry>((entry) => {
+    if (!isRecord(entry)) return [];
+    const target = wave.models.find(({ modelId }) => modelId === entry.modelId);
+    if (
+      !target ||
+      entry.waveId !== wave.id ||
+      entry.familyId !== target.familyId ||
+      entry.acceptedAssetCount !== target.requiredVideos ||
+      entry.familyPlaylistSlug !== `family-${target.familyId}` ||
+      entry.modelPlaylistSlug !== `examples-${target.modelId}`
+    ) {
+      return [];
+    }
+    return [{
+      waveId: wave.id,
+      modelId: target.modelId,
+      familyId: target.familyId,
+      acceptedAssetCount: target.requiredVideos,
+      familyPlaylistSlug: entry.familyPlaylistSlug,
+      modelPlaylistSlug: entry.modelPlaylistSlug,
+    }];
+  });
+  if (models.length !== wave.models.length || new Set(models.map(({ modelId }) => modelId)).size !== models.length) {
+    return missing;
+  }
+  return { ...missing, sourceStatus: 'validated', sourceDigest: value.sourceDigest, models };
+}
+
 export function parseModelLaunchReadinessProjection(value: unknown): ModelLaunchReadinessProjection {
   const missing: ModelLaunchReadinessProjection = {
     schemaVersion: 1,
-    generatedBy: 'scripts/generate-p0-launch-assets.ts',
-    sourceManifest: 'docs/model-launch/p0-video-example-pack.json',
-    sourceStatus: 'missing',
-    sourceDigest: null,
+    generatedBy: 'scripts/generate-model-launch-assets.ts',
+    waves: MODEL_LAUNCH_WAVES.map(createMissingWaveReadiness),
     models: [],
   };
   if (
     !isRecord(value) ||
     value.schemaVersion !== 1 ||
     value.generatedBy !== missing.generatedBy ||
-    value.sourceManifest !== missing.sourceManifest ||
-    !Array.isArray(value.models)
+    !Array.isArray(value.waves)
   ) {
     return missing;
   }
-  if (value.sourceStatus === 'missing') {
+  const sourceWaves = value.waves;
+  if (
+    sourceWaves.length !== MODEL_LAUNCH_WAVES.length ||
+    new Set(sourceWaves.map((wave) => isRecord(wave) ? wave.waveId : null)).size !== sourceWaves.length
+  ) {
     return missing;
   }
-  if (value.sourceStatus !== 'validated' || typeof value.sourceDigest !== 'string' || !/^[a-f0-9]{64}$/.test(value.sourceDigest)) {
-    return missing;
-  }
-
-  const expectedIds = new Set<string>(P0_VIDEO_EXAMPLE_MODEL_IDS);
-  const models = value.models.flatMap<ModelLaunchReadinessEntry>((entry) => {
-    if (
-      !isRecord(entry) ||
-      typeof entry.modelId !== 'string' ||
-      !expectedIds.has(entry.modelId) ||
-      (entry.familyId !== 'wan' && entry.familyId !== 'ltx' && entry.familyId !== 'grok' && entry.familyId !== 'flux') ||
-      entry.familyId !== P0_VIDEO_EXAMPLE_FAMILY_BY_MODEL_ID[entry.modelId as P0VideoExampleModelId] ||
-      entry.acceptedAssetCount !== 2 ||
-      entry.familyPlaylistSlug !== `family-${entry.familyId}` ||
-      entry.modelPlaylistSlug !== `examples-${entry.modelId}`
-    ) {
-      return [];
-    }
-    return [entry as ModelLaunchReadinessEntry];
-  });
-  if (models.length !== P0_VIDEO_EXAMPLE_MODEL_IDS.length || new Set(models.map(({ modelId }) => modelId)).size !== models.length) {
-    return missing;
-  }
-  return { ...missing, sourceStatus: 'validated', sourceDigest: value.sourceDigest, models };
+  const waves = MODEL_LAUNCH_WAVES.map((wave) => parseWaveReadiness(
+    sourceWaves.find((candidate) => isRecord(candidate) && candidate.waveId === wave.id),
+    wave,
+  ));
+  return {
+    ...missing,
+    waves,
+    models: waves.flatMap(({ models }) => models),
+  };
 }
 
 export function findModelLaunchReadiness(

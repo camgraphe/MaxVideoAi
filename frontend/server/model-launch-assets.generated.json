@@ -1,39 +1,23 @@
 {
   "schemaVersion": 1,
-  "generatedBy": "scripts/generate-p0-launch-assets.ts",
-  "sourceManifest": "docs/model-launch/p0-video-example-pack.json",
-  "sourceStatus": "validated",
-  "sourceDigest": "b711cc0d9c625f7564b4ba8cf9287eb481c7462c97a5e353c8cc78ade5a69e93",
-  "assets": [
+  "generatedBy": "scripts/generate-model-launch-assets.ts",
+  "waves": [
     {
-      "assetId": "output:e2ef7bdf-e78c-4aca-94b4-d2ba74036dac:video:0",
-      "videoId": "e2ef7bdf-e78c-4aca-94b4-d2ba74036dac",
-      "libraryAssetId": "ma_af7494789ff74a55a0c26341da1ee90a",
-      "jobId": "e2ef7bdf-e78c-4aca-94b4-d2ba74036dac",
-      "modelId": "wan-3",
-      "engineId": "wan-3",
-      "familyId": "wan",
-      "mode": "t2v",
-      "prompt": "A coherent 10-second cinematic three-shot story featuring the same adult female trail runner in an unbranded saffron windbreaker. Shot 1: intimate dawn close-up as her hands tighten a shoe lace beside a mountain trail, crisp fabric and breath in cold air. Shot 2: clean motivated cut to a low tracking shot as she runs through silver grass, stable face, body and wardrobe, gravel kicking naturally beneath her shoes. Shot 3: clean motivated cut to a wide summit reveal as she arrives, slows, and looks across a sunlit valley. Preserve exact character identity, clothing and geography across all shots. Natural wind, footsteps and breathing, premium outdoor campaign energy, realistic anatomy, decisive final beat. No captions, text, logos, watermark or unrelated people.",
-      "sourceKind": "text",
-      "sourceAssetIds": [],
-      "videoUrl": "https://media.maxvideoai.com/mcp-reference-staging/media-assets/1a3c083f-bbda-4dc0-9e2a-75d46a6b5cbb/36df3036-b5bc-4b10-acd4-fb079fa00ec1.mp4",
-      "thumbnailUrl": "https://media.maxvideoai.com/mcp-render-staging/1a3c083f-bbda-4dc0-9e2a-75d46a6b5cbb/97eb5593-1303-4a7e-a5d0-2738e04b9c95.jpg",
-      "width": 1280,
-      "height": 720,
-      "durationSec": 10.031,
-      "acceptedAt": "2026-09-02T15:44:24.524Z",
-      "reviewStatus": "accepted",
-      "publicationState": "gallery_only",
-      "watchPageCandidate": false,
-      "familyPlaylistId": "c35f77f7-1c57-406f-ad88-035475a2c369",
-      "modelPlaylistId": "a970d5cc-2631-40d3-bda5-23b63af39b65",
-      "playlistSlugs": [
-        "family-wan",
-        "examples-wan-3"
-      ]
+      "waveId": "p0",
+      "sourceManifest": "docs/model-launch/p0-video-example-pack.json",
+      "sourceStatus": "validated",
+      "sourceDigest": "b711cc0d9c625f7564b4ba8cf9287eb481c7462c97a5e353c8cc78ade5a69e93"
     },
     {
+      "waveId": "p1",
+      "sourceManifest": "docs/model-launch/p1-video-example-pack.json",
+      "sourceStatus": "missing",
+      "sourceDigest": null
+    }
+  ],
+  "assets": [
+    {
+      "waveId": "p0",
       "assetId": "output:322fa03b-47f1-4267-a384-1d04aac27167:video:0",
       "videoId": "322fa03b-47f1-4267-a384-1d04aac27167",
       "libraryAssetId": "ma_afdc576e01db4392823399e9cc631de2",
@@ -64,19 +48,20 @@
       ]
     },
     {
-      "assetId": "output:feccb90c-11ed-48ef-a96b-b7c80e5fe1c5:video:0",
-      "videoId": "feccb90c-11ed-48ef-a96b-b7c80e5fe1c5",
-      "libraryAssetId": "ma_5ce5bd0b82c440728134584ce0ba8709",
-      "jobId": "feccb90c-11ed-48ef-a96b-b7c80e5fe1c5",
-      "modelId": "wan-3-prime",
-      "engineId": "wan-3-prime",
+      "waveId": "p0",
+      "assetId": "output:e2ef7bdf-e78c-4aca-94b4-d2ba74036dac:video:0",
+      "videoId": "e2ef7bdf-e78c-4aca-94b4-d2ba74036dac",
+      "libraryAssetId": "ma_af7494789ff74a55a0c26341da1ee90a",
+      "jobId": "e2ef7bdf-e78c-4aca-94b4-d2ba74036dac",
+      "modelId": "wan-3",
+      "engineId": "wan-3",
       "familyId": "wan",
       "mode": "t2v",
-      "prompt": "A polished 10-second culinary campaign told in three coherent shots with the same adult chef, the same copper kitchen and the same signature plate. Shot 1: wide establishing view as the chef crosses a warm open kitchen carrying fresh herbs. Shot 2: precise macro cut to her hands spooning a glossy sauce and placing one final green leaf, realistic food texture and controlled steam. Shot 3: medium portrait as she slides the completed plate into a pool of light, looks up with a quiet satisfied smile, and the camera eases forward. Maintain exact identity, clothing, plate design, lighting direction and workspace continuity between shots. Natural kitchen ambience, gentle utensil sounds, premium restaurant-film pacing. No readable text, brand marks, watermark, extra staff or malformed hands.",
+      "prompt": "A coherent 10-second cinematic three-shot story featuring the same adult female trail runner in an unbranded saffron windbreaker. Shot 1: intimate dawn close-up as her hands tighten a shoe lace beside a mountain trail, crisp fabric and breath in cold air. Shot 2: clean motivated cut to a low tracking shot as she runs through silver grass, stable face, body and wardrobe, gravel kicking naturally beneath her shoes. Shot 3: clean motivated cut to a wide summit reveal as she arrives, slows, and looks across a sunlit valley. Preserve exact character identity, clothing and geography across all shots. Natural wind, footsteps and breathing, premium outdoor campaign energy, realistic anatomy, decisive final beat. No captions, text, logos, watermark or unrelated people.",
       "sourceKind": "text",
       "sourceAssetIds": [],
-      "videoUrl": "https://media.maxvideoai.com/mcp-reference-staging/media-assets/1a3c083f-bbda-4dc0-9e2a-75d46a6b5cbb/7a76c5cd-4e64-43c2-a6db-24c05737f472.mp4",
-      "thumbnailUrl": "https://media.maxvideoai.com/mcp-render-staging/1a3c083f-bbda-4dc0-9e2a-75d46a6b5cbb/4a0e6028-7d74-4d74-bce3-0a31f0a3894e.jpg",
+      "videoUrl": "https://media.maxvideoai.com/mcp-reference-staging/media-assets/1a3c083f-bbda-4dc0-9e2a-75d46a6b5cbb/36df3036-b5bc-4b10-acd4-fb079fa00ec1.mp4",
+      "thumbnailUrl": "https://media.maxvideoai.com/mcp-render-staging/1a3c083f-bbda-4dc0-9e2a-75d46a6b5cbb/97eb5593-1303-4a7e-a5d0-2738e04b9c95.jpg",
       "width": 1280,
       "height": 720,
       "durationSec": 10.031,
@@ -85,13 +70,14 @@
       "publicationState": "gallery_only",
       "watchPageCandidate": false,
       "familyPlaylistId": "c35f77f7-1c57-406f-ad88-035475a2c369",
-      "modelPlaylistId": "5c9b3c74-a499-4d54-bc95-694271ff401f",
+      "modelPlaylistId": "a970d5cc-2631-40d3-bda5-23b63af39b65",
       "playlistSlugs": [
         "family-wan",
-        "examples-wan-3-prime"
+        "examples-wan-3"
       ]
     },
     {
+      "waveId": "p0",
       "assetId": "output:f9a9022c-e587-4c6a-b49a-f2985908eee9:video:0",
       "videoId": "f9a9022c-e587-4c6a-b49a-f2985908eee9",
       "libraryAssetId": "ma_0ca13c04871841bbb21155d10985151e",
@@ -122,34 +108,36 @@
       ]
     },
     {
-      "assetId": "output:bd943cbc-c500-49ff-baff-d7e1f03fb2dc:video:0",
-      "videoId": "bd943cbc-c500-49ff-baff-d7e1f03fb2dc",
-      "libraryAssetId": "ma_3dfa0422ed3448b9a0525c43411d1d87",
-      "jobId": "bd943cbc-c500-49ff-baff-d7e1f03fb2dc",
-      "modelId": "ltx-2-5-fast",
-      "engineId": "ltx-2-5-fast",
-      "familyId": "ltx",
+      "waveId": "p0",
+      "assetId": "output:feccb90c-11ed-48ef-a96b-b7c80e5fe1c5:video:0",
+      "videoId": "feccb90c-11ed-48ef-a96b-b7c80e5fe1c5",
+      "libraryAssetId": "ma_5ce5bd0b82c440728134584ce0ba8709",
+      "jobId": "feccb90c-11ed-48ef-a96b-b7c80e5fe1c5",
+      "modelId": "wan-3-prime",
+      "engineId": "wan-3-prime",
+      "familyId": "wan",
       "mode": "t2v",
-      "prompt": "One energetic continuous six-second street-film shot at golden hour. An adult percussionist begins a sharp syncopated rhythm on hand drums in a colorful pedestrian square; two adult friends respond with spontaneous coordinated footwork while passersby remain softly distant. A lightweight handheld camera pushes through the circle and ends on the drummer's joyful expression. Prioritize rhythmic body motion synchronized with crisp native drum hits, shoe scuffs and a small crowd cheer. Natural diverse adults, stable faces and hands, believable contact and momentum, social-video immediacy without looking amateur. No captions, readable signs, logos, watermark or duplicated people.",
+      "prompt": "A polished 10-second culinary campaign told in three coherent shots with the same adult chef, the same copper kitchen and the same signature plate. Shot 1: wide establishing view as the chef crosses a warm open kitchen carrying fresh herbs. Shot 2: precise macro cut to her hands spooning a glossy sauce and placing one final green leaf, realistic food texture and controlled steam. Shot 3: medium portrait as she slides the completed plate into a pool of light, looks up with a quiet satisfied smile, and the camera eases forward. Maintain exact identity, clothing, plate design, lighting direction and workspace continuity between shots. Natural kitchen ambience, gentle utensil sounds, premium restaurant-film pacing. No readable text, brand marks, watermark, extra staff or malformed hands.",
       "sourceKind": "text",
       "sourceAssetIds": [],
-      "videoUrl": "https://media.maxvideoai.com/mcp-reference-staging/media-assets/1a3c083f-bbda-4dc0-9e2a-75d46a6b5cbb/434470e7-fafc-4266-a007-cdecdf3383ab.mp4",
-      "thumbnailUrl": "https://media.maxvideoai.com/mcp-render-staging/1a3c083f-bbda-4dc0-9e2a-75d46a6b5cbb/b7330c80-4b69-4cce-815c-1552ee2493fd.jpg",
+      "videoUrl": "https://media.maxvideoai.com/mcp-reference-staging/media-assets/1a3c083f-bbda-4dc0-9e2a-75d46a6b5cbb/7a76c5cd-4e64-43c2-a6db-24c05737f472.mp4",
+      "thumbnailUrl": "https://media.maxvideoai.com/mcp-render-staging/1a3c083f-bbda-4dc0-9e2a-75d46a6b5cbb/4a0e6028-7d74-4d74-bce3-0a31f0a3894e.jpg",
       "width": 1280,
       "height": 720,
-      "durationSec": 6.12,
+      "durationSec": 10.031,
       "acceptedAt": "2026-09-02T15:44:24.524Z",
       "reviewStatus": "accepted",
       "publicationState": "gallery_only",
       "watchPageCandidate": false,
-      "familyPlaylistId": "bb3851c1-c97c-45a8-9878-b795f28a9577",
-      "modelPlaylistId": "08f31273-bb79-49fd-96d2-c70b142aceba",
+      "familyPlaylistId": "c35f77f7-1c57-406f-ad88-035475a2c369",
+      "modelPlaylistId": "5c9b3c74-a499-4d54-bc95-694271ff401f",
       "playlistSlugs": [
-        "family-ltx",
-        "examples-ltx-2-5-fast"
+        "family-wan",
+        "examples-wan-3-prime"
       ]
     },
     {
+      "waveId": "p0",
       "assetId": "output:7b52c7eb-24fa-45a8-baa9-c675b7f50174:video:0",
       "videoId": "7b52c7eb-24fa-45a8-baa9-c675b7f50174",
       "libraryAssetId": "ma_3f95b11878aa4acda287eb0f64fff9b9",
@@ -180,6 +168,36 @@
       ]
     },
     {
+      "waveId": "p0",
+      "assetId": "output:bd943cbc-c500-49ff-baff-d7e1f03fb2dc:video:0",
+      "videoId": "bd943cbc-c500-49ff-baff-d7e1f03fb2dc",
+      "libraryAssetId": "ma_3dfa0422ed3448b9a0525c43411d1d87",
+      "jobId": "bd943cbc-c500-49ff-baff-d7e1f03fb2dc",
+      "modelId": "ltx-2-5-fast",
+      "engineId": "ltx-2-5-fast",
+      "familyId": "ltx",
+      "mode": "t2v",
+      "prompt": "One energetic continuous six-second street-film shot at golden hour. An adult percussionist begins a sharp syncopated rhythm on hand drums in a colorful pedestrian square; two adult friends respond with spontaneous coordinated footwork while passersby remain softly distant. A lightweight handheld camera pushes through the circle and ends on the drummer's joyful expression. Prioritize rhythmic body motion synchronized with crisp native drum hits, shoe scuffs and a small crowd cheer. Natural diverse adults, stable faces and hands, believable contact and momentum, social-video immediacy without looking amateur. No captions, readable signs, logos, watermark or duplicated people.",
+      "sourceKind": "text",
+      "sourceAssetIds": [],
+      "videoUrl": "https://media.maxvideoai.com/mcp-reference-staging/media-assets/1a3c083f-bbda-4dc0-9e2a-75d46a6b5cbb/434470e7-fafc-4266-a007-cdecdf3383ab.mp4",
+      "thumbnailUrl": "https://media.maxvideoai.com/mcp-render-staging/1a3c083f-bbda-4dc0-9e2a-75d46a6b5cbb/b7330c80-4b69-4cce-815c-1552ee2493fd.jpg",
+      "width": 1280,
+      "height": 720,
+      "durationSec": 6.12,
+      "acceptedAt": "2026-09-02T15:44:24.524Z",
+      "reviewStatus": "accepted",
+      "publicationState": "gallery_only",
+      "watchPageCandidate": false,
+      "familyPlaylistId": "bb3851c1-c97c-45a8-9878-b795f28a9577",
+      "modelPlaylistId": "08f31273-bb79-49fd-96d2-c70b142aceba",
+      "playlistSlugs": [
+        "family-ltx",
+        "examples-ltx-2-5-fast"
+      ]
+    },
+    {
+      "waveId": "p0",
       "assetId": "output:5d47efd3-c75c-42c0-91fc-e0e1d8b50357:video:0",
       "videoId": "5d47efd3-c75c-42c0-91fc-e0e1d8b50357",
       "libraryAssetId": "ma_40a522941e464089a006e93a3674d33c",
@@ -208,6 +226,7 @@
       ]
     },
     {
+      "waveId": "p0",
       "assetId": "output:a30e1f55-27ca-4cd5-9c6b-1cb990a5ca91:video:0",
       "videoId": "a30e1f55-27ca-4cd5-9c6b-1cb990a5ca91",
       "libraryAssetId": "ma_9381fbbb354d49299f537d9fb0e4505d",
@@ -238,34 +257,7 @@
       ]
     },
     {
-      "assetId": "output:4467d48a-8d6a-490c-96ba-09468aea313e:video:0",
-      "videoId": "4467d48a-8d6a-490c-96ba-09468aea313e",
-      "libraryAssetId": "ma_4e220ec3608a4f2b8cdff224d2510896",
-      "jobId": "4467d48a-8d6a-490c-96ba-09468aea313e",
-      "modelId": "grok-imagine-video-1-5",
-      "engineId": "grok-imagine-video-1-5",
-      "familyId": "grok",
-      "mode": "t2v",
-      "prompt": "A playful cinematic scene inside a tiny lunar cafe with a panoramic view of Earth. An adult astronaut barista in a clean unbranded white suit carefully pours a ribbon of coffee; in low gravity, three droplets lift from the cup, orbit once, then land perfectly as the barista raises an amused eyebrow. The camera slides sideways past silver cafe equipment, maintaining stable face, hands and cup geometry. Generate delightful subtle machine hum, fabric movement and the soft plink of the final droplet. Photorealistic materials with one surprising visual gag and a resolved finish. No spoken dialogue, captions, text, logos, watermark, extra limbs or trademarked designs.",
-      "sourceKind": "text",
-      "sourceAssetIds": [],
-      "videoUrl": "https://media.maxvideoai.com/mcp-reference-staging/media-assets/1a3c083f-bbda-4dc0-9e2a-75d46a6b5cbb/67fb2792-7393-4e8c-bddb-537ae13b27f2.mp4",
-      "thumbnailUrl": "https://media.maxvideoai.com/mcp-render-staging/1a3c083f-bbda-4dc0-9e2a-75d46a6b5cbb/050ab4c6-cb84-4148-9b90-48fd30fbbcb5.jpg",
-      "width": 1280,
-      "height": 720,
-      "durationSec": 5.042,
-      "acceptedAt": "2026-09-02T15:44:24.524Z",
-      "reviewStatus": "accepted",
-      "publicationState": "gallery_only",
-      "watchPageCandidate": false,
-      "familyPlaylistId": "8a3b0b74-91e8-436d-855e-30743c7552c5",
-      "modelPlaylistId": "4ff43943-c4bb-4beb-bfc3-1c8320920374",
-      "playlistSlugs": [
-        "family-grok",
-        "examples-grok-imagine-video-1-5"
-      ]
-    },
-    {
+      "waveId": "p0",
       "assetId": "output:2b74b648-63f2-4b19-b555-9dad0554ed40:video:0",
       "videoId": "2b74b648-63f2-4b19-b555-9dad0554ed40",
       "libraryAssetId": "ma_cd96d91660d243aa8c2c5f97f634b3c1",
@@ -296,34 +288,36 @@
       ]
     },
     {
-      "assetId": "output:abd1a29b-7de8-4bb5-bc24-1c670d3b0a88:video:0",
-      "videoId": "abd1a29b-7de8-4bb5-bc24-1c670d3b0a88",
-      "libraryAssetId": "ma_f21bb1fb963c408fa2dbd613075ffb48",
-      "jobId": "abd1a29b-7de8-4bb5-bc24-1c670d3b0a88",
-      "modelId": "flux-3",
-      "engineId": "flux-3",
-      "familyId": "flux",
+      "waveId": "p0",
+      "assetId": "output:4467d48a-8d6a-490c-96ba-09468aea313e:video:0",
+      "videoId": "4467d48a-8d6a-490c-96ba-09468aea313e",
+      "libraryAssetId": "ma_4e220ec3608a4f2b8cdff224d2510896",
+      "jobId": "4467d48a-8d6a-490c-96ba-09468aea313e",
+      "modelId": "grok-imagine-video-1-5",
+      "engineId": "grok-imagine-video-1-5",
+      "familyId": "grok",
       "mode": "t2v",
-      "prompt": "A photorealistic continuous tracking shot in a monumental glass railway station. One adult commuter in a charcoal coat walks steadily toward camera while the environment transitions seamlessly through four seasons around her: fresh spring leaves unfold, warm summer light sweeps across the floor, amber autumn foliage spirals through the concourse, then a delicate winter frost resolves on the windows. Preserve the woman's identity, stride, coat and architecture throughout; changes propagate physically through light, plants and atmosphere without cuts. Elegant high-end visual-effects demonstration, realistic reflections and depth, subtle station ambience with seasonal sound texture. No readable signs, brands, text, watermark, crowd morphing or duplicated subject.",
+      "prompt": "A playful cinematic scene inside a tiny lunar cafe with a panoramic view of Earth. An adult astronaut barista in a clean unbranded white suit carefully pours a ribbon of coffee; in low gravity, three droplets lift from the cup, orbit once, then land perfectly as the barista raises an amused eyebrow. The camera slides sideways past silver cafe equipment, maintaining stable face, hands and cup geometry. Generate delightful subtle machine hum, fabric movement and the soft plink of the final droplet. Photorealistic materials with one surprising visual gag and a resolved finish. No spoken dialogue, captions, text, logos, watermark, extra limbs or trademarked designs.",
       "sourceKind": "text",
       "sourceAssetIds": [],
-      "videoUrl": "https://media.maxvideoai.com/mcp-reference-staging/media-assets/1a3c083f-bbda-4dc0-9e2a-75d46a6b5cbb/5b92e939-d36c-493d-98be-3a7c46217129.mp4",
-      "thumbnailUrl": "https://media.maxvideoai.com/mcp-render-staging/1a3c083f-bbda-4dc0-9e2a-75d46a6b5cbb/28d85209-56f7-4561-8465-75453e15333f.jpg",
+      "videoUrl": "https://media.maxvideoai.com/mcp-reference-staging/media-assets/1a3c083f-bbda-4dc0-9e2a-75d46a6b5cbb/67fb2792-7393-4e8c-bddb-537ae13b27f2.mp4",
+      "thumbnailUrl": "https://media.maxvideoai.com/mcp-render-staging/1a3c083f-bbda-4dc0-9e2a-75d46a6b5cbb/050ab4c6-cb84-4148-9b90-48fd30fbbcb5.jpg",
       "width": 1280,
-      "height": 704,
+      "height": 720,
       "durationSec": 5.042,
       "acceptedAt": "2026-09-02T15:44:24.524Z",
       "reviewStatus": "accepted",
       "publicationState": "gallery_only",
       "watchPageCandidate": false,
-      "familyPlaylistId": "4db60518-0365-4304-bad8-dd1e29160fbb",
-      "modelPlaylistId": "e25e944c-7597-42f1-915d-69ad180f3607",
+      "familyPlaylistId": "8a3b0b74-91e8-436d-855e-30743c7552c5",
+      "modelPlaylistId": "4ff43943-c4bb-4beb-bfc3-1c8320920374",
       "playlistSlugs": [
-        "family-flux",
-        "examples-flux-3"
+        "family-grok",
+        "examples-grok-imagine-video-1-5"
       ]
     },
     {
+      "waveId": "p0",
       "assetId": "output:08ac14de-f53b-46c7-b6db-ae56c0095d7a:video:0",
       "videoId": "08ac14de-f53b-46c7-b6db-ae56c0095d7a",
       "libraryAssetId": "ma_a281987dad88493aa0d4bbfe51b9c6fb",
@@ -354,6 +348,36 @@
       ]
     },
     {
+      "waveId": "p0",
+      "assetId": "output:abd1a29b-7de8-4bb5-bc24-1c670d3b0a88:video:0",
+      "videoId": "abd1a29b-7de8-4bb5-bc24-1c670d3b0a88",
+      "libraryAssetId": "ma_f21bb1fb963c408fa2dbd613075ffb48",
+      "jobId": "abd1a29b-7de8-4bb5-bc24-1c670d3b0a88",
+      "modelId": "flux-3",
+      "engineId": "flux-3",
+      "familyId": "flux",
+      "mode": "t2v",
+      "prompt": "A photorealistic continuous tracking shot in a monumental glass railway station. One adult commuter in a charcoal coat walks steadily toward camera while the environment transitions seamlessly through four seasons around her: fresh spring leaves unfold, warm summer light sweeps across the floor, amber autumn foliage spirals through the concourse, then a delicate winter frost resolves on the windows. Preserve the woman's identity, stride, coat and architecture throughout; changes propagate physically through light, plants and atmosphere without cuts. Elegant high-end visual-effects demonstration, realistic reflections and depth, subtle station ambience with seasonal sound texture. No readable signs, brands, text, watermark, crowd morphing or duplicated subject.",
+      "sourceKind": "text",
+      "sourceAssetIds": [],
+      "videoUrl": "https://media.maxvideoai.com/mcp-reference-staging/media-assets/1a3c083f-bbda-4dc0-9e2a-75d46a6b5cbb/5b92e939-d36c-493d-98be-3a7c46217129.mp4",
+      "thumbnailUrl": "https://media.maxvideoai.com/mcp-render-staging/1a3c083f-bbda-4dc0-9e2a-75d46a6b5cbb/28d85209-56f7-4561-8465-75453e15333f.jpg",
+      "width": 1280,
+      "height": 704,
+      "durationSec": 5.042,
+      "acceptedAt": "2026-09-02T15:44:24.524Z",
+      "reviewStatus": "accepted",
+      "publicationState": "gallery_only",
+      "watchPageCandidate": false,
+      "familyPlaylistId": "4db60518-0365-4304-bad8-dd1e29160fbb",
+      "modelPlaylistId": "e25e944c-7597-42f1-915d-69ad180f3607",
+      "playlistSlugs": [
+        "family-flux",
+        "examples-flux-3"
+      ]
+    },
+    {
+      "waveId": "p0",
       "assetId": "output:34605e6e-0a3a-4b23-ac71-9985b486bd01:video:0",
       "videoId": "34605e6e-0a3a-4b23-ac71-9985b486bd01",
       "libraryAssetId": "ma_41fce509eff8455880032d301c7aae05",
@@ -382,6 +406,7 @@
       ]
     },
     {
+      "waveId": "p0",
       "assetId": "output:b7014d70-b6a7-4e64-b41f-36f836756f76:video:0",
       "videoId": "b7014d70-b6a7-4e64-b41f-36f836756f76",
       "libraryAssetId": "ma_dd193b6bfd534026863345a50fe97bcd",

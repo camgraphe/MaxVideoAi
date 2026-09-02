@@ -67,6 +67,7 @@ test('every non-publication P0 launch prerequisite is complete', () => {
     assert.deepEqual(engine?.engine.modes, EXPECTED_MODES.get(id), id);
     assert.ok(engine?.engine.pricingDetails, `${id} pricing`);
     assert.equal(readiness?.acceptedAssetCount, 2, `${id} accepted assets`);
+    assert.equal(readiness?.waveId, 'p0', `${id} launch wave`);
     assert.equal(readiness?.modelPlaylistSlug, `examples-${id}`);
     for (const locale of ['en', 'fr', 'es']) {
       assert.equal(existsSync(`content/models/${locale}/${model?.slug}.json`), true, `${locale}:${id}`);

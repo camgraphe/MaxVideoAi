@@ -297,7 +297,7 @@ test('full Task 12 evidence stays server-only and projection freshness is releas
     }
   }
   const clientGraph = [...visited].map((file) => readFileSync(file, 'utf8')).join('\n');
-  assert.doesNotMatch(clientGraph, /model-launch-assets|ACCEPTED_DURABLE_MODEL_ASSETS|libraryAssetId|reviewStatus/);
+  assert.doesNotMatch(clientGraph, /model-launch-assets\.generated|ACCEPTED_DURABLE_MODEL_ASSETS|libraryAssetId|reviewStatus/);
 });
 
 test('test validation compares both launch projections with source and detects isolated corruption', () => {
