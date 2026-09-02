@@ -14,7 +14,7 @@ import {
   estimateImageGeneration,
   type ImageEstimateInput,
 } from '@/server/images/estimate-image-generation';
-import type { PreflightRequest, PreflightResponse, PricingSnapshot } from '@/types/engines';
+import type { EngineCaps, PreflightRequest, PreflightResponse, PricingSnapshot } from '@/types/engines';
 import type { ImageGenerationMode, ImageGenerationRequest } from '@/types/image-generation';
 import {
   resolveGptImage2AutoInputImageSize,
@@ -54,6 +54,7 @@ export type ExecutorGenerationPricingDependencies = {
 
 export type GenerationPricingReferenceContext = Readonly<{
   resolvedReferences?: readonly ResolvedReference[];
+  resolvedEngine?: EngineCaps;
 }>;
 
 const defaultDependencies: GenerationPricingDependencies = {
@@ -254,6 +255,9 @@ export async function priceCanonicalGeneration(
   referenceContext: GenerationPricingReferenceContext = {},
 ): Promise<GenerationPricingResult> {
   if (request.surface === 'video') {
+    if (referenceContext.resolvedEngine && referenceContext.resolvedEngine.id !== request.engineId) {
+      throw new Error('Canonical pricing engine mismatch.');
+    }
     const settings = request.settings;
     const engineMode = toEngineGenerationMode(request.engineId, request.mode);
     const aspectRatio = optionalString(settings, 'aspectRatio');
@@ -274,6 +278,7 @@ export async function priceCanonicalGeneration(
       user: { memberTier: membershipTier },
     }, {
       trustedMediaPricingFacts: canonicalVideoTrustedMediaPricingFacts(request, referenceContext),
+      ...(referenceContext.resolvedEngine ? { resolvedEngine: referenceContext.resolvedEngine } : {}),
     });
     if (!result.ok || !result.pricing || result.total === undefined || !result.currency) {
       throw new Error('Canonical video pricing is unavailable.');

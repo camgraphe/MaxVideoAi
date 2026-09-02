@@ -426,6 +426,45 @@ test('project budget prices LTX A2V from the explicitly declared source-audio du
   assert.equal(result.proposals[0]?.lines[0]?.unitPrice.amountCents, 153);
 });
 
+test('project budget prices a prelaunch line with the exact catalog-resolved engine', async () => {
+  const candidate = registryCapability('wan-3');
+  let resolvedPricingEngineId: string | undefined;
+  const value = input([{
+    name: 'Wan 3 canary budget',
+    lines: [line({
+      engineId: 'wan-3',
+      mode: 't2v',
+      settings: { durationSec: 5, resolution: '720p', aspectRatio: '16:9', audio: true },
+    })],
+  }]);
+
+  const result = await calculateAgentProjectBudget(value, principal, {
+    listPublicEngines: async () => [candidate],
+    getMembershipStatus: async () => ({ pricing: { tier: 'member' } }),
+    computeCatalogRevision: () => 'mcp-catalog-v2:wan-3-canary',
+    priceGeneration: (request, membershipTier, resolvedCandidate) => priceCanonicalGeneration(
+      request,
+      membershipTier,
+      {
+        computeVideoPreflight: async (_payload, options) => {
+          resolvedPricingEngineId = options?.resolvedEngine?.id;
+          return {
+            ok: true,
+            total: 175,
+            currency: 'USD',
+            pricing: { totalCents: 175, currency: 'USD', membershipTier: 'member' },
+          };
+        },
+        estimateImage: async () => { throw new Error('unused'); },
+      },
+      { resolvedEngine: resolvedCandidate?.engine },
+    ),
+  });
+
+  assert.equal(resolvedPricingEngineId, 'wan-3');
+  assert.equal(result.proposals[0]?.total.amountCents, 175);
+});
+
 test('fails closed for invalid catalog, capability, reference, quantity, pricing, and overflow conditions', async () => {
   await assertError(calculateAgentProjectBudget(input([{ name: 'Missing', lines: [line({ engineId: 'hidden-model' })] }]), principal, makeDeps()), 'ENGINE_UNAVAILABLE');
   await assertError(calculateAgentProjectBudget(input([{ name: 'Mode', lines: [line({ mode: 'i2v', referenceRoles: [] })] }]), principal, makeDeps()), 'REFERENCE_REQUIRED');

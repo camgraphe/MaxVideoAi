@@ -109,6 +109,7 @@ export type AgentProjectBudgetDependencies = {
   priceGeneration(
     request: CanonicalGenerationRequest,
     membershipTier: AuthoritativeMembershipTier,
+    candidate: AgentPublicGenerationEngine,
   ): Promise<GenerationPricingResult>;
   computeCatalogRevision(engines: readonly AgentPublicGenerationEngine[]): string;
 };
@@ -116,7 +117,12 @@ export type AgentProjectBudgetDependencies = {
 const defaultDependencies: AgentProjectBudgetDependencies = {
   listPublicEngines: () => listPublicAgentGenerationEngines(),
   getMembershipStatus: getUserMembershipStatus,
-  priceGeneration: priceCanonicalGeneration,
+  priceGeneration: (request, membershipTier, candidate) => priceCanonicalGeneration(
+    request,
+    membershipTier,
+    undefined,
+    { resolvedEngine: candidate.engine },
+  ),
   computeCatalogRevision: computeGenerationCatalogRevision,
 };
 
@@ -531,7 +537,10 @@ export async function calculateAgentProjectBudget(
       }
       let unitPrice: BudgetMoney;
       try {
-        unitPrice = validatePrice(await dependencies.priceGeneration(request, membershipTier), membershipTier);
+        unitPrice = validatePrice(
+          await dependencies.priceGeneration(request, membershipTier, candidate),
+          membershipTier,
+        );
       } catch (error) {
         if (error instanceof AgentApiError) throw error;
         internalPricingError();
