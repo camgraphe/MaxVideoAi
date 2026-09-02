@@ -83,6 +83,12 @@ protection and the normal skew-protection setting remain enabled. The project
 serving `maxvideoai.com` is a different project and must stay read-only during
 staging operations.
 
+Because MCP protected-resource discovery is now publicly published, an
+unaliased deployment candidate returns the same stable resource metadata as the
+permanent staging host. The deployment wrapper validates that exact metadata
+before promotion. The candidate transport itself remains closed: `/api/mcp`
+must return `404` until the deployment is promoted to the exact staging host.
+
 The foundation application variables below belong in the staging project's
 Production target:
 

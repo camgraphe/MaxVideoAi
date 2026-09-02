@@ -165,7 +165,10 @@ body=''
 extra_headers=''
 case "$url" in
   'https://candidate-with-google-crons.vercel.app/') status='200' ;;
-  'https://candidate-with-google-crons.vercel.app/.well-known/oauth-protected-resource/mcp') status='404' ;;
+  'https://candidate-with-google-crons.vercel.app/.well-known/oauth-protected-resource/mcp')
+    status='200'
+    body='{"resource":"https://maxvideoai-mcp-staging.vercel.app/mcp","authorization_servers":["https://gecrywjztpbwbrlnomti.supabase.co/auth/v1"]}'
+    ;;
   'https://candidate-with-google-crons.vercel.app/api/mcp') status='404' ;;
   'https://maxvideoai-mcp-staging.vercel.app/') status='200' ;;
   'https://maxvideoai-mcp-staging.vercel.app/.well-known/oauth-protected-resource/mcp')
