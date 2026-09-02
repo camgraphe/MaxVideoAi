@@ -78,6 +78,20 @@ test('Wan ref2v requires any supported reference, including video-only or audio-
   }
 });
 
+test('Wan i2v accepts its required start image without applying the ref2v reference pool', () => {
+  for (const engineId of ['wan-3', 'wan-3-prime']) {
+    const value = request(engineId, 'i2v', {
+      references: [{
+        kind: 'https',
+        url: 'https://cdn.example.com/start.png',
+        role: 'first_frame',
+        mediaKind: 'image',
+      }],
+    });
+    assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(value, candidate(engineId)));
+  }
+});
+
 test('site validation uses Wan provider field names and accepts audio-only references', () => {
   const schema = candidate('wan-3').engine.inputSchema;
   assert.deepEqual(validateModeMediaInputs({

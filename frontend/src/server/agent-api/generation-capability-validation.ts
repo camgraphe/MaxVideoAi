@@ -729,7 +729,11 @@ function validateReferences(
     if (count > maximum) fail('references', 'reference_invalid');
   }
   const atLeastOneReferenceField = candidate.engine.inputSchema?.constraints?.atLeastOneReferenceField;
-  if (Array.isArray(atLeastOneReferenceField) && atLeastOneReferenceField.length) {
+  if (
+    request.mode === 'ref2v'
+    && Array.isArray(atLeastOneReferenceField)
+    && atLeastOneReferenceField.length
+  ) {
     const accepted = new Set(atLeastOneReferenceField);
     const hasReference = selectedFields.some((fields) => fields.some((field) => accepted.has(field.id)));
     if (!hasReference) fail('references', 'reference_required');
