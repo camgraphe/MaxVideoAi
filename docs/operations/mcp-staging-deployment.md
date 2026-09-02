@@ -88,6 +88,8 @@ unaliased deployment candidate returns the same stable resource metadata as the
 permanent staging host. The deployment wrapper validates that exact metadata
 before promotion. The candidate transport itself remains closed: `/api/mcp`
 must return `404` until the deployment is promoted to the exact staging host.
+After promotion, the unauthenticated MCP challenge must use the current
+transport cache policy `private, no-store, no-transform`.
 
 The foundation application variables below belong in the staging project's
 Production target:

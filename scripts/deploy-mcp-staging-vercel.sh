@@ -476,7 +476,7 @@ assert_protocol_endpoints() {
 
   test "$mode" = 'stable'
   test "$mcp_status" = '401'
-  grep -Eiq '^cache-control:[[:space:]]*private, no-store\r?$' "${prefix}.mcp.headers"
+  grep -Eiq '^cache-control:[[:space:]]*private, no-store, no-transform\r?$' "${prefix}.mcp.headers"
   grep -Eiq "^www-authenticate:[[:space:]]*Bearer resource_metadata=\"https://${STABLE_HOST}/\.well-known/oauth-protected-resource/mcp\"\r?$" \
     "${prefix}.mcp.headers"
 }
