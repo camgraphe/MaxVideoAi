@@ -119,3 +119,24 @@ actual company/trust-link scanning intact.
 
 Node emitted the current engine warning during the final command run: this
 worktree is running Node `v23.9.0` while the repository declares Node `22.x`.
+
+## Launch verification — 2026-09-02
+
+Final release gates were rerun with Node `v22.23.2`.
+
+| Gate | Result |
+| --- | --- |
+| P0 architecture, runtime, pricing, marketing, SEO, MCP, examples, scoreboards, readiness | PASS — 105/105 tests |
+| Repository validation | PASS — 3,923/3,923 tests |
+| Model registry | PASS — 50 models, 2 tombstones, generated projections current |
+| Pricing | PASS — immutable baseline 178 rows; public baseline 556 rows; audit 246/246, 0 mismatches |
+| i18n | PASS — FR 4,219 keys; ES 4,213 keys |
+| SEO, public exposure, TypeScript, ESLint | PASS |
+| Production build | PASS — 828 static pages generated |
+| Local public smoke test | PASS — 25/25 routes; canonical, reciprocal locale alternates and JSON-LD verified |
+| P0 comparison policy | PASS — 8/8 scoreboards, no showdown media or future-media promise |
+| Authenticated workspace and MCP | PASS — non-paid mode, lookup, recommendation, budget, prepare and validation contracts |
+
+Search Console production measurements are stored in
+`docs/model-launch/p0-video-post-launch-monitoring.md`; Day 0 starts only when
+the production publication is live.
