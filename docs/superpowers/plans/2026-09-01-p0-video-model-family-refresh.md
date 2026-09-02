@@ -831,12 +831,9 @@ git commit -m "feat: strengthen p0 seo discovery graph"
 
 - Create: `docs/model-launch/p0-video-example-pack.json`
 - Create: `docs/model-launch/p0-video-example-review.md`
-- Modify: `frontend/config/video-seo-editorial.ts`
-- Modify: `frontend/config/sitemap-timestamps.ts`
 - Mutate through existing server APIs: `videos`, `playlists`, and `playlist_items` rows for `family-{wan,ltx,grok,flux}` and `examples-{each-p0-model-slug}`
 - Modify: `tests/model-examples-content-contract.test.ts`
 - Modify: `tests/video-seo-editorial-contract.test.ts`
-- Modify: `tests/video-sitemap-lastmod.test.ts`
 - Create: `tests/p0-video-example-pack.test.ts`
 
 - [x] **Step 1: Re-read live MCP model details and create the comparable brief**
@@ -845,11 +842,11 @@ Use `maxvideoai:plan` to resolve the live seven-model capabilities. Define two s
 
 - [x] **Step 2: Add a failing manifest contract**
 
-Require exactly two accepted durable assets per model, truthful engine/mode IDs, prompt/source metadata, dimensions/duration, library asset ID, family playlist ID, model playlist ID, review status, and at least one watch-page candidate per model.
+Require exactly two accepted durable assets per model, truthful engine/mode IDs, prompt/source metadata, dimensions/duration, library asset ID, family playlist ID, model playlist ID, and review status. Launch evidence remains gallery-only; it must not preselect or pre-approve Video SEO pages.
 
 ```ts
 expect(acceptedByModel.get(modelId)).toHaveLength(2);
-expect(watchCandidatesByModel.get(modelId)?.length).toBeGreaterThanOrEqual(1);
+expect(acceptedByModel.get(modelId)?.every((asset) => !asset.watchPageCandidate)).toBe(true);
 ```
 
 - [x] **Step 3: Calculate and present the complete project budget**
@@ -869,24 +866,24 @@ For each line:
 
 Any failed/rejected retry gets a new quote and separate approval. Never consume the retry allowance automatically.
 
-- [x] **Step 5: Attach accepted assets and curate watch candidates**
+- [x] **Step 5: Attach accepted assets through normal video publication**
 
-Attach both accepted assets to the correct model and family playlists through the existing playlist mutations. Record the resulting durable video IDs and playlist slugs in `p0-video-example-pack.json` so database state is auditable. Only editorially approved candidates receive entries in `frontend/config/video-seo-editorial.ts` with unique watch-page title/H1/description, durable thumbnail/video URL, canonical ownership, internal links, and video-sitemap eligibility. Weak candidates remain gallery-only. Never relabel an older LTX/Wan asset as P0.
+Attach both accepted assets to the correct model and family playlists through the existing playlist mutations. Record the resulting durable video IDs and playlist slugs in `p0-video-example-pack.json` so database state is auditable. Keep all fourteen as ordinary gallery videos. A later Video SEO rollout starts from the admin cockpit, creates database-backed drafts, and requires its normal human review and QA before any page becomes indexable. Never relabel an older LTX/Wan asset as P0.
 
 - [x] **Step 6: Run gallery and video-search contracts**
 
 Run:
 
 ```bash
-pnpm exec vitest run tests/p0-video-example-pack.test.ts tests/model-examples-content-contract.test.ts tests/model-examples-view-model.test.ts tests/video-seo-editorial-contract.test.ts tests/video-seo-editorial-validation.test.ts tests/video-sitemap-lastmod.test.ts tests/video-pages-sitemap.test.ts
+pnpm exec vitest run tests/p0-video-example-pack.test.ts tests/model-examples-content-contract.test.ts tests/model-examples-view-model.test.ts tests/video-seo-editorial-contract.test.ts tests/video-seo-editorial-validation.test.ts tests/video-pages-sitemap.test.ts
 node scripts/public-media-origin-guard.mjs
 git diff --check
 ```
 
-- [x] **Step 7: Commit durable manifests and approved editorial data**
+- [x] **Step 7: Commit durable manifests and gallery publication data**
 
 ```bash
-git add docs/model-launch/p0-video-example-pack.json docs/model-launch/p0-video-example-review.md frontend/config/video-seo-editorial.ts frontend/config/sitemap-timestamps.ts tests/p0-video-example-pack.test.ts tests/model-examples-content-contract.test.ts tests/video-seo-editorial-contract.test.ts tests/video-sitemap-lastmod.test.ts
+git add docs/model-launch/p0-video-example-pack.json docs/model-launch/p0-video-example-review.md tests/p0-video-example-pack.test.ts tests/model-examples-content-contract.test.ts tests/video-seo-editorial-contract.test.ts
 git commit -m "feat: add p0 video example pack"
 ```
 

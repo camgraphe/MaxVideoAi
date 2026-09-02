@@ -66,8 +66,8 @@ type AcceptedAsset = {
   durationSec: number;
   acceptedAt: string;
   reviewStatus: 'accepted';
-  publicationState: 'pending_publication' | 'gallery_only';
-  watchPageCandidate: boolean;
+  publicationState: 'gallery_only';
+  watchPageCandidate: false;
   familyPlaylistId: string;
   modelPlaylistId: string;
   playlistSlugs: readonly string[];
@@ -124,8 +124,8 @@ function acceptedAssets(): AcceptedAsset[] {
     durationSec: 6,
     acceptedAt: '2026-09-01T12:00:00.000Z',
     reviewStatus: 'accepted',
-    publicationState: 'pending_publication',
-    watchPageCandidate: true,
+    publicationState: 'gallery_only',
+    watchPageCandidate: false,
     familyPlaylistId: `playlist_family_${familyByModelId[modelId]}`,
     modelPlaylistId: `playlist_model_${modelId}`,
     playlistSlugs: [`family-${familyByModelId[modelId]}`, `examples-${modelId}`],
@@ -259,12 +259,9 @@ test('Task 12 evidence modes and source attachments follow each canonical Fal in
   textWithSource[0].sourceAssetIds = ['source_image_for_text_mode'];
   assert.equal(validatePack({ schemaVersion: 1, assets: textWithSource }).ok, false);
 
-  const galleryWatchClaim = structuredClone(complete);
-  galleryWatchClaim[0].publicationState = 'gallery_only';
-  galleryWatchClaim[0].watchPageCandidate = true;
-  galleryWatchClaim[1].publicationState = 'gallery_only';
-  galleryWatchClaim[1].watchPageCandidate = false;
-  assert.equal(validatePack({ schemaVersion: 1, assets: galleryWatchClaim }).ok, false);
+  const prematureSeoClaim = structuredClone(complete) as Array<AcceptedAsset & { watchPageCandidate: boolean }>;
+  prematureSeoClaim[0].watchPageCandidate = true;
+  assert.equal(validatePack({ schemaVersion: 1, assets: prematureSeoClaim }).ok, false);
 });
 
 test('full Task 12 evidence stays server-only and projection freshness is release-gated', () => {

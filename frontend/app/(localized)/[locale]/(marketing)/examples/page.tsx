@@ -160,7 +160,7 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
   const heroTitle = modelLanding?.heroTitle ?? content.hero.title;
   const heroSubtitle = modelLanding?.heroSubtitle ?? content.hero.subtitle;
   const heroBody = (modelLanding?.intro ?? hubHeroBody).replace(/\s+/g, ' ').trim();
-  const heroLead = modelLanding ? heroBody : compactLeadCopy(heroBody, 152);
+  const heroLead = compactLeadCopy(heroBody, modelLanding ? 220 : 152);
   const klingSectionTitles = getKlingExamplesSectionTitles(appLocale, isKlingLanding);
   const modelLandingSections = modelLanding?.sections.map((section, index) => ({
     ...section,

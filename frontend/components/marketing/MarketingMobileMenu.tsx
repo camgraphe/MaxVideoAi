@@ -48,7 +48,12 @@ export function MarketingMobileMenu({
   const loginHref = buildLoginHref({ mode: 'signin', nextPath: '/app' });
 
   return (
-    <div className={clsx('fixed inset-0 z-50 bg-bg px-4 py-6 sm:px-6', isHomePage && 'home-monochrome')}>
+    <div
+      className={clsx(
+        'fixed inset-0 z-50 overflow-y-auto overscroll-y-contain bg-bg px-4 py-6 sm:px-6',
+        isHomePage && 'home-monochrome'
+      )}
+    >
       <div className="mx-auto flex max-w-sm items-center justify-end">
         <Button
           type="button"

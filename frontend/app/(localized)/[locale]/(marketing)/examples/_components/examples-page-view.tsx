@@ -162,6 +162,7 @@ export function ExamplesPageView({
   usesCurrentAndSupportedBlocks,
 }: ExamplesPageViewProps) {
   const hasRouteHero = Boolean(mainVideo && mainVideoFeature.contentUrl);
+  const familyNotesLabel = locale === 'fr' ? 'Notes sur la famille' : locale === 'es' ? 'Notas de la familia' : 'Family notes';
 
   return (
     <>
@@ -238,8 +239,11 @@ export function ExamplesPageView({
           />
 
           {isModelLanding && heroLead !== heroBody ? (
-            <section className="mx-auto max-w-4xl text-sm leading-relaxed text-text-secondary/90">
-              <p>{heroBody}</p>
+            <section className="mx-auto w-full max-w-4xl">
+              <details className="rounded-[12px] border border-hairline bg-surface/75 px-4 py-3 text-sm text-text-secondary shadow-sm">
+                <summary className="cursor-pointer font-semibold text-text-primary">{familyNotesLabel}</summary>
+                <p className="mt-3 leading-relaxed text-text-secondary/90">{heroBody}</p>
+              </details>
             </section>
           ) : null}
 

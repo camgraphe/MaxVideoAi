@@ -295,6 +295,10 @@ export function HeaderBar() {
               const isOpen = desktopDropdownOpen === item.key;
               const allLabel = t(dropdown.allLabelKey, dropdown.allLabelFallback);
               const hasSections = Boolean(dropdown.sections?.length);
+              const usesTwoColumnItems = !hasSections && dropdown.desktopColumns === 2;
+              const dropdownWidthClass = hasSections ? 'min-w-[520px] w-max' : usesTwoColumnItems ? 'min-w-[420px] w-max' : item.key === 'compare' ? 'min-w-[280px] w-max' : 'min-w-[240px]';
+              const dropdownGridClass = hasSections ? 'grid-cols-[1fr_1fr]' : 'grid-cols-1';
+              const dropdownItemsClass = usesTwoColumnItems ? 'grid grid-cols-2 gap-1' : 'flex flex-col gap-1';
               return (
                 <div
                   key={item.href}
@@ -328,15 +332,15 @@ export function HeaderBar() {
                     <div
                       className={clsx(
                         'rounded-card border border-hairline bg-surface p-2 shadow-float',
-                        hasSections ? 'min-w-[520px] w-max' : item.key === 'compare' ? 'min-w-[280px] w-max' : 'min-w-[240px]'
+                        dropdownWidthClass
                       )}
                     >
-                      <div className={clsx('grid gap-3', hasSections ? 'grid-cols-[1fr_1fr]' : 'grid-cols-1')}>
-                        <nav className="flex flex-col gap-1" role="menu" aria-label={label}>
+                      <div className={clsx('grid gap-3', dropdownGridClass)}>
+                        <nav className={dropdownItemsClass} role="menu" aria-label={label}>
                           <Link
                             href={resolveLocalizedHref(dropdown.allHref)}
                             prefetch={false}
-                            className="rounded-input px-3 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring whitespace-nowrap"
+                            className={clsx('rounded-input px-3 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring whitespace-nowrap', usesTwoColumnItems ? 'col-span-2' : undefined)}
                             role="menuitem"
                             onClick={() => closeDesktopDropdown(200)}
                           >

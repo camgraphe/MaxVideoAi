@@ -355,9 +355,14 @@ test('examples route components own nav and JSON-LD rendering', () => {
   );
   assert.match(pageViewSource, /detailsCtaLabel=\{galleryUiCopy\.detailsCta\}/);
   assert.match(pageViewSource, /ExamplesJsonLdScripts/, 'page view should compose JSON-LD scripts');
+  assert.match(pageViewSource, /<details className="rounded-\[12px\]/, 'long family notes should stay available without dominating the page');
+  assert.match(pageViewSource, /Notes sur la famille|Notas de la familia|Family notes/, 'the compact family disclosure should be localized');
   assert.match(engineFilterNavSource, /export function ExamplesEngineFilterNav/, 'engine filter nav should be exported');
   assert.match(engineFilterNavSource, /sticky top-16 z-\[35\]/, 'engine filter nav should own sticky filter markup');
   assert.match(engineFilterNavSource, /getEngineAccentOutlineStyle/, 'engine filter nav should own active brand outline styling');
+  assert.match(engineFilterNavSource, /overflow-x-auto overscroll-x-contain/, 'the expanded family rail should scroll instead of squeezing labels');
+  assert.match(engineFilterNavSource, /flex w-max min-w-full/, 'family filters should keep their natural label width');
+  assert.match(pageSource, /compactLeadCopy\(heroBody, modelLanding \? 220 : 152\)/, 'family landing heroes should stay concise above the fold');
   assert.match(jsonLdScriptsSource, /export function ExamplesJsonLdScripts/, 'JSON-LD scripts component should be exported');
   assert.match(jsonLdScriptsSource, /dangerouslySetInnerHTML/, 'JSON-LD scripts component should own JSON-LD script rendering');
   assert.match(jsonLdScriptsSource, /serializeJsonLd/, 'JSON-LD scripts component should serialize via route helper');

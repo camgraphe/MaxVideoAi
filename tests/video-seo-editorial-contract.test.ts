@@ -43,25 +43,19 @@ test('every watchlist video has an explicit editorial SEO entry', () => {
   }
 });
 
-test('every P0 model has exactly one approved canonical watch candidate', () => {
+test('P0 launch videos stay outside the static SEO rollout until an admin promotes them', () => {
   const manifest = JSON.parse(readFileSync('docs/model-launch/p0-video-example-pack.json', 'utf8')) as {
-    assets: Array<{ modelId: string; videoId: string; watchPageCandidate: boolean }>;
+    assets: Array<{ modelId: string; videoId: string }>;
   };
-  const selected = manifest.assets.filter(({ watchPageCandidate }) => watchPageCandidate);
-  assert.equal(selected.length, 7);
 
-  for (const asset of selected) {
-    const editorial = getVideoSeoEditorialEntry(asset.videoId);
-    const watch = VIDEO_SEO_WATCHLIST.find(({ id }) => id === asset.videoId);
-    assert.equal(editorial?.seoStatus, 'approved', asset.modelId);
-    assert.equal(editorial?.modelSlug, asset.modelId, asset.modelId);
-    assert.ok(editorial?.canonicalSlug, asset.modelId);
-    assert.equal(watch?.watchPageEligible, true, asset.modelId);
-    assert.equal(watch?.sourcePath, `/models/${asset.modelId}`, asset.modelId);
+  for (const asset of manifest.assets) {
+    assert.equal(getVideoSeoEditorialEntry(asset.videoId), null, `${asset.modelId} must enter SEO through the admin workflow`);
+    assert.equal(
+      VIDEO_SEO_WATCHLIST.some(({ id }) => id === asset.videoId),
+      false,
+      `${asset.modelId} must not be pre-approved in the static watchlist`,
+    );
   }
-  assert.equal(new Set(selected.map(({ videoId }) => (
-    getVideoSeoEditorialEntry(videoId)?.canonicalSlug
-  ))).size, 7);
 });
 
 test('editorial SEO config uses status, not a direct sitemap toggle', () => {

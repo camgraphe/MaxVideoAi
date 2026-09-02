@@ -429,8 +429,22 @@ test('Seedance 2.5 and Seedance 2.0 lead the app menu while the MiniMax H3 launc
   );
   assert.equal(MARKETING_NAV_COMPARE.length, 10);
   assert.equal(MARKETING_NAV_COMPARE[0]?.badge, 'new');
-  assert.deepEqual(MARKETING_NAV_EXAMPLES.map((item) => item.key), ['veo', 'seedance', 'hailuo', 'ltx', 'wan', 'kling', 'grok', 'flux']);
-  assert.deepEqual(MARKETING_FOOTER_EXAMPLES.map((item) => item.key), ['veo', 'seedance', 'hailuo', 'ltx', 'wan', 'kling', 'grok', 'flux']);
+  const expectedExampleFamilies = [
+    'veo',
+    'seedance',
+    'ltx',
+    'kling',
+    'wan',
+    'happy-horse',
+    'sora',
+    'luma',
+    'grok',
+    'flux',
+    'pika',
+    'hailuo',
+  ];
+  assert.deepEqual(MARKETING_NAV_EXAMPLES.map((item) => item.key), expectedExampleFamilies);
+  assert.deepEqual(MARKETING_FOOTER_EXAMPLES.map((item) => item.key), expectedExampleFamilies);
 });
 
 test('Seedance 1.5 Pro stays active while Seedance 2.0 keeps the primary alias and promoted slots', () => {

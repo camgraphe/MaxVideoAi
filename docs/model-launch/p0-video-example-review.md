@@ -4,7 +4,7 @@ Review date: 2026-09-02
 
 All fourteen launch renders were inspected from local final MP4 files using multi-frame contact sheets. Dimensions, duration and audio-stream presence were measured with ffprobe. The accepted pack is attached on staging to one model playlist and one family playlist per video: 14 durable library assets and 28 verified playlist attachments.
 
-The review gate covers opening readability, subject or source identity, motion, anatomy and geometry, unwanted text or watermarking, and the final beat. The seven text-to-video renders are the watch-page candidates; the image-to-video renders remain supporting gallery evidence.
+The review gate covers opening readability, subject or source identity, motion, anatomy and geometry, unwanted text or watermarking, and the final beat. All fourteen renders follow the normal video and playlist publication flow. Video SEO selection remains a separate admin decision after publication.
 
 ## Wan
 
@@ -17,7 +17,7 @@ The review gate covers opening readability, subject or source identity, motion, 
 - Anatomy and geometry: limbs, trail perspective and alpine horizon remain credible in the reviewed frames.
 - Text and watermark: none observed.
 - Final beat: clean summit pause with a wide landscape payoff.
-- Decision: accepted; primary watch-page candidate for Wan 3.
+- Decision: accepted as text-to-video gallery evidence.
 
 ### wan-3 — i2v
 
@@ -39,7 +39,7 @@ The review gate covers opening readability, subject or source identity, motion, 
 - Anatomy and geometry: hands, plate, counters and kitchen equipment remain readable without material deformation.
 - Text and watermark: none observed.
 - Final beat: confident plated-dish presentation in close framing.
-- Decision: accepted; primary watch-page candidate for Wan 3 Prime.
+- Decision: accepted as text-to-video gallery evidence.
 
 ### wan-3-prime — i2v
 
@@ -63,7 +63,7 @@ The review gate covers opening readability, subject or source identity, motion, 
 - Anatomy and geometry: faces and bodies remain convincing at the reviewed key moments despite a busy background.
 - Text and watermark: none observed.
 - Final beat: close portrait lands with a clear smile and human expression.
-- Decision: accepted; primary watch-page candidate for LTX 2.5 Fast.
+- Decision: accepted as text-to-video gallery evidence.
 
 ### ltx-2-5-fast — i2v
 
@@ -85,7 +85,7 @@ The review gate covers opening readability, subject or source identity, motion, 
 - Anatomy and geometry: faces, fingers and lantern construction remain credible in the reviewed frames.
 - Text and watermark: none observed.
 - Final beat: the floating lantern separates cleanly from the couple for an emotional payoff.
-- Decision: accepted; primary watch-page candidate for LTX 2.5 Pro.
+- Decision: accepted as text-to-video gallery evidence.
 
 ### ltx-2-5-pro — i2v
 
@@ -109,7 +109,7 @@ The review gate covers opening readability, subject or source identity, motion, 
 - Anatomy and geometry: face, hands, cup and equipment remain readable; the stylized liquid motion is intentional.
 - Text and watermark: none observed.
 - Final beat: a clear smile and completed pour resolve the miniature story.
-- Decision: accepted; primary watch-page candidate and first Grok-family editorial example.
+- Decision: accepted as text-to-video gallery evidence and first Grok-family editorial example.
 
 ### grok-imagine-video-1-5 — i2v
 
@@ -133,7 +133,7 @@ The review gate covers opening readability, subject or source identity, motion, 
 - Anatomy and geometry: figure scale, tracks, arches and platforms remain coherent across the transformation.
 - Text and watermark: none observed.
 - Final beat: the winter state lands as a crisp final environmental contrast.
-- Decision: accepted; primary watch-page candidate for FLUX 3.
+- Decision: accepted as text-to-video gallery evidence.
 
 ### flux-3 — i2v
 
@@ -155,7 +155,7 @@ The review gate covers opening readability, subject or source identity, motion, 
 - Anatomy and geometry: wheel, frame and rider alignment remain coherent in the reviewed frames.
 - Text and watermark: none observed.
 - Final beat: the bright tunnel exit gives the short clip a decisive destination.
-- Decision: accepted; primary watch-page candidate for FLUX 3 Draft.
+- Decision: accepted as text-to-video gallery evidence.
 
 ### flux-3-draft — i2v
 
@@ -170,7 +170,7 @@ The review gate covers opening readability, subject or source identity, motion, 
 
 ## Publication decision
 
-- Watch pages: one text-to-video candidate per P0 model, seven total.
+- Watch pages: none preselected or pre-approved; promotion happens from the admin Video SEO workflow after normal publication and review.
 - Galleries: both accepted assets per model, fourteen total.
 - Comparison pages: scoreboard-only; no face-to-face video block is authorized for this launch.
 - Legacy content: no older LTX or Wan video is relabeled as a new-model render.

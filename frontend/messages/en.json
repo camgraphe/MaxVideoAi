@@ -79,6 +79,9 @@
           "veo": "Veo",
           "wan": "Wan",
           "seedance": "Seedance",
+          "ltx": "LTX",
+          "happy-horse": "Happy Horse",
+          "luma": "Luma Ray",
           "pika": "Pika",
           "hailuo": "Hailuo",
           "grok": "Grok Imagine Video",
@@ -245,6 +248,8 @@
           "seedance": "Seedance examples",
           "hailuo": "Hailuo examples",
           "pika": "Pika examples",
+          "happy-horse": "Happy Horse examples",
+          "luma": "Luma Ray examples",
           "grok": "Grok Imagine Video examples",
           "flux": "FLUX examples",
           "all": "All examples"

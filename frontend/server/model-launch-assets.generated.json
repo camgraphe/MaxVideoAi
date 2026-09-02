@@ -3,7 +3,7 @@
   "generatedBy": "scripts/generate-p0-launch-assets.ts",
   "sourceManifest": "docs/model-launch/p0-video-example-pack.json",
   "sourceStatus": "validated",
-  "sourceDigest": "c821137f2eeceec877aa0cebb26889fa30d50c7929e4609539556ca6a3fdccac",
+  "sourceDigest": "b711cc0d9c625f7564b4ba8cf9287eb481c7462c97a5e353c8cc78ade5a69e93",
   "assets": [
     {
       "assetId": "output:e2ef7bdf-e78c-4aca-94b4-d2ba74036dac:video:0",
@@ -24,8 +24,8 @@
       "durationSec": 10.031,
       "acceptedAt": "2026-09-02T15:44:24.524Z",
       "reviewStatus": "accepted",
-      "publicationState": "pending_publication",
-      "watchPageCandidate": true,
+      "publicationState": "gallery_only",
+      "watchPageCandidate": false,
       "familyPlaylistId": "c35f77f7-1c57-406f-ad88-035475a2c369",
       "modelPlaylistId": "a970d5cc-2631-40d3-bda5-23b63af39b65",
       "playlistSlugs": [
@@ -82,8 +82,8 @@
       "durationSec": 10.031,
       "acceptedAt": "2026-09-02T15:44:24.524Z",
       "reviewStatus": "accepted",
-      "publicationState": "pending_publication",
-      "watchPageCandidate": true,
+      "publicationState": "gallery_only",
+      "watchPageCandidate": false,
       "familyPlaylistId": "c35f77f7-1c57-406f-ad88-035475a2c369",
       "modelPlaylistId": "5c9b3c74-a499-4d54-bc95-694271ff401f",
       "playlistSlugs": [
@@ -140,8 +140,8 @@
       "durationSec": 6.12,
       "acceptedAt": "2026-09-02T15:44:24.524Z",
       "reviewStatus": "accepted",
-      "publicationState": "pending_publication",
-      "watchPageCandidate": true,
+      "publicationState": "gallery_only",
+      "watchPageCandidate": false,
       "familyPlaylistId": "bb3851c1-c97c-45a8-9878-b795f28a9577",
       "modelPlaylistId": "08f31273-bb79-49fd-96d2-c70b142aceba",
       "playlistSlugs": [
@@ -198,8 +198,8 @@
       "durationSec": 6.12,
       "acceptedAt": "2026-09-02T15:44:24.524Z",
       "reviewStatus": "accepted",
-      "publicationState": "pending_publication",
-      "watchPageCandidate": true,
+      "publicationState": "gallery_only",
+      "watchPageCandidate": false,
       "familyPlaylistId": "bb3851c1-c97c-45a8-9878-b795f28a9577",
       "modelPlaylistId": "ec63d5f9-2034-4754-b0fd-083c296e8908",
       "playlistSlugs": [
@@ -256,8 +256,8 @@
       "durationSec": 5.042,
       "acceptedAt": "2026-09-02T15:44:24.524Z",
       "reviewStatus": "accepted",
-      "publicationState": "pending_publication",
-      "watchPageCandidate": true,
+      "publicationState": "gallery_only",
+      "watchPageCandidate": false,
       "familyPlaylistId": "8a3b0b74-91e8-436d-855e-30743c7552c5",
       "modelPlaylistId": "4ff43943-c4bb-4beb-bfc3-1c8320920374",
       "playlistSlugs": [
@@ -314,8 +314,8 @@
       "durationSec": 5.042,
       "acceptedAt": "2026-09-02T15:44:24.524Z",
       "reviewStatus": "accepted",
-      "publicationState": "pending_publication",
-      "watchPageCandidate": true,
+      "publicationState": "gallery_only",
+      "watchPageCandidate": false,
       "familyPlaylistId": "4db60518-0365-4304-bad8-dd1e29160fbb",
       "modelPlaylistId": "e25e944c-7597-42f1-915d-69ad180f3607",
       "playlistSlugs": [
@@ -372,8 +372,8 @@
       "durationSec": 5.042,
       "acceptedAt": "2026-09-02T15:44:24.524Z",
       "reviewStatus": "accepted",
-      "publicationState": "pending_publication",
-      "watchPageCandidate": true,
+      "publicationState": "gallery_only",
+      "watchPageCandidate": false,
       "familyPlaylistId": "4db60518-0365-4304-bad8-dd1e29160fbb",
       "modelPlaylistId": "add9fb61-f6d6-490b-9437-99ac6e9e871b",
       "playlistSlugs": [

@@ -1,8 +1,6 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { SITEMAP_MANUAL_TIMESTAMPS } from '../frontend/config/sitemap-timestamps.ts';
-import { VIDEO_SEO_WATCHLIST } from '../frontend/config/video-seo-watchlist.ts';
 import { resolveVideoSitemapDates } from '../frontend/server/sitemaps/video-dates.ts';
 
 test('video sitemap lastmod uses editorial modified date without changing publication date', () => {
@@ -30,28 +28,9 @@ test('video sitemap dates fall back to published video date for static entries',
   assert.equal(dates.publicationDate, '2026-03-06T22:53:48.997Z');
 });
 
-test('P0 watch candidates use the accepted durable asset date as publication and lastmod', () => {
-  const manifest = JSON.parse(readFileSync('docs/model-launch/p0-video-example-pack.json', 'utf8')) as {
-    assets: Array<{ videoId: string; acceptedAt: string; watchPageCandidate: boolean }>;
-  };
-  const selected = manifest.assets.filter(({ watchPageCandidate }) => watchPageCandidate);
-  assert.equal(selected.length, 7);
-
-  for (const asset of selected) {
-    const entry = VIDEO_SEO_WATCHLIST.find(({ id }) => id === asset.videoId);
-    assert.ok(entry, asset.videoId);
-    assert.equal(entry.publishedAt, asset.acceptedAt);
-    assert.equal(entry.modifiedAt, asset.acceptedAt);
-    assert.deepEqual(resolveVideoSitemapDates(entry, { createdAt: asset.acceptedAt }), {
-      lastModified: '2026-09-02',
-      publicationDate: asset.acceptedAt,
-    });
-  }
-});
-
-test('P0 model, family and video sitemaps receive the launch timestamp', () => {
-  assert.equal(SITEMAP_MANUAL_TIMESTAMPS.sitemaps?.['sitemap-video.xml'], '2026-09-02');
-  assert.equal(SITEMAP_MANUAL_TIMESTAMPS.sitemaps?.['sitemap-video-pages.xml'], '2026-09-02');
+test('P0 model and family pages receive the launch timestamp without pre-bumping video sitemaps', () => {
+  assert.equal(SITEMAP_MANUAL_TIMESTAMPS.sitemaps?.['sitemap-video.xml'], undefined);
+  assert.equal(SITEMAP_MANUAL_TIMESTAMPS.sitemaps?.['sitemap-video-pages.xml'], undefined);
   for (const route of [
     '/models/wan-3',
     '/models/wan-3-prime',

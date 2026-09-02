@@ -29,8 +29,8 @@ export type AcceptedDurableModelAsset = {
   durationSec: number;
   acceptedAt: string;
   reviewStatus: 'accepted';
-  publicationState: 'pending_publication' | 'gallery_only';
-  watchPageCandidate: boolean;
+  publicationState: 'gallery_only';
+  watchPageCandidate: false;
   familyPlaylistId: string;
   modelPlaylistId: string;
   playlistSlugs: readonly string[];
@@ -118,7 +118,7 @@ function getCanonicalLaunchSourceRule(modelId: P0VideoExampleModelId, mode: stri
 
 export function parseAcceptedDurableModelAsset(value: unknown): AcceptedDurableModelAsset | null {
   if (!isRecord(value) || value.reviewStatus !== 'accepted') return null;
-  if (value.publicationState !== 'pending_publication' && value.publicationState !== 'gallery_only') return null;
+  if (value.publicationState !== 'gallery_only' || value.watchPageCandidate !== false) return null;
   if (
     !nonEmptyString(value.assetId) ||
     !nonEmptyString(value.videoId) ||
@@ -139,7 +139,6 @@ export function parseAcceptedDurableModelAsset(value: unknown): AcceptedDurableM
     !isPositiveNumber(value.durationSec) ||
     !nonEmptyString(value.acceptedAt) ||
     !Number.isFinite(Date.parse(value.acceptedAt)) ||
-    typeof value.watchPageCandidate !== 'boolean' ||
     !nonEmptyString(value.familyPlaylistId) ||
     !nonEmptyString(value.modelPlaylistId) ||
     !Array.isArray(value.playlistSlugs) ||
@@ -166,7 +165,6 @@ export function parseAcceptedDurableModelAsset(value: unknown): AcceptedDurableM
     value.sourceAssetIds.length < sourceRule.minCount ||
     value.sourceAssetIds.length > sourceRule.maxCount ||
     uniqueSourceAssetIds.size !== value.sourceAssetIds.length ||
-    (value.watchPageCandidate && value.publicationState !== 'pending_publication') ||
     value.familyPlaylistId === value.modelPlaylistId
   ) {
     return null;
@@ -241,11 +239,6 @@ export function validateP0VideoExamplePackDocument(input: unknown): ValidationRe
       !PLANNED_LAUNCH_MODES.every((mode) => modelAssets.some((asset) => asset.mode === mode))
     ) {
       errors.push(`${modelId} must have one text-to-video and one image-to-video asset.`);
-    }
-    if (modelAssets.length === 2 && !modelAssets.some((asset) => (
-      asset.watchPageCandidate && asset.publicationState === 'pending_publication'
-    ))) {
-      errors.push(`${modelId} must have at least one watch-page candidate.`);
     }
   }
   for (const familyId of ['wan', 'ltx', 'grok', 'flux'] as const) {

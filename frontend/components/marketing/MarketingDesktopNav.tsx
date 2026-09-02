@@ -51,6 +51,8 @@ export function MarketingDesktopNav({
         const allLabel = t(dropdown.allLabelKey, dropdown.allLabelFallback);
         const isOpen = desktopDropdownOpen === item.key;
         const hasSections = Boolean(dropdown.sections?.length);
+        const usesTwoColumnItems = !hasSections && dropdown.desktopColumns === 2;
+        const dropdownItemsClass = usesTwoColumnItems ? 'grid grid-cols-2 gap-1' : 'flex flex-col gap-1';
 
         return (
           <div
@@ -85,13 +87,30 @@ export function MarketingDesktopNav({
                 isOpen ? 'visible opacity-100' : 'invisible opacity-0'
               )}
             >
-              <div className="min-w-[240px] rounded-card border border-hairline bg-surface p-3 shadow-card">
-                <div className={clsx('grid gap-3', hasSections ? 'min-w-[520px] grid-cols-[1fr_1fr]' : 'min-w-0 grid-cols-1')}>
-                  <nav className="flex flex-col gap-1" role="menu" aria-label={label}>
+              <div
+                className={clsx(
+                  'rounded-card border border-hairline bg-surface p-3 shadow-card',
+                  usesTwoColumnItems ? 'min-w-[420px]' : 'min-w-[240px]'
+                )}
+              >
+                <div
+                  className={clsx(
+                    'grid gap-3',
+                    hasSections
+                      ? 'min-w-[520px] grid-cols-[1fr_1fr]'
+                      : usesTwoColumnItems
+                        ? 'min-w-[420px] grid-cols-1'
+                        : 'min-w-0 grid-cols-1'
+                  )}
+                >
+                  <nav className={dropdownItemsClass} role="menu" aria-label={label}>
                     <Link
                       href={dropdown.allHref}
                       prefetch={false}
-                      className="rounded-input px-3 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className={clsx(
+                        'rounded-input px-3 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                        usesTwoColumnItems ? 'col-span-2' : undefined
+                      )}
                       role="menuitem"
                       onClick={() => onCloseDesktopDropdown(200)}
                     >

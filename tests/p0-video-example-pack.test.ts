@@ -28,8 +28,9 @@ test('the P0 example pack contains two accepted durable and attached assets per 
     const accepted = result.assets.filter((asset) => asset.modelId === modelId);
     assert.equal(accepted.length, 2, modelId);
     assert.deepEqual(new Set(accepted.map(({ mode }) => mode)), new Set(['t2v', 'i2v']), modelId);
-    assert.ok(accepted.some(({ watchPageCandidate }) => watchPageCandidate), modelId);
     for (const asset of accepted) {
+      assert.equal(asset.publicationState, 'gallery_only', `${modelId} must first follow normal gallery publication`);
+      assert.equal(asset.watchPageCandidate, false, `${modelId} SEO promotion belongs to the admin workflow`);
       assert.deepEqual(
         new Set(asset.playlistSlugs),
         new Set([`family-${familyId}`, `examples-${modelId}`]),

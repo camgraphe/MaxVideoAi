@@ -6,7 +6,12 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
 import { getMcpDocsLink, getMcpInternalLink } from '@/lib/mcp-internal-links';
 import engineCatalog from '@/config/engine-catalog.json';
-import { MARKETING_FOOTER_EXAMPLES, MARKETING_NAV_BEST_FOR_HUB, MARKETING_NAV_BEST_FOR_USE_CASES } from '@/config/navigation';
+import {
+  MARKETING_FOOTER_EXAMPLES,
+  MARKETING_NAV_BEST_FOR_HUB,
+  MARKETING_NAV_BEST_FOR_USE_CASES,
+  MARKETING_NAV_MODELS,
+} from '@/config/navigation';
 
 type FooterLink = { key: string; label: string; href: LocalizedLinkHref };
 type PolicyLink = { label: string; href: string; locale?: boolean };
@@ -53,24 +58,11 @@ export function MarketingFooter() {
     href: item.href.startsWith('/legal') ? localizeFooterPath(locale, item.href) : item.href,
   }));
 
-  const engineItems = [
-    { slug: 'seedance-2-5', labelKey: 'footer.sections.engines.items.seedance2_5', fallback: 'Seedance 2.5' },
-    { slug: 'seedance-2-0', labelKey: 'footer.sections.engines.items.seedance2_0', fallback: 'Seedance 2.0' },
-    { slug: 'kling-3-pro', labelKey: 'footer.sections.engines.items.kling3pro', fallback: 'Kling 3 Pro' },
-    { slug: 'veo-3-1', labelKey: 'footer.sections.engines.items.veo3_1', fallback: 'Veo 3.1' },
-    { slug: 'happy-horse-1-1', labelKey: 'footer.sections.engines.items.happyHorse11', fallback: 'Happy Horse 1.1' },
-    { slug: 'dreamina-seedance-2-0-mini', labelKey: 'footer.sections.engines.items.seedance2mini', fallback: 'Seedance 2.0 Mini' },
-    { slug: 'ltx-2-3-fast', labelKey: 'footer.sections.engines.items.ltx23fast', fallback: 'LTX 2.3 Fast' },
-    { slug: 'ltx-2-3-pro', labelKey: 'footer.sections.engines.items.ltx23pro', fallback: 'LTX 2.3 Pro' },
-    { slug: 'wan-2-6', labelKey: 'footer.sections.engines.items.wan2_6', fallback: 'Wan 2.6' },
-  ];
-  const engineLinks: FooterLink[] = engineItems
-    .filter((item) => modelSlugSet.has(item.slug))
-    .map<FooterLink>((item) => ({
-      key: item.slug,
-      label: labelFor(item.labelKey, item.fallback),
-      href: { pathname: '/models/[slug]', params: { slug: item.slug } },
-    }));
+  const engineLinks: FooterLink[] = MARKETING_NAV_MODELS.map((item) => ({
+    key: item.key,
+    label: labelFor(`nav.dropdown.models.items.${item.key}`, item.label),
+    href: item.href,
+  }));
 
   const comparisonItems = [
     {

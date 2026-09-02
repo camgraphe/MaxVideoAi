@@ -2,6 +2,7 @@ import type { LocalizedLinkHref } from '@/i18n/navigation';
 import mcpPublication from '@/config/mcp-publication.json';
 import { getModelFamilyDefinition } from '@/config/model-families';
 import { listRuntimeModels, type RuntimeModelEntry } from '@/config/model-runtime';
+import { orderExamplesHubFamilyIds } from '@/lib/examples/familyOrder';
 import { getExampleNavFamilyIds } from '@/lib/model-families';
 import { getMcpPublicationState } from '@/lib/mcp-publication';
 
@@ -24,6 +25,7 @@ export type MarketingNavSection = {
 export type MarketingNavDropdown = {
   items: MarketingNavItem[];
   sections?: MarketingNavSection[];
+  desktopColumns?: 1 | 2;
   allHref: LocalizedLinkHref;
   allLabelKey: string;
   allLabelFallback: string;
@@ -117,11 +119,9 @@ export function buildMarketingModelMenu(models: readonly RuntimeModelEntry[]): L
 
 const MODEL_MENU = buildMarketingModelMenu(listRuntimeModels());
 
-const EXAMPLE_FAMILY_PRIORITY = ['veo', 'seedance', 'hailuo', 'ltx', 'wan', 'kling', 'grok', 'flux'] as const;
 const AVAILABLE_EXAMPLE_FAMILY_IDS = getExampleNavFamilyIds();
 
-const EXAMPLES_MENU: LabeledSlug[] = EXAMPLE_FAMILY_PRIORITY
-  .filter((familyId) => AVAILABLE_EXAMPLE_FAMILY_IDS.includes(familyId))
+const EXAMPLES_MENU: LabeledSlug[] = orderExamplesHubFamilyIds(AVAILABLE_EXAMPLE_FAMILY_IDS)
   .map((familyId) => getModelFamilyDefinition(familyId))
   .filter((family): family is NonNullable<typeof family> => Boolean(family))
   .map((family) => ({
@@ -258,6 +258,7 @@ export const MARKETING_NAV_DROPDOWNS: Partial<Record<string, MarketingNavDropdow
   },
   examples: {
     items: MARKETING_NAV_EXAMPLES,
+    desktopColumns: 2,
     allHref: { pathname: '/examples' },
     allLabelKey: 'nav.dropdown.allExamples',
     allLabelFallback: 'All examples',

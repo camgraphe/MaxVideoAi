@@ -205,6 +205,37 @@ test('marketing footer keeps crawlable Best-For hub and priority child links', (
   );
 });
 
+test('examples navigation can expose every public family without a one-column desktop menu', () => {
+  const examplesDropdown = MARKETING_NAV_DROPDOWNS.examples;
+  assert.equal(examplesDropdown?.desktopColumns, 2);
+  assert.deepEqual(examplesDropdown?.items.map((item) => item.key), [
+    'veo',
+    'seedance',
+    'ltx',
+    'kling',
+    'wan',
+    'happy-horse',
+    'sora',
+    'luma',
+    'grok',
+    'flux',
+    'pika',
+    'hailuo',
+  ]);
+  assert.match(marketingDesktopNavSource, /dropdown\.desktopColumns === 2/);
+  assert.match(headerBarSource, /dropdown\.desktopColumns === 2/);
+  for (const source of [marketingDesktopNavSource, headerBarSource]) {
+    assert.match(source, /grid grid-cols-2 gap-1/);
+    assert.match(source, /col-span-2/);
+  }
+});
+
+test('marketing footer projects the current bounded model menu instead of a second stale roster', () => {
+  assert.match(marketingFooterSource, /MARKETING_NAV_MODELS\.map/);
+  assert.doesNotMatch(marketingFooterSource, /slug: 'ltx-2-3-fast'/);
+  assert.doesNotMatch(marketingFooterSource, /slug: 'wan-2-6'/);
+});
+
 test('marketing navigation avoids background-prefetching every crawlable destination', () => {
   for (const [surface, source] of [
     ['desktop navigation', marketingDesktopNavSource],

@@ -66,6 +66,15 @@ test('marketing nav delegates desktop, mobile, and account menu rendering', () =
   assert.match(mobileMenuSource, /MARKETING_NAV_DROPDOWNS|mobileDropdownOpen\[item\.key\]|export function MarketingMobileMenu/, 'MarketingMobileMenu should own mobile dropdown rendering');
 });
 
+test('expanded mobile menus remain scrollable on short viewports', () => {
+  const headerMobileMenuSource = readSource(headerMobileMenuPath);
+  const marketingMobileMenuSource = readSource(marketingMobileMenuPath);
+
+  for (const source of [headerMobileMenuSource, marketingMobileMenuSource]) {
+    assert.match(source, /fixed inset-0 z-50[^\n]*overflow-y-auto overscroll-y-contain/);
+  }
+});
+
 test('navigation orchestrators stay below page-sized component thresholds', () => {
   const headerBarSource = readSource(headerBarPath);
   const headerAccountMenuSource = readSource(headerAccountMenuPath);

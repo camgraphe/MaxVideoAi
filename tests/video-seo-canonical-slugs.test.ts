@@ -127,22 +127,17 @@ test('video SEO editorial validation protects existing canonical slugs from acci
   assert.equal(confirmed.entry.canonicalSlug, canonicalSlug);
 });
 
-test('each P0 video model owns one approved readable watch-page canonical slug', () => {
-  const expected = new Map([
-    ['wan-3', 'wan-3-alpine-runner-multishot'],
-    ['wan-3-prime', 'wan-3-prime-chef-multishot'],
-    ['ltx-2-5-fast', 'ltx-2-5-fast-street-rhythm'],
-    ['ltx-2-5-pro', 'ltx-2-5-pro-lantern-release'],
-    ['grok-imagine-video-1-5', 'grok-1-5-lunar-barista'],
-    ['flux-3', 'flux-3-season-shifting-station'],
-    ['flux-3-draft', 'flux-3-draft-neon-cyclist'],
-  ]);
-
-  for (const [modelSlug, expectedCanonicalSlug] of expected) {
+test('P0 video models do not receive static canonical slugs before admin SEO review', () => {
+  for (const modelSlug of [
+    'wan-3',
+    'wan-3-prime',
+    'ltx-2-5-fast',
+    'ltx-2-5-pro',
+    'grok-imagine-video-1-5',
+    'flux-3',
+    'flux-3-draft',
+  ]) {
     const entries = VIDEO_SEO_EDITORIAL_ENTRIES.filter((entry) => entry.modelSlug === modelSlug);
-    const approved = entries.filter((entry) => entry.seoStatus === 'approved');
-    assert.equal(approved.length, 1, modelSlug);
-    assert.equal(approved[0]?.canonicalSlug, expectedCanonicalSlug);
-    assert.equal(normalizeVideoSeoCanonicalSlug(expectedCanonicalSlug), expectedCanonicalSlug);
+    assert.equal(entries.length, 0, modelSlug);
   }
 });
