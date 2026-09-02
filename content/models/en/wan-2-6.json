@@ -3,10 +3,10 @@
   "versionLabel": "2.6",
   "seo": {
     "title": "Wan 2.6 (5–15s, 1080p) — Text/Image/Reference Videos",
-    "description": "Wan 2.6 inside MaxVideoAI: generate 5–15s clips from text/images, or keep subject consistency using 1–3 reference videos (5–10s). 720p/1080p, per-second pricing, real examples.",
+    "description": "Wan 2.6 remains an executable previous-generation route for 5–15s text, image and reference clips; review pricing and the upgrade path to Wan 3.",
     "image": "/hero/wan-26.jpg"
   },
-  "overview": "Wan 2.6 in MaxVideoAI: multi-shot 5–15s clips from text or a still image, plus reference-to-video (5–10s) for subject consistency across variations. 720p/1080p output, optional audio on T2V/I2V, pay-as-you-go pricing.",
+  "overview": "Wan 2.6 remains available as a previous-generation legacy route for existing multi-shot and reference-video workflows. Wan 3 is the current standard successor for new Wan projects.",
   "hero": {
     "title": "Wan 2.6 – Multi-shot AI video (Text/Image 5–15s, Reference 5–10s, 720p/1080p)",
     "intro": "Structured 5–15s clips in 720p/1080p — stronger subject consistency with 1–3 reference videos.",
@@ -307,7 +307,7 @@
   "decision": {
     "modelSlug": "wan-2-6",
     "hero": {
-      "eyebrow": "WAN MULTI-SHOT VIDEO ROUTE",
+      "eyebrow": "PREVIOUS-GENERATION WAN LEGACY ROUTE",
       "title": "Wan 2.6",
       "subtitle": "15s multi-shot clips, 5s/10s reference-video consistency, and optional audio for text or image starts.",
       "subtitleHighlights": [
@@ -315,7 +315,7 @@
         "5s/10s reference-video consistency",
         "optional audio for text or image starts"
       ],
-      "paragraph": "Use Wan 2.6 when you need the newer Wan route on MaxVideoAI: 720p or 1080p clips up to 15 seconds, text-to-video, image-to-video, 5s/10s reference-video guidance and optional audio for text or image workflows.",
+      "paragraph": "Wan 2.6 remains executable for previous-generation 720p or 1080p clips, existing examples and established reference-video briefs. Keep it for repeatable legacy work, or use Wan 3 as the current standard successor for a new Wan project.",
       "primaryCta": {
         "label": "Generate with Wan 2.6",
         "href": "/app?engine=wan-2-6"
@@ -326,8 +326,12 @@
       },
       "quickLinks": [
         {
-          "label": "Compare vs Sora 2",
-          "href": "/ai-video-engines/sora-2-vs-wan-2-6?order=wan-2-6"
+          "label": "View current Wan 3",
+          "href": "/models/wan-3"
+        },
+        {
+        "label": "Compare Wan 2.6 with Sora 2",
+        "href": "/ai-video-engines/sora-2-vs-wan-2-6?order=wan-2-6"
         },
         {
           "label": "View pricing",
@@ -384,11 +388,11 @@
     ],
     "decisionCards": [
       {
-        "title": "Wan 2.6 or Wan 2.5?",
-        "body": "Use Wan 2.6 for longer 15s clips, reference-video consistency and multi-shot planning. Use Wan 2.5 for shorter audio-ready checks.",
+        "title": "Stay on Wan 2.6 or move to Wan 3?",
+        "body": "Keep Wan 2.6 for a repeatable legacy multi-shot workflow. Choose Wan 3 for current text, image and reference-led production.",
         "cta": {
-          "label": "Compare Wan 2.6 vs Wan 2.5",
-          "href": "/ai-video-engines/wan-2-5-vs-wan-2-6?order=wan-2-6"
+          "label": "View current Wan 3",
+          "href": "/models/wan-3"
         }
       },
       {

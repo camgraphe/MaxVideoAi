@@ -52,6 +52,39 @@ test('fal proxy policy blocks unconfigured Fal endpoints', () => {
   assert.equal(isFalProxyTargetAllowed('https://queue.fal.run/fal-ai/flux/dev'), false);
 });
 
+test('fal proxy policy allows every published P0 endpoint for authenticated execution', () => {
+  const publishedEndpoints = [
+    'alibaba/wan-3.0/text-to-video',
+    'alibaba/wan-3.0/image-to-video',
+    'alibaba/wan-3.0/reference-to-video',
+    'alibaba/wan-3.0-prime/text-to-video',
+    'alibaba/wan-3.0-prime/image-to-video',
+    'alibaba/wan-3.0-prime/reference-to-video',
+    'lightricks/ltx-2.5/text-to-video/fast',
+    'lightricks/ltx-2.5/image-to-video/fast',
+    'lightricks/ltx-2.5/audio-to-video/fast',
+    'lightricks/ltx-2.5/text-to-video/pro',
+    'lightricks/ltx-2.5/image-to-video/pro',
+    'lightricks/ltx-2.5/audio-to-video/pro',
+    'xai/grok-imagine-video/v1.5/text-to-video',
+    'xai/grok-imagine-video/v1.5/image-to-video',
+    'xai/grok-imagine-video/v1.5/reference-to-video',
+    'blackforestlabs/flux-3/text-to-video',
+    'blackforestlabs/flux-3/image-to-video',
+    'blackforestlabs/flux-3/first-last-frame-to-video',
+    'blackforestlabs/flux-3/extend-video',
+    'blackforestlabs/flux-3/text-to-video/draft',
+    'blackforestlabs/flux-3/image-to-video/draft',
+    'blackforestlabs/flux-3/first-last-frame-to-video/draft',
+    'blackforestlabs/flux-3/extend-video/draft',
+  ];
+
+  for (const endpoint of publishedEndpoints) {
+    assert.equal(FAL_PROXY_ALLOWED_ENDPOINTS.includes(endpoint), true, endpoint);
+    assert.equal(isFalProxyTargetAllowed(`https://queue.fal.run/${endpoint}`), true, endpoint);
+  }
+});
+
 test('fal proxy policy blocks beatoven targets in path and query', () => {
   assert.equal(isFalProxyTargetAllowed('https://queue.fal.run/beatoven/music-generation'), false);
   assert.equal(

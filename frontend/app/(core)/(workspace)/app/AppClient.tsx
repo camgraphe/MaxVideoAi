@@ -206,6 +206,7 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     effectiveDurationSec: composer.effectiveDurationSec,
     voiceControlEnabled: composer.voiceControlEnabled,
     submissionMode: composer.submissionMode,
+    inputAssets: assets.inputAssets,
   });
   const generation = useWorkspaceGenerationRunner({
     audioWorkflowUnsupported: composer.audioWorkflowUnsupported,

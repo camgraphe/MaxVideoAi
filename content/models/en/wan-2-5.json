@@ -3,17 +3,17 @@
   "versionLabel": "2.5",
   "seo": {
     "title": "Wan 2.5 – Text or Image to Video with Optional Audio (480p–1080p, 5–10s)",
-    "description": "Audio-ready 5–10s clips at 480p/720p/1080p. Text or image input, optional WAV/MP3 upload, native audio, prompt expansion toggle, and pay-as-you-go pricing in MaxVideoAI.",
+    "description": "Wan 2.5 is a historical deep-legacy profile retained for its original 5–10s audio workflow intent; begin current Wan projects with Wan 3.",
     "image": "/hero/wan-25.jpg"
   },
-  "overview": "Wan 2.5 in MaxVideoAI: audio-ready 5–10s clips from text or a single image, at 480p/720p/1080p. Optional WAV/MP3 upload, native audio when no track is provided, prompt expansion toggle, and per-second pricing by resolution.",
+  "overview": "Wan 2.5 remains self-canonical as a historical deep-legacy profile for its original audio-ready workflow and examples. New Wan generation should begin with Wan 3.",
   "hero": {
-    "title": "Wan 2.5 – Text or Image to Video with Optional Audio in MaxVideoAI (480p–1080p, 5–10s)",
-    "intro": "Audio-ready cinematic beats from text or a still — sync to your track or let Wan generate sound.",
+    "title": "Wan 2.5 – historical deep-legacy text or image to video with optional audio",
+    "intro": "This page documents the historical Wan 2.5 audio-ready workflow; Wan 3 is the current standard successor.",
     "badge": "480p/720p/1080p · 5–10s · Text or Image input · Optional audio",
     "ctaPrimary": {
-      "label": "Start generating with Wan 2.5",
-      "href": "/app?engine=wan-2-5"
+      "label": "Generate with Wan 3",
+      "href": "/app?engine=wan-3"
     },
     "secondaryLinks": [
       {
@@ -142,7 +142,7 @@
     }
   ],
   "custom": {
-    "heroDesc1": "Wan 2.5 lets you storyboard cinematic beats with built-in audio: prompt or image input, optional WAV/MP3, 5 or 10 seconds at 480p/720p/1080p.",
+    "heroDesc1": "Historically, Wan 2.5 storyboarded cinematic beats from a prompt or image with optional WAV/MP3, 5 or 10 seconds at 480p/720p/1080p.",
     "heroDesc2": "Use it for hero beats and reveals where music, ambience or dialogue matter. Upload a track for tight sync or let Wan score the scene natively.",
     "heroSupportLine": "Best for music-led reveals, voiceover hooks, and punchy hero beats that feel finished.",
     "whyTitle": "Why Wan 2.5 is powerful",
@@ -184,7 +184,7 @@
     "whatIntro2": "In MaxVideoAI it’s a flexible, audio-ready engine with tiered pricing by resolution.",
     "whatFlowTitle": "In-app flow",
     "whatFlowSteps": [
-      "1. Pick Wan 2.5.",
+      "1. Historical Wan 2.5 flow began with a text or image input.",
       "2. Choose Text → Video or Image → Video.",
       "3. Set duration (5/10 s), resolution (480p/720p/1080p) and aspect ratio.",
       "4. (Optional) Attach WAV/MP3.",
@@ -193,7 +193,7 @@
       "7. Check live pricing and render."
     ],
     "specTitle": "Real Specs – Wan 2.5 in MaxVideoAI (480p–1080p, 5–10s)",
-    "specNote": "These specs describe Wan 2.5 exactly as you can use it today via MaxVideoAI.",
+    "specNote": "These specs preserve the historical Wan 2.5 route as it was exposed through MaxVideoAI.",
     "specSections": [
       {
         "title": "Audio-led workflows",
@@ -216,7 +216,7 @@
         ]
       }
     ],
-    "specValueProp": "Wan 2.5 is the audio-ready short-form engine for 5–10s beats where visuals and sound need to land together.",
+    "specValueProp": "Wan 2.5 historically covered audio-ready 5–10s beats where visuals and sound needed to land together.",
     "imageTitle": "Image-to-Video Flow with Wan 2.5",
     "imageIntro": "Animate a single still into an audio-backed beat.",
     "imageFlow": [
@@ -295,10 +295,10 @@
     ],
     "relatedTitle": "Explore other models",
     "relatedSubtitle": "Compare price, latency and output options across the MaxVideoAI catalog.",
-    "finalPara1": "Wan 2.5 in MaxVideoAI is your audio-ready short-form engine for 5–10 second beats.",
-    "finalPara2": "Use native or uploaded audio, iterate cheap, and finish in HD when visuals and sound must land together.",
-    "finalButton": "Open Generate",
-    "tipsIntro": "Wan 2.5 works best for short, sound-led beats — keep the visual brief simple and let timing come from the audio.",
+    "finalPara1": "Wan 2.5 remains documented as a historical audio-ready short-form route for 5–10 second beats.",
+    "finalPara2": "Use Wan 3 for current text, image and reference-led generation.",
+    "finalButton": "Open Wan 3 in Generate",
+    "tipsIntro": "Historically, Wan 2.5 worked best for short, sound-led beats with a simple visual brief.",
     "troubleshootingTitle": "Common problems → fast fixes",
     "troubleshootingItems": [
       "Audio feels off → remember uploaded audio is trimmed to the first 5/10s; prompt to the segment you’re actually using.",
@@ -311,7 +311,7 @@
   "decision": {
     "modelSlug": "wan-2-5",
     "hero": {
-      "eyebrow": "WAN SUPPORTED AUDIO DRAFT ROUTE",
+      "eyebrow": "HISTORICAL DEEP-LEGACY WAN ROUTE",
       "title": "Wan 2.5",
       "subtitle": "Audio-ready 5-10s clips for text or image starts, prompt expansion, and 480p to 1080p checks.",
       "subtitleHighlights": [
@@ -319,10 +319,10 @@
         "text or image starts",
         "480p to 1080p checks"
       ],
-      "paragraph": "Use Wan 2.5 when you need the supported older Wan route for short audio-ready tests: text-to-video, image-to-video, optional soundtrack upload, prompt expansion, seed control and lower-resolution draft passes.",
+      "paragraph": "This historical Wan 2.5 page preserves deep-legacy specifications, examples and search value without redirecting away. New generation starts on Wan 3, the current standard successor.",
       "primaryCta": {
-        "label": "Generate with Wan 2.5",
-        "href": "/app?engine=wan-2-5"
+        "label": "View current Wan 3",
+        "href": "/models/wan-3"
       },
       "secondaryCta": {
         "label": "View examples",
@@ -330,8 +330,8 @@
       },
       "quickLinks": [
         {
-          "label": "Compare vs Sora 2",
-          "href": "/ai-video-engines/sora-2-vs-wan-2-5?order=wan-2-5"
+          "label": "View Wan 3",
+          "href": "/models/wan-3"
         },
         {
           "label": "View pricing",
@@ -377,7 +377,7 @@
       },
       {
         "title": "Max 10s",
-        "body": "Keep Wan 2.5 focused on short single-beat or two-beat clips.",
+        "body": "Historically, Wan 2.5 focused on short single-beat or two-beat clips.",
         "tone": "duration"
       },
       {
@@ -388,11 +388,11 @@
     ],
     "decisionCards": [
       {
-        "title": "Wan 2.5 or Wan 2.6?",
-        "body": "Use Wan 2.5 for short audio-ready checks and lower-resolution drafts. Use Wan 2.6 when you need 15s, multi-shot or reference-video guidance.",
+        "title": "Historical Wan 2.5 or current Wan 3?",
+        "body": "Keep this page for historical reference and existing examples. Start a new Wan brief with Wan 3.",
         "cta": {
-          "label": "View Wan 2.6",
-          "href": "/models/wan-2-6"
+          "label": "View Wan 3",
+          "href": "/models/wan-3"
         }
       },
       {
@@ -438,13 +438,13 @@
       "title": "Wan 2.5 pricing at a glance",
       "subtitle": "Preset short-clip totals - see the exact live price in the app before you generate.",
       "footnote": "All prices are MaxVideoAI display prices in USD credits for preset scenarios.",
-      "ctaLabel": "View full pricing",
+      "ctaLabel": "Generate with Wan 3",
       "maxDurationNote": "Up to 1080p",
-      "ctaHref": "/pricing#wan-2-5-pricing"
+      "ctaHref": "/app?engine=wan-3"
     },
     "meta": {
       "title": "Wan 2.5: Pricing, Audio Drafts & Examples | MaxVideoAI",
-      "description": "Use Wan 2.5 for short audio-ready AI video drafts, text-to-video, image-to-video, optional soundtrack upload, prompt expansion and pricing."
+      "description": "Historical Wan 2.5 reference for short audio-ready AI video drafts, text-to-video, image-to-video, optional soundtrack upload, prompt expansion and pricing."
     }
   },
   "prompting": {

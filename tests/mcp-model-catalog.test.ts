@@ -109,6 +109,9 @@ test('catalog emits a narrow public DTO and supported modes only', async () => {
       referenceImages: true,
       availability: 'available',
       generationEnabled: true,
+      lifecycle: 'current',
+      successor: null,
+      recommendedByDefault: true,
     },
     {
       id: 'image-public',
@@ -122,6 +125,9 @@ test('catalog emits a narrow public DTO and supported modes only', async () => {
       referenceImages: true,
       availability: 'available',
       generationEnabled: true,
+      lifecycle: 'current',
+      successor: null,
+      recommendedByDefault: true,
     },
   ]);
   assert.equal('pricing' in models[0], false);
@@ -215,6 +221,9 @@ test('mode-scoped catalog filtering uses modeCaps while aggregate discovery stay
     referenceImages: false,
     availability: 'available',
     generationEnabled: true,
+    lifecycle: 'current',
+    successor: null,
+    recommendedByDefault: true,
   });
 
   const [aggregate] = await listAgentModels({}, catalogDeps);
@@ -299,6 +308,9 @@ test('catalog mirrors real execution gates for newly registered video models', {
         referenceImages: true,
         availability: 'available',
         generationEnabled: true,
+        lifecycle: 'current',
+        successor: null,
+        recommendedByDefault: true,
       },
     );
 
@@ -325,6 +337,9 @@ test('catalog mirrors real execution gates for newly registered video models', {
         referenceImages: true,
         availability: 'available',
         generationEnabled: true,
+        lifecycle: 'current',
+        successor: null,
+        recommendedByDefault: true,
       },
     );
     assert.equal(
@@ -356,6 +371,9 @@ test('catalog mirrors real execution gates for newly registered video models', {
         referenceImages: true,
         availability: 'available',
         generationEnabled: true,
+        lifecycle: 'current',
+        successor: null,
+        recommendedByDefault: true,
       },
     );
   } finally {

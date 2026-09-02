@@ -3,17 +3,17 @@
   "versionLabel": "2.5",
   "seo": {
     "title": "Wan 2.5 – Texte ou image vers vidéo avec audio optionnel (480p–1080p, 5–10 s)",
-    "description": "Clips audio-ready de 5–10 s en 480p/720p/1080p. Entrée texte ou image, upload WAV/MP3 optionnel, audio natif, toggle d’expansion de prompt, et tarification à la seconde dans MaxVideoAI.",
+    "description": "Wan 2.5 est un profil historique d'ancienne génération conservé pour son workflow audio de 5 à 10 s ; commencez les nouveaux projets Wan avec Wan 3.",
     "image": "/hero/wan-25.jpg"
   },
-  "overview": "Wan 2.5 dans MaxVideoAI : clips audio-ready de 5–10 s depuis un texte ou une image unique, en 480p/720p/1080p. Upload WAV/MP3 optionnel, audio natif si aucune piste, toggle d’expansion de prompt, et prix à la seconde par résolution.",
+  "overview": "Wan 2.5 conserve son URL canonique comme profil historique d'ancienne génération pour son ancien workflow audio et ses exemples. Les nouvelles générations Wan doivent commencer sur Wan 3.",
   "hero": {
-    "title": "Wan 2.5 – Texte ou image vers vidéo avec audio optionnel dans MaxVideoAI (480p–1080p, 5–10 s)",
-    "intro": "Beats cinématiques audio-ready depuis un texte ou un still — synchronisez sur votre piste ou laissez Wan générer le son.",
+    "title": "Wan 2.5 – route historique d’ancienne génération, texte ou image vers vidéo avec audio optionnel",
+    "intro": "Cette page documente le workflow audio-ready historique de Wan 2.5 ; Wan 3 est le successeur standard actuel.",
     "badge": "480p/720p/1080p · 5–10 s · Entrée texte ou image · Audio optionnel",
     "ctaPrimary": {
-      "label": "Générer avec Wan 2.5",
-      "href": "/app?engine=wan-2-5"
+      "label": "Générer avec Wan 3",
+      "href": "/app?engine=wan-3"
     },
     "secondaryLinks": [
       {
@@ -142,7 +142,7 @@
     }
   ],
   "custom": {
-    "heroDesc1": "Wan 2.5 vous permet de storyboarder des beats cinématiques avec audio intégré : prompt ou image, WAV/MP3 optionnel, 5 ou 10 s en 480p/720p/1080p.",
+    "heroDesc1": "Historiquement, Wan 2.5 storyboardait des beats cinématiques depuis un prompt ou une image avec WAV/MP3 optionnel, en 5 ou 10 s à 480p/720p/1080p.",
     "heroDesc2": "Utilisez‑le pour des beats et reveals où musique, ambiance ou dialogue comptent. Uploadez une piste pour une synchro serrée ou laissez Wan générer l’audio.",
     "heroSupportLine": "Idéal pour les reveals guidés par la musique, les accroches voix‑off et des beats hero percutants qui semblent finis.",
     "whyTitle": "Pourquoi Wan 2.5 est puissant",
@@ -184,7 +184,7 @@
     "whatIntro2": "Dans MaxVideoAI, c’est un modèle audio‑ready et flexible avec un pricing par résolution.",
     "whatFlowTitle": "Flux in‑app",
     "whatFlowSteps": [
-      "1. Choisissez Wan 2.5.",
+      "1. Le workflow historique Wan 2.5 commençait par une entrée texte ou image.",
       "2. Choisissez Texte → Vidéo ou Image → Vidéo.",
       "3. Réglez durée (5/10 s), résolution (480p/720p/1080p) et format.",
       "4. (Optionnel) Joignez un WAV/MP3.",
@@ -193,7 +193,7 @@
       "7. Vérifiez le prix en direct puis lancez le rendu."
     ],
     "specTitle": "Specs réelles — Wan 2.5 dans MaxVideoAI (480p–1080p, 5–10 s)",
-    "specNote": "Ces specs décrivent Wan 2.5 tel qu’il est utilisable aujourd’hui via MaxVideoAI.",
+    "specNote": "Ces specs préservent la route historique Wan 2.5 telle qu’elle était exposée dans MaxVideoAI.",
     "specSections": [
       {
         "title": "Workflows guidés par l’audio",
@@ -216,7 +216,7 @@
         ]
       }
     ],
-    "specValueProp": "Wan 2.5 est le modèle court audio‑ready pour des beats 5–10 s où image et son doivent tomber ensemble.",
+    "specValueProp": "Wan 2.5 couvrait historiquement les beats audio-ready de 5 à 10 s où image et son devaient tomber ensemble.",
     "imageTitle": "Flux Image → Vidéo avec Wan 2.5",
     "imageIntro": "Animez un still en beat avec audio.",
     "imageFlow": [
@@ -295,10 +295,10 @@
     ],
     "relatedTitle": "Explorer d’autres modèles",
     "relatedSubtitle": "Comparez prix, latence et options de sortie sur le catalogue MaxVideoAI.",
-    "finalPara1": "Wan 2.5 dans MaxVideoAI est votre modèle court audio‑ready pour des beats de 5–10 s.",
-    "finalPara2": "Utilisez l’audio natif ou uploadez une piste, itérez à bas coût, puis finalisez en HD quand image et son doivent tomber ensemble.",
-    "finalButton": "Ouvrir Generate",
-    "tipsIntro": "Wan 2.5 fonctionne mieux pour des beats courts guidés par le son — gardez le brief visuel simple et laissez le timing venir de l’audio.",
+    "finalPara1": "Wan 2.5 reste documenté comme route historique audio-ready pour des beats de 5 à 10 s.",
+    "finalPara2": "Utilisez Wan 3 pour toute nouvelle génération depuis texte, image ou références.",
+    "finalButton": "Ouvrir Wan 3 dans Generate",
+    "tipsIntro": "Historiquement, Wan 2.5 fonctionnait mieux pour des beats courts guidés par le son et un brief visuel simple.",
     "troubleshootingTitle": "Problèmes fréquents → solutions rapides",
     "troubleshootingItems": [
       "Audio décalé → rappelez‑vous que l’audio uploadé est recoupé aux 5/10 premières secondes; promptez sur le segment réellement utilisé.",
@@ -311,7 +311,7 @@
   "decision": {
     "modelSlug": "wan-2-5",
     "hero": {
-      "eyebrow": "ROUTE WAN AUDIO DRAFT PRISE EN CHARGE",
+      "eyebrow": "ROUTE HISTORIQUE WAN D'ANCIENNE GÉNÉRATION",
       "title": "Wan 2.5",
       "subtitle": "Clips audio-ready de 5 à 10 s pour départs texte ou image, expansion de prompt et checks 480p à 1080p.",
       "subtitleHighlights": [
@@ -319,10 +319,10 @@
         "départs texte ou image",
         "checks 480p à 1080p"
       ],
-      "paragraph": "Utilisez Wan 2.5 quand il vous faut l’ancienne route Wan encore prise en charge pour des tests courts avec audio : texte-vidéo, image-vidéo, upload audio optionnel, expansion de prompt, seed et drafts basse résolution.",
+      "paragraph": "Cette page historique Wan 2.5 préserve les caractéristiques, exemples et acquis SEO de l'ancienne génération sans redirection. Toute nouvelle génération commence sur Wan 3, le successeur standard actuel.",
       "primaryCta": {
-        "label": "Générer avec Wan 2.5",
-        "href": "/app?engine=wan-2-5"
+        "label": "Voir le Wan 3 actuel",
+        "href": "/fr/modeles/wan-3"
       },
       "secondaryCta": {
         "label": "Voir les exemples",
@@ -330,8 +330,8 @@
       },
       "quickLinks": [
         {
-          "label": "Comparer vs Sora 2",
-          "href": "/fr/comparatif/sora-2-vs-wan-2-5?order=wan-2-5"
+          "label": "Voir Wan 3",
+          "href": "/fr/modeles/wan-3"
         },
         {
           "label": "Voir les tarifs",
@@ -377,7 +377,7 @@
       },
       {
         "title": "Max 10 s",
-        "body": "Gardez Wan 2.5 sur des clips courts à un ou deux beats.",
+        "body": "Historiquement, Wan 2.5 ciblait des clips courts à un ou deux beats.",
         "tone": "duration"
       },
       {
@@ -388,11 +388,11 @@
     ],
     "decisionCards": [
       {
-        "title": "Wan 2.5 ou Wan 2.6 ?",
-        "body": "Utilisez Wan 2.5 pour des checks audio courts et des drafts basse résolution. Passez à Wan 2.6 pour 15 s, multi-plans ou référence vidéo.",
+        "title": "Wan 2.5 historique ou Wan 3 actuel ?",
+        "body": "Gardez cette page comme référence historique. Commencez un nouveau brief Wan avec Wan 3.",
         "cta": {
-          "label": "Voir Wan 2.6",
-          "href": "/fr/modeles/wan-2-6"
+          "label": "Voir Wan 3",
+          "href": "/fr/modeles/wan-3"
         }
       },
       {
@@ -438,13 +438,13 @@
       "title": "Prix Wan 2.5 en un coup d’œil",
       "subtitle": "Prix totaux de clips courts — prix exact affiché dans l’app avant génération.",
       "footnote": "Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.",
-      "ctaLabel": "Voir tous les tarifs",
+      "ctaLabel": "Générer avec Wan 3",
       "maxDurationNote": "Jusqu’à 1080p",
-      "ctaHref": "/fr/tarifs#wan-2-5-pricing"
+      "ctaHref": "/app?engine=wan-3"
     },
     "meta": {
       "title": "Wan 2.5 : tarifs, drafts audio et exemples | MaxVideoAI",
-      "description": "Utilisez Wan 2.5 pour des drafts vidéo IA courts avec audio, texte-vidéo, image-vidéo, upload audio optionnel, expansion de prompt et tarifs."
+      "description": "Référence historique Wan 2.5 pour drafts vidéo IA courts avec audio, texte-vidéo, image-vidéo, upload audio optionnel, expansion de prompt et tarifs."
     }
   },
   "prompting": {

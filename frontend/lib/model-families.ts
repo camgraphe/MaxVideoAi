@@ -8,6 +8,8 @@ import {
   type ModelFamilyId,
 } from '@/config/model-families';
 import { listFalEngines } from '@/config/falEngines';
+import type { FalEngineEntry } from '@/config/falEngines';
+import { normalizeFamilyExamplesPageConfig } from '@/config/model-publication';
 import { normalizeEngineId } from '@/lib/engine-alias';
 
 type ExampleFamilyDescriptor = {
@@ -32,22 +34,29 @@ function unique(values: string[]): string[] {
 function resolveEntryFamilyId(entry: {
   family?: string;
   brandId?: string;
-}): ModelFamilyId | null {
+}, families: readonly ModelFamilyDefinition[] = MODEL_FAMILY_LIST): ModelFamilyId | null {
   if (typeof entry.family === 'string' && entry.family.trim().length > 0) {
-    const byFamily = getModelFamilyDefinition(entry.family);
+    const normalized = entry.family.trim().toLowerCase();
+    const byFamily = families.find((family) => family.id === normalized);
     if (byFamily) return byFamily.id as ModelFamilyId;
   }
 
   if (typeof entry.brandId === 'string' && entry.brandId.trim().length > 0) {
     const brandId = entry.brandId.trim().toLowerCase();
-    const byBrand = MODEL_FAMILY_LIST.find((family) => family.brandId === brandId);
+    const byBrand = families.find((family) => family.brandId === brandId);
     if (byBrand) return byBrand.id as ModelFamilyId;
   }
 
   return null;
 }
 
-const FAMILY_STATE = (() => {
+export function createExampleFamilyResolver({
+  families,
+  engines = listFalEngines(),
+}: {
+  families: readonly ModelFamilyDefinition[];
+  engines?: readonly FalEngineEntry[];
+}) {
   const aliasToFamily = new Map<string, ModelFamilyId>();
   const routeSlugs = new Set<string>();
   const publicFamilyIds: ModelFamilyId[] = [];
@@ -65,10 +74,12 @@ const FAMILY_STATE = (() => {
     aliasToFamily.set(normalized, familyId);
   };
 
-  MODEL_FAMILY_LIST.forEach((family) => {
+  const familyById = new Map(families.map((family) => [family.id, family]));
+
+  families.forEach((family) => {
     const familyId = family.id as ModelFamilyId;
-    const examplesPage = getModelFamilyExamplesPageConfig(familyId);
-    if (!examplesPage || examplesPage.stage === 'hidden') {
+    const examplesPage = normalizeFamilyExamplesPageConfig(family.examplesPage);
+    if (examplesPage.stage === 'hidden') {
       return;
     }
 
@@ -89,12 +100,13 @@ const FAMILY_STATE = (() => {
     family.aliases?.forEach((alias) => register(alias, familyId));
   });
 
-  FAL_ENGINES.forEach((entry) => {
-    const familyId = resolveEntryFamilyId(entry);
-    if (!familyId || !entry.surfaces.examples.includeInFamilyResolver) return;
+  engines.forEach((entry) => {
+    const familyId = resolveEntryFamilyId(entry, families);
+    if (!familyId) return;
 
-    const examplesPage = getModelFamilyExamplesPageConfig(familyId);
-    if (!examplesPage || examplesPage.stage === 'hidden') {
+    const family = familyById.get(familyId);
+    const examplesPage = normalizeFamilyExamplesPageConfig(family?.examplesPage);
+    if (examplesPage.stage === 'hidden' || !examplesPage.publishedModelSlugs.includes(entry.modelSlug)) {
       return;
     }
 
@@ -105,11 +117,11 @@ const FAMILY_STATE = (() => {
   });
 
   publicFamilyIds.forEach((familyId) => {
-    const family = getModelFamilyDefinition(familyId);
-    const examplesPage = getModelFamilyExamplesPageConfig(familyId);
-    if (!family || !examplesPage) {
+    const family = familyById.get(familyId);
+    if (!family) {
       return;
     }
+    const examplesPage = normalizeFamilyExamplesPageConfig(family.examplesPage);
 
     const publishedModelSlugs = examplesPage.publishedModelSlugs;
     const currentModelSlugs = examplesPage.currentModelSlugs.filter((slug) => publishedModelSlugs.includes(slug));
@@ -126,8 +138,8 @@ const FAMILY_STATE = (() => {
     );
 
     const aliasSet = new Set<string>();
-    FAL_ENGINES.forEach((entry) => {
-      if (resolveEntryFamilyId(entry) !== familyId || !publishedModelSlugs.includes(entry.modelSlug)) {
+    engines.forEach((entry) => {
+      if (resolveEntryFamilyId(entry, families) !== familyId || !publishedModelSlugs.includes(entry.modelSlug)) {
         return;
       }
       const addAlias = (value: string | null | undefined) => {
@@ -149,6 +161,27 @@ const FAMILY_STATE = (() => {
     engineAliasesByFamily.set(familyId, Array.from(aliasSet));
   });
 
+  const resolveFamilyId = (raw: string | null | undefined): ModelFamilyId | null => {
+    if (!raw) return null;
+    const normalizedRaw = raw.trim().toLowerCase();
+    if (!normalizedRaw) return null;
+    const normalized = normalizeEngineId(raw)?.trim().toLowerCase() ?? normalizedRaw;
+    const direct = aliasToFamily.get(normalized) ?? aliasToFamily.get(normalizedRaw);
+    if (direct) return direct;
+
+    for (const family of families) {
+      const examplesPage = normalizeFamilyExamplesPageConfig(family.examplesPage);
+      if (examplesPage.stage === 'hidden') continue;
+      if (family.prefixes?.some((prefix) => normalized.startsWith(prefix) || normalizedRaw.startsWith(prefix))) {
+        return family.id as ModelFamilyId;
+      }
+      if (family.contains?.some((token) => normalized.includes(token) || normalizedRaw.includes(token))) {
+        return family.id as ModelFamilyId;
+      }
+    }
+    return null;
+  };
+
   return {
     aliasToFamily,
     routeSlugs: Array.from(routeSlugs),
@@ -159,8 +192,21 @@ const FAMILY_STATE = (() => {
     currentModelSlugsByFamily,
     variantLabelsByFamily,
     engineAliasesByFamily,
+    resolveFamilyId,
+    getModelSlugs: (familyId: string) => [
+      ...(publishedModelSlugsByFamily.get(familyId as ModelFamilyId) ?? []),
+    ],
+    getCurrentModelSlugs: (familyId: string) => [
+      ...(currentModelSlugsByFamily.get(familyId as ModelFamilyId) ?? []),
+    ],
+    getNavFamilyIds: () => [...navFamilyIds],
   };
-})();
+}
+
+const FAMILY_STATE = createExampleFamilyResolver({
+  families: MODEL_FAMILY_LIST,
+  engines: FAL_ENGINES,
+});
 
 export function getMarketingExampleRouteSlugs(): string[] {
   return FAMILY_STATE.routeSlugs.slice();
@@ -279,27 +325,5 @@ export function isIndexedExampleFamilyId(value: string): value is ModelFamilyId 
 }
 
 export function resolveExampleFamilyId(raw: string | null | undefined): ModelFamilyId | null {
-  if (!raw) return null;
-
-  const normalizedRaw = raw.trim().toLowerCase();
-  if (!normalizedRaw) return null;
-
-  const normalized = normalizeEngineId(raw)?.trim().toLowerCase() ?? normalizedRaw;
-  const direct = FAMILY_STATE.aliasToFamily.get(normalized) ?? FAMILY_STATE.aliasToFamily.get(normalizedRaw);
-  if (direct) return direct;
-
-  for (const family of MODEL_FAMILY_LIST) {
-    const examplesPage = getModelFamilyExamplesPageConfig(family.id);
-    if (!examplesPage || examplesPage.stage === 'hidden') {
-      continue;
-    }
-    if (family.prefixes?.some((prefix) => normalized.startsWith(prefix) || normalizedRaw.startsWith(prefix))) {
-      return family.id as ModelFamilyId;
-    }
-    if (family.contains?.some((token) => normalized.includes(token) || normalizedRaw.includes(token))) {
-      return family.id as ModelFamilyId;
-    }
-  }
-
-  return null;
+  return FAMILY_STATE.resolveFamilyId(raw);
 }

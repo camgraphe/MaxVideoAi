@@ -4,11 +4,16 @@ export const ltx23FastTemplateConfig: ModelPageTemplateConfig = {
   slug: 'ltx-2-3-fast',
   intent: 'draft',
   hero: {
-    eyebrow: 'LTX FAST DRAFT ROUTE',
+    eyebrow: 'PREVIOUS-GENERATION LTX FAST LEGACY ROUTE',
     subtitleHighlightTerms: ['visual exploration', 'prompt testing', 'vertical/social drafts'],
     primaryCtaHref: '/app?engine=ltx-2-3-fast',
     secondaryCtaHref: '/examples/ltx',
     quickLinks: [
+      {
+        labelKey: 'compareFast',
+        href: '/models/ltx-2-5-fast',
+        icon: 'compare',
+      },
       {
         labelKey: 'comparePro',
         href: '/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro',

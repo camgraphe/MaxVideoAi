@@ -2,9 +2,12 @@ import runtimeDocument from './model-runtime.json' with { type: 'json' };
 import type { ModelPublicationSurfaces } from './model-publication';
 import type { ModelRegistryEntry } from './model-registry-validation';
 
-export type RuntimeModelEntry = Omit<ModelRegistryEntry, 'replacement'> & { publicTargetId?: string };
+export type RuntimeModelEntry = Omit<ModelRegistryEntry, 'replacement'> & {
+  successorSlug: string | null;
+  publicTargetId?: string;
+};
 export type ModelRuntimeDocument = {
-  schemaVersion: 1;
+  schemaVersion: 2;
   models: RuntimeModelEntry[];
 };
 
@@ -14,8 +17,15 @@ export function createRuntimeModelResolver(document: ModelRuntimeDocument) {
   const bySlug = new Map(models.map((model) => [model.slug.toLowerCase(), model]));
   const byEngineInput = new Map<string, RuntimeModelEntry>();
   const byPublicSlug = new Map<string, RuntimeModelEntry>();
+  const resolveModel = (modelOrId: RuntimeModelEntry | string) =>
+    typeof modelOrId === 'string' ? byId.get(modelOrId.trim().toLowerCase()) ?? null : modelOrId;
 
   for (const model of models) {
+    if (model.lifecycle === 'retired') {
+      if (!model.publicTargetId) {
+        throw new Error(`Model runtime retired identity requires a public target "${model.id}"`);
+      }
+    }
     if (model.presentationOnly !== true) {
       for (const value of [model.id, model.slug, ...model.aliases.internal]) {
         byEngineInput.set(value.trim().toLowerCase(), model);
@@ -24,6 +34,9 @@ export function createRuntimeModelResolver(document: ModelRuntimeDocument) {
     const targetId = model.publicTargetId ?? model.id;
     const target = byId.get(targetId.trim().toLowerCase());
     if (!target) throw new Error(`Model runtime public target is missing "${targetId}"`);
+    if (model.lifecycle === 'retired' && target.lifecycle !== 'current') {
+      throw new Error(`Model runtime retired identity target must be current "${targetId}"`);
+    }
     for (const value of [model.slug, ...model.aliases.publicSlugs]) {
       const key = value.trim().toLowerCase();
       const existing = byPublicSlug.get(key);
@@ -38,6 +51,12 @@ export function createRuntimeModelResolver(document: ModelRuntimeDocument) {
     models,
     getById: (id: string) => byId.get(id.trim().toLowerCase()) ?? null,
     getByCanonicalSlug: (slug: string) => bySlug.get(slug.trim().toLowerCase()) ?? null,
+    getSuccessor: (modelOrId: RuntimeModelEntry | string) => {
+      const model = resolveModel(modelOrId);
+      return model?.successorId ? byId.get(model.successorId.toLowerCase()) ?? null : null;
+    },
+    isRecommendedByDefault: (modelOrId: RuntimeModelEntry | string) =>
+      resolveModel(modelOrId)?.lifecycle === 'current',
     resolveEngineInput: (value: string | null | undefined) => {
       const key = value?.trim().toLowerCase();
       return key ? byEngineInput.get(key) ?? null : null;
@@ -56,6 +75,31 @@ export function listPublishedRuntimeModels(): readonly RuntimeModelEntry[] {
   return runtimeResolver.models.filter((model) => model.publication.model.published);
 }
 
+export function isRuntimeModelPublicCurrent(
+  model: RuntimeModelEntry | null | undefined,
+): boolean {
+  return Boolean(
+    model &&
+      model.lifecycle === 'current' &&
+      model.publication.model.published &&
+      model.publication.model.indexable,
+  );
+}
+
+export function listPublicCurrentRuntimeModels(
+  models: readonly RuntimeModelEntry[] = runtimeResolver.models,
+): RuntimeModelEntry[] {
+  return models.filter(isRuntimeModelPublicCurrent);
+}
+
+export function filterPublicCurrentModelSlugs(
+  slugs: readonly string[],
+  models: readonly RuntimeModelEntry[] = runtimeResolver.models,
+): string[] {
+  const publicCurrentSlugs = new Set(listPublicCurrentRuntimeModels(models).map((model) => model.slug));
+  return slugs.filter((slug) => publicCurrentSlugs.has(slug));
+}
+
 export function getRuntimeModelById(id: string): RuntimeModelEntry | null {
   return runtimeResolver.getById(id);
 }
@@ -70,6 +114,18 @@ export function resolveRuntimeEngineInput(value: string | null | undefined): Run
 
 export function resolveRuntimePublicSlug(slug: string): RuntimeModelEntry | null {
   return runtimeResolver.resolvePublicSlug(slug);
+}
+
+export function getRuntimeModelSuccessor(
+  modelOrId: RuntimeModelEntry | string
+): RuntimeModelEntry | null {
+  return runtimeResolver.getSuccessor(modelOrId);
+}
+
+export function isRuntimeModelRecommendedByDefault(
+  modelOrId: RuntimeModelEntry | string
+): boolean {
+  return runtimeResolver.isRecommendedByDefault(modelOrId);
 }
 
 export function isRuntimeModelPagePublished(modelOrId: RuntimeModelEntry | string | null | undefined): boolean {

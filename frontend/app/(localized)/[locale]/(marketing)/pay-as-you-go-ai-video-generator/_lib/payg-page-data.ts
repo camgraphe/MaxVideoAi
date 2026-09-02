@@ -1,4 +1,5 @@
 import type { AppLocale } from '@/i18n/locales';
+import { isPublishedComparisonSlug } from '@/lib/compare-hub/data';
 import { getMcpInternalLink } from '@/lib/mcp-internal-links';
 import type {
   PayAsYouGoContent,
@@ -13,10 +14,14 @@ import {
   type VideoPricePresetId,
   type VideoPricingRow,
 } from '../../pricing/_lib/pricingHubData';
+import {
+  DEFAULT_PAYG_DISCOVERY_CONFIGS,
+  type PaygDiscoveryConfigs,
+} from './payg-discovery-config';
 
 export const PAYG_PAGE_PATH = '/pay-as-you-go-ai-video-generator';
 
-const MODEL_FAMILIES = ['seedance', 'kling', 'veo', 'happy-horse', 'seedance-mini', 'ltx', 'wan'] as const;
+const MODEL_FAMILIES = ['ltx', 'wan', 'grok', 'flux', 'seedance', 'kling', 'veo', 'happy-horse', 'seedance-mini'] as const;
 const PRIMARY_PRICE_PRESETS: readonly VideoPricePresetId[] = ['5s-720p', '8s-1080p', '10s-1080p'];
 const MODEL_FAMILY_PREFERRED_IDS: Record<(typeof MODEL_FAMILIES)[number], readonly string[]> = {
   seedance: ['seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini'],
@@ -24,8 +29,10 @@ const MODEL_FAMILY_PREFERRED_IDS: Record<(typeof MODEL_FAMILIES)[number], readon
   'seedance-mini': ['seedance-2-0-mini'],
   kling: ['kling-3-pro', 'kling-3-standard', 'kling-2-5-turbo'],
   veo: ['veo-3-1', 'veo-3-1-fast', 'veo-3-1-lite'],
-  ltx: ['ltx-2-3-fast', 'ltx-2-3', 'ltx-2-fast'],
-  wan: ['wan-2-6', 'wan-2-5'],
+  ltx: ['ltx-2-5-pro', 'ltx-2-5-fast', 'ltx-2-3', 'ltx-2-3-fast'],
+  wan: ['wan-3-prime', 'wan-3', 'wan-2-6'],
+  grok: ['grok-imagine-video-1-5'],
+  flux: ['flux-3', 'flux-3-draft'],
 };
 const PAYG_COMPARE_ALLOWED_MODEL_IDS = new Set([
   ...Object.values(MODEL_FAMILY_PREFERRED_IDS).flat(),
@@ -34,41 +41,11 @@ const PAYG_COMPARE_ALLOWED_MODEL_IDS = new Set([
 const PAYG_COMPARE_CANONICAL_HREFS: Record<string, string> = {
   '/ai-video-engines/veo-3-1-vs-kling-3-pro': '/ai-video-engines/kling-3-pro-vs-veo-3-1',
 };
-const PRICE_LOOKUP_CONFIGS = [
-  { id: 'seedance-2-0', presetId: '5s-720p' },
-  { id: 'kling-3-pro', presetId: '8s-1080p' },
-  { id: 'veo-3-1', presetId: '8s-1080p' },
-  { id: 'happy-horse-1-1', presetId: '5s-720p' },
-  { id: 'seedance-2-0-mini', presetId: '5s-720p' },
-  { id: 'ltx-2-3-fast', presetId: '8s-1080p' },
-] as const satisfies readonly { id: PaygPriceLookupId; presetId: VideoPricePresetId }[];
-const PREFERRED_EXAMPLES = [
-  { id: 'seedance-2-0', presetId: '5s-720p' },
-  { id: 'kling-3-pro', presetId: '8s-1080p' },
-  { id: 'veo-3-1-fast', presetId: '8s-1080p' },
-  { id: 'happy-horse-1-1', presetId: '5s-720p' },
-  { id: 'seedance-2-0-mini', presetId: '5s-720p' },
-  { id: 'ltx-2-3-fast', presetId: '8s-1080p' },
-] as const satisfies readonly { id: PaygExampleCostId; presetId: VideoPricePresetId }[];
-const SUPPORTED_MODEL_CONFIGS = [
-  { id: 'seedance-2-5', fallbackHref: '/models/seedance-2-5', fallbackLabel: 'Seedance 2.5' },
-  { id: 'seedance-2-0', fallbackHref: '/models/seedance-2-0', fallbackLabel: 'Seedance 2.0' },
-  { id: 'kling-3-pro', fallbackHref: '/models/kling-3-pro', fallbackLabel: 'Kling' },
-  { id: 'veo-3-1', fallbackHref: '/models/veo-3-1', fallbackLabel: 'Google Veo' },
-  { id: 'happy-horse-1-1', fallbackHref: '/models/happy-horse-1-1', fallbackLabel: 'Happy Horse 1.1' },
-  { id: 'seedance-2-0-mini', fallbackHref: '/models/dreamina-seedance-2-0-mini', fallbackLabel: 'Seedance 2.0 Mini' },
-  { id: 'ltx-2-3-fast', fallbackHref: '/models/ltx-2-3-fast', fallbackLabel: 'LTX' },
-  { id: 'wan-2-6', fallbackHref: '/models/wan-2-6', fallbackLabel: 'Wan' },
-] as const satisfies readonly {
-  id: PaygSupportedModelId;
-  fallbackHref: string;
-  fallbackLabel: string;
-}[];
-
 export type BuildPayAsYouGoPageDataInput = {
   locale: AppLocale;
   content: PayAsYouGoContent;
   pricingHub?: PricingHubData;
+  discoveryConfigs?: PaygDiscoveryConfigs;
 };
 
 export type PayAsYouGoEngineIcon = {
@@ -180,6 +157,8 @@ function bestForId(row: VideoPricingRow): keyof PayAsYouGoContent['pricing']['be
   if (lower.includes('veo')) return 'veo';
   if (lower.includes('ltx')) return 'ltx';
   if (lower.includes('wan')) return 'wan';
+  if (lower.includes('grok')) return 'grok';
+  if (lower.includes('flux')) return 'flux';
   return 'fallback';
 }
 
@@ -195,7 +174,9 @@ function compareIdsFromHref(href: string) {
 function isPaygCompareHref(href: string) {
   if (!/\/(ai-video-engines|comparatif|comparativa)\//.test(href)) return false;
   const compareIds = compareIdsFromHref(canonicalCompareHref(href));
-  return compareIds.length === 2 && compareIds.every((id) => PAYG_COMPARE_ALLOWED_MODEL_IDS.has(id));
+  return compareIds.length === 2
+    && compareIds.every((id) => PAYG_COMPARE_ALLOWED_MODEL_IDS.has(id))
+    && isPublishedComparisonSlug(compareIds.join('-vs-'));
 }
 
 function pickPaygCompareHref(links: VideoPricingRow['links']) {
@@ -214,11 +195,7 @@ function isRenderReadyQuote(quote: PresetQuote | undefined) {
   );
 }
 
-function formatExamplePrice(
-  value: string,
-  renderReady: boolean,
-  common: PayAsYouGoContent['common'],
-) {
+function formatExamplePrice(value: string, renderReady: boolean, common: PayAsYouGoContent['common']) {
   return renderReady ? `${common.examplePrefix} : ${value}` : value;
 }
 
@@ -253,32 +230,35 @@ function buildModelRows(
 }
 
 function buildPriceLookups(
+  configs: PaygDiscoveryConfigs['priceLookups'],
   rows: VideoPricingRow[],
   lookupCopyById: PayAsYouGoContent['priceLookups']['items'],
   liveQuote: string,
 ): PayAsYouGoPriceLookup[] {
-  return PRICE_LOOKUP_CONFIGS.map((config) => {
+  return configs.flatMap((config) => {
     const row = rows.find((candidate) => candidate.id === config.id);
+    if (!row) return [];
     const copy = lookupCopyById[config.id];
-    return {
+    return [{
       id: config.id,
       ...copy,
       engineIcon: row?.engineIcon ?? { id: config.id, label: copy.title },
       price: row?.quotes[config.presetId]?.display ?? liveQuote,
-      href: row ? `/pricing#${row.anchorId}` : '/pricing#video-pricing',
+      href: `/pricing#${row.anchorId}`,
       modelHref: row?.modelHref,
-    };
+    }];
   });
 }
 
 function buildExampleCosts(
+  configs: PaygDiscoveryConfigs['examples'],
   pricingHub: PricingHubData,
   exampleLabels: PayAsYouGoContent['exampleCosts']['labels'],
   settingsLabel: string,
   liveQuote: string,
 ): PayAsYouGoExampleCost[] {
   const rowsById = new Map(pricingHub.video.rows.map((row) => [row.id, row]));
-  const examples = PREFERRED_EXAMPLES.flatMap((example) => {
+  const examples = configs.flatMap((example) => {
     const row = rowsById.get(example.id);
     if (!row) return [];
     return [{
@@ -290,25 +270,24 @@ function buildExampleCosts(
       href: `/pricing#${row.anchorId}`,
     }];
   });
-  if (examples.length >= 6) return examples.slice(0, 6);
-  return pricingHub.popularChecks.slice(0, 4).flatMap((check, index) => {
-    const config = PREFERRED_EXAMPLES[index];
-    return config ? [{ id: config.id, label: check.priceCheck, engine: check.engine, price: check.price, context: settingsLabel, href: check.link.href }] : [];
-  });
+  return examples.slice(0, 6);
 }
 
 function buildSupportedModels(
+  configs: PaygDiscoveryConfigs['supportedModels'],
   rows: VideoPricingRow[],
   modelCopyById: PayAsYouGoContent['modelTesting']['models'],
 ): PayAsYouGoSupportedModel[] {
-  return SUPPORTED_MODEL_CONFIGS.map((config) => {
+  return configs.flatMap((config) => {
     const row = rows.find((candidate) => candidate.id === config.id);
-    return {
+    const href = row?.modelHref ?? config.fallbackHref;
+    if (!href) return [];
+    return [{
       id: config.id,
       ...modelCopyById[config.id],
-      href: row?.modelHref ?? config.fallbackHref,
+      href,
       engineIcon: row?.engineIcon ?? { id: config.id, label: config.fallbackLabel },
-    };
+    }];
   });
 }
 
@@ -325,6 +304,7 @@ export function buildPayAsYouGoPageData({
   locale,
   content,
   pricingHub: inputPricingHub,
+  discoveryConfigs = DEFAULT_PAYG_DISCOVERY_CONFIGS,
 }: BuildPayAsYouGoPageDataInput): PayAsYouGoPageData {
   const pricingHub = inputPricingHub ?? buildPricingHubData(locale);
   const { models: modelCopyById, ...modelTestingCopy } = content.modelTesting;
@@ -332,6 +312,7 @@ export function buildPayAsYouGoPageData({
   const { labels: exampleLabels, settingsLabel, header: exampleCostsHeader } = content.exampleCosts;
   const rows = buildModelRows(pricingHub, bestForCopy, content.common);
   const exampleCosts = buildExampleCosts(
+    discoveryConfigs.examples,
     pricingHub,
     exampleLabels,
     settingsLabel,
@@ -357,7 +338,10 @@ export function buildPayAsYouGoPageData({
       },
     },
     naturalQuestions: content.naturalQuestions,
-    modelTesting: { ...modelTestingCopy, items: buildSupportedModels(pricingHub.video.rows, modelCopyById) },
+    modelTesting: {
+      ...modelTestingCopy,
+      items: buildSupportedModels(discoveryConfigs.supportedModels, pricingHub.video.rows, modelCopyById),
+    },
     meaning: content.meaning,
     noSubscription: content.noSubscription,
     audienceFit: content.audienceFit,
@@ -368,7 +352,12 @@ export function buildPayAsYouGoPageData({
     pricing: { ...pricingCopy, rows, fullMatrixHref: '/pricing#video-pricing' },
     priceLookups: {
       ...content.priceLookups,
-      items: buildPriceLookups(pricingHub.video.rows, content.priceLookups.items, content.common.liveQuote),
+      items: buildPriceLookups(
+        discoveryConfigs.priceLookups,
+        pricingHub.video.rows,
+        content.priceLookups.items,
+        content.common.liveQuote,
+      ),
     },
     exampleCosts: { header: exampleCostsHeader, items: exampleCosts },
     refundPolicy: content.refundPolicy,

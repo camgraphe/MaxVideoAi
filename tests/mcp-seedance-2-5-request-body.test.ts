@@ -110,7 +110,10 @@ test('Seedance 2.5 paid projection routes all five modes into exact app request 
         httpsReference(imageEnd, 'last_frame', 'image'),
       ],
       expected: { imageUrl: imageStart, endImageUrl: imageEnd },
-      expectedInputs: [],
+      expectedInputs: [
+        { kind: 'image', slotId: 'image_url', url: imageStart },
+        { kind: 'image', slotId: 'end_image_url', url: imageEnd },
+      ],
     },
     {
       mode: 'ref2v',

@@ -5,7 +5,7 @@
     "title": "Generate and edit videos with Gemini Omni Flash",
     "url": "https://ai.google.dev/gemini-api/docs/omni",
     "modelIds": ["gemini-omni-flash"],
-    "modes": ["t2v", "i2v", "ref2v", "fl2v", "v2v", "extend"],
+    "modes": ["t2v", "i2v", "ref2v", "v2v", "retake"],
     "reviewedAt": "2026-08-28"
   },
   {
@@ -50,7 +50,7 @@
     "title": "Dreamina Seedance 2.0 series prompt guide",
     "url": "https://docs.byteplus.com/api/docs/ModelArk/2222480",
     "modelIds": ["seedance-2-0", "seedance-2-0-fast", "seedance-2-0-mini"],
-    "modes": ["t2v", "i2v", "ref2v", "v2v", "r2v", "extend"],
+    "modes": ["t2v", "i2v", "ref2v", "v2v", "extend"],
     "reviewedAt": "2026-08-28"
   },
   {
@@ -59,7 +59,7 @@
     "title": "Dreamina Seedance 2.5 prompt guide",
     "url": "https://docs.byteplus.com/en/docs/ModelArk/2607689",
     "modelIds": ["seedance-2-5"],
-    "modes": ["t2v", "i2v", "ref2v", "v2v", "r2v", "extend"],
+    "modes": ["t2v", "i2v", "ref2v", "v2v", "extend"],
     "reviewedAt": "2026-08-28"
   },
   {
@@ -77,7 +77,7 @@
     "title": "MiniMax video generation guide",
     "url": "https://platform.minimax.io/docs/guides/video-generation",
     "modelIds": ["minimax-h3", "minimax-hailuo-02-text"],
-    "modes": ["t2v", "i2v", "fl2v", "ref2v"],
+    "modes": ["t2v", "i2v", "ref2v"],
     "reviewedAt": "2026-08-28"
   },
   {
@@ -85,8 +85,8 @@
     "provider": "LTX",
     "title": "LTX prompting guide",
     "url": "https://docs.ltx.io/api-documentation/implementation-guides/prompting-guide",
-    "modelIds": ["ltx-2", "ltx-2-fast", "ltx-2-3", "ltx-2-3-fast"],
-    "modes": ["t2v", "i2v", "a2v", "retake", "extend", "reframe"],
+    "modelIds": ["ltx-2", "ltx-2-fast", "ltx-2-3", "ltx-2-3-fast", "ltx-2-5-fast", "ltx-2-5-pro"],
+    "modes": ["t2v", "i2v", "a2v", "retake", "extend"],
     "reviewedAt": "2026-08-28"
   },
   {
@@ -95,7 +95,34 @@
     "title": "Luma video generation guide",
     "url": "https://docs.lumalabs.ai/docs/video-generation",
     "modelIds": ["lumaRay2", "lumaRay2_flash", "luma-ray-3-2"],
-    "modes": ["t2v", "i2v", "fl2v", "v2v", "extend", "reframe"],
+    "modes": ["t2v", "i2v", "v2v", "reframe"],
     "reviewedAt": "2026-08-28"
+  },
+  {
+    "id": "alibaba-wan-video-prompting",
+    "provider": "Alibaba",
+    "title": "Wan video generation prompt guide",
+    "url": "https://docs.modelstudio.console.alibabacloud.com/en/model-studio/wan3-video-generation-guide",
+    "modelIds": ["wan-3", "wan-3-prime"],
+    "modes": ["t2v", "i2v", "ref2v"],
+    "reviewedAt": "2026-09-01"
+  },
+  {
+    "id": "xai-grok-imagine-video-prompting",
+    "provider": "xAI",
+    "title": "Grok Imagine Video 1.5 model guide",
+    "url": "https://docs.x.ai/developers/models/grok-imagine-video-1.5",
+    "modelIds": ["grok-imagine-video-1-5"],
+    "modes": ["t2v", "i2v", "ref2v"],
+    "reviewedAt": "2026-09-01"
+  },
+  {
+    "id": "bfl-flux-3-video-prompting",
+    "provider": "Black Forest Labs",
+    "title": "FLUX.3 video model guide",
+    "url": "https://bfl.ai/blog/flux-3-video",
+    "modelIds": ["flux-3", "flux-3-draft"],
+    "modes": ["t2v", "i2v", "fl2v", "extend"],
+    "reviewedAt": "2026-09-01"
   }
 ]

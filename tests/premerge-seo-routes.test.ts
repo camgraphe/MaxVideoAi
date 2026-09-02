@@ -12,6 +12,15 @@ const nextConfig = require('../frontend/next.config.js');
 const compareConfig = require('../frontend/config/compare-config.json');
 
 const repoRoot = process.cwd();
+const P0_MODEL_IDS = [
+  'wan-3',
+  'wan-3-prime',
+  'ltx-2-5-fast',
+  'ltx-2-5-pro',
+  'grok-imagine-video-1-5',
+  'flux-3',
+  'flux-3-draft',
+] as const;
 
 test('removed vertical-shorts best-for URLs redirect to active UGC guide', async () => {
   const redirects = await nextConfig.redirects();
@@ -165,5 +174,16 @@ test('Seedance 2.5 route metadata is index-follow with the accepted launch socia
     });
     assert.deepEqual(twitterImages, [socialImageUrl]);
     assert.doesNotMatch(JSON.stringify(metadata), /coming-soon/i);
+  }
+});
+
+test('P0 route inputs are indexable, sitemap-eligible and localized', () => {
+  for (const id of P0_MODEL_IDS) {
+    const engine = getFalEngineById(id);
+    assert.ok(engine, id);
+    assert.deepEqual(engine.surfaces.modelPage, { indexable: true, includeInSitemap: true }, id);
+    for (const locale of ['en', 'fr', 'es'] as const) {
+      assert.equal(existsSync(path.join(repoRoot, 'content/models', locale, `${engine.modelSlug}.json`)), true, `${locale}:${id}`);
+    }
   }
 });

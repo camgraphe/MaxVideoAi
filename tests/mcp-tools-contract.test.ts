@@ -95,9 +95,14 @@ const model: AgentModel = {
 const modelDetails: AgentModelDetails = {
   id: 'minimax-h3',
   label: 'MiniMax H3',
+  slug: 'minimax-h3',
   surface: 'video',
   availability: 'available',
   generationEnabled: true,
+  lifecycle: 'current',
+  successor: null,
+  recommendedByDefault: true,
+  prelaunch: false,
   modes: [],
   guidance: null,
   promptingSources: [],
@@ -674,7 +679,7 @@ test('tools return structured content and pass validated filters to facade servi
     }),
     connected.client.callTool({
       name: 'calculate_project_budget',
-      arguments: { proposals: [{ ...budgetArguments.proposals[0], lines: Array.from({ length: 13 }, () => budgetArguments.proposals[0].lines[0]) }] },
+      arguments: { proposals: [{ ...budgetArguments.proposals[0], lines: Array.from({ length: 15 }, () => budgetArguments.proposals[0].lines[0]) }] },
     }),
     connected.client.callTool({
       name: 'calculate_project_budget',

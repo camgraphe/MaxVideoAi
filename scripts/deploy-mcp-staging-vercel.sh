@@ -461,13 +461,6 @@ assert_protocol_endpoints() {
     "${base_url}${mcp_path}")"
   assert_exact_robots_header "${prefix}.mcp.headers"
 
-  if [[ "$mode" == 'candidate' ]]; then
-    test "$discovery_status" = '404'
-    test "$mcp_status" = '404'
-    return
-  fi
-
-  test "$mode" = 'stable'
   test "$discovery_status" = '200'
   jq -e \
     --arg resource "https://${STABLE_HOST}/mcp" \
@@ -476,8 +469,14 @@ assert_protocol_endpoints() {
       .authorization_servers == [$authorization_server]
     ' "${prefix}.oauth.json" >/dev/null
 
+  if [[ "$mode" == 'candidate' ]]; then
+    test "$mcp_status" = '404'
+    return
+  fi
+
+  test "$mode" = 'stable'
   test "$mcp_status" = '401'
-  grep -Eiq '^cache-control:[[:space:]]*private, no-store\r?$' "${prefix}.mcp.headers"
+  grep -Eiq '^cache-control:[[:space:]]*private, no-store, no-transform\r?$' "${prefix}.mcp.headers"
   grep -Eiq "^www-authenticate:[[:space:]]*Bearer resource_metadata=\"https://${STABLE_HOST}/\.well-known/oauth-protected-resource/mcp\"\r?$" \
     "${prefix}.mcp.headers"
 }

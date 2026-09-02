@@ -83,6 +83,14 @@ protection and the normal skew-protection setting remain enabled. The project
 serving `maxvideoai.com` is a different project and must stay read-only during
 staging operations.
 
+Because MCP protected-resource discovery is now publicly published, an
+unaliased deployment candidate returns the same stable resource metadata as the
+permanent staging host. The deployment wrapper validates that exact metadata
+before promotion. The candidate transport itself remains closed: `/api/mcp`
+must return `404` until the deployment is promoted to the exact staging host.
+After promotion, the unauthenticated MCP challenge must use the current
+transport cache policy `private, no-store, no-transform`.
+
 The foundation application variables below belong in the staging project's
 Production target:
 
@@ -135,6 +143,14 @@ values on the dedicated staging project:
 MCP_STAGING_CANARY_ACCOUNT_IDS=<comma-separated MaxVideoAI staging account IDs>
 MCP_STAGING_CANARY_CLIENT_IDS=<comma-separated hosted MCP OAuth client IDs>
 ```
+
+During an attended QA campaign, `MCP_STAGING_CANARY_ADDITIONAL_ACCOUNT_IDS`
+and `MCP_STAGING_CANARY_ADDITIONAL_CLIENT_IDS` may hold second sensitive
+comma-separated allowlists. They are cumulative: the primary allowlists remain
+authorized and must never be overwritten merely to rotate in a temporary QA
+identity. Remove both additional values after the campaign. An exact account
+and exact client match remain mandatory, whether each match comes from its
+primary or additional list.
 
 Access is granted only when the exact account and the exact OAuth client both
 match, the request is served from `maxvideoai-mcp-staging.vercel.app`, and

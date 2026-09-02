@@ -9,7 +9,9 @@ import { authFetch } from '@/lib/authFetch';
 import { formatRateLimitMessage } from '@/lib/wallet/rate-limit-message';
 import type { EngineCaps, Mode, PreflightRequest, PreflightResponse } from '@/types/engines';
 import type { WorkspaceCopy } from '../_lib/workspace-copy';
+import type { ReferenceAsset } from '../_lib/workspace-assets';
 import type { FormState } from '../_lib/workspace-form-state';
+import { buildWorkspacePreflightInputs } from '../_lib/workspace-generation-inputs';
 import { DEBOUNCE_MS } from '../_lib/workspace-client-helpers';
 import {
   buildWorkspaceTopupAnalyticsPayload,
@@ -37,6 +39,7 @@ type UseWorkspacePricingGateOptions = {
   effectiveDurationSec: number;
   voiceControlEnabled: boolean;
   submissionMode: Mode;
+  inputAssets: Record<string, (ReferenceAsset | null)[]>;
 };
 
 type UseWorkspacePricingGateResult = {
@@ -89,6 +92,7 @@ export function useWorkspacePricingGate({
   effectiveDurationSec,
   voiceControlEnabled,
   submissionMode,
+  inputAssets,
 }: UseWorkspacePricingGateOptions): UseWorkspacePricingGateResult {
   const [preflight, setPreflight] = useState<PreflightResponse | null>(null);
   const [preflightError, setPreflightError] = useState<string | undefined>();
@@ -228,6 +232,7 @@ export function useWorkspacePricingGate({
       loop: form.loop,
       ...(supportsAudioToggle ? { audio: form.audio } : {}),
       ...(voiceControlEnabled ? { voiceControl: true } : {}),
+      inputs: buildWorkspacePreflightInputs(inputAssets),
       ...(Object.keys(form.extraInputValues).length ? { extraInputValues: form.extraInputValues } : {}),
       user: { memberTier },
     };
@@ -236,7 +241,7 @@ export function useWorkspacePricingGate({
 
     const timeout = setTimeout(() => {
       Promise.resolve()
-        .then(() => runPreflight(payload))
+        .then(() => runPreflight(payload, { accessToken }))
         .then((response) => {
           if (canceled) return;
           setPreflight(response);
@@ -271,6 +276,8 @@ export function useWorkspacePricingGate({
     effectiveDurationSec,
     voiceControlEnabled,
     submissionMode,
+    inputAssets,
+    accessToken,
   ]);
 
   const singlePriceCents = typeof preflight?.total === 'number' ? preflight.total : null;

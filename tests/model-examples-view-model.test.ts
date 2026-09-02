@@ -472,6 +472,33 @@ test('stored no-media routes preserve legacy section and TOC visibility in every
   }
 });
 
+test('P0 model galleries stay hidden without accepted media and become visible from real media only', () => {
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    for (const slug of [
+      'wan-3',
+      'wan-3-prime',
+      'ltx-2-5-fast',
+      'ltx-2-5-pro',
+      'grok-imagine-video-1-5',
+      'flux-3',
+      'flux-3-draft',
+    ]) {
+      const hidden = buildStoredExamplesViewModel({ slug, locale, modelName: slug });
+      const accepted = buildStoredExamplesViewModel({
+        slug,
+        locale,
+        modelName: slug,
+        galleryVideos: [galleryVideo({ id: `job_${slug}`, engineLabel: slug })],
+      });
+
+      assert.equal(hidden.visible, false, `${slug}/${locale}/hidden`);
+      assert.deepEqual(hidden.decision.items, [], `${slug}/${locale}/no placeholder`);
+      assert.equal(accepted.visible, true, `${slug}/${locale}/accepted`);
+      assert.equal(accepted.decision.items[0]?.id, `job_${slug}`);
+    }
+  }
+});
+
 test('builder does not mutate frozen content, media, maps or link inputs', () => {
   const input = deepFreeze(videoInput());
 

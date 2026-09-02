@@ -165,7 +165,10 @@ body=''
 extra_headers=''
 case "$url" in
   'https://candidate-with-google-crons.vercel.app/') status='200' ;;
-  'https://candidate-with-google-crons.vercel.app/.well-known/oauth-protected-resource/mcp') status='404' ;;
+  'https://candidate-with-google-crons.vercel.app/.well-known/oauth-protected-resource/mcp')
+    status='200'
+    body='{"resource":"https://maxvideoai-mcp-staging.vercel.app/mcp","authorization_servers":["https://gecrywjztpbwbrlnomti.supabase.co/auth/v1"]}'
+    ;;
   'https://candidate-with-google-crons.vercel.app/api/mcp') status='404' ;;
   'https://maxvideoai-mcp-staging.vercel.app/') status='200' ;;
   'https://maxvideoai-mcp-staging.vercel.app/.well-known/oauth-protected-resource/mcp')
@@ -174,7 +177,7 @@ case "$url" in
     ;;
   'https://maxvideoai-mcp-staging.vercel.app/mcp')
     status='401'
-    extra_headers=$'cache-control: private, no-store\\nwww-authenticate: Bearer resource_metadata="https://maxvideoai-mcp-staging.vercel.app/.well-known/oauth-protected-resource/mcp"\\n'
+    extra_headers=$'cache-control: private, no-store, no-transform\\nwww-authenticate: Bearer resource_metadata="https://maxvideoai-mcp-staging.vercel.app/.well-known/oauth-protected-resource/mcp"\\n'
     ;;
   *) printf 'UNEXPECTED_CURL_URL %s\\n' "$url" >&2; exit 77 ;;
 esac

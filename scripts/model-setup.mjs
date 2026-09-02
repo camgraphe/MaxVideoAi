@@ -189,6 +189,8 @@ function buildRegistryEntry(options) {
     slug: options.slug,
     family: options.family || null,
     category: options.category ?? 'video',
+    lifecycle: 'current',
+    successorId: null,
     aliases: { internal: [], publicSlugs: [] },
     publication: {
       model: { published: false, indexable: false },

@@ -1,18 +1,7 @@
 import { uploadImageToStorage, isAllowedAssetHost, probeImageUrl, recordUserAsset } from '@/server/storage';
+import type { NormalizedAttachment } from './generation-attachment-types';
 
-export type NormalizedAttachment = {
-  name: string;
-  type: string;
-  size: number;
-  kind?: 'image' | 'video' | 'audio';
-  slotId?: string;
-  label?: string;
-  url?: string;
-  width?: number | null;
-  height?: number | null;
-  durationSec?: number | null;
-  assetId?: string;
-};
+export type { NormalizedAttachment } from './generation-attachment-types';
 
 type AttachmentProcessingErrorBody =
   | {

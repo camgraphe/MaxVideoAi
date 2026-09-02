@@ -1,5 +1,6 @@
 import type { AppLocale } from '@/i18n/locales';
 import { defaultLocale } from '@/i18n/locales';
+import { filterPublicCurrentModelSlugs } from '@/config/model-runtime';
 import { canonicalizePublishedCompareSlug, isPublishedComparisonSlug } from '@/lib/compare-hub/data';
 import { isComparisonIndexable } from '@/lib/compare-hub/indexation';
 import { getContentEntries } from '@/lib/content/markdown';
@@ -94,7 +95,7 @@ export function getAlsoAvailableModels(slug: string, topPicks: string[]) {
     'fast-drafts': ['pika-text-to-video', 'minimax-hailuo-02-text', 'wan-2-6'],
     'stylized-anime': ['seedance-2-0', 'wan-2-6', 'ltx-2-3-fast'],
   };
-  return (preferred[slug] ?? [])
+  return filterPublicCurrentModelSlugs(preferred[slug] ?? [])
     .filter((modelSlug) => !topPicks.includes(modelSlug))
     .map((modelSlug) => ENGINE_BY_SLUG.get(modelSlug))
     .filter((engine): engine is EngineCatalogEntry => Boolean(engine))

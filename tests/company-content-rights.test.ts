@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
 
@@ -59,4 +60,10 @@ test('internal link guard follows the extracted Company owner and allows the Abo
   assert.match(guard, /company\/_lib\/company-copy\.ts/);
   assert.match(guard, /about\/_components\/AboutView\.tsx/);
   assert.match(guard, /companySources/);
+  assert.doesNotThrow(() => {
+    execFileSync(process.execPath, ['scripts/internal-link-guard.mjs'], {
+      cwd: process.cwd(),
+      stdio: 'pipe',
+    });
+  });
 });

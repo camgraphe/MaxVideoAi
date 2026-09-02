@@ -144,7 +144,7 @@ function registryCapability(engineId: string): AgentPublicGenerationEngine {
   const publicModes = entry.modes
     .map((mode) => mode.mode)
     .filter((mode): mode is AgentPublicGenerationEngine['publicModes'][number] =>
-      ['t2v', 'i2v', 'ref2v', 'v2v', 'extend', 't2i', 'i2i'].includes(mode));
+      ['t2v', 'i2v', 'ref2v', 'fl2v', 'v2v', 'r2v', 'extend', 'a2v', 't2i', 'i2i'].includes(mode));
   return {
     engine: entry.engine,
     surface: entry.category === 'image' ? 'image' : 'video',
@@ -411,6 +411,15 @@ test('canonical, public-engine, mode, surface, and reference validation fail clo
 
   const disabledEngine = baseDependencies({ listPublicEngines: async () => [] });
   await expectAgentError(prepareGeneration(videoInput, principal, disabledEngine.deps), 'ENGINE_UNAVAILABLE');
+
+  const retiredEngine = baseDependencies({ listPublicEngines: async () => [] });
+  await expectAgentError(prepareGeneration({
+    ...videoInput,
+    engineId: 'retired-video-fixture',
+  }, principal, retiredEngine.deps), 'ENGINE_UNAVAILABLE');
+  assert.deepEqual(retiredEngine.captures.events, ['feature', 'restriction']);
+  assert.equal(retiredEngine.captures.priced.length, 0);
+  assert.equal(retiredEngine.captures.inserted.length, 0);
 
   const modeMismatch = baseDependencies();
   await expectAgentError(
@@ -820,6 +829,7 @@ test('catalog revision and full versioned pricing snapshot are deterministic and
 
 test('generation pricing delegates video and image formulas to the existing canonical owners', async () => {
   let videoPayload: Record<string, unknown> | null = null;
+  let videoOptions: Record<string, unknown> | null = null;
   let imagePayload: Record<string, unknown> | null = null;
   const videoRequest = { ...videoInput, schemaVersion: 1, prompt: videoInput.prompt.trim() } as CanonicalGenerationRequest;
   const imageRequest = {
@@ -828,8 +838,9 @@ test('generation pricing delegates video and image formulas to the existing cano
     settings: { ...imageInput.settings, enableWebSearch: true },
   } as CanonicalGenerationRequest;
   const deps = {
-    computeVideoPreflight: async (payload: Record<string, unknown>) => {
+    computeVideoPreflight: async (payload: Record<string, unknown>, options: Record<string, unknown>) => {
       videoPayload = payload;
+      videoOptions = options;
       return {
         ok: true,
         total: 125,
@@ -871,8 +882,10 @@ test('generation pricing delegates video and image formulas to the existing cano
     fps: 24,
     audio: true,
     hasVideoInput: false,
-    extraInputValues: { referenceImageCount: 0 },
     user: { memberTier: 'member' },
+  });
+  assert.deepEqual(videoOptions, {
+    trustedMediaPricingFacts: { referenceImageCount: 0 },
   });
   assert.deepEqual(imagePayload, {
     engineId: imageModel.id,
@@ -947,7 +960,6 @@ test('Luma HDR and EXR addons reach both canonical video pricing paths', async (
     estimateImage: async () => { throw new Error('unused'); },
   });
   assert.deepEqual(preflight?.extraInputValues, {
-    referenceImageCount: 0,
     hdr: true,
     exr_export: true,
   });
@@ -1081,8 +1093,9 @@ test('generation pricing forwards MiniMax H3 reference counts to both canonical 
   };
   let capturedPreflight: Record<string, unknown> | null = null;
   await priceCanonicalGeneration(ref2vRequest, 'member', {
-    computeVideoPreflight: async (payload: Record<string, unknown>) => {
+    computeVideoPreflight: async (payload: Record<string, unknown>, options: Record<string, unknown>) => {
       capturedPreflight = payload;
+      capturedPreflight.options = options;
       return {
         ok: true,
         total: 100,
@@ -1094,7 +1107,12 @@ test('generation pricing forwards MiniMax H3 reference counts to both canonical 
       throw new Error('unused');
     },
   }, { resolvedReferences });
-  assert.equal((capturedPreflight?.extraInputValues as { referenceImageCount?: number } | undefined)?.referenceImageCount, 3);
+  assert.equal(
+    ((capturedPreflight?.options as { trustedMediaPricingFacts?: { referenceImageCount?: number } } | undefined)
+      ?.trustedMediaPricingFacts?.referenceImageCount),
+    3,
+  );
+  assert.equal(capturedPreflight?.extraInputValues, undefined);
 
   let capturedBillingContext: Record<string, unknown> | null = null;
   const pricingExecutor = {
@@ -1122,8 +1140,9 @@ test('generation pricing forwards MiniMax H3 reference counts to both canonical 
     };
     let count: number | undefined;
     await priceCanonicalGeneration(request, 'member', {
-      computeVideoPreflight: async (payload: Record<string, unknown>) => {
-        count = (payload.extraInputValues as { referenceImageCount?: number } | undefined)?.referenceImageCount;
+      computeVideoPreflight: async (_payload: Record<string, unknown>, options: Record<string, unknown>) => {
+        count = ((options.trustedMediaPricingFacts as { referenceImageCount?: number } | undefined)
+          ?.referenceImageCount);
         return {
           ok: true,
           total: 100,
@@ -1137,6 +1156,63 @@ test('generation pricing forwards MiniMax H3 reference counts to both canonical 
     }, mode === 'ref2v' ? { resolvedReferences } : {});
     assert.equal(count, mode === 'ref2v' ? 3 : 0);
   }
+});
+
+test('generation pricing forwards resolved LTX source-audio duration to prepare and confirmation pricing', async () => {
+  const candidate = registryCapability('ltx-2-5-fast');
+  const request: CanonicalGenerationRequest = {
+    schemaVersion: 1,
+    surface: 'video',
+    engineId: candidate.engine.id,
+    mode: 'a2v',
+    prompt: 'A source-audio-led character beat',
+    settings: { durationSec: 6, resolution: '1080p' },
+    references: [{ kind: 'asset', assetId: 'private-audio', role: 'source' }],
+    outputCount: 1,
+  };
+  const resolvedReferences = [{
+    assetId: 'private-audio',
+    role: 'source' as const,
+    mediaKind: 'audio' as const,
+    storageUrl: 'https://assets.example.com/private-audio.wav',
+    width: null,
+    height: null,
+    durationSec: 9.25,
+    mimeType: 'audio/wav',
+  }];
+
+  let capturedPreflight: Record<string, unknown> | null = null;
+  await priceCanonicalGeneration(request, 'member', {
+    computeVideoPreflight: async (payload: Record<string, unknown>, options: Record<string, unknown>) => {
+      capturedPreflight = payload;
+      capturedPreflight.options = options;
+      return {
+        ok: true,
+        total: 100,
+        currency: 'USD',
+        pricing: { totalCents: 100, currency: 'USD', membershipTier: 'member' },
+      };
+    },
+    estimateImage: async () => { throw new Error('unused'); },
+  }, { resolvedReferences });
+  assert.equal(
+    ((capturedPreflight?.options as { trustedMediaPricingFacts?: { inputAudioDurationSec?: number } } | undefined)
+      ?.trustedMediaPricingFacts?.inputAudioDurationSec),
+    9.25,
+  );
+  assert.equal(capturedPreflight?.extraInputValues, undefined);
+
+  let capturedBillingContext: Record<string, unknown> | null = null;
+  await priceCanonicalGenerationInExecutor(request, 'member', {
+    executor: { async query() { return []; } } as TransactionQueryExecutor,
+    candidate,
+    resolvedReferences,
+    computeBillingSnapshot: async (context) => {
+      capturedBillingContext = context as unknown as Record<string, unknown>;
+      return { totalCents: 100, currency: 'USD', membershipTier: 'member' } as never;
+    },
+  });
+  assert.equal(capturedBillingContext?.inputAudioDurationSec, 9.25);
 });
 
 test('prepare pricing uses the real Seedance video-input tier for source-video modes', async () => {
@@ -1200,6 +1276,33 @@ test('prepare pricing classifies canonical ref2v video references without trusti
 
   await prepareGeneration(request, principal, deps);
   assert.equal(billingInputType, 'video_input');
+});
+
+test('prepare pricing receives the selected prelaunch engine snapshot', async () => {
+  const candidate = registryCapability('wan-3');
+  const request: PrepareGenerationInput = {
+    surface: 'video',
+    engineId: 'wan-3',
+    mode: 't2v',
+    prompt: 'A controlled product-film motion diagnostic.',
+    settings: { durationSec: 5, resolution: '720p', aspectRatio: '16:9', audio: true },
+    references: [],
+    outputCount: 1,
+  };
+  const { deps } = baseDependencies({
+    listPublicEngines: async () => [candidate],
+    priceGeneration: async (_canonicalRequest, _membershipTier, referenceContext) => {
+      assert.equal(referenceContext.resolvedEngine, candidate.engine);
+      return {
+        priceCents: 60,
+        currency: 'USD',
+        membershipTier: 'member',
+        pricingSnapshot: { totalCents: 60, currency: 'USD', membershipTier: 'member' },
+      };
+    },
+  });
+
+  await prepareGeneration(request, principal, deps);
 });
 
 test('canonical video pricing leaves source-derived i2v framing unset', async () => {

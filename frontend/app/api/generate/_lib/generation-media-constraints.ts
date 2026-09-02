@@ -7,7 +7,7 @@ import {
 import type { ReferenceBudgetMediaItem } from '@/lib/reference-budget';
 import { getFalEngineById } from '@/config/falEngines';
 import type { EngineInputSchema, Mode } from '@/types/engines';
-import type { NormalizedAttachment } from './attachments';
+import type { NormalizedAttachment } from './generation-attachment-types';
 import { MINIMAX_H3_ENGINE } from '@/src/config/fal-engines/minimax-h3';
 import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
 import { detectVideoDimensions } from '@/server/media/detect-has-audio';
@@ -37,7 +37,7 @@ type MediaConstraintError =
   | 'MEDIA_COMBINED_DURATION_EXCEEDED';
 
 export type GenerationMediaConstraintValidationResult =
-  | { ok: true }
+  | { ok: true; trustedDurationSecByField?: Record<string, number[]> }
   | {
       ok: false;
       status: 422;
@@ -385,5 +385,14 @@ export async function validateGenerationMediaConstraints(params: {
     });
   }
 
-  return { ok: true };
+  const trustedDurationSecByField = [...durationByKindAndUrl.values()].reduce<Record<string, number[]>>(
+    (result, entry) => {
+      (result[entry.fieldId] ??= []).push(entry.durationSec);
+      return result;
+    },
+    {},
+  );
+  return Object.keys(trustedDurationSecByField).length
+    ? { ok: true, trustedDurationSecByField }
+    : { ok: true };
 }

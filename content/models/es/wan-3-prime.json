@@ -1,0 +1,86 @@
+{
+  "marketingName": "Wan 3 Prime",
+  "versionLabel": "3 Prime",
+  "seo": {
+    "title": "Generador de video con IA Wan 3 Prime: flujo premium",
+    "description": "Evalúa Wan 3 Prime para una producción premium desde texto, imagen o referencias, con consejos, elección del modelo hermano y cotizaciones canónicas."
+  },
+  "overview": "Wan 3 Prime es el modelo premium actual de la familia Wan 3. Conserva los flujos de texto, imagen y referencias para briefs que eligen de forma deliberada la ruta Prime. Alibaba/Tongyi es propietario de Wan; MaxVideoAI distribuye estos endpoints mediante Fal sin sugerir un acuerdo directo con el propietario.",
+  "decision": {
+    "modelSlug": "wan-3-prime",
+    "hero": {
+      "eyebrow": "RUTA WAN PRIME ACTUAL",
+      "title": "Wan 3 Prime",
+      "subtitle": "Usa la ruta Wan premium para texto, animación de una imagen o referencias mixtas, entre dos y treinta segundos hasta 1080p.",
+      "subtitleHighlights": ["ruta Wan premium", "referencias mixtas", "dos a treinta segundos"],
+      "paragraph": "Elige Prime cuando el brief justifique un recorrido premium, no porque cada proyecto Wan lo exija. El modelo puede partir de un prompt, una imagen con final opcional o un conjunto de referencias controlado. Alibaba/Tongyi es el propietario y Fal es el distribuidor de ejecución utilizado por MaxVideoAI para este lanzamiento.",
+      "primaryCta": { "label": "Generar con Wan 3 Prime", "href": "/app?engine=wan-3-prime" },
+      "secondaryCta": { "label": "Explorar ejemplos de Wan", "href": "/es/galeria/wan" },
+      "quickLinks": [
+        { "label": "Ver el Wan 3 estándar", "href": "/es/modelos/wan-3" },
+        { "label": "Comparar Wan 3 y Prime", "href": "/es/comparativa/wan-3-vs-wan-3-prime?order=wan-3-prime" },
+        { "label": "Consultar precios de Prime", "href": "/es/precios#wan-3-prime-pricing" },
+        { "label": "Abrir el laboratorio Prime", "href": "#prompting" }
+      ]
+    },
+    "media": { "caption": "Galería de pruebas de Wan 3 Prime", "description": "Los resultados Prime revisados aparecerán después de su aceptación", "renderLabel": "Revisar el render aceptado", "badges": ["Prime", "Tres modos", "Hasta 1080p"], "altContext": "ejemplo de producción Wan 3 Prime aceptado" },
+    "features": [
+      { "title": "Posicionamiento premium deliberado", "body": "Prime es una opción actual separada para equipos que desean probar la ruta Wan premium frente al modelo estándar. Esta página no afirma que gane todos los briefs.", "tone": "quality" },
+      { "title": "Inicio mediante prompt o imagen", "body": "Genera desde texto o anima una imagen inicial con una imagen final opcional. Describe la transición y la respuesta física sin repetir cada píxel.", "tone": "reference" },
+      { "title": "Referencias mixtas estructuradas", "body": "El modo de referencias admite varias categorías bajo límites distintos. Asigna explícitamente funciones de identidad, movimiento, sonido y contexto.", "tone": "continuity" },
+      { "title": "Duración adaptada a la entrega", "body": "Selecciona entre dos y treinta segundos y ajusta la complejidad narrativa. El escenario de seis segundos permite comparar precios de manera coherente.", "tone": "duration" }
+    ],
+    "decisionCards": [
+      { "title": "Ideal para briefs premium evaluados", "body": "Usa Prime cuando el equipo tenga una razón concreta para probar la ruta premium en una campaña, un producto o una escena controlada.", "cta": { "label": "Comenzar con Prime", "href": "/app?engine=wan-3-prime" } },
+      { "title": "Menos adecuado como elección predeterminada", "body": "Para exploración habitual o sin requisito premium declarado, revisa el Wan 3 estándar antes de comprometer el proyecto con Prime.", "cta": { "label": "Ver Wan 3 estándar", "href": "/es/modelos/wan-3" } },
+      { "title": "Redactar según criterios de revisión", "body": "Indica los anclajes de identidad, la acción, el movimiento de cámara y el plano final que deberán revisar los evaluadores.", "cta": { "label": "Abrir el laboratorio", "href": "#prompting" } }
+    ],
+    "referenceWorkflows": [
+      { "title": "Brief de texto premium", "body": "Redacta un plano compacto con acción visible, cámara controlada y composición final estable." },
+      { "title": "Animación premium de imagen", "body": "Parte de una imagen sólida y dirige el movimiento sin pedir al modelo que rediseñe la fuente." },
+      { "title": "Jerarquía de referencias", "body": "Indica qué fuente gobierna identidad, movimiento, ritmo o contexto." },
+      { "title": "Entrega responsable", "body": "Verifica derechos, consentimiento, anatomía, geometría, texto y ausencia de marcas antes de aprobar." }
+    ],
+    "pricingCopy": { "title": "Precios por escenario de Wan 3 Prime", "subtitle": "Compara la misma escena de seis segundos en 720p y 1080p mediante el calculador público canónico.", "footnote": "Las cotizaciones calculadas son la fuente de verdad; el texto localizado no contiene un total para el cliente ni una tarifa del proveedor.", "ctaLabel": "Generar con Wan 3 Prime", "ctaHref": "/app?engine=wan-3-prime" },
+    "meta": { "title": "Modelo de video con IA Wan 3 Prime y flujo premium", "description": "Comprende los modos, duraciones, referencias, prompts, seguridad, alternativa Wan estándar y escenarios canónicos de Wan 3 Prime." }
+  },
+  "prompting": {
+    "modelSlug": "wan-3-prime",
+    "section": { "title": "Laboratorio de prompts — Wan 3 Prime", "intro": "Convierte la decisión premium en un brief medible con continuidad y criterios de revisión explícitos.", "tip": "Describe una actuación principal y un movimiento de cámara antes de añadir una atmósfera secundaria.", "guide": { "label": "Leer la guía de Wan 3 de Alibaba Model Studio", "href": "https://docs.modelstudio.console.alibabacloud.com/en/model-studio/wan3-video-generation-guide" }, "referencesTitle": "Construir un brief Prime que pueda evaluarse" },
+    "tabs": [
+      { "id": "intent", "label": "Intención", "title": "Definir por qué se prueba Prime", "description": "Conecta la ruta premium con una necesidad de producción concreta.", "copy": "Contexto de entrega:\n[Campaña, presentación, película de producto o escena de personaje]\n\nCriterio de éxito:\n[Movimiento, fidelidad o continuidad que debe verse]\n\nSujeto central:\n[Apariencia, material, vestuario y detalles protegidos]\n\nPlano final:\n[Cómo se resuelve el plano]" },
+      { "id": "direction", "label": "Dirección", "title": "Dirigir actuación y cámara", "description": "Mantén movimientos físicamente compatibles y fáciles de evaluar.", "copy": "Imagen inicial:\n[Composición, luz y pose]\n\nActuación:\n[Una acción principal con ritmo]\n\nCámara:\n[Un travelling, arco, paneo o acercamiento]\n\nEntorno:\n[Respuesta esperada de sombras, tela, líquido o partículas]" },
+      { "id": "control", "label": "Control", "title": "Fijar fuentes y restricciones", "description": "Separa funciones y limita las exclusiones a los puntos críticos.", "copy": "Referencia de identidad:\n[Fuente y rasgos protegidos]\n\nReferencia de movimiento:\n[Fuente y gesto tomado]\n\nReferencia sonora:\n[Fuente y función temporal]\n\nEvitar:\n[Deriva de identidad, objetos duplicados, manos deformes, texto, logotipo y marca de agua]" }
+    ],
+    "tabNotes": [
+      { "tabId": "intent", "body": "Una prueba Prime debe responder una pregunta de producción en lugar de repetir un borrador sin criterio." },
+      { "tabId": "direction", "body": "Relaciona el movimiento de cámara con la acción para que el plano forme una sola actuación diseñada." },
+      { "tabId": "control", "body": "Menos referencias con funciones nombradas reducen la ambigüedad durante la evaluación." }
+    ],
+    "globalPrinciples": ["Comienza por la entrega y los detalles protegidos del sujeto.", "Divide una acción compleja en momentos visibles que quepan en la duración.", "Usa referencias solo cuando su función sea explícita.", "Comprueba consentimiento, derechos de fuentes y seguridad de marca antes de publicar."],
+    "engineWhy": ["Prime hace explícita la elección premium en vez de ocultarla bajo una etiqueta Wan genérica.", "Los modos de texto, imagen y referencias permiten un plan de evaluación común.", "El rango de control compartido facilita una comparación coherente con Wan 3 estándar."],
+    "demo": {
+      "title": "Estudio de materiales con Wan 3 Prime",
+      "promptLabel": "Brief premium de producto",
+      "prompt": "Un maletín artesanal de cuero descansa sobre una mesa de piedra junto a una ventana abierta. Una artesana cierra el broche de latón, el maletín responde con un peso creíble y la cámara describe un semicírculo lento mientras la luz revela la textura. Conservar costuras, geometría del broche y anatomía de la mano. Terminar con una vista estable de tres cuartos, sin texto ni logotipos.",
+      "notes": ["El material y el contacto del broche aportan puntos concretos de revisión.", "El movimiento sobrio de cámara protege la silueta del producto."],
+      "summary": { "subject": "Maletín artesanal de cuero", "action": "Una artesana cierra el broche de latón", "camera": "Semicírculo lento hasta una vista estable de tres cuartos", "style": "Documental artesanal premium y cálido", "output": "Ruta Prime con estado de audio determinado por el render" },
+      "presentationOverrides": { "modeLabel": "Texto a video", "outputLabel": "Ajustes de salida canónicos", "duration": null, "aspectRatio": null, "audioChipMode": "media", "audioChipLabel": null, "altContext": "prompt Wan 3 Prime para un estudio de maletín de cuero" }
+    },
+    "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "wan-3-prime",
+    "showWhenEmpty": false,
+    "section": { "title": "Ejemplos revisados de Wan 3 Prime", "intro": "La galería Prime permanece ausente hasta que dos resultados duraderos superen la revisión editorial.", "defaultCtaLabel": "Ver todos los ejemplos de Wan", "recreateLabel": null },
+    "filters": [{ "id": "all", "label": "Todos" }, { "id": "product", "label": "Producto" }, { "id": "character", "label": "Personaje" }],
+    "proofItems": [
+      { "id": "materials", "icon": "sparkles", "title": "Fidelidad de materiales", "body": "Inspeccionar superficies, reflejos, costuras y geometría durante el movimiento." },
+      { "id": "contact", "icon": "users", "title": "Interacción humana", "body": "Revisar manos, contactos, peso y respuesta física." },
+      { "id": "camera", "icon": "maximize", "title": "Control de cámara", "body": "Confirmar que el movimiento solicitado sea fluido y apoye al sujeto." },
+      { "id": "continuity", "icon": "image", "title": "Continuidad de referencias", "body": "Comparar los detalles protegidos con sus fuentes asignadas." },
+      { "id": "safety", "icon": "shield", "title": "Puerta de aprobación", "body": "Rechazar contenido peligroso, marcas, errores de texto o semejanzas no autorizadas." }
+    ],
+    "fallbackItems": null
+  }
+}

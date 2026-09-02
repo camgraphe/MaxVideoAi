@@ -4,11 +4,16 @@ export const wan26TemplateConfig: ModelPageTemplateConfig = {
   slug: 'wan-2-6',
   intent: 'production',
   hero: {
-    eyebrow: 'WAN MULTI-SHOT VIDEO ROUTE',
+    eyebrow: 'PREVIOUS-GENERATION WAN LEGACY ROUTE',
     subtitleHighlightTerms: ['15s multi-shot clips', 'reference-to-video consistency', 'optional audio for text or image starts'],
     primaryCtaHref: '/app?engine=wan-2-6',
     secondaryCtaHref: '/examples/wan',
     quickLinks: [
+      {
+        labelKey: 'compareWan',
+        href: '/models/wan-3',
+        icon: 'compare',
+      },
       {
         labelKey: 'compareSora',
         href: '/ai-video-engines/sora-2-vs-wan-2-6?order=wan-2-6',

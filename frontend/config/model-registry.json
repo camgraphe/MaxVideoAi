@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "models": [
     {
       "id": "gemini-omni-flash",
@@ -54,7 +54,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "gpt-image-2",
@@ -95,7 +97,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "happy-horse-1-0",
@@ -153,7 +157,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "legacy",
+      "successorId": null
     },
     {
       "id": "happy-horse-1-1",
@@ -224,7 +230,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "kling-2-5-turbo",
@@ -292,7 +300,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "legacy",
+      "successorId": null
     },
     {
       "id": "kling-2-6-pro",
@@ -352,7 +362,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "legacy",
+      "successorId": null
     },
     {
       "id": "kling-3-4k",
@@ -405,7 +417,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "kling-3-pro",
@@ -474,7 +488,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "kling-3-standard",
@@ -547,7 +563,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "kling-o3-4k",
@@ -601,7 +619,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "kling-o3-pro",
@@ -666,7 +686,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "kling-o3-standard",
@@ -722,7 +744,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "ltx-2",
@@ -742,7 +766,7 @@
           "published": true,
           "includeInFamilyCopy": true,
           "current": false,
-          "familyRank": 2
+          "familyRank": 4
         },
         "compare": {
           "published": true,
@@ -773,16 +797,18 @@
           ]
         },
         "app": {
-          "published": true
+          "published": false
         },
         "pricing": {
-          "published": true
+          "published": false
         },
         "sitemap": {
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "deep_legacy",
+      "successorId": "ltx-2-5-pro"
     },
     {
       "id": "ltx-2-3",
@@ -807,13 +833,14 @@
         "examples": {
           "published": true,
           "includeInFamilyCopy": true,
-          "current": true,
-          "familyRank": 0
+          "current": false,
+          "familyRank": 2
         },
         "compare": {
           "published": true,
           "indexed": true,
           "suggestedOpponentIds": [
+            "ltx-2-5-pro",
             "ltx-2-3-fast",
             "ltx-2-fast",
             "sora-2"
@@ -826,6 +853,7 @@
             "kling-3-standard",
             "ltx-2",
             "ltx-2-3-fast",
+            "ltx-2-5-pro",
             "ltx-2-fast",
             "lumaRay2",
             "lumaRay2_flash",
@@ -852,7 +880,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "legacy",
+      "successorId": "ltx-2-5-pro"
     },
     {
       "id": "ltx-2-3-fast",
@@ -874,13 +904,14 @@
         "examples": {
           "published": true,
           "includeInFamilyCopy": true,
-          "current": true,
-          "familyRank": 1
+          "current": false,
+          "familyRank": 3
         },
         "compare": {
           "published": true,
           "indexed": true,
           "suggestedOpponentIds": [
+            "ltx-2-5-fast",
             "ltx-2-3",
             "veo-3-1-fast",
             "ltx-2-fast"
@@ -893,6 +924,7 @@
             "kling-3-standard",
             "ltx-2",
             "ltx-2-3",
+            "ltx-2-5-fast",
             "ltx-2-fast",
             "lumaRay2",
             "lumaRay2_flash",
@@ -921,7 +953,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "legacy",
+      "successorId": "ltx-2-5-fast"
     },
     {
       "id": "ltx-2-fast",
@@ -941,7 +975,7 @@
           "published": true,
           "includeInFamilyCopy": true,
           "current": false,
-          "familyRank": 3
+          "familyRank": 5
         },
         "compare": {
           "published": true,
@@ -976,16 +1010,18 @@
           ]
         },
         "app": {
-          "published": true
+          "published": false
         },
         "pricing": {
-          "published": true
+          "published": false
         },
         "sitemap": {
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "deep_legacy",
+      "successorId": "ltx-2-5-fast"
     },
     {
       "id": "luma-ray-3-2",
@@ -1039,7 +1075,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "luma-uni-1",
@@ -1079,7 +1117,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "luma-uni-1-max",
@@ -1119,7 +1159,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "lumaRay2",
@@ -1190,7 +1232,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "legacy",
+      "successorId": null
     },
     {
       "id": "lumaRay2_flash",
@@ -1261,7 +1305,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "legacy",
+      "successorId": null
     },
     {
       "id": "minimax-h3",
@@ -1312,7 +1358,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "minimax-hailuo-02-text",
@@ -1384,7 +1432,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "nano-banana",
@@ -1422,7 +1472,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "legacy",
+      "successorId": null
     },
     {
       "id": "nano-banana-2",
@@ -1460,7 +1512,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "nano-banana-lite",
@@ -1501,7 +1555,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "nano-banana-pro",
@@ -1539,7 +1595,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "pika-text-to-video",
@@ -1612,7 +1670,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "seedance-1-5-pro",
@@ -1680,7 +1740,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "seedance-2-0",
@@ -1756,7 +1818,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "seedance-2-0-fast",
@@ -1837,7 +1901,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "seedance-2-0-fast-byteplus",
@@ -1874,7 +1940,9 @@
           "published": false
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "seedance-2-0-mini",
@@ -1927,7 +1995,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "seedance-2-5",
@@ -1979,7 +2049,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "seedream",
@@ -2020,7 +2092,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "seedream-5-0-pro",
@@ -2061,7 +2135,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "sora-2",
@@ -2092,11 +2168,13 @@
           "published": true,
           "indexed": true,
           "suggestedOpponentIds": [
+            "grok-imagine-video-1-5",
             "veo-3-1",
             "kling-3-pro",
             "seedance-2-0"
           ],
           "publishedPairIds": [
+            "grok-imagine-video-1-5",
             "kling-2-5-turbo",
             "kling-2-6-pro",
             "kling-3-4k",
@@ -2133,7 +2211,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "sora-2-pro",
@@ -2202,7 +2282,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "veo-3-1",
@@ -2280,7 +2362,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "veo-3-1-fast",
@@ -2357,7 +2441,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "veo-3-1-lite",
@@ -2432,7 +2518,9 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "wan-2-5",
@@ -2455,8 +2543,8 @@
         "examples": {
           "published": true,
           "includeInFamilyCopy": true,
-          "current": true,
-          "familyRank": 1
+          "current": false,
+          "familyRank": 3
         },
         "compare": {
           "published": true,
@@ -2487,16 +2575,18 @@
           ]
         },
         "app": {
-          "published": true
+          "published": false
         },
         "pricing": {
-          "published": true
+          "published": false
         },
         "sitemap": {
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "deep_legacy",
+      "successorId": "wan-3"
     },
     {
       "id": "wan-2-6",
@@ -2518,13 +2608,14 @@
         "examples": {
           "published": true,
           "includeInFamilyCopy": true,
-          "current": true,
-          "familyRank": 0
+          "current": false,
+          "familyRank": 2
         },
         "compare": {
           "published": true,
           "indexed": true,
           "suggestedOpponentIds": [
+            "wan-3",
             "sora-2",
             "veo-3-1",
             "ltx-2-3-fast"
@@ -2550,7 +2641,8 @@
             "veo-3-1",
             "veo-3-1-fast",
             "veo-3-1-lite",
-            "wan-2-5"
+            "wan-2-5",
+            "wan-3"
           ]
         },
         "app": {
@@ -2563,7 +2655,327 @@
           "published": true
         }
       },
-      "replacement": null
+      "replacement": null,
+      "lifecycle": "legacy",
+      "successorId": "wan-3"
+    },
+    {
+      "id": "wan-3",
+      "slug": "wan-3",
+      "family": "wan",
+      "category": "video",
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": true,
+          "indexable": true
+        },
+        "examples": {
+          "published": true,
+          "includeInFamilyCopy": true,
+          "current": true,
+          "familyRank": 1
+        },
+        "compare": {
+          "published": true,
+          "indexed": true,
+          "suggestedOpponentIds": [
+            "wan-3-prime",
+            "wan-2-6"
+          ],
+          "publishedPairIds": [
+            "wan-2-6",
+            "wan-3-prime"
+          ]
+        },
+        "app": {
+          "published": true
+        },
+        "pricing": {
+          "published": true
+        },
+        "sitemap": {
+          "published": true
+        }
+      },
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
+    },
+    {
+      "id": "wan-3-prime",
+      "slug": "wan-3-prime",
+      "family": "wan",
+      "category": "video",
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": true,
+          "indexable": true
+        },
+        "examples": {
+          "published": true,
+          "includeInFamilyCopy": true,
+          "current": true,
+          "familyRank": 0
+        },
+        "compare": {
+          "published": true,
+          "indexed": true,
+          "suggestedOpponentIds": [
+            "wan-3"
+          ],
+          "publishedPairIds": [
+            "wan-3"
+          ]
+        },
+        "app": {
+          "published": true
+        },
+        "pricing": {
+          "published": true
+        },
+        "sitemap": {
+          "published": true
+        }
+      },
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
+    },
+    {
+      "id": "ltx-2-5-fast",
+      "slug": "ltx-2-5-fast",
+      "family": "ltx",
+      "category": "video",
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": true,
+          "indexable": true
+        },
+        "examples": {
+          "published": true,
+          "includeInFamilyCopy": true,
+          "current": true,
+          "familyRank": 1
+        },
+        "compare": {
+          "published": true,
+          "indexed": true,
+          "suggestedOpponentIds": [
+            "ltx-2-5-pro",
+            "ltx-2-3-fast"
+          ],
+          "publishedPairIds": [
+            "ltx-2-3-fast",
+            "ltx-2-5-pro"
+          ]
+        },
+        "app": {
+          "published": true
+        },
+        "pricing": {
+          "published": true
+        },
+        "sitemap": {
+          "published": true
+        }
+      },
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
+    },
+    {
+      "id": "ltx-2-5-pro",
+      "slug": "ltx-2-5-pro",
+      "family": "ltx",
+      "category": "video",
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": true,
+          "indexable": true
+        },
+        "examples": {
+          "published": true,
+          "includeInFamilyCopy": true,
+          "current": true,
+          "familyRank": 0
+        },
+        "compare": {
+          "published": true,
+          "indexed": true,
+          "suggestedOpponentIds": [
+            "ltx-2-5-fast",
+            "ltx-2-3"
+          ],
+          "publishedPairIds": [
+            "ltx-2-3",
+            "ltx-2-5-fast"
+          ]
+        },
+        "app": {
+          "published": true
+        },
+        "pricing": {
+          "published": true
+        },
+        "sitemap": {
+          "published": true
+        }
+      },
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
+    },
+    {
+      "id": "grok-imagine-video-1-5",
+      "slug": "grok-imagine-video-1-5",
+      "family": "grok",
+      "category": "video",
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": true,
+          "indexable": true
+        },
+        "examples": {
+          "published": true,
+          "includeInFamilyCopy": true,
+          "current": true,
+          "familyRank": 0
+        },
+        "compare": {
+          "published": true,
+          "indexed": true,
+          "suggestedOpponentIds": [
+            "flux-3",
+            "sora-2"
+          ],
+          "publishedPairIds": [
+            "flux-3",
+            "sora-2"
+          ]
+        },
+        "app": {
+          "published": true
+        },
+        "pricing": {
+          "published": true
+        },
+        "sitemap": {
+          "published": true
+        }
+      },
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
+    },
+    {
+      "id": "flux-3",
+      "slug": "flux-3",
+      "family": "flux",
+      "category": "video",
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": true,
+          "indexable": true
+        },
+        "examples": {
+          "published": true,
+          "includeInFamilyCopy": true,
+          "current": true,
+          "familyRank": 0
+        },
+        "compare": {
+          "published": true,
+          "indexed": true,
+          "suggestedOpponentIds": [
+            "flux-3-draft",
+            "grok-imagine-video-1-5"
+          ],
+          "publishedPairIds": [
+            "flux-3-draft",
+            "grok-imagine-video-1-5"
+          ]
+        },
+        "app": {
+          "published": true
+        },
+        "pricing": {
+          "published": true
+        },
+        "sitemap": {
+          "published": true
+        }
+      },
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
+    },
+    {
+      "id": "flux-3-draft",
+      "slug": "flux-3-draft",
+      "family": "flux",
+      "category": "video",
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": true,
+          "indexable": true
+        },
+        "examples": {
+          "published": true,
+          "includeInFamilyCopy": true,
+          "current": true,
+          "familyRank": 1
+        },
+        "compare": {
+          "published": true,
+          "indexed": true,
+          "suggestedOpponentIds": [
+            "flux-3"
+          ],
+          "publishedPairIds": [
+            "flux-3"
+          ]
+        },
+        "app": {
+          "published": true
+        },
+        "pricing": {
+          "published": true
+        },
+        "sitemap": {
+          "published": true
+        }
+      },
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
     }
   ],
   "tombstones": [

@@ -3,30 +3,30 @@
   "versionLabel": "Fast",
   "seo": {
     "title": "LTX 2 Fast | Modèle vidéo IA, specs et prix | MaxVideoAI",
-    "description": "Utilisez le modèle LTX 2 Fast encore pris en charge sur MaxVideoAI pour des tests audio rapides, puis passez à LTX 2.3 Fast pour le workflow fast LTX actuel.",
+    "description": "LTX 2 Fast est un profil historique d'ancienne génération conservé pour son intention de recherche ; démarrez les brouillons actuels avec LTX 2.5 Fast.",
     "image": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/1bd62e34-0e55-4f49-b434-295276b991d4-job_d895c3b0-562a-4e36-ae06-4ce083a47126.jpg"
   },
-  "overview": "LTX 2 Fast reste disponible sur MaxVideoAI comme modèle LTX fast plus ancien encore pris en charge pour des tests audio rapides et des workflows fast hérités.",
+  "overview": "LTX 2 Fast conserve son URL canonique comme profil historique d'ancienne génération. Ses caractéristiques et exemples restent documentés, tandis que les nouveaux brouillons doivent commencer sur LTX 2.5 Fast.",
   "hero": {
-    "title": "LTX 2 Fast — modèle LTX plus ancien encore pris en charge pour des tests audio rapides",
-    "intro": "LTX 2 Fast reste disponible pour des tests audio rapides et des workflows fast plus anciens, tandis que LTX 2.3 Fast est désormais l’option fast LTX actuelle principale.",
+    "title": "LTX 2 Fast — modèle LTX historique d’ancienne génération pour les brouillons audio rapides",
+    "intro": "LTX 2 Fast est documenté ici pour son workflow historique de brouillons audio, tandis que LTX 2.5 Fast est le successeur rapide actuel.",
     "badge": "1080p/1440p/4K · 6–20 s · Audio on/off · 25/50 fps",
     "ctaPrimary": {
-      "label": "Générer avec LTX 2 Fast",
-      "href": "/app?engine=ltx-2-fast"
+      "label": "Générer avec LTX 2.5 Fast",
+      "href": "/app?engine=ltx-2-5-fast"
     },
     "secondaryLinks": [
       {
-        "label": "Voir LTX 2.3 Fast",
-        "href": "/models/ltx-2-3-fast"
+        "label": "Voir le LTX 2.5 Fast actuel",
+        "href": "/fr/modeles/ltx-2-5-fast"
       },
       {
         "label": "Voir les exemples LTX",
         "href": "/examples/ltx"
       },
       {
-        "label": "Voir LTX 2.3 Pro",
-        "href": "/models/ltx-2-3-pro"
+        "label": "Voir les tarifs LTX",
+        "href": "/fr/tarifs#ltx-2-fast-pricing"
       },
       {
         "label": "Comparer LTX 2.3 Fast vs LTX 2.3 Pro",
@@ -157,7 +157,7 @@
       "Conçu pour l’itération rapide||Faites beaucoup de variantes sans sur‑optimiser le premier rendu.",
       "Plus d’espace par clip||Meilleur pour le pacing, la montée et les beats “mini‑scène” que les modèles ultra‑courts.",
       "Tests prêts pour le son||Parfait pour caler dialogue/ambiance/SFX en temp (ou coupez l’audio et finissez en post).",
-      "Upgrade simple||Gardez la même structure de prompt et relancez les gagnants en LTX‑2 Pro."
+      "Upgrade simple||Gardez la même structure de prompt et relancez les gagnants en LTX 2.5 Pro."
     ],
     "specTitle": "Specs réelles — LTX 2 Fast dans MaxVideoAI",
     "specNote": "Les specs reflètent le routage Fal en production.",
@@ -174,7 +174,7 @@
       },
       {
         "title": "Workflow draft",
-        "intro": "Le format de prompt est compatible avec LTX‑2 Pro, donc l’upgrade est simple. Utilisez Fast comme couche de brouillon.",
+        "intro": "Le format de prompt est compatible avec LTX 2.5 Pro, donc l’upgrade actuel reste simple.",
         "items": [
           "Réutilisez le langage de plan pour les finals.",
           "Remplacez par de meilleures références ensuite.",
@@ -188,7 +188,7 @@
     "whatIntro2": "Pour 12–20 s, nous contraignons automatiquement à 1080p/25 fps pour garder une route stable.",
     "whatFlowTitle": "Workflow",
     "whatFlowSteps": [
-      "Sélectionnez LTX 2 Fast, puis Texte → Vidéo ou Image → Vidéo",
+      "Workflow historique LTX 2 Fast : Texte → Vidéo ou Image → Vidéo",
       "Définissez la durée (6–20 s) et le format 16:9",
       "Choisissez résolution/fps (12–20 s = 1080p/25)",
       "Audio on/off, ajoutez prompt et seed/négatif optionnels",
@@ -236,33 +236,33 @@
     ],
     "comparisonTitle": "Quand choisir LTX 2 Fast",
     "comparisonPoints": [
-      "Utilisez Fast pour des clips sociaux rapides; passez en LTX‑2 Pro pour un polish premium",
+      "Utilisez LTX 2.5 Fast pour des clips sociaux rapides ; passez en LTX 2.5 Pro pour un polish premium",
       "Pour des formats multi‑AR, combinez avec Wan ou Veo; Fast est 16:9 seulement",
       "Pour des tests muets, coupez l’audio pour réduire le coût"
     ],
     "comparisonCta": "Comparer LTX 2 Fast vs Pro →",
-    "relatedTitle": "Versions LTX 2.3 plus récentes",
-    "relatedSubtitle": "Utilisez LTX 2.3 Fast comme page LTX fast actuelle principale, ou LTX 2.3 Pro quand le workflow demande la surface LTX actuelle la plus complète.",
+    "relatedTitle": "Versions LTX 2.5 actuelles",
+    "relatedSubtitle": "LTX 2.5 Fast est le successeur rapide actuel, tandis que LTX 2.5 Pro couvre la production actuelle.",
     "relatedItems": [
       {
         "brand": "ltx",
-        "title": "LTX 2.3 Fast",
-        "description": "Restez sur un workflow fast mais passez au routing LTX 2.3 Fast actuel pour une génération texte→vidéo et image→vidéo plus récente.",
-        "modelSlug": "ltx-2-3-fast",
-        "ctaLabel": "Voir LTX 2.3 Fast ->"
+        "title": "LTX 2.5 Fast",
+        "description": "Restez sur un workflow fast avec le routing LTX 2.5 Fast actuel pour toute nouvelle génération texte→vidéo et image→vidéo.",
+        "modelSlug": "ltx-2-5-fast",
+        "ctaLabel": "Voir LTX 2.5 Fast ->"
       },
       {
         "brand": "ltx",
-        "title": "LTX 2.3 Pro",
-        "description": "Passez à LTX 2.3 Pro quand le projet a besoin d’audio→vidéo, Extend, Retake et d’un set de workflows LTX actuels plus large.",
-        "modelSlug": "ltx-2-3-pro",
-        "ctaLabel": "Voir LTX 2.3 Pro ->"
+        "title": "LTX 2.5 Pro",
+        "description": "Passez à LTX 2.5 Pro quand le projet demande le workflow de production actuel.",
+        "modelSlug": "ltx-2-5-pro",
+        "ctaLabel": "Voir LTX 2.5 Pro ->"
       }
     ],
-    "finalPara1": "Prêt à essayer LTX 2 Fast ? Chargez votre wallet et vérifiez le chip prix avant de lancer.",
-    "finalPara2": "Passez à LTX‑2 Pro quand vous avez besoin de fidélité max et d’un son synchro.",
-    "finalButton": "Ouvrir LTX 2 Fast dans Generate →",
-    "tipsIntro": "LTX‑2 Fast est le plus fiable quand vous le traitez comme une passe draft : plans simples, variations rapides, puis polish du gagnant.",
+    "finalPara1": "Prêt pour un brouillon rapide actuel ? Ouvrez LTX 2.5 Fast et vérifiez le prix avant de lancer.",
+    "finalPara2": "Passez à LTX 2.5 Pro quand la production actuelle demande une passe plus fidèle.",
+    "finalButton": "Ouvrir LTX 2.5 Fast dans Generate →",
+    "tipsIntro": "Historiquement, LTX 2 Fast servait de passe draft pour les plans simples et les variations rapides ; utilisez LTX 2.5 Fast pour les brouillons actuels.",
     "troubleshootingTitle": "Problèmes fréquents → solutions rapides",
     "troubleshootingItems": [
       "Résultat aléatoire / incohérent → retirez des beats; relancez 2–3 variations serrées.",
@@ -275,7 +275,7 @@
   "decision": {
     "modelSlug": "ltx-2-fast",
     "hero": {
-      "eyebrow": "ROUTE LTX 2 FAST ENCORE PRISE EN CHARGE",
+      "eyebrow": "ROUTE HISTORIQUE LTX 2 FAST D'ANCIENNE GÉNÉRATION",
       "title": "LTX 2 Fast",
       "subtitle": "Drafts 16:9 rapides jusqu’à 20 s pour texte ou image de départ, revues avec audio et checks 1080p à 4K.",
       "subtitleHighlights": [
@@ -283,10 +283,10 @@
         "jusqu’à 20 s",
         "checks 1080p à 4K"
       ],
-      "paragraph": "Utilisez LTX 2 Fast pour l’ancienne route fast LTX encore prise en charge : drafts 16:9 moins chers, tests de timing jusqu’à 20 s, image de départ et options haute résolution. Utilisez LTX 2.3 Fast pour le workflow fast LTX actuel.",
+      "paragraph": "Cette page historique LTX 2 Fast préserve les caractéristiques, exemples et acquis SEO de l'ancienne génération sans redirection. Tout nouveau brouillon commence sur LTX 2.5 Fast, le successeur rapide actuel.",
       "primaryCta": {
-        "label": "Drafter avec LTX 2 Fast",
-        "href": "/app?engine=ltx-2-fast"
+        "label": "Voir le LTX 2.5 Fast actuel",
+        "href": "/fr/modeles/ltx-2-5-fast"
       },
       "secondaryCta": {
         "label": "Voir les exemples",
@@ -294,8 +294,8 @@
       },
       "quickLinks": [
         {
-          "label": "Voir LTX 2.3 Fast",
-          "href": "/fr/modeles/ltx-2-3-fast"
+          "label": "Voir LTX 2.5 Fast",
+          "href": "/fr/modeles/ltx-2-5-fast"
         },
         {
           "label": "Voir les tarifs",
@@ -352,19 +352,19 @@
     ],
     "decisionCards": [
       {
-        "title": "LTX 2 Fast ou LTX 2.3 Fast ?",
-        "body": "Utilisez LTX 2 Fast pour d’anciens drafts 16:9 encore pris en charge. Choisissez LTX 2.3 Fast pour la route fast actuelle et plus de formats.",
+        "title": "LTX 2 Fast historique ou LTX 2.5 Fast actuel ?",
+        "body": "Gardez cette page comme référence historique. Commencez une nouvelle itération avec LTX 2.5 Fast.",
         "cta": {
-          "label": "Voir LTX 2.3 Fast",
-          "href": "/fr/modeles/ltx-2-3-fast"
+          "label": "Voir LTX 2.5 Fast",
+          "href": "/fr/modeles/ltx-2-5-fast"
         }
       },
       {
         "title": "Besoin de plus de fidélité ?",
-        "body": "Déplacez les directions validées vers LTX 2 ou LTX 2.3 Pro quand le plan mérite une passe plus propre.",
+        "body": "Déplacez les directions validées vers LTX 2.5 Pro quand le plan mérite une passe actuelle plus propre.",
         "cta": {
-          "label": "Voir LTX 2",
-          "href": "/fr/modeles/ltx-2"
+          "label": "Voir LTX 2.5 Pro",
+          "href": "/fr/modeles/ltx-2-5-pro"
         }
       },
       {
@@ -403,20 +403,20 @@
       },
       {
         "title": "Montée de gamme",
-        "body": "Envoyez les directions gagnantes vers LTX 2.3 Fast ou Pro selon le workflow actuel recherché."
+        "body": "Envoyez les directions gagnantes vers LTX 2.5 Fast ou Pro selon le workflow actuel recherché."
       }
     ],
     "pricingCopy": {
       "title": "Prix des drafts LTX 2 Fast",
       "subtitle": "Totaux de brouillon par scénario — prix exact affiché dans l’app avant génération.",
       "footnote": "Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.",
-      "ctaLabel": "Voir tous les tarifs",
+      "ctaLabel": "Générer avec LTX 2.5 Fast",
       "maxDurationNote": "20 s en 1080p / 25 fps",
-      "ctaHref": "/fr/tarifs#ltx-2-fast-pricing"
+      "ctaHref": "/app?engine=ltx-2-5-fast"
     },
     "meta": {
       "title": "LTX 2 Fast : tarifs, drafts 20 s et exemples | MaxVideoAI",
-      "description": "Utilisez LTX 2 Fast pour des drafts 16:9 encore pris en charge, tests de timing 20 s, text-to-video, image-to-video, checks haute résolution et tarifs."
+      "description": "Référence historique LTX 2 Fast pour drafts 16:9, tests de timing 20 s, text-to-video, image-to-video, checks haute résolution et tarifs."
     }
   },
   "prompting": {
@@ -555,7 +555,7 @@
       {
         "id": "proof-1",
         "title": "Rendus communautaires",
-        "body": "Voyez ce qui est possible avec LTX 2 Fast — modèle LTX plus ancien encore pris en charge pour des tests audio rapides.",
+        "body": "Consultez les exemples historiques de tests audio LTX 2 Fast depuis cette page d’ancienne génération.",
         "icon": "sparkles"
       },
       {

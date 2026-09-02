@@ -3,16 +3,21 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { buildLocalizedModelPath } from '../frontend/config/model-registry.ts';
 import {
+  createRuntimeModelResolver,
   getRuntimeModelByCanonicalSlug,
   getRuntimeModelById,
+  getRuntimeModelSuccessor,
+  isRuntimeModelRecommendedByDefault,
   listRuntimeModels,
   resolveRuntimeEngineInput,
   resolveRuntimePublicSlug,
   toLegacyModelSurfaces,
 } from '../frontend/config/model-runtime.ts';
+import { buildModelRuntimeProjection } from '../scripts/lib/model-runtime-projection.mjs';
 import {
   canonicalizeFalModelSlug,
   getFalEngineBySlug,
+  listFalEngines,
 } from '../frontend/src/config/falEngines.ts';
 import { normalizeEngineId } from '../frontend/src/lib/engine-alias.ts';
 import {
@@ -25,6 +30,14 @@ import {
 } from '../frontend/config/model-families.ts';
 
 const baseline = JSON.parse(readFileSync('tests/fixtures/model-registry-baseline.json', 'utf8'));
+const P0_SUCCESSORS = {
+  'ltx-2-3': 'ltx-2-5-pro',
+  'ltx-2-3-fast': 'ltx-2-5-fast',
+  'ltx-2': 'ltx-2-5-pro',
+  'ltx-2-fast': 'ltx-2-5-fast',
+  'wan-2-6': 'wan-3',
+  'wan-2-5': 'wan-3',
+} as const;
 
 test('runtime model projection matches every baseline identity and surface', () => {
   const runtimeById = new Map(listRuntimeModels().map((model) => [model.id, model]));
@@ -38,12 +51,23 @@ test('runtime model projection matches every baseline identity and surface', () 
     'seedance-2-5',
     'veo-3-1',
   ]);
+  const reciprocalP0PairByOwner = new Map([
+    ['sora-2', 'grok-imagine-video-1-5'],
+    ['ltx-2-3', 'ltx-2-5-pro'],
+    ['ltx-2-3-fast', 'ltx-2-5-fast'],
+    ['wan-2-6', 'wan-3'],
+  ]);
   for (const expected of baseline.models) {
     const actual = runtimeById.get(expected.id);
     assert.ok(actual, `missing runtime model ${expected.id}`);
     assert.equal(actual.slug, expected.slug);
     assert.equal(actual.family, expected.family);
     assert.equal(actual.category, expected.category);
+    assert.equal(actual.lifecycle, expected.lifecycle);
+    assert.equal(
+      actual.successorId,
+      P0_SUCCESSORS[expected.id as keyof typeof P0_SUCCESSORS] ?? expected.successorId,
+    );
     const actualPublication = toLegacyModelSurfaces(actual);
     if (reciprocalSeedance25PairOwners.has(expected.id)) {
       assert.equal(
@@ -65,8 +89,124 @@ test('runtime model projection matches every baseline identity and surface', () 
         (slug) => slug !== 'minimax-h3',
       );
     }
+    const reciprocalP0Pair = reciprocalP0PairByOwner.get(expected.id);
+    if (reciprocalP0Pair) {
+      assert.equal(
+        actualPublication.compare.suggestOpponents.filter((slug) => slug === reciprocalP0Pair).length,
+        1,
+        expected.id,
+      );
+      assert.equal(
+        actualPublication.compare.publishedPairs.filter((slug) => slug === reciprocalP0Pair).length,
+        1,
+        expected.id,
+      );
+      actualPublication.compare.suggestOpponents = actualPublication.compare.suggestOpponents.filter(
+        (slug) => slug !== reciprocalP0Pair,
+      );
+      actualPublication.compare.publishedPairs = actualPublication.compare.publishedPairs.filter(
+        (slug) => slug !== reciprocalP0Pair,
+      );
+    }
     assert.deepEqual(actualPublication, expected.publication);
   }
+});
+
+test('runtime projection derives successor slugs without changing identity or public routing', () => {
+  const registry = JSON.parse(readFileSync('frontend/config/model-registry.json', 'utf8'));
+  const source = structuredClone(registry.models.find((model: any) => model.id === 'happy-horse-1-0'));
+  const target = structuredClone(registry.models.find((model: any) => model.id === 'happy-horse-1-1'));
+  source.lifecycle = 'legacy';
+  source.successorId = target.id;
+  target.lifecycle = 'current';
+  target.successorId = null;
+  const runtime = buildModelRuntimeProjection({ schemaVersion: 2, models: [source, target], tombstones: [] });
+  const resolver = createRuntimeModelResolver(runtime);
+  const projectedSource = resolver.getById(source.id);
+
+  assert.equal(projectedSource?.successorId, target.id);
+  assert.equal(projectedSource?.successorSlug, target.slug);
+  assert.equal(resolver.getSuccessor(source.id)?.id, target.id);
+  assert.equal(resolver.isRecommendedByDefault(source.id), false);
+  assert.equal(resolver.isRecommendedByDefault(target.id), true);
+  assert.equal(resolver.resolveEngineInput(source.id)?.id, source.id);
+  assert.equal(resolver.resolvePublicSlug(source.slug)?.id, source.id);
+  assert.equal(Object.hasOwn(projectedSource!, 'publicTargetId'), false);
+});
+
+test('runtime lifecycle helpers and Fal materialization share canonical recommendation policy', () => {
+  const runtimeById = new Map(listRuntimeModels().map((model) => [model.id, model]));
+  for (const engine of listFalEngines()) {
+    const model = runtimeById.get(engine.id);
+    assert.ok(model, engine.id);
+    assert.equal(engine.lifecycle, model.lifecycle, engine.id);
+    assert.equal(engine.successorId, model.successorId, engine.id);
+    assert.equal(engine.successorSlug, model.successorSlug, engine.id);
+    assert.equal(engine.isLegacy, model.lifecycle !== 'current', engine.id);
+    assert.equal(isRuntimeModelRecommendedByDefault(model), model.lifecycle === 'current', engine.id);
+    assert.equal(getRuntimeModelSuccessor(model)?.id ?? null, model.successorId, engine.id);
+  }
+});
+
+test('generated catalog and rosters project registry lifecycle and successor identity consistently', () => {
+  const registry = JSON.parse(readFileSync('frontend/config/model-registry.json', 'utf8'));
+  const catalog = JSON.parse(readFileSync('frontend/config/engine-catalog.json', 'utf8'));
+  const frontendRoster = JSON.parse(readFileSync('frontend/config/model-roster.json', 'utf8'));
+  const docsRoster = JSON.parse(readFileSync('docs/model-roster.json', 'utf8'));
+  const docsRosterCsv = readFileSync('docs/model-roster.csv', 'utf8');
+  const registryById = new Map(registry.models.map((model: any) => [model.id, model]));
+
+  assert.deepEqual(frontendRoster, docsRoster);
+  assert.match(
+    docsRosterCsv,
+    /^engineId,marketingName,brandId,modelSlug,family,lifecycle,successorId,successorSlug,/,
+  );
+  assert.match(docsRosterCsv, /^happy-horse-1-0,[^\n]*,legacy,,,/m);
+  assert.match(
+    docsRosterCsv,
+    /^ltx-2,LTX Video 2\.0 Pro,lightricks,ltx-2,ltx,deep_legacy,ltx-2-5-pro,ltx-2-5-pro,/m,
+  );
+  for (const entry of [...catalog, ...frontendRoster]) {
+    const source = registryById.get(entry.engineId) as any;
+    assert.ok(source, entry.engineId);
+    assert.equal(entry.lifecycle, source.lifecycle, entry.engineId);
+    assert.equal(entry.successorId, source.successorId, entry.engineId);
+    assert.equal(
+      entry.successorSlug,
+      source.successorId ? registryById.get(source.successorId)?.slug ?? null : null,
+      entry.engineId,
+    );
+  }
+});
+
+test('canonical lifecycle classifies every approved non-current model and authors only the six P0 successors', () => {
+  const nonCurrent = Object.fromEntries(
+    listRuntimeModels()
+      .filter((model) => model.lifecycle !== 'current')
+      .map((model) => [model.id, model.lifecycle]),
+  );
+  assert.deepEqual(nonCurrent, {
+    'happy-horse-1-0': 'legacy',
+    'kling-2-5-turbo': 'legacy',
+    'kling-2-6-pro': 'legacy',
+    'ltx-2': 'deep_legacy',
+    'ltx-2-3': 'legacy',
+    'ltx-2-3-fast': 'legacy',
+    'ltx-2-fast': 'deep_legacy',
+    lumaRay2: 'legacy',
+    lumaRay2_flash: 'legacy',
+    'nano-banana': 'legacy',
+    'wan-2-5': 'deep_legacy',
+    'wan-2-6': 'legacy',
+  });
+  assert.deepEqual(
+    Object.fromEntries(
+      listRuntimeModels()
+        .filter((model) => model.successorId !== null)
+        .map((model) => [model.id, model.successorId]),
+    ),
+    P0_SUCCESSORS,
+  );
 });
 
 test('legacy app projection preserves registry-owned launch metadata', () => {
@@ -146,16 +286,30 @@ test('family model membership and current variants remain identical to baseline'
     assert.ok(actual, expected.id);
     assert.equal(
       actual.defaultModelSlug,
-      expected.id === 'hailuo' ? 'minimax-h3' : expected.defaultModelSlug,
+      expected.id === 'hailuo'
+        ? 'minimax-h3'
+        : expected.id === 'ltx'
+          ? 'ltx-2-5-pro'
+          : expected.id === 'wan'
+            ? 'wan-3-prime'
+            : expected.defaultModelSlug,
     );
-    assert.deepEqual(
-      actual.routeAliases,
-      expected.id === 'hailuo' ? ['minimax-h3', ...expected.routeAliases] : expected.routeAliases,
-    );
+    const expectedRouteAliases = expected.id === 'hailuo'
+      ? ['minimax-h3', ...expected.routeAliases]
+      : expected.id === 'ltx'
+        ? ['ltx-2-5-pro', 'ltx-2-5-fast', ...expected.routeAliases]
+        : expected.id === 'wan'
+          ? ['wan-3-prime', 'wan-3', 'wan-2-6', 'wan-2-5']
+          : expected.routeAliases;
+    assert.deepEqual(actual.routeAliases, expectedRouteAliases);
     const expectedPublishedModelSlugs = expected.id === 'seedance'
       ? ['seedance-2-5', ...(expected.examplesPage?.publishedModelSlugs ?? [])]
       : expected.id === 'hailuo'
         ? ['minimax-h3', ...(expected.examplesPage?.publishedModelSlugs ?? [])]
+        : expected.id === 'ltx'
+          ? ['ltx-2-5-pro', 'ltx-2-5-fast', ...(expected.examplesPage?.publishedModelSlugs ?? [])]
+        : expected.id === 'wan'
+            ? ['wan-3-prime', 'wan-3', 'wan-2-6', 'wan-2-5']
         : expected.examplesPage?.publishedModelSlugs ?? [];
     const baselineCurrentModelSlugs = expected.examplesPage?.currentModelSlugs?.length
       ? expected.examplesPage.currentModelSlugs
@@ -164,6 +318,10 @@ test('family model membership and current variants remain identical to baseline'
       ? ['seedance-2-5', ...baselineCurrentModelSlugs]
       : expected.id === 'hailuo'
         ? ['minimax-h3']
+        : expected.id === 'ltx'
+          ? ['ltx-2-5-pro', 'ltx-2-5-fast']
+          : expected.id === 'wan'
+            ? ['wan-3-prime', 'wan-3']
         : baselineCurrentModelSlugs;
     assert.deepEqual(
       getModelFamilyExamplesPageConfig(expected.id)?.publishedModelSlugs,

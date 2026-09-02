@@ -5,6 +5,7 @@ import type {
 } from '@/components/Composer';
 import { localizeLtxField } from '@/lib/ltx-localization';
 import type { EngineCaps, EngineInputField, Mode } from '@/types/engines';
+import { resolveActiveVideoInputField, VIDEO_MEDIA_FIELD_CANDIDATES } from '@/lib/video-input-schema';
 import { isGeminiOmniUnifiedAssetField } from './gemini-omni-unified-workflow';
 import { isKlingO3EngineId } from './kling-o3-unified-workflow';
 import {
@@ -134,7 +135,23 @@ export function summarizeWorkspaceInputSchema({
       )
     );
   const isUnifiedKlingO3 = isKlingO3EngineId(selectedEngine?.id);
+  const unifiedFirstFrameField = allowsUnifiedVeoFirstLast
+    ? resolveActiveVideoInputField({
+        inputSchema: schema,
+        mode: 'fl2v',
+        type: 'image',
+        candidateFieldIds: VIDEO_MEDIA_FIELD_CANDIDATES.firstFrame,
+      })
+    : null;
   const appliesToMode = (field: EngineInputField) => {
+    if (
+      allowsUnifiedVeoFirstLast
+      && unifiedFirstFrameField
+      && unifiedFirstFrameField.id !== 'first_frame_url'
+      && field.type === 'image'
+      && field.modes?.includes('i2v')
+      && VIDEO_MEDIA_FIELD_CANDIDATES.firstFrame.includes(field.id as never)
+    ) return false;
     if (!field.modes || field.modes.includes(activeMode)) return true;
     if (
       isUnifiedKlingO3 &&
@@ -168,7 +185,11 @@ export function summarizeWorkspaceInputSchema({
     ) {
       return true;
     }
-    if (allowsUnifiedVeoFirstLast && field.id === 'last_frame_url' && field.modes.includes('fl2v')) return true;
+    if (
+      allowsUnifiedVeoFirstLast
+      && (field.id === 'last_frame_url' || field.id === 'end_image_url' || field.id === 'start_image_url')
+      && field.modes.includes('fl2v')
+    ) return true;
     if (allowsUnifiedVeoFirstLast && field.id === 'first_frame_url' && field.modes.includes('fl2v')) return false;
     if (!allowsCrossModeAssets) return false;
     if (field.type === 'image' && field.modes.includes('i2v')) return true;

@@ -209,6 +209,53 @@ test('billing preflight passes the Seedance video-input class into canonical pri
   assert.equal(capturedHasVideoInput, true);
 });
 
+test('billing preflight persists validated P0 reference count and trusted input-audio duration', async () => {
+  let capturedContext: Record<string, unknown> | null = null;
+  const result = await resolveGenerateBillingPreflight({
+    req: createReq('US'),
+    engine,
+    mode: 'a2v',
+    userId: 'user_123',
+    payment: { mode: 'wallet', paymentIntentId: null },
+    jobId: 'job_p0_audio',
+    durationSec: 6,
+    durationLabel: '6s',
+    pricingResolution: '1080p',
+    effectiveResolution: '1080p',
+    aspectRatio: '16:9',
+    membershipTier: 'member',
+    isLumaRay2: false,
+    loop: false,
+    referenceImageCount: 3,
+    inputAudioDurationSec: 9.25,
+    rawDurationOption: null,
+    lumaDurationLabel: null,
+    audioEnabled: true,
+    voiceControl: false,
+    deps: {
+      getUserPreferredCurrencyFn: async () => 'usd',
+      resolveCurrencyFn: () => ({ currency: 'usd', source: 'user_pref' }),
+      computePricingSnapshotFn: async (context) => {
+        capturedContext = context as unknown as Record<string, unknown>;
+        return { ...pricing, meta: { ...pricing.meta } };
+      },
+      convertCentsFn: async () => ({ cents: 1200, rate: 1, source: 'test' }),
+      getPlatformFeeCentsFn: () => 0,
+      receiptsPriceOnlyEnabledFn: () => false,
+      buildReceiptSnapshotFn: (value) => value,
+      applyEngineVariantPricingFn: (value) => value,
+      buildEngineAddonInputFn: () => ({}),
+    },
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(capturedContext?.referenceImageCount, 3);
+  assert.equal(capturedContext?.inputAudioDurationSec, 9.25);
+  assert.equal(result.preflight.pricing.meta?.request?.referenceImageCount, 3);
+  assert.equal(result.preflight.pricing.meta?.request?.inputAudioDurationSec, 9.25);
+  assert.equal(result.preflight.receiptSnapshot.meta?.request?.inputAudioDurationSec, 9.25);
+});
+
 test('billing preflight accepts captured direct payment intents', async () => {
   const ensuredCurrencies: string[] = [];
   const result = await resolveGenerateBillingPreflight({

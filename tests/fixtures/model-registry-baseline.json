@@ -39,7 +39,9 @@
         "pricing": {
           "includeInEstimator": true
         }
-      }
+      },
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "gpt-image-2",
@@ -70,7 +72,9 @@
           "includeInEstimator": true,
           "featuredScenario": "high-quality product still"
         }
-      }
+      },
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "happy-horse-1-0",
@@ -111,7 +115,9 @@
           "includeInEstimator": true,
           "featuredScenario": "legacy happy-horse-video-edit"
         }
-      }
+      },
+      "lifecycle": "legacy",
+      "successorId": null
     },
     {
       "id": "happy-horse-1-1",
@@ -159,7 +165,9 @@
           "includeInEstimator": true,
           "featuredScenario": "happy-horse-1-1-native-audio-video"
         }
-      }
+      },
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "kling-2-5-turbo",
@@ -208,7 +216,9 @@
         "pricing": {
           "includeInEstimator": true
         }
-      }
+      },
+      "lifecycle": "legacy",
+      "successorId": null
     },
     {
       "id": "kling-2-6-pro",
@@ -257,7 +267,9 @@
         "pricing": {
           "includeInEstimator": true
         }
-      }
+      },
+      "lifecycle": "legacy",
+      "successorId": null
     },
     {
       "id": "kling-3-4k",
@@ -295,7 +307,9 @@
         "pricing": {
           "includeInEstimator": true
         }
-      }
+      },
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "kling-3-pro",
@@ -350,7 +364,9 @@
         "pricing": {
           "includeInEstimator": true
         }
-      }
+      },
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "kling-3-standard",
@@ -405,7 +421,9 @@
         "pricing": {
           "includeInEstimator": true
         }
-      }
+      },
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "kling-o3-4k",
@@ -444,7 +462,9 @@
           "includeInEstimator": true,
           "featuredScenario": "reference-guided storyboard video"
         }
-      }
+      },
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "kling-o3-pro",
@@ -484,7 +504,9 @@
           "includeInEstimator": true,
           "featuredScenario": "reference-guided storyboard video"
         }
-      }
+      },
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "kling-o3-standard",
@@ -523,7 +545,9 @@
           "includeInEstimator": true,
           "featuredScenario": "reference-guided storyboard video"
         }
-      }
+      },
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "ltx-2",
@@ -567,12 +591,14 @@
           "includeInHub": true
         },
         "app": {
-          "enabled": true
+          "enabled": false
         },
         "pricing": {
-          "includeInEstimator": true
+          "includeInEstimator": false
         }
-      }
+      },
+      "lifecycle": "deep_legacy",
+      "successorId": null
     },
     {
       "id": "ltx-2-3",
@@ -625,7 +651,9 @@
         "pricing": {
           "includeInEstimator": true
         }
-      }
+      },
+      "lifecycle": "legacy",
+      "successorId": null
     },
     {
       "id": "ltx-2-3-fast",
@@ -680,7 +708,9 @@
         "pricing": {
           "includeInEstimator": true
         }
-      }
+      },
+      "lifecycle": "legacy",
+      "successorId": null
     },
     {
       "id": "ltx-2-fast",
@@ -728,12 +758,14 @@
           "includeInHub": true
         },
         "app": {
-          "enabled": true
+          "enabled": false
         },
         "pricing": {
-          "includeInEstimator": true
+          "includeInEstimator": false
         }
-      }
+      },
+      "lifecycle": "deep_legacy",
+      "successorId": null
     },
     {
       "id": "luma-ray-3-2",
@@ -776,7 +808,9 @@
         "pricing": {
           "includeInEstimator": true
         }
-      }
+      },
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "luma-uni-1",
@@ -806,7 +840,9 @@
         "pricing": {
           "includeInEstimator": true
         }
-      }
+      },
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "luma-uni-1-max",
@@ -836,7 +872,9 @@
         "pricing": {
           "includeInEstimator": true
         }
-      }
+      },
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "lumaRay2",
@@ -892,7 +930,9 @@
         "pricing": {
           "includeInEstimator": false
         }
-      }
+      },
+      "lifecycle": "legacy",
+      "successorId": null
     },
     {
       "id": "lumaRay2_flash",
@@ -948,7 +988,9 @@
         "pricing": {
           "includeInEstimator": false
         }
-      }
+      },
+      "lifecycle": "legacy",
+      "successorId": null
     },
     {
       "id": "minimax-hailuo-02-text",
@@ -998,7 +1040,9 @@
         "pricing": {
           "includeInEstimator": true
         }
-      }
+      },
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "nano-banana",
@@ -1026,7 +1070,9 @@
         "pricing": {
           "includeInEstimator": true
         }
-      }
+      },
+      "lifecycle": "legacy",
+      "successorId": null
     },
     {
       "id": "nano-banana-2",
@@ -1054,7 +1100,9 @@
         "pricing": {
           "includeInEstimator": true
         }
-      }
+      },
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "nano-banana-lite",
@@ -1085,7 +1133,9 @@
           "includeInEstimator": true,
           "featuredScenario": "fast 1K image draft"
         }
-      }
+      },
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "nano-banana-pro",
@@ -1113,7 +1163,9 @@
         "pricing": {
           "includeInEstimator": true
         }
-      }
+      },
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "pika-text-to-video",
@@ -1167,7 +1219,9 @@
         "pricing": {
           "includeInEstimator": true
         }
-      }
+      },
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "seedance-1-5-pro",
@@ -1220,7 +1274,9 @@
         "pricing": {
           "includeInEstimator": true
         }
-      }
+      },
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "seedance-2-0",
@@ -1278,7 +1334,9 @@
           "includeInEstimator": true,
           "featuredScenario": "seedance-2-family"
         }
-      }
+      },
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "seedance-2-0-fast",
@@ -1336,7 +1394,9 @@
           "includeInEstimator": true,
           "featuredScenario": "seedance-2-family"
         }
-      }
+      },
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "seedance-2-0-fast-byteplus",
@@ -1363,7 +1423,9 @@
         "pricing": {
           "includeInEstimator": false
         }
-      }
+      },
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "seedance-2-0-mini",
@@ -1405,7 +1467,9 @@
           "includeInEstimator": true,
           "featuredScenario": "seedance-2-family"
         }
-      }
+      },
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "seedream",
@@ -1436,7 +1500,9 @@
           "includeInEstimator": true,
           "featuredScenario": "reference image before Seedance"
         }
-      }
+      },
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "seedream-5-0-pro",
@@ -1467,7 +1533,9 @@
           "includeInEstimator": true,
           "featuredScenario": "professional image final"
         }
-      }
+      },
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "sora-2",
@@ -1523,7 +1591,9 @@
         "pricing": {
           "includeInEstimator": true
         }
-      }
+      },
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "sora-2-pro",
@@ -1575,7 +1645,9 @@
         "pricing": {
           "includeInEstimator": true
         }
-      }
+      },
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "veo-3-1",
@@ -1631,7 +1703,9 @@
         "pricing": {
           "includeInEstimator": true
         }
-      }
+      },
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "veo-3-1-fast",
@@ -1687,7 +1761,9 @@
         "pricing": {
           "includeInEstimator": true
         }
-      }
+      },
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "veo-3-1-lite",
@@ -1743,7 +1819,9 @@
         "pricing": {
           "includeInEstimator": true
         }
-      }
+      },
+      "lifecycle": "current",
+      "successorId": null
     },
     {
       "id": "wan-2-5",
@@ -1787,12 +1865,14 @@
           "includeInHub": true
         },
         "app": {
-          "enabled": true
+          "enabled": false
         },
         "pricing": {
-          "includeInEstimator": true
+          "includeInEstimator": false
         }
-      }
+      },
+      "lifecycle": "deep_legacy",
+      "successorId": null
     },
     {
       "id": "wan-2-6",
@@ -1845,7 +1925,9 @@
         "pricing": {
           "includeInEstimator": true
         }
-      }
+      },
+      "lifecycle": "legacy",
+      "successorId": null
     }
   ],
   "internalAliases": [
@@ -2561,6 +2643,9 @@
         "publishedModelSlugs": [
           "wan-2-6",
           "wan-2-5"
+        ],
+        "currentModelSlugs": [
+          "wan-2-6"
         ]
       }
     },

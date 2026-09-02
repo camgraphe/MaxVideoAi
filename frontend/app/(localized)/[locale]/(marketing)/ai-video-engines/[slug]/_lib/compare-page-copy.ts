@@ -170,10 +170,10 @@ export function buildCompareDetailPageText({
     : null;
   const noShowdownHeroIntro =
     activeLocale === 'fr'
-      ? `Cette page compare {left} vs {right} sur MaxVideoAI avec les specs clés, les prix, les contrôles et une grille de score sur ${criteriaCount} critères. Les vidéos côte à côte curées seront ajoutées quand des rendus dédiés seront disponibles.`
+      ? `Comparez {left} et {right} sur les specs clés, les prix, les contrôles et une grille de score sur ${criteriaCount} critères.`
       : activeLocale === 'es'
-        ? `Esta página compara {left} vs {right} en MaxVideoAI con especificaciones clave, precios, controles y una puntuación de ${criteriaCount} criterios. Los vídeos comparativos curados se añadirán cuando haya renders dedicados disponibles.`
-        : `This page compares {left} vs {right} on MaxVideoAI using key specs, pricing, controls, and a scorecard across ${criteriaCount} criteria. Curated side-by-side videos will be added once model-specific renders are available.`;
+        ? `Compara {left} y {right} por especificaciones clave, precios, controles y una puntuación de ${criteriaCount} criterios.`
+        : `Compare {left} and {right} by key specs, pricing, controls, and a scorecard across ${criteriaCount} criteria.`;
   const heroIntroTemplate = replaceCriteriaCount(
     pairHasKling3Native4k
       ? (pageHeroIntro ??

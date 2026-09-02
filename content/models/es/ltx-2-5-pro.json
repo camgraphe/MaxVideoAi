@@ -1,0 +1,87 @@
+{
+  "marketingName": "LTX 2.5 Pro",
+  "versionLabel": "2.5 Pro",
+  "seo": {
+    "title": "Generador de video con IA LTX 2.5 Pro para producción",
+    "description": "Elige LTX 2.5 Pro para pasadas de texto, imagen y audio orientadas a producción, con restricciones, método de prompt y cotizaciones canónicas."
+  },
+  "overview": "LTX 2.5 Pro es la ruta actual orientada a producción de la familia LTX. Sirve para briefs ya estructurados que necesitan una evaluación cuidadosa en texto a video, imagen a video o audio a video. Lightricks es propietario de LTX y Fal distribuye esta integración de MaxVideoAI durante el lanzamiento.",
+  "decision": {
+    "modelSlug": "ltx-2-5-pro",
+    "hero": {
+      "eyebrow": "RUTA LTX DE PRODUCCIÓN ACTUAL",
+      "title": "LTX 2.5 Pro",
+      "subtitle": "Convierte un brief aprobado en una salida de texto, imagen o audio hasta 1080p, con duración y movimiento preparados para revisión de producción.",
+      "subtitleHighlights": ["brief aprobado", "texto, imagen o audio", "revisión de producción"],
+      "paragraph": "Elige Pro cuando el concepto, la continuidad y los criterios de aceptación estén suficientemente maduros para una pasada orientada a producción. El modelo separa los flujos de texto, imagen y audio para mantener claras las entradas y duraciones. Lightricks es el propietario; MaxVideoAI ejecuta esta versión distribuida mediante Fal.",
+      "primaryCta": { "label": "Generar con LTX 2.5 Pro", "href": "/app?engine=ltx-2-5-pro" },
+      "secondaryCta": { "label": "Explorar la galería LTX", "href": "/es/galeria/ltx" },
+      "quickLinks": [
+        { "label": "Ver LTX 2.5 Fast", "href": "/es/modelos/ltx-2-5-fast" },
+        { "label": "Comparar Pro con LTX 2.3 Pro", "href": "/es/comparativa/ltx-2-3-pro-vs-ltx-2-5-pro?order=ltx-2-5-pro" },
+        { "label": "Comparar Pro y Fast", "href": "/es/comparativa/ltx-2-5-fast-vs-ltx-2-5-pro?order=ltx-2-5-pro" },
+        { "label": "Consultar precios de Pro", "href": "/es/precios#ltx-2-5-pro-pricing" },
+        { "label": "Abrir el laboratorio Pro", "href": "#prompting" }
+      ]
+    },
+    "media": { "caption": "Galería de pruebas de LTX 2.5 Pro", "description": "Los resultados Pro aceptados aparecerán después de la revisión", "renderLabel": "Revisar el resultado aceptado", "badges": ["Pro", "Tres flujos", "Hasta 1080p"], "altContext": "ejemplo de video LTX 2.5 Pro aceptado" },
+    "features": [
+      { "title": "Ruta orientada a producción", "body": "Usa Pro después de fijar sujeto, acción, cámara y criterios de aceptación. Este paso reduce pruebas vagas y hace más útiles los comentarios de revisión.", "tone": "quality" },
+      { "title": "Control desde una imagen", "body": "Anima una imagen aprobada y añade una restricción final si está disponible. Protege identidad, encuadre y materiales esenciales.", "tone": "reference" },
+      { "title": "Flujo de audio separado", "body": "Audio a video transforma un archivo sonoro privado en actuación visual. La duración facturable viene de la fuente validada, no de un valor de marketing.", "tone": "audio" },
+      { "title": "Duración y definición coherentes", "body": "Elige 720p para una validación práctica o 1080p para mayor definición, y adapta las acciones a la duración realmente permitida.", "tone": "duration" }
+    ],
+    "decisionCards": [
+      { "title": "Ideal para un brief ya fijado", "body": "Elige Pro para planos de campaña, producto o personaje cuya composición y expectativas de continuidad ya estén establecidas.", "cta": { "label": "Iniciar una pasada Pro", "href": "/app?engine=ltx-2-5-pro" } },
+      { "title": "Menos adecuado para exploración abierta", "body": "Si cámara, ritmo o encuadre todavía cambian mucho, empieza con Fast y traslada el brief elegido a Pro.", "cta": { "label": "Explorar LTX 2.5 Fast", "href": "/es/modelos/ltx-2-5-fast" } },
+      { "title": "Definir el control de calidad", "body": "Enumera antes de generar los detalles de identidad, material, contacto y plano final que determinarán la aceptación.", "cta": { "label": "Abrir el laboratorio", "href": "#prompting" } }
+    ],
+    "referenceWorkflows": [
+      { "title": "Producción desde texto", "body": "Transforma el brief en un plano ordenado con sujeto, acción, cámara y cierre." },
+      { "title": "Producción desde imagen", "body": "Conserva la composición aprobada mientras diriges un cambio físico limitado." },
+      { "title": "Producción desde audio", "body": "Asocia las señales de un archivo autorizado con acciones visibles y una conclusión." },
+      { "title": "Revisión responsable", "body": "Controla derechos, consentimiento, seguridad, anatomía, texto y marcas antes de entregar." }
+    ],
+    "pricingCopy": { "title": "Precios por escenario de LTX 2.5 Pro", "subtitle": "Compara una pasada de texto de seis segundos en 720p, otra en 1080p y seis segundos de audio fuente validado.", "footnote": "Las tarjetas consumen cotizaciones canónicas. El escenario de audio utiliza la duración del archivo inspeccionada por el servidor.", "ctaLabel": "Generar con LTX 2.5 Pro", "ctaHref": "/app?engine=ltx-2-5-pro" },
+    "meta": { "title": "Modelo de video con IA LTX 2.5 Pro, producción y precios", "description": "Analiza LTX 2.5 Pro para texto, imagen y audio con restricciones de producción, continuidad, seguridad y cotizaciones canónicas." }
+  },
+  "prompting": {
+    "modelSlug": "ltx-2-5-pro",
+    "section": { "title": "Laboratorio de prompts — LTX 2.5 Pro", "intro": "Convierte un brief aprobado en un plan de generación preciso, medible y sencillo de revisar.", "tip": "Escribe los criterios de aceptación antes de los detalles decorativos para proteger la entrega.", "guide": { "label": "Leer la guía oficial de prompting de LTX", "href": "https://docs.ltx.io/api-documentation/implementation-guides/prompting-guide" }, "referencesTitle": "Preparar una pasada Pro controlada" },
+    "tabs": [
+      { "id": "delivery", "label": "Entrega", "title": "Fijar el plano que debe producirse", "description": "Describe uso, encuadre y resultado observable antes del estilo.", "copy": "Uso:\n[Campaña, producto, relato o presentación]\n\nSujeto protegido:\n[Identidad, vestuario, material y geometría]\n\nAcción central:\n[Inicio, evolución y consecuencia]\n\nPlano final:\n[Composición estable para entregar]" },
+      { "id": "continuity", "label": "Continuidad", "title": "Proteger el plano durante el movimiento", "description": "Indica qué debe permanecer estable en todo momento.", "copy": "Imagen inicial:\n[Encuadre y luz aprobados]\n\nMovimiento:\n[Acción física y respuesta del entorno]\n\nCámara:\n[Un recorrido compatible con la acción]\n\nInvariantes:\n[Rostro, proporciones, accesorios, texto y dirección]" },
+      { "id": "audio", "label": "Audio", "title": "Sincronizar una fuente autorizada", "description": "Divide el audio en señales visibles sin inventar su duración.", "copy": "Fuente privada:\n[Archivo propio y duración validada]\n\nSeñales:\n[Inicio, acento, pausa y final]\n\nActuación:\n[Acción vinculada con cada señal]\n\nEvitar:\n[Desincronización, cortes innecesarios, identidad inestable, logotipo y marca de agua]" }
+    ],
+    "tabNotes": [
+      { "tabId": "delivery", "body": "Un brief Pro útil permite que dos evaluadores reconozcan el mismo éxito o defecto." },
+      { "tabId": "continuity", "body": "Separa el movimiento del sujeto y el recorrido de cámara para que cada problema pueda diagnosticarse." },
+      { "tabId": "audio", "body": "La duración del archivo de audio controlado gobierna el escenario y su cotización canónica." }
+    ],
+    "globalPrinciples": ["Protege primero los detalles indispensables de la entrega.", "Limita cada plano a una progresión física legible.", "Asocia cada referencia con una responsabilidad precisa.", "Incluye revisiones de derechos, consentimiento y seguridad en la aceptación."],
+    "engineWhy": ["Pro ofrece una ruta LTX actual diseñada para briefs más maduros.", "Los flujos separados hacen verificables las hipótesis de texto, imagen y audio.", "La elección explícita de resolución facilita coherencia entre revisión y entrega."],
+    "demo": {
+      "title": "Plano de producción LTX 2.5 Pro",
+      "promptLabel": "Brief controlado de texto a video",
+      "prompt": "En un taller luminoso, una relojera coloca un engranaje diminuto dentro de un mecanismo abierto. La cámara avanza lentamente a la altura de la mesa mientras las ruedas empiezan a girar y proyectan reflejos precisos. Conservar dedos, dientes metálicos y geometría de la caja. Terminar con el mecanismo estable y activo, sin texto, logotipo ni marca de agua.",
+      "notes": ["Los contactos mecánicos y los dedos aportan criterios de aceptación precisos.", "El acercamiento lento apoya la acción sin añadir otro movimiento complejo."],
+      "summary": { "subject": "Relojera y mecanismo abierto", "action": "Colocación del engranaje y arranque del mecanismo", "camera": "Acercamiento lento a la altura de la mesa", "style": "Película artesanal clara y precisa", "output": "Pasada Pro con ajustes tomados del motor" },
+      "presentationOverrides": { "modeLabel": "Texto a video", "outputLabel": "Ajustes de salida canónicos", "duration": null, "aspectRatio": null, "audioChipMode": "media", "audioChipLabel": null, "altContext": "prompt LTX 2.5 Pro para un taller de relojería" }
+    },
+    "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "ltx-2-5-pro",
+    "showWhenEmpty": false,
+    "section": { "title": "Ejemplos revisados de LTX 2.5 Pro", "intro": "La galería Pro sigue oculta hasta que dos resultados duraderos superen la revisión y se unan a la lista del modelo.", "defaultCtaLabel": "Ver todos los ejemplos de LTX", "recreateLabel": null },
+    "filters": [{ "id": "all", "label": "Todos" }, { "id": "product", "label": "Producción" }, { "id": "audio", "label": "Guiados por audio" }],
+    "proofItems": [
+      { "id": "fidelity", "icon": "sparkles", "title": "Fidelidad al brief", "body": "Comparar el resultado con las acciones y detalles protegidos solicitados." },
+      { "id": "motion", "icon": "zap", "title": "Movimiento controlado", "body": "Controlar anatomía, contactos, peso y respuesta de los materiales." },
+      { "id": "audio", "icon": "audio", "title": "Sincronización de audio", "body": "Revisar la alineación de la actuación con el archivo sonoro." },
+      { "id": "ending", "icon": "maximize", "title": "Final estable", "body": "Inspeccionar detalle, encuadre y estabilidad del plano final." },
+      { "id": "safety", "icon": "shield", "title": "Aprobación responsable", "body": "Rechazar contenido peligroso, texto no deseado o semejanzas sin consentimiento." }
+    ],
+    "fallbackItems": null
+  }
+}

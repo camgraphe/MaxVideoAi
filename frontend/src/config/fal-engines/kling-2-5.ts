@@ -122,7 +122,6 @@ export const KLING_2_5_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     versionLabel: '2.5 Turbo',
     availability: 'available',
     logoPolicy: 'textOnly',
-    isLegacy: true,
     engine: KLING_2_5_TURBO_ENGINE,
     modes: [
       {

@@ -81,13 +81,17 @@ test('semantic ID inventories are fixed and exhaustive', () => {
     'model', 'engine', 'preview', 'video', 'refund', 'duration', 'resolution', 'audio', 'credits',
   ]);
   assert.deepEqual(PAYG_PRICE_LOOKUP_IDS, [
+    'ltx-2-5-pro', 'ltx-2-5-fast', 'wan-3-prime', 'wan-3', 'grok-imagine-video-1-5', 'flux-3', 'flux-3-draft',
     'seedance-2-0', 'kling-3-pro', 'veo-3-1', 'happy-horse-1-1', 'seedance-2-0-mini', 'ltx-2-3-fast',
   ]);
   assert.deepEqual(PAYG_EXAMPLE_COST_IDS, [
+    'ltx-2-5-pro', 'wan-3-prime', 'grok-imagine-video-1-5', 'flux-3',
     'seedance-2-0', 'kling-3-pro', 'veo-3-1-fast', 'happy-horse-1-1', 'seedance-2-0-mini', 'ltx-2-3-fast',
   ]);
   assert.deepEqual(PAYG_SUPPORTED_MODEL_IDS, [
-    'seedance-2-5', 'seedance-2-0', 'kling-3-pro', 'veo-3-1', 'happy-horse-1-1', 'seedance-2-0-mini', 'ltx-2-3-fast', 'wan-2-6',
+    'seedance-2-5', 'seedance-2-0', 'kling-3-pro', 'veo-3-1', 'happy-horse-1-1', 'seedance-2-0-mini',
+    'ltx-2-5-pro', 'ltx-2-5-fast', 'wan-3-prime', 'wan-3', 'grok-imagine-video-1-5', 'flux-3', 'flux-3-draft',
+    'ltx-2-3-fast', 'wan-2-6',
   ]);
   assert.deepEqual(PAYG_SHOWCASE_TITLE_IDS, [
     'rooftop', 'museum', 'smooth-image', 'guided-image', 'racer', 'ugc', 'warrior', 'product-image', 'product-reveal',

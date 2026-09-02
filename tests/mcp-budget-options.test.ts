@@ -427,13 +427,12 @@ test('catalog resolution mismatches are excluded before pricing', () => {
   assertLowestMatchesAuthoritativeMinimum(dependencies);
 });
 
-test('budget options use the current canonical trial, lowest paid route, and capability upgrade', () => {
+test('budget options use the current canonical trial and lowest paid route without legacy upgrades', () => {
   const options = buildMcpBudgetOptions('en', livePublication);
 
   assert.deepEqual(options.map((candidate) => candidate.slot), [
     'included_trial',
     'lowest_paid',
-    'affordable_upgrade',
   ]);
   assert.equal(options[0].engineId, 'seedance-2-0-mini');
   assert.equal(options[0].modelSlug, 'dreamina-seedance-2-0-mini');
@@ -447,12 +446,7 @@ test('budget options use the current canonical trial, lowest paid route, and cap
   assert.equal(options[1].priceSource, 'canonical_public_quote');
   assert.equal(options[1].audioState, 'silent');
 
-  assert.equal(options[2].engineId, 'wan-2-6');
-  assert.equal(options[2].amountCents, quoteScenario('wan-2-6', 5, '720p'));
-  assert.equal(options[2].audioState, 'optional');
-  assert.match(options[2].scenarioLabel, /Optional audio/);
-  assert.doesNotMatch(options[2].scenarioLabel, /Audio included/);
-  assert.ok(options[1].amountCents! <= options[2].amountCents!);
+  assert.equal(options.some((candidate) => candidate.engineId === 'wan-2-6'), false);
 });
 
 test('audio presentation follows exact T2V defaults and optional inputs instead of engine capability', () => {
@@ -466,43 +460,41 @@ test('audio presentation follows exact T2V defaults and optional inputs instead 
     'optional',
   );
 
-  const wanWithoutAudioInput = withMutatedEngine('wan-2-6', (entry) => {
+  const veoWithoutAudioInput = withOnlyEngine('veo-3-1', (entry) => {
     entry.engine.inputSchema!.optional = entry.engine.inputSchema!.optional!.filter(
-      (field) => field.id !== 'audio_url',
+      (field) => field.id !== 'generate_audio',
     );
     entry.engine.audio = false;
     const t2v = entry.modes.find((mode) => mode.mode === 't2v');
     assert.ok(t2v);
     t2v.ui.audioToggle = false;
   });
-  const wan = buildMcpBudgetOptions('en', livePublication, wanWithoutAudioInput).find(
-    (candidate) => candidate.engineId === 'wan-2-6',
-  );
-  assert.ok(wan);
-  assert.equal(wan.audioState, 'silent');
-  assert.match(wan.scenarioLabel, /Silent/);
+  const veo = option(buildMcpBudgetOptions('en', livePublication, veoWithoutAudioInput), 'lowest_paid');
+  assert.equal(veo.engineId, 'veo-3-1');
+  assert.equal(veo.audioState, 'silent');
+  assert.match(veo.scenarioLabel, /Silent/);
 });
 
 test('enum-backed T2V audio controls use only schema-proven boolean strings', () => {
-  const selectedLtx = option(
-    buildMcpBudgetOptions('en', livePublication, withOnlyEngine('ltx-2-3-fast')),
+  const selectedVeo = option(
+    buildMcpBudgetOptions('en', livePublication, withOnlyEngine('veo-3-1-lite')),
     'lowest_paid',
   );
-  assert.equal(selectedLtx.amountCents, quoteScenario('ltx-2-3-fast', 6, '1080p'));
-  assert.equal(selectedLtx.audioState, 'enabled');
-  assert.match(selectedLtx.scenarioLabel, /Audio enabled/);
+  assert.equal(selectedVeo.engineId, 'veo-3-1-lite');
+  assert.equal(selectedVeo.audioState, 'enabled');
+  assert.match(selectedVeo.scenarioLabel, /Audio enabled/);
 
-  const defaultOff = withOnlyEngine('ltx-2-3-fast', (entry) => {
+  const defaultOff = withOnlyEngine('veo-3-1-lite', (entry) => {
     const audio = entry.engine.inputSchema?.optional?.find((field) => field.id === 'generate_audio');
     assert.ok(audio);
     audio.default = 'false';
   });
   const optional = option(buildMcpBudgetOptions('en', livePublication, defaultOff), 'lowest_paid');
-  assert.equal(optional.amountCents, selectedLtx.amountCents);
+  assert.equal(optional.amountCents, selectedVeo.amountCents);
   assert.equal(optional.audioState, 'optional');
   assert.match(optional.scenarioLabel, /Optional audio/);
 
-  const falseOnly = withOnlyEngine('ltx-2-3-fast', (entry) => {
+  const falseOnly = withOnlyEngine('veo-3-1-lite', (entry) => {
     const audio = entry.engine.inputSchema?.optional?.find((field) => field.id === 'generate_audio');
     assert.ok(audio);
     audio.values = ['false'];
@@ -513,7 +505,7 @@ test('enum-backed T2V audio controls use only schema-proven boolean strings', ()
     'silent',
   );
 
-  const unprovenTruthyDefault = withOnlyEngine('ltx-2-3-fast', (entry) => {
+  const unprovenTruthyDefault = withOnlyEngine('veo-3-1-lite', (entry) => {
     const audio = entry.engine.inputSchema?.optional?.find((field) => field.id === 'generate_audio');
     assert.ok(audio);
     audio.values = ['yes', 'no'];
@@ -539,7 +531,7 @@ test('selected routes are current, public, enabled, non-legacy, and text-to-vide
     assert.ok(entry);
     assert.ok(roster);
     assert.ok(runtime);
-    assert.equal(entry.isLegacy, undefined);
+    assert.equal(entry.isLegacy, false);
     assert.equal(entry.modes.some((mode) => mode.mode === 't2v'), true);
     assert.equal(entry.engine.status, 'live');
     assert.equal(entry.engine.availability, 'available');
@@ -551,7 +543,7 @@ test('selected routes are current, public, enabled, non-legacy, and text-to-vide
   }
 });
 
-test('trial, paid, and reference-sensitive claims fail closed with publication gates', () => {
+test('trial and paid claims fail closed with publication gates after legacy recommendation exclusion', () => {
   const trialOnly = buildMcpBudgetOptions('en', {
     ...livePublication,
     showPaidGenerationClaim: false,
@@ -564,7 +556,7 @@ test('trial, paid, and reference-sensitive claims fail closed with publication g
     indexable: false,
     showTrialClaim: false,
   });
-  assert.deepEqual(paidOnly.map((candidate) => candidate.slot), ['lowest_paid', 'affordable_upgrade']);
+  assert.deepEqual(paidOnly.map((candidate) => candidate.slot), ['lowest_paid']);
   assert.equal(paidOnly.some((candidate) => candidate.priceSource === 'included_trial'), false);
 
   const withoutReferenceClaim = buildMcpBudgetOptions('en', {
@@ -572,7 +564,10 @@ test('trial, paid, and reference-sensitive claims fail closed with publication g
     indexable: false,
     showReferenceClaim: false,
   });
-  assert.equal(option(withoutReferenceClaim, 'affordable_upgrade').engineId, 'wan-2-6');
+  assert.deepEqual(withoutReferenceClaim.map((candidate) => candidate.slot), [
+    'included_trial',
+    'lowest_paid',
+  ]);
   assert.equal(
     withoutReferenceClaim.some((candidate) => /reference/i.test(candidate.scenarioLabel)),
     false,

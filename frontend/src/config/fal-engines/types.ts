@@ -1,5 +1,6 @@
 import type { EngineCaps, EngineAvailability, Mode } from '../../../types/engines';
 import type { ModelPublicationSurfaces } from '../../../config/model-publication';
+import type { ModelLifecycle } from '../../../config/model-registry-validation';
 
 export type EngineLogoPolicy = 'logoAllowed' | 'textOnly';
 
@@ -79,7 +80,6 @@ export interface FalEngineEntry {
   versionLabel?: string;
   availability: EngineAvailability;
   logoPolicy: EngineLogoPolicy;
-  isLegacy?: boolean;
   billingNote?: string;
   engine: EngineCaps;
   modes: FalEngineModeConfig[];
@@ -94,10 +94,24 @@ export interface FalEngineEntry {
   pricingHint?: FalEnginePricingHint;
   promptExample?: string;
   category?: 'video' | 'image' | 'audio' | 'multimodal';
+  lifecycle: ModelLifecycle;
+  successorId: string | null;
+  successorSlug: string | null;
+  isLegacy: boolean;
   surfaces: ModelPublicationSurfaces;
 }
 
 // The interface keeps the existing public type shape while excluding registry-owned fields.
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface RawFalEngineEntry
-  extends Omit<FalEngineEntry, 'modelSlug' | 'family' | 'category' | 'surfaces'> {}
+  extends Omit<
+    FalEngineEntry,
+    | 'modelSlug'
+    | 'family'
+    | 'category'
+    | 'lifecycle'
+    | 'successorId'
+    | 'successorSlug'
+    | 'isLegacy'
+    | 'surfaces'
+  > {}

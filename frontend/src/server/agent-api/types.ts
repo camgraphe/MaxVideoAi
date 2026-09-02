@@ -3,6 +3,7 @@ import type { CanonicalGenerationMode } from './generation-types';
 import type { CanonicalGenerationReferenceRole } from './generation-types';
 import type { AgentModelGuidance, AgentModelUseCase } from './model-guidance';
 import type { AgentModelPromptingSource } from './model-prompting-sources';
+import type { RuntimeModelEntry } from '@/config/model-runtime';
 
 export type AgentApiResult<T> = { ok: true; data: T } | AgentApiFailure;
 
@@ -79,6 +80,9 @@ export type AgentAccountStatus = {
 
 export type AgentGenerationMode = CanonicalGenerationMode;
 
+export type AgentModelLifecycle = RuntimeModelEntry['lifecycle'];
+export type AgentModelSuccessor = Readonly<{ id: string; slug: string }>;
+
 export type AgentModel = {
   id: string;
   label: string;
@@ -91,6 +95,9 @@ export type AgentModel = {
   referenceImages: boolean;
   availability: string;
   generationEnabled: boolean;
+  lifecycle: AgentModelLifecycle;
+  successor: AgentModelSuccessor | null;
+  recommendedByDefault: boolean;
 };
 
 export type AgentModelFilter = {
@@ -138,7 +145,7 @@ export type AgentModelRecommendationResult = {
 export type AgentModelAudioPolicy = 'unavailable' | 'optional' | 'always_generated';
 
 export type AgentModelDurationDetails = Readonly<{
-  options: readonly (number | string)[] | null;
+  options: readonly number[] | null;
   range: Readonly<{ min: number; max: number }> | null;
 }>;
 
@@ -192,16 +199,21 @@ export type AgentModelModeDetails = Readonly<{
 export type AgentModelDetails = Readonly<{
   id: string;
   label: string;
+  slug: string;
   surface: 'video' | 'image';
   availability: string;
   generationEnabled: boolean;
+  lifecycle: AgentModelLifecycle;
+  successor: AgentModelSuccessor | null;
+  recommendedByDefault: boolean;
+  prelaunch: boolean;
   modes: readonly AgentModelModeDetails[];
   guidance: AgentModelGuidance | null;
   promptingSources: readonly AgentModelPromptingSource[];
   links: Readonly<{
-    model: string;
-    pricing: string;
+    model: string | null;
+    pricing: string | null;
     examples: string | null;
   }>;
-  catalogUpdatedAt: string;
+  catalogUpdatedAt: string | null;
 }>;

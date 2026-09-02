@@ -1,0 +1,86 @@
+{
+  "marketingName": "Grok Imagine Video 1.5",
+  "versionLabel": "1.5",
+  "seo": {
+    "title": "Generador con IA Grok Imagine Video 1.5 y referencias",
+    "description": "Descubre la nueva familia Grok para generar desde texto o imágenes de referencia, con método de prompt, límites y cotizaciones canónicas."
+  },
+  "overview": "Grok Imagine Video 1.5 abre una familia nueva en MaxVideoAI. Genera desde texto o desde una hasta siete imágenes de referencia para separar identidad, entorno y estilo. xAI es propietario del modelo; Fal distribuye el endpoint usado en este lanzamiento. MaxVideoAI no presenta esta ruta como una integración directa con xAI.",
+  "decision": {
+    "modelSlug": "grok-imagine-video-1-5",
+    "hero": {
+      "eyebrow": "NUEVA FAMILIA GROK",
+      "title": "Grok Imagine Video 1.5",
+      "subtitle": "Crea desde texto o dirige un clip con una a siete imágenes, separando con claridad identidad, entorno, paleta y composición.",
+      "subtitleHighlights": ["nueva familia", "una a siete imágenes", "funciones separadas"],
+      "paragraph": "Elige Grok Imagine Video 1.5 para explorar la primera ruta Grok de MaxVideoAI, sobre todo cuando un brief puede repartir funciones entre imágenes distintas. El modo de referencias exige al menos una imagen válida y admite hasta siete fuentes. xAI posee Grok Imagine Video, mientras Fal distribuye la ejecución de esta versión.",
+      "primaryCta": { "label": "Generar con Grok 1.5", "href": "/app?engine=grok-imagine-video-1-5" },
+      "secondaryCta": { "label": "Ver la galería Grok", "href": "/es/galeria/grok" },
+      "quickLinks": [
+        { "label": "Comparar Grok 1.5 con Sora 2", "href": "/es/comparativa/grok-imagine-video-1-5-vs-sora-2?order=grok-imagine-video-1-5" },
+        { "label": "Comparar Grok 1.5 con FLUX 3", "href": "/es/comparativa/flux-3-vs-grok-imagine-video-1-5?order=grok-imagine-video-1-5" },
+        { "label": "Consultar precios de Grok", "href": "/es/precios#grok-imagine-video-1-5-pricing" },
+        { "label": "Abrir el laboratorio Grok", "href": "#prompting" }
+      ]
+    },
+    "media": { "caption": "Galería de pruebas de Grok 1.5", "description": "Los ejemplos Grok aprobados aparecerán después de la revisión", "renderLabel": "Revisar el render aceptado", "badges": ["Texto", "Imagen", "Hasta 7 referencias"], "altContext": "ejemplo de video Grok Imagine Video 1.5 aceptado" },
+    "features": [
+      { "title": "Familia nueva para evaluar por separado", "body": "Grok llega como familia nueva, no como sucesor de una página existente. Compara su ajuste con briefs idénticos y criterios explícitos.", "tone": "quality" },
+      { "title": "Una a siete imágenes de referencia", "body": "Asigna una función precisa a cada imagen: rostro, vestuario, objeto, entorno, luz o paleta. Las fuentes redundantes hacen más ambigua la dirección.", "tone": "reference" },
+      { "title": "El prompt textual sigue siendo central", "body": "Incluso con varias imágenes, el texto debe ordenar acción, cámara y final. Así conecta las fuentes en una escena en lugar de formar un collage.", "tone": "continuity" },
+      { "title": "Cotización sensible al número de referencias", "body": "La tarjeta de referencias usa ocho segundos en 480p con dos imágenes. El precio mostrado procede del cálculo canónico con el número real de fuentes.", "tone": "price" }
+    ],
+    "decisionCards": [
+      { "title": "Ideal para dirección con varias imágenes", "body": "Elige Grok cuando varias imágenes compatibles deban controlar capas visuales distintas dentro de una sola escena.", "cta": { "label": "Comenzar con Grok", "href": "/app?engine=grok-imagine-video-1-5" } },
+      { "title": "Menos adecuado sin jerarquía de referencias", "body": "No añadas siete imágenes por principio. Una o dos fuentes bien descritas son mejores que una colección contradictoria.", "cta": { "label": "Leer la estructura de prompt", "href": "#prompting" } },
+      { "title": "Comparar como familia nueva", "body": "Evalúa movimiento, fidelidad, cámara y seguridad frente a modelos establecidos sin prometer una victoria general.", "cta": { "label": "Ver Grok frente a Sora 2", "href": "/es/comparativa/grok-imagine-video-1-5-vs-sora-2?order=grok-imagine-video-1-5" } }
+    ],
+    "referenceWorkflows": [
+      { "title": "Texto a video", "body": "Elige una relación de aspecto compatible y describe sujeto, acción, cámara, ambiente y final para un clip de hasta 1080p." },
+      { "title": "Imagen a video", "body": "Anima una sola imagen inicial hasta 1080p; esa fuente fija el encuadre porque este modo funciona sin un control de relación de aspecto separado." },
+      { "title": "Referencias a video", "body": "Adjunta una a siete imágenes, dirígete a ellas desde <IMAGE_0>, nombra el rol de cada una y usa solo 480p o 720p." },
+      { "title": "Revisión responsable", "body": "Confirma derechos de imágenes, consentimiento de personas y ausencia de texto o marcas no deseadas." }
+    ],
+    "pricingCopy": { "title": "Precios por escenario de Grok 1.5", "subtitle": "Compara un plano de texto de seis segundos en 720p con una escena de ocho segundos en 480p guiada por dos imágenes.", "footnote": "La cotización de referencias consume el número de imágenes declarado por el manifiesto; el contenido no incluye ningún total terminado.", "ctaLabel": "Generar con Grok 1.5", "ctaHref": "/app?engine=grok-imagine-video-1-5" },
+    "meta": { "title": "Grok Imagine Video 1.5, nueva familia y precios", "description": "Evalúa Grok 1.5 para texto y referencias múltiples con atribución a xAI, distribución por Fal, prompts estructurados y cotizaciones canónicas." }
+  },
+  "prompting": {
+    "modelSlug": "grok-imagine-video-1-5",
+    "section": { "title": "Laboratorio de prompts — Grok Imagine Video 1.5", "intro": "Conecta varias referencias dentro de una historia clara sin mezclar sus responsabilidades.", "tip": "Nombra cada imagen en el prompt e indica el único rasgo que debe controlar.", "guide": { "label": "Leer la documentación de xAI para Grok Imagine Video 1.5", "href": "https://docs.x.ai/developers/models/grok-imagine-video-1.5" }, "referencesTitle": "Convertir imágenes separadas en una dirección coherente" },
+    "tabs": [
+      { "id": "story", "label": "Historia", "title": "Escribir una acción completa", "description": "Da al sujeto una acción, una consecuencia y un final legibles.", "copy": "Sujeto:\n[Persona, objeto o criatura principal]\n\nAcción:\n[Un movimiento con inicio y consecuencia]\n\nEntorno:\n[Lugar, clima y luz]\n\nFinal:\n[Imagen estable que cierra el clip]" },
+      { "id": "cinema", "label": "Cámara", "title": "Organizar la puesta en escena", "description": "Usa un solo recorrido de cámara compatible con la acción.", "copy": "Encuadre inicial:\n[Distancia y ángulo]\n\nMovimiento de cámara:\n[Paneo, travelling, acercamiento u órbita]\n\nRitmo:\n[Acentos y pausa final]\n\nContinuidad:\n[Escala, dirección, luz y anatomía]" },
+      { "id": "images", "label": "Imágenes", "title": "Separar las funciones de referencia", "description": "Indica qué controla cada imagen y qué no debe sustituir.", "copy": "<IMAGE_0>:\n[Identidad u objeto protegido]\n\n<IMAGE_1>:\n[Entorno, paleta o luz]\n\nFuentes adicionales:\n[Una función distinta por imagen]\n\nEvitar:\n[Identidades fusionadas, perspectiva incompatible, texto, logotipo y marca de agua]" }
+    ],
+    "tabNotes": [
+      { "tabId": "story", "body": "Una acción única con final observable hace más sencilla la comparación del resultado." },
+      { "tabId": "cinema", "body": "El movimiento de cámara debe revelar la acción en vez de competir con varios cambios de encuadre." },
+      { "tabId": "images", "body": "Empieza con el mínimo de imágenes y añade una fuente solo cuando aporte una función que falta." }
+    ],
+    "globalPrinciples": ["Coloca sujeto y acción antes de los adjetivos de estilo.", "Asigna una responsabilidad única a cada imagen.", "Pide una cámara y un final fáciles de controlar.", "Usa únicamente referencias autorizadas y semejanzas con consentimiento."],
+    "engineWhy": ["Grok 1.5 introduce una familia distinta en el catálogo de video.", "El modo de varias imágenes permite separar identidad y dirección de escena.", "El cálculo canónico tiene en cuenta la cantidad real de referencias del escenario."],
+    "demo": {
+      "title": "Mercado nocturno guiado por Grok",
+      "promptLabel": "Prompt con dos imágenes de referencia",
+      "prompt": "Usar <IMAGE_0> para el rostro del cocinero, su delantal y la sartén de cobre; usar <IMAGE_1> para la paleta del mercado bajo la lluvia y la forma de las linternas. El cocinero lanza los fideos una vez, el vapor sube hacia la luz cálida y la cámara avanza lentamente desde un plano medio amplio hasta uno medio cercano. Conservar identidad y forma de la sartén. Terminar cuando los fideos caigan, sin letreros, subtítulos ni logotipos.",
+      "notes": ["Cada imagen controla una capa visual distinta.", "La acción y el momento final son fáciles de revisar."],
+      "summary": { "subject": "Cocinero de mercado guiado por la primera imagen", "action": "Un lanzamiento de fideos con vapor ascendente", "camera": "Acercamiento lento hacia un plano medio", "style": "Colores de mercado lluvioso tomados de la segunda imagen", "output": "Clip guiado por referencias con cantidad real de imágenes en la cotización" },
+      "presentationOverrides": { "modeLabel": "Referencias a video", "outputLabel": "Ajustes de referencia compatibles", "duration": null, "aspectRatio": null, "audioChipMode": "media", "audioChipLabel": null, "altContext": "prompt de Grok Imagine Video 1.5 para un mercado con dos imágenes" }
+    },
+    "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "grok-imagine-video-1-5",
+    "showWhenEmpty": false,
+    "section": { "title": "Ejemplos revisados de Grok Imagine Video 1.5", "intro": "No se muestra una galería vacía; deben adjuntarse dos resultados duraderos y aceptados antes de publicar esta sección.", "defaultCtaLabel": "Ver todos los ejemplos de Grok", "recreateLabel": null },
+    "filters": [{ "id": "all", "label": "Todos" }, { "id": "character", "label": "Personaje" }, { "id": "reference", "label": "Imágenes de referencia" }],
+    "proofItems": [
+      { "id": "identity", "icon": "users", "title": "Fidelidad de identidad", "body": "Comparar el sujeto con la función asignada a su imagen." },
+      { "id": "reference", "icon": "image", "title": "Separación de referencias", "body": "Comprobar que las fuentes de identidad y entorno sigan distintas." },
+      { "id": "motion", "icon": "zap", "title": "Acción coherente", "body": "Revisar contactos, anatomía, ritmo y estabilización final." },
+      { "id": "composition", "icon": "maximize", "title": "Composición estable", "body": "Controlar intención de cámara, encuadre y coherencia temporal." },
+      { "id": "safety", "icon": "shield", "title": "Salida responsable", "body": "Rechazar imágenes peligrosas, semejanzas engañosas, texto o marcas no deseadas." }
+    ],
+    "fallbackItems": null
+  }
+}

@@ -1,9 +1,14 @@
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
+import { listRuntimeModels } from '@/config/model-runtime';
 import type { AppLocale } from '@/i18n/locales';
 import { getEnginePictogram } from '@/lib/engine-branding';
 import { getLocalizedCapabilityKeywords, getLocalizedModelUseCases } from '@/lib/ltx-localization';
 import { getEngineLocalized } from '@/lib/models/i18n';
-import { isImageOnlyModel, isModelInScope } from '@/lib/models/catalog';
+import {
+  isImageOnlyModel,
+  isModelInScope,
+  selectCurrentModelCatalogSlugs,
+} from '@/lib/models/catalog';
 import { computeMarketingPriceRange } from '@/lib/pricing-marketing';
 import type { ModelGalleryCard, ModelsGalleryCopy } from '@/components/marketing/ModelsGallery';
 
@@ -99,55 +104,15 @@ export type ModelsCatalogEngineMetaCopy = Record<
   }
 >;
 
-const MODELS_CATALOG_PRIORITY_ORDER = [
-  'seedance-2-0',
-  'kling-3-pro',
-  'veo-3-1',
-  'happy-horse-1-1',
-  'ltx-2-3-pro',
-  'seedance-2-0-fast',
-  'kling-3-standard',
-  'kling-3-4k',
-  'veo-3-1-fast',
-  'veo-3-1-lite',
-  'ltx-2-3-fast',
-  'luma-ray-3-2',
-  'sora-2',
-  'sora-2-pro',
-  'seedance-1-5-pro',
-  'luma-ray-2',
-  'luma-ray-2-flash',
-  'pika-text-to-video',
-  'wan-2-6',
-  'wan-2-5',
-  'kling-2-6-pro',
-  'kling-2-5-turbo',
-  'ltx-2-fast',
-  'ltx-2',
-  'minimax-hailuo-02-text',
-  'happy-horse-1-0',
-  'gpt-image-2',
-  'seedream',
-  'seedream-5-0-pro',
-  'nano-banana-lite',
-  'nano-banana-2',
-  'nano-banana-pro',
-  'nano-banana',
-] as const;
-
 function listPublishedModelsByScope(scope: ModelsPageScope): FalEngineEntry[] {
   const allEngines = listFalEngines();
   const engineIndex = new Map<string, FalEngineEntry>(allEngines.map((entry) => [entry.modelSlug, entry]));
-  const priorityEngines = MODELS_CATALOG_PRIORITY_ORDER
+  const MODELS_CATALOG_PRIORITY_ORDER = selectCurrentModelCatalogSlugs(listRuntimeModels());
+  const currentEngines = MODELS_CATALOG_PRIORITY_ORDER
     .map((slug) => engineIndex.get(slug))
     .filter((entry): entry is FalEngineEntry => Boolean(entry));
-  const remainingEngines = allEngines
-    .filter((entry) => !MODELS_CATALOG_PRIORITY_ORDER.includes(entry.modelSlug as (typeof MODELS_CATALOG_PRIORITY_ORDER)[number]))
-    .sort((a, b) => getEngineDisplayName(a).localeCompare(getEngineDisplayName(b)));
 
-  return [...priorityEngines, ...remainingEngines]
-    .filter((entry) => entry.surfaces.modelPage.indexable || entry.surfaces.modelPage.includeInSitemap)
-    .filter((entry) => isModelInScope(entry, scope));
+  return currentEngines.filter((entry) => isModelInScope(entry, scope));
 }
 
 export async function buildModelsCatalogCards({

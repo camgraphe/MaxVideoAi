@@ -3,10 +3,10 @@
   "versionLabel": "Fast",
   "seo": {
     "title": "LTX 2.3 Fast | Modelo de video IA, specs, precio y duración máxima | MaxVideoAI",
-    "description": "Usa LTX 2.3 Fast en MaxVideoAI para generación de video más económica, loops de borrador más largos, el precio actual, la duración máxima y las diferencias clave frente a LTX 2.3 Pro.",
+    "description": "LTX 2.3 Fast sigue como ruta ejecutable de generación anterior para borradores establecidos; consulta precios y el avance hacia LTX 2.5 Fast.",
     "image": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/1bd62e34-0e55-4f49-b434-295276b991d4-job_d895c3b0-562a-4e36-ae06-4ce083a47126.jpg"
   },
-  "overview": "LTX 2.3 Fast es el modelo LTX fast actual en MaxVideoAI para generación de video más económica, loops de borrador más largos e iteración más rápida antes de mover salidas seleccionadas a LTX 2.3 Pro.",
+  "overview": "LTX 2.3 Fast permanece disponible como ruta de legado de generación anterior para borradores y ejemplos existentes. LTX 2.5 Fast es su sucesor rápido actual.",
   "hero": {
     "title": "LTX 2.3 Fast — modelo LTX fast actual para borradores más largos, pruebas e iteración",
     "intro": "Usa LTX 2.3 Fast para generación de video más económica, loops de borrador más largos e iteración más rápida cuando quieras probar ideas, comparar el comportamiento de prompts o explorar clips más largos antes de mover las salidas seleccionadas a LTX 2.3 Pro. Esta página cubre el precio del modelo, su duración máxima, sus mejores objetivos y cómo se compara con LTX 2.3 Pro en los workflows actuales de LTX.",
@@ -294,7 +294,7 @@
   "decision": {
     "modelSlug": "ltx-2-3-fast",
     "hero": {
-      "eyebrow": "RUTA LTX FAST PARA BORRADORES",
+      "eyebrow": "RUTA DE LEGADO LTX FAST DE GENERACIÓN ANTERIOR",
       "title": "LTX 2.3 Fast",
       "subtitle": "Una exploración visual rápida para pruebas de prompts, ciclos de borrador de menor coste y borradores verticales/sociales.",
       "subtitleHighlights": [
@@ -302,7 +302,7 @@
         "pruebas de prompts",
         "borradores verticales/sociales"
       ],
-      "paragraph": "Usa LTX 2.3 Fast para explorar rápido con texto a video e imagen a video: probar prompts, comparar estilos y preparar borradores sociales antes de una ruta final.",
+      "paragraph": "LTX 2.3 Fast sigue ejecutable para ciclos de borrador de generación anterior, prompts guardados y ejemplos existentes. Mantenlo cuando importe reproducir un proyecto o inicia las nuevas iteraciones con su sucesor LTX 2.5 Fast.",
       "primaryCta": {
         "label": "Crear borrador con LTX Fast",
         "href": "/app?engine=ltx-2-3-fast"
@@ -313,8 +313,12 @@
       },
       "quickLinks": [
         {
-          "label": "Comparar con Pro",
-          "href": "/es/comparativa/ltx-2-3-fast-vs-ltx-2-3-pro"
+          "label": "Ver el LTX 2.5 Fast actual",
+          "href": "/es/modelos/ltx-2-5-fast"
+        },
+        {
+        "label": "Comparar LTX Fast con Seedance Fast",
+        "href": "/es/comparativa/ltx-2-3-fast-vs-seedance-2-0-fast"
         },
         {
           "label": "Ver precios",
@@ -371,11 +375,11 @@
     ],
     "decisionCards": [
       {
-        "title": "¿Fast o LTX 2.3 Pro?",
-        "body": "Usa Fast para explorar y probar prompts. Usa Pro cuando necesites el flujo de producción más amplio de la ruta Pro.",
+        "title": "¿Seguir en 2.3 Fast o pasar a 2.5 Fast?",
+        "body": "Mantén 2.3 Fast para un borrador de legado reproducible. Elige LTX 2.5 Fast para un nuevo ciclo de iteración.",
         "cta": {
-          "label": "Comparar Fast vs Pro",
-          "href": "/es/comparativa/ltx-2-3-fast-vs-ltx-2-3-pro"
+          "label": "Ver el LTX 2.5 Fast actual",
+          "href": "/es/modelos/ltx-2-5-fast"
         }
       },
       {

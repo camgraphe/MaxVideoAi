@@ -352,6 +352,13 @@ export function buildBillingPricingFacts(
   const definitionFacts = computePricingDefinitionFacts(factualDefinition, {
     durationSec,
     resolution,
+    mode,
+    ...(typeof context.inputAudioDurationSec === 'number'
+      ? { inputAudioDurationSec: context.inputAudioDurationSec }
+      : {}),
+    ...(typeof context.referenceImageCount === 'number'
+      ? { referenceImageCount: context.referenceImageCount }
+      : {}),
     ...(context.addons ? { addons: context.addons } : {}),
   });
   return resultFromFacts({

@@ -324,6 +324,10 @@ test('workspace upload context and trusted generation validation are wired befor
     'frontend/app/api/generate/_lib/generation-attachment-processing.ts',
     'utf8'
   );
+  const normalizedValidationSource = readFileSync(
+    'frontend/app/api/generate/_lib/normalized-generation-attachment-validation.ts',
+    'utf8'
+  );
 
   assert.match(dropzoneSource, /resolveEngineMediaFieldConstraint/);
   assert.match(dropzoneSource, /validateEngineAudioFile/);
@@ -335,5 +339,6 @@ test('workspace upload context and trusted generation validation are wired befor
   const billingPreflight = videoGenerationSource.indexOf('const billingPreflight = trustedIncludedTrialBilling');
   assert.ok(constraintValidation >= 0);
   assert.ok(constraintValidation < billingPreflight, 'trusted media validation must run before billing preflight');
-  assert.match(attachmentProcessingSource, /validateGenerationMediaConstraints/);
+  assert.match(attachmentProcessingSource, /validateNormalizedGenerationAttachments/);
+  assert.match(normalizedValidationSource, /validateGenerationMediaConstraints/);
 });

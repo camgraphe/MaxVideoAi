@@ -4,6 +4,11 @@ import { getPayAsYouGoContent } from '../frontend/app/(localized)/[locale]/(mark
 import { buildPayAsYouGoPageData } from '../frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/_lib/payg-page-data.ts';
 import { buildPricingHubData } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData.ts';
 
+const p0Ids = new Set([
+  'ltx-2-5-pro', 'ltx-2-5-fast', 'wan-3-prime', 'wan-3',
+  'grok-imagine-video-1-5', 'flux-3', 'flux-3-draft',
+]);
+
 test('Pay-as-you-go data is render-ready and does not mutate content or pricing input', () => {
   const content = structuredClone(getPayAsYouGoContent('en'));
   const pricingHub = structuredClone(buildPricingHubData('en'));
@@ -19,32 +24,49 @@ test('Pay-as-you-go data is render-ready and does not mutate content or pricing 
   assert.ok(data.pricing.rows.every((row) => row.priceCells.every((cell) => cell.displayValue.trim())));
 });
 
+test('published P0 models are discoverable through PAYG rows, lookups, examples, and model links', () => {
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const data = buildPayAsYouGoPageData({ locale, content: getPayAsYouGoContent(locale) });
+    const exposedIds = new Set([
+      ...data.pricing.rows,
+      ...data.hero.quote.previewRows,
+      ...data.modelTesting.items,
+      ...data.priceLookups.items,
+      ...data.exampleCosts.items,
+    ].map((item) => item.id).filter((id) => p0Ids.has(id)));
+    assert.deepEqual([...exposedIds].sort(), [...p0Ids].sort());
+    for (const id of p0Ids) {
+      assert.ok(data.modelTesting.items.some((item) => item.id === id && item.href.includes(id)), `${locale}:${id}`);
+      assert.ok(data.priceLookups.items.some((item) => item.id === id && item.modelHref?.includes(id)), `${locale}:${id}:lookup`);
+    }
+  }
+});
+
 test('displayed pricing remains a live projection of the pricing hub', () => {
   const content = getPayAsYouGoContent('en');
   const pricingHub = structuredClone(buildPricingHubData('en'));
-  const sourceRow = pricingHub.video.rows.find((row) => row.id === 'seedance-2-0');
+  const sourceRow = pricingHub.video.rows.find((row) => row.id === 'ltx-2-5-pro');
   assert.ok(sourceRow);
-  assert.equal(sourceRow.quotes['5s-720p'].status, 'exact');
-  sourceRow.quotes['5s-720p'] = { ...sourceRow.quotes['5s-720p'], display: '$987.65' };
+  sourceRow.quotes['5s-720p'] = { status: 'exact', display: '$987.65' };
 
   const data = buildPayAsYouGoPageData({ locale: 'en', content, pricingHub });
   const cell = data.pricing.rows
-    .find((row) => row.id === 'seedance-2-0')
+    .find((row) => row.id === 'ltx-2-5-pro')
     ?.priceCells.find((item) => item.presetId === '5s-720p');
 
   assert.equal(cell?.value, '$987.65');
   assert.equal(cell?.displayValue, 'Example : $987.65');
   assert.equal(cell?.renderReady, true);
   assert.equal(
-    data.hero.quote.previewRows.find((row) => row.id === 'seedance-2-0')?.quoteLabel,
+    data.hero.quote.previewRows.find((row) => row.id === 'ltx-2-5-pro')?.quoteLabel,
     '$987.65',
   );
   assert.equal(
-    data.priceLookups.items.find((item) => item.id === 'seedance-2-0')?.price,
+    data.priceLookups.items.find((item) => item.id === 'ltx-2-5-pro')?.price,
     '$987.65',
   );
   assert.equal(
-    data.exampleCosts.items.find((item) => item.id === 'seedance-2-0')?.price,
+    data.exampleCosts.items.find((item) => item.id === 'ltx-2-5-pro')?.price,
     '$987.65',
   );
   assert.equal(data.hero.quote.sampleCost?.price, '$987.65');
@@ -54,14 +76,14 @@ test('displayed pricing remains a live projection of the pricing hub', () => {
 test('live-quote status stays invisible independently of localized display prose', () => {
   const content = getPayAsYouGoContent('fr');
   const pricingHub = structuredClone(buildPricingHubData('fr'));
-  const sourceRow = pricingHub.video.rows.find((row) => row.id === 'seedance-2-0');
+  const sourceRow = pricingHub.video.rows.find((row) => row.id === 'ltx-2-5-pro');
   assert.ok(sourceRow);
   sourceRow.quotes['5s-720p'] = { status: 'live_quote', display: 'Devis en direct' };
   sourceRow.quotes['8s-1080p'] = { status: 'closest', display: '$12.34' };
   sourceRow.quotes['10s-1080p'] = { status: 'unsupported', display: '—' };
 
   const data = buildPayAsYouGoPageData({ locale: 'fr', content, pricingHub });
-  const row = data.pricing.rows.find((candidate) => candidate.id === 'seedance-2-0');
+  const row = data.pricing.rows.find((candidate) => candidate.id === 'ltx-2-5-pro');
   const liveQuoteCell = row?.priceCells.find((cell) => cell.presetId === '5s-720p');
   const closestCell = row?.priceCells.find((cell) => cell.presetId === '8s-1080p');
   const unsupportedCell = row?.priceCells.find((cell) => cell.presetId === '10s-1080p');
@@ -75,7 +97,7 @@ test('live-quote status stays invisible independently of localized display prose
   assert.equal(unsupportedCell?.displayValue, '—');
   assert.equal(unsupportedCell?.renderReady, false);
   assert.equal(
-    data.hero.quote.previewRows.find((candidate) => candidate.id === 'seedance-2-0')?.quoteLabel,
+    data.hero.quote.previewRows.find((candidate) => candidate.id === 'ltx-2-5-pro')?.quoteLabel,
     '$12.34',
   );
 });

@@ -11,8 +11,9 @@ import compareConfig from '@/config/compare-config.json';
 import { getHubComparisonSlugsForSitemap } from '@/lib/compare-hub/data';
 import { getIndexableComparisonLocales } from '@/lib/compare-hub/indexation';
 import { canonicalizeCompareSlug, comparePaths, normalizeCompareEnglishPath } from './compare-paths';
-import { formatLastModified, getGitLastModified, getModelLastModified, getRouteLastModified } from './lastmod';
-import { hasBlogLocale, hasModelLocale } from './model-locales';
+import { formatLastModified, getGitLastModified, getRouteLastModified } from './lastmod';
+import { hasBlogLocale } from './model-locales';
+import { buildModelRouteEntriesFromRoster } from './model-routes';
 import {
   BASE_EXTRA_CANONICAL_PATHS,
   LOCALES,
@@ -20,6 +21,8 @@ import {
   type DynamicRouteGenerator,
   type RouteTemplate,
 } from './types';
+
+export { buildModelRouteEntriesFromRoster } from './model-routes';
 
 const APP_PATHS_MANIFEST_PATH = findAppPathsManifestPath();
 const SOURCE_APP_ROOT = resolveSourceAppRoot();
@@ -364,13 +367,7 @@ const DYNAMIC_ROUTE_GENERATORS: Record<string, DynamicRouteGenerator> = {
       englishPath: `/examples/${model}`,
     })),
   '/models/[slug]': async () =>
-    modelRoster
-      .filter((model) => Boolean(model?.modelSlug) && model?.surfaces?.modelPage?.includeInSitemap !== false)
-      .map((model) => ({
-        englishPath: `/models/${model.modelSlug}`,
-        lastModified: getModelLastModified(model.modelSlug),
-        locales: LOCALES.filter((locale) => hasModelLocale(model.modelSlug, locale)),
-      })),
+    buildModelRouteEntriesFromRoster(modelRoster),
   '/ai-video-engines/[slug]': async () =>
     Array.from(new Set(getHubComparisonSlugsForSitemap().map((slug) => canonicalizeCompareSlug(slug)))).map((slug) => ({
       englishPath: `/ai-video-engines/${slug}`,

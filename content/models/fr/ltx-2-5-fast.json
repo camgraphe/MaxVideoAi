@@ -1,0 +1,87 @@
+{
+  "marketingName": "LTX 2.5 Fast",
+  "versionLabel": "2.5 Fast",
+  "seo": {
+    "title": "Générateur vidéo IA LTX 2.5 Fast pour itérer vite",
+    "description": "Utilisez LTX 2.5 Fast pour itérer depuis un texte, une image ou un son source, avec limites pratiques, conseils de prompt et devis canoniques."
+  },
+  "overview": "LTX 2.5 Fast est la route actuelle orientée vitesse pour l'exploration visuelle, les tests de mouvement et les brouillons de la famille LTX. Lightricks possède LTX ; MaxVideoAI distribue cette intégration de lancement via Fal. Le modèle propose des workflows distincts de texte vers vidéo, image vers vidéo et audio vers vidéo.",
+  "decision": {
+    "modelSlug": "ltx-2-5-fast",
+    "hero": {
+      "eyebrow": "ROUTE LTX RAPIDE ACTUELLE",
+      "title": "LTX 2.5 Fast",
+      "subtitle": "Itérez depuis un texte, une image initiale ou un son source, avec des niveaux natifs de 720p à 4K et des durées adaptées à la revue rapide.",
+      "subtitleHighlights": ["texte", "son source", "720p à 4K"],
+      "paragraph": "Choisissez Fast lorsque l'équipe explore le mouvement, le rythme, le cadrage ou des variantes de prompt. Les modes texte et image couvrent plusieurs résolutions avec son généré natif ; audio vers vidéo est un workflow séparé dont le devis dépend de la durée validée du son source. Lightricks possède le modèle et Fal distribue son exécution pour cette version.",
+      "primaryCta": { "label": "Générer avec LTX 2.5 Fast", "href": "/app?engine=ltx-2-5-fast" },
+      "secondaryCta": { "label": "Parcourir la galerie LTX", "href": "/fr/galerie/ltx" },
+      "quickLinks": [
+        { "label": "Découvrir LTX 2.5 Pro", "href": "/fr/modeles/ltx-2-5-pro" },
+        { "label": "Comparer Fast à LTX 2.3 Fast", "href": "/fr/comparatif/ltx-2-3-fast-vs-ltx-2-5-fast?order=ltx-2-5-fast" },
+        { "label": "Comparer Fast et Pro", "href": "/fr/comparatif/ltx-2-5-fast-vs-ltx-2-5-pro?order=ltx-2-5-fast" },
+        { "label": "Consulter les tarifs Fast", "href": "/fr/tarifs#ltx-2-5-fast-pricing" },
+        { "label": "Ouvrir le laboratoire Fast", "href": "#prompting" }
+      ]
+    },
+    "media": { "caption": "Galerie de preuves LTX 2.5 Fast", "description": "Les brouillons Fast acceptés apparaîtront après revue", "renderLabel": "Examiner le brouillon accepté", "badges": ["Fast", "Trois workflows", "Jusqu'à 4K"], "altContext": "exemple vidéo LTX 2.5 Fast accepté" },
+    "features": [
+      { "title": "Exploration rapide des prompts", "body": "Utilisez une passe de six secondes en 720p pour comparer mouvement, composition et comportement avant une sortie plus longue ou plus définie. Chaque variante doit mesurer un seul changement.", "tone": "duration" },
+      { "title": "Résolutions élevées natives", "body": "Les modes texte et image montent de 720p à 1080p, 1440p et 4K. Les niveaux élevés et certaines fréquences ont des plafonds de durée plus courts.", "tone": "quality" },
+      { "title": "Tests de mouvement depuis une image", "body": "Animez une image initiale fiable et guidez éventuellement la fin. Décrivez la caméra et la transformation physique sans redessiner la source.", "tone": "reference" },
+      { "title": "Performance guidée par un son", "body": "Audio vers vidéo exige un fichier sonore privé et peut recevoir une image. Le devis canonique utilise la durée du son validée côté serveur, jamais une durée éditoriale inventée.", "tone": "audio" }
+    ],
+    "decisionCards": [
+      { "title": "Idéal pour l'itération créative rapide", "body": "Choisissez Fast pour les tests A/B de prompts, les cadrages sociaux, les études de mouvement et les premiers temps d'un storyboard.", "cta": { "label": "Démarrer un brouillon Fast", "href": "/app?engine=ltx-2-5-fast" } },
+      { "title": "Moins adapté à l'approbation finale par défaut", "body": "Lorsque le concept est verrouillé et que la revue demande le modèle LTX orienté production, transférez le même brief vers Pro.", "cta": { "label": "Ouvrir LTX 2.5 Pro", "href": "/fr/modeles/ltx-2-5-pro" } },
+      { "title": "Modifier une variable à la fois", "body": "Conservez sujet, décor et style tout en changeant la caméra, l'action ou le rythme. La boucle rapide produit ainsi des preuves utiles.", "cta": { "label": "Ouvrir le laboratoire", "href": "#prompting" } }
+    ],
+    "referenceWorkflows": [
+      { "title": "Brouillon texte", "body": "Testez une scène avec un sujet clair, une action, un trajet caméra et une pose finale." },
+      { "title": "Brouillon image", "body": "Préservez l'identité et le cadrage de la source en demandant uniquement le mouvement utile." },
+      { "title": "Brouillon guidé par l'audio", "body": "Choisissez une source autorisée et alignez les actions visibles sur son rythme." },
+      { "title": "Itération sûre", "body": "Employez des médias possédés et refusez anatomie déformée, texte indésirable, contenu dangereux ou ressemblance trompeuse." }
+    ],
+    "pricingCopy": { "title": "Tarification par scénario LTX 2.5 Fast", "subtitle": "Comparez un brouillon texte en 720p, une passe texte 4K native et six secondes de source audio.", "footnote": "Chaque montant vient du devis canonique. Pour audio vers vidéo, six secondes désigne six secondes validées du son source.", "ctaLabel": "Générer avec LTX 2.5 Fast", "ctaHref": "/app?engine=ltx-2-5-fast" },
+    "meta": { "title": "Modèle vidéo IA LTX 2.5 Fast, audio et tarifs", "description": "Évaluez LTX 2.5 Fast pour texte, animation d'image et vidéo guidée par audio avec résolutions natives, limites, prompts et devis canoniques." }
+  },
+  "prompting": {
+    "modelSlug": "ltx-2-5-fast",
+    "section": { "title": "Laboratoire de prompts — LTX 2.5 Fast", "intro": "Construisez une boucle répétable autour d'une question créative et d'un critère de réussite visible.", "tip": "Ne changez qu'une variable majeure entre deux brouillons afin que le résultat apporte un enseignement.", "guide": { "label": "Lire le guide officiel de prompting LTX", "href": "https://docs.ltx.io/api-documentation/implementation-guides/prompting-guide" }, "referencesTitle": "Diriger des brouillons rapides sans perdre la discipline de revue" },
+    "tabs": [
+      { "id": "brief", "label": "Brief", "title": "Écrire la plus petite scène utile", "description": "Définissez un sujet, une action et une fin adaptés à la durée.", "copy": "Sujet :\n[Apparence et détail d'identité protégé]\n\nDécor :\n[Lieu, moment et lumière]\n\nAction :\n[Un mouvement visible]\n\nPlan final :\n[Comment le sujet et la caméra se stabilisent]" },
+      { "id": "motion", "label": "Mouvement", "title": "Tester caméra et réponse physique", "description": "Utilisez des mouvements précis plutôt que des mots d'énergie génériques.", "copy": "Caméra :\n[Fixe, travelling, rapprochement, recul ou mise au point]\n\nRythme du sujet :\n[Départ, accélération, pause et fin]\n\nDécor :\n[Tissu, cheveux, ombre, liquide ou particules]\n\nContinuité :\n[Détails qui ne doivent pas dériver]" },
+      { "id": "audio", "label": "Audio", "title": "Planifier la source audio", "description": "Laissez la durée et le rythme de la source définir la performance visuelle.", "copy": "Source audio :\n[Fichier autorisé et longueur validée]\n\nCarte rythmique :\n[Signal d'ouverture, accent central et fin]\n\nPerformance visible :\n[Mouvement lié à ces signaux]\n\nÀ éviter :\n[Coupes sans lien, identités changeantes, logos, sous-titres et images dangereuses]" }
+    ],
+    "tabNotes": [
+      { "tabId": "brief", "body": "L'itération Fast fonctionne si la scène reste assez petite pour comparer plusieurs variantes contrôlées." },
+      { "tabId": "motion", "body": "En 1440p, 4K ou haute fréquence, gardez la durée prévue sous le plafond actif du schéma." },
+      { "tabId": "audio", "body": "Audio vers vidéo utilise la durée fiable de la source et n'est pas un simple interrupteur sonore du mode texte." }
+    ],
+    "globalPrinciples": ["Gardez une action principale par brouillon court.", "Réutilisez le même squelette de prompt pour comparer les mouvements.", "Choisissez la résolution après avoir défini la question créative.", "Vérifiez droits des sources, consentement et sécurité de marque avant tout ajout."],
+    "engineWhy": ["Fast propose une large échelle de résolutions natives pour l'itération.", "Les modes texte, image et audio séparés rendent les entrées obligatoires explicites.", "Les réglages compatibles permettent des séquences de brouillon plus longues lorsque les limites le permettent."],
+    "demo": {
+      "title": "Étude de mouvement LTX 2.5 Fast",
+      "promptLabel": "Brouillon contrôlé image vers vidéo",
+      "prompt": "Animer l'image éditoriale fournie d'une cycliste sous un viaduc en béton. Elle regarde à gauche, transfère son poids sur une pédale puis avance tandis que la caméra effectue un léger travelling parallèle. Préserver veste, cadre du vélo, visage et reflets du sol mouillé. Garder la circulation floue et finir lorsque la cycliste traverse la zone de lumière la plus vive.",
+      "notes": ["Le prompt protège l'identité de la source et demande une seule action lisible.", "Un trajet latéral unique facilite la comparaison des brouillons."],
+      "summary": { "subject": "Cycliste sous un viaduc en béton", "action": "Transfert de poids suivi d'un départ contrôlé", "camera": "Léger travelling parallèle", "style": "Étude de mouvement éditoriale naturelle", "output": "Brouillon Fast depuis image avec état audio issu du rendu" },
+      "presentationOverrides": { "modeLabel": "Image vers vidéo", "outputLabel": "Réglages de sortie canoniques", "duration": null, "aspectRatio": null, "audioChipMode": "media", "audioChipLabel": null, "altContext": "prompt LTX 2.5 Fast pour une étude de cycliste" }
+    },
+    "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "ltx-2-5-fast",
+    "showWhenEmpty": false,
+    "section": { "title": "Exemples LTX 2.5 Fast vérifiés", "intro": "Cette section reste masquée jusqu'à ce que deux sorties Fast acceptées soient durables et liées à la bonne playlist.", "defaultCtaLabel": "Voir tous les exemples LTX", "recreateLabel": null },
+    "filters": [{ "id": "all", "label": "Tous" }, { "id": "action", "label": "Tests de mouvement" }, { "id": "audio", "label": "Guidés par audio" }],
+    "proofItems": [
+      { "id": "iteration", "icon": "zap", "title": "Itération utile", "body": "Comparer une variable modifiée à un brief stable." },
+      { "id": "source", "icon": "image", "title": "Fidélité à la source", "body": "Examiner identité, cadrage et détails visuels protégés." },
+      { "id": "rhythm", "icon": "audio", "title": "Rythme audio", "body": "Vérifier l'alignement des actions visibles avec le clip source." },
+      { "id": "motion", "icon": "sparkles", "title": "Cohérence du mouvement", "body": "Contrôler anatomie, contacts, caméra et stabilité finale." },
+      { "id": "safety", "icon": "shield", "title": "Sécurité éditoriale", "body": "Refuser toute sortie dangereuse, trompeuse ou contraire aux droits." }
+    ],
+    "fallbackItems": null
+  }
+}

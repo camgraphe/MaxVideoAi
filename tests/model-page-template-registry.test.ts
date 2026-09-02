@@ -147,8 +147,8 @@ test('template registry enables Seedance production and draft model templates', 
   assert.equal(seedanceFast.hero.primaryCtaHref, '/app?engine=seedance-2-0-fast');
   assert.equal(seedanceMini.hero.primaryCtaHref, '/app?engine=seedance-2-0-mini');
   assert.equal(seedanceMini.hero.secondaryCtaHref, '/examples/seedance');
-  assert.equal(ltx2.hero.primaryCtaHref, '/app?engine=ltx-2');
-  assert.equal(ltx2Fast.hero.primaryCtaHref, '/app?engine=ltx-2-fast');
+  assert.equal(ltx2.hero.primaryCtaHref, '/app?engine=ltx-2-5-pro');
+  assert.equal(ltx2Fast.hero.primaryCtaHref, '/app?engine=ltx-2-5-fast');
   assert.equal(ltxFast.hero.primaryCtaHref, '/app?engine=ltx-2-3-fast');
   assert.equal(luma.hero.primaryCtaHref, '/app?engine=lumaRay2');
   assert.equal(lumaFlash.hero.primaryCtaHref, '/app?engine=lumaRay2_flash');
@@ -281,8 +281,11 @@ test('template registry enables Seedance production and draft model templates', 
   );
   assert.deepEqual(listModelPageTemplateSlugs().sort(), [
     'dreamina-seedance-2-0-mini',
+    'flux-3',
+    'flux-3-draft',
     'gemini-omni-flash',
     'gpt-image-2',
+    'grok-imagine-video-1-5',
     'happy-horse-1-0',
     'happy-horse-1-1',
     'kling-2-5-turbo',
@@ -296,6 +299,8 @@ test('template registry enables Seedance production and draft model templates', 
     'ltx-2',
     'ltx-2-3-fast',
     'ltx-2-3-pro',
+    'ltx-2-5-fast',
+    'ltx-2-5-pro',
     'ltx-2-fast',
     'luma-ray-2',
     'luma-ray-2-flash',
@@ -322,7 +327,65 @@ test('template registry enables Seedance production and draft model templates', 
     'veo-3-1-lite',
     'wan-2-5',
     'wan-2-6',
+    'wan-3',
+    'wan-3-prime',
   ]);
+});
+
+test('P0 templates freeze canonical rendered pricing scenarios without finished totals', () => {
+  const expected = {
+    'wan-3': [
+      ['6s-720p-t2v', 6, '720p', 't2v', undefined],
+      ['6s-1080p-t2v', 6, '1080p', 't2v', undefined],
+    ],
+    'wan-3-prime': [
+      ['6s-720p-t2v', 6, '720p', 't2v', undefined],
+      ['6s-1080p-t2v', 6, '1080p', 't2v', undefined],
+    ],
+    'ltx-2-5-fast': [
+      ['6s-720p-t2v', 6, '720p', 't2v', undefined],
+      ['6s-4k-t2v', 6, '4k', 't2v', undefined],
+      ['6s-1080p-a2v', 6, '1080p', 'a2v', undefined],
+    ],
+    'ltx-2-5-pro': [
+      ['6s-720p-t2v', 6, '720p', 't2v', undefined],
+      ['6s-1080p-t2v', 6, '1080p', 't2v', undefined],
+      ['6s-1080p-a2v', 6, '1080p', 'a2v', undefined],
+    ],
+    'grok-imagine-video-1-5': [
+      ['6s-720p-t2v', 6, '720p', 't2v', undefined],
+      ['6s-1080p-t2v', 6, '1080p', 't2v', undefined],
+      ['8s-480p-ref2v-2-images', 8, '480p', 'ref2v', 2],
+    ],
+    'flux-3': [
+      ['6s-720p-t2v', 6, '720p', 't2v', undefined],
+      ['6s-1080p-t2v', 6, '1080p', 't2v', undefined],
+      ['6s-720p-extend', 6, '720p', 'extend', undefined],
+    ],
+    'flux-3-draft': [
+      ['6s-720p-t2v', 6, '720p', 't2v', undefined],
+      ['6s-720p-extend', 6, '720p', 'extend', undefined],
+    ],
+  } as const;
+
+  for (const [slug, scenarios] of Object.entries(expected)) {
+    const template = getModelPageTemplateConfig(slug);
+    assert.ok(template, `${slug} should have a normal page template`);
+    assert.equal(template.pricing.enabled, true, `${slug} pricing should be rendered`);
+    assert.equal(template.pricing.anchorHref, `/pricing#${slug}-pricing`);
+    assert.deepEqual(
+      template.pricing.presets.map((preset) => [
+        preset.id,
+        preset.seconds,
+        preset.resolution,
+        preset.mode,
+        preset.referenceImageCount,
+      ]),
+      scenarios,
+      slug,
+    );
+    assert.doesNotMatch(JSON.stringify(template), /(?:amount|total|providerRate|margin)Cents|\$\s*\d/i);
+  }
 });
 
 test('Seedance template pricing presets are declarative and do not hardcode provider prices', () => {
@@ -392,7 +455,7 @@ test('second-wave templates avoid cross-route overclaims', () => {
   assert.notEqual(ltxPro.hero.primaryCtaHref, '/app?engine=ltx-2-3-pro');
 });
 
-test('LTX 2 legacy templates stay distinct from current LTX 2.3 routes', () => {
+test('LTX 2 deep-legacy templates preserve old pricing while routing generation to current successors', () => {
   const ltx2 = getModelPageTemplateConfig('ltx-2');
   const ltx2Fast = getModelPageTemplateConfig('ltx-2-fast');
 
@@ -400,8 +463,8 @@ test('LTX 2 legacy templates stay distinct from current LTX 2.3 routes', () => {
   assert.ok(ltx2Fast);
   assert.equal(ltx2.intent, 'specialized');
   assert.equal(ltx2Fast.intent, 'draft');
-  assert.equal(ltx2.hero.primaryCtaHref, '/app?engine=ltx-2');
-  assert.equal(ltx2Fast.hero.primaryCtaHref, '/app?engine=ltx-2-fast');
+  assert.equal(ltx2.hero.primaryCtaHref, '/app?engine=ltx-2-5-pro');
+  assert.equal(ltx2Fast.hero.primaryCtaHref, '/app?engine=ltx-2-5-fast');
   assert.equal(ltx2.hero.quickLinks.some((link) => link.href === '#prompting'), true);
   assert.equal(ltx2Fast.hero.quickLinks.some((link) => link.href === '#prompting'), true);
   assert.equal(ltx2.pricing.presets.every((preset) => preset.resolution !== '720p'), true);
@@ -483,7 +546,7 @@ test('Wan templates separate reference-video route from shorter audio drafts', (
   assert.ok(wan26);
   assert.equal(wan25.intent, 'draft');
   assert.equal(wan26.intent, 'production');
-  assert.equal(wan25.hero.primaryCtaHref, '/app?engine=wan-2-5');
+  assert.equal(wan25.hero.primaryCtaHref, '/app?engine=wan-3');
   assert.equal(wan26.hero.primaryCtaHref, '/app?engine=wan-2-6');
   assert.equal(wan25.pricing.anchorHref, '/pricing#wan-2-5-pricing');
   assert.equal(wan26.pricing.anchorHref, '/pricing#wan-2-6-pricing');

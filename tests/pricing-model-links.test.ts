@@ -2,12 +2,16 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
-import { buildPricingHubData } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData.ts';
+import {
+  buildPricingHubData,
+  buildVideoPricingRowsFromEntries,
+} from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData.ts';
 import { buildPayAsYouGoPageData } from '../frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/_lib/payg-page-data.ts';
 import { enPayAsYouGoContent } from '../frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/_content/en.ts';
 import { frPayAsYouGoContent } from '../frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/_content/fr.ts';
 import { esPayAsYouGoContent } from '../frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/_content/es.ts';
 import type { AppLocale } from '../frontend/i18n/locales.ts';
+import { listFalEngines } from '../frontend/src/config/falEngines.ts';
 
 const root = process.cwd();
 const videoMatrixPath = join(
@@ -51,6 +55,36 @@ test('pricing video engine rows expose localized model hrefs for clickable engin
   assert.equal(klingFr?.modelHref, '/fr/modeles/kling-3-pro');
   assert.equal(veoEs?.modelHref, '/es/modelos/veo-3-1');
   assert.equal(gptImage?.modelHref, '/models/gpt-image-2');
+});
+
+test('pricing model links follow pricing publication and exclude deep legacy history', () => {
+  const p0Ids = new Set([
+    'ltx-2-5-pro', 'ltx-2-5-fast', 'wan-3-prime', 'wan-3',
+    'grok-imagine-video-1-5', 'flux-3', 'flux-3-draft',
+  ]);
+  const deepLegacyIds = new Set(['ltx-2', 'ltx-2-fast', 'wan-2-5']);
+  const liveRows = buildPricingHubData('en').video.rows;
+  assert.deepEqual(
+    liveRows.filter((row) => p0Ids.has(row.id)).map((row) => row.id).sort(),
+    [...p0Ids].sort(),
+  );
+  assert.deepEqual(liveRows.filter((row) => deepLegacyIds.has(row.id)), []);
+
+  const visibleEntries = listFalEngines().map((entry) => p0Ids.has(entry.id) ? {
+    ...structuredClone(entry),
+    surfaces: {
+      ...structuredClone(entry.surfaces),
+      modelPage: { ...entry.surfaces.modelPage, indexable: true },
+      pricing: { ...entry.surfaces.pricing, includeInEstimator: true },
+    },
+  } : entry);
+  const visibleRows = buildVideoPricingRowsFromEntries(visibleEntries, 'fr');
+  for (const id of p0Ids) {
+    const row = visibleRows.find((candidate) => candidate.id === id);
+    assert.equal(row?.anchorId, `${id}-pricing`);
+    assert.equal(row?.modelHref, `/fr/modeles/${id}`);
+  }
+  assert.deepEqual(visibleRows.filter((row) => deepLegacyIds.has(row.id)), []);
 });
 
 test('pricing video matrix links the rendered engine identity to its model page', () => {

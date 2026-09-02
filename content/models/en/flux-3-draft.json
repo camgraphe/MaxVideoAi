@@ -1,0 +1,86 @@
+{
+  "marketingName": "FLUX 3 Video Draft",
+  "versionLabel": "3 Draft",
+  "seo": {
+    "title": "FLUX 3 Video Draft Generator for 720p Iteration",
+    "description": "Use FLUX 3 Video Draft for 720p text, image, first-last-frame and extension trials, with exact source rules, prompt guidance and mode-aware quotes."
+  },
+  "overview": "FLUX 3 Video Draft is the current 720p iteration sibling in the FLUX video family. It mirrors the four launch workflows while returning a draft-oriented result and cache context. Black Forest Labs owns the model; MaxVideoAI distributes these endpoints through Fal. Draft is positioned for testing, not as an automatic substitute for standard FLUX 3 production review.",
+  "decision": {
+    "modelSlug": "flux-3-draft",
+    "hero": {
+      "eyebrow": "CURRENT FLUX VIDEO DRAFT ROUTE",
+      "title": "FLUX 3 Video Draft",
+      "subtitle": "Test text, opening-image, first-and-last-frame and source-video extension ideas at the fixed 720p draft tier.",
+      "subtitleHighlights": ["text", "first-and-last-frame", "720p draft tier"],
+      "paragraph": "Choose Draft while comparing scene direction, source compatibility and transition logic before a standard FLUX 3 pass. First-and-last-frame still requires both anchors, and extension still requires a source video with its own mode-specific quote. Black Forest Labs owns FLUX and Fal distributes execution for this MaxVideoAI launch.",
+      "primaryCta": { "label": "Generate with FLUX 3 Draft", "href": "/app?engine=flux-3-draft" },
+      "secondaryCta": { "label": "Explore the FLUX gallery", "href": "/examples/flux" },
+      "quickLinks": [
+        { "label": "Review standard FLUX 3", "href": "/models/flux-3" },
+        { "label": "Compare FLUX 3 and Draft", "href": "/ai-video-engines/flux-3-vs-flux-3-draft?order=flux-3-draft" },
+        { "label": "Review Draft pricing", "href": "/pricing#flux-3-draft-pricing" },
+        { "label": "Open Draft Prompt Lab", "href": "#prompting" }
+      ]
+    },
+    "media": { "caption": "FLUX 3 Draft evidence gallery", "description": "Accepted Draft outputs will appear after review", "renderLabel": "Review accepted draft", "badges": ["Draft", "Four workflows", "720p"], "altContext": "accepted FLUX 3 Video Draft example" },
+    "features": [
+      { "title": "Fixed 720p iteration", "body": "Draft has one supported output tier, which makes it useful for direction tests without pretending to offer the standard model's 1080p option. Choose the sibling after a concept survives review.", "tone": "quality" },
+      { "title": "Same explicit source roles", "body": "Text needs a prompt, image mode needs an opening image, fl2v needs both start and end images, and extension needs a video. Draft does not relax those required inputs.", "tone": "reference" },
+      { "title": "Fast creative decisions", "body": "Use short controlled scenes to compare camera direction, action timing and visual continuity. Avoid spending the draft loop on several unrelated story beats that cannot be diagnosed.", "tone": "duration" },
+      { "title": "Draft extension remains separate", "body": "Extension uses a distinct canonical pricing rule even on Draft. The page sends mode extend into the calculator rather than presenting a normal-generation estimate.", "tone": "price" }
+    ],
+    "decisionCards": [
+      { "title": "Best fit: controlled 720p trials", "body": "Use Draft for early frame bridges, source-video continuation tests, motion sketches and prompt comparisons with one measurable change per attempt.", "cta": { "label": "Start a Draft test", "href": "/app?engine=flux-3-draft" } },
+      { "title": "Not ideal: final production equivalence", "body": "Draft is not described as equivalent to standard FLUX 3 delivery. Move the selected concept to the standard sibling when the production brief calls for that route or 1080p.", "cta": { "label": "Open standard FLUX 3", "href": "/models/flux-3" } },
+      { "title": "Design tests that transfer", "body": "Keep source frames, prompt structure and acceptance criteria reusable so the successful draft can be evaluated consistently on the standard model.", "cta": { "label": "Open Prompt Lab", "href": "#prompting" } }
+    ],
+    "referenceWorkflows": [
+      { "title": "Text sketch", "body": "Test one scene idea with a clear action, camera path and ending." },
+      { "title": "Image sketch", "body": "Animate an opening frame while preserving subject and composition." },
+      { "title": "Frame-bridge sketch", "body": "Use two compatible anchors and specify the plausible transition between them." },
+      { "title": "Extension sketch", "body": "Continue an eligible source clip without resetting identity, camera or light." }
+    ],
+    "pricingCopy": { "title": "FLUX 3 Draft scenario pricing", "subtitle": "Compare six seconds of normal 720p generation with six seconds of 720p extension.", "footnote": "Both amounts come from the canonical mode-aware calculator; extension never inherits the normal Draft rate by omission.", "ctaLabel": "Generate with FLUX 3 Draft", "ctaHref": "/app?engine=flux-3-draft" },
+    "meta": { "title": "FLUX 3 Video Draft Model, 720p Modes and Pricing", "description": "Review FLUX 3 Draft text, image, frame-bridge and extend workflows, fixed 720p scope, prompting discipline, sibling handoff and canonical quotes." }
+  },
+  "prompting": {
+    "modelSlug": "flux-3-draft",
+    "section": { "title": "Prompt Lab — FLUX 3 Video Draft", "intro": "Use the draft loop to answer one source, motion or transition question at a time.", "tip": "Write the acceptance criterion before rendering so a cheap-looking difference is not mistaken for useful evidence.", "guide": { "label": "Read Black Forest Labs' FLUX 3 Video guide", "href": "https://bfl.ai/blog/flux-3-video" }, "referencesTitle": "Prepare transferable draft tests" },
+    "tabs": [
+      { "id": "question", "label": "Question", "title": "Define the draft question", "description": "Choose one uncertainty the render should resolve.", "copy": "Question:\n[Camera, action, frame compatibility or continuation]\n\nSuccess signal:\n[Visible behavior that answers it]\n\nSubject anchors:\n[Details that remain fixed]\n\nFinal beat:\n[How the draft should settle]" },
+      { "id": "sources", "label": "Sources", "title": "Check required inputs", "description": "Attach exactly the source type the selected mode owns.", "copy": "Mode:\n[Text, image, first-last-frame, or extend]\n\nOpening source:\n[Image or source-video state]\n\nEnding source:\n[Required final image for fl2v]\n\nCompatibility:\n[Identity, perspective, lighting and motion direction]" },
+      { "id": "handoff", "label": "Handoff", "title": "Write a reusable production handoff", "description": "Capture the prompt and criteria that should transfer to standard FLUX 3.", "copy": "Keep:\n[Prompt lines and source media that worked]\n\nChange:\n[One issue to correct on the next pass]\n\nProduction target:\n[Resolution and delivery context]\n\nAvoid:\n[Unplanned edits, abrupt reset, malformed geometry, text, logos and unsafe content]" }
+    ],
+    "tabNotes": [
+      { "tabId": "question", "body": "A draft is valuable when it reduces one concrete uncertainty, even if it is not a final asset." },
+      { "tabId": "sources", "body": "The Draft contract does not turn fl2v into arbitrary keyframes or make the end image optional." },
+      { "tabId": "handoff", "body": "Record sources, prompt and acceptance notes before switching to standard FLUX 3." }
+    ],
+    "globalPrinciples": ["Change one major variable per draft.", "Use sources that are compatible in identity and scene logic.", "Keep movement physically readable at short duration.", "Apply rights, consent and safety review even to temporary outputs."],
+    "engineWhy": ["A fixed 720p route keeps Draft positioning clear.", "Four explicit modes let teams test the same source contracts before production handoff.", "Separate extension pricing prevents a draft continuation from being quoted as ordinary generation."],
+    "demo": {
+      "title": "FLUX 3 Draft continuation test",
+      "promptLabel": "Source-video extension draft",
+      "prompt": "Continue the supplied clip from its final frame: the small research boat keeps moving left to right through low morning fog while the camera maintains the same slow aerial track. A buoy passes beneath the frame and the wake widens naturally. Preserve hull colors, crew count, horizon height and cool light. Do not introduce a cut, title, logo or new vessel.",
+      "notes": ["The prompt begins from the source clip's ending state.", "Continuity anchors make the draft useful for standard-model handoff."],
+      "summary": { "subject": "Small research boat in morning fog", "action": "Boat continues past a buoy as its wake expands", "camera": "Unbroken slow aerial track", "style": "Cool restrained maritime documentary", "output": "720p extension draft with mode-aware quote" },
+      "presentationOverrides": { "modeLabel": "Extend", "outputLabel": "720p Draft settings", "duration": null, "aspectRatio": null, "audioChipMode": "media", "audioChipLabel": null, "altContext": "FLUX 3 Draft research-boat extension prompt" }
+    },
+    "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "flux-3-draft",
+    "showWhenEmpty": false,
+    "section": { "title": "Reviewed FLUX 3 Draft examples", "intro": "This gallery stays hidden until two accepted Draft outputs are durable and attached to the model playlist.", "defaultCtaLabel": "View all FLUX examples", "recreateLabel": null },
+    "filters": [{ "id": "all", "label": "All" }, { "id": "action", "label": "Motion tests" }, { "id": "edit", "label": "Extension drafts" }],
+    "proofItems": [
+      { "id": "question", "icon": "zap", "title": "Decision value", "body": "Check whether the draft answers its stated creative question." },
+      { "id": "sources", "icon": "image", "title": "Source compatibility", "body": "Inspect identity, perspective and transition logic." },
+      { "id": "motion", "icon": "sparkles", "title": "Motion readability", "body": "Review physical response, camera continuity and final stability." },
+      { "id": "handoff", "icon": "maximize", "title": "Production handoff", "body": "Record the prompt and sources worth taking to standard FLUX 3." },
+      { "id": "safety", "icon": "shield", "title": "Draft safety", "body": "Temporary output still requires rights, likeness and content review." }
+    ],
+    "fallbackItems": null
+  }
+}

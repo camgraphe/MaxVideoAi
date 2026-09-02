@@ -1,0 +1,21 @@
+{
+  "slug": "ltx-2-5-fast-vs-ltx-2-5-pro",
+  "en": {
+    "meta": { "title": "LTX 2.5 Fast vs Pro: Scores, Price & Specs", "description": "Compare LTX 2.5 Fast and Pro for quality, speed, pricing, duration and resolution.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Quick verdict", "body": "Choose Fast for iteration, value, 4K and 20-second clips. Choose Pro for denser scenes and the best final-render fidelity." },
+    "primaryLinksTitle": "Explore the models",
+    "primaryLinks": [{ "href": "/models/ltx-2-5-fast", "label": "LTX 2.5 Fast" }, { "href": "/models/ltx-2-5-pro", "label": "LTX 2.5 Pro" }]
+  },
+  "fr": {
+    "meta": { "title": "LTX 2.5 Fast vs Pro : notes, prix et specs", "description": "Comparez LTX 2.5 Fast et Pro sur la qualité, vitesse, durée, résolution et prix.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Verdict rapide", "body": "Choisissez Fast pour itérer, économiser, sortir en 4K et aller jusqu’à 20 secondes. Choisissez Pro pour les scènes denses et le meilleur rendu final." },
+    "primaryLinksTitle": "Explorer les modèles",
+    "primaryLinks": [{ "href": "/models/ltx-2-5-fast", "label": "LTX 2.5 Fast" }, { "href": "/models/ltx-2-5-pro", "label": "LTX 2.5 Pro" }]
+  },
+  "es": {
+    "meta": { "title": "LTX 2.5 Fast vs Pro: notas, precio y specs", "description": "Compara LTX 2.5 Fast y Pro en calidad, velocidad, duración, resolución y precio.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Veredicto rápido", "body": "Elige Fast para iterar, ahorrar, exportar en 4K y llegar a 20 segundos. Elige Pro para escenas densas y la mejor fidelidad final." },
+    "primaryLinksTitle": "Explorar los modelos",
+    "primaryLinks": [{ "href": "/models/ltx-2-5-fast", "label": "LTX 2.5 Fast" }, { "href": "/models/ltx-2-5-pro", "label": "LTX 2.5 Pro" }]
+  }
+}

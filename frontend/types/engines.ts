@@ -280,11 +280,19 @@ export interface PreflightRequest {
   audio?: boolean;
   hasVideoInput?: boolean;
   voiceControl?: boolean;
+  inputs?: PreflightMediaInput[];
   extraInputValues?: Record<string, unknown>;
   user?: {
     memberTier?: string;
   };
 }
+
+export type PreflightMediaInput = {
+  assetId: string;
+  slotId: string;
+  kind: 'image' | 'video' | 'audio';
+  url: string;
+};
 
 export interface ItemizationLine {
   unit?: string;
@@ -337,6 +345,25 @@ export interface EnginePricingDetails {
       | { perSecondCents?: number; perSecondCentsByResolution?: Record<string, number>; flatCents?: number }
       | undefined;
   };
+  byMode?: Partial<Record<Mode, ModePricingOverride>>;
+  referenceImages?: ReferenceImagePricing;
   maxDurationSec?: number;
   tokenPricing?: TokenVideoPricing;
 }
+
+export type PricingDurationBasis = 'output' | 'input_audio';
+
+export type ModePricingOverride = {
+  perSecondCents?: {
+    default?: number;
+    byResolution?: Record<string, number>;
+  };
+  durationBasis?: PricingDurationBasis;
+};
+
+export type ReferenceImagePricing = {
+  unitCents: number;
+  includedCount?: number;
+  minimumCount?: number;
+  modes: Mode[];
+};

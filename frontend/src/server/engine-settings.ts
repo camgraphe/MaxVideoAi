@@ -1,14 +1,15 @@
-import { query, type QueryExecutor } from '@/lib/db';
+import { query } from '@/lib/db';
 import { getBaseEngines } from '@/lib/engines';
 import type { EngineCaps, EnginePricingDetails } from '@/types/engines';
+import {
+  fetchEngineSettingsReadOnly,
+  fetchEngineSettingsReadOnlyWithExecutor,
+  type EngineSettingsRecord,
+} from '@/server/engine-configuration-read';
 
-export type EngineSettingsRecord = {
-  engine_id: string;
-  options: Record<string, unknown> | null;
-  pricing: EnginePricingDetails | null;
-  updated_at: string;
-  updated_by: string | null;
-};
+export type { EngineSettingsRecord } from '@/server/engine-configuration-read';
+export const fetchEngineSettings = fetchEngineSettingsReadOnly;
+export const fetchEngineSettingsWithExecutor = fetchEngineSettingsReadOnlyWithExecutor;
 
 type EngineSettingsUpsert = {
   engine_id: string;
@@ -71,24 +72,6 @@ function extractPricing(engine: EngineCaps): EnginePricingDetails | null {
 
 function shouldRefreshEngineOptions(engine: EngineCaps, current?: EngineSettingsRecord | null): boolean {
   return !current || current.updated_by == null;
-}
-
-export async function fetchEngineSettings(): Promise<Map<string, EngineSettingsRecord>> {
-  if (isProductionBuildPhase()) return new Map();
-  if (!process.env.DATABASE_URL) return new Map();
-  const rows = await query<EngineSettingsRecord>(
-    `SELECT engine_id, options, pricing, updated_at, updated_by FROM engine_settings`
-  );
-  return new Map(rows.map((row) => [row.engine_id, row]));
-}
-
-export async function fetchEngineSettingsWithExecutor(
-  executor: QueryExecutor,
-): Promise<Map<string, EngineSettingsRecord>> {
-  const rows = await executor.query<EngineSettingsRecord>(
-    'SELECT engine_id, options, pricing, updated_at, updated_by FROM engine_settings',
-  );
-  return new Map(rows.map((row) => [row.engine_id, row]));
 }
 
 export async function listEnginePricingOverrides(): Promise<Record<string, EnginePricingDetails>> {

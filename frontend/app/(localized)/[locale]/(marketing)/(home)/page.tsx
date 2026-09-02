@@ -30,6 +30,7 @@ import {
   filterProviderItems,
   filterToolCards,
   loadHomepageExamples,
+  selectHomepageHeroPreviews,
   loadProgrammedHomepageHeroSlots,
   loadSuccessfulGenerationCount,
   type RedesignContent,
@@ -80,7 +81,7 @@ export default async function HomePage(props: { params: Promise<{ locale: AppLoc
 
   return (
     <div className="home-monochrome">
-      <HomeHero copy={hero} proofStats={proofStats} previews={examples.slice(0, 5)} programmedHeroItems={programmedHeroItems} />
+      <HomeHero copy={hero} proofStats={proofStats} previews={selectHomepageHeroPreviews(examples)} programmedHeroItems={programmedHeroItems} />
       <DeferredMarketingContent>
         <ShotTypeEngineSelector copy={content.shotTypes} cards={primaryBestForCards} startupFameLabel={startupFameLabel} />
       </DeferredMarketingContent>

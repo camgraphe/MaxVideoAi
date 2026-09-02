@@ -6,6 +6,7 @@ import {
   classifyGscIntent,
   classifyGscModelFamily,
   findGscOpportunities,
+  isHiddenRuntimeModelDemand,
   parseGscRows,
   summarizeGscPerformance,
 } from '../frontend/lib/seo/gsc-analysis.ts';
@@ -55,6 +56,44 @@ test('classifiers identify MaxVideoAI model-family and intent clusters', () => {
   assert.equal(classifyGscIntent('kling vs veo video generator'), 'compare');
   assert.equal(classifyGscIntent('ai video pay as you go no subscription'), 'pay-as-you-go');
   assert.equal(classifyGscIntent('sora prompt examples'), 'prompt examples');
+  assert.equal(classifyGscModelFamily('grok imagine video vs flux 3', '/models/grok-imagine-video-1-5'), 'Grok');
+  assert.equal(classifyGscModelFamily('flux 3 draft examples', '/examples/flux'), 'FLUX');
+  assert.equal(classifyGscModelFamily('ltx 2.3 upgrade history', '/models/ltx-2-3-pro'), 'LTX');
+  assert.equal(classifyGscModelFamily('wan 2.6 impressions', '/models/wan-2-6'), 'Wan');
+  assert.equal(classifyGscIntent('grok vs flux pricing', '/models/grok-imagine-video-1-5'), 'compare');
+  assert.equal(classifyGscIntent('grok model', '/ai-video-engines/flux-3-vs-grok-imagine-video-1-5'), 'compare');
+  assert.equal(classifyGscIntent('grok model', '/pricing#grok-imagine-video-1-5-pricing'), 'pricing');
+  assert.equal(classifyGscIntent('grok model', '/fr/galerie/grok'), 'examples');
+  assert.equal(classifyGscIntent('grok model', '/es/modelos/grok-imagine-video-1-5'), 'model');
+});
+
+test('published P0 demand is actionable after the registry publishes the exact model', () => {
+  const opportunities = findGscOpportunities([
+    {
+      query: 'grok imagine video 1.5',
+      page: 'https://maxvideoai.com/models/grok-imagine-video-1-5',
+      country: 'usa',
+      device: 'DESKTOP',
+      searchAppearance: null,
+      date: null,
+      searchType: 'web',
+      clicks: 0,
+      impressions: 600,
+      ctr: 0,
+      position: 8,
+    },
+  ]);
+
+  assert.ok(opportunities.length > 0);
+  assert.ok(opportunities.every((opportunity) => opportunity.actionMode === 'actionable'));
+  assert.ok(opportunities.every((opportunity) => !/monitor only/i.test(opportunity.suggestedAction)));
+});
+
+test('historic and published successor demand are both eligible for GSC actioning', () => {
+  assert.equal(isHiddenRuntimeModelDemand('ltx 2.3 pro impressions', '/models/ltx-2-3-pro'), false);
+  assert.equal(isHiddenRuntimeModelDemand('wan 2.6 examples', '/examples/wan-2-6'), false);
+  assert.equal(isHiddenRuntimeModelDemand('ltx 2.5 pro', '/models/ltx-2-5-pro'), false);
+  assert.equal(isHiddenRuntimeModelDemand('wan 3 prime', '/models/wan-3-prime'), false);
 });
 
 test('summarizeGscPerformance aggregates weighted CTR and position', () => {

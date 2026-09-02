@@ -5,6 +5,9 @@ export type {
   MemberTier,
   DurationSteps,
   PricingAddonRule,
+  PricingDurationBasis,
+  PricingModeRate,
+  PricingReferenceImageRule,
 } from './types';
 export { createPricingKernel } from './kernel';
 export {

@@ -1,0 +1,142 @@
+# P0 video-model family refresh: frozen live source contract
+
+Checked at **2026-09-01T11:40:36Z**. This is a pre-implementation contract,
+not a publication decision or a substitute for the paid-generation source check.
+Each Fal page below resolved to a live `Inference` endpoint at that time; the
+linked OpenAPI document is the field-level authority. Recheck the exact page
+and schema immediately before implementation and before paid launch work.
+
+## Authority and interpretation
+
+- Runtime distribution is **Fal**, not a direct MaxVideoAI relationship with
+  the model owner. The owner is Alibaba/Tongyi (Wan), Lightricks (LTX), xAI
+  (Grok), or Black Forest Labs (FLUX).
+- Owner cross-checks: [Alibaba Wan 3 guide](https://docs.modelstudio.console.alibabacloud.com/en/model-studio/wan3-video-generation-guide),
+  [Lightricks LTX-2.5 model card](https://huggingface.co/Lightricks/LTX-2.5),
+  [xAI Grok Imagine Video 1.5 documentation](https://docs.x.ai/developers/models/grok-imagine-video-1.5),
+  and [Black Forest Labs FLUX 3 Video announcement](https://bfl.ai/blog/flux-3-video).
+- `required` means required by the live Fal OpenAPI schema. Where a canonical
+  `ref2v` workflow has no schema-required reference field (Wan), MaxVideoAI
+  must additionally require at least one supported reference; otherwise that
+  route would no longer be reference-to-video.
+- “Not published” is intentional: do not invent an FPS, upload limit, or
+  capability when the Fal schema/page does not state one. URLs must be
+  accessible by Fal unless the schema explicitly accepts a data URI.
+
+## Canonical endpoint contract
+
+| Canonical identity / mode | Owner, Fal endpoint, checked source | Exact inputs and references | Controls, output, media / upload limits | Fal billing and current availability |
+| --- | --- | --- | --- | --- |
+| `wan-3` / `t2v` | Alibaba/Tongyi; `alibaba/wan-3.0/text-to-video`; [page](https://fal.ai/models/alibaba/wan-3.0/text-to-video) · [schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=alibaba/wan-3.0/text-to-video) | Required: `prompt`. | `duration` 2–30 s or smart (`null`), default 5; `resolution` 480p/720p/1080p, default 1080p; `aspect_ratio` adaptive/16:9/4:3/1:1/3:4/9:16, default adaptive; `audio` default true; `enable_thinking` default false; output MP4, 30 fps. | Per generated output second: $0.05 480p, $0.10 720p, $0.20 1080p. Live Fal inference page. |
+| `wan-3` / `i2v` | Alibaba/Tongyi; `alibaba/wan-3.0/image-to-video`; [page](https://fal.ai/models/alibaba/wan-3.0/image-to-video) · [schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=alibaba/wan-3.0/image-to-video) | Required: `start_image_url`; optional `prompt`, optional `end_image_url` (requires start). One start image; no source upload-size limit published. | Same Wan duration/resolution/aspect/audio defaults as `t2v`; output MP4, 30 fps. | Same $0.05/$0.10/$0.20 per output second. Live Fal inference page. |
+| `wan-3` / `ref2v` | Alibaba/Tongyi; `alibaba/wan-3.0/reference-to-video`; [page](https://fal.ai/models/alibaba/wan-3.0/reference-to-video) · [schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=alibaba/wan-3.0/reference-to-video) | Schema required: none; canonical route requires >=1 of `reference_image_urls` (max 10), `reference_video_urls` (max 5, total <=15 s, >=16 fps), `reference_audio_urls` (max 5, total <=15 s), `file_url` (max 1) or public `web_url` (max 1). `file_url`/`web_url` require `enable_thinking=true`; file/link cannot combine. | Same Wan controls/output. Images/video/audio/document/public-web references; Alibaba documents image <=20 MB, each video <=100 MB, each audio <=15 MB. | Same $0.05/$0.10/$0.20 per output second. Live Fal inference page. |
+| `wan-3-prime` / `t2v` | Alibaba/Tongyi; `alibaba/wan-3.0-prime/text-to-video`; [page](https://fal.ai/models/alibaba/wan-3.0-prime/text-to-video) · [schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=alibaba/wan-3.0-prime/text-to-video) | Required: `prompt`. | `duration` 2–30 s or smart (`null`), default 5; 480p/720p/1080p (default 1080p); adaptive/16:9/4:3/1:1/3:4/9:16 (default adaptive); `audio` true; thinking false; MP4 30 fps. | Per generated output second: $0.068 480p, $0.14 720p, $0.28 1080p. Live Fal inference page. |
+| `wan-3-prime` / `i2v` | Alibaba/Tongyi; `alibaba/wan-3.0-prime/image-to-video`; [page](https://fal.ai/models/alibaba/wan-3.0-prime/image-to-video) · [schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=alibaba/wan-3.0-prime/image-to-video) | Required: `start_image_url`; optional `prompt`, `end_image_url`. One start image; no size limit published. | Same Prime duration/resolution/aspect/audio defaults; MP4 30 fps. | Same $0.068/$0.14/$0.28 per output second. Live Fal inference page. |
+| `wan-3-prime` / `ref2v` | Alibaba/Tongyi; `alibaba/wan-3.0-prime/reference-to-video`; [page](https://fal.ai/models/alibaba/wan-3.0-prime/reference-to-video) · [schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=alibaba/wan-3.0-prime/reference-to-video) | Schema required: none; canonical route requires >=1 reference. `reference_image_urls` max 10; `reference_video_urls` max 5 / <=15 s / >=16 fps; `reference_audio_urls` max 5 / <=15 s; one `file_url` or public `web_url` when thinking is true. Alibaba limits: images <=20 MB, videos <=100 MB each, audio <=15 MB each. | Same Prime controls/output. | Same $0.068/$0.14/$0.28 per output second. Live Fal inference page. |
+| `ltx-2-5-fast` / `t2v` | Lightricks; `lightricks/ltx-2.5/text-to-video/fast`; [page](https://fal.ai/models/lightricks/ltx-2.5/text-to-video/fast) · [schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=lightricks/ltx-2.5/text-to-video/fast) | Required: `prompt`. | `duration` 6/8/10/12/14/16/18/20/`auto` (default `auto`); 720p/1080p/1440p/2160p (default 1080p); 16:9/9:16 (default 16:9); 24/25/48/50 fps (default 25); `generate_audio` true. 48/50 fps supports <=10 s; 1440p/2160p <=10 s. | Per output second: $0.09 720p, $0.13 1080p, $0.19 1440p, $0.30 4K; native audio included. Live Fal inference page. |
+| `ltx-2-5-fast` / `i2v` | Lightricks; `lightricks/ltx-2.5/image-to-video/fast`; [page](https://fal.ai/models/lightricks/ltx-2.5/image-to-video/fast) · [schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=lightricks/ltx-2.5/image-to-video/fast) | Required: `prompt`, `image_url`; optional `end_image_url`, `camera_motion`. One start image plus optional end image; no size limit published. | Same Fast duration/resolution/fps/audio; aspect ratio `auto`/16:9/9:16, default `auto`. | Same $0.09/$0.13/$0.19/$0.30 per output second; native audio included. Live Fal inference page. |
+| `ltx-2-5-fast` / `a2v` | Lightricks; `lightricks/ltx-2.5/audio-to-video/fast`; [page](https://fal.ai/models/lightricks/ltx-2.5/audio-to-video/fast) · [schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=lightricks/ltx-2.5/audio-to-video/fast) | Required: `audio_url`; require `prompt` when `image_url` is absent. Optional `image_url`, `guidance_scale`. Audio is 2–20 s and must be public or base64 data URI; page accepts mp3/ogg/wav/m4a/aac. Optional image page accepts jpg/jpeg/png/webp/gif/avif. | `aspect_ratio` auto/16:9/9:16, default auto. Output duration/fps/resolution controls are not exposed in this schema; live page bills 1080p. | Per **input-audio** second: $0.13 at 1080p; native audio included. Live Fal inference page. |
+| `ltx-2-5-pro` / `t2v` | Lightricks; `lightricks/ltx-2.5/text-to-video/pro`; [page](https://fal.ai/models/lightricks/ltx-2.5/text-to-video/pro) · [schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=lightricks/ltx-2.5/text-to-video/pro) | Required: `prompt`. | `duration` 6/8/10/`auto`, default auto; 720p/1080p default 1080p; 16:9/9:16 default 16:9; 24/25/50 fps default 25; `generate_audio` true. | Per output second: $0.12 720p, $0.17 1080p; native audio included. Live Fal inference page. |
+| `ltx-2-5-pro` / `i2v` | Lightricks; `lightricks/ltx-2.5/image-to-video/pro`; [page](https://fal.ai/models/lightricks/ltx-2.5/image-to-video/pro) · [schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=lightricks/ltx-2.5/image-to-video/pro) | Required: `prompt`, `image_url`; optional `end_image_url`, `camera_motion`. One start image plus optional end image; no size limit published. | Same Pro duration/resolution/fps/audio; aspect ratio auto/16:9/9:16, default auto. | $0.12 720p or $0.17 1080p per output second; native audio included. Live Fal inference page. |
+| `ltx-2-5-pro` / `a2v` | Lightricks; `lightricks/ltx-2.5/audio-to-video/pro`; [page](https://fal.ai/models/lightricks/ltx-2.5/audio-to-video/pro) · [schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=lightricks/ltx-2.5/audio-to-video/pro) | Required: `audio_url`; `prompt` required when no `image_url`; optional image and `guidance_scale`. Public/base64 audio only; provider description states Pro max 10 s (and 2 s minimum); page audio/image file kinds match Fast. | Aspect ratio auto/16:9/9:16 (auto default); no output duration/fps/resolution control exposed; live page bills 1080p. | Per **input-audio** second: $0.17 at 1080p; native audio included. Live Fal inference page. |
+| `grok-imagine-video-1-5` / `t2v` | xAI; `xai/grok-imagine-video/v1.5/text-to-video`; [page](https://fal.ai/models/xai/grok-imagine-video/v1.5/text-to-video) · [schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=xai/grok-imagine-video/v1.5/text-to-video) | Required: `prompt`; no reference media. | `duration` integer **1–15 s**, default 6; 480p/720p/1080p default 720p; aspect 16:9/4:3/3:2/1:1/2:3/3:4/9:16 default 16:9. Fal describes generated audio; FPS/upload limit not published. | Per output second: $0.08 480p, $0.14 720p, $0.25 1080p. Live Fal inference page. |
+| `grok-imagine-video-1-5` / `i2v` | xAI; `xai/grok-imagine-video/v1.5/image-to-video`; [page](https://fal.ai/models/xai/grok-imagine-video/v1.5/image-to-video) · [schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=xai/grok-imagine-video/v1.5/image-to-video) | Required: `prompt`, `image_url`; one first-frame image; page accepts JPG/JPEG/PNG/WebP/GIF/AVIF (no published upload-size limit). | `duration` integer **1–15 s**, default 6; 480p/720p/1080p default 720p. The endpoint schema exposes no aspect-ratio field, FPS, or audio toggle; Fal describes output with audio. | Same $0.08/$0.14/$0.25 per output second. Live Fal inference page. |
+| `grok-imagine-video-1-5` / `ref2v` | xAI; `xai/grok-imagine-video/v1.5/reference-to-video`; [page](https://fal.ai/models/xai/grok-imagine-video/v1.5/reference-to-video) · [schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=xai/grok-imagine-video/v1.5/reference-to-video) | Required: `prompt`, `reference_image_urls`; 1–7 images, addressed as `<IMAGE_0>`… in the prompt. Fal page says optional reference audio is included; schema does not expose an audio-input field. | `duration` integer **1–15 s**, default 8; 480p/720p, default 480p; ratios 16:9/4:3/3:2/1:1/2:3/3:4/9:16, default 16:9. FPS/upload limit not published. | $0.08/s 480p or $0.14/s 720p plus **$0.01 per reference image**; reference audio included. Live Fal inference page. |
+| `flux-3` / `t2v` | Black Forest Labs; `blackforestlabs/flux-3/text-to-video`; [page](https://fal.ai/models/blackforestlabs/flux-3/text-to-video) · [schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=blackforestlabs/flux-3/text-to-video) | Required: `prompt`; no reference media. | `duration` auto or 5–20 whole seconds, default auto; 720p/1080p default 720p; aspect auto/21:9/2:1/16:9/4:3/1:1/3:4/9:16 default auto; `generate_audio` true. FPS/upload limit not published. | Per output second: $0.17 720p, $0.29 1080p. Live Fal inference page. |
+| `flux-3` / `i2v` | Black Forest Labs; `blackforestlabs/flux-3/image-to-video`; [page](https://fal.ai/models/blackforestlabs/flux-3/image-to-video) · [schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=blackforestlabs/flux-3/image-to-video) | Required: `prompt`, `image_url`; source image PNG/JPEG/WebP; no size limit published. | Same normal FLUX duration/resolution/aspect/audio controls; FPS not published. | $0.17/s 720p, $0.29/s 1080p. Live Fal inference page. |
+| `flux-3` / `fl2v` | Black Forest Labs; `blackforestlabs/flux-3/first-last-frame-to-video`; [page](https://fal.ai/models/blackforestlabs/flux-3/first-last-frame-to-video) · [schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=blackforestlabs/flux-3/first-last-frame-to-video) | Required: `prompt`, `start_image_url`, `end_image_url`; images PNG/JPEG/WebP; exactly a first and last frame, no size limit published. | Duration is explicit 5–20 whole seconds, default 5; normal 720p/1080p and aspect/audio controls; FPS not published. | $0.17/s 720p, $0.29/s 1080p. Live Fal inference page. |
+| `flux-3` / `extend` | Black Forest Labs; `blackforestlabs/flux-3/extend-video`; [page](https://fal.ai/models/blackforestlabs/flux-3/extend-video) · [schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=blackforestlabs/flux-3/extend-video) | Required: `prompt`, `video_url`; source MP4, <50 MB and <15 s. | Duration auto or 5–20 s, default auto; 720p/1080p default 720p; normal aspect/audio controls; FPS not published. | Per output second: **$0.41 720p, $0.53 1080p**. Live Fal inference page. |
+| `flux-3-draft` / `t2v` | Black Forest Labs; `blackforestlabs/flux-3/text-to-video/draft`; [page](https://fal.ai/models/blackforestlabs/flux-3/text-to-video/draft) · [schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=blackforestlabs/flux-3/text-to-video/draft) | Required: `prompt`; no reference media. | Duration auto or 5–20 whole seconds, default auto; 720p-only (no resolution field); normal aspect set/default auto; `generate_audio` true; returns `draft_cache`. FPS/upload limit not published. | $0.06 per generated 720p draft-video second. Live Fal inference page. |
+| `flux-3-draft` / `i2v` | Black Forest Labs; `blackforestlabs/flux-3/image-to-video/draft`; [page](https://fal.ai/models/blackforestlabs/flux-3/image-to-video/draft) · [schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=blackforestlabs/flux-3/image-to-video/draft) | Required: `prompt`, `image_url`; URL or data URI opening image; no size limit published. | 5–20 s or auto (default auto); 720p-only; normal aspect/audio; returns `draft_cache`; FPS not published. | $0.06 per generated 720p draft-video second. Live Fal inference page. |
+| `flux-3-draft` / `fl2v` | Black Forest Labs; `blackforestlabs/flux-3/first-last-frame-to-video/draft`; [page](https://fal.ai/models/blackforestlabs/flux-3/first-last-frame-to-video/draft) · [schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=blackforestlabs/flux-3/first-last-frame-to-video/draft) | Required: `prompt`, `start_image_url`, `end_image_url`; URLs or data URIs; exactly two frame images, no size limit published. | Explicit 5–20 s, default 5; 720p-only; normal aspect/audio; returns `draft_cache`; FPS not published. | $0.06 per generated 720p draft-video second. Live Fal inference page. |
+| `flux-3-draft` / `extend` | Black Forest Labs; `blackforestlabs/flux-3/extend-video/draft`; [page](https://fal.ai/models/blackforestlabs/flux-3/extend-video/draft) · [schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=blackforestlabs/flux-3/extend-video/draft) | Required: `prompt`, `video_url`; URL or data-URI source MP4, max 50 MiB. | 5–20 s or auto (default auto); 720p-only; normal aspect/audio; returns `draft_cache`; FPS not published. | **$0.12** per generated 720p draft-video second. Live Fal inference page. |
+
+## Complete Fal schema input inventory
+
+Rechecked systematically at **2026-09-01T12:00:20Z** from all 23 linked Fal
+OpenAPI endpoint schemas. This inventory completes the concise table above and
+is the adapter-facing field authority: every input name from each live schema
+is listed below. `*` means schema-required; `?` means nullable; `d=` is the
+schema default (`—` means no schema default); `E=` is the complete enum; and
+brackets contain every published minimum/maximum (including `minLength`,
+`maxLength`, `minItems`, and `maxItems`). `schema type=—` means the OpenAPI
+property intentionally publishes no JSON `type`; all fields in these 23 schemas
+have `format=—`. Where a conditional default is published in a field
+description it is stated explicitly.
+
+| Canonical identity / mode | Every live schema input (type, default, enum/bounds) |
+| --- | --- |
+| `wan-3` / `t2v` | `enable_thinking` boolean d=false; `prompt` string* d=— [minLength 1, maxLength 5000]; `duration` integer? d=5 [2,30]; `enable_safety_checker` boolean d=true; `resolution` string d=1080p E={480p,720p,1080p}; `aspect_ratio` string d=adaptive E={adaptive,16:9,4:3,1:1,3:4,9:16}; `seed` integer? d=— [0,2147483647]; `audio` boolean d=true; `enable_prompt_expansion` boolean d=true. |
+| `wan-3` / `i2v` | `start_image_url` string* d=—; `prompt` string? d=— [maxLength 5000]; `duration` integer? d=5 [2,30]; `enable_safety_checker` boolean d=true; `end_image_url` string? d=—; `resolution` string d=1080p E={480p,720p,1080p}; `enable_thinking` boolean d=false; `aspect_ratio` string d=adaptive E={adaptive,16:9,4:3,1:1,3:4,9:16}; `seed` integer? d=— [0,2147483647]; `audio` boolean d=true; `enable_prompt_expansion` boolean d=true. |
+| `wan-3` / `ref2v` | `file_url` string? d=—; `prompt` string? d=— [maxLength 5000]; `duration` integer? d=5 [2,30]; `enable_safety_checker` boolean d=true; `resolution` string d=1080p E={480p,720p,1080p}; `reference_image_urls` array d=— [maxItems 10]; `reference_video_urls` array d=— [maxItems 5]; `enable_thinking` boolean d=false; `aspect_ratio` string d=adaptive E={adaptive,16:9,4:3,1:1,3:4,9:16}; `web_url` string? d=—; `reference_audio_urls` array d=— [maxItems 5]; `seed` integer? d=— [0,2147483647]; `audio` boolean d=true; `enable_prompt_expansion` boolean d=true. |
+| `wan-3-prime` / `t2v` | `enable_thinking` boolean d=false; `enable_safety_checker` boolean d=true; `prompt` string* d=— [minLength 1, maxLength 5000]; `enable_prompt_expansion` boolean d=true; `seed` integer? d=— [0,2147483647]; `duration` integer? d=5 [2,30]; `aspect_ratio` string d=adaptive E={adaptive,16:9,4:3,1:1,3:4,9:16}; `audio` boolean d=true; `resolution` string d=1080p E={480p,720p,1080p}. |
+| `wan-3-prime` / `i2v` | `enable_thinking` boolean d=false; `enable_safety_checker` boolean d=true; `prompt` string? d=— [maxLength 5000]; `enable_prompt_expansion` boolean d=true; `end_image_url` string? d=—; `seed` integer? d=— [0,2147483647]; `duration` integer? d=5 [2,30]; `aspect_ratio` string d=adaptive E={adaptive,16:9,4:3,1:1,3:4,9:16}; `audio` boolean d=true; `resolution` string d=1080p E={480p,720p,1080p}; `start_image_url` string* d=—. |
+| `wan-3-prime` / `ref2v` | `reference_image_urls` array d=— [maxItems 10]; `file_url` string? d=—; `enable_thinking` boolean d=false; `enable_safety_checker` boolean d=true; `prompt` string? d=— [maxLength 5000]; `reference_audio_urls` array d=— [maxItems 5]; `reference_video_urls` array d=— [maxItems 5]; `enable_prompt_expansion` boolean d=true; `seed` integer? d=— [0,2147483647]; `duration` integer? d=5 [2,30]; `aspect_ratio` string d=adaptive E={adaptive,16:9,4:3,1:1,3:4,9:16}; `audio` boolean d=true; `resolution` string d=1080p E={480p,720p,1080p}; `web_url` string? d=—. |
+| `ltx-2-5-fast` / `t2v` | `resolution` string d=1080p E={720p,1080p,1440p,2160p}; `duration` schema type=— d=auto E={6,8,10,12,14,16,18,20,auto}; `prompt` string* d=— [minLength 1, maxLength 5000]; `fps` integer d=25 E={24,25,48,50}; `aspect_ratio` string d=16:9 E={16:9,9:16}; `generate_audio` boolean d=true; `camera_motion` string? d=— E={dolly_in,dolly_out,dolly_left,dolly_right,jib_up,jib_down,static,focus_shift}. |
+| `ltx-2-5-fast` / `i2v` | `duration` schema type=— d=auto E={6,8,10,12,14,16,18,20,auto}; `image_url` string* d=—; `fps` integer d=25 E={24,25,48,50}; `resolution` string d=1080p E={720p,1080p,1440p,2160p}; `generate_audio` boolean d=true; `aspect_ratio` string d=auto E={auto,16:9,9:16}; `camera_motion` string? d=— E={dolly_in,dolly_out,dolly_left,dolly_right,jib_up,jib_down,static,focus_shift}; `end_image_url` string? d=—; `prompt` string* d=— [minLength 1, maxLength 5000]. |
+| `ltx-2-5-fast` / `a2v` | `prompt` string? d=— [minLength 1, maxLength 5000]; `audio_url` string* d=—; `aspect_ratio` string d=auto E={auto,16:9,9:16}; conditional default: `auto` uses image ratio, or 16:9 with no image; `image_url` string? d=—; `guidance_scale` number? d=— [1,50]; conditional default: 5 with no image (T2V), 9 with an image. Provider additionally requires `prompt` when `image_url` is absent. |
+| `ltx-2-5-pro` / `t2v` | `resolution` string d=1080p E={720p,1080p}; `duration` schema type=— d=auto E={6,8,10,auto}; `prompt` string* d=— [minLength 1, maxLength 5000]; `fps` integer d=25 E={24,25,50}; `aspect_ratio` string d=16:9 E={16:9,9:16}; `generate_audio` boolean d=true; `camera_motion` string? d=— E={dolly_in,dolly_out,dolly_left,dolly_right,jib_up,jib_down,static,focus_shift}. |
+| `ltx-2-5-pro` / `i2v` | `duration` schema type=— d=auto E={6,8,10,auto}; `image_url` string* d=—; `fps` integer d=25 E={24,25,50}; `resolution` string d=1080p E={720p,1080p}; `generate_audio` boolean d=true; `aspect_ratio` string d=auto E={auto,16:9,9:16}; `camera_motion` string? d=— E={dolly_in,dolly_out,dolly_left,dolly_right,jib_up,jib_down,static,focus_shift}; `end_image_url` string? d=—; `prompt` string* d=— [minLength 1, maxLength 5000]. |
+| `ltx-2-5-pro` / `a2v` | `prompt` string? d=— [minLength 1, maxLength 5000]; `audio_url` string* d=—; `aspect_ratio` string d=auto E={auto,16:9,9:16}; conditional default: `auto` uses image ratio, or 16:9 with no image; `image_url` string? d=—; `guidance_scale` number? d=— [1,50]; conditional default: 5 with no image (T2V), 9 with an image. Provider additionally requires `prompt` when `image_url` is absent. |
+| `grok-imagine-video-1-5` / `t2v` | `prompt` string* d=— [maxLength 4096]; `aspect_ratio` string d=16:9 E={16:9,4:3,3:2,1:1,2:3,3:4,9:16}; `duration` integer d=6 [1,15]; `resolution` string d=720p E={480p,720p,1080p}. |
+| `grok-imagine-video-1-5` / `i2v` | `prompt` string* d=— [maxLength 4096]; `image_url` string* d=—; `duration` integer d=6 [1,15]; `resolution` string d=720p E={480p,720p,1080p}. |
+| `grok-imagine-video-1-5` / `ref2v` | `prompt` string* d=— [maxLength 4096]; `aspect_ratio` string d=16:9 E={16:9,4:3,3:2,1:1,2:3,3:4,9:16}; `duration` integer d=8 [1,15]; `resolution` string d=480p E={480p,720p}; `reference_image_urls` array* d=— [minItems 1, maxItems 7]. |
+| `flux-3` / `t2v` | `prompt` string* d=—; `duration` schema type=— d=auto E={auto,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20}; `generate_audio` boolean d=true; `aspect_ratio` string d=auto E={auto,21:9,2:1,16:9,4:3,1:1,3:4,9:16}; `resolution` string d=720p E={720p,1080p}; `safety_tolerance` integer d=2 [0,4]. |
+| `flux-3` / `i2v` | `prompt` string* d=—; `image_url` string* d=—; `generate_audio` boolean d=true; `aspect_ratio` string d=auto E={auto,21:9,2:1,16:9,4:3,1:1,3:4,9:16}; `duration` schema type=— d=auto E={auto,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20}; `resolution` string d=720p E={720p,1080p}; `safety_tolerance` integer d=2 [0,4]. |
+| `flux-3` / `fl2v` | `start_image_url` string* d=—; `duration` integer d=5 E={5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20}; `aspect_ratio` string d=auto E={auto,21:9,2:1,16:9,4:3,1:1,3:4,9:16}; `end_image_url` string* d=—; `prompt` string* d=—; `generate_audio` boolean d=true; `resolution` string d=720p E={720p,1080p}; `safety_tolerance` integer d=2 [0,4]. |
+| `flux-3` / `extend` | `prompt` string* d=—; `duration` schema type=— d=auto E={auto,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20}; `generate_audio` boolean d=true; `video_url` string* d=—; `aspect_ratio` string d=auto E={auto,21:9,2:1,16:9,4:3,1:1,3:4,9:16}; `resolution` string d=720p E={720p,1080p}; `safety_tolerance` integer d=2 [0,4]. |
+| `flux-3-draft` / `t2v` | `prompt` string* d=—; `duration` schema type=— d=auto E={auto,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20}; `generate_audio` boolean d=true; `aspect_ratio` string d=auto E={auto,21:9,2:1,16:9,4:3,1:1,3:4,9:16}; `safety_tolerance` integer d=2 [0,4]. |
+| `flux-3-draft` / `i2v` | `prompt` string* d=—; `image_url` string* d=—; `generate_audio` boolean d=true; `aspect_ratio` string d=auto E={auto,21:9,2:1,16:9,4:3,1:1,3:4,9:16}; `duration` schema type=— d=auto E={auto,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20}; `safety_tolerance` integer d=2 [0,4]. |
+| `flux-3-draft` / `fl2v` | `prompt` string* d=—; `start_image_url` string* d=—; `duration` integer d=5 E={5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20}; `generate_audio` boolean d=true; `aspect_ratio` string d=auto E={auto,21:9,2:1,16:9,4:3,1:1,3:4,9:16}; `end_image_url` string* d=—; `safety_tolerance` integer d=2 [0,4]. |
+| `flux-3-draft` / `extend` | `prompt` string* d=—; `duration` schema type=— d=auto E={auto,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20}; `generate_audio` boolean d=true; `video_url` string* d=—; `aspect_ratio` string d=auto E={auto,21:9,2:1,16:9,4:3,1:1,3:4,9:16}; `safety_tolerance` integer d=2 [0,4]. |
+
+## Explicit P0 exclusions
+
+- `keyframes-to-video` is excluded. The canonical FLUX workflow is only
+  `fl2v`, with the exact `start_image_url` and `end_image_url` projection.
+- `draft-enhance` is excluded. Draft output/caches are not silently represented
+  as a supported enhancement mode.
+- Any live provider mode not listed in the table (including Wan editing or
+  extension and unprojected reference/media variants) is excluded until it has
+  a distinct canonical workflow, validation, request adapter, billing contract,
+  and product decision.
+
+## Baseline verification record
+
+The source-contract change also restores the SEO guard baseline. The
+`frontend/lib/analytics/journey.ts` route classifier is explicitly classified
+as analytics data, not an authored public link. The exception is file-specific:
+it does not allow `/company` globally and leaves JSX, Markdown, metadata, and
+actual company/trust-link scanning intact.
+
+| Command | Result |
+| --- | --- |
+| `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/analytics-consent.test.ts tests/company-content-rights.test.ts` | PASS: 28 tests. (This repository has no Vitest binary, so the task brief's Vitest command is not runnable; this is the repository-supported equivalent.) |
+| `pnpm --prefix frontend run seo:check` | PASS: canonical SEO guard, `llms.txt`, internal-link guard, and public-media-origin guard. |
+| `node scripts/public-media-origin-guard.mjs` | PASS: scanned 1,630 files. |
+| `pnpm --prefix frontend run i18n:check` | PASS: French 4,207 keys; Spanish 4,201 keys. |
+| `git diff --check` | PASS: no whitespace errors. |
+
+Node emitted the current engine warning during the final command run: this
+worktree is running Node `v23.9.0` while the repository declares Node `22.x`.
+
+## Launch verification — 2026-09-02
+
+Final release gates were rerun with Node `v22.23.2`.
+
+| Gate | Result |
+| --- | --- |
+| P0 architecture, runtime, pricing, marketing, SEO, MCP, examples, scoreboards, readiness | PASS — 105/105 tests |
+| Repository validation | PASS — 3,923/3,923 tests |
+| Model registry | PASS — 50 models, 2 tombstones, generated projections current |
+| Pricing | PASS — immutable baseline 178 rows; public baseline 556 rows; audit 246/246, 0 mismatches |
+| i18n | PASS — FR 4,219 keys; ES 4,213 keys |
+| SEO, public exposure, TypeScript, ESLint | PASS |
+| Production build | PASS — 828 static pages generated |
+| Local public smoke test | PASS — 25/25 routes; canonical, reciprocal locale alternates and JSON-LD verified |
+| P0 comparison policy | PASS — 8/8 scoreboards, no showdown media or future-media promise |
+| Authenticated workspace and MCP | PASS — non-paid mode, lookup, recommendation, budget, prepare and validation contracts |
+
+Search Console production measurements are stored in
+`docs/model-launch/p0-video-post-launch-monitoring.md`; Day 0 starts only when
+the production publication is live.

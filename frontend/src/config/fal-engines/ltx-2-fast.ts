@@ -129,7 +129,6 @@ export const LTX_2_FAST_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     versionLabel: 'Fast',
     availability: 'available',
     logoPolicy: 'textOnly',
-    isLegacy: true,
     engine: LTX_2_FAST_ENGINE,
     modes: [
       {

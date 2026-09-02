@@ -74,6 +74,39 @@ test('builds family dictionary from real app model families', () => {
   assert.ok(dictionary.find((family) => family.label === 'Happy Horse')?.modelSlugs.includes('happy-horse-1-0'));
 });
 
+test('published P0 family defaults and identities resolve to their canonical SEO families', () => {
+  const dictionary = getSeoFamilyDictionary();
+  const expectedSeoDefaults = {
+    ltx: 'ltx-2-5-pro',
+    wan: 'wan-3-prime',
+    grok: 'grok-imagine-video-1-5',
+    flux: 'flux-3',
+  } as const;
+  const p0FamilyBySlug = {
+    'wan-3': 'wan',
+    'wan-3-prime': 'wan',
+    'ltx-2-5-fast': 'ltx',
+    'ltx-2-5-pro': 'ltx',
+    'grok-imagine-video-1-5': 'grok',
+    'flux-3': 'flux',
+    'flux-3-draft': 'flux',
+  } as const;
+
+  for (const [familyId, expectedDefault] of Object.entries(expectedSeoDefaults)) {
+    const family = dictionary.find((entry) => entry.id === familyId);
+    assert.ok(family, familyId);
+    assert.equal(family.defaultModelSlug, expectedDefault, familyId);
+  }
+
+  for (const [slug, ownerFamilyId] of Object.entries(p0FamilyBySlug)) {
+    for (const family of dictionary) {
+      const isOwner = family.id === ownerFamilyId;
+      assert.equal(family.modelSlugs.includes(slug), isOwner, `${family.id}:modelSlugs:${slug}`);
+      assert.equal(family.aliases.includes(slug), isOwner, `${family.id}:aliases:${slug}`);
+    }
+  }
+});
+
 test('matches real app family aliases including Happy Horse', () => {
   assert.equal(detectStrategicModelFamily('happy horse 1.1 examples'), 'Happy Horse');
   assert.equal(detectStrategicModelFamily('happy horse 1.0 examples'), 'Happy Horse');

@@ -18,7 +18,7 @@ const principal: AgentPrincipal = {
   userId: 'budget-user', clientId: 'codex-client', emailVerified: true, authMethod: 'oauth',
 };
 
-type VideoBudgetMode = 't2v' | 'i2v' | 'ref2v' | 'fl2v' | 'v2v' | 'r2v' | 'extend';
+type VideoBudgetMode = 't2v' | 'i2v' | 'ref2v' | 'fl2v' | 'v2v' | 'r2v' | 'extend' | 'a2v';
 
 function engine(id: string, modes: readonly VideoBudgetMode[], durations: readonly number[]): AgentPublicGenerationEngine {
   const inputFields: EngineInputField[] = [
@@ -34,6 +34,7 @@ function engine(id: string, modes: readonly VideoBudgetMode[], durations: readon
     { id: 'video_url', type: 'video', label: 'Source video', modes: ['v2v'], requiredInModes: ['v2v'], minCount: 1, maxCount: 1 },
     { id: 'video_urls', type: 'video', label: 'Reference videos', modes: ['r2v'], requiredInModes: ['r2v'], minCount: 1, maxCount: 3 },
     { id: 'extension_source_videos', type: 'video', label: 'Source clips', modes: ['extend'], requiredInModes: ['extend'], minCount: 1, maxCount: 3 },
+    { id: 'audio_url', type: 'audio', label: 'Source audio', modes: ['a2v'], requiredInModes: ['a2v'], minCount: 1, maxCount: 1 },
   ];
   const caps: EngineCaps = {
     id, label: id, provider: 'test', status: 'live', latencyTier: 'standard', modes: [...modes],
@@ -59,7 +60,7 @@ function registryCapability(engineId: string): AgentPublicGenerationEngine {
   const publicModes = entry.modes
     .map((mode) => mode.mode)
     .filter((mode): mode is AgentPublicGenerationEngine['publicModes'][number] =>
-      ['t2v', 'i2v', 'ref2v', 'fl2v', 'v2v', 'r2v', 'extend', 't2i', 'i2i'].includes(mode));
+      ['t2v', 'i2v', 'ref2v', 'fl2v', 'v2v', 'r2v', 'extend', 'a2v', 't2i', 'i2i'].includes(mode));
   return {
     engine: entry.engine,
     surface: entry.category === 'image' ? 'image' : 'video',
@@ -386,6 +387,84 @@ test('project budgets accept the full canonical reference envelope when the mode
   assert.equal(result.proposals[0]?.lines[0]?.referenceCount, 17);
 });
 
+test('project budget prices LTX A2V from the explicitly declared source-audio duration', async () => {
+  const candidate = registryCapability('ltx-2-5-fast');
+  let capturedTrustedMediaPricingFacts: Record<string, unknown> | undefined;
+  const value = input([{
+    name: 'LTX audio-led plan',
+    lines: [line({
+      engineId: 'ltx-2-5-fast',
+      mode: 'a2v',
+      settings: { durationSec: 9, resolution: '1080p', aspectRatio: 'auto' },
+      referenceRoles: ['source'],
+    })],
+  }]);
+
+  const result = await calculateAgentProjectBudget(value, principal, {
+    listPublicEngines: async () => [candidate],
+    getMembershipStatus: async () => ({ pricing: { tier: 'member' } }),
+    computeCatalogRevision: () => 'mcp-catalog-v2:ltx-a2v',
+    priceGeneration: (request, membershipTier) => priceCanonicalGeneration(
+      request,
+      membershipTier,
+      {
+        computeVideoPreflight: async (_payload, options) => {
+          capturedTrustedMediaPricingFacts = options?.trustedMediaPricingFacts;
+          return {
+            ok: true,
+            total: 153,
+            currency: 'USD',
+            pricing: { totalCents: 153, currency: 'USD', membershipTier: 'member' },
+          };
+        },
+        estimateImage: async () => { throw new Error('unused'); },
+      },
+    ),
+  });
+
+  assert.equal(capturedTrustedMediaPricingFacts?.inputAudioDurationSec, 9);
+  assert.equal(result.proposals[0]?.lines[0]?.unitPrice.amountCents, 153);
+});
+
+test('project budget prices a prelaunch line with the exact catalog-resolved engine', async () => {
+  const candidate = registryCapability('wan-3');
+  let resolvedPricingEngineId: string | undefined;
+  const value = input([{
+    name: 'Wan 3 canary budget',
+    lines: [line({
+      engineId: 'wan-3',
+      mode: 't2v',
+      settings: { durationSec: 5, resolution: '720p', aspectRatio: '16:9', audio: true },
+    })],
+  }]);
+
+  const result = await calculateAgentProjectBudget(value, principal, {
+    listPublicEngines: async () => [candidate],
+    getMembershipStatus: async () => ({ pricing: { tier: 'member' } }),
+    computeCatalogRevision: () => 'mcp-catalog-v2:wan-3-canary',
+    priceGeneration: (request, membershipTier, resolvedCandidate) => priceCanonicalGeneration(
+      request,
+      membershipTier,
+      {
+        computeVideoPreflight: async (_payload, options) => {
+          resolvedPricingEngineId = options?.resolvedEngine?.id;
+          return {
+            ok: true,
+            total: 175,
+            currency: 'USD',
+            pricing: { totalCents: 175, currency: 'USD', membershipTier: 'member' },
+          };
+        },
+        estimateImage: async () => { throw new Error('unused'); },
+      },
+      { resolvedEngine: resolvedCandidate?.engine },
+    ),
+  });
+
+  assert.equal(resolvedPricingEngineId, 'wan-3');
+  assert.equal(result.proposals[0]?.total.amountCents, 175);
+});
+
 test('fails closed for invalid catalog, capability, reference, quantity, pricing, and overflow conditions', async () => {
   await assertError(calculateAgentProjectBudget(input([{ name: 'Missing', lines: [line({ engineId: 'hidden-model' })] }]), principal, makeDeps()), 'ENGINE_UNAVAILABLE');
   await assertError(calculateAgentProjectBudget(input([{ name: 'Mode', lines: [line({ mode: 'i2v', referenceRoles: [] })] }]), principal, makeDeps()), 'REFERENCE_REQUIRED');
@@ -395,7 +474,8 @@ test('fails closed for invalid catalog, capability, reference, quantity, pricing
   await assertError(calculateAgentProjectBudget(input([{ name: 'Unsafe count', lines: [line({ clipCount: Number.MAX_SAFE_INTEGER + 1 })] }]), principal, makeDeps()), 'PARAMETER_INVALID');
   await assertError(calculateAgentProjectBudget(input([{ name: 'Attempts below range', lines: [line({ attemptsPerClip: 0 })] }]), principal, makeDeps()), 'PARAMETER_INVALID');
   await assertError(calculateAgentProjectBudget(input(Array.from({ length: 5 }, (_, index) => ({ name: `P${index}`, lines: [line()] }))), principal, makeDeps()), 'PARAMETER_INVALID');
-  await assertError(calculateAgentProjectBudget(input([{ name: 'Lines', lines: Array.from({ length: 13 }, () => line()) }]), principal, makeDeps()), 'PARAMETER_INVALID');
+  assert.equal((await calculateAgentProjectBudget(input([{ name: 'Lines', lines: Array.from({ length: 14 }, () => line()) }]), principal, makeDeps())).proposals[0]?.lines.length, 14);
+  await assertError(calculateAgentProjectBudget(input([{ name: 'Lines', lines: Array.from({ length: 15 }, () => line()) }]), principal, makeDeps()), 'PARAMETER_INVALID');
   await assertError(calculateAgentProjectBudget(input([{ name: 'References', lines: [line({ mode: 'ref2v', referenceRoles: Array.from({ length: 51 }, () => 'reference') })] }]), principal, makeDeps()), 'REFERENCE_INVALID');
   await assertError(calculateAgentProjectBudget(input([{ name: 'Attempts', lines: [line({ clipCount: 100, attemptsPerClip: 10 })] }]), principal, makeDeps()), 'PARAMETER_INVALID');
   let currencyCalls = 0;

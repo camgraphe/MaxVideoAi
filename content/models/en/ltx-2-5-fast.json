@@ -1,0 +1,87 @@
+{
+  "marketingName": "LTX 2.5 Fast",
+  "versionLabel": "2.5 Fast",
+  "seo": {
+    "title": "LTX 2.5 Fast AI Video Generator for Rapid Iteration",
+    "description": "Use LTX 2.5 Fast for current text, image and source-audio iteration, with practical duration and resolution limits, prompt advice and live canonical quotes."
+  },
+  "overview": "LTX 2.5 Fast is the current speed-oriented route for visual exploration, motion tests and draft iteration in the LTX family. Lightricks owns LTX; MaxVideoAI distributes this launch integration through Fal. The route supports text-to-video, image-to-video and a distinct audio-to-video workflow driven by a source audio asset.",
+  "decision": {
+    "modelSlug": "ltx-2-5-fast",
+    "hero": {
+      "eyebrow": "CURRENT LTX FAST ITERATION ROUTE",
+      "title": "LTX 2.5 Fast",
+      "subtitle": "Iterate from text, an opening image or source audio, with native 720p through 4K tiers and duration choices suited to rapid review.",
+      "subtitleHighlights": ["text", "source audio", "720p through 4K"],
+      "paragraph": "Choose Fast while the team is exploring motion, pacing, framing or prompt variations. Text and image modes support several output tiers and native generated audio; audio-to-video is a separate workflow priced from the validated source-audio duration. Lightricks is the model owner and Fal distributes execution for this release.",
+      "primaryCta": { "label": "Generate with LTX 2.5 Fast", "href": "/app?engine=ltx-2-5-fast" },
+      "secondaryCta": { "label": "Browse the LTX family gallery", "href": "/examples/ltx" },
+      "quickLinks": [
+        { "label": "Review LTX 2.5 Pro", "href": "/models/ltx-2-5-pro" },
+        { "label": "Compare Fast with LTX 2.3 Fast", "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-5-fast?order=ltx-2-5-fast" },
+        { "label": "Compare Fast and Pro", "href": "/ai-video-engines/ltx-2-5-fast-vs-ltx-2-5-pro?order=ltx-2-5-fast" },
+        { "label": "Review Fast pricing", "href": "/pricing#ltx-2-5-fast-pricing" },
+        { "label": "Open Fast Prompt Lab", "href": "#prompting" }
+      ]
+    },
+    "media": { "caption": "LTX 2.5 Fast evidence gallery", "description": "Accepted Fast drafts will appear after review", "renderLabel": "Review accepted draft", "badges": ["Fast", "Three workflows", "Up to 4K"], "altContext": "accepted LTX 2.5 Fast video example" },
+    "features": [
+      { "title": "Fast prompt exploration", "body": "Use a six-second 720p pass to compare motion language, composition and subject behavior before committing to a higher-resolution or longer render. Keep each variant tied to one measurable change.", "tone": "duration" },
+      { "title": "Native high-resolution tiers", "body": "Text and image generation can move through 720p, 1080p, 1440p and 4K. The higher tiers and high frame-rate choices have shorter duration ceilings, so review the active constraints before queuing.", "tone": "quality" },
+      { "title": "Image-led movement tests", "body": "Animate a trusted opening frame and optionally guide the ending frame. Describe camera motion and physical change rather than restating the source image as a new composition.", "tone": "reference" },
+      { "title": "Source-audio performance", "body": "Audio-to-video requires a private source-audio asset and can optionally use an image. The canonical quote uses server-validated input-audio duration, never an invented output duration supplied in editorial copy.", "tone": "audio" }
+    ],
+    "decisionCards": [
+      { "title": "Best fit: fast creative iteration", "body": "Pick Fast for prompt A/B tests, social framing, motion studies and early storyboard beats where learning speed matters more than final-delivery positioning.", "cta": { "label": "Start a Fast draft", "href": "/app?engine=ltx-2-5-fast" } },
+      { "title": "Not ideal: default final approval", "body": "When the concept is locked and the review calls for the production-oriented LTX sibling, move the same brief to Pro and compare the result deliberately.", "cta": { "label": "Open LTX 2.5 Pro", "href": "/models/ltx-2-5-pro" } },
+      { "title": "Prompt one variable at a time", "body": "Hold subject, setting and style constant while changing camera, action or pacing. That discipline turns a fast render loop into useful production evidence.", "cta": { "label": "Open Prompt Lab", "href": "#prompting" } }
+    ],
+    "referenceWorkflows": [
+      { "title": "Text draft", "body": "Test one scene idea with a clear subject, action, camera path and final pose." },
+      { "title": "Image draft", "body": "Preserve source identity and framing while specifying only the motion that should unfold." },
+      { "title": "Audio-driven draft", "body": "Choose a permitted source clip, state the visible performance, and align scene beats with its rhythm." },
+      { "title": "Safe iteration", "body": "Use owned media, avoid deceptive likenesses, and reject malformed anatomy, unwanted text or unsafe content before reuse." }
+    ],
+    "pricingCopy": { "title": "LTX 2.5 Fast scenario pricing", "subtitle": "Compare a common 720p text draft, a native 4K text pass and a six-second source-audio workflow.", "footnote": "Each amount is calculated through the canonical quote path. For audio-to-video, six seconds means six validated seconds of source audio.", "ctaLabel": "Generate with LTX 2.5 Fast", "ctaHref": "/app?engine=ltx-2-5-fast" },
+    "meta": { "title": "LTX 2.5 Fast AI Video Model, A2V and Pricing", "description": "Evaluate LTX 2.5 Fast for text drafts, image animation and source-audio video, including native tiers, timing limits, prompt structure and canonical quotes." }
+  },
+  "prompting": {
+    "modelSlug": "ltx-2-5-fast",
+    "section": { "title": "Prompt Lab — LTX 2.5 Fast", "intro": "Build a repeatable iteration loop around one creative question and one visible success criterion.", "tip": "Change only one major variable between drafts so the result teaches the team something.", "guide": { "label": "Read the official LTX prompting guide", "href": "https://docs.ltx.io/api-documentation/implementation-guides/prompting-guide" }, "referencesTitle": "Direct quick drafts without losing evaluation discipline" },
+    "tabs": [
+      { "id": "brief", "label": "Brief", "title": "Write the smallest useful scene", "description": "Define a subject, action and final beat that fit the duration.", "copy": "Subject:\n[Appearance and one protected identity detail]\n\nSetting:\n[Place, time and lighting]\n\nAction:\n[One visible movement]\n\nFinal beat:\n[How the subject and camera settle]" },
+      { "id": "motion", "label": "Motion", "title": "Test camera and physical response", "description": "Use specific movement instead of generic energy words.", "copy": "Camera:\n[Static, track, push, pull, jib or focus shift]\n\nSubject timing:\n[Start, acceleration, pause and finish]\n\nEnvironment:\n[Fabric, hair, shadow, liquid or particles]\n\nContinuity:\n[Details that may not drift]" },
+      { "id": "audio", "label": "Audio", "title": "Plan audio-to-video input", "description": "Let source duration and rhythm define the visual performance.", "copy": "Source audio:\n[Owned asset and validated length]\n\nRhythm map:\n[Opening cue, central accent and closing cue]\n\nVisible performance:\n[Movement linked to those cues]\n\nAvoid:\n[Unrelated cuts, identity changes, logos, captions and unsafe imagery]" }
+    ],
+    "tabNotes": [
+      { "tabId": "brief", "body": "Fast iteration works when the scene is small enough to compare across several controlled variants." },
+      { "tabId": "motion", "body": "At 1440p, 4K or higher frame rates, keep the planned duration inside the active schema ceiling." },
+      { "tabId": "audio", "body": "Audio-to-video uses the trusted source duration for billing and should not be described as a text-mode audio toggle." }
+    ],
+    "globalPrinciples": ["Keep one primary action per short draft.", "Use the same prompt skeleton when comparing motion variables.", "Choose resolution after the creative question is clear.", "Confirm source rights, consent and brand safety before attaching media."],
+    "engineWhy": ["Fast supports a broad native resolution ladder for iteration and review.", "Dedicated text, image and audio modes prevent one ambiguous workflow from hiding required inputs.", "A longer maximum on supported Fast settings gives draft sequences room when high-tier constraints allow it."],
+    "demo": {
+      "title": "LTX 2.5 Fast motion study",
+      "promptLabel": "Controlled image-to-video draft",
+      "prompt": "Animate the supplied editorial still of a cyclist waiting beneath a concrete overpass. The rider looks left, shifts weight onto one pedal, and starts forward as the camera makes a gentle parallel track. Preserve the jacket, bicycle frame, face and wet pavement reflections. Keep background traffic soft and end with the cyclist crossing the brightest patch of light.",
+      "notes": ["The prompt protects source identity while asking for one readable action.", "A single lateral camera move makes draft comparison easier."],
+      "summary": { "subject": "Cyclist beneath a concrete overpass", "action": "Weight shift followed by a controlled start", "camera": "Gentle parallel track", "style": "Natural editorial motion study", "output": "Fast image-led draft with render-derived audio status" },
+      "presentationOverrides": { "modeLabel": "Image-to-video", "outputLabel": "Canonical output settings", "duration": null, "aspectRatio": null, "audioChipMode": "media", "audioChipLabel": null, "altContext": "LTX 2.5 Fast cyclist motion-study prompt" }
+    },
+    "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "ltx-2-5-fast",
+    "showWhenEmpty": false,
+    "section": { "title": "Reviewed LTX 2.5 Fast examples", "intro": "The section stays hidden until two accepted Fast outputs are durable and attached to the correct playlist.", "defaultCtaLabel": "View all LTX examples", "recreateLabel": null },
+    "filters": [{ "id": "all", "label": "All" }, { "id": "action", "label": "Motion tests" }, { "id": "audio", "label": "Audio-led" }],
+    "proofItems": [
+      { "id": "iteration", "icon": "zap", "title": "Useful iteration", "body": "Compare one changed variable against a stable brief." },
+      { "id": "source", "icon": "image", "title": "Source fidelity", "body": "Inspect identity, framing and protected visual details." },
+      { "id": "rhythm", "icon": "audio", "title": "Audio rhythm", "body": "Check whether visible beats align with the source clip." },
+      { "id": "motion", "icon": "sparkles", "title": "Motion coherence", "body": "Review anatomy, contact, camera movement and final stability." },
+      { "id": "safety", "icon": "shield", "title": "Editorial safety", "body": "Reject unsafe, deceptive or rights-infringing output before reuse." }
+    ],
+    "fallbackItems": null
+  }
+}

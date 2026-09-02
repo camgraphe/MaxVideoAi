@@ -122,7 +122,45 @@ export function cloneEngine(engine: EngineCaps): EngineCaps {
       : undefined,
     providerMeta: engine.providerMeta ? { ...engine.providerMeta } : undefined,
     pricing: engine.pricing ? { ...engine.pricing } : undefined,
-    pricingDetails: engine.pricingDetails ? { ...engine.pricingDetails } : undefined,
+    pricingDetails: engine.pricingDetails
+      ? {
+          ...engine.pricingDetails,
+          perSecondCents: engine.pricingDetails.perSecondCents
+            ? {
+                ...engine.pricingDetails.perSecondCents,
+                byResolution: engine.pricingDetails.perSecondCents.byResolution
+                  ? { ...engine.pricingDetails.perSecondCents.byResolution }
+                  : undefined,
+              }
+            : undefined,
+          byMode: engine.pricingDetails.byMode
+            ? Object.fromEntries(
+                Object.entries(engine.pricingDetails.byMode).map(([mode, value]) => [
+                  mode,
+                  value
+                    ? {
+                        ...value,
+                        perSecondCents: value.perSecondCents
+                          ? {
+                              ...value.perSecondCents,
+                              byResolution: value.perSecondCents.byResolution
+                                ? { ...value.perSecondCents.byResolution }
+                                : undefined,
+                            }
+                          : undefined,
+                      }
+                    : value,
+                ]),
+              )
+            : undefined,
+          referenceImages: engine.pricingDetails.referenceImages
+            ? {
+                ...engine.pricingDetails.referenceImages,
+                modes: [...engine.pricingDetails.referenceImages.modes],
+              }
+            : undefined,
+        }
+      : undefined,
     modeCaps: engine.modeCaps
       ? Object.fromEntries(
           Object.entries(engine.modeCaps).map(([mode, caps]) => [

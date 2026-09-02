@@ -1,0 +1,21 @@
+{
+  "slug": "grok-imagine-video-1-5-vs-sora-2",
+  "en": {
+    "meta": { "title": "Grok Imagine Video 1.5 vs Sora 2: Scores & Specs", "description": "Compare Grok Imagine Video 1.5 and Sora 2 scores, resolution, duration, audio and price.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Quick verdict", "body": "Choose Grok 1.5 for stronger current visual scores, more aspect ratios and 1080p. Choose Sora 2 when its workflow and value fit better." },
+    "primaryLinksTitle": "Explore the models",
+    "primaryLinks": [{ "href": "/models/grok-imagine-video-1-5", "label": "Grok Imagine Video 1.5" }, { "href": "/models/sora-2", "label": "Sora 2" }]
+  },
+  "fr": {
+    "meta": { "title": "Grok Imagine Video 1.5 vs Sora 2 : notes et specs", "description": "Comparez Grok Imagine Video 1.5 et Sora 2 sur les notes, résolution, durée, audio et prix.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Verdict rapide", "body": "Choisissez Grok 1.5 pour de meilleures notes visuelles, plus de formats et le 1080p. Choisissez Sora 2 si son workflow et son coût conviennent mieux." },
+    "primaryLinksTitle": "Explorer les modèles",
+    "primaryLinks": [{ "href": "/models/grok-imagine-video-1-5", "label": "Grok Imagine Video 1.5" }, { "href": "/models/sora-2", "label": "Sora 2" }]
+  },
+  "es": {
+    "meta": { "title": "Grok Imagine Video 1.5 vs Sora 2: notas y specs", "description": "Compara Grok Imagine Video 1.5 y Sora 2 en notas, resolución, duración, audio y precio.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Veredicto rápido", "body": "Elige Grok 1.5 por sus mejores notas visuales, más formatos y 1080p. Elige Sora 2 si su flujo y valor encajan mejor." },
+    "primaryLinksTitle": "Explorar los modelos",
+    "primaryLinks": [{ "href": "/models/grok-imagine-video-1-5", "label": "Grok Imagine Video 1.5" }, { "href": "/models/sora-2", "label": "Sora 2" }]
+  }
+}

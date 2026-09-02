@@ -1,0 +1,87 @@
+{
+  "marketingName": "FLUX 3",
+  "versionLabel": "3",
+  "seo": {
+    "title": "Générateur vidéo IA FLUX 3 : images, transition et extension",
+    "description": "Utilisez FLUX 3 pour le texte, l'animation d'image, la transition entre deux images ou l'extension vidéo, avec prompts et devis canoniques."
+  },
+  "overview": "FLUX 3 est la route de production actuelle de la famille vidéo FLUX. Elle couvre texte vers vidéo, image vers vidéo, transition entre première et dernière image et extension d'un clip. Black Forest Labs possède le modèle ; MaxVideoAI distribue ces endpoints via Fal au lancement, sans affirmer une connexion directe au propriétaire.",
+  "decision": {
+    "modelSlug": "flux-3",
+    "hero": {
+      "eyebrow": "ROUTE FLUX PRODUCTION ACTUELLE",
+      "title": "FLUX 3",
+      "subtitle": "Créez depuis un texte ou une image, reliez deux images d'ancrage ou prolongez une vidéo en 720p et 1080p.",
+      "subtitleHighlights": ["texte ou image", "deux images d'ancrage", "prolonger une vidéo"],
+      "paragraph": "Choisissez FLUX 3 lorsque le brief demande un workflow de production courant avec des ancrages visuels ou une continuité de clip explicites. Les quatre modes ont des entrées différentes : le mode première et dernière image exige deux cadres, tandis que l'extension part d'une vidéo source. Black Forest Labs possède FLUX et Fal distribue l'exécution utilisée ici.",
+      "primaryCta": { "label": "Générer avec FLUX 3", "href": "/app?engine=flux-3" },
+      "secondaryCta": { "label": "Voir la galerie FLUX", "href": "/fr/galerie/flux" },
+      "quickLinks": [
+        { "label": "Découvrir FLUX 3 Draft", "href": "/fr/modeles/flux-3-draft" },
+        { "label": "Comparer FLUX 3 et Draft", "href": "/fr/comparatif/flux-3-vs-flux-3-draft?order=flux-3" },
+        { "label": "Comparer FLUX 3 à Grok", "href": "/fr/comparatif/flux-3-vs-grok-imagine-video-1-5?order=flux-3" },
+        { "label": "Consulter les tarifs FLUX 3", "href": "/fr/tarifs#flux-3-pricing" },
+        { "label": "Ouvrir le laboratoire FLUX", "href": "#prompting" }
+      ]
+    },
+    "media": { "caption": "Galerie de preuves FLUX 3", "description": "Les sorties FLUX 3 validées apparaîtront après revue", "renderLabel": "Examiner le rendu accepté", "badges": ["Quatre workflows", "720p", "1080p"], "altContext": "exemple vidéo FLUX 3 accepté" },
+    "features": [
+      { "title": "Quatre workflows explicites", "body": "Sélectionnez texte, image, première et dernière image ou extension selon le média disponible. Chaque mode rend ses entrées obligatoires visibles avant génération.", "tone": "reference" },
+      { "title": "Transition entre deux ancrages", "body": "Employez des images compatibles en identité, perspective et lumière. Décrivez la force physique et la caméra qui peuvent relier ces compositions naturellement.", "tone": "continuity" },
+      { "title": "Extension depuis l'état final", "body": "Commencez par la dernière action, position et direction du clip source. Conservez le vecteur caméra et évitez une coupe déguisée.", "tone": "duration" },
+      { "title": "Devis calculé par scénario", "body": "La page compare six secondes en 720p et 1080p. Le montant est fourni par le calcul canonique du mode, de la durée et de la résolution.", "tone": "price" }
+    ],
+    "decisionCards": [
+      { "title": "Idéal pour des ancrages contrôlés", "body": "Retenez FLUX 3 quand une image d'ouverture, une image de fin ou un clip source doit rester au centre de la direction.", "cta": { "label": "Démarrer avec FLUX 3", "href": "/app?engine=flux-3" } },
+      { "title": "Moins adapté à une exploration sans question", "body": "Pour tester rapidement une idée encore ouverte, Draft peut répondre à la question avant de transférer les sources retenues vers FLUX 3.", "cta": { "label": "Voir FLUX 3 Draft", "href": "/fr/modeles/flux-3-draft" } },
+      { "title": "Préparer une transition plausible", "body": "Vérifiez que les cadres partagent une géométrie et une lumière conciliables, puis décrivez un seul mouvement continu.", "cta": { "label": "Ouvrir le laboratoire", "href": "#prompting" } }
+    ],
+    "referenceWorkflows": [
+      { "title": "Texte ou image", "body": "Construisez une action simple ou animez une composition de départ sans la redessiner." },
+      { "title": "Première et dernière image", "body": "Reliez deux ancrages compatibles par un mouvement, une caméra et une transformation physiques." },
+      { "title": "Extension vidéo", "body": "Poursuivez la trajectoire, le rythme, l'identité et la lumière établis dans le clip source." },
+      { "title": "Contrôle responsable", "body": "Vérifiez droits, consentement, sécurité, texte, marques et continuité avant d'accepter le résultat." }
+    ],
+    "pricingCopy": { "title": "Tarification par scénario FLUX 3", "subtitle": "Comparez la même génération texte de six secondes en 720p et 1080p à partir du calcul canonique.", "footnote": "Le contenu ne contient ni prix fini ni tarif fournisseur ; les cartes utilisent la politique commerciale active.", "ctaLabel": "Générer avec FLUX 3", "ctaHref": "/app?engine=flux-3" },
+    "meta": { "title": "Modèle vidéo IA FLUX 3, transitions et tarifs", "description": "Évaluez FLUX 3 pour texte, image, double ancrage et extension avec préparation des sources, sécurité, alternative Draft et devis canoniques." }
+  },
+  "prompting": {
+    "modelSlug": "flux-3",
+    "section": { "title": "Laboratoire de prompts — FLUX 3", "intro": "Choisissez d'abord le bon workflow, puis écrivez la continuité que les sources rendent physiquement possible.", "tip": "Pour une transition ou une extension, partez toujours de l'état visible de la source au lieu de recommencer la scène.", "guide": { "label": "Lire la présentation officielle de FLUX 3 Video", "href": "https://bfl.ai/blog/flux-3-video" }, "referencesTitle": "Diriger cadres d'ancrage et continuité vidéo" },
+    "tabs": [
+      { "id": "mode", "label": "Mode", "title": "Choisir l'entrée qui gouverne le plan", "description": "Reliez le besoin créatif au mode avant de rédiger.", "copy": "Objectif :\n[Plan neuf, image animée, transition ou extension]\n\nSource principale :\n[Texte, image ou clip autorisé]\n\nSujet protégé :\n[Identité, forme, matière et couleur]\n\nFin :\n[Composition ou état final]" },
+      { "id": "transition", "label": "Transition", "title": "Relier deux images compatibles", "description": "Décrivez la cause visuelle qui conduit du premier cadre au dernier.", "copy": "Premier cadre :\n[Pose, cadrage, lumière et décor]\n\nDernier cadre :\n[État cible compatible]\n\nTransformation :\n[Force, geste ou changement de matière]\n\nCaméra :\n[Trajet unique qui relie les deux vues]" },
+      { "id": "continuation", "label": "Extension", "title": "Continuer sans coupe cachée", "description": "Reprenez le dernier état du clip et prolongez sa logique.", "copy": "État final source :\n[Position, vitesse et action]\n\nSuite :\n[Prochaine action observable]\n\nCaméra :\n[Vecteur, hauteur et vitesse à conserver]\n\nÀ éviter :\n[Nouveau sujet, saut de lumière, coupe, texte, logo et filigrane]" }
+    ],
+    "tabNotes": [
+      { "tabId": "mode", "body": "Un mode bien choisi élimine les instructions incompatibles avec les sources réellement disponibles." },
+      { "tabId": "transition", "body": "Les deux cadres doivent partager assez de géométrie et de lumière pour permettre un passage crédible." },
+      { "tabId": "continuation", "body": "Le premier instant généré doit se lire comme la seconde suivante du clip et non comme un nouveau plan." }
+    ],
+    "globalPrinciples": ["Décrivez une action observable et sa conséquence.", "Préservez identité, matière et direction de lumière entre les ancrages.", "Utilisez un trajet caméra compatible avec la transformation.", "Confirmez droits des sources, consentement et sécurité avant génération."],
+    "engineWhy": ["FLUX 3 réunit quatre workflows sans masquer leurs entrées distinctes.", "Le mode double image donne une cible visuelle explicite à la transition.", "L'extension conserve la continuité d'un clip au lieu de repartir d'une image isolée."],
+    "demo": {
+      "title": "Pont première-dernière image FLUX 3",
+      "promptLabel": "Transition de cadres contrôlée",
+      "prompt": "Commencer par l'image large fournie d'une installation en tissu rouge immobile dans une galerie blanche. Un courant d'air soulève progressivement les panneaux inférieurs pendant que la caméra glisse lentement vers la droite. Rejoindre naturellement l'image finale rapprochée où le tissu s'enroule autour d'une forme en acier poli. Préserver géométrie, couleur et direction lumineuse. Aucun visiteur, panneau ou logo.",
+      "notes": ["Le prompt nomme la force physique et un trajet caméra compatible.", "Les deux ancrages partagent lieu, matière et logique lumineuse."],
+      "summary": { "subject": "Installation de tissu rouge dans une galerie blanche", "action": "Le vent soulève les panneaux autour d'une forme métallique", "camera": "Travelling lent vers la droite du large au rapproché", "style": "Film d'art architectural minimal", "output": "Rendu double image avec réglages canoniques" },
+      "presentationOverrides": { "modeLabel": "Première et dernière image", "outputLabel": "Workflow de cadres pris en charge", "duration": null, "aspectRatio": null, "audioChipMode": "media", "audioChipLabel": null, "altContext": "prompt FLUX 3 de transition avec tissu rouge" }
+    },
+    "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "flux-3",
+    "showWhenEmpty": false,
+    "section": { "title": "Exemples FLUX 3 vérifiés", "intro": "La galerie reste masquée jusqu'à ce que deux vidéos FLUX 3 durables soient acceptées et correctement associées.", "defaultCtaLabel": "Voir tous les exemples FLUX", "recreateLabel": null },
+    "filters": [{ "id": "all", "label": "Tous" }, { "id": "cinematic", "label": "Cinématique" }, { "id": "edit", "label": "Extension" }],
+    "proofItems": [
+      { "id": "anchors", "icon": "image", "title": "Fidélité aux ancrages", "body": "Comparer compositions de début et de fin aux images sources." },
+      { "id": "physics", "icon": "zap", "title": "Physique de transition", "body": "Examiner contacts, réactions des matières et mouvement plausible." },
+      { "id": "continuity", "icon": "users", "title": "Continuité de la source", "body": "Contrôler identité, vecteur caméra et décor pendant l'extension." },
+      { "id": "delivery", "icon": "maximize", "title": "Stabilité de livraison", "body": "Vérifier détail, cadrage, cohérence temporelle et fin." },
+      { "id": "safety", "icon": "shield", "title": "Étape éditoriale", "body": "Refuser contenu dangereux, marques, texte ou problème de droits." }
+    ],
+    "fallbackItems": null
+  }
+}

@@ -154,13 +154,13 @@ test('generic Examples UI copy is complete and model-neutral', () => {
   }
 });
 
-test('all 42 executable model documents expose strict Examples content in every locale', () => {
+test('all 49 executable model documents expose strict Examples content in every locale', () => {
   const expected = listModelPageTemplateSlugs().map((slug) => `${slug}.json`).sort();
   const completeInventory = [
     ...expected,
     ...listPrelaunchModelPageTemplateSlugs().map((slug) => `${slug}.json`),
   ].sort();
-  assert.equal(expected.length, 42);
+  assert.equal(expected.length, 49);
   for (const locale of LOCALES) {
     assert.deepEqual(files(locale), completeInventory);
     for (const fileName of expected) {
@@ -171,7 +171,7 @@ test('all 42 executable model documents expose strict Examples content in every 
   }
 });
 
-test('all 126 documents own the historically derived empty-state visibility boolean', () => {
+test('all 147 documents own the historically derived empty-state visibility boolean', () => {
   const counts = { true: 0, false: 0 };
   for (const locale of LOCALES) {
     const localeCounts = { true: 0, false: 0 };
@@ -181,9 +181,9 @@ test('all 126 documents own the historically derived empty-state visibility bool
       counts[key] += 1;
       localeCounts[key] += 1;
     }
-    assert.deepEqual(localeCounts, { true: 35, false: 7 }, locale);
+    assert.deepEqual(localeCounts, { true: 35, false: 14 }, locale);
   }
-  assert.deepEqual(counts, { true: 105, false: 21 });
+  assert.deepEqual(counts, { true: 105, false: 42 });
 
   for (const slug of ['nano-banana-lite', 'seedream-5-0-pro']) {
     for (const locale of LOCALES) {
@@ -248,4 +248,38 @@ test('each model keeps identical EN FR ES Examples structure and semantic IDs', 
 test('localized Examples selection never falls back to English', () => {
   assert.match(normalizationSource, /examples:\s*overlay\.examples/);
   assert.doesNotMatch(normalizationSource, /examples:\s*overlay\.examples\s*\?\?\s*base\.examples/);
+});
+
+test('P0 model Examples content is backed by two exact durable playlist assets', () => {
+  const manifest = JSON.parse(
+    readFileSync(path.join(process.cwd(), 'docs', 'model-launch', 'p0-video-example-pack.json'), 'utf8'),
+  ) as {
+    assets: Array<{ modelId: string; familyId: string; playlistSlugs: string[] }>;
+  };
+  const p0ModelIds = [
+    'wan-3',
+    'wan-3-prime',
+    'ltx-2-5-fast',
+    'ltx-2-5-pro',
+    'grok-imagine-video-1-5',
+    'flux-3',
+    'flux-3-draft',
+  ];
+
+  for (const modelId of p0ModelIds) {
+    const accepted = manifest.assets.filter((asset) => asset.modelId === modelId);
+    assert.equal(accepted.length, 2, modelId);
+    for (const locale of LOCALES) {
+      const content = parseModelExamplesContent(readDocument(locale, modelId).examples, modelId, locale);
+      assert.equal(content.modelSlug, modelId);
+      assert.equal(content.showWhenEmpty, false, `${modelId}/${locale} must not render placeholder examples`);
+    }
+    for (const asset of accepted) {
+      assert.deepEqual(
+        new Set(asset.playlistSlugs),
+        new Set([`family-${asset.familyId}`, `examples-${modelId}`]),
+        modelId,
+      );
+    }
+  }
 });

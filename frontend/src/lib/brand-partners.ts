@@ -10,6 +10,8 @@ export type PartnerBrandId =
   | 'minimax'
   | 'wan'
   | 'lightricks'
+  | 'xai'
+  | 'black-forest-labs'
   | 'bytedance'
   | 'google'
   | 'alibaba';
@@ -34,9 +36,9 @@ export interface PartnerBrand {
   policy: BrandAssetPolicy;
   defaultAvailability: EngineAvailability;
   availabilityLink?: string;
-  compactMark: PartnerBrandAssetSet;
+  compactMark?: PartnerBrandAssetSet;
   wordmark?: PartnerBrandAssetSet;
-  alt: {
+  alt?: {
     light: string;
     dark: string;
   };
@@ -53,6 +55,14 @@ function allowLogos(linkToGuidelines?: string, usageNotes?: string): BrandAssetP
     logoAllowed: true,
     textOnly: false,
     linkToGuidelines,
+    usageNotes,
+  };
+}
+
+function textOnly(usageNotes: string): BrandAssetPolicy {
+  return {
+    logoAllowed: false,
+    textOnly: true,
     usageNotes,
   };
 }
@@ -243,7 +253,17 @@ const PARTNER_BRANDS: PartnerBrand[] = [
       light: 'Wan compact logo',
       dark: 'Wan compact logo (dark mode)',
     },
-    engineIds: ['wan-2-5', 'wan-2-6', 'wan25', 'wan26', 'wan-25-preview', 'wan-25', 'wan-26'],
+    engineIds: [
+      'wan-2-5',
+      'wan-2-6',
+      'wan-3',
+      'wan-3-prime',
+      'wan25',
+      'wan26',
+      'wan-25-preview',
+      'wan-25',
+      'wan-26',
+    ],
   },
   {
     id: 'lightricks',
@@ -266,6 +286,8 @@ const PARTNER_BRANDS: PartnerBrand[] = [
       'ltx-2-3',
       'ltx-2-3-pro',
       'ltx-2-3-fast',
+      'ltx-2-5-fast',
+      'ltx-2-5-pro',
       'ltx-2',
       'ltx-2-fast',
       'fal-ai/ltx-2.3/text-to-video',
@@ -273,6 +295,24 @@ const PARTNER_BRANDS: PartnerBrand[] = [
       'fal-ai/ltx-2/text-to-video',
       'fal-ai/ltx-2/text-to-video/fast',
     ],
+  },
+  {
+    id: 'xai',
+    label: 'xAI',
+    shortText: 'xAI',
+    policy: textOnly('Use text-only xAI attribution; no licensed durable logo asset is recorded.'),
+    defaultAvailability: 'available',
+    engineIds: ['grok-imagine-video-1-5'],
+  },
+  {
+    id: 'black-forest-labs',
+    label: 'Black Forest Labs',
+    shortText: 'Black Forest Labs',
+    policy: textOnly(
+      'Use text-only Black Forest Labs attribution; no licensed durable logo asset is recorded.'
+    ),
+    defaultAvailability: 'available',
+    engineIds: ['flux-3', 'flux-3-draft'],
   },
   {
     id: 'bytedance',

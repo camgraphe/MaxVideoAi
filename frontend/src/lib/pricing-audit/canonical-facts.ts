@@ -84,6 +84,10 @@ function buildScenarioPublicFacts(
     ...(scenario.mode ? { mode: scenario.mode as Mode } : {}),
     quality: typeof scenario.input.quality === 'string' ? scenario.input.quality : undefined,
     referenceImageCount: Number(scenario.input.referenceImageCount ?? 0),
+    inputAudioDurationSec:
+      typeof scenario.input.inputAudioDurationSec === 'number'
+        ? scenario.input.inputAudioDurationSec
+        : undefined,
   });
   return { ...result.facts, engineId: scenario.engineId };
 }

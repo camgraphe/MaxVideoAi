@@ -81,8 +81,16 @@ export function buildHubAnchor(cluster: SeoQueryCluster, modelSlug: string) {
 function chooseModelName(cluster: SeoQueryCluster, modelSlug: string) {
   const queryText = cluster.representativeQueries.join(' ');
   const versionMatch = queryText.match(/\b(?:ltx|seedance|veo|kling|pika|wan|sora|happy horse|hailuo|minimax|luma|ray)\s+(?:v)?\d+(?:[.\s-]\d+){0,2}(?:\s+(?:fast|lite|pro|standard|flash))?\b/i);
-  if (versionMatch) return titleize(versionMatch[0]);
-  return humanizeModelSlug(modelSlug);
+  const modelName = humanizeModelSlug(modelSlug);
+  const normalizeVersion = (value: string) => normalizeSeoQuery(value).replace(/[.-]/g, ' ');
+  if (versionMatch) {
+    const matchedName = normalizeVersion(versionMatch[0]);
+    const canonicalName = normalizeVersion(modelName);
+    if (matchedName.startsWith(canonicalName) || canonicalName.startsWith(matchedName)) {
+      return titleize(versionMatch[0]);
+    }
+  }
+  return modelName;
 }
 
 export function humanizeModelSlug(slug: string) {
@@ -103,6 +111,9 @@ export function humanizeModelSlug(slug: string) {
       return part.charAt(0).toUpperCase() + part.slice(1);
     })
     .join(' ')
+    .replace(/\b3 0\b/g, '3.0')
+    .replace(/\b2 6\b/g, '2.6')
+    .replace(/\b2 5\b/g, '2.5')
     .replace(/\b2 3\b/g, '2.3')
     .replace(/\b3 1\b/g, '3.1')
     .replace(/\b2 0\b/g, '2.0')

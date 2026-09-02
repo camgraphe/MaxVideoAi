@@ -26,6 +26,10 @@ import type {
 import type { AgentPublicGenerationEngine } from './model-catalog';
 import type { ResolvedReference } from './reference-types';
 import { toEngineGenerationMode } from './generation-mode-aliases';
+import {
+  getVideoSchemaControlConstraintViolation,
+  projectVideoProviderFieldValue,
+} from '@/lib/video-input-schema';
 
 const VIDEO_FIELD_BY_SETTING: Record<string, string> = {
   cameraFixed: 'camera_fixed',
@@ -165,22 +169,36 @@ function validateVideoModeCaps(
   }
 
   const resolution = request.settings.resolution;
+  const resolutionField = applicableField(candidate, 'resolution', request.mode);
+  const providerResolution = projectVideoProviderFieldValue(
+    resolutionField,
+    resolution,
+    candidate.engine.inputSchema,
+  );
   const supportedResolutions = caps.resolution?.length
     ? caps.resolution
     : candidate.engine.resolutions.filter((value) => value !== 'auto').slice(0, 1);
   if (
     typeof resolution !== 'string'
-    || !supportedResolutions.includes(resolution as never)
-    || !candidate.engine.resolutions.includes(resolution as never)
+    || (!supportedResolutions.includes(resolution as never)
+      && !supportedResolutions.some((value) => String(value) === String(providerResolution)))
+    || (!resolutionField && !candidate.engine.resolutions.includes(resolution as never))
   ) {
     fail('resolution');
   }
   const aspectRatio = request.settings.aspectRatio;
+  const aspectRatioField = applicableField(candidate, 'aspect_ratio', request.mode);
+  const providerAspectRatio = projectVideoProviderFieldValue(
+    aspectRatioField,
+    aspectRatio,
+    candidate.engine.inputSchema,
+  );
   const supportedAspectRatios = caps.aspectRatio ?? [];
   if (supportedAspectRatios.length > 0 && (
     typeof aspectRatio !== 'string'
-    || !supportedAspectRatios.includes(aspectRatio)
-    || !candidate.engine.aspectRatios.includes(aspectRatio as never)
+    || (!supportedAspectRatios.includes(aspectRatio)
+      && !supportedAspectRatios.some((value) => String(value) === String(providerAspectRatio)))
+    || (!aspectRatioField && !candidate.engine.aspectRatios.includes(aspectRatio as never))
   )) {
     fail('aspectRatio');
   }
@@ -195,15 +213,19 @@ function validateVideoModeCaps(
   const audio = request.settings.audio;
   if (audio !== undefined && (typeof audio !== 'boolean' || !caps.audioToggle)) fail('audio');
 
-  for (const [setting, fieldId] of [
-    ['resolution', 'resolution'],
-    ['aspectRatio', 'aspect_ratio'],
-    ['fps', 'fps'],
-    ['audio', 'generate_audio'],
+  for (const [setting, fieldIds] of [
+    ['resolution', ['resolution']],
+    ['aspectRatio', ['aspect_ratio']],
+    ['fps', ['fps']],
+    ['audio', ['generate_audio', 'audio']],
   ] as const) {
     const value = request.settings[setting];
-    const field = applicableField(candidate, fieldId, request.mode);
-    if (value !== undefined && field) validateFieldValue(field, value);
+    const field = fieldIds
+      .map((fieldId) => applicableField(candidate, fieldId, request.mode))
+      .find((candidateField): candidateField is EngineInputField => Boolean(candidateField));
+    if (value !== undefined && field) {
+      validateFieldValue(field, projectVideoProviderFieldValue(field, value, candidate.engine.inputSchema));
+    }
   }
 
   for (const [setting, fieldId] of Object.entries(VIDEO_FIELD_BY_SETTING)) {
@@ -219,6 +241,13 @@ function validateVideoModeCaps(
     validateFieldValue(field, request.settings.loop);
   }
   if (request.settings.numFrames !== undefined) fail('numFrames');
+
+  if (getVideoSchemaControlConstraintViolation({
+    inputSchema: candidate.engine.inputSchema,
+    duration,
+    resolution,
+    fps,
+  })) fail('durationSec');
 }
 
 function validateDerivedSourceFacts(
@@ -398,6 +427,7 @@ function validateImageSettings(
 
 export type GenerationCapabilityValidationOptions = {
   resolvedReferences?: readonly ResolvedReference[];
+  allowUnverifiedReferenceDuration?: boolean;
 };
 
 const REFERENCE_FIELD_TYPES = new Set<EngineInputField['type']>(['image', 'video', 'audio']);
@@ -428,8 +458,8 @@ function fieldIdsForRole(
       : [];
   }
   if (request.mode === 'fl2v') {
-    if (role === 'first_frame') return ['first_frame_url'];
-    if (role === 'last_frame') return ['last_frame_url'];
+    if (role === 'first_frame') return ['first_frame_url', 'start_image_url'];
+    if (role === 'last_frame') return ['last_frame_url', 'end_image_url'];
     return [];
   }
   if (request.mode === 'v2v') {
@@ -530,13 +560,19 @@ function validateTrustedReferenceDuration(
     : field.type === 'audio'
       ? constraints?.maxCombinedAudioDurationSec
       : undefined;
+  const exclusiveMaximum =
+    requestModeForExclusiveDuration(candidate, field);
   if (
     field.minDurationSec === undefined
     && field.maxDurationSec === undefined
     && combinedLimit === undefined
+    && exclusiveMaximum === undefined
   ) return;
-  if (reference.kind !== 'asset') fail('references', 'reference_invalid');
-  if (!options.resolvedReferences) return;
+  if (reference.kind !== 'asset' || !options.resolvedReferences) {
+    if (options.allowUnverifiedReferenceDuration) return;
+    if (candidate.engine.id === 'minimax-h3') fail('references', 'reference_invalid');
+    return;
+  }
   const resolved = resolvedReference(reference, options);
   if (!resolved) fail('references', 'reference_invalid');
   const durationSec = resolved.durationSec;
@@ -546,7 +582,17 @@ function validateTrustedReferenceDuration(
     || durationSec <= 0
     || (typeof field.minDurationSec === 'number' && durationSec < field.minDurationSec)
     || (typeof field.maxDurationSec === 'number' && durationSec > field.maxDurationSec)
+    || (typeof exclusiveMaximum === 'number' && durationSec >= exclusiveMaximum)
   ) fail('references', 'reference_invalid');
+}
+
+function requestModeForExclusiveDuration(
+  candidate: AgentPublicGenerationEngine,
+  field: EngineInputField,
+): number | undefined {
+  if (field.id !== 'video_url') return undefined;
+  const value = candidate.engine.inputSchema?.constraints?.extendVideoDurationExclusiveMaxSec;
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
 }
 
 function validateCombinedReferenceDurations(
@@ -682,6 +728,24 @@ function validateReferences(
     if (count < minimum && !hasDeferredAsset) fail('references', 'reference_required');
     if (count > maximum) fail('references', 'reference_invalid');
   }
+  const atLeastOneReferenceField = candidate.engine.inputSchema?.constraints?.atLeastOneReferenceField;
+  if (
+    request.mode === 'ref2v'
+    && Array.isArray(atLeastOneReferenceField)
+    && atLeastOneReferenceField.length
+  ) {
+    const accepted = new Set(atLeastOneReferenceField);
+    const hasReference = selectedFields.some((fields) => fields.some((field) => accepted.has(field.id)));
+    if (!hasReference) fail('references', 'reference_required');
+  }
+  if (
+    request.mode === 'a2v'
+    && candidate.engine.inputSchema?.constraints?.a2vPromptRequiredWithoutImage
+    && !request.prompt.trim()
+    && !request.references.some((reference, index) =>
+      reference.role === 'first_frame'
+      && selectedFields[index]?.some((field) => field.type === 'image'))
+  ) fail('prompt');
   validateReferenceBudget(request, candidate, selectedFields);
   validateCombinedReferenceDurations(candidate, options);
 }

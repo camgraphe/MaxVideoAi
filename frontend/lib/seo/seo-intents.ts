@@ -1,4 +1,5 @@
 import { MODEL_FAMILIES, type ModelFamilyDefinition } from '../../config/model-families';
+import { getRuntimeModelByCanonicalSlug } from '../../config/model-runtime';
 import type {
   SeoFamilyDictionaryEntry,
   SeoFamilyStatus,
@@ -145,27 +146,33 @@ export function getSeoFamilyStatus(family: StrategicSeoFamily): SeoFamilyStatus 
 export function getSeoFamilyDictionary(): SeoFamilyDictionaryEntry[] {
   return (MODEL_FAMILIES as readonly ModelFamilyDefinition[]).map((family) => {
     const label = canonicalSeoFamilyLabel(family.id, family.label);
+    const publicDefaultModelSlug = family.defaultModelSlug
+      && isSeoLinkableModelSlug(family.defaultModelSlug)
+      ? family.defaultModelSlug
+      : undefined;
     const currentModelSlugs = Array.from(
       new Set([
         ...(family.examplesPage?.currentModelSlugs ?? []),
-        family.defaultModelSlug,
-      ].filter((value): value is string => Boolean(value)))
+        publicDefaultModelSlug,
+      ].filter((value): value is string => typeof value === 'string' && isSeoLinkableModelSlug(value)))
     );
     const publishedModelSlugs = Array.from(
       new Set([
         ...(family.examplesPage?.publishedModelSlugs ?? []),
         ...(family.routeAliases ?? []),
-        family.defaultModelSlug,
-      ].filter((value): value is string => Boolean(value)))
+        publicDefaultModelSlug,
+      ].filter((value): value is string => typeof value === 'string' && isSeoLinkableModelSlug(value)))
     );
     const modelSlugs = Array.from(
       new Set([
-        family.defaultModelSlug,
-        ...(family.routeAliases ?? []),
         ...publishedModelSlugs,
         ...currentModelSlugs,
       ].filter((value): value is string => Boolean(value)))
     );
+    const defaultModelSlug = publicDefaultModelSlug
+      ?? currentModelSlugs[0]
+      ?? publishedModelSlugs[0]
+      ?? null;
     const aliases = Array.from(
       new Set(
         [
@@ -173,8 +180,7 @@ export function getSeoFamilyDictionary(): SeoFamilyDictionaryEntry[] {
           family.label,
           family.navLabel,
           family.brandId,
-          family.defaultModelSlug,
-          ...(family.routeAliases ?? []),
+          defaultModelSlug,
           ...(family.aliases ?? []),
           ...(family.prefixes ?? []),
           ...(family.contains ?? []),
@@ -195,11 +201,16 @@ export function getSeoFamilyDictionary(): SeoFamilyDictionaryEntry[] {
       modelSlugs,
       currentModelSlugs,
       publishedModelSlugs,
-      defaultModelSlug: family.defaultModelSlug ?? null,
+      defaultModelSlug,
       businessPriorityWeight: getBusinessPriorityWeight(label),
       businessPriorityRank: resolveFamilyRank(label),
     };
   }).sort((a, b) => a.businessPriorityRank - b.businessPriorityRank || a.label.localeCompare(b.label));
+}
+
+function isSeoLinkableModelSlug(slug: string): boolean {
+  const model = getRuntimeModelByCanonicalSlug(slug);
+  return model?.publication.model.published === true && model.publication.model.indexable === true;
 }
 
 export function compactIntentLabel(intent: SeoIntentType): string {

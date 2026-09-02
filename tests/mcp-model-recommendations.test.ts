@@ -215,15 +215,15 @@ test('an open shortlist keeps one representative per authored model family', asy
   const result = await recommendAgentModels(
     { surface: 'video', mode: 't2v' },
     deps([
-      candidate('ltx-2-3'),
-      candidate('ltx-2-3-fast', { latencyTier: 'fast' }),
+      candidate('kling-3-pro'),
+      candidate('kling-3-standard', { latencyTier: 'fast' }),
       candidate('zulu-a'),
       candidate('zulu-b'),
     ]),
   );
 
   assert.deepEqual(result.recommendations.map((entry) => entry.model.id), [
-    'ltx-2-3',
+    'kling-3-pro',
     'zulu-a',
     'zulu-b',
   ]);

@@ -251,7 +251,7 @@ test('Seedance 2.0 SEO metadata can omit the site-name suffix', () => {
   assert.equal(typeof meta.title === 'object' ? meta.title.absolute : meta.title, title);
 });
 
-test('LTX 2.3 Fast returns LTX-specific draft decision data', () => {
+test('LTX 2.3 Fast keeps draft capabilities while identifying the current Fast successor', () => {
   const ltx = getEngine('ltx-2-3-fast');
   const en = buildModelDecisionDataFromContent({ engine: ltx, locale: 'en' });
   const fr = buildModelDecisionDataFromContent({ engine: ltx, locale: 'fr' });
@@ -266,7 +266,8 @@ test('LTX 2.3 Fast returns LTX-specific draft decision data', () => {
   assert.match(en.hero.subtitle, /prompt testing/);
   assert.match(en.hero.subtitle, /vertical\/social drafts/);
   assert.deepEqual(en.hero.subtitleHighlights, ['visual exploration', 'prompt testing', 'vertical/social drafts']);
-  assert.match(en.hero.paragraph, /fast text-to-video and image-to-video/);
+  assert.match(en.hero.paragraph, /previous-generation draft loops/);
+  assert.ok(en.hero.quickLinks.some(({ href }) => href === '/models/ltx-2-5-fast'));
   assert.doesNotMatch(en.hero.subtitle, /audio-to-video|retake|extend/i);
   assert.doesNotMatch(visibleDecisionText(en), /audio-to-video|retake|extend/i);
   assert.equal(en.meta.title, 'LTX 2.3 Fast: Pricing, Max Length & Fast vs Pro');
@@ -324,7 +325,7 @@ test('LTX 2.3 Fast SEO metadata can omit the site-name suffix', async () => {
   assert.match(modelPageSource, /ltx-2-3-fast/);
 });
 
-test('LTX 2 legacy templates keep older route positioning distinct from LTX 2.3', () => {
+test('LTX 2 deep-legacy pages keep historical positioning and route new generation to 2.5', () => {
   const ltx2 = getEngine('ltx-2');
   const ltx2Fast = getEngine('ltx-2-fast');
   const en = buildModelDecisionDataFromContent({ engine: ltx2, locale: 'en' });
@@ -340,17 +341,20 @@ test('LTX 2 legacy templates keep older route positioning distinct from LTX 2.3'
   assert.equal(en.hero.title, 'LTX 2');
   assert.match(en.hero.subtitle, /High-fidelity 16:9 clips/);
   assert.match(en.hero.subtitle, /1080p to 4K checks/);
-  assert.equal(en.hero.primaryCta.href, '/app?engine=ltx-2');
+  assert.equal(en.hero.primaryCta.href, '/models/ltx-2-5-pro');
+  assert.equal(en.pricing.cta.href, '/app?engine=ltx-2-5-pro');
   assert.equal(en.hero.quickLinks[2]?.href, '#prompting');
-  assert.equal(en.decisionCards[1]?.cta.href, '/models/ltx-2-fast');
+  assert.equal(en.decisionCards[1]?.cta.href, '/models/ltx-2-5-fast');
   assert.doesNotMatch(visibleDecisionText(en), /audio-to-video|Extend|Retake|vertical\/social|9:16/i);
   assert.match(fr.hero.subtitle, /Clips 16:9 haute fidélité/);
 
   assert.equal(fast.hero.title, 'LTX 2 Fast');
   assert.match(fast.hero.subtitle, /Fast 16:9 drafts/);
   assert.match(fast.hero.subtitle, /up to 20s/);
-  assert.equal(fast.hero.primaryCta.href, '/app?engine=ltx-2-fast');
+  assert.equal(fast.hero.primaryCta.href, '/models/ltx-2-5-fast');
+  assert.equal(fast.pricing.cta.href, '/app?engine=ltx-2-5-fast');
   assert.equal(fast.hero.quickLinks[2]?.href, '#prompting');
+  assert.equal(fast.decisionCards[1]?.cta.href, '/models/ltx-2-5-pro');
   assert.doesNotMatch(visibleDecisionText(fast), /audio-to-video|Extend|Retake|vertical\/social|9:16/i);
   assert.match(es.hero.subtitle, /Borradores 16:9 rápidos/);
 });
@@ -702,7 +706,8 @@ test('Wan templates separate 2.6 reference-video workflow from 2.5 audio checks'
     'text or image starts',
     '480p to 1080p checks',
   ]);
-  assert.equal(en25.hero.primaryCta.href, '/app?engine=wan-2-5');
+  assert.equal(en25.hero.primaryCta.href, '/models/wan-3');
+  assert.equal(en25.pricing.cta.href, '/app?engine=wan-3');
   assert.equal(en25.hero.quickLinks[2]?.href, '#prompting');
   assert.equal(en25.decisionCards[1]?.cta.href, '#prompting');
   assert.match(fr25.hero.subtitle, /Clips audio-ready de 5 à 10 s/);
@@ -720,7 +725,7 @@ test('Wan templates separate 2.6 reference-video workflow from 2.5 audio checks'
     'optional audio for text or image starts',
   ]);
   assert.equal(en26.hero.primaryCta.href, '/app?engine=wan-2-6');
-  assert.equal(en26.hero.quickLinks[2]?.href, '#prompting');
+  assert.ok(en26.hero.quickLinks.some(({ href }) => href === '#prompting'));
   assert.equal(en26.decisionCards[1]?.cta.href, '#prompting');
   assert.match(fr26.hero.subtitle, /Clips multi-plans jusqu’à 15 s/);
   assert.match(es26.hero.subtitle, /Clips multi-shot de hasta 15 s/);

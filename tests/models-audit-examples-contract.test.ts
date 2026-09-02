@@ -194,3 +194,66 @@ test('model audit fails malformed and divergent localized Examples with critical
     rmSync(sandbox, { recursive: true, force: true });
   }
 });
+
+test('model audit rejects empty or incomplete strict decision owners instead of accepting object presence', () => {
+  const sandbox = mkdtempSync(join(tmpdir(), 'maxvideo-models-audit-decision-'));
+  const contentRoot = join(sandbox, 'models');
+  const reportPath = join(sandbox, 'models-audit.json');
+  const mutations = [
+    ['wan-3', null],
+    ['wan-3-prime', 'hero'],
+    ['ltx-2-5-fast', 'media'],
+    ['ltx-2-5-pro', 'features'],
+    ['grok-imagine-video-1-5', 'decisionCards'],
+    ['flux-3', 'referenceWorkflows'],
+    ['flux-3-draft', 'pricingCopy'],
+    ['seedance-2-0', 'meta'],
+  ] as const;
+
+  try {
+    cpSync(join(ROOT, 'content/models'), contentRoot, { recursive: true });
+    for (const [slug, missingBlock] of mutations) {
+      updateDocument(contentRoot, 'en', slug, (document) => {
+        delete document.hero;
+        delete document.bestUseCases;
+        delete document.technicalOverview;
+        delete document.faqs;
+        delete document.custom;
+        if (missingBlock === null) {
+          document.decision = {};
+          return;
+        }
+        delete (document.decision as Record<string, unknown>)[missingBlock];
+      });
+    }
+
+    const result = spawnSync(
+      TSX_BIN,
+      [
+        '--tsconfig',
+        TS_CONFIG,
+        AUDIT_SCRIPT,
+        '--content-root',
+        contentRoot,
+        '--report-path',
+        reportPath,
+      ],
+      { cwd: ROOT, encoding: 'utf8' },
+    );
+
+    assert.equal(result.status, 1, result.stdout || result.stderr);
+    const report = JSON.parse(readFileSync(reportPath, 'utf8')) as {
+      critical: Array<{ type: string; modelSlug?: string; locale?: string }>;
+    };
+    const strictDecisionFailures = report.critical.filter(
+      ({ type }) => type === 'invalid_localized_decision_content',
+    );
+    assert.deepEqual(
+      strictDecisionFailures.map(({ modelSlug, locale }) => `${modelSlug}/${locale}`).sort(),
+      mutations.map(([slug]) => `${slug}/en`).sort(),
+      JSON.stringify(report.critical, null, 2),
+    );
+  } finally {
+    rmSync(sandbox, { recursive: true, force: true });
+  }
+});

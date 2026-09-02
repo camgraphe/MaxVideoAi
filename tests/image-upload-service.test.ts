@@ -388,6 +388,9 @@ test('media_assets mirror failure stays non-fatal while upload and record failur
 
 test('upload failures emit only coarse event codes and never forward raw secret errors', async () => {
   const service = await loadService();
+  const storage = await import(pathToFileURL(
+    path.join(process.cwd(), 'frontend/server/storage.ts')
+  ).href);
   const secret = 'private-key=user-secret https://signed.example.com/image?token=secret';
   const events: unknown[][] = [];
   const logImageUploadEvent = (...args: unknown[]) => {
@@ -420,6 +423,19 @@ test('upload failures emit only coarse event codes and never forward raw secret 
   );
   await assert.rejects(uploadFailure(params));
 
+  const uploadPreparationFailure = service.createStoreImageUploadService(
+    makeServiceDependencies({
+      logImageUploadEvent,
+      uploadImageToStorage: async () => {
+        throw new storage.StorageUploadError('private preparation detail', {
+          stage: 'before-upload',
+          key: 'private-reference-key',
+        });
+      },
+    })
+  );
+  await assert.rejects(uploadPreparationFailure(params));
+
   const mirrorFailure = service.createStoreImageUploadService(
     makeServiceDependencies({
       logImageUploadEvent,
@@ -443,6 +459,7 @@ test('upload failures emit only coarse event codes and never forward raw secret 
   assert.deepEqual(events, [
     ['warn', 'IMAGE_UPLOAD_NORMALIZATION_FAILED'],
     ['error', 'IMAGE_UPLOAD_STORAGE_FAILED'],
+    ['error', 'IMAGE_UPLOAD_STORE_PREPARE_FAILED'],
     ['warn', 'IMAGE_UPLOAD_MIRROR_FAILED'],
     ['error', 'IMAGE_UPLOAD_RECORD_FAILED'],
   ]);

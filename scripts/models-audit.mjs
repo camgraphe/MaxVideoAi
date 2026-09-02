@@ -3,8 +3,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import modelExamplesContent from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-content.ts';
+import modelDecisionContent from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-content.ts';
 
 const { parseModelExamplesContent } = modelExamplesContent;
+const { parseModelDecisionContent } = modelDecisionContent;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
@@ -259,29 +261,33 @@ async function runLocalizedExamplesChecks(catalogBySlug, issues, contentRoot) {
   }
 }
 
-function getMarketingCoverage(content) {
+function getMarketingCoverage(content, hasDecisionContent = false) {
   const custom = content?.custom && typeof content.custom === 'object' ? content.custom : {};
 
   return {
     hero: Boolean(
+      hasDecisionContent ||
       hasNonEmptyString(content?.hero?.title) &&
         hasNonEmptyString(content?.hero?.ctaPrimary?.label) &&
         hasNonEmptyString(content?.hero?.ctaPrimary?.href)
     ),
     useCases: Boolean(
+      hasDecisionContent ||
       hasNonEmptyArray(content?.bestUseCases?.items) ||
         hasNonEmptyArray(custom?.bestUseCases) ||
         hasNonEmptyArray(custom?.heroHighlights)
     ),
     specs: Boolean(
+      hasDecisionContent ||
       hasNonEmptyArray(content?.technicalOverview) ||
         hasNonEmptyArray(custom?.specSections) ||
         hasNonEmptyString(content?.pricingNotes)
     ),
     prompting: Boolean(content?.prompting),
     examples: Boolean(content?.examples),
-    faq: hasNonEmptyArray(content?.faqs),
+    faq: Boolean(hasDecisionContent || hasNonEmptyArray(content?.faqs)),
     closingCta: Boolean(
+      hasDecisionContent ||
       hasNonEmptyString(custom?.finalPara1) ||
         hasNonEmptyString(custom?.finalButton) ||
         hasNonEmptyString(custom?.relatedTitle) ||
@@ -319,7 +325,32 @@ async function runMarketingContentChecks(catalogBySlug, issues, contentRoot) {
       continue;
     }
 
-    const coverage = getMarketingCoverage(content);
+    let hasDecisionContent = false;
+    if (content?.decision !== undefined) {
+      try {
+        parseModelDecisionContent(
+          content.decision,
+          modelSlug,
+          'en',
+          `content/models/en/${modelSlug}.json#decision`,
+        );
+        hasDecisionContent = true;
+      } catch (error) {
+        addIssue(
+          issues,
+          'critical',
+          'invalid_localized_decision_content',
+          `Model "${modelSlug}" has invalid EN decision content: ${error instanceof Error ? error.message : String(error)}.`,
+          {
+            modelSlug,
+            locale: 'en',
+            error: error instanceof Error ? error.message : String(error),
+          },
+        );
+      }
+    }
+
+    const coverage = getMarketingCoverage(content, hasDecisionContent);
     const missingCriticalBlocks = Object.entries({
       hero: coverage.hero,
       useCases: coverage.useCases,
@@ -663,7 +694,14 @@ function validateRosterEntries(roster, catalogBySlug, issues) {
   });
 }
 
-function runSlugParityChecks(catalogSlugs, rosterSlugs, contentSlugs, localeSlugMaps, issues) {
+function runSlugParityChecks(
+  catalogSlugs,
+  rosterSlugs,
+  requiredContentSlugs,
+  registeredContentSlugs,
+  localeSlugMaps,
+  issues,
+) {
   const missingInRoster = diffSet(catalogSlugs, rosterSlugs);
   const missingInCatalogFromRoster = diffSet(rosterSlugs, catalogSlugs);
 
@@ -687,8 +725,8 @@ function runSlugParityChecks(catalogSlugs, rosterSlugs, contentSlugs, localeSlug
   }
 
   localeSlugMaps.forEach(({ locale, slugs }) => {
-    const missingInLocale = diffSet(contentSlugs, slugs);
-    const extraInLocale = diffSet(slugs, contentSlugs);
+    const missingInLocale = diffSet(requiredContentSlugs, slugs);
+    const extraInLocale = diffSet(slugs, registeredContentSlugs);
     if (missingInLocale.length) {
       addIssue(
         issues,
@@ -703,7 +741,7 @@ function runSlugParityChecks(catalogSlugs, rosterSlugs, contentSlugs, localeSlug
         issues,
         'critical',
         'extra_content_locale_slugs',
-        `Content slugs in content/models/${locale} missing from the published model registry: ${extraInLocale.join(', ')}`,
+        `Content slugs in content/models/${locale} missing from the model registry: ${extraInLocale.join(', ')}`,
         { locale, slugs: extraInLocale }
       );
     }
@@ -937,6 +975,7 @@ async function main() {
     registry.models.filter((model) => model?.publication?.model?.published === true),
     'slug',
   );
+  const registeredContentSlugs = setFromSlugs(registry.models, 'slug');
   const rosterSlugs = setFromSlugs(
     roster.filter((entry) => hasPublishedModelPage(entry)),
     'modelSlug',
@@ -944,7 +983,14 @@ async function main() {
   const catalogBySlug = new Map(catalog.map((entry) => [entry.modelSlug, entry]));
   const publicCatalogBySlug = new Map(publicCatalog.map((entry) => [entry.modelSlug, entry]));
 
-  runSlugParityChecks(catalogSlugs, rosterSlugs, publishedContentSlugs, localeSlugMaps, issues);
+  runSlugParityChecks(
+    catalogSlugs,
+    rosterSlugs,
+    publishedContentSlugs,
+    registeredContentSlugs,
+    localeSlugMaps,
+    issues,
+  );
   validateCatalogEntries(catalog, issues);
   validateRosterEntries(roster, catalogBySlug, issues);
   await runPrelaunchContentChecks(catalogBySlug, issues, contentRoot);

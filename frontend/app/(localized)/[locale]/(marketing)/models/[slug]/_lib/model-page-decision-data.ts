@@ -1,5 +1,6 @@
 import type { AppLocale } from '@/i18n/locales';
 import type { FalEngineEntry } from '@/config/falEngines';
+import { isPublishedComparisonSlug } from '@/lib/compare-hub/data';
 
 import { buildDecisionPricingScenarios, type ModelDecisionPricingScenario } from './model-page-decision-pricing';
 import { parseModelDecisionContent } from './model-page-decision-content';
@@ -70,14 +71,37 @@ export function buildModelDecisionPricingScenarios(
   return buildDecisionPricingScenarios(entry, locale, presets);
 }
 
+function comparisonSlugFromHref(href: string): string | null {
+  const pathname = href.split(/[?#]/, 1)[0] ?? '';
+  return pathname.match(/^\/(?:ai-video-engines|fr\/comparatif|es\/comparativa)\/([^/]+)$/)?.[1] ?? null;
+}
+
+function isPublishedDecisionHref(
+  href: string,
+  isComparisonPublished: (slug: string) => boolean,
+): boolean {
+  const comparisonSlug = comparisonSlugFromHref(href);
+  return comparisonSlug === null || isComparisonPublished(comparisonSlug);
+}
+
+function publishedLinkOrFallback(
+  link: ModelDecisionLink,
+  fallbackHref: string,
+  isComparisonPublished: (slug: string) => boolean,
+): ModelDecisionLink {
+  return isPublishedDecisionHref(link.href, isComparisonPublished) ? link : { ...link, href: fallbackHref };
+}
+
 export function buildModelDecisionData({
   engine,
   locale,
   decisionContent,
+  isComparisonPublished = isPublishedComparisonSlug,
 }: {
   engine: FalEngineEntry;
   locale: AppLocale;
   decisionContent: unknown;
+  isComparisonPublished?: (slug: string) => boolean;
 }): ModelDecisionData | null {
   const template = getModelPageTemplateConfig(engine.modelSlug);
 
@@ -96,17 +120,26 @@ export function buildModelDecisionData({
   );
 
   return {
-    hero: copy.hero,
+    hero: {
+      ...copy.hero,
+      primaryCta: publishedLinkOrFallback(copy.hero.primaryCta, template.hero.primaryCtaHref, isComparisonPublished),
+      secondaryCta: publishedLinkOrFallback(copy.hero.secondaryCta, template.hero.secondaryCtaHref, isComparisonPublished),
+      quickLinks: copy.hero.quickLinks.filter((link) => isPublishedDecisionHref(link.href, isComparisonPublished)),
+    },
     media: copy.media,
     features: copy.features,
-    decisionCards: copy.decisionCards,
+    decisionCards: copy.decisionCards.filter((card) => isPublishedDecisionHref(card.cta.href, isComparisonPublished)),
     referenceWorkflows: copy.referenceWorkflows,
     meta: copy.meta,
     pricing: {
       title: copy.pricingCopy.title,
       subtitle: copy.pricingCopy.subtitle,
       footnote: copy.pricingCopy.footnote,
-      cta: { label: copy.pricingCopy.ctaLabel, href: copy.pricingCopy.ctaHref },
+      cta: publishedLinkOrFallback(
+        { label: copy.pricingCopy.ctaLabel, href: copy.pricingCopy.ctaHref },
+        template.pricing.anchorHref,
+        isComparisonPublished,
+      ),
       scenarios,
     },
   };

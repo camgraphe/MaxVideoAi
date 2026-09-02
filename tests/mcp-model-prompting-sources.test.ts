@@ -36,7 +36,7 @@ test('official prompting sources are reviewed, model-scoped, immutable, and free
   for (const record of records) {
     assert.match(record.id, /^[a-z0-9]+(?:-[a-z0-9]+)*$/);
     assert.match(record.url, /^https:\/\//);
-    assert.equal(record.reviewedAt, '2026-08-28');
+    assert.match(record.reviewedAt, /^2026-(08-28|09-01)$/);
     assert.ok(record.modelIds.length >= 1);
     assert.ok(record.modes.length >= 1);
     assert.ok(Object.isFrozen(record));
@@ -54,6 +54,10 @@ test('official prompting sources are reviewed, model-scoped, immutable, and free
   assert.ok(records.some((record) => record.modelIds.includes('seedance-2-0')));
   assert.ok(records.some((record) => record.modelIds.includes('seedance-2-5')));
   assert.ok(records.some((record) => record.modelIds.includes('veo-3-1')));
+  assert.ok(records.some((record) => record.modelIds.includes('wan-3') && new URL(record.url).hostname === 'docs.modelstudio.console.alibabacloud.com'));
+  assert.ok(records.some((record) => record.modelIds.includes('grok-imagine-video-1-5') && new URL(record.url).hostname === 'docs.x.ai'));
+  assert.ok(records.some((record) => record.modelIds.includes('flux-3') && new URL(record.url).hostname === 'bfl.ai'));
+  assert.equal(records.some((record) => new URL(record.url).hostname.endsWith('fal.ai')), false);
   assert.ok([...sourcesByModel.values()].every((count) => count <= 3));
 
   const veo = getAgentModelPromptingSources('veo-3-1');
@@ -62,6 +66,17 @@ test('official prompting sources are reviewed, model-scoped, immutable, and free
   assert.equal(Object.isFrozen(veo), true);
   assert.equal(Object.isFrozen(veo[0]), true);
   assert.deepEqual(getAgentModelPromptingSources('unknown-model'), []);
+});
+
+test('Wan prompting uses the exact frozen Task 1 owner URL, never a distributor URL', () => {
+  const wan = listAgentModelPromptingSourceRecords().find((record) =>
+    record.modelIds.includes('wan-3'));
+  assert.ok(wan);
+  assert.equal(
+    wan.url,
+    'https://docs.modelstudio.console.alibabacloud.com/en/model-studio/wan3-video-generation-guide',
+  );
+  assert.equal(new URL(wan.url).hostname, 'docs.modelstudio.console.alibabacloud.com');
 });
 
 test('prompting-source parser fails closed for unknown fields, models, modes, and domains', () => {
@@ -75,6 +90,7 @@ test('prompting-source parser fails closed for unknown fields, models, modes, an
     ['unknown model', [{ ...validRecord(), modelIds: ['unknown-model'] }]],
     ['unknown mode', [{ ...validRecord(), modes: ['storyboard'] }]],
     ['unreviewed domain', [{ ...validRecord(), url: 'https://example.com/prompting' }]],
+    ['Fal distributor domain', [{ ...validRecord(), url: 'https://fal.ai/models/veo' }]],
     ['insecure URL', [{ ...validRecord(), url: 'http://cloud.google.com/prompting' }]],
     ['duplicate source ID', [validRecord(), validRecord()]],
     ['duplicate model', [{ ...validRecord(), modelIds: ['veo-3-1', 'veo-3-1'] }]],
@@ -88,4 +104,10 @@ test('prompting-source parser fails closed for unknown fields, models, modes, an
       description,
     );
   }
+
+  assert.throws(() => parseAgentModelPromptingSources(
+    [{ ...validRecord(), modes: ['ref2v'] }],
+    knownEngineIds,
+    new Map([['veo-3-1', new Set(['t2v', 'i2v'])]]),
+  ));
 });

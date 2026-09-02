@@ -51,11 +51,172 @@ function writeRepositoryFixture(
 }
 
 function repositoryDocument(models: Array<ReturnType<typeof isolatedModel>>) {
-  return { schemaVersion: 1 as const, models, tombstones: [] };
+  return { schemaVersion: 2 as const, models, tombstones: [] };
 }
 
+function lifecycleDocument() {
+  const copy = structuredClone(valid);
+  copy.schemaVersion = 2;
+  for (const model of copy.models) {
+    model.lifecycle = 'current';
+    model.successorId = null;
+  }
+  return copy;
+}
+
+function retire(model: any, replacement: string) {
+  model.label = `Retired ${model.id}`;
+  model.lifecycle = 'retired';
+  model.successorId = null;
+  model.replacement = replacement;
+  model.publication = {
+    model: { published: false, indexable: false },
+    examples: { published: false, includeInFamilyCopy: false, current: false },
+    compare: { published: false, indexed: false, suggestedOpponentIds: [], publishedPairIds: [] },
+    app: { published: false },
+    pricing: { published: false },
+    sitemap: { published: false },
+  };
+}
+
+test('schema v2 accepts every lifecycle state and a direct current successor', () => {
+  const document = lifecycleDocument();
+  const current = document.models.find((model: any) => model.id === 'happy-horse-1-1');
+  const legacy = document.models.find((model: any) => model.id === 'happy-horse-1-0');
+  const deepLegacy = document.models.find((model: any) => model.id === 'ltx-2');
+  const retired = document.models.find((model: any) => model.id === 'lumaRay2');
+
+  legacy.lifecycle = 'legacy';
+  legacy.successorId = current.id;
+  deepLegacy.lifecycle = 'deep_legacy';
+  deepLegacy.successorId = current.id;
+  deepLegacy.publication.app = { published: false };
+  deepLegacy.publication.pricing = { published: false };
+  deepLegacy.publication.examples.current = false;
+  retire(retired, current.id);
+
+  assert.doesNotThrow(() => validateModelRegistryDocument(document));
+});
+
+test('registry requires a known lifecycle and nullable canonical successor identity', () => {
+  for (const [label, mutateLifecycle, expected] of [
+    ['missing lifecycle', (model: any) => { delete model.lifecycle; }, /invalid lifecycle/i],
+    ['unknown lifecycle', (model: any) => { model.lifecycle = 'deprecated'; }, /invalid lifecycle/i],
+    ['missing successor field', (model: any) => { delete model.successorId; }, /invalid successorId/i],
+    ['non-string successor', (model: any) => { model.successorId = 42; }, /invalid successorId/i],
+  ] as const) {
+    const document = lifecycleDocument();
+    mutateLifecycle(document.models[0]);
+    assert.throws(() => validateModelRegistryDocument(document), expected, label);
+  }
+});
+
+test('lifecycle successors are direct non-self references to current models in the same category', () => {
+  const cases = [
+    {
+      label: 'self successor',
+      mutate(document: any) {
+        const source = document.models[0];
+        source.lifecycle = 'legacy';
+        source.successorId = source.id;
+      },
+      expected: /successor self-reference/i,
+    },
+    {
+      label: 'missing successor',
+      mutate(document: any) {
+        document.models[0].lifecycle = 'legacy';
+        document.models[0].successorId = 'missing-model';
+      },
+      expected: /missing model reference .*successorId/i,
+    },
+    {
+      label: 'successor chain',
+      mutate(document: any) {
+        document.models[0].lifecycle = 'legacy';
+        document.models[0].successorId = document.models[1].id;
+        document.models[1].lifecycle = 'legacy';
+        document.models[1].successorId = document.models[2].id;
+      },
+      expected: /successor target .* must be current/i,
+    },
+    {
+      label: 'category mismatch',
+      mutate(document: any) {
+        const source = document.models.find((model: any) => model.category === 'video');
+        const target = document.models.find((model: any) => model.category === 'image');
+        source.lifecycle = 'legacy';
+        source.successorId = target.id;
+      },
+      expected: /successor category mismatch/i,
+    },
+  ];
+
+  for (const scenario of cases) {
+    const document = lifecycleDocument();
+    scenario.mutate(document);
+    assert.throws(() => validateModelRegistryDocument(document), scenario.expected, scenario.label);
+  }
+});
+
+test('current and retired models cannot have lifecycle successors', () => {
+  const currentDocument = lifecycleDocument();
+  currentDocument.models[0].successorId = currentDocument.models[1].id;
+  assert.throws(
+    () => validateModelRegistryDocument(currentDocument),
+    /current model .* cannot have a successor/i,
+  );
+
+  const retiredDocument = lifecycleDocument();
+  const retired = retiredDocument.models[0];
+  retire(retired, retiredDocument.models[1].id);
+  retired.successorId = retiredDocument.models[2].id;
+  assert.throws(
+    () => validateModelRegistryDocument(retiredDocument),
+    /retired model .* cannot have a successor/i,
+  );
+});
+
+test('deep-legacy models cannot publish current app, pricing, or example discovery', () => {
+  for (const [label, enable] of [
+    ['app', (model: any) => { model.publication.app.published = true; }],
+    ['pricing', (model: any) => { model.publication.pricing.published = true; }],
+    ['current examples', (model: any) => { model.publication.examples.current = true; }],
+  ] as const) {
+    const document = lifecycleDocument();
+    const model = document.models[0];
+    model.lifecycle = 'deep_legacy';
+    model.publication.app = { published: false };
+    model.publication.pricing = { published: false };
+    model.publication.examples.current = false;
+    enable(model);
+    assert.throws(
+      () => validateModelRegistryDocument(document),
+      /deep-legacy model .* must disable app, pricing, and current examples/i,
+      label,
+    );
+  }
+});
+
+test('retired lifecycle and replacement retirement remain one canonical contract', () => {
+  const missingReplacement = lifecycleDocument();
+  missingReplacement.models[0].label = `Retired ${missingReplacement.models[0].id}`;
+  missingReplacement.models[0].lifecycle = 'retired';
+  assert.throws(
+    () => validateModelRegistryDocument(missingReplacement),
+    /retired model .* requires a replacement/i,
+  );
+
+  const activeReplacement = lifecycleDocument();
+  activeReplacement.models[0].replacement = activeReplacement.models[1].id;
+  assert.throws(
+    () => validateModelRegistryDocument(activeReplacement),
+    /replacement model .* must be retired/i,
+  );
+});
+
 test('canonical registry validates the committed document', () => {
-  assert.equal(validateModelRegistryDocument(valid).models.length, 43);
+  assert.equal(validateModelRegistryDocument(valid).models.length, 50);
 });
 
 test('published model pages require localized content in en, fr, and es', () => {
@@ -164,6 +325,21 @@ test('suggested and published-pair opponents must be comparison-published', () =
       relation
     );
   }
+});
+
+test('hidden comparison models may pre-author a hidden launch graph', () => {
+  const source = isolatedModel('wan-3');
+  const opponent = isolatedModel('wan-3-prime');
+  source.publication.compare.published = false;
+  source.publication.compare.indexed = false;
+  opponent.publication.compare.published = false;
+  opponent.publication.compare.indexed = false;
+  source.publication.compare.suggestedOpponentIds = [opponent.id];
+  source.publication.compare.publishedPairIds = [opponent.id];
+  const document = repositoryDocument([source, opponent]);
+  assert.doesNotThrow(() =>
+    validateModelRegistryRepository(document, writeRepositoryFixture(document.models))
+  );
 });
 
 test('engine and public alias namespaces preserve context-specific veo3 behavior', () => {
@@ -292,6 +468,8 @@ test('replacement models are fully retired and point directly to an active model
     () => validateModelRegistryDocument(mutate((copy) => {
       const retired = copy.models[0];
       const target = copy.models[1];
+      retired.label = `Retired ${retired.id}`;
+      retired.lifecycle = 'retired';
       retired.replacement = target.id;
       retired.publication = {
         model: { published: false, indexable: false },
@@ -311,6 +489,9 @@ test('replacement models are fully retired and point directly to an active model
 
 test('registry rejects replacement cycles as well as longer chains', () => {
   const retire = (model: any, replacement: string) => {
+    model.label = `Retired ${model.id}`;
+    model.lifecycle = 'retired';
+    model.successorId = null;
     model.replacement = replacement;
     model.publication = {
       model: { published: false, indexable: false },

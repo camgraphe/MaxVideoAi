@@ -5,7 +5,7 @@ import sharp from 'sharp';
 import { query } from '@/lib/db';
 import { ensureAssetSchema } from '@/lib/schema';
 import { ensureReusableAsset } from '@/server/media-library';
-import { recordUserAsset, uploadImageToStorage } from '@/server/storage';
+import { recordUserAsset, StorageUploadError, uploadImageToStorage } from '@/server/storage';
 import { createUploadImageThumbnail } from '@/server/upload-thumbnails';
 
 const DEFAULT_MAX_IMAGE_MB = 25;
@@ -459,7 +459,12 @@ export function createStoreImageUploadService(
         ...(params.signal ? { signal: params.signal } : {}),
       });
     } catch (error) {
-      dependencies.logImageUploadEvent('error', 'IMAGE_UPLOAD_STORAGE_FAILED');
+      dependencies.logImageUploadEvent(
+        'error',
+        error instanceof StorageUploadError && error.context.stage === 'before-upload'
+          ? 'IMAGE_UPLOAD_STORE_PREPARE_FAILED'
+          : 'IMAGE_UPLOAD_STORAGE_FAILED'
+      );
       throw new ImageUploadError('UPLOAD_FAILED', 'Failed to upload the image.', error);
     }
 

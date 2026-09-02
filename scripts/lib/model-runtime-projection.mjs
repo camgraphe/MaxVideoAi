@@ -15,12 +15,20 @@ export function buildModelRuntimeProjection(source) {
     return model.id;
   }
 
+  function resolveSuccessorSlug(sourceModel) {
+    if (!sourceModel.successorId) return null;
+    const target = modelsById.get(sourceModel.successorId.toLowerCase());
+    if (!target) throw new Error(`model-runtime: missing successor target "${sourceModel.successorId}"`);
+    return target.slug;
+  }
+
   return {
     schemaVersion: source.schemaVersion,
     models: source.models.map((sourceModel) => {
       const { replacement: _replacement, ...model } = sourceModel;
       return {
         ...model,
+        successorSlug: resolveSuccessorSlug(sourceModel),
         ...(sourceModel.replacement ? { publicTargetId: resolvePublicTargetId(sourceModel) } : {}),
       };
     }),

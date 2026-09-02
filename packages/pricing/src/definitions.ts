@@ -147,6 +147,36 @@ export function buildPricingDefinitionsFromFixtures(): PricingEngineDefinition[]
       minChargeCents: 0,
       taxPolicyHint: 'standard',
       addons: engine.pricingDetails?.addons ?? undefined,
+      modePricing: engine.pricingDetails?.byMode
+        ? Object.fromEntries(
+            Object.entries(engine.pricingDetails.byMode).map(([mode, value]) => [
+              mode,
+              value
+                ? {
+                    ...(value.perSecondCents
+                      ? {
+                          perSecondCents: {
+                            ...(typeof value.perSecondCents.default === 'number'
+                              ? { default: value.perSecondCents.default }
+                              : {}),
+                            ...(value.perSecondCents.byResolution
+                              ? { byResolution: { ...value.perSecondCents.byResolution } }
+                              : {}),
+                          },
+                        }
+                      : {}),
+                    ...(value.durationBasis ? { durationBasis: value.durationBasis } : {}),
+                  }
+                : value,
+            ]),
+          )
+        : undefined,
+      referenceImages: engine.pricingDetails?.referenceImages
+        ? {
+            ...engine.pricingDetails.referenceImages,
+            modes: [...engine.pricingDetails.referenceImages.modes],
+          }
+        : undefined,
       availability: engine.availability,
       metadata: {
         source: 'falEngines.ts',

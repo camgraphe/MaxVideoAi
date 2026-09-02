@@ -34,6 +34,7 @@ export const MCP_REFERENCE_STAGING_STORAGE_PREFIX = 'mcp-reference-staging/';
 
 export class StorageUploadError extends Error {
   context: {
+    stage?: 'before-upload' | 'put-object';
     key?: string;
     keyBytes?: number;
     prefix?: string;
@@ -44,6 +45,7 @@ export class StorageUploadError extends Error {
   constructor(
     message: string,
     context: {
+      stage?: 'before-upload' | 'put-object';
       key?: string;
       keyBytes?: number;
       prefix?: string;
@@ -297,9 +299,22 @@ export async function uploadImageToStorage(params: {
 
   try {
     await params.beforeUpload?.(key);
+  } catch {
+    throw new StorageUploadError('Failed to prepare image storage.', {
+      stage: 'before-upload',
+      key,
+      keyBytes: getObjectKeySizeBytes(key),
+      prefix: params.prefix,
+      userId: params.userId ?? null,
+      originalFileName: params.fileName ?? null,
+    });
+  }
+
+  try {
     await client.send(putCommand, { abortSignal: params.signal });
-  } catch (error) {
+  } catch {
     throw new StorageUploadError('Failed to upload image to storage.', {
+      stage: 'put-object',
       key,
       keyBytes: getObjectKeySizeBytes(key),
       prefix: params.prefix,
@@ -322,6 +337,7 @@ export async function uploadImageToStorage(params: {
 
 const DEFAULT_ALLOWED_HOSTS = new Set([
   'cdn.maxvideoai.com',
+  'media.maxvideoai.com',
   'blob.vercel-storage.com',
   'storage.googleapis.com',
   's3.amazonaws.com',

@@ -6,6 +6,7 @@ import test from 'node:test';
 type EngineCatalogEntry = {
   category?: string;
   availability?: string;
+  lifecycle?: string;
   engine?: {
     availability?: string;
     modes?: string[];
@@ -154,13 +155,13 @@ test('pricing matrix data is generated from the catalog with scenario total pres
   assert.match(hubDataSource, /DEFAULT_VIDEO_PRICE_PRESET_ID/);
   assert.match(hubDataSource, /engineIcon/);
   assert.match(hubDataSource, /PRICING_HIGHLIGHT_EXCLUDED_ENGINE_IDS/);
-  assert.match(hubDataSource, /PREVIOUS_GENERATION_PRICING_ENGINE_IDS/);
+  assert.match(hubDataSource, /isPricingDiscoveryEntry/);
+  assert.match(hubDataSource, /buildVideoPricingRowsFromEntries/);
   assert.match(hubDataSource, /seedance-1-5-pro/);
-  assert.match(hubDataSource, /pika-text-to-video/);
   assert.match(hubDataSource, /PRICING_DISPLAY_MODEL_ORDER/);
   assert.match(hubDataSource, /PRICING_DISPLAY_FAMILY_ORDER/);
   assert.match(hubDataSource, /getPricingDisplayRank/);
-  assert.match(hubDataSource, /'seedance-2-0'[\s\S]*'kling-3-pro'[\s\S]*'veo-3-1'[\s\S]*'happy-horse-1-1'[\s\S]*'ltx-2-3-fast'[\s\S]*'wan-2-6'[\s\S]*'minimax-hailuo-02-text'[\s\S]*'luma-ray-2'[\s\S]*'happy-horse-1-0'/);
+  assert.match(hubDataSource, /'ltx-2-5-pro'[\s\S]*'ltx-2-5-fast'[\s\S]*'ltx-2-3'[\s\S]*'ltx-2-3-fast'[\s\S]*'wan-3-prime'[\s\S]*'wan-3'[\s\S]*'wan-2-6'[\s\S]*'grok-imagine-video-1-5'[\s\S]*'flux-3'[\s\S]*'flux-3-draft'/);
   assert.match(hubDataSource, /Entry route/);
   assert.match(hubDataSource, /chooseEntryDuration/);
   assert.match(hubDataSource, /chooseEntryResolution/);
@@ -206,13 +207,9 @@ test('pricing matrix data is generated from the catalog with scenario total pres
       modes.has('retake');
     return (
       supportsVideo &&
-      (entry.availability ?? entry.engine?.availability) === 'available' &&
-      Boolean(
-        surfaces.pricing?.includeInEstimator ||
-          surfaces.modelPage?.indexable ||
-          surfaces.compare?.includeInHub ||
-          surfaces.app?.enabled
-      )
+      ['available', 'limited'].includes(entry.availability ?? entry.engine?.availability ?? '') &&
+      ['current', 'legacy'].includes(entry.lifecycle ?? '') &&
+      surfaces.pricing?.includeInEstimator === true
     );
   });
   assert.ok(publicVideoEngines.length > 12, `expected a broad public video catalog, got ${publicVideoEngines.length}`);

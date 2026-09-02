@@ -6,7 +6,7 @@ const fixturePath = 'tests/fixtures/model-registry-baseline.json';
 
 test('model registry baseline freezes the complete pre-migration contract', () => {
   const baseline = JSON.parse(readFileSync(fixturePath, 'utf8')) as {
-    models: Array<{ id: string; slug: string }>;
+    models: Array<{ id: string; slug: string; lifecycle: string; successorId: string | null }>;
     internalAliases: Array<{ alias: string; targetId: string }>;
     publicSlugAliases: Array<{ alias: string; targetSlug: string }>;
     familyDefinitions: Array<{ id: string }>;
@@ -17,6 +17,11 @@ test('model registry baseline freezes the complete pre-migration contract', () =
   assert.equal(baseline.models.length, 41);
   assert.equal(new Set(baseline.models.map((model) => model.id.toLowerCase())).size, 41);
   assert.equal(new Set(baseline.models.map((model) => model.slug)).size, 41);
+  assert.equal(
+    baseline.models.every((model) => ['current', 'legacy', 'deep_legacy', 'retired'].includes(model.lifecycle)),
+    true,
+  );
+  assert.equal(baseline.models.every((model) => model.successorId === null), true);
   assert.equal(baseline.internalAliases.length, 87);
   assert.equal(baseline.publicSlugAliases.length, 45);
   assert.ok(baseline.familyDefinitions.length >= 10);

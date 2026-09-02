@@ -2,6 +2,7 @@ import { listFalEngines } from '@/config/falEngines';
 import type { EngineCaps } from '@/types/engines';
 
 import type { PricingAuditScenario } from './types';
+import { P0_VIDEO_PRICING_SCENARIOS } from './p0-video-scenarios';
 
 const MEMBER_TIERS = ['member', 'plus', 'pro'] as const;
 const PRICING_HUB_PRESETS = [
@@ -23,6 +24,7 @@ const PROVIDER_REFERENCE_COMPATIBILITY_ENGINE_IDS = new Set([
   'seedance-2-0-fast',
   'seedance-2-0-mini',
 ]);
+const FROZEN_LEGACY_AUDIT_ENGINE_IDS = new Set(['ltx-2-fast', 'ltx-2', 'wan-2-5']);
 
 function compatibilityProfileForEngine(engineId: string): string | undefined {
   return PROVIDER_REFERENCE_COMPATIBILITY_ENGINE_IDS.has(engineId) ? 'provider-reference-current' : undefined;
@@ -51,44 +53,82 @@ function addScenario(rows: PricingAuditScenario[], scenario: PricingAuditScenari
   rows.push(scenario);
 }
 
-export function buildPricingAuditScenarios(): PricingAuditScenario[] {
-  const entries = listFalEngines().filter((entry) => entry.surfaces.pricing.includeInEstimator);
-  const rows: PricingAuditScenario[] = [];
+function addEngineDefaultScenarios(rows: PricingAuditScenario[], entry: ReturnType<typeof listFalEngines>[number]): void {
+  const engine = entry.engine;
+  const durationSec = resolveDuration(engine);
+  const resolution = resolveResolution(engine);
+  const mode = entry.modes[0]?.mode ?? (entry.category === 'image' ? 't2i' : 't2v');
+  const equivalenceKey = `${entry.id}:${mode}:${durationSec}:${resolution}:member`;
+  const compatibilityProfile = compatibilityProfileForEngine(entry.id);
 
-  for (const entry of entries) {
-    const engine = entry.engine;
-    const durationSec = resolveDuration(engine);
-    const resolution = resolveResolution(engine);
-    const mode = entry.modes[0]?.mode ?? (entry.category === 'image' ? 't2i' : 't2v');
-    const equivalenceKey = `${entry.id}:${mode}:${durationSec}:${resolution}:member`;
-    const compatibilityProfile = compatibilityProfileForEngine(entry.id);
-
-    for (const membershipTier of MEMBER_TIERS) {
-      addScenario(rows, {
-        id: `billing:${entry.id}:${mode}:${durationSec}:${resolution}:${membershipTier}`,
-        surface: 'billing',
-        engineId: entry.id,
-        mode,
-        resolution,
-        durationSec,
-        membershipTier,
-        equivalenceKey: `${entry.id}:${mode}:${durationSec}:${resolution}:${membershipTier}`,
-        ...(compatibilityProfile ? { compatibilityProfile } : {}),
-        input: {},
-      });
-    }
-
+  for (const membershipTier of MEMBER_TIERS) {
     addScenario(rows, {
-      id: `estimator:${entry.id}:${durationSec}:${resolution}`,
-      surface: 'estimator',
+      id: `billing:${entry.id}:${mode}:${durationSec}:${resolution}:${membershipTier}`,
+      surface: 'billing',
       engineId: entry.id,
       mode,
       resolution,
       durationSec,
-      membershipTier: 'member',
-      equivalenceKey,
+      membershipTier,
+      equivalenceKey: `${entry.id}:${mode}:${durationSec}:${resolution}:${membershipTier}`,
       ...(compatibilityProfile ? { compatibilityProfile } : {}),
       input: {},
+    });
+  }
+
+  addScenario(rows, {
+    id: `estimator:${entry.id}:${durationSec}:${resolution}`,
+    surface: 'estimator',
+    engineId: entry.id,
+    mode,
+    resolution,
+    durationSec,
+    membershipTier: 'member',
+    equivalenceKey,
+    ...(compatibilityProfile ? { compatibilityProfile } : {}),
+    input: {},
+  });
+}
+
+export function buildPricingAuditScenarios(): PricingAuditScenario[] {
+  const allEntries = listFalEngines();
+  const entries = allEntries.filter((entry) => entry.surfaces.pricing.includeInEstimator);
+  const rows: PricingAuditScenario[] = [];
+
+  for (const entry of entries) {
+    addEngineDefaultScenarios(rows, entry);
+  }
+
+  for (const entry of allEntries) {
+    if (FROZEN_LEGACY_AUDIT_ENGINE_IDS.has(entry.id) && !entries.includes(entry)) {
+      addEngineDefaultScenarios(rows, entry);
+    }
+  }
+
+  for (const scenario of P0_VIDEO_PRICING_SCENARIOS) {
+    const inputAudioDurationSec = 'inputAudioDurationSec' in scenario
+      ? scenario.inputAudioDurationSec
+      : undefined;
+    const referenceImageCount = 'referenceImageCount' in scenario
+      ? scenario.referenceImageCount
+      : undefined;
+    addScenario(rows, {
+      id: `billing:p0:${scenario.id}`,
+      surface: 'billing',
+      engineId: scenario.engineId,
+      mode: scenario.mode,
+      resolution: scenario.resolution,
+      durationSec: scenario.durationSec,
+      membershipTier: 'member',
+      equivalenceKey: `${scenario.id}:member`,
+      input: {
+        ...(inputAudioDurationSec != null
+          ? { inputAudioDurationSec }
+          : {}),
+        ...(referenceImageCount != null
+          ? { referenceImageCount }
+          : {}),
+      },
     });
   }
 

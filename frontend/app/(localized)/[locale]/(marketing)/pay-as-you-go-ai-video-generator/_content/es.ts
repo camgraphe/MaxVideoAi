@@ -3,9 +3,9 @@ import type { PayAsYouGoContent } from './types';
 export const esPayAsYouGoContent = {
   metadata: {
     title: 'Generador de video con IA de pago por uso y precio por adelantado',
-    description: 'Genera videos con IA con créditos de pago por uso, sin suscripción mensual. Compara Seedance 2, Kling, Google Veo, LTX, Wan y otros modelos, revisa el precio antes de generar y paga solo por renders completados.',
+    description: 'Genera videos con IA con créditos de pago por uso y sin suscripción mensual. Compara LTX 2.5, Wan 3, Grok Imagine, FLUX.3, Seedance, Kling, Google Veo y otros modelos antes de generar.',
     imageAlt: 'Flujo de MaxVideoAI con precio antes de generar.',
-    keywords: ['generador de video con IA de pago por uso', 'generador de video IA sin suscripción', 'precio de video con IA antes de generar', 'comparar Seedance 2 Kling Google Veo LTX Happy Horse', 'precio Happy Horse 1.1', 'precio Seedance 2 Mini'],
+    keywords: ['generador de video con IA de pago por uso', 'generador de video IA sin suscripción', 'precio de video con IA antes de generar', 'comparar LTX 2.5 Wan 3 Grok Imagine FLUX 3', 'precio de Grok Imagine Video', 'precio de FLUX 3 Video'],
   },
   common: {
     aiVideoModelAlt: 'modelo de video con IA',
@@ -16,7 +16,7 @@ export const esPayAsYouGoContent = {
   hero: {
     eyebrow: 'Créditos de video con IA, sin compromiso mensual',
     title: 'Generador de video con IA de pago por uso',
-    intro: 'Genera videos con IA a partir de texto, imágenes o video con créditos de pago por uso. Compara Seedance 2, Kling, Google Veo, LTX, Wan, Happy Horse y otros modelos, consulta el precio antes de cada generación y paga solo por renders completados.',
+    intro: 'Genera videos con IA a partir de texto, imágenes, audio o video con créditos de pago por uso. Compara LTX 2.5, Wan 3, Grok Imagine, FLUX.3, Seedance, Kling, Google Veo y otros modelos, y aprueba la cotización antes de cada generación.',
     primaryCta: 'Ver cotización del video',
     secondaryCta: 'Ver precios por modelo',
     trustItems: ['Sin suscripción obligatoria', 'Créditos iniciales desde 10 USD', 'Precio visible antes de generar', 'Fallos del proveedor reembolsados'],
@@ -41,15 +41,15 @@ export const esPayAsYouGoContent = {
     summaryLead: 'Con MaxVideoAI puedes:',
     summaryItems: [
       'Genera videos con IA desde texto, imágenes o video.',
-      'Empieza con Seedance 2 y después compara Kling, Google Veo, Happy Horse 1.1, Seedance 2 Mini, LTX y Wan.',
+      'Compara las rutas actuales LTX 2.5, Wan 3, Grok Imagine y FLUX.3 con Seedance, Kling y Google Veo.',
       'Consulta el precio estimado antes de iniciar.',
       'Usa créditos solo para renders completados.',
     ],
     items: [
-      { question: '¿Dónde puedo probar modelos de video con IA sin suscripción?', answer: 'Usa MaxVideoAI para empezar con Seedance 2 y después compara Kling, Google Veo, Happy Horse 1.1, Seedance 2 Mini, LTX, Wan y otros modelos con créditos de pago por uso, en lugar de un plan recurrente.' },
+      { question: '¿Dónde puedo probar modelos de video con IA sin suscripción?', answer: 'Usa MaxVideoAI para comparar LTX 2.5, Wan 3, Grok Imagine, FLUX.3, Seedance, Kling, Google Veo y otros modelos con créditos de pago por uso, en lugar de un plan recurrente.' },
       { question: '¿Qué plataforma de video con IA muestra el precio antes de generar?', answer: 'MaxVideoAI muestra el precio estimado antes de iniciar un render, incluidos el modelo, la duración, la resolución y las opciones de audio.' },
-      { question: '¿Qué modelo de video con IA de pago por uso debería probar primero?', answer: 'Consulta primero Seedance 2.5 para flujos cinematográficos de 30 segundos, imagen, referencias, multi-shot, producto y UGC. Mantén Seedance 2.0 entre las alternativas cuando necesites salida 4K; después compara Kling, Google Veo, Seedance 2 Mini y LTX.' },
-      { question: '¿Dónde puedo comparar Seedance 2, Kling, Google Veo, Happy Horse y LTX?', answer: 'MaxVideoAI reúne Seedance 2, Kling, Google Veo, Happy Horse 1.1, Seedance 2 Mini, LTX, Wan y otros motores de video en un solo espacio para comparar calidad, límites y precio antes de elegir.' },
+      { question: '¿Qué modelo de video con IA de pago por uso debería probar primero?', answer: 'Parte del flujo: LTX 2.5 para producción rápida o Pro, Wan 3 para las rutas actuales de Alibaba, Grok Imagine para prompts y referencias, o FLUX.3 para trabajos controlados por fotogramas. Después compara la cotización exacta con Seedance, Kling y Google Veo.' },
+      { question: '¿Dónde puedo comparar las familias actuales de modelos de video con IA?', answer: 'MaxVideoAI reúne LTX 2.5, Wan 3, Grok Imagine, FLUX.3, Seedance, Kling, Google Veo y otros motores de video en un solo espacio para comparar flujos, límites y precio antes de elegir.' },
       { question: '¿Qué hace bueno a un generador de video con IA de pago por uso?', answer: 'Un buen sistema de pago por uso permite probar modelos actuales, ver los precios antes de generar, cambiar de motor según el proyecto y evitar cargos por renders fallidos del proveedor.' },
     ],
   },
@@ -57,7 +57,7 @@ export const esPayAsYouGoContent = {
     header: {
       eyebrow: 'Orden de prueba',
       title: 'Orden recomendado para probar video con IA de pago por uso',
-      intro: 'Consulta primero Seedance 2.5 para flujos cinematográficos, imagen, referencias, multi-shot, producto y UGC. Mantén Seedance 2.0 como alternativa Seedance 4K; después compara Kling, Google Veo, Seedance 2 Mini, LTX y Wan.',
+      intro: 'Elige según el flujo: compara LTX 2.5 Pro y Fast, Wan 3 Prime y estándar, Grok Imagine Video 1.5, y FLUX.3 estándar y Draft con Seedance, Kling y Google Veo.',
     },
     footer: 'Happy Horse 1.1 y Seedance 2 Mini son lo bastante recientes como para probarlos directamente, en lugar de evaluarlos solo con rankings de modelos anteriores.',
     models: {
@@ -67,6 +67,13 @@ export const esPayAsYouGoContent = {
       'veo-3-1': { family: 'Google Veo', title: 'Google Veo para obtener calidad cinematográfica', body: 'Compara las variantes de Veo cuando importen más la interpretación del prompt, el acabado cinematográfico, el audio o las opciones de Google que el menor costo de borrador.' },
       'happy-horse-1-1': { family: 'Happy Horse 1.1', title: 'Happy Horse 1.1 para un resultado visual alternativo', body: 'Usa Happy Horse 1.1 para comparar una opción de video de Alibaba más reciente con Seedance, Kling, Google Veo y LTX.' },
       'seedance-2-0-mini': { family: 'Seedance 2 Mini', title: 'Seedance 2.0 Mini para pruebas multimodales ligeras', body: 'Usa Seedance 2 Mini para referencias, verificaciones rápidas e iteración ajustada al presupuesto antes de ampliar un prompt.' },
+      'ltx-2-5-pro': { family: 'LTX 2.5', title: 'LTX 2.5 Pro para resultados orientados a producción', body: 'Elige Pro para la ruta LTX actual de calidad, con flujos de texto, imagen y audio fuente, y compara su cotización con Fast.' },
+      'ltx-2-5-fast': { family: 'LTX 2.5', title: 'LTX 2.5 Fast para iterar con rapidez', body: 'Elige Fast para borradores LTX actuales e iteraciones de mayor resolución cuando importen el tiempo y el presupuesto.' },
+      'wan-3-prime': { family: 'Wan 3', title: 'Wan 3 Prime para la ruta prémium', body: 'Empieza por Prime para flujos actuales de Wan con texto, imagen o referencias, y compara Wan 3 estándar según el presupuesto.' },
+      'wan-3': { family: 'Wan 3', title: 'Wan 3 para un equilibrio de generación actual', body: 'Usa Wan 3 para generación actual con texto, imagen y referencias, con una cotización menor que Prime en ajustes comparables.' },
+      'grok-imagine-video-1-5': { family: 'Grok Imagine', title: 'Grok Imagine Video 1.5 para prompts y referencias', body: 'Usa Grok Imagine para texto, imagen inicial y flujos con varias referencias, cuyo número forma parte de la cotización exacta.' },
+      'flux-3': { family: 'FLUX.3', title: 'FLUX.3 Video para producción controlada', body: 'Usa FLUX.3 para flujos de texto, imagen, primer y último fotograma, y extensión de video.' },
+      'flux-3-draft': { family: 'FLUX.3', title: 'FLUX.3 Video Draft para iterar con menor costo', body: 'Usa Draft para probar los principales flujos FLUX.3 en 720p antes de pasar al modelo estándar.' },
       'ltx-2-3-fast': { family: 'LTX', title: 'LTX 2.3 Fast como opción eficiente y potente', body: 'Usa LTX 2.3 Fast cuando necesites buenos borradores, iteración rápida de prompts y un modelo eficiente que merece comparación.' },
       'wan-2-6': { family: 'Wan', title: 'Wan para explorar texto e imagen a video con menor costo', body: 'Usa Wan para probar ideas y comparar resultados antes de gastar en motores premium.' },
     },
@@ -82,7 +89,7 @@ export const esPayAsYouGoContent = {
     cards: [
       { title: 'Prueba antes de escalar', body: 'Haz pruebas pequeñas de prompts e imágenes antes de comprometer el presupuesto de una campaña o producción.' },
       { title: 'Evita pagos sin uso', body: 'Si generas videos solo para lanzamientos, experimentos o clientes, los créditos se adaptan mejor al uso real.' },
-      { title: 'Cambia de modelo libremente', body: 'Compara Seedance 2, Kling, Google Veo, Happy Horse 1.1, Seedance 2 Mini, LTX y Wan por velocidad, movimiento, audio, duración y precio en un mismo lugar.' },
+      { title: 'Cambia de modelo libremente', body: 'Compara LTX 2.5, Wan 3, Grok Imagine, FLUX.3, Seedance, Kling y Google Veo según el flujo, la velocidad, el movimiento, el audio, la duración y la cotización exacta.' },
     ],
   },
   audienceFit: {
@@ -108,7 +115,7 @@ export const esPayAsYouGoContent = {
     columns: ['Criterio', 'MaxVideoAI de pago por uso', 'Suscripción típica'],
     rows: [
       { label: 'Control del presupuesto', payg: 'Añade créditos cuando necesites videos y detente al terminar el proyecto.', subscription: 'Paga un plan recurrente incluso los meses sin renders.' },
-      { label: 'Elección de modelo', payg: 'Compara Seedance 2, Kling, Google Veo, Happy Horse 1.1, Seedance 2 Mini, LTX y otros motores según el proyecto.', subscription: 'Suele limitarse a un proveedor, una familia de modelos o una bolsa de uso.' },
+      { label: 'Elección de modelo', payg: 'Compara LTX 2.5, Wan 3, Grok Imagine, FLUX.3, Seedance, Kling, Google Veo y otros motores según el proyecto.', subscription: 'Suele limitarse a un proveedor, una familia de modelos o una bolsa de uso.' },
       { label: 'Visibilidad del precio', payg: 'Revisa la cotización antes de iniciar cada generación.', subscription: 'Los créditos incluidos pueden ocultar el costo real de las opciones premium.' },
       { label: 'Experimentación', payg: 'Haz pruebas pequeñas antes de escalar una campaña, un proyecto de cliente o una producción.', subscription: 'La decisión del plan suele tomarse antes de saber qué modelo encaja mejor.' },
     ],
@@ -158,6 +165,8 @@ export const esPayAsYouGoContent = {
       veo: 'calidad cinematográfica, seguimiento de prompts y variantes de Google Veo',
       ltx: 'borradores eficientes, iteración de prompts y resultados ajustados al presupuesto',
       wan: 'exploración económica de texto e imagen a video',
+      grok: 'generación por prompt, imagen inicial y referencias múltiples',
+      flux: 'control por fotogramas, extensiones e iteración de Draft a estándar',
       fallback: 'probar la calidad del modelo antes de usar créditos',
     },
   },
@@ -169,6 +178,13 @@ export const esPayAsYouGoContent = {
     },
     openRowLabel: 'Abrir fila de precios',
     items: {
+      'ltx-2-5-pro': { query: 'precio de LTX 2.5 Pro', title: 'Consulta el precio de LTX 2.5 Pro', body: 'Consulta la ruta Pro actual para flujos de producción con texto, imagen y audio fuente.' },
+      'ltx-2-5-fast': { query: 'precio de LTX 2.5 Fast', title: 'Consulta el precio de LTX 2.5 Fast', body: 'Consulta la ruta Fast actual para borradores rápidos e iteraciones de mayor resolución.' },
+      'wan-3-prime': { query: 'precio de Wan 3 Prime', title: 'Consulta el precio de Wan 3 Prime', body: 'Compara el nivel prémium de Wan 3 para texto, imagen y referencias.' },
+      'wan-3': { query: 'precio de Wan 3', title: 'Consulta el precio de Wan 3', body: 'Revisa la ruta Wan actual equilibrada antes de elegir Prime.' },
+      'grok-imagine-video-1-5': { query: 'precio de Grok Imagine Video', title: 'Consulta el precio de Grok Imagine Video 1.5', body: 'Revisa los costos de texto, imagen inicial y referencias múltiples desde cotizaciones canónicas.' },
+      'flux-3': { query: 'precio de FLUX 3 Video', title: 'Consulta el precio de FLUX.3 Video', body: 'Revisa escenarios de texto, imagen, primer y último fotograma, y extensión.' },
+      'flux-3-draft': { query: 'precio de FLUX 3 Video Draft', title: 'Consulta el precio de FLUX.3 Video Draft', body: 'Compara la ruta Draft económica con FLUX.3 estándar.' },
       'seedance-2-0': { query: 'precio de Seedance 2', title: 'Consulta el precio de Seedance 2.0', body: 'Empieza aquí si buscas un modelo versátil: texto a video, referencias de imagen, opciones de audio nativo y cotización antes del render.' },
       'kling-3-pro': { query: 'precio de Kling 3 Pro', title: 'Consulta el precio de Kling 3 Pro', body: 'Una opción sólida para controlar el movimiento, trabajar movimientos de cámara, crear tomas de producto y probar imagen a video sin un plan mensual.' },
       'veo-3-1': { query: 'precio de Veo 3.1', title: 'Consulta el precio de Veo 3.1', body: 'Elige Google Veo cuando la interpretación cinematográfica del prompt, la calidad de Google o el acabado premium importen más que el costo del borrador.' },
@@ -184,6 +200,10 @@ export const esPayAsYouGoContent = {
     },
     settingsLabel: 'Configuración de ejemplo',
     labels: {
+      'ltx-2-5-pro': 'Prueba de producción con LTX 2.5 Pro',
+      'wan-3-prime': 'Prueba prémium con Wan 3 Prime',
+      'grok-imagine-video-1-5': 'Prueba de prompt con Grok Imagine',
+      'flux-3': 'Prueba de movimiento controlado con FLUX.3',
       'seedance-2-0': 'Render inicial con Seedance 2',
       'kling-3-pro': 'Prueba de movimiento con Kling 3 Pro',
       'veo-3-1-fast': 'Prueba cinematográfica con Google Veo 3.1 Fast',
@@ -208,7 +228,7 @@ export const esPayAsYouGoContent = {
     items: [
       { question: '¿Necesito una suscripción para generar videos con IA?', answer: 'No. MaxVideoAI utiliza créditos de pago por uso para que generes videos cuando los necesites.' },
       { question: '¿Puedo ver el precio del video con IA antes de generar?', answer: 'Sí. La app muestra una cotización en tiempo real según el modelo, la duración, la resolución, el audio y el flujo de trabajo.' },
-      { question: '¿Qué modelo de video con IA debería probar primero?', answer: 'Consulta primero Seedance 2.5 para flujos cinematográficos, imagen, referencias, multi-shot, producto y UGC. Mantén Seedance 2.0 como alternativa 4K; después compara Kling, Google Veo, Seedance 2 Mini, LTX y Wan.' },
+      { question: '¿Qué modelo de video con IA debería probar primero?', answer: 'Parte del flujo: LTX 2.5, Wan 3, Grok Imagine y FLUX.3 cubren necesidades distintas de velocidad, referencias, audio y control de fotogramas. Compara sus cotizaciones con Seedance, Kling y Google Veo antes de generar.' },
       { question: '¿Qué ocurre si falla un render?', answer: 'Los renders completados consumen créditos. Los trabajos fallidos del proveedor se reembolsan o no se cobran si no devuelven un resultado utilizable.' },
       { question: '¿Es lo mismo que la página de precios?', answer: 'No. Esta página responde directamente a la intención de pago por uso y sin suscripción. La página de precios ofrece la matriz detallada por modelo y escenario.' },
     ],
@@ -267,7 +287,7 @@ export const esPayAsYouGoContent = {
     webApplication: {
       description: 'Generador de video con IA de pago por uso para comparar varios modelos, con precio por adelantado y sin suscripción obligatoria.',
       offer: 'Los créditos iniciales están disponibles sin suscripción recurrente.',
-      features: ['Genera videos con IA desde texto, imágenes o video', 'Compara Seedance 2, Kling, Google Veo, Happy Horse 1.1, Seedance 2 Mini, LTX, Wan y otros modelos', 'Consulta el precio estimado antes de generar', 'Usa créditos solo para renders completados'],
+      features: ['Genera videos con IA desde texto, imágenes, audio o video', 'Compara LTX 2.5, Wan 3, Grok Imagine, FLUX.3, Seedance, Kling, Google Veo y otros modelos', 'Consulta el precio estimado antes de generar', 'Usa créditos solo para renders completados'],
     },
   },
 } satisfies PayAsYouGoContent;

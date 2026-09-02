@@ -21,6 +21,16 @@ import {
 import { getComparePageOverride } from './compare-page-overrides';
 import type { Params } from './compare-page-types';
 
+export function resolveComparePublicationRobots(
+  locale: Params['locale'],
+  canonicalSlug: string,
+): Metadata['robots'] | undefined {
+  if (!isPublishedComparisonSlug(canonicalSlug) || !isComparisonIndexable(locale ?? 'en', canonicalSlug)) {
+    return { index: false, follow: true };
+  }
+  return undefined;
+}
+
 export async function buildComparePageMetadata(props: {
   params: Promise<Params>;
   searchParams?: Promise<{ order?: string }>;
@@ -67,13 +77,7 @@ export async function buildComparePageMetadata(props: {
       })
     : descriptionFallback;
 
-  let robots: Metadata['robots'] | undefined;
-  if (!isPublishedComparisonSlug(canonicalSlug)) {
-    robots = { index: false, follow: true };
-  }
-  if (!isComparisonIndexable(locale, canonicalSlug)) {
-    robots = { index: false, follow: true };
-  }
+  let robots: Metadata['robots'] | undefined = resolveComparePublicationRobots(locale, canonicalSlug);
   if (resolved) {
     const keySpecs = await loadEngineKeySpecs();
     const leftKeySpecs = keySpecs.get(resolved.left.modelSlug)?.keySpecs ?? undefined;

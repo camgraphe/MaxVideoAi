@@ -1,6 +1,6 @@
 import type { MultiPromptScene } from '@/components/Composer';
 import type { KlingElementAsset, KlingElementState } from '@/components/KlingElementsBuilder';
-import type { EngineCaps, Mode } from '@/types/engines';
+import type { EngineCaps, Mode, PreflightMediaInput } from '@/types/engines';
 import {
   getKlingO3AssetState,
   isKlingO3FrameFieldId,
@@ -13,6 +13,7 @@ import { evaluateReferenceBudget, resolveEngineReferenceBudget } from '@/lib/ref
 import type { ReferenceAsset } from './workspace-assets';
 import { normalizeExtraInputValue, type FormState } from './workspace-form-state';
 import type { WorkspaceInputFieldEntry, WorkspaceInputSchemaSummary } from './workspace-input-schema';
+import { resolveActiveVideoInputField, VIDEO_MEDIA_FIELD_CANDIDATES } from '@/lib/video-input-schema';
 
 export type GenerationAttachmentPayload = {
   name: string;
@@ -27,6 +28,24 @@ export type GenerationAttachmentPayload = {
   durationSec?: number | null;
   assetId?: string;
 };
+
+export function buildWorkspacePreflightInputs(
+  inputAssets: Record<string, (ReferenceAsset | null)[]>,
+): PreflightMediaInput[] {
+  return Object.entries(inputAssets).flatMap(([fieldId, assets]) =>
+    assets.flatMap((asset) => {
+      if (!asset || asset.status !== 'ready' || !asset.url) return [];
+      return [{
+        // Preserve an unresolved reference in the quote payload so the strict
+        // server boundary fails closed instead of silently under-counting it.
+        assetId: asset.assetId ?? '',
+        slotId: fieldId,
+        kind: asset.kind,
+        url: asset.url,
+      }];
+    })
+  );
+}
 
 export type GenerationKlingElementPayload = {
   id?: string;
@@ -240,6 +259,29 @@ export function prepareGenerationInputs(options: PrepareGenerationInputsOptions)
     });
   });
 
+  const activeI2vPrimaryField = options.submissionMode === 'i2v'
+    ? resolveActiveVideoInputField({
+        inputSchema: options.inputSchema,
+        mode: 'i2v',
+        type: 'image',
+        candidateFieldIds: VIDEO_MEDIA_FIELD_CANDIDATES.firstFrame,
+      })
+    : null;
+  const unifiedFirstFrameField = activeI2vPrimaryField
+    ? resolveActiveVideoInputField({
+        inputSchema: options.inputSchema,
+        mode: 'fl2v',
+        type: 'image',
+        candidateFieldIds: VIDEO_MEDIA_FIELD_CANDIDATES.firstFrame,
+      })
+    : null;
+  const shouldPromoteUnifiedFirstFrame = Boolean(
+    activeI2vPrimaryField
+    && unifiedFirstFrameField
+    && activeI2vPrimaryField.id !== unifiedFirstFrameField.id
+    && !orderedAttachments.some(({ field }) => field.id === activeI2vPrimaryField.id)
+  );
+
   let inputsPayload: GenerationAttachmentPayload[] | undefined;
   if (orderedAttachments.length) {
     const collected: GenerationAttachmentPayload[] = [];
@@ -262,7 +304,10 @@ export function prepareGenerationInputs(options: PrepareGenerationInputsOptions)
           return { ok: false, message: violation.message };
         }
       }
-      collected.push(buildAttachmentPayload(field, { ...asset, url: assetUrl }));
+      const payloadField = shouldPromoteUnifiedFirstFrame && field.id === unifiedFirstFrameField?.id
+        ? activeI2vPrimaryField
+        : field;
+      collected.push(buildAttachmentPayload(payloadField ?? field, { ...asset, url: assetUrl }));
     }
     if (collected.length) {
       inputsPayload = collected;
@@ -282,21 +327,34 @@ export function prepareGenerationInputs(options: PrepareGenerationInputsOptions)
           ? new Set(['image_urls'])
           : referenceSlots
       : referenceSlots;
-  const primaryAttachment =
+  const effectivePrimaryAssetFieldIds = new Set(options.primaryAssetFieldIds);
+  if (activeI2vPrimaryField) effectivePrimaryAssetFieldIds.add(activeI2vPrimaryField.id);
+  if (unifiedFirstFrameField) effectivePrimaryAssetFieldIds.add(unifiedFirstFrameField.id);
+  const schemaPrimaryAttachment =
     inputsPayload?.find(
-      (attachment) => typeof attachment.slotId === 'string' && options.primaryAssetFieldIds.has(attachment.slotId)
+      (attachment) =>
+        typeof attachment.slotId === 'string'
+        && effectivePrimaryAssetFieldIds.has(attachment.slotId)
     ) ?? null;
+  const firstFrameAttachment = options.submissionMode === 'fl2v'
+    ? inputsPayload?.find(
+        (attachment) =>
+          typeof attachment.slotId === 'string'
+          && VIDEO_MEDIA_FIELD_CANDIDATES.firstFrame.includes(attachment.slotId as never)
+      ) ?? null
+    : null;
+  const primaryAttachment = firstFrameAttachment ?? schemaPrimaryAttachment;
   const referenceImageUrls = inputsPayload
     ? uniqueValues(
         inputsPayload
           .filter((attachment) => {
             if (attachment.kind !== 'image' || typeof attachment.url !== 'string') return false;
             const slotId = attachment.slotId;
-            if (slotId && options.primaryAssetFieldIds.has(slotId)) return false;
+            if (slotId && effectivePrimaryAssetFieldIds.has(slotId)) return false;
             if (slotId && options.frameAssetFieldIds.has(slotId)) return false;
             if (!slotId) return activeReferenceSlots.size === 0;
             if (activeReferenceSlots.size === 0) {
-              return !options.primaryAssetFieldIds.has(slotId);
+              return !effectivePrimaryAssetFieldIds.has(slotId);
             }
             return activeReferenceSlots.has(slotId);
           })
@@ -324,8 +382,9 @@ export function prepareGenerationInputs(options: PrepareGenerationInputsOptions)
       )
     : [];
 
-  const primaryImageUrl =
-    primaryAttachment?.url ??
+  const primaryImageUrl = options.submissionMode === 'fl2v'
+    ? undefined
+    : schemaPrimaryAttachment?.url ??
     (options.activeMode === 'i2v' || options.activeMode === 'i2i' ? referenceImageUrls[0] : undefined);
   const primaryAudioUrl =
     inputsPayload?.find(
@@ -334,9 +393,14 @@ export function prepareGenerationInputs(options: PrepareGenerationInputsOptions)
         typeof attachment.url === 'string' &&
         !(typeof attachment.slotId === 'string' && options.referenceAudioFieldIds.has(attachment.slotId))
     )?.url ?? undefined;
-  const endImageUrl =
-    inputsPayload?.find((attachment) => attachment.slotId === 'end_image_url' && typeof attachment.url === 'string')
-      ?.url ?? undefined;
+  const endImageUrl = options.submissionMode === 'fl2v'
+    ? undefined
+    : inputsPayload?.find(
+        (attachment) =>
+          typeof attachment.slotId === 'string'
+          && VIDEO_MEDIA_FIELD_CANDIDATES.lastFrame.includes(attachment.slotId as never)
+          && typeof attachment.url === 'string'
+      )?.url ?? undefined;
   if (options.selectedEngineId.startsWith('kling-o3-') && options.submissionMode === 'ref2v') {
     const assetState = getKlingO3AssetState({
       inputAssets: options.inputAssets,

@@ -3,10 +3,10 @@
   "versionLabel": "Fast",
   "seo": {
     "title": "LTX 2.3 Fast | AI Video Model, Specs, Pricing & Max Length | MaxVideoAI",
-    "description": "Use LTX 2.3 Fast on MaxVideoAI for lower-cost video generation, longer draft loops, current pricing, max length, and the key differences versus LTX 2.3 Pro.",
+    "description": "LTX 2.3 Fast remains an executable previous-generation route for established drafts; review pricing and the upgrade path to LTX 2.5 Fast.",
     "image": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/1bd62e34-0e55-4f49-b434-295276b991d4-job_d895c3b0-562a-4e36-ae06-4ce083a47126.jpg"
   },
-  "overview": "LTX 2.3 Fast is the current fast LTX model on MaxVideoAI for lower-cost video generation, longer draft loops, and faster iteration before you move selected outputs into LTX 2.3 Pro.",
+  "overview": "LTX 2.3 Fast remains available as a previous-generation legacy route for existing drafts and examples. LTX 2.5 Fast is the current speed-oriented successor.",
   "hero": {
     "title": "LTX 2.3 Fast — current fast LTX model for longer drafts, testing and iteration",
     "intro": "Use LTX 2.3 Fast for lower-cost video generation, longer draft loops, and faster iteration when you want to test ideas, compare prompt behavior, or explore longer clips before moving selected outputs into LTX 2.3 Pro. This page covers the model’s pricing, max length, best use cases, and how it compares to LTX 2.3 Pro for current LTX workflows.",
@@ -294,7 +294,7 @@
   "decision": {
     "modelSlug": "ltx-2-3-fast",
     "hero": {
-      "eyebrow": "LTX FAST DRAFT ROUTE",
+      "eyebrow": "PREVIOUS-GENERATION LTX FAST LEGACY ROUTE",
       "title": "LTX 2.3 Fast",
       "subtitle": "Fast visual exploration for prompt testing, lower-cost draft loops, and vertical/social drafts.",
       "subtitleHighlights": [
@@ -302,7 +302,7 @@
         "prompt testing",
         "vertical/social drafts"
       ],
-      "paragraph": "Use LTX 2.3 Fast for fast text-to-video and image-to-video exploration when you need to test prompts, compare looks, and prepare social drafts before choosing a final production route.",
+      "paragraph": "LTX 2.3 Fast stays executable for previous-generation draft loops, saved prompts and existing examples. Continue using it when reproducibility matters, or begin new speed-oriented exploration with its current successor, LTX 2.5 Fast.",
       "primaryCta": {
         "label": "Draft with LTX 2.3 Fast",
         "href": "/app?engine=ltx-2-3-fast"
@@ -313,8 +313,12 @@
       },
       "quickLinks": [
         {
-          "label": "Compare vs Pro",
-          "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro"
+          "label": "View current LTX 2.5 Fast",
+          "href": "/models/ltx-2-5-fast"
+        },
+        {
+        "label": "Compare LTX Fast with Seedance Fast",
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-seedance-2-0-fast"
         },
         {
           "label": "View pricing",
@@ -371,11 +375,11 @@
     ],
     "decisionCards": [
       {
-        "title": "Fast or LTX 2.3 Pro?",
-        "body": "Use Fast for visual exploration and prompt tests. Use Pro when you need the broader production workflow exposed by the Pro route.",
+        "title": "Stay on 2.3 Fast or move to 2.5 Fast?",
+        "body": "Keep 2.3 Fast for repeatable legacy drafts. Choose LTX 2.5 Fast when starting a current iteration workflow.",
         "cta": {
-          "label": "Compare Fast vs Pro",
-          "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro"
+          "label": "View current LTX 2.5 Fast",
+          "href": "/models/ltx-2-5-fast"
         }
       },
       {

@@ -145,7 +145,6 @@ export const WAN_2_5_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     versionLabel: 'Preview',
     availability: 'available',
     logoPolicy: 'textOnly',
-    isLegacy: true,
     engine: WAN_2_5_ENGINE,
     modes: [
       {

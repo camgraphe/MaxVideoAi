@@ -52,6 +52,10 @@
         "items": {
           "minimax-h3": "MiniMax H3",
           "seedance-2-5": "Seedance 2.5",
+          "ltx-2-5-pro": "LTX 2.5 Pro",
+          "wan-3-prime": "Wan 3 Prime",
+          "grok-imagine-video-1-5": "Grok Imagine Video 1.5",
+          "flux-3": "FLUX 3",
           "sora-2": "Sora 2",
           "sora-2-pro": "Sora 2 Pro",
           "veo-3-1": "Veo 3.1",
@@ -88,6 +92,8 @@
           "seedance": "Seedance",
           "pika": "Pika",
           "hailuo": "Hailuo",
+          "grok": "Grok Imagine Video",
+          "flux": "FLUX",
           "veo-3-1": "Veo 3.1",
           "kling-2-6-pro": "Kling 2.6 Pro",
           "kling-3-4k": "Kling 3 4K",
@@ -102,6 +108,10 @@
       },
       "compare": {
         "items": {
+          "ltx-2-3-pro-vs-ltx-2-5-pro": "LTX 2.3 Pro vs LTX 2.5 Pro",
+          "wan-2-6-vs-wan-3": "Wan 2.6 vs Wan 3",
+          "flux-3-vs-grok-imagine-video-1-5": "FLUX 3 vs Grok Imagine Video 1.5",
+          "grok-imagine-video-1-5-vs-sora-2": "Grok Imagine Video 1.5 vs Sora 2",
           "minimax-h3-vs-seedance-2-5": "MiniMax H3 vs Seedance 2.5",
           "kling-o3-pro-vs-minimax-h3": "Kling 3.0 Omni Pro vs MiniMax H3",
           "minimax-h3-vs-veo-3-1": "MiniMax H3 vs Veo 3.1",
@@ -338,6 +348,8 @@
           "seedance": "Exemples Seedance",
           "hailuo": "Exemples Hailuo",
           "pika": "Exemples Pika",
+          "grok": "Exemples Grok Imagine Video",
+          "flux": "Exemples FLUX",
           "all": "Tous les exemples"
         }
       },

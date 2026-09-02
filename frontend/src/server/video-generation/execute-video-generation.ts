@@ -159,6 +159,7 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
   }
   const {
     attachments: processedAttachments,
+    trustedDurationSecByField,
     references: {
       maxUploadedBytes,
       lastFrameUrl,
@@ -203,6 +204,8 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     audioEnabled,
     isBytePlusV1a,
     supportsDuration,
+    supportsFps,
+    fps: body.fps,
     numFrames,
     validationDuration: lumaDurationInfo?.label ?? (Number.isFinite(effectiveDurationSec) ? effectiveDurationSec : null),
     maxUploadedBytes,
@@ -225,6 +228,7 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     referenceValuesByField,
     referenceMediaItems,
     referenceProvenanceIssues,
+    validatedExtraInputValues,
   });
   if (!validationPayloadResult.ok) {
     logMetric('rejected', validationPayloadResult.metric);
@@ -280,6 +284,8 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     isLumaRay2,
     loop,
     hasVideoInput,
+    referenceImageCount: normalizedReferenceImages.length,
+    inputAudioDurationSec: trustedDurationSecByField.audio_url?.[0],
     rawDurationOption,
     lumaDurationLabel: lumaDurationInfo?.label ?? null,
     audioEnabled,

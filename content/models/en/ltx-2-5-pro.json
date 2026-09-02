@@ -1,0 +1,87 @@
+{
+  "marketingName": "LTX 2.5 Pro",
+  "versionLabel": "2.5 Pro",
+  "seo": {
+    "title": "LTX 2.5 Pro AI Video Generator for Production Work",
+    "description": "Choose LTX 2.5 Pro for current production-focused text, image and source-audio video, with exact workflow limits, prompt guidance and canonical pricing."
+  },
+  "overview": "LTX 2.5 Pro is the current default production route for the LTX family. It supports text-to-video, image-to-video and a separate source-audio-driven workflow at 720p or 1080p. Lightricks owns LTX, while MaxVideoAI distributes these endpoints through Fal for the launch.",
+  "decision": {
+    "modelSlug": "ltx-2-5-pro",
+    "hero": {
+      "eyebrow": "CURRENT LTX PRODUCTION DEFAULT",
+      "title": "LTX 2.5 Pro",
+      "subtitle": "Move a locked brief into production-focused text, image or source-audio video at 720p or 1080p with native generated sound on creation modes.",
+      "subtitleHighlights": ["production-focused", "source-audio video", "720p or 1080p"],
+      "paragraph": "Choose Pro when the concept and continuity anchors are already defined and the team needs the current LTX production route. Text and image modes render from six to ten seconds, while audio-to-video follows the validated source-audio duration. Lightricks owns the model; Fal distributes MaxVideoAI execution for this release.",
+      "primaryCta": { "label": "Generate with LTX 2.5 Pro", "href": "/app?engine=ltx-2-5-pro" },
+      "secondaryCta": { "label": "Explore the LTX family gallery", "href": "/examples/ltx" },
+      "quickLinks": [
+        { "label": "Review LTX 2.5 Fast", "href": "/models/ltx-2-5-fast" },
+        { "label": "Compare Pro with LTX 2.3 Pro", "href": "/ai-video-engines/ltx-2-3-pro-vs-ltx-2-5-pro?order=ltx-2-5-pro" },
+        { "label": "Compare Fast and Pro", "href": "/ai-video-engines/ltx-2-5-fast-vs-ltx-2-5-pro?order=ltx-2-5-pro" },
+        { "label": "Review Pro pricing", "href": "/pricing#ltx-2-5-pro-pricing" },
+        { "label": "Open Pro Prompt Lab", "href": "#prompting" }
+      ]
+    },
+    "media": { "caption": "LTX 2.5 Pro evidence gallery", "description": "Approved production examples will appear after review", "renderLabel": "Review accepted output", "badges": ["Pro", "Three workflows", "1080p"], "altContext": "accepted LTX 2.5 Pro production example" },
+    "features": [
+      { "title": "Current LTX production position", "body": "Pro is the family default for approved production briefs, while Fast remains the sibling for exploratory loops. This is a workflow distinction, not an unsupported claim that one variant wins every visual category.", "tone": "quality" },
+      { "title": "Short controlled generation", "body": "Text and image modes support six, eight or ten-second outputs at 720p or 1080p. Use that bounded window for one performance, transition or product beat with a composed ending.", "tone": "duration" },
+      { "title": "Opening and optional end image", "body": "Guide subject identity and framing with a source image, then add an ending image when the destination composition matters. Keep camera direction compatible with both anchors.", "tone": "reference" },
+      { "title": "Dedicated audio-to-video", "body": "A2V requires a private audio asset and can use an optional image. Pricing follows trusted input-audio duration, which keeps the model page, preflight and final generation on the same factual basis.", "tone": "audio" }
+    ],
+    "decisionCards": [
+      { "title": "Best fit: locked production concepts", "body": "Use Pro for approved campaign beats, product sequences and character performances with clear identity, action, camera and delivery requirements.", "cta": { "label": "Start a Pro render", "href": "/app?engine=ltx-2-5-pro" } },
+      { "title": "Not ideal: broad prompt exploration", "body": "If the team is still comparing compositions or motion ideas, use Fast first and bring only the strongest controlled brief into Pro.", "cta": { "label": "Explore LTX 2.5 Fast", "href": "/models/ltx-2-5-fast" } },
+      { "title": "Protect production anchors", "body": "Name the subject traits, material behavior, screen direction and final frame that cannot drift. Remove secondary events that compete with the primary action.", "cta": { "label": "Open Prompt Lab", "href": "#prompting" } }
+    ],
+    "referenceWorkflows": [
+      { "title": "Text production", "body": "Write a concise shot brief with one central action and an explicit landing composition." },
+      { "title": "Image production", "body": "Preserve the source and direct camera, timing and environmental response around it." },
+      { "title": "Audio performance", "body": "Map visible beats to an owned source clip and let its validated duration define the billed quantity." },
+      { "title": "Production safety", "body": "Verify media rights, likeness consent, anatomy, text, logos and content safety before approval." }
+    ],
+    "pricingCopy": { "title": "LTX 2.5 Pro scenario pricing", "subtitle": "Compare six-second 720p and 1080p text scenes with a six-second source-audio scenario.", "footnote": "Canonical runtime quotes supply every amount. The A2V scenario treats six seconds as six verified seconds of source audio.", "ctaLabel": "Generate with LTX 2.5 Pro", "ctaHref": "/app?engine=ltx-2-5-pro" },
+    "meta": { "title": "LTX 2.5 Pro AI Video Model, A2V and Live Pricing", "description": "Review LTX 2.5 Pro text, image and audio-to-video workflows, duration and resolution limits, production prompting, safety and canonical quote scenarios." }
+  },
+  "prompting": {
+    "modelSlug": "ltx-2-5-pro",
+    "section": { "title": "Prompt Lab — LTX 2.5 Pro", "intro": "Translate an approved concept into one controlled shot with explicit protected details and a stable ending.", "tip": "Treat the final frame as part of the brief, not an accidental point where generation stops.", "guide": { "label": "Read the official LTX prompting guide", "href": "https://docs.ltx.io/api-documentation/implementation-guides/prompting-guide" }, "referencesTitle": "Prepare a production-ready LTX brief" },
+    "tabs": [
+      { "id": "production", "label": "Production", "title": "Lock the deliverable", "description": "State what the approved shot must communicate and preserve.", "copy": "Deliverable:\n[Campaign beat, product motion or character performance]\n\nSubject anchors:\n[Identity, wardrobe, shape, materials and props]\n\nPrimary action:\n[One physically readable change]\n\nFinal composition:\n[Framing, pose and visual priority]" },
+      { "id": "cinematography", "label": "Camera", "title": "Specify controlled cinematography", "description": "Connect camera movement, light and action into one shot.", "copy": "Opening frame:\n[Shot size, lens feel and light]\n\nCamera path:\n[One precise move and speed]\n\nPhysical response:\n[Weight, contact, cloth, hair, reflections or particles]\n\nContinuity:\n[Screen direction and details that stay unchanged]" },
+      { "id": "sound", "label": "Audio", "title": "Map source audio to performance", "description": "Use visible beats that correspond to the owned clip.", "copy": "Source clip:\n[Owned audio asset and verified duration]\n\nCue map:\n[Opening, accent and closing moments]\n\nPerformance:\n[Gesture, expression or scene change for each cue]\n\nAvoid:\n[Extra cuts, identity drift, malformed anatomy, captions and watermarks]" }
+    ],
+    "tabNotes": [
+      { "tabId": "production", "body": "A production prompt should make approval criteria visible rather than relying on broad adjectives." },
+      { "tabId": "cinematography", "body": "One motivated camera move usually protects continuity better than several competing moves." },
+      { "tabId": "sound", "body": "Source-audio duration is a trusted media fact and never a free-form client pricing field." }
+    ],
+    "globalPrinciples": ["Remove actions that do not support the delivery goal.", "Repeat only the identity and continuity anchors that must not change.", "Use a clear final beat for editorial usability.", "Confirm rights, consent and safety before using any source media."],
+    "engineWhy": ["Pro provides the current production default for the LTX family.", "Dedicated text, image and audio modes keep required inputs explicit.", "Bounded output choices encourage a focused shot that reviewers can evaluate consistently."],
+    "demo": {
+      "title": "LTX 2.5 Pro production shot",
+      "promptLabel": "Controlled product sequence",
+      "prompt": "A brushed-steel espresso machine stands on a dark walnut counter in a quiet café before opening. A barista locks the portafilter into place, steam briefly curls in the side light, and the camera performs a slow push toward the polished control dial. Preserve machine geometry, hand anatomy and reflected window lines. End on a stable close three-quarter composition without labels or logos.",
+      "notes": ["Contact and reflections create concrete fidelity checks.", "The final close composition is specified for editorial usability."],
+      "summary": { "subject": "Brushed-steel espresso machine and barista", "action": "Portafilter locks while steam rises", "camera": "Slow push toward the control dial", "style": "Restrained early-morning commercial film", "output": "Pro production render with media-derived audio state" },
+      "presentationOverrides": { "modeLabel": "Text-to-video", "outputLabel": "Canonical output settings", "duration": null, "aspectRatio": null, "audioChipMode": "media", "audioChipLabel": null, "altContext": "LTX 2.5 Pro espresso-machine production prompt" }
+    },
+    "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "ltx-2-5-pro",
+    "showWhenEmpty": false,
+    "section": { "title": "Reviewed LTX 2.5 Pro examples", "intro": "The gallery remains hidden until two durable Pro outputs pass the launch acceptance rubric.", "defaultCtaLabel": "View the LTX family gallery", "recreateLabel": null },
+    "filters": [{ "id": "all", "label": "All" }, { "id": "product", "label": "Product" }, { "id": "audio", "label": "Audio-led" }],
+    "proofItems": [
+      { "id": "fidelity", "icon": "sparkles", "title": "Production fidelity", "body": "Inspect protected materials, shapes and subject identity." },
+      { "id": "motion", "icon": "zap", "title": "Physical motion", "body": "Check contact, weight, timing and environmental response." },
+      { "id": "audio", "icon": "audio", "title": "Audio performance", "body": "Review alignment between source cues and visible action." },
+      { "id": "ending", "icon": "maximize", "title": "Stable ending", "body": "Confirm the final beat is composed and useful in an edit." },
+      { "id": "safety", "icon": "shield", "title": "Approval safety", "body": "Reject rights issues, unsafe imagery, accidental marks and deceptive likenesses." }
+    ],
+    "fallbackItems": null
+  }
+}

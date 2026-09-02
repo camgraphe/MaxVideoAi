@@ -1,4 +1,8 @@
-import { computeConfiguredPreflight } from '@/server/engines';
+import {
+  computeConfiguredPreflight,
+  type ComputeConfiguredPreflightOptions,
+  type TrustedPreflightMediaPricingFacts,
+} from '@/server/engines';
 import { computeCanonicalBillingSnapshot } from '@/server/pricing/quote-billing';
 import type { TransactionQueryExecutor } from '@/lib/db';
 import { loadMembershipTiersWithExecutor } from '@/lib/membership';
@@ -10,7 +14,7 @@ import {
   estimateImageGeneration,
   type ImageEstimateInput,
 } from '@/server/images/estimate-image-generation';
-import type { PreflightRequest, PreflightResponse, PricingSnapshot } from '@/types/engines';
+import type { EngineCaps, PreflightRequest, PreflightResponse, PricingSnapshot } from '@/types/engines';
 import type { ImageGenerationMode, ImageGenerationRequest } from '@/types/image-generation';
 import {
   resolveGptImage2AutoInputImageSize,
@@ -31,7 +35,10 @@ export type GenerationPricingResult = {
 };
 
 export type GenerationPricingDependencies = {
-  computeVideoPreflight(request: PreflightRequest): Promise<PreflightResponse>;
+  computeVideoPreflight(
+    request: PreflightRequest,
+    options?: ComputeConfiguredPreflightOptions,
+  ): Promise<PreflightResponse>;
   estimateImage(
     input: ImageEstimateInput,
   ): Promise<Awaited<ReturnType<typeof estimateImageGeneration>>>;
@@ -47,6 +54,7 @@ export type ExecutorGenerationPricingDependencies = {
 
 export type GenerationPricingReferenceContext = Readonly<{
   resolvedReferences?: readonly ResolvedReference[];
+  resolvedEngine?: EngineCaps;
 }>;
 
 const defaultDependencies: GenerationPricingDependencies = {
@@ -133,6 +141,29 @@ function canonicalReferenceImageCount(
   }, 0);
 }
 
+function canonicalInputAudioDurationSec(
+  request: CanonicalGenerationRequest,
+  context: GenerationPricingReferenceContext,
+): number | undefined {
+  if (request.surface !== 'video' || request.mode !== 'a2v') return undefined;
+  const resolved = context.resolvedReferences?.find((candidate) =>
+    candidate.role === 'source'
+    && candidate.mediaKind === 'audio'
+    && request.references.some((reference) =>
+      reference.role === 'source'
+      && reference.kind === 'asset'
+      && reference.assetId === candidate.assetId
+      && reference.slot === candidate.slot));
+  if (context.resolvedReferences !== undefined) {
+    return typeof resolved?.durationSec === 'number' && Number.isFinite(resolved.durationSec) && resolved.durationSec > 0
+      ? resolved.durationSec
+      : undefined;
+  }
+  // Project budgets have declared roles but no resolved media. For A2V only,
+  // durationSec is the caller's explicit intended source-audio/clip duration.
+  return requiredPositiveInteger(request.settings, 'durationSec');
+}
+
 function canonicalImageReferences(request: CanonicalGenerationRequest) {
   return request.references.filter((reference) => reference.role !== 'mask');
 }
@@ -177,12 +208,21 @@ function canonicalEffectiveCustomImageSize(
 
 function canonicalVideoExtraInputValues(
   request: CanonicalGenerationRequest,
-  context: GenerationPricingReferenceContext,
-): Record<string, number | boolean> {
+): Record<string, boolean> {
   return {
-    referenceImageCount: canonicalReferenceImageCount(request, context),
     ...(request.settings.hdr === true ? { hdr: true } : {}),
     ...(request.settings.exrExport === true ? { exr_export: true } : {}),
+  };
+}
+
+function canonicalVideoTrustedMediaPricingFacts(
+  request: CanonicalGenerationRequest,
+  context: GenerationPricingReferenceContext,
+): TrustedPreflightMediaPricingFacts {
+  const inputAudioDurationSec = canonicalInputAudioDurationSec(request, context);
+  return {
+    referenceImageCount: canonicalReferenceImageCount(request, context),
+    ...(inputAudioDurationSec !== undefined ? { inputAudioDurationSec } : {}),
   };
 }
 
@@ -215,9 +255,13 @@ export async function priceCanonicalGeneration(
   referenceContext: GenerationPricingReferenceContext = {},
 ): Promise<GenerationPricingResult> {
   if (request.surface === 'video') {
+    if (referenceContext.resolvedEngine && referenceContext.resolvedEngine.id !== request.engineId) {
+      throw new Error('Canonical pricing engine mismatch.');
+    }
     const settings = request.settings;
     const engineMode = toEngineGenerationMode(request.engineId, request.mode);
     const aspectRatio = optionalString(settings, 'aspectRatio');
+    const extraInputValues = canonicalVideoExtraInputValues(request);
     const result = await dependencies.computeVideoPreflight({
       engine: request.engineId,
       mode: engineMode,
@@ -230,8 +274,11 @@ export async function priceCanonicalGeneration(
       ...(typeof settings.loop === 'boolean' ? { loop: settings.loop } : {}),
       ...(typeof settings.audio === 'boolean' ? { audio: settings.audio } : {}),
       hasVideoInput: hasCanonicalVideoInput(request, referenceContext),
-      extraInputValues: canonicalVideoExtraInputValues(request, referenceContext),
+      ...(Object.keys(extraInputValues).length ? { extraInputValues } : {}),
       user: { memberTier: membershipTier },
+    }, {
+      trustedMediaPricingFacts: canonicalVideoTrustedMediaPricingFacts(request, referenceContext),
+      ...(referenceContext.resolvedEngine ? { resolvedEngine: referenceContext.resolvedEngine } : {}),
     });
     if (!result.ok || !result.pricing || result.total === undefined || !result.currency) {
       throw new Error('Canonical video pricing is unavailable.');
@@ -304,6 +351,7 @@ export async function priceCanonicalGenerationInExecutor(
       mode: engineMode,
       hasVideoInput: hasCanonicalVideoInput(request, dependencies),
       referenceImageCount: canonicalReferenceImageCount(request, dependencies),
+      inputAudioDurationSec: canonicalInputAudioDurationSec(request, dependencies),
       membershipTier,
       loop: isLumaRay2EngineId(engine.id) && request.settings.loop === true,
       durationOption: isLumaRay2EngineId(engine.id)

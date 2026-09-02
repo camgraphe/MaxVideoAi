@@ -1,0 +1,21 @@
+{
+  "slug": "flux-3-vs-grok-imagine-video-1-5",
+  "en": {
+    "meta": { "title": "FLUX 3 vs Grok Imagine Video 1.5: Scores & Specs", "description": "Compare FLUX 3 and Grok Imagine Video 1.5 for quality, control, duration, audio and pricing.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Quick verdict", "body": "Choose FLUX 3 for final visual quality, multishot and deeper production control. Choose Grok 1.5 for simpler generation and broader fixed aspect ratios." },
+    "primaryLinksTitle": "Explore the models",
+    "primaryLinks": [{ "href": "/models/flux-3", "label": "FLUX 3" }, { "href": "/models/grok-imagine-video-1-5", "label": "Grok Imagine Video 1.5" }]
+  },
+  "fr": {
+    "meta": { "title": "FLUX 3 vs Grok Imagine Video 1.5 : notes et specs", "description": "Comparez FLUX 3 et Grok Imagine Video 1.5 sur la qualité, le contrôle, la durée, l’audio et le prix.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Verdict rapide", "body": "Choisissez FLUX 3 pour la qualité finale, le multishot et un contrôle de production poussé. Choisissez Grok 1.5 pour une génération simple et plus de formats fixes." },
+    "primaryLinksTitle": "Explorer les modèles",
+    "primaryLinks": [{ "href": "/models/flux-3", "label": "FLUX 3" }, { "href": "/models/grok-imagine-video-1-5", "label": "Grok Imagine Video 1.5" }]
+  },
+  "es": {
+    "meta": { "title": "FLUX 3 vs Grok Imagine Video 1.5: notas y specs", "description": "Compara FLUX 3 y Grok Imagine Video 1.5 en calidad, control, duración, audio y precio.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Veredicto rápido", "body": "Elige FLUX 3 para calidad final, multishot y mayor control de producción. Elige Grok 1.5 para una generación sencilla y más formatos fijos." },
+    "primaryLinksTitle": "Explorar los modelos",
+    "primaryLinks": [{ "href": "/models/flux-3", "label": "FLUX 3" }, { "href": "/models/grok-imagine-video-1-5", "label": "Grok Imagine Video 1.5" }]
+  }
+}

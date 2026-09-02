@@ -1,0 +1,21 @@
+{
+  "slug": "wan-2-6-vs-wan-3",
+  "en": {
+    "meta": { "title": "WAN 2.6 vs WAN 3: Scores, Specs & Upgrade", "description": "Compare WAN 2.6 and WAN 3 scores, generation modes, duration, audio and control.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Quick verdict", "body": "Choose WAN 3 for 30-second clips, richer references, native multishot and stronger control. WAN 2.6 remains a legacy option." },
+    "primaryLinksTitle": "Explore the models",
+    "primaryLinks": [{ "href": "/models/wan-2-6", "label": "WAN 2.6" }, { "href": "/models/wan-3", "label": "WAN 3" }]
+  },
+  "fr": {
+    "meta": { "title": "WAN 2.6 vs WAN 3 : notes, specs et évolution", "description": "Comparez WAN 2.6 et WAN 3 sur les notes, modes, durée, audio et contrôle.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Verdict rapide", "body": "Choisissez WAN 3 pour les clips de 30 secondes, les références enrichies, le multishot natif et un meilleur contrôle. WAN 2.6 reste une option legacy." },
+    "primaryLinksTitle": "Explorer les modèles",
+    "primaryLinks": [{ "href": "/models/wan-2-6", "label": "WAN 2.6" }, { "href": "/models/wan-3", "label": "WAN 3" }]
+  },
+  "es": {
+    "meta": { "title": "WAN 2.6 vs WAN 3: notas, specs y evolución", "description": "Compara WAN 2.6 y WAN 3 en notas, modos, duración, audio y control.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Veredicto rápido", "body": "Elige WAN 3 para clips de 30 segundos, más referencias, multishot nativo y mayor control. WAN 2.6 queda como opción legacy." },
+    "primaryLinksTitle": "Explorar los modelos",
+    "primaryLinks": [{ "href": "/models/wan-2-6", "label": "WAN 2.6" }, { "href": "/models/wan-3", "label": "WAN 3" }]
+  }
+}

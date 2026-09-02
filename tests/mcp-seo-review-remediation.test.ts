@@ -140,7 +140,7 @@ test('llms response is built deterministically from publication state without a 
   assert.equal(existsSync(routePath), true, 'the served llms route should exist');
   assert.equal(existsSync('frontend/public/llms.txt'), false, 'a static file must not shadow the state-aware route');
 
-  const { buildLlmsText } = await import('../frontend/lib/seo/llms-text.ts');
+  const { buildLlmsModelDiscoveryProjection, buildLlmsText } = await import('../frontend/lib/seo/llms-text.ts');
   const falseText = buildLlmsText({
     publicMarketing: false,
     publicIndexing: false,
@@ -151,7 +151,7 @@ test('llms response is built deterministically from publication state without a 
     trial: false,
     referenceUploads: false,
   });
-  const releaseText = buildLlmsText(mcpPublication);
+  const releaseText = buildLlmsText(mcpPublication, buildLlmsModelDiscoveryProjection());
   const enabledText = buildLlmsText(enabledPublication);
   const sourceUrls = Object.values(localizedMcpUrls).map(({ en }) => en);
   sourceUrls.forEach((url) => assert.equal(falseText.includes(url), false));
@@ -193,7 +193,7 @@ test('llms response is built deterministically from publication state without a 
 
   const routeSource = readFileSync(routePath, 'utf8');
   assert.match(routeSource, /mcp-publication\.json/);
-  assert.match(routeSource, /buildLlmsText\(mcpPublication\)/);
+  assert.match(routeSource, /buildLlmsText\(mcpPublication, buildLlmsModelDiscoveryProjection\(\)\)/);
   const { GET } = await import('../frontend/app/llms.txt/route.ts');
   const response = GET();
   assert.equal(response.status, 200);

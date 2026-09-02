@@ -2,7 +2,7 @@ import type { EngineInputSchema, Mode } from '@/types/engines';
 import { isHappyHorseEngineId, supportsHappyHorseVideoEdit } from '@/lib/happy-horse-workflow';
 import type { ReferenceBudgetMediaItem, ReferenceBudgetValuesByField } from '@/lib/reference-budget';
 import { isSoraEngineId } from '@/lib/sora';
-import type { NormalizedAttachment } from './attachments';
+import type { NormalizedAttachment } from './generation-attachment-types';
 
 export type ReferenceProvenanceIssue =
   | {

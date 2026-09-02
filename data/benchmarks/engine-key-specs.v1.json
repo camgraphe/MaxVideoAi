@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "last_updated": "2026-08-08",
+  "last_updated": "2026-09-02",
   "specs": [
     {
       "modelSlug": "sora-2",
@@ -1414,6 +1414,195 @@
           "PNG"
         ],
         "audioOutput": "Not supported"
+      }
+    },
+    {
+      "modelSlug": "wan-3",
+      "sources": [
+        "https://docs.modelstudio.console.alibabacloud.com/en/model-studio/wan3-video-generation-guide",
+        "https://fal.ai/models/alibaba/wan-3.0/text-to-video",
+        "https://fal.ai/models/alibaba/wan-3.0/reference-to-video"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Supported by provider for editing and extension through reference video",
+        "firstLastFrame": "Supported",
+        "referenceImageStyle": "Up to 10 reference images",
+        "referenceVideo": "Up to 5 clips, 15s total",
+        "maxResolution": "1080p",
+        "maxDuration": "30s",
+        "aspectRatios": ["adaptive", "16:9", "4:3", "1:1", "3:4", "9:16"],
+        "fpsOptions": [30],
+        "outputFormats": ["MP4"],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Prompt-directed native dialogue",
+        "cameraMotionControls": "Prompt-based; native multi-shot storyboard support",
+        "watermark": "No visible MaxVideoAI watermark; provider provenance markers may apply",
+        "releaseDate": "Sep 2026"
+      }
+    },
+    {
+      "modelSlug": "wan-3-prime",
+      "sources": [
+        "https://docs.modelstudio.console.alibabacloud.com/en/model-studio/wan3-video-generation-guide",
+        "https://fal.ai/models/alibaba/wan-3.0-prime/text-to-video",
+        "https://fal.ai/models/alibaba/wan-3.0-prime/reference-to-video"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Supported by provider for editing and extension through reference video",
+        "firstLastFrame": "Supported",
+        "referenceImageStyle": "Up to 10 reference images",
+        "referenceVideo": "Up to 5 clips, 15s total",
+        "maxResolution": "1080p",
+        "maxDuration": "30s",
+        "aspectRatios": ["adaptive", "16:9", "4:3", "1:1", "3:4", "9:16"],
+        "fpsOptions": [30],
+        "outputFormats": ["MP4"],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Prompt-directed native dialogue",
+        "cameraMotionControls": "Prompt-based; native multi-shot storyboard support",
+        "watermark": "No visible MaxVideoAI watermark; provider provenance markers may apply",
+        "releaseDate": "Sep 2026"
+      }
+    },
+    {
+      "modelSlug": "ltx-2-5-fast",
+      "sources": [
+        "https://docs.ltx.io/models/ltx-2-5",
+        "https://huggingface.co/Lightricks/LTX-2.5",
+        "https://fal.ai/models/lightricks/ltx-2.5/text-to-video/fast"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Not exposed in current LTX 2.5 Fast endpoint set",
+        "firstLastFrame": "Supported (optional end frame)",
+        "referenceImageStyle": "Single start image plus optional end frame",
+        "referenceVideo": "Not exposed in current LTX 2.5 Fast endpoint set",
+        "maxResolution": "4K",
+        "maxDuration": "20s",
+        "aspectRatios": ["16:9", "9:16"],
+        "fpsOptions": [24, 25, 48, 50],
+        "outputFormats": ["MP4"],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Supported through synchronized audio and audio-to-video workflows",
+        "cameraMotionControls": "Dolly, jib, static and focus-shift presets",
+        "watermark": "No visible MaxVideoAI watermark",
+        "releaseDate": "Aug 2026"
+      }
+    },
+    {
+      "modelSlug": "ltx-2-5-pro",
+      "sources": [
+        "https://docs.ltx.io/models/ltx-2-5",
+        "https://huggingface.co/Lightricks/LTX-2.5",
+        "https://fal.ai/models/lightricks/ltx-2.5/text-to-video/pro"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Not exposed in current LTX 2.5 Pro endpoint set",
+        "firstLastFrame": "Supported (optional end frame)",
+        "referenceImageStyle": "Single start image plus optional end frame",
+        "referenceVideo": "Not exposed in current LTX 2.5 Pro endpoint set",
+        "maxResolution": "1080p",
+        "maxDuration": "10s",
+        "aspectRatios": ["16:9", "9:16"],
+        "fpsOptions": [24, 25, 50],
+        "outputFormats": ["MP4"],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Supported through synchronized audio and audio-to-video workflows",
+        "cameraMotionControls": "Dolly, jib, static and focus-shift presets",
+        "watermark": "No visible MaxVideoAI watermark",
+        "releaseDate": "Aug 2026"
+      }
+    },
+    {
+      "modelSlug": "grok-imagine-video-1-5",
+      "sources": [
+        "https://docs.x.ai/developers/models/grok-imagine-video-1.5",
+        "https://docs.x.ai/developers/model-capabilities/video/generation",
+        "https://fal.ai/models/xai/grok-imagine-video/v1.5/text-to-video"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Supported by xAI for video editing; not exposed in current MaxVideoAI route",
+        "firstLastFrame": "Not exposed in current MaxVideoAI route",
+        "referenceImageStyle": "1-7 reference images",
+        "referenceVideo": "Provider video-edit input is not exposed in current MaxVideoAI route",
+        "maxResolution": "1080p (720p for reference-to-video)",
+        "maxDuration": "15s",
+        "aspectRatios": ["16:9", "4:3", "3:2", "1:1", "2:3", "3:4", "9:16"],
+        "fpsOptions": ["Provider-managed"],
+        "outputFormats": ["MP4"],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Supported through generated and preset-voice workflows",
+        "cameraMotionControls": "Prompt-based",
+        "watermark": "No visible MaxVideoAI watermark; provider provenance markers may apply",
+        "releaseDate": "May 2026"
+      }
+    },
+    {
+      "modelSlug": "flux-3",
+      "sources": [
+        "https://bfl.ai/blog/flux-3-video",
+        "https://docs.bfl.ai/flux_3",
+        "https://fal.ai/models/blackforestlabs/flux-3/text-to-video"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Supported (video continuation)",
+        "firstLastFrame": "Supported",
+        "referenceImageStyle": "Start image and first/last keyframes",
+        "referenceVideo": "Supported for continuation",
+        "maxResolution": "1080p",
+        "maxDuration": "20s",
+        "aspectRatios": ["auto", "21:9", "2:1", "16:9", "4:3", "1:1", "3:4", "9:16"],
+        "fpsOptions": ["Provider-managed"],
+        "outputFormats": ["MP4"],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Supported for multilingual dialogue",
+        "cameraMotionControls": "Prompt-based; native multi-shot support",
+        "watermark": "No visible MaxVideoAI watermark; provider provenance markers may apply",
+        "releaseDate": "Aug 2026"
+      }
+    },
+    {
+      "modelSlug": "flux-3-draft",
+      "sources": [
+        "https://bfl.ai/blog/flux-3-video",
+        "https://docs.bfl.ai/flux_3",
+        "https://fal.ai/models/blackforestlabs/flux-3/text-to-video/draft"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Supported (draft video continuation)",
+        "firstLastFrame": "Supported",
+        "referenceImageStyle": "Start image and first/last keyframes",
+        "referenceVideo": "Supported for draft continuation",
+        "maxResolution": "720p",
+        "maxDuration": "20s",
+        "aspectRatios": ["auto", "21:9", "2:1", "16:9", "4:3", "1:1", "3:4", "9:16"],
+        "fpsOptions": ["Provider-managed"],
+        "outputFormats": ["MP4"],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Prompt-directed dialogue in the FLUX 3 Draft endpoint family",
+        "cameraMotionControls": "Prompt-based",
+        "watermark": "No visible MaxVideoAI watermark; provider provenance markers may apply",
+        "releaseDate": "Aug 2026"
       }
     }
   ]

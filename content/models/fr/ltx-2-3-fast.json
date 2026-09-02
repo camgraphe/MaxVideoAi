@@ -3,10 +3,10 @@
   "versionLabel": "Fast",
   "seo": {
     "title": "LTX 2.3 Fast | Modèle vidéo IA, specs, prix et durée max | MaxVideoAI",
-    "description": "Utilisez LTX 2.3 Fast sur MaxVideoAI pour une génération vidéo moins coûteuse, des boucles de draft plus longues, la tarification actuelle, la durée max et les différences clés face à LTX 2.3 Pro.",
+    "description": "LTX 2.3 Fast reste une route exécutable de génération précédente pour les brouillons établis ; consultez les tarifs et la montée vers LTX 2.5 Fast.",
     "image": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/1bd62e34-0e55-4f49-b434-295276b991d4-job_d895c3b0-562a-4e36-ae06-4ce083a47126.jpg"
   },
-  "overview": "LTX 2.3 Fast est le modèle LTX fast actuel sur MaxVideoAI pour une génération vidéo moins coûteuse, des boucles de draft plus longues et une itération plus rapide avant de faire monter les sorties retenues vers LTX 2.3 Pro.",
+  "overview": "LTX 2.3 Fast reste disponible comme route legacy de génération précédente pour les brouillons et exemples existants. LTX 2.5 Fast est son successeur rapide actuel.",
   "hero": {
     "title": "LTX 2.3 Fast — modèle LTX fast actuel pour des tests plus longs, les tests et l’itération",
     "intro": "Utilisez LTX 2.3 Fast pour une génération vidéo moins coûteuse, des boucles de draft plus longues et une itération plus rapide quand vous voulez tester des idées, comparer le comportement des prompts ou explorer des clips plus longs avant de faire monter les sorties retenues vers LTX 2.3 Pro. Cette page couvre la tarification du modèle, sa durée max, ses meilleurs cas d’usage et la façon dont il se compare à LTX 2.3 Pro dans les workflows LTX actuels.",
@@ -294,7 +294,7 @@
   "decision": {
     "modelSlug": "ltx-2-3-fast",
     "hero": {
-      "eyebrow": "WORKFLOW LTX FAST POUR BROUILLONS",
+      "eyebrow": "ROUTE LEGACY LTX FAST DE GÉNÉRATION PRÉCÉDENTE",
       "title": "LTX 2.3 Fast",
       "subtitle": "Une exploration visuelle rapide pour tests de prompts, boucles de brouillon moins coûteuses et brouillons verticaux/social.",
       "subtitleHighlights": [
@@ -302,7 +302,7 @@
         "tests de prompts",
         "brouillons verticaux/social"
       ],
-      "paragraph": "Utilisez LTX 2.3 Fast pour explorer vite en text-to-video et image-to-video : tester des prompts, comparer des directions visuelles et préparer des brouillons sociaux avant un rendu final.",
+      "paragraph": "LTX 2.3 Fast reste exécutable pour les boucles de brouillon de génération précédente, les prompts enregistrés et les exemples existants. Gardez-le pour reproduire un projet ou commencez les nouvelles itérations sur son successeur LTX 2.5 Fast.",
       "primaryCta": {
         "label": "Créer un brouillon LTX Fast",
         "href": "/app?engine=ltx-2-3-fast"
@@ -313,8 +313,12 @@
       },
       "quickLinks": [
         {
-          "label": "Comparer vs Pro",
-          "href": "/fr/comparatif/ltx-2-3-fast-vs-ltx-2-3-pro"
+          "label": "Voir le LTX 2.5 Fast actuel",
+          "href": "/fr/modeles/ltx-2-5-fast"
+        },
+        {
+        "label": "Comparer LTX Fast à Seedance Fast",
+        "href": "/fr/comparatif/ltx-2-3-fast-vs-seedance-2-0-fast"
         },
         {
           "label": "Voir les tarifs",
@@ -371,11 +375,11 @@
     ],
     "decisionCards": [
       {
-        "title": "Fast ou LTX 2.3 Pro ?",
-        "body": "Utilisez Fast pour explorer et tester des prompts. Choisissez Pro pour le workflow de production plus large exposé par la route Pro.",
+        "title": "Rester sur 2.3 Fast ou passer à 2.5 Fast ?",
+        "body": "Gardez 2.3 Fast pour un brouillon legacy reproductible. Choisissez LTX 2.5 Fast pour une nouvelle boucle d'itération.",
         "cta": {
-          "label": "Comparer Fast vs Pro",
-          "href": "/fr/comparatif/ltx-2-3-fast-vs-ltx-2-3-pro"
+          "label": "Voir le LTX 2.5 Fast actuel",
+          "href": "/fr/modeles/ltx-2-5-fast"
         }
       },
       {

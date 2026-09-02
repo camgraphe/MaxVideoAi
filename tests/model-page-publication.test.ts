@@ -9,6 +9,16 @@ import {
 } from '../frontend/config/model-runtime.ts';
 import { isPublishedModelPage } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-publication.ts';
 
+const P0_MODEL_IDS = [
+  'wan-3',
+  'wan-3-prime',
+  'ltx-2-5-fast',
+  'ltx-2-5-pro',
+  'grok-imagine-video-1-5',
+  'flux-3',
+  'flux-3-draft',
+] as const;
+
 function engine(id: string, publication: { indexable: boolean; includeInSitemap: boolean }) {
   return {
     id,
@@ -57,5 +67,16 @@ test('model route gates use published state rather than sitemap membership', () 
       /(?:isPublishedModelPage|modelPage\.published|listPublishedRuntimeModels)/,
       path,
     );
+  }
+});
+
+test('all seven P0 model routes are published, indexable and sitemap-eligible', () => {
+  const runtimeById = new Map(listRuntimeModels().map((model) => [model.id, model]));
+  for (const id of P0_MODEL_IDS) {
+    const model = runtimeById.get(id);
+    assert.ok(model, id);
+    assert.equal(isRuntimeModelPagePublished(model), true, id);
+    assert.deepEqual(model.publication.model, { published: true, indexable: true }, id);
+    assert.equal(model.publication.sitemap.published, true, id);
   }
 });

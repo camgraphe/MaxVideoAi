@@ -12,6 +12,13 @@ import { buildFalElementInputs } from '@/lib/video-provider-elements';
 import { isHappyHorseFalModelId, supportsHappyHorseVideoEdit } from '@/lib/happy-horse-workflow';
 import { buildMinimaxH3FalRequest, isMinimaxH3EngineId } from '@/lib/minimax-h3';
 import type { GeneratePayload } from '@/lib/fal-types';
+import type { Mode } from '@/types/engines';
+import { getFalEngineById } from '@/config/falEngines';
+import {
+  projectVideoProviderFieldValue,
+  resolveActiveVideoInputField,
+  VIDEO_MEDIA_FIELD_CANDIDATES,
+} from '@/lib/video-input-schema';
 
 export function buildFalGenerationRequest(
   payload: GeneratePayload,
@@ -37,25 +44,48 @@ export function buildFalGenerationRequest(
       requestBody.api_key = apiKey;
     }
   } else {
+    const inputSchema = getFalEngineById(payload.engineId)?.engine.inputSchema;
+    const activeField = (
+      candidateFieldIds: readonly string[],
+      type?: 'image' | 'video' | 'audio' | 'enum' | 'boolean' | 'number',
+    ) => resolveActiveVideoInputField({
+      inputSchema,
+      mode: (payload.mode ?? 't2v') as Mode,
+      candidateFieldIds,
+      type,
+    });
+    const schemaAware = Boolean(inputSchema);
     const resolution = resolveFalVideoResolutionInput(payload.engineId, payload.resolution, model, payload.mode);
     requestBody = {};
-    if (!isHappyHorseFalModelId(model) && typeof payload.fps === 'number' && Number.isFinite(payload.fps)) {
+    if (
+      !isHappyHorseFalModelId(model)
+      && typeof payload.fps === 'number'
+      && Number.isFinite(payload.fps)
+      && (!schemaAware || activeField(['fps']))
+    ) {
       requestBody.fps = payload.fps;
     }
-    if (resolution) {
-      requestBody.resolution = resolution;
+    const resolutionField = activeField(['resolution']);
+    if (resolution && (!schemaAware || resolutionField)) {
+      requestBody.resolution = projectVideoProviderFieldValue(resolutionField, resolution, inputSchema);
     }
     if (payload.prompt.trim().length) {
       requestBody.prompt = payload.prompt;
     }
     const shouldSendAspectRatio = !(isHappyHorseFalModelId(model) && payload.mode === 'i2v');
-    if (payload.aspectRatio && shouldSendAspectRatio) {
-      requestBody.aspect_ratio = payload.aspectRatio;
+    const aspectRatioField = activeField(['aspect_ratio']);
+    if (payload.aspectRatio && shouldSendAspectRatio && (!schemaAware || aspectRatioField)) {
+      requestBody.aspect_ratio = projectVideoProviderFieldValue(aspectRatioField, payload.aspectRatio, inputSchema);
     }
 
     const isKlingO3VideoToVideo = payload.engineId.startsWith('kling-o3') && payload.mode === 'v2v';
-    if (typeof payload.audio === 'boolean' && !isKlingO3VideoToVideo) {
-      requestBody.generate_audio = payload.audio;
+    const audioToggleField = activeField(['generate_audio', 'audio']);
+    if (
+      typeof payload.audio === 'boolean'
+      && !isKlingO3VideoToVideo
+      && (!schemaAware || audioToggleField)
+    ) {
+      requestBody[audioToggleField?.id ?? 'generate_audio'] = payload.audio;
     }
 
     if (payload.audioUrl) {
@@ -65,9 +95,10 @@ export function buildFalGenerationRequest(
     if (typeof payload.numFrames === 'number' && Number.isFinite(payload.numFrames) && payload.numFrames > 0) {
       requestBody.num_frames = Math.round(payload.numFrames);
     } else if (!isLumaRay2EngineId(payload.engineId)) {
-      if (payload.durationOption != null) {
+      const durationField = activeField(['duration']);
+      if (payload.durationOption != null && (!schemaAware || durationField)) {
         requestBody.duration = normalizeFalDurationValueForModel(payload.engineId, model, payload.durationOption);
-      } else if (payload.durationSec != null) {
+      } else if (payload.durationSec != null && (!schemaAware || durationField)) {
         requestBody.duration = normalizeFalDurationValueForModel(payload.engineId, model, payload.durationSec);
       }
     }
@@ -143,6 +174,27 @@ export function buildFalGenerationRequest(
   };
 
   const attachments = payload.inputs ?? [];
+  const inputSchema = getFalEngineById(payload.engineId)?.engine.inputSchema;
+  const activeMediaFieldId = (
+    candidateFieldIds: readonly string[],
+    type: 'image' | 'video' | 'audio',
+    fallback: string,
+  ) => resolveActiveVideoInputField({
+    inputSchema,
+    mode: (payload.mode ?? 't2v') as Mode,
+    candidateFieldIds,
+    type,
+  })?.id ?? fallback;
+  const referenceImageFieldId = activeMediaFieldId(
+    VIDEO_MEDIA_FIELD_CANDIDATES.referenceImage, 'image', 'image_urls');
+  const referenceVideoFieldId = activeMediaFieldId(
+    VIDEO_MEDIA_FIELD_CANDIDATES.referenceVideo, 'video', 'video_urls');
+  const referenceAudioFieldId = activeMediaFieldId(
+    VIDEO_MEDIA_FIELD_CANDIDATES.referenceAudio, 'audio', 'audio_urls');
+  const firstFrameFieldId = activeMediaFieldId(
+    VIDEO_MEDIA_FIELD_CANDIDATES.firstFrame, 'image', 'first_frame_url');
+  const lastFrameFieldId = activeMediaFieldId(
+    VIDEO_MEDIA_FIELD_CANDIDATES.lastFrame, 'image', 'last_frame_url');
   let primaryImageUrl = payload.imageUrl?.trim();
   let primaryAudioUrl = payload.audioUrl?.trim();
 
@@ -158,7 +210,7 @@ export function buildFalGenerationRequest(
       slotId === 'reference_image_urls'
     ) {
       if (expectsImageArray) {
-        addToArray('image_urls', urlCandidate);
+        addToArray(referenceImageFieldId, urlCandidate);
       } else if (slotId === 'reference_images') {
         addToArray('reference_images', urlCandidate);
       } else if (slotId === 'reference_image_urls') {
@@ -187,7 +239,7 @@ export function buildFalGenerationRequest(
         }
       } else {
         if (expectsImageArray && (slotId === 'reference_videos' || slotId === 'reference_video_urls')) {
-          addToArray('video_urls', urlCandidate);
+          addToArray(referenceVideoFieldId, urlCandidate);
         } else if (slotId === 'reference_videos' || slotId === 'reference_video_urls') {
           addToArray('reference_video_urls', urlCandidate);
         } else {
@@ -205,7 +257,7 @@ export function buildFalGenerationRequest(
       if (slotId === 'audio_url') {
         requestBody.audio_url = urlCandidate;
       } else if (expectsImageArray && (slotId === 'reference_audio_urls' || slotId === 'reference_audios')) {
-        addToArray('audio_urls', urlCandidate);
+        addToArray(referenceAudioFieldId, urlCandidate);
       } else {
         addToArray(slotId === 'reference_audios' ? 'reference_audio_urls' : slotId, urlCandidate);
       }
@@ -213,8 +265,8 @@ export function buildFalGenerationRequest(
     }
     if (slotId === 'input_image' || slotId === 'image' || slotId === 'image_url') {
       if (expectsFirstLastFrames) {
-        if (!requestBody.first_frame_url) {
-          requestBody.first_frame_url = urlCandidate;
+        if (!requestBody[firstFrameFieldId]) {
+          requestBody[firstFrameFieldId] = urlCandidate;
         }
         continue;
       }
@@ -233,11 +285,16 @@ export function buildFalGenerationRequest(
       slotId === 'start_image_url' ||
       slotId === 'end_image_url'
     ) {
-      requestBody[slotId] = urlCandidate;
+      const selectedSlotId = expectsFirstLastFrames
+        ? slotId === 'first_frame_url' || slotId === 'start_image_url'
+          ? firstFrameFieldId
+          : lastFrameFieldId
+        : slotId;
+      requestBody[selectedSlotId] = urlCandidate;
       continue;
     }
     if (!slotId && attachment.kind === 'image' && expectsImageArray) {
-      addToArray('image_urls', urlCandidate);
+      addToArray(referenceImageFieldId, urlCandidate);
       continue;
     }
     if (!slotId && attachment.kind === 'video') {
@@ -252,7 +309,7 @@ export function buildFalGenerationRequest(
     }
     if (!slotId && attachment.kind === 'audio') {
       if (expectsImageArray) {
-        addToArray('audio_urls', urlCandidate);
+        addToArray(referenceAudioFieldId, urlCandidate);
       } else if (!requestBody.audio_url) {
         requestBody.audio_url = urlCandidate;
       } else {
@@ -267,7 +324,7 @@ export function buildFalGenerationRequest(
     const trimmed = url.trim();
     if (!trimmed) return;
     if (expectsImageArray) {
-      addToArray('image_urls', trimmed);
+      addToArray(referenceImageFieldId, trimmed);
       return;
     }
     if (expectsKlingO3VideoToVideoImages) {
@@ -296,14 +353,21 @@ export function buildFalGenerationRequest(
     }
   }
 
-  if (!requestBody.first_frame_url && primaryImageUrl && expectsFirstLastFrames) {
-    requestBody.first_frame_url = primaryImageUrl;
+  if (!requestBody[firstFrameFieldId] && primaryImageUrl && expectsFirstLastFrames) {
+    requestBody[firstFrameFieldId] = primaryImageUrl;
   }
-  if (!requestBody.image_url && primaryImageUrl && !forbidsPrimaryImage && !expectsFirstLastFrames) {
-    requestBody.image_url = primaryImageUrl;
+  if (primaryImageUrl && !forbidsPrimaryImage && !expectsFirstLastFrames) {
+    const primaryImageFieldId = activeMediaFieldId(
+      payload.mode === 'i2v'
+        ? ['start_image_url', 'image_url', 'first_frame_url']
+        : ['image_url', 'start_image_url', 'first_frame_url'],
+      'image',
+      'image_url',
+    );
+    if (!requestBody[primaryImageFieldId]) requestBody[primaryImageFieldId] = primaryImageUrl;
   }
   if (!requestBody.audio_url && primaryAudioUrl) {
-    requestBody.audio_url = primaryAudioUrl;
+    if (!expectsImageArray) requestBody.audio_url = primaryAudioUrl;
   }
   if (!requestBody.input_image && primaryImageUrl && payload.engineId.startsWith('sora-2')) {
     requestBody.input_image = primaryImageUrl;

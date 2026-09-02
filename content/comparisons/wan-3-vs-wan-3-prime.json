@@ -1,0 +1,21 @@
+{
+  "slug": "wan-3-vs-wan-3-prime",
+  "en": {
+    "meta": { "title": "WAN 3 vs WAN 3 Prime: Scores, Speed & Price", "description": "Compare WAN 3 and WAN 3 Prime for quality, speed, pricing and production use.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Quick verdict", "body": "Choose WAN 3 for the best value. Choose Prime when faster end-to-end generation and higher final polish justify the premium." },
+    "primaryLinksTitle": "Explore the models",
+    "primaryLinks": [{ "href": "/models/wan-3", "label": "WAN 3" }, { "href": "/models/wan-3-prime", "label": "WAN 3 Prime" }]
+  },
+  "fr": {
+    "meta": { "title": "WAN 3 vs WAN 3 Prime : notes, vitesse et prix", "description": "Comparez WAN 3 et WAN 3 Prime sur la qualité, vitesse, prix et usages.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Verdict rapide", "body": "Choisissez WAN 3 pour le meilleur rapport qualité-prix. Choisissez Prime si sa génération plus rapide et sa finition supérieure justifient le surcoût." },
+    "primaryLinksTitle": "Explorer les modèles",
+    "primaryLinks": [{ "href": "/models/wan-3", "label": "WAN 3" }, { "href": "/models/wan-3-prime", "label": "WAN 3 Prime" }]
+  },
+  "es": {
+    "meta": { "title": "WAN 3 vs WAN 3 Prime: notas, velocidad y precio", "description": "Compara WAN 3 y WAN 3 Prime en calidad, velocidad, precio y usos.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Veredicto rápido", "body": "Elige WAN 3 para obtener el mejor valor. Elige Prime si su generación más rápida y acabado superior justifican el coste extra." },
+    "primaryLinksTitle": "Explorar los modelos",
+    "primaryLinks": [{ "href": "/models/wan-3", "label": "WAN 3" }, { "href": "/models/wan-3-prime", "label": "WAN 3 Prime" }]
+  }
+}

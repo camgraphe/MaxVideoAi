@@ -14,6 +14,7 @@ export type PricingContext = {
   loop?: boolean;
   hasVideoInput?: boolean;
   durationOption?: number | string | null;
+  inputAudioDurationSec?: number;
   referenceImageCount?: number;
   addons?: Record<string, boolean | number | undefined>;
 };

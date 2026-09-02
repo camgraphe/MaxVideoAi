@@ -3,10 +3,10 @@
   "versionLabel": "2.3",
   "seo": {
     "title": "LTX 2.3 Pro | Modèle vidéo IA, specs et prix | MaxVideoAI",
-    "description": "Utilisez LTX 2.3 Pro sur MaxVideoAI pour la génération vidéo haute fidélité, les workflows pilotés par l’audio, Extend et Retake, avec specs et prix visibles avant rendu.",
+    "description": "LTX 2.3 Pro reste une route exécutable de génération précédente ; consultez ses contrôles, ses tarifs et la montée vers LTX 2.5 Pro.",
     "image": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/f397ab6d-d0ef-44eb-977a-3419f494d17e-job_cda079d3-9895-45a0-866c-2dbf57593463.jpg"
   },
-  "overview": "LTX 2.3 Pro est le modèle LTX actuel sur MaxVideoAI pour la génération vidéo haute fidélité, les workflows pilotés par l’audio, Extend et Retake.",
+  "overview": "LTX 2.3 Pro reste disponible comme route legacy de génération précédente pour les workflows, exemples et recherches existants. LTX 2.5 Pro est son successeur de production actuel.",
   "hero": {
     "title": "LTX 2.3 Pro — modèle LTX actuel pour l’audio, Extend et Retake",
     "intro": "LTX 2.3 Pro est le modèle LTX actuel pour la génération vidéo haute fidélité, les workflows pilotés par l’audio, Extend et Retake quand vous avez besoin de la page LTX principale actuelle pour un rendu de production soigné.",
@@ -304,7 +304,7 @@
   "decision": {
     "modelSlug": "ltx-2-3-pro",
     "hero": {
-      "eyebrow": "ROUTE LTX DE PRODUCTION",
+      "eyebrow": "ROUTE LEGACY LTX DE GÉNÉRATION PRÉCÉDENTE",
       "title": "LTX 2.3 Pro",
       "subtitle": "Workflows pilotés par audio, contrôles Extend et Retake, et passes Generate 4K pour la production vidéo.",
       "subtitleHighlights": [
@@ -312,7 +312,7 @@
         "Extend et Retake",
         "passes Generate 4K"
       ],
-      "paragraph": "Utilisez LTX 2.3 Pro quand un job LTX dépasse le brouillon : génération texte ou image, audio-to-video, extension de vidéo source et retake ciblé dans une seule route de production.",
+      "paragraph": "LTX 2.3 Pro reste exécutable pour les productions de génération précédente, les briefs enregistrés et les exemples existants. Il conserve texte, image, audio, Extend et Retake, tandis que LTX 2.5 Pro est le successeur actuel des nouveaux projets.",
       "primaryCta": {
         "label": "Générer avec LTX 2.3 Pro",
         "href": "/app?engine=ltx-2-3"
@@ -323,8 +323,12 @@
       },
       "quickLinks": [
         {
-          "label": "Comparer vs Fast",
-          "href": "/fr/comparatif/ltx-2-3-fast-vs-ltx-2-3-pro?order=ltx-2-3-pro"
+          "label": "Voir le LTX 2.5 Pro actuel",
+          "href": "/fr/modeles/ltx-2-5-pro"
+        },
+        {
+        "label": "Comparer 2.3 Pro à Veo 3.1",
+        "href": "/fr/comparatif/ltx-2-3-pro-vs-veo-3-1"
         },
         {
           "label": "Voir les tarifs",
@@ -381,11 +385,11 @@
     ],
     "decisionCards": [
       {
-        "title": "Pro ou Fast ?",
-        "body": "Utilisez Fast pour les brouillons simples. Choisissez Pro pour audio, extension, retake ou contrôle haute résolution.",
+        "title": "Rester sur 2.3 Pro ou passer à 2.5 Pro ?",
+        "body": "Gardez 2.3 Pro pour un workflow legacy reproductible. Choisissez LTX 2.5 Pro pour commencer un brief de production actuel.",
         "cta": {
-          "label": "Comparer Fast vs Pro",
-          "href": "/fr/comparatif/ltx-2-3-fast-vs-ltx-2-3-pro?order=ltx-2-3-pro"
+          "label": "Voir le LTX 2.5 Pro actuel",
+          "href": "/fr/modeles/ltx-2-5-pro"
         }
       },
       {
