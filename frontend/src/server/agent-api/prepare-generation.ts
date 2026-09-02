@@ -478,7 +478,7 @@ export async function prepareGeneration(
     pricing = await dependencies.priceGeneration(
       request,
       membership.tier,
-      { resolvedReferences },
+      { resolvedReferences, resolvedEngine: candidate.engine },
     );
   } catch {
     throw new AgentApiError(

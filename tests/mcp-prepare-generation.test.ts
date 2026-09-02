@@ -1278,6 +1278,33 @@ test('prepare pricing classifies canonical ref2v video references without trusti
   assert.equal(billingInputType, 'video_input');
 });
 
+test('prepare pricing receives the selected prelaunch engine snapshot', async () => {
+  const candidate = registryCapability('wan-3');
+  const request: PrepareGenerationInput = {
+    surface: 'video',
+    engineId: 'wan-3',
+    mode: 't2v',
+    prompt: 'A controlled product-film motion diagnostic.',
+    settings: { durationSec: 5, resolution: '720p', aspectRatio: '16:9', audio: true },
+    references: [],
+    outputCount: 1,
+  };
+  const { deps } = baseDependencies({
+    listPublicEngines: async () => [candidate],
+    priceGeneration: async (_canonicalRequest, _membershipTier, referenceContext) => {
+      assert.equal(referenceContext.resolvedEngine, candidate.engine);
+      return {
+        priceCents: 60,
+        currency: 'USD',
+        membershipTier: 'member',
+        pricingSnapshot: { totalCents: 60, currency: 'USD', membershipTier: 'member' },
+      };
+    },
+  });
+
+  await prepareGeneration(request, principal, deps);
+});
+
 test('canonical video pricing leaves source-derived i2v framing unset', async () => {
   const request: CanonicalGenerationRequest = {
     schemaVersion: 1,
