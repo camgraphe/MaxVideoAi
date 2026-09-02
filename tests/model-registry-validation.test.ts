@@ -327,6 +327,21 @@ test('suggested and published-pair opponents must be comparison-published', () =
   }
 });
 
+test('hidden comparison models may pre-author a hidden launch graph', () => {
+  const source = isolatedModel('wan-3');
+  const opponent = isolatedModel('wan-3-prime');
+  source.publication.compare.published = false;
+  source.publication.compare.indexed = false;
+  opponent.publication.compare.published = false;
+  opponent.publication.compare.indexed = false;
+  source.publication.compare.suggestedOpponentIds = [opponent.id];
+  source.publication.compare.publishedPairIds = [opponent.id];
+  const document = repositoryDocument([source, opponent]);
+  assert.doesNotThrow(() =>
+    validateModelRegistryRepository(document, writeRepositoryFixture(document.models))
+  );
+});
+
 test('engine and public alias namespaces preserve context-specific veo3 behavior', () => {
   const document = validateModelRegistryDocument(valid);
   const internalOwner = document.models.find((model) => model.aliases.internal.includes('veo3'));

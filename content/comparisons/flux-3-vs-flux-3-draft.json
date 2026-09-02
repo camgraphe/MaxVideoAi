@@ -1,0 +1,21 @@
+{
+  "slug": "flux-3-vs-flux-3-draft",
+  "en": {
+    "meta": { "title": "FLUX 3 vs Draft: Scores, Quality & Price", "description": "Compare FLUX 3 and FLUX 3 Draft for quality, iteration speed, price and delivery resolution.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Quick verdict", "body": "Use Draft for fast, low-cost exploration at 720p. Move to FLUX 3 for final quality, 1080p delivery and stronger production control." },
+    "primaryLinksTitle": "Explore the models",
+    "primaryLinks": [{ "href": "/models/flux-3", "label": "FLUX 3" }, { "href": "/models/flux-3-draft", "label": "FLUX 3 Draft" }]
+  },
+  "fr": {
+    "meta": { "title": "FLUX 3 vs Draft : notes, qualité et prix", "description": "Comparez FLUX 3 et FLUX 3 Draft sur la qualité, vitesse, prix et résolution.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Verdict rapide", "body": "Utilisez Draft pour explorer vite et à bas coût en 720p. Passez à FLUX 3 pour la qualité finale, le 1080p et un meilleur contrôle de production." },
+    "primaryLinksTitle": "Explorer les modèles",
+    "primaryLinks": [{ "href": "/models/flux-3", "label": "FLUX 3" }, { "href": "/models/flux-3-draft", "label": "FLUX 3 Draft" }]
+  },
+  "es": {
+    "meta": { "title": "FLUX 3 vs Draft: notas, calidad y precio", "description": "Compara FLUX 3 y FLUX 3 Draft en calidad, velocidad, precio y resolución.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Veredicto rápido", "body": "Usa Draft para explorar rápido y barato en 720p. Pasa a FLUX 3 para calidad final, entrega en 1080p y mayor control de producción." },
+    "primaryLinksTitle": "Explorar los modelos",
+    "primaryLinks": [{ "href": "/models/flux-3", "label": "FLUX 3" }, { "href": "/models/flux-3-draft", "label": "FLUX 3 Draft" }]
+  }
+}

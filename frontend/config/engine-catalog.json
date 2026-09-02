@@ -18685,8 +18685,14 @@
         "includeInFamilyCopy": false
       },
       "compare": {
-        "suggestOpponents": [],
-        "publishedPairs": [],
+        "suggestOpponents": [
+          "wan-3-prime",
+          "wan-2-6"
+        ],
+        "publishedPairs": [
+          "wan-2-6",
+          "wan-3-prime"
+        ],
         "includeInHub": false
       },
       "app": {
@@ -19229,8 +19235,12 @@
         "includeInFamilyCopy": false
       },
       "compare": {
-        "suggestOpponents": [],
-        "publishedPairs": [],
+        "suggestOpponents": [
+          "wan-3"
+        ],
+        "publishedPairs": [
+          "wan-3"
+        ],
         "includeInHub": false
       },
       "app": {
@@ -19776,8 +19786,14 @@
         "includeInFamilyCopy": false
       },
       "compare": {
-        "suggestOpponents": [],
-        "publishedPairs": [],
+        "suggestOpponents": [
+          "ltx-2-5-pro",
+          "ltx-2-3-fast"
+        ],
+        "publishedPairs": [
+          "ltx-2-3-fast",
+          "ltx-2-5-pro"
+        ],
         "includeInHub": false
       },
       "app": {
@@ -20379,8 +20395,14 @@
         "includeInFamilyCopy": false
       },
       "compare": {
-        "suggestOpponents": [],
-        "publishedPairs": [],
+        "suggestOpponents": [
+          "ltx-2-5-fast",
+          "ltx-2-3-pro"
+        ],
+        "publishedPairs": [
+          "ltx-2-3-pro",
+          "ltx-2-5-fast"
+        ],
         "includeInHub": false
       },
       "app": {
@@ -20922,8 +20944,14 @@
         "includeInFamilyCopy": false
       },
       "compare": {
-        "suggestOpponents": [],
-        "publishedPairs": [],
+        "suggestOpponents": [
+          "flux-3",
+          "sora-2"
+        ],
+        "publishedPairs": [
+          "flux-3",
+          "sora-2"
+        ],
         "includeInHub": false
       },
       "app": {
@@ -21374,8 +21402,14 @@
         "includeInFamilyCopy": false
       },
       "compare": {
-        "suggestOpponents": [],
-        "publishedPairs": [],
+        "suggestOpponents": [
+          "flux-3-draft",
+          "grok-imagine-video-1-5"
+        ],
+        "publishedPairs": [
+          "flux-3-draft",
+          "grok-imagine-video-1-5"
+        ],
         "includeInHub": false
       },
       "app": {
@@ -22136,8 +22170,12 @@
         "includeInFamilyCopy": false
       },
       "compare": {
-        "suggestOpponents": [],
-        "publishedPairs": [],
+        "suggestOpponents": [
+          "flux-3"
+        ],
+        "publishedPairs": [
+          "flux-3"
+        ],
         "includeInHub": false
       },
       "app": {

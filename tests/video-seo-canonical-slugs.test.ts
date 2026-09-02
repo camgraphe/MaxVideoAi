@@ -6,6 +6,7 @@ import {
   getVideoCanonicalRedirectPath,
   normalizeVideoSeoCanonicalSlug,
 } from '../frontend/lib/video-seo-canonical.ts';
+import { VIDEO_SEO_EDITORIAL_ENTRIES } from '../frontend/config/video-seo-editorial.ts';
 import { validateVideoSeoEditorialUpdatePayload } from '../frontend/server/video-seo-editorial.ts';
 
 const videoId = 'job_55bfb245-ea0f-44e1-a3d8-7a24039b3a9e';
@@ -124,4 +125,24 @@ test('video SEO editorial validation protects existing canonical slugs from acci
   });
   assert.equal(confirmed.ok, true);
   assert.equal(confirmed.entry.canonicalSlug, canonicalSlug);
+});
+
+test('each P0 video model owns one approved readable watch-page canonical slug', () => {
+  const expected = new Map([
+    ['wan-3', 'wan-3-alpine-runner-multishot'],
+    ['wan-3-prime', 'wan-3-prime-chef-multishot'],
+    ['ltx-2-5-fast', 'ltx-2-5-fast-street-rhythm'],
+    ['ltx-2-5-pro', 'ltx-2-5-pro-lantern-release'],
+    ['grok-imagine-video-1-5', 'grok-1-5-lunar-barista'],
+    ['flux-3', 'flux-3-season-shifting-station'],
+    ['flux-3-draft', 'flux-3-draft-neon-cyclist'],
+  ]);
+
+  for (const [modelSlug, expectedCanonicalSlug] of expected) {
+    const entries = VIDEO_SEO_EDITORIAL_ENTRIES.filter((entry) => entry.modelSlug === modelSlug);
+    const approved = entries.filter((entry) => entry.seoStatus === 'approved');
+    assert.equal(approved.length, 1, modelSlug);
+    assert.equal(approved[0]?.canonicalSlug, expectedCanonicalSlug);
+    assert.equal(normalizeVideoSeoCanonicalSlug(expectedCanonicalSlug), expectedCanonicalSlug);
+  }
 });

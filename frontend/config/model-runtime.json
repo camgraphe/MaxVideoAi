@@ -2673,8 +2673,14 @@
         "compare": {
           "published": false,
           "indexed": false,
-          "suggestedOpponentIds": [],
-          "publishedPairIds": []
+          "suggestedOpponentIds": [
+            "wan-3-prime",
+            "wan-2-6"
+          ],
+          "publishedPairIds": [
+            "wan-2-6",
+            "wan-3-prime"
+          ]
         },
         "app": {
           "published": false
@@ -2712,8 +2718,12 @@
         "compare": {
           "published": false,
           "indexed": false,
-          "suggestedOpponentIds": [],
-          "publishedPairIds": []
+          "suggestedOpponentIds": [
+            "wan-3"
+          ],
+          "publishedPairIds": [
+            "wan-3"
+          ]
         },
         "app": {
           "published": false
@@ -2751,8 +2761,14 @@
         "compare": {
           "published": false,
           "indexed": false,
-          "suggestedOpponentIds": [],
-          "publishedPairIds": []
+          "suggestedOpponentIds": [
+            "ltx-2-5-pro",
+            "ltx-2-3-fast"
+          ],
+          "publishedPairIds": [
+            "ltx-2-3-fast",
+            "ltx-2-5-pro"
+          ]
         },
         "app": {
           "published": false
@@ -2790,8 +2806,14 @@
         "compare": {
           "published": false,
           "indexed": false,
-          "suggestedOpponentIds": [],
-          "publishedPairIds": []
+          "suggestedOpponentIds": [
+            "ltx-2-5-fast",
+            "ltx-2-3"
+          ],
+          "publishedPairIds": [
+            "ltx-2-3",
+            "ltx-2-5-fast"
+          ]
         },
         "app": {
           "published": false
@@ -2829,8 +2851,14 @@
         "compare": {
           "published": false,
           "indexed": false,
-          "suggestedOpponentIds": [],
-          "publishedPairIds": []
+          "suggestedOpponentIds": [
+            "flux-3",
+            "sora-2"
+          ],
+          "publishedPairIds": [
+            "flux-3",
+            "sora-2"
+          ]
         },
         "app": {
           "published": false
@@ -2868,8 +2896,14 @@
         "compare": {
           "published": false,
           "indexed": false,
-          "suggestedOpponentIds": [],
-          "publishedPairIds": []
+          "suggestedOpponentIds": [
+            "flux-3-draft",
+            "grok-imagine-video-1-5"
+          ],
+          "publishedPairIds": [
+            "flux-3-draft",
+            "grok-imagine-video-1-5"
+          ]
         },
         "app": {
           "published": false
@@ -2907,8 +2941,12 @@
         "compare": {
           "published": false,
           "indexed": false,
-          "suggestedOpponentIds": [],
-          "publishedPairIds": []
+          "suggestedOpponentIds": [
+            "flux-3"
+          ],
+          "publishedPairIds": [
+            "flux-3"
+          ]
         },
         "app": {
           "published": false

@@ -443,14 +443,16 @@ export function validateModelRegistryRepository(document: ModelRegistryDocument,
       fail(`sitemap model must be indexable "${model.slug}"`);
     }
 
-    const opponentIds = [
-      ...model.publication.compare.suggestedOpponentIds,
-      ...model.publication.compare.publishedPairIds,
-    ];
-    for (const opponentId of opponentIds) {
-      const opponent = modelsById.get(normalized(opponentId));
-      if (!opponent?.publication.compare.published) {
-        fail(`comparison opponent "${opponentId}" is not published for "${model.id}"`);
+    if (model.publication.compare.published) {
+      const opponentIds = [
+        ...model.publication.compare.suggestedOpponentIds,
+        ...model.publication.compare.publishedPairIds,
+      ];
+      for (const opponentId of opponentIds) {
+        const opponent = modelsById.get(normalized(opponentId));
+        if (!opponent?.publication.compare.published) {
+          fail(`comparison opponent "${opponentId}" is not published for "${model.id}"`);
+        }
       }
     }
   }
