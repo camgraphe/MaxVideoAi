@@ -32,7 +32,10 @@ function isExactStagingCanary(
     && host === STAGING_ACCOUNT_HOST
     && principal.clientId !== null
     && csvIncludes(env.MCP_STAGING_CANARY_ACCOUNT_IDS, principal.userId)
-    && csvIncludes(env.MCP_STAGING_CANARY_CLIENT_IDS, principal.clientId);
+    && (
+      csvIncludes(env.MCP_STAGING_CANARY_CLIENT_IDS, principal.clientId)
+      || csvIncludes(env.MCP_STAGING_CANARY_ADDITIONAL_CLIENT_IDS, principal.clientId)
+    );
 }
 
 export type McpPrelaunchModelAccess = Readonly<{

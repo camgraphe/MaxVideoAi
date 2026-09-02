@@ -89,6 +89,24 @@ test('canary access fails closed outside the exact staging host, account, client
   }
 });
 
+test('an additional staging client can be rotated in without replacing the primary allowlist', () => {
+  const additionalClient = 'staging-qa-client';
+  const environment = resolveMcpStagingCanaryGenerationEnvironment(
+    { ...principal, clientId: additionalClient },
+    'https://maxvideoai-mcp-staging.vercel.app/account/connections',
+    {
+      ...stagingEnv,
+      MCP_STAGING_CANARY_CLIENT_IDS: 'primary-client-stays-authorized',
+      MCP_STAGING_CANARY_ADDITIONAL_CLIENT_IDS: additionalClient,
+    },
+  );
+
+  assert.deepEqual(
+    resolveAgentGenerationEngineExecutability(engine('veo-3-1-lite'), environment),
+    { executable: true, reason: 'available' },
+  );
+});
+
 test('the image canary remains bounded by the authored engine allowlist', () => {
   const environment = resolveMcpStagingCanaryGenerationEnvironment(
     principal,

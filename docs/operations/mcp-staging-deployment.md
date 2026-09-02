@@ -144,6 +144,12 @@ MCP_STAGING_CANARY_ACCOUNT_IDS=<comma-separated MaxVideoAI staging account IDs>
 MCP_STAGING_CANARY_CLIENT_IDS=<comma-separated hosted MCP OAuth client IDs>
 ```
 
+During an attended QA campaign, `MCP_STAGING_CANARY_ADDITIONAL_CLIENT_IDS`
+may hold a second sensitive comma-separated client allowlist. It is cumulative:
+the primary allowlist remains authorized and must never be overwritten merely
+to rotate in a temporary QA client. Remove the additional value after the
+campaign; account matching remains mandatory for both lists.
+
 Access is granted only when the exact account and the exact OAuth client both
 match, the request is served from `maxvideoai-mcp-staging.vercel.app`, and
 `MCP_STAGING_OPERATIONAL_ENABLED=true`. A partial match fails closed. These
