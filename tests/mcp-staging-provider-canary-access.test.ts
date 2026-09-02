@@ -96,6 +96,8 @@ test('an additional staging client can be rotated in without replacing the prima
     'https://maxvideoai-mcp-staging.vercel.app/account/connections',
     {
       ...stagingEnv,
+      MCP_STAGING_CANARY_ACCOUNT_IDS: 'primary-account-stays-authorized',
+      MCP_STAGING_CANARY_ADDITIONAL_ACCOUNT_IDS: principal.userId,
       MCP_STAGING_CANARY_CLIENT_IDS: 'primary-client-stays-authorized',
       MCP_STAGING_CANARY_ADDITIONAL_CLIENT_IDS: additionalClient,
     },
