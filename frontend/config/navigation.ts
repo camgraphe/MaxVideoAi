@@ -94,13 +94,13 @@ const MODEL_MENU_CANDIDATES: readonly LabeledSlug[] = [
   { slug: 'grok-imagine-video-1-5', label: 'Grok Imagine Video 1.5', badge: 'new' },
   { slug: 'flux-3', label: 'FLUX 3', badge: 'new' },
   { slug: 'seedance-2-0', label: 'Seedance 2.0' },
-  { slug: 'seedance-2-0-fast', label: 'Seedance 2.0 Fast' },
-  { slug: 'ltx-2-3-fast', label: 'LTX 2.3 Fast' },
   { slug: 'veo-3-1', label: 'Veo 3.1' },
   { slug: 'gemini-omni-flash', label: 'Gemini Omni Flash' },
-  { slug: 'veo-3-1-lite', label: 'Veo 3.1 Lite' },
   { slug: 'kling-o3-pro', label: 'Kling 3.0 Omni Pro' },
   { slug: 'kling-o3-4k', label: 'Kling 3.0 Omni 4K' },
+  { slug: 'seedance-2-0-fast', label: 'Seedance 2.0 Fast' },
+  { slug: 'ltx-2-3-fast', label: 'LTX 2.3 Fast' },
+  { slug: 'veo-3-1-lite', label: 'Veo 3.1 Lite' },
 ] as const;
 
 export function buildMarketingModelMenu(models: readonly RuntimeModelEntry[]): LabeledSlug[] {
@@ -133,6 +133,11 @@ const FOOTER_EXAMPLES_MENU: LabeledSlug[] = [...EXAMPLES_MENU];
 
 const COMPARE_MENU: LabeledSlug[] = [
   {
+    slug: 'minimax-h3-vs-seedance-2-5',
+    label: 'MiniMax H3 vs Seedance 2.5',
+    badge: 'new',
+  },
+  {
     slug: 'ltx-2-3-pro-vs-ltx-2-5-pro',
     label: 'LTX 2.3 Pro vs LTX 2.5 Pro',
     badge: 'new',
@@ -140,11 +145,6 @@ const COMPARE_MENU: LabeledSlug[] = [
   { slug: 'wan-2-6-vs-wan-3', label: 'Wan 2.6 vs Wan 3', badge: 'new' },
   { slug: 'flux-3-vs-grok-imagine-video-1-5', label: 'FLUX 3 vs Grok Imagine Video 1.5', badge: 'new' },
   { slug: 'grok-imagine-video-1-5-vs-sora-2', label: 'Grok Imagine Video 1.5 vs Sora 2' },
-  {
-    slug: 'minimax-h3-vs-seedance-2-5',
-    label: 'MiniMax H3 vs Seedance 2.5',
-    badge: 'new',
-  },
   { slug: 'kling-o3-pro-vs-minimax-h3', label: 'Kling 3.0 Omni Pro vs MiniMax H3' },
   { slug: 'gemini-omni-flash-vs-veo-3-1', label: 'Gemini Omni Flash vs Veo 3.1' },
   { slug: 'kling-3-pro-vs-kling-o3-pro', label: 'Kling 3 Pro vs Kling 3.0 Omni Pro' },

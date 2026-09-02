@@ -38,20 +38,20 @@
     "safety": "Recommendation only; no sitemap, robots, canonical, or noindex change is applied."
   },
   "summary": {
-    "publishedSlugs": 298,
-    "totalUrls": 894,
+    "publishedSlugs": 306,
+    "totalUrls": 918,
     "withGscRows": 639,
-    "withoutGscRows": 255,
+    "withoutGscRows": 279,
     "withClicks": 144,
     "gscRowsOutsidePublishedSet": 21,
     "gscRowsOutsidePublishedSetWithClicks": 2,
     "byLocale": {
-      "en": 298,
-      "fr": 298,
-      "es": 298
+      "en": 306,
+      "fr": 306,
+      "es": 306
     },
     "byClassification": {
-      "keep": 310,
+      "keep": 334,
       "enrich": 28,
       "review": 346,
       "noindex_candidate": 210
@@ -216,6 +216,50 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/ai-video-engines/flux-3-vs-flux-3-draft",
+      "locale": "en",
+      "slug": "flux-3-vs-flux-3-draft",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "scoreboard"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override",
+        "english_strategic_surface"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/ai-video-engines/flux-3-vs-grok-imagine-video-1-5",
+      "locale": "en",
+      "slug": "flux-3-vs-grok-imagine-video-1-5",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "scoreboard"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override",
+        "english_strategic_surface"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/ai-video-engines/gemini-omni-flash-vs-seedance-2-0",
       "locale": "en",
       "slug": "gemini-omni-flash-vs-seedance-2-0",
@@ -305,6 +349,28 @@
       ],
       "classification": "keep",
       "rationale": [
+        "english_strategic_surface"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/ai-video-engines/grok-imagine-video-1-5-vs-sora-2",
+      "locale": "en",
+      "slug": "grok-imagine-video-1-5-vs-sora-2",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "scoreboard"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override",
         "english_strategic_surface"
       ]
     },
@@ -2876,6 +2942,28 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/ai-video-engines/ltx-2-3-fast-vs-ltx-2-5-fast",
+      "locale": "en",
+      "slug": "ltx-2-3-fast-vs-ltx-2-5-fast",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "scoreboard"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override",
+        "english_strategic_surface"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/ai-video-engines/ltx-2-3-fast-vs-ltx-2-fast",
       "locale": "en",
       "slug": "ltx-2-3-fast-vs-ltx-2-fast",
@@ -3179,6 +3267,28 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/ai-video-engines/ltx-2-3-pro-vs-ltx-2-5-pro",
+      "locale": "en",
+      "slug": "ltx-2-3-pro-vs-ltx-2-5-pro",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "scoreboard"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override",
+        "english_strategic_surface"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/ai-video-engines/ltx-2-3-pro-vs-ltx-2-fast",
       "locale": "en",
       "slug": "ltx-2-3-pro-vs-ltx-2-fast",
@@ -3461,6 +3571,28 @@
       "classification": "noindex_candidate",
       "rationale": [
         "no_gsc_row_or_editorial_signal"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/ai-video-engines/ltx-2-5-fast-vs-ltx-2-5-pro",
+      "locale": "en",
+      "slug": "ltx-2-5-fast-vs-ltx-2-5-pro",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "scoreboard"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override",
+        "english_strategic_surface"
       ]
     },
     {
@@ -6101,6 +6233,50 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/ai-video-engines/wan-2-6-vs-wan-3",
+      "locale": "en",
+      "slug": "wan-2-6-vs-wan-3",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "scoreboard"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override",
+        "english_strategic_surface"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/ai-video-engines/wan-3-vs-wan-3-prime",
+      "locale": "en",
+      "slug": "wan-3-vs-wan-3-prime",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "scoreboard"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override",
+        "english_strategic_surface"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/fr/comparatif/dreamina-seedance-2-0-mini-vs-happy-horse-1-1",
       "locale": "fr",
       "slug": "dreamina-seedance-2-0-mini-vs-happy-horse-1-1",
@@ -6251,6 +6427,48 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/fr/comparatif/flux-3-vs-flux-3-draft",
+      "locale": "fr",
+      "slug": "flux-3-vs-flux-3-draft",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "scoreboard"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/fr/comparatif/flux-3-vs-grok-imagine-video-1-5",
+      "locale": "fr",
+      "slug": "flux-3-vs-grok-imagine-video-1-5",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "scoreboard"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/fr/comparatif/gemini-omni-flash-vs-seedance-2-0",
       "locale": "fr",
       "slug": "gemini-omni-flash-vs-seedance-2-0",
@@ -6339,6 +6557,27 @@
       "rationale": [
         "gsc_top_10_review",
         "strategic_localization_review"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/fr/comparatif/grok-imagine-video-1-5-vs-sora-2",
+      "locale": "fr",
+      "slug": "grok-imagine-video-1-5-vs-sora-2",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "scoreboard"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
       ]
     },
     {
@@ -8785,6 +9024,27 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/fr/comparatif/ltx-2-3-fast-vs-ltx-2-5-fast",
+      "locale": "fr",
+      "slug": "ltx-2-3-fast-vs-ltx-2-5-fast",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "scoreboard"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/fr/comparatif/ltx-2-3-fast-vs-ltx-2-fast",
       "locale": "fr",
       "slug": "ltx-2-3-fast-vs-ltx-2-fast",
@@ -9069,6 +9329,27 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/fr/comparatif/ltx-2-3-pro-vs-ltx-2-5-pro",
+      "locale": "fr",
+      "slug": "ltx-2-3-pro-vs-ltx-2-5-pro",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "scoreboard"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/fr/comparatif/ltx-2-3-pro-vs-ltx-2-fast",
       "locale": "fr",
       "slug": "ltx-2-3-pro-vs-ltx-2-fast",
@@ -9346,6 +9627,27 @@
       "classification": "noindex_candidate",
       "rationale": [
         "no_gsc_row_or_editorial_signal"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/fr/comparatif/ltx-2-5-fast-vs-ltx-2-5-pro",
+      "locale": "fr",
+      "slug": "ltx-2-5-fast-vs-ltx-2-5-pro",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "scoreboard"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
       ]
     },
     {
@@ -11828,6 +12130,48 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/fr/comparatif/wan-2-6-vs-wan-3",
+      "locale": "fr",
+      "slug": "wan-2-6-vs-wan-3",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "scoreboard"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/fr/comparatif/wan-3-vs-wan-3-prime",
+      "locale": "fr",
+      "slug": "wan-3-vs-wan-3-prime",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "scoreboard"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/es/comparativa/dreamina-seedance-2-0-mini-vs-happy-horse-1-1",
       "locale": "es",
       "slug": "dreamina-seedance-2-0-mini-vs-happy-horse-1-1",
@@ -11974,6 +12318,48 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/es/comparativa/flux-3-vs-flux-3-draft",
+      "locale": "es",
+      "slug": "flux-3-vs-flux-3-draft",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "scoreboard"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/es/comparativa/flux-3-vs-grok-imagine-video-1-5",
+      "locale": "es",
+      "slug": "flux-3-vs-grok-imagine-video-1-5",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "scoreboard"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/es/comparativa/gemini-omni-flash-vs-seedance-2-0",
       "locale": "es",
       "slug": "gemini-omni-flash-vs-seedance-2-0",
@@ -12068,6 +12454,27 @@
       "rationale": [
         "gsc_top_10_review",
         "strategic_localization_review"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/es/comparativa/grok-imagine-video-1-5-vs-sora-2",
+      "locale": "es",
+      "slug": "grok-imagine-video-1-5-vs-sora-2",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "scoreboard"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
       ]
     },
     {
@@ -14586,6 +14993,27 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/es/comparativa/ltx-2-3-fast-vs-ltx-2-5-fast",
+      "locale": "es",
+      "slug": "ltx-2-3-fast-vs-ltx-2-5-fast",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "scoreboard"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/es/comparativa/ltx-2-3-fast-vs-ltx-2-fast",
       "locale": "es",
       "slug": "ltx-2-3-fast-vs-ltx-2-fast",
@@ -14887,6 +15315,27 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/es/comparativa/ltx-2-3-pro-vs-ltx-2-5-pro",
+      "locale": "es",
+      "slug": "ltx-2-3-pro-vs-ltx-2-5-pro",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "scoreboard"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/es/comparativa/ltx-2-3-pro-vs-ltx-2-fast",
       "locale": "es",
       "slug": "ltx-2-3-pro-vs-ltx-2-fast",
@@ -15173,6 +15622,27 @@
       "classification": "review",
       "rationale": [
         "gsc_review_opportunity"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/es/comparativa/ltx-2-5-fast-vs-ltx-2-5-pro",
+      "locale": "es",
+      "slug": "ltx-2-5-fast-vs-ltx-2-5-pro",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "scoreboard"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
       ]
     },
     {
@@ -17721,6 +18191,48 @@
       "classification": "review",
       "rationale": [
         "gsc_review_opportunity"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/es/comparativa/wan-2-6-vs-wan-3",
+      "locale": "es",
+      "slug": "wan-2-6-vs-wan-3",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "scoreboard"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/es/comparativa/wan-3-vs-wan-3-prime",
+      "locale": "es",
+      "slug": "wan-3-vs-wan-3-prime",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "scoreboard"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
       ]
     }
   ],

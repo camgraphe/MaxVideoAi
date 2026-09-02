@@ -66,16 +66,16 @@ function p0IdsIn(values: readonly { id: string }[]) {
 }
 
 test('pricing discovery is controlled only by lifecycle and pricing publication', () => {
-  const hiddenRows = buildVideoPricingRowsFromEntries(entries, 'en');
+  const publicRows = buildVideoPricingRowsFromEntries(entries, 'en');
   const visibleRows = buildVideoPricingRowsFromEntries(publishedP0Entries(), 'en');
 
-  assert.deepEqual(p0IdsIn(hiddenRows), []);
+  assert.deepEqual([...p0IdsIn(publicRows)].sort(), [...P0_IDS].sort());
   assert.deepEqual(
     P0_IDS.filter((id) => visibleRows.some((row) => row.id === id)),
     P0_IDS,
   );
   assert.deepEqual(
-    DEEP_LEGACY_IDS.filter((id) => hiddenRows.some((row) => row.id === id)),
+    DEEP_LEGACY_IDS.filter((id) => publicRows.some((row) => row.id === id)),
     [],
   );
 
@@ -155,29 +155,26 @@ test('P0 pricing rows derive canonical anchors and locale-aware model links', ()
   }
 });
 
-test('hidden P0 never leaks into any PAYG data fallback', () => {
+test('published P0 representatives and pricing data project consistently into PAYG', () => {
   for (const locale of ['en', 'fr', 'es'] as const) {
     const content = getPayAsYouGoContent(locale);
     const data = buildPayAsYouGoPageData({ locale, content });
-    assert.deepEqual(p0IdsIn(data.pricing.rows), [], `${locale}:pricing`);
-    assert.deepEqual(p0IdsIn(data.hero.quote.previewRows), [], `${locale}:hero`);
-    assert.deepEqual(p0IdsIn(data.modelTesting.items), [], `${locale}:models`);
-    assert.deepEqual(p0IdsIn(data.priceLookups.items), [], `${locale}:lookups`);
-    assert.deepEqual(p0IdsIn(data.exampleCosts.items), [], `${locale}:examples`);
-    assert.doesNotMatch(
-      JSON.stringify(data),
-      /\/(?:models|modeles|modelos)\/(?:ltx-2-5|wan-3|grok-imagine-video-1-5|flux-3)/,
-      `${locale}:fallback href`,
-    );
-    assert.doesNotMatch(
-      JSON.stringify(data.pricing.rows),
-      /(?:ltx-2-5|wan-3|grok-imagine-video-1-5|flux-3).*?-vs-|(?:-vs-).*?(?:ltx-2-5|wan-3|grok-imagine-video-1-5|flux-3)/,
-      `${locale}:comparison`,
-    );
+    assert.deepEqual(p0IdsIn(data.pricing.rows), P0_REPRESENTATIVE_IDS, `${locale}:pricing`);
+    assert.deepEqual(p0IdsIn(data.hero.quote.previewRows), P0_REPRESENTATIVE_IDS, `${locale}:hero`);
+    assert.deepEqual(p0IdsIn(data.modelTesting.items), P0_IDS, `${locale}:models`);
+    assert.deepEqual(p0IdsIn(data.priceLookups.items), P0_IDS, `${locale}:lookups`);
+    assert.deepEqual(p0IdsIn(data.exampleCosts.items), P0_REPRESENTATIVE_IDS, `${locale}:examples`);
+    for (const id of P0_REPRESENTATIVE_IDS) {
+      assert.match(
+        data.pricing.rows.find((row) => row.id === id)?.compareHref ?? '',
+        /^\/(?:fr\/comparatif|es\/comparativa|ai-video-engines)\/[a-z0-9-]+-vs-[a-z0-9-]+$/,
+        `${locale}:${id}:comparison`,
+      );
+    }
   }
 });
 
-test('sparse PAYG data never relabels generic checks as hidden P0 examples', () => {
+test('sparse PAYG data never relabels generic checks as P0 examples', () => {
   const pricingHub = structuredClone(buildPricingHubData('en'));
   const seedance = pricingHub.video.rows.find((row) => row.id === 'seedance-2-0');
   assert.ok(seedance);
@@ -281,7 +278,7 @@ test('explicit published model fallbacks remain available without a pricing row'
   );
 });
 
-test('unpublished comparison suggestions cannot leak a hidden P0 opponent', () => {
+test('unpublished comparison suggestions cannot leak an unknown opponent', () => {
   const entriesWithHiddenSuggestion = entries.map((entry) => entry.id === 'ltx-2-3' ? {
     ...structuredClone(entry),
     surfaces: {
@@ -289,7 +286,7 @@ test('unpublished comparison suggestions cannot leak a hidden P0 opponent', () =
       compare: {
         ...structuredClone(entry.surfaces.compare),
         includeInHub: true,
-        suggestOpponents: ['ltx-2-5-pro'],
+        suggestOpponents: ['future-video-model'],
         publishedPairs: [],
       },
     },
@@ -297,7 +294,7 @@ test('unpublished comparison suggestions cannot leak a hidden P0 opponent', () =
   const ltxLegacy = buildVideoPricingRowsFromEntries(entriesWithHiddenSuggestion, 'en')
     .find((row) => row.id === 'ltx-2-3');
   assert.ok(ltxLegacy);
-  assert.doesNotMatch(JSON.stringify(ltxLegacy.links), /ltx-2-5-pro/);
+  assert.doesNotMatch(JSON.stringify(ltxLegacy.links), /future-video-model/);
 
   const pricingHub = structuredClone(buildPricingHubData('en'));
   const ltxPaygRow = pricingHub.video.rows.find((row) => row.id === 'ltx-2-3-fast');

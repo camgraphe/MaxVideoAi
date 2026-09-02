@@ -132,6 +132,17 @@ test('the eight canonical P0 comparison documents are localized and scoreboard-o
   }
 });
 
+test('scoreboard-only fallbacks do not promise future side-by-side media', () => {
+  const source = [
+    'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-copy.ts',
+    'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-faq.ts',
+  ].map((path) => readFileSync(path, 'utf8')).join('\n');
+
+  assert.doesNotMatch(source, /Curated side-by-side videos will be added/i);
+  assert.doesNotMatch(source, /vidéos comparatives curées seront ajoutées/i);
+  assert.doesNotMatch(source, /vídeos comparativos curados se añadirán/i);
+});
+
 test('published P0 models expose only the eight approved comparison edges', () => {
   const registry = JSON.parse(readFileSync('frontend/config/model-registry.json', 'utf8')) as {
     models: Array<{

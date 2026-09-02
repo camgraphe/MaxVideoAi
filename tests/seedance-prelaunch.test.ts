@@ -402,20 +402,24 @@ test('Seedance 2.5 and Seedance 2.0 lead the app menu while the MiniMax H3 launc
     [
       'seedance-2-5',
       'minimax-h3',
+      'ltx-2-5-pro',
+      'wan-3-prime',
+      'grok-imagine-video-1-5',
+      'flux-3',
       'seedance-2-0',
-      'seedance-2-0-fast',
-      'ltx-2-3-fast',
       'veo-3-1',
       'gemini-omni-flash',
-      'veo-3-1-lite',
       'kling-o3-pro',
-      'kling-o3-4k',
     ]
   );
   assert.deepEqual(
     MARKETING_NAV_COMPARE.map((item) => item.key),
     [
       'minimax-h3-vs-seedance-2-5',
+      'ltx-2-3-pro-vs-ltx-2-5-pro',
+      'wan-2-6-vs-wan-3',
+      'flux-3-vs-grok-imagine-video-1-5',
+      'grok-imagine-video-1-5-vs-sora-2',
       'kling-o3-pro-vs-minimax-h3',
       'gemini-omni-flash-vs-veo-3-1',
       'kling-3-pro-vs-kling-o3-pro',
@@ -423,10 +427,10 @@ test('Seedance 2.5 and Seedance 2.0 lead the app menu while the MiniMax H3 launc
       'minimax-h3-vs-veo-3-1',
     ]
   );
-  assert.equal(MARKETING_NAV_COMPARE.length, 6);
+  assert.equal(MARKETING_NAV_COMPARE.length, 10);
   assert.equal(MARKETING_NAV_COMPARE[0]?.badge, 'new');
-  assert.deepEqual(MARKETING_NAV_EXAMPLES.map((item) => item.key), ['veo', 'seedance', 'hailuo', 'ltx', 'kling']);
-  assert.deepEqual(MARKETING_FOOTER_EXAMPLES.map((item) => item.key), ['veo', 'seedance', 'hailuo', 'ltx', 'kling']);
+  assert.deepEqual(MARKETING_NAV_EXAMPLES.map((item) => item.key), ['veo', 'seedance', 'hailuo', 'ltx', 'wan', 'kling', 'grok', 'flux']);
+  assert.deepEqual(MARKETING_FOOTER_EXAMPLES.map((item) => item.key), ['veo', 'seedance', 'hailuo', 'ltx', 'wan', 'kling', 'grok', 'flux']);
 });
 
 test('Seedance 1.5 Pro stays active while Seedance 2.0 keeps the primary alias and promoted slots', () => {
@@ -441,18 +445,18 @@ test('Seedance 1.5 Pro stays active while Seedance 2.0 keeps the primary alias a
   assert.equal(getHubEngines().some((engine) => engine.modelSlug === 'seedance-1-5-pro'), true);
 });
 
-test('Header model menu promotes MiniMax H3 after Seedance 2.5 while keeping the Veo and Kling families expanded', () => {
+test('Header model menu keeps H3, current family representatives, Veo, Gemini, and Kling in the bounded set', () => {
   assert.deepEqual(MARKETING_NAV_MODELS.map((item) => item.key), [
     'seedance-2-5',
     'minimax-h3',
+    'ltx-2-5-pro',
+    'wan-3-prime',
+    'grok-imagine-video-1-5',
+    'flux-3',
     'seedance-2-0',
-    'seedance-2-0-fast',
-    'ltx-2-3-fast',
     'veo-3-1',
     'gemini-omni-flash',
-    'veo-3-1-lite',
     'kling-o3-pro',
-    'kling-o3-4k',
   ]);
 });
 
@@ -466,6 +470,8 @@ test('Examples hub family order follows the current business priority without re
     'happy-horse',
     'sora',
     'luma',
+    'grok',
+    'flux',
     'pika',
     'hailuo',
   ]);
@@ -505,7 +511,7 @@ test('Examples family current model groups do not classify new delivery models a
     'seedance-2-0-fast',
     'dreamina-seedance-2-0-mini',
   ]);
-  assert.deepEqual(getExampleFamilyCurrentModelSlugs('ltx'), ['ltx-2-3-pro', 'ltx-2-3-fast']);
+  assert.deepEqual(getExampleFamilyCurrentModelSlugs('ltx'), ['ltx-2-5-pro', 'ltx-2-5-fast']);
 });
 
 test('Engine select keeps its app-specific family priority stable', () => {

@@ -7,7 +7,7 @@ import {
 } from '../frontend/lib/seo/missing-content';
 import { formatCodexActionQueueMarkdown } from '../frontend/lib/seo/codex-action-queue';
 
-const HIDDEN_P0_MODEL_CASES = [
+const P0_MODEL_CASES = [
   ['wan-3', 'wan'],
   ['wan-3-prime', 'wan'],
   ['ltx-2-5-fast', 'ltx'],
@@ -111,11 +111,16 @@ test('Pika max length intent maps to specs candidates without fabricating a targ
   assert.ok(item.likelyPageCandidates.includes('/models/pika-text-to-video'));
 });
 
-test('missing-content candidate selection never emits any hidden P0 model URL', () => {
-  const hiddenPaths = new Set(HIDDEN_P0_MODEL_CASES.map(([slug]) => `/models/${slug}`));
-  const leakedPaths = new Set<string>();
+test('missing-content candidate selection uses one current canonical P0 target per family', () => {
+  const expectedPaths = new Set([
+    '/models/wan-3-prime',
+    '/models/ltx-2-5-pro',
+    '/models/grok-imagine-video-1-5',
+    '/models/flux-3',
+  ]);
+  const selectedPaths = new Set<string>();
 
-  for (const [slug, family] of HIDDEN_P0_MODEL_CASES) {
+  for (const [slug, family] of P0_MODEL_CASES) {
     const items = buildMissingContentItems([
       gscRow(`${slug} prompt examples`, null, 0, 110, 0, 11.4),
       gscRow(`${slug} prompting guide`, null, 0, 65, 0, 12.1),
@@ -124,12 +129,12 @@ test('missing-content candidate selection never emits any hidden P0 model URL', 
 
     for (const item of items) {
       for (const candidate of item.likelyPageCandidates) {
-        if (hiddenPaths.has(candidate)) leakedPaths.add(candidate);
+        if (expectedPaths.has(candidate)) selectedPaths.add(candidate);
       }
     }
   }
 
-  assert.deepEqual([...leakedPaths].sort(), []);
+  assert.deepEqual([...selectedPaths].sort(), [...expectedPaths].sort());
 });
 
 test('one-off low-volume query does not trigger create page', () => {

@@ -10,15 +10,15 @@ async function main(): Promise<void> {
   const current = JSON.parse(await readFile(additionsFixturePath, 'utf8')) as {
     rows: FrozenPricingOutput[];
   };
-  const existingRows = current.rows.filter((row) => !row.scenarioId.startsWith('billing:p0:'));
-  const generatedP0Rows = collectCanonicalPricingOutputs([...frozen.rows, ...existingRows])
-    .filter((row) => row.scenarioId.startsWith('billing:p0:'))
+  const frozenIds = new Set(frozen.rows.map((row) => row.scenarioId));
+  const generatedRows = collectCanonicalPricingOutputs([...frozen.rows, ...current.rows])
+    .filter((row) => !frozenIds.has(row.scenarioId))
     .map(({ engineId: _engineId, policySource: _policySource, policyRuleId: _policyRuleId, ...row }) => row);
   const expected = `${JSON.stringify(
     {
       version: 1,
       generatedFrom: 'registry-publication-shadow-additions',
-      rows: [...existingRows, ...generatedP0Rows],
+      rows: generatedRows,
     },
     null,
     2,
@@ -26,7 +26,7 @@ async function main(): Promise<void> {
 
   if (process.argv.includes('--write')) {
     await writeFile(additionsFixturePath, expected);
-    console.log(`[pricing-shadow-additions] wrote ${existingRows.length + generatedP0Rows.length} rows`);
+    console.log(`[pricing-shadow-additions] wrote ${generatedRows.length} rows`);
     return;
   }
 
@@ -38,7 +38,7 @@ async function main(): Promise<void> {
     process.exitCode = 1;
     return;
   }
-  console.log(`[pricing-shadow-additions] current (${existingRows.length + generatedP0Rows.length} rows)`);
+  console.log(`[pricing-shadow-additions] current (${generatedRows.length} rows)`);
 }
 
 void main().catch((error: unknown) => {

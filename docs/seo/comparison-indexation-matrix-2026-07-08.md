@@ -8,14 +8,14 @@ Source : Google Search Console, propriété `sc-domain:maxvideoai.com`, recherch
 
 | Mesure | Total |
 | --- | ---: |
-| Slugs publiés | 298 |
-| URLs localisées auditées | 894 |
+| Slugs publiés | 306 |
+| URLs localisées auditées | 918 |
 | URLs présentes dans l'export GSC | 639 |
-| URLs sans ligne GSC dans les 996 premières pages | 255 |
+| URLs sans ligne GSC dans les 996 premières pages | 279 |
 | URLs avec au moins un clic | 144 |
 | Lignes GSC hors du périmètre publié | 21 |
 | Lignes hors périmètre avec clics | 2 |
-| Keep | 310 |
+| Keep | 334 |
 | Enrich | 28 |
 | Review | 346 |
 | Noindex candidate | 210 |
@@ -189,7 +189,7 @@ Ce lot commence par les URLs absentes de l'export GSC, puis par celles avec le m
 
 ## URLs GSC hors du périmètre publié
 
-Ces anciennes URLs ou variantes ne font pas partie des 298 slugs actuellement publiés. Celles qui ont des clics doivent être vérifiées en priorité pour décider entre republication, redirection 301 pertinente ou maintien temporaire.
+Ces anciennes URLs ou variantes ne font pas partie des 306 slugs actuellement publiés. Celles qui ont des clics doivent être vérifiées en priorité pour décider entre republication, redirection 301 pertinente ou maintien temporaire.
 
 - 19 anciennes variantes Veo `first-last` sont déjà normalisées par une redirection permanente vers les comparatifs Veo 3.1 canoniques.
 - Les 2 URLs localisées Happy Horse 1.0 vs Sora 2 Pro passent désormais par une redirection permanente vers le comparatif publié Happy Horse 1.1 vs Sora 2 Pro dans cette branche.
@@ -218,4 +218,4 @@ Ces anciennes URLs ou variantes ne font pas partie des 298 slugs actuellement pu
 | es | [seedance-2-0-vs-veo-3-1-first-last](https://maxvideoai.com/es/comparativa/seedance-2-0-vs-veo-3-1-first-last) | 0 | 1 | 9 |
 | es | [veo-3-1-fast-vs-veo-3-1-first-last](https://maxvideoai.com/es/comparativa/veo-3-1-fast-vs-veo-3-1-first-last) | 0 | 1 | 11 |
 
-L'inventaire exhaustif des 894 URLs se trouve dans `docs/seo/comparison-indexation-matrix-2026-07-08.json`.
+L'inventaire exhaustif des 918 URLs se trouve dans `docs/seo/comparison-indexation-matrix-2026-07-08.json`.

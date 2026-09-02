@@ -4,7 +4,10 @@ import { dirname, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 
-import { P0_VIDEO_PRICING_SCENARIOS } from '../frontend/src/lib/pricing-audit/p0-video-scenarios.ts';
+import {
+  P0_VIDEO_MODEL_IDS,
+  P0_VIDEO_PRICING_SCENARIOS,
+} from '../frontend/src/lib/pricing-audit/p0-video-scenarios.ts';
 
 const collectorPath = 'frontend/src/lib/pricing-audit/legacy-collectors.ts';
 const fixturePath = 'tests/fixtures/pricing-parity.v1.json';
@@ -65,9 +68,9 @@ test('committed pre-canonical pricing baseline is immutable after legacy deletio
     rows: Array<{ scenarioId: string }>;
   };
   assert.equal(additions.generatedFrom, 'registry-publication-shadow-additions');
-  assert.equal(additions.rows.length, 8 + P0_VIDEO_PRICING_SCENARIOS.length);
+  assert.equal(additions.rows.length, 8 + P0_VIDEO_PRICING_SCENARIOS.length + P0_VIDEO_MODEL_IDS.length * 4);
   assert.deepEqual(
-    additions.rows.filter((row) => !row.scenarioId.startsWith('billing:p0:')).reduce<Record<string, number>>((counts, row) => {
+    additions.rows.filter((row) => /(?:billing|estimator):(minimax-h3|seedance-2-5):/.test(row.scenarioId)).reduce<Record<string, number>>((counts, row) => {
       const engineId = row.scenarioId.includes('minimax-h3') ? 'minimax-h3' : 'seedance-2-5';
       counts[engineId] = (counts[engineId] ?? 0) + 1;
       return counts;
@@ -81,6 +84,15 @@ test('committed pre-canonical pricing baseline is immutable after legacy deletio
       .sort(),
     P0_VIDEO_PRICING_SCENARIOS.map((scenario) => `billing:p0:${scenario.id}`).sort(),
   );
+  for (const engineId of P0_VIDEO_MODEL_IDS) {
+    assert.equal(
+      additions.rows.filter((row) =>
+        row.scenarioId.startsWith(`billing:${engineId}:`) || row.scenarioId.startsWith(`estimator:${engineId}:`)
+      ).length,
+      4,
+      engineId,
+    );
+  }
 });
 
 test('P0 shadow additions are reproducible through the canonical audit generator', () => {

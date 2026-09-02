@@ -178,20 +178,20 @@ export function buildCompareFaqItems({
           a1: '{left} et {right} sont des moteurs de génération vidéo IA disponibles sur MaxVideoAI. Cette page compare les specs clés, les prix, les contrôles et les données de performance ci-dessus.',
           a2: 'Cela dépend de votre workflow. Utilisez la grille de scores et les specs pour comparer le contrôle, les références, l’audio, le prix et les limites de génération, puis ouvrez chaque profil pour les détails complets.',
           q10: 'Pourquoi les résultats peuvent-ils différer entre ces modèles ?',
-          a10: 'Les modèles interprètent les instructions, les références visuelles et les contraintes de génération différemment. Les vidéos comparatives curées seront ajoutées quand des rendus dédiés seront disponibles.',
+          a10: 'Les modèles interprètent les instructions, les références visuelles et les contraintes de génération différemment.',
         }
       : activeLocale === 'es'
         ? {
             a1: '{left} y {right} son motores de generación de video IA disponibles en MaxVideoAI. Esta página compara especificaciones clave, precios, controles y los datos de rendimiento anteriores.',
             a2: 'Depende de tu flujo de trabajo. Usa la puntuación y las especificaciones para comparar control, referencias, audio, precio y límites de generación, luego abre cada perfil para los detalles completos.',
             q10: '¿Por qué pueden diferir los resultados entre estos modelos?',
-            a10: 'Los modelos interpretan instrucciones, referencias visuales y restricciones de generación de forma distinta. Los vídeos comparativos curados se añadirán cuando haya renders dedicados disponibles.',
+            a10: 'Los modelos interpretan instrucciones, referencias visuales y restricciones de generación de forma distinta.',
           }
         : {
             a1: '{left} and {right} are AI video generation engines available on MaxVideoAI. This page compares key specs, pricing, controls, and performance data shown above.',
             a2: 'It depends on your workflow. Use the scorecard and specs to compare control, references, audio, pricing, and generation limits, then open each engine profile for full details.',
             q10: 'Why can results differ between these models?',
-            a10: 'Models interpret instructions, visual references, and generation constraints differently. Curated side-by-side videos will be added once model-specific renders are available.',
+            a10: 'Models interpret instructions, visual references, and generation constraints differently.',
           }
     : null;
 

@@ -44,7 +44,7 @@ const FAMILY_DEFAULTS = {
 
 const p0Ids = Object.keys(P0_MODELS);
 
-test('registry owns exactly seven hidden current P0 identities with no launch metadata', () => {
+test('registry owns exactly seven published current P0 identities', () => {
   const registry = JSON.parse(readFileSync('frontend/config/model-registry.json', 'utf8'));
   const rows = registry.models.filter((model: { id: string }) => p0Ids.includes(model.id));
 
@@ -57,19 +57,17 @@ test('registry owns exactly seven hidden current P0 identities with no launch me
     assert.equal(row.successorId, null, row.id);
     assert.equal(row.replacement, null, row.id);
     assert.deepEqual(row.aliases, { internal: [], publicSlugs: [] }, row.id);
-    assert.deepEqual(row.publication, {
-      model: { published: false, indexable: false },
-      examples: { published: false, includeInFamilyCopy: false, current: false },
-      compare: {
-        published: false,
-        indexed: false,
-        suggestedOpponentIds: [],
-        publishedPairIds: [],
-      },
-      app: { published: false },
-      pricing: { published: false },
-      sitemap: { published: false },
-    }, row.id);
+    assert.deepEqual(row.publication.model, { published: true, indexable: true }, row.id);
+    assert.equal(row.publication.examples.published, true, row.id);
+    assert.equal(row.publication.examples.includeInFamilyCopy, true, row.id);
+    assert.equal(row.publication.examples.current, true, row.id);
+    assert.equal(Number.isInteger(row.publication.examples.familyRank), true, row.id);
+    assert.equal(row.publication.compare.published, true, row.id);
+    assert.equal(row.publication.compare.indexed, true, row.id);
+    assert.ok(row.publication.compare.publishedPairIds.length > 0, row.id);
+    assert.deepEqual(row.publication.app, { published: true }, row.id);
+    assert.deepEqual(row.publication.pricing, { published: true }, row.id);
+    assert.deepEqual(row.publication.sitemap, { published: true }, row.id);
   }
 });
 
@@ -95,30 +93,30 @@ test('all seven concrete raw contracts are materialized by the Fal aggregate', (
     assert.ok(engine, id);
     assert.equal(engine.lifecycle, 'current', id);
     assert.equal(engine.successorId, null, id);
-    assert.equal(engine.surfaces.app.enabled, false, id);
+    assert.equal(engine.surfaces.app.enabled, true, id);
   }
 });
 
-test('P0 family defaults are canonical while new family example routes stay hidden', () => {
+test('P0 family defaults and new family example routes are public', () => {
   for (const [familyId, defaultModelSlug] of Object.entries(FAMILY_DEFAULTS)) {
     assert.equal(getModelFamilyDefinition(familyId)?.defaultModelSlug, defaultModelSlug, familyId);
   }
 
   assert.deepEqual(getModelFamilyExamplesPageConfig('grok'), {
-    stage: 'hidden',
-    showInNav: false,
-    publishedModelSlugs: [],
-    currentModelSlugs: [],
+    stage: 'indexed',
+    showInNav: true,
+    publishedModelSlugs: ['grok-imagine-video-1-5'],
+    currentModelSlugs: ['grok-imagine-video-1-5'],
   });
   assert.deepEqual(getModelFamilyExamplesPageConfig('flux'), {
-    stage: 'hidden',
-    showInNav: false,
-    publishedModelSlugs: [],
-    currentModelSlugs: [],
+    stage: 'indexed',
+    showInNav: true,
+    publishedModelSlugs: ['flux-3', 'flux-3-draft'],
+    currentModelSlugs: ['flux-3', 'flux-3-draft'],
   });
 });
 
-test('hidden P0 identities stay out of public model, workspace, MCP, roster, family, and SEO discovery', async () => {
+test('published P0 identities stay aligned across model, workspace, MCP, roster, family, and SEO discovery', async () => {
   const publicModelIds = new Set(listPublishedRuntimeModels().map((model) => model.id));
   const workspaceIds = new Set(getBaseEngines().map((engine) => engine.id));
   const rosterIds = new Set(getModelRoster().map((entry) => entry.engineId));
@@ -139,21 +137,21 @@ test('hidden P0 identities stay out of public model, workspace, MCP, roster, fam
   const seoFamilies = getSeoFamilyDictionary();
 
   for (const id of p0Ids) {
-    assert.equal(publicModelIds.has(id), false, `model publication leaked ${id}`);
-    assert.equal(workspaceIds.has(id), false, `workspace leaked ${id}`);
-    assert.equal(mcpIds.has(id), false, `MCP leaked ${id}`);
-    assert.equal(rosterIds.has(id), false, `roster leaked ${id}`);
+    assert.equal(publicModelIds.has(id), true, `model publication missing ${id}`);
+    assert.equal(workspaceIds.has(id), true, `workspace missing ${id}`);
+    assert.equal(mcpIds.has(id), true, `MCP missing ${id}`);
+    assert.equal(rosterIds.has(id), true, `roster missing ${id}`);
 
     const familyId = P0_MODELS[id as keyof typeof P0_MODELS];
     const family = getModelFamilyExamplesPageConfig(familyId);
-    assert.equal(family?.publishedModelSlugs.includes(id), false, `family publication leaked ${id}`);
-    assert.equal(family?.currentModelSlugs.includes(id), false, `family current list leaked ${id}`);
+    assert.equal(family?.publishedModelSlugs.includes(id), true, `family publication missing ${id}`);
+    assert.equal(family?.currentModelSlugs.includes(id), true, `family current list missing ${id}`);
 
     const seoFamily = seoFamilies.find((entry) => entry.id === familyId);
-    assert.equal(seoFamily?.publishedModelSlugs.includes(id), false, `SEO publication leaked ${id}`);
-    assert.equal(seoFamily?.currentModelSlugs.includes(id), false, `SEO current list leaked ${id}`);
-    assert.equal(seoFamily?.modelSlugs.includes(id), false, `SEO link target leaked ${id}`);
-    assert.equal(seoFamily?.aliases.includes(id), false, `SEO alias leaked ${id}`);
-    assert.notEqual(seoFamily?.defaultModelSlug, id, `SEO default leaked ${id}`);
+    assert.equal(seoFamily?.publishedModelSlugs.includes(id), true, `SEO publication missing ${id}`);
+    assert.equal(seoFamily?.currentModelSlugs.includes(id), true, `SEO current list missing ${id}`);
+    assert.equal(seoFamily?.modelSlugs.includes(id), true, `SEO link target missing ${id}`);
+    assert.equal(seoFamily?.aliases.includes(id), true, `SEO alias missing ${id}`);
+    assert.equal(seoFamily?.defaultModelSlug, FAMILY_DEFAULTS[familyId], `SEO default mismatch ${id}`);
   }
 });

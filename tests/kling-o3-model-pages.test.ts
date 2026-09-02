@@ -268,7 +268,6 @@ test('Kling marketing family and navigation are O3-first without dropping Kling 
   ]);
 
   assert.ok(MARKETING_MODEL_SLUGS.includes('kling-o3-pro'));
-  assert.ok(MARKETING_MODEL_SLUGS.includes('kling-o3-4k'));
   assert.ok(!MARKETING_MODEL_SLUGS.includes('kling-3-pro'));
   assert.ok(MARKETING_NAV_COMPARE.some((item) => item.key === 'kling-3-pro-vs-kling-o3-pro'));
 });

@@ -64,7 +64,11 @@ test('pricing model links follow pricing publication and exclude deep legacy his
   ]);
   const deepLegacyIds = new Set(['ltx-2', 'ltx-2-fast', 'wan-2-5']);
   const liveRows = buildPricingHubData('en').video.rows;
-  assert.deepEqual(liveRows.filter((row) => p0Ids.has(row.id) || deepLegacyIds.has(row.id)), []);
+  assert.deepEqual(
+    liveRows.filter((row) => p0Ids.has(row.id)).map((row) => row.id).sort(),
+    [...p0Ids].sort(),
+  );
+  assert.deepEqual(liveRows.filter((row) => deepLegacyIds.has(row.id)), []);
 
   const visibleEntries = listFalEngines().map((entry) => p0Ids.has(entry.id) ? {
     ...structuredClone(entry),

@@ -103,7 +103,7 @@ test('MCP exact hidden details read settings and overrides without touching boot
   assert.equal(seedWrites, 0);
 });
 
-test('get_model_details and project-budget hidden selection use the same non-mutating read seam', async () => {
+test('get_model_details and project-budget published selection use the same non-mutating read seam', async () => {
   let settingsReads = 0;
   let overrideReads = 0;
   let billingBootstraps = 0;
@@ -120,14 +120,12 @@ test('get_model_details and project-budget hidden selection use the same non-mut
     isEngineExecutable: () => true,
     isModeExecutable: () => true,
   };
-  const access = { allowedPrelaunchModelIds: new Set(['wan-3']) };
-
-  const details = await getAgentModelDetails('wan-3', catalogDeps, access);
+  const details = await getAgentModelDetails('wan-3', catalogDeps);
   assert.equal(details.id, 'wan-3');
   await assert.rejects(calculateAgentProjectBudget({ proposals: [{
     name: 'Read-only canary selection',
     lines: [{
-      purpose: 'Resolve the hidden candidate',
+      purpose: 'Resolve the published candidate',
       engineId: 'wan-3',
       mode: 't2v',
       settings: { durationSec: 5, resolution: '1080p', aspectRatio: '16:9' },
@@ -137,14 +135,14 @@ test('get_model_details and project-budget hidden selection use the same non-mut
   }] }, {
     userId: 'read-only-user', clientId: 'read-only-client', emailVerified: true, authMethod: 'oauth',
   }, {
-    listPublicEngines: () => listPublicAgentGenerationEngines(catalogDeps, access),
+    listPublicEngines: () => listPublicAgentGenerationEngines(catalogDeps),
     getMembershipStatus: async () => ({ pricing: { tier: 'member' } }),
     async priceGeneration() { throw new Error('pricing sentinel after read-only selection'); },
     computeCatalogRevision: () => 'read-only-revision',
   }), /Current project pricing is unavailable/u);
 
-  assert.equal(settingsReads, 4);
-  assert.equal(overrideReads, 4);
+  assert.equal(settingsReads, 2);
+  assert.equal(overrideReads, 2);
   assert.equal(billingBootstraps, 0);
   assert.equal(seedWrites, 0);
 });

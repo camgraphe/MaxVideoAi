@@ -67,7 +67,7 @@ test('classifiers identify MaxVideoAI model-family and intent clusters', () => {
   assert.equal(classifyGscIntent('grok model', '/es/modelos/grok-imagine-video-1-5'), 'model');
 });
 
-test('hidden P0 demand is monitor-only until the registry publishes the exact model', () => {
+test('published P0 demand is actionable after the registry publishes the exact model', () => {
   const opportunities = findGscOpportunities([
     {
       query: 'grok imagine video 1.5',
@@ -85,15 +85,15 @@ test('hidden P0 demand is monitor-only until the registry publishes the exact mo
   ]);
 
   assert.ok(opportunities.length > 0);
-  assert.ok(opportunities.every((opportunity) => opportunity.actionMode === 'monitor_only'));
-  assert.ok(opportunities.every((opportunity) => /monitor/i.test(opportunity.suggestedAction)));
+  assert.ok(opportunities.every((opportunity) => opportunity.actionMode === 'actionable'));
+  assert.ok(opportunities.every((opportunity) => !/monitor only/i.test(opportunity.suggestedAction)));
 });
 
-test('historic LTX 2.3 and Wan 2.6 demand stays distinct from hidden successor demand', () => {
+test('historic and published successor demand are both eligible for GSC actioning', () => {
   assert.equal(isHiddenRuntimeModelDemand('ltx 2.3 pro impressions', '/models/ltx-2-3-pro'), false);
   assert.equal(isHiddenRuntimeModelDemand('wan 2.6 examples', '/examples/wan-2-6'), false);
-  assert.equal(isHiddenRuntimeModelDemand('ltx 2.5 pro', '/models/ltx-2-5-pro'), true);
-  assert.equal(isHiddenRuntimeModelDemand('wan 3 prime', '/models/wan-3-prime'), true);
+  assert.equal(isHiddenRuntimeModelDemand('ltx 2.5 pro', '/models/ltx-2-5-pro'), false);
+  assert.equal(isHiddenRuntimeModelDemand('wan 3 prime', '/models/wan-3-prime'), false);
 });
 
 test('summarizeGscPerformance aggregates weighted CTR and position', () => {

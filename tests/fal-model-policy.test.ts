@@ -52,8 +52,8 @@ test('fal proxy policy blocks unconfigured Fal endpoints', () => {
   assert.equal(isFalProxyTargetAllowed('https://queue.fal.run/fal-ai/flux/dev'), false);
 });
 
-test('fal proxy policy rejects every hidden P0 endpoint from ordinary authenticated execution', () => {
-  const hiddenEndpoints = [
+test('fal proxy policy allows every published P0 endpoint for authenticated execution', () => {
+  const publishedEndpoints = [
     'alibaba/wan-3.0/text-to-video',
     'alibaba/wan-3.0/image-to-video',
     'alibaba/wan-3.0/reference-to-video',
@@ -79,9 +79,9 @@ test('fal proxy policy rejects every hidden P0 endpoint from ordinary authentica
     'blackforestlabs/flux-3/extend-video/draft',
   ];
 
-  for (const endpoint of hiddenEndpoints) {
-    assert.equal(FAL_PROXY_ALLOWED_ENDPOINTS.includes(endpoint), false, endpoint);
-    assert.equal(isFalProxyTargetAllowed(`https://queue.fal.run/${endpoint}`), false, endpoint);
+  for (const endpoint of publishedEndpoints) {
+    assert.equal(FAL_PROXY_ALLOWED_ENDPOINTS.includes(endpoint), true, endpoint);
+    assert.equal(isFalProxyTargetAllowed(`https://queue.fal.run/${endpoint}`), true, endpoint);
   }
 });
 

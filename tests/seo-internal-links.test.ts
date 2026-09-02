@@ -40,7 +40,7 @@ const SEEDANCE_25_BEST_FOR_SLUGS = [
   'product-videos',
   'ugc-ads',
 ] as const;
-const HIDDEN_P0_MODEL_CASES = [
+const P0_MODEL_CASES = [
   ['wan-3', 'wan'],
   ['wan-3-prime', 'wan'],
   ['ltx-2-5-fast', 'ltx'],
@@ -158,21 +158,21 @@ test('examples page recommends a current canonical model target instead of an al
       gscRow('how to prompt ltx 2.3', 'https://maxvideoai.com/examples/ltx', 8, 74, 0.108, 6.2),
     ],
   });
-  const link = suggestions.find((item) => item.sourceUrl === '/examples/ltx' && item.targetUrl === '/models/ltx-2-3-pro');
+  const link = suggestions.find((item) => item.sourceUrl === '/examples/ltx' && item.targetUrl === '/models/ltx-2-5-pro');
 
   assert.ok(link);
   assert.equal(link.recommendationType, 'examples_to_model');
   assert.equal(link.family, 'LTX');
-  assert.match(link.suggestedAnchor, /LTX 2\.3 prompt examples and specs/i);
+  assert.match(link.suggestedAnchor, /LTX 2\.5 Pro prompt examples and specs/i);
   assert.equal(link.verifyExistingLinkFirst, true);
   assert.equal(suggestions.some((item) => item.targetUrl === '/models/ltx-2-3'), false);
 });
 
-test('internal link selection never emits any hidden P0 model URL', () => {
-  const hiddenPaths = new Set(HIDDEN_P0_MODEL_CASES.map(([slug]) => `/models/${slug}`));
-  const leakedPaths = new Set<string>();
+test('internal link selection emits the exact published P0 model URLs', () => {
+  const p0Paths = new Set(P0_MODEL_CASES.map(([slug]) => `/models/${slug}`));
+  const selectedPaths = new Set<string>();
 
-  for (const [slug, family] of HIDDEN_P0_MODEL_CASES) {
+  for (const [slug, family] of P0_MODEL_CASES) {
     const suggestions = buildInternalLinkSuggestions({
       rows: [
         gscRow(`${slug} prompt examples`, `https://maxvideoai.com/examples/${family}`, 24, 180, 0.133, 7.2),
@@ -181,12 +181,12 @@ test('internal link selection never emits any hidden P0 model URL', () => {
     });
 
     for (const suggestion of suggestions) {
-      if (hiddenPaths.has(suggestion.sourceUrl)) leakedPaths.add(suggestion.sourceUrl);
-      if (hiddenPaths.has(suggestion.targetUrl)) leakedPaths.add(suggestion.targetUrl);
+      if (p0Paths.has(suggestion.sourceUrl)) selectedPaths.add(suggestion.sourceUrl);
+      if (p0Paths.has(suggestion.targetUrl)) selectedPaths.add(suggestion.targetUrl);
     }
   }
 
-  assert.deepEqual([...leakedPaths].sort(), []);
+  assert.deepEqual([...selectedPaths].sort(), [...p0Paths].sort());
 });
 
 test('model page to examples links are downgraded as expected-existing maintenance checks', () => {

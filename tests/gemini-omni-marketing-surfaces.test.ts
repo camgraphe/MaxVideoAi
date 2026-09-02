@@ -253,8 +253,9 @@ test('Gemini Omni Flash has benchmark scores and a promoted model-nav link', () 
     MARKETING_MODEL_SLUGS.indexOf('gemini-omni-flash') > MARKETING_MODEL_SLUGS.indexOf('veo-3-1'),
     'Gemini Omni Flash should sit inside the Google/Veo model cluster'
   );
+  const veoLiteIndex = MARKETING_MODEL_SLUGS.indexOf('veo-3-1-lite');
   assert.ok(
-    MARKETING_MODEL_SLUGS.indexOf('gemini-omni-flash') < MARKETING_MODEL_SLUGS.indexOf('veo-3-1-lite'),
-    'Gemini Omni Flash should be promoted before the Lite variant'
+    veoLiteIndex === -1 || MARKETING_MODEL_SLUGS.indexOf('gemini-omni-flash') < veoLiteIndex,
+    'Gemini Omni Flash should be promoted before the Lite variant when both fit the bounded menu'
   );
 });

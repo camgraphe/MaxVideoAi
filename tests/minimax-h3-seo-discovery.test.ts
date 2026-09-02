@@ -106,12 +106,12 @@ test('bounded discovery surfaces feature H3 immediately after Seedance 2.5', () 
       { key: 'minimax-h3', badge: 'new' },
     ],
   );
-  assert.equal(MARKETING_NAV_COMPARE.length, 6);
+  assert.equal(MARKETING_NAV_COMPARE.length, 10);
   assert.equal(MARKETING_NAV_COMPARE[0]?.key, 'minimax-h3-vs-seedance-2-5');
   assert.equal(MARKETING_NAV_COMPARE[0]?.badge, 'new');
 
   const popular = getPopularComparisons();
-  assert.equal(compareHubConfig.popularComparisons.length, 30, 'popular comparison inventory stays bounded');
+  assert.equal(compareHubConfig.popularComparisons.length, 38, 'popular comparison inventory includes the eight P0 scoreboards');
   assert.equal(popular[0]?.slug, 'minimax-h3-vs-seedance-2-5');
 
   const buckets = new Map(getUseCaseBuckets().map((bucket) => [bucket.id, bucket.pairs]));
