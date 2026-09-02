@@ -463,6 +463,7 @@ export function projectAcceptedDurableModelAssets(input: unknown): AcceptedDurab
     const metadata = parsedWaves.find((candidate) => candidate.waveId === wave.id);
     const waveAssets = assets.filter((asset) => asset.waveId === wave.id);
     if (!metadata || metadata.sourceManifest !== wave.sourceManifest) return [];
+    if (metadata.sourceStatus !== 'missing' && metadata.sourceStatus !== 'validated') return [];
     if (metadata.sourceStatus === 'missing' && (metadata.sourceDigest !== null || waveAssets.length !== 0)) return [];
     if (
       metadata.sourceStatus === 'validated' &&

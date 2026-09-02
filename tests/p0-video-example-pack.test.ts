@@ -7,12 +7,23 @@ import {
   P0_VIDEO_EXAMPLE_MODEL_IDS,
 } from '../frontend/config/model-launch-readiness-schema.ts';
 import {
-  buildP0LaunchProjectionsFromSource,
+  MODEL_LAUNCH_WAVES,
+} from '../frontend/config/model-launch-waves.ts';
+import {
+  type ModelLaunchSourceByWave,
+  buildModelLaunchProjectionsFromSources,
   validateP0VideoExamplePackDocument,
 } from '../frontend/server/model-launch-assets-validation.ts';
 
 const manifestPath = 'docs/model-launch/p0-video-example-pack.json';
 const reviewPath = 'docs/model-launch/p0-video-example-review.md';
+
+function configuredLaunchSources(): ModelLaunchSourceByWave {
+  return Object.fromEntries(MODEL_LAUNCH_WAVES.map((wave) => [
+    wave.id,
+    existsSync(wave.sourceManifest) ? readFileSync(wave.sourceManifest, 'utf8') : null,
+  ])) as ModelLaunchSourceByWave;
+}
 
 test('the P0 example pack contains two accepted durable and attached assets per model', () => {
   assert.equal(existsSync(manifestPath), true, `${manifestPath} must exist`);
@@ -43,8 +54,7 @@ test('the P0 example pack contains two accepted durable and attached assets per 
 });
 
 test('the committed launch projections are generated from the exact accepted manifest', () => {
-  const source = readFileSync(manifestPath, 'utf8');
-  const expected = buildP0LaunchProjectionsFromSource(source);
+  const expected = buildModelLaunchProjectionsFromSources(configuredLaunchSources());
   const full = JSON.parse(readFileSync('frontend/server/model-launch-assets.generated.json', 'utf8')) as unknown;
   const readiness = JSON.parse(readFileSync('frontend/config/model-launch-readiness.generated.json', 'utf8')) as unknown;
   assert.deepEqual(full, expected.full);

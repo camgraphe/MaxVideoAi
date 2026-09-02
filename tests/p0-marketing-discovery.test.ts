@@ -6,6 +6,7 @@ import test from 'node:test';
 
 import * as familyConfig from '../frontend/config/model-families.ts';
 import * as launchReadiness from '../frontend/config/model-launch-readiness.ts';
+import { MODEL_LAUNCH_WAVES } from '../frontend/config/model-launch-waves.ts';
 import { listRuntimeModels, type RuntimeModelEntry } from '../frontend/config/model-runtime.ts';
 import * as launchAssets from '../frontend/server/model-launch-assets-validation.ts';
 import * as navigation from '../frontend/config/navigation.ts';
@@ -36,6 +37,17 @@ const P0_MENU_REPRESENTATIVES = [
   'grok-imagine-video-1-5',
   'flux-3',
 ] as const;
+
+function configuredLaunchSources(
+  overrides: Partial<launchAssets.ModelLaunchSourceByWave> = {},
+): launchAssets.ModelLaunchSourceByWave {
+  return Object.fromEntries(MODEL_LAUNCH_WAVES.map((wave) => [
+    wave.id,
+    wave.id in overrides
+      ? overrides[wave.id]
+      : existsSync(wave.sourceManifest) ? readFileSync(wave.sourceManifest, 'utf8') : null,
+  ])) as launchAssets.ModelLaunchSourceByWave;
+}
 
 const FAMILY_RANKS: Readonly<Record<(typeof P0_IDS)[number], number>> = {
   'wan-3-prime': 0,
@@ -301,38 +313,15 @@ test('full Task 12 evidence stays server-only and projection freshness is releas
 });
 
 test('test validation compares both launch projections with source and detects isolated corruption', () => {
-  const sourcePath = 'docs/model-launch/p0-video-example-pack.json';
   const fullProjectionPath = 'frontend/server/model-launch-assets.generated.json';
   const readinessProjectionPath = 'frontend/config/model-launch-readiness.generated.json';
-  const buildProjections = (
-    launchAssets as typeof launchAssets & {
-      buildP0LaunchProjectionsFromSource?: (source: string | null) => {
-        full: launchAssets.ModelLaunchAssetProjection;
-        readiness: launchReadiness.ModelLaunchReadinessProjection;
-      };
-    }
-  ).buildP0LaunchProjectionsFromSource;
-  const checkFreshness = (
-    launchAssets as typeof launchAssets & {
-      checkP0LaunchProjectionFreshness?: (input: {
-        source: string | null;
-        full: unknown;
-        readiness: unknown;
-      }) => { ok: boolean; stale: Array<'full' | 'readiness'> };
-    }
-  ).checkP0LaunchProjectionFreshness;
-
-  assert.equal(typeof buildProjections, 'function');
-  assert.equal(typeof checkFreshness, 'function');
-  if (!buildProjections || !checkFreshness) return;
-
-  const source = existsSync(sourcePath) ? readFileSync(sourcePath, 'utf8') : null;
-  const expected = buildProjections(source);
+  const sources = configuredLaunchSources();
+  const expected = launchAssets.buildModelLaunchProjectionsFromSources(sources);
   const generatedFull = JSON.parse(readFileSync(fullProjectionPath, 'utf8')) as unknown;
   const generatedReadiness = JSON.parse(readFileSync(readinessProjectionPath, 'utf8')) as unknown;
   assert.deepEqual(generatedFull, expected.full);
   assert.deepEqual(generatedReadiness, expected.readiness);
-  assert.deepEqual(checkFreshness({ source, full: generatedFull, readiness: generatedReadiness }), {
+  assert.deepEqual(launchAssets.checkModelLaunchProjectionFreshness({ sources, full: generatedFull, readiness: generatedReadiness }), {
     ok: true,
     stale: [],
   });
@@ -340,7 +329,8 @@ test('test validation compares both launch projections with source and detects i
   const fixtureDirectory = mkdtempSync(resolve(tmpdir(), 'maxvideoai-launch-assets-'));
   try {
     const validSource = `${JSON.stringify({ schemaVersion: 1, assets: completeAcceptedPackAssets() }, null, 2)}\n`;
-    const valid = buildProjections(validSource);
+    const validSources = configuredLaunchSources({ p0: validSource });
+    const valid = launchAssets.buildModelLaunchProjectionsFromSources(validSources);
     const temporarySourcePath = resolve(fixtureDirectory, 'source.json');
     const temporaryFullPath = resolve(fixtureDirectory, 'full.json');
     const temporaryReadinessPath = resolve(fixtureDirectory, 'readiness.json');
@@ -351,18 +341,20 @@ test('test validation compares both launch projections with source and detects i
     const corruptedFull = structuredClone(valid.full);
     corruptedFull.assets = corruptedFull.assets.slice(1);
     writeFileSync(temporaryFullPath, `${JSON.stringify(corruptedFull, null, 2)}\n`, 'utf8');
-    assert.deepEqual(checkFreshness({
-      source: readFileSync(temporarySourcePath, 'utf8'),
+    assert.deepEqual(launchAssets.checkModelLaunchProjectionFreshness({
+      sources: { ...validSources, p0: readFileSync(temporarySourcePath, 'utf8') },
       full: JSON.parse(readFileSync(temporaryFullPath, 'utf8')),
       readiness: JSON.parse(readFileSync(temporaryReadinessPath, 'utf8')),
     }), { ok: false, stale: ['full'] });
 
     writeFileSync(temporaryFullPath, `${JSON.stringify(valid.full, null, 2)}\n`, 'utf8');
     const corruptedReadiness = structuredClone(valid.readiness);
-    corruptedReadiness.sourceDigest = '0'.repeat(64);
+    const p0Readiness = corruptedReadiness.waves.find(({ waveId }) => waveId === 'p0');
+    assert.ok(p0Readiness);
+    p0Readiness.sourceDigest = '0'.repeat(64);
     writeFileSync(temporaryReadinessPath, `${JSON.stringify(corruptedReadiness, null, 2)}\n`, 'utf8');
-    assert.deepEqual(checkFreshness({
-      source: readFileSync(temporarySourcePath, 'utf8'),
+    assert.deepEqual(launchAssets.checkModelLaunchProjectionFreshness({
+      sources: { ...validSources, p0: readFileSync(temporarySourcePath, 'utf8') },
       full: JSON.parse(readFileSync(temporaryFullPath, 'utf8')),
       readiness: JSON.parse(readFileSync(temporaryReadinessPath, 'utf8')),
     }), { ok: false, stale: ['readiness'] });
