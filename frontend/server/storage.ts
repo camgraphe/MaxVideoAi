@@ -337,6 +337,7 @@ export async function uploadImageToStorage(params: {
 
 const DEFAULT_ALLOWED_HOSTS = new Set([
   'cdn.maxvideoai.com',
+  'media.maxvideoai.com',
   'blob.vercel-storage.com',
   'storage.googleapis.com',
   's3.amazonaws.com',

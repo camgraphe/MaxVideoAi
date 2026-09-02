@@ -1,7 +1,14 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { buildObjectKey } from '../frontend/server/storage.ts';
+import { buildObjectKey, isAllowedAssetHost } from '../frontend/server/storage.ts';
+
+test('the canonical MaxVideoAI media host stays trusted without optional environment wiring', () => {
+  assert.equal(
+    isAllowedAssetHost('https://media.maxvideoai.com/user-assets/example/reference.jpg'),
+    true
+  );
+});
 
 test('storage object keys preserve slash-separated prefixes', () => {
   assert.equal(
