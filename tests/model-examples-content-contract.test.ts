@@ -249,3 +249,37 @@ test('localized Examples selection never falls back to English', () => {
   assert.match(normalizationSource, /examples:\s*overlay\.examples/);
   assert.doesNotMatch(normalizationSource, /examples:\s*overlay\.examples\s*\?\?\s*base\.examples/);
 });
+
+test('P0 model Examples content is backed by two exact durable playlist assets', () => {
+  const manifest = JSON.parse(
+    readFileSync(path.join(process.cwd(), 'docs', 'model-launch', 'p0-video-example-pack.json'), 'utf8'),
+  ) as {
+    assets: Array<{ modelId: string; familyId: string; playlistSlugs: string[] }>;
+  };
+  const p0ModelIds = [
+    'wan-3',
+    'wan-3-prime',
+    'ltx-2-5-fast',
+    'ltx-2-5-pro',
+    'grok-imagine-video-1-5',
+    'flux-3',
+    'flux-3-draft',
+  ];
+
+  for (const modelId of p0ModelIds) {
+    const accepted = manifest.assets.filter((asset) => asset.modelId === modelId);
+    assert.equal(accepted.length, 2, modelId);
+    for (const locale of LOCALES) {
+      const content = parseModelExamplesContent(readDocument(locale, modelId).examples, modelId, locale);
+      assert.equal(content.modelSlug, modelId);
+      assert.equal(content.showWhenEmpty, false, `${modelId}/${locale} must not render placeholder examples`);
+    }
+    for (const asset of accepted) {
+      assert.deepEqual(
+        new Set(asset.playlistSlugs),
+        new Set([`family-${asset.familyId}`, `examples-${modelId}`]),
+        modelId,
+      );
+    }
+  }
+});
