@@ -14,6 +14,16 @@ function parseEvidenceModelIds(evidence: string): string[] {
   return Array.from(scope.matchAll(/^\| `([^`]+)` \|/gm), ([, id]) => id);
 }
 
+function parseReleaseGates(evidence: string): Array<{ gate: string; state: string }> {
+  const section = evidence.match(/^## Release Gates\n([\s\S]*)$/m)?.[1] ?? '';
+  return section
+    .split('\n')
+    .filter((line) => /^\| .+ \| .+ \| .+ \|$/.test(line))
+    .map((line) => line.split('|').map((cell) => cell.trim()))
+    .filter((cells) => cells[1] !== 'Gate' && cells[1] !== '---')
+    .map((cells) => ({ gate: cells[1], state: cells[2] }));
+}
+
 test('P1 evidence freezes the approved scope and release constraints', () => {
   const evidence = readEvidence();
 
@@ -64,12 +74,40 @@ test('P1 evidence freezes the approved scope and release constraints', () => {
   }
 
   assert.doesNotMatch(evidence, /runway/i, 'P1 evidence must not add a Runway product');
-  assert.match(evidence, /Kling direct publication gate:\s+(proven|blocked)/);
+  assert.match(evidence, /Kling direct publication gate:\s+blocked/);
   assert.match(evidence, /H3 Max 480P rate:\s+\$\d+(?:\.\d+)?\/s/);
   assert.match(evidence, /Google staging probe: HTTP 400 pre-acceptance rejection/);
   assert.match(evidence, /store=true is required for background interactions/);
   assert.match(evidence, /Kling staging probe: HTTP 429 pre-acceptance rejection/);
   assert.match(evidence, /Account balance not enough/);
   assert.match(evidence, /Actual provider debit: \$0\.000 USD for each rejected probe/);
-  assert.match(evidence, /\b(proven|blocked|not-applicable)\b/);
+});
+
+test('P1 evidence freezes the excluded identities and H3 search ownership policy', () => {
+  const evidence = readEvidence().replace(/\s+/g, ' ');
+
+  assert.match(evidence, /No Gemini Omni Flash 1\.0 product, page, alias, comparison row, or lifecycle entry/i);
+  assert.match(evidence, /No MiniMax H3 Max Turbo variant is in scope or may be published/i);
+  assert.match(evidence, /Google direct policy: no Fal fallback/i);
+  assert.match(evidence, /Generic `minimax h3` intent remains owned by `\/models\/minimax-h3`/i);
+  assert.match(evidence, /Exact `minimax h3 max` intent is owned by `\/models\/minimax-h3-max`/i);
+  assert.match(evidence, /Public publisher: MiniMax; public family: Hailuo/i);
+});
+
+test('P1 evidence assigns a permitted state to every release gate', () => {
+  const gates = parseReleaseGates(readEvidence());
+  assert.ok(gates.length >= 8, `expected release gates, got ${gates.length}`);
+
+  for (const gate of gates) {
+    assert.ok(
+      ['proven', 'blocked', 'not-applicable'].includes(gate.state),
+      `${gate.gate} has invalid release state ${gate.state}`,
+    );
+  }
+
+  assert.equal(
+    gates.find((gate) => gate.gate === 'Kling direct provider contract')?.state,
+    'blocked',
+    'the recorded HTTP 429 pre-acceptance outcome blocks direct publication',
+  );
 });

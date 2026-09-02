@@ -18,6 +18,10 @@ Canonical Gemini stays `/models/gemini-omni-flash`. The two permanent,
 single-hop version-search aliases are `gemini-omni-flash-1-1` and
 `gemini-omni-1-1-flash`.
 
+No Gemini Omni Flash 1.0 product, page, alias, comparison row, or lifecycle
+entry is in scope. No MiniMax H3 Max Turbo variant is in scope or may be
+published. Google direct policy: no Fal fallback.
+
 The existing Gemini comparison pages remain published and self-canonical; only
 their visible current-model label is updated:
 
@@ -183,6 +187,12 @@ Snapshot window: 2026-06-01 through 2026-08-31.
   position 7.6.
 - Current URL ownership: ES H3 page 261 impressions/six clicks/position 5.9;
   FR H3 page 74/zero/9.5; EN H3 page 15/zero/26.9.
+
+H3 search-intent policy: Generic `minimax h3` intent remains owned by
+`/models/minimax-h3`. Exact `minimax h3 max` intent is owned by
+`/models/minimax-h3-max` when its release gates permit publication. Public
+publisher: MiniMax; public family: Hailuo. Public model and SEO copy must not
+name internal infrastructure or routing.
 
 Operational blocker: the local/admin Search Console refresh flow currently
 returns `invalid_grant`. No refresh token, client secret, authorization code,
