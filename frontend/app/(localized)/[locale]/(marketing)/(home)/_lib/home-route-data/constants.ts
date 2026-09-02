@@ -88,11 +88,11 @@ export const HERO_ENGINE_TARGETS: Record<
 export const DEFAULT_MODEL_BY_EXAMPLE_FAMILY: Record<HomepageExampleFamily, string> = {
   seedance: 'seedance-2-0',
   kling: 'kling-3-pro',
-  ltx: 'ltx-2-3-pro',
+  ltx: 'ltx-2-5-pro',
   veo: 'veo-3-1',
   hailuo: 'minimax-h3',
   'happy-horse': 'happy-horse-1-1',
-  wan: 'wan-2-6',
+  wan: 'wan-3-prime',
   grok: 'grok-imagine-video-1-5',
   flux: 'flux-3',
 };
@@ -122,6 +122,13 @@ export const ALLOWED_TOOL_CARD_IDS = new Set([
 ]);
 
 export const FALLBACK_MODE_BY_ENGINE: Record<string, Mode> = {
+  'wan-3': 't2v',
+  'wan-3-prime': 't2v',
+  'ltx-2-5-fast': 't2v',
+  'ltx-2-5-pro': 't2v',
+  'grok-imagine-video-1-5': 't2v',
+  'flux-3': 't2v',
+  'flux-3-draft': 't2v',
   'sora-2': 't2v',
   'veo-3-1': 'i2v',
   'veo-3-1-lite': 'i2v',

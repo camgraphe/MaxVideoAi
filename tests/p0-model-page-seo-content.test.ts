@@ -292,7 +292,7 @@ test('rendered decision links expose only canonically published comparison pairs
   }
 });
 
-test('hidden P0 decision projection withholds authored future comparison links', () => {
+test('published P0 decision projection renders only published authored comparison links', () => {
   const engines = new Map(listFalEngines().map((engine) => [engine.modelSlug, engine]));
   for (const slug of P0_SLUGS) {
     const engine = engines.get(slug);
@@ -301,7 +301,7 @@ test('hidden P0 decision projection withholds authored future comparison links',
       const raw = parseModelDecisionContent(readDocument(locale, slug).decision, slug, locale);
       assert.ok(
         links(raw).some((href) => comparisonSlugFromHref(href) !== null),
-        `${slug}/${locale} keeps future comparison editorial content`,
+        `${slug}/${locale} keeps authored comparison content`,
       );
       const projected = buildModelDecisionData({ engine, locale, decisionContent: raw });
       assert.ok(projected, `${slug}/${locale}`);
@@ -317,18 +317,24 @@ test('hidden P0 decision projection withholds authored future comparison links',
   }
 });
 
-test('P0 galleries are authored but hidden and contain no placeholder media', () => {
+test('P0 galleries are published and contain no placeholder media', () => {
   for (const slug of P0_SLUGS) {
     const runtime = getRuntimeModelByCanonicalSlug(slug);
     assert.ok(runtime);
-    assert.deepEqual(runtime.publication, {
-      model: { published: false, indexable: false },
-      examples: { published: false, includeInFamilyCopy: false, current: false },
-      compare: { published: false, indexed: false, suggestedOpponentIds: [], publishedPairIds: [] },
-      app: { published: false },
-      pricing: { published: false },
-      sitemap: { published: false },
+    assert.deepEqual(runtime.publication.model, { published: true, indexable: true });
+    assert.deepEqual(runtime.publication.examples, {
+      published: true,
+      includeInFamilyCopy: true,
+      current: true,
+      familyRank: runtime.publication.examples.familyRank,
     });
+    assert.equal(Number.isInteger(runtime.publication.examples.familyRank), true);
+    assert.equal(runtime.publication.compare.published, true);
+    assert.equal(runtime.publication.compare.indexed, true);
+    assert.ok(runtime.publication.compare.publishedPairIds.length > 0);
+    assert.deepEqual(runtime.publication.app, { published: true });
+    assert.deepEqual(runtime.publication.pricing, { published: true });
+    assert.deepEqual(runtime.publication.sitemap, { published: true });
     for (const locale of LOCALES) {
       const examples = parseModelExamplesContent(readDocument(locale, slug).examples, slug, locale);
       assert.equal(examples.showWhenEmpty, false);

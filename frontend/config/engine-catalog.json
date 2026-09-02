@@ -4463,11 +4463,13 @@
       },
       "compare": {
         "suggestOpponents": [
+          "grok-imagine-video-1-5",
           "veo-3-1",
           "kling-3-pro",
           "seedance-2-0"
         ],
         "publishedPairs": [
+          "grok-imagine-video-1-5",
           "kling-2-5-turbo",
           "kling-2-6-pro",
           "kling-3-4k",
@@ -13370,11 +13372,14 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "wan-3-prime",
+        "wan-3",
         "wan-2-6",
         "wan-2-5"
       ],
       "currentModelSlugs": [
-        "wan-2-6"
+        "wan-3-prime",
+        "wan-3"
       ]
     },
     "versionLabel": "Preview",
@@ -13689,11 +13694,14 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "wan-3-prime",
+        "wan-3",
         "wan-2-6",
         "wan-2-5"
       ],
       "currentModelSlugs": [
-        "wan-2-6"
+        "wan-3-prime",
+        "wan-3"
       ]
     },
     "versionLabel": "2.6",
@@ -13713,6 +13721,7 @@
       },
       "compare": {
         "suggestOpponents": [
+          "wan-3",
           "sora-2",
           "veo-3-1",
           "ltx-2-3-fast"
@@ -13738,7 +13747,8 @@
           "veo-3-1",
           "veo-3-1-fast",
           "veo-3-1-lite",
-          "wan-2-5"
+          "wan-2-5",
+          "wan-3"
         ],
         "includeInHub": true
       },
@@ -14078,14 +14088,16 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "ltx-2-5-pro",
+        "ltx-2-5-fast",
         "ltx-2-3-pro",
         "ltx-2-3-fast",
         "ltx-2",
         "ltx-2-fast"
       ],
       "currentModelSlugs": [
-        "ltx-2-3-pro",
-        "ltx-2-3-fast"
+        "ltx-2-5-pro",
+        "ltx-2-5-fast"
       ]
     },
     "versionLabel": "Fast",
@@ -14397,14 +14409,16 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "ltx-2-5-pro",
+        "ltx-2-5-fast",
         "ltx-2-3-pro",
         "ltx-2-3-fast",
         "ltx-2",
         "ltx-2-fast"
       ],
       "currentModelSlugs": [
-        "ltx-2-3-pro",
-        "ltx-2-3-fast"
+        "ltx-2-5-pro",
+        "ltx-2-5-fast"
       ]
     },
     "versionLabel": "Pro",
@@ -14697,14 +14711,16 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "ltx-2-5-pro",
+        "ltx-2-5-fast",
         "ltx-2-3-pro",
         "ltx-2-3-fast",
         "ltx-2",
         "ltx-2-fast"
       ],
       "currentModelSlugs": [
-        "ltx-2-3-pro",
-        "ltx-2-3-fast"
+        "ltx-2-5-pro",
+        "ltx-2-5-fast"
       ]
     },
     "versionLabel": "2.3 Fast",
@@ -14724,6 +14740,7 @@
       },
       "compare": {
         "suggestOpponents": [
+          "ltx-2-5-fast",
           "ltx-2-3-pro",
           "veo-3-1-fast",
           "ltx-2-fast"
@@ -14736,6 +14753,7 @@
           "kling-3-standard",
           "ltx-2",
           "ltx-2-3-pro",
+          "ltx-2-5-fast",
           "ltx-2-fast",
           "luma-ray-2",
           "luma-ray-2-flash",
@@ -15071,14 +15089,16 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "ltx-2-5-pro",
+        "ltx-2-5-fast",
         "ltx-2-3-pro",
         "ltx-2-3-fast",
         "ltx-2",
         "ltx-2-fast"
       ],
       "currentModelSlugs": [
-        "ltx-2-3-pro",
-        "ltx-2-3-fast"
+        "ltx-2-5-pro",
+        "ltx-2-5-fast"
       ]
     },
     "versionLabel": "Pro",
@@ -15098,6 +15118,7 @@
       },
       "compare": {
         "suggestOpponents": [
+          "ltx-2-5-pro",
           "ltx-2-3-fast",
           "ltx-2-fast",
           "sora-2"
@@ -15110,6 +15131,7 @@
           "kling-3-standard",
           "ltx-2",
           "ltx-2-3-fast",
+          "ltx-2-5-pro",
           "ltx-2-fast",
           "luma-ray-2",
           "luma-ray-2-flash",
@@ -18662,11 +18684,14 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "wan-3-prime",
+        "wan-3",
         "wan-2-6",
         "wan-2-5"
       ],
       "currentModelSlugs": [
-        "wan-2-6"
+        "wan-3-prime",
+        "wan-3"
       ]
     },
     "versionLabel": "3.0",
@@ -18677,12 +18702,12 @@
     "successorSlug": null,
     "surfaces": {
       "modelPage": {
-        "indexable": false,
-        "includeInSitemap": false
+        "indexable": true,
+        "includeInSitemap": true
       },
       "examples": {
-        "includeInFamilyResolver": false,
-        "includeInFamilyCopy": false
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
       },
       "compare": {
         "suggestOpponents": [
@@ -18693,13 +18718,13 @@
           "wan-2-6",
           "wan-3-prime"
         ],
-        "includeInHub": false
+        "includeInHub": true
       },
       "app": {
-        "enabled": false
+        "enabled": true
       },
       "pricing": {
-        "includeInEstimator": false
+        "includeInEstimator": true
       }
     },
     "surfacesSource": "registry",
@@ -19212,11 +19237,14 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "wan-3-prime",
+        "wan-3",
         "wan-2-6",
         "wan-2-5"
       ],
       "currentModelSlugs": [
-        "wan-2-6"
+        "wan-3-prime",
+        "wan-3"
       ]
     },
     "versionLabel": "3.0 Prime",
@@ -19227,12 +19255,12 @@
     "successorSlug": null,
     "surfaces": {
       "modelPage": {
-        "indexable": false,
-        "includeInSitemap": false
+        "indexable": true,
+        "includeInSitemap": true
       },
       "examples": {
-        "includeInFamilyResolver": false,
-        "includeInFamilyCopy": false
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
       },
       "compare": {
         "suggestOpponents": [
@@ -19241,13 +19269,13 @@
         "publishedPairs": [
           "wan-3"
         ],
-        "includeInHub": false
+        "includeInHub": true
       },
       "app": {
-        "enabled": false
+        "enabled": true
       },
       "pricing": {
-        "includeInEstimator": false
+        "includeInEstimator": true
       }
     },
     "surfacesSource": "registry",
@@ -19760,14 +19788,16 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "ltx-2-5-pro",
+        "ltx-2-5-fast",
         "ltx-2-3-pro",
         "ltx-2-3-fast",
         "ltx-2",
         "ltx-2-fast"
       ],
       "currentModelSlugs": [
-        "ltx-2-3-pro",
-        "ltx-2-3-fast"
+        "ltx-2-5-pro",
+        "ltx-2-5-fast"
       ]
     },
     "versionLabel": "2.5 Fast",
@@ -19778,12 +19808,12 @@
     "successorSlug": null,
     "surfaces": {
       "modelPage": {
-        "indexable": false,
-        "includeInSitemap": false
+        "indexable": true,
+        "includeInSitemap": true
       },
       "examples": {
-        "includeInFamilyResolver": false,
-        "includeInFamilyCopy": false
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
       },
       "compare": {
         "suggestOpponents": [
@@ -19794,13 +19824,13 @@
           "ltx-2-3-fast",
           "ltx-2-5-pro"
         ],
-        "includeInHub": false
+        "includeInHub": true
       },
       "app": {
-        "enabled": false
+        "enabled": true
       },
       "pricing": {
-        "includeInEstimator": false
+        "includeInEstimator": true
       }
     },
     "surfacesSource": "registry",
@@ -20369,14 +20399,16 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "ltx-2-5-pro",
+        "ltx-2-5-fast",
         "ltx-2-3-pro",
         "ltx-2-3-fast",
         "ltx-2",
         "ltx-2-fast"
       ],
       "currentModelSlugs": [
-        "ltx-2-3-pro",
-        "ltx-2-3-fast"
+        "ltx-2-5-pro",
+        "ltx-2-5-fast"
       ]
     },
     "versionLabel": "2.5 Pro",
@@ -20387,12 +20419,12 @@
     "successorSlug": null,
     "surfaces": {
       "modelPage": {
-        "indexable": false,
-        "includeInSitemap": false
+        "indexable": true,
+        "includeInSitemap": true
       },
       "examples": {
-        "includeInFamilyResolver": false,
-        "includeInFamilyCopy": false
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
       },
       "compare": {
         "suggestOpponents": [
@@ -20403,13 +20435,13 @@
           "ltx-2-3-pro",
           "ltx-2-5-fast"
         ],
-        "includeInHub": false
+        "includeInHub": true
       },
       "app": {
-        "enabled": false
+        "enabled": true
       },
       "pricing": {
-        "includeInEstimator": false
+        "includeInEstimator": true
       }
     },
     "surfacesSource": "registry",
@@ -20923,10 +20955,14 @@
     "brandId": "xai",
     "family": "grok",
     "familyExamplesPage": {
-      "stage": "hidden",
-      "showInNav": false,
-      "publishedModelSlugs": [],
-      "currentModelSlugs": []
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "grok-imagine-video-1-5"
+      ],
+      "currentModelSlugs": [
+        "grok-imagine-video-1-5"
+      ]
     },
     "versionLabel": "1.5",
     "availability": "available",
@@ -20936,12 +20972,12 @@
     "successorSlug": null,
     "surfaces": {
       "modelPage": {
-        "indexable": false,
-        "includeInSitemap": false
+        "indexable": true,
+        "includeInSitemap": true
       },
       "examples": {
-        "includeInFamilyResolver": false,
-        "includeInFamilyCopy": false
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
       },
       "compare": {
         "suggestOpponents": [
@@ -20952,13 +20988,13 @@
           "flux-3",
           "sora-2"
         ],
-        "includeInHub": false
+        "includeInHub": true
       },
       "app": {
-        "enabled": false
+        "enabled": true
       },
       "pricing": {
-        "includeInEstimator": false
+        "includeInEstimator": true
       }
     },
     "surfacesSource": "registry",
@@ -21381,10 +21417,16 @@
     "brandId": "black-forest-labs",
     "family": "flux",
     "familyExamplesPage": {
-      "stage": "hidden",
-      "showInNav": false,
-      "publishedModelSlugs": [],
-      "currentModelSlugs": []
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "flux-3",
+        "flux-3-draft"
+      ],
+      "currentModelSlugs": [
+        "flux-3",
+        "flux-3-draft"
+      ]
     },
     "versionLabel": "3",
     "availability": "available",
@@ -21394,12 +21436,12 @@
     "successorSlug": null,
     "surfaces": {
       "modelPage": {
-        "indexable": false,
-        "includeInSitemap": false
+        "indexable": true,
+        "includeInSitemap": true
       },
       "examples": {
-        "includeInFamilyResolver": false,
-        "includeInFamilyCopy": false
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
       },
       "compare": {
         "suggestOpponents": [
@@ -21410,13 +21452,13 @@
           "flux-3-draft",
           "grok-imagine-video-1-5"
         ],
-        "includeInHub": false
+        "includeInHub": true
       },
       "app": {
-        "enabled": false
+        "enabled": true
       },
       "pricing": {
-        "includeInEstimator": false
+        "includeInEstimator": true
       }
     },
     "surfacesSource": "registry",
@@ -22149,10 +22191,16 @@
     "brandId": "black-forest-labs",
     "family": "flux",
     "familyExamplesPage": {
-      "stage": "hidden",
-      "showInNav": false,
-      "publishedModelSlugs": [],
-      "currentModelSlugs": []
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "flux-3",
+        "flux-3-draft"
+      ],
+      "currentModelSlugs": [
+        "flux-3",
+        "flux-3-draft"
+      ]
     },
     "versionLabel": "3 Draft",
     "availability": "available",
@@ -22162,12 +22210,12 @@
     "successorSlug": null,
     "surfaces": {
       "modelPage": {
-        "indexable": false,
-        "includeInSitemap": false
+        "indexable": true,
+        "includeInSitemap": true
       },
       "examples": {
-        "includeInFamilyResolver": false,
-        "includeInFamilyCopy": false
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
       },
       "compare": {
         "suggestOpponents": [
@@ -22176,13 +22224,13 @@
         "publishedPairs": [
           "flux-3"
         ],
-        "includeInHub": false
+        "includeInHub": true
       },
       "app": {
-        "enabled": false
+        "enabled": true
       },
       "pricing": {
-        "includeInEstimator": false
+        "includeInEstimator": true
       }
     },
     "surfacesSource": "registry",

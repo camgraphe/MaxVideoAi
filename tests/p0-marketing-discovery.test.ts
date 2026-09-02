@@ -374,7 +374,7 @@ test('test validation compares both launch projections with source and detects i
   }
 });
 
-test('hidden P0 identities cannot leak into public discovery or generic comparisons', () => {
+test('published P0 identities enter public discovery with one compact menu representative per family', () => {
   const runtime = listRuntimeModels();
   const selectCatalogSlugs = (
     modelCatalog as typeof modelCatalog & {
@@ -386,17 +386,24 @@ test('hidden P0 identities cannot leak into public discovery or generic comparis
   if (!selectCatalogSlugs) return;
 
   const catalogSlugs = selectCatalogSlugs(runtime);
-  assert.deepEqual(navigation.MARKETING_MODEL_SLUGS.filter((slug) => P0_IDS.includes(slug as never)), []);
+  assert.deepEqual(
+    navigation.MARKETING_MODEL_SLUGS.filter((slug) => P0_IDS.includes(slug as never)),
+    P0_MENU_REPRESENTATIVES,
+  );
   assert.deepEqual(navigation.MARKETING_NAV_EXAMPLES.map(({ key }) => key), navigation.MARKETING_FOOTER_EXAMPLES.map(({ key }) => key));
-  assert.equal(navigation.MARKETING_NAV_EXAMPLES.some(({ key }) => key === 'grok' || key === 'flux'), false);
-  assert.equal(catalogSlugs.some((slug) => P0_IDS.includes(slug as never)), false);
+  assert.equal(navigation.MARKETING_NAV_EXAMPLES.some(({ key }) => key === 'grok'), true);
+  assert.equal(navigation.MARKETING_NAV_EXAMPLES.some(({ key }) => key === 'flux'), true);
+  assert.deepEqual(
+    catalogSlugs.filter((slug) => P0_IDS.includes(slug as never)).sort(),
+    [...P0_IDS].sort(),
+  );
   assert.equal(catalogSlugs.includes('ltx-2'), false);
   assert.equal(catalogSlugs.includes('ltx-2-fast'), false);
   assert.equal(catalogSlugs.includes('wan-2-5'), false);
-  assert.equal(modelFamilies.resolveExampleFamilyId('grok'), null);
-  assert.equal(modelFamilies.resolveExampleFamilyId('flux'), null);
+  assert.equal(modelFamilies.resolveExampleFamilyId('grok'), 'grok');
+  assert.equal(modelFamilies.resolveExampleFamilyId('flux'), 'flux');
   for (const modelId of P0_IDS) {
-    assert.equal(buildDefaultModelCompareHref(modelId), null, `${modelId} must not invent a comparison route`);
+    assert.equal(buildDefaultModelCompareHref(modelId), null, `${modelId} must not invent a generic comparison route`);
   }
 });
 
@@ -502,7 +509,8 @@ test('family routing requires both publication and named accepted durable asset 
     'ltx-2-3-pro',
     'ltx-2-3-fast',
   ]);
-  assert.deepEqual(withEvidence.getCurrentModelSlugs('wan'), ['wan-3-prime', 'wan-3', 'wan-2-6']);
+  assert.deepEqual(withEvidence.getCurrentModelSlugs('wan'), ['wan-3-prime', 'wan-3']);
+  assert.deepEqual(withEvidence.getCurrentModelSlugs('ltx'), ['ltx-2-5-pro', 'ltx-2-5-fast']);
   assert.deepEqual(withEvidence.getModelSlugs('grok'), ['grok-imagine-video-1-5']);
   assert.deepEqual(withEvidence.getModelSlugs('flux'), ['flux-3', 'flux-3-draft']);
   assert.ok(withEvidence.getNavFamilyIds().includes('grok'));
@@ -522,7 +530,15 @@ test('homepage P0 eligibility requires publication, safe readiness and exact pub
   assert.equal(typeof buildTargets, 'function');
   if (!buildTargets) return;
 
-  assert.deepEqual(buildTargets({ models: listRuntimeModels(), readiness: readinessFixture() }), []);
+  assert.deepEqual(
+    buildTargets({ models: listRuntimeModels(), readiness: readinessFixture() }).map(({ family, modelId }) => [family, modelId]),
+    [
+      ['ltx', 'ltx-2-5-pro'],
+      ['wan', 'wan-3-prime'],
+      ['grok', 'grok-imagine-video-1-5'],
+      ['flux', 'flux-3'],
+    ],
+  );
   assert.deepEqual(buildTargets({ models: publishedFixture(), readiness: [] }), []);
   assert.deepEqual(
     buildTargets({ models: publishedFixture(), readiness: readinessFixture() }).map(({ family, modelId }) => [family, modelId]),

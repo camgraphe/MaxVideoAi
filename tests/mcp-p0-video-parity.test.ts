@@ -4,7 +4,7 @@ import test from 'node:test';
 import { getRuntimeModelById } from '../frontend/config/model-runtime';
 import { listFalEngines } from '../frontend/src/config/falEngines';
 import { getAgentModelDetails } from '../frontend/src/server/agent-api/model-details';
-import { listAgentModels, listPublicAgentGenerationEngines, type AgentModelAccessContext, type AgentModelCatalogDeps } from '../frontend/src/server/agent-api/model-catalog';
+import { listAgentModels, listPublicAgentGenerationEngines, type AgentModelCatalogDeps } from '../frontend/src/server/agent-api/model-catalog';
 import { recommendAgentModels } from '../frontend/src/server/agent-api/model-recommendations';
 import { resolveMcpPrelaunchModelAccess } from '../frontend/src/server/mcp/provider-canary-access';
 import { calculateAgentProjectBudget } from '../frontend/src/server/agent-api/project-budget';
@@ -26,13 +26,12 @@ const deps: AgentModelCatalogDeps = {
   isEngineExecutable: () => true,
   isModeExecutable: () => true,
 };
-const access: AgentModelAccessContext = { allowedPrelaunchModelIds: new Set(P0) };
-
 test('default discovery is current+published while exact legacy identities preserve lifecycle and canonical successor slugs', async () => {
   const listed = await listAgentModels({}, deps);
   assert.ok(listed.length > 0);
   assert.ok(listed.every((model) => model.lifecycle === 'current' && model.recommendedByDefault));
-  assert.equal(listed.some((model) => ['ltx-2-3', 'ltx-2', ...P0].includes(model.id as never)), false);
+  assert.equal(listed.some((model) => ['ltx-2-3', 'ltx-2'].includes(model.id as never)), false);
+  assert.deepEqual(listed.filter((model) => P0.includes(model.id as never)).map((model) => model.id).sort(), [...P0].sort());
   const [legacy] = await listAgentModels({ id: 'ltx-2-3' }, deps);
   assert.equal(legacy?.lifecycle, 'legacy');
   assert.equal(legacy?.recommendedByDefault, false);
@@ -50,29 +49,24 @@ test('default discovery is current+published while exact legacy identities prese
   assert.equal((await recommendAgentModels({ id: 'ltx-2-3' }, deps)).recommendations.length, 0);
 });
 
-test('hidden P0 access is exact-only, non-enumerating and gated by exact staging user+client+host', async () => {
-  await assert.rejects(getAgentModelDetails(P0[0], deps), /not currently available/i);
-  assert.equal((await listAgentModels({}, deps)).some((model) => P0.includes(model.id as never)), false);
-  assert.equal((await recommendAgentModels({}, deps)).recommendations.some((item) => P0.includes(item.model.id as never)), false);
+test('published P0 models enumerate normally and no longer require staging canary access', async () => {
+  assert.equal((await listAgentModels({}, deps)).filter((model) => P0.includes(model.id as never)).length, P0.length);
   const principal = { userId: 'canary-user', clientId: 'canary-client', emailVerified: true, authMethod: 'oauth' as const };
   const env = { NODE_ENV: 'production', MCP_STAGING_OPERATIONAL_ENABLED: 'true', MCP_STAGING_CANARY_ACCOUNT_IDS: principal.userId, MCP_STAGING_CANARY_CLIENT_IDS: principal.clientId } as NodeJS.ProcessEnv;
   const resolved = resolveMcpPrelaunchModelAccess(principal, 'https://maxvideoai-mcp-staging.vercel.app/account', env);
-  assert.deepEqual([...resolved!.allowedModelIds].sort(), [...P0].sort());
+  assert.equal(resolved, null);
   assert.equal(resolveMcpPrelaunchModelAccess({ ...principal, clientId: 'wrong' }, 'https://maxvideoai-mcp-staging.vercel.app', env), null);
   assert.equal(resolveMcpPrelaunchModelAccess(principal, 'https://maxvideoai.com', env), null);
-  const details = await getAgentModelDetails(P0[0], deps, access);
-  assert.equal(details.prelaunch, true);
-  assert.equal(details.links.model, null);
+  const details = await getAgentModelDetails(P0[0], deps);
+  assert.equal(details.prelaunch, false);
+  assert.equal(details.links.model, 'https://maxvideoai.com/models/wan-3');
   assert.equal(details.links.examples, null);
-  assert.ok(details.guidance);
-  assert.deepEqual(details.guidance.evidenceUrls, []);
-  assert.equal((await listAgentModels({}, deps)).some((model) => P0.includes(model.id as never)), false);
 });
 
 test('all 23 P0 modes expose numeric duration choices from canonical engine schemas', async () => {
   let modes = 0;
   for (const id of P0) {
-    const details = await getAgentModelDetails(id, deps, access);
+    const details = await getAgentModelDetails(id, deps);
     assert.deepEqual(details.modes.map((mode) => mode.mode), expectedModes.get(id), id);
     for (const mode of details.modes) {
       modes += 1;
@@ -80,7 +74,7 @@ test('all 23 P0 modes expose numeric duration choices from canonical engine sche
     }
   }
   assert.equal(modes, 23);
-  assert.deepEqual((await listPublicAgentGenerationEngines(deps, access)).filter((entry) => P0.includes(entry.engine.id as never)).map((entry) => entry.engine.id).sort(), [...P0].sort());
+  assert.deepEqual((await listPublicAgentGenerationEngines(deps)).filter((entry) => P0.includes(entry.engine.id as never)).map((entry) => entry.engine.id).sort(), [...P0].sort());
 });
 
 test('deep-legacy and retired spending selection fail before canonical pricing is called', async () => {
@@ -105,24 +99,14 @@ test('deep-legacy and retired spending selection fail before canonical pricing i
   }
 });
 
-test('the P0 canary is all seven hidden current models or null when publication drifts', () => {
+test('the P0 prelaunch canary closes after atomic publication', () => {
   const principal = { userId: 'canary-user', clientId: 'canary-client', emailVerified: true, authMethod: 'oauth' as const };
   const env = { NODE_ENV: 'production', MCP_STAGING_OPERATIONAL_ENABLED: 'true', MCP_STAGING_CANARY_ACCOUNT_IDS: principal.userId, MCP_STAGING_CANARY_CLIENT_IDS: principal.clientId } as NodeJS.ProcessEnv;
   const accountUrl = 'https://maxvideoai-mcp-staging.vercel.app';
   const current = resolveMcpPrelaunchModelAccess(principal, accountUrl, env);
-  assert.deepEqual([...current!.allowedModelIds].sort(), [...P0].sort());
+  assert.equal(current, null);
   assert.ok(P0.every((id) => {
     const runtime = getRuntimeModelById(id);
-    return runtime?.lifecycle === 'current' && runtime.publication.app.published === false;
+    return runtime?.lifecycle === 'current' && runtime.publication.app.published === true;
   }));
-
-  const drifted = resolveMcpPrelaunchModelAccess(principal, accountUrl, env, (id) => {
-    const runtime = getRuntimeModelById(id);
-    if (!runtime || id !== P0[0]) return runtime;
-    return {
-      ...runtime,
-      publication: { ...runtime.publication, app: { ...runtime.publication.app, published: true } },
-    };
-  });
-  assert.equal(drifted, null);
 });

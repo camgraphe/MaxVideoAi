@@ -38,6 +38,44 @@
     }
   },
   {
+    "engineId": "flux-3",
+    "marketingName": "FLUX 3",
+    "brandId": "black-forest-labs",
+    "modelSlug": "flux-3",
+    "family": "flux",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "versionLabel": "3",
+    "availability": "available",
+    "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
+    "engineId": "flux-3-draft",
+    "marketingName": "FLUX 3 Draft",
+    "brandId": "black-forest-labs",
+    "modelSlug": "flux-3-draft",
+    "family": "flux",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "versionLabel": "3 Draft",
+    "availability": "available",
+    "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
     "engineId": "seedance-2-0-mini",
     "marketingName": "Dreamina Seedance 2.0 Mini",
     "brandId": "bytedance",
@@ -513,6 +551,44 @@
     }
   },
   {
+    "engineId": "ltx-2-5-fast",
+    "marketingName": "LTX 2.5 Fast",
+    "brandId": "lightricks",
+    "modelSlug": "ltx-2-5-fast",
+    "family": "ltx",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "versionLabel": "2.5 Fast",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
+    "engineId": "ltx-2-5-pro",
+    "marketingName": "LTX 2.5 Pro",
+    "brandId": "lightricks",
+    "modelSlug": "ltx-2-5-pro",
+    "family": "ltx",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "versionLabel": "2.5 Pro",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
     "engineId": "ltx-2-fast",
     "marketingName": "LTX Video 2.0 Fast",
     "brandId": "lightricks",
@@ -790,6 +866,63 @@
     "versionLabel": "2.6",
     "availability": "available",
     "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
+    "engineId": "wan-3",
+    "marketingName": "Wan 3",
+    "brandId": "wan",
+    "modelSlug": "wan-3",
+    "family": "wan",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "versionLabel": "3.0",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
+    "engineId": "wan-3-prime",
+    "marketingName": "Wan 3 Prime",
+    "brandId": "wan",
+    "modelSlug": "wan-3-prime",
+    "family": "wan",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "versionLabel": "3.0 Prime",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
+    "engineId": "grok-imagine-video-1-5",
+    "marketingName": "Grok Imagine Video 1.5",
+    "brandId": "xai",
+    "modelSlug": "grok-imagine-video-1-5",
+    "family": "grok",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "versionLabel": "1.5",
+    "availability": "available",
+    "logoPolicy": "textOnly",
     "surfaces": {
       "modelPage": {
         "indexable": true,

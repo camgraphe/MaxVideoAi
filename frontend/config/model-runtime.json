@@ -766,7 +766,7 @@
           "published": true,
           "includeInFamilyCopy": true,
           "current": false,
-          "familyRank": 2
+          "familyRank": 4
         },
         "compare": {
           "published": true,
@@ -833,13 +833,14 @@
         "examples": {
           "published": true,
           "includeInFamilyCopy": true,
-          "current": true,
-          "familyRank": 0
+          "current": false,
+          "familyRank": 2
         },
         "compare": {
           "published": true,
           "indexed": true,
           "suggestedOpponentIds": [
+            "ltx-2-5-pro",
             "ltx-2-3-fast",
             "ltx-2-fast",
             "sora-2"
@@ -852,6 +853,7 @@
             "kling-3-standard",
             "ltx-2",
             "ltx-2-3-fast",
+            "ltx-2-5-pro",
             "ltx-2-fast",
             "lumaRay2",
             "lumaRay2_flash",
@@ -902,13 +904,14 @@
         "examples": {
           "published": true,
           "includeInFamilyCopy": true,
-          "current": true,
-          "familyRank": 1
+          "current": false,
+          "familyRank": 3
         },
         "compare": {
           "published": true,
           "indexed": true,
           "suggestedOpponentIds": [
+            "ltx-2-5-fast",
             "ltx-2-3",
             "veo-3-1-fast",
             "ltx-2-fast"
@@ -921,6 +924,7 @@
             "kling-3-standard",
             "ltx-2",
             "ltx-2-3",
+            "ltx-2-5-fast",
             "ltx-2-fast",
             "lumaRay2",
             "lumaRay2_flash",
@@ -971,7 +975,7 @@
           "published": true,
           "includeInFamilyCopy": true,
           "current": false,
-          "familyRank": 3
+          "familyRank": 5
         },
         "compare": {
           "published": true,
@@ -2164,11 +2168,13 @@
           "published": true,
           "indexed": true,
           "suggestedOpponentIds": [
+            "grok-imagine-video-1-5",
             "veo-3-1",
             "kling-3-pro",
             "seedance-2-0"
           ],
           "publishedPairIds": [
+            "grok-imagine-video-1-5",
             "kling-2-5-turbo",
             "kling-2-6-pro",
             "kling-3-4k",
@@ -2538,7 +2544,7 @@
           "published": true,
           "includeInFamilyCopy": true,
           "current": false,
-          "familyRank": 1
+          "familyRank": 3
         },
         "compare": {
           "published": true,
@@ -2602,13 +2608,14 @@
         "examples": {
           "published": true,
           "includeInFamilyCopy": true,
-          "current": true,
-          "familyRank": 0
+          "current": false,
+          "familyRank": 2
         },
         "compare": {
           "published": true,
           "indexed": true,
           "suggestedOpponentIds": [
+            "wan-3",
             "sora-2",
             "veo-3-1",
             "ltx-2-3-fast"
@@ -2634,7 +2641,8 @@
             "veo-3-1",
             "veo-3-1-fast",
             "veo-3-1-lite",
-            "wan-2-5"
+            "wan-2-5",
+            "wan-3"
           ]
         },
         "app": {
@@ -2662,17 +2670,18 @@
       },
       "publication": {
         "model": {
-          "published": false,
-          "indexable": false
+          "published": true,
+          "indexable": true
         },
         "examples": {
-          "published": false,
-          "includeInFamilyCopy": false,
-          "current": false
+          "published": true,
+          "includeInFamilyCopy": true,
+          "current": true,
+          "familyRank": 1
         },
         "compare": {
-          "published": false,
-          "indexed": false,
+          "published": true,
+          "indexed": true,
           "suggestedOpponentIds": [
             "wan-3-prime",
             "wan-2-6"
@@ -2683,13 +2692,13 @@
           ]
         },
         "app": {
-          "published": false
+          "published": true
         },
         "pricing": {
-          "published": false
+          "published": true
         },
         "sitemap": {
-          "published": false
+          "published": true
         }
       },
       "lifecycle": "current",
@@ -2707,17 +2716,18 @@
       },
       "publication": {
         "model": {
-          "published": false,
-          "indexable": false
+          "published": true,
+          "indexable": true
         },
         "examples": {
-          "published": false,
-          "includeInFamilyCopy": false,
-          "current": false
+          "published": true,
+          "includeInFamilyCopy": true,
+          "current": true,
+          "familyRank": 0
         },
         "compare": {
-          "published": false,
-          "indexed": false,
+          "published": true,
+          "indexed": true,
           "suggestedOpponentIds": [
             "wan-3"
           ],
@@ -2726,13 +2736,13 @@
           ]
         },
         "app": {
-          "published": false
+          "published": true
         },
         "pricing": {
-          "published": false
+          "published": true
         },
         "sitemap": {
-          "published": false
+          "published": true
         }
       },
       "lifecycle": "current",
@@ -2750,17 +2760,18 @@
       },
       "publication": {
         "model": {
-          "published": false,
-          "indexable": false
+          "published": true,
+          "indexable": true
         },
         "examples": {
-          "published": false,
-          "includeInFamilyCopy": false,
-          "current": false
+          "published": true,
+          "includeInFamilyCopy": true,
+          "current": true,
+          "familyRank": 1
         },
         "compare": {
-          "published": false,
-          "indexed": false,
+          "published": true,
+          "indexed": true,
           "suggestedOpponentIds": [
             "ltx-2-5-pro",
             "ltx-2-3-fast"
@@ -2771,13 +2782,13 @@
           ]
         },
         "app": {
-          "published": false
+          "published": true
         },
         "pricing": {
-          "published": false
+          "published": true
         },
         "sitemap": {
-          "published": false
+          "published": true
         }
       },
       "lifecycle": "current",
@@ -2795,17 +2806,18 @@
       },
       "publication": {
         "model": {
-          "published": false,
-          "indexable": false
+          "published": true,
+          "indexable": true
         },
         "examples": {
-          "published": false,
-          "includeInFamilyCopy": false,
-          "current": false
+          "published": true,
+          "includeInFamilyCopy": true,
+          "current": true,
+          "familyRank": 0
         },
         "compare": {
-          "published": false,
-          "indexed": false,
+          "published": true,
+          "indexed": true,
           "suggestedOpponentIds": [
             "ltx-2-5-fast",
             "ltx-2-3"
@@ -2816,13 +2828,13 @@
           ]
         },
         "app": {
-          "published": false
+          "published": true
         },
         "pricing": {
-          "published": false
+          "published": true
         },
         "sitemap": {
-          "published": false
+          "published": true
         }
       },
       "lifecycle": "current",
@@ -2840,17 +2852,18 @@
       },
       "publication": {
         "model": {
-          "published": false,
-          "indexable": false
+          "published": true,
+          "indexable": true
         },
         "examples": {
-          "published": false,
-          "includeInFamilyCopy": false,
-          "current": false
+          "published": true,
+          "includeInFamilyCopy": true,
+          "current": true,
+          "familyRank": 0
         },
         "compare": {
-          "published": false,
-          "indexed": false,
+          "published": true,
+          "indexed": true,
           "suggestedOpponentIds": [
             "flux-3",
             "sora-2"
@@ -2861,13 +2874,13 @@
           ]
         },
         "app": {
-          "published": false
+          "published": true
         },
         "pricing": {
-          "published": false
+          "published": true
         },
         "sitemap": {
-          "published": false
+          "published": true
         }
       },
       "lifecycle": "current",
@@ -2885,17 +2898,18 @@
       },
       "publication": {
         "model": {
-          "published": false,
-          "indexable": false
+          "published": true,
+          "indexable": true
         },
         "examples": {
-          "published": false,
-          "includeInFamilyCopy": false,
-          "current": false
+          "published": true,
+          "includeInFamilyCopy": true,
+          "current": true,
+          "familyRank": 0
         },
         "compare": {
-          "published": false,
-          "indexed": false,
+          "published": true,
+          "indexed": true,
           "suggestedOpponentIds": [
             "flux-3-draft",
             "grok-imagine-video-1-5"
@@ -2906,13 +2920,13 @@
           ]
         },
         "app": {
-          "published": false
+          "published": true
         },
         "pricing": {
-          "published": false
+          "published": true
         },
         "sitemap": {
-          "published": false
+          "published": true
         }
       },
       "lifecycle": "current",
@@ -2930,17 +2944,18 @@
       },
       "publication": {
         "model": {
-          "published": false,
-          "indexable": false
+          "published": true,
+          "indexable": true
         },
         "examples": {
-          "published": false,
-          "includeInFamilyCopy": false,
-          "current": false
+          "published": true,
+          "includeInFamilyCopy": true,
+          "current": true,
+          "familyRank": 1
         },
         "compare": {
-          "published": false,
-          "indexed": false,
+          "published": true,
+          "indexed": true,
           "suggestedOpponentIds": [
             "flux-3"
           ],
@@ -2949,13 +2964,13 @@
           ]
         },
         "app": {
-          "published": false
+          "published": true
         },
         "pricing": {
-          "published": false
+          "published": true
         },
         "sitemap": {
-          "published": false
+          "published": true
         }
       },
       "lifecycle": "current",

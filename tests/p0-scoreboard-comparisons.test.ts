@@ -132,7 +132,7 @@ test('the eight canonical P0 comparison documents are localized and scoreboard-o
   }
 });
 
-test('hidden P0 models pre-author only the eight approved comparison edges', () => {
+test('published P0 models expose only the eight approved comparison edges', () => {
   const registry = JSON.parse(readFileSync('frontend/config/model-registry.json', 'utf8')) as {
     models: Array<{
       id: string;
@@ -155,8 +155,8 @@ test('hidden P0 models pre-author only the eight approved comparison edges', () 
   for (const modelId of P0_IDS) {
     const model = registry.models.find(({ id }) => id === modelId);
     assert.ok(model, modelId);
-    assert.equal(model.publication.compare.published, false, modelId);
-    assert.equal(model.publication.compare.indexed, false, modelId);
+    assert.equal(model.publication.compare.published, true, modelId);
+    assert.equal(model.publication.compare.indexed, true, modelId);
     assert.deepEqual(
       new Set(model.publication.compare.publishedPairIds),
       expected.get(modelId),

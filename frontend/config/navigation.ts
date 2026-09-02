@@ -117,7 +117,7 @@ export function buildMarketingModelMenu(models: readonly RuntimeModelEntry[]): L
 
 const MODEL_MENU = buildMarketingModelMenu(listRuntimeModels());
 
-const EXAMPLE_FAMILY_PRIORITY = ['veo', 'seedance', 'hailuo', 'ltx', 'kling', 'grok', 'flux'] as const;
+const EXAMPLE_FAMILY_PRIORITY = ['veo', 'seedance', 'hailuo', 'ltx', 'wan', 'kling', 'grok', 'flux'] as const;
 const AVAILABLE_EXAMPLE_FAMILY_IDS = getExampleNavFamilyIds();
 
 const EXAMPLES_MENU: LabeledSlug[] = EXAMPLE_FAMILY_PRIORITY
@@ -132,6 +132,14 @@ const EXAMPLES_MENU: LabeledSlug[] = EXAMPLE_FAMILY_PRIORITY
 const FOOTER_EXAMPLES_MENU: LabeledSlug[] = [...EXAMPLES_MENU];
 
 const COMPARE_MENU: LabeledSlug[] = [
+  {
+    slug: 'ltx-2-3-pro-vs-ltx-2-5-pro',
+    label: 'LTX 2.3 Pro vs LTX 2.5 Pro',
+    badge: 'new',
+  },
+  { slug: 'wan-2-6-vs-wan-3', label: 'Wan 2.6 vs Wan 3', badge: 'new' },
+  { slug: 'flux-3-vs-grok-imagine-video-1-5', label: 'FLUX 3 vs Grok Imagine Video 1.5', badge: 'new' },
+  { slug: 'grok-imagine-video-1-5-vs-sora-2', label: 'Grok Imagine Video 1.5 vs Sora 2' },
   {
     slug: 'minimax-h3-vs-seedance-2-5',
     label: 'MiniMax H3 vs Seedance 2.5',

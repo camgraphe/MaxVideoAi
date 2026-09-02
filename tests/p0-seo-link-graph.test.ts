@@ -116,14 +116,14 @@ function localizedDecision(modelId: string, locale: AppLocale) {
   return JSON.parse(readFileSync(join('content/models', locale, `${modelId}.json`), 'utf8')).decision;
 }
 
-test('the real hidden state omits every P0 from current and machine discovery owners', async () => {
+test('the real published state exposes every P0 across current and machine discovery owners', async () => {
   ensureReactCacheForSitemapImports();
   const sitemap = await import('../frontend/lib/sitemapData.ts');
-  assert.deepEqual(runtime.listPublicCurrentRuntimeModels().filter((model) => P0_SET.has(model.id)), []);
-  assert.deepEqual(selectCurrentModelCatalogSlugs(runtime.listRuntimeModels()).filter((slug) => P0_SET.has(slug)), []);
+  assert.deepEqual(runtime.listPublicCurrentRuntimeModels().filter((model) => P0_SET.has(model.id)).map((model) => model.id).sort(), [...P0_IDS].sort());
+  assert.deepEqual(selectCurrentModelCatalogSlugs(runtime.listRuntimeModels()).filter((slug) => P0_SET.has(slug)).sort(), [...P0_IDS].sort());
 
   const xml = await sitemap.buildModelsSitemapXml();
-  const llmsText = llms.buildLlmsText(mcpPublication);
+  const llmsText = llms.buildLlmsText(mcpPublication, llms.buildLlmsModelDiscoveryProjection());
   const pricingRows = buildVideoPricingRowsFromEntries(listFalEngines(), 'en');
   const payg = buildPayAsYouGoPageData({
     locale: 'en',
@@ -132,28 +132,22 @@ test('the real hidden state omits every P0 from current and machine discovery ow
   });
   const paygLinks = JSON.stringify(payg);
   for (const id of P0_IDS) {
-    assert.doesNotMatch(xml, new RegExp(`/models/${id}(?:<|$)`), id);
-    assert.doesNotMatch(llmsText, new RegExp(`/models/${id}(?:\\)|$)`), id);
-    assert.equal(pricingRows.some((row) => row.id === id), false, id);
-    assert.doesNotMatch(paygLinks, new RegExp(`(?:/models/|#)${id}(?:["#)]|$)`), `PAYG ${id}`);
+    assert.match(xml, new RegExp(`/models/${id}(?:<|$)`), id);
+    assert.match(llmsText, new RegExp(`/models/${id}(?:\\)|$)`), id);
+    assert.equal(pricingRows.some((row) => row.id === id), true, id);
+    assert.match(paygLinks, new RegExp(`(?:/models/|#)${id}(?:["#)]|$)`), `PAYG ${id}`);
     assert.equal(
       MODEL_FAMILIES.some((family) => family.examplesPage?.publishedModelSlugs?.includes(id)),
-      false,
+      true,
       `family ${id}`,
     );
   }
 
-  assert.deepEqual(
-    comparisons.getHubComparisonSlugsForSitemap().filter((slug) => P0_IDS.some((id) => slug.includes(id))),
-    [],
-  );
+  assert.equal(comparisons.getHubComparisonSlugsForSitemap().filter((slug) => P0_IDS.some((id) => slug.includes(id))).length, 8);
 });
 
-test('hidden P0 comparison metadata remains noindex,follow', () => {
-  assert.deepEqual(
-    resolveComparePublicationRobots('en', 'flux-3-vs-grok-imagine-video-1-5'),
-    { index: false, follow: true },
-  );
+test('published P0 comparison metadata is index,follow', () => {
+  assert.equal(resolveComparePublicationRobots('en', 'flux-3-vs-grok-imagine-video-1-5'), undefined);
 });
 
 test('one public-current predicate excludes hidden, legacy and deep-legacy models', () => {
@@ -318,7 +312,7 @@ test('best-for explicit and fallback ranking require complete relevant numeric e
     { slug: 'cinematic-realism', title: 'Fixture', tier: 1, topPicks: [...P0_IDS] },
     oneScore,
     { models: runtime.listRuntimeModels(), catalog },
-  ), []);
+  ), [P0_IDS[0]]);
 });
 
 test('symmetric comparison publication requires both endpoint flags and a complete localized scoreboard', () => {
@@ -343,10 +337,10 @@ test('symmetric comparison publication requires both endpoint flags and a comple
   ], () => false), []);
 });
 
-test('LLMS accepts a registry-derived projection while the real output stays P0-free', () => {
+test('LLMS accepts a registry-derived projection and publishes the complete P0 set', () => {
   const realProjection = llms.buildLlmsModelDiscoveryProjection();
   const realText = llms.buildLlmsText(mcpPublication, realProjection);
-  for (const id of P0_IDS) assert.doesNotMatch(realText, new RegExp(`/models/${id}(?:\\)|$)`));
+  for (const id of P0_IDS) assert.match(realText, new RegExp(`/models/${id}(?:\\)|$)`));
   assert.match(realText, /LTX 2\.3 Pro \(previous generation\)/);
   assert.match(realText, /Wan 2\.6 \(previous generation\)/);
 
@@ -367,7 +361,11 @@ test('LLMS accepts a registry-derived projection while the real output stays P0-
     }],
     isLocalizedScoreboardComplete: () => true,
   });
-  assert.deepEqual(unrelatedProjection.primaryComparisons, []);
+  assert.deepEqual(unrelatedProjection.primaryComparisons, [{
+    slug: 'flux-3-vs-grok-imagine-video-1-5',
+    label: 'FLUX 3 vs Grok Imagine Video 1.5',
+    href: 'https://maxvideoai.com/ai-video-engines/flux-3-vs-grok-imagine-video-1-5',
+  }]);
 
   const wanUpgradeModels = wanOnlyModels.map((model) => {
     if (model.id === 'wan-3') {

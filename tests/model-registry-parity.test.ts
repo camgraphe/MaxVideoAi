@@ -51,6 +51,12 @@ test('runtime model projection matches every baseline identity and surface', () 
     'seedance-2-5',
     'veo-3-1',
   ]);
+  const reciprocalP0PairByOwner = new Map([
+    ['sora-2', 'grok-imagine-video-1-5'],
+    ['ltx-2-3', 'ltx-2-5-pro'],
+    ['ltx-2-3-fast', 'ltx-2-5-fast'],
+    ['wan-2-6', 'wan-3'],
+  ]);
   for (const expected of baseline.models) {
     const actual = runtimeById.get(expected.id);
     assert.ok(actual, `missing runtime model ${expected.id}`);
@@ -81,6 +87,25 @@ test('runtime model projection matches every baseline identity and surface', () 
       );
       actualPublication.compare.publishedPairs = actualPublication.compare.publishedPairs.filter(
         (slug) => slug !== 'minimax-h3',
+      );
+    }
+    const reciprocalP0Pair = reciprocalP0PairByOwner.get(expected.id);
+    if (reciprocalP0Pair) {
+      assert.equal(
+        actualPublication.compare.suggestOpponents.filter((slug) => slug === reciprocalP0Pair).length,
+        1,
+        expected.id,
+      );
+      assert.equal(
+        actualPublication.compare.publishedPairs.filter((slug) => slug === reciprocalP0Pair).length,
+        1,
+        expected.id,
+      );
+      actualPublication.compare.suggestOpponents = actualPublication.compare.suggestOpponents.filter(
+        (slug) => slug !== reciprocalP0Pair,
+      );
+      actualPublication.compare.publishedPairs = actualPublication.compare.publishedPairs.filter(
+        (slug) => slug !== reciprocalP0Pair,
       );
     }
     assert.deepEqual(actualPublication, expected.publication);
@@ -269,14 +294,22 @@ test('family model membership and current variants remain identical to baseline'
             ? 'wan-3-prime'
             : expected.defaultModelSlug,
     );
-    assert.deepEqual(
-      actual.routeAliases,
-      expected.id === 'hailuo' ? ['minimax-h3', ...expected.routeAliases] : expected.routeAliases,
-    );
+    const expectedRouteAliases = expected.id === 'hailuo'
+      ? ['minimax-h3', ...expected.routeAliases]
+      : expected.id === 'ltx'
+        ? ['ltx-2-5-pro', 'ltx-2-5-fast', ...expected.routeAliases]
+        : expected.id === 'wan'
+          ? ['wan-3-prime', 'wan-3', 'wan-2-6', 'wan-2-5']
+          : expected.routeAliases;
+    assert.deepEqual(actual.routeAliases, expectedRouteAliases);
     const expectedPublishedModelSlugs = expected.id === 'seedance'
       ? ['seedance-2-5', ...(expected.examplesPage?.publishedModelSlugs ?? [])]
       : expected.id === 'hailuo'
         ? ['minimax-h3', ...(expected.examplesPage?.publishedModelSlugs ?? [])]
+        : expected.id === 'ltx'
+          ? ['ltx-2-5-pro', 'ltx-2-5-fast', ...(expected.examplesPage?.publishedModelSlugs ?? [])]
+        : expected.id === 'wan'
+            ? ['wan-3-prime', 'wan-3', 'wan-2-6', 'wan-2-5']
         : expected.examplesPage?.publishedModelSlugs ?? [];
     const baselineCurrentModelSlugs = expected.examplesPage?.currentModelSlugs?.length
       ? expected.examplesPage.currentModelSlugs
@@ -285,6 +318,10 @@ test('family model membership and current variants remain identical to baseline'
       ? ['seedance-2-5', ...baselineCurrentModelSlugs]
       : expected.id === 'hailuo'
         ? ['minimax-h3']
+        : expected.id === 'ltx'
+          ? ['ltx-2-5-pro', 'ltx-2-5-fast']
+          : expected.id === 'wan'
+            ? ['wan-3-prime', 'wan-3']
         : baselineCurrentModelSlugs;
     assert.deepEqual(
       getModelFamilyExamplesPageConfig(expected.id)?.publishedModelSlugs,

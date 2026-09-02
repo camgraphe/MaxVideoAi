@@ -36,6 +36,19 @@ type BuildLlmsModelDiscoveryProjectionOptions = {
   isLocalizedScoreboardComplete?: (canonicalSlug: string) => boolean;
 };
 
+export const P0_PRIMARY_COMPARISONS = [
+  { slug: 'ltx-2-3-pro-vs-ltx-2-5-pro', label: 'LTX 2.3 Pro vs LTX 2.5 Pro' },
+  { slug: 'ltx-2-3-fast-vs-ltx-2-5-fast', label: 'LTX 2.3 Fast vs LTX 2.5 Fast' },
+  { slug: 'ltx-2-5-fast-vs-ltx-2-5-pro', label: 'LTX 2.5 Fast vs LTX 2.5 Pro' },
+  { slug: 'wan-2-6-vs-wan-3', label: 'Wan 2.6 vs Wan 3' },
+  { slug: 'wan-3-vs-wan-3-prime', label: 'Wan 3 vs Wan 3 Prime' },
+  { slug: 'flux-3-vs-flux-3-draft', label: 'FLUX 3 vs FLUX 3 Draft' },
+  { slug: 'grok-imagine-video-1-5-vs-sora-2', label: 'Grok Imagine Video 1.5 vs Sora 2' },
+  { slug: 'flux-3-vs-grok-imagine-video-1-5', label: 'FLUX 3 vs Grok Imagine Video 1.5' },
+] as const;
+
+const P0_LOCALIZED_SCOREBOARDS = new Set<string>(P0_PRIMARY_COMPARISONS.map(({ slug }) => slug));
+
 export function buildLlmsModelDiscoveryProjection(
   options: BuildLlmsModelDiscoveryProjectionOptions = {},
 ): LlmsModelDiscoveryProjection {
@@ -74,7 +87,7 @@ export function buildLlmsModelDiscoveryProjection(
     }));
   const qualifiedPublishedPairs = new Set(buildPublishedComparisonSlugsFromModels(
     models,
-    options.isLocalizedScoreboardComplete ?? (() => false),
+    options.isLocalizedScoreboardComplete ?? ((slug) => P0_LOCALIZED_SCOREBOARDS.has(slug)),
   ));
   const publicCurrentLaunchPairs = new Set<string>();
   for (const launchModel of launchModels) {
@@ -84,7 +97,7 @@ export function buildLlmsModelDiscoveryProjection(
     }
   }
   const primaryComparisons = Array.from(
-    new Map((options.primaryComparisons ?? []).map((pair) => [pair.slug, pair])).values(),
+    new Map((options.primaryComparisons ?? P0_PRIMARY_COMPARISONS).map((pair) => [pair.slug, pair])).values(),
   )
     .filter(
       (pair) =>

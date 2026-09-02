@@ -1,6 +1,8 @@
 engineId,marketingName,brandId,modelSlug,family,lifecycle,successorId,successorSlug,versionLabel,availability,logoPolicy,modelPageIndexable,modelPageInSitemap
 happy-horse-1-0,Happy Horse 1.0,alibaba,happy-horse-1-0,happy-horse,legacy,,,1.0,available,logoAllowed,true,true
 happy-horse-1-1,Happy Horse 1.1,alibaba,happy-horse-1-1,happy-horse,current,,,1.1,available,logoAllowed,true,true
+flux-3,FLUX 3,black-forest-labs,flux-3,flux,current,,,3,available,textOnly,true,true
+flux-3-draft,FLUX 3 Draft,black-forest-labs,flux-3-draft,flux,current,,,3 Draft,available,textOnly,true,true
 seedance-2-0-mini,Dreamina Seedance 2.0 Mini,bytedance,dreamina-seedance-2-0-mini,seedance,current,,,2.0 Mini,available,logoAllowed,true,true
 seedance-1-5-pro,Seedance 1.5 Pro,bytedance,seedance-1-5-pro,seedance,current,,,v1.5 Pro,available,logoAllowed,true,true
 seedance-2-0,Seedance 2.0,bytedance,seedance-2-0,seedance,current,,,2.0,available,logoAllowed,true,true
@@ -26,6 +28,8 @@ kling-o3-pro,Kling 3.0 Omni Pro,kling,kling-o3-pro,kling,current,,,3.0 Omni Pro,
 kling-o3-standard,Kling 3.0 Omni Standard,kling,kling-o3-standard,kling,current,,,3.0 Omni Standard,available,logoAllowed,true,true
 ltx-2-3-fast,LTX 2.3 Fast,lightricks,ltx-2-3-fast,ltx,legacy,ltx-2-5-fast,ltx-2-5-fast,2.3 Fast,available,logoAllowed,true,true
 ltx-2-3,LTX 2.3 Pro,lightricks,ltx-2-3-pro,ltx,legacy,ltx-2-5-pro,ltx-2-5-pro,Pro,available,logoAllowed,true,true
+ltx-2-5-fast,LTX 2.5 Fast,lightricks,ltx-2-5-fast,ltx,current,,,2.5 Fast,available,logoAllowed,true,true
+ltx-2-5-pro,LTX 2.5 Pro,lightricks,ltx-2-5-pro,ltx,current,,,2.5 Pro,available,logoAllowed,true,true
 ltx-2-fast,LTX Video 2.0 Fast,lightricks,ltx-2-fast,ltx,deep_legacy,ltx-2-5-fast,ltx-2-5-fast,Fast,available,logoAllowed,true,true
 ltx-2,LTX Video 2.0 Pro,lightricks,ltx-2,ltx,deep_legacy,ltx-2-5-pro,ltx-2-5-pro,Pro,available,logoAllowed,true,true
 lumaRay2,Luma Ray 2,luma,luma-ray-2,luma,legacy,,,Ray 2,available,logoAllowed,true,true
@@ -41,3 +45,6 @@ sora-2-pro,OpenAI Sora 2 Pro,openai,sora-2-pro,sora,current,,,Pro,available,logo
 pika-text-to-video,Pika 2.2 Text & Image to Video,pika,pika-text-to-video,pika,current,,,2.2,available,logoAllowed,true,true
 wan-2-5,Wan 2.5 Text & Image to Video,wan,wan-2-5,wan,deep_legacy,wan-3,wan-3,Preview,available,logoAllowed,true,true
 wan-2-6,Wan 2.6 Text & Image to Video,wan,wan-2-6,wan,legacy,wan-3,wan-3,2.6,available,logoAllowed,true,true
+wan-3,Wan 3,wan,wan-3,wan,current,,,3.0,available,logoAllowed,true,true
+wan-3-prime,Wan 3 Prime,wan,wan-3-prime,wan,current,,,3.0 Prime,available,logoAllowed,true,true
+grok-imagine-video-1-5,Grok Imagine Video 1.5,xai,grok-imagine-video-1-5,grok,current,,,1.5,available,textOnly,true,true
