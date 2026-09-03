@@ -111,10 +111,16 @@ test('raw engine definitions do not own model identity or publication', () => {
 });
 
 test('fal engine materialization reads registry-owned model fields', () => {
-  const source = readFileSync('frontend/src/config/falEngines.ts', 'utf8');
-  assert.match(source, /getRuntimeModelById/);
-  assert.match(source, /toLegacyModelSurfaces/);
-  assert.doesNotMatch(source, /buildDefaultModelPublicationSurfaces|mergeModelPublicationSurfaces/);
+  const facade = readFileSync('frontend/src/config/falEngines.ts', 'utf8');
+  const materialization = readFileSync('frontend/src/config/fal-engine-materialization.ts', 'utf8');
+  assert.match(facade, /materializeFalEngineEntry/);
+  assert.doesNotMatch(facade, /getRuntimeModelById|toLegacyModelSurfaces/);
+  assert.match(materialization, /getRuntimeModelById/);
+  assert.match(materialization, /toLegacyModelSurfaces/);
+  assert.doesNotMatch(
+    `${facade}\n${materialization}`,
+    /buildDefaultModelPublicationSurfaces|mergeModelPublicationSurfaces/,
+  );
 });
 
 test('legacy model policy tables cannot return outside the canonical registry', () => {

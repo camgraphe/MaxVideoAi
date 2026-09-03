@@ -18,6 +18,12 @@ const reference = z.discriminatedUnion('kind', [
   }).strict(),
 ]);
 const canonicalSettingsSchema = z.object({
+  multiPrompt: z.array(z.object({
+    prompt: z.string().trim().min(1).max(512),
+    durationSec: z.number().int().min(1).max(15),
+  }).strict()).min(1).max(6).optional().describe(
+    'Kling multi-shot scenes. Use only when get_model_details reports the multiPrompt setting; omit the top-level prompt text content for this form.',
+  ),
   durationSec: z.number().int().min(1).max(86_400).optional().describe(
     'For video modes, use the exact key settings.durationSec for the requested duration in seconds; never send settings.duration.',
   ),

@@ -6,6 +6,13 @@ import {
   resolveMinimaxH3MaxEndpoint,
   type MinimaxH3MaxMode,
 } from '@/lib/minimax-h3-max';
+import {
+  isKling3TurboEngineId,
+} from '@/lib/kling-3-turbo';
+import {
+  KLING_3_TURBO_ENDPOINTS,
+  type Kling3TurboMode,
+} from '@/src/config/fal-engines/kling-3-turbo-shared';
 
 const ENGINE_MODE_MODEL_MAP = (() => {
   const map = new Map<string, Map<string, string>>();
@@ -99,6 +106,12 @@ export function resolveFalVideoResolutionInput(
 }
 
 export function resolveFalModelSlug(payload: GeneratePayload, fallback?: string): string | undefined {
+  if (isKling3TurboEngineId(payload.engineId)) {
+    const mode = payload.mode ?? 't2v';
+    return mode === 't2v' || mode === 'i2v'
+      ? KLING_3_TURBO_ENDPOINTS[payload.engineId][mode as Kling3TurboMode]
+      : undefined;
+  }
   if (isMinimaxH3MaxEngineId(payload.engineId)) {
     const mode = payload.mode ?? 't2v';
     if (mode === 't2v' || mode === 'i2v' || mode === 'ref2v') {

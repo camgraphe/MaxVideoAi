@@ -28,7 +28,17 @@ export type CanonicalVideoGenerationMode = (typeof CANONICAL_VIDEO_GENERATION_MO
 export type CanonicalImageGenerationMode = (typeof CANONICAL_IMAGE_GENERATION_MODES)[number];
 export type CanonicalGenerationMode = (typeof CANONICAL_GENERATION_MODES)[number];
 
-export type CanonicalGenerationSettingValue = string | number | boolean | null;
+export type CanonicalGenerationMultiPromptScene = Readonly<{
+  prompt: string;
+  durationSec: number;
+}>;
+
+export type CanonicalGenerationSettingValue =
+  | string
+  | number
+  | boolean
+  | null
+  | readonly CanonicalGenerationMultiPromptScene[];
 
 export type CanonicalGenerationReferenceRole =
   | 'source'

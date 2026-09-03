@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { listFalEngines } from '../frontend/src/config/falEngines';
+import { UNPUBLISHED_FAL_ENGINE_REGISTRY } from '../frontend/src/config/fal-engines/registry';
 import { getModelRegistryEntryById } from '../frontend/config/model-registry';
 import {
   validateCanonicalGenerationCapabilities,
@@ -113,6 +114,21 @@ test('MCP mode parity audit identifies every remaining specialized public workfl
     });
     assert.deepEqual(model.modes, expectedModes, entry.id);
   }
+});
+
+test('the specialized-mode audit records unpublished P1 media modes that remain intentionally closed', () => {
+  const h3Max = UNPUBLISHED_FAL_ENGINE_REGISTRY.find((entry) => entry.id === 'minimax-h3-max');
+  assert.ok(h3Max);
+
+  const closed = h3Max.engine.modes
+    .filter((mode) => mode !== 't2v')
+    .map((mode) => `${h3Max.id}:${mode}`)
+    .sort();
+
+  assert.deepEqual(closed, [
+    'minimax-h3-max:i2v',
+    'minimax-h3-max:ref2v',
+  ]);
 });
 
 test('MCP normalization and tool schema accept every transport-safe video workflow', () => {

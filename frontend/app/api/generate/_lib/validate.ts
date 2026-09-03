@@ -14,6 +14,7 @@ import { validateProviderControls } from './validate-provider-controls';
 import { getVideoSchemaControlConstraintViolation } from '@/lib/video-input-schema';
 import type { ValidationResult } from './validate-types';
 import { deriveRuntimeSchemaCaps } from './runtime-schema-options';
+import { getPrivateRuntimeEngineById } from '@/server/video-generation/private-engine-registry';
 export type RequestValidationContext = { inputSchema?: EngineInputSchema | null; referenceValuesByField?: ReferenceBudgetValuesByField<string>; referenceMediaItems?: readonly ReferenceBudgetMediaItem[]; referenceProvenanceIssues?: readonly ReferenceProvenanceIssue[] };
 const ENGINE_INPUT_LIMITS = listFalEngines().reduce<Record<string, { promptMaxChars?: number }>>((acc, entry) => {
   acc[entry.id] = { promptMaxChars: entry.engine.inputLimits.promptMaxChars };
@@ -44,7 +45,8 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
     };
   }
 
-  const promptMaxChars = ENGINE_INPUT_LIMITS[engineId]?.promptMaxChars;
+  const promptMaxChars = ENGINE_INPUT_LIMITS[engineId]?.promptMaxChars
+    ?? getPrivateRuntimeEngineById(engineId)?.inputLimits.promptMaxChars;
   const rawPrompt = typeof payload['prompt'] === 'string' ? payload['prompt'] : '';
   const hasMultiPrompt =
     Array.isArray(payload['multi_prompt']) &&

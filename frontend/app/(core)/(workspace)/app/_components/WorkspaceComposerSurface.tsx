@@ -35,6 +35,7 @@ import {
   MULTI_PROMPT_MIN_SEC,
 } from '../_lib/workspace-input-helpers';
 import { KLING_MULTI_PROMPT_SCENE_MAX_CHARS } from '../_lib/workspace-multi-prompt-state';
+import { supportsWorkspaceMultiPrompt } from '../_hooks/useWorkspaceEngineModeState';
 import type { LumaRay32KeyframeEditorProps } from './LumaRay32KeyframeEditor';
 import type { OmniStudioPanelProps } from './omni/OmniStudioPanel.client';
 import type { StoryboardLaunchModalProps } from './StoryboardLaunchModal';
@@ -285,6 +286,8 @@ export function WorkspaceComposerSurface({
     isUnifiedKlingO3 && !klingO3VideoToVideoSupported ? KLING_O3_SOURCE_VIDEO_UNSUPPORTED_MESSAGE : null;
   const showLumaRay32KeyframeEditor = selectedEngine.id === 'luma-ray-3-2' && submissionMode === 'v2v';
   const showOmniStudioPanel = selectedEngine.id === 'gemini-omni-flash';
+  const isKlingTurbo = selectedEngine.id.startsWith('kling-3-turbo-');
+  const showMultiPrompt = supportsWorkspaceMultiPrompt(selectedEngine, submissionMode);
   const hdrFieldEntry = useMemo(
     () =>
       inputSchemaSummary.secondaryFields.find(({ field }) => field.id === HDR_FIELD_ID) ??
@@ -349,6 +352,7 @@ export function WorkspaceComposerSurface({
   const advancedFields = useMemo(() => {
     const shouldHideInlineField = (field: EngineInputField) =>
       Boolean(hdrFieldEntry && field.id === hdrFieldEntry.field.id) ||
+      (showMultiPrompt && field.id === 'multi_prompt') ||
       (showOmniStudioPanel && OMNI_CUSTOM_FIELD_IDS.has(field.id));
     if (!showLumaRay32KeyframeEditor) {
       return inputSchemaSummary.secondaryFields.filter(({ field }) => !shouldHideInlineField(field));
@@ -356,7 +360,7 @@ export function WorkspaceComposerSurface({
     return inputSchemaSummary.secondaryFields.filter(
       ({ field }) => !LUMA_RAY32_MODIFY_ADVANCED_FIELD_IDS.has(field.id) && !shouldHideInlineField(field)
     );
-  }, [hdrFieldEntry, inputSchemaSummary.secondaryFields, showLumaRay32KeyframeEditor, showOmniStudioPanel]);
+  }, [hdrFieldEntry, inputSchemaSummary.secondaryFields, showLumaRay32KeyframeEditor, showMultiPrompt, showOmniStudioPanel]);
 
   const handleExtraInputValueChange = useCallback(
     (field: EngineInputField, value: unknown) => {
@@ -433,6 +437,7 @@ export function WorkspaceComposerSurface({
   const showLoopControl = supportsModeLoopControl(selectedEngine, submissionMode);
   const showKlingElementsBuilder =
     supportsKlingV3Controls &&
+    !isKlingTurbo &&
     (isUnifiedKlingO3 || activeMode === 'i2v' || activeMode === 'ref2v');
   const resolvedWorkflowNotice = klingO3UnsupportedVideoReason ?? composerWorkflowNotice;
 
@@ -509,7 +514,7 @@ export function WorkspaceComposerSurface({
         onNotice={showNotice}
         onOpenLibrary={handleOpenAssetLibrary}
         multiPrompt={
-          supportsKlingV3Controls
+          showMultiPrompt
             ? {
                 enabled: multiPromptEnabled,
                 scenes: multiPromptScenes,
@@ -620,7 +625,7 @@ export function WorkspaceComposerSurface({
               onCfgScaleChange={setCfgScale}
               durationManaged={multiPromptActive}
               durationManagedLabel={durationManagedLabel}
-              showKlingV3Controls={supportsKlingV3Controls}
+              showKlingV3Controls={supportsKlingV3Controls && !isKlingTurbo}
               showKlingV3VoiceControls={supportsKlingV3VoiceControl}
               klingShotType={shotType}
               onKlingShotTypeChange={setShotType}

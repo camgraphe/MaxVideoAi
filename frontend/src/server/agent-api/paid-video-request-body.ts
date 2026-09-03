@@ -185,6 +185,16 @@ function projectExtraInputValues(settings: Record<string, unknown>): Record<stri
   return extra;
 }
 
+function projectMultiPrompt(settings: Record<string, unknown>): Array<{ prompt: string; duration: number }> | null {
+  const value = settings.multiPrompt;
+  delete settings.multiPrompt;
+  if (!Array.isArray(value)) return null;
+  return value.map((scene) => ({
+    prompt: String((scene as { prompt?: unknown }).prompt ?? ''),
+    duration: Number((scene as { durationSec?: unknown }).durationSec),
+  }));
+}
+
 export function buildPaidVideoRequestBody(
   execution: PaidVideoRequestBodyExecution,
 ): Record<string, unknown> {
@@ -193,6 +203,7 @@ export function buildPaidVideoRequestBody(
   }
   const settings = { ...execution.request.settings };
   if (!supportsAspectRatio(execution)) delete settings.aspectRatio;
+  const multiPrompt = projectMultiPrompt(settings);
   const extraInputValues = projectExtraInputValues(settings);
   const references = materializeReferences(execution);
   const body: Record<string, unknown> = {
@@ -204,6 +215,7 @@ export function buildPaidVideoRequestBody(
     membershipTier: resolvePaidMembershipTier(execution.canonicalPricing),
     ...settings,
     ...(Object.keys(extraInputValues).length ? { extraInputValues } : {}),
+    ...(multiPrompt?.length ? { multiPrompt } : {}),
     inputs: [],
   };
 

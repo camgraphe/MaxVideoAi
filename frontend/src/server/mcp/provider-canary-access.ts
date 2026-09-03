@@ -5,6 +5,7 @@ import {
 } from '@/server/agent-runtime/model-executability';
 import { getRuntimeModelById } from '@/config/model-runtime';
 import { P0_VIDEO_MODEL_IDS } from '@/lib/pricing-audit/p0-video-scenarios';
+import { MODEL_LAUNCH_WAVES } from '@/config/model-launch-waves';
 
 const STAGING_ACCOUNT_HOST = 'maxvideoai-mcp-staging.vercel.app';
 
@@ -52,11 +53,17 @@ export function resolveMcpPrelaunchModelAccess(
   resolveRuntimeModel: typeof getRuntimeModelById = getRuntimeModelById,
 ): McpPrelaunchModelAccess | null {
   if (!isExactStagingCanary(principal, accountUrl, env)) return null;
-  const ids = P0_VIDEO_MODEL_IDS.filter((id) => {
+  const launchCanaryIds = Array.from(new Set([
+    ...P0_VIDEO_MODEL_IDS,
+    ...MODEL_LAUNCH_WAVES.flatMap((wave) => wave.id === 'p1'
+      ? wave.models.map(({ modelId }) => modelId)
+      : []),
+  ]));
+  const ids = launchCanaryIds.filter((id) => {
     const model = resolveRuntimeModel(id);
     return model?.lifecycle === 'current' && model.publication.app.published === false;
   });
-  return ids.length === P0_VIDEO_MODEL_IDS.length
+  return ids.length
     ? Object.freeze({ allowedModelIds: new Set(ids) })
     : null;
 }

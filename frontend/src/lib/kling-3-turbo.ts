@@ -32,7 +32,7 @@ export type NormalizedKling3TurboRequest = {
   imageUrl?: string;
 };
 
-function isKling3TurboEngineId(value: string): value is Kling3TurboEngineId {
+export function isKling3TurboEngineId(value: string): value is Kling3TurboEngineId {
   return (KLING_3_TURBO_ENGINE_IDS as readonly string[]).includes(value);
 }
 

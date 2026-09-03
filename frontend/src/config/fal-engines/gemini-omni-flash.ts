@@ -155,6 +155,7 @@ const GEMINI_OMNI_FLASH_ENGINE: EngineCaps = {
       },
     ],
     constraints: {
+      ownedAssetModes: ['fl2v', 'extend'],
       supportedFormats: ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif', 'mp4', 'webm', 'mov', 'mpeg', 'mpg', 'wmv', '3gpp'],
       maxImageSizeMB: 30,
       maxVideoDurationSec: 10,

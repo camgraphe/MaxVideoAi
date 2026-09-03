@@ -54,7 +54,8 @@ test('published P0 models enumerate normally and no longer require staging canar
   const principal = { userId: 'canary-user', clientId: 'canary-client', emailVerified: true, authMethod: 'oauth' as const };
   const env = { NODE_ENV: 'production', MCP_STAGING_OPERATIONAL_ENABLED: 'true', MCP_STAGING_CANARY_ACCOUNT_IDS: principal.userId, MCP_STAGING_CANARY_CLIENT_IDS: principal.clientId } as NodeJS.ProcessEnv;
   const resolved = resolveMcpPrelaunchModelAccess(principal, 'https://maxvideoai-mcp-staging.vercel.app/account', env);
-  assert.equal(resolved, null);
+  assert.ok(resolved);
+  assert.equal(P0.some((id) => resolved.allowedModelIds.has(id)), false);
   assert.equal(resolveMcpPrelaunchModelAccess({ ...principal, clientId: 'wrong' }, 'https://maxvideoai-mcp-staging.vercel.app', env), null);
   assert.equal(resolveMcpPrelaunchModelAccess(principal, 'https://maxvideoai.com', env), null);
   const details = await getAgentModelDetails(P0[0], deps);
@@ -104,7 +105,8 @@ test('the P0 prelaunch canary closes after atomic publication', () => {
   const env = { NODE_ENV: 'production', MCP_STAGING_OPERATIONAL_ENABLED: 'true', MCP_STAGING_CANARY_ACCOUNT_IDS: principal.userId, MCP_STAGING_CANARY_CLIENT_IDS: principal.clientId } as NodeJS.ProcessEnv;
   const accountUrl = 'https://maxvideoai-mcp-staging.vercel.app';
   const current = resolveMcpPrelaunchModelAccess(principal, accountUrl, env);
-  assert.equal(current, null);
+  assert.ok(current);
+  assert.equal(P0.some((id) => current.allowedModelIds.has(id)), false);
   assert.ok(P0.every((id) => {
     const runtime = getRuntimeModelById(id);
     return runtime?.lifecycle === 'current' && runtime.publication.app.published === true;

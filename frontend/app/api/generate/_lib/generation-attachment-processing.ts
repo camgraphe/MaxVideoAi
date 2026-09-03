@@ -17,7 +17,22 @@ type AttachmentProcessingFailure = Extract<
 
 type GenerationAttachmentProcessingResult =
   | NormalizedGenerationAttachmentValidationResult
-  | AttachmentProcessingFailure;
+  | AttachmentProcessingFailure
+  | {
+      ok: false;
+      status: 422;
+      body: {
+        ok: false;
+        error: 'OWNED_MEDIA_REQUIRED';
+        message: string;
+      };
+      metric?: undefined;
+    };
+
+function modeRequiresOwnedMedia(params: GenerationAttachmentProcessingParams): boolean {
+  const modes = params.inputSchema?.constraints?.ownedAssetModes;
+  return Array.isArray(modes) && modes.includes(params.mode);
+}
 
 export async function processAndValidateGenerationAttachments(
   params: GenerationAttachmentProcessingParams
@@ -26,6 +41,21 @@ export async function processAndValidateGenerationAttachments(
   const attachmentProcessing = await processGenerationAttachments({ rawInputs, userId });
   if (!attachmentProcessing.ok) {
     return { ...attachmentProcessing, metric: undefined };
+  }
+  if (
+    modeRequiresOwnedMedia(params)
+    && attachmentProcessing.attachments.some((attachment) => attachment.url && !attachment.assetId)
+  ) {
+    return {
+      ok: false,
+      status: 422,
+      body: {
+        ok: false,
+        error: 'OWNED_MEDIA_REQUIRED',
+        message: 'This mode requires media saved in your MaxVideoAI library.',
+      },
+      metric: undefined,
+    };
   }
 
   return validateNormalizedGenerationAttachments({

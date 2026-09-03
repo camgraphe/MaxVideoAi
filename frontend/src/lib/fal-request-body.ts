@@ -15,6 +15,10 @@ import {
   buildMinimaxH3MaxFalRequestFromPayload,
   isMinimaxH3MaxEngineId,
 } from '@/lib/minimax-h3-max';
+import {
+  buildKling3TurboFalFallbackRequest,
+  isKling3TurboEngineId,
+} from '@/lib/kling-3-turbo';
 import type { GeneratePayload } from '@/lib/fal-types';
 import type { Mode } from '@/types/engines';
 import { getFalEngineById } from '@/config/falEngines';
@@ -28,6 +32,21 @@ export function buildFalGenerationRequest(
   payload: GeneratePayload,
   defaultModel: string
 ): { model: string; requestBody: Record<string, unknown> } {
+  if (isKling3TurboEngineId(payload.engineId)) {
+    const mode = payload.mode ?? 't2v';
+    if (mode !== 't2v' && mode !== 'i2v') {
+      throw new Error(`Unsupported Kling 3 Turbo mode: ${mode}`);
+    }
+    return buildKling3TurboFalFallbackRequest({
+      engineId: payload.engineId,
+      mode,
+      durationSec: payload.durationSec ?? 5,
+      prompt: payload.prompt,
+      multiPrompt: payload.multiPrompt?.map(({ prompt, duration }) => ({ prompt, durationSec: duration })),
+      aspectRatio: payload.aspectRatio,
+      imageUrl: payload.imageUrl,
+    });
+  }
   if (isMinimaxH3MaxEngineId(payload.engineId)) {
     return buildMinimaxH3MaxFalRequestFromPayload(payload);
   }

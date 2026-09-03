@@ -39,6 +39,33 @@ function fallbackMaxSizeMB(engine: EngineCaps, field: EngineInputField): number 
   return undefined;
 }
 
+const FORMAT_MIME_TYPES: Readonly<Record<string, readonly string[]>> = Object.freeze({
+  jpg: ['image/jpeg'],
+  jpeg: ['image/jpeg'],
+  png: ['image/png'],
+  webp: ['image/webp'],
+  heic: ['image/heic'],
+  heif: ['image/heif'],
+  mp4: ['video/mp4'],
+  webm: ['video/webm'],
+  mov: ['video/quicktime'],
+  mpeg: ['video/mpeg'],
+  mpg: ['video/mpeg'],
+  wmv: ['video/x-ms-wmv'],
+  '3gpp': ['video/3gpp'],
+});
+
+function formatsForField(engine: EngineCaps, field: EngineInputField): string[] {
+  const formats = normalizeList(
+    Array.isArray(engine.inputSchema?.constraints?.supportedFormats)
+      ? engine.inputSchema.constraints.supportedFormats.filter((value): value is string => typeof value === 'string')
+      : undefined,
+  );
+  const mimePrefix = `${field.type}/`;
+  return formats.filter((format) =>
+    (FORMAT_MIME_TYPES[format] ?? []).some((mime) => mime.startsWith(mimePrefix)));
+}
+
 export function hasFieldSpecificMediaConstraint(field: EngineInputField): boolean {
   return (
     typeof field.maxSizeMB === 'number' ||
@@ -54,10 +81,17 @@ export function resolveEngineMediaFieldConstraint({
   engine: EngineCaps;
   field: EngineInputField;
 }): MediaFieldConstraint {
+  const fallbackFormats = formatsForField(engine, field);
+  const acceptedFileExtensions = normalizeList(field.acceptedFileExtensions);
+  const acceptedMimeTypes = normalizeList(field.acceptedMimeTypes);
   return {
     maxSizeMB: field.maxSizeMB ?? fallbackMaxSizeMB(engine, field),
-    acceptedMimeTypes: normalizeList(field.acceptedMimeTypes),
-    acceptedFileExtensions: normalizeList(field.acceptedFileExtensions),
+    acceptedMimeTypes: acceptedMimeTypes.length
+      ? acceptedMimeTypes
+      : Array.from(new Set(fallbackFormats.flatMap((format) => FORMAT_MIME_TYPES[format] ?? []))),
+    acceptedFileExtensions: acceptedFileExtensions.length
+      ? acceptedFileExtensions
+      : fallbackFormats,
   };
 }
 

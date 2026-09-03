@@ -184,6 +184,7 @@ export interface EngineInputSchema {
   optional?: EngineInputField[];
   referenceBudget?: EngineReferenceBudget;
   constraints?: {
+    ownedAssetModes?: Mode[];
     supportedFormats?: string[];
     maxImageSizeMB?: number;
     minImageSidePx?: number;

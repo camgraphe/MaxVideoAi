@@ -64,16 +64,18 @@ test('MiniMax H3 Max validation and pricing metadata do not expose infrastructur
 });
 
 test('MiniMax H3 Max MCP details serialize no infrastructure provider or endpoint', async () => {
+  const access = { allowedPrelaunchModelIds: new Set(['minimax-h3-max']) };
   const details = await getAgentModelDetails('minimax-h3-max', {
     listEngines: async () => [MINIMAX_H3_MAX_ENGINE],
     surfaceByEngineId: () => 'video',
     isEngineExecutable: () => true,
-    isModeExecutable: () => true,
+    isModeExecutable: (_engine, mode) => mode === 't2v',
     getGuidance: () => null,
     getPromptingSources: () => [],
     resolveRuntimeModel: () => null,
-  });
+  }, access);
 
   assert.equal(details.label, 'MiniMax H3 Max');
+  assert.deepEqual(details.modes.map(({ mode }) => mode), ['t2v']);
   assertPublicSafe(details, 'MCP model details');
 });

@@ -6,6 +6,7 @@ import {
 } from '@/lib/media-field-constraints';
 import type { ReferenceBudgetMediaItem } from '@/lib/reference-budget';
 import { getFalEngineById } from '@/config/falEngines';
+import { getPrivateRuntimeEngineById } from '@/server/video-generation/private-engine-registry';
 import type { EngineInputSchema, Mode } from '@/types/engines';
 import type { NormalizedAttachment } from './generation-attachment-types';
 import { MINIMAX_H3_ENGINE } from '@/src/config/fal-engines/minimax-h3';
@@ -54,6 +55,7 @@ export type GenerationMediaConstraintValidationResult =
         actualWidth?: number;
         actualHeight?: number;
         minimumPixelCount?: number;
+        minimumSidePx?: number;
       };
       metric: {
         errorCode: MediaConstraintError;
@@ -105,6 +107,7 @@ function failure(params: {
   actualWidth?: number;
   actualHeight?: number;
   minimumPixelCount?: number;
+  minimumSidePx?: number;
 }): GenerationMediaConstraintValidationResult {
   return {
     ok: false,
@@ -122,6 +125,7 @@ function failure(params: {
       ...(typeof params.actualWidth === 'number' ? { actualWidth: params.actualWidth } : {}),
       ...(typeof params.actualHeight === 'number' ? { actualHeight: params.actualHeight } : {}),
       ...(typeof params.minimumPixelCount === 'number' ? { minimumPixelCount: params.minimumPixelCount } : {}),
+      ...(typeof params.minimumSidePx === 'number' ? { minimumSidePx: params.minimumSidePx } : {}),
     },
     metric: {
       errorCode: params.error,
@@ -135,6 +139,7 @@ function failure(params: {
         ...(typeof params.actualWidth === 'number' ? { actualWidth: params.actualWidth } : {}),
         ...(typeof params.actualHeight === 'number' ? { actualHeight: params.actualHeight } : {}),
         ...(typeof params.minimumPixelCount === 'number' ? { minimumPixelCount: params.minimumPixelCount } : {}),
+        ...(typeof params.minimumSidePx === 'number' ? { minimumSidePx: params.minimumSidePx } : {}),
       },
     },
   };
@@ -154,8 +159,10 @@ export async function validateGenerationMediaConstraints(params: {
 }): Promise<GenerationMediaConstraintValidationResult> {
   const engine =
     getFalEngineById(params.engineId)?.engine ??
+    getPrivateRuntimeEngineById(params.engineId) ??
     (isMinimaxH3EngineId(params.engineId) ? MINIMAX_H3_ENGINE : undefined);
   if (!engine) return { ok: true };
+  const requiresOwnedMedia = params.inputSchema?.constraints?.ownedAssetModes?.includes(params.mode) === true;
 
   const constrainedFields = [
     ...(params.inputSchema?.required ?? []),
@@ -165,6 +172,13 @@ export async function validateGenerationMediaConstraints(params: {
       (field.type === 'image' || field.type === 'video' || field.type === 'audio') &&
       (!field.modes?.length || field.modes.includes(params.mode)) &&
       (hasFieldSpecificMediaConstraint(field) ||
+        (() => {
+          const constraint = resolveEngineMediaFieldConstraint({ engine, field });
+          return typeof constraint.maxSizeMB === 'number'
+            || constraint.acceptedMimeTypes.length > 0
+            || constraint.acceptedFileExtensions.length > 0;
+        })() ||
+        (field.type === 'image' && typeof params.inputSchema?.constraints?.minImageSidePx === 'number') ||
         (field.type === 'video' &&
           typeof params.inputSchema?.constraints?.minVideoPixelCount === 'number') ||
         typeof field.minDurationSec === 'number' ||
@@ -252,7 +266,7 @@ export async function validateGenerationMediaConstraints(params: {
         : undefined) ?? matchingRows[0];
     const sizeBytes = stored ? normalizeSizeBytes(stored.size_bytes) : null;
     if (!stored || sizeBytes == null) {
-      if (candidate.kind === 'image') continue;
+      if (candidate.kind === 'image' && !requiresOwnedMedia) continue;
       return failure({
         error: 'MEDIA_METADATA_UNVERIFIED',
         fieldId: candidate.fieldId,
@@ -285,6 +299,32 @@ export async function validateGenerationMediaConstraints(params: {
         message: `${field.type[0]?.toUpperCase()}${field.type.slice(1)} references must use ${validation.acceptedFileExtensions?.map((format) => format.toUpperCase()).join(' or ')}.`,
         acceptedFormats: validation.acceptedFileExtensions,
       });
+    }
+
+    const minimumSidePx = field.type === 'image'
+      ? params.inputSchema?.constraints?.minImageSidePx
+      : undefined;
+    if (typeof minimumSidePx === 'number' && Number.isFinite(minimumSidePx) && minimumSidePx > 0) {
+      const width = normalizeDimension(stored.width);
+      const height = normalizeDimension(stored.height);
+      if (width == null || height == null) {
+        return failure({
+          error: 'MEDIA_DIMENSIONS_UNVERIFIED',
+          fieldId: candidate.fieldId,
+          message: 'This image reference has no trusted dimension metadata. Upload it again before generating.',
+          minimumSidePx,
+        });
+      }
+      if (width < minimumSidePx || height < minimumSidePx) {
+        return failure({
+          error: 'MEDIA_DIMENSIONS_TOO_SMALL',
+          fieldId: candidate.fieldId,
+          message: `This image is ${width} x ${height} px. ${engine.label} requires each side to be at least ${minimumSidePx} px.`,
+          actualWidth: width,
+          actualHeight: height,
+          minimumSidePx,
+        });
+      }
     }
 
     const minimumPixelCount =

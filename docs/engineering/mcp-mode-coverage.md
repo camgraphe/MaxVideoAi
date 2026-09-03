@@ -6,7 +6,7 @@ of truth; this file explains the MCP projection and must not duplicate prices.
 
 ## Current coverage
 
-Checked 2026-09-01 against the canonical runtime registry and engine schemas.
+Checked 2026-09-03 against the canonical runtime registry and engine schemas.
 
 MCP catalog and exact hidden-model resolution are read-only database paths. They
 use `frontend/src/server/agent-api/read-only-engine-catalog.ts`, whose transitive
@@ -15,6 +15,9 @@ They never run billing-schema bootstrap or engine-settings seed writes. The
 transactional confirmation variant takes a share lock and reads the same two
 configuration tables through the caller executor before selection; quote,
 reservation, and provider mutations remain downstream of successful selection.
+An authenticated prelaunch exact lookup may also resolve a current unpublished
+runtime definition after the same access check. That fallback is configuration
+only and is never consulted by default discovery or recommendations.
 
 Default discovery and recommendations contain only current, app-published
 models. An exact legacy ID remains available when its runtime route is ready,
@@ -54,13 +57,23 @@ executable discovery in environments without the separate LAS access and key.
 This does not restrict its image-to-video, multimodal-reference, or extension
 workflows.
 
+Gemini Omni Flash is exposed under the stable `gemini-omni-flash` identity and
+the visible 1.1 label. Its executable MCP projection is Google-direct only and
+contains `t2v`, `i2v`, `ref2v`, `fl2v`, `v2v`, and `extend`. `fl2v` and `extend`
+require owned MaxVideoAI assets whose persisted MIME type, file extension, byte
+size, and applicable duration metadata pass the same generation-route checks as
+the workspace. Raw media URLs cannot satisfy that contract.
+
 ## Specialized workflows still closed
 
-One public model-mode pair remains intentionally absent from MCP execution:
+One app-published model-mode pair and two unpublished prelaunch pairs remain
+intentionally absent from MCP execution:
 
-| Model | Mode | Why it remains closed |
-| --- | --- | --- |
-| Gemini Omni Flash | `retake` | Requires a stored provider interaction identifier; exposing a raw provider identifier would break the transport-neutral contract. |
+| Model | Mode | Scope | Why it remains closed |
+| --- | --- | --- | --- |
+| Gemini Omni Flash 1.1 | `retake` | Public MCP | Requires a private previous-interaction identifier; exposing it would break the transport-neutral contract. The authenticated workspace can retain that private interaction state. |
+| MiniMax H3 Max | `i2v` | Launch canary | Trusted MIME type, extension, byte-size, and image-dimension enforcement has not been proven through the complete route. |
+| MiniMax H3 Max | `ref2v` | Launch canary | Mixed image/video/audio references require trusted token metadata and complete per-type limits before the mode can execute. |
 
 LTX 2.3 audio-to-video and retake, the Luma Ray reframe modes, and Kling 2.5
 Standard now use verified MaxVideoAI assets, exact canonical pricing, and the
@@ -68,21 +81,35 @@ existing website execution pipeline. They therefore remain subject to the same
 provider configuration and runtime availability as the website.
 
 `tests/mcp-special-video-modes.test.ts` is the drift guard. It fails when a new
-app-published mode is not represented by the canonical MCP contract or by the
-explicit closed list above.
+app-published mode is not represented by the canonical MCP contract or when the
+explicit unpublished H3 Max closed list changes without review.
 
 ## Prelaunch access
 
-The seven P0 video identities can be exercised before publication only by the
-existing production staging canary: exact staging host, allowlisted account ID,
-and allowlisted OAuth client ID must all match. The private access set is
-derived from the canonical P0 pricing scenarios and rechecks that every model
-is still current and app-unpublished. It is used only for an exact known ID in
-details, project budgeting, preparation, and confirmation. Public listing and
-recommendation never receive it, and prelaunch details omit unpublished model
-and example links.
+The current private set contains `kling-3-turbo-standard`,
+`kling-3-turbo-pro`, and `minimax-h3-max`. They can be exercised before
+publication only by the existing production staging launch canary: exact
+staging host, allowlisted account ID, allowlisted OAuth client ID, and the
+operational switch must all match. The set is derived from launch-wave
+contracts and rechecks that every identity is still current and
+app-unpublished. It is used only for an exact known ID in details, project
+budgeting, preparation, and confirmation. Public listing and recommendation
+never receive it, and prelaunch details omit unpublished model and example
+links.
+
+Both Kling 3 Turbo tiers expose only `t2v` and owned-image `i2v` in the canary,
+including their schema-derived multi-shot prompt contract. MCP metadata names
+Kling by Kuaishou as the primary provider and serializes neither alternate
+routes nor fallback implementation details. The direct-provider launch gate is
+still unproven, so these identities remain private even though a canary-only
+contingency route is available.
+
+MiniMax H3 Max exposes only `t2v` in the canary. Its details contain neither a
+Fal provider label nor a Fal endpoint. `i2v` and `ref2v` fail closed at the
+executability boundary for the reasons recorded above; their theoretical
+engine-schema presence is not projected as an executable capability.
 
 Mode details normalize provider duration labels to executable numeric seconds;
-provider-only values such as `auto` are never advertised as MCP inputs. The 23
-P0 modes continue to derive settings, references, prices, and paid request
+provider-only values such as `auto` are never advertised as MCP inputs. P0 and
+P1 modes continue to derive settings, references, prices, and paid request
 bodies from the shared engine, pricing, and site execution owners.
