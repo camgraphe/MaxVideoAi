@@ -182,6 +182,10 @@ test('P1 details expose only the actually executable canary modes and shared cap
 
   const h3 = await getAgentModelDetails('minimax-h3-max', catalogDeps, access);
   assert.deepEqual(h3.modes.map(({ mode }) => mode), ['t2v']);
+  assert.ok(h3.modes[0]?.settings.some((setting) =>
+    setting.key === 'promptExpansionMode'
+    && setting.default === 'balanced'
+    && setting.values?.join(',') === 'balanced,quality'));
   const h3Serialized = JSON.stringify(h3).toLowerCase();
   assert.equal(h3Serialized.includes('fal-ai/'), false);
   assert.equal(h3Serialized.includes('"provider":"fal"'), false);
@@ -344,6 +348,26 @@ test('H3 Max advertises and executes t2v only while media modes remain fail clos
   const engine = privateById.get('minimax-h3-max');
   assert.ok(engine);
   assert.equal(resolveAgentGenerationModeExecutability(engine, 't2v', executionEnvironment).executable, true);
+  const qualityRequest = request({
+    engineId: engine.id,
+    mode: 't2v',
+    settings: {
+      durationSec: 7,
+      resolution: '768P',
+      aspectRatio: '1:1',
+      promptExpansionMode: 'quality',
+    },
+    references: [],
+  });
+  const h3Candidate = candidate('minimax-h3-max', ['t2v']);
+  assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(qualityRequest, h3Candidate));
+  const qualityBody = buildPaidVideoRequestBody({
+    quoteId: 'quote-p1-h3-quality',
+    request: qualityRequest,
+    engine,
+    canonicalPricing: { membershipTier: 'member' },
+  });
+  assert.deepEqual(qualityBody.extraInputValues, { prompt_expansion_mode: 'quality' });
   for (const mode of ['i2v', 'ref2v'] as const) {
     const assetId = mode === 'i2v'
       ? 'ma_44444444444444444444444444444444'

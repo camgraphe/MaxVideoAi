@@ -57,6 +57,7 @@ const VIDEO_FIELD_BY_SETTING: Record<string, string> = {
   modifyStrength: 'mode',
   multiPrompt: 'multi_prompt',
   negativePrompt: 'negative_prompt',
+  promptExpansionMode: 'prompt_expansion_mode',
   reframeGridPositionX: 'grid_position_x',
   reframeGridPositionY: 'grid_position_y',
   retakeMode: 'retake_mode',

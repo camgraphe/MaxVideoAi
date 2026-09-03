@@ -5,6 +5,9 @@
     "mode": "t2v",
     "durationSec": 6,
     "aspectRatio": "9:16",
+    "resolution": "1080p",
+    "outputCount": 1,
+    "audio": true,
     "intent": "human"
   },
   {
@@ -13,52 +16,63 @@
     "mode": "t2v",
     "durationSec": 8,
     "aspectRatio": "16:9",
+    "resolution": "1080p",
+    "outputCount": 1,
+    "audio": true,
     "intent": "scene"
   },
   {
     "modelId": "kling-3-turbo-standard",
-    "prompt": "An anonymous market baker shown only from shoulders down shapes one ribbon of dough into six rolls in a compact open kitchen. Use a brisk lateral tracking move as flour blooms, trays slide into place, and gloved hands complete the sequence cleanly, with warm oven light and crisp natural preparation sounds.",
+    "prompt": "An anonymous market baker shown only from shoulders down twists a single cord of dough into one clean knot and sets it on a metal baking tray. Use one rapid lateral tracking move as flour lifts in the oven glow, ending with the soft breath of the oven and one crisp tray snap.",
     "mode": "t2v",
     "durationSec": 5,
     "aspectRatio": "9:16",
+    "resolution": "720p",
+    "outputCount": 1,
     "intent": "human"
   },
   {
     "modelId": "kling-3-turbo-standard",
-    "prompt": "A concise three-shot morning delivery story follows one unmarked paper parcel from a rooftop greenhouse, through a fast bicycle crossing, to a careful doorstep handoff, maintaining the same parcel, weather, and forward momentum across every cut.",
+    "prompt": "A concise three-shot morning delivery story follows one unmarked paper parcel from a rooftop greenhouse, through a fast bicycle crossing, to a careful doorstep handoff, maintaining the same parcel, rainy weather, and forward momentum across every cut. Continuous rain and bicycle wheel sound bridge all three shots; no dialogue.",
     "mode": "t2v",
     "durationSec": 9,
     "aspectRatio": "16:9",
+    "resolution": "720p",
+    "outputCount": 1,
     "intent": "multishot",
     "multiPrompt": [
       {
-        "prompt": "Wide dawn view inside a rooftop greenhouse: gloved hands lift one plain kraft-paper parcel from a wooden bench as irrigation mist catches the low sun; faces remain outside the frame.",
+        "prompt": "Wide dawn view inside a rain-speckled rooftop greenhouse: gloved hands lift one plain kraft-paper parcel from a wooden bench as irrigation mist catches the low sun; faces remain outside the frame, with steady rain patter and a soft wheel freehub beginning offscreen.",
         "durationSec": 3
       },
       {
-        "prompt": "Low tracking shot beside a bicycle crossing wet cobblestones at speed, the same plain parcel secured to the rear rack while wheels throw fine spray and buildings streak past.",
+        "prompt": "Low tracking shot beside a bicycle crossing wet cobblestones at speed, the same plain parcel secured to the rear rack while wheels throw fine spray and buildings streak past; tire hiss, spinning spokes, and rain continue without interruption.",
         "durationSec": 3
       },
       {
-        "prompt": "Overhead doorstep close-up: the courier places the same parcel into waiting hands, both people kept above the shoulders outside the composition, ending on a neat, decisive handoff.",
+        "prompt": "Overhead doorstep close-up: the courier places the same parcel into waiting hands, both people kept above the shoulders outside the composition, ending on a neat, decisive handoff as rain patter and the slowing bicycle freehub carry through.",
         "durationSec": 3
       }
     ]
   },
   {
     "modelId": "kling-3-turbo-pro",
-    "prompt": "On a dark slate pedestal, an unlabeled hand-blown glass atomizer turns slowly as a controlled ribbon of condensation travels down its irregular surface. A macro camera glides from the polished metal nozzle to the thick glass base, preserving tiny bubbles, sharp caustics, and a luxurious studio finish.",
+    "prompt": "On a dark slate pedestal, an unlabeled hand-blown glass atomizer turns slowly as a controlled ribbon of condensation travels down its irregular surface. A macro camera glides from the polished metal nozzle to the thick glass base, preserving tiny bubbles, sharp caustics, and a luxurious studio finish; one faint glass chime settles into restrained room tone, with no dialogue.",
     "mode": "t2v",
     "durationSec": 6,
     "aspectRatio": "1:1",
+    "resolution": "1080p",
+    "outputCount": 1,
     "intent": "product"
   },
   {
     "modelId": "kling-3-turbo-pro",
-    "prompt": "During a mountain blizzard, an isolated observatory dome opens while its weathered telescope rotates toward a brief break in the clouds. The camera cranes from wind-carved ice at ground level to the mechanism overhead, resolving snow grains, frosted metal, moving cables, and distant lightning with precise cinematic detail.",
+    "prompt": "During a mountain blizzard, an isolated observatory dome opens while its weathered telescope rotates toward a brief break in the clouds. The camera cranes from wind-carved ice at ground level to the mechanism overhead, resolving snow grains, frosted metal, moving cables, and distant lightning with precise cinematic detail; layered wind, servo whir, and distant thunder remain natural, with no dialogue.",
     "mode": "t2v",
     "durationSec": 8,
     "aspectRatio": "16:9",
+    "resolution": "1080p",
+    "outputCount": 1,
     "intent": "scene"
   },
   {
@@ -67,6 +81,9 @@
     "mode": "t2v",
     "durationSec": 8,
     "aspectRatio": "9:16",
+    "resolution": "768P",
+    "outputCount": 1,
+    "promptExpansionMode": "quality",
     "intent": "human"
   },
   {
@@ -75,6 +92,9 @@
     "mode": "t2v",
     "durationSec": 7,
     "aspectRatio": "1:1",
+    "resolution": "768P",
+    "outputCount": 1,
+    "promptExpansionMode": "quality",
     "intent": "product"
   }
 ]

@@ -231,6 +231,7 @@ const CANONICAL_SETTING_BY_FIELD_ID: Readonly<Record<string, string>> = Object.f
   multi_prompt: 'multiPrompt',
   negative_prompt: 'negativePrompt',
   output_format: 'outputFormat',
+  prompt_expansion_mode: 'promptExpansionMode',
   quality: 'quality',
   retake_mode: 'retakeMode',
   seed: 'seed',

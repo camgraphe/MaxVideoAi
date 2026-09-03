@@ -7,6 +7,7 @@ import { GEMINI_OMNI_FLASH_FAL_ENGINE_REGISTRY } from '../frontend/src/config/fa
 import { KLING_3_TURBO_PRO_ENGINE } from '../frontend/src/config/fal-engines/kling-3-turbo-pro';
 import { KLING_3_TURBO_STANDARD_ENGINE } from '../frontend/src/config/fal-engines/kling-3-turbo-standard';
 import { MINIMAX_H3_MAX_ENGINE } from '../frontend/src/config/fal-engines/minimax-h3-max';
+import type { CanonicalGenerationRequest } from '../frontend/src/server/agent-api/generation-types';
 import type { EngineCaps, Mode } from '../frontend/types/engines';
 
 const BRIEF_PATH = 'docs/model-launch/p1-generation-brief.json';
@@ -27,36 +28,54 @@ type P1GenerationBrief = {
   mode: string;
   durationSec: number;
   aspectRatio: string;
+  resolution: string;
+  outputCount: number;
   intent: Intent;
+  audio?: boolean;
+  promptExpansionMode?: string;
   multiPrompt?: MultiPromptShot[];
 };
 
 const modelContracts: Record<ModelId, {
   engine: EngineCaps;
   executableModes: readonly string[];
-  defaultResolution: string;
+  requiredResolution: string;
 }> = {
   'gemini-omni-flash': {
     engine: GEMINI_OMNI_FLASH_FAL_ENGINE_REGISTRY[0]!.engine,
     executableModes: ['t2v'],
-    defaultResolution: '720p',
+    requiredResolution: '1080p',
   },
   'kling-3-turbo-standard': {
     engine: KLING_3_TURBO_STANDARD_ENGINE,
     executableModes: ['t2v'],
-    defaultResolution: '720p',
+    requiredResolution: '720p',
   },
   'kling-3-turbo-pro': {
     engine: KLING_3_TURBO_PRO_ENGINE,
     executableModes: ['t2v'],
-    defaultResolution: '1080p',
+    requiredResolution: '1080p',
   },
   'minimax-h3-max': {
     engine: MINIMAX_H3_MAX_ENGINE,
     executableModes: ['t2v'],
-    defaultResolution: '768P',
+    requiredResolution: '768P',
   },
 };
+
+const REVIEWED_PROMPT_HASHES = [
+  '1a972eec509eb5431bfe742c4b0882d9a22298692200d3d54f0a839976a126db',
+  'bdf1221fca81d8c8b1b28f279724fa539d625861a300ef8c313b79f7d0ced23f',
+  '2741dcc992f2a4706d015268ae325d2b62831d01999dd014737e6a16326868d9',
+  'cddb137a2a528536b5e97f087ed79805f4d5ab2ed22796bd30d985c1a1e2d60e',
+  'dfd17c3ca43681506d4b2948aa4e43db6649f44095f2d872f6c82381bc0d02e6',
+  'd65a8533e073af22d25ef9b065d69f8e436510a323e3a79fa8b80b03c009194b',
+  'b4aeea7100876615e33fa323e61f0929cbe6fe81f6616741d4cf2ed2587e5e6a',
+  'f301673a554adb8efa56c3169ebcff903a46e2919fbcb13f7388bc429b02a921',
+  '9457f4ccd61d385e0e6d8a555818af951b412d7ce6c825bfa6a14730cae2491b',
+  '0f04e2c7116070487ae62798124129818d20151ce84d2e76fc9945ec6e821680',
+  '98386b27abf4da953de0900010f8cc414cecfb6227aaad6db76c74bb25d97aab',
+] as const;
 
 function sha256(value: string): string {
   return createHash('sha256').update(value).digest('hex');
@@ -127,6 +146,7 @@ test('P1 launch generation brief defines exactly two executable briefs per targe
     const contract = modelContracts[brief.modelId];
     assert.ok(contract.engine.modes.includes(brief.mode as Mode), `${brief.modelId}:${brief.mode} is not registered`);
     assert.ok(contract.executableModes.includes(brief.mode), `${brief.modelId}:${brief.mode} is not executable in Task 8`);
+    assert.equal(brief.outputCount, 1, `${brief.modelId} launch briefs produce one output`);
 
     const duration = inputField(contract.engine, 'duration', brief.mode);
     const durationOptions = (duration?.values ?? []).map((value) => Number(String(value).replace(/s$/i, '')));
@@ -134,18 +154,35 @@ test('P1 launch generation brief defines exactly two executable briefs per targe
 
     const aspectRatio = inputField(contract.engine, 'aspect_ratio', brief.mode);
     assert.ok(aspectRatio?.values?.includes(brief.aspectRatio), `${brief.modelId}:${brief.aspectRatio} is unsupported`);
+    assert.equal(brief.resolution, contract.requiredResolution, `${brief.modelId} resolution must be explicit`);
+    assert.ok(contract.engine.resolutions.includes(brief.resolution), `${brief.modelId}:${brief.resolution} is unsupported`);
+    const pricing = contract.engine.pricingDetails?.perSecondCents;
+    const rate = pricing?.byResolution?.[brief.resolution as keyof typeof pricing.byResolution]
+      ?? pricing?.default;
+    assert.equal(typeof rate, 'number', `${brief.modelId}:${brief.resolution} has no local pricing input`);
+    assert.ok((rate ?? 0) > 0, `${brief.modelId}:${brief.resolution} local pricing input must be positive`);
     assert.ok(
       brief.prompt.length <= (contract.engine.inputLimits?.promptMaxChars ?? Number.POSITIVE_INFINITY),
       `${brief.modelId} prompt exceeds its local limit`,
     );
 
-    const resolution = inputField(contract.engine, 'resolution', brief.mode)?.default
-      ?? contract.engine.resolutions[0];
-    assert.equal(resolution, contract.defaultResolution, `${brief.modelId} draft resolution changed`);
+    if (brief.modelId === 'gemini-omni-flash') {
+      assert.equal(brief.audio, true, 'Gemini launch briefs request native audio explicitly');
+    } else {
+      assert.equal(Object.hasOwn(brief, 'audio'), false, `${brief.modelId} always generates audio without a toggle`);
+    }
+    if (brief.modelId === 'minimax-h3-max') {
+      assert.equal(brief.promptExpansionMode, 'quality');
+      assert.ok(inputField(contract.engine, 'prompt_expansion_mode', brief.mode)?.values?.includes('quality'));
+    } else {
+      assert.equal(Object.hasOwn(brief, 'promptExpansionMode'), false);
+    }
 
     const keys = Object.keys(brief).sort();
     const expectedKeys = [
-      'aspectRatio', 'durationSec', 'intent', 'mode', 'modelId', 'prompt',
+      'aspectRatio', 'durationSec', 'intent', 'mode', 'modelId', 'outputCount', 'prompt', 'resolution',
+      ...(brief.audio !== undefined ? ['audio'] : []),
+      ...(brief.promptExpansionMode !== undefined ? ['promptExpansionMode'] : []),
       ...(brief.multiPrompt ? ['multiPrompt'] : []),
     ].sort();
     assert.deepEqual(keys, expectedKeys, `brief ${index + 1} contains an unsupported field`);
@@ -161,10 +198,11 @@ test('P1 launch concepts cover people, action environments, products, and a real
   assert.ok(countIntent('multishot') >= 1);
 
   for (const brief of briefs.filter((candidate) => candidate.intent === 'human')) {
+    assert.match(brief.prompt, /\banonymous\b/i, `${brief.modelId} human concept must be anonymous`);
     assert.match(
       brief.prompt,
-      /\b(?:anonymous|unidentifiable|face (?:always )?(?:hidden|obscured|out of frame|never visible)|seen from behind|shoulders down)\b/i,
-      `${brief.modelId} human concept must prevent a recognizable face`,
+      /\b(?:unidentifiable|face (?:always )?(?:hidden|obscured|out of frame|never visible)|seen from behind|shoulders down)\b/i,
+      `${brief.modelId} human concept must also hide the face through framing`,
     );
   }
 
@@ -175,7 +213,8 @@ test('P1 launch concepts cover people, action environments, products, and a real
   assert.equal(multishot.intent, 'multishot');
   assert.match(multishot.modelId, /^kling-3-turbo-(?:standard|pro)$/);
   assert.equal(multishot.mode, 't2v');
-  assert.ok(multishot.multiPrompt!.length >= 1 && multishot.multiPrompt!.length <= 6);
+  assert.equal(multishot.multiPrompt!.length, 3, 'the reviewed launch multishot has exactly three shots');
+  assert.ok(multishot.multiPrompt!.length >= 2 && multishot.multiPrompt!.length <= 6);
   assert.ok(multishot.multiPrompt!.every((shot) => shot.prompt.trim().length >= 60));
   assert.ok(multishot.multiPrompt!.every((shot) => Number.isInteger(shot.durationSec) && shot.durationSec >= 1));
   assert.equal(
@@ -191,6 +230,63 @@ test('P1 launch concepts cover people, action environments, products, and a real
   for (const brief of briefs.filter((candidate) => candidate.multiPrompt === undefined)) {
     assert.notEqual(brief.intent, 'multishot', `${brief.modelId} multishot intent needs structured shots`);
   }
+
+  const baker = briefs.find((brief) =>
+    brief.modelId === 'kling-3-turbo-standard' && brief.intent === 'human');
+  assert.ok(baker);
+  assert.match(
+    baker.prompt,
+    /single cord of dough.*one clean knot.*sets it on a metal baking tray.*rapid lateral tracking.*breath of the oven.*tray snap/is,
+  );
+
+  assert.match(multishot.prompt, /continuous rain.*bicycle wheel sound.*three shots.*no dialogue/is);
+  assert.ok(multishot.multiPrompt!.every((shot) => /\b(?:rain|wheel|tire|spokes|freehub)\b/i.test(shot.prompt)));
+  const atomizer = briefs.find((brief) =>
+    brief.modelId === 'kling-3-turbo-pro' && brief.intent === 'product');
+  const observatory = briefs.find((brief) =>
+    brief.modelId === 'kling-3-turbo-pro' && brief.intent === 'scene');
+  assert.ok(atomizer && observatory);
+  assert.match(atomizer.prompt, /glass chime.*room tone.*no dialogue/is);
+  assert.match(observatory.prompt, /wind.*servo whir.*thunder.*no dialogue/is);
+});
+
+test('P1 launch briefs project to reusable canonical requests without mixing single and multi-shot prompts', async () => {
+  let projectBrief: ((brief: P1GenerationBrief) => CanonicalGenerationRequest) | undefined;
+  try {
+    const module = await import('../frontend/src/server/model-launch/p1-generation-brief');
+    projectBrief = module.projectP1GenerationBriefToCanonicalRequest;
+  } catch {
+    // The assertion below records the RED state without hiding a module-loader failure.
+  }
+  assert.equal(typeof projectBrief, 'function', 'the reusable P1 brief projection should exist');
+
+  const briefs = loadBriefs();
+  const projected = briefs.map((brief) => ({ brief, request: projectBrief!(brief) }));
+  for (const { brief, request } of projected) {
+    assert.equal(request.outputCount, 1);
+    assert.equal(request.settings.durationSec, brief.durationSec);
+    assert.equal(request.settings.resolution, brief.resolution);
+    assert.equal(request.settings.aspectRatio, brief.aspectRatio);
+    assert.deepEqual(request.references, []);
+  }
+
+  const multishot = projected.find(({ brief }) => brief.intent === 'multishot');
+  assert.ok(multishot?.brief.multiPrompt);
+  assert.equal(multishot.request.prompt, '');
+  assert.deepEqual(multishot.request.settings.multiPrompt, multishot.brief.multiPrompt);
+  assert.equal(multishot.request.settings.multiPrompt.length, 3);
+  assert.notEqual(multishot.request.prompt, multishot.brief.prompt, 'the editorial summary is never sent with multiPrompt');
+
+  for (const item of projected.filter(({ brief }) => brief.intent !== 'multishot')) {
+    assert.equal(item.request.prompt, item.brief.prompt);
+    assert.equal('multiPrompt' in item.request.settings, false);
+  }
+  assert.ok(projected.filter(({ brief }) => brief.modelId === 'gemini-omni-flash')
+    .every(({ request }) => request.settings.audio === true));
+  assert.ok(projected.filter(({ brief }) => brief.modelId === 'minimax-h3-max')
+    .every(({ request }) => request.settings.promptExpansionMode === 'quality'));
+  assert.ok(projected.filter(({ brief }) => brief.modelId !== 'gemini-omni-flash')
+    .every(({ request }) => !Object.hasOwn(request.settings, 'audio')));
 });
 
 test('P1 launch prompts are original concepts without public-figure, trademark, IP, or text dependencies', () => {
@@ -214,14 +310,22 @@ test('P1 launch prompts are original concepts without public-figure, trademark, 
     brief.prompt,
     ...(brief.multiPrompt?.map((shot) => shot.prompt) ?? []),
   ]);
+  assert.deepEqual(
+    allPromptStrings.map((prompt) => sha256(prompt)),
+    REVIEWED_PROMPT_HASHES,
+    'every reviewed prompt and sub-prompt hash must remain frozen',
+  );
   assert.equal(
     new Set(allPromptStrings.map((prompt) => sha256(normalizePrompt(prompt)))).size,
     allPromptStrings.length,
     'every editorial and shot prompt should be unique',
   );
 
-  const forbiddenDependency = /\b(?:celebrity|public figure|famous (?:actor|athlete|singer|politician)|likeness of|in the style of|marvel|disney|pixar|star wars|pokemon|barbie|nike|adidas|coca[ -]?cola|pepsi|iphone|samsung|tesla|ferrari|lego|netflix|spotify|logo|wordmark|slogan|caption|on[ -]?screen text|readable text|typography)\b/i;
+  // This is a bounded high-risk denylist; frozen hashes retain the human review
+  // boundary instead of pretending a regex can identify every person or mark.
+  const forbiddenDependency = /\b(?:celebrity|public figure|famous (?:actor|athlete|singer|politician)|president|royal family|superstar|likeness of|in the style of|mona lisa|marvel|dc comics|disney|pixar|star wars|pokemon|barbie|batman|superman|mickey mouse|harry potter|jurassic park|nike|adidas|coca[ -]?cola|pepsi|iphone|samsung|tesla|ferrari|lego|nintendo|playstation|xbox|netflix|spotify|youtube|tiktok|google|amazon|meta|openai|chanel|gucci|rolex|mcdonald'?s|starbucks|logo|wordmark|slogan|caption|on[ -]?screen text|readable text|typography)\b/i;
   for (const prompt of allPromptStrings) {
     assert.doesNotMatch(prompt, forbiddenDependency);
+    assert.doesNotMatch(prompt, /\b(?:speaks?|says?|voiceover|spoken words|conversation)\b/i);
   }
 });

@@ -82,6 +82,7 @@ const VIDEO_SETTING_KEYS = new Set([
   'loop',
   'negativePrompt',
   'numFrames',
+  'promptExpansionMode',
   'resolution',
   'reframeGridPositionX',
   'reframeGridPositionY',

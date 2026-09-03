@@ -174,6 +174,7 @@ const EXTRA_INPUT_FIELD_BY_SETTING: Readonly<Record<string, string>> = Object.fr
   guidanceScale: 'guidance_scale',
   hdr: 'hdr',
   modifyStrength: 'mode',
+  promptExpansionMode: 'prompt_expansion_mode',
   reframeGridPositionX: 'grid_position_x',
   reframeGridPositionY: 'grid_position_y',
   retakeMode: 'retake_mode',
