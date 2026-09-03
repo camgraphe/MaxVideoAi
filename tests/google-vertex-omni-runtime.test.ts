@@ -68,6 +68,56 @@ const baseJob = {
   created_at: new Date(Date.now() - 60_000).toISOString(),
 };
 
+test('Gemini Omni Flash poll advances accepted jobs after new direct submissions are disabled', { concurrency: false }, async () => {
+  const originalEnabled = process.env.GOOGLE_VERTEX_OMNI_ENABLED;
+  process.env.GOOGLE_VERTEX_OMNI_ENABLED = 'false';
+  const queries: string[] = [];
+
+  try {
+    const response = await runGoogleVertexOmniPoll({
+      deps: {
+        queryFn: async (sql) => {
+          queries.push(sql);
+          if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {
+            return [baseJob] as never;
+          }
+          if (/FROM provider_attempts/.test(sql)) {
+            return [{ id: 40, attempt_index: 1 }] as never;
+          }
+          return [] as never;
+        },
+        getGoogleVertexOmniClientFn: () => ({
+          createInteraction: async () => {
+            throw new Error('not used');
+          },
+          fetchInteraction: async () => ({
+            id: baseJob.provider_job_id,
+            status: 'in_progress',
+            object: 'interaction',
+          }),
+          downloadOutputUri: async () => {
+            throw new Error('not used');
+          },
+        }),
+      },
+    });
+
+    assert.deepEqual(await response.json(), {
+      ok: true,
+      enabled: false,
+      checked: 1,
+      updates: 1,
+    });
+    assert.ok(
+      queries.some((sql) => /SET status = 'running'/.test(sql)),
+      'an accepted job must keep polling after the submission gate is disabled',
+    );
+  } finally {
+    if (originalEnabled === undefined) delete process.env.GOOGLE_VERTEX_OMNI_ENABLED;
+    else process.env.GOOGLE_VERTEX_OMNI_ENABLED = originalEnabled;
+  }
+});
+
 test('Gemini Omni Flash response normalizes completed Interactions video output', () => {
   const normalized = normalizeGoogleVertexOmniInteraction(completedInteraction);
 

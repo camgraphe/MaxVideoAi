@@ -327,9 +327,12 @@ export async function runGoogleVertexOmniPoll(options: { deps?: GoogleVertexOmni
   const generateAndPersistJobKeyframesFn =
     deps.generateAndPersistJobKeyframesFn ?? generateAndPersistJobKeyframes;
 
-  if ((process.env.GOOGLE_VERTEX_OMNI_ENABLED ?? '').trim().toLowerCase() !== 'true' && !deps.queryFn) {
-    return NextResponse.json({ ok: true, enabled: false, checked: 0, updates: 0 });
-  }
+  // The flag gates new submissions, not completion of tasks that Google has
+  // already accepted. This is especially important for staging canaries, which
+  // enable the direct route per request while keeping the global public gate
+  // closed, and for production rollback after an accepted submission.
+  const submissionsEnabled =
+    (process.env.GOOGLE_VERTEX_OMNI_ENABLED ?? '').trim().toLowerCase() === 'true';
 
   const rows = await queryFn<GoogleVertexOmniPendingJob>(
     `SELECT job_id, user_id, engine_id, engine_label, provider_job_id, status, duration_sec, thumb_url,
@@ -346,7 +349,7 @@ export async function runGoogleVertexOmniPoll(options: { deps?: GoogleVertexOmni
   );
 
   if (!rows.length) {
-    return NextResponse.json({ ok: true, enabled: true, checked: 0, updates: 0 });
+    return NextResponse.json({ ok: true, enabled: submissionsEnabled, checked: 0, updates: 0 });
   }
 
   const client = getGoogleVertexOmniClientFn();
@@ -542,5 +545,5 @@ export async function runGoogleVertexOmniPoll(options: { deps?: GoogleVertexOmni
     }
   }
 
-  return NextResponse.json({ ok: true, enabled: true, checked: rows.length, updates });
+  return NextResponse.json({ ok: true, enabled: submissionsEnabled, checked: rows.length, updates });
 }
