@@ -637,6 +637,69 @@ test('Gemini Omni Flash poll copies Interactions video output before marking the
   assert.equal(attemptUpdate.params?.[4], 1.21632);
 });
 
+test('Gemini Omni Flash poll can recover a recently stalled accepted job without creating a new generation', async () => {
+  const queries: Array<{ sql: string; params?: unknown[] }> = [];
+  let fetchCalls = 0;
+  let uploadCalls = 0;
+
+  const response = await runGoogleVertexOmniPoll({
+    deps: {
+      queryFn: async (sql, params) => {
+        queries.push({ sql, params });
+        if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {
+          return [{
+            ...baseJob,
+            status: 'provider_polling_stalled',
+            created_at: new Date(Date.now() - 46 * 60_000).toISOString(),
+          }] as never;
+        }
+        if (/FROM provider_attempts/.test(sql)) {
+          return [{ id: 46, attempt_index: 1 }] as never;
+        }
+        if (/UPDATE app_jobs/.test(sql) && /SET status = 'completed'/.test(sql)) {
+          return [{ job_id: baseJob.job_id }] as never;
+        }
+        return [] as never;
+      },
+      getGoogleVertexOmniClientFn: () => ({
+        createInteraction: async () => {
+          throw new Error('not used');
+        },
+        fetchInteraction: async () => {
+          fetchCalls += 1;
+          return completedInteraction;
+        },
+        downloadOutputUri: async () => ({ data: Buffer.from('recovered-omni-output'), mime: 'video/mp4' }),
+      }),
+      isStorageConfiguredFn: () => true,
+      uploadFileBufferFn: async () => {
+        uploadCalls += 1;
+        return {
+          key: 'renders/user_123/job_omni_123-recovered.mp4',
+          url: 'https://cdn.maxvideoai.com/renders/job_omni_123-recovered.mp4',
+        };
+      },
+      ensureJobThumbnailFn: async () => 'https://cdn.maxvideoai.com/renders/job_omni_123-recovered-thumb.jpg',
+      upsertLegacyJobOutputsFn: async () => undefined,
+      generateAndPersistJobPreviewVideoFn: async () => null,
+      generateAndPersistJobKeyframesFn: async () => [],
+    },
+  });
+
+  assert.equal(fetchCalls, 1);
+  assert.equal(uploadCalls, 1);
+  assert.equal((await response.json()).updates, 1);
+  const completedUpdate = queries.find((entry) => /SET status = 'completed'/.test(entry.sql));
+  assert.ok(completedUpdate, 'the original accepted task should be recoverable in place');
+  assert.ok(
+    Array.isArray(completedUpdate.params?.[4])
+      && completedUpdate.params[4].includes('provider_polling_stalled'),
+    'the completion transition must accept the stalled recovery state',
+  );
+  assert.equal(queries.some((entry) => /INSERT INTO app_jobs/.test(entry.sql)), false);
+  assert.equal(queries.some((entry) => /INSERT INTO app_receipts/.test(entry.sql)), false);
+});
+
 test('Gemini Omni Flash poll copies inline Interactions video data before marking the job completed', async () => {
   const queries: Array<{ sql: string; params?: unknown[] }> = [];
   const uploads: Array<{ data: Buffer; mime: string; fileName?: string | null }> = [];
