@@ -31,7 +31,7 @@ test('Gemini Omni client calls the Vertex Interactions API with bearer auth', as
   });
 
   const response = await client.createInteraction({
-    model: 'gemini-omni-flash-preview',
+    model: 'gemini-omni-1.1-flash-preview',
     input: [{ role: 'user', content: [{ type: 'text', text: 'Generate a cinematic product shot' }] }],
     generation_config: { video_config: { task: 'text_to_video', aspect_ratio: '16:9' } },
     response_format: [{ type: 'video', aspect_ratio: '16:9', delivery: 'uri', duration: '4s', resolution: '720p' }],
@@ -43,7 +43,33 @@ test('Gemini Omni client calls the Vertex Interactions API with bearer auth', as
   assert.match(requests[0]?.url ?? '', /\/v1beta1\/projects\/demo-project\/locations\/global\/interactions$/);
   assert.equal(requests[0]?.method, 'POST');
   assert.equal(requests[0]?.headers.get('authorization'), 'Bearer test-token');
-  assert.equal((requests[0]?.body as Record<string, unknown>).model, 'gemini-omni-flash-preview');
+  assert.equal((requests[0]?.body as Record<string, unknown>).model, 'gemini-omni-1.1-flash-preview');
+});
+
+test('Gemini Omni client rejects Fal model ids before a direct request', async () => {
+  let requestCount = 0;
+  const client = new GoogleVertexOmniClient({
+    projectId: 'demo-project',
+    location: 'global',
+    apiBaseUrl: 'https://aiplatform.googleapis.com',
+    serviceAccount: { client_email: 'svc@example.com', private_key: 'unused-in-test' },
+    getAccessTokenFn: async () => 'test-token',
+    fetchFn: async () => {
+      requestCount += 1;
+      return new Response('{}', { status: 200 });
+    },
+  });
+
+  await assert.rejects(
+    () => client.createInteraction({
+      model: 'fal-ai/gemini-omni-1.1-flash-preview',
+      input: [{ type: 'text', text: 'A product reveal' }],
+      background: true,
+      store: true,
+    }),
+    /direct Google model/i
+  );
+  assert.equal(requestCount, 0);
 });
 
 test('Gemini Omni client retrieves stored preview video interactions with GET', async () => {
@@ -140,11 +166,12 @@ test('Gemini Omni client preserves HTTP status and never marks direct Google err
   await assert.rejects(
     () =>
       client.createInteraction({
-        model: 'gemini-omni-flash-preview',
+        model: 'gemini-omni-1.1-flash-preview',
         input: [{ role: 'user', content: [{ type: 'text', text: 'Generate a cinematic product shot' }] }],
         generation_config: { video_config: { task: 'text_to_video' } },
         response_format: [{ type: 'video', aspect_ratio: '16:9', delivery: 'uri', duration: '4s', resolution: '720p' }],
         background: true,
+        store: true,
       }),
     (error) => {
       assert.ok(error instanceof GoogleVertexOmniError);

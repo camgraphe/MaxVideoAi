@@ -68,6 +68,10 @@ function userSafeGoogleVertexOmniMessage(errorClass: string): string {
   return 'The render could not start. Please retry later.';
 }
 
+function nonNegativeNumber(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : undefined;
+}
+
 async function markJobFailedBeforeSubmit(params: {
   jobId: string;
   engineLabel: string;
@@ -119,6 +123,7 @@ export async function submitGoogleVertexOmniGenerateTask(params: {
   negativePrompt?: string | null;
   durationSec: number;
   aspectRatio: string | null;
+  resolution: string;
   audioEnabled: boolean | undefined;
   placeholderThumb: string;
   pricing: PricingSnapshot;
@@ -141,13 +146,20 @@ export async function submitGoogleVertexOmniGenerateTask(params: {
   const getGoogleVertexOmniClientFn = deps.getGoogleVertexOmniClientFn ?? getGoogleVertexOmniClient;
   const queryFn = deps.queryFn ?? query;
   const rollbackPendingPaymentFn = deps.rollbackPendingPaymentFn ?? rollbackPendingPayment;
+  const ownedSourceVideo = params.falPayload.inputs?.find(
+    (input) => input.kind === 'video' && typeof input.url === 'string' && input.url.trim().length
+  );
+  const falPayload =
+    (params.mode === 'v2v' || params.mode === 'extend') && !params.falPayload.videoUrl && ownedSourceVideo?.url
+      ? { ...params.falPayload, videoUrl: ownedSourceVideo.url.trim() }
+      : params.falPayload;
 
   const support = resolveGoogleVertexOmniSupport({
     engineId: params.engineId,
     mode: params.mode,
     aspectRatio: params.aspectRatio,
     negativePrompt: params.negativePrompt,
-    falPayload: params.falPayload,
+    falPayload,
   });
   if (!support.supported) {
     const message = userSafeGoogleVertexOmniMessage('unsupported_params');
@@ -181,11 +193,28 @@ export async function submitGoogleVertexOmniGenerateTask(params: {
   }
 
   const route = support.route;
+  const pricingMeta = params.pricing.meta ?? {};
+  const inputImageCount = nonNegativeNumber(pricingMeta.input_image_count) ?? (
+    params.mode === 'i2v'
+      ? 1
+      : params.mode === 'fl2v'
+        ? 2
+        : params.mode === 'ref2v'
+          ? falPayload.referenceImages?.length ?? 0
+          : 0
+  );
+  const inputVideoDurationSec =
+    params.mode === 'v2v' || params.mode === 'extend'
+      ? nonNegativeNumber(pricingMeta.input_video_duration_sec)
+      : 0;
   const estimate = estimateGoogleVertexOmniCost({
     engineId: params.engineId,
     mode: params.mode,
     durationSec: params.durationSec,
     audioEnabled: params.audioEnabled,
+    resolution: params.resolution,
+    inputImageCount,
+    inputVideoDurationSec,
   });
   const googleAttempt = await createProviderAttempt({
     publicJobId: params.jobId,
@@ -202,12 +231,12 @@ export async function submitGoogleVertexOmniGenerateTask(params: {
       durationSec: params.durationSec,
       aspectRatio: params.aspectRatio,
       audioEnabled: params.audioEnabled !== false,
-      hasImage: Boolean(params.falPayload.imageUrl),
-      hasVideo: Boolean(params.falPayload.videoUrl),
-      referenceImageCount: params.falPayload.referenceImages?.length ?? 0,
+      hasImage: Boolean(falPayload.imageUrl),
+      hasVideo: Boolean(falPayload.videoUrl),
+      referenceImageCount: falPayload.referenceImages?.length ?? 0,
       hasPreviousInteraction: Boolean(
-        (params.falPayload.extraInputValues as Record<string, unknown> | undefined)?.previous_interaction_id ||
-          (params.falPayload.extraInputValues as Record<string, unknown> | undefined)?.previousInteractionId
+        (falPayload.extraInputValues as Record<string, unknown> | undefined)?.previous_interaction_id ||
+          (falPayload.extraInputValues as Record<string, unknown> | undefined)?.previousInteractionId
       ),
       promptLength: params.prompt.length,
       estimatedProviderCostUsd: estimate.providerCostUsd,
@@ -231,18 +260,18 @@ export async function submitGoogleVertexOmniGenerateTask(params: {
         ?? ''
     )).trim();
     const hasMediaInputs = Boolean(
-      params.falPayload.imageUrl
-      || params.falPayload.videoUrl
-      || params.falPayload.referenceImages?.length
+      falPayload.imageUrl
+      || falPayload.videoUrl
+      || falPayload.referenceImages?.length
     );
     const googleFalPayload = hasMediaInputs
       ? await stageGoogleVertexOmniPayloadMedia({
-          falPayload: params.falPayload,
+          falPayload,
           inputGcsPrefix,
           objectNamespace: `omni-inputs/${params.jobId}`,
           accessToken: await googleClient.accessToken(),
         })
-      : params.falPayload;
+      : falPayload;
     const payload = await buildGoogleVertexOmniPayload({
       engineId: params.engineId,
       mode: params.mode,
@@ -250,7 +279,7 @@ export async function submitGoogleVertexOmniGenerateTask(params: {
       negativePrompt: params.negativePrompt,
       aspectRatio: params.aspectRatio,
       durationSec: params.durationSec,
-      resolution: '720p',
+      resolution: params.resolution,
       outputGcsUri: buildGoogleVertexOmniOutputGcsUri(outputGcsPrefix, params.jobId),
       falPayload: googleFalPayload,
     });

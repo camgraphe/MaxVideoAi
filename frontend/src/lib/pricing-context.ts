@@ -16,5 +16,7 @@ export type PricingContext = {
   durationOption?: number | string | null;
   inputAudioDurationSec?: number;
   referenceImageCount?: number;
+  inputImageCount?: number;
+  inputVideoDurationSec?: number;
   addons?: Record<string, boolean | number | undefined>;
 };

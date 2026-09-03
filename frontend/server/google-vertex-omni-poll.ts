@@ -75,6 +75,30 @@ const POLL_MAX_DURATION_MS = 45 * 60_000;
 const ACTIVE_JOB_STATUSES = ['pending', 'queued', 'running', 'processing', 'in_progress'];
 const STALLED_MESSAGE = 'This render needs manual review before retrying or refunding.';
 
+function recordValue(value: unknown): Record<string, unknown> | null {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null;
+}
+
+function nonNegativeNumber(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : undefined;
+}
+
+function estimateGoogleVertexOmniJobCost(job: GoogleVertexOmniPendingJob) {
+  const snapshot = recordValue(job.pricing_snapshot);
+  const meta = recordValue(snapshot?.meta);
+  return estimateGoogleVertexOmniCost({
+    engineId: job.engine_id,
+    mode: typeof meta?.mode === 'string' ? meta.mode : undefined,
+    durationSec: job.duration_sec,
+    audioEnabled: job.has_audio === true,
+    resolution: typeof meta?.output_resolution === 'string' ? meta.output_resolution : undefined,
+    inputImageCount: nonNegativeNumber(meta?.input_image_count),
+    inputVideoDurationSec: nonNegativeNumber(meta?.input_video_duration_sec),
+  });
+}
+
 async function recordWalletRefundOnce(job: GoogleVertexOmniPendingJob, reason: string, queryFn: QueryFn) {
   if (job.payment_status !== 'paid_wallet' || !job.user_id || !job.final_price_cents) return false;
 
@@ -235,11 +259,7 @@ async function deferStorageCopyRetry(
 }
 
 function buildCostBreakdown(job: GoogleVertexOmniPendingJob) {
-  const estimate = estimateGoogleVertexOmniCost({
-    engineId: job.engine_id,
-    durationSec: job.duration_sec,
-    audioEnabled: job.has_audio === true,
-  });
+  const estimate = estimateGoogleVertexOmniJobCost(job);
   return {
     provider: GOOGLE_VERTEX_OMNI_PROVIDER,
     provider_cost_source: estimate.source,
@@ -342,11 +362,7 @@ export async function runGoogleVertexOmniPoll(options: { deps?: GoogleVertexOmni
       });
       const interaction = await client.fetchInteraction(job.provider_job_id);
       const task = normalizeGoogleVertexOmniInteraction(interaction, job.provider_job_id);
-      const estimate = estimateGoogleVertexOmniCost({
-        engineId: job.engine_id,
-        durationSec: job.duration_sec,
-        audioEnabled: job.has_audio === true,
-      });
+      const estimate = estimateGoogleVertexOmniJobCost(job);
 
       if (task.status === 'queued' || task.status === 'running') {
         await queryFn(

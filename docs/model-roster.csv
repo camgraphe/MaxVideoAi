@@ -14,7 +14,7 @@ nano-banana,Nano Banana (Image Generation),google,nano-banana,nano-banana,legacy
 nano-banana-2,Nano Banana 2,google,nano-banana-2,nano-banana,current,,,2,available,logoAllowed,true,true
 nano-banana-lite,Nano Banana Lite,google,nano-banana-lite,nano-banana,current,,,Lite,available,logoAllowed,true,true
 nano-banana-pro,Nano Banana Pro,google,nano-banana-pro,nano-banana,current,,,Pro,available,logoAllowed,true,true
-gemini-omni-flash,Gemini Omni Flash,google-gemini,gemini-omni-flash,veo,current,,,Preview,limited,textOnly,true,true
+gemini-omni-flash,Gemini Omni Flash 1.1,google-gemini,gemini-omni-flash,veo,current,,,1.1 Preview,limited,textOnly,true,true
 veo-3-1,Google Veo 3.1,google-veo,veo-3-1,veo,current,,,3.1,available,logoAllowed,true,true
 veo-3-1-fast,Google Veo 3.1 Fast,google-veo,veo-3-1-fast,veo,current,,,3.1 Fast,available,logoAllowed,true,true
 veo-3-1-lite,Google Veo 3.1 Lite,google-veo,veo-3-1-lite,veo,current,,,3.1 Lite,available,logoAllowed,true,true

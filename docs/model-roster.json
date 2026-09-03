@@ -286,14 +286,14 @@
   },
   {
     "engineId": "gemini-omni-flash",
-    "marketingName": "Gemini Omni Flash",
+    "marketingName": "Gemini Omni Flash 1.1",
     "brandId": "google-gemini",
     "modelSlug": "gemini-omni-flash",
     "family": "veo",
     "lifecycle": "current",
     "successorId": null,
     "successorSlug": null,
-    "versionLabel": "Preview",
+    "versionLabel": "1.1 Preview",
     "availability": "limited",
     "logoPolicy": "textOnly",
     "surfaces": {

@@ -285,6 +285,18 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     loop,
     hasVideoInput,
     referenceImageCount: normalizedReferenceImages.length,
+    inputImageCount:
+      mode === 'i2v'
+        ? 1
+        : mode === 'fl2v'
+          ? 2
+          : mode === 'ref2v'
+            ? normalizedReferenceImages.length
+            : 0,
+    inputVideoDurationSec:
+      mode === 'v2v' || mode === 'extend'
+        ? trustedDurationSecByField.video_url?.[0]
+        : 0,
     inputAudioDurationSec: trustedDurationSecByField.audio_url?.[0],
     rawDurationOption,
     lumaDurationLabel: lumaDurationInfo?.label ?? null,

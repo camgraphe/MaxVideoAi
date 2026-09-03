@@ -17,7 +17,7 @@ const completedInteraction = {
   id: 'v1_omni_123',
   status: 'completed',
   object: 'interaction',
-  model: 'gemini-omni-flash-preview',
+  model: 'gemini-omni-1.1-flash-preview',
   steps: [
     {
       type: 'model_output',
@@ -40,7 +40,7 @@ const baseJob = {
   job_id: 'job_omni_123',
   user_id: 'user_123',
   engine_id: 'gemini-omni-flash',
-  engine_label: 'Gemini Omni Flash',
+  engine_label: 'Gemini Omni Flash 1.1',
   provider_job_id: 'v1_omni_123',
   status: 'running',
   duration_sec: 8,
@@ -50,7 +50,16 @@ const baseJob = {
   aspect_ratio: '16:9',
   has_audio: true,
   final_price_cents: 99,
-  pricing_snapshot: { totalCents: 99, currency: 'USD' },
+  pricing_snapshot: {
+    totalCents: 99,
+    currency: 'USD',
+    meta: {
+      mode: 't2v',
+      output_resolution: '1080p',
+      input_image_count: 0,
+      input_video_duration_sec: 0,
+    },
+  },
   settings_snapshot: { core: { durationSec: 8, aspectRatio: '16:9' } },
   currency: 'USD',
   payment_status: 'paid_wallet',
@@ -87,34 +96,55 @@ test('Gemini Omni Flash response accepts SDK output_video data payloads', () => 
   assert.equal(normalized.message, null);
 });
 
-test('Gemini Omni Flash direct submission stores the Interactions id and provider', async () => {
+test('Gemini Omni Flash direct extension submission carries one owned source video', async () => {
   const queries: Array<{ sql: string; params?: unknown[] }> = [];
   const metrics: Array<{ kind: string; event?: unknown }> = [];
+  let submittedPayload: Record<string, unknown> | null = null;
 
   const result = await submitGoogleVertexOmniGenerateTask({
     jobId: 'job_omni_123',
     userId: 'user_123',
     engineId: 'gemini-omni-flash',
     engineLabel: 'Gemini Omni Flash',
-    mode: 't2v',
-    prompt: 'A documentary-style product demo with crisp synced audio',
+    mode: 'extend',
+    prompt: 'Continue the documentary-style product demo with crisp synced audio',
     negativePrompt: null,
     durationSec: 8,
     aspectRatio: '16:9',
+    resolution: '1080p',
     audioEnabled: true,
     placeholderThumb: '/assets/frames/thumb-16x9.svg',
-    pricing: { amountCents: 99, currency: 'USD' },
+    pricing: {
+      amountCents: 99,
+      currency: 'USD',
+      meta: {
+        mode: 'extend',
+        output_resolution: '1080p',
+        input_image_count: 0,
+        input_video_duration_sec: 5,
+      },
+    },
     paymentStatus: 'paid_wallet',
     pendingReceipt: null,
     paymentMode: 'wallet',
     walletChargeReserved: false,
     falPayload: {
       engineId: 'gemini-omni-flash',
-      prompt: 'A documentary-style product demo with crisp synced audio',
-      mode: 't2v',
+      prompt: 'Continue the documentary-style product demo with crisp synced audio',
+      mode: 'extend',
       durationSec: 8,
       aspectRatio: '16:9',
       audio: true,
+      inputs: [
+        {
+          name: 'source.mp4',
+          type: 'video/mp4',
+          size: 2048,
+          kind: 'video',
+          url: 'gs://owned/source.mp4',
+          durationSec: 4,
+        },
+      ],
       extraInputValues: { store_interaction: true },
     },
     batchId: null,
@@ -137,7 +167,11 @@ test('Gemini Omni Flash direct submission stores the Interactions id and provide
         return [] as never;
       },
       getGoogleVertexOmniClientFn: () => ({
-        createInteraction: async () => ({ id: 'v1_omni_123', status: 'in_progress', object: 'interaction' }),
+        accessToken: async () => 'test-access-token',
+        createInteraction: async (payload) => {
+          submittedPayload = payload as unknown as Record<string, unknown>;
+          return { id: 'v1_omni_123', status: 'in_progress', object: 'interaction' };
+        },
         fetchInteraction: async () => {
           throw new Error('not used');
         },
@@ -152,11 +186,28 @@ test('Gemini Omni Flash direct submission stores the Interactions id and provide
   assert.equal(result.kind, 'accepted');
   assert.equal(result.body.provider, 'google_vertex_omni_direct');
   assert.equal(result.body.providerJobId, 'v1_omni_123');
+  assert.equal(submittedPayload?.model, 'gemini-omni-1.1-flash-preview');
+  assert.equal(submittedPayload?.store, true);
+  assert.equal(
+    ((submittedPayload?.generation_config as Record<string, Record<string, unknown>> | undefined)?.video_config?.task),
+    'extend'
+  );
+  assert.deepEqual(
+    (submittedPayload?.input as Array<Record<string, unknown>> | undefined)?.filter((input) => input.type === 'video'),
+    [{ type: 'video', uri: 'gs://owned/source.mp4', mime_type: 'video/mp4' }]
+  );
+  assert.equal(
+    ((submittedPayload?.response_format as Array<Record<string, unknown>> | undefined)?.[0]?.resolution),
+    '1080p'
+  );
 
   const jobUpdate = queries.find((entry) => /UPDATE app_jobs/.test(entry.sql) && /provider_job_id = \$4/.test(entry.sql));
   assert.ok(jobUpdate, 'submission should persist provider_job_id on app_jobs');
   assert.equal(jobUpdate.params?.[2], 'google_vertex_omni_direct');
   assert.equal(jobUpdate.params?.[3], 'v1_omni_123');
+  const attemptInsert = queries.find((entry) => /INSERT INTO provider_attempts/.test(entry.sql));
+  assert.ok(attemptInsert, 'submission should create a provider attempt');
+  assert.equal(JSON.parse(String(attemptInsert.params?.[5])).estimatedProviderCostUsd, 1.25976);
   assert.equal(metrics[0]?.kind, 'accepted');
 });
 
@@ -174,6 +225,7 @@ test('Gemini Omni Flash unsupported direct input fails on Google without invokin
     negativePrompt: 'blurry',
     durationSec: 8,
     aspectRatio: '16:9',
+    resolution: '720p',
     audioEnabled: true,
     placeholderThumb: '/assets/frames/thumb-16x9.svg',
     pricing: { amountCents: 99, currency: 'USD' },
@@ -264,15 +316,15 @@ test('Gemini Omni Flash poll copies Interactions video output before marking the
   assert.ok(completedUpdate, 'completed app_jobs update should run');
   assert.equal(completedUpdate.params?.[1], 'https://cdn.maxvideoai.com/renders/job_omni_123.mp4');
   const costBreakdown = JSON.parse(String(completedUpdate.params?.[3]));
-  assert.equal(costBreakdown.provider_cost_source, 'google_vertex_omni_public_video_pricing_estimate');
+  assert.equal(costBreakdown.provider_cost_source, 'google_omni_1_1_token_pricing');
   assert.equal(costBreakdown.provider_cost_units, 8);
-  assert.equal(costBreakdown.provider_cost_usd, 0.8);
+  assert.equal(costBreakdown.provider_cost_usd, 1.21632);
   assert.match(JSON.stringify(outputs[0]), /cdn\.maxvideoai\.com/);
 
   const attemptUpdate = queries.find((entry) => /UPDATE provider_attempts/.test(entry.sql) && /provider_cost_usd/.test(entry.sql));
   assert.ok(attemptUpdate, 'provider_attempts should store estimated Google Omni provider cost');
   assert.equal(attemptUpdate.params?.[3], 8);
-  assert.equal(attemptUpdate.params?.[4], 0.8);
+  assert.equal(attemptUpdate.params?.[4], 1.21632);
 });
 
 test('Gemini Omni Flash poll copies inline Interactions video data before marking the job completed', async () => {

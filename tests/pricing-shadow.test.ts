@@ -103,7 +103,7 @@ test('P0 shadow additions are reproducible through the canonical audit generator
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
 });
 
-test('canonical shadow quotes match every frozen current output', async () => {
+test('canonical shadow quotes match frozen outputs except the approved Gemini Omni 1.1 refresh', async () => {
   const matrixPath = 'frontend/src/lib/pricing-audit/matrix.ts';
   assert.equal(existsSync(matrixPath), true, `${matrixPath} should exist`);
   const { buildPricingAuditMatrix } = await import('../frontend/src/lib/pricing-audit/matrix.ts');
@@ -115,8 +115,40 @@ test('canonical shadow quotes match every frozen current output', async () => {
   const matrix = await buildPricingAuditMatrix(rows);
   assert.equal(matrix.rows.length > 0, true);
   assert.deepEqual(
-    matrix.rows.filter((row) => row.status !== 'match'),
-    []
+    matrix.rows
+      .filter((row) => row.status !== 'match')
+      .map((row) => ({
+        scenarioId: row.scenarioId,
+        currentTotalCents: row.currentTotalCents,
+        canonicalTotalCents: row.canonicalTotalCents,
+        deltaCents: row.deltaCents,
+      })),
+    [
+      {
+        scenarioId: 'billing:gemini-omni-flash:t2v:10:720p:member',
+        currentTotalCents: 130,
+        canonicalTotalCents: 132,
+        deltaCents: 2,
+      },
+      {
+        scenarioId: 'billing:gemini-omni-flash:t2v:10:720p:plus',
+        currentTotalCents: 123,
+        canonicalTotalCents: 125,
+        deltaCents: 2,
+      },
+      {
+        scenarioId: 'billing:gemini-omni-flash:t2v:10:720p:pro',
+        currentTotalCents: 117,
+        canonicalTotalCents: 119,
+        deltaCents: 2,
+      },
+      {
+        scenarioId: 'estimator:gemini-omni-flash:10:720p',
+        currentTotalCents: 130,
+        canonicalTotalCents: 132,
+        deltaCents: 2,
+      },
+    ]
   );
 });
 

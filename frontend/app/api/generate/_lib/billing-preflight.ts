@@ -97,6 +97,8 @@ export async function resolveGenerateBillingPreflight(params: {
   loop: boolean;
   hasVideoInput?: boolean;
   referenceImageCount?: number;
+  inputImageCount?: number;
+  inputVideoDurationSec?: number;
   inputAudioDurationSec?: number;
   rawDurationOption: number | string | null;
   lumaDurationLabel: string | null;
@@ -139,6 +141,11 @@ export async function resolveGenerateBillingPreflight(params: {
     loop: params.isLumaRay2 ? params.loop : undefined,
     hasVideoInput: params.hasVideoInput,
     referenceImageCount: Math.max(0, Math.floor(params.referenceImageCount ?? 0)),
+    inputImageCount:
+      typeof params.inputImageCount === 'number'
+        ? Math.max(0, Math.floor(params.inputImageCount))
+        : undefined,
+    inputVideoDurationSec: params.inputVideoDurationSec,
     inputAudioDurationSec: params.inputAudioDurationSec,
     durationOption: params.lumaDurationLabel ?? params.rawDurationOption ?? null,
     currency: DISPLAY_CURRENCY,
@@ -168,6 +175,12 @@ export async function resolveGenerateBillingPreflight(params: {
   }
   if (typeof params.referenceImageCount === 'number') {
     requestMeta.referenceImageCount = Math.max(0, Math.floor(params.referenceImageCount));
+  }
+  if (typeof params.inputImageCount === 'number') {
+    requestMeta.inputImageCount = Math.max(0, Math.floor(params.inputImageCount));
+  }
+  if (typeof params.inputVideoDurationSec === 'number') {
+    requestMeta.inputVideoDurationSec = params.inputVideoDurationSec;
   }
   if (typeof params.inputAudioDurationSec === 'number') {
     requestMeta.inputAudioDurationSec = params.inputAudioDurationSec;

@@ -197,19 +197,20 @@ test('Gemini Omni Flash is exposed on the pricing matrix with a visible 10s 720p
   for (const locale of LOCALES) {
     const row = buildPricingHubData(locale).video.rows.find((candidate) => candidate.anchorId === 'gemini-omni-flash-pricing');
     assert.ok(row, `${locale} pricing row should include Gemini Omni Flash`);
-    assert.equal(row.engineName, 'Gemini Omni Flash');
+    assert.equal(row.engineName, 'Gemini Omni Flash 1.1');
     assert.equal(row.family, 'veo');
     assert.equal(row.modelHref, expectedModelHrefs[locale]);
     assert.ok(row.links.some((link) => link.href === '/app?engine=gemini-omni-flash'));
 
     const previewQuote = row.quotes['10s-720p'];
     assert.equal(previewQuote.status, 'exact');
-    assert.equal(previewQuote.amountCents, 130);
+    assert.equal(previewQuote.amountCents, 132);
     assert.match(previewQuote.rateDisplay ?? '', /0[,.]13/);
 
     const standard1080Quote = row.quotes['10s-1080p'];
-    assert.equal(standard1080Quote.status, 'unsupported');
-    assert.match(standard1080Quote.note ?? '', /720p/i);
+    assert.equal(standard1080Quote.status, 'exact');
+    assert.equal(standard1080Quote.amountCents, 198);
+    assert.match(standard1080Quote.rateDisplay ?? '', /0[,.]20/);
   }
 });
 

@@ -1851,7 +1851,7 @@
   {
     "engineId": "gemini-omni-flash",
     "modelSlug": "gemini-omni-flash",
-    "marketingName": "Gemini Omni Flash",
+    "marketingName": "Gemini Omni Flash 1.1",
     "provider": "Google",
     "brandId": "google-gemini",
     "family": "veo",
@@ -1869,7 +1869,7 @@
         "veo-3-1-lite"
       ]
     },
-    "versionLabel": "Preview",
+    "versionLabel": "1.1 Preview",
     "availability": "limited",
     "logoPolicy": "textOnly",
     "lifecycle": "current",
@@ -1912,9 +1912,9 @@
     "surfacesSource": "registry",
     "engine": {
       "id": "gemini-omni-flash",
-      "label": "Gemini Omni Flash",
+      "label": "Gemini Omni Flash 1.1",
       "provider": "Google",
-      "version": "Preview",
+      "version": "1.1 Preview",
       "status": "early_access",
       "latencyTier": "fast",
       "queueDepth": 0,
@@ -1923,12 +1923,17 @@
         "t2v",
         "i2v",
         "ref2v",
+        "fl2v",
         "v2v",
+        "extend",
         "retake"
       ],
       "maxDurationSec": 10,
       "resolutions": [
-        "720p"
+        "360p",
+        "720p",
+        "1080p",
+        "4k"
       ],
       "aspectRatios": [
         "16:9",
@@ -1939,7 +1944,7 @@
       ],
       "audio": true,
       "upscale4k": false,
-      "extend": false,
+      "extend": true,
       "motionControls": false,
       "keyframes": false,
       "params": {},
@@ -1959,14 +1964,18 @@
               "t2v",
               "i2v",
               "ref2v",
+              "fl2v",
               "v2v",
+              "extend",
               "retake"
             ],
             "requiredInModes": [
               "t2v",
               "i2v",
               "ref2v",
+              "fl2v",
               "v2v",
+              "extend",
               "retake"
             ]
           },
@@ -1976,10 +1985,27 @@
             "label": "Source image",
             "description": "Use one image as the starting visual context for image-to-video generation.",
             "modes": [
-              "i2v"
+              "i2v",
+              "fl2v"
             ],
             "requiredInModes": [
-              "i2v"
+              "i2v",
+              "fl2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "end_image_url",
+            "type": "image",
+            "label": "End image",
+            "description": "Target ending frame for first/last-frame generation.",
+            "modes": [
+              "fl2v"
+            ],
+            "requiredInModes": [
+              "fl2v"
             ],
             "minCount": 1,
             "maxCount": 1,
@@ -2004,12 +2030,14 @@
             "id": "video_url",
             "type": "video",
             "label": "Source video",
-            "description": "Use a short source clip for Gemini Omni video editing.",
+            "description": "Use one owned source clip for Gemini Omni video editing or extension.",
             "modes": [
-              "v2v"
+              "v2v",
+              "extend"
             ],
             "requiredInModes": [
-              "v2v"
+              "v2v",
+              "extend"
             ],
             "minCount": 1,
             "maxCount": 1,
@@ -2036,18 +2064,26 @@
             "type": "enum",
             "label": "Duration",
             "values": [
+              "3s",
               "4s",
+              "5s",
               "6s",
+              "7s",
               "8s",
+              "9s",
               "10s"
             ],
             "default": "10s",
             "modes": [
               "t2v",
               "i2v",
-              "ref2v"
+              "ref2v",
+              "fl2v",
+              "v2v",
+              "extend",
+              "retake"
             ],
-            "min": 4,
+            "min": 3,
             "max": 10
           },
           {
@@ -2062,7 +2098,11 @@
             "modes": [
               "t2v",
               "i2v",
-              "ref2v"
+              "ref2v",
+              "fl2v",
+              "v2v",
+              "extend",
+              "retake"
             ]
           },
           {
@@ -2070,16 +2110,12 @@
             "type": "enum",
             "label": "Resolution",
             "values": [
-              "720p"
+              "360p",
+              "720p",
+              "1080p",
+              "4k"
             ],
             "default": "720p"
-          },
-          {
-            "id": "store_interaction",
-            "type": "boolean",
-            "label": "Store interaction",
-            "description": "Keep the provider interaction id so the result can be refined in a later Omni run.",
-            "default": true
           },
           {
             "id": "prompt_audio_direction",
@@ -2102,6 +2138,7 @@
             "description": "Optional edit instruction for source-video and refine workflows.",
             "modes": [
               "v2v",
+              "extend",
               "retake"
             ],
             "values": []
@@ -2132,27 +2169,33 @@
       "pricingDetails": {
         "currency": "USD",
         "perSecondCents": {
-          "default": 10,
+          "default": 10.136000000000001,
           "byResolution": {
-            "720p": 10
+            "360p": 3.3792500000000003,
+            "720p": 10.136000000000001,
+            "1080p": 15.204,
+            "4k": 30.408
           }
         },
         "maxDurationSec": 10
       },
       "pricing": {
         "unit": "USD/s",
-        "base": 0.1,
+        "base": 0.10136,
         "byResolution": {
-          "720p": 0.1
+          "360p": 0.0337925,
+          "720p": 0.10136,
+          "1080p": 0.15204,
+          "4k": 0.30408
         },
         "currency": "USD",
-        "notes": "MaxVideoAI customer rate for the direct Google Vertex Gemini Omni Flash preview route."
+        "notes": "Google Omni 1.1 output-token provider facts by resolution; customer pricing is applied canonically."
       },
-      "updatedAt": "2026-06-30T00:00:00Z",
+      "updatedAt": "2026-09-03T00:00:00Z",
       "ttlSec": 600,
       "providerMeta": {
         "provider": "google_vertex_omni",
-        "modelSlug": "gemini-omni-flash-preview"
+        "modelSlug": "gemini-omni-1.1-flash-preview"
       },
       "availability": "limited",
       "brandId": "google-gemini"
@@ -2160,52 +2203,64 @@
     "modes": [
       {
         "mode": "t2v",
-        "falModelId": "gemini-omni-flash-preview",
+        "falModelId": "gemini-omni-1.1-flash-preview",
         "ui": {
           "modes": [
             "t2v"
           ],
           "duration": {
             "options": [
+              "3s",
               "4s",
+              "5s",
               "6s",
+              "7s",
               "8s",
+              "9s",
               "10s"
             ],
             "default": "10s"
           },
           "resolution": [
-            "720p"
+            "360p",
+            "720p",
+            "1080p",
+            "4k"
           ],
-          "resolutionLocked": true,
           "aspectRatio": [
             "16:9",
             "9:16"
           ],
           "audioToggle": true,
-          "notes": "Generate a 720p video with native sound direction through Vertex Agent Platform Interactions."
+          "notes": "Generate video with native sound direction through Vertex Agent Platform Interactions."
         }
       },
       {
         "mode": "i2v",
-        "falModelId": "gemini-omni-flash-preview",
+        "falModelId": "gemini-omni-1.1-flash-preview",
         "ui": {
           "modes": [
             "i2v"
           ],
           "duration": {
             "options": [
+              "3s",
               "4s",
+              "5s",
               "6s",
+              "7s",
               "8s",
+              "9s",
               "10s"
             ],
             "default": "10s"
           },
           "resolution": [
-            "720p"
+            "360p",
+            "720p",
+            "1080p",
+            "4k"
           ],
-          "resolutionLocked": true,
           "aspectRatio": [
             "16:9",
             "9:16"
@@ -2225,24 +2280,30 @@
       },
       {
         "mode": "ref2v",
-        "falModelId": "gemini-omni-flash-preview",
+        "falModelId": "gemini-omni-1.1-flash-preview",
         "ui": {
           "modes": [
             "ref2v"
           ],
           "duration": {
             "options": [
+              "3s",
               "4s",
+              "5s",
               "6s",
+              "7s",
               "8s",
+              "9s",
               "10s"
             ],
             "default": "10s"
           },
           "resolution": [
-            "720p"
+            "360p",
+            "720p",
+            "1080p",
+            "4k"
           ],
-          "resolutionLocked": true,
           "aspectRatio": [
             "16:9",
             "9:16"
@@ -2261,31 +2322,146 @@
         }
       },
       {
+        "mode": "fl2v",
+        "falModelId": "gemini-omni-1.1-flash-preview",
+        "ui": {
+          "modes": [
+            "fl2v"
+          ],
+          "duration": {
+            "options": [
+              "3s",
+              "4s",
+              "5s",
+              "6s",
+              "7s",
+              "8s",
+              "9s",
+              "10s"
+            ],
+            "default": "10s"
+          },
+          "resolution": [
+            "360p",
+            "720p",
+            "1080p",
+            "4k"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "9:16"
+          ],
+          "audioToggle": true,
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp",
+            "heic",
+            "heif"
+          ],
+          "maxUploadMB": 30,
+          "notes": "Generate an ordered transition from a start image to an end image."
+        }
+      },
+      {
         "mode": "v2v",
-        "falModelId": "gemini-omni-flash-preview",
+        "falModelId": "gemini-omni-1.1-flash-preview",
         "ui": {
           "modes": [
             "v2v"
           ],
+          "duration": {
+            "options": [
+              "3s",
+              "4s",
+              "5s",
+              "6s",
+              "7s",
+              "8s",
+              "9s",
+              "10s"
+            ],
+            "default": "10s"
+          },
           "resolution": [
-            "720p"
+            "360p",
+            "720p",
+            "1080p",
+            "4k"
           ],
-          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16"
+          ],
           "audioToggle": true,
           "notes": "Edit a short source video with text, sound, and camera instructions."
         }
       },
       {
+        "mode": "extend",
+        "falModelId": "gemini-omni-1.1-flash-preview",
+        "ui": {
+          "modes": [
+            "extend"
+          ],
+          "duration": {
+            "options": [
+              "3s",
+              "4s",
+              "5s",
+              "6s",
+              "7s",
+              "8s",
+              "9s",
+              "10s"
+            ],
+            "default": "10s"
+          },
+          "resolution": [
+            "360p",
+            "720p",
+            "1080p",
+            "4k"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "9:16"
+          ],
+          "audioToggle": true,
+          "notes": "Continue one owned source video through Google Vertex Interactions."
+        }
+      },
+      {
         "mode": "retake",
-        "falModelId": "gemini-omni-flash-preview",
+        "falModelId": "gemini-omni-1.1-flash-preview",
         "ui": {
           "modes": [
             "retake"
           ],
+          "duration": {
+            "options": [
+              "3s",
+              "4s",
+              "5s",
+              "6s",
+              "7s",
+              "8s",
+              "9s",
+              "10s"
+            ],
+            "default": "10s"
+          },
           "resolution": [
-            "720p"
+            "360p",
+            "720p",
+            "1080p",
+            "4k"
           ],
-          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16"
+          ],
           "audioToggle": true,
           "notes": "Refine a stored Gemini Omni interaction by passing its previous interaction id."
         }
@@ -2302,7 +2478,7 @@
         "value": false
       },
       "extend": {
-        "value": false
+        "value": true
       }
     }
   },

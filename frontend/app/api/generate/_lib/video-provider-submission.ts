@@ -200,6 +200,7 @@ export async function submitGenerateProviderTask(params: {
       negativePrompt: typeof params.negativePrompt === 'string' ? params.negativePrompt : null,
       durationSec: params.durationSec,
       aspectRatio: params.aspectRatio,
+      resolution: params.effectiveResolution ?? params.falPayload.resolution ?? '720p',
       audioEnabled: params.audioEnabled,
       placeholderThumb: params.placeholderThumb,
       pricing: params.pricing,

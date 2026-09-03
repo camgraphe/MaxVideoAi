@@ -1,6 +1,7 @@
 import { createSign } from 'node:crypto';
 import { GoogleVertexOmniError } from './errors';
 import { resolveGoogleVertexOmniLocation } from './location';
+import { GOOGLE_VERTEX_OMNI_MODEL_ID } from './model-map';
 
 type GoogleServiceAccount = {
   client_email: string;
@@ -337,6 +338,12 @@ export class GoogleVertexOmniClient {
   }
 
   async createInteraction(request: GoogleVertexOmniInteractionRequest): Promise<GoogleVertexOmniInteraction> {
+    if (request.model !== GOOGLE_VERTEX_OMNI_MODEL_ID) {
+      throw new Error(`Google Vertex Omni requires the direct Google model ${GOOGLE_VERTEX_OMNI_MODEL_ID}.`);
+    }
+    if (request.background === true && request.store !== true) {
+      throw new Error('Google Vertex Omni background interactions require store=true.');
+    }
     const json = await requestJson({
       fetchFn: this.fetchFn(),
       url: this.interactionsUrl(),

@@ -9,14 +9,14 @@ import {
 } from '../frontend/src/server/video-providers/google-vertex-omni/model-map';
 import { resolveVideoProviderRoutingPlan } from '../frontend/src/server/video-providers/router';
 
-test('Gemini Omni Flash model map uses the Vertex Agent Platform preview model id', () => {
+test('Gemini Omni Flash model map uses the Vertex Agent Platform 1.1 preview model id', () => {
   assert.equal(GOOGLE_VERTEX_OMNI_PROVIDER, 'google_vertex_omni_direct');
   assert.equal(isGoogleVertexOmniEngine('gemini-omni-flash'), true);
 
   const route = resolveGoogleVertexOmniModelRoute('gemini-omni-flash');
-  assert.equal(route.providerModel, 'gemini-omni-flash-preview');
+  assert.equal(route.providerModel, 'gemini-omni-1.1-flash-preview');
   assert.equal(route.launchStage, 'preview');
-  assert.deepEqual(route.supportedModes, ['t2v', 'i2v', 'ref2v', 'v2v', 'retake']);
+  assert.deepEqual(route.supportedModes, ['t2v', 'i2v', 'ref2v', 'fl2v', 'v2v', 'extend', 'retake']);
   assert.deepEqual(route.aspectRatios, ['16:9', '9:16']);
 });
 
@@ -30,12 +30,20 @@ test('Gemini Omni Flash support rejects unsupported Veo-only controls', () => {
 
   assert.equal(resolveGoogleVertexOmniSupport({ ...base }).supported, true);
   assert.equal(resolveGoogleVertexOmniSupport({ ...base, aspectRatio: '1:1' }).reason, 'aspect_ratio_not_supported');
-  assert.equal(resolveGoogleVertexOmniSupport({ ...base, mode: 'extend' }).reason, 'unsupported_mode');
+  assert.equal(resolveGoogleVertexOmniSupport({
+    ...base,
+    mode: 'extend',
+    falPayload: { engineId: base.engineId, prompt: base.prompt, videoUrl: 'gs://owned/source.mp4' },
+  }).supported, true);
   assert.equal(resolveGoogleVertexOmniSupport({ ...base, negativePrompt: 'bad anatomy' }).reason, 'negative_prompt_not_supported');
   assert.equal(resolveGoogleVertexOmniSupport({ ...base, seed: 123 }).reason, 'seed_not_supported');
+  assert.equal(
+    resolveGoogleVertexOmniSupport({ ...base, mode: 'extend', falPayload: { engineId: base.engineId, prompt: base.prompt } }).reason,
+    'source_video_required'
+  );
 });
 
-test('Gemini Omni Flash routing is public when enabled and can be explicitly gated', () => {
+test('Gemini Omni Flash routing stays publication-gated until explicitly enabled', () => {
   assert.deepEqual(
     resolveVideoProviderRoutingPlan({
       engineId: 'gemini-omni-flash',
@@ -45,10 +53,7 @@ test('Gemini Omni Flash routing is public when enabled and can be explicitly gat
         GOOGLE_VERTEX_OMNI_ENABLED: 'true',
       },
     }),
-    {
-      kind: 'google_vertex_omni_primary',
-      primaryProvider: 'google_vertex_omni_direct',
-    }
+    { kind: 'google_vertex_unavailable', reason: 'public_routing_disabled' }
   );
 
   assert.deepEqual(
@@ -58,11 +63,13 @@ test('Gemini Omni Flash routing is public when enabled and can be explicitly gat
       isAdmin: false,
       env: {
         GOOGLE_VERTEX_OMNI_ENABLED: 'true',
-        GOOGLE_VERTEX_OMNI_PUBLIC_ROUTING_ENABLED: 'false',
-        GOOGLE_VERTEX_OMNI_ADMIN_ONLY: 'true',
+        GOOGLE_VERTEX_OMNI_PUBLIC_ROUTING_ENABLED: 'true',
       },
     }),
-    { kind: 'google_vertex_unavailable', reason: 'admin_only' }
+    {
+      kind: 'google_vertex_omni_primary',
+      primaryProvider: 'google_vertex_omni_direct',
+    }
   );
 
   assert.deepEqual(

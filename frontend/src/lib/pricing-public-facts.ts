@@ -16,6 +16,11 @@ import { normalizeGptImage2Quality, resolveGptImage2PricingTier } from '@/lib/im
 import type { EngineCaps, Mode } from '@/types/engines';
 import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
 import { calculateMinimaxH3ProviderPrice } from '@/lib/minimax-h3-pricing';
+import {
+  calculateGoogleOmniProviderCost,
+  GOOGLE_OMNI_PRICING_SOURCE,
+  resolveGoogleOmniPricingInput,
+} from '@/lib/google-omni-pricing';
 
 export type PublicPricingFactsResult = {
   facts: PricingFacts;
@@ -35,6 +40,8 @@ export type PublicPricingFactsContext = {
   aspectRatio?: string | null;
   quality?: string | null;
   referenceImageCount?: number;
+  inputImageCount?: number;
+  inputVideoDurationSec?: number;
   hasVideoInput?: boolean;
   addons?: Record<string, boolean | number | undefined>;
   lumaRay2BasePriceUsd?: number;
@@ -130,6 +137,37 @@ export function buildPublicPricingFacts(context: PublicPricingFactsContext): Pub
   const currency = (engine.pricingDetails?.currency ?? engine.pricing?.currency ?? 'USD').toUpperCase();
   if (context.useStandardDefinitionFacts) {
     return buildStandardDefinitionFacts(context, currency);
+  }
+
+  if (engine.id === 'gemini-omni-flash') {
+    const pricingInput = resolveGoogleOmniPricingInput({
+      outputResolution: resolution,
+      outputDurationSec: durationSec,
+      mode,
+      inputImageCount: context.inputImageCount,
+      referenceImageCount: context.referenceImageCount,
+      inputVideoDurationSec: context.inputVideoDurationSec,
+    });
+    const pricing = calculateGoogleOmniProviderCost(pricingInput);
+    return resultFromExactFacts({
+      engineId: engine.id,
+      currency,
+      exactCents: pricing.providerCostCents,
+      presentedBaseCents: pricing.providerCostCents,
+      quantity: durationSec,
+      unit: 'sec',
+      rate: pricing.providerCostUsd / durationSec,
+      meta: {
+        pricing_model: 'google_omni_tokens',
+        provider_cost_source: GOOGLE_OMNI_PRICING_SOURCE,
+        mode,
+        output_resolution: pricingInput.outputResolution,
+        output_duration_sec: pricingInput.outputDurationSec,
+        input_image_count: pricingInput.inputImageCount,
+        input_video_duration_sec: pricingInput.inputVideoDurationSec,
+        cost_breakdown_usd: pricing,
+      },
+    });
   }
 
   if (isMinimaxH3EngineId(engine.id)) {

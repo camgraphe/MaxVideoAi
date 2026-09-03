@@ -209,7 +209,7 @@ test('billing preflight passes the Seedance video-input class into canonical pri
   assert.equal(capturedHasVideoInput, true);
 });
 
-test('billing preflight persists validated P0 reference count and trusted input-audio duration', async () => {
+test('billing preflight persists verified media counts and durations in the canonical pricing context', async () => {
   let capturedContext: Record<string, unknown> | null = null;
   const result = await resolveGenerateBillingPreflight({
     req: createReq('US'),
@@ -227,6 +227,8 @@ test('billing preflight persists validated P0 reference count and trusted input-
     isLumaRay2: false,
     loop: false,
     referenceImageCount: 3,
+    inputImageCount: 4,
+    inputVideoDurationSec: 7.5,
     inputAudioDurationSec: 9.25,
     rawDurationOption: null,
     lumaDurationLabel: null,
@@ -250,8 +252,12 @@ test('billing preflight persists validated P0 reference count and trusted input-
 
   assert.equal(result.ok, true);
   assert.equal(capturedContext?.referenceImageCount, 3);
+  assert.equal(capturedContext?.inputImageCount, 4);
+  assert.equal(capturedContext?.inputVideoDurationSec, 7.5);
   assert.equal(capturedContext?.inputAudioDurationSec, 9.25);
   assert.equal(result.preflight.pricing.meta?.request?.referenceImageCount, 3);
+  assert.equal(result.preflight.pricing.meta?.request?.inputImageCount, 4);
+  assert.equal(result.preflight.pricing.meta?.request?.inputVideoDurationSec, 7.5);
   assert.equal(result.preflight.pricing.meta?.request?.inputAudioDurationSec, 9.25);
   assert.equal(result.preflight.receiptSnapshot.meta?.request?.inputAudioDurationSec, 9.25);
 });

@@ -18,6 +18,7 @@ export type Mode =
   | 'i2i';
 export type Resolution =
   | '0.5k'
+  | '360p'
   | '540p'
   | '480p'
   | '720p'

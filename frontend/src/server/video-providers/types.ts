@@ -62,6 +62,8 @@ export type ProviderCostInput = {
   durationSec: number;
   audioEnabled?: boolean;
   resolution?: string | null;
+  inputImageCount?: number;
+  inputVideoDurationSec?: number;
 };
 
 export type ProviderCostEstimate = {
