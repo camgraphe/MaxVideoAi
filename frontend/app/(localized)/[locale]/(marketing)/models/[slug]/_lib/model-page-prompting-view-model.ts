@@ -38,7 +38,7 @@ export type ModelPromptingViewModel = {
     promptLabel: string;
     prompt: string;
     notes: string[];
-    summary: NonNullable<ModelPromptingContent['demo']>['summary'];
+    summary: NonNullable<ModelPromptingContent['demo']>['summary'] | null;
     modeLabel: string;
     outputLabel: string;
     durationLabel: string;
@@ -121,19 +121,27 @@ function buildDemoViewModel(
   const mediaPrompt = input.demoPromptSource === 'media'
     ? input.demoMedia?.prompt?.trim()
     : null;
+  const usesReviewedMedia = Boolean(mediaPrompt);
+  const mediaLabel = input.demoMedia?.label?.trim();
 
   return {
-    title: demo.title,
+    title: usesReviewedMedia && mediaLabel ? mediaLabel : demo.title,
     promptLabel: demo.promptLabel,
     prompt: mediaPrompt || demo.prompt,
     notes: demo.notes,
-    summary: demo.summary,
-    modeLabel: presentation.modeLabel,
+    summary: usesReviewedMedia ? null : demo.summary,
+    modeLabel: usesReviewedMedia ? ui.textToVideo : presentation.modeLabel,
     outputLabel: presentation.outputLabel,
-    durationLabel: presentation.duration ?? formatMediaDuration(input.demoMedia, input.locale),
-    aspectLabel: presentation.aspectRatio ?? resolveMediaAspect(input.demoMedia),
+    durationLabel: usesReviewedMedia
+      ? formatMediaDuration(input.demoMedia, input.locale)
+      : presentation.duration ?? formatMediaDuration(input.demoMedia, input.locale),
+    aspectLabel: usesReviewedMedia
+      ? resolveMediaAspect(input.demoMedia)
+      : presentation.aspectRatio ?? resolveMediaAspect(input.demoMedia),
     audioChipLabel: resolveAudioChipLabel(input, presentation, ui),
-    alt: presentation.altContext,
+    alt: usesReviewedMedia && mediaLabel
+      ? `${mediaLabel} ${ui.example.toLocaleLowerCase(input.locale)}`
+      : presentation.altContext,
     posterSrc: input.demoMedia?.posterUrl ?? null,
     videoSrc: input.demoMedia?.videoUrl ?? input.demoMedia?.previewVideoUrl ?? null,
     fullHref: input.demoMedia?.href ?? null,

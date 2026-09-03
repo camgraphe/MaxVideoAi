@@ -235,7 +235,7 @@ test('localized Veo Fast routes keep editorial demo prompts when pinned media ha
   }
 });
 
-test('route prompt-source policy uses media only for Happy Horse or summary-shaped fallback copy', () => {
+test('non-launch route prompt-source policy uses media only for Happy Horse or summary-shaped fallback copy', () => {
   const happyHorse = localizedPrompting('en', 'happy-horse-1-1');
   const runtimeMedia = media({ prompt: 'Runtime media prose' });
   assert.equal(

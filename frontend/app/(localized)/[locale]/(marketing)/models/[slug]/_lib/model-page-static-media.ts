@@ -23,6 +23,34 @@ export const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string
     hero: 'job_a424b7be-5f70-491b-b70e-6cbbbe223d21',
     demo: 'job_43c4c8cd-246a-4c96-80a9-ab647b2eade7',
   },
+  'wan-3': {
+    hero: '322fa03b-47f1-4267-a384-1d04aac27167',
+    demo: 'e2ef7bdf-e78c-4aca-94b4-d2ba74036dac',
+  },
+  'wan-3-prime': {
+    hero: 'f9a9022c-e587-4c6a-b49a-f2985908eee9',
+    demo: 'feccb90c-11ed-48ef-a96b-b7c80e5fe1c5',
+  },
+  'ltx-2-5-fast': {
+    hero: '7b52c7eb-24fa-45a8-baa9-c675b7f50174',
+    demo: 'bd943cbc-c500-49ff-baff-d7e1f03fb2dc',
+  },
+  'ltx-2-5-pro': {
+    hero: 'a30e1f55-27ca-4cd5-9c6b-1cb990a5ca91',
+    demo: '5d47efd3-c75c-42c0-91fc-e0e1d8b50357',
+  },
+  'grok-imagine-video-1-5': {
+    hero: '2b74b648-63f2-4b19-b555-9dad0554ed40',
+    demo: '4467d48a-8d6a-490c-96ba-09468aea313e',
+  },
+  'flux-3': {
+    hero: '08ac14de-f53b-46c7-b6db-ae56c0095d7a',
+    demo: 'abd1a29b-7de8-4bb5-bc24-1c670d3b0a88',
+  },
+  'flux-3-draft': {
+    hero: 'b7014d70-b6a7-4e64-b41f-36f836756f76',
+    demo: '34605e6e-0a3a-4b23-ac71-9985b486bd01',
+  },
   'gemini-omni-flash': {
     hero: 'f06c01cf-86f4-4c91-81bd-5bc099566e05',
     demo: '46b7eafe-089c-4135-958c-95c6670150c2',

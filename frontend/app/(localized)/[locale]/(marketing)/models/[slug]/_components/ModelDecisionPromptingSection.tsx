@@ -144,13 +144,15 @@ export function ModelDecisionPromptingSection({
             <span className="mt-3 inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600 dark:!bg-blue-500/[0.12] dark:text-blue-200">
               {demo.modeLabel}
             </span>
-            <p className="mt-4 text-sm leading-6 text-text-secondary">
-              <strong>{ui.subject}:</strong> {demo.summary.subject} &nbsp;•&nbsp; <strong>{ui.action}:</strong> {demo.summary.action}
-              <br />
-              <strong>{ui.camera}:</strong> {demo.summary.camera} &nbsp;•&nbsp; <strong>{ui.style}:</strong> {demo.summary.style}
-              <br />
-              <strong>{demo.outputLabel}:</strong> {demo.summary.output}
-            </p>
+            {demo.summary ? (
+              <p className="mt-4 text-sm leading-6 text-text-secondary">
+                <strong>{ui.subject}:</strong> {demo.summary.subject} &nbsp;•&nbsp; <strong>{ui.action}:</strong> {demo.summary.action}
+                <br />
+                <strong>{ui.camera}:</strong> {demo.summary.camera} &nbsp;•&nbsp; <strong>{ui.style}:</strong> {demo.summary.style}
+                <br />
+                <strong>{demo.outputLabel}:</strong> {demo.summary.output}
+              </p>
+            ) : null}
             <details className="mt-5 rounded-xl border border-hairline bg-surface p-4 text-sm text-text-secondary shadow-sm">
               <summary className="cursor-pointer font-semibold text-text-primary">{ui.showPrompt}</summary>
               <pre className="mt-3 max-h-[180px] overflow-auto whitespace-pre-wrap rounded-lg border border-hairline bg-bg px-3 py-3 font-mono text-[0.8rem] leading-5 text-text-primary dark:!bg-slate-950/[0.72]">

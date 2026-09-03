@@ -1,10 +1,15 @@
 import type { AppLocale } from '@/i18n/locales';
+import { MODEL_LAUNCH_WAVES } from '@/config/model-launch-waves';
 
 import type { FeaturedMedia } from './model-page-media';
 import type { ModelPromptingContent } from './model-page-prompting-content';
 import { getModelPromptingUiCopy } from './model-page-prompting-ui-copy';
 
 export type ModelPromptingDemoPromptSource = 'editorial' | 'media';
+
+const REVIEWED_LAUNCH_MODEL_IDS = new Set<string>(
+  MODEL_LAUNCH_WAVES.flatMap((wave) => wave.models.map(({ modelId }) => modelId)),
+);
 
 export function resolveDefaultModelPromptingDemoPromptSource(
   demoMedia: FeaturedMedia | null,
@@ -25,6 +30,7 @@ export function resolveModelPromptingDemoPromptSource({
 }): ModelPromptingDemoPromptSource {
   const demo = content.demo;
   if (!demo || !demoMedia?.prompt?.trim()) return 'editorial';
+  if (REVIEWED_LAUNCH_MODEL_IDS.has(content.modelSlug)) return 'media';
 
   const ui = getModelPromptingUiCopy(locale);
   const summaryPrompt = [
