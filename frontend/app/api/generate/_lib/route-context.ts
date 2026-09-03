@@ -31,10 +31,7 @@ import { isGoogleVertexOmniEngine } from '@/server/video-providers/google-vertex
 import { isGoogleVertexVeoEngine } from '@/server/video-providers/google-vertex-veo/model-map';
 import { isKlingDirectEngine } from '@/server/video-providers/kling-direct/model-map';
 import { isLumaAgentsVideoEngine } from '@/server/video-providers/luma-agents/model-map';
-import {
-  isMinimaxH3MaxEngineId,
-  isMinimaxH3MaxRuntimeModeAvailable,
-} from '@/lib/minimax-h3-max';
+import { isMinimaxH3MaxEngineId, isMinimaxH3MaxRuntimeModeAvailable } from '@/lib/minimax-h3-max';
 import type { EngineCaps, Mode } from '@/types/engines';
 import type { PaymentMode } from './initial-video-job';
 import { isVideoMode } from './request-options';
@@ -42,6 +39,11 @@ import {
   getPrivateRuntimeEngineById,
   isPrivateRuntimeEngineId,
 } from '@/server/video-generation/private-engine-registry';
+import {
+  resolveLaunchCanaryRequestContext,
+  type LaunchCanaryRequestContext,
+} from '@/server/model-launch-canary-request';
+import { resolveAgentGenerationModeExecutability } from '@/server/agent-runtime/model-executability';
 
 export type GenerateRouteContext = {
   engine: EngineCaps;
@@ -63,6 +65,7 @@ type GenerateRouteContextBoundaries = {
   getConfiguredEngineIncludingHidden: typeof getConfiguredEngineIncludingHidden;
   isDatabaseConfigured: typeof isDatabaseConfigured;
   requireAdmin: typeof requireAdmin;
+  resolveLaunchCanaryRequestContext: typeof resolveLaunchCanaryRequestContext;
 };
 
 const defaultGenerateRouteContextBoundaries: GenerateRouteContextBoundaries = {
@@ -71,6 +74,7 @@ const defaultGenerateRouteContextBoundaries: GenerateRouteContextBoundaries = {
   getConfiguredEngineIncludingHidden,
   isDatabaseConfigured,
   requireAdmin,
+  resolveLaunchCanaryRequestContext,
 };
 
 export function resolveTrustedPaidGenerateRouteContext(params: {
@@ -81,10 +85,7 @@ export function resolveTrustedPaidGenerateRouteContext(params: {
   providerEnv?: VideoProviderRoutingEnv;
 }): GenerateRouteContextResult {
   const { body, engine, jobId, mode, providerEnv } = params;
-  if (
-    isMinimaxH3MaxEngineId(engine.id)
-    && !isMinimaxH3MaxRuntimeModeAvailable(mode)
-  ) {
+  if (isMinimaxH3MaxEngineId(engine.id) && !isMinimaxH3MaxRuntimeModeAvailable(mode)) {
     return { ok: false, status: 503, body: { ok: false, error: 'Engine unavailable' } };
   }
   let bytePlusProfile: BytePlusSeedanceProfile | null;
@@ -163,6 +164,13 @@ export async function resolveGenerateRouteContext(params: {
     ...params.boundaryOverrides,
   };
   const requestedEngineId = String(body.engineId || '');
+  let launchCanaryContext: LaunchCanaryRequestContext | null = null;
+  if (isPrivateRuntimeEngineId(requestedEngineId)) {
+    launchCanaryContext = await boundaries.resolveLaunchCanaryRequestContext(req);
+    if (!launchCanaryContext?.access.allowedModelIds.has(requestedEngineId)) {
+      return { ok: false, status: 404, body: { ok: false, error: 'Engine unavailable' } };
+    }
+  }
   if (requiresBytePlusSeedanceEarlyGate(requestedEngineId)) {
     try {
       assertBytePlusSeedanceSubmissionEnabled(requestedEngineId);
@@ -262,8 +270,12 @@ export async function resolveGenerateRouteContext(params: {
       : engine.modes[0] ?? 't2v';
 
   if (
-    isMinimaxH3MaxEngineId(engine.id)
-    && !isMinimaxH3MaxRuntimeModeAvailable(mode)
+    launchCanaryContext
+    && !resolveAgentGenerationModeExecutability(
+      engine,
+      mode,
+      launchCanaryContext.generationEnvironment,
+    ).executable
   ) {
     return { ok: false, status: 503, body: { ok: false, error: 'Engine unavailable' } };
   }

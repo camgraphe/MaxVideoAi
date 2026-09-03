@@ -133,7 +133,7 @@ export function buildWorkspaceGeneratePayload(
     ...(options.endImageUrl ? { endImageUrl: options.endImageUrl } : {}),
     ...(Object.keys(options.extraInputValues).length ? { extraInputValues: options.extraInputValues } : {}),
     ...(options.multiPromptPayload && options.multiPromptPayload.length ? { multiPrompt: options.multiPromptPayload } : {}),
-    ...(options.supportsKlingV3Controls && !options.selectedEngineId.startsWith('kling-3-turbo-')
+    ...(options.supportsKlingV3Controls
       ? {
           shotType: options.activeMode === 'i2v' ? 'customize' : options.shotType,
           ...(options.supportsKlingV3VoiceControl && options.voiceIds.length ? { voiceIds: options.voiceIds } : {}),

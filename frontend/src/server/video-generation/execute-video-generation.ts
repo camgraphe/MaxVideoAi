@@ -28,6 +28,7 @@ import {
   buildTrustedQuotedVideoBilling,
 } from './trusted-video-billing';
 import { resolveGoogleOmniInheritedDurationSec } from '@/server/video-providers/google-vertex-omni/pricing-context';
+import type { ResolvedReference } from '@/server/agent-api/reference-types';
 
 export type { VideoGenerationAdapters, VideoGenerationResponse } from './video-generation-contracts';
 export { executeVideoGenerationLifecycle } from './video-generation-lifecycle';
@@ -44,6 +45,7 @@ type VideoGenerationReservationOptions =
       walletReservation: 'already_reserved';
       preReservedInitialState: PreReservedVideoInitialState;
       trustedQuotedBilling: TrustedQuotedBilling;
+      trustedResolvedReferences: readonly ResolvedReference[];
       funding?: never;
       trustedIncludedTrialBilling?: never;
     })
@@ -89,6 +91,9 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     trustedIncludedTrialBilling,
   } = params;
   const funding = 'funding' in params ? params.funding : undefined;
+  const trustedResolvedReferences = 'trustedResolvedReferences' in params
+    ? params.trustedResolvedReferences
+    : undefined;
   const { engine, isBytePlusV1a, jobId, mode, payment } = routeContext;
 
   const {
@@ -150,6 +155,7 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     rawAudioUrl,
     endImageUrl,
     isBytePlusV1a,
+    trustedResolvedReferences,
   });
   if (!attachmentProcessing.ok) {
     if (attachmentProcessing.metric) logMetric('rejected', attachmentProcessing.metric);

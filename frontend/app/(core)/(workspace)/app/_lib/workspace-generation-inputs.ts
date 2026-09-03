@@ -132,7 +132,6 @@ function buildKlingElementsPayload(
     (options.submissionMode === 'ref2v' || options.submissionMode === 'v2v');
   const supportsKling3Elements =
     !options.selectedEngineId.startsWith('kling-o3-') &&
-    !options.selectedEngineId.startsWith('kling-3-turbo-') &&
     (options.submissionMode === 'i2v' || options.submissionMode === 'ref2v');
   if (!options.supportsKlingV3Controls || (!supportsKlingO3Elements && !supportsKling3Elements)) {
     return {

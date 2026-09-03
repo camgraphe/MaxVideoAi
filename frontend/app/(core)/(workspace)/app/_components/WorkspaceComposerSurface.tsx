@@ -286,7 +286,6 @@ export function WorkspaceComposerSurface({
     isUnifiedKlingO3 && !klingO3VideoToVideoSupported ? KLING_O3_SOURCE_VIDEO_UNSUPPORTED_MESSAGE : null;
   const showLumaRay32KeyframeEditor = selectedEngine.id === 'luma-ray-3-2' && submissionMode === 'v2v';
   const showOmniStudioPanel = selectedEngine.id === 'gemini-omni-flash';
-  const isKlingTurbo = selectedEngine.id.startsWith('kling-3-turbo-');
   const showMultiPrompt = supportsWorkspaceMultiPrompt(selectedEngine, submissionMode);
   const hdrFieldEntry = useMemo(
     () =>
@@ -437,7 +436,6 @@ export function WorkspaceComposerSurface({
   const showLoopControl = supportsModeLoopControl(selectedEngine, submissionMode);
   const showKlingElementsBuilder =
     supportsKlingV3Controls &&
-    !isKlingTurbo &&
     (isUnifiedKlingO3 || activeMode === 'i2v' || activeMode === 'ref2v');
   const resolvedWorkflowNotice = klingO3UnsupportedVideoReason ?? composerWorkflowNotice;
 
@@ -625,7 +623,7 @@ export function WorkspaceComposerSurface({
               onCfgScaleChange={setCfgScale}
               durationManaged={multiPromptActive}
               durationManagedLabel={durationManagedLabel}
-              showKlingV3Controls={supportsKlingV3Controls && !isKlingTurbo}
+              showKlingV3Controls={supportsKlingV3Controls}
               showKlingV3VoiceControls={supportsKlingV3VoiceControl}
               klingShotType={shotType}
               onKlingShotTypeChange={setShotType}

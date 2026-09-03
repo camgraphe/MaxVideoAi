@@ -12,6 +12,7 @@ import type { NormalizedAttachment } from './generation-attachment-types';
 import { MINIMAX_H3_ENGINE } from '@/src/config/fal-engines/minimax-h3';
 import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
 import { detectVideoDimensions } from '@/server/media/detect-has-audio';
+import type { ResolvedReference } from '@/server/agent-api/reference-types';
 
 type QueryFn = <T = unknown>(sql: string, params?: readonly unknown[]) => Promise<T[]>;
 
@@ -152,6 +153,7 @@ export async function validateGenerationMediaConstraints(params: {
   inputSchema?: EngineInputSchema | null;
   attachments: readonly NormalizedAttachment[];
   referenceMediaItems: readonly ReferenceBudgetMediaItem[];
+  trustedResolvedReferences?: readonly ResolvedReference[];
   deps?: {
     queryFn?: QueryFn;
     detectVideoDimensionsFn?: typeof detectVideoDimensions;
@@ -178,6 +180,7 @@ export async function validateGenerationMediaConstraints(params: {
             || constraint.acceptedMimeTypes.length > 0
             || constraint.acceptedFileExtensions.length > 0;
         })() ||
+        (requiresOwnedMedia && (field.type === 'image' || field.type === 'video')) ||
         (field.type === 'image' && typeof params.inputSchema?.constraints?.minImageSidePx === 'number') ||
         (field.type === 'video' &&
           typeof params.inputSchema?.constraints?.minVideoPixelCount === 'number') ||
@@ -207,11 +210,32 @@ export async function validateGenerationMediaConstraints(params: {
 
   const assetIds = Array.from(new Set(candidates.map((candidate) => candidate.assetId).filter(Boolean))) as string[];
   const urls = Array.from(new Set(candidates.map((candidate) => candidate.url)));
-  const queryFn = params.deps?.queryFn ?? query;
   const detectVideoDimensionsFn =
     params.deps?.detectVideoDimensionsFn ?? detectVideoDimensions;
   let rows: StoredMediaMetadataRow[];
-  try {
+  if (params.trustedResolvedReferences !== undefined) {
+    rows = candidates.flatMap((candidate) => {
+      if (!candidate.assetId) return [];
+      const matches = params.trustedResolvedReferences!.filter((resolved) =>
+        resolved.assetId === candidate.assetId
+        && resolved.storageUrl === candidate.url
+        && resolved.mediaKind === candidate.kind);
+      if (matches.length !== 1) return [];
+      const resolved = matches[0]!;
+      return [{
+        asset_id: resolved.assetId,
+        url: resolved.storageUrl,
+        origin_url: null,
+        original_name: resolved.originalName ?? null,
+        mime_type: resolved.mimeType,
+        size_bytes: resolved.sizeBytes ?? null,
+        duration_sec: resolved.durationSec,
+        width: resolved.width,
+        height: resolved.height,
+      } satisfies StoredMediaMetadataRow];
+    });
+  } else try {
+    const queryFn = params.deps?.queryFn ?? query;
     rows = await queryFn<StoredMediaMetadataRow>(
       `SELECT asset_id::text AS asset_id,
               url,
@@ -301,12 +325,26 @@ export async function validateGenerationMediaConstraints(params: {
       });
     }
 
+    const trustedWidth = normalizeDimension(stored.width);
+    const trustedHeight = normalizeDimension(stored.height);
+    if (
+      requiresOwnedMedia
+      && (field.type === 'image' || field.type === 'video')
+      && (trustedWidth == null || trustedHeight == null)
+    ) {
+      return failure({
+        error: 'MEDIA_DIMENSIONS_UNVERIFIED',
+        fieldId: candidate.fieldId,
+        message: `This ${field.type} reference has no trusted dimension metadata. Upload it again before generating.`,
+      });
+    }
+
     const minimumSidePx = field.type === 'image'
       ? params.inputSchema?.constraints?.minImageSidePx
       : undefined;
     if (typeof minimumSidePx === 'number' && Number.isFinite(minimumSidePx) && minimumSidePx > 0) {
-      const width = normalizeDimension(stored.width);
-      const height = normalizeDimension(stored.height);
+      const width = trustedWidth;
+      const height = trustedHeight;
       if (width == null || height == null) {
         return failure({
           error: 'MEDIA_DIMENSIONS_UNVERIFIED',
@@ -337,9 +375,9 @@ export async function validateGenerationMediaConstraints(params: {
       Number.isFinite(minimumPixelCount) &&
       minimumPixelCount > 0
     ) {
-      let width = normalizeDimension(stored.width);
-      let height = normalizeDimension(stored.height);
-      if (width == null || height == null) {
+      let width = trustedWidth;
+      let height = trustedHeight;
+      if (!requiresOwnedMedia && (width == null || height == null)) {
         const detected = await detectVideoDimensionsFn(stored.url).catch(() => null);
         width = normalizeDimension(detected?.width);
         height = normalizeDimension(detected?.height);

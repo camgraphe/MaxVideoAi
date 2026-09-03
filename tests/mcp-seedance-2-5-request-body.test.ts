@@ -212,7 +212,7 @@ test('ordered Seedance source slots come from canonical request order, never res
   }));
   const reversedBody = await projectedBody(right, reversedResolved);
   assert.deepEqual(reversedBody.extensionSourceVideos, [secondVideo, sourceVideo]);
-  assert.equal(JSON.stringify(body).includes('slot-1'), false);
+  assert.equal(JSON.stringify(body).includes('slot-1'), true);
   assert.equal(JSON.stringify(body).includes('mimeType'), false);
 });
 

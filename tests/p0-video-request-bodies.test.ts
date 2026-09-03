@@ -244,7 +244,7 @@ test('LTX a2v sends source audio and optional image without output controls or a
       audioUrl,
       imageUrl: startUrl,
       inputs: [
-        { kind: 'audio', slotId: 'audio_url', url: audioUrl, durationSec: 7.8, type: 'audio/wav' },
+        { assetId, kind: 'audio', slotId: 'audio_url', url: audioUrl, durationSec: 7.8, type: 'audio/wav' },
         { kind: 'image', slotId: 'image_url', url: startUrl },
       ],
     },
@@ -498,7 +498,7 @@ test('all 23 P0 engine modes have exact whole site and paid MCP request bodies',
         });
         Object.assign(expectedPaid, {
           audioUrl,
-          inputs: [{ kind: 'audio', slotId: 'audio_url', url: audioUrl, durationSec: 8, type: 'audio/wav' }],
+          inputs: [{ assetId, kind: 'audio', slotId: 'audio_url', url: audioUrl, durationSec: 8, type: 'audio/wav' }],
         });
       } else {
         payload.durationSec = undefined;

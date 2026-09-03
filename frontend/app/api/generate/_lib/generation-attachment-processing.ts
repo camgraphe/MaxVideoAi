@@ -37,7 +37,7 @@ function modeRequiresOwnedMedia(params: GenerationAttachmentProcessingParams): b
 export async function processAndValidateGenerationAttachments(
   params: GenerationAttachmentProcessingParams
 ): Promise<GenerationAttachmentProcessingResult> {
-  const { rawInputs, userId, mediaConstraintDeps, ...referenceParams } = params;
+  const { rawInputs, userId, mediaConstraintDeps, trustedResolvedReferences, ...referenceParams } = params;
   const attachmentProcessing = await processGenerationAttachments({ rawInputs, userId });
   if (!attachmentProcessing.ok) {
     return { ...attachmentProcessing, metric: undefined };
@@ -63,5 +63,6 @@ export async function processAndValidateGenerationAttachments(
     userId,
     attachments: attachmentProcessing.attachments,
     mediaConstraintDeps,
+    trustedResolvedReferences,
   });
 }

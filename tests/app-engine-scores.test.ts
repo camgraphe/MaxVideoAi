@@ -31,7 +31,7 @@ test('image engine surfaces do not request selector scores', () => {
   const imagePageSource = readFileSync(imageWorkspacePagePath, 'utf8');
 
   assert.match(apiSource, /const includeScores = category !== 'image'/);
-  assert.match(apiSource, /includeScores \? loadAppEngineScoreMap\(\) : Promise\.resolve\(\{\}\)/);
+  assert.match(apiSource, /includeScores \? dependencies\.loadAppEngineScoreMap\(\) : Promise\.resolve\(\{\}\)/);
   assert.doesNotMatch(imagePageSource, /loadAppEngineScoreMap/);
   assert.doesNotMatch(imagePageSource, /engineScores=\{engineScores\}/);
 });

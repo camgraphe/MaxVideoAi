@@ -30,6 +30,9 @@ type MaterializedReference = {
   height?: number | null;
   durationSec?: number | null;
   mimeType?: string;
+  assetId?: string;
+  sizeBytes?: number | null;
+  originalName?: string | null;
 };
 
 function controlledHttpsUrl(value: unknown): string {
@@ -89,6 +92,9 @@ function materializeReferences(execution: PaidVideoRequestBodyExecution): Materi
       height: resolved.height,
       durationSec: resolved.durationSec,
       mimeType: resolved.mimeType,
+      assetId: resolved.assetId,
+      sizeBytes: resolved.sizeBytes,
+      originalName: resolved.originalName,
       ...(reference.slot === undefined ? {} : { slot: reference.slot }),
     };
   });
@@ -111,13 +117,16 @@ export function resolvePaidMembershipTier(
 
 function input(reference: MaterializedReference, slotId: string) {
   return {
+    ...(reference.assetId ? { assetId: reference.assetId } : {}),
+    ...(reference.originalName ? { name: reference.originalName } : {}),
+    ...(reference.mimeType ? { type: reference.mimeType } : {}),
+    ...(typeof reference.sizeBytes === 'number' ? { size: reference.sizeBytes } : {}),
     kind: reference.kind,
     slotId,
     url: reference.url,
     ...(typeof reference.width === 'number' ? { width: reference.width } : {}),
     ...(typeof reference.height === 'number' ? { height: reference.height } : {}),
     ...(typeof reference.durationSec === 'number' ? { durationSec: reference.durationSec } : {}),
-    ...(reference.mimeType ? { type: reference.mimeType } : {}),
   };
 }
 

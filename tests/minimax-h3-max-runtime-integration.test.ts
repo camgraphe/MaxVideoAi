@@ -21,6 +21,19 @@ const privateRuntimeBoundaries = {
     engineId === MINIMAX_H3_MAX_ENGINE.id ? MINIMAX_H3_MAX_ENGINE : undefined,
   isDatabaseConfigured: () => true,
   ensureBillingSchema: async () => undefined,
+  resolveLaunchCanaryRequestContext: async () => ({
+    principal: {
+      userId: 'h3-canary-user', clientId: 'h3-canary-client',
+      emailVerified: true, authMethod: 'oauth' as const,
+    },
+    access: { allowedModelIds: new Set(['minimax-h3-max']) },
+    generationEnvironment: {
+      bytePlusEnabled: false,
+      bytePlusApiKey: undefined,
+      falApiKey: 'private-canary-fal-key',
+      providerEnv: {},
+    },
+  }),
 };
 
 test('MiniMax H3 Max resolves through the private generation runtime without entering the public catalog', async () => {

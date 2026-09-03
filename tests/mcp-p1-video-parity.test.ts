@@ -114,8 +114,8 @@ function request(input: Record<string, unknown>): CanonicalGenerationRequest {
 
 function resolved(input: Partial<ResolvedReference> & Pick<ResolvedReference, 'assetId' | 'role' | 'mediaKind' | 'storageUrl'>): ResolvedReference {
   return {
-    width: input.mediaKind === 'image' ? 1280 : null,
-    height: input.mediaKind === 'image' ? 720 : null,
+    width: input.mediaKind === 'image' || input.mediaKind === 'video' ? 1280 : null,
+    height: input.mediaKind === 'image' || input.mediaKind === 'video' ? 720 : null,
     durationSec: input.mediaKind === 'video' ? 8 : null,
     mimeType: input.mediaKind === 'image' ? 'image/png' : 'video/mp4',
     sizeBytes: 1_024,

@@ -295,6 +295,15 @@ function validateDerivedSourceFacts(
         || !resolved.mimeType
         || !originalName
       ) fail('references', 'reference_invalid');
+      if (
+        (resolved.mediaKind === 'image' || resolved.mediaKind === 'video')
+        && (
+          !Number.isSafeInteger(resolved.width)
+          || !Number.isSafeInteger(resolved.height)
+          || Number(resolved.width) <= 0
+          || Number(resolved.height) <= 0
+        )
+      ) fail('references', 'reference_invalid');
       const mediaValidation = validateMediaFileAgainstConstraint({
         name: originalName,
         mimeType: resolved.mimeType,

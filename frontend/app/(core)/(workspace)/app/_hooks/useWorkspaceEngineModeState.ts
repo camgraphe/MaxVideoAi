@@ -50,18 +50,8 @@ import {
   supportsModeAudioControl,
 } from '../_lib/workspace-engine-helpers';
 import { STORAGE_KEYS } from '../_lib/workspace-storage';
-import {
-  isMinimaxH3MaxEngineId,
-  isMinimaxH3MaxRuntimeModeAvailable,
-} from '@/lib/minimax-h3-max';
 
 type ShotType = 'customize' | 'intelligent';
-
-export function getP1WorkspaceExecutableModes(engine: EngineCaps): Mode[] {
-  return isMinimaxH3MaxEngineId(engine.id)
-    ? engine.modes.filter(isMinimaxH3MaxRuntimeModeAvailable)
-    : [...engine.modes];
-}
 
 export function supportsWorkspaceMultiPrompt(engine: EngineCaps, mode?: Mode): boolean {
   const fields = [...(engine.inputSchema?.required ?? []), ...(engine.inputSchema?.optional ?? [])];
@@ -186,8 +176,7 @@ export function useWorkspaceEngineModeState({
     selectedEngine?.id === 'kling-3-pro' ||
     selectedEngine?.id === 'kling-3-standard' ||
     selectedEngine?.id === 'kling-3-4k' ||
-    Boolean(selectedEngine?.id.startsWith('kling-o3-')) ||
-    Boolean(selectedEngine && supportsWorkspaceMultiPrompt(selectedEngine));
+    Boolean(selectedEngine?.id.startsWith('kling-o3-'));
   const supportsKlingV3VoiceControl = false;
   const isSeedance = selectedEngine?.id === 'seedance-1-5-pro';
   const isUnifiedSeedance = isUnifiedSeedanceEngineId(selectedEngine?.id);
@@ -237,7 +226,7 @@ export function useWorkspaceEngineModeState({
   }, [form?.engineId, setForm]);
 
   const workspaceExecutableModes = useMemo(
-    () => selectedEngine ? getP1WorkspaceExecutableModes(selectedEngine) : [],
+    () => selectedEngine ? [...selectedEngine.modes] : [],
     [selectedEngine],
   );
   const engineModeOptions = useMemo(

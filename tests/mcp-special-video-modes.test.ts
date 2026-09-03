@@ -457,6 +457,7 @@ test('Luma Ray 3.2 v2v preserves its optional guide image through the site reque
   assert.equal(body.imageUrl, guideUrl);
   assert.deepEqual(body.inputs, [
     {
+      assetId: sourceAssetId,
       kind: 'video', slotId: 'video_url', url: sourceUrl,
       width: 1920, height: 1080, durationSec: 5, type: 'video/mp4',
     },
@@ -520,6 +521,7 @@ test('Luma Ray 3.2 v2v sends ordered canonical reference images as edit keyframe
   assert.deepEqual(body.referenceImages, keyframes);
   assert.deepEqual(body.inputs, [
     {
+      assetId: sourceAssetId,
       kind: 'video', slotId: 'video_url', url: sourceUrl,
       width: 1920, height: 1080, durationSec: 5, type: 'video/mp4',
     },
@@ -576,6 +578,7 @@ test('Luma Ray 2 v2v uses verified owned-source duration and its fixed pricing r
   assert.equal(body.imageUrl, guideUrl);
   assert.deepEqual(body.inputs, [
     {
+      assetId,
       kind: 'video',
       slotId: 'video_url',
       url: sourceUrl,
@@ -695,6 +698,7 @@ test('paid video projection preserves verified source duration for the existing 
     canonicalPricing: { membershipTier: 'member' },
   });
   assert.deepEqual(body.inputs, [{
+    assetId,
     kind: 'video',
     slotId: 'video_url',
     url: sourceUrl,

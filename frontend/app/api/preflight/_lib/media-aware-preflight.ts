@@ -2,18 +2,22 @@ import { validateNormalizedGenerationAttachments } from '@/app/api/generate/_lib
 import {
   computeConfiguredPreflight,
   getConfiguredEngine,
+  getConfiguredEngineIncludingHidden,
   type ComputeConfiguredPreflightOptions,
   type TrustedPreflightMediaPricingFacts,
 } from '@/server/engines';
 import type { EngineCaps, PreflightRequest, PreflightResponse } from '@/types/engines';
 import { parsePreflightRequestPayload } from './preflight-request';
+import type { LaunchCanaryRequestContext } from '@/server/model-launch-canary-request';
+import { resolveAgentGenerationModeExecutability } from '@/server/agent-runtime/model-executability';
 
 type MediaConstraintDependencies = Parameters<
   typeof validateNormalizedGenerationAttachments
 >[0]['mediaConstraintDeps'];
 
-type MediaAwarePreflightDependencies = {
+export type MediaAwarePreflightDependencies = {
   getConfiguredEngineFn?: typeof getConfiguredEngine;
+  getConfiguredEngineIncludingHiddenFn?: typeof getConfiguredEngineIncludingHidden;
   computeConfiguredPreflightFn?: (
     request: PreflightRequest,
     options?: ComputeConfiguredPreflightOptions,
@@ -55,6 +59,10 @@ function requiresInputAudioDuration(engine: EngineCaps, request: PreflightReques
   return engine.pricingDetails?.byMode?.[request.mode]?.durationBasis === 'input_audio';
 }
 
+function requiresTrustedOwnedMedia(engine: EngineCaps, request: PreflightRequest): boolean {
+  return engine.inputSchema?.constraints?.ownedAssetModes?.includes(request.mode) === true;
+}
+
 function hasValidPersistedReferenceRoles(engine: EngineCaps, request: PreflightRequest): boolean {
   if (!request.inputs?.length) return true;
   const activeMediaFields = new Map(
@@ -76,6 +84,7 @@ export async function resolveMediaAwarePreflight(
     request: PreflightRequest;
     userId?: string | null;
     resolveUserId?: () => Promise<string | null>;
+    launchCanaryContext?: LaunchCanaryRequestContext | null;
   },
   dependencies: MediaAwarePreflightDependencies = {},
 ): Promise<PreflightResponse> {
@@ -83,10 +92,27 @@ export async function resolveMediaAwarePreflight(
   if (!parsedRequest.ok) return parsedRequest.response;
   const request = parsedRequest.request;
   const getConfiguredEngineFn = dependencies.getConfiguredEngineFn ?? getConfiguredEngine;
+  const getConfiguredEngineIncludingHiddenFn =
+    dependencies.getConfiguredEngineIncludingHiddenFn ?? getConfiguredEngineIncludingHidden;
   const computeConfiguredPreflightFn =
     dependencies.computeConfiguredPreflightFn ?? computeConfiguredPreflight;
-  const engine = await getConfiguredEngineFn(request.engine);
+  const publicEngine = await getConfiguredEngineFn(request.engine);
+  const canAccessPrivate = input.launchCanaryContext?.access.allowedModelIds.has(request.engine) === true;
+  const privateEngine = !publicEngine && canAccessPrivate
+    ? await getConfiguredEngineIncludingHiddenFn(request.engine)
+    : undefined;
+  const engine = publicEngine ?? privateEngine;
   if (!engine) return computeConfiguredPreflightFn(request);
+  if (
+    privateEngine
+    && !resolveAgentGenerationModeExecutability(
+      engine,
+      request.mode,
+      input.launchCanaryContext!.generationEnvironment,
+    ).executable
+  ) {
+    return computeConfiguredPreflightFn(request);
+  }
 
   if (hasClientDeclaredMediaPricingFacts(request)) {
     return mediaPricingFailure(
@@ -104,7 +130,8 @@ export async function resolveMediaAwarePreflight(
 
   const needsReferenceImageCount = requiresReferenceImageCount(engine, request);
   const needsInputAudioDuration = requiresInputAudioDuration(engine, request);
-  if (!needsReferenceImageCount && !needsInputAudioDuration) {
+  const needsTrustedOwnedMedia = requiresTrustedOwnedMedia(engine, request);
+  if (!needsReferenceImageCount && !needsInputAudioDuration && !needsTrustedOwnedMedia) {
     return computeConfiguredPreflightFn(request, { resolvedEngine: engine });
   }
   const userId = input.userId === undefined

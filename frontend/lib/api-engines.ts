@@ -1,5 +1,6 @@
 import useSWR from 'swr';
 import type { EnginesResponse } from '@/types/engines';
+import { authFetch } from '@/src/lib/authFetch';
 
 export type EngineCategory = 'video' | 'image' | 'all';
 
@@ -27,7 +28,7 @@ export function useEngines(category: EngineCategory = 'video', options?: UseEngi
     enabled ? `static-engines:${category}:${options?.includeAverages ? 'avg' : 'base'}` : null,
     async () => {
       try {
-        const response = await fetch(`/api/engines${query}`, { credentials: 'include' });
+        const response = await authFetch(`/api/engines${query}`, { credentials: 'include' });
         const data = (await response.json().catch(() => null)) as
           | { engines?: EnginesResponse['engines']; engineScores?: EnginesResponse['engineScores']; error?: string }
           | null;

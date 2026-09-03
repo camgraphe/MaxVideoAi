@@ -4,6 +4,7 @@ export type MediaFieldConstraint = {
   maxSizeMB?: number;
   acceptedMimeTypes: string[];
   acceptedFileExtensions: string[];
+  unmappedDeclaredFormats?: string[];
 };
 
 export type MediaFileConstraintValidation =
@@ -44,23 +45,35 @@ const FORMAT_MIME_TYPES: Readonly<Record<string, readonly string[]>> = Object.fr
   jpeg: ['image/jpeg'],
   png: ['image/png'],
   webp: ['image/webp'],
+  gif: ['image/gif'],
+  avif: ['image/avif'],
+  bmp: ['image/bmp', 'image/x-ms-bmp'],
+  tif: ['image/tiff'],
+  tiff: ['image/tiff'],
   heic: ['image/heic'],
   heif: ['image/heif'],
   mp4: ['video/mp4'],
   webm: ['video/webm'],
   mov: ['video/quicktime'],
+  m4v: ['video/x-m4v', 'video/mp4'],
   mpeg: ['video/mpeg'],
   mpg: ['video/mpeg'],
   wmv: ['video/x-ms-wmv'],
   '3gpp': ['video/3gpp'],
+  mp3: ['audio/mpeg'],
+  wav: ['audio/wav', 'audio/x-wav'],
 });
 
-function formatsForField(engine: EngineCaps, field: EngineInputField): string[] {
-  const formats = normalizeList(
+function declaredFormats(engine: EngineCaps): string[] {
+  return normalizeList(
     Array.isArray(engine.inputSchema?.constraints?.supportedFormats)
       ? engine.inputSchema.constraints.supportedFormats.filter((value): value is string => typeof value === 'string')
       : undefined,
   );
+}
+
+function formatsForField(engine: EngineCaps, field: EngineInputField): string[] {
+  const formats = declaredFormats(engine);
   const mimePrefix = `${field.type}/`;
   return formats.filter((format) =>
     (FORMAT_MIME_TYPES[format] ?? []).some((mime) => mime.startsWith(mimePrefix)));
@@ -84,6 +97,10 @@ export function resolveEngineMediaFieldConstraint({
   const fallbackFormats = formatsForField(engine, field);
   const acceptedFileExtensions = normalizeList(field.acceptedFileExtensions);
   const acceptedMimeTypes = normalizeList(field.acceptedMimeTypes);
+  const usesDeclaredFormats = !acceptedFileExtensions.length || !acceptedMimeTypes.length;
+  const unmappedDeclaredFormats = usesDeclaredFormats
+    ? declaredFormats(engine).filter((format) => !FORMAT_MIME_TYPES[format]?.length)
+    : [];
   return {
     maxSizeMB: field.maxSizeMB ?? fallbackMaxSizeMB(engine, field),
     acceptedMimeTypes: acceptedMimeTypes.length
@@ -92,6 +109,7 @@ export function resolveEngineMediaFieldConstraint({
     acceptedFileExtensions: acceptedFileExtensions.length
       ? acceptedFileExtensions
       : fallbackFormats,
+    ...(unmappedDeclaredFormats.length ? { unmappedDeclaredFormats } : {}),
   };
 }
 
@@ -119,6 +137,14 @@ export function validateMediaFileAgainstConstraint({
     sizeBytes > constraint.maxSizeMB * 1024 * 1024
   ) {
     return { ok: false, reason: 'size', maxSizeMB: constraint.maxSizeMB };
+  }
+
+  if (constraint.unmappedDeclaredFormats?.length) {
+    return {
+      ok: false,
+      reason: 'format',
+      acceptedFileExtensions: constraint.acceptedFileExtensions,
+    };
   }
 
   const normalizedMime = mimeType.split(';', 1)[0]?.trim().toLowerCase() ?? '';
