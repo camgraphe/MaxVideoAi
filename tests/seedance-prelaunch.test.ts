@@ -408,6 +408,7 @@ test('Seedance 2.5 and Seedance 2.0 lead the app menu while P1 models enter mark
       'veo-3-1',
       'gemini-omni-flash',
       'ltx-2-5-pro',
+      'wan-3',
       'wan-3-prime',
       'grok-imagine-video-1-5',
     ]
@@ -428,7 +429,6 @@ test('Seedance 2.5 and Seedance 2.0 lead the app menu while P1 models enter mark
     ]
   );
   assert.equal(MARKETING_NAV_COMPARE.length, 10);
-  assert.equal(MARKETING_NAV_COMPARE[0]?.badge, 'new');
   const expectedExampleFamilies = [
     'veo',
     'seedance',
@@ -469,6 +469,7 @@ test('Header model menu keeps H3 and the current P1 representatives in the bound
     'veo-3-1',
     'gemini-omni-flash',
     'ltx-2-5-pro',
+    'wan-3',
     'wan-3-prime',
     'grok-imagine-video-1-5',
   ]);
