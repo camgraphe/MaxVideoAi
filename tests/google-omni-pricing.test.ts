@@ -138,6 +138,47 @@ test('Google Omni edit pricing ignores selected duration and requires trusted in
   }
 });
 
+test('Google Omni edit pricing accepts trusted fractional inherited duration without relaxing selected duration', () => {
+  const v2v = buildBillingPricingFacts({
+    engine,
+    durationSec: 10,
+    inheritedDurationSec: 4.25,
+    resolution: '720p',
+    mode: 'v2v',
+    inputVideoDurationSec: 4.25,
+  }, engine.pricingDetails, 'USD');
+  const chainedRetake = buildBillingPricingFacts({
+    engine,
+    durationSec: 3,
+    inheritedDurationSec: 4.25,
+    resolution: '720p',
+    mode: 'retake',
+    inputVideoDurationSec: 0,
+  }, engine.pricingDetails, 'USD');
+
+  assert.equal(v2v.facts.quantity, 4.25);
+  assert.equal(v2v.facts.vendorSubtotalExactCents, 46.7704);
+  assert.equal(chainedRetake.facts.quantity, 4.25);
+  assert.equal(chainedRetake.facts.vendorSubtotalExactCents, 43.078);
+
+  assert.throws(() => buildBillingPricingFacts({
+    engine,
+    durationSec: 4.25,
+    resolution: '720p',
+    mode: 't2v',
+  }, engine.pricingDetails, 'USD'), /integer from 3 through 10/i);
+
+  for (const inheritedDurationSec of [Number.NaN, Number.POSITIVE_INFINITY, 2.99, 10.01]) {
+    assert.throws(() => buildBillingPricingFacts({
+      engine,
+      durationSec: 5,
+      inheritedDurationSec,
+      resolution: '720p',
+      mode: 'retake',
+    }, engine.pricingDetails, 'USD'), /inherited duration/i);
+  }
+});
+
 test('Google Omni inherited duration resolves only from trusted source or owned interaction data', async () => {
   assert.equal(await resolveGoogleOmniInheritedDurationSec({
     engineId: 'gemini-omni-flash',
@@ -154,7 +195,7 @@ test('Google Omni inherited duration resolves only from trusted source or owned 
     previousInteractionId: 'interactions/owned_123',
     queryFn: async (sql, params) => {
       queries.push({ sql, params });
-      return [{ duration_sec: 6 }] as never;
+      return [{ request_snapshot: { providerPricing: { outputDurationSec: 6 } } }] as never;
     },
   });
   assert.equal(resolved, 6);
@@ -163,6 +204,7 @@ test('Google Omni inherited duration resolves only from trusted source or owned 
   assert.match(queries[0]?.sql ?? '', /engine_id = 'gemini-omni-flash'/);
   assert.match(queries[0]?.sql ?? '', /provider = 'google_vertex_omni_direct'/);
   assert.match(queries[0]?.sql ?? '', /status = 'completed'/);
+  assert.match(queries[0]?.sql ?? '', /request_snapshot/);
   assert.deepEqual(queries[0]?.params, ['user_123', 'interactions/owned_123']);
 
   assert.equal(await resolveGoogleOmniInheritedDurationSec({

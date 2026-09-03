@@ -5,6 +5,7 @@ import test from 'node:test';
 
 import { normalizeGoogleVertexOmniInteraction } from '../frontend/src/server/video-providers/google-vertex-omni/response';
 import { GoogleVertexOmniError } from '../frontend/src/server/video-providers/google-vertex-omni/errors';
+import { resolveGoogleOmniInheritedDurationSec } from '../frontend/src/server/video-providers/google-vertex-omni/pricing-context';
 import { submitGoogleVertexOmniGenerateTask } from '../frontend/app/api/generate/_lib/google-vertex-omni-submission';
 import { runGoogleVertexOmniPoll } from '../frontend/server/google-vertex-omni-poll';
 
@@ -327,6 +328,147 @@ test('Gemini Omni provider pricing snapshot survives price-only job receipts thr
   const costBreakdown = JSON.parse(String(completedUpdate.params?.[3]));
   assert.equal(costBreakdown.provider_cost_units, 5);
   assert.equal(costBreakdown.provider_cost_usd, 0.80364);
+});
+
+test('Gemini Omni v2v and chained retake inherit duration from owned provider pricing snapshots', async () => {
+  async function persistPricingSnapshot(params: {
+    jobId: string;
+    mode: 'v2v' | 'retake';
+    outputDurationSec: number;
+    inputVideoDurationSec: number;
+    providerInteractionId: string;
+  }) {
+    let requestSnapshot: Record<string, unknown> | null = null;
+    const result = await submitGoogleVertexOmniGenerateTask({
+      jobId: params.jobId,
+      userId: 'user_123',
+      engineId: 'gemini-omni-flash',
+      engineLabel: 'Gemini Omni Flash 1.1',
+      mode: params.mode,
+      prompt: 'Keep the exact inherited timing',
+      negativePrompt: null,
+      durationSec: 10,
+      aspectRatio: '16:9',
+      resolution: '720p',
+      audioEnabled: true,
+      placeholderThumb: '/assets/frames/thumb-16x9.svg',
+      pricing: {
+        amountCents: 99,
+        currency: 'USD',
+        meta: {
+          mode: params.mode,
+          output_resolution: '720p',
+          output_duration_sec: params.outputDurationSec,
+          input_image_count: 0,
+          input_video_duration_sec: params.inputVideoDurationSec,
+        },
+      },
+      paymentStatus: 'paid_wallet',
+      pendingReceipt: null,
+      paymentMode: 'wallet',
+      walletChargeReserved: false,
+      falPayload: {
+        engineId: 'gemini-omni-flash',
+        prompt: 'Keep the exact inherited timing',
+        mode: params.mode,
+        videoUrl: params.mode === 'v2v' ? 'gs://owned/source.mp4' : undefined,
+        durationSec: 10,
+        aspectRatio: '16:9',
+        extraInputValues: params.mode === 'retake'
+          ? { previous_interaction_id: 'interactions/previous' }
+          : undefined,
+      },
+      batchId: null,
+      groupId: null,
+      iterationIndex: null,
+      iterationCount: null,
+      renderIds: null,
+      heroRenderId: null,
+      localKey: null,
+      logMetricFn: () => {},
+      deps: {
+        outputGcsPrefix: 'gs://maxvideoai-vertex/shared-inputs',
+        queryFn: async (sql, queryParams) => {
+          if (/INSERT INTO provider_attempts/.test(sql)) {
+            requestSnapshot = JSON.parse(String(queryParams?.[5]));
+            return [{ id: 81, attempt_index: 1 }] as never;
+          }
+          return [] as never;
+        },
+        getGoogleVertexOmniClientFn: () => ({
+          accessToken: async () => 'test-access-token',
+          createInteraction: async () => ({
+            id: params.providerInteractionId,
+            status: 'in_progress',
+            object: 'interaction',
+          }),
+          fetchInteraction: async () => { throw new Error('not used'); },
+          downloadOutputUri: async () => { throw new Error('not used'); },
+        }),
+      },
+    });
+    assert.equal(result.ok, true);
+    assert.ok(requestSnapshot);
+    return requestSnapshot;
+  }
+
+  const v2vSnapshot = await persistPricingSnapshot({
+    jobId: 'job_v2v_fractional',
+    mode: 'v2v',
+    outputDurationSec: 4.25,
+    inputVideoDurationSec: 4.25,
+    providerInteractionId: 'interactions/v2v_fractional',
+  });
+  assert.equal(v2vSnapshot.estimatedProviderCostUsd, 0.467704);
+  const resolverQueries: Array<{ sql: string; params?: unknown[] }> = [];
+  const fromV2v = await resolveGoogleOmniInheritedDurationSec({
+    engineId: 'gemini-omni-flash',
+    mode: 'retake',
+    userId: 'user_123',
+    previousInteractionId: 'interactions/v2v_fractional',
+    queryFn: async (sql, params) => {
+      resolverQueries.push({ sql, params });
+      return [{ request_snapshot: v2vSnapshot }] as never;
+    },
+  });
+  assert.equal(fromV2v, 4.25);
+
+  const retakeSnapshot = await persistPricingSnapshot({
+    jobId: 'job_retake_fractional',
+    mode: 'retake',
+    outputDurationSec: fromV2v!,
+    inputVideoDurationSec: 0,
+    providerInteractionId: 'interactions/retake_fractional',
+  });
+  assert.equal(retakeSnapshot.estimatedProviderCostUsd, 0.43078);
+  const fromRetake = await resolveGoogleOmniInheritedDurationSec({
+    engineId: 'gemini-omni-flash',
+    mode: 'retake',
+    userId: 'user_123',
+    previousInteractionId: 'interactions/retake_fractional',
+    queryFn: async () => [{ request_snapshot: retakeSnapshot }] as never,
+  });
+  assert.equal(fromRetake, 4.25);
+  assert.deepEqual(resolverQueries[0]?.params, ['user_123', 'interactions/v2v_fractional']);
+  assert.match(resolverQueries[0]?.sql ?? '', /aj\.user_id = \$1/);
+  assert.match(resolverQueries[0]?.sql ?? '', /aj\.provider = 'google_vertex_omni_direct'/);
+  assert.match(resolverQueries[0]?.sql ?? '', /pa\.provider = 'google_vertex_omni_direct'/);
+  assert.match(resolverQueries[0]?.sql ?? '', /aj\.status = 'completed'/);
+  assert.match(resolverQueries[0]?.sql ?? '', /pa\.status = 'completed'/);
+
+  for (const requestSnapshot of [
+    null,
+    { providerPricing: {} },
+    { providerPricing: { outputDurationSec: 10.5 } },
+  ]) {
+    assert.equal(await resolveGoogleOmniInheritedDurationSec({
+      engineId: 'gemini-omni-flash',
+      mode: 'retake',
+      userId: 'user_123',
+      previousInteractionId: 'interactions/untrusted',
+      queryFn: async () => [{ request_snapshot: requestSnapshot }] as never,
+    }), undefined);
+  }
 });
 
 test('Gemini Omni Flash unsupported direct input fails on Google without invoking another provider', async () => {

@@ -3,8 +3,16 @@ import type { Mode } from '@/types/engines';
 
 type QueryFn = <T = unknown>(sql: string, params?: unknown[]) => Promise<T[]>;
 
-function positiveFiniteNumber(value: unknown): number | undefined {
-  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : undefined;
+function inheritedDuration(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 3 && value <= 10
+    ? value
+    : undefined;
+}
+
+function recordValue(value: unknown): Record<string, unknown> | undefined {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : undefined;
 }
 
 export async function resolveGoogleOmniInheritedDurationSec(params: {
@@ -17,7 +25,7 @@ export async function resolveGoogleOmniInheritedDurationSec(params: {
 }): Promise<number | undefined> {
   if (params.engineId !== 'gemini-omni-flash') return undefined;
   if (params.mode === 'v2v') {
-    return positiveFiniteNumber(params.trustedSourceVideoDurationSec);
+    return inheritedDuration(params.trustedSourceVideoDurationSec);
   }
   if (params.mode !== 'retake') return undefined;
 
@@ -25,17 +33,23 @@ export async function resolveGoogleOmniInheritedDurationSec(params: {
     typeof params.previousInteractionId === 'string' ? params.previousInteractionId.trim() : '';
   if (!previousInteractionId) return undefined;
   const queryFn = params.queryFn ?? query;
-  const rows = await queryFn<{ duration_sec: number }>(
-    `SELECT duration_sec
-       FROM app_jobs
-      WHERE user_id = $1
-        AND provider_job_id = $2
-        AND engine_id = 'gemini-omni-flash'
-        AND provider = 'google_vertex_omni_direct'
-        AND status = 'completed'
-      ORDER BY created_at DESC
+  const rows = await queryFn<{ request_snapshot: unknown }>(
+    `SELECT pa.request_snapshot
+       FROM provider_attempts pa
+       JOIN app_jobs aj ON aj.id = pa.job_id
+      WHERE aj.user_id = $1
+        AND aj.provider_job_id = $2
+        AND aj.engine_id = 'gemini-omni-flash'
+        AND aj.provider = 'google_vertex_omni_direct'
+        AND aj.status = 'completed'
+        AND pa.provider = 'google_vertex_omni_direct'
+        AND pa.provider_job_id = $2
+        AND pa.status = 'completed'
+      ORDER BY pa.attempt_index DESC
       LIMIT 1`,
     [params.userId, previousInteractionId]
   );
-  return positiveFiniteNumber(rows[0]?.duration_sec);
+  const snapshot = recordValue(rows[0]?.request_snapshot);
+  const providerPricing = recordValue(snapshot?.providerPricing);
+  return inheritedDuration(providerPricing?.outputDurationSec);
 }

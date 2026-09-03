@@ -17,7 +17,11 @@ function inputImageCount(input: ProviderCostInput): number {
 }
 
 export function estimateGoogleVertexOmniCost(input: ProviderCostInput): ProviderCostEstimate {
-  const seconds = Math.max(3, Math.min(10, Math.round(input.durationSec)));
+  const inheritsOutputTiming = input.mode === 'v2v' || input.mode === 'retake';
+  const seconds = Math.max(
+    3,
+    Math.min(10, inheritsOutputTiming ? input.durationSec : Math.round(input.durationSec))
+  );
   if ((input.mode === 'v2v' || input.mode === 'extend') && input.inputVideoDurationSec === undefined) {
     return {
       providerCostUnits: seconds,

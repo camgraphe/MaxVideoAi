@@ -44,8 +44,8 @@ function assertNonNegativeFinite(value: number, label: string): void {
 }
 
 export function calculateGoogleOmniProviderCost(input: GoogleOmniPricingInput): GoogleOmniPricingBreakdown {
-  if (!Number.isInteger(input.outputDurationSec) || input.outputDurationSec < 3 || input.outputDurationSec > 10) {
-    throw new Error('Google Omni output duration must be an integer from 3 through 10 seconds.');
+  if (!Number.isFinite(input.outputDurationSec) || input.outputDurationSec < 3 || input.outputDurationSec > 10) {
+    throw new Error('Google Omni output duration must be from 3 through 10 seconds.');
   }
   if (!Number.isInteger(input.inputImageCount) || input.inputImageCount < 0) {
     throw new Error('Google Omni input image count must be a non-negative integer.');
@@ -83,8 +83,20 @@ export function resolveGoogleOmniPricingInput(context: GoogleOmniPricingContext)
 
   const mode = context.mode ?? 't2v';
   const inheritsOutputTiming = mode === 'v2v' || mode === 'retake';
-  if (inheritsOutputTiming && context.inheritedDurationSec === undefined) {
-    throw new Error('Google Omni exact pricing requires trusted inherited duration metadata for edit modes.');
+  if (inheritsOutputTiming && (
+    typeof context.inheritedDurationSec !== 'number'
+    || !Number.isFinite(context.inheritedDurationSec)
+    || context.inheritedDurationSec < 3
+    || context.inheritedDurationSec > 10
+  )) {
+    throw new Error('Google Omni exact pricing requires trusted inherited duration metadata from 3 through 10 seconds for edit modes.');
+  }
+  if (!inheritsOutputTiming && (
+    !Number.isInteger(context.outputDurationSec)
+    || context.outputDurationSec < 3
+    || context.outputDurationSec > 10
+  )) {
+    throw new Error('Google Omni output duration must be an integer from 3 through 10 seconds.');
   }
   const inferredImageCount = mode === 'i2v' ? 1 : mode === 'fl2v' ? 2 : 0;
   const inputImageCount = context.inputImageCount
