@@ -276,7 +276,7 @@ export interface PreflightRequest {
   engine: string;
   mode: Mode;
   durationSec: number;
-  resolution: Resolution;
+  resolution?: Resolution;
   aspectRatio?: AspectRatio;
   fps: number;
   seedLocked?: boolean;

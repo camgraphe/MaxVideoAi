@@ -20,11 +20,24 @@ import {
 import { getWorkspaceGenerationFailureMessage } from '../_lib/workspace-failure-messages';
 
 export function useWorkspaceAppBootstrap() {
-  const { data, error: enginesError, isLoading } = useEngines();
+  const { user, session, loading: authLoading, authStatus } = useRequireAuth({ redirectIfLoggedOut: false });
+  const enginesAuthScope = useMemo<NonNullable<Parameters<typeof useEngines>[1]>['authScope']>(() => {
+    if (authStatus === 'authed' && user?.id && session?.access_token) {
+      return {
+        status: 'authenticated',
+        principalId: user.id,
+        accessToken: session.access_token,
+      };
+    }
+    if (authStatus === 'loggedOut') return { status: 'anonymous' };
+    return { status: 'pending' };
+  }, [authStatus, session?.access_token, user?.id]);
+  const { data, error: enginesError, isLoading } = useEngines('video', {
+    authScope: enginesAuthScope,
+  });
   const engines = useMemo(() => data?.engines ?? [], [data]);
   const engineScores = useMemo(() => data?.engineScores ?? {}, [data?.engineScores]);
   const { data: latestJobsPages, mutate: mutateLatestJobs } = useInfiniteJobs(24, { type: 'video' });
-  const { user, session, loading: authLoading, authStatus } = useRequireAuth({ redirectIfLoggedOut: false });
   const provider = useResultProvider();
   const showCenterGallery = CLIENT_ENV.WORKSPACE_CENTER_GALLERY === 'true';
   const { t, locale } = useI18n();

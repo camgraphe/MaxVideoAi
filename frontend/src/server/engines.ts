@@ -182,14 +182,19 @@ export async function computeConfiguredPreflight(
   const supportsAspectRatio = Boolean(capability?.aspectRatio?.length);
   const requestedResolution = request.resolution;
   const availableResolutions: string[] = engine.resolutions.map((value) => value);
-  let effectiveResolution = requestedResolution;
+  const fallbackResolution = (
+    availableResolutions.find((value) => value !== 'auto')
+    ?? availableResolutions[0]
+    ?? '1080p'
+  ) as NonNullable<typeof requestedResolution>;
+  let effectiveResolution: NonNullable<PreflightRequest['resolution']> = requestedResolution ?? fallbackResolution;
   if (isLumaRay2) {
     if (!supportsResolution) {
       effectiveResolution =
-        (availableResolutions.find((value) => value !== 'auto') ?? availableResolutions[0] ?? '540p') as typeof requestedResolution;
+        (availableResolutions.find((value) => value !== 'auto') ?? availableResolutions[0] ?? '540p') as typeof effectiveResolution;
     } else if (requestedResolution === 'auto') {
-      effectiveResolution = '540p' as typeof requestedResolution;
-    } else if (!availableResolutions.includes(requestedResolution)) {
+      effectiveResolution = '540p';
+    } else if (requestedResolution !== undefined && !availableResolutions.includes(requestedResolution)) {
       return {
         ok: false,
         messages: [LUMA_RAY2_ERROR_UNSUPPORTED],
@@ -201,11 +206,11 @@ export async function computeConfiguredPreflight(
     }
   } else if (requestedResolution === 'auto') {
     effectiveResolution =
-      (engine.resolutions.find((value) => value !== 'auto') ?? engine.resolutions[0] ?? '1080p') as typeof requestedResolution;
-  } else if (!availableResolutions.includes(requestedResolution)) {
+      (engine.resolutions.find((value) => value !== 'auto') ?? engine.resolutions[0] ?? '1080p') as typeof effectiveResolution;
+  } else if (requestedResolution !== undefined && !availableResolutions.includes(requestedResolution)) {
     const fallback =
       availableResolutions.find((value) => value !== 'auto') ?? availableResolutions[0] ?? engine.resolutions[0];
-    effectiveResolution = (fallback ?? '1080p') as typeof requestedResolution;
+    effectiveResolution = (fallback ?? '1080p') as typeof effectiveResolution;
   }
 
   const durationInfo = isLumaRay2 && supportsDuration ? getLumaRay2DurationInfo(request.durationSec) : null;

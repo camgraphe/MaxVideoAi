@@ -7,6 +7,7 @@ import type {
 } from './workspace-generation-inputs';
 import type { FormState } from './workspace-form-state';
 import type { LumaRay2GenerationContext } from './workspace-generation-guards';
+import { workspaceModeSupportsRequestField } from './workspace-mode-request-fields';
 
 export type WorkspaceGeneratePayload = Parameters<typeof runGenerate>[0] & {
   imageUrl?: string;
@@ -70,8 +71,13 @@ function schemaSupportsField(inputSchema: EngineCaps['inputSchema'] | null | und
 export function buildWorkspaceGeneratePayload(
   options: BuildWorkspaceGeneratePayloadOptions
 ): WorkspaceGeneratePayloadBuildResult {
-  const shouldSendAspectRatio =
-    !options.capability || (options.capability.aspectRatio?.length ?? 0) > 0;
+  const requestMode = options.submissionMode as Mode;
+  const shouldSendAspectRatio = workspaceModeSupportsRequestField({
+    inputSchema: options.inputSchema,
+    capability: options.capability,
+    fieldId: 'aspect_ratio',
+    mode: requestMode,
+  });
   const resolvedDurationSeconds =
     options.lumaContext.isLumaRay2GenerateWorkflow && options.lumaContext.lumaDuration
       ? options.lumaContext.lumaDuration.seconds
@@ -85,7 +91,12 @@ export function buildWorkspaceGeneratePayload(
           options.effectiveDurationSec
         : options.form.durationOption ?? options.effectiveDurationSec;
   const shouldSendDuration = !options.capability || Boolean(options.capability.duration || options.capability.frames);
-  const shouldSendResolution = !options.capability || (options.capability.resolution?.length ?? 0) > 0;
+  const shouldSendResolution = workspaceModeSupportsRequestField({
+    inputSchema: options.inputSchema,
+    capability: options.capability,
+    fieldId: 'resolution',
+    mode: requestMode,
+  });
   const resolvedResolution =
     options.lumaContext.isLumaRay2GenerateWorkflow && options.lumaContext.lumaResolution
       ? options.lumaContext.lumaResolution.value
@@ -99,7 +110,6 @@ export function buildWorkspaceGeneratePayload(
       : undefined;
   const cameraFixed = typeof options.form.cameraFixed === 'boolean' ? options.form.cameraFixed : undefined;
   const safetyChecker = typeof options.form.safetyChecker === 'boolean' ? options.form.safetyChecker : undefined;
-  const requestMode = options.submissionMode as Mode;
   const supportsSeed = options.isSeedance || schemaSupportsField(options.inputSchema, 'seed', requestMode);
   const supportsCameraFixed =
     options.isSeedance || schemaSupportsField(options.inputSchema, 'camera_fixed', requestMode);

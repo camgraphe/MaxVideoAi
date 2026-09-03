@@ -69,7 +69,7 @@ const preflightRequestSchema = z.object({
   engine: z.string().trim().min(1).max(128),
   mode: z.enum(modes),
   durationSec: z.number().finite().positive().max(3_600),
-  resolution: z.enum(resolutions),
+  resolution: z.enum(resolutions).optional(),
   aspectRatio: z.enum(aspectRatios).optional(),
   fps: z.number().finite().positive().max(240),
   seedLocked: z.boolean().optional(),

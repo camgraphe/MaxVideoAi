@@ -87,7 +87,12 @@ export function createEnginesGetHandler(
       }));
       return NextResponse.json(
         { ok: true, engines: payload, engineScores },
-        { headers: { 'Cache-Control': 'private, no-store' } },
+        {
+          headers: {
+            'Cache-Control': 'private, no-store',
+            Vary: 'Authorization, Cookie',
+          },
+        },
       );
     } catch (error) {
       console.error('[api/engines] failed to load configured engines, falling back to base registry', error);
@@ -97,7 +102,12 @@ export function createEnginesGetHandler(
       }));
       return NextResponse.json(
         { ok: true, engines: payload, engineScores: {}, degraded: true },
-        { headers: { 'Cache-Control': 'private, no-store' } },
+        {
+          headers: {
+            'Cache-Control': 'private, no-store',
+            Vary: 'Authorization, Cookie',
+          },
+        },
       );
     }
   };

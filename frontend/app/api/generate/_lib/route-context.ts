@@ -264,6 +264,9 @@ export async function resolveGenerateRouteContext(params: {
   const requestedJobId = typeof body.jobId === 'string' && body.jobId.trim() ? String(body.jobId).trim() : null;
   const jobId = requestedJobId ?? `job_${randomUUID()}`;
   const rawMode = typeof body.mode === 'string' ? body.mode.trim().toLowerCase() : '';
+  if (rawMode && !isVideoMode(rawMode)) {
+    return { ok: false, status: 400, body: { ok: false, error: 'Invalid mode' } };
+  }
   const mode: Mode = isVideoMode(rawMode)
     ? rawMode
     : engine.modes.includes('t2v')
