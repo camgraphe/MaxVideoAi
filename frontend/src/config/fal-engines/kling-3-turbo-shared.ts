@@ -1,0 +1,140 @@
+import type { AspectRatio, EngineCaps, EngineInputSchema, EnginePricingDetails } from '../../../types/engines';
+
+export const KLING_3_TURBO_ENGINE_IDS = [
+  'kling-3-turbo-standard',
+  'kling-3-turbo-pro',
+] as const;
+
+export type Kling3TurboEngineId = (typeof KLING_3_TURBO_ENGINE_IDS)[number];
+export type Kling3TurboMode = 't2v' | 'i2v';
+
+export const KLING_3_TURBO_ENDPOINTS: Record<Kling3TurboEngineId, Record<Kling3TurboMode, string>> = {
+  'kling-3-turbo-standard': {
+    t2v: 'fal-ai/kling-video/v3/turbo/standard/text-to-video',
+    i2v: 'fal-ai/kling-video/v3/turbo/standard/image-to-video',
+  },
+  'kling-3-turbo-pro': {
+    t2v: 'fal-ai/kling-video/v3/turbo/pro/text-to-video',
+    i2v: 'fal-ai/kling-video/v3/turbo/pro/image-to-video',
+  },
+};
+
+export const KLING_3_TURBO_DURATION_OPTIONS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] as const;
+export const KLING_3_TURBO_TEXT_ASPECT_RATIOS = ['16:9', '9:16', '1:1'] as const satisfies readonly AspectRatio[];
+
+export const KLING_3_TURBO_PROVIDER_COST_CENTS_PER_SECOND: Record<Kling3TurboEngineId, number> = {
+  'kling-3-turbo-standard': 11.2,
+  'kling-3-turbo-pro': 14,
+};
+
+const KLING_3_TURBO_INPUT_SCHEMA: EngineInputSchema = {
+  required: [
+    {
+      id: 'image_url',
+      type: 'image',
+      label: 'Start image',
+      description: 'Required opening-frame image for image-to-video generation.',
+      modes: ['i2v'],
+      requiredInModes: ['i2v'],
+      minCount: 1,
+      maxCount: 1,
+      source: 'either',
+    },
+  ],
+  optional: [
+    {
+      id: 'prompt',
+      type: 'text',
+      label: 'Prompt',
+      description: 'Single prompt. Mutually exclusive with multi-shot prompts.',
+      modes: ['t2v', 'i2v'],
+    },
+    {
+      id: 'multi_prompt',
+      type: 'text',
+      label: 'Multi-shot prompts',
+      description: 'One to six shot prompts. Their durations must total no more than 15 seconds and cannot be combined with a single prompt.',
+      modes: ['t2v', 'i2v'],
+    },
+    {
+      id: 'duration',
+      type: 'enum',
+      label: 'Duration (seconds)',
+      values: KLING_3_TURBO_DURATION_OPTIONS.map(String),
+      default: '5',
+      min: 3,
+      max: 15,
+      modes: ['t2v', 'i2v'],
+    },
+    {
+      id: 'aspect_ratio',
+      type: 'enum',
+      label: 'Aspect ratio',
+      values: [...KLING_3_TURBO_TEXT_ASPECT_RATIOS],
+      default: '16:9',
+      modes: ['t2v'],
+    },
+  ],
+  constraints: {
+    supportedFormats: ['jpg', 'jpeg', 'png'],
+    maxImageSizeMB: 50,
+    minImageSidePx: 300,
+  },
+};
+
+export function createKling3TurboEngine(input: {
+  id: Kling3TurboEngineId;
+  label: string;
+  version: string;
+  resolution: '720p' | '1080p';
+}): EngineCaps {
+  const perSecondCents = KLING_3_TURBO_PROVIDER_COST_CENTS_PER_SECOND[input.id];
+  const pricingDetails: EnginePricingDetails = {
+    currency: 'USD',
+    perSecondCents: { default: perSecondCents },
+    maxDurationSec: 15,
+  };
+
+  return {
+    id: input.id,
+    label: input.label,
+    provider: 'Kling by Kuaishou',
+    version: input.version,
+    status: 'early_access',
+    latencyTier: 'fast',
+    queueDepth: 0,
+    region: 'global',
+    modes: ['t2v', 'i2v'],
+    maxDurationSec: 15,
+    resolutions: [input.resolution],
+    aspectRatios: [...KLING_3_TURBO_TEXT_ASPECT_RATIOS],
+    fps: [24],
+    audio: true,
+    upscale4k: false,
+    extend: false,
+    motionControls: false,
+    keyframes: false,
+    params: {},
+    inputLimits: {
+      imageMaxMB: 50,
+      promptMaxChars: 2500,
+      promptMaxCharsSource: 'official',
+    },
+    inputSchema: KLING_3_TURBO_INPUT_SCHEMA,
+    pricingDetails,
+    pricing: {
+      unit: 'USD/s',
+      base: perSecondCents / 100,
+      currency: 'USD',
+      notes: `Provider-cost ceiling: $${(perSecondCents / 100).toFixed(3)}/s until direct Kling account pricing is proven lower.`,
+    },
+    updatedAt: '2026-09-03T00:00:00Z',
+    ttlSec: 600,
+    providerMeta: {
+      provider: 'kling',
+      modelSlug: KLING_3_TURBO_ENDPOINTS[input.id].t2v,
+    },
+    availability: 'limited',
+    brandId: 'kling',
+  };
+}

@@ -16,6 +16,8 @@ import { KLING_3_PRO_FAL_ENGINE_REGISTRY } from './kling-3-pro';
 import { KLING_3_STANDARD_FAL_ENGINE_REGISTRY } from './kling-3-standard';
 import { KLING_3_4K_FAL_ENGINE_REGISTRY } from './kling-3-4k';
 import { KLING_O3_FAL_ENGINE_REGISTRY } from './kling-o3';
+import { KLING_3_TURBO_STANDARD_FAL_ENGINE_REGISTRY } from './kling-3-turbo-standard';
+import { KLING_3_TURBO_PRO_FAL_ENGINE_REGISTRY } from './kling-3-turbo-pro';
 import { HAPPY_HORSE_FAL_ENGINE_REGISTRY } from './happy-horse';
 import { SEEDANCE_1_5_FAL_ENGINE_REGISTRY } from './seedance-1-5';
 import { SEEDANCE_2_STANDARD_FAL_ENGINE_REGISTRY } from './seedance-2-standard';
@@ -44,6 +46,13 @@ import { NANO_BANANA_PRO_FAL_ENGINE_REGISTRY } from './nano-banana-pro';
 import { NANO_BANANA_2_FAL_ENGINE_REGISTRY } from './nano-banana-2';
 import { GPT_IMAGE_2_FAL_ENGINE_REGISTRY } from './gpt-image-2';
 import { SEEDREAM_FAL_ENGINE_REGISTRY } from './seedream';
+
+// These contracts are intentionally excluded from the public engine catalog until
+// direct Kling acceptance and the model-registry publication gates are complete.
+export const UNPUBLISHED_FAL_ENGINE_REGISTRY: readonly RawFalEngineEntry[] = [
+  ...KLING_3_TURBO_STANDARD_FAL_ENGINE_REGISTRY,
+  ...KLING_3_TURBO_PRO_FAL_ENGINE_REGISTRY,
+];
 
 export const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   ...PIKA_FAL_ENGINE_REGISTRY,
