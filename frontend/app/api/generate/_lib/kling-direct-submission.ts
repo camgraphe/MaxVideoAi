@@ -322,6 +322,7 @@ export async function submitKlingDirectGenerateTask(params: {
       estimatedProviderCostUnits: estimate.providerCostUnits,
       estimatedProviderCostUsd: estimate.providerCostUsd,
     },
+    queryFn,
   });
 
   try {
@@ -365,6 +366,7 @@ export async function submitKlingDirectGenerateTask(params: {
       attemptId: klingAttempt.id,
       providerJobId: task.providerJobId,
       responseSnapshot: task.raw,
+      queryFn,
     });
     const status = task.status === 'running' ? 'running' : 'queued';
     const progress = task.status === 'running' ? 30 : 10;
@@ -427,6 +429,7 @@ export async function submitKlingDirectGenerateTask(params: {
       errorClass: normalized.errorClass,
       fallbackEligible,
       responseSnapshot: normalized.raw,
+      queryFn,
     });
 
     if (!fallbackEligible) {
@@ -476,8 +479,9 @@ export async function submitKlingDirectGenerateTask(params: {
         fallbackReason: normalized.errorClass,
         fallbackErrorCode: normalized.code,
       },
+      queryFn,
     });
-    await linkProviderFallbackAttempt({ fromAttemptId: klingAttempt.id, toAttemptId: falAttempt.id });
+    await linkProviderFallbackAttempt({ fromAttemptId: klingAttempt.id, toAttemptId: falAttempt.id, queryFn });
     await queryFn(`UPDATE app_jobs SET provider = 'fal', updated_at = NOW() WHERE job_id = $1`, [params.jobId]);
 
     const falTracker = createProviderJobTracker({
@@ -511,6 +515,7 @@ export async function submitKlingDirectGenerateTask(params: {
         attemptId: falAttempt.id,
         providerJobId: falProviderJobId,
         responseSnapshot: falSubmission.ok ? falSubmission.generationResult : falSubmission.body,
+        queryFn,
       });
     }
     if (!falSubmission.ok) {
@@ -520,6 +525,7 @@ export async function submitKlingDirectGenerateTask(params: {
         errorClass: 'fal_fallback_failed',
         fallbackEligible: false,
         responseSnapshot: falSubmission.body,
+        queryFn,
       });
       return falSubmission;
     }
@@ -528,6 +534,7 @@ export async function submitKlingDirectGenerateTask(params: {
         attemptId: falAttempt.id,
         status: 'completed',
         responseSnapshot: falSubmission.generationResult,
+        queryFn,
       });
     }
     return {

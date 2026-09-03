@@ -248,9 +248,10 @@ application treats absence as an unset, host-only cookie domain.
 Except for the dedicated staging-only BytePlus and Google identities, the
 marketplace-managed `FAL_KEY`, the staging-only provider poll/callback tokens,
 `MCP_TOPUP_HANDOFF_SECRET`, the dedicated prefix-scoped staging storage
-credential, and cleanup-only `CRON_SECRET`, do not add other provider keys, Stripe secrets, a
-Supabase secret or legacy `service_role` key, SMTP credentials, or any production
-database URL to this project.
+credential, cleanup-only `CRON_SECRET`, and the explicitly approved Kling direct
+credentials are allowed here. Do not add Stripe secrets, a Supabase secret or
+legacy `service_role` key, SMTP credentials, or any production database URL to
+this project.
 
 ### Schema and cleanup prerequisite
 
@@ -262,12 +263,14 @@ deployment wrapper does not run migrations or mutate the live database. If the
 required schema state cannot be established without revealing credentials, stop
 with `SCHEMA_BLOCKED`; do not deploy and do not attempt an in-band repair.
 
-The operational MCP staging package registers exactly four schedules:
-`/api/cron/byteplus-poll`, `/api/cron/fal-poll`,
+The operational MCP staging package registers exactly five schedules:
+`/api/cron/byteplus-poll`, `/api/cron/fal-poll`, `/api/cron/kling-direct-poll`,
 `/api/cron/google-vertex-veo-poll`, and
 `/api/cron/google-vertex-omni-poll`, all every five minutes. They advance
-accepted Seedance 2.5, Fal-backed, Veo, and Omni jobs and persist their terminal
-outputs. Do not add the Task 5 cleanup schedule or any other production
+accepted Seedance 2.5, Fal-backed, Kling direct, Veo, and Omni jobs and persist
+their terminal outputs. Kling Turbo is direct-first; a pre-acceptance depleted
+balance response may fall back once to Fal when both fallback flags are enabled.
+Do not add the Task 5 cleanup schedule or any other production
 cron to `frontend/vercel.mcp-staging.json`.
 Cleanup remains an attended, authenticated one-shot operation using the same
 route and bounded Task 5 ledger owner as production. A secret name without a
@@ -409,7 +412,8 @@ The acceptance conditions are all mandatory:
 - `mcpApprovedGitSha` and `mcpTrackedArchiveSha256` match the current clean
   tracked revision exactly;
 - its cron list contains only `/api/cron/byteplus-poll`,
-  `/api/cron/fal-poll`, `/api/cron/google-vertex-veo-poll`, and
+  `/api/cron/fal-poll`, `/api/cron/kling-direct-poll`,
+  `/api/cron/google-vertex-veo-poll`, and
   `/api/cron/google-vertex-omni-poll`, all on `*/5 * * * *`;
 - the tested root, protected-resource discovery, and MCP protocol responses
   include exact `X-Robots-Tag: noindex, nofollow, noarchive`;

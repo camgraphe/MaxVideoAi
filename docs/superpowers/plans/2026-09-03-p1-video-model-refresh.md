@@ -16,7 +16,11 @@
 - Add one-hop aliases `gemini-omni-flash-1-1` and `gemini-omni-1-1-flash` through the model registry. Do not introduce a public “Gemini Omni Flash 1.0” identity.
 - Route Gemini directly through Google. Do not add a Fal fallback for Gemini.
 - Route Kling Turbo directly through Kling first and use Fal only for portable pre-acceptance failures. Never fall back after a direct task ID exists.
-- Do not publish Kling Turbo as “direct-first” until a staging probe with the real Kling account proves the exact submit and poll contract.
+- Keep Kling Turbo direct-first even while the current Kling account is unfunded:
+  activate the mapped direct route, allow the observed pre-acceptance depleted
+  balance response to fall back once to Fal, and never fall back after a direct
+  task ID exists. A future funded accepted task must use the existing direct
+  poller; lack of provider credit does not block this P1 release.
 - Keep MiniMax H3 and MiniMax H3 Max as separate public models. H3 Max uses Fal internally but public UI, metadata, comparison copy, pricing, documentation, and MCP responses must say MiniMax/Hailuo only.
 - Preserve MiniMax H3's generic search intent and existing page signals. Target exact `MiniMax H3 Max` intent only on the H3 Max page, and centralize overlapping decision content on the comparison page instead of duplicating it across both model pages.
 - Treat `MaxVideoAI` as the publisher/site entity, not as an extra H3 Max keyword. Preserve its existing natural publisher mentions and the normal title suffix, but do not repeat “Max” beyond the actual H3 Max model name and the single reciprocal decision link to manufacture token overlap.
@@ -70,7 +74,11 @@ assert.match(evidence, /Kling direct publication gate:\s+(proven|blocked)/)
 - [ ] Quote the smallest Google and Kling contract probes, present their combined maximum debit, and wait for explicit confirmation before sending either request. Space the two accepted submissions by at least 10 seconds.
 - [ ] For Google, execute the confirmed minimal authenticated staging request using the exact Vertex Interactions model ID documented for the account. Record the accepted provider model ID and response envelope; do not infer it from the public Gemini API alias.
 - [ ] For Kling Turbo, use the configured staging account to execute the confirmed smallest billable Standard request. Record the accepted path, request keys, task ID location, status values, output location, and error envelope.
-- [ ] If the Kling probe fails for access, auth, or unsupported model, set `Kling direct publication gate: blocked` and stop P1 publication. Do not substitute a Fal-only release under the same product promise.
+- [ ] If the Kling probe fails for access, auth, or unsupported model, set
+  `Kling direct publication gate: blocked` and stop P1 publication. If it fails
+  only for the observed depleted prepaid balance before acceptance, keep the
+  mapped direct route active and prove the explicitly enabled one-time Fal
+  fallback instead of requiring provider funding.
 - [ ] For H3 Max, fetch the live OpenAPI schemas and record the exact 480P and 768P per-second prices, duration bounds, end-frame field, reference-token formula, and whether native audio is automatic or configurable. The evidence test must reject a missing 480P rate.
 - [ ] Run the evidence test again and confirm it passes.
 - [ ] Commit the evidence contract.
@@ -225,10 +233,7 @@ git commit -m "feat: add Kling 3 Turbo engine contracts"
 
 **Files:**
 
-- Create: `frontend/src/server/video-providers/kling-direct/turbo-model-map.ts`
-- Create: `frontend/src/server/video-providers/kling-direct/turbo-payload.ts`
-- Create: `frontend/src/server/video-providers/kling-direct/turbo-client.ts`
-- Create: `frontend/src/server/video-providers/kling-direct/turbo-response.ts`
+- Modify: `frontend/src/server/video-providers/kling-direct/model-map.ts`
 - Modify: `frontend/src/server/video-providers/kling-direct/index.ts`
 - Modify: `frontend/src/server/video-providers/kling-direct/capabilities.ts`
 - Modify: `frontend/src/server/video-providers/kling-direct/cost.ts`
@@ -253,12 +258,16 @@ type KlingTurboDirectRequest = {
 }
 ```
 
-- [ ] Add mocked direct-contract tests from the exact submit, task, status, and output envelopes captured in Task 1. Do not reuse the legacy `video-v3` payload fixture for Turbo.
+- [ ] Add direct-contract tests from the exact rejected submit envelope captured
+  in Task 1 and the existing shared V3 polling contract. Keep the Turbo IDs
+  explicit even though they select the same provider model and endpoint family.
 - [ ] Extend router tests so both Turbo IDs choose `kling_direct` first when enabled and record Fal as the fallback provider.
 - [ ] Add fallback-matrix tests: network failure, timeout, 429, 5xx, and empty response may fall back before acceptance; moderation, invalid input, auth failure, nonportable input, or any returned task ID must not.
 - [ ] Add poll tests proving the stored `provider_attempts.request_snapshot` selects the Turbo poll contract after process restart.
 - [ ] Run the four Kling test files and confirm the new cases fail.
-- [ ] Implement a dedicated Turbo model map and payload builder around the account-proven API contract. Standard and Pro must select resolution/quality explicitly, not by changing the public model ID after submission.
+- [ ] Map both Turbo IDs into the existing V3 direct adapter around the observed
+  account contract. Standard and Pro select `std`/`pro` explicitly, without
+  changing the public model ID after submission.
 - [ ] Implement response normalization into the existing provider result shape and record provider, provider model, task ID, request snapshot, estimated cost, and final output URL.
 - [ ] Update direct cost estimation from the observed account contract. Keep the customer preflight ceiling at the verified Fal rate unless the direct rate is both lower and contractually stable.
 - [ ] Implement pre-acceptance fallback with a single portable request object so fields cannot drift between direct and Fal attempts.
@@ -669,7 +678,9 @@ git commit -m "feat: link p1 models across public surfaces"
 - [ ] Write a failing sitemap-delta test that compares the last production route fixture with the proposed projection and asserts exactly seven new English canonical routes and 21 localized `<loc>` entries.
 - [ ] Add negative assertions that Gemini aliases, the existing Gemini page, preserved Gemini comparisons, Runway, and H3 Max Turbo add zero canonical URLs.
 - [ ] Run the tests and confirm they fail while new model publication flags remain false.
-- [ ] Verify Task 1’s Kling direct gate is `proven`, all eight videos are accepted, P1 readiness is green, and no score/pricing/MCP/content field is missing.
+- [ ] Verify the Kling direct mapping is active, the depleted-balance fallback
+  is enabled and tested, all eight videos are accepted, P1 readiness is green,
+  and no score/pricing/MCP/content field is missing.
 - [ ] Flip all three new model identities to public in one authored registry edit.
 - [ ] Regenerate every registry/catalog/roster projection and run the model registry check.
 - [ ] Run the atomic publication and sitemap delta tests; inspect the generated URL list, not only the count.
@@ -736,7 +747,9 @@ git commit -m "docs: record p1 production verification"
 
 - [ ] Gemini public identity and indexed URLs are preserved while every visible contract says 1.1.
 - [ ] Gemini generations use Google direct only.
-- [ ] Kling Turbo Standard and Pro use proven Kling direct contracts first and safe Fal fallback only before acceptance.
+- [ ] Kling Turbo Standard and Pro use the mapped Kling direct contracts first
+  and safe Fal fallback only before acceptance, including the explicitly
+  enabled depleted-balance case.
 - [ ] H3 Max is distinct from H3 and exposes no Fal attribution publicly.
 - [ ] All runtime capabilities, validation, and exact quotes match between workspace and MCP.
 - [ ] Eight distinct videos are accepted, public in galleries, attached to exact model/family playlists, and excluded from immediate video-SEO editorial indexing.

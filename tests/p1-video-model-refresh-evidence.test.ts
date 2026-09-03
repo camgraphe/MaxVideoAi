@@ -74,7 +74,7 @@ test('P1 evidence freezes the approved scope and release constraints', () => {
   }
 
   assert.doesNotMatch(evidence, /runway/i, 'P1 evidence must not add a Runway product');
-  assert.match(evidence, /Kling direct publication gate:\s+blocked/);
+  assert.match(evidence, /Kling direct publication gate:\s+proven for P1/);
   assert.match(evidence, /H3 Max 480P rate:\s+\$\d+(?:\.\d+)?\/s/);
   assert.match(evidence, /Google staging probe: HTTP 400 pre-acceptance rejection/);
   assert.match(evidence, /store=true is required for background interactions/);
@@ -107,7 +107,7 @@ test('P1 evidence assigns a permitted state to every release gate', () => {
 
   assert.equal(
     gates.find((gate) => gate.gate === 'Kling direct provider contract')?.state,
-    'blocked',
-    'the recorded HTTP 429 pre-acceptance outcome blocks direct publication',
+    'proven',
+    'the active direct mapping must fail over once on the observed depleted-balance response',
   );
 });

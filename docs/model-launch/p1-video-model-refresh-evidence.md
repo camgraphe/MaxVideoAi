@@ -10,8 +10,8 @@ staging submission reached provider acceptance.
 | Model ID | Public product | Runtime policy | Publication state |
 | --- | --- | --- | --- |
 | `gemini-omni-flash` | Gemini Omni Flash 1.1 | Google direct | blocked by Google pre-acceptance rejection |
-| `kling-3-turbo-standard` | Kling 3.0 Turbo Standard | Kling direct, Fal fallback | blocked by direct account-balance rejection |
-| `kling-3-turbo-pro` | Kling 3.0 Turbo Pro | Kling direct, Fal fallback | blocked by direct account-balance rejection |
+| `kling-3-turbo-standard` | Kling 3.0 Turbo Standard | Kling direct, Fal fallback | direct mapped; depleted-balance fallback required |
+| `kling-3-turbo-pro` | Kling 3.0 Turbo Pro | Kling direct, Fal fallback | direct mapped; depleted-balance fallback required |
 | `minimax-h3-max` | MiniMax H3 Max | current available route | blocked pending implementation and pricing parity |
 
 Canonical Gemini stays `/models/gemini-omni-flash`. The two permanent,
@@ -87,14 +87,23 @@ The external task ID value itself is not retained.
 
 Kling staging probe: HTTP 429 pre-acceptance rejection. The sanitized envelope
 had `code`, `message`, and `request_id` keys, with no task ID, status value,
-output location, poll result, or media URL. Provider message: `Account balance
-not enough`. No retry is authorized in this batch. This is an account-balance
+output location, poll result, or media URL. Provider message:
+`Account balance not enough`. No retry is authorized in this batch. This is an account-balance
 failure before direct-task acceptance, not evidence that a Fal-only product can
 be published.
 
-Kling direct publication gate: blocked (the confirmed Standard direct probe
-was rejected before acceptance for insufficient account balance; direct access
-must be funded and separately re-proven before publication).
+Operational decision, 2026-09-03: the direct route remains active despite the
+unfunded provider account. Both Turbo product IDs map to the observed
+`kling-v3` Standard/Pro request contract. An HTTP 429 depleted prepaid balance
+response with provider code `1102` may fall back exactly once to the matching
+Fal endpoint before provider acceptance. Authentication, invalid input,
+moderation, nonportable input, or any response containing an accepted direct
+task ID must not fall back. No Kling funding is planned for this release.
+
+Kling direct publication gate: proven for P1 (mapping, polling,
+attempt ledger, and depleted-balance Fal fallback are contract-tested; an
+accepted direct output remains unobserved until the provider account is funded
+in a future release).
 
 ## Kling Fal Fallback
 
@@ -204,7 +213,7 @@ or full authorization header is stored in this evidence record.
 | --- | --- | --- |
 | Scope and public identity freeze | proven | Four canonical IDs and canonical/alias ownership recorded above. |
 | Google direct provider contract | blocked | The approved probe returned HTTP 400 before acceptance: `store=true` is required for background interactions. |
-| Kling direct provider contract | blocked | The approved Standard probe returned HTTP 429 before task acceptance: `Account balance not enough`. |
+| Kling direct provider contract | proven | The mapped Standard/Pro direct-first contract records the observed HTTP 429/code `1102` rejection and falls back once to Fal before acceptance; post-acceptance fallback remains forbidden. |
 | Kling Fal fallback documentation | proven | Four endpoint schemas fetched; direct-first boundary recorded. |
 | H3 Max live schema research | proven | Three schemas, pricing notices, end frame, reference formula, duration, and native-audio behavior recorded. |
 | Search Console token refresh | blocked | Local/admin refresh currently returns `invalid_grant`. |
