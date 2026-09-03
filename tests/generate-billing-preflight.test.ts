@@ -5,6 +5,7 @@ import test from 'node:test';
 
 import { resolveGenerateBillingPreflight } from '../frontend/app/api/generate/_lib/billing-preflight';
 import { listFalEngines } from '../frontend/src/config/falEngines';
+import { MINIMAX_H3_MAX_ENGINE } from '../frontend/src/config/fal-engines/minimax-h3-max';
 import type { PricingSnapshot } from '../frontend/types/engines';
 
 const root = process.cwd();
@@ -260,6 +261,100 @@ test('billing preflight persists verified media counts and durations in the cano
   assert.equal(result.preflight.pricing.meta?.request?.inputVideoDurationSec, 7.5);
   assert.equal(result.preflight.pricing.meta?.request?.inputAudioDurationSec, 9.25);
   assert.equal(result.preflight.receiptSnapshot.meta?.request?.inputAudioDurationSec, 9.25);
+});
+
+test('billing preflight forwards only server-trusted H3 Max reference tokens into wallet pricing', async () => {
+  let capturedContext: Record<string, unknown> | null = null;
+  const result = await resolveGenerateBillingPreflight({
+    req: createReq('US'),
+    engine: MINIMAX_H3_MAX_ENGINE,
+    mode: 'ref2v',
+    userId: 'user_h3_max',
+    payment: { mode: 'wallet', paymentIntentId: null },
+    jobId: 'job_h3_max',
+    durationSec: 5,
+    durationLabel: '5s',
+    pricingResolution: '768P',
+    effectiveResolution: '768P',
+    aspectRatio: null,
+    membershipTier: 'member',
+    isLumaRay2: false,
+    loop: false,
+    trustedMediaPricingFacts: { verifiedReferenceTokenCount: 4_597 },
+    rawDurationOption: 5,
+    lumaDurationLabel: null,
+    audioEnabled: undefined,
+    voiceControl: false,
+    deps: {
+      getUserPreferredCurrencyFn: async () => 'usd',
+      resolveCurrencyFn: () => ({ currency: 'usd', source: 'user_pref' }),
+      computePricingSnapshotFn: async (context) => {
+        capturedContext = context as unknown as Record<string, unknown>;
+        return { ...pricing, totalCents: 41, meta: { ...pricing.meta } };
+      },
+      convertCentsFn: async (cents) => ({ cents, rate: 1, source: 'identity' }),
+      getPlatformFeeCentsFn: () => 0,
+      receiptsPriceOnlyEnabledFn: () => false,
+      buildReceiptSnapshotFn: (value) => value,
+      applyEngineVariantPricingFn: (value) => value,
+      buildEngineAddonInputFn: () => ({}),
+    },
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(capturedContext?.verifiedReferenceTokenCount, 4_597);
+  if (!result.ok) return;
+  assert.equal(
+    (result.preflight.pricing.meta?.request as { verifiedReferenceTokenCount?: number })
+      .verifiedReferenceTokenCount,
+    4_597,
+  );
+});
+
+test('billing preflight fails H3 Max reference pricing closed before wallet reservation without trusted tokens', async () => {
+  let pricingCalls = 0;
+  const result = await resolveGenerateBillingPreflight({
+    req: createReq('US'),
+    engine: MINIMAX_H3_MAX_ENGINE,
+    mode: 'ref2v',
+    userId: 'user_h3_max',
+    payment: { mode: 'wallet', paymentIntentId: null },
+    jobId: 'job_h3_max_missing_tokens',
+    durationSec: 5,
+    durationLabel: '5s',
+    pricingResolution: '768P',
+    effectiveResolution: '768P',
+    aspectRatio: null,
+    membershipTier: 'member',
+    isLumaRay2: false,
+    loop: false,
+    rawDurationOption: 5,
+    lumaDurationLabel: null,
+    audioEnabled: undefined,
+    voiceControl: false,
+    deps: {
+      getUserPreferredCurrencyFn: async () => 'usd',
+      resolveCurrencyFn: () => ({ currency: 'usd', source: 'user_pref' }),
+      computePricingSnapshotFn: async () => {
+        pricingCalls += 1;
+        return { ...pricing, meta: { ...pricing.meta } };
+      },
+      applyEngineVariantPricingFn: (value) => value,
+      buildEngineAddonInputFn: () => ({}),
+    },
+  });
+
+  assert.deepEqual(result, {
+    ok: false,
+    status: 422,
+    body: {
+      ok: false,
+      error: 'PRICING_MEDIA_FACTS_UNVERIFIED',
+      message: 'Trusted reference-token pricing metadata is required.',
+    },
+    metric: { errorCode: 'PRICING_MEDIA_FACTS_UNVERIFIED' },
+  });
+  assert.equal(pricingCalls, 0);
 });
 
 test('billing preflight passes trusted inherited edit duration independently of the selected duration', async () => {

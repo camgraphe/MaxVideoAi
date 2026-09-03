@@ -23,6 +23,7 @@ import {
   type MultiPromptEntry,
 } from './request-option-normalizers';
 import { buildSoraRequestOptions } from './request-options-sora';
+import { getRuntimeDurationDefault, getRuntimeSchemaEnumDefault } from './runtime-schema-options';
 
 export type { GenerationElement, MultiPromptEntry } from './request-option-normalizers';
 
@@ -125,7 +126,8 @@ export function buildGenerateRequestOptions(params: {
         ? body.generate_audio
         : undefined;
   const isLumaRay2 = isLumaRay2EngineId(engine.id);
-  const capability = getEngineCaps(engine.id, mode);
+  const capability = getEngineCaps(engine.id, mode) ?? engine.modeCaps?.[mode];
+  const activeEnumDefault = (fieldId: string) => getRuntimeSchemaEnumDefault(engine.inputSchema, mode, fieldId);
   const supportsDuration = capability ? Boolean(capability.duration || capability.frames) : true;
   const supportsResolution = capability ? Boolean(capability.resolution && capability.resolution.length) : true;
   const supportsFps = capability
@@ -136,7 +138,8 @@ export function buildGenerateRequestOptions(params: {
   const supportsAspectRatio = capability ? Boolean(capability.aspectRatio && capability.aspectRatio.length) : true;
   const rawDurationOption =
     typeof body.durationOption === 'number' || typeof body.durationOption === 'string' ? body.durationOption : null;
-  let durationSec = Number(body.durationSec || body.duration || 4);
+  const defaultDurationSec = getRuntimeDurationDefault(capability, 4);
+  let durationSec = Number(body.durationSec || body.duration || defaultDurationSec);
   if (multiPromptTotalSec > 0) {
     durationSec = multiPromptTotalSec;
   }
@@ -181,7 +184,8 @@ export function buildGenerateRequestOptions(params: {
       ? body.aspectRatio.trim()
       : null;
   const fallbackAspectRatio = supportsAspectRatio
-    ? capability?.aspectRatio?.find((value) => value !== 'auto') ??
+    ? activeEnumDefault('aspect_ratio') ??
+      capability?.aspectRatio?.find((value) => value !== 'auto') ??
       engine.aspectRatios?.find((value) => value !== 'auto') ??
       engine.aspectRatios?.[0] ??
       '16:9'
@@ -238,7 +242,7 @@ export function buildGenerateRequestOptions(params: {
   let requestedResolution =
     typeof body.resolution === 'string' && body.resolution.trim().length
       ? body.resolution.trim()
-      : engine.resolutions?.[0] ?? '1080p';
+      : activeEnumDefault('resolution') ?? engine.resolutions?.[0] ?? '1080p';
   let pricingResolution =
     requestedResolution === 'auto'
       ? engine.resolutions.find((value) => value !== 'auto') ?? engine.resolutions[0] ?? '1080p'

@@ -11,6 +11,10 @@ import { stripKlingDirectOnlyExtraInputValues } from '@/lib/kling-direct-extra-v
 import { buildFalElementInputs } from '@/lib/video-provider-elements';
 import { isHappyHorseFalModelId, supportsHappyHorseVideoEdit } from '@/lib/happy-horse-workflow';
 import { buildMinimaxH3FalRequest, isMinimaxH3EngineId } from '@/lib/minimax-h3';
+import {
+  buildMinimaxH3MaxFalRequestFromPayload,
+  isMinimaxH3MaxEngineId,
+} from '@/lib/minimax-h3-max';
 import type { GeneratePayload } from '@/lib/fal-types';
 import type { Mode } from '@/types/engines';
 import { getFalEngineById } from '@/config/falEngines';
@@ -24,6 +28,9 @@ export function buildFalGenerationRequest(
   payload: GeneratePayload,
   defaultModel: string
 ): { model: string; requestBody: Record<string, unknown> } {
+  if (isMinimaxH3MaxEngineId(payload.engineId)) {
+    return buildMinimaxH3MaxFalRequestFromPayload(payload);
+  }
   if (isMinimaxH3EngineId(payload.engineId)) {
     return buildMinimaxH3FalRequest(payload);
   }

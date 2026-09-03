@@ -31,9 +31,17 @@ import { isGoogleVertexOmniEngine } from '@/server/video-providers/google-vertex
 import { isGoogleVertexVeoEngine } from '@/server/video-providers/google-vertex-veo/model-map';
 import { isKlingDirectEngine } from '@/server/video-providers/kling-direct/model-map';
 import { isLumaAgentsVideoEngine } from '@/server/video-providers/luma-agents/model-map';
+import {
+  isMinimaxH3MaxEngineId,
+  isMinimaxH3MaxRuntimeModeAvailable,
+} from '@/lib/minimax-h3-max';
 import type { EngineCaps, Mode } from '@/types/engines';
 import type { PaymentMode } from './initial-video-job';
 import { isVideoMode } from './request-options';
+import {
+  getPrivateRuntimeEngineById,
+  isPrivateRuntimeEngineId,
+} from '@/server/video-generation/private-engine-registry';
 
 export type GenerateRouteContext = {
   engine: EngineCaps;
@@ -73,6 +81,12 @@ export function resolveTrustedPaidGenerateRouteContext(params: {
   providerEnv?: VideoProviderRoutingEnv;
 }): GenerateRouteContextResult {
   const { body, engine, jobId, mode, providerEnv } = params;
+  if (
+    isMinimaxH3MaxEngineId(engine.id)
+    && !isMinimaxH3MaxRuntimeModeAvailable(mode)
+  ) {
+    return { ok: false, status: 503, body: { ok: false, error: 'Engine unavailable' } };
+  }
   let bytePlusProfile: BytePlusSeedanceProfile | null;
 
   try {
@@ -166,7 +180,9 @@ export async function resolveGenerateRouteContext(params: {
       throw error;
     }
   }
-  const registeredBaseEngine = getBaseEngineIncludingHidden(requestedEngineId);
+  const registeredBaseEngine =
+    getBaseEngineIncludingHidden(requestedEngineId)
+    ?? getPrivateRuntimeEngineById(requestedEngineId);
   if (!registeredBaseEngine) {
     return { ok: false, status: 400, body: { ok: false, error: 'Unknown engine' } };
   }
@@ -188,7 +204,7 @@ export async function resolveGenerateRouteContext(params: {
   const publicEngine = await boundaries.getConfiguredEngine(requestedEngineId);
   const engine =
     publicEngine ??
-    (isBytePlusSeedanceHiddenEngine(requestedEngineId)
+    (isBytePlusSeedanceHiddenEngine(requestedEngineId) || isPrivateRuntimeEngineId(requestedEngineId)
       ? await boundaries.getConfiguredEngineIncludingHidden(requestedEngineId)
       : undefined);
   if (!engine) {
@@ -244,6 +260,13 @@ export async function resolveGenerateRouteContext(params: {
     : engine.modes.includes('t2v')
       ? 't2v'
       : engine.modes[0] ?? 't2v';
+
+  if (
+    isMinimaxH3MaxEngineId(engine.id)
+    && !isMinimaxH3MaxRuntimeModeAvailable(mode)
+  ) {
+    return { ok: false, status: 503, body: { ok: false, error: 'Engine unavailable' } };
+  }
 
   if (isBytePlusV1a && !isBytePlusModelArkEnabled()) {
     return { ok: false, status: 404, body: { ok: false, error: 'Engine unavailable' } };

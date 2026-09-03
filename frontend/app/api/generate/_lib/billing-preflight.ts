@@ -13,6 +13,8 @@ import {
   type Currency,
 } from '@/lib/currency';
 import type { EngineCaps, Mode, PricingSnapshot } from '@/types/engines';
+import type { TrustedPreflightMediaPricingFacts } from '@/server/engines';
+import { isMinimaxH3MaxEngineId } from '@/lib/minimax-h3-max';
 import { buildReceiptSnapshot } from './receipt-snapshot';
 import type { PaymentMode, PendingReceipt } from './initial-video-job';
 
@@ -101,6 +103,7 @@ export async function resolveGenerateBillingPreflight(params: {
   inputVideoDurationSec?: number;
   inheritedDurationSec?: number;
   inputAudioDurationSec?: number;
+  trustedMediaPricingFacts?: TrustedPreflightMediaPricingFacts;
   rawDurationOption: number | string | null;
   lumaDurationLabel: string | null;
   audioEnabled: boolean | undefined;
@@ -118,6 +121,28 @@ export async function resolveGenerateBillingPreflight(params: {
   const buildReceiptSnapshotFn = deps.buildReceiptSnapshotFn ?? buildReceiptSnapshot;
   const getPlatformFeeCentsFn = deps.getPlatformFeeCentsFn ?? getPlatformFeeCents;
   const ensureUserPreferredCurrencyFn = deps.ensureUserPreferredCurrencyFn ?? ensureUserPreferredCurrency;
+  const verifiedReferenceTokenCount =
+    params.trustedMediaPricingFacts?.verifiedReferenceTokenCount;
+  if (
+    isMinimaxH3MaxEngineId(params.engine.id)
+    && params.mode === 'ref2v'
+    && (
+      typeof verifiedReferenceTokenCount !== 'number'
+      || !Number.isInteger(verifiedReferenceTokenCount)
+      || verifiedReferenceTokenCount < 0
+    )
+  ) {
+    return {
+      ok: false,
+      status: 422,
+      body: {
+        ok: false,
+        error: 'PRICING_MEDIA_FACTS_UNVERIFIED',
+        message: 'Trusted reference-token pricing metadata is required.',
+      },
+      metric: { errorCode: 'PRICING_MEDIA_FACTS_UNVERIFIED' },
+    };
+  }
 
   let preferredCurrency = await getUserPreferredCurrencyFn(String(params.userId));
   const currencyResolution = resolveCurrencyFn(
@@ -149,6 +174,7 @@ export async function resolveGenerateBillingPreflight(params: {
     inputVideoDurationSec: params.inputVideoDurationSec,
     inheritedDurationSec: params.inheritedDurationSec,
     inputAudioDurationSec: params.inputAudioDurationSec,
+    verifiedReferenceTokenCount,
     durationOption: params.lumaDurationLabel ?? params.rawDurationOption ?? null,
     currency: DISPLAY_CURRENCY,
     addons: pricingAddons,
@@ -189,6 +215,9 @@ export async function resolveGenerateBillingPreflight(params: {
   }
   if (typeof params.inputAudioDurationSec === 'number') {
     requestMeta.inputAudioDurationSec = params.inputAudioDurationSec;
+  }
+  if (typeof verifiedReferenceTokenCount === 'number') {
+    requestMeta.verifiedReferenceTokenCount = verifiedReferenceTokenCount;
   }
 
   pricing.meta = {

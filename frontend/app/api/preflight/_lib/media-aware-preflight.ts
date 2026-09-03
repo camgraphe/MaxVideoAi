@@ -42,6 +42,7 @@ function hasClientDeclaredMediaPricingFacts(request: PreflightRequest): boolean 
     && (
       Object.prototype.hasOwnProperty.call(extra, 'referenceImageCount')
       || Object.prototype.hasOwnProperty.call(extra, 'inputAudioDurationSec')
+      || Object.prototype.hasOwnProperty.call(extra, 'verifiedReferenceTokenCount')
     )
   );
 }

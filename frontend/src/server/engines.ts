@@ -35,6 +35,7 @@ import {
   applyConfiguredEngineRuntimeOptions,
   projectConfiguredEngine,
 } from '@/server/engine-configuration-projection';
+import { getPrivateRuntimeEngineById } from '@/server/video-generation/private-engine-registry';
 
 async function getConfiguredEnginesForBase(
   baseEngines: EngineCaps[],
@@ -110,7 +111,7 @@ export async function getConfiguredEngineIncludingHidden(
   if (!engineId) return undefined;
   const publicEngine = await getConfiguredEngine(engineId, includeDisabled);
   if (publicEngine) return publicEngine;
-  const hiddenBase = getBaseEngineIncludingHidden(engineId);
+  const hiddenBase = getBaseEngineIncludingHidden(engineId) ?? getPrivateRuntimeEngineById(engineId);
   if (!hiddenBase) return undefined;
   const [configured] = await getConfiguredEnginesForBase([hiddenBase], includeDisabled);
   return configured;
@@ -121,7 +122,7 @@ export async function getConfiguredEngineIncludingHiddenInExecutor(
   executor: TransactionQueryExecutor,
 ): Promise<EngineCaps | undefined> {
   if (!engineId) return undefined;
-  const hiddenBase = getBaseEngineIncludingHidden(engineId);
+  const hiddenBase = getBaseEngineIncludingHidden(engineId) ?? getPrivateRuntimeEngineById(engineId);
   if (!hiddenBase) return undefined;
   await executor.query('LOCK TABLE engine_settings, engine_overrides IN SHARE MODE');
   const [settingsMap, overridesMap] = await Promise.all([
@@ -136,6 +137,7 @@ export async function getConfiguredEngineIncludingHiddenInExecutor(
 export type TrustedPreflightMediaPricingFacts = Readonly<{
   referenceImageCount?: number;
   inputAudioDurationSec?: number;
+  verifiedReferenceTokenCount?: number;
 }>;
 
 export type ComputeConfiguredPreflightOptions = Readonly<{
@@ -250,6 +252,7 @@ export async function computeConfiguredPreflight(
   if (
     Object.prototype.hasOwnProperty.call(rawExtraInputValues, 'referenceImageCount')
     || Object.prototype.hasOwnProperty.call(rawExtraInputValues, 'inputAudioDurationSec')
+    || Object.prototype.hasOwnProperty.call(rawExtraInputValues, 'verifiedReferenceTokenCount')
   ) {
     return {
       ok: false,
@@ -260,7 +263,11 @@ export async function computeConfiguredPreflight(
       },
     };
   }
-  const { referenceImageCount, inputAudioDurationSec } = options.trustedMediaPricingFacts ?? {};
+  const {
+    referenceImageCount,
+    inputAudioDurationSec,
+    verifiedReferenceTokenCount,
+  } = options.trustedMediaPricingFacts ?? {};
   const booleanExtraAddon = (value: unknown): boolean | undefined => {
     if (typeof value === 'boolean') return value;
     if (typeof value === 'string') {
@@ -288,6 +295,7 @@ export async function computeConfiguredPreflight(
       addons: Object.keys(pricingAddons).length ? pricingAddons : undefined,
       referenceImageCount,
       inputAudioDurationSec,
+      verifiedReferenceTokenCount,
     });
   } catch (error) {
     return {

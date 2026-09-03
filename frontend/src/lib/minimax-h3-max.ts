@@ -5,6 +5,7 @@ import {
   MINIMAX_H3_MAX_RESOLUTIONS,
   MINIMAX_H3_MAX_TEXT_ASPECT_RATIOS,
 } from '@/src/config/fal-engines/minimax-h3-max';
+import type { GeneratePayload } from '@/lib/fal-types';
 
 export type MinimaxH3MaxMode = 't2v' | 'i2v' | 'ref2v';
 export type PromptExpansionMode = 'balanced' | 'quality';
@@ -47,6 +48,10 @@ export type NormalizedMinimaxH3MaxRequest = {
 
 export function isMinimaxH3MaxEngineId(id: string | null | undefined): boolean {
   return id === MINIMAX_H3_MAX_ID;
+}
+
+export function isMinimaxH3MaxRuntimeModeAvailable(mode: string | null | undefined): boolean {
+  return mode === 't2v';
 }
 
 export function resolveMinimaxH3MaxEndpoint(mode: MinimaxH3MaxMode): string {
@@ -167,4 +172,47 @@ export function buildMinimaxH3MaxFalRequest(input: MinimaxH3MaxRequestInput): {
     model: resolveMinimaxH3MaxEndpoint(request.mode),
     requestBody,
   };
+}
+
+function payloadAttachmentUrls(payload: GeneratePayload, slotId: string): string[] {
+  return normalizedUrls(
+    (payload.inputs ?? [])
+      .filter((attachment) => attachment.slotId?.trim() === slotId)
+      .map((attachment) => attachment.url?.trim() ?? attachment.dataUrl?.trim() ?? ''),
+  );
+}
+
+function payloadDurationSec(payload: GeneratePayload): number | undefined {
+  const value = payload.durationOption ?? payload.durationSec;
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string' && /^\d+(?:\.\d+)?s?$/iu.test(value.trim())) {
+    return Number(value.trim().replace(/s$/iu, ''));
+  }
+  return undefined;
+}
+
+export function buildMinimaxH3MaxFalRequestFromPayload(payload: GeneratePayload): {
+  model: string;
+  requestBody: Record<string, unknown>;
+} {
+  const mode = (payload.mode ?? 't2v') as MinimaxH3MaxMode;
+  const extraInputValues = payload.extraInputValues ?? {};
+  const firstImage = (slotId: string) => payloadAttachmentUrls(payload, slotId)[0];
+
+  return buildMinimaxH3MaxFalRequest({
+    mode,
+    prompt: payload.prompt,
+    durationSec: payloadDurationSec(payload),
+    resolution: payload.resolution,
+    aspectRatio: payload.aspectRatio,
+    promptExpansionMode:
+      typeof extraInputValues.prompt_expansion_mode === 'string'
+        ? extraInputValues.prompt_expansion_mode
+        : null,
+    imageUrl: firstImage('image_url') ?? payload.imageUrl,
+    endImageUrl: firstImage('end_image_url') ?? payload.endImageUrl,
+    referenceImageUrls: payloadAttachmentUrls(payload, 'reference_image_urls'),
+    referenceVideoUrls: payloadAttachmentUrls(payload, 'reference_video_urls'),
+    referenceAudioUrls: payloadAttachmentUrls(payload, 'reference_audio_urls'),
+  });
 }

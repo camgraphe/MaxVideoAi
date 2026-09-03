@@ -1,6 +1,11 @@
 import { listFalEngines } from '@/config/falEngines';
 import type { GeneratePayload } from '@/lib/fal-types';
 import { isLumaRay32EngineId } from '@/lib/luma-agents';
+import {
+  isMinimaxH3MaxEngineId,
+  resolveMinimaxH3MaxEndpoint,
+  type MinimaxH3MaxMode,
+} from '@/lib/minimax-h3-max';
 
 const ENGINE_MODE_MODEL_MAP = (() => {
   const map = new Map<string, Map<string, string>>();
@@ -94,6 +99,13 @@ export function resolveFalVideoResolutionInput(
 }
 
 export function resolveFalModelSlug(payload: GeneratePayload, fallback?: string): string | undefined {
+  if (isMinimaxH3MaxEngineId(payload.engineId)) {
+    const mode = payload.mode ?? 't2v';
+    if (mode === 't2v' || mode === 'i2v' || mode === 'ref2v') {
+      return resolveMinimaxH3MaxEndpoint(mode as MinimaxH3MaxMode);
+    }
+    return undefined;
+  }
   const baseSlug = fallback;
   const modeKey = typeof payload.mode === 'string' ? payload.mode : undefined;
   const mapped =
