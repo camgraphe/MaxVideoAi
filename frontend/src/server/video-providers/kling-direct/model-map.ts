@@ -6,6 +6,8 @@ export type KlingDirectEngineId =
   | 'kling-3-standard'
   | 'kling-3-pro'
   | 'kling-3-4k'
+  | 'kling-3-turbo-standard'
+  | 'kling-3-turbo-pro'
   | 'kling-o3-standard'
   | 'kling-o3-pro'
   | 'kling-o3-4k';
@@ -68,6 +70,22 @@ const KLING_DIRECT_MODEL_ROUTES: Record<KlingDirectEngineId, KlingDirectModelRou
     pollPathPrefixes: KLING_V3_ENDPOINTS,
     providerModel: 'kling-v3',
     mode: '4k',
+  },
+  'kling-3-turbo-standard': {
+    engineId: 'kling-3-turbo-standard',
+    endpointFamily: 'video-v3',
+    createPaths: KLING_V3_ENDPOINTS,
+    pollPathPrefixes: KLING_V3_ENDPOINTS,
+    providerModel: 'kling-v3',
+    mode: 'std',
+  },
+  'kling-3-turbo-pro': {
+    engineId: 'kling-3-turbo-pro',
+    endpointFamily: 'video-v3',
+    createPaths: KLING_V3_ENDPOINTS,
+    pollPathPrefixes: KLING_V3_ENDPOINTS,
+    providerModel: 'kling-v3',
+    mode: 'pro',
   },
   'kling-o3-standard': {
     engineId: 'kling-o3-standard',

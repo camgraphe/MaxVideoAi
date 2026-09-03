@@ -1,11 +1,9 @@
-import { getPartnerByBrandId } from '../lib/brand-partners';
 import {
-  getRuntimeModelById,
   resolveRuntimePublicSlug,
-  toLegacyModelSurfaces,
 } from '../../config/model-runtime';
 import { RAW_FAL_ENGINE_REGISTRY } from './fal-engines/registry';
-import type { FalEngineEntry, RawFalEngineEntry } from './fal-engines/types';
+import { materializeFalEngineEntry } from './fal-engine-materialization';
+import type { FalEngineEntry } from './fal-engines/types';
 
 export type {
   EngineLogoPolicy,
@@ -19,24 +17,6 @@ export type {
   FalEnginePromptHint,
   FalEngineSeoMeta,
 } from './fal-engines/types';
-
-function materializeFalEngineEntry(entry: RawFalEngineEntry): FalEngineEntry {
-  const partnerBrand = getPartnerByBrandId(entry.brandId);
-  const model = getRuntimeModelById(entry.id);
-  if (!model) throw new Error(`Missing model registry entry for engine "${entry.id}"`);
-  return {
-    ...entry,
-    modelSlug: model.slug,
-    family: model.family ?? undefined,
-    category: model.category,
-    lifecycle: model.lifecycle,
-    successorId: model.successorId,
-    successorSlug: model.successorSlug,
-    isLegacy: model.lifecycle !== 'current',
-    logoPolicy: partnerBrand?.policy.logoAllowed ? 'logoAllowed' : entry.logoPolicy,
-    surfaces: toLegacyModelSurfaces(model),
-  };
-}
 
 export const FAL_ENGINE_REGISTRY: readonly FalEngineEntry[] = RAW_FAL_ENGINE_REGISTRY.map(materializeFalEngineEntry);
 

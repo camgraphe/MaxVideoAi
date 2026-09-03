@@ -74,7 +74,12 @@ function requiresOwnedReferenceAsset(
   roles: readonly CanonicalGenerationReferenceRole[],
   mode: AgentGenerationMode,
   engineId: string,
+  engine: EngineCaps,
 ): boolean {
+  const ownedAssetModes = engine.inputSchema?.constraints?.ownedAssetModes;
+  if (Array.isArray(ownedAssetModes) && ownedAssetModes.includes(toEngineGenerationMode(engineId, mode))) {
+    return true;
+  }
   return roles.includes('source') && (
     mode === 'a2v'
     || mode === 'retake'
@@ -131,7 +136,7 @@ function projectReferences(
     return [Object.freeze({
       type: field.type,
       roles: Object.freeze([...roles]),
-      assetRequired: requiresOwnedReferenceAsset(roles, mode, engine.id) || durationSec !== null,
+      assetRequired: requiresOwnedReferenceAsset(roles, mode, engine.id, engine) || durationSec !== null,
       ...(assetRequiredWhen ? { assetRequiredWhen } : {}),
       ...(durationSec ? { durationSec } : {}),
       required: field.requiredInModes
@@ -223,8 +228,10 @@ const CANONICAL_SETTING_BY_FIELD_ID: Readonly<Record<string, string>> = Object.f
   limit_generations: 'limitGenerations',
   loop: 'loop',
   mode: 'modifyStrength',
+  multi_prompt: 'multiPrompt',
   negative_prompt: 'negativePrompt',
   output_format: 'outputFormat',
+  prompt_expansion_mode: 'promptExpansionMode',
   quality: 'quality',
   retake_mode: 'retakeMode',
   seed: 'seed',
@@ -259,7 +266,9 @@ function projectSettings(
     if (!['boolean', 'number', 'text', 'enum'].includes(field.type)) return [];
     return [Object.freeze({
       key,
-      type: field.type as AgentModelSettingDetails['type'],
+      type: field.id === 'multi_prompt'
+        ? 'multi_prompt'
+        : field.type as AgentModelSettingDetails['type'],
       required: field.requiredInModes
         ? field.requiredInModes.includes(toEngineGenerationMode(engine.id, mode))
         : required,

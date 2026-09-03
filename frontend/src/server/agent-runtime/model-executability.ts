@@ -23,6 +23,10 @@ import { ENV } from '@/lib/env';
 import type { CanonicalGenerationRequest } from '@/server/agent-api/generation-types';
 import type { ResolvedReference } from '@/server/agent-api/reference-types';
 import { parseGoogleVertexServiceAccount } from '@/server/video-providers/google-vertex-auth';
+import {
+  isMinimaxH3MaxEngineId,
+  isMinimaxH3MaxRuntimeModeAvailable,
+} from '@/lib/minimax-h3-max';
 
 export type AgentGenerationExecutabilityDecision = Readonly<{
   executable: boolean;
@@ -157,6 +161,10 @@ export function resolveAgentGenerationModeExecutability(
 ): AgentGenerationExecutabilityDecision {
   if (isBytePlusSeedreamEngine(engine)) {
     return resolveAgentGenerationEngineExecutability(engine, environment);
+  }
+
+  if (isMinimaxH3MaxEngineId(engine.id) && !isMinimaxH3MaxRuntimeModeAvailable(mode)) {
+    return { executable: false, reason: 'profile_invalid' };
   }
 
   const providerEnv = environment.providerEnv ?? process.env;

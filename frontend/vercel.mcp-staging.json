@@ -10,6 +10,10 @@
       "schedule": "*/5 * * * *"
     },
     {
+      "path": "/api/cron/kling-direct-poll",
+      "schedule": "*/5 * * * *"
+    },
+    {
       "path": "/api/cron/google-vertex-veo-poll",
       "schedule": "*/5 * * * *"
     },

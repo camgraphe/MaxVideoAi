@@ -30,6 +30,9 @@ type MaterializedReference = {
   height?: number | null;
   durationSec?: number | null;
   mimeType?: string;
+  assetId?: string;
+  sizeBytes?: number | null;
+  originalName?: string | null;
 };
 
 function controlledHttpsUrl(value: unknown): string {
@@ -89,6 +92,9 @@ function materializeReferences(execution: PaidVideoRequestBodyExecution): Materi
       height: resolved.height,
       durationSec: resolved.durationSec,
       mimeType: resolved.mimeType,
+      assetId: resolved.assetId,
+      sizeBytes: resolved.sizeBytes,
+      originalName: resolved.originalName,
       ...(reference.slot === undefined ? {} : { slot: reference.slot }),
     };
   });
@@ -111,13 +117,16 @@ export function resolvePaidMembershipTier(
 
 function input(reference: MaterializedReference, slotId: string) {
   return {
+    ...(reference.assetId ? { assetId: reference.assetId } : {}),
+    ...(reference.originalName ? { name: reference.originalName } : {}),
+    ...(reference.mimeType ? { type: reference.mimeType } : {}),
+    ...(typeof reference.sizeBytes === 'number' ? { size: reference.sizeBytes } : {}),
     kind: reference.kind,
     slotId,
     url: reference.url,
     ...(typeof reference.width === 'number' ? { width: reference.width } : {}),
     ...(typeof reference.height === 'number' ? { height: reference.height } : {}),
     ...(typeof reference.durationSec === 'number' ? { durationSec: reference.durationSec } : {}),
-    ...(reference.mimeType ? { type: reference.mimeType } : {}),
   };
 }
 
@@ -165,6 +174,7 @@ const EXTRA_INPUT_FIELD_BY_SETTING: Readonly<Record<string, string>> = Object.fr
   guidanceScale: 'guidance_scale',
   hdr: 'hdr',
   modifyStrength: 'mode',
+  promptExpansionMode: 'prompt_expansion_mode',
   reframeGridPositionX: 'grid_position_x',
   reframeGridPositionY: 'grid_position_y',
   retakeMode: 'retake_mode',
@@ -185,6 +195,16 @@ function projectExtraInputValues(settings: Record<string, unknown>): Record<stri
   return extra;
 }
 
+function projectMultiPrompt(settings: Record<string, unknown>): Array<{ prompt: string; duration: number }> | null {
+  const value = settings.multiPrompt;
+  delete settings.multiPrompt;
+  if (!Array.isArray(value)) return null;
+  return value.map((scene) => ({
+    prompt: String((scene as { prompt?: unknown }).prompt ?? ''),
+    duration: Number((scene as { durationSec?: unknown }).durationSec),
+  }));
+}
+
 export function buildPaidVideoRequestBody(
   execution: PaidVideoRequestBodyExecution,
 ): Record<string, unknown> {
@@ -193,6 +213,7 @@ export function buildPaidVideoRequestBody(
   }
   const settings = { ...execution.request.settings };
   if (!supportsAspectRatio(execution)) delete settings.aspectRatio;
+  const multiPrompt = projectMultiPrompt(settings);
   const extraInputValues = projectExtraInputValues(settings);
   const references = materializeReferences(execution);
   const body: Record<string, unknown> = {
@@ -204,6 +225,7 @@ export function buildPaidVideoRequestBody(
     membershipTier: resolvePaidMembershipTier(execution.canonicalPricing),
     ...settings,
     ...(Object.keys(extraInputValues).length ? { extraInputValues } : {}),
+    ...(multiPrompt?.length ? { multiPrompt } : {}),
     inputs: [],
   };
 

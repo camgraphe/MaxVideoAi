@@ -1,17 +1,17 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import {
-  buildP0LaunchProjectionsFromSource,
-} from '../frontend/server/model-launch-assets-validation';
 
-const SOURCE_MANIFEST = 'docs/model-launch/p0-video-example-pack.json' as const;
+import { MODEL_LAUNCH_WAVES } from '../frontend/config/model-launch-waves';
+import { buildModelLaunchProjectionsFromSources } from '../frontend/server/model-launch-assets-validation';
+
 const FULL_PROJECTION = 'frontend/server/model-launch-assets.generated.json';
 const READINESS_PROJECTION = 'frontend/config/model-launch-readiness.generated.json';
-const sourcePath = resolve(process.cwd(), SOURCE_MANIFEST);
+const sources = Object.fromEntries(MODEL_LAUNCH_WAVES.map((wave) => {
+  const sourcePath = resolve(process.cwd(), wave.sourceManifest);
+  return [wave.id, existsSync(sourcePath) ? readFileSync(sourcePath, 'utf8') : null];
+})) as Record<(typeof MODEL_LAUNCH_WAVES)[number]['id'], string | null>;
 
-const projections = buildP0LaunchProjectionsFromSource(
-  existsSync(sourcePath) ? readFileSync(sourcePath, 'utf8') : null,
-);
+const projections = buildModelLaunchProjectionsFromSources(sources);
 const outputs = [
   { path: FULL_PROJECTION, value: projections.full },
   { path: READINESS_PROJECTION, value: projections.readiness },

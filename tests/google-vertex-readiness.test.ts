@@ -249,7 +249,7 @@ test('Google Vertex readiness rejects an unsupported-location response even when
   assert.equal(result.ok, false);
   assert.deepEqual(omni, {
     engineId: 'gemini-omni-flash',
-    providerModel: 'gemini-omni-flash-preview',
+    providerModel: 'gemini-omni-1.1-flash-preview',
     kind: 'omni',
     ok: false,
     metadataStatus: 200,

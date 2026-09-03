@@ -70,6 +70,7 @@ export type PaidVideoContinuationOptions = {
   walletReservation: 'already_reserved';
   preReservedInitialState: Extract<PaidGenerationExecution['trustedInitialState'], { walletChargeReserved: true }>;
   trustedQuotedBilling: TrustedQuotedBilling;
+  trustedResolvedReferences: readonly ResolvedReference[];
   providerEnv?: VideoProviderRoutingEnv;
 };
 
@@ -427,6 +428,7 @@ export async function submitReservedPaidGeneration(
         walletReservation: 'already_reserved',
         preReservedInitialState: execution.trustedInitialState,
         trustedQuotedBilling,
+        trustedResolvedReferences: execution.resolvedReferences ?? [],
         providerEnv: submissionOptions.providerEnv,
       });
       if (result.body.ok === true) {

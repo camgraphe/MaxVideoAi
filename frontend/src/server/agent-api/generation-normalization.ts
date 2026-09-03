@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 
 import type {
   CanonicalGenerationMode,
+  CanonicalGenerationMultiPromptScene,
   CanonicalGenerationReference,
   CanonicalGenerationReferenceRole,
   CanonicalReferenceMediaKind,
@@ -81,6 +82,7 @@ const VIDEO_SETTING_KEYS = new Set([
   'loop',
   'negativePrompt',
   'numFrames',
+  'promptExpansionMode',
   'resolution',
   'reframeGridPositionX',
   'reframeGridPositionY',
@@ -95,6 +97,7 @@ const VIDEO_SETTING_KEYS = new Set([
   'startTimeSec',
   'extendPosition',
   'modifyStrength',
+  'multiPrompt',
   'exrExport',
   'editDepthBlur',
   'editFace',
@@ -254,6 +257,21 @@ function normalizeSettingKey(value: string, allowedKeys: ReadonlySet<string>): s
 }
 
 function normalizeSettingValue(value: unknown, key: string): CanonicalGenerationSettingValue {
+  if (key === 'multiPrompt') {
+    assertDenseDataArray(value, 'settings.multiPrompt', 6);
+    if (value.length === 0) fail('settings.multiPrompt', 'multiPrompt must contain at least one scene.');
+    return value.map((entry, index): CanonicalGenerationMultiPromptScene => {
+      const field = `settings.multiPrompt[${index}]`;
+      assertPlainDataObject(entry, field);
+      assertExactFields(entry, new Set(['prompt', 'durationSec']), field);
+      const prompt = normalizeText(entry.prompt, `${field}.prompt`, 512, false);
+      const durationSec = entry.durationSec;
+      if (!Number.isSafeInteger(durationSec) || (durationSec as number) < 1 || (durationSec as number) > 15) {
+        fail(`${field}.durationSec`, 'multiPrompt durationSec must be an integer from 1 through 15.');
+      }
+      return { prompt, durationSec: durationSec as number };
+    });
+  }
   if (value === null || typeof value === 'boolean') return value;
   if (typeof value === 'number') {
     if (!Number.isFinite(value)) {
@@ -264,7 +282,7 @@ function normalizeSettingValue(value: unknown, key: string): CanonicalGeneration
   if (typeof value === 'string') {
     return normalizeText(value, `settings.${key}`, MAX_CANONICAL_SETTING_STRING_CHARS, true);
   }
-  fail(`settings.${key}`, 'settings values must be strings, finite numbers, booleans, or null.');
+  fail(`settings.${key}`, 'settings contains an invalid value.');
 }
 
 export function stableJson(value: unknown): string {
@@ -477,13 +495,18 @@ export function normalizeGenerationRequest(input: unknown): CanonicalGenerationR
   const mode = normalizeMode(input.mode);
   assertSurfaceMode(surface, mode);
 
+  const settings = normalizeSettings(input.settings, mode);
+  const prompt = normalizeText(input.prompt, 'prompt', MAX_CANONICAL_PROMPT_CHARS, true);
+  if (!prompt && !Array.isArray(settings.multiPrompt)) {
+    fail('prompt', 'prompt has an invalid length.');
+  }
   return {
     schemaVersion: 1,
     surface,
     engineId: normalizeEngineId(input.engineId),
     mode,
-    prompt: normalizeText(input.prompt, 'prompt', MAX_CANONICAL_PROMPT_CHARS, false),
-    settings: normalizeSettings(input.settings, mode),
+    prompt,
+    settings,
     references: normalizeReferences(input.references, mode),
     outputCount: normalizeOutputCount(input.outputCount, surface),
   };

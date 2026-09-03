@@ -145,7 +145,7 @@ test('wrong-user and stale assets fail before pricing or provider submission', a
   );
 });
 
-test('paid execution materializes a verified asset URL only in the ephemeral provider body', async () => {
+test('paid execution carries verified asset identity only through the internal site continuation body', async () => {
   const execution: PaidGenerationExecution = {
     surface: 'video',
     quoteId: '123e4567-e89b-42d3-a456-426614174000',
@@ -179,7 +179,7 @@ test('paid execution materializes a verified asset URL only in the ephemeral pro
 
   assert.deepEqual(outcome, { kind: 'accepted' });
   assert.equal(providerBody?.imageUrl, 'https://media.maxvideoai.com/private/reference.png');
-  assert.equal(JSON.stringify(providerBody).includes('asset-image-1'), false);
+  assert.equal(JSON.stringify(providerBody).includes('asset-image-1'), true);
   assert.equal(JSON.stringify(providerBody).includes('mimeType'), false);
   assert.equal(JSON.stringify(providerBody).includes('storageUrl'), false);
   assert.equal(JSON.stringify(providerBody).includes('mediaKind'), false);

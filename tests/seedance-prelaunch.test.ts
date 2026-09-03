@@ -389,7 +389,7 @@ test('Public marketing media fetchers stay visibility-safe for pinned and prompt
   ]);
 });
 
-test('Seedance 2.5 and Seedance 2.0 lead the app menu while the MiniMax H3 launch stays in the top group', () => {
+test('Seedance 2.5 and Seedance 2.0 lead the app menu while P1 models enter marketing navigation', () => {
   const appEngineIds = getBaseEnginesByCategory('video').map((engine) => engine.id);
   assert.equal(appEngineIds[0], 'seedance-2-5');
   assert.equal(appEngineIds[1], 'seedance-2-0');
@@ -402,29 +402,29 @@ test('Seedance 2.5 and Seedance 2.0 lead the app menu while the MiniMax H3 launc
     [
       'seedance-2-5',
       'minimax-h3',
+      'minimax-h3-max',
+      'kling-3-turbo-pro',
+      'kling-3-turbo-standard',
+      'veo-3-1',
+      'gemini-omni-flash',
       'ltx-2-5-pro',
       'wan-3-prime',
       'grok-imagine-video-1-5',
-      'flux-3',
-      'seedance-2-0',
-      'veo-3-1',
-      'gemini-omni-flash',
-      'kling-o3-pro',
     ]
   );
   assert.deepEqual(
     MARKETING_NAV_COMPARE.map((item) => item.key),
     [
+      'minimax-h3-vs-minimax-h3-max',
+      'kling-3-turbo-pro-vs-kling-3-turbo-standard',
+      'kling-3-pro-vs-kling-3-turbo-pro',
+      'gemini-omni-flash-vs-kling-3-turbo-pro',
+      'gemini-omni-flash-vs-veo-3-1',
       'minimax-h3-vs-seedance-2-5',
       'ltx-2-3-pro-vs-ltx-2-5-pro',
       'wan-2-6-vs-wan-3',
       'flux-3-vs-grok-imagine-video-1-5',
       'grok-imagine-video-1-5-vs-sora-2',
-      'kling-o3-pro-vs-minimax-h3',
-      'gemini-omni-flash-vs-veo-3-1',
-      'kling-3-pro-vs-kling-o3-pro',
-      'ltx-2-3-pro-vs-veo-3-1',
-      'minimax-h3-vs-veo-3-1',
     ]
   );
   assert.equal(MARKETING_NAV_COMPARE.length, 10);
@@ -459,18 +459,18 @@ test('Seedance 1.5 Pro stays active while Seedance 2.0 keeps the primary alias a
   assert.equal(getHubEngines().some((engine) => engine.modelSlug === 'seedance-1-5-pro'), true);
 });
 
-test('Header model menu keeps H3, current family representatives, Veo, Gemini, and Kling in the bounded set', () => {
+test('Header model menu keeps H3 and the current P1 representatives in the bounded set', () => {
   assert.deepEqual(MARKETING_NAV_MODELS.map((item) => item.key), [
     'seedance-2-5',
     'minimax-h3',
+    'minimax-h3-max',
+    'kling-3-turbo-pro',
+    'kling-3-turbo-standard',
+    'veo-3-1',
+    'gemini-omni-flash',
     'ltx-2-5-pro',
     'wan-3-prime',
     'grok-imagine-video-1-5',
-    'flux-3',
-    'seedance-2-0',
-    'veo-3-1',
-    'gemini-omni-flash',
-    'kling-o3-pro',
   ]);
 });
 
@@ -502,6 +502,8 @@ test('Happy Horse has a crawlable examples family and appears in example family 
 
 test('Examples family current model groups do not classify new delivery models as older', () => {
   assert.deepEqual(getExampleFamilyModelSlugs('kling'), [
+    'kling-3-turbo-pro',
+    'kling-3-turbo-standard',
     'kling-o3-pro',
     'kling-o3-standard',
     'kling-o3-4k',
@@ -512,6 +514,8 @@ test('Examples family current model groups do not classify new delivery models a
     'kling-2-5-turbo',
   ]);
   assert.deepEqual(getExampleFamilyCurrentModelSlugs('kling'), [
+    'kling-3-turbo-pro',
+    'kling-3-turbo-standard',
     'kling-o3-pro',
     'kling-o3-standard',
     'kling-o3-4k',

@@ -21,6 +21,7 @@ const REQUIRED_OPERATIONAL_ENVIRONMENT = [
   'MCP_STAGING_OPERATIONAL_ENABLED',
   'MCP_STAGING_CANARY_ACCOUNT_IDS',
   'MCP_STAGING_CANARY_CLIENT_IDS',
+  'WORKSPACE_STAGING_CANARY_ACCOUNT_IDS',
   'BYTEPLUS_ARK_ENABLED',
   'BYTEPLUS_ARK_API_KEY',
   'SEEDANCE_2_5_BYTEPLUS_ENABLED',
@@ -40,6 +41,14 @@ const REQUIRED_OPERATIONAL_ENVIRONMENT = [
   'CRON_SECRET',
   'FAL_WEBHOOK_TOKEN',
   'FAL_POLL_TOKEN',
+  'KLING_ACCESS_KEY',
+  'KLING_SECRET_KEY',
+  'KLING_DIRECT_ENABLED',
+  'KLING_DIRECT_PUBLIC_ROUTING_ENABLED',
+  'KLING_DIRECT_ADMIN_ONLY',
+  'KLING_DIRECT_FALLBACK_TO_FAL_ENABLED',
+  'KLING_DIRECT_FALLBACK_ON_CREDITS_DEPLETED_ENABLED',
+  'KLING_DIRECT_POLL_TOKEN',
   'GOOGLE_VERTEX_PROJECT_ID',
   'GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON',
   'GOOGLE_VERTEX_LOCATION',
@@ -62,6 +71,7 @@ const REQUIRED_OPERATIONAL_ENVIRONMENT = [
 const EXPECTED_STAGING_CRONS = [
   { path: '/api/cron/byteplus-poll', schedule: '*/5 * * * *' },
   { path: '/api/cron/fal-poll', schedule: '*/5 * * * *' },
+  { path: '/api/cron/kling-direct-poll', schedule: '*/5 * * * *' },
   { path: '/api/cron/google-vertex-veo-poll', schedule: '*/5 * * * *' },
   { path: '/api/cron/google-vertex-omni-poll', schedule: '*/5 * * * *' },
 ] as const;
@@ -324,7 +334,7 @@ test('MCP staging schedules only the authenticated provider polls and blocks ind
   ]);
 });
 
-test('deployment accepts the exact four-cron candidate before promotion', () => {
+test('deployment accepts the exact provider-cron candidate before promotion', () => {
   const fixture = createDeployFixture();
   try {
     const result = runStubbedDeploy(fixture, { completeCandidate: true });
@@ -720,6 +730,7 @@ test('MCP staging deploy wrapper gates an unaliased candidate before promotion',
   }
   assert.match(runbook, /BYTEPLUS_ARK_API_KEY[\s\S]{0,400}dedicated staging credential/i);
   assert.match(runbook, /MCP_STAGING_CANARY_ACCOUNT_IDS[\s\S]{0,600}MCP_STAGING_CANARY_CLIENT_IDS/i);
+  assert.match(runbook, /WORKSPACE_STAGING_CANARY_ACCOUNT_IDS[\s\S]{0,600}stable Supabase user IDs/i);
   assert.match(runbook, /exact account[\s\S]{0,160}OAuth client/i);
   assert.match(runbook, /public routing\s+flags[\s\S]{0,160}(?:false|closed)/i);
   assert.match(runbook, /CREDENTIAL_BLOCKED/);

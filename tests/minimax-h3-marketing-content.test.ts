@@ -20,19 +20,22 @@ const expected = {
   en: {
     cta: 'Generate with MiniMax H3',
     examplesHref: '/examples/minimax-h3',
-    compareHref: '/ai-video-engines/kling-o3-pro-vs-minimax-h3?order=minimax-h3',
+    compareHref: '/models/minimax-h3-max',
+    legacyCompareHref: '/ai-video-engines/kling-o3-pro-vs-minimax-h3?order=minimax-h3',
     pricingHref: '/pricing#minimax-h3-pricing',
   },
   fr: {
     cta: 'Générer avec MiniMax H3',
     examplesHref: '/fr/galerie/minimax-h3',
-    compareHref: '/fr/comparatif/kling-o3-pro-vs-minimax-h3?order=minimax-h3',
+    compareHref: '/fr/modeles/minimax-h3-max',
+    legacyCompareHref: '/fr/comparatif/kling-o3-pro-vs-minimax-h3?order=minimax-h3',
     pricingHref: '/fr/tarifs#minimax-h3-pricing',
   },
   es: {
     cta: 'Generar con MiniMax H3',
     examplesHref: '/es/galeria/minimax-h3',
-    compareHref: '/es/comparativa/kling-o3-pro-vs-minimax-h3?order=minimax-h3',
+    compareHref: '/es/modelos/minimax-h3-max',
+    legacyCompareHref: '/es/comparativa/kling-o3-pro-vs-minimax-h3?order=minimax-h3',
     pricingHref: '/es/precios#minimax-h3-pricing',
   },
 } as const;
@@ -104,8 +107,9 @@ test('MiniMax H3 ships complete localized conversion content without rollout dis
     assert.equal(decision.hero.primaryCta.href, '/app?engine=minimax-h3');
     assert.equal(decision.hero.secondaryCta.href, copy.examplesHref);
     assert.equal(decision.hero.quickLinks[0]?.href, copy.compareHref);
-    assert.equal(decision.hero.quickLinks[1]?.href, copy.pricingHref);
-    assert.equal(decision.hero.quickLinks[2]?.href, '#prompting');
+    assert.equal(decision.hero.quickLinks[1]?.href, copy.legacyCompareHref);
+    assert.equal(decision.hero.quickLinks[2]?.href, copy.pricingHref);
+    assert.equal(decision.hero.quickLinks[3]?.href, '#prompting');
     assert.equal(prompting.modelSlug, slug);
     assert.equal(examples.modelSlug, slug);
     assert.equal(examples.showWhenEmpty, false);

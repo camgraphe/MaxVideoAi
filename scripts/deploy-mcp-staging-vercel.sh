@@ -10,6 +10,7 @@ STAGING_SUPABASE_ORIGIN='https://gecrywjztpbwbrlnomti.supabase.co'
 EXPECTED_ROBOTS='noindex, nofollow, noarchive'
 EXPECTED_BYTEPLUS_CRON_PATH='/api/cron/byteplus-poll'
 EXPECTED_FAL_CRON_PATH='/api/cron/fal-poll'
+EXPECTED_KLING_DIRECT_CRON_PATH='/api/cron/kling-direct-poll'
 EXPECTED_GOOGLE_VERTEX_VEO_CRON_PATH='/api/cron/google-vertex-veo-poll'
 EXPECTED_GOOGLE_VERTEX_OMNI_CRON_PATH='/api/cron/google-vertex-omni-poll'
 EXPECTED_CRON_SCHEDULE='*/5 * * * *'
@@ -19,6 +20,7 @@ REQUIRED_OPERATIONAL_ENVIRONMENT=(
   'MCP_STAGING_OPERATIONAL_ENABLED'
   'MCP_STAGING_CANARY_ACCOUNT_IDS'
   'MCP_STAGING_CANARY_CLIENT_IDS'
+  'WORKSPACE_STAGING_CANARY_ACCOUNT_IDS'
   'BYTEPLUS_ARK_ENABLED'
   'BYTEPLUS_ARK_API_KEY'
   'SEEDANCE_2_5_BYTEPLUS_ENABLED'
@@ -38,6 +40,14 @@ REQUIRED_OPERATIONAL_ENVIRONMENT=(
   'CRON_SECRET'
   'FAL_WEBHOOK_TOKEN'
   'FAL_POLL_TOKEN'
+  'KLING_ACCESS_KEY'
+  'KLING_SECRET_KEY'
+  'KLING_DIRECT_ENABLED'
+  'KLING_DIRECT_PUBLIC_ROUTING_ENABLED'
+  'KLING_DIRECT_ADMIN_ONLY'
+  'KLING_DIRECT_FALLBACK_TO_FAL_ENABLED'
+  'KLING_DIRECT_FALLBACK_ON_CREDITS_DEPLETED_ENABLED'
+  'KLING_DIRECT_POLL_TOKEN'
   'GOOGLE_VERTEX_PROJECT_ID'
   'GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON'
   'GOOGLE_VERTEX_LOCATION'
@@ -123,12 +133,14 @@ if [[ -z "$RESUME_CANDIDATE_ID" ]]; then
     --arg expected "$EXPECTED_ROBOTS" \
     --arg byteplus_cron_path "$EXPECTED_BYTEPLUS_CRON_PATH" \
     --arg fal_cron_path "$EXPECTED_FAL_CRON_PATH" \
+    --arg kling_direct_cron_path "$EXPECTED_KLING_DIRECT_CRON_PATH" \
     --arg google_vertex_veo_cron_path "$EXPECTED_GOOGLE_VERTEX_VEO_CRON_PATH" \
     --arg google_vertex_omni_cron_path "$EXPECTED_GOOGLE_VERTEX_OMNI_CRON_PATH" \
     --arg cron_schedule "$EXPECTED_CRON_SCHEDULE" '
     .crons == [
       {path: $byteplus_cron_path, schedule: $cron_schedule},
       {path: $fal_cron_path, schedule: $cron_schedule},
+      {path: $kling_direct_cron_path, schedule: $cron_schedule},
       {path: $google_vertex_veo_cron_path, schedule: $cron_schedule},
       {path: $google_vertex_omni_cron_path, schedule: $cron_schedule}
     ] and
@@ -376,6 +388,7 @@ jq -e \
   --arg archive_sha256 "$TRACKED_ARCHIVE_SHA256" \
   --arg byteplus_cron_path "$EXPECTED_BYTEPLUS_CRON_PATH" \
   --arg fal_cron_path "$EXPECTED_FAL_CRON_PATH" \
+  --arg kling_direct_cron_path "$EXPECTED_KLING_DIRECT_CRON_PATH" \
   --arg google_vertex_veo_cron_path "$EXPECTED_GOOGLE_VERTEX_VEO_CRON_PATH" \
   --arg google_vertex_omni_cron_path "$EXPECTED_GOOGLE_VERTEX_OMNI_CRON_PATH" \
   --arg cron_schedule "$EXPECTED_CRON_SCHEDULE" '
@@ -389,6 +402,7 @@ jq -e \
     .crons == [
       {path: $byteplus_cron_path, schedule: $cron_schedule},
       {path: $fal_cron_path, schedule: $cron_schedule},
+      {path: $kling_direct_cron_path, schedule: $cron_schedule},
       {path: $google_vertex_veo_cron_path, schedule: $cron_schedule},
       {path: $google_vertex_omni_cron_path, schedule: $cron_schedule}
     ] and

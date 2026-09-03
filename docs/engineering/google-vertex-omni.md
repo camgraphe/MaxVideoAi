@@ -1,20 +1,21 @@
-# Google Vertex Omni / Gemini Omni Flash
+# Google Vertex Omni / Gemini Omni Flash 1.1
 
-This guide covers the MaxVideoAI direct integration for Gemini Omni Flash through Google Vertex / Agent Platform Interactions.
+This guide covers the MaxVideoAI direct integration for Gemini Omni Flash 1.1 through Google Vertex / Agent Platform Interactions.
 
 ## Scope
 
 - Engine id: `gemini-omni-flash`
 - Provider key: `google_vertex_omni_direct`
-- Google model id: `gemini-omni-flash-preview`
+- Google model id: `gemini-omni-1.1-flash-preview`
 - API family: Interactions API, not Veo `predictLongRunning`
 - Public status: preview / limited
+- Publication gate: blocked until a separately authorized smoke is accepted
 
-The route supports text-to-video, image-to-video, reference-to-video, short source-video edit, and conversational refine through `previous_interaction_id`.
+The route supports text-to-video, image-to-video, reference-to-video, first/last-frame generation, short source-video edit and extension, and conversational refine through `previous_interaction_id`. This implementation does not claim GA status or account acceptance: the 2026-09-03 staging probe was rejected before acceptance because background interactions require `store=true`.
 
 ## Rollout Flags
 
-When the route is enabled, Gemini Omni Flash is available to regular users by default. Use the gating flags below only for a temporary admin-only preview or rollback.
+Keep the route disabled while the publication gate is blocked. After a separately authorized accepted smoke and release approval, the existing flags control preview and rollback.
 
 ```txt
 GOOGLE_VERTEX_OMNI_ENABLED=false
@@ -50,7 +51,7 @@ Fallbacks:
 - `GOOGLE_VERTEX_OMNI_SERVICE_ACCOUNT_JSON` falls back to `GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON`.
 - `GOOGLE_VERTEX_OMNI_LOCATION` defaults to `global` and never inherits `GOOGLE_VERTEX_LOCATION`, which may use a Veo-only regional value.
 - `GOOGLE_VERTEX_OMNI_INPUT_GCS_URI` and `GOOGLE_VERTEX_OMNI_OUTPUT_GCS_URI` fall back to the shared `GOOGLE_VERTEX_INPUT_GCS_URI`; media inputs and generated output stay on Google Cloud Storage.
-- The current `gemini-omni-flash-preview` Vertex route is global-only. Any explicit value other than `global` is rejected before provider submission.
+- The current `gemini-omni-1.1-flash-preview` Vertex route is documented for `global`. Any explicit value other than `global` is rejected before provider submission.
 
 Do not commit service account JSON. Configure it only through deployment secrets.
 
@@ -67,14 +68,16 @@ The payload builder maps app modes to documented Interactions tasks:
 - `t2v` -> `text_to_video`
 - `i2v` -> `image_to_video`
 - `ref2v` -> `reference_to_video`
+- `fl2v` -> `image_to_video` with ordered `<FIRST_FRAME>` and `<LAST_FRAME>` images
 - `v2v` -> `edit`
+- `extend` -> `extend` with one owned source video
 - `retake` -> `edit` with `previous_interaction_id`
 
 Media blocks should use the documented Interactions content fields only, such as `type`, `uri`, `data`, and `mime_type`.
 Do not add internal media role fields to the JSON body. Image roles are expressed in the prompt text with Google Omni tags such as `<FIRST_FRAME>` and `<IMAGE_REF_N>`.
-For text, image, and reference generation, the video response format is a list containing the documented duration, aspect ratio, 720p resolution, and an isolated `gcs_uri` output prefix. Edit/refine requests omit duration and aspect ratio so Google inherits them from the source interaction. The service stages HTTP media inputs into the configured Google Vertex input bucket before submission and rejects images above the documented 30 MB limit. Polling must still handle inline base64 data because Google can return bytes instead of a URI.
+For generation and extension, the video response format is a list containing the selected integer duration from 3 through 10 seconds, `16:9` or `9:16`, one of `360p`, `720p`, `1080p`, or `4k`, and an isolated `gcs_uri` output prefix. Edit/refine requests omit duration and aspect ratio so Google inherits them from the source interaction. The service stages HTTP media inputs, including both ordered frame images, into the configured Google Vertex input bucket before submission and rejects images above the documented 30 MB limit. Polling must still handle inline base64 data because Google can return bytes instead of a URI.
 
-Do not add negative prompt, seed, first/last-frame, extend, or 4K controls unless Google changes the Omni docs and the payload contract tests are updated.
+Background Interactions requests always send `store: true`; this is provider-required and is not a user control. Negative prompt, seed, and audio-reference inputs remain unsupported.
 
 ## Polling
 
@@ -88,7 +91,7 @@ The cron route accepts Vercel Cron auth and the optional `x-google-vertex-omni-p
 
 Poller responsibilities:
 
-- Fetch the stored `gemini-omni-flash-preview` interaction with `GET /interactions/{id}`. Do not use the empty-body `POST` shown on some Google video task pages: a production probe on August 28, 2026 returned `200` for `GET` and `404` for `POST` against the same completed `video-*` interaction.
+- Fetch the stored `gemini-omni-1.1-flash-preview` interaction with `GET /interactions/{id}`. Do not use the empty-body `POST` shown on some Google video task pages: a production probe on August 28, 2026 returned `200` for `GET` and `404` for `POST` against the same completed `video-*` interaction.
 - Normalize Interactions responses, including `steps[].content` and SDK-style `output_video`.
 - Download `gs://` or URI video output through the Google client.
 - Copy the final video into MaxVideoAI storage.
@@ -97,9 +100,9 @@ Poller responsibilities:
 
 ## Pricing And Cost Estimate
 
-Google Cloud lists Gemini Omni Flash video output at `$0.10/s`. MaxVideoAI customer pricing is configured separately in the engine catalog and currently displays `$0.13/s` for the 720p preview route.
+The factual calculator in `frontend/src/lib/google-omni-pricing.ts` is the single Google Omni cost source. Output uses 1,931/5,792/8,688/17,376 tokens per second at 360p/720p/1080p/4k and `$17.50` per million output tokens. Each input image uses 1,120 tokens; source video uses 5,792 tokens per second; both are charged at `$1.50` per million input tokens. Fractional cents are retained through canonical commercial math and rounded only at the final customer-money boundary.
 
-The provider cost estimator records `google_vertex_omni_public_video_pricing_estimate` with `provider_cost_units` equal to output seconds and `provider_cost_usd` equal to seconds x `$0.10`. Text input/output token costs are not included in this estimate unless Google starts returning an authoritative usage cost signal.
+Billing and public pricing facts consume that calculator before the canonical commercial policy is applied. Source-video modes require verified duration metadata for an exact paid quote. Video edit pricing inherits trusted source duration, and conversational retake pricing resolves the duration only from the user's completed, owned previous interaction; a selected UI duration cannot change either edit charge. Provider-attempt estimates use the same calculator and record `google_omni_1_1_token_pricing`; provider code does not own margin or customer-price policy. A media-free provider-pricing snapshot is stored on the provider attempt so polling can reconstruct mode, resolution, and verified media inputs even when price-only receipt snapshots omit provider metadata.
 
 ## Workspace UI
 
@@ -109,7 +112,7 @@ The Omni UI is intentionally route-local:
 - Mounted from `WorkspaceComposerSurface.tsx`
 - Hidden unless `selectedEngine.id === 'gemini-omni-flash'`
 
-The panel owns mode-specific source fields, Store interaction, previous interaction id, sound direction, camera direction, and edit instruction. `AppClient.tsx` should stay a route orchestrator.
+The panel owns mode-specific source fields, previous interaction id, sound direction, camera direction, and edit instruction. Interaction storage is mandatory for background requests and is not exposed as a toggle. `AppClient.tsx` should stay a route orchestrator.
 
 ## Marketing And SEO Boundaries
 

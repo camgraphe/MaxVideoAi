@@ -53,6 +53,13 @@ import { STORAGE_KEYS } from '../_lib/workspace-storage';
 
 type ShotType = 'customize' | 'intelligent';
 
+export function supportsWorkspaceMultiPrompt(engine: EngineCaps, mode?: Mode): boolean {
+  const fields = [...(engine.inputSchema?.required ?? []), ...(engine.inputSchema?.optional ?? [])];
+  return fields.some((field) =>
+    field.id === 'multi_prompt'
+    && (!mode || !field.modes?.length || field.modes.includes(mode)));
+}
+
 export type WorkspaceComposerWorkflowCopy = Parameters<typeof buildComposerModeToggles>[0]['workflowCopy'] & {
   removeAudioToUseEdit: string;
 };
@@ -218,7 +225,16 @@ export function useWorkspaceEngineModeState({
     }
   }, [form?.engineId, setForm]);
 
-  const engineModeOptions = useMemo(() => getEngineModeOptions(selectedEngine), [selectedEngine]);
+  const workspaceExecutableModes = useMemo(
+    () => selectedEngine ? [...selectedEngine.modes] : [],
+    [selectedEngine],
+  );
+  const engineModeOptions = useMemo(
+    () => getEngineModeOptions(selectedEngine
+      ? { ...selectedEngine, modes: workspaceExecutableModes }
+      : null),
+    [selectedEngine, workspaceExecutableModes],
+  );
 
   const referenceInputStatus = useMemo(() => getReferenceInputStatus(inputAssets), [inputAssets]);
   const seedanceAssetState = useMemo(() => getSeedanceAssetState(inputAssets), [inputAssets]);
@@ -258,7 +274,7 @@ export function useWorkspaceEngineModeState({
         supportsVideoEdit: supportsHappyHorseVideoEdit(selectedEngine.id),
       });
     }
-    const modes = selectedEngine.modes;
+    const modes = workspaceExecutableModes;
     if (referenceInputStatus.hasAudio && modes.includes('a2v')) return 'a2v';
     if (referenceInputStatus.hasVideo && modes.includes('v2v')) return 'v2v';
     if (referenceInputStatus.hasVideo && modes.includes('r2v')) return 'r2v';
@@ -280,6 +296,7 @@ export function useWorkspaceEngineModeState({
     referenceInputStatus.hasImage,
     referenceInputStatus.hasVideo,
     selectedEngine,
+    workspaceExecutableModes,
   ]);
 
   const audioToVideoSupported = Boolean(selectedEngine?.modes.includes('a2v'));
@@ -309,6 +326,7 @@ export function useWorkspaceEngineModeState({
         currentMode === 'extend' ||
         currentMode === 'retake') &&
       isWorkspaceModeAvailable(selectedEngine, currentMode)
+      && workspaceExecutableModes.includes(currentMode)
     ) {
       return currentMode;
     }
@@ -321,6 +339,7 @@ export function useWorkspaceEngineModeState({
     isUnifiedSeedance,
     referenceInputStatus.hasAudio,
     selectedEngine,
+    workspaceExecutableModes,
   ]);
 
   const activeMode: Mode = activeManualMode ?? implicitMode;
@@ -508,11 +527,11 @@ export function useWorkspaceEngineModeState({
   const handleModeChange = useCallback(
     (mode: Mode) => {
       if (!selectedEngine) return;
-      if (!isWorkspaceModeAvailable(selectedEngine, mode)) return;
+      if (!workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(selectedEngine, mode)) return;
       const nextMode = getPreferredEngineMode(selectedEngine, mode);
       setForm((current) => coerceFormState(selectedEngine, nextMode, current ? { ...current, mode: nextMode } : null));
     },
-    [selectedEngine, setForm]
+    [selectedEngine, setForm, workspaceExecutableModes]
   );
 
   const composerModeToggles = useMemo(
@@ -551,13 +570,13 @@ export function useWorkspaceEngineModeState({
         showNotice(workflowCopy.removeAudioToUseEdit);
         return;
       }
-      if (mode && !isWorkspaceModeAvailable(selectedEngine, mode)) return;
+      if (mode && (!workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(selectedEngine, mode))) return;
       const nextMode = mode ?? implicitMode;
       setForm((current) =>
         coerceFormState(selectedEngine, nextMode, current ? { ...current, mode: nextMode } : null)
       );
     },
-    [implicitMode, isUnifiedMinimaxH3, isUnifiedSeedance, referenceInputStatus.hasAudio, selectedEngine, setForm, showNotice, workflowCopy]
+    [implicitMode, isUnifiedMinimaxH3, isUnifiedSeedance, referenceInputStatus.hasAudio, selectedEngine, setForm, showNotice, workflowCopy, workspaceExecutableModes]
   );
 
   useEffect(() => {

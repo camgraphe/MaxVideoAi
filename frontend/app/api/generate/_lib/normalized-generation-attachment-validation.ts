@@ -4,6 +4,7 @@ import {
   validateGenerationMediaConstraints,
   type GenerationMediaConstraintValidationResult,
 } from './generation-media-constraints';
+import type { ResolvedReference } from '@/server/agent-api/reference-types';
 
 export type NormalizedGenerationAttachmentValidationParams = Omit<
   Parameters<typeof deriveGenerationAttachmentReferences>[0],
@@ -12,6 +13,7 @@ export type NormalizedGenerationAttachmentValidationParams = Omit<
   attachments: NormalizedAttachment[];
   userId: string;
   mediaConstraintDeps?: Parameters<typeof validateGenerationMediaConstraints>[0]['deps'];
+  trustedResolvedReferences?: readonly ResolvedReference[];
 };
 
 type MediaConstraintFailure = Extract<
@@ -31,7 +33,7 @@ export type NormalizedGenerationAttachmentValidationResult =
 export async function validateNormalizedGenerationAttachments(
   params: NormalizedGenerationAttachmentValidationParams,
 ): Promise<NormalizedGenerationAttachmentValidationResult> {
-  const { attachments, userId, mediaConstraintDeps, ...referenceParams } = params;
+  const { attachments, userId, mediaConstraintDeps, trustedResolvedReferences, ...referenceParams } = params;
   const references = deriveGenerationAttachmentReferences({
     ...referenceParams,
     attachments,
@@ -43,6 +45,7 @@ export async function validateNormalizedGenerationAttachments(
     inputSchema: params.inputSchema,
     attachments,
     referenceMediaItems: references.referenceMediaItems,
+    trustedResolvedReferences,
     deps: mediaConstraintDeps,
   });
   if (!mediaConstraints.ok) return mediaConstraints;

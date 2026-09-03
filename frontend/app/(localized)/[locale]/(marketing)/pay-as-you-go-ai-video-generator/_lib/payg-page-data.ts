@@ -21,14 +21,16 @@ import {
 
 export const PAYG_PAGE_PATH = '/pay-as-you-go-ai-video-generator';
 
-const MODEL_FAMILIES = ['ltx', 'wan', 'grok', 'flux', 'seedance', 'kling', 'veo', 'happy-horse', 'seedance-mini'] as const;
+const MODEL_FAMILIES = ['ltx', 'wan', 'grok', 'flux', 'seedance', 'kling', 'veo', 'gemini', 'hailuo', 'happy-horse', 'seedance-mini'] as const;
 const PRIMARY_PRICE_PRESETS: readonly VideoPricePresetId[] = ['5s-720p', '8s-1080p', '10s-1080p'];
 const MODEL_FAMILY_PREFERRED_IDS: Record<(typeof MODEL_FAMILIES)[number], readonly string[]> = {
   seedance: ['seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini'],
   'happy-horse': ['happy-horse-1-1', 'happy-horse-1-0'],
   'seedance-mini': ['seedance-2-0-mini'],
-  kling: ['kling-3-pro', 'kling-3-standard', 'kling-2-5-turbo'],
+  kling: ['kling-3-turbo-pro', 'kling-3-turbo-standard', 'kling-3-pro', 'kling-3-standard', 'kling-2-5-turbo'],
   veo: ['veo-3-1', 'veo-3-1-fast', 'veo-3-1-lite'],
+  gemini: ['gemini-omni-flash'],
+  hailuo: ['minimax-h3', 'minimax-h3-max', 'minimax-hailuo-02-text'],
   ltx: ['ltx-2-5-pro', 'ltx-2-5-fast', 'ltx-2-3', 'ltx-2-3-fast'],
   wan: ['wan-3-prime', 'wan-3', 'wan-2-6'],
   grok: ['grok-imagine-video-1-5'],
@@ -154,6 +156,8 @@ function bestForId(row: VideoPricingRow): keyof PayAsYouGoContent['pricing']['be
   if (lower.includes('seedance')) return 'seedance';
   if (lower.includes('happy-horse')) return 'happyHorse';
   if (lower.includes('kling')) return 'kling';
+  if (lower.includes('gemini')) return 'gemini';
+  if (lower.includes('hailuo') || lower.includes('minimax')) return 'hailuo';
   if (lower.includes('veo')) return 'veo';
   if (lower.includes('ltx')) return 'ltx';
   if (lower.includes('wan')) return 'wan';

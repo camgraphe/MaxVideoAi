@@ -2,9 +2,10 @@ import type { GeneratePayload } from '@/lib/fal';
 import type { Mode } from '@/types/engines';
 
 export const GOOGLE_VERTEX_OMNI_PROVIDER = 'google_vertex_omni_direct' as const;
+export const GOOGLE_VERTEX_OMNI_MODEL_ID = 'gemini-omni-1.1-flash-preview' as const;
 
 export type GoogleVertexOmniEngineId = 'gemini-omni-flash';
-export type GoogleVertexOmniMode = Extract<Mode, 't2v' | 'i2v' | 'ref2v' | 'v2v' | 'retake'>;
+export type GoogleVertexOmniMode = Extract<Mode, 't2v' | 'i2v' | 'ref2v' | 'fl2v' | 'v2v' | 'extend' | 'retake'>;
 
 export type GoogleVertexOmniModelRoute = {
   engineId: GoogleVertexOmniEngineId;
@@ -21,9 +22,9 @@ export type GoogleVertexOmniSupportResult =
 const GOOGLE_VERTEX_OMNI_ROUTES: Record<GoogleVertexOmniEngineId, GoogleVertexOmniModelRoute> = {
   'gemini-omni-flash': {
     engineId: 'gemini-omni-flash',
-    providerModel: 'gemini-omni-flash-preview',
+    providerModel: GOOGLE_VERTEX_OMNI_MODEL_ID,
     launchStage: 'preview',
-    supportedModes: ['t2v', 'i2v', 'ref2v', 'v2v', 'retake'],
+    supportedModes: ['t2v', 'i2v', 'ref2v', 'fl2v', 'v2v', 'extend', 'retake'],
     aspectRatios: ['16:9', '9:16'],
   },
 };
@@ -72,8 +73,11 @@ export function resolveGoogleVertexOmniSupport(params: {
   if (typeof params.seed === 'number' || typeof params.falPayload?.seed === 'number') {
     return { supported: false, route, reason: 'seed_not_supported' };
   }
-  if (params.falPayload?.endImageUrl) {
-    return { supported: false, route, reason: 'first_last_frame_not_supported' };
+  if (params.mode === 'fl2v' && (!params.falPayload?.imageUrl || !params.falPayload.endImageUrl)) {
+    return { supported: false, route, reason: 'first_last_frame_required' };
+  }
+  if (params.mode === 'extend' && !params.falPayload?.videoUrl) {
+    return { supported: false, route, reason: 'source_video_required' };
   }
   if (params.falPayload?.audioUrl) {
     return { supported: false, route, reason: 'audio_reference_not_supported' };

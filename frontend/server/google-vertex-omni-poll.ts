@@ -72,8 +72,47 @@ type GoogleVertexOmniPollDeps = {
 
 const POLL_INITIAL_DELAY_MS = 5_000;
 const POLL_MAX_DURATION_MS = 45 * 60_000;
+const STALLED_RECOVERY_WINDOW_HOURS = 24;
 const ACTIVE_JOB_STATUSES = ['pending', 'queued', 'running', 'processing', 'in_progress'];
+const STALLED_JOB_STATUS = 'provider_polling_stalled';
+const POLLABLE_JOB_STATUSES = [...ACTIVE_JOB_STATUSES, STALLED_JOB_STATUS];
 const STALLED_MESSAGE = 'This render needs manual review before retrying or refunding.';
+
+function recordValue(value: unknown): Record<string, unknown> | null {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null;
+}
+
+function nonNegativeNumber(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : undefined;
+}
+
+function estimateGoogleVertexOmniJobCost(job: GoogleVertexOmniPendingJob, attemptSnapshot?: unknown) {
+  const snapshot = recordValue(job.pricing_snapshot);
+  const meta = recordValue(snapshot?.meta);
+  const attempt = recordValue(attemptSnapshot);
+  const providerPricing = recordValue(attempt?.providerPricing);
+  return estimateGoogleVertexOmniCost({
+    engineId: job.engine_id,
+    mode: typeof providerPricing?.mode === 'string'
+      ? providerPricing.mode
+      : typeof meta?.mode === 'string'
+        ? meta.mode
+        : undefined,
+    durationSec: nonNegativeNumber(providerPricing?.outputDurationSec) ?? job.duration_sec,
+    audioEnabled: job.has_audio === true,
+    resolution: typeof providerPricing?.outputResolution === 'string'
+      ? providerPricing.outputResolution
+      : typeof meta?.output_resolution === 'string'
+        ? meta.output_resolution
+        : undefined,
+    inputImageCount:
+      nonNegativeNumber(providerPricing?.inputImageCount) ?? nonNegativeNumber(meta?.input_image_count),
+    inputVideoDurationSec:
+      nonNegativeNumber(providerPricing?.inputVideoDurationSec) ?? nonNegativeNumber(meta?.input_video_duration_sec),
+  });
+}
 
 async function recordWalletRefundOnce(job: GoogleVertexOmniPendingJob, reason: string, queryFn: QueryFn) {
   if (job.payment_status !== 'paid_wallet' || !job.user_id || !job.final_price_cents) return false;
@@ -142,7 +181,7 @@ async function markJobFailed(
       WHERE job_id = $1
         AND status = ANY($3::text[])
       RETURNING job_id`,
-    [job.job_id, userMessage, ACTIVE_JOB_STATUSES]
+    [job.job_id, userMessage, POLLABLE_JOB_STATUSES]
   );
   if (!rows.length) return false;
   const refunded = await recordWalletRefundOnce(job, userMessage, queryFn);
@@ -230,16 +269,12 @@ async function deferStorageCopyRetry(
             updated_at = NOW()
       WHERE job_id = $1
         AND status = ANY($4::text[])`,
-    [job.job_id, PROVIDER_VIDEO_COPY_RETRY_MESSAGE, JSON.stringify(nextCopyState), ACTIVE_JOB_STATUSES]
+    [job.job_id, PROVIDER_VIDEO_COPY_RETRY_MESSAGE, JSON.stringify(nextCopyState), POLLABLE_JOB_STATUSES]
   );
 }
 
-function buildCostBreakdown(job: GoogleVertexOmniPendingJob) {
-  const estimate = estimateGoogleVertexOmniCost({
-    engineId: job.engine_id,
-    durationSec: job.duration_sec,
-    audioEnabled: job.has_audio === true,
-  });
+function buildCostBreakdown(job: GoogleVertexOmniPendingJob, attemptSnapshot?: unknown) {
+  const estimate = estimateGoogleVertexOmniJobCost(job, attemptSnapshot);
   return {
     provider: GOOGLE_VERTEX_OMNI_PROVIDER,
     provider_cost_source: estimate.source,
@@ -295,9 +330,12 @@ export async function runGoogleVertexOmniPoll(options: { deps?: GoogleVertexOmni
   const generateAndPersistJobKeyframesFn =
     deps.generateAndPersistJobKeyframesFn ?? generateAndPersistJobKeyframes;
 
-  if ((process.env.GOOGLE_VERTEX_OMNI_ENABLED ?? '').trim().toLowerCase() !== 'true' && !deps.queryFn) {
-    return NextResponse.json({ ok: true, enabled: false, checked: 0, updates: 0 });
-  }
+  // The flag gates new submissions, not completion of tasks that Google has
+  // already accepted. This is especially important for staging canaries, which
+  // enable the direct route per request while keeping the global public gate
+  // closed, and for production rollback after an accepted submission.
+  const submissionsEnabled =
+    (process.env.GOOGLE_VERTEX_OMNI_ENABLED ?? '').trim().toLowerCase() === 'true';
 
   const rows = await queryFn<GoogleVertexOmniPendingJob>(
     `SELECT job_id, user_id, engine_id, engine_label, provider_job_id, status, duration_sec, thumb_url,
@@ -308,26 +346,31 @@ export async function runGoogleVertexOmniPoll(options: { deps?: GoogleVertexOmni
       WHERE provider = $1
         AND provider_job_id IS NOT NULL
         AND status = ANY($2::text[])
+        AND (
+          status <> $3
+          OR created_at >= NOW() - INTERVAL '${STALLED_RECOVERY_WINDOW_HOURS} hours'
+        )
       ORDER BY updated_at ASC
       LIMIT 10`,
-    [GOOGLE_VERTEX_OMNI_PROVIDER, ACTIVE_JOB_STATUSES]
+    [GOOGLE_VERTEX_OMNI_PROVIDER, POLLABLE_JOB_STATUSES, STALLED_JOB_STATUS]
   );
 
   if (!rows.length) {
-    return NextResponse.json({ ok: true, enabled: true, checked: 0, updates: 0 });
+    return NextResponse.json({ ok: true, enabled: submissionsEnabled, checked: 0, updates: 0 });
   }
 
   const client = getGoogleVertexOmniClientFn();
   let updates = 0;
 
   for (const job of rows) {
+    const recoveringStalledJob = job.status === STALLED_JOB_STATUS;
     const now = Date.now();
     const updatedAtMs = Date.parse(job.updated_at);
     if (Number.isFinite(updatedAtMs) && now - updatedAtMs < POLL_INITIAL_DELAY_MS) {
       continue;
     }
     const createdAtMs = Date.parse(job.created_at);
-    if (Number.isFinite(createdAtMs) && now - createdAtMs > POLL_MAX_DURATION_MS) {
+    if (!recoveringStalledJob && Number.isFinite(createdAtMs) && now - createdAtMs > POLL_MAX_DURATION_MS) {
       await markJobPollingStalled(job, queryFn);
       updates += 1;
       continue;
@@ -342,13 +385,15 @@ export async function runGoogleVertexOmniPoll(options: { deps?: GoogleVertexOmni
       });
       const interaction = await client.fetchInteraction(job.provider_job_id);
       const task = normalizeGoogleVertexOmniInteraction(interaction, job.provider_job_id);
-      const estimate = estimateGoogleVertexOmniCost({
-        engineId: job.engine_id,
-        durationSec: job.duration_sec,
-        audioEnabled: job.has_audio === true,
-      });
+      const estimate = estimateGoogleVertexOmniJobCost(job, attempt?.requestSnapshot);
 
       if (task.status === 'queued' || task.status === 'running') {
+        if (recoveringStalledJob) {
+          // Re-read the already accepted provider task without reviving it or
+          // representing the check as a new billable generation. A later
+          // completed or failed provider state can still reconcile the job.
+          continue;
+        }
         await queryFn(
           `UPDATE app_jobs
               SET status = 'running',
@@ -426,7 +471,7 @@ export async function runGoogleVertexOmniPoll(options: { deps?: GoogleVertexOmni
         }
       }
 
-      const costBreakdown = buildCostBreakdown(job);
+      const costBreakdown = buildCostBreakdown(job, attempt?.requestSnapshot);
       const completedRows = await queryFn<{ job_id: string }>(
         `UPDATE app_jobs
             SET status = 'completed',
@@ -441,7 +486,7 @@ export async function runGoogleVertexOmniPoll(options: { deps?: GoogleVertexOmni
           WHERE job_id = $1
             AND status = ANY($5::text[])
           RETURNING job_id`,
-        [job.job_id, copiedVideoUrl, thumb, JSON.stringify(costBreakdown), ACTIVE_JOB_STATUSES]
+        [job.job_id, copiedVideoUrl, thumb, JSON.stringify(costBreakdown), POLLABLE_JOB_STATUSES]
       );
       if (!completedRows.length) {
         continue;
@@ -514,5 +559,5 @@ export async function runGoogleVertexOmniPoll(options: { deps?: GoogleVertexOmni
     }
   }
 
-  return NextResponse.json({ ok: true, enabled: true, checked: rows.length, updates });
+  return NextResponse.json({ ok: true, enabled: submissionsEnabled, checked: rows.length, updates });
 }

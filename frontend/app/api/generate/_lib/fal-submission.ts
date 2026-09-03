@@ -15,6 +15,8 @@ import {
   shouldDeferFalError,
   withFalTimeout,
 } from './fal-error-handling';
+import { projectProviderErrorResponse } from '@/server/provider-error-projection';
+import type { ProviderClientErrorPolicy } from '@/types/engines';
 
 const LUMA_RAY2_TIMEOUT_MS = 180_000;
 const FAL_RETRY_DELAYS_MS = [5_000, 15_000, 30_000];
@@ -126,6 +128,7 @@ export async function submitFalGenerateTask(params: {
   setLastProviderJobId: (providerJobId: string | null) => void;
   persistProviderJobId: (providerJobId: string) => void | Promise<void>;
   logMetricFn: LogMetricFn;
+  clientErrorPolicy?: ProviderClientErrorPolicy;
   deps?: SubmitFalGenerateTaskDeps;
 }): Promise<FalGenerateSubmissionResult> {
   const generateVideoFn = params.deps?.generateVideoFn ?? generateVideo;
@@ -351,13 +354,16 @@ export async function submitFalGenerateTask(params: {
       return {
         ok: false,
         status: 422,
-        body: {
-          ok: false,
-          error: translated.errorCode,
-          message: userMessage,
-          providerMessage: null,
-          detail: null,
-        },
+        body: projectProviderErrorResponse({
+          policy: params.clientErrorPolicy,
+          body: {
+            ok: false,
+            error: translated.errorCode,
+            message: userMessage,
+            providerMessage: null,
+            detail: null,
+          },
+        }),
       };
     }
 
@@ -372,13 +378,16 @@ export async function submitFalGenerateTask(params: {
     return {
       ok: false,
       status: isTimeoutError ? 504 : isQuotaError ? 429 : status ?? 500,
-      body: {
-        ok: false,
-        error: errorCode,
-        message: failureMessage,
-        providerMessage: null,
-        detail: null,
-      },
+      body: projectProviderErrorResponse({
+        policy: params.clientErrorPolicy,
+        body: {
+          ok: false,
+          error: errorCode,
+          message: failureMessage,
+          providerMessage: null,
+          detail: null,
+        },
+      }),
     };
   }
 }

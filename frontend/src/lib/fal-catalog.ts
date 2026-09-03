@@ -3,11 +3,21 @@ import path from 'node:path';
 import type { EngineCaps, EnginePricingDetails } from '@/types/engines';
 import { listFalEngines } from '@/config/falEngines';
 import { listUpscaleToolEngines } from '@/config/tools-upscale-engines';
+import {
+  MINIMAX_H3_MAX_ENDPOINTS,
+  MINIMAX_H3_MAX_ID,
+} from '@/src/config/fal-engines/minimax-h3-max';
 
 const CATALOG_TTL_MS = 5 * 60 * 1000;
 
 const ENGINE_REGISTRY = listFalEngines();
 const UPSCALE_ENGINE_REGISTRY = listUpscaleToolEngines();
+const PRIVATE_RUNTIME_DEFAULT_MODEL_MAP: Readonly<Record<string, string>> = {
+  [MINIMAX_H3_MAX_ID]: MINIMAX_H3_MAX_ENDPOINTS.t2v,
+};
+const PRIVATE_RUNTIME_ENGINE_ID_OVERRIDES: Readonly<Record<string, string>> = Object.fromEntries(
+  Object.values(MINIMAX_H3_MAX_ENDPOINTS).map((modelId) => [modelId, MINIMAX_H3_MAX_ID]),
+);
 
 const ENGINE_ID_OVERRIDES: Record<string, string> = ENGINE_REGISTRY.reduce<Record<string, string>>(
   (acc, engine) => {
@@ -361,6 +371,9 @@ export async function resolveFalModelId(engineId: string): Promise<string | unde
   if (override && override.trim()) {
     return override.trim();
   }
+  if (PRIVATE_RUNTIME_DEFAULT_MODEL_MAP[engineId]) {
+    return PRIVATE_RUNTIME_DEFAULT_MODEL_MAP[engineId];
+  }
   const catalog = await getFalCatalog();
   if (catalog?.modelMap?.[engineId]) {
     return catalog.modelMap[engineId];
@@ -376,6 +389,9 @@ export async function resolveEngineIdFromModelSlug(modelSlug: string): Promise<s
   if (!modelSlug) return undefined;
   const normalized = modelSlug.trim();
   if (!normalized) return undefined;
+  if (PRIVATE_RUNTIME_ENGINE_ID_OVERRIDES[normalized]) {
+    return PRIVATE_RUNTIME_ENGINE_ID_OVERRIDES[normalized];
+  }
   if (ENGINE_ID_OVERRIDES[normalized]) {
     return ENGINE_ID_OVERRIDES[normalized];
   }

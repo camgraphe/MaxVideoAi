@@ -57,6 +57,9 @@ test('runtime model projection matches every baseline identity and surface', () 
     ['ltx-2-3-fast', 'ltx-2-5-fast'],
     ['wan-2-6', 'wan-3'],
   ]);
+  const reciprocalP1PairByOwner = new Map([
+    ['gemini-omni-flash', 'kling-3-turbo-pro'],
+  ]);
   for (const expected of baseline.models) {
     const actual = runtimeById.get(expected.id);
     assert.ok(actual, `missing runtime model ${expected.id}`);
@@ -107,6 +110,32 @@ test('runtime model projection matches every baseline identity and surface', () 
       actualPublication.compare.publishedPairs = actualPublication.compare.publishedPairs.filter(
         (slug) => slug !== reciprocalP0Pair,
       );
+    }
+    const reciprocalP1Pair = reciprocalP1PairByOwner.get(expected.id);
+    if (reciprocalP1Pair) {
+      assert.equal(
+        actualPublication.compare.suggestOpponents.filter((slug) => slug === reciprocalP1Pair).length,
+        1,
+        expected.id,
+      );
+      assert.equal(
+        actualPublication.compare.publishedPairs.filter((slug) => slug === reciprocalP1Pair).length,
+        1,
+        expected.id,
+      );
+      actualPublication.compare.suggestOpponents = actualPublication.compare.suggestOpponents.filter(
+        (slug) => slug !== reciprocalP1Pair,
+      );
+      actualPublication.compare.publishedPairs = actualPublication.compare.publishedPairs.filter(
+        (slug) => slug !== reciprocalP1Pair,
+      );
+    }
+    if (expected.id === 'gemini-omni-flash') {
+      assert.deepEqual(actualPublication.examples, {
+        includeInFamilyResolver: true,
+        includeInFamilyCopy: true,
+      });
+      actualPublication.examples = expected.publication.examples;
     }
     assert.deepEqual(actualPublication, expected.publication);
   }
@@ -294,8 +323,10 @@ test('family model membership and current variants remain identical to baseline'
             ? 'wan-3-prime'
             : expected.defaultModelSlug,
     );
-    const expectedRouteAliases = expected.id === 'hailuo'
-      ? ['minimax-h3', ...expected.routeAliases]
+    const expectedRouteAliases = expected.id === 'kling'
+      ? ['kling-3-turbo-pro', 'kling-3-turbo-standard', ...expected.routeAliases]
+      : expected.id === 'hailuo'
+      ? ['minimax-h3', 'minimax-h3-max', ...expected.routeAliases]
       : expected.id === 'ltx'
         ? ['ltx-2-5-pro', 'ltx-2-5-fast', ...expected.routeAliases]
         : expected.id === 'wan'
@@ -304,8 +335,12 @@ test('family model membership and current variants remain identical to baseline'
     assert.deepEqual(actual.routeAliases, expectedRouteAliases);
     const expectedPublishedModelSlugs = expected.id === 'seedance'
       ? ['seedance-2-5', ...(expected.examplesPage?.publishedModelSlugs ?? [])]
+      : expected.id === 'kling'
+        ? ['kling-3-turbo-pro', 'kling-3-turbo-standard', ...(expected.examplesPage?.publishedModelSlugs ?? [])]
       : expected.id === 'hailuo'
-        ? ['minimax-h3', ...(expected.examplesPage?.publishedModelSlugs ?? [])]
+        ? ['minimax-h3', 'minimax-h3-max', ...(expected.examplesPage?.publishedModelSlugs ?? [])]
+        : expected.id === 'veo'
+          ? [...(expected.examplesPage?.publishedModelSlugs ?? []), 'gemini-omni-flash']
         : expected.id === 'ltx'
           ? ['ltx-2-5-pro', 'ltx-2-5-fast', ...(expected.examplesPage?.publishedModelSlugs ?? [])]
         : expected.id === 'wan'
@@ -316,8 +351,12 @@ test('family model membership and current variants remain identical to baseline'
       : expected.examplesPage?.publishedModelSlugs ?? [];
     const expectedCurrentModelSlugs = expected.id === 'seedance'
       ? ['seedance-2-5', ...baselineCurrentModelSlugs]
+      : expected.id === 'kling'
+        ? ['kling-3-turbo-pro', 'kling-3-turbo-standard', ...baselineCurrentModelSlugs]
       : expected.id === 'hailuo'
-        ? ['minimax-h3']
+        ? ['minimax-h3', 'minimax-h3-max']
+        : expected.id === 'veo'
+          ? [...baselineCurrentModelSlugs, 'gemini-omni-flash']
         : expected.id === 'ltx'
           ? ['ltx-2-5-pro', 'ltx-2-5-fast']
           : expected.id === 'wan'

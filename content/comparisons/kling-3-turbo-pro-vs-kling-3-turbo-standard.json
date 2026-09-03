@@ -1,0 +1,21 @@
+{
+  "slug": "kling-3-turbo-pro-vs-kling-3-turbo-standard",
+  "en": {
+    "meta": { "title": "Kling 3 Turbo Pro vs Standard: Scores & Price", "description": "Compare Kling 3 Turbo Pro and Standard for quality, resolution, speed, audio and price.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Quick verdict", "body": "Choose Turbo Standard for lower-cost 720p drafts and iteration. Choose Turbo Pro for 1080p delivery, stronger visual polish and final campaign shots." },
+    "primaryLinksTitle": "Explore the models",
+    "primaryLinks": [{ "href": "/models/kling-3-turbo-pro", "label": "Kling 3 Turbo Pro" }, { "href": "/models/kling-3-turbo-standard", "label": "Kling 3 Turbo Standard" }]
+  },
+  "fr": {
+    "meta": { "title": "Kling 3 Turbo Pro vs Standard : notes et prix", "description": "Comparez Kling 3 Turbo Pro et Standard sur la qualité, résolution, vitesse, audio et prix.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Verdict rapide", "body": "Choisissez Turbo Standard pour les brouillons 720p et les itérations moins coûteuses. Choisissez Turbo Pro pour la livraison 1080p, une finition supérieure et les plans de campagne finaux." },
+    "primaryLinksTitle": "Explorer les modèles",
+    "primaryLinks": [{ "href": "/fr/modeles/kling-3-turbo-pro", "label": "Kling 3 Turbo Pro" }, { "href": "/fr/modeles/kling-3-turbo-standard", "label": "Kling 3 Turbo Standard" }]
+  },
+  "es": {
+    "meta": { "title": "Kling 3 Turbo Pro vs Standard: notas y precio", "description": "Compara Kling 3 Turbo Pro y Standard en calidad, resolución, velocidad, audio y precio.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Veredicto rápido", "body": "Elige Turbo Standard para borradores 720p e iteración más económica. Elige Turbo Pro para entrega 1080p, mejor acabado visual y planos finales de campaña." },
+    "primaryLinksTitle": "Explorar los modelos",
+    "primaryLinks": [{ "href": "/es/modelos/kling-3-turbo-pro", "label": "Kling 3 Turbo Pro" }, { "href": "/es/modelos/kling-3-turbo-standard", "label": "Kling 3 Turbo Standard" }]
+  }
+}

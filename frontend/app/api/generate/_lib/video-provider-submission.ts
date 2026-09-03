@@ -1,5 +1,5 @@
 import type { GeneratePayload, GenerateResult } from '@/lib/fal';
-import type { Mode, PricingSnapshot } from '@/types/engines';
+import type { Mode, PricingSnapshot, ProviderClientErrorPolicy } from '@/types/engines';
 import type { VideoProviderRoutingPlan } from '@/server/video-providers/router';
 import { submitFalGenerateTask } from './fal-submission';
 import { submitGoogleVertexOmniGenerateTask } from './google-vertex-omni-submission';
@@ -60,6 +60,7 @@ export async function submitGenerateProviderTask(params: {
   heroRenderId: string | null;
   localKey: string | null;
   logMetricFn: LogMetricFn;
+  clientErrorPolicy?: ProviderClientErrorPolicy;
 }): Promise<GenerateProviderSubmissionResult> {
   if (params.providerRoutingPlan.kind === 'luma_agents_direct_primary') {
     const lumaSubmission = await submitLumaAgentsGenerateTask({
@@ -94,6 +95,7 @@ export async function submitGenerateProviderTask(params: {
       heroRenderId: params.heroRenderId,
       localKey: params.localKey,
       logMetricFn: params.logMetricFn,
+      clientErrorPolicy: params.clientErrorPolicy,
     });
     if (!lumaSubmission.ok) {
       return { kind: 'error_response', status: lumaSubmission.status, body: lumaSubmission.body };
@@ -138,6 +140,7 @@ export async function submitGenerateProviderTask(params: {
       heroRenderId: params.heroRenderId,
       localKey: params.localKey,
       logMetricFn: params.logMetricFn,
+      clientErrorPolicy: params.clientErrorPolicy,
     });
     if (!klingSubmission.ok) {
       return { kind: 'error_response', status: klingSubmission.status, body: klingSubmission.body };
@@ -200,6 +203,7 @@ export async function submitGenerateProviderTask(params: {
       negativePrompt: typeof params.negativePrompt === 'string' ? params.negativePrompt : null,
       durationSec: params.durationSec,
       aspectRatio: params.aspectRatio,
+      resolution: params.effectiveResolution ?? params.falPayload.resolution ?? '720p',
       audioEnabled: params.audioEnabled,
       placeholderThumb: params.placeholderThumb,
       pricing: params.pricing,
@@ -245,6 +249,7 @@ export async function submitGenerateProviderTask(params: {
     setLastProviderJobId: providerJobTracker.setLastProviderJobId,
     persistProviderJobId: providerJobTracker.persistProviderJobId,
     logMetricFn: params.logMetricFn,
+    clientErrorPolicy: params.clientErrorPolicy,
   });
   if (!falSubmission.ok) {
     return { kind: 'error_response', status: falSubmission.status, body: falSubmission.body };

@@ -30,6 +30,8 @@ const PRICING_DISPLAY_MODEL_ORDER = [
   'seedance-2-0',
   'seedance-2-0-fast',
   'dreamina-seedance-2-0-mini',
+  'kling-3-turbo-pro',
+  'kling-3-turbo-standard',
   'kling-3-pro',
   'kling-3-4k',
   'kling-3-standard',
@@ -48,6 +50,8 @@ const PRICING_DISPLAY_MODEL_ORDER = [
   'grok-imagine-video-1-5',
   'flux-3',
   'flux-3-draft',
+  'minimax-h3',
+  'minimax-h3-max',
   'minimax-hailuo-02-text',
   'luma-ray-2',
   'luma-ray-2-flash',
@@ -68,6 +72,9 @@ const PRICING_DISPLAY_FAMILY_ORDER = [
   'luma',
 ] as const;
 const PRICING_FAMILY_VARIANT_ORDER: Readonly<Record<string, readonly string[]>> = {
+  kling: ['kling-3-turbo-pro', 'kling-3-turbo-standard', 'kling-3-pro', 'kling-3-standard', 'kling-3-4k'],
+  veo: ['veo-3-1', 'veo-3-1-fast', 'gemini-omni-flash', 'veo-3-1-lite'],
+  hailuo: ['minimax-h3', 'minimax-h3-max', 'minimax-hailuo-02-text'],
   ltx: ['ltx-2-5-pro', 'ltx-2-5-fast', 'ltx-2-3', 'ltx-2-3-fast'],
   wan: ['wan-3-prime', 'wan-3', 'wan-2-6'],
   grok: ['grok-imagine-video-1-5'],

@@ -35,6 +35,8 @@ import {
   applyConfiguredEngineRuntimeOptions,
   projectConfiguredEngine,
 } from '@/server/engine-configuration-projection';
+import { getPrivateRuntimeEngineById } from '@/server/video-generation/private-engine-registry';
+import { resolveRuntimeResolutionPolicy } from '@/server/video-generation/runtime-resolution';
 
 async function getConfiguredEnginesForBase(
   baseEngines: EngineCaps[],
@@ -110,7 +112,7 @@ export async function getConfiguredEngineIncludingHidden(
   if (!engineId) return undefined;
   const publicEngine = await getConfiguredEngine(engineId, includeDisabled);
   if (publicEngine) return publicEngine;
-  const hiddenBase = getBaseEngineIncludingHidden(engineId);
+  const hiddenBase = getBaseEngineIncludingHidden(engineId) ?? getPrivateRuntimeEngineById(engineId);
   if (!hiddenBase) return undefined;
   const [configured] = await getConfiguredEnginesForBase([hiddenBase], includeDisabled);
   return configured;
@@ -121,7 +123,7 @@ export async function getConfiguredEngineIncludingHiddenInExecutor(
   executor: TransactionQueryExecutor,
 ): Promise<EngineCaps | undefined> {
   if (!engineId) return undefined;
-  const hiddenBase = getBaseEngineIncludingHidden(engineId);
+  const hiddenBase = getBaseEngineIncludingHidden(engineId) ?? getPrivateRuntimeEngineById(engineId);
   if (!hiddenBase) return undefined;
   await executor.query('LOCK TABLE engine_settings, engine_overrides IN SHARE MODE');
   const [settingsMap, overridesMap] = await Promise.all([
@@ -136,6 +138,7 @@ export async function getConfiguredEngineIncludingHiddenInExecutor(
 export type TrustedPreflightMediaPricingFacts = Readonly<{
   referenceImageCount?: number;
   inputAudioDurationSec?: number;
+  verifiedReferenceTokenCount?: number;
 }>;
 
 export type ComputeConfiguredPreflightOptions = Readonly<{
@@ -175,19 +178,25 @@ export async function computeConfiguredPreflight(
   const isLumaRay2 = isLumaRay2EngineId(engine.id);
   const pricingEngine = applyEngineVariantPricing(engine, request.mode);
   const capability = getEngineCaps(engine.id, request.mode);
+  const resolutionPolicy = resolveRuntimeResolutionPolicy(engine, request.mode);
   const supportsDuration = Boolean(capability?.duration || capability?.frames);
-  const supportsResolution = Boolean(capability?.resolution?.length);
+  const supportsResolution = resolutionPolicy.supportsResolution;
   const supportsAspectRatio = Boolean(capability?.aspectRatio?.length);
   const requestedResolution = request.resolution;
   const availableResolutions: string[] = engine.resolutions.map((value) => value);
-  let effectiveResolution = requestedResolution;
+  const fallbackResolution = resolutionPolicy.pricingFallbackResolution as NonNullable<typeof requestedResolution>;
+  let effectiveResolution = (
+    requestedResolution
+    ?? resolutionPolicy.defaultResolution
+    ?? fallbackResolution
+  ) as NonNullable<PreflightRequest['resolution']>;
   if (isLumaRay2) {
     if (!supportsResolution) {
       effectiveResolution =
-        (availableResolutions.find((value) => value !== 'auto') ?? availableResolutions[0] ?? '540p') as typeof requestedResolution;
+        (availableResolutions.find((value) => value !== 'auto') ?? availableResolutions[0] ?? '540p') as typeof effectiveResolution;
     } else if (requestedResolution === 'auto') {
-      effectiveResolution = '540p' as typeof requestedResolution;
-    } else if (!availableResolutions.includes(requestedResolution)) {
+      effectiveResolution = '540p';
+    } else if (requestedResolution !== undefined && !availableResolutions.includes(requestedResolution)) {
       return {
         ok: false,
         messages: [LUMA_RAY2_ERROR_UNSUPPORTED],
@@ -199,11 +208,11 @@ export async function computeConfiguredPreflight(
     }
   } else if (requestedResolution === 'auto') {
     effectiveResolution =
-      (engine.resolutions.find((value) => value !== 'auto') ?? engine.resolutions[0] ?? '1080p') as typeof requestedResolution;
-  } else if (!availableResolutions.includes(requestedResolution)) {
+      (engine.resolutions.find((value) => value !== 'auto') ?? engine.resolutions[0] ?? '1080p') as typeof effectiveResolution;
+  } else if (requestedResolution !== undefined && !availableResolutions.includes(requestedResolution)) {
     const fallback =
       availableResolutions.find((value) => value !== 'auto') ?? availableResolutions[0] ?? engine.resolutions[0];
-    effectiveResolution = (fallback ?? '1080p') as typeof requestedResolution;
+    effectiveResolution = (fallback ?? '1080p') as typeof effectiveResolution;
   }
 
   const durationInfo = isLumaRay2 && supportsDuration ? getLumaRay2DurationInfo(request.durationSec) : null;
@@ -250,6 +259,7 @@ export async function computeConfiguredPreflight(
   if (
     Object.prototype.hasOwnProperty.call(rawExtraInputValues, 'referenceImageCount')
     || Object.prototype.hasOwnProperty.call(rawExtraInputValues, 'inputAudioDurationSec')
+    || Object.prototype.hasOwnProperty.call(rawExtraInputValues, 'verifiedReferenceTokenCount')
   ) {
     return {
       ok: false,
@@ -260,7 +270,11 @@ export async function computeConfiguredPreflight(
       },
     };
   }
-  const { referenceImageCount, inputAudioDurationSec } = options.trustedMediaPricingFacts ?? {};
+  const {
+    referenceImageCount,
+    inputAudioDurationSec,
+    verifiedReferenceTokenCount,
+  } = options.trustedMediaPricingFacts ?? {};
   const booleanExtraAddon = (value: unknown): boolean | undefined => {
     if (typeof value === 'boolean') return value;
     if (typeof value === 'string') {
@@ -288,6 +302,7 @@ export async function computeConfiguredPreflight(
       addons: Object.keys(pricingAddons).length ? pricingAddons : undefined,
       referenceImageCount,
       inputAudioDurationSec,
+      verifiedReferenceTokenCount,
     });
   } catch (error) {
     return {

@@ -3,6 +3,7 @@ import mcpPublication from '@/config/mcp-publication.json';
 import { getModelFamilyDefinition } from '@/config/model-families';
 import { listRuntimeModels, type RuntimeModelEntry } from '@/config/model-runtime';
 import { orderExamplesHubFamilyIds } from '@/lib/examples/familyOrder';
+import { buildPublishedComparisonSlugsFromModels } from '@/lib/compare-hub/data';
 import { getExampleNavFamilyIds } from '@/lib/model-families';
 import { getMcpPublicationState } from '@/lib/mcp-publication';
 
@@ -88,7 +89,7 @@ const docLink = (slug: string): LocalizedLinkHref => ({
   params: { slug },
 });
 
-const MODEL_MENU_CANDIDATES: readonly LabeledSlug[] = [
+const BASE_MODEL_MENU_CANDIDATES: readonly LabeledSlug[] = [
   { slug: 'seedance-2-5', label: 'Seedance 2.5', badge: 'new' },
   { slug: 'minimax-h3', label: 'MiniMax H3', badge: 'new' },
   { slug: 'ltx-2-5-pro', label: 'LTX 2.5 Pro', badge: 'new' },
@@ -97,7 +98,7 @@ const MODEL_MENU_CANDIDATES: readonly LabeledSlug[] = [
   { slug: 'flux-3', label: 'FLUX 3', badge: 'new' },
   { slug: 'seedance-2-0', label: 'Seedance 2.0' },
   { slug: 'veo-3-1', label: 'Veo 3.1' },
-  { slug: 'gemini-omni-flash', label: 'Gemini Omni Flash' },
+  { slug: 'gemini-omni-flash', label: 'Gemini Omni Flash 1.1', badge: 'new' },
   { slug: 'kling-o3-pro', label: 'Kling 3.0 Omni Pro' },
   { slug: 'kling-o3-4k', label: 'Kling 3.0 Omni 4K' },
   { slug: 'seedance-2-0-fast', label: 'Seedance 2.0 Fast' },
@@ -105,11 +106,37 @@ const MODEL_MENU_CANDIDATES: readonly LabeledSlug[] = [
   { slug: 'veo-3-1-lite', label: 'Veo 3.1 Lite' },
 ] as const;
 
+const P1_MODEL_MENU_CANDIDATES: readonly LabeledSlug[] = [
+  { slug: 'seedance-2-5', label: 'Seedance 2.5', badge: 'new' },
+  { slug: 'minimax-h3', label: 'MiniMax H3', badge: 'new' },
+  { slug: 'minimax-h3-max', label: 'MiniMax H3 Max', badge: 'new' },
+  { slug: 'kling-3-turbo-pro', label: 'Kling 3.0 Turbo Pro', badge: 'new' },
+  { slug: 'kling-3-turbo-standard', label: 'Kling 3.0 Turbo Standard', badge: 'new' },
+  { slug: 'veo-3-1', label: 'Veo 3.1' },
+  { slug: 'gemini-omni-flash', label: 'Gemini Omni Flash 1.1', badge: 'new' },
+  { slug: 'ltx-2-5-pro', label: 'LTX 2.5 Pro', badge: 'new' },
+  { slug: 'wan-3-prime', label: 'Wan 3 Prime', badge: 'new' },
+  { slug: 'grok-imagine-video-1-5', label: 'Grok Imagine Video 1.5', badge: 'new' },
+  { slug: 'flux-3', label: 'FLUX 3', badge: 'new' },
+  { slug: 'seedance-2-0', label: 'Seedance 2.0' },
+  { slug: 'kling-o3-pro', label: 'Kling 3.0 Omni Pro' },
+] as const;
+
+const P1_NEW_MODEL_SLUGS = [
+  'minimax-h3-max',
+  'kling-3-turbo-pro',
+  'kling-3-turbo-standard',
+] as const;
+
 export function buildMarketingModelMenu(models: readonly RuntimeModelEntry[]): LabeledSlug[] {
   const bySlug = new Map(models.map((model) => [model.slug, model]));
   const byId = new Map(models.map((model) => [model.id, model]));
+  const p1Published = P1_NEW_MODEL_SLUGS.every(
+    (slug) => bySlug.get(slug)?.publication.model.published === true,
+  );
+  const candidates = p1Published ? P1_MODEL_MENU_CANDIDATES : BASE_MODEL_MENU_CANDIDATES;
 
-  return MODEL_MENU_CANDIDATES.filter(({ slug }) => {
+  return candidates.filter(({ slug }) => {
     const model = bySlug.get(slug);
     if (!model?.publication.model.published || model.lifecycle === 'retired') return false;
     if (model.lifecycle !== 'legacy' || !model.successorId) return true;
@@ -131,6 +158,33 @@ const EXAMPLES_MENU: LabeledSlug[] = orderExamplesHubFamilyIds(AVAILABLE_EXAMPLE
 
 const FOOTER_EXAMPLES_MENU: LabeledSlug[] = [...EXAMPLES_MENU];
 
+const P1_COMPARE_MENU: LabeledSlug[] = [
+  {
+    slug: 'minimax-h3-vs-minimax-h3-max',
+    label: 'MiniMax H3 vs H3 Max',
+    badge: 'new',
+  },
+  {
+    slug: 'kling-3-turbo-pro-vs-kling-3-turbo-standard',
+    label: 'Kling 3 Turbo Pro vs Standard',
+    badge: 'new',
+  },
+  {
+    slug: 'kling-3-pro-vs-kling-3-turbo-pro',
+    label: 'Kling 3 Pro vs Turbo Pro',
+    badge: 'new',
+  },
+  {
+    slug: 'gemini-omni-flash-vs-kling-3-turbo-pro',
+    label: 'Gemini Omni Flash 1.1 vs Kling 3 Turbo Pro',
+    badge: 'new',
+  },
+  {
+    slug: 'gemini-omni-flash-vs-veo-3-1',
+    label: 'Gemini Omni Flash 1.1 vs Veo 3.1',
+  },
+];
+
 const COMPARE_MENU: LabeledSlug[] = [
   {
     slug: 'minimax-h3-vs-seedance-2-5',
@@ -146,7 +200,7 @@ const COMPARE_MENU: LabeledSlug[] = [
   { slug: 'flux-3-vs-grok-imagine-video-1-5', label: 'FLUX 3 vs Grok Imagine Video 1.5', badge: 'new' },
   { slug: 'grok-imagine-video-1-5-vs-sora-2', label: 'Grok Imagine Video 1.5 vs Sora 2' },
   { slug: 'kling-o3-pro-vs-minimax-h3', label: 'Kling 3.0 Omni Pro vs MiniMax H3' },
-  { slug: 'gemini-omni-flash-vs-veo-3-1', label: 'Gemini Omni Flash vs Veo 3.1' },
+  { slug: 'gemini-omni-flash-vs-veo-3-1', label: 'Gemini Omni Flash 1.1 vs Veo 3.1' },
   { slug: 'kling-3-pro-vs-kling-o3-pro', label: 'Kling 3 Pro vs Kling 3.0 Omni Pro' },
   { slug: 'ltx-2-3-pro-vs-veo-3-1', label: 'LTX 2.3 Pro vs Veo 3.1' },
   { slug: 'minimax-h3-vs-veo-3-1', label: 'MiniMax H3 vs Veo 3.1' },
@@ -180,7 +234,14 @@ export const MARKETING_FOOTER_EXAMPLES: MarketingNavItem[] = FOOTER_EXAMPLES_MEN
   href: exampleLink(item.slug),
 }));
 
-export const MARKETING_NAV_COMPARE: MarketingNavItem[] = COMPARE_MENU.map((item) => ({
+export function buildMarketingCompareMenu(models: readonly RuntimeModelEntry[]): LabeledSlug[] {
+  const publishedSlugs = new Set(buildPublishedComparisonSlugsFromModels(models, () => true));
+  return [...P1_COMPARE_MENU, ...COMPARE_MENU]
+    .filter(({ slug }) => publishedSlugs.has(slug))
+    .slice(0, 10);
+}
+
+export const MARKETING_NAV_COMPARE: MarketingNavItem[] = buildMarketingCompareMenu(listRuntimeModels()).map((item) => ({
   key: item.slug,
   label: item.label,
   href: compareLink(item.slug),

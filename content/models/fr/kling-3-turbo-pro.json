@@ -1,0 +1,243 @@
+{
+  "marketingName": "Kling 3.0 Turbo Pro",
+  "versionLabel": "3.0 Turbo Pro",
+  "seo": {
+    "title": "Kling 3 Turbo Pro : vidéo IA 1080p, audio et prix",
+    "description": "Générez des vidéos Kling 3 Turbo Pro de 3 à 15 secondes en 1080p depuis un texte ou une image, avec audio natif et prompts multishot."
+  },
+  "overview": "Kling 3 Turbo Pro est le palier 1080p pour les plans de campagne, scènes cinématographiques et séquences détaillées avec audio natif.",
+  "decision": {
+    "modelSlug": "kling-3-turbo-pro",
+    "hero": {
+      "eyebrow": "ROUTE KLING TURBO 1080P",
+      "title": "Kling 3.0 Turbo Pro",
+      "subtitle": "Texte-vers-vidéo et image-vers-vidéo rapides en 1080p pour des scènes et séquences multishot de 3 à 15 secondes.",
+      "subtitleHighlights": [
+        "1080p",
+        "3–15s",
+        "Multishot"
+      ],
+      "paragraph": "Choisissez Pro lorsque les détails, les matières et la livraison 1080p justifient le surcoût face à Standard. Utilisez un prompt ou jusqu’à six plans minutés.",
+      "primaryCta": {
+        "label": "Générer avec Kling 3.0 Turbo Pro",
+        "href": "/app?engine=kling-3-turbo-pro"
+      },
+      "secondaryCta": {
+        "label": "Voir les exemples",
+        "href": "/fr/galerie/kling"
+      },
+      "quickLinks": [
+        {
+          "label": "Voir Turbo Standard en 720p",
+          "href": "/fr/modeles/kling-3-turbo-standard"
+        },
+        {
+          "label": "Comparer les modèles",
+          "href": "/fr/comparatif/kling-3-turbo-pro-vs-kling-3-turbo-standard"
+        },
+        {
+          "label": "Voir les tarifs",
+          "href": "/fr/tarifs#kling-3-turbo-pro-pricing"
+        },
+        {
+          "label": "Atelier de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Exemples de lancement validés",
+      "description": "Signal d’observatoire enneigé",
+      "renderLabel": "Voir le rendu",
+      "badges": [
+        "1080p",
+        "3–15s",
+        "Multishot",
+        "Native audio"
+      ],
+      "altContext": "Kling 3.0 Turbo Pro: Signal d’observatoire enneigé"
+    },
+    "features": [
+      {
+        "title": "Palier de finition 1080p",
+        "body": "Utilisez Pro pour les détails, matières, lumières et cadres de livraison plus grands.",
+        "tone": "quality"
+      },
+      {
+        "title": "Clips de 3 à 15 secondes",
+        "body": "Choisissez chaque seconde entière pour un plan ou une courte séquence.",
+        "tone": "duration"
+      },
+      {
+        "title": "Prompts multishot structurés",
+        "body": "Dirigez jusqu’à six plans avec des repères de continuité répétés.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Audio natif",
+        "body": "Générez dialogue, ambiance et effets dans le même rendu.",
+        "tone": "audio"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Choisir Pro pour la livraison",
+        "body": "Utilisez Pro quand le concept validé exige une sortie 1080p et une finition plus poussée.",
+        "cta": {
+          "label": "Générer avec Kling 3.0 Turbo Pro",
+          "href": "/app?engine=kling-3-turbo-pro"
+        }
+      },
+      {
+        "title": "Voir Turbo Standard en 720p",
+        "body": "Choisissez Pro lorsque les détails, les matières et la livraison 1080p justifient le surcoût face à Standard. Utilisez un prompt ou jusqu’à six plans minutés.",
+        "cta": {
+          "label": "Voir Turbo Standard en 720p",
+          "href": "/fr/modeles/kling-3-turbo-standard"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text-to-video",
+        "body": "Séparez sujet, action, caméra, continuité et son."
+      },
+      {
+        "title": "Image-to-video",
+        "body": "Animez une image de départ en décrivant le mouvement et la caméra."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Kling 3.0 Turbo Pro — Voir les tarifs",
+      "subtitle": "Le prix exact est calculé avant le rendu depuis la durée, le mode et la résolution.",
+      "footnote": "Le total affiché au moment de générer reste la référence.",
+      "ctaLabel": "Générer avec Kling 3.0 Turbo Pro",
+      "ctaHref": "/app?engine=kling-3-turbo-pro"
+    },
+    "meta": {
+      "title": "Kling 3 Turbo Pro : vidéo IA 1080p, audio et prix",
+      "description": "Générez des vidéos Kling 3 Turbo Pro de 3 à 15 secondes en 1080p depuis un texte ou une image, avec audio natif et prompts multishot."
+    }
+  },
+  "prompting": {
+    "modelSlug": "kling-3-turbo-pro",
+    "section": {
+      "title": "Atelier de prompts — Kling 3 Turbo Pro",
+      "intro": "Précisez matières, lumière et caméra sans surcharger chaque plan.",
+      "tip": "Répétez seulement les repères d’identité, d’objet et de couleur nécessaires entre les coupes.",
+      "guide": {
+        "label": "Guide officiel Kling 3",
+        "href": "https://app.klingai.com/cn/quickstart/klingai-video-3-model-user-guide"
+      },
+      "referencesTitle": "Diriger une séquence soignée"
+    },
+    "tabs": [
+      {
+        "id": "direction",
+        "label": "Direction",
+        "title": "Diriger une séquence soignée",
+        "description": "Séparez sujet, action, caméra, continuité et son.",
+        "copy": "Un observatoire isolé dans une tempête de neige. Le dôme tourne, le télescope s’aligne avec une trouée dans les nuages et un éclair lointain découpe la crête. Caméra lente, architecture stable, palette bleue, vent et sons mécaniques."
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "direction",
+        "body": "Répétez seulement les repères d’identité, d’objet et de couleur nécessaires entre les coupes."
+      }
+    ],
+    "globalPrinciples": [
+      "Une action lisible par plan.",
+      "Répétez uniquement les repères de continuité indispensables."
+    ],
+    "engineWhy": [
+      "Kling 3 Turbo Pro est le palier 1080p pour les plans de campagne, scènes cinématographiques et séquences détaillées avec audio natif."
+    ],
+    "demo": {
+      "title": "Signal d’observatoire enneigé",
+      "promptLabel": "Prompt de production",
+      "prompt": "Un observatoire isolé dans une tempête de neige. Le dôme tourne, le télescope s’aligne avec une trouée dans les nuages et un éclair lointain découpe la crête. Caméra lente, architecture stable, palette bleue, vent et sons mécaniques.",
+      "notes": [
+        "Répétez seulement les repères d’identité, d’objet et de couleur nécessaires entre les coupes."
+      ],
+      "summary": {
+        "subject": "Signal d’observatoire enneigé",
+        "action": "L’observatoire s’aligne pendant la tempête",
+        "camera": "Un mouvement de caméra contrôlé",
+        "style": "Scène nocturne cinématographique soignée",
+        "output": "1080p · 24 FPS · native audio"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Text-to-video",
+        "outputLabel": "1080p · 24 FPS · native audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "media",
+        "audioChipLabel": null,
+        "altContext": "Kling 3.0 Turbo Pro: Signal d’observatoire enneigé"
+      }
+    },
+    "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "kling-3-turbo-pro",
+    "showWhenEmpty": false,
+    "section": {
+      "title": "Exemples validés",
+      "intro": "Deux rendus distincts montrent le modèle sur des personnes, des scènes ou des produits.",
+      "defaultCtaLabel": "Voir la galerie de la famille",
+      "recreateLabel": null
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Tous"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinématique"
+      },
+      {
+        "id": "product",
+        "label": "Produit"
+      },
+      {
+        "id": "reference",
+        "label": "Références"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "prompt",
+        "icon": "sparkles",
+        "title": "Respect du prompt",
+        "body": "Vérifiez le sujet, l’action, le cadrage et la fin demandés."
+      },
+      {
+        "id": "motion",
+        "icon": "zap",
+        "title": "Qualité du mouvement",
+        "body": "Contrôlez les contacts, la caméra et la stabilité temporelle."
+      },
+      {
+        "id": "people",
+        "icon": "users",
+        "title": "Fidélité humaine",
+        "body": "Inspectez l’anatomie, l’identité, les vêtements et le mouvement."
+      },
+      {
+        "id": "finish",
+        "icon": "maximize",
+        "title": "Finition visuelle",
+        "body": "Inspectez les détails, la lumière, les matières et la résolution."
+      },
+      {
+        "id": "review",
+        "icon": "shield",
+        "title": "Revue éditoriale",
+        "body": "Écartez texte indésirable, marque, contenu risqué ou ressemblance non autorisée."
+      }
+    ],
+    "fallbackItems": null
+  }
+}

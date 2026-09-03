@@ -1,0 +1,243 @@
+{
+  "marketingName": "Kling 3.0 Turbo Standard",
+  "versionLabel": "3.0 Turbo Standard",
+  "seo": {
+    "title": "Kling 3 Turbo Standard: vídeo IA 720p, audio y precio",
+    "description": "Genera vídeos Kling 3 Turbo Standard de 3–15 segundos en 720p desde texto o una imagen inicial, con audio nativo y prompts multishot."
+  },
+  "overview": "Kling 3 Turbo Standard es la ruta 720p orientada al valor para borradores rápidos, conceptos sociales y secuencias multishot con audio nativo.",
+  "decision": {
+    "modelSlug": "kling-3-turbo-standard",
+    "hero": {
+      "eyebrow": "RUTA KLING TURBO DE VALOR",
+      "title": "Kling 3.0 Turbo Standard",
+      "subtitle": "Texto a vídeo e imagen a vídeo rápidos en 720p para clips y secuencias multishot de 3–15 segundos.",
+      "subtitleHighlights": [
+        "720p",
+        "3–15s",
+        "Multishot"
+      ],
+      "paragraph": "Elige Standard cuando el coste de iteración y la velocidad importan más que la entrega final 1080p. Usa un prompt o hasta seis planos cronometrados.",
+      "primaryCta": {
+        "label": "Generar con Kling 3.0 Turbo Standard",
+        "href": "/app?engine=kling-3-turbo-standard"
+      },
+      "secondaryCta": {
+        "label": "Ver ejemplos",
+        "href": "/es/galeria/kling"
+      },
+      "quickLinks": [
+        {
+          "label": "Ver Turbo Pro en 1080p",
+          "href": "/es/modelos/kling-3-turbo-pro"
+        },
+        {
+          "label": "Comparar los modelos",
+          "href": "/es/comparativa/kling-3-turbo-pro-vs-kling-3-turbo-standard"
+        },
+        {
+          "label": "Ver precios",
+          "href": "/es/precios#kling-3-turbo-standard-pricing"
+        },
+        {
+          "label": "Laboratorio de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Ejemplos de lanzamiento revisados",
+      "description": "Relevo de paquete bajo la lluvia",
+      "renderLabel": "Ver render",
+      "badges": [
+        "720p",
+        "3–15s",
+        "Multishot",
+        "Native audio"
+      ],
+      "altContext": "Kling 3.0 Turbo Standard: Relevo de paquete bajo la lluvia"
+    },
+    "features": [
+      {
+        "title": "Nivel 720p económico",
+        "body": "Prueba conceptos, ritmo y encuadre rápidamente con menor coste.",
+        "tone": "price"
+      },
+      {
+        "title": "Clips de 3–15 segundos",
+        "body": "Elige cada segundo entero y adapta el número de planos a la duración.",
+        "tone": "duration"
+      },
+      {
+        "title": "Prompts multishot estructurados",
+        "body": "Dirige hasta seis planos cronometrados con los mismos anclajes de continuidad.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Audio nativo",
+        "body": "Genera diálogo, ambiente y efectos con la imagen.",
+        "tone": "audio"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Elige Standard para iterar",
+        "body": "Usa Standard en 720p para probar ganchos, puesta en escena y ritmo antes del acabado final.",
+        "cta": {
+          "label": "Generar con Kling 3.0 Turbo Standard",
+          "href": "/app?engine=kling-3-turbo-standard"
+        }
+      },
+      {
+        "title": "Ver Turbo Pro en 1080p",
+        "body": "Elige Standard cuando el coste de iteración y la velocidad importan más que la entrega final 1080p. Usa un prompt o hasta seis planos cronometrados.",
+        "cta": {
+          "label": "Ver Turbo Pro en 1080p",
+          "href": "/es/modelos/kling-3-turbo-pro"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text-to-video",
+        "body": "Da a cada plano una acción, una cámara y un sonido."
+      },
+      {
+        "title": "Image-to-video",
+        "body": "Anima una imagen inicial describiendo movimiento y cámara."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Kling 3.0 Turbo Standard — Ver precios",
+      "subtitle": "El precio exacto se calcula antes del render según duración, modo y resolución.",
+      "footnote": "El total mostrado al generar sigue siendo la referencia.",
+      "ctaLabel": "Generar con Kling 3.0 Turbo Standard",
+      "ctaHref": "/app?engine=kling-3-turbo-standard"
+    },
+    "meta": {
+      "title": "Kling 3 Turbo Standard: vídeo IA 720p, audio y precio",
+      "description": "Genera vídeos Kling 3 Turbo Standard de 3–15 segundos en 720p desde texto o una imagen inicial, con audio nativo y prompts multishot."
+    }
+  },
+  "prompting": {
+    "modelSlug": "kling-3-turbo-standard",
+    "section": {
+      "title": "Laboratorio de prompts — Kling 3 Turbo Standard",
+      "intro": "Mantén cada plano corto, visual y verificable.",
+      "tip": "Nombra cada plano y haz que sus duraciones sumen el total elegido.",
+      "guide": {
+        "label": "Guía oficial de Kling 3",
+        "href": "https://app.klingai.com/cn/quickstart/klingai-video-3-model-user-guide"
+      },
+      "referencesTitle": "Construir una secuencia cronometrada"
+    },
+    "tabs": [
+      {
+        "id": "direction",
+        "label": "Dirección",
+        "title": "Construir una secuencia cronometrada",
+        "description": "Da a cada plano una acción, una cámara y un sonido.",
+        "copy": "Plano 1: un mensajero protege un paquete plateado bajo un toldo. Plano 2: el mismo paquete viaja en una cesta de bicicleta bajo la lluvia. Plano 3: el mensajero lo entrega a un panadero en una puerta cálida. Mantener paquete, lluvia, dirección y color."
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "direction",
+        "body": "Nombra cada plano y haz que sus duraciones sumen el total elegido."
+      }
+    ],
+    "globalPrinciples": [
+      "Una acción legible por plano.",
+      "Repite solo los anclajes de continuidad imprescindibles."
+    ],
+    "engineWhy": [
+      "Kling 3 Turbo Standard es la ruta 720p orientada al valor para borradores rápidos, conceptos sociales y secuencias multishot con audio nativo."
+    ],
+    "demo": {
+      "title": "Relevo de paquete bajo la lluvia",
+      "promptLabel": "Prompt de producción",
+      "prompt": "Plano 1: un mensajero protege un paquete plateado bajo un toldo. Plano 2: el mismo paquete viaja en una cesta de bicicleta bajo la lluvia. Plano 3: el mensajero lo entrega a un panadero en una puerta cálida. Mantener paquete, lluvia, dirección y color.",
+      "notes": [
+        "Nombra cada plano y haz que sus duraciones sumen el total elegido."
+      ],
+      "summary": {
+        "subject": "Relevo de paquete bajo la lluvia",
+        "action": "Un paquete recorre tres pasos conectados",
+        "camera": "Un movimiento de cámara controlado",
+        "style": "Secuencia publicitaria rápida y cinematográfica",
+        "output": "720p · 24 FPS · native audio"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Text-to-video",
+        "outputLabel": "720p · 24 FPS · native audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "media",
+        "audioChipLabel": null,
+        "altContext": "Kling 3.0 Turbo Standard: Relevo de paquete bajo la lluvia"
+      }
+    },
+    "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "kling-3-turbo-standard",
+    "showWhenEmpty": false,
+    "section": {
+      "title": "Ejemplos revisados",
+      "intro": "Dos renders distintos muestran el modelo con personas, escenas o productos.",
+      "defaultCtaLabel": "Ver la galería de la familia",
+      "recreateLabel": null
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Todos"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinemático"
+      },
+      {
+        "id": "product",
+        "label": "Producto"
+      },
+      {
+        "id": "reference",
+        "label": "Referencias"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "prompt",
+        "icon": "sparkles",
+        "title": "Fidelidad al prompt",
+        "body": "Comprueba el sujeto, la acción, el encuadre y el cierre solicitados."
+      },
+      {
+        "id": "motion",
+        "icon": "zap",
+        "title": "Calidad de movimiento",
+        "body": "Revisa contactos, cámara y estabilidad temporal."
+      },
+      {
+        "id": "people",
+        "icon": "users",
+        "title": "Fidelidad humana",
+        "body": "Inspecciona anatomía, identidad, ropa y movimiento natural."
+      },
+      {
+        "id": "finish",
+        "icon": "maximize",
+        "title": "Acabado visual",
+        "body": "Inspecciona detalle, luz, materiales y resolución."
+      },
+      {
+        "id": "review",
+        "icon": "shield",
+        "title": "Revisión editorial",
+        "body": "Descarta texto no deseado, marcas, contenido inseguro o parecidos no autorizados."
+      }
+    ],
+    "fallbackItems": null
+  }
+}

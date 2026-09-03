@@ -111,6 +111,78 @@
       "equivalenceKey": "grok-imagine-video-1-5:t2v:6:720p:pro"
     },
     {
+      "scenarioId": "billing:kling-3-turbo-pro:t2v:5:1080p:member",
+      "surface": "billing",
+      "currency": "USD",
+      "vendorSubtotalCents": 70,
+      "marginCents": 21,
+      "surchargeCents": 0,
+      "customerTotalCents": 91,
+      "unit": "sec",
+      "quantity": 5,
+      "equivalenceKey": "kling-3-turbo-pro:t2v:5:1080p:member"
+    },
+    {
+      "scenarioId": "billing:kling-3-turbo-pro:t2v:5:1080p:plus",
+      "surface": "billing",
+      "currency": "USD",
+      "vendorSubtotalCents": 70,
+      "marginCents": 21,
+      "surchargeCents": 0,
+      "customerTotalCents": 86,
+      "unit": "sec",
+      "quantity": 5,
+      "equivalenceKey": "kling-3-turbo-pro:t2v:5:1080p:plus"
+    },
+    {
+      "scenarioId": "billing:kling-3-turbo-pro:t2v:5:1080p:pro",
+      "surface": "billing",
+      "currency": "USD",
+      "vendorSubtotalCents": 70,
+      "marginCents": 21,
+      "surchargeCents": 0,
+      "customerTotalCents": 82,
+      "unit": "sec",
+      "quantity": 5,
+      "equivalenceKey": "kling-3-turbo-pro:t2v:5:1080p:pro"
+    },
+    {
+      "scenarioId": "billing:kling-3-turbo-standard:t2v:5:720p:member",
+      "surface": "billing",
+      "currency": "USD",
+      "vendorSubtotalCents": 56,
+      "marginCents": 17,
+      "surchargeCents": 0,
+      "customerTotalCents": 73,
+      "unit": "sec",
+      "quantity": 5,
+      "equivalenceKey": "kling-3-turbo-standard:t2v:5:720p:member"
+    },
+    {
+      "scenarioId": "billing:kling-3-turbo-standard:t2v:5:720p:plus",
+      "surface": "billing",
+      "currency": "USD",
+      "vendorSubtotalCents": 56,
+      "marginCents": 17,
+      "surchargeCents": 0,
+      "customerTotalCents": 69,
+      "unit": "sec",
+      "quantity": 5,
+      "equivalenceKey": "kling-3-turbo-standard:t2v:5:720p:plus"
+    },
+    {
+      "scenarioId": "billing:kling-3-turbo-standard:t2v:5:720p:pro",
+      "surface": "billing",
+      "currency": "USD",
+      "vendorSubtotalCents": 56,
+      "marginCents": 17,
+      "surchargeCents": 0,
+      "customerTotalCents": 66,
+      "unit": "sec",
+      "quantity": 5,
+      "equivalenceKey": "kling-3-turbo-standard:t2v:5:720p:pro"
+    },
+    {
       "scenarioId": "billing:ltx-2-5-fast:t2v:1:1080p:member",
       "surface": "billing",
       "currency": "USD",
@@ -181,6 +253,42 @@
       "unit": "sec",
       "quantity": 6,
       "equivalenceKey": "ltx-2-5-pro:t2v:1:1080p:pro"
+    },
+    {
+      "scenarioId": "billing:minimax-h3-max:t2v:5:768P:member",
+      "surface": "billing",
+      "currency": "USD",
+      "vendorSubtotalCents": 40,
+      "marginCents": 12,
+      "surchargeCents": 0,
+      "customerTotalCents": 52,
+      "unit": "sec",
+      "quantity": 5,
+      "equivalenceKey": "minimax-h3-max:t2v:5:768P:member"
+    },
+    {
+      "scenarioId": "billing:minimax-h3-max:t2v:5:768P:plus",
+      "surface": "billing",
+      "currency": "USD",
+      "vendorSubtotalCents": 40,
+      "marginCents": 12,
+      "surchargeCents": 0,
+      "customerTotalCents": 49,
+      "unit": "sec",
+      "quantity": 5,
+      "equivalenceKey": "minimax-h3-max:t2v:5:768P:plus"
+    },
+    {
+      "scenarioId": "billing:minimax-h3-max:t2v:5:768P:pro",
+      "surface": "billing",
+      "currency": "USD",
+      "vendorSubtotalCents": 40,
+      "marginCents": 12,
+      "surchargeCents": 0,
+      "customerTotalCents": 47,
+      "unit": "sec",
+      "quantity": 5,
+      "equivalenceKey": "minimax-h3-max:t2v:5:768P:pro"
     },
     {
       "scenarioId": "billing:minimax-h3:t2v:10:2K:member",
@@ -750,6 +858,32 @@
       "equivalenceKey": "grok-imagine-video-1-5:t2v:6:720p:member"
     },
     {
+      "scenarioId": "estimator:kling-3-turbo-pro:5:1080p",
+      "surface": "estimator",
+      "currency": "USD",
+      "vendorSubtotalCents": 70,
+      "marginCents": 21,
+      "surchargeCents": 0,
+      "customerTotalCents": 91,
+      "unit": "sec",
+      "quantity": 5,
+      "displayedAmount": "$0.91",
+      "equivalenceKey": "kling-3-turbo-pro:t2v:5:1080p:member"
+    },
+    {
+      "scenarioId": "estimator:kling-3-turbo-standard:5:720p",
+      "surface": "estimator",
+      "currency": "USD",
+      "vendorSubtotalCents": 56,
+      "marginCents": 17,
+      "surchargeCents": 0,
+      "customerTotalCents": 73,
+      "unit": "sec",
+      "quantity": 5,
+      "displayedAmount": "$0.73",
+      "equivalenceKey": "kling-3-turbo-standard:t2v:5:720p:member"
+    },
+    {
       "scenarioId": "estimator:ltx-2-5-fast:1:1080p",
       "surface": "estimator",
       "currency": "USD",
@@ -774,6 +908,19 @@
       "quantity": 6,
       "displayedAmount": "$1.33",
       "equivalenceKey": "ltx-2-5-pro:t2v:1:1080p:member"
+    },
+    {
+      "scenarioId": "estimator:minimax-h3-max:5:768P",
+      "surface": "estimator",
+      "currency": "USD",
+      "vendorSubtotalCents": 40,
+      "marginCents": 12,
+      "surchargeCents": 0,
+      "customerTotalCents": 52,
+      "unit": "sec",
+      "quantity": 5,
+      "displayedAmount": "$0.52",
+      "equivalenceKey": "minimax-h3-max:t2v:5:768P:member"
     },
     {
       "scenarioId": "estimator:minimax-h3:10:2K",

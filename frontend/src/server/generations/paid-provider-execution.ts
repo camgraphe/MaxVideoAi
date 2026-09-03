@@ -92,6 +92,7 @@ async function executePaidVideoContinuation(
     walletReservation: 'already_reserved',
     preReservedInitialState: options.preReservedInitialState,
     trustedQuotedBilling: options.trustedQuotedBilling,
+    trustedResolvedReferences: options.trustedResolvedReferences,
   });
 }
 

@@ -17,6 +17,7 @@ import {
   buildWorkspaceTopupAnalyticsPayload,
   getSufficientTopUpAmountCents,
 } from '../_lib/workspace-topup';
+import { workspaceModeSupportsRequestField } from '../_lib/workspace-mode-request-fields';
 
 export type MemberTier = 'Member' | 'Plus' | 'Pro';
 
@@ -221,12 +222,30 @@ export function useWorkspacePricingGate({
     if (!form || !selectedEngine || !authChecked) return;
     let canceled = false;
 
+    const capability = selectedEngine.modeCaps?.[submissionMode];
+    const shouldSendResolution = workspaceModeSupportsRequestField({
+      inputSchema: selectedEngine.inputSchema,
+      capability,
+      fieldId: 'resolution',
+      mode: submissionMode,
+    });
+    const shouldSendAspectRatio = workspaceModeSupportsRequestField({
+      inputSchema: selectedEngine.inputSchema,
+      capability,
+      fieldId: 'aspect_ratio',
+      mode: submissionMode,
+    });
+
     const payload: PreflightRequest = {
       engine: form.engineId,
       mode: submissionMode,
       durationSec: effectiveDurationSec,
-      resolution: form.resolution as PreflightRequest['resolution'],
-      aspectRatio: form.aspectRatio as PreflightRequest['aspectRatio'],
+      ...(shouldSendResolution
+        ? { resolution: form.resolution as PreflightRequest['resolution'] }
+        : {}),
+      ...(shouldSendAspectRatio
+        ? { aspectRatio: form.aspectRatio as PreflightRequest['aspectRatio'] }
+        : {}),
       fps: form.fps,
       seedLocked: Boolean(form.seedLocked),
       loop: form.loop,

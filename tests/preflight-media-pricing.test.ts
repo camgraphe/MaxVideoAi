@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
 import { computeConfiguredPreflight } from '../frontend/src/server/engines.ts';
+import { MINIMAX_H3_MAX_ENGINE } from '../frontend/src/config/fal-engines/minimax-h3-max.ts';
 import { computeCanonicalBillingSnapshot } from '../frontend/server/pricing/quote-billing.ts';
 import { resolveMediaAwarePreflight } from '../frontend/app/api/preflight/_lib/media-aware-preflight.ts';
 import type { EngineCaps, PreflightRequest } from '../frontend/types/engines.ts';
@@ -156,6 +157,23 @@ test('configured preflight rejects client media scalars even when an engine is a
     resolvedEngine: engine,
     trustedMediaPricingFacts: { inputAudioDurationSec: 9.25 },
   });
+  assert.equal(result.ok, false);
+  assert.equal(result.error?.code, 'PRICING_MEDIA_FACTS_UNTRUSTED');
+});
+
+test('public preflight rejects client-declared H3 Max reference-token facts', async () => {
+  const result = await computeConfiguredPreflight({
+    engine: 'minimax-h3-max',
+    mode: 'ref2v',
+    durationSec: 5,
+    resolution: '768P',
+    fps: 24,
+    extraInputValues: { verifiedReferenceTokenCount: 4_597 },
+  }, {
+    resolvedEngine: MINIMAX_H3_MAX_ENGINE,
+    trustedMediaPricingFacts: { verifiedReferenceTokenCount: 4_096 },
+  });
+
   assert.equal(result.ok, false);
   assert.equal(result.error?.code, 'PRICING_MEDIA_FACTS_UNTRUSTED');
 });

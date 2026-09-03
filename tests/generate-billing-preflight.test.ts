@@ -5,6 +5,7 @@ import test from 'node:test';
 
 import { resolveGenerateBillingPreflight } from '../frontend/app/api/generate/_lib/billing-preflight';
 import { listFalEngines } from '../frontend/src/config/falEngines';
+import { MINIMAX_H3_MAX_ENGINE } from '../frontend/src/config/fal-engines/minimax-h3-max';
 import type { PricingSnapshot } from '../frontend/types/engines';
 
 const root = process.cwd();
@@ -209,7 +210,7 @@ test('billing preflight passes the Seedance video-input class into canonical pri
   assert.equal(capturedHasVideoInput, true);
 });
 
-test('billing preflight persists validated P0 reference count and trusted input-audio duration', async () => {
+test('billing preflight persists verified media counts and durations in the canonical pricing context', async () => {
   let capturedContext: Record<string, unknown> | null = null;
   const result = await resolveGenerateBillingPreflight({
     req: createReq('US'),
@@ -227,6 +228,8 @@ test('billing preflight persists validated P0 reference count and trusted input-
     isLumaRay2: false,
     loop: false,
     referenceImageCount: 3,
+    inputImageCount: 4,
+    inputVideoDurationSec: 7.5,
     inputAudioDurationSec: 9.25,
     rawDurationOption: null,
     lumaDurationLabel: null,
@@ -250,10 +253,156 @@ test('billing preflight persists validated P0 reference count and trusted input-
 
   assert.equal(result.ok, true);
   assert.equal(capturedContext?.referenceImageCount, 3);
+  assert.equal(capturedContext?.inputImageCount, 4);
+  assert.equal(capturedContext?.inputVideoDurationSec, 7.5);
   assert.equal(capturedContext?.inputAudioDurationSec, 9.25);
   assert.equal(result.preflight.pricing.meta?.request?.referenceImageCount, 3);
+  assert.equal(result.preflight.pricing.meta?.request?.inputImageCount, 4);
+  assert.equal(result.preflight.pricing.meta?.request?.inputVideoDurationSec, 7.5);
   assert.equal(result.preflight.pricing.meta?.request?.inputAudioDurationSec, 9.25);
   assert.equal(result.preflight.receiptSnapshot.meta?.request?.inputAudioDurationSec, 9.25);
+});
+
+test('billing preflight forwards only server-trusted H3 Max reference tokens into wallet pricing', async () => {
+  let capturedContext: Record<string, unknown> | null = null;
+  const result = await resolveGenerateBillingPreflight({
+    req: createReq('US'),
+    engine: MINIMAX_H3_MAX_ENGINE,
+    mode: 'ref2v',
+    userId: 'user_h3_max',
+    payment: { mode: 'wallet', paymentIntentId: null },
+    jobId: 'job_h3_max',
+    durationSec: 5,
+    durationLabel: '5s',
+    pricingResolution: '768P',
+    effectiveResolution: '768P',
+    aspectRatio: null,
+    membershipTier: 'member',
+    isLumaRay2: false,
+    loop: false,
+    trustedMediaPricingFacts: { verifiedReferenceTokenCount: 4_597 },
+    rawDurationOption: 5,
+    lumaDurationLabel: null,
+    audioEnabled: undefined,
+    voiceControl: false,
+    deps: {
+      getUserPreferredCurrencyFn: async () => 'usd',
+      resolveCurrencyFn: () => ({ currency: 'usd', source: 'user_pref' }),
+      computePricingSnapshotFn: async (context) => {
+        capturedContext = context as unknown as Record<string, unknown>;
+        return { ...pricing, totalCents: 41, meta: { ...pricing.meta } };
+      },
+      convertCentsFn: async (cents) => ({ cents, rate: 1, source: 'identity' }),
+      getPlatformFeeCentsFn: () => 0,
+      receiptsPriceOnlyEnabledFn: () => false,
+      buildReceiptSnapshotFn: (value) => value,
+      applyEngineVariantPricingFn: (value) => value,
+      buildEngineAddonInputFn: () => ({}),
+    },
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(capturedContext?.verifiedReferenceTokenCount, 4_597);
+  if (!result.ok) return;
+  assert.equal(
+    (result.preflight.pricing.meta?.request as { verifiedReferenceTokenCount?: number })
+      .verifiedReferenceTokenCount,
+    4_597,
+  );
+});
+
+test('billing preflight fails H3 Max reference pricing closed before wallet reservation without trusted tokens', async () => {
+  let pricingCalls = 0;
+  const result = await resolveGenerateBillingPreflight({
+    req: createReq('US'),
+    engine: MINIMAX_H3_MAX_ENGINE,
+    mode: 'ref2v',
+    userId: 'user_h3_max',
+    payment: { mode: 'wallet', paymentIntentId: null },
+    jobId: 'job_h3_max_missing_tokens',
+    durationSec: 5,
+    durationLabel: '5s',
+    pricingResolution: '768P',
+    effectiveResolution: '768P',
+    aspectRatio: null,
+    membershipTier: 'member',
+    isLumaRay2: false,
+    loop: false,
+    rawDurationOption: 5,
+    lumaDurationLabel: null,
+    audioEnabled: undefined,
+    voiceControl: false,
+    deps: {
+      getUserPreferredCurrencyFn: async () => 'usd',
+      resolveCurrencyFn: () => ({ currency: 'usd', source: 'user_pref' }),
+      computePricingSnapshotFn: async () => {
+        pricingCalls += 1;
+        return { ...pricing, meta: { ...pricing.meta } };
+      },
+      applyEngineVariantPricingFn: (value) => value,
+      buildEngineAddonInputFn: () => ({}),
+    },
+  });
+
+  assert.deepEqual(result, {
+    ok: false,
+    status: 422,
+    body: {
+      ok: false,
+      error: 'PRICING_MEDIA_FACTS_UNVERIFIED',
+      message: 'Trusted reference-token pricing metadata is required.',
+    },
+    metric: { errorCode: 'PRICING_MEDIA_FACTS_UNVERIFIED' },
+  });
+  assert.equal(pricingCalls, 0);
+});
+
+test('billing preflight passes trusted inherited edit duration independently of the selected duration', async () => {
+  for (const mode of ['v2v', 'retake'] as const) {
+    let capturedContext: Record<string, unknown> | null = null;
+    const result = await resolveGenerateBillingPreflight({
+      req: createReq('US'),
+      engine,
+      mode,
+      userId: 'user_123',
+      payment: { mode: 'wallet', paymentIntentId: null },
+      jobId: `job_${mode}`,
+      durationSec: 10,
+      inheritedDurationSec: 4,
+      durationLabel: '10s',
+      pricingResolution: '720p',
+      effectiveResolution: '720p',
+      aspectRatio: '16:9',
+      membershipTier: 'member',
+      isLumaRay2: false,
+      loop: false,
+      inputVideoDurationSec: mode === 'v2v' ? 4 : 0,
+      rawDurationOption: 10,
+      lumaDurationLabel: null,
+      audioEnabled: true,
+      voiceControl: false,
+      deps: {
+        getUserPreferredCurrencyFn: async () => 'usd',
+        resolveCurrencyFn: () => ({ currency: 'usd', source: 'user_pref' }),
+        computePricingSnapshotFn: async (context) => {
+          capturedContext = context as unknown as Record<string, unknown>;
+          return { ...pricing, meta: { ...pricing.meta } };
+        },
+        convertCentsFn: async () => ({ cents: 1200, rate: 1, source: 'test' }),
+        getPlatformFeeCentsFn: () => 0,
+        receiptsPriceOnlyEnabledFn: () => true,
+        buildReceiptSnapshotFn: (value) => ({ totalCents: value.totalCents, currency: value.currency }),
+        applyEngineVariantPricingFn: (value) => value,
+        buildEngineAddonInputFn: () => ({}),
+      },
+    });
+
+    assert.equal(result.ok, true);
+    assert.equal(capturedContext?.durationSec, 10);
+    assert.equal(capturedContext?.inheritedDurationSec, 4);
+    assert.equal(result.preflight.pricing.meta?.request?.inheritedDurationSec, 4);
+    assert.equal(result.preflight.pricingSnapshotJson, '{"totalCents":1200,"currency":"USD"}');
+  }
 });
 
 test('billing preflight accepts captured direct payment intents', async () => {

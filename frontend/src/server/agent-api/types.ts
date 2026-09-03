@@ -175,7 +175,7 @@ export type AgentModelOutputCountDetails = Readonly<{
 
 export type AgentModelSettingDetails = Readonly<{
   key: string;
-  type: 'boolean' | 'number' | 'text' | 'enum';
+  type: 'boolean' | 'number' | 'text' | 'enum' | 'multi_prompt';
   required: boolean;
   values: readonly (string | number | boolean)[] | null;
   min: number | null;

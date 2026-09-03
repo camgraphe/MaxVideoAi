@@ -3,13 +3,14 @@ import type { Mode } from '@/types/engines';
 import { parseGoogleVertexGcsPrefix } from '../google-vertex-gcs';
 import { resolveGoogleVertexOmniModelRoute, type GoogleVertexOmniMode } from './model-map';
 import {
+  buildOmniEndImageInput,
   buildOmniReferenceImageInputs,
   buildOmniSourceImageInput,
   buildOmniSourceVideoInput,
   type GoogleVertexOmniMediaInput,
 } from './media-input';
 
-type GoogleVertexOmniTask = 'text_to_video' | 'image_to_video' | 'reference_to_video' | 'edit';
+type GoogleVertexOmniTask = 'text_to_video' | 'image_to_video' | 'reference_to_video' | 'edit' | 'extend';
 
 export type GoogleVertexOmniPayload = {
   model: string;
@@ -23,7 +24,7 @@ export type GoogleVertexOmniPayload = {
     type: 'video';
     delivery: 'uri';
     gcs_uri: string;
-    resolution: '720p';
+    resolution: '360p' | '720p' | '1080p' | '4k';
     aspect_ratio?: '16:9' | '9:16';
     duration?: `${number}s`;
   }>;
@@ -48,7 +49,9 @@ const OMNI_TASK_BY_MODE: Record<GoogleVertexOmniMode, GoogleVertexOmniTask> = {
   t2v: 'text_to_video',
   i2v: 'image_to_video',
   ref2v: 'reference_to_video',
+  fl2v: 'image_to_video',
   v2v: 'edit',
+  extend: 'extend',
   retake: 'edit',
 };
 
@@ -60,19 +63,6 @@ function stringFromExtra(extra: Record<string, unknown>, ...keys: string[]): str
   for (const key of keys) {
     const value = extra[key];
     if (typeof value === 'string' && value.trim().length) return value.trim();
-  }
-  return null;
-}
-
-function booleanFromExtra(extra: Record<string, unknown>, ...keys: string[]): boolean | null {
-  for (const key of keys) {
-    const value = extra[key];
-    if (typeof value === 'boolean') return value;
-    if (typeof value === 'string') {
-      const normalized = value.trim().toLowerCase();
-      if (['true', '1', 'yes', 'on'].includes(normalized)) return true;
-      if (['false', '0', 'no', 'off'].includes(normalized)) return false;
-    }
   }
   return null;
 }
@@ -89,9 +79,9 @@ function normalizeDuration(value: number): `${number}s` {
   return `${value}s`;
 }
 
-function normalizeResolution(value: string): '720p' {
-  if (value !== '720p') throw new Error('Gemini Omni Flash is currently enabled at 720p on MaxVideoAI.');
-  return value;
+function normalizeResolution(value: string): '360p' | '720p' | '1080p' | '4k' {
+  if (value === '360p' || value === '720p' || value === '1080p' || value === '4k') return value;
+  throw new Error('Gemini Omni Flash supports 360p, 720p, 1080p, and 4k output.');
 }
 
 function normalizeOutputGcsUri(value: string): string {
@@ -119,6 +109,11 @@ function buildPromptText(params: { prompt: string; mode: Mode | string; extra: R
   const lines =
     params.mode === 'i2v'
       ? [`[# Sources <FIRST_FRAME>@Image1] ${prompt}`, 'Use Image1 as the starting frame.']
+      : params.mode === 'fl2v'
+        ? [
+            `[# Sources <FIRST_FRAME>@Image1 <LAST_FRAME>@Image2] ${prompt}`,
+            'Use Image1 as the starting frame and Image2 as the ending frame.',
+          ]
       : params.mode === 'ref2v'
         ? [prompt, 'Use the given image(s) as references for video generation. The images should not be used as literal initial frames.']
         : [prompt];
@@ -171,15 +166,31 @@ export async function buildGoogleVertexOmniPayload(
     addMediaInput(input, sourceImage);
   }
 
+  if (mode === 'fl2v') {
+    const sourceImage = buildOmniSourceImageInput(params.falPayload);
+    const endImage = buildOmniEndImageInput(params.falPayload);
+    if (!sourceImage || !endImage) {
+      throw new Error('Gemini Omni Flash first/last-frame mode requires both source images.');
+    }
+    addMediaInput(input, sourceImage);
+    addMediaInput(input, endImage);
+  }
+
   if (mode === 'ref2v') {
     const references = buildOmniReferenceImageInputs(params.falPayload);
     if (!references.length) throw new Error('Gemini Omni Flash reference-to-video requires reference images.');
     addMediaInputs(input, references);
   }
 
-  if (mode === 'v2v') {
+  if (mode === 'v2v' || mode === 'extend') {
     const sourceVideo = buildOmniSourceVideoInput(params.falPayload);
-    if (!sourceVideo) throw new Error('Gemini Omni Flash video edit requires a source video.');
+    if (!sourceVideo) {
+      throw new Error(
+        mode === 'extend'
+          ? 'Gemini Omni Flash extension requires a source video.'
+          : 'Gemini Omni Flash video edit requires a source video.'
+      );
+    }
     addMediaInput(input, sourceVideo);
   }
 
@@ -190,17 +201,19 @@ export async function buildGoogleVertexOmniPayload(
 
   const outputGcsUri = normalizeOutputGcsUri(params.outputGcsUri);
   const resolution = normalizeResolution(params.resolution);
+  const aspectRatio = normalizeAspectRatio(params.aspectRatio ?? params.falPayload.aspectRatio ?? '16:9');
+  const duration = normalizeDuration(params.durationSec);
   const responseFormat: GoogleVertexOmniPayload['response_format'] =
     task === 'edit'
       ? [{ type: 'video', delivery: 'uri', gcs_uri: outputGcsUri, resolution }]
       : [
           {
             type: 'video',
-            aspect_ratio: normalizeAspectRatio(params.aspectRatio ?? params.falPayload.aspectRatio ?? '16:9'),
+            aspect_ratio: aspectRatio,
             delivery: 'uri',
             gcs_uri: outputGcsUri,
             resolution,
-            duration: normalizeDuration(params.durationSec),
+            duration,
           },
         ];
 
@@ -214,7 +227,7 @@ export async function buildGoogleVertexOmniPayload(
     },
     response_format: responseFormat,
     background: true,
-    store: booleanFromExtra(extra, 'store_interaction', 'storeInteraction') ?? true,
+    store: true,
   };
 
   if (previousInteractionId) {

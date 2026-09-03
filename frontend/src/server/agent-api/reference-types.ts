@@ -13,4 +13,6 @@ export type ResolvedReference = {
   height: number | null;
   durationSec: number | null;
   mimeType: string;
+  sizeBytes?: number | null;
+  originalName?: string | null;
 };

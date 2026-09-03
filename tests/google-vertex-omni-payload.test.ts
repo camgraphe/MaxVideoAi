@@ -29,7 +29,7 @@ test('Omni text-to-video payload uses Interactions video_config task and video r
     },
   });
 
-  assert.equal(payload.model, 'gemini-omni-flash-preview');
+  assert.equal(payload.model, 'gemini-omni-1.1-flash-preview');
   assert.deepEqual(payload.response_format, [
     {
       type: 'video',
@@ -113,7 +113,7 @@ test('Omni image-to-video payload tags the source image in the prompt', async ()
   assert.match(JSON.stringify(payload.input), /Use Image1 as the starting frame/);
 });
 
-test('Omni payload allows callers to opt out of stored interactions', async () => {
+test('Omni background payload always stores the interaction', async () => {
   const payload = await buildGoogleVertexOmniPayload({
     engineId: 'gemini-omni-flash',
     mode: 't2v',
@@ -129,7 +129,98 @@ test('Omni payload allows callers to opt out of stored interactions', async () =
     },
   });
 
-  assert.equal(payload.store, false);
+  assert.equal(payload.store, true);
+});
+
+test('Omni first/last-frame payload serializes the start image before the end image', async () => {
+  const payload = await buildGoogleVertexOmniPayload({
+    engineId: 'gemini-omni-flash',
+    mode: 'fl2v',
+    prompt: 'Travel from the opening frame to the closing frame',
+    aspectRatio: '16:9',
+    ...directVideoOptions,
+    resolution: '1080p',
+    falPayload: {
+      engineId: 'gemini-omni-flash',
+      prompt: 'Travel from the opening frame to the closing frame',
+      mode: 'fl2v',
+      imageUrl: 'gs://maxvideoai-vertex/first.png',
+      endImageUrl: 'gs://maxvideoai-vertex/last.webp',
+    },
+  });
+
+  assert.equal(payload.generation_config.video_config.task, 'image_to_video');
+  assert.deepEqual(payload.input.filter((item) => item.type === 'image'), [
+    { type: 'image', uri: 'gs://maxvideoai-vertex/first.png', mime_type: 'image/png' },
+    { type: 'image', uri: 'gs://maxvideoai-vertex/last.webp', mime_type: 'image/webp' },
+  ]);
+  assert.match(String(payload.input[0]?.text), /<FIRST_FRAME>/);
+  assert.match(String(payload.input[0]?.text), /<LAST_FRAME>/);
+  assert.equal(payload.response_format[0]?.resolution, '1080p');
+});
+
+test('Omni extension payload carries exactly one owned source video', async () => {
+  const payload = await buildGoogleVertexOmniPayload({
+    engineId: 'gemini-omni-flash',
+    mode: 'extend',
+    prompt: 'Continue the camera move into the next beat',
+    aspectRatio: '9:16',
+    durationSec: 7,
+    resolution: '4k',
+    outputGcsUri: directVideoOptions.outputGcsUri,
+    falPayload: {
+      engineId: 'gemini-omni-flash',
+      prompt: 'Continue the camera move into the next beat',
+      mode: 'extend',
+      videoUrl: 'gs://maxvideoai-vertex/owned-source.mp4',
+    },
+  });
+
+  assert.equal(payload.generation_config.video_config.task, 'extend');
+  assert.deepEqual(payload.input.filter((item) => item.type === 'video'), [
+    { type: 'video', uri: 'gs://maxvideoai-vertex/owned-source.mp4', mime_type: 'video/mp4' },
+  ]);
+  assert.equal(payload.response_format[0]?.resolution, '4k');
+});
+
+test('Omni rejects out-of-range duration, unsupported ratio, and extension without a source video', async () => {
+  const base = {
+    engineId: 'gemini-omni-flash',
+    prompt: 'Continue the scene',
+    resolution: '720p',
+    outputGcsUri: directVideoOptions.outputGcsUri,
+  } as const;
+
+  await assert.rejects(
+    () => buildGoogleVertexOmniPayload({
+      ...base,
+      mode: 't2v',
+      aspectRatio: '16:9',
+      durationSec: 11,
+      falPayload: { engineId: base.engineId, prompt: base.prompt, mode: 't2v' },
+    }),
+    /3 to 10 seconds/i
+  );
+  await assert.rejects(
+    () => buildGoogleVertexOmniPayload({
+      ...base,
+      mode: 't2v',
+      aspectRatio: '1:1',
+      durationSec: 5,
+      falPayload: { engineId: base.engineId, prompt: base.prompt, mode: 't2v' },
+    }),
+    /16:9 and 9:16/i
+  );
+  await assert.rejects(
+    () => buildGoogleVertexOmniPayload({
+      ...base,
+      mode: 'extend',
+      aspectRatio: '16:9',
+      durationSec: 5,
+      falPayload: { engineId: base.engineId, prompt: base.prompt, mode: 'extend' },
+    }),
+    /extension requires a source video/i
+  );
 });
 
 test('Omni retake payload preserves previous interaction id', async () => {
@@ -187,6 +278,56 @@ test('Omni video edit response format inherits source timing and aspect ratio', 
   ]);
 });
 
+test('Omni edit payloads validate duration and aspect ratio even though those fields are inherited', async () => {
+  const base = {
+    engineId: 'gemini-omni-flash',
+    prompt: 'Preserve the source timing and framing',
+    resolution: '720p',
+    outputGcsUri: directVideoOptions.outputGcsUri,
+  } as const;
+  const requests = [
+    {
+      mode: 'v2v' as const,
+      falPayload: {
+        engineId: base.engineId,
+        prompt: base.prompt,
+        mode: 'v2v' as const,
+        videoUrl: 'gs://maxvideoai-vertex/source.mp4',
+      },
+    },
+    {
+      mode: 'retake' as const,
+      falPayload: {
+        engineId: base.engineId,
+        prompt: base.prompt,
+        mode: 'retake' as const,
+        extraInputValues: { previous_interaction_id: 'interactions/abc123' },
+      },
+    },
+  ];
+
+  for (const request of requests) {
+    await assert.rejects(
+      () => buildGoogleVertexOmniPayload({
+        ...base,
+        ...request,
+        aspectRatio: '16:9',
+        durationSec: 11,
+      }),
+      /3 to 10 seconds/i
+    );
+    await assert.rejects(
+      () => buildGoogleVertexOmniPayload({
+        ...base,
+        ...request,
+        aspectRatio: '1:1',
+        durationSec: 5,
+      }),
+      /16:9 and 9:16/i
+    );
+  }
+});
+
 test('Omni payload rejects unsupported negative prompt and seed before provider call', async () => {
   await assert.rejects(
     () =>
@@ -226,6 +367,7 @@ test('Omni stages non-GCS media through the shared Google Vertex bucket', async 
       imageUrl: 'https://media.maxvideoai.com/source.png',
       referenceImages: ['https://media.maxvideoai.com/ref.webp', 'gs://existing/ref.png'],
       videoUrl: 'https://media.maxvideoai.com/source.mp4',
+      endImageUrl: 'https://media.maxvideoai.com/end.png',
     },
     inputGcsPrefix: 'gs://maxvideoai-vertex/inputs',
     objectNamespace: 'omni-inputs/job-123',
@@ -251,7 +393,8 @@ test('Omni stages non-GCS media through the shared Google Vertex bucket', async 
     'gs://existing/ref.png',
   ]);
   assert.equal(staged.videoUrl, 'gs://maxvideoai-vertex/omni-inputs/job-123/3.mp4');
-  assert.deepEqual(uploads.map((upload) => upload.mime), ['image/webp', 'image/webp', 'video/mp4']);
+  assert.equal(staged.endImageUrl, 'gs://maxvideoai-vertex/omni-inputs/job-123/4.webp');
+  assert.deepEqual(uploads.map((upload) => upload.mime), ['image/webp', 'image/webp', 'video/mp4', 'image/webp']);
 });
 
 test('Omni rejects images larger than the Google Vertex 30 MB limit before upload', async () => {

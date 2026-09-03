@@ -59,7 +59,7 @@ function readModelContent(locale: (typeof LOCALES)[number]) {
   };
 }
 
-test('Gemini Omni Flash has localized model content with non-cannibalizing internal links', () => {
+test('Gemini Omni Flash 1.1 has localized model content with non-cannibalizing internal links', () => {
   const expectedLinks = {
     en: ['/app?engine=gemini-omni-flash', '/ai-video-engines/gemini-omni-flash-vs-veo-3-1', '/pricing#gemini-omni-flash-pricing'],
     fr: ['/app?engine=gemini-omni-flash', '/fr/comparatif/gemini-omni-flash-vs-veo-3-1', '/fr/tarifs#gemini-omni-flash-pricing'],
@@ -68,27 +68,28 @@ test('Gemini Omni Flash has localized model content with non-cannibalizing inter
 
   for (const locale of LOCALES) {
     const { raw, data, prompting } = readModelContent(locale);
-    assert.equal(data.marketingName, 'Gemini Omni Flash');
-    assert.match(raw, /720p/i);
-    assert.match(raw, /10\s*(?:s|seconds|secondes|segundos)/i);
-    assert.match(raw, /previous interaction id/i);
-    assert.match(raw, /reference/i);
-    assert.match(raw, /Golden-hour rooftop/i);
-    assert.match(raw, /Sound direction/i);
-    assert.match(raw, /Camera direction/i);
+    assert.equal(data.marketingName, 'Gemini Omni Flash 1.1');
+    assert.match(raw, /360p/);
+    assert.match(raw, /1080p/i);
+    assert.match(raw, /4K/i);
+    assert.match(raw, /3.?10\s*(?:s|seconds|secondes|segundos)/i);
+    assert.match(raw, /reference|référence|referencia/i);
+    assert.match(raw, /mechanic|mécanicien|mecánico/i);
+    assert.match(raw, /sound|son|sonido/i);
+    assert.match(raw, /camera|caméra|cámara/i);
     assert.deepEqual(prompting.tabs, []);
     assert.deepEqual(prompting.globalPrinciples, []);
     assert.deepEqual(prompting.engineWhy, []);
     assert.ok(prompting.demo, `${locale} Gemini Omni should expose a Prompt Lab demo`);
-    assert.match(prompting.demo.prompt, /Golden-hour rooftop/i);
-    assert.match(prompting.demo.prompt, /Sound direction/i);
-    assert.match(prompting.demo.prompt, /Camera direction/i);
+    assert.match(prompting.demo.prompt, /mechanic|mécanicien|mecánico/i);
+    assert.match(prompting.demo.prompt, /sound|son|sonido/i);
+    assert.match(prompting.demo.prompt, /camera|caméra|cámara/i);
     assert.equal(prompting.demo.presentationOverrides.audioChipMode, 'media');
-    assert.match(prompting.demo.presentationOverrides.modeLabel, /10\s*s|10s/i);
+    assert.match(prompting.demo.presentationOverrides.modeLabel, /6\s*s|6s/i);
     assert.ok(prompting.demo.presentationOverrides.altContext.trim().length > 0);
     assert.doesNotMatch(raw, /will be published after approved|seront publies apres validation|se publicaran despues/i);
     assert.doesNotMatch(raw, /fal\.ai|\bFal\b|\bFAL\b/);
-    assert.doesNotMatch(raw, /Vertex implementation tutorial/i);
+    assert.doesNotMatch(raw, /gemini-omni-flash-preview|720p-only|720p only/i);
     for (const href of expectedLinks[locale]) {
       assert.match(raw, new RegExp(href.replaceAll('.', '\\.').replaceAll('?', '\\?')));
     }
@@ -97,16 +98,16 @@ test('Gemini Omni Flash has localized model content with non-cannibalizing inter
 
 test('Gemini Omni Flash model page uses approved hero and demo render IDs', () => {
   assert.deepEqual(PREFERRED_MEDIA['gemini-omni-flash'], {
-    hero: 'job_bd1604b7-ae90-45eb-9a65-fb6d44dfffe9',
-    demo: 'job_bbc31801-7191-4d40-90b7-6b52bdeb1a7a',
+    hero: 'd7c08847-0a76-4ec6-bdb9-03d9d293b840',
+    demo: 'a59bedef-5ee8-451e-a09c-7be29e18e629',
   });
 });
 
 test('Gemini Omni Flash Examples preserve current localized sections and approved media links', () => {
   const slug = 'gemini-omni-flash';
   const mediaIds = [
-    'job_bd1604b7-ae90-45eb-9a65-fb6d44dfffe9',
-    'job_bbc31801-7191-4d40-90b7-6b52bdeb1a7a',
+    'd7c08847-0a76-4ec6-bdb9-03d9d293b840',
+    'a59bedef-5ee8-451e-a09c-7be29e18e629',
   ];
   const galleryVideos: ExampleGalleryVideo[] = mediaIds.map((id, index) => ({
     id,
@@ -124,9 +125,9 @@ test('Gemini Omni Flash Examples preserve current localized sections and approve
     recreateHref: `/app?engine=${slug}&recreate=${id}`,
   }));
   const expected = {
-    en: { title: 'Gemini Omni Flash examples', recreate: 'Recreate this shot' },
-    fr: { title: 'Exemples Gemini Omni Flash', recreate: 'Recreer ce plan' },
-    es: { title: 'Ejemplos de Gemini Omni Flash', recreate: 'Recrear esta toma' },
+    en: { title: 'Gemini Omni Flash 1.1 examples', recreate: 'Recreate this shot' },
+    fr: { title: 'Exemples Gemini Omni Flash 1.1', recreate: 'Recréer ce plan' },
+    es: { title: 'Ejemplos de Gemini Omni Flash 1.1', recreate: 'Recrear esta toma' },
   } as const;
 
   for (const locale of LOCALES) {
@@ -197,23 +198,24 @@ test('Gemini Omni Flash is exposed on the pricing matrix with a visible 10s 720p
   for (const locale of LOCALES) {
     const row = buildPricingHubData(locale).video.rows.find((candidate) => candidate.anchorId === 'gemini-omni-flash-pricing');
     assert.ok(row, `${locale} pricing row should include Gemini Omni Flash`);
-    assert.equal(row.engineName, 'Gemini Omni Flash');
+    assert.equal(row.engineName, 'Gemini Omni Flash 1.1');
     assert.equal(row.family, 'veo');
     assert.equal(row.modelHref, expectedModelHrefs[locale]);
     assert.ok(row.links.some((link) => link.href === '/app?engine=gemini-omni-flash'));
 
     const previewQuote = row.quotes['10s-720p'];
     assert.equal(previewQuote.status, 'exact');
-    assert.equal(previewQuote.amountCents, 130);
+    assert.equal(previewQuote.amountCents, 132);
     assert.match(previewQuote.rateDisplay ?? '', /0[,.]13/);
 
     const standard1080Quote = row.quotes['10s-1080p'];
-    assert.equal(standard1080Quote.status, 'unsupported');
-    assert.match(standard1080Quote.note ?? '', /720p/i);
+    assert.equal(standard1080Quote.status, 'exact');
+    assert.equal(standard1080Quote.amountCents, 198);
+    assert.match(standard1080Quote.rateDisplay ?? '', /0[,.]20/);
   }
 });
 
-test('Gemini Omni Flash comparison pages are published as scorecard-only with localized overrides', () => {
+test('Gemini Omni Flash comparison pages are published as scorecard-only with localized 1.1 overrides', () => {
   const publishedSlugs = getPublishedComparisonSlugs();
   for (const slug of OMNI_COMPARE_SLUGS) {
     assert.ok(compareConfig.scoreboardOnlyComparisons.includes(slug), `${slug} should be scorecard-only at launch`);
@@ -226,8 +228,9 @@ test('Gemini Omni Flash comparison pages are published as scorecard-only with lo
   assert.ok(englishComparison, 'missing EN Omni vs Veo override');
   assert.ok(frenchComparison, 'missing FR Omni vs Veo override');
   assert.ok(spanishComparison, 'missing ES Omni vs Veo override');
-  assert.match(englishComparison.heroIntro ?? '', /scorecard\/specs page/);
-  assert.match(englishComparison.quickVerdict?.body ?? '', /first\/last-frame|extend/i);
+  assert.equal(englishComparison.heroIntro, undefined);
+  assert.match(englishComparison.quickVerdict?.body ?? '', /conversational refine/i);
+  assert.match(englishComparison.quickVerdict?.body ?? '', /Veo 3\.1/i);
 });
 
 test('Gemini Omni Flash limited preview is not labeled as pre-launch on compare pages', () => {
@@ -243,8 +246,8 @@ test('Gemini Omni Flash has benchmark scores and a promoted model-nav link', () 
   for (const field of SCORE_FIELDS) {
     assert.equal(typeof (score as Record<string, unknown>)[field], 'number', `gemini-omni-flash.${field} should be scored`);
   }
-  assert.equal(score.controllability, 9);
-  assert.equal(score.pricing, 8.4);
+  assert.equal(score.controllability, 9.2);
+  assert.equal(score.pricing, 8.1);
 
   assert.ok(MARKETING_MODEL_SLUGS.includes('gemini-omni-flash'));
   assert.ok(MARKETING_NAV_MODELS.some((item) => item.key === 'gemini-omni-flash'));

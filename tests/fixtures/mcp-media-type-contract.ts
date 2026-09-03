@@ -88,6 +88,8 @@ type ExpectedResolvedReference = {
   height: number | null;
   durationSec: number | null;
   mimeType: string;
+  sizeBytes?: number | null;
+  originalName?: string | null;
 };
 
 type ExpectedResolvedReferenceKeys =
@@ -99,7 +101,9 @@ type ExpectedResolvedReferenceKeys =
   | 'width'
   | 'height'
   | 'durationSec'
-  | 'mimeType';
+  | 'mimeType'
+  | 'sizeBytes'
+  | 'originalName';
 
 type ForbiddenResolvedReferenceKeys =
   | 'previewUrl'

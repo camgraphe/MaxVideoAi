@@ -38,20 +38,20 @@
     "safety": "Recommendation only; no sitemap, robots, canonical, or noindex change is applied."
   },
   "summary": {
-    "publishedSlugs": 306,
-    "totalUrls": 918,
+    "publishedSlugs": 310,
+    "totalUrls": 930,
     "withGscRows": 639,
-    "withoutGscRows": 279,
+    "withoutGscRows": 291,
     "withClicks": 144,
     "gscRowsOutsidePublishedSet": 21,
     "gscRowsOutsidePublishedSetWithClicks": 2,
     "byLocale": {
-      "en": 306,
-      "fr": 306,
-      "es": 306
+      "en": 310,
+      "fr": 310,
+      "es": 310
     },
     "byClassification": {
-      "keep": 334,
+      "keep": 346,
       "enrich": 28,
       "review": 346,
       "noindex_candidate": 210
@@ -252,6 +252,30 @@
         "opponent_override",
         "popular",
         "scoreboard"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override",
+        "english_strategic_surface"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/ai-video-engines/gemini-omni-flash-vs-kling-3-turbo-pro",
+      "locale": "en",
+      "slug": "gemini-omni-flash-vs-kling-3-turbo-pro",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "related_graph",
+        "scoreboard",
+        "use_case_bucket"
       ],
       "classification": "keep",
       "rationale": [
@@ -1901,6 +1925,30 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/ai-video-engines/kling-3-pro-vs-kling-3-turbo-pro",
+      "locale": "en",
+      "slug": "kling-3-pro-vs-kling-3-turbo-pro",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "related_graph",
+        "scoreboard",
+        "use_case_bucket"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override",
+        "english_strategic_surface"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/ai-video-engines/kling-3-pro-vs-kling-o3-4k",
       "locale": "en",
       "slug": "kling-3-pro-vs-kling-o3-4k",
@@ -2773,6 +2821,30 @@
       ],
       "classification": "keep",
       "rationale": [
+        "english_strategic_surface"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/ai-video-engines/kling-3-turbo-pro-vs-kling-3-turbo-standard",
+      "locale": "en",
+      "slug": "kling-3-turbo-pro-vs-kling-3-turbo-standard",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "related_graph",
+        "scoreboard",
+        "use_case_bucket"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override",
         "english_strategic_surface"
       ]
     },
@@ -4790,6 +4862,30 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/ai-video-engines/minimax-h3-vs-minimax-h3-max",
+      "locale": "en",
+      "slug": "minimax-h3-vs-minimax-h3-max",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "related_graph",
+        "scoreboard",
+        "use_case_bucket"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override",
+        "english_strategic_surface"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/ai-video-engines/minimax-h3-vs-seedance-2-5",
       "locale": "en",
       "slug": "minimax-h3-vs-seedance-2-5",
@@ -6469,6 +6565,29 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/fr/comparatif/gemini-omni-flash-vs-kling-3-turbo-pro",
+      "locale": "fr",
+      "slug": "gemini-omni-flash-vs-kling-3-turbo-pro",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "related_graph",
+        "scoreboard",
+        "use_case_bucket"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/fr/comparatif/gemini-omni-flash-vs-seedance-2-0",
       "locale": "fr",
       "slug": "gemini-omni-flash-vs-seedance-2-0",
@@ -8037,6 +8156,29 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/fr/comparatif/kling-3-pro-vs-kling-3-turbo-pro",
+      "locale": "fr",
+      "slug": "kling-3-pro-vs-kling-3-turbo-pro",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "related_graph",
+        "scoreboard",
+        "use_case_bucket"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/fr/comparatif/kling-3-pro-vs-kling-o3-4k",
       "locale": "fr",
       "slug": "kling-3-pro-vs-kling-o3-4k",
@@ -8863,6 +9005,29 @@
       "rationale": [
         "gsc_top_10_review",
         "strategic_localization_review"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/fr/comparatif/kling-3-turbo-pro-vs-kling-3-turbo-standard",
+      "locale": "fr",
+      "slug": "kling-3-turbo-pro-vs-kling-3-turbo-standard",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "related_graph",
+        "scoreboard",
+        "use_case_bucket"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
       ]
     },
     {
@@ -10766,6 +10931,29 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/fr/comparatif/minimax-h3-vs-minimax-h3-max",
+      "locale": "fr",
+      "slug": "minimax-h3-vs-minimax-h3-max",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "related_graph",
+        "scoreboard",
+        "use_case_bucket"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/fr/comparatif/minimax-h3-vs-seedance-2-5",
       "locale": "fr",
       "slug": "minimax-h3-vs-seedance-2-5",
@@ -12353,6 +12541,29 @@
         "opponent_override",
         "popular",
         "scoreboard"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/es/comparativa/gemini-omni-flash-vs-kling-3-turbo-pro",
+      "locale": "es",
+      "slug": "gemini-omni-flash-vs-kling-3-turbo-pro",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "related_graph",
+        "scoreboard",
+        "use_case_bucket"
       ],
       "classification": "keep",
       "rationale": [
@@ -13964,6 +14175,29 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/es/comparativa/kling-3-pro-vs-kling-3-turbo-pro",
+      "locale": "es",
+      "slug": "kling-3-pro-vs-kling-3-turbo-pro",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "related_graph",
+        "scoreboard",
+        "use_case_bucket"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/es/comparativa/kling-3-pro-vs-kling-o3-4k",
       "locale": "es",
       "slug": "kling-3-pro-vs-kling-o3-4k",
@@ -14828,6 +15062,29 @@
       "rationale": [
         "gsc_top_10_review",
         "strategic_localization_review"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/es/comparativa/kling-3-turbo-pro-vs-kling-3-turbo-standard",
+      "locale": "es",
+      "slug": "kling-3-turbo-pro-vs-kling-3-turbo-standard",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "related_graph",
+        "scoreboard",
+        "use_case_bucket"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
       ]
     },
     {
@@ -16783,6 +17040,29 @@
         "opponent_override",
         "popular",
         "related_graph",
+        "use_case_bucket"
+      ],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/es/comparativa/minimax-h3-vs-minimax-h3-max",
+      "locale": "es",
+      "slug": "minimax-h3-vs-minimax-h3-max",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [
+        "opponent_override",
+        "popular",
+        "related_graph",
+        "scoreboard",
         "use_case_bucket"
       ],
       "classification": "keep",

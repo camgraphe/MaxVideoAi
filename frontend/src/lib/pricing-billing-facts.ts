@@ -32,6 +32,16 @@ import {
 import type { EnginePricingDetails } from '@/types/engines';
 import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
 import { calculateMinimaxH3ProviderPrice } from '@/lib/minimax-h3-pricing';
+import { isMinimaxH3MaxEngineId } from '@/lib/minimax-h3-max';
+import {
+  calculateMinimaxH3MaxProviderCost,
+  MINIMAX_H3_MAX_PRICING_SOURCE,
+} from '@/lib/minimax-h3-max-pricing';
+import {
+  calculateGoogleOmniProviderCost,
+  GOOGLE_OMNI_PRICING_SOURCE,
+  resolveGoogleOmniPricingInput,
+} from '@/lib/google-omni-pricing';
 
 export type BillingPricingFacts = {
   facts: PricingFacts;
@@ -78,6 +88,73 @@ export function buildBillingPricingFacts(
 ): BillingPricingFacts {
   const { engine, durationSec, resolution } = context;
   const mode = context.mode ?? 't2v';
+
+  if (engine.id === 'gemini-omni-flash') {
+    const pricingInput = resolveGoogleOmniPricingInput({
+      outputResolution: resolution,
+      outputDurationSec: durationSec,
+      inheritedDurationSec: context.inheritedDurationSec,
+      mode,
+      inputImageCount: context.inputImageCount,
+      referenceImageCount: context.referenceImageCount,
+      inputVideoDurationSec: context.inputVideoDurationSec,
+    });
+    const pricing = calculateGoogleOmniProviderCost(pricingInput);
+    return resultFromFacts({
+      engineId: engine.id,
+      currency,
+      vendorSubtotalExactCents: pricing.providerCostExactCents,
+      base: {
+        seconds: pricingInput.outputDurationSec,
+        rate: pricing.providerCostUsd / pricingInput.outputDurationSec,
+        unit: 'sec',
+        amountCents: pricing.providerCostCents,
+      },
+      meta: {
+        pricing_model: 'google_omni_tokens',
+        provider_cost_source: GOOGLE_OMNI_PRICING_SOURCE,
+        mode,
+        output_resolution: pricingInput.outputResolution,
+        output_duration_sec: pricingInput.outputDurationSec,
+        input_image_count: pricingInput.inputImageCount,
+        input_video_duration_sec: pricingInput.inputVideoDurationSec,
+        cost_breakdown_usd: pricing,
+      },
+    });
+  }
+
+  if (isMinimaxH3MaxEngineId(engine.id)) {
+    const reference = calculateMinimaxH3MaxProviderCost({
+      mode: mode as 't2v' | 'i2v' | 'ref2v',
+      durationSec,
+      resolution: resolution as '480P' | '768P',
+      verifiedReferenceTokenCount: context.verifiedReferenceTokenCount,
+    });
+    const referenceTokenCents = Math.round(reference.referenceTokenSubtotalUsd * 100);
+    return resultFromFacts({
+      engineId: engine.id,
+      currency,
+      vendorSubtotalExactCents: reference.providerCostExactCents,
+      base: {
+        seconds: durationSec,
+        rate: reference.ratePerSecondUsd,
+        unit: 'sec',
+        amountCents: Math.round(reference.outputSubtotalUsd * 100),
+      },
+      addons: referenceTokenCents > 0
+        ? [{ type: 'reference_tokens_above_4096', amountCents: referenceTokenCents }]
+        : [],
+      compatibilityProfileId: 'provider-reference-current',
+      meta: {
+        pricing_model: 'minimax_h3_max_output_plus_reference_tokens',
+        provider_cost_source: MINIMAX_H3_MAX_PRICING_SOURCE,
+        public_provider: 'MiniMax',
+        public_family: 'Hailuo',
+        mode,
+        cost_breakdown_usd: reference,
+      },
+    });
+  }
 
   if (isMinimaxH3EngineId(engine.id)) {
     const reference = calculateMinimaxH3ProviderPrice({

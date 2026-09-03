@@ -1,5 +1,5 @@
 import type { GeneratePayload, GenerateResult } from '@/lib/fal';
-import type { Mode, PricingSnapshot } from '@/types/engines';
+import type { Mode, PricingSnapshot, ProviderClientErrorPolicy } from '@/types/engines';
 import { query } from '@/lib/db';
 import { getKlingDirectClient } from '@/server/video-providers/kling-direct/client';
 import {
@@ -244,6 +244,7 @@ export async function submitKlingDirectGenerateTask(params: {
   heroRenderId: string | null;
   localKey: string | null;
   logMetricFn: LogMetricFn;
+  clientErrorPolicy?: ProviderClientErrorPolicy;
   deps?: KlingDirectSubmissionDeps;
 }): Promise<KlingDirectGenerateSubmissionResult> {
   const deps = params.deps ?? {};
@@ -321,6 +322,7 @@ export async function submitKlingDirectGenerateTask(params: {
       estimatedProviderCostUnits: estimate.providerCostUnits,
       estimatedProviderCostUsd: estimate.providerCostUsd,
     },
+    queryFn,
   });
 
   try {
@@ -364,6 +366,7 @@ export async function submitKlingDirectGenerateTask(params: {
       attemptId: klingAttempt.id,
       providerJobId: task.providerJobId,
       responseSnapshot: task.raw,
+      queryFn,
     });
     const status = task.status === 'running' ? 'running' : 'queued';
     const progress = task.status === 'running' ? 30 : 10;
@@ -426,6 +429,7 @@ export async function submitKlingDirectGenerateTask(params: {
       errorClass: normalized.errorClass,
       fallbackEligible,
       responseSnapshot: normalized.raw,
+      queryFn,
     });
 
     if (!fallbackEligible) {
@@ -475,8 +479,9 @@ export async function submitKlingDirectGenerateTask(params: {
         fallbackReason: normalized.errorClass,
         fallbackErrorCode: normalized.code,
       },
+      queryFn,
     });
-    await linkProviderFallbackAttempt({ fromAttemptId: klingAttempt.id, toAttemptId: falAttempt.id });
+    await linkProviderFallbackAttempt({ fromAttemptId: klingAttempt.id, toAttemptId: falAttempt.id, queryFn });
     await queryFn(`UPDATE app_jobs SET provider = 'fal', updated_at = NOW() WHERE job_id = $1`, [params.jobId]);
 
     const falTracker = createProviderJobTracker({
@@ -502,6 +507,7 @@ export async function submitKlingDirectGenerateTask(params: {
       setLastProviderJobId: falTracker.setLastProviderJobId,
       persistProviderJobId: falTracker.persistProviderJobId,
       logMetricFn: params.logMetricFn,
+      clientErrorPolicy: params.clientErrorPolicy,
     });
     const falProviderJobId = falProviderJobIdFromResult(falSubmission, falTracker.getLastProviderJobId);
     if (falProviderJobId) {
@@ -509,6 +515,7 @@ export async function submitKlingDirectGenerateTask(params: {
         attemptId: falAttempt.id,
         providerJobId: falProviderJobId,
         responseSnapshot: falSubmission.ok ? falSubmission.generationResult : falSubmission.body,
+        queryFn,
       });
     }
     if (!falSubmission.ok) {
@@ -518,6 +525,7 @@ export async function submitKlingDirectGenerateTask(params: {
         errorClass: 'fal_fallback_failed',
         fallbackEligible: false,
         responseSnapshot: falSubmission.body,
+        queryFn,
       });
       return falSubmission;
     }
@@ -526,6 +534,7 @@ export async function submitKlingDirectGenerateTask(params: {
         attemptId: falAttempt.id,
         status: 'completed',
         responseSnapshot: falSubmission.generationResult,
+        queryFn,
       });
     }
     return {

@@ -115,6 +115,21 @@ test('MCP mode parity audit identifies every remaining specialized public workfl
   }
 });
 
+test('the specialized-mode audit records P1 media modes that remain intentionally execution-gated', () => {
+  const h3Max = listFalEngines().find((entry) => entry.id === 'minimax-h3-max');
+  assert.ok(h3Max);
+
+  const closed = h3Max.engine.modes
+    .filter((mode) => mode !== 't2v')
+    .map((mode) => `${h3Max.id}:${mode}`)
+    .sort();
+
+  assert.deepEqual(closed, [
+    'minimax-h3-max:i2v',
+    'minimax-h3-max:ref2v',
+  ]);
+});
+
 test('MCP normalization and tool schema accept every transport-safe video workflow', () => {
   for (const mode of ['fl2v', 'r2v', 'a2v', 'retake', 'reframe']) {
     const input = {
@@ -441,6 +456,7 @@ test('Luma Ray 3.2 v2v preserves its optional guide image through the site reque
   assert.equal(body.imageUrl, guideUrl);
   assert.deepEqual(body.inputs, [
     {
+      assetId: sourceAssetId,
       kind: 'video', slotId: 'video_url', url: sourceUrl,
       width: 1920, height: 1080, durationSec: 5, type: 'video/mp4',
     },
@@ -504,6 +520,7 @@ test('Luma Ray 3.2 v2v sends ordered canonical reference images as edit keyframe
   assert.deepEqual(body.referenceImages, keyframes);
   assert.deepEqual(body.inputs, [
     {
+      assetId: sourceAssetId,
       kind: 'video', slotId: 'video_url', url: sourceUrl,
       width: 1920, height: 1080, durationSec: 5, type: 'video/mp4',
     },
@@ -560,6 +577,7 @@ test('Luma Ray 2 v2v uses verified owned-source duration and its fixed pricing r
   assert.equal(body.imageUrl, guideUrl);
   assert.deepEqual(body.inputs, [
     {
+      assetId,
       kind: 'video',
       slotId: 'video_url',
       url: sourceUrl,
@@ -679,6 +697,7 @@ test('paid video projection preserves verified source duration for the existing 
     canonicalPricing: { membershipTier: 'member' },
   });
   assert.deepEqual(body.inputs, [{
+    assetId,
     kind: 'video',
     slotId: 'video_url',
     url: sourceUrl,

@@ -22,6 +22,7 @@ import {
 } from '@/server/agent-runtime/model-executability';
 import { normalizeVideoDurationOption } from '@/server/video-generation/execution-constraints';
 import type { EngineCaps, EngineModeUiCaps, Mode } from '@/types/engines';
+import { getPrivateRuntimeEngineById } from '@/server/video-generation/private-engine-registry';
 
 import type { AgentGenerationMode, AgentModel, AgentModelFilter } from './types';
 import { toCanonicalGenerationMode, toEngineGenerationMode } from './generation-mode-aliases';
@@ -84,9 +85,15 @@ export function createAgentModelCatalogDeps(
   return {
     listEngines: () => getReadOnlyConfiguredEnginesByCategory('all', false, readOnlyDependencies),
     getEngineIncludingHidden: (engineId) =>
-      getReadOnlyConfiguredEngineIncludingHidden(engineId, false, readOnlyDependencies),
+      getReadOnlyConfiguredEngineIncludingHidden(engineId, false, readOnlyDependencies)
+        .then((engine) => engine ?? getPrivateRuntimeEngineById(engineId)),
     surfaceByEngineId(engineId) {
-      return SURFACE_BY_ENGINE_ID.get(engineId) ?? null;
+      const configured = SURFACE_BY_ENGINE_ID.get(engineId);
+      if (configured) return configured;
+      const runtime = getRuntimeModelById(engineId);
+      return runtime?.category === 'video' || runtime?.category === 'image'
+        ? runtime.category
+        : null;
     },
     isEngineExecutable: environment
       ? (engine) => resolveAgentGenerationEngineExecutability(engine, environment).executable
@@ -224,7 +231,7 @@ export async function listPublicAgentCatalogEngines(
     return [{
       engine,
       surface,
-      publicModes: generationEnabled ? executableModes : configuredModes,
+      publicModes: executableModes,
       modeCaps,
       generationEnabled,
     }];
@@ -256,9 +263,15 @@ export async function listPublicAgentGenerationEnginesInExecutor(
 ): Promise<AgentPublicGenerationEngine[]> {
   return listPublicAgentGenerationEngines({
     listEngines: () => getReadOnlyConfiguredEnginesByCategoryInExecutor('all', executor),
-    getEngineIncludingHidden: (engineId) => getReadOnlyConfiguredEngineIncludingHiddenInExecutor(engineId, executor),
+    getEngineIncludingHidden: (engineId) => getReadOnlyConfiguredEngineIncludingHiddenInExecutor(engineId, executor)
+      .then((engine) => engine ?? getPrivateRuntimeEngineById(engineId)),
     surfaceByEngineId(engineId) {
-      return SURFACE_BY_ENGINE_ID.get(engineId) ?? null;
+      const configured = SURFACE_BY_ENGINE_ID.get(engineId);
+      if (configured) return configured;
+      const runtime = getRuntimeModelById(engineId);
+      return runtime?.category === 'video' || runtime?.category === 'image'
+        ? runtime.category
+        : null;
     },
     isEngineExecutable: environment
       ? (engine) => resolveAgentGenerationEngineExecutability(engine, environment).executable

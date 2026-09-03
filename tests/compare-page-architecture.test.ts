@@ -11,6 +11,7 @@ import * as compareRouting from '../frontend/app/(localized)/[locale]/(marketing
 import {
   getCanonicalCompareSlug,
   resolveLegacyCompareRedirect,
+  resolveEngines,
 } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-routing.ts';
 import { buildSeoMetadata } from '../frontend/lib/seo/metadata.ts';
 
@@ -119,6 +120,18 @@ test('legacy Happy Horse 1.0 vs Sora comparison redirects to the published 1.1 r
 test('comparison detail page applies legacy replacements as permanent redirects', () => {
   assert.match(pageSource, /resolveLegacyCompareRedirect/);
   assert.match(pageSource, /legacyRedirect[\s\S]*permanentRedirect\(legacyRedirect\)/);
+});
+
+test('comparison routing accepts public P1 engines while preserving unresolved-pair notFound handling', () => {
+  const publicP1Pair = resolveEngines('kling-3-turbo-pro-vs-minimax-h3-max');
+  assert.equal(publicP1Pair?.left.modelSlug, 'kling-3-turbo-pro');
+  assert.equal(publicP1Pair?.right.modelSlug, 'minimax-h3-max');
+  assert.equal(resolveEngines('missing-model-vs-veo-3-1'), null);
+
+  const publishedPair = resolveEngines('gemini-omni-flash-vs-veo-3-1');
+  assert.equal(publishedPair?.left.modelSlug, 'gemini-omni-flash');
+  assert.equal(publishedPair?.right.modelSlug, 'veo-3-1');
+  assert.match(pageSource, /const resolved = resolveEngines\(canonicalInfo\.canonicalSlug\);[\s\S]*if \(!resolved\) \{[\s\S]*notFound\(\);/);
 });
 const scorecardSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-scorecard.ts',
@@ -238,6 +251,13 @@ const p0ScoreboardOnlyComparisons = [
   'flux-3-vs-flux-3-draft',
   'grok-imagine-video-1-5-vs-sora-2',
   'flux-3-vs-grok-imagine-video-1-5',
+];
+
+const p1ScoreboardOnlyComparisons = [
+  'minimax-h3-vs-minimax-h3-max',
+  'kling-3-turbo-pro-vs-kling-3-turbo-standard',
+  'kling-3-pro-vs-kling-3-turbo-pro',
+  'gemini-omni-flash-vs-kling-3-turbo-pro',
 ];
 
 const canonicalMiniCompareOverrideSlugs = [
@@ -383,6 +403,7 @@ test('Seedance family comparisons use video showdowns while Mini and Gemini page
     ...miniScoreboardOnlyComparisons,
     ...geminiScoreboardOnlyComparisons,
     ...p0ScoreboardOnlyComparisons,
+    ...p1ScoreboardOnlyComparisons,
   ]);
   assert.match(configSource, /export const SCOREBOARD_ONLY_COMPARISONS/);
   assert.match(configSource, /compareConfig as \{ scoreboardOnlyComparisons\?: string\[\] \}/);
@@ -395,6 +416,9 @@ test('Seedance family comparisons use video showdowns while Mini and Gemini page
     assert.equal(compareConfig.showdowns?.[slug], undefined, `${slug} should stay scorecard-only until curated outputs exist`);
   });
   p0ScoreboardOnlyComparisons.forEach((slug) => {
+    assert.equal(compareConfig.showdowns?.[slug], undefined, `${slug} must stay scoreboard-only`);
+  });
+  p1ScoreboardOnlyComparisons.forEach((slug) => {
     assert.equal(compareConfig.showdowns?.[slug], undefined, `${slug} must stay scoreboard-only`);
   });
 

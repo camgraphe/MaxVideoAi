@@ -12,6 +12,7 @@ import {
 import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
 import type { EngineModeDurationCaps, Mode } from '@/types/engines';
 import { SEEDANCE_2_5_ENGINE_ID } from '@/server/video-providers/byteplus-modelark-constants';
+import { isKling3TurboEngineId } from '@/lib/kling-3-turbo';
 
 const MINIMAX_H3_MODES = ['t2v', 'i2v', 'ref2v'] as const;
 
@@ -219,6 +220,43 @@ export function validateProviderSpecificConstraints(params: {
   normalizedMode: Mode;
   payload: Record<string, unknown>;
 }): VideoExecutionValidationResult {
+  if (isKling3TurboEngineId(params.engineId)) {
+    const rawMultiPrompt = params.payload.multi_prompt;
+    const multiPrompt = Array.isArray(rawMultiPrompt) ? rawMultiPrompt : [];
+    const prompt = typeof params.payload.prompt === 'string' ? params.payload.prompt.trim() : '';
+    if (rawMultiPrompt !== undefined && !Array.isArray(rawMultiPrompt)) {
+      return minimaxH3Error('multi_prompt', 'Kling multi-shot prompts must be an array.');
+    }
+    if (prompt && multiPrompt.length) {
+      return minimaxH3Error('multi_prompt', 'Kling single and multi-shot prompts are mutually exclusive.');
+    }
+    if (multiPrompt.length > 6) {
+      return minimaxH3Error('multi_prompt', 'Kling supports up to 6 multi-shot prompts.', [1, 6], multiPrompt.length);
+    }
+    let totalDurationSec = 0;
+    for (let index = 0; index < multiPrompt.length; index += 1) {
+      const entry = multiPrompt[index];
+      if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+        return minimaxH3Error(`multi_prompt[${index}]`, 'Each Kling multi-shot entry must be an object.');
+      }
+      const scenePrompt = (entry as Record<string, unknown>).prompt;
+      const sceneDuration = minimaxH3StrictInteger((entry as Record<string, unknown>).duration);
+      if (typeof scenePrompt !== 'string' || !scenePrompt.trim() || scenePrompt.length > KLING_MULTI_PROMPT_SCENE_MAX_CHARS) {
+        return minimaxH3Error(`multi_prompt[${index}].prompt`, 'Each Kling multi-shot prompt is required and must be at most 512 characters.');
+      }
+      if (sceneDuration === null || sceneDuration < 1 || sceneDuration > 15) {
+        return minimaxH3Error(`multi_prompt[${index}].duration`, 'Each Kling multi-shot duration must be an integer from 1 through 15 seconds.');
+      }
+      totalDurationSec += sceneDuration;
+    }
+    const requestedDuration = minimaxH3StrictInteger(params.payload.duration ?? params.payload.duration_seconds);
+    if (multiPrompt.length && (totalDurationSec > 15 || requestedDuration !== totalDurationSec)) {
+      return minimaxH3Error('multi_prompt', 'Kling multi-shot durations must total the requested duration and no more than 15 seconds.');
+    }
+    if (params.normalizedMode === 't2v' && !prompt && !multiPrompt.length) {
+      return minimaxH3Error('prompt', 'Kling text-to-video requires a single prompt or multi-shot prompts.');
+    }
+  }
   if (
     (params.engineId === 'wan-3' || params.engineId === 'wan-3-prime')
     && params.normalizedMode === 'ref2v'

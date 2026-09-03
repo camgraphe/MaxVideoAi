@@ -1,398 +1,166 @@
 {
-  "marketingName": "Gemini Omni Flash",
-  "versionLabel": "Preview",
+  "marketingName": "Gemini Omni Flash 1.1",
+  "versionLabel": "1.1",
   "seo": {
-    "title": "Gemini Omni Flash | Video Google Omni, specs et tarifs | MaxVideoAI",
-    "description": "Utilisez Gemini Omni Flash sur MaxVideoAI pour text-to-video 720p, image-to-video, reference-to-video, edition video et refine conversationnel.",
-    "image": "/hero/veo-3-1-hero.jpg"
+    "title": "Gemini Omni Flash 1.1 : vidéo IA 4K, édition et audio",
+    "description": "Générez des vidéos Gemini Omni Flash 1.1 de 3 à 10 secondes depuis texte, images, références ou vidéo source, de 360p à 4K avec audio natif."
   },
-  "overview": "Gemini Omni Flash est le modele video Omni preview de Google dans MaxVideoAI pour des clips 720p jusqu a 10 secondes, avec texte, image, images de reference, edition depuis video source et refine par previous interaction id.",
-  "pricingNotes": "Gemini Omni Flash est une route Google preview. MaxVideoAI affiche le prix client exact avant generation ; la route preview 720p est actuellement affichee a $0.13/s.",
-  "hero": {
-    "title": "Gemini Omni Flash - generation video Google Omni et edition conversationnelle",
-    "intro": "Generez depuis un texte, animez une image source, guidez une video avec plusieurs references, editez une courte video source ou affinez un resultat Omni precedent avec son interaction id.",
-    "badge": "720p · jusqu a 10 s · Texte, image, references, edition video et refine",
-    "ctaPrimary": {
-      "label": "Generer avec Gemini Omni Flash",
-      "href": "/app?engine=gemini-omni-flash"
-    },
-    "secondaryLinks": [
-      {
-        "label": "Comparer Gemini Omni Flash vs Veo 3.1",
-        "href": "/fr/comparatif/gemini-omni-flash-vs-veo-3-1"
-      },
-      {
-        "label": "Voir le prix Gemini Omni Flash",
-        "href": "/fr/tarifs#gemini-omni-flash-pricing"
-      },
-      {
-        "label": "Ouvrir la page Veo 3.1",
-        "href": "/fr/modeles/veo-3-1"
-      }
-    ]
-  },
-  "bestUseCases": {
-    "title": "Meilleurs cas d usage",
-    "items": [
-      {
-        "title": "Refine conversationnel de plans",
-        "icon": "repeat2"
-      },
-      {
-        "title": "Videos produit guidees par references",
-        "icon": "product"
-      },
-      {
-        "title": "Editions courtes depuis video source",
-        "icon": "scissors"
-      },
-      {
-        "title": "Tests sociaux 16:9 et 9:16",
-        "icon": "smartphone"
-      },
-      {
-        "title": "Brouillons avec direction sonore",
-        "icon": "audio"
-      }
-    ]
-  },
-  "technicalOverviewTitle": "Vue technique",
-  "technicalOverview": [
-    {
-      "label": "Workflows",
-      "body": "Text-to-video, image-to-video, reference-to-video, edition video et refine conversationnel"
-    },
-    {
-      "label": "Duree",
-      "body": "Jusqu a 10 secondes par generation preview actuelle"
-    },
-    {
-      "label": "Resolution",
-      "body": "Sortie 720p"
-    },
-    {
-      "label": "Formats",
-      "body": "16:9 paysage et 9:16 portrait"
-    },
-    {
-      "label": "Entrees",
-      "body": "Prompt texte, une image source, jusqu a 10 images de reference, courte video source ou previous interaction id"
-    },
-    {
-      "label": "Audio",
-      "body": "La generation sonore native est dirigee par prompt"
-    },
-    {
-      "label": "Non supporte",
-      "body": "Pas de negative prompt, seed, first/last frame, extend, sortie non-video ou 4K dans la route Omni preview actuelle"
-    }
-  ],
-  "promptStructure": {
-    "title": "Mini-guide de prompt",
-    "quote": "Sujet + action + regle source/reference + direction camera + direction sonore + elements a garder stables.",
-    "description": "Gemini Omni Flash fonctionne mieux avec un brief visuel concis et des directions son, camera et edition separees.",
-    "steps": [
-      "Commencez par un sujet et une action visuelle.",
-      "Precisez si le run part du texte, d une image, de references, d une video source ou d un refine.",
-      "Nommez ce qui doit rester stable depuis les sources.",
-      "Ajoutez mouvement camera et cadrage.",
-      "Ajoutez ambiance, musique, parole ou SFX.",
-      "Utilisez 16:9 ou 9:16 et restez sous 10 secondes."
-    ]
-  },
-  "tips": {
-    "title": "Conseils et limites",
-    "items": [
-      "Gardez Store interaction actif si le resultat peut demander une passe refine.",
-      "Utilisez reference-to-video quand identite produit, tenue ou style doivent rester coherents.",
-      "Pour l edition video, dites ce qui doit rester avant de decrire ce qui change.",
-      "Traitez la direction sonore comme une note de realisation courte.",
-      "Choisissez Veo 3.1 si vous avez besoin de first/last-frame, extend ou livraison en plus haute resolution."
-    ]
-  },
-  "compareLink": {
-    "label": "Comparer Gemini Omni Flash vs Veo 3.1 ->",
-    "href": "/fr/comparatif/gemini-omni-flash-vs-veo-3-1"
-  },
-  "prompts": [
-    {
-      "title": "Refine produit conversationnel",
-      "prompt": "Machine a cafe premium sur comptoir en marbre, lent dolly-in, lumiere chaude du matin, conserver la forme produit, ambiance cafe subtile. Edition suivante : resserrer le reveal produit et rendre la vapeur plus visible."
-    },
-    {
-      "title": "Plan lancement guide par references",
-      "prompt": "Utilise les images de reference pour conserver la silhouette et les couleurs de la sneaker. Cree un clip 9:16 de lancement avec mouvement turntable studio, foley tissu discret et courte montee musicale."
-    },
-    {
-      "title": "Edition depuis video source",
-      "prompt": "Conserve le mouvement camera et le timing de la video source. Transforme la piece en showroom editorial lumineux, preserve le mouvement sujet, ajoute un room tone doux et aucun sous-titre."
-    }
-  ],
-  "faqs": [
-    {
-      "q": "Gemini Omni Flash est-il disponible via Vertex AI sur MaxVideoAI ?",
-      "a": "Oui. MaxVideoAI implemente Gemini Omni Flash comme route Google Vertex / Agent Platform Interactions quand la route preview est activee pour le compte."
-    },
-    {
-      "q": "A quoi sert Gemini Omni Flash ?",
-      "a": "Utilisez-le pour des videos courtes 720p ou texte, references image, edition depuis video source et refine conversationnel comptent plus que la 4K ou le controle first/last-frame."
-    },
-    {
-      "q": "Quelle difference avec Veo 3.1 ?",
-      "a": "Omni Flash est mieux positionne pour l interaction stateful et les workflows reference/edit. Veo 3.1 reste la meilleure page pour evaluer first/last-frame, extend et les chemins Veo en resolution plus elevee."
-    },
-    {
-      "q": "Gemini Omni Flash peut-il generer l audio ?",
-      "a": "Oui. Le son est dirige par prompt pour ambiance, musique, voix ou SFX, selon la route preview actuelle."
-    },
-    {
-      "q": "Gemini Omni Flash supporte-t-il la 4K ou le 1080p ?",
-      "a": "Non. La route Omni preview actuelle exposee dans MaxVideoAI est documentee et affichee en sortie 720p."
-    }
-  ],
-  "custom": {
-    "heroEyebrow": "Preview video Google Gemini Omni",
-    "heroSupportLine": "Ideal pour refine stateful, plans guides par references et editions courtes depuis video source.",
-    "heroSpecChips": [
-      {
-        "label": "720p",
-        "icon": "resolution"
-      },
-      {
-        "label": "Jusqu a 10 s",
-        "icon": "duration"
-      },
-      {
-        "label": "Text->Video",
-        "icon": "textToVideo"
-      },
-      {
-        "label": "Image/refs",
-        "icon": "imageToVideo"
-      },
-      {
-        "label": "Son natif",
-        "icon": "audio"
-      }
-    ],
-    "specTitle": "Specs Gemini Omni Flash",
-    "specNote": "Specs decrivant la route preview MaxVideoAI pour Gemini Omni Flash via Google Vertex Interactions.",
-    "specSections": [
-      {
-        "title": "Routes supportees",
-        "intro": "Gemini Omni Flash est expose comme route video multimodale, pas comme prediction longue Veo.",
-        "items": [
-          "Text-to-video depuis un prompt.",
-          "Image-to-video depuis une image source.",
-          "Reference-to-video avec jusqu a 10 images de reference.",
-          "Edition video depuis une courte video source.",
-          "Refine conversationnel avec previous interaction id.",
-          "Sortie 16:9 et 9:16.",
-          "Sortie 720p jusqu a 10 secondes.",
-          "Generation sonore dirigee par prompt."
-        ]
-      },
-      {
-        "title": "Limites",
-        "items": [
-          "Pas de negative prompt ni seed.",
-          "Pas de workflow first/last-frame.",
-          "Pas de workflow extend.",
-          "Pas de sortie 1080p ou 4K dans la route preview actuelle.",
-          "Pas de guide public d implementation fournisseur sur cette page marketing."
-        ]
-      }
-    ],
-    "finalPara1": "Gemini Omni Flash est la route Google Omni a tester quand l edition stateful et les references comptent plus que les controles de livraison Veo classiques.",
-    "finalButton": "Generer avec Gemini Omni Flash"
-  },
+  "overview": "Gemini Omni Flash 1.1 est la route vidéo multimodale directe de Google pour générer, guider par références, contrôler début et fin, éditer, prolonger et raffiner.",
   "decision": {
     "modelSlug": "gemini-omni-flash",
     "hero": {
-      "eyebrow": "PREVIEW VIDEO GOOGLE GEMINI OMNI",
-      "title": "Gemini Omni Flash",
-      "subtitle": "Edition video stateful, jusqu a 10 s, sortie 720p, images de reference, editions depuis video source et direction sonore native dans un workflow Google Omni.",
+      "eyebrow": "GOOGLE OMNI FLASH 1.1",
+      "title": "Gemini Omni Flash 1.1",
+      "subtitle": "Créez et éditez des vidéos de 3 à 10 secondes en 360p, 720p, 1080p ou 4K avec références, contrôle d’images et audio natif.",
       "subtitleHighlights": [
-        "Edition video stateful",
-        "jusqu a 10 s",
-        "direction sonore native"
+        "3–10s",
+        "360p–4K",
+        "Native audio"
       ],
-      "paragraph": "Utilisez Gemini Omni Flash quand le besoin depasse un simple prompt-to-video : partez d un texte, d une image source, de jusqu a 10 images de reference, d une courte video source ou d un previous interaction id pour un refine conversationnel.",
+      "paragraph": "Choisissez Omni Flash 1.1 quand le workflow dépasse un rendu : générez depuis texte ou images, éditez ou prolongez une vidéo, puis raffinez l’interaction enregistrée.",
       "primaryCta": {
-        "label": "Generer avec Gemini Omni Flash",
+        "label": "Générer avec Gemini Omni Flash 1.1",
         "href": "/app?engine=gemini-omni-flash"
       },
       "secondaryCta": {
-        "label": "Comparer avec Veo 3.1",
-        "href": "/fr/comparatif/gemini-omni-flash-vs-veo-3-1"
+        "label": "Voir les exemples vidéo Google",
+        "href": "/fr/galerie/veo"
       },
       "quickLinks": [
         {
-          "label": "Comparer vs Veo 3.1",
+          "label": "Comparer Omni Flash 1.1 et Veo 3.1",
           "href": "/fr/comparatif/gemini-omni-flash-vs-veo-3-1"
         },
         {
-          "label": "Voir les tarifs",
+          "label": "Voir le prix Omni Flash 1.1",
           "href": "/fr/tarifs#gemini-omni-flash-pricing"
         },
         {
-          "label": "Exemples de prompts",
-          "href": "#prompting"
-        },
-        {
-          "label": "Specs du modele",
+          "label": "Voir les modes pris en charge",
           "href": "#specs"
         }
       ]
     },
     "media": {
-      "caption": "Preview Gemini Omni Flash",
-      "description": "Workflow video Google multimodal",
-      "renderLabel": "Ouvrir la preview",
+      "caption": "Exemples Gemini Omni Flash 1.1 validés",
+      "description": "Un mécanicien de nuit anonyme et une vallée de sel à l’aube testent mouvement humain, échelle, caméra et audio natif.",
+      "renderLabel": "Voir le rendu",
       "badges": [
-        "720p",
-        "Jusqu a 10 s",
-        "References + edition"
+        "1080p",
+        "3–10s",
+        "Native audio"
       ],
-      "altContext": "preview de generation video multimodale Gemini Omni Flash"
+      "altContext": "Un mécanicien de nuit anonyme et une vallée de sel à l’aube testent mouvement humain, échelle, caméra et audio natif."
     },
     "features": [
       {
-        "title": "Refine stateful",
-        "body": "Conservez l interaction id et continuez le meme rendu Omni dans une edition suivante.",
-        "tone": "continuity"
-      },
-      {
-        "title": "Pile de references",
-        "body": "Guidez la scene avec une image ou jusqu a 10 images de reference.",
-        "tone": "reference"
-      },
-      {
-        "title": "Edition video",
-        "body": "Chargez une courte video source et decrivez changement, camera et son.",
+        "title": "De 360p à 4K",
+        "body": "Choisissez la résolution selon exploration rapide, revue ou livraison finale.",
         "tone": "quality"
       },
       {
-        "title": "Direction sonore native",
-        "body": "Ajoutez ambiance, musique, voix ou SFX dans le prompt.",
+        "title": "Création et édition multimodales",
+        "body": "Générez depuis texte, images, références, images de début et fin, ou éditez et prolongez une vidéo autorisée.",
+        "tone": "reference"
+      },
+      {
+        "title": "Raffinement conversationnel",
+        "body": "Poursuivez une interaction enregistrée pour modifier la même direction créative.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Audio natif",
+        "body": "Dirigez dialogue, ambiance, effets et musique avec l’image.",
         "tone": "audio"
-      },
-      {
-        "title": "Limites preview",
-        "body": "Les contraintes Google actuelles sont 720p, 16:9 ou 9:16, et jusqu a 10 secondes.",
-        "tone": "duration"
-      },
-      {
-        "title": "Route Vertex",
-        "body": "MaxVideoAI garde l integration sur le chemin Google Vertex Interactions.",
-        "tone": "price"
       }
     ],
     "decisionCards": [
       {
-        "title": "Omni Flash ou Veo 3.1 ?",
-        "body": "Choisissez Omni Flash pour le refine conversationnel, les editions depuis video source et les grandes piles de references. Choisissez Veo 3.1 pour la route Veo plus mature avec first/last-frame, extend ou livraison en resolution plus elevee.",
+        "title": "Idéal pour l’itération multimodale",
+        "body": "Utilisez Omni Flash 1.1 quand références, édition, prolongation et raffinement doivent rester dans un workflow Google.",
         "cta": {
-          "label": "Comparer Omni Flash vs Veo 3.1",
+          "label": "Comparer Omni Flash 1.1 et Veo 3.1",
           "href": "/fr/comparatif/gemini-omni-flash-vs-veo-3-1"
-        }
-      },
-      {
-        "title": "Besoin d un workflow refine ?",
-        "body": "Gardez Store interaction actif si le rendu peut demander des retouches. L interaction id sauvegarde sert de pont pour la passe Omni suivante.",
-        "cta": {
-          "label": "Generer dans l app",
-          "href": "/app?engine=gemini-omni-flash"
-        }
-      },
-      {
-        "title": "Prompts a ecrire ?",
-        "body": "Gardez le prompt principal court, puis separez son, camera et consigne d edition pour que l UI les preserve entre les modes.",
-        "cta": {
-          "label": "Ouvrir le Prompt Lab",
-          "href": "#prompting"
         }
       }
     ],
     "referenceWorkflows": [
       {
-        "title": "Text-to-video",
-        "body": "Commencez par un sujet clair, une action, une direction sonore et le format 16:9 ou 9:16."
+        "title": "Générer",
+        "body": "Partez d’un texte, d’une image, de dix références maximum ou d’images de début et fin."
       },
       {
-        "title": "Image-to-video",
-        "body": "Utilisez une image source quand la composition initiale ou la forme produit compte."
+        "title": "Éditer et prolonger",
+        "body": "Transformez ou continuez une vidéo autorisée avec directions visuelles et sonores."
       },
       {
-        "title": "Reference-to-video",
-        "body": "Utilisez plusieurs references pour identite, tenue, produit, palette ou style de scene."
-      },
-      {
-        "title": "Edition video",
-        "body": "Chargez une courte video et dites ce qui doit rester avant de decrire le changement."
-      },
-      {
-        "title": "Refine conversationnel",
-        "body": "Reutilisez le previous interaction id pour modifier la sortie sans reconstruire le plan."
+        "title": "Raffiner",
+        "body": "Utilisez une interaction enregistrée pour demander une modification ciblée."
       }
     ],
     "pricingCopy": {
-      "title": "Prix Gemini Omni Flash en un coup d oeil",
-      "subtitle": "Totaux preview 720p - verifiez le prix live exact avant chaque generation.",
-      "footnote": "Gemini Omni Flash est une route Google preview. MaxVideoAI affiche le prix client avant generation et peut ajuster les tarifs quand les SKUs fournisseur se stabilisent.",
-      "ctaLabel": "Voir tous les tarifs",
-      "maxDurationNote": "Jusqu a 10 s en 720p",
-      "ctaHref": "/fr/tarifs#gemini-omni-flash-pricing"
+      "title": "Tarifs Gemini Omni Flash 1.1",
+      "subtitle": "Comparez le total exact selon durée et résolution avant le rendu.",
+      "footnote": "Le devis affiché au moment de générer reste la référence.",
+      "ctaLabel": "Générer avec Omni Flash 1.1",
+      "ctaHref": "/app?engine=gemini-omni-flash",
+      "maxDurationNote": "3–10s · 360p–4K"
     },
     "meta": {
-      "title": "Gemini Omni Flash : video Google Omni, specs et tarifs",
-      "description": "Utilisez Gemini Omni Flash pour text-to-video 720p, image-to-video, reference-to-video, edition video et refine conversationnel sur MaxVideoAI."
+      "title": "Gemini Omni Flash 1.1 : vidéo IA 4K, édition et audio",
+      "description": "Générez des vidéos Gemini Omni Flash 1.1 de 3 à 10 secondes depuis texte, images, références ou vidéo source, de 360p à 4K avec audio natif."
     }
   },
   "prompting": {
     "modelSlug": "gemini-omni-flash",
     "section": {
-      "title": "Prompt Lab — Gemini Omni Flash",
-      "intro": null,
-      "tip": null,
-      "guide": null,
-      "referencesTitle": "Comment Gemini Omni Flash utilise les références"
+      "title": "Atelier de prompts — Gemini Omni Flash 1.1",
+      "intro": "Séparez action visuelle, mouvement de caméra et direction sonore.",
+      "tip": "Gardez une action observable et associez chaque son à un événement clair.",
+      "guide": {
+        "label": "Documentation officielle Google",
+        "href": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/gemini/omni-1-1-flash"
+      },
+      "referencesTitle": "Atelier de prompts — Gemini Omni Flash 1.1"
     },
     "tabs": [],
     "tabNotes": [],
     "globalPrinciples": [],
     "engineWhy": [],
     "demo": {
-      "title": "Prompt demo Gemini Omni Flash",
-      "promptLabel": "Prompt 10 s 16:9 avec son natif",
-      "prompt": "Prompt: Golden-hour rooftop above a modern city. Two friends discover a small handheld recorder can turn spoken memories into warm moving light. One friend presses record; translucent images of a childhood beach form briefly in the air between them, then dissolve in the wind. Their faces shift from curiosity to wonder. Premium cinematic realism, warm backlight, no text or logos.\nSound direction: Soft rooftop wind, recorder click, distant city ambience, gentle ocean echo as the memory appears, one whispered line: \"That was my favorite day.\"\nCamera direction: Smooth lateral dolly ending on their surprised faces, 50mm lens feel, shallow depth of field, golden-hour backlight.",
-      "notes": [],
+      "title": "Mécanicien vélo de nuit",
+      "promptLabel": "Prompt de production",
+      "prompt": "Direction visuelle : un mécanicien vélo de nuit anonyme, vu de dos et visage hors cadre, monte un pneu sur une roue sous une lampe. Caméra : arc fluide à hauteur de taille tandis que les rayons brillent. Son : cliquetis précis et pluie douce aux fenêtres.",
+      "notes": [
+        "Gardez une action observable et associez chaque son à un événement clair."
+      ],
       "summary": {
-        "subject": "Deux amis sur un rooftop au coucher du soleil",
-        "action": "Un enregistreur transforme un souvenir en lumiere mouvante",
-        "camera": "Dolly lateral fluide, fin en reaction deux visages",
-        "style": "Realisme cinematographique premium, backlight chaud, ville douce",
-        "output": "Vent rooftop, clic recorder, echo ocean, une ligne chuchotee"
+        "subject": "Mécanicien vélo de nuit",
+        "action": "Le mécanicien monte un pneu sur une roue",
+        "camera": "Arc fluide contrôlé",
+        "style": "Scène documentaire intime en atelier",
+        "output": "1080p · 9:16 · native audio"
       },
       "presentationOverrides": {
-        "modeLabel": "Prompt 10 s 16:9 avec son natif",
-        "outputLabel": "Audio",
-        "duration": null,
-        "aspectRatio": null,
+        "modeLabel": "Text-to-video · 6s",
+        "outputLabel": "1080p",
+        "duration": "6s",
+        "aspectRatio": "9:16",
         "audioChipMode": "media",
         "audioChipLabel": null,
-        "altContext": "Rendu Gemini Omni Flash rooftop avec son natif"
+        "altContext": "Un mécanicien de nuit anonyme et une vallée de sel à l’aube testent mouvement humain, échelle, caméra et audio natif."
       }
     },
     "imageExamples": null
   },
   "examples": {
     "modelSlug": "gemini-omni-flash",
+    "showWhenEmpty": false,
     "section": {
-      "title": "Exemples Gemini Omni Flash",
-      "intro": "Deux rendus MaxVideoAI approuves montrent Gemini Omni Flash avec personnages, direction camera et son natif en 16:9.",
+      "title": "Exemples Gemini Omni Flash 1.1",
+      "intro": "Deux rendus 1.1 validés couvrent une action humaine anonyme et un vaste paysage en mouvement.",
       "defaultCtaLabel": null,
-      "recreateLabel": "Recreer ce plan"
+      "recreateLabel": "Recréer ce plan"
     },
     "filters": [
       {
@@ -404,55 +172,42 @@
         "label": "Cinématique"
       },
       {
-        "id": "product",
-        "label": "Produit / Pub"
-      },
-      {
-        "id": "action",
-        "label": "Action"
-      },
-      {
-        "id": "vertical",
-        "label": "Vertical"
-      },
-      {
         "id": "audio",
-        "label": "Audio activé"
+        "label": "Audio"
       }
     ],
     "proofItems": [
       {
-        "id": "proof-1",
-        "title": "Rendus communautaires",
-        "body": "Voyez ce qui est possible avec Gemini Omni Flash.",
-        "icon": "sparkles"
+        "id": "prompt",
+        "icon": "sparkles",
+        "title": "Respect du prompt",
+        "body": "Vérifiez action, caméra et synchronisation sonore."
       },
       {
-        "id": "proof-2",
-        "title": "Recréer un plan",
-        "body": "Ouvrez l’app en un clic et réutilisez la configuration.",
-        "icon": "zap"
+        "id": "motion",
+        "icon": "zap",
+        "title": "Qualité du mouvement",
+        "body": "Contrôlez contacts physiques, caméra et stabilité temporelle."
       },
       {
-        "id": "proof-3",
-        "title": "Audio natif",
-        "body": "Dialogue, ambiance et SFX générés en synchro.",
-        "icon": "audio"
+        "id": "people",
+        "icon": "users",
+        "title": "Fidélité humaine",
+        "body": "Inspectez anatomie et gestion de l’identité."
       },
       {
-        "id": "proof-4",
-        "title": "Continuité multi-plans",
-        "body": "Gardez personnages, style et scène cohérents.",
-        "icon": "users"
+        "id": "finish",
+        "icon": "maximize",
+        "title": "Qualité de livraison",
+        "body": "Inspectez détail et stabilité à la résolution choisie."
       },
       {
-        "id": "proof-5",
-        "title": "Prêt pour la production",
-        "body": "Garde-fous et filtres intégrés.",
-        "icon": "shield"
+        "id": "review",
+        "icon": "shield",
+        "title": "Revue éditoriale",
+        "body": "Écartez texte indésirable, contenu risqué ou ressemblance non autorisée."
       }
     ],
-    "fallbackItems": null,
-    "showWhenEmpty": true
+    "fallbackItems": null
   }
 }

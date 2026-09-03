@@ -13,6 +13,8 @@ import { validateProviderSpecificConstraints } from './validate-provider-constra
 import { validateProviderControls } from './validate-provider-controls';
 import { getVideoSchemaControlConstraintViolation } from '@/lib/video-input-schema';
 import type { ValidationResult } from './validate-types';
+import { deriveRuntimeSchemaCaps } from './runtime-schema-options';
+import { getPrivateRuntimeEngineById } from '@/server/video-generation/private-engine-registry';
 export type RequestValidationContext = { inputSchema?: EngineInputSchema | null; referenceValuesByField?: ReferenceBudgetValuesByField<string>; referenceMediaItems?: readonly ReferenceBudgetMediaItem[]; referenceProvenanceIssues?: readonly ReferenceProvenanceIssue[] };
 const ENGINE_INPUT_LIMITS = listFalEngines().reduce<Record<string, { promptMaxChars?: number }>>((acc, entry) => {
   acc[entry.id] = { promptMaxChars: entry.engine.inputLimits.promptMaxChars };
@@ -33,14 +35,9 @@ const ENGINE_REQUIRED_PROMPT_MODES = listFalEngines().reduce<Record<string, Mode
 
 export function validateRequest(engineId: string, mode: Mode | undefined, payload: Record<string, unknown>, context: RequestValidationContext = {}): ValidationResult {
   const capsKey: EngineCapsKey | undefined = resolveEngineCapsKey(engineId, mode);
-  if (!capsKey) {
-    return {
-      ok: false,
-      error: { code: 'ENGINE_UNKNOWN', message: 'Unsupported engine' },
-    };
-  }
-
-  const caps = ENGINE_CAPS[capsKey];
+  const normalizedMode: Mode = mode ?? 't2v';
+  const caps = (capsKey ? ENGINE_CAPS[capsKey] : undefined)
+    ?? deriveRuntimeSchemaCaps(context.inputSchema, normalizedMode);
   if (!caps) {
     return {
       ok: false,
@@ -48,14 +45,25 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
     };
   }
 
-  const normalizedMode: Mode = mode ?? 't2v';
-  const promptMaxChars = ENGINE_INPUT_LIMITS[engineId]?.promptMaxChars;
+  const promptMaxChars = ENGINE_INPUT_LIMITS[engineId]?.promptMaxChars
+    ?? getPrivateRuntimeEngineById(engineId)?.inputLimits.promptMaxChars;
   const rawPrompt = typeof payload['prompt'] === 'string' ? payload['prompt'] : '';
   const hasMultiPrompt =
     Array.isArray(payload['multi_prompt']) &&
     payload['multi_prompt'].some((entry) => entry && typeof entry === 'object' && typeof (entry as { prompt?: unknown }).prompt === 'string');
 
-  if (ENGINE_REQUIRED_PROMPT_MODES[engineId]?.includes(normalizedMode) && !rawPrompt.trim() && !hasMultiPrompt) {
+  const schemaRequiresPrompt = !capsKey && (context.inputSchema?.required ?? []).some((field) => (
+    field.id === 'prompt'
+    && (
+      field.requiredInModes?.includes(normalizedMode)
+      || (!field.requiredInModes?.length && (!field.modes?.length || field.modes.includes(normalizedMode)))
+    )
+  ));
+  if (
+    (ENGINE_REQUIRED_PROMPT_MODES[engineId]?.includes(normalizedMode) || schemaRequiresPrompt)
+    && !rawPrompt.trim()
+    && !hasMultiPrompt
+  ) {
     return {
       ok: false,
       error: {

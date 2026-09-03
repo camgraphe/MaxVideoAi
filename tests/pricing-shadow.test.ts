@@ -12,6 +12,11 @@ import {
 const collectorPath = 'frontend/src/lib/pricing-audit/legacy-collectors.ts';
 const fixturePath = 'tests/fixtures/pricing-parity.v1.json';
 const launchAdditionsFixturePath = 'tests/fixtures/pricing-shadow-additions.v1.json';
+const P1_PUBLIC_VIDEO_MODEL_IDS = [
+  'kling-3-turbo-standard',
+  'kling-3-turbo-pro',
+  'minimax-h3-max',
+] as const;
 
 function readFixtureRows<T>(path: string): T[] {
   return (JSON.parse(readFileSync(path, 'utf8')) as { rows: T[] }).rows;
@@ -68,7 +73,13 @@ test('committed pre-canonical pricing baseline is immutable after legacy deletio
     rows: Array<{ scenarioId: string }>;
   };
   assert.equal(additions.generatedFrom, 'registry-publication-shadow-additions');
-  assert.equal(additions.rows.length, 8 + P0_VIDEO_PRICING_SCENARIOS.length + P0_VIDEO_MODEL_IDS.length * 4);
+  assert.equal(
+    additions.rows.length,
+    8
+      + P0_VIDEO_PRICING_SCENARIOS.length
+      + P0_VIDEO_MODEL_IDS.length * 4
+      + P1_PUBLIC_VIDEO_MODEL_IDS.length * 4,
+  );
   assert.deepEqual(
     additions.rows.filter((row) => /(?:billing|estimator):(minimax-h3|seedance-2-5):/.test(row.scenarioId)).reduce<Record<string, number>>((counts, row) => {
       const engineId = row.scenarioId.includes('minimax-h3') ? 'minimax-h3' : 'seedance-2-5';
@@ -93,9 +104,18 @@ test('committed pre-canonical pricing baseline is immutable after legacy deletio
       engineId,
     );
   }
+  for (const engineId of P1_PUBLIC_VIDEO_MODEL_IDS) {
+    assert.equal(
+      additions.rows.filter((row) =>
+        row.scenarioId.startsWith(`billing:${engineId}:`) || row.scenarioId.startsWith(`estimator:${engineId}:`)
+      ).length,
+      4,
+      engineId,
+    );
+  }
 });
 
-test('P0 shadow additions are reproducible through the canonical audit generator', () => {
+test('registry publication shadow additions are reproducible through the canonical audit generator', () => {
   const result = spawnSync('pnpm', ['--silent', 'pricing:shadow-additions'], {
     cwd: process.cwd(),
     encoding: 'utf8',
@@ -103,7 +123,7 @@ test('P0 shadow additions are reproducible through the canonical audit generator
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
 });
 
-test('canonical shadow quotes match every frozen current output', async () => {
+test('canonical shadow quotes match frozen outputs except the approved Gemini Omni 1.1 refresh', async () => {
   const matrixPath = 'frontend/src/lib/pricing-audit/matrix.ts';
   assert.equal(existsSync(matrixPath), true, `${matrixPath} should exist`);
   const { buildPricingAuditMatrix } = await import('../frontend/src/lib/pricing-audit/matrix.ts');
@@ -115,8 +135,40 @@ test('canonical shadow quotes match every frozen current output', async () => {
   const matrix = await buildPricingAuditMatrix(rows);
   assert.equal(matrix.rows.length > 0, true);
   assert.deepEqual(
-    matrix.rows.filter((row) => row.status !== 'match'),
-    []
+    matrix.rows
+      .filter((row) => row.status !== 'match')
+      .map((row) => ({
+        scenarioId: row.scenarioId,
+        currentTotalCents: row.currentTotalCents,
+        canonicalTotalCents: row.canonicalTotalCents,
+        deltaCents: row.deltaCents,
+      })),
+    [
+      {
+        scenarioId: 'billing:gemini-omni-flash:t2v:10:720p:member',
+        currentTotalCents: 130,
+        canonicalTotalCents: 132,
+        deltaCents: 2,
+      },
+      {
+        scenarioId: 'billing:gemini-omni-flash:t2v:10:720p:plus',
+        currentTotalCents: 123,
+        canonicalTotalCents: 125,
+        deltaCents: 2,
+      },
+      {
+        scenarioId: 'billing:gemini-omni-flash:t2v:10:720p:pro',
+        currentTotalCents: 117,
+        canonicalTotalCents: 119,
+        deltaCents: 2,
+      },
+      {
+        scenarioId: 'estimator:gemini-omni-flash:10:720p',
+        currentTotalCents: 130,
+        canonicalTotalCents: 132,
+        deltaCents: 2,
+      },
+    ]
   );
 });
 

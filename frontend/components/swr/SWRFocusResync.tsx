@@ -31,7 +31,7 @@ function shouldResyncKey(key: unknown): boolean {
   }
   if (Array.isArray(key)) {
     const head = key[0];
-    return head === 'jobs' || head === 'image-pricing';
+    return head === 'engines' || head === 'jobs' || head === 'image-pricing';
   }
   return false;
 }

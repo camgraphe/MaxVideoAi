@@ -18,6 +18,7 @@ export type Mode =
   | 'i2i';
 export type Resolution =
   | '0.5k'
+  | '360p'
   | '540p'
   | '480p'
   | '720p'
@@ -87,6 +88,7 @@ export type AspectRatio =
   | 'source'
   | 'auto';
 export type EngineAvailability = 'available' | 'limited' | 'waitlist' | 'paused';
+export type ProviderClientErrorPolicy = 'public' | 'opaque';
 
 export interface BrandAssetPolicy {
   logoAllowed: boolean;
@@ -183,6 +185,7 @@ export interface EngineInputSchema {
   optional?: EngineInputField[];
   referenceBudget?: EngineReferenceBudget;
   constraints?: {
+    ownedAssetModes?: Mode[];
     supportedFormats?: string[];
     maxImageSizeMB?: number;
     minImageSidePx?: number;
@@ -253,6 +256,7 @@ export interface EngineCaps {
   providerMeta?: {
     provider?: string;
     modelSlug?: string;
+    clientErrorPolicy?: ProviderClientErrorPolicy;
   };
   pricingDetails?: EnginePricingDetails;
   iconUrl?: string | null;
@@ -272,7 +276,7 @@ export interface PreflightRequest {
   engine: string;
   mode: Mode;
   durationSec: number;
-  resolution: Resolution;
+  resolution?: Resolution;
   aspectRatio?: AspectRatio;
   fps: number;
   seedLocked?: boolean;

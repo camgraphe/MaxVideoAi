@@ -1,0 +1,21 @@
+{
+  "slug": "minimax-h3-vs-minimax-h3-max",
+  "en": {
+    "meta": { "title": "MiniMax H3 Max vs H3: Scores, Speed & Specs", "description": "Compare MiniMax H3 Max and H3 for quality, speed, resolution, references and production use.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Quick verdict", "body": "Choose H3 Max for faster 768P production and strong value. Choose H3 when 2K or 4K delivery and broader final-output options matter more." },
+    "primaryLinksTitle": "Explore the models",
+    "primaryLinks": [{ "href": "/models/minimax-h3-max", "label": "MiniMax H3 Max" }, { "href": "/models/minimax-h3", "label": "MiniMax H3" }]
+  },
+  "fr": {
+    "meta": { "title": "MiniMax H3 Max vs H3 : notes, vitesse et specs", "description": "Comparez MiniMax H3 Max et H3 sur la qualité, vitesse, résolution, références et usages.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Verdict rapide", "body": "Choisissez H3 Max pour produire plus vite en 768P avec un bon rapport qualité-prix. Choisissez H3 si la livraison 2K ou 4K et des sorties finales plus larges sont prioritaires." },
+    "primaryLinksTitle": "Explorer les modèles",
+    "primaryLinks": [{ "href": "/fr/modeles/minimax-h3-max", "label": "MiniMax H3 Max" }, { "href": "/fr/modeles/minimax-h3", "label": "MiniMax H3" }]
+  },
+  "es": {
+    "meta": { "title": "MiniMax H3 Max vs H3: notas, velocidad y specs", "description": "Compara MiniMax H3 Max y H3 en calidad, velocidad, resolución, referencias y usos.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Veredicto rápido", "body": "Elige H3 Max para producir más rápido en 768P con buena relación calidad-precio. Elige H3 si priorizas entregas 2K o 4K y opciones finales más amplias." },
+    "primaryLinksTitle": "Explorar los modelos",
+    "primaryLinks": [{ "href": "/es/modelos/minimax-h3-max", "label": "MiniMax H3 Max" }, { "href": "/es/modelos/minimax-h3", "label": "MiniMax H3" }]
+  }
+}

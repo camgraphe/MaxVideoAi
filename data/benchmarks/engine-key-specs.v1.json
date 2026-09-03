@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "last_updated": "2026-09-02",
+  "last_updated": "2026-09-03",
   "specs": [
     {
       "modelSlug": "sora-2",
@@ -187,19 +187,18 @@
       "modelSlug": "gemini-omni-flash",
       "sources": [
         "https://maxvideoai.com/models/gemini-omni-flash",
-        "https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/gemini/omni-flash-preview",
-        "https://docs.cloud.google.com/gemini-enterprise-agent-platform/reference/models/interactions-api",
-        "https://ai.google.dev/gemini-api/docs/omni"
+        "https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/gemini/omni-1-1-flash",
+        "https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/video/generate-videos-from-references"
       ],
       "keySpecs": {
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
-        "videoToVideo": "Supported (short source-video edit and conversational refine)",
-        "firstLastFrame": "Not supported in current Omni route",
+        "videoToVideo": "Supported (edit, extend, and conversational refine)",
+        "firstLastFrame": "Supported in current Omni 1.1 route",
         "referenceImageStyle": "Supported (up to 10 reference images)",
         "referenceVideo": "Supported (short source video for edit; previous interaction id for refine)",
-        "maxResolution": "720p",
-        "maxDuration": "10s",
+        "maxResolution": "4K",
+        "maxDuration": "3–10s",
         "aspectRatios": [
           "16:9",
           "9:16"
@@ -212,10 +211,116 @@
         ],
         "audioOutput": "Supported",
         "nativeAudioGeneration": "Supported",
-        "lipSync": "Prompt-directed only",
+        "lipSync": "Supported through native dialogue and audio generation",
         "cameraMotionControls": "Prompt-based sound, camera and edit directions",
         "watermark": "No visible MaxVideoAI watermark; provider provenance markers may apply",
-        "releaseDate": "Google preview: Jun 30 2026"
+        "releaseDate": "Google public preview: Aug 27 2026"
+      }
+    },
+    {
+      "modelSlug": "kling-3-turbo-standard",
+      "sources": [
+        "https://maxvideoai.com/models/kling-3-turbo-standard",
+        "https://app.klingai.com/cn/quickstart/klingai-video-3-model-user-guide"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Not exposed in current MaxVideoAI route",
+        "firstLastFrame": "Not exposed in current MaxVideoAI route",
+        "referenceImageStyle": "Supported (one start image in image-to-video mode)",
+        "referenceVideo": "Not exposed in current MaxVideoAI route",
+        "maxResolution": "720p",
+        "maxDuration": "3–15s",
+        "aspectRatios": [
+          "16:9",
+          "9:16",
+          "1:1"
+        ],
+        "fpsOptions": [
+          "24 fps"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Supported through native dialogue and audio generation",
+        "cameraMotionControls": "Prompt-based camera direction",
+        "watermark": "No visible MaxVideoAI watermark; provider provenance markers may apply",
+        "releaseDate": "Sep 2026"
+      }
+    },
+    {
+      "modelSlug": "kling-3-turbo-pro",
+      "sources": [
+        "https://maxvideoai.com/models/kling-3-turbo-pro",
+        "https://app.klingai.com/cn/quickstart/klingai-video-3-model-user-guide"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Not exposed in current MaxVideoAI route",
+        "firstLastFrame": "Not exposed in current MaxVideoAI route",
+        "referenceImageStyle": "Supported (one start image in image-to-video mode)",
+        "referenceVideo": "Not exposed in current MaxVideoAI route",
+        "maxResolution": "1080p",
+        "maxDuration": "3–15s",
+        "aspectRatios": [
+          "16:9",
+          "9:16",
+          "1:1"
+        ],
+        "fpsOptions": [
+          "24 fps"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Supported through native dialogue and audio generation",
+        "cameraMotionControls": "Prompt-based camera direction",
+        "watermark": "No visible MaxVideoAI watermark; provider provenance markers may apply",
+        "releaseDate": "Sep 2026"
+      }
+    },
+    {
+      "modelSlug": "minimax-h3-max",
+      "sources": [
+        "https://maxvideoai.com/models/minimax-h3-max",
+        "https://layer.ai/docs/models/minimax-h3-max",
+        "https://csuite.so/models/minimax-h3-max"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Supported through mixed reference video workflows",
+        "firstLastFrame": "Supported (optional end image in image-to-video mode)",
+        "referenceImageStyle": "Supported (up to 9 reference images; 12 mixed references total)",
+        "referenceVideo": "Supported (up to 3 clips, 2–15 seconds each, 15 seconds combined)",
+        "maxResolution": "768P",
+        "maxDuration": "5–15s",
+        "aspectRatios": [
+          "21:9",
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16"
+        ],
+        "fpsOptions": [
+          "24 fps"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Supported through native dialogue and audio generation",
+        "cameraMotionControls": "Prompt-based camera direction",
+        "watermark": "No visible MaxVideoAI watermark; provider provenance markers may apply",
+        "releaseDate": "Aug 2026"
       }
     },
     {

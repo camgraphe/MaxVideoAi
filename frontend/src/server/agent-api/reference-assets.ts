@@ -18,6 +18,7 @@ type ReferenceAssetRow = {
   kind: string;
   url: string;
   mime_type: string | null;
+  size_bytes: string | number | null;
   width: number | null;
   height: number | null;
   status: string | null;
@@ -58,6 +59,21 @@ function normalizeAssetId(value: unknown): string {
 
 function validDimension(value: unknown): value is number | null {
   return value === null || (typeof value === 'number' && Number.isInteger(value) && value > 0);
+}
+
+function normalizePositiveBytes(value: unknown): number | null {
+  const numeric = typeof value === 'string' ? Number(value) : value;
+  return typeof numeric === 'number' && Number.isSafeInteger(numeric) && numeric > 0
+    ? numeric
+    : null;
+}
+
+function originalNameMetadata(value: unknown): string | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const name = (value as Record<string, unknown>).originalName;
+  return typeof name === 'string' && name.trim().length > 0 && name.length <= 1_024
+    ? name.trim()
+    : null;
 }
 
 function validStorageUrl(value: unknown): value is string {
@@ -103,7 +119,7 @@ export async function resolveOwnedReferenceAsset(
   const normalizedAssetId = normalizeAssetId(assetId);
   const executor = dependencies.executor ?? defaultExecutor;
   const rows = await executor.query<ReferenceAssetRow>(
-    `SELECT id, public_id, user_id, kind, url, mime_type, width, height, status, deleted_at, metadata
+    `SELECT id, public_id, user_id, kind, url, mime_type, size_bytes, width, height, status, deleted_at, metadata
        FROM media_assets
       WHERE public_id = $1
         AND user_id = $2
@@ -131,6 +147,9 @@ export async function resolveOwnedReferenceAsset(
     || !duration?.valid
   ) invalidReference();
 
+  const sizeBytes = normalizePositiveBytes(row.size_bytes);
+  const originalName = originalNameMetadata(row.metadata);
+
   return {
     assetId: row.public_id,
     mediaKind: media.kind,
@@ -139,5 +158,7 @@ export async function resolveOwnedReferenceAsset(
     height: row.height,
     durationSec: duration.durationSec,
     mimeType: media.canonicalMime,
+    ...(sizeBytes === null ? {} : { sizeBytes }),
+    ...(originalName === null ? {} : { originalName }),
   };
 }

@@ -30,6 +30,10 @@ import {
   getVideoSchemaControlConstraintViolation,
   projectVideoProviderFieldValue,
 } from '@/lib/video-input-schema';
+import {
+  resolveEngineMediaFieldConstraint,
+  validateMediaFileAgainstConstraint,
+} from '@/lib/media-field-constraints';
 
 const VIDEO_FIELD_BY_SETTING: Record<string, string> = {
   cameraFixed: 'camera_fixed',
@@ -51,7 +55,9 @@ const VIDEO_FIELD_BY_SETTING: Record<string, string> = {
   guidanceScale: 'guidance_scale',
   hdr: 'hdr',
   modifyStrength: 'mode',
+  multiPrompt: 'multi_prompt',
   negativePrompt: 'negative_prompt',
+  promptExpansionMode: 'prompt_expansion_mode',
   reframeGridPositionX: 'grid_position_x',
   reframeGridPositionY: 'grid_position_y',
   retakeMode: 'retake_mode',
@@ -233,6 +239,16 @@ function validateVideoModeCaps(
     if (value === undefined) continue;
     const field = applicableField(candidate, fieldId, request.mode);
     if (!field) fail(setting);
+    if (setting === 'multiPrompt') {
+      if (!Array.isArray(value) || value.length < 1 || value.length > 6) fail(setting);
+      const total = value.reduce((sum, scene) => sum + scene.durationSec, 0);
+      if (
+        request.prompt.length > 0
+        || total !== request.settings.durationSec
+        || value.some((scene) => !scene.prompt || scene.prompt.length > 512)
+      ) fail(setting);
+      continue;
+    }
     validateFieldValue(field, value);
   }
   if (request.settings.loop !== undefined) {
@@ -255,6 +271,52 @@ function validateDerivedSourceFacts(
   candidate: AgentPublicGenerationEngine,
   options: GenerationCapabilityValidationOptions,
 ): void {
+  const ownedAssetModes = candidate.engine.inputSchema?.constraints?.ownedAssetModes;
+  if (
+    Array.isArray(ownedAssetModes)
+    && ownedAssetModes.includes(toEngineGenerationMode(candidate.engine.id, request.mode))
+  ) {
+    for (const reference of request.references) {
+      if (reference.kind !== 'asset') fail('references', 'reference_invalid');
+      if (!options.resolvedReferences) continue;
+      const resolved = resolvedReference(reference, options);
+      const fields = fieldsForReference(
+        request,
+        candidate,
+        reference,
+        resolved?.mediaKind ?? null,
+      );
+      if (!resolved || fields.length !== 1) fail('references', 'reference_invalid');
+      const sizeBytes = resolved.sizeBytes;
+      const originalName = resolved.originalName ?? resolved.storageUrl;
+      if (
+        typeof sizeBytes !== 'number'
+        || !Number.isSafeInteger(sizeBytes)
+        || sizeBytes <= 0
+        || !resolved.mimeType
+        || !originalName
+      ) fail('references', 'reference_invalid');
+      if (
+        (resolved.mediaKind === 'image' || resolved.mediaKind === 'video')
+        && (
+          !Number.isSafeInteger(resolved.width)
+          || !Number.isSafeInteger(resolved.height)
+          || Number(resolved.width) <= 0
+          || Number(resolved.height) <= 0
+        )
+      ) fail('references', 'reference_invalid');
+      const mediaValidation = validateMediaFileAgainstConstraint({
+        name: originalName,
+        mimeType: resolved.mimeType,
+        sizeBytes,
+        constraint: resolveEngineMediaFieldConstraint({
+          engine: candidate.engine,
+          field: fields[0]!,
+        }),
+      });
+      if (!mediaValidation.ok) fail('references', 'reference_invalid');
+    }
+  }
   if (
     request.engineId === 'gpt-image-2'
     && request.mode === 'i2i'
@@ -338,7 +400,10 @@ function buildProviderConstraintPayload(
   }
   for (const [setting, fieldId] of Object.entries(VIDEO_FIELD_BY_SETTING)) {
     const value = request.settings[setting];
-    if (value !== undefined) payload[fieldId] = value;
+    if (value === undefined) continue;
+    payload[fieldId] = setting === 'multiPrompt' && Array.isArray(value)
+      ? value.map((scene) => ({ prompt: scene.prompt, duration: scene.durationSec }))
+      : value;
   }
   const valuesByField = new Map<string, string[]>();
   for (const [index, reference] of request.references.entries()) {
@@ -458,7 +523,7 @@ function fieldIdsForRole(
       : [];
   }
   if (request.mode === 'fl2v') {
-    if (role === 'first_frame') return ['first_frame_url', 'start_image_url'];
+    if (role === 'first_frame') return ['first_frame_url', 'start_image_url', 'image_url'];
     if (role === 'last_frame') return ['last_frame_url', 'end_image_url'];
     return [];
   }

@@ -32,7 +32,11 @@
     "wan-3-vs-wan-3-prime",
     "flux-3-vs-flux-3-draft",
     "grok-imagine-video-1-5-vs-sora-2",
-    "flux-3-vs-grok-imagine-video-1-5"
+    "flux-3-vs-grok-imagine-video-1-5",
+    "minimax-h3-vs-minimax-h3-max",
+    "kling-3-turbo-pro-vs-kling-3-turbo-standard",
+    "kling-3-pro-vs-kling-3-turbo-pro",
+    "gemini-omni-flash-vs-kling-3-turbo-pro"
   ],
   "bestForPages": [
     {
@@ -358,6 +362,26 @@
       "happy-horse-1-1-vs-seedance-2-0",
       "happy-horse-1-1-vs-veo-3-1",
       "kling-3-pro-vs-sora-2-pro"
+    ],
+    "minimax-h3-vs-minimax-h3-max": [
+      "minimax-h3-vs-seedance-2-5",
+      "kling-o3-pro-vs-minimax-h3",
+      "minimax-h3-vs-veo-3-1"
+    ],
+    "kling-3-turbo-pro-vs-kling-3-turbo-standard": [
+      "kling-3-pro-vs-kling-3-turbo-pro",
+      "kling-3-pro-vs-kling-3-standard",
+      "kling-3-pro-vs-seedance-2-5"
+    ],
+    "kling-3-pro-vs-kling-3-turbo-pro": [
+      "kling-3-turbo-pro-vs-kling-3-turbo-standard",
+      "kling-3-pro-vs-kling-3-standard",
+      "kling-3-pro-vs-seedance-2-5"
+    ],
+    "gemini-omni-flash-vs-kling-3-turbo-pro": [
+      "gemini-omni-flash-vs-veo-3-1",
+      "gemini-omni-flash-vs-sora-2",
+      "kling-3-pro-vs-kling-3-turbo-pro"
     ]
   },
   "showdownOverrides": {

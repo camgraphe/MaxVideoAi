@@ -87,6 +87,64 @@
       "prompt": "Create a coherent three-shot sequence featuring the same woman in a yellow raincoat and the same silver compact camera: shot one, a wide view as she enters a foggy pine forest; shot two, a close-up as she raises the camera and takes one photograph; shot three, an over-the-shoulder view of the captured deer on the camera screen. Preserve her identity, clothing, camera, weather, direction, and color grade across all shots."
     }
   ],
+  "p1Evidence": [
+    {
+      "evidenceId": "d7c08847-0a76-4ec6-bdb9-03d9d293b840",
+      "modelSlug": "gemini-omni-flash",
+      "reviewStatus": "accepted",
+      "observedAt": "2026-09-03T12:13:06.834Z",
+      "observation": "Anonymous bicycle mechanic remains out of frame; coherent wheel action, cinematic workshop lighting, rain ambience, and no material temporal artifact."
+    },
+    {
+      "evidenceId": "a59bedef-5ee8-451e-a09c-7be29e18e629",
+      "modelSlug": "gemini-omni-flash",
+      "reviewStatus": "accepted",
+      "observedAt": "2026-09-03T12:13:13.480Z",
+      "observation": "Continuous aerial reveal of a terraced salt valley with coherent water, mist, birds, camera climb, sunrise transition, and native audio."
+    },
+    {
+      "evidenceId": "d4890c1b-dc03-4e60-bcc6-b3d1b44857ba",
+      "modelSlug": "kling-3-turbo-standard",
+      "reviewStatus": "accepted",
+      "observedAt": "2026-09-03T10:52:02.845Z",
+      "observation": "Anonymous baker action is readable at the Standard tier with stable dough handling, fast lateral camera motion, and synchronized ambience."
+    },
+    {
+      "evidenceId": "da92f706-f644-4a6a-ab0d-b4175e472dd8",
+      "modelSlug": "kling-3-turbo-standard",
+      "reviewStatus": "accepted",
+      "observedAt": "2026-09-03T10:53:14.610Z",
+      "observation": "Three-shot parcel delivery preserves the parcel, rainy setting, forward movement, and bridging audio across greenhouse, bicycle, and handoff shots."
+    },
+    {
+      "evidenceId": "df4f081a-9a9e-459b-8aa2-bac773fc6e8e",
+      "modelSlug": "kling-3-turbo-pro",
+      "reviewStatus": "accepted",
+      "observedAt": "2026-09-03T10:55:49.201Z",
+      "observation": "Premium glass-product macro preserves fine material detail, condensation, caustics, restrained camera movement, and clean studio audio."
+    },
+    {
+      "evidenceId": "951395ca-6ef0-4f8c-a4d5-a8c1c0a8c93b",
+      "modelSlug": "kling-3-turbo-pro",
+      "reviewStatus": "accepted",
+      "observedAt": "2026-09-03T10:57:32.590Z",
+      "observation": "Observatory scene resolves snow, metal, cables, telescope motion, crane movement, and layered storm audio with strong temporal consistency."
+    },
+    {
+      "evidenceId": "799a7e0a-89c1-4776-b6f0-d0d8068075d7",
+      "modelSlug": "minimax-h3-max",
+      "reviewStatus": "accepted",
+      "observedAt": "2026-09-03T10:57:57.579Z",
+      "observation": "Anonymous dancer maintains body, hood, fabric motion, mirrored ripples, retreating camera, and synchronized percussion through one continuous movement."
+    },
+    {
+      "evidenceId": "7b6c56c3-4aba-459a-8e6c-09aeedc2dc81",
+      "modelSlug": "minimax-h3-max",
+      "reviewStatus": "accepted",
+      "observedAt": "2026-09-03T10:58:37.907Z",
+      "observation": "Square product transformation follows the requested rise, ninety-degree pivot, light reveal, mechanical timing, material finish, and clean sound design."
+    }
+  ],
   "requiredRunMetadata": [
     "evaluationDate",
     "modelVersion",

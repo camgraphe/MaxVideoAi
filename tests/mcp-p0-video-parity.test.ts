@@ -54,7 +54,7 @@ test('published P0 models enumerate normally and no longer require staging canar
   const principal = { userId: 'canary-user', clientId: 'canary-client', emailVerified: true, authMethod: 'oauth' as const };
   const env = { NODE_ENV: 'production', MCP_STAGING_OPERATIONAL_ENABLED: 'true', MCP_STAGING_CANARY_ACCOUNT_IDS: principal.userId, MCP_STAGING_CANARY_CLIENT_IDS: principal.clientId } as NodeJS.ProcessEnv;
   const resolved = resolveMcpPrelaunchModelAccess(principal, 'https://maxvideoai-mcp-staging.vercel.app/account', env);
-  assert.equal(resolved, null);
+  assert.equal(resolved, null, 'the canary closes when no private launch models remain');
   assert.equal(resolveMcpPrelaunchModelAccess({ ...principal, clientId: 'wrong' }, 'https://maxvideoai-mcp-staging.vercel.app', env), null);
   assert.equal(resolveMcpPrelaunchModelAccess(principal, 'https://maxvideoai.com', env), null);
   const details = await getAgentModelDetails(P0[0], deps);

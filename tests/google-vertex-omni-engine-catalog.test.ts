@@ -8,24 +8,34 @@ import { summarizeWorkspaceInputSchema } from '../frontend/app/(core)/(workspace
 import { prepareGenerationInputs } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-generation-inputs';
 import type { FormState } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-form-state';
 
-test('Gemini Omni Flash is exposed as a Vertex-backed Google video engine', () => {
+test('Gemini Omni Flash 1.1 is exposed as a publication-gated Vertex-backed Google video engine', () => {
   const entry = listFalEngines().find((candidate) => candidate.id === 'gemini-omni-flash');
   assert.ok(entry, 'Gemini Omni Flash catalog entry should exist');
+  assert.equal(entry.marketingName, 'Gemini Omni Flash 1.1');
+  assert.equal(entry.engine.label, 'Gemini Omni Flash 1.1');
   assert.equal(entry.provider, 'Google');
   assert.equal(entry.family, 'veo');
-  assert.equal(entry.defaultFalModelId, 'gemini-omni-flash-preview');
+  assert.equal(entry.defaultFalModelId, 'gemini-omni-1.1-flash-preview');
   assert.equal(entry.engine.providerMeta?.provider, 'google_vertex_omni');
-  assert.equal(entry.engine.providerMeta?.modelSlug, 'gemini-omni-flash-preview');
-  assert.equal(entry.versionLabel, 'Preview');
+  assert.equal(entry.engine.providerMeta?.modelSlug, 'gemini-omni-1.1-flash-preview');
+  assert.equal(entry.versionLabel, '1.1 Preview');
+  assert.equal(entry.availability, 'limited');
   assert.equal(entry.engine.inputLimits?.imageMaxMB, 30);
   assert.equal(entry.engine.inputSchema?.constraints?.maxImageSizeMB, 30);
-  assert.deepEqual(entry.engine.modes, ['t2v', 'i2v', 'ref2v', 'v2v', 'retake']);
+  assert.deepEqual(entry.engine.modes, ['t2v', 'i2v', 'ref2v', 'fl2v', 'v2v', 'extend', 'retake']);
   assert.deepEqual(entry.engine.aspectRatios, ['16:9', '9:16']);
-  assert.deepEqual(entry.engine.resolutions, ['720p']);
-  assert.equal(entry.engine.pricingDetails?.perSecondCents?.default, 10);
-  assert.equal(entry.engine.pricingDetails?.perSecondCents?.byResolution?.['720p'], 10);
-  assert.equal(entry.engine.pricing?.base, 0.1);
-  assert.equal(entry.pricingHint?.amountCents, 100);
+  assert.deepEqual(entry.engine.resolutions, ['360p', '720p', '1080p', '4k']);
+  assert.equal(entry.engine.extend, true);
+
+  const allFields = [
+    ...(entry.engine.inputSchema?.required ?? []),
+    ...(entry.engine.inputSchema?.optional ?? []),
+  ];
+  const fieldById = new Map(allFields.map((field) => [field.id, field]));
+  assert.deepEqual(fieldById.get('duration')?.values, ['3s', '4s', '5s', '6s', '7s', '8s', '9s', '10s']);
+  assert.deepEqual(fieldById.get('resolution')?.values, ['360p', '720p', '1080p', '4k']);
+  assert.deepEqual(fieldById.get('end_image_url')?.requiredInModes, ['fl2v']);
+  assert.deepEqual(fieldById.get('video_url')?.requiredInModes, ['v2v', 'extend']);
 });
 
 test('Gemini Omni Flash shares the Veo model family instead of creating a Gemini family', () => {
@@ -36,10 +46,10 @@ test('Gemini Omni Flash shares the Veo model family instead of creating a Gemini
   assert.ok(veoFamily.aliases?.includes('gemini-omni-flash-preview'));
   assert.ok(veoFamily.aliases?.includes('omni-flash'));
   assert.ok(veoFamily.prefixes?.includes('gemini-omni'));
-  assert.equal(veoFamily.examplesPage?.publishedModelSlugs?.includes('gemini-omni-flash'), false);
+  assert.equal(veoFamily.examplesPage?.publishedModelSlugs?.includes('gemini-omni-flash'), true);
 });
 
-test('Gemini Omni Flash catalog keeps Veo/Fal-only controls out of the schema', () => {
+test('Gemini Omni Flash catalog keeps unsupported Veo/Fal-only controls out of the schema', () => {
   const engine = getBaseEngines().find((candidate) => candidate.id === 'gemini-omni-flash');
   assert.ok(engine, 'Gemini Omni Flash should be available in the app engine list');
 
@@ -49,9 +59,9 @@ test('Gemini Omni Flash catalog keeps Veo/Fal-only controls out of the schema', 
   ].map((field) => field.id);
   assert.equal(allFieldIds.includes('negative_prompt'), false);
   assert.equal(allFieldIds.includes('seed'), false);
-  assert.equal(allFieldIds.includes('end_image_url'), false);
+  assert.equal(allFieldIds.includes('end_image_url'), true);
   assert.equal(allFieldIds.includes('audio_url'), false);
-  assert.equal(allFieldIds.includes('store_interaction'), true);
+  assert.equal(allFieldIds.includes('store_interaction'), false);
   assert.equal(allFieldIds.includes('previous_interaction_id'), true);
   assert.equal(allFieldIds.includes('prompt_audio_direction'), true);
   assert.equal(allFieldIds.includes('prompt_camera_direction'), true);
@@ -101,7 +111,6 @@ test('Gemini Omni Flash workspace schema preserves Omni extra controls for paylo
       prompt_audio_direction: 'soft cafe ambience',
       prompt_camera_direction: 'slow dolly in',
       prompt_edit_instruction: 'tighten the product reveal',
-      store_interaction: true,
       unrelated: 'drop me',
     },
   };
@@ -128,7 +137,6 @@ test('Gemini Omni Flash workspace schema preserves Omni extra controls for paylo
 
   assert.equal(result.ok, true);
   assert.deepEqual(result.extraInputValues, {
-    store_interaction: true,
     previous_interaction_id: 'interactions/abc123',
     prompt_audio_direction: 'soft cafe ambience',
     prompt_camera_direction: 'slow dolly in',

@@ -124,11 +124,19 @@ export async function stageGoogleVertexOmniPayloadMedia(params: {
     ...(params.falPayload.videoUrl
       ? { videoUrl: await stage(params.falPayload.videoUrl, 'video') }
       : {}),
+    ...(params.falPayload.endImageUrl
+      ? { endImageUrl: await stage(params.falPayload.endImageUrl, 'image') }
+      : {}),
   };
 }
 
 export function buildOmniSourceImageInput(falPayload: GeneratePayload): GoogleVertexOmniMediaInput | null {
   const uri = cleanUrl(falPayload.imageUrl);
+  return uri ? { type: 'image', uri, mime_type: inferGoogleVertexOmniMediaMime(uri, 'image') } : null;
+}
+
+export function buildOmniEndImageInput(falPayload: GeneratePayload): GoogleVertexOmniMediaInput | null {
+  const uri = cleanUrl(falPayload.endImageUrl);
   return uri ? { type: 'image', uri, mime_type: inferGoogleVertexOmniMediaMime(uri, 'image') } : null;
 }
 

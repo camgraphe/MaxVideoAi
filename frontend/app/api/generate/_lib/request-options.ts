@@ -23,14 +23,13 @@ import {
   type MultiPromptEntry,
 } from './request-option-normalizers';
 import { buildSoraRequestOptions } from './request-options-sora';
-
+import { deriveRuntimeSchemaCaps, getRuntimeDurationDefault, getRuntimeSchemaEnumDefault } from './runtime-schema-options';
+import { resolveRuntimeResolutionPolicy } from '@/server/video-generation/runtime-resolution';
 export type { GenerationElement, MultiPromptEntry } from './request-option-normalizers';
-
 export type VideoMode = Extract<
   Mode,
   't2v' | 'i2v' | 'ref2v' | 'fl2v' | 'i2i' | 'v2v' | 'r2v' | 'a2v' | 'extend' | 'retake' | 'reframe'
 >;
-
 export type GenerateRequestOptionsMetric = {
   errorCode: string;
   meta?: Record<string, unknown>;
@@ -125,9 +124,16 @@ export function buildGenerateRequestOptions(params: {
         ? body.generate_audio
         : undefined;
   const isLumaRay2 = isLumaRay2EngineId(engine.id);
-  const capability = getEngineCaps(engine.id, mode);
+  const fixtureCapability = getEngineCaps(engine.id, mode);
+  const resolutionPolicy = resolveRuntimeResolutionPolicy(engine, mode);
+  const usesRuntimeSchema = resolutionPolicy.usesSchemaDefaults;
+  const capability = fixtureCapability
+    ?? (usesRuntimeSchema ? deriveRuntimeSchemaCaps(engine.inputSchema, mode) : undefined);
+  const activeEnumDefault = (fieldId: string) => (
+    usesRuntimeSchema ? getRuntimeSchemaEnumDefault(engine.inputSchema, mode, fieldId) : undefined
+  );
   const supportsDuration = capability ? Boolean(capability.duration || capability.frames) : true;
-  const supportsResolution = capability ? Boolean(capability.resolution && capability.resolution.length) : true;
+  const supportsResolution = resolutionPolicy.supportsResolution;
   const supportsFps = capability
     ? Array.isArray(capability.fps)
       ? capability.fps.length > 0
@@ -136,7 +142,8 @@ export function buildGenerateRequestOptions(params: {
   const supportsAspectRatio = capability ? Boolean(capability.aspectRatio && capability.aspectRatio.length) : true;
   const rawDurationOption =
     typeof body.durationOption === 'number' || typeof body.durationOption === 'string' ? body.durationOption : null;
-  let durationSec = Number(body.durationSec || body.duration || 4);
+  const defaultDurationSec = usesRuntimeSchema ? getRuntimeDurationDefault(capability, 4) : 4;
+  let durationSec = Number(body.durationSec || body.duration || defaultDurationSec);
   if (multiPromptTotalSec > 0) {
     durationSec = multiPromptTotalSec;
   }
@@ -181,7 +188,8 @@ export function buildGenerateRequestOptions(params: {
       ? body.aspectRatio.trim()
       : null;
   const fallbackAspectRatio = supportsAspectRatio
-    ? capability?.aspectRatio?.find((value) => value !== 'auto') ??
+    ? activeEnumDefault('aspect_ratio') ??
+      capability?.aspectRatio?.find((value) => value !== 'auto') ??
       engine.aspectRatios?.find((value) => value !== 'auto') ??
       engine.aspectRatios?.[0] ??
       '16:9'
@@ -238,7 +246,7 @@ export function buildGenerateRequestOptions(params: {
   let requestedResolution =
     typeof body.resolution === 'string' && body.resolution.trim().length
       ? body.resolution.trim()
-      : engine.resolutions?.[0] ?? '1080p';
+      : resolutionPolicy.defaultResolution ?? resolutionPolicy.pricingFallbackResolution;
   let pricingResolution =
     requestedResolution === 'auto'
       ? engine.resolutions.find((value) => value !== 'auto') ?? engine.resolutions[0] ?? '1080p'
@@ -261,8 +269,7 @@ export function buildGenerateRequestOptions(params: {
     effectiveResolution = lumaResolutionInfo.value;
     requestedResolution = lumaResolutionInfo.value;
   } else if (!supportsResolution) {
-    const fallbackResolution =
-      engine.resolutions.find((value) => value !== 'auto') ?? engine.resolutions[0] ?? '540p';
+    const fallbackResolution = resolutionPolicy.pricingFallbackResolution;
     pricingResolution = fallbackResolution;
     effectiveResolution = fallbackResolution;
     requestedResolution = fallbackResolution;

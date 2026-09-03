@@ -7,7 +7,7 @@ import { listFalEngines } from '../frontend/src/config/falEngines.ts';
 import { loadAppEngineScoreMap } from '../frontend/src/server/engine-scores.ts';
 
 const root = process.cwd();
-const apiEnginesRoutePath = join(root, 'frontend/app/api/engines/route.ts');
+const apiEnginesHandlerPath = join(root, 'frontend/app/api/engines/_lib/engines-get-handler.ts');
 const imageWorkspacePagePath = join(root, 'frontend/app/(core)/(workspace)/app/image/page.tsx');
 
 test('app engine score map excludes image-only models while keeping video models', async () => {
@@ -27,11 +27,11 @@ test('app engine score map excludes image-only models while keeping video models
 });
 
 test('image engine surfaces do not request selector scores', () => {
-  const apiSource = readFileSync(apiEnginesRoutePath, 'utf8');
+  const apiSource = readFileSync(apiEnginesHandlerPath, 'utf8');
   const imagePageSource = readFileSync(imageWorkspacePagePath, 'utf8');
 
   assert.match(apiSource, /const includeScores = category !== 'image'/);
-  assert.match(apiSource, /includeScores \? loadAppEngineScoreMap\(\) : Promise\.resolve\(\{\}\)/);
+  assert.match(apiSource, /includeScores \? dependencies\.loadAppEngineScoreMap\(\) : Promise\.resolve\(\{\}\)/);
   assert.doesNotMatch(imagePageSource, /loadAppEngineScoreMap/);
   assert.doesNotMatch(imagePageSource, /engineScores=\{engineScores\}/);
 });

@@ -1,0 +1,250 @@
+# P1 Video Model Refresh Evidence
+
+Evidence snapshot: 2026-09-03. This private engineering record freezes only
+what was observed from primary documentation, controlled staging submissions,
+and editorial review. The approved eight-video launch batch completed without
+an automatic retry or a duplicate wallet charge.
+
+## Scope
+
+| Model ID | Public product | Runtime policy | Publication state |
+| --- | --- | --- | --- |
+| `gemini-omni-flash` | Gemini Omni Flash 1.1 | Google direct | two reviewed Google-direct launch videos accepted |
+| `kling-3-turbo-standard` | Kling 3.0 Turbo Standard | Kling direct, Fal fallback | two reviewed launch videos accepted through the depleted-credit fallback |
+| `kling-3-turbo-pro` | Kling 3.0 Turbo Pro | Kling direct, Fal fallback | two reviewed launch videos accepted through the depleted-credit fallback |
+| `minimax-h3-max` | MiniMax H3 Max | current available route | two reviewed launch videos accepted |
+
+Canonical Gemini stays `/models/gemini-omni-flash`. The two permanent,
+single-hop version-search aliases are `gemini-omni-flash-1-1` and
+`gemini-omni-1-1-flash`.
+
+No Gemini Omni Flash 1.0 product, page, alias, comparison row, or lifecycle
+entry is in scope. No MiniMax H3 Max Turbo variant is in scope or may be
+published. Google direct policy: no Fal fallback.
+
+The existing Gemini comparison pages remain published and self-canonical; only
+their visible current-model label is updated:
+
+- `gemini-omni-flash-vs-veo-3-1`
+- `gemini-omni-flash-vs-veo-3-1-fast`
+- `gemini-omni-flash-vs-sora-2`
+- `gemini-omni-flash-vs-seedance-2-0`
+
+## Google
+
+Observed 2026-09-03 from the [Google Cloud model page](https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/gemini/omni-1-1-flash): the Agent Platform model ID is
+`gemini-omni-1.1-flash-preview`, its documented region is `global`, and the
+page declares text-to-video, image-to-video, reference-to-video, first/last
+frames, audio, video editing, and extension support. The page is dated
+2026-09-02 and describes this specific Agent Platform model as Preview.
+
+The [Google Gemini API changelog](https://ai.google.dev/gemini-api/docs/changelog)
+records a separate GA `gemini-omni-1.1-flash` release on 2026-08-27 and says
+the prior `gemini-omni-flash-preview` endpoint is deprecated on 2026-09-30.
+The [Gemini deprecations page](https://ai.google.dev/gemini-api/docs/deprecations)
+and [Omni guide](https://ai.google.dev/gemini-api/docs/omni) are retained as
+primary-source migration references. Those public Gemini API names must not be
+substituted for the configured account's Vertex Interactions model ID.
+
+Confirmed staging probe, 2026-09-03: one 3-second text-to-video request was
+submitted through Vertex Interactions with model
+`gemini-omni-1.1-flash-preview`, request keys `background`,
+`generation_config`, `input`, `model`, `response_format`, and `store`, plus a
+3-second 720p URI-delivery response format. No credential, token, full header,
+prompt, or output URL is retained here.
+
+Google staging probe: HTTP 400 pre-acceptance rejection. The sanitized error
+envelope had top-level `error` and nested `code`/`message` keys; no interaction
+ID, poll result, terminal status, or output location was issued. Provider
+message: `store=true is required for background interactions.` The request
+used `store: false`, so this proves the configured account requires `store:
+true` when `background: true`; it does not prove the revised request envelope
+or a successful provider model acceptance. No retry is authorized in this
+batch.
+
+The revised request keeps `store: true` for background interactions. Two later
+approved launch requests were accepted by Google, polled by their original job
+IDs, copied to durable staging storage, and saved to the normal media library.
+One completed promptly; the other was safely reconciled from the polling-stalled
+state after the completion poller was corrected. No replacement request and no
+second charge were created.
+
+Google direct publication gate: proven for P1 (two Google-direct outputs,
+6-second portrait and 8-second landscape, were reviewed and accepted).
+
+## Kling Direct
+
+Primary source checked 2026-09-03:
+[Kling 3.0 Turbo text-to-video API documentation](https://kling.ai/document-api/api/video/3-0-turbo/text-to-video).
+The documentation page is JavaScript-rendered in this retrieval environment,
+so its account-specific accepted path and envelope cannot be treated as
+observed from a page fetch alone.
+
+Safe local adapter inspection establishes only the existing pre-smoke proposal:
+the smallest Standard text request is 3 seconds; it uses the direct adapter's
+`model_name`, `duration`, `mode`, `sound`, and `external_task_id` fields. These
+are not evidence that the new Turbo account accepts the path or body.
+
+Confirmed staging probe, 2026-09-03: one 3-second Standard direct
+text-to-video request used the candidate path `/v1/videos/text2video`, model
+`kling-v3`, mode `std`, `sound: off`, and the key set `aspect_ratio`,
+`duration`, `external_task_id`, `mode`, `model_name`, `prompt`, and `sound`.
+The external task ID value itself is not retained.
+
+Kling staging probe: HTTP 429 pre-acceptance rejection. The sanitized envelope
+had `code`, `message`, and `request_id` keys, with no task ID, status value,
+output location, poll result, or media URL. Provider message:
+`Account balance not enough`. No retry is authorized in this batch. This is an account-balance
+failure before direct-task acceptance, not evidence that a Fal-only product can
+be published.
+
+Operational decision, 2026-09-03: the direct route remains active despite the
+unfunded provider account. Both Turbo product IDs map to the observed
+`kling-v3` Standard/Pro request contract. An HTTP 429 depleted prepaid balance
+response with provider code `1102` may fall back exactly once to the matching
+Fal endpoint before provider acceptance. Authentication, invalid input,
+moderation, nonportable input, or any response containing an accepted direct
+task ID must not fall back. No Kling funding is planned for this release.
+
+Kling direct publication gate: proven for P1 (mapping, polling,
+attempt ledger, and depleted-balance Fal fallback are contract-tested; an
+accepted direct output remains unobserved until the provider account is funded
+in a future release).
+
+## Kling Fal Fallback
+
+The seven live Fal endpoint documentation pages and their OpenAPI schemas were
+fetched without authentication on 2026-09-03:
+
+| Product/mode | Endpoint ID | Primary source |
+| --- | --- | --- |
+| Standard text | `fal-ai/kling-video/v3/turbo/standard/text-to-video` | [API](https://fal.ai/models/fal-ai/kling-video/v3/turbo/standard/text-to-video/api) |
+| Standard image | `fal-ai/kling-video/v3/turbo/standard/image-to-video` | [API](https://fal.ai/models/fal-ai/kling-video/v3/turbo/standard/image-to-video/api) |
+| Pro text | `fal-ai/kling-video/v3/turbo/pro/text-to-video` | [API](https://fal.ai/models/fal-ai/kling-video/v3/turbo/pro/text-to-video/api) |
+| Pro image | `fal-ai/kling-video/v3/turbo/pro/image-to-video` | [API](https://fal.ai/models/fal-ai/kling-video/v3/turbo/pro/image-to-video/api) |
+| H3 Max text | `minimax/h3-max/text-to-video` | [API](https://fal.ai/models/minimax/h3-max/text-to-video/api) |
+| H3 Max image | `minimax/h3-max/image-to-video` | [API](https://fal.ai/models/minimax/h3-max/image-to-video/api) |
+| H3 Max reference | `minimax/h3-max/reference-to-video` | [API](https://fal.ai/models/minimax/h3-max/reference-to-video/api) |
+
+The four Kling schemas expose queue submit, status, result, and cancellation
+paths. Both text schemas allow either `prompt` or `multi_prompt`; both image
+schemas require `image_url`; the currently observed duration enum is 3–15
+seconds. These are fallback-contract inputs only. Fallback remains allowed
+only before a direct task ID for pre-acceptance network/timeout, rate-limit,
+provider-5xx, invalid-empty-response, or explicitly flagged credit-depletion
+conditions. It is not allowed after a direct task ID, nor for validation,
+moderation, authentication/account, or incompatible-projection failures.
+
+## MiniMax H3 Max
+
+The live queue OpenAPI schemas were fetched without authentication on
+2026-09-03 from the three API sources in the table above. All expose a
+5–15-second duration bound and `480P`/`768P` resolution enum, with `768P` as
+the default. `image-to-video` has optional `image_url` and optional
+`end_image_url`; the latter is the first-to-last-frame field. The reference
+schema accepts at most 9 images, 3 videos, and 3 audio clips, capped at 12
+files total. It requires an image or video when audio is supplied.
+
+Native audio is automatic, generated with the visual output; no audio-toggle
+field appears in these three current OpenAPI input schemas.
+
+The live text/image endpoint pricing notice is a temporary launch promotion:
+
+- H3 Max 480P rate: $0.0125/s.
+- H3 Max 768P rate: $0.02/s.
+- The notice states that the promotion ends 2026-09-07, after which the listed
+  rates are $0.05/s at 480P and $0.08/s at 768P. Those non-promotional amounts
+  must be rechecked immediately before pricing publication.
+
+The separately released reference-to-video endpoint currently states output
+video at $0.08/s plus reference tokens: the first 4,096 pooled tokens are
+included, then each 1,000 reference tokens costs $0.02. Its stated image
+formula is `(width * height) / 1024` tokens; reference-video tokens depend on
+reference duration and requested generation resolution. This endpoint’s
+published pricing differs from the text/image launch-promotion notice, so no
+single H3 Max price may be published until canonical scenario pricing selects
+and validates the exact mode.
+
+## Pricing Inputs
+
+The smallest two billable smoke proposals use existing adapter constraints and
+cost estimators, not a generated provider result:
+
+| Probe | Minimal request | Maximum provider debit |
+| --- | --- | --- |
+| Google | 3-second Google-direct text-to-video request | $0.300 |
+| Kling | 3-second direct Standard text-to-video request with `sound: off` | $0.252 |
+
+Combined maximum wallet/provider debit: **$0.552 USD**. This excludes any
+separately billed storage/network charges that the current estimators do not
+model; it is the maximum generation debit currently derived by the configured
+code paths. No customer wallet quote exists yet because these P1 identities
+are not published in the registry/pricing pipeline.
+
+Actual provider debit: $0.000 USD for each rejected probe. Google rejected the
+request at HTTP 400 before issuing an interaction; Kling rejected it at HTTP
+429 before issuing a task. Neither response reported a provider-deduction
+field, and no poll or generated media was created.
+
+## Launch Video Review
+
+The approved batch contained exactly two distinct prompts per model: three
+human-led scenes, two environment/action scenes, two product shots, and one
+explicit Kling multishot. Faces were anonymous or outside the frame; prompts
+contained no public figure, trademark-dependent subject, or reused concept.
+
+| Model | Evidence IDs | Editorial result |
+| --- | --- | --- |
+| Gemini Omni Flash 1.1 | `d7c08847-0a76-4ec6-bdb9-03d9d293b840`, `a59bedef-5ee8-451e-a09c-7be29e18e629` | Mechanic action and salt-valley aerial accepted; coherent motion, camera direction, ambience, and no material artifact. |
+| Kling 3.0 Turbo Standard | `d4890c1b-dc03-4e60-bcc6-b3d1b44857ba`, `da92f706-f644-4a6a-ab0d-b4175e472dd8` | Baker action and three-shot parcel sequence accepted; the multishot preserves subject and weather continuity. |
+| Kling 3.0 Turbo Pro | `df4f081a-9a9e-459b-8aa2-bac773fc6e8e`, `951395ca-6ef0-4f8c-a4d5-a8c1c0a8c93b` | Glass-product macro and observatory storm accepted; both demonstrate the Pro detail/finish position. |
+| MiniMax H3 Max | `799a7e0a-89c1-4776-b6f0-d0d8068075d7`, `7b6c56c3-4aba-459a-8e6c-09aeedc2dc81` | Dancer and lamp transformation accepted; strong prompt adherence, material finish, and synchronized audio. |
+
+All eight jobs report `completed`, `paid_wallet`, and saved to the staging
+library. Aggregate customer-wallet debit was **$8.28 USD**; the final staging
+wallet balance was **$3.92 USD**. The eight durable assets are attached to their
+eight model and eight family playlist positions. They remain private and
+non-indexable in the admin `not-published` queue, with zero editorial watch
+pages. Production import must preserve that state so the admin SEO workflow,
+not this release, decides when each video becomes public and indexable.
+
+## Search Console
+
+Snapshot window: 2026-06-01 through 2026-08-31.
+
+- Gemini-query aggregate: 809 impressions and 11 clicks.
+- `gemini omni flash`: 310 impressions.
+- `gemini omni flash vs veo 3.1`: 98 impressions.
+- Preservation decision: retain the canonical Gemini page and all four
+  existing comparison URLs; update current visible 1.1 facts rather than
+  replacing their URL ownership.
+- Queries containing `minimax h3`: 756 impressions, 17 clicks, 2.2% CTR, and
+  average position 14.9.
+- Exact `minimax h3 max`: 350 impressions, six clicks, 1.7% CTR, and average
+  position 7.6.
+- Current URL ownership: ES H3 page 261 impressions/six clicks/position 5.9;
+  FR H3 page 74/zero/9.5; EN H3 page 15/zero/26.9.
+
+H3 search-intent policy: Generic `minimax h3` intent remains owned by
+`/models/minimax-h3`. Exact `minimax h3 max` intent is owned by
+`/models/minimax-h3-max` when its release gates permit publication. Public
+publisher: MiniMax; public family: Hailuo. Public model and SEO copy must not
+name internal infrastructure or routing.
+
+Operational blocker: the local/admin Search Console refresh flow currently
+returns `invalid_grant`. No refresh token, client secret, authorization code,
+or full authorization header is stored in this evidence record.
+
+## Release Gates
+
+| Gate | State | Evidence or required next step |
+| --- | --- | --- |
+| Scope and public identity freeze | proven | Four canonical IDs and canonical/alias ownership recorded above. |
+| Google direct provider contract | proven | Two approved Google-direct jobs completed through the corrected stored-background and polling contract without resubmission. |
+| Kling direct provider contract | proven | The mapped Standard/Pro direct-first contract records the observed HTTP 429/code `1102` rejection and falls back once to Fal before acceptance; post-acceptance fallback remains forbidden. |
+| Kling Fal fallback documentation | proven | Four endpoint schemas fetched; direct-first boundary recorded. |
+| H3 Max live schema research | proven | Three schemas, pricing notices, end frame, reference formula, duration, and native-audio behavior recorded. |
+| Search Console token refresh | blocked | Local/admin refresh currently returns `invalid_grant`. |
+| Eight launch videos | proven | Two distinct, reviewed, completed staging videos per P1 model; no automatic retry or duplicate charge. |
+| Public publication | blocked | Production video import into the admin `not-published` queue, final atomic registry switch, route/sitemap verification, and Search Console refresh remain outstanding. Video publication/indexing is a later admin SEO decision and is not a P1 release gate. |
+| Excluded-product release gate | not-applicable | No excluded product is included in this P1 scope. |

@@ -6,7 +6,7 @@ import {
   listRuntimeModels,
   type RuntimeModelEntry,
 } from '@/config/model-runtime';
-import { P0_VIDEO_EXAMPLE_MODEL_IDS } from '@/config/model-launch-readiness-schema';
+import { MODEL_LAUNCH_READY_MODELS } from '@/config/model-launch-readiness';
 import {
   buildCanonicalCompareSlug,
   buildPublishedComparisonSlugsFromModels,
@@ -47,7 +47,16 @@ export const P0_PRIMARY_COMPARISONS = [
   { slug: 'flux-3-vs-grok-imagine-video-1-5', label: 'FLUX 3 vs Grok Imagine Video 1.5' },
 ] as const;
 
-const P0_LOCALIZED_SCOREBOARDS = new Set<string>(P0_PRIMARY_COMPARISONS.map(({ slug }) => slug));
+export const P1_PRIMARY_COMPARISONS = [
+  { slug: 'minimax-h3-vs-minimax-h3-max', label: 'MiniMax H3 vs MiniMax H3 Max' },
+  { slug: 'kling-3-turbo-pro-vs-kling-3-turbo-standard', label: 'Kling 3 Turbo Pro vs Standard' },
+  { slug: 'kling-3-pro-vs-kling-3-turbo-pro', label: 'Kling 3 Pro vs Kling 3 Turbo Pro' },
+  { slug: 'gemini-omni-flash-vs-kling-3-turbo-pro', label: 'Gemini Omni Flash 1.1 vs Kling 3 Turbo Pro' },
+] as const;
+
+const LAUNCH_LOCALIZED_SCOREBOARDS = new Set<string>(
+  [...P0_PRIMARY_COMPARISONS, ...P1_PRIMARY_COMPARISONS].map(({ slug }) => slug),
+);
 
 export function buildLlmsModelDiscoveryProjection(
   options: BuildLlmsModelDiscoveryProjectionOptions = {},
@@ -55,7 +64,9 @@ export function buildLlmsModelDiscoveryProjection(
   const models = options.models ?? listRuntimeModels();
   const catalog = options.catalog ?? (engineCatalog as LlmsCatalogEntry[]);
   const families = options.families ?? MODEL_FAMILIES;
-  const candidateIds = new Set(options.candidateModelIds ?? P0_VIDEO_EXAMPLE_MODEL_IDS);
+  const candidateIds = new Set(
+    options.candidateModelIds ?? MODEL_LAUNCH_READY_MODELS.map(({ modelId }) => modelId),
+  );
   const catalogById = new Map(catalog.map((entry) => [entry.engineId ?? entry.modelSlug, entry]));
   const publicCurrentModels = models.filter(isRuntimeModelPublicCurrent);
   const publicModelPageModels = models.filter(
@@ -87,7 +98,7 @@ export function buildLlmsModelDiscoveryProjection(
     }));
   const qualifiedPublishedPairs = new Set(buildPublishedComparisonSlugsFromModels(
     models,
-    options.isLocalizedScoreboardComplete ?? ((slug) => P0_LOCALIZED_SCOREBOARDS.has(slug)),
+    options.isLocalizedScoreboardComplete ?? ((slug) => LAUNCH_LOCALIZED_SCOREBOARDS.has(slug)),
   ));
   const publicCurrentLaunchPairs = new Set<string>();
   for (const launchModel of launchModels) {
@@ -97,7 +108,7 @@ export function buildLlmsModelDiscoveryProjection(
     }
   }
   const primaryComparisons = Array.from(
-    new Map((options.primaryComparisons ?? P0_PRIMARY_COMPARISONS).map((pair) => [pair.slug, pair])).values(),
+    new Map((options.primaryComparisons ?? [...P0_PRIMARY_COMPARISONS, ...P1_PRIMARY_COMPARISONS]).map((pair) => [pair.slug, pair])).values(),
   )
     .filter(
       (pair) =>

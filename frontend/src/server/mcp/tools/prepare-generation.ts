@@ -18,6 +18,12 @@ const reference = z.discriminatedUnion('kind', [
   }).strict(),
 ]);
 const canonicalSettingsSchema = z.object({
+  multiPrompt: z.array(z.object({
+    prompt: z.string().trim().min(1).max(512),
+    durationSec: z.number().int().min(1).max(15),
+  }).strict()).min(1).max(6).optional().describe(
+    'Kling multi-shot scenes. Use only when get_model_details reports the multiPrompt setting; omit the top-level prompt text content for this form.',
+  ),
   durationSec: z.number().int().min(1).max(86_400).optional().describe(
     'For video modes, use the exact key settings.durationSec for the requested duration in seconds; never send settings.duration.',
   ),
@@ -65,6 +71,9 @@ const canonicalSettingsSchema = z.object({
     'GPT Image 2 only: custom output width in pixels when resolution is custom.',
   ),
   outputFormat: z.string().trim().min(1).max(64).optional(),
+  promptExpansionMode: z.enum(['balanced', 'quality']).optional().describe(
+    'Use only when get_model_details reports the promptExpansionMode setting for the selected mode.',
+  ),
   quality: z.string().trim().min(1).max(64).optional(),
   reframeGridPositionX: z.number().optional(),
   reframeGridPositionY: z.number().optional(),

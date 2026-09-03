@@ -334,6 +334,7 @@ export async function executePreparedVideoGeneration(params: ExecutePreparedVide
         heroRenderId,
         localKey,
         logMetricFn: logMetric,
+        clientErrorPolicy: engine.providerMeta?.clientErrorPolicy,
       });
     },
     completeDirect: async (generationResult) => {

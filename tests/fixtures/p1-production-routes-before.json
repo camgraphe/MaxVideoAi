@@ -1,0 +1,23 @@
+{
+  "capturedAt": "2026-09-03",
+  "dynamicEnglishCanonicalCount": 355,
+  "publishedModelCount": 49,
+  "publishedComparisonCount": 306,
+  "localizedLocCount": 1005,
+  "protectedEnglishPaths": [
+    "/models/gemini-omni-flash",
+    "/ai-video-engines/gemini-omni-flash-vs-veo-3-1",
+    "/ai-video-engines/gemini-omni-flash-vs-veo-3-1-fast",
+    "/ai-video-engines/gemini-omni-flash-vs-sora-2",
+    "/ai-video-engines/gemini-omni-flash-vs-seedance-2-0"
+  ],
+  "expectedNewEnglishPaths": [
+    "/models/kling-3-turbo-standard",
+    "/models/kling-3-turbo-pro",
+    "/models/minimax-h3-max",
+    "/ai-video-engines/minimax-h3-vs-minimax-h3-max",
+    "/ai-video-engines/kling-3-turbo-pro-vs-kling-3-turbo-standard",
+    "/ai-video-engines/kling-3-pro-vs-kling-3-turbo-pro",
+    "/ai-video-engines/gemini-omni-flash-vs-kling-3-turbo-pro"
+  ]
+}

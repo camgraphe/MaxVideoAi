@@ -1,0 +1,21 @@
+{
+  "slug": "gemini-omni-flash-vs-kling-3-turbo-pro",
+  "en": {
+    "meta": { "title": "Gemini Omni Flash 1.1 vs Kling 3 Turbo Pro", "description": "Compare Gemini Omni Flash 1.1 and Kling 3 Turbo Pro for quality, editing, resolution, audio and speed.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Quick verdict", "body": "Choose Gemini Omni Flash 1.1 for 4K, reference stacks and video editing workflows. Choose Kling 3 Turbo Pro for fast 1080p generation and structured multishot sequences." },
+    "primaryLinksTitle": "Explore the models",
+    "primaryLinks": [{ "href": "/models/gemini-omni-flash", "label": "Gemini Omni Flash 1.1" }, { "href": "/models/kling-3-turbo-pro", "label": "Kling 3 Turbo Pro" }]
+  },
+  "fr": {
+    "meta": { "title": "Gemini Omni Flash 1.1 vs Kling 3 Turbo Pro", "description": "Comparez Gemini Omni Flash 1.1 et Kling 3 Turbo Pro sur la qualité, édition, résolution, audio et vitesse.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Verdict rapide", "body": "Choisissez Gemini Omni Flash 1.1 pour la 4K, les piles de références et l’édition vidéo. Choisissez Kling 3 Turbo Pro pour générer vite en 1080p et créer des séquences multishot structurées." },
+    "primaryLinksTitle": "Explorer les modèles",
+    "primaryLinks": [{ "href": "/fr/modeles/gemini-omni-flash", "label": "Gemini Omni Flash 1.1" }, { "href": "/fr/modeles/kling-3-turbo-pro", "label": "Kling 3 Turbo Pro" }]
+  },
+  "es": {
+    "meta": { "title": "Gemini Omni Flash 1.1 vs Kling 3 Turbo Pro", "description": "Compara Gemini Omni Flash 1.1 y Kling 3 Turbo Pro en calidad, edición, resolución, audio y velocidad.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Veredicto rápido", "body": "Elige Gemini Omni Flash 1.1 para 4K, pilas de referencias y edición de vídeo. Elige Kling 3 Turbo Pro para generar rápido en 1080p y crear secuencias multishot estructuradas." },
+    "primaryLinksTitle": "Explorar los modelos",
+    "primaryLinks": [{ "href": "/es/modelos/gemini-omni-flash", "label": "Gemini Omni Flash 1.1" }, { "href": "/es/modelos/kling-3-turbo-pro", "label": "Kling 3 Turbo Pro" }]
+  }
+}

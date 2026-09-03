@@ -14,7 +14,7 @@ nano-banana,Nano Banana (Image Generation),google,nano-banana,nano-banana,legacy
 nano-banana-2,Nano Banana 2,google,nano-banana-2,nano-banana,current,,,2,available,logoAllowed,true,true
 nano-banana-lite,Nano Banana Lite,google,nano-banana-lite,nano-banana,current,,,Lite,available,logoAllowed,true,true
 nano-banana-pro,Nano Banana Pro,google,nano-banana-pro,nano-banana,current,,,Pro,available,logoAllowed,true,true
-gemini-omni-flash,Gemini Omni Flash,google-gemini,gemini-omni-flash,veo,current,,,Preview,limited,textOnly,true,true
+gemini-omni-flash,Gemini Omni Flash 1.1,google-gemini,gemini-omni-flash,veo,current,,,1.1 Preview,limited,textOnly,true,true
 veo-3-1,Google Veo 3.1,google-veo,veo-3-1,veo,current,,,3.1,available,logoAllowed,true,true
 veo-3-1-fast,Google Veo 3.1 Fast,google-veo,veo-3-1-fast,veo,current,,,3.1 Fast,available,logoAllowed,true,true
 veo-3-1-lite,Google Veo 3.1 Lite,google-veo,veo-3-1-lite,veo,current,,,3.1 Lite,available,logoAllowed,true,true
@@ -26,6 +26,8 @@ kling-3-standard,Kling 3 Standard,kling,kling-3-standard,kling,current,,,v3 Stan
 kling-o3-4k,Kling 3.0 Omni 4K,kling,kling-o3-4k,kling,current,,,3.0 Omni 4K,available,logoAllowed,true,true
 kling-o3-pro,Kling 3.0 Omni Pro,kling,kling-o3-pro,kling,current,,,3.0 Omni Pro,available,logoAllowed,true,true
 kling-o3-standard,Kling 3.0 Omni Standard,kling,kling-o3-standard,kling,current,,,3.0 Omni Standard,available,logoAllowed,true,true
+kling-3-turbo-pro,Kling 3.0 Turbo Pro,kling,kling-3-turbo-pro,kling,current,,,3.0 Turbo Pro,limited,logoAllowed,true,true
+kling-3-turbo-standard,Kling 3.0 Turbo Standard,kling,kling-3-turbo-standard,kling,current,,,3.0 Turbo Standard,limited,logoAllowed,true,true
 ltx-2-3-fast,LTX 2.3 Fast,lightricks,ltx-2-3-fast,ltx,legacy,ltx-2-5-fast,ltx-2-5-fast,2.3 Fast,available,logoAllowed,true,true
 ltx-2-3,LTX 2.3 Pro,lightricks,ltx-2-3-pro,ltx,legacy,ltx-2-5-pro,ltx-2-5-pro,Pro,available,logoAllowed,true,true
 ltx-2-5-fast,LTX 2.5 Fast,lightricks,ltx-2-5-fast,ltx,current,,,2.5 Fast,available,logoAllowed,true,true
@@ -38,6 +40,7 @@ luma-ray-3-2,Luma Ray 3.2,luma,luma-ray-3-2,luma,current,,,Ray 3.2,available,log
 luma-uni-1,Luma Uni-1,luma,luma-uni-1,luma-uni,current,,,Uni-1,available,logoAllowed,true,true
 luma-uni-1-max,Luma Uni-1 Max,luma,luma-uni-1-max,luma-uni,current,,,Uni-1 Max,available,logoAllowed,true,true
 minimax-h3,MiniMax H3,minimax,minimax-h3,hailuo,current,,,H3,available,logoAllowed,true,true
+minimax-h3-max,MiniMax H3 Max,minimax,minimax-h3-max,hailuo,current,,,H3 Max,limited,logoAllowed,true,true
 minimax-hailuo-02-text,MiniMax Hailuo 02 Standard,minimax,minimax-hailuo-02-text,hailuo,current,,,Standard,available,logoAllowed,true,true
 gpt-image-2,GPT Image 2,openai,gpt-image-2,gpt-image,current,,,2,available,logoAllowed,true,true
 sora-2,OpenAI Sora 2,openai,sora-2,sora,current,,,2,available,logoAllowed,true,true

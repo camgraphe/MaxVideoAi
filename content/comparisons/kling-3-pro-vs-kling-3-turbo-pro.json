@@ -1,0 +1,21 @@
+{
+  "slug": "kling-3-pro-vs-kling-3-turbo-pro",
+  "en": {
+    "meta": { "title": "Kling 3 Turbo Pro vs Kling 3 Pro: Scores & Specs", "description": "Compare Kling 3 Turbo Pro and Kling 3 Pro for quality, speed, controls, audio and pricing.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Quick verdict", "body": "Choose Turbo Pro for faster 1080p generation and stronger value. Choose Kling 3 Pro when start-to-end frame control is essential to the shot." },
+    "primaryLinksTitle": "Explore the models",
+    "primaryLinks": [{ "href": "/models/kling-3-turbo-pro", "label": "Kling 3 Turbo Pro" }, { "href": "/models/kling-3-pro", "label": "Kling 3 Pro" }]
+  },
+  "fr": {
+    "meta": { "title": "Kling 3 Turbo Pro vs Kling 3 Pro : notes et specs", "description": "Comparez Kling 3 Turbo Pro et Kling 3 Pro sur la qualité, vitesse, contrôles, audio et prix.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Verdict rapide", "body": "Choisissez Turbo Pro pour générer plus vite en 1080p avec un meilleur rapport qualité-prix. Choisissez Kling 3 Pro lorsque le contrôle de la première à la dernière image est indispensable." },
+    "primaryLinksTitle": "Explorer les modèles",
+    "primaryLinks": [{ "href": "/fr/modeles/kling-3-turbo-pro", "label": "Kling 3 Turbo Pro" }, { "href": "/fr/modeles/kling-3-pro", "label": "Kling 3 Pro" }]
+  },
+  "es": {
+    "meta": { "title": "Kling 3 Turbo Pro vs Kling 3 Pro: notas y specs", "description": "Compara Kling 3 Turbo Pro y Kling 3 Pro en calidad, velocidad, controles, audio y precio.", "titleBranding": "none" },
+    "quickVerdict": { "title": "Veredicto rápido", "body": "Elige Turbo Pro para generar más rápido en 1080p con mejor valor. Elige Kling 3 Pro cuando el control entre el fotograma inicial y final sea imprescindible." },
+    "primaryLinksTitle": "Explorar los modelos",
+    "primaryLinks": [{ "href": "/es/modelos/kling-3-turbo-pro", "label": "Kling 3 Turbo Pro" }, { "href": "/es/modelos/kling-3-pro", "label": "Kling 3 Pro" }]
+  }
+}

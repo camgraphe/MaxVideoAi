@@ -150,7 +150,7 @@ export function buildFalRequestParts(params: {
     safetyChecker: typeof params.safetyChecker === 'boolean' ? params.safetyChecker : undefined,
     voiceIds: params.voiceIds.length ? params.voiceIds : undefined,
     elements: params.elements ?? undefined,
-    endImageUrl: params.endImageUrl ?? undefined,
+    endImageUrl: params.endImageUrl ?? params.lastFrameUrl ?? undefined,
     extraInputValues: Object.keys(params.extraInputValues).length ? params.extraInputValues : undefined,
     ...(params.supportsDuration
       ? { durationSec: params.durationSec, durationOption: params.durationOption, numFrames: params.numFrames }

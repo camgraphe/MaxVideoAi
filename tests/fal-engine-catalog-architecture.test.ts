@@ -5,6 +5,8 @@ import test from 'node:test';
 
 const root = process.cwd();
 const facadePath = join(root, 'frontend/src/config/falEngines.ts');
+const materializationPath = join(root, 'frontend/src/config/fal-engine-materialization.ts');
+const privateCatalogProjectionPath = join(root, 'scripts/lib/private-engine-catalog-projection.ts');
 const modulesDir = join(root, 'frontend/src/config/fal-engines');
 const aggregatedModuleNames = [
   'types.ts',
@@ -126,6 +128,17 @@ test('Fal engine catalog public facade stays focused on materialization and look
 
   const lineCount = facadeSource.split('\n').length;
   assert.ok(lineCount <= 180, `falEngines.ts should stay a thin public facade, got ${lineCount} lines`);
+});
+
+test('private catalog projection uses an internal materializer without exporting it through the public facade', () => {
+  assert.ok(existsSync(materializationPath), 'shared materialization should live in its internal module');
+  assert.ok(existsSync(privateCatalogProjectionPath), 'private build catalog helper should exist');
+
+  const privateProjectionSource = readFileSync(privateCatalogProjectionPath, 'utf8');
+  assert.match(facadeSource, /from '\.\/fal-engine-materialization'/);
+  assert.doesNotMatch(facadeSource, /export function materializeFalEngineEntry/);
+  assert.match(privateProjectionSource, /from '\.\.\/\.\.\/frontend\/src\/config\/fal-engine-materialization'/);
+  assert.doesNotMatch(privateProjectionSource, /from '\.\.\/\.\.\/frontend\/src\/config\/falEngines'/);
 });
 
 test('Fal engine catalog data is split into provider-family modules', () => {

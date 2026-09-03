@@ -84,7 +84,9 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
   const firstFrameUrl =
     params.attachments.find((attachment) => attachment.slotId === 'first_frame_url')?.url?.trim() ?? undefined;
   const lastFrameUrl =
-    params.attachments.find((attachment) => attachment.slotId === 'last_frame_url')?.url?.trim() ?? undefined;
+    params.attachments.find(
+      (attachment) => attachment.slotId === 'last_frame_url' || attachment.slotId === 'end_image_url'
+    )?.url?.trim() ?? undefined;
   const primaryImageSlotIds = ['image_url', 'input_image', 'image'] as const;
   type PrimaryImageSlotId = (typeof primaryImageSlotIds)[number];
   const isPrimaryImageSlot = (
@@ -407,11 +409,11 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
     appendScalarProjectionOnlyValue(
       resolveDirectMediaFieldId(
         'image',
-        ['last_frame_url'],
+        ['last_frame_url', 'end_image_url'],
         'last_frame_url'
       ),
       lastFrameUrl,
-      attachmentUrlsForSlots(['last_frame_url']),
+      attachmentUrlsForSlots(['last_frame_url', 'end_image_url']),
       'image'
     );
   }
