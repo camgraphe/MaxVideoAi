@@ -96,9 +96,9 @@ test('P1 LLM discovery exposes current names, canonical URLs, families, and scor
   assert.doesNotMatch(text, /fal(?:\.ai)?/i);
 });
 
-test('unpublished P1 identities remain absent from default LLM discovery', () => {
+test('published P1 identities remain present in default LLM discovery', () => {
   const projection = buildLlmsModelDiscoveryProjection();
   for (const id of ['kling-3-turbo-standard', 'kling-3-turbo-pro', 'minimax-h3-max']) {
-    assert.equal(projection.currentModels.some((model) => model.id === id), false, id);
+    assert.equal(projection.currentModels.some((model) => model.id === id), true, id);
   }
 });

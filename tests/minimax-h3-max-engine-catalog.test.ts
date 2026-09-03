@@ -6,7 +6,6 @@ import {
 } from '../frontend/src/config/fal-engines/minimax-h3-max';
 import {
   RAW_FAL_ENGINE_REGISTRY,
-  UNPUBLISHED_FAL_ENGINE_REGISTRY,
 } from '../frontend/src/config/fal-engines/registry';
 
 const entry = MINIMAX_H3_MAX_FAL_ENGINE_REGISTRY[0];
@@ -62,14 +61,10 @@ test('MiniMax H3 Max exposes exact defaults, text ratios, and reference bounds',
   assert.equal(entry?.modes.every(({ ui }) => ui.audioToggle === false), true);
 });
 
-test('MiniMax H3 Max stays private without adding excluded products', () => {
-  const privateIds = new Set(UNPUBLISHED_FAL_ENGINE_REGISTRY.map(({ id }) => id));
+test('MiniMax H3 Max is public without adding excluded products', () => {
   const publicIds = new Set(RAW_FAL_ENGINE_REGISTRY.map(({ id }) => id));
 
-  assert.equal(privateIds.has('minimax-h3-max'), true);
-  assert.equal(publicIds.has('minimax-h3-max'), false);
-  assert.equal(privateIds.has('minimax-h3-max-turbo'), false);
+  assert.equal(publicIds.has('minimax-h3-max'), true);
   assert.equal(publicIds.has('minimax-h3-max-turbo'), false);
-  assert.equal(privateIds.has('runway-gen-4-turbo'), false);
   assert.equal(publicIds.has('runway-gen-4-turbo'), false);
 });

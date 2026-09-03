@@ -136,12 +136,12 @@ test('public model menus keep both Seedance 2.5 and MiniMax H3 launch badges', (
   }
 });
 
-test('P0 navigation exposes one model per family and the priority upgrade comparisons', () => {
+test('P1 navigation preserves the priority P0 model and upgrade links that fit the bounded menu', () => {
   assert.deepEqual(
     MARKETING_NAV_MODELS
-      .filter(({ key }) => ['ltx-2-5-pro', 'wan-3-prime', 'grok-imagine-video-1-5', 'flux-3'].includes(key))
+      .filter(({ key }) => ['ltx-2-5-pro', 'wan-3-prime', 'grok-imagine-video-1-5'].includes(key))
       .map(({ key }) => key),
-    ['ltx-2-5-pro', 'wan-3-prime', 'grok-imagine-video-1-5', 'flux-3'],
+    ['ltx-2-5-pro', 'wan-3-prime', 'grok-imagine-video-1-5'],
   );
   const expectedComparisons = [
     'ltx-2-3-pro-vs-ltx-2-5-pro',

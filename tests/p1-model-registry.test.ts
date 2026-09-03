@@ -16,20 +16,23 @@ const GEMINI_ALIASES = [
   'gemini-omni-1-1-flash',
 ] as const;
 
-const PRIVATE_P1_MODELS = {
-  'kling-3-turbo-standard': { family: 'kling', label: 'Kling 3.0 Turbo Standard' },
-  'kling-3-turbo-pro': { family: 'kling', label: 'Kling 3.0 Turbo Pro' },
-  'minimax-h3-max': { family: 'hailuo', label: 'MiniMax H3 Max' },
+const PUBLISHED_P1_MODELS = {
+  'kling-3-turbo-standard': {
+    family: 'kling',
+    label: 'Kling 3.0 Turbo Standard',
+    opponents: ['kling-3-turbo-pro'],
+  },
+  'kling-3-turbo-pro': {
+    family: 'kling',
+    label: 'Kling 3.0 Turbo Pro',
+    opponents: ['kling-3-turbo-standard', 'kling-3-pro', 'gemini-omni-flash'],
+  },
+  'minimax-h3-max': {
+    family: 'hailuo',
+    label: 'MiniMax H3 Max',
+    opponents: ['minimax-h3'],
+  },
 } as const;
-
-const privatePublication = {
-  model: { published: false, indexable: false },
-  examples: { published: false, includeInFamilyCopy: false, current: false },
-  compare: { published: false, indexed: false, suggestedOpponentIds: [], publishedPairIds: [] },
-  app: { published: false },
-  pricing: { published: false },
-  sitemap: { published: false },
-};
 
 const localizedBases = [
   { prefix: '/models', destinationPrefix: '/models' },
@@ -56,8 +59,8 @@ test('Gemini 1.1 compatibility aliases resolve directly to the existing canonica
   assert.equal(getModelFamilyDefinition('veo')?.aliases?.includes(GEMINI_ALIASES[1]), true);
 });
 
-test('P1 video identities are current private members with no replacement graph', () => {
-  for (const [id, expected] of Object.entries(PRIVATE_P1_MODELS)) {
+test('P1 video identities are current published members with no replacement graph', () => {
+  for (const [id, expected] of Object.entries(PUBLISHED_P1_MODELS)) {
     const model = registry.models.find((candidate) => candidate.id === id);
     assert.ok(model, `missing registry identity ${id}`);
     assert.equal(model.slug, id, id);
@@ -65,7 +68,19 @@ test('P1 video identities are current private members with no replacement graph'
     assert.equal(model.family, expected.family, id);
     assert.equal(model.category, 'video', id);
     assert.deepEqual(model.aliases, { internal: [], publicSlugs: [] }, id);
-    assert.deepEqual(model.publication, privatePublication, id);
+    assert.deepEqual(model.publication.model, { published: true, indexable: true }, id);
+    assert.deepEqual(model.publication.examples, {
+      published: true,
+      includeInFamilyCopy: true,
+      current: true,
+    }, id);
+    assert.equal(model.publication.compare.published, true, id);
+    assert.equal(model.publication.compare.indexed, true, id);
+    assert.deepEqual(model.publication.compare.suggestedOpponentIds, expected.opponents, id);
+    assert.deepEqual(model.publication.compare.publishedPairIds, expected.opponents, id);
+    assert.equal(model.publication.app.published, true, id);
+    assert.equal(model.publication.pricing.published, true, id);
+    assert.equal(model.publication.sitemap.published, true, id);
     assert.equal(model.lifecycle, 'current', id);
     assert.equal(model.successorId, null, id);
     assert.equal(model.replacement, null, id);
@@ -96,36 +111,41 @@ test('Gemini compatibility URLs are explicit one-hop redirects in every locale',
   }
 });
 
-test('runtime resolution preserves self-canonical paths and includes the private P1 identities', () => {
+test('runtime resolution preserves self-canonical paths and includes the published P1 identities', () => {
   const runtimeIds = new Set(listRuntimeModels().map((model) => model.id));
   for (const model of registry.models) {
     assert.equal(resolveRuntimePublicSlug(model.slug)?.id, model.id, model.slug);
   }
-  for (const id of Object.keys(PRIVATE_P1_MODELS)) {
+  for (const id of Object.keys(PUBLISHED_P1_MODELS)) {
     assert.equal(runtimeIds.has(id), true, `runtime identity missing ${id}`);
   }
 });
 
-test('build catalog projects private P1 engines while public engine and roster lists stay closed', () => {
+test('build catalog projects the P1 engines on public product surfaces', () => {
   const catalogById = new Map(engineCatalog.map((entry) => [entry.engineId, entry]));
   const publicEngineIds = new Set(listFalEngines().map((engine) => engine.id));
   const rosterIds = new Set(modelRoster.map((entry) => entry.engineId));
 
-  for (const [id, expected] of Object.entries(PRIVATE_P1_MODELS)) {
+  for (const [id, expected] of Object.entries(PUBLISHED_P1_MODELS)) {
     const entry = catalogById.get(id);
-    assert.ok(entry, `missing private catalog entry ${id}`);
+    assert.ok(entry, `missing public catalog entry ${id}`);
     assert.equal(entry.modelSlug, id, id);
     assert.equal(entry.family, expected.family, id);
     assert.equal(entry.lifecycle, 'current', id);
-    assert.deepEqual(entry.surfaces, {
-      modelPage: { indexable: false, includeInSitemap: false },
-      examples: { includeInFamilyResolver: false, includeInFamilyCopy: false },
-      compare: { suggestOpponents: [], publishedPairs: [], includeInHub: false },
-      app: { enabled: false },
-      pricing: { includeInEstimator: false },
+    assert.deepEqual(entry.surfaces.modelPage, { indexable: true, includeInSitemap: true }, id);
+    assert.deepEqual(entry.surfaces.examples, {
+      includeInFamilyResolver: true,
+      includeInFamilyCopy: true,
     }, id);
-    assert.equal(publicEngineIds.has(id), false, `public engine leak ${id}`);
-    assert.equal(rosterIds.has(id), false, `published roster leak ${id}`);
+    assert.deepEqual(entry.surfaces.compare, {
+      suggestOpponents: expected.opponents,
+      publishedPairs: expected.opponents,
+      includeInHub: true,
+    }, id);
+    assert.equal(entry.surfaces.app.enabled, true, id);
+    assert.equal(entry.surfaces.pricing.includeInEstimator, true, id);
+    assert.equal(publicEngineIds.has(id), true, `public engine missing ${id}`);
+    assert.equal(rosterIds.has(id), true, `published roster missing ${id}`);
   }
 });
 

@@ -27,12 +27,12 @@ test('admin playlist helpers expose missing Kling O3 model playlists', () => {
   }
 });
 
-test('Kling family fallback prioritizes O3 model playlists before legacy Kling V3 playlists', () => {
+test('Kling family fallback prioritizes Turbo and O3 playlists before legacy Kling V3 playlists', () => {
   assert.deepEqual(getFamilyFeedSourceSlugs('kling').slice(0, 5), [
     'family-kling',
+    'examples-kling-3-turbo-pro',
+    'examples-kling-3-turbo-standard',
     'examples-kling-o3-pro',
     'examples-kling-o3-standard',
-    'examples-kling-o3-4k',
-    'examples-kling-3-pro',
   ]);
 });

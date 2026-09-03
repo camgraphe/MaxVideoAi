@@ -37,6 +37,9 @@ const P0_MENU_REPRESENTATIVES = [
   'grok-imagine-video-1-5',
   'flux-3',
 ] as const;
+const P0_BOUNDED_MENU_REPRESENTATIVES = P0_MENU_REPRESENTATIVES.filter(
+  (modelId) => modelId !== 'flux-3',
+);
 
 function configuredLaunchSources(
   overrides: Partial<launchAssets.ModelLaunchSourceByWave> = {},
@@ -377,7 +380,7 @@ test('published P0 identities enter public discovery with one compact menu repre
   const catalogSlugs = selectCatalogSlugs(runtime);
   assert.deepEqual(
     navigation.MARKETING_MODEL_SLUGS.filter((slug) => P0_IDS.includes(slug as never)),
-    P0_MENU_REPRESENTATIVES,
+    P0_BOUNDED_MENU_REPRESENTATIVES,
   );
   assert.deepEqual(navigation.MARKETING_NAV_EXAMPLES.map(({ key }) => key), navigation.MARKETING_FOOTER_EXAMPLES.map(({ key }) => key));
   assert.equal(navigation.MARKETING_NAV_EXAMPLES.some(({ key }) => key === 'grok'), true);
@@ -410,7 +413,7 @@ test('a published fixture keeps the menu compact and exposes exactly one P0 repr
   assert.ok(menu.length <= 10);
   assert.deepEqual(
     menu.map(({ slug }) => slug).filter((slug) => P0_IDS.includes(slug as never)),
-    P0_MENU_REPRESENTATIVES,
+    P0_BOUNDED_MENU_REPRESENTATIVES,
   );
 });
 

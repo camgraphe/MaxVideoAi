@@ -11,31 +11,10 @@ import { getFalEngineById, listFalEngines } from '../frontend/src/config/falEngi
 import { KLING_3_TURBO_STANDARD_ENGINE } from '../frontend/src/config/fal-engines/kling-3-turbo-standard';
 import { MINIMAX_H3_MAX_ENGINE } from '../frontend/src/config/fal-engines/minimax-h3-max';
 import type { GenerateRequestOptions } from '../frontend/app/api/generate/_lib/request-options';
-import type { AgentGenerationExecutabilityEnvironment } from '../frontend/src/server/agent-runtime/model-executability';
 import { computeConfiguredPreflight } from '../frontend/src/server/engines';
 import type { EngineCaps, Mode, PreflightRequest } from '../frontend/types/engines';
 
 const STAGING_URL = 'https://maxvideoai-mcp-staging.vercel.app';
-const CANARY_USER_ID = '00000000-0000-4000-8000-000000000801';
-
-const generationEnvironment: AgentGenerationExecutabilityEnvironment = {
-  bytePlusEnabled: false,
-  bytePlusApiKey: undefined,
-  falApiKey: 'round4-private-provider-key',
-  providerEnv: {},
-};
-
-const privateCanaryContext = {
-  principal: {
-    userId: CANARY_USER_ID,
-    clientId: null,
-    emailVerified: true,
-    authMethod: 'oauth' as const,
-  },
-  access: { allowedModelIds: new Set([KLING_3_TURBO_STANDARD_ENGINE.id]) },
-  generationEnvironment,
-};
-
 function publicEngine(engineId: string): EngineCaps {
   const engine = listFalEngines().find((entry) => entry.id === engineId)?.engine;
   assert.ok(engine, `Missing public engine ${engineId}`);
@@ -44,7 +23,6 @@ function publicEngine(engineId: string): EngineCaps {
 
 async function resolveModeAtGenerateBoundary(input: {
   engine: EngineCaps;
-  isPrivate: boolean;
   modePresent: boolean;
   mode?: unknown;
 }) {
@@ -56,9 +34,9 @@ async function resolveModeAtGenerateBoundary(input: {
     req: new NextRequest(`${STAGING_URL}/api/generate`, { method: 'POST' }),
     body,
     boundaryOverrides: {
-      resolveLaunchCanaryRequestContext: async () => input.isPrivate ? privateCanaryContext : null,
-      getConfiguredEngine: async () => input.isPrivate ? undefined : input.engine,
-      getConfiguredEngineIncludingHidden: async () => input.isPrivate ? input.engine : undefined,
+      resolveLaunchCanaryRequestContext: async () => null,
+      getConfiguredEngine: async () => input.engine,
+      getConfiguredEngineIncludingHidden: async () => undefined,
       isDatabaseConfigured: () => {
         databaseChecks += 1;
         return true;
@@ -76,8 +54,8 @@ test('generate defaults only a truly absent mode and keeps normalized public mod
   assert.ok(publicPika);
 
   for (const fixture of [
-    { engine: KLING_3_TURBO_STANDARD_ENGINE, isPrivate: true },
-    { engine: publicPika, isPrivate: false },
+    { engine: KLING_3_TURBO_STANDARD_ENGINE },
+    { engine: publicPika },
   ]) {
     const omitted = await resolveModeAtGenerateBoundary({
       ...fixture,
@@ -91,7 +69,6 @@ test('generate defaults only a truly absent mode and keeps normalized public mod
 
   const normalizedPublic = await resolveModeAtGenerateBoundary({
     engine: publicPika,
-    isPrivate: false,
     modePresent: true,
     mode: '  T2V  ',
   });
@@ -113,8 +90,8 @@ test('generate rejects every explicitly invalid mode before database and billing
   ];
 
   for (const fixture of [
-    { label: 'private', engine: KLING_3_TURBO_STANDARD_ENGINE, isPrivate: true },
-    { label: 'public', engine: publicPika, isPrivate: false },
+    { label: 'P1 public', engine: KLING_3_TURBO_STANDARD_ENGINE },
+    { label: 'established public', engine: publicPika },
   ]) {
     for (const invalid of invalidModes) {
       await context.test(`${fixture.label}: ${invalid.label}`, async () => {

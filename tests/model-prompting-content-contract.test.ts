@@ -73,13 +73,13 @@ function valueAtPath(value: unknown, objectPath: string): unknown {
   }, value);
 }
 
-test('all 49 executable model documents expose strict prompting content in every locale', () => {
+test('all 52 executable model documents expose strict prompting content in every locale', () => {
   const expectedFiles = listModelPageTemplateSlugs().map((slug) => `${slug}.json`).sort();
   const completeInventory = [
     ...expectedFiles,
     ...listPrelaunchModelPageTemplateSlugs().map((slug) => `${slug}.json`),
   ].sort();
-  assert.equal(expectedFiles.length, 49);
+  assert.equal(expectedFiles.length, 52);
   for (const locale of LOCALES) {
     assert.deepEqual(files(locale), completeInventory, `${locale} model inventory`);
     for (const fileName of expectedFiles) {

@@ -5,7 +5,6 @@ import { KLING_3_TURBO_PRO_FAL_ENGINE_REGISTRY } from '../frontend/src/config/fa
 import { KLING_3_TURBO_STANDARD_FAL_ENGINE_REGISTRY } from '../frontend/src/config/fal-engines/kling-3-turbo-standard';
 import {
   RAW_FAL_ENGINE_REGISTRY,
-  UNPUBLISHED_FAL_ENGINE_REGISTRY,
 } from '../frontend/src/config/fal-engines/registry';
 
 const turboEngines = [
@@ -58,14 +57,10 @@ test('Kling 3 Turbo contracts preserve the documented product names, endpoints, 
   );
 });
 
-test('Kling 3 Turbo stays registered privately until its publication gates are satisfied', () => {
-  const unpublishedIds = new Set(UNPUBLISHED_FAL_ENGINE_REGISTRY.map(({ id }) => id));
-  assert.equal(unpublishedIds.has('kling-3-turbo-standard'), true);
-  assert.equal(unpublishedIds.has('kling-3-turbo-pro'), true);
-  assert.equal(unpublishedIds.has('runway-gen-4-turbo'), false);
-  assert.equal(unpublishedIds.has('minimax-h3-max-turbo'), false);
-
+test('Kling 3 Turbo is public after its publication gates are satisfied', () => {
   const publicIds = new Set(RAW_FAL_ENGINE_REGISTRY.map(({ id }) => id));
-  assert.equal(publicIds.has('kling-3-turbo-standard'), false);
-  assert.equal(publicIds.has('kling-3-turbo-pro'), false);
+  assert.equal(publicIds.has('kling-3-turbo-standard'), true);
+  assert.equal(publicIds.has('kling-3-turbo-pro'), true);
+  assert.equal(publicIds.has('runway-gen-4-turbo'), false);
+  assert.equal(publicIds.has('minimax-h3-max-turbo'), false);
 });

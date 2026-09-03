@@ -240,7 +240,7 @@ test('Kling V3 model pages keep start-frame positioning instead of cannibalizing
   }
 });
 
-test('Kling marketing family and navigation are O3-first without dropping Kling V3 support', () => {
+test('Kling marketing family promotes Turbo without changing the O3 family canonical', () => {
   const descriptor = getExampleFamilyDescriptor('kling-o3-pro');
   assert.ok(descriptor);
   assert.equal(descriptor.id, 'kling');
@@ -249,6 +249,8 @@ test('Kling marketing family and navigation are O3-first without dropping Kling 
   assert.equal(getExampleFamilyPrimaryModelSlug('kling'), 'kling-o3-pro');
 
   assert.deepEqual(getExampleFamilyCurrentModelSlugs('kling'), [
+    'kling-3-turbo-pro',
+    'kling-3-turbo-standard',
     'kling-o3-pro',
     'kling-o3-standard',
     'kling-o3-4k',
@@ -257,17 +259,17 @@ test('Kling marketing family and navigation are O3-first without dropping Kling 
     'kling-3-4k',
   ]);
   assert.deepEqual(getExampleFamilyModelSlugs('kling').slice(0, 8), [
+    'kling-3-turbo-pro',
+    'kling-3-turbo-standard',
     'kling-o3-pro',
     'kling-o3-standard',
     'kling-o3-4k',
     'kling-3-pro',
     'kling-3-standard',
     'kling-3-4k',
-    'kling-2-6-pro',
-    'kling-2-5-turbo',
   ]);
 
-  assert.ok(MARKETING_MODEL_SLUGS.includes('kling-o3-pro'));
+  assert.ok(MARKETING_MODEL_SLUGS.includes('kling-3-turbo-pro'));
   assert.ok(!MARKETING_MODEL_SLUGS.includes('kling-3-pro'));
-  assert.ok(MARKETING_NAV_COMPARE.some((item) => item.key === 'kling-3-pro-vs-kling-o3-pro'));
+  assert.ok(MARKETING_NAV_COMPARE.some((item) => item.key === 'kling-3-pro-vs-kling-3-turbo-pro'));
 });

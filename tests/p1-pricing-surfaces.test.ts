@@ -17,8 +17,6 @@ import { computeConfiguredPreflight } from '../frontend/src/server/engines.ts';
 import { priceCanonicalGeneration } from '../frontend/src/server/agent-api/generation-pricing.ts';
 import type { CanonicalGenerationRequest } from '../frontend/src/server/agent-api/generation-types.ts';
 import { listFalEngines, type FalEngineEntry } from '../frontend/src/config/falEngines.ts';
-import { materializeFalEngineEntry } from '../frontend/src/config/fal-engine-materialization.ts';
-import { UNPUBLISHED_FAL_ENGINE_REGISTRY } from '../frontend/src/config/fal-engines/registry.ts';
 import type { Resolution } from '../frontend/types/engines.ts';
 
 const P1_IDS = [
@@ -47,11 +45,7 @@ const PAYG_PRESET_BY_ID: Record<(typeof P1_IDS)[number], VideoPricePresetId> = {
   'minimax-h3-max': 'entry-route',
 };
 
-const entries = [
-  ...listFalEngines(),
-  ...UNPUBLISHED_FAL_ENGINE_REGISTRY.filter((entry) =>
-    P1_IDS.includes(entry.id as (typeof P1_IDS)[number])).map(materializeFalEngineEntry),
-];
+const entries = listFalEngines();
 
 function publishedP1Entries(): FalEngineEntry[] {
   return entries.map((entry) => {

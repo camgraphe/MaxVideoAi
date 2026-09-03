@@ -331,12 +331,14 @@
       "publishedModelSlugs": [
         "veo-3-1",
         "veo-3-1-fast",
-        "veo-3-1-lite"
+        "veo-3-1-lite",
+        "gemini-omni-flash"
       ],
       "currentModelSlugs": [
         "veo-3-1",
         "veo-3-1-fast",
-        "veo-3-1-lite"
+        "veo-3-1-lite",
+        "gemini-omni-flash"
       ]
     },
     "versionLabel": "3.1",
@@ -859,12 +861,14 @@
       "publishedModelSlugs": [
         "veo-3-1",
         "veo-3-1-fast",
-        "veo-3-1-lite"
+        "veo-3-1-lite",
+        "gemini-omni-flash"
       ],
       "currentModelSlugs": [
         "veo-3-1",
         "veo-3-1-fast",
-        "veo-3-1-lite"
+        "veo-3-1-lite",
+        "gemini-omni-flash"
       ]
     },
     "versionLabel": "3.1 Fast",
@@ -1388,12 +1392,14 @@
       "publishedModelSlugs": [
         "veo-3-1",
         "veo-3-1-fast",
-        "veo-3-1-lite"
+        "veo-3-1-lite",
+        "gemini-omni-flash"
       ],
       "currentModelSlugs": [
         "veo-3-1",
         "veo-3-1-fast",
-        "veo-3-1-lite"
+        "veo-3-1-lite",
+        "gemini-omni-flash"
       ]
     },
     "versionLabel": "3.1 Lite",
@@ -1861,12 +1867,14 @@
       "publishedModelSlugs": [
         "veo-3-1",
         "veo-3-1-fast",
-        "veo-3-1-lite"
+        "veo-3-1-lite",
+        "gemini-omni-flash"
       ],
       "currentModelSlugs": [
         "veo-3-1",
         "veo-3-1-fast",
-        "veo-3-1-lite"
+        "veo-3-1-lite",
+        "gemini-omni-flash"
       ]
     },
     "versionLabel": "1.1 Preview",
@@ -1881,21 +1889,23 @@
         "includeInSitemap": true
       },
       "examples": {
-        "includeInFamilyResolver": false,
-        "includeInFamilyCopy": false
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
       },
       "compare": {
         "suggestOpponents": [
           "veo-3-1",
           "veo-3-1-fast",
           "sora-2",
-          "seedance-2-0"
+          "seedance-2-0",
+          "kling-3-turbo-pro"
         ],
         "publishedPairs": [
           "veo-3-1",
           "veo-3-1-fast",
           "sora-2",
-          "seedance-2-0"
+          "seedance-2-0",
+          "kling-3-turbo-pro"
         ],
         "includeInHub": true
       },
@@ -5187,6 +5197,8 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "kling-3-turbo-pro",
+        "kling-3-turbo-standard",
         "kling-o3-pro",
         "kling-o3-standard",
         "kling-o3-4k",
@@ -5197,6 +5209,8 @@
         "kling-2-5-turbo"
       ],
       "currentModelSlugs": [
+        "kling-3-turbo-pro",
+        "kling-3-turbo-standard",
         "kling-o3-pro",
         "kling-o3-standard",
         "kling-o3-4k",
@@ -5517,6 +5531,8 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "kling-3-turbo-pro",
+        "kling-3-turbo-standard",
         "kling-o3-pro",
         "kling-o3-standard",
         "kling-o3-4k",
@@ -5527,6 +5543,8 @@
         "kling-2-5-turbo"
       ],
       "currentModelSlugs": [
+        "kling-3-turbo-pro",
+        "kling-3-turbo-standard",
         "kling-o3-pro",
         "kling-o3-standard",
         "kling-o3-4k",
@@ -5854,6 +5872,8 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "kling-3-turbo-pro",
+        "kling-3-turbo-standard",
         "kling-o3-pro",
         "kling-o3-standard",
         "kling-o3-4k",
@@ -5864,6 +5884,8 @@
         "kling-2-5-turbo"
       ],
       "currentModelSlugs": [
+        "kling-3-turbo-pro",
+        "kling-3-turbo-standard",
         "kling-o3-pro",
         "kling-o3-standard",
         "kling-o3-4k",
@@ -6246,6 +6268,8 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "kling-3-turbo-pro",
+        "kling-3-turbo-standard",
         "kling-o3-pro",
         "kling-o3-standard",
         "kling-o3-4k",
@@ -6256,6 +6280,8 @@
         "kling-2-5-turbo"
       ],
       "currentModelSlugs": [
+        "kling-3-turbo-pro",
+        "kling-3-turbo-standard",
         "kling-o3-pro",
         "kling-o3-standard",
         "kling-o3-4k",
@@ -6637,6 +6663,8 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "kling-3-turbo-pro",
+        "kling-3-turbo-standard",
         "kling-o3-pro",
         "kling-o3-standard",
         "kling-o3-4k",
@@ -6647,6 +6675,8 @@
         "kling-2-5-turbo"
       ],
       "currentModelSlugs": [
+        "kling-3-turbo-pro",
+        "kling-3-turbo-standard",
         "kling-o3-pro",
         "kling-o3-standard",
         "kling-o3-4k",
@@ -6990,6 +7020,8 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "kling-3-turbo-pro",
+        "kling-3-turbo-standard",
         "kling-o3-pro",
         "kling-o3-standard",
         "kling-o3-4k",
@@ -7000,6 +7032,8 @@
         "kling-2-5-turbo"
       ],
       "currentModelSlugs": [
+        "kling-3-turbo-pro",
+        "kling-3-turbo-standard",
         "kling-o3-pro",
         "kling-o3-standard",
         "kling-o3-4k",
@@ -7628,6 +7662,8 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "kling-3-turbo-pro",
+        "kling-3-turbo-standard",
         "kling-o3-pro",
         "kling-o3-standard",
         "kling-o3-4k",
@@ -7638,6 +7674,8 @@
         "kling-2-5-turbo"
       ],
       "currentModelSlugs": [
+        "kling-3-turbo-pro",
+        "kling-3-turbo-standard",
         "kling-o3-pro",
         "kling-o3-standard",
         "kling-o3-4k",
@@ -8268,6 +8306,8 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "kling-3-turbo-pro",
+        "kling-3-turbo-standard",
         "kling-o3-pro",
         "kling-o3-standard",
         "kling-o3-4k",
@@ -8278,6 +8318,8 @@
         "kling-2-5-turbo"
       ],
       "currentModelSlugs": [
+        "kling-3-turbo-pro",
+        "kling-3-turbo-standard",
         "kling-o3-pro",
         "kling-o3-standard",
         "kling-o3-4k",
@@ -8779,6 +8821,774 @@
       }
     },
     "bestFor": "4K reference-guided delivery"
+  },
+  {
+    "engineId": "kling-3-turbo-standard",
+    "modelSlug": "kling-3-turbo-standard",
+    "marketingName": "Kling 3.0 Turbo Standard",
+    "provider": "Kling by Kuaishou",
+    "brandId": "kling",
+    "family": "kling",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "kling-3-turbo-pro",
+        "kling-3-turbo-standard",
+        "kling-o3-pro",
+        "kling-o3-standard",
+        "kling-o3-4k",
+        "kling-3-pro",
+        "kling-3-standard",
+        "kling-3-4k",
+        "kling-2-6-pro",
+        "kling-2-5-turbo"
+      ],
+      "currentModelSlugs": [
+        "kling-3-turbo-pro",
+        "kling-3-turbo-standard",
+        "kling-o3-pro",
+        "kling-o3-standard",
+        "kling-o3-4k",
+        "kling-3-pro",
+        "kling-3-standard",
+        "kling-3-4k"
+      ]
+    },
+    "versionLabel": "3.0 Turbo Standard",
+    "availability": "limited",
+    "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [
+          "kling-3-turbo-pro"
+        ],
+        "publishedPairs": [
+          "kling-3-turbo-pro"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true,
+        "variantGroup": "kling-3-turbo",
+        "variantLabel": "Standard",
+        "launchBadge": "new"
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "registry",
+    "engine": {
+      "id": "kling-3-turbo-standard",
+      "label": "Kling 3.0 Turbo Standard",
+      "provider": "Kling by Kuaishou",
+      "version": "3.0 Turbo Standard",
+      "status": "early_access",
+      "latencyTier": "fast",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
+      "maxDurationSec": 15,
+      "resolutions": [
+        "720p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": true,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 50,
+        "promptMaxChars": 2500,
+        "promptMaxCharsSource": "official"
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Start image",
+            "description": "Required opening-frame image for image-to-video generation.",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          }
+        ],
+        "optional": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "description": "Single prompt. Mutually exclusive with multi-shot prompts.",
+            "modes": [
+              "t2v",
+              "i2v"
+            ]
+          },
+          {
+            "id": "multi_prompt",
+            "type": "text",
+            "label": "Multi-shot prompts",
+            "description": "One to six shot prompts. Their durations must total no more than 15 seconds and cannot be combined with a single prompt.",
+            "modes": [
+              "t2v",
+              "i2v"
+            ]
+          },
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration (seconds)",
+            "values": [
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15"
+            ],
+            "default": "5",
+            "min": 3,
+            "max": 15,
+            "modes": [
+              "t2v",
+              "i2v"
+            ]
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "16:9",
+              "9:16",
+              "1:1"
+            ],
+            "default": "16:9",
+            "modes": [
+              "t2v"
+            ]
+          }
+        ],
+        "constraints": {
+          "ownedAssetModes": [
+            "i2v"
+          ],
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png"
+          ],
+          "maxImageSizeMB": 50,
+          "minImageSidePx": 300
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 11.2
+        },
+        "maxDurationSec": 15
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.11199999999999999,
+        "currency": "USD",
+        "notes": "Provider-cost ceiling: $0.112/s until direct Kling account pricing is proven lower."
+      },
+      "updatedAt": "2026-09-03T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "kling",
+        "modelSlug": "fal-ai/kling-video/v3/turbo/standard/text-to-video",
+        "clientErrorPolicy": "opaque"
+      },
+      "availability": "limited",
+      "brandId": "kling",
+      "modeCaps": {
+        "t2v": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "720p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "notes": "Native audio is generated by Kling. Single prompts and multi-shot prompts are mutually exclusive."
+        },
+        "i2v": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "720p"
+          ],
+          "resolutionLocked": true,
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png"
+          ],
+          "maxUploadMB": 50,
+          "notes": "Native audio is generated by Kling. One start image is required."
+        }
+      }
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "fal-ai/kling-video/v3/turbo/standard/text-to-video",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "720p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "notes": "Native audio is generated by Kling. Single prompts and multi-shot prompts are mutually exclusive."
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "fal-ai/kling-video/v3/turbo/standard/image-to-video",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "720p"
+          ],
+          "resolutionLocked": true,
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png"
+          ],
+          "maxUploadMB": 50,
+          "notes": "Native audio is generated by Kling. One start image is required."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": true
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    }
+  },
+  {
+    "engineId": "kling-3-turbo-pro",
+    "modelSlug": "kling-3-turbo-pro",
+    "marketingName": "Kling 3.0 Turbo Pro",
+    "provider": "Kling by Kuaishou",
+    "brandId": "kling",
+    "family": "kling",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "kling-3-turbo-pro",
+        "kling-3-turbo-standard",
+        "kling-o3-pro",
+        "kling-o3-standard",
+        "kling-o3-4k",
+        "kling-3-pro",
+        "kling-3-standard",
+        "kling-3-4k",
+        "kling-2-6-pro",
+        "kling-2-5-turbo"
+      ],
+      "currentModelSlugs": [
+        "kling-3-turbo-pro",
+        "kling-3-turbo-standard",
+        "kling-o3-pro",
+        "kling-o3-standard",
+        "kling-o3-4k",
+        "kling-3-pro",
+        "kling-3-standard",
+        "kling-3-4k"
+      ]
+    },
+    "versionLabel": "3.0 Turbo Pro",
+    "availability": "limited",
+    "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [
+          "kling-3-turbo-standard",
+          "kling-3-pro",
+          "gemini-omni-flash"
+        ],
+        "publishedPairs": [
+          "kling-3-turbo-standard",
+          "kling-3-pro",
+          "gemini-omni-flash"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true,
+        "variantGroup": "kling-3-turbo",
+        "variantLabel": "Pro",
+        "launchBadge": "new"
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "registry",
+    "engine": {
+      "id": "kling-3-turbo-pro",
+      "label": "Kling 3.0 Turbo Pro",
+      "provider": "Kling by Kuaishou",
+      "version": "3.0 Turbo Pro",
+      "status": "early_access",
+      "latencyTier": "fast",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v"
+      ],
+      "maxDurationSec": 15,
+      "resolutions": [
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": true,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 50,
+        "promptMaxChars": 2500,
+        "promptMaxCharsSource": "official"
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Start image",
+            "description": "Required opening-frame image for image-to-video generation.",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          }
+        ],
+        "optional": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "description": "Single prompt. Mutually exclusive with multi-shot prompts.",
+            "modes": [
+              "t2v",
+              "i2v"
+            ]
+          },
+          {
+            "id": "multi_prompt",
+            "type": "text",
+            "label": "Multi-shot prompts",
+            "description": "One to six shot prompts. Their durations must total no more than 15 seconds and cannot be combined with a single prompt.",
+            "modes": [
+              "t2v",
+              "i2v"
+            ]
+          },
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration (seconds)",
+            "values": [
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15"
+            ],
+            "default": "5",
+            "min": 3,
+            "max": 15,
+            "modes": [
+              "t2v",
+              "i2v"
+            ]
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "16:9",
+              "9:16",
+              "1:1"
+            ],
+            "default": "16:9",
+            "modes": [
+              "t2v"
+            ]
+          }
+        ],
+        "constraints": {
+          "ownedAssetModes": [
+            "i2v"
+          ],
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png"
+          ],
+          "maxImageSizeMB": 50,
+          "minImageSidePx": 300
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 14
+        },
+        "maxDurationSec": 15
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.14,
+        "currency": "USD",
+        "notes": "Provider-cost ceiling: $0.140/s until direct Kling account pricing is proven lower."
+      },
+      "updatedAt": "2026-09-03T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "kling",
+        "modelSlug": "fal-ai/kling-video/v3/turbo/pro/text-to-video",
+        "clientErrorPolicy": "opaque"
+      },
+      "availability": "limited",
+      "brandId": "kling",
+      "modeCaps": {
+        "t2v": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "notes": "Native audio is generated by Kling. Single prompts and multi-shot prompts are mutually exclusive."
+        },
+        "i2v": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png"
+          ],
+          "maxUploadMB": 50,
+          "notes": "Native audio is generated by Kling. One start image is required."
+        }
+      }
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "fal-ai/kling-video/v3/turbo/pro/text-to-video",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "notes": "Native audio is generated by Kling. Single prompts and multi-shot prompts are mutually exclusive."
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "fal-ai/kling-video/v3/turbo/pro/image-to-video",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png"
+          ],
+          "maxUploadMB": 50,
+          "notes": "Native audio is generated by Kling. One start image is required."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": true
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    }
   },
   {
     "engineId": "happy-horse-1-1",
@@ -15830,10 +16640,12 @@
       "showInNav": true,
       "publishedModelSlugs": [
         "minimax-h3",
+        "minimax-h3-max",
         "minimax-hailuo-02-text"
       ],
       "currentModelSlugs": [
-        "minimax-h3"
+        "minimax-h3",
+        "minimax-h3-max"
       ]
     },
     "versionLabel": "H3",
@@ -16353,6 +17165,533 @@
     "bestFor": "Native-audio multimodal character video"
   },
   {
+    "engineId": "minimax-h3-max",
+    "modelSlug": "minimax-h3-max",
+    "marketingName": "MiniMax H3 Max",
+    "provider": "MiniMax",
+    "brandId": "minimax",
+    "family": "hailuo",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "minimax-h3",
+        "minimax-h3-max",
+        "minimax-hailuo-02-text"
+      ],
+      "currentModelSlugs": [
+        "minimax-h3",
+        "minimax-h3-max"
+      ]
+    },
+    "versionLabel": "H3 Max",
+    "availability": "limited",
+    "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [
+          "minimax-h3"
+        ],
+        "publishedPairs": [
+          "minimax-h3"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true,
+        "variantGroup": "hailuo",
+        "variantLabel": "H3 Max",
+        "launchBadge": "new"
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "registry",
+    "engine": {
+      "id": "minimax-h3-max",
+      "label": "MiniMax H3 Max",
+      "provider": "MiniMax",
+      "version": "H3 Max",
+      "status": "early_access",
+      "latencyTier": "fast",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v",
+        "ref2v"
+      ],
+      "maxDurationSec": 15,
+      "resolutions": [
+        "480P",
+        "768P"
+      ],
+      "aspectRatios": [
+        "21:9",
+        "16:9",
+        "4:3",
+        "1:1",
+        "3:4",
+        "9:16"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": true,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "videoMaxDurationSec": 15,
+        "audioMaxDurationSec": 15,
+        "promptMaxChars": 50000,
+        "promptMaxCharsSource": "official"
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "description": "Describe the characters, action, setting, camera, dialogue, and sound.",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "requiredInModes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ]
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Start image",
+            "description": "Required first frame for image-to-video.",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          }
+        ],
+        "optional": [
+          {
+            "id": "end_image_url",
+            "type": "image",
+            "label": "End image",
+            "description": "Optional final frame for first-to-last-frame generation.",
+            "modes": [
+              "i2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "reference_image_urls",
+            "type": "image",
+            "label": "Reference images",
+            "modes": [
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 9,
+            "source": "either"
+          },
+          {
+            "id": "reference_video_urls",
+            "type": "video",
+            "label": "Reference videos",
+            "description": "Each clip must be 2–15 seconds, with at most 15 seconds combined.",
+            "modes": [
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 3,
+            "minDurationSec": 2,
+            "maxDurationSec": 15,
+            "source": "either"
+          },
+          {
+            "id": "reference_audio_urls",
+            "type": "audio",
+            "label": "Reference audio",
+            "description": "Each clip must be 2–15 seconds, with at most 15 seconds combined. Audio requires an image or video reference.",
+            "modes": [
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 3,
+            "minDurationSec": 2,
+            "maxDurationSec": 15,
+            "source": "either"
+          },
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration (seconds)",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "values": [
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15"
+            ],
+            "default": "5",
+            "min": 5,
+            "max": 15
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "values": [
+              "480P",
+              "768P"
+            ],
+            "default": "768P"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "modes": [
+              "t2v"
+            ],
+            "values": [
+              "21:9",
+              "16:9",
+              "4:3",
+              "1:1",
+              "3:4",
+              "9:16"
+            ],
+            "default": "16:9"
+          },
+          {
+            "id": "prompt_expansion_mode",
+            "type": "enum",
+            "label": "Prompt expansion",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "values": [
+              "balanced",
+              "quality"
+            ],
+            "default": "balanced"
+          }
+        ],
+        "referenceBudget": {
+          "fieldIds": [
+            "reference_image_urls",
+            "reference_video_urls",
+            "reference_audio_urls"
+          ],
+          "modes": [
+            "ref2v"
+          ],
+          "maxTotal": 12,
+          "countUniqueUrls": true
+        },
+        "constraints": {
+          "maxCombinedVideoDurationSec": 15,
+          "maxCombinedAudioDurationSec": 15,
+          "referenceAudioRequiresVisual": true
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 8,
+          "byResolution": {
+            "480P": 5,
+            "768P": 8
+          }
+        },
+        "byMode": {
+          "ref2v": {
+            "perSecondCents": {
+              "default": 8
+            }
+          }
+        },
+        "maxDurationSec": 15
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.08,
+        "byResolution": {
+          "480P": 0.05,
+          "768P": 0.08
+        },
+        "currency": "USD",
+        "notes": "Normal output is $0.05/s at 480P or $0.08/s at 768P. Reference output is $0.08/s plus reference tokens above the included 4,096-token pool."
+      },
+      "updatedAt": "2026-09-03T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "minimax",
+        "modelSlug": "minimax/h3-max/text-to-video",
+        "clientErrorPolicy": "opaque"
+      },
+      "availability": "limited",
+      "brandId": "minimax",
+      "brandAssetPolicy": {
+        "logoAllowed": false,
+        "textOnly": true,
+        "usageNotes": "Use text-only MiniMax attribution until approved H3 Max brand assets are present."
+      },
+      "modeCaps": {
+        "t2v": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "480P",
+            "768P"
+          ],
+          "aspectRatio": [
+            "21:9",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "audioToggle": false,
+          "notes": "Text-to-video with automatic native audio and balanced prompt expansion by default."
+        },
+        "i2v": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "480P",
+            "768P"
+          ],
+          "audioToggle": false,
+          "notes": "Animate one required start image with an optional end image and automatic native audio."
+        },
+        "ref2v": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "480P",
+            "768P"
+          ],
+          "audioToggle": false,
+          "notes": "Combine image, video, and audio references within the Hailuo reference limits; audio requires a visual reference."
+        }
+      }
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "minimax/h3-max/text-to-video",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "480P",
+            "768P"
+          ],
+          "aspectRatio": [
+            "21:9",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "audioToggle": false,
+          "notes": "Text-to-video with automatic native audio and balanced prompt expansion by default."
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "minimax/h3-max/image-to-video",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "480P",
+            "768P"
+          ],
+          "audioToggle": false,
+          "notes": "Animate one required start image with an optional end image and automatic native audio."
+        }
+      },
+      {
+        "mode": "ref2v",
+        "falModelId": "minimax/h3-max/reference-to-video",
+        "ui": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "480P",
+            "768P"
+          ],
+          "audioToggle": false,
+          "notes": "Combine image, video, and audio references within the Hailuo reference limits; audio requires a visual reference."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": true
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    }
+  },
+  {
     "engineId": "minimax-hailuo-02-text",
     "modelSlug": "minimax-hailuo-02-text",
     "marketingName": "MiniMax Hailuo 02 Standard",
@@ -16364,10 +17703,12 @@
       "showInNav": true,
       "publishedModelSlugs": [
         "minimax-h3",
+        "minimax-h3-max",
         "minimax-hailuo-02-text"
       ],
       "currentModelSlugs": [
-        "minimax-h3"
+        "minimax-h3",
+        "minimax-h3-max"
       ]
     },
     "versionLabel": "Standard",
@@ -23069,1266 +24410,6 @@
       },
       "extend": {
         "value": true
-      }
-    }
-  },
-  {
-    "engineId": "kling-3-turbo-standard",
-    "modelSlug": "kling-3-turbo-standard",
-    "marketingName": "Kling 3.0 Turbo Standard",
-    "provider": "Kling by Kuaishou",
-    "brandId": "kling",
-    "family": "kling",
-    "familyExamplesPage": {
-      "stage": "indexed",
-      "showInNav": true,
-      "publishedModelSlugs": [
-        "kling-o3-pro",
-        "kling-o3-standard",
-        "kling-o3-4k",
-        "kling-3-pro",
-        "kling-3-standard",
-        "kling-3-4k",
-        "kling-2-6-pro",
-        "kling-2-5-turbo"
-      ],
-      "currentModelSlugs": [
-        "kling-o3-pro",
-        "kling-o3-standard",
-        "kling-o3-4k",
-        "kling-3-pro",
-        "kling-3-standard",
-        "kling-3-4k"
-      ]
-    },
-    "versionLabel": "3.0 Turbo Standard",
-    "availability": "limited",
-    "logoPolicy": "logoAllowed",
-    "lifecycle": "current",
-    "successorId": null,
-    "successorSlug": null,
-    "surfaces": {
-      "modelPage": {
-        "indexable": false,
-        "includeInSitemap": false
-      },
-      "examples": {
-        "includeInFamilyResolver": false,
-        "includeInFamilyCopy": false
-      },
-      "compare": {
-        "suggestOpponents": [],
-        "publishedPairs": [],
-        "includeInHub": false
-      },
-      "app": {
-        "enabled": false
-      },
-      "pricing": {
-        "includeInEstimator": false
-      }
-    },
-    "surfacesSource": "registry",
-    "engine": {
-      "id": "kling-3-turbo-standard",
-      "label": "Kling 3.0 Turbo Standard",
-      "provider": "Kling by Kuaishou",
-      "version": "3.0 Turbo Standard",
-      "status": "early_access",
-      "latencyTier": "fast",
-      "queueDepth": 0,
-      "region": "global",
-      "modes": [
-        "t2v",
-        "i2v"
-      ],
-      "maxDurationSec": 15,
-      "resolutions": [
-        "720p"
-      ],
-      "aspectRatios": [
-        "16:9",
-        "9:16",
-        "1:1"
-      ],
-      "fps": [
-        24
-      ],
-      "audio": true,
-      "upscale4k": false,
-      "extend": false,
-      "motionControls": false,
-      "keyframes": false,
-      "params": {},
-      "inputLimits": {
-        "imageMaxMB": 50,
-        "promptMaxChars": 2500,
-        "promptMaxCharsSource": "official"
-      },
-      "inputSchema": {
-        "required": [
-          {
-            "id": "image_url",
-            "type": "image",
-            "label": "Start image",
-            "description": "Required opening-frame image for image-to-video generation.",
-            "modes": [
-              "i2v"
-            ],
-            "requiredInModes": [
-              "i2v"
-            ],
-            "minCount": 1,
-            "maxCount": 1,
-            "source": "either"
-          }
-        ],
-        "optional": [
-          {
-            "id": "prompt",
-            "type": "text",
-            "label": "Prompt",
-            "description": "Single prompt. Mutually exclusive with multi-shot prompts.",
-            "modes": [
-              "t2v",
-              "i2v"
-            ]
-          },
-          {
-            "id": "multi_prompt",
-            "type": "text",
-            "label": "Multi-shot prompts",
-            "description": "One to six shot prompts. Their durations must total no more than 15 seconds and cannot be combined with a single prompt.",
-            "modes": [
-              "t2v",
-              "i2v"
-            ]
-          },
-          {
-            "id": "duration",
-            "type": "enum",
-            "label": "Duration (seconds)",
-            "values": [
-              "3",
-              "4",
-              "5",
-              "6",
-              "7",
-              "8",
-              "9",
-              "10",
-              "11",
-              "12",
-              "13",
-              "14",
-              "15"
-            ],
-            "default": "5",
-            "min": 3,
-            "max": 15,
-            "modes": [
-              "t2v",
-              "i2v"
-            ]
-          },
-          {
-            "id": "aspect_ratio",
-            "type": "enum",
-            "label": "Aspect ratio",
-            "values": [
-              "16:9",
-              "9:16",
-              "1:1"
-            ],
-            "default": "16:9",
-            "modes": [
-              "t2v"
-            ]
-          }
-        ],
-        "constraints": {
-          "ownedAssetModes": [
-            "i2v"
-          ],
-          "supportedFormats": [
-            "jpg",
-            "jpeg",
-            "png"
-          ],
-          "maxImageSizeMB": 50,
-          "minImageSidePx": 300
-        }
-      },
-      "pricingDetails": {
-        "currency": "USD",
-        "perSecondCents": {
-          "default": 11.2
-        },
-        "maxDurationSec": 15
-      },
-      "pricing": {
-        "unit": "USD/s",
-        "base": 0.11199999999999999,
-        "currency": "USD",
-        "notes": "Provider-cost ceiling: $0.112/s until direct Kling account pricing is proven lower."
-      },
-      "updatedAt": "2026-09-03T00:00:00Z",
-      "ttlSec": 600,
-      "providerMeta": {
-        "provider": "kling",
-        "modelSlug": "fal-ai/kling-video/v3/turbo/standard/text-to-video",
-        "clientErrorPolicy": "opaque"
-      },
-      "availability": "limited",
-      "brandId": "kling",
-      "modeCaps": {
-        "t2v": {
-          "modes": [
-            "t2v"
-          ],
-          "duration": {
-            "options": [
-              3,
-              4,
-              5,
-              6,
-              7,
-              8,
-              9,
-              10,
-              11,
-              12,
-              13,
-              14,
-              15
-            ],
-            "default": 5
-          },
-          "resolution": [
-            "720p"
-          ],
-          "resolutionLocked": true,
-          "aspectRatio": [
-            "16:9",
-            "9:16",
-            "1:1"
-          ],
-          "notes": "Native audio is generated by Kling. Single prompts and multi-shot prompts are mutually exclusive."
-        },
-        "i2v": {
-          "modes": [
-            "i2v"
-          ],
-          "duration": {
-            "options": [
-              3,
-              4,
-              5,
-              6,
-              7,
-              8,
-              9,
-              10,
-              11,
-              12,
-              13,
-              14,
-              15
-            ],
-            "default": 5
-          },
-          "resolution": [
-            "720p"
-          ],
-          "resolutionLocked": true,
-          "acceptsImageFormats": [
-            "jpg",
-            "jpeg",
-            "png"
-          ],
-          "maxUploadMB": 50,
-          "notes": "Native audio is generated by Kling. One start image is required."
-        }
-      }
-    },
-    "modes": [
-      {
-        "mode": "t2v",
-        "falModelId": "fal-ai/kling-video/v3/turbo/standard/text-to-video",
-        "ui": {
-          "modes": [
-            "t2v"
-          ],
-          "duration": {
-            "options": [
-              3,
-              4,
-              5,
-              6,
-              7,
-              8,
-              9,
-              10,
-              11,
-              12,
-              13,
-              14,
-              15
-            ],
-            "default": 5
-          },
-          "resolution": [
-            "720p"
-          ],
-          "resolutionLocked": true,
-          "aspectRatio": [
-            "16:9",
-            "9:16",
-            "1:1"
-          ],
-          "notes": "Native audio is generated by Kling. Single prompts and multi-shot prompts are mutually exclusive."
-        }
-      },
-      {
-        "mode": "i2v",
-        "falModelId": "fal-ai/kling-video/v3/turbo/standard/image-to-video",
-        "ui": {
-          "modes": [
-            "i2v"
-          ],
-          "duration": {
-            "options": [
-              3,
-              4,
-              5,
-              6,
-              7,
-              8,
-              9,
-              10,
-              11,
-              12,
-              13,
-              14,
-              15
-            ],
-            "default": 5
-          },
-          "resolution": [
-            "720p"
-          ],
-          "resolutionLocked": true,
-          "acceptsImageFormats": [
-            "jpg",
-            "jpeg",
-            "png"
-          ],
-          "maxUploadMB": 50,
-          "notes": "Native audio is generated by Kling. One start image is required."
-        }
-      }
-    ],
-    "features": {
-      "audio": {
-        "value": true
-      },
-      "motionControls": {
-        "value": false
-      },
-      "keyframes": {
-        "value": false
-      },
-      "extend": {
-        "value": false
-      }
-    }
-  },
-  {
-    "engineId": "kling-3-turbo-pro",
-    "modelSlug": "kling-3-turbo-pro",
-    "marketingName": "Kling 3.0 Turbo Pro",
-    "provider": "Kling by Kuaishou",
-    "brandId": "kling",
-    "family": "kling",
-    "familyExamplesPage": {
-      "stage": "indexed",
-      "showInNav": true,
-      "publishedModelSlugs": [
-        "kling-o3-pro",
-        "kling-o3-standard",
-        "kling-o3-4k",
-        "kling-3-pro",
-        "kling-3-standard",
-        "kling-3-4k",
-        "kling-2-6-pro",
-        "kling-2-5-turbo"
-      ],
-      "currentModelSlugs": [
-        "kling-o3-pro",
-        "kling-o3-standard",
-        "kling-o3-4k",
-        "kling-3-pro",
-        "kling-3-standard",
-        "kling-3-4k"
-      ]
-    },
-    "versionLabel": "3.0 Turbo Pro",
-    "availability": "limited",
-    "logoPolicy": "logoAllowed",
-    "lifecycle": "current",
-    "successorId": null,
-    "successorSlug": null,
-    "surfaces": {
-      "modelPage": {
-        "indexable": false,
-        "includeInSitemap": false
-      },
-      "examples": {
-        "includeInFamilyResolver": false,
-        "includeInFamilyCopy": false
-      },
-      "compare": {
-        "suggestOpponents": [],
-        "publishedPairs": [],
-        "includeInHub": false
-      },
-      "app": {
-        "enabled": false
-      },
-      "pricing": {
-        "includeInEstimator": false
-      }
-    },
-    "surfacesSource": "registry",
-    "engine": {
-      "id": "kling-3-turbo-pro",
-      "label": "Kling 3.0 Turbo Pro",
-      "provider": "Kling by Kuaishou",
-      "version": "3.0 Turbo Pro",
-      "status": "early_access",
-      "latencyTier": "fast",
-      "queueDepth": 0,
-      "region": "global",
-      "modes": [
-        "t2v",
-        "i2v"
-      ],
-      "maxDurationSec": 15,
-      "resolutions": [
-        "1080p"
-      ],
-      "aspectRatios": [
-        "16:9",
-        "9:16",
-        "1:1"
-      ],
-      "fps": [
-        24
-      ],
-      "audio": true,
-      "upscale4k": false,
-      "extend": false,
-      "motionControls": false,
-      "keyframes": false,
-      "params": {},
-      "inputLimits": {
-        "imageMaxMB": 50,
-        "promptMaxChars": 2500,
-        "promptMaxCharsSource": "official"
-      },
-      "inputSchema": {
-        "required": [
-          {
-            "id": "image_url",
-            "type": "image",
-            "label": "Start image",
-            "description": "Required opening-frame image for image-to-video generation.",
-            "modes": [
-              "i2v"
-            ],
-            "requiredInModes": [
-              "i2v"
-            ],
-            "minCount": 1,
-            "maxCount": 1,
-            "source": "either"
-          }
-        ],
-        "optional": [
-          {
-            "id": "prompt",
-            "type": "text",
-            "label": "Prompt",
-            "description": "Single prompt. Mutually exclusive with multi-shot prompts.",
-            "modes": [
-              "t2v",
-              "i2v"
-            ]
-          },
-          {
-            "id": "multi_prompt",
-            "type": "text",
-            "label": "Multi-shot prompts",
-            "description": "One to six shot prompts. Their durations must total no more than 15 seconds and cannot be combined with a single prompt.",
-            "modes": [
-              "t2v",
-              "i2v"
-            ]
-          },
-          {
-            "id": "duration",
-            "type": "enum",
-            "label": "Duration (seconds)",
-            "values": [
-              "3",
-              "4",
-              "5",
-              "6",
-              "7",
-              "8",
-              "9",
-              "10",
-              "11",
-              "12",
-              "13",
-              "14",
-              "15"
-            ],
-            "default": "5",
-            "min": 3,
-            "max": 15,
-            "modes": [
-              "t2v",
-              "i2v"
-            ]
-          },
-          {
-            "id": "aspect_ratio",
-            "type": "enum",
-            "label": "Aspect ratio",
-            "values": [
-              "16:9",
-              "9:16",
-              "1:1"
-            ],
-            "default": "16:9",
-            "modes": [
-              "t2v"
-            ]
-          }
-        ],
-        "constraints": {
-          "ownedAssetModes": [
-            "i2v"
-          ],
-          "supportedFormats": [
-            "jpg",
-            "jpeg",
-            "png"
-          ],
-          "maxImageSizeMB": 50,
-          "minImageSidePx": 300
-        }
-      },
-      "pricingDetails": {
-        "currency": "USD",
-        "perSecondCents": {
-          "default": 14
-        },
-        "maxDurationSec": 15
-      },
-      "pricing": {
-        "unit": "USD/s",
-        "base": 0.14,
-        "currency": "USD",
-        "notes": "Provider-cost ceiling: $0.140/s until direct Kling account pricing is proven lower."
-      },
-      "updatedAt": "2026-09-03T00:00:00Z",
-      "ttlSec": 600,
-      "providerMeta": {
-        "provider": "kling",
-        "modelSlug": "fal-ai/kling-video/v3/turbo/pro/text-to-video",
-        "clientErrorPolicy": "opaque"
-      },
-      "availability": "limited",
-      "brandId": "kling",
-      "modeCaps": {
-        "t2v": {
-          "modes": [
-            "t2v"
-          ],
-          "duration": {
-            "options": [
-              3,
-              4,
-              5,
-              6,
-              7,
-              8,
-              9,
-              10,
-              11,
-              12,
-              13,
-              14,
-              15
-            ],
-            "default": 5
-          },
-          "resolution": [
-            "1080p"
-          ],
-          "resolutionLocked": true,
-          "aspectRatio": [
-            "16:9",
-            "9:16",
-            "1:1"
-          ],
-          "notes": "Native audio is generated by Kling. Single prompts and multi-shot prompts are mutually exclusive."
-        },
-        "i2v": {
-          "modes": [
-            "i2v"
-          ],
-          "duration": {
-            "options": [
-              3,
-              4,
-              5,
-              6,
-              7,
-              8,
-              9,
-              10,
-              11,
-              12,
-              13,
-              14,
-              15
-            ],
-            "default": 5
-          },
-          "resolution": [
-            "1080p"
-          ],
-          "resolutionLocked": true,
-          "acceptsImageFormats": [
-            "jpg",
-            "jpeg",
-            "png"
-          ],
-          "maxUploadMB": 50,
-          "notes": "Native audio is generated by Kling. One start image is required."
-        }
-      }
-    },
-    "modes": [
-      {
-        "mode": "t2v",
-        "falModelId": "fal-ai/kling-video/v3/turbo/pro/text-to-video",
-        "ui": {
-          "modes": [
-            "t2v"
-          ],
-          "duration": {
-            "options": [
-              3,
-              4,
-              5,
-              6,
-              7,
-              8,
-              9,
-              10,
-              11,
-              12,
-              13,
-              14,
-              15
-            ],
-            "default": 5
-          },
-          "resolution": [
-            "1080p"
-          ],
-          "resolutionLocked": true,
-          "aspectRatio": [
-            "16:9",
-            "9:16",
-            "1:1"
-          ],
-          "notes": "Native audio is generated by Kling. Single prompts and multi-shot prompts are mutually exclusive."
-        }
-      },
-      {
-        "mode": "i2v",
-        "falModelId": "fal-ai/kling-video/v3/turbo/pro/image-to-video",
-        "ui": {
-          "modes": [
-            "i2v"
-          ],
-          "duration": {
-            "options": [
-              3,
-              4,
-              5,
-              6,
-              7,
-              8,
-              9,
-              10,
-              11,
-              12,
-              13,
-              14,
-              15
-            ],
-            "default": 5
-          },
-          "resolution": [
-            "1080p"
-          ],
-          "resolutionLocked": true,
-          "acceptsImageFormats": [
-            "jpg",
-            "jpeg",
-            "png"
-          ],
-          "maxUploadMB": 50,
-          "notes": "Native audio is generated by Kling. One start image is required."
-        }
-      }
-    ],
-    "features": {
-      "audio": {
-        "value": true
-      },
-      "motionControls": {
-        "value": false
-      },
-      "keyframes": {
-        "value": false
-      },
-      "extend": {
-        "value": false
-      }
-    }
-  },
-  {
-    "engineId": "minimax-h3-max",
-    "modelSlug": "minimax-h3-max",
-    "marketingName": "MiniMax H3 Max",
-    "provider": "MiniMax",
-    "brandId": "minimax",
-    "family": "hailuo",
-    "familyExamplesPage": {
-      "stage": "indexed",
-      "showInNav": true,
-      "publishedModelSlugs": [
-        "minimax-h3",
-        "minimax-hailuo-02-text"
-      ],
-      "currentModelSlugs": [
-        "minimax-h3"
-      ]
-    },
-    "versionLabel": "H3 Max",
-    "availability": "limited",
-    "logoPolicy": "logoAllowed",
-    "lifecycle": "current",
-    "successorId": null,
-    "successorSlug": null,
-    "surfaces": {
-      "modelPage": {
-        "indexable": false,
-        "includeInSitemap": false
-      },
-      "examples": {
-        "includeInFamilyResolver": false,
-        "includeInFamilyCopy": false
-      },
-      "compare": {
-        "suggestOpponents": [],
-        "publishedPairs": [],
-        "includeInHub": false
-      },
-      "app": {
-        "enabled": false
-      },
-      "pricing": {
-        "includeInEstimator": false
-      }
-    },
-    "surfacesSource": "registry",
-    "engine": {
-      "id": "minimax-h3-max",
-      "label": "MiniMax H3 Max",
-      "provider": "MiniMax",
-      "version": "H3 Max",
-      "status": "early_access",
-      "latencyTier": "fast",
-      "queueDepth": 0,
-      "region": "global",
-      "modes": [
-        "t2v",
-        "i2v",
-        "ref2v"
-      ],
-      "maxDurationSec": 15,
-      "resolutions": [
-        "480P",
-        "768P"
-      ],
-      "aspectRatios": [
-        "21:9",
-        "16:9",
-        "4:3",
-        "1:1",
-        "3:4",
-        "9:16"
-      ],
-      "fps": [
-        24
-      ],
-      "audio": true,
-      "upscale4k": false,
-      "extend": false,
-      "motionControls": false,
-      "keyframes": false,
-      "params": {},
-      "inputLimits": {
-        "videoMaxDurationSec": 15,
-        "audioMaxDurationSec": 15,
-        "promptMaxChars": 50000,
-        "promptMaxCharsSource": "official"
-      },
-      "inputSchema": {
-        "required": [
-          {
-            "id": "prompt",
-            "type": "text",
-            "label": "Prompt",
-            "description": "Describe the characters, action, setting, camera, dialogue, and sound.",
-            "modes": [
-              "t2v",
-              "i2v",
-              "ref2v"
-            ],
-            "requiredInModes": [
-              "t2v",
-              "i2v",
-              "ref2v"
-            ]
-          },
-          {
-            "id": "image_url",
-            "type": "image",
-            "label": "Start image",
-            "description": "Required first frame for image-to-video.",
-            "modes": [
-              "i2v"
-            ],
-            "requiredInModes": [
-              "i2v"
-            ],
-            "minCount": 1,
-            "maxCount": 1,
-            "source": "either"
-          }
-        ],
-        "optional": [
-          {
-            "id": "end_image_url",
-            "type": "image",
-            "label": "End image",
-            "description": "Optional final frame for first-to-last-frame generation.",
-            "modes": [
-              "i2v"
-            ],
-            "minCount": 0,
-            "maxCount": 1,
-            "source": "either"
-          },
-          {
-            "id": "reference_image_urls",
-            "type": "image",
-            "label": "Reference images",
-            "modes": [
-              "ref2v"
-            ],
-            "minCount": 0,
-            "maxCount": 9,
-            "source": "either"
-          },
-          {
-            "id": "reference_video_urls",
-            "type": "video",
-            "label": "Reference videos",
-            "description": "Each clip must be 2–15 seconds, with at most 15 seconds combined.",
-            "modes": [
-              "ref2v"
-            ],
-            "minCount": 0,
-            "maxCount": 3,
-            "minDurationSec": 2,
-            "maxDurationSec": 15,
-            "source": "either"
-          },
-          {
-            "id": "reference_audio_urls",
-            "type": "audio",
-            "label": "Reference audio",
-            "description": "Each clip must be 2–15 seconds, with at most 15 seconds combined. Audio requires an image or video reference.",
-            "modes": [
-              "ref2v"
-            ],
-            "minCount": 0,
-            "maxCount": 3,
-            "minDurationSec": 2,
-            "maxDurationSec": 15,
-            "source": "either"
-          },
-          {
-            "id": "duration",
-            "type": "enum",
-            "label": "Duration (seconds)",
-            "modes": [
-              "t2v",
-              "i2v",
-              "ref2v"
-            ],
-            "values": [
-              "5",
-              "6",
-              "7",
-              "8",
-              "9",
-              "10",
-              "11",
-              "12",
-              "13",
-              "14",
-              "15"
-            ],
-            "default": "5",
-            "min": 5,
-            "max": 15
-          },
-          {
-            "id": "resolution",
-            "type": "enum",
-            "label": "Resolution",
-            "modes": [
-              "t2v",
-              "i2v",
-              "ref2v"
-            ],
-            "values": [
-              "480P",
-              "768P"
-            ],
-            "default": "768P"
-          },
-          {
-            "id": "aspect_ratio",
-            "type": "enum",
-            "label": "Aspect ratio",
-            "modes": [
-              "t2v"
-            ],
-            "values": [
-              "21:9",
-              "16:9",
-              "4:3",
-              "1:1",
-              "3:4",
-              "9:16"
-            ],
-            "default": "16:9"
-          },
-          {
-            "id": "prompt_expansion_mode",
-            "type": "enum",
-            "label": "Prompt expansion",
-            "modes": [
-              "t2v",
-              "i2v",
-              "ref2v"
-            ],
-            "values": [
-              "balanced",
-              "quality"
-            ],
-            "default": "balanced"
-          }
-        ],
-        "referenceBudget": {
-          "fieldIds": [
-            "reference_image_urls",
-            "reference_video_urls",
-            "reference_audio_urls"
-          ],
-          "modes": [
-            "ref2v"
-          ],
-          "maxTotal": 12,
-          "countUniqueUrls": true
-        },
-        "constraints": {
-          "maxCombinedVideoDurationSec": 15,
-          "maxCombinedAudioDurationSec": 15,
-          "referenceAudioRequiresVisual": true
-        }
-      },
-      "pricingDetails": {
-        "currency": "USD",
-        "perSecondCents": {
-          "default": 8,
-          "byResolution": {
-            "480P": 5,
-            "768P": 8
-          }
-        },
-        "byMode": {
-          "ref2v": {
-            "perSecondCents": {
-              "default": 8
-            }
-          }
-        },
-        "maxDurationSec": 15
-      },
-      "pricing": {
-        "unit": "USD/s",
-        "base": 0.08,
-        "byResolution": {
-          "480P": 0.05,
-          "768P": 0.08
-        },
-        "currency": "USD",
-        "notes": "Normal output is $0.05/s at 480P or $0.08/s at 768P. Reference output is $0.08/s plus reference tokens above the included 4,096-token pool."
-      },
-      "updatedAt": "2026-09-03T00:00:00Z",
-      "ttlSec": 600,
-      "providerMeta": {
-        "provider": "minimax",
-        "modelSlug": "minimax/h3-max/text-to-video",
-        "clientErrorPolicy": "opaque"
-      },
-      "availability": "limited",
-      "brandId": "minimax",
-      "brandAssetPolicy": {
-        "logoAllowed": false,
-        "textOnly": true,
-        "usageNotes": "Use text-only MiniMax attribution until approved H3 Max brand assets are present."
-      },
-      "modeCaps": {
-        "t2v": {
-          "modes": [
-            "t2v"
-          ],
-          "duration": {
-            "options": [
-              5,
-              6,
-              7,
-              8,
-              9,
-              10,
-              11,
-              12,
-              13,
-              14,
-              15
-            ],
-            "default": 5
-          },
-          "resolution": [
-            "480P",
-            "768P"
-          ],
-          "aspectRatio": [
-            "21:9",
-            "16:9",
-            "4:3",
-            "1:1",
-            "3:4",
-            "9:16"
-          ],
-          "audioToggle": false,
-          "notes": "Text-to-video with automatic native audio and balanced prompt expansion by default."
-        },
-        "i2v": {
-          "modes": [
-            "i2v"
-          ],
-          "duration": {
-            "options": [
-              5,
-              6,
-              7,
-              8,
-              9,
-              10,
-              11,
-              12,
-              13,
-              14,
-              15
-            ],
-            "default": 5
-          },
-          "resolution": [
-            "480P",
-            "768P"
-          ],
-          "audioToggle": false,
-          "notes": "Animate one required start image with an optional end image and automatic native audio."
-        },
-        "ref2v": {
-          "modes": [
-            "ref2v"
-          ],
-          "duration": {
-            "options": [
-              5,
-              6,
-              7,
-              8,
-              9,
-              10,
-              11,
-              12,
-              13,
-              14,
-              15
-            ],
-            "default": 5
-          },
-          "resolution": [
-            "480P",
-            "768P"
-          ],
-          "audioToggle": false,
-          "notes": "Combine image, video, and audio references within the Hailuo reference limits; audio requires a visual reference."
-        }
-      }
-    },
-    "modes": [
-      {
-        "mode": "t2v",
-        "falModelId": "minimax/h3-max/text-to-video",
-        "ui": {
-          "modes": [
-            "t2v"
-          ],
-          "duration": {
-            "options": [
-              5,
-              6,
-              7,
-              8,
-              9,
-              10,
-              11,
-              12,
-              13,
-              14,
-              15
-            ],
-            "default": 5
-          },
-          "resolution": [
-            "480P",
-            "768P"
-          ],
-          "aspectRatio": [
-            "21:9",
-            "16:9",
-            "4:3",
-            "1:1",
-            "3:4",
-            "9:16"
-          ],
-          "audioToggle": false,
-          "notes": "Text-to-video with automatic native audio and balanced prompt expansion by default."
-        }
-      },
-      {
-        "mode": "i2v",
-        "falModelId": "minimax/h3-max/image-to-video",
-        "ui": {
-          "modes": [
-            "i2v"
-          ],
-          "duration": {
-            "options": [
-              5,
-              6,
-              7,
-              8,
-              9,
-              10,
-              11,
-              12,
-              13,
-              14,
-              15
-            ],
-            "default": 5
-          },
-          "resolution": [
-            "480P",
-            "768P"
-          ],
-          "audioToggle": false,
-          "notes": "Animate one required start image with an optional end image and automatic native audio."
-        }
-      },
-      {
-        "mode": "ref2v",
-        "falModelId": "minimax/h3-max/reference-to-video",
-        "ui": {
-          "modes": [
-            "ref2v"
-          ],
-          "duration": {
-            "options": [
-              5,
-              6,
-              7,
-              8,
-              9,
-              10,
-              11,
-              12,
-              13,
-              14,
-              15
-            ],
-            "default": 5
-          },
-          "resolution": [
-            "480P",
-            "768P"
-          ],
-          "audioToggle": false,
-          "notes": "Combine image, video, and audio references within the Hailuo reference limits; audio requires a visual reference."
-        }
-      }
-    ],
-    "features": {
-      "audio": {
-        "value": true
-      },
-      "motionControls": {
-        "value": false
-      },
-      "keyframes": {
-        "value": false
-      },
-      "extend": {
-        "value": false
       }
     }
   }

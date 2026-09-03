@@ -23,9 +23,10 @@
           "indexable": true
         },
         "examples": {
-          "published": false,
-          "includeInFamilyCopy": false,
-          "current": false
+          "published": true,
+          "includeInFamilyCopy": true,
+          "current": true,
+          "familyRank": 3
         },
         "compare": {
           "published": true,
@@ -34,13 +35,15 @@
             "veo-3-1",
             "veo-3-1-fast",
             "sora-2",
-            "seedance-2-0"
+            "seedance-2-0",
+            "kling-3-turbo-pro"
           ],
           "publishedPairIds": [
             "veo-3-1",
             "veo-3-1-fast",
             "sora-2",
-            "seedance-2-0"
+            "seedance-2-0",
+            "kling-3-turbo-pro"
           ]
         },
         "app": {
@@ -581,28 +584,39 @@
       },
       "publication": {
         "model": {
-          "published": false,
-          "indexable": false
+          "published": true,
+          "indexable": true
         },
         "examples": {
-          "published": false,
-          "includeInFamilyCopy": false,
-          "current": false
+          "published": true,
+          "includeInFamilyCopy": true,
+          "current": true
         },
         "compare": {
-          "published": false,
-          "indexed": false,
-          "suggestedOpponentIds": [],
-          "publishedPairIds": []
+          "published": true,
+          "indexed": true,
+          "suggestedOpponentIds": [
+            "kling-3-turbo-standard",
+            "kling-3-pro",
+            "gemini-omni-flash"
+          ],
+          "publishedPairIds": [
+            "kling-3-turbo-standard",
+            "kling-3-pro",
+            "gemini-omni-flash"
+          ]
         },
         "app": {
-          "published": false
+          "published": true,
+          "variantGroup": "kling-3-turbo",
+          "variantLabel": "Pro",
+          "launchBadge": "new"
         },
         "pricing": {
-          "published": false
+          "published": true
         },
         "sitemap": {
-          "published": false
+          "published": true
         }
       },
       "replacement": null,
@@ -621,28 +635,35 @@
       },
       "publication": {
         "model": {
-          "published": false,
-          "indexable": false
+          "published": true,
+          "indexable": true
         },
         "examples": {
-          "published": false,
-          "includeInFamilyCopy": false,
-          "current": false
+          "published": true,
+          "includeInFamilyCopy": true,
+          "current": true
         },
         "compare": {
-          "published": false,
-          "indexed": false,
-          "suggestedOpponentIds": [],
-          "publishedPairIds": []
+          "published": true,
+          "indexed": true,
+          "suggestedOpponentIds": [
+            "kling-3-turbo-pro"
+          ],
+          "publishedPairIds": [
+            "kling-3-turbo-pro"
+          ]
         },
         "app": {
-          "published": false
+          "published": true,
+          "variantGroup": "kling-3-turbo",
+          "variantLabel": "Standard",
+          "launchBadge": "new"
         },
         "pricing": {
-          "published": false
+          "published": true
         },
         "sitemap": {
-          "published": false
+          "published": true
         }
       },
       "replacement": null,
@@ -1456,28 +1477,35 @@
       },
       "publication": {
         "model": {
-          "published": false,
-          "indexable": false
+          "published": true,
+          "indexable": true
         },
         "examples": {
-          "published": false,
-          "includeInFamilyCopy": false,
-          "current": false
+          "published": true,
+          "includeInFamilyCopy": true,
+          "current": true
         },
         "compare": {
-          "published": false,
-          "indexed": false,
-          "suggestedOpponentIds": [],
-          "publishedPairIds": []
+          "published": true,
+          "indexed": true,
+          "suggestedOpponentIds": [
+            "minimax-h3"
+          ],
+          "publishedPairIds": [
+            "minimax-h3"
+          ]
         },
         "app": {
-          "published": false
+          "published": true,
+          "variantGroup": "hailuo",
+          "variantLabel": "H3 Max",
+          "launchBadge": "new"
         },
         "pricing": {
-          "published": false
+          "published": true
         },
         "sitemap": {
-          "published": false
+          "published": true
         }
       },
       "replacement": null,

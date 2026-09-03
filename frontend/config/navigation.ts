@@ -179,6 +179,10 @@ const P1_COMPARE_MENU: LabeledSlug[] = [
     label: 'Gemini Omni Flash 1.1 vs Kling 3 Turbo Pro',
     badge: 'new',
   },
+  {
+    slug: 'gemini-omni-flash-vs-veo-3-1',
+    label: 'Gemini Omni Flash 1.1 vs Veo 3.1',
+  },
 ];
 
 const COMPARE_MENU: LabeledSlug[] = [

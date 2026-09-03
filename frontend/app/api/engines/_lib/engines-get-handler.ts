@@ -8,6 +8,8 @@ import { loadAppEngineScoreMap } from '@/server/engine-scores';
 import { getBaseEnginesByCategory } from '@/lib/engines';
 import { resolveLaunchCanaryRequestContext } from '@/server/model-launch-canary-request';
 import { resolveAgentGenerationModeExecutability } from '@/server/agent-runtime/model-executability';
+import { isMinimaxH3MaxEngineId, isMinimaxH3MaxRuntimeModeAvailable } from '@/lib/minimax-h3-max';
+import { isKling3TurboEngineId } from '@/lib/kling-3-turbo';
 import type { EngineCaps, Mode } from '@/types/engines';
 
 type EnginesRouteDependencies = Readonly<{
@@ -26,7 +28,7 @@ const defaultDependencies: EnginesRouteDependencies = {
   loadAppEngineScoreMap,
 };
 
-function privateWorkspaceProjection(engine: EngineCaps, modes: readonly Mode[]): EngineCaps {
+function workspaceModeProjection(engine: EngineCaps, modes: readonly Mode[]): EngineCaps {
   const safeEngine = { ...engine };
   delete safeEngine.providerMeta;
   return {
@@ -74,12 +76,19 @@ export function createEnginesGetHandler(
             ).executable,
           );
           if (executableModes.length) {
-            privateEngines.push(privateWorkspaceProjection(engine, executableModes));
+            privateEngines.push(workspaceModeProjection(engine, executableModes));
           }
         }
       }
       const averageMap = new Map(averages.map((entry) => [entry.engineId, entry.averageDurationMs]));
-      const payload = [...publicEngines, ...privateEngines].map((engine) => ({
+      const publicWorkspaceEngines = publicEngines.map((engine) => (
+        isMinimaxH3MaxEngineId(engine.id)
+          ? workspaceModeProjection(engine, engine.modes.filter(isMinimaxH3MaxRuntimeModeAvailable) as Mode[])
+          : isKling3TurboEngineId(engine.id)
+            ? workspaceModeProjection(engine, engine.modes)
+          : engine
+      ));
+      const payload = [...publicWorkspaceEngines, ...privateEngines].map((engine) => ({
         ...engine,
         avgDurationMs: averageMap.get(engine.id) ?? null,
       }));
@@ -95,7 +104,11 @@ export function createEnginesGetHandler(
     } catch (error) {
       console.error('[api/engines] failed to load configured engines, falling back to base registry', error);
       const payload = getBaseEnginesByCategory(category).map((engine) => ({
-        ...engine,
+        ...(isMinimaxH3MaxEngineId(engine.id)
+          ? workspaceModeProjection(engine, engine.modes.filter(isMinimaxH3MaxRuntimeModeAvailable) as Mode[])
+          : isKling3TurboEngineId(engine.id)
+            ? workspaceModeProjection(engine, engine.modes)
+          : engine),
         avgDurationMs: null,
       }));
       return NextResponse.json(

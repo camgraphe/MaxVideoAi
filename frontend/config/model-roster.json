@@ -513,6 +513,44 @@
     }
   },
   {
+    "engineId": "kling-3-turbo-pro",
+    "marketingName": "Kling 3.0 Turbo Pro",
+    "brandId": "kling",
+    "modelSlug": "kling-3-turbo-pro",
+    "family": "kling",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "versionLabel": "3.0 Turbo Pro",
+    "availability": "limited",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
+    "engineId": "kling-3-turbo-standard",
+    "marketingName": "Kling 3.0 Turbo Standard",
+    "brandId": "kling",
+    "modelSlug": "kling-3-turbo-standard",
+    "family": "kling",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "versionLabel": "3.0 Turbo Standard",
+    "availability": "limited",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
     "engineId": "ltx-2-3-fast",
     "marketingName": "LTX 2.3 Fast",
     "brandId": "lightricks",
@@ -732,6 +770,25 @@
     "successorSlug": null,
     "versionLabel": "H3",
     "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
+    "engineId": "minimax-h3-max",
+    "marketingName": "MiniMax H3 Max",
+    "brandId": "minimax",
+    "modelSlug": "minimax-h3-max",
+    "family": "hailuo",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "versionLabel": "H3 Max",
+    "availability": "limited",
     "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {

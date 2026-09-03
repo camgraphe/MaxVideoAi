@@ -3,18 +3,17 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import { listFalEngines } from '../frontend/src/config/falEngines';
-import { UNPUBLISHED_FAL_ENGINE_REGISTRY } from '../frontend/src/config/fal-engines/registry';
 import { supportsWorkspaceMultiPrompt } from '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceEngineModeState';
 
-function privateEngine(id: string) {
-  const engine = UNPUBLISHED_FAL_ENGINE_REGISTRY.find((entry) => entry.id === id)?.engine;
+function publicEngine(id: string) {
+  const engine = listFalEngines().find((entry) => entry.id === id)?.engine;
   assert.ok(engine);
   return engine;
 }
 
 test('workspace derives Kling Turbo multi-shot UI from the engine schema', () => {
   for (const id of ['kling-3-turbo-standard', 'kling-3-turbo-pro']) {
-    const engine = privateEngine(id);
+    const engine = publicEngine(id);
     assert.equal(supportsWorkspaceMultiPrompt(engine, 't2v'), true);
     assert.equal(supportsWorkspaceMultiPrompt(engine, 'i2v'), true);
     assert.deepEqual(engine.modes, ['t2v', 'i2v']);

@@ -45,6 +45,7 @@ import {
 } from '@/server/model-launch-canary-request';
 import { resolveAgentGenerationModeExecutability } from '@/server/agent-runtime/model-executability';
 import { validateRuntimeRequestSettings } from './runtime-schema-options';
+import { resolveRuntimeResolutionPolicy } from '@/server/video-generation/runtime-resolution';
 
 export type GenerateRouteContext = {
   engine: EngineCaps;
@@ -274,6 +275,10 @@ export async function resolveGenerateRouteContext(params: {
       ? 't2v'
       : engine.modes[0] ?? 't2v';
 
+  if (isMinimaxH3MaxEngineId(engine.id) && !isMinimaxH3MaxRuntimeModeAvailable(mode)) {
+    return { ok: false, status: 503, body: { ok: false, error: 'Engine unavailable' } };
+  }
+
   if (
     launchCanaryContext
     && !resolveAgentGenerationModeExecutability(
@@ -284,7 +289,7 @@ export async function resolveGenerateRouteContext(params: {
   ) {
     return { ok: false, status: 503, body: { ok: false, error: 'Engine unavailable' } };
   }
-  if (launchCanaryContext) {
+  if (launchCanaryContext || resolveRuntimeResolutionPolicy(engine, mode).usesSchemaDefaults) {
     const settingsValidation = validateRuntimeRequestSettings({
       engine,
       mode,

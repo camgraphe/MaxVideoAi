@@ -24,16 +24,12 @@ import {
 } from './request-option-normalizers';
 import { buildSoraRequestOptions } from './request-options-sora';
 import { deriveRuntimeSchemaCaps, getRuntimeDurationDefault, getRuntimeSchemaEnumDefault } from './runtime-schema-options';
-import { isPrivateRuntimeEngineId } from '@/server/video-generation/private-engine-registry';
 import { resolveRuntimeResolutionPolicy } from '@/server/video-generation/runtime-resolution';
-
 export type { GenerationElement, MultiPromptEntry } from './request-option-normalizers';
-
 export type VideoMode = Extract<
   Mode,
   't2v' | 'i2v' | 'ref2v' | 'fl2v' | 'i2i' | 'v2v' | 'r2v' | 'a2v' | 'extend' | 'retake' | 'reframe'
 >;
-
 export type GenerateRequestOptionsMetric = {
   errorCode: string;
   meta?: Record<string, unknown>;
@@ -128,12 +124,13 @@ export function buildGenerateRequestOptions(params: {
         ? body.generate_audio
         : undefined;
   const isLumaRay2 = isLumaRay2EngineId(engine.id);
-  const usesPrivateRuntimeSchema = isPrivateRuntimeEngineId(engine.id);
-  const capability = getEngineCaps(engine.id, mode)
-    ?? (usesPrivateRuntimeSchema ? deriveRuntimeSchemaCaps(engine.inputSchema, mode) : undefined);
+  const fixtureCapability = getEngineCaps(engine.id, mode);
   const resolutionPolicy = resolveRuntimeResolutionPolicy(engine, mode);
+  const usesRuntimeSchema = resolutionPolicy.usesSchemaDefaults;
+  const capability = fixtureCapability
+    ?? (usesRuntimeSchema ? deriveRuntimeSchemaCaps(engine.inputSchema, mode) : undefined);
   const activeEnumDefault = (fieldId: string) => (
-    usesPrivateRuntimeSchema ? getRuntimeSchemaEnumDefault(engine.inputSchema, mode, fieldId) : undefined
+    usesRuntimeSchema ? getRuntimeSchemaEnumDefault(engine.inputSchema, mode, fieldId) : undefined
   );
   const supportsDuration = capability ? Boolean(capability.duration || capability.frames) : true;
   const supportsResolution = resolutionPolicy.supportsResolution;
@@ -145,7 +142,7 @@ export function buildGenerateRequestOptions(params: {
   const supportsAspectRatio = capability ? Boolean(capability.aspectRatio && capability.aspectRatio.length) : true;
   const rawDurationOption =
     typeof body.durationOption === 'number' || typeof body.durationOption === 'string' ? body.durationOption : null;
-  const defaultDurationSec = usesPrivateRuntimeSchema ? getRuntimeDurationDefault(capability, 4) : 4;
+  const defaultDurationSec = usesRuntimeSchema ? getRuntimeDurationDefault(capability, 4) : 4;
   let durationSec = Number(body.durationSec || body.duration || defaultDurationSec);
   if (multiPromptTotalSec > 0) {
     durationSec = multiPromptTotalSec;

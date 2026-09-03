@@ -50,7 +50,7 @@ test('all P0 models have eleven reviewed numeric scores and a derived three-axis
     last_updated: string;
     scores: Array<Record<string, unknown> & { modelSlug: string }>;
   };
-  assert.equal(document.last_updated, '2026-09-02');
+  assert.equal(document.last_updated, '2026-09-03');
 
   for (const modelId of P0_IDS) {
     const score = document.scores.find(({ modelSlug }) => modelSlug === modelId);
@@ -95,7 +95,7 @@ test('all P0 models have complete sourced key specs', () => {
     'watermark',
     'releaseDate',
   ];
-  assert.equal(document.last_updated, '2026-09-02');
+  assert.equal(document.last_updated, '2026-09-03');
   for (const modelId of P0_IDS) {
     const row = document.specs.find(({ modelSlug }) => modelSlug === modelId);
     assert.ok(row, modelId);

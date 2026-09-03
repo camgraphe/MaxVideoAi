@@ -117,7 +117,7 @@ test('the complete P0 graph publishes atomically across public discovery surface
 
   assert.deepEqual(
     MARKETING_NAV_MODELS.filter(({ key }) => P0.includes(key as (typeof P0)[number])).map(({ key }) => key),
-    ['ltx-2-5-pro', 'wan-3-prime', 'grok-imagine-video-1-5', 'flux-3'],
+    ['ltx-2-5-pro', 'wan-3-prime', 'grok-imagine-video-1-5'],
   );
   for (const familyId of ['wan', 'ltx', 'grok', 'flux']) {
     const family = MODEL_FAMILIES.find(({ id }) => id === familyId);
@@ -126,7 +126,16 @@ test('the complete P0 graph publishes atomically across public discovery surface
   }
 
   const discovery = buildLlmsModelDiscoveryProjection();
-  assert.deepEqual(discovery.currentModels.map(({ id }) => id).sort(), [...P0].sort());
-  assert.deepEqual(discovery.families.map(({ id }) => id).sort(), ['flux', 'grok', 'ltx', 'wan']);
-  assert.deepEqual(discovery.primaryComparisons.map(({ slug }) => slug).sort(), [...PAIRS].sort());
+  assert.deepEqual(
+    discovery.currentModels.filter(({ id }) => P0.includes(id as (typeof P0)[number])).map(({ id }) => id).sort(),
+    [...P0].sort(),
+  );
+  assert.deepEqual(
+    discovery.families.filter(({ id }) => ['flux', 'grok', 'ltx', 'wan'].includes(id)).map(({ id }) => id).sort(),
+    ['flux', 'grok', 'ltx', 'wan'],
+  );
+  assert.deepEqual(
+    discovery.primaryComparisons.filter(({ slug }) => PAIRS.includes(slug as (typeof PAIRS)[number])).map(({ slug }) => slug).sort(),
+    [...PAIRS].sort(),
+  );
 });

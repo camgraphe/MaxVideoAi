@@ -12,10 +12,7 @@ export const PAYG_ICON_IDS = [
 export type PaygIconId = (typeof PAYG_ICON_IDS)[number];
 
 export const PAYG_PRICE_LOOKUP_IDS = [
-  'gemini-omni-flash',
-  'kling-3-turbo-pro',
-  'kling-3-turbo-standard',
-  'minimax-h3-max',
+  'gemini-omni-flash', 'kling-3-turbo-pro', 'kling-3-turbo-standard', 'minimax-h3-max',
   'ltx-2-5-pro',
   'ltx-2-5-fast',
   'wan-3-prime',
@@ -33,10 +30,7 @@ export const PAYG_PRICE_LOOKUP_IDS = [
 export type PaygPriceLookupId = (typeof PAYG_PRICE_LOOKUP_IDS)[number];
 
 export const PAYG_EXAMPLE_COST_IDS = [
-  'gemini-omni-flash',
-  'kling-3-turbo-pro',
-  'kling-3-turbo-standard',
-  'minimax-h3-max',
+  'gemini-omni-flash', 'kling-3-turbo-pro', 'kling-3-turbo-standard', 'minimax-h3-max',
   'ltx-2-5-pro',
   'wan-3-prime',
   'grok-imagine-video-1-5',
@@ -51,10 +45,7 @@ export const PAYG_EXAMPLE_COST_IDS = [
 export type PaygExampleCostId = (typeof PAYG_EXAMPLE_COST_IDS)[number];
 
 export const PAYG_SUPPORTED_MODEL_IDS = [
-  'gemini-omni-flash',
-  'kling-3-turbo-pro',
-  'kling-3-turbo-standard',
-  'minimax-h3-max',
+  'gemini-omni-flash', 'kling-3-turbo-pro', 'kling-3-turbo-standard', 'minimax-h3-max',
   'seedance-2-5',
   'seedance-2-0',
   'kling-3-pro',
@@ -85,7 +76,6 @@ export const PAYG_SHOWCASE_TITLE_IDS = [
   'product-reveal',
 ] as const;
 export type PaygShowcaseTitleId = (typeof PAYG_SHOWCASE_TITLE_IDS)[number];
-
 export type PaygHeaderCopy = { eyebrow?: string; title: string; intro?: string };
 export type PaygQuestion = { question: string; answer: string };
 export type PaygCard = { title: string; body: string };

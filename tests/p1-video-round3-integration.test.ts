@@ -405,13 +405,13 @@ test('Kling Turbo i2v workspace preflight and generation omit unsupported framin
   });
 });
 
-test('private and public generate reject an explicit unknown mode before database work', async () => {
+test('P1 and established public engines reject an explicit unknown mode before database work', async () => {
   const publicEngine = getFalEngineById('pika-text-to-video')?.engine;
   assert.ok(publicEngine);
 
   for (const fixture of [
-    { engine: KLING_3_TURBO_STANDARD_ENGINE, private: true },
-    { engine: publicEngine, private: false },
+    { engine: KLING_3_TURBO_STANDARD_ENGINE },
+    { engine: publicEngine },
   ]) {
     let databaseChecks = 0;
     let billingChecks = 0;
@@ -419,9 +419,9 @@ test('private and public generate reject an explicit unknown mode before databas
       req: new NextRequest(`${STAGING_URL}/api/generate`, { method: 'POST' }),
       body: { engineId: fixture.engine.id, mode: 'bogus' },
       boundaryOverrides: {
-        resolveLaunchCanaryRequestContext: async () => fixture.private ? privateCanaryContext : null,
-        getConfiguredEngine: async () => fixture.private ? undefined : fixture.engine,
-        getConfiguredEngineIncludingHidden: async () => fixture.private ? fixture.engine : undefined,
+        resolveLaunchCanaryRequestContext: async () => null,
+        getConfiguredEngine: async () => fixture.engine,
+        getConfiguredEngineIncludingHidden: async () => undefined,
         isDatabaseConfigured: () => {
           databaseChecks += 1;
           return true;

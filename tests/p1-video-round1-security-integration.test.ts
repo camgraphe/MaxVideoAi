@@ -2,53 +2,39 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { NextRequest } from 'next/server';
 
-import { POST as generatePost } from '../frontend/app/api/generate/route';
 import { resolveGenerateRouteContext } from '../frontend/app/api/generate/_lib/route-context';
 import { createPreflightPostHandler } from '../frontend/app/api/preflight/_lib/preflight-handler';
 import { createEnginesGetHandler } from '../frontend/app/api/engines/_lib/engines-get-handler';
 import { KLING_3_TURBO_STANDARD_ENGINE } from '../frontend/src/config/fal-engines/kling-3-turbo-standard';
 import { KLING_3_TURBO_PRO_ENGINE } from '../frontend/src/config/fal-engines/kling-3-turbo-pro';
 import { MINIMAX_H3_MAX_ENGINE } from '../frontend/src/config/fal-engines/minimax-h3-max';
-import type { AgentGenerationExecutabilityEnvironment } from '../frontend/src/server/agent-runtime/model-executability';
+import { listFalEngines } from '../frontend/src/config/falEngines';
 import { resolveSelectedWorkspaceEngine } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers';
 import { resolveLaunchCanaryRequestContext } from '../frontend/src/server/model-launch-canary-request';
 
-const PRIVATE_IDS = [
+const P1_IDS = [
   'kling-3-turbo-standard',
   'kling-3-turbo-pro',
   'minimax-h3-max',
 ] as const;
 
-const PRIVATE_ENGINES = [
+const P1_ENGINES = [
   KLING_3_TURBO_STANDARD_ENGINE,
   KLING_3_TURBO_PRO_ENGINE,
   MINIMAX_H3_MAX_ENGINE,
 ];
 
-const generationEnvironment: AgentGenerationExecutabilityEnvironment = {
-  bytePlusEnabled: false,
-  bytePlusApiKey: undefined,
-  falApiKey: 'private-canary-fal-key',
-  providerEnv: {},
-};
+function p1Engine(engineId: string) {
+  return P1_ENGINES.find((engine) => engine.id === engineId);
+}
 
-const canaryContext = {
-  principal: {
+test('published P1 models no longer consume the staging launch-canary gate', async () => {
+  const principal = {
     userId: 'workspace-canary-user',
     clientId: 'workspace-canary-client',
     emailVerified: true,
     authMethod: 'oauth' as const,
-  },
-  access: { allowedModelIds: new Set<string>(PRIVATE_IDS) },
-  generationEnvironment,
-};
-
-function privateEngine(engineId: string) {
-  return PRIVATE_ENGINES.find((engine) => engine.id === engineId);
-}
-
-test('the shared request gate requires the exact staging host, server flag, account, and verified OAuth client', async () => {
-  const principal = canaryContext.principal;
+  };
   const env = {
     NODE_ENV: 'production',
     MCP_STAGING_OPERATIONAL_ENABLED: 'true',
@@ -61,7 +47,7 @@ test('the shared request gate requires the exact staging host, server flag, acco
     }),
     { env, resolvePrincipal: async () => principal },
   );
-  assert.ok(allowed?.access.allowedModelIds.has('kling-3-turbo-standard'));
+  assert.equal(allowed, null);
 
   for (const request of [
     new Request('https://maxvideoai.com/api/engines'),
@@ -78,28 +64,18 @@ test('the shared request gate requires the exact staging host, server flag, acco
   ), null);
 });
 
-test('the real website generate route rejects a private P1 id before database, billing, or auth work', async () => {
-  const response = await generatePost(new NextRequest('https://maxvideoai.com/api/generate', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({
-      engineId: 'kling-3-turbo-standard',
-      mode: 't2v',
-      prompt: 'A private launch request must remain closed.',
-    }),
-  }));
-
-  assert.equal(response.status, 404);
-  assert.deepEqual(await response.json(), { ok: false, error: 'Engine unavailable' });
+test('all three P1 engines are in the public application registry', () => {
+  const publicIds = new Set(listFalEngines().map(({ id }) => id));
+  for (const id of P1_IDS) assert.equal(publicIds.has(id), true, id);
 });
 
-test('generate route context resolves a private engine only after exact launch-canary authorization', async () => {
+test('generate route context resolves P1 through the public engine boundary', async () => {
   let hiddenLookups = 0;
   const boundaryBase = {
-    getConfiguredEngine: async () => undefined,
+    getConfiguredEngine: async (engineId: string) => p1Engine(engineId),
     getConfiguredEngineIncludingHidden: async (engineId: string) => {
       hiddenLookups += 1;
-      return privateEngine(engineId);
+      return p1Engine(engineId);
     },
     isDatabaseConfigured: () => true,
     ensureBillingSchema: async () => undefined,
@@ -109,7 +85,7 @@ test('generate route context resolves a private engine only after exact launch-c
     method: 'POST',
   });
 
-  const denied = await resolveGenerateRouteContext({
+  const resolved = await resolveGenerateRouteContext({
     body: { engineId: 'kling-3-turbo-standard', mode: 't2v' },
     req: request,
     boundaryOverrides: {
@@ -117,31 +93,16 @@ test('generate route context resolves a private engine only after exact launch-c
       resolveLaunchCanaryRequestContext: async () => null,
     },
   });
-  assert.deepEqual(denied, {
-    ok: false,
-    status: 404,
-    body: { ok: false, error: 'Engine unavailable' },
-  });
-  assert.equal(hiddenLookups, 0, 'private engine data must not resolve before the canary gate');
-
-  const allowed = await resolveGenerateRouteContext({
-    body: { engineId: 'kling-3-turbo-standard', mode: 't2v' },
-    req: request,
-    boundaryOverrides: {
-      ...boundaryBase,
-      resolveLaunchCanaryRequestContext: async () => canaryContext,
-    },
-  });
-  assert.equal(allowed.ok, true);
-  if (allowed.ok) assert.equal(allowed.context.engine.id, 'kling-3-turbo-standard');
-  assert.equal(hiddenLookups, 1);
+  assert.equal(resolved.ok, true);
+  if (resolved.ok) assert.equal(resolved.context.engine.id, 'kling-3-turbo-standard');
+  assert.equal(hiddenLookups, 0);
 });
 
-test('workspace engine bootstrap is principal-scoped and returns only executable private modes', async () => {
+test('workspace engine bootstrap returns executable P1 public modes', async () => {
   const handler = createEnginesGetHandler({
-    getPublicConfiguredEnginesByCategory: async () => [],
-    getConfiguredEngineIncludingHidden: async (engineId: string) => privateEngine(engineId),
-    resolveLaunchCanaryRequestContext: async () => canaryContext,
+    getPublicConfiguredEnginesByCategory: async () => P1_ENGINES,
+    getConfiguredEngineIncludingHidden: async () => undefined,
+    resolveLaunchCanaryRequestContext: async () => null,
     fetchEngineAverageDurations: async () => [],
     loadAppEngineScoreMap: async () => ({}),
   });
@@ -150,8 +111,8 @@ test('workspace engine bootstrap is principal-scoped and returns only executable
     { headers: { authorization: 'Bearer verified-canary-token' } },
   ));
   assert.equal(response.status, 200);
-  const payload = await response.json() as { engines: typeof PRIVATE_ENGINES };
-  assert.deepEqual(payload.engines.map(({ id }) => id).sort(), [...PRIVATE_IDS].sort());
+  const payload = await response.json() as { engines: typeof P1_ENGINES };
+  assert.deepEqual(payload.engines.map(({ id }) => id).sort(), [...P1_IDS].sort());
   assert.deepEqual(payload.engines.find(({ id }) => id === 'minimax-h3-max')?.modes, ['t2v']);
   assert.deepEqual(payload.engines.find(({ id }) => id === 'kling-3-turbo-standard')?.modes, ['t2v', 'i2v']);
   assert.equal(JSON.stringify(payload).toLowerCase().includes('fal-ai/'), false);
@@ -168,23 +129,23 @@ test('workspace engine bootstrap is principal-scoped and returns only executable
   assert.equal(selected?.id, 'kling-3-turbo-standard');
 
   const publicHandler = createEnginesGetHandler({
-    getPublicConfiguredEnginesByCategory: async () => [],
-    getConfiguredEngineIncludingHidden: async (engineId: string) => privateEngine(engineId),
+    getPublicConfiguredEnginesByCategory: async () => P1_ENGINES,
+    getConfiguredEngineIncludingHidden: async () => undefined,
     resolveLaunchCanaryRequestContext: async () => null,
     fetchEngineAverageDurations: async () => [],
     loadAppEngineScoreMap: async () => ({}),
   });
   const publicPayload = await publicHandler(new NextRequest('https://maxvideoai.com/api/engines'))
-    .then((result) => result.json()) as { engines: unknown[] };
-  assert.deepEqual(publicPayload.engines, []);
+    .then((result) => result.json()) as { engines: typeof P1_ENGINES };
+  assert.deepEqual(publicPayload.engines.map(({ id }) => id).sort(), [...P1_IDS].sort());
 });
 
-test('workspace preflight resolves and prices P1 only inside the same exact canary context', async () => {
+test('workspace preflight resolves and prices P1 through the public engine boundary', async () => {
   const handler = createPreflightPostHandler({
-    resolveLaunchCanaryRequestContextFn: async () => canaryContext,
+    resolveLaunchCanaryRequestContextFn: async () => null,
     mediaAwarePreflightDependencies: {
-      getConfiguredEngineFn: async () => undefined,
-      getConfiguredEngineIncludingHiddenFn: async (engineId: string) => privateEngine(engineId),
+      getConfiguredEngineFn: async (engineId: string) => p1Engine(engineId),
+      getConfiguredEngineIncludingHiddenFn: async () => undefined,
     },
   });
   const request = () => new NextRequest('https://maxvideoai-mcp-staging.vercel.app/api/preflight', {
@@ -202,15 +163,4 @@ test('workspace preflight resolves and prices P1 only inside the same exact cana
   const allowed = await handler(request());
   assert.equal(allowed.status, 200);
   assert.equal((await allowed.json() as { ok: boolean }).ok, true);
-
-  const deniedHandler = createPreflightPostHandler({
-    resolveLaunchCanaryRequestContextFn: async () => null,
-    mediaAwarePreflightDependencies: {
-      getConfiguredEngineFn: async () => undefined,
-      getConfiguredEngineIncludingHiddenFn: async (engineId: string) => privateEngine(engineId),
-    },
-  });
-  const denied = await deniedHandler(request());
-  assert.equal(denied.status, 400);
-  assert.equal((await denied.json() as { error?: { code?: string } }).error?.code, 'ENGINE_NOT_FOUND');
 });

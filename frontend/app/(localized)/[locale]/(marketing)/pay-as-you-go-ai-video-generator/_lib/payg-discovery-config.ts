@@ -45,11 +45,11 @@ const PREFERRED_EXAMPLES = [
 ] as const satisfies PaygDiscoveryConfigs['examples'];
 
 const SUPPORTED_MODEL_CONFIGS = [
+  { id: 'seedance-2-5', fallbackHref: '/models/seedance-2-5', fallbackLabel: 'Seedance 2.5' },
   { id: 'gemini-omni-flash', fallbackHref: '/models/gemini-omni-flash', fallbackLabel: 'Gemini Omni Flash 1.1' },
   { id: 'kling-3-turbo-pro', fallbackLabel: 'Kling 3.0 Turbo Pro' },
   { id: 'kling-3-turbo-standard', fallbackLabel: 'Kling 3.0 Turbo Standard' },
   { id: 'minimax-h3-max', fallbackLabel: 'MiniMax H3 Max' },
-  { id: 'seedance-2-5', fallbackHref: '/models/seedance-2-5', fallbackLabel: 'Seedance 2.5' },
   { id: 'seedance-2-0', fallbackHref: '/models/seedance-2-0', fallbackLabel: 'Seedance 2.0' },
   { id: 'kling-3-pro', fallbackHref: '/models/kling-3-pro', fallbackLabel: 'Kling' },
   { id: 'veo-3-1', fallbackHref: '/models/veo-3-1', fallbackLabel: 'Google Veo' },

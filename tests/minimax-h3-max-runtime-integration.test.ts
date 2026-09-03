@@ -7,7 +7,6 @@ import { resolveFalModelSlug } from '../frontend/src/lib/fal-model-helpers';
 import { resolveEngineIdFromModelSlug, resolveFalModelId } from '../frontend/src/lib/fal-catalog';
 import { listFalEngines } from '../frontend/src/config/falEngines';
 import { MINIMAX_H3_MAX_ENGINE } from '../frontend/src/config/fal-engines/minimax-h3-max';
-import { getPrivateRuntimeEngineById } from '../frontend/src/server/video-generation/private-engine-registry';
 import { getConfiguredEngineIncludingHidden } from '../frontend/src/server/engines';
 import { buildGenerateRequestOptions } from '../frontend/app/api/generate/_lib/request-options';
 import { resolveGenerateRouteContext } from '../frontend/app/api/generate/_lib/route-context';
@@ -15,8 +14,9 @@ import { validateRequest } from '../frontend/app/api/generate/_lib/validate';
 
 const req = new NextRequest('http://localhost/api/generate', { method: 'POST' });
 
-const privateRuntimeBoundaries = {
-  getConfiguredEngine: async () => undefined,
+const publicRuntimeBoundaries = {
+  getConfiguredEngine: async (engineId: string) =>
+    engineId === MINIMAX_H3_MAX_ENGINE.id ? MINIMAX_H3_MAX_ENGINE : undefined,
   getConfiguredEngineIncludingHidden: async (engineId: string) =>
     engineId === MINIMAX_H3_MAX_ENGINE.id ? MINIMAX_H3_MAX_ENGINE : undefined,
   isDatabaseConfigured: () => true,
@@ -36,15 +36,14 @@ const privateRuntimeBoundaries = {
   }),
 };
 
-test('MiniMax H3 Max resolves through the private generation runtime without entering the public catalog', async () => {
-  assert.equal(listFalEngines().some(({ id }) => id === 'minimax-h3-max'), false);
-  assert.equal(getPrivateRuntimeEngineById('minimax-h3-max')?.id, 'minimax-h3-max');
+test('MiniMax H3 Max resolves through the public generation runtime and catalog', async () => {
+  assert.equal(listFalEngines().some(({ id }) => id === 'minimax-h3-max'), true);
   assert.equal((await getConfiguredEngineIncludingHidden('minimax-h3-max'))?.id, 'minimax-h3-max');
 
   const result = await resolveGenerateRouteContext({
-    body: { engineId: 'minimax-h3-max', mode: 't2v', jobId: 'job_h3_max_private' },
+    body: { engineId: 'minimax-h3-max', mode: 't2v', jobId: 'job_h3_max_public' },
     req,
-    boundaryOverrides: privateRuntimeBoundaries,
+    boundaryOverrides: publicRuntimeBoundaries,
   });
 
   assert.equal(result.ok, true);
@@ -63,7 +62,7 @@ test('MiniMax H3 Max media modes fail closed while live size and format limits a
     const result = await resolveGenerateRouteContext({
       body: { engineId: 'minimax-h3-max', mode, jobId: `job_h3_max_${mode}` },
       req,
-      boundaryOverrides: privateRuntimeBoundaries,
+      boundaryOverrides: publicRuntimeBoundaries,
     });
 
     assert.deepEqual(result, {
@@ -74,7 +73,7 @@ test('MiniMax H3 Max media modes fail closed while live size and format limits a
   }
 });
 
-test('MiniMax H3 Max private request options use the documented runtime defaults', () => {
+test('MiniMax H3 Max public request options use the documented runtime defaults', () => {
   const result = buildGenerateRequestOptions({
     body: { prompt: 'A glass observatory turns slowly beneath the stars.' },
     engine: MINIMAX_H3_MAX_ENGINE,
@@ -126,7 +125,7 @@ test('the production model resolver and Fal request dispatcher invoke the MiniMa
   );
 });
 
-test('the production request validator accepts private H3 Max text requests from its runtime schema', () => {
+test('the production request validator accepts public H3 Max text requests from its runtime schema', () => {
   assert.deepEqual(validateRequest(
     'minimax-h3-max',
     't2v',

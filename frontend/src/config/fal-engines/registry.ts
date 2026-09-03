@@ -48,13 +48,8 @@ import { NANO_BANANA_2_FAL_ENGINE_REGISTRY } from './nano-banana-2';
 import { GPT_IMAGE_2_FAL_ENGINE_REGISTRY } from './gpt-image-2';
 import { SEEDREAM_FAL_ENGINE_REGISTRY } from './seedream';
 
-// These contracts are intentionally excluded from the public engine catalog until
-// their provider and model-registry publication gates are complete.
-export const UNPUBLISHED_FAL_ENGINE_REGISTRY: readonly RawFalEngineEntry[] = [
-  ...KLING_3_TURBO_STANDARD_FAL_ENGINE_REGISTRY,
-  ...KLING_3_TURBO_PRO_FAL_ENGINE_REGISTRY,
-  ...MINIMAX_H3_MAX_FAL_ENGINE_REGISTRY,
-];
+// Build-only contracts awaiting a future model-registry publication gate.
+export const UNPUBLISHED_FAL_ENGINE_REGISTRY: readonly RawFalEngineEntry[] = [];
 
 export const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   ...PIKA_FAL_ENGINE_REGISTRY,
@@ -74,6 +69,8 @@ export const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   ...KLING_3_STANDARD_FAL_ENGINE_REGISTRY,
   ...KLING_3_4K_FAL_ENGINE_REGISTRY,
   ...KLING_O3_FAL_ENGINE_REGISTRY,
+  ...KLING_3_TURBO_STANDARD_FAL_ENGINE_REGISTRY,
+  ...KLING_3_TURBO_PRO_FAL_ENGINE_REGISTRY,
   ...HAPPY_HORSE_FAL_ENGINE_REGISTRY,
   ...SEEDANCE_1_5_FAL_ENGINE_REGISTRY,
   ...SEEDANCE_2_STANDARD_FAL_ENGINE_REGISTRY,
@@ -88,6 +85,7 @@ export const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   ...LTX_2_3_FAST_FAL_ENGINE_REGISTRY,
   ...LTX_2_3_FAL_ENGINE_REGISTRY,
   ...MINIMAX_H3_FAL_ENGINE_REGISTRY,
+  ...MINIMAX_H3_MAX_FAL_ENGINE_REGISTRY,
   ...HAILUO_FAL_ENGINE_REGISTRY,
   ...NANO_BANANA_FAL_ENGINE_REGISTRY,
   ...NANO_BANANA_LITE_FAL_ENGINE_REGISTRY,

@@ -47,20 +47,21 @@ test('MiniMax H3 is one canonical executable production model on every public su
   ]);
 });
 
-test('MiniMax family makes H3 current while retaining Hailuo 02 as a published older model', () => {
+test('MiniMax family keeps H3 canonical while adding H3 Max and retaining Hailuo 02', () => {
   const family = getModelFamilyDefinition('hailuo');
   const hailuo02 = getRuntimeModelById('minimax-hailuo-02-text');
 
   assert.ok(family);
   assert.ok(hailuo02);
   assert.equal(family.defaultModelSlug, slug);
-  assert.deepEqual(family.examplesPage.publishedModelSlugs, [slug, 'minimax-hailuo-02-text']);
-  assert.deepEqual(family.examplesPage.currentModelSlugs, [slug]);
+  assert.deepEqual(family.examplesPage.publishedModelSlugs, [slug, 'minimax-h3-max', 'minimax-hailuo-02-text']);
+  assert.deepEqual(family.examplesPage.currentModelSlugs, [slug, 'minimax-h3-max']);
   assert.equal(hailuo02.publication.examples.current, false);
   assert.equal(hailuo02.publication.examples.familyRank, 1);
   assert.ok(family.routeAliases.includes(slug));
+  assert.ok(family.routeAliases.includes('minimax-h3-max'));
   assert.ok(family.routeAliases.includes('minimax-hailuo-02-text'));
-  assert.deepEqual(family.aliases, ['minimax-h3', 'hailuo-h3', 'hailuo-03', 'minimax-hailuo-02']);
+  assert.deepEqual(family.aliases, ['minimax-h3', 'minimax-h3-max', 'hailuo-h3', 'hailuo-03', 'minimax-hailuo-02']);
   assert.deepEqual(family.prefixes, ['minimax/h3', 'minimax-h3', 'hailuo-h3', 'minimax-hailuo-02']);
 });
 

@@ -2,11 +2,9 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { listFalEngines } from '../frontend/src/config/falEngines';
-import { UNPUBLISHED_FAL_ENGINE_REGISTRY } from '../frontend/src/config/fal-engines/registry';
-import type { EngineCaps, Mode } from '../frontend/types/engines';
+import type { Mode } from '../frontend/types/engines';
 import {
   listAgentModels,
-  type AgentModelAccessContext,
   type AgentModelCatalogDeps,
   type AgentPublicGenerationEngine,
 } from '../frontend/src/server/agent-api/model-catalog';
@@ -25,29 +23,20 @@ import {
 } from '../frontend/src/server/agent-runtime/model-executability';
 import type { ResolvedReference } from '../frontend/src/server/agent-api/reference-types';
 import {
-  resolveMcpPrelaunchModelAccess,
-} from '../frontend/src/server/mcp/provider-canary-access';
-import type { AgentPrincipal } from '../frontend/src/server/agent-api/principal';
-import {
   validateGenerationMediaConstraints,
   type StoredMediaMetadataRow,
 } from '../frontend/app/api/generate/_lib/generation-media-constraints';
 import { processAndValidateGenerationAttachments } from '../frontend/app/api/generate/_lib/generation-attachment-processing';
 import { prepareGenerationInputSchema } from '../frontend/src/server/mcp/tools/prepare-generation';
 
-const P1_PRIVATE_IDS = [
+const P1_PUBLIC_IDS = [
   'kling-3-turbo-standard',
   'kling-3-turbo-pro',
   'minimax-h3-max',
 ] as const;
 
-const privateById = new Map(
-  UNPUBLISHED_FAL_ENGINE_REGISTRY.map((entry) => [entry.id, entry.engine]),
-);
 const publicEntries = listFalEngines();
-const access: AgentModelAccessContext = {
-  allowedPrelaunchModelIds: new Set(P1_PRIVATE_IDS),
-};
+const publicById = new Map(publicEntries.map((entry) => [entry.id, entry.engine]));
 
 const executionEnvironment: AgentGenerationExecutabilityEnvironment = {
   bytePlusEnabled: false,
@@ -69,10 +58,10 @@ function deps(): AgentModelCatalogDeps {
       return publicEntries.map((entry) => entry.engine);
     },
     async getEngineIncludingHidden(engineId) {
-      return privateById.get(engineId);
+      return publicById.get(engineId);
     },
     surfaceByEngineId(engineId) {
-      return publicEntries.some((entry) => entry.id === engineId) || privateById.has(engineId)
+      return publicById.has(engineId)
         ? 'video'
         : null;
     },
@@ -87,8 +76,7 @@ function deps(): AgentModelCatalogDeps {
 }
 
 function candidate(engineId: string, modes: readonly Mode[]): AgentPublicGenerationEngine {
-  const entry = publicEntries.find((item) => item.id === engineId)
-    ?? UNPUBLISHED_FAL_ENGINE_REGISTRY.find((item) => item.id === engineId);
+  const entry = publicEntries.find((item) => item.id === engineId);
   assert.ok(entry);
   return {
     engine: entry.engine,
@@ -124,34 +112,18 @@ function resolved(input: Partial<ResolvedReference> & Pick<ResolvedReference, 'a
   };
 }
 
-test('P1 private identities stay out of public discovery and require exact launch-canary access', async () => {
+test('P1 identities are publicly discoverable after the atomic publication gate', async () => {
   const catalogDeps = deps();
   const publicIds = new Set((await listAgentModels({}, catalogDeps)).map(({ id }) => id));
-  for (const id of P1_PRIVATE_IDS) assert.equal(publicIds.has(id), false, id);
+  for (const id of P1_PUBLIC_IDS) assert.equal(publicIds.has(id), true, id);
 
-  for (const id of P1_PRIVATE_IDS) {
-    assert.deepEqual(await listAgentModels({ id }, catalogDeps), [], id);
-    const details = await getAgentModelDetails(id, catalogDeps, access);
+  for (const id of P1_PUBLIC_IDS) {
+    assert.equal((await listAgentModels({ id }, catalogDeps))[0]?.id, id);
+    const details = await getAgentModelDetails(id, catalogDeps);
     assert.equal(details.id, id);
-    assert.equal(details.prelaunch, true);
-    assert.equal(details.links.model, null);
+    assert.equal(details.prelaunch, false);
+    assert.equal(details.links.model, `https://maxvideoai.com/models/${id}`);
   }
-
-  const principal: AgentPrincipal = {
-    userId: 'p1-canary-account', clientId: 'p1-canary-client', emailVerified: true, authMethod: 'oauth',
-  };
-  const canary = resolveMcpPrelaunchModelAccess(principal, 'https://maxvideoai-mcp-staging.vercel.app/account', {
-    NODE_ENV: 'production',
-    MCP_STAGING_OPERATIONAL_ENABLED: 'true',
-    MCP_STAGING_CANARY_ACCOUNT_IDS: principal.userId,
-    MCP_STAGING_CANARY_CLIENT_IDS: principal.clientId!,
-  } as NodeJS.ProcessEnv);
-  assert.deepEqual([...canary!.allowedModelIds].sort(), [...P1_PRIVATE_IDS].sort());
-  assert.equal(resolveMcpPrelaunchModelAccess(
-    principal,
-    'https://maxvideoai.com/account',
-    { NODE_ENV: 'production' } as NodeJS.ProcessEnv,
-  ), null);
 });
 
 test('P1 details expose only the actually executable canary modes and shared capability facts', async () => {
@@ -169,7 +141,7 @@ test('P1 details expose only the actually executable canary modes and shared cap
   assert.equal(gemini.modes.find(({ mode }) => mode === 'extend')?.references[0]?.assetRequired, true);
 
   for (const id of ['kling-3-turbo-standard', 'kling-3-turbo-pro'] as const) {
-    const details = await getAgentModelDetails(id, catalogDeps, access);
+    const details = await getAgentModelDetails(id, catalogDeps);
     assert.deepEqual(details.modes.map(({ mode }) => mode), ['t2v', 'i2v']);
     assert.deepEqual(details.modes[0]?.duration.options, [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
     assert.ok(details.modes[0]?.settings.some(({ key, type }) => key === 'multiPrompt' && type === 'multi_prompt'));
@@ -180,7 +152,7 @@ test('P1 details expose only the actually executable canary modes and shared cap
     assert.equal(serialized.includes('kling'), true);
   }
 
-  const h3 = await getAgentModelDetails('minimax-h3-max', catalogDeps, access);
+  const h3 = await getAgentModelDetails('minimax-h3-max', catalogDeps);
   assert.deepEqual(h3.modes.map(({ mode }) => mode), ['t2v']);
   assert.ok(h3.modes[0]?.settings.some((setting) =>
     setting.key === 'promptExpansionMode'
@@ -345,7 +317,7 @@ test('Kling Turbo multi-shot is canonical, validated, and projected into the pai
 });
 
 test('H3 Max advertises and executes t2v only while media modes remain fail closed', () => {
-  const engine = privateById.get('minimax-h3-max');
+  const engine = publicById.get('minimax-h3-max');
   assert.ok(engine);
   assert.equal(resolveAgentGenerationModeExecutability(engine, 't2v', executionEnvironment).executable, true);
   const qualityRequest = request({

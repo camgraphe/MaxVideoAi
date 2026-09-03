@@ -33,6 +33,7 @@ const P0_REPRESENTATIVE_IDS = [
   'grok-imagine-video-1-5',
   'flux-3',
 ] as const;
+const P0_VISIBLE_EXAMPLE_IDS = ['ltx-2-5-pro', 'wan-3-prime'] as const;
 const entries = listFalEngines();
 
 function publishedP0Entries(): FalEngineEntry[] {
@@ -163,7 +164,7 @@ test('published P0 representatives and pricing data project consistently into PA
     assert.deepEqual(p0IdsIn(data.hero.quote.previewRows), P0_REPRESENTATIVE_IDS, `${locale}:hero`);
     assert.deepEqual(p0IdsIn(data.modelTesting.items), P0_IDS, `${locale}:models`);
     assert.deepEqual(p0IdsIn(data.priceLookups.items), P0_IDS, `${locale}:lookups`);
-    assert.deepEqual(p0IdsIn(data.exampleCosts.items), P0_REPRESENTATIVE_IDS, `${locale}:examples`);
+    assert.deepEqual(p0IdsIn(data.exampleCosts.items), P0_VISIBLE_EXAMPLE_IDS, `${locale}:examples`);
     for (const id of P0_REPRESENTATIVE_IDS) {
       assert.match(
         data.pricing.rows.find((row) => row.id === id)?.compareHref ?? '',
@@ -266,8 +267,8 @@ test('explicit published model fallbacks remain available without a pricing row'
   assert.deepEqual(
     data.modelTesting.items.map((item) => item.id),
     [
-      'gemini-omni-flash',
       'seedance-2-5',
+      'gemini-omni-flash',
       'seedance-2-0',
       'kling-3-pro',
       'veo-3-1',
@@ -343,7 +344,7 @@ test('published fixtures expose all P0 model cards and one current row per famil
         `${locale}:${id}:lookup-quote`,
       );
     }
-    for (const id of P0_REPRESENTATIVE_IDS) {
+    for (const id of P0_VISIBLE_EXAMPLE_IDS) {
       const sourceQuote = pricingHub.video.rows.find((row) => row.id === id)?.quotes['5s-720p'];
       assert.equal(
         data.exampleCosts.items.find((item) => item.id === id)?.price,

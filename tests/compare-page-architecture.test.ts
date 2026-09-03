@@ -122,9 +122,11 @@ test('comparison detail page applies legacy replacements as permanent redirects'
   assert.match(pageSource, /legacyRedirect[\s\S]*permanentRedirect\(legacyRedirect\)/);
 });
 
-test('comparison routing rejects private catalog engines and sends unresolved pairs to notFound', () => {
-  assert.equal(resolveEngines('kling-3-turbo-pro-vs-minimax-h3-max'), null);
-  assert.equal(resolveEngines('kling-3-turbo-standard-vs-veo-3-1'), null);
+test('comparison routing accepts public P1 engines while preserving unresolved-pair notFound handling', () => {
+  const publicP1Pair = resolveEngines('kling-3-turbo-pro-vs-minimax-h3-max');
+  assert.equal(publicP1Pair?.left.modelSlug, 'kling-3-turbo-pro');
+  assert.equal(publicP1Pair?.right.modelSlug, 'minimax-h3-max');
+  assert.equal(resolveEngines('missing-model-vs-veo-3-1'), null);
 
   const publishedPair = resolveEngines('gemini-omni-flash-vs-veo-3-1');
   assert.equal(publishedPair?.left.modelSlug, 'gemini-omni-flash');

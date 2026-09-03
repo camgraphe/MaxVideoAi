@@ -46,7 +46,7 @@ test('Gemini Omni Flash shares the Veo model family instead of creating a Gemini
   assert.ok(veoFamily.aliases?.includes('gemini-omni-flash-preview'));
   assert.ok(veoFamily.aliases?.includes('omni-flash'));
   assert.ok(veoFamily.prefixes?.includes('gemini-omni'));
-  assert.equal(veoFamily.examplesPage?.publishedModelSlugs?.includes('gemini-omni-flash'), false);
+  assert.equal(veoFamily.examplesPage?.publishedModelSlugs?.includes('gemini-omni-flash'), true);
 });
 
 test('Gemini Omni Flash catalog keeps unsupported Veo/Fal-only controls out of the schema', () => {

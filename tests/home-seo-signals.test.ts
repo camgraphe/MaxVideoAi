@@ -69,10 +69,9 @@ test('homepage proof card stays on Seedance 2.0 while discovery surfaces lead wi
   const footerSource = readFileSync('frontend/components/marketing/MarketingFooter.tsx', 'utf8');
   const footerModelIds = MARKETING_NAV_MODELS.map((item) => item.key);
   const seedance25Index = footerModelIds.indexOf('seedance-2-5');
-  const seedance20Index = footerModelIds.indexOf('seedance-2-0');
   assert.match(footerSource, /MARKETING_NAV_MODELS\.map/);
   assert.ok(seedance25Index >= 0, 'Footer should include Seedance 2.5');
-  assert.ok(seedance25Index < seedance20Index, 'Footer should list Seedance 2.5 before Seedance 2.0');
+  assert.equal(seedance25Index, 0, 'Footer should lead with Seedance 2.5');
 });
 
 test('localized homepage keeps the Seedance 2.0 proof and renders a separate Seedance 2.5 discovery CTA', () => {

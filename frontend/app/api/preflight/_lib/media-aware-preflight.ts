@@ -11,6 +11,7 @@ import { parsePreflightRequestPayload } from './preflight-request';
 import type { LaunchCanaryRequestContext } from '@/server/model-launch-canary-request';
 import { resolveAgentGenerationModeExecutability } from '@/server/agent-runtime/model-executability';
 import { validateRuntimeRequestSettings } from '@/app/api/generate/_lib/runtime-schema-options';
+import { resolveRuntimeResolutionPolicy } from '@/server/video-generation/runtime-resolution';
 
 type MediaConstraintDependencies = Parameters<
   typeof validateNormalizedGenerationAttachments
@@ -114,7 +115,7 @@ export async function resolveMediaAwarePreflight(
   ) {
     return computeConfiguredPreflightFn(request);
   }
-  if (privateEngine) {
+  if (privateEngine || resolveRuntimeResolutionPolicy(engine, request.mode).usesSchemaDefaults) {
     const settingsValidation = validateRuntimeRequestSettings({
       engine,
       mode: request.mode,

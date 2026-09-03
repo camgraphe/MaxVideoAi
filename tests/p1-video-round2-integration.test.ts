@@ -14,7 +14,6 @@ import { FalGenerationError, type GeneratePayload } from '../frontend/src/lib/fa
 import { computeConfiguredPreflight } from '../frontend/src/server/engines';
 import { resolveAgentPrincipal } from '../frontend/src/server/mcp/oauth-adapter';
 import { resolveLaunchCanaryRequestContext } from '../frontend/src/server/model-launch-canary-request';
-import type { AgentGenerationExecutabilityEnvironment } from '../frontend/src/server/agent-runtime/model-executability';
 import type { AgentPrincipal } from '../frontend/src/server/agent-api/principal';
 import type { EngineCaps, PreflightRequest } from '../frontend/types/engines';
 
@@ -67,14 +66,13 @@ function bearerRequest(path: string): NextRequest {
   });
 }
 
-test('a verified first-party Supabase session needs the dedicated staging workspace account allowlist', async () => {
+test('published P1 models are no longer projected through the staging workspace allowlist', async () => {
   const request = bearerRequest('/api/engines');
   const allowed = await resolveLaunchCanaryRequestContext(request, {
     env: FIRST_PARTY_ENV,
     resolvePrincipal: supabasePrincipalResolver({ userId: SESSION_USER_ID, clientId: null }),
   });
-  assert.ok(allowed?.access.allowedModelIds.has('kling-3-turbo-standard'));
-  assert.equal(allowed?.principal.clientId, null);
+  assert.equal(allowed, null);
 
   for (const deniedEnv of [
     { ...FIRST_PARTY_ENV, WORKSPACE_STAGING_CANARY_ACCOUNT_IDS: undefined },
@@ -87,10 +85,10 @@ test('a verified first-party Supabase session needs the dedicated staging worksp
   }
 });
 
-test('workspace engine bootstrap resolves a real first-party bearer and stays closed for a non-allowlisted session', async () => {
+test('workspace engine bootstrap returns public P1 engines without hidden lookups or allowlists', async () => {
   let hiddenLookups = 0;
   const handler = createEnginesGetHandler({
-    getPublicConfiguredEnginesByCategory: async () => [],
+    getPublicConfiguredEnginesByCategory: async () => [...PRIVATE_ENGINES.values()],
     getConfiguredEngineIncludingHidden: async (engineId) => {
       hiddenLookups += 1;
       return PRIVATE_ENGINES.get(engineId);
@@ -108,11 +106,11 @@ test('workspace engine bootstrap resolves a real first-party bearer and stays cl
     allowedBody.engines.map(({ id }) => id).sort(),
     [...PRIVATE_ENGINES.keys()].sort(),
   );
-  assert.ok(hiddenLookups > 0);
+  assert.equal(hiddenLookups, 0);
 
   hiddenLookups = 0;
   const deniedHandler = createEnginesGetHandler({
-    getPublicConfiguredEnginesByCategory: async () => [],
+    getPublicConfiguredEnginesByCategory: async () => [...PRIVATE_ENGINES.values()],
     getConfiguredEngineIncludingHidden: async (engineId) => {
       hiddenLookups += 1;
       return PRIVATE_ENGINES.get(engineId);
@@ -128,11 +126,14 @@ test('workspace engine bootstrap resolves a real first-party bearer and stays cl
     loadAppEngineScoreMap: async () => ({}),
   });
   const denied = await deniedHandler(bearerRequest('/api/engines'));
-  assert.deepEqual((await denied.json() as { engines: unknown[] }).engines, []);
+  assert.deepEqual(
+    (await denied.json() as { engines: EngineCaps[] }).engines.map(({ id }) => id).sort(),
+    [...PRIVATE_ENGINES.keys()].sort(),
+  );
   assert.equal(hiddenLookups, 0);
 });
 
-test('an MCP bearer with a client claim cannot use the first-party workspace allowlist to bypass its client gate', async () => {
+test('published P1 models leave no MCP prelaunch access set for any client claim', async () => {
   const env = {
     NODE_ENV: 'production',
     MCP_STAGING_OPERATIONAL_ENABLED: 'true',
@@ -146,7 +147,7 @@ test('an MCP bearer with a client claim cannot use the first-party workspace all
     env,
     resolvePrincipal: supabasePrincipalResolver({ userId: MCP_USER_ID, clientId: MCP_CLIENT_ID }),
   });
-  assert.ok(allowed);
+  assert.equal(allowed, null);
 
   const denied = await resolveLaunchCanaryRequestContext(request, {
     env,
@@ -158,7 +159,7 @@ test('an MCP bearer with a client claim cannot use the first-party workspace all
   assert.equal(denied, null);
 });
 
-test('a normal first-party user is rejected before private engine resolution and billing readiness', async () => {
+test('a normal first-party user reaches public P1 resolution without hidden-engine access', async () => {
   const env = {
     NODE_ENV: 'production',
     MCP_STAGING_OPERATIONAL_ENABLED: 'true',
@@ -177,25 +178,25 @@ test('a normal first-party user is rejected before private engine resolution and
           clientId: null,
         }),
       }),
-      getConfiguredEngine: async () => undefined,
+      getConfiguredEngine: async () => KLING_3_TURBO_STANDARD_ENGINE,
       getConfiguredEngineIncludingHidden: async () => {
         hiddenLookups += 1;
         return KLING_3_TURBO_STANDARD_ENGINE;
       },
       isDatabaseConfigured: () => {
         databaseChecks += 1;
-        return true;
+        return false;
       },
     },
   });
 
   assert.deepEqual(result, {
     ok: false,
-    status: 404,
-    body: { ok: false, error: 'Engine unavailable' },
+    status: 503,
+    body: { ok: false, error: 'Database unavailable' },
   });
   assert.equal(hiddenLookups, 0);
-  assert.equal(databaseChecks, 0);
+  assert.equal(databaseChecks, 1);
 });
 
 const PRIVATE_ENGINES = new Map<string, EngineCaps>([
@@ -203,24 +204,6 @@ const PRIVATE_ENGINES = new Map<string, EngineCaps>([
   [KLING_3_TURBO_PRO_ENGINE.id, KLING_3_TURBO_PRO_ENGINE],
   [MINIMAX_H3_MAX_ENGINE.id, MINIMAX_H3_MAX_ENGINE],
 ]);
-
-const generationEnvironment: AgentGenerationExecutabilityEnvironment = {
-  bytePlusEnabled: false,
-  bytePlusApiKey: undefined,
-  falApiKey: 'test-private-provider-key',
-  providerEnv: {},
-};
-
-const privateCanaryContext = {
-  principal: {
-    userId: SESSION_USER_ID,
-    clientId: null,
-    emailVerified: true,
-    authMethod: 'oauth' as const,
-  },
-  access: { allowedModelIds: new Set(PRIVATE_ENGINES.keys()) },
-  generationEnvironment,
-};
 
 const validPrivateRequests: PreflightRequest[] = [
   {
@@ -245,15 +228,12 @@ const invalidPrivateRequests: PreflightRequest[] = [
   { ...validPrivateRequests[2]!, resolution: '720p' },
 ];
 
-function createPrivatePreflightHandler(onPricing: () => void) {
+function createP1PreflightHandler(onPricing: () => void) {
   return createPreflightPostHandler({
-    resolveLaunchCanaryRequestContextFn: (request) => resolveLaunchCanaryRequestContext(request, {
-      env: FIRST_PARTY_ENV,
-      resolvePrincipal: supabasePrincipalResolver({ userId: SESSION_USER_ID, clientId: null }),
-    }),
+    resolveLaunchCanaryRequestContextFn: async () => null,
     mediaAwarePreflightDependencies: {
-      getConfiguredEngineFn: async () => undefined,
-      getConfiguredEngineIncludingHiddenFn: async (engineId) => PRIVATE_ENGINES.get(engineId),
+      getConfiguredEngineFn: async (engineId) => PRIVATE_ENGINES.get(engineId),
+      getConfiguredEngineIncludingHiddenFn: async () => undefined,
       computeConfiguredPreflightFn: async (request, options) => {
         onPricing();
         return computeConfiguredPreflight(request, options);
@@ -273,9 +253,9 @@ function preflightHttpRequest(request: PreflightRequest): NextRequest {
   });
 }
 
-test('private preflight rejects explicit settings outside exact engine caps before pricing', async () => {
+test('public P1 preflight rejects explicit settings outside exact engine caps before pricing', async () => {
   let pricingCalls = 0;
-  const handler = createPrivatePreflightHandler(() => { pricingCalls += 1; });
+  const handler = createP1PreflightHandler(() => { pricingCalls += 1; });
 
   for (const request of invalidPrivateRequests) {
     const response = await handler(preflightHttpRequest(request));
@@ -286,9 +266,9 @@ test('private preflight rejects explicit settings outside exact engine caps befo
   assert.equal(pricingCalls, 0);
 });
 
-test('private preflight accepts exact caps for all three P1 runtime engines', async () => {
+test('public P1 preflight accepts exact caps for all three runtime engines', async () => {
   let pricingCalls = 0;
-  const handler = createPrivatePreflightHandler(() => { pricingCalls += 1; });
+  const handler = createP1PreflightHandler(() => { pricingCalls += 1; });
 
   for (const request of validPrivateRequests) {
     const response = await handler(preflightHttpRequest(request));
@@ -298,7 +278,7 @@ test('private preflight accepts exact caps for all three P1 runtime engines', as
   assert.equal(pricingCalls, validPrivateRequests.length);
 });
 
-test('private generate context applies the same exact setting constraints before database or billing work', async () => {
+test('public P1 generate context applies the same exact setting constraints before database or billing work', async () => {
   for (const request of invalidPrivateRequests) {
     let databaseChecks = 0;
     const result = await resolveGenerateRouteContext({
@@ -312,9 +292,9 @@ test('private generate context applies the same exact setting constraints before
         fps: request.fps,
       },
       boundaryOverrides: {
-        resolveLaunchCanaryRequestContext: async () => privateCanaryContext,
-        getConfiguredEngine: async () => undefined,
-        getConfiguredEngineIncludingHidden: async (engineId) => PRIVATE_ENGINES.get(engineId),
+        resolveLaunchCanaryRequestContext: async () => null,
+        getConfiguredEngine: async (engineId) => PRIVATE_ENGINES.get(engineId),
+        getConfiguredEngineIncludingHidden: async () => undefined,
         isDatabaseConfigured: () => {
           databaseChecks += 1;
           return false;
@@ -330,7 +310,7 @@ test('private generate context applies the same exact setting constraints before
   }
 });
 
-test('private generate context accepts exact caps for all three P1 runtime engines', async () => {
+test('public P1 generate context accepts exact caps for all three runtime engines', async () => {
   for (const request of validPrivateRequests) {
     let databaseChecks = 0;
     const result = await resolveGenerateRouteContext({
@@ -344,9 +324,9 @@ test('private generate context accepts exact caps for all three P1 runtime engin
         fps: request.fps,
       },
       boundaryOverrides: {
-        resolveLaunchCanaryRequestContext: async () => privateCanaryContext,
-        getConfiguredEngine: async () => undefined,
-        getConfiguredEngineIncludingHidden: async (engineId) => PRIVATE_ENGINES.get(engineId),
+        resolveLaunchCanaryRequestContext: async () => null,
+        getConfiguredEngine: async (engineId) => PRIVATE_ENGINES.get(engineId),
+        getConfiguredEngineIncludingHidden: async () => undefined,
         isDatabaseConfigured: () => {
           databaseChecks += 1;
           return false;
@@ -408,7 +388,7 @@ async function submitRealFalFailure(input: {
   }));
 }
 
-test('opaque infrastructure policy masks real Fal submission errors for private Kling and H3', async () => {
+test('opaque infrastructure policy masks real Fal submission errors for public Kling and H3', async () => {
   const cases = [
     { engine: KLING_3_TURBO_STANDARD_ENGINE, status: 422, code: 'FAL_UNPROCESSABLE_ENTITY' },
     { engine: MINIMAX_H3_MAX_ENGINE, status: 500, code: 'FAL_ENDPOINT_FAILURE' },

@@ -549,6 +549,90 @@
       "compatibilityProfile": "standard"
     },
     {
+      "id": "estimator:kling-3-turbo-pro:member:default",
+      "surface": "estimator",
+      "engineId": "kling-3-turbo-pro",
+      "status": "exact",
+      "currency": "USD",
+      "vendorSubtotalCents": 70,
+      "marginCents": 21,
+      "discountCents": 0,
+      "customerTotalCents": 91,
+      "unit": "sec",
+      "quantity": 5,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "estimator:kling-3-turbo-pro:plus:default",
+      "surface": "estimator",
+      "engineId": "kling-3-turbo-pro",
+      "status": "exact",
+      "currency": "USD",
+      "vendorSubtotalCents": 70,
+      "marginCents": 21,
+      "discountCents": 5,
+      "customerTotalCents": 86,
+      "unit": "sec",
+      "quantity": 5,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "estimator:kling-3-turbo-pro:pro:default",
+      "surface": "estimator",
+      "engineId": "kling-3-turbo-pro",
+      "status": "exact",
+      "currency": "USD",
+      "vendorSubtotalCents": 70,
+      "marginCents": 21,
+      "discountCents": 9,
+      "customerTotalCents": 82,
+      "unit": "sec",
+      "quantity": 5,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "estimator:kling-3-turbo-standard:member:default",
+      "surface": "estimator",
+      "engineId": "kling-3-turbo-standard",
+      "status": "exact",
+      "currency": "USD",
+      "vendorSubtotalCents": 56,
+      "marginCents": 17,
+      "discountCents": 0,
+      "customerTotalCents": 73,
+      "unit": "sec",
+      "quantity": 5,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "estimator:kling-3-turbo-standard:plus:default",
+      "surface": "estimator",
+      "engineId": "kling-3-turbo-standard",
+      "status": "exact",
+      "currency": "USD",
+      "vendorSubtotalCents": 56,
+      "marginCents": 17,
+      "discountCents": 4,
+      "customerTotalCents": 69,
+      "unit": "sec",
+      "quantity": 5,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "estimator:kling-3-turbo-standard:pro:default",
+      "surface": "estimator",
+      "engineId": "kling-3-turbo-standard",
+      "status": "exact",
+      "currency": "USD",
+      "vendorSubtotalCents": 56,
+      "marginCents": 17,
+      "discountCents": 7,
+      "customerTotalCents": 66,
+      "unit": "sec",
+      "quantity": 5,
+      "compatibilityProfile": "standard"
+    },
+    {
       "id": "estimator:kling-o3-4k:member:default",
       "surface": "estimator",
       "engineId": "kling-o3-4k",
@@ -923,6 +1007,48 @@
       "surface": "estimator",
       "engineId": "luma-uni-1",
       "status": "unavailable"
+    },
+    {
+      "id": "estimator:minimax-h3-max:member:default",
+      "surface": "estimator",
+      "engineId": "minimax-h3-max",
+      "status": "exact",
+      "currency": "USD",
+      "vendorSubtotalCents": 25,
+      "marginCents": 8,
+      "discountCents": 0,
+      "customerTotalCents": 33,
+      "unit": "sec",
+      "quantity": 5,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "estimator:minimax-h3-max:plus:default",
+      "surface": "estimator",
+      "engineId": "minimax-h3-max",
+      "status": "exact",
+      "currency": "USD",
+      "vendorSubtotalCents": 25,
+      "marginCents": 8,
+      "discountCents": 2,
+      "customerTotalCents": 31,
+      "unit": "sec",
+      "quantity": 5,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "estimator:minimax-h3-max:pro:default",
+      "surface": "estimator",
+      "engineId": "minimax-h3-max",
+      "status": "exact",
+      "currency": "USD",
+      "vendorSubtotalCents": 25,
+      "marginCents": 8,
+      "discountCents": 3,
+      "customerTotalCents": 30,
+      "unit": "sec",
+      "quantity": 5,
+      "compatibilityProfile": "standard"
     },
     {
       "id": "estimator:minimax-h3:member:default",
@@ -2175,6 +2301,30 @@
       "compatibilityProfile": "schema-current"
     },
     {
+      "id": "json-ld:kling-3-turbo-pro:offer",
+      "surface": "json-ld",
+      "engineId": "kling-3-turbo-pro",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 70,
+      "unit": "offer",
+      "quantity": 1,
+      "structuredDataAmount": "0.70",
+      "compatibilityProfile": "schema-current"
+    },
+    {
+      "id": "json-ld:kling-3-turbo-standard:offer",
+      "surface": "json-ld",
+      "engineId": "kling-3-turbo-standard",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 56,
+      "unit": "offer",
+      "quantity": 1,
+      "structuredDataAmount": "0.56",
+      "compatibilityProfile": "schema-current"
+    },
+    {
       "id": "json-ld:kling-o3-4k:offer",
       "surface": "json-ld",
       "engineId": "kling-o3-4k",
@@ -2329,6 +2479,18 @@
       "surface": "json-ld",
       "engineId": "lumaRay2",
       "status": "unavailable"
+    },
+    {
+      "id": "json-ld:minimax-h3-max:offer",
+      "surface": "json-ld",
+      "engineId": "minimax-h3-max",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 40,
+      "unit": "offer",
+      "quantity": 1,
+      "structuredDataAmount": "0.40",
+      "compatibilityProfile": "schema-current"
     },
     {
       "id": "json-ld:minimax-h3:offer",
@@ -2775,6 +2937,34 @@
       "compatibilityProfile": "standard"
     },
     {
+      "id": "model-page:kling-3-turbo-pro:default",
+      "surface": "model-page",
+      "engineId": "kling-3-turbo-pro",
+      "status": "exact",
+      "currency": "USD",
+      "vendorSubtotalCents": 70,
+      "marginCents": 21,
+      "discountCents": 0,
+      "customerTotalCents": 91,
+      "unit": "sec",
+      "quantity": 5,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "model-page:kling-3-turbo-standard:default",
+      "surface": "model-page",
+      "engineId": "kling-3-turbo-standard",
+      "status": "exact",
+      "currency": "USD",
+      "vendorSubtotalCents": 56,
+      "marginCents": 17,
+      "discountCents": 0,
+      "customerTotalCents": 73,
+      "unit": "sec",
+      "quantity": 5,
+      "compatibilityProfile": "standard"
+    },
+    {
       "id": "model-page:kling-o3-4k:default",
       "surface": "model-page",
       "engineId": "kling-o3-4k",
@@ -2966,6 +3156,20 @@
       "marginCents": 15,
       "discountCents": 0,
       "customerTotalCents": 65,
+      "unit": "sec",
+      "quantity": 5,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "model-page:minimax-h3-max:default",
+      "surface": "model-page",
+      "engineId": "minimax-h3-max",
+      "status": "exact",
+      "currency": "USD",
+      "vendorSubtotalCents": 40,
+      "marginCents": 12,
+      "discountCents": 0,
+      "customerTotalCents": 52,
       "unit": "sec",
       "quantity": 5,
       "compatibilityProfile": "standard"
@@ -4723,6 +4927,132 @@
       "compatibilityProfile": "standard"
     },
     {
+      "id": "pricing-hub-video:kling-3-turbo-pro:10s-1080p",
+      "surface": "pricing-hub-video",
+      "engineId": "kling-3-turbo-pro",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 182,
+      "unit": "scenario",
+      "quantity": 1,
+      "displayedAmount": "$1.82",
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "pricing-hub-video:kling-3-turbo-pro:10s-1080p-audio",
+      "surface": "pricing-hub-video",
+      "engineId": "kling-3-turbo-pro",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 182,
+      "unit": "scenario",
+      "quantity": 1,
+      "displayedAmount": "$1.82",
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "pricing-hub-video:kling-3-turbo-pro:10s-720p",
+      "surface": "pricing-hub-video",
+      "engineId": "kling-3-turbo-pro",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:kling-3-turbo-pro:4k-route",
+      "surface": "pricing-hub-video",
+      "engineId": "kling-3-turbo-pro",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:kling-3-turbo-pro:5s-720p",
+      "surface": "pricing-hub-video",
+      "engineId": "kling-3-turbo-pro",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:kling-3-turbo-pro:8s-1080p",
+      "surface": "pricing-hub-video",
+      "engineId": "kling-3-turbo-pro",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 146,
+      "unit": "scenario",
+      "quantity": 1,
+      "displayedAmount": "$1.46",
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "pricing-hub-video:kling-3-turbo-pro:entry-route",
+      "surface": "pricing-hub-video",
+      "engineId": "kling-3-turbo-pro",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 182,
+      "unit": "scenario",
+      "quantity": 1,
+      "displayedAmount": "$1.82",
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "pricing-hub-video:kling-3-turbo-standard:10s-1080p",
+      "surface": "pricing-hub-video",
+      "engineId": "kling-3-turbo-standard",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:kling-3-turbo-standard:10s-1080p-audio",
+      "surface": "pricing-hub-video",
+      "engineId": "kling-3-turbo-standard",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:kling-3-turbo-standard:10s-720p",
+      "surface": "pricing-hub-video",
+      "engineId": "kling-3-turbo-standard",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 146,
+      "unit": "scenario",
+      "quantity": 1,
+      "displayedAmount": "$1.46",
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "pricing-hub-video:kling-3-turbo-standard:4k-route",
+      "surface": "pricing-hub-video",
+      "engineId": "kling-3-turbo-standard",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:kling-3-turbo-standard:5s-720p",
+      "surface": "pricing-hub-video",
+      "engineId": "kling-3-turbo-standard",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 73,
+      "unit": "scenario",
+      "quantity": 1,
+      "displayedAmount": "$0.73",
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "pricing-hub-video:kling-3-turbo-standard:8s-1080p",
+      "surface": "pricing-hub-video",
+      "engineId": "kling-3-turbo-standard",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:kling-3-turbo-standard:entry-route",
+      "surface": "pricing-hub-video",
+      "engineId": "kling-3-turbo-standard",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 146,
+      "unit": "scenario",
+      "quantity": 1,
+      "displayedAmount": "$1.46",
+      "compatibilityProfile": "standard"
+    },
+    {
       "id": "pricing-hub-video:kling-o3-4k:10s-1080p",
       "surface": "pricing-hub-video",
       "engineId": "kling-o3-4k",
@@ -5267,6 +5597,54 @@
       "quantity": 1,
       "displayedAmount": "$2.60",
       "compatibilityProfile": "provider-reference-current"
+    },
+    {
+      "id": "pricing-hub-video:minimax-h3-max:10s-1080p",
+      "surface": "pricing-hub-video",
+      "engineId": "minimax-h3-max",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:minimax-h3-max:10s-1080p-audio",
+      "surface": "pricing-hub-video",
+      "engineId": "minimax-h3-max",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:minimax-h3-max:10s-720p",
+      "surface": "pricing-hub-video",
+      "engineId": "minimax-h3-max",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:minimax-h3-max:4k-route",
+      "surface": "pricing-hub-video",
+      "engineId": "minimax-h3-max",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:minimax-h3-max:5s-720p",
+      "surface": "pricing-hub-video",
+      "engineId": "minimax-h3-max",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:minimax-h3-max:8s-1080p",
+      "surface": "pricing-hub-video",
+      "engineId": "minimax-h3-max",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:minimax-h3-max:entry-route",
+      "surface": "pricing-hub-video",
+      "engineId": "minimax-h3-max",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 104,
+      "unit": "scenario",
+      "quantity": 1,
+      "displayedAmount": "$1.04",
+      "compatibilityProfile": "standard"
     },
     {
       "id": "pricing-hub-video:minimax-h3:10s-1080p",

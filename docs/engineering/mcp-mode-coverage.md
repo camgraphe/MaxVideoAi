@@ -72,8 +72,8 @@ intentionally absent from MCP execution:
 | Model | Mode | Scope | Why it remains closed |
 | --- | --- | --- | --- |
 | Gemini Omni Flash 1.1 | `retake` | Public MCP | Requires a private previous-interaction identifier; exposing it would break the transport-neutral contract. The authenticated workspace can retain that private interaction state. |
-| MiniMax H3 Max | `i2v` | Launch canary | Trusted MIME type, extension, byte-size, and image-dimension enforcement has not been proven through the complete route. |
-| MiniMax H3 Max | `ref2v` | Launch canary | Mixed image/video/audio references require trusted token metadata and complete per-type limits before the mode can execute. |
+| MiniMax H3 Max | `i2v` | Public model, execution-gated mode | Trusted MIME type, extension, byte-size, and image-dimension enforcement has not been proven through the complete route. |
+| MiniMax H3 Max | `ref2v` | Public model, execution-gated mode | Mixed image/video/audio references require trusted token metadata and complete per-type limits before the mode can execute. |
 
 LTX 2.3 audio-to-video and retake, the Luma Ray reframe modes, and Kling 2.5
 Standard now use verified MaxVideoAI assets, exact canonical pricing, and the
@@ -82,32 +82,32 @@ provider configuration and runtime availability as the website.
 
 `tests/mcp-special-video-modes.test.ts` is the drift guard. It fails when a new
 app-published mode is not represented by the canonical MCP contract or when the
-explicit unpublished H3 Max closed list changes without review.
+explicit H3 Max execution-gated mode list changes without review.
 
-## Prelaunch access
+## P1 public access
 
-The current private set contains `kling-3-turbo-standard`,
-`kling-3-turbo-pro`, and `minimax-h3-max`. They can be exercised before
-publication only by the existing production staging launch canary: exact
-staging host, allowlisted account ID, allowlisted OAuth client ID, and the
-operational switch must all match. The set is derived from launch-wave
-contracts and rechecks that every identity is still current and
-app-unpublished. It is used only for an exact known ID in details, project
-budgeting, preparation, and confirmation. Public listing and recommendation
-never receive it, and prelaunch details omit unpublished model and example
-links.
+`kling-3-turbo-standard`, `kling-3-turbo-pro`, and `minimax-h3-max` are public
+registry identities after the atomic P1 publication gate. Public MCP listing,
+details, budgeting, preparation, and confirmation now resolve them through the
+same public engine registry as the workspace. They are no longer members of
+the private runtime or prelaunch-access sets.
 
-Both Kling 3 Turbo tiers expose only `t2v` and owned-image `i2v` in the canary,
+Both Kling 3 Turbo tiers expose only `t2v` and owned-image `i2v`,
 including their schema-derived multi-shot prompt contract. MCP metadata names
 Kling by Kuaishou as the primary provider and serializes neither alternate
-routes nor fallback implementation details. The direct-provider launch gate is
-still unproven, so these identities remain private even though a canary-only
-contingency route is available.
+routes nor fallback implementation details. The direct route remains primary;
+the narrowly tested depleted-balance response may fall back once before any
+direct task is accepted.
 
-MiniMax H3 Max exposes only `t2v` in the canary. Its details contain neither a
+MiniMax H3 Max exposes only executable `t2v` in public MCP. Its details contain neither a
 Fal provider label nor a Fal endpoint. `i2v` and `ref2v` fail closed at the
 executability boundary for the reasons recorded above; their theoretical
 engine-schema presence is not projected as an executable capability.
+
+Launch videos are a separate publication concern: the eight P1 media rows stay
+private and non-indexable in the admin `not-published` queue. They enter public
+model pages, watch pages, and the video sitemap only after a later decision in
+the normal admin SEO workflow.
 
 Mode details normalize provider duration labels to executable numeric seconds;
 provider-only values such as `auto` are never advertised as MCP inputs. P0 and
