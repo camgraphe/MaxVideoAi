@@ -26,10 +26,6 @@ const TOP_PICK_IDS = [
   'grok-imagine-video-1-5',
   'flux-3',
   'seedance-2-5',
-  'seedance-2-0',
-  'kling-3-pro',
-  'veo-3-1',
-  'happy-horse-1-1',
 ] as const;
 const RECOMMENDED_IDS = [
   'wan-3',
