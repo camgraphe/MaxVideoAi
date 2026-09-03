@@ -25,6 +25,7 @@ import {
 import { buildSoraRequestOptions } from './request-options-sora';
 import { deriveRuntimeSchemaCaps, getRuntimeDurationDefault, getRuntimeSchemaEnumDefault } from './runtime-schema-options';
 import { isPrivateRuntimeEngineId } from '@/server/video-generation/private-engine-registry';
+import { resolveRuntimeResolutionPolicy } from '@/server/video-generation/runtime-resolution';
 
 export type { GenerationElement, MultiPromptEntry } from './request-option-normalizers';
 
@@ -130,11 +131,12 @@ export function buildGenerateRequestOptions(params: {
   const usesPrivateRuntimeSchema = isPrivateRuntimeEngineId(engine.id);
   const capability = getEngineCaps(engine.id, mode)
     ?? (usesPrivateRuntimeSchema ? deriveRuntimeSchemaCaps(engine.inputSchema, mode) : undefined);
+  const resolutionPolicy = resolveRuntimeResolutionPolicy(engine, mode);
   const activeEnumDefault = (fieldId: string) => (
     usesPrivateRuntimeSchema ? getRuntimeSchemaEnumDefault(engine.inputSchema, mode, fieldId) : undefined
   );
   const supportsDuration = capability ? Boolean(capability.duration || capability.frames) : true;
-  const supportsResolution = capability ? Boolean(capability.resolution && capability.resolution.length) : true;
+  const supportsResolution = resolutionPolicy.supportsResolution;
   const supportsFps = capability
     ? Array.isArray(capability.fps)
       ? capability.fps.length > 0
@@ -247,7 +249,7 @@ export function buildGenerateRequestOptions(params: {
   let requestedResolution =
     typeof body.resolution === 'string' && body.resolution.trim().length
       ? body.resolution.trim()
-      : activeEnumDefault('resolution') ?? engine.resolutions?.[0] ?? '1080p';
+      : resolutionPolicy.defaultResolution ?? resolutionPolicy.pricingFallbackResolution;
   let pricingResolution =
     requestedResolution === 'auto'
       ? engine.resolutions.find((value) => value !== 'auto') ?? engine.resolutions[0] ?? '1080p'
@@ -270,8 +272,7 @@ export function buildGenerateRequestOptions(params: {
     effectiveResolution = lumaResolutionInfo.value;
     requestedResolution = lumaResolutionInfo.value;
   } else if (!supportsResolution) {
-    const fallbackResolution =
-      engine.resolutions.find((value) => value !== 'auto') ?? engine.resolutions[0] ?? '540p';
+    const fallbackResolution = resolutionPolicy.pricingFallbackResolution;
     pricingResolution = fallbackResolution;
     effectiveResolution = fallbackResolution;
     requestedResolution = fallbackResolution;

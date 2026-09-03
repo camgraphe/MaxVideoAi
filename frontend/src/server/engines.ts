@@ -36,6 +36,7 @@ import {
   projectConfiguredEngine,
 } from '@/server/engine-configuration-projection';
 import { getPrivateRuntimeEngineById } from '@/server/video-generation/private-engine-registry';
+import { resolveRuntimeResolutionPolicy } from '@/server/video-generation/runtime-resolution';
 
 async function getConfiguredEnginesForBase(
   baseEngines: EngineCaps[],
@@ -177,17 +178,18 @@ export async function computeConfiguredPreflight(
   const isLumaRay2 = isLumaRay2EngineId(engine.id);
   const pricingEngine = applyEngineVariantPricing(engine, request.mode);
   const capability = getEngineCaps(engine.id, request.mode);
+  const resolutionPolicy = resolveRuntimeResolutionPolicy(engine, request.mode);
   const supportsDuration = Boolean(capability?.duration || capability?.frames);
-  const supportsResolution = Boolean(capability?.resolution?.length);
+  const supportsResolution = resolutionPolicy.supportsResolution;
   const supportsAspectRatio = Boolean(capability?.aspectRatio?.length);
   const requestedResolution = request.resolution;
   const availableResolutions: string[] = engine.resolutions.map((value) => value);
-  const fallbackResolution = (
-    availableResolutions.find((value) => value !== 'auto')
-    ?? availableResolutions[0]
-    ?? '1080p'
-  ) as NonNullable<typeof requestedResolution>;
-  let effectiveResolution: NonNullable<PreflightRequest['resolution']> = requestedResolution ?? fallbackResolution;
+  const fallbackResolution = resolutionPolicy.pricingFallbackResolution as NonNullable<typeof requestedResolution>;
+  let effectiveResolution = (
+    requestedResolution
+    ?? resolutionPolicy.defaultResolution
+    ?? fallbackResolution
+  ) as NonNullable<PreflightRequest['resolution']>;
   if (isLumaRay2) {
     if (!supportsResolution) {
       effectiveResolution =
