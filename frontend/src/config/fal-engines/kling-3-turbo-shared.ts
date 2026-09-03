@@ -153,6 +153,7 @@ export function createKling3TurboEngine(input: {
     providerMeta: {
       provider: 'kling',
       modelSlug: KLING_3_TURBO_ENDPOINTS[input.id].t2v,
+      clientErrorPolicy: 'opaque',
     },
     availability: 'limited',
     brandId: 'kling',

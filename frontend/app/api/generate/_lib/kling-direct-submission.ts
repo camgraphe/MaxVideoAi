@@ -1,5 +1,5 @@
 import type { GeneratePayload, GenerateResult } from '@/lib/fal';
-import type { Mode, PricingSnapshot } from '@/types/engines';
+import type { Mode, PricingSnapshot, ProviderClientErrorPolicy } from '@/types/engines';
 import { query } from '@/lib/db';
 import { getKlingDirectClient } from '@/server/video-providers/kling-direct/client';
 import {
@@ -244,6 +244,7 @@ export async function submitKlingDirectGenerateTask(params: {
   heroRenderId: string | null;
   localKey: string | null;
   logMetricFn: LogMetricFn;
+  clientErrorPolicy?: ProviderClientErrorPolicy;
   deps?: KlingDirectSubmissionDeps;
 }): Promise<KlingDirectGenerateSubmissionResult> {
   const deps = params.deps ?? {};
@@ -502,6 +503,7 @@ export async function submitKlingDirectGenerateTask(params: {
       setLastProviderJobId: falTracker.setLastProviderJobId,
       persistProviderJobId: falTracker.persistProviderJobId,
       logMetricFn: params.logMetricFn,
+      clientErrorPolicy: params.clientErrorPolicy,
     });
     const falProviderJobId = falProviderJobIdFromResult(falSubmission, falTracker.getLastProviderJobId);
     if (falProviderJobId) {

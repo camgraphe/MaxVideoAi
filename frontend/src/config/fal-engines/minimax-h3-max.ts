@@ -213,6 +213,7 @@ export const MINIMAX_H3_MAX_ENGINE: EngineCaps = {
   providerMeta: {
     provider: 'minimax',
     modelSlug: MINIMAX_H3_MAX_ENDPOINTS.t2v,
+    clientErrorPolicy: 'opaque',
   },
   availability: 'limited',
   brandId: 'minimax',

@@ -23276,7 +23276,8 @@
       "ttlSec": 600,
       "providerMeta": {
         "provider": "kling",
-        "modelSlug": "fal-ai/kling-video/v3/turbo/standard/text-to-video"
+        "modelSlug": "fal-ai/kling-video/v3/turbo/standard/text-to-video",
+        "clientErrorPolicy": "opaque"
       },
       "availability": "limited",
       "brandId": "kling",
@@ -23646,7 +23647,8 @@
       "ttlSec": 600,
       "providerMeta": {
         "provider": "kling",
-        "modelSlug": "fal-ai/kling-video/v3/turbo/pro/text-to-video"
+        "modelSlug": "fal-ai/kling-video/v3/turbo/pro/text-to-video",
+        "clientErrorPolicy": "opaque"
       },
       "availability": "limited",
       "brandId": "kling",
@@ -24110,7 +24112,8 @@
       "ttlSec": 600,
       "providerMeta": {
         "provider": "minimax",
-        "modelSlug": "minimax/h3-max/text-to-video"
+        "modelSlug": "minimax/h3-max/text-to-video",
+        "clientErrorPolicy": "opaque"
       },
       "availability": "limited",
       "brandId": "minimax",

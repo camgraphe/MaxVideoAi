@@ -10,6 +10,7 @@ import type { EngineCaps, PreflightRequest, PreflightResponse } from '@/types/en
 import { parsePreflightRequestPayload } from './preflight-request';
 import type { LaunchCanaryRequestContext } from '@/server/model-launch-canary-request';
 import { resolveAgentGenerationModeExecutability } from '@/server/agent-runtime/model-executability';
+import { validateRuntimeRequestSettings } from '@/app/api/generate/_lib/runtime-schema-options';
 
 type MediaConstraintDependencies = Parameters<
   typeof validateNormalizedGenerationAttachments
@@ -112,6 +113,22 @@ export async function resolveMediaAwarePreflight(
     ).executable
   ) {
     return computeConfiguredPreflightFn(request);
+  }
+  if (privateEngine) {
+    const settingsValidation = validateRuntimeRequestSettings({
+      engine,
+      mode: request.mode,
+      durationSec: request.durationSec,
+      resolution: request.resolution,
+      aspectRatio: request.aspectRatio,
+      fps: request.fps,
+    });
+    if (!settingsValidation.ok) {
+      return mediaPricingFailure(
+        settingsValidation.error.code,
+        settingsValidation.error.message,
+      );
+    }
   }
 
   if (hasClientDeclaredMediaPricingFacts(request)) {

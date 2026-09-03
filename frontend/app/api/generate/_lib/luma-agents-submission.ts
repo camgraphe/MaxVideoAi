@@ -1,6 +1,6 @@
 import type { GeneratePayload, GenerateResult } from '@/lib/fal';
 import { query } from '@/lib/db';
-import type { Mode, PricingSnapshot } from '@/types/engines';
+import type { Mode, PricingSnapshot, ProviderClientErrorPolicy } from '@/types/engines';
 import { getLumaAgentsClient } from '@/server/video-providers/luma-agents/client';
 import { estimateLumaAgentsVideoCost } from '@/server/video-providers/luma-agents/cost';
 import {
@@ -246,6 +246,7 @@ async function submitFalFromLumaAgents(params: {
   queryFn: QueryFn;
   submitFalGenerateTaskFn: typeof submitFalGenerateTask;
   logMetricFn: LogMetricFn;
+  clientErrorPolicy?: ProviderClientErrorPolicy;
 }): Promise<LumaAgentsGenerateSubmissionResult> {
   const falAttempt =
     params.attemptIndex === null
@@ -295,6 +296,7 @@ async function submitFalFromLumaAgents(params: {
     setLastProviderJobId: falTracker.setLastProviderJobId,
     persistProviderJobId: falTracker.persistProviderJobId,
     logMetricFn: params.logMetricFn,
+    clientErrorPolicy: params.clientErrorPolicy,
   });
   const falProviderJobId = falProviderJobIdFromResult(falSubmission, falTracker.getLastProviderJobId);
   if (falAttempt && falProviderJobId) {
@@ -365,6 +367,7 @@ export async function submitLumaAgentsGenerateTask(params: {
   heroRenderId: string | null;
   localKey: string | null;
   logMetricFn: LogMetricFn;
+  clientErrorPolicy?: ProviderClientErrorPolicy;
   deps?: LumaAgentsSubmissionDeps;
 }): Promise<LumaAgentsGenerateSubmissionResult> {
   const deps = params.deps ?? {};
@@ -414,6 +417,7 @@ export async function submitLumaAgentsGenerateTask(params: {
       queryFn,
       submitFalGenerateTaskFn,
       logMetricFn: params.logMetricFn,
+      clientErrorPolicy: params.clientErrorPolicy,
     });
   }
 
@@ -605,6 +609,7 @@ export async function submitLumaAgentsGenerateTask(params: {
       queryFn,
       submitFalGenerateTaskFn,
       logMetricFn: params.logMetricFn,
+      clientErrorPolicy: params.clientErrorPolicy,
     });
   }
 }

@@ -2,6 +2,8 @@ import { resolveAgentPrincipal } from '@/server/mcp/oauth-adapter';
 import {
   resolveMcpPrelaunchModelAccess,
   resolveMcpStagingCanaryGenerationEnvironment,
+  resolveWorkspacePrelaunchModelAccess,
+  resolveWorkspaceStagingCanaryGenerationEnvironment,
   type McpPrelaunchModelAccess,
 } from '@/server/mcp/provider-canary-access';
 import type { AgentPrincipal } from '@/server/agent-api/principal';
@@ -19,9 +21,10 @@ export type LaunchCanaryRequestDependencies = Readonly<{
 }>;
 
 /**
- * Reuses the MCP launch-canary contract for every authenticated surface. Access
- * is granted only from the exact staging host to a verified OAuth account and
- * OAuth client present in the server-side allowlists.
+ * Resolves launch-canary access on the exact staging surface. Hosted MCP
+ * requests require matching account and client allowlists; first-party
+ * workspace sessions require a verified Supabase principal in the separate
+ * workspace account allowlist and must not carry an MCP client claim.
  */
 export async function resolveLaunchCanaryRequestContext(
   request: Request,
@@ -34,15 +37,17 @@ export async function resolveLaunchCanaryRequestContext(
   } catch {
     return null;
   }
-  const access = resolveMcpPrelaunchModelAccess(principal, request.url, env);
+  const mcpAccess = resolveMcpPrelaunchModelAccess(principal, request.url, env);
+  const workspaceAccess = mcpAccess
+    ? null
+    : resolveWorkspacePrelaunchModelAccess(principal, request.url, env);
+  const access = mcpAccess ?? workspaceAccess;
   if (!access) return null;
   return Object.freeze({
     principal,
     access,
-    generationEnvironment: resolveMcpStagingCanaryGenerationEnvironment(
-      principal,
-      request.url,
-      env,
-    ),
+    generationEnvironment: mcpAccess
+      ? resolveMcpStagingCanaryGenerationEnvironment(principal, request.url, env)
+      : resolveWorkspaceStagingCanaryGenerationEnvironment(principal, request.url, env),
   });
 }

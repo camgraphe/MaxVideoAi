@@ -142,7 +142,16 @@ values on the dedicated staging project:
 ```text
 MCP_STAGING_CANARY_ACCOUNT_IDS=<comma-separated MaxVideoAI staging account IDs>
 MCP_STAGING_CANARY_CLIENT_IDS=<comma-separated hosted MCP OAuth client IDs>
+WORKSPACE_STAGING_CANARY_ACCOUNT_IDS=<comma-separated stable Supabase user IDs for first-party workspace QA>
 ```
+
+`WORKSPACE_STAGING_CANARY_ACCOUNT_IDS` is a separate server-only allowlist for
+first-party browser sessions, whose verified Supabase access tokens do not carry
+an MCP `client_id` claim. It accepts stable Supabase user IDs only: never email
+addresses, browser-provided identifiers, or hard-coded application values. The
+variable must be present on the dedicated staging project for workspace canary
+QA; when absent or empty, first-party access fails closed. The exact staging
+host and `MCP_STAGING_OPERATIONAL_ENABLED=true` remain mandatory.
 
 During an attended QA campaign, `MCP_STAGING_CANARY_ADDITIONAL_ACCOUNT_IDS`
 and `MCP_STAGING_CANARY_ADDITIONAL_CLIENT_IDS` may hold second sensitive
@@ -152,7 +161,7 @@ identity. Remove both additional values after the campaign. An exact account
 and exact client match remain mandatory, whether each match comes from its
 primary or additional list.
 
-Access is granted only when the exact account and the exact OAuth client both
+Hosted MCP access is granted only when the exact account and the exact OAuth client both
 match, the request is served from `maxvideoai-mcp-staging.vercel.app`, and
 `MCP_STAGING_OPERATIONAL_ENABLED=true`. A partial match fails closed. These
 allowlists do not mutate the deployed provider configuration: all public routing

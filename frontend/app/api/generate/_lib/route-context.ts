@@ -44,6 +44,7 @@ import {
   type LaunchCanaryRequestContext,
 } from '@/server/model-launch-canary-request';
 import { resolveAgentGenerationModeExecutability } from '@/server/agent-runtime/model-executability';
+import { validateRuntimeRequestSettings } from './runtime-schema-options';
 
 export type GenerateRouteContext = {
   engine: EngineCaps;
@@ -278,6 +279,27 @@ export async function resolveGenerateRouteContext(params: {
     ).executable
   ) {
     return { ok: false, status: 503, body: { ok: false, error: 'Engine unavailable' } };
+  }
+  if (launchCanaryContext) {
+    const settingsValidation = validateRuntimeRequestSettings({
+      engine,
+      mode,
+      durationSec: body.durationSec ?? body.duration,
+      resolution: body.resolution,
+      aspectRatio: body.aspectRatio,
+      fps: body.fps,
+    });
+    if (!settingsValidation.ok) {
+      return {
+        ok: false,
+        status: 400,
+        body: {
+          ok: false,
+          error: settingsValidation.error.code,
+          message: settingsValidation.error.message,
+        },
+      };
+    }
   }
 
   if (isBytePlusV1a && !isBytePlusModelArkEnabled()) {

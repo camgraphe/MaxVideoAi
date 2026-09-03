@@ -17,8 +17,7 @@ function csvIncludes(value: string | undefined, expected: string): boolean {
     .includes(expected);
 }
 
-function isExactStagingCanary(
-  principal: AgentPrincipal,
+function isExactStagingSurface(
   accountUrl: string,
   env: NodeJS.ProcessEnv,
 ): boolean {
@@ -30,7 +29,15 @@ function isExactStagingCanary(
   }
   return env.NODE_ENV === 'production'
     && env.MCP_STAGING_OPERATIONAL_ENABLED === 'true'
-    && host === STAGING_ACCOUNT_HOST
+    && host === STAGING_ACCOUNT_HOST;
+}
+
+function isExactMcpStagingCanary(
+  principal: AgentPrincipal,
+  accountUrl: string,
+  env: NodeJS.ProcessEnv,
+): boolean {
+  return isExactStagingSurface(accountUrl, env)
     && principal.clientId !== null
     && (
       csvIncludes(env.MCP_STAGING_CANARY_ACCOUNT_IDS, principal.userId)
@@ -42,17 +49,23 @@ function isExactStagingCanary(
     );
 }
 
+function isExactWorkspaceStagingCanary(
+  principal: AgentPrincipal,
+  accountUrl: string,
+  env: NodeJS.ProcessEnv,
+): boolean {
+  return isExactStagingSurface(accountUrl, env)
+    && principal.clientId === null
+    && csvIncludes(env.WORKSPACE_STAGING_CANARY_ACCOUNT_IDS, principal.userId);
+}
+
 export type McpPrelaunchModelAccess = Readonly<{
   allowedModelIds: ReadonlySet<string>;
 }>;
 
-export function resolveMcpPrelaunchModelAccess(
-  principal: AgentPrincipal,
-  accountUrl: string,
-  env: NodeJS.ProcessEnv = process.env,
-  resolveRuntimeModel: typeof getRuntimeModelById = getRuntimeModelById,
+function resolvePrelaunchModelAccess(
+  resolveRuntimeModel: typeof getRuntimeModelById,
 ): McpPrelaunchModelAccess | null {
-  if (!isExactStagingCanary(principal, accountUrl, env)) return null;
   const launchCanaryIds = Array.from(new Set([
     ...P0_VIDEO_MODEL_IDS,
     ...MODEL_LAUNCH_WAVES.flatMap((wave) => wave.id === 'p1'
@@ -68,16 +81,30 @@ export function resolveMcpPrelaunchModelAccess(
     : null;
 }
 
-export function resolveMcpStagingCanaryGenerationEnvironment(
+export function resolveMcpPrelaunchModelAccess(
   principal: AgentPrincipal,
   accountUrl: string,
   env: NodeJS.ProcessEnv = process.env,
-): AgentGenerationExecutabilityEnvironment {
-  if (!isExactStagingCanary(principal, accountUrl, env)) {
-    return createAgentGenerationExecutabilityEnvironment(env);
-  }
+  resolveRuntimeModel: typeof getRuntimeModelById = getRuntimeModelById,
+): McpPrelaunchModelAccess | null {
+  if (!isExactMcpStagingCanary(principal, accountUrl, env)) return null;
+  return resolvePrelaunchModelAccess(resolveRuntimeModel);
+}
 
-  return createAgentGenerationExecutabilityEnvironment(Object.freeze({
+export function resolveWorkspacePrelaunchModelAccess(
+  principal: AgentPrincipal,
+  accountUrl: string,
+  env: NodeJS.ProcessEnv = process.env,
+  resolveRuntimeModel: typeof getRuntimeModelById = getRuntimeModelById,
+): McpPrelaunchModelAccess | null {
+  if (!isExactWorkspaceStagingCanary(principal, accountUrl, env)) return null;
+  return resolvePrelaunchModelAccess(resolveRuntimeModel);
+}
+
+function createStagingCanaryGenerationEnvironment(
+  env: NodeJS.ProcessEnv,
+): AgentGenerationExecutabilityEnvironment {
+  const environment = createAgentGenerationExecutabilityEnvironment(Object.freeze({
     ...env,
     GOOGLE_VERTEX_IMAGE_MCP_ENABLED: 'true',
     GOOGLE_VERTEX_IMAGE_MCP_PUBLIC_ROUTING_ENABLED: 'true',
@@ -88,4 +115,31 @@ export function resolveMcpStagingCanaryGenerationEnvironment(
     GOOGLE_VERTEX_OMNI_PUBLIC_ROUTING_ENABLED: 'true',
     GOOGLE_VERTEX_OMNI_ADMIN_ONLY: 'false',
   }));
+  return Object.freeze({
+    ...environment,
+    falApiKey: env.FAL_API_KEY ?? env.FAL_KEY ?? environment.falApiKey,
+  });
+}
+
+export function resolveMcpStagingCanaryGenerationEnvironment(
+  principal: AgentPrincipal,
+  accountUrl: string,
+  env: NodeJS.ProcessEnv = process.env,
+): AgentGenerationExecutabilityEnvironment {
+  if (!isExactMcpStagingCanary(principal, accountUrl, env)) {
+    return createAgentGenerationExecutabilityEnvironment(env);
+  }
+
+  return createStagingCanaryGenerationEnvironment(env);
+}
+
+export function resolveWorkspaceStagingCanaryGenerationEnvironment(
+  principal: AgentPrincipal,
+  accountUrl: string,
+  env: NodeJS.ProcessEnv = process.env,
+): AgentGenerationExecutabilityEnvironment {
+  if (!isExactWorkspaceStagingCanary(principal, accountUrl, env)) {
+    return createAgentGenerationExecutabilityEnvironment(env);
+  }
+  return createStagingCanaryGenerationEnvironment(env);
 }

@@ -21,6 +21,7 @@ const REQUIRED_OPERATIONAL_ENVIRONMENT = [
   'MCP_STAGING_OPERATIONAL_ENABLED',
   'MCP_STAGING_CANARY_ACCOUNT_IDS',
   'MCP_STAGING_CANARY_CLIENT_IDS',
+  'WORKSPACE_STAGING_CANARY_ACCOUNT_IDS',
   'BYTEPLUS_ARK_ENABLED',
   'BYTEPLUS_ARK_API_KEY',
   'SEEDANCE_2_5_BYTEPLUS_ENABLED',
@@ -720,6 +721,7 @@ test('MCP staging deploy wrapper gates an unaliased candidate before promotion',
   }
   assert.match(runbook, /BYTEPLUS_ARK_API_KEY[\s\S]{0,400}dedicated staging credential/i);
   assert.match(runbook, /MCP_STAGING_CANARY_ACCOUNT_IDS[\s\S]{0,600}MCP_STAGING_CANARY_CLIENT_IDS/i);
+  assert.match(runbook, /WORKSPACE_STAGING_CANARY_ACCOUNT_IDS[\s\S]{0,600}stable Supabase user IDs/i);
   assert.match(runbook, /exact account[\s\S]{0,160}OAuth client/i);
   assert.match(runbook, /public routing\s+flags[\s\S]{0,160}(?:false|closed)/i);
   assert.match(runbook, /CREDENTIAL_BLOCKED/);

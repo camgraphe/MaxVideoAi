@@ -88,6 +88,7 @@ export type AspectRatio =
   | 'source'
   | 'auto';
 export type EngineAvailability = 'available' | 'limited' | 'waitlist' | 'paused';
+export type ProviderClientErrorPolicy = 'public' | 'opaque';
 
 export interface BrandAssetPolicy {
   logoAllowed: boolean;
@@ -255,6 +256,7 @@ export interface EngineCaps {
   providerMeta?: {
     provider?: string;
     modelSlug?: string;
+    clientErrorPolicy?: ProviderClientErrorPolicy;
   };
   pricingDetails?: EnginePricingDetails;
   iconUrl?: string | null;
