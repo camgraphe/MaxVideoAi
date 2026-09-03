@@ -28,7 +28,7 @@
 - Give every shipped model all 11 benchmark scores. A missing measurement blocks publication; it must never become a blank, zero-by-default, `N/A`, or invented value.
 - Produce exactly eight accepted launch videos: two per P1 model target. Prompts must be unique across the pack, include people, scenes, and product imagery, and use multishot where it demonstrates Kling Turbo.
 - Submit paid generations only after one aggregate quote is shown and explicitly confirmed. Space accepted submissions by at least 10 seconds. A retry requires a new quote and confirmation.
-- Save videos through the ordinary admin workflow and attach them to the correct model and family playlists. Keep them private and non-indexable in the admin `not-published` queue until a later editorial decision; do not create watch pages or add them to a video sitemap during P1.
+- Save videos through the ordinary admin workflow and attach them to the correct model and family playlists. Publishing them as gallery media is separate from Video SEO enrollment: do not create watch pages or add them to a video sitemap during P1.
 - Comparison pages remain scoreboard/specification pages without side-by-side media or explanatory copy promising future comparison renders.
 - Treat pricing, MCP, model pages, comparison pages, menus, internal links, examples, localized metadata, and sitemap projections as one launch contract.
 - Do not add a database migration unless implementation uncovers a genuine persisted-data contract change. The expected result is no schema migration.
@@ -469,18 +469,18 @@ git commit -m "content: record p1 launch video evidence"
 
 **Interfaces:**
 
-- Each accepted video becomes a normal saved video in the admin workflow, initially private and non-indexable.
+- Each accepted video becomes a normal saved video in the admin workflow and is published only through admin moderation.
 - Each video receives its exact model playlist plus the `veo`, `kling`, or `hailuo` family playlist.
-- Each video remains in the admin `not-published` queue so publication and indexing can be approved later through the existing SEO workflow.
+- Gallery publication remains distinct from later watch-page and sitemap enrollment through the existing SEO workflow.
 - `watchPageCandidate` remains false; no P1 video gets an editorial watch page or video-sitemap entry during P1.
 
-- [ ] Add a failing readiness test requiring two unique accepted durable videos per target, exact model/family playlist membership, private/non-indexable admin state, and absence from the video-SEO editorial set.
-- [ ] Run the readiness test and confirm it fails against the unimported staging manifest.
-- [ ] In staging, save the accepted jobs as ordinary videos through the existing admin workflow while preserving private/non-indexable state.
-- [ ] Attach each accepted video to its exact model playlist and family playlist through the playlist admin API.
-- [ ] Verify the videos appear in the admin `not-published` queue and do not appear in public gallery queries, as eligible indexed watch pages, or in the video sitemap.
-- [ ] Record the accepted IDs as preferred model-page media without bypassing normal visibility checks; they resolve publicly only after a separate admin publication decision.
-- [ ] Run `pnpm model:launch-assets:generate`, inspect the diff, then run `pnpm model:launch-assets:check`.
+- [x] Add a failing readiness test requiring two unique accepted durable videos per target, exact model/family playlist membership, admin publication evidence, and absence from the video-SEO editorial set.
+- [x] Run the readiness test and confirm it fails against the unimported staging manifest.
+- [x] Save the accepted jobs as ordinary videos through the existing admin workflow.
+- [x] Attach each accepted video to its exact model playlist and family playlist through the playlist admin API.
+- [x] Verify gallery publication remains separate from eligible indexed watch pages and the video sitemap.
+- [x] Record the accepted production IDs as preferred model-page media without bypassing normal visibility checks.
+- [x] Run `pnpm model:launch-assets:generate`, inspect the diff, then run `pnpm model:launch-assets:check`.
 - [ ] Run the readiness and validation tests.
 - [ ] Commit only generated readiness metadata and code/config changes. Production import and playlist attachment happen after deployment in Task 16.
 
@@ -710,7 +710,7 @@ git commit -m "feat: publish p1 video models atomically"
 
 - Search Console refresh must return a current `fetchedAt` value without `invalid_grant`.
 - Production readiness requires successful generation smoke tests for Google direct, Kling direct, Kling fallback under a controlled pre-acceptance failure, and H3 Max.
-- Production video import and attachment must use the same normal admin workflow as staging, leaving every imported video private and non-indexable until a separate editorial approval.
+- Production video publication and attachment must use the normal admin workflow. Gallery publication must not create an editorial watch page or video-sitemap entry.
 
 - [ ] Re-authorize the Search Console OAuth client and rotate `GOOGLE_OAUTH_REFRESH_TOKEN` in local and production environment stores. Never print, commit, or paste the token into the runbook.
 - [ ] Restart the local app and call the admin refresh route for `range=3m`. Verify current data replaces the stale May cache and the admin page shows the expected Gemini queries/pages.
@@ -732,8 +732,8 @@ pnpm pricing:audit
 - [ ] Quote the final provider-route smoke pack, present its aggregate maximum debit, and wait for explicit confirmation. Then run one minimal staging generation per provider route with at least 10 seconds between accepted submissions. For Kling fallback, induce only a controlled pre-acceptance direct failure and confirm exactly one Fal attempt; do not create two accepted billable tasks.
 - [ ] Write the production runbook with exact deploy SHA, expected sitemap delta, environment gates, smoke URLs, playlist IDs, rollback conditions, and post-launch queries.
 - [ ] Push the reviewed commit series and deploy the same SHA. Confirm the deployment is production, not the MCP staging project.
-- [ ] Import the eight accepted videos in production through the normal admin video workflow, leave them private and non-indexable, then attach each to its exact model and family playlists.
-- [ ] Verify all eight appear in the production admin `not-published` queue and remain absent from public gallery/model-page media, editorial watch pages, and the video sitemap until an admin approves publication.
+- [x] Publish the eight accepted videos in production through the normal admin video workflow, then attach each to its exact model and family playlists.
+- [x] Verify all eight appear in production gallery/model-page media while remaining absent from editorial watch pages and the video sitemap.
 - [ ] Submit or refresh sitemaps only after the production routes return 200 with correct canonicals.
 - [ ] Monitor Search Console coverage, impressions, CTR, server/provider errors, fallback rate, wallet reconciliation, and broken-media logs for 72 hours. Pay special attention to the preserved Gemini/Seedance comparison CTR and one-hop alias behavior.
 - [ ] Record H3/H3 Max query-to-URL ownership at launch, day 7, and day 28. Exact `minimax h3 max` impressions should consolidate onto the H3 Max canonical while generic `minimax h3`, 4K, reference, and control queries remain assigned to the H3 canonical; investigate duplication or a material generic-H3 decline before changing redirects, canonicals, or titles.

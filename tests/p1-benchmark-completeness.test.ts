@@ -95,6 +95,14 @@ test('P1 launch evidence uses eight unique reviewed video evidence ids', () => {
       observedAt: string;
     }>;
   };
+  const launchPack = JSON.parse(readFileSync('docs/model-launch/p1-video-example-pack.json', 'utf8')) as {
+    assets: Array<{
+      jobId: string;
+      modelId: string;
+      reviewStatus: string;
+      acceptedAt: string;
+    }>;
+  };
   const evidence = methodology.p1Evidence ?? [];
   assert.equal(evidence.length, 8);
   assert.equal(new Set(evidence.map(({ evidenceId }) => evidenceId)).size, 8);
@@ -105,4 +113,19 @@ test('P1 launch evidence uses eight unique reviewed video evidence ids', () => {
     assert.equal(row.reviewStatus, 'accepted');
     assert.ok(Number.isFinite(Date.parse(row.observedAt)), row.evidenceId);
   }
+  assert.deepEqual(
+    evidence.map(({ evidenceId, modelSlug, reviewStatus, observedAt }) => ({
+      evidenceId,
+      modelSlug,
+      reviewStatus,
+      observedAt,
+    })),
+    launchPack.assets.map(({ jobId, modelId, reviewStatus, acceptedAt }) => ({
+      evidenceId: jobId,
+      modelSlug: modelId,
+      reviewStatus,
+      observedAt: acceptedAt,
+    })),
+    'benchmark evidence should reference the production launch pack',
+  );
 });

@@ -89,60 +89,60 @@
   ],
   "p1Evidence": [
     {
-      "evidenceId": "d7c08847-0a76-4ec6-bdb9-03d9d293b840",
+      "evidenceId": "f06c01cf-86f4-4c91-81bd-5bc099566e05",
       "modelSlug": "gemini-omni-flash",
       "reviewStatus": "accepted",
-      "observedAt": "2026-09-03T12:13:06.834Z",
+      "observedAt": "2026-09-03T20:51:09.005715Z",
       "observation": "Anonymous bicycle mechanic remains out of frame; coherent wheel action, cinematic workshop lighting, rain ambience, and no material temporal artifact."
     },
     {
-      "evidenceId": "a59bedef-5ee8-451e-a09c-7be29e18e629",
+      "evidenceId": "46b7eafe-089c-4135-958c-95c6670150c2",
       "modelSlug": "gemini-omni-flash",
       "reviewStatus": "accepted",
-      "observedAt": "2026-09-03T12:13:13.480Z",
+      "observedAt": "2026-09-03T20:55:11.671188Z",
       "observation": "Continuous aerial reveal of a terraced salt valley with coherent water, mist, birds, camera climb, sunrise transition, and native audio."
     },
     {
-      "evidenceId": "d4890c1b-dc03-4e60-bcc6-b3d1b44857ba",
+      "evidenceId": "3c9d288d-5252-4ed9-9370-b75f5c123ee4",
       "modelSlug": "kling-3-turbo-standard",
       "reviewStatus": "accepted",
-      "observedAt": "2026-09-03T10:52:02.845Z",
+      "observedAt": "2026-09-03T20:45:44.938397Z",
       "observation": "Anonymous baker action is readable at the Standard tier with stable dough handling, fast lateral camera motion, and synchronized ambience."
     },
     {
-      "evidenceId": "da92f706-f644-4a6a-ab0d-b4175e472dd8",
+      "evidenceId": "1e897756-8d78-4112-9c8f-98d4f5e5bd07",
       "modelSlug": "kling-3-turbo-standard",
       "reviewStatus": "accepted",
-      "observedAt": "2026-09-03T10:53:14.610Z",
+      "observedAt": "2026-09-03T20:54:58.603028Z",
       "observation": "Three-shot parcel delivery preserves the parcel, rainy setting, forward movement, and bridging audio across greenhouse, bicycle, and handoff shots."
     },
     {
-      "evidenceId": "df4f081a-9a9e-459b-8aa2-bac773fc6e8e",
+      "evidenceId": "4104d35b-a97a-4449-91fd-cfc628f626de",
       "modelSlug": "kling-3-turbo-pro",
       "reviewStatus": "accepted",
-      "observedAt": "2026-09-03T10:55:49.201Z",
+      "observedAt": "2026-09-03T20:47:06.644363Z",
       "observation": "Premium glass-product macro preserves fine material detail, condensation, caustics, restrained camera movement, and clean studio audio."
     },
     {
-      "evidenceId": "951395ca-6ef0-4f8c-a4d5-a8c1c0a8c93b",
+      "evidenceId": "5981ead1-6b40-46e8-9dc3-ef5a1077f7e7",
       "modelSlug": "kling-3-turbo-pro",
       "reviewStatus": "accepted",
-      "observedAt": "2026-09-03T10:57:32.590Z",
+      "observedAt": "2026-09-03T21:00:38.604728Z",
       "observation": "Observatory scene resolves snow, metal, cables, telescope motion, crane movement, and layered storm audio with strong temporal consistency."
     },
     {
-      "evidenceId": "799a7e0a-89c1-4776-b6f0-d0d8068075d7",
+      "evidenceId": "0caeabd8-4594-473d-aec6-e1998c2e67a8",
       "modelSlug": "minimax-h3-max",
       "reviewStatus": "accepted",
-      "observedAt": "2026-09-03T10:57:57.579Z",
+      "observedAt": "2026-09-03T20:47:30.196767Z",
       "observation": "Anonymous dancer maintains body, hood, fabric motion, mirrored ripples, retreating camera, and synchronized percussion through one continuous movement."
     },
     {
-      "evidenceId": "7b6c56c3-4aba-459a-8e6c-09aeedc2dc81",
+      "evidenceId": "2fbcc3d8-8001-465e-b5ed-8e5e5d8a40a5",
       "modelSlug": "minimax-h3-max",
       "reviewStatus": "accepted",
-      "observedAt": "2026-09-03T10:58:37.907Z",
-      "observation": "Square product transformation follows the requested rise, ninety-degree pivot, light reveal, mechanical timing, material finish, and clean sound design."
+      "observedAt": "2026-09-03T20:48:08.324792Z",
+      "observation": "Landscape product transformation follows the requested rise, ninety-degree pivot, light reveal, mechanical timing, material finish, and clean sound design."
     }
   ],
   "requiredRunMetadata": [

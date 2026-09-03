@@ -24,20 +24,20 @@ export const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string
     demo: 'job_43c4c8cd-246a-4c96-80a9-ab647b2eade7',
   },
   'gemini-omni-flash': {
-    hero: 'd7c08847-0a76-4ec6-bdb9-03d9d293b840',
-    demo: 'a59bedef-5ee8-451e-a09c-7be29e18e629',
+    hero: 'f06c01cf-86f4-4c91-81bd-5bc099566e05',
+    demo: '46b7eafe-089c-4135-958c-95c6670150c2',
   },
   'kling-3-turbo-standard': {
-    hero: 'd4890c1b-dc03-4e60-bcc6-b3d1b44857ba',
-    demo: 'da92f706-f644-4a6a-ab0d-b4175e472dd8',
+    hero: '3c9d288d-5252-4ed9-9370-b75f5c123ee4',
+    demo: '1e897756-8d78-4112-9c8f-98d4f5e5bd07',
   },
   'kling-3-turbo-pro': {
-    hero: 'df4f081a-9a9e-459b-8aa2-bac773fc6e8e',
-    demo: '951395ca-6ef0-4f8c-a4d5-a8c1c0a8c93b',
+    hero: '4104d35b-a97a-4449-91fd-cfc628f626de',
+    demo: '5981ead1-6b40-46e8-9dc3-ef5a1077f7e7',
   },
   'minimax-h3-max': {
-    hero: '799a7e0a-89c1-4776-b6f0-d0d8068075d7',
-    demo: '7b6c56c3-4aba-459a-8e6c-09aeedc2dc81',
+    hero: '0caeabd8-4594-473d-aec6-e1998c2e67a8',
+    demo: '2fbcc3d8-8001-465e-b5ed-8e5e5d8a40a5',
   },
   'pika-text-to-video': {
     hero: 'job_2c958e35-92e7-4c0f-8828-ec49476c8c4e',

@@ -98,16 +98,16 @@ test('Gemini Omni Flash 1.1 has localized model content with non-cannibalizing i
 
 test('Gemini Omni Flash model page uses approved hero and demo render IDs', () => {
   assert.deepEqual(PREFERRED_MEDIA['gemini-omni-flash'], {
-    hero: 'd7c08847-0a76-4ec6-bdb9-03d9d293b840',
-    demo: 'a59bedef-5ee8-451e-a09c-7be29e18e629',
+    hero: 'f06c01cf-86f4-4c91-81bd-5bc099566e05',
+    demo: '46b7eafe-089c-4135-958c-95c6670150c2',
   });
 });
 
 test('Gemini Omni Flash Examples preserve current localized sections and approved media links', () => {
   const slug = 'gemini-omni-flash';
   const mediaIds = [
-    'd7c08847-0a76-4ec6-bdb9-03d9d293b840',
-    'a59bedef-5ee8-451e-a09c-7be29e18e629',
+    'f06c01cf-86f4-4c91-81bd-5bc099566e05',
+    '46b7eafe-089c-4135-958c-95c6670150c2',
   ];
   const galleryVideos: ExampleGalleryVideo[] = mediaIds.map((id, index) => ({
     id,

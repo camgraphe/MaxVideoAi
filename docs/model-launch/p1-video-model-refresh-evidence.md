@@ -195,18 +195,18 @@ contained no public figure, trademark-dependent subject, or reused concept.
 
 | Model | Evidence IDs | Editorial result |
 | --- | --- | --- |
-| Gemini Omni Flash 1.1 | `d7c08847-0a76-4ec6-bdb9-03d9d293b840`, `a59bedef-5ee8-451e-a09c-7be29e18e629` | Mechanic action and salt-valley aerial accepted; coherent motion, camera direction, ambience, and no material artifact. |
-| Kling 3.0 Turbo Standard | `d4890c1b-dc03-4e60-bcc6-b3d1b44857ba`, `da92f706-f644-4a6a-ab0d-b4175e472dd8` | Baker action and three-shot parcel sequence accepted; the multishot preserves subject and weather continuity. |
-| Kling 3.0 Turbo Pro | `df4f081a-9a9e-459b-8aa2-bac773fc6e8e`, `951395ca-6ef0-4f8c-a4d5-a8c1c0a8c93b` | Glass-product macro and observatory storm accepted; both demonstrate the Pro detail/finish position. |
-| MiniMax H3 Max | `799a7e0a-89c1-4776-b6f0-d0d8068075d7`, `7b6c56c3-4aba-459a-8e6c-09aeedc2dc81` | Dancer and lamp transformation accepted; strong prompt adherence, material finish, and synchronized audio. |
+| Gemini Omni Flash 1.1 | `f06c01cf-86f4-4c91-81bd-5bc099566e05`, `46b7eafe-089c-4135-958c-95c6670150c2` | Mechanic action and salt-valley aerial accepted; coherent motion, camera direction, ambience, and no material artifact. |
+| Kling 3.0 Turbo Standard | `3c9d288d-5252-4ed9-9370-b75f5c123ee4`, `1e897756-8d78-4112-9c8f-98d4f5e5bd07` | Baker action and three-shot parcel sequence accepted; the multishot preserves subject and weather continuity. |
+| Kling 3.0 Turbo Pro | `4104d35b-a97a-4449-91fd-cfc628f626de`, `5981ead1-6b40-46e8-9dc3-ef5a1077f7e7` | Glass-product macro and observatory storm accepted; both demonstrate the Pro detail/finish position. |
+| MiniMax H3 Max | `0caeabd8-4594-473d-aec6-e1998c2e67a8`, `2fbcc3d8-8001-465e-b5ed-8e5e5d8a40a5` | Dancer and lamp transformation accepted; strong prompt adherence, material finish, and synchronized audio. |
 
-All eight jobs report `completed`, `paid_wallet`, and saved to the staging
-library. Aggregate customer-wallet debit was **$8.28 USD**; the final staging
-wallet balance was **$3.92 USD**. The eight durable assets are attached to their
-eight model and eight family playlist positions. They remain private and
-non-indexable in the admin `not-published` queue, with zero editorial watch
-pages. Production import must preserve that state so the admin SEO workflow,
-not this release, decides when each video becomes public and indexable.
+All eight jobs report `completed`, `paid_wallet`, and saved to the production
+Camgraphe library. Aggregate customer-wallet debit was **$8.50 USD**. The eight
+durable assets are attached to their eight model and eight family playlist
+positions, then published on site through the production admin. They have zero
+Video SEO pages and are absent from the video sitemap; the normal admin SEO
+workflow, not this release, decides if and when an editorial watch page is
+created.
 
 ## Search Console
 
@@ -245,6 +245,6 @@ or full authorization header is stored in this evidence record.
 | Kling Fal fallback documentation | proven | Four endpoint schemas fetched; direct-first boundary recorded. |
 | H3 Max live schema research | proven | Three schemas, pricing notices, end frame, reference formula, duration, and native-audio behavior recorded. |
 | Search Console token refresh | blocked | Local/admin refresh currently returns `invalid_grant`. |
-| Eight launch videos | proven | Two distinct, reviewed, completed staging videos per P1 model; no automatic retry or duplicate charge. |
-| Public publication | blocked | Production video import into the admin `not-published` queue, final atomic registry switch, route/sitemap verification, and Search Console refresh remain outstanding. Video publication/indexing is a later admin SEO decision and is not a P1 release gate. |
+| Eight launch videos | proven | Two distinct, reviewed, completed production videos per P1 model; no automatic retry or duplicate charge. |
+| Public publication | proven | Eight production assets published through the admin and attached to 16 model/family playlist positions. No Video SEO page or video-sitemap entry was forced; that remains a later admin SEO decision. |
 | Excluded-product release gate | not-applicable | No excluded product is included in this P1 scope. |

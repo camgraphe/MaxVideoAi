@@ -70,7 +70,7 @@
       "waveId": "p1",
       "sourceManifest": "docs/model-launch/p1-video-example-pack.json",
       "sourceStatus": "validated",
-      "sourceDigest": "f23dbbf0ebc534b3731bbc8f5ca344a4d35821d960e4433fb46367700d40b9c5",
+      "sourceDigest": "9d2949a7eff28bc67fccf52109be708c3de7caf21efdbdd638417ee92a48d834",
       "models": [
         {
           "waveId": "p1",

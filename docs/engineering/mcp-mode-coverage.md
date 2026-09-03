@@ -104,10 +104,11 @@ Fal provider label nor a Fal endpoint. `i2v` and `ref2v` fail closed at the
 executability boundary for the reasons recorded above; their theoretical
 engine-schema presence is not projected as an executable capability.
 
-Launch videos are a separate publication concern: the eight P1 media rows stay
-private and non-indexable in the admin `not-published` queue. They enter public
-model pages, watch pages, and the video sitemap only after a later decision in
-the normal admin SEO workflow.
+Launch videos are a separate publication concern: the eight P1 media rows are
+published as ordinary production gallery media and attached to their exact
+model and family playlists. None has an editorial watch page or video-sitemap
+entry; any later Video SEO enrollment must still use the normal admin SEO
+workflow.
 
 Mode details normalize provider duration labels to executable numeric seconds;
 provider-only values such as `auto` are never advertised as MCP inputs. P0 and

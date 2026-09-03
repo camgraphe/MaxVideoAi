@@ -114,8 +114,9 @@ test('provider and video-indexing release gates remain explicit at publication',
   assert.match(evidence, /Google direct provider contract \| proven/i);
   assert.match(evidence, /Kling direct provider contract \| proven/i);
   assert.match(evidence, /depleted-balance Fal fallback/i);
-  assert.match(review, /private and non-indexable/i);
+  assert.match(review, /published on site/i);
   assert.match(review, /admin SEO workflow/i);
+  assert.match(review, /zero Video SEO pages/i);
   for (const asset of pack.assets) {
     assert.equal(asset.watchPageCandidate, false, asset.jobId);
     assert.doesNotMatch(editorial, new RegExp(asset.jobId));
