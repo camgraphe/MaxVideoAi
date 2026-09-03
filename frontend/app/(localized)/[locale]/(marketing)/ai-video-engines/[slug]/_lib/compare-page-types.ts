@@ -58,6 +58,9 @@ export type EngineCatalogEntry = {
     compare?: {
       includeInHub?: boolean;
     };
+    modelPage?: {
+      indexable?: boolean;
+    };
   };
 };
 

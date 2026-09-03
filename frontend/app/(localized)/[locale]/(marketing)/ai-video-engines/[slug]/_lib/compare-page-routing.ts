@@ -7,6 +7,7 @@ import {
   EXCLUDED_ENGINE_SLUGS,
   MODELS_SLUG_MAP,
 } from './compare-page-config';
+import type { EngineCatalogEntry } from './compare-page-types';
 
 const LEGACY_COMPARE_REPLACEMENTS: Record<string, { slug: string; orderAliases: Record<string, string> }> = {
   'happy-horse-1-0-vs-sora-2-pro': {
@@ -21,6 +22,10 @@ export function reverseCompareSlug(slug: string) {
   return `${parts[1]}-vs-${parts[0]}`;
 }
 
+function isPublicComparisonEngine(entry: EngineCatalogEntry | undefined): entry is EngineCatalogEntry {
+  return entry?.surfaces?.modelPage?.indexable === true && entry.surfaces?.compare?.includeInHub === true;
+}
+
 export function resolveEngines(slug: string) {
   const parts = slug.split('-vs-');
   if (parts.length !== 2) return null;
@@ -30,7 +35,7 @@ export function resolveEngines(slug: string) {
   }
   const left = CATALOG_BY_SLUG.get(leftSlug);
   const right = CATALOG_BY_SLUG.get(rightSlug);
-  if (!left || !right) return null;
+  if (!isPublicComparisonEngine(left) || !isPublicComparisonEngine(right)) return null;
   return { left, right };
 }
 

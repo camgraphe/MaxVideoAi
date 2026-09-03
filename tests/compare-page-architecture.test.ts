@@ -11,6 +11,7 @@ import * as compareRouting from '../frontend/app/(localized)/[locale]/(marketing
 import {
   getCanonicalCompareSlug,
   resolveLegacyCompareRedirect,
+  resolveEngines,
 } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-routing.ts';
 import { buildSeoMetadata } from '../frontend/lib/seo/metadata.ts';
 
@@ -119,6 +120,16 @@ test('legacy Happy Horse 1.0 vs Sora comparison redirects to the published 1.1 r
 test('comparison detail page applies legacy replacements as permanent redirects', () => {
   assert.match(pageSource, /resolveLegacyCompareRedirect/);
   assert.match(pageSource, /legacyRedirect[\s\S]*permanentRedirect\(legacyRedirect\)/);
+});
+
+test('comparison routing rejects private catalog engines and sends unresolved pairs to notFound', () => {
+  assert.equal(resolveEngines('kling-3-turbo-pro-vs-minimax-h3-max'), null);
+  assert.equal(resolveEngines('kling-3-turbo-standard-vs-veo-3-1'), null);
+
+  const publishedPair = resolveEngines('gemini-omni-flash-vs-veo-3-1');
+  assert.equal(publishedPair?.left.modelSlug, 'gemini-omni-flash');
+  assert.equal(publishedPair?.right.modelSlug, 'veo-3-1');
+  assert.match(pageSource, /const resolved = resolveEngines\(canonicalInfo\.canonicalSlug\);[\s\S]*if \(!resolved\) \{[\s\S]*notFound\(\);/);
 });
 const scorecardSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-scorecard.ts',

@@ -1,8 +1,8 @@
 import {
   materializeFalEngineEntry,
-  type FalEngineEntry,
-} from '../../frontend/src/config/falEngines';
+} from '../../frontend/src/config/fal-engine-materialization';
 import { UNPUBLISHED_FAL_ENGINE_REGISTRY } from '../../frontend/src/config/fal-engines/registry';
+import type { FalEngineEntry } from '../../frontend/src/config/fal-engines/types';
 
 /**
  * Private engine contracts stay out of the application-facing Fal registry.
