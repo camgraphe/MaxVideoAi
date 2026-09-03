@@ -71,6 +71,9 @@ const canonicalSettingsSchema = z.object({
     'GPT Image 2 only: custom output width in pixels when resolution is custom.',
   ),
   outputFormat: z.string().trim().min(1).max(64).optional(),
+  promptExpansionMode: z.enum(['balanced', 'quality']).optional().describe(
+    'Use only when get_model_details reports the promptExpansionMode setting for the selected mode.',
+  ),
   quality: z.string().trim().min(1).max(64).optional(),
   reframeGridPositionX: z.number().optional(),
   reframeGridPositionY: z.number().optional(),

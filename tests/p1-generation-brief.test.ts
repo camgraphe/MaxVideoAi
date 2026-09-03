@@ -8,6 +8,7 @@ import { KLING_3_TURBO_PRO_ENGINE } from '../frontend/src/config/fal-engines/kli
 import { KLING_3_TURBO_STANDARD_ENGINE } from '../frontend/src/config/fal-engines/kling-3-turbo-standard';
 import { MINIMAX_H3_MAX_ENGINE } from '../frontend/src/config/fal-engines/minimax-h3-max';
 import type { CanonicalGenerationRequest } from '../frontend/src/server/agent-api/generation-types';
+import { prepareGenerationInputSchema } from '../frontend/src/server/mcp/tools/prepare-generation';
 import type { EngineCaps, Mode } from '../frontend/types/engines';
 
 const BRIEF_PATH = 'docs/model-launch/p1-generation-brief.json';
@@ -287,6 +288,26 @@ test('P1 launch briefs project to reusable canonical requests without mixing sin
     .every(({ request }) => request.settings.promptExpansionMode === 'quality'));
   assert.ok(projected.filter(({ brief }) => brief.modelId !== 'gemini-omni-flash')
     .every(({ request }) => !Object.hasOwn(request.settings, 'audio')));
+});
+
+test('the MCP quote schema accepts the live H3 Max prompt expansion setting', () => {
+  const result = prepareGenerationInputSchema.safeParse({
+    schemaVersion: 1,
+    surface: 'video',
+    engineId: 'minimax-h3-max',
+    mode: 't2v',
+    prompt: 'An original cinematic product scene with controlled motion and native ambience.',
+    settings: {
+      durationSec: 5,
+      resolution: '768P',
+      aspectRatio: '16:9',
+      promptExpansionMode: 'quality',
+    },
+    references: [],
+    outputCount: 1,
+  });
+
+  assert.equal(result.success, true);
 });
 
 test('P1 launch prompts are original concepts without public-figure, trademark, IP, or text dependencies', () => {
