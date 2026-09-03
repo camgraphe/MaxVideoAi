@@ -20,7 +20,7 @@ export type {
   FalEngineSeoMeta,
 } from './fal-engines/types';
 
-function materializeFalEngineEntry(entry: RawFalEngineEntry): FalEngineEntry {
+export function materializeFalEngineEntry(entry: RawFalEngineEntry): FalEngineEntry {
   const partnerBrand = getPartnerByBrandId(entry.brandId);
   const model = getRuntimeModelById(entry.id);
   if (!model) throw new Error(`Missing model registry entry for engine "${entry.id}"`);

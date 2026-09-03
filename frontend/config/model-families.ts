@@ -95,6 +95,8 @@ const MODEL_FAMILY_SOURCES = [
       'google-omni-flash',
       'omni-flash',
       'gemini-omni',
+      'gemini-omni-1-1-flash',
+      'gemini-omni-flash-1-1',
       'gemini-omni-flash-preview',
     ],
     prefixes: ['veo', 'veo-3', 'veo3', 'gemini-omni', 'google-omni'],

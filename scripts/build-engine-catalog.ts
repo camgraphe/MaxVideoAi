@@ -7,6 +7,7 @@ import { type ModelFamilyExamplesPageConfig } from '../frontend/config/model-pub
 import { listFalEngines, type FalEngineEntry } from '../frontend/src/config/falEngines';
 import { getEngineCatalogOverrides, type EngineCatalogOverride, type EngineCatalogFeature } from '../frontend/src/config/engineCatalog.overrides';
 import type { ModelLifecycle } from '../frontend/config/model-registry-validation';
+import { listBuildOnlyPrivateFalEngines } from './lib/private-engine-catalog-projection';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
@@ -106,7 +107,7 @@ function validateCatalog(catalog: EngineCatalogEntry[]) {
 async function main() {
   const check = process.argv.includes('--check');
   const overrides = getEngineCatalogOverrides();
-  const engines = listFalEngines();
+  const engines = [...listFalEngines(), ...listBuildOnlyPrivateFalEngines()];
   const catalog = engines.map((engine) => toCatalogEntry(engine, overrides[engine.id]));
 
   const unknownOverrides = Object.keys(overrides).filter((engineId) => !engines.some((engine) => engine.id === engineId));

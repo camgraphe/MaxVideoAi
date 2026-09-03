@@ -91,6 +91,9 @@ const docLink = (slug: string): LocalizedLinkHref => ({
 const MODEL_MENU_CANDIDATES: readonly LabeledSlug[] = [
   { slug: 'seedance-2-5', label: 'Seedance 2.5', badge: 'new' },
   { slug: 'minimax-h3', label: 'MiniMax H3', badge: 'new' },
+  { slug: 'minimax-h3-max', label: 'MiniMax H3 Max', badge: 'new' },
+  { slug: 'kling-3-turbo-pro', label: 'Kling 3.0 Turbo Pro', badge: 'new' },
+  { slug: 'kling-3-turbo-standard', label: 'Kling 3.0 Turbo Standard', badge: 'new' },
   { slug: 'ltx-2-5-pro', label: 'LTX 2.5 Pro', badge: 'new' },
   { slug: 'wan-3-prime', label: 'Wan 3 Prime', badge: 'new' },
   { slug: 'grok-imagine-video-1-5', label: 'Grok Imagine Video 1.5', badge: 'new' },

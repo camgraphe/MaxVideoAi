@@ -10,6 +10,8 @@
         "internal": [],
         "publicSlugs": [
           "gemini-omni",
+          "gemini-omni-1-1-flash",
+          "gemini-omni-flash-1-1",
           "gemini-omni-flash-preview",
           "google-omni-flash",
           "omni-flash"
@@ -561,6 +563,86 @@
         },
         "sitemap": {
           "published": true
+        }
+      },
+      "lifecycle": "current",
+      "successorId": null,
+      "successorSlug": null
+    },
+    {
+      "id": "kling-3-turbo-pro",
+      "label": "Kling 3.0 Turbo Pro",
+      "slug": "kling-3-turbo-pro",
+      "family": "kling",
+      "category": "video",
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": false,
+          "indexable": false
+        },
+        "examples": {
+          "published": false,
+          "includeInFamilyCopy": false,
+          "current": false
+        },
+        "compare": {
+          "published": false,
+          "indexed": false,
+          "suggestedOpponentIds": [],
+          "publishedPairIds": []
+        },
+        "app": {
+          "published": false
+        },
+        "pricing": {
+          "published": false
+        },
+        "sitemap": {
+          "published": false
+        }
+      },
+      "lifecycle": "current",
+      "successorId": null,
+      "successorSlug": null
+    },
+    {
+      "id": "kling-3-turbo-standard",
+      "label": "Kling 3.0 Turbo Standard",
+      "slug": "kling-3-turbo-standard",
+      "family": "kling",
+      "category": "video",
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": false,
+          "indexable": false
+        },
+        "examples": {
+          "published": false,
+          "includeInFamilyCopy": false,
+          "current": false
+        },
+        "compare": {
+          "published": false,
+          "indexed": false,
+          "suggestedOpponentIds": [],
+          "publishedPairIds": []
+        },
+        "app": {
+          "published": false
+        },
+        "pricing": {
+          "published": false
+        },
+        "sitemap": {
+          "published": false
         }
       },
       "lifecycle": "current",
@@ -1356,6 +1438,46 @@
         },
         "sitemap": {
           "published": true
+        }
+      },
+      "lifecycle": "current",
+      "successorId": null,
+      "successorSlug": null
+    },
+    {
+      "id": "minimax-h3-max",
+      "label": "MiniMax H3 Max",
+      "slug": "minimax-h3-max",
+      "family": "hailuo",
+      "category": "video",
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": false,
+          "indexable": false
+        },
+        "examples": {
+          "published": false,
+          "includeInFamilyCopy": false,
+          "current": false
+        },
+        "compare": {
+          "published": false,
+          "indexed": false,
+          "suggestedOpponentIds": [],
+          "publishedPairIds": []
+        },
+        "app": {
+          "published": false
+        },
+        "pricing": {
+          "published": false
+        },
+        "sitemap": {
+          "published": false
         }
       },
       "lifecycle": "current",
