@@ -7,6 +7,7 @@ import {
   buildGenerateRequestOptions,
   isVideoMode,
 } from '../frontend/app/api/generate/_lib/request-options';
+import { listFalEngines } from '../frontend/src/config/falEngines';
 import type { EngineCaps } from '../frontend/types/engines';
 
 const root = process.cwd();
@@ -24,6 +25,12 @@ const baseEngine = {
   resolutions: ['auto', '720p', '1080p'],
   aspectRatios: ['auto', '16:9', '9:16'],
 } as EngineCaps;
+
+function registeredEngine(engineId: string): EngineCaps {
+  const engine = listFalEngines().find(({ id }) => id === engineId)?.engine;
+  assert.ok(engine, `expected ${engineId} in the production engine registry`);
+  return engine;
+}
 
 test('generate route delegates request option normalization', () => {
   assert.ok(existsSync(helperPath), 'request option normalization should live in the generate route _lib folder');
@@ -205,6 +212,56 @@ test('request option helper uses profile capabilities and generated audio for By
   if (!miniResult.ok) return;
   assert.equal(miniResult.options.durationSec, 4);
   assert.equal(miniResult.options.audioEnabled, true);
+});
+
+test('request option helper preserves MiniMax H3 historical omitted-option defaults', () => {
+  const result = buildGenerateRequestOptions({
+    body: { prompt: 'A lighthouse keeper turns toward the sweeping beam.' },
+    engine: registeredEngine('minimax-h3'),
+    mode: 't2v',
+    isBytePlusV1a: false,
+  });
+
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.deepEqual({
+    durationSec: result.options.durationSec,
+    aspectRatio: result.options.aspectRatio,
+    requestedResolution: result.options.requestedResolution,
+    pricingResolution: result.options.pricingResolution,
+    effectiveResolution: result.options.effectiveResolution,
+  }, {
+    durationSec: 4,
+    aspectRatio: '21:9',
+    requestedResolution: '768P',
+    pricingResolution: '768P',
+    effectiveResolution: '768P',
+  });
+});
+
+test('request option helper preserves Wan 3 historical omitted-option defaults', () => {
+  const result = buildGenerateRequestOptions({
+    body: { prompt: 'A quiet street at blue hour.' },
+    engine: registeredEngine('wan-3'),
+    mode: 't2v',
+    isBytePlusV1a: false,
+  });
+
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.deepEqual({
+    durationSec: result.options.durationSec,
+    aspectRatio: result.options.aspectRatio,
+    requestedResolution: result.options.requestedResolution,
+    pricingResolution: result.options.pricingResolution,
+    effectiveResolution: result.options.effectiveResolution,
+  }, {
+    durationSec: 4,
+    aspectRatio: '16:9',
+    requestedResolution: '480p',
+    pricingResolution: '480p',
+    effectiveResolution: '480p',
+  });
 });
 
 test('request option helper keeps video mode narrowing explicit', () => {

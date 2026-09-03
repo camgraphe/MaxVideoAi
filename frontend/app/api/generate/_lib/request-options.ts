@@ -10,6 +10,7 @@ import {
   type LumaRay2DurationLabel,
 } from '@/lib/luma-ray2';
 import { isLumaRay32EngineId, isLumaRay32PublicMode } from '@/lib/luma-agents';
+import { isMinimaxH3MaxEngineId } from '@/lib/minimax-h3-max';
 import { isSoraEngineId, type SoraRequest } from '@/lib/sora';
 import type { EngineCaps, Mode } from '@/types/engines';
 import { normalizeBytePlusOptions } from './request-options-byteplus';
@@ -126,8 +127,11 @@ export function buildGenerateRequestOptions(params: {
         ? body.generate_audio
         : undefined;
   const isLumaRay2 = isLumaRay2EngineId(engine.id);
-  const capability = getEngineCaps(engine.id, mode) ?? engine.modeCaps?.[mode];
-  const activeEnumDefault = (fieldId: string) => getRuntimeSchemaEnumDefault(engine.inputSchema, mode, fieldId);
+  const isMinimaxH3Max = isMinimaxH3MaxEngineId(engine.id);
+  const capability = getEngineCaps(engine.id, mode) ?? (isMinimaxH3Max ? engine.modeCaps?.[mode] : undefined);
+  const activeEnumDefault = (fieldId: string) => (
+    isMinimaxH3Max ? getRuntimeSchemaEnumDefault(engine.inputSchema, mode, fieldId) : undefined
+  );
   const supportsDuration = capability ? Boolean(capability.duration || capability.frames) : true;
   const supportsResolution = capability ? Boolean(capability.resolution && capability.resolution.length) : true;
   const supportsFps = capability
@@ -138,7 +142,7 @@ export function buildGenerateRequestOptions(params: {
   const supportsAspectRatio = capability ? Boolean(capability.aspectRatio && capability.aspectRatio.length) : true;
   const rawDurationOption =
     typeof body.durationOption === 'number' || typeof body.durationOption === 'string' ? body.durationOption : null;
-  const defaultDurationSec = getRuntimeDurationDefault(capability, 4);
+  const defaultDurationSec = isMinimaxH3Max ? getRuntimeDurationDefault(capability, 4) : 4;
   let durationSec = Number(body.durationSec || body.duration || defaultDurationSec);
   if (multiPromptTotalSec > 0) {
     durationSec = multiPromptTotalSec;
