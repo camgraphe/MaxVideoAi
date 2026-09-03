@@ -42,6 +42,7 @@ export type PublicPricingFactsContext = {
   referenceImageCount?: number;
   inputImageCount?: number;
   inputVideoDurationSec?: number;
+  inheritedDurationSec?: number;
   hasVideoInput?: boolean;
   addons?: Record<string, boolean | number | undefined>;
   lumaRay2BasePriceUsd?: number;
@@ -143,6 +144,7 @@ export function buildPublicPricingFacts(context: PublicPricingFactsContext): Pub
     const pricingInput = resolveGoogleOmniPricingInput({
       outputResolution: resolution,
       outputDurationSec: durationSec,
+      inheritedDurationSec: context.inheritedDurationSec,
       mode,
       inputImageCount: context.inputImageCount,
       referenceImageCount: context.referenceImageCount,
@@ -152,11 +154,11 @@ export function buildPublicPricingFacts(context: PublicPricingFactsContext): Pub
     return resultFromExactFacts({
       engineId: engine.id,
       currency,
-      exactCents: pricing.providerCostCents,
+      exactCents: pricing.providerCostExactCents,
       presentedBaseCents: pricing.providerCostCents,
-      quantity: durationSec,
+      quantity: pricingInput.outputDurationSec,
       unit: 'sec',
-      rate: pricing.providerCostUsd / durationSec,
+      rate: pricing.providerCostUsd / pricingInput.outputDurationSec,
       meta: {
         pricing_model: 'google_omni_tokens',
         provider_cost_source: GOOGLE_OMNI_PRICING_SOURCE,

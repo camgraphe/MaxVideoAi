@@ -18,5 +18,6 @@ export type PricingContext = {
   referenceImageCount?: number;
   inputImageCount?: number;
   inputVideoDurationSec?: number;
+  inheritedDurationSec?: number;
   addons?: Record<string, boolean | number | undefined>;
 };

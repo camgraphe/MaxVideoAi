@@ -201,17 +201,19 @@ export async function buildGoogleVertexOmniPayload(
 
   const outputGcsUri = normalizeOutputGcsUri(params.outputGcsUri);
   const resolution = normalizeResolution(params.resolution);
+  const aspectRatio = normalizeAspectRatio(params.aspectRatio ?? params.falPayload.aspectRatio ?? '16:9');
+  const duration = normalizeDuration(params.durationSec);
   const responseFormat: GoogleVertexOmniPayload['response_format'] =
     task === 'edit'
       ? [{ type: 'video', delivery: 'uri', gcs_uri: outputGcsUri, resolution }]
       : [
           {
             type: 'video',
-            aspect_ratio: normalizeAspectRatio(params.aspectRatio ?? params.falPayload.aspectRatio ?? '16:9'),
+            aspect_ratio: aspectRatio,
             delivery: 'uri',
             gcs_uri: outputGcsUri,
             resolution,
-            duration: normalizeDuration(params.durationSec),
+            duration,
           },
         ];
 

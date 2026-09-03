@@ -85,17 +85,29 @@ function nonNegativeNumber(value: unknown): number | undefined {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : undefined;
 }
 
-function estimateGoogleVertexOmniJobCost(job: GoogleVertexOmniPendingJob) {
+function estimateGoogleVertexOmniJobCost(job: GoogleVertexOmniPendingJob, attemptSnapshot?: unknown) {
   const snapshot = recordValue(job.pricing_snapshot);
   const meta = recordValue(snapshot?.meta);
+  const attempt = recordValue(attemptSnapshot);
+  const providerPricing = recordValue(attempt?.providerPricing);
   return estimateGoogleVertexOmniCost({
     engineId: job.engine_id,
-    mode: typeof meta?.mode === 'string' ? meta.mode : undefined,
-    durationSec: job.duration_sec,
+    mode: typeof providerPricing?.mode === 'string'
+      ? providerPricing.mode
+      : typeof meta?.mode === 'string'
+        ? meta.mode
+        : undefined,
+    durationSec: nonNegativeNumber(providerPricing?.outputDurationSec) ?? job.duration_sec,
     audioEnabled: job.has_audio === true,
-    resolution: typeof meta?.output_resolution === 'string' ? meta.output_resolution : undefined,
-    inputImageCount: nonNegativeNumber(meta?.input_image_count),
-    inputVideoDurationSec: nonNegativeNumber(meta?.input_video_duration_sec),
+    resolution: typeof providerPricing?.outputResolution === 'string'
+      ? providerPricing.outputResolution
+      : typeof meta?.output_resolution === 'string'
+        ? meta.output_resolution
+        : undefined,
+    inputImageCount:
+      nonNegativeNumber(providerPricing?.inputImageCount) ?? nonNegativeNumber(meta?.input_image_count),
+    inputVideoDurationSec:
+      nonNegativeNumber(providerPricing?.inputVideoDurationSec) ?? nonNegativeNumber(meta?.input_video_duration_sec),
   });
 }
 
@@ -258,8 +270,8 @@ async function deferStorageCopyRetry(
   );
 }
 
-function buildCostBreakdown(job: GoogleVertexOmniPendingJob) {
-  const estimate = estimateGoogleVertexOmniJobCost(job);
+function buildCostBreakdown(job: GoogleVertexOmniPendingJob, attemptSnapshot?: unknown) {
+  const estimate = estimateGoogleVertexOmniJobCost(job, attemptSnapshot);
   return {
     provider: GOOGLE_VERTEX_OMNI_PROVIDER,
     provider_cost_source: estimate.source,
@@ -362,7 +374,7 @@ export async function runGoogleVertexOmniPoll(options: { deps?: GoogleVertexOmni
       });
       const interaction = await client.fetchInteraction(job.provider_job_id);
       const task = normalizeGoogleVertexOmniInteraction(interaction, job.provider_job_id);
-      const estimate = estimateGoogleVertexOmniJobCost(job);
+      const estimate = estimateGoogleVertexOmniJobCost(job, attempt?.requestSnapshot);
 
       if (task.status === 'queued' || task.status === 'running') {
         await queryFn(
@@ -442,7 +454,7 @@ export async function runGoogleVertexOmniPoll(options: { deps?: GoogleVertexOmni
         }
       }
 
-      const costBreakdown = buildCostBreakdown(job);
+      const costBreakdown = buildCostBreakdown(job, attempt?.requestSnapshot);
       const completedRows = await queryFn<{ job_id: string }>(
         `UPDATE app_jobs
             SET status = 'completed',

@@ -72,6 +72,10 @@ function nonNegativeNumber(value: unknown): number | undefined {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : undefined;
 }
 
+function outputResolution(value: unknown, fallback: string): string {
+  return typeof value === 'string' && value.length ? value : fallback;
+}
+
 async function markJobFailedBeforeSubmit(params: {
   jobId: string;
   engineLabel: string;
@@ -207,14 +211,21 @@ export async function submitGoogleVertexOmniGenerateTask(params: {
     params.mode === 'v2v' || params.mode === 'extend'
       ? nonNegativeNumber(pricingMeta.input_video_duration_sec)
       : 0;
-  const estimate = estimateGoogleVertexOmniCost({
-    engineId: params.engineId,
+  const providerPricing = {
     mode: params.mode,
-    durationSec: params.durationSec,
-    audioEnabled: params.audioEnabled,
-    resolution: params.resolution,
+    outputResolution: outputResolution(pricingMeta.output_resolution, params.resolution),
+    outputDurationSec: nonNegativeNumber(pricingMeta.output_duration_sec) ?? params.durationSec,
     inputImageCount,
     inputVideoDurationSec,
+  };
+  const estimate = estimateGoogleVertexOmniCost({
+    engineId: params.engineId,
+    mode: providerPricing.mode,
+    durationSec: providerPricing.outputDurationSec,
+    audioEnabled: params.audioEnabled,
+    resolution: providerPricing.outputResolution,
+    inputImageCount: providerPricing.inputImageCount,
+    inputVideoDurationSec: providerPricing.inputVideoDurationSec,
   });
   const googleAttempt = await createProviderAttempt({
     publicJobId: params.jobId,
@@ -240,6 +251,7 @@ export async function submitGoogleVertexOmniGenerateTask(params: {
       ),
       promptLength: params.prompt.length,
       estimatedProviderCostUsd: estimate.providerCostUsd,
+      providerPricing,
     },
     queryFn,
   });

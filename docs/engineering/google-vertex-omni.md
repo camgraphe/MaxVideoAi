@@ -100,9 +100,9 @@ Poller responsibilities:
 
 ## Pricing And Cost Estimate
 
-The factual calculator in `frontend/src/lib/google-omni-pricing.ts` is the single Google Omni cost source. Output uses 1,931/5,792/8,688/17,376 tokens per second at 360p/720p/1080p/4k and `$17.50` per million output tokens. Each input image uses 1,120 tokens; source video uses 5,792 tokens per second; both are charged at `$1.50` per million input tokens. Fractional dollars are retained until the final integer-cent boundary.
+The factual calculator in `frontend/src/lib/google-omni-pricing.ts` is the single Google Omni cost source. Output uses 1,931/5,792/8,688/17,376 tokens per second at 360p/720p/1080p/4k and `$17.50` per million output tokens. Each input image uses 1,120 tokens; source video uses 5,792 tokens per second; both are charged at `$1.50` per million input tokens. Fractional cents are retained through canonical commercial math and rounded only at the final customer-money boundary.
 
-Billing and public pricing facts consume that calculator before the canonical commercial policy is applied. Source-video modes require verified duration metadata for an exact paid quote. Provider-attempt estimates use the same calculator and record `google_omni_1_1_token_pricing`; provider code does not own margin or customer-price policy.
+Billing and public pricing facts consume that calculator before the canonical commercial policy is applied. Source-video modes require verified duration metadata for an exact paid quote. Video edit pricing inherits trusted source duration, and conversational retake pricing resolves the duration only from the user's completed, owned previous interaction; a selected UI duration cannot change either edit charge. Provider-attempt estimates use the same calculator and record `google_omni_1_1_token_pricing`; provider code does not own margin or customer-price policy. A media-free provider-pricing snapshot is stored on the provider attempt so polling can reconstruct mode, resolution, and verified media inputs even when price-only receipt snapshots omit provider metadata.
 
 ## Workspace UI
 

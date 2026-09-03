@@ -99,6 +99,7 @@ export async function resolveGenerateBillingPreflight(params: {
   referenceImageCount?: number;
   inputImageCount?: number;
   inputVideoDurationSec?: number;
+  inheritedDurationSec?: number;
   inputAudioDurationSec?: number;
   rawDurationOption: number | string | null;
   lumaDurationLabel: string | null;
@@ -146,6 +147,7 @@ export async function resolveGenerateBillingPreflight(params: {
         ? Math.max(0, Math.floor(params.inputImageCount))
         : undefined,
     inputVideoDurationSec: params.inputVideoDurationSec,
+    inheritedDurationSec: params.inheritedDurationSec,
     inputAudioDurationSec: params.inputAudioDurationSec,
     durationOption: params.lumaDurationLabel ?? params.rawDurationOption ?? null,
     currency: DISPLAY_CURRENCY,
@@ -181,6 +183,9 @@ export async function resolveGenerateBillingPreflight(params: {
   }
   if (typeof params.inputVideoDurationSec === 'number') {
     requestMeta.inputVideoDurationSec = params.inputVideoDurationSec;
+  }
+  if (typeof params.inheritedDurationSec === 'number') {
+    requestMeta.inheritedDurationSec = params.inheritedDurationSec;
   }
   if (typeof params.inputAudioDurationSec === 'number') {
     requestMeta.inputAudioDurationSec = params.inputAudioDurationSec;

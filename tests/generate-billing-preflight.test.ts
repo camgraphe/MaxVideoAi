@@ -262,6 +262,54 @@ test('billing preflight persists verified media counts and durations in the cano
   assert.equal(result.preflight.receiptSnapshot.meta?.request?.inputAudioDurationSec, 9.25);
 });
 
+test('billing preflight passes trusted inherited edit duration independently of the selected duration', async () => {
+  for (const mode of ['v2v', 'retake'] as const) {
+    let capturedContext: Record<string, unknown> | null = null;
+    const result = await resolveGenerateBillingPreflight({
+      req: createReq('US'),
+      engine,
+      mode,
+      userId: 'user_123',
+      payment: { mode: 'wallet', paymentIntentId: null },
+      jobId: `job_${mode}`,
+      durationSec: 10,
+      inheritedDurationSec: 4,
+      durationLabel: '10s',
+      pricingResolution: '720p',
+      effectiveResolution: '720p',
+      aspectRatio: '16:9',
+      membershipTier: 'member',
+      isLumaRay2: false,
+      loop: false,
+      inputVideoDurationSec: mode === 'v2v' ? 4 : 0,
+      rawDurationOption: 10,
+      lumaDurationLabel: null,
+      audioEnabled: true,
+      voiceControl: false,
+      deps: {
+        getUserPreferredCurrencyFn: async () => 'usd',
+        resolveCurrencyFn: () => ({ currency: 'usd', source: 'user_pref' }),
+        computePricingSnapshotFn: async (context) => {
+          capturedContext = context as unknown as Record<string, unknown>;
+          return { ...pricing, meta: { ...pricing.meta } };
+        },
+        convertCentsFn: async () => ({ cents: 1200, rate: 1, source: 'test' }),
+        getPlatformFeeCentsFn: () => 0,
+        receiptsPriceOnlyEnabledFn: () => true,
+        buildReceiptSnapshotFn: (value) => ({ totalCents: value.totalCents, currency: value.currency }),
+        applyEngineVariantPricingFn: (value) => value,
+        buildEngineAddonInputFn: () => ({}),
+      },
+    });
+
+    assert.equal(result.ok, true);
+    assert.equal(capturedContext?.durationSec, 10);
+    assert.equal(capturedContext?.inheritedDurationSec, 4);
+    assert.equal(result.preflight.pricing.meta?.request?.inheritedDurationSec, 4);
+    assert.equal(result.preflight.pricingSnapshotJson, '{"totalCents":1200,"currency":"USD"}');
+  }
+});
+
 test('billing preflight accepts captured direct payment intents', async () => {
   const ensuredCurrencies: string[] = [];
   const result = await resolveGenerateBillingPreflight({

@@ -278,6 +278,56 @@ test('Omni video edit response format inherits source timing and aspect ratio', 
   ]);
 });
 
+test('Omni edit payloads validate duration and aspect ratio even though those fields are inherited', async () => {
+  const base = {
+    engineId: 'gemini-omni-flash',
+    prompt: 'Preserve the source timing and framing',
+    resolution: '720p',
+    outputGcsUri: directVideoOptions.outputGcsUri,
+  } as const;
+  const requests = [
+    {
+      mode: 'v2v' as const,
+      falPayload: {
+        engineId: base.engineId,
+        prompt: base.prompt,
+        mode: 'v2v' as const,
+        videoUrl: 'gs://maxvideoai-vertex/source.mp4',
+      },
+    },
+    {
+      mode: 'retake' as const,
+      falPayload: {
+        engineId: base.engineId,
+        prompt: base.prompt,
+        mode: 'retake' as const,
+        extraInputValues: { previous_interaction_id: 'interactions/abc123' },
+      },
+    },
+  ];
+
+  for (const request of requests) {
+    await assert.rejects(
+      () => buildGoogleVertexOmniPayload({
+        ...base,
+        ...request,
+        aspectRatio: '16:9',
+        durationSec: 11,
+      }),
+      /3 to 10 seconds/i
+    );
+    await assert.rejects(
+      () => buildGoogleVertexOmniPayload({
+        ...base,
+        ...request,
+        aspectRatio: '1:1',
+        durationSec: 5,
+      }),
+      /16:9 and 9:16/i
+    );
+  }
+});
+
 test('Omni payload rejects unsupported negative prompt and seed before provider call', async () => {
   await assert.rejects(
     () =>

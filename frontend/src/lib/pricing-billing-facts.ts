@@ -88,6 +88,7 @@ export function buildBillingPricingFacts(
     const pricingInput = resolveGoogleOmniPricingInput({
       outputResolution: resolution,
       outputDurationSec: durationSec,
+      inheritedDurationSec: context.inheritedDurationSec,
       mode,
       inputImageCount: context.inputImageCount,
       referenceImageCount: context.referenceImageCount,
@@ -97,10 +98,10 @@ export function buildBillingPricingFacts(
     return resultFromFacts({
       engineId: engine.id,
       currency,
-      vendorSubtotalExactCents: pricing.providerCostCents,
+      vendorSubtotalExactCents: pricing.providerCostExactCents,
       base: {
-        seconds: durationSec,
-        rate: pricing.providerCostUsd / durationSec,
+        seconds: pricingInput.outputDurationSec,
+        rate: pricing.providerCostUsd / pricingInput.outputDurationSec,
         unit: 'sec',
         amountCents: pricing.providerCostCents,
       },

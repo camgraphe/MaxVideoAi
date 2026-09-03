@@ -23,12 +23,14 @@ export type GoogleOmniPricingBreakdown = {
   inputImageTokens: number;
   inputVideoTokens: number;
   providerCostUsd: number;
+  providerCostExactCents: number;
   providerCostCents: number;
 };
 
 export type GoogleOmniPricingContext = {
   outputResolution: string;
   outputDurationSec: number;
+  inheritedDurationSec?: number;
   mode?: string | null;
   inputImageCount?: number;
   referenceImageCount?: number;
@@ -53,17 +55,19 @@ export function calculateGoogleOmniProviderCost(input: GoogleOmniPricingInput): 
   const outputTokens = GOOGLE_OMNI_OUTPUT_TOKENS_PER_SECOND[input.outputResolution] * input.outputDurationSec;
   const inputImageTokens = GOOGLE_OMNI_INPUT_IMAGE_TOKENS * input.inputImageCount;
   const inputVideoTokens = GOOGLE_OMNI_INPUT_VIDEO_TOKENS_PER_SECOND * input.inputVideoDurationSec;
-  const providerCostUsd =
-    (outputTokens * GOOGLE_OMNI_OUTPUT_USD_PER_MILLION_TOKENS
-      + (inputImageTokens + inputVideoTokens) * GOOGLE_OMNI_INPUT_USD_PER_MILLION_TOKENS)
-    / 1_000_000;
+  const pricedTokenUnits =
+    outputTokens * GOOGLE_OMNI_OUTPUT_USD_PER_MILLION_TOKENS
+    + (inputImageTokens + inputVideoTokens) * GOOGLE_OMNI_INPUT_USD_PER_MILLION_TOKENS;
+  const providerCostUsd = pricedTokenUnits / 1_000_000;
+  const providerCostExactCents = pricedTokenUnits / 10_000;
 
   return {
     outputTokens,
     inputImageTokens,
     inputVideoTokens,
     providerCostUsd,
-    providerCostCents: Math.round(providerCostUsd * 100),
+    providerCostExactCents,
+    providerCostCents: Math.round(providerCostExactCents),
   };
 }
 
@@ -78,6 +82,10 @@ export function resolveGoogleOmniPricingInput(context: GoogleOmniPricingContext)
   }
 
   const mode = context.mode ?? 't2v';
+  const inheritsOutputTiming = mode === 'v2v' || mode === 'retake';
+  if (inheritsOutputTiming && context.inheritedDurationSec === undefined) {
+    throw new Error('Google Omni exact pricing requires trusted inherited duration metadata for edit modes.');
+  }
   const inferredImageCount = mode === 'i2v' ? 1 : mode === 'fl2v' ? 2 : 0;
   const inputImageCount = context.inputImageCount
     ?? (mode === 'ref2v' ? context.referenceImageCount : undefined)
@@ -88,7 +96,7 @@ export function resolveGoogleOmniPricingInput(context: GoogleOmniPricingContext)
 
   return {
     outputResolution,
-    outputDurationSec: context.outputDurationSec,
+    outputDurationSec: inheritsOutputTiming ? context.inheritedDurationSec! : context.outputDurationSec,
     inputImageCount,
     inputVideoDurationSec: context.inputVideoDurationSec ?? 0,
   };

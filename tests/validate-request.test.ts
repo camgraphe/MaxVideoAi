@@ -26,6 +26,8 @@ import type { MaxVideoProviderElement } from '../frontend/src/lib/video-provider
 import { buildBytePlusSeedancePayload } from '../frontend/src/server/video-providers/byteplus-modelark.ts';
 import { resolveKlingDirectSubmissionMediaInputs } from '../frontend/app/api/generate/_lib/kling-direct-submission.ts';
 import { buildKlingDirectPayload } from '../frontend/src/server/video-providers/kling-direct/payload.ts';
+import { resolveGoogleVertexOmniSupport } from '../frontend/src/server/video-providers/google-vertex-omni/model-map.ts';
+import { buildGoogleVertexOmniPayload } from '../frontend/src/server/video-providers/google-vertex-omni/payload.ts';
 import type { EngineInputSchema, Mode } from '../frontend/types/engines.ts';
 
 const root = process.cwd();
@@ -363,6 +365,51 @@ function buildFalMediaPipeline(params: FalMediaPipelineParams) {
     capturedValidationContext,
   };
 }
+
+test('Gemini Omni workspace first/last attachments survive the real Fal request path', async () => {
+  const entry = listFalEngines().find((candidate) => candidate.id === 'gemini-omni-flash');
+  assert.ok(entry?.engine.inputSchema);
+  const firstUrl = 'https://media.maxvideoai.com/omni-first.png';
+  const lastUrl = 'https://media.maxvideoai.com/omni-last.png';
+  const scenario = buildFalMediaPipeline({
+    engineId: entry.id,
+    defaultModel: entry.defaultFalModelId,
+    mode: 'fl2v',
+    inputSchema: entry.engine.inputSchema,
+    attachments: [
+      attachment('image', 'image_url', firstUrl),
+      attachment('image', 'end_image_url', lastUrl),
+    ],
+  });
+
+  assert.equal(scenario.validation.ok, true, JSON.stringify(scenario.validation));
+  assert.equal(scenario.references.resolvedFirstFrameUrl, firstUrl);
+  assert.equal(scenario.references.lastFrameUrl, lastUrl);
+  assert.equal(scenario.falPayload.imageUrl, firstUrl);
+  assert.equal(scenario.falPayload.endImageUrl, lastUrl);
+  const support = resolveGoogleVertexOmniSupport({
+    engineId: entry.id,
+    mode: 'fl2v',
+    aspectRatio: '16:9',
+    falPayload: scenario.falPayload,
+  });
+  assert.equal(support.supported, true);
+
+  const payload = await buildGoogleVertexOmniPayload({
+    engineId: entry.id,
+    mode: 'fl2v',
+    prompt: scenario.falPayload.prompt,
+    aspectRatio: '16:9',
+    durationSec: 4,
+    resolution: '720p',
+    outputGcsUri: 'gs://maxvideoai-vertex/omni-outputs/workspace-fl2v/',
+    falPayload: scenario.falPayload,
+  });
+  assert.deepEqual(payload.input.filter((item) => item.type === 'image'), [
+    { type: 'image', uri: firstUrl, mime_type: 'image/png' },
+    { type: 'image', uri: lastUrl, mime_type: 'image/png' },
+  ]);
+});
 
 function deriveAndValidateBudgetedRef2v(
   extraAttachment: NormalizedAttachment

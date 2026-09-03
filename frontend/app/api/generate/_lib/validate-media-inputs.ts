@@ -476,7 +476,7 @@ export function validateModeMediaInputs(params: {
       field.id === id
       && field.type === 'image'
       && (!field.modes?.length || field.modes.includes(normalizedMode))));
-    const firstFieldId = activeImageField(['first_frame_url', 'start_image_url']) ?? 'first_frame_url';
+    const firstFieldId = activeImageField(['first_frame_url', 'start_image_url', 'image_url']) ?? 'first_frame_url';
     const lastFieldId = activeImageField(['last_frame_url', 'end_image_url']) ?? 'last_frame_url';
     const firstFrame = typeof payload[firstFieldId] === 'string' ? payload[firstFieldId].trim() : '';
     const lastFrame = typeof payload[lastFieldId] === 'string' ? payload[lastFieldId].trim() : '';

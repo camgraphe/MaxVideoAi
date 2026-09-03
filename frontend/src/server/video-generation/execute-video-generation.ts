@@ -27,6 +27,7 @@ import {
   buildTrustedIncludedTrialVideoBilling,
   buildTrustedQuotedVideoBilling,
 } from './trusted-video-billing';
+import { resolveGoogleOmniInheritedDurationSec } from '@/server/video-providers/google-vertex-omni/pricing-context';
 
 export type { VideoGenerationAdapters, VideoGenerationResponse } from './video-generation-contracts';
 export { executeVideoGenerationLifecycle } from './video-generation-lifecycle';
@@ -191,6 +192,14 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     return { body: sourceVideoContext.body, status: sourceVideoContext.status };
   }
   const { durationSec: effectiveDurationSec, durationLabel: effectiveDurationLabel, hasVideoInput } = sourceVideoContext;
+  const trustedSourceVideoDurationSec = trustedDurationSecByField.video_url?.[0];
+  const inheritedDurationSec = await resolveGoogleOmniInheritedDurationSec({
+    engineId: engine.id,
+    mode,
+    userId,
+    trustedSourceVideoDurationSec,
+    previousInteractionId: validatedExtraInputValues.previous_interaction_id,
+  });
   metricState.durationSec = effectiveDurationSec;
   const validationPayloadResult = buildGenerateValidationPayload({
     engineId: engine.id,
@@ -295,8 +304,9 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
             : 0,
     inputVideoDurationSec:
       mode === 'v2v' || mode === 'extend'
-        ? trustedDurationSecByField.video_url?.[0]
+        ? trustedSourceVideoDurationSec
         : 0,
+    inheritedDurationSec,
     inputAudioDurationSec: trustedDurationSecByField.audio_url?.[0],
     rawDurationOption,
     lumaDurationLabel: lumaDurationInfo?.label ?? null,
