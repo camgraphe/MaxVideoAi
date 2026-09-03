@@ -1,0 +1,80 @@
+[
+  {
+    "modelId": "gemini-omni-flash",
+    "prompt": "An anonymous night-shift bicycle mechanic, seen from behind with the face always out of frame, seats a tire on a spinning wheel beneath a single workshop lamp. The camera makes a smooth waist-high arc while spokes flash, rubber flexes, and precise ratchet clicks blend with soft rain against the windows.",
+    "mode": "t2v",
+    "durationSec": 6,
+    "aspectRatio": "9:16",
+    "intent": "human"
+  },
+  {
+    "modelId": "gemini-omni-flash",
+    "prompt": "At sunrise, meltwater surges through a steep terraced salt valley, lifting tiny mineral crystals as a flock of pale birds banks between columns of mist. Begin inches above the rushing stream, climb rapidly to reveal the immense landscape, and carry the water roar into airy wingbeats and distant thunder.",
+    "mode": "t2v",
+    "durationSec": 8,
+    "aspectRatio": "16:9",
+    "intent": "scene"
+  },
+  {
+    "modelId": "kling-3-turbo-standard",
+    "prompt": "An anonymous market baker shown only from shoulders down shapes one ribbon of dough into six rolls in a compact open kitchen. Use a brisk lateral tracking move as flour blooms, trays slide into place, and gloved hands complete the sequence cleanly, with warm oven light and crisp natural preparation sounds.",
+    "mode": "t2v",
+    "durationSec": 5,
+    "aspectRatio": "9:16",
+    "intent": "human"
+  },
+  {
+    "modelId": "kling-3-turbo-standard",
+    "prompt": "A concise three-shot morning delivery story follows one unmarked paper parcel from a rooftop greenhouse, through a fast bicycle crossing, to a careful doorstep handoff, maintaining the same parcel, weather, and forward momentum across every cut.",
+    "mode": "t2v",
+    "durationSec": 9,
+    "aspectRatio": "16:9",
+    "intent": "multishot",
+    "multiPrompt": [
+      {
+        "prompt": "Wide dawn view inside a rooftop greenhouse: gloved hands lift one plain kraft-paper parcel from a wooden bench as irrigation mist catches the low sun; faces remain outside the frame.",
+        "durationSec": 3
+      },
+      {
+        "prompt": "Low tracking shot beside a bicycle crossing wet cobblestones at speed, the same plain parcel secured to the rear rack while wheels throw fine spray and buildings streak past.",
+        "durationSec": 3
+      },
+      {
+        "prompt": "Overhead doorstep close-up: the courier places the same parcel into waiting hands, both people kept above the shoulders outside the composition, ending on a neat, decisive handoff.",
+        "durationSec": 3
+      }
+    ]
+  },
+  {
+    "modelId": "kling-3-turbo-pro",
+    "prompt": "On a dark slate pedestal, an unlabeled hand-blown glass atomizer turns slowly as a controlled ribbon of condensation travels down its irregular surface. A macro camera glides from the polished metal nozzle to the thick glass base, preserving tiny bubbles, sharp caustics, and a luxurious studio finish.",
+    "mode": "t2v",
+    "durationSec": 6,
+    "aspectRatio": "1:1",
+    "intent": "product"
+  },
+  {
+    "modelId": "kling-3-turbo-pro",
+    "prompt": "During a mountain blizzard, an isolated observatory dome opens while its weathered telescope rotates toward a brief break in the clouds. The camera cranes from wind-carved ice at ground level to the mechanism overhead, resolving snow grains, frosted metal, moving cables, and distant lightning with precise cinematic detail.",
+    "mode": "t2v",
+    "durationSec": 8,
+    "aspectRatio": "16:9",
+    "intent": "scene"
+  },
+  {
+    "modelId": "minimax-h3-max",
+    "prompt": "An anonymous contemporary dancer, seen from behind with the face obscured by a translucent hood, crosses a shallow mirrored stage in one continuous movement. Each footfall sends concentric ripples through the reflection while fabric twists in slow arcs; the camera retreats at matching pace as low percussion and breath remain synchronized.",
+    "mode": "t2v",
+    "durationSec": 8,
+    "aspectRatio": "9:16",
+    "intent": "human"
+  },
+  {
+    "modelId": "minimax-h3-max",
+    "prompt": "Centered on a walnut desk, an unbranded matte ceramic task lamp performs a precise three-step transformation: the folded arm rises, the shade pivots exactly ninety degrees, then a narrow pool of warm light reveals the grain beneath it. Hold a disciplined square composition, clean mechanical timing, tactile hinge sounds, and no extra objects entering frame.",
+    "mode": "t2v",
+    "durationSec": 7,
+    "aspectRatio": "1:1",
+    "intent": "product"
+  }
+]
