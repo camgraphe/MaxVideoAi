@@ -92,13 +92,14 @@ const docLink = (slug: string): LocalizedLinkHref => ({
 const BASE_MODEL_MENU_CANDIDATES: readonly LabeledSlug[] = [
   { slug: 'seedance-2-5', label: 'Seedance 2.5', badge: 'new' },
   { slug: 'minimax-h3', label: 'MiniMax H3', badge: 'new' },
-  { slug: 'ltx-2-5-pro', label: 'LTX 2.5 Pro', badge: 'new' },
+  { slug: 'ltx-2-5-pro', label: 'LTX 2.5 Pro' },
+  { slug: 'wan-3', label: 'Wan 3', badge: 'new' },
   { slug: 'wan-3-prime', label: 'Wan 3 Prime', badge: 'new' },
-  { slug: 'grok-imagine-video-1-5', label: 'Grok Imagine Video 1.5', badge: 'new' },
-  { slug: 'flux-3', label: 'FLUX 3', badge: 'new' },
+  { slug: 'grok-imagine-video-1-5', label: 'Grok Imagine Video 1.5' },
+  { slug: 'flux-3', label: 'FLUX 3' },
   { slug: 'seedance-2-0', label: 'Seedance 2.0' },
   { slug: 'veo-3-1', label: 'Veo 3.1' },
-  { slug: 'gemini-omni-flash', label: 'Gemini Omni Flash 1.1', badge: 'new' },
+  { slug: 'gemini-omni-flash', label: 'Gemini Omni Flash 1.1' },
   { slug: 'kling-o3-pro', label: 'Kling 3.0 Omni Pro' },
   { slug: 'kling-o3-4k', label: 'Kling 3.0 Omni 4K' },
   { slug: 'seedance-2-0-fast', label: 'Seedance 2.0 Fast' },
@@ -110,14 +111,15 @@ const P1_MODEL_MENU_CANDIDATES: readonly LabeledSlug[] = [
   { slug: 'seedance-2-5', label: 'Seedance 2.5', badge: 'new' },
   { slug: 'minimax-h3', label: 'MiniMax H3', badge: 'new' },
   { slug: 'minimax-h3-max', label: 'MiniMax H3 Max', badge: 'new' },
-  { slug: 'kling-3-turbo-pro', label: 'Kling 3.0 Turbo Pro', badge: 'new' },
-  { slug: 'kling-3-turbo-standard', label: 'Kling 3.0 Turbo Standard', badge: 'new' },
+  { slug: 'kling-3-turbo-pro', label: 'Kling 3.0 Turbo Pro' },
+  { slug: 'kling-3-turbo-standard', label: 'Kling 3.0 Turbo Standard' },
   { slug: 'veo-3-1', label: 'Veo 3.1' },
-  { slug: 'gemini-omni-flash', label: 'Gemini Omni Flash 1.1', badge: 'new' },
-  { slug: 'ltx-2-5-pro', label: 'LTX 2.5 Pro', badge: 'new' },
+  { slug: 'gemini-omni-flash', label: 'Gemini Omni Flash 1.1' },
+  { slug: 'ltx-2-5-pro', label: 'LTX 2.5 Pro' },
+  { slug: 'wan-3', label: 'Wan 3', badge: 'new' },
   { slug: 'wan-3-prime', label: 'Wan 3 Prime', badge: 'new' },
-  { slug: 'grok-imagine-video-1-5', label: 'Grok Imagine Video 1.5', badge: 'new' },
-  { slug: 'flux-3', label: 'FLUX 3', badge: 'new' },
+  { slug: 'grok-imagine-video-1-5', label: 'Grok Imagine Video 1.5' },
+  { slug: 'flux-3', label: 'FLUX 3' },
   { slug: 'seedance-2-0', label: 'Seedance 2.0' },
   { slug: 'kling-o3-pro', label: 'Kling 3.0 Omni Pro' },
 ] as const;
@@ -141,7 +143,7 @@ export function buildMarketingModelMenu(models: readonly RuntimeModelEntry[]): L
     if (!model?.publication.model.published || model.lifecycle === 'retired') return false;
     if (model.lifecycle !== 'legacy' || !model.successorId) return true;
     return byId.get(model.successorId)?.publication.model.published !== true;
-  }).slice(0, 10);
+  }).slice(0, 11);
 }
 
 const MODEL_MENU = buildMarketingModelMenu(listRuntimeModels());
@@ -162,22 +164,18 @@ const P1_COMPARE_MENU: LabeledSlug[] = [
   {
     slug: 'minimax-h3-vs-minimax-h3-max',
     label: 'MiniMax H3 vs H3 Max',
-    badge: 'new',
   },
   {
     slug: 'kling-3-turbo-pro-vs-kling-3-turbo-standard',
     label: 'Kling 3 Turbo Pro vs Standard',
-    badge: 'new',
   },
   {
     slug: 'kling-3-pro-vs-kling-3-turbo-pro',
     label: 'Kling 3 Pro vs Turbo Pro',
-    badge: 'new',
   },
   {
     slug: 'gemini-omni-flash-vs-kling-3-turbo-pro',
     label: 'Gemini Omni Flash 1.1 vs Kling 3 Turbo Pro',
-    badge: 'new',
   },
   {
     slug: 'gemini-omni-flash-vs-veo-3-1',
@@ -189,15 +187,13 @@ const COMPARE_MENU: LabeledSlug[] = [
   {
     slug: 'minimax-h3-vs-seedance-2-5',
     label: 'MiniMax H3 vs Seedance 2.5',
-    badge: 'new',
   },
   {
     slug: 'ltx-2-3-pro-vs-ltx-2-5-pro',
     label: 'LTX 2.3 Pro vs LTX 2.5 Pro',
-    badge: 'new',
   },
-  { slug: 'wan-2-6-vs-wan-3', label: 'Wan 2.6 vs Wan 3', badge: 'new' },
-  { slug: 'flux-3-vs-grok-imagine-video-1-5', label: 'FLUX 3 vs Grok Imagine Video 1.5', badge: 'new' },
+  { slug: 'wan-2-6-vs-wan-3', label: 'Wan 2.6 vs Wan 3' },
+  { slug: 'flux-3-vs-grok-imagine-video-1-5', label: 'FLUX 3 vs Grok Imagine Video 1.5' },
   { slug: 'grok-imagine-video-1-5-vs-sora-2', label: 'Grok Imagine Video 1.5 vs Sora 2' },
   { slug: 'kling-o3-pro-vs-minimax-h3', label: 'Kling 3.0 Omni Pro vs MiniMax H3' },
   { slug: 'gemini-omni-flash-vs-veo-3-1', label: 'Gemini Omni Flash 1.1 vs Veo 3.1' },
@@ -282,7 +278,7 @@ const MARKETING_COMPARE_DECISION_GUIDES_SECTION: MarketingNavSection = {
 
 export const MARKETING_NAV_TOOLS: MarketingNavItem[] = [
   ...(getMcpPublicationState(mcpPublication).indexable
-    ? [{ key: 'ai-video-assistant', label: 'Claude, ChatGPT & Codex video assistant', href: '/mcp', badge: 'new' as const }]
+    ? [{ key: 'ai-video-assistant', label: 'Claude, ChatGPT & Codex video assistant', href: '/mcp' as const }]
     : []),
   { key: 'character-builder', label: 'Consistent Character AI', href: toolLink('character-builder') },
   { key: 'angle', label: 'Change Camera Angle', href: toolLink('angle') },

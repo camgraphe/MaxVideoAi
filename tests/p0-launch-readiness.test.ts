@@ -117,7 +117,7 @@ test('the complete P0 graph publishes atomically across public discovery surface
 
   assert.deepEqual(
     MARKETING_NAV_MODELS.filter(({ key }) => P0.includes(key as (typeof P0)[number])).map(({ key }) => key),
-    ['ltx-2-5-pro', 'wan-3-prime', 'grok-imagine-video-1-5'],
+    ['ltx-2-5-pro', 'wan-3', 'wan-3-prime', 'grok-imagine-video-1-5'],
   );
   for (const familyId of ['wan', 'ltx', 'grok', 'flux']) {
     const family = MODEL_FAMILIES.find(({ id }) => id === familyId);

@@ -82,7 +82,7 @@ test('the P1 model and comparison menus publish atomically without changing cano
   const modelMenu = buildMarketingModelMenu(models);
   const compareMenu = buildMarketingCompareMenu(models);
 
-  assert.ok(modelMenu.length <= 10);
+  assert.ok(modelMenu.length <= 11);
   for (const id of NEW_MODEL_IDS) assert.ok(modelMenu.some(({ slug }) => slug === id), id);
   assert.ok(modelMenu.some(({ slug, label }) => slug === 'gemini-omni-flash' && label === 'Gemini Omni Flash 1.1'));
   assert.ok(modelMenu.some(({ slug }) => slug === 'minimax-h3'), 'generic H3 canonical stays visible');

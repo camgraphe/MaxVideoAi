@@ -37,9 +37,12 @@ const P0_MENU_REPRESENTATIVES = [
   'grok-imagine-video-1-5',
   'flux-3',
 ] as const;
-const P0_BOUNDED_MENU_REPRESENTATIVES = P0_MENU_REPRESENTATIVES.filter(
-  (modelId) => modelId !== 'flux-3',
-);
+const P0_BOUNDED_NAV_MENU_ENTRIES = [
+  'ltx-2-5-pro',
+  'wan-3',
+  'wan-3-prime',
+  'grok-imagine-video-1-5',
+] as const;
 
 function configuredLaunchSources(
   overrides: Partial<launchAssets.ModelLaunchSourceByWave> = {},
@@ -366,7 +369,7 @@ test('test validation compares both launch projections with source and detects i
   }
 });
 
-test('published P0 identities enter public discovery with one compact menu representative per family', () => {
+test('published P0 identities enter public discovery with the two promoted Wan variants', () => {
   const runtime = listRuntimeModels();
   const selectCatalogSlugs = (
     modelCatalog as typeof modelCatalog & {
@@ -380,7 +383,7 @@ test('published P0 identities enter public discovery with one compact menu repre
   const catalogSlugs = selectCatalogSlugs(runtime);
   assert.deepEqual(
     navigation.MARKETING_MODEL_SLUGS.filter((slug) => P0_IDS.includes(slug as never)),
-    P0_BOUNDED_MENU_REPRESENTATIVES,
+    P0_BOUNDED_NAV_MENU_ENTRIES,
   );
   assert.deepEqual(navigation.MARKETING_NAV_EXAMPLES.map(({ key }) => key), navigation.MARKETING_FOOTER_EXAMPLES.map(({ key }) => key));
   assert.equal(navigation.MARKETING_NAV_EXAMPLES.some(({ key }) => key === 'grok'), true);
@@ -399,7 +402,7 @@ test('published P0 identities enter public discovery with one compact menu repre
   }
 });
 
-test('a published fixture keeps the menu compact and exposes exactly one P0 representative per family', () => {
+test('a published fixture keeps the menu bounded while exposing both promoted Wan variants', () => {
   const buildMarketingModelMenu = (
     navigation as typeof navigation & {
       buildMarketingModelMenu?: (models: readonly RuntimeModelEntry[]) => Array<{ slug: string }>;
@@ -410,10 +413,10 @@ test('a published fixture keeps the menu compact and exposes exactly one P0 repr
   if (!buildMarketingModelMenu) return;
 
   const menu = buildMarketingModelMenu(publishedFixture());
-  assert.ok(menu.length <= 10);
+  assert.ok(menu.length <= 11);
   assert.deepEqual(
     menu.map(({ slug }) => slug).filter((slug) => P0_IDS.includes(slug as never)),
-    P0_BOUNDED_MENU_REPRESENTATIVES,
+    P0_BOUNDED_NAV_MENU_ENTRIES,
   );
 });
 

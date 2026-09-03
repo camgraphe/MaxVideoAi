@@ -88,14 +88,19 @@ test('marketing top navigation stays clean while Best-For links live inside drop
   assert.match(marketingDesktopNavSource, /font-semibold text-text-primary/);
 });
 
-test('public model menus keep both Seedance 2.5 and MiniMax H3 launch badges', () => {
-  assert.deepEqual(
-    MARKETING_NAV_MODELS.slice(0, 2).map(({ key, badge }) => ({ key, badge })),
-    [
-      { key: 'seedance-2-5', badge: 'new' },
-      { key: 'minimax-h3', badge: 'new' },
-    ],
-  );
+test('public dropdowns limit launch badges to five current models with none on comparisons', () => {
+  const badgedEntries = Object.values(MARKETING_NAV_DROPDOWNS)
+    .flatMap((dropdown) => dropdown?.items ?? [])
+    .filter(({ badge }) => badge === 'new')
+    .map(({ key }) => key);
+
+  assert.deepEqual(badgedEntries, [
+    'seedance-2-5',
+    'minimax-h3',
+    'minimax-h3-max',
+    'wan-3',
+    'wan-3-prime',
+  ]);
 
   for (const [surface, source] of [
     ['marketing desktop', marketingDesktopNavSource],
@@ -117,15 +122,7 @@ test('public model menus keep both Seedance 2.5 and MiniMax H3 launch badges', (
     assert.equal(dictionary.nav.badges.new, label);
   }
 
-  const flagshipComparison = MARKETING_NAV_DROPDOWNS.compare?.items.find(
-    (item) => item.key === 'minimax-h3-vs-seedance-2-5',
-  );
-  assert.equal(flagshipComparison?.key, 'minimax-h3-vs-seedance-2-5');
-  assert.equal(flagshipComparison?.badge, 'new');
-  assert.deepEqual(flagshipComparison?.href, {
-    pathname: '/ai-video-engines/[slug]',
-    params: { slug: 'minimax-h3-vs-seedance-2-5' },
-  });
+  assert.equal(MARKETING_NAV_DROPDOWNS.compare?.items.some(({ badge }) => badge === 'new'), false);
 
   for (const locale of ['en', 'fr', 'es'] as const) {
     const dictionary = JSON.parse(readFileSync(`frontend/messages/${locale}.json`, 'utf8'));
