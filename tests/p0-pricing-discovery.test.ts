@@ -266,6 +266,7 @@ test('explicit published model fallbacks remain available without a pricing row'
   assert.deepEqual(
     data.modelTesting.items.map((item) => item.id),
     [
+      'gemini-omni-flash',
       'seedance-2-5',
       'seedance-2-0',
       'kling-3-pro',

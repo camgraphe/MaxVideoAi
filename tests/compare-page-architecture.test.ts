@@ -251,6 +251,13 @@ const p0ScoreboardOnlyComparisons = [
   'flux-3-vs-grok-imagine-video-1-5',
 ];
 
+const p1ScoreboardOnlyComparisons = [
+  'minimax-h3-vs-minimax-h3-max',
+  'kling-3-turbo-pro-vs-kling-3-turbo-standard',
+  'kling-3-pro-vs-kling-3-turbo-pro',
+  'gemini-omni-flash-vs-kling-3-turbo-pro',
+];
+
 const canonicalMiniCompareOverrideSlugs = [
   'dreamina-seedance-2-0-mini-vs-seedance-2-0',
   'dreamina-seedance-2-0-mini-vs-seedance-2-0-fast',
@@ -394,6 +401,7 @@ test('Seedance family comparisons use video showdowns while Mini and Gemini page
     ...miniScoreboardOnlyComparisons,
     ...geminiScoreboardOnlyComparisons,
     ...p0ScoreboardOnlyComparisons,
+    ...p1ScoreboardOnlyComparisons,
   ]);
   assert.match(configSource, /export const SCOREBOARD_ONLY_COMPARISONS/);
   assert.match(configSource, /compareConfig as \{ scoreboardOnlyComparisons\?: string\[\] \}/);
@@ -406,6 +414,9 @@ test('Seedance family comparisons use video showdowns while Mini and Gemini page
     assert.equal(compareConfig.showdowns?.[slug], undefined, `${slug} should stay scorecard-only until curated outputs exist`);
   });
   p0ScoreboardOnlyComparisons.forEach((slug) => {
+    assert.equal(compareConfig.showdowns?.[slug], undefined, `${slug} must stay scoreboard-only`);
+  });
+  p1ScoreboardOnlyComparisons.forEach((slug) => {
     assert.equal(compareConfig.showdowns?.[slug], undefined, `${slug} must stay scoreboard-only`);
   });
 

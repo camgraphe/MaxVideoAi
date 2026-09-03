@@ -36,6 +36,9 @@ const ASSET_GATED_LAUNCH_MODEL_IDS = new Set([
   'grok-imagine-video-1-5',
   'flux-3',
   'flux-3-draft',
+  'kling-3-turbo-standard',
+  'kling-3-turbo-pro',
+  'minimax-h3-max',
 ]);
 
 const MODEL_FAMILY_SOURCES = [
@@ -59,7 +62,10 @@ const MODEL_FAMILY_SOURCES = [
     navLabel: 'Kling 3.0 Omni',
     brandId: 'kling',
     defaultModelId: 'kling-o3-pro',
+    modelOrderIds: ['kling-3-turbo-pro', 'kling-3-turbo-standard', 'kling-o3-pro', 'kling-o3-standard', 'kling-o3-4k', 'kling-3-pro', 'kling-3-standard', 'kling-3-4k', 'kling-2-6-pro', 'kling-2-5-turbo'],
     routeAliases: [
+      'kling-3-turbo-pro',
+      'kling-3-turbo-standard',
       'kling-2-5-turbo',
       'kling-2-6-pro',
       'kling-3-standard',
@@ -249,8 +255,9 @@ const MODEL_FAMILY_SOURCES = [
     navLabel: 'MiniMax H3',
     brandId: 'minimax',
     defaultModelId: 'minimax-h3',
-    routeAliases: ['minimax-h3', 'minimax-hailuo-02-text', 'minimax-hailuo-02-image'],
-    aliases: ['minimax-h3', 'hailuo-h3', 'hailuo-03', 'minimax-hailuo-02'],
+    modelOrderIds: ['minimax-h3', 'minimax-h3-max', 'minimax-hailuo-02-text', 'minimax-hailuo-02-image'],
+    routeAliases: ['minimax-h3', 'minimax-h3-max', 'minimax-hailuo-02-text', 'minimax-hailuo-02-image'],
+    aliases: ['minimax-h3', 'minimax-h3-max', 'hailuo-h3', 'hailuo-03', 'minimax-hailuo-02'],
     prefixes: ['minimax/h3', 'minimax-h3', 'hailuo-h3', 'minimax-hailuo-02'],
     contains: ['minimax', 'hailuo'],
     examplesPage: {

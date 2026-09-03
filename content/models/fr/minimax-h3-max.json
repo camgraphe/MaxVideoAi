@@ -1,0 +1,240 @@
+{
+  "marketingName": "MiniMax H3 Max",
+  "versionLabel": "H3 Max",
+  "seo": {
+    "title": "MiniMax H3 Max : vidéo IA rapide 768P, références et audio",
+    "description": "Générez des vidéos MiniMax H3 Max de 5 à 15 secondes en 480P ou 768P depuis du texte, des images ou des références image, vidéo et audio."
+  },
+  "overview": "MiniMax H3 Max est la route Hailuo de production rapide pour le respect du prompt, une finition 768P soignée, l’audio natif et les références multimodales.",
+  "decision": {
+    "modelSlug": "minimax-h3-max",
+    "hero": {
+      "eyebrow": "ROUTE H3 MAX DE PRODUCTION RAPIDE",
+      "title": "MiniMax H3 Max",
+      "subtitle": "Créez des vidéos soignées de 5 à 15 secondes jusqu’en 768P depuis du texte, des images de début et fin ou des références mixtes.",
+      "subtitleHighlights": [
+        "480P / 768P",
+        "5–15s",
+        "Mixed references"
+      ],
+      "paragraph": "Choisissez H3 Max pour produire vite en 480P ou 768P avec expansion du prompt et bonne finition. Conservez MiniMax H3 pour l’intention large 2K/4K.",
+      "primaryCta": {
+        "label": "Générer avec MiniMax H3 Max",
+        "href": "/app?engine=minimax-h3-max"
+      },
+      "secondaryCta": {
+        "label": "Voir les exemples",
+        "href": "/fr/galerie/hailuo"
+      },
+      "quickLinks": [
+        {
+          "label": "Voir MiniMax H3 pour la 2K et 4K",
+          "href": "/fr/modeles/minimax-h3"
+        },
+        {
+          "label": "Comparer les modèles",
+          "href": "/fr/comparatif/minimax-h3-vs-minimax-h3-max"
+        },
+        {
+          "label": "Voir les tarifs",
+          "href": "/fr/tarifs#minimax-h3-max-pricing"
+        },
+        {
+          "label": "Atelier de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Exemples de lancement validés",
+      "description": "Lampe en céramique transformable",
+      "renderLabel": "Voir le rendu",
+      "badges": [
+        "480P / 768P",
+        "5–15s",
+        "Mixed references",
+        "Native audio"
+      ],
+      "altContext": "MiniMax H3 Max: Lampe en céramique transformable"
+    },
+    "features": [
+      {
+        "title": "Sortie rapide et soignée",
+        "body": "Utilisez H3 Max pour le respect du prompt et la production rapide en 480P ou 768P.",
+        "tone": "quality"
+      },
+      {
+        "title": "Texte, images et références",
+        "body": "Partez d’un prompt, animez une image avec une fin facultative ou combinez des références.",
+        "tone": "reference"
+      },
+      {
+        "title": "Clips de 5 à 15 secondes",
+        "body": "Choisissez chaque seconde entière et six formats paysage, carré ou vertical en texte-vers-vidéo.",
+        "tone": "duration"
+      },
+      {
+        "title": "Audio natif",
+        "body": "Générez dialogue, ambiance, musique et effets synchronisés.",
+        "tone": "audio"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Choisir H3 Max pour la vitesse ciblée",
+        "body": "Utilisez H3 Max quand la production rapide en 768P, le respect du prompt et l’audio comptent plus que la 2K ou 4K.",
+        "cta": {
+          "label": "Générer avec MiniMax H3 Max",
+          "href": "/app?engine=minimax-h3-max"
+        }
+      },
+      {
+        "title": "Voir MiniMax H3 pour la 2K et 4K",
+        "body": "Choisissez H3 Max pour produire vite en 480P ou 768P avec expansion du prompt et bonne finition. Conservez MiniMax H3 pour l’intention large 2K/4K.",
+        "cta": {
+          "label": "Voir les specs H3 Max",
+          "href": "#specs"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text-to-video",
+        "body": "Définissez le sujet, le changement visible, la caméra et la réponse sonore."
+      },
+      {
+        "title": "Image-to-video",
+        "body": "Animez une image de départ en décrivant le mouvement et la caméra."
+      }
+    ],
+    "pricingCopy": {
+      "title": "MiniMax H3 Max — Voir les tarifs",
+      "subtitle": "Le prix exact est calculé avant le rendu depuis la durée, le mode et la résolution.",
+      "footnote": "Le total affiché au moment de générer reste la référence.",
+      "ctaLabel": "Générer avec MiniMax H3 Max",
+      "ctaHref": "/app?engine=minimax-h3-max"
+    },
+    "meta": {
+      "title": "MiniMax H3 Max : vidéo IA rapide 768P, références et audio",
+      "description": "Générez des vidéos MiniMax H3 Max de 5 à 15 secondes en 480P ou 768P depuis du texte, des images ou des références image, vidéo et audio."
+    }
+  },
+  "prompting": {
+    "modelSlug": "minimax-h3-max",
+    "section": {
+      "title": "Atelier de prompts — MiniMax H3 Max",
+      "intro": "Commencez par l’action visible, puis ajoutez caméra, continuité et son.",
+      "tip": "Utilisez l’expansion équilibrée pour les briefs directs et qualité pour enrichir le détail cinématographique.",
+      "guide": null,
+      "referencesTitle": "Diriger un plan de production ciblé"
+    },
+    "tabs": [
+      {
+        "id": "direction",
+        "label": "Direction",
+        "title": "Diriger un plan de production ciblé",
+        "description": "Définissez le sujet, le changement visible, la caméra et la réponse sonore.",
+        "copy": "Une lampe sculpturale en céramique dans un studio sombre se déploie d’une forme compacte vers une arche lumineuse. Une orbite lente, matières stables, articulations précises, ambiance douce et cadre final propre. Aucun texte ni logo."
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "direction",
+        "body": "Utilisez l’expansion équilibrée pour les briefs directs et qualité pour enrichir le détail cinématographique."
+      }
+    ],
+    "globalPrinciples": [
+      "Une action lisible par plan.",
+      "Répétez uniquement les repères de continuité indispensables."
+    ],
+    "engineWhy": [
+      "MiniMax H3 Max est la route Hailuo de production rapide pour le respect du prompt, une finition 768P soignée, l’audio natif et les références multimodales."
+    ],
+    "demo": {
+      "title": "Lampe en céramique transformable",
+      "promptLabel": "Prompt de production",
+      "prompt": "Une lampe sculpturale en céramique dans un studio sombre se déploie d’une forme compacte vers une arche lumineuse. Une orbite lente, matières stables, articulations précises, ambiance douce et cadre final propre. Aucun texte ni logo.",
+      "notes": [
+        "Utilisez l’expansion équilibrée pour les briefs directs et qualité pour enrichir le détail cinématographique."
+      ],
+      "summary": {
+        "subject": "Lampe en céramique transformable",
+        "action": "Une lampe se déploie vers sa forme finale",
+        "camera": "Un mouvement de caméra contrôlé",
+        "style": "Transformation produit premium et épurée",
+        "output": "480P or 768P · 24 FPS · native audio"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Text-to-video",
+        "outputLabel": "480P or 768P · 24 FPS · native audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "media",
+        "audioChipLabel": null,
+        "altContext": "MiniMax H3 Max: Lampe en céramique transformable"
+      }
+    },
+    "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "minimax-h3-max",
+    "showWhenEmpty": false,
+    "section": {
+      "title": "Exemples validés",
+      "intro": "Deux rendus distincts montrent le modèle sur des personnes, des scènes ou des produits.",
+      "defaultCtaLabel": "Voir la galerie de la famille",
+      "recreateLabel": null
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Tous"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinématique"
+      },
+      {
+        "id": "product",
+        "label": "Produit"
+      },
+      {
+        "id": "reference",
+        "label": "Références"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "prompt",
+        "icon": "sparkles",
+        "title": "Respect du prompt",
+        "body": "Vérifiez le sujet, l’action, le cadrage et la fin demandés."
+      },
+      {
+        "id": "motion",
+        "icon": "zap",
+        "title": "Qualité du mouvement",
+        "body": "Contrôlez les contacts, la caméra et la stabilité temporelle."
+      },
+      {
+        "id": "people",
+        "icon": "users",
+        "title": "Fidélité humaine",
+        "body": "Inspectez l’anatomie, l’identité, les vêtements et le mouvement."
+      },
+      {
+        "id": "finish",
+        "icon": "maximize",
+        "title": "Finition visuelle",
+        "body": "Inspectez les détails, la lumière, les matières et la résolution."
+      },
+      {
+        "id": "review",
+        "icon": "shield",
+        "title": "Revue éditoriale",
+        "body": "Écartez texte indésirable, marque, contenu risqué ou ressemblance non autorisée."
+      }
+    ],
+    "fallbackItems": null
+  }
+}

@@ -24,8 +24,20 @@ export const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string
     demo: 'job_43c4c8cd-246a-4c96-80a9-ab647b2eade7',
   },
   'gemini-omni-flash': {
-    hero: 'job_bd1604b7-ae90-45eb-9a65-fb6d44dfffe9',
-    demo: 'job_bbc31801-7191-4d40-90b7-6b52bdeb1a7a',
+    hero: 'd7c08847-0a76-4ec6-bdb9-03d9d293b840',
+    demo: 'a59bedef-5ee8-451e-a09c-7be29e18e629',
+  },
+  'kling-3-turbo-standard': {
+    hero: 'd4890c1b-dc03-4e60-bcc6-b3d1b44857ba',
+    demo: 'da92f706-f644-4a6a-ab0d-b4175e472dd8',
+  },
+  'kling-3-turbo-pro': {
+    hero: 'df4f081a-9a9e-459b-8aa2-bac773fc6e8e',
+    demo: '951395ca-6ef0-4f8c-a4d5-a8c1c0a8c93b',
+  },
+  'minimax-h3-max': {
+    hero: '799a7e0a-89c1-4776-b6f0-d0d8068075d7',
+    demo: '7b6c56c3-4aba-459a-8e6c-09aeedc2dc81',
   },
   'pika-text-to-video': {
     hero: 'job_2c958e35-92e7-4c0f-8828-ec49476c8c4e',

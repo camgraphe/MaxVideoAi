@@ -12,6 +12,10 @@ export const PAYG_ICON_IDS = [
 export type PaygIconId = (typeof PAYG_ICON_IDS)[number];
 
 export const PAYG_PRICE_LOOKUP_IDS = [
+  'gemini-omni-flash',
+  'kling-3-turbo-pro',
+  'kling-3-turbo-standard',
+  'minimax-h3-max',
   'ltx-2-5-pro',
   'ltx-2-5-fast',
   'wan-3-prime',
@@ -29,6 +33,10 @@ export const PAYG_PRICE_LOOKUP_IDS = [
 export type PaygPriceLookupId = (typeof PAYG_PRICE_LOOKUP_IDS)[number];
 
 export const PAYG_EXAMPLE_COST_IDS = [
+  'gemini-omni-flash',
+  'kling-3-turbo-pro',
+  'kling-3-turbo-standard',
+  'minimax-h3-max',
   'ltx-2-5-pro',
   'wan-3-prime',
   'grok-imagine-video-1-5',
@@ -43,6 +51,10 @@ export const PAYG_EXAMPLE_COST_IDS = [
 export type PaygExampleCostId = (typeof PAYG_EXAMPLE_COST_IDS)[number];
 
 export const PAYG_SUPPORTED_MODEL_IDS = [
+  'gemini-omni-flash',
+  'kling-3-turbo-pro',
+  'kling-3-turbo-standard',
+  'minimax-h3-max',
   'seedance-2-5',
   'seedance-2-0',
   'kling-3-pro',
@@ -129,7 +141,7 @@ export type PayAsYouGoContent = {
     modelLinkLabel: string;
     compareLinkLabel: string;
     bestFor: Record<
-      'seedanceMini' | 'seedance' | 'happyHorse' | 'kling' | 'veo' | 'ltx' | 'wan' | 'grok' | 'flux' | 'fallback',
+      'seedanceMini' | 'seedance' | 'happyHorse' | 'kling' | 'veo' | 'gemini' | 'hailuo' | 'ltx' | 'wan' | 'grok' | 'flux' | 'fallback',
       string
     >;
   };

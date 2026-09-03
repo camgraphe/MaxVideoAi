@@ -45,32 +45,36 @@ test('published P0 models are discoverable through PAYG rows, lookups, examples,
 test('displayed pricing remains a live projection of the pricing hub', () => {
   const content = getPayAsYouGoContent('en');
   const pricingHub = structuredClone(buildPricingHubData('en'));
-  const sourceRow = pricingHub.video.rows.find((row) => row.id === 'ltx-2-5-pro');
+  const sourceId = 'ltx-2-5-pro';
+  const sourceRow = pricingHub.video.rows.find((row) => row.id === sourceId);
   assert.ok(sourceRow);
   sourceRow.quotes['5s-720p'] = { status: 'exact', display: '$987.65' };
+  const sampleSourceRow = pricingHub.video.rows.find((row) => row.id === 'gemini-omni-flash');
+  assert.ok(sampleSourceRow);
+  sampleSourceRow.quotes['5s-720p'] = { status: 'exact', display: '$876.54' };
 
   const data = buildPayAsYouGoPageData({ locale: 'en', content, pricingHub });
   const cell = data.pricing.rows
-    .find((row) => row.id === 'ltx-2-5-pro')
+    .find((row) => row.id === sourceId)
     ?.priceCells.find((item) => item.presetId === '5s-720p');
 
   assert.equal(cell?.value, '$987.65');
   assert.equal(cell?.displayValue, 'Example : $987.65');
   assert.equal(cell?.renderReady, true);
   assert.equal(
-    data.hero.quote.previewRows.find((row) => row.id === 'ltx-2-5-pro')?.quoteLabel,
+    data.hero.quote.previewRows.find((row) => row.id === sourceId)?.quoteLabel,
     '$987.65',
   );
   assert.equal(
-    data.priceLookups.items.find((item) => item.id === 'ltx-2-5-pro')?.price,
+    data.priceLookups.items.find((item) => item.id === sourceId)?.price,
     '$987.65',
   );
   assert.equal(
-    data.exampleCosts.items.find((item) => item.id === 'ltx-2-5-pro')?.price,
+    data.exampleCosts.items.find((item) => item.id === sourceId)?.price,
     '$987.65',
   );
-  assert.equal(data.hero.quote.sampleCost?.price, '$987.65');
-  assert.doesNotMatch(JSON.stringify(content), /987\.65/);
+  assert.equal(data.hero.quote.sampleCost?.price, '$876.54');
+  assert.doesNotMatch(JSON.stringify(content), /987\.65|876\.54/);
 });
 
 test('live-quote status stays invisible independently of localized display prose', () => {

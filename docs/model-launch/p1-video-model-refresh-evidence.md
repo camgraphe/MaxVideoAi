@@ -1,18 +1,18 @@
 # P1 Video Model Refresh Evidence
 
 Evidence snapshot: 2026-09-03. This private engineering record freezes only
-what was observed from primary documentation and safe, non-mutating checks.
-Provider polling and result envelopes remain unproven because neither approved
-staging submission reached provider acceptance.
+what was observed from primary documentation, controlled staging submissions,
+and editorial review. The approved eight-video launch batch completed without
+an automatic retry or a duplicate wallet charge.
 
 ## Scope
 
 | Model ID | Public product | Runtime policy | Publication state |
 | --- | --- | --- | --- |
-| `gemini-omni-flash` | Gemini Omni Flash 1.1 | Google direct | blocked by Google pre-acceptance rejection |
-| `kling-3-turbo-standard` | Kling 3.0 Turbo Standard | Kling direct, Fal fallback | direct mapped; depleted-balance fallback required |
-| `kling-3-turbo-pro` | Kling 3.0 Turbo Pro | Kling direct, Fal fallback | direct mapped; depleted-balance fallback required |
-| `minimax-h3-max` | MiniMax H3 Max | current available route | blocked pending implementation and pricing parity |
+| `gemini-omni-flash` | Gemini Omni Flash 1.1 | Google direct | two reviewed Google-direct launch videos accepted |
+| `kling-3-turbo-standard` | Kling 3.0 Turbo Standard | Kling direct, Fal fallback | two reviewed launch videos accepted through the depleted-credit fallback |
+| `kling-3-turbo-pro` | Kling 3.0 Turbo Pro | Kling direct, Fal fallback | two reviewed launch videos accepted through the depleted-credit fallback |
+| `minimax-h3-max` | MiniMax H3 Max | current available route | two reviewed launch videos accepted |
 
 Canonical Gemini stays `/models/gemini-omni-flash`. The two permanent,
 single-hop version-search aliases are `gemini-omni-flash-1-1` and
@@ -62,9 +62,15 @@ true` when `background: true`; it does not prove the revised request envelope
 or a successful provider model acceptance. No retry is authorized in this
 batch.
 
-Google direct publication gate: blocked (the approved single probe was
-rejected before acceptance; a later separately approved smoke must use the
-required store behavior and record its accepted envelope).
+The revised request keeps `store: true` for background interactions. Two later
+approved launch requests were accepted by Google, polled by their original job
+IDs, copied to durable staging storage, and saved to the normal media library.
+One completed promptly; the other was safely reconciled from the polling-stalled
+state after the completion poller was corrected. No replacement request and no
+second charge were created.
+
+Google direct publication gate: proven for P1 (two Google-direct outputs,
+6-second portrait and 8-second landscape, were reviewed and accepted).
 
 ## Kling Direct
 
@@ -180,6 +186,28 @@ request at HTTP 400 before issuing an interaction; Kling rejected it at HTTP
 429 before issuing a task. Neither response reported a provider-deduction
 field, and no poll or generated media was created.
 
+## Launch Video Review
+
+The approved batch contained exactly two distinct prompts per model: three
+human-led scenes, two environment/action scenes, two product shots, and one
+explicit Kling multishot. Faces were anonymous or outside the frame; prompts
+contained no public figure, trademark-dependent subject, or reused concept.
+
+| Model | Evidence IDs | Editorial result |
+| --- | --- | --- |
+| Gemini Omni Flash 1.1 | `d7c08847-0a76-4ec6-bdb9-03d9d293b840`, `a59bedef-5ee8-451e-a09c-7be29e18e629` | Mechanic action and salt-valley aerial accepted; coherent motion, camera direction, ambience, and no material artifact. |
+| Kling 3.0 Turbo Standard | `d4890c1b-dc03-4e60-bcc6-b3d1b44857ba`, `da92f706-f644-4a6a-ab0d-b4175e472dd8` | Baker action and three-shot parcel sequence accepted; the multishot preserves subject and weather continuity. |
+| Kling 3.0 Turbo Pro | `df4f081a-9a9e-459b-8aa2-bac773fc6e8e`, `951395ca-6ef0-4f8c-a4d5-a8c1c0a8c93b` | Glass-product macro and observatory storm accepted; both demonstrate the Pro detail/finish position. |
+| MiniMax H3 Max | `799a7e0a-89c1-4776-b6f0-d0d8068075d7`, `7b6c56c3-4aba-459a-8e6c-09aeedc2dc81` | Dancer and lamp transformation accepted; strong prompt adherence, material finish, and synchronized audio. |
+
+All eight jobs report `completed`, `paid_wallet`, and saved to the staging
+library. Aggregate customer-wallet debit was **$8.28 USD**; the final staging
+wallet balance was **$3.92 USD**. The eight durable assets are attached to their
+eight model and eight family playlist positions. They remain private and
+non-indexable in the admin `not-published` queue, with zero editorial watch
+pages. Production import must preserve that state so the admin SEO workflow,
+not this release, decides when each video becomes public and indexable.
+
 ## Search Console
 
 Snapshot window: 2026-06-01 through 2026-08-31.
@@ -212,10 +240,11 @@ or full authorization header is stored in this evidence record.
 | Gate | State | Evidence or required next step |
 | --- | --- | --- |
 | Scope and public identity freeze | proven | Four canonical IDs and canonical/alias ownership recorded above. |
-| Google direct provider contract | blocked | The approved probe returned HTTP 400 before acceptance: `store=true` is required for background interactions. |
+| Google direct provider contract | proven | Two approved Google-direct jobs completed through the corrected stored-background and polling contract without resubmission. |
 | Kling direct provider contract | proven | The mapped Standard/Pro direct-first contract records the observed HTTP 429/code `1102` rejection and falls back once to Fal before acceptance; post-acceptance fallback remains forbidden. |
 | Kling Fal fallback documentation | proven | Four endpoint schemas fetched; direct-first boundary recorded. |
 | H3 Max live schema research | proven | Three schemas, pricing notices, end frame, reference formula, duration, and native-audio behavior recorded. |
 | Search Console token refresh | blocked | Local/admin refresh currently returns `invalid_grant`. |
-| Public publication | blocked | Provider smokes, canonical pricing parity, implementation, examples, and broader release gates remain outstanding. |
+| Eight launch videos | proven | Two distinct, reviewed, completed staging videos per P1 model; no automatic retry or duplicate charge. |
+| Public publication | blocked | Production video import into the admin `not-published` queue, final atomic registry switch, route/sitemap verification, and Search Console refresh remain outstanding. Video publication/indexing is a later admin SEO decision and is not a P1 release gate. |
 | Excluded-product release gate | not-applicable | No excluded product is included in this P1 scope. |

@@ -123,6 +123,10 @@
       },
       "quickLinks": [
         {
+          "label": "Voir MiniMax H3 Max pour la production rapide en 768P",
+          "href": "/fr/modeles/minimax-h3-max"
+        },
+        {
           "label": "Comparer avec Kling O3 Pro",
           "href": "/fr/comparatif/kling-o3-pro-vs-minimax-h3?order=minimax-h3"
         },

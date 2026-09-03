@@ -4,6 +4,7 @@ import {
 } from './model-launch-waves';
 
 const P0_LAUNCH_WAVE = MODEL_LAUNCH_WAVES[0];
+const P1_LAUNCH_WAVE = MODEL_LAUNCH_WAVES[1];
 
 export const P0_VIDEO_EXAMPLE_MODEL_IDS = Object.freeze(P0_LAUNCH_WAVE.models.map(({ modelId }) => modelId)) as readonly (
   (typeof P0_LAUNCH_WAVE.models)[number]['modelId']
@@ -12,6 +13,14 @@ export type P0VideoExampleModelId = (typeof P0_LAUNCH_WAVE.models)[number]['mode
 export const P0_VIDEO_EXAMPLE_FAMILY_BY_MODEL_ID = Object.fromEntries(
   P0_LAUNCH_WAVE.models.map(({ modelId, familyId }) => [modelId, familyId]),
 ) as Record<P0VideoExampleModelId, (typeof P0_LAUNCH_WAVE.models)[number]['familyId']>;
+
+export const P1_VIDEO_EXAMPLE_MODEL_IDS = Object.freeze(P1_LAUNCH_WAVE.models.map(({ modelId }) => modelId)) as readonly (
+  (typeof P1_LAUNCH_WAVE.models)[number]['modelId']
+)[];
+export type P1VideoExampleModelId = (typeof P1_LAUNCH_WAVE.models)[number]['modelId'];
+export const P1_VIDEO_EXAMPLE_FAMILY_BY_MODEL_ID = Object.fromEntries(
+  P1_LAUNCH_WAVE.models.map(({ modelId, familyId }) => [modelId, familyId]),
+) as Record<P1VideoExampleModelId, (typeof P1_LAUNCH_WAVE.models)[number]['familyId']>;
 
 export type ModelLaunchReadinessEntry = {
   waveId: ModelLaunchWaveId;

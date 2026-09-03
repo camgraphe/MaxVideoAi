@@ -1,0 +1,243 @@
+{
+  "marketingName": "Kling 3.0 Turbo Standard",
+  "versionLabel": "3.0 Turbo Standard",
+  "seo": {
+    "title": "Kling 3 Turbo Standard AI Video: 720p, Audio & Price",
+    "description": "Generate 3–15-second Kling 3 Turbo Standard videos at 720p from text or an opening image, with native audio and multishot prompting."
+  },
+  "overview": "Kling 3 Turbo Standard is the value-focused 720p route for fast drafts, social concepts, and structured multishot sequences with native audio.",
+  "decision": {
+    "modelSlug": "kling-3-turbo-standard",
+    "hero": {
+      "eyebrow": "KLING TURBO VALUE ROUTE",
+      "title": "Kling 3.0 Turbo Standard",
+      "subtitle": "Fast 720p text-to-video and image-to-video for 3–15-second drafts, social clips, and multishot concepts.",
+      "subtitleHighlights": [
+        "720p",
+        "3–15s",
+        "Multishot"
+      ],
+      "paragraph": "Choose Standard when iteration cost and speed matter more than final 1080p delivery. Use one prompt or a timed sequence of up to six shots.",
+      "primaryCta": {
+        "label": "Generate with Kling 3.0 Turbo Standard",
+        "href": "/app?engine=kling-3-turbo-standard"
+      },
+      "secondaryCta": {
+        "label": "View examples",
+        "href": "/examples/kling"
+      },
+      "quickLinks": [
+        {
+          "label": "See Turbo Pro in 1080p",
+          "href": "/models/kling-3-turbo-pro"
+        },
+        {
+          "label": "Compare the models",
+          "href": "/ai-video-engines/kling-3-turbo-pro-vs-kling-3-turbo-standard"
+        },
+        {
+          "label": "View pricing",
+          "href": "/pricing#kling-3-turbo-standard-pricing"
+        },
+        {
+          "label": "Prompt Lab",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Reviewed launch examples",
+      "description": "Rainy parcel relay",
+      "renderLabel": "View render",
+      "badges": [
+        "720p",
+        "3–15s",
+        "Multishot",
+        "Native audio"
+      ],
+      "altContext": "Kling 3.0 Turbo Standard: Rainy parcel relay"
+    },
+    "features": [
+      {
+        "title": "720p value tier",
+        "body": "A lower-cost route for rapid concept tests and approved social drafts.",
+        "tone": "price"
+      },
+      {
+        "title": "3–15-second clips",
+        "body": "Choose any whole-second duration and match the number of story beats to the runtime.",
+        "tone": "duration"
+      },
+      {
+        "title": "Structured multishot prompts",
+        "body": "Direct up to six timed shots while preserving the same subject, prop, and visual language.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Native audio",
+        "body": "Generate dialogue, ambience, and effects with the picture.",
+        "tone": "audio"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Choose Standard for iteration",
+        "body": "Use 720p Standard to test hooks, staging, rhythm, and multishot structure before a higher-finish pass.",
+        "cta": {
+          "label": "Generate with Kling 3.0 Turbo Standard",
+          "href": "/app?engine=kling-3-turbo-standard"
+        }
+      },
+      {
+        "title": "See Turbo Pro in 1080p",
+        "body": "Choose Standard when iteration cost and speed matter more than final 1080p delivery. Use one prompt or a timed sequence of up to six shots.",
+        "cta": {
+          "label": "See Turbo Pro in 1080p",
+          "href": "/models/kling-3-turbo-pro"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text-to-video",
+        "body": "Give each shot one action, one camera instruction, and one sound cue."
+      },
+      {
+        "title": "Image-to-video",
+        "body": "Animate one opening image by describing motion and camera."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Kling 3.0 Turbo Standard — View pricing",
+      "subtitle": "The exact price is calculated before rendering from duration, mode, and resolution.",
+      "footnote": "The total shown at generation time remains authoritative.",
+      "ctaLabel": "Generate with Kling 3.0 Turbo Standard",
+      "ctaHref": "/app?engine=kling-3-turbo-standard"
+    },
+    "meta": {
+      "title": "Kling 3 Turbo Standard AI Video: 720p, Audio & Price",
+      "description": "Generate 3–15-second Kling 3 Turbo Standard videos at 720p from text or an opening image, with native audio and multishot prompting."
+    }
+  },
+  "prompting": {
+    "modelSlug": "kling-3-turbo-standard",
+    "section": {
+      "title": "Prompt Lab — Kling 3 Turbo Standard",
+      "intro": "Keep each shot short, visual, and easy to verify.",
+      "tip": "For multishot work, name each shot and make all shot durations add up to the selected total.",
+      "guide": {
+        "label": "Official Kling 3 guide",
+        "href": "https://app.klingai.com/cn/quickstart/klingai-video-3-model-user-guide"
+      },
+      "referencesTitle": "Build a timed sequence"
+    },
+    "tabs": [
+      {
+        "id": "direction",
+        "label": "Direction",
+        "title": "Build a timed sequence",
+        "description": "Give each shot one action, one camera instruction, and one sound cue.",
+        "copy": "Shot 1: a courier protects a silver parcel beneath a station awning. Shot 2: the same parcel travels in a bicycle basket through rain. Shot 3: the courier hands it to a baker at a warm doorway. Preserve the parcel, rain, direction, and color grade."
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "direction",
+        "body": "For multishot work, name each shot and make all shot durations add up to the selected total."
+      }
+    ],
+    "globalPrinciples": [
+      "Use one readable action per shot.",
+      "Repeat only essential continuity anchors."
+    ],
+    "engineWhy": [
+      "Kling 3 Turbo Standard is the value-focused 720p route for fast drafts, social concepts, and structured multishot sequences with native audio."
+    ],
+    "demo": {
+      "title": "Rainy parcel relay",
+      "promptLabel": "Production prompt",
+      "prompt": "Shot 1: a courier protects a silver parcel beneath a station awning. Shot 2: the same parcel travels in a bicycle basket through rain. Shot 3: the courier hands it to a baker at a warm doorway. Preserve the parcel, rain, direction, and color grade.",
+      "notes": [
+        "For multishot work, name each shot and make all shot durations add up to the selected total."
+      ],
+      "summary": {
+        "subject": "Rainy parcel relay",
+        "action": "A parcel moves through three connected beats",
+        "camera": "One controlled camera move",
+        "style": "Fast cinematic commercial sequence",
+        "output": "720p · 24 FPS · native audio"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Text-to-video",
+        "outputLabel": "720p · 24 FPS · native audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "media",
+        "audioChipLabel": null,
+        "altContext": "Kling 3.0 Turbo Standard: Rainy parcel relay"
+      }
+    },
+    "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "kling-3-turbo-standard",
+    "showWhenEmpty": false,
+    "section": {
+      "title": "Reviewed examples",
+      "intro": "Two distinct launch renders show the model on people, scenes, or products.",
+      "defaultCtaLabel": "View the family gallery",
+      "recreateLabel": null
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "All"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinematic"
+      },
+      {
+        "id": "product",
+        "label": "Product"
+      },
+      {
+        "id": "reference",
+        "label": "References"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "prompt",
+        "icon": "sparkles",
+        "title": "Prompt adherence",
+        "body": "Check the requested subject, action, framing, and final beat."
+      },
+      {
+        "id": "motion",
+        "icon": "zap",
+        "title": "Motion quality",
+        "body": "Review physical contact, camera movement, and temporal stability."
+      },
+      {
+        "id": "people",
+        "icon": "users",
+        "title": "Human fidelity",
+        "body": "Inspect anatomy, identity, clothing, and natural movement."
+      },
+      {
+        "id": "finish",
+        "icon": "maximize",
+        "title": "Visual finish",
+        "body": "Inspect detail, lighting, materials, and resolution."
+      },
+      {
+        "id": "review",
+        "icon": "shield",
+        "title": "Editorial review",
+        "body": "Reject unwanted text, marks, unsafe content, or unapproved likenesses."
+      }
+    ],
+    "fallbackItems": null
+  }
+}

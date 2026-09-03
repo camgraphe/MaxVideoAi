@@ -1,0 +1,243 @@
+{
+  "marketingName": "Kling 3.0 Turbo Pro",
+  "versionLabel": "3.0 Turbo Pro",
+  "seo": {
+    "title": "Kling 3 Turbo Pro AI Video: 1080p, Audio & Price",
+    "description": "Generate 3–15-second Kling 3 Turbo Pro videos at 1080p from text or an opening image, with native audio and multishot prompting."
+  },
+  "overview": "Kling 3 Turbo Pro is the 1080p finish tier for fast campaign shots, cinematic scenes, and detailed multishot sequences with native audio.",
+  "decision": {
+    "modelSlug": "kling-3-turbo-pro",
+    "hero": {
+      "eyebrow": "KLING TURBO 1080P ROUTE",
+      "title": "Kling 3.0 Turbo Pro",
+      "subtitle": "Fast 1080p text-to-video and image-to-video for polished 3–15-second scenes and multishot sequences.",
+      "subtitleHighlights": [
+        "1080p",
+        "3–15s",
+        "Multishot"
+      ],
+      "paragraph": "Choose Pro when detail, material rendering, and final 1080p delivery justify the premium over Standard. Use one prompt or a timed sequence of up to six shots.",
+      "primaryCta": {
+        "label": "Generate with Kling 3.0 Turbo Pro",
+        "href": "/app?engine=kling-3-turbo-pro"
+      },
+      "secondaryCta": {
+        "label": "View examples",
+        "href": "/examples/kling"
+      },
+      "quickLinks": [
+        {
+          "label": "See Turbo Standard in 720p",
+          "href": "/models/kling-3-turbo-standard"
+        },
+        {
+          "label": "Compare the models",
+          "href": "/ai-video-engines/kling-3-turbo-pro-vs-kling-3-turbo-standard"
+        },
+        {
+          "label": "View pricing",
+          "href": "/pricing#kling-3-turbo-pro-pricing"
+        },
+        {
+          "label": "Prompt Lab",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Reviewed launch examples",
+      "description": "Snow observatory signal",
+      "renderLabel": "View render",
+      "badges": [
+        "1080p",
+        "3–15s",
+        "Multishot",
+        "Native audio"
+      ],
+      "altContext": "Kling 3.0 Turbo Pro: Snow observatory signal"
+    },
+    "features": [
+      {
+        "title": "1080p finish tier",
+        "body": "Use Pro for campaign-ready detail, materials, lighting, and larger delivery frames.",
+        "tone": "quality"
+      },
+      {
+        "title": "3–15-second clips",
+        "body": "Choose any whole-second duration for a single shot or short structured sequence.",
+        "tone": "duration"
+      },
+      {
+        "title": "Structured multishot prompts",
+        "body": "Direct up to six timed shots with repeated continuity anchors.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Native audio",
+        "body": "Generate dialogue, ambience, and effects in the same render.",
+        "tone": "audio"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Choose Pro for final delivery",
+        "body": "Use Pro when the approved concept needs 1080p output and a more polished visual finish.",
+        "cta": {
+          "label": "Generate with Kling 3.0 Turbo Pro",
+          "href": "/app?engine=kling-3-turbo-pro"
+        }
+      },
+      {
+        "title": "See Turbo Standard in 720p",
+        "body": "Choose Pro when detail, material rendering, and final 1080p delivery justify the premium over Standard. Use one prompt or a timed sequence of up to six shots.",
+        "cta": {
+          "label": "See Turbo Standard in 720p",
+          "href": "/models/kling-3-turbo-standard"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text-to-video",
+        "body": "Separate subject, action, camera, continuity, and sound."
+      },
+      {
+        "title": "Image-to-video",
+        "body": "Animate one opening image by describing motion and camera."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Kling 3.0 Turbo Pro — View pricing",
+      "subtitle": "The exact price is calculated before rendering from duration, mode, and resolution.",
+      "footnote": "The total shown at generation time remains authoritative.",
+      "ctaLabel": "Generate with Kling 3.0 Turbo Pro",
+      "ctaHref": "/app?engine=kling-3-turbo-pro"
+    },
+    "meta": {
+      "title": "Kling 3 Turbo Pro AI Video: 1080p, Audio & Price",
+      "description": "Generate 3–15-second Kling 3 Turbo Pro videos at 1080p from text or an opening image, with native audio and multishot prompting."
+    }
+  },
+  "prompting": {
+    "modelSlug": "kling-3-turbo-pro",
+    "section": {
+      "title": "Prompt Lab — Kling 3 Turbo Pro",
+      "intro": "Use precise material, lighting, and camera language without overloading each shot.",
+      "tip": "Repeat only the identity, prop, and color anchors that must survive every cut.",
+      "guide": {
+        "label": "Official Kling 3 guide",
+        "href": "https://app.klingai.com/cn/quickstart/klingai-video-3-model-user-guide"
+      },
+      "referencesTitle": "Direct a polished sequence"
+    },
+    "tabs": [
+      {
+        "id": "direction",
+        "label": "Direction",
+        "title": "Direct a polished sequence",
+        "description": "Separate subject, action, camera, continuity, and sound.",
+        "copy": "A remote observatory in a snowstorm. The dome rotates, the telescope aligns with a break in the clouds, and one distant lightning flash silhouettes the ridge. Slow controlled camera move, stable architecture, cold blue grade, wind and mechanical audio."
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "direction",
+        "body": "Repeat only the identity, prop, and color anchors that must survive every cut."
+      }
+    ],
+    "globalPrinciples": [
+      "Use one readable action per shot.",
+      "Repeat only essential continuity anchors."
+    ],
+    "engineWhy": [
+      "Kling 3 Turbo Pro is the 1080p finish tier for fast campaign shots, cinematic scenes, and detailed multishot sequences with native audio."
+    ],
+    "demo": {
+      "title": "Snow observatory signal",
+      "promptLabel": "Production prompt",
+      "prompt": "A remote observatory in a snowstorm. The dome rotates, the telescope aligns with a break in the clouds, and one distant lightning flash silhouettes the ridge. Slow controlled camera move, stable architecture, cold blue grade, wind and mechanical audio.",
+      "notes": [
+        "Repeat only the identity, prop, and color anchors that must survive every cut."
+      ],
+      "summary": {
+        "subject": "Snow observatory signal",
+        "action": "The observatory aligns during a storm",
+        "camera": "One controlled camera move",
+        "style": "Polished cinematic night scene",
+        "output": "1080p · 24 FPS · native audio"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Text-to-video",
+        "outputLabel": "1080p · 24 FPS · native audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "media",
+        "audioChipLabel": null,
+        "altContext": "Kling 3.0 Turbo Pro: Snow observatory signal"
+      }
+    },
+    "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "kling-3-turbo-pro",
+    "showWhenEmpty": false,
+    "section": {
+      "title": "Reviewed examples",
+      "intro": "Two distinct launch renders show the model on people, scenes, or products.",
+      "defaultCtaLabel": "View the family gallery",
+      "recreateLabel": null
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "All"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinematic"
+      },
+      {
+        "id": "product",
+        "label": "Product"
+      },
+      {
+        "id": "reference",
+        "label": "References"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "prompt",
+        "icon": "sparkles",
+        "title": "Prompt adherence",
+        "body": "Check the requested subject, action, framing, and final beat."
+      },
+      {
+        "id": "motion",
+        "icon": "zap",
+        "title": "Motion quality",
+        "body": "Review physical contact, camera movement, and temporal stability."
+      },
+      {
+        "id": "people",
+        "icon": "users",
+        "title": "Human fidelity",
+        "body": "Inspect anatomy, identity, clothing, and natural movement."
+      },
+      {
+        "id": "finish",
+        "icon": "maximize",
+        "title": "Visual finish",
+        "body": "Inspect detail, lighting, materials, and resolution."
+      },
+      {
+        "id": "review",
+        "icon": "shield",
+        "title": "Editorial review",
+        "body": "Reject unwanted text, marks, unsafe content, or unapproved likenesses."
+      }
+    ],
+    "fallbackItems": null
+  }
+}

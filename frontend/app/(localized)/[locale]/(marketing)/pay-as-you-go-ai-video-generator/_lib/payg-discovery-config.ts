@@ -8,6 +8,10 @@ export type PaygDiscoveryConfigs = {
 };
 
 const PRICE_LOOKUP_CONFIGS = [
+  { id: 'gemini-omni-flash', presetId: '5s-720p' },
+  { id: 'kling-3-turbo-pro', presetId: '8s-1080p' },
+  { id: 'kling-3-turbo-standard', presetId: '5s-720p' },
+  { id: 'minimax-h3-max', presetId: 'entry-route' },
   { id: 'ltx-2-5-pro', presetId: '5s-720p' },
   { id: 'ltx-2-5-fast', presetId: '5s-720p' },
   { id: 'wan-3-prime', presetId: '5s-720p' },
@@ -24,6 +28,10 @@ const PRICE_LOOKUP_CONFIGS = [
 ] as const satisfies PaygDiscoveryConfigs['priceLookups'];
 
 const PREFERRED_EXAMPLES = [
+  { id: 'gemini-omni-flash', presetId: '5s-720p' },
+  { id: 'kling-3-turbo-pro', presetId: '8s-1080p' },
+  { id: 'kling-3-turbo-standard', presetId: '5s-720p' },
+  { id: 'minimax-h3-max', presetId: 'entry-route' },
   { id: 'ltx-2-5-pro', presetId: '5s-720p' },
   { id: 'wan-3-prime', presetId: '5s-720p' },
   { id: 'grok-imagine-video-1-5', presetId: '5s-720p' },
@@ -37,6 +45,10 @@ const PREFERRED_EXAMPLES = [
 ] as const satisfies PaygDiscoveryConfigs['examples'];
 
 const SUPPORTED_MODEL_CONFIGS = [
+  { id: 'gemini-omni-flash', fallbackHref: '/models/gemini-omni-flash', fallbackLabel: 'Gemini Omni Flash 1.1' },
+  { id: 'kling-3-turbo-pro', fallbackLabel: 'Kling 3.0 Turbo Pro' },
+  { id: 'kling-3-turbo-standard', fallbackLabel: 'Kling 3.0 Turbo Standard' },
+  { id: 'minimax-h3-max', fallbackLabel: 'MiniMax H3 Max' },
   { id: 'seedance-2-5', fallbackHref: '/models/seedance-2-5', fallbackLabel: 'Seedance 2.5' },
   { id: 'seedance-2-0', fallbackHref: '/models/seedance-2-0', fallbackLabel: 'Seedance 2.0' },
   { id: 'kling-3-pro', fallbackHref: '/models/kling-3-pro', fallbackLabel: 'Kling' },

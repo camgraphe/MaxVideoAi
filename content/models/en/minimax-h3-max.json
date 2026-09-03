@@ -1,0 +1,240 @@
+{
+  "marketingName": "MiniMax H3 Max",
+  "versionLabel": "H3 Max",
+  "seo": {
+    "title": "MiniMax H3 Max AI Video: Fast 768P, References & Audio",
+    "description": "Generate 5–15-second MiniMax H3 Max videos at 480P or 768P from text, frames, or mixed image, video and audio references."
+  },
+  "overview": "MiniMax H3 Max is the focused fast-production Hailuo route for strong prompt adherence, polished 768P visuals, native audio, and multimodal reference direction.",
+  "decision": {
+    "modelSlug": "minimax-h3-max",
+    "hero": {
+      "eyebrow": "H3 MAX FAST PRODUCTION ROUTE",
+      "title": "MiniMax H3 Max",
+      "subtitle": "Create polished 5–15-second videos at up to 768P from text, start and end frames, or mixed references with native audio.",
+      "subtitleHighlights": [
+        "480P / 768P",
+        "5–15s",
+        "Mixed references"
+      ],
+      "paragraph": "Choose H3 Max for fast 480P or 768P production with prompt expansion and strong visual finish. Keep MiniMax H3 for broad 2K/4K delivery intent.",
+      "primaryCta": {
+        "label": "Generate with MiniMax H3 Max",
+        "href": "/app?engine=minimax-h3-max"
+      },
+      "secondaryCta": {
+        "label": "View examples",
+        "href": "/examples/hailuo"
+      },
+      "quickLinks": [
+        {
+          "label": "See MiniMax H3 for 2K and 4K",
+          "href": "/models/minimax-h3"
+        },
+        {
+          "label": "Compare the models",
+          "href": "/ai-video-engines/minimax-h3-vs-minimax-h3-max"
+        },
+        {
+          "label": "View pricing",
+          "href": "/pricing#minimax-h3-max-pricing"
+        },
+        {
+          "label": "Prompt Lab",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Reviewed launch examples",
+      "description": "Transforming ceramic lamp",
+      "renderLabel": "View render",
+      "badges": [
+        "480P / 768P",
+        "5–15s",
+        "Mixed references",
+        "Native audio"
+      ],
+      "altContext": "MiniMax H3 Max: Transforming ceramic lamp"
+    },
+    "features": [
+      {
+        "title": "Fast polished output",
+        "body": "Use the focused H3 Max route for strong prompt adherence and quick production at 480P or 768P.",
+        "tone": "quality"
+      },
+      {
+        "title": "Text, frames, and references",
+        "body": "Start from a prompt, animate an opening image with an optional ending image, or combine mixed references.",
+        "tone": "reference"
+      },
+      {
+        "title": "5–15-second clips",
+        "body": "Choose any whole-second duration and one of six landscape, square, or vertical ratios for text-to-video.",
+        "tone": "duration"
+      },
+      {
+        "title": "Native audio",
+        "body": "Generate dialogue, ambience, music, and synchronized effects with the video.",
+        "tone": "audio"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Choose H3 Max for focused speed",
+        "body": "Use H3 Max when fast 768P production, prompt adherence, and native audio matter more than 2K or 4K delivery.",
+        "cta": {
+          "label": "Generate with MiniMax H3 Max",
+          "href": "/app?engine=minimax-h3-max"
+        }
+      },
+      {
+        "title": "See MiniMax H3 for 2K and 4K",
+        "body": "Choose H3 Max for fast 480P or 768P production with prompt expansion and strong visual finish. Keep MiniMax H3 for broad 2K/4K delivery intent.",
+        "cta": {
+          "label": "Review H3 Max specs",
+          "href": "#specs"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text-to-video",
+        "body": "Define the subject, visible change, camera path, and sound response."
+      },
+      {
+        "title": "Image-to-video",
+        "body": "Animate one opening image by describing motion and camera."
+      }
+    ],
+    "pricingCopy": {
+      "title": "MiniMax H3 Max — View pricing",
+      "subtitle": "The exact price is calculated before rendering from duration, mode, and resolution.",
+      "footnote": "The total shown at generation time remains authoritative.",
+      "ctaLabel": "Generate with MiniMax H3 Max",
+      "ctaHref": "/app?engine=minimax-h3-max"
+    },
+    "meta": {
+      "title": "MiniMax H3 Max AI Video: Fast 768P, References & Audio",
+      "description": "Generate 5–15-second MiniMax H3 Max videos at 480P or 768P from text, frames, or mixed image, video and audio references."
+    }
+  },
+  "prompting": {
+    "modelSlug": "minimax-h3-max",
+    "section": {
+      "title": "Prompt Lab — MiniMax H3 Max",
+      "intro": "Lead with the visible action, then add camera, continuity, and sound.",
+      "tip": "Use balanced expansion for direct prompts and quality expansion when the brief benefits from added cinematic detail.",
+      "guide": null,
+      "referencesTitle": "Direct a focused production shot"
+    },
+    "tabs": [
+      {
+        "id": "direction",
+        "label": "Direction",
+        "title": "Direct a focused production shot",
+        "description": "Define the subject, visible change, camera path, and sound response.",
+        "copy": "A sculptural ceramic lamp in a dark design studio unfolds from a compact form into a warm glowing arch. One slow orbit, stable materials, precise joints, soft room tone, and a clean final hero frame. No text or logo."
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "direction",
+        "body": "Use balanced expansion for direct prompts and quality expansion when the brief benefits from added cinematic detail."
+      }
+    ],
+    "globalPrinciples": [
+      "Use one readable action per shot.",
+      "Repeat only essential continuity anchors."
+    ],
+    "engineWhy": [
+      "MiniMax H3 Max is the focused fast-production Hailuo route for strong prompt adherence, polished 768P visuals, native audio, and multimodal reference direction."
+    ],
+    "demo": {
+      "title": "Transforming ceramic lamp",
+      "promptLabel": "Production prompt",
+      "prompt": "A sculptural ceramic lamp in a dark design studio unfolds from a compact form into a warm glowing arch. One slow orbit, stable materials, precise joints, soft room tone, and a clean final hero frame. No text or logo.",
+      "notes": [
+        "Use balanced expansion for direct prompts and quality expansion when the brief benefits from added cinematic detail."
+      ],
+      "summary": {
+        "subject": "Transforming ceramic lamp",
+        "action": "A lamp unfolds into its final form",
+        "camera": "One controlled camera move",
+        "style": "Clean premium product transformation",
+        "output": "480P or 768P · 24 FPS · native audio"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Text-to-video",
+        "outputLabel": "480P or 768P · 24 FPS · native audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "media",
+        "audioChipLabel": null,
+        "altContext": "MiniMax H3 Max: Transforming ceramic lamp"
+      }
+    },
+    "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "minimax-h3-max",
+    "showWhenEmpty": false,
+    "section": {
+      "title": "Reviewed examples",
+      "intro": "Two distinct launch renders show the model on people, scenes, or products.",
+      "defaultCtaLabel": "View the family gallery",
+      "recreateLabel": null
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "All"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinematic"
+      },
+      {
+        "id": "product",
+        "label": "Product"
+      },
+      {
+        "id": "reference",
+        "label": "References"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "prompt",
+        "icon": "sparkles",
+        "title": "Prompt adherence",
+        "body": "Check the requested subject, action, framing, and final beat."
+      },
+      {
+        "id": "motion",
+        "icon": "zap",
+        "title": "Motion quality",
+        "body": "Review physical contact, camera movement, and temporal stability."
+      },
+      {
+        "id": "people",
+        "icon": "users",
+        "title": "Human fidelity",
+        "body": "Inspect anatomy, identity, clothing, and natural movement."
+      },
+      {
+        "id": "finish",
+        "icon": "maximize",
+        "title": "Visual finish",
+        "body": "Inspect detail, lighting, materials, and resolution."
+      },
+      {
+        "id": "review",
+        "icon": "shield",
+        "title": "Editorial review",
+        "body": "Reject unwanted text, marks, unsafe content, or unapproved likenesses."
+      }
+    ],
+    "fallbackItems": null
+  }
+}
