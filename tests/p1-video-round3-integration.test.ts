@@ -8,7 +8,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { SWRConfig } from 'swr';
 
-import { createEnginesGetHandler } from '../frontend/app/api/engines/route';
+import { createEnginesGetHandler } from '../frontend/app/api/engines/_lib/engines-get-handler';
 import { createPreflightPostHandler } from '../frontend/app/api/preflight/_lib/preflight-handler';
 import { resolveGenerateRouteContext } from '../frontend/app/api/generate/_lib/route-context';
 import { useWorkspacePricingGate } from '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspacePricingGate';

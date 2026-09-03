@@ -5,7 +5,7 @@ import { NextRequest } from 'next/server';
 import { POST as generatePost } from '../frontend/app/api/generate/route';
 import { resolveGenerateRouteContext } from '../frontend/app/api/generate/_lib/route-context';
 import { createPreflightPostHandler } from '../frontend/app/api/preflight/_lib/preflight-handler';
-import { createEnginesGetHandler } from '../frontend/app/api/engines/route';
+import { createEnginesGetHandler } from '../frontend/app/api/engines/_lib/engines-get-handler';
 import { KLING_3_TURBO_STANDARD_ENGINE } from '../frontend/src/config/fal-engines/kling-3-turbo-standard';
 import { KLING_3_TURBO_PRO_ENGINE } from '../frontend/src/config/fal-engines/kling-3-turbo-pro';
 import { MINIMAX_H3_MAX_ENGINE } from '../frontend/src/config/fal-engines/minimax-h3-max';

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { NextRequest } from 'next/server';
 
-import { createEnginesGetHandler } from '../frontend/app/api/engines/route';
+import { createEnginesGetHandler } from '../frontend/app/api/engines/_lib/engines-get-handler';
 import { createPreflightPostHandler } from '../frontend/app/api/preflight/_lib/preflight-handler';
 import { resolveGenerateRouteContext } from '../frontend/app/api/generate/_lib/route-context';
 import { submitFalGenerateTask } from '../frontend/app/api/generate/_lib/fal-submission';
