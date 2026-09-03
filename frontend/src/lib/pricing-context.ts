@@ -16,6 +16,7 @@ export type PricingContext = {
   durationOption?: number | string | null;
   inputAudioDurationSec?: number;
   referenceImageCount?: number;
+  verifiedReferenceTokenCount?: number;
   inputImageCount?: number;
   inputVideoDurationSec?: number;
   inheritedDurationSec?: number;

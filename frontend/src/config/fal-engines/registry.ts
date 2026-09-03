@@ -40,6 +40,7 @@ import { FLUX_3_FAL_ENGINE_REGISTRY } from './flux-3';
 import { FLUX_3_DRAFT_FAL_ENGINE_REGISTRY } from './flux-3-draft';
 import { HAILUO_FAL_ENGINE_REGISTRY } from './hailuo';
 import { MINIMAX_H3_FAL_ENGINE_REGISTRY } from './minimax-h3';
+import { MINIMAX_H3_MAX_FAL_ENGINE_REGISTRY } from './minimax-h3-max';
 import { NANO_BANANA_FAL_ENGINE_REGISTRY } from './nano-banana';
 import { NANO_BANANA_LITE_FAL_ENGINE_REGISTRY } from './nano-banana-lite';
 import { NANO_BANANA_PRO_FAL_ENGINE_REGISTRY } from './nano-banana-pro';
@@ -48,10 +49,11 @@ import { GPT_IMAGE_2_FAL_ENGINE_REGISTRY } from './gpt-image-2';
 import { SEEDREAM_FAL_ENGINE_REGISTRY } from './seedream';
 
 // These contracts are intentionally excluded from the public engine catalog until
-// direct Kling acceptance and the model-registry publication gates are complete.
+// their provider and model-registry publication gates are complete.
 export const UNPUBLISHED_FAL_ENGINE_REGISTRY: readonly RawFalEngineEntry[] = [
   ...KLING_3_TURBO_STANDARD_FAL_ENGINE_REGISTRY,
   ...KLING_3_TURBO_PRO_FAL_ENGINE_REGISTRY,
+  ...MINIMAX_H3_MAX_FAL_ENGINE_REGISTRY,
 ];
 
 export const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [

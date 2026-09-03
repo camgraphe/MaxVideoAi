@@ -59,11 +59,9 @@ test('Kling 3 Turbo contracts preserve the documented product names, endpoints, 
 });
 
 test('Kling 3 Turbo stays registered privately until its publication gates are satisfied', () => {
-  assert.deepEqual(
-    UNPUBLISHED_FAL_ENGINE_REGISTRY.map(({ id }) => id),
-    ['kling-3-turbo-standard', 'kling-3-turbo-pro'],
-  );
   const unpublishedIds = new Set(UNPUBLISHED_FAL_ENGINE_REGISTRY.map(({ id }) => id));
+  assert.equal(unpublishedIds.has('kling-3-turbo-standard'), true);
+  assert.equal(unpublishedIds.has('kling-3-turbo-pro'), true);
   assert.equal(unpublishedIds.has('runway-gen-4-turbo'), false);
   assert.equal(unpublishedIds.has('minimax-h3-max-turbo'), false);
 

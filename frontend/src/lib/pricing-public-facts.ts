@@ -16,6 +16,11 @@ import { normalizeGptImage2Quality, resolveGptImage2PricingTier } from '@/lib/im
 import type { EngineCaps, Mode } from '@/types/engines';
 import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
 import { calculateMinimaxH3ProviderPrice } from '@/lib/minimax-h3-pricing';
+import { isMinimaxH3MaxEngineId } from '@/lib/minimax-h3-max';
+import {
+  calculateMinimaxH3MaxProviderCost,
+  MINIMAX_H3_MAX_PRICING_SOURCE,
+} from '@/lib/minimax-h3-max-pricing';
 import {
   calculateGoogleOmniProviderCost,
   GOOGLE_OMNI_PRICING_SOURCE,
@@ -40,6 +45,7 @@ export type PublicPricingFactsContext = {
   aspectRatio?: string | null;
   quality?: string | null;
   referenceImageCount?: number;
+  verifiedReferenceTokenCount?: number;
   inputImageCount?: number;
   inputVideoDurationSec?: number;
   inheritedDurationSec?: number;
@@ -168,6 +174,37 @@ export function buildPublicPricingFacts(context: PublicPricingFactsContext): Pub
         input_image_count: pricingInput.inputImageCount,
         input_video_duration_sec: pricingInput.inputVideoDurationSec,
         cost_breakdown_usd: pricing,
+      },
+    });
+  }
+
+  if (isMinimaxH3MaxEngineId(engine.id)) {
+    const reference = calculateMinimaxH3MaxProviderCost({
+      mode: mode as 't2v' | 'i2v' | 'ref2v',
+      durationSec,
+      resolution: resolution as '480P' | '768P',
+      verifiedReferenceTokenCount: context.verifiedReferenceTokenCount,
+    });
+    const referenceTokenCents = Math.round(reference.referenceTokenSubtotalUsd * 100);
+    return resultFromExactFacts({
+      engineId: engine.id,
+      currency,
+      exactCents: reference.providerCostExactCents,
+      presentedBaseCents: Math.round(reference.outputSubtotalUsd * 100),
+      quantity: durationSec,
+      unit: 'sec',
+      rate: reference.ratePerSecondUsd,
+      addons: referenceTokenCents > 0
+        ? [{ type: 'reference_tokens_above_4096', amountCents: referenceTokenCents }]
+        : [],
+      compatibilityProfileId: 'provider-reference-current',
+      meta: {
+        pricing_model: 'minimax_h3_max_output_plus_reference_tokens',
+        provider_cost_source: MINIMAX_H3_MAX_PRICING_SOURCE,
+        public_provider: 'MiniMax',
+        public_family: 'Hailuo',
+        mode,
+        cost_breakdown_usd: reference,
       },
     });
   }
