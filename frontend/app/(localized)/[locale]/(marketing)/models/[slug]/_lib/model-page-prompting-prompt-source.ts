@@ -11,6 +11,19 @@ const REVIEWED_LAUNCH_MODEL_IDS = new Set<string>(
   MODEL_LAUNCH_WAVES.flatMap((wave) => wave.models.map(({ modelId }) => modelId)),
 );
 
+const VERIFIED_MEDIA_PROMPT_MODEL_IDS = new Set<string>([
+  ...REVIEWED_LAUNCH_MODEL_IDS,
+  'seedance-1-5-pro',
+  'seedance-2-5',
+  'veo-3-1-fast',
+  'kling-3-4k',
+  'kling-3-pro',
+  'kling-3-standard',
+  'luma-ray-2',
+  'luma-ray-2-flash',
+  'minimax-hailuo-02-text',
+]);
+
 export function resolveDefaultModelPromptingDemoPromptSource(
   demoMedia: FeaturedMedia | null,
 ): ModelPromptingDemoPromptSource {
@@ -30,7 +43,7 @@ export function resolveModelPromptingDemoPromptSource({
 }): ModelPromptingDemoPromptSource {
   const demo = content.demo;
   if (!demo || !demoMedia?.prompt?.trim()) return 'editorial';
-  if (REVIEWED_LAUNCH_MODEL_IDS.has(content.modelSlug)) return 'media';
+  if (VERIFIED_MEDIA_PROMPT_MODEL_IDS.has(content.modelSlug)) return 'media';
 
   const ui = getModelPromptingUiCopy(locale);
   const summaryPrompt = [

@@ -321,23 +321,6 @@ async function renderMarketingModelPage({
       return aScore - bScore;
     });
   }
-  if (engine.modelSlug === 'veo-3-1-fast') {
-    const promptOverrides = new Map<string, string>([
-      [
-        'job_e34e8979-9056-4564-bbfd-27e8d886fa26',
-        '8s 16:9 Veo 3.1 Fast desk draft with a presenter, slow handheld drift, soft typing, city ambience, and one short calm line.',
-      ],
-      [
-        'job_3ee52c57-e023-4e98-9b45-c3ec7b60edf5',
-        'Veo 3.1 Fast portrait interview draft of a man speaking about happiness, audio on, 16:9.',
-      ],
-    ]);
-    galleryVideos = galleryVideos.map((video) => {
-      const prompt = promptOverrides.get(video.id);
-      return prompt ? { ...video, prompt, promptFull: prompt } : video;
-    });
-  }
-
   const modelName = localizedContent.marketingName ?? engine.marketingName;
   const fallbackMedia: FeaturedMedia = {
     id: `${engine.modelSlug}-hero-fallback`,
@@ -370,10 +353,6 @@ async function renderMarketingModelPage({
   });
   if (engine.modelSlug === 'sora-2-pro') {
     demoMedia = heroMedia;
-  }
-  if (engine.modelSlug === 'minimax-hailuo-02-text' && demoMedia) {
-    demoMedia.prompt =
-      '10s silent Hailuo 02 draft in 16:9. A cyclist rides through a shallow puddle on an empty concrete path; water splashes outward and the jacket fabric reacts to the motion. Low side tracking shot with one smooth push-in, natural dusk light, simple background, physics-focused movement, no dialogue or audio.';
   }
   const compareEngines = pickCompareEngines(listFalEngines(), engine.modelSlug);
   const faqEntries = localizedContent.faqs.length ? localizedContent.faqs : copy.faqs;

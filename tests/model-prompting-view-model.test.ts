@@ -17,7 +17,19 @@ import {
 
 const CONTENT_ROOT = join(process.cwd(), 'content/models');
 const VEO_FAST_MEDIA_PROMPT =
-  '8s 16:9 Veo 3.1 Fast desk draft with a presenter, slow handheld drift, soft typing, city ambience, and one short calm line.';
+  '6 second vertical loop of a young woman working late at a minimalist desk in front of a big window, city lights blurred in the background.';
+
+const VERIFIED_MEDIA_PROMPT_MODELS = [
+  'seedance-1-5-pro',
+  'seedance-2-5',
+  'veo-3-1-fast',
+  'kling-3-4k',
+  'kling-3-pro',
+  'kling-3-standard',
+  'luma-ray-2',
+  'luma-ray-2-flash',
+  'minimax-hailuo-02-text',
+] as const;
 
 function videoContent(): ModelPromptingContent {
   return {
@@ -213,29 +225,52 @@ function buildLocalizedRouteViewModel(locale: 'en' | 'fr' | 'es', content: Model
   };
 }
 
-test('localized Veo Fast routes keep editorial demo prompts when pinned media has short English prose', () => {
-  const expectedStarts = {
-    en: '8s 16:9 Veo 3.1 Fast draft',
-    fr: 'Brouillon Veo 3.1 Fast',
-    es: 'Borrador Veo 3.1 Fast',
-  } as const;
-
+test('localized Veo Fast routes use the exact prompt from the adjacent pinned video', () => {
   for (const locale of ['en', 'fr', 'es'] as const) {
     const content = localizedPrompting(locale, 'veo-3-1-fast');
     const result = buildLocalizedRouteViewModel(locale, content);
 
-    assert.equal(result.demoPromptSource, 'editorial', `${locale} route prompt source`);
+    assert.equal(result.demoPromptSource, 'media', `${locale} route prompt source`);
     assert.equal(result.defaultDemoPromptSource, 'media', `${locale} default prompt source`);
-    assert.equal(result.viewModel.demo?.prompt, content.demo?.prompt, `${locale} editorial prompt`);
-    assert.ok(result.viewModel.demo?.prompt.startsWith(expectedStarts[locale]), `${locale} prompt opening`);
-    assert.match(result.viewModel.demo?.prompt ?? '', /\n/, `${locale} multiline editorial projection`);
-    assert.notEqual(result.viewModel.demo?.prompt, VEO_FAST_MEDIA_PROMPT, `${locale} pinned media prose`);
+    assert.equal(result.viewModel.demo?.prompt, VEO_FAST_MEDIA_PROMPT, `${locale} pinned media prompt`);
+    assert.equal(result.viewModel.demo?.summary, null, `${locale} stale editorial summary`);
     assert.equal(result.viewModel.defaultPresentation.demo?.promptLabel, undefined);
     assert.deepEqual(result.viewModel.defaultPresentation.demo?.promptLines, []);
   }
 });
 
-test('non-launch route prompt-source policy uses media only for Happy Horse or summary-shaped fallback copy', () => {
+test('audited legacy model pages use their adjacent video prompt after a verified mismatch', () => {
+  const runtimeMedia = media({ prompt: 'Exact prompt stored with the adjacent video.' });
+
+  for (const modelSlug of VERIFIED_MEDIA_PROMPT_MODELS) {
+    const content = localizedPrompting('en', modelSlug);
+    assert.equal(
+      resolveModelPromptingDemoPromptSource({
+        content,
+        demoMedia: runtimeMedia,
+        engineId: modelSlug,
+        locale: 'en',
+      }),
+      'media',
+      modelSlug,
+    );
+  }
+});
+
+test('model route does not replace audited database prompts with unrelated manual copy', () => {
+  const pageSource = readFileSync(
+    join(
+      process.cwd(),
+      'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/page.tsx',
+    ),
+    'utf8',
+  );
+
+  assert.doesNotMatch(pageSource, /const promptOverrides = new Map<string, string>/);
+  assert.doesNotMatch(pageSource, /engine\.modelSlug === 'minimax-hailuo-02-text'[\s\S]*?demoMedia\.prompt\s*=/);
+});
+
+test('non-audited route prompt-source policy uses media only for Happy Horse or summary-shaped fallback copy', () => {
   const happyHorse = localizedPrompting('en', 'happy-horse-1-1');
   const runtimeMedia = media({ prompt: 'Runtime media prose' });
   assert.equal(
