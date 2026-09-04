@@ -86,7 +86,6 @@ export function CompositePreviewDockTile({
                 ref={registerVideo(itemKey)}
                 data-preview-video="active"
                 src={inlinePreviewUrl}
-                poster={item.thumb}
                 className={clsx('relative z-0 h-full w-full', mediaFitClass)}
                 muted={isMuted}
                 playsInline

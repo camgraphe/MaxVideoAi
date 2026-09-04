@@ -36,6 +36,7 @@ export async function GET(req: NextRequest) {
     assets: assets.map((asset) => ({
       id: asset.id,
       url: asset.url,
+      thumbUrl: asset.thumbUrl,
       mime: asset.mimeType,
       width: asset.width,
       height: asset.height,

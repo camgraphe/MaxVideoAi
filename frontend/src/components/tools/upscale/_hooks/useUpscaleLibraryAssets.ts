@@ -100,6 +100,7 @@ export function useUpscaleLibraryAssets({
               return {
                 id: asset.id,
                 url: asset.url,
+                thumbUrl: asset.thumbUrl?.trim() || null,
                 kind: mime?.startsWith('video/') ? 'video' : 'image',
                 width: asset.width ?? null,
                 height: asset.height ?? null,
@@ -125,6 +126,7 @@ export function useUpscaleLibraryAssets({
               .map((job) => ({
                 id: `job:${job.jobId}`,
                 url: job.videoUrl ?? job.readyVideoUrl ?? '',
+                thumbUrl: job.thumbUrl?.trim() || job.previewFrame?.trim() || null,
                 kind: 'video' as const,
                 mime: 'video/mp4',
                 source: 'generated',
@@ -136,10 +138,17 @@ export function useUpscaleLibraryAssets({
         }
 
         const combined = kind === 'video' ? [...filteredAssets, ...generatedVideos] : filteredAssets;
-        const deduped = combined.filter(
-          (asset, index, list) => list.findIndex((entry) => entry.url === asset.url) === index
-        );
-        setLibraryAssets(deduped);
+        const assetsByUrl = new Map<string, AssetBrowserAsset>();
+        for (const asset of combined) {
+          const existing = assetsByUrl.get(asset.url);
+          if (!existing) {
+            assetsByUrl.set(asset.url, asset);
+          } else if (!existing.thumbUrl && asset.thumbUrl) {
+            // Preserve saved asset identity while recovering a missing cover from its job.
+            assetsByUrl.set(asset.url, { ...existing, thumbUrl: asset.thumbUrl });
+          }
+        }
+        setLibraryAssets([...assetsByUrl.values()]);
         setLibraryLoadedKey(requestKey);
       } catch (libraryLoadError) {
         console.error('[upscale] failed to load library assets', libraryLoadError);
