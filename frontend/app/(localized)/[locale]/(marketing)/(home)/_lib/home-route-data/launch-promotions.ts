@@ -8,6 +8,7 @@ import type { AppLocale } from '@/i18n/locales';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import type { AcceptedDurableModelAsset } from '@/server/model-launch-assets-validation';
 import type { GalleryVideo } from '@/server/videos';
+import { formatCurrency } from './formatting';
 import type { HomepageExampleFamily, RedesignContent } from './types';
 
 const P0_PROMOTION_CANDIDATES = [
@@ -102,7 +103,7 @@ export function buildHomepageP0PromotionCards({
       engine: target.label,
       mode: content.modeLabels?.t2v ?? 'Text-to-video',
       duration: `${video.durationSec}${locale === 'fr' ? ' s' : 's'}`,
-      price: null,
+      price: formatCurrency(locale, video.currency, video.finalPriceCents),
       useCase: locale === 'fr' ? 'Nouvelle génération' : locale === 'es' ? 'Nueva generación' : 'New generation',
       imageSrc: video.thumbUrl,
       videoSrc: video.videoUrl,
@@ -113,7 +114,7 @@ export function buildHomepageP0PromotionCards({
       modelHref: { pathname: '/models/[slug]', params: { slug: target.modelId } },
       ctaLabel: content.examples.cta ?? 'View examples',
       examplesCtaVisible: true,
-      modelCtaLabel: content.examples.featuredModelCta ?? 'Specs & pricing',
+      modelCtaLabel: (content.examples.modelCta ?? 'Discover {model}').replace('{model}', target.label),
       cloneLabel: content.examples.viewPrompt,
     }];
   });

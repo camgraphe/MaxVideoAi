@@ -107,6 +107,8 @@ export type RedesignContent = {
     modelsCta?: string;
     compareLink?: string;
     featuredModelCta: string;
+    modelCta?: string;
+    costUnavailable?: string;
     libraryTitle?: string;
     libraryBody?: string;
     providerLabel?: string;

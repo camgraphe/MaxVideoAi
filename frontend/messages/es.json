@@ -663,6 +663,8 @@
         "modelsCta": "Ver todas las especificaciones",
         "compareLink": "Comparar modelos",
         "featuredModelCta": "Descubrir Seedance 2.5",
+        "modelCta": "Descubrir {model}",
+        "costUnavailable": "Coste no registrado",
         "providerLabel": "Modelos compatibles:",
         "viewPrompt": "Clonar ajustes",
         "fallbackCards": [

@@ -10,7 +10,7 @@ export function RealExamplesPreview({
   examples,
   providers,
 }: {
-  copy: SectionCopy & { viewPrompt?: string; featuredModelCta: string };
+  copy: SectionCopy & { viewPrompt?: string; featuredModelCta: string; costUnavailable?: string };
   examples: HomeExampleCard[];
   providers?: ProviderItem[];
 }) {
@@ -75,7 +75,7 @@ export function RealExamplesPreview({
         <div className="dark-neon-panel mt-7 overflow-hidden rounded-[20px] border border-hairline bg-bg shadow-sm dark:border-white/[0.08]">
           <div className="divide-y divide-hairline dark:divide-white/[0.07]">
             {examples.map((example) => (
-              <HomeExamplePreviewRow key={example.id} example={example} />
+              <HomeExamplePreviewRow key={example.id} example={example} costUnavailable={copy.costUnavailable} />
             ))}
           </div>
         </div>
@@ -86,7 +86,7 @@ export function RealExamplesPreview({
   );
 }
 
-function HomeExamplePreviewRow({ example }: { example: HomeExampleCard }) {
+function HomeExamplePreviewRow({ example, costUnavailable = 'Cost not recorded' }: { example: HomeExampleCard; costUnavailable?: string }) {
   const modeIcon = example.mode.toLowerCase().startsWith('text') ? Type : example.mode.toLowerCase().startsWith('video') ? Video : ImageIcon;
   const showExamplesCta = example.examplesCtaVisible !== false;
   const modelHref = example.modelHref ?? example.href;
@@ -140,7 +140,7 @@ function HomeExamplePreviewRow({ example }: { example: HomeExampleCard }) {
             {example.price}
           </span>
         ) : (
-          <span className="text-sm text-text-muted">—</span>
+          <span className="text-xs text-text-muted">{costUnavailable}</span>
         )}
       </div>
 
