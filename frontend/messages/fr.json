@@ -438,7 +438,8 @@
               "engineId": "minimax-h3-max",
               "name": "MiniMax H3 Max",
               "provider": "MiniMax",
-              "bestFor": "Danse cinématique fluide",
+              "bestFor": "Récit catastrophe cinématographique",
+              "imageAlt": "Une mère et un enfant se mettent à l’abri dans une catastrophe rétrofuturiste photoréaliste générée avec MiniMax H3 Max.",
               "fallbackPrice": "Prix actualisé",
               "selected": true,
               "scores": [
@@ -456,9 +457,9 @@
                 }
               ],
               "tags": [
-                "Danse",
-                "Mouvement",
-                "Cinéma"
+                "Narration",
+                "Audio natif",
+                "Prise de vues réelle"
               ]
             },
             {

@@ -438,7 +438,8 @@
               "engineId": "minimax-h3-max",
               "name": "MiniMax H3 Max",
               "provider": "MiniMax",
-              "bestFor": "Movimiento de danza cinematográfico",
+              "bestFor": "Narrativa cinematográfica de catástrofes",
+              "imageAlt": "Una madre y un niño se refugian durante una catástrofe retrofuturista fotorrealista generada con MiniMax H3 Max.",
               "fallbackPrice": "Precio actualizado",
               "selected": true,
               "scores": [
@@ -456,9 +457,9 @@
                 }
               ],
               "tags": [
-                "Danza",
-                "Movimiento",
-                "Cine"
+                "Narrativa",
+                "Audio nativo",
+                "Acción real"
               ]
             },
             {

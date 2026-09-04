@@ -62,7 +62,7 @@ export const PROVIDER_MODEL_LINKS: Partial<Record<string, LocalizedLinkHref>> = 
 export type HeroEngineId = 'minimax-h3-max' | 'seedance-2-5' | 'wan-3-prime' | 'kling-3-pro' | 'ltx-2-5-pro';
 
 export const HERO_VIDEO_CHIPS: Record<string, string[]> = {
-  'minimax-h3-max': ['Dance', 'Cinematic motion'],
+  'minimax-h3-max': ['Narrative', 'Native audio'],
   'seedance-2-5': ['Physics', 'Cinematic'],
   'wan-3-prime': ['Craft motion', 'Realism'],
   'kling-3-pro': ['Cinematic', 'Camera move'],

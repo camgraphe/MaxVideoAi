@@ -159,8 +159,8 @@ test('homepage hero uses only curated media even when programmed slots exist', (
   const homeHeroSource = source.slice(source.indexOf('export function HomeHero'), source.indexOf('export function ShotTypeEngineSelector'));
 
   assert.match(heroSource, /KLING_3_PRO_HERO_RENDER/);
-  assert.match(heroSource, /showcase-minimax-h3-max-8s\.webp/);
-  assert.match(heroSource, /1b29e9b2-c68d-46a3-8415-7677deed674a\.mp4/);
+  assert.match(heroSource, /showcase-minimax-h3-max-12s\.webp/);
+  assert.match(heroSource, /6e299d72-22dd-46f4-8260-4d6887777558\.mp4/);
   assert.match(heroSource, /085cc0a7-063d-4801-91f9-ec3d9c5eb95d\.mp4/);
   assert.match(heroSource, /c8567e3b0531ae10a993534c41d5f76ec8a1fc2329294d0c8fdb7e4b38ab349a\.mp4/);
   assert.match(heroSource, /7b1f1c7b-f7f0-473e-9610-82723604b690\.mp4/);
@@ -170,7 +170,7 @@ test('homepage hero uses only curated media even when programmed slots exist', (
   assert.match(source, /videoSrc:\s*media\.videoSrc \?\? null/);
 });
 
-test('homepage hero opens on the alternate MiniMax H3 Max render and keeps the approved model media aligned', () => {
+test('homepage hero opens on the approved MiniMax H3 Max disaster story with coherent media and pricing', () => {
   (globalThis as typeof globalThis & { React: typeof React }).React = React;
   const cases = [
     ['en', enMessages],
@@ -179,12 +179,49 @@ test('homepage hero opens on the alternate MiniMax H3 Max render and keeps the a
   ] as const;
   let englishItems: HeroVideoShowcaseItem[] | null = null;
 
+  const expectedMiniMaxDescriptions = {
+    en: 'Cinematic disaster storytelling',
+    fr: 'Récit catastrophe cinématographique',
+    es: 'Narrativa cinematográfica de catástrofes',
+  } as const;
+  const expectedMiniMaxChips = {
+    en: ['Narrative', 'Native audio'],
+    fr: ['Narration', 'Audio natif'],
+    es: ['Narrativa', 'Audio nativo'],
+  } as const;
+  const expectedMiniMaxAlts = {
+    en: 'A mother and child shelter during a photorealistic retro-futuristic disaster generated with MiniMax H3 Max.',
+    fr: 'Une mère et un enfant se mettent à l’abri dans une catastrophe rétrofuturiste photoréaliste générée avec MiniMax H3 Max.',
+    es: 'Una madre y un niño se refugian durante una catástrofe retrofuturista fotorrealista generada con MiniMax H3 Max.',
+  } as const;
+
   for (const [locale, messages] of cases) {
     const copy = buildHeroContent(locale, messages.home.redesign as RedesignContent);
     const hero = HomeHero({
       copy,
       proofStats: [],
       previews: [],
+      programmedHeroItems: [
+        {
+          id: 'programmed-minimax',
+          engineId: 'minimax-h3-max',
+          name: 'MiniMax H3 Max',
+          provider: 'MiniMax',
+          bestFor: 'Stale programmed copy',
+          chips: ['Stale', 'Programmed'],
+          mediaInfo: 'Text-to-video · 5s · 1:1',
+          price: '$9.99',
+          estimateLabel: 'Estimate',
+          estimateValue: '$9.99',
+          estimateMeta: '5s generation',
+          modelHref: { pathname: '/models/[slug]', params: { slug: 'minimax-h3-max' } },
+          posterSrc: '/stale-programmed-poster.webp',
+          videoSrc: 'https://example.com/stale-programmed-video.mp4',
+          duration: '0:05',
+          resolution: '1:1',
+          imageAlt: 'Stale programmed alt text.',
+        },
+      ],
     });
     const pending = [hero] as React.ReactNode[];
     let showcaseItems: HeroVideoShowcaseItem[] | null = null;
@@ -205,6 +242,9 @@ test('homepage hero opens on the alternate MiniMax H3 Max render and keeps the a
       ['minimax-h3-max', 'seedance-2-5', 'wan-3-prime', 'kling-3-pro', 'ltx-2-5-pro'],
       `HomeHero should keep the approved current-model order in ${locale}`,
     );
+    assert.equal(showcaseItems[0]?.bestFor, expectedMiniMaxDescriptions[locale]);
+    assert.deepEqual(showcaseItems[0]?.chips, expectedMiniMaxChips[locale]);
+    assert.equal(showcaseItems[0]?.imageAlt, expectedMiniMaxAlts[locale]);
     if (locale === 'en') englishItems = showcaseItems;
   }
 
@@ -224,13 +264,13 @@ test('homepage hero opens on the alternate MiniMax H3 Max render and keeps the a
     [
       {
         engineId: 'minimax-h3-max',
-        estimateMeta: '8s generation',
-        estimateValue: '$0.80',
-        mediaInfo: 'Text-to-video · 8s · 16:9',
+        estimateMeta: '12s generation',
+        estimateValue: '$1.19',
+        mediaInfo: 'Text-to-video · 12s · 16:9',
         modelHref: { pathname: '/models/[slug]', params: { slug: 'minimax-h3-max' } },
-        posterSrc: '/hero/showcase-minimax-h3-max-8s.webp',
-        videoSrc: 'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/1b29e9b2-c68d-46a3-8415-7677deed674a.mp4',
-        duration: '0:08',
+        posterSrc: '/hero/showcase-minimax-h3-max-12s.webp',
+        videoSrc: 'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/6e299d72-22dd-46f4-8260-4d6887777558.mp4',
+        duration: '0:12',
         resolution: '16:9',
       },
       {

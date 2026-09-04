@@ -55,7 +55,7 @@ function buildHeroVideoItems(copy: HomeHeroContent['mockup'], previews: HomeExam
       name: engineName,
       provider: engine.provider,
       bestFor: engine.bestFor,
-      chips: HERO_VIDEO_CHIPS[engine.engineId] ?? (engine.tags?.length ? engine.tags.slice(0, 2) : [engine.bestFor, engine.provider]),
+      chips: engine.tags?.length ? engine.tags.slice(0, 2) : (HERO_VIDEO_CHIPS[engine.engineId] ?? [engine.bestFor, engine.provider]),
       mediaInfo: [engine.modeLabel ?? HERO_VIDEO_MODE_LABELS[engine.engineId], durationLabel, fallbackMedia.resolution].filter(Boolean).join(' · '),
       price: fallbackMedia.price ?? engine.price ?? engine.fallbackPrice,
       estimateLabel: copy.quoteLabel,
@@ -69,7 +69,7 @@ function buildHeroVideoItems(copy: HomeHeroContent['mockup'], previews: HomeExam
       videoSrc: fallbackMedia.videoSrc ?? preview?.videoSrc ?? null,
       duration: fallbackMedia.duration,
       resolution: fallbackMedia.resolution,
-      imageAlt: preview?.imageAlt ?? `${engineName} AI video preview in MaxVideoAI.`,
+      imageAlt: engine.imageAlt ?? preview?.imageAlt ?? `${engineName} AI video preview in MaxVideoAI.`,
     };
   });
 }
@@ -142,8 +142,21 @@ export function HomeHero({
   });
   const fallbackByEngine = new Map(fallbackItems.map((item) => [item.engineId ?? item.id, item]));
   const videoItems = HERO_VIDEO_ORDER.flatMap((engineId) => {
-    const item = programmedByEngine.get(engineId) ?? fallbackByEngine.get(engineId);
-    return item ? [applyHomeLcpPoster(applyCuratedHeroMedia(item))] : [];
+    const localizedFallback = fallbackByEngine.get(engineId);
+    const item = programmedByEngine.get(engineId) ?? localizedFallback;
+    if (!item) return [];
+
+    const curatedItem = applyCuratedHeroMedia(item);
+    const localizedItem = localizedFallback
+      ? {
+          ...curatedItem,
+          bestFor: localizedFallback.bestFor,
+          chips: localizedFallback.chips,
+          imageAlt: localizedFallback.imageAlt,
+        }
+      : curatedItem;
+
+    return [applyHomeLcpPoster(localizedItem)];
   });
   const proofGridColumnsClass = proofStats.length >= 8 ? 'xl:grid-cols-8' : 'xl:grid-cols-7';
 

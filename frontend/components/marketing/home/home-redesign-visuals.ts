@@ -73,7 +73,7 @@ export const HERO_VIDEO_MODE_LABELS: Record<string, string> = {
 };
 
 export const HERO_VIDEO_CHIPS: Record<string, string[]> = {
-  'minimax-h3-max': ['Dance', 'Cinematic motion'],
+  'minimax-h3-max': ['Narrative', 'Native audio'],
   'seedance-2-5': ['Physics', 'Cinematic'],
   'wan-3-prime': ['Craft motion', 'Realism'],
   'kling-3-pro': ['Cinematic', 'Camera move'],
@@ -117,14 +117,13 @@ export const HERO_ENGINE_MEDIA: Record<
   }
 > = {
   'minimax-h3-max': {
-    posterSrc: '/hero/showcase-minimax-h3-max-8s.webp',
+    posterSrc: '/hero/showcase-minimax-h3-max-12s.webp',
     videoSrc:
-      'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/1b29e9b2-c68d-46a3-8415-7677deed674a.mp4',
+      'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/6e299d72-22dd-46f4-8260-4d6887777558.mp4',
     resolution: '16:9',
-    duration: '0:08',
-    estimateValue: '$0.80',
-    estimateMeta: '8s generation',
-    imageAlt: 'MiniMax H3 Max cinematic dancer scene generated with MaxVideoAI.',
+    duration: '0:12',
+    estimateValue: '$1.19',
+    estimateMeta: '12s generation',
   },
   'seedance-2-5': {
     posterSrc:

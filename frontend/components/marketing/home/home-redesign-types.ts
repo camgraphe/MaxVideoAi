@@ -39,6 +39,7 @@ export type HomeHeroContent = {
       name: string;
       provider: string;
       bestFor: string;
+      imageAlt?: string;
       fallbackPrice: string;
       price?: string;
       modeLabel?: string;

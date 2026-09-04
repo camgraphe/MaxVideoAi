@@ -335,7 +335,8 @@
               "engineId": "minimax-h3-max",
               "name": "MiniMax H3 Max",
               "provider": "MiniMax",
-              "bestFor": "Cinematic dance motion",
+              "bestFor": "Cinematic disaster storytelling",
+              "imageAlt": "A mother and child shelter during a photorealistic retro-futuristic disaster generated with MiniMax H3 Max.",
               "fallbackPrice": "Live price",
               "selected": true,
               "scores": [
@@ -353,9 +354,9 @@
                 }
               ],
               "tags": [
-                "Dance",
-                "Motion",
-                "Cinematic"
+                "Narrative",
+                "Native audio",
+                "Live action"
               ]
             },
             {
