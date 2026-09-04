@@ -142,7 +142,7 @@ function normalizedFileName(fileName: string, mimeType: string): string {
 
 function looksLikeSvg(bytes: Buffer): boolean {
   const prefix = bytes.subarray(0, 64 * 1024).toString('utf8').replace(/^\uFEFF/, '');
-  return /<(?:\?xml[\s\S]*?)?\s*svg(?:\s|>)/i.test(prefix);
+  return /^\s*(?:<\?xml[\s\S]*?\?>\s*)?(?:<!--[\s\S]*?-->\s*)*(?:<!doctype\s+svg(?:\s[^>]*)?>\s*)?<svg(?:\s|>)/i.test(prefix);
 }
 
 function isBmp(bytes: Buffer): boolean {

@@ -122,6 +122,33 @@ test('image decoder rejects actual SVG data regardless of its declared MIME', as
   );
 });
 
+test('image decoder accepts a valid PNG whose provenance metadata contains embedded SVG markup', async () => {
+  const service = await loadService();
+  const png = await sharp({
+    create: {
+      width: 3,
+      height: 2,
+      channels: 4,
+      background: { r: 20, g: 80, b: 160, alpha: 1 },
+    },
+  })
+    .png()
+    .withXmp(
+      '<x:xmpmeta xmlns:x="adobe:ns:meta/"><svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1v1H0z"/></svg></x:xmpmeta>'
+    )
+    .toBuffer();
+
+  const decoded = await service.decodeImageUpload({
+    fileName: 'provenance.png',
+    declaredMime: 'image/png',
+    bytes: png,
+  });
+
+  assert.equal(decoded.mimeType, 'image/png');
+  assert.equal(decoded.width, 3);
+  assert.equal(decoded.height, 2);
+});
+
 test('service enforces actual byte and decoded pixel caps before persistence', async () => {
   const service = await loadService();
   let decodeCalls = 0;
