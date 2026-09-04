@@ -31,6 +31,32 @@ test('workspace video rail opens renders in the composite preview, not the group
   assert.match(railSource, /onGroupAction\(original,\s*'open',\s*\{\s*autoPlayPreview:\s*true\s*\}\)/);
 });
 
+test('workspace sample cards give visible feedback when their footer is clicked', () => {
+  const shellSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/_components/WorkspaceAppShell.tsx'),
+    'utf8'
+  );
+  const railSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/components/GalleryRail.tsx'),
+    'utf8'
+  );
+  const railCardsSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/components/GalleryRailCards.tsx'),
+    'utf8'
+  );
+  const cardSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/components/GroupedJobCard.tsx'),
+    'utf8'
+  );
+
+  assert.match(shellSource, /selectedGroupId=\{compositeOverrideSummary\?\.id \?\? null\}/);
+  assert.match(railSource, /selectedGroupId\?: string \| null/);
+  assert.match(railCardsSource, /selected=\{selectedGroupId === group\.id\}/);
+  assert.match(cardSource, /selected\?: boolean/);
+  assert.match(cardSource, /aria-pressed=\{selected\}/);
+  assert.match(cardSource, /onClick=\{\(event\) => \{\s*event\.stopPropagation\(\);\s*onOpen\?\.\(group\);/);
+});
+
 test('grouped job media action surface does not nest the action menu control', () => {
   const cardSource = fs.readFileSync(
     path.join(process.cwd(), 'frontend/components/GroupedJobCard.tsx'),

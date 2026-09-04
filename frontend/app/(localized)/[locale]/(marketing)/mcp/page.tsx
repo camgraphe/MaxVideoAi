@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { FEATURES } from '@/content/feature-flags';
-import { localeRegions, type AppLocale } from '@/i18n/locales';
+import { localeRegions, normalizeAppLocale } from '@/i18n/locales';
 import { getMcpPublicationState } from '@/lib/mcp-publication';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
@@ -23,9 +23,10 @@ function publicationState() {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ locale: AppLocale }>;
+  params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const { locale } = await params;
+  const { locale: localeParam } = await params;
+  const locale = normalizeAppLocale(localeParam);
   const copy = getMcpPageCopy(locale);
   const publication = publicationState();
   return buildSeoMetadata({
@@ -44,9 +45,10 @@ export async function generateMetadata({
 export default async function McpPage({
   params,
 }: {
-  params: Promise<{ locale: AppLocale }>;
+  params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params;
+  const { locale: localeParam } = await params;
+  const locale = normalizeAppLocale(localeParam);
   const publication = publicationState();
   if (!publication.renderPublicPage) notFound();
 

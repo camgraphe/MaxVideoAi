@@ -41,6 +41,7 @@ export interface GroupedJobCardProps {
   openLabel?: string;
   actionMenuLabel?: string;
   showOpenOverlay?: boolean;
+  selected?: boolean;
   eagerPreview?: boolean;
   warmOnVisible?: boolean;
 }
@@ -67,6 +68,7 @@ export function GroupedJobCard({
   openLabel = 'Open group',
   actionMenuLabel = 'Actions',
   showOpenOverlay = true,
+  selected = false,
   eagerPreview = false,
   warmOnVisible = false,
 }: GroupedJobCardProps) {
@@ -180,7 +182,8 @@ export function GroupedJobCard({
     <Card
       ref={cardRef}
       className={clsx(
-        'relative overflow-visible rounded-card border border-border bg-surface-glass-90 p-0 shadow-card',
+        'relative overflow-visible rounded-card border bg-surface-glass-90 p-0 shadow-card transition-[border-color,box-shadow]',
+        selected ? 'border-brand ring-2 ring-brand/25' : 'border-border',
         menuOpen && 'z-30'
       )}
     >
@@ -197,6 +200,7 @@ export function GroupedJobCard({
           role="button"
           tabIndex={0}
           aria-label={openLabel}
+          aria-pressed={selected}
           onClick={() => onOpen?.(group)}
           onFocus={() => {
             setIsPreviewWarm(true);
@@ -307,9 +311,23 @@ export function GroupedJobCard({
             )}
             {isCurated ? (
               <div className="flex items-center gap-2">
-                <span className="rounded-pill border border-hairline bg-bg px-2 py-0.5 text-[11px] font-semibold uppercase tracking-micro text-text-secondary">
-                  Sample
-                </span>
+                {onOpen ? (
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onOpen?.(group);
+                    }}
+                    aria-pressed={selected}
+                    className="rounded-pill border border-hairline bg-bg px-2 py-0.5 text-[11px] font-semibold uppercase tracking-micro text-text-secondary transition hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    Sample
+                  </button>
+                ) : (
+                  <span className="rounded-pill border border-hairline bg-bg px-2 py-0.5 text-[11px] font-semibold uppercase tracking-micro text-text-secondary">
+                    Sample
+                  </span>
+                )}
                 {showImageCta ? (
                   <ButtonLink
                     href={imageCtaHref}

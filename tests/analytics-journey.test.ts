@@ -13,6 +13,31 @@ test('resolution prioritizes campaign, organic, referral, then direct', () => {
   assert.equal(resolveAnalyticsTouch({ href: 'https://maxvideoai.com/', referrer: '', siteOrigin: 'https://maxvideoai.com', ...route }).source, 'direct');
 });
 
+test('payment and authentication return domains do not replace acquisition', () => {
+  for (const referrer of [
+    'https://checkout.stripe.com/c/pay/cs_test_123',
+    'https://accounts.google.com/o/oauth2/v2/auth',
+  ]) {
+    assert.deepEqual(
+      resolveAnalyticsTouch({
+        href: 'https://maxvideoai.com/billing?status=success',
+        referrer,
+        siteOrigin: 'https://maxvideoai.com',
+        landingRouteFamily: 'billing',
+        landingSurface: 'billing',
+        locale: 'en',
+      }),
+      {
+        source: 'direct',
+        medium: 'none',
+        landingRouteFamily: 'billing',
+        landingSurface: 'billing',
+        locale: 'en',
+      },
+    );
+  }
+});
+
 test('URL-shaped UTM values are not persisted in attribution touches', () => {
   const maliciousSource = new URL('https://maxvideoai.com/pricing');
   maliciousSource.searchParams.set('utm_source', 'https://tracker.example/private');

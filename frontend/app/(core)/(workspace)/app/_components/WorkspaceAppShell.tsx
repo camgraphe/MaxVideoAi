@@ -100,6 +100,7 @@ export function WorkspaceAppShell({
           engine={selectedEngine}
           engineRegistry={engines}
           activeGroups={normalizedPendingGroups}
+          selectedGroupId={compositeOverrideSummary?.id ?? null}
           onOpenGroup={openGroupViaGallery}
           onGroupAction={handleGalleryGroupAction}
           onFeedStateChange={handleGalleryFeedStateChange}

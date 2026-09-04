@@ -16,6 +16,7 @@ interface GalleryRailCardsProps {
   onCardAction: (group: GroupSummary, action: GroupedJobAction) => void;
   onCardOpen: (group: GroupSummary) => void;
   resolveAspectRatioLabel: (group: GroupSummary) => string | null;
+  selectedGroupId: string | null;
   sentinelRef: Ref<HTMLDivElement>;
 }
 
@@ -29,6 +30,7 @@ export function GalleryRailCards({
   onCardAction,
   onCardOpen,
   resolveAspectRatioLabel,
+  selectedGroupId,
   sentinelRef,
 }: GalleryRailCardsProps) {
   return (
@@ -48,6 +50,7 @@ export function GalleryRailCards({
             menuVariant={feedType === 'video' ? 'gallery' : 'gallery-image'}
             openLabel={feedType === 'video' ? 'Preview' : undefined}
             showOpenOverlay={false}
+            selected={selectedGroupId === group.id}
             eagerPreview={feedType === 'video' && index < backgroundWarmCount}
             warmOnVisible={false}
           />

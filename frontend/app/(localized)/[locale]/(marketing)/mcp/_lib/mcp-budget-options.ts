@@ -1,6 +1,6 @@
 import { buildLocalizedModelPath } from '@/config/model-registry';
 import { getRuntimeModelById } from '@/config/model-runtime';
-import { localeRegions, type AppLocale } from '@/i18n/locales';
+import { localeRegions, normalizeAppLocale, type AppLocale } from '@/i18n/locales';
 import type { McpPublicationState } from '@/lib/mcp-publication';
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
 import { buildPublicPricingFacts } from '@/lib/pricing-public-facts';
@@ -433,8 +433,9 @@ export function buildMcpBudgetOptions(
   dependencies: McpBudgetOptionsDependencies = DEFAULT_DEPENDENCIES
 ): McpBudgetOption[] {
   if (!publication.renderPublicPage) return [];
+  const resolvedLocale = normalizeAppLocale(locale);
   const candidates = buildCandidates(dependencies);
-  const trial = publication.showTrialClaim ? toTrialOption(locale, candidates, dependencies) : null;
+  const trial = publication.showTrialClaim ? toTrialOption(resolvedLocale, candidates, dependencies) : null;
   const options: McpBudgetOption[] = trial ? [trial] : [];
   if (!publication.showPaidGenerationClaim) return options;
 
@@ -443,7 +444,7 @@ export function buildMcpBudgetOptions(
     : candidates;
   const lowest = paidCandidates[0];
   if (!lowest) return options;
-  options.push(toPaidOption(locale, 'lowest_paid', lowest));
+  options.push(toPaidOption(resolvedLocale, 'lowest_paid', lowest));
 
   const upgrade = paidCandidates.find(
     (candidate) =>
@@ -451,6 +452,6 @@ export function buildMcpBudgetOptions(
       candidate.amountCents > lowest.amountCents &&
       addsMaterialCapability(candidate, lowest, publication.showReferenceClaim)
   );
-  if (upgrade) options.push(toPaidOption(locale, 'affordable_upgrade', upgrade));
+  if (upgrade) options.push(toPaidOption(resolvedLocale, 'affordable_upgrade', upgrade));
   return options;
 }

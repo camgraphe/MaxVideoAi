@@ -292,6 +292,7 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     setSharedPrompt: routeForm.setSharedPrompt,
   });
   const loadState = getWorkspaceAppLoadState({
+    authLoading: app.authLoading,
     engineCount: app.engines.length,
     enginesError: app.enginesError,
     hasForm: Boolean(routeForm.form),

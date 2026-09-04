@@ -133,13 +133,16 @@ Analytics attribution is valid only after analytics consent has been granted. Va
 
 Consent validation should use event-level inspection. Do not register `journey_id` as a custom dimension merely to perform this check.
 
-## 6. Stripe referral exclusion
+## 6. Payment and authentication referral exclusion
 
 In **Admin > Data streams > Web stream > Configure tag settings > List unwanted referrals**, add:
 
 - `stripe.com`
 - `checkout.stripe.com`
 - `js.stripe.com`
+- `accounts.google.com`
+
+The Google Accounts entry prevents the OAuth return from replacing the acquisition source with an authentication-provider referral.
 
 ## 7. DebugView release checklist
 

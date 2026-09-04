@@ -13,6 +13,7 @@ export type HostedWalletCheckoutInput = {
   locale: string;
   accessToken: string | null;
   captchaToken?: string;
+  gaClientId?: string | null;
   gaSessionId?: string | null;
   analyticsJourney?: WalletAnalyticsJourney | null;
 };
@@ -154,6 +155,7 @@ export async function requestHostedWalletCheckout(
         currency: currency.toLowerCase(),
         locale: input.locale,
         ...(input.captchaToken ? { captchaToken: input.captchaToken } : {}),
+        ...(input.gaClientId ? { gaClientId: input.gaClientId } : {}),
         ...(input.gaSessionId ? { gaSessionId: input.gaSessionId } : {}),
         ...(input.analyticsJourney ? { analyticsJourney: input.analyticsJourney } : {}),
       }),

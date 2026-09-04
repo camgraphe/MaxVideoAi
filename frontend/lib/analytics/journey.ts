@@ -96,6 +96,7 @@ const MARKETING_OWNER_SURFACES: Readonly<Record<string, string>> = {
   '/models/': '/models',
 };
 const ORGANIC_SOURCES = new Set(['google', 'bing', 'yahoo', 'duckduckgo', 'ecosia', 'baidu', 'yandex']);
+const UNWANTED_REFERRER_DOMAINS = ['stripe.com', 'accounts.google.com'] as const;
 const ANALYTICS_TOUCH_KEYS = new Set([
   'source', 'medium', 'campaign', 'content', 'referrerHost', 'landingRouteFamily',
   'landingSurface', 'locale',
@@ -325,6 +326,9 @@ export function resolveAnalyticsTouch(input: AnalyticsTouchInput): AnalyticsTouc
   ) {
     const classificationHost = normalizeHostname(referrerUrl.hostname);
     if (!classificationHost) return { source: 'direct', medium: 'none', ...routeFields(input) };
+    if (UNWANTED_REFERRER_DOMAINS.some((domain) => matchesDomain(classificationHost, domain))) {
+      return { source: 'direct', medium: 'none', ...routeFields(input) };
+    }
     const referrerHost = sanitizeAttributionValue(classificationHost, { lowercase: true });
     if (!referrerHost) return { source: 'direct', medium: 'none', ...routeFields(input) };
     const organicSource = organicSourceForHostname(classificationHost);

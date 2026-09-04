@@ -188,6 +188,7 @@ export async function POST(req: NextRequest) {
   const walletGa4Context = resolveWalletGa4CheckoutContext({
     analyticsConsentGranted,
     gaClientCookie: req.cookies.get('_ga')?.value ?? null,
+    gaClientId: body.gaClientId,
     gaSessionId: body.gaSessionId,
   });
   const walletAttribution = normalizeWalletAttribution(body.analyticsJourney, analyticsConsentGranted);

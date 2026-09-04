@@ -4,12 +4,14 @@ import { extractGaClientId } from '@/server/ga4';
 type WalletGa4CheckoutContextInput = {
   analyticsConsentGranted: boolean;
   gaClientCookie: string | null;
+  gaClientId: unknown;
   gaSessionId: unknown;
 };
 
 export function resolveWalletGa4CheckoutContext({
   analyticsConsentGranted,
   gaClientCookie,
+  gaClientId,
   gaSessionId,
 }: WalletGa4CheckoutContextInput): {
   metadata: Record<string, string>;
@@ -17,7 +19,8 @@ export function resolveWalletGa4CheckoutContext({
 } {
   if (!analyticsConsentGranted) return { metadata: {}, sessionId: null };
 
-  const clientId = extractGaClientId(gaClientCookie);
+  const clientId = extractGaClientId(typeof gaClientId === 'string' ? gaClientId : null)
+    ?? extractGaClientId(gaClientCookie);
   const sessionId = normalizeGa4SessionId(gaSessionId);
   return {
     metadata: {

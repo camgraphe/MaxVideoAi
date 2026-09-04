@@ -4,6 +4,7 @@ import type { VideoGroup } from '@/types/video-groups';
 import { WorkspaceBootSurface } from './WorkspaceBootSurface';
 
 type WorkspaceAppLoadStateOptions = {
+  authLoading: boolean;
   engineCount: number;
   enginesError?: Error | null;
   hasForm: boolean;
@@ -15,7 +16,16 @@ type WorkspaceAppLoadStateOptions = {
   noEnginesError: string;
 };
 
+export function shouldShowWorkspaceBootSurface({
+  authLoading,
+  engineCount,
+  isLoading,
+}: Pick<WorkspaceAppLoadStateOptions, 'authLoading' | 'engineCount' | 'isLoading'>): boolean {
+  return engineCount === 0 && (authLoading || isLoading);
+}
+
 export function getWorkspaceAppLoadState({
+  authLoading,
   engineCount,
   enginesError,
   hasForm,
@@ -26,7 +36,7 @@ export function getWorkspaceAppLoadState({
   loadEnginesError,
   noEnginesError,
 }: WorkspaceAppLoadStateOptions) {
-  if (isLoading && engineCount === 0) {
+  if (shouldShowWorkspaceBootSurface({ authLoading, engineCount, isLoading })) {
     return (
       <WorkspaceBootSurface
         initialPreviewGroup={initialPreviewFallbackGroup}

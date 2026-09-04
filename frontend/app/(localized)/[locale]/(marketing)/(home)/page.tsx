@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Script from 'next/script';
 import { getTranslations } from 'next-intl/server';
 import { resolveDictionary } from '@/lib/i18n/server';
-import { type AppLocale } from '@/i18n/locales';
+import { normalizeAppLocale } from '@/i18n/locales';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { DeferredMarketingContent } from '@/components/marketing/DeferredMarketingContent';
 import {
@@ -39,9 +39,9 @@ import { buildFaqSchema, buildItemListSchema, buildSoftwareSchema, serializeJson
 
 export const revalidate = 60;
 
-export async function generateMetadata(props: { params: Promise<{ locale: AppLocale }> }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const params = await props.params;
-  const locale = params.locale;
+  const locale = normalizeAppLocale(params.locale);
   const t = await getTranslations({ locale, namespace: 'home.meta' });
 
   return buildSeoMetadata({
@@ -54,9 +54,9 @@ export async function generateMetadata(props: { params: Promise<{ locale: AppLoc
   });
 }
 
-export default async function HomePage(props: { params: Promise<{ locale: AppLocale }> }) {
+export default async function HomePage(props: { params: Promise<{ locale: string }> }) {
   const params = await props.params;
-  const locale = params.locale;
+  const locale = normalizeAppLocale(params.locale);
   const { dictionary } = await resolveDictionary({ locale });
   const content = dictionary.home.redesign as RedesignContent;
   const workflowSeoCopy = dictionary.home.seoContent as WorkflowSeoSummaryCopy | undefined;

@@ -643,3 +643,17 @@ test('labels, currency, and model links are stable and localized in English, Fre
     assert.doesNotMatch(paid.scenarioLabel, /provider|fal-ai|margin|token/i);
   }
 });
+
+test('unmatched localized route segments fall back without crashing MCP budget labels', () => {
+  const options = buildMcpBudgetOptions(
+    '.well-known' as AppLocale,
+    livePublication,
+  );
+  const trial = option(options, 'included_trial');
+  const paid = option(options, 'lowest_paid');
+
+  assert.equal(trial.priceLabel, 'Included');
+  assert.match(paid.scenarioLabel, /Silent/);
+  assert.equal(trial.modelHref.startsWith('/models/'), true);
+  assert.equal(paid.modelHref.startsWith('/models/'), true);
+});

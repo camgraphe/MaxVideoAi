@@ -1,6 +1,5 @@
 'use client';
 /* eslint-disable @next/next/no-img-element */
-
 import clsx from 'clsx';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { EngineCaps } from '@/types/engines';
@@ -35,17 +34,16 @@ import {
   type GalleryVariant,
 } from './gallery-rail-utils';
 import { useGalleryRailScrollbar } from './useGalleryRailScrollbar';
-
 export interface GalleryFeedState {
   visibleGroups: GroupSummary[];
   sampleOnly: boolean;
 }
-
 export interface GalleryRailProps {
   engine: EngineCaps;
   engineRegistry?: EngineCaps[];
   feedType?: GalleryFeedType;
   activeGroups?: GroupSummary[];
+  selectedGroupId?: string | null;
   onOpenGroup?: (group: GroupSummary) => void;
   onGroupAction?: (group: GroupSummary, action: GroupedJobAction, options?: { autoPlayPreview?: boolean }) => void;
   onFeedStateChange?: (state: GalleryFeedState) => void;
@@ -60,6 +58,7 @@ export function GalleryRail({
   engineRegistry,
   feedType = 'video',
   activeGroups = [],
+  selectedGroupId = null,
   onOpenGroup,
   onGroupAction,
   onFeedStateChange,
@@ -423,6 +422,7 @@ export function GalleryRail({
       onCardAction={handleCardAction}
       onCardOpen={handleCardOpen}
       resolveAspectRatioLabel={resolveAspectRatioLabel}
+      selectedGroupId={selectedGroupId}
       sentinelRef={sentinelRef}
     />
   );
