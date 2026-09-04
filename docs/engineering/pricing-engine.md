@@ -101,6 +101,26 @@ Deterministic browser and marketing projections enter through `frontend/src/lib/
 
 The pricing hub, model decision cards, estimator, chip, model price rows, Product Offer JSON-LD, workspace preflight, and image estimate routes are protected by `tests/pricing-public-authority.test.ts`. The exhaustive 492-row fixture protects the cent-level output of every migrated public surface.
 
+## Historical launch examples
+
+`frontend/server/launch-example-pricing-records.json` preserves the original
+customer totals for 14 accepted P0 demo generations whose production import omitted
+pricing. The amounts were recovered on 2026-09-04 from the same job IDs in
+`preview/mcp-staging`; each `final_price_cents` matched the saved canonical
+`pricing_snapshot.totalCents`, model, duration and currency. These are archived
+generation receipts, not current rate definitions or newly calculated quotes.
+
+`videos-normalization.ts` uses a matching receipt only when the job has no
+stored price. An existing price, including zero, wins; a model, duration or
+currency mismatch rejects the receipt. This changes the gallery/marketing
+projection only. Production billing columns, wallet transactions and refund
+snapshots are never backfilled with staging charges.
+
+For future demo imports, preserve the verified historical display receipt at
+import time. Never estimate a past charge from today's rates or generalize one
+example's amount to another job. When no receipt exists, a new reproduction
+estimate must go through `quote-public.ts` and be labeled as an estimate.
+
 ## Final one-owner state
 
 `quoteCanonicalPricing` is the sole commercial formula. Definition catalogs and provider adapters can derive factual vendor subtotals, units, durations, resolutions, and addons, but they cannot apply margins, membership discounts, customer-total rounding, or settlement allocation. Storyboard and audio use the same canonical quote as every other live surface. The removed compatibility facade, specialized commercial snapshots, legacy audit collector, dead client preflight, and old kernel quote method must not be reintroduced.

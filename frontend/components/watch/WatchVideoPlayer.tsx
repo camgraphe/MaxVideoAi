@@ -1,7 +1,7 @@
 'use client';
 
 import type { CSSProperties } from 'react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Film, Maximize2, Pause, Play, Volume2, VolumeX } from 'lucide-react';
 
 type WatchVideoPlayerProps = {
@@ -12,6 +12,10 @@ type WatchVideoPlayerProps = {
   hasAudio: boolean;
   containerStyle?: CSSProperties;
   videoStyle?: CSSProperties;
+};
+
+type FullscreenVideoElement = HTMLVideoElement & {
+  webkitEnterFullscreen?: () => void;
 };
 
 function formatTime(value: number) {
@@ -31,11 +35,19 @@ export function WatchVideoPlayer({
   videoStyle,
 }: WatchVideoPlayerProps) {
   const shellRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoRef = useRef<FullscreenVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
+  const [canFullscreen, setCanFullscreen] = useState(false);
+
+  useEffect(() => {
+    setCanFullscreen(
+      typeof shellRef.current?.requestFullscreen === 'function' ||
+      typeof videoRef.current?.webkitEnterFullscreen === 'function'
+    );
+  }, []);
 
   const togglePlayback = () => {
     const player = videoRef.current;
@@ -62,14 +74,21 @@ export function WatchVideoPlayer({
     setCurrentTime(nextTime);
   };
 
-  const toggleFullscreen = () => {
+  const toggleFullscreen = async () => {
     const shell = shellRef.current;
     if (!shell) return;
-    if (document.fullscreenElement) {
-      void document.exitFullscreen();
-      return;
+    try {
+      if (document.fullscreenElement && typeof document.exitFullscreen === 'function') {
+        await document.exitFullscreen();
+      } else if (typeof shell.requestFullscreen === 'function') {
+        await shell.requestFullscreen();
+      } else {
+        // iPhone Safari exposes fullscreen on the video instead of its container.
+        videoRef.current?.webkitEnterFullscreen?.();
+      }
+    } catch {
+      // A browser can refuse fullscreen or media may not be ready yet. Keep playback usable.
     }
-    void shell.requestFullscreen();
   };
 
   return (
@@ -142,14 +161,16 @@ export function WatchVideoPlayer({
           >
             {isMuted ? <VolumeX className="h-4 w-4" aria-hidden /> : <Volume2 className="h-4 w-4" aria-hidden />}
           </button>
-          <button
-            type="button"
-            aria-label="Fullscreen video"
-            onClick={toggleFullscreen}
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-on-inverse transition hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <Maximize2 className="h-4 w-4" aria-hidden />
-          </button>
+          {canFullscreen ? (
+            <button
+              type="button"
+              aria-label="Fullscreen video"
+              onClick={toggleFullscreen}
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-on-inverse transition hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <Maximize2 className="h-4 w-4" aria-hidden />
+            </button>
+          ) : null}
         </div>
       </div>
     </div>

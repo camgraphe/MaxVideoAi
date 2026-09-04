@@ -1,6 +1,7 @@
 import { normalizeMediaUrl } from '@/lib/media';
 import { normalizeJobKeyframeUrls, type JobKeyframeUrls } from '@/server/video-keyframes';
 import type { PricingSnapshot } from '@/types/engines';
+import { findLaunchExamplePrice } from './launch-example-pricing';
 
 export type VideoRow = {
   job_id: string;
@@ -64,6 +65,12 @@ function formatPromptExcerpt(prompt: string, maxLength = 160): string {
 }
 
 export function mapGalleryVideoRow(row: VideoRow): GalleryVideo {
+  const historicalPrice = row.final_price_cents == null ? findLaunchExamplePrice({
+    jobId: row.job_id,
+    engineId: row.engine_id,
+    durationSec: row.duration_sec,
+    currency: row.currency,
+  }) : null;
   return {
     id: row.job_id,
     userId: row.user_id ?? null,
@@ -84,8 +91,8 @@ export function mapGalleryVideoRow(row: VideoRow): GalleryVideo {
     indexable: Boolean(row.indexable ?? true),
     hasAudio: Boolean(row.has_audio ?? false),
     canUpscale: Boolean(row.can_upscale ?? false),
-    finalPriceCents: row.final_price_cents ?? undefined,
-    currency: row.currency ?? undefined,
+    finalPriceCents: row.final_price_cents ?? historicalPrice?.totalCents ?? undefined,
+    currency: row.currency ?? historicalPrice?.currency ?? undefined,
     pricingSnapshot: row.pricing_snapshot ?? undefined,
     settingsSnapshot: row.settings_snapshot ?? undefined,
     playlistOrder: typeof row.order_index === 'number' ? row.order_index : null,

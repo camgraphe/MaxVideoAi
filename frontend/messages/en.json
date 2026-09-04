@@ -560,6 +560,8 @@
         "modelsCta": "View all model specs",
         "compareLink": "Compare engines",
         "featuredModelCta": "Discover Seedance 2.5",
+        "modelCta": "Discover {model}",
+        "costUnavailable": "Cost not recorded",
         "providerLabel": "Supported engines:",
         "viewPrompt": "Clone settings",
         "fallbackCards": [
