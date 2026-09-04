@@ -3,13 +3,14 @@
 /* eslint-disable @next/next/no-img-element */
 
 import clsx from 'clsx';
-import { useEffect, useRef, type ReactNode } from 'react';
+import Image from 'next/image';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Copy, Download, ExternalLink, Minus, Pencil, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
-import { resolveCssAspectRatio } from '@/lib/aspect';
+import { getAspectRatioNumber, resolveCssAspectRatio } from '@/lib/aspect';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import { resolveStableMediaUrl } from '@/lib/media';
+import { isSignedMediaUrl, resolveStableMediaUrl } from '@/lib/media';
 
 type PreviewImage = {
   url: string;
@@ -94,6 +95,13 @@ export function ImageCompositePreviewDock({
     height: selected?.height ?? null,
     fallback: '1 / 1',
   });
+  const previewRatio = getAspectRatioNumber(aspectRatioCss.replace(/\s/g, ''), 1);
+  const previewSizes = `(max-width: 639px) min(calc(100vw - 40px), ${Math.ceil((workspaceDensity ? 220 : 320) * previewRatio)}px), min(100vw, ${Math.ceil((workspaceDensity ? 330 : 420) * previewRatio)}px)`;
+  const [failedPreviewUrl, setFailedPreviewUrl] = useState<string | null>(null);
+  // Other sources may require browser credentials or a provider URL unsupported by the optimizer.
+  const canOptimizePreview = Boolean(
+    selectedPreviewUrl?.startsWith('https://media.maxvideoai.com/') && !isSignedMediaUrl(selectedPreviewUrl)
+  );
   const previewRef = useRef<HTMLDivElement | null>(null);
   const toolbarRef = useRef<HTMLDivElement | null>(null);
 
@@ -288,11 +296,16 @@ export function ImageCompositePreviewDock({
             style={{ aspectRatio: aspectRatioCss ?? '1 / 1' }}
           >
             {selected ? (
-              <img
+              <Image
                 src={selectedPreviewUrl ?? selected.url}
                 alt={entry?.prompt ?? ''}
+                fill
+                sizes={previewSizes}
                 className="h-full w-full object-contain"
-                loading="lazy"
+                loading="eager"
+                fetchPriority="high"
+                unoptimized={!canOptimizePreview || failedPreviewUrl === selectedPreviewUrl}
+                onError={() => setFailedPreviewUrl(selectedPreviewUrl)}
                 referrerPolicy="no-referrer"
               />
             ) : (
