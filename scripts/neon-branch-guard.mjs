@@ -2,10 +2,11 @@
 import { promises as fs } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { createGitBranchLookup, findCompletedPreviewCandidates } from './lib/neon-preview-cleanup-policy.mjs';
 
 const DEFAULT_PROJECT_ID = 'shy-flower-71253790';
 const DEFAULT_BRANCH_LIMIT = 8;
-const DEFAULT_DELETE_PATTERN = '^preview/';
+const DEFAULT_DELETE_PATTERN = '^preview/codex/';
 const DEFAULT_API_BASE_URL = 'https://console.neon.tech/api/v2';
 
 function parseArgs(argv) {
@@ -13,6 +14,7 @@ function parseArgs(argv) {
     projectId: process.env.NEON_BRANCH_GUARD_PROJECT_ID || process.env.NEON_PROJECT_ID || DEFAULT_PROJECT_ID,
     limit: parsePositiveInteger(process.env.NEON_BRANCH_LIMIT, DEFAULT_BRANCH_LIMIT),
     deleteArchived: process.env.NEON_BRANCH_DELETE_ARCHIVED === '1',
+    deleteMerged: process.env.NEON_BRANCH_DELETE_MERGED === '1',
     deletePattern: process.env.NEON_BRANCH_DELETE_PATTERN || DEFAULT_DELETE_PATTERN,
     dryRun: process.env.NEON_BRANCH_GUARD_DRY_RUN === '1',
     apiBaseUrl: process.env.NEON_API_BASE_URL || DEFAULT_API_BASE_URL,
@@ -20,6 +22,7 @@ function parseArgs(argv) {
 
   argv.forEach((arg, index) => {
     if (arg === '--delete-archived') options.deleteArchived = true;
+    if (arg === '--delete-merged') options.deleteMerged = true;
     if (arg === '--dry-run') options.dryRun = true;
     if (arg === '--project-id') options.projectId = argv[index + 1] ?? options.projectId;
     if (arg.startsWith('--project-id=')) options.projectId = arg.slice('--project-id='.length);
@@ -73,11 +76,26 @@ async function neonApi(options, token, resourcePath, init = {}) {
 }
 
 async function listBranches(options, token) {
-  const payload = await neonApi(options, token, `projects/${options.projectId}/branches`);
-  if (!Array.isArray(payload?.branches)) {
-    throw new Error('Neon API response did not include a branches array.');
-  }
-  return payload.branches;
+  const branches = [];
+  const seen = new Set();
+  let cursor;
+  do {
+    const params = new URLSearchParams({ limit: '100', sort_by: 'created_at', sort_order: 'asc' });
+    if (cursor) params.set('cursor', cursor);
+    const payload = await neonApi(options, token, `projects/${options.projectId}/branches?${params}`);
+    if (!Array.isArray(payload?.branches)) throw new Error('Neon API response did not include a branches array.');
+    branches.push(...payload.branches);
+    cursor = payload.pagination?.next;
+    if (cursor && seen.has(cursor)) throw new Error('Neon branch pagination repeated a cursor.');
+    if (cursor) seen.add(cursor);
+  } while (cursor);
+  return branches;
+}
+
+async function listEndpoints(options, token) {
+  const payload = await neonApi(options, token, `projects/${options.projectId}/endpoints`);
+  if (!Array.isArray(payload?.endpoints)) throw new Error('Neon API response did not include an endpoints array.');
+  return payload.endpoints;
 }
 
 async function deleteBranch(options, token, branchId) {
@@ -100,15 +118,6 @@ function printBranchSummary(label, options, branches) {
   console.log(
     `[neon-branch-guard] ${label}: project=${options.projectId} total=${branches.length} limit=${options.limit} states=${branchStateSummary(branches)}`
   );
-}
-
-function buildDeleteCandidates(branches, deletePattern) {
-  const pattern = new RegExp(deletePattern);
-  return branches
-    .filter((branch) => branch.primary !== true)
-    .filter((branch) => branch.current_state === 'archived')
-    .filter((branch) => pattern.test(branch.name ?? ''))
-    .sort((a, b) => String(a.created_at ?? '').localeCompare(String(b.created_at ?? '')));
 }
 
 function printOverLimitBranches(branches, limit) {
@@ -137,14 +146,26 @@ async function main() {
   let branches = await listBranches(options, token);
   printBranchSummary('before', options, branches);
 
-  if (options.deleteArchived) {
-    const candidates = buildDeleteCandidates(branches, options.deletePattern);
+  if (options.deleteArchived || options.deleteMerged) {
+    const lookupGitBranch = createGitBranchLookup({ repository: process.env.GITHUB_REPOSITORY, token: process.env.GITHUB_TOKEN });
+    const findCandidates = async (currentBranches) => {
+      const endpoints = await listEndpoints(options, token);
+      const candidates = await findCompletedPreviewCandidates({ branches: currentBranches, endpoints, lookupGitBranch, archivedOnly: !options.deleteMerged });
+      return candidates.filter(branch => new RegExp(options.deletePattern).test(branch.name));
+    };
+    const candidates = await findCandidates(branches);
     console.log(
-      `[neon-branch-guard] archived preview branches eligible for deletion=${candidates.length} dry_run=${options.dryRun}`
+      `[neon-branch-guard] completed preview branches eligible for deletion=${candidates.length} dry_run=${options.dryRun}`
     );
 
     for (const [index, branch] of candidates.entries()) {
       if (!options.dryRun) {
+        // Recheck remote state immediately before each destructive operation.
+        const freshCandidates = await findCandidates(await listBranches(options, token));
+        if (!freshCandidates.some(candidate => candidate.id === branch.id && candidate.name === branch.name)) {
+          console.log(`[neon-branch-guard] preserved changed branch id=${branch.id}`);
+          continue;
+        }
         await deleteBranch(options, token, branch.id);
       }
       if ((index + 1) % 25 === 0 || index + 1 === candidates.length) {

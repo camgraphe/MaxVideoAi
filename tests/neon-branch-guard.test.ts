@@ -11,12 +11,12 @@ test('Neon branch guard scripts are wired into package.json', () => {
   assert.equal(pkg.scripts['neon:branches:prune'], 'node scripts/neon-branch-guard.mjs --delete-archived');
 });
 
-test('Neon branch guard only auto-deletes archived preview branches', () => {
+test('Neon branch guard delegates deletion to the completed-preview policy', () => {
   const source = readFileSync(join(root, 'scripts/neon-branch-guard.mjs'), 'utf8');
   assert.match(source, /const DEFAULT_BRANCH_LIMIT = 8/);
-  assert.match(source, /const DEFAULT_DELETE_PATTERN = '\^preview\/'/);
-  assert.match(source, /branch\.primary !== true/);
-  assert.match(source, /branch\.current_state === 'archived'/);
+  assert.match(source, /const DEFAULT_DELETE_PATTERN = '\^preview\/codex\/'/);
+  assert.match(source, /findCompletedPreviewCandidates/);
+  assert.match(source, /freshCandidates/);
   assert.match(source, /NEON_API_KEY/);
   assert.doesNotMatch(source, /console\.(log|error)\([^)]*token/i);
 });
@@ -27,5 +27,6 @@ test('Neon branch guard runs daily in GitHub Actions', () => {
   assert.match(workflow, /cron: '17 5 \* \* \*'/);
   assert.match(workflow, /NEON_API_KEY: \$\{\{ secrets\.NEON_API_KEY \}\}/);
   assert.match(workflow, /NEON_BRANCH_LIMIT: '8'/);
-  assert.match(workflow, /node scripts\/neon-branch-guard\.mjs --delete-archived/);
+  assert.match(workflow, /node scripts\/neon-branch-guard\.mjs --delete-merged/);
+  assert.match(workflow, /pull-requests: read/);
 });

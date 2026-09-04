@@ -183,3 +183,41 @@ test('infra costs report remains readable when provider credentials are missing'
   assert.ok(report.alerts.some((alert) => alert.kind === 'configuration' && alert.provider === 'vercel'));
   assert.ok(report.alerts.some((alert) => alert.kind === 'configuration' && alert.provider === 's3'));
 });
+
+for (const scenario of [
+  { name: 'Launch within allowance', counts: [3], plan: 'launch', futureHours: 0 },
+  { name: 'Launch at allowance', counts: [10], plan: 'launch', futureHours: 0 },
+  { name: 'Launch over allowance', counts: [12], plan: 'launch', futureHours: 720 },
+  { name: 'Scale allowance', counts: [25], plan: 'scale', futureHours: 0 },
+  { name: 'Scale over allowance', counts: [27], plan: 'scale', futureHours: 720 },
+  { name: 'allowance is per project', counts: [12, 3], plan: 'launch', futureHours: 720 },
+]) {
+  test(`Neon branch projection preserves metered history and applies ${scenario.name}`, async () => {
+    const projectIds = scenario.counts.map((_, i) => `project-${i}`);
+    const report = await fetchInfraCostsReport({
+      now: new Date('2026-06-16T00:00:00.000Z'),
+      env: { NEON_API_KEY: 'test-token', NEON_USAGE_PLAN: scenario.plan, NEON_USAGE_PROJECT_IDS: projectIds.join(',') },
+      fetchFn: async (input) => {
+        const url = new URL(String(input));
+        if (url.pathname.includes('consumption_history')) {
+          return jsonResponse({ projects: [{ project_id: projectIds[0], periods: [{ consumption: [{
+            timeframe_start: '2026-06-01T00:00:00Z', metrics: [{ metric_name: 'extra_branches_month', value: 48 }],
+          }] }] }] });
+        }
+        const i = projectIds.findIndex(id => url.pathname === `/api/v2/projects/${id}/branches`);
+        assert.notEqual(i, -1);
+        return jsonResponse({ branches: Array.from({ length: scenario.counts[i] }, (_, n) => ({
+          id: `br-${i}-${n}`, primary: n === 0, current_state: n === 1 ? 'archived' : 'ready',
+        })) });
+      },
+    });
+    const details = report.providers.neon.details!;
+    assert.equal(details.totals.extraBranchesMonth, 48);
+    assert.equal(details.costBreakdown.extraBranchUsd, 0.1);
+    assert.equal(details.projectedTotals.extraBranchesMonth, 48 + scenario.futureHours);
+    assert.equal(details.projectedCostBreakdown.extraBranchUsd, ((48 + scenario.futureHours) / 720) * 1.5);
+    for (const alert of report.alerts.filter(alert => alert.kind === 'branch')) {
+      assert.doesNotMatch(alert.detail, /active branches/);
+    }
+  });
+}

@@ -72,6 +72,7 @@ export type NeonInfraCostDetails = {
   orgId: string;
   projectIds: string[];
   plan: 'launch' | 'scale';
+  includedBranchesPerProject: number;
   branchGuardLimit: number;
   includedPublicTransferGb: number;
   rates: {

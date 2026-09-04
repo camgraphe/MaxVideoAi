@@ -11,12 +11,14 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: read
+      pull-requests: read
     env:
       NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+      GITHUB_TOKEN: ${{ github.token }}
       NEON_BRANCH_GUARD_PROJECT_ID: shy-flower-71253790
       NEON_BRANCH_LIMIT: '8'
-      NEON_BRANCH_DELETE_ARCHIVED: '1'
-      NEON_BRANCH_DELETE_PATTERN: '^preview/'
+      NEON_BRANCH_DELETE_MERGED: '1'
+      NEON_BRANCH_DELETE_PATTERN: '^preview/codex/'
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -28,4 +30,4 @@ jobs:
           package-manager-cache: false
 
       - name: Run Neon branch guard
-        run: node scripts/neon-branch-guard.mjs --delete-archived
+        run: node scripts/neon-branch-guard.mjs --delete-merged

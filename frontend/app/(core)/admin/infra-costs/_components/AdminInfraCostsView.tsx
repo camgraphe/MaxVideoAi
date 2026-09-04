@@ -212,7 +212,7 @@ function buildNeonMetrics(report: InfraCostsReport): AdminMetricItem[] {
     {
       label: 'Branches',
       value: details?.totals.currentBranchCount ?? 'n/a',
-      helper: details ? `Guard limit ${details.branchGuardLimit}` : 'Branch API not available',
+      helper: details ? `${details.includedBranchesPerProject} included per project · guard ${details.branchGuardLimit}` : 'Branch API not available',
       tone: details && details.totals.currentBranchCount !== null && details.totals.currentBranchCount > details.branchGuardLimit ? 'warning' : 'default',
       icon: GitBranch,
     },
