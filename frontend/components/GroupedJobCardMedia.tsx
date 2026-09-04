@@ -125,9 +125,9 @@ export function GroupPreviewMedia({
   };
 
   if (hasVideo && displayVideoUrl) {
-    const poster = thumbSrc ?? undefined;
     return (
       <div className="relative h-full w-full overflow-hidden rounded-[inherit]">
+        {/* Keep the thumbnail here: video posters eagerly fetch the original, even with preload="none". */}
         {thumbSrc ? (
           <ThumbImage
             src={thumbSrc}
@@ -142,7 +142,6 @@ export function GroupPreviewMedia({
         <video
           ref={videoRef}
           src={displayVideoUrl}
-          poster={poster}
           className={clsx(
             'absolute inset-0 h-full w-full pointer-events-none transition-opacity duration-150 ease-out',
             fit === 'cover' ? 'object-cover scale-[1.06] transform-gpu' : 'object-contain',
