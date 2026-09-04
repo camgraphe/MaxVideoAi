@@ -176,7 +176,7 @@ export async function buildCompareShowdownSlots({
     }
   }
 
-  return compareShowdowns.map((template, index) => {
+  const showdownSlots = compareShowdowns.map((template, index) => {
     const entry = orderedShowdowns[index];
     const shouldSwapShowdownSides =
       showdownSourceSlug === canonicalSlug ? shouldSwapDisplayOrder : !shouldSwapDisplayOrder;
@@ -217,4 +217,6 @@ export async function buildCompareShowdownSlots({
       right: rightSide,
     };
   });
+
+  return showdownSlots.filter((slot) => hasMedia(slot.left) && hasMedia(slot.right));
 }

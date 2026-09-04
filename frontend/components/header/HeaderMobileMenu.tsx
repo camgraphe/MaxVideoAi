@@ -7,6 +7,7 @@ import { NAV_ITEMS } from '@/components/AppSidebar';
 import { AppLanguageToggle } from '@/components/AppLanguageToggle';
 import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
+import { MarketingNavEntryContent } from '@/components/marketing/MarketingNavEntryContent';
 import { MARKETING_NAV_DROPDOWNS } from '@/config/navigation';
 import {
   GUEST_MOBILE_NAV_ICONS,
@@ -185,6 +186,8 @@ export function HeaderMobileMenu({
                     </Link>
                     {dropdown.items.map((entry) => {
                       const href = resolveLocalizedHref(entry.href);
+                      const entryLabel = t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label) ?? entry.label;
+                      const badgeLabel = entry.badge ? (t(`nav.badges.${entry.badge}`, entry.badge) ?? entry.badge) : undefined;
                       return (
                         <Link
                           key={entry.key}
@@ -192,12 +195,12 @@ export function HeaderMobileMenu({
                           onClick={onClose}
                           className="rounded-input px-2 py-2 transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
-                          <span>{t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label)}</span>
-                          {entry.badge ? (
-                            <span className="ml-2 inline-flex rounded-full bg-brand px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-micro text-white">
-                              {t(`nav.badges.${entry.badge}`, entry.badge)}
-                            </span>
-                          ) : null}
+                          <MarketingNavEntryContent
+                            entry={entry}
+                            label={entryLabel}
+                            badgeLabel={badgeLabel}
+                            showModelLogo={item.key === 'models'}
+                          />
                         </Link>
                       );
                     })}

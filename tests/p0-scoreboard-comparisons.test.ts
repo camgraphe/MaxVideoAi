@@ -143,7 +143,7 @@ test('scoreboard-only fallbacks do not promise future side-by-side media', () =>
   assert.doesNotMatch(source, /vídeos comparativos curados se añadirán/i);
 });
 
-test('published P0 models expose only the eight approved comparison edges', () => {
+test('published P0 models expose only approved comparison edges, including the trend expansion', () => {
   const registry = JSON.parse(readFileSync('frontend/config/model-registry.json', 'utf8')) as {
     models: Array<{
       id: string;
@@ -162,6 +162,7 @@ test('published P0 models expose only the eight approved comparison edges', () =
     if (expected.has(leftId)) expected.get(leftId)?.add(rightId);
     if (expected.has(rightId)) expected.get(rightId)?.add(leftId);
   }
+  expected.get('wan-3')?.add('seedance-2-5');
 
   for (const modelId of P0_IDS) {
     const model = registry.models.find(({ id }) => id === modelId);

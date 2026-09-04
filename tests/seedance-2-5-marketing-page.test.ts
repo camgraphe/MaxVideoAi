@@ -122,7 +122,7 @@ test('Seedance 2.5 launches with three localized, indexable comparison decisions
   }
 });
 
-test('the three priority Seedance 2.5 comparisons remain promoted behind the H3 launch', () => {
+test('the three priority Seedance 2.5 comparisons remain promoted behind the trend and H3 launches', () => {
   const compareConfig = JSON.parse(readFileSync('frontend/config/compare-config.json', 'utf8')) as {
     trophyComparisons: string[];
     bestForPages: Array<{ slug: string; relatedComparisons: string[] }>;
@@ -132,7 +132,7 @@ test('the three priority Seedance 2.5 comparisons remain promoted behind the H3 
     JSON.stringify(compareConfig).match(/[a-z0-9-]*seedance-2-5[a-z0-9-]*-vs-[a-z0-9-]+|[a-z0-9-]+-vs-[a-z0-9-]*seedance-2-5[a-z0-9-]*/g) ?? [],
   );
 
-  assert.deepEqual(compareConfig.trophyComparisons.slice(3, 6), priorityComparisonSlugs);
+  assert.deepEqual(compareConfig.trophyComparisons.slice(5, 8), priorityComparisonSlugs);
   for (const slug of priorityComparisonSlugs) assert.ok(serializedSeedance25Slugs.has(slug));
   assert.ok(serializedSeedance25Slugs.has('minimax-h3-vs-seedance-2-5'));
   assert.deepEqual(compareConfig.relatedComparisons['seedance-2-0-vs-seedance-2-5'], [
@@ -146,6 +146,8 @@ test('the three priority Seedance 2.5 comparisons remain promoted behind the H3 
     'seedance-2-0-vs-seedance-2-5',
   ]);
   assert.deepEqual(compareConfig.relatedComparisons['seedance-2-5-vs-veo-3-1'], [
+    'seedance-2-5-vs-wan-3',
+    'minimax-h3-max-vs-seedance-2-5',
     'seedance-2-0-vs-veo-3-1',
     'kling-3-pro-vs-veo-3-1',
     'seedance-2-0-vs-seedance-2-5',

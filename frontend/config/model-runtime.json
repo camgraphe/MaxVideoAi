@@ -1489,10 +1489,12 @@
           "published": true,
           "indexed": true,
           "suggestedOpponentIds": [
-            "minimax-h3"
+            "minimax-h3",
+            "seedance-2-5"
           ],
           "publishedPairIds": [
-            "minimax-h3"
+            "minimax-h3",
+            "seedance-2-5"
           ]
         },
         "app": {
@@ -2173,6 +2175,8 @@
           "published": true,
           "indexed": true,
           "suggestedOpponentIds": [
+            "wan-3",
+            "minimax-h3-max",
             "seedance-2-0",
             "kling-3-pro",
             "veo-3-1"
@@ -2181,7 +2185,9 @@
             "seedance-2-0",
             "kling-3-pro",
             "minimax-h3",
-            "veo-3-1"
+            "minimax-h3-max",
+            "veo-3-1",
+            "wan-3"
           ]
         },
         "app": {
@@ -2833,10 +2839,12 @@
           "published": true,
           "indexed": true,
           "suggestedOpponentIds": [
+            "seedance-2-5",
             "wan-3-prime",
             "wan-2-6"
           ],
           "publishedPairIds": [
+            "seedance-2-5",
             "wan-2-6",
             "wan-3-prime"
           ]

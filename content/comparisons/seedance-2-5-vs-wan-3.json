@@ -1,0 +1,51 @@
+{
+  "slug": "seedance-2-5-vs-wan-3",
+  "en": {
+    "meta": {
+      "title": "Seedance 2.5 vs Wan 3: Scores, Multi-Shot & Value",
+      "description": "Compare Seedance 2.5 and Wan 3 scores, multi-shot control, audio, quality, duration and production value.",
+      "titleBranding": "none"
+    },
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Choose Seedance 2.5 for the strongest overall finish, motion and sequence consistency. Choose Wan 3 for a value-led native multi-shot workflow with flexible references and clips up to 30 seconds."
+    },
+    "primaryLinksTitle": "Explore the models",
+    "primaryLinks": [
+      { "href": "/models/seedance-2-5", "label": "Seedance 2.5" },
+      { "href": "/models/wan-3", "label": "Wan 3" }
+    ]
+  },
+  "fr": {
+    "meta": {
+      "title": "Seedance 2.5 vs Wan 3 : notes, multi-plan et valeur",
+      "description": "Comparez Seedance 2.5 et Wan 3 sur les notes, le multi-plan, l'audio, la qualité, la durée et la valeur en production.",
+      "titleBranding": "none"
+    },
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Choisissez Seedance 2.5 pour la meilleure finition globale, le mouvement et la cohérence des séquences. Choisissez Wan 3 pour un workflow multi-plan natif axé sur la valeur, des références flexibles et des clips jusqu'à 30 secondes."
+    },
+    "primaryLinksTitle": "Explorer les modèles",
+    "primaryLinks": [
+      { "href": "/fr/modeles/seedance-2-5", "label": "Seedance 2.5" },
+      { "href": "/fr/modeles/wan-3", "label": "Wan 3" }
+    ]
+  },
+  "es": {
+    "meta": {
+      "title": "Seedance 2.5 vs Wan 3: notas, multiescena y valor",
+      "description": "Compara Seedance 2.5 y Wan 3 en notas, control multiescena, audio, calidad, duración y valor de producción.",
+      "titleBranding": "none"
+    },
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Elige Seedance 2.5 para el mejor acabado general, movimiento y consistencia de secuencias. Elige Wan 3 para un flujo multiescena nativo orientado al valor, referencias flexibles y clips de hasta 30 segundos."
+    },
+    "primaryLinksTitle": "Explorar los modelos",
+    "primaryLinks": [
+      { "href": "/es/modelos/seedance-2-5", "label": "Seedance 2.5" },
+      { "href": "/es/modelos/wan-3", "label": "Wan 3" }
+    ]
+  }
+}

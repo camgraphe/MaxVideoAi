@@ -30,7 +30,7 @@ const PUBLISHED_P1_MODELS = {
   'minimax-h3-max': {
     family: 'hailuo',
     label: 'MiniMax H3 Max',
-    opponents: ['minimax-h3'],
+    opponents: ['minimax-h3', 'seedance-2-5'],
   },
 } as const;
 

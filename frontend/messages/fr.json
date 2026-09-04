@@ -393,7 +393,7 @@
           "À l’usage · sans abonnement"
         ],
         "title": "Arrêtez de deviner quel modèle vidéo IA utiliser.",
-        "subtitle": "Comparez Seedance, Kling, Veo, LTX et d’autres modèles, prévisualisez de vrais résultats, voyez le prix avant génération, puis choisissez le bon modèle vidéo IA pour chaque plan.",
+        "subtitle": "Comparez MiniMax H3 Max, Seedance 2.5, Wan 3, Kling 3 et LTX 2.5, prévisualisez de vrais résultats, voyez le prix avant génération, puis choisissez le bon modèle vidéo IA pour chaque plan.",
         "primaryCta": "Générer",
         "secondaryCta": "Voir les exemples",
         "examplesCta": "Comparer les modèles",
@@ -435,10 +435,63 @@
           "engineLabel": "2. Comparer les modèles recommandés",
           "engineRecommendations": [
             {
-              "engineId": "seedance-2-0",
-              "name": "Seedance 2.0",
+              "engineId": "minimax-h3-max",
+              "name": "MiniMax H3 Max",
+              "provider": "MiniMax",
+              "bestFor": "Motion produit rapide",
+              "fallbackPrice": "Prix actualisé",
+              "selected": true,
+              "scores": [
+                {
+                  "label": "Motion",
+                  "value": 91
+                },
+                {
+                  "label": "Réalisme",
+                  "value": 88
+                },
+                {
+                  "label": "Vitesse",
+                  "value": 92
+                }
+              ],
+              "tags": [
+                "Rapide",
+                "Produit",
+                "7 s"
+              ]
+            },
+            {
+              "engineId": "seedance-2-5",
+              "name": "Seedance 2.5",
               "provider": "ByteDance",
-              "bestFor": "Réalisme cinéma",
+              "bestFor": "Multi-plan cinématique",
+              "fallbackPrice": "Prix actualisé",
+              "scores": [
+                {
+                  "label": "Motion",
+                  "value": 94
+                },
+                {
+                  "label": "Réalisme",
+                  "value": 92
+                },
+                {
+                  "label": "Vitesse",
+                  "value": 76
+                }
+              ],
+              "tags": [
+                "Multi-plan",
+                "Référence",
+                "Cinéma"
+              ]
+            },
+            {
+              "engineId": "wan-3",
+              "name": "Wan 3",
+              "provider": "Alibaba",
+              "bestFor": "Mouvement caméra contrôlé",
               "fallbackPrice": "Prix actualisé",
               "scores": [
                 {
@@ -447,43 +500,17 @@
                 },
                 {
                   "label": "Réalisme",
-                  "value": 90
-                },
-                {
-                  "label": "Vitesse",
-                  "value": 78
-                }
-              ],
-              "tags": [
-                "Audio",
-                "Référence",
-                "Poli"
-              ]
-            },
-            {
-              "engineId": "veo-3-1-lite",
-              "name": "Veo 3.1 Lite",
-              "provider": "Google",
-              "bestFor": "Motion réaliste",
-              "fallbackPrice": "Prix actualisé",
-              "scores": [
-                {
-                  "label": "Motion",
                   "value": 89
                 },
                 {
-                  "label": "Réalisme",
-                  "value": 94
-                },
-                {
                   "label": "Vitesse",
-                  "value": 70
+                  "value": 83
                 }
               ],
               "tags": [
-                "1080p",
-                "Audio",
-                "Premium"
+                "Caméra",
+                "Réalisme",
+                "Image"
               ]
             },
             {
@@ -492,7 +519,6 @@
               "provider": "Kuaishou",
               "bestFor": "Mouvement caméra",
               "fallbackPrice": "Prix actualisé",
-              "selected": true,
               "scores": [
                 {
                   "label": "Motion",
@@ -514,55 +540,29 @@
               ]
             },
             {
-              "engineId": "ltx-2-3-pro",
-              "name": "LTX 2.3 Pro",
+              "engineId": "ltx-2-5-pro",
+              "name": "LTX 2.5 Pro",
               "provider": "Lightricks",
-              "bestFor": "Audio et retakes",
+              "bestFor": "Animation d’image rapide",
               "fallbackPrice": "Prix actualisé",
               "scores": [
                 {
                   "label": "Motion",
+                  "value": 88
+                },
+                {
+                  "label": "Réalisme",
                   "value": 84
                 },
                 {
-                  "label": "Réalisme",
-                  "value": 80
-                },
-                {
                   "label": "Vitesse",
-                  "value": 78
+                  "value": 87
                 }
               ],
               "tags": [
-                "Audio",
-                "Retake",
-                "Extend"
-              ]
-            },
-            {
-              "engineId": "happy-horse-1-1",
-              "name": "Happy Horse 1.1",
-              "provider": "Alibaba",
-              "bestFor": "Audio + références",
-              "fallbackPrice": "Prix actualisé",
-              "scores": [
-                {
-                  "label": "Motion",
-                  "value": 76
-                },
-                {
-                  "label": "Réalisme",
-                  "value": 74
-                },
-                {
-                  "label": "Vitesse",
-                  "value": 72
-                }
-              ],
-              "tags": [
-                "Lip-sync",
-                "Audio",
-                "Références"
+                "Rapide",
+                "Image",
+                "Contrôle"
               ]
             }
           ],

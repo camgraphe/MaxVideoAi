@@ -45,6 +45,15 @@ const comparisonIndexation = JSON.parse(
 const engineCatalog = JSON.parse(
   readFileSync('frontend/config/engine-catalog.json', 'utf8'),
 ) as EngineCatalogEntry[];
+const ENGLISH_FIRST_TRENDING_COMPARISONS = [
+  'seedance-2-5-vs-wan-3',
+  'minimax-h3-max-vs-seedance-2-5',
+] as const;
+const INITIAL_LOW_SIGNAL_WAVE_SIZE = 30;
+const SAFE_GSC_CLEANUP_SIZE = {
+  fr: 54,
+  es: 28,
+} as const;
 const requireFromSitemapDependency = createRequire(
   new URL('../frontend/server/video-seo.ts', import.meta.url),
 );
@@ -71,19 +80,27 @@ test('comparison indexation fails closed for an unsupported locale', () => {
   assert.equal(isComparisonIndexable('de' as never, 'ltx-2-vs-veo-3-1-lite'), false);
 });
 
-test('wave 1 configuration contains exactly 30 unique candidates per localized market', () => {
+test('indexation configuration preserves the initial wave, adds the safe GSC cleanup, and keeps trend launches English-first', () => {
   assert.equal(comparisonIndexation.schemaVersion, 1);
-  assert.equal(comparisonIndexation.wave, 'localized-low-signal-2026-07-11');
-  assert.equal(comparisonIndexation.evidenceDate, '2026-07-08');
+  assert.equal(comparisonIndexation.wave, 'trend-comparisons-english-first-2026-09-04');
+  assert.equal(comparisonIndexation.evidenceDate, '2026-09-04');
   assert.equal(Object.hasOwn(comparisonIndexation.noindexByLocale, 'en'), false);
 
   const frenchSlugs = comparisonIndexation.noindexByLocale.fr;
   const spanishSlugs = comparisonIndexation.noindexByLocale.es;
-  assert.equal(frenchSlugs.length, 30);
-  assert.equal(spanishSlugs.length, 30);
-  assert.equal(frenchSlugs.length + spanishSlugs.length, 60);
+  assert.equal(
+    frenchSlugs.length,
+    INITIAL_LOW_SIGNAL_WAVE_SIZE + SAFE_GSC_CLEANUP_SIZE.fr + ENGLISH_FIRST_TRENDING_COMPARISONS.length,
+  );
+  assert.equal(
+    spanishSlugs.length,
+    INITIAL_LOW_SIGNAL_WAVE_SIZE + SAFE_GSC_CLEANUP_SIZE.es + ENGLISH_FIRST_TRENDING_COMPARISONS.length,
+  );
+  assert.equal(frenchSlugs.length + spanishSlugs.length, 146);
   assert.equal(new Set(frenchSlugs).size, frenchSlugs.length);
   assert.equal(new Set(spanishSlugs).size, spanishSlugs.length);
+  assert.deepEqual(frenchSlugs.slice(-2), ENGLISH_FIRST_TRENDING_COMPARISONS);
+  assert.deepEqual(spanishSlugs.slice(-2), ENGLISH_FIRST_TRENDING_COMPARISONS);
 });
 
 test('wave 1 candidates reproduce the approved low-signal evidence selection', () => {
@@ -97,9 +114,9 @@ test('wave 1 candidates reproduce the approved low-signal evidence selection', (
     const expectedSlugs = document.rows
       .filter((row) => row.locale === locale && row.classification === 'noindex_candidate')
       .sort(candidateComparator)
-      .slice(0, 30)
+      .slice(0, INITIAL_LOW_SIGNAL_WAVE_SIZE)
       .map((row) => row.slug);
-    const selectedSlugs = comparisonIndexation.noindexByLocale[locale];
+    const selectedSlugs = comparisonIndexation.noindexByLocale[locale].slice(0, INITIAL_LOW_SIGNAL_WAVE_SIZE);
 
     assert.deepEqual(selectedSlugs, expectedSlugs);
 
@@ -124,6 +141,28 @@ test('wave 1 candidates reproduce the approved low-signal evidence selection', (
   }
 });
 
+test('the safe GSC cleanup contains only zero-signal noindex candidates', () => {
+  const { document } = generateComparisonIndexationArtifacts();
+
+  for (const locale of ['fr', 'es'] as const) {
+    const cleanupSlugs = comparisonIndexation.noindexByLocale[locale].slice(
+      INITIAL_LOW_SIGNAL_WAVE_SIZE,
+      -ENGLISH_FIRST_TRENDING_COMPARISONS.length,
+    );
+    assert.equal(cleanupSlugs.length, SAFE_GSC_CLEANUP_SIZE[locale]);
+
+    for (const slug of cleanupSlugs) {
+      const row = document.rows.find((candidate) => candidate.locale === locale && candidate.slug === slug);
+      assert.ok(row, `${locale}:${slug} should exist in the generated evidence matrix`);
+      assert.equal(row.classification, 'noindex_candidate');
+      assert.equal(row.clicks, 0);
+      assert.equal(row.impressions, 0);
+      assert.equal(row.hasLocalizedOverride, false);
+      assert.deepEqual(row.strategicSignals, []);
+    }
+  }
+});
+
 test('wave 1 keeps English and every comparison carrying a positive safety signal indexable', async () => {
   const policy = await import('../frontend/lib/compare-hub/indexation.ts');
   const { document } = generateComparisonIndexationArtifacts();
@@ -144,6 +183,15 @@ test('wave 1 keeps English and every comparison carrying a positive safety signa
   );
   assert.ok(protectedRows.length > 0);
   for (const row of protectedRows) {
+    if (
+      row.locale !== 'en' &&
+      ENGLISH_FIRST_TRENDING_COMPARISONS.includes(
+        row.slug as (typeof ENGLISH_FIRST_TRENDING_COMPARISONS)[number],
+      )
+    ) {
+      assert.equal(policy.isComparisonIndexable(row.locale, row.slug), false);
+      continue;
+    }
     assert.equal(
       policy.isComparisonIndexable(row.locale, row.slug),
       true,
@@ -174,9 +222,14 @@ test('wave 1 sitemap contains exactly the indexable localized comparison URLs', 
     }),
   );
 
-  assert.equal(publishedSlugs.length, 310);
+  assert.equal(publishedSlugs.length, 312);
   assert.equal(comparisonEntries.length, publishedSlugs.length);
-  assert.equal(comparisonUrlKeys.size, 310 * 3 - 60);
+  assert.equal(
+    comparisonUrlKeys.size,
+    publishedSlugs.length * 3 -
+      comparisonIndexation.noindexByLocale.fr.length -
+      comparisonIndexation.noindexByLocale.es.length,
+  );
 
   for (const slug of publishedSlugs) {
     assert.ok(
@@ -331,8 +384,9 @@ test('wave 1 filters every comparison hub discovery set for the active locale', 
 
   for (const locale of ['fr', 'es'] as const) {
     const excluded = comparisonIndexation.noindexByLocale[locale];
+    const historicalLowSignalExclusions = excluded.slice(0, 30);
     assert.ok(
-      excluded.every((slug) => unfilteredSets.directory.includes(slug)),
+      historicalLowSignalExclusions.every((slug) => unfilteredSets.directory.includes(slug)),
       `${locale} exclusions should remain discoverable on the unchanged English directory`,
     );
 

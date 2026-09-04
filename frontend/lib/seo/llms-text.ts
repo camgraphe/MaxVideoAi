@@ -54,8 +54,15 @@ export const P1_PRIMARY_COMPARISONS = [
   { slug: 'gemini-omni-flash-vs-kling-3-turbo-pro', label: 'Gemini Omni Flash 1.1 vs Kling 3 Turbo Pro' },
 ] as const;
 
+export const TREND_PRIMARY_COMPARISONS = [
+  { slug: 'seedance-2-5-vs-wan-3', label: 'Seedance 2.5 vs Wan 3' },
+  { slug: 'minimax-h3-max-vs-seedance-2-5', label: 'MiniMax H3 Max vs Seedance 2.5' },
+] as const;
+
 const LAUNCH_LOCALIZED_SCOREBOARDS = new Set<string>(
-  [...P0_PRIMARY_COMPARISONS, ...P1_PRIMARY_COMPARISONS].map(({ slug }) => slug),
+  [...P0_PRIMARY_COMPARISONS, ...P1_PRIMARY_COMPARISONS, ...TREND_PRIMARY_COMPARISONS].map(
+    ({ slug }) => slug,
+  ),
 );
 
 export function buildLlmsModelDiscoveryProjection(
@@ -108,7 +115,15 @@ export function buildLlmsModelDiscoveryProjection(
     }
   }
   const primaryComparisons = Array.from(
-    new Map((options.primaryComparisons ?? [...P0_PRIMARY_COMPARISONS, ...P1_PRIMARY_COMPARISONS]).map((pair) => [pair.slug, pair])).values(),
+    new Map(
+      (
+        options.primaryComparisons ?? [
+          ...P0_PRIMARY_COMPARISONS,
+          ...P1_PRIMARY_COMPARISONS,
+          ...TREND_PRIMARY_COMPARISONS,
+        ]
+      ).map((pair) => [pair.slug, pair]),
+    ).values(),
   )
     .filter(
       (pair) =>

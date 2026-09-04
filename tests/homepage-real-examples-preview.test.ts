@@ -159,24 +159,27 @@ test('homepage hero uses only curated media even when programmed slots exist', (
   const homeHeroSource = source.slice(source.indexOf('export function HomeHero'), source.indexOf('export function ShotTypeEngineSelector'));
 
   assert.match(heroSource, /KLING_3_PRO_HERO_RENDER/);
-  assert.match(heroSource, /01245e62-6bb2-4d5d-89c6-c60923a004ad\.jpg/);
-  assert.match(heroSource, /7b1f1c7b-f7f0-473e-9610-82723604b690\.mp4/);
-  assert.match(heroSource, /9d6811c9-226c-44bd-8b56-b3aa74039d59\.mp4/);
+  assert.match(heroSource, /showcase-minimax-h3-max-7s\.webp/);
+  assert.match(heroSource, /b0a6f7e2-69df-4cdd-9ce4-423100c75e7d\.mp4/);
+  assert.match(heroSource, /6ab56b7c-bece-4c72-9372-c910bafdc622\.mp4/);
+  assert.match(heroSource, /ca0adbafdacf6b5c2051314e3ebf4296f7ed8f7a3df1583ed033715ce2e4b9dd\.mp4/);
+  assert.match(heroSource, /0e6eb160-5d11-42ec-8551-c436b0908c60\.mp4/);
+  assert.match(heroSource, /2506829a4f4f3d7e5d2bd864a701fc6cc2fb7c53182f7a7f5ca10cc580c70aa8\.mp4/);
   assert.match(homeHeroSource, /applyCuratedHeroMedia\(item\)/);
   assert.match(source, /HERO_ENGINE_MEDIA\[engineId\]/);
   assert.match(source, /videoSrc:\s*media\.videoSrc \?\? null/);
 });
 
-test('homepage Veo 3.1 Lite hero renders its real Romantic clip and matching overlays', () => {
+test('homepage hero opens on the low-cost 7-second MiniMax H3 Max render and keeps current model media aligned', () => {
   (globalThis as typeof globalThis & { React: typeof React }).React = React;
   const cases = [
-    ['en', enMessages, 'Text-to-video'],
-    ['fr', frMessages, 'Texte-vers-vidéo'],
-    ['es', esMessages, 'Texto a video'],
+    ['en', enMessages],
+    ['fr', frMessages],
+    ['es', esMessages],
   ] as const;
-  let englishItem: HeroVideoShowcaseItem | null = null;
+  let englishItems: HeroVideoShowcaseItem[] | null = null;
 
-  for (const [locale, messages, expectedModeLabel] of cases) {
+  for (const [locale, messages] of cases) {
     const copy = buildHeroContent(locale, messages.home.redesign as RedesignContent);
     const hero = HomeHero({
       copy,
@@ -197,36 +200,84 @@ test('homepage Veo 3.1 Lite hero renders its real Romantic clip and matching ove
     }
 
     assert.ok(showcaseItems, `HomeHero should compose the ${locale} video showcase`);
-    const veoLiteItem = showcaseItems.find((item) => item.engineId === 'veo-3-1-lite') ?? null;
-    assert.ok(veoLiteItem, `HomeHero should include Veo 3.1 Lite in ${locale}`);
-    assert.equal(veoLiteItem.mediaInfo, `${expectedModeLabel} · 8s · 16:9`);
-    if (locale === 'en') englishItem = veoLiteItem;
+    assert.deepEqual(
+      showcaseItems.map((item) => item.engineId),
+      ['minimax-h3-max', 'seedance-2-5', 'wan-3', 'kling-3-pro', 'ltx-2-5-pro'],
+      `HomeHero should keep the approved current-model order in ${locale}`,
+    );
+    if (locale === 'en') englishItems = showcaseItems;
   }
 
-  assert.ok(englishItem);
+  assert.ok(englishItems);
   assert.deepEqual(
-    {
-      chips: englishItem.chips,
-      estimateMeta: englishItem.estimateMeta,
-      estimateValue: englishItem.estimateValue,
-      imageAlt: englishItem.imageAlt,
-      posterSrc: englishItem.posterSrc,
-      videoSrc: englishItem.videoSrc,
-      duration: englishItem.duration,
-      resolution: englishItem.resolution,
-    },
-    {
-      chips: ['Cinematic', 'Audio'],
-      estimateMeta: '8s generation',
-      estimateValue: '$0.52',
-      imageAlt: 'Veo 3.1 Lite romantic train-station reunion generated with MaxVideoAI.',
-      posterSrc:
-        'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/8729a3ad-aa8e-470d-85e5-558a5f897893.jpg',
-      videoSrc:
-        'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/4e4954fc-513a-4345-945c-41adba7ec26a.mp4',
-      duration: '0:08',
-      resolution: '16:9',
-    },
+    englishItems.map((item) => ({
+      engineId: item.engineId,
+      estimateMeta: item.estimateMeta,
+      estimateValue: item.estimateValue,
+      mediaInfo: item.mediaInfo,
+      modelHref: item.modelHref,
+      posterSrc: item.posterSrc,
+      videoSrc: item.videoSrc,
+      duration: item.duration,
+      resolution: item.resolution,
+    })),
+    [
+      {
+        engineId: 'minimax-h3-max',
+        estimateMeta: '7s generation',
+        estimateValue: '$0.69',
+        mediaInfo: 'Text-to-video · 7s · 16:9',
+        modelHref: { pathname: '/models/[slug]', params: { slug: 'minimax-h3-max' } },
+        posterSrc: '/hero/showcase-minimax-h3-max-7s.webp',
+        videoSrc: 'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/b0a6f7e2-69df-4cdd-9ce4-423100c75e7d.mp4',
+        duration: '0:07',
+        resolution: '16:9',
+      },
+      {
+        engineId: 'seedance-2-5',
+        estimateMeta: '15s generation',
+        estimateValue: '$2.19',
+        mediaInfo: 'Reference-to-video · 15s · 16:9',
+        modelHref: { pathname: '/models/[slug]', params: { slug: 'seedance-2-5' } },
+        posterSrc: 'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/93d61e58-260d-4fa7-87f7-24893333ded1.jpg',
+        videoSrc: 'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/6ab56b7c-bece-4c72-9372-c910bafdc622.mp4',
+        duration: '0:15',
+        resolution: '16:9',
+      },
+      {
+        engineId: 'wan-3',
+        estimateMeta: '5s generation',
+        estimateValue: '$0.50',
+        mediaInfo: 'Image-to-video · 5s · 16:9',
+        modelHref: { pathname: '/models/[slug]', params: { slug: 'wan-3' } },
+        posterSrc: 'https://media.maxvideoai.com/user-asset-thumbs/by-content/c780259ed79d025b4ac74ccc513f18bf/74526116dfc966ce5f871d0ebc7f94967519628291cd25ca2f2f383d623f353c.jpeg',
+        videoSrc: 'https://media.maxvideoai.com/media-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/ca0adbafdacf6b5c2051314e3ebf4296f7ed8f7a3df1583ed033715ce2e4b9dd.mp4',
+        duration: '0:05',
+        resolution: '16:9',
+      },
+      {
+        engineId: 'kling-3-pro',
+        estimateMeta: '5s generation',
+        estimateValue: '$0.73',
+        mediaInfo: 'Text-to-video · 5s · 16:9',
+        modelHref: { pathname: '/models/[slug]', params: { slug: 'kling-3-pro' } },
+        posterSrc: 'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/2ad99872-35db-4ff8-8805-99cc23c25e5e.jpg',
+        videoSrc: 'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/0e6eb160-5d11-42ec-8551-c436b0908c60.mp4',
+        duration: '0:05',
+        resolution: '16:9',
+      },
+      {
+        engineId: 'ltx-2-5-pro',
+        estimateMeta: '6s generation',
+        estimateValue: '$0.72',
+        mediaInfo: 'Image-to-video · 6s · 16:9',
+        modelHref: { pathname: '/models/[slug]', params: { slug: 'ltx-2-5-pro' } },
+        posterSrc: 'https://media.maxvideoai.com/user-asset-thumbs/by-content/c780259ed79d025b4ac74ccc513f18bf/eca62625821feb6bd76c6e023a43988bc8ea18508c783bc6adf4973f172b8d75.jpeg',
+        videoSrc: 'https://media.maxvideoai.com/media-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/2506829a4f4f3d7e5d2bd864a701fc6cc2fb7c53182f7a7f5ca10cc580c70aa8.mp4',
+        duration: '0:06',
+        resolution: '16:9',
+      },
+    ],
   );
 });
 

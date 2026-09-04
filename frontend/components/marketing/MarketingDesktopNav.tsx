@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import { ChevronDown } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { UIIcon } from '@/components/ui/UIIcon';
+import { MarketingNavEntryContent } from '@/components/marketing/MarketingNavEntryContent';
 import { MARKETING_NAV_DROPDOWNS } from '@/config/navigation';
 import type { MarketingTopNavLink } from '@/config/navigation';
 
@@ -116,23 +117,27 @@ export function MarketingDesktopNav({
                     >
                       {allLabel}
                     </Link>
-                    {dropdown.items.map((entry) => (
-                      <Link
-                        key={entry.key}
-                        href={entry.href}
-                        prefetch={false}
-                        className="rounded-input px-3 py-2 text-sm text-text-secondary transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        role="menuitem"
-                        onClick={() => onCloseDesktopDropdown(200)}
-                      >
-                        <span>{t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label)}</span>
-                        {entry.badge ? (
-                          <span className="ml-2 inline-flex rounded-full bg-brand px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-micro text-white">
-                            {t(`nav.badges.${entry.badge}`, entry.badge)}
-                          </span>
-                        ) : null}
-                      </Link>
-                    ))}
+                    {dropdown.items.map((entry) => {
+                      const entryLabel = t<string>(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label) ?? entry.label;
+                      const badgeLabel = entry.badge ? t<string>(`nav.badges.${entry.badge}`, entry.badge) : undefined;
+                      return (
+                        <Link
+                          key={entry.key}
+                          href={entry.href}
+                          prefetch={false}
+                          className="rounded-input px-3 py-2 text-sm text-text-secondary transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          role="menuitem"
+                          onClick={() => onCloseDesktopDropdown(200)}
+                        >
+                          <MarketingNavEntryContent
+                            entry={entry}
+                            label={entryLabel}
+                            badgeLabel={badgeLabel}
+                            showModelLogo={item.key === 'models'}
+                          />
+                        </Link>
+                      );
+                    })}
                   </nav>
                   {dropdown.sections?.map((section) => {
                     const sectionLabel = section.titleKey

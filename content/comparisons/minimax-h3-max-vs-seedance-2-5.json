@@ -1,0 +1,51 @@
+{
+  "slug": "minimax-h3-max-vs-seedance-2-5",
+  "en": {
+    "meta": {
+      "title": "MiniMax H3 Max vs Seedance 2.5: Scores & Best Uses",
+      "description": "Compare MiniMax H3 Max and Seedance 2.5 scores, speed, quality, audio, references and production value.",
+      "titleBranding": "none"
+    },
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Choose Seedance 2.5 for higher overall quality, motion and multi-shot consistency at up to 1080p. Choose MiniMax H3 Max for faster 768P production and stronger value when speed and cost matter most."
+    },
+    "primaryLinksTitle": "Explore the models",
+    "primaryLinks": [
+      { "href": "/models/minimax-h3-max", "label": "MiniMax H3 Max" },
+      { "href": "/models/seedance-2-5", "label": "Seedance 2.5" }
+    ]
+  },
+  "fr": {
+    "meta": {
+      "title": "MiniMax H3 Max vs Seedance 2.5 : notes et usages",
+      "description": "Comparez MiniMax H3 Max et Seedance 2.5 sur les notes, la vitesse, la qualité, l'audio, les références et la valeur.",
+      "titleBranding": "none"
+    },
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Choisissez Seedance 2.5 pour une qualité globale, un mouvement et une cohérence multi-plan supérieurs jusqu'en 1080p. Choisissez MiniMax H3 Max pour produire plus vite en 768P avec une meilleure valeur lorsque la vitesse et le coût priment."
+    },
+    "primaryLinksTitle": "Explorer les modèles",
+    "primaryLinks": [
+      { "href": "/fr/modeles/minimax-h3-max", "label": "MiniMax H3 Max" },
+      { "href": "/fr/modeles/seedance-2-5", "label": "Seedance 2.5" }
+    ]
+  },
+  "es": {
+    "meta": {
+      "title": "MiniMax H3 Max vs Seedance 2.5: notas y usos",
+      "description": "Compara MiniMax H3 Max y Seedance 2.5 en notas, velocidad, calidad, audio, referencias y valor de producción.",
+      "titleBranding": "none"
+    },
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Elige Seedance 2.5 para mayor calidad general, movimiento y consistencia multiescena hasta 1080p. Elige MiniMax H3 Max para producir más rápido en 768P con mejor valor cuando la velocidad y el coste son prioritarios."
+    },
+    "primaryLinksTitle": "Explorar los modelos",
+    "primaryLinks": [
+      { "href": "/es/modelos/minimax-h3-max", "label": "MiniMax H3 Max" },
+      { "href": "/es/modelos/seedance-2-5", "label": "Seedance 2.5" }
+    ]
+  }
+}

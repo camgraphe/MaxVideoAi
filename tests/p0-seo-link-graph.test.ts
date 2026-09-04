@@ -143,7 +143,7 @@ test('the real published state exposes every P0 across current and machine disco
     );
   }
 
-  assert.equal(comparisons.getHubComparisonSlugsForSitemap().filter((slug) => P0_IDS.some((id) => slug.includes(id))).length, 8);
+  assert.equal(comparisons.getHubComparisonSlugsForSitemap().filter((slug) => P0_IDS.some((id) => slug.includes(id))).length, 9);
 });
 
 test('published P0 comparison metadata is index,follow', () => {

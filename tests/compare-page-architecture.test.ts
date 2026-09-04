@@ -6,7 +6,10 @@ import {
   CATALOG_BY_SLUG,
   ENGINE_OPTIONS,
 } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-config.ts';
-import { resolvePromptInheritedShowdowns } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-showdowns.ts';
+import {
+  buildCompareShowdownSlots,
+  resolvePromptInheritedShowdowns,
+} from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-showdowns.ts';
 import * as compareRouting from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-routing.ts';
 import {
   getCanonicalCompareSlug,
@@ -260,6 +263,11 @@ const p1ScoreboardOnlyComparisons = [
   'gemini-omni-flash-vs-kling-3-turbo-pro',
 ];
 
+const trendingScoreboardOnlyComparisons = [
+  'seedance-2-5-vs-wan-3',
+  'minimax-h3-max-vs-seedance-2-5',
+];
+
 const canonicalMiniCompareOverrideSlugs = [
   'dreamina-seedance-2-0-mini-vs-seedance-2-0',
   'dreamina-seedance-2-0-mini-vs-seedance-2-0-fast',
@@ -404,6 +412,7 @@ test('Seedance family comparisons use video showdowns while Mini and Gemini page
     ...geminiScoreboardOnlyComparisons,
     ...p0ScoreboardOnlyComparisons,
     ...p1ScoreboardOnlyComparisons,
+    ...trendingScoreboardOnlyComparisons,
   ]);
   assert.match(configSource, /export const SCOREBOARD_ONLY_COMPARISONS/);
   assert.match(configSource, /compareConfig as \{ scoreboardOnlyComparisons\?: string\[\] \}/);
@@ -419,6 +428,9 @@ test('Seedance family comparisons use video showdowns while Mini and Gemini page
     assert.equal(compareConfig.showdowns?.[slug], undefined, `${slug} must stay scoreboard-only`);
   });
   p1ScoreboardOnlyComparisons.forEach((slug) => {
+    assert.equal(compareConfig.showdowns?.[slug], undefined, `${slug} must stay scoreboard-only`);
+  });
+  trendingScoreboardOnlyComparisons.forEach((slug) => {
     assert.equal(compareConfig.showdowns?.[slug], undefined, `${slug} must stay scoreboard-only`);
   });
 
@@ -531,6 +543,31 @@ test('scoreboard-only comparisons skip video showdown lookup before database req
   assert.ok(returnIndex < curatedIndex, 'scoreboard-only return should happen before curated showdown hydration');
   assert.ok(returnIndex < publicByIdsIndex, 'scoreboard-only return should happen before override video lookups');
   assert.ok(returnIndex < latestVideoIndex, 'scoreboard-only return should happen before prompt/engine video lookups');
+});
+
+test('published comparison pages never receive incomplete side-by-side showdown slots', async () => {
+  const left = CATALOG_BY_SLUG.get('minimax-h3');
+  const right = CATALOG_BY_SLUG.get('seedance-2-5');
+
+  assert.ok(left);
+  assert.ok(right);
+
+  const slots = await buildCompareShowdownSlots({
+    activeLocale: 'en',
+    canonicalSlug: 'minimax-h3-vs-seedance-2-5',
+    left,
+    pairHasKling3Native4k: false,
+    pairHasNativeAudio: true,
+    right,
+    shouldSwapDisplayOrder: false,
+  });
+
+  assert.deepEqual(slots, []);
+  assert.match(
+    showdownsSource,
+    /showdownSlots\.filter\(\(slot\) => hasMedia\(slot\.left\) && hasMedia\(slot\.right\)\)/,
+  );
+  assert.match(showdownSectionSource, /if \(!showdownSlots\.length\) return null;/);
 });
 
 test('comparison detail page delegates copy, data, schema, and media responsibilities', () => {

@@ -290,7 +290,7 @@
           "Pay-as-you-go · no subscription"
         ],
         "title": "Stop guessing which AI video model to use.",
-        "subtitle": "Compare Seedance, Kling, Veo, LTX and more, preview real outputs, see the cost before you generate, and choose the right AI video engine for every shot.",
+        "subtitle": "Compare MiniMax H3 Max, Seedance 2.5, Wan 3, Kling 3 and LTX 2.5, preview real outputs, see the cost before you generate, and choose the right AI video engine for every shot.",
         "primaryCta": "Generate",
         "secondaryCta": "See examples",
         "examplesCta": "Compare engines",
@@ -332,10 +332,63 @@
           "engineLabel": "2. Compare recommended engines",
           "engineRecommendations": [
             {
-              "engineId": "seedance-2-0",
-              "name": "Seedance 2.0",
+              "engineId": "minimax-h3-max",
+              "name": "MiniMax H3 Max",
+              "provider": "MiniMax",
+              "bestFor": "Fast product motion",
+              "fallbackPrice": "Live price",
+              "selected": true,
+              "scores": [
+                {
+                  "label": "Motion",
+                  "value": 91
+                },
+                {
+                  "label": "Realism",
+                  "value": 88
+                },
+                {
+                  "label": "Speed",
+                  "value": 92
+                }
+              ],
+              "tags": [
+                "Fast",
+                "Product",
+                "7s"
+              ]
+            },
+            {
+              "engineId": "seedance-2-5",
+              "name": "Seedance 2.5",
               "provider": "ByteDance",
-              "bestFor": "Cinematic realism",
+              "bestFor": "Cinematic multi-shot",
+              "fallbackPrice": "Live price",
+              "scores": [
+                {
+                  "label": "Motion",
+                  "value": 94
+                },
+                {
+                  "label": "Realism",
+                  "value": 92
+                },
+                {
+                  "label": "Speed",
+                  "value": 76
+                }
+              ],
+              "tags": [
+                "Multi-shot",
+                "Reference",
+                "Cinematic"
+              ]
+            },
+            {
+              "engineId": "wan-3",
+              "name": "Wan 3",
+              "provider": "Alibaba",
+              "bestFor": "Controlled camera motion",
               "fallbackPrice": "Live price",
               "scores": [
                 {
@@ -344,43 +397,17 @@
                 },
                 {
                   "label": "Realism",
-                  "value": 90
-                },
-                {
-                  "label": "Speed",
-                  "value": 78
-                }
-              ],
-              "tags": [
-                "Audio",
-                "Reference",
-                "Polished"
-              ]
-            },
-            {
-              "engineId": "veo-3-1-lite",
-              "name": "Veo 3.1 Lite",
-              "provider": "Google",
-              "bestFor": "Realistic motion",
-              "fallbackPrice": "Live price",
-              "scores": [
-                {
-                  "label": "Motion",
                   "value": 89
                 },
                 {
-                  "label": "Realism",
-                  "value": 94
-                },
-                {
                   "label": "Speed",
-                  "value": 70
+                  "value": 83
                 }
               ],
               "tags": [
-                "1080p",
-                "Audio",
-                "Premium"
+                "Camera",
+                "Realism",
+                "Image"
               ]
             },
             {
@@ -389,7 +416,6 @@
               "provider": "Kuaishou",
               "bestFor": "Camera movement",
               "fallbackPrice": "Live price",
-              "selected": true,
               "scores": [
                 {
                   "label": "Motion",
@@ -411,55 +437,29 @@
               ]
             },
             {
-              "engineId": "ltx-2-3-pro",
-              "name": "LTX 2.3 Pro",
+              "engineId": "ltx-2-5-pro",
+              "name": "LTX 2.5 Pro",
               "provider": "Lightricks",
-              "bestFor": "Audio and retakes",
+              "bestFor": "Fast image animation",
               "fallbackPrice": "Live price",
               "scores": [
                 {
                   "label": "Motion",
+                  "value": 88
+                },
+                {
+                  "label": "Realism",
                   "value": 84
                 },
                 {
-                  "label": "Realism",
-                  "value": 80
-                },
-                {
                   "label": "Speed",
-                  "value": 78
+                  "value": 87
                 }
               ],
               "tags": [
-                "Audio",
-                "Retake",
-                "Extend"
-              ]
-            },
-            {
-              "engineId": "happy-horse-1-1",
-              "name": "Happy Horse 1.1",
-              "provider": "Alibaba",
-              "bestFor": "Audio + references",
-              "fallbackPrice": "Live price",
-              "scores": [
-                {
-                  "label": "Motion",
-                  "value": 76
-                },
-                {
-                  "label": "Realism",
-                  "value": 74
-                },
-                {
-                  "label": "Speed",
-                  "value": 72
-                }
-              ],
-              "tags": [
-                "Lip-sync",
-                "Audio",
-                "References"
+                "Fast",
+                "Image",
+                "Control"
               ]
             }
           ],

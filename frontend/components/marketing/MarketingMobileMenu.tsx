@@ -6,6 +6,7 @@ import { Link } from '@/i18n/navigation';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
 import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
+import { MarketingNavEntryContent } from '@/components/marketing/MarketingNavEntryContent';
 import { MARKETING_NAV_DROPDOWNS } from '@/config/navigation';
 import type { MarketingTopNavLink } from '@/config/navigation';
 import { buildLoginHref } from '@/lib/auth-entry-href';
@@ -141,21 +142,25 @@ export function MarketingMobileMenu({
                     >
                       {allLabel}
                     </Link>
-                    {dropdown.items.map((entry) => (
-                      <Link
-                        key={entry.key}
-                        href={entry.href}
-                        onClick={onClose}
-                        className="rounded-input px-2 py-2 transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      >
-                        <span>{t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label)}</span>
-                        {entry.badge ? (
-                          <span className="ml-2 inline-flex rounded-full bg-brand px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-micro text-white">
-                            {t(`nav.badges.${entry.badge}`, entry.badge)}
-                          </span>
-                        ) : null}
-                      </Link>
-                    ))}
+                    {dropdown.items.map((entry) => {
+                      const entryLabel = t<string>(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label) ?? entry.label;
+                      const badgeLabel = entry.badge ? t<string>(`nav.badges.${entry.badge}`, entry.badge) : undefined;
+                      return (
+                        <Link
+                          key={entry.key}
+                          href={entry.href}
+                          onClick={onClose}
+                          className="rounded-input px-2 py-2 transition hover:bg-surface-2 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          <MarketingNavEntryContent
+                            entry={entry}
+                            label={entryLabel}
+                            badgeLabel={badgeLabel}
+                            showModelLogo={item.key === 'models'}
+                          />
+                        </Link>
+                      );
+                    })}
                     {dropdown.sections?.map((section) => {
                       const sectionLabel = section.titleKey
                         ? t(section.titleKey, section.titleFallback ?? section.key)

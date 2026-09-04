@@ -15,6 +15,7 @@ import { SERVICE_NOTICE_POLLING_INTERVAL_MS } from '@/lib/service-notice-polling
 import { HeaderAccountMenu } from '@/components/header/HeaderAccountMenu';
 import { HeaderAuthActions } from '@/components/header/HeaderAuthActions';
 import { HeaderLogoMark } from '@/components/header/HeaderLogoMark';
+import { MarketingNavEntryContent } from '@/components/marketing/MarketingNavEntryContent';
 import { HeaderMobileMenu } from '@/components/header/HeaderMobileMenu';
 import { HeaderWalletStatus } from '@/components/header/HeaderWalletStatus';
 import {
@@ -348,6 +349,8 @@ export function HeaderBar() {
                           </Link>
                           {dropdown.items.map((entry) => {
                             const href = resolveLocalizedHref(entry.href);
+                            const entryLabel = t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label) ?? entry.label;
+                            const badgeLabel = entry.badge ? (t(`nav.badges.${entry.badge}`, entry.badge) ?? entry.badge) : undefined;
                             return (
                               <Link
                                 key={entry.key}
@@ -357,12 +360,11 @@ export function HeaderBar() {
                                 role="menuitem"
                                 onClick={() => closeDesktopDropdown(200)}
                               >
-                                <span>{t(`nav.dropdown.${item.key}.items.${entry.key}`, entry.label)}</span>
-                                {entry.badge ? (
-                                  <span className="ml-2 inline-flex rounded-full bg-brand px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-micro text-white">
-                                    {t(`nav.badges.${entry.badge}`, entry.badge)}
-                                  </span>
-                                ) : null}
+                                <MarketingNavEntryContent
+                                  entry={entry} label={entryLabel}
+                                  badgeLabel={badgeLabel}
+                                  showModelLogo={item.key === 'models'}
+                                />
                               </Link>
                             );
                           })}

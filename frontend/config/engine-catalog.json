@@ -13631,6 +13631,8 @@
       },
       "compare": {
         "suggestOpponents": [
+          "wan-3",
+          "minimax-h3-max",
           "seedance-2-0",
           "kling-3-pro",
           "veo-3-1"
@@ -13639,7 +13641,9 @@
           "seedance-2-0",
           "kling-3-pro",
           "minimax-h3",
-          "veo-3-1"
+          "minimax-h3-max",
+          "veo-3-1",
+          "wan-3"
         ],
         "includeInHub": true
       },
@@ -17201,10 +17205,12 @@
       },
       "compare": {
         "suggestOpponents": [
-          "minimax-h3"
+          "minimax-h3",
+          "seedance-2-5"
         ],
         "publishedPairs": [
-          "minimax-h3"
+          "minimax-h3",
+          "seedance-2-5"
         ],
         "includeInHub": true
       },
@@ -20232,10 +20238,12 @@
       },
       "compare": {
         "suggestOpponents": [
+          "seedance-2-5",
           "wan-3-prime",
           "wan-2-6"
         ],
         "publishedPairs": [
+          "seedance-2-5",
           "wan-2-6",
           "wan-3-prime"
         ],

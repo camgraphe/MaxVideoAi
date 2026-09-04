@@ -13,16 +13,18 @@ export type SitemapTimestampConfig = {
 
 export const SITEMAP_MANUAL_TIMESTAMPS: SitemapTimestampConfig = {
   sitemaps: {
-    'sitemap-en.xml': '2026-09-03',
-    'sitemap-fr.xml': '2026-09-03',
-    'sitemap-es.xml': '2026-09-03',
+    'sitemap-en.xml': '2026-09-04',
+    'sitemap-fr.xml': '2026-09-04',
+    'sitemap-es.xml': '2026-09-04',
     'sitemap-models.xml': '2026-09-03',
   },
   routes: {
     '/models': '2026-09-03',
     '/pricing': '2026-09-03',
     '/pay-as-you-go-ai-video-generator': '2026-09-03',
-    '/ai-video-engines': '2026-09-03',
+    '/ai-video-engines': '2026-09-04',
+    '/ai-video-engines/seedance-2-5-vs-wan-3': '2026-09-04',
+    '/ai-video-engines/minimax-h3-max-vs-seedance-2-5': '2026-09-04',
     '/models/gemini-omni-flash': '2026-09-03',
     '/models/kling-3-turbo-standard': '2026-09-03',
     '/models/kling-3-turbo-pro': '2026-09-03',

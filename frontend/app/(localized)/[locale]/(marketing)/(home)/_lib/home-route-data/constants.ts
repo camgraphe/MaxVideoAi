@@ -59,14 +59,14 @@ export const PROVIDER_MODEL_LINKS: Partial<Record<string, LocalizedLinkHref>> = 
   Alibaba: { pathname: '/examples/[model]', params: { model: 'happy-horse' } },
 };
 
-export type HeroEngineId = 'seedance-2-0' | 'kling-3-pro' | 'veo-3-1-lite' | 'happy-horse-1-1' | 'ltx-2-3-pro';
+export type HeroEngineId = 'minimax-h3-max' | 'seedance-2-5' | 'wan-3' | 'kling-3-pro' | 'ltx-2-5-pro';
 
 export const HERO_VIDEO_CHIPS: Record<string, string[]> = {
+  'minimax-h3-max': ['Fast', 'Product motion'],
+  'seedance-2-5': ['Cinematic', 'Multishot'],
+  'wan-3': ['Camera control', 'Realism'],
   'kling-3-pro': ['Cinematic', 'Camera move'],
-  'seedance-2-0': ['Cinematic', 'Realism'],
-  'veo-3-1-lite': ['Realistic', 'Premium'],
-  'happy-horse-1-1': ['Lip-sync', 'Unified'],
-  'ltx-2-3-pro': ['Audio', 'Retake'],
+  'ltx-2-5-pro': ['Fast', 'Image control'],
 };
 
 export const HERO_ENGINE_TARGETS: Record<
@@ -78,11 +78,11 @@ export const HERO_ENGINE_TARGETS: Record<
     mode: Mode;
   }
 > = {
-  'kling-3-pro': { name: 'Kling 3 Pro', exampleFamily: 'kling', modelSlug: 'kling-3-pro', mode: 'i2v' },
-  'seedance-2-0': { name: 'Seedance 2.0', exampleFamily: 'seedance', modelSlug: 'seedance-2-0', mode: 'i2v' },
-  'veo-3-1-lite': { name: 'Veo 3.1 Lite', exampleFamily: 'veo', modelSlug: 'veo-3-1-lite', mode: 't2v' },
-  'happy-horse-1-1': { name: 'Happy Horse 1.1', exampleFamily: 'happy-horse', modelSlug: 'happy-horse-1-1', mode: 'ref2v' },
-  'ltx-2-3-pro': { name: 'LTX 2.3 Pro', exampleFamily: 'ltx', modelSlug: 'ltx-2-3-pro', mode: 'a2v' },
+  'minimax-h3-max': { name: 'MiniMax H3 Max', exampleFamily: 'hailuo', modelSlug: 'minimax-h3-max', mode: 't2v' },
+  'seedance-2-5': { name: 'Seedance 2.5', exampleFamily: 'seedance', modelSlug: 'seedance-2-5', mode: 'ref2v' },
+  'wan-3': { name: 'Wan 3', exampleFamily: 'wan', modelSlug: 'wan-3', mode: 'i2v' },
+  'kling-3-pro': { name: 'Kling 3 Pro', exampleFamily: 'kling', modelSlug: 'kling-3-pro', mode: 't2v' },
+  'ltx-2-5-pro': { name: 'LTX 2.5 Pro', exampleFamily: 'ltx', modelSlug: 'ltx-2-5-pro', mode: 'i2v' },
 };
 
 export const DEFAULT_MODEL_BY_EXAMPLE_FAMILY: Record<HomepageExampleFamily, string> = {
@@ -122,6 +122,7 @@ export const ALLOWED_TOOL_CARD_IDS = new Set([
 ]);
 
 export const FALLBACK_MODE_BY_ENGINE: Record<string, Mode> = {
+  'minimax-h3-max': 't2v',
   'wan-3': 't2v',
   'wan-3-prime': 't2v',
   'ltx-2-5-fast': 't2v',

@@ -1,6 +1,8 @@
 {
   "popularComparisons": [
     { "left": "minimax-h3", "right": "seedance-2-5", "tags": ["audio", "4k", "value"] },
+    { "left": "seedance-2-5", "right": "wan-3", "tags": ["multishot", "audio", "trending"] },
+    { "left": "minimax-h3-max", "right": "seedance-2-5", "tags": ["quality", "speed", "value"] },
     { "left": "happy-horse-1-1", "right": "seedance-2-0", "tags": ["audio", "unified", "quality"] },
     { "left": "happy-horse-1-1", "right": "kling-3-pro", "tags": ["lipsync", "reference", "quality"] },
     { "left": "happy-horse-1-1", "right": "veo-3-1", "tags": ["audio", "cinematic", "quality"] },
@@ -48,6 +50,8 @@
       "id": "cinematic",
       "pairs": [
         { "left": "minimax-h3", "right": "seedance-2-5" },
+        { "left": "seedance-2-5", "right": "wan-3" },
+        { "left": "minimax-h3-max", "right": "seedance-2-5" },
         { "left": "happy-horse-1-1", "right": "seedance-2-0" },
         { "left": "luma-ray-3-2", "right": "veo-3-1-fast" },
         { "left": "seedance-2-0", "right": "veo-3-1" },
@@ -100,6 +104,7 @@
     {
       "id": "storyboards",
       "pairs": [
+        { "left": "seedance-2-5", "right": "wan-3" },
         { "left": "seedance-2-0-fast", "right": "ltx-2-3-fast" },
         { "left": "happy-horse-1-1", "right": "seedance-2-0-fast" },
         { "left": "seedance-2-0-fast", "right": "dreamina-seedance-2-0-mini" },
@@ -113,6 +118,7 @@
       "id": "audio",
       "pairs": [
         { "left": "minimax-h3", "right": "seedance-2-5" },
+        { "left": "seedance-2-5", "right": "wan-3" },
         { "left": "happy-horse-1-1", "right": "seedance-2-0" },
         { "left": "happy-horse-1-1", "right": "kling-o3-pro" },
         { "left": "happy-horse-1-1", "right": "veo-3-1" },
@@ -136,6 +142,8 @@
       "id": "best-value",
       "pairs": [
         { "left": "minimax-h3", "right": "seedance-2-5" },
+        { "left": "minimax-h3-max", "right": "seedance-2-5" },
+        { "left": "seedance-2-5", "right": "wan-3" },
         { "left": "dreamina-seedance-2-0-mini", "right": "happy-horse-1-1" },
         { "left": "dreamina-seedance-2-0-mini", "right": "luma-ray-3-2" },
         { "left": "happy-horse-1-1", "right": "seedance-2-0-fast" },
@@ -153,6 +161,8 @@
       "id": "best-quality",
       "pairs": [
         { "left": "minimax-h3", "right": "seedance-2-5" },
+        { "left": "minimax-h3-max", "right": "seedance-2-5" },
+        { "left": "seedance-2-5", "right": "wan-3" },
         { "left": "happy-horse-1-1", "right": "seedance-2-0" },
         { "left": "happy-horse-1-1", "right": "kling-o3-pro" },
         { "left": "happy-horse-1-1", "right": "ltx-2-3-pro" },
@@ -168,6 +178,7 @@
       "id": "text-to-video",
       "pairs": [
         { "left": "minimax-h3", "right": "seedance-2-5" },
+        { "left": "seedance-2-5", "right": "wan-3" },
         { "left": "happy-horse-1-1", "right": "seedance-2-0" },
         { "left": "happy-horse-1-1", "right": "kling-o3-pro" },
         { "left": "gemini-omni-flash", "right": "veo-3-1" },
@@ -180,6 +191,7 @@
     {
       "id": "image-to-video",
       "pairs": [
+        { "left": "minimax-h3-max", "right": "seedance-2-5" },
         { "left": "minimax-h3", "right": "veo-3-1" },
         { "left": "happy-horse-1-1", "right": "veo-3-1" },
         { "left": "gemini-omni-flash", "right": "veo-3-1" },
@@ -210,6 +222,7 @@
   "opponentOverrides": {
     "minimax-h3": ["minimax-h3-max", "seedance-2-5", "kling-o3-pro", "veo-3-1"],
     "minimax-h3-max": ["minimax-h3", "seedance-2-5", "kling-o3-pro"],
+    "seedance-2-5": ["wan-3", "minimax-h3-max", "minimax-h3", "kling-3-pro", "veo-3-1"],
     "happy-horse-1-1": ["seedance-2-0", "kling-3-pro", "veo-3-1", "kling-o3-pro", "veo-3-1-fast", "seedance-2-0-fast", "dreamina-seedance-2-0-mini", "ltx-2-3-pro", "sora-2-pro", "happy-horse-1-0"],
     "happy-horse-1-0": ["happy-horse-1-1", "seedance-2-0", "kling-3-pro", "veo-3-1"],
     "sora-2-pro": ["sora-2", "veo-3-1", "kling-3-pro"],
@@ -223,7 +236,7 @@
     "kling-3-turbo-standard": ["kling-3-turbo-pro", "kling-3-standard"],
     "kling-3-pro": ["kling-3-turbo-pro", "seedance-2-0", "veo-3-1", "sora-2"],
     "wan-2-6": ["wan-3", "seedance-2-0", "veo-3-1", "ltx-2-3-fast"],
-    "wan-3": ["wan-3-prime", "wan-2-6"],
+    "wan-3": ["seedance-2-5", "wan-3-prime", "wan-2-6"],
     "wan-3-prime": ["wan-3"],
     "ltx-2-3-pro": ["ltx-2-5-pro", "seedance-2-0", "veo-3-1", "happy-horse-1-1", "ltx-2-3-fast"],
     "ltx-2-3-fast": ["ltx-2-5-fast", "dreamina-seedance-2-0-mini", "seedance-2-0-fast", "veo-3-1-fast", "ltx-2-fast"],

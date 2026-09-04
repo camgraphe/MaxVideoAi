@@ -17,6 +17,7 @@ const marketingMobileMenuSource = readFileSync('frontend/components/marketing/Ma
 const marketingFooterSource = readFileSync('frontend/components/marketing/MarketingFooter.tsx', 'utf8');
 const headerBarSource = readFileSync('frontend/components/HeaderBar.tsx', 'utf8');
 const headerMobileMenuSource = readFileSync('frontend/components/header/HeaderMobileMenu.tsx', 'utf8');
+const navEntryContentSource = readFileSync('frontend/components/marketing/MarketingNavEntryContent.tsx', 'utf8');
 const modelPageComponentsDirectory =
   'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components';
 
@@ -129,6 +130,25 @@ test('public dropdowns limit launch badges to five current models with none on c
     assert.equal(
       dictionary.nav.dropdown.compare.items['minimax-h3-vs-seedance-2-5'],
       'MiniMax H3 vs Seedance 2.5',
+    );
+  }
+});
+
+test('model dropdown entries show the shared engine logo before every model name', () => {
+  assert.match(navEntryContentSource, /EngineIcon/);
+  assert.match(navEntryContentSource, /showModelLogo/);
+
+  for (const [surface, source] of [
+    ['marketing desktop', marketingDesktopNavSource],
+    ['marketing mobile', marketingMobileMenuSource],
+    ['workspace header desktop', headerBarSource],
+    ['workspace header mobile', headerMobileMenuSource],
+  ] as const) {
+    assert.match(source, /MarketingNavEntryContent/, `${surface} should reuse the shared dropdown entry content`);
+    assert.match(
+      source,
+      /showModelLogo=\{item\.key === 'models'\}/,
+      `${surface} should enable logos only in the Models dropdown`,
     );
   }
 });

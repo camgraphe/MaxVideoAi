@@ -1,5 +1,7 @@
 {
   "trophyComparisons": [
+    "seedance-2-5-vs-wan-3",
+    "minimax-h3-max-vs-seedance-2-5",
     "minimax-h3-vs-seedance-2-5",
     "kling-o3-pro-vs-minimax-h3",
     "minimax-h3-vs-veo-3-1",
@@ -36,7 +38,9 @@
     "minimax-h3-vs-minimax-h3-max",
     "kling-3-turbo-pro-vs-kling-3-turbo-standard",
     "kling-3-pro-vs-kling-3-turbo-pro",
-    "gemini-omni-flash-vs-kling-3-turbo-pro"
+    "gemini-omni-flash-vs-kling-3-turbo-pro",
+    "seedance-2-5-vs-wan-3",
+    "minimax-h3-max-vs-seedance-2-5"
   ],
   "bestForPages": [
     {
@@ -53,7 +57,7 @@
       "description": "Best AI video models for cinematic motion, lighting, camera language, and high-end visual polish.",
       "tier": 1,
       "topPicks": ["seedance-2-5", "seedance-2-0", "kling-3-pro", "kling-o3-pro", "minimax-h3", "veo-3-1", "happy-horse-1-1", "luma-ray-3-2"],
-      "relatedComparisons": ["kling-3-pro-vs-seedance-2-5", "seedance-2-5-vs-veo-3-1", "minimax-h3-vs-seedance-2-5", "happy-horse-1-1-vs-kling-3-pro", "seedance-2-0-vs-veo-3-1"]
+      "relatedComparisons": ["seedance-2-5-vs-wan-3", "minimax-h3-max-vs-seedance-2-5", "kling-3-pro-vs-seedance-2-5", "seedance-2-5-vs-veo-3-1", "minimax-h3-vs-seedance-2-5"]
     },
     {
       "slug": "character-reference",
@@ -77,7 +81,7 @@
       "description": "Best AI video models for creating a complete mini-sequence, trailer beat, or edited-style clip from one structured prompt.",
       "tier": 1,
       "topPicks": ["seedance-2-5", "seedance-2-0", "kling-3-pro", "kling-o3-pro", "minimax-h3", "sora-2-pro", "kling-3-standard"],
-      "relatedComparisons": ["seedance-2-0-vs-seedance-2-5", "kling-3-pro-vs-seedance-2-5", "minimax-h3-vs-seedance-2-5", "kling-3-pro-vs-seedance-2-0", "kling-3-pro-vs-sora-2-pro"]
+      "relatedComparisons": ["seedance-2-5-vs-wan-3", "seedance-2-0-vs-seedance-2-5", "kling-3-pro-vs-seedance-2-5", "minimax-h3-vs-seedance-2-5", "kling-3-pro-vs-sora-2-pro"]
     },
     {
       "slug": "4k-video",
@@ -138,6 +142,8 @@
   ],
   "relatedComparisons": {
     "minimax-h3-vs-seedance-2-5": [
+      "minimax-h3-max-vs-seedance-2-5",
+      "seedance-2-5-vs-wan-3",
       "kling-o3-pro-vs-minimax-h3",
       "minimax-h3-vs-veo-3-1",
       "seedance-2-5-vs-veo-3-1"
@@ -163,6 +169,8 @@
       "seedance-2-0-vs-seedance-2-5"
     ],
     "seedance-2-5-vs-veo-3-1": [
+      "seedance-2-5-vs-wan-3",
+      "minimax-h3-max-vs-seedance-2-5",
       "seedance-2-0-vs-veo-3-1",
       "kling-3-pro-vs-veo-3-1",
       "seedance-2-0-vs-seedance-2-5"
@@ -364,9 +372,39 @@
       "kling-3-pro-vs-sora-2-pro"
     ],
     "minimax-h3-vs-minimax-h3-max": [
+      "minimax-h3-max-vs-seedance-2-5",
       "minimax-h3-vs-seedance-2-5",
       "kling-o3-pro-vs-minimax-h3",
       "minimax-h3-vs-veo-3-1"
+    ],
+    "ltx-2-3-pro-vs-ltx-2-5-pro": [
+      "ltx-2-5-fast-vs-ltx-2-5-pro",
+      "ltx-2-3-fast-vs-ltx-2-5-fast",
+      "ltx-2-3-fast-vs-ltx-2-3-pro",
+      "ltx-2-3-pro-vs-veo-3-1"
+    ],
+    "wan-2-6-vs-wan-3": [
+      "seedance-2-5-vs-wan-3",
+      "wan-3-vs-wan-3-prime",
+      "sora-2-vs-wan-2-6",
+      "veo-3-1-vs-wan-2-6"
+    ],
+    "wan-3-vs-wan-3-prime": [
+      "seedance-2-5-vs-wan-3",
+      "wan-2-6-vs-wan-3",
+      "minimax-h3-vs-seedance-2-5"
+    ],
+    "seedance-2-5-vs-wan-3": [
+      "wan-2-6-vs-wan-3",
+      "wan-3-vs-wan-3-prime",
+      "minimax-h3-vs-seedance-2-5",
+      "kling-3-pro-vs-seedance-2-5"
+    ],
+    "minimax-h3-max-vs-seedance-2-5": [
+      "minimax-h3-vs-minimax-h3-max",
+      "minimax-h3-vs-seedance-2-5",
+      "seedance-2-5-vs-wan-3",
+      "kling-3-pro-vs-seedance-2-5"
     ],
     "kling-3-turbo-pro-vs-kling-3-turbo-standard": [
       "kling-3-pro-vs-kling-3-turbo-pro",
