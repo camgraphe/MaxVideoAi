@@ -66,6 +66,7 @@ export async function fetchNeonInfraCostReport({
   const projectIds = readCsvEnv(env, 'NEON_USAGE_PROJECT_IDS', 'NEON_PROJECT_ID', 'NEON_BRANCH_GUARD_PROJECT_ID');
   const resolvedProjectIds = projectIds.length ? projectIds : [DEFAULT_NEON_PROJECT_ID];
   const plan = readEnv(env, 'NEON_USAGE_PLAN')?.toLowerCase() === 'scale' ? 'scale' : 'launch';
+  const includedBranchesPerProject = plan === 'scale' ? 25 : 10;
   const rates = readNeonRates(env, plan);
   const branchGuardLimit = readPositiveInteger(env, ['NEON_BRANCH_LIMIT', 'NEON_USAGE_BRANCH_CRITICAL'], 8);
   const apiBaseUrl = readEnv(env, 'NEON_API_BASE_URL') ?? DEFAULT_NEON_API_BASE_URL;
@@ -84,7 +85,9 @@ export async function fetchNeonInfraCostReport({
     );
     const totals = buildNeonTotals(usage, branches);
     const monthHours = Math.max(1, (Date.parse(period.monthEndIso) - Date.parse(period.startIso)) / (1000 * 60 * 60));
-    const currentExtraBranchCount = branches.reduce((sum, branch) => sum + branch.nonPrimary, 0);
+    const currentExtraBranchCount = branches.reduce(
+      (sum, branch) => sum + Math.max(0, branch.total - includedBranchesPerProject), 0
+    );
     const projectedTotals = projectNeonTotals(totals, period, currentExtraBranchCount);
     const costBreakdown = estimateNeonCosts(totals, rates, monthHours);
     const projectedCostBreakdown = estimateNeonCosts(projectedTotals, rates, monthHours);
@@ -92,6 +95,7 @@ export async function fetchNeonInfraCostReport({
       orgId,
       projectIds: resolvedProjectIds,
       plan,
+      includedBranchesPerProject,
       branchGuardLimit,
       includedPublicTransferGb: rates.includedPublicTransferGb,
       rates,
@@ -163,7 +167,7 @@ export function buildNeonAlerts(
         level: 'critical',
         kind: 'branch',
         title: 'Neon branch guard exceeded',
-        detail: `${branchCount} active branches for a guard limit of ${limit}.`,
+        detail: `${branchCount} total branches for a guard limit of ${limit}.`,
       });
     } else if (branchCount >= Math.max(1, limit - 1)) {
       alerts.push({
@@ -171,7 +175,7 @@ export function buildNeonAlerts(
         level: 'warning',
         kind: 'branch',
         title: 'Neon branch count near guard',
-        detail: `${branchCount} active branches for a guard limit of ${limit}.`,
+        detail: `${branchCount} total branches for a guard limit of ${limit}.`,
       });
     }
   }
