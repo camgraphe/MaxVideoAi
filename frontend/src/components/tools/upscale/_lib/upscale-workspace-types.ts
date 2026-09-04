@@ -50,6 +50,7 @@ export type UserAssetsResponse = {
   assets?: Array<{
     id: string;
     url: string;
+    thumbUrl?: string | null;
     mime?: string | null;
     width?: number | null;
     height?: number | null;
@@ -72,6 +73,8 @@ export type JobsLibraryResponse = {
     jobId: string;
     videoUrl?: string | null;
     readyVideoUrl?: string | null;
+    thumbUrl?: string | null;
+    previewFrame?: string | null;
     createdAt?: string;
   }>;
   error?: string;

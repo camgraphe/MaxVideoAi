@@ -51,6 +51,7 @@ export function ModelHeroMedia({
   const lcpReadyRef = useRef(false);
   const lcpObserverRef = useRef<PerformanceObserver | null>(null);
   const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
+  const [isVideoReady, setIsVideoReady] = useState(false);
   const [autoPlayDisabled, setAutoPlayDisabled] = useState(false);
 
   const clearScheduledLoad = useCallback(() => {
@@ -155,6 +156,7 @@ export function ModelHeroMedia({
   }, [autoPlayDelayMs, clearScheduledLoad, scheduleLoad, shouldLoadVideo, videoSrc, waitForLcp]);
 
   useEffect(() => {
+    setIsVideoReady(false);
     if (!shouldLoadVideo) return;
     const node = videoRef.current;
     if (!node) return;
@@ -162,12 +164,13 @@ export function ModelHeroMedia({
       void node.play().catch(() => {});
     };
     if (node.readyState >= 2) {
+      setIsVideoReady(true);
       tryPlay();
       return;
     }
     node.addEventListener('loadeddata', tryPlay, { once: true });
     return () => node.removeEventListener('loadeddata', tryPlay);
-  }, [shouldLoadVideo]);
+  }, [shouldLoadVideo, videoSrc]);
 
   useEffect(() => {
     return clearScheduledLoad;
@@ -201,14 +204,17 @@ export function ModelHeroMedia({
       )}
       {videoSrc && shouldLoadVideo ? (
         <video
+          key={videoSrc}
           ref={videoRef}
-          className={mediaClassName}
+          className={`${mediaClassName} ${isVideoReady ? 'opacity-100' : 'opacity-0'}`}
           autoPlay
           muted
           loop
           playsInline
           preload="metadata"
-          poster={posterSrc ?? undefined}
+          onLoadedData={() => setIsVideoReady(true)}
+          onEmptied={() => setIsVideoReady(false)}
+          onError={() => setIsVideoReady(false)}
           aria-label={alt}
         >
           <source src={videoSrc} type={sourceType} />
