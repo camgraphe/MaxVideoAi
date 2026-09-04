@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "environment": "preview/mcp-staging",
+    "recordedAt": "2026-09-04",
+    "amountField": "app_jobs.final_price_cents",
+    "verifiedAgainst": "pricing_snapshot.totalCents"
+  },
+  "records": [
+    {
+      "jobId": "08ac14de-f53b-46c7-b6db-ae56c0095d7a",
+      "engineId": "flux-3",
+      "durationSec": 5,
+      "totalCents": 102,
+      "currency": "USD"
+    },
+    {
+      "jobId": "abd1a29b-7de8-4bb5-bc24-1c670d3b0a88",
+      "engineId": "flux-3",
+      "durationSec": 5,
+      "totalCents": 102,
+      "currency": "USD"
+    },
+    {
+      "jobId": "34605e6e-0a3a-4b23-ac71-9985b486bd01",
+      "engineId": "flux-3-draft",
+      "durationSec": 5,
+      "totalCents": 36,
+      "currency": "USD"
+    },
+    {
+      "jobId": "b7014d70-b6a7-4e64-b41f-36f836756f76",
+      "engineId": "flux-3-draft",
+      "durationSec": 5,
+      "totalCents": 36,
+      "currency": "USD"
+    },
+    {
+      "jobId": "2b74b648-63f2-4b19-b555-9dad0554ed40",
+      "engineId": "grok-imagine-video-1-5",
+      "durationSec": 5,
+      "totalCents": 84,
+      "currency": "USD"
+    },
+    {
+      "jobId": "4467d48a-8d6a-490c-96ba-09468aea313e",
+      "engineId": "grok-imagine-video-1-5",
+      "durationSec": 5,
+      "totalCents": 84,
+      "currency": "USD"
+    },
+    {
+      "jobId": "7b52c7eb-24fa-45a8-baa9-c675b7f50174",
+      "engineId": "ltx-2-5-fast",
+      "durationSec": 6,
+      "totalCents": 65,
+      "currency": "USD"
+    },
+    {
+      "jobId": "bd943cbc-c500-49ff-baff-d7e1f03fb2dc",
+      "engineId": "ltx-2-5-fast",
+      "durationSec": 6,
+      "totalCents": 65,
+      "currency": "USD"
+    },
+    {
+      "jobId": "5d47efd3-c75c-42c0-91fc-e0e1d8b50357",
+      "engineId": "ltx-2-5-pro",
+      "durationSec": 6,
+      "totalCents": 87,
+      "currency": "USD"
+    },
+    {
+      "jobId": "a30e1f55-27ca-4cd5-9c6b-1cb990a5ca91",
+      "engineId": "ltx-2-5-pro",
+      "durationSec": 6,
+      "totalCents": 87,
+      "currency": "USD"
+    },
+    {
+      "jobId": "322fa03b-47f1-4267-a384-1d04aac27167",
+      "engineId": "wan-3",
+      "durationSec": 5,
+      "totalCents": 60,
+      "currency": "USD"
+    },
+    {
+      "jobId": "e2ef7bdf-e78c-4aca-94b4-d2ba74036dac",
+      "engineId": "wan-3",
+      "durationSec": 10,
+      "totalCents": 120,
+      "currency": "USD"
+    },
+    {
+      "jobId": "f9a9022c-e587-4c6a-b49a-f2985908eee9",
+      "engineId": "wan-3-prime",
+      "durationSec": 5,
+      "totalCents": 84,
+      "currency": "USD"
+    },
+    {
+      "jobId": "feccb90c-11ed-48ef-a96b-b7c80e5fe1c5",
+      "engineId": "wan-3-prime",
+      "durationSec": 10,
+      "totalCents": 168,
+      "currency": "USD"
+    }
+  ]
+}
