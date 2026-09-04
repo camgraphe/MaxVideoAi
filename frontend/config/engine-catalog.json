@@ -22495,7 +22495,7 @@
     },
     "versionLabel": "1.5",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "lifecycle": "current",
     "successorId": null,
     "successorSlug": null,

@@ -16,7 +16,7 @@ export function MarketingNavEntryContent({
     <span className="inline-flex min-w-0 items-center gap-2">
       {showModelLogo ? (
         <EngineIcon
-          engine={{ id: entry.key, label }}
+          engine={{ id: entry.key, label, brandId: entry.brandId }}
           label={label}
           size={20}
           rounded="full"

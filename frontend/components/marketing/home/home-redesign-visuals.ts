@@ -61,21 +61,21 @@ export const REFERENCE_WORKFLOW_VISUALS = [
   '/assets/marketing/reference-workflow-final-video.webp',
 ] as const;
 
-export const HERO_VIDEO_ORDER = ['minimax-h3-max', 'seedance-2-5', 'wan-3', 'kling-3-pro', 'ltx-2-5-pro'] as const;
+export const HERO_VIDEO_ORDER = ['minimax-h3-max', 'seedance-2-5', 'wan-3-prime', 'kling-3-pro', 'ltx-2-5-pro'] as const;
 export const HOME_HERO_IMAGE_URL = '/assets/home/home-hero-reference.webp';
 
 export const HERO_VIDEO_MODE_LABELS: Record<string, string> = {
   'minimax-h3-max': 'text-to-video',
-  'seedance-2-5': 'reference-to-video',
-  'wan-3': 'image-to-video',
-  'kling-3-pro': 'text-to-video',
+  'seedance-2-5': 'text-to-video',
+  'wan-3-prime': 'text-to-video',
+  'kling-3-pro': 'image-to-video',
   'ltx-2-5-pro': 'image-to-video',
 };
 
 export const HERO_VIDEO_CHIPS: Record<string, string[]> = {
-  'minimax-h3-max': ['Fast', 'Product motion'],
-  'seedance-2-5': ['Cinematic', 'Multishot'],
-  'wan-3': ['Camera control', 'Realism'],
+  'minimax-h3-max': ['Dance', 'Cinematic motion'],
+  'seedance-2-5': ['Physics', 'Cinematic'],
+  'wan-3-prime': ['Craft motion', 'Realism'],
   'kling-3-pro': ['Cinematic', 'Camera move'],
   'ltx-2-5-pro': ['Fast', 'Image control'],
 };
@@ -93,13 +93,13 @@ export const PROOF_ICONS: Record<string, LucideIcon> = {
 
 export const KLING_3_PRO_HERO_RENDER = {
   posterSrc:
-    'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/2ad99872-35db-4ff8-8805-99cc23c25e5e.jpg',
+    'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/01245e62-6bb2-4d5d-89c6-c60923a004ad.jpg',
   videoSrc:
-    'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/0e6eb160-5d11-42ec-8551-c436b0908c60.mp4',
+    'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/7b1f1c7b-f7f0-473e-9610-82723604b690.mp4',
   resolution: '16:9',
-  duration: '0:05',
-  estimateValue: '$0.73',
-  estimateMeta: '5s generation',
+  duration: '0:12',
+  estimateValue: '$2.63',
+  estimateMeta: '12s generation',
 } as const;
 
 export const HERO_ENGINE_MEDIA: Record<
@@ -117,33 +117,33 @@ export const HERO_ENGINE_MEDIA: Record<
   }
 > = {
   'minimax-h3-max': {
-    posterSrc: '/hero/showcase-minimax-h3-max-7s.webp',
+    posterSrc: '/hero/showcase-minimax-h3-max-8s.webp',
     videoSrc:
-      'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/b0a6f7e2-69df-4cdd-9ce4-423100c75e7d.mp4',
+      'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/1b29e9b2-c68d-46a3-8415-7677deed674a.mp4',
     resolution: '16:9',
-    duration: '0:07',
-    estimateValue: '$0.69',
-    estimateMeta: '7s generation',
-    imageAlt: 'MiniMax H3 Max ceramic lamp transformation generated with MaxVideoAI.',
+    duration: '0:08',
+    estimateValue: '$0.80',
+    estimateMeta: '8s generation',
+    imageAlt: 'MiniMax H3 Max cinematic dancer scene generated with MaxVideoAI.',
   },
   'seedance-2-5': {
     posterSrc:
-      'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/93d61e58-260d-4fa7-87f7-24893333ded1.jpg',
+      'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/322680c4-ca2f-405f-89f6-0bdb90f186b9.jpg',
     videoSrc:
-      'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/6ab56b7c-bece-4c72-9372-c910bafdc622.mp4',
+      'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/085cc0a7-063d-4801-91f9-ec3d9c5eb95d.mp4',
     resolution: '16:9',
-    duration: '0:15',
-    estimateValue: '$2.19',
-    estimateMeta: '15s generation',
+    duration: '0:10',
+    estimateValue: '$1.46',
+    estimateMeta: '10s generation',
   },
-  'wan-3': {
+  'wan-3-prime': {
     posterSrc:
-      'https://media.maxvideoai.com/user-asset-thumbs/by-content/c780259ed79d025b4ac74ccc513f18bf/74526116dfc966ce5f871d0ebc7f94967519628291cd25ca2f2f383d623f353c.jpeg',
+      'https://media.maxvideoai.com/user-asset-thumbs/by-content/c780259ed79d025b4ac74ccc513f18bf/db3ef505b123301c648d118f0d740df7b05d098ec47b5104f0425f42019c069f.jpeg',
     videoSrc:
-      'https://media.maxvideoai.com/media-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/ca0adbafdacf6b5c2051314e3ebf4296f7ed8f7a3df1583ed033715ce2e4b9dd.mp4',
+      'https://media.maxvideoai.com/media-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/c8567e3b0531ae10a993534c41d5f76ec8a1fc2329294d0c8fdb7e4b38ab349a.mp4',
     resolution: '16:9',
     duration: '0:05',
-    estimateValue: '$0.50',
+    estimateValue: '$0.70',
     estimateMeta: '5s generation',
   },
   'kling-3-pro': {

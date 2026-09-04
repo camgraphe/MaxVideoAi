@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
 
@@ -51,7 +51,7 @@ test('EngineIcon allows oversized brand marks without global image max-width dis
   assert.match(engineIconSource, /maxWidth: 'none'/);
 });
 
-test('P0 engines resolve to their model owners and unlicensed owners stay text-only', () => {
+test('P0 engines resolve to their model owners while only unlicensed owners stay text-only', () => {
   const expectedOwners = {
     'wan-3': 'wan',
     'wan-3-prime': 'wan',
@@ -66,7 +66,17 @@ test('P0 engines resolve to their model owners and unlicensed owners stay text-o
     assert.equal(getPartnerByEngineId(engineId)?.id, brandId, engineId);
   }
 
-  for (const brandId of ['xai', 'black-forest-labs']) {
+  const xai = getPartnerByBrandId('xai');
+  assert.ok(xai);
+  assert.equal(xai.policy.logoAllowed, true);
+  assert.equal(xai.compactMark?.light.src, '/brand/partners/xai/grok-app-icon.png');
+  assert.equal(xai.compactMark?.dark.src, '/brand/partners/xai/grok-app-icon.png');
+  assert.equal(
+    existsSync(join(root, 'frontend/public/brand/partners/xai/grok-app-icon.png')),
+    true,
+  );
+
+  for (const brandId of ['black-forest-labs']) {
     const brand = getPartnerByBrandId(brandId);
     assert.ok(brand, brandId);
     assert.equal(brand.policy.logoAllowed, false, brandId);

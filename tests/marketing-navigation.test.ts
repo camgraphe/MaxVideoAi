@@ -10,6 +10,7 @@ import {
   MARKETING_NAV_MODELS,
   MARKETING_TOP_NAV_LINKS,
 } from '../frontend/config/navigation.ts';
+import { getPartnerBrandMark } from '../frontend/src/lib/brand-partners.ts';
 
 const marketingNavSource = readFileSync('frontend/components/marketing/MarketingNav.tsx', 'utf8');
 const marketingDesktopNavSource = readFileSync('frontend/components/marketing/MarketingDesktopNav.tsx', 'utf8');
@@ -137,6 +138,15 @@ test('public dropdowns limit launch badges to five current models with none on c
 test('model dropdown entries show the shared engine logo before every model name', () => {
   assert.match(navEntryContentSource, /EngineIcon/);
   assert.match(navEntryContentSource, /showModelLogo/);
+  assert.match(navEntryContentSource, /brandId:\s*entry\.brandId/);
+
+  for (const entry of MARKETING_NAV_MODELS) {
+    assert.ok(entry.brandId, `${entry.label} should expose its canonical family brand`);
+    assert.ok(
+      getPartnerBrandMark({ id: entry.key, brandId: entry.brandId }),
+      `${entry.label} should resolve to a real shared engine logo`,
+    );
+  }
 
   for (const [surface, source] of [
     ['marketing desktop', marketingDesktopNavSource],

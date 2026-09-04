@@ -11,6 +11,7 @@ export type MarketingNavItem = {
   key: string;
   label: string;
   href: LocalizedLinkHref;
+  brandId?: string;
   emphasized?: boolean;
   badge?: 'new';
 };
@@ -48,7 +49,12 @@ export const MARKETING_TOP_NAV_LINKS: readonly MarketingTopNavLink[] = [
   { key: 'blog', href: '/blog' },
 ] as const;
 
-type LabeledSlug = { slug: string; label: string; badge?: MarketingNavItem['badge'] };
+type LabeledSlug = {
+  slug: string;
+  label: string;
+  brandId?: string;
+  badge?: MarketingNavItem['badge'];
+};
 
 const modelLink = (slug: string): LocalizedLinkHref => ({
   pathname: '/models/[slug]',
@@ -138,12 +144,21 @@ export function buildMarketingModelMenu(models: readonly RuntimeModelEntry[]): L
   );
   const candidates = p1Published ? P1_MODEL_MENU_CANDIDATES : BASE_MODEL_MENU_CANDIDATES;
 
-  return candidates.filter(({ slug }) => {
-    const model = bySlug.get(slug);
-    if (!model?.publication.model.published || model.lifecycle === 'retired') return false;
-    if (model.lifecycle !== 'legacy' || !model.successorId) return true;
-    return byId.get(model.successorId)?.publication.model.published !== true;
-  }).slice(0, 11);
+  return candidates
+    .filter(({ slug }) => {
+      const model = bySlug.get(slug);
+      if (!model?.publication.model.published || model.lifecycle === 'retired') return false;
+      if (model.lifecycle !== 'legacy' || !model.successorId) return true;
+      return byId.get(model.successorId)?.publication.model.published !== true;
+    })
+    .slice(0, 11)
+    .map((item) => {
+      const model = bySlug.get(item.slug);
+      return {
+        ...item,
+        brandId: model?.family ? getModelFamilyDefinition(model.family)?.brandId : undefined,
+      };
+    });
 }
 
 const MODEL_MENU = buildMarketingModelMenu(listRuntimeModels());
@@ -215,6 +230,7 @@ export const MARKETING_NAV_MODELS: MarketingNavItem[] = MODEL_MENU.map((item) =>
   key: item.slug,
   label: item.label,
   href: modelLink(item.slug),
+  brandId: item.brandId,
   badge: item.badge,
 }));
 

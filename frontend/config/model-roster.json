@@ -979,7 +979,7 @@
     "successorSlug": null,
     "versionLabel": "1.5",
     "availability": "available",
-    "logoPolicy": "textOnly",
+    "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {
         "indexable": true,

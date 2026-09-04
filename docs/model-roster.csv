@@ -50,4 +50,4 @@ wan-2-5,Wan 2.5 Text & Image to Video,wan,wan-2-5,wan,deep_legacy,wan-3,wan-3,Pr
 wan-2-6,Wan 2.6 Text & Image to Video,wan,wan-2-6,wan,legacy,wan-3,wan-3,2.6,available,logoAllowed,true,true
 wan-3,Wan 3,wan,wan-3,wan,current,,,3.0,available,logoAllowed,true,true
 wan-3-prime,Wan 3 Prime,wan,wan-3-prime,wan,current,,,3.0 Prime,available,logoAllowed,true,true
-grok-imagine-video-1-5,Grok Imagine Video 1.5,xai,grok-imagine-video-1-5,grok,current,,,1.5,available,textOnly,true,true
+grok-imagine-video-1-5,Grok Imagine Video 1.5,xai,grok-imagine-video-1-5,grok,current,,,1.5,available,logoAllowed,true,true

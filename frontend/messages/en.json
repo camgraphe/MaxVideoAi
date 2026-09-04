@@ -290,7 +290,7 @@
           "Pay-as-you-go · no subscription"
         ],
         "title": "Stop guessing which AI video model to use.",
-        "subtitle": "Compare MiniMax H3 Max, Seedance 2.5, Wan 3, Kling 3 and LTX 2.5, preview real outputs, see the cost before you generate, and choose the right AI video engine for every shot.",
+        "subtitle": "Compare MiniMax H3 Max, Seedance 2.5, Wan 3 Prime, Kling 3 and LTX 2.5, preview real outputs, see the cost before you generate, and choose the right AI video engine for every shot.",
         "primaryCta": "Generate",
         "secondaryCta": "See examples",
         "examplesCta": "Compare engines",
@@ -335,7 +335,7 @@
               "engineId": "minimax-h3-max",
               "name": "MiniMax H3 Max",
               "provider": "MiniMax",
-              "bestFor": "Fast product motion",
+              "bestFor": "Cinematic dance motion",
               "fallbackPrice": "Live price",
               "selected": true,
               "scores": [
@@ -353,16 +353,16 @@
                 }
               ],
               "tags": [
-                "Fast",
-                "Product",
-                "7s"
+                "Dance",
+                "Motion",
+                "Cinematic"
               ]
             },
             {
               "engineId": "seedance-2-5",
               "name": "Seedance 2.5",
               "provider": "ByteDance",
-              "bestFor": "Cinematic multi-shot",
+              "bestFor": "Complex cinematic physics",
               "fallbackPrice": "Live price",
               "scores": [
                 {
@@ -379,16 +379,16 @@
                 }
               ],
               "tags": [
-                "Multi-shot",
-                "Reference",
+                "Physics",
+                "Audio",
                 "Cinematic"
               ]
             },
             {
-              "engineId": "wan-3",
-              "name": "Wan 3",
+              "engineId": "wan-3-prime",
+              "name": "Wan 3 Prime",
               "provider": "Alibaba",
-              "bestFor": "Controlled camera motion",
+              "bestFor": "Controlled craft motion",
               "fallbackPrice": "Live price",
               "scores": [
                 {
@@ -405,9 +405,9 @@
                 }
               ],
               "tags": [
-                "Camera",
+                "Craft",
                 "Realism",
-                "Image"
+                "Camera"
               ]
             },
             {

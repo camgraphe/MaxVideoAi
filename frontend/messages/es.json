@@ -393,7 +393,7 @@
           "Pago por uso · sin suscripción"
         ],
         "title": "Deja de adivinar qué modelo de video IA usar",
-        "subtitle": "Compara MiniMax H3 Max, Seedance 2.5, Wan 3, Kling 3 y LTX 2.5, previsualiza resultados reales, mira el precio antes de generar y elige el modelo de video IA adecuado para cada plano.",
+        "subtitle": "Compara MiniMax H3 Max, Seedance 2.5, Wan 3 Prime, Kling 3 y LTX 2.5, previsualiza resultados reales, mira el precio antes de generar y elige el modelo de video IA adecuado para cada plano.",
         "primaryCta": "Generar",
         "secondaryCta": "Ver ejemplos",
         "examplesCta": "Comparar modelos",
@@ -438,7 +438,7 @@
               "engineId": "minimax-h3-max",
               "name": "MiniMax H3 Max",
               "provider": "MiniMax",
-              "bestFor": "Movimiento de producto rápido",
+              "bestFor": "Movimiento de danza cinematográfico",
               "fallbackPrice": "Precio actualizado",
               "selected": true,
               "scores": [
@@ -456,16 +456,16 @@
                 }
               ],
               "tags": [
-                "Rápido",
-                "Producto",
-                "7 s"
+                "Danza",
+                "Movimiento",
+                "Cine"
               ]
             },
             {
               "engineId": "seedance-2-5",
               "name": "Seedance 2.5",
               "provider": "ByteDance",
-              "bestFor": "Multi-plano cinematográfico",
+              "bestFor": "Física cinematográfica compleja",
               "fallbackPrice": "Precio actualizado",
               "scores": [
                 {
@@ -482,16 +482,16 @@
                 }
               ],
               "tags": [
-                "Multi-plano",
-                "Referencia",
+                "Física",
+                "Audio",
                 "Cine"
               ]
             },
             {
-              "engineId": "wan-3",
-              "name": "Wan 3",
+              "engineId": "wan-3-prime",
+              "name": "Wan 3 Prime",
               "provider": "Alibaba",
-              "bestFor": "Movimiento de cámara controlado",
+              "bestFor": "Movimiento artesanal controlado",
               "fallbackPrice": "Precio actualizado",
               "scores": [
                 {
@@ -508,9 +508,9 @@
                 }
               ],
               "tags": [
-                "Cámara",
+                "Artesanía",
                 "Realismo",
-                "Imagen"
+                "Cámara"
               ]
             },
             {

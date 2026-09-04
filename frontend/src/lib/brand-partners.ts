@@ -300,8 +300,19 @@ const PARTNER_BRANDS: PartnerBrand[] = [
     id: 'xai',
     label: 'xAI',
     shortText: 'xAI',
-    policy: textOnly('Use text-only xAI attribution; no licensed durable logo asset is recorded.'),
+    policy: allowLogos(
+      'https://x.ai/legal/brand-guidelines',
+      'Use the official unmodified Grok app icon for compact Grok model attribution.'
+    ),
     defaultAvailability: 'available',
+    compactMark: {
+      light: { src: '/brand/partners/xai/grok-app-icon.png', scale: 0.8 },
+      dark: { src: '/brand/partners/xai/grok-app-icon.png', scale: 0.8 },
+    },
+    alt: {
+      light: 'Grok compact logo',
+      dark: 'Grok compact logo (dark mode)',
+    },
     engineIds: ['grok-imagine-video-1-5'],
   },
   {
