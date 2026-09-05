@@ -38,6 +38,7 @@ export function ExamplesHeroVideo({
 }: ExamplesHeroVideoProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const playerVisibleRef = useRef(true);
   const userPausedRef = useRef(false);
   const environmentPauseRef = useRef(false);
   const playIntendedRef = useRef(false);
@@ -75,14 +76,12 @@ export function ExamplesHeroVideo({
     if (!node || !container || !playbackAttempt) return;
     measureNode(node);
 
-    let inView = true;
     const generation = ++playGenerationRef.current;
     let autoplayDisabled = shouldDisableHeroAutoplay();
-    let loadingRequested = false;
     environmentPauseRef.current = false;
     setShowPosterOverlay(Boolean(poster));
 
-    const visibleNow = () => inView && document.visibilityState !== 'hidden';
+    const visibleNow = () => playerVisibleRef.current && document.visibilityState !== 'hidden';
     const pauseForEnvironment = () => {
       setContext({ visible: false });
       measurePause();
@@ -91,7 +90,10 @@ export function ExamplesHeroVideo({
       node.pause();
     };
     const tryPlay = () => {
-      if (videoRef.current !== node || userPausedRef.current || !playIntendedRef.current || !visibleNow()) return;
+      if (
+        videoRef.current !== node || userPausedRef.current || !playIntendedRef.current || !visibleNow()
+        || programmaticPlayRef.current || !node.paused
+      ) return;
       programmaticPlayRef.current = true;
       const playPromise = node.play();
       if (playPromise && typeof playPromise.catch === 'function') {
@@ -101,11 +103,6 @@ export function ExamplesHeroVideo({
           }
         });
       }
-    };
-    const requestAutomaticLoad = () => {
-      if (loadingRequested) return;
-      loadingRequested = true;
-      node.load();
     };
     const syncPlayback = () => {
       if ((autoplayDisabled && !manualPlaybackRef.current) || !visibleNow()) {
@@ -124,19 +121,8 @@ export function ExamplesHeroVideo({
         playIntendedRef.current = true;
         setContext({ intended: true });
       }
-      if (node.readyState < node.HAVE_CURRENT_DATA) {
-        requestAutomaticLoad();
-        return;
-      }
       tryPlay();
     };
-
-    if (manualPlayPendingRef.current && visibleNow()) {
-      manualPlayPendingRef.current = false;
-      loadingRequested = true;
-      node.load();
-      tryPlay();
-    }
 
     const motionQuery = window.matchMedia?.('(prefers-reduced-motion: reduce)');
     const mobileQuery = window.matchMedia?.('(max-width: 767px)');
@@ -148,7 +134,7 @@ export function ExamplesHeroVideo({
     mobileQuery?.addEventListener?.('change', handleAutoplayPreferenceChange);
 
     const observer = new IntersectionObserver((entries) => {
-      inView = entries.some((entry) => entry.isIntersecting);
+      playerVisibleRef.current = entries.some((entry) => entry.isIntersecting);
       syncPlayback();
     }, { threshold: 0.55 });
     observer.observe(container);

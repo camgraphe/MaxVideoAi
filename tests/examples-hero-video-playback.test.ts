@@ -12,7 +12,11 @@ import { resolvePublicVideoRendition } from '../frontend/lib/public-video-rendit
 
 const ORIGINAL = 'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/6e299d72-22dd-46f4-8260-4d6887777558.mp4';
 
-async function mountExample({ desktop, ready = 0 }: { desktop: boolean; ready?: number }) {
+async function mountExample({
+  desktop,
+  ready = 0,
+  controls = true,
+}: { desktop: boolean; ready?: number; controls?: boolean }) {
   const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost', pretendToBeVisual: true });
   const observers: MockIntersectionObserver[] = [];
   class MockIntersectionObserver {
@@ -39,6 +43,11 @@ async function mountExample({ desktop, ready = 0 }: { desktop: boolean; ready?: 
   });
   Object.defineProperty(dom.window.navigator, 'connection', { configurable: true, value: { saveData: false } });
   Object.defineProperty(dom.window.HTMLMediaElement.prototype, 'readyState', { configurable: true, get: () => ready });
+  let documentVisible = true;
+  Object.defineProperty(dom.window.document, 'visibilityState', {
+    configurable: true,
+    get: () => documentVisible ? 'visible' : 'hidden',
+  });
   const globals = {
     window: dom.window,
     document: dom.window.document,
@@ -59,7 +68,7 @@ async function mountExample({ desktop, ready = 0 }: { desktop: boolean; ready?: 
   const container = dom.window.document.querySelector<HTMLElement>('#root')!;
   const root = createRoot(container);
   await act(async () => root.render(React.createElement(ExamplesHeroVideo, {
-    src: ORIGINAL, type: 'video/mp4', poster: '/poster.jpg', ariaLabel: 'Example', controls: true,
+    src: ORIGINAL, type: 'video/mp4', poster: '/poster.jpg', ariaLabel: 'Example', controls,
   })));
   const video = () => container.querySelector<HTMLVideoElement>('video');
   const emitVisibility = async (visible: boolean) => {
@@ -67,6 +76,10 @@ async function mountExample({ desktop, ready = 0 }: { desktop: boolean; ready?: 
     const observer = observers.find((candidate) => candidate.targets.has(target));
     assert.ok(observer);
     await act(async () => observer.emit(target, visible));
+  };
+  const setDocumentVisible = async (visible: boolean) => {
+    documentVisible = visible;
+    await act(async () => dom.window.document.dispatchEvent(new dom.window.Event('visibilitychange')));
   };
   const cleanup = async () => {
     await act(async () => root.unmount());
@@ -77,7 +90,7 @@ async function mountExample({ desktop, ready = 0 }: { desktop: boolean; ready?: 
     }
   };
   return {
-    dom, container, video, emitVisibility, cleanup,
+    dom, container, video, emitVisibility, setDocumentVisible, cleanup,
     loadCalls: () => loadCalls, playCalls: () => playCalls, pauseCalls: () => pauseCalls,
   };
 }
@@ -161,6 +174,70 @@ test('examples preserve native mute and volume through derivative fallback', asy
     assert.equal(originalVideo.querySelector('source')?.getAttribute('src'), ORIGINAL);
     assert.equal(originalVideo.muted, false, 'fallback must retain the user-selected native mute state');
     assert.equal(originalVideo.volume, 0.35, 'fallback must retain the user-selected native volume');
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
+test('native mobile playback requests a cold original fallback without loadeddata', async () => {
+  const fixture = await mountExample({ desktop: false, ready: 0 });
+  try {
+    const derivativeVideo = fixture.video()!;
+    derivativeVideo.muted = false;
+    derivativeVideo.volume = 0.35;
+    await act(async () => derivativeVideo.dispatchEvent(new fixture.dom.window.Event('volumechange')));
+    await act(async () => derivativeVideo.dispatchEvent(new fixture.dom.window.Event('play')));
+    await act(async () => derivativeVideo.querySelector('source')!.dispatchEvent(new fixture.dom.window.Event('error')));
+
+    const originalVideo = fixture.video()!;
+    assert.notEqual(originalVideo, derivativeVideo);
+    assert.equal(originalVideo.querySelector('source')?.getAttribute('src'), ORIGINAL);
+    assert.equal(originalVideo.classList.contains('opacity-0'), true, 'poster must remain until fallback playback is presented');
+    assert.equal(originalVideo.muted, false);
+    assert.equal(originalVideo.volume, 0.35);
+    assert.equal(fixture.loadCalls(), 0, 'guarded play must create demand without a redundant load call');
+    assert.equal(fixture.playCalls(), 1, 'retained native intent must request the cold fallback immediately');
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
+test('cold examples fallback respects user pause, offscreen, and hidden guards', async () => {
+  for (const blockedBy of ['pause', 'offscreen', 'hidden'] as const) {
+    const fixture = await mountExample({ desktop: false, ready: 0 });
+    try {
+      const derivativeVideo = fixture.video()!;
+      await act(async () => derivativeVideo.dispatchEvent(new fixture.dom.window.Event('play')));
+      if (blockedBy === 'pause') {
+        await act(async () => derivativeVideo.dispatchEvent(new fixture.dom.window.Event('pause')));
+      } else if (blockedBy === 'offscreen') {
+        await fixture.emitVisibility(false);
+      } else {
+        await fixture.setDocumentVisible(false);
+      }
+      await act(async () => derivativeVideo.querySelector('source')!.dispatchEvent(new fixture.dom.window.Event('error')));
+      assert.equal(fixture.video()?.querySelector('source')?.getAttribute('src'), ORIGINAL);
+      assert.equal(fixture.playCalls(), 0, `${blockedBy} fallback must not request playback`);
+    } finally {
+      await fixture.cleanup();
+    }
+  }
+});
+
+test('controls-free desktop examples request cold automatic playback and fallback', async () => {
+  const fixture = await mountExample({ desktop: true, ready: 0, controls: false });
+  try {
+    const derivativeVideo = fixture.video()!;
+    assert.equal(derivativeVideo.controls, false);
+    assert.notEqual(derivativeVideo.querySelector('source')?.getAttribute('src'), ORIGINAL);
+    assert.equal(fixture.loadCalls(), 0);
+    assert.equal(fixture.playCalls(), 1, 'eligible desktop reader must request cold playback on attachment');
+
+    await act(async () => derivativeVideo.querySelector('source')!.dispatchEvent(new fixture.dom.window.Event('error')));
+    const originalVideo = fixture.video()!;
+    assert.notEqual(originalVideo, derivativeVideo);
+    assert.equal(originalVideo.querySelector('source')?.getAttribute('src'), ORIGINAL);
+    assert.equal(fixture.playCalls(), 2, 'eligible cold fallback must receive its own guarded play request');
   } finally {
     await fixture.cleanup();
   }
