@@ -744,7 +744,7 @@
             "useCase": "Tests rapides",
             "cta": "Exemples & prompts",
             "modelCta": "Specs & pricing",
-            "imageSrc": "/hero/showcase-ltx-2-3-fast.jpg",
+            "imageSrc": "/hero/showcase-ltx-2-3-fast.webp",
             "imageAlt": "Exemple vidéo IA LTX 2.3 Fast pour génération rapide de tests.",
             "examplesSlug": "ltx"
           },

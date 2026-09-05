@@ -4,8 +4,9 @@ import type { McpHostProof } from '../_lib/mcp-host-proof';
 export function McpHostProofCard({ proof, priority = false }: { proof: McpHostProof; priority?: boolean }) {
   return (
     <figure
+      id={`${proof.host}-video-result`}
       data-mcp-host-proof={proof.host}
-      className="overflow-hidden rounded-[18px] border border-hairline bg-white shadow-sm dark:border-white/[0.14] dark:bg-neutral-900"
+      className="scroll-mt-24 overflow-hidden rounded-[18px] border border-hairline bg-white shadow-sm dark:border-white/[0.14] dark:bg-neutral-900"
     >
       <div className="border-b border-hairline bg-surface px-4 py-3 dark:border-white/[0.1] dark:bg-white/[0.045]">
         <p className="text-xs font-semibold uppercase tracking-micro text-text-secondary dark:text-white/68">

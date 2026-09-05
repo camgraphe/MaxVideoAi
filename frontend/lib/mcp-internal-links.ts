@@ -4,6 +4,7 @@ import { getMcpPublicationState, type McpPublicationState } from '@/lib/mcp-publ
 
 export type McpInternalLinkPlacement =
   | 'home'
+  | 'homeHero'
   | 'footer'
   | 'payg'
   | 'models'
@@ -19,6 +20,7 @@ type McpPublicationInputs = Parameters<typeof getMcpPublicationState>[0];
 const LABELS: Record<AppLocale, Record<McpInternalLinkPlacement, string>> = {
   en: {
     home: 'Use MaxVideoAI with Claude, ChatGPT or Codex',
+    homeHero: 'Create videos in your AI assistant',
     footer: 'MaxVideoAI for Claude, ChatGPT & Codex',
     payg: 'Plan a video budget in Claude, ChatGPT or Codex',
     models: 'Compare models from an agent-assisted brief',
@@ -29,6 +31,7 @@ const LABELS: Record<AppLocale, Record<McpInternalLinkPlacement, string>> = {
   },
   fr: {
     home: 'Utiliser MaxVideoAI avec Claude, ChatGPT ou Codex',
+    homeHero: 'Créez vos vidéos dans votre assistant IA',
     footer: 'MaxVideoAI pour Claude, ChatGPT et Codex',
     payg: 'Préparer un budget vidéo avec Claude, ChatGPT ou Codex',
     models: 'Comparer les modèles depuis un brief assisté',
@@ -39,6 +42,7 @@ const LABELS: Record<AppLocale, Record<McpInternalLinkPlacement, string>> = {
   },
   es: {
     home: 'Usar MaxVideoAI con Claude, ChatGPT o Codex',
+    homeHero: 'Crea vídeos en tu asistente de IA',
     footer: 'MaxVideoAI para Claude, ChatGPT y Codex',
     payg: 'Planifica un presupuesto de video con Claude, ChatGPT o Codex',
     models: 'Compara modelos desde una idea asistida',
