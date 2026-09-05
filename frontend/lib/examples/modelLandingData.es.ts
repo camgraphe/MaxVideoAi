@@ -196,44 +196,44 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
   ltx: {
     metaTitle: 'Ejemplos de LTX, prompts, ajustes y salidas | MaxVideoAI',
     metaDescription:
-      'Consulta ejemplos de prompts de LTX 2.3 Pro y LTX 2.3 Fast, ajustes, salidas y patrones de imagen a video, y luego revisa los workflows LTX 2 aún compatibles en MaxVideoAI.',
+      "Explora ejemplos de video, prompts y ajustes de LTX 2.5 Pro y Fast, con ejemplos de LTX 2.3 y LTX 2 identificados para flujos anteriores.",
     heroTitle: 'Ejemplos de LTX, prompts, ajustes y salidas',
-    subtitle: 'Ejemplos para los workflows actuales de LTX 2.3 Pro y LTX 2.3 Fast, más setups LTX anteriores aún compatibles.',
+    subtitle: 'Ejemplos para los workflows actuales de LTX 2.5 Pro y LTX 2.5 Fast, más setups LTX anteriores aún compatibles.',
     intro:
-      'Consulta los ejemplos de prompts, ajustes reutilizables y patrones de salida de LTX 2.3 Pro y LTX 2.3 Fast, y luego revisa LTX 2 y LTX 2 Fast como setups aún compatibles para workflows anteriores, bases históricas de prompts y contexto de migración. Usa esta página para estudiar la estructura de prompts, los patrones de imagen a video con IA y los ajustes específicos de cada modelo antes de abrir la página LTX correspondiente.',
+      "Explora prompts, ajustes y resultados de LTX 2.5 Pro y Fast. La galería conserva ejemplos de LTX 2.3 Pro/Fast y LTX 2 Pro/Fast para flujos anteriores y comparaciones de migración. Cada video identifica el modelo que lo generó. Abre sus detalles para consultar el prompt, los ajustes y el precio registrado.",
     summary:
-      'LTX 2.3 Pro y LTX 2.3 Fast lideran esta página para ejemplos de prompts, ajustes, salidas y patrones de imagen a video, mientras LTX 2 y LTX 2 Fast se mantienen más abajo para workflows anteriores y contexto de migración.',
+      "LTX 2.5 Pro y Fast encabezan esta página. Los ejemplos de LTX 2.3 y LTX 2 conservan sus etiquetas originales para comparar generaciones sin confundir sus capacidades.",
     promptPatterns:
-      'Empieza con estructuras de prompts reutilizables de LTX 2.3 para tomas de producto, clips cinematográficos cortos y pruebas de movimiento consistentes que se conviertan en salidas de video repetibles antes de adaptarlas a tu escena.',
+      'Empieza con estructuras de prompts reutilizables de LTX 2.5 para tomas de producto, clips cinematográficos cortos y pruebas de movimiento consistentes que se conviertan en salidas de video repetibles antes de adaptarlas a tu escena.',
     strengthsLimits:
-      'Usa LTX 2.3 con una imagen fuente clara, una instrucción principal de movimiento y un único objetivo de cámara para comparar mejor las salidas entre Pro y Fast.',
+      'Usa LTX 2.5 con una imagen fuente clara, una instrucción principal de movimiento y un único objetivo de cámara para comparar mejor las salidas entre Pro y Fast.',
     pricingNotes:
       'Mantén alineados la duración, la relación de aspecto, la complejidad del movimiento y los ajustes de salida al probar prompts para comparar con más claridad calidad, velocidad y coste.',
     faq: [
       {
-        question: '¿Cuáles son los mejores ejemplos de prompts de LTX 2.3 para empezar?',
+        question: '¿Cuáles son los mejores ejemplos de prompts de LTX 2.5 para empezar?',
         answer:
           'El mejor punto de partida es una estructura simple: sujeto, acción, dirección de cámara y objetivo visual. Los ejemplos más útiles mantienen esa estructura estable y solo cambian una variable a la vez.',
       },
       {
-        question: '¿Cómo debería estructurar un prompt de LTX 2.3?',
+        question: '¿Cómo debería estructurar un prompt de LTX 2.5?',
         answer:
-          'Empieza con un sujeto claro, una acción principal, una instrucción de cámara y una referencia de estilo visual. Los prompts de LTX 2.3 suelen funcionar mejor cuando el objetivo de movimiento es explícito y la escena se mantiene compacta.',
+          'Empieza con un sujeto claro, una acción principal, una instrucción de cámara y una referencia de estilo visual. Los prompts de LTX 2.5 suelen funcionar mejor cuando el objetivo de movimiento es explícito y la escena se mantiene compacta.',
       },
       {
-        question: '¿Qué ajustes importan más en las salidas de LTX 2.3?',
+        question: '¿Qué ajustes importan más en las salidas de LTX 2.5?',
         answer:
           'Los ajustes más importantes son la duración, la relación de aspecto, la imagen fuente para imagen a video y el nivel de complejidad de movimiento que pides en un solo prompt. Mantenerlos estables hace mucho más fácil probar prompts.',
       },
       {
-        question: '¿Cómo debería escribir prompts para LTX 2.3 en imagen a video?',
+        question: '¿Cómo debería escribir prompts para LTX 2.5 en imagen a video?',
         answer:
-          'Parte de una imagen fuente fuerte y añade una instrucción de movimiento, un movimiento de cámara y un objetivo de salida. LTX 2.3 funciona mejor cuando el prompt amplía la imagen original en lugar de intentar sustituirla por una escena totalmente distinta.',
+          'Parte de una imagen fuente fuerte y añade una instrucción de movimiento, un movimiento de cámara y un objetivo de salida. LTX 2.5 funciona mejor cuando el prompt amplía la imagen original en lugar de intentar sustituirla por una escena totalmente distinta.',
       },
       {
-        question: '¿Qué modelo LTX debería usar: LTX 2.3 Pro o LTX 2.3 Fast?',
+        question: '¿Qué modelo LTX debería usar: LTX 2.5 Pro o LTX 2.5 Fast?',
         answer:
-          'Usa LTX 2.3 Pro cuando quieras la mejor calidad actual de LTX y flujos más avanzados como audio, Extend y Retake. Usa LTX 2.3 Fast cuando quieras pruebas de prompts más rápidas, más baratas y con más margen para iterar borradores largos.',
+          'Compara LTX 2.5 Pro y Fast con el mismo prompt y los mismos ajustes. Usa los ejemplos para valorar el resultado y la página de precios para comparar costes actuales. Consulta cada modelo para sus modos y límites; los ejemplos anteriores describen la versión indicada en su etiqueta.',
       },
     ],
   },

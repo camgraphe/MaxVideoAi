@@ -6,10 +6,10 @@
       "description": "Compare Seedance 2.0 and Fast with identical prompts, side-by-side video outputs, pricing, speed, quality tradeoffs and when to use each model.",
       "titleBranding": "none"
     },
-    "heroIntro": "Use Seedance 2.0 when quality and consistency matter. Use Seedance 2.0 Fast when you want quicker, cheaper prompt tests and rapid iteration. Compare identical prompts, side-by-side outputs, pricing, speed, and quality tradeoffs before choosing the right Seedance workflow.",
+    "heroIntro": "Choose Seedance 2.0 for polished 1080p or 4K output, and Fast for lower-cost 480p or 720p drafts. Compare the outputs and settings below; actual waiting time depends on the route, settings and provider queue.",
     "quickVerdict": {
       "title": "Quick verdict",
-      "body": "Seedance 2.0 vs Seedance 2.0 Fast is mainly a quality versus iteration-speed choice. Seedance 2.0 is better for final 1080p or 4K shots, stronger consistency, reference-driven work, native audio, and polished output. Seedance 2.0 Fast is better for cheaper 480p or 720p drafts, prompt testing, timing checks, and fast creative exploration before upgrading the best idea to the standard Seedance 2.0 route."
+      "body": "The main tradeoff is output quality and resolution versus the cost of testing. Seedance 2.0 supports polished 1080p or 4K shots with native audio and references. Fast offers lower-cost 480p or 720p drafts for prompt and timing checks. The Fast name does not guarantee a shorter wait for every job; use the dated production measurements below as context, not as a controlled speed comparison."
     },
     "primaryLinksTitle": "Recommended next steps",
     "primaryLinks": [
@@ -32,7 +32,7 @@
       "items": [
         {
           "question": "Which Seedance AI video model should I use for draft work?",
-          "answer": "Use Seedance 2.0 Fast for cheaper draft passes, faster testing, and workflow comparisons. Use Seedance 2.0 when you want stronger final-quality multi-shot output, native audio, and a more production-ready workflow."
+          "answer": "Use Fast for lower-cost 480p or 720p draft passes and prompt tests. Choose standard Seedance 2.0 for 1080p or 4K delivery and more polished output. Check the current price and supported settings before generating."
         },
         {
           "question": "How is Seedance 2.0 different from Seedance 2.0 Fast?",
@@ -49,6 +49,10 @@
         {
           "question": "Is Seedance 2.0 better for polished Seedance video output?",
           "answer": "Yes. Seedance 2.0 is the better fit when the goal is polished Seedance video output, while Fast is the better fit when the goal is to test ideas and compare workflows quickly."
+        },
+        {
+          "question": "Is Seedance 2.0 Fast always faster?",
+          "answer": "No. Generation time depends on duration, resolution, references and provider queues. The observed median and P90 below use eligible production traffic over 30 days; they do not compare identical settings. Missing data means the public sample requirements are not met or the measurement is unavailable."
         }
       ]
     }
@@ -59,10 +63,10 @@
       "description": "Comparez Seedance 2.0 et Fast avec des prompts identiques, des vidéos côte à côte, les prix, la vitesse, les écarts de qualité et les usages de chaque modèle.",
       "titleBranding": "none"
     },
-    "heroIntro": "Comparez Seedance 2.0 et Seedance 2.0 Fast pour choisir le bon workflow video IA Seedance actuel selon votre besoin de rendu multi-shot final, d audio natif et de comparaison de workflow. Utilisez cette page pour voir quand le Seedance standard convient mieux a une sortie video Seedance soignee et quand Fast convient mieux aux tests, aux checks de timing et a l iteration moins couteuse.",
+    "heroIntro": "Choisissez Seedance 2.0 pour une sortie soignée en 1080p ou 4K, et Fast pour des brouillons 480p ou 720p moins coûteux. Comparez les résultats et les réglages ci-dessous ; le temps d’attente dépend de la route, des paramètres et de la file du fournisseur.",
     "quickVerdict": {
       "title": "Verdict rapide",
-      "body": "Le choix entre Seedance 2.0 et Seedance 2.0 Fast oppose surtout qualité finale et vitesse d’itération. Seedance 2.0 convient mieux aux plans finaux en 1080p ou 4K, à une cohérence renforcée, aux projets guidés par des références, à l’audio natif et à une finition soignée. Seedance 2.0 Fast est préférable pour des brouillons 480p ou 720p moins coûteux, les essais de prompts, les contrôles de rythme et l’exploration rapide, avant de produire la meilleure idée avec Seedance 2.0."
+      "body": "Le choix porte surtout sur la qualité et la résolution du résultat face au coût des essais. Seedance 2.0 permet des plans soignés en 1080p ou 4K, avec audio natif et références. Fast propose des brouillons 480p ou 720p moins coûteux pour tester les prompts et le rythme. Le nom Fast ne garantit pas une attente plus courte à chaque génération ; les mesures datées ci-dessous donnent un contexte de production, pas un test de vitesse à conditions identiques."
     },
     "primaryLinksTitle": "Parcours recommande",
     "primaryLinks": [
@@ -85,7 +89,7 @@
       "items": [
         {
           "question": "Quel modele video IA Seedance faut-il utiliser pour le travail de draft ?",
-          "answer": "Utilisez Seedance 2.0 Fast pour des tests moins couteux, des tests plus rapides et des comparaisons de workflow. Utilisez Seedance 2.0 quand vous voulez une sortie multi-shot plus aboutie, l audio natif et un workflow plus pret pour la production."
+          "answer": "Utilisez Fast pour des brouillons 480p ou 720p moins coûteux et des essais de prompts. Choisissez Seedance 2.0 standard pour le 1080p ou la 4K et une finition plus soignée. Vérifiez le prix actuel et les réglages pris en charge avant de générer."
         },
         {
           "question": "Quelle difference entre Seedance 2.0 et Seedance 2.0 Fast ?",
@@ -102,6 +106,10 @@
         {
           "question": "Seedance 2.0 est-il meilleur pour une sortie video Seedance soignee ?",
           "answer": "Oui. Seedance 2.0 convient mieux quand l objectif est une sortie video Seedance soignee, tandis que Fast convient mieux quand l objectif est de tester des idees et de comparer rapidement des workflows."
+        },
+        {
+          "question": "Seedance 2.0 Fast est-il toujours plus rapide ?",
+          "answer": "Non. Le délai dépend de la durée, de la résolution, des références et des files du fournisseur. La médiane et le P90 ci-dessous reposent sur un échantillon de production admissible sur 30 jours, sans imposer les mêmes réglages. Une donnée absente indique un échantillon insuffisant ou une mesure indisponible."
         }
       ]
     }
@@ -112,10 +120,10 @@
       "description": "Compara Seedance 2.0 y Fast con prompts idénticos, videos lado a lado, precios, velocidad, diferencias de calidad y los mejores usos de cada modelo.",
       "titleBranding": "none"
     },
-    "heroIntro": "Compara Seedance 2.0 y Seedance 2.0 Fast para elegir el workflow de video IA de Seedance actual mas adecuado segun tu necesidad de trabajo multi-shot final, audio nativo y comparacion de workflow. Usa esta pagina para ver cuando el Seedance estandar encaja mejor en una salida de video de Seedance mas pulida y cuando Fast encaja mejor para pruebas, checks de timing e iteracion mas barata.",
+    "heroIntro": "Elige Seedance 2.0 para resultados pulidos en 1080p o 4K, y Fast para borradores más económicos en 480p o 720p. Compara los resultados y ajustes; la espera real depende de la ruta, los parámetros y la cola del proveedor.",
     "quickVerdict": {
       "title": "Veredicto rápido",
-      "body": "Elegir entre Seedance 2.0 y Seedance 2.0 Fast es, ante todo, decidir entre calidad final y velocidad de iteración. Seedance 2.0 funciona mejor para tomas finales en 1080p o 4K, mayor consistencia, trabajos guiados por referencias, audio nativo y resultados pulidos. Seedance 2.0 Fast conviene para borradores más económicos en 480p o 720p, pruebas de prompts, revisiones de ritmo y exploración creativa rápida antes de llevar la mejor idea a Seedance 2.0."
+      "body": "La principal diferencia es la calidad y resolución del resultado frente al coste de las pruebas. Seedance 2.0 permite tomas pulidas en 1080p o 4K con audio nativo y referencias. Fast ofrece borradores más económicos en 480p o 720p para probar prompts y ritmo. El nombre Fast no garantiza una espera menor en cada generación; las mediciones fechadas aportan contexto de producción, no una prueba de velocidad con ajustes idénticos."
     },
     "primaryLinksTitle": "Siguientes pasos recomendados",
     "primaryLinks": [
@@ -138,7 +146,7 @@
       "items": [
         {
           "question": "Que modelo de video IA de Seedance deberia usar para trabajo de borrador?",
-          "answer": "Usa Seedance 2.0 Fast para borradores mas baratos, pruebas mas rapidas y comparaciones de workflow. Usa Seedance 2.0 cuando quieras una salida multi-shot mas pulida, audio nativo y un workflow mas listo para produccion."
+          "answer": "Usa Fast para borradores más económicos en 480p o 720p y pruebas de prompts. Elige Seedance 2.0 estándar para 1080p o 4K y resultados más pulidos. Comprueba el precio actual y los ajustes admitidos antes de generar."
         },
         {
           "question": "En que se diferencia Seedance 2.0 de Seedance 2.0 Fast?",
@@ -155,6 +163,10 @@
         {
           "question": "Es mejor Seedance 2.0 para una salida de video de Seedance mas pulida?",
           "answer": "Si. Seedance 2.0 encaja mejor cuando el objetivo es una salida de video de Seedance mas pulida, mientras que Fast encaja mejor cuando el objetivo es probar ideas y comparar workflows rapidamente."
+        },
+        {
+          "question": "¿Seedance 2.0 Fast siempre es más rápido?",
+          "answer": "No. La espera depende de la duración, la resolución, las referencias y las colas del proveedor. La mediana y el P90 usan tráfico de producción admisible de los últimos 30 días, sin exigir ajustes idénticos. La ausencia de datos indica una muestra insuficiente o una medición no disponible."
         }
       ]
     }

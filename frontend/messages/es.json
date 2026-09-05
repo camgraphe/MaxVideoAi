@@ -1819,7 +1819,7 @@
     "priceChipSuffix": "Precio antes de generar.",
     "priceChipPrefix": "Esta generación",
     "meta": {
-      "title": "Comparación de precios de video IA: Veo, LTX, Kling, Seedance y más | MaxVideoAI",
+      "title": "Precios de video IA: compara modelos | MaxVideoAI",
       "description": "Compara precios de video IA por motor, duración, resolución y audio. Ve precios 720p, 1080p y 4K, luego abre la app para el precio en vivo."
     }
   },
@@ -5302,7 +5302,9 @@
     "keySpecs": {
       "title": "Especificaciones clave (lado a lado)",
       "subtitle": "Compara las especificaciones clave de modelos de video IA (precios, entradas, resolución, duración, formatos, audio y controles). Es un resumen — abre el perfil para ver el set completo y ejemplos de prompts.",
-      "keyLabel": "Especificación clave"
+      "keyLabel": "Especificación clave",
+      "latencyNote": "Tiempos observados en producción durante 30 días; los ajustes y las colas varían. P90 indica que el 90 % de los renders medidos termina en ese plazo. No son pruebas de velocidad en condiciones idénticas.",
+      "latencySource": "Método de medición y límites"
     },
     "specLabels": {
       "pricing": "Precios (MaxVideoAI)",
@@ -5322,7 +5324,8 @@
       "lipSync": "Lip sync",
       "cameraMotionControls": "Controles de cámara / movimiento",
       "watermark": "Marca de agua",
-      "avgRenderTime": "Tiempo medio de render"
+      "avgRenderTime": "Tiempo medio de render",
+      "observedMedian": "Mediana observada (30 días)"
     },
     "showdown": {
       "title": "Showdown (mismo prompt)",

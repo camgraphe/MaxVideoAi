@@ -196,44 +196,44 @@ export const FR_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
   ltx: {
     metaTitle: 'Exemples LTX, prompts, réglages et sorties | MaxVideoAI',
     metaDescription:
-      'Parcourez des exemples de prompts LTX 2.3 Pro et LTX 2.3 Fast, des réglages, des sorties et des schemas image-vers-vidéo, puis consultez les flux LTX 2 encore pris en charge sur MaxVideoAI.',
+      "Explorez les exemples vidéo, prompts et réglages LTX 2.5 Pro et Fast, avec des exemples LTX 2.3 et LTX 2 identifiés pour les anciens flux.",
     heroTitle: 'Exemples LTX, prompts, réglages et sorties',
-    subtitle: 'Exemples pour les flux LTX 2.3 Pro et LTX 2.3 Fast actuels, avec les anciens flux LTX encore pris en charge.',
+    subtitle: 'Exemples pour les flux LTX 2.5 Pro et LTX 2.5 Fast actuels, avec les anciens flux LTX encore pris en charge.',
     intro:
-      'Parcourez les exemples de prompts, les réglages réutilisables et les schemas de sortie de LTX 2.3 Pro et LTX 2.3 Fast, puis consultez LTX 2 et LTX 2 Fast comme configurations encore prises en charge pour des flux plus anciens, des bases de prompts historiques et du contexte de migration. Utilisez cette page pour étudier la structure des prompts, les schemas image-vers-vidéo IA et les réglages propres à chaque modèle avant d’ouvrir la page LTX correspondante.',
+      "Explorez les prompts, réglages et résultats LTX 2.5 Pro et Fast. La galerie conserve aussi des exemples LTX 2.3 Pro/Fast et LTX 2 Pro/Fast pour les anciens flux et les comparaisons de migration. Chaque vidéo indique le modèle qui a réellement produit le résultat. Ouvrez ses détails pour retrouver le prompt, les réglages et le prix enregistré.",
     summary:
-      'LTX 2.3 Pro et LTX 2.3 Fast mènent cette page pour les exemples de prompts, les réglages, les sorties et les schemas image-vers-vidéo, tandis que LTX 2 et LTX 2 Fast restent disponibles plus bas pour les flux plus anciens et le contexte de migration.',
+      "LTX 2.5 Pro et Fast occupent le premier plan. Les exemples LTX 2.3 et LTX 2 conservent leur modèle d’origine pour comparer les générations sans confondre leurs capacités.",
     promptPatterns:
-      'Commencez par des structures de prompts LTX 2.3 réutilisables pour des plans produit, des clips cinématiques courts et des tests de mouvement cohérents qui se transforment en sorties vidéo répétables, puis adaptez-les à votre scène.',
+      'Commencez par des structures de prompts LTX 2.5 réutilisables pour des plans produit, des clips cinématiques courts et des tests de mouvement cohérents qui se transforment en sorties vidéo répétables, puis adaptez-les à votre scène.',
     strengthsLimits:
-      'Utilisez LTX 2.3 avec une image source claire, une instruction de mouvement principale et un objectif caméra unique pour comparer plus proprement les sorties entre Pro et Fast.',
+      'Utilisez LTX 2.5 avec une image source claire, une instruction de mouvement principale et un objectif caméra unique pour comparer plus proprement les sorties entre Pro et Fast.',
     pricingNotes:
       'Gardez la durée, le ratio, la complexité du mouvement et les réglages de sortie alignés quand vous testez des prompts afin de comparer plus proprement la qualité, la vitesse et le coût.',
     faq: [
       {
-        question: 'Quels sont les meilleurs exemples de prompts LTX 2.3 pour commencer ?',
+        question: 'Quels sont les meilleurs exemples de prompts LTX 2.5 pour commencer ?',
         answer:
           'Le meilleur point de départ reste une structure simple : sujet, action, direction caméra et intention visuelle. Les exemples les plus utiles gardent cette structure stable et ne changent qu’une variable à la fois.',
       },
       {
-        question: 'Comment faut-il structurer un prompt LTX 2.3 ?',
+        question: 'Comment faut-il structurer un prompt LTX 2.5 ?',
         answer:
-          'Commencez par un sujet clair, une action principale, une instruction caméra et un repère de style visuel. Les prompts LTX 2.3 fonctionnent généralement mieux quand l’objectif de mouvement est explicite et que la scène reste compacte.',
+          'Commencez par un sujet clair, une action principale, une instruction caméra et un repère de style visuel. Les prompts LTX 2.5 fonctionnent généralement mieux quand l’objectif de mouvement est explicite et que la scène reste compacte.',
       },
       {
-        question: 'Quels réglages comptent le plus pour les sorties LTX 2.3 ?',
+        question: 'Quels réglages comptent le plus pour les sorties LTX 2.5 ?',
         answer:
           'Les réglages les plus importants sont la durée, le ratio, l’image source pour l’image-vers-vidéo et le niveau de complexité de mouvement demandé. Les garder stables rend les tests beaucoup plus lisibles.',
       },
       {
-        question: 'Comment faut-il prompter LTX 2.3 en image-vers-vidéo ?',
+        question: 'Comment faut-il prompter LTX 2.5 en image-vers-vidéo ?',
         answer:
-          'Partez d’une image source forte, puis ajoutez une instruction de mouvement, un mouvement caméra et un objectif de sortie. LTX 2.3 fonctionne mieux quand le prompt prolonge l’image d’origine au lieu de tenter de la remplacer par une scène totalement différente.',
+          'Partez d’une image source forte, puis ajoutez une instruction de mouvement, un mouvement caméra et un objectif de sortie. LTX 2.5 fonctionne mieux quand le prompt prolonge l’image d’origine au lieu de tenter de la remplacer par une scène totalement différente.',
       },
       {
-        question: 'Quel modèle LTX utiliser : LTX 2.3 Pro ou LTX 2.3 Fast ?',
+        question: 'Quel modèle LTX utiliser : LTX 2.5 Pro ou LTX 2.5 Fast ?',
         answer:
-          'Utilisez LTX 2.3 Pro quand vous cherchez la meilleure qualité actuelle et des flux avancés comme l’audio, Extend et Retake. Utilisez LTX 2.3 Fast quand vous voulez tester des prompts plus vite, à moindre coût, et itérer sur des tests plus longs.',
+          'Comparez LTX 2.5 Pro et Fast avec le même prompt et les mêmes réglages. Appuyez-vous sur les exemples pour juger le résultat et sur la page des tarifs pour comparer les coûts actuels. Consultez chaque page modèle pour ses modes et limites ; les anciens exemples LTX décrivent la version indiquée sur leur étiquette.',
       },
     ],
   },

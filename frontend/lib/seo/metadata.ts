@@ -26,7 +26,9 @@ function buildSeoTitle(input: string, branding: SeoTitleBranding = 'auto'): stri
   if (BRAND_REGEX.test(normalized)) {
     return normalized;
   }
-  return `${normalized} — ${SITE_NAME}`;
+  const branded = `${normalized} — ${SITE_NAME}`;
+  // Prefer the complete descriptive title when optional branding makes it long.
+  return branded.length <= 60 ? branded : normalized;
 }
 
 type OpenGraphMetadata = NonNullable<Metadata['openGraph']> & { type?: string };

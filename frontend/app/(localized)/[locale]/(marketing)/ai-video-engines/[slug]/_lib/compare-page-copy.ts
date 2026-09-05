@@ -49,7 +49,7 @@ export type ComparePageCopy = {
     expandPrompt?: string;
     collapsePrompt?: string;
   };
-  keySpecs?: { title?: string; subtitle?: string; keyLabel?: string };
+  keySpecs?: { title?: string; subtitle?: string; keyLabel?: string; latencyNote?: string; latencySource?: string };
   specLabels?: Record<string, string>;
   showdown?: { title?: string; subtitle?: string; subtitlePrelaunch?: string; note?: string; footer?: string };
   related?: { title?: string; subtitle?: string };

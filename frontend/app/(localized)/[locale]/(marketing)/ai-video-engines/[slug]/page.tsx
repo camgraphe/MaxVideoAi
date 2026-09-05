@@ -24,7 +24,6 @@ import {
 import { buildCompareSpecRows } from './_lib/compare-page-spec-rows';
 import { buildCompareShowdownSlots } from './_lib/compare-page-showdowns';
 import {
-  computePairScores,
   computePricingScore,
   getCanonicalCompareSlug,
   getEngineAccent,
@@ -165,11 +164,15 @@ export default async function CompareDetailPage(
     leftScore: computePricingScore(leftPricingDisplay.scorePrices ?? leftPricingDisplay.prices),
     rightScore: computePricingScore(rightPricingDisplay.scorePrices ?? rightPricingDisplay.prices),
   };
-  const speedScores = computePairScores(left.engine?.avgDurationMs ?? null, right.engine?.avgDurationMs ?? null, true);
+  // Observed production latency is not a controlled editorial speed score.
+  const speedScores = { leftScore: null, rightScore: null };
   const resolvedLeftOptions = ENGINE_OPTIONS;
   const resolvedRightOptions = ENGINE_OPTIONS;
   const specLabels = compareCopy.specLabels ?? {};
   const specRows = buildCompareSpecRows({
+    activeLocale,
+    leftLatency: routeData.leftLatency,
+    rightLatency: routeData.rightLatency,
     left,
     right,
     leftSpecs,

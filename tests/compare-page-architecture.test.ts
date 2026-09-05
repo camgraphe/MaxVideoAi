@@ -152,6 +152,13 @@ const routeDataSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-route-data.ts',
   'utf8'
 );
+
+test('comparison latency shares the qualified public benchmark source', () => {
+  assert.match(routeDataSource, /import \{ fetchPublicBenchmarkLatency \} from '@\/server\/benchmark-lab-metrics'/);
+  assert.doesNotMatch(routeDataSource, /fetchEngineAverageDurations/);
+  assert.doesNotMatch(pageSource, /computePairScores/);
+});
+
 const schemaSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-schema.ts',
   'utf8'
@@ -287,18 +294,10 @@ test('Seedance 2.0 vs Fast comparison owns CTR metadata without a site-name suff
   assert.equal(meta?.title, title);
   assert.equal(meta?.description, description);
   assert.equal(meta?.titleBranding, 'none');
-  assert.match(
-    override?.heroIntro ?? '',
-    /^Use Seedance 2\.0 when quality and consistency matter\. Use Seedance 2\.0 Fast when you want quicker, cheaper prompt tests and rapid iteration\./
-  );
   assert.equal(override?.quickVerdict?.title, 'Quick verdict');
   assert.match(
     override?.quickVerdict?.body ?? '',
-    /Seedance 2\.0 vs Seedance 2\.0 Fast is mainly a quality versus iteration-speed choice/
-  );
-  assert.match(
-    override?.quickVerdict?.body ?? '',
-    /final 1080p or 4K shots[\s\S]*cheaper 480p or 720p drafts/,
+    /1080p or 4K[\s\S]*480p or 720p drafts/,
     'Seedance 2.0 vs Fast should expose the direct snippet answer and resolution tradeoff'
   );
   assert.match(

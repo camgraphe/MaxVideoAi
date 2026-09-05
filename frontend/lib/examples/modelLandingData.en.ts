@@ -196,44 +196,44 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
   ltx: {
     metaTitle: 'LTX Examples, Prompts, Settings & Outputs | MaxVideoAI',
     metaDescription:
-      'Browse LTX 2.3 Pro and LTX 2.3 Fast prompt examples, settings, outputs, and image-to-video patterns, then review supported LTX 2 workflows on MaxVideoAI.',
+      "Explore LTX 2.5 Pro and Fast video examples, prompts and settings, with clearly labelled LTX 2.3 and LTX 2 examples for older workflows.",
     heroTitle: 'LTX examples, prompts, settings and outputs',
-    subtitle: 'Examples for current LTX 2.3 Pro and LTX 2.3 Fast workflows, plus supported older LTX setups.',
+    subtitle: 'Examples for current LTX 2.5 Pro and LTX 2.5 Fast workflows, plus supported older LTX setups.',
     intro:
-      'Browse LTX 2.3 Pro and LTX 2.3 Fast prompt examples, reusable settings, and output patterns, then review supported LTX 2 and LTX 2 Fast setups for older workflows, historical prompt baselines, and migration context. Use this page to study prompt structure, image-to-video AI patterns, and model-specific settings before opening the matching LTX model page.',
+      "Explore LTX 2.5 Pro and Fast prompts, settings and outputs. The gallery also keeps LTX 2.3 Pro/Fast and LTX 2 Pro/Fast examples for older workflows and migration comparisons. Each video identifies the model that actually generated it. Open its details for the prompt, settings and recorded price.",
     summary:
-      'LTX 2.3 Pro and LTX 2.3 Fast lead this page for prompt examples, reusable settings, outputs, and image-to-video patterns, with LTX 2 and LTX 2 Fast kept below for supported older workflows and migration context.',
+      "LTX 2.5 Pro and Fast lead this page. Older LTX 2.3 and LTX 2 examples keep their original model labels so you can compare generations without confusing their capabilities.",
     promptPatterns:
-      'Start from reusable LTX 2.3 prompt structures for product shots, short cinematic clips, and consistent motion tests that turn into repeatable video outputs before adapting them to your own scene.',
+      'Start from reusable LTX 2.5 prompt structures for product shots, short cinematic clips, and consistent motion tests that turn into repeatable video outputs before adapting them to your own scene.',
     strengthsLimits:
-      'Use LTX 2.3 with a clear source image, one main motion instruction, and one camera goal so outputs stay easier to compare across Pro and Fast.',
+      'Use LTX 2.5 with a clear source image, one main motion instruction, and one camera goal so outputs stay easier to compare across Pro and Fast.',
     pricingNotes:
       'Keep duration, aspect ratio, motion complexity, and output settings aligned when testing prompts so you can compare result quality, speed, and cost more cleanly.',
     faq: [
       {
-        question: 'What are the best LTX 2.3 prompt examples to start from?',
+        question: 'What are the best LTX 2.5 prompt examples to start from?',
         answer:
           'The best starting point is a simple structure: subject, action, camera direction, and style goal. The strongest examples keep that structure stable while changing only one variable at a time.',
       },
       {
-        question: 'How should I structure an LTX 2.3 prompt?',
+        question: 'How should I structure an LTX 2.5 prompt?',
         answer:
-          'Start with one clear subject, one main action, one camera instruction, and one visual style cue. LTX 2.3 prompts usually work better when the motion goal is explicit and the scene description stays tight.',
+          'Start with one clear subject, one main action, one camera instruction, and one visual style cue. LTX 2.5 prompts usually work better when the motion goal is explicit and the scene description stays tight.',
       },
       {
-        question: 'What settings matter most for LTX 2.3 outputs?',
+        question: 'What settings matter most for LTX 2.5 outputs?',
         answer:
           'The main settings to watch are duration, aspect ratio, source image choice for image-to-video, and how much motion complexity you ask for in a single prompt. Keeping those stable makes prompt testing much easier.',
       },
       {
-        question: 'How should I prompt LTX 2.3 for image-to-video?',
+        question: 'How should I prompt LTX 2.5 for image-to-video?',
         answer:
-          'Start from a strong source image, then add one motion instruction, one camera movement, and one output goal. LTX 2.3 image-to-video works best when the prompt extends the source image instead of replacing it with a completely different scene.',
+          'Start from a strong source image, then add one motion instruction, one camera movement, and one output goal. LTX 2.5 image-to-video works best when the prompt extends the source image instead of replacing it with a completely different scene.',
       },
       {
-        question: 'Which LTX model should I use: LTX 2.3 Pro or LTX 2.3 Fast?',
+        question: 'Which LTX model should I use: LTX 2.5 Pro or LTX 2.5 Fast?',
         answer:
-          'Use LTX 2.3 Pro when you want the strongest current LTX output quality and more advanced workflows like audio, Extend, and Retake. Use LTX 2.3 Fast when you want quicker, lower-cost prompt testing and longer draft iteration loops.',
+          'Compare LTX 2.5 Pro and Fast with the same prompt and settings. Use the examples to judge the output you need and the current pricing page to compare costs. Check each model page for supported modes and limits; older LTX examples describe the version shown on their label.',
       },
     ],
   },

@@ -43,14 +43,14 @@ function resolveExamplesPricingCallout(selectedEngine: string | null, locale: Ap
   const normalized = selectedEngine?.toLowerCase() ?? '';
   if (normalized === 'ltx') {
     return {
-      href: `${pricingPath}#ltx-2-3-fast-pricing`,
-      title: locale === 'fr' ? 'Tarifs LTX 2.3' : locale === 'es' ? 'Precios de LTX 2.3' : 'LTX 2.3 pricing',
+      href: `${pricingPath}#ltx-2-5-fast-pricing`,
+      title: locale === 'fr' ? 'Tarifs LTX 2.5' : locale === 'es' ? 'Precios de LTX 2.5' : 'LTX 2.5 pricing',
       body:
         locale === 'fr'
-          ? 'Comparez les coûts LTX 2.3 Fast et Pro pour 8 s, 10 s, 1080p et les routes 4K.'
+          ? 'Comparez les tarifs actuels LTX 2.5 Fast et Pro selon la durée, la résolution et les options audio.'
           : locale === 'es'
-            ? 'Compara costes de LTX 2.3 Fast y Pro para 8 s, 10 s, 1080p y rutas 4K.'
-            : 'Compare LTX 2.3 Fast and Pro costs for 8s, 10s, 1080p and 4K routes.',
+            ? 'Compara los precios actuales de LTX 2.5 Fast y Pro según duración, resolución y opciones de audio.'
+            : 'Compare current LTX 2.5 Fast and Pro prices by duration, resolution and audio options.',
     };
   }
   if (normalized === 'kling') {
