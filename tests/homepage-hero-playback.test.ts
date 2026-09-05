@@ -8,6 +8,7 @@ import {
   HeroVideoShowcase,
   type HeroVideoShowcaseItem,
 } from '../frontend/components/marketing/home/HeroVideoShowcase.tsx';
+import { resolvePublicVideoRendition } from '../frontend/lib/public-video-renditions.ts';
 
 (globalThis as typeof globalThis & { React: typeof React }).React = React;
 
@@ -29,7 +30,7 @@ const items: HeroVideoShowcaseItem[] = ['one', 'two'].map((id, index) => ({
 
 type MatchPolicy = { desktop?: boolean; reducedMotion?: boolean; saveData?: boolean };
 
-async function mountHero(policy: MatchPolicy = {}) {
+async function mountHero(policy: MatchPolicy = {}, renderedItems = items) {
   const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost', pretendToBeVisual: true });
   const idle = new Map<number, IdleRequestCallback>();
   const cancelledIdle: number[] = [];
@@ -58,7 +59,11 @@ async function mountHero(policy: MatchPolicy = {}) {
   Object.defineProperty(dom.window, 'matchMedia', {
     configurable: true,
     value: (query: string) => ({
-      matches: query.includes('min-width') ? (policy.desktop ?? false) : (policy.reducedMotion ?? false),
+      matches: query.includes('min-width')
+        ? (policy.desktop ?? false)
+        : query.includes('max-width')
+          ? !(policy.desktop ?? false)
+          : (policy.reducedMotion ?? false),
       media: query,
       onchange: null,
       addEventListener() {},
@@ -107,7 +112,7 @@ async function mountHero(policy: MatchPolicy = {}) {
   const container = dom.window.document.querySelector<HTMLElement>('#root')!;
   const root: Root = createRoot(container);
   await act(async () => root.render(React.createElement(HeroVideoShowcase, {
-    items,
+    items: renderedItems,
     playLabel: 'Play',
     pauseLabel: 'Pause',
     loadingLabel: 'Loading preview',
@@ -165,6 +170,58 @@ test('automatic hero loading waits for visible desktop idle and honors data-savi
     assert.equal(desktop.video()?.querySelector('source')?.getAttribute('src'), '/hero/one.mp4');
   } finally {
     await desktop.cleanup();
+  }
+});
+
+test('known mobile playback mounts only its selected rendition and keeps that profile through resize', async () => {
+  const original = 'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/6e299d72-22dd-46f4-8260-4d6887777558.mp4';
+  const expected = resolvePublicVideoRendition(original, 'mobile').src;
+  const knownItems = items.map((item, index) => index === 0 ? { ...item, videoSrc: original } : item);
+  const fixture = await mountHero({ desktop: false, reducedMotion: true }, knownItems);
+  const requested: string[] = [];
+  fixture.dom.window.HTMLMediaElement.prototype.play = function () {
+    requested.push(this.querySelector('source')?.getAttribute('src') ?? '');
+    return Promise.resolve();
+  };
+  try {
+    assert.equal(fixture.video(), null, 'mobile initial render must not mount a video source');
+    await act(async () => fixture.container.querySelector<HTMLButtonElement>('button[aria-label="Play: Model 1"]')!.click());
+    assert.equal(fixture.video()?.querySelector('source')?.getAttribute('src'), expected);
+    assert.deepEqual(requested, [expected]);
+    assert.equal(requested.includes(original), false, 'the original must not be mounted before the derivative');
+
+    Object.defineProperty(fixture.dom.window, 'innerWidth', { configurable: true, value: 1440 });
+    await act(async () => fixture.dom.window.dispatchEvent(new fixture.dom.window.Event('resize')));
+    assert.equal(fixture.video()?.querySelector('source')?.getAttribute('src'), expected);
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
+test('a derivative source failure falls back once and terminal retry remounts the preferred profile', async () => {
+  const original = 'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/6e299d72-22dd-46f4-8260-4d6887777558.mp4';
+  const derivative = resolvePublicVideoRendition(original, 'mobile').src;
+  const knownItems = items.map((item, index) => index === 0 ? { ...item, videoSrc: original } : item);
+  const fixture = await mountHero({ desktop: false, reducedMotion: true }, knownItems);
+  try {
+    await act(async () => fixture.container.querySelector<HTMLButtonElement>('button[aria-label="Play: Model 1"]')!.click());
+    const derivativeVideo = fixture.video()!;
+    assert.equal(derivativeVideo.querySelector('source')?.getAttribute('src'), derivative);
+    await act(async () => derivativeVideo.querySelector('source')!.dispatchEvent(new fixture.dom.window.Event('error', { bubbles: false })));
+    const originalVideo = fixture.video()!;
+    assert.notEqual(originalVideo, derivativeVideo);
+    assert.equal(originalVideo.querySelector('source')?.getAttribute('src'), original);
+
+    await act(async () => derivativeVideo.dispatchEvent(new fixture.dom.window.Event('error')));
+    assert.equal(fixture.video(), originalVideo, 'late events from the replaced derivative are ignored');
+    await act(async () => originalVideo.querySelector('source')!.dispatchEvent(new fixture.dom.window.Event('error', { bubbles: false })));
+    assert.equal(fixture.player().dataset.playbackState, 'error');
+    const retry = fixture.container.querySelector<HTMLButtonElement>('button[aria-label="Retry preview"]')!;
+    await act(async () => retry.click());
+    assert.notEqual(fixture.video(), originalVideo);
+    assert.equal(fixture.video()?.querySelector('source')?.getAttribute('src'), derivative);
+  } finally {
+    await fixture.cleanup();
   }
 });
 

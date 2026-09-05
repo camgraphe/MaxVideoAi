@@ -46,3 +46,9 @@ export function resolvePublicVideoRendition(
     generatedProjection as PublicVideoRenditionProjection
   );
 }
+
+export function getPublicVideoRenditionAssetIds(): readonly string[] {
+  return [...new Set(Object.values(
+    (generatedProjection as PublicVideoRenditionProjection).renditions
+  ).map((entry) => entry.assetId))];
+}

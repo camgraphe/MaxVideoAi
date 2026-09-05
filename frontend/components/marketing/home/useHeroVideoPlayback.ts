@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState, type SyntheticEvent } from 'react';
 
+import { usePublicVideoPlayback } from '@/components/media/usePublicVideoPlayback';
+
 type PlaybackStatus = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
 
 type PlaybackItem = {
@@ -22,7 +24,6 @@ export function useHeroVideoPlayback<T extends PlaybackItem>(items: T[]) {
   const [isDocumentVisible, setIsDocumentVisible] = useState(true);
   const [isFrameReady, setIsFrameReady] = useState(false);
   const [manualPlayRequest, setManualPlayRequest] = useState(0);
-  const [mediaAttempt, setMediaAttempt] = useState(0);
   const playerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const idleHandleRef = useRef<number | null>(null);
@@ -31,7 +32,16 @@ export function useHeroVideoPlayback<T extends PlaybackItem>(items: T[]) {
   const playAttemptRef = useRef(0);
   const userPausedRef = useRef(false);
   const pendingManualPlayRef = useRef(false);
+  const playerVisibleRef = useRef(false);
+  const documentVisibleRef = useRef(true);
   const selected = items[selectedIndex] ?? items[0];
+  const {
+    attempt, begin, fail, setContext,
+    measureNode, measurePlaying, measureWaiting, measurePause,
+  } = usePublicVideoPlayback('home');
+  const playbackAttempt = attempt?.rendition.originalSrc === selected?.videoSrc
+    ? attempt
+    : null;
 
   const cancelScheduledLoad = useCallback(() => {
     const handle = idleHandleRef.current;
@@ -47,6 +57,8 @@ export function useHeroVideoPlayback<T extends PlaybackItem>(items: T[]) {
   const playCurrent = useCallback(() => {
     const video = videoRef.current;
     if (!video) return;
+    setContext({ intended: true });
+    measureNode(video);
     const generation = generationRef.current;
     const playAttempt = ++playAttemptRef.current;
     setStatus('loading');
@@ -61,12 +73,13 @@ export function useHeroVideoPlayback<T extends PlaybackItem>(items: T[]) {
         setIsFrameReady(false);
       }
     });
-  }, []);
+  }, [measureNode, setContext]);
 
   const pauseForEnvironment = useCallback(() => {
     playAttemptRef.current += 1;
+    measurePause();
     videoRef.current?.pause();
-  }, []);
+  }, [measurePause]);
 
   useEffect(() => {
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -89,23 +102,27 @@ export function useHeroVideoPlayback<T extends PlaybackItem>(items: T[]) {
     if (!player) return;
     const observer = new IntersectionObserver(([entry]) => {
       const visible = Boolean(entry?.isIntersecting);
+      playerVisibleRef.current = visible;
       setIsPlayerVisible(visible);
+      setContext({ visible: visible && documentVisibleRef.current });
       if (!visible) pauseForEnvironment();
     }, { threshold: 0.01 });
     observer.observe(player);
     return () => observer.disconnect();
-  }, [pauseForEnvironment]);
+  }, [pauseForEnvironment, setContext]);
 
   useEffect(() => {
     const updateVisibility = () => {
       const visible = document.visibilityState !== 'hidden';
+      documentVisibleRef.current = visible;
       setIsDocumentVisible(visible);
+      setContext({ visible: visible && playerVisibleRef.current });
       if (!visible) pauseForEnvironment();
     };
     updateVisibility();
     document.addEventListener('visibilitychange', updateVisibility);
     return () => document.removeEventListener('visibilitychange', updateVisibility);
-  }, [pauseForEnvironment]);
+  }, [pauseForEnvironment, setContext]);
 
   useEffect(() => {
     cancelScheduledLoad();
@@ -114,6 +131,8 @@ export function useHeroVideoPlayback<T extends PlaybackItem>(items: T[]) {
     const loadPreview = () => {
       idleHandleRef.current = null;
       if (generationRef.current !== generation) return;
+      begin(selected.videoSrc!, 'automatic');
+      setContext({ intended: true });
       setShouldLoadVideo(true);
       setStatus('loading');
     };
@@ -125,7 +144,7 @@ export function useHeroVideoPlayback<T extends PlaybackItem>(items: T[]) {
       idleHandleRef.current = window.setTimeout(loadPreview, 1200);
     }
     return cancelScheduledLoad;
-  }, [canAutoplay, cancelScheduledLoad, isDocumentVisible, isPlayerVisible, selected?.id, selected?.videoSrc, shouldLoadVideo]);
+  }, [begin, canAutoplay, cancelScheduledLoad, isDocumentVisible, isPlayerVisible, selected?.id, selected?.videoSrc, setContext, shouldLoadVideo]);
 
   useEffect(() => {
     if (!shouldLoadVideo || !selected?.videoSrc) return;
@@ -137,7 +156,7 @@ export function useHeroVideoPlayback<T extends PlaybackItem>(items: T[]) {
     }
     if (!isPlayerVisible || userPausedRef.current) return;
     playCurrent();
-  }, [isDocumentVisible, isPlayerVisible, manualPlayRequest, mediaAttempt, playCurrent, selected?.id, selected?.videoSrc, shouldLoadVideo]);
+  }, [isDocumentVisible, isPlayerVisible, manualPlayRequest, playbackAttempt?.id, playCurrent, selected?.id, selected?.videoSrc, shouldLoadVideo]);
 
   useEffect(() => () => {
     generationRef.current += 1;
@@ -146,13 +165,15 @@ export function useHeroVideoPlayback<T extends PlaybackItem>(items: T[]) {
     videoRef.current?.pause();
   }, [cancelScheduledLoad]);
 
-  function resetForSelection() {
+  function resetForSelection(videoSrc: string) {
     generationRef.current += 1;
     playAttemptRef.current += 1;
     cancelScheduledLoad();
     videoRef.current?.pause();
     userPausedRef.current = false;
     pendingManualPlayRef.current = true;
+    begin(videoSrc, 'user', { force: true });
+    setContext({ intended: true });
     setHasUserPaused(false);
     setIsMuted(true);
     setStatus('loading');
@@ -164,37 +185,51 @@ export function useHeroVideoPlayback<T extends PlaybackItem>(items: T[]) {
   }
 
   function selectAndPlay(index: number) {
-    resetForSelection();
+    const next = items[index] ?? items[0];
+    if (!next?.videoSrc) return;
+    resetForSelection(next.videoSrc);
     setSelectedIndex(index);
   }
 
   function handlePlayToggle() {
     if (!selected?.videoSrc) return;
     if (!shouldLoadVideo) {
-      resetForSelection();
+      resetForSelection(selected.videoSrc);
       return;
     }
     if (status === 'playing') {
       playAttemptRef.current += 1;
       userPausedRef.current = true;
+      setContext({ intended: false });
+      measurePause();
       setHasUserPaused(true);
       setStatus('paused');
       videoRef.current?.pause();
       return;
     }
     userPausedRef.current = false;
+    setContext({ intended: true });
     pendingManualPlayRef.current = true;
     setHasUserPaused(false);
     if (status === 'error') {
+      begin(selected.videoSrc, 'user', { force: true });
       setIsFrameReady(false);
       setStatus('loading');
-      setMediaAttempt((value) => value + 1);
     }
     setManualPlayRequest((value) => value + 1);
   }
 
   function isCurrentVideo(event: SyntheticEvent<HTMLVideoElement>) {
     return videoRef.current === event.currentTarget;
+  }
+
+  function handlePlaybackError(video: HTMLVideoElement, attemptId: number) {
+    if (videoRef.current !== video) return;
+    playAttemptRef.current += 1;
+    setIsFrameReady(false);
+    const failure = fail(attemptId, video.error?.code);
+    if (failure === 'fallback') setStatus('loading');
+    if (failure === 'terminal') setStatus('error');
   }
 
   return {
@@ -207,9 +242,9 @@ export function useHeroVideoPlayback<T extends PlaybackItem>(items: T[]) {
     currentTime,
     progress,
     shouldLoadVideo,
+    playbackAttempt,
     canAutoplay,
     isFrameReady,
-    mediaAttempt,
     playerRef,
     videoRef,
     selectAndPlay,
@@ -222,22 +257,23 @@ export function useHeroVideoPlayback<T extends PlaybackItem>(items: T[]) {
       },
       onPlaying(event: SyntheticEvent<HTMLVideoElement>) {
         if (!isCurrentVideo(event)) return;
+        measurePlaying(event.currentTarget);
         setIsFrameReady(true);
         setStatus('playing');
       },
       onWaiting(event: SyntheticEvent<HTMLVideoElement>) {
         if (!isCurrentVideo(event)) return;
+        measureWaiting();
         setStatus('loading');
       },
       onPause(event: SyntheticEvent<HTMLVideoElement>) {
         if (!isCurrentVideo(event)) return;
+        measurePause();
         setStatus(userPausedRef.current ? 'paused' : 'loading');
       },
       onError(event: SyntheticEvent<HTMLVideoElement>) {
-        if (!isCurrentVideo(event)) return;
-        playAttemptRef.current += 1;
-        setIsFrameReady(false);
-        setStatus('error');
+        if (!playbackAttempt) return;
+        handlePlaybackError(event.currentTarget, playbackAttempt.id);
       },
       onTimeUpdate(event: SyntheticEvent<HTMLVideoElement>) {
         if (!isCurrentVideo(event)) return;
@@ -247,6 +283,11 @@ export function useHeroVideoPlayback<T extends PlaybackItem>(items: T[]) {
           setProgress(Math.min(100, (video.currentTime / video.duration) * 100));
         }
       },
+    },
+    onSourceError(event: SyntheticEvent<HTMLSourceElement>) {
+      const video = event.currentTarget.parentElement as HTMLVideoElement | null;
+      if (!video || !playbackAttempt) return;
+      handlePlaybackError(video, playbackAttempt.id);
     },
   };
 }

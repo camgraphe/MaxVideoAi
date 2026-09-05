@@ -72,6 +72,10 @@ test('model preview retains its cover during loading and on failure without fetc
     await act(async () => video.dispatchEvent(new dom.window.Event('error')));
     assert.ok(video.classList.contains('opacity-0'), 'A failed video must reveal its cover');
     assert.ok(container.contains(image), 'Keep the optimized image as the fallback throughout playback');
+    const retry = container.querySelector<HTMLButtonElement>('button[aria-label="Retry preview"]')!;
+    assert.ok(retry, 'A terminal model preview error must expose a retry');
+    await act(async () => retry.click());
+    assert.notEqual(container.querySelector('video'), video, 'Retry must remount the failed media resource');
   } finally {
     await act(async () => root.unmount());
     dom.window.close();

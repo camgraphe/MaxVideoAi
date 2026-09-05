@@ -102,8 +102,8 @@ export function HeroVideoShowcase({
   const mobileThumbnailsRef = useRef<HTMLDivElement>(null);
   const {
     selectedIndex, selected, status, isPlaying, hasUserPaused, isMuted, currentTime, progress,
-    shouldLoadVideo, canAutoplay, isFrameReady, mediaAttempt, playerRef, videoRef, selectAndPlay,
-    handlePlayToggle, handleMuteToggle, mediaHandlers,
+    shouldLoadVideo, canAutoplay, isFrameReady, playbackAttempt, playerRef, videoRef, selectAndPlay,
+    handlePlayToggle, handleMuteToggle, mediaHandlers, onSourceError,
   } = useHeroVideoPlayback(items);
 
   useEffect(() => {
@@ -168,10 +168,10 @@ export function HeroVideoShowcase({
                 className="object-cover"
               />
             )}
-            {selected.videoSrc && shouldLoadVideo ? (
+            {selected.videoSrc && shouldLoadVideo && playbackAttempt ? (
               <video
                 ref={videoRef}
-                key={`${selected.id}:${mediaAttempt}`}
+                key={`${selected.id}:${playbackAttempt.id}`}
                 aria-label={`${selected.name} preview video`}
                 className={`absolute inset-0 h-full w-full object-cover transition-opacity ${isFrameReady ? 'opacity-100' : 'opacity-0'}`}
                 preload={canAutoplay ? 'metadata' : 'auto'}
@@ -180,7 +180,11 @@ export function HeroVideoShowcase({
                 loop
                 {...mediaHandlers}
               >
-                <source src={selected.videoSrc} type="video/mp4" />
+                <source
+                  src={playbackAttempt.rendition.src}
+                  type="video/mp4"
+                  onError={onSourceError}
+                />
               </video>
             ) : null}
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,7,18,0.34)_0%,rgba(3,7,18,0.04)_38%,rgba(3,7,18,0.72)_100%)]" />
