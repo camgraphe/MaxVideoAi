@@ -70,10 +70,11 @@ jobs:
       - name: Install Playwright browser
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Install media validation tools
+      - name: Install media and database validation tools
         run: |
           sudo apt-get update
-          sudo apt-get install --yes --no-install-recommends ffmpeg
+          sudo apt-get install --yes --no-install-recommends ffmpeg postgresql
+          pg_config --bindir >> "$GITHUB_PATH"
           ffmpeg -hide_banner -version
 
       - name: Validate tests

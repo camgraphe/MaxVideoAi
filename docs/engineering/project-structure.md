@@ -80,6 +80,8 @@ Media presentation and server processing follow `docs/engineering/media-delivery
 
 `frontend/config/public-video-sources.json` is the authored public-demo source catalogue. `frontend/scripts/check-public-video-coverage.ts` is the offline build entry for full public-rendition coherence and selected homepage coverage, exposed as `pnpm --prefix frontend run media:public-renditions:check`. Its injected pure coverage logic belongs under `frontend/scripts/_lib`. It reads the exported homepage selection and media constants instead of owning a second hero/model list.
 
+Image repair orchestration belongs in `frontend/scripts/_lib/image-thumbnail-backfill.ts`. Its projection adapter, `image-thumbnail-projections.ts` in the same directory, inventories and conservatively synchronizes the stored API/library representations. It accepts query/transaction executors and must not import schema initializers, broad library upserts, encoding, or storage. The CLI always supplies this adapter; the low-level injected runner can still be used against isolated fixtures without a library. Public routes and browser readers do not import these operational helpers.
+
 ## Naming Conventions
 
 - `*.client.tsx`: browser-only component.
