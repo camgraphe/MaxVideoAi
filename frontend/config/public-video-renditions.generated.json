@@ -1,5 +1,30 @@
 {
   "schemaVersion": 1,
   "profileVersion": "public-demo-v1",
-  "renditions": {}
+  "renditions": {
+    "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/6e299d72-22dd-46f4-8260-4d6887777558.mp4": {
+      "assetId": "elevator-reunion",
+      "desktop": "https://media.maxvideoai.com/marketing/video-renditions/cb1e0396ba9893a9e7186af7fc72c92742d8c1486f1664d71c5021869aa5aec6/public-demo-v1/desktop/be2d23699a8de58f67045eeacb400f6e908f74772ec8f84067f531802135c3af.mp4",
+      "mobile": "https://media.maxvideoai.com/marketing/video-renditions/cb1e0396ba9893a9e7186af7fc72c92742d8c1486f1664d71c5021869aa5aec6/public-demo-v1/mobile/a5c300b6e89b9a4d7a955309f9a084a7c5847ae2c646bd8acdd1fbdc755fd41c.mp4"
+    },
+    "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/085cc0a7-063d-4801-91f9-ec3d9c5eb95d.mp4": {
+      "assetId": "balloon-street",
+      "desktop": "https://media.maxvideoai.com/marketing/video-renditions/ad31418d34fe9eca057278908a8b1f640b1fd7b0a210cf1a1cb580a1279fe41f/public-demo-v1/desktop/373c0a35f5566e728130e5a2c33b6b9fc42946874889b9a56dbb94e25b1c56a8.mp4",
+      "mobile": "https://media.maxvideoai.com/marketing/video-renditions/ad31418d34fe9eca057278908a8b1f640b1fd7b0a210cf1a1cb580a1279fe41f/public-demo-v1/mobile/b6bc27f48fd6bcb5c980729a0afca330dcf62a8cfb2eafcdf352e3335f4b14fc.mp4"
+    },
+    "https://media.maxvideoai.com/media-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/c8567e3b0531ae10a993534c41d5f76ec8a1fc2329294d0c8fdb7e4b38ab349a.mp4": {
+      "assetId": "glassblower",
+      "desktop": "https://media.maxvideoai.com/marketing/video-renditions/c8567e3b0531ae10a993534c41d5f76ec8a1fc2329294d0c8fdb7e4b38ab349a/public-demo-v1/desktop/fb8d72fe4e9a408accb5229b7839a915760805190dc813f9c9bdb000db900bef.mp4",
+      "mobile": "https://media.maxvideoai.com/marketing/video-renditions/c8567e3b0531ae10a993534c41d5f76ec8a1fc2329294d0c8fdb7e4b38ab349a/public-demo-v1/mobile/7f07e71c00cb0f49a626724fe9c424c44f1cb86d900ed37e8cf59969c20112ad.mp4"
+    },
+    "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/7b1f1c7b-f7f0-473e-9610-82723604b690.mp4": {
+      "assetId": "mars-garden",
+      "desktop": "https://media.maxvideoai.com/marketing/video-renditions/34828ca39ffe1fd87f05cef3fa57728e461189c063e17362d857598bce835a98/public-demo-v1/desktop/1ba1c5333e5396dca007d37678ff2e3a2d46a960ca7a8b32dd4a240a63e7f45e.mp4",
+      "mobile": "https://media.maxvideoai.com/marketing/video-renditions/34828ca39ffe1fd87f05cef3fa57728e461189c063e17362d857598bce835a98/public-demo-v1/mobile/7eda2b52c1daade621b841edd1367aeb37e3ef4c034184a930baa23ea3e1a03c.mp4"
+    },
+    "https://media.maxvideoai.com/media-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/2506829a4f4f3d7e5d2bd864a701fc6cc2fb7c53182f7a7f5ca10cc580c70aa8.mp4": {
+      "assetId": "underwater-swimmer",
+      "mobile": "https://media.maxvideoai.com/marketing/video-renditions/2506829a4f4f3d7e5d2bd864a701fc6cc2fb7c53182f7a7f5ca10cc580c70aa8/public-demo-v1/mobile/64e689cb64cceb67ef006622524b5f1183ce00f83749fdf6f7d38d87d28a86c4.mp4"
+    }
+  }
 }
