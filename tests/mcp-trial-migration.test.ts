@@ -96,7 +96,7 @@ test('migration 31 constraints, transitions, immutability, indexes and races exe
   });
 
   const psql = (...args: string[]) => spawnSync('psql', [
-    '-X', '-h', socketDirectory, '-U', 'postgres', '-d', 'postgres', ...args,
+    '-X', '-q', '-h', socketDirectory, '-U', 'postgres', '-d', 'postgres', ...args,
   ], { encoding: 'utf8' });
   const applyTrialAlone = psql(
     '--single-transaction', '-v', 'ON_ERROR_STOP=1', '-f', join(root, trialMigrationPath),

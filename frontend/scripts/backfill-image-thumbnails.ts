@@ -6,22 +6,24 @@ import {
   parseImageThumbnailBackfillOptions,
   runImageThumbnailBackfill,
 } from './_lib/image-thumbnail-backfill';
+import { createImageThumbnailProjectionRepair } from './_lib/image-thumbnail-projections';
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   parseImageThumbnailBackfillOptions(args, process.env);
 
   const { config: loadEnv } = await import('dotenv');
-  loadEnv({ path: path.resolve(process.cwd(), '.env.local'), override: true });
+  loadEnv({ path: path.resolve(process.cwd(), '.env.local'), override: false });
   loadEnv({ path: path.resolve(process.cwd(), '.env'), override: false });
   const options = parseImageThumbnailBackfillOptions(args, process.env);
 
   await import('tsconfig-paths/lib/register');
-  const { query, getDb } = await import('../src/lib/db');
+  const { query, getDb, withDbTransaction } = await import('../src/lib/db');
 
   try {
     const dependencies = {
       query,
+      projections: createImageThumbnailProjectionRepair({ query, transaction: withDbTransaction }),
       onCandidate: (row: { job_id: string }, reasons: string[]) => {
         const prefix = options.mode === 'dry-run' ? '[image-thumb-backfill][dry-run]' : '[image-thumb-backfill]';
         console.log(`${prefix} ${row.job_id}: ${reasons.join(', ')}`);
