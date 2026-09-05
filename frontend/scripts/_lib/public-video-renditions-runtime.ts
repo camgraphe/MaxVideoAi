@@ -1,4 +1,4 @@
-import { execFile } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdir, open, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -12,11 +12,14 @@ import {
   assertAllowedPublicMp4Url,
   buildFfmpegArguments,
   DOWNLOAD_TIMEOUT_MS,
+  hashAdtsPacketPayloads,
   inspectMp4TopLevelBoxes,
   MAX_DOWNLOAD_BYTES,
   parseFfprobeJson,
   PROCESS_TIMEOUT_MS,
   PUBLIC_VIDEO_PROFILE_VERSION,
+  RenditionOmissionError,
+  validatePublicVideoSources,
   validatePreparedRendition,
   verifyPreparedOutputForResume,
   type MediaProbe,
@@ -25,6 +28,10 @@ import {
 } from './public-video-renditions';
 
 const execFileAsync = promisify(execFile);
+
+export async function getPublicVideoFfmpegPath(): Promise<string> {
+  return ensureExecutableFfmpegPath(ffmpegInstaller.path);
+}
 
 async function atomicWrite(filePath: string, data: Buffer | string): Promise<void> {
   await mkdir(path.dirname(filePath), { recursive: true });
@@ -111,15 +118,75 @@ async function runExecutable(executable: string, args: string[], timeoutMs = PRO
   });
 }
 
+async function runExecutableBuffer(
+  executable: string,
+  args: string[],
+  maximumBytes = MAX_DOWNLOAD_BYTES,
+  timeoutMs = PROCESS_TIMEOUT_MS
+): Promise<Buffer> {
+  return new Promise<Buffer>((resolve, reject) => {
+    const child = spawn(executable, args, { stdio: ['ignore', 'pipe', 'pipe'], shell: false });
+    const stdout: Buffer[] = [];
+    const stderr: Buffer[] = [];
+    let stdoutBytes = 0;
+    let stderrBytes = 0;
+    let settled = false;
+    const finish = (error?: Error) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      if (error) reject(error);
+      else resolve(Buffer.concat(stdout, stdoutBytes));
+    };
+    const timer = setTimeout(() => {
+      child.kill('SIGKILL');
+      finish(new Error(`Media process exceeded ${Math.min(timeoutMs, PROCESS_TIMEOUT_MS)}ms`));
+    }, Math.min(timeoutMs, PROCESS_TIMEOUT_MS));
+    child.stdout.on('data', (chunk: Buffer) => {
+      stdoutBytes += chunk.byteLength;
+      if (stdoutBytes > Math.min(maximumBytes, MAX_DOWNLOAD_BYTES)) {
+        child.kill('SIGKILL');
+        finish(new Error('Media process output exceeded the byte limit'));
+        return;
+      }
+      stdout.push(chunk);
+    });
+    child.stderr.on('data', (chunk: Buffer) => {
+      const remaining = 1024 * 1024 - stderrBytes;
+      if (remaining <= 0) return;
+      const bounded = chunk.subarray(0, remaining);
+      stderr.push(bounded);
+      stderrBytes += bounded.byteLength;
+    });
+    child.on('error', (error) => finish(error));
+    child.on('close', (code, signal) => {
+      if (settled) return;
+      if (code === 0) finish();
+      else finish(new Error(`Media process failed code=${code ?? 'none'} signal=${signal ?? 'none'}: ${Buffer.concat(stderr).toString('utf8')}`));
+    });
+  });
+}
+
 export async function probeMediaFile(filePath: string): Promise<MediaProbe> {
   const probeResult = await runExecutable(ffprobe.path, [
-    '-v', 'error', '-print_format', 'json', '-show_format', '-show_streams', filePath,
+    '-v', 'error', '-print_format', 'json', '-show_format', '-show_streams', '-show_frames', filePath,
   ]);
-  const parsed = parseFfprobeJson(probeResult.stdout);
+  const rawProbe = JSON.parse(probeResult.stdout) as { streams?: Array<{ codec_type?: unknown }> };
+  const hasAudio = rawProbe.streams?.some((stream) => stream.codec_type === 'audio') === true;
+  const ffmpegPath = await getPublicVideoFfmpegPath();
+  const audioPacketPayloadSha256 = hasAudio
+    ? hashAdtsPacketPayloads(await runExecutableBuffer(ffmpegPath, [
+        '-hide_banner', '-nostdin', '-v', 'error', '-i', filePath,
+        '-map', '0:a:0', '-c:a', 'copy', '-f', 'adts', 'pipe:1',
+      ]))
+    : null;
+  const parsed = parseFfprobeJson(probeResult.stdout, { audioPacketPayloadSha256 });
   const bytes = await readFile(filePath);
   const fastStart = inspectMp4TopLevelBoxes(bytes).fastStart;
-  const ffmpegPath = await ensureExecutableFfmpegPath(ffmpegInstaller.path);
-  await runExecutable(ffmpegPath, ['-hide_banner', '-nostdin', '-v', 'error', '-xerror', '-i', filePath, '-map', '0:v:0', '-f', 'null', '-']);
+  await runExecutable(ffmpegPath, [
+    '-hide_banner', '-nostdin', '-v', 'error', '-xerror', '-i', filePath,
+    '-map', '0:v:0', '-map', '0:a:0?', '-f', 'null', '-',
+  ]);
   return { ...parsed, fastStart, decodeOk: true };
 }
 
@@ -131,7 +198,7 @@ export async function encodePublicVideoRendition(
 ): Promise<void> {
   await mkdir(path.dirname(outputPath), { recursive: true });
   const temporary = `${outputPath}.partial-${process.pid}.mp4`;
-  const ffmpegPath = await ensureExecutableFfmpegPath(ffmpegInstaller.path);
+  const ffmpegPath = await getPublicVideoFfmpegPath();
   try {
     await runExecutable(ffmpegPath, buildFfmpegArguments(sourcePath, temporary, sourceProbe, profile));
     await rename(temporary, outputPath);
@@ -149,6 +216,7 @@ export async function preparePublicVideoRenditions(
     encode?: typeof encodePublicVideoRendition;
   } = {}
 ): Promise<PreparedCheckpoint[]> {
+  validatePublicVideoSources(input.sources);
   const download = dependencies.download ?? downloadPublicVideoToFile;
   const probe = dependencies.probe ?? probeMediaFile;
   const encode = dependencies.encode ?? encodePublicVideoRendition;
@@ -187,11 +255,17 @@ export async function preparePublicVideoRenditions(
       original: { url: source.url, sha256: source.sha256, bytes: sourceBytes, path: sourcePath, probe: sourceProbe },
       renditions: {},
       omissions: [],
+      failures: [],
     };
     try {
       const prior = JSON.parse(await readFile(checkpointPath, 'utf8')) as PreparedCheckpoint;
       if (prior.assetId === source.assetId && prior.profileVersion === PUBLIC_VIDEO_PROFILE_VERSION && prior.original.sha256 === source.sha256) {
-        checkpoint = { ...checkpoint, renditions: prior.renditions ?? {}, omissions: prior.omissions ?? [] };
+        checkpoint = {
+          ...checkpoint,
+          renditions: prior.renditions ?? {},
+          omissions: prior.omissions ?? [],
+          failures: prior.failures ?? [],
+        };
       }
     } catch {
       // A missing or malformed checkpoint is rebuilt from verified files.
@@ -205,13 +279,15 @@ export async function preparePublicVideoRenditions(
         expectedSha256: prior.sha256,
         expectedProbe: prior.probe,
       }, { probeFile: probe })) continue;
+      if (checkpoint.omissions.some((omission) => omission.profile === profile)) continue;
       delete checkpoint.renditions[profile];
       checkpoint.omissions = checkpoint.omissions.filter((omission) => omission.profile !== profile);
-      await encode(sourcePath, outputPath, sourceProbe, profile);
-      const outputStat = await stat(outputPath);
-      const outputHash = await sha256File(outputPath);
-      const outputProbe = await probe(outputPath);
+      checkpoint.failures = checkpoint.failures.filter((failure) => failure.profile !== profile);
       try {
+        await encode(sourcePath, outputPath, sourceProbe, profile);
+        const outputStat = await stat(outputPath);
+        const outputHash = await sha256File(outputPath);
+        const outputProbe = await probe(outputPath);
         validatePreparedRendition({ sourceBytes, outputBytes: outputStat.size, sourceProbe, outputProbe }, profile);
         checkpoint.renditions[profile] = {
           profileVersion: PUBLIC_VIDEO_PROFILE_VERSION,
@@ -222,7 +298,8 @@ export async function preparePublicVideoRenditions(
         };
       } catch (error) {
         const reason = error instanceof Error ? error.message : String(error);
-        checkpoint.omissions.push({ profile, reason });
+        if (error instanceof RenditionOmissionError) checkpoint.omissions.push({ profile, reason });
+        else checkpoint.failures.push({ profile, reason, retryable: true });
         await rm(outputPath, { force: true });
       }
       await atomicWriteJson(checkpointPath, checkpoint);

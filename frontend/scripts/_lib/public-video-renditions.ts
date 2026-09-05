@@ -6,6 +6,13 @@ import type {
   PublicVideoRenditionProfile,
   PublicVideoRenditionProjection,
 } from '../../lib/public-video-renditions';
+import {
+  activatePublishedManifestState,
+  buildPublicProjectionState,
+  checkPublicVideoStateFiles,
+  persistActivatedStateFiles,
+  validatePublishedManifestState,
+} from './public-video-rendition-state';
 
 export type PublicVideoProfileVersion = 'public-demo-v1';
 export const PUBLIC_VIDEO_PROFILE_VERSION = profileConfig.version as PublicVideoProfileVersion;
@@ -49,11 +56,25 @@ export type AudioProbe = {
   channels: number;
   sampleRateHz: number;
   durationSeconds: number;
+  startSeconds: number;
+  packetPayloadSha256: string;
+};
+export type FrameCadenceProbe = {
+  kind: 'cfr';
+  firstTimestampSeconds: number;
+  lastTimestampSeconds: number;
+  minDeltaSeconds: number;
+  maxDeltaSeconds: number;
+  timestampsSha256: string;
 };
 export type MediaProbe = {
   width: number;
   height: number;
   durationSeconds: number;
+  containerDurationSeconds: number;
+  videoStartSeconds: number;
+  videoFrameCount: number;
+  cadence: FrameCadenceProbe;
   frameRate: Rational;
   videoCodec: 'h264';
   pixelFormat: 'yuv420p';
@@ -101,7 +122,9 @@ export type PublishedManifest = {
     role: 'public-demo';
     original: { url: string; sha256: string; bytes: number; probe: MediaProbe };
     renditions: Partial<Record<PublicVideoRenditionProfile, PublishedRendition>>;
+    pendingRenditions: Partial<Record<PublicVideoRenditionProfile, PublishedRendition>>;
     omissions: Array<{ profile: PublicVideoRenditionProfile; reason: string }>;
+    failures: Array<{ profile: PublicVideoRenditionProfile; reason: string; retryable: true }>;
   }>;
 };
 
@@ -125,7 +148,15 @@ export type PreparedCheckpoint = {
     probe: MediaProbe;
   }>>;
   omissions: Array<{ profile: PublicVideoRenditionProfile; reason: string }>;
+  failures: Array<{ profile: PublicVideoRenditionProfile; reason: string; retryable: true }>;
 };
+
+export class RenditionOmissionError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'RenditionOmissionError';
+  }
+}
 
 export type PublicVideoRenditionOptions = {
   mode: 'prepare' | 'publish' | 'check' | 'activate';
@@ -135,6 +166,21 @@ export type PublicVideoRenditionOptions = {
   http: boolean;
   reviewEvidence?: string;
 };
+
+export function summarizePreparedCheckpoints(checkpoints: PreparedCheckpoint[]): {
+  assets: number;
+  acceptedProfiles: number;
+  omittedProfiles: number;
+  failedProfiles: number;
+} {
+  return checkpoints.reduce((summary, checkpoint) => {
+    summary.assets += 1;
+    summary.acceptedProfiles += Number(Boolean(checkpoint.renditions.desktop)) + Number(Boolean(checkpoint.renditions.mobile));
+    summary.omittedProfiles += checkpoint.omissions.length;
+    summary.failedProfiles += checkpoint.failures.length;
+    return summary;
+  }, { assets: 0, acceptedProfiles: 0, omittedProfiles: 0, failedProfiles: 0 });
+}
 
 function parsePositiveInteger(raw: string, label: string, maximum: number): number {
   if (!/^\d+$/.test(raw)) throw new Error(`${label} must be an integer between 1 and ${maximum}`);
@@ -221,6 +267,12 @@ function parseFinitePositive(raw: unknown, label: string): number {
   return value;
 }
 
+function parseFinite(raw: unknown, label: string): number {
+  const value = typeof raw === 'number' ? raw : typeof raw === 'string' ? Number(raw) : NaN;
+  if (!Number.isFinite(value)) throw new Error(`${label} must be finite`);
+  return value;
+}
+
 function parseRational(raw: unknown, separator: '/' | ':', label: string): Rational {
   if (typeof raw !== 'string') throw new Error(`${label} must be rational`);
   const match = raw.match(separator === '/' ? /^(\d+)\/(\d+)$/ : /^(\d+):(\d+)$/);
@@ -233,10 +285,43 @@ function parseRational(raw: unknown, separator: '/' | ':', label: string): Ratio
 
 type FfprobeStream = Record<string, unknown> & { codec_type?: unknown };
 
-export function parseFfprobeJson(input: string | unknown): MediaProbe {
-  let parsed: { streams?: unknown; format?: unknown };
+function buildCadenceProbe(framesInput: unknown, frameRate: Rational): FrameCadenceProbe & { frameCount: number } {
+  const supported = [[24, 1], [25, 1], [30, 1]].some(
+    ([numerator, denominator]) => rationalEqual(frameRate, { numerator: numerator!, denominator: denominator! })
+  );
+  if (!supported) throw new Error('Only constant 24, 25, or 30 fps input is supported');
+  if (!Array.isArray(framesInput)) throw new Error('Bounded video frame timing evidence is required');
+  const frames = (framesInput as Array<Record<string, unknown>>).filter((frame) => frame.media_type === 'video');
+  if (frames.length < 2 || frames.length > 3600) throw new Error('Video frame evidence must contain 2 to 3600 frames');
+  const timestamps = frames.map((frame) => parseFinite(
+    frame.best_effort_timestamp_time ?? frame.pts_time ?? frame.pkt_dts_time,
+    'video frame timestamp'
+  ));
+  const deltas = timestamps.slice(1).map((timestamp, index) => timestamp - timestamps[index]!);
+  if (deltas.some((delta) => delta <= 0)) throw new Error('Video frame timestamps must increase');
+  const expectedDelta = frameRate.denominator / frameRate.numerator;
+  const tolerance = Math.max(0.0001, expectedDelta * 0.01);
+  if (deltas.some((delta) => Math.abs(delta - expectedDelta) > tolerance)) {
+    throw new Error('Unsupported variable frame cadence');
+  }
+  return {
+    kind: 'cfr',
+    frameCount: frames.length,
+    firstTimestampSeconds: timestamps[0]!,
+    lastTimestampSeconds: timestamps[timestamps.length - 1]!,
+    minDeltaSeconds: Math.min(...deltas),
+    maxDeltaSeconds: Math.max(...deltas),
+    timestampsSha256: createHash('sha256').update(timestamps.map((value) => value.toFixed(6)).join('\n')).digest('hex'),
+  };
+}
+
+export function parseFfprobeJson(
+  input: string | unknown,
+  options: { audioPacketPayloadSha256?: string | null } = {}
+): MediaProbe {
+  let parsed: { streams?: unknown; format?: unknown; frames?: unknown };
   try {
-    parsed = (typeof input === 'string' ? JSON.parse(input) : input) as { streams?: unknown; format?: unknown };
+    parsed = (typeof input === 'string' ? JSON.parse(input) : input) as { streams?: unknown; format?: unknown; frames?: unknown };
   } catch {
     throw new Error('Expected valid ffprobe JSON');
   }
@@ -265,21 +350,35 @@ export function parseFfprobeJson(input: string | unknown): MediaProbe {
   if (!Number.isFinite(rotationDegrees) || rotationDegrees !== 0) throw new Error('Rotated input is unsupported');
   const audioStreams = streams.filter((stream) => stream.codec_type === 'audio');
   if (audioStreams.length > 1) throw new Error('Only zero or one audio stream is supported');
+  if (audioStreams[0]?.codec_name !== undefined && audioStreams[0].codec_name !== 'aac') {
+    throw new Error('Only AAC input audio is supported');
+  }
+  const cadence = buildCadenceProbe(parsed.frames, frameRate);
   let audio: AudioProbe | null = null;
   if (audioStreams.length === 1) {
     const stream = audioStreams[0]!;
-    if (stream.codec_name !== 'aac') throw new Error('Only AAC input audio is supported');
+    if (!options.audioPacketPayloadSha256 || !/^[a-f0-9]{64}$/.test(options.audioPacketPayloadSha256)) {
+      throw new Error('AAC packet payload measurement is required');
+    }
     audio = {
       codec: 'aac',
       channels: parsePositiveInteger(String(stream.channels), 'audio channels', 32),
       sampleRateHz: parsePositiveInteger(String(stream.sample_rate), 'audio sample rate', 384_000),
       durationSeconds: parseFinitePositive(stream.duration ?? (parsed.format as Record<string, unknown>).duration, 'audio duration'),
+      startSeconds: parseFinite(stream.start_time ?? 0, 'audio start time'),
+      packetPayloadSha256: options.audioPacketPayloadSha256,
     };
   }
+  const durationSeconds = parseFinitePositive(video.duration, 'video stream duration');
+  if (durationSeconds > 60) throw new Error('Video duration exceeds the 60-second measurement limit');
   return {
     width,
     height,
-    durationSeconds: parseFinitePositive((parsed.format as Record<string, unknown>).duration, 'duration'),
+    durationSeconds,
+    containerDurationSeconds: parseFinitePositive((parsed.format as Record<string, unknown>).duration, 'container duration'),
+    videoStartSeconds: parseFinite(video.start_time ?? cadence.firstTimestampSeconds, 'video start time'),
+    videoFrameCount: cadence.frameCount,
+    cadence,
     frameRate,
     videoCodec: 'h264',
     pixelFormat: 'yuv420p',
@@ -308,8 +407,8 @@ export function buildFfmpegArguments(
     '-hide_banner', '-nostdin', '-i', inputPath, '-map', '0:v:0', '-map', '0:a:0?',
     '-vf', `scale='min(${definition.width},iw)':'min(${definition.height},ih)':force_original_aspect_ratio=decrease:force_divisible_by=2`,
     '-c:v', definition.videoCodec, '-preset', definition.preset, '-crf', String(definition.crf), '-pix_fmt', definition.pixelFormat,
-    '-r', `${source.frameRate.numerator}/${source.frameRate.denominator}`, '-g', String(gop),
-    '-keyint_min', String(gop), '-sc_threshold', definition.sceneCut ? '40' : '0', '-threads', String(definition.threads), '-c:a', 'copy',
+    '-g', String(gop), '-keyint_min', String(gop), '-sc_threshold', definition.sceneCut ? '40' : '0',
+    '-threads', String(definition.threads), '-c:a', 'copy',
     '-movflags', '+faststart', '-y', outputPath,
   ];
 }
@@ -323,7 +422,7 @@ export function validatePreparedRendition(
   if (!Number.isSafeInteger(sourceBytes) || sourceBytes <= 0 || !Number.isSafeInteger(outputBytes) || outputBytes <= 0) {
     throw new Error('Source and output byte sizes must be positive integers');
   }
-  if (outputBytes > Math.floor(sourceBytes * 0.85)) throw new Error('Rendition must save at least 15% of source bytes');
+  if (outputBytes > Math.floor(sourceBytes * 0.85)) throw new RenditionOmissionError('Rendition must save at least 15% of source bytes');
   if (output.width > source.width || output.height > source.height) throw new Error('Rendition must not upscale');
   if (output.width > bounds.width || output.height > bounds.height || output.width % 2 || output.height % 2) {
     throw new Error('Rendition dimensions violate profile bounds');
@@ -334,6 +433,11 @@ export function validatePreparedRendition(
     throw new Error('Rendition aspect ratio changed');
   }
   if (!rationalEqual(source.frameRate, output.frameRate)) throw new Error('Rendition cadence changed');
+  if (
+    source.videoFrameCount !== output.videoFrameCount ||
+    source.cadence.timestampsSha256 !== output.cadence.timestampsSha256 ||
+    Math.abs(source.videoStartSeconds - output.videoStartSeconds) > 0.001
+  ) throw new Error('Rendition frame timeline changed');
   if (Math.abs(source.durationSeconds - output.durationSeconds) > 0.15) throw new Error('Rendition duration changed');
   if (source.videoCodec !== output.videoCodec || output.videoCodec !== 'h264' || output.pixelFormat !== 'yuv420p') {
     throw new Error('Rendition video format is unsupported');
@@ -344,7 +448,9 @@ export function validatePreparedRendition(
   if (source.audio && output.audio && (
     output.audio.codec !== 'aac' || source.audio.channels !== output.audio.channels ||
     source.audio.sampleRateHz !== output.audio.sampleRateHz ||
-    Math.abs(source.audio.durationSeconds - output.audio.durationSeconds) > 0.15
+    Math.abs(source.audio.durationSeconds - output.audio.durationSeconds) > 0.001 ||
+    Math.abs(source.audio.startSeconds - output.audio.startSeconds) > 0.001 ||
+    source.audio.packetPayloadSha256 !== output.audio.packetPayloadSha256
   )) throw new Error('Rendition audio changed');
 }
 
@@ -377,12 +483,38 @@ export function inspectMp4TopLevelBoxes(bytes: Buffer): { fastStart: boolean; bo
   return { fastStart: moov >= 0 && (mdat < 0 || moov < mdat), boxes };
 }
 
-const ALLOWED_SOURCE_HOSTS = new Set(['media.maxvideoai.com', 'videohub-uploads-us.s3.amazonaws.com']);
+export function hashAdtsPacketPayloads(input: Buffer): string {
+  const hash = createHash('sha256');
+  let offset = 0;
+  let packets = 0;
+  while (offset < input.length) {
+    if (offset + 7 > input.length || input[offset] !== 0xff || (input[offset + 1]! & 0xf6) !== 0xf0) {
+      throw new Error('Invalid bounded ADTS packet stream');
+    }
+    const headerBytes = (input[offset + 1]! & 0x01) === 1 ? 7 : 9;
+    const packetBytes = ((input[offset + 3]! & 0x03) << 11) | (input[offset + 4]! << 3) | (input[offset + 5]! >> 5);
+    if (packetBytes < headerBytes || offset + packetBytes > input.length) throw new Error('Invalid bounded ADTS packet length');
+    const payloadBytes = packetBytes - headerBytes;
+    const length = Buffer.allocUnsafe(4);
+    length.writeUInt32BE(payloadBytes);
+    hash.update(length);
+    hash.update(input.subarray(offset + headerBytes, offset + packetBytes));
+    packets += 1;
+    offset += packetBytes;
+  }
+  if (packets === 0) throw new Error('AAC stream has no packet payloads');
+  return hash.digest('hex');
+}
+
+const ALLOWED_PUBLIC_VIDEO_ORIGINS = new Set([
+  'https://media.maxvideoai.com',
+  'https://videohub-uploads-us.s3.amazonaws.com',
+]);
 
 export function assertAllowedPublicMp4Url(raw: string): URL {
   let url: URL;
   try { url = new URL(raw); } catch { throw new Error('Expected an allowed public media URL'); }
-  if (url.protocol !== 'https:' || !ALLOWED_SOURCE_HOSTS.has(url.hostname) || url.username || url.password || url.search || url.hash) {
+  if (!ALLOWED_PUBLIC_VIDEO_ORIGINS.has(url.origin) || url.username || url.password || url.search || url.hash) {
     throw new Error('Expected an allowed public media URL without credentials, query, or fragment');
   }
   if (!url.pathname.toLowerCase().endsWith('.mp4') || url.pathname.includes('/../') || url.pathname.includes('/./')) {
@@ -391,13 +523,32 @@ export function assertAllowedPublicMp4Url(raw: string): URL {
   return url;
 }
 
-function assertSha256(value: string, label: string): void {
+export function assertSha256(value: string, label: string): void {
   if (!/^[a-f0-9]{64}$/.test(value)) throw new Error(`${label} must be a lowercase SHA256`);
 }
 
-function assertProbeShape(probe: MediaProbe): void {
+export function validatePublicVideoSources(sources: PublicVideoSource[]): void {
+  if (!Array.isArray(sources) || sources.length === 0) throw new Error('Public video source list must not be empty');
+  const ids = new Set<string>();
+  const urls = new Set<string>();
+  const hashes = new Set<string>();
+  for (const source of sources) {
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(source.assetId)) throw new Error(`Invalid public video asset ID: ${source.assetId}`);
+    if (source.role !== 'public-demo') throw new Error(`Invalid public video role for ${source.assetId}`);
+    assertAllowedPublicMp4Url(source.url);
+    assertSha256(source.sha256, 'Source hash');
+    if (ids.has(source.assetId)) throw new Error(`Duplicate source asset ID: ${source.assetId}`);
+    if (urls.has(source.url)) throw new Error(`Duplicate source URL: ${source.url}`);
+    if (hashes.has(source.sha256)) throw new Error(`Duplicate source SHA256: ${source.sha256}`);
+    ids.add(source.assetId);
+    urls.add(source.url);
+    hashes.add(source.sha256);
+  }
+}
+
+export function assertProbeShape(probe: MediaProbe): void {
   if (!probe || probe.videoCodec !== 'h264' || probe.pixelFormat !== 'yuv420p') throw new Error('Invalid measured probe');
-  if (![probe.width, probe.height, probe.durationSeconds, probe.frameRate?.numerator, probe.frameRate?.denominator].every((value) => Number.isFinite(value) && Number(value) > 0)) {
+  if (![probe.width, probe.height, probe.durationSeconds, probe.containerDurationSeconds, probe.videoFrameCount, probe.frameRate?.numerator, probe.frameRate?.denominator].every((value) => Number.isFinite(value) && Number(value) > 0)) {
     throw new Error('Invalid measured probe values');
   }
   if (probe.sampleAspectRatio?.numerator !== probe.sampleAspectRatio?.denominator || probe.rotationDegrees !== 0) {
@@ -406,91 +557,24 @@ function assertProbeShape(probe: MediaProbe): void {
   if (typeof probe.fastStart !== 'boolean' || typeof probe.decodeOk !== 'boolean' || !probe.decodeOk) {
     throw new Error('Invalid measured decode or faststart status');
   }
+  if (
+    probe.cadence?.kind !== 'cfr' || !/^[a-f0-9]{64}$/.test(probe.cadence.timestampsSha256) ||
+    !Number.isFinite(probe.videoStartSeconds)
+  ) throw new Error('Invalid measured frame timeline');
   if (probe.audio && (
     probe.audio.codec !== 'aac' || !Number.isSafeInteger(probe.audio.channels) || probe.audio.channels <= 0 ||
     !Number.isSafeInteger(probe.audio.sampleRateHz) || probe.audio.sampleRateHz <= 0 ||
-    !Number.isFinite(probe.audio.durationSeconds) || probe.audio.durationSeconds <= 0
+    !Number.isFinite(probe.audio.durationSeconds) || probe.audio.durationSeconds <= 0 ||
+    !Number.isFinite(probe.audio.startSeconds) || !/^[a-f0-9]{64}$/.test(probe.audio.packetPayloadSha256)
   )) throw new Error('Invalid measured audio probe');
 }
 
 export function validatePublishedManifest(manifest: PublishedManifest, sources: PublicVideoSource[]): void {
-  if (manifest?.schemaVersion !== 1) throw new Error('Unsupported manifest schema version');
-  if (manifest.profileVersion !== PUBLIC_VIDEO_PROFILE_VERSION) throw new Error('Stale manifest profile version');
-  const sourceById = new Map<string, PublicVideoSource>();
-  const sourceUrls = new Set<string>();
-  for (const source of sources) {
-    if (sourceById.has(source.assetId)) throw new Error(`Duplicate source asset ID: ${source.assetId}`);
-    if (sourceUrls.has(source.url)) throw new Error(`Duplicate source URL: ${source.url}`);
-    assertAllowedPublicMp4Url(source.url);
-    assertSha256(source.sha256, 'Source hash');
-    sourceById.set(source.assetId, source);
-    sourceUrls.add(source.url);
-  }
-  const ids = new Set<string>();
-  const derivativeUrls = new Set<string>();
-  for (const entry of manifest.entries) {
-    if (ids.has(entry.assetId)) throw new Error(`Duplicate asset ID: ${entry.assetId}`);
-    ids.add(entry.assetId);
-    const source = sourceById.get(entry.assetId);
-    if (!source) throw new Error(`Unknown source asset ID: ${entry.assetId}`);
-    if (entry.role !== 'public-demo' || source.role !== entry.role) throw new Error('Invalid public video role');
-    if (entry.original.url !== source.url) throw new Error(`Stale source URL for ${entry.assetId}`);
-    if (entry.original.sha256 !== source.sha256) throw new Error(`Stale source hash for ${entry.assetId}`);
-    if (!Number.isSafeInteger(entry.original.bytes) || entry.original.bytes <= 0) throw new Error('Invalid original byte size');
-    assertProbeShape(entry.original.probe);
-    for (const profile of ['desktop', 'mobile'] as const) {
-      const rendition = entry.renditions[profile];
-      if (!rendition) continue;
-      if (rendition.profileVersion !== PUBLIC_VIDEO_PROFILE_VERSION) throw new Error(`Stale profile version for ${entry.assetId}`);
-      assertAllowedPublicMp4Url(rendition.url);
-      if (new URL(rendition.url).hostname !== 'media.maxvideoai.com') throw new Error('Derivative must use the public media origin');
-      if (derivativeUrls.has(rendition.url)) throw new Error(`Duplicate or conflicting derivative URL: ${rendition.url}`);
-      derivativeUrls.add(rendition.url);
-      assertSha256(rendition.sha256, 'Rendition hash');
-      const expectedKey = `marketing/video-renditions/${entry.original.sha256}/${PUBLIC_VIDEO_PROFILE_VERSION}/${profile}/${rendition.sha256}.mp4`;
-      if (rendition.storageKey !== expectedKey || !rendition.url.endsWith(`/${expectedKey}`)) throw new Error('Rendition identity conflicts with immutable storage key');
-      assertProbeShape(rendition.probe);
-      validatePreparedRendition({ sourceBytes: entry.original.bytes, outputBytes: rendition.bytes, sourceProbe: entry.original.probe, outputProbe: rendition.probe }, profile);
-      if (!rendition.visualReview?.evidence.trim() || !Number.isFinite(Date.parse(rendition.visualReview.reviewedAt))) {
-        throw new Error('Published rendition requires valid visual review evidence');
-      }
-      if (rendition.httpCheck && (
-        !Number.isFinite(Date.parse(rendition.httpCheck.checkedAt)) ||
-        rendition.httpCheck.bytes !== rendition.bytes || rendition.httpCheck.totalBytes !== rendition.bytes ||
-        rendition.httpCheck.contentType !== 'video/mp4' || rendition.httpCheck.rangeStart !== 0 ||
-        rendition.httpCheck.rangeEnd !== 31
-      )) throw new Error('Published rendition has invalid HTTP readiness evidence');
-      if (rendition.activatedAt) {
-        if (!Number.isFinite(Date.parse(rendition.activatedAt))) {
-          throw new Error('Activated rendition has invalid review or activation time');
-        }
-        if (!rendition.httpCheck) throw new Error('Activated rendition requires HTTP readiness evidence');
-      }
-    }
-    const omitted = new Set<PublicVideoRenditionProfile>();
-    for (const omission of entry.omissions ?? []) {
-      if (!['desktop', 'mobile'].includes(omission.profile) || !omission.reason?.trim()) throw new Error('Invalid rendition omission');
-      if (omitted.has(omission.profile) || entry.renditions[omission.profile]) throw new Error('Conflicting rendition omission');
-      omitted.add(omission.profile);
-    }
-  }
+  validatePublishedManifestState(manifest, sources);
 }
 
 export function buildPublicProjection(manifest: PublishedManifest): PublicVideoRenditionProjection {
-  const renditions: PublicVideoRenditionProjection['renditions'] = {};
-  for (const entry of manifest.entries) {
-    const projected: { assetId: string; desktop?: string; mobile?: string } = { assetId: entry.assetId };
-    for (const profile of ['desktop', 'mobile'] as const) {
-      const rendition = entry.renditions[profile];
-      if (rendition?.activatedAt) projected[profile] = rendition.url;
-    }
-    if (projected.desktop || projected.mobile) renditions[entry.original.url] = projected;
-  }
-  return { schemaVersion: 1, profileVersion: PUBLIC_VIDEO_PROFILE_VERSION, renditions };
-}
-
-function jsonEqual(left: unknown, right: unknown): boolean {
-  return JSON.stringify(left) === JSON.stringify(right);
+  return buildPublicProjectionState(manifest);
 }
 
 export function checkPublicVideoState(input: {
@@ -498,12 +582,7 @@ export function checkPublicVideoState(input: {
   manifest: PublishedManifest;
   projection: PublicVideoRenditionProjection;
 }): void {
-  validatePublishedManifest(input.manifest, input.sources);
-  if (input.projection.schemaVersion !== 1 || input.projection.profileVersion !== PUBLIC_VIDEO_PROFILE_VERSION) {
-    throw new Error('Generated projection has a stale schema or profile version');
-  }
-  const expected = buildPublicProjection(input.manifest);
-  if (!jsonEqual(input.projection, expected)) throw new Error('Generated projection is stale or hand-edited');
+  checkPublicVideoStateFiles(input);
 }
 
 export async function activatePublishedManifest(
@@ -515,38 +594,52 @@ export async function activatePublishedManifest(
     assetIds?: ReadonlySet<string>;
   }
 ): Promise<{ manifest: PublishedManifest; projection: PublicVideoRenditionProjection }> {
-  validatePublishedManifest(manifest, sources);
-  if (dependencies.assetIds) {
-    for (const assetId of dependencies.assetIds) {
-      if (!manifest.entries.some((entry) => entry.assetId === assetId)) {
-        throw new Error(`Selected asset ${assetId} is not published`);
-      }
-    }
+  return activatePublishedManifestState(manifest, sources, dependencies);
+}
+
+export async function persistActivatedState(
+  manifest: PublishedManifest,
+  _currentProjection: PublicVideoRenditionProjection,
+  sources: PublicVideoSource[],
+  dependencies: {
+    verifyHttp: (url: string, expectedBytes: number) => Promise<HttpCheckEvidence>;
+    writeManifest: (manifest: PublishedManifest) => Promise<void>;
+    writeProjection: (projection: PublicVideoRenditionProjection) => Promise<void>;
+    now?: () => Date;
+    assetIds?: ReadonlySet<string>;
   }
-  const activated = structuredClone(manifest);
-  const activatedAt = (dependencies.now ?? (() => new Date()))().toISOString();
-  for (const entry of activated.entries) {
-    if (dependencies.assetIds && !dependencies.assetIds.has(entry.assetId)) continue;
-    for (const profile of ['desktop', 'mobile'] as const) {
-      const rendition = entry.renditions[profile];
-      if (!rendition) continue;
-      if (!rendition.visualReview?.evidence.trim()) {
-        throw new Error(`${entry.assetId} ${profile} requires explicit visual review evidence`);
-      }
-      const evidence = await dependencies.verifyHttp(rendition.url, rendition.bytes);
-      if (evidence.bytes !== rendition.bytes || evidence.totalBytes !== rendition.bytes || evidence.contentType !== 'video/mp4') {
-        throw new Error(`${entry.assetId} ${profile} failed current HTTP readiness verification`);
-      }
-      rendition.httpCheck = evidence;
-      rendition.activatedAt = activatedAt;
-    }
-  }
-  validatePublishedManifest(activated, sources);
-  return { manifest: activated, projection: buildPublicProjection(activated) };
+): Promise<{ manifest: PublishedManifest; projection: PublicVideoRenditionProjection }> {
+  return persistActivatedStateFiles(manifest, sources, dependencies);
 }
 
 function isPreconditionConflict(error: unknown): boolean {
   return (error as { context?: { code?: unknown } } | null)?.context?.code === 'precondition-conflict';
+}
+
+async function verifyMeasuredFile(
+  filePath: string,
+  expectedBytes: number,
+  expectedSha256: string,
+  expectedProbe: MediaProbe,
+  label: string,
+  measureFile: (filePath: string) => Promise<MediaProbe>
+): Promise<void> {
+  let metadata;
+  try {
+    metadata = await stat(filePath);
+  } catch {
+    throw new Error(`${label} file is missing`);
+  }
+  if (!metadata.isFile() || metadata.size <= 0 || metadata.size > MAX_DOWNLOAD_BYTES) {
+    throw new Error(`${label} file has invalid bounded size`);
+  }
+  if (metadata.size !== expectedBytes) throw new Error(`${label} file byte size differs from checkpoint`);
+  const bytes = await readFile(filePath);
+  if (createHash('sha256').update(bytes).digest('hex') !== expectedSha256) {
+    throw new Error(`${label} file hash differs from checkpoint`);
+  }
+  const measured = await measureFile(filePath);
+  if (!probesEqual(measured, expectedProbe)) throw new Error(`${label} measured probe differs from checkpoint`);
 }
 
 export async function publishPreparedCheckpoints(
@@ -564,6 +657,7 @@ export async function publishPreparedCheckpoints(
       signal: AbortSignal;
     }) => Promise<{ key: string; url: string }>;
     readRemote: (url: string, maximumBytes: number) => Promise<Buffer>;
+    measureFile: (filePath: string) => Promise<MediaProbe>;
     now?: () => Date;
     uploadTimeoutMs?: number;
   }
@@ -579,6 +673,7 @@ export async function publishPreparedCheckpoints(
     if (checkpointIds.has(checkpoint.assetId)) throw new Error(`Duplicate prepared asset ID: ${checkpoint.assetId}`);
     checkpointIds.add(checkpoint.assetId);
   }
+  // Complete bounded local remeasurement for every selected record before the first upload.
   for (const checkpoint of checkpoints) {
     if (checkpoint.schemaVersion !== 1 || checkpoint.profileVersion !== PUBLIC_VIDEO_PROFILE_VERSION || checkpoint.role !== 'public-demo') {
       throw new Error(`Stale or invalid prepared checkpoint for ${checkpoint.assetId}`);
@@ -586,19 +681,48 @@ export async function publishPreparedCheckpoints(
     assertAllowedPublicMp4Url(checkpoint.original.url);
     assertSha256(checkpoint.original.sha256, 'Prepared source hash');
     assertProbeShape(checkpoint.original.probe);
-    const publishedRenditions: Partial<Record<PublicVideoRenditionProfile, PublishedRendition>> = {};
+    await verifyMeasuredFile(
+      checkpoint.original.path, checkpoint.original.bytes, checkpoint.original.sha256,
+      checkpoint.original.probe, `${checkpoint.assetId} source`, dependencies.measureFile
+    );
     for (const profile of ['desktop', 'mobile'] as const) {
       const prepared = checkpoint.renditions[profile];
       if (!prepared) continue;
       if (prepared.profileVersion !== PUBLIC_VIDEO_PROFILE_VERSION) throw new Error(`Stale prepared ${profile} profile`);
       assertSha256(prepared.sha256, 'Prepared rendition hash');
       assertProbeShape(prepared.probe);
+      await verifyMeasuredFile(
+        prepared.path, prepared.bytes, prepared.sha256, prepared.probe,
+        `${checkpoint.assetId} ${profile}`, dependencies.measureFile
+      );
       validatePreparedRendition({
         sourceBytes: checkpoint.original.bytes,
         outputBytes: prepared.bytes,
         sourceProbe: checkpoint.original.probe,
         outputProbe: prepared.probe,
       }, profile);
+    }
+  }
+  for (const checkpoint of checkpoints) {
+    const existingIndex = manifest.entries.findIndex((entry) => entry.assetId === checkpoint.assetId);
+    const previous = existingIndex >= 0 ? manifest.entries[existingIndex]! : null;
+    const activeRenditions = structuredClone(previous?.renditions ?? {});
+    const pendingRenditions = structuredClone(previous?.pendingRenditions ?? {});
+    for (const profile of ['desktop', 'mobile'] as const) {
+      const prepared = checkpoint.renditions[profile];
+      if (!prepared) {
+        if (checkpoint.omissions.some((omission) => omission.profile === profile)) delete pendingRenditions[profile];
+        continue;
+      }
+      const active = activeRenditions[profile];
+      if (active?.sha256 === prepared.sha256 && active.bytes === prepared.bytes && probesEqual(active.probe, prepared.probe)) {
+        delete pendingRenditions[profile];
+        continue;
+      }
+      const pending = pendingRenditions[profile];
+      if (pending?.sha256 === prepared.sha256 && pending.bytes === prepared.bytes && probesEqual(pending.probe, prepared.probe)) {
+        continue;
+      }
       const data = await readFile(prepared.path);
       const actualHash = createHash('sha256').update(data).digest('hex');
       if (data.byteLength !== prepared.bytes || actualHash !== prepared.sha256) {
@@ -625,7 +749,7 @@ export async function publishPreparedCheckpoints(
       } finally {
         clearTimeout(timer);
       }
-      publishedRenditions[profile] = {
+      pendingRenditions[profile] = {
         profileVersion: PUBLIC_VIDEO_PROFILE_VERSION,
         url,
         storageKey: key,
@@ -646,10 +770,11 @@ export async function publishPreparedCheckpoints(
         bytes: checkpoint.original.bytes,
         probe: checkpoint.original.probe,
       },
-      renditions: publishedRenditions,
+      renditions: activeRenditions,
+      pendingRenditions,
       omissions: checkpoint.omissions,
+      failures: checkpoint.failures,
     };
-    const existingIndex = manifest.entries.findIndex((entry) => entry.assetId === checkpoint.assetId);
     if (existingIndex >= 0) manifest.entries[existingIndex] = nextEntry;
     else manifest.entries.push(nextEntry);
   }
@@ -666,6 +791,25 @@ async function responseWithTimeout(
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try { return await fetchFn(url, { ...init, redirect: 'error', signal: controller.signal }); }
   finally { clearTimeout(timer); }
+}
+
+async function readExactRangeBody(response: Response, expectedBytes: number): Promise<Buffer> {
+  if (!response.body) throw new Error('Public rendition Range response has no body');
+  const reader = response.body.getReader();
+  const output = Buffer.alloc(expectedBytes);
+  let offset = 0;
+  while (true) {
+    const chunk = await reader.read();
+    if (chunk.done) break;
+    if (offset + chunk.value.byteLength > expectedBytes) {
+      await reader.cancel('Range response exceeded the byte limit');
+      throw new Error(`Public rendition Range body exceeds ${expectedBytes} bytes`);
+    }
+    output.set(chunk.value, offset);
+    offset += chunk.value.byteLength;
+  }
+  if (offset !== expectedBytes) throw new Error('Public rendition Range body has invalid length');
+  return output;
 }
 
 export async function verifyPublicHttpRendition(
@@ -691,9 +835,8 @@ export async function verifyPublicHttpRendition(
     const match = range.headers.get('content-range')?.match(/^bytes 0-31\/(\d+)$/);
     if (!match || Number(match[1]) !== expectedBytes) throw new Error('Public rendition returned an invalid Content-Range');
     if (Number(range.headers.get('content-length')) !== 32) throw new Error('Public rendition Range response has invalid length');
-    const body = new Uint8Array(await range.arrayBuffer());
-    if (body.byteLength !== 32) throw new Error('Public rendition Range body has invalid length');
-    if (Buffer.from(body).toString('ascii', 4, 8) !== 'ftyp') throw new Error('Public rendition Range body is not an MP4 prefix');
+    const body = await readExactRangeBody(range, 32);
+    if (body.toString('ascii', 4, 8) !== 'ftyp') throw new Error('Public rendition Range body is not an MP4 prefix');
   } finally {
     clearTimeout(timer);
   }

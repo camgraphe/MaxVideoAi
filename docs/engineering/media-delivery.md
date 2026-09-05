@@ -15,7 +15,10 @@ Read this guide when changing image/video presentation, poster URLs, generated m
 | Generated image thumbnails | `frontend/server/image-thumbnails.ts` |
 | Uploaded image/video thumbnails | `frontend/server/upload-thumbnails.ts` |
 | Small video previews | `frontend/server/video-preview.ts` |
-| Public full-duration renditions | `frontend/scripts/public-video-renditions.ts`, its `_lib/public-video-renditions*` modules, and `frontend/config/public-video-rendition*.json` |
+| Public rendition CLI and stable contracts | `frontend/scripts/public-video-renditions.ts` and `_lib/public-video-renditions.ts` |
+| Public rendition media I/O | `frontend/scripts/_lib/public-video-renditions-runtime.ts` |
+| Public rendition manifest/activation state | `frontend/scripts/_lib/public-video-rendition-state.ts` |
+| Browser-safe public rendition lookup | `frontend/lib/public-video-renditions.ts` and `frontend/config/public-video-renditions.generated.json` |
 | Storage and reusable assets | `frontend/server/storage.ts` and `frontend/server/media-library/` |
 | Image thumbnail repair entry | `frontend/scripts/backfill-image-thumbnails.ts` |
 
@@ -75,7 +78,7 @@ pnpm --prefix frontend run media:public-renditions publish --work-dir=/absolute/
 pnpm --prefix frontend run media:public-renditions activate --asset-id=elevator-reunion
 ```
 
-Preparation and publishing process at most five authored assets by default and twenty when explicitly raised. A prepared derivative must preserve supported H.264/AAC media properties, decode successfully, use faststart, and save at least 15% of the original bytes. Profiles that miss the gate are omitted independently, leaving the original URL as that profile's display fallback. Review evidence must document an actual production acceptance decision; corpus comparison artifacts alone are candidate-preparation evidence.
+Preparation and publishing process at most five authored assets by default and twenty when explicitly raised. A prepared derivative must preserve supported H.264/AAC media properties, decode successfully, use faststart, and save at least 15% of the original bytes. Profiles that miss the gate are omitted independently, leaving the original URL as that profile's display fallback. Review evidence records explicit visual/audio content acceptance; it is not deployment approval. Corpus comparison artifacts alone are candidate-preparation evidence, and browser, device and Core Web Vitals gates remain separate rollout work.
 
 ## Repair and cleanup
 

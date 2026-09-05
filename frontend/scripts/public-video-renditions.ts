@@ -3,11 +3,13 @@ import path from 'node:path';
 import process from 'node:process';
 
 import {
-  activatePublishedManifest,
   checkPublicVideoState,
   parsePublicVideoRenditionOptions,
+  persistActivatedState,
   publishPreparedCheckpoints,
+  summarizePreparedCheckpoints,
   validatePublishedManifest,
+  validatePublicVideoSources,
   verifyPublicHttpRendition,
   type PreparedCheckpoint,
   type PublicVideoSource,
@@ -50,6 +52,7 @@ async function main(): Promise<void> {
   // Parse all flags before reading configs, credentials, storage, or media.
   const options = parsePublicVideoRenditionOptions(process.argv.slice(2));
   const sources = await loadSources();
+  validatePublicVideoSources(sources);
   const manifest = await readJson<PublishedManifest>(MANIFEST_PATH);
   const projection = await readJson<PublicVideoRenditionProjection>(PROJECTION_PATH);
 
@@ -73,7 +76,12 @@ async function main(): Promise<void> {
     const checkpoints = await preparePublicVideoRenditions({
       workDir: path.resolve(options.workDir!), sources: selected, assetIds: options.assetIds, maxAssets: options.maxAssets,
     });
-    console.log(`[public-video-renditions] prepared=${checkpoints.length} workDir=${path.resolve(options.workDir!)}`);
+    const summary = summarizePreparedCheckpoints(checkpoints);
+    console.log(
+      `[public-video-renditions] prepared=${summary.assets} acceptedProfiles=${summary.acceptedProfiles} ` +
+      `omittedProfiles=${summary.omittedProfiles} failedProfiles=${summary.failedProfiles} workDir=${path.resolve(options.workDir!)}`
+    );
+    if (summary.failedProfiles > 0) process.exitCode = 1;
     return;
   }
 
@@ -98,11 +106,12 @@ async function main(): Promise<void> {
       }
       checkpoints.push(checkpoint);
     }
-    const { atomicWriteJson, readRemoteBytes } = await import('./_lib/public-video-renditions-runtime');
+    const { atomicWriteJson, probeMediaFile, readRemoteBytes } = await import('./_lib/public-video-renditions-runtime');
     const { uploadFileBufferToKey } = await import('../server/storage');
     const next = await publishPreparedCheckpoints(checkpoints, manifest, options.reviewEvidence!, {
       upload: uploadFileBufferToKey,
       readRemote: readRemoteBytes,
+      measureFile: probeMediaFile,
     });
     validatePublishedManifest(next, sources);
     await atomicWriteJson(MANIFEST_PATH, next);
@@ -110,17 +119,14 @@ async function main(): Promise<void> {
     return;
   }
 
-  checkPublicVideoState({ sources, manifest, projection });
   const assetIds = new Set(selected.map((source) => source.assetId));
-  const activated = await activatePublishedManifest(manifest, sources, {
+  const { atomicWriteJson } = await import('./_lib/public-video-renditions-runtime');
+  await persistActivatedState(manifest, projection, sources, {
     verifyHttp: verifyPublicHttpRendition,
     assetIds,
+    writeManifest: (next) => atomicWriteJson(MANIFEST_PATH, next),
+    writeProjection: (next) => atomicWriteJson(PROJECTION_PATH, next),
   });
-  // Both values are computed and validated before either active file is changed.
-  validatePublishedManifest(activated.manifest, sources);
-  const { atomicWriteJson } = await import('./_lib/public-video-renditions-runtime');
-  await atomicWriteJson(MANIFEST_PATH, activated.manifest);
-  await atomicWriteJson(PROJECTION_PATH, activated.projection);
   console.log(`[public-video-renditions] activated=${assetIds.size}`);
 }
 
