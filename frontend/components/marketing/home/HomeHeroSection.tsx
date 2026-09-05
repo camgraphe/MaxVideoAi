@@ -230,7 +230,14 @@ export function HomeHero({
           </div>
         </div>
         <div className="min-w-0 min-[900px]:col-start-2 min-[900px]:row-span-2 min-[900px]:row-start-2 min-[900px]:self-center">
-          <HeroVideoShowcase items={videoItems} playLabel={copy.mockup.playLabel} pauseLabel={copy.mockup.pauseLabel} />
+          <HeroVideoShowcase
+            items={videoItems}
+            playLabel={copy.mockup.playLabel}
+            pauseLabel={copy.mockup.pauseLabel}
+            loadingLabel={copy.mockup.loadingLabel}
+            errorLabel={copy.mockup.errorLabel}
+            retryLabel={copy.mockup.retryLabel}
+          />
         </div>
         <div className="grid grid-cols-2 gap-2 sm:gap-3 min-[900px]:col-start-1 min-[900px]:row-start-3">
           {copy.valueCards.map((card) => (

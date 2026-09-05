@@ -477,7 +477,10 @@
           "generateCta": "Generate with this engine",
           "refundNote": "Credits returned if generation fails",
           "playLabel": "Play engine preview",
-          "pauseLabel": "Pause engine preview"
+          "pauseLabel": "Pause engine preview",
+          "loadingLabel": "Loading preview",
+          "errorLabel": "Preview unavailable",
+          "retryLabel": "Retry preview"
         }
       },
       "proof": {

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "version": "public-demo-v1",
+  "profiles": {
+    "desktop": {
+      "videoCodec": "libx264",
+      "preset": "slow",
+      "crf": 20,
+      "maxWidth": 1920,
+      "maxHeight": 1080,
+      "pixelFormat": "yuv420p",
+      "gopSeconds": 2,
+      "sceneCut": false,
+      "threads": 2,
+      "audio": "copy-aac",
+      "fastStart": true
+    },
+    "mobile": {
+      "videoCodec": "libx264",
+      "preset": "slow",
+      "crf": 22,
+      "maxWidth": 1280,
+      "maxHeight": 720,
+      "pixelFormat": "yuv420p",
+      "gopSeconds": 2,
+      "sceneCut": false,
+      "threads": 2,
+      "audio": "copy-aac",
+      "fastStart": true
+    }
+  }
+}

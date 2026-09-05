@@ -34,6 +34,7 @@ export const MCP_REFERENCE_STAGING_STORAGE_PREFIX = 'mcp-reference-staging/';
 
 export class StorageUploadError extends Error {
   context: {
+    code?: 'precondition-conflict';
     stage?: 'before-upload' | 'put-object';
     key?: string;
     keyBytes?: number;
@@ -45,6 +46,7 @@ export class StorageUploadError extends Error {
   constructor(
     message: string,
     context: {
+      code?: 'precondition-conflict';
       stage?: 'before-upload' | 'put-object';
       key?: string;
       keyBytes?: number;
@@ -617,6 +619,8 @@ export async function uploadFileBufferToKey(params: {
   mime: string;
   cacheControl?: string;
   acl?: string | null;
+  conditionalCreate?: boolean;
+  signal?: AbortSignal;
 }): Promise<{ key: string; url: string }> {
   const client = getS3Client();
   const keyBytes = getObjectKeySizeBytes(params.key);
@@ -627,31 +631,56 @@ export async function uploadFileBufferToKey(params: {
     });
   }
 
-  const command = new PutObjectCommand({
+  const command = new PutObjectCommand(buildFileBufferToKeyPutInput(params));
+
+  try {
+    await client.send(command, { abortSignal: params.signal });
+  } catch (error) {
+    throw createFileBufferUploadError({ key: params.key, conditionalCreate: params.conditionalCreate, keyBytes }, error);
+  }
+
+  return { key: params.key, url: buildPublicUrl(params.key) };
+}
+
+export function buildFileBufferToKeyPutInput(params: {
+  key: string;
+  data: Buffer;
+  mime: string;
+  cacheControl?: string;
+  acl?: string | null;
+  conditionalCreate?: boolean;
+}) {
+  const input: ConstructorParameters<typeof PutObjectCommand>[0] = {
     Bucket: S3_BUCKET,
     Key: params.key,
     Body: params.data,
     ContentType: params.mime || 'application/octet-stream',
     CacheControl: params.cacheControl ?? S3_CACHE_CONTROL,
-  });
-
+    ...(params.conditionalCreate ? { IfNoneMatch: '*' } : {}),
+  };
   const acl = params.acl === undefined ? S3_UPLOAD_ACL : params.acl;
-  if (acl) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore - ACL accepts specific string literals; keep runtime flexible via env
-    command.input.ACL = acl;
-  }
+  if (acl) input.ACL = acl as typeof input.ACL;
+  return input;
+}
 
-  try {
-    await client.send(command);
-  } catch {
-    throw new StorageUploadError('Failed to upload file to storage.', {
-      key: params.key,
-      keyBytes,
-    });
-  }
-
-  return { key: params.key, url: buildPublicUrl(params.key) };
+export function createFileBufferUploadError(
+  input: { key: string; conditionalCreate?: boolean; keyBytes?: number },
+  cause: unknown
+): StorageUploadError {
+  const candidate = cause as { name?: unknown; $metadata?: { httpStatusCode?: unknown } } | null;
+  const preconditionConflict = input.conditionalCreate === true && (
+    candidate?.name === 'PreconditionFailed' || candidate?.$metadata?.httpStatusCode === 412
+  );
+  return new StorageUploadError(
+    preconditionConflict
+      ? 'Storage object already exists; conditional create was not applied.'
+      : 'Failed to upload file to storage.',
+    {
+      ...(preconditionConflict ? { code: 'precondition-conflict' as const } : {}),
+      key: input.key,
+      keyBytes: input.keyBytes ?? getObjectKeySizeBytes(input.key),
+    }
+  );
 }
 
 export async function createSignedUploadUrl(params: {

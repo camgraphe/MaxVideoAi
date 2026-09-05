@@ -7,6 +7,7 @@ import { Link, type LocalizedLinkHref } from '@/i18n/navigation';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { HomeLcpPoster } from '@/components/marketing/home/HomeLcpPoster';
 import { HOME_LCP_POSTER_SRC } from '@/components/marketing/home/home-lcp-image';
+import { useHeroVideoPlayback } from '@/components/marketing/home/useHeroVideoPlayback';
 
 export type HeroVideoShowcaseItem = {
   id: string;
@@ -86,38 +87,24 @@ export function HeroVideoShowcase({
   items,
   playLabel,
   pauseLabel,
+  loadingLabel,
+  errorLabel,
+  retryLabel,
 }: {
   items: HeroVideoShowcaseItem[];
   playLabel: string;
   pauseLabel: string;
+  loadingLabel: string;
+  errorLabel: string;
+  retryLabel: string;
 }) {
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [hasUserPaused, setHasUserPaused] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [progress, setProgress] = useState(0);
-  const [shouldAutoplayPreview, setShouldAutoplayPreview] = useState(false);
-  const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
   const [shouldLoadMobileThumbnails, setShouldLoadMobileThumbnails] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const mobileThumbnailsRef = useRef<HTMLDivElement>(null);
-  const selected = items[selectedIndex] ?? items[0];
-
-  useEffect(() => {
-    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const desktopQuery = window.matchMedia('(min-width: 768px)');
-    const updatePlaybackPolicy = () => setShouldAutoplayPreview(desktopQuery.matches && !motionQuery.matches);
-
-    updatePlaybackPolicy();
-    desktopQuery.addEventListener('change', updatePlaybackPolicy);
-    motionQuery.addEventListener('change', updatePlaybackPolicy);
-
-    return () => {
-      desktopQuery.removeEventListener('change', updatePlaybackPolicy);
-      motionQuery.removeEventListener('change', updatePlaybackPolicy);
-    };
-  }, []);
+  const {
+    selectedIndex, selected, status, isPlaying, hasUserPaused, isMuted, currentTime, progress,
+    shouldLoadVideo, canAutoplay, isFrameReady, playbackAttempt, playerRef, videoRef, selectAndPlay,
+    handlePlayToggle, handleMuteToggle, mediaHandlers, onSourceError,
+  } = useHeroVideoPlayback(items);
 
   useEffect(() => {
     const mobileThumbnails = mobileThumbnailsRef.current;
@@ -139,65 +126,6 @@ export function HeroVideoShowcase({
     };
   }, []);
 
-  useEffect(() => {
-    setHasUserPaused(false);
-    setIsMuted(true);
-    setIsPlaying(false);
-    setProgress(0);
-    setCurrentTime(0);
-
-    if (!selected?.videoSrc || !shouldAutoplayPreview) {
-      setShouldLoadVideo(false);
-      return;
-    }
-
-    setShouldLoadVideo(false);
-    const loadPreview = () => setShouldLoadVideo(true);
-    const idleCallback =
-      typeof window.requestIdleCallback === 'function'
-        ? window.requestIdleCallback(loadPreview, { timeout: 1800 })
-        : window.setTimeout(loadPreview, 1200);
-
-    return () => {
-      if (typeof idleCallback === 'number') {
-        window.clearTimeout(idleCallback);
-      } else if (typeof window.cancelIdleCallback === 'function') {
-        window.cancelIdleCallback(idleCallback);
-      }
-    };
-  }, [selected?.id, selected?.videoSrc, shouldAutoplayPreview]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const video = videoRef.current;
-    if (!video || !selected?.videoSrc || !shouldLoadVideo) {
-      return () => {
-        cancelled = true;
-      };
-    }
-
-    video.muted = true;
-    video
-      .play()
-      .then(() => {
-        if (!cancelled) setIsPlaying(!video.paused);
-      })
-      .catch(() => {
-        if (!cancelled) setIsPlaying(false);
-      });
-
-    return () => {
-      cancelled = true;
-      video.pause();
-    };
-  }, [selected?.id, selected?.videoSrc, shouldLoadVideo]);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (video) video.muted = isMuted;
-  }, [isMuted, selected?.id]);
-
   if (!selected) return null;
 
   const primaryPrice = selected.estimateValue || selected.price;
@@ -207,43 +135,6 @@ export function HeroVideoShowcase({
     .filter(Boolean)
     .join(' · ');
   const ratePerSecond = buildRatePerSecondLabel(selected, primaryPrice, ratePrice);
-
-  async function handlePlayToggle() {
-    if (selected.videoSrc && !shouldLoadVideo) {
-      setHasUserPaused(false);
-      setShouldLoadVideo(true);
-      return;
-    }
-
-    const video = videoRef.current;
-    if (!video || !selected.videoSrc) {
-      setIsPlaying((value) => {
-        const next = !value;
-        setHasUserPaused(!next);
-        return next;
-      });
-      setProgress((value) => (value > 0 ? 0 : 38));
-      return;
-    }
-
-    if (video.paused) {
-      await video.play().catch(() => undefined);
-      setIsPlaying(!video.paused);
-      if (!video.paused) setHasUserPaused(false);
-    } else {
-      video.pause();
-      setIsPlaying(false);
-      setHasUserPaused(true);
-    }
-  }
-
-  function handleMuteToggle() {
-    setIsMuted((value) => !value);
-  }
-
-  function selectEngine(index: number) {
-    setSelectedIndex(index);
-  }
 
   const timeLabel = formatPlaybackTime(currentTime);
 
@@ -256,7 +147,10 @@ export function HeroVideoShowcase({
           className="pointer-events-none absolute -inset-px rounded-[23px] opacity-0 dark:bg-[linear-gradient(135deg,rgba(96,165,250,0.74)_0%,rgba(125,211,252,0.36)_43%,rgba(217,70,239,0.76)_100%)] dark:opacity-80 dark:shadow-[0_0_18px_rgba(96,165,250,0.20),22px_-14px_34px_-22px_rgba(217,70,239,0.58)]"
         />
         <div
+          ref={playerRef}
           data-hero-player="main"
+          data-playback-state={status}
+          aria-busy={status === 'loading'}
           className="relative z-10 overflow-hidden rounded-[22px] border border-white/24 bg-[#070b14] shadow-[0_30px_86px_-44px_rgba(15,23,42,0.95)] dark:border-[rgba(147,197,253,0.30)] dark:shadow-[0_0_0_1px_rgba(96,165,250,0.18),0_0_36px_-20px_rgba(59,130,246,0.62),22px_-18px_46px_-32px_rgba(217,70,239,0.74),-18px_6px_44px_-32px_rgba(96,165,250,0.58),0_30px_80px_-48px_rgba(0,0,0,0.95)]"
         >
           <div className="relative overflow-hidden bg-[#050912]" style={{ aspectRatio: '1.62 / 1' }}>
@@ -274,29 +168,23 @@ export function HeroVideoShowcase({
                 className="object-cover"
               />
             )}
-            {selected.videoSrc && shouldLoadVideo ? (
+            {selected.videoSrc && shouldLoadVideo && playbackAttempt ? (
               <video
                 ref={videoRef}
-                key={selected.id}
+                key={`${selected.id}:${playbackAttempt.id}`}
                 aria-label={`${selected.name} preview video`}
-                className="absolute inset-0 h-full w-full object-cover"
-                poster={selected.posterSrc}
-                preload={shouldAutoplayPreview ? 'metadata' : 'auto'}
-                autoPlay={shouldAutoplayPreview}
+                className={`absolute inset-0 h-full w-full object-cover transition-opacity ${isFrameReady ? 'opacity-100' : 'opacity-0'}`}
+                preload={canAutoplay ? 'metadata' : 'auto'}
                 muted={isMuted}
                 playsInline
                 loop
-                onPause={() => setIsPlaying(false)}
-                onPlay={() => setIsPlaying(true)}
-                onTimeUpdate={(event) => {
-                  const video = event.currentTarget;
-                  setCurrentTime(video.currentTime);
-                  if (video.duration && Number.isFinite(video.duration)) {
-                    setProgress(Math.min(100, (video.currentTime / video.duration) * 100));
-                  }
-                }}
+                {...mediaHandlers}
               >
-                <source src={selected.videoSrc} type="video/mp4" />
+                <source
+                  src={playbackAttempt.rendition.src}
+                  type="video/mp4"
+                  onError={onSourceError}
+                />
               </video>
             ) : null}
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,7,18,0.34)_0%,rgba(3,7,18,0.04)_38%,rgba(3,7,18,0.72)_100%)]" />
@@ -326,10 +214,20 @@ export function HeroVideoShowcase({
             {ratePerSecond ? <p className="mt-0.5 text-[8px] font-semibold leading-tight text-white/78 sm:text-[9px]">{ratePerSecond}</p> : null}
           </div>
 
-          {hasUserPaused || (selected.videoSrc && !shouldLoadVideo) ? (
+          {status === 'loading' || status === 'error' ? (
+            <p
+              role="status"
+              aria-live="polite"
+              className="absolute bottom-16 right-3 rounded-full bg-black/58 px-2.5 py-1 text-xs font-semibold text-white/90 backdrop-blur-sm sm:right-5"
+            >
+              {status === 'error' ? errorLabel : loadingLabel}
+            </p>
+          ) : null}
+
+          {status === 'error' || hasUserPaused || (selected.videoSrc && !shouldLoadVideo) ? (
             <button
               type="button"
-              aria-label={`${selected.name} — ${playLabel}`}
+              aria-label={status === 'error' ? retryLabel : `${selected.name} — ${playLabel}`}
               aria-pressed={false}
               onClick={handlePlayToggle}
               className="absolute left-1/2 top-1/2 inline-flex h-[72px] w-[72px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/75 bg-white/94 text-[#161a2d] shadow-[0_18px_46px_-18px_rgba(0,0,0,0.88)] backdrop-blur-md transition hover:scale-105 hover:bg-white focus:outline-none focus:ring-2 focus:ring-white/90 focus:ring-offset-2 focus:ring-offset-[#070b14] dark:border-white/45 dark:focus:ring-[rgba(143,183,255,0.34)]"
@@ -342,7 +240,7 @@ export function HeroVideoShowcase({
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                aria-label={isPlaying ? pauseLabel : playLabel}
+                aria-label={status === 'error' ? retryLabel : isPlaying ? pauseLabel : playLabel}
                 onClick={handlePlayToggle}
                 className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/80 dark:hover:bg-white/[0.07] dark:focus:ring-[rgba(143,183,255,0.34)]"
               >
@@ -399,7 +297,7 @@ export function HeroVideoShowcase({
                 type="button"
                 aria-label={`${playLabel}: ${item.name}`}
                 aria-pressed={selectedThumb}
-                onClick={() => selectEngine(index)}
+                onClick={() => selectAndPlay(index)}
                 className={
                   selectedThumb
                     ? 'relative aspect-[0.9] min-w-0 overflow-hidden rounded-[13px] border border-white/90 bg-[#070b14] shadow-[0_0_0_2px_rgba(17,24,39,0.24),0_18px_34px_-24px_rgba(3,7,18,0.76)] focus:outline-none focus:ring-2 focus:ring-slate-400/70 dark:border-white/[0.18] dark:shadow-[0_0_0_1px_rgba(143,183,255,0.34),0_18px_34px_-24px_rgba(0,0,0,0.9)]'

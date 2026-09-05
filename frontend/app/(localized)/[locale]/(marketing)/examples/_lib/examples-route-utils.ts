@@ -81,8 +81,6 @@ export const EXAMPLES_PAGE_SIZE = 60;
 export const HUB_INITIAL_DESKTOP_GALLERY_BATCH = 8;
 export const FAMILY_INITIAL_DESKTOP_GALLERY_BATCH = 12;
 export const INITIAL_MOBILE_GALLERY_BATCH = 4;
-export const HERO_POSTER_OPTIONS = { width: 1080, quality: 60 } as const;
-export const GALLERY_POSTER_OPTIONS = { width: 640, quality: 56 } as const;
 export const ALLOWED_QUERY_KEYS = new Set(['sort', 'engine', 'page', '__engineFromPath']);
 const POSTER_PLACEHOLDERS: Record<string, string> = {
   '9:16': '/assets/frames/thumb-9x16.svg',

@@ -7,6 +7,7 @@ import {
   type AnalyticsTouch,
   type PreparedAnalyticsEvent,
 } from './journey-contract';
+import { getPublicVideoRenditionAssetIds } from '@/lib/public-video-renditions';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -493,6 +494,17 @@ const ANALYTICS_EVENT_PAYLOAD_KEYS = {
   topup_failed: TOPUP_PAYLOAD_KEYS,
   tile_action: ['route_family', 'action', 'batchid', 'version'],
   compare_used: ['route_family', 'batchid'],
+  public_video_startup: [
+    'asset_id', 'playback_profile', 'playback_surface', 'playback_trigger',
+    'measurement_method', 'duration_ms',
+  ],
+  public_video_rebuffer: [
+    'asset_id', 'playback_profile', 'playback_surface', 'playback_trigger',
+    'duration_ms', 'rebuffer_count',
+  ],
+  public_video_error: [
+    'asset_id', 'playback_profile', 'playback_surface', 'playback_trigger', 'media_error_code',
+  ],
 } as const satisfies Record<string, readonly string[]>;
 
 export type AllowedAnalyticsEvent = keyof typeof ANALYTICS_EVENT_PAYLOAD_KEYS;
@@ -618,6 +630,11 @@ const EXACT_STRING_VALUES: Readonly<Record<string, ReadonlySet<string>>> = {
   topup_tier_label: new Set(['$10', '$25', '$50', '$100', 'Custom']),
   failure_category: new Set(['authentication', 'validation', 'network', 'stripe', 'unknown', 'generation_request_failed', 'job_failed']),
   error_code: new Set(['generation_request_failed', 'INSUFFICIENT_WALLET_FUNDS', 'INSUFFICIENT_FUNDS', 'auth_required', 'UNAUTHORIZED']),
+  asset_id: new Set(getPublicVideoRenditionAssetIds()),
+  playback_profile: new Set(['original', 'mobile', 'desktop']),
+  playback_surface: new Set(['home', 'model', 'examples']),
+  playback_trigger: new Set(['user', 'automatic']),
+  measurement_method: new Set(['video_frame_callback', 'playing_fallback']),
 };
 
 const BOOLEAN_FIELDS = new Set([
@@ -637,6 +654,9 @@ const INTEGER_FIELDS: Readonly<Record<string, readonly [number, number]>> = {
   version: [0, 10_000],
   duration_sec: [0, 86_400],
   latency_ms: [0, 86_400_000],
+  duration_ms: [0, 120_000],
+  rebuffer_count: [1, 5],
+  media_error_code: [1, 4],
   price_cents: [0, 1_000_000_000],
   final_price_cents: [0, 1_000_000_000],
   total_cents: [0, 1_000_000_000],

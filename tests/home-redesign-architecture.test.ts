@@ -23,8 +23,8 @@ const heroVideoShowcaseSource = readFileSync(heroVideoShowcasePath, 'utf8');
 const shotTypeSectionSource = readFileSync(shotTypeSectionPath, 'utf8');
 
 test('homepage hero overlay and toolbar expose distinct playback names', () => {
-  assert.match(heroVideoShowcaseSource, /aria-label=\{`\$\{selected\.name\} — \$\{playLabel\}`\}/);
-  assert.match(heroVideoShowcaseSource, /aria-label=\{isPlaying \? pauseLabel : playLabel\}/);
+  assert.match(heroVideoShowcaseSource, /aria-label=\{status === 'error' \? retryLabel : `\$\{selected\.name\} — \$\{playLabel\}`\}/);
+  assert.match(heroVideoShowcaseSource, /aria-label=\{status === 'error' \? retryLabel : isPlaying \? pauseLabel : playLabel\}/);
 });
 
 test('home redesign sections delegate shared content contracts', () => {
