@@ -129,12 +129,13 @@ export function useHeroVideoPlayback<T extends PlaybackItem>(items: T[]) {
 
   useEffect(() => {
     if (!shouldLoadVideo || !selected?.videoSrc) return;
+    if (!isDocumentVisible || document.visibilityState === 'hidden') return;
     if (pendingManualPlayRef.current) {
       pendingManualPlayRef.current = false;
       playCurrent();
       return;
     }
-    if (!isPlayerVisible || !isDocumentVisible || userPausedRef.current) return;
+    if (!isPlayerVisible || userPausedRef.current) return;
     playCurrent();
   }, [isDocumentVisible, isPlayerVisible, manualPlayRequest, mediaAttempt, playCurrent, selected?.id, selected?.videoSrc, shouldLoadVideo]);
 

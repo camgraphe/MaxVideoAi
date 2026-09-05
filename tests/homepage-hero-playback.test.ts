@@ -188,6 +188,26 @@ test('a Play-labelled thumbnail loads and starts the selected video in one click
   }
 });
 
+test('a manual request waits when the document becomes hidden before the play effect', async () => {
+  const fixture = await mountHero({ desktop: false, reducedMotion: true, saveData: true });
+  let playCalls = 0;
+  fixture.dom.window.HTMLMediaElement.prototype.play = function () { playCalls += 1; return Promise.resolve(); };
+  try {
+    Object.defineProperty(fixture.dom.window.document, 'visibilityState', { configurable: true, value: 'visible' });
+    await act(async () => {
+      fixture.container.querySelector<HTMLButtonElement>('button[aria-label="Play: Model 2"]')!.click();
+      Object.defineProperty(fixture.dom.window.document, 'visibilityState', { configurable: true, value: 'hidden' });
+      fixture.dom.window.document.dispatchEvent(new fixture.dom.window.Event('visibilitychange'));
+    });
+    assert.equal(playCalls, 0, 'A pending manual request must not start while the document is hidden');
+    Object.defineProperty(fixture.dom.window.document, 'visibilityState', { configurable: true, value: 'visible' });
+    await act(async () => fixture.dom.window.document.dispatchEvent(new fixture.dom.window.Event('visibilitychange')));
+    assert.equal(playCalls, 1, 'The retained manual request should start when the document becomes visible');
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
 test('playing state follows media readiness and waiting returns the control to loading', async () => {
   const fixture = await mountHero();
   try {
