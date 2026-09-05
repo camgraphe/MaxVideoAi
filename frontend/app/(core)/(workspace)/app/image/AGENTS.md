@@ -23,6 +23,10 @@ This route owns the dedicated still-image generation workspace.
 - Keep image composer storage keys and stored payload shape backward compatible.
 - Keep upload, generation, pricing, and auth behavior unchanged unless the task explicitly targets those flows.
 
+## Media Delivery
+
+Read `docs/engineering/media-delivery.md` before changing image display or persistence. Keep thumbnail, responsive preview and original action URLs distinct; preserve private/signed URL behavior and stored render compatibility. Use shared optimizer settings instead of per-route quality/width constants. A missing thumbnail must not silently turn every small tile into an eager original download. Keep error/loading geometry stable and validate initial-load changes against Core Web Vitals before expanding rollout.
+
 ## Checks
 
 For image workspace refactors, run:

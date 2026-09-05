@@ -580,7 +580,10 @@
           "generateCta": "Generar con este modelo",
           "refundNote": "Créditos devueltos si la generación falla",
           "playLabel": "Reproducir preview del modelo",
-          "pauseLabel": "Pausar preview del modelo"
+          "pauseLabel": "Pausar preview del modelo",
+          "loadingLabel": "Cargando vista previa",
+          "errorLabel": "Vista previa no disponible",
+          "retryLabel": "Reintentar vista previa"
         }
       },
       "proof": {

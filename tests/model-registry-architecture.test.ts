@@ -179,7 +179,8 @@ test('generated runtime projection is checked and never hand-authored', () => {
   const frontendPackage = readFileSync('frontend/package.json', 'utf8');
   assert.match(rootPackage, /model:registry:check/);
   assert.match(rootPackage, /model:registry:check[^\n]*engine:catalog[^\n]*--check[^\n]*model:generate/);
-  assert.match(frontendPackage, /"prebuild":\s*"pnpm --dir \.\. model:registry:check"/);
+  const frontendScripts = JSON.parse(frontendPackage).scripts as Record<string, string>;
+  assert.match(frontendScripts.prebuild, /^pnpm --dir \.\. model:registry:check(?:\s|$)/);
 });
 
 test('engineering and agent guides point model policy changes to the canonical registry', () => {

@@ -37,6 +37,10 @@ This route is the main signed-in video generation workspace.
 - Use existing SWR hooks and `frontend/lib/api.ts` contracts before adding a new data layer.
 - Keep dynamic imports for heavy browser-only panels and modals.
 
+## Media Delivery
+
+Read `docs/engineering/media-delivery.md` for media changes. Preserve thumbnail/preview/original roles: gallery cards should use existing preview/thumbnail fields, while download and reuse actions keep the original. Keep media lifecycle ownership in focused hooks/components and AppClient as the orchestrator. Reuse shared optimizer settings, preserve stable cover geometry, and include before/after evidence for initial-load changes; moving code alone is not a Core Web Vitals improvement.
+
 ## Checks
 
 For small route-local extractions:

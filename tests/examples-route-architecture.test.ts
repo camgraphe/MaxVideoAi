@@ -235,8 +235,6 @@ test('examples helper module exposes the route contract', () => {
     'HUB_INITIAL_DESKTOP_GALLERY_BATCH',
     'FAMILY_INITIAL_DESKTOP_GALLERY_BATCH',
     'INITIAL_MOBILE_GALLERY_BATCH',
-    'HERO_POSTER_OPTIONS',
-    'GALLERY_POSTER_OPTIONS',
     'ALLOWED_QUERY_KEYS',
     'PREFERRED_ENGINE_ORDER',
     'ENGINE_MODEL_LINKS_BY_GROUP',
@@ -290,7 +288,7 @@ test('examples page data helper owns filter, model link, and gallery projections
 
   assert.match(pageDataSource, /const engineFilterMap =/, 'page data helper should own engine filter state');
   assert.match(pageDataSource, /PREFERRED_ENGINE_ORDER/, 'page data helper should own preferred family ordering');
-  assert.match(pageDataSource, /buildOptimizedPosterUrl/, 'page data helper should own gallery poster optimization');
+  assert.match(pageDataSource, /buildExamplePosterProjection/, 'page data helper should use the shared poster projection');
   assert.match(pageDataSource, /formatPromptExcerpt/, 'page data helper should own client prompt display shaping');
   assert.match(pageDataSource, /pickFirstPlayableVideo/, 'page data helper should own hero video selection');
   assert.match(pageDataSource, /buildMainVideoHeroLine/, 'page data helper should own main video hero copy shaping');
