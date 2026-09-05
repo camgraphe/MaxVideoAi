@@ -95,6 +95,10 @@ Change only the registry `publication` object. Do not add surface overrides to e
 
 Provider IDs stay in provider adapters and mode definitions. Do not add them to registry aliases merely to make provider routing work. Registry `aliases.internal` are historical MaxVideoAI engine/app inputs; `aliases.publicSlugs` are historical public URL slugs, and the two namespaces may intentionally resolve the same token differently.
 
+## Publish Or Replace Example Media
+
+Follow `docs/engineering/media-delivery.md` when adding an example or replacing a model's hero media. Resolve canonical identity from this registry and use the shared media presentation/optimizer contracts; do not introduce another model list or model-specific playback branch. Verify durable source, actual poster response, representative playback and localized links, then run `pnpm model:launch-assets:check` alongside the applicable registry checks. The current launch-asset check validates its declared asset contract; it does not certify encodings or Core Web Vitals. Initial-load changes also require comparable before/after performance evidence.
+
 ## Required commands
 
 Run these commands after an authored registry change:

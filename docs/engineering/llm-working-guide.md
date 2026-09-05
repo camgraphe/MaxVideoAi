@@ -9,6 +9,7 @@ Read these files before changing architecture or route structure:
 - `AGENTS.md`
 - `docs/engineering/project-structure.md`
 - `docs/engineering/page-architecture.md`
+- `docs/engineering/media-delivery.md` when changing images, videos, posters, media repair scripts or model examples
 - `docs/engineering/admin-routes.md` when touching admin pages
 - `docs/engineering/refactor-roadmap.md`
 - `docs/engineering/model-registry.md` when changing model identity, aliases, family membership, publication, replacement, or redirects

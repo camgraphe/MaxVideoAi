@@ -32,6 +32,7 @@ Use these guides as context before changing the related areas:
 
 - `docs/engineering/project-structure.md`: where new code should live.
 - `docs/engineering/page-architecture.md`: how route files, metadata, data builders, and page sections should be split.
+- `docs/engineering/media-delivery.md`: media ownership, original/preview contracts, image optimizer settings, safe repairs, and Core Web Vitals validation.
 - `docs/engineering/admin-routes.md`: admin route and admin UI conventions.
 - `docs/engineering/refactor-roadmap.md`: cleanup strategy and historical context; confirm current line counts with the audit.
 - `docs/engineering/model-registry.md`: required workflow for adding, renaming, retiring, or publishing models.
@@ -156,6 +157,12 @@ For the authenticated workspace route, keep `frontend/app/(core)/(workspace)/app
 - Keep workspace asset library, reference field assets, and Kling element assets split across `_hooks/useWorkspaceAssetLibrary.ts`, `_hooks/useWorkspaceReferenceAssets.ts`, and `_hooks/useWorkspaceKlingElementAssets.ts`; `useWorkspaceAssets.ts` should stay an orchestrator.
 - Keep composer JSX in `_components/WorkspaceComposerSurface.tsx` and shared modal wiring in `_components/WorkspaceRuntimeModals.tsx`.
 - Add or update contract tests in `tests/workspace-*-contract.test.ts` when moving workspace responsibilities, so the architecture stays explicit.
+
+## Media Changes
+
+Read `docs/engineering/media-delivery.md` before changing media presentation, image optimizer URLs, encoding, thumbnail repairs, or model examples. Keep original download/edit URLs distinct from display derivatives, preserve the critical server-rendered poster and layout geometry, and use shared delivery rules when adding a model or media item. Do not introduce model-specific playback branches or per-route optimizer settings.
+
+For initial-loading changes, attach comparable before/after performance evidence and block reproducible Core Web Vitals regressions. Functional tests alone do not establish performance gains. Keep repair simulations read-only, make writes explicit and bounded, and update ownership documentation and contracts in the same change.
 
 ## Architecture Contracts
 

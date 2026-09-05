@@ -75,6 +75,8 @@ Move code to shared locations only when reuse is real:
 
 Avoid promoting a one-off helper into `frontend/lib` just because it is long.
 
+Media presentation and server processing follow `docs/engineering/media-delivery.md`. Keep a surface-specific playback lifecycle colocated until another consumer actually needs the same interface; share optimizer data and pure URL selection where consumers already exist. Encoding, uploads and repair I/O remain outside client modules.
+
 ## Naming Conventions
 
 - `*.client.tsx`: browser-only component.

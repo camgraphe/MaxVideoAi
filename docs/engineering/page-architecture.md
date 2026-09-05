@@ -182,6 +182,10 @@ Runtime gallery media, engine capabilities, route destinations, and poster selec
 runtime policy. They are not localized editorial content and do not belong in the `examples`
 document block.
 
+## Media In Public Pages
+
+Use the owners and validation rules in `docs/engineering/media-delivery.md`. Routes select data and compose media surfaces; they do not own an encoding pipeline or construct independent image optimizer settings. Preserve discovery of the critical poster in server HTML and stable media dimensions through hydration and playback. A route cleanup must not trade a faster preview for a slower LCP or interactive form.
+
 ## Refactor Checklist
 
 Before moving code:
