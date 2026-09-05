@@ -52,6 +52,18 @@ test('a newly selected unregistered homepage source fails with the hero identity
   );
 });
 
+test('surrounding whitespace does not normalize a critical source into a registered URL', () => {
+  const input = currentInput();
+  const heroId = input.heroVideoOrder[0]!;
+  const sourceUrl = input.heroEngineMedia[heroId]!.videoSrc!;
+  input.heroEngineMedia[heroId] = { videoSrc: `${sourceUrl} ` };
+
+  assert.throws(
+    () => checkCriticalHomeVideoCoverage(input),
+    (error: Error) => error.message.includes(heroId) && error.message.includes('unregistered public video source'),
+  );
+});
+
 test('a selected homepage item without a video URL fails with the hero identity', () => {
   const input = currentInput();
   input.heroVideoOrder.push('missing-video');

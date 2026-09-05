@@ -22,6 +22,17 @@ test('public rendition state and media runtime keep their ownership split behind
   assert.doesNotMatch(browser, /scripts\/|server\/|node:/);
 });
 
+test('the scripts compiler reuses shared frontend ambient declarations', async () => {
+  const [scriptsConfig, ffprobeDeclaration] = await Promise.all([
+    readFile(new URL('frontend/tsconfig.scripts.json', ROOT), 'utf8').then(JSON.parse),
+    readFile(new URL('frontend/types/ffprobe-static.d.ts', ROOT), 'utf8'),
+  ]);
+
+  assert.ok(scriptsConfig.include.includes('scripts/**/*.ts'));
+  assert.ok(scriptsConfig.include.includes('types/**/*.d.ts'));
+  assert.match(ffprobeDeclaration, /declare module 'ffprobe-static'/);
+});
+
 test('critical homepage coverage is an offline prebuild guard with a pure injected boundary', async () => {
   const [frontendPackage, command, coverage, browser, agents, mediaGuide, structureGuide] = await Promise.all([
     readFile(new URL('frontend/package.json', ROOT), 'utf8').then(JSON.parse),

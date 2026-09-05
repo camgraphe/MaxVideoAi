@@ -30,8 +30,8 @@ export function checkCriticalHomeVideoCoverage(input: PublicVideoCoverageInput):
     if (!media) {
       throw new Error(`Critical homepage hero "${heroId}" is missing HERO_ENGINE_MEDIA`);
     }
-    const sourceUrl = media.videoSrc?.trim();
-    if (!sourceUrl) {
+    const sourceUrl = media.videoSrc;
+    if (!sourceUrl?.trim()) {
       throw new Error(`Critical homepage hero "${heroId}" is missing its full-duration videoSrc`);
     }
     const source = sourceByUrl.get(sourceUrl);
