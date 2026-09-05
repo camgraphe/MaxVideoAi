@@ -97,7 +97,9 @@ Provider IDs stay in provider adapters and mode definitions. Do not add them to 
 
 ## Publish Or Replace Example Media
 
-Follow `docs/engineering/media-delivery.md` when adding an example or replacing a model's hero media. Resolve canonical identity from this registry and use the shared media presentation/optimizer contracts; do not introduce another model list or model-specific playback branch. Verify durable source, actual poster response, representative playback and localized links, then run `pnpm model:launch-assets:check` alongside the applicable registry checks. The current launch-asset check validates its declared asset contract; it does not certify encodings or Core Web Vitals. Initial-load changes also require comparable before/after performance evidence.
+Follow `docs/engineering/media-delivery.md` when adding an example or replacing a model's hero media. Resolve canonical model identity from this registry and use the shared media presentation/optimizer contracts; public-video `assetId`, role and rendition profile are media-delivery identities and must not be added here as aliases or publication policy.
+
+Verify the durable original, actual poster response, representative playback and localized links, then run `pnpm model:launch-assets:check` alongside the applicable registry checks. If the source becomes one of `HERO_VIDEO_ORDER`'s selected homepage videos, also register the source, prepare, review, publish, HTTP-check and activate its profiles, then run `pnpm --prefix frontend run media:public-renditions:check`. A model-page or historical example that is not a selected critical homepage hero may continue to use its exact original until it is prepared. The launch-asset check, rendition coverage check and browser/Core Web Vitals rollout evidence certify different contracts.
 
 ## Required commands
 

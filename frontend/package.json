@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "prebuild": "pnpm --dir .. model:registry:check",
+    "prebuild": "pnpm --dir .. model:registry:check && pnpm media:public-renditions:check",
     "build": "next build",
     "postbuild": "next-sitemap",
     "start": "next start",
@@ -21,6 +21,7 @@
     "thumbs:backfill": "tsx --tsconfig tsconfig.scripts.json scripts/backfill-thumbnails.ts",
     "previews:backfill": "tsx --tsconfig tsconfig.scripts.json scripts/backfill-video-previews.ts",
     "media:public-renditions": "tsx --tsconfig tsconfig.scripts.json scripts/public-video-renditions.ts",
+    "media:public-renditions:check": "tsx --tsconfig tsconfig.scripts.json scripts/check-public-video-coverage.ts",
     "keyframes:backfill": "tsx --tsconfig tsconfig.scripts.json scripts/backfill-video-keyframes.ts",
     "thumbs:image-backfill": "tsx --tsconfig tsconfig.scripts.json scripts/backfill-image-thumbnails.ts",
     "thumbs:uploads-backfill": "tsx --tsconfig tsconfig.scripts.json scripts/backfill-upload-thumbnails.ts",

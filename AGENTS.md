@@ -160,7 +160,11 @@ For the authenticated workspace route, keep `frontend/app/(core)/(workspace)/app
 
 ## Media Changes
 
-Read `docs/engineering/media-delivery.md` before changing media presentation, image optimizer URLs, encoding, thumbnail repairs, or model examples. Keep original download/edit URLs distinct from display derivatives, preserve the critical server-rendered poster and layout geometry, and use shared delivery rules when adding a model or media item. Do not introduce model-specific playback branches or per-route optimizer settings.
+Read `docs/engineering/media-delivery.md` before changing media presentation, image optimizer URLs, encoding, thumbnail repairs, or model examples. `frontend/config/public-video-sources.json` owns authored public-demo source identity, while `public-video-renditions.manifest.json` owns measured preparation, review, HTTP readiness and activation state. The generated browser projection is never hand-edited. These media roles and profiles are separate from model identity in `model-registry.json`.
+
+Keep original download, edit and schema URLs distinct from immutable display derivatives. Public playback policy belongs in `frontend/lib/public-video-playback.ts`, browser attempt lifecycle in `frontend/components/media/usePublicVideoPlayback.ts`, and encoding/storage/database work outside browser modules. Preserve the critical server-rendered poster, fixed geometry and lazy mobile loading. Unknown or signed media must retain exact-original fallback behavior; do not introduce model-specific playback branches or per-route optimizer settings.
+
+When adding a selected homepage hero video, register its authored source, prepare and review derivatives, publish them, verify public HTTP and Range behavior, activate them, then run `pnpm --prefix frontend run media:public-renditions:check`. The same offline coherence and critical-home coverage gate runs in frontend `prebuild`. A validated profile omission deliberately keeps the original; pending candidates and retryable failures do not establish readiness. Model launch assets remain a separate contract checked with `pnpm model:launch-assets:check`.
 
 For initial-loading changes, attach comparable before/after performance evidence and block reproducible Core Web Vitals regressions. Functional tests alone do not establish performance gains. Keep repair simulations read-only, make writes explicit and bounded, and update ownership documentation and contracts in the same change.
 

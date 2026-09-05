@@ -11,6 +11,8 @@ Read this guide when changing image/video presentation, poster URLs, generated m
 | Critical homepage poster | `HomeLcpPoster.tsx` and `home-lcp-image.ts` in the same directory |
 | Example gallery playback | `frontend/components/examples/ExampleGalleryCard.tsx` and `ExamplesHeroVideo.client.tsx` |
 | Model hero playback | `frontend/components/marketing/ModelHeroMedia.client.tsx` |
+| Shared public playback policy and observations | `frontend/lib/public-video-playback.ts` |
+| Shared browser attempt/fallback lifecycle | `frontend/components/media/usePublicVideoPlayback.ts` |
 | Optimized poster URLs | `frontend/lib/media-helpers.ts` and `frontend/config/image-optimizer.json` |
 | Generated image thumbnails | `frontend/server/image-thumbnails.ts` |
 | Uploaded image/video thumbnails | `frontend/server/upload-thumbnails.ts` |
@@ -18,7 +20,10 @@ Read this guide when changing image/video presentation, poster URLs, generated m
 | Public rendition CLI and stable contracts | `frontend/scripts/public-video-renditions.ts` and `_lib/public-video-renditions.ts` |
 | Public rendition media I/O | `frontend/scripts/_lib/public-video-renditions-runtime.ts` |
 | Public rendition manifest/activation state | `frontend/scripts/_lib/public-video-rendition-state.ts` |
+| Authored public-demo source catalogue | `frontend/config/public-video-sources.json` |
+| Rendition profile definition and measured state | `frontend/config/public-video-rendition-profiles.json` and `public-video-renditions.manifest.json` |
 | Browser-safe public rendition lookup | `frontend/lib/public-video-renditions.ts` and `frontend/config/public-video-renditions.generated.json` |
+| Offline coherence and critical-home coverage | `frontend/scripts/check-public-video-coverage.ts` and `_lib/public-video-coverage.ts` |
 | Storage and reusable assets | `frontend/server/storage.ts` and `frontend/server/media-library/` |
 | Image thumbnail repair entry | `frontend/scripts/backfill-image-thumbnails.ts` |
 
@@ -29,7 +34,7 @@ Playback hooks stay client-side; encoding, storage and database work stay server
 - Keep the durable original URL available for downloads, editing and precise inspection. A presentation optimization must not silently substitute a low-resolution derivative in these actions.
 - Use a thumbnail sized for a grid or reference slot. A missing thumbnail is a repair condition; do not eagerly fetch a large original for every small tile.
 - Existing video grid previews are short, silent and deliberately lower cadence/resolution. They are not suitable evidence of a model's full motion quality or audio.
-- Use a representative full-duration rendition for a model demonstration when that rendition exists and has passed visual/audio review. The first foundation patch does not introduce a full-duration encoding pipeline.
+- Use a representative full-duration rendition for a model demonstration after its derivative has passed the measured media gates, explicit visual/audio review, public HTTP readiness and activation. A profile with a validated savings omission deliberately uses the original.
 - Preserve private/signed URL behavior. Public image optimization does not forward a user's authorization headers; do not strip signatures or publish a private source to make optimization work.
 - Preserve aspect ratio, alpha/transparency when required, orientation, and the distinction between original quality and display quality.
 
@@ -42,6 +47,18 @@ The homepage poster must remain discoverable in server-rendered HTML with its ex
 - Pause offscreen/hidden playback; respect a user pause when visibility returns. Cancel pending callbacks and ignore stale media events/play promises after source changes.
 - Preserve fixed media geometry and control layout through idle/loading/playing/paused/error states. Avoid an extra native poster download when an optimized image already provides the cover.
 - Keep playback behavior independent of model IDs. A new item should receive the same policy through data, not a new conditional in the hook.
+
+Shared public playback chooses one profile when an attempt begins and keeps it for that attempt: `mobile` below 768 px, `desktop` otherwise, with an explicit user start allowed to prefer `mobile` when the browser reports Save-Data. Unknown, private or signed inputs pass through the exact original URL. If a known derivative fails, the attempt falls back to the original at most once while retaining play intent, mute state and startup timing. Original download, edit and schema URLs never change to derivative URLs.
+
+Homepage mobile loading remains lazy, and the critical poster and fixed geometry remain present before hydration. Model, examples and homepage readers share rendition/fallback mechanics while retaining their surface-specific controls, autoplay eligibility, visibility rules and posters. Do not add per-model playback branches.
+
+### Playback observations
+
+The shared observer emits only `public_video_startup`, `public_video_rebuffer` and `public_video_error` through the existing consented analytics dispatcher. Common fields are allowlisted `asset_id`, `playback_profile` (`original`, `mobile`, `desktop`), `playback_surface` (`home`, `model`, `examples`) and `playback_trigger` (`user`, `automatic`). Startup adds `measurement_method` (`video_frame_callback` or explicitly labelled `playing_fallback`) and `duration_ms` from 0 to 120,000. Rebuffer adds `duration_ms` from 0 to 120,000 and `rebuffer_count` from 1 to 5. Error may add the native `media_error_code` from 1 to 4 and emits at most twice per observer.
+
+The first-frame callback is armed when the video node attaches. `playing` is used for startup only when that callback API is unavailable; otherwise it completes a valid post-presentation rebuffer. Rebuffer timing starts only after first presentation while playback is intended and visible. Pausing, hiding, source replacement and disposal cancel pending observations. The payload does not admit URLs, private media, prompts, queries, user/job IDs or arbitrary model labels.
+
+These bounded observations describe browser startup, rebuffer and errors for known public assets. They do not establish physical display, comparable Core Web Vitals or field performance by themselves.
 
 Do not assume a lighter file or a higher Lighthouse score proves improvement. Before merging a performance-sensitive lot, compare the reference and candidate production builds on the same routes, media and conditions. Record the commit, environment, individual runs and variability. Include mobile/desktop and cold/warm cache scenarios; identify browser versus server cache explicitly. Check LCP/CLS, blocking work, critical requests and time until the form is usable. Exercise the actual interactions for INP diagnosis: Lighthouse TBT is not field INP.
 
@@ -61,10 +78,11 @@ Sharp encoding quality and Next's admitted request quality are separate contract
 2. Record a durable original and a valid poster. Check the actual content type, dimensions, duration/cadence and audio when relevant; labels alone do not prove these properties.
 3. Select the appropriate existing display path: small grid preview, responsive image, full demonstration, or original action. New media must not increase eager requests across all items.
 4. Verify poster URLs against allowed optimizer settings and HTTP responses in the intended environment. Check loading/error, mobile single-click playback, visibility and reduced-motion/data-saving behavior when touching a reader.
-5. Run the relevant tests and `pnpm model:launch-assets:check`. Run `pnpm model:registry:check` for any model policy change, along with the model guide's generation commands when needed.
-6. Check public canonical/hreflang/JSON-LD and localized links if the owning page changes. Update this guide and relevant AGENTS ownership rules with any new implemented responsibility.
+5. For a new selected homepage hero source, add it to `public-video-sources.json`, prepare and content-review its derivatives, publish, HTTP-check and activate them, then run `pnpm --prefix frontend run media:public-renditions:check`. Pending profiles and retryable failures are not ready; every desktop/mobile profile needs an active rendition or validated omission.
+6. Run the relevant tests and `pnpm model:launch-assets:check`. Run `pnpm model:registry:check` for any model policy change, along with the model guide's generation commands when needed.
+7. Check public canonical/hreflang/JSON-LD and localized links if the owning page changes. Update this guide and relevant AGENTS ownership rules with any new implemented responsibility.
 
-The model launch-asset validator does not enforce rendition readiness. The public rendition command below owns measured byte, metadata, review, and HTTP activation gates; broader UI rollout remains separate work.
+The model launch-asset validator does not enforce rendition readiness. The public rendition command below owns measured byte, metadata, review, and HTTP activation gates. Historical grids and model pages outside the selected homepage set keep exact-original fallback until prepared; the critical-home build check is intentionally not a claim that every historical public video has been transcoded.
 
 ### Public full-duration rendition command
 
@@ -76,9 +94,19 @@ pnpm --prefix frontend run media:public-renditions check --http
 pnpm --prefix frontend run media:public-renditions prepare --work-dir=/absolute/path --asset-id=elevator-reunion
 pnpm --prefix frontend run media:public-renditions publish --work-dir=/absolute/path --asset-id=elevator-reunion --review-evidence="review record"
 pnpm --prefix frontend run media:public-renditions activate --asset-id=elevator-reunion
+# Full offline coherence plus selected-homepage coverage; also runs during frontend prebuild:
+pnpm --prefix frontend run media:public-renditions:check
 ```
 
-Preparation and publishing process at most five authored assets by default and twenty when explicitly raised. A prepared derivative must preserve supported H.264/AAC media properties, decode successfully, use faststart, and save at least 15% of the original bytes. Profiles that miss the gate are omitted independently, leaving the original URL as that profile's display fallback. Review evidence records explicit visual/audio content acceptance; it is not deployment approval. Corpus comparison artifacts alone are candidate-preparation evidence, and browser, device and Core Web Vitals gates remain separate rollout work.
+Run the lifecycle in order: `prepare`, content review, `publish`, `check --http`, then `activate`. Preparation and publishing process at most five authored assets by default and twenty when explicitly raised. The implementation accepts one square-pixel, unrotated SDR H.264/yuv420p video stream up to 16,384×16,384 and 60 seconds, at constant 24, 25 or 30 fps, with zero or one AAC audio stream. Frame evidence is bounded to 2–3,600 frames. Desktop output is bounded to 1920×1080 at CRF 20; mobile to 1280×720 at CRF 22. Outputs must avoid upscale, preserve aspect ratio, complete frame timeline and cadence, video timing, and AAC packet payload/timing, decode successfully, use faststart, and save at least 15% of original bytes.
+
+The two profiles are independent. Insufficient savings records an explicit omission and keeps the exact original for that profile. An operational encode/probe failure is retryable and does not erase a sibling success. Publishing a replacement preserves an already active rendition until the new pending candidate passes current HTTP/Range verification and activation. Pending-only candidates and failures without an active rendition or omission do not satisfy critical-home coverage.
+
+`public-video-sources.json` is the authored source catalogue. `public-video-renditions.manifest.json` is the full measured and reviewed state, including immutable storage identity, hashes, bytes, probes, omissions, failures, pending candidates and active HTTP evidence. `public-video-renditions.generated.json` is a browser-only projection of active display URLs and must not be edited by hand. The offline check validates source/manifest/projection coherence and fails on a stale projection. Activation writes the manifest before the projection, so an interrupted projection write can leave a recoverable stale projection; rerun the explicit `activate` command after verifying the intended manifest state and current public object to regenerate it.
+
+Derivative URLs are content- and profile-version-addressed immutable objects. Do not change profile settings under a profile version that has already been published. A future profile change needs a new version and a reviewed migration of preparation, manifest and projection state; this migration is not automatic.
+
+Review evidence records explicit visual and audio content acceptance. It is separate from deployment readiness: HTTP/Range verification and activation establish public object readiness, while Safari/iOS, other supported browsers, comparable Core Web Vitals and actual interactions still gate rollout. Keep original files and rollback references; this work does not authorize original or broad storage deletion.
 
 ## Repair and cleanup
 
@@ -113,4 +141,4 @@ Remove obsolete code/configuration in the lot that replaces it. Keep compatibili
 - `npm --prefix frontend run lint`, `npm run lint:exposure`, `git diff --check`.
 - Production build and browser smoke for changed public surfaces; explicit before/after performance evidence for initial-load changes.
 - Supported browser checks for media behavior, including Safari/iOS before broad rollout; record any untested environment rather than claiming coverage.
-- Documentation describes shipped code; future pipeline work stays labelled as future work.
+- Documentation describes shipped code without treating incomplete browser, device or field-performance validation as finished.

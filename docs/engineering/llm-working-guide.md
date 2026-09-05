@@ -39,6 +39,7 @@ For a focused task, inspect the nearest route-local `AGENTS.md` if one exists.
 - The current server-data client cache is SWR. Prefer standardizing existing SWR hooks before considering a data-layer migration.
 - Author model policy only in `frontend/config/model-registry.json`, follow `docs/engineering/model-registry.md`, and run `pnpm model:registry:check` after any model policy change.
 - Never edit `frontend/config/model-runtime.json`, `frontend/config/engine-catalog.json`, `frontend/config/model-roster.json`, or the roster files under `docs/` directly; they are generated projections.
+- Author public-demo source identity only in `frontend/config/public-video-sources.json`. Do not hand-edit measured rendition entries or the generated browser projection. Follow `docs/engineering/media-delivery.md` and run `pnpm --prefix frontend run media:public-renditions:check` when a selected homepage video or rendition state changes.
 
 ## Server And Client Boundaries
 
@@ -46,6 +47,7 @@ For a focused task, inspect the nearest route-local `AGENTS.md` if one exists.
 - Add `'use client'` only for hooks, browser APIs, event handlers, or client-only libraries.
 - Never import database access, secrets, Node APIs, or admin-only helpers into client files.
 - Put privileged or database-backed logic in `frontend/server` or route handlers.
+- Keep public-video playback policy in `frontend/lib/public-video-playback.ts`, React attempt state in `frontend/components/media/usePublicVideoPlayback.ts`, and rendition commands under `frontend/scripts`. Browser code may consume only the generated public projection, not the measured manifest or script helpers.
 
 ## Refactor Order
 
@@ -80,6 +82,8 @@ Before merge or PR, run a full build when feasible:
 ```bash
 npm --prefix frontend run build
 ```
+
+Frontend `prebuild` first validates the model registry and then runs the offline public-rendition coherence and critical-home coverage gate. This gate does not make network, storage or database calls; use the explicit rendition command and its documented review/HTTP activation sequence for operational changes.
 
 ## Current Architecture Notes
 
