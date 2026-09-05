@@ -15,6 +15,7 @@ Read this guide when changing image/video presentation, poster URLs, generated m
 | Generated image thumbnails | `frontend/server/image-thumbnails.ts` |
 | Uploaded image/video thumbnails | `frontend/server/upload-thumbnails.ts` |
 | Small video previews | `frontend/server/video-preview.ts` |
+| Public full-duration renditions | `frontend/scripts/public-video-renditions.ts`, its `_lib/public-video-renditions*` modules, and `frontend/config/public-video-rendition*.json` |
 | Storage and reusable assets | `frontend/server/storage.ts` and `frontend/server/media-library/` |
 | Image thumbnail repair entry | `frontend/scripts/backfill-image-thumbnails.ts` |
 
@@ -60,7 +61,21 @@ Sharp encoding quality and Next's admitted request quality are separate contract
 5. Run the relevant tests and `pnpm model:launch-assets:check`. Run `pnpm model:registry:check` for any model policy change, along with the model guide's generation commands when needed.
 6. Check public canonical/hreflang/JSON-LD and localized links if the owning page changes. Update this guide and relevant AGENTS ownership rules with any new implemented responsibility.
 
-The existing launch-asset validator does not yet enforce measured byte budgets or the readiness of every delivery profile. Do not describe those future gates as installed. A versioned derivative manifest, durable retry queue and broader rollout of full demonstration renditions remain separate implementation work.
+The model launch-asset validator does not enforce rendition readiness. The public rendition command below owns measured byte, metadata, review, and HTTP activation gates; broader UI rollout remains separate work.
+
+### Public full-duration rendition command
+
+The public rendition command defaults to a read-only offline coherence check. Preparation is local and resumable; publishing requires explicit review evidence; activation independently requires current public MP4 and Range readiness. The generated projection is the only rendition data imported by browser-safe code.
+
+```sh
+pnpm --prefix frontend run media:public-renditions check
+pnpm --prefix frontend run media:public-renditions check --http
+pnpm --prefix frontend run media:public-renditions prepare --work-dir=/absolute/path --asset-id=elevator-reunion
+pnpm --prefix frontend run media:public-renditions publish --work-dir=/absolute/path --asset-id=elevator-reunion --review-evidence="review record"
+pnpm --prefix frontend run media:public-renditions activate --asset-id=elevator-reunion
+```
+
+Preparation and publishing process at most five authored assets by default and twenty when explicitly raised. A prepared derivative must preserve supported H.264/AAC media properties, decode successfully, use faststart, and save at least 15% of the original bytes. Profiles that miss the gate are omitted independently, leaving the original URL as that profile's display fallback. Review evidence must document an actual production acceptance decision; corpus comparison artifacts alone are candidate-preparation evidence.
 
 ## Repair and cleanup
 

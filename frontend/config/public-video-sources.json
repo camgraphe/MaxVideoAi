@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "role": "public-demo",
+  "sources": [
+    {
+      "assetId": "elevator-reunion",
+      "url": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/6e299d72-22dd-46f4-8260-4d6887777558.mp4",
+      "sha256": "cb1e0396ba9893a9e7186af7fc72c92742d8c1486f1664d71c5021869aa5aec6"
+    },
+    {
+      "assetId": "balloon-street",
+      "url": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/085cc0a7-063d-4801-91f9-ec3d9c5eb95d.mp4",
+      "sha256": "ad31418d34fe9eca057278908a8b1f640b1fd7b0a210cf1a1cb580a1279fe41f"
+    },
+    {
+      "assetId": "glassblower",
+      "url": "https://media.maxvideoai.com/media-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/c8567e3b0531ae10a993534c41d5f76ec8a1fc2329294d0c8fdb7e4b38ab349a.mp4",
+      "sha256": "c8567e3b0531ae10a993534c41d5f76ec8a1fc2329294d0c8fdb7e4b38ab349a"
+    },
+    {
+      "assetId": "mars-garden",
+      "url": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/7b1f1c7b-f7f0-473e-9610-82723604b690.mp4",
+      "sha256": "34828ca39ffe1fd87f05cef3fa57728e461189c063e17362d857598bce835a98"
+    },
+    {
+      "assetId": "underwater-swimmer",
+      "url": "https://media.maxvideoai.com/media-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/2506829a4f4f3d7e5d2bd864a701fc6cc2fb7c53182f7a7f5ca10cc580c70aa8.mp4",
+      "sha256": "2506829a4f4f3d7e5d2bd864a701fc6cc2fb7c53182f7a7f5ca10cc580c70aa8"
+    }
+  ]
+}
