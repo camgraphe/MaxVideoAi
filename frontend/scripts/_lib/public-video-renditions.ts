@@ -12,6 +12,7 @@ import {
   checkPublicVideoStateFiles,
   persistActivatedStateFiles,
   validatePublishedManifestState,
+  verifyPublishedHttpRenditionsState,
 } from './public-video-rendition-state';
 
 export type PublicVideoProfileVersion = 'public-demo-v1';
@@ -583,6 +584,13 @@ export function checkPublicVideoState(input: {
   projection: PublicVideoRenditionProjection;
 }): void {
   checkPublicVideoStateFiles(input);
+}
+
+export async function verifyPublishedHttpRenditions(
+  manifest: PublishedManifest,
+  verifyHttp: (url: string, expectedBytes: number) => Promise<unknown>
+): Promise<void> {
+  await verifyPublishedHttpRenditionsState(manifest, verifyHttp);
 }
 
 export async function activatePublishedManifest(

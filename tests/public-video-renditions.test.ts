@@ -18,6 +18,7 @@ import {
   summarizePreparedCheckpoints,
   validatePreparedRendition,
   validatePublishedManifest,
+  verifyPublishedHttpRenditions,
   verifyPreparedOutputForResume,
   verifyPublicHttpRendition,
   type MediaProbe,
@@ -472,6 +473,41 @@ test('offline check detects a stale or hand-edited generated projection', async 
   const stale = buildPublicProjection(manifestWith());
   stale.renditions[SOURCE_URL]!.mobile = SOURCE_URL;
   assert.throws(() => checkPublicVideoState({ sources, manifest: manifestWith(), projection: stale }), /projection is stale/i);
+});
+
+test('explicit HTTP check verifies pending-only publications and propagates readiness failures', async () => {
+  const pending = manifestWith({ httpCheck: null, activatedAt: null });
+  let checked = 0;
+  await assert.rejects(() => verifyPublishedHttpRenditions(pending, async (url, bytes) => {
+    checked += 1;
+    assert.equal(url, DERIVATIVE_URL);
+    assert.equal(bytes, 800_000);
+    throw new Error('pending public response failed');
+  }), /pending public response failed/);
+  assert.equal(checked, 1);
+});
+
+test('explicit HTTP check covers active and replacement candidates and deduplicates immutable URLs', async () => {
+  const manifest = manifestWith();
+  const replacementSha = 'e'.repeat(64);
+  const replacementUrl = `https://media.maxvideoai.com/marketing/video-renditions/${SOURCE_SHA}/public-demo-v1/mobile/${replacementSha}.mp4`;
+  manifest.entries[0]!.pendingRenditions.mobile = {
+    ...manifest.entries[0]!.renditions.mobile!,
+    sha256: replacementSha,
+    storageKey: `marketing/video-renditions/${SOURCE_SHA}/public-demo-v1/mobile/${replacementSha}.mp4`,
+    url: replacementUrl,
+    httpCheck: null,
+    activatedAt: null,
+  };
+  manifest.entries.push({
+    ...structuredClone(manifest.entries[0]!),
+    assetId: 'duplicate-for-orchestration-only',
+    renditions: { mobile: structuredClone(manifest.entries[0]!.renditions.mobile!) },
+    pendingRenditions: {},
+  });
+  const checked: string[] = [];
+  await verifyPublishedHttpRenditions(manifest, async (url) => { checked.push(url); });
+  assert.deepEqual(checked, [DERIVATIVE_URL, replacementUrl]);
 });
 
 test('activation requires explicit review and current HTTP readiness before producing a projection', async () => {

@@ -10,6 +10,7 @@ import {
   summarizePreparedCheckpoints,
   validatePublishedManifest,
   validatePublicVideoSources,
+  verifyPublishedHttpRenditions,
   verifyPublicHttpRendition,
   type PreparedCheckpoint,
   type PublicVideoSource,
@@ -59,12 +60,7 @@ async function main(): Promise<void> {
   if (options.mode === 'check') {
     checkPublicVideoState({ sources, manifest, projection });
     if (options.http) {
-      for (const entry of manifest.entries) {
-        for (const profile of ['desktop', 'mobile'] as const) {
-          const rendition = entry.renditions[profile];
-          if (rendition) await verifyPublicHttpRendition(rendition.url, rendition.bytes);
-        }
-      }
+      await verifyPublishedHttpRenditions(manifest, verifyPublicHttpRendition);
     }
     console.log(`[public-video-renditions] check passed http=${options.http}`);
     return;

@@ -121,6 +121,22 @@ export function checkPublicVideoStateFiles(input: {
   }
 }
 
+export async function verifyPublishedHttpRenditionsState(
+  manifest: PublishedManifest,
+  verifyHttp: (url: string, expectedBytes: number) => Promise<unknown>
+): Promise<void> {
+  const verifiedUrls = new Set<string>();
+  for (const entry of manifest.entries) {
+    for (const profile of ['desktop', 'mobile'] as const) {
+      for (const rendition of [entry.renditions[profile], entry.pendingRenditions[profile]]) {
+        if (!rendition || verifiedUrls.has(rendition.url)) continue;
+        verifiedUrls.add(rendition.url);
+        await verifyHttp(rendition.url, rendition.bytes);
+      }
+    }
+  }
+}
+
 export async function activatePublishedManifestState(
   manifest: PublishedManifest,
   sources: PublicVideoSource[],
