@@ -31,3 +31,28 @@ Result: exit 0; 26 tests passed, 0 failed; focused ESLint, TypeScript, and diff 
 ## Commit
 
 Included in the task commit containing this report (`HEAD` at handoff).
+
+## Review follow-up — six Important findings
+
+Fix commit: `c7f8922847c58d05d6a66e486a8d9fdf9b90b5bc` (`fix(home): harden hero playback recovery`)
+
+### Fix details
+
+- Consumes each manual play request once, then requires player/document visibility for later resume.
+- Gives same-thumbnail reselection its own play-request sequence so it cannot stall in loading.
+- Limits idle scheduling to unloaded media, preventing visibility changes from queuing callbacks over mounted, playing, or user-paused video.
+- Invalidates pending `play()` promises on every newer play, pause, selection, visibility suspension, native error, and unmount; stale and expected `AbortError` rejections cannot hide the current frame.
+- Adds visible `aria-live` loading/error feedback and retry labels through the real EN/FR/ES homepage copy and `HomeHeroContent` contract.
+- Remounts the video with a new attempt key after native media errors before retrying playback.
+
+### Follow-up RED
+
+Command: `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/homepage-hero-playback.test.ts`
+
+Recorded result against `82a2c7199`: 10 tests, 6 passed, 4 failed. Failures reproduced same-thumbnail reselection, repeated idle scheduling after mount, same-element stale promise rejection, and missing localized/native-error recovery. The visibility reproduction was then tightened to begin onscreen so it exercises the reported immediate restart path.
+
+### Follow-up GREEN
+
+Command: `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/homepage-hero-playback.test.ts tests/homepage-lcp-performance.test.ts tests/homepage-real-examples-preview.test.ts tests/home-redesign-architecture.test.ts tests/home-redesign-sections-architecture.test.ts && pnpm --dir frontend exec eslint components/marketing/home/HeroVideoShowcase.tsx components/marketing/home/useHeroVideoPlayback.ts components/marketing/home/HomeHeroSection.tsx components/marketing/home/home-redesign-types.ts --no-cache && pnpm --dir frontend exec tsc --noEmit --pretty false && pnpm --dir frontend run i18n:check && git diff --check`
+
+Result: exit 0; 30 tests passed, 0 failed; focused ESLint, TypeScript, EN/FR/ES localization parity, and diff checks passed. Node emitted the repository's existing engine warning because the host uses Node 23 while the package requests Node 22.
