@@ -229,10 +229,6 @@ export function useHeroVideoPlayback<T extends PlaybackItem>(items: T[]) {
         if (!isCurrentVideo(event)) return;
         setStatus('loading');
       },
-      onStalled(event: SyntheticEvent<HTMLVideoElement>) {
-        if (!isCurrentVideo(event)) return;
-        setStatus('loading');
-      },
       onPause(event: SyntheticEvent<HTMLVideoElement>) {
         if (!isCurrentVideo(event)) return;
         setStatus(userPausedRef.current ? 'paused' : 'loading');

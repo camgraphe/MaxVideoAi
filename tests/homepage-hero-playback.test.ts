@@ -225,6 +225,31 @@ test('playing state follows media readiness and waiting returns the control to l
   }
 });
 
+test('stalled fetching keeps the Pause control while buffered playback continues', async () => {
+  const fixture = await mountHero();
+  let pauseCalls = 0;
+  fixture.dom.window.HTMLMediaElement.prototype.pause = function () { pauseCalls += 1; };
+  try {
+    await act(async () => fixture.container.querySelector<HTMLButtonElement>('button[aria-label="Play: Model 1"]')!.click());
+    const video = fixture.video()!;
+    Object.defineProperties(video, {
+      paused: { configurable: true, value: false },
+      readyState: { configurable: true, value: video.HAVE_FUTURE_DATA },
+    });
+
+    await act(async () => video.dispatchEvent(new fixture.dom.window.Event('playing')));
+    await act(async () => video.dispatchEvent(new fixture.dom.window.Event('stalled')));
+
+    const pause = fixture.container.querySelector<HTMLButtonElement>('button[aria-label="Pause"]');
+    assert.ok(pause, 'A stalled fetch must not replace Pause while buffered media is still playing');
+    await act(async () => pause.click());
+    assert.equal(pauseCalls, 1);
+    assert.equal(fixture.player().dataset.playbackState, 'paused');
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
 test('offscreen and hidden playback pauses without overriding the user pause', async () => {
   const fixture = await mountHero({ desktop: true });
   let playCalls = 0;
