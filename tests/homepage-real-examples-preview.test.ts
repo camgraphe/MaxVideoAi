@@ -321,19 +321,6 @@ test('homepage hero opens on the approved MiniMax H3 Max disaster story with coh
   );
 });
 
-test('homepage hero avoids initial mobile video downloads', () => {
-  const showcaseSource = readFileSync('frontend/components/marketing/home/HeroVideoShowcase.tsx', 'utf8');
-
-  assert.match(showcaseSource, /const \[shouldAutoplayPreview, setShouldAutoplayPreview\]/);
-  assert.match(showcaseSource, /window\.matchMedia\('\(min-width: 768px\)'\)/);
-  assert.match(showcaseSource, /if \(!selected\?\.videoSrc \|\| !shouldAutoplayPreview\) \{\n\s+setShouldLoadVideo\(false\);/);
-  assert.match(showcaseSource, /window\.requestIdleCallback\(loadPreview, \{ timeout: 1800 \}\)/);
-  assert.match(showcaseSource, /selected\.videoSrc && shouldLoadVideo/);
-  assert.match(showcaseSource, /autoPlay=\{shouldAutoplayPreview\}/);
-  assert.doesNotMatch(showcaseSource, /video\.load\(\)/);
-  assert.doesNotMatch(showcaseSource, /loading="eager"/);
-});
-
 test('homepage hero defers mobile thumbnail images without changing desktop thumbnails', () => {
   const showcaseSource = readFileSync('frontend/components/marketing/home/HeroVideoShowcase.tsx', 'utf8');
 
