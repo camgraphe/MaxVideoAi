@@ -7,7 +7,7 @@ import { promisify } from 'node:util';
 import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
 import ffprobe from 'ffprobe-static';
 
-import { ensureExecutableFfmpegPath } from '../../server/ffmpeg-runtime';
+import { resolvePublicVideoFfmpegPath } from './public-video-ffmpeg';
 import {
   assertAllowedPublicMp4Url,
   buildFfmpegArguments,
@@ -28,9 +28,21 @@ import {
 } from './public-video-renditions';
 
 const execFileAsync = promisify(execFile);
+const ffmpegPaths = new Map<string, Promise<string>>();
 
 export async function getPublicVideoFfmpegPath(): Promise<string> {
-  return ensureExecutableFfmpegPath(ffmpegInstaller.path);
+  const overridePath = process.env.PUBLIC_VIDEO_FFMPEG_PATH?.trim();
+  const key = overridePath ?? '';
+  const cached = ffmpegPaths.get(key);
+  if (cached) return cached;
+  const resolution = resolvePublicVideoFfmpegPath({ bundledPath: ffmpegInstaller.path, overridePath });
+  ffmpegPaths.set(key, resolution);
+  try {
+    return await resolution;
+  } catch (error) {
+    ffmpegPaths.delete(key);
+    throw error;
+  }
 }
 
 async function atomicWrite(filePath: string, data: Buffer | string): Promise<void> {
