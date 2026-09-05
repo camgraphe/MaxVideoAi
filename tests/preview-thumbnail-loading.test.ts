@@ -10,6 +10,77 @@ import { ModelHeroMedia } from '../frontend/components/marketing/ModelHeroMedia.
 
 (globalThis as typeof globalThis & { React: typeof React }).React = React;
 
+const PUBLIC_ORIGINAL = 'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/6e299d72-22dd-46f4-8260-4d6887777558.mp4';
+
+async function mountModelPreview({ automatic = false }: { automatic?: boolean } = {}) {
+  const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost', pretendToBeVisual: true });
+  const observers: MockIntersectionObserver[] = [];
+  class MockIntersectionObserver {
+    private callback: IntersectionObserverCallback;
+    targets = new Set<Element>();
+    constructor(callback: IntersectionObserverCallback) { this.callback = callback; observers.push(this); }
+    observe(target: Element) { this.targets.add(target); }
+    unobserve(target: Element) { this.targets.delete(target); }
+    disconnect() { this.targets.clear(); }
+    takeRecords() { return []; }
+    get root() { return null; }
+    get rootMargin() { return '0px'; }
+    get thresholds() { return [0.01]; }
+    emit(target: Element, visible: boolean) {
+      this.callback([{ target, isIntersecting: visible } as IntersectionObserverEntry], this as unknown as IntersectionObserver);
+    }
+  }
+  Object.defineProperty(dom.window, 'matchMedia', {
+    configurable: true,
+    value: () => ({ matches: false, addEventListener() {}, removeEventListener() {} }),
+  });
+  Object.defineProperty(dom.window.navigator, 'connection', { configurable: true, value: { saveData: false } });
+  Object.defineProperty(dom.window.HTMLMediaElement.prototype, 'readyState', { configurable: true, get: () => 2 });
+  const globals = {
+    window: dom.window,
+    document: dom.window.document,
+    navigator: dom.window.navigator,
+    IntersectionObserver: MockIntersectionObserver,
+    IS_REACT_ACT_ENVIRONMENT: true,
+  };
+  const previous = new Map(Object.keys(globals).map((key) => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
+  for (const [key, value] of Object.entries(globals)) {
+    Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
+  }
+  let playCalls = 0;
+  dom.window.HTMLMediaElement.prototype.play = function () { playCalls += 1; return Promise.resolve(); };
+  dom.window.HTMLMediaElement.prototype.pause = function () {};
+  const container = dom.window.document.querySelector<HTMLElement>('#root')!;
+  const root = createRoot(container);
+  await act(async () => root.render(React.createElement(ModelHeroMedia, {
+    posterSrc: '/renders/model.jpg',
+    videoSrc: PUBLIC_ORIGINAL,
+    alt: 'Model example',
+    sizes: '100vw',
+    autoPlayDelayMs: automatic ? 1 : undefined,
+  })));
+  if (automatic) await act(async () => new Promise((resolve) => dom.window.setTimeout(resolve, 10)));
+  const video = () => container.querySelector<HTMLVideoElement>('video');
+  const emitVisibility = async (visible: boolean) => {
+    const target = container.firstElementChild!;
+    const observer = observers.find((candidate) => candidate.targets.has(target));
+    assert.ok(observer);
+    await act(async () => observer.emit(target, visible));
+  };
+  const cleanup = async () => {
+    await act(async () => root.unmount());
+    dom.window.close();
+    for (const [key, descriptor] of previous) {
+      if (descriptor) Object.defineProperty(globalThis, key, descriptor);
+      else Reflect.deleteProperty(globalThis, key);
+    }
+  };
+  return {
+    dom, container, video, emitVisibility, cleanup,
+    playCalls: () => playCalls,
+  };
+}
+
 test('the active workspace preview keeps its optimized cover until ready without a native poster', async () => {
   const require = createRequire(import.meta.url);
   const previousCssLoader = require.extensions['.css'];
@@ -83,5 +154,53 @@ test('model preview retains its cover during loading and on failure without fetc
       if (descriptor) Object.defineProperty(globalThis, key, descriptor);
       else Reflect.deleteProperty(globalThis, key);
     }
+  }
+});
+
+test('model fallback cannot autoplay after a user pause', async () => {
+  const fixture = await mountModelPreview();
+  try {
+    await act(async () => fixture.container.querySelector<HTMLButtonElement>('button[aria-label="Play preview"]')!.click());
+    const derivativeVideo = fixture.video()!;
+    assert.ok(fixture.playCalls() >= 1);
+    assert.equal(derivativeVideo.autoplay, false, 'model playback must use the guarded play path');
+
+    await act(async () => derivativeVideo.dispatchEvent(new fixture.dom.window.Event('pause')));
+    const callsAfterPause = fixture.playCalls();
+    await act(async () => derivativeVideo.querySelector('source')!.dispatchEvent(new fixture.dom.window.Event('error')));
+
+    const originalVideo = fixture.video()!;
+    assert.notEqual(originalVideo, derivativeVideo);
+    assert.equal(originalVideo.querySelector('source')?.getAttribute('src'), PUBLIC_ORIGINAL);
+    assert.equal(originalVideo.autoplay, false);
+    assert.equal(fixture.playCalls(), callsAfterPause, 'fallback must not bypass the retained user pause');
+    await fixture.emitVisibility(false);
+    await fixture.emitVisibility(true);
+    assert.equal(fixture.playCalls(), callsAfterPause, 'visibility changes must not resume a user-paused fallback');
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
+test('model automatic fallback waits offscreen and resumes through the visibility guard', async () => {
+  const fixture = await mountModelPreview({ automatic: true });
+  try {
+    const derivativeVideo = fixture.video()!;
+    assert.ok(derivativeVideo, 'eligible automatic playback must still mount the selected source');
+    assert.ok(fixture.playCalls() >= 1, 'eligible automatic playback must still use the guarded play path');
+    assert.equal(derivativeVideo.autoplay, false);
+
+    await fixture.emitVisibility(false);
+    const callsWhileHidden = fixture.playCalls();
+    await act(async () => derivativeVideo.querySelector('source')!.dispatchEvent(new fixture.dom.window.Event('error')));
+    const originalVideo = fixture.video()!;
+    assert.notEqual(originalVideo, derivativeVideo);
+    assert.equal(originalVideo.querySelector('source')?.getAttribute('src'), PUBLIC_ORIGINAL);
+    assert.equal(fixture.playCalls(), callsWhileHidden, 'offscreen fallback must not start autonomously');
+
+    await fixture.emitVisibility(true);
+    assert.equal(fixture.playCalls(), callsWhileHidden + 1, 'eligible fallback should resume through the guarded visibility transition');
+  } finally {
+    await fixture.cleanup();
   }
 });

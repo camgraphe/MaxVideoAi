@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { usePublicVideoPlayback } from '@/components/media/usePublicVideoPlayback';
 import { isCrawlerUserAgent } from '@/lib/crawler-user-agent';
@@ -45,6 +45,8 @@ export function ExamplesHeroVideo({
   const manualPlaybackRef = useRef(false);
   const programmaticPlayRef = useRef(false);
   const playGenerationRef = useRef(0);
+  const mutedRef = useRef(true);
+  const volumeRef = useRef(1);
   const [showPosterOverlay, setShowPosterOverlay] = useState(Boolean(poster));
   const {
     attempt, terminalError, begin, fail, setContext,
@@ -52,6 +54,12 @@ export function ExamplesHeroVideo({
   } = usePublicVideoPlayback('examples');
   const playbackAttempt = attempt?.rendition.originalSrc === src ? attempt : null;
   const posterStyle = useMemo(() => poster ? { objectFit: posterFit } : undefined, [poster, posterFit]);
+  const setVideoNode = useCallback((node: HTMLVideoElement | null) => {
+    videoRef.current = node;
+    if (!node) return;
+    node.muted = mutedRef.current;
+    node.volume = volumeRef.current;
+  }, []);
 
   useEffect(() => {
     userPausedRef.current = false;
@@ -196,11 +204,11 @@ export function ExamplesHeroVideo({
       {playbackAttempt ? (
         <video
           key={playbackAttempt.id}
-          ref={videoRef}
+          ref={setVideoNode}
           className={`${className ?? ''} absolute inset-0 z-20 transition-opacity duration-300 ${
             controls ? '' : ' pointer-events-none'
           } ${showPosterOverlay || terminalError ? 'opacity-0' : 'opacity-100'} ${terminalError ? 'pointer-events-none' : ''}`}
-          muted
+          muted={mutedRef.current}
           loop
           controls={controls}
           preload="none"
@@ -221,6 +229,10 @@ export function ExamplesHeroVideo({
             measurePlaying(event.currentTarget);
           }}
           onWaiting={measureWaiting}
+          onVolumeChange={(event) => {
+            mutedRef.current = event.currentTarget.muted;
+            volumeRef.current = event.currentTarget.volume;
+          }}
           onPause={() => {
             measurePause();
             programmaticPlayRef.current = false;

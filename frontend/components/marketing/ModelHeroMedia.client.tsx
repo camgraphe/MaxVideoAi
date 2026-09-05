@@ -248,7 +248,6 @@ export function ModelHeroMedia({
           key={playbackAttempt.id}
           ref={videoRef}
           className={`${mediaClassName} ${isVideoReady && !terminalError ? 'opacity-100' : 'opacity-0'}`}
-          autoPlay
           muted
           loop
           playsInline

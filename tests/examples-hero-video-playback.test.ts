@@ -146,3 +146,22 @@ test('examples fallback once and expose a retry after the original also fails', 
     await fixture.cleanup();
   }
 });
+
+test('examples preserve native mute and volume through derivative fallback', async () => {
+  const fixture = await mountExample({ desktop: true, ready: 2 });
+  try {
+    const derivativeVideo = fixture.video()!;
+    derivativeVideo.muted = false;
+    derivativeVideo.volume = 0.35;
+    await act(async () => derivativeVideo.dispatchEvent(new fixture.dom.window.Event('volumechange')));
+    await act(async () => derivativeVideo.querySelector('source')!.dispatchEvent(new fixture.dom.window.Event('error')));
+
+    const originalVideo = fixture.video()!;
+    assert.notEqual(originalVideo, derivativeVideo);
+    assert.equal(originalVideo.querySelector('source')?.getAttribute('src'), ORIGINAL);
+    assert.equal(originalVideo.muted, false, 'fallback must retain the user-selected native mute state');
+    assert.equal(originalVideo.volume, 0.35, 'fallback must retain the user-selected native volume');
+  } finally {
+    await fixture.cleanup();
+  }
+});
