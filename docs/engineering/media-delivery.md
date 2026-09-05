@@ -26,6 +26,7 @@ Read this guide when changing image/video presentation, poster URLs, generated m
 | Offline coherence and critical-home coverage | `frontend/scripts/check-public-video-coverage.ts` and `_lib/public-video-coverage.ts` |
 | Storage and reusable assets | `frontend/server/storage.ts` and `frontend/server/media-library/` |
 | Image thumbnail repair entry | `frontend/scripts/backfill-image-thumbnails.ts` |
+| Image repair inventory, references and guarded transactions | `frontend/scripts/_lib/image-thumbnail-projections.ts` |
 
 Playback hooks stay client-side; encoding, storage and database work stay server-side. Pages compose these owners. Do not put provider, pricing, storage or encoding responsibilities in a playback component. Route-specific workspace behavior stays under its existing `_hooks`, `_lib` and `_components` boundaries.
 
@@ -118,7 +119,7 @@ Keep scan order stable when repairs update rows. Preserve valid originals and th
 
 ### Image thumbnail repair command
 
-`frontend/scripts/backfill-image-thumbnails.ts` owns the CLI and deferred I/O imports; `frontend/scripts/_lib/image-thumbnail-backfill.ts` owns option validation and the injected scan/update orchestration. The default is a read-only inventory. With pnpm, pass flags directly, without a separating `--`:
+`frontend/scripts/backfill-image-thumbnails.ts` owns the CLI and deferred I/O imports; `frontend/scripts/_lib/image-thumbnail-backfill.ts` owns option validation and the injected scan/update orchestration. `image-thumbnail-projections.ts` in the same directory owns the stored-reader inventory, conservative matching, and reference transaction. The CLI always wires it: a healthy `app_jobs` row can still be a candidate when its API/library references need repair. The default is a read-only inventory. With pnpm, pass flags directly, without a separating `--`:
 
 ```sh
 pnpm --prefix frontend run thumbs:image-backfill --dry-run --after-id=0 --max=100 --batch-size=25
@@ -128,9 +129,21 @@ pnpm --prefix frontend run thumbs:image-backfill --apply --after-id=0 --max=100 
 
 Apply requires an authorized bounded repair. Batch size is 1–100 (default 25 or `IMAGE_THUMB_BACKFILL_BATCH`); maximum scanned rows per invocation is 1–10,000 (default 100 or `IMAGE_THUMB_BACKFILL_MAX`). `--after-id` accepts 0 through PostgreSQL's signed bigint maximum, defaults to 0, and is retained as a string. Unknown/conflicting flags fail before database/encoding modules load.
 
+An explicitly supplied environment variable, including `DATABASE_URL`, takes precedence over `.env.local`, then `.env`. Keep connection strings outside logs and command arguments. The inventory performs SELECTs only and can run with PostgreSQL `default_transaction_read_only=on`; it never creates missing tables. Install the application's normal migrations before using the repair tool.
+
+For each eligible job, the adapter inventories image `job_outputs`, undeleted image `media_assets` linked to the job or one of its outputs, and image `user_assets` linked by legacy job metadata. Ownership must match, including a null owner. Each table is capped at 1,000 references per job; an oversized inventory fails explicitly rather than silently omitting references. Hidden/video jobs, deleted records, foreign owners and other jobs remain outside the repair scope.
+
+Match output positions and original URLs before copying a thumbnail. A saved asset with an explicit output link must agree with that output; other saved assets need an unambiguous original-to-thumbnail match. Valid existing thumbnails win and are not replaced, even when they differ from the job thumbnail. A saved asset's existing valid column/metadata thumbnail can fill its own missing counterpart. Unknown or ambiguous originals fail the reference phase and remain operator-review items; never guess a match from a model name or generate another original.
+
+After thumbnail creation, the runner first durably updates the job with its optimistic predicate. The adapter then uses a separate, short transaction for the references: lock and validate the current job source, reread the references, and guard every UPDATE with the exact `to_jsonb(record)::text` snapshot. This preserves timestamp and numeric precision. Change only missing thumbnail fields and the relevant update timestamp; metadata updates use `jsonb_set` in PostgreSQL so unrelated fields remain intact. No upserts, record creation, originals, status/payment changes or storage deletion belong in this phase. A conflict rolls back all reference writes for that job. Transaction statement and lock waits are limited to 15 seconds and 2 seconds respectively.
+
 The summary reports actual `lastScannedId` and a separate conservative `resumeAfterId`. Use the latter to continue a run in the **same mode**: it freezes before the first failed or partially failed apply row. A dry-run cursor only continues inventory; switching to apply must use that inventory range's original starting cursor, or candidates would be skipped. Existing repaired rows are reread and skipped without regenerating their thumbnails.
 
 An apply row can increment both `updated` and `failed` after a partial repair; remaining missing thumbnails remain retryable. Apply exits nonzero if any row failed, and conflicts never overwrite a newer row. The optimistic predicate uses exact `updated_at::text`, prior JSONB renders and the previous hero URL, preserving PostgreSQL timestamp precision.
+
+`updated` counts jobs changed in either phase, once per job; it is not an upload or reference-row count. If references fail after the job thumbnail was committed, that job is both updated and failed. Retry the saved range: the existing thumbnail is reused and only the remaining references are repaired. A repair affecting references alone does not rewrite the healthy job or its timestamp. A successful retry becomes a zero-candidate inventory once all eligible representations are healthy.
+
+`tests/image-thumbnail-projections-postgres.test.ts` exercises the actual CLI and SQL against disposable PostgreSQL, including read-only inventory, healthy-job/stale-library detection, environment target precedence, reference rollback, retry without duplicate encoding, concurrent edits, bounded scope and metadata preservation. Quality CI installs PostgreSQL binaries for these checks. These operational tests do not measure page speed or alter public routes, metadata, canonicals, hreflang, sitemaps, or browser loading behavior.
 
 No checkpoint file is written. A hard process kill can prevent the final summary from printing; restart from the prior saved starting cursor. Tests simulate rejected operations/lost acknowledgments before upload, after upload and after database update, rather than OS signal handling. An uncertain upload can leave an unreferenced derivative and a retry can upload again. Do not claim exactly-once processing or delete originals/other assets to compensate. A lost database acknowledgment is treated as failure; retry rereads stored state before deciding whether repair is still needed.
 

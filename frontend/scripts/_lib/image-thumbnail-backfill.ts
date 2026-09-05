@@ -1,5 +1,6 @@
 import { buildStoredImageRenderEntries, parseStoredImageRenders } from '../../lib/image-renders';
 import { normalizeMediaUrl } from '../../lib/media';
+import type { ImageThumbnailProjectionRepair } from './image-thumbnail-projections';
 
 export type BackfillRow = {
   id: number | string;
@@ -32,6 +33,7 @@ type ThumbnailBatchInput = { jobId: string; userId: string | null; imageUrls: st
 export type ImageThumbnailBackfillDependencies = {
   query<T>(sql: string, params?: ReadonlyArray<unknown>): Promise<T[]>;
   createThumbnails?: (input: ThumbnailBatchInput) => Promise<Array<string | null>>;
+  projections?: ImageThumbnailProjectionRepair;
   onCandidate?: (row: BackfillRow, reasons: string[]) => void;
   onFailure?: (row: BackfillRow, error: unknown) => void;
 };
@@ -198,11 +200,13 @@ export async function runImageThumbnailBackfill(
         return indexes;
       }, []);
       const existingHero = validExistingHero(row, parsed.entries[0]!.url);
-      const reasons = [
+      const jobReasons = [
         ...(!parsed.hasStructuredEntries ? ['render format'] : []),
         ...(missingIndexes.length ? ['missing thumbnails'] : []),
         ...(!existingHero ? ['hero thumbnail'] : []),
       ];
+      const projectionCount = await dependencies.projections?.inspect(row) ?? 0;
+      const reasons = [...jobReasons, ...(projectionCount ? ['library thumbnails'] : [])];
       if (!reasons.length) {
         summary.skipped += 1;
         if (checkpointCanAdvance) summary.resumeAfterId = rowId;
@@ -246,33 +250,38 @@ export async function runImageThumbnailBackfill(
         const firstEntry = mergedEntries[0];
         const heroThumb =
           existingHero ?? normalizeMediaUrl(firstEntry?.thumbUrl) ?? normalizeMediaUrl(firstEntry?.url) ?? null;
-        const updatedRows = await dependencies.query<{ id: number | string }>(
-          `UPDATE app_jobs
-           SET render_ids = $2::jsonb,
-               thumb_url = COALESCE($3, thumb_url),
-               preview_frame = COALESCE(preview_frame, $3),
-               updated_at = NOW()
-           WHERE id = $1
-             AND updated_at IS NOT DISTINCT FROM $4::timestamptz
-             AND render_ids IS NOT DISTINCT FROM $5::jsonb
-             AND thumb_url IS NOT DISTINCT FROM $6::text
-           RETURNING id`,
-          [
-            row.id,
-            JSON.stringify(buildStoredImageRenderEntries(mergedEntries)),
-            heroThumb,
-            row.updated_at,
-            JSON.stringify(row.render_ids),
-            row.thumb_url,
-          ]
-        );
-        if (!updatedRows.length) {
-          summary.failed += 1;
-          checkpointCanAdvance = false;
-          dependencies.onFailure?.(row, new Error('row changed during repair'));
-          continue;
+        if (jobReasons.length) {
+          const updatedRows = await dependencies.query<{ id: number | string }>(
+            `UPDATE app_jobs
+             SET render_ids = $2::jsonb,
+                 thumb_url = COALESCE($3, thumb_url),
+                 preview_frame = COALESCE(preview_frame, $3),
+                 updated_at = NOW()
+             WHERE id = $1
+               AND updated_at IS NOT DISTINCT FROM $4::timestamptz
+               AND render_ids IS NOT DISTINCT FROM $5::jsonb
+               AND thumb_url IS NOT DISTINCT FROM $6::text
+               AND hidden IS NOT TRUE AND video_url IS NULL
+             RETURNING id`,
+            [
+              row.id,
+              JSON.stringify(buildStoredImageRenderEntries(mergedEntries)),
+              heroThumb,
+              row.updated_at,
+              JSON.stringify(row.render_ids),
+              row.thumb_url,
+            ]
+          );
+          if (!updatedRows.length) throw new Error('row changed during repair');
+          summary.updated += 1;
         }
-        summary.updated += 1;
+        if (!candidateFailed && dependencies.projections) {
+          const repaired = await dependencies.projections.repair(row, mergedEntries);
+          if (!jobReasons.length) {
+            if (repaired) summary.updated += 1;
+            else summary.skipped += 1;
+          }
+        }
         if (candidateFailed) {
           summary.failed += 1;
           checkpointCanAdvance = false;

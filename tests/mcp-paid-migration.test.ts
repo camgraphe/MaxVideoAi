@@ -126,7 +126,7 @@ test('migration 30 constraints, state machine, immutability, indexes, row locks,
   });
 
   const psql = (...args: string[]) => spawnSync('psql', [
-    '-X', '-h', socketDirectory, '-U', 'postgres', '-d', 'postgres', ...args,
+    '-X', '-q', '-h', socketDirectory, '-U', 'postgres', '-d', 'postgres', ...args,
   ], { encoding: 'utf8' });
   for (let attempt = 0; attempt < 2; attempt += 1) {
     const migration = psql(
