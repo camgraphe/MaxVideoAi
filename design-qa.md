@@ -41,6 +41,6 @@ Date: 2026-09-06.
 
 ## Checks and limits
 
-Production build passes: 860 pages generated, including lint/type validation and model-registry projection checks. All 77 focused home/MCP tests pass. SEO/media origin checks, exposure and translation parity pass. Production preview verifies localized canonical URLs, hreflang and JSON-LD, the homepage link to MCP, playback and the Codex/Claude text. No deployment performed. Browser verification used the in-app browser at desktop/mobile viewport sizes, not physical iOS/Android hardware. Build log: `/tmp/maxvideoai-mcp-final-build.log`.
+Production build passes after integrating media PR #268 (`c085f5fde`): 860 pages generated, including lint/type validation, model-registry projections and the critical homepage rendition gate. All 141 focused home/MCP, shared playback, comparison and SEO tests pass. SEO/media origin checks, exposure and translation parity pass. The integrated production preview verifies localized canonical URLs, hreflang, the homepage link to MCP, playback and the Codex/Claude text; JSON-LD was also checked in the preceding production preview. No deployment performed. Browser verification used the in-app browser at desktop/mobile viewport sizes, not physical iOS/Android hardware. This is functional validation, not a measured Core Web Vitals improvement or a physical-device performance comparison. Build log: `/tmp/maxvideoai-mcp-merged-build.log`; tests: `/tmp/maxvideoai-mcp-merged-tests.log`.
 
 final result: passed
