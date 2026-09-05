@@ -62,6 +62,9 @@ export type HomeHeroContent = {
     refundNote: string;
     playLabel: string;
     pauseLabel: string;
+    loadingLabel: string;
+    errorLabel: string;
+    retryLabel: string;
   };
 };
 

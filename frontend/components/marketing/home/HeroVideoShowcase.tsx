@@ -87,16 +87,22 @@ export function HeroVideoShowcase({
   items,
   playLabel,
   pauseLabel,
+  loadingLabel,
+  errorLabel,
+  retryLabel,
 }: {
   items: HeroVideoShowcaseItem[];
   playLabel: string;
   pauseLabel: string;
+  loadingLabel: string;
+  errorLabel: string;
+  retryLabel: string;
 }) {
   const [shouldLoadMobileThumbnails, setShouldLoadMobileThumbnails] = useState(false);
   const mobileThumbnailsRef = useRef<HTMLDivElement>(null);
   const {
     selectedIndex, selected, status, isPlaying, hasUserPaused, isMuted, currentTime, progress,
-    shouldLoadVideo, canAutoplay, isFrameReady, playerRef, videoRef, selectAndPlay,
+    shouldLoadVideo, canAutoplay, isFrameReady, mediaAttempt, playerRef, videoRef, selectAndPlay,
     handlePlayToggle, handleMuteToggle, mediaHandlers,
   } = useHeroVideoPlayback(items);
 
@@ -165,7 +171,7 @@ export function HeroVideoShowcase({
             {selected.videoSrc && shouldLoadVideo ? (
               <video
                 ref={videoRef}
-                key={selected.id}
+                key={`${selected.id}:${mediaAttempt}`}
                 aria-label={`${selected.name} preview video`}
                 className={`absolute inset-0 h-full w-full object-cover transition-opacity ${isFrameReady ? 'opacity-100' : 'opacity-0'}`}
                 preload={canAutoplay ? 'metadata' : 'auto'}
@@ -204,10 +210,20 @@ export function HeroVideoShowcase({
             {ratePerSecond ? <p className="mt-0.5 text-[8px] font-semibold leading-tight text-white/78 sm:text-[9px]">{ratePerSecond}</p> : null}
           </div>
 
-          {hasUserPaused || (selected.videoSrc && !shouldLoadVideo) ? (
+          {status === 'loading' || status === 'error' ? (
+            <p
+              role="status"
+              aria-live="polite"
+              className="absolute bottom-16 right-3 rounded-full bg-black/58 px-2.5 py-1 text-xs font-semibold text-white/90 backdrop-blur-sm sm:right-5"
+            >
+              {status === 'error' ? errorLabel : loadingLabel}
+            </p>
+          ) : null}
+
+          {status === 'error' || hasUserPaused || (selected.videoSrc && !shouldLoadVideo) ? (
             <button
               type="button"
-              aria-label={`${selected.name} — ${playLabel}`}
+              aria-label={status === 'error' ? retryLabel : `${selected.name} — ${playLabel}`}
               aria-pressed={false}
               onClick={handlePlayToggle}
               className="absolute left-1/2 top-1/2 inline-flex h-[72px] w-[72px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/75 bg-white/94 text-[#161a2d] shadow-[0_18px_46px_-18px_rgba(0,0,0,0.88)] backdrop-blur-md transition hover:scale-105 hover:bg-white focus:outline-none focus:ring-2 focus:ring-white/90 focus:ring-offset-2 focus:ring-offset-[#070b14] dark:border-white/45 dark:focus:ring-[rgba(143,183,255,0.34)]"
@@ -220,7 +236,7 @@ export function HeroVideoShowcase({
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                aria-label={isPlaying ? pauseLabel : playLabel}
+                aria-label={status === 'error' ? retryLabel : isPlaying ? pauseLabel : playLabel}
                 onClick={handlePlayToggle}
                 className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/80 dark:hover:bg-white/[0.07] dark:focus:ring-[rgba(143,183,255,0.34)]"
               >

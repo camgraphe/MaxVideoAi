@@ -580,7 +580,10 @@
           "generateCta": "Générer avec ce modèle",
           "refundNote": "Crédits rendus si la génération échoue",
           "playLabel": "Lire l’aperçu du modèle",
-          "pauseLabel": "Mettre l’aperçu en pause"
+          "pauseLabel": "Mettre l’aperçu en pause",
+          "loadingLabel": "Chargement de l’aperçu",
+          "errorLabel": "Aperçu indisponible",
+          "retryLabel": "Réessayer l’aperçu"
         }
       },
       "proof": {

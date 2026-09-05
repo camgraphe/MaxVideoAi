@@ -110,6 +110,9 @@ async function mountHero(policy: MatchPolicy = {}) {
     items,
     playLabel: 'Play',
     pauseLabel: 'Pause',
+    loadingLabel: 'Loading preview',
+    errorLabel: 'Preview unavailable',
+    retryLabel: 'Retry preview',
   })));
 
   const player = () => container.querySelector<HTMLElement>('[data-hero-player="main"]')!;
@@ -233,6 +236,92 @@ test('offscreen and hidden playback pauses without overriding the user pause', a
   }
 });
 
+test('manual intent is consumed once and subsequent offscreen state suspends playback', async () => {
+  const fixture = await mountHero({ desktop: false, reducedMotion: true });
+  let playCalls = 0;
+  fixture.dom.window.HTMLMediaElement.prototype.play = function () { playCalls += 1; return Promise.resolve(); };
+  try {
+    await fixture.intersectPlayer(true);
+    await act(async () => fixture.container.querySelector<HTMLButtonElement>('button[aria-label="Play: Model 2"]')!.click());
+    assert.equal(playCalls, 1, 'The explicit click starts immediately');
+    await fixture.intersectPlayer(false);
+    assert.equal(playCalls, 1, 'The consumed manual intent must not bypass later visibility suspension');
+    await fixture.intersectPlayer(true);
+    assert.equal(playCalls, 2, 'The mounted preview may resume when it becomes visible');
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
+test('reselecting the current Play-labelled thumbnail starts it again', async () => {
+  const fixture = await mountHero();
+  let playCalls = 0;
+  fixture.dom.window.HTMLMediaElement.prototype.play = function () { playCalls += 1; return Promise.resolve(); };
+  try {
+    const selectedThumbnail = fixture.container.querySelector<HTMLButtonElement>('button[aria-label="Play: Model 1"]')!;
+    await act(async () => selectedThumbnail.click());
+    await act(async () => fixture.video()!.dispatchEvent(new fixture.dom.window.Event('playing')));
+    await act(async () => selectedThumbnail.click());
+    assert.equal(playCalls, 2);
+    assert.equal(fixture.player().dataset.playbackState, 'loading');
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
+test('a mounted preview never schedules another initial idle load on visibility changes', async () => {
+  const fixture = await mountHero({ desktop: true });
+  try {
+    await fixture.intersectPlayer(true);
+    await fixture.flushIdle();
+    await act(async () => fixture.video()!.dispatchEvent(new fixture.dom.window.Event('playing')));
+    await fixture.intersectPlayer(false);
+    await fixture.intersectPlayer(true);
+    assert.equal(fixture.idle.size, 0);
+    await act(async () => fixture.video()!.dispatchEvent(new fixture.dom.window.Event('playing')));
+    await act(async () => fixture.container.querySelector<HTMLButtonElement>('button[aria-label="Pause"]')!.click());
+    await fixture.intersectPlayer(false);
+    await fixture.intersectPlayer(true);
+    assert.equal(fixture.idle.size, 0, 'User-paused mounted media must not receive a late initial-load callback');
+    assert.equal(fixture.player().dataset.playbackState, 'paused');
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
+test('new play and visibility actions invalidate same-element pending play promises', async () => {
+  const fixture = await mountHero();
+  const rejections: Array<(reason?: unknown) => void> = [];
+  fixture.dom.window.HTMLMediaElement.prototype.play = function () {
+    return new Promise((_, reject) => rejections.push(reject));
+  };
+  try {
+    await act(async () => fixture.container.querySelector<HTMLButtonElement>('button[aria-label="Play: Model 1"]')!.click());
+    await act(async () => fixture.container.querySelector<HTMLButtonElement>('button[aria-label="Play"]')!.click());
+    await act(async () => {
+      rejections[0]?.(new fixture.dom.window.DOMException('interrupted', 'AbortError'));
+      await Promise.resolve();
+    });
+    assert.equal(fixture.player().dataset.playbackState, 'loading');
+    await fixture.intersectPlayer(false);
+    await act(async () => {
+      rejections[1]?.(new fixture.dom.window.DOMException('interrupted', 'AbortError'));
+      await Promise.resolve();
+    });
+    assert.notEqual(fixture.player().dataset.playbackState, 'error');
+    await fixture.intersectPlayer(true);
+    await act(async () => fixture.video()!.dispatchEvent(new fixture.dom.window.Event('playing')));
+    await act(async () => fixture.container.querySelector<HTMLButtonElement>('button[aria-label="Pause"]')!.click());
+    await act(async () => {
+      rejections[2]?.(new fixture.dom.window.DOMException('interrupted', 'AbortError'));
+      await Promise.resolve();
+    });
+    assert.equal(fixture.player().dataset.playbackState, 'paused');
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
 test('selection cancels stale idle work and stale media events cannot change the current state', async () => {
   const fixture = await mountHero({ desktop: true });
   let rejectStalePlay: ((reason?: unknown) => void) | undefined;
@@ -265,7 +354,7 @@ test('selection cancels stale idle work and stale media events cannot change the
   }
 });
 
-test('a playback error leaves the cover visible and one manual retry calls play again', async () => {
+test('a native playback error announces a localized retry and remounts media before playing again', async () => {
   const fixture = await mountHero();
   let playCalls = 0;
   fixture.dom.window.HTMLMediaElement.prototype.play = function () {
@@ -278,8 +367,14 @@ test('a playback error leaves the cover visible and one manual retry calls play 
     await act(async () => video.dispatchEvent(new fixture.dom.window.Event('error')));
     assert.equal(video.getAttribute('poster'), null);
     assert.ok(video.classList.contains('opacity-0'));
-    await act(async () => fixture.container.querySelector<HTMLButtonElement>('button[aria-label="Play"]')!.click());
+    const status = fixture.container.querySelector<HTMLElement>('[role="status"]')!;
+    assert.equal(status.textContent, 'Preview unavailable');
+    const retry = fixture.container.querySelector<HTMLButtonElement>('button[aria-label="Retry preview"]')!;
+    assert.ok(retry);
+    await act(async () => retry.click());
     assert.equal(playCalls, 2);
+    assert.notEqual(fixture.video(), video, 'Retry must reload the failed native media resource');
+    assert.equal(status.textContent, 'Loading preview');
   } finally {
     await fixture.cleanup();
   }
