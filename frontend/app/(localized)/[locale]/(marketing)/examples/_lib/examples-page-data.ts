@@ -1,7 +1,7 @@
 import type { ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import type { AppLocale } from '@/i18n/locales';
 import { pickFirstPlayableVideo } from '@/lib/examples/heroVideo';
-import { GALLERY_POSTER_OPTIONS, HERO_POSTER_OPTIONS, buildOptimizedPosterUrl } from '@/lib/media-helpers';
+import { buildExamplePosterProjection } from '@/lib/media-helpers';
 import { getExampleFamilyDescriptor } from '@/lib/model-families';
 import type { ExampleSort, listExamplesPage } from '@/server/videos';
 import {
@@ -301,9 +301,7 @@ function buildClientVideo({
     aspectRatio: video.aspectRatio ?? null,
     durationSec: video.durationSec,
     hasAudio: video.hasAudio,
-    heroPosterUrl: video.thumbUrl ? buildOptimizedPosterUrl(video.thumbUrl, HERO_POSTER_OPTIONS) : null,
-    optimizedPosterUrl: video.thumbUrl ? buildOptimizedPosterUrl(video.thumbUrl, GALLERY_POSTER_OPTIONS) : null,
-    rawPosterUrl: video.thumbUrl ?? getPlaceholderPoster(video.aspectRatio),
+    ...buildExamplePosterProjection(video.thumbUrl, getPlaceholderPoster(video.aspectRatio)),
     videoUrl: video.videoUrl ?? null,
     previewVideoUrl: video.previewVideoUrl ?? null,
     modelHref,

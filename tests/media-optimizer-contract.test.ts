@@ -5,8 +5,7 @@ import test from 'node:test';
 import { ImageOptimizerCache } from '../frontend/node_modules/next/dist/server/image-optimizer.js';
 import { imageConfigDefault } from '../frontend/node_modules/next/dist/shared/lib/image-config.js';
 import {
-  GALLERY_POSTER_OPTIONS,
-  HERO_POSTER_OPTIONS,
+  buildExamplePosterProjection,
   buildOptimizedPosterUrl,
 } from '../frontend/lib/media-helpers.ts';
 
@@ -34,17 +33,24 @@ function assertAcceptedByNext(value: string | null): void {
   assert.ok(!('errorMessage' in result), 'errorMessage' in result ? result.errorMessage : undefined);
 }
 
-test('named poster profiles produce optimizer URLs accepted by the actual Next config', () => {
-  const source = 'https://media.maxvideoai.com/example.jpg';
-  const hero = buildOptimizedPosterUrl(source, HERO_POSTER_OPTIONS);
-  const gallery = buildOptimizedPosterUrl(source, GALLERY_POSTER_OPTIONS);
+test('examples poster projection produces valid consumer fields for remote, local, and missing sources', () => {
+  for (const source of ['https://media.maxvideoai.com/example.jpg', '/examples/poster.jpg']) {
+    const projection = buildExamplePosterProjection(source, '/assets/frames/thumb-16x9.svg');
 
-  assert.equal(parseOptimizerUrl(hero).searchParams.get('w'), '1080');
-  assert.equal(parseOptimizerUrl(hero).searchParams.get('q'), '75');
-  assert.equal(parseOptimizerUrl(gallery).searchParams.get('w'), '640');
-  assert.equal(parseOptimizerUrl(gallery).searchParams.get('q'), '75');
-  assertAcceptedByNext(hero);
-  assertAcceptedByNext(gallery);
+    assert.equal(parseOptimizerUrl(projection.heroPosterUrl).searchParams.get('w'), '1080');
+    assert.equal(parseOptimizerUrl(projection.heroPosterUrl).searchParams.get('q'), '75');
+    assert.equal(parseOptimizerUrl(projection.optimizedPosterUrl).searchParams.get('w'), '640');
+    assert.equal(parseOptimizerUrl(projection.optimizedPosterUrl).searchParams.get('q'), '75');
+    assert.equal(projection.rawPosterUrl, source);
+    assertAcceptedByNext(projection.heroPosterUrl);
+    assertAcceptedByNext(projection.optimizedPosterUrl);
+  }
+
+  assert.deepEqual(buildExamplePosterProjection(null, '/assets/frames/thumb-16x9.svg'), {
+    heroPosterUrl: null,
+    optimizedPosterUrl: null,
+    rawPosterUrl: '/assets/frames/thumb-16x9.svg',
+  });
 });
 
 test('custom optimizer options normalize upward to admitted widths and nearest admitted quality', () => {

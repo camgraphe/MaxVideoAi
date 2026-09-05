@@ -4,7 +4,7 @@ import { listExampleFamilyPage, listExamplesPage, type ExampleSort, type Gallery
 import { resolveExampleCanonicalSlug } from '@/lib/examples-links';
 import { listFalEngines } from '@/config/falEngines';
 import { normalizeEngineId } from '@/lib/engine-alias';
-import { GALLERY_POSTER_OPTIONS, HERO_POSTER_OPTIONS, buildOptimizedPosterUrl } from '@/lib/media-helpers';
+import { buildExamplePosterProjection } from '@/lib/media-helpers';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { localePathnames, type AppLocale } from '@/i18n/locales';
 import { getExampleFamilyDescriptor, getExampleFamilyPrimaryModelSlug } from '@/lib/model-families';
@@ -154,9 +154,7 @@ function toExampleCard(video: GalleryVideo, locale: AppLocale) {
     aspectRatio: video.aspectRatio ?? null,
     durationSec: video.durationSec,
     hasAudio: video.hasAudio,
-    heroPosterUrl: video.thumbUrl ? buildOptimizedPosterUrl(video.thumbUrl, HERO_POSTER_OPTIONS) : null,
-    optimizedPosterUrl: video.thumbUrl ? buildOptimizedPosterUrl(video.thumbUrl, GALLERY_POSTER_OPTIONS) : null,
-    rawPosterUrl: video.thumbUrl ?? getPlaceholderPoster(video.aspectRatio ?? null),
+    ...buildExamplePosterProjection(video.thumbUrl, getPlaceholderPoster(video.aspectRatio ?? null)),
     videoUrl: video.videoUrl ?? null,
     previewVideoUrl: video.previewVideoUrl ?? null,
     modelHref,

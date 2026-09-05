@@ -37,3 +37,11 @@ export function buildOptimizedPosterUrl(
   const encoded = encodeURIComponent(src);
   return `/_next/image?url=${encoded}&w=${width}&q=${quality}`;
 }
+
+export function buildExamplePosterProjection(src: string | null | undefined, fallback: string) {
+  return {
+    heroPosterUrl: buildOptimizedPosterUrl(src, HERO_POSTER_OPTIONS),
+    optimizedPosterUrl: buildOptimizedPosterUrl(src, GALLERY_POSTER_OPTIONS),
+    rawPosterUrl: src ?? fallback,
+  };
+}
