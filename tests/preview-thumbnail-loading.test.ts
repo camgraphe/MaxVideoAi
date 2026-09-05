@@ -12,7 +12,10 @@ import { ModelHeroMedia } from '../frontend/components/marketing/ModelHeroMedia.
 
 const PUBLIC_ORIGINAL = 'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/6e299d72-22dd-46f4-8260-4d6887777558.mp4';
 
-async function mountModelPreview({ automatic = false }: { automatic?: boolean } = {}) {
+async function mountModelPreview({
+  automatic = false,
+  readyState = 2,
+}: { automatic?: boolean; readyState?: number } = {}) {
   const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost', pretendToBeVisual: true });
   const observers: MockIntersectionObserver[] = [];
   class MockIntersectionObserver {
@@ -35,7 +38,7 @@ async function mountModelPreview({ automatic = false }: { automatic?: boolean } 
     value: () => ({ matches: false, addEventListener() {}, removeEventListener() {} }),
   });
   Object.defineProperty(dom.window.navigator, 'connection', { configurable: true, value: { saveData: false } });
-  Object.defineProperty(dom.window.HTMLMediaElement.prototype, 'readyState', { configurable: true, get: () => 2 });
+  Object.defineProperty(dom.window.HTMLMediaElement.prototype, 'readyState', { configurable: true, get: () => readyState });
   const globals = {
     window: dom.window,
     document: dom.window.document,
@@ -177,6 +180,32 @@ test('model fallback cannot autoplay after a user pause', async () => {
     await fixture.emitVisibility(false);
     await fixture.emitVisibility(true);
     assert.equal(fixture.playCalls(), callsAfterPause, 'visibility changes must not resume a user-paused fallback');
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
+test('model explicit Play requests cold playback before loadeddata', async () => {
+  const fixture = await mountModelPreview({ readyState: 0 });
+  try {
+    await act(async () => fixture.container.querySelector<HTMLButtonElement>('button[aria-label="Play preview"]')!.click());
+    const video = fixture.video()!;
+    assert.ok(video, 'explicit Play must mount the selected source');
+    assert.notEqual(video.querySelector('source')?.getAttribute('src'), PUBLIC_ORIGINAL);
+    assert.equal(video.classList.contains('opacity-0'), true, 'the cover remains until media is actually ready');
+    assert.equal(fixture.playCalls(), 1, 'explicit Play must request playback without waiting for loadeddata');
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
+test('model delayed automatic playback requests metadata-only media before loadeddata', async () => {
+  const fixture = await mountModelPreview({ automatic: true, readyState: 1 });
+  try {
+    const video = fixture.video()!;
+    assert.ok(video, 'eligible automatic playback must mount the selected source');
+    assert.equal(video.classList.contains('opacity-0'), true, 'metadata alone must not hide the cover');
+    assert.equal(fixture.playCalls(), 1, 'automatic playback must request data beyond metadata without a loadeddata event');
   } finally {
     await fixture.cleanup();
   }

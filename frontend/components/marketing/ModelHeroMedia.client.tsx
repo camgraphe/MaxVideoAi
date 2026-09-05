@@ -163,15 +163,8 @@ export function ModelHeroMedia({
     const node = videoRef.current;
     if (!node) return;
     measureNode(node);
-    setIsVideoReady(false);
-    if (node.readyState >= node.HAVE_CURRENT_DATA) {
-      setIsVideoReady(true);
-      tryPlay(node);
-      return;
-    }
-    const handleLoadedData = () => tryPlay(node);
-    node.addEventListener('loadeddata', handleLoadedData, { once: true });
-    return () => node.removeEventListener('loadeddata', handleLoadedData);
+    setIsVideoReady(node.readyState >= node.HAVE_CURRENT_DATA);
+    tryPlay(node);
   }, [measureNode, playbackAttempt, shouldLoadVideo, tryPlay]);
 
   useEffect(() => {
@@ -252,9 +245,8 @@ export function ModelHeroMedia({
           loop
           playsInline
           preload="metadata"
-          onLoadedData={(event) => {
+          onLoadedData={() => {
             setIsVideoReady(true);
-            tryPlay(event.currentTarget);
           }}
           onPlaying={(event) => measurePlaying(event.currentTarget)}
           onWaiting={measureWaiting}
