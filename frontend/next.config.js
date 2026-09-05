@@ -85,6 +85,7 @@ const SHARP_ALL_BINARIES = [
 ];
 
 const withNextIntl = require('next-intl/plugin')('./i18n/request.ts');
+const imageOptimizer = require('./config/image-optimizer.json');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -93,7 +94,9 @@ const nextConfig = {
   trailingSlash: false,
   transpilePackages: ['@maxvideoai/pricing'],
   images: {
-    qualities: [52, 70, 72, 75, 80],
+    deviceSizes: imageOptimizer.deviceSizes,
+    imageSizes: imageOptimizer.imageSizes,
+    qualities: imageOptimizer.qualities,
     minimumCacheTTL: 604800,
     localPatterns: [
       { pathname: '/assets/**' },

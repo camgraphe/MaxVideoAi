@@ -1,7 +1,7 @@
 import type { ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import type { AppLocale } from '@/i18n/locales';
 import { pickFirstPlayableVideo } from '@/lib/examples/heroVideo';
-import { buildOptimizedPosterUrl } from '@/lib/media-helpers';
+import { GALLERY_POSTER_OPTIONS, HERO_POSTER_OPTIONS, buildOptimizedPosterUrl } from '@/lib/media-helpers';
 import { getExampleFamilyDescriptor } from '@/lib/model-families';
 import type { ExampleSort, listExamplesPage } from '@/server/videos';
 import {
@@ -10,8 +10,6 @@ import {
   ENGINE_MODEL_LINKS,
   ENGINE_MODEL_LINKS_BY_GROUP,
   FAMILY_INITIAL_DESKTOP_GALLERY_BATCH,
-  GALLERY_POSTER_OPTIONS,
-  HERO_POSTER_OPTIONS,
   HUB_INITIAL_DESKTOP_GALLERY_BATCH,
   PREFERRED_ENGINE_ORDER,
   buildLocalizedExampleLabel,
