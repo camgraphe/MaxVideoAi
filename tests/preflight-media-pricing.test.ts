@@ -6,6 +6,7 @@ import { computeConfiguredPreflight } from '../frontend/src/server/engines.ts';
 import { MINIMAX_H3_MAX_ENGINE } from '../frontend/src/config/fal-engines/minimax-h3-max.ts';
 import { computeCanonicalBillingSnapshot } from '../frontend/server/pricing/quote-billing.ts';
 import { resolveMediaAwarePreflight } from '../frontend/app/api/preflight/_lib/media-aware-preflight.ts';
+import { parsePreflightRequestPayload } from '../frontend/app/api/preflight/_lib/preflight-request.ts';
 import type { EngineCaps, PreflightRequest } from '../frontend/types/engines.ts';
 
 function engineFor(id: string): EngineCaps {
@@ -274,5 +275,48 @@ test('media-aware preflight rejects malformed persisted references before attach
     assert.equal(response.ok, false);
     assert.equal(response.error?.code, 'PREFLIGHT_REQUEST_INVALID');
     assert.equal(processCalls, 0);
+  }
+});
+
+for (const engineId of ['gemini-omni-flash', 'minimax-h3-max', 'minimax-h3']) {
+  test(`${engineId} workspace resolutions reach canonical pricing while unknown resolution values remain rejected`, async () => {
+    const engine = engineFor(engineId);
+    for (const resolution of engine.resolutions) {
+      const request: PreflightRequest = { ...requestFor(engine, 't2v'), resolution, audio: true };
+      const response = await resolveMediaAwarePreflight(
+        { request },
+        { getConfiguredEngineFn: async () => engine },
+      );
+      assert.equal(response.ok, true, `${engineId} ${resolution} must yield a current quote`);
+      assert.ok(response.total > 0, `${engineId} ${resolution} must retain a paid quote`);
+      const billing = await computeCanonicalBillingSnapshot({
+        engine, durationSec: 6, resolution, aspectRatio: '16:9', mode: 't2v',
+        membershipTier: 'member', audio: true,
+      }, {
+        pricingPolicy: {
+          loadOverrides: async () => ({ status: 'loaded', rules: [], routingRules: [] }),
+          warn: () => undefined,
+        },
+        membershipDiscounts: { member: 0, plus: 0.05, pro: 0.1 },
+      });
+      assert.equal(response.total, billing.totalCents, `${engineId} ${resolution} quote must match canonical billing`);
+    }
+    const unsupported = await resolveMediaAwarePreflight(
+      { request: { ...requestFor(engine, 't2v'), resolution: 'not-a-resolution' as PreflightRequest['resolution'] } },
+      { getConfiguredEngineFn: async () => engine },
+    );
+    assert.equal(unsupported.ok, false, 'request parsing must keep its bounded resolution vocabulary');
+  });
+
+}
+
+test('every catalog resolution is representable at the preflight request boundary', () => {
+  for (const { engine } of listFalEngines()) {
+    for (const resolution of engine.resolutions) {
+      const parsed = parsePreflightRequestPayload({
+        ...requestFor(engine, engine.modes[0]), resolution,
+      });
+      assert.equal(parsed.ok, true, `${engine.id}: ${resolution} must pass bounded request parsing`);
+    }
   }
 });

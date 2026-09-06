@@ -56,6 +56,7 @@ export type Resolution =
   | '3328x4992'
   | '4992x3328'
   | '6240x2656'
+  | '480P'
   | '512P'
   | '768P'
   | 'square'

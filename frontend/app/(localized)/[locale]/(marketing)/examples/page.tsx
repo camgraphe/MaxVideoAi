@@ -267,6 +267,7 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
   });
   const nextStepLinks = buildExamplesNextStepLinks({
     appLocale,
+    familySlug: modelLanding?.slug,
     isKlingLanding,
     isLtxLanding,
     isSeedanceLanding,
@@ -336,7 +337,7 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
     localePrefix,
     modelLandingLabel: modelLanding?.label ?? null,
   });
-  const mainVideoCopy = getExamplesMainVideoCopy(appLocale);
+  const mainVideoCopy = getExamplesMainVideoCopy(appLocale, modelLanding?.slug);
 
   return (
     <ExamplesPageView

@@ -10,6 +10,7 @@ type ExamplesMainVideoCopy = {
   openExample: string;
   openWatchPage: string;
   preview: string;
+  recreationHint?: string;
 };
 
 export function ExamplesMainVideoFeature({
@@ -156,6 +157,9 @@ export function ExamplesMainVideoFeature({
               </Link>
             ) : null}
           </div>
+          {copy.recreationHint ? (
+            <p className="text-sm leading-relaxed text-text-secondary">{copy.recreationHint}</p>
+          ) : null}
         </div>
       </article>
     </section>

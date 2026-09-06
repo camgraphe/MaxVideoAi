@@ -26,6 +26,7 @@ export function AngleOrbitStudio({ content }: { content: AngleLandingContent['he
   const [previewView, setPreviewView] = useState<AngleOrbitViewId | null>(null);
   const [failedViews, setFailedViews] = useState<ReadonlySet<AngleOrbitViewId>>(() => new Set());
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [hasChangedView, setHasChangedView] = useState(false);
   const pointerStart = useRef<PointerStart | null>(null);
   const activeView = resolveAvailableOrbitView(previewView ?? committedView, failedViews);
   const viewContent =
@@ -80,6 +81,7 @@ export function AngleOrbitStudio({ content }: { content: AngleLandingContent['he
 
   const chooseAdjacentView = (direction: 'next' | 'previous') => {
     const target = advanceOrbitView(activeView, direction);
+    setHasChangedView(true);
     setCommittedView(resolveAvailableOrbitView(target, failedViews));
     setPreviewView(null);
   };
@@ -94,6 +96,7 @@ export function AngleOrbitStudio({ content }: { content: AngleLandingContent['he
     const start = pointerStart.current;
     if (!start || start.id !== event.pointerId) return;
     const target = selectOrbitViewFromDrag(start.view, event.clientX - start.x);
+    if (resolveAvailableOrbitView(target, failedViews) !== activeView) setHasChangedView(true);
     setPreviewView(resolveAvailableOrbitView(target, failedViews));
   };
 
@@ -101,6 +104,7 @@ export function AngleOrbitStudio({ content }: { content: AngleLandingContent['he
     const start = pointerStart.current;
     if (!start || start.id !== event.pointerId) return;
     const target = selectOrbitViewFromDrag(start.view, event.clientX - start.x);
+    if (resolveAvailableOrbitView(target, failedViews) !== activeView) setHasChangedView(true);
     setCommittedView(resolveAvailableOrbitView(target, failedViews));
     setPreviewView(null);
     pointerStart.current = null;
@@ -149,7 +153,7 @@ export function AngleOrbitStudio({ content }: { content: AngleLandingContent['he
           priority={activeView === INITIAL_VIEW}
           sizes={ORBIT_IMAGE_SIZES}
           onError={() => markFailed(activeView)}
-          className={reducedMotion ? styles.orbitImageReduced : styles.orbitImage}
+          className={reducedMotion || !hasChangedView ? styles.orbitImageReduced : styles.orbitImage}
         />
         <div className="pointer-events-none absolute inset-x-5 bottom-5 flex items-end justify-between gap-4 text-[#292724] sm:inset-x-7 sm:bottom-7">
           <p className="rounded-full border border-[#d6cfc3]/80 bg-[#fffdf8]/90 px-4 py-2 text-xs font-semibold shadow-[0_10px_28px_rgba(45,40,34,0.08)] backdrop-blur-sm">

@@ -146,6 +146,7 @@ export function getExamplesModelPageLabels({
 
 export function buildExamplesNextStepLinks({
   appLocale,
+  familySlug,
   isKlingLanding,
   isLtxLanding,
   isSeedanceLanding,
@@ -154,6 +155,7 @@ export function buildExamplesNextStepLinks({
   pricingPath,
 }: {
   appLocale: AppLocale;
+  familySlug?: string;
   isKlingLanding: boolean;
   isLtxLanding: boolean;
   isSeedanceLanding: boolean;
@@ -161,7 +163,17 @@ export function buildExamplesNextStepLinks({
   locale: AppLocale;
   pricingPath: string;
 }): ExamplesNextStepLink[] {
-  const rawNextStepLinks = isSeedanceLanding
+  const rawNextStepLinks = familySlug === 'hailuo'
+    ? [
+        ['minimax-h3-vs-minimax-h3-max', 'MiniMax H3 vs H3 Max'],
+        ['minimax-h3-vs-veo-3-1', 'MiniMax H3 vs Veo 3.1'],
+        ['minimax-h3-max-vs-seedance-2-5', 'MiniMax H3 Max vs Seedance 2.5'],
+        ['minimax-hailuo-02-text-vs-veo-3-1-fast', 'Hailuo 02 vs Veo 3.1 Fast'],
+      ].map(([slug, title]) => ({
+        href: buildCompareHref(appLocale, slug),
+        label: `${locale === 'fr' ? 'Comparer' : locale === 'es' ? 'Comparar' : 'Compare'} ${title}`,
+      }))
+    : isSeedanceLanding
     ? [
         {
           href: buildModelHref(appLocale, 'seedance-2-5'),
@@ -259,6 +271,15 @@ export function buildExamplesNextStepLinks({
         ]
       : isVeoLanding
         ? [
+            {
+              href: buildCompareHref(appLocale, 'gemini-omni-flash-vs-veo-3-1'),
+              label:
+                locale === 'fr'
+                  ? 'Comparer Gemini Omni Flash 1.1 et Veo 3.1'
+                  : locale === 'es'
+                    ? 'Comparar Gemini Omni Flash 1.1 y Veo 3.1'
+                    : 'Compare Gemini Omni Flash 1.1 and Veo 3.1',
+            },
             {
               href: buildCompareHref(appLocale, 'veo-3-1-vs-veo-3-1-fast'),
               label:
@@ -390,9 +411,13 @@ export function buildExamplesNextStepLinks({
   );
 }
 
-export function getExamplesMainVideoCopy(locale: AppLocale) {
+export function getExamplesMainVideoCopy(locale: AppLocale, familySlug?: string) {
+  const showRecreationHint = familySlug === 'veo' || familySlug === 'hailuo';
   if (locale === 'fr') {
     return {
+      recreationHint: showRecreationHint
+        ? 'Depuis la fiche, reprenez cet exemple dans le workspace, ajoutez vos sources et vérifiez le devis avant de générer.'
+        : undefined,
       preview: 'Aperçu',
       openExample: 'Voir réglages et prix',
       openWatchPage: 'Ouvrir les détails de la vidéo',
@@ -402,6 +427,9 @@ export function getExamplesMainVideoCopy(locale: AppLocale) {
   }
   if (locale === 'es') {
     return {
+      recreationHint: showRecreationHint
+        ? 'Desde la ficha, recrea este ejemplo en tu espacio de trabajo, añade tus fuentes y revisa el presupuesto antes de generar.'
+        : undefined,
       preview: 'Vista previa',
       openExample: 'Ver ajustes y precio',
       openWatchPage: 'Abrir los detalles del video',
@@ -410,6 +438,9 @@ export function getExamplesMainVideoCopy(locale: AppLocale) {
     };
   }
   return {
+    recreationHint: showRecreationHint
+      ? 'From the detail page, recreate this example in your workspace, add your sources and review the quote before generating.'
+      : undefined,
     preview: 'Preview',
     openExample: 'View settings & price',
     openWatchPage: 'Open video details',

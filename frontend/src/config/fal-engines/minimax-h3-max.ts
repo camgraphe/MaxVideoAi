@@ -174,7 +174,7 @@ export const MINIMAX_H3_MAX_ENGINE: EngineCaps = {
   region: 'global',
   modes: [...MINIMAX_H3_MAX_MODES],
   maxDurationSec: 15,
-  resolutions: [...MINIMAX_H3_MAX_RESOLUTIONS] as EngineCaps['resolutions'],
+  resolutions: [...MINIMAX_H3_MAX_RESOLUTIONS],
   aspectRatios: [...MINIMAX_H3_MAX_TEXT_ASPECT_RATIOS],
   fps: [24],
   audio: true,
