@@ -1,6 +1,6 @@
 'use client';
 
-import Image from 'next/image';
+import Image, { getImageProps } from 'next/image';
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import { ANGLE_ORBIT_ASSETS, type AngleLandingContent } from './angle-landing-assets';
 import {
@@ -13,6 +13,7 @@ import {
 import styles from './AngleLanding.module.css';
 
 const INITIAL_VIEW = ANGLE_ORBIT_VIEW_IDS[1];
+const ORBIT_IMAGE_SIZES = '(max-width: 1024px) 100vw, 58vw';
 
 type PointerStart = {
   id: number;
@@ -45,8 +46,16 @@ export function AngleOrbitStudio({ content }: { content: AngleLandingContent['he
     const preload = () => {
       for (const viewId of ANGLE_ORBIT_VIEW_IDS) {
         if (viewId === INITIAL_VIEW) continue;
+        const { props } = getImageProps({
+          src: ANGLE_ORBIT_ASSETS.hero[viewId],
+          alt: '',
+          fill: true,
+          sizes: ORBIT_IMAGE_SIZES,
+        });
         const preloadImage = new window.Image();
-        preloadImage.src = ANGLE_ORBIT_ASSETS.hero[viewId];
+        preloadImage.sizes = props.sizes ?? ORBIT_IMAGE_SIZES;
+        if (props.srcSet) preloadImage.srcset = props.srcSet;
+        preloadImage.src = props.src;
       }
     };
 
@@ -138,7 +147,7 @@ export function AngleOrbitStudio({ content }: { content: AngleLandingContent['he
           alt={viewContent.alt}
           fill
           priority={activeView === INITIAL_VIEW}
-          sizes="(max-width: 1024px) 100vw, 58vw"
+          sizes={ORBIT_IMAGE_SIZES}
           onError={() => markFailed(activeView)}
           className={reducedMotion ? styles.orbitImageReduced : styles.orbitImage}
         />

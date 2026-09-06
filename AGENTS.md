@@ -174,6 +174,8 @@ When extending public rendition coverage beyond the homepage, verify the exact s
 
 Image thumbnail repair must cover stored readers as well as `app_jobs`: `job_outputs`, `media_assets`, and legacy `user_assets`. The operational CLI wires the projection repair owner in `frontend/scripts/_lib/image-thumbnail-projections.ts`; do not replace it with broad media-library upserts. Preserve originals, valid thumbnails, ownership, job/payment status and unrelated metadata. Persist generated thumbnails before synchronizing references, then guard the reference transaction with the current source and exact stored snapshots. A projection failure keeps the conservative resume cursor before that job. Validate this boundary with `tests/image-thumbnail-projections-postgres.test.ts` on disposable PostgreSQL.
 
+When preparing Angle's public orbit images, use the same Next Image responsive URLs and sizing policy as the displayed views. Preserve the deferred scheduling and verify preparation/display parity with `tests/angle-orbit-responsive-preload.test.ts`; do not warm the larger authored source while rendering a different optimized URL.
+
 ## Architecture Contracts
 
 Architecture tests are part of the project design, not incidental test coverage.
