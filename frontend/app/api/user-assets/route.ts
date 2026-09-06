@@ -24,8 +24,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'UNAUTHORIZED' }, { status: 401 });
   }
 
+  const requestedKind = req.nextUrl.searchParams.get('kind');
   const assets = await listLibraryAssets({
     userId,
+    kind: requestedKind === 'image' || requestedKind === 'video' || requestedKind === 'audio' ? requestedKind : null,
     source: req.nextUrl.searchParams.get('source'),
     originUrl: req.nextUrl.searchParams.get('originUrl'),
     limit: Number(req.nextUrl.searchParams.get('limit') ?? 50),

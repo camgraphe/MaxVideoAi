@@ -8,4 +8,5 @@
 - JSON-LD and showcase helpers accept authored copy explicitly and must not add locale maps.
 - Section components render `PayAsYouGoPageData`; they do not receive locale selectors or import pricing builders.
 - Preserve public paths, metadata, canonical, hreflang, JSON-LD, section order, classes, links, prices, and showcase behavior during structural work.
+- Showcase cards retain server-rendered copy and watch links. `PayAsYouGoPreview.client.tsx` owns viewport eligibility and responsive lazy covers; `useExampleCardPlayback` owns playback. Only visible desktop previews mount video. Keep mobile poster-only navigation and do not prioritize this below-fold strip over the hero.
 - Run the five permanent Pay-as-you-go tests plus `pnpm test:validate`, frontend TypeScript/lint, exposure lint, architecture audit, build, and EN/FR/ES route smokes after changes.

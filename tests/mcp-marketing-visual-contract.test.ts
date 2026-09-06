@@ -207,7 +207,8 @@ test('integration heroes lead with visual product evidence and link directly to 
   assert.match(setup, /id="setup"/);
   assert.match(preview, /<video/);
   assert.match(preview, /controls/);
-  assert.match(preview, /preload="metadata"/);
+  assert.match(preview, /preload="none"/);
+  assert.match(preview, /buildPublicVideoPosterUrl/);
   assert.match(preview, /poster=/);
   assert.doesNotMatch(preview, /autoPlay/);
 });

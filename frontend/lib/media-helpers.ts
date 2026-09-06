@@ -46,14 +46,16 @@ export function buildExamplePosterProjection(src: string | null | undefined, fal
   };
 }
 
+/** Private, signed and unknown sources must not pass through the public image optimizer. */
+export function isOptimizablePublicMediaUrl(src: string): boolean {
+  try {
+    const url = new URL(src);
+    return url.origin === 'https://media.maxvideoai.com' && !url.search && !url.hash && !url.username && !url.password;
+  } catch { return false; }
+}
+
 /** Native posters have no srcset; optimize only the public, unsigned media CDN. */
 export function buildPublicVideoPosterUrl(src?: string | null): string | null {
   if (!src) return null;
-  try {
-    const url = new URL(src);
-    if (url.origin === 'https://media.maxvideoai.com' && !url.search && !url.hash && !url.username && !url.password) {
-      return buildOptimizedPosterUrl(src, HERO_POSTER_OPTIONS);
-    }
-  } catch { /* Relative and opaque sources retain their existing URL. */ }
-  return src;
+  return isOptimizablePublicMediaUrl(src) ? buildOptimizedPosterUrl(src, HERO_POSTER_OPTIONS) : src;
 }

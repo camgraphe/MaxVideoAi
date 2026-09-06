@@ -1,3 +1,4 @@
+import type { LibraryImageMedia } from '@/lib/library-image';
 import type {
   CharacterBuilderAction,
   CharacterBuilderFormatMode,
@@ -12,10 +13,8 @@ export type UploadedAsset = {
   name?: string | null;
 };
 
-export type CharacterLibraryAsset = {
+export type CharacterLibraryAsset = LibraryImageMedia & {
   id: string;
-  url: string;
-  mime?: string | null;
   width?: number | null;
   height?: number | null;
   size?: number | null;

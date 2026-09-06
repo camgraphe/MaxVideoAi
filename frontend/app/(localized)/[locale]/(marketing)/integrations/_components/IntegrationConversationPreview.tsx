@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { BadgeCheck, CircleDollarSign, Images } from 'lucide-react';
 import type { AppLocale } from '@/i18n/locales';
 import { UIIcon } from '@/components/ui/UIIcon';
+import { buildPublicVideoPosterUrl } from '@/lib/media-helpers';
 import type { McpClientId } from '../../mcp/_lib/mcp-page-types';
 
 const MEDIA = {
@@ -103,8 +104,8 @@ export function IntegrationConversationPreview({
         <video
           controls
           playsInline
-          preload="metadata"
-          poster={MEDIA.poster}
+          preload="none"
+          poster={buildPublicVideoPosterUrl(MEDIA.poster) ?? undefined}
           className="aspect-video w-full object-cover"
           aria-label={copy.result}
         >

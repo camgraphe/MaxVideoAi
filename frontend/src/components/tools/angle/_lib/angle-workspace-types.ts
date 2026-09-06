@@ -1,3 +1,4 @@
+import type { LibraryImageMedia } from '@/lib/library-image';
 import type { AngleToolEngineId, AngleToolNumericParams, AngleToolResponse } from '@/types/tools-angle';
 
 export type UploadedImage = {
@@ -10,10 +11,8 @@ export type UploadedImage = {
   source?: 'upload' | 'library' | 'paste' | 'example';
 };
 
-export type LibraryAsset = {
+export type LibraryAsset = LibraryImageMedia & {
   id: string;
-  url: string;
-  mime?: string | null;
   width?: number | null;
   height?: number | null;
   size?: number | null;

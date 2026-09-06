@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import { PayAsYouGoPreview } from './PayAsYouGoPreview.client';
 import { ArrowRight, Play } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { EngineIcon } from '@/components/ui/EngineIcon';
@@ -9,53 +9,6 @@ type PayAsYouGoVideoShowcaseProps = {
   copy: PayAsYouGoContent['showcase']['section'];
   videos: PayAsYouGoShowcaseVideo[];
 };
-
-function VideoMedia({
-  video,
-  priority,
-  copy,
-}: {
-  video: PayAsYouGoShowcaseVideo;
-  priority: boolean;
-  copy: PayAsYouGoContent['showcase']['section'];
-}) {
-  const mediaLabel = `${video.title}, ${copy.mediaPhrase} ${video.engineLabel}, ${video.priceLabel}, ${video.durationLabel}`;
-  if (video.videoUrl) {
-    return (
-      <video
-        aria-label={mediaLabel}
-        autoPlay
-        className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-        loop
-        muted
-        playsInline
-        poster={video.posterUrl}
-        preload="metadata"
-      >
-        <source src={video.videoUrl} type="video/mp4" />
-      </video>
-    );
-  }
-
-  if (video.posterUrl) {
-    return (
-      <Image
-        src={video.posterUrl}
-        alt={mediaLabel}
-        fill
-        className="object-cover transition duration-500 group-hover:scale-[1.03]"
-        sizes="(max-width: 639px) 72vw, (max-width: 1023px) 32vw, 220px"
-        priority={priority}
-      />
-    );
-  }
-
-  return (
-    <div className="flex h-full w-full items-center justify-center bg-surface-3 text-xs font-semibold uppercase tracking-micro text-text-muted">
-      {copy.preview}
-    </div>
-  );
-}
 
 export function PayAsYouGoVideoShowcase({ copy, videos }: PayAsYouGoVideoShowcaseProps) {
   if (!videos.length) return null;
@@ -76,7 +29,7 @@ export function PayAsYouGoVideoShowcase({ copy, videos }: PayAsYouGoVideoShowcas
         </div>
 
         <div className="mt-6 flex gap-3 overflow-x-auto pb-2 [scrollbar-width:thin]">
-          {videos.map((video, index) => (
+          {videos.map((video) => (
             <Link
               key={video.id}
               href={video.href}
@@ -84,7 +37,12 @@ export function PayAsYouGoVideoShowcase({ copy, videos }: PayAsYouGoVideoShowcas
               className="group relative block h-[280px] w-[210px] shrink-0 overflow-hidden rounded-[8px] border border-hairline bg-surface shadow-sm transition hover:-translate-y-0.5 hover:border-text-muted sm:h-[320px] sm:w-[230px]"
             >
               <div className="absolute inset-0">
-                <VideoMedia video={video} priority={index < 2} copy={copy} />
+                <PayAsYouGoPreview
+                  src={video.videoUrl}
+                  poster={video.posterUrl}
+                  label={`${video.title}, ${copy.mediaPhrase} ${video.engineLabel}, ${video.priceLabel}, ${video.durationLabel}`}
+                  placeholder={copy.preview}
+                />
               </div>
               <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-black/70 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur">
