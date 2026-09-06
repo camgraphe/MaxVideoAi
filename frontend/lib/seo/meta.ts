@@ -12,10 +12,9 @@ function truncateAtSpace(value: string, max: number): string {
   return `${sliced}…`;
 }
 
-export function buildMetaTitle(input: string, max = 60): string {
-  const normalized = normalizeWhitespace(input);
-  if (normalized.length <= max) return normalized;
-  return truncateAtSpace(normalized, max);
+export function buildMetaTitle(input: string): string {
+  // Search engines size their own title links. Preserve complete authored text.
+  return normalizeWhitespace(input);
 }
 
 export function buildMetaDescription(input: string, max = 160): string {

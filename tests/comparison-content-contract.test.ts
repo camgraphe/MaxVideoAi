@@ -233,7 +233,7 @@ test('the real metadata builder projects a localized generic fallback with canon
   });
 
   assert.deepEqual(metadata.title, {
-    absolute: 'Kling 3 Pro vs Veo 3.1 | Comparatif de modèles vidéo IA |…',
+    absolute: 'Kling 3 Pro vs Veo 3.1 | Comparatif de modèles vidéo IA | MaxVideoAI',
   });
   assert.equal(
     metadata.description,

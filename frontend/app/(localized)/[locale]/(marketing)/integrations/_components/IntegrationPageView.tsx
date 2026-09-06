@@ -1,4 +1,5 @@
 import type { AppLocale } from '@/i18n/locales';
+import { AssistantFirstRequest } from '@/components/marketing/AssistantFirstRequest';
 import type { McpPublicationState } from '@/lib/mcp-publication';
 import type { McpCompatibilityClientEvidence } from '../../mcp/_lib/mcp-compatibility';
 import type { McpHostProof } from '../../mcp/_lib/mcp-host-proof';
@@ -25,6 +26,9 @@ export function IntegrationPageView({
     <div className="border-t border-hairline bg-bg text-text-primary dark:border-white/[0.08] dark:bg-bg dark:text-white">
       <IntegrationHeroSection copy={copy} publication={publication} locale={locale} hostProof={hostProof} />
       <IntegrationSetupSection compatibility={compatibility} copy={copy} locale={locale} />
+      {publication.connectionAvailable && publication.showPaidGenerationClaim ? (
+        <AssistantFirstRequest locale={locale} />
+      ) : null}
       <IntegrationWorkflowSection copy={copy} publication={publication} />
       <IntegrationTroubleshootingSection copy={copy} locale={locale} publication={publication} />
     </div>

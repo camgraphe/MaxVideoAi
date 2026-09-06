@@ -3,7 +3,9 @@ import type {
   CompareSpecValues,
   EngineCatalogEntry,
 } from './compare-page-types';
-import { formatSpeedChip, isPending } from './compare-page-helpers';
+import { isPending } from './compare-page-helpers';
+import { localeRegions, type AppLocale } from '@/i18n/locales';
+import type { PublicBenchmarkLatency } from '@/server/benchmark-lab-metrics';
 
 export type CompareSpecRow = {
   label: string;
@@ -13,17 +15,27 @@ export type CompareSpecRow = {
   sublines?: string[];
   rightSubline?: string | null;
   rightSublines?: string[];
+  kind?: 'latency';
 };
 
+function latencyContext(row: PublicBenchmarkLatency | null | undefined, locale: AppLocale): string | null {
+  if (!row) return null;
+  const date = new Intl.DateTimeFormat(localeRegions[locale], {
+    day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC',
+  }).format(new Date(row.asOf));
+  return `P90: ${Math.round(row.p90DurationMs / 1000)}s · ${date}`;
+}
+
 export function buildCompareSpecRows({
-  left,
-  right,
   leftSpecs,
   rightSpecs,
   leftPricingDisplay,
   rightPricingDisplay,
   pairHasNativeAudio,
   specLabels,
+  activeLocale = 'en',
+  leftLatency,
+  rightLatency,
 }: {
   left: EngineCatalogEntry;
   right: EngineCatalogEntry;
@@ -33,6 +45,9 @@ export function buildCompareSpecRows({
   rightPricingDisplay: ComparePricingDisplay;
   pairHasNativeAudio: boolean;
   specLabels: Record<string, string>;
+  activeLocale?: AppLocale;
+  leftLatency?: PublicBenchmarkLatency | null;
+  rightLatency?: PublicBenchmarkLatency | null;
 }): CompareSpecRow[] {
   return [
     {
@@ -57,9 +72,12 @@ export function buildCompareSpecRows({
     { label: specLabels.maxResolution ?? 'Max resolution', left: leftSpecs.maxResolution, right: rightSpecs.maxResolution },
     { label: specLabels.maxDuration ?? 'Max duration', left: leftSpecs.maxDuration, right: rightSpecs.maxDuration },
     {
-      label: specLabels.avgRenderTime ?? 'Avg render time',
-      left: formatSpeedChip(left),
-      right: formatSpeedChip(right),
+      kind: 'latency' as const,
+      label: specLabels.observedMedian ?? 'Observed median (30 days)',
+      left: leftLatency ? `${Math.round(leftLatency.medianDurationMs / 1000)}s` : 'Data pending',
+      right: rightLatency ? `${Math.round(rightLatency.medianDurationMs / 1000)}s` : 'Data pending',
+      subline: latencyContext(leftLatency, activeLocale),
+      rightSubline: latencyContext(rightLatency, activeLocale),
     },
     { label: specLabels.aspectRatios ?? 'Aspect ratios', left: leftSpecs.aspectRatios, right: rightSpecs.aspectRatios },
     { label: specLabels.fpsOptions ?? 'FPS options', left: leftSpecs.fpsOptions, right: rightSpecs.fpsOptions },

@@ -3,6 +3,7 @@ import { BadgeDollarSign, CircleDollarSign, RefreshCcw, Sparkles } from 'lucide-
 import { Link } from '@/i18n/navigation';
 import { ButtonLink } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
+import { HomeAssistantLink } from './HomeAssistantLink';
 import { HeroVideoShowcase, type HeroVideoShowcaseItem } from '@/components/marketing/home/HeroVideoShowcase';
 import {
   HERO_ENGINE_MEDIA,
@@ -126,11 +127,13 @@ export function HomeHero({
   proofStats,
   previews,
   programmedHeroItems = [],
+  assistantLink = null,
 }: {
   copy: HomeHeroContent;
   proofStats: ProofStat[];
   previews: HomeExampleCard[];
   programmedHeroItems?: HeroVideoShowcaseItem[];
+  assistantLink?: { href: string; label: string } | null;
 }) {
   const fallbackItems = buildHeroVideoItems(copy.mockup, previews);
   const programmedByEngine = new Map<string, HeroVideoShowcaseItem>();
@@ -228,15 +231,12 @@ export function HomeHero({
               <span aria-hidden="true">→</span>
             </Link>
           </div>
+          <HomeAssistantLink link={assistantLink} />
         </div>
         <div className="min-w-0 min-[900px]:col-start-2 min-[900px]:row-span-2 min-[900px]:row-start-2 min-[900px]:self-center">
-          <HeroVideoShowcase
-            items={videoItems}
-            playLabel={copy.mockup.playLabel}
-            pauseLabel={copy.mockup.pauseLabel}
-            loadingLabel={copy.mockup.loadingLabel}
-            errorLabel={copy.mockup.errorLabel}
-            retryLabel={copy.mockup.retryLabel}
+          <HeroVideoShowcase items={videoItems}
+            playLabel={copy.mockup.playLabel} pauseLabel={copy.mockup.pauseLabel}
+            loadingLabel={copy.mockup.loadingLabel} errorLabel={copy.mockup.errorLabel} retryLabel={copy.mockup.retryLabel}
           />
         </div>
         <div className="grid grid-cols-2 gap-2 sm:gap-3 min-[900px]:col-start-1 min-[900px]:row-start-3">

@@ -1,6 +1,5 @@
 import type { AppLocale } from '@/i18n/locales';
-import { isDatabaseConfigured } from '@/lib/db';
-import { fetchEngineAverageDurations } from '@/server/generate-metrics';
+import { fetchPublicBenchmarkLatency } from '@/server/benchmark-lab-metrics';
 import { PRICING_ENGINES } from './compare-page-config';
 import {
   buildSpecValues,
@@ -21,29 +20,26 @@ export async function buildCompareRouteData({
   left: EngineCatalogEntry;
   right: EngineCatalogEntry;
 }) {
-  const averageDurations = isDatabaseConfigured() ? await fetchEngineAverageDurations() : [];
-  const averageMap = new Map(averageDurations.map((entry) => [entry.engineId, entry.averageDurationMs]));
-  const leftAverage = averageMap.get(left.engineId) ?? left.engine?.avgDurationMs ?? null;
-  const rightAverage = averageMap.get(right.engineId) ?? right.engine?.avgDurationMs ?? null;
-  const hydratedLeft = { ...left, engine: { ...left.engine, avgDurationMs: leftAverage } };
-  const hydratedRight = { ...right, engine: { ...right.engine, avgDurationMs: rightAverage } };
+  const latency = await fetchPublicBenchmarkLatency();
+  const leftLatency = latency.rows.find((row) => row.engineId === left.engineId) ?? null;
+  const rightLatency = latency.rows.find((row) => row.engineId === right.engineId) ?? null;
   const scores = await loadEngineScores();
   const keySpecs = await loadEngineKeySpecs();
-  const leftScore = scores.get(hydratedLeft.modelSlug) ?? scores.get(hydratedLeft.engineId) ?? null;
-  const rightScore = scores.get(hydratedRight.modelSlug) ?? scores.get(hydratedRight.engineId) ?? null;
+  const leftScore = scores.get(left.modelSlug) ?? scores.get(left.engineId) ?? null;
+  const rightScore = scores.get(right.modelSlug) ?? scores.get(right.engineId) ?? null;
   const leftKeySpecs =
-    keySpecs.get(hydratedLeft.modelSlug)?.keySpecs ?? keySpecs.get(hydratedLeft.engineId)?.keySpecs ?? undefined;
+    keySpecs.get(left.modelSlug)?.keySpecs ?? keySpecs.get(left.engineId)?.keySpecs ?? undefined;
   const rightKeySpecs =
-    keySpecs.get(hydratedRight.modelSlug)?.keySpecs ?? keySpecs.get(hydratedRight.engineId)?.keySpecs ?? undefined;
-  const leftSpecs = buildSpecValues(hydratedLeft, leftKeySpecs);
-  const rightSpecs = buildSpecValues(hydratedRight, rightKeySpecs);
-  const pairHasNativeAudio = Boolean(hydratedLeft.engine?.audio) || Boolean(hydratedRight.engine?.audio);
+    keySpecs.get(right.modelSlug)?.keySpecs ?? keySpecs.get(right.engineId)?.keySpecs ?? undefined;
+  const leftSpecs = buildSpecValues(left, leftKeySpecs);
+  const rightSpecs = buildSpecValues(right, rightKeySpecs);
+  const pairHasNativeAudio = Boolean(left.engine?.audio) || Boolean(right.engine?.audio);
   const criteriaCount = pairHasNativeAudio ? 11 : 10;
   const pairHasKling3Native4k =
-    hydratedLeft.modelSlug === 'kling-3-4k' || hydratedRight.modelSlug === 'kling-3-4k';
+    left.modelSlug === 'kling-3-4k' || right.modelSlug === 'kling-3-4k';
   const [leftPricingDisplay, rightPricingDisplay] = await Promise.all([
-    resolvePricingDisplay(hydratedLeft, activeLocale, PRICING_ENGINES.get(hydratedLeft.modelSlug)),
-    resolvePricingDisplay(hydratedRight, activeLocale, PRICING_ENGINES.get(hydratedRight.modelSlug)),
+    resolvePricingDisplay(left, activeLocale, PRICING_ENGINES.get(left.modelSlug)),
+    resolvePricingDisplay(right, activeLocale, PRICING_ENGINES.get(right.modelSlug)),
   ]);
   const leftOverall = computeOverall(leftScore);
   const rightOverall = computeOverall(rightScore);
@@ -52,13 +48,14 @@ export async function buildCompareRouteData({
       .map(([key, score]) => [key, computeOverall(score)] as const)
       .filter((entry): entry is readonly [string, number] => entry[1] != null)
   );
-  const leftIsPrelaunch = isPrelaunchAvailability(hydratedLeft);
-  const rightIsPrelaunch = isPrelaunchAvailability(hydratedRight);
+  const leftIsPrelaunch = isPrelaunchAvailability(left);
+  const rightIsPrelaunch = isPrelaunchAvailability(right);
 
   return {
     criteriaCount,
     hasPrelaunchEngine: leftIsPrelaunch || rightIsPrelaunch,
-    left: hydratedLeft,
+    left,
+    leftLatency,
     leftIsPrelaunch,
     leftOverall,
     leftPricingDisplay,
@@ -67,7 +64,8 @@ export async function buildCompareRouteData({
     engineScoresBySlug,
     pairHasKling3Native4k,
     pairHasNativeAudio,
-    right: hydratedRight,
+    right,
+    rightLatency,
     rightIsPrelaunch,
     rightOverall,
     rightPricingDisplay,

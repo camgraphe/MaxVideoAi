@@ -352,7 +352,7 @@ test('pricing metadata and FAQ target comparison intent first', () => {
 
   assert.equal(
     pricing?.meta?.title,
-    'AI Video Pricing Comparison: Veo, LTX, Kling, Seedance & More | MaxVideoAI'
+    'AI Video Pricing: Compare Models | MaxVideoAI'
   );
   assert.equal(
     pricing?.meta?.description,

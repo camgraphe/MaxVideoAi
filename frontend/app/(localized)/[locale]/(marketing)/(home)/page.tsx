@@ -81,7 +81,13 @@ export default async function HomePage(props: { params: Promise<{ locale: string
 
   return (
     <div className="home-monochrome">
-      <HomeHero copy={hero} proofStats={proofStats} previews={selectHomepageHeroPreviews(examples)} programmedHeroItems={programmedHeroItems} />
+      <HomeHero
+        copy={hero}
+        proofStats={proofStats}
+        previews={selectHomepageHeroPreviews(examples)}
+        programmedHeroItems={programmedHeroItems}
+        assistantLink={getMcpInternalLink(locale, 'homeHero')}
+      />
       <DeferredMarketingContent>
         <ShotTypeEngineSelector copy={content.shotTypes} cards={primaryBestForCards} startupFameLabel={startupFameLabel} />
       </DeferredMarketingContent>

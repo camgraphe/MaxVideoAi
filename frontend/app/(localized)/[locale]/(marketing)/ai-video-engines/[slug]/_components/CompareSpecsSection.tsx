@@ -86,6 +86,16 @@ export function CompareSpecsSection({
         </div>
       </div>
 
+      {specRows.some((row) => row.kind === 'latency') ? (
+        <p className="mt-3 text-xs leading-5 text-text-muted">
+          {compareCopy.keySpecs?.latencyNote ??
+            'Observed production times over 30 days; settings and queues vary. P90 means 90% of measured renders finished within this time. These are not controlled speed tests.'}{' '}
+          <Link href="/benchmarks" className="font-semibold text-brand underline underline-offset-4">
+            {compareCopy.keySpecs?.latencySource ?? 'Measurement method and limitations'}
+          </Link>
+        </p>
+      ) : null}
+
       {pageOverride?.topCards?.length ? (
         <section className="mt-6 rounded-[24px] border border-hairline bg-surface-2/70 p-4 shadow-sm sm:p-5">
           <div className="grid gap-3 md:grid-cols-2">
