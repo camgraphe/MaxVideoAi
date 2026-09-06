@@ -20,6 +20,11 @@ export type ResolvedPublicVideoRendition = {
   profile: ResolvedPublicVideoRenditionProfile;
 };
 
+export function hasPublicVideoRendition(originalSrc: string): boolean {
+  const entry = (generatedProjection as PublicVideoRenditionProjection).renditions[originalSrc];
+  return Boolean(entry?.desktop || entry?.mobile);
+}
+
 export function resolvePublicVideoRenditionFromProjection(
   originalSrc: string,
   profile: PublicVideoRenditionProfile,

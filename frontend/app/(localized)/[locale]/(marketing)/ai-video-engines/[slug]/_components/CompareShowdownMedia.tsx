@@ -1,6 +1,8 @@
 import Image from 'next/image';
 import clsx from 'clsx';
 import { getImageAlt } from '@/lib/image-alt';
+import { buildPublicVideoPosterUrl } from '@/lib/media-helpers';
+import { PublicVideoPlayer } from '@/components/media/PublicVideoPlayer.client';
 import type { ShowdownSide } from '../_lib/compare-page-types';
 
 export function renderShowdownMedia(
@@ -9,7 +11,8 @@ export function renderShowdownMedia(
   placeholderLabel: string,
   noPreviewLabel: string,
   aspectRatio?: string,
-  mediaAlt?: string
+  mediaAlt?: string,
+  locale = 'en'
 ) {
   const label = side.label ?? fallbackLabel;
   const altText =
@@ -33,16 +36,13 @@ export function renderShowdownMedia(
         )}
       >
         {side.videoUrl ? (
-          <video
+          <PublicVideoPlayer
             className={clsx('h-full w-full', mediaClass)}
-            controls
-            preload="none"
-            poster={side.posterUrl}
-            playsInline
-            aria-label={altText}
-          >
-            <source src={side.videoUrl} />
-          </video>
+            src={side.videoUrl}
+            poster={buildPublicVideoPosterUrl(side.posterUrl)}
+            title={altText}
+            locale={locale}
+          />
         ) : side.posterUrl ? (
           <Image
             src={side.posterUrl}

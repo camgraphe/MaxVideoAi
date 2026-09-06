@@ -48,6 +48,7 @@ For a focused task, inspect the nearest route-local `AGENTS.md` if one exists.
 - Never import database access, secrets, Node APIs, or admin-only helpers into client files.
 - Put privileged or database-backed logic in `frontend/server` or route handlers.
 - Keep public-video playback policy in `frontend/lib/public-video-playback.ts`, React attempt state in `frontend/components/media/usePublicVideoPlayback.ts`, and rendition commands under `frontend/scripts`. Browser code may consume only the generated public projection, not the measured manifest or script helpers.
+- Manual watch/comparison controls use `usePublicVideoControls.ts`; comparisons default to Original, watch to Auto. Gallery previews use `useExampleCardPlayback.ts` only for visible playback intent and prefer existing short previews. Keep original schema/action URLs and the critical poster separate from live playback sources.
 
 ## Refactor Order
 

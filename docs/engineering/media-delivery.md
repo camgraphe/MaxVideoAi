@@ -9,10 +9,13 @@ Read this guide when changing image/video presentation, poster URLs, generated m
 | Homepage presentation | `frontend/components/marketing/home/HeroVideoShowcase.tsx` |
 | Homepage playback lifecycle | `frontend/components/marketing/home/useHeroVideoPlayback.ts` |
 | Critical homepage poster | `HomeLcpPoster.tsx` and `home-lcp-image.ts` in the same directory |
-| Example gallery playback | `frontend/components/examples/ExampleGalleryCard.tsx` and `ExamplesHeroVideo.client.tsx` |
+| Example gallery presentation / incidental playback | `frontend/components/examples/ExampleGalleryCard.tsx` / `useExampleCardPlayback.ts` |
+| Example hero playback | `frontend/components/examples/ExamplesHeroVideo.client.tsx` |
 | Model hero playback | `frontend/components/marketing/ModelHeroMedia.client.tsx` |
 | Shared public playback policy and observations | `frontend/lib/public-video-playback.ts` |
 | Shared browser attempt/fallback lifecycle | `frontend/components/media/usePublicVideoPlayback.ts` |
+| Manual watch/comparison controls | `frontend/components/media/usePublicVideoControls.ts` |
+| Watch / native comparison presentation | `frontend/components/watch/WatchVideoPlayer.tsx` / `frontend/components/media/PublicVideoPlayer.client.tsx` |
 | Optimized poster URLs | `frontend/lib/media-helpers.ts` and `frontend/config/image-optimizer.json` |
 | Generated image thumbnails | `frontend/server/image-thumbnails.ts` |
 | Uploaded image/video thumbnails | `frontend/server/upload-thumbnails.ts` |
@@ -53,9 +56,15 @@ Shared public playback chooses one profile when an attempt begins and keeps it f
 
 Homepage mobile loading remains lazy, and the critical poster and fixed geometry remain present before hydration. Model, examples and homepage readers share rendition/fallback mechanics while retaining their surface-specific controls, autoplay eligibility, visibility rules and posters. Do not add per-model playback branches.
 
+Watch pages use Auto by default; prepared sources expose Auto/Original. Comparisons default to Original, including under Save-Data, so judging model fidelity does not silently use a smaller rendition. Auto is offered only for a source present in the active projection. Unknown and signed videos keep their exact URL and have no misleading quality selector. Profile omissions can make Auto and Original resolve to the same URL; changing the label then must not reload or restart playback.
+
+`usePublicVideoControls` owns manual play intent, visibility pauses, native/custom events, quality changes and original fallback. It changes only the live video source, synchronously before a requested play, while the original remains in SSR/React props and in separate schema/download/edit data. Quality changes and fallback retain the same native video element, time, mute and volume; a different original remounts it. Guard stale events/promises, seek after metadata, and never resume a manually paused or hidden reader automatically. All manual readers use `preload="none"`.
+
+Gallery cards retain their responsive optimized image underneath the video until actual `playing`, and show it again when waiting, paused or failed. A visible idle card has no video element. The card's visibility and hover/first-card policy request playback; `useExampleCardPlayback` applies hidden-tab, reduced-motion and Save-Data restrictions, then uses the shared attempt owner. Existing short previews remain preferred; only a missing-preview full video can use its prepared full-duration rendition. A failed short preview leaves the poster and watch link instead of fetching a large full video. Cards keep their existing narrow-mobile poster-only behavior. No native raw poster duplicates the optimized image request.
+
 ### Playback observations
 
-The shared observer emits only `public_video_startup`, `public_video_rebuffer` and `public_video_error` through the existing consented analytics dispatcher. Common fields are allowlisted `asset_id`, `playback_profile` (`original`, `mobile`, `desktop`), `playback_surface` (`home`, `model`, `examples`) and `playback_trigger` (`user`, `automatic`). Startup adds `measurement_method` (`video_frame_callback` or explicitly labelled `playing_fallback`) and `duration_ms` from 0 to 120,000. Rebuffer adds `duration_ms` from 0 to 120,000 and `rebuffer_count` from 1 to 5. Error may add the native `media_error_code` from 1 to 4 and emits at most twice per observer.
+The shared observer emits only `public_video_startup`, `public_video_rebuffer` and `public_video_error` through the existing consented analytics dispatcher. Common fields are allowlisted `asset_id`, `playback_profile` (`original`, `mobile`, `desktop`), `playback_surface` (`home`, `model`, `examples`, `watch`, `comparison`, `examples-card`) and `playback_trigger` (`user`, `automatic`). Startup adds `measurement_method` (`video_frame_callback` or explicitly labelled `playing_fallback`) and `duration_ms` from 0 to 120,000. Rebuffer adds `duration_ms` from 0 to 120,000 and `rebuffer_count` from 1 to 5. Error may add the native `media_error_code` from 1 to 4 and emits at most twice per observer.
 
 The first-frame callback is armed when the video node attaches. `playing` is used for startup only when that callback API is unavailable; otherwise it completes a valid post-presentation rebuffer. Rebuffer timing starts only after first presentation while playback is intended and visible. Pausing, hiding, source replacement and disposal cancel pending observations. The payload does not admit URLs, private media, prompts, queries, user/job IDs or arbitrary model labels.
 
@@ -68,6 +77,8 @@ Block a reproducible regression beyond baseline variability even if a metric rem
 ## Images and URL configuration
 
 Use `buildExamplePosterProjection` for the shared API/gallery poster fields, or the shared poster builder and its named presets when an explicit optimized URL is needed. `next/image` should normally receive the original allowed source plus responsive `sizes`; do not optimize an already optimized URL again. Widths and qualities in emitted `/_next/image` requests must be admitted by the actual Next configuration. Do not add per-route quality constants or hand-build optimizer query strings.
+
+Native comparison posters use `buildPublicVideoPosterUrl` and the shared hero preset. It admits only unsigned HTTPS sources on `media.maxvideoai.com`; query strings, credentials, unknown origins, relative and opaque URLs pass through exactly. It never converts private/signed media into a public optimizer request. Image-only comparison sides continue to use responsive `next/image`.
 
 `frontend/config/image-optimizer.json` is the shared source for admitted widths/qualities and fallback values, consumed by `next.config.js` and the URL helper. Use `HERO_POSTER_OPTIONS` (1080/75) or `GALLERY_POSTER_OPTIONS` (640/75). A positive finite width rounds up to the next admitted size and caps at the largest; quality uses the nearest admitted value, preferring the lower on ties. Invalid values fall back to 1080/75. No options preserve the original source; data/blob and already optimized URLs pass through.
 
@@ -85,7 +96,7 @@ Sharp encoding quality and Next's admitted request quality are separate contract
 
 The model launch-asset validator does not enforce rendition readiness. The public rendition command below owns measured byte, metadata, review, and HTTP activation gates. Historical grids and model pages outside the selected homepage set keep exact-original fallback until prepared; the critical-home build check is intentionally not a claim that every historical public video has been transcoded.
 
-For additional public sources, prioritize the exact media observed in the rendered page using recent page exposure and measured file size. A model's fallback demo in configuration may differ from its selected gallery hero. Page views are not video plays or CDN transfer counts. Add each verified original to the same authored catalogue and run the lifecycle with explicit `--asset-id` selections; the default five-asset limit can otherwise leave later entries unprocessed. Confirm the generated URL is actually selected by the owning reader before calling that surface optimized. Model and family hero readers already use the shared resolver; comparison, watch and small-card preview readers require their own integration review. Do not replace full-quality download, editing or schema sources when extending display coverage.
+For additional public sources, prioritize the exact media observed in the rendered page using recent page exposure and measured file size. A model's fallback demo in configuration may differ from its selected gallery hero. Page views are not video plays or CDN transfer counts. Add each verified original to the same authored catalogue and run the lifecycle with explicit `--asset-id` selections; the default five-asset limit can otherwise leave later entries unprocessed. Confirm the generated URL is actually selected by the owning reader before calling that surface optimized. Watch and full-video card fallback consume the shared projection; comparison readers deliberately retain Original by default. Short card previews remain a separate display role. An integrated reader does not mean all historical source files have been prepared. Do not replace full-quality download, editing or schema sources when extending display coverage.
 
 ### Public full-duration rendition command
 

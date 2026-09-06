@@ -4,6 +4,15 @@ import test from 'node:test';
 import { dispatchAnalyticsEvent } from '../frontend/lib/analytics-client';
 import { projectAllowedAnalyticsPayload } from '../frontend/lib/analytics/journey';
 
+test('new public readers retain bounded surface labels without admitting media URLs', () => {
+  for (const surface of ['watch', 'comparison', 'examples-card']) {
+    assert.deepEqual(projectAllowedAnalyticsPayload('public_video_startup', {
+      asset_id: 'elevator-reunion', playback_surface: surface, duration_ms: 25,
+      url: 'https://private.example/file?token=private',
+    }), { asset_id: 'elevator-reunion', playback_surface: surface, duration_ms: 25 });
+  }
+});
+
 test('public playback analytics keeps only bounded allowlisted fields and values', () => {
   assert.deepEqual(projectAllowedAnalyticsPayload('public_video_startup', {
     asset_id: 'elevator-reunion',
