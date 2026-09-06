@@ -9,6 +9,8 @@ import { Images, Upload } from 'lucide-react';
 
 import { Button } from '@/components/ui/Button';
 import { authFetch } from '@/lib/authFetch';
+import { LibraryImageThumbnail } from '@/components/library/LibraryImageThumbnail.client';
+import { isLibraryImageAsset } from '@/lib/library-image';
 import type { CharacterBuilderReferenceImage } from '@/types/character-builder';
 import type { CharacterCopy } from '../_lib/character-builder-copy';
 import type { CharacterLibraryAsset, CharacterLibraryAssetsResponse } from '../_lib/character-builder-types';
@@ -101,11 +103,6 @@ export function ReferenceSlot({
   );
 }
 
-function isImageLibraryAsset(asset: CharacterLibraryAsset): boolean {
-  if (typeof asset.mime === 'string' && asset.mime.toLowerCase().startsWith('image/')) return true;
-  return /\.(png|jpe?g|webp|gif|avif)(?:[?#].*)?$/i.test(asset.url);
-}
-
 export function CharacterReferenceLibraryModal({
   open,
   onClose,
@@ -120,8 +117,8 @@ export function CharacterReferenceLibraryModal({
   const [activeSource, setActiveSource] = useState<'all' | 'upload' | 'generated' | 'character' | 'angle'>('all');
   const swrKey = open
     ? activeSource === 'all'
-      ? '/api/user-assets?limit=60'
-      : `/api/user-assets?limit=60&source=${encodeURIComponent(activeSource)}`
+      ? '/api/user-assets?kind=image&limit=60'
+      : `/api/user-assets?kind=image&limit=60&source=${encodeURIComponent(activeSource)}`
     : null;
   const { data, error, isLoading } = useSWR<CharacterLibraryAssetsResponse>(swrKey, async (url: string) => {
     const response = await authFetch(url);
@@ -132,7 +129,7 @@ export function CharacterReferenceLibraryModal({
     return payload ?? { ok: true, assets: [] };
   });
 
-  const assets = (data?.assets ?? []).filter(isImageLibraryAsset);
+  const assets = (data?.assets ?? []).filter(isLibraryImageAsset);
 
   if (!open) return null;
 
@@ -226,7 +223,7 @@ export function CharacterReferenceLibraryModal({
                   className="overflow-hidden rounded-card border border-border bg-surface text-left transition hover:border-border-hover hover:shadow-card"
                 >
                   <div className="relative aspect-square overflow-hidden bg-bg/50">
-                    <img src={asset.url} alt="" className="h-full w-full object-cover" />
+                    <LibraryImageThumbnail asset={asset} className="h-full w-full object-cover" />
                   </div>
                   <div className="border-t border-border px-4 py-3">
                     <p className="truncate text-xs font-medium text-text-primary">

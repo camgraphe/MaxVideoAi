@@ -1,12 +1,12 @@
 'use client';
 
-/* eslint-disable @next/next/no-img-element */
-
 import clsx from 'clsx';
 import { useState, type MouseEvent as ReactMouseEvent } from 'react';
 import useSWR from 'swr';
 import { Button } from '@/components/ui/Button';
 import { authFetch } from '@/lib/authFetch';
+import { LibraryImageThumbnail } from '@/components/library/LibraryImageThumbnail.client';
+import { isLibraryImageAsset } from '@/lib/library-image';
 import type { AngleCopy } from '../_lib/angle-workspace-copy';
 import type { LibraryAsset, LibraryAssetsResponse } from '../_lib/angle-workspace-types';
 
@@ -24,8 +24,8 @@ export function AngleImageLibraryModal({
   const [activeSource, setActiveSource] = useState<'all' | 'upload' | 'generated'>('all');
   const swrKey = open
     ? activeSource === 'all'
-      ? '/api/user-assets?limit=60'
-      : `/api/user-assets?limit=60&source=${encodeURIComponent(activeSource)}`
+      ? '/api/user-assets?kind=image&limit=60'
+      : `/api/user-assets?kind=image&limit=60&source=${encodeURIComponent(activeSource)}`
     : null;
   const { data, error, isLoading } = useSWR<LibraryAssetsResponse>(swrKey, async (url: string) => {
     const response = await authFetch(url);
@@ -36,7 +36,7 @@ export function AngleImageLibraryModal({
     return payload;
   });
 
-  const assets = data?.assets ?? [];
+  const assets = (data?.assets ?? []).filter(isLibraryImageAsset);
 
   if (!open) return null;
 
@@ -130,7 +130,7 @@ export function AngleImageLibraryModal({
                   className="group block w-full overflow-hidden rounded-card border border-border bg-surface text-left shadow-card transition hover:border-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
                 >
                   <div className="relative aspect-square overflow-hidden rounded-t-card bg-placeholder">
-                    <img src={asset.url} alt="" className="h-full w-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
+                    <LibraryImageThumbnail asset={asset} className="h-full w-full object-cover" />
                     <div className="absolute inset-0 hidden items-center justify-center bg-surface-on-media-dark-40 text-sm font-semibold text-on-inverse group-hover:flex">
                       {copy.useImage}
                     </div>
