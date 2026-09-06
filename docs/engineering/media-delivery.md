@@ -17,6 +17,7 @@ Read this guide when changing image/video presentation, poster URLs, generated m
 | Manual watch/comparison controls | `frontend/components/media/usePublicVideoControls.ts` |
 | Watch / native comparison presentation | `frontend/components/watch/WatchVideoPlayer.tsx` / `frontend/components/media/PublicVideoPlayer.client.tsx` |
 | Optimized poster URLs | `frontend/lib/media-helpers.ts` and `frontend/config/image-optimizer.json` |
+| Angle public orbit display and responsive preparation | `frontend/src/components/tools/angle/landing/AngleOrbitStudio.client.tsx` |
 | Generated image thumbnails | `frontend/server/image-thumbnails.ts` |
 | Uploaded image/video thumbnails | `frontend/server/upload-thumbnails.ts` |
 | Small video previews | `frontend/server/video-preview.ts` |
@@ -41,6 +42,8 @@ Playback hooks stay client-side; encoding, storage and database work stay server
 - Use a representative full-duration rendition for a model demonstration after its derivative has passed the measured media gates, explicit visual/audio review, public HTTP readiness and activation. A profile with a validated savings omission deliberately uses the original.
 - Preserve private/signed URL behavior. Public image optimization does not forward a user's authorization headers; do not strip signatures or publish a private source to make optimization work.
 - Preserve aspect ratio, alpha/transparency when required, orientation, and the distinction between original quality and display quality.
+
+Angle's public orbit prepares the other three views after its existing idle boundary. Derive their `src`, `srcSet` and `sizes` with Next Image's `getImageProps` and the same sizing policy as the displayed image; assign `sizes` and `srcset` before `src`. Loading the authored source URL would warm a different resource and waste a second transfer on selection. Keep the initial view as the only mounted image, preserve scheduled-work cleanup, and check `tests/angle-orbit-responsive-preload.test.ts` when changing this behavior. Future display quality or sizing changes must stay shared with preparation; validate actual browser selection at the relevant viewport and DPR.
 
 ## Playback and Core Web Vitals
 
