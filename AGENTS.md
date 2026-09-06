@@ -166,6 +166,8 @@ Keep original download, edit and schema URLs distinct from immutable display der
 
 For examples pages, keep the route hero's responsive poster explicitly prioritized in `ExamplesHeroVideo`. Do not add a competing route-head preload or prioritize the first gallery poster when that hero is present; `tests/examples-lcp-performance.test.ts` covers this boundary.
 
+For below-fold manual demonstrations, preserve the poster and geometry but default to `preload="none"`. `metadata` does not guarantee a small transfer. Check real network requests and first-Play behavior before adding or changing these readers; Character Builder's workflow is a native manual reader.
+
 Manual watch/comparison controls share `frontend/components/media/usePublicVideoControls.ts`; comparison playback defaults to Original for fidelity, and watch playback defaults to Auto with an explicit Original choice for prepared sources. Gallery cards delegate incidental preview playback to `useExampleCardPlayback.ts`, prefer their short preview, and mount video only for visible playback intent. Preserve optimized image covers and keep private/signed posters out of public optimization. Consult the media guide before adding a new reader.
 
 When adding a selected homepage hero video, register its authored source, prepare and review derivatives, publish them, verify public HTTP and Range behavior, activate them, then run `pnpm --prefix frontend run media:public-renditions:check`. The same offline coherence and critical-home coverage gate runs in frontend `prebuild`. A validated profile omission deliberately keeps the original; pending candidates and retryable failures do not establish readiness. Model launch assets remain a separate contract checked with `pnpm model:launch-assets:check`.

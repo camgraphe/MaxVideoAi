@@ -153,7 +153,7 @@ export function CharacterBuilderOutputsWorkflowSection({ content }: { content: C
                     className="aspect-[16/12] w-full object-cover"
                     controls
                     playsInline
-                    preload="metadata"
+                    preload="none"
                     poster={WORKFLOW_VIDEO_START_FRAME_ASSET.url}
                   >
                     <source src={WORKFLOW_VIDEO_START_FRAME_ASSET.videoUrl} type="video/mp4" />
