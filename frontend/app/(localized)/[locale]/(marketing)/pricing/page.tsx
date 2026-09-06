@@ -8,6 +8,7 @@ import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { DeferredMarketingContent } from '@/components/marketing/DeferredMarketingContent';
 import { PricingCreditsRefundsSection } from './_components/PricingCreditsRefundsSection';
 import { PricingHeroSection } from './_components/PricingHeroSection';
+import { PricingQuickStart } from './_components/PricingQuickStart';
 import { PricingJsonLdScripts } from './_components/PricingJsonLdScripts';
 import { PricingOtherSurfacesSection } from './_components/PricingOtherSurfacesSection';
 import { PricingPopularChecksSection } from './_components/PricingPopularChecksSection';
@@ -57,7 +58,13 @@ export default async function PricingPage(props: { params: Promise<{ locale: App
         subtitle={content.hero.subtitle}
         supportingLine={content.hero.supportingLine}
         title={content.hero.title}
-      />
+      >
+        <PricingQuickStart
+          highlights={pricingHub.video.highlights}
+          title={content.hero.quickStartTitle}
+          note={content.hero.quickStartNote}
+        />
+      </PricingHeroSection>
 
       <div className="container-page max-w-[1440px] py-8 sm:py-10">
         <div className="stack-gap-lg">

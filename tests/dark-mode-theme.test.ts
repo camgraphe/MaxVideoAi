@@ -117,10 +117,11 @@ test('homepage dark mode follows the reference with luminous hero and tokenized 
   assert.doesNotMatch(homeSource, /dark:bg-white\/\[0\.055\]/);
 });
 
-test('homepage hero badge chips wrap on mobile instead of being clipped', () => {
+test('homepage hero uses a compact mobile eyebrow and keeps desktop badges wrapping', () => {
   const homeHeroSource = homeSource.slice(homeSource.indexOf('export function HomeHero'), homeSource.indexOf('export function ShotTypeEngineSelector'));
 
-  assert.match(homeHeroSource, /flex min-w-0 flex-wrap gap-2 overflow-visible sm:flex-nowrap sm:overflow-x-auto/);
+  assert.match(homeHeroSource, /hidden min-w-0 flex-wrap gap-2 min-\[900px\]:col-span-2 min-\[900px\]:flex/);
+  assert.match(homeHeroSource, /min-\[900px\]:hidden">\{copy\.eyebrow\}/);
   assert.match(homeHeroSource, /inline-flex max-w-full shrink-0 items-center/);
   assert.match(homeHeroSource, /whitespace-normal/);
   assert.doesNotMatch(homeHeroSource, /-mx-1 flex min-w-0 flex-nowrap gap-2 overflow-x-auto/);

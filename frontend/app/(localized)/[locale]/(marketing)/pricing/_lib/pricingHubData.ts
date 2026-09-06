@@ -185,6 +185,7 @@ export type VideoPricingHighlight = {
   label: string;
   value: string;
   href?: string;
+  featured?: { engineName: string; price: string };
 };
 
 export type VideoPricingMatrixData = {
@@ -779,6 +780,7 @@ function buildVideoHighlights(rows: VideoPricingRow[], locale: AppLocale): Video
   return [
     {
       label: copy.video.highlights.bestDraft,
+      featured: bestDraft?.quote.display ? { engineName: bestDraft.row.engineName, price: bestDraft.quote.display } : undefined,
       value: bestDraft ? `${bestDraft.row.engineName} · ${bestDraft.quote.display}` : copy.liveQuote,
       href: bestDraft ? `#${bestDraft.row.anchorId}` : undefined,
     },
@@ -789,11 +791,13 @@ function buildVideoHighlights(rows: VideoPricingRow[], locale: AppLocale): Video
     },
     {
       label: copy.video.highlights.cheapest10s,
+      featured: cheapest10s?.quote.display ? { engineName: cheapest10s.row.engineName, price: cheapest10s.quote.display } : undefined,
       value: cheapest10s ? `${cheapest10s.row.engineName} · ${cheapest10s.quote.display}` : copy.liveQuote,
       href: cheapest10s ? `#${cheapest10s.row.anchorId}` : undefined,
     },
     {
       label: copy.video.highlights.cheapestAudio,
+      featured: cheapestAudio?.quote.display ? { engineName: cheapestAudio.row.engineName, price: cheapestAudio.quote.display } : undefined,
       value: cheapestAudio ? `${cheapestAudio.row.engineName} · ${cheapestAudio.quote.display}` : copy.liveQuote,
       href: cheapestAudio ? `#${cheapestAudio.row.anchorId}` : undefined,
     },

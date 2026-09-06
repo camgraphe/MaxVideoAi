@@ -4,6 +4,31 @@ Read this guide when changing image/video presentation, poster URLs, generated m
 
 ## Existing ownership
 
+Homepage mobile composition puts the main video before the comparison and assistant
+links. When its thumbnail strip becomes visible, the first thumbnail reuses
+`HOME_LCP_MOBILE_DELIVERY_SRC`, already loaded by the critical poster; do not request
+the larger desktop asset for that mobile thumbnail. Its observer, lazy scheduling,
+fixed geometry and exact original/derivative playback policy remain independent.
+`HomeHeroSecondaryLinks` owns the comparison/assistant destinations after the player
+in mobile document order; keep those secondary actions outside the main intro.
+
+The critical homepage poster's authored identity and geometry stay in
+`home-lcp-image.ts`. `pnpm --prefix frontend media:home-posters:prepare` copies those
+two approved WebP files without re-encoding to `public/hero/prepared/<sha256>.webp`
+and generates `config/home-posters.generated.json`. Do not hand-edit the projection
+or overwrite an existing hash URL. `home-lcp-delivery.ts` exposes only display URLs;
+`HomeLcpPoster` and its corresponding thumbnails reuse the same responsive file.
+Only this verified hash namespace receives year-long immutable browser caching.
+Authored files, originals, other posters and page cache policies are unchanged.
+
+Run `pnpm --prefix frontend media:home-posters:check` after changing either critical
+source. The same read-only check runs in `prebuild`: source hashes, manifest, copied
+bytes and every retained prepared filename must agree. Preparation keeps older hash
+files because cached HTML may still reference them. Updating a critical source means
+preparing a new URL, never replacing bytes under a cached URL. Check cold and warm
+mobile rendering when changing the hero's visibility: moving the image above the fold
+can make it the LCP element even when its weight is unchanged.
+
 | Area | Owner |
 | --- | --- |
 | Homepage presentation | `frontend/components/marketing/home/HeroVideoShowcase.tsx` |

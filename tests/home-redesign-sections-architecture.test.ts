@@ -6,6 +6,7 @@ import test from 'node:test';
 const root = process.cwd();
 const facadePath = join(root, 'frontend/components/marketing/home/HomeRedesignSections.tsx');
 const heroPath = join(root, 'frontend/components/marketing/home/HomeHeroSection.tsx');
+const secondaryLinksPath = join(root, 'frontend/components/marketing/home/HomeHeroSecondaryLinks.tsx');
 const shotTypePath = join(root, 'frontend/components/marketing/home/HomeShotTypeEngineSelector.tsx');
 const examplesPath = join(root, 'frontend/components/marketing/home/HomeRealExamplesPreview.tsx');
 const startupPath = join(root, 'frontend/components/marketing/home/HomeStartupFameLink.tsx');
@@ -29,6 +30,8 @@ test('home redesign sections facade delegates focused homepage sections', () => 
   assert.match(facadeSource, /export \{ RealExamplesPreview \}/, 'facade should re-export RealExamplesPreview');
   assert.doesNotMatch(facadeSource, /function buildHeroVideoItems|BEST_FOR_CARD_VISUALS|examples\.map/, 'facade should not own section rendering internals');
   assert.match(heroSource, /buildHeroVideoItems|HeroVideoShowcase|PROOF_ICONS/, 'hero section should own hero media and proof stats');
+  assert.ok(heroSource.indexOf('<HomeHeroSecondaryLinks') > heroSource.indexOf('<HeroVideoShowcase'), 'mobile document order should expose the video before secondary destinations');
+  assert.ok(lineCount(readSource(secondaryLinksPath)) <= 60, 'secondary destinations should stay a focused server presentation');
   assert.match(shotTypeSource, /BEST_FOR_CARD_VISUALS|formatBestForPickLabel|StartupFameLink/, 'shot type selector should own best-for cards');
   assert.match(examplesSource, /HomeExamplePreviewRow|HomeExampleProviders|examples\.map/, 'examples preview should own preview rows and providers');
   assert.match(startupSource, /startupfa\.me/, 'startup link should own external attribution link');

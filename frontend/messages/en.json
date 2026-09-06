@@ -1457,6 +1457,8 @@
       "title": "AI Video Pricing Comparison",
       "subtitle": "Compare video, image, audio and tool costs before you generate.",
       "supportingLine": "Pay as you go. See the exact live price in the app before launch. Failed generations are refunded.",
+      "quickStartTitle": "Three starting points for your next video",
+      "quickStartNote": "Indicative total per video, in USD. Select a scenario to see the full comparison. Confirm the live quote in the app before generating.",
       "primaryCta": "Open app for live pricing before you generate",
       "secondaryCta": "Compare prices below",
       "badges": [

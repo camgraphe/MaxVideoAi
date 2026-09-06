@@ -17,6 +17,7 @@ import { LOCALE_COOKIE } from '@/lib/i18n/constants';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { LocaleSync } from '@/components/i18n/LocaleSync';
 import { SITE_ORIGIN } from '@/lib/siteOrigin';
+import { buildSiteOrganizationSchema } from '@/lib/seo/site-organization-schema';
 const NORMALIZED_SITE_URL = SITE_ORIGIN;
 
 export const metadata: Metadata = {
@@ -52,20 +53,7 @@ export default async function CoreLayout({ children }: { children: ReactNode }) 
   const { dictionary, fallback } = await resolveDictionary({ locale });
 
   const homeUrl = `${NORMALIZED_SITE_URL}/`;
-  const logoUrl = `${NORMALIZED_SITE_URL}/favicon-512.png`;
-  const orgSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: 'MaxVideoAI',
-    url: homeUrl,
-    logo: logoUrl,
-    sameAs: [
-      'https://x.com/MaxVideoAI',
-      'https://www.linkedin.com/company/maxvideoai/',
-      'https://github.com/camgraphe/maxvideoai',
-      'https://www.producthunt.com/products/maxvideoai',
-    ],
-  };
+  const orgSchema = buildSiteOrganizationSchema();
 
   const enableSearchSchema = process.env.NEXT_PUBLIC_ENABLE_SEARCH_SCHEMA === 'true';
   const websiteSchema = {
