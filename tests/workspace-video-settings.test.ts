@@ -3,9 +3,11 @@ import test from 'node:test';
 
 import type { EngineCaps } from '../frontend/types/engines';
 import type { FormState } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-form-state';
+import { getBaseEngines } from '../frontend/src/lib/engines';
 import {
   buildVideoSettingsFormState,
   buildVideoSettingsSnapshotFromTile,
+  buildVideoSettingsSnapshotFromSharedVideo,
   claimSharedVideoHydration,
   resolveVideoSettingsSnapshot,
 } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-video-settings';
@@ -89,6 +91,68 @@ test('shared video hydration waits for engines and claims the same id only once 
   assert.equal(snapshotApplications, 1);
   assert.equal(jobHydrations, 1);
   assert.equal(prompt, 'visitor edit after recreation');
+});
+
+function resolveForEngine(snapshot: unknown, engine: EngineCaps) {
+  return resolveVideoSettingsSnapshot(snapshot, {
+    engines: [engine],
+    engineMap: new Map([[engine.id, engine]]),
+    createLocalId: (prefix) => `${prefix}-1`,
+    createFallbackScene: () => ({ id: 'scene-1', prompt: '', duration: 5 }),
+    createFallbackKlingElement: () => ({
+      id: 'element-1', frontal: null, references: [null, null, null], video: null,
+    }),
+  });
+}
+
+function sharedSnapshot(aspectRatio: string, engineId = 'minimax-h3') {
+  return buildVideoSettingsSnapshotFromSharedVideo({
+    id: 'example', engineId, engineLabel: 'Example', durationSec: 15,
+    prompt: 'Recreate this shot', aspectRatio, createdAt: '2026-09-06T00:00:00Z',
+  });
+}
+
+test('recreating an H3 example preserves its near-16:9 framing instead of selecting 21:9', () => {
+  const engine = getBaseEngines().find((candidate) => candidate.id === 'minimax-h3');
+  assert.ok(engine);
+  const resolved = resolveForEngine(sharedSnapshot('159:91'), engine);
+  const form = buildVideoSettingsFormState(resolved, previousForm());
+  assert.equal(form.aspectRatio, '16:9');
+  assert.equal(form.durationSec, 15);
+  assert.equal(resolved.prompt, 'Recreate this shot');
+});
+
+test('derived tile ratios use the nearest supported ratio, including portrait and equivalent dimensions', () => {
+  const engine = seedanceEngine();
+  engine.modeCaps!.t2v!.aspectRatio = ['21:9', '16:9', '9:16'];
+  for (const [input, expected] of [['159:91', '16:9'], ['91:159', '9:16'], ['1920/1080', '16:9']]) {
+    const snapshot = buildVideoSettingsSnapshotFromTile({
+      engineId: engine.id, aspectRatio: input, durationSec: 12, iterationCount: 1,
+      prompt: 'Example',
+    } as Parameters<typeof buildVideoSettingsSnapshotFromTile>[0]);
+    assert.equal(buildVideoSettingsFormState(resolveForEngine(snapshot, engine), null).aspectRatio, expected);
+  }
+});
+
+test('derived framing only snaps small differences and respects mode-specific or source-driven ratios', () => {
+  const engine = seedanceEngine();
+  engine.aspectRatios = ['16:9', '9:16'];
+  engine.modeCaps!.t2v!.aspectRatio = ['21:9', '16:9', 'auto'];
+  for (const input of ['21:9', 'auto', '4:3', '1.83:1', '91:159', '0:9', 'invalid']) {
+    assert.equal(resolveForEngine(sharedSnapshot(input, engine.id), engine).formValues.aspectRatio, input);
+  }
+  assert.equal(buildVideoSettingsFormState(resolveForEngine(sharedSnapshot('4:3', engine.id), engine), null).aspectRatio, '21:9');
+  engine.modeCaps!.t2v!.aspectRatio = [];
+  assert.equal(resolveForEngine(sharedSnapshot('159:91', engine.id), engine).formValues.aspectRatio, '159:91');
+});
+
+test('saved generation settings stay authoritative and are not normalized like derived media metadata', () => {
+  const engine = seedanceEngine();
+  const snapshot = {
+    schemaVersion: 1, surface: 'video', engineId: engine.id, inputMode: 't2v',
+    core: { aspectRatio: '159:91' }, meta: {},
+  };
+  assert.equal(resolveForEngine(snapshot, engine).formValues.aspectRatio, '159:91');
 });
 
 test('shared video hydration resets for a changed or cleared shared video id', () => {
