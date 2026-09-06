@@ -12,7 +12,9 @@ import { JSDOM } from 'jsdom';
 test('Angle idle preparation warms the same responsive images displayed by its controls', async () => {
   const require = createRequire(import.meta.url);
   const previousCssLoader = require.extensions['.css'];
-  require.extensions['.css'] = () => {};
+  require.extensions['.css'] = (module) => {
+    module.exports = { orbitImage: 'orbitImage', orbitImageReduced: 'orbitImageReduced' };
+  };
   let AngleOrbitStudio;
   try {
     ({ AngleOrbitStudio } = await import('../frontend/src/components/tools/angle/landing/AngleOrbitStudio.client'));
@@ -56,6 +58,7 @@ test('Angle idle preparation warms the same responsive images displayed by its c
   try {
     await act(async () => root.render(React.createElement(AngleOrbitStudio, { content })));
     const initial = container.querySelector('img')!.getAttribute('src');
+    assert.equal(container.querySelector('img')!.className, 'orbitImageReduced', 'the first view must be visible without an entrance animation');
     assert.equal(container.querySelectorAll('img').length, 1);
     assert.equal(preloaded.length, 0, 'secondary views must wait for the existing idle boundary');
     assert.ok(idleCallback);
@@ -70,6 +73,7 @@ test('Angle idle preparation warms the same responsive images displayed by its c
     for (let index = 0; index < 3; index += 1) {
       await act(async () => next.click());
       const displayed = container.querySelector('img')!;
+      assert.equal(displayed.className, 'orbitImage', 'user-requested view changes retain their transition');
       const prepared = preloaded.find((image) => image.src === displayed.src);
       assert.ok(prepared, 'each selected view must reuse an already prepared resource');
       assert.equal(prepared.getAttribute('srcset'), displayed.getAttribute('srcset'));
@@ -78,6 +82,7 @@ test('Angle idle preparation warms the same responsive images displayed by its c
     }
     await act(async () => next.click());
     assert.equal(container.querySelector('img')!.getAttribute('src'), initial, 'the fourth action returns to the initial view');
+    assert.equal(container.querySelector('img')!.className, 'orbitImage', 'returning to the first view still counts as an interaction');
   } finally {
     await act(async () => root.unmount());
     dom.window.close();
