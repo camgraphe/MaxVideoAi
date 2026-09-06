@@ -1,5 +1,6 @@
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
 import { isIP } from 'node:net';
+import { classifyMcpClient } from '@/server/mcp/client-family';
 
 import { getMcpRequestHost, isMcpApiHost } from '@/lib/mcp-host-routing';
 import type { AgentAccountStatusWalletDeps } from '@/server/agent-api/account-status';
@@ -171,6 +172,7 @@ async function recordProtocolActivity(
     const eventType = method === 'initialize' ? 'connection_initialized' : 'tool_discovery';
     await recorder?.({
       eventType,
+      ...(method === 'initialize' ? { clientFamily: classifyMcpClient(body) } : {}),
       userId: principal.userId,
       oauthClientId: principal.clientId,
       tool: null,

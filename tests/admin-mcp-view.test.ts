@@ -73,6 +73,7 @@ function activityMetrics(): AdminMcpMetrics {
 test('MCP admin renders live activity before a collapsed measurement coverage disclosure', () => {
   const html = renderToStaticMarkup(createElement(AdminMcpView, {
     metrics: activityMetrics(),
+    outcomes: { totals: null, clients: [], notices: ['Outcome statistics unavailable.'] },
     selectedRange: '24h',
   }));
 
@@ -93,4 +94,23 @@ test('MCP admin renders live activity before a collapsed measurement coverage di
     html.indexOf('Decision overview') < html.indexOf('8 measurements pending'),
     'live decision metrics should render before the pending measurement disclosure',
   );
+});
+
+
+test('account and completed-video metrics precede tool activity and explain attribution limits', () => {
+  const counts = { accounts: 12, newSignups: 3, generators: 4, submitted: 9, videos: 6, failed: 2, pending: 1 };
+  const html = renderToStaticMarkup(createElement(AdminMcpView, {
+    metrics: activityMetrics(), selectedRange: '7d',
+    outcomes: { totals: counts, clients: [
+      { ...counts, client: 'chatgpt' }, { ...counts, client: 'claude' },
+      { ...counts, client: 'codex' }, { ...counts, client: 'other' },
+    ], notices: [] },
+  }));
+  for (const label of ['MCP accounts (total)', 'New signups using MCP', 'Users who generated videos', 'Videos generated', 'ChatGPT', 'Claude', 'Codex', 'Other / unidentified']) {
+    assert.ok(html.includes(label), label);
+  }
+  assert.match(html, /9 video jobs submitted · 1 in progress · 2 failed or cancelled/);
+  assert.match(html, /this does not establish the signup source/);
+  assert.match(html, /self-reported/);
+  assert.ok(html.indexOf('MCP accounts and videos') < html.indexOf('Decision overview'));
 });
