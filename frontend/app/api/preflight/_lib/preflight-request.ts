@@ -26,7 +26,7 @@ const resolutions = [
   '1600x2848', '2496x1664', '1664x2496', '3136x1344', '3072x3072', '3456x2592',
   '2592x3456', '4096x2304', '2304x4096', '2496x3744', '3744x2496', '4704x2016',
   '4096x4096', '3520x4704', '4704x3520', '5504x3040', '3040x5504', '3328x4992',
-  '4992x3328', '6240x2656', '512P', '768P', 'square', 'square_hd', 'landscape_hd',
+  '4992x3328', '6240x2656', '480P', '512P', '768P', 'square', 'square_hd', 'landscape_hd',
   'portrait_hd', 'portrait_4_3', 'portrait_16_9', 'landscape_4_3', 'landscape_16_9',
   'custom', 'auto',
 ] as const;
