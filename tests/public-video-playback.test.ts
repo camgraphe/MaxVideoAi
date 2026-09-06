@@ -10,6 +10,15 @@ import {
 
 const ORIGINAL = 'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/6e299d72-22dd-46f4-8260-4d6887777558.mp4';
 
+test('an explicit Original choice preserves the original even on a data-saving mobile connection', () => {
+  const selected = selectPublicVideoPlaybackRendition(ORIGINAL, {
+    viewportWidth: 390, saveData: true, trigger: 'user', quality: 'original',
+  });
+  assert.deepEqual(selected, {
+    src: ORIGINAL, originalSrc: ORIGINAL, assetId: 'elevator-reunion', profile: 'original',
+  });
+});
+
 test('source selection uses viewport and explicit data-saving playback without changing unknown inputs', () => {
   const mobile = selectPublicVideoPlaybackRendition(ORIGINAL, {
     viewportWidth: 390, saveData: false, trigger: 'user',

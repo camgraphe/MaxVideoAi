@@ -3,7 +3,8 @@ import {
   type ResolvedPublicVideoRendition,
 } from '@/lib/public-video-renditions';
 
-export type PublicVideoPlaybackSurface = 'home' | 'model' | 'examples';
+export type PublicVideoPlaybackSurface = 'home' | 'model' | 'examples' | 'watch' | 'comparison' | 'examples-card';
+export type PublicVideoQuality = 'auto' | 'original';
 export type PublicVideoPlaybackTrigger = 'user' | 'automatic';
 export type PublicVideoMeasurementMethod = 'video_frame_callback' | 'playing_fallback';
 
@@ -21,12 +22,16 @@ export function selectPublicVideoPlaybackRendition(
     viewportWidth: number;
     saveData: boolean;
     trigger: PublicVideoPlaybackTrigger;
+    quality?: PublicVideoQuality;
   },
 ): ResolvedPublicVideoRendition {
   const profile = input.viewportWidth < 768 || (input.trigger === 'user' && input.saveData)
     ? 'mobile'
     : 'desktop';
-  return resolvePublicVideoRendition(originalSrc, profile);
+  const rendition = resolvePublicVideoRendition(originalSrc, profile);
+  return input.quality === 'original'
+    ? { ...rendition, src: originalSrc, profile: 'original' }
+    : rendition;
 }
 
 export function createPublicVideoOriginalFallbackAttempt(

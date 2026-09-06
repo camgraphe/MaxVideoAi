@@ -14,6 +14,7 @@ import {
   TALL_CARD_MEDIA_PERCENT,
 } from '@/components/examples/examples-gallery-helpers';
 import type { ExampleGalleryVideo } from '@/components/examples/examples-gallery-types';
+import { useExampleCardPlayback } from './useExampleCardPlayback';
 import mediaStyles from './examples-media.module.css';
 
 type ExampleGalleryCardProps = {
@@ -43,16 +44,14 @@ export function ExampleGalleryCard({
 }: ExampleGalleryCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [inView, setInView] = useState(false);
-  const [videoReady, setVideoReady] = useState(false);
   const cardRef = useRef<HTMLDivElement | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const rawAspect = useMemo(() => (video.aspectRatio ? parseAspectRatio(video.aspectRatio) : 16 / 9), [video.aspectRatio]);
   const isPortrait = rawAspect < 1;
   const posterSizes = isPortrait ? PORTRAIT_SIZES : LANDSCAPE_SIZES;
   const inlineVideoUrl = video.previewVideoUrl ?? video.videoUrl ?? null;
-  const shouldLoadVideo = enableInlineVideo && inView && Boolean(inlineVideoUrl);
-  const shouldPlay = shouldLoadVideo && (isHovered || isFirst || forceExclusivePlay);
+  const shouldPlay = enableInlineVideo && inView && (isHovered || isFirst || forceExclusivePlay);
+  const { videoRef, playbackAttempt, events, videoReady } = useExampleCardPlayback(inlineVideoUrl, shouldPlay, forceExclusivePlay);
   const mediaPaddingPercent = Number((100 / rawAspect).toFixed(3));
   const desktopMediaPadding = isPortrait
     ? `calc(${TALL_CARD_MEDIA_PERCENT}% + var(--examples-grid-row-gap, 10px))`
@@ -70,42 +69,11 @@ export function ExampleGalleryCard({
         const entry = entries[0];
         setInView(entry.isIntersecting);
       },
-      { rootMargin: '120px 0px 120px 0px', threshold: 0.25 }
+      { threshold: 0.25 }
     );
     observer.observe(node);
     return () => observer.disconnect();
   }, []);
-
-  useEffect(() => {
-    const node = videoRef.current;
-    if (!node || !shouldPlay) return;
-    const pauseOthers = () => {
-      if (!forceExclusivePlay) return;
-      try {
-        document.querySelectorAll('video[data-examples-card]').forEach((el) => {
-          if (el !== node) {
-            (el as HTMLVideoElement).pause();
-          }
-        });
-      } catch {
-        // ignore autoplay coordination errors
-      }
-    };
-
-    const play = async () => {
-      try {
-        pauseOthers();
-        await node.play();
-        setVideoReady(true);
-      } catch {
-        // ignore autoplay failures
-      }
-    };
-    void play();
-    return () => {
-      node.pause();
-    };
-  }, [shouldPlay, forceExclusivePlay]);
 
   const posterSrc = video.rawPosterUrl ?? null;
   const watchAnchorText = buildWatchAnchorText(locale, video);
@@ -126,20 +94,7 @@ export function ExampleGalleryCard({
         <div className={clsx(mediaStyles.mediaOuter, 'relative w-full overflow-hidden bg-surface-on-media-dark-5')}>
           <div className={clsx(mediaStyles.mediaFrame, 'relative w-full')} style={mediaFrameStyle}>
             <div className="absolute inset-0">
-              {shouldLoadVideo && inlineVideoUrl ? (
-                <video
-                  ref={videoRef}
-                  aria-hidden="true"
-                  muted
-                  loop
-                  playsInline
-                  poster={posterSrc ?? undefined}
-                  data-examples-card
-                  className="h-full w-full object-cover object-center transition duration-500 group-hover:scale-[1.02]"
-                >
-                  <source src={inlineVideoUrl} type="video/mp4" />
-                </video>
-              ) : posterSrc ? (
+              {posterSrc ? (
                 <Image
                   src={posterSrc}
                   alt={altText}
@@ -156,6 +111,21 @@ export function ExampleGalleryCard({
                   {noPreviewLabel}
                 </div>
               )}
+              {playbackAttempt ? (
+                <video
+                  key={playbackAttempt.id}
+                  ref={videoRef}
+                  src={playbackAttempt.rendition.src}
+                  aria-hidden="true"
+                  muted
+                  loop
+                  playsInline
+                  preload="none"
+                  data-examples-card
+                  {...events}
+                  className={clsx('absolute inset-0 h-full w-full object-cover object-center transition duration-500 group-hover:scale-[1.02]', videoReady ? 'opacity-100' : 'opacity-0')}
+                />
+              ) : null}
               {video.hasAudio ? <AudioEqualizerBadge tone="light" size="sm" label={audioAvailableLabel} /> : null}
             </div>
           </div>

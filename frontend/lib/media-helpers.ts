@@ -45,3 +45,15 @@ export function buildExamplePosterProjection(src: string | null | undefined, fal
     rawPosterUrl: src ?? fallback,
   };
 }
+
+/** Native posters have no srcset; optimize only the public, unsigned media CDN. */
+export function buildPublicVideoPosterUrl(src?: string | null): string | null {
+  if (!src) return null;
+  try {
+    const url = new URL(src);
+    if (url.origin === 'https://media.maxvideoai.com' && !url.search && !url.hash && !url.username && !url.password) {
+      return buildOptimizedPosterUrl(src, HERO_POSTER_OPTIONS);
+    }
+  } catch { /* Relative and opaque sources retain their existing URL. */ }
+  return src;
+}

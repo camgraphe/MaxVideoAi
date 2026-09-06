@@ -116,7 +116,8 @@ export function CompareShowdownSection({
                     labels.placeholder,
                     labels.placeholder,
                     entry.aspectRatio,
-                    leftAlt
+                    leftAlt,
+                    activeLocale
                   )}
                   {renderShowdownMedia(
                     entry.right,
@@ -124,7 +125,8 @@ export function CompareShowdownSection({
                     labels.placeholder,
                     labels.placeholder,
                     entry.aspectRatio,
-                    rightAlt
+                    rightAlt,
+                    activeLocale
                   )}
                 </div>
                 <div className="flex flex-wrap items-center gap-2 text-sm text-text-secondary">

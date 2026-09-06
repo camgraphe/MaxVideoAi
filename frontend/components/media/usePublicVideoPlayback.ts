@@ -10,6 +10,7 @@ import {
   type PublicVideoPlaybackAttempt,
   type PublicVideoPlaybackSurface,
   type PublicVideoPlaybackTrigger,
+  type PublicVideoQuality,
 } from '@/lib/public-video-playback';
 
 type FailureResult = 'fallback' | 'terminal' | 'stale';
@@ -56,10 +57,10 @@ export function usePublicVideoPlayback(surface: PublicVideoPlaybackSurface) {
   const begin = useCallback((
     originalSrc: string,
     trigger: PublicVideoPlaybackTrigger,
-    options: { force?: boolean } = {},
+    options: { force?: boolean; quality?: PublicVideoQuality } = {},
   ) => {
     const current = currentRef.current;
-    if (!options.force && current?.rendition.originalSrc === originalSrc && !terminalErrorRef.current) return current;
+    if (!options.force && options.quality === undefined && current?.rendition.originalSrc === originalSrc && !terminalErrorRef.current) return current;
     const startedAt = browserNow();
     const next: PublicVideoPlaybackAttempt = {
       id: nextAttemptIdRef.current++,
@@ -67,6 +68,7 @@ export function usePublicVideoPlayback(surface: PublicVideoPlaybackSurface) {
         viewportWidth: browserViewportWidth(),
         saveData: browserSaveData(),
         trigger,
+        quality: options.quality,
       }),
       trigger,
       startedAt,

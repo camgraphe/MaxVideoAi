@@ -3,6 +3,8 @@
 import type { CSSProperties } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { Film, Maximize2, Pause, Play, Volume2, VolumeX } from 'lucide-react';
+import { PublicVideoQualitySelect } from '@/components/media/PublicVideoQualitySelect.client';
+import { usePublicVideoControls } from '@/components/media/usePublicVideoControls';
 
 type WatchVideoPlayerProps = {
   src: string;
@@ -35,44 +37,18 @@ export function WatchVideoPlayer({
   videoStyle,
 }: WatchVideoPlayerProps) {
   const shellRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<FullscreenVideoElement>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [duration, setDuration] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
+  const {
+    videoRef, events, isPlaying, isLoading, isMuted, duration, currentTime, terminalError,
+    quality, changeQuality, hasQualityChoice, togglePlayback, toggleMuted, seek,
+  } = usePublicVideoControls(src, 'watch');
   const [canFullscreen, setCanFullscreen] = useState(false);
 
   useEffect(() => {
     setCanFullscreen(
       typeof shellRef.current?.requestFullscreen === 'function' ||
-      typeof videoRef.current?.webkitEnterFullscreen === 'function'
+      typeof (videoRef.current as FullscreenVideoElement | null)?.webkitEnterFullscreen === 'function'
     );
-  }, []);
-
-  const togglePlayback = () => {
-    const player = videoRef.current;
-    if (!player) return;
-    if (player.paused) {
-      void player.play();
-      return;
-    }
-    player.pause();
-  };
-
-  const toggleMuted = () => {
-    const player = videoRef.current;
-    if (!player) return;
-    player.muted = !player.muted;
-    setIsMuted(player.muted);
-  };
-
-  const handleSeek = (value: string) => {
-    const player = videoRef.current;
-    const nextTime = Number(value);
-    if (!player || !Number.isFinite(nextTime)) return;
-    player.currentTime = nextTime;
-    setCurrentTime(nextTime);
-  };
+  }, [videoRef]);
 
   const toggleFullscreen = async () => {
     const shell = shellRef.current;
@@ -84,7 +60,7 @@ export function WatchVideoPlayer({
         await shell.requestFullscreen();
       } else {
         // iPhone Safari exposes fullscreen on the video instead of its container.
-        videoRef.current?.webkitEnterFullscreen?.();
+        (videoRef.current as FullscreenVideoElement | null)?.webkitEnterFullscreen?.();
       }
     } catch {
       // A browser can refuse fullscreen or media may not be ready yet. Keep playback usable.
@@ -94,22 +70,34 @@ export function WatchVideoPlayer({
   return (
     <div ref={shellRef} className="relative overflow-hidden rounded-t-card bg-black" style={containerStyle}>
       <video
+        key={src}
         ref={videoRef}
+        src={src}
         poster={poster}
         className="h-full w-full object-contain"
         playsInline
-        preload="metadata"
+        preload="none"
+        muted={isMuted}
         aria-label={title}
         style={videoStyle}
         onClick={togglePlayback}
-        onLoadedMetadata={(event) => setDuration(event.currentTarget.duration || 0)}
-        onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime || 0)}
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-        onEnded={() => setIsPlaying(false)}
-      >
-        <source src={src} type="video/mp4" />
-      </video>
+        {...events}
+      />
+      {hasQualityChoice ? (
+        <div className="absolute bottom-20 right-4 z-20">
+          <PublicVideoQualitySelect value={quality} onChange={changeQuality} title={title} />
+        </div>
+      ) : null}
+      {isLoading ? (
+        <span role="status" className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-pill bg-black/70 px-4 py-2 text-sm text-white">
+          Loading video…
+        </span>
+      ) : null}
+      {terminalError ? (
+        <span role="alert" className="pointer-events-none absolute inset-x-4 top-16 rounded-lg bg-black/70 px-3 py-2 text-center text-sm text-white">
+          Video unavailable. Press Play to retry.
+        </span>
+      ) : null}
       <div className="pointer-events-none absolute left-4 top-4 inline-flex items-center gap-2 rounded-pill bg-surface-on-media-dark-70 px-3 py-2 text-xs font-semibold text-on-inverse shadow-card backdrop-blur">
         <Film className="h-4 w-4" aria-hidden />
         {engineLabel}
@@ -150,7 +138,7 @@ export function WatchVideoPlayer({
             step={0.1}
             value={Math.min(currentTime, duration || currentTime)}
             aria-label={`Seek ${title}`}
-            onChange={(event) => handleSeek(event.currentTarget.value)}
+            onChange={(event) => seek(event.currentTarget.value)}
             className="h-1 min-w-0 flex-1 cursor-pointer accent-white"
           />
           <button
