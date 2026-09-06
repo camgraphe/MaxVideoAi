@@ -35,6 +35,8 @@ Always author `successorId` explicitly, using `null` when there is no successor.
 4. Run `pnpm model:registry:generate`, `pnpm engine:catalog`, and `pnpm model:generate:write` to refresh the generated projections.
 5. Run `pnpm model:registry:check` and the focused model/page tests.
 
+When a model becomes visible in a family gallery, review the family introduction, examples guidance and FAQ in `frontend/lib/examples/modelLandingData.{en,fr,es}.ts` as part of the same launch. Registry-derived model links do not update authored prose. Keep the gallery's existing canonical owner and metadata unless a separate SEO change is intended; distinguish different models grouped in one gallery. Route-local onward links live in `examples/_lib/examples-page-copy.ts` and must use the existing localized model/comparison href builders. Link to the example detail page for its recorded cost and recreation action; the workspace owns required inputs and the current quote. Verify the new comparison destinations and FAQ/JSON-LD consistency in all three locales. `tests/examples-family-journeys.test.ts` covers the Veo/Omni and Hailuo/H3 entry paths.
+
 `pnpm model:setup -- --from <source-slug> --slug <target-slug> --name "<Marketing Name>" --family <family-id>` can scaffold the localized content, provider/execution stub, registry entry skeleton, and optional presentation-only family stub.
 The scaffold retargets `decision.modelSlug`, but its generated English, French, and Spanish
 decision content still requires the manual review in the checklist above before publication.

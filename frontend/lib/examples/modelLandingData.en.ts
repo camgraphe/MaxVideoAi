@@ -31,32 +31,24 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     metaDescription:
       'Browse Veo 3.1 examples, prompts, settings, and image-to-video patterns, then open a video detail page to see its recorded render cost on MaxVideoAI.',
     heroTitle: 'Veo 3.1 examples, prompts, settings and image-to-video patterns',
-    subtitle: 'Veo 3.1 examples, prompts, settings, and image-to-video patterns across the current Veo family.',
-    intro:
-      'Browse Veo 3.1, Veo 3.1 Fast, and Veo 3.1 Lite examples, prompts, reusable settings, and image-to-video patterns, then open the model pages for specs, limits, and pricing. Use this page to study prompt structure, text-to-video AI patterns, and model-specific image-to-video settings before opening the matching Veo model page.',
-    summary:
-      'Veo 3.1 leads this page for examples, prompts, settings, and image-to-video patterns, with Veo 3.1 Fast and Veo 3.1 Lite kept visible as current Veo variants for faster iteration and lower-cost audio-ready tests.',
-    promptPatterns:
-      'Veo 3.1 examples usually improve when prompts specify shot objective first, then movement, lighting, and any image-to-video reference constraints.',
-    strengthsLimits:
-      'Veo is strong on controllable framing and consistent movement in short text-to-video and image-to-video runs. Capability details still vary by mode, so verify available options before large jobs.',
-    pricingNotes:
-      'Open a video detail page to see its recorded render cost, which reflects duration, resolution, and audio behavior. Keep a stable preset to compare Veo outputs across multiple briefs.',
+    subtitle: "Veo 3.1 and Gemini Omni Flash 1.1 examples, with prompts, inputs and settings to inspect.",
+    intro: "Compare Google video examples from Veo 3.1, Fast and Lite alongside Gemini Omni Flash 1.1. Open a result to inspect its prompt and settings, then adapt the example in your workspace.",
+    summary: "Veo and Gemini Omni are distinct Google models grouped in this gallery. Keep the model shown on each example as your reference. Use the linked model pages and comparisons to choose a workflow, then check the current quote before generating.",
+    promptPatterns: "Describe the subject, action and camera move first. With an opening image, specify what should move and what should remain. Keep the same brief when comparing models, and change one instruction at a time.",
+    strengthsLimits: "Compare motion, framing and subject continuity across the whole clip. Veo and Omni do not share every input or editing option: check the selected model and mode before supplying images, references or a source video. One successful example does not guarantee the same result from a new prompt.",
+    pricingNotes: "The example detail page shows the recorded render cost. Your next render uses the current quote for its model, inputs, duration and resolution. Reuse the available settings, add your own sources where needed, and review the quote before submitting.",
     faq: [
       {
-        question: 'How should I use Veo 3 for image-to-video?',
-        answer:
-          'Start from a strong source still, define one clear motion goal, and keep camera direction explicit. Veo 3.1 image-to-video workflows usually work best when the prompt extends the source image instead of replacing it completely.',
+        question: "Why are Gemini Omni examples shown in this Veo gallery?",
+        answer: "This gallery groups Google video examples, including Veo and Gemini Omni. They remain distinct models: inspect the name on the example and use the Omni versus Veo comparison to choose the right workflow.",
       },
       {
-        question: 'Which Veo 3 model should I use for prompt testing?',
-        answer:
-          'Start with Veo 3.1 Fast or Veo 3.1 Lite when you want cheaper draft passes and quicker prompt testing, then move to Veo 3.1 for stronger final-quality cinematic output and more reference-guided control.',
+        question: "How do I recreate a Veo or Omni example?",
+        answer: "Open the example detail page to review its prompt, settings and recorded cost, then use the recreation action. Check the selected model, supply any required source media and review the new quote in the workspace before generating.",
       },
       {
-        question: 'Can these Veo 3.1 examples help me structure text-to-video AI prompts?',
-        answer:
-          'Yes. Use them as Veo 3.1 text-to-video AI baselines by keeping the same subject, motion goal, camera direction, and format while changing only one prompt variable at a time.',
+        question: "How should I compare Veo 3.1, Fast, Lite and Omni?",
+        answer: "Use the same subject and creative goal, then compare the whole result and the current quote. Keep the input mode explicit; reference and editing controls vary by model, so a preset should not be assumed to transfer unchanged.",
       },
     ],
   },
@@ -263,27 +255,24 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     ],
   },
   hailuo: {
-    subtitle: 'Hailuo examples for budget-friendly tests, motion tests, and reference-based iteration.',
-    intro:
-      'This Hailuo examples page focuses on draft quality, motion validation, and practical prompt iteration. It is useful when you want low-cost exploration before rebuilding winners in premium engines. The guidance remains specific to Hailuo behavior to prevent hub-level duplication.',
-    promptPatterns:
-      'Use short prompts that define subject motion and camera intent first. Hailuo examples are more stable when prompts avoid overloaded style instructions.',
-    strengthsLimits:
-      'Hailuo is typically strong for early-stage motion tests and inexpensive concept passes. Validate complex shots in small steps for better consistency.',
-    pricingNotes:
-      'Treat Hailuo as a draft baseline: test cheaply, keep winners, then upscale or reroute as needed.',
+    subtitle: "MiniMax H3 Max, H3 and earlier Hailuo examples: inspect prompts, motion and recorded settings.",
+    intro: "Explore MiniMax H3 Max and H3 alongside earlier Hailuo examples. Review the whole clip, open its prompt and settings, then adapt the example to your project in the workspace.",
+    summary: "Use H3 Max and H3 examples to compare motion, scene continuity and the audio actually present in each clip. Earlier Hailuo results remain useful references. Choose by your intended output and the model details, rather than treating the whole family as a draft-only tool.",
+    promptPatterns: "Start with the subject, one clear action and camera direction. Add scene or sound instructions when relevant to the selected model. For reference-based work, give each permitted source a clear role and check that the model supports that input.",
+    strengthsLimits: "Judge the full result: subject identity, motion, framing and any generated audio. H3 Max, H3 and older Hailuo models have different modes and output choices. An example shows one result; it does not establish perfect consistency or identical controls across the family.",
+    pricingNotes: "Compare H3 and H3 Max with the same brief and intended output. The detail page records the example cost; the workspace provides the current quote for your next render. Validate a short shot, then expand the versions that meet your visual criteria.",
     faq: [
       {
-        question: 'Why use Hailuo examples before premium engines?',
-        answer: 'They help validate motion ideas at lower cost before committing budget to higher-tier generation.',
+        question: "Is Hailuo only useful for inexpensive drafts?",
+        answer: "This gallery now includes MiniMax H3 and H3 Max as well as older Hailuo examples. Evaluate the published results for your intended project and compare the current model details and quote; the family is not limited to a single draft workflow.",
       },
       {
-        question: 'How should I structure Hailuo prompts?',
-        answer: 'Keep prompts short and action-focused, with one clear camera directive.',
+        question: "How do I choose between MiniMax H3 and H3 Max?",
+        answer: "Open the H3 versus H3 Max comparison and their model pages. Compare the available inputs, resolution choices and current quote against your target output, then inspect examples made with the exact model you plan to use.",
       },
       {
-        question: 'What is the best pricing workflow for Hailuo?',
-        answer: 'Run short draft tests first, then expand only the variants that meet your quality bar.',
+        question: "Can I reuse a MiniMax example in my workspace?",
+        answer: "Open its detail page, inspect the prompt and recorded settings, then use the recreation action. Add your own required media and review the current quote before generating; a public example does not grant access to private source files.",
       },
     ],
   },
