@@ -176,8 +176,8 @@ export function HomeHero({
       />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_74%_18%,rgba(255,255,255,0.76),transparent_30%),radial-gradient(circle_at_46%_88%,rgba(255,255,255,0.42),transparent_34%),linear-gradient(180deg,rgba(248,250,252,0.92),rgba(255,255,255,0.18)_58%,rgba(255,255,255,0)_100%)] dark:bg-[radial-gradient(ellipse_at_78%_16%,rgba(255,255,255,0.055),transparent_46%),radial-gradient(ellipse_at_94%_26%,rgba(125,211,252,0.035),transparent_42%),linear-gradient(180deg,rgba(3,7,18,0.99)_0%,rgba(4,8,22,0.96)_48%,rgba(3,7,18,0.92)_100%)]" />
       <div className="home-hero-dark-grid pointer-events-none absolute inset-x-0 bottom-0 hidden h-[38%] dark:block" aria-hidden="true" />
-      <div className="container-page relative grid max-w-[1400px] gap-7 py-10 min-[900px]:grid-cols-[minmax(340px,0.88fr)_minmax(0,1.12fr)] min-[900px]:items-start min-[900px]:gap-6 min-[900px]:py-12 lg:grid-cols-[minmax(380px,0.92fr)_minmax(0,1.08fr)] lg:gap-7 xl:grid-cols-[minmax(450px,0.95fr)_minmax(0,1.05fr)] xl:gap-8 xl:py-14 2xl:grid-cols-[minmax(500px,1fr)_minmax(0,0.96fr)]">
-        <div className="flex min-w-0 flex-wrap gap-2 overflow-visible sm:flex-nowrap sm:overflow-x-auto min-[900px]:col-span-2">
+      <div className="container-page relative grid max-w-[1400px] gap-5 py-6 sm:gap-7 sm:py-10 min-[900px]:grid-cols-[minmax(340px,0.88fr)_minmax(0,1.12fr)] min-[900px]:items-start min-[900px]:gap-6 min-[900px]:py-12 lg:grid-cols-[minmax(380px,0.92fr)_minmax(0,1.08fr)] lg:gap-7 xl:grid-cols-[minmax(450px,0.95fr)_minmax(0,1.05fr)] xl:gap-8 xl:py-14 2xl:grid-cols-[minmax(500px,1fr)_minmax(0,0.96fr)]">
+        <div className="hidden min-w-0 flex-wrap gap-2 min-[900px]:col-span-2 min-[900px]:flex">
           {(copy.badgeChips?.length ? copy.badgeChips : [copy.eyebrow]).map((badge, index) => (
             <span
               key={badge}
@@ -189,11 +189,12 @@ export function HomeHero({
           ))}
         </div>
         <div className="min-w-0 min-[900px]:col-start-1 min-[900px]:row-start-2 min-[900px]:pr-1">
-          <h1 className="mt-8 max-w-[20ch] text-4xl font-semibold leading-[1.04] text-text-primary sm:text-5xl md:text-[2.65rem] lg:text-[3.05rem] xl:text-[3.65rem]">
+          <p className="mb-3 text-[10px] font-semibold uppercase tracking-micro text-text-muted min-[900px]:hidden">{copy.eyebrow}</p>
+          <h1 className="max-w-[20ch] text-4xl font-semibold leading-[1.04] text-text-primary sm:text-5xl md:text-[2.65rem] lg:text-[3.05rem] xl:text-[3.65rem]">
             {renderHeroTitle(copy.title)}
           </h1>
-          <p className="mt-5 max-w-[42rem] text-base leading-7 text-text-secondary xl:text-lg xl:leading-8">{copy.subtitle}</p>
-          <div className="mt-7 flex flex-wrap items-center gap-3">
+          <p className="mt-4 max-w-[42rem] text-sm leading-6 text-text-secondary sm:text-base sm:leading-7 xl:text-lg xl:leading-8">{copy.subtitle}</p>
+          <div className="mt-5 flex flex-wrap items-center gap-3">
             <ButtonLink
               href="/app"
               prefetch={false}
@@ -218,28 +219,29 @@ export function HomeHero({
             >
               {copy.secondaryCta}
             </ButtonLink>
-            <Link
-              href={{ pathname: '/ai-video-engines' }}
-              prefetch={false}
-              className="inline-flex min-h-[48px] items-center gap-2 px-2 text-sm font-semibold text-brand underline decoration-transparent underline-offset-4 transition hover:text-brandHover hover:decoration-current"
-              data-analytics-event="hero_compare_click"
-              data-analytics-cta-name="compare_engines"
-              data-analytics-cta-location="home_hero"
-              data-analytics-target-family="compare"
-            >
-              {copy.examplesCta}
-              <span aria-hidden="true">→</span>
-            </Link>
           </div>
-          <HomeAssistantLink link={assistantLink} />
         </div>
-        <div className="min-w-0 min-[900px]:col-start-2 min-[900px]:row-span-2 min-[900px]:row-start-2 min-[900px]:self-center">
+        <div className="min-w-0 min-[900px]:col-start-2 min-[900px]:row-span-3 min-[900px]:row-start-2 min-[900px]:self-center">
           <HeroVideoShowcase items={videoItems}
             playLabel={copy.mockup.playLabel} pauseLabel={copy.mockup.pauseLabel}
             loadingLabel={copy.mockup.loadingLabel} errorLabel={copy.mockup.errorLabel} retryLabel={copy.mockup.retryLabel}
           />
         </div>
-        <div className="grid grid-cols-2 gap-2 sm:gap-3 min-[900px]:col-start-1 min-[900px]:row-start-3">
+        <div className="min-w-0 min-[900px]:col-start-1 min-[900px]:row-start-3">
+          <Link
+            href={{ pathname: '/ai-video-engines' }}
+            prefetch={false}
+            className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-brand underline decoration-transparent underline-offset-4 transition hover:text-brandHover hover:decoration-current"
+            data-analytics-event="hero_compare_click"
+            data-analytics-cta-name="compare_engines"
+            data-analytics-cta-location="home_hero"
+            data-analytics-target-family="compare"
+          >
+            {copy.examplesCta}<span aria-hidden="true">→</span>
+          </Link>
+          <HomeAssistantLink link={assistantLink} />
+        </div>
+        <div className="grid grid-cols-2 gap-2 sm:gap-3 min-[900px]:col-start-1 min-[900px]:row-start-4">
           {copy.valueCards.map((card) => (
             <div
               key={card.title}
@@ -271,6 +273,7 @@ export function HomeHero({
                 <Link
                   key={stat.label}
                   href={stat.href}
+                  prefetch={false}
                   className="relative flex min-h-[72px] flex-col items-center justify-center gap-1.5 px-3 py-3 transition hover:bg-white/52 focus:outline-none focus:ring-2 focus:ring-brand/30 dark:hover:bg-white/[0.045] sm:min-h-[76px] sm:py-3 [&:not(:last-child)]:after:absolute [&:not(:last-child)]:after:right-0 [&:not(:last-child)]:after:top-4 [&:not(:last-child)]:after:h-[calc(100%-2rem)] [&:not(:last-child)]:after:w-px [&:not(:last-child)]:after:bg-black/[0.08] dark:[&:not(:last-child)]:after:bg-white/[0.07]"
                 >
                   {content}

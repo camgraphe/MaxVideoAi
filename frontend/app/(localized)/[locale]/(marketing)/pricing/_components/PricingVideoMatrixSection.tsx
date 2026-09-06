@@ -345,8 +345,9 @@ export function PricingVideoMatrixSection({ locale, video }: { locale: AppLocale
   return (
     <section id="video-pricing" className="scroll-mt-24 space-y-3 sm:scroll-mt-28">
       <div>
-        <div className="grid auto-rows-fr items-stretch gap-2 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-7">
+        <div className="grid auto-rows-fr items-stretch gap-2 sm:grid-cols-2 lg:grid-cols-4">
           {video.highlights.map((highlight, index) => {
+            if (highlight.featured) return null;
             const style = highlightStyles[index] ?? highlightStyles[0];
             const Icon = style.icon;
             const body = (

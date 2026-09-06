@@ -160,6 +160,15 @@ For the authenticated workspace route, keep `frontend/app/(core)/(workspace)/app
 
 ## Media Changes
 
+On the homepage, keep the primary generation/examples actions followed by the video
+in mobile document order. Comparison and assistant links follow that proof. Do not
+move ancillary links or badges ahead of the mobile poster without comparable loading
+measurements. Pricing's featured scenario cards project the existing exact matrix
+quotes on the server; follow `docs/engineering/pricing-engine.md` for their ownership.
+After changing a critical home poster, run `pnpm --prefix frontend media:home-posters:prepare`.
+Its generated hash URLs are immutable display copies; never overwrite them or edit
+`home-posters.generated.json` by hand. The read-only check is also a prebuild gate.
+
 Read `docs/engineering/media-delivery.md` before changing media presentation, image optimizer URLs, encoding, thumbnail repairs, or model examples. `frontend/config/public-video-sources.json` owns authored public-demo source identity, while `public-video-renditions.manifest.json` owns measured preparation, review, HTTP readiness and activation state. The generated browser projection is never hand-edited. These media roles and profiles are separate from model identity in `model-registry.json`.
 
 Keep original download, edit and schema URLs distinct from immutable display derivatives. Public playback policy belongs in `frontend/lib/public-video-playback.ts`, browser attempt lifecycle in `frontend/components/media/usePublicVideoPlayback.ts`, and encoding/storage/database work outside browser modules. Preserve the critical server-rendered poster, fixed geometry and lazy mobile loading. Unknown or signed media must retain exact-original fallback behavior; do not introduce model-specific playback branches or per-route optimizer settings.

@@ -97,6 +97,15 @@ New charges enter through `frontend/server/pricing/quote-billing.ts` or the cano
 
 ## Public authority
 
+The pricing landing page promotes three exact, eligible matrix highlights into
+`PricingQuickStart`: 5s 720p, 10s 1080p and 10s 1080p with audio. The existing
+`buildVideoHighlights` owner supplies each formatted price, engine and row anchor.
+The hero never recalculates prices or loads a browser estimator. Featured highlights
+are removed from the supporting strip to avoid duplicate choices; unavailable exact
+quotes stay in the matrix's existing fallback presentation. Labels and the indicative
+USD/live-quote explanation are authored in the three locale message files.
+`tests/pricing-quick-start.test.ts` locks matrix parity and the server boundary.
+
 Deterministic browser and marketing projections enter through `frontend/src/lib/pricing-public-quote.ts`. DB-aware model projections and live estimates enter through `frontend/server/pricing/quote-public.ts`. Provider adapters provide facts only; consumers choose scenarios and format canonical results. Browser modules may receive validated serialized overrides but cannot import the database resolver, server modules, environment secrets, or admin owners.
 
 The pricing hub, model decision cards, estimator, chip, model price rows, Product Offer JSON-LD, workspace preflight, and image estimate routes are protected by `tests/pricing-public-authority.test.ts`. The exhaustive 492-row fixture protects the cent-level output of every migrated public surface.

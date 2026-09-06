@@ -1,5 +1,6 @@
 import { ArrowDown, ArrowUpRight, Sparkles } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
+import type { ReactNode } from 'react';
 
 type PricingHeroSectionProps = {
   badges?: string[];
@@ -11,6 +12,7 @@ type PricingHeroSectionProps = {
   subtitle?: string;
   supportingLine?: string;
   title?: string;
+  children?: ReactNode;
 };
 
 const DEFAULT_BADGES = ['No subscription', 'Guest preview', 'Starter credits from $10', 'Refunds on failed generations'];
@@ -25,6 +27,7 @@ export function PricingHeroSection({
   subtitle = 'Compare video, image, audio and tool costs before you generate.',
   supportingLine = 'Pay as you go. See the exact live price in the app before launch. Failed generations are refunded.',
   title = 'AI Video Pricing Comparison',
+  children,
 }: PricingHeroSectionProps) {
   return (
     <header className="relative min-h-[260px] border-b border-hairline bg-bg">
@@ -37,7 +40,7 @@ export function PricingHeroSection({
           <p className="mt-3 max-w-[680px] text-base leading-7 text-text-secondary sm:text-lg">{subtitle}</p>
           <p className="mt-1 max-w-[740px] text-sm leading-6 text-text-muted">{supportingLine}</p>
 
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-4 hidden flex-wrap gap-2 sm:flex">
             {badges.map((badge) => (
               <span
                 key={badge}
@@ -68,6 +71,7 @@ export function PricingHeroSection({
           </Link>
         </div>
       </div>
+      {children}
     </header>
   );
 }

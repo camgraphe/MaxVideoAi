@@ -1,0 +1,14 @@
+{
+  "desktop": {
+    "source": "/hero/showcase-minimax-h3-max-12s.webp",
+    "url": "/hero/prepared/b622d52cf65c701373c8e1f236773629ff3a8d92e16664ac064f8e34b27ec196.webp",
+    "sha256": "b622d52cf65c701373c8e1f236773629ff3a8d92e16664ac064f8e34b27ec196",
+    "bytes": 29196
+  },
+  "mobile": {
+    "source": "/hero/showcase-minimax-h3-max-12s-mobile.webp",
+    "url": "/hero/prepared/eb8f03ac19b747a8e02d050e83fdb50665ad80d70a854ce864163c391398a74a.webp",
+    "sha256": "eb8f03ac19b747a8e02d050e83fdb50665ad80d70a854ce864163c391398a74a",
+    "bytes": 12640
+  }
+}

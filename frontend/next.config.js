@@ -370,6 +370,13 @@ const nextConfig = {
   async headers() {
     const rules = [];
 
+    // This namespace contains verified SHA-256 filenames only. Mutable authored
+    // sources and all other public assets retain their existing cache policy.
+    rules.push({
+      source: '/hero/prepared/:asset([a-f0-9]{64}\\.webp)',
+      headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+    });
+
     MARKETING_CDN_CACHE_PATHS.forEach((source) => {
       rules.push({ source, headers: MARKETING_CDN_CACHE_HEADERS });
     });

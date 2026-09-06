@@ -7,6 +7,7 @@ import { Link, type LocalizedLinkHref } from '@/i18n/navigation';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { HomeLcpPoster } from '@/components/marketing/home/HomeLcpPoster';
 import { HOME_LCP_POSTER_SRC } from '@/components/marketing/home/home-lcp-image';
+import { HOME_LCP_DESKTOP_DELIVERY_SRC, HOME_LCP_MOBILE_DELIVERY_SRC } from './home-lcp-delivery';
 import { useHeroVideoPlayback } from '@/components/marketing/home/useHeroVideoPlayback';
 
 export type HeroVideoShowcaseItem = {
@@ -305,7 +306,7 @@ export function HeroVideoShowcase({
                 }
               >
                 <Image
-                  src={item.posterSrc}
+                  src={item.posterSrc === HOME_LCP_POSTER_SRC ? HOME_LCP_DESKTOP_DELIVERY_SRC : item.posterSrc}
                   alt={item.imageAlt}
                   fill
                   unoptimized={item.unoptimizedPoster}
@@ -315,7 +316,7 @@ export function HeroVideoShowcase({
                 />
                 {shouldLoadMobileThumbnails ? (
                   <Image
-                    src={item.posterSrc}
+                    src={item.posterSrc === HOME_LCP_POSTER_SRC ? HOME_LCP_MOBILE_DELIVERY_SRC : item.posterSrc}
                     alt={item.imageAlt}
                     fill
                     unoptimized={item.unoptimizedPoster}
