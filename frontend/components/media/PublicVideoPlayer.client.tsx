@@ -1,6 +1,6 @@
 'use client';
 
-import { PublicVideoQualitySelect } from './PublicVideoQualitySelect';
+import { PublicVideoQualitySelect } from './PublicVideoQualitySelect.client';
 import { usePublicVideoControls } from './usePublicVideoControls';
 
 const labels = {

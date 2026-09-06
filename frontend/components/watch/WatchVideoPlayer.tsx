@@ -3,7 +3,7 @@
 import type { CSSProperties } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { Film, Maximize2, Pause, Play, Volume2, VolumeX } from 'lucide-react';
-import { PublicVideoQualitySelect } from '@/components/media/PublicVideoQualitySelect';
+import { PublicVideoQualitySelect } from '@/components/media/PublicVideoQualitySelect.client';
 import { usePublicVideoControls } from '@/components/media/usePublicVideoControls';
 
 type WatchVideoPlayerProps = {
