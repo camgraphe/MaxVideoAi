@@ -767,6 +767,519 @@
         }
       ],
       "failures": []
+    },
+    {
+      "assetId": "minimax-h3-model-demo",
+      "role": "public-demo",
+      "original": {
+        "url": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/10186dec-e084-4141-8249-8d39331b3a23.mp4",
+        "sha256": "b24035c64a2c2f87be23637337621e0b480dab68499e498eafb2cf0e520e2266",
+        "bytes": 36677883,
+        "probe": {
+          "width": 2544,
+          "height": 1456,
+          "durationSeconds": 15.083333,
+          "containerDurationSeconds": 15.084,
+          "videoStartSeconds": 0,
+          "videoFrameCount": 362,
+          "cadence": {
+            "kind": "cfr",
+            "frameCount": 362,
+            "firstTimestampSeconds": 0,
+            "lastTimestampSeconds": 15.041667,
+            "minDeltaSeconds": 0.041665999999999315,
+            "maxDeltaSeconds": 0.04166700000000034,
+            "timestampsSha256": "1d485809f35ae94885b989507142024174bcfd80b4aaee7307e171526278ea7f"
+          },
+          "frameRate": {
+            "numerator": 24,
+            "denominator": 1
+          },
+          "videoCodec": "h264",
+          "pixelFormat": "yuv420p",
+          "sampleAspectRatio": {
+            "numerator": 1,
+            "denominator": 1
+          },
+          "colorTransfer": null,
+          "rotationDegrees": 0,
+          "audio": {
+            "codec": "aac",
+            "channels": 2,
+            "sampleRateHz": 32000,
+            "durationSeconds": 15.008,
+            "startSeconds": 0,
+            "packetPayloadSha256": "4e38c6b30422f9fd7197c92cd23eb1fe2b5fe72404231da4a820a2c10fd10519"
+          },
+          "fastStart": true,
+          "decodeOk": true
+        }
+      },
+      "renditions": {
+        "desktop": {
+          "profileVersion": "public-demo-v1",
+          "url": "https://media.maxvideoai.com/marketing/video-renditions/b24035c64a2c2f87be23637337621e0b480dab68499e498eafb2cf0e520e2266/public-demo-v1/desktop/f54a3f128e6da188810eb7c4d955b0211e001d7ddff8e653fbb3b58729de4be6.mp4",
+          "storageKey": "marketing/video-renditions/b24035c64a2c2f87be23637337621e0b480dab68499e498eafb2cf0e520e2266/public-demo-v1/desktop/f54a3f128e6da188810eb7c4d955b0211e001d7ddff8e653fbb3b58729de4be6.mp4",
+          "sha256": "f54a3f128e6da188810eb7c4d955b0211e001d7ddff8e653fbb3b58729de4be6",
+          "bytes": 14615963,
+          "probe": {
+            "width": 1888,
+            "height": 1080,
+            "durationSeconds": 15.083333,
+            "containerDurationSeconds": 15.084,
+            "videoStartSeconds": 0,
+            "videoFrameCount": 362,
+            "cadence": {
+              "kind": "cfr",
+              "frameCount": 362,
+              "firstTimestampSeconds": 0,
+              "lastTimestampSeconds": 15.041667,
+              "minDeltaSeconds": 0.041665999999999315,
+              "maxDeltaSeconds": 0.04166700000000034,
+              "timestampsSha256": "1d485809f35ae94885b989507142024174bcfd80b4aaee7307e171526278ea7f"
+            },
+            "frameRate": {
+              "numerator": 24,
+              "denominator": 1
+            },
+            "videoCodec": "h264",
+            "pixelFormat": "yuv420p",
+            "sampleAspectRatio": {
+              "numerator": 1,
+              "denominator": 1
+            },
+            "colorTransfer": null,
+            "rotationDegrees": 0,
+            "audio": {
+              "codec": "aac",
+              "channels": 2,
+              "sampleRateHz": 32000,
+              "durationSeconds": 15.008,
+              "startSeconds": 0,
+              "packetPayloadSha256": "4e38c6b30422f9fd7197c92cd23eb1fe2b5fe72404231da4a820a2c10fd10519"
+            },
+            "fastStart": true,
+            "decodeOk": true
+          },
+          "visualReview": {
+            "reviewedAt": "2026-09-06T00:36:14.103Z",
+            "evidence": "2026-09-06 content acceptance: three source/desktop/mobile contact sheets at 10/50/90 percent duration inspected for composition, detail, dark gradients, particles and faces; all six variants completed paired Chrome playback with no media errors. Original frame timestamps and exact AAC payload/timing match each output. Audio accepted by payload identity without re-encoding. See docs/operations/public-video-renditions-2026-09-06.md and local public-video-priority-renditions-20260906 review artifacts. This accepts display content, not field CWV or physical iPhone coverage; originals retained."
+          },
+          "httpCheck": {
+            "checkedAt": "2026-09-06T00:37:51.915Z",
+            "contentType": "video/mp4",
+            "bytes": 14615963,
+            "rangeStart": 0,
+            "rangeEnd": 31,
+            "totalBytes": 14615963
+          },
+          "activatedAt": "2026-09-06T00:37:51.738Z"
+        },
+        "mobile": {
+          "profileVersion": "public-demo-v1",
+          "url": "https://media.maxvideoai.com/marketing/video-renditions/b24035c64a2c2f87be23637337621e0b480dab68499e498eafb2cf0e520e2266/public-demo-v1/mobile/f46f366b07e5454f5f601710216344ad1216dd3e4a1108621d18adbd7ade1d1c.mp4",
+          "storageKey": "marketing/video-renditions/b24035c64a2c2f87be23637337621e0b480dab68499e498eafb2cf0e520e2266/public-demo-v1/mobile/f46f366b07e5454f5f601710216344ad1216dd3e4a1108621d18adbd7ade1d1c.mp4",
+          "sha256": "f46f366b07e5454f5f601710216344ad1216dd3e4a1108621d18adbd7ade1d1c",
+          "bytes": 5624570,
+          "probe": {
+            "width": 1258,
+            "height": 720,
+            "durationSeconds": 15.083333,
+            "containerDurationSeconds": 15.084,
+            "videoStartSeconds": 0,
+            "videoFrameCount": 362,
+            "cadence": {
+              "kind": "cfr",
+              "frameCount": 362,
+              "firstTimestampSeconds": 0,
+              "lastTimestampSeconds": 15.041667,
+              "minDeltaSeconds": 0.041665999999999315,
+              "maxDeltaSeconds": 0.04166700000000034,
+              "timestampsSha256": "1d485809f35ae94885b989507142024174bcfd80b4aaee7307e171526278ea7f"
+            },
+            "frameRate": {
+              "numerator": 24,
+              "denominator": 1
+            },
+            "videoCodec": "h264",
+            "pixelFormat": "yuv420p",
+            "sampleAspectRatio": {
+              "numerator": 1,
+              "denominator": 1
+            },
+            "colorTransfer": null,
+            "rotationDegrees": 0,
+            "audio": {
+              "codec": "aac",
+              "channels": 2,
+              "sampleRateHz": 32000,
+              "durationSeconds": 15.008,
+              "startSeconds": 0,
+              "packetPayloadSha256": "4e38c6b30422f9fd7197c92cd23eb1fe2b5fe72404231da4a820a2c10fd10519"
+            },
+            "fastStart": true,
+            "decodeOk": true
+          },
+          "visualReview": {
+            "reviewedAt": "2026-09-06T00:36:14.103Z",
+            "evidence": "2026-09-06 content acceptance: three source/desktop/mobile contact sheets at 10/50/90 percent duration inspected for composition, detail, dark gradients, particles and faces; all six variants completed paired Chrome playback with no media errors. Original frame timestamps and exact AAC payload/timing match each output. Audio accepted by payload identity without re-encoding. See docs/operations/public-video-renditions-2026-09-06.md and local public-video-priority-renditions-20260906 review artifacts. This accepts display content, not field CWV or physical iPhone coverage; originals retained."
+          },
+          "httpCheck": {
+            "checkedAt": "2026-09-06T00:37:52.148Z",
+            "contentType": "video/mp4",
+            "bytes": 5624570,
+            "rangeStart": 0,
+            "rangeEnd": 31,
+            "totalBytes": 5624570
+          },
+          "activatedAt": "2026-09-06T00:37:51.738Z"
+        }
+      },
+      "pendingRenditions": {},
+      "omissions": [],
+      "failures": []
+    },
+    {
+      "assetId": "kling-family-featured",
+      "role": "public-demo",
+      "original": {
+        "url": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/6e192457-4607-4ed7-8861-5ccc3ade5e1b.mp4",
+        "sha256": "8806d2a9df40337d9c799e04973b2c6cb06e3b7f9115bb0b3bae84dc05537e64",
+        "bytes": 18618789,
+        "probe": {
+          "width": 1920,
+          "height": 1080,
+          "durationSeconds": 8.041667,
+          "containerDurationSeconds": 8.081,
+          "videoStartSeconds": 0,
+          "videoFrameCount": 193,
+          "cadence": {
+            "kind": "cfr",
+            "frameCount": 193,
+            "firstTimestampSeconds": 0,
+            "lastTimestampSeconds": 8,
+            "minDeltaSeconds": 0.041665999999999315,
+            "maxDeltaSeconds": 0.04166700000000034,
+            "timestampsSha256": "a1e5c7bba4a1896168248f1f8ba427a33e491a4cd422f7e724e8a32dbee402bd"
+          },
+          "frameRate": {
+            "numerator": 24,
+            "denominator": 1
+          },
+          "videoCodec": "h264",
+          "pixelFormat": "yuv420p",
+          "sampleAspectRatio": {
+            "numerator": 1,
+            "denominator": 1
+          },
+          "colorTransfer": null,
+          "rotationDegrees": 0,
+          "audio": {
+            "codec": "aac",
+            "channels": 2,
+            "sampleRateHz": 44100,
+            "durationSeconds": 8.033991,
+            "startSeconds": 0,
+            "packetPayloadSha256": "da5e9ffdd2b660de3bfe319e34d7d1d5c47fe6105d7f05b4219806c99a502cbb"
+          },
+          "fastStart": true,
+          "decodeOk": true
+        }
+      },
+      "renditions": {
+        "desktop": {
+          "profileVersion": "public-demo-v1",
+          "url": "https://media.maxvideoai.com/marketing/video-renditions/8806d2a9df40337d9c799e04973b2c6cb06e3b7f9115bb0b3bae84dc05537e64/public-demo-v1/desktop/6b44bc2214554294984fe6a855ffa2382f63e0bf075e5109b080a5241908e544.mp4",
+          "storageKey": "marketing/video-renditions/8806d2a9df40337d9c799e04973b2c6cb06e3b7f9115bb0b3bae84dc05537e64/public-demo-v1/desktop/6b44bc2214554294984fe6a855ffa2382f63e0bf075e5109b080a5241908e544.mp4",
+          "sha256": "6b44bc2214554294984fe6a855ffa2382f63e0bf075e5109b080a5241908e544",
+          "bytes": 7070171,
+          "probe": {
+            "width": 1920,
+            "height": 1080,
+            "durationSeconds": 8.041667,
+            "containerDurationSeconds": 8.042,
+            "videoStartSeconds": 0,
+            "videoFrameCount": 193,
+            "cadence": {
+              "kind": "cfr",
+              "frameCount": 193,
+              "firstTimestampSeconds": 0,
+              "lastTimestampSeconds": 8,
+              "minDeltaSeconds": 0.041665999999999315,
+              "maxDeltaSeconds": 0.04166700000000034,
+              "timestampsSha256": "a1e5c7bba4a1896168248f1f8ba427a33e491a4cd422f7e724e8a32dbee402bd"
+            },
+            "frameRate": {
+              "numerator": 24,
+              "denominator": 1
+            },
+            "videoCodec": "h264",
+            "pixelFormat": "yuv420p",
+            "sampleAspectRatio": {
+              "numerator": 1,
+              "denominator": 1
+            },
+            "colorTransfer": null,
+            "rotationDegrees": 0,
+            "audio": {
+              "codec": "aac",
+              "channels": 2,
+              "sampleRateHz": 44100,
+              "durationSeconds": 8.033991,
+              "startSeconds": 0,
+              "packetPayloadSha256": "da5e9ffdd2b660de3bfe319e34d7d1d5c47fe6105d7f05b4219806c99a502cbb"
+            },
+            "fastStart": true,
+            "decodeOk": true
+          },
+          "visualReview": {
+            "reviewedAt": "2026-09-06T00:36:14.103Z",
+            "evidence": "2026-09-06 content acceptance: three source/desktop/mobile contact sheets at 10/50/90 percent duration inspected for composition, detail, dark gradients, particles and faces; all six variants completed paired Chrome playback with no media errors. Original frame timestamps and exact AAC payload/timing match each output. Audio accepted by payload identity without re-encoding. See docs/operations/public-video-renditions-2026-09-06.md and local public-video-priority-renditions-20260906 review artifacts. This accepts display content, not field CWV or physical iPhone coverage; originals retained."
+          },
+          "httpCheck": {
+            "checkedAt": "2026-09-06T00:37:52.255Z",
+            "contentType": "video/mp4",
+            "bytes": 7070171,
+            "rangeStart": 0,
+            "rangeEnd": 31,
+            "totalBytes": 7070171
+          },
+          "activatedAt": "2026-09-06T00:37:51.738Z"
+        },
+        "mobile": {
+          "profileVersion": "public-demo-v1",
+          "url": "https://media.maxvideoai.com/marketing/video-renditions/8806d2a9df40337d9c799e04973b2c6cb06e3b7f9115bb0b3bae84dc05537e64/public-demo-v1/mobile/72e0acad94ab5b4c2a89f581c1369bacc6428086e5cd7ab8ecffb35a28f58d5c.mp4",
+          "storageKey": "marketing/video-renditions/8806d2a9df40337d9c799e04973b2c6cb06e3b7f9115bb0b3bae84dc05537e64/public-demo-v1/mobile/72e0acad94ab5b4c2a89f581c1369bacc6428086e5cd7ab8ecffb35a28f58d5c.mp4",
+          "sha256": "72e0acad94ab5b4c2a89f581c1369bacc6428086e5cd7ab8ecffb35a28f58d5c",
+          "bytes": 2129316,
+          "probe": {
+            "width": 1280,
+            "height": 720,
+            "durationSeconds": 8.041667,
+            "containerDurationSeconds": 8.042,
+            "videoStartSeconds": 0,
+            "videoFrameCount": 193,
+            "cadence": {
+              "kind": "cfr",
+              "frameCount": 193,
+              "firstTimestampSeconds": 0,
+              "lastTimestampSeconds": 8,
+              "minDeltaSeconds": 0.041665999999999315,
+              "maxDeltaSeconds": 0.04166700000000034,
+              "timestampsSha256": "a1e5c7bba4a1896168248f1f8ba427a33e491a4cd422f7e724e8a32dbee402bd"
+            },
+            "frameRate": {
+              "numerator": 24,
+              "denominator": 1
+            },
+            "videoCodec": "h264",
+            "pixelFormat": "yuv420p",
+            "sampleAspectRatio": {
+              "numerator": 1,
+              "denominator": 1
+            },
+            "colorTransfer": null,
+            "rotationDegrees": 0,
+            "audio": {
+              "codec": "aac",
+              "channels": 2,
+              "sampleRateHz": 44100,
+              "durationSeconds": 8.033991,
+              "startSeconds": 0,
+              "packetPayloadSha256": "da5e9ffdd2b660de3bfe319e34d7d1d5c47fe6105d7f05b4219806c99a502cbb"
+            },
+            "fastStart": true,
+            "decodeOk": true
+          },
+          "visualReview": {
+            "reviewedAt": "2026-09-06T00:36:14.103Z",
+            "evidence": "2026-09-06 content acceptance: three source/desktop/mobile contact sheets at 10/50/90 percent duration inspected for composition, detail, dark gradients, particles and faces; all six variants completed paired Chrome playback with no media errors. Original frame timestamps and exact AAC payload/timing match each output. Audio accepted by payload identity without re-encoding. See docs/operations/public-video-renditions-2026-09-06.md and local public-video-priority-renditions-20260906 review artifacts. This accepts display content, not field CWV or physical iPhone coverage; originals retained."
+          },
+          "httpCheck": {
+            "checkedAt": "2026-09-06T00:37:52.363Z",
+            "contentType": "video/mp4",
+            "bytes": 2129316,
+            "rangeStart": 0,
+            "rangeEnd": 31,
+            "totalBytes": 2129316
+          },
+          "activatedAt": "2026-09-06T00:37:51.738Z"
+        }
+      },
+      "pendingRenditions": {},
+      "omissions": [],
+      "failures": []
+    },
+    {
+      "assetId": "seedance-2-5-model-demo",
+      "role": "public-demo",
+      "original": {
+        "url": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/6ab56b7c-bece-4c72-9372-c910bafdc622.mp4",
+        "sha256": "b9a52e75940a011d8a0af4a7a6754c0ce74125bb5bc2a4532726d777da18176c",
+        "bytes": 12402108,
+        "probe": {
+          "width": 854,
+          "height": 480,
+          "durationSeconds": 15.041667,
+          "containerDurationSeconds": 15.104,
+          "videoStartSeconds": 0,
+          "videoFrameCount": 361,
+          "cadence": {
+            "kind": "cfr",
+            "frameCount": 361,
+            "firstTimestampSeconds": 0,
+            "lastTimestampSeconds": 15,
+            "minDeltaSeconds": 0.041665999999999315,
+            "maxDeltaSeconds": 0.04166700000000034,
+            "timestampsSha256": "840795626fa85e208a6ac0bde9f2980e9fee700f89daf9b76006b78017892129"
+          },
+          "frameRate": {
+            "numerator": 24,
+            "denominator": 1
+          },
+          "videoCodec": "h264",
+          "pixelFormat": "yuv420p",
+          "sampleAspectRatio": {
+            "numerator": 1,
+            "denominator": 1
+          },
+          "colorTransfer": null,
+          "rotationDegrees": 0,
+          "audio": {
+            "codec": "aac",
+            "channels": 2,
+            "sampleRateHz": 32000,
+            "durationSeconds": 15.072,
+            "startSeconds": 0,
+            "packetPayloadSha256": "36a517ff1d6a113960118eec9e94a1c0610aeb7eb5d05372435fca70eae1b4d8"
+          },
+          "fastStart": true,
+          "decodeOk": true
+        }
+      },
+      "renditions": {
+        "desktop": {
+          "profileVersion": "public-demo-v1",
+          "url": "https://media.maxvideoai.com/marketing/video-renditions/b9a52e75940a011d8a0af4a7a6754c0ce74125bb5bc2a4532726d777da18176c/public-demo-v1/desktop/229667923d62609fceb0b9aa7c5e4be6cb94588017c5efd787e6b183c32ef2f2.mp4",
+          "storageKey": "marketing/video-renditions/b9a52e75940a011d8a0af4a7a6754c0ce74125bb5bc2a4532726d777da18176c/public-demo-v1/desktop/229667923d62609fceb0b9aa7c5e4be6cb94588017c5efd787e6b183c32ef2f2.mp4",
+          "sha256": "229667923d62609fceb0b9aa7c5e4be6cb94588017c5efd787e6b183c32ef2f2",
+          "bytes": 3788369,
+          "probe": {
+            "width": 854,
+            "height": 480,
+            "durationSeconds": 15.041667,
+            "containerDurationSeconds": 15.072,
+            "videoStartSeconds": 0,
+            "videoFrameCount": 361,
+            "cadence": {
+              "kind": "cfr",
+              "frameCount": 361,
+              "firstTimestampSeconds": 0,
+              "lastTimestampSeconds": 15,
+              "minDeltaSeconds": 0.041665999999999315,
+              "maxDeltaSeconds": 0.04166700000000034,
+              "timestampsSha256": "840795626fa85e208a6ac0bde9f2980e9fee700f89daf9b76006b78017892129"
+            },
+            "frameRate": {
+              "numerator": 24,
+              "denominator": 1
+            },
+            "videoCodec": "h264",
+            "pixelFormat": "yuv420p",
+            "sampleAspectRatio": {
+              "numerator": 1,
+              "denominator": 1
+            },
+            "colorTransfer": null,
+            "rotationDegrees": 0,
+            "audio": {
+              "codec": "aac",
+              "channels": 2,
+              "sampleRateHz": 32000,
+              "durationSeconds": 15.072,
+              "startSeconds": 0,
+              "packetPayloadSha256": "36a517ff1d6a113960118eec9e94a1c0610aeb7eb5d05372435fca70eae1b4d8"
+            },
+            "fastStart": true,
+            "decodeOk": true
+          },
+          "visualReview": {
+            "reviewedAt": "2026-09-06T00:36:14.103Z",
+            "evidence": "2026-09-06 content acceptance: three source/desktop/mobile contact sheets at 10/50/90 percent duration inspected for composition, detail, dark gradients, particles and faces; all six variants completed paired Chrome playback with no media errors. Original frame timestamps and exact AAC payload/timing match each output. Audio accepted by payload identity without re-encoding. See docs/operations/public-video-renditions-2026-09-06.md and local public-video-priority-renditions-20260906 review artifacts. This accepts display content, not field CWV or physical iPhone coverage; originals retained."
+          },
+          "httpCheck": {
+            "checkedAt": "2026-09-06T00:37:52.467Z",
+            "contentType": "video/mp4",
+            "bytes": 3788369,
+            "rangeStart": 0,
+            "rangeEnd": 31,
+            "totalBytes": 3788369
+          },
+          "activatedAt": "2026-09-06T00:37:51.738Z"
+        },
+        "mobile": {
+          "profileVersion": "public-demo-v1",
+          "url": "https://media.maxvideoai.com/marketing/video-renditions/b9a52e75940a011d8a0af4a7a6754c0ce74125bb5bc2a4532726d777da18176c/public-demo-v1/mobile/a71c37c1a37bbb9fc0bfc210b1aef4f01a77e80a351781ed6d1d08896e02cba5.mp4",
+          "storageKey": "marketing/video-renditions/b9a52e75940a011d8a0af4a7a6754c0ce74125bb5bc2a4532726d777da18176c/public-demo-v1/mobile/a71c37c1a37bbb9fc0bfc210b1aef4f01a77e80a351781ed6d1d08896e02cba5.mp4",
+          "sha256": "a71c37c1a37bbb9fc0bfc210b1aef4f01a77e80a351781ed6d1d08896e02cba5",
+          "bytes": 2982698,
+          "probe": {
+            "width": 854,
+            "height": 480,
+            "durationSeconds": 15.041667,
+            "containerDurationSeconds": 15.072,
+            "videoStartSeconds": 0,
+            "videoFrameCount": 361,
+            "cadence": {
+              "kind": "cfr",
+              "frameCount": 361,
+              "firstTimestampSeconds": 0,
+              "lastTimestampSeconds": 15,
+              "minDeltaSeconds": 0.041665999999999315,
+              "maxDeltaSeconds": 0.04166700000000034,
+              "timestampsSha256": "840795626fa85e208a6ac0bde9f2980e9fee700f89daf9b76006b78017892129"
+            },
+            "frameRate": {
+              "numerator": 24,
+              "denominator": 1
+            },
+            "videoCodec": "h264",
+            "pixelFormat": "yuv420p",
+            "sampleAspectRatio": {
+              "numerator": 1,
+              "denominator": 1
+            },
+            "colorTransfer": null,
+            "rotationDegrees": 0,
+            "audio": {
+              "codec": "aac",
+              "channels": 2,
+              "sampleRateHz": 32000,
+              "durationSeconds": 15.072,
+              "startSeconds": 0,
+              "packetPayloadSha256": "36a517ff1d6a113960118eec9e94a1c0610aeb7eb5d05372435fca70eae1b4d8"
+            },
+            "fastStart": true,
+            "decodeOk": true
+          },
+          "visualReview": {
+            "reviewedAt": "2026-09-06T00:36:14.103Z",
+            "evidence": "2026-09-06 content acceptance: three source/desktop/mobile contact sheets at 10/50/90 percent duration inspected for composition, detail, dark gradients, particles and faces; all six variants completed paired Chrome playback with no media errors. Original frame timestamps and exact AAC payload/timing match each output. Audio accepted by payload identity without re-encoding. See docs/operations/public-video-renditions-2026-09-06.md and local public-video-priority-renditions-20260906 review artifacts. This accepts display content, not field CWV or physical iPhone coverage; originals retained."
+          },
+          "httpCheck": {
+            "checkedAt": "2026-09-06T00:37:52.572Z",
+            "contentType": "video/mp4",
+            "bytes": 2982698,
+            "rangeStart": 0,
+            "rangeEnd": 31,
+            "totalBytes": 2982698
+          },
+          "activatedAt": "2026-09-06T00:37:51.738Z"
+        }
+      },
+      "pendingRenditions": {},
+      "omissions": [],
+      "failures": []
     }
   ]
 }

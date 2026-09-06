@@ -85,6 +85,8 @@ Sharp encoding quality and Next's admitted request quality are separate contract
 
 The model launch-asset validator does not enforce rendition readiness. The public rendition command below owns measured byte, metadata, review, and HTTP activation gates. Historical grids and model pages outside the selected homepage set keep exact-original fallback until prepared; the critical-home build check is intentionally not a claim that every historical public video has been transcoded.
 
+For additional public sources, prioritize the exact media observed in the rendered page using recent page exposure and measured file size. A model's fallback demo in configuration may differ from its selected gallery hero. Page views are not video plays or CDN transfer counts. Add each verified original to the same authored catalogue and run the lifecycle with explicit `--asset-id` selections; the default five-asset limit can otherwise leave later entries unprocessed. Confirm the generated URL is actually selected by the owning reader before calling that surface optimized. Model and family hero readers already use the shared resolver; comparison, watch and small-card preview readers require their own integration review. Do not replace full-quality download, editing or schema sources when extending display coverage.
+
 ### Public full-duration rendition command
 
 The public rendition command defaults to a read-only offline coherence check. Preparation is local and resumable; publishing requires explicit review evidence; activation independently requires current public MP4 and Range readiness. The generated projection is the only rendition data imported by browser-safe code.
