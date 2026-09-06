@@ -8,7 +8,7 @@ import {
   buildItemListSchema,
   buildSoftwareSchema,
 } from '../frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-jsonld.ts';
-import { buildSiteOrganizationSchema } from '../frontend/lib/seo/site-organization-schema.ts';
+import { buildSiteOrganizationReference, buildSiteOrganizationSchema } from '../frontend/lib/seo/site-organization-schema.ts';
 import { buildFAQJsonLd } from '../frontend/components/seo/FAQSchema.tsx';
 import { buildPricingBreadcrumbJsonLd, buildPricingServiceJsonLd } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricing-jsonld.ts';
 import {
@@ -431,7 +431,20 @@ test('site Organization schema keeps one canonical complete entity', () => {
   assert.equal(organization['@id'], 'https://maxvideoai.com/#organization');
   assert.equal(organization.name, 'MaxVideoAI');
   assert.equal(organization.alternateName, 'MaxVideo AI');
-  assert.ok(organization.sameAs.length >= 4);
+  assert.deepEqual(organization.sameAs, [
+    'https://x.com/MaxVideoAI',
+    'https://www.linkedin.com/company/maxvideoai/',
+    'https://github.com/camgraphe/maxvideoai',
+    'https://github.com/camgraphe/maxvideoai-plugin',
+    'https://www.producthunt.com/products/maxvideoai',
+    'https://www.youtube.com/channel/UCi5XkvmzIaG8gvJPLEs94Mw',
+  ]);
+  const reference = buildSiteOrganizationReference();
+  assert.equal(reference['@id'], organization['@id']);
+  assert.ok(reference.sameAs.every((profile) => organization.sameAs.includes(profile)));
+  const coreLayout = readFileSync('frontend/app/(core)/layout.tsx', 'utf8');
+  assert.match(coreLayout, /const orgSchema = buildSiteOrganizationSchema\(\)/);
+  assert.doesNotMatch(coreLayout, /sameAs:/);
 });
 
 test('blog Article schema identifies the visible person while retaining MaxVideoAI as publisher', () => {

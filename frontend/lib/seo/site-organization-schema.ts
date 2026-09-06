@@ -1,6 +1,7 @@
 import { SITE_ORIGIN } from '@/lib/siteOrigin';
 
 export const MAXVIDEOAI_PLUGIN_REPOSITORY_URL = 'https://github.com/camgraphe/maxvideoai-plugin';
+export const MAXVIDEOAI_YOUTUBE_CHANNEL_URL = 'https://www.youtube.com/channel/UCi5XkvmzIaG8gvJPLEs94Mw';
 
 export function buildSiteOrganizationReference() {
   return {
@@ -8,7 +9,7 @@ export function buildSiteOrganizationReference() {
     '@id': `${SITE_ORIGIN}/#organization`,
     name: 'MaxVideoAI',
     url: `${SITE_ORIGIN}/`,
-    sameAs: [MAXVIDEOAI_PLUGIN_REPOSITORY_URL],
+    sameAs: [MAXVIDEOAI_PLUGIN_REPOSITORY_URL, MAXVIDEOAI_YOUTUBE_CHANNEL_URL],
   } as const;
 }
 
@@ -29,6 +30,7 @@ export function buildSiteOrganizationSchema() {
       'https://github.com/camgraphe/maxvideoai',
       MAXVIDEOAI_PLUGIN_REPOSITORY_URL,
       'https://www.producthunt.com/products/maxvideoai',
+      MAXVIDEOAI_YOUTUBE_CHANNEL_URL,
     ],
   };
 }

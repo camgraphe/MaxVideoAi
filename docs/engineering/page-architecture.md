@@ -100,6 +100,10 @@ Avoid passing the entire dictionary or entire engine object unless the section t
 
 ## JSON-LD Pattern
 
+MaxVideoAI's organization identity and profiles belong in `frontend/lib/seo/site-organization-schema.ts`.
+Both `LocaleRuntime` and the core layout render its shared builder; retain `/#organization`
+when adding a profile, and keep profile-only schema changes independent of visible social links.
+
 Build schema payloads in pure helpers, then render them at the route/shell level:
 
 ```tsx
