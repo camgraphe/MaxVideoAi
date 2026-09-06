@@ -25,6 +25,21 @@
     "https://media.maxvideoai.com/media-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/2506829a4f4f3d7e5d2bd864a701fc6cc2fb7c53182f7a7f5ca10cc580c70aa8.mp4": {
       "assetId": "underwater-swimmer",
       "mobile": "https://media.maxvideoai.com/marketing/video-renditions/2506829a4f4f3d7e5d2bd864a701fc6cc2fb7c53182f7a7f5ca10cc580c70aa8/public-demo-v1/mobile/64e689cb64cceb67ef006622524b5f1183ce00f83749fdf6f7d38d87d28a86c4.mp4"
+    },
+    "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/10186dec-e084-4141-8249-8d39331b3a23.mp4": {
+      "assetId": "minimax-h3-model-demo",
+      "desktop": "https://media.maxvideoai.com/marketing/video-renditions/b24035c64a2c2f87be23637337621e0b480dab68499e498eafb2cf0e520e2266/public-demo-v1/desktop/f54a3f128e6da188810eb7c4d955b0211e001d7ddff8e653fbb3b58729de4be6.mp4",
+      "mobile": "https://media.maxvideoai.com/marketing/video-renditions/b24035c64a2c2f87be23637337621e0b480dab68499e498eafb2cf0e520e2266/public-demo-v1/mobile/f46f366b07e5454f5f601710216344ad1216dd3e4a1108621d18adbd7ade1d1c.mp4"
+    },
+    "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/6e192457-4607-4ed7-8861-5ccc3ade5e1b.mp4": {
+      "assetId": "kling-family-featured",
+      "desktop": "https://media.maxvideoai.com/marketing/video-renditions/8806d2a9df40337d9c799e04973b2c6cb06e3b7f9115bb0b3bae84dc05537e64/public-demo-v1/desktop/6b44bc2214554294984fe6a855ffa2382f63e0bf075e5109b080a5241908e544.mp4",
+      "mobile": "https://media.maxvideoai.com/marketing/video-renditions/8806d2a9df40337d9c799e04973b2c6cb06e3b7f9115bb0b3bae84dc05537e64/public-demo-v1/mobile/72e0acad94ab5b4c2a89f581c1369bacc6428086e5cd7ab8ecffb35a28f58d5c.mp4"
+    },
+    "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/6ab56b7c-bece-4c72-9372-c910bafdc622.mp4": {
+      "assetId": "seedance-2-5-model-demo",
+      "desktop": "https://media.maxvideoai.com/marketing/video-renditions/b9a52e75940a011d8a0af4a7a6754c0ce74125bb5bc2a4532726d777da18176c/public-demo-v1/desktop/229667923d62609fceb0b9aa7c5e4be6cb94588017c5efd787e6b183c32ef2f2.mp4",
+      "mobile": "https://media.maxvideoai.com/marketing/video-renditions/b9a52e75940a011d8a0af4a7a6754c0ce74125bb5bc2a4532726d777da18176c/public-demo-v1/mobile/a71c37c1a37bbb9fc0bfc210b1aef4f01a77e80a351781ed6d1d08896e02cba5.mp4"
     }
   }
 }

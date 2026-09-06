@@ -168,6 +168,8 @@ When adding a selected homepage hero video, register its authored source, prepar
 
 For initial-loading changes, attach comparable before/after performance evidence and block reproducible Core Web Vitals regressions. Functional tests alone do not establish performance gains. Keep repair simulations read-only, make writes explicit and bounded, and update ownership documentation and contracts in the same change.
 
+When extending public rendition coverage beyond the homepage, verify the exact source selected by the rendered model or family page, then use explicit `--asset-id` selections throughout preparation, publication and activation. A configured fallback demo or a page-view count alone does not prove which video is loaded or how often it plays. Verify the owning reader uses the shared projection; extending the catalogue does not automatically optimize comparison, watch or preview-card readers.
+
 Image thumbnail repair must cover stored readers as well as `app_jobs`: `job_outputs`, `media_assets`, and legacy `user_assets`. The operational CLI wires the projection repair owner in `frontend/scripts/_lib/image-thumbnail-projections.ts`; do not replace it with broad media-library upserts. Preserve originals, valid thumbnails, ownership, job/payment status and unrelated metadata. Persist generated thumbnails before synchronizing references, then guard the reference transaction with the current source and exact stored snapshots. A projection failure keeps the conservative resume cursor before that job. Validate this boundary with `tests/image-thumbnail-projections-postgres.test.ts` on disposable PostgreSQL.
 
 ## Architecture Contracts
