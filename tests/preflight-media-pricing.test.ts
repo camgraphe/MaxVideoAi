@@ -276,3 +276,33 @@ test('media-aware preflight rejects malformed persisted references before attach
     assert.equal(processCalls, 0);
   }
 });
+
+test('Omni workspace resolutions reach canonical pricing while unknown resolution values remain rejected', async () => {
+  const engine = engineFor('gemini-omni-flash');
+  assert.ok(engine.resolutions.includes('360p'), 'the workspace exposes the 360p output option');
+  for (const resolution of engine.resolutions) {
+    const request: PreflightRequest = { ...requestFor(engine, 't2v'), resolution, audio: true };
+    const response = await resolveMediaAwarePreflight(
+      { request },
+      { getConfiguredEngineFn: async () => engine },
+    );
+    assert.equal(response.ok, true, `Omni ${resolution} must yield a current quote`);
+    assert.ok(response.total > 0, `Omni ${resolution} must retain a paid quote`);
+    const billing = await computeCanonicalBillingSnapshot({
+      engine, durationSec: 6, resolution, aspectRatio: '16:9', mode: 't2v',
+      membershipTier: 'member', audio: true,
+    }, {
+      pricingPolicy: {
+        loadOverrides: async () => ({ status: 'loaded', rules: [], routingRules: [] }),
+        warn: () => undefined,
+      },
+      membershipDiscounts: { member: 0, plus: 0.05, pro: 0.1 },
+    });
+    assert.equal(response.total, billing.totalCents, `Omni ${resolution} quote must match canonical billing`);
+  }
+  const unsupported = await resolveMediaAwarePreflight(
+    { request: { ...requestFor(engine, 't2v'), resolution: 'not-a-resolution' as PreflightRequest['resolution'] } },
+    { getConfiguredEngineFn: async () => engine },
+  );
+  assert.equal(unsupported.ok, false, 'request parsing must keep its bounded resolution vocabulary');
+});

@@ -115,3 +115,7 @@ pnpm model:registry:check
 ```
 
 Commit the authored registry change and every refreshed generated projection together. If `pnpm model:registry:check` reports drift, regenerate instead of editing a projection by hand.
+
+### Workspace quote input coverage
+
+When publishing new output resolutions, check both the engine runtime schema and the bounded request vocabulary in `frontend/app/api/preflight/_lib/preflight-request.ts`. A workspace option can otherwise be rejected before model validation and pricing (as happened with Omni 360p). Keep model-specific resolution validation downstream; do not accept arbitrary resolution strings. Exercise the configured quote path and rejection of an unknown resolution value in `tests/preflight-media-pricing.test.ts`, then smoke-test example recreation through the displayed current quote. This does not change pricing rules or authorize a paid generation.
