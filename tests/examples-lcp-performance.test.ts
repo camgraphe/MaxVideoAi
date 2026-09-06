@@ -2,6 +2,12 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
+import * as React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { JSDOM } from 'jsdom';
+import { ExamplesHeroVideo } from '../frontend/components/examples/ExamplesHeroVideo.client';
+
+(globalThis as typeof globalThis & { React: typeof React }).React = React;
 
 const root = process.cwd();
 const galleryCardPath = join(root, 'frontend/components/examples/ExampleGalleryCard.tsx');
@@ -19,6 +25,25 @@ const examplesRouteSectionsPath = join(
 );
 
 const readSource = (path: string) => readFileSync(path, 'utf8');
+
+test('examples hero gives its single responsive poster high priority before hydration', () => {
+  const dom = new JSDOM(renderToStaticMarkup(React.createElement(ExamplesHeroVideo, {
+    src: 'https://media.maxvideoai.com/example.mp4',
+    type: 'video/mp4',
+    poster: '/poster.jpg',
+    ariaLabel: 'Example',
+  })));
+  try {
+    const images = dom.window.document.querySelectorAll('img');
+    assert.equal(images.length, 1, 'initial markup must not introduce a second poster');
+    assert.equal(images[0].getAttribute('fetchpriority'), 'high');
+    assert.notEqual(images[0].getAttribute('loading'), 'lazy');
+    assert.ok(images[0].getAttribute('srcset'), 'the browser still chooses a responsive image');
+    assert.equal(dom.window.document.querySelector('video'), null, 'the initial poster must not require a video request');
+  } finally {
+    dom.window.close();
+  }
+});
 
 test('examples gallery prioritizes its first poster only when no route hero is rendered', () => {
   const cardSource = readSource(galleryCardPath);

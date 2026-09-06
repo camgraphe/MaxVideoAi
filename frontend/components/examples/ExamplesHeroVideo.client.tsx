@@ -181,6 +181,7 @@ export function ExamplesHeroVideo({
           alt=""
           fill
           priority
+          fetchPriority="high"
           sizes="(max-width: 768px) 100vw, 920px"
           aria-hidden="true"
           className={`${className ?? ''} pointer-events-none absolute inset-0 z-10 transition-opacity duration-300`}
