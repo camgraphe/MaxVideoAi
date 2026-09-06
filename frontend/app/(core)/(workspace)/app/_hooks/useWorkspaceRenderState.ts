@@ -146,10 +146,11 @@ export function useWorkspaceRenderState({
     writeScopedStorage(STORAGE_KEYS.pendingRenders, serialized);
   }, [hydratedForScope, renders, storageScope, writeScopedStorage]);
 
+  const hasRendersNeedingStatusRefresh = getRendersNeedingStatusRefresh(renders).length > 0;
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const jobsNeedingRefresh = getRendersNeedingStatusRefresh(renders);
-    if (!jobsNeedingRefresh.length) {
+    if (!hasRendersNeedingStatusRefresh) {
       if (pendingPollRef.current !== null) {
         window.clearInterval(pendingPollRef.current);
         pendingPollRef.current = null;
@@ -157,11 +158,15 @@ export function useWorkspaceRenderState({
       return;
     }
     let cancelled = false;
+    const inFlightJobs = new Set<string>();
 
     const poll = async () => {
+      // Read the latest jobs without restarting this timer on every status/feed update.
+      const jobsNeedingRefresh = getRendersNeedingStatusRefresh(rendersRef.current);
       await Promise.all(
         jobsNeedingRefresh.map(async (render) => {
-          if (!render.jobId) return;
+          if (!render.jobId || inFlightJobs.has(render.jobId)) return;
+          inFlightJobs.add(render.jobId);
           try {
             const providerStatus = await getJobStatus(render.jobId);
             statusErrorCountsRef.current.delete(render.jobId);
@@ -200,6 +205,8 @@ export function useWorkspaceRenderState({
             }
 
             // ignore other transient errors and retry on next tick
+          } finally {
+            inFlightJobs.delete(render.jobId);
           }
         })
       );
@@ -220,7 +227,7 @@ export function useWorkspaceRenderState({
         pendingPollRef.current = null;
       }
     };
-  }, [renders, workspaceCopy]);
+  }, [hasRendersNeedingStatusRefresh, workspaceCopy]);
 
   useEffect(() => {
     if (!recentJobs.length) return;

@@ -25,6 +25,7 @@ import {
   DEFAULT_GROUP_PROVIDER,
   INITIAL_EAGER_PREVIEW_COUNT,
   filterGalleryFeedJobs,
+  orderGalleryGroups,
   resolveAspectRatioLabel,
   resolveBackgroundWarmPreviewLimit,
   resolveDisplayedActiveGroup,
@@ -170,9 +171,8 @@ export function GalleryRail({
     const nonCurated = [...normalizedActiveGroups, ...normalizedHistoricalGroups].filter(
       (group) => !group.hero.job?.curated
     );
-    if (nonCurated.length) return nonCurated;
-    return [...normalizedActiveGroups, ...normalizedHistoricalGroups];
-  }, [normalizedActiveGroups, normalizedHistoricalGroups]);
+    return orderGalleryGroups(nonCurated.length ? nonCurated : [...normalizedActiveGroups, ...normalizedHistoricalGroups], feedType);
+  }, [feedType, normalizedActiveGroups, normalizedHistoricalGroups]);
   const renderedGroups = useMemo(() => (hasMounted ? combinedGroups : []), [combinedGroups, hasMounted]);
   useEffect(() => {
     if (feedType !== 'video') return undefined;

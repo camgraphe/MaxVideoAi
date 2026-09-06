@@ -105,4 +105,5 @@ Keep these boundaries stable when continuing workspace cleanup:
 - `useWorkspaceComposerState` owns prompt/input field state.
 - `useWorkspaceWalletPreflight` owns wallet balance preflight.
 - `useWorkspaceGenerationRunner` owns generation submission, accepted results, and polling.
+- `useWorkspaceRenderState` polls the latest render snapshot on a stable interval, with at most one outstanding request per job. Status/feed updates must not restart that interval. Completed jobs already in history must not be reinserted into local renders. The video rail keeps a single chronological order across active and historical groups; `tests/workspace-render-polling-behavior.test.ts` and `tests/gallery-rail-order-behavior.test.ts` cover these transitions.
 - `useWorkspaceAssetLibrary`, `useWorkspaceReferenceAssets`, and `useWorkspaceKlingElementAssets` own their specific asset concerns.

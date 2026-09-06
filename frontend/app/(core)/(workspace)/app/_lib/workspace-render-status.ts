@@ -235,6 +235,10 @@ export function mergeRecentJobsIntoLocalRenders(
       return;
     }
 
+    // Completed, synced jobs already belong to history. Re-adding them here makes
+    // them flash through the active list before the cleanup effect removes them.
+    if (converted.status === 'completed' && (converted.videoUrl || converted.readyVideoUrl)) return;
+
     next.push(converted);
     if (converted.localKey) {
       byLocalKey.set(converted.localKey, next.length - 1);

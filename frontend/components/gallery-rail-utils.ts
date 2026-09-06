@@ -7,6 +7,18 @@ import { isPlaceholderMediaUrl, isTemporaryProviderMediaUrl, normalizeMediaUrl }
 export type GalleryVariant = 'desktop' | 'mobile' | 'responsive';
 export type GalleryFeedType = 'video' | 'image';
 
+export function orderGalleryGroups(groups: GroupSummary[], feedType: GalleryFeedType): GroupSummary[] {
+  if (feedType !== 'video') return groups;
+  // A render keeps its chronological position when it moves from local state
+  // to history. Identity breaks timestamp ties independently of either list.
+  return [...groups].sort((a, b) => {
+    const aTime = Date.parse(a.createdAt);
+    const bTime = Date.parse(b.createdAt);
+    const byTime = (Number.isFinite(bTime) ? bTime : 0) - (Number.isFinite(aTime) ? aTime : 0);
+    return byTime || a.id.localeCompare(b.id);
+  });
+}
+
 export const DEFAULT_GALLERY_COPY = {
   title: 'Latest renders',
   viewAll: 'View all',
