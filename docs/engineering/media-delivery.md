@@ -46,6 +46,8 @@ Playback hooks stay client-side; encoding, storage and database work stay server
 
 The homepage poster must remain discoverable in server-rendered HTML with its existing responsive source, dimensions and critical priority. Do not make it depend on hydration, a video download or an idle callback. Initial media scheduling and an explicit Play action have different priorities.
 
+The examples route hero also owns one responsive poster with explicit high fetch priority in the initial HTML. Keep this hint on `ExamplesHeroVideo`, alongside its existing `priority` setting; do not create another route-head preload or prioritize gallery cards while a route hero is present. This scheduling hint does not change the selected image, its quality, geometry, or mobile video loading policy. Validate its effect with comparable browser measurements; the HTML contract alone does not establish a performance gain.
+
 - Automatic video loading remains deferred and subject to device/motion/data-saving preferences and visibility. Never mount or preload every video to make selection appear faster.
 - A user Play action may load immediately. Show loading until actual playback; keep a stable cover through buffering and failures. Do not interpret the `play` event as proof that frames are being presented.
 - Pause offscreen/hidden playback; respect a user pause when visibility returns. Cancel pending callbacks and ignore stale media events/play promises after source changes.
