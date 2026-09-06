@@ -14,6 +14,7 @@ import {
   resolveAudioDefault,
   resolveBooleanFieldDefault,
 } from './workspace-engine-helpers';
+import { resolveDerivedAspectRatio } from './workspace-derived-aspect-ratio';
 import { MULTI_PROMPT_MIN_SEC } from './workspace-input-helpers';
 
 type MemberTier = 'Member' | 'Plus' | 'Pro';
@@ -300,7 +301,12 @@ export function resolveVideoSettingsSnapshot(
           : undefined,
       numFrames: readInteger(core.numFrames),
       resolution: typeof core.resolution === 'string' ? core.resolution : undefined,
-      aspectRatio: typeof core.aspectRatio === 'string' ? core.aspectRatio : undefined,
+      aspectRatio:
+        typeof core.aspectRatio === 'string'
+          ? meta.derived === true
+            ? resolveDerivedAspectRatio(core.aspectRatio, engine, mode)
+            : core.aspectRatio
+          : undefined,
       fps: readInteger(core.fps),
       iterations:
         typeof core.iterationCount === 'number' && Number.isFinite(core.iterationCount)

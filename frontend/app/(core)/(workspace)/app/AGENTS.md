@@ -28,6 +28,7 @@ This route is the main signed-in video generation workspace.
 - Keep accepted `runGenerate` response projection and immediate render/preview patches in `_lib`; `AppClient.tsx` should dispatch events and start polling.
 - Keep generation polling projections and poll-delay decisions in `_lib`; `AppClient.tsx` should own `getJobStatus`, timers, and React setters.
 - Keep video settings snapshot parsing and job media patch mapping in `_lib`; route-local hooks should wire those results into React state and own settings hydration requests.
+- Keep derived example framing recovery in `workspace-derived-aspect-ratio.ts`, called only for derived snapshots by `workspace-video-settings.ts`: match measured ratios only to a supported mode ratio within 2%. Saved generation snapshots remain authoritative; do not change original media dimensions or the general engine fallback to fix recreation.
 - Keep workspace request parsing and boot hydration decisions in `_lib`; route-local draft hooks should apply the resolved state and keep browser storage reads/writes out of `AppClient.tsx`.
 - Keep route shell UI in `_components`; `AppClient.tsx` should render named surfaces instead of owning gallery cards, preview dock internals, boot skeleton composition, or runtime modal JSX inline.
 - Keep asset-library selection, reference slot insertion, and Kling library asset mapping in `_lib`; route-local hooks should own bounded asset library state, upload orchestration, and network calls.
