@@ -105,6 +105,9 @@ are removed from the supporting strip to avoid duplicate choices; unavailable ex
 quotes stay in the matrix's existing fallback presentation. Labels and the indicative
 USD/live-quote explanation are authored in the three locale message files.
 `tests/pricing-quick-start.test.ts` locks matrix parity and the server boundary.
+Scenario clicks reuse the consent-controlled `cta_click` bridge with the explicitly
+allowed `pricing_scenario` / `pricing_hero` values. These are aggregate card clicks;
+they do not prove a paid conversion or distinguish the three scenarios.
 
 Deterministic browser and marketing projections enter through `frontend/src/lib/pricing-public-quote.ts`. DB-aware model projections and live estimates enter through `frontend/server/pricing/quote-public.ts`. Provider adapters provide facts only; consumers choose scenarios and format canonical results. Browser modules may receive validated serialized overrides but cannot import the database resolver, server modules, environment secrets, or admin owners.
 
