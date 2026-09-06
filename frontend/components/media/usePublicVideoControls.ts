@@ -134,13 +134,14 @@ export function usePublicVideoControls(src: string, surface: PublicVideoPlayback
     if (qualityRef.current === next) return;
     const node = videoRef.current;
     const previousSource = node?.getAttribute('src');
+    const pendingTime = resumeTimeRef.current;
     const completed = node && (node.ended || (node.duration > 0 && node.currentTime >= node.duration));
-    resumeTimeRef.current = completed ? 0 : node?.currentTime ?? 0;
+    resumeTimeRef.current = completed ? 0 : pendingTime ?? node?.currentTime ?? 0;
     qualityRef.current = next;
     setQuality(next);
     const selected = prepare(next);
     if (selected.rendition.src === previousSource) {
-      resumeTimeRef.current = null;
+      resumeTimeRef.current = pendingTime;
       return;
     }
     if (intentRef.current) play();
@@ -217,8 +218,10 @@ export function usePublicVideoControls(src: string, surface: PublicVideoPlayback
       const node = videoRef.current;
       const time = Number(value);
       if (!node || !Number.isFinite(time) || !duration) return;
-      node.currentTime = Math.min(duration, Math.max(0, time));
-      setCurrentTime(node.currentTime);
+      const nextTime = Math.min(duration, Math.max(0, time));
+      resumeTimeRef.current = node.readyState < 1 ? nextTime : null;
+      if (node.readyState >= 1) node.currentTime = nextTime;
+      setCurrentTime(nextTime);
     },
   };
 }

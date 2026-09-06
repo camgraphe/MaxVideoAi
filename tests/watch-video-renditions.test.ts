@@ -168,3 +168,16 @@ test('replaying after the end and a quality change starts at zero even before me
     assert.equal(f.video().currentTime, 0, 'Do not restore the completed position over a new replay');
   } finally { await f.cleanup(); }
 });
+
+test('several lazy quality changes while paused preserve the pending seek position', async () => {
+  const f = await mountPublicMedia(player());
+  try {
+    await f.click('Play video'); await f.emit('loadedmetadata');
+    f.video().currentTime = 4; await f.emit('timeupdate'); await f.click('Pause video');
+    await f.selectQuality('original');
+    f.video().currentTime = 0;
+    await f.selectQuality('auto');
+    await f.click('Play video'); await f.emit('loadedmetadata');
+    assert.equal(f.video().currentTime, 4);
+  } finally { await f.cleanup(); }
+});
