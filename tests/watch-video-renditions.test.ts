@@ -156,3 +156,15 @@ test('replacing the original resets the position and ignores an old pending play
     assert.equal(f.video().paused, true); assert.equal(f.plays.length, 1);
   } finally { await f.cleanup(); }
 });
+
+test('replaying after the end and a quality change starts at zero even before metadata arrives', async () => {
+  const f = await mountPublicMedia(player());
+  try {
+    await f.click('Play video'); await f.emit('loadedmetadata');
+    f.video().currentTime = 15; await f.emit('timeupdate'); await f.emit('ended');
+    await f.selectQuality('original');
+    await f.click('Play video');
+    f.video().currentTime = 0; await f.emit('loadedmetadata');
+    assert.equal(f.video().currentTime, 0, 'Do not restore the completed position over a new replay');
+  } finally { await f.cleanup(); }
+});

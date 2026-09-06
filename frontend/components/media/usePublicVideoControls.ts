@@ -134,7 +134,8 @@ export function usePublicVideoControls(src: string, surface: PublicVideoPlayback
     if (qualityRef.current === next) return;
     const node = videoRef.current;
     const previousSource = node?.getAttribute('src');
-    resumeTimeRef.current = node?.currentTime ?? 0;
+    const completed = node && (node.ended || (node.duration > 0 && node.currentTime >= node.duration));
+    resumeTimeRef.current = completed ? 0 : node?.currentTime ?? 0;
     qualityRef.current = next;
     setQuality(next);
     const selected = prepare(next);
