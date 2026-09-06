@@ -9,6 +9,8 @@ links. When its thumbnail strip becomes visible, the first thumbnail reuses
 `HOME_LCP_MOBILE_DELIVERY_SRC`, already loaded by the critical poster; do not request
 the larger desktop asset for that mobile thumbnail. Its observer, lazy scheduling,
 fixed geometry and exact original/derivative playback policy remain independent.
+`HomeHeroSecondaryLinks` owns the comparison/assistant destinations after the player
+in mobile document order; keep those secondary actions outside the main intro.
 
 The critical homepage poster's authored identity and geometry stay in
 `home-lcp-image.ts`. `pnpm --prefix frontend media:home-posters:prepare` copies those

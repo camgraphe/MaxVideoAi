@@ -46,7 +46,7 @@ test('critical homepage coverage is an offline prebuild guard with a pure inject
 
   assert.equal(
     frontendPackage.scripts.prebuild,
-    'pnpm --dir .. model:registry:check && pnpm media:public-renditions:check',
+    'pnpm --dir .. model:registry:check && pnpm media:public-renditions:check && pnpm media:home-posters:check',
   );
   assert.equal(
     frontendPackage.scripts['media:public-renditions:check'],

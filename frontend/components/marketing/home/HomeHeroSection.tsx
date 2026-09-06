@@ -3,7 +3,7 @@ import { BadgeDollarSign, CircleDollarSign, RefreshCcw, Sparkles } from 'lucide-
 import { Link } from '@/i18n/navigation';
 import { ButtonLink } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
-import { HomeAssistantLink } from './HomeAssistantLink';
+import { HomeHeroSecondaryLinks } from './HomeHeroSecondaryLinks';
 import { HeroVideoShowcase, type HeroVideoShowcaseItem } from '@/components/marketing/home/HeroVideoShowcase';
 import {
   HERO_ENGINE_MEDIA,
@@ -227,20 +227,7 @@ export function HomeHero({
             loadingLabel={copy.mockup.loadingLabel} errorLabel={copy.mockup.errorLabel} retryLabel={copy.mockup.retryLabel}
           />
         </div>
-        <div className="min-w-0 min-[900px]:col-start-1 min-[900px]:row-start-3">
-          <Link
-            href={{ pathname: '/ai-video-engines' }}
-            prefetch={false}
-            className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-brand underline decoration-transparent underline-offset-4 transition hover:text-brandHover hover:decoration-current"
-            data-analytics-event="hero_compare_click"
-            data-analytics-cta-name="compare_engines"
-            data-analytics-cta-location="home_hero"
-            data-analytics-target-family="compare"
-          >
-            {copy.examplesCta}<span aria-hidden="true">→</span>
-          </Link>
-          <HomeAssistantLink link={assistantLink} />
-        </div>
+        <HomeHeroSecondaryLinks compareLabel={copy.examplesCta} assistantLink={assistantLink} />
         <div className="grid grid-cols-2 gap-2 sm:gap-3 min-[900px]:col-start-1 min-[900px]:row-start-4">
           {copy.valueCards.map((card) => (
             <div
