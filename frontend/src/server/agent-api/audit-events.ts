@@ -10,6 +10,7 @@ export type McpAuditEvent = {
   surface: 'video' | 'image' | null;
   engineId: string | null;
   errorCode: string | null;
+  clientFamily?: 'chatgpt' | 'claude' | 'codex' | 'other';
 };
 
 export type McpAuditDeps = {
@@ -26,6 +27,7 @@ const ALLOWED_KEYS = new Set<keyof McpAuditEvent>([
   'surface',
   'engineId',
   'errorCode',
+  'clientFamily',
 ]);
 const SENSITIVE_KEY = /prompt|email|token|secret|reference.?url|raw.?url|provider.?(?:body|response)|payment|fraud/i;
 const EVENT_TYPES = new Set<McpAuditEvent['eventType']>([
@@ -49,7 +51,11 @@ function isMcpAuditEvent(value: unknown): value is McpAuditEvent {
   const record = value as Record<string, unknown>;
   const keys = Object.keys(record);
   if (keys.some((key) => SENSITIVE_KEY.test(key) || !ALLOWED_KEYS.has(key as keyof McpAuditEvent))) return false;
-  if (keys.length !== ALLOWED_KEYS.size) return false;
+  if (keys.length !== ALLOWED_KEYS.size - (record.clientFamily === undefined ? 1 : 0)) return false;
+  if (record.clientFamily !== undefined
+    && (record.eventType !== 'connection_initialized'
+      || typeof record.clientFamily !== 'string'
+      || !['chatgpt', 'claude', 'codex', 'other'].includes(record.clientFamily))) return false;
   if (!EVENT_TYPES.has(record.eventType as McpAuditEvent['eventType'])) return false;
   if (typeof record.userId !== 'string' || record.userId.length < 1 || record.userId.length > 128) return false;
   if (!nullableBoundedString(record.oauthClientId)) return false;
@@ -70,8 +76,8 @@ export async function recordMcpEvent(
     await deps.ensureSchema();
     await deps.executor.query(
       `INSERT INTO mcp_audit_events (
-        event_type, user_id, oauth_client_id, tool_name, outcome, surface, engine_id, error_code
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+        event_type, user_id, oauth_client_id, tool_name, outcome, surface, engine_id, error_code, client_family
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
       [
         input.eventType,
         input.userId,
@@ -81,6 +87,7 @@ export async function recordMcpEvent(
         input.surface,
         input.engineId,
         input.errorCode,
+        input.clientFamily ?? null,
       ]
     );
     return true;

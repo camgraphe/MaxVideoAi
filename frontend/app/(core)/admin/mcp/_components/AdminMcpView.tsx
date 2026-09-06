@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import type { AdminMcpOutcomes } from '@/server/admin-mcp-outcomes';
+import { McpGenerationOverview } from './McpGenerationOverview';
 import { AdminEmptyState } from '@/components/admin-system/feedback/AdminEmptyState';
 import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
@@ -18,6 +20,7 @@ import {
 
 type AdminMcpViewProps = {
   metrics: AdminMcpMetrics;
+  outcomes: AdminMcpOutcomes;
   selectedRange: AdminMcpRangeLabel;
 };
 
@@ -30,7 +33,7 @@ const FUNNEL_LABELS = {
   repeat_paid_generation: 'Repeat paid generation',
 } as const;
 
-export function AdminMcpView({ metrics, selectedRange }: AdminMcpViewProps) {
+export function AdminMcpView({ metrics, outcomes, selectedRange }: AdminMcpViewProps) {
   const unavailableSections = describeAvailability(metrics);
   const funnelRows = metrics.funnel ? Object.entries(metrics.funnel) : [];
   const funnelHasData = funnelRows.some(([, value]) => value > 0);
@@ -71,6 +74,8 @@ export function AdminMcpView({ metrics, selectedRange }: AdminMcpViewProps) {
           </div>
         }
       />
+
+      <McpGenerationOverview outcomes={outcomes} />
 
       <AdminSection
         title="Decision overview"
@@ -235,7 +240,7 @@ export function AdminMcpView({ metrics, selectedRange }: AdminMcpViewProps) {
         </AdminSection>
       </div>
 
-      <AdminSection title="Publication flags" description="Release gates remain independent from measurement availability.">
+      <AdminSection title="Publication flags" description="Release gates control public features, independently of measurement coverage. Disabled does not mean broken; trial remains a separate product rollout.">
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {Object.entries(metrics.featureFlags).map(([flag, enabled]) => (
             <div key={flag} className="flex items-center justify-between gap-3 rounded-xl border border-hairline bg-bg/60 px-4 py-3">

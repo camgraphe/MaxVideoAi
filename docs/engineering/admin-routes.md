@@ -134,3 +134,52 @@ tests/admin-user-detail-architecture.test.ts
 tests/admin-video-seo-architecture.test.ts
 tests/admin-seo-gsc-architecture.test.ts
 ```
+
+## MCP Acquisition Measurements
+
+`/admin/mcp` loads operational audit metrics and account/video outcomes independently.
+`frontend/server/admin-mcp-outcomes.ts` and `admin-mcp-outcomes-queries.ts` own the latter;
+the route-local `McpGenerationOverview` renders them ahead of tool-call activity.
+
+- MCP accounts are distinct authenticated accounts observed in the audit or quote ledger
+  before the reporting end. This is cumulative usage, not installation or signup attribution.
+- New signups using MCP match those accounts to synchronized `profiles.created_at` within
+  the UTC window. A bounded server-only Auth lookup fills missing/unsynchronized profiles
+  in memory; unresolved dates make this measure unavailable. It does
+  not prove MCP caused the signup, and signups that never use MCP are outside this cohort.
+- Video jobs are scoped by `app_jobs.created_at` in UTC `[from, to)`, joined to a canonical
+  MCP quote on both job and user ownership, and restricted to `surface = 'video'`. Current
+  completed status counts as a generated video job; failed/cancelled and pending jobs are
+  shown separately. Quote retries, polling, images and unrelated website jobs do not count.
+- Global users are deduplicated across applications. Application rows may overlap for users,
+  while each video job has one application. Account application uses the latest observed
+  activity for its user/OAuth-client pair; video attribution uses evidence at submission time.
+- Migration 41 and the existing audit bootstrap add nullable `client_family`. Successful MCP
+  initialization stores only a normalized family from self-reported `clientInfo.name`; raw
+  metadata is discarded. This field is analytics only and must never authorize access.
+  Recorded connection-link attribution is the fallback for the same user/OAuth-client pair.
+  A bounded server-only lookup of current registered OAuth client names supplies an
+  indicative historical fallback when event-time evidence is missing.
+  Null client IDs and missing evidence remain unidentified; later observations never relabel
+  an earlier video through event-time evidence; the current OAuth registry fallback is
+  explicitly labeled as indicative. Old schemas continue to serve outcomes using the
+  available attribution.
+
+The commercial funnel capability flags must not be flipped merely because tables exist.
+Paid preparation/acceptance/completion funnel events are not yet fully produced, so the
+legacy conversion, receipt-attribution and provider-cost panels retain their unavailable
+states. The public `trial` flag controls a separate free-trial rollout, not analytics; this
+change does not enable that offer. The new outcomes read the existing quote/job producers
+and work while the commercial funnel is disabled.
+
+Validation: `tests/admin-mcp-metrics-postgres.test.ts` exercises real PostgreSQL outcomes,
+window boundaries, multiple clients, ownership, missing profiles and legacy schemas;
+`tests/admin-mcp-outcomes.test.ts` covers failure handling and client-family normalization.
+
+Auth metadata fallbacks use the existing Supabase admin client in
+`frontend/server/admin-mcp-auth-metadata.ts`: at most 100 requested identities per page,
+four concurrent reads, only missing dates and unidentified applications. No synchronization
+writes occur; raw names, account records and credentials never enter the page DTO.
+The outcome query returns bounded internal ID arrays solely for this server-side lookup.
+See the [Auth account lookup](https://supabase.com/docs/reference/javascript/auth-admin-getuserbyid)
+and [OAuth client lookup](https://supabase.com/docs/reference/javascript/oauth-admin-getclient) contracts.

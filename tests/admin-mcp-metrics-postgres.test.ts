@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -15,6 +15,10 @@ import {
   RECOMMENDATION_TO_QUOTE_SQL,
   TOOL_USAGE_SQL,
 } from '../frontend/server/admin-mcp-metrics-queries.ts';
+
+import { buildMcpOutcomesSql } from '../frontend/server/admin-mcp-outcomes-queries.ts';
+import type { readMcpAuthMetadata } from '../frontend/server/admin-mcp-auth-metadata.ts';
+import { loadAdminMcpOutcomes } from '../frontend/server/admin-mcp-outcomes.ts';
 
 type CommandResult = ReturnType<typeof spawnSync>;
 
@@ -231,4 +235,101 @@ test('admin MCP aggregates enforce causal ordering, canonical UTC windows, and t
     assert.equal(Number(row.provider_cost_cents), 175);
     assert.equal(Number(row.trial_cost_cents), 25);
   });
+
+  await t.test('video outcomes deduplicate users, exclude web/image jobs, and attribute each job to its own application', async () => {
+    await client.query(`
+      CREATE SCHEMA outcomes_fixture;
+      SET search_path TO outcomes_fixture;
+      CREATE TABLE mcp_audit_events (event_type text, user_id text, oauth_client_id text, outcome text, client_family text, created_at timestamptz);
+      CREATE TABLE mcp_funnel_events (event_type text, user_id text, oauth_client_id text, acquisition_client text, occurred_at timestamptz);
+      CREATE TABLE mcp_generation_quotes (user_id text, oauth_client_id text, job_id text UNIQUE, created_at timestamptz);
+      CREATE TABLE app_jobs (job_id text UNIQUE, user_id text, surface text, status text, created_at timestamptz);
+      CREATE TABLE profiles (id text PRIMARY KEY, created_at timestamptz, synced_from_supabase boolean);
+      INSERT INTO profiles VALUES ('a', '2026-06-01Z', true), ('b', '2026-07-01Z', true), ('c', '2026-07-02Z', true);
+      INSERT INTO mcp_audit_events VALUES
+        ('connection_initialized', 'a', 'codex-id', 'success', 'codex', '2026-06-01Z'),
+        ('connection_initialized', 'a', 'codex-id', 'success', 'codex', '2026-07-02Z'),
+        ('connection_initialized', 'a', 'claude-id', 'success', 'claude', '2026-07-03Z'),
+        ('connection_initialized', 'b', 'chatgpt-id', 'success', NULL, '2026-07-01Z'),
+        ('connection_initialized', 'c', 'unknown-id', 'success', 'other', '2026-07-02Z'),
+        ('connection_initialized', 'future', 'codex-id', 'success', 'codex', '2026-07-08Z');
+      INSERT INTO mcp_funnel_events VALUES ('oauth_connection_completed', 'b', 'chatgpt-id', 'chatgpt', '2026-07-01Z');
+      INSERT INTO app_jobs VALUES
+        ('a1', 'a', 'video', 'completed', '2026-07-01Z'),
+        ('a2', 'a', 'video', 'completed', '2026-07-02Z'),
+        ('a3', 'a', 'video', 'completed', '2026-07-04Z'),
+        ('image', 'a', 'image', 'completed', '2026-07-04Z'),
+        ('b1', 'b', 'video', 'queued', '2026-07-02Z'),
+        ('b2', 'b', 'video', 'failed', '2026-07-03Z'),
+        ('c1', 'c', 'video', 'completed', '2026-07-04Z'),
+        ('web', 'a', 'video', 'completed', '2026-07-04Z'),
+        ('wrong-owner', 'outsider', 'video', 'completed', '2026-07-04Z'),
+        ('before', 'a', 'video', 'completed', '2026-06-30Z'),
+        ('after', 'a', 'video', 'completed', '2026-07-08Z');
+      INSERT INTO mcp_generation_quotes
+        SELECT 'a', CASE WHEN job_id IN ('a3', 'image') THEN 'claude-id' ELSE 'codex-id' END, job_id, '2026-06-30Z'
+          FROM app_jobs WHERE job_id IN ('a1', 'a2', 'a3', 'image', 'before', 'after', 'wrong-owner');
+      INSERT INTO mcp_generation_quotes VALUES
+        ('b', 'chatgpt-id', 'b1', '2026-07-02Z'), ('b', 'chatgpt-id', 'b2', '2026-07-03Z'),
+        ('c', 'unknown-id', 'c1', '2026-07-04Z'), ('c', 'unknown-id', NULL, '2026-07-04Z');
+    `);
+    const relations = { audit: true, quotes: true, jobs: true, profiles: true, funnel: true, clientFamily: true };
+    const load = (readAuthMetadata?: typeof readMcpAuthMetadata) => loadAdminMcpOutcomes({ from: params[0], to: params[1], timeZone: 'UTC', conversionWindowSeconds: 60 }, {
+      configured: () => true,
+      readAuthMetadata,
+      executor: { async query<T>(sql, values) {
+        return (sql.includes('admin-mcp:outcome-relations') ? [relations] : (await client.query(sql, values ? [...values] : [])).rows) as T[];
+      } },
+    });
+    const result = await load();
+    assert.deepEqual(result.notices, []);
+    assert.deepEqual(result.totals, { accounts: 3, newSignups: 2, generators: 2, submitted: 6, videos: 4, failed: 1, pending: 1 });
+    assert.equal(result.clients.find((row) => row.client === 'codex')?.videos, 2);
+    assert.equal(result.clients.find((row) => row.client === 'claude')?.videos, 1);
+    assert.equal(result.clients.find((row) => row.client === 'chatgpt')?.newSignups, 1);
+    assert.equal(result.clients.find((row) => row.client === 'other')?.videos, 1);
+    assert.equal(result.clients.reduce((sum, row) => sum + row.generators, 0), 3, 'one user uses two applications while the global count remains distinct');
+
+    await client.query(`INSERT INTO mcp_audit_events VALUES ('connection_initialized', 'c', 'unknown-id', 'success', 'codex', '2026-07-06Z')`);
+    const laterIdentity = await load();
+    assert.equal(laterIdentity.clients.find((row) => row.client === 'other')?.videos, 1, 'later client metadata must not relabel earlier videos');
+
+    await client.query(`UPDATE profiles SET synced_from_supabase = false WHERE id = 'b'`);
+    const missingProfile = await load();
+    assert.equal(missingProfile.totals?.newSignups, null);
+    assert.equal(missingProfile.totals?.videos, 4, 'registration gaps do not hide video outcomes');
+    assert.equal(missingProfile.notices.length, 1);
+    const recovered = await load(async (users, clients) => {
+      assert.deepEqual(users, ['b']);
+      assert.deepEqual(clients, ['unknown-id']);
+      return { profiles: [{ user_id: 'b', registered_at: '2026-07-01Z' }], clients: [{ oauth_client_id: 'unknown-id', family: 'chatgpt' }] };
+    });
+    assert.equal(recovered.totals?.newSignups, 2);
+    assert.equal(recovered.clients.find((row) => row.client === 'chatgpt')?.videos, 1);
+    assert.equal(recovered.clients.find((row) => row.client === 'codex')?.videos, 2, 'recorded attribution wins over the registry fallback');
+    assert.doesNotMatch(JSON.stringify(recovered), /user_id|oauth_client_id|missing_user_ids|unknown_client_ids/);
+    const authOutage = await load(async () => { throw new Error('auth unavailable'); });
+    assert.equal(authOutage.totals?.videos, 4);
+    assert.equal(authOutage.totals?.newSignups, null);
+
+    await client.query('ALTER TABLE mcp_audit_events DROP COLUMN client_family');
+    const legacy = await client.query(buildMcpOutcomesSql({ ...relations, clientFamily: false, profiles: false }), [...params, JSON.stringify({ profiles: [], clients: [] })]);
+    assert.equal(Number(legacy.rows.find((row) => row.client === 'all').videos), 4);
+    assert.equal(Number(legacy.rows.find((row) => row.client === 'chatgpt').accounts), 1, 'signed landing attribution works on the old schema');
+    await client.query('DROP TABLE mcp_funnel_events');
+    const noAttribution = await client.query(buildMcpOutcomesSql({ ...relations, clientFamily: false, profiles: false, funnel: false }), [...params, JSON.stringify({ profiles: [], clients: [] })]);
+    assert.equal(Number(noAttribution.rows.find((row) => row.client === 'other').videos), 4);
+
+    await client.query('TRUNCATE mcp_audit_events, mcp_generation_quotes, app_jobs');
+    const empty = await client.query(buildMcpOutcomesSql({ ...relations, clientFamily: false, profiles: false, funnel: false }), [...params, JSON.stringify({ profiles: [], clients: [] })]);
+    assert.equal(Number(empty.rows[0].videos), 0);
+    assert.equal(Number(empty.rows[0].accounts), 0);
+    const migration = readFileSync(join(process.cwd(), 'neon/migrations/41_mcp_client_family.sql'), 'utf8');
+    await client.query(migration);
+    await client.query(migration);
+    await assert.rejects(() => client.query(`INSERT INTO mcp_audit_events (client_family) VALUES ('raw-client-name')`), /check constraint/);
+    await client.query(`INSERT INTO mcp_audit_events (client_family) VALUES ('codex'), ('claude'), ('chatgpt'), ('other'), (NULL)`);
+    await client.query('SET search_path TO public');
+  });
+
 });

@@ -97,3 +97,21 @@ test('MCP acquisition is in Analytics navigation and publication matches the pro
     referenceUploads: true,
   });
 });
+
+
+test('MCP video outcomes have independent read-only owners and do not enable incomplete funnel producers', () => {
+  const outcomePath = join(root, 'frontend/server/admin-mcp-outcomes.ts');
+  const outcomeQueryPath = join(root, 'frontend/server/admin-mcp-outcomes-queries.ts');
+  const outcomes = readFileSync(outcomePath, 'utf8');
+  const queries = readFileSync(outcomeQueryPath, 'utf8');
+  const page = readFileSync(pagePath, 'utf8');
+  assert.match(page, /loadAdminMcpOutcomes/);
+  assert.match(page, /Promise.all/);
+  assert.match(readFileSync(viewPath, 'utf8'), /McpGenerationOverview/);
+  assert.doesNotMatch(outcomes + queries, /INSERT INTO|UPDATE \w+|DELETE FROM/i);
+  assert.doesNotMatch(queries, /\b(prompt|email|request_json|video_url|access_token)\b/);
+  assert.match(queries, /job.user_id = quote.user_id/);
+  assert.match(queries, /job.surface = 'video'/);
+  assert.match(queries, /status = 'completed'/);
+  assert.ok(outcomes.split('\n').length < 200);
+});

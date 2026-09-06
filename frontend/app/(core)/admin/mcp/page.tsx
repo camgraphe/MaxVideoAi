@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { requireAdmin } from '@/server/admin';
+import { loadAdminMcpOutcomes } from '@/server/admin-mcp-outcomes';
 import { loadAdminMcpMetrics } from '@/server/admin-mcp-metrics';
 import { AdminMcpView } from './_components/AdminMcpView';
 import { McpTrialControls } from './_components/McpTrialControls';
@@ -25,14 +26,17 @@ export default async function AdminMcpPage({ searchParams }: AdminMcpPageProps) 
 
   const params = await searchParams;
   const range = resolveAdminMcpRange(params.range);
-  const metrics = await loadAdminMcpMetrics(range.query);
+  const [metrics, outcomes] = await Promise.all([
+    loadAdminMcpMetrics(range.query),
+    loadAdminMcpOutcomes(range.query),
+  ]);
   const trialUserId = typeof params.trialUserId === 'string'
     ? params.trialUserId.trim() || null
     : null;
 
   return (
     <>
-      <AdminMcpView metrics={metrics} selectedRange={range.label} />
+      <AdminMcpView outcomes={outcomes} metrics={metrics} selectedRange={range.label} />
       <McpTrialControls inspectionUserId={trialUserId} />
     </>
   );

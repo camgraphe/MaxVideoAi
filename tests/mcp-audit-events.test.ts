@@ -77,6 +77,7 @@ test('recordMcpEvent inserts an allowlisted payload with positional parameters',
     'video',
     null,
     null,
+    null,
   ]);
 });
 
