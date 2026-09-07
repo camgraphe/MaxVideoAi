@@ -1460,17 +1460,20 @@
     {
       "path": "tests/media-library-round4.test.ts",
       "gitBlob": "90e314801877795a9820214076dd80663daf0946",
-      "sha256": "0745544eee7a1f53d7850add70434654f0b02b13f31e9aac495cfff1129c99e9"
+      "sha256": "0745544eee7a1f53d7850add70434654f0b02b13f31e9aac495cfff1129c99e9",
+      "disposition": "excluded-global-owner-contract"
     },
     {
       "path": "tests/media-library-round5.test.ts",
       "gitBlob": "4c8b2a372f1523c994f3c4028dd7c186c696268d",
-      "sha256": "438b79895b76c15e33379047fd8733486e03bcc285a99f1ff928e0330be37b89"
+      "sha256": "438b79895b76c15e33379047fd8733486e03bcc285a99f1ff928e0330be37b89",
+      "disposition": "excluded-global-owner-contract"
     },
     {
       "path": "tests/media-library-security-round3.test.ts",
       "gitBlob": "d96cb3576b4d5a95476aadbd644c32c0266c8ae0",
-      "sha256": "21964b42c83b27283469cd2ef0bb05051e386271a5b0c66790d3d5a8f7e9323f"
+      "sha256": "21964b42c83b27283469cd2ef0bb05051e386271a5b0c66790d3d5a8f7e9323f",
+      "disposition": "excluded-global-owner-contract"
     },
     {
       "path": "tests/studio-localization-contract.test.ts",
@@ -1505,7 +1508,18 @@
     {
       "path": "tests/wallet-render-round3.test.ts",
       "gitBlob": "cb4904f7cf1424731fcec352e1c57aa4c0b35f49",
-      "sha256": "dd15d17bdc5ad4476b104cb52b3e3ca15096da0c673f1ea273d29d7236a6874a"
+      "sha256": "dd15d17bdc5ad4476b104cb52b3e3ca15096da0c673f1ea273d29d7236a6874a",
+      "disposition": "excluded-global-owner-contract"
+    },
+    {
+      "path": "frontend/lib/studio-chat-models.ts",
+      "gitBlob": "bb655fc877015c7c052d403390637e7d743ffec5",
+      "sha256": "bfa2de871dac464ee04424f4d4eee3f71457834c51ffbd01460ed41c05a492d7"
+    },
+    {
+      "path": "docs/engineering/maxvideoai-editor-server-render.md",
+      "gitBlob": "cd5cf692679e72c2c3d6cbc02beced6b44ddc40b",
+      "sha256": "b81a1d23decc54102672e902508275e958c7963df9eb42d27586fdb5d99898ad"
     }
   ]
 }

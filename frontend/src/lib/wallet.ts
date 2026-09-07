@@ -406,3 +406,10 @@ export async function getWalletBalanceCents(userId: string): Promise<{ balanceCe
     return { balanceCents: getMockWalletBalance(userId), mock: true };
   }
 }
+export function userWalletAdvisoryLockKey(userId: string): string {
+  return `wallet:${userId}`;
+}
+
+export async function lockUserWalletInExecutor(executor: QueryExecutor, userId: string): Promise<void> {
+  await executor.query(`SELECT pg_advisory_xact_lock(hashtext($1))`, [userWalletAdvisoryLockKey(userId)]);
+}

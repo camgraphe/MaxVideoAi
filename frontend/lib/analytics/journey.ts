@@ -453,6 +453,14 @@ const TOPUP_PAYLOAD_KEYS = [
 ] as const;
 
 const ANALYTICS_EVENT_PAYLOAD_KEYS = {
+  studio_guided_template_started: ['template_id', 'step_id', 'locale', 'elapsed_ms', 'viewport_class'],
+  studio_guide_step_focused: ['template_id', 'step_id', 'locale', 'elapsed_ms', 'viewport_class'],
+  studio_guide_hidden: ['template_id', 'step_id', 'locale', 'elapsed_ms', 'viewport_class'],
+  studio_guide_annotation_deleted: ['template_id', 'step_id', 'locale', 'elapsed_ms', 'viewport_class'],
+  studio_guide_all_deleted: ['template_id', 'step_id', 'locale', 'elapsed_ms', 'viewport_class'],
+  studio_guide_reset: ['template_id', 'step_id', 'locale', 'elapsed_ms', 'viewport_class'],
+  studio_first_generation_completed: ['template_id', 'step_id', 'locale', 'elapsed_ms', 'viewport_class'],
+  studio_first_timeline_insert_completed: ['template_id', 'step_id', 'locale', 'elapsed_ms', 'viewport_class'],
   page_view: [
     'route_family', 'page_location', 'page_path', 'page_title', 'tool_name', 'tool_surface', 'workspace_section',
   ],
@@ -604,6 +612,9 @@ const CTA_LOCATIONS = new Set([
   'tool_character_builder_final', 'tool_character_builder_hero',
 ]);
 const EXACT_STRING_VALUES: Readonly<Record<string, ReadonlySet<string>>> = {
+  template_id: new Set(['guided-product-ad', 'guided-storyboard-to-video', 'guided-cinematic-scene']),
+  step_id: new Set(['reference', 'prompt', 'generate', 'output', 'timeline', 'all']),
+  viewport_class: new Set(['mobile', 'compact', 'desktop']),
   route_family: ANALYTICS_ROUTE_FAMILIES,
   tool_name: ANALYTICS_TOOL_NAMES,
   tool_surface: new Set(['public', 'workspace']),
@@ -644,6 +655,7 @@ const BOOLEAN_FIELDS = new Set([
   'is_first_generation',
 ]);
 const INTEGER_FIELDS: Readonly<Record<string, readonly [number, number]>> = {
+  elapsed_ms: [0, 86400000],
   generate_count: [0, 100],
   result_count: [0, 100],
   output_count: [0, 100],
