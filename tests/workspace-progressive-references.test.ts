@@ -51,7 +51,7 @@ test('workspace Options is a separate entry and stale video quotes are suppresse
   const image = readFileSync('frontend/app/(core)/(workspace)/app/image/_components/ImageWorkspaceComposerSurface.tsx', 'utf8');
   assert.match(composer, /price == null \|\| isPricing \|\| preflight\?\.ok === false/);
   assert.match(video, /isPricing=\{isPricing\}/);
-  assert.match(video, /optionsControl=\{<WorkspaceOptionsButton/);
+  assert.match(video, /trailingControl=\{<WorkspaceOptionsButton/);
   assert.match(video, /advancedOpen=\{optionsOpen\}/);
   assert.match(image, /<ImageAdvancedSettings\s+open=\{optionsOpen\}/);
   assert.match(composer, /htmlFor=\{promptId\}/);

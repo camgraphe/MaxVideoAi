@@ -106,7 +106,8 @@ test('the web policy revision rejects every pre-retirement tab, including custom
     }
   }
   assert.equal(requireCurrentWebPricingPolicy({ headers: { get: () => LIVE_PRICING_POLICY_REVISION } }), null);
-  for (const route of ['generate/route.ts', 'images/generate/route.ts', 'tools/angle/route.ts', 'tools/character-builder/route.ts', 'tools/background-removal/route.ts', 'tools/upscale/_shared.ts', 'wallet/route.ts']) {
+  for (const route of ['generate/route.ts', 'images/generate/route.ts', 'tools/angle/route.ts', 'tools/character-builder/route.ts', 'tools/background-removal/route.ts', 'tools/upscale/_shared.ts']) {
     assert.match(readFileSync(`frontend/app/api/${route}`, 'utf8'), /requireCurrentWebPricingPolicy\(req/);
   }
+  assert.match(readFileSync('frontend/app/api/wallet/route.ts', 'utf8'), /requireCurrentWalletDirectPricingPolicy\(req/);
 });

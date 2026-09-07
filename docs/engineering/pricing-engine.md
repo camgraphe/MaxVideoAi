@@ -12,7 +12,7 @@ The canonical package remains able to interpret historical membership discounts.
 
 The membership admin route is now read-only. Inventory and immutable audit history remain available for historical analysis, while preview, confirmation, and rollback mutations return `410 membership_retired`. Do not edit stored tiers or migrate historical rows to express this retirement; live adapters own the current product policy.
 
-The commercial values and pricing results remain unchanged: no price, margin, surcharge, membership discount, currency, rounding outcome, wallet debit, direct-payment comparison, public display, structured-data offer, or seeded product value changed. The admin mutation workflow changed from direct mutation to a server-owned `preview → explicit confirmation → transactional apply` protocol. The public batch added one named rounding-only compatibility profile after the frozen fixture demonstrated the historical behavior it preserves.
+The original pricing-foundation migration preserved every then-current commercial value. The later membership retirement intentionally removes membership discounts from new quotes while leaving margins, surcharges, currency, rounding, stored settlements, and historical evidence unchanged. Active pricing-policy and billing-product mutations use a server-owned `preview → explicit confirmation → transactional apply` protocol.
 
 ## Ownership model
 
@@ -51,9 +51,9 @@ Provider facts include vendor rates, units, duration, resolution, provider tiers
 | `frontend/src/server/tools/background-removal.ts` | Background-removal billing | Canonical fixed-product and dynamic quote | Stable consumer |
 | `frontend/src/server/tools/upscale.ts` | Upscale billing | Canonical fixed-product and dynamic quote | Stable consumer |
 | `frontend/app/(core)/admin/pricing` | Canonical engine-policy inventory, preview, confirmation, history, and rollback | Operationally accepted on isolated DB | Stable policy-domain owner |
-| `frontend/app/(core)/admin/membership` | Membership threshold and discount preview, confirmation, history, and rollback | Operationally accepted on isolated DB | Stable membership-domain owner |
+| `frontend/app/(core)/admin/membership` | Read-only historical membership thresholds, discounts, and immutable events | Retired for mutation | Stable historical owner |
 | `frontend/app/(core)/admin/billing-products` | Referenced fixed-product preview, confirmation, history, and rollback | Operationally accepted on isolated DB | Stable billing-product-domain owner |
-| `frontend/app/api/admin/pricing`, `membership`, `billing-products` | Authorized inventory/history reads and preview-fingerprint-confirm mutations | Operationally accepted on isolated DB | Stable thin route adapters |
+| `frontend/app/api/admin/pricing`, `membership`, `billing-products` | Authorized inventory/history reads; pricing and billing-product preview/confirm mutations; explicit membership-retired errors | Operationally accepted on isolated DB | Stable thin route adapters |
 
 ## Policy precedence
 
@@ -79,12 +79,11 @@ The committed billing and public baselines remain frozen pre-migration reference
 ```bash
 pnpm pricing:baseline
 pnpm pricing:public-baseline
-pnpm pricing:public-baseline:generate
 pnpm pricing:audit
 pnpm --silent pricing:audit -- --json
 ```
 
-The 178-row pre-canonical billing baseline is immutable; there is no generation command for it. `pricing:public-baseline:generate` is the only fixture write operation and is reserved for an explicitly reviewed public-contract update. The other commands do not mutate pricing policy or application state.
+The 178-row pre-canonical billing baseline and public baseline are immutable historical evidence. The legacy `pricing:public-baseline:generate` entry point now refuses to write; changing either fixture requires a separately designed migration rather than an operating command. The commands above do not mutate pricing policy or application state.
 
 Every current cross-surface difference is preserved and identified by a compatibility profile. Updating `frontend/config/pricing-policy.json` is a commercial change after this foundation batch and requires an intentional matrix review; it must never be bundled into an unrelated refactor.
 
@@ -151,7 +150,7 @@ Two non-quote projections remain intentionally narrow: storyboard bundle code ad
 
 ## Admin commercial mutation workflow
 
-The admin navigation exposes exactly three commercial owners: `Pricing policy`, `Membership`, and `Billing products`. Each domain loads its own inventory and immutable history. A mutation must follow `preview → explicit confirmation → immediate transactional apply`; confirmation recomputes the preview and rejects a stale fingerprint.
+The admin navigation exposes `Pricing policy`, `Membership`, and `Billing products`. Each domain loads its own inventory and immutable history. Pricing-policy and billing-product mutations follow `preview → explicit confirmation → immediate transactional apply`; confirmation recomputes the preview and rejects a stale fingerprint. Membership is historical and read-only, and its mutation endpoints return `membership_retired`.
 
 Routing fields are excluded from commercial proposals: `vendorAccountId` is read-only context, an update preserves the stored routing value, and a new policy rule cannot create a routing override. Rollback creates a new immutable event and is a new mutation, never a history rewrite. Clients send only the target and immutable event identifiers. The server reads the event, derives the historical state, computes a fresh canonical preview, and requires the normal explicit confirmation. Event history renders actor, timestamp, operation, target, and the server-recorded scenario delta range. The former direct membership-tier and raw pricing-rule mutation routes have been removed.
 
@@ -159,19 +158,19 @@ Read-only public quote resolution may fall back to validated versioned policy wh
 
 ## Operational acceptance record
 
-On 2026-07-13, the three commercial domains were exercised through authenticated localhost admin routes against a disposable PostgreSQL database containing migration 27. Inventory loaded 49 policy selectors, the three canonical membership tiers, and all 13 referenced active billing products with no missing product key. Browser preview/cancel and post-history render smoke tests passed for `/admin/pricing`, `/admin/membership`, and `/admin/billing-products` without client errors.
+Historically, on 2026-07-13, the three commercial domains were exercised through authenticated localhost admin routes against a disposable PostgreSQL database containing migration 27. Inventory loaded 49 policy selectors, the three canonical membership tiers, and all 13 referenced active billing products with no missing product key. Those membership mutation results predate retirement and are retained only as an acceptance record.
 
-Each domain then completed a controlled `preview → confirmation → history → rollback` cycle. A deliberately stale fingerprint was rejected with HTTP 409 before persistence, both the update and rollback remained in immutable history with the authenticated actor, and the final state was strictly restored to its pre-test value. With PostgreSQL stopped, all three confirmation routes rejected the mutation with `database_unavailable` and HTTP 503; the database was then restarted successfully. The acceptance database was local and disposable. No production database, authored pricing policy, frozen parity fixture, or applied commercial value was changed.
+Each domain then completed a controlled `preview → confirmation → history → rollback` cycle. This records the former workflow; current membership preview, confirmation, and rollback return HTTP 410. The acceptance database was local and disposable. No production database, authored pricing policy, frozen parity fixture, or applied commercial value was changed.
 
 ## Safe price-change runbook
 
 Use only the owner for the value being changed:
 
 1. `/admin/pricing` for engine policy selectors, margins, surcharges, currency, and compatibility profiles.
-2. `/admin/membership` for the canonical `member`, `plus`, and `pro` thresholds and discounts.
+2. `/admin/membership` to inspect historical `member`, `plus`, and `pro` thresholds, discounts, and immutable events. It cannot apply or roll back changes.
 3. `/admin/billing-products` for active fixed products referenced by production billing consumers.
 
-On the selected page, inspect the current source and provenance, edit the proposed value, request the canonical server preview, review every affected row and warning, then either cancel or explicitly confirm. Confirmation applies immediately. If the server reports `preview_stale`, discard the preview, refresh current state, and preview again. To undo a committed change, select its immutable history event and run the same preview-confirm flow; rollback never edits or deletes history.
+For pricing policy or billing products, inspect the current source and provenance, edit the proposed value, request the canonical server preview, review every affected row and warning, then either cancel or explicitly confirm. Confirmation applies immediately. If the server reports `preview_stale`, discard the preview, refresh current state, and preview again. To undo a committed change in either active domain, select its immutable history event and run the same preview-confirm flow; rollback never edits or deletes history. Membership history has no active rollback control.
 
 Before confirming a real change, work in a configured environment with an authenticated admin and a database containing the current migrations. Record the intended policy diff, then run the read-only guards:
 
@@ -182,7 +181,7 @@ pnpm pricing:audit
 pnpm --silent pricing:audit -- --json
 ```
 
-Do not regenerate the public baseline during an ordinary price change. The billing baseline cannot be regenerated, and the public fixture may be rewritten only after a separate explicit review of the changed public contract. After the previewed change is confirmed, verify the affected billing/public scenarios and run:
+The billing and public baseline commands are read-only; the former public baseline writer refuses to rewrite the frozen fixture. After the previewed change is confirmed, verify the affected billing/public scenarios and run:
 
 ```bash
 pnpm test:validate

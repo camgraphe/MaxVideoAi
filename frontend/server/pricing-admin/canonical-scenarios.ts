@@ -10,6 +10,7 @@ import { buildCanonicalPricingFacts } from '@/lib/pricing-audit/canonical-facts'
 import { buildPricingAuditScenarios } from '@/lib/pricing-audit/scenarios';
 import type { PricingAuditScenario, PricingAuditSurface } from '@/lib/pricing-audit/types';
 import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
+import { LIVE_MEMBERSHIP_DISCOUNTS, LIVE_MEMBERSHIP_POLICY } from '@/lib/membership-policy';
 
 import { PricingAdminError } from './errors';
 
@@ -53,11 +54,6 @@ export type PricingChangePreviewRow = {
   compatibilityProfile: string;
 };
 
-const DEFAULT_MEMBERSHIP_DISCOUNTS: PricingMembershipDiscountMap = {
-  member: 0,
-  plus: 0.05,
-  pro: 0.1,
-};
 const engineCapabilitiesById = new Map(
   listFalEngines().flatMap((entry) => [
     [entry.id, entry.engine] as const,
@@ -160,7 +156,7 @@ export function quoteCanonicalAdminScenarios(input: {
 }): AdminCanonicalScenarioOutcome[] {
   const policyDocument = getVersionedPricingPolicy();
   const profiles = new Map(policyDocument.compatibilityProfiles.map((profile) => [profile.id, profile]));
-  const membershipDiscounts = { ...DEFAULT_MEMBERSHIP_DISCOUNTS, ...input.membershipDiscounts };
+  const membershipDiscounts = LIVE_MEMBERSHIP_DISCOUNTS;
   const scenarios = input.scenarios ?? buildPricingAuditScenarios();
   const projectionScenarios = [
     ...scenarios,
@@ -245,7 +241,7 @@ export function quoteCanonicalAdminScenarios(input: {
           ...(surcharge ? { surcharge } : {}),
         };
       }
-      const membershipTier = scenario.membershipTier ?? 'member';
+      const membershipTier = LIVE_MEMBERSHIP_POLICY.tier;
       const quote = quoteCanonicalPricing({
         facts,
         scenario: {
