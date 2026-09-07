@@ -169,6 +169,34 @@ test('recent output search and cursors run against PostgreSQL', { timeout: 90_00
       userId: 'user-a', kind: 'image', source: 'upload', q: 'legacy needle', limit: 60,
     });
     assert.deepEqual(legacySearch.items.map((item) => item.id), ['legacy-old']);
+
+    const providerUrl = 'https://provider.example.test/user-a-job-004.png';
+    const durableUrl = 'https://storage.example.test/user-a-job-004.png';
+    await database.pool.query(
+      `UPDATE job_outputs SET url = $1, storage_url = $2 WHERE id = 'output-user-a-004'`,
+      [providerUrl, durableUrl]
+    );
+    const outputOriginal = await listLibraryAssetPage({
+      userId: 'user-a', kind: 'image', source: 'saved_job_output', q: 'ordinary prompt 004', includeOutputs: true,
+    });
+    assert.deepEqual(outputOriginal.items.map((item) => ({ id: item.id, url: item.url })), [
+      { id: 'output:output-user-a-004', url: durableUrl },
+    ]);
+
+    await database.pool.query(
+      `INSERT INTO media_assets
+        (id,user_id,kind,url,mime_type,source,source_job_id,source_output_id,status,metadata,created_at)
+       VALUES
+        ('saved-output-user-a-004','user-a','image',$1,'image/png','saved_job_output','user-a-job-004',
+         'output-user-a-004','ready','{"label":"ordinary prompt 004"}'::jsonb,$2)`,
+      [durableUrl, timestamp]
+    );
+    const deduplicatedOriginal = await listLibraryAssetPage({
+      userId: 'user-a', kind: 'image', source: 'saved_job_output', q: 'ordinary prompt 004', includeOutputs: true,
+    });
+    assert.deepEqual(deduplicatedOriginal.items.map((item) => ({ id: item.id, url: item.url })), [
+      { id: 'saved-output-user-a-004', url: durableUrl },
+    ]);
   } finally {
     const { getDb } = await import('../frontend/src/lib/db');
     await getDb().end();

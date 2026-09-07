@@ -10,7 +10,7 @@ import { getLocalizedAssetDropzoneCopy, normalizeUiLocale } from '@/lib/ltx-loca
 import type { ComposerProps } from './composer-types';
 import { getWorkspaceFrameCommand } from './workspace-reference-commands';
 import { WorkspaceReferencePopup } from './WorkspaceReferencePopup.client';
-import { workspaceReferenceCopy } from './workspace-reference-copy';
+import { resolveWorkspaceReferenceFieldTitle, workspaceReferenceCopy } from './workspace-reference-copy';
 
 type Props = Pick<ComposerProps, 'engine' | 'caps' | 'assetFields' | 'assets' | 'onAssetAdd' | 'onAssetRemove' | 'onNotice' | 'onOpenLibrary' | 'onAssetUrlSelect'> & { referenceWarning: string };
 
@@ -73,7 +73,7 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
         {assetFields.map((entry) => entry.headerAction ? <span key={entry.field.id}>{entry.headerAction}</span> : null)}
       </div>
     </div>
-    {collectionRequired.length ? <p id={requiredId} className="app-reference-required">{copy.required} · {collectionRequired.map(({ field }) => field.label ?? copy.kinds[field.type === 'audio' ? 'audio' : field.type === 'video' ? 'video' : 'image']).join(', ')}</p> : null}
+    {collectionRequired.length ? <p id={requiredId} className="app-reference-required">{copy.required} · {collectionRequired.map(({ field, role }) => resolveWorkspaceReferenceFieldTitle(field, role ?? 'generic', locale) || copy.kinds[field.type === 'audio' ? 'audio' : field.type === 'video' ? 'video' : 'image']).join(', ')}</p> : null}
     {selectedCollections.length ? <div className="app-reference-selected-summary">
       {selectedCollections.slice(0, 3).map(({ entry, asset, slotIndex }) => <button key={`${entry.field.id}-${slotIndex}`} type="button"
         onClick={() => {

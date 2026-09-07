@@ -78,6 +78,54 @@ test('pending save blocks a double submission and reports success only after com
   } finally { await form.dispose(); }
 });
 
+test('same-account verified metadata replaces a pristine cached name', async () => {
+  const cached = makeUser('user-a', 'Cached name');
+  const verified = makeUser('user-a', 'Verified name');
+  const form = await mountForm(cached, async () => makeClient(verified), updateAccountNameWithToken);
+  try {
+    await form.changeUser(verified);
+    assert.equal(form.state.name, 'Verified name');
+    assert.equal(form.state.savedName, 'Verified name');
+    assert.equal(form.state.dirty, false);
+  } finally { await form.dispose(); }
+});
+
+test('same-account metadata hydration preserves dirty edits', async () => {
+  const cached = makeUser('user-a', 'Cached name');
+  const verified = makeUser('user-a', 'Verified name');
+  const form = await mountForm(cached, async () => makeClient(verified), updateAccountNameWithToken);
+  try {
+    await form.changeName('My unsaved edit');
+    await form.changeUser(verified);
+    assert.equal(form.state.name, 'My unsaved edit');
+    assert.equal(form.state.savedName, 'Cached name');
+    assert.equal(form.state.dirty, true);
+  } finally { await form.dispose(); }
+});
+
+test('same-account metadata hydration does not disturb a pending save', async () => {
+  const gate = deferred<User>();
+  const cached = makeUser('user-a', 'Cached name');
+  const verified = makeUser('user-a', 'Verified name');
+  const updated = makeUser('user-a', 'Saved edit');
+  const form = await mountForm(cached, async () => makeClient(cached), async () => gate.promise);
+  try {
+    await form.changeName('Saved edit');
+    let save!: Promise<void>;
+    await act(async () => { save = form.state.save(messages); });
+    await form.changeUser(verified);
+    assert.equal(form.state.name, 'Saved edit');
+    assert.equal(form.state.savedName, 'Cached name');
+    assert.equal(form.state.busy, true);
+    gate.resolve(updated);
+    await act(async () => save);
+    assert.equal(form.state.name, 'Saved edit');
+    assert.equal(form.state.savedName, 'Saved edit');
+    assert.equal(form.state.dirty, false);
+    assert.deepEqual(form.state.status, { kind: 'success', message: 'Saved' });
+  } finally { await form.dispose(); }
+});
+
 test('cancel invalidates a pending save and restores the saved name', async () => {
   const loader = deferred<AccountNameClient>();
   let updates = 0;

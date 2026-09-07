@@ -190,6 +190,7 @@ export function MediaLightbox({
     () => entries.some((entry) => Boolean(entry.videoUrl || entry.audioUrl || entry.imageUrl || entry.thumbUrl)),
     [entries]
   );
+  const hasPendingEntry = useMemo(() => entries.some((entry) => entry.status === 'pending'), [entries]);
   const specs = useMemo(() => {
     const next: Array<{ label: string; value: string }> = [];
     if (title) {
@@ -232,7 +233,7 @@ export function MediaLightbox({
             {t('workspace.result.close', 'Close')}
           </Button>
         </div>
-        {!hasAtLeastOneRenderableMedia ? (
+        {!hasAtLeastOneRenderableMedia && !hasPendingEntry ? (
           <p className="mb-4 rounded-input border border-dashed border-border bg-bg px-3 py-2 text-sm text-text-muted">
             Media will be available once the render completes.
           </p>

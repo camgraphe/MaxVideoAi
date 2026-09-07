@@ -84,7 +84,7 @@ export async function listLibraryAssetPage(params: {
          NULL::text AS public_id,
          o.user_id,
          o.kind,
-         o.url,
+         COALESCE(o.storage_url, o.url) AS url,
          o.thumb_url,
          o.preview_url,
          o.mime_type,

@@ -19,9 +19,15 @@ export function useAccountNameForm(user: User | null, dependencies: { loadClient
   const requestRef = useRef(0);
   const userIdRef = useRef(user?.id ?? null);
   const savingRef = useRef(false);
+  const incomingNameRef = useRef(initialName);
+  const nameRef = useRef(name);
+  const savedNameRef = useRef(savedName);
+  nameRef.current = name;
+  savedNameRef.current = savedName;
 
   useEffect(() => {
     userIdRef.current = user?.id ?? null;
+    incomingNameRef.current = initialName;
     requestRef.current += 1;
     setName(initialName);
     setSavedName(initialName);
@@ -31,6 +37,16 @@ export function useAccountNameForm(user: User | null, dependencies: { loadClient
     // Account metadata events for the same user must not cancel their own save completion.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
+
+  useEffect(() => {
+    if (userIdRef.current !== (user?.id ?? null) || incomingNameRef.current === initialName) return;
+    incomingNameRef.current = initialName;
+    if (savingRef.current || nameRef.current.trim() !== savedNameRef.current.trim()) return;
+    nameRef.current = initialName;
+    savedNameRef.current = initialName;
+    setName(initialName);
+    setSavedName(initialName);
+  }, [initialName, user?.id]);
 
   const validation = validateAccountName(name);
   const dirty = Boolean(user) && validation.name !== savedName.trim();

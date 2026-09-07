@@ -1,3 +1,6 @@
+import type { AssetFieldRole } from '@/components/asset-dropzone/asset-dropzone-types';
+import type { EngineInputField } from '@/types/engines';
+
 export function workspaceReferenceCopy(locale: string) {
   return locale === 'fr' ? {
     calculating: 'Calcul…', priceUnavailable: 'Prix indisponible', kinds: { image: 'Images', video: 'Vidéos', audio: 'Audio' },
@@ -9,4 +12,32 @@ export function workspaceReferenceCopy(locale: string) {
     calculating: 'Calculating…', priceUnavailable: 'Price unavailable', kinds: { image: 'Images', video: 'Videos', audio: 'Audio' },
     start: 'Start', end: 'End', title: 'References', add: 'Add references', manage: 'Manage', close: 'Close', replace: 'Replace', remove: 'Remove', upload: 'Upload', library: 'Library', required: 'Required', details: 'Formats and guidance', options: 'Options', placeholder: 'Describe your creation…',
   };
+}
+
+export function resolveWorkspaceReferenceFieldTitle(
+  field: EngineInputField,
+  role: AssetFieldRole,
+  locale: string
+): string {
+  if (locale !== 'fr' && locale !== 'es') return field.label;
+  const label = field.label.trim();
+  const capacity = typeof field.maxCount === 'number' && Number.isFinite(field.maxCount) && field.maxCount > 1
+    ? Math.floor(field.maxCount)
+    : null;
+  const suffix = capacity == null ? '' : locale === 'fr' ? ` (jusqu’à ${capacity})` : ` (hasta ${capacity})`;
+
+  if (field.id === 'video_url' && /^source video$/i.test(label)) {
+    return locale === 'fr' ? 'Vidéo source' : 'Video fuente';
+  }
+  if (role !== 'reference') return field.label;
+  if (field.id === 'image_urls' && /^reference images(?:\s*\([^)]*\))?$/i.test(label)) {
+    return locale === 'fr' ? `Images de référence${suffix}` : `Imágenes de referencia${suffix}`;
+  }
+  if (field.id === 'video_urls' && /^reference video clips(?:\s*\([^)]*\))?$/i.test(label)) {
+    return locale === 'fr' ? `Clips vidéo de référence${suffix}` : `Clips de vídeo de referencia${suffix}`;
+  }
+  if (field.id === 'audio_urls' && /^reference audio clips(?:\s*\([^)]*\))?$/i.test(label)) {
+    return locale === 'fr' ? `Clips audio de référence${suffix}` : `Clips de audio de referencia${suffix}`;
+  }
+  return field.label;
 }

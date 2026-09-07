@@ -5,7 +5,7 @@ import { useMemo, useCallback, useRef } from 'react';
 import type { ChangeEvent, ClipboardEvent, DragEvent, ReactNode } from 'react';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps as CapabilityCaps } from '@/types/engines';
 import { getWorkspaceReferenceSlots } from '@/components/composer/workspace-reference-layout';
-import { workspaceReferenceCopy } from '@/components/composer/workspace-reference-copy';
+import { resolveWorkspaceReferenceFieldTitle, workspaceReferenceCopy } from '@/components/composer/workspace-reference-copy';
 import { getVisibleAssetSlots } from '@/lib/asset-slot-layout';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { getLocalizedAssetDropzoneCopy, normalizeUiLocale } from '@/lib/ltx-localization';
@@ -261,7 +261,12 @@ export function AssetDropzone({
 
   const defaultFieldTitle = resolveAssetFieldTitle(field, role, assetCopy);
   const frameTitle = field.id === 'image_url' ? (locale === 'fr' ? 'Image de départ' : locale === 'es' ? 'Imagen inicial' : 'Start image') : field.id === 'end_image_url' ? (locale === 'fr' ? 'Image de fin' : locale === 'es' ? 'Imagen final' : 'End image') : null;
-  const fieldTitle = density === 'workspace' && field.type === 'image' && (engine.modes.includes('t2v') || engine.modes.includes('i2v')) ? frameTitle ?? defaultFieldTitle : defaultFieldTitle;
+  const workspaceFieldTitle = resolveWorkspaceReferenceFieldTitle(field, role, locale);
+  const fieldTitle = density === 'workspace'
+    ? field.type === 'image' && (engine.modes.includes('t2v') || engine.modes.includes('i2v'))
+      ? frameTitle ?? workspaceFieldTitle
+      : workspaceFieldTitle
+    : defaultFieldTitle;
   const roleDescription = resolveAssetRoleDescription(role, assetCopy);
   const visibleHelperText = field.type === 'video' && helperLines.length ? helperLines.join(' · ') : null;
   const detailsTooltipLines = buildAssetFieldTooltipLines({
