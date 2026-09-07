@@ -33,3 +33,17 @@ Séquence confiée :
 - La copie Neon de qualification app expire le10septembre2026 à16:43:50UTC; elle n'est pas une autorisation générale d'écriture pour Studio. Aucun secret ne doit être transféré dans un prompt ou une documentation.
 
 Références : `docs/design/global-app-concept/visual-rules.md`, `integration-contract.md`, `experience-map.md`, `docs/engineering/app-experience.md`, `mcp-montage-preparation.md`, instructions et contrats propres à Studio dans sa branche.
+
+## Extension demandée et tâches lancées
+
+L’utilisateur a ensuite demandé une tâche Billing/Wallet, autorisé d’autres chantiers parallèles pertinents et exigé Astra pour toutes les tâches déléguées. Trois tâches sont lancées, chacune dans sa worktree, avec le modèle explicitement réglé sur `gpt-6-astra` :
+
+| Périmètre | Tâche | Worktree |
+|---|---|---|
+| Studio, canevas, médias et montage MCP minimal | `01a07e2a-7f4d-7c83-b24d-11b6008f00d9` | `/Users/adrienmillot/.codex/worktrees/dce6/MaxVideoAi V2` |
+| Billing/Wallet, recharge, transactions et factures | `01a07e2c-1d46-7ef2-bdc5-abc017ee2332` | `/Users/adrienmillot/.codex/worktrees/6820/MaxVideoAi V2` |
+| Cause et correction de la latence Activity | `01a07e2c-ba9d-73d2-8a87-07f7efc04d14` | `/Users/adrienmillot/.codex/worktrees/0b3f/MaxVideoAi V2` |
+
+La priorité1 du fil principal (latence Activity) est donc confiée à la troisième tâche, qui possède le chemin de chargement et les adaptations ciblées nécessaires des helpers et tests, sans refonte visuelle supplémentaire. Billing possède ses composants/hooks/styles locaux et prépare séparément tout contrat nécessaire au wallet d’en-tête; politique tarifaire, configuration Stripe live et paiements réels sont hors scope. Les tâches partent du projet par défaut et doivent composer le socle app qualifié dans leur copie : elles ne sont pas présumées avoir hérité automatiquement de cette branche.
+
+Le fil principal conserve comparaison des devis, adaptation des modèles, continuité des références/brouillons, cohérence visuelle et intégration finale. Chaque tâche fournit commits, prévisualisation sur port distinct et preuves de validation. Rien n’est automatiquement fusionné ou déployé.
