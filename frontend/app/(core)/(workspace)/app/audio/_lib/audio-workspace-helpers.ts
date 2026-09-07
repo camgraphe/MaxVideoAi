@@ -42,6 +42,10 @@ export const AUDIO_MODE_META: Record<
     icon: Music2,
     providerKey: 'music',
   },
+  sfx_only: {
+    icon: AudioLines,
+    providerKey: 'sfx',
+  },
   voice_only: {
     icon: Mic2,
     providerKey: 'voice',

@@ -3,6 +3,7 @@ import type { PricingSnapshot } from '@maxvideoai/pricing';
 export const AUDIO_SURFACE = 'audio' as const;
 export const AUDIO_MIN_DURATION_SEC = 3;
 export const AUDIO_MAX_DURATION_SEC = 184;
+export const AUDIO_SFX_MAX_DURATION_SEC = 30;
 export const AUDIO_PROMPT_MAX_LENGTH = 2000;
 export const AUDIO_SCRIPT_MAX_LENGTH = 5000;
 export const AUDIO_VOICE_ESTIMATE_WORDS_PER_MINUTE = 150;
@@ -62,9 +63,11 @@ export const DEFAULT_SEED_AUDIO_PITCH = 0;
 const AUDIO_PRICE_LYRIA3_CLIP_CENTS_PER_AUDIO = 4;
 const AUDIO_PRICE_LYRIA3_PRO_CENTS_PER_AUDIO = 8;
 const AUDIO_PRICE_MIRELO_SFX_CENTS_PER_SECOND = 1;
+// https://fal.ai/models/fal-ai/mmaudio-v2/text-to-audio — $0.001/second, verified 2026-09-08.
+const AUDIO_PRICE_MMAUDIO_TEXT_CENTS_PER_SECOND = 0.1;
 const AUDIO_PRICE_SEED_AUDIO_CENTS_PER_MINUTE = 18.75;
 
-export const AUDIO_PACK_VALUES = ['music_only', 'voice_only', 'cinematic', 'cinematic_voice'] as const;
+export const AUDIO_PACK_VALUES = ['music_only', 'voice_only', 'sfx_only', 'cinematic', 'cinematic_voice'] as const;
 export type AudioPackId = (typeof AUDIO_PACK_VALUES)[number];
 
 export type AudioPricingInput = {
@@ -142,6 +145,20 @@ const AUDIO_PACK_CONFIG: Record<AudioPackId, AudioPackConfig> = {
     requiresVideo: false,
     requiresMood: false,
     requiresScript: true,
+    supportsMusicToggle: false,
+    supportsAudioExport: false,
+    defaultMusicEnabled: false,
+  },
+  sfx_only: {
+    engineId: 'audio-sfx-only',
+    billingProductKey: 'audio-sfx-only',
+    label: 'SFX Only',
+    description: 'Standalone sound effects and ambience from a text prompt with MMAudio V2.',
+    includesVoice: false,
+    audioOnly: true,
+    requiresVideo: false,
+    requiresMood: false,
+    requiresScript: false,
     supportsMusicToggle: false,
     supportsAudioExport: false,
     defaultMusicEnabled: false,
@@ -388,6 +405,16 @@ function buildAudioVendorCostComponents(input: {
     amountCents: number;
   }> = [];
 
+  if (input.pack === 'sfx_only') {
+    components.push({
+      type: 'sound_design_mmaudio_v2_text',
+      label: 'MMAudio V2',
+      model: 'fal-ai/mmaudio-v2/text-to-audio',
+      unit: 'sec',
+      units: durationSec,
+      amountCents: durationSec * AUDIO_PRICE_MMAUDIO_TEXT_CENTS_PER_SECOND,
+    });
+  }
   if (input.pack === 'cinematic' || input.pack === 'cinematic_voice') {
     components.push({
       type: 'sound_design_mirelo_sfx_v1_5',
@@ -427,6 +454,9 @@ export function buildAudioVendorCostFacts(input: {
   musicModel?: AudioLyria3Model | null;
   musicEnabled?: boolean | null;
 }) {
+  if (input.pack === 'sfx_only' && (!Number.isFinite(input.durationSec) || input.durationSec < AUDIO_MIN_DURATION_SEC || input.durationSec > AUDIO_SFX_MAX_DURATION_SEC)) {
+    throw new Error('Standalone SFX duration must be between 3 and 30 seconds.');
+  }
   const durationSec = normalizeAudioDuration(input.durationSec);
   const components = buildAudioVendorCostComponents({
     ...input,

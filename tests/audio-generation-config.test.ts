@@ -118,6 +118,7 @@ test('audio pricing uses voice clone request and preview costs', () => {
 
 test('audio helpers normalize packs, moods, voice mode, output kind, and duration bounds', () => {
   assert.equal(coerceAudioPackId(' music_only '), 'music_only');
+  assert.equal(coerceAudioPackId(' sfx_only '), 'sfx_only');
   assert.equal(coerceAudioPackId(' cinematic_voice '), 'cinematic_voice');
   assert.equal(coerceAudioPackId('basic'), null);
 
@@ -142,11 +143,13 @@ test('audio helpers normalize packs, moods, voice mode, output kind, and duratio
   assert.equal(AUDIO_SEED_AUDIO_VOICE_VALUES[0], 'default');
 
   assert.equal(resolveAudioVoiceMode({ pack: 'music_only', voiceSampleUrl: 'https://example.com/voice.wav' }), null);
+  assert.equal(resolveAudioVoiceMode({ pack: 'sfx_only', voiceSampleUrl: 'https://example.com/voice.wav' }), null);
   assert.equal(resolveAudioVoiceMode({ pack: 'voice_only', voiceSampleUrl: null }), 'standard');
   assert.equal(resolveAudioVoiceMode({ pack: 'voice_only', voiceSampleUrl: 'https://example.com/voice.wav' }), 'clone');
   assert.equal(resolveAudioVoiceMode({ pack: 'cinematic_voice', voiceSampleUrl: null }), 'standard');
   assert.equal(resolveAudioVoiceMode({ pack: 'cinematic_voice', voiceSampleUrl: 'https://example.com/voice.wav' }), 'clone');
   assert.equal(resolveAudioOutputKind({ pack: 'voice_only', exportAudioFile: false }), 'audio');
+  assert.equal(resolveAudioOutputKind({ pack: 'sfx_only', exportAudioFile: false }), 'audio');
   assert.equal(resolveAudioOutputKind({ pack: 'cinematic', exportAudioFile: false }), 'video');
   assert.equal(resolveAudioOutputKind({ pack: 'cinematic_voice', exportAudioFile: true }), 'both');
   assert.equal(estimateVoiceScriptDurationSec('This is a short narration sample for pricing.'), AUDIO_MIN_DURATION_SEC);
@@ -204,6 +207,28 @@ test('audio pricing includes sound design and optional music for cinematic rende
   assert.equal(withoutMusic.vendorShareCents, 30);
   assert.equal(withoutMusic.margin.amountCents, 45);
   assert.equal(withoutMusic.totalCents, 75);
+});
+
+test('audio pricing supports standalone SFX renders', () => {
+  const pricing = quotePublicAudioPricingSnapshot({
+    pack: 'sfx_only',
+    durationSec: 8,
+    mood: null,
+  });
+
+  assert.equal(pricing.vendorShareCents, 1);
+  assert.equal(pricing.platformFeeCents, 2);
+  assert.equal(pricing.totalCents, 3);
+  assert.deepEqual(pricing.meta.vendorCostComponents, [
+    {
+      type: 'sound_design_mmaudio_v2_text',
+      label: 'MMAudio V2',
+      model: 'fal-ai/mmaudio-v2/text-to-audio',
+      unit: 'sec',
+      units: 8,
+      amountCents: 0.8,
+    },
+  ]);
 });
 
 test('audio pricing rounds fractional 150 percent margins up to the next cent', () => {
