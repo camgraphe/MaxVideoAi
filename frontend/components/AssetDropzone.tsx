@@ -6,6 +6,7 @@ import type { ChangeEvent, ClipboardEvent, DragEvent, ReactNode } from 'react';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps as CapabilityCaps } from '@/types/engines';
 import { getWorkspaceReferenceSlots } from '@/components/composer/workspace-reference-layout';
 import { resolveWorkspaceReferenceFieldTitle, workspaceReferenceCopy } from '@/components/composer/workspace-reference-copy';
+import { getWorkspaceFrameCommand } from '@/components/composer/workspace-reference-commands';
 import { getVisibleAssetSlots } from '@/lib/asset-slot-layout';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { getLocalizedAssetDropzoneCopy, normalizeUiLocale } from '@/lib/ltx-localization';
@@ -260,7 +261,8 @@ export function AssetDropzone({
   }), [field, engine, caps, acceptFormats, minimumImageSidePx, mediaFieldConstraint, assetCopy]);
 
   const defaultFieldTitle = resolveAssetFieldTitle(field, role, assetCopy);
-  const frameTitle = field.id === 'image_url' ? (locale === 'fr' ? 'Image de départ' : locale === 'es' ? 'Imagen inicial' : 'Start image') : field.id === 'end_image_url' ? (locale === 'fr' ? 'Image de fin' : locale === 'es' ? 'Imagen final' : 'End image') : null;
+  const frameCommand = getWorkspaceFrameCommand({ field, role, required }, engine);
+  const frameTitle = frameCommand ? workspaceReferenceCopy(locale)[frameCommand] : null;
   const workspaceFieldTitle = resolveWorkspaceReferenceFieldTitle(field, role, locale);
   const fieldTitle = density === 'workspace'
     ? field.type === 'image' && (engine.modes.includes('t2v') || engine.modes.includes('i2v'))

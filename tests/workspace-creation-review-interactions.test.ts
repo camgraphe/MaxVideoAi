@@ -190,7 +190,7 @@ test('direct frame commands order Start before End, preserve exact uploads and s
     assert.deepEqual(commands.map(node => node.dataset.referenceCommand), ['image_url', 'end_image_url']);
     assert.equal(doc.querySelector('input[type="file"]'), null, 'no empty dropzone appears in the toolbar');
     await click(commands[1]);
-    assert.equal(doc.querySelector('[role="dialog"] h2')?.textContent, 'Fin');
+    assert.equal(doc.querySelector('[role="dialog"] h2')?.textContent, 'Imagen final');
     assert.equal(doc.querySelectorAll('[data-reference-field]').length, 1);
     await act(async () => new Promise(resolve => setTimeout(resolve, 5)));
     const popup = doc.querySelector<HTMLElement>('[role="dialog"]')!;
@@ -394,8 +394,8 @@ test('populated frame commands show their original previews and states without d
     const end = fixture.container.querySelector('[data-reference-command="end_image_url"]')!;
     assert.equal(start.querySelector('img')?.getAttribute('src'), '/original-start.png');
     assert.equal(end.querySelector('img')?.getAttribute('src'), '/original-end.png');
-    assert.equal(start.getAttribute('aria-label'), 'Inicio · Full start name');
-    assert.equal(end.getAttribute('aria-label'), 'Fin · Full end name');
+    assert.equal(start.getAttribute('aria-label'), 'Imagen inicial · Full start name');
+    assert.equal(end.getAttribute('aria-label'), 'Imagen final · Full end name');
     assert.ok(start.querySelector('[role="status"]')); assert.match(end.querySelector('[role="alert"]')!.textContent!, /Upload failed/);
     assert.equal(start.querySelector('svg'), null); assert.equal(end.querySelector('svg'), null);
     assert.doesNotMatch(start.textContent!, /✓/);

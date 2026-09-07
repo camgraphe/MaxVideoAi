@@ -67,12 +67,12 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
           const availability = getReferenceCommandAvailability([entry], assets);
           return <button key={entry.field.id} ref={(node) => { if (node) commandRefs.current.set(entry.field.id, node); else commandRefs.current.delete(entry.field.id); }} type="button" className={`app-reference-command${availability.addDisabled ? ' is-add-disabled' : ''}`} data-reference-command={entry.field.id}
             data-add-disabled={availability.addDisabled || undefined} aria-disabled={!availability.canOpen || undefined}
-            aria-label={asset ? `${copy[command]} · ${asset.name}` : undefined} aria-describedby={availability.addDisabled ? restrictionId : undefined} aria-haspopup="dialog" aria-expanded={activeCommand === entry.field.id} title={entry.disabled ? entry.disabledReason ?? copy.unavailable : entry.field.label}
+            aria-label={asset ? `${copy[command]} · ${asset.name}` : undefined} aria-describedby={availability.addDisabled ? restrictionId : undefined} aria-haspopup="dialog" aria-expanded={activeCommand === entry.field.id} title={entry.disabled ? entry.disabledReason ?? copy.unavailable : copy[command]}
             onClick={(event) => { if (availability.canOpen) open(entry.field.id, event.currentTarget); }}>
             <span className="app-reference-command-media">
               {asset?.kind === 'image' ? <img src={asset.previewUrl} alt="" loading="lazy" /> : <AppGlyph name={command} />}
               {asset?.status === 'uploading' ? <small className="app-reference-command-status" role="status">…<span className="sr-only">{assetCopy.uploading}</span></small> : asset?.status === 'error' ? <small className="app-reference-command-status" role="alert">!<span className="sr-only">{asset.error ?? assetCopy.uploadFailed}</span></small> : null}
-            </span><span>{copy[command]}</span>
+            </span><span className="app-reference-command-label">{copy[command]}</span>
             {!asset && entry.required ? <small>{copy.required}</small> : null}
           </button>;
         })}

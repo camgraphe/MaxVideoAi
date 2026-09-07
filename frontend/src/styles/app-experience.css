@@ -319,6 +319,10 @@
 .app-experience .app-reference-command.is-add-disabled { border-color: var(--app-line); border-style: dashed; color: var(--app-muted); }
 .app-experience .app-reference-command[aria-disabled="true"] { opacity: .55; cursor: not-allowed; }
 .app-experience .app-reference-command small { color: var(--app-muted); font-size: 10px; }
+@media (max-width: 640px) {
+  .app-experience .app-reference-commands .app-reference-command { padding-inline: 6px; }
+  .app-experience .app-reference-command-label { max-width: 52px; white-space: normal; text-align: left; line-height: 1.15; }
+}
 .app-experience .app-reference-restrictions { display: grid; gap: 2px; margin-top: 4px; color: var(--app-muted); font-size: 11px; line-height: 1.35; overflow-wrap: anywhere; }
 .app-experience .app-reference-restrictions p { margin: 0; }
 .app-experience .app-reference-required { margin-top: 4px; font-size: 11px; color: var(--app-muted); overflow-wrap: anywhere; }
