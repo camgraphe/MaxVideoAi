@@ -9,27 +9,29 @@ import { ButtonLink } from '@/components/ui/Button';
 type HeaderTranslate = (key: string, fallback: string) => string | undefined;
 
 type HeaderWalletStatusProps = {
-  authResolved: boolean;
   promptId: string;
   t: HeaderTranslate;
   wallet: { balance: number } | null;
+  walletLoading: boolean;
   walletPromptOpen: boolean;
   onOpenPrompt: () => void;
   onSchedulePromptClose: () => void;
 };
 
 export function HeaderWalletStatus({
-  authResolved,
   promptId,
   t,
   wallet,
+  walletLoading,
   walletPromptOpen,
   onOpenPrompt,
   onSchedulePromptClose,
 }: HeaderWalletStatusProps) {
-  const walletAmount = wallet ? `$${wallet.balance.toFixed(2)}` : authResolved ? '--' : '...';
+  const walletAmount = wallet ? `$${wallet.balance.toFixed(2)}` : walletLoading ? '...' : '--';
   const walletBaseLabel = t('workspace.header.wallet.label', 'Wallet') ?? 'Wallet';
-  const missingLabel = authResolved ? t('workspace.header.wallet.unavailable', 'Unavailable') ?? 'Unavailable' : t('workspace.header.wallet.loading', 'Loading…') ?? 'Loading…';
+  const missingLabel = walletLoading
+    ? t('workspace.header.wallet.loading', 'Loading…') ?? 'Loading…'
+    : t('workspace.header.wallet.unavailable', 'Unavailable') ?? 'Unavailable';
   const walletLabel = `${walletBaseLabel}: ${wallet ? walletAmount : missingLabel}`;
 
   return (

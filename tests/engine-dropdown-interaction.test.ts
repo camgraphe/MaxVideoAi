@@ -169,7 +169,7 @@ test('rendered dropdown reports catalogue coverage and explains legacy-only empt
 
   try {
     await act(async () => { root.render(React.createElement(EngineSelectDropdown, props)); });
-    assert.match(portalElement.textContent ?? '', /2 of 3 models across 2 families/);
+    assert.match(portalElement.textContent ?? '', /Models: 2\/3 · Families: 2/);
     assert.match(portalElement.textContent ?? '', /1 legacy model hidden/);
 
     const input = portalElement.querySelector<HTMLInputElement>('input:not([type="checkbox"])')!;
@@ -187,6 +187,90 @@ test('rendered dropdown reports catalogue coverage and explains legacy-only empt
       portalElement.textContent ?? '',
       /1 matching legacy model is hidden\. Turn on Legacy models to include it\./,
     );
+  } finally {
+    await act(async () => { root.unmount(); });
+    dom.window.close();
+    for (const [key, descriptor] of saved) {
+      if (descriptor) Object.defineProperty(globalThis, key, descriptor);
+      else Reflect.deleteProperty(globalThis, key);
+    }
+  }
+});
+
+test('rendered dropdown keeps a one-model catalogue summary count-neutral in every locale', async () => {
+  const dom = new JSDOM('<div id="root"></div><div id="portal"></div>', { pretendToBeVisual: true });
+  const saved = new Map<string, PropertyDescriptor | undefined>();
+  for (const [key, value] of Object.entries({
+    window: dom.window,
+    document: dom.window.document,
+    navigator: dom.window.navigator,
+    HTMLElement: dom.window.HTMLElement,
+    React,
+    IS_REACT_ACT_ENVIRONMENT: true,
+  })) {
+    saved.set(key, Object.getOwnPropertyDescriptor(globalThis, key));
+    Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
+  }
+
+  const onlyEngine = selectorEngine('only-model', 'Only Model');
+  const registryMeta = {
+    order: new Map([[onlyEngine.id, 0]]),
+    meta: new Map([[onlyEngine.id, {
+      id: onlyEngine.id,
+      modelSlug: onlyEngine.id,
+      provider: onlyEngine.provider,
+      marketingName: onlyEngine.label,
+      brandId: 'only-family',
+      family: 'only-family',
+      category: 'video',
+      availability: 'available',
+      surfaces: { app: { discoveryRank: 1 } },
+    }]]),
+  } as unknown as EngineRegistryMeta;
+  const root = createRoot(dom.window.document.getElementById('root')!);
+  const portalElement = dom.window.document.getElementById('portal') as HTMLDivElement;
+
+  try {
+    for (const [locale, expected] of [
+      ['en', 'Models: 1/1 · Families: 1'],
+      ['fr', 'Modèles : 1/1 · Familles : 1'],
+      ['es', 'Modelos: 1/1 · Familias: 1'],
+    ] as const) {
+      const dictionary = JSON.parse(
+        (await import('node:fs')).readFileSync(`frontend/messages/${locale}.json`, 'utf8'),
+      );
+      const localizedCopy = {
+        ...DEFAULT_ENGINE_SELECT_COPY,
+        ...dictionary.workspace.generate.engineSelect,
+      };
+      await act(async () => {
+        root.render(React.createElement(EngineSelectDropdown, {
+          activeOptionId: undefined,
+          contentRef: React.createRef<HTMLDivElement>(),
+          copy: localizedCopy,
+          engines: [onlyEngine],
+          formatEngineShort: (engine: EngineCaps | null | undefined) => engine?.label ?? '',
+          hasLegacyEngines: false,
+          highlightedIndex: 0,
+          legacyToggleId: 'legacy-toggle',
+          legacyToggleLabel: localizedCopy.modal.legacyToggleLabel,
+          onBrowse() {},
+          onClose() {},
+          onHighlight() {},
+          onItemRef() {},
+          onSelectEngine() {},
+          onToggleLegacy() {},
+          portalElement,
+          position: { left: 0, top: 0, width: 640 },
+          registryMeta,
+          selectedEngine: onlyEngine,
+          showLegacy: false,
+          triggerId: 'engine-trigger',
+          visibleEngines: [onlyEngine],
+        }));
+      });
+      assert.match(portalElement.textContent ?? '', new RegExp(expected));
+    }
   } finally {
     await act(async () => { root.unmount(); });
     dom.window.close();

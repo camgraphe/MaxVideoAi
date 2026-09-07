@@ -155,23 +155,24 @@ export function EngineSelect({
       onClick={toggleOpen}
       onKeyDown={handleTriggerKeyDown}
       className={clsx(
-        'flex min-w-0 flex-1 items-center justify-between gap-4 rounded-input border border-border bg-surface text-left text-text-primary shadow-sm transition hover:border-border-hover hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        'flex min-w-0 flex-1 items-center justify-between rounded-input border border-border bg-surface text-left text-text-primary shadow-sm transition hover:border-border-hover hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        controlPresentation === 'workspace' ? 'gap-2' : 'gap-4',
         isBarVariant
           ? controlPresentation === 'workspace'
-            ? 'h-11 w-full px-2.5 py-0 text-[12px] sm:px-3 sm:text-[13px]'
+            ? 'min-h-11 w-full px-2 py-1.5 text-[12px] sm:px-3 sm:text-[13px]'
             : 'px-2.5 py-1.5 text-[12px] sm:px-3 sm:py-2 sm:text-[13px]'
           : 'px-4 py-3 text-sm'
       )}
       aria-haspopup="listbox"
       aria-expanded={open}
     >
-      <div className="flex min-w-0 items-center gap-4">
+      <div className={clsx('flex min-w-0 items-center', controlPresentation === 'workspace' ? 'gap-2' : 'gap-4')}>
         <EngineIcon engine={selectedEngine} size={isBarVariant ? 24 : 32} className="shrink-0" />
         <div className="min-w-0">
-          <p className={clsx('truncate font-medium', isBarVariant ? 'text-[13px]' : '')}>
+          <p className={clsx('font-medium', controlPresentation === 'workspace' ? 'break-words whitespace-normal leading-tight' : 'truncate', isBarVariant ? 'text-[13px]' : '')}>
             {selectedMeta?.marketingName ?? formatEngineShort(selectedEngine)}
           </p>
-          <p className={clsx('truncate text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[11px]')}>
+          <p className={clsx('text-text-muted', controlPresentation === 'workspace' ? 'break-words whitespace-normal leading-tight' : 'truncate', isBarVariant ? 'text-[10px]' : 'text-[11px]')}>
             {selectedEngine.provider}
             {selectedMeta?.versionLabel || selectedEngine.version ? ` - ${selectedMeta?.versionLabel ?? selectedEngine.version ?? ''}` : ''}
           </p>
@@ -180,7 +181,7 @@ export function EngineSelect({
       <svg
         aria-hidden="true"
         viewBox="0 0 20 20"
-        className={clsx('h-5 w-5 text-text-muted transition-transform', open && 'rotate-180')}
+        className={clsx('h-5 w-5 shrink-0 text-text-muted transition-transform', open && 'rotate-180')}
         fill="none"
       >
         <path d="m6 8 4 4 4-4" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
@@ -235,8 +236,8 @@ export function EngineSelect({
       >
         <div className={clsx('flex-1 min-w-0', isBarVariant ? (isCompact ? 'space-y-1' : 'space-y-1.5') : 'space-y-2 sm:min-w-[240px]')}>
           {controlPresentation === 'workspace' ? (
-            <div className="flex w-full max-w-full min-w-0 flex-nowrap items-end gap-2 sm:gap-3">
-              <div className="min-w-0 flex-1 overflow-hidden sm:w-[320px] sm:flex-none">
+            <div className="flex w-full max-w-full min-w-0 flex-col items-stretch gap-1.5 min-[360px]:flex-row min-[360px]:items-end min-[360px]:gap-2 sm:gap-3">
+              <div className="w-full min-w-0 min-[360px]:flex-1 sm:w-[320px] sm:flex-none">
                 <label className={clsx('uppercase tracking-micro text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[12px]')}>
                   {copy.choose}
                 </label>

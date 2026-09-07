@@ -3534,7 +3534,7 @@
         "families": "Familias",
         "models": "Modelos",
         "searchPlaceholder": "Buscar un modelo",
-        "catalogueSummary": "{visible} de {total} modelos en {families} familias",
+        "catalogueSummary": "Modelos: {visible}/{total} · Familias: {families}",
         "legacyHiddenOne": "1 modelo antiguo oculto",
         "legacyHiddenMany": "{count} modelos antiguos ocultos",
         "emptySearch": "Ningún modelo coincide con «{query}».",

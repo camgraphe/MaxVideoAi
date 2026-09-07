@@ -55,15 +55,15 @@ test('wallet retains its real billing destination and distinguishes zero from mi
   for (const [locale, loading, unavailable] of [['en', 'Loading…', 'Unavailable'], ['fr', 'Chargement…', 'Indisponible'], ['es', 'Cargando…', 'No disponible']]) {
     const dictionary = JSON.parse(readFileSync(`frontend/messages/${locale}.json`, 'utf8'));
     const t = (key: string, fallback: string) => key.split('.').reduce((obj, part) => obj?.[part], dictionary) ?? fallback;
-    for (const [authResolved, wallet, expected] of [[false, null, loading], [true, null, unavailable], [true, { balance: 0 }, '$0.00'], [true, { balance: 12.3 }, '$12.30']] as const) {
-      const markup = renderToStaticMarkup(React.createElement(HeaderWalletStatus, { authResolved, wallet, t, promptId: 'wallet', walletPromptOpen: false, onOpenPrompt() {}, onSchedulePromptClose() {} }));
+    for (const [walletLoading, wallet, expected] of [[true, null, loading], [false, null, unavailable], [false, { balance: 0 }, '$0.00'], [false, { balance: 12.3 }, '$12.30']] as const) {
+      const markup = renderToStaticMarkup(React.createElement(HeaderWalletStatus, { walletLoading, wallet, t, promptId: 'wallet', walletPromptOpen: false, onOpenPrompt() {}, onSchedulePromptClose() {} }));
       assert.ok(markup.includes(`aria-label="Wallet: ${expected}"`), `${locale}: ${expected}`);
       assert.match(markup, /href="\/billing"/);
       if (!wallet) assert.ok(!markup.includes('$0.00'));
     }
   }
-  for (const [authResolved, expected] of [[false, 'Loading…'], [true, 'Unavailable']] as const) {
-    const markup = renderToStaticMarkup(React.createElement(HeaderWalletStatus, { authResolved, wallet: null, t: () => undefined, promptId: 'wallet', walletPromptOpen: false, onOpenPrompt() {}, onSchedulePromptClose() {} }));
+  for (const [walletLoading, expected] of [[true, 'Loading…'], [false, 'Unavailable']] as const) {
+    const markup = renderToStaticMarkup(React.createElement(HeaderWalletStatus, { walletLoading, wallet: null, t: () => undefined, promptId: 'wallet', walletPromptOpen: false, onOpenPrompt() {}, onSchedulePromptClose() {} }));
     assert.ok(markup.includes(`aria-label="Wallet: ${expected}"`));
   }
 });

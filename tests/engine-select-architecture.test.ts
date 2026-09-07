@@ -122,11 +122,12 @@ test('workspace variant trigger is compact and does not spend width on a chevron
   const variantControlSource = readFileSync(variantControlPath, 'utf8');
   assert.match(
     variantControlSource,
-    /buttonClassName="!min-w-0 /,
+    /buttonClassName="[^"]*!min-w-0 /,
     'workspace variant trigger must override the shared minimum width'
   );
-  assert.match(variantControlSource, /w-\[92px\].*sm:w-\[124px\]/s);
-  assert.match(variantControlSource, /h-11/);
+  assert.match(variantControlSource, /w-full.*min-\[360px\]:w-\[108px\].*sm:w-\[124px\]/s);
+  assert.match(variantControlSource, /!min-h-11/);
+  assert.match(variantControlSource, /\[&>span>span\]:!whitespace-normal/);
   assert.match(variantControlSource, /hideChevron/);
 });
 
@@ -136,10 +137,12 @@ test('workspace engine and variant controls stay together without a Browse row',
     /controlPresentation === 'workspace' \? \([\s\S]*?\n\s*\) : \(/,
   )?.[0] ?? '';
 
-  assert.match(workspaceBranch, /flex w-full max-w-full min-w-0 flex-nowrap items-end gap-2 sm:gap-3/);
-  assert.match(workspaceBranch, /<div className="min-w-0 flex-1 overflow-hidden sm:w-\[320px\] sm:flex-none">/);
+  assert.match(workspaceBranch, /flex w-full max-w-full min-w-0 flex-col items-stretch gap-1\.5 min-\[360px\]:flex-row min-\[360px\]:items-end min-\[360px\]:gap-2 sm:gap-3/);
+  assert.match(workspaceBranch, /<div className="w-full min-w-0 min-\[360px\]:flex-1 sm:w-\[320px\] sm:flex-none">/);
   assert.match(engineSelectSource, /controlPresentation === 'workspace' && 'w-full min-w-0'/);
-  assert.match(engineSelectSource, /controlPresentation === 'workspace'\s*\? 'h-11 w-full/);
+  assert.match(engineSelectSource, /controlPresentation === 'workspace'\s*\? 'min-h-11 w-full/);
+  assert.match(engineSelectSource, /break-words whitespace-normal/);
+  assert.doesNotMatch(engineSelectSource, /<p className=\{clsx\('truncate font-medium'/);
   assert.doesNotMatch(workspaceBranch, /copy\.browseCompact|ExternalLink/);
   assert.match(engineSelectSource, /copy\.browse/);
   assert.match(engineSelectSource, /BrowseEnginesModal/);

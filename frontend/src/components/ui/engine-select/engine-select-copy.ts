@@ -8,7 +8,7 @@ export const DEFAULT_ENGINE_SELECT_COPY = {
   models: 'Models',
   score: 'Score',
   searchPlaceholder: 'Search engines',
-  catalogueSummary: '{visible} of {total} models across {families} families',
+  catalogueSummary: 'Models: {visible}/{total} · Families: {families}',
   legacyHiddenOne: '1 legacy model hidden',
   legacyHiddenMany: '{count} legacy models hidden',
   emptySearch: 'No models match “{query}”.',
