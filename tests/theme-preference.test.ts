@@ -51,3 +51,15 @@ test('system changes notify subscribers and cleanup removes every listener', () 
   assert.deepEqual(snapshots, ['dark']);
   assert.equal(browser.listenerCount(), 0);
 });
+
+test('blocked localStorage falls back to tab memory without crashing consumers', () => {
+  const browser = createThemeWindow(false);
+  Object.defineProperty(browser.window, 'localStorage', {
+    configurable: true,
+    get() { throw new DOMException('Storage blocked', 'SecurityError'); },
+  });
+
+  assert.deepEqual(readThemeSnapshot(browser.window), { preference: 'light', resolvedTheme: 'light' });
+  assert.doesNotThrow(() => persistThemePreference(browser.window, 'dark'));
+  assert.deepEqual(readThemeSnapshot(browser.window), { preference: 'dark', resolvedTheme: 'dark' });
+});

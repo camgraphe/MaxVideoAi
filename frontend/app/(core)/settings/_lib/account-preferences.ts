@@ -23,9 +23,8 @@ export function validateAccountName(value: string) {
   return { name, error: null };
 }
 
-export async function updateAccountName(client: AccountNameClient, user: User, name: string) {
-  const metadata = { ...(user.user_metadata ?? {}), name, full_name: name };
-  const result = await client.auth.updateUser({ data: metadata });
+export async function updateAccountName(client: AccountNameClient, name: string) {
+  const result = await client.auth.updateUser({ data: { name, full_name: name } });
   if (result.error) throw new Error(result.error.message);
   if (!result.data.user) throw new Error('Account update did not return a user.');
   return result.data.user;

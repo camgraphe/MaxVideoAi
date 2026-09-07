@@ -13,15 +13,33 @@ type ThemeSnapshot = {
   resolvedTheme: ResolvedTheme;
 };
 
+const volatilePreferences = new WeakMap<Window, ThemePreference>();
+
 function isExplicitTheme(value: string | null): value is ResolvedTheme {
   return value === 'light' || value === 'dark';
 }
 
+function readStoredPreference(browserWindow: Window) {
+  try {
+    return browserWindow.localStorage.getItem(THEME_STORAGE_KEY);
+  } catch {
+    return volatilePreferences.get(browserWindow) ?? null;
+  }
+}
+
+function prefersDark(browserWindow: Window) {
+  try {
+    return browserWindow.matchMedia('(prefers-color-scheme: dark)').matches;
+  } catch {
+    return false;
+  }
+}
+
 export function readThemeSnapshot(browserWindow: Window): ThemeSnapshot {
-  const stored = browserWindow.localStorage.getItem(THEME_STORAGE_KEY);
+  const stored = readStoredPreference(browserWindow);
   const preference: ThemePreference = stored === 'system' ? 'system' : isExplicitTheme(stored) ? stored : 'light';
   const resolvedTheme = preference === 'system'
-    ? browserWindow.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    ? prefersDark(browserWindow) ? 'dark' : 'light'
     : preference;
   return { preference, resolvedTheme };
 }
@@ -32,30 +50,40 @@ export function applyResolvedTheme(resolvedTheme: ResolvedTheme, root: HTMLEleme
 }
 
 export function persistThemePreference(browserWindow: Window, preference: ThemePreference) {
-  browserWindow.localStorage.setItem(THEME_STORAGE_KEY, preference);
+  volatilePreferences.set(browserWindow, preference);
+  try {
+    browserWindow.localStorage.setItem(THEME_STORAGE_KEY, preference);
+  } catch {
+    // The in-memory preference keeps this tab usable when storage is blocked.
+  }
   const event = browserWindow.document.createEvent('Event');
   event.initEvent(THEME_CHANGE_EVENT, false, false);
   browserWindow.dispatchEvent(event);
 }
 
 export function subscribeToThemePreference(browserWindow: Window, notify: (snapshot: ThemeSnapshot) => void) {
-  const media = browserWindow.matchMedia('(prefers-color-scheme: dark)');
+  let media: MediaQueryList | null = null;
+  try {
+    media = browserWindow.matchMedia('(prefers-color-scheme: dark)');
+  } catch {
+    media = null;
+  }
   const publish = () => notify(readThemeSnapshot(browserWindow));
   const onStorage = (event: StorageEvent) => {
     if (event.key === THEME_STORAGE_KEY) publish();
   };
   const onThemeChange = () => publish();
   const onSystemChange = () => {
-    if (browserWindow.localStorage.getItem(THEME_STORAGE_KEY) === 'system') publish();
+    if (readThemeSnapshot(browserWindow).preference === 'system') publish();
   };
 
   browserWindow.addEventListener('storage', onStorage);
   browserWindow.addEventListener(THEME_CHANGE_EVENT, onThemeChange);
-  media.addEventListener('change', onSystemChange);
+  media?.addEventListener('change', onSystemChange);
   return () => {
     browserWindow.removeEventListener('storage', onStorage);
     browserWindow.removeEventListener(THEME_CHANGE_EVENT, onThemeChange);
-    media.removeEventListener('change', onSystemChange);
+    media?.removeEventListener('change', onSystemChange);
   };
 }
 

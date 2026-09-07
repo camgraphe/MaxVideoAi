@@ -52,7 +52,7 @@ export function useAccountNameForm(user: User | null) {
     setStatus(null);
     try {
       const client = await loadSupabaseClient();
-      await updateAccountName(client, user, validation.name);
+      await updateAccountName(client, validation.name);
       if (requestRef.current !== request || userIdRef.current !== expectedUserId) return;
       setName(validation.name);
       setSavedName(validation.name);
