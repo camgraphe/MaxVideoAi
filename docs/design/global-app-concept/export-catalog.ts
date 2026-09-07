@@ -41,6 +41,11 @@ const models = ids.map(id => {
     formats: entry.engine.aspectRatios,
     audio: option.audioToggle ? 'optional' : option.audioIncluded ? 'included' : 'none',
     defaultDuration: option.defaultDuration, quotes,
+    inputModes: entry.engine.modes,
+    referenceFields: [...(entry.engine.inputSchema?.required ?? []), ...(entry.engine.inputSchema?.optional ?? [])]
+      .filter(field => ['image', 'video', 'audio'].includes(field.type))
+      .map(field => ({ id: field.id, kind: field.type, max: field.maxCount ?? 1,
+        modes: field.modes ?? entry.engine.modes, requiredInModes: field.requiredInModes ?? [] })),
   };
 });
 const catalogue = {

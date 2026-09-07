@@ -324,3 +324,23 @@ dialog{color:var(--text);background:var(--surface);border:1px solid var(--line);
 
 .assistant-mark{display:inline-flex;flex:none;align-items:center;justify-content:center}.assistant-mark img{width:24px;height:24px}.assistant-mark .mark-light{display:none}[data-theme=light] .assistant-mark .mark-light{display:block}[data-theme=light] .assistant-mark .mark-dark{display:none}.assistant-marks{display:inline-flex;gap:5px}.assistant-marks img{width:19px;height:19px}
 @media(max-width:600px){.topbar .assistant-shortcut{flex-direction:column;gap:2px;font-size:10px}.topbar .assistant-shortcut span{display:inline-flex}.topbar .assistant-shortcut .mark-light{display:none}[data-theme=light] .topbar .assistant-shortcut .mark-light{display:block}[data-theme=light] .topbar .assistant-shortcut .mark-dark{display:none}}
+
+/* Direct reference commands: no empty cards or manual workflow selector. */
+.reference-line{gap:12px;flex-wrap:wrap;padding:10px 0;min-height:64px}
+.reference-line .refs-label{min-width:0;margin-right:2px;flex-shrink:0}
+.reference-commands{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.reference-command{display:flex;gap:7px;align-items:center;justify-content:center;min-height:44px;padding:0 10px;border:1px solid var(--line);background:var(--surface);border-radius:5px;font-size:12px;font-weight:550;white-space:nowrap}
+.reference-command>.icon:first-child{width:22px;height:22px;color:var(--accent)}
+.reference-command>.icon:last-child{width:13px;height:13px;color:var(--muted)}
+.reference-command>img{width:28px;height:28px;object-fit:cover;border-radius:3px}
+.reference-command.has-reference{border-color:var(--accent);background:var(--soft)}
+.reference-command:hover:not(:disabled){border-color:var(--accent);background:var(--soft)}
+.reference-command[aria-disabled="true"]{opacity:.45;cursor:not-allowed}
+.refs-total{margin-left:auto;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;gap:5px;font-size:12px}
+.refs-total>.icon{width:12px}
+.reference-selection{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.reference-selection .ref-thumbs{flex:1}
+.picker-sources{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+@media(max-width:600px){.reference-line{gap:8px}.reference-line .refs-label{flex-basis:100%;margin:0}.reference-command{padding:0 10px}.reference-selection .ref-thumbs{flex:1}.reference-selection .ref-thumb:nth-child(n){display:grid}.reference-selection .refs-extra{min-width:44px}}
+@media(max-width:350px){.reference-commands{gap:5px}.reference-command{padding:0 8px;font-size:11px;gap:5px}.reference-command>.icon:first-child{width:20px}.reference-command>.icon:last-child{width:11px}.reference-line:has(.refs-total) .reference-commands{flex:1}.refs-total{margin:0}}
+@media(max-width:600px){.reference-line .refs-label{flex-basis:auto;margin-right:auto}.reference-line .refs-total{order:0}.reference-commands{order:1;width:100%;flex-wrap:nowrap}.reference-command{flex:1;min-width:0;padding:0 6px;gap:4px}.reference-command>img{width:22px;height:22px}.reference-command>.icon:last-child{width:11px}.reference-command>span{min-width:0}.reference-line:has(.refs-total) .reference-commands{flex-basis:100%}}

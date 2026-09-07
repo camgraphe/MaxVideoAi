@@ -1,15 +1,5 @@
 // Local review fixtures. Limits belong to UI scenarios, not production models.
 export const profiles = {
-  mixed: { name: 'Références mixtes', kind: 'video', detail: 'Images, vidéos et audio', max: 8, roles: [
-    { id: 'image', kind: 'image', name: 'Référence image', max: 6 },
-    { id: 'video', kind: 'video', name: 'Référence vidéo', max: 2 },
-    { id: 'audio', kind: 'audio', name: 'Référence audio', max: 2 },
-  ] },
-  frames: { name: 'Début → fin', kind: 'video', detail: 'Deux images aux rôles distincts', max: 2, roles: [
-    { id: 'first', kind: 'image', name: 'Première image', max: 1, required: true },
-    { id: 'last', kind: 'image', name: 'Dernière image', max: 1 },
-  ] },
-  text: { name: 'Texte seul', kind: 'video', detail: 'Aucune référence média', max: 0, roles: [] },
   images: { name: 'Création & références', kind: 'image', detail: 'Créer ou transformer une image', max: 8, roles: [
     { id: 'image', kind: 'image', name: 'Référence image', max: 8 },
   ] },
@@ -30,10 +20,12 @@ export const media = [
   { id: 'a1', kind: 'audio', name: 'Ambiance de station', url: 'assets/ambience.wav', source: 'Exemple du dépôt' },
 ];
 export const labels = { video: 'Vidéo', image: 'Image', audio: 'Audio' };
-export const defaults = { video: 'mixed', image: 'images', audio: 'music' };
+export const defaults = { video: 'automatic', image: 'images', audio: 'music' };
 
 // Original geometric pictograms: common 24-unit grid, solid mass + tinted detail.
 const shapes = {
+  first: '<path d="M2 3h3v18H2z"/><path d="M8 4h14v16H8z" opacity=".25"/><circle cx="18" cy="8" r="1.5"/><path d="m8 18 5-7 4 5 2-2 3 4v2H8z"/>',
+  last: '<path d="M19 3h3v18h-3z"/><path d="M2 4h14v16H2z" opacity=".25"/><circle cx="12" cy="8" r="1.5"/><path d="m2 18 5-7 4 5 2-2 3 4v2H2z"/>',
   reference: '<path d="M2 2h15v3H5v12H2z" opacity=".4"/><path d="M7 7h15v15H7z" opacity=".25"/><circle cx="17.5" cy="11.5" r="1.5"/><path d="m8 20 5-7 4 5 2-2 3 4v2H8z"/>',
   prompt: '<path d="M3 4h18v15H3z" opacity=".2"/><path d="M6 7h10v2H6zm0 4h7v2H6zm0 4h6v2H6zm10-4h2v7h-2z"/>',
   create: '<path d="M4 3h10l6 6v12H4z" opacity=".25"/><path d="M13 3v7h7M7 14h10v2H7zm0 4h6v2H7z"/><path d="m8 5 1 3 3 1-3 1-1 3-1-3-3-1 3-1z"/>',

@@ -2,6 +2,7 @@ import { profiles, media, labels, defaults, icon } from './data.js';
 import { catalogue } from './catalog.generated.js';
 import { createModelChoices, money, soundLabel } from './model-choice.js';
 import { recentItems, renderRecentCards, installMediaDrag } from './recent-media.js';
+import { referenceProfile, referenceMode, requiredReferences } from './reference-choice.js';
 
 const { initialModelChoice, modelFor, differences, matchingQuote, adaptChoice } = createModelChoices(catalogue);
 
@@ -19,7 +20,7 @@ state.drafts.video.prompt = 'Un mouvement de caméra lent. Préserver la lumièr
 try { state.appearance = ['dark','light','system'].includes(localStorage.getItem('maxvideoai-concept-theme')) ? localStorage.getItem('maxvideoai-concept-theme') : 'dark'; } catch {}
 let refCounter = 0, importCounter = 0, restoreFocus = null, noticeTimer, renderedContext = null;
 const draft = () => state.drafts[state.kind];
-const profile = () => profiles[draft().profile];
+const profile = () => state.kind === 'video' ? referenceProfile(modelFor(draft().modelChoice)) : profiles[draft().profile];
 const asset = id => media.find(m => m.id === id);
 const roleFor = id => profile().roles.find(r => r.id === id);
 const byId = id => draft().refs.find(r => r.id === id);
@@ -51,6 +52,7 @@ function reader(m, cls = 'preview-media') {
   return `<div class="sound-stage">${wave()}<h2>${esc(m.name)}</h2><small>Audio · exemple local</small><audio src="${esc(m.url)}" controls preload="none" aria-label="Écouter ${esc(m.name)}"></audio></div>`;
 }
 function invalidRefs(p = profile(), refs = draft().refs) {
+  if (p.modes && refs.length && !referenceMode(p, refs)) return refs;
   const counts = {};
   return refs.filter((r, i) => {
     const role = p.roles.find(s => s.id === r.role);
@@ -58,26 +60,27 @@ function invalidRefs(p = profile(), refs = draft().refs) {
     return !role || role.kind !== asset(r.assetId)?.kind || counts[r.role] > role.max || i >= p.max;
   });
 }
-function missingRequired() { return profile().roles.filter(r => r.required && !draft().refs.some(s => s.role === r.id)); }
+function missingRequired() { return state.kind === 'video' ? requiredReferences(profile(), draft().refs) : profile().roles.filter(r => r.required && !draft().refs.some(s => s.role === r.id)); }
 function canInsert(role, amount = 1, replaceId = null) {
   if (!role) return false;
   const remaining = draft().refs.filter(r => r.id !== replaceId);
-  return remaining.length + amount <= profile().max && remaining.filter(r => r.role === role.id).length + amount <= role.max;
+  return remaining.length + amount <= profile().max && remaining.filter(r => r.role === role.id).length + amount <= role.max
+    && (state.kind !== 'video' || Boolean(referenceMode(profile(), [...remaining, { role: role.id }])));
 }
 function renderReferences() {
-  const refs = draft().refs, invalid = invalidRefs(), p = profile();
-  const frameRoles = p.roles.filter(r => ['first','last'].includes(r.id));
-  const collection = refs.filter(r => !frameRoles.some(role => role.id === r.role));
-  const visibleCount = innerWidth <= 350 ? (collection.length > 1 ? 0 : 1) : innerWidth <= 600 ? 2 : 4;
-  const frames = frameRoles.length ? `<div class="reference-frames" aria-label="Images de début et de fin">${frameRoles.map(role => {
-    const ref=refs.find(r=>r.role===role.id),m=ref&&asset(ref.assetId),name=role.id==='first'?'Image de départ':'Image de fin';
-    return `<div class="frame-slot"><button class="frame-target ${ref?'ref-thumb':''} ${ref&&invalid.includes(ref)?'invalid':''}" data-action="${ref?'reference':'pick'}" ${ref?`data-id="${ref.id}"`:''} data-role="${role.id}" data-drop-role="${role.id}" aria-label="${ref?'Gérer':'Ajouter'} : ${name}"><span class="frame-picture">${m?`<img src="${esc(m.url)}" alt="">`:icon('image')}</span><span><strong>${name}</strong><small>${m?esc(m.name):role.required?'À ajouter':'Facultative'}</small></span>${ref?'':icon('plus')}</button>${ref?`<button class="icon-btn" data-action="remove" data-id="${ref.id}" aria-label="Retirer : ${name}">${icon('remove')}</button>`:''}</div>`;
-  }).join('')}</div>` : '';
-  return `<div class="reference-line"><button class="refs-label" data-action="profile" aria-label="Scénarios de références de démonstration"><strong>${icon('reference')}Références</strong><small>${refs.length ? p.max ? `${refs.length} / ${p.max}` : `${refs.length} à vérifier` : 'Scénarios · démo'} ${icon('down')}</small></button>
-    ${collection.length ? `<div class="ref-thumbs">${collection.slice(0,visibleCount).map((r,i)=>{const m=asset(r.assetId);return `<button class="ref-thumb ${invalid.includes(r)?'invalid':''}" data-action="reference" data-id="${r.id}" aria-label="Gérer ${esc(m.name)}, ${esc(roleFor(r.role)?.name||r.role)}">${m.kind==='image'?`<img src="${esc(m.url)}" alt="" style="object-position:${esc(m.focus||'50% 50%')}">`:icon(m.kind)}<span class="ref-count">${i+1}</span></button>`;}).join('')}${collection.length>visibleCount?`<button class="refs-extra" data-action="manage" aria-label="Gérer les ${refs.length} références">+${collection.length-visibleCount}</button>`:''}</div>` : `<span class="reference-empty">${p.roles.length ? p.roles.filter(r=>!frameRoles.includes(r)).map(r=>icon(r.kind)).join('') : 'Texte seul'}</span>`}
-    ${p.roles.length?`<button class="ref-add" data-action="add">${icon('plus')} Ajouter</button>`:''}${refs.length?button('Gérer','manage',null):''}</div>${frames}
-    ${invalid.length?`<p class="error">${invalid.length} référence(s) incompatible(s) conservée(s). Changez de profil ou retirez-les du brouillon.</p>`:''}
-    ${missingRequired().length?`<p class="error">À ajouter : ${missingRequired().map(r=>r.name).join(', ')}.</p>`:''}`;
+  const refs=draft().refs, invalid=invalidRefs(), p=profile();
+  const frameRoles=p.roles.filter(r=>['first','last'].includes(r.id));
+  const collection=refs.filter(r=>!frameRoles.some(role=>role.id===r.role));
+  const collectionRoles=p.roles.filter(r=>!frameRoles.includes(r));
+  const visibleCount=innerWidth<=600?2:4;
+  const incompatible=state.kind==='video'&&refs.length&&!referenceMode(p,refs);
+  return `<div class="reference-line"><div class="refs-label"><strong>${icon('reference')}Références</strong></div><div class="reference-commands" aria-label="Ajouter des médias au brouillon">${frameRoles.map(role=>{
+    const ref=refs.find(r=>r.role===role.id),m=ref&&asset(ref.assetId);
+    return `<button class="reference-command ${ref?'has-reference':''}" data-action="${ref?'reference':'pick'}" ${ref?`data-id="${ref.id}"`:''} data-role="${role.id}" data-drop-role="${role.id}" aria-label="${ref?'Gérer':'Ajouter'} : ${role.name}" title="${ref?esc(m.name):role.name}" aria-disabled="${!ref&&!canInsert(role)}">${ref?`<img src="${esc(m.url)}" alt="">`:icon(role.id)}<span>${role.id==='first'?'Départ':'Fin'}</span>${icon(ref?'check':'plus')}</button>`;
+  }).join('')}${collectionRoles.length?`<button class="reference-command" data-action="add">${icon('reference')}<span>Ajouter</span>${icon('plus')}</button>`:''}</div>${refs.length?`<button class="refs-total" data-action="manage" aria-label="Gérer les ${refs.length} références">${refs.length}${icon('down')}</button>`:''}</div>
+  ${collection.length?`<div class="reference-selection"><div class="ref-thumbs">${collection.slice(0,visibleCount).map(r=>{const m=asset(r.assetId);return `<button class="ref-thumb ${invalid.includes(r)?'invalid':''}" data-action="reference" data-id="${r.id}" aria-label="Gérer ${esc(m.name)}, ${esc(roleFor(r.role)?.name||r.role)}">${m.kind==='image'?`<img src="${esc(m.url)}" alt="" style="object-position:${esc(m.focus||'50% 50%')}">`:icon(m.kind)}</button>`;}).join('')}${collection.length>visibleCount?`<button class="refs-extra" data-action="manage" aria-label="Gérer les ${refs.length} références">+${collection.length-visibleCount}</button>`:''}</div>${button('Gérer','manage',null)}</div>`:''}
+  ${invalid.length||incompatible?`<p class="error">Ces références sont conservées mais ne peuvent pas être combinées avec ce modèle. Retirez-les ou choisissez un autre modèle.</p>`:''}
+  ${missingRequired().length?`<p class="error">À ajouter : ${missingRequired().map(r=>r.name).join(', ')}.</p>`:''}`;
 }
 
 function currentQuote(choice = draft().modelChoice) {
@@ -108,7 +111,9 @@ function changeSummary(choice) {
   const names = {duration:'Durée',resolution:'Résolution',format:'Format',audio:'Son'};
   const value = (key,c) => key==='audio'?soundLabel(c):key==='duration'?`${c[key]} s`:c[key];
   const changes = Object.keys(names).filter(key=>previous[key]!==choice[key]);
-  return changes.length ? `<div class="model-changes"><small>Changements proposés</small>${changes.map(key=>`<div><span>${names[key]}</span><span>${esc(value(key,previous))} → <strong>${esc(value(key,choice))}</strong></span></div>`).join('')}</div>` : '<p class="panel-intro model-preserved">Vos réglages sont conservés.</p>';
+  const incompatible = invalidRefs(referenceProfile(modelFor(choice)));
+  const referenceNote = incompatible.length ? `<p class="error">${incompatible.length} référence(s) à vérifier avec ce modèle. Elles restent dans le brouillon.</p>` : '';
+  return referenceNote + (changes.length ? `<div class="model-changes"><small>Changements proposés</small>${changes.map(key=>`<div><span>${names[key]}</span><span>${esc(value(key,previous))} → <strong>${esc(value(key,choice))}</strong></span></div>`).join('')}</div>` : '<p class="panel-intro model-preserved">Vos réglages sont conservés.</p>');
 }
 function modelList() {
   const choice=draft().modelChoice, families=[...new Map(catalogue.models.map(m=>[m.familyId,m.familyLabel])).entries()];
@@ -182,7 +187,7 @@ function render() {
   positionNotice();
   if(focus){
     const matches=[...document.querySelectorAll('#app [data-action]')].filter(el=>Object.entries(focus).every(([key,value])=>el.dataset[key]===value));
-    (matches.find(el=>focusLabel&&el.getAttribute('aria-label')===focusLabel)||matches.find(el=>el.textContent===focusText)||matches[0])?.focus({preventScroll:true});
+    (matches.find(el=>focusLabel&&el.getAttribute('aria-label')===focusLabel)||matches.find(el=>el.textContent===focusText)||matches[0]||(focus.role?[...document.querySelectorAll('#app [data-role]')].find(el=>el.dataset.role===focus.role):null))?.focus({preventScroll:true});
   }
 }
 function positionNotice() {
@@ -195,7 +200,7 @@ function toast(message, undo=null) {
   positionNotice();$('#notice').classList.add('shown');noticeTimer=setTimeout(()=>{$('#notice').classList.remove('shown');state.undo=null;},undo?12000:6500);
 }
 function openPanel(type, args={}) {
-  if(!$('#panel').open){const el=document.activeElement;restoreFocus=el?.dataset?.action ? {action:el.dataset.action,id:el.dataset.id,kind:el.dataset.kind,label:el.getAttribute('aria-label'),text:el.textContent} : null;}
+  if(!$('#panel').open){const el=document.activeElement;restoreFocus=el?.dataset?.action ? {action:el.dataset.action,id:el.dataset.id,kind:el.dataset.kind,role:el.dataset.role,label:el.getAttribute('aria-label'),text:el.textContent} : null;}
   state.panel={type,...args};state.picks=[];renderPanel();
   if(!$('#panel').open)$('#panel').showModal();
   $('#panel .icon-btn')?.focus();
@@ -204,7 +209,7 @@ function closePanel() {
   $('#panel').close();$('#panel').innerHTML='';state.panel=null;
   if(restoreFocus){
     const f=restoreFocus,matches=[...document.querySelectorAll('#app [data-action]')].filter(el=>el.dataset.action===f.action&&el.dataset.id===f.id&&el.dataset.kind===f.kind);
-    (matches.find(el=>f.label&&el.getAttribute('aria-label')===f.label)||matches.find(el=>el.textContent===f.text)||matches[0])?.focus();
+    (matches.find(el=>f.label&&el.getAttribute('aria-label')===f.label)||matches.find(el=>el.textContent===f.text)||matches[0]||(f.role?[...document.querySelectorAll('#app [data-role]')].find(el=>el.dataset.role===f.role):null))?.focus();
   }
 }
 function panelLayout(title,body) {
@@ -235,10 +240,10 @@ function renderPanel() {
   }else if(p.type==='controls' && state.kind==='video'){
     panelLayout('Réglages de création',`${modelControls(draft().modelChoice)}<div class="panel-footer"><div id="settings-quote" class="candidate-quote" role="status"><strong>${esc(money(currentQuote()))}</strong><small>Estimation catalogue · Member · USD</small></div>${button('Terminé','close','check','','primary')}</div>`);
   }else if(p.type==='add'){
-    panelLayout('Ajouter une référence',`<p class="panel-intro">Scénario de références indépendant du modèle : limites illustratives pour essayer les interactions.</p>${profile().roles.map(r=>`<div class="role-row">${icon(r.kind)}<div class="grow"><strong>${r.name}</strong><small>${draft().refs.filter(x=>x.role===r.id).length} / ${r.max}${r.required?' · Requise':''}</small><div class="role-options">${button('Choisir','pick',null,`data-role="${r.id}" aria-label="Choisir : ${r.name}" ${canInsert(r)?'':'disabled'}`)}${button('Importer','import',null,`data-role="${r.id}" aria-label="Importer : ${r.name}" ${canInsert(r)?'':'disabled'}`)}${button('Créer','create-reference',null,`data-role="${r.id}" aria-label="Créer : ${r.name}" ${!state.returnContext&&canInsert(r)?'':'disabled'}`)}</div></div></div>`).join('')}<small style="display:block;margin-top:18px">${draft().refs.length} / ${profile().max} au total · limites illustratives du prototype</small>`);
+    panelLayout('Ajouter une référence',`<p class="panel-intro">Choisissez le rôle du média à ajouter.</p>${profile().roles.filter(r=>!['first','last'].includes(r.id)).map(r=>`<div class="role-row">${icon(r.kind)}<div class="grow"><strong>${r.name}</strong><small>${draft().refs.filter(x=>x.role===r.id).length} / ${r.max}${r.required?' · Requise':''}</small>${!canInsert(r)?'<small class="error">Retirez ou remplacez les références présentes pour utiliser ce rôle.</small>':''}<div class="role-options">${button('Choisir','pick',null,`data-role="${r.id}" aria-label="Choisir : ${r.name}" ${canInsert(r)?'':'disabled'}`)}${button('Importer','import',null,`data-role="${r.id}" aria-label="Importer : ${r.name}" ${canInsert(r)?'':'disabled'}`)}${button('Créer','create-reference',null,`data-role="${r.id}" aria-label="Créer : ${r.name}" ${!state.returnContext&&canInsert(r)?'':'disabled'}`)}</div></div></div>`).join('')}<small style="display:block;margin-top:18px">${state.kind==='video'?'Rôles du catalogue · sélection locale, aucun envoi':'Sélection locale · limites illustratives'}</small>`);
   }else if(p.type==='pick'){
-    const role=roleFor(p.role),choices=media.filter(m=>m.kind===role.kind);
-    panelLayout(p.replaceId?'Remplacer la référence':role.name,`<p class="panel-intro">${p.replaceId?'La référence actuelle reste en place jusqu’à votre choix.':'Sélectionnez un ou plusieurs médias compatibles.'}</p><div class="picker-grid">${choices.map(m=>`<button class="pick-card" data-action="pick-item" data-id="${m.id}" aria-pressed="${state.picks.includes(m.id)}" aria-label="Choisir ${esc(m.name)}">${thumb(m)}<span class="name">${esc(m.name)}</span>${state.picks.includes(m.id)?`<span class="pick-mark">${icon('check')}</span>`:''}</button>`).join('')}</div><div class="panel-footer"><small>${state.picks.length} sélectionné(s)</small>${button(p.replaceId?'Remplacer':'Ajouter la sélection','confirm-picks','check',!state.picks.length?'disabled':'','primary')}</div>`);
+    const role=roleFor(p.role);if(!role){closePanel();return;}const choices=media.filter(m=>m.kind===role.kind);
+    panelLayout(p.replaceId?'Remplacer la référence':role.name,`<p class="panel-intro">${p.replaceId?'La référence actuelle reste en place jusqu’à votre choix.':role.max===1?'Choisissez un média ou importez un fichier.':'Sélectionnez des médias compatibles.'}</p><div class="picker-sources">${button('Importer un fichier','import','upload',`data-role="${role.id}"` ,'outline')}${!p.replaceId?button('Créer une référence','create-reference','create',`data-role="${role.id}" ${state.returnContext?'disabled':''}`):''}</div><div class="picker-grid">${choices.map(m=>`<button class="pick-card" data-action="pick-item" data-id="${m.id}" aria-pressed="${state.picks.includes(m.id)}" aria-label="Choisir ${esc(m.name)}">${thumb(m)}<span class="name">${esc(m.name)}</span>${state.picks.includes(m.id)?`<span class="pick-mark">${icon('check')}</span>`:''}</button>`).join('')}</div><div class="panel-footer"><small>${state.picks.length} sélectionné(s)</small>${button(p.replaceId?'Remplacer':'Ajouter la sélection','confirm-picks','check',!state.picks.length?'disabled':'','primary')}</div>`);
   }else if(p.type==='manage'||p.type==='reference'){
     const refs=p.type==='reference'?[byId(p.id)].filter(Boolean):draft().refs;
     panelLayout(p.type==='reference'?'Cette référence':`Références · ${draft().refs.length}`,`<p class="panel-intro">Retirer agit sur le brouillon. Vos médias restent dans la bibliothèque.</p>${refs.map(r=>{
@@ -246,7 +251,7 @@ function renderPanel() {
       return `<div class="manage-row">${thumb(m,false)}<div><strong>${esc(m.name)}</strong><small>${esc(role?.name||'Incompatible avec ce profil')}</small>${profile().roles.filter(s=>s.kind===m.kind).length?`<label class="role-select">Rôle<select data-role-ref="${r.id}" aria-label="Rôle de ${esc(m.name)}"><option value="" ${role?'':'selected'} disabled>Attribuer un rôle</option>${profile().roles.filter(s=>s.kind===m.kind).map(s=>`<option value="${s.id}" ${r.role===s.id?'selected':''}>${s.name}</option>`).join('')}</select></label>`:''}</div><div class="manage-actions">${button('Aperçu','reference-preview','play',`data-id="${r.id}"`)}${button('Remplacer','replace','replace',`data-id="${r.id}" ${role?'':'disabled'}`)}${button('Retirer','remove','remove',`data-id="${r.id}"`,'danger')}<button class="icon-btn" data-action="move" data-id="${r.id}" data-step="-1" aria-label="Monter ${esc(m.name)}" ${i===0?'disabled':''}>${icon('up')}</button><button class="icon-btn" data-action="move" data-id="${r.id}" data-step="1" aria-label="Descendre ${esc(m.name)}" ${i===draft().refs.length-1?'disabled':''}>${icon('down')}</button></div></div>`;
     }).join('')||'<p class="panel-intro">Aucune référence dans ce brouillon.</p>'}${button('Ajouter une référence','add','plus','','outline')}`);
   }else if(p.type==='profile'){
-    panelLayout('Scénarios de références',`<p class="panel-intro">Ces profils servent à tester les interactions. Leurs limites sont illustratives et ne décrivent pas les capacités du modèle sélectionné.</p>${Object.entries(profiles).filter(([,v])=>v.kind===state.kind).map(([key,v])=>`<button class="choice-row" data-action="set-profile" data-value="${key}">${icon(v.kind)}<div class="grow"><strong>${v.name}</strong><small>${v.detail}</small>${invalidRefs(v).length?`<small class="error">${invalidRefs(v).length} référence(s) deviendront incompatibles, sans être effacées.</small>`:""}</div>${draft().profile===key?icon('check'):icon('arrow')}</button>`).join('')}<p class="panel-intro" style="margin-top:18px">Vos références restent conservées si vous changez de profil. Les incompatibilités empêchent la simulation jusqu’à résolution.</p>`);
+    panelLayout('Type de création',`<p class="panel-intro">Choisissez ce que vous souhaitez créer.</p>${Object.entries(profiles).filter(([,v])=>v.kind===state.kind).map(([key,v])=>`<button class="choice-row" data-action="set-profile" data-value="${key}">${icon(v.kind)}<div class="grow"><strong>${v.name}</strong><small>${v.detail}</small>${invalidRefs(v).length?`<small class="error">${invalidRefs(v).length} référence(s) deviendront incompatibles, sans être effacées.</small>`:""}</div>${draft().profile===key?icon('check'):icon('arrow')}</button>`).join('')}<p class="panel-intro" style="margin-top:18px">Vos références restent conservées si vous changez de profil. Les incompatibilités empêchent la simulation jusqu’à résolution.</p>`);
   }else if(p.type==='controls'){
     panelLayout('Réglages de création',`<p class="panel-intro">Valeurs locales pour éprouver les commandes. Aucun devis n’est calculé.</p><div class="stack">${state.kind!=='audio'?`<label>Format<select id="format"><option ${draft().format==='16:9'?'selected':''}>16:9</option><option ${draft().format==='9:16'?'selected':''}>9:16</option><option ${draft().format==='1:1'?'selected':''}>1:1</option></select></label>`:''}${state.kind!=='image'?`<label>Durée de démonstration<select id="duration"><option ${draft().duration==='5 s'?'selected':''}>5 s</option><option ${draft().duration==='10 s'?'selected':''}>10 s</option></select></label>`:''}</div><div class="panel-footer"><small>Conservés dans le brouillon</small>${button('Terminé','close','check','','primary')}</div>`);
   }else if(p.type==='preview'){
@@ -270,7 +275,7 @@ function recentDestination(id, replaceId, targetRole) {
     return {allowed,roles:role?[role]:[],message:allowed?'Remplacer cette référence · confirmation requise':'Ce média ne peut pas remplacer cette référence.'};
   }
   const available=roles.filter(r=>canInsert(r));
-  return {allowed:available.length>0,roles,available,message:available.length?available.length===1?`Ajouter : ${available[0].name}`:'Déposer, puis choisir un rôle':roles.length?'Limite atteinte. Retirez ou remplacez une référence.':'Ce type de média n’est pas accepté par ce scénario de références.'};
+  return {allowed:available.length>0,roles,available,message:available.length?available.length===1?`Ajouter : ${available[0].name}`:'Déposer, puis choisir un rôle':roles.length?'Rôle indisponible avec les références présentes. Retirez ou remplacez une référence.':'Ce type de média n’est pas proposé par le modèle sélectionné.'};
 }
 function revealReferences() {
   $('#references')?.scrollIntoView({block:'nearest',behavior:state.reduced||matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
@@ -315,15 +320,15 @@ function finishReference(useOutput) {
   render();toast(useOutput?'Référence ajoutée au brouillon d’origine.':'Brouillon d’origine retrouvé.');
 }
 function upload(roleId=null) {
-  const role=roleId?roleFor(roleId):null;
+  const role=roleId?roleFor(roleId):null,replaceId=state.panel?.replaceId;
   const input=document.createElement('input');input.type='file';input.accept=role?`${role.kind}/*`:'image/*,video/*,audio/*';input.multiple=!role||role.max>1;
   input.addEventListener('change',()=>{
     const files=[...input.files];if(!files.length)return;
     const valid=files.filter(f=>['image','video','audio'].includes(f.type.split('/')[0])&&(!role||f.type.startsWith(`${role.kind}/`)));
     if(valid.length!==files.length){toast('Un fichier a un type incompatible. La sélection est conservée.');return;}
-    if(role&&!canInsert(role,valid.length)){toast('Trop de fichiers pour ce rôle ou ce profil.');return;}
+    if(role&&!canInsert(role,valid.length,replaceId)){toast('Trop de fichiers pour ce rôle ou ce profil.');return;}
     const ids=valid.map(f=>{const id=`upload-${++importCounter}`;media.push({id,name:f.name,kind:f.type.split('/')[0],url:URL.createObjectURL(f),source:'Import local · non envoyé'});return id;});
-    promoteRecent(ids);if(role)insertReferences(ids,roleId);closePanel();render();toast('Fichiers ajoutés localement. Aucun envoi au serveur.');
+    promoteRecent(ids);if(role)insertReferences(ids,roleId,replaceId);closePanel();render();toast('Fichiers ajoutés localement. Aucun envoi au serveur.');
   });input.click();
 }
 
@@ -355,12 +360,12 @@ document.addEventListener('click',event=>{
     draft().modelChoice=structuredClone(state.panel.choice);closePanel();render();toast('Modèle appliqué. Instruction et références conservées.');
   }
   else if(a==='reference')openPanel('reference',{id});
-  else if(a==='pick')openPanel('pick',{role:el.dataset.role});
+  else if(a==='pick'){if(!canInsert(roleFor(el.dataset.role))){toast('Retirez ou remplacez les références présentes pour utiliser ce rôle.');return;}openPanel('pick',{role:el.dataset.role});}
   else if(a==='replace'){const r=byId(id);if(r)openPanel('pick',{role:r.role,replaceId:id});}
   else if(a==='pick-item'){
     const p=state.panel;const role=roleFor(p.role);
     if(state.picks.includes(id))state.picks=state.picks.filter(v=>v!==id);
-    else if(p.replaceId)state.picks=[id];
+    else if(p.replaceId||role.max===1)state.picks=[id];
     else if(canInsert(role,state.picks.length+1))state.picks.push(id);
     else{toast('Limite atteinte pour ce profil.');return;}
     renderPanel();$('#panel [data-id="'+id+'"]')?.focus();
@@ -368,7 +373,7 @@ document.addEventListener('click',event=>{
     if(insertReferences(state.picks,state.panel.role,state.panel.replaceId)){closePanel();render();toast('Références mises à jour.');}
   }else if(a==='remove'){
     const kind=state.kind,index=draft().refs.findIndex(r=>r.id===id),removed=structuredClone(byId(id));draft().refs=draft().refs.filter(r=>r.id!==id);render();
-    openPanel('manage');toast('Retirée du brouillon, conservée dans les médias.',()=>{if(!state.drafts[kind].refs.some(r=>r.id===removed.id))state.drafts[kind].refs.splice(Math.min(index,state.drafts[kind].refs.length),0,removed);render();if(state.panel)renderPanel();});
+    if(draft().refs.length&&state.panel)openPanel('manage');else closePanel();toast('Retirée du brouillon, conservée dans les médias.',()=>{if(!state.drafts[kind].refs.some(r=>r.id===removed.id))state.drafts[kind].refs.splice(Math.min(index,state.drafts[kind].refs.length),0,removed);render();if(state.panel)renderPanel();});
   }else if(a==='move'){
     const i=draft().refs.findIndex(r=>r.id===id),j=i+Number(el.dataset.step);if(j>=0&&j<draft().refs.length){[draft().refs[i],draft().refs[j]]=[draft().refs[j],draft().refs[i]];render();renderPanel();$('#panel [data-id="'+id+'"][data-step="'+el.dataset.step+'"]')?.focus();}
   }else if(a==='set-profile'){draft().profile=el.dataset.value;closePanel();render();if(invalidRefs().length)toast('Références conservées. Vérifiez les incompatibilités.');}
@@ -376,7 +381,7 @@ document.addEventListener('click',event=>{
   else if(a==='cancel-return')finishReference(false);
   else if(a==='complete-return')finishReference(true);
   else if(a==='simulate'){
-    if(invalidRefs().length||missingRequired().length)return;
+    if(invalidRefs().length||missingRequired().length||(state.kind==='video'&&draft().refs.length&&!referenceMode(profile(),draft().refs)))return;
     if(draft().pending)return;
     const target=draft(),kind=state.kind,outputKind=profile().outputKind||kind,run={step:0,started:Date.now()};target.pending=run;render();
     [1,2,3].forEach(step=>setTimeout(()=>{if(target.pending!==run)return;if(step<3)run.step=step;else{delete target.pending;target.output=media.find(m=>m.kind===outputKind)?.id;promoteRecent([target.output]);}if(draft()===target&&state.screen==='create'){render();if(step===3)toast('Exemple local affiché. Aucune génération ni dépense.');}},step*1200));
@@ -390,9 +395,8 @@ document.addEventListener('click',event=>{
   }else if(a==='reuse-target'){
     const m=asset(id),kind=el.dataset.kind;const oldKind=state.kind;state.kind=kind;
     let role=profile().roles.find(r=>r.kind===m.kind);
-    if(!role){state.kind=oldKind;openPanel('target-profile',{id,kind});return;}
-    if(!insertReferences([id],role.id)){state.kind=oldKind;return;}
-    state.screen='create';closePanel();render();toast('Média ajouté au brouillon existant.');
+    if(!role){state.kind=oldKind;if(kind==='video'){toast('Le modèle vidéo choisi n’accepte pas ce type de média.');return;}openPanel('target-profile',{id,kind});return;}
+    state.screen='create';closePanel();render();requestRecent(id);
   }else if(a==='apply-target'){
     const oldKind=state.kind, kind=el.dataset.kind, previousProfile=state.drafts[kind].profile;
     state.kind=kind;draft().profile=el.dataset.profile;

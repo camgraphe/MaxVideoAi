@@ -1,6 +1,6 @@
 # Carte d’actions — création interconnectée
 
-La bibliothèque est le point commun des médias ; un brouillon est le contexte de travail. On navigue par activité, on agit sur une sélection. Le prototype démontre les raccords en mémoire locale ; les limites de ses profils sont illustratives.
+La bibliothèque est le point commun des médias ; un brouillon est le contexte de travail. On navigue par activité, on agit sur une sélection. Le prototype démontre les raccords en mémoire locale ; les rôles vidéo viennent du catalogue existant ; les scénarios image/audio restent illustratifs.
 
 | Activité / route réelle | Actions à conserver et organiser | Mobile / état initial |
 |---|---|---|
@@ -40,3 +40,5 @@ Sources locales vérifiées : AppSidebar, AssetLibraryBrowser, reference-budget.
 L’en-tête garde MaxVideoAI, Assistants et Wallet. Le prix du rendu reste près de Générer, distinct du solde disponible. Comparer propose les modèles et adaptations du brouillon ; les comparatifs détaillés sont accessibles depuis ce choix et le menu MaxVideoAI. Accueil, modèles, exemples, tarifs, outils et guides s’ouvrent dans un autre onglet. Les destinations viennent de `frontend/config/navigation.ts` ; l’intégration réelle conserve leurs locales.
 
 Le créateur réserve une zone défilante à l’aperçu, aux références et au texte, entre la barre de modèle et le pied d’action. Les récents desktop ont leur propre défilement. La navigation reste visible en portrait et paysage court ; le lecteur audio conserve sa hauteur naturelle pour ne pas perdre ses commandes.
+
+Les références vidéo se pilotent directement par Départ, Fin et Ajouter, avec pictogrammes et fenêtres de médias. Aucun sélecteur de scénario ne précède l’ajout. Sans source, le brouillon reste en texte seul ; les médias et le schéma déterminent les modes compatibles. Une image de fin seule signale le départ manquant quand le modèle l’exige. Les commandes restent sur une ligne à 320 px, sous leur label, et les vignettes apparaissent seulement après ajout.
