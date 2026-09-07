@@ -136,6 +136,15 @@ test('recent output search and cursors run against PostgreSQL', { timeout: 90_00
                '{"label":"legacy needle","jobId":"legacy-job"}'::jsonb,$1)`,
       [timestamp]
     );
+    await database.pool.query(
+      `INSERT INTO media_assets
+        (id,user_id,kind,url,mime_type,source,status,metadata,created_at)
+       VALUES
+        ('newer-video','user-a','video','https://example.test/newer.mp4','video/mp4','upload','ready','{}',
+         '2026-09-02T10:00:00.000Z'),
+        ('other-user-image','user-b','image','https://example.test/other.png','image/png','upload','ready','{}',
+         '2026-09-02T10:00:00.000Z')`
+    );
 
     const assetIds: string[] = [];
     cursor = null;
@@ -149,6 +158,8 @@ test('recent output search and cursors run against PostgreSQL', { timeout: 90_00
     assert.equal(assetIds.length, 126);
     assert.equal(new Set(assetIds).size, 126);
     assert.ok(assetIds.every((id) => !id.startsWith('legacy-copy-')));
+    assert.ok(!assetIds.includes('newer-video'), 'kind filtering must happen before the bounded result limit');
+    assert.ok(!assetIds.includes('other-user-image'), 'ownership filtering must happen before the bounded result limit');
 
     const savedWildcard = await listLibraryAssetPage({
       userId: 'user-a', kind: 'image', source: 'upload', q: '50%_literal\\', limit: 60,
