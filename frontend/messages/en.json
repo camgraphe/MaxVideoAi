@@ -3073,14 +3073,38 @@
       "memberFallback": "Member",
       "signedIn": "Signed in",
       "themeToggle": {
-        "toDark": "Switch to dark theme",
-        "toLight": "Switch to light theme"
+        "toLight": "Switch to light theme",
+        "toDark": "Switch to dark theme"
       },
       "primaryNav": "Primary navigation",
       "signOut": "Sign out",
       "createAccount": "Create account",
       "signIn": "Sign in",
-      "logoAria": "Go to marketing homepage"
+      "logoAria": "Go to marketing homepage",
+      "quickNav": {
+        "video": "Video",
+        "image": "Image",
+        "library": "Library",
+        "menu": "Menu"
+      },
+      "createVideo": "Create video",
+      "mobileClose": "Close menu",
+      "mobileToggle": "Open menu",
+      "controlLabels": {
+        "duration": "Duration",
+        "resolution": "Resolution",
+        "aspect": "Format",
+        "audio": "Audio",
+        "iterations": "Outputs",
+        "fps": "Frame rate",
+        "hdr": "HDR",
+        "images": "Images",
+        "format": "File format",
+        "quality": "Quality",
+        "style": "Style"
+      },
+      "createImage": "Create image",
+      "workspaceLabel": "Creative workspace"
     },
     "sidebar": {
       "aria": {
@@ -3113,6 +3137,22 @@
         "claude": "Claude",
         "chatgpt": "ChatGPT",
         "codex": "Codex"
+      },
+      "groups": {
+        "create": "Create",
+        "organize": "Workspace",
+        "account": "Account"
+      },
+      "shortLabels": {
+        "generate": "Video",
+        "generate-image": "Image",
+        "generate-audio": "Audio",
+        "tools": "Creative tools",
+        "dashboard": "Overview",
+        "library": "Library",
+        "jobs": "Activity",
+        "billing": "Billing",
+        "settings": "Settings"
       }
     },
     "languageToggle": {
@@ -3453,7 +3493,10 @@
               "Reference video"
             ]
           }
-        }
+        },
+        "families": "Families",
+        "models": "Models",
+        "searchPlaceholder": "Search models"
       }
     },
     "image": {
@@ -3552,7 +3595,7 @@
         "refreshing": "Refreshing history…"
       },
       "runButton": {
-        "idle": "Generate images",
+        "idle": "Generate",
         "running": "Generating…"
       },
       "errors": {
@@ -3944,8 +3987,8 @@
         }
       },
       "views": {
-        "saved": "Saved assets",
-        "review": "Review recent renders"
+        "saved": "Saved media",
+        "review": "Generated media"
       },
       "media": {
         "images": "Images",
@@ -3961,7 +4004,10 @@
         "import": "Import",
         "importing": "Importing…",
         "importFailed": "Import failed. Please try again.",
-        "refresh": "Refresh"
+        "refresh": "Refresh",
+        "searchSaved": "Search names or render IDs…",
+        "searchRenders": "Search prompts or render IDs…",
+        "create": "Create"
       },
       "tabs": {
         "all": "All images",
@@ -3983,7 +4029,9 @@
         "saving": "Saving…",
         "saved": "Saved",
         "saveError": "Unable to save this render to Library.",
-        "openRender": "Open render"
+        "openRender": "Open render",
+        "linkedResult": "Linked result",
+        "showAll": "All renders"
       },
       "assets": {
         "title": "Library assets",
@@ -4003,6 +4051,19 @@
         "useSettingsButton": "Open source",
         "deleting": "Deleting…",
         "assetFallback": "Asset"
+      },
+      "sources": {
+        "video": {
+          "all": "All videos",
+          "upload": "Uploaded videos",
+          "generated": "Saved renders",
+          "upscale": "Upscaled videos"
+        },
+        "audio": {
+          "all": "All audio",
+          "upload": "Uploaded audio",
+          "generated": "Saved audio renders"
+        }
       }
     },
     "settings": {
@@ -4016,31 +4077,47 @@
       },
       "account": {
         "title": "Account",
+        "guest": {
+          "description": "Sign in to update your account preferences.",
+          "action": "Log in"
+        },
         "fields": {
           "name": {
             "label": "Name",
-            "placeholder": "Your name"
+            "placeholder": "Your name",
+            "help": "1–80 characters."
           },
           "email": {
             "label": "Email",
-            "placeholder": "you@domain.com"
+            "placeholder": "you@domain.com",
+            "readOnly": "Email changes are managed separately."
           },
           "locale": {
-            "label": "Locale",
-            "options": [
-              "EN",
-              "FR",
-              "ES"
-            ]
+            "label": "Language",
+            "description": "Interface language:"
           },
           "theme": {
-            "label": "Theme",
-            "options": [
-              "System",
-              "Light",
-              "Dark"
-            ]
+            "label": "Appearance",
+            "description": "Saved on this device.",
+            "options": {
+              "light": "Light",
+              "dark": "Dark",
+              "system": "System"
+            }
           }
+        },
+        "actions": {
+          "save": "Save",
+          "saving": "Saving…",
+          "cancel": "Cancel"
+        },
+        "validation": {
+          "required": "Enter a name.",
+          "tooLong": "Name must be 80 characters or fewer."
+        },
+        "status": {
+          "success": "Name saved.",
+          "genericError": "Could not save your name. Try again."
         }
       },
       "team": {
@@ -4980,6 +5057,48 @@
       "recentFailed": "Failed",
       "authTitle": "Sign in to use the tool",
       "authBody": "Background removal uses wallet billing and private library storage."
+    },
+    "result": {
+      "title": "Result",
+      "close": "Close",
+      "duration": "Duration",
+      "aspect": "Format",
+      "audioOn": "On",
+      "audioOff": "Off",
+      "downloading": "Downloading…",
+      "download": "Download",
+      "copied": "Link copied",
+      "copyLink": "Copy link",
+      "checking": "Checking…",
+      "refresh": "Refresh status",
+      "openOriginal": "Open original",
+      "remix": "Remix",
+      "reuse": "Use settings",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "retrySave": "Retry save",
+      "save": "Save to library",
+      "details": "Render details",
+      "status": {
+        "completed": "Ready",
+        "pending": "Processing",
+        "failed": "Failed"
+      },
+      "unavailable": "Preview unavailable",
+      "audioOutput": "Audio output",
+      "processing": "Processing…",
+      "copy": "Copy",
+      "copyDone": "Copied",
+      "more": "Show more",
+      "less": "Show less",
+      "metadata": {
+        "job_id": "Render ID",
+        "group": "Group",
+        "created": "Created",
+        "duration": "Duration",
+        "cost": "Cost",
+        "batch": "Batch"
+      }
     }
   },
   "cookieBanner": {

@@ -117,7 +117,8 @@ export function useEngineSelectDropdownState({
 
     function handleKey(event: KeyboardEvent) {
       const target = event.target as HTMLElement | null;
-      const isTextEntryTarget = Boolean(target?.closest('input, textarea, [contenteditable="true"]'));
+      const isOptionTarget = Boolean(target?.closest('[role="option"]'));
+      const isTriggerTarget = Boolean(target && triggerRef.current?.contains(target));
       if (event.key === 'Escape') {
         event.preventDefault();
         setOpen(false);
@@ -126,21 +127,27 @@ export function useEngineSelectDropdownState({
         return;
       }
 
-      if (isTextEntryTarget) return;
+      // Search, family selection, Browse and Close retain their own native keyboard actions.
+      if (!isOptionTarget && !isTriggerTarget) return;
       if (!visibleEngines.length) return;
 
-      if (event.key === 'ArrowDown') {
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
         event.preventDefault();
-        setHighlightedIndexAndRemember((previous) => (previous + 1 >= visibleEngines.length ? 0 : previous + 1));
-      }
-
-      if (event.key === 'ArrowUp') {
-        event.preventDefault();
-        setHighlightedIndexAndRemember((previous) => (previous - 1 < 0 ? visibleEngines.length - 1 : previous - 1));
+        // Only the active family is mounted; skip paused/disabled models as well.
+        const selectableIndices = visibleEngines.flatMap((_, index) => {
+          const item = itemRefs.current[index];
+          return item && !item.disabled ? [index] : [];
+        });
+        if (!selectableIndices.length) return;
+        const current = selectableIndices.indexOf(highlightedIndex);
+        const next = event.key === 'ArrowDown'
+          ? (current + 1) % selectableIndices.length
+          : (current <= 0 ? selectableIndices.length : current) - 1;
+        setHighlightedIndexAndRemember(selectableIndices[next]);
       }
 
       if (event.key === 'Enter' || event.key === ' ') {
-        if (highlightedIndex >= 0 && highlightedIndex < visibleEngines.length) {
+        if (highlightedIndex >= 0 && highlightedIndex < visibleEngines.length && itemRefs.current[highlightedIndex] && !itemRefs.current[highlightedIndex]?.disabled) {
           event.preventDefault();
           onEngineChange(visibleEngines[highlightedIndex].id);
           setOpen(false);
@@ -170,7 +177,7 @@ export function useEngineSelectDropdownState({
   useEffect(() => {
     const element = document.createElement('div');
     element.dataset.engineSelectPortal = 'true';
-    document.body.appendChild(element);
+    (containerRef.current?.closest('.app-experience') ?? document.body).appendChild(element);
     setPortalElement(element);
     return () => {
       try {

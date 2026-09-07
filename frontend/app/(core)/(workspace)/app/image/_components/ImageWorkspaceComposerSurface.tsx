@@ -1,6 +1,7 @@
 'use client';
 
 import type { FormEvent } from 'react';
+import { WorkspaceCreationHeading } from '../../_components/WorkspaceCreationHeading';
 import type { EngineCaps } from '@/types/engines';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import { Composer, type AssetFieldConfig, type ComposerAttachment } from '@/components/Composer';
@@ -197,25 +198,7 @@ export function ImageWorkspaceComposerSurface({
   thinkingLevelSelectOptions,
   watermark,
 }: ImageWorkspaceComposerSurfaceProps) {
-  return (
-    <div className="flex flex-col gap-1">
-      <ImageCompositePreviewDock
-        density="workspace"
-        entry={compositePreviewEntry}
-        selectedIndex={selectedPreviewImageIndex}
-        onSelectIndex={setSelectedPreviewImageIndex}
-        onOpenModal={previewEntry ? () => handleOpenHistoryEntry(previewEntry) : undefined}
-        onDownload={handleDownload}
-        onCopyLink={handleCopy}
-        onEditImage={handleEditSelectedPreview}
-        onAddToLibrary={handleAddToLibrary}
-        onRemoveFromLibrary={handleRemoveFromLibrary}
-        isInLibrary={isInLibrary}
-        isSavingToLibrary={isSavingToLibrary}
-        isRemovingFromLibrary={isRemovingFromLibrary}
-        copiedUrl={copiedUrl}
-        showTitle={false}
-        engineSettings={
+  const engineSettings = (
           <div className="flex min-w-0 flex-1 flex-wrap items-center gap-4">
             <EngineSelect
               engines={engineCapsList}
@@ -237,8 +220,30 @@ export function ImageWorkspaceComposerSurface({
               className="min-w-0 flex-1"
             />
           </div>
-        }
-      />
+  );
+  return (
+    <div className="flex flex-col gap-1">
+      <WorkspaceCreationHeading media="image" />
+      {!compositePreviewEntry ? (
+        <section className="app-model-strip rounded-card border border-border bg-surface px-4 py-1 shadow-card">{engineSettings}</section>
+      ) : <ImageCompositePreviewDock
+        density="workspace"
+        entry={compositePreviewEntry}
+        selectedIndex={selectedPreviewImageIndex}
+        onSelectIndex={setSelectedPreviewImageIndex}
+        onOpenModal={previewEntry ? () => handleOpenHistoryEntry(previewEntry) : undefined}
+        onDownload={handleDownload}
+        onCopyLink={handleCopy}
+        onEditImage={handleEditSelectedPreview}
+        onAddToLibrary={handleAddToLibrary}
+        onRemoveFromLibrary={handleRemoveFromLibrary}
+        isInLibrary={isInLibrary}
+        isSavingToLibrary={isSavingToLibrary}
+        isRemovingFromLibrary={isRemovingFromLibrary}
+        copiedUrl={copiedUrl}
+        showTitle={false}
+        engineSettings={engineSettings}
+      />}
 
       <form onSubmit={handleRun} className="space-y-4">
         {inProgressMessage ? (

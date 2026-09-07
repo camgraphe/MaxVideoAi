@@ -42,7 +42,7 @@ export function HeaderAccountMenu({
         variant="ghost"
         size="sm"
         onClick={onToggleAccountMenu}
-        className="h-10 w-full min-h-0 justify-between gap-2 rounded-input border border-hairline bg-surface-2 px-2 py-0 text-sm font-semibold text-text-primary shadow-sm hover:bg-surface-3"
+        className="h-11 w-full min-h-0 justify-between gap-2 rounded-input border border-hairline bg-surface-2 px-2 py-0 text-sm font-semibold text-text-primary shadow-sm hover:bg-surface-3"
         aria-haspopup="menu"
         aria-expanded={accountMenuOpen}
       >

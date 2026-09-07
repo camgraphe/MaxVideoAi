@@ -1,7 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
-import { Check, ChevronRight, Search } from 'lucide-react';
+import { Check, ChevronRight, Search, X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useEffect, useMemo, useState, type RefObject } from 'react';
 import type { EngineAvailability, EngineCaps } from '@/types/engines';
@@ -28,6 +28,7 @@ type EngineSelectDropdownProps = {
   legacyToggleLabel: string;
   disabledEngineReasons?: Record<string, string>;
   onBrowse: () => void;
+  onClose: () => void;
   onHighlight: (index: number) => void;
   onItemRef: (index: number, node: HTMLButtonElement | null) => void;
   onSelectEngine: (engineId: string) => void;
@@ -80,17 +81,22 @@ function engineMatchesQuery(engine: EngineCaps, meta: EngineRegistryMeta | null,
   return haystack.includes(query);
 }
 
-function getDropdownGeometry(position: DropdownPosition) {
-  if (typeof window === 'undefined') {
+export function getDropdownGeometry(position: DropdownPosition, viewport?: { width: number; height: number }) {
+  if (!viewport && typeof window === 'undefined') {
     return {
       left: position.left,
       width: Math.max(position.width, 620),
+      top: position.top,
+      maxHeight: 560,
     };
   }
+  const bounds = viewport ?? { width: window.innerWidth, height: window.innerHeight };
   const viewportPadding = 12;
-  const width = Math.max(320, Math.min(window.innerWidth - viewportPadding * 2, Math.max(position.width, 620)));
-  const left = Math.max(viewportPadding, Math.min(position.left, window.innerWidth - width - viewportPadding));
-  return { left, width };
+  const width = Math.max(0, Math.min(bounds.width - viewportPadding * 2, Math.max(position.width, 620)));
+  const maxHeight = Math.min(560, Math.max(0, bounds.height - viewportPadding * 2));
+  const left = Math.max(viewportPadding, Math.min(position.left, bounds.width - width - viewportPadding));
+  const top = Math.max(viewportPadding, Math.min(position.top, bounds.height - maxHeight - viewportPadding));
+  return { left, width, top, maxHeight };
 }
 
 function ScoreBadge({ value }: { value: string }) {
@@ -125,6 +131,7 @@ export function EngineSelectDropdown({
   legacyToggleLabel,
   disabledEngineReasons,
   onBrowse,
+  onClose,
   onHighlight,
   onItemRef,
   onSelectEngine,
@@ -200,9 +207,13 @@ export function EngineSelectDropdown({
     <div
       ref={contentRef}
       className="fixed z-[9999]"
-      style={{ top: position.top, left: geometry.left, width: geometry.width }}
+      style={{ top: geometry.top, left: geometry.left, width: geometry.width }}
     >
-      <div className="max-h-[min(78vh,560px)] overflow-hidden rounded-card border border-border bg-surface shadow-float">
+      <div style={{ maxHeight: geometry.maxHeight }} className="overflow-y-auto overscroll-contain rounded-card border border-border bg-surface shadow-float">
+        <div className="flex items-center justify-between border-b border-hairline px-3 py-1">
+          <span className="text-sm font-semibold text-text-primary">{copy.choose}</span>
+          <button type="button" onClick={onClose} className="inline-flex min-h-11 items-center gap-2 rounded-input px-2 text-xs font-medium text-text-primary hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-ring"><X className="h-4 w-4" aria-hidden />{copy.modal.close}</button>
+        </div>
         <div className="flex flex-col gap-2 border-b border-hairline px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative min-w-0 flex-1">
             <Search aria-hidden="true" className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted" />
@@ -210,14 +221,15 @@ export function EngineSelectDropdown({
               value={query}
               onChange={(event) => setQuery(event.currentTarget.value)}
               placeholder={copy.searchPlaceholder}
-              className="h-8 w-full rounded-input border border-border bg-bg pl-8 pr-3 text-[12px] text-text-primary outline-none transition placeholder:text-text-muted focus:border-border-hover focus:ring-2 focus:ring-ring"
+              aria-label={copy.searchPlaceholder}
+              className="h-11 w-full rounded-input border border-border bg-bg pl-8 pr-3 text-[12px] text-text-primary outline-none transition placeholder:text-text-muted focus:border-border-hover focus:ring-2 focus:ring-ring"
             />
           </div>
-          <div className="flex shrink-0 items-center justify-between gap-3 text-[12px] text-text-muted sm:justify-end">
+          <div className="flex flex-wrap shrink-0 items-center justify-between gap-2 text-[12px] text-text-muted sm:justify-end">
             {hasLegacyEngines ? (
               <label
                 htmlFor={legacyToggleId}
-                className="inline-flex items-center gap-2 whitespace-nowrap text-[11px] font-medium text-text-secondary"
+                className="inline-flex min-h-11 items-center gap-2 whitespace-nowrap text-[11px] font-medium text-text-secondary"
               >
                 <input
                   id={legacyToggleId}
@@ -232,7 +244,7 @@ export function EngineSelectDropdown({
             <button
               type="button"
               onClick={onBrowse}
-              className="rounded-input border border-transparent px-2 py-1 text-[11px] font-medium text-brand transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="min-h-11 rounded-input border border-transparent px-2 py-1 text-[11px] font-medium text-brand transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {copy.browse}
             </button>
@@ -241,10 +253,22 @@ export function EngineSelectDropdown({
 
         <div className="grid min-h-[250px] min-w-0 sm:grid-cols-[170px_minmax(0,1fr)]">
           <div className="min-w-0 border-b border-hairline bg-surface-2/60 sm:border-b-0 sm:border-r">
-            <div className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-micro text-text-muted">
+            <div className="hidden sm:block px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-micro text-text-muted">
               {copy.families}
             </div>
-            <div className="flex w-full min-w-0 max-w-full snap-x gap-2 overflow-x-auto overscroll-x-contain px-2 pb-2 [scrollbar-width:thin] sm:block sm:max-h-[390px] sm:space-y-1 sm:overflow-y-auto sm:pb-3">
+            <label className="flex items-center gap-3 p-3 text-xs font-medium text-text-secondary sm:hidden">
+              {copy.families}
+              <select value={activeFamily?.id ?? ''} onChange={(event) => {
+                const family = filteredGroups.find((group) => group.id === event.target.value);
+                if (!family) return;
+                setActiveFamilyId(family.id);
+                const index = engineIndexById.get(family.engines[0]?.id ?? '');
+                if (index !== undefined) onHighlight(index);
+              }} className="h-11 min-w-0 flex-1 rounded-input border border-border bg-surface px-2 text-text-primary focus-visible:ring-2 focus-visible:ring-ring">
+                {filteredGroups.map((group) => <option key={group.id} value={group.id}>{group.label} ({group.engines.length})</option>)}
+              </select>
+            </label>
+            <div className="hidden sm:block sm:max-h-[390px] sm:space-y-1 sm:overflow-y-auto sm:px-2 sm:pb-3">
               {filteredGroups.map((group) => {
                 const active = group.id === activeFamily?.id;
                 const firstIndex = engineIndexById.get(group.engines[0]?.id ?? '') ?? -1;
@@ -267,7 +291,7 @@ export function EngineSelectDropdown({
                     <EngineIcon engine={{ id: group.id, label: group.label, brandId: group.brandId }} size={24} className="shrink-0" />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-[12px] font-semibold">{group.label}</span>
-                      <span className="block text-[9px] text-text-muted">{group.engines.length} models</span>
+                      <span className="block text-[9px] text-text-muted">{group.engines.length} {copy.models.toLowerCase()}</span>
                     </span>
                     <ChevronRight aria-hidden="true" className={clsx('hidden h-3.5 w-3.5 sm:block', active ? 'text-brand' : 'text-text-muted')} />
                   </button>

@@ -1,0 +1,153 @@
+/* Authenticated product surfaces. No marketing/admin primitive overrides. */
+.app-experience {
+  --header-height: 68px;
+  --app-ink: #20232a;
+  --app-muted: #717680;
+  --app-canvas: #f6f6f4;
+  --app-panel: #fff;
+  --app-line: #e2e4e8;
+  --app-accent: #6655db;
+  --app-accent-soft: #eeebfc;
+  --bg: var(--app-canvas);
+  --surface: var(--app-panel);
+  --surface-2: #eeefee;
+  --text-primary: var(--app-ink);
+  --text-secondary: #585e69;
+  --text-muted: var(--app-muted);
+  --brand: var(--app-accent);
+  --brand-soft: var(--app-accent-soft);
+  --brand-gradient: linear-gradient(var(--app-accent), var(--app-accent));
+  --brand-gradient-strong: linear-gradient(#5847ca, #5847ca);
+  --on-brand: #fff;
+  --border: var(--app-line);
+  --hairline: var(--app-line);
+  --shadow-card: none;
+  --shadow-brand-button: none;
+  font-family: var(--font-app), system-ui, sans-serif;
+  font-size: 14px;
+  letter-spacing: -.015em;
+  background: var(--app-canvas);
+  color: var(--app-ink);
+}
+[data-theme="dark"] .app-experience {
+  --app-ink: #f1f2f5;
+  --app-muted: #a0a4af;
+  --app-canvas: #15171b;
+  --app-panel: #1d2026;
+  --app-line: #30343d;
+  --app-accent: #a398ff;
+  --app-accent-soft: #302b49;
+  --surface-2: #24272f;
+  --text-secondary: #bcc0ca;
+  --on-brand: #181327;
+}
+.app-experience .app-topbar { height: 68px; background: var(--app-panel); }
+.app-experience .app-marketing-nav { display: none; }
+.app-experience .app-topbar-menu { display: inline-flex; border: 0; border-radius: 8px; }
+.app-experience .app-brand-context { color: var(--app-muted); font-size: 12px; letter-spacing: .01em; }
+.app-experience .app-sidebar {
+  width: 224px;
+  background: #20232a;
+  border: 0;
+  color: #e9ebf1;
+  --brand: #d4ccff;
+  --brand-soft: #363247;
+  --text-primary: #e9ebf1;
+  --text-secondary: #b8bdc8;
+  --text-muted: #858d9d;
+  --surface: #2b2f38;
+  --surface-2: #252932;
+  --border: #383d48;
+  --hairline: #383d48;
+}
+.app-sidebar .app-nav-group { margin: 22px 0 6px; padding: 0 14px; color: #818999; font-size: 10px; font-weight: 650; letter-spacing: .1em; text-transform: uppercase; }
+.app-sidebar .app-nav-item { min-height: 46px; border-radius: 8px; gap: 12px; padding: 0 14px; font-size: 13px; font-weight: 500; }
+.app-sidebar .app-nav-item[aria-current="page"] { color: #e1dbff; background: #373245; }
+.app-sidebar .app-nav-item[aria-current="page"]::before { content: ''; position: absolute; left: -10px; width: 3px; height: 20px; border-radius: 2px; background: #ae9eff; }
+.app-sidebar .app-assistant-connections { border: 0; border-top: 1px solid #383d48; border-radius: 0; box-shadow: none; background: transparent; }
+.app-sidebar .app-assistant-connections > div:last-child { border: 0; border-radius: 0; }
+.app-sidebar .app-assistant-connections a { border: 0; min-height: 42px; font-weight: 450; }
+.app-sidebar .app-assistant-connections img { filter: brightness(0) invert(1); opacity: .8; }
+.app-experience .app-mobile-nav { background: var(--app-panel); padding: 6px 10px; }
+.app-experience .app-mobile-nav a, .app-experience .app-mobile-nav button { border-radius: 8px; font-weight: 550; font-size: 11px; }
+.app-experience .app-mobile-nav a[aria-current="page"] { color: var(--app-accent); background: var(--app-accent-soft); }
+.app-experience .app-workspace-main { padding: 32px 36px; gap: 26px; max-width: 1160px; width: 100%; margin-inline: auto; }
+.app-experience .app-creation-heading { align-items: end; padding-bottom: 20px; border-bottom: 1px solid var(--app-line); }
+.app-creation-heading .app-eyebrow { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; color: var(--app-muted); font-size: 11px; font-weight: 550; letter-spacing: .06em; text-transform: uppercase; }
+.app-creation-heading h1 { font-size: clamp(24px, 2.2vw, 32px); font-weight: 620; line-height: 1.15; letter-spacing: -.05em; }
+.app-experience .app-creation-heading > a { border: 0; border-radius: 8px; background: transparent; color: var(--app-muted); }
+.app-experience .app-model-strip { border: 0; border-radius: 0; background: transparent; box-shadow: none; padding: 0 0 20px; }
+.app-model-strip > div { padding: 0; }
+.app-experience [data-composer-density="workspace"] { border: 0; border-radius: 0; background: transparent; background-image: none; box-shadow: none; padding: 0; }
+.app-experience .app-mode-switch { gap: 22px; border-bottom: 1px solid var(--app-line); margin-bottom: 20px; }
+.app-experience .app-mode-switch button { border: 0; border-radius: 0; background: transparent; background-image: none; color: var(--app-muted); box-shadow: none; padding: 0 0 9px; font-size: 13px; }
+.app-experience .app-mode-switch button[aria-pressed="true"] { color: var(--app-ink); box-shadow: inset 0 -2px var(--app-accent); }
+.app-experience .app-prompt-surface { border: 1px solid var(--app-line); border-radius: 12px; background: var(--app-panel); background-image: none; box-shadow: none; }
+.app-experience .app-prompt-heading { padding: 18px 20px 8px; }
+.app-experience .app-prompt-heading > div:first-child > span { font-size: 13px; font-weight: 550; text-transform: none; letter-spacing: -.01em; color: var(--app-ink); }
+.app-experience [data-workspace-prompt] { min-height: 148px; padding: 8px 20px 18px; font-size: 16px; line-height: 1.65; letter-spacing: -.02em; }
+.app-experience [data-workspace-prompt]::placeholder { color: var(--app-muted); opacity: .8; }
+.app-experience .app-composer-toolbar { padding: 14px 16px; border-color: var(--app-line); background: transparent; }
+.app-experience .app-composer-toolbar button { border-radius: 7px; box-shadow: none; font-weight: 500; }
+.app-experience .app-generation-action { min-height: 48px !important; border: 0; border-radius: 8px !important; background: var(--app-accent); color: var(--on-brand); }
+.app-experience .app-generation-action > span:first-child { text-transform: none; letter-spacing: -.01em; font-weight: 600; }
+.app-experience .app-generation-action > span:nth-child(2) { border: 0; border-left: 1px solid currentColor; border-radius: 0; padding: 0 0 0 12px; background: none; color: inherit; box-shadow: none; font-variant-numeric: tabular-nums; }
+.app-experience .app-generation-action:disabled { background: var(--surface-2); color: var(--app-muted); }
+.app-experience .app-reference-section { padding-top: 22px; }
+.app-experience .app-results-rail { border-left: 1px solid var(--app-line); background: var(--app-panel); padding: 26px 16px; }
+.app-experience .app-library-heading { border: 0; border-radius: 0; background: transparent; padding: 0 0 22px; border-bottom: 1px solid var(--app-line); gap: 22px; }
+.app-experience .app-library-heading h2 { font-size: 32px; font-weight: 620; letter-spacing: -.05em; }
+.app-experience .app-library-heading p { font-size: 13px; color: var(--app-muted); }
+.app-experience .app-library-view-switch { gap: 22px; }
+.app-experience .app-library-view-switch button { border: 0; border-radius: 0; background: transparent; background-image: none; color: var(--app-muted); padding-inline: 0; font-weight: 500; }
+.app-experience .app-library-view-switch button[aria-pressed="true"] { color: var(--app-ink); box-shadow: inset 0 -2px var(--app-accent); }
+.app-experience .app-library-types button { border-radius: 7px; font-weight: 500; }
+.app-experience .app-library-filters { width: 200px; }
+.app-experience .app-library-filters input, .app-experience .app-library-filters select { border-radius: 8px; }
+.app-experience .app-library-filters [role="group"] button { border-radius: 7px; font-size: 13px; font-weight: 450; background: transparent; background-image: none; color: var(--app-muted); }
+.app-experience .app-library-filters [role="group"] button[aria-pressed="true"] { color: var(--app-accent); background: var(--app-accent-soft); }
+.app-experience .app-library-asset { border: 0; border-radius: 9px; background: transparent; box-shadow: none; }
+.app-experience .app-library-asset > div:last-child { border: 0; background: transparent; padding: 12px 0; }
+.app-experience .app-library-asset button, .app-experience .app-library-asset a { border-radius: 7px; }
+.app-experience .app-settings-main { max-width: 1160px; margin: 0 auto; padding: 32px 36px; }
+.app-experience .app-settings-main > h1 { font-size: 32px; font-weight: 620; letter-spacing: -.05em; margin-bottom: 26px; }
+.app-experience .app-settings-tabs { gap: 24px; border-bottom: 1px solid var(--app-line); margin-bottom: 30px; }
+.app-experience .app-settings-tabs > a { padding: 0 0 12px; border: 0; border-radius: 0; background: transparent; box-shadow: none; color: var(--app-muted); font-weight: 500; }
+.app-experience .app-settings-tabs > a[aria-current="page"] { color: var(--app-ink); box-shadow: inset 0 -2px var(--app-accent); }
+.app-experience .app-account-panel { border: 0; border-radius: 0; background: transparent; padding: 0; box-shadow: none; max-width: 820px; }
+.app-experience .app-account-panel > h2 { font-size: 20px; letter-spacing: -.025em; font-weight: 580; }
+.app-experience .app-account-panel form > div, .app-experience .app-account-panel fieldset { border-radius: 0; box-shadow: none; background: transparent; }
+.app-experience .app-preference-row { padding: 22px 0; border: 0; border-top: 1px solid var(--app-line); }
+.app-experience .app-account-panel input { border-radius: 7px; background: var(--app-panel); font-size: 14px; }
+.app-experience .app-appearance-choice { min-height: 96px !important; flex-direction: column; gap: 12px; border-radius: 9px; border: 1px solid var(--app-line); background: var(--app-panel); background-image: none; color: var(--app-muted); box-shadow: none; }
+.app-experience .app-appearance-choice[aria-pressed="true"] { border-color: var(--app-accent); color: var(--app-accent); background: var(--app-accent-soft); }
+.app-experience .app-result-entry { border: 0; border-radius: 0; box-shadow: none; background: transparent; }
+.app-experience .app-result-details { border: 0; border-radius: 0; box-shadow: none; background: transparent; border-top: 1px solid var(--app-line); padding: 22px 0; }
+@media (max-width: 767px) {
+  .app-experience .app-topbar-menu { display: none; }
+  .app-experience .app-topbar { padding-inline: 12px; }
+  .app-experience .app-workspace-main, .app-experience .app-settings-main { padding: 24px 18px; gap: 22px; }
+  .app-experience .app-creation-heading { padding-bottom: 18px; }
+  .app-experience .app-library-heading h2, .app-experience .app-settings-main > h1 { font-size: 28px; }
+  .app-experience .app-prompt-heading { padding: 12px 14px 4px; }
+  .app-experience [data-workspace-prompt] { padding-inline: 14px; font-size: 15px; }
+  .app-experience .app-composer-toolbar { padding: 12px; }
+  .app-experience .app-library-filters { width: 100%; }
+  .app-experience .app-settings-tabs { gap: 14px; margin-bottom: 24px; }
+  .app-experience .app-settings-tabs > a { font-size: 12px; }
+  .app-experience .app-results-rail { border-left: 0; border-top: 1px solid var(--app-line); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-experience *, .app-experience *::before, .app-experience *::after { scroll-behavior: auto !important; transition-duration: 0s !important; animation-duration: 0s !important; }
+}
+
+.app-experience .app-reference-surface { border: 0; border-radius: 0; background: transparent; background-image: none; padding: 0; box-shadow: none; }
+.app-experience .app-reference-section { gap: 24px; }
+.app-experience .app-result-action { min-height: 48px !important; border: 0; border-bottom: 1px solid var(--app-line); border-radius: 0; background: transparent; padding: 12px 0; }
+.app-experience .app-result-action > span:first-child { background: transparent; border-radius: 0; color: var(--app-accent); }
+.app-experience .app-result-details > div { padding-inline: 0; }
+.app-experience .app-prompt-heading button { border: 0; background: transparent; background-image: none; box-shadow: none; font-size: 12px; color: var(--app-muted); }
+.app-experience .app-output-count button { background-image: none !important; background: var(--surface-2) !important; color: var(--app-ink) !important; border: 0; }
+
+.app-experience .app-mobile-menu nav > div:first-child { border: 0; border-radius: 0; background: transparent; padding: 0; }
+.app-experience .app-account-panel form > div:first-child { border: 0; padding: 0; }

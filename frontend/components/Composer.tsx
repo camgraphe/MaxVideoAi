@@ -226,7 +226,7 @@ export function Composer({
         <div hidden={workspaceDensity && !visibleModeToggles && !promptDescription && !workflowNotice && !error} className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1 space-y-3">
             {visibleModeToggles ? (
-              <div className="flex flex-wrap gap-2">
+              <div className="app-mode-switch flex flex-wrap gap-2">
                 {visibleModeToggles.map((entry) => {
                   const active = activeManualMode === entry.mode;
                   return (
@@ -238,7 +238,8 @@ export function Composer({
                       onClick={() => onModeToggle?.(entry.mode === null ? null : active ? null : entry.mode)}
                       disabled={entry.disabled}
                       title={entry.disabledReason}
-                      className="min-h-0 h-10 rounded-2xl px-4 py-0 text-[12px] font-semibold dark:border-white/12 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]"
+                      aria-pressed={active}
+                      className="!min-h-11 rounded-2xl px-4 py-0 text-[12px] font-semibold dark:border-white/12 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]"
                     >
                       {entry.label}
                     </Button>
@@ -270,14 +271,14 @@ export function Composer({
         <div className="space-y-3">
             <div
               className={clsx(
-                'overflow-visible rounded-[28px] border bg-surface dark:bg-[linear-gradient(180deg,rgba(22,32,43,0.94),rgba(19,28,38,0.98))]',
+                'app-prompt-surface overflow-visible rounded-[28px] border bg-surface dark:bg-[linear-gradient(180deg,rgba(22,32,43,0.94),rgba(19,28,38,0.98))]',
                 'dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]',
                 promptTooLong ? 'border-error-border' : 'border-border'
               )}
             >
             <div className={clsx(
-              'flex items-start justify-between px-4',
-              workspaceDensity ? 'flex-nowrap gap-2 pb-1 pt-2' : 'flex-wrap gap-3 pb-2 pt-4'
+              'app-prompt-heading flex items-start justify-between px-4',
+              workspaceDensity ? 'flex-wrap gap-2 pb-2 pt-3' : 'flex-wrap gap-3 pb-2 pt-4'
             )}>
               <div className={clsx('flex items-center gap-2 pt-1', workspaceDensity && 'shrink-0')}>
                 <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{promptLabel}</span>
@@ -289,7 +290,7 @@ export function Composer({
               </div>
               <div className={clsx(
                 'flex items-center justify-end',
-                workspaceDensity ? 'min-w-0 gap-1.5' : 'flex-wrap gap-2'
+                workspaceDensity ? 'min-w-0 flex-wrap gap-1.5' : 'flex-wrap gap-2'
               )}>
                 {multiPrompt ? (
                   <Button
@@ -297,7 +298,7 @@ export function Composer({
                     size="sm"
                     variant={multiPromptEnabled ? 'primary' : 'outline'}
                     onClick={() => multiPrompt.onToggle(!multiPromptEnabled)}
-                    className="min-h-0 h-8 rounded-full px-3 py-0 text-[10px] font-semibold uppercase tracking-micro dark:border-white/12 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]"
+                    className="!min-h-11 sm:!min-h-0 sm:h-8 rounded-full px-3 py-0 text-[10px] font-semibold uppercase tracking-micro dark:border-white/12 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]"
                   >
                     {multiPromptEnabled ? 'Multi-prompt on' : 'Multi-prompt'}
                   </Button>
@@ -313,7 +314,7 @@ export function Composer({
                     title={action.tooltip ?? action.label}
                     aria-label={action.tooltip ?? action.label}
                     aria-pressed={action.active}
-                    className="min-h-0 h-8 rounded-full px-2.5 py-0 text-[10px] font-semibold dark:border-white/12 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]"
+                    className="!min-h-11 sm:!min-h-0 sm:h-8 rounded-full px-2.5 py-0 text-[10px] font-semibold dark:border-white/12 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]"
                   >
                     <span className="shrink-0">
                       <ComposerPromotedActionIcon icon={action.icon} />
@@ -330,8 +331,9 @@ export function Composer({
                 value={prompt}
                 onChange={(event) => onPromptChange(event.currentTarget.value)}
                 placeholder={promptPlaceholderValue}
-                rows={workspaceDensity ? 7 : compactPrompt ? 2 : 6}
+                rows={workspaceDensity ? 5 : compactPrompt ? 2 : 6}
                 aria-label={promptLabel}
+                data-workspace-prompt
                 aria-invalid={promptTooLong || undefined}
                 className={clsx(
                   workspaceDensity
@@ -345,14 +347,14 @@ export function Composer({
             )}
 
             {(settingsBar || onGenerate) ? (
-              <div className={clsx('border-t border-border/65 dark:border-white/[0.06]', workspaceDensity ? 'px-3 py-1' : 'px-4 py-3')}>
+              <div className={clsx('app-composer-toolbar border-t border-border/65 dark:border-white/[0.06]', workspaceDensity ? 'px-3 py-1' : 'px-4 py-3')}>
                 <div className={workspaceDensity
                   ? 'flex flex-col gap-3 lg:flex-row lg:flex-nowrap lg:items-center'
                   : 'flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between'}>
                   {settingsBar ? (
                     <div className={clsx(
                       'min-w-0 flex-1',
-                      workspaceDensity && 'w-full overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+                      workspaceDensity && 'w-full'
                     )}>
                       {settingsBar}
                     </div>
@@ -377,12 +379,12 @@ export function Composer({
                           size="md"
                           disabled={isGenerateDisabled}
                           className={clsx(
-                            'relative w-full justify-between overflow-hidden rounded-[24px] text-left',
-                            'transform-gpu transition-transform duration-200 ease-out',
+                            'app-generation-action relative w-full justify-between overflow-hidden rounded-[24px] text-left',
+                            'transform-gpu transition-transform duration-200 ease-out motion-reduce:transform-none motion-reduce:animate-none motion-reduce:transition-none',
                             'border border-brand shadow-card',
                             'disabled:border-border disabled:bg-surface disabled:text-text-muted disabled:shadow-none',
                             workspaceDensity
-                              ? 'h-10 gap-3 px-4 py-0 lg:w-auto lg:min-w-[176px]'
+                              ? '!min-h-11 gap-3 px-4 py-0 lg:w-auto lg:min-w-[176px]'
                               : 'min-w-[220px] gap-4 px-5 py-3',
                             isButtonAnimating && !isGenerateDisabled ? 'animate-button-pop' : '',
                             isGenerateDisabled ? '' : 'active:scale-[0.97]',
@@ -425,7 +427,7 @@ export function Composer({
           <div className="space-y-2">
             <div
               className={clsx(
-                'text-sm',
+                'app-reference-section text-sm',
                 assetFieldLayoutClass
               )}
             >

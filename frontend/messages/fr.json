@@ -3108,14 +3108,38 @@
       "memberFallback": "Membre",
       "signedIn": "Connecté",
       "themeToggle": {
-        "toDark": "Passer en mode sombre",
-        "toLight": "Passer en mode clair"
+        "toLight": "Passer au thème clair",
+        "toDark": "Passer au thème sombre"
       },
       "primaryNav": "Navigation principale",
       "signOut": "Se déconnecter",
       "createAccount": "Créer un compte",
       "signIn": "Se connecter",
-      "logoAria": "Revenir à la page marketing"
+      "logoAria": "Revenir à la page marketing",
+      "quickNav": {
+        "video": "Vidéo",
+        "image": "Image",
+        "library": "Bibliothèque",
+        "menu": "Menu"
+      },
+      "createVideo": "Créer une vidéo",
+      "mobileClose": "Fermer le menu",
+      "mobileToggle": "Ouvrir le menu",
+      "controlLabels": {
+        "duration": "Durée",
+        "resolution": "Résolution",
+        "aspect": "Format",
+        "audio": "Audio",
+        "iterations": "Résultats",
+        "fps": "Cadence",
+        "hdr": "HDR",
+        "images": "Images",
+        "format": "Format du fichier",
+        "quality": "Qualité",
+        "style": "Style"
+      },
+      "createImage": "Créer une image",
+      "workspaceLabel": "Atelier de création"
     },
     "sidebar": {
       "aria": {
@@ -3148,6 +3172,22 @@
         "claude": "Claude",
         "chatgpt": "ChatGPT",
         "codex": "Codex"
+      },
+      "groups": {
+        "create": "Créer",
+        "organize": "Espace de travail",
+        "account": "Compte"
+      },
+      "shortLabels": {
+        "generate": "Vidéo",
+        "generate-image": "Image",
+        "generate-audio": "Audio",
+        "tools": "Outils créatifs",
+        "dashboard": "Vue d’ensemble",
+        "library": "Bibliothèque",
+        "jobs": "Activité",
+        "billing": "Facturation",
+        "settings": "Paramètres"
       }
     },
     "languageToggle": {
@@ -3488,7 +3528,10 @@
               "Vidéo de référence"
             ]
           }
-        }
+        },
+        "families": "Familles",
+        "models": "Modèles",
+        "searchPlaceholder": "Rechercher un modèle"
       }
     },
     "jobs": {
@@ -3897,7 +3940,7 @@
         "refreshing": "Actualisation de l’historique…"
       },
       "runButton": {
-        "idle": "Générer des images",
+        "idle": "Générer",
         "running": "Génération…"
       },
       "errors": {
@@ -3979,8 +4022,8 @@
         }
       },
       "views": {
-        "saved": "Assets enregistrés",
-        "review": "Parcourir les rendus récents"
+        "saved": "Médias enregistrés",
+        "review": "Médias générés"
       },
       "media": {
         "images": "Images",
@@ -3996,7 +4039,10 @@
         "import": "Importer",
         "importing": "Import…",
         "importFailed": "Import impossible. Réessayez.",
-        "refresh": "Actualiser"
+        "refresh": "Actualiser",
+        "searchSaved": "Rechercher un nom ou un ID de rendu…",
+        "searchRenders": "Rechercher un prompt ou un ID de rendu…",
+        "create": "Créer"
       },
       "tabs": {
         "all": "Toutes les images",
@@ -4018,7 +4064,9 @@
         "saving": "Enregistrement…",
         "saved": "Enregistré",
         "saveError": "Impossible d’enregistrer ce rendu dans la Bibliothèque.",
-        "openRender": "Ouvrir le rendu"
+        "openRender": "Ouvrir le rendu",
+        "linkedResult": "Résultat lié",
+        "showAll": "Tous les rendus"
       },
       "assets": {
         "title": "Ressources de la bibliothèque",
@@ -4038,6 +4086,19 @@
         "useSettingsButton": "Ouvrir la source",
         "deleting": "Suppression…",
         "assetFallback": "Ressource"
+      },
+      "sources": {
+        "video": {
+          "all": "Toutes les vidéos",
+          "upload": "Vidéos importées",
+          "generated": "Rendus enregistrés",
+          "upscale": "Vidéos agrandies"
+        },
+        "audio": {
+          "all": "Tous les audios",
+          "upload": "Audios importés",
+          "generated": "Rendus audio enregistrés"
+        }
       }
     },
     "settings": {
@@ -4051,31 +4112,47 @@
       },
       "account": {
         "title": "Compte",
+        "guest": {
+          "description": "Connectez-vous pour modifier les préférences de votre compte.",
+          "action": "Se connecter"
+        },
         "fields": {
           "name": {
             "label": "Nom",
-            "placeholder": "Votre nom"
+            "placeholder": "Votre nom",
+            "help": "1 à 80 caractères."
           },
           "email": {
-            "label": "Email",
-            "placeholder": "vous@domaine.com"
+            "label": "E-mail",
+            "placeholder": "vous@domaine.com",
+            "readOnly": "Les changements d’adresse e-mail sont gérés séparément."
           },
           "locale": {
             "label": "Langue",
-            "options": [
-              "EN",
-              "FR",
-              "ES"
-            ]
+            "description": "Langue de l’interface :"
           },
           "theme": {
-            "label": "Thème",
-            "options": [
-              "Système",
-              "Clair",
-              "Sombre"
-            ]
+            "label": "Apparence",
+            "description": "Enregistrée sur cet appareil.",
+            "options": {
+              "light": "Clair",
+              "dark": "Sombre",
+              "system": "Système"
+            }
           }
+        },
+        "actions": {
+          "save": "Enregistrer",
+          "saving": "Enregistrement…",
+          "cancel": "Annuler"
+        },
+        "validation": {
+          "required": "Saisissez un nom.",
+          "tooLong": "Le nom doit contenir 80 caractères maximum."
+        },
+        "status": {
+          "success": "Nom enregistré.",
+          "genericError": "Impossible d’enregistrer votre nom. Réessayez."
         }
       },
       "team": {
@@ -5015,6 +5092,48 @@
       "recentFailed": "Failed",
       "authTitle": "Connectez-vous pour utiliser l’outil",
       "authBody": "La suppression d’arrière-plan utilise la facturation wallet et le stockage privé."
+    },
+    "result": {
+      "title": "Résultat",
+      "close": "Fermer",
+      "duration": "Durée",
+      "aspect": "Format",
+      "audioOn": "Activé",
+      "audioOff": "Désactivé",
+      "downloading": "Téléchargement…",
+      "download": "Télécharger",
+      "copied": "Lien copié",
+      "copyLink": "Copier le lien",
+      "checking": "Vérification…",
+      "refresh": "Actualiser le statut",
+      "openOriginal": "Ouvrir l’original",
+      "remix": "Créer une variante",
+      "reuse": "Reprendre les réglages",
+      "saving": "Enregistrement…",
+      "saved": "Enregistré",
+      "retrySave": "Réessayer",
+      "save": "Enregistrer",
+      "details": "Détails du rendu",
+      "status": {
+        "completed": "Prêt",
+        "pending": "En cours",
+        "failed": "Échec"
+      },
+      "unavailable": "Aperçu indisponible",
+      "audioOutput": "Résultat audio",
+      "processing": "Traitement…",
+      "copy": "Copier",
+      "copyDone": "Copié",
+      "more": "Voir plus",
+      "less": "Voir moins",
+      "metadata": {
+        "job_id": "ID du rendu",
+        "group": "Groupe",
+        "created": "Création",
+        "duration": "Durée",
+        "cost": "Coût",
+        "batch": "Lot"
+      }
     }
   },
   "cookieBanner": {

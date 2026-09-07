@@ -2,6 +2,7 @@
 
 import type { ComponentProps, ReactNode } from 'react';
 import dynamic from 'next/dynamic';
+import { WorkspaceCreationHeading } from './WorkspaceCreationHeading';
 import type { GalleryRailProps } from '@/components/GalleryRail';
 import type { EngineCaps, Mode } from '@/types/engines';
 import type { GroupSummary } from '@/types/groups';
@@ -108,6 +109,7 @@ export function WorkspaceAppShell({
         />
       }
     >
+      <WorkspaceCreationHeading />
       {notice && (
         <div className="rounded-card border border-warning-border bg-warning-bg px-4 py-2 text-sm text-warning shadow-card">
           {notice}

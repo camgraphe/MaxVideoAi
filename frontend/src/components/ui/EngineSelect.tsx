@@ -158,7 +158,7 @@ export function EngineSelect({
         'flex min-w-0 flex-1 items-center justify-between gap-4 rounded-input border border-border bg-surface text-left text-text-primary shadow-sm transition hover:border-border-hover hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         isBarVariant
           ? controlPresentation === 'workspace'
-            ? 'h-[42px] w-full px-2.5 py-0 text-[12px] sm:px-3 sm:text-[13px]'
+            ? 'h-11 w-full px-2.5 py-0 text-[12px] sm:px-3 sm:text-[13px]'
             : 'px-2.5 py-1.5 text-[12px] sm:px-3 sm:py-2 sm:text-[13px]'
           : 'px-4 py-3 text-sm'
       )}
@@ -329,6 +329,7 @@ export function EngineSelect({
                 setHighlightedIndex(-1);
                 triggerRef.current?.focus();
               }}
+              onClose={() => { setOpen(false); triggerRef.current?.focus(); }}
               onToggleLegacy={setShowLegacy}
               portalElement={portalElement}
               position={position}

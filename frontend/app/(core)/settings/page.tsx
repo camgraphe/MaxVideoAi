@@ -117,7 +117,7 @@ export default function SettingsPage() {
       <HeaderBar />
       <div className="flex flex-1 min-w-0">
         <AppSidebar />
-        <main className="flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
+        <main className="app-settings-main flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
           <h1 className="mb-4 text-xl font-semibold text-text-primary">{copy.title}</h1>
 
           <SettingsTabs

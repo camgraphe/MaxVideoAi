@@ -210,7 +210,7 @@ test('shared media surfaces delegate slot, entry rendering, helper, and type own
   assert.match(mediaLightboxSource, /<MediaLightboxEntryCard/, 'MediaLightbox should compose a focused entry card');
   assert.doesNotMatch(mediaLightboxSource, /function formatPromptPreview|function RenderDecorVisual|function ActionCard/, 'MediaLightbox should not own entry rendering helpers');
   assert.match(mediaLightboxEntryCardSource, /export function MediaLightboxEntryCard/, 'MediaLightboxEntryCard should own entry rendering');
-  assert.match(mediaLightboxEntryCardSource, /function RenderDecorVisual/, 'entry card should own decorative render visuals');
+  assert.match(mediaLightboxEntryCardSource, /function ActionCard/, 'entry card should own result actions');
   assert.match(mediaLightboxHelpersSource, /export function formatPromptPreview/, 'media lightbox helpers should own prompt formatting');
   assert.match(mediaLightboxHelpersSource, /export function resolveStatusLabel/, 'media lightbox helpers should own status labels');
   assert.match(mediaLightboxTypesSource, /export interface MediaLightboxEntry/, 'media lightbox types should own public entry contracts');

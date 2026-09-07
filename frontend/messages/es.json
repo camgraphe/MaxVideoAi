@@ -3100,14 +3100,38 @@
       "memberFallback": "Miembro",
       "signedIn": "Sesión iniciada",
       "themeToggle": {
-        "toDark": "Cambiar a modo oscuro",
-        "toLight": "Cambiar a modo claro"
+        "toLight": "Cambiar a tema claro",
+        "toDark": "Cambiar a tema oscuro"
       },
       "primaryNav": "Navegación principal",
       "signOut": "Cerrar sesión",
       "createAccount": "Crear cuenta",
       "signIn": "Iniciar sesión",
-      "logoAria": "Ir a la página de marketing"
+      "logoAria": "Ir a la página de marketing",
+      "quickNav": {
+        "video": "Vídeo",
+        "image": "Imagen",
+        "library": "Biblioteca",
+        "menu": "Menú"
+      },
+      "createVideo": "Crear un vídeo",
+      "mobileClose": "Cerrar menú",
+      "mobileToggle": "Abrir menú",
+      "controlLabels": {
+        "duration": "Duración",
+        "resolution": "Resolución",
+        "aspect": "Formato",
+        "audio": "Audio",
+        "iterations": "Resultados",
+        "fps": "Fotogramas por segundo",
+        "hdr": "HDR",
+        "images": "Imágenes",
+        "format": "Formato de archivo",
+        "quality": "Calidad",
+        "style": "Estilo"
+      },
+      "createImage": "Crear una imagen",
+      "workspaceLabel": "Espacio de creación"
     },
     "sidebar": {
       "aria": {
@@ -3140,6 +3164,22 @@
         "claude": "Claude",
         "chatgpt": "ChatGPT",
         "codex": "Codex"
+      },
+      "groups": {
+        "create": "Crear",
+        "organize": "Espacio de trabajo",
+        "account": "Cuenta"
+      },
+      "shortLabels": {
+        "generate": "Vídeo",
+        "generate-image": "Imagen",
+        "generate-audio": "Audio",
+        "tools": "Herramientas creativas",
+        "dashboard": "Vista general",
+        "library": "Biblioteca",
+        "jobs": "Actividad",
+        "billing": "Facturación",
+        "settings": "Ajustes"
       }
     },
     "languageToggle": {
@@ -3480,7 +3520,10 @@
               "Video de referencia"
             ]
           }
-        }
+        },
+        "families": "Familias",
+        "models": "Modelos",
+        "searchPlaceholder": "Buscar un modelo"
       }
     },
     "jobs": {
@@ -3889,7 +3932,7 @@
         "refreshing": "Actualizando historial…"
       },
       "runButton": {
-        "idle": "Generar imágenes",
+        "idle": "Generar",
         "running": "Generando…"
       },
       "errors": {
@@ -3971,8 +4014,8 @@
         }
       },
       "views": {
-        "saved": "Recursos guardados",
-        "review": "Revisar renders recientes"
+        "saved": "Medios guardados",
+        "review": "Medios generados"
       },
       "media": {
         "images": "Imágenes",
@@ -3988,7 +4031,10 @@
         "import": "Importar",
         "importing": "Importando…",
         "importFailed": "No se pudo importar. Intenta de nuevo.",
-        "refresh": "Actualizar"
+        "refresh": "Actualizar",
+        "searchSaved": "Buscar nombres o ID de resultados…",
+        "searchRenders": "Buscar prompts o ID de resultados…",
+        "create": "Crear"
       },
       "tabs": {
         "all": "Todas las imágenes",
@@ -4010,7 +4056,9 @@
         "saving": "Guardando…",
         "saved": "Guardado",
         "saveError": "No se pudo guardar este render en la Biblioteca.",
-        "openRender": "Abrir render"
+        "openRender": "Abrir render",
+        "linkedResult": "Resultado enlazado",
+        "showAll": "Todos los resultados"
       },
       "assets": {
         "title": "Recursos de la biblioteca",
@@ -4030,6 +4078,19 @@
         "useSettingsButton": "Abrir fuente",
         "deleting": "Eliminando…",
         "assetFallback": "Recurso"
+      },
+      "sources": {
+        "video": {
+          "all": "Todos los vídeos",
+          "upload": "Vídeos importados",
+          "generated": "Resultados guardados",
+          "upscale": "Vídeos ampliados"
+        },
+        "audio": {
+          "all": "Todos los audios",
+          "upload": "Audios importados",
+          "generated": "Resultados de audio guardados"
+        }
       }
     },
     "settings": {
@@ -4043,31 +4104,47 @@
       },
       "account": {
         "title": "Cuenta",
+        "guest": {
+          "description": "Inicia sesión para actualizar las preferencias de tu cuenta.",
+          "action": "Iniciar sesión"
+        },
         "fields": {
           "name": {
             "label": "Nombre",
-            "placeholder": "Tu nombre"
+            "placeholder": "Tu nombre",
+            "help": "Entre 1 y 80 caracteres."
           },
           "email": {
-            "label": "Email",
-            "placeholder": "tu@dominio.com"
+            "label": "Correo electrónico",
+            "placeholder": "tu@dominio.com",
+            "readOnly": "Los cambios de correo electrónico se gestionan por separado."
           },
           "locale": {
             "label": "Idioma",
-            "options": [
-              "EN",
-              "FR",
-              "ES"
-            ]
+            "description": "Idioma de la interfaz:"
           },
           "theme": {
-            "label": "Tema",
-            "options": [
-              "Sistema",
-              "Claro",
-              "Oscuro"
-            ]
+            "label": "Apariencia",
+            "description": "Se guarda en este dispositivo.",
+            "options": {
+              "light": "Claro",
+              "dark": "Oscuro",
+              "system": "Sistema"
+            }
           }
+        },
+        "actions": {
+          "save": "Guardar",
+          "saving": "Guardando…",
+          "cancel": "Cancelar"
+        },
+        "validation": {
+          "required": "Introduce un nombre.",
+          "tooLong": "El nombre debe tener 80 caracteres como máximo."
+        },
+        "status": {
+          "success": "Nombre guardado.",
+          "genericError": "No se pudo guardar tu nombre. Inténtalo de nuevo."
         }
       },
       "team": {
@@ -5007,6 +5084,48 @@
       "recentFailed": "Failed",
       "authTitle": "Inicia sesión para usar la herramienta",
       "authBody": "La eliminación de fondo usa facturación de wallet y biblioteca privada."
+    },
+    "result": {
+      "title": "Resultado",
+      "close": "Cerrar",
+      "duration": "Duración",
+      "aspect": "Formato",
+      "audioOn": "Activado",
+      "audioOff": "Desactivado",
+      "downloading": "Descargando…",
+      "download": "Descargar",
+      "copied": "Enlace copiado",
+      "copyLink": "Copiar enlace",
+      "checking": "Comprobando…",
+      "refresh": "Actualizar estado",
+      "openOriginal": "Abrir original",
+      "remix": "Crear variante",
+      "reuse": "Usar ajustes",
+      "saving": "Guardando…",
+      "saved": "Guardado",
+      "retrySave": "Reintentar",
+      "save": "Guardar",
+      "details": "Detalles del resultado",
+      "status": {
+        "completed": "Listo",
+        "pending": "Procesando",
+        "failed": "Error"
+      },
+      "unavailable": "Vista previa no disponible",
+      "audioOutput": "Resultado de audio",
+      "processing": "Procesando…",
+      "copy": "Copiar",
+      "copyDone": "Copiado",
+      "more": "Ver más",
+      "less": "Ver menos",
+      "metadata": {
+        "job_id": "ID del resultado",
+        "group": "Grupo",
+        "created": "Creación",
+        "duration": "Duración",
+        "cost": "Coste",
+        "batch": "Lote"
+      }
     }
   },
   "cookieBanner": {

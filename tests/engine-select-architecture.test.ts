@@ -63,7 +63,8 @@ test('engine select modules expose the expected contracts', () => {
   assert.match(dropdownSource, /Score \$\{value\}\/10/);
   assert.doesNotMatch(dropdownSource, /formatEngineSelectScorePercent\(engineScores/);
   assert.match(dropdownSource, /grid min-h-\[250px\] min-w-0/);
-  assert.match(dropdownSource, /overflow-x-auto overscroll-x-contain/);
+  assert.match(dropdownSource, /<select value=\{activeFamily\?\.id/);
+  assert.doesNotMatch(dropdownSource, /overflow-x-auto overscroll-x-contain/, 'mobile families use a visible native select');
   assert.match(dropdownSource, /max-h-\[min\(36vh,300px\)\]/);
   assert.match(dropdownStateHookSource, /export function useEngineSelectDropdownState/);
   assert.match(dropdownStateHookSource, /document\.addEventListener\('mousedown'/);
@@ -110,7 +111,7 @@ test('workspace variant trigger is compact and does not spend width on a chevron
     'workspace variant trigger must override the shared minimum width'
   );
   assert.match(variantControlSource, /w-\[92px\].*sm:w-\[124px\]/s);
-  assert.match(variantControlSource, /h-\[42px\]/);
+  assert.match(variantControlSource, /h-11/);
   assert.match(variantControlSource, /hideChevron/);
 });
 
@@ -123,7 +124,7 @@ test('workspace engine and variant controls stay together without a Browse row',
   assert.match(workspaceBranch, /flex w-full max-w-full min-w-0 flex-nowrap items-end gap-2 sm:gap-3/);
   assert.match(workspaceBranch, /<div className="min-w-0 flex-1 overflow-hidden sm:w-\[320px\] sm:flex-none">/);
   assert.match(engineSelectSource, /controlPresentation === 'workspace' && 'w-full min-w-0'/);
-  assert.match(engineSelectSource, /controlPresentation === 'workspace'\s*\? 'h-\[42px\] w-full/);
+  assert.match(engineSelectSource, /controlPresentation === 'workspace'\s*\? 'h-11 w-full/);
   assert.doesNotMatch(workspaceBranch, /copy\.browseCompact|ExternalLink/);
   assert.match(engineSelectSource, /copy\.browse/);
   assert.match(engineSelectSource, /BrowseEnginesModal/);

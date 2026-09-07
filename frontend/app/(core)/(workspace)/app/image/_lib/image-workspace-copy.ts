@@ -264,7 +264,7 @@ export const DEFAULT_COPY: ImageWorkspaceCopy = {
     refreshing: 'Refreshing history…',
   },
   runButton: {
-    idle: 'Generate images',
+    idle: 'Generate',
     running: 'Generating…',
   },
   errors: {

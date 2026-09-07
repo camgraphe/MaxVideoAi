@@ -48,7 +48,7 @@ export const NAV_ITEMS: readonly NavItemDefinition[] = [
   { id: 'settings', label: 'Settings', badge: null, icon: 'settings', href: '/settings' }
 ];
 
-const NAV_ICON_MAP: Record<string, LucideIcon> = {
+export const NAV_ICON_MAP: Record<string, LucideIcon> = {
   dashboard: Home,
   generate: Clapperboard,
   'generate-image': Images,
@@ -95,7 +95,7 @@ export function AssistantConnectionsCard({ t }: { t: SidebarTranslate }) {
   );
 
   return (
-    <div className="rounded-card border border-hairline bg-surface shadow-sm">
+    <div className="app-assistant-connections rounded-card border border-hairline bg-surface shadow-sm">
       <div className="flex items-center justify-between gap-2 px-3.5 py-3">
         <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text-primary">
           {t('workspace.sidebar.assistantConnections.label', 'Connect')}
@@ -174,7 +174,7 @@ export function AppSidebar() {
         : item.id === 'settings'
           ? isSettingsPath(normalizedPath)
           : matchesExact || matchesSubroute || (item.id === 'generate-image' && normalizedPath === '/app/image');
-    const label = t(`workspace.sidebar.links.${item.id}`, item.label);
+    const label = t(`workspace.sidebar.shortLabels.${item.id}`, t(`workspace.sidebar.links.${item.id}`, item.label) ?? item.label);
     const badgeLabel = item.badge
       ? t(`workspace.sidebar.badges.${item.badgeKey ?? item.id}`, item.badge)
       : null;
@@ -186,7 +186,7 @@ export function AppSidebar() {
           href={item.href}
           prefetch={false}
           className={clsx(
-            'relative flex min-h-[42px] w-full items-center rounded-input border border-transparent text-sm font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+            'app-nav-item relative flex min-h-[42px] w-full items-center rounded-input border border-transparent text-sm font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
             'gap-2 px-2',
             active
               ? 'bg-[var(--brand-soft)] text-brand'
@@ -220,7 +220,7 @@ export function AppSidebar() {
 
   return (
     <aside
-      className="sticky top-[var(--header-height)] hidden h-[calc(100vh-var(--header-height))] w-[188px] shrink-0 flex-col border-r border-hairline bg-surface-2 md:flex"
+      className="app-sidebar sticky top-[var(--header-height)] hidden h-[calc(100vh-var(--header-height))] w-[188px] shrink-0 flex-col border-r border-hairline bg-surface-2 md:flex"
     >
       <div className="flex min-h-0 flex-1 flex-col">
         <nav
@@ -230,7 +230,14 @@ export function AppSidebar() {
           <ul
             className="mt-2 flex w-full flex-col gap-1"
           >
-            {navigationItems.map((item) => renderNavItem(item))}
+            {[
+              { key: 'create', label: 'Create', ids: ['generate', 'generate-image', 'generate-audio', 'tools'] },
+              { key: 'organize', label: 'Workspace', ids: ['dashboard', 'library', 'jobs'] },
+              { key: 'account', label: 'Account', ids: ['billing', 'settings'] },
+            ].map((group) => <li key={group.key}>
+              <p className="app-nav-group">{t(`workspace.sidebar.groups.${group.key}`, group.label)}</p>
+              <ul className="space-y-1">{navigationItems.filter((item) => group.ids.includes(item.id)).map(renderNavItem)}</ul>
+            </li>)}
           </ul>
         </nav>
         <div className="mt-auto px-3 pb-5 pt-3">

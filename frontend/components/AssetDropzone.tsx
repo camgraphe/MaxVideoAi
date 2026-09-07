@@ -358,7 +358,7 @@ export function AssetDropzone({
       <div
         className={clsx(
           'flex w-full flex-col rounded-input border border-dashed border-border bg-surface-glass-80 text-text-secondary dark:border-white/[0.07] dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.018))] dark:text-white/68',
-          workspaceDensity && 'h-full',
+          workspaceDensity && 'app-reference-surface h-full',
           fullBleedSingleAsset ? 'relative min-h-[260px] overflow-hidden' : compactDensity ? 'gap-2 p-2.5' : 'gap-4 p-4',
           disabled && disabledReason && disabledPresentation !== 'auth-lock' && 'border-warning-border/70 bg-warning-bg/30 dark:border-[#f6c667]/25 dark:bg-[#f6c667]/[0.045]'
         )}

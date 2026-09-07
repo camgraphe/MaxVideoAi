@@ -39,6 +39,9 @@ export function GalleryRailSkeleton({ responsive = false }: { responsive?: boole
 }
 
 export function WorkspaceBootPreview({ posterSrc }: { posterSrc?: string | null }) {
+  if (!posterSrc) {
+    return <section className="app-model-strip rounded-card border border-border bg-surface shadow-card" aria-hidden><WorkspacePreviewHeaderSkeleton /></section>;
+  }
   return (
     <section className="rounded-card border border-border bg-surface-glass-90 shadow-card" aria-hidden>
       <WorkspacePreviewHeaderSkeleton />

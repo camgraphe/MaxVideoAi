@@ -5,7 +5,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import deepmerge from 'deepmerge';
-import { CheckCircle2, Download, History, Plus, Trash2 } from 'lucide-react';
+import { AudioWaveform, Clapperboard, Images, CheckCircle2, Download, History, Plus, RefreshCw, Trash2, Upload, X } from 'lucide-react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Button, ButtonLink } from '@/components/ui/Button';
@@ -21,7 +21,6 @@ import {
   DEFAULT_LIBRARY_COPY,
   formatTemplate,
   getAssetJobHref,
-  LIBRARY_PAGE_SIZE,
   resolveLibraryEntry,
   type LibraryCopy,
   type LibraryKind,
@@ -42,38 +41,25 @@ export function LibraryPageClient() {
   const [activeView, setActiveView] = useState<LibraryView>(libraryEntry.view);
   const [activeKind, setActiveKind] = useState<LibraryKind>(libraryEntry.kind);
   const [activeSource, setActiveSource] = useState<SavedAssetSource>('all');
-  const [savedAssetLimit, setSavedAssetLimit] = useState(LIBRARY_PAGE_SIZE);
-  const [recentOutputLimit, setRecentOutputLimit] = useState(LIBRARY_PAGE_SIZE);
 
   const {
-    assetsData,
     assetsError,
     assetsLoading,
-    assetsValidating,
     mutateAssets,
-    recentData,
     recentError,
     recentLoading,
-    recentValidating,
     mutateRecentOutputs,
     currentAssets,
+    searchQuery, setSearchQuery, hasMore, loadMore, isLoadingMore, activeJobId, clearJobFilter,
   } = useLibraryPageData({
     userId: user?.id,
     activeView,
     activeKind,
     activeSource,
-    savedAssetLimit,
-    recentOutputLimit,
+    jobId: libraryEntry.jobId,
     toolsEnabled,
   });
-  const displayedAssets = useMemo(() => {
-    if (activeView !== 'review' || activeKind !== libraryEntry.kind || !libraryEntry.jobId) {
-      return currentAssets;
-    }
-    const targetIndex = currentAssets.findIndex((asset) => asset.jobId === libraryEntry.jobId);
-    if (targetIndex <= 0) return currentAssets;
-    return [currentAssets[targetIndex]!, ...currentAssets.slice(0, targetIndex), ...currentAssets.slice(targetIndex + 1)];
-  }, [activeKind, activeView, currentAssets, libraryEntry.jobId, libraryEntry.kind]);
+
   const {
     importInputRef,
     deletingId,
@@ -114,20 +100,20 @@ export function LibraryPageClient() {
     () =>
       activeKind === 'video'
         ? {
-            all: 'All videos',
-            upload: 'Uploaded videos',
-            generated: 'Saved renders',
+            all: t('workspace.library.sources.video.all', 'All videos'),
+            upload: t('workspace.library.sources.video.upload', 'Uploaded videos'),
+            generated: t('workspace.library.sources.video.generated', 'Saved renders'),
             recent: copy.tabs.recent,
             storyboard: copy.tabs.storyboard,
             character: copy.tabs.character,
             angle: copy.tabs.angle,
-            upscale: 'Upscale videos',
+            upscale: t('workspace.library.sources.video.upscale', 'Upscale videos'),
           }
         : activeKind === 'audio'
           ? {
-              all: 'All audio',
-              upload: 'Uploaded audio',
-              generated: 'Saved audio renders',
+              all: t('workspace.library.sources.audio.all', 'All audio'),
+              upload: t('workspace.library.sources.audio.upload', 'Uploaded audio'),
+              generated: t('workspace.library.sources.audio.generated', 'Saved audio renders'),
               recent: copy.tabs.recent,
               storyboard: copy.tabs.storyboard,
               character: copy.tabs.character,
@@ -135,7 +121,7 @@ export function LibraryPageClient() {
               upscale: copy.tabs.upscale,
             }
         : copy.tabs,
-    [activeKind, copy.tabs]
+    [activeKind, copy.tabs, t]
   );
   const assetCountLabel = formatTemplate(copy.assets.countLabel, { count: currentAssets.length });
   const emptyLabel =
@@ -173,13 +159,6 @@ export function LibraryPageClient() {
     }
   }, [activeSource, availableSources]);
 
-  useEffect(() => {
-    setSavedAssetLimit(LIBRARY_PAGE_SIZE);
-  }, [activeKind, activeSource]);
-
-  useEffect(() => {
-    setRecentOutputLimit(LIBRARY_PAGE_SIZE);
-  }, [activeKind]);
 
   return (
     <div className="flex min-h-screen flex-col bg-bg lg:h-[100dvh]">
@@ -191,7 +170,7 @@ export function LibraryPageClient() {
             <div className="w-full animate-pulse rounded-card border border-border bg-surface p-8">
               <div className="h-4 w-24 rounded bg-surface-2" />
               <div className="mt-4 h-10 w-64 rounded bg-surface-2" />
-              <div className="mt-3 h-4 w-96 rounded bg-surface-2" />
+              <div className="mt-3 h-4 w-full max-w-96 rounded bg-surface-2" />
             </div>
           ) : !user ? (
             <section className="mx-auto max-w-3xl rounded-card border border-border bg-surface p-8 shadow-card">
@@ -223,13 +202,22 @@ export function LibraryPageClient() {
                 onChange={handleImportChange}
               />
 
+              {activeJobId ? (
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-sm">
+                  <span className="text-text-secondary">{t('workspace.library.review.linkedResult', 'Linked result')}</span>
+                  <Button type="button" variant="outline" size="sm" className="!min-h-11 gap-2" onClick={clearJobFilter}>
+                    <X className="h-4 w-4" aria-hidden />
+                    {t('workspace.library.review.showAll', 'All renders')}
+                  </Button>
+                </div>
+              ) : null}
               <AssetLibraryBrowser
                 layout="page"
                 title={copy.hero.title}
                 subtitle={activeView === 'review' ? copy.review.subtitle : copy.hero.subtitle}
                 countLabel={assetCountLabel}
                 assetType={activeKind}
-                assets={displayedAssets}
+                assets={currentAssets}
                 isLoading={
                   activeView === 'review'
                     ? recentLoading && currentAssets.length === 0
@@ -255,7 +243,7 @@ export function LibraryPageClient() {
                   setActiveSource(source as SavedAssetSource);
                   resetSourceMutationState();
                 }}
-                searchPlaceholder={copy.browser.searchPlaceholder}
+                searchPlaceholder={activeView === 'review' ? t('workspace.library.browser.searchRenders', 'Search prompts or render IDs…') ?? 'Search prompts or render IDs…' : t('workspace.library.browser.searchSaved', 'Search names or render IDs…') ?? 'Search names or render IDs…'}
                 sourcesTitle={activeView === 'review' ? copy.review.sourcesTitle : copy.browser.sourcesTitle}
                 emptyLabel={emptyLabel || copy.assets.empty}
                 emptySearchLabel={copy.browser.emptySearch}
@@ -266,27 +254,25 @@ export function LibraryPageClient() {
                 getAssetHrefLabel={() =>
                   activeView === 'review' ? copy.review.openRender : copy.assets.openAssetButton
                 }
-                hasMore={
-                  activeView === 'review'
-                    ? (recentData?.outputs?.length ?? 0) >= recentOutputLimit
-                    : (assetsData?.assets?.length ?? 0) >= savedAssetLimit
-                }
+                hasMore={hasMore}
                 loadMoreLabel={copy.browser.loadMore}
-                isLoadingMore={activeView === 'review' ? recentValidating : assetsValidating}
-                onLoadMore={() => {
-                  if (activeView === 'review') {
-                    setRecentOutputLimit((limit) => limit + LIBRARY_PAGE_SIZE);
-                  } else {
-                    setSavedAssetLimit((limit) => limit + LIBRARY_PAGE_SIZE);
-                  }
+                isLoadingMore={isLoadingMore}
+                onLoadMore={loadMore}
+                searchQuery={searchQuery}
+                onSearchQueryChange={setSearchQuery}
+                onRetry={() => {
+                  clearMutationErrors();
+                  void (activeView === 'review' ? mutateRecentOutputs() : mutateAssets());
                 }}
+                retryLabel={copy.browser.refresh}
                 titleActions={
                   <>
                     <Button
                       type="button"
                       variant={activeView === 'saved' ? 'primary' : 'outline'}
+                      aria-pressed={activeView === 'saved'}
                       size="sm"
-                      className="rounded-full px-3 text-sm"
+                      className="!min-h-11 rounded-full px-3 text-sm"
                       onClick={() => {
                         setActiveView('saved');
                         setSaveError(null);
@@ -297,8 +283,9 @@ export function LibraryPageClient() {
                     <Button
                       type="button"
                       variant={activeView === 'review' ? 'primary' : 'outline'}
+                      aria-pressed={activeView === 'review'}
                       size="sm"
-                      className="gap-1 rounded-full px-3 text-sm"
+                      className="!min-h-11 gap-2 rounded-full px-3 text-sm"
                       onClick={() => {
                         setActiveView('review');
                         setDeleteError(null);
@@ -315,28 +302,34 @@ export function LibraryPageClient() {
                     <Button
                       type="button"
                       variant={activeKind === 'image' ? 'primary' : 'outline'}
+                      aria-pressed={activeKind === 'image'}
                       size="sm"
-                      className="rounded-full px-3 text-sm"
+                      className="!min-h-11 rounded-full px-3 text-sm"
                       onClick={() => setActiveKind('image')}
                     >
+                      <Images className="h-[18px] w-[18px]" aria-hidden />
                       {copy.media.images}
                     </Button>
                     <Button
                       type="button"
                       variant={activeKind === 'video' ? 'primary' : 'outline'}
+                      aria-pressed={activeKind === 'video'}
                       size="sm"
-                      className="rounded-full px-3 text-sm"
+                      className="!min-h-11 rounded-full px-3 text-sm"
                       onClick={() => setActiveKind('video')}
                     >
+                      <Clapperboard className="h-[18px] w-[18px]" aria-hidden />
                       {copy.media.videos}
                     </Button>
                     <Button
                       type="button"
                       variant={activeKind === 'audio' ? 'primary' : 'outline'}
+                      aria-pressed={activeKind === 'audio'}
                       size="sm"
-                      className="rounded-full px-3 text-sm"
+                      className="!min-h-11 rounded-full px-3 text-sm"
                       onClick={() => setActiveKind('audio')}
                     >
+                      <AudioWaveform className="h-[18px] w-[18px]" aria-hidden />
                       {copy.media.audio}
                     </Button>
                   </>
@@ -348,10 +341,11 @@ export function LibraryPageClient() {
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="rounded-full border-border bg-surface-2 px-3 text-sm text-text-secondary hover:bg-surface-3 hover:text-text-primary"
+                        className="!min-h-11 gap-2 rounded-full border-border bg-surface-2 px-3 text-sm text-text-secondary hover:bg-surface-3 hover:text-text-primary"
                         disabled={isImporting}
                         onClick={() => importInputRef.current?.click()}
                       >
+                        <Upload className="h-4 w-4" aria-hidden />
                         {isImporting ? copy.browser.importing : copy.browser.import}
                       </Button>
                     ) : null}
@@ -359,7 +353,7 @@ export function LibraryPageClient() {
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="rounded-full border-border bg-surface-2 px-3 text-sm text-text-secondary hover:bg-surface-3 hover:text-text-primary"
+                      className="!min-h-11 gap-2 rounded-full border-border bg-surface-2 px-3 text-sm text-text-secondary hover:bg-surface-3 hover:text-text-primary"
                       onClick={() => {
                         clearMutationErrors();
                         if (activeView === 'review') {
@@ -369,20 +363,17 @@ export function LibraryPageClient() {
                         }
                       }}
                     >
+                      <RefreshCw className="h-4 w-4" aria-hidden />
                       {copy.browser.refresh}
                     </Button>
-                    <ButtonLink href="/app/image" prefetch={false} variant="outline" size="sm" className="rounded-full px-3 text-sm">
-                      <span className="lg:hidden">Image</span>
-                      <span className="hidden lg:inline">{copy.hero.ctas.image}</span>
-                    </ButtonLink>
-                    <ButtonLink href="/app" prefetch={false} variant="outline" size="sm" className="rounded-full px-3 text-sm">
-                      <span className="lg:hidden">Video</span>
-                      <span className="hidden lg:inline">{copy.hero.ctas.video}</span>
+                    <ButtonLink href={activeKind === 'video' ? '/app' : activeKind === 'audio' ? '/app/audio' : '/app/image'} prefetch={false} variant="outline" size="sm" className="!min-h-11 gap-2 rounded-full px-3 text-sm">
+                      <Plus className="h-4 w-4" aria-hidden />
+                      {t('workspace.library.browser.create', 'Create')}
                     </ButtonLink>
                   </>
                 }
                 renderAssetMeta={(asset) =>
-                  asset.createdAt ? <span className="text-text-muted">{new Date(asset.createdAt).toLocaleString()}</span> : null
+                  asset.createdAt ? <span className="text-text-muted">{new Date(asset.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</span> : null
                 }
                 renderAssetActions={(asset) =>
                   activeView === 'review' ? (
@@ -395,9 +386,10 @@ export function LibraryPageClient() {
                           disabled
                           title={copy.review.saved}
                           aria-label={copy.review.saved}
-                          className="h-9 w-9 min-h-0 rounded-full border-state-success/40 bg-state-success/10 p-0 text-state-success disabled:opacity-100"
+                          className="!min-h-11 gap-1.5 rounded-xl border-state-success/40 bg-state-success/10 px-2 text-state-success disabled:opacity-100"
                         >
                           <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
+                          <span className="text-xs">{copy.review.saved}</span>
                         </Button>
                       ) : (
                         <Button
@@ -416,13 +408,14 @@ export function LibraryPageClient() {
                               ? copy.review.saving
                               : copy.review.saveButton
                           }
-                          className="h-9 w-9 min-h-0 rounded-full p-0 disabled:cursor-not-allowed disabled:opacity-60"
+                          className="!min-h-11 gap-1.5 rounded-xl px-2 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           {asset.sourceOutputId && savingOutputIds.has(asset.sourceOutputId) ? (
                             <span className="text-[10px] font-semibold">...</span>
                           ) : (
                             <Plus className="h-4 w-4" aria-hidden />
                           )}
+                          <span className="text-xs">{copy.review.saveButton}</span>
                         </Button>
                       )}
                     </>
@@ -433,11 +426,12 @@ export function LibraryPageClient() {
                         href={buildAppDownloadUrl(asset.url, suggestDownloadFilename(asset.url, asset.url.split('/').pop() ?? 'asset'))}
                         variant="outline"
                         size="sm"
-                        className="h-9 w-9 min-h-0 rounded-full border-border/70 bg-surface p-0 text-text-secondary hover:border-text-muted hover:text-text-primary"
+                        className="!min-h-11 flex-1 gap-1.5 rounded-xl border-border/70 bg-surface px-2 text-text-secondary hover:border-text-muted hover:text-text-primary"
                         aria-label={`${copy.assets.downloadButton} ${asset.url.split('/').pop() ?? copy.assets.assetFallback}`}
                         title={`${copy.assets.downloadButton} ${asset.url.split('/').pop() ?? copy.assets.assetFallback}`}
                       >
-                        <Download className="h-4 w-4" aria-hidden />
+                        <Download className="h-4 w-4 shrink-0" aria-hidden />
+                        <span className="text-xs">{copy.assets.downloadButton}</span>
                       </ButtonLink>
                       <Button
                         type="button"
@@ -445,7 +439,7 @@ export function LibraryPageClient() {
                         size="sm"
                         onClick={() => handleDeleteAsset(asset.id)}
                         disabled={deletingId === asset.id}
-                        className="h-9 w-9 min-h-0 rounded-full border border-state-warning/40 bg-state-warning/10 p-0 text-state-warning hover:bg-state-warning/20 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="h-11 w-11 !min-h-11 rounded-xl border border-border bg-surface p-0 text-text-muted hover:border-state-warning hover:text-state-warning disabled:cursor-not-allowed disabled:opacity-60"
                         aria-label={copy.assets.deleteButton}
                         title={copy.assets.deleteButton}
                       >
