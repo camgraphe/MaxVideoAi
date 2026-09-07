@@ -1,7 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import type { EngineCaps, EngineModeUiCaps as CapabilityCaps, Mode } from '@/types/engines';
 import { DEFAULT_CONTROLS_COPY, mergeControlsCopy } from '@/components/SettingsControls';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -10,6 +10,7 @@ import { formatCompactResolutionLabel, formatResolutionLabel } from '@/lib/resol
 
 interface CoreSettingsBarProps {
   density?: 'default' | 'workspace';
+  trailingControl?: ReactNode;
   engine: EngineCaps;
   mode: Mode;
   caps?: CapabilityCaps;
@@ -241,6 +242,7 @@ function InlineSelectControl({
             : compact ? '!min-h-11 sm:h-9 sm:!min-h-0 !min-w-0 gap-1.5 px-2.5 text-xs' : 'h-10 px-3 text-[12px]'
         )}
         menuPlacement="top"
+        menuClassName={compact ? 'app-experience app-settings-menu' : undefined}
         portal={compact}
         hideChevron={false}
       />
@@ -278,6 +280,7 @@ export function CoreIterationsControl({
 
 export function CoreSettingsBar({
   density = 'default',
+  trailingControl,
   engine,
   mode,
   caps,
@@ -535,6 +538,7 @@ export function CoreSettingsBar({
             onIterationsChange={onIterationsChange}
           />
         ) : null}
+        {trailingControl}
       </div>
       {audioNotice || isLtxFastLong ? (
         <div className="flex flex-wrap items-center gap-3 text-[11px] text-text-muted">

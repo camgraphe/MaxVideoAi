@@ -223,7 +223,7 @@ export function Composer({
   const composerToolbar = (settingsBar || onGenerate) ? (
               <div className={clsx('app-composer-toolbar border-t border-border/65 dark:border-white/[0.06]', workspaceDensity ? 'px-3 py-1' : 'px-4 py-3')}>
                 <div className={workspaceDensity
-                  ? 'flex flex-col gap-3 lg:flex-row lg:flex-nowrap lg:items-center'
+                  ? 'app-composer-toolbar-layout flex flex-col gap-3'
                   : 'flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between'}>
                   {settingsBar ? (
                     <div className={clsx(
@@ -237,19 +237,19 @@ export function Composer({
                   {onGenerate ? (
                     <div className={clsx(
                       'flex shrink-0 flex-col gap-2',
-                      workspaceDensity ? 'w-full lg:w-auto' : 'lg:items-end'
+                      workspaceDensity ? 'app-composer-submit w-full' : 'lg:items-end'
                     )}>
                       {memberDiscount && memberDiscount.amountCents > 0 ? (
-                        <span className="text-[11px] text-text-muted">
+                        <span className="app-member-savings text-[11px] text-text-muted">
                           {composerCopy.memberLabel.replace(
                             '{percent}',
                             String(Math.round((memberDiscount.percentApplied ?? 0) * 100))
                           )}
                         </span>
                       ) : null}
-                      <div className="flex w-full items-center gap-2 lg:w-auto">
+                      {workspaceDensity && !formattedPrice ? <span className="app-quote-status" role="status">{isPricing ? workbenchCopy.calculating : workbenchCopy.priceUnavailable}</span> : null}
+                      <div className={clsx('flex w-full items-center gap-2 lg:w-auto', workspaceDensity && 'app-generation-controls')}>
                         {generateControl}
-                        {workspaceDensity && !formattedPrice ? <span className="app-quote-status" role="status">{isPricing ? workbenchCopy.calculating : workbenchCopy.priceUnavailable}</span> : null}
                         <Button
                           type="button"
                           size="md"
@@ -268,11 +268,11 @@ export function Composer({
                           )}
                           onClick={handleGenerateClick}
                         >
-                          <span className="relative z-10 text-sm font-semibold uppercase tracking-micro">{resolvedGenerateLabel}</span>
+                          <span className="app-generation-label relative z-10 text-sm font-semibold uppercase tracking-micro">{resolvedGenerateLabel}</span>
                           {formattedPrice ? (
                             <span
                               className={clsx(
-                                'relative z-10 inline-flex items-center rounded-full py-1 text-sm font-semibold normal-case backdrop-blur',
+                                'app-generation-price relative z-10 inline-flex items-center rounded-full py-1 text-sm font-semibold normal-case backdrop-blur',
                                 workspaceDensity ? 'px-3' : 'px-3.5',
                                 isGenerateDisabled
                                   ? 'border border-border/80 bg-surface-2 text-text-secondary shadow-none'

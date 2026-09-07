@@ -1,6 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
+import type { ReactNode } from 'react';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { SelectMenu } from '@/components/ui/SelectMenu';
 import { formatCompactResolutionLabel } from '@/lib/resolution-labels';
@@ -13,6 +14,7 @@ type ControlOption = {
 
 interface ImageSettingsBarProps {
   density?: 'default' | 'workspace';
+  trailingControl?: ReactNode;
   numImages?: {
     value: number;
     options: ControlOption[];
@@ -171,7 +173,7 @@ function InlineControl({
             ? 'h-11 !min-w-0 gap-1.5 border-brand !bg-[image:var(--brand-gradient)] px-3 text-[11px] !text-on-brand shadow-card'
             : compact ? '!min-h-11 sm:h-9 sm:!min-h-0 !min-w-0 gap-1.5 px-2.5 text-xs' : 'h-10 px-3 text-[12px]'
         )}
-        menuClassName="min-w-[12rem]"
+        menuClassName={clsx('min-w-[12rem]', compact && 'app-experience app-settings-menu')}
         menuPlacement="top"
         portal={compact}
         hideChevron={false}
@@ -205,6 +207,7 @@ export function ImageCountControl({
 
 export function ImageSettingsBar({
   density = 'default',
+  trailingControl,
   numImages,
   aspectRatio,
   resolution,
@@ -277,6 +280,7 @@ export function ImageSettingsBar({
             onChange={(value) => outputFormat.onChange(String(value))}
           />
         ) : null}
+        {trailingControl}
       </div>
     </div>
   );

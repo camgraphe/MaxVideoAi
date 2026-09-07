@@ -68,14 +68,16 @@ test('video and image composers opt into one responsive workspace density contra
   assert.match(coreSettingsSource, /portal=\{compact\}/);
   assert.match(imageSettingsSource, /portal=\{compact\}/);
   assert.doesNotMatch(composerSource, /overflow-x-auto/, 'essential settings must wrap without a hidden horizontal scroll area');
-  assert.match(composerSource, /workspaceDensity[\s\S]*lg:flex-row[\s\S]*lg:flex-nowrap/);
-  assert.match(composerSource, /workspaceDensity[\s\S]*w-full lg:w-auto/);
+  assert.match(composerSource, /workspaceDensity[\s\S]*app-composer-toolbar-layout flex flex-col/);
+  assert.match(composerSource, /workspaceDensity[\s\S]*app-composer-submit w-full/);
+  assert.match(videoComposerSource, /<CoreSettingsBar[\s\S]*trailingControl=\{<WorkspaceOptionsButton/);
+  assert.match(imageSurfaceSource, /<ImageSettingsBar[\s\S]*trailingControl=/);
   assert.doesNotMatch(composerSource, /Estimated price|Estimated credits/);
 });
 
 test('workspace quantity controls sit beside the generate action', () => {
   assert.match(composerTypesSource, /generateControl\?: ReactNode/);
-  assert.match(composerSource, /<div className="flex w-full items-center gap-2 lg:w-auto">[\s\S]*\{generateControl\}[\s\S]*<Button/);
+  assert.match(composerSource, /app-generation-controls[\s\S]*\{generateControl\}[\s\S]*<Button/);
   assert.match(videoComposerSource, /generateControl=\{[\s\S]*<CoreIterationsControl[\s\S]*iterations=\{form\.iterations\}/);
   assert.match(imageSurfaceSource, /generateControl=\{[\s\S]*<ImageCountControl[\s\S]*value=\{numImages\}/);
   assert.match(coreSettingsSource, /action\s*\?\s*'h-11[\s\S]*!bg-\[image:var\(--brand-gradient\)\]/);

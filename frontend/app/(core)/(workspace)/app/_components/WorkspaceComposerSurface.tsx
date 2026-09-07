@@ -444,7 +444,6 @@ export function WorkspaceComposerSurface({
       ) : null}
       <Composer
         density="workspace"
-        optionsControl={<WorkspaceOptionsButton open={optionsOpen} onToggle={() => setOptionsOpen((value) => !value)} />}
         engine={selectedEngine}
         prompt={prompt}
         onPromptChange={setPrompt}
@@ -611,6 +610,7 @@ export function WorkspaceComposerSurface({
         }
         settingsBar={
           <CoreSettingsBar
+            trailingControl={<WorkspaceOptionsButton open={optionsOpen} onToggle={() => setOptionsOpen((value) => !value)} />}
             density="workspace"
             engine={selectedEngine}
             mode={submissionMode}

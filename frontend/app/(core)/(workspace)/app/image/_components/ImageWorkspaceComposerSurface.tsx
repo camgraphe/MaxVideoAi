@@ -270,7 +270,6 @@ export function ImageWorkspaceComposerSurface({
 
         <Composer
           density="workspace"
-          optionsControl={(showSeedControl || showThinkingLevelControl || showCustomImageSizeControl || showMaskUrlControl || showEnableWebSearchControl || showLimitGenerationsControl || showWatermarkControl) ? <WorkspaceOptionsButton open={optionsOpen} onToggle={() => setOptionsOpen((value) => !value)} /> : undefined}
           compactPrompt
           engine={selectedEngineCaps}
           prompt={prompt}
@@ -300,6 +299,7 @@ export function ImageWorkspaceComposerSurface({
           onNotice={setError}
           settingsBar={
             <ImageSettingsBar
+              trailingControl={(showSeedControl || showThinkingLevelControl || showCustomImageSizeControl || showMaskUrlControl || showEnableWebSearchControl || showLimitGenerationsControl || showWatermarkControl) ? <WorkspaceOptionsButton open={optionsOpen} onToggle={() => setOptionsOpen((value) => !value)} /> : undefined}
               density="workspace"
               aspectRatio={
                 showAspectRatioControl
