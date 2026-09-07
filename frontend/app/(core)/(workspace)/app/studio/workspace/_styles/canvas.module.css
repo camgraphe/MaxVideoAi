@@ -1,0 +1,269 @@
+.canvasShell {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 28% 18%, rgba(59, 130, 246, 0.055), transparent 30%),
+    linear-gradient(180deg, var(--studio-surface), var(--studio-bg));
+}
+
+.reactFlowCanvas {
+  width: 100%;
+  height: 100%;
+}
+
+.canvasShell :global(.react-flow__renderer),
+.canvasShell :global(.react-flow__pane),
+.canvasShell :global(.react-flow__viewport) {
+  width: 100%;
+  height: 100%;
+}
+
+.canvasShell :global(.react-flow) {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.canvasShell :global(.react-flow__renderer) {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.canvasShell :global(.react-flow__pane) {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  cursor: grab;
+}
+
+.canvasShell :global(.react-flow__pane.selection) {
+  cursor: pointer;
+}
+
+.canvasShell :global(.react-flow__viewport) {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+.canvasShell :global(.react-flow__node) {
+  position: absolute;
+  z-index: 3;
+  font-family: inherit;
+  transform-origin: 0 0;
+  pointer-events: all;
+  user-select: none;
+}
+
+.canvasShell :global(.react-flow__node-asset-image),
+.canvasShell :global(.react-flow__node-asset-video),
+.canvasShell :global(.react-flow__node-text-prompt),
+.canvasShell :global(.react-flow__node-note),
+.canvasShell :global(.react-flow__node-output) {
+  width: 260px;
+  height: 166px;
+}
+
+.canvasShell :global(.react-flow__node-asset-audio) {
+  width: 260px;
+  height: 138px;
+}
+
+.canvasShell :global(.react-flow__edges) {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.canvasShell :global(.react-flow__edges svg) {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.canvasShell :global(.react-flow__edge) {
+  position: absolute;
+  overflow: visible;
+  pointer-events: visibleStroke;
+}
+
+.canvasShell :global(.react-flow__edge-path) {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.canvasShell :global(.react-flow__edge.selected),
+.canvasShell :global(.react-flow__edge:focus),
+.canvasShell :global(.react-flow__edge:focus-visible) {
+  outline: none;
+  box-shadow: none;
+}
+
+.canvasShell :global(.react-flow__edge.selected .react-flow__edge-path) {
+  filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.42));
+}
+
+.canvasShell :global(.react-flow__edge-labels) {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.canvasShell :global(.react-flow__background) {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.canvasShell :global(.react-flow__edge-path) {
+  filter: drop-shadow(0 0 6px rgba(99, 102, 241, 0.18));
+}
+
+.canvasShell :global(.react-flow__edge-textbg) {
+  fill: var(--studio-surface);
+}
+
+.canvasShell :global(.react-flow__edge-text) {
+  fill: var(--studio-text);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.canvasShell :global(.react-flow__selection) {
+  z-index: 6;
+  border: 1px dashed rgba(147, 197, 253, 0.96);
+  border-radius: 7px;
+  background: rgba(37, 99, 235, 0.12);
+  box-shadow:
+    inset 0 0 0 1px rgba(96, 165, 250, 0.24),
+    0 0 26px rgba(59, 130, 246, 0.22);
+  pointer-events: none;
+}
+
+.canvasShell :global(.react-flow__handle) {
+  position: absolute;
+  z-index: 5;
+  pointer-events: all;
+}
+
+.canvasShell :global(.react-flow__handle-left) {
+  left: 0;
+  transform: translate(-50%, -50%);
+}
+
+.canvasShell :global(.react-flow__handle-right) {
+  right: 0;
+  transform: translate(50%, -50%);
+}
+
+.canvasShell :global(.react-flow__handle-top) {
+  top: 0;
+  transform: translate(-50%, -50%);
+}
+
+.canvasShell :global(.react-flow__handle-bottom) {
+  bottom: 0;
+  transform: translate(-50%, 50%);
+}
+
+.canvasShell :global(.react-flow__attribution) {
+  display: none;
+}
+
+.workspaceGhostLink {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  width: 1px;
+  height: 1px;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.workspaceGhostLink path {
+  fill: none;
+  stroke-width: 2.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 7 7;
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--node-accent, #8b5cf6) 42%, transparent));
+  opacity: 0.9;
+}
+
+.workspaceGhostNode {
+  position: absolute;
+  z-index: 8;
+  display: grid;
+  width: 214px;
+  min-height: 76px;
+  align-content: center;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 1px dashed color-mix(in srgb, var(--node-accent, #8b5cf6) 72%, rgba(226, 232, 240, 0.26));
+  border-radius: 9px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--node-accent, #8b5cf6) 24%, var(--studio-surface)), var(--studio-bg)),
+    var(--studio-surface);
+  box-shadow:
+    0 18px 48px var(--studio-node-shadow),
+    0 0 30px color-mix(in srgb, var(--node-accent, #8b5cf6) 24%, transparent);
+  color: var(--studio-text-strong);
+  opacity: 0.82;
+  pointer-events: none;
+}
+
+.workspaceGhostNode strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  line-height: 1.1;
+}
+
+.workspaceGhostNode span {
+  overflow: hidden;
+  color: var(--studio-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.canvasEmptyState {
+  position: absolute;
+  inset: 50%;
+  display: grid;
+  width: 260px;
+  height: 120px;
+  place-items: center;
+  padding: 20px;
+  transform: translate(-50%, -50%);
+  border: 1px dashed var(--studio-border);
+  border-radius: 12px;
+  background: var(--studio-surface);
+  text-align: center;
+}
+
+.canvasEmptyState p {
+  margin: 0;
+  color: var(--studio-text-strong);
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.canvasEmptyState span {
+  color: var(--studio-text-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}

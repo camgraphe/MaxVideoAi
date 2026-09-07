@@ -1,0 +1,514 @@
+.nodeActionButton,
+.nodeInspectButton,
+.mediaPickerEmpty {
+  border: 0;
+  font: inherit;
+  color: inherit;
+}
+
+.nodePreview img,
+.nodePreview video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.graphNode {
+  position: relative;
+  width: 260px;
+  border: 1px solid color-mix(in srgb, var(--node-accent) 30%, var(--studio-border));
+  border-radius: 15px;
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--node-accent) 9%, transparent), transparent 58%),
+    linear-gradient(180deg, color-mix(in srgb, var(--studio-surface) 94%, var(--node-accent) 6%), color-mix(in srgb, var(--studio-bg-soft) 76%, var(--studio-surface))),
+    var(--studio-surface);
+  box-shadow:
+    0 14px 34px color-mix(in srgb, var(--studio-node-shadow) 38%, transparent),
+    0 1px 0 color-mix(in srgb, #ffffff 54%, transparent) inset;
+  color: var(--studio-text);
+}
+
+.sourceResizableNode {
+  display: flex;
+  width: 100%;
+  min-width: 190px;
+  height: 100%;
+  min-height: 132px;
+  flex-direction: column;
+}
+
+.sourceResizableNode.outputNode {
+  min-height: 190px;
+}
+
+.graphNode::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--node-accent) 10%, transparent);
+}
+
+.graphNodeSelected {
+  border-color: color-mix(in srgb, var(--node-accent) 68%, var(--studio-border));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--node-accent) 20%, transparent),
+    0 18px 42px color-mix(in srgb, var(--studio-node-shadow) 48%, transparent),
+    0 1px 0 color-mix(in srgb, #ffffff 58%, transparent) inset;
+}
+
+.graphNodeTimelineDraggable {
+  cursor: grab;
+}
+
+.graphNodeTimelineDraggable:active {
+  cursor: grabbing;
+}
+
+.nodeResizeControl {
+  position: absolute;
+  bottom: -8px;
+  left: -8px;
+  z-index: 8;
+  display: grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  cursor: nesw-resize;
+  opacity: 0.3;
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+
+.graphNode:hover .nodeResizeControl,
+.graphNodeSelected .nodeResizeControl {
+  opacity: 0.82;
+}
+
+.nodeResizeControl:hover {
+  transform: scale(1.05);
+}
+
+.nodeResizeGrip {
+  display: block;
+  width: 10px;
+  height: 10px;
+  border-bottom: 1px solid color-mix(in srgb, var(--node-accent) 78%, #ffffff 12%);
+  border-left: 1px solid color-mix(in srgb, var(--node-accent) 78%, #ffffff 12%);
+  border-bottom-left-radius: 3px;
+  box-shadow: -3px 3px 8px var(--studio-bg);
+}
+
+.nodeHeader {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  gap: 9px;
+  align-items: center;
+  padding: 14px 15px 10px;
+}
+
+.nodeIcon {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--node-accent) 16%, var(--studio-surface));
+  color: color-mix(in srgb, var(--node-accent) 90%, var(--studio-text-strong) 10%);
+}
+
+.nodeTitle {
+  margin: 0;
+  overflow: hidden;
+  color: var(--studio-text-strong);
+  font-size: 13px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nodeSubtitle {
+  margin: 2px 0 0;
+  overflow: hidden;
+  color: var(--studio-text-muted);
+  font-size: 10.5px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nodeInspectButton {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--studio-surface) 78%, transparent);
+  color: color-mix(in srgb, var(--node-accent) 70%, var(--studio-text));
+  cursor: pointer;
+  opacity: 0.78;
+  transition:
+    background 140ms ease,
+    color 140ms ease,
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+
+.nodeInspectButton:hover,
+.nodeInspectButton:focus-visible {
+  background: color-mix(in srgb, var(--node-accent) 18%, var(--studio-surface));
+  color: var(--studio-text-strong);
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+.nodePreview,
+.nodePreviewEmpty,
+.mediaPickerEmpty {
+  position: relative;
+  display: grid;
+  height: 96px;
+  margin: 0 15px 12px;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--studio-bg) 82%, var(--node-accent) 4%);
+}
+
+.sourceResizableNode .nodePreview,
+.sourceResizableNode .nodePreviewEmpty,
+.sourceResizableNode .mediaPickerEmpty,
+.sourceResizableNode .waveform,
+.sourceResizableNode .promptTextarea {
+  flex: 1 1 auto;
+}
+
+.sourceResizableNode .nodePreview,
+.sourceResizableNode .nodePreviewEmpty,
+.sourceResizableNode .mediaPickerEmpty {
+  height: auto;
+  min-height: 70px;
+}
+
+.nodePreviewEmpty,
+.mediaPickerEmpty {
+  color: var(--studio-text-muted);
+  border: 1px dashed color-mix(in srgb, var(--node-accent) 30%, var(--studio-border));
+}
+
+.nodePreviewEmpty span {
+  display: block;
+  margin-top: 6px;
+  color: var(--studio-text-muted);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.processingPreview {
+  color: var(--studio-info-text);
+  border-color: rgba(59, 130, 246, 0.34);
+  background:
+    linear-gradient(135deg, rgba(37, 99, 235, 0.16), var(--studio-surface)),
+    var(--studio-bg);
+}
+
+.processingPreview svg {
+  animation: processingPulse 1.6s ease-in-out infinite;
+}
+
+.previewVideo {
+  display: block;
+  background: var(--studio-bg);
+}
+
+.audioPreview {
+  min-height: 70px;
+  padding: 12px;
+}
+
+.previewAudio {
+  width: 100%;
+  min-width: 0;
+  accent-color: var(--node-accent);
+}
+
+.mediaPickerEmpty {
+  width: calc(100% - 30px);
+  cursor: pointer;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--node-accent) 9%, var(--studio-surface)), var(--studio-bg)),
+    var(--studio-bg);
+}
+
+.mediaPickerEmpty > span {
+  color: color-mix(in srgb, var(--node-accent) 52%, var(--studio-text-muted));
+}
+
+.mediaPickerEmpty strong {
+  position: absolute;
+  right: 9px;
+  bottom: 9px;
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--node-accent) 78%, var(--studio-bg-soft));
+  color: #ffffff;
+  box-shadow: 0 10px 24px var(--studio-node-shadow);
+}
+
+.mediaPickerEmpty:hover {
+  border-color: color-mix(in srgb, var(--node-accent) 60%, rgba(226, 232, 240, 0.2));
+}
+
+.previewPlayBadge {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: var(--studio-bg);
+  color: #ffffff;
+  backdrop-filter: blur(8px);
+}
+
+.nodeMetaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 15px 12px;
+  color: var(--studio-text-muted);
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.nodeMetaRow span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.assetMetaRow {
+  justify-content: flex-end;
+}
+
+.waveform {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 66px;
+  margin: 0 15px 12px;
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(20, 83, 45, 0.32);
+}
+
+.sourceResizableNode .waveform {
+  height: auto;
+  min-height: 56px;
+}
+
+.waveform span {
+  flex: 1;
+  min-width: 2px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #86efac, #16a34a);
+}
+
+.promptTextarea {
+  width: calc(100% - 30px);
+  min-height: 92px;
+  margin: 0 15px 12px;
+  padding: 10px;
+  resize: none;
+  border: 1px solid var(--studio-border);
+  border-radius: 11px;
+  background: var(--studio-bg);
+  color: var(--studio-text);
+  font-size: 11px;
+  line-height: 1.45;
+  outline: none;
+}
+
+.noteNode {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, #facc15 16%, var(--studio-surface)), var(--studio-surface)),
+    var(--studio-bg-soft);
+}
+
+.noteTextarea {
+  border-color: rgba(250, 204, 21, 0.18);
+  background:
+    linear-gradient(135deg, rgba(250, 204, 21, 0.1), transparent 56%),
+    var(--studio-bg);
+  color: var(--studio-text);
+}
+
+.sourceResizableNode .promptTextarea {
+  min-height: 76px;
+}
+
+.shotInputDock {
+  display: grid;
+  gap: 7px;
+  margin: 0 14px 12px;
+  padding: 8px 0 0;
+  border-top: 1px solid color-mix(in srgb, var(--node-accent) 18%, var(--studio-border));
+  background: transparent;
+  pointer-events: all;
+}
+
+.shotConnectorGroup {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.shotInputLabel {
+  color: var(--studio-text-muted);
+  font-size: 9px;
+  font-weight: 720;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.shotInputRow {
+  position: relative;
+  display: flex;
+  min-height: 18px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+  padding: 0 2px;
+  color: var(--studio-text);
+  font-size: 10.5px;
+  font-weight: 640;
+  line-height: 1.05;
+  text-align: left;
+}
+
+.shotInputRowDisabled {
+  color: var(--studio-text-muted);
+  opacity: 0.62;
+}
+
+.shotOutputRow {
+  color: var(--studio-text-strong);
+}
+
+.shotInputName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shotInputCapacity {
+  flex: 0 0 auto;
+  min-width: 28px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--node-accent) 12%, var(--studio-surface));
+  color: color-mix(in srgb, var(--node-accent) 74%, var(--studio-text-strong));
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.shotInputRowHandle {
+  z-index: 3;
+}
+
+.nodeActionButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: calc(100% - 24px);
+  height: 30px;
+  margin: 0 12px 10px;
+  border-radius: 10px;
+  background: var(--studio-bg-soft);
+  color: var(--studio-text);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.nodeActionButton:hover {
+  background: var(--studio-control-bg-hover);
+}
+
+.nodeActionButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+@keyframes processingPulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.96);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
+
+.graphHandle {
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: none;
+  cursor: crosshair;
+  opacity: 1;
+  touch-action: none;
+}
+
+.graphHandle::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+}
+
+.graphHandle::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--workspace-handle-color, var(--node-accent));
+  transform: translate(-50%, -50%);
+  transition:
+    width 120ms ease,
+    height 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.graphHandle:hover::after,
+.graphHandle:focus-visible::after {
+  width: 10px;
+  height: 10px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--workspace-handle-color, var(--node-accent)) 14%, transparent);
+}
+
+.graphHandle:focus-visible {
+  outline: none;
+}

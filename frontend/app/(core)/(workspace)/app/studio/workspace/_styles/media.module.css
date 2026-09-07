@@ -1,0 +1,775 @@
+.timelineProjectSidebar {
+  position: relative;
+  overflow: hidden;
+  gap: 0;
+  padding: 0;
+  border-right-color: var(--studio-border);
+  background: var(--studio-media-sidebar-bg);
+}
+
+.projectMediaHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(128px, 0.72fr);
+  gap: 10px;
+  align-items: center;
+  padding: 17px 14px 12px;
+}
+
+.projectMediaHeaderCopy {
+  min-width: 0;
+}
+
+.projectMediaTitle {
+  margin: 0;
+  color: var(--studio-text-strong);
+  font-size: 17px;
+  font-weight: 820;
+  letter-spacing: 0;
+}
+
+.projectMediaSubtitle {
+  display: block;
+  margin-top: 5px;
+  color: var(--studio-media-detail);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.projectMediaActionButton {
+  display: inline-flex;
+  flex: 0 0 auto;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--studio-primary), var(--studio-primary-2));
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 16px 38px rgba(37, 99, 235, 0.22);
+}
+
+.projectMediaActionButton:hover {
+  filter: brightness(1.08);
+}
+
+.projectMediaControls {
+  display: block;
+  padding: 0 14px 12px;
+}
+
+.projectMediaSearch {
+  display: flex;
+  min-width: 0;
+  height: 34px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-media-input-bg);
+  color: var(--studio-text-muted);
+  padding: 0 10px;
+}
+
+.projectMediaSearch span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.projectMediaSearch input {
+  min-width: 0;
+  flex: 1 1 auto;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--studio-text);
+  font: inherit;
+  font-size: 12px;
+}
+
+.projectMediaSearch input::placeholder {
+  color: var(--studio-text-muted);
+}
+
+.projectMediaKindFilters {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 0 14px 12px;
+}
+
+.projectMediaKindFilterButton {
+  flex: 0 0 auto;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-media-tool-bg);
+  color: var(--studio-text-muted);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 760;
+  cursor: pointer;
+}
+
+.projectMediaKindFilterButton:hover,
+.projectMediaKindFilterButton:focus-visible,
+.projectMediaKindFilterButtonActive {
+  border-color: rgba(129, 140, 248, 0.42);
+  background: var(--studio-control-bg-hover);
+  color: var(--studio-text-strong);
+  outline: none;
+}
+
+.projectMediaFolderHeader {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+  padding: 0 14px 12px;
+}
+
+.projectMediaBackButton {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 30px;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-surface);
+  color: var(--studio-text);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 760;
+  cursor: pointer;
+  padding: 0 9px;
+}
+
+.projectMediaBackButton:hover,
+.projectMediaBackButton:focus-visible {
+  border-color: rgba(96, 165, 250, 0.34);
+  background: var(--studio-bg-soft);
+  color: var(--studio-text-strong);
+  outline: none;
+}
+
+.projectMediaFolderTitle {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+  color: var(--studio-text-muted);
+  font-size: 11px;
+  font-weight: 720;
+}
+
+.projectMediaFolderTitle svg {
+  color: #a78bfa;
+}
+
+.projectMediaFolderTitle strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--studio-text-strong);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.projectMediaGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: max-content;
+  min-height: 0;
+  flex: 1 1 0;
+  align-content: start;
+  align-items: start;
+  gap: 8px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  padding: 0 14px 16px;
+}
+
+.projectMediaGrid::-webkit-scrollbar {
+  display: none;
+}
+
+.projectMediaTileFrame {
+  position: relative;
+  min-width: 0;
+  height: 100%;
+}
+
+@supports (content-visibility: auto) {
+  .projectMediaTileFrame {
+    content-visibility: auto;
+    contain-intrinsic-size: 128px 112px;
+  }
+}
+
+.projectMediaTile {
+  position: relative;
+  display: flex;
+  min-height: 112px;
+  min-width: 0;
+  height: 100%;
+  flex-direction: column;
+  border: 1px solid var(--studio-border);
+  border-radius: 7px;
+  overflow: hidden;
+  background: var(--studio-media-tile-bg);
+  color: var(--studio-text-strong);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.projectMediaTile:hover,
+.projectMediaTile:focus-visible {
+  border-color: rgba(96, 165, 250, 0.44);
+  outline: none;
+  background: var(--studio-media-tile-hover-bg);
+}
+
+.projectMediaTile[data-project-media-drag-kind] {
+  cursor: grab;
+}
+
+.projectMediaTile[data-project-media-drag-kind]:active {
+  cursor: grabbing;
+}
+
+.projectMediaTileSelected {
+  border-color: rgba(129, 140, 248, 0.72);
+  box-shadow:
+    0 0 0 1px rgba(129, 140, 248, 0.18),
+    0 16px 38px var(--studio-surface);
+}
+
+[data-project-media-folder-drop-target="true"] .projectMediaTile {
+  border-color: rgba(167, 139, 250, 0.9);
+  background:
+    linear-gradient(180deg, rgba(59, 46, 132, 0.48), var(--studio-surface));
+  box-shadow:
+    0 0 0 1px rgba(167, 139, 250, 0.28),
+    0 18px 42px rgba(88, 28, 135, 0.24);
+}
+
+.projectMediaArtwork {
+  position: relative;
+  flex: 0 0 auto;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  overflow: hidden;
+  background: var(--studio-media-artwork-bg);
+}
+
+.projectMediaArtwork img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.projectMediaArtworkSequence {
+  background: var(--studio-media-sequence-artwork-bg);
+}
+
+.projectMediaArtworkFolder {
+  background: var(--studio-media-folder-artwork-bg);
+}
+
+.projectMediaFolderGlyph {
+  display: grid;
+  position: absolute;
+  inset: 0;
+  place-items: center;
+  color: rgba(253, 186, 116, 0.92);
+}
+
+.projectMediaFolderGlyph::before {
+  content: "";
+  position: absolute;
+  width: min(60%, 72px);
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.22), transparent 68%);
+}
+
+.projectMediaFolderGlyph svg {
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 10px 18px var(--studio-node-shadow));
+}
+
+.projectMediaArtworkAudio {
+  background: var(--studio-media-audio-artwork-bg);
+}
+
+.projectMediaArtworkGenerated {
+  background: var(--studio-media-generated-artwork-bg);
+}
+
+.projectMediaPosterFallback {
+  position: absolute;
+  inset: 0;
+  background: var(--studio-media-poster-fallback-bg);
+}
+
+.projectMediaWaveform {
+  display: flex;
+  position: absolute;
+  inset: 27% 9px 24%;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+
+.projectMediaWaveform span {
+  width: 1.5px;
+  min-height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #34d399, #059669);
+  box-shadow: 0 0 18px rgba(16, 185, 129, 0.24);
+}
+
+.projectMediaTileBody {
+  min-width: 0;
+  flex: 1 1 auto;
+  padding: 7px 24px 9px 8px;
+}
+
+.projectMediaTileBody strong,
+.projectMediaTileBody span {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.projectMediaTileBody strong {
+  color: var(--studio-text-strong);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.projectMediaTileBody span {
+  margin-top: 3px;
+  color: var(--studio-media-detail);
+  font-size: 9.5px;
+}
+
+.projectMediaMoreButton {
+  position: absolute;
+  z-index: 2;
+  right: 5px;
+  bottom: 6px;
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--studio-text);
+  cursor: pointer;
+}
+
+.projectMediaMoreButton:hover,
+.projectMediaMoreButton:focus-visible {
+  background: var(--studio-border);
+  outline: none;
+}
+
+.projectMediaMoreButton svg {
+  width: 14px;
+  height: 14px;
+}
+
+.projectMediaContextMenu {
+  position: fixed;
+  z-index: 90;
+  width: 190px;
+  padding: 7px;
+  border: 1px solid var(--studio-border);
+  border-radius: 9px;
+  background: var(--studio-popover-bg);
+  box-shadow: 0 18px 48px var(--studio-node-shadow);
+}
+
+.projectMediaContextMenu > span {
+  display: block;
+  padding: 6px 8px 8px;
+  overflow: hidden;
+  color: var(--studio-text-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.projectMediaContextMenu button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 7px;
+  padding: 8px;
+  background: transparent;
+  color: var(--studio-text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.projectMediaContextMenu button:hover,
+.projectMediaContextMenu button:focus-visible {
+  background: rgba(59, 130, 246, 0.16);
+  outline: none;
+}
+
+.projectMediaContextMenu .projectMediaDangerAction {
+  color: var(--studio-danger-text);
+}
+
+.projectMediaContextMenu .projectMediaDangerAction:hover,
+.projectMediaContextMenu .projectMediaDangerAction:focus-visible {
+  background: rgba(239, 68, 68, 0.14);
+}
+
+.projectMediaDialogOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: var(--studio-bg);
+  backdrop-filter: blur(8px);
+}
+
+.projectMediaDialog {
+  width: min(360px, 100%);
+  border: 1px solid var(--studio-border);
+  border-radius: 14px;
+  background: var(--studio-media-dialog-bg);
+  box-shadow: 0 28px 80px var(--studio-node-shadow);
+  color: var(--studio-text-strong);
+  padding: 14px;
+}
+
+.projectMediaDialogHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.projectMediaDialogHeader p {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 820;
+  letter-spacing: 0;
+}
+
+.projectMediaDialogHeader span {
+  display: block;
+  margin-top: 4px;
+  color: var(--studio-text-muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.projectMediaDialogHeader button {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-surface);
+  color: var(--studio-text);
+  cursor: pointer;
+}
+
+.projectMediaDialogHeader button:hover,
+.projectMediaDialogHeader button:focus-visible {
+  border-color: rgba(96, 165, 250, 0.34);
+  color: var(--studio-text-strong);
+  outline: none;
+}
+
+.projectMediaDialogField {
+  display: grid;
+  gap: 7px;
+  margin-top: 18px;
+}
+
+.projectMediaDialogField span {
+  color: var(--studio-text);
+  font-size: 11px;
+  font-weight: 740;
+}
+
+.projectMediaDialogField input {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid var(--studio-border);
+  border-radius: 9px;
+  background: var(--studio-media-input-bg);
+  color: var(--studio-text-strong);
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+  padding: 0 11px;
+}
+
+.projectMediaDialogField input:focus {
+  border-color: rgba(129, 140, 248, 0.58);
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.14);
+}
+
+.projectMediaFolderList {
+  display: grid;
+  max-height: 240px;
+  overflow: auto;
+  gap: 7px;
+  margin-top: 18px;
+}
+
+.projectMediaFolderList button {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  min-height: 38px;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid var(--studio-border);
+  border-radius: 9px;
+  background: var(--studio-media-input-bg);
+  color: var(--studio-text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 720;
+  padding: 0 11px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.projectMediaFolderList button span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.projectMediaFolderList button:hover,
+.projectMediaFolderList button:focus-visible,
+.projectMediaFolderOptionSelected {
+  border-color: rgba(129, 140, 248, 0.52) !important;
+  background: var(--studio-control-bg-hover) !important;
+  outline: none;
+}
+
+.projectMediaDialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.projectMediaDialogActions button {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--studio-border);
+  border-radius: 9px;
+  background: var(--studio-surface);
+  color: var(--studio-text);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 760;
+  padding: 0 13px;
+  cursor: pointer;
+}
+
+.projectMediaDialogActions button[type="submit"] {
+  border: 0;
+  background: linear-gradient(135deg, var(--studio-primary), var(--studio-primary-2));
+  color: #ffffff;
+}
+
+.projectMediaDialogActions button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.projectMediaDialogActions button:hover:not(:disabled),
+.projectMediaDialogActions button:focus-visible:not(:disabled) {
+  filter: brightness(1.08);
+  outline: none;
+}
+
+.projectMediaFooterBar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 16px 15px;
+  border-top: 1px solid var(--studio-border);
+  background: var(--studio-media-footer-bg);
+}
+
+.projectMediaItemCount {
+  display: flex;
+  min-width: 0;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  color: var(--studio-text);
+  font-size: 11px;
+  font-weight: 680;
+  white-space: nowrap;
+}
+
+.projectMediaItemCount svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  color: var(--studio-text);
+}
+
+.projectMediaFooterActions {
+  display: flex;
+  min-width: 0;
+  flex: 0 1 auto;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+.projectMediaFooterAction {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 1px solid var(--studio-border);
+  border-radius: 9px;
+  background: var(--studio-surface);
+  color: var(--studio-text);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 720;
+  padding: 0 6px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.projectMediaFooterAction svg {
+  flex: 0 0 auto;
+}
+
+.projectMediaFooterAction:hover,
+.projectMediaFooterAction:focus-visible {
+  border-color: rgba(96, 165, 250, 0.34);
+  background: var(--studio-bg-soft);
+  outline: none;
+}
+
+.projectMediaFooterAction:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.projectMediaFooterDangerAction {
+  border-color: rgba(248, 113, 113, 0.22);
+  color: var(--studio-danger-text);
+}
+
+.projectMediaFooterDangerAction:hover:not(:disabled),
+.projectMediaFooterDangerAction:focus-visible:not(:disabled) {
+  border-color: rgba(248, 113, 113, 0.34);
+  background: var(--studio-danger-soft-bg);
+}
+
+.projectMediaEmpty {
+  grid-column: 1 / -1;
+  padding: 18px 0;
+  color: var(--studio-text-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+@media (max-width: 1120px) {
+  .timelineProjectSidebar {
+    display: flex;
+    height: 100%;
+    border-right: 0;
+  }
+
+  .projectMediaHeader {
+    grid-template-columns: 1fr;
+    gap: 9px;
+    padding: 14px 12px 10px;
+  }
+
+  .projectMediaActionButton {
+    width: 100%;
+    min-height: 40px;
+  }
+
+  .projectMediaSearch {
+    height: 40px;
+  }
+
+  .projectMediaKindFilterButton,
+  .projectMediaBackButton {
+    min-height: 40px;
+  }
+
+  .projectMediaControls,
+  .projectMediaKindFilters,
+  .projectMediaFolderHeader {
+    padding-inline: 12px;
+  }
+
+  .projectMediaGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 0 12px 14px;
+  }
+
+  .projectMediaFooterBar {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 10px 12px 12px;
+  }
+
+  .projectMediaFooterActions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .projectMediaFooterAction {
+    flex: 1 1 0;
+    min-height: 40px;
+  }
+
+  .projectMediaMoreButton {
+    width: 40px;
+    height: 40px;
+    right: 3px;
+    bottom: 3px;
+  }
+}

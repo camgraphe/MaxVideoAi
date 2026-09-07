@@ -1,0 +1,193 @@
+.timelineTransport button[data-tooltip]::after,
+.timelineZoomControl button[data-tooltip]::after,
+.timelineExportButton[data-tooltip]::after {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  z-index: 20;
+  width: max-content;
+  max-width: 220px;
+  padding: 6px 8px;
+  border: 1px solid var(--studio-border);
+  border-radius: 7px;
+  background: var(--studio-bg);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.32);
+  color: var(--studio-text);
+  content: attr(data-tooltip);
+  font-size: 10px;
+  line-height: 1.2;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition: opacity 150ms ease, transform 150ms ease;
+  white-space: normal;
+}
+
+.timelineTransport button[data-tooltip]:hover::after,
+.timelineTransport button[data-tooltip]:focus-visible::after,
+.timelineZoomControl button[data-tooltip]:hover::after,
+.timelineZoomControl button[data-tooltip]:focus-visible::after,
+.timelineExportButton[data-tooltip]:hover::after,
+.timelineExportButton[data-tooltip]:focus-visible::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.timelineTopbar {
+  flex: 0 0 44px;
+  display: grid;
+  grid-template-columns: minmax(118px, 1fr) minmax(0, auto);
+  height: 44px;
+  align-items: center;
+  column-gap: 12px;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--studio-border);
+}
+
+.timelineTimecodeCluster {
+  display: flex;
+  min-width: 118px;
+  align-items: center;
+}
+
+.timelineCurrentTimecode {
+  color: var(--studio-text-strong);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 760;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.timelineTransport {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.timelineZoomSlot {
+  display: flex;
+  grid-column: 2;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.timelineTransport button,
+.timelineZoomControl button {
+  position: relative;
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 0;
+  border-radius: 7px;
+  background: var(--studio-bg-soft);
+  color: var(--studio-text);
+  cursor: pointer;
+}
+
+.timelineTransport button:disabled,
+.timelineZoomControl button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.timelineToolButton {
+  color: var(--studio-text-strong);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.timelineToolGroup {
+  display: flex;
+  gap: 2px;
+  overflow: hidden;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-surface);
+}
+
+.timelineToolGroup button {
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--studio-text-muted);
+}
+
+.timelineToolButton.timelineToolButtonActive {
+  border: 1px solid rgba(129, 140, 248, 0.82);
+  background: var(--studio-active-control-bg);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  color: var(--studio-on-primary);
+}
+
+.timelineZoomControl {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 6px;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-surface);
+}
+
+.timelineZoomControl button {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--studio-bg-soft);
+}
+
+.timelineZoomControl input {
+  width: 72px;
+  accent-color: #8b5cf6;
+}
+
+.timelineExportButton {
+  position: relative;
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 0;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--studio-primary), var(--studio-primary-2));
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 760;
+  padding: 0 12px;
+  white-space: nowrap;
+}
+
+.timelineExportButton:hover,
+.timelineExportButton:focus-visible {
+  filter: brightness(1.05);
+  outline: none;
+}
+
+.timelineExportButton span {
+  line-height: 1;
+}
+
+@media (max-width: 720px) {
+  .timelineExportButton {
+    width: 30px;
+    padding: 0;
+  }
+
+  .timelineExportButton span {
+    display: none;
+  }
+}

@@ -1,0 +1,341 @@
+.canvasToolbar,
+.canvasToolbar button,
+.canvasToolbar input {
+  font: inherit;
+}
+
+.canvasToolbar {
+  position: absolute;
+  z-index: 42;
+  bottom: 18px;
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: calc(100% - 32px);
+  padding: 6px;
+  transform: translateX(-50%);
+  border: 1px solid var(--studio-border);
+  border-radius: 10px;
+  background: var(--studio-bg);
+  box-shadow:
+    0 22px 58px var(--studio-node-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(18px);
+  color: var(--studio-text);
+  user-select: none;
+}
+
+.toolbarButton {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--studio-text-muted);
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
+}
+
+.toolbarButton:hover,
+.toolbarButton:focus-visible {
+  background: var(--studio-bg-soft);
+  color: var(--studio-text-strong);
+}
+
+.toolbarButton:disabled,
+.toolbarButton:disabled:hover {
+  background: transparent;
+  color: var(--studio-border);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.toolbarButton:active {
+  transform: scale(0.98);
+}
+
+.toolbarButton:focus-visible,
+.blockOption:focus-visible,
+.saveActionButton:focus-visible,
+.templateSaveForm input:focus-visible,
+.templateSaveForm button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--studio-primary) 76%, #ffffff 10%);
+  outline-offset: 2px;
+}
+
+.toolbarButtonActive {
+  background: linear-gradient(135deg, var(--studio-primary), var(--studio-primary-2));
+  color: #ffffff;
+  box-shadow: 0 12px 28px rgba(79, 70, 229, 0.34);
+}
+
+.toolbarSeparator {
+  width: 1px;
+  height: 28px;
+  margin: 0 3px;
+  background: var(--studio-border);
+}
+
+.toolbarControl {
+  display: contents;
+}
+
+.toolbarPopover {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  display: grid;
+  width: min(560px, calc(100vw - 40px));
+  min-height: 0;
+  max-height: clamp(220px, calc(100vh - 430px), 360px);
+  gap: 10px;
+  padding: 12px;
+  transform: translateX(-50%);
+  overflow: auto;
+  border: 1px solid var(--studio-border);
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, var(--studio-surface), var(--studio-bg)),
+    var(--studio-bg);
+  box-shadow: 0 28px 84px var(--studio-node-shadow);
+  scrollbar-width: none;
+}
+
+.toolbarPopover::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.toolbarPopoverWide {
+  width: min(430px, calc(100vw - 40px));
+}
+
+.popoverHeader {
+  display: grid;
+  gap: 4px;
+}
+
+.popoverHeader strong {
+  color: var(--studio-text-strong);
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: 0;
+}
+
+.popoverHeader span {
+  color: var(--studio-text-muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.blockOptionList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.blockOption {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  min-height: 60px;
+  padding: 8px;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--template-accent, #8b5cf6) 12%, transparent), transparent 60%),
+    var(--studio-surface);
+  color: var(--studio-text);
+  cursor: grab;
+  text-align: left;
+}
+
+.blockOption:active {
+  cursor: grabbing;
+}
+
+.blockOption:hover,
+.blockOption:focus-visible {
+  border-color: color-mix(in srgb, var(--template-accent, #8b5cf6) 52%, rgba(226, 232, 240, 0.18));
+}
+
+.blockOptionIcon {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--template-accent, #8b5cf6) 22%, var(--studio-surface));
+  color: color-mix(in srgb, var(--template-accent, #8b5cf6) 82%, #ffffff 10%);
+}
+
+.blockOptionContent {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.blockOption strong {
+  overflow: hidden;
+  color: var(--studio-text-strong);
+  font-size: 12px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.blockOption small {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--studio-text-muted);
+  font-size: 10px;
+  line-height: 1.25;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.blockOptionMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.blockOptionMeta em {
+  min-width: 0;
+  max-width: 100%;
+  padding: 1px 5px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--template-accent, #8b5cf6) 30%, var(--studio-border));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--template-accent, #8b5cf6) 12%, var(--studio-bg-soft));
+  color: var(--studio-text);
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 850;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.saveActionList {
+  display: grid;
+  gap: 8px;
+}
+
+.saveActionButton {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 9px;
+  align-items: center;
+  min-height: 54px;
+  padding: 9px;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-surface);
+  color: var(--studio-text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.saveActionButton:hover,
+.saveActionButton:focus-visible {
+  background: var(--studio-bg-soft);
+}
+
+.saveActionButton > svg {
+  color: var(--studio-primary);
+}
+
+.saveActionButton span {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.saveActionButton strong {
+  overflow: hidden;
+  color: var(--studio-text-strong);
+  font-size: 12px;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.saveActionButton small {
+  overflow: hidden;
+  color: var(--studio-text-muted);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.templateSaveForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.templateSaveForm input {
+  min-width: 0;
+  height: 34px;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-surface);
+  color: var(--studio-select-text);
+  padding: 0 10px;
+  outline: none;
+}
+
+.templateSaveForm button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 34px;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-bg-soft);
+  color: var(--studio-text);
+  cursor: pointer;
+}
+
+.templateSaveForm button:hover {
+  background: var(--studio-control-bg-hover);
+}
+
+.templateSaveForm input:disabled,
+.templateSaveForm button:disabled,
+.templateSaveForm button:disabled:hover {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+
+@media (max-width: 760px) {
+  .canvasToolbar {
+    bottom: 12px;
+    overflow-x: auto;
+  }
+
+  .canvasToolbar[data-canvas-toolbar-popover-open='true'] {
+    overflow: visible;
+  }
+
+  .toolbarPopover,
+  .toolbarPopoverWide {
+    width: min(340px, calc(100vw - 24px));
+    height: 220px;
+    min-height: 220px;
+    max-height: 220px;
+  }
+
+  .blockOptionList {
+    grid-template-columns: 1fr;
+  }
+}
