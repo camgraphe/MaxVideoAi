@@ -131,6 +131,52 @@ test('compact availability blocks only empty fully locked commands and deduplica
   });
 });
 
+test('removing the final upstream-locked frame or collection restores focus to its guarded command', async () => {
+  const { WorkspaceReferenceSection } = await loadReferenceSection();
+  const engine = listFalEngines().find((entry) => entry.id === 'seedance-2-0')!.engine;
+
+  for (const [field, commandId] of [[startField, 'image_url'], [referenceField, 'collections']] as const) {
+    function Fixture() {
+      const [assets, setAssets] = React.useState<Record<string, (ComposerAttachment | null)[]>>({
+        [field.field.id]: [imageAsset],
+      });
+      return React.createElement(WorkspaceReferenceSection, {
+        engine,
+        referenceWarning: '',
+        assets,
+        assetFields: [{ ...field, disabled: true, disabledReason: modelRestriction }],
+        onAssetRemove: (removedField: AssetFieldConfig['field'], index: number) => {
+          setAssets((current) => ({
+            ...current,
+            [removedField.id]: (current[removedField.id] ?? []).map((asset, slotIndex) => slotIndex === index ? null : asset),
+          }));
+        },
+      });
+    }
+
+    const fixture = await mount(React.createElement(Fixture));
+    const doc = fixture.dom.window.document;
+    try {
+      const command = fixture.container.querySelector<HTMLButtonElement>(`[data-reference-command="${commandId}"]`)!;
+      assert.equal(command.getAttribute('aria-disabled'), null);
+      await act(async () => command.click());
+      const dialog = doc.querySelector<HTMLElement>('[role="dialog"]')!;
+      const remove = dialog.querySelector<HTMLButtonElement>('button[aria-label^="Remove"]')!;
+      remove.focus();
+      await act(async () => remove.click());
+      assert.equal(command.isConnected, true);
+      assert.equal(command.disabled, false, 'the stable popup opener remains programmatically focusable');
+      assert.equal(command.getAttribute('aria-disabled'), 'true');
+      assert.ok(dialog.contains(doc.activeElement), 'focus first recovers inside the still-open popup');
+      await act(async () => doc.activeElement?.dispatchEvent(new fixture.dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
+      assert.equal(doc.querySelector('[role="dialog"]'), null);
+      assert.equal(doc.activeElement, command, 'Escape restores focus to the stable meaningful command');
+      await act(async () => command.click());
+      assert.equal(doc.querySelector('[role="dialog"]'), null, 'the guarded empty command cannot reopen upload or Library controls');
+    } finally { await fixture.cleanup(); }
+  }
+});
+
 test('partially available collections open allowed controls while locked empty commands stay inert', async () => {
   const { WorkspaceReferenceSection } = await loadReferenceSection();
   const engine = listFalEngines().find((entry) => entry.id === 'seedance-2-0')!.engine;
@@ -147,7 +193,8 @@ test('partially available collections open allowed controls while locked empty c
   }));
   try {
     const locked = fixture.container.querySelector<HTMLButtonElement>('[data-reference-command="collections"]')!;
-    assert.equal(locked.disabled, true);
+    assert.equal(locked.disabled, false);
+    assert.equal(locked.getAttribute('aria-disabled'), 'true');
     assert.equal(fixture.dom.window.document.querySelector('[role="dialog"]'), null);
     await act(async () => locked.click());
     assert.equal(fixture.dom.window.document.querySelector('[role="dialog"]'), null);
@@ -163,6 +210,7 @@ test('partially available collections open allowed controls while locked empty c
     }));
     const partial = fixture.container.querySelector<HTMLButtonElement>('[data-reference-command="collections"]')!;
     assert.equal(partial.disabled, false);
+    assert.equal(partial.getAttribute('aria-disabled'), null);
     await act(async () => partial.click());
     const dialog = fixture.dom.window.document.querySelector<HTMLElement>('[role="dialog"]')!;
     assert.ok(dialog);
@@ -210,26 +258,28 @@ test('Seedance commands lock and unlock as start and reference assets are added 
     let references = fixture.container.querySelector<HTMLButtonElement>('[data-reference-command="collections"]')!;
     assert.equal(start.disabled, false);
     assert.equal(references.disabled, false);
+    assert.equal(start.getAttribute('aria-disabled'), null);
+    assert.equal(references.getAttribute('aria-disabled'), null);
     await click(start);
     await click(doc.querySelector<HTMLButtonElement>('[data-reference-field="image_url"] .app-reference-library-target')!);
     references = fixture.container.querySelector<HTMLButtonElement>('[data-reference-command="collections"]')!;
-    assert.equal(references.disabled, true, 'adding a start frame locks empty reference additions');
+    assert.equal(references.getAttribute('aria-disabled'), 'true', 'adding a start frame locks empty reference additions');
     assert.match(fixture.container.textContent!, new RegExp(clearFrames.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
 
     start = fixture.container.querySelector<HTMLButtonElement>('[data-reference-command="image_url"]')!;
     await click(start);
     await click(doc.querySelector<HTMLButtonElement>('[data-reference-field="image_url"] button[aria-label^="Remove"]')!);
     references = fixture.container.querySelector<HTMLButtonElement>('[data-reference-command="collections"]')!;
-    assert.equal(references.disabled, false, 'removing the start frame unlocks references');
+    assert.equal(references.getAttribute('aria-disabled'), null, 'removing the start frame unlocks references');
     await click(references);
     await click(doc.querySelector<HTMLButtonElement>('[data-reference-field="image_urls"] .app-reference-library-target')!);
 
     start = fixture.container.querySelector<HTMLButtonElement>('[data-reference-command="image_url"]')!;
     const end = fixture.container.querySelector<HTMLButtonElement>('[data-reference-command="end_image_url"]')!;
     references = fixture.container.querySelector<HTMLButtonElement>('[data-reference-command="collections"]')!;
-    assert.equal(start.disabled, true);
-    assert.equal(end.disabled, true);
-    assert.equal(references.disabled, false, 'existing locked references remain manageable');
+    assert.equal(start.getAttribute('aria-disabled'), 'true');
+    assert.equal(end.getAttribute('aria-disabled'), 'true');
+    assert.equal(references.getAttribute('aria-disabled'), null, 'existing locked references remain manageable');
     await click(references);
     const remove = doc.querySelector<HTMLButtonElement>('[data-reference-field="image_urls"] button[aria-label^="Remove"]')!;
     remove.focus();
@@ -238,6 +288,6 @@ test('Seedance commands lock and unlock as start and reference assets are added 
     await act(async () => doc.activeElement?.dispatchEvent(new fixture.dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
     assert.equal(doc.querySelector('[role="dialog"]'), null);
     assert.equal(doc.activeElement, references);
-    assert.equal(fixture.container.querySelector<HTMLButtonElement>('[data-reference-command="image_url"]')!.disabled, false);
+    assert.equal(fixture.container.querySelector<HTMLButtonElement>('[data-reference-command="image_url"]')!.getAttribute('aria-disabled'), null);
   } finally { await fixture.cleanup(); }
 });

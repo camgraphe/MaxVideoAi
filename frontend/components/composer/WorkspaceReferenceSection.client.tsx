@@ -65,9 +65,9 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
           const asset = (assets[entry.field.id] ?? []).find(Boolean);
           const availability = getReferenceCommandAvailability([entry], assets);
           return <button key={entry.field.id} ref={(node) => { if (node) commandRefs.current.set(entry.field.id, node); else commandRefs.current.delete(entry.field.id); }} type="button" className={`app-reference-command${availability.addDisabled ? ' is-add-disabled' : ''}`} data-reference-command={entry.field.id}
-            data-add-disabled={availability.addDisabled || undefined} disabled={!availability.canOpen}
+            data-add-disabled={availability.addDisabled || undefined} aria-disabled={!availability.canOpen || undefined}
             aria-label={asset ? `${copy[command]} · ${asset.name}` : undefined} aria-describedby={availability.addDisabled ? restrictionId : undefined} aria-haspopup="dialog" aria-expanded={activeCommand === entry.field.id} title={entry.disabled ? entry.disabledReason ?? copy.unavailable : entry.field.label}
-            onClick={(event) => open(entry.field.id, event.currentTarget)}>
+            onClick={(event) => { if (availability.canOpen) open(entry.field.id, event.currentTarget); }}>
             <span className="app-reference-command-media">
               {asset?.kind === 'image' ? <img src={asset.previewUrl} alt="" loading="lazy" /> : <AppGlyph name={command} />}
               {asset?.status === 'uploading' ? <small className="app-reference-command-status" role="status">…<span className="sr-only">{assetCopy.uploading}</span></small> : asset?.status === 'error' ? <small className="app-reference-command-status" role="alert">!<span className="sr-only">{asset.error ?? assetCopy.uploadFailed}</span></small> : null}
@@ -76,8 +76,8 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
           </button>;
         })}
         {collections.length ? <button ref={(node) => { if (node) commandRefs.current.set('collections', node); else commandRefs.current.delete('collections'); }} type="button" className={`app-reference-command${collectionAvailability.addDisabled ? ' is-add-disabled' : ''}`} data-reference-command="collections"
-          data-add-disabled={collectionAvailability.addDisabled || undefined} disabled={!collectionAvailability.canOpen}
-          aria-label={collectionAvailability.addDisabled && selectedCollections.length ? copy.manage : copy.add} aria-describedby={[collectionRequired.length ? requiredId : null, collections.some((entry) => entry.disabled) ? restrictionId : null].filter(Boolean).join(' ') || undefined} aria-haspopup="dialog" aria-expanded={activeCommand === 'collections'} onClick={(event) => open('collections', event.currentTarget)}>
+          data-add-disabled={collectionAvailability.addDisabled || undefined} aria-disabled={!collectionAvailability.canOpen || undefined}
+          aria-label={collectionAvailability.addDisabled && selectedCollections.length ? copy.manage : copy.add} aria-describedby={[collectionRequired.length ? requiredId : null, collections.some((entry) => entry.disabled) ? restrictionId : null].filter(Boolean).join(' ') || undefined} aria-haspopup="dialog" aria-expanded={activeCommand === 'collections'} onClick={(event) => { if (collectionAvailability.canOpen) open('collections', event.currentTarget); }}>
           <span>{copy.title}</span><span aria-hidden="true">{collectionAvailability.addDisabled && selectedCollections.length ? copy.manage : '+'}</span>
         </button> : null}
         {assetFields.map((entry) => entry.headerAction ? <span key={entry.field.id}>{entry.headerAction}</span> : null)}
