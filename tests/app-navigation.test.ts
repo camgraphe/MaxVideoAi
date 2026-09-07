@@ -62,4 +62,8 @@ test('wallet retains its real billing destination and distinguishes zero from mi
       if (!wallet) assert.ok(!markup.includes('$0.00'));
     }
   }
+  for (const [authResolved, expected] of [[false, 'Loading…'], [true, 'Unavailable']] as const) {
+    const markup = renderToStaticMarkup(React.createElement(HeaderWalletStatus, { authResolved, wallet: null, t: () => undefined, promptId: 'wallet', walletPromptOpen: false, onOpenPrompt() {}, onSchedulePromptClose() {} }));
+    assert.ok(markup.includes(`aria-label="Wallet: ${expected}"`));
+  }
 });

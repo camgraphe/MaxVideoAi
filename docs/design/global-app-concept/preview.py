@@ -21,6 +21,10 @@ def prepare_preview():
     for name in ("index.html", "app.css", "app.js", "data.js", "model-choice.js", "recent-media.js"):
         shutil.copyfile(source / name, output / name)
     authored_assets = {
+        "openai-mark-light.svg": "frontend/public/brand/partners/openai/openai-mark-light.svg",
+        "openai-mark-dark.svg": "frontend/public/brand/partners/openai/openai-mark-dark.svg",
+        "claude-mark-light.svg": "frontend/public/brand/partners/anthropic/claude-mark-light.svg",
+        "claude-mark-dark.svg": "frontend/public/brand/partners/anthropic/claude-mark-dark.svg",
         "logo-mark.svg": "frontend/public/assets/branding/logo-mark.svg",
         "GeistLatin.woff2": "frontend/app/(core)/_fonts/GeistLatin.woff2",
         "OFL.txt": "frontend/app/(core)/_fonts/OFL.txt",

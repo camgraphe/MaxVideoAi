@@ -29,7 +29,7 @@ export function HeaderWalletStatus({
 }: HeaderWalletStatusProps) {
   const walletAmount = wallet ? `$${wallet.balance.toFixed(2)}` : authResolved ? '--' : '...';
   const walletBaseLabel = t('workspace.header.wallet.label', 'Wallet') ?? 'Wallet';
-  const missingLabel = authResolved ? t('workspace.header.wallet.unavailable', 'Unavailable') : t('workspace.header.wallet.loading', 'Loading…');
+  const missingLabel = authResolved ? t('workspace.header.wallet.unavailable', 'Unavailable') ?? 'Unavailable' : t('workspace.header.wallet.loading', 'Loading…') ?? 'Loading…';
   const walletLabel = `${walletBaseLabel}: ${wallet ? walletAmount : missingLabel}`;
 
   return (

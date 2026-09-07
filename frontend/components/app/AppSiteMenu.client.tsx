@@ -8,6 +8,7 @@ import { MARKETING_TOP_NAV_LINKS } from '@/config/navigation';
 import { getPathname } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { AppGlyph } from './AppGlyph';
+import { AppAssistantConnections, AppAssistantMarks } from './AppAssistantConnections';
 import { appNavLabel, getAppMenuItems } from './app-navigation';
 
 type Props = {
@@ -25,6 +26,7 @@ type Props = {
 export function AppSiteMenu({ children, email, authResolved, isAdmin, signinHref, signupHref, themeToggleLabel, onToggleTheme, onSignOut }: Props) {
   const { locale, t } = useI18n();
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
   const openerRef = useRef<HTMLElement | null>(null);
   const titleId = useId();
   const copy = locale === 'fr'
@@ -35,6 +37,7 @@ export function AppSiteMenu({ children, email, authResolved, isAdmin, signinHref
   const open = (trigger: HTMLElement) => {
     openerRef.current = trigger;
     dialogRef.current?.showModal();
+    bodyRef.current?.scrollTo({ top: 0 });
   };
   const close = () => dialogRef.current?.close();
   useEffect(() => {
@@ -47,9 +50,6 @@ export function AppSiteMenu({ children, email, authResolved, isAdmin, signinHref
   const publicLinks: { key: string; label: string; href: (typeof topPaths)[keyof typeof topPaths] | '/' | '/integrations/claude' | '/integrations/chatgpt' | '/integrations/codex' }[] = [
     { key: 'home', label: locale === 'fr' ? 'Accueil' : locale === 'es' ? 'Inicio' : 'Home', href: '/' },
     ...MARKETING_TOP_NAV_LINKS.map((item) => ({ ...item, href: topPaths[item.key], label: t(`nav.linkLabels.${item.key}`, item.key) ?? item.key })),
-    { key: 'claude', label: 'Claude', href: '/integrations/claude' },
-    { key: 'chatgpt', label: 'ChatGPT', href: '/integrations/chatgpt' },
-    { key: 'codex', label: 'Codex', href: '/integrations/codex' },
   ];
   return (
     <>
@@ -58,9 +58,9 @@ export function AppSiteMenu({ children, email, authResolved, isAdmin, signinHref
         <span><strong>MaxVideoAI</strong><small>{copy.menu}</small></span><AppGlyph name="menu" />
       </button>
       <div className="app-header-actions">
-        <Link className="app-assistant-shortcut" href={getPathname({ locale, href: '/mcp' })} target="_blank" rel="noopener noreferrer" prefetch={false}>
-          <AppGlyph name="connect" /><span>{copy.assistants}</span><span className="sr-only"> ({copy.newTab})</span>
-        </Link>
+        <button className="app-assistant-shortcut" type="button" aria-haspopup="dialog" onClick={(event) => open(event.currentTarget)}>
+          <AppAssistantMarks /><span>{copy.assistants}</span>
+        </button>
         {children}
         <div className="app-header-account">
           {email ? <button type="button" onClick={(event) => open(event.currentTarget)} aria-haspopup="dialog"><AppGlyph name="settings" /><span>{copy.account}</span></button>
@@ -70,7 +70,8 @@ export function AppSiteMenu({ children, email, authResolved, isAdmin, signinHref
       </div>
       <dialog ref={dialogRef} className="app-site-dialog" aria-labelledby={titleId} onClick={(event) => { if (event.target === event.currentTarget) close(); }}>
         <div className="app-site-dialog-heading"><h2 id={titleId}>MaxVideoAI</h2><button type="button" onClick={close} autoFocus>{copy.close} ×</button></div>
-        <div className="app-site-dialog-body">
+        <div ref={bodyRef} className="app-site-dialog-body">
+          <AppAssistantConnections locale={locale} onNavigate={close} />
           <section aria-labelledby={`${titleId}-app`}><h3 id={`${titleId}-app`}>{copy.app}</h3>
             <nav className="app-complete-menu" aria-label={copy.app}>
               {getAppMenuItems().map((item) => <Link key={item.id} href={item.href} prefetch={false} onClick={close}><AppGlyph name={item.glyph} /><span>{appNavLabel(item, locale)}</span></Link>)}
