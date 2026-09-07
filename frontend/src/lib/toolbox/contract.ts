@@ -12,7 +12,7 @@ export type ToolAssetRef = z.infer<typeof toolAssetRefSchema>;
 
 const settings = {
   upscale: z.object({ mode: z.enum(['factor', 'target']), factor: z.union([z.literal(2), z.literal(4)]), targetResolution: z.enum(['720p', '1080p', '1440p', '2160p']), outputFormat: z.enum(['jpg', 'png', 'webp', 'mp4', 'webm', 'mov', 'gif']) }).strict(),
-  'background-removal': z.object({ backgroundColor: z.enum(['Transparent', 'Black', 'White', 'Gray', 'Red', 'Green', 'Blue', 'Yellow', 'Cyan', 'Magenta']), outputCodec: z.enum(['webm_vp9', 'mp4_h264', 'mp4_h265', 'mov_h265', 'mkv_h265', 'mkv_h264', 'mkv_vp9', 'avi_h264', 'gif']), preserveAudio: z.boolean() }).strict(),
+  'background-removal': z.object({ backgroundColor: z.enum(['Transparent', 'Black', 'White', 'Gray', 'Red', 'Green', 'Blue', 'Yellow', 'Cyan', 'Magenta', 'Orange']), outputCodec: z.enum(['webm_vp9', 'mp4_h264', 'mp4_h265', 'mov_h265', 'mkv_h265', 'mkv_h264', 'mkv_vp9', 'avi_h264', 'gif']), preserveAudio: z.boolean() }).strict(),
   angle: z.object({ rotation: z.number().finite().min(-180).max(180), tilt: z.number().finite().min(-90).max(90), zoom: z.number().finite().positive(), safeMode: z.boolean(), generateBestAngles: z.boolean() }).strict(),
 };
 

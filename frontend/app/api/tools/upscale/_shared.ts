@@ -125,6 +125,7 @@ export async function handleUpscaleToolRequest(
   try {
     const result = await runUpscale({
       userId,
+      acceptedQuote: body?.acceptedQuote,
       mediaType,
       mediaUrl,
       engineId: engine.id,
