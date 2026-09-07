@@ -122,3 +122,127 @@ dialog{color:var(--text);background:var(--surface);border:1px solid var(--line);
   .pagehead:has(.modes)>.btn{grid-column:2;grid-row:1}
   .screen:has(>video),.screen:has(>img){height:clamp(140px,50vw,220px);min-height:140px}
 }
+
+/* The editor scrolls between real header/footer rows; controls never cover it. */
+.app-shell:has(.work-layout){height:100dvh;min-height:0;overflow:hidden}
+.main:has(.work-layout){display:flex;flex-direction:column;height:100%;min-height:0}
+.content:has(.work-layout){height:auto;flex:1;min-height:0;width:100%;display:flex;flex-direction:column;padding-bottom:18px}
+.content:has(.work-layout)>.pagehead,.topbar,.returnbar{flex:none}
+.work-layout{flex:1;min-height:0}
+.workbench{display:flex;flex-direction:column;min-height:0}
+.toolbar{flex:none}
+.work-scroll{display:flex;flex-direction:column;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable;padding-right:5px;scroll-padding:12px}
+.work-scroll:focus-visible,.recent-list:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.work-scroll>.screen{flex:1 0 130px;min-height:130px;height:auto}
+.work-scroll>.screen:has(.sound-stage){flex:none;height:auto;min-height:0}
+.sound-stage{min-width:0;width:100%}
+.work-scroll>.screen-empty{flex:1 0 auto;min-height:210px}
+.work-scroll>.asset-caption,.work-scroll>#references,.work-scroll>.compose{flex:none}
+.work-scroll>.compose{padding-bottom:10px}
+.work-scroll textarea{height:74px;min-height:64px;max-height:160px}
+.commandbar{position:static;flex:none;margin-top:8px;padding:8px 0 0;border-top:1px solid var(--line);z-index:auto}
+.creator-actions{display:flex;align-items:center;gap:8px}
+.mobile-recents{display:none}
+.recent-shelf{display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.recent-shelf .shelf-head{flex:none;margin-bottom:10px;gap:8px}
+.recent-shelf .shelf-head strong{font-size:14px;font-weight:550}
+.recent-shelf .shelf-head small{display:block;font-size:10px;margin-top:5px}
+.recent-shelf .shelf-head .btn{font-size:11px;padding:0 3px;gap:5px}
+.recent-shelf .shelf-head .icon{width:16px;height:16px}
+.recent-shelf>.btn{flex:none;justify-content:space-between;margin-top:10px;padding:0 4px;border-top:1px solid var(--line);border-radius:0;font-size:12px}
+.recent-list{overflow-y:auto;overscroll-behavior:contain;min-height:0;flex:1;scrollbar-gutter:stable;padding-right:3px}
+.recent-card{min-width:0;margin-bottom:18px}
+.recent-preview{display:block;width:100%;padding:0;border-radius:3px;overflow:hidden}
+.recent-preview[draggable=true]{cursor:grab}
+.recent-preview .thumb{aspect-ratio:1.65}
+.recent-name{padding-top:8px;display:grid;gap:4px;min-width:0}
+.recent-name strong{font-size:12px;font-weight:550;line-height:1.4;overflow-wrap:anywhere}
+.recent-name small{font-size:10px;line-height:1.4}
+.recent-add{width:100%;display:flex;align-items:center;gap:5px;padding:4px 0;text-align:left;color:var(--accent);font-size:11px;line-height:1.4;min-height:44px}
+.recent-add>.icon{width:17px;height:17px}
+.recent-add>span{min-width:0}
+.recent-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 18px}
+.recent-filters{margin-bottom:18px;flex-wrap:wrap}
+.chosen-recent{display:flex;align-items:center;gap:16px;margin-bottom:20px;font-size:14px}
+.chosen-recent .thumb{width:100px;flex:none}
+.replacement-pair{display:grid;grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr);gap:16px;align-items:center;margin-bottom:22px}
+.replacement-pair small{display:block;margin-top:7px;line-height:1.4}
+#references{position:relative;scroll-margin:8px}
+.drop-feedback{display:none;pointer-events:none}
+#references[data-drop-state] .drop-feedback{position:absolute;inset:0;z-index:1;background:var(--soft);border:2px dashed var(--accent);display:flex;align-items:center;justify-content:center;padding:8px;font-size:13px;text-align:center;color:var(--accent);pointer-events:none}
+#references[data-drop-state=blocked] .drop-feedback{border-color:var(--danger);color:var(--danger);background:var(--surface)}
+.ref-thumb.drop-target-replace{outline:3px solid var(--accent);outline-offset:2px;z-index:2}
+.site-trigger{display:flex;align-items:center;gap:10px;text-align:left;padding:0;font-size:13px;font-weight:650;flex:none}
+.site-trigger small{display:block;font-size:10px;font-weight:400;margin-top:3px;color:var(--muted)}
+.site-trigger>.icon{width:12px;height:12px;color:var(--muted)}
+.wallet-trigger{display:flex;align-items:center;gap:9px;padding:0 9px;border-left:1px solid var(--line);text-align:left}
+.wallet-trigger>.icon{color:var(--accent);width:23px;height:23px}
+.wallet-trigger span{display:grid;gap:3px}
+.wallet-trigger small{font-size:10px}
+.wallet-trigger strong{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.site-links{display:grid}
+.site-link{min-height:49px;display:flex;align-items:center;justify-content:space-between;gap:15px;border-bottom:1px solid var(--line);text-decoration:none;color:var(--text);font-size:14px;padding:10px 3px}
+.site-link:hover{background:var(--raised)}
+.site-link .icon{width:16px;height:16px;color:var(--muted)}
+.site-app-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.wallet-summary{display:flex;align-items:center;gap:22px;margin:4px 0 24px}
+.wallet-summary>.icon{color:var(--accent);width:48px;height:48px}
+.wallet-summary>div{display:grid;gap:8px}
+.wallet-summary strong{font-size:32px;font-weight:550;letter-spacing:-1px}
+.wallet-summary span{font-size:12px;color:var(--muted);line-height:1.5}
+.wallet-note{display:block;margin-top:18px;line-height:1.5}
+@media(max-width:1100px){.recent-shelf .shelf-head .btn{font-size:0;min-width:44px}.recent-add{font-size:10px}.recent-name strong{font-size:11px}}
+@media(max-width:800px){
+  .app-shell:has(.work-layout){padding-bottom:0}
+  .content:has(.work-layout){padding-top:14px;padding-bottom:10px}
+  .recent-shelf{display:none}
+  .mobile-recents{display:inline-flex}
+  .work-scroll>.screen{flex:none;height:clamp(140px,50vw,260px);min-height:140px}
+  .work-scroll>.screen-empty{height:180px}
+  .work-scroll>.screen:has(.sound-stage){height:auto;min-height:245px}
+  .work-scroll .compose{margin-top:14px}
+  .work-scroll .asset-caption{margin:10px 0 14px}
+  .work-scroll textarea{height:90px;font-size:16px}
+  .commandbar{padding:4px 0 0;margin-top:6px}
+}
+@media(max-width:600px){
+  .app-shell:has(.work-layout){padding-bottom:calc(69px + env(safe-area-inset-bottom))}
+  .topbar{padding:8px 12px;min-height:60px}
+  .top-right{gap:5px}
+  .site-trigger{font-size:11px;gap:5px}
+  .site-trigger small{font-size:9px}
+  .wallet-trigger{gap:5px;padding:0 3px 0 7px}
+  .wallet-trigger>.icon{width:18px;height:18px}
+  .wallet-trigger strong{font-size:11px}
+  .wallet-trigger small{font-size:9px}
+  .topbar .assistant-shortcut{padding:0 3px;font-size:10px;gap:4px}
+  .topbar .assistant-shortcut .icon{width:16px;height:16px}
+  .pagehead:has(.modes)>.creator-actions{grid-column:2;grid-row:1;gap:2px}
+  .creator-actions>.btn{font-size:11px;padding:0 5px;gap:4px}
+  .creator-actions .icon{width:16px;height:16px}
+  .content:has(.work-layout){padding:10px 16px 8px}
+  .content:has(.work-layout)>.pagehead{margin-bottom:10px}
+  .work-scroll{padding-right:3px;scrollbar-gutter:auto}
+  .commandbar .quick-values{gap:3px}
+  .recent-grid{gap:5px 12px}
+  .recent-grid .recent-add{font-size:11px}
+}
+@media(max-height:500px) and (min-width:601px){
+  .nav{padding:8px 6px;gap:4px}
+  .brand{margin-bottom:4px;font-size:20px}
+  .nav-button{min-height:52px;gap:2px}
+  .nav-button .icon{width:22px;height:22px}
+  .topbar{min-height:57px;padding-top:4px;padding-bottom:4px}
+  .content:has(.work-layout){padding:8px 18px}
+  .content:has(.work-layout)>.pagehead{margin-bottom:4px}
+  .content:has(.work-layout)>.pagehead h1{font-size:22px}
+  .content:has(.work-layout)>.pagehead .mode{min-height:44px}
+  .work-layout{grid-template-columns:minmax(0,1fr)}
+  .recent-shelf{display:none}
+  .mobile-recents{display:inline-flex}
+  .toolbar{margin-bottom:4px}
+  .commandbar{flex-wrap:nowrap;padding-top:4px;margin-top:4px}
+  .commandbar .quick-values{flex-basis:auto;gap:7px}
+  .commandbar .creation-action{width:auto;flex-basis:auto;gap:10px}
+  .work-scroll>.screen{flex:none;height:170px}
+}

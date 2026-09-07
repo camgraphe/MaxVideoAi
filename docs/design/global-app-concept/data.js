@@ -54,6 +54,8 @@ const shapes = {
   replace: '<path d="M3 5h12V2l7 5-7 5V9H3zM21 19H9v3l-7-5 7-5v3h12z"/>',
   remove: '<path d="M5 7h14l-1 15H6z" opacity=".3"/><path d="M9 2h6v2h6v2H3V4h6zm0 7h2v10H9zm4 0h2v10h-2z"/>',
   connect: '<path d="M3 5h6v14H3zM15 5h6v14h-6z" opacity=".3"/><path d="M6 9h12v6H6zm3-5h2v3H9zm4 0h2v3h-2zm-4 13h2v3H9zm4 0h2v3h-2z"/>',
+  wallet: '<path d="M3 5h18v16H3z" opacity=".25"/><path d="M3 3h15v3H5v2H3zm11 7h8v7h-8z"/><circle cx="17" cy="13.5" r="1" fill="var(--bg)"/>',
+  external: '<path d="M3 6h7v3H6v10h10v-4h3v7H3z" opacity=".4"/><path d="M13 2h9v9h-3V7l-8 8-2-2 8-8h-4z"/>',
   play: '<path d="m7 3 15 9-15 9z"/>',
 };
 export const icon = (name) => `<svg viewBox="0 0 24 24" class="icon" aria-hidden="true" focusable="false">${shapes[name] || shapes.create}</svg>`;

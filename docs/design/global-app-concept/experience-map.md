@@ -7,6 +7,7 @@ La bibliothèque est le point commun des médias ; un brouillon est le contexte 
 | Créer vidéo `/app` | Instruction, modèle/mode, réglages compatibles, références, devis, lancer, suivre, aperçu, télécharger, réutiliser | Vidéo · Image · Audio visibles ; instruction et Ajouter sans emplacements vides ; commande principale nommée |
 | Créer image `/app/image` | Texte seul, image source/références/masque selon modèle, variantes, résultat vers référence vidéo ou outil | Même grammaire de références ; paramètres dans un panneau explicitement ouvrable |
 | Créer audio `/app/audio` | Musique, voix, sonoriser une vidéo, voix + sonorisation ; script, voix, musique/durée, source vidéo et échantillon vocal selon pack ; écoute et export | Audio reste une activité visible ; lecteur à la demande, pas de vidéo factice pour représenter un son |
+| Récents, accès transversal | Derniers médias image/vidéo/audio → aperçu, ajouter comme référence ; futur Studio → projet/canevas selon destination | Colonne indépendante sur desktop ; bouton nommé Récents et panneau sur mobile. Pas de lecteurs au repos ni de cases vides réservées. |
 | Médias `/app/library` | Recherche, filtres image/vidéo/audio et provenance, pagination, sélection, aperçu/écoute, original, réutiliser, supprimer | Grille compacte ; barre d’actions de sélection nommée ; recherche conservée au retour |
 | Outils `/app/tools/*` | Angle, Character Builder, Storyboard, upscale, détourage : choisir/importer une source compatible, agir, réutiliser le résultat | Catalogue lisible et actions liées au média, accès depuis navigation et sélection |
 | Compte `/settings`, `/account/connections`, `/billing` | Profil, apparence, langue, mouvement, connexions et révocation réelle, crédits/factures | Préférences en lignes ; labels persistants ; choix/toggles selon leur fonction |
@@ -33,3 +34,9 @@ Image générée → image de début / référence compatible ; vidéo → vidé
 MCP existant : `list_media`, `import_reference_files`, `create_reference_upload_link` acceptent image/vidéo/audio ; `get_model_details` fixe les capacités, `prepare_generation` valide et chiffre image/vidéo, confirmation/génération/suivi restent distincts. La création audio autonome a son API app, mais pas encore une équivalence MCP démontrée. `prepare_montage` est un plan vidéo non persisté et désactivé par défaut ; ce n’est pas un éditeur enregistré. UI et MCP devront invoquer les mêmes commandes métier, avec propriété, validation et idempotence adaptées.
 
 Sources locales vérifiées : AppSidebar, AssetLibraryBrowser, reference-budget.ts, audio-generation.ts (4 packs), useAudioSourceMediaHandlers, mcp/tools/{list-media,prepare-generation,import-reference-files,prepare-montage}, guides mcp-mode-coverage et mcp-reference-imports.
+
+## Navigation pendant la création
+
+L’en-tête garde MaxVideoAI, Assistants et Wallet. Le prix du rendu reste près de Générer, distinct du solde disponible. Comparer propose les modèles et adaptations du brouillon ; les comparatifs détaillés sont accessibles depuis ce choix et le menu MaxVideoAI. Accueil, modèles, exemples, tarifs, outils et guides s’ouvrent dans un autre onglet. Les destinations viennent de `frontend/config/navigation.ts` ; l’intégration réelle conserve leurs locales.
+
+Le créateur réserve une zone défilante à l’aperçu, aux références et au texte, entre la barre de modèle et le pied d’action. Les récents desktop ont leur propre défilement. La navigation reste visible en portrait et paysage court ; le lecteur audio conserve sa hauteur naturelle pour ne pas perdre ses commandes.

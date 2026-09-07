@@ -12,6 +12,7 @@ Le script copie uniquement une liste explicite d’assets existants dans la zone
 
 Parcours :
 
+- Créer → Récents → ajouter une image, une vidéo ou un audio en référence ; dépôt direct depuis la colonne desktop, choix du rôle si nécessaire, remplacement confirmé et Annuler.
 - Créer → Ajouter → choisir/importer/créer une référence image, vidéo ou audio.
 - Vidéo → Comparer → examiner un modèle à réglages identiques, ou prévisualiser ses adaptations → Utiliser ce modèle. Fermer annule le changement proposé.
 - Options → durée/résolution/format/son → estimation catalogue actualisée et visible près de Simuler.
@@ -19,6 +20,8 @@ Parcours :
 - Gérer → aperçu, rôle, remplacement, retrait/annulation, ordre.
 - Changer de profil → conserver les médias et résoudre les incompatibilités.
 - Médias → recherche/filtre → aperçu/écoute → réutiliser dans un créateur compatible.
+- Wallet visible → état non connecté et lien vers la facturation réelle.
+- Menu MaxVideoAI → modèles, comparatifs détaillés, exemples, tarifs, outils et guides dans un autre onglet.
 - Compte → apparence, mouvement, profil local, présentation des connexions.
 
 La variante `?volume=50` ajoute des copies identifiées comme médias de test pour éprouver la densité, sans modifier les capacités des profils. Les plafonds de références restent des fixtures UI indépendantes des modèles réels. Aucun rendu, devis personnalisé, paiement, upload serveur, changement de compte réel ou projet Studio n’est produit. Les brouillons vivent en mémoire ; seule l’apparence persiste sous une clé propre à cette maquette.
@@ -28,3 +31,5 @@ La variante `?volume=50` ajoute des copies identifiées comme médias de test po
 Le lecteur audio est réel ; la forme d’onde est un motif décoratif, pas une analyse du fichier. Les médias copiés n’ont pas été optimisés pour mesurer une performance de production. La refonte réelle devra réutiliser ses contrats de médias, de génération, de références et de pagination.
 
 Voir `experience-map.md`, `visual-rules.md`, `review.md`, `integration-contract.md` et le plan `docs/superpowers/plans/2026-09-07-model-choice-price-concept.md`.
+
+Le créateur défile entre son en-tête et son pied d’action. Sur desktop, les récents défilent indépendamment ; sur mobile et paysage court, le bouton nommé Récents ouvre le même choix de médias. Le solde reste explicitement non connecté. La présentation commune des récents accepte une action destinataire pour le futur Studio, mais aucune insertion dans un projet/canevas n’est encore persistée. Plan du lot : `docs/superpowers/plans/2026-09-07-recent-media-workspace.md`.

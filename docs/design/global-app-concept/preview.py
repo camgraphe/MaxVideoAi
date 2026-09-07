@@ -18,7 +18,7 @@ def prepare_preview():
         str(root / "node_modules/.bin/tsx"), "--tsconfig", str(root / "frontend/tsconfig.json"),
         str(source / "export-catalog.ts"), str(output / "catalog.generated.js"),
     ], cwd=root, check=True)
-    for name in ("index.html", "app.css", "app.js", "data.js", "model-choice.js"):
+    for name in ("index.html", "app.css", "app.js", "data.js", "model-choice.js", "recent-media.js"):
         shutil.copyfile(source / name, output / name)
     authored_assets = {
         "GeistLatin.woff2": "frontend/app/(core)/_fonts/GeistLatin.woff2",

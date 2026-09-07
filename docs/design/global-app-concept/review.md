@@ -1,6 +1,6 @@
 # Revue du prototype global — 7 septembre 2026
 
-Statut : direction visuelle retenue par l’utilisateur. Le lot suivant ajoute le choix du modèle et le prix avant génération ; la conservation des fonctions importantes est exigée dans `integration-contract.md`. Cette revue ne valide pas une intégration de production.
+Statut : direction visuelle retenue par l’utilisateur. Les lots interactifs ajoutent le choix du modèle, le prix avant génération, les récents, le wallet et le menu du site ; la conservation des fonctions importantes est exigée dans `integration-contract.md`. Cette revue ne valide pas une intégration de production.
 
 ## Démontré dans le navigateur
 
@@ -49,3 +49,34 @@ Vérifications de source : préparation reproductible avec `preview.py --prepare
 - Contrats `pricing-public-authority.test.ts` et `pricing-architecture.test.ts` : 11 tests réussis. Analyse syntaxique des trois modules et `git diff --check` réussis. Le build Next et les contrôles de production ne sont pas revendiqués pour ce lot documentaire.
 
 Captures supplémentaires locales : `model-price-320.png`, `model-compare-390.png`, `model-price-1440.png`, `model-compare-1440.png`. Les montants correspondent au catalogue préparé pour cette revue, pas à un engagement de prix d’un compte connecté.
+
+## Lot récents, wallet et navigation — vérifications supplémentaires
+
+- Dépôt natif d’une image depuis la colonne vers les références : insertion dans le bon rôle, montant texte-seul retiré. Ajout explicite de vidéo et d’audio : trois références typées, aucun changement implicite de modèle ou de profil.
+- Profil Début → fin : choix Première/Dernière image lorsque les deux rôles sont disponibles ; second ajout dans le dernier rôle disponible ; troisième refusé avec limite expliquée. Audio refusé dans ce profil, références existantes conservées.
+- Dépôt sur la première image à capacité atteinte : confirmation de remplacement, annulation conserve La cartographe ; remplacement par Étude de produit conserve le rôle ; Annuler restaure La cartographe et laisse la dernière image en place.
+- Récents à 390 et 320 px : panneau nommé, filtre Audio, ajout par Entrée et annulation ; estimation texte-seul restaurée quand le brouillon retrouve zéro référence. Boucle Maj-Tab vers Tous les médias, Tab vers Fermer, Échap et focus rendu à Récents.
+- Simulation audio explicitement locale : média existant remonté en tête, sans doublon, sans date ni job inventés. Le code d’import promeut les IDs issus de l’import existant ; le sélecteur de fichiers n’a pas été rejoué dans ce lot. L’import audio avait été vérifié au lot précédent.
+- Colonne et panneau utilisent les mêmes cartes avec action de destination paramétrable. Aucun lecteur audio/vidéo monté dans la colonne au repos ; aucun succès d’insertion Studio inventé. Le raccordement au flux réel et aux projets est décrit dans `integration-contract.md`.
+- Menu : sept destinations vérifiées contre le propriétaire de navigation du dépôt ; ancres en `_blank` avec `noopener noreferrer`. Wallet montre explicitement — USD/non connecté et le lien `/billing`. Fermeture des panneaux conserve texte, deux références et rôles. Les parcours du site après ouverture et la session/facturation réelles ne sont pas validés par ce test.
+- Comparatifs détaillés également accessibles depuis la liste des modèles. Wallet et menu nommés dans l’en-tête desktop/mobile ; leur contenu reste à raccorder au compte réel.
+
+Mesures finales du créateur dans le navigateur local :
+
+| Format | Document | Fin du contenu défilant / début du pied | Fin du pied / début navigation mobile |
+|---|---|---|---|
+| 1440 × 960 | 1440 × 960 | 876 / 884 px | 942 px / navigation latérale |
+| 900 × 700 | 900 × 700 | 560 / 568 px | 682 px / navigation latérale |
+| 390 × 844 | 390 × 844 | 657 / 663 px | 767 / 775 px |
+| 320 × 740 | 320 × 740 | 553 / 559 px | 663 / 671 px |
+| 844 × 390 | 844 × 390 | 324 / 328 px | 382 px / navigation latérale |
+
+Ces mesures remplacent le positionnement sticky des lots précédents. Correction du parent mobile non borné qui laissait le pied passer sous la navigation. Le contenu est découpé par sa propre zone de défilement, sans recouvrir le pied ; après défilement à 320 px, l’instruction finit à 538,5 px avant la limite à 553 px. À 390 px, saisie ciblée finissant à 642,5 px avant le pied à 663 px. Aucun bouton visible mesuré sous 44 × 44 px à 320 px. En paysage court, les cinq entrées sont visibles, hautes de 52 px ; Compte finit à 382 px.
+
+Le lecteur audio conservait trop peu de hauteur à 900 px et débordait latéralement à 390 px : correction de sa hauteur naturelle et de la largeur minimale du conteneur. Vérification à 390 px : lecteur de x=35 à 352 px, compris dans son aperçu de x=16 à 371 px ; commandes lisibles. Lecture native effective constatée (piste locale de 15 s, temps avançant), puis pause. Aucune mesure de gain de performance de production n’est revendiquée. Clavier virtuel, appareils physiques et lecteurs d’écran complets restent à qualifier.
+
+Sources de la décision de navigation : [Adobe — crédits génératifs](https://helpx.adobe.com/creative-cloud/apps/generative-ai/generative-credits-faq.html), [Runway — gestion de l’abonnement depuis le dashboard](https://help.runwayml.com/hc/en-us/articles/50205612565779-Managing-your-subscription). Ces documents étayent la présence du solde/de la facturation dans l’app ; le menu public séparé est notre recommandation pour conserver le contexte de création. Aucun effet sur la conversion n’a été mesuré.
+
+État vide inspecté à 390 px : titre, ajout et saisie accessibles. Les messages avec Annuler sont désormais positionnés au-dessus du pied d’action et suivent son déplacement au redimensionnement ; le bouton principal reste dégagé. Aucun avertissement ni erreur de console dans le dernier parcours.
+
+Vérification de source : préparation reproductible, syntaxe des quatre modules JavaScript et du script Python, `git diff --check`. Captures locales : `recents-wallet-1440.png`, `recents-wallet-390.png`, `recents-wallet-landscape.png`, `recents-audio-390.png`. Aucun fichier frontend de production modifié dans ce lot.

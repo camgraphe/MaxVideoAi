@@ -1,6 +1,7 @@
 import { profiles, media, labels, defaults, icon } from './data.js';
 import { catalogue } from './catalog.generated.js';
 import { createModelChoices, money, soundLabel } from './model-choice.js';
+import { recentItems, renderRecentCards, installMediaDrag } from './recent-media.js';
 
 const { initialModelChoice, modelFor, differences, matchingQuote, adaptChoice } = createModelChoices(catalogue);
 
@@ -11,11 +12,12 @@ const state = {
   screen: 'create', kind: 'video', drafts: Object.fromEntries(Object.keys(labels).map(k => [k, freshDraft(k)])),
   selected: null, query: '', filter: 'all', panel: null, picks: [], returnContext: null,
   appearance: 'dark', reduced: false, accountTab: 'appearance', name: 'Créateur', undo: null,
+  recentIds: ['v1','i2','a1','i3','i4','i1'], recentFilter: 'all',
 };
 state.drafts.video.output = 'v1';
 state.drafts.video.prompt = 'Un mouvement de caméra lent. Préserver la lumière et la matière du plan.';
 try { state.appearance = ['dark','light','system'].includes(localStorage.getItem('maxvideoai-concept-theme')) ? localStorage.getItem('maxvideoai-concept-theme') : 'dark'; } catch {}
-let refCounter = 0, importCounter = 0, restoreFocus = null, noticeTimer;
+let refCounter = 0, importCounter = 0, restoreFocus = null, noticeTimer, renderedContext = null;
 const draft = () => state.drafts[state.kind];
 const profile = () => profiles[draft().profile];
 const asset = id => media.find(m => m.id === id);
@@ -23,6 +25,15 @@ const roleFor = id => profile().roles.find(r => r.id === id);
 const byId = id => draft().refs.find(r => r.id === id);
 const button = (label, action, ico, attrs = '', cls = '') => `<button class="btn ${cls}" data-action="${action}" ${attrs}>${ico ? icon(ico) : ''}${label}</button>`;
 const wave = () => `<div class="wave" aria-hidden="true">${Array.from({length:55}, (_,i) => `<i style="height:${18 + (Math.sin(i * 2.3) + 1) * 25 + (i % 6) * 4}%"></i>`).join('')}</div>`;
+const externalLink = (name,path,cls='site-link') => `<a class="${cls}" href="https://maxvideoai.com${esc(path)}" target="_blank" rel="noopener noreferrer">${esc(name)}${icon('external')}</a>`;
+function promoteRecent(ids) { state.recentIds = [...new Set([...ids, ...state.recentIds])].slice(0,50); }
+function recentCards(draggable=false) {
+  const items=recentItems(media,state.recentIds,50).filter(m=>draggable||state.recentFilter==='all'||m.kind===state.recentFilter).slice(0,12);
+  return renderRecentCards({items,icon,thumb,esc,draggable,inUse:id=>draft().refs.some(r=>r.assetId===id)});
+}
+function recentShelf() {
+  return `<aside class="shelf recent-shelf" aria-label="Médias récents"><div class="shelf-head"><div><strong>Récents</strong><small>Exemples locaux</small></div>${button('Ouvrir','recent','library','aria-label="Ouvrir les médias récents"')}</div><div class="recent-list" role="region" aria-label="Liste des médias récents" tabindex="0">${recentCards(true)}</div>${button('Tous les médias','navigate','arrow','data-screen="library"','','')}</aside>`;
+}
 
 function applyTheme() {
   document.documentElement.dataset.theme = state.appearance === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : state.appearance;
@@ -100,7 +111,7 @@ function modelList() {
   return `<p class="panel-intro">Même durée, résolution, format et son. Six modèles du catalogue pour éprouver ce choix.</p><div class="comparison-context"><span>${choice.duration} s</span><span>${esc(choice.resolution)}</span><span>${esc(choice.format)}</span><span>${soundLabel(choice)}</span>${button('Modifier','controls','settings')}</div>${draft().refs.length || missingRequired().length ? '<p class="error">Les devis avec références ne sont pas raccordés dans cette maquette.</p>' : ''}<div class="model-list">${catalogue.models.map(model=>{
     const proposed = {...choice,modelId:model.id}, diff = differences(model, choice), quote = currentQuote(proposed), selected = choice.modelId === model.id;
     return `<button class="model-option ${selected?'selected':''}" data-action="candidate" data-id="${model.id}" aria-label="Examiner ${esc(model.label)}${selected?', modèle actuel':''}"><span class="model-glyph">${selected?icon('check'):icon('video')}</span><span class="model-description"><strong>${esc(model.label)}</strong><small>${diff.length ? `${diff.join(' · ')} à adapter` : 'Réglages conservés'}${selected?' · Actuel':''}</small></span><span class="model-cost">${diff.length?'Adapter':quote?esc(money(quote)):'Devis à raccorder'}${icon('arrow')}</span></button>`;
-  }).join('')}</div><div class="quote-scope"><span>Estimation catalogue · Member · USD</span>${button('Détails','price-info',null)}</div>`;
+  }).join('')}</div><div class="quote-scope"><span>Estimation catalogue · Member · USD</span>${button('Détails','price-info',null)}</div>${externalLink('Comparatifs détaillés sur le site','/ai-video-engines')}`;
 }
 function returnBar() {
   const c = state.returnContext;
@@ -108,14 +119,16 @@ function returnBar() {
 }
 function creator() {
   const d = draft(), m = asset(d.output);
-  return `${returnBar()}<div class="pagehead"><h1>Créer</h1><div class="modes" aria-label="Type de création">${Object.entries(labels).map(([k,l]) => `<button class="mode ${state.kind === k ? 'active' : ''}" data-action="kind" data-kind="${k}" aria-pressed="${state.kind===k}">${icon(k)}${l}</button>`).join('')}</div>${button('Nouveau','new','plus')}</div>
+  return `${returnBar()}<div class="pagehead"><h1>Créer</h1><div class="modes" aria-label="Type de création">${Object.entries(labels).map(([k,l]) => `<button class="mode ${state.kind === k ? 'active' : ''}" data-action="kind" data-kind="${k}" aria-pressed="${state.kind===k}">${icon(k)}${l}</button>`).join('')}</div><div class="creator-actions">${button('Récents','recent','library','','mobile-recents')}${button('Nouveau','new','plus')}</div></div>
     <div class="work-layout"><section class="workbench" aria-label="Créateur ${labels[state.kind]}">
       <div class="toolbar">${modelToolbar()}</div>
+      <div class="work-scroll" role="region" aria-label="Aperçu, références et instruction" tabindex="0">
       ${m ? `<div class="screen">${reader(m,'')}</div><div class="asset-caption"><div><strong>${esc(m.name)}</strong><small style="display:block;margin-top:4px">Exemple local · aucune génération</small></div>${button('Réutiliser','reuse', 'replace', `data-id="${m.id}"`)}</div>` : `<div class="screen screen-empty"><div class="empty-icon">${icon(state.kind)}</div><h2>${state.kind === 'audio' ? 'Donnez du son à votre idée.' : state.kind === 'image' ? 'Donnez forme à votre idée.' : 'Mettez votre idée en mouvement.'}</h2><p>Une instruction suffit pour commencer.</p></div>`}
-      <div id="references">${renderReferences()}</div>
+      <div id="references"><span class="drop-feedback" role="status"></span>${renderReferences()}</div>
       <div class="compose"><label for="prompt">${state.kind === 'audio' && d.profile === 'voice' ? 'Votre script' : 'Votre direction'}</label><textarea id="prompt" rows="3" placeholder="Décrivez ce que vous voulez créer…">${esc(d.prompt)}</textarea></div>
+      </div>
       <div class="commandbar"><div class="quick-values">${quickControls()}</div><div class="creation-action">${quoteDisplay()}${button('Simuler','simulate','arrow',invalidRefs().length || missingRequired().length ? 'disabled' : '', 'primary generate')}</div></div>
-    </section><aside class="shelf"><div class="shelf-head"><span class="tiny">Vos médias</span><button class="icon-btn" data-action="navigate" data-screen="library" aria-label="Ouvrir les médias">${icon('arrow')}</button></div><div class="shelf-items">${media.slice(0,4).map(m => `<button class="shelf-media" data-action="preview" data-id="${m.id}">${thumb(m)}<div class="shelf-caption">${esc(m.name)}</div></button>`).join('')}</div>${button('Tout voir','navigate',null,'data-screen="library"','','')}</aside></div>`;
+    </section>${recentShelf()}</div>`;
 }
 const filteredMedia = () => media.filter(m => (state.filter === 'all' || m.kind === state.filter) && m.name.toLocaleLowerCase('fr').includes(state.query.toLocaleLowerCase('fr')));
 function libraryGrid() {
@@ -145,18 +158,28 @@ function render() {
   const active = document.activeElement;
   const focus = active?.closest('#app') && active.dataset.action ? {...active.dataset} : null;
   const focusLabel = active?.getAttribute('aria-label'), focusText = active?.textContent;
+  const sameContext=renderedContext===`${state.screen}:${state.kind}`;
+  const workScroll=sameContext?$('.work-scroll')?.scrollTop||0:0, shelfScroll=sameContext?$('.recent-list')?.scrollTop||0:0;
   applyTheme();
   const nav=[['create','create','Créer'],['library','library','Médias'],['tools','tools','Outils'],['studio','studio','Studio'],['settings','settings','Compte']];
-  $('#app').innerHTML=`<div class="app-shell"><nav class="nav" aria-label="Navigation principale"><div class="brand" aria-label="MaxVideoAI">M/</div>${nav.map(([k,i,l])=>`<button class="nav-button ${state.screen===k?'active':''} ${k==='settings'?'nav-bottom':''}" data-action="navigate" data-screen="${k}" aria-current="${state.screen===k?'page':'false'}">${icon(i)}${l}</button>`).join('')}</nav><main class="main"><header class="topbar"><span class="wordmark">MaxVideoAI <span class="muted">/ Espace créatif</span></span><div class="top-right"><span class="demo-label"><i class="dot"></i>Prototype · local</span>${button('<span>Assistants</span>','assistants','connect','aria-label="Assistants"')}<div class="avatar" aria-hidden="true">${esc(state.name.slice(0,2).toUpperCase())}</div></div></header><div class="content">${state.screen==='create'?creator():state.screen==='library'?library():state.screen==='settings'?settings():futureScreen()}</div></main></div>`;
+  $('#app').innerHTML=`<div class="app-shell"><nav class="nav" aria-label="Navigation principale"><div class="brand" aria-label="MaxVideoAI">M/</div>${nav.map(([k,i,l])=>`<button class="nav-button ${state.screen===k?'active':''} ${k==='settings'?'nav-bottom':''}" data-action="navigate" data-screen="${k}" aria-current="${state.screen===k?'page':'false'}">${icon(i)}${l}</button>`).join('')}</nav><main class="main"><header class="topbar"><button class="site-trigger" data-action="site" aria-label="Menu MaxVideoAI : site et aide"><span>MaxVideoAI<small>Menu · prototype</small></span>${icon('down')}</button><div class="top-right">${button('<span>Assistants</span>','assistants','connect','aria-label="Assistants"','assistant-shortcut')}<button class="wallet-trigger" data-action="wallet" aria-label="Wallet : solde non connecté">${icon('wallet')}<span><small>Wallet</small><strong>— USD</strong></span></button><div class="avatar" aria-hidden="true">${esc(state.name.slice(0,2).toUpperCase())}</div></div></header><div class="content">${state.screen==='create'?creator():state.screen==='library'?library():state.screen==='settings'?settings():futureScreen()}</div></main></div>`;
+  renderedContext=`${state.screen}:${state.kind}`;
+  if($('.work-scroll'))$('.work-scroll').scrollTop=workScroll;
+  if($('.recent-list'))$('.recent-list').scrollTop=shelfScroll;
+  positionNotice();
   if(focus){
     const matches=[...document.querySelectorAll('#app [data-action]')].filter(el=>Object.entries(focus).every(([key,value])=>el.dataset[key]===value));
     (matches.find(el=>focusLabel&&el.getAttribute('aria-label')===focusLabel)||matches.find(el=>el.textContent===focusText)||matches[0])?.focus({preventScroll:true});
   }
 }
+function positionNotice() {
+  const command=$('.commandbar');
+  $('#notice').style.bottom=command?`${Math.max(16,innerHeight-command.getBoundingClientRect().top+12)}px`:'';
+}
 function toast(message, undo=null) {
   clearTimeout(noticeTimer);state.undo=undo;
   $('#notice').innerHTML=`<span>${esc(message)}</span>${undo?button('Annuler','undo',null):''}`;
-  $('#notice').classList.add('shown');noticeTimer=setTimeout(()=>{$('#notice').classList.remove('shown');state.undo=null;},undo?12000:6500);
+  positionNotice();$('#notice').classList.add('shown');noticeTimer=setTimeout(()=>{$('#notice').classList.remove('shown');state.undo=null;},undo?12000:6500);
 }
 function openPanel(type, args={}) {
   if(!$('#panel').open){const el=document.activeElement;restoreFocus=el?.dataset?.action ? {action:el.dataset.action,id:el.dataset.id,kind:el.dataset.kind,label:el.getAttribute('aria-label'),text:el.textContent} : null;}
@@ -176,7 +199,20 @@ function panelLayout(title,body) {
 }
 function renderPanel() {
   const p=state.panel;if(!p)return;
-  if(p.type==='models'){
+  if(p.type==='site'){
+    panelLayout('MaxVideoAI',`<p class="panel-intro">Explorer le site dans un autre onglet. Votre brouillon reste ici.</p><div class="site-links">${[['Accueil','/'],['Modèles','/models'],['Comparatifs détaillés','/ai-video-engines'],['Exemples','/examples'],['Tarifs','/pricing'],['Outils','/tools'],['Guides & actualités','/blog']].map(([name,path])=>externalLink(name,path)).join('')}</div><div class="site-app-actions">${button('Connexions et assistants','assistants','connect')}${button('Wallet et facturation','wallet','wallet')}</div>`);
+  }else if(p.type==='wallet'){
+    panelLayout('Votre wallet',`<div class="wallet-summary">${icon('wallet')}<div><small>Solde disponible</small><strong>— USD</strong><span>Compte non connecté dans ce prototype</span></div></div><p class="panel-intro">L’app affichera ici votre solde réel et l’accès à la recharge. Le prix près de Générer reste le coût du rendu choisi.</p><div class="site-links">${externalLink('Ouvrir le wallet et la facturation','/billing')}</div><small class="wallet-note">Aucun montant fictif, aucun débit dans la maquette.</small>`);
+  }else if(p.type==='recent'){
+    panelLayout('Médias récents',`<p class="panel-intro">Résultats et imports de démonstration, dans l’ordre le plus récent.</p><div class="filters recent-filters">${[['all','Tous'],...Object.entries(labels)].map(([kind,name])=>`<button class="filter ${state.recentFilter===kind?'active':''}" data-action="recent-filter" data-kind="${kind}" aria-pressed="${state.recentFilter===kind}">${name}</button>`).join('')}</div><div class="recent-grid">${recentCards()}</div><div class="panel-footer"><small>Image · vidéo · audio</small>${button('Tous les médias','navigate','arrow','data-screen="library"')}</div>`);
+  }else if(p.type==='recent-role'){
+    const m=asset(p.id), destination=recentDestination(p.id);
+    panelLayout('Ajouter comme référence',`<div class="chosen-recent">${thumb(m)}<strong>${esc(m.name)}</strong></div><p class="panel-intro">Choisissez son rôle dans le brouillon.</p>${destination.roles.map(r=>`<button class="choice-row" data-action="confirm-recent" data-id="${m.id}" data-role="${r.id}" ${canInsert(r)?'':'disabled'}>${icon(r.kind)}<span class="grow"><strong>${esc(r.name)}</strong><small>${draft().refs.filter(x=>x.role===r.id).length} / ${r.max}</small></span>${icon('plus')}</button>`).join('')}`);
+  }else if(p.type==='recent-replace'){
+    const old=byId(p.replaceId),m=asset(p.id);
+    if(!old){closePanel();return;}
+    panelLayout('Remplacer cette référence ?',`<div class="replacement-pair"><div>${thumb(asset(old.assetId))}<small>Actuelle</small></div>${icon('arrow')}<div>${thumb(m)}<small>${esc(m.name)}</small></div></div><p class="panel-intro">Le rôle « ${esc(roleFor(old.role)?.name||old.role)} » est conservé. L’original reste dans vos médias.</p><div class="panel-footer">${button('Annuler','close',null)}${button('Remplacer','confirm-replacement','replace',`data-id="${m.id}" data-replace-id="${old.id}"`,'primary')}</div>`);
+  }else if(p.type==='models'){
     panelLayout('Choisir votre modèle',modelList());
   }else if(p.type==='candidate'){
     const choice=p.choice, model=modelFor(choice);
@@ -212,6 +248,41 @@ function renderPanel() {
     panelLayout(`${esc(p.name)} · connexion`,`<p class="panel-intro">Parcours prévu : ouvrir la connexion, autoriser l’accès, vérifier l’état puis choisir les actions disponibles. La maquette n’effectue aucune connexion.</p><div class="choice-row">${icon('library')}<div><strong>Image · vidéo · audio</strong><small>Liste et import de références déjà présents côté MCP.</small></div></div><div class="choice-row">${icon('create')}<div><strong>Créer et suivre</strong><small>Génération image/vidéo existante ; génération audio autonome à compléter côté MCP.</small></div></div>`);
   }
 }
+function recentDestination(id, replaceId) {
+  const m=asset(id), roles=profile().roles.filter(r=>r.kind===m?.kind);
+  if(!m)return {allowed:false,roles:[],message:'Ce média n’est plus disponible.'};
+  if(replaceId){
+    const old=byId(replaceId),role=old&&roleFor(old.role);
+    const allowed=Boolean(role&&role.kind===m.kind&&canInsert(role,1,replaceId));
+    return {allowed,roles:role?[role]:[],message:allowed?'Remplacer cette référence · confirmation requise':'Ce média ne peut pas remplacer cette référence.'};
+  }
+  const available=roles.filter(r=>canInsert(r));
+  return {allowed:available.length>0,roles,available,message:available.length?available.length===1?`Ajouter : ${available[0].name}`:'Déposer, puis choisir un rôle':roles.length?'Limite atteinte. Retirez ou remplacez une référence.':'Ce type de média n’est pas accepté par ce scénario de références.'};
+}
+function revealReferences() {
+  $('#references')?.scrollIntoView({block:'nearest',behavior:state.reduced||matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+}
+function requestRecent(id, replaceId) {
+  const destination=recentDestination(id,replaceId);
+  if(!destination.allowed){toast(destination.message);return;}
+  if(replaceId){openPanel('recent-replace',{id,replaceId});return;}
+  if(destination.available.length>1){openPanel('recent-role',{id});return;}
+  applyRecent(id,destination.available[0].id);
+}
+function applyRecent(id, roleId, replaceId) {
+  const kind=state.kind, target=draft(), previous=replaceId?structuredClone(byId(replaceId)):null;
+  const existing=new Set(target.refs.map(r=>r.id));
+  if(!insertReferences([id],roleId,replaceId))return;
+  const inserted=target.refs.find(r=>!existing.has(r.id));
+  closePanel();render();revealReferences();
+  toast(`${asset(id).name} · ${roleFor(roleId)?.name||'Référence'}`,()=>{
+    if(state.drafts[kind]!==target)return;
+    const index=target.refs.findIndex(r=>r.id===inserted.id);
+    if(index<0)return;
+    target.refs.splice(index,1,...(previous?[previous]:[]));render();
+    if(state.panel)renderPanel();
+  });
+}
 function insertReferences(ids, roleId, replaceId) {
   const r=roleFor(roleId);if(!canInsert(r,ids.length,replaceId)||ids.some(id=>asset(id)?.kind!==r.kind)){toast('Cette sélection dépasse les limites du profil.');return false;}
   const next=ids.map(id=>({id:`ref-${++refCounter}`,assetId:id,role:roleId}));
@@ -239,7 +310,7 @@ function upload(roleId=null) {
     if(valid.length!==files.length){toast('Un fichier a un type incompatible. La sélection est conservée.');return;}
     if(role&&!canInsert(role,valid.length)){toast('Trop de fichiers pour ce rôle ou ce profil.');return;}
     const ids=valid.map(f=>{const id=`upload-${++importCounter}`;media.push({id,name:f.name,kind:f.type.split('/')[0],url:URL.createObjectURL(f),source:'Import local · non envoyé'});return id;});
-    if(role)insertReferences(ids,roleId);closePanel();render();toast('Fichiers ajoutés localement. Aucun envoi au serveur.');
+    promoteRecent(ids);if(role)insertReferences(ids,roleId);closePanel();render();toast('Fichiers ajoutés localement. Aucun envoi au serveur.');
   });input.click();
 }
 
@@ -254,7 +325,15 @@ document.addEventListener('click',event=>{
     state.kind=el.dataset.kind;render();
   }else if(a==='new'){
     const kind=state.kind,previous=structuredClone(draft());state.drafts[kind]=freshDraft(kind);render();toast('Nouveau brouillon.',()=>{state.drafts[kind]=previous;render();});
-  }else if(['add','manage','profile','controls','models','price-info'].includes(a))openPanel(a);
+  }else if(['add','manage','profile','controls','models','price-info','recent','wallet','site'].includes(a))openPanel(a);
+  else if(a==='recent-add')requestRecent(id);
+  else if(a==='confirm-recent')applyRecent(id,el.dataset.role);
+  else if(a==='confirm-replacement'){
+    const old=byId(el.dataset.replaceId);
+    if(old&&recentDestination(id,old.id).allowed)applyRecent(id,old.role,old.id);
+  }else if(a==='recent-filter'){
+    state.recentFilter=el.dataset.kind;renderPanel();$(`#panel [data-action="recent-filter"][data-kind="${state.recentFilter}"]`)?.focus();
+  }
   else if(a==='candidate'){
     const model=catalogue.models.find(m=>m.id===id);if(model)openPanel('candidate',{choice:adaptChoice(model,draft().modelChoice)});
   }else if(a==='apply-model'){
@@ -284,7 +363,7 @@ document.addEventListener('click',event=>{
   else if(a==='complete-return')finishReference(true);
   else if(a==='simulate'){
     if(invalidRefs().length||missingRequired().length)return;
-    draft().output=media.find(m=>m.kind===(profile().outputKind||state.kind))?.id;render();toast('Exemple local affiché. Aucune génération ni dépense.');
+    draft().output=media.find(m=>m.kind===(profile().outputKind||state.kind))?.id;promoteRecent([draft().output]);render();toast('Exemple local affiché. Aucune génération ni dépense.');
   }else if(a==='import')upload(el.dataset.role);
   else if(a==='library-import')upload();
   else if(a==='preview')openPanel('preview',{id});
@@ -311,7 +390,7 @@ document.addEventListener('click',event=>{
   else if(a==='theme'){state.appearance=el.dataset.value;try{localStorage.setItem('maxvideoai-concept-theme',state.appearance);}catch{}render();}
   else if(a==='motion'){state.reduced=!state.reduced;render();}
   else if(a==='cancel-name'){event.preventDefault();$('#profile-name').value=state.name;toast('Modification annulée.');}
-  else if(a==='assistants'){if(state.returnContext){toast('Terminez ou annulez le détour de référence.');return;}state.screen='settings';state.accountTab='connections';render();}
+  else if(a==='assistants'){if(state.returnContext){toast('Terminez ou annulez le détour de référence.');return;}state.screen='settings';state.accountTab='connections';closePanel();render();}
   else if(a==='connection')openPanel('connection',{name:el.dataset.name});
   else if(a==='close')closePanel();
   else if(a==='undo'){const fn=state.undo;state.undo=null;$('#notice').classList.remove('shown');fn?.();}
@@ -351,5 +430,6 @@ $('#panel').addEventListener('keydown',e=>{
 });
 window.addEventListener('beforeunload',()=>media.filter(m=>m.url.startsWith('blob:')).forEach(m=>URL.revokeObjectURL(m.url)));
 let width=innerWidth;
-window.addEventListener('resize',()=>{if(Math.abs(width-innerWidth)>20){width=innerWidth;if(state.screen==='create'&&$('#references'))$('#references').innerHTML=renderReferences();}});
+window.addEventListener('resize',()=>{positionNotice();if(Math.abs(width-innerWidth)>20){width=innerWidth;if(state.screen==='create'&&$('#references'))$('#references').innerHTML='<span class="drop-feedback" role="status"></span>'+renderReferences();}});
+installMediaDrag({getAsset:asset,getDestination:recentDestination,onDrop:requestRecent,onReject:toast});
 render();
