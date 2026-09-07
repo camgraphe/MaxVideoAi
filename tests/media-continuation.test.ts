@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { consumeMediaHandoff, stageMediaHandoff, MEDIA_HANDOFF_KEY, supportsMediaDestination } from '../frontend/lib/media-handoff';
+import { groupJobsIntoSummaries } from '../frontend/lib/job-groups';
+import type { Job } from '../frontend/types/jobs';
 import { galleryMediaAssets } from '../frontend/components/library/gallery-media-assets';
 import type { GroupSummary } from '../frontend/types/groups';
 
@@ -57,4 +59,20 @@ test('activity audio originals and separate single-image jobs retain their exact
   assert.equal(galleryMediaAssets(group, 'audio')[0].url, 'https://private.example/original.wav?signature=exact');
   group.members = ['one', 'two'].map((id) => ({ ...member, id, job: { jobId: id, engineLabel: 'Engine', durationSec: 0, prompt: '', createdAt: member.createdAt, renderIds: [`https://private.example/${id}.png`] } }));
   assert.deepEqual(galleryMediaAssets(group, 'image').map((entry) => entry.url), ['https://private.example/one.png', 'https://private.example/two.png']);
+});
+
+test('Activity maps every real grouped image output to its own original and thumbnail', () => {
+  const jobs: Job[] = ['first', 'last'].map((jobId) => ({
+    jobId, groupId: 'batch', surface: 'image', status: 'completed', engineLabel: 'Image engine',
+    durationSec: 0, prompt: '', createdAt: '2026-09-07T12:00:00Z',
+    renderIds: [0, 1, 2].map((index) => `https://private.example/${jobId}-${index}.png?signature=exact`),
+    renderThumbUrls: [0, 1, 2].map((index) => `https://private.example/${jobId}-${index}-thumb.webp`),
+  }));
+  const group = groupJobsIntoSummaries(jobs, { includeSinglesAsGroups: true }).groups[0];
+  assert.deepEqual(group.members.map((member) => member.id), ['first-image-0', 'first-image-1', 'first-image-2', 'last-image-0', 'last-image-1', 'last-image-2']);
+  const assets = galleryMediaAssets(group, 'image');
+  assert.equal(assets.length, 6);
+  assert.deepEqual(assets.map(({ url, thumbUrl }) => ({ url, thumbUrl })), jobs.flatMap((job) => job.renderIds!.map((url, index) => ({ url, thumbUrl: job.renderThumbUrls![index] }))));
+  assert.equal(assets[0].url, jobs[0].renderIds![0]);
+  assert.equal(assets.at(-1)?.url, jobs[1].renderIds![2]);
 });
