@@ -15,6 +15,8 @@ export async function GET(request: NextRequest) {
     const averages = await fetchEngineAverageDurations();
     return NextResponse.json({
       ok: true,
+      source: 'completion_event',
+      samples: Object.fromEntries(averages.map((entry) => [entry.engineId, entry.completedCount])),
       averages: Object.fromEntries(averages.map((entry) => [entry.engineId, entry.averageDurationMs])),
     });
   } catch (error) {

@@ -1,3 +1,4 @@
+import type { GenerationObservation } from '@/lib/generation-observation';
 import type { AudioOutputKind } from '@/lib/audio-generation';
 
 export type SourceVideoState = {
@@ -51,6 +52,7 @@ export type AudioJobSettingsSnapshot = {
 };
 
 export type AudioJobDetail = {
+  createdAt?: string;
   ok?: boolean;
   error?: string;
   jobId: string;
@@ -68,8 +70,12 @@ export type AudioJobDetail = {
 };
 
 export type ActiveAudioJobState = {
+  startedAt?: number;
+  etaSeconds?: number | null;
+  etaSource?: 'observed' | 'heuristic';
   jobId: string;
   status: 'pending' | 'running' | 'completed' | 'failed';
+  observation?: GenerationObservation;
   progress: number;
   message: string | null;
   videoUrl: string | null;

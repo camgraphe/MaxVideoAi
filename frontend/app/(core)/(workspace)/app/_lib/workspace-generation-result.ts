@@ -1,3 +1,4 @@
+import { generationStage, isStaleGenerationUpdate } from '@/lib/generation-observation';
 import { isRefundedPaymentStatus } from '@/lib/gallery-retention';
 import type { SelectedVideoPreview } from '@/lib/video-preview-group';
 import type { LocalRender } from './render-persistence';
@@ -110,16 +111,16 @@ export function projectAcceptedGenerationResult({
   const etaLabel = response.etaLabel ?? fallback.etaLabel;
   const message = response.message ?? fallback.message;
   const status = response.status ?? (response.videoUrl ? 'completed' : 'pending');
-  const progress = typeof response.progress === 'number' ? response.progress : response.videoUrl ? 100 : 5;
+  const progress = typeof response.progress === 'number' && Number.isFinite(response.progress) ? Math.max(0, Math.min(100, response.progress)) : response.videoUrl ? 100 : 0;
   const pricingSnapshot = response.pricing ?? fallback.pricingSnapshot;
   const paymentStatus = response.paymentStatus ?? 'pending_payment';
   const renderIds = response.renderIds ?? undefined;
   const heroRenderId = response.heroRenderId ?? null;
   const videoUrl = response.videoUrl ?? undefined;
-  const gatingActive = Boolean(videoUrl) && now < fallback.minReadyAt;
-  const clampedProgress = progress < 5 ? 5 : progress;
-  const gatedProgress = gatingActive ? Math.min(clampedProgress, 95) : clampedProgress;
-  const visibleStatus = gatingActive ? 'pending' : status;
+  // Retain the projection shape for callers; an estimate never gates delivery.
+  const gatingActive = false;
+  const gatedProgress = progress;
+  const visibleStatus = status;
 
   return {
     now,
@@ -175,6 +176,7 @@ export function applyAcceptedGenerationResultToRender(
   render: LocalRender,
   projection: AcceptedGenerationProjection
 ): LocalRender {
+  if (isStaleGenerationUpdate(render, projection)) return render;
   const nextFailedAt =
     projection.status === 'failed' && isRefundedPaymentStatus(projection.paymentStatus)
       ? render.failedAt ?? projection.now
@@ -192,6 +194,7 @@ export function applyAcceptedGenerationResultToRender(
     message: projection.message,
     progress: projection.gatedProgress,
     status: projection.visibleStatus,
+    observation: { stage: generationStage(projection.status) },
     priceCents: projection.priceCents,
     currency: projection.currency,
     pricingSnapshot: projection.pricingSnapshot,
@@ -202,7 +205,7 @@ export function applyAcceptedGenerationResultToRender(
     renderIds: projection.renderIds,
     heroRenderId: projection.heroRenderId,
     readyVideoUrl: projection.videoUrl ?? render.readyVideoUrl,
-    videoUrl: projection.gatingActive ? render.videoUrl : projection.videoUrl ?? render.videoUrl,
+    videoUrl: projection.videoUrl ?? render.videoUrl,
     previewVideoUrl: render.previewVideoUrl,
   };
 }
@@ -215,6 +218,7 @@ export function applyAcceptedGenerationResultToSelectedPreview(
     return current;
   }
 
+  if (isStaleGenerationUpdate(current, projection)) return current;
   return {
     ...current,
     id: projection.jobId,
@@ -228,8 +232,9 @@ export function applyAcceptedGenerationResultToSelectedPreview(
     currency: projection.currency,
     etaSeconds: projection.etaSeconds ?? undefined,
     etaLabel: projection.etaLabel ?? undefined,
-    videoUrl: projection.gatingActive ? current.videoUrl : projection.videoUrl ?? current.videoUrl,
+    videoUrl: projection.videoUrl ?? current.videoUrl,
     previewVideoUrl: current.previewVideoUrl,
     status: projection.visibleStatus,
+    observation: { stage: generationStage(projection.status) },
   };
 }

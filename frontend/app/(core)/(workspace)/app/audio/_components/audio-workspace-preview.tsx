@@ -1,5 +1,6 @@
 'use client';
 
+import { GenerationPendingStatus } from '@/components/groups/GenerationPendingStatus';
 import { AppGlyph } from '@/components/app/AppGlyph';
 import { WorkspaceEmptyPreview } from '@/components/composer/WorkspaceEmptyPreview.client';
 import type { AudioWorkspaceCopy } from '../copy';
@@ -29,8 +30,9 @@ export function AudioWorkspacePreview({ activeJob, result, awaitingJob = false, 
         <div className="app-audio-preview-content">
           <div className="app-audio-preview-status" role={failed ? 'alert' : 'status'}>
             <AppGlyph name={media?.videoUrl ? 'video' : 'audio'} />
-            <span>{copy.rail.statuses[status]}</span>
+            {!inFlight ? <span>{copy.rail.statuses[status]}</span> : null}
           </div>
+          {inFlight ? <GenerationPendingStatus observation={activeJob.observation ?? { stage: activeJob.status === 'running' ? 'processing' : 'pending' }} startedAt={activeJob.startedAt} etaSeconds={activeJob.etaSeconds} etaSource={activeJob.etaSource} /> : null}
           {hasMedia ? <>
             {media?.videoUrl ? <video controls preload="none" src={media.videoUrl} poster={media.thumbUrl ?? undefined} aria-label={copy.rail.outputs.video} /> : null}
             {media?.audioUrl ? <audio controls preload="none" src={media.audioUrl} aria-label={copy.rail.outputs.audio} /> : null}

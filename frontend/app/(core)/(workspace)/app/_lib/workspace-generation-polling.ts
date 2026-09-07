@@ -1,3 +1,4 @@
+import { isStaleGenerationUpdate, mergeGenerationObservation, type GenerationObservation } from '@/lib/generation-observation';
 import { isRefundedPaymentStatus } from '@/lib/gallery-retention';
 import { isPlaceholderMediaUrl } from '@/lib/media';
 import type { SelectedVideoPreview } from '@/lib/video-preview-group';
@@ -5,6 +6,8 @@ import { resolvePolledThumbUrl, type LocalRender } from './render-persistence';
 
 export type GenerationPollStatus = {
   status?: LocalRender['status'] | null;
+  observation?: GenerationObservation;
+  etaSource?: 'observed' | 'heuristic';
   progress?: number | null;
   videoUrl?: string | null;
   previewVideoUrl?: string | null;
@@ -44,24 +47,6 @@ export function projectGenerationPollStatus({
   localKey: string;
   now: number;
 }): GenerationPollProjection {
-  const isCompleted = status.status === 'completed' || Boolean(status.videoUrl);
-  const minReadyAtCurrent = target?.minReadyAt ?? 0;
-  if (isCompleted && target && now < minReadyAtCurrent) {
-    return {
-      status,
-      jobId,
-      localKey,
-      now,
-      targetReadyVideoUrl: target.readyVideoUrl,
-      deferUntilReady: true,
-      shouldApplyState: false,
-      shouldKeepPolling: true,
-      shouldStopProgressTracking: false,
-      nextPollDelayMs: Math.max(500, minReadyAtCurrent - now),
-      progressMessage: status.message ?? undefined,
-    };
-  }
-
   const hasVideo = Boolean(status.videoUrl);
   const hasThumb = Boolean(status.thumbUrl && !isPlaceholderMediaUrl(status.thumbUrl));
   const shouldKeepPolling = status.status !== 'failed' && (status.status !== 'completed' || !hasVideo || !hasThumb);
@@ -85,6 +70,7 @@ export function applyGenerationPollToRender(
   render: LocalRender,
   projection: GenerationPollProjection
 ): LocalRender {
+  if (isStaleGenerationUpdate(render, projection.status)) return render;
   const nextStatus = projection.status.status ?? render.status;
   const nextPaymentStatus = projection.status.paymentStatus ?? render.paymentStatus;
   const nextFailedAt =
@@ -95,6 +81,7 @@ export function applyGenerationPollToRender(
   return {
     ...render,
     status: nextStatus,
+    observation: mergeGenerationObservation(render.observation, projection.status.observation),
     progress: projection.status.progress ?? render.progress,
     readyVideoUrl: projection.status.videoUrl ?? render.readyVideoUrl,
     videoUrl: projection.status.videoUrl ?? render.videoUrl ?? render.readyVideoUrl,
@@ -117,8 +104,10 @@ export function applyGenerationPollToSelectedPreview(
     return current;
   }
 
+  if (isStaleGenerationUpdate(current, projection.status)) return current;
   return {
     ...current,
+    observation: mergeGenerationObservation(current.observation, projection.status.observation),
     status: projection.status.status ?? current.status,
     id: projection.jobId,
     localKey: projection.localKey,

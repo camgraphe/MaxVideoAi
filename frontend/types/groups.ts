@@ -1,3 +1,4 @@
+import type { GenerationObservation } from '@/lib/generation-observation';
 import type { Job } from '@/types/jobs';
 
 export type GroupSource = 'active' | 'history';
@@ -22,6 +23,8 @@ export interface GroupMemberSummary {
   aspectRatio?: string | null;
   prompt?: string | null;
   status?: 'pending' | 'completed' | 'failed';
+  observation?: GenerationObservation;
+  etaSource?: 'observed' | 'heuristic';
   progress?: number | null;
   message?: string | null;
   etaLabel?: string | null;

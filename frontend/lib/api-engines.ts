@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import useSWR from 'swr';
 import type { EnginesResponse } from '@/types/engines';
 import { authFetch } from '@/src/lib/authFetch';
@@ -36,13 +37,10 @@ export function useEngines(category: EngineCategory = 'video', options?: UseEngi
   if (category !== 'video') {
     params.set('category', category);
   }
-  if (options?.includeAverages) {
-    params.set('includeAverages', '1');
-  }
   const query = params.size > 0 ? `?${params.toString()}` : '';
-  return useSWR<EnginesResponse>(
+  const catalog = useSWR<EnginesResponse>(
     enabled && cachePrincipal
-      ? ['engines', cachePrincipal, category, options?.includeAverages ? 'avg' : 'base']
+      ? ['engines', cachePrincipal, category, 'base']
       : null,
     async () => {
       try {
@@ -72,4 +70,24 @@ export function useEngines(category: EngineCategory = 'video', options?: UseEngi
       dedupingInterval: 5 * 60 * 1000,
     }
   );
+  const { data: timings } = useSWR<{ averages: Record<string, number>; samples?: Record<string, number>; source?: string }>(
+    enabled && cachePrincipal && options?.includeAverages && category !== 'image'
+      ? ['engine-averages', cachePrincipal, category] : null,
+    async () => {
+      const response = await fetch(`/api/engines/averages?category=${category}`, { credentials: 'omit', cache: 'no-store' });
+      if (!response.ok) throw new Error('Engine averages unavailable');
+      return response.json();
+    },
+    { dedupingInterval: 5 * 60 * 1000, shouldRetryOnError: false }
+  );
+  const data = useMemo(() => {
+    if (!catalog.data || !timings || timings.source !== 'completion_event') return catalog.data;
+    return { ...catalog.data, engines: catalog.data.engines.map((engine) => ({
+      ...engine,
+      avgDurationMs: timings.averages?.[engine.id] ?? null,
+      durationSampleCount: timings.samples?.[engine.id] ?? null,
+      durationSource: 'completion_event' as const,
+    })) };
+  }, [catalog.data, timings]);
+  return { ...catalog, data };
 }

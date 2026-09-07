@@ -17,7 +17,7 @@ import type { GenerateBillingPreflight } from '@/app/api/generate/_lib/billing-p
 import type { FalInputSummary } from '@/app/api/generate/_lib/fal-request';
 import type { GenerateRequestOptions } from '@/app/api/generate/_lib/request-options';
 import type { GenerateRouteContext } from '@/app/api/generate/_lib/route-context';
-import type { GenerateRouteMetricOptions, GenerateRouteMetricStatus } from '@/app/api/generate/_lib/metric-logger';
+import { terminalGenerateMetricStatus, type GenerateRouteMetricOptions, type GenerateRouteMetricStatus } from '@/app/api/generate/_lib/metric-logger';
 import type { WalletReservation } from '@/server/generations/initial-job-reservation';
 import type { EngineInputSchema } from '@/types/engines';
 import { executeVideoGenerationLifecycle } from './video-generation-lifecycle';
@@ -463,7 +463,9 @@ export async function executePreparedVideoGeneration(params: ExecutePreparedVide
           localKey,
         },
       });
-      logMetric(status === 'failed' ? 'failed' : 'completed', {
+      // Accepted was already logged at reservation. Nonterminal submissions are not completed renders.
+      const metricStatus = terminalGenerateMetricStatus(status);
+      if (metricStatus) logMetric(metricStatus, {
         jobId,
         meta: {
           providerJobId,

@@ -1,3 +1,4 @@
+import { generationStage, isStaleGenerationUpdate, mergeGenerationObservation, normalizeGenerationObservation } from '@/lib/generation-observation';
 import { useEffect, useRef, useState } from 'react';
 import useSWRInfinite from 'swr/infinite';
 import { authFetch } from '@/lib/authFetch';
@@ -39,6 +40,7 @@ function normalizeJobFromApi(job: Job): Job {
 
   return {
     ...job,
+    observation: normalizeGenerationObservation(job.observation) ?? { stage: generationStage(job.status) },
     status,
     progress,
     message,
@@ -229,11 +231,12 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
                 typeof detail.progress === 'number' && Number.isFinite(detail.progress)
                   ? Math.max(0, Math.min(100, detail.progress))
                   : undefined;
+              if (isStaleGenerationUpdate(job, detail)) return job;
               const next = {
                 ...job,
                 status: detail.status ?? job.status,
                 progress:
-                  typeof progressFromDetail === 'number' && progressFromDetail > 0
+                  typeof progressFromDetail === 'number' && Number.isFinite(progressFromDetail)
                     ? progressFromDetail
                     : job.progress,
                 videoUrl: detail.videoUrl ?? job.videoUrl,
@@ -251,6 +254,7 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
                 heroRenderId: detail.heroRenderId ?? job.heroRenderId,
                 localKey: detail.localKey ?? job.localKey,
                 message: detail.message ?? job.message,
+                observation: mergeGenerationObservation(job.observation, detail.observation),
                 etaSeconds: detail.etaSeconds ?? job.etaSeconds,
                 etaLabel: detail.etaLabel ?? job.etaLabel,
               };
@@ -355,7 +359,8 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
           return;
         }
 
-        const merged: Job = { ...existing, ...job };
+        if (isStaleGenerationUpdate(existing, job)) return;
+        const merged: Job = { ...existing, ...job, observation: mergeGenerationObservation(existing.observation, job.observation) };
         if (job.thumbUrl == null && existing.thumbUrl != null) merged.thumbUrl = existing.thumbUrl;
         if (job.videoUrl == null && existing.videoUrl != null) merged.videoUrl = existing.videoUrl;
         if (job.audioUrl == null && existing.audioUrl != null) merged.audioUrl = existing.audioUrl;

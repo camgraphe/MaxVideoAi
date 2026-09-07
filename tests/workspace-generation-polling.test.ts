@@ -40,7 +40,7 @@ function render(overrides: Partial<LocalRender> = {}): LocalRender {
   };
 }
 
-test('projectGenerationPollStatus defers completed videos until minReadyAt', () => {
+test('projectGenerationPollStatus shows completed videos immediately despite a legacy minReadyAt', () => {
   const target = render({ readyVideoUrl: 'https://cdn.example.com/previous.mp4' });
   const projection = projectGenerationPollStatus({
     status: {
@@ -56,9 +56,9 @@ test('projectGenerationPollStatus defers completed videos until minReadyAt', () 
     now: 5_000,
   });
 
-  assert.equal(projection.deferUntilReady, true);
-  assert.equal(projection.nextPollDelayMs, 5_000);
-  assert.equal(projection.shouldApplyState, false);
+  assert.equal(projection.deferUntilReady, false);
+  assert.equal(projection.nextPollDelayMs, null);
+  assert.equal(projection.shouldApplyState, true);
   assert.equal(projection.progressMessage, 'Ready');
 });
 

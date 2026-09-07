@@ -80,7 +80,7 @@ export function createEnginesGetHandler(
           }
         }
       }
-      const averageMap = new Map(averages.map((entry) => [entry.engineId, entry.averageDurationMs]));
+      const averageMap = new Map(averages.map((entry) => [entry.engineId, entry]));
       const publicWorkspaceEngines = publicEngines.map((engine) => (
         isMinimaxH3MaxEngineId(engine.id)
           ? workspaceModeProjection(engine, engine.modes.filter(isMinimaxH3MaxRuntimeModeAvailable) as Mode[])
@@ -90,7 +90,9 @@ export function createEnginesGetHandler(
       ));
       const payload = [...publicWorkspaceEngines, ...privateEngines].map((engine) => ({
         ...engine,
-        avgDurationMs: averageMap.get(engine.id) ?? null,
+        avgDurationMs: averageMap.get(engine.id)?.averageDurationMs ?? null,
+        durationSampleCount: averageMap.get(engine.id)?.completedCount ?? null,
+        durationSource: averageMap.get(engine.id)?.source ?? null,
       }));
       return NextResponse.json(
         { ok: true, engines: payload, engineScores },

@@ -78,6 +78,10 @@ export function GroupedJobCardPreviewGrid({
                 className="absolute inset-0"
                 state={memberStatus === 'failed' ? 'error' : 'pending'}
                 message={member.message}
+                observation={member.observation}
+                startedAt={Date.parse(member.createdAt)}
+                etaSeconds={member.etaSeconds}
+                etaSource={member.etaSource}
                 tone="light"
                 tileIndex={index + 1}
                 tileCount={previewCount}

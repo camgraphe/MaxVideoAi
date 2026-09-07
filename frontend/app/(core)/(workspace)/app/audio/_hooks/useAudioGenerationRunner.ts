@@ -110,6 +110,7 @@ export function useAudioGenerationRunner({
 }: UseAudioGenerationRunnerParams) {
   return useCallback(async () => {
     if (!canGenerate) return;
+    const startedAt = Date.now();
     const pendingId = `aud_pending_${crypto.randomUUID()}`;
     setPendingAudioGenerations((previous) => [
       {
@@ -156,6 +157,8 @@ export function useAudioGenerationRunner({
       };
       setResult(nextResult);
       setActiveJob({
+        startedAt,
+        observation: { stage: response.status === 'pending' ? 'pending' : response.status },
         jobId: response.jobId,
         status: response.status,
         progress: response.progress,

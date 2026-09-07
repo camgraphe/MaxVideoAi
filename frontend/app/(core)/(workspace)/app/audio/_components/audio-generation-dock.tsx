@@ -7,7 +7,6 @@ import { UIIcon } from '@/components/ui/UIIcon';
 import type { AudioWorkspaceCopy } from '../copy';
 
 export function AudioGenerationDock({
-  activeProgress,
   canGenerate,
   copy,
   durationLabel,
@@ -15,7 +14,6 @@ export function AudioGenerationDock({
   onGenerate,
   priceLabel,
 }: {
-  activeProgress: number | null;
   canGenerate: boolean;
   copy: AudioWorkspaceCopy;
   durationLabel: string | null;
@@ -47,11 +45,7 @@ export function AudioGenerationDock({
               <p className="text-sm font-semibold text-text-primary">{priceLabel}</p>
             </div>
           </div>
-          {activeProgress == null ? null : (
-            <div className="rounded-[9px] border border-brand/25 bg-brand-soft px-3 py-2 text-sm font-semibold text-brand">
-              {activeProgress}%
-            </div>
-          )}
+
         </div>
 
         <div className="flex flex-col gap-2 sm:min-w-[360px] sm:flex-row sm:items-center sm:justify-end">

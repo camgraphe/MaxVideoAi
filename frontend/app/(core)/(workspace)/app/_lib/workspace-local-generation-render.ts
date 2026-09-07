@@ -46,12 +46,12 @@ export function prepareLocalGenerationRender({
   const localKey = `local_${batchId}_${iterationIndex + 1}`;
   const id = localKey;
   const thumb = resolveRenderThumb({ aspectRatio: form.aspectRatio });
-  const { seconds: etaSeconds, label: etaLabel } = getRenderEta(selectedEngine, effectiveDurationSec);
+  const { seconds: etaSeconds, label: etaLabel, source: etaSource } = getRenderEta(selectedEngine, effectiveDurationSec);
   const friendlyMessage = iterationCount > 1 ? formatTakeLabel(iterationIndex + 1, iterationCount) : '';
   const startedAt = now ?? Date.now();
-  const minEtaSeconds = Math.min(Math.max(etaSeconds ?? 4, 0), 8);
-  const minDurationMs = Math.max(1200, minEtaSeconds * 1000);
-  const minReadyAt = startedAt + minDurationMs;
+  // Legacy persisted fields remain readable, but never delay available output.
+  const minDurationMs = 0;
+  const minReadyAt = startedAt;
   const currency = preflight?.pricing?.currency ?? preflight?.currency ?? 'USD';
 
   const initialRender: LocalRender = {
@@ -66,7 +66,9 @@ export function prepareLocalGenerationRender({
     aspectRatio: form.aspectRatio,
     durationSec: effectiveDurationSec,
     prompt: effectivePrompt,
-    progress: 5,
+    progress: 0,
+    observation: { stage: 'submitting' },
+    etaSource,
     message: friendlyMessage,
     status: 'pending',
     thumbUrl: thumb,
@@ -104,6 +106,9 @@ export function prepareLocalGenerationRender({
       aspectRatio: form.aspectRatio,
       thumbUrl: thumb,
       progress: initialRender.progress,
+      observation: initialRender.observation,
+      startedAt,
+      etaSource,
       message: friendlyMessage,
       priceCents: initialRender.priceCents,
       currency: initialRender.currency,

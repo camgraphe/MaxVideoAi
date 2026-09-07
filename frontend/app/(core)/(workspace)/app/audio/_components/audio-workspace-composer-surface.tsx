@@ -32,7 +32,6 @@ interface AudioWorkspaceComposerSurfaceProps {
   activeJobId: string | null;
   previewJob?: AudioWorkspacePreviewProps['activeJob'];
   previewResult?: AudioWorkspacePreviewProps['result'];
-  activeProgress: number | null;
   canGenerate: boolean;
   composerIsScript: boolean;
   composerLabel: string;
@@ -117,7 +116,6 @@ export function AudioWorkspaceComposerSurface({
   activeJobId,
   previewJob,
   previewResult,
-  activeProgress,
   canGenerate,
   composerIsScript,
   composerLabel,
@@ -332,7 +330,6 @@ export function AudioWorkspaceComposerSurface({
       </div>
 
       <AudioGenerationDock
-        activeProgress={activeProgress}
         canGenerate={canGenerate}
         copy={copy}
         durationLabel={dockDurationLabel}

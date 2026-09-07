@@ -1,3 +1,4 @@
+import type { GenerationObservation } from '@/lib/generation-observation';
 import type { PricingSnapshot } from '@/types/engines';
 import type { BillingProductKey, JobSurface } from '@/types/billing';
 
@@ -30,6 +31,8 @@ export interface Job {
   heroRenderId?: string | null;
   localKey?: string | null;
   status?: string;
+  observation?: GenerationObservation;
+  etaSource?: 'observed' | 'heuristic';
   progress?: number;
   message?: string | null;
   etaSeconds?: number | null;

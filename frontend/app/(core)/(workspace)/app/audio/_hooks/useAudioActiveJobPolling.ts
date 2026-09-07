@@ -1,3 +1,4 @@
+import { degradedGenerationObservation, isStaleGenerationUpdate, mergeGenerationObservation } from '@/lib/generation-observation';
 import { useEffect, type Dispatch, type SetStateAction } from 'react';
 import { getJobStatus } from '@/lib/api';
 import { inferOutputKind } from '../_lib/audio-workspace-helpers';
@@ -17,14 +18,19 @@ export function useAudioActiveJobPolling({
   setActiveJob,
   setResult,
 }: UseAudioActiveJobPollingParams) {
+  const jobId = activeJob?.jobId;
+  const pending = activeJob?.status === 'pending' || activeJob?.status === 'running';
   useEffect(() => {
-    if (!activeJob || (activeJob.status !== 'pending' && activeJob.status !== 'running')) {
+    if (!jobId || !pending) {
       return;
     }
     let cancelled = false;
+    let inFlight = false;
     const poll = async () => {
+      if (inFlight) return;
+      inFlight = true;
       try {
-        const status = await getJobStatus(activeJob.jobId);
+        const status = await getJobStatus(jobId);
         if (cancelled) return;
         const nextOutputKind = inferOutputKind({
           videoUrl: status.videoUrl ?? null,
@@ -34,13 +40,17 @@ export function useAudioActiveJobPolling({
           jobId: status.jobId,
           status: status.videoUrl || status.audioUrl ? 'completed' : status.status,
           progress: status.progress,
+          observation: status.observation,
+          startedAt: status.createdAt ? Date.parse(status.createdAt) : undefined,
+          etaSeconds: status.etaSeconds,
           message: status.message ?? null,
           videoUrl: status.videoUrl ?? null,
           audioUrl: status.audioUrl ?? null,
           thumbUrl: status.thumbUrl ?? null,
           outputKind: nextOutputKind,
         };
-        setActiveJob(nextStatus);
+        setActiveJob((current) => !current || current.jobId !== jobId || isStaleGenerationUpdate(current, nextStatus)
+          ? current : { ...current, ...nextStatus, observation: mergeGenerationObservation(current.observation, nextStatus.observation), startedAt: current.startedAt ?? nextStatus.startedAt });
         if (status.videoUrl || status.audioUrl) {
           setResult({
             jobId: status.jobId,
@@ -51,7 +61,11 @@ export function useAudioActiveJobPolling({
           });
         }
       } catch {
-        // Keep current state and retry on the next interval.
+        if (cancelled) return;
+        setActiveJob((current) => current?.jobId === jobId && (current.status === 'pending' || current.status === 'running')
+          ? { ...current, observation: degradedGenerationObservation(current.observation) } : current);
+      } finally {
+        inFlight = false;
       }
     };
 
@@ -64,5 +78,5 @@ export function useAudioActiveJobPolling({
       cancelled = true;
       window.clearInterval(interval);
     };
-  }, [activeJob, setActiveJob, setResult]);
+  }, [jobId, pending, setActiveJob, setResult]);
 }
