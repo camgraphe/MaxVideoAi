@@ -1,6 +1,7 @@
 import { getBaseEnginesByCategory } from '@/lib/engines';
 import type { AspectRatio, EngineCaps, Resolution } from '@/types/engines';
 import type {
+  WorkspaceBlockMode,
   WorkspaceEdgeKind,
   WorkspaceGenerationPresetId,
   WorkspaceModelCapability,
@@ -11,6 +12,7 @@ import type {
 } from '../workspace-types';
 import {
   ALL_INPUT_KINDS,
+  blockModesForEngineModes,
   inputConnectorsFor,
   inputConnectorsFromKinds,
   optionalInputsFor,
@@ -41,6 +43,32 @@ function familyForEngine(engine: EngineCaps): WorkspaceModelCapability['family']
   return 'video';
 }
 
+function controlForEngineField(engineField: ReturnType<typeof fieldsFor>[number]): WorkspacePolicyControlField | null {
+  const key = fieldSearchKey(engineField);
+  if (key.includes('aspectratio')) return 'aspectRatio';
+  if (key === 'resolution' || key.includes('outputresolution') || key.includes('imagesize')) return 'resolution';
+  if (key === 'duration' || key.includes('durationseconds')) return 'durationSec';
+  if (key === 'fps' || key.includes('framespersecond')) return 'fps';
+  return null;
+}
+
+function schemaValuesForControl(engine: EngineCaps, control: WorkspacePolicyControlField): string[] {
+  const field = fieldsFor(engine).find((candidate) => controlForEngineField(candidate) === control);
+  return field?.type === 'enum' && field.values?.length ? field.values : [];
+}
+
+function controlDefaultsForEngine(
+  engine: EngineCaps,
+): Partial<Record<WorkspacePolicyControlField, string | number | boolean>> {
+  const defaults: Partial<Record<WorkspacePolicyControlField, string | number | boolean>> = {};
+  for (const field of fieldsFor(engine)) {
+    const control = controlForEngineField(field);
+    if (!control || field.default === undefined) continue;
+    defaults[control] = field.default;
+  }
+  return defaults;
+}
+
 function supportedDurations(engine: EngineCaps): number[] {
   const values = new Set<number>();
   Object.values(engine.modeCaps ?? {}).forEach((caps) => {
@@ -64,6 +92,10 @@ function supportedDurations(engine: EngineCaps): number[] {
 }
 
 function supportedAspectRatios(engine: EngineCaps): AspectRatio[] {
+  const schemaValues = schemaValuesForControl(engine, 'aspectRatio');
+  if (schemaValues.length) return schemaValues as AspectRatio[];
+  const modeValues = Object.values(engine.modeCaps ?? {}).flatMap((caps) => caps?.aspectRatio ?? []);
+  if (modeValues.length) return Array.from(new Set(modeValues)) as AspectRatio[];
   const ratios = new Set<AspectRatio>(engine.aspectRatios);
   Object.values(engine.modeCaps ?? {}).forEach((caps) => {
     caps?.aspectRatio?.forEach((ratio) => ratios.add(ratio as AspectRatio));
@@ -72,6 +104,10 @@ function supportedAspectRatios(engine: EngineCaps): AspectRatio[] {
 }
 
 function supportedResolutions(engine: EngineCaps): Resolution[] {
+  const schemaValues = schemaValuesForControl(engine, 'resolution');
+  if (schemaValues.length) return schemaValues as Resolution[];
+  const modeValues = Object.values(engine.modeCaps ?? {}).flatMap((caps) => caps?.resolution ?? []);
+  if (modeValues.length) return Array.from(new Set(modeValues)) as Resolution[];
   const resolutions = new Set<Resolution>(engine.resolutions);
   Object.values(engine.modeCaps ?? {}).forEach((caps) => {
     caps?.resolution?.forEach((resolution) => resolutions.add(resolution as Resolution));
@@ -80,6 +116,14 @@ function supportedResolutions(engine: EngineCaps): Resolution[] {
 }
 
 function supportedFps(engine: EngineCaps): number[] {
+  const schemaValues = schemaValuesForControl(engine, 'fps')
+    .map((value) => Number.parseInt(value, 10))
+    .filter(Number.isFinite);
+  if (schemaValues.length) return Array.from(new Set(schemaValues)).sort((a, b) => a - b);
+  const modeValues = Object.values(engine.modeCaps ?? {}).flatMap((caps) => (
+    Array.isArray(caps?.fps) ? caps.fps : typeof caps?.fps === 'number' ? [caps.fps] : []
+  ));
+  if (modeValues.length) return Array.from(new Set(modeValues)).sort((a, b) => a - b);
   const fps = new Set<number>(engine.fps);
   Object.values(engine.modeCaps ?? {}).forEach((caps) => {
     if (Array.isArray(caps?.fps)) {
@@ -89,6 +133,27 @@ function supportedFps(engine: EngineCaps): number[] {
     }
   });
   return Array.from(fps).sort((a, b) => a - b);
+}
+
+function controlModesForEngine(
+  engine: EngineCaps,
+): Partial<Record<WorkspacePolicyControlField, WorkspaceBlockMode[]>> {
+  const modesByControl: Partial<Record<WorkspacePolicyControlField, Set<WorkspaceBlockMode>>> = {};
+  for (const field of fieldsFor(engine)) {
+    if (!field.modes?.length) continue;
+    const control = controlForEngineField(field);
+    const blockModes = blockModesForEngineModes(field.modes);
+    if (!control || !blockModes?.length) continue;
+    const current = modesByControl[control] ?? new Set<WorkspaceBlockMode>();
+    blockModes.forEach((mode) => current.add(mode));
+    modesByControl[control] = current;
+  }
+  const result: Partial<Record<WorkspacePolicyControlField, WorkspaceBlockMode[]>> = {};
+  for (const [control, modes] of Object.entries(modesByControl)) {
+    if (!modes) continue;
+    result[control as WorkspacePolicyControlField] = Array.from(modes);
+  }
+  return result;
 }
 
 function outputCountForEngine(engine: EngineCaps): WorkspaceOutputCount {
@@ -149,6 +214,7 @@ function buildCapability(engine: EngineCaps): WorkspaceModelCapability {
   const supportsAudio = engine.audio || hasFieldType(engine, 'audio') || hasMode(engine, ['a2v']);
   const renderOptions = resolveWorkspaceRenderOptions(engine);
   const controlFields = controlFieldsForCapability({ family: generationFamily, outputKind, renderOptions });
+  const controlModes = controlModesForEngine(engine);
   const pricingRelevantFields = pricingRelevantFieldsForCapability({ family: generationFamily, outputKind, renderOptions });
   const outputCount = outputCountForEngine(engine);
   if (typeof outputCount !== 'number' || outputCount > 1) {
@@ -214,7 +280,11 @@ function buildCapability(engine: EngineCaps): WorkspaceModelCapability {
     unsupported_inputs: ALL_INPUT_KINDS.filter((kind) => !supportedInputs.has(kind)),
     output_count: outputCount,
     control_fields: controlFields,
+    control_modes: controlModes,
+    control_defaults: controlDefaultsForEngine(engine),
     pricing_relevant_fields: pricingRelevantFields,
+    reference_budget: engine.inputSchema?.referenceBudget,
+    input_constraints: engine.inputSchema?.constraints,
   };
 }
 

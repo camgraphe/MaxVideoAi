@@ -1501,6 +1501,7 @@ test('canvas toolbar groups creation tools by media workflow', async ({ page }) 
   await expect(videoMenu.locator('[data-canvas-toolbar-block-id="video"]')).toContainText('Video');
   await expect(videoMenu.locator('[data-canvas-toolbar-block-id="generate-video"]')).toContainText('Generate video');
   await expect(videoMenu.locator('[data-canvas-toolbar-block-id="modify-video"]')).toContainText('Modify video');
+  await expect(videoMenu.locator('[data-canvas-toolbar-block-id="extend-video"]')).toContainText('Extend video');
   await expect(videoMenu.locator('[data-canvas-toolbar-block-id="storyboard-video"]')).toHaveCount(0);
   await expect(videoMenu.locator('[data-canvas-toolbar-block-id="character-video"]')).toHaveCount(0);
   await expect(videoMenu.locator('[data-canvas-toolbar-block-id="upscale-video"]')).toContainText('Upscale video');
@@ -3375,6 +3376,40 @@ test('Studio native video connectors follow engine switching', async ({ page }) 
   assertNoEditorClientErrors(errors);
 });
 
+test('Studio exposes certified Seedance 2.5 and MiniMax H3 controls from their current engine schemas', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+
+  await openMinimalEditorWorkspace(page);
+  const node = page.locator('.react-flow__node-shot').first();
+  const trigger = node.locator('[data-studio-engine-picker-trigger="node"]');
+  await expect(node).toBeVisible();
+
+  const selectEngine = async (query: string, modelId: string) => {
+    await trigger.click();
+    const search = page.getByPlaceholder('Search engines...');
+    await search.fill(query);
+    const option = page.locator(`[data-studio-engine-option="${modelId}"]`);
+    await expect(option).toBeVisible();
+    await expect(option).toHaveAttribute('data-studio-engine-disabled', 'false');
+    await option.click();
+  };
+
+  await selectEngine('Seedance 2.5', 'seedance-2-5');
+  await expect(trigger).toHaveText('Seedance 2.5');
+  await expect(node.locator('[data-shot-connector-row="input"][data-shot-connector-kind="video_reference"]')).toContainText('10/10');
+
+  await selectEngine('MiniMax H3', 'minimax-h3');
+  await expect(trigger).toHaveText('MiniMax H3');
+  const resolutionSelect = node.locator('label').filter({ hasText: 'Resolution' }).locator('select');
+  await expect(resolutionSelect).toBeVisible();
+  expect(await resolutionSelect.locator('option').allTextContents()).toEqual(['768P', '2K', '4K']);
+  const audioControl = node.locator('label').filter({ hasText: 'Audio' });
+  await expect(audioControl).toContainText('Included');
+  await expect(audioControl.locator('button')).toHaveCount(0);
+
+  assertNoEditorClientErrors(errors);
+});
+
 test('Studio inspector engine picker selects through the shared node behavior', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
 
@@ -3548,7 +3583,12 @@ for (const scenario of [
     const listbox = page.getByRole('listbox');
     await expectWithinViewport(page, listbox, `${scenario.theme} picker at ${scenario.viewport.width}x${scenario.viewport.height}`);
 
+    const families = page.locator('[data-studio-engine-family]');
     const disabledOption = page.locator('[data-studio-engine-disabled="true"]').first();
+    for (let index = 0; index < await families.count(); index += 1) {
+      await families.nth(index).click();
+      if (await disabledOption.count()) break;
+    }
     await expect(disabledOption).toBeVisible();
     const disabledReason = (await disabledOption.getAttribute('title'))?.trim();
     expect(disabledReason).toBeTruthy();

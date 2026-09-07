@@ -64,6 +64,7 @@ export type PersistedWorkspaceState = {
   timelinePanelHeight?: number | null;
   timelineInPointSec?: number | null;
   timelineOutPointSec?: number | null;
+  compatibilityAdjustmentCount?: number;
 };
 
 export type WorkspaceSequenceRecord = {

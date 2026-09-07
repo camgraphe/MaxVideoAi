@@ -59,7 +59,10 @@ import {
   compatibleCapabilitiesForShot,
   isToolOnlyPreset,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-shot-inspector-helpers';
-import { buildWorkspaceShotGenerateRequest } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-generation';
+import {
+  buildWorkspaceShotGenerateRequest,
+  workspaceGenerationMediaInputsFromGraph,
+} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-generation';
 import {
   getWorkspaceBlockCompatibleCapabilities,
   resolveWorkspaceBlockPolicy,
@@ -773,6 +776,7 @@ test('Generate Video request routing follows the policy workflow for storyboard,
     ...capability,
     id: 'test-first-last-fallback-video',
     modes: ['i2v', 'r2v'] as const,
+    input_connectors: capability.input_connectors.filter((connector) => connector.kind !== 'end_image'),
   };
   assert.equal(getWorkspaceBlockCompatibleCapabilities({
     settings: { ...generateVideo, modelId: firstLastFallbackCapability.id },
@@ -875,7 +879,7 @@ test('legacy modify video shots without preset ids retain the V1 model allowlist
     capabilities,
   }).map((capability) => capability.id);
 
-  assert.deepEqual(compatibleModelIds, ['luma-ray-3-2']);
+  assert.deepEqual(compatibleModelIds, ['seedance-2-5', 'luma-ray-3-2']);
 });
 
 test('Studio V1 input connectors disable inputs unsupported by the selected real engine', () => {
@@ -1179,6 +1183,63 @@ test('Generate Video does not send inactive mode media fields in a text-to-video
   assert.equal(request.mode, 't2v');
   assert.equal('inputs' in request, false);
   assert.equal('audioUrl' in request, false);
+});
+
+test('graph media inputs retain asset provenance before provider slot assignment', () => {
+  const shotNode: WorkspaceGraphNode = {
+    id: 'shot-provenance',
+    type: 'shot',
+    position: { x: 0, y: 0 },
+    data: {
+      kind: 'shot',
+      title: 'Reference shot',
+      shot: defaultShotForPreset('generate-video'),
+    },
+  };
+  const imageNode: WorkspaceGraphNode = {
+    id: 'image-provenance',
+    type: 'asset',
+    position: { x: 0, y: 0 },
+    data: {
+      kind: 'asset-image',
+      title: 'Character reference',
+      asset: {
+        id: 'asset-character',
+        kind: 'image',
+        filename: 'character.png',
+        subtitle: 'Image',
+        url: 'https://cdn.example.com/character.png',
+        mimeType: 'image/png',
+        sizeBytes: 4096,
+        dimensions: '1024x1536',
+      },
+    },
+  };
+  const edges: WorkspaceGraphEdge[] = [{
+    id: 'reference-provenance',
+    source: imageNode.id,
+    target: shotNode.id,
+    sourceHandle: 'reference',
+    targetHandle: 'reference',
+    data: { kind: 'reference', label: 'Reference', color: '#7c3aed' },
+  }];
+
+  assert.deepEqual(workspaceGenerationMediaInputsFromGraph({
+    nodes: [shotNode, imageNode],
+    edges,
+    shotNodeId: shotNode.id,
+  }), [{
+    semanticKind: 'reference',
+    kind: 'image',
+    url: 'https://cdn.example.com/character.png',
+    name: 'character.png',
+    assetId: 'asset-character',
+    mimeType: 'image/png',
+    sizeBytes: 4096,
+    width: 1024,
+    height: 1536,
+    durationSec: undefined,
+  }]);
 });
 
 test('Generate Video never synthesizes absent non-prompt required connectors as supported', () => {

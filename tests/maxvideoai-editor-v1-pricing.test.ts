@@ -9,11 +9,14 @@ import { resolveWorkspaceBlockPolicy } from '../frontend/app/(core)/(workspace)/
 import {
   blockedWorkspacePricingEstimate,
   buildWorkspaceImageEstimateRequest,
+  buildWorkspaceShotPreflightRequest,
   buildWorkspaceStoryboardImageEstimateRequest,
   formatWorkspaceImagePricingEstimate,
   readyWorkspacePricingEstimate,
   unavailableWorkspacePricingEstimate,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-pricing';
+import { resolveWorkspaceGenerationFacts } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-generation-facts';
+import { getWorkspaceModelCapability } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/model-capability-registry';
 import {
   buildWorkspaceToolBillingProductRequest,
   buildWorkspaceToolPricingEstimate,
@@ -34,6 +37,126 @@ test('shared pricing constructors emit normalized V1 states', () => {
   assert.equal(blockedWorkspacePricingEstimate(validation).status, 'blocked');
   assert.equal(readyWorkspacePricingEstimate(12).status, 'ready');
   assert.equal(unavailableWorkspacePricingEstimate('Chat pricing is unavailable').status, 'error');
+});
+
+test('video pricing and submission facts share mode, media presence, and reference counts', () => {
+  const settings = {
+    ...defaultShot('generate-video'),
+    modelId: 'minimax-h3',
+    workflowType: 'storyboard_to_video' as const,
+    resolution: '2K' as const,
+  };
+  const capability = getWorkspaceModelCapability(settings.modelId);
+  assert.ok(capability);
+  const connectedInputs = ['prompt', 'reference', 'video_reference', 'audio'] as const;
+  const mediaInputs = [
+    ...Array.from({ length: 6 }, (_, index) => ({
+      semanticKind: 'reference' as const,
+      kind: 'image' as const,
+      url: `https://example.com/reference-${index + 1}.png`,
+    })),
+    {
+      semanticKind: 'video_reference' as const,
+      kind: 'video' as const,
+      url: 'https://example.com/motion.mp4',
+      durationSec: 5,
+    },
+    {
+      semanticKind: 'audio' as const,
+      kind: 'audio' as const,
+      url: 'https://example.com/dialogue.wav',
+      durationSec: 4,
+    },
+  ];
+
+  const facts = resolveWorkspaceGenerationFacts({
+    settings,
+    capability,
+    connectedInputs,
+    mediaInputs,
+  });
+  const preflight = buildWorkspaceShotPreflightRequest({
+    settings,
+    capability,
+    connectedInputs: [...connectedInputs],
+    mediaInputs,
+  });
+
+  assert.equal(facts.mode, 'ref2v');
+  assert.equal(facts.referenceImageCount, 6);
+  assert.equal(facts.hasVideoInput, true);
+  assert.deepEqual(facts.referenceBudget, { used: 8, maximum: 12, exceeded: false });
+  assert.equal(preflight.mode, facts.mode);
+  assert.equal(preflight.referenceImageCount, facts.referenceImageCount);
+  assert.equal(preflight.hasVideoInput, facts.hasVideoInput);
+});
+
+test('MiniMax H3 generation facts enforce reference duration, dependency, and shared-budget limits', () => {
+  const settings = {
+    ...defaultShot('generate-video'),
+    modelId: 'minimax-h3',
+    workflowType: 'storyboard_to_video' as const,
+    resolution: '2K' as const,
+  };
+  const capability = getWorkspaceModelCapability(settings.modelId);
+  assert.ok(capability);
+
+  const tooShort = resolveWorkspaceGenerationFacts({
+    settings,
+    capability,
+    connectedInputs: ['prompt', 'reference', 'video_reference'],
+    mediaInputs: [
+      { semanticKind: 'reference', kind: 'image', url: 'https://example.com/visual.png' },
+      { semanticKind: 'video_reference', kind: 'video', url: 'https://example.com/short.mp4', durationSec: 1 },
+    ],
+  });
+  assert.equal(tooShort.issues.some((issue) => issue.code === 'file_duration' && /minimum/i.test(issue.message)), true);
+
+  const combined = resolveWorkspaceGenerationFacts({
+    settings,
+    capability,
+    connectedInputs: ['prompt', 'reference', 'video_reference', 'audio'],
+    mediaInputs: [
+      { semanticKind: 'reference', kind: 'image', url: 'https://example.com/visual.png' },
+      { semanticKind: 'video_reference', kind: 'video', url: 'https://example.com/video-1.mp4', durationSec: 8 },
+      { semanticKind: 'video_reference', kind: 'video', url: 'https://example.com/video-2.mp4', durationSec: 8 },
+      { semanticKind: 'audio', kind: 'audio', url: 'https://example.com/audio-1.wav', durationSec: 8 },
+      { semanticKind: 'audio', kind: 'audio', url: 'https://example.com/audio-2.wav', durationSec: 8 },
+    ],
+  });
+  assert.equal(combined.issues.filter((issue) => issue.code === 'combined_duration').length, 2);
+
+  const missingVisual = resolveWorkspaceGenerationFacts({
+    settings,
+    capability,
+    connectedInputs: ['prompt', 'reference', 'audio'],
+    mediaInputs: [
+      { semanticKind: 'audio', kind: 'audio', url: 'https://example.com/audio.wav', durationSec: 4 },
+    ],
+  });
+  assert.equal(missingVisual.issues.some((issue) => issue.code === 'visual_reference_required'), true);
+
+  const overBudget = resolveWorkspaceGenerationFacts({
+    settings,
+    capability,
+    connectedInputs: ['prompt', 'reference', 'video_reference', 'audio'],
+    mediaInputs: [
+      ...Array.from({ length: 9 }, (_, index) => ({
+        semanticKind: 'reference' as const,
+        kind: 'image' as const,
+        url: `https://example.com/image-${index}.png`,
+      })),
+      ...Array.from({ length: 3 }, (_, index) => ({
+        semanticKind: 'video_reference' as const,
+        kind: 'video' as const,
+        url: `https://example.com/video-${index}.mp4`,
+        durationSec: 2,
+      })),
+      { semanticKind: 'audio' as const, kind: 'audio' as const, url: 'https://example.com/audio.wav', durationSec: 2 },
+    ],
+  });
+  assert.deepEqual(overBudget.referenceBudget, { used: 13, maximum: 12, exceeded: true });
+  assert.equal(overBudget.issues.some((issue) => issue.code === 'reference_budget'), true);
 });
 
 test('ordinary image estimate quantity exactly matches one and four image generation payloads', () => {

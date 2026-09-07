@@ -250,6 +250,11 @@ export function useWorkspacePersistenceEffects({
       setTimelineInPointSec(persisted.timelineInPointSec ?? null);
       setTimelineOutPointSec(persisted.timelineOutPointSec ?? null);
       setCanvasRevision((value) => value + 1);
+      if (persisted.compatibilityAdjustmentCount) {
+        setNotice(formatNotice(studioNotices.workspaceSettingsAdjusted, {
+          count: persisted.compatibilityAdjustmentCount,
+        }));
+      }
     };
 
     const applyStoredProjectWorkspace = (project: StudioProjectStorageRecord) => {
@@ -411,6 +416,7 @@ export function useWorkspacePersistenceEffects({
     studioNotices.studioApiUnauthorized,
     studioNotices.studioApiUnavailable,
     studioNotices.projectLoadedCleanSequence,
+    studioNotices.workspaceSettingsAdjusted,
     timelineItemsRef,
     workspaceStorageKey,
   ]);

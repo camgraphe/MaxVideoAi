@@ -1,6 +1,13 @@
 import type { Edge, Node } from '@xyflow/react';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
-import type { AspectRatio, EngineAvailability, Mode, Resolution } from '@/types/engines';
+import type {
+  AspectRatio,
+  EngineAvailability,
+  EngineInputSchema,
+  EngineReferenceBudget,
+  Mode,
+  Resolution,
+} from '@/types/engines';
 import type {
   AudioIntensity,
   AudioLanguage,
@@ -86,6 +93,7 @@ export type WorkspaceBlockMode =
   | 'text-to-video'
   | 'tool'
   | 'video-edit'
+  | 'video-extend'
   | 'video-reframe';
 export type WorkspaceOutputMediaKind = 'audio' | 'image' | 'text' | 'video';
 export type WorkspaceAudioProvenance = 'none' | 'embedded' | 'external' | 'unknown';
@@ -176,6 +184,7 @@ export type WorkspaceToolSettings = {
 export type WorkspaceGenerationPresetId =
   | 'generate-video'
   | 'modify-video'
+  | 'extend-video'
   | 'storyboard'
   | 'character-builder'
   | 'angle'
@@ -240,6 +249,24 @@ export type WorkspaceAssetRecord = {
   audioProvenance?: WorkspaceAudioProvenance;
   durationSec?: number;
   dimensions?: string;
+  mimeType?: string;
+  sizeBytes?: number;
+  width?: number;
+  height?: number;
+};
+
+export type WorkspaceGenerationMediaInput = {
+  semanticKind: WorkspaceEdgeKind;
+  fieldId?: string;
+  kind: 'image' | 'video' | 'audio';
+  url: string;
+  name?: string;
+  assetId?: string;
+  mimeType?: string;
+  sizeBytes?: number;
+  width?: number;
+  height?: number;
+  durationSec?: number;
 };
 
 export type WorkspaceReferencePreview = {
@@ -332,6 +359,7 @@ export type WorkspaceInputConnector = {
   mutuallyExclusiveWith?: WorkspaceEdgeKind[];
   acceptedMediaKinds?: WorkspaceAcceptedMediaKind[];
   acceptedFormats?: string[];
+  minDurationSec?: number;
   maxDurationSec?: number;
   maxFileSizeMb?: number;
   disabledReason?: string;
@@ -398,7 +426,11 @@ export type WorkspaceModelCapability = {
   unsupported_inputs: WorkspaceEdgeKind[];
   output_count?: WorkspaceOutputCount;
   control_fields?: WorkspacePolicyControlField[];
+  control_modes?: Partial<Record<WorkspacePolicyControlField, WorkspaceBlockMode[]>>;
+  control_defaults?: Partial<Record<WorkspacePolicyControlField, string | number | boolean>>;
   pricing_relevant_fields?: WorkspacePolicyControlField[];
+  reference_budget?: EngineReferenceBudget;
+  input_constraints?: EngineInputSchema['constraints'];
 };
 
 export type WorkspaceShotValidation = {

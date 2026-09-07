@@ -25,6 +25,7 @@ import {
   workspaceConnectorSupportsBlockMode,
 } from './model-input-connectors';
 import { resolveWorkspaceEngineOperationalEligibility } from './workspace-engine-availability';
+import { isWorkspaceModelCertifiedForSettings } from './workspace-model-certification';
 
 export type { WorkspaceBlockMode } from '../workspace-types';
 
@@ -109,11 +110,16 @@ export function getWorkspaceBlockIntentCapabilities({
   settings: WorkspaceShotSettings;
   capabilities: WorkspaceModelCapability[];
 }): WorkspaceModelCapability[] {
+  const certifiedCapabilities = capabilities.filter((capability) => isWorkspaceModelCertifiedForSettings({
+    modelId: capability.id,
+    settings,
+    workflows: capability.workflows,
+  }));
   const singleEngineTool = isSingleEngineTool(settings);
-  if (singleEngineTool) return capabilities.filter((capability) => capability.id === singleEngineTool);
+  if (singleEngineTool) return certifiedCapabilities.filter((capability) => capability.id === singleEngineTool);
 
   if (settings.toolKind === 'angle') {
-    return capabilities.filter((capability) => (
+    return certifiedCapabilities.filter((capability) => (
       capability.family === 'image' &&
       capability.outputKind === 'image' &&
       capability.workflows.includes('angle_generation')
@@ -122,7 +128,7 @@ export function getWorkspaceBlockIntentCapabilities({
 
   const v1BlockContract = v1BlockContractFor(settings);
   if (v1BlockContract) {
-    return capabilities.filter((capability) => (
+    return certifiedCapabilities.filter((capability) => (
       capability.family === v1BlockContract.family &&
       capability.outputKind === v1BlockContract.outputKind &&
       v1BlockContract.workflows.some((workflow) => capability.workflows.includes(workflow)) &&
@@ -131,7 +137,7 @@ export function getWorkspaceBlockIntentCapabilities({
   }
 
   if (isModifyImage(settings)) {
-    return capabilities.filter((capability) => (
+    return certifiedCapabilities.filter((capability) => (
       capability.family === 'image' &&
       capability.outputKind === 'image' &&
       capability.workflows.includes('image_to_image')
@@ -139,7 +145,7 @@ export function getWorkspaceBlockIntentCapabilities({
   }
 
   if (isGenerateImage(settings)) {
-    return capabilities.filter((capability) => (
+    return certifiedCapabilities.filter((capability) => (
       capability.family === 'image' &&
       capability.outputKind === 'image' &&
       capability.workflows.includes('text_to_image')
@@ -147,7 +153,7 @@ export function getWorkspaceBlockIntentCapabilities({
   }
 
   if (isModifyVideo(settings)) {
-    return capabilities.filter((capability) => (
+    return certifiedCapabilities.filter((capability) => (
       capability.family === 'video' &&
       capability.outputKind === 'video' &&
       capability.workflows.includes('video_to_video')
@@ -155,14 +161,14 @@ export function getWorkspaceBlockIntentCapabilities({
   }
 
   if (isGenerateVideo(settings)) {
-    return capabilities.filter((capability) => (
+    return certifiedCapabilities.filter((capability) => (
       capability.family === 'video' &&
       capability.outputKind === 'video' &&
       (capability.workflows.includes('text_to_video') || capability.workflows.includes('image_to_video'))
     ));
   }
 
-  return capabilities.filter((capability) => {
+  return certifiedCapabilities.filter((capability) => {
     const familyMatches = !settings.family || capability.family === settings.family;
     const outputMatches = !settings.outputKind || capability.outputKind === settings.outputKind;
     return familyMatches && outputMatches && capability.workflows.includes(settings.workflowType);
@@ -199,7 +205,7 @@ function requiredInputsForMode(
     if (contract.workflows.includes(resolvedWorkflowType)) return contract.requiredInputsByWorkflow[resolvedWorkflowType] ?? [];
   }
   if (mode === 'image-edit') return ['prompt', 'reference'];
-  if (mode === 'video-edit' || mode === 'video-reframe') return ['prompt', 'video_reference'];
+  if (mode === 'video-edit' || mode === 'video-extend' || mode === 'video-reframe') return ['prompt', 'video_reference'];
   if (mode === 'image-to-video') return ['prompt', 'start_image'];
   if (mode === 'reference-to-video') return ['prompt', 'reference'];
   if (mode === 'first-last-video') return ['prompt', 'start_image', 'end_image'];
@@ -289,6 +295,7 @@ function normalizedConnector({
     mutuallyExclusiveWith: connector.mutuallyExclusiveWith ?? connectorMutualExclusions(settings, connector.kind),
     acceptedMediaKinds: connector.acceptedMediaKinds,
     acceptedFormats: connector.acceptedFormats,
+    minDurationSec: connector.minDurationSec,
     maxDurationSec: connector.maxDurationSec,
     maxFileSizeMb: connector.maxFileSizeMb,
     disabledReason,
@@ -302,7 +309,7 @@ function unsupportedInputReason(
   edgeLabel: (kind: WorkspaceEdgeKind) => string
 ): string | undefined {
   if (!capability) return undefined;
-  const supportedInputs = new Set([...capability.required_inputs, ...capability.optional_inputs]);
+  const supportedInputs = new Set([...(capability.required_inputs ?? []), ...(capability.optional_inputs ?? [])]);
   return inputSupportedBy(kind, supportedInputs)
     ? undefined
     : formatPolicyCopy(policyCopy.unsupportedInput, { input: edgeLabel(kind) });
@@ -369,8 +376,12 @@ function mergeConnectors(
   }
   if (contract) {
     const contractInputs = Array.from(new Set([...requiredInputs, ...optionalInputs]));
+    const capabilityConnectors = getWorkspaceShotInputConnectors(capability);
     for (const kind of contractInputs) {
-      const current = getWorkspaceShotInputConnectors(capability).find((connector) => connector.kind === kind);
+      const connectorCandidates = capabilityConnectors.filter((connector) => connector.kind === kind);
+      const current = connectorCandidates.find((connector) => workspaceConnectorSupportsBlockMode(connector, mode))
+        ?? connectorCandidates.find((connector) => !connector.supportedInModes?.length)
+        ?? connectorCandidates[0];
       byKind.set(kind, normalizedConnector({
         connected,
         connector: current ?? connectorForKind(kind, requiredInputs.includes(kind), mode),
@@ -444,13 +455,19 @@ function outputCountForPolicy(
 function controlFieldsForPolicy(
   settings: WorkspaceShotSettings,
   capability: WorkspaceModelCapability | null,
-  outputMediaKind: WorkspaceOutputMediaKind
+  outputMediaKind: WorkspaceOutputMediaKind,
+  mode: WorkspaceBlockMode,
 ): WorkspacePolicyControlField[] {
+  const enabledForMode = (field: WorkspacePolicyControlField) => {
+    const supportedModes = capability?.control_modes?.[field];
+    return !supportedModes?.length || supportedModes.includes(mode);
+  };
   const contract = v1BlockContractFor(settings);
   if (contract) {
-    return capability?.control_fields?.length
+    const fields = capability?.control_fields?.length
       ? contract.visibleControls.filter((field) => capability.control_fields?.includes(field))
       : contract.visibleControls;
+    return fields.filter(enabledForMode);
   }
   if (settings.family === 'chat') return capability?.control_fields?.length
     ? capability.control_fields
@@ -481,7 +498,7 @@ function controlFieldsForPolicy(
     fields.add('resolution');
     fields.add('referenceStrength');
   }
-  return Array.from(fields);
+  return Array.from(fields).filter(enabledForMode);
 }
 
 function pricingRelevantFieldsForPolicy(
@@ -600,7 +617,7 @@ export function resolveWorkspaceBlockPolicy({
     outputMediaKind,
     outputCount: outputCountForPolicy(settings, capability),
     resolvedWorkflowType: intent.workflowType,
-    controlFields: controlFieldsForPolicy(settings, capability, outputMediaKind),
+    controlFields: controlFieldsForPolicy(settings, capability, outputMediaKind, mode),
     pricingRelevantFields: pricingRelevantFieldsForPolicy(settings, capability, outputMediaKind),
     disabledReason,
     canGenerate: selectedModelEligible && missingInputs.length === 0,

@@ -21,6 +21,7 @@ import { resolveWorkspaceAudioProvenance } from './workspace-audio-provenance';
 import {
   buildWorkspaceShotGenerateRequest,
   mediaUrlsFromKinds,
+  workspaceGenerationMediaInputsFromGraph,
 } from './workspace-generation';
 import {
   buildWorkspaceAngleToolRequest,
@@ -213,6 +214,11 @@ async function submitVideoGeneration(params: WorkspaceGenerationRouteParams): Pr
   const endImageUrl = imageReferenceUrlFor(params, 'end_image');
   const videoReferences = videoReferencesFor(params);
   const audioReferences = audioReferencesFor(params);
+  const mediaInputs = workspaceGenerationMediaInputsFromGraph({
+    nodes: params.nodes,
+    edges: params.edges,
+    shotNodeId: params.shotNode.id,
+  });
   const result = (await runGenerate(buildWorkspaceShotGenerateRequest({
     settings: params.settings,
     capability: params.capability,
@@ -223,6 +229,7 @@ async function submitVideoGeneration(params: WorkspaceGenerationRouteParams): Pr
     endImageUrl,
     videoReferences,
     audioReferences,
+    mediaInputs,
     shotNodeId: params.shotNode.id,
     outputName: params.outputName,
     submissionId: params.submissionId,

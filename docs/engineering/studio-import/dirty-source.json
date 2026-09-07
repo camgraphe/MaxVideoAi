@@ -1,0 +1,212 @@
+{
+  "sourceCommit": "6165afc34bb27b8b3dc2d05074b09cdcdb44c13f",
+  "sourcePath": "/Users/adrienmillot/Desktop/MaxVideoAi V2/.worktrees/maxvideoai-editor-run",
+  "tracked": 32,
+  "untracked": 2,
+  "files": [
+    {
+      "path": "docs/engineering/studio-editor-architecture.md",
+      "status": " M",
+      "sha256": "5dc862cd7392ecf99c2d9b034092ef1ac7fcb44956ca69b230fa568c5e3fd90b",
+      "disposition": "copied exactly"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-08-21-studio-main-model-certification.md",
+      "status": " M",
+      "sha256": "b3ef48ba9cf1ff5988d8ba215b9ca1077d08059ce02b0a59b9cf153f103998fd",
+      "disposition": "copied exactly"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/AGENTS.md",
+      "status": " M",
+      "sha256": "eb86620d4d7d95f71cd56049ebfcadbc60d71f3b177a5cd8588bd060ceea7810",
+      "disposition": "copied exactly"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/_lib/studio-copy.ts",
+      "status": " M",
+      "sha256": "b0db4163d1b7ac10b5398f83f239b58fbb388b1be74ddf0a8ff6c1e9376948c7",
+      "disposition": "copied exactly"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_components/canvas/CanvasFloatingToolbar.tsx",
+      "status": " M",
+      "sha256": "8dfb4d7a2099ae71e6fb6002cc6d6d96d8abafd6c35e53d5f614912b4a90bb55",
+      "disposition": "copied exactly"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspacePersistenceEffects.ts",
+      "status": " M",
+      "sha256": "85e2f3745bfd1b70be5efcf4759c96c9facc1b1e38c03978c7053b1609a97694",
+      "disposition": "copied exactly"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceShotPricing.ts",
+      "status": " M",
+      "sha256": "8dc780a1d7265d5cedfccb02bc9d30d985cfe4b334f9e90d45ad498cdcd9fac0",
+      "disposition": "copied exactly"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/model-capability-registry.ts",
+      "status": " M",
+      "sha256": "be42500f1e9beb2cbb8a0ed04a5f21bb2512fba7ccd8a23def61868f2a8eb0a4",
+      "disposition": "copied exactly"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/model-input-connectors.ts",
+      "status": " M",
+      "sha256": "6a5ca3da5bbf0e812b7781a29fa47f8f6a6c75bf08b688ff27f2d0c5507583fc",
+      "disposition": "copied exactly"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-block-capability-policy.ts",
+      "status": " M",
+      "sha256": "3d2514f5dc3b0c237c8073d21d08e1a8f9d0d72cd7b03f306382a7a62fbc8e55",
+      "disposition": "copied exactly"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-model-selection.ts",
+      "status": " M",
+      "sha256": "c2e229bc7a564d97d86dcb0714a861b4a0d63ceb8c6945b5020b477e4b996beb",
+      "disposition": "copied exactly"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-v1-block-matrix.ts",
+      "status": " M",
+      "sha256": "f66e947765be6912906a389fee8c37dc3f2cb6f227d96815d76d18c0f5b8700d",
+      "disposition": "copied exactly"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-block-presets.ts",
+      "status": " M",
+      "sha256": "fca88e68846004713c3147ea434f1203bb866763b599f52c5b0fe8e95aa5bcfa",
+      "disposition": "copied exactly"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-generation-routing.ts",
+      "status": " M",
+      "sha256": "be3d9116efef6e2905dcb259ca87237ec51c55b02022d8e6b8369788edacb089",
+      "disposition": "copied exactly"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-generation.ts",
+      "status": " M",
+      "sha256": "dee5108eea7f13ff415ddc340587370b2eb1b36c12ae77e7abfa512c5b8e0019",
+      "disposition": "copied exactly"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-library-assets.ts",
+      "status": " M",
+      "sha256": "90e9e88aea34b65c868c3d465668274eb59e94a75f2283bef5835bc8b0f03962",
+      "disposition": "copied exactly"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-pricing.ts",
+      "status": " M",
+      "sha256": "a14baba1637163d84784fc9d6e97d3deff2e80d146ebae5c5f704fced494c11e",
+      "disposition": "copied exactly"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types.ts",
+      "status": " M",
+      "sha256": "7d8d6128d9d7fa6fb8e9f5cb65dd2120c08c536d625e8138fd997d380bfcf799",
+      "disposition": "copied exactly"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-api-persistence.ts",
+      "status": " M",
+      "sha256": "59b2b0a02d7ddb21715939014366c8406466a65e4a12e5c3fce6b5c8a460f0d4",
+      "disposition": "copied exactly"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-state.ts",
+      "status": " M",
+      "sha256": "ef6dba62d645eb53d37315570de0a6bbd6619b836dde3d64cc67fbc6d6d1554e",
+      "disposition": "copied exactly"
+    },
+    {
+      "path": "frontend/messages/en.json",
+      "status": " M",
+      "sha256": "da2576c66a3f25c56d7f6b33c9054fcab72d43283cc09f7c24fe974edcee3f18",
+      "disposition": "adapt separately to current shared contract"
+    },
+    {
+      "path": "frontend/messages/es.json",
+      "status": " M",
+      "sha256": "ec699405dd75d95bdaf1b531f627e8659438997fbe957cbc4245fd2201095838",
+      "disposition": "adapt separately to current shared contract"
+    },
+    {
+      "path": "frontend/messages/fr.json",
+      "status": " M",
+      "sha256": "fe408c3bdb54c4b1cf88316f25c7238313100addcaa97a19826f857775c8618d",
+      "disposition": "adapt separately to current shared contract"
+    },
+    {
+      "path": "frontend/src/server/engines.ts",
+      "status": " M",
+      "sha256": "a1350c0cf5d803981f09e0cf8461bb00de65b81398eaef3016fbeaad5e04eee9",
+      "disposition": "adapt separately to current shared contract"
+    },
+    {
+      "path": "frontend/types/engines.ts",
+      "status": " M",
+      "sha256": "44bb2c7c0bec04fb449f394de8494329dc2c8cdc82c15a438e175041b8f8679f",
+      "disposition": "adapt separately to current shared contract"
+    },
+    {
+      "path": "tests/e2e/editor/editor-smoke.spec.ts",
+      "status": " M",
+      "sha256": "8ecb38ca0f310cda1c9256e08b1fad4fd216aedf902d8c3edd47efd77f503958",
+      "disposition": "copied exactly"
+    },
+    {
+      "path": "tests/maxvideoai-editor-engine-picker.test.ts",
+      "status": " M",
+      "sha256": "5d0b1224211f38bdcaf6e050d08297d7484ee1623c1975b1a93dccfc9265f578",
+      "disposition": "copied exactly"
+    },
+    {
+      "path": "tests/maxvideoai-editor-generation-blocks.test.ts",
+      "status": " M",
+      "sha256": "4c24a3fca61c178212b49f8178015d064a999624bdd7005386541f199d8ee770",
+      "disposition": "copied exactly"
+    },
+    {
+      "path": "tests/maxvideoai-editor-v1-capability-matrix.test.ts",
+      "status": " M",
+      "sha256": "8698442fe3f1d9623500d8386674fa595d540ee80c46b012bc87ce94a10aa67a",
+      "disposition": "copied exactly"
+    },
+    {
+      "path": "tests/maxvideoai-editor-v1-pricing.test.ts",
+      "status": " M",
+      "sha256": "aeed3b974c76a64ccc0b308e3cebf3e5fa66f8b2dbc5e7a93769738ae26d6657",
+      "disposition": "copied exactly"
+    },
+    {
+      "path": "tests/maxvideoai-editor-v1-request-payloads.test.ts",
+      "status": " M",
+      "sha256": "cbc121e128555e08f3d745a4e0124913d77b4fc3b7afbac7265c127ec399c9b1",
+      "disposition": "copied exactly"
+    },
+    {
+      "path": "tests/maxvideoai-editor-workspace-architecture.test.ts",
+      "status": " M",
+      "sha256": "ad2fcf1e02540669028ce545346bc8b1f754fab6a4ca7aa24db908afbedbdf14",
+      "disposition": "copied exactly"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-model-certification.ts",
+      "status": "??",
+      "sha256": "94f0dc4bcaad835ad84a07f541aa6d7dc47e95840f6ccd10aeca3fdaa048a8a5",
+      "disposition": "copied exactly"
+    },
+    {
+      "path": "frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-generation-facts.ts",
+      "status": "??",
+      "sha256": "83ac5900cbfe698190634bd839d03edafb5f1e71abeb11a6f175179190b73253",
+      "disposition": "copied exactly"
+    }
+  ]
+}

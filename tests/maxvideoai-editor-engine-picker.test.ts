@@ -21,6 +21,7 @@ import {
 import {
   workspaceShotPatchForModelSelection,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-model-selection';
+import { normalizePersistedWorkspaceState } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-api-persistence';
 
 const capabilities = getWorkspaceModelCapabilities();
 const generateVideo = structuredClone(
@@ -37,7 +38,7 @@ const baseVideoEngine = getBaseEnginesByCategory('video')
   .find((engine) => engine.id === 'seedance-2-0')!;
 
 function syntheticVideoCapability(availability: EngineAvailability): WorkspaceModelCapability {
-  const id = `test-${availability}`;
+  const id = 'seedance-2-0';
   const capability = getWorkspaceModelCapabilities([{
     ...baseVideoEngine,
     id,
@@ -58,6 +59,49 @@ test('model selection resets model-derived options in one shared patch', () => {
   assert.equal(typeof patch.lipSyncEnabled, 'boolean');
 });
 
+test('Seedream 5.0 Pro uses its exact input schema instead of stale broad resolution metadata', () => {
+  const seedream = capabilities.find((capability) => capability.id === 'seedream-5-0-pro');
+  assert.ok(seedream);
+  assert.deepEqual(seedream.supported_resolutions, ['2K']);
+
+  const patch = workspaceShotPatchForModelSelection({
+    ...WORKSPACE_BLOCK_PRESETS.find((preset) => preset.id === 'generate-image')!.defaultShot!,
+    resolution: '4K',
+  }, seedream);
+  assert.equal(patch.resolution, '2K');
+});
+
+test('persisted Studio blocks normalize unsupported model settings and report the compatibility migration', () => {
+  const originalShot = {
+    ...WORKSPACE_BLOCK_PRESETS.find((preset) => preset.id === 'generate-image')!.defaultShot!,
+    modelId: 'seedream-5-0-pro',
+    resolution: '4K' as const,
+    outputName: 'Keep this output name',
+    referenceStrength: 0.42,
+  };
+  const normalized = normalizePersistedWorkspaceState({
+    nodes: [{
+      id: 'seedream-shot',
+      type: 'shot',
+      position: { x: 0, y: 0 },
+      data: {
+        kind: 'shot',
+        title: 'Seedream block',
+        shot: originalShot,
+      },
+    }],
+    edges: [],
+    timelineItems: [],
+    activeTemplateId: 'blank',
+  });
+
+  assert.ok(normalized);
+  assert.equal(normalized.nodes[0]?.data.shot?.resolution, '2K');
+  assert.equal(normalized.nodes[0]?.data.shot?.outputName, 'Keep this output name');
+  assert.equal(normalized.nodes[0]?.data.shot?.referenceStrength, 0.42);
+  assert.equal(normalized.compatibilityAdjustmentCount, 1);
+});
+
 test('picker omits block-incompatible families without a local allowlist', () => {
   const groups = buildWorkspaceEnginePickerGroups({
     settings: generateVideo,
@@ -74,11 +118,31 @@ test('picker omits block-incompatible families without a local allowlist', () =>
   assert.equal(items.some((item) => item.capability.family === 'image'), false);
 });
 
+test('picker fails closed for a published capability without Studio certification', () => {
+  const publishedButUncertified: WorkspaceModelCapability = {
+    ...capabilities.find((capability) => capability.id === 'seedance-2-0')!,
+    id: 'future-published-video-model',
+    label: 'Future published video model',
+    availability: 'available',
+  };
+  const groups = buildWorkspaceEnginePickerGroups({
+    settings: generateVideo,
+    capabilities: [publishedButUncertified],
+    connectedInputs: ['prompt'],
+    selectedModelId: publishedButUncertified.id,
+    incompatibleReason: 'Not compatible with current inputs',
+    pausedReason: 'Temporarily paused',
+    waitlistReason: 'Waitlist only',
+  });
+
+  assert.deepEqual(groups, []);
+});
+
 test('picker keeps intent-compatible models disabled when current inputs cannot route them', () => {
   const source = capabilities.find((capability) => capability.id === 'seedance-2-0')!;
   const textOnly: WorkspaceModelCapability = {
     ...source,
-    id: 'test-text-only',
+    id: 'seedance-2-0-fast-byteplus',
     label: 'Text only',
     workflows: ['text_to_video'],
     text_to_video: true,
@@ -86,7 +150,7 @@ test('picker keeps intent-compatible models disabled when current inputs cannot 
   };
   const imageOnly: WorkspaceModelCapability = {
     ...source,
-    id: 'test-image-only',
+    id: 'pika-text-to-video',
     label: 'Image only',
     workflows: ['image_to_video'],
     text_to_video: false,
@@ -102,7 +166,7 @@ test('picker keeps intent-compatible models disabled when current inputs cannot 
     waitlistReason: 'Waitlist only',
   });
   const disabled = groups.flatMap((group) => group.items).filter((item) => item.disabled);
-  assert.deepEqual(disabled.map((item) => item.id), ['test-text-only']);
+  assert.deepEqual(disabled.map((item) => item.id), ['seedance-2-0-fast-byteplus']);
   assert.ok(disabled.every((item) => item.disabledReason === 'Not compatible with current inputs'));
 });
 

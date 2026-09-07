@@ -92,6 +92,8 @@ Use this map before adding new code. If a change does not fit one of these owner
 - `_lib/timeline/*`: pure edit math and timeline invariants.
 - `_lib/workspace-project-media-metadata.ts`: pure metadata checks and timeline item repair for imported Project media.
 - `_lib/models/*`: model capability, connector, pricing, and render-option contracts.
+- `_lib/models/workspace-model-certification.ts`: fail-closed Studio readiness for exact model, block, and workflow tuples. Registry publication is necessary but not sufficient for Studio visibility.
+- `_lib/workspace-generation-facts.ts`: normalized mode, exact provider field assignments, media provenance, reference usage, and validation shared by pricing and submission.
 - `_lib/templates/*`: advanced graph-only Canvas templates plus compact guided project starter builders. Only guided project starter builders own canonical guide annotations.
 
 When a feature crosses surfaces, split it by owner. For example, a generated video output used in the timeline should have canvas output metadata in node code, Project media card behavior in the media controller/sidebar, and insertion rules in timeline helpers.
@@ -122,6 +124,22 @@ Capability ownership is split across `workspace-block-presets.ts`, the model cap
 `workspace-v1-block-matrix.ts`, and `workspace-block-capability-policy.ts`. UI surfaces consume the
 resolved policy; they do not maintain independent allowlists. Generation routing and pricing adapters
 must consume the same selected capability and normalized block settings used by the node and inspector.
+
+Studio model availability is deliberately fail-closed. A model may be published in the global registry
+and still remain absent from Studio until `workspace-model-certification.ts` records a verified
+model/block/workflow tuple. Certification is Studio readiness data only; it must not duplicate model
+resolutions, durations, media constraints, or provider parameters from the generated engine catalog.
+
+`workspace-generation-facts.ts` resolves the final execution contract once. Wallet preflight and final
+submission consume those facts instead of independently inferring mode, audio, input counts, or provider
+slots. Semantic React Flow edge kinds remain stable for saved projects, while resolved connectors retain
+the exact engine field ID used in the API attachment. Known media provenance (asset ID, MIME, bytes,
+dimensions, and duration) travels with that assignment so schema constraints can fail before billing.
+
+Persisted shot settings are normalized against current certified capability values during hydration.
+The exact input schema wins over broad catalog summary values. Unsupported stored values move to the
+engine default, unrelated node state is preserved, and the editor emits one localized compatibility
+notice. This is a compatibility migration, not permission to rewrite existing graphs or templates.
 
 The active sequence owns timeline and export state. Canvas nodes own generation inputs and typed outputs.
 Project media owns imported, generated, and completed-export assets. Moving media between those surfaces

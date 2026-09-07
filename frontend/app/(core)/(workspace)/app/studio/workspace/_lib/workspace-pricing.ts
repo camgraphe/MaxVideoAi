@@ -3,11 +3,12 @@ import { STORYBOARD_TEMPLATE_SIZES, getStoryboardOutputConfig } from '@/componen
 import { STORYBOARD_SOURCE } from '@/lib/storyboard-pricing';
 import type { ImageGenerationRequest } from '@/types/image-generation';
 import type { PreflightRequest, PreflightResponse } from '@/types/engines';
-import { resolveWorkspaceGenerationMode, workspaceAudioEnabledForRequest } from './workspace-capabilities';
 import { resolveWorkspaceBlockPolicy } from './models/workspace-block-capability-policy';
+import { resolveWorkspaceGenerationFacts } from './workspace-generation-facts';
 import { buildWorkspaceImageGenerationRequest } from './workspace-tool-requests';
 import type {
   WorkspaceEdgeKind,
+  WorkspaceGenerationMediaInput,
   WorkspaceModelCapability,
   WorkspacePricingEstimate,
   WorkspaceShotSettings,
@@ -19,6 +20,7 @@ type BuildWorkspaceShotPreflightRequestOptions = {
   connectedInputs: WorkspaceEdgeKind[];
   capability: WorkspaceModelCapability | null;
   memberTier?: string;
+  mediaInputs?: WorkspaceGenerationMediaInput[];
 };
 
 export type WorkspaceStoryboardImageEstimateRequest = {
@@ -119,21 +121,20 @@ export function buildWorkspaceShotPreflightRequest({
   connectedInputs,
   capability,
   memberTier = 'Member',
+  mediaInputs,
 }: BuildWorkspaceShotPreflightRequestOptions): PreflightRequest {
-  const audioEnabled = workspaceAudioEnabledForRequest(settings, capability);
+  const facts = resolveWorkspaceGenerationFacts({ settings, connectedInputs, capability, mediaInputs });
   return {
     engine: settings.modelId,
-    mode: resolveWorkspaceGenerationMode({
-      settings,
-      connectedInputs,
-      capability,
-    }),
-    durationSec: settings.durationSec,
-    resolution: settings.resolution,
-    aspectRatio: settings.aspectRatio,
-    fps: settings.fps,
+    mode: facts.mode,
+    durationSec: facts.durationSec,
+    resolution: facts.resolution,
+    aspectRatio: facts.aspectRatio,
+    fps: facts.fps,
     seedLocked: typeof settings.seed === 'number',
-    ...(typeof audioEnabled === 'boolean' ? { audio: audioEnabled } : {}),
+    ...(typeof facts.audio === 'boolean' ? { audio: facts.audio } : {}),
+    hasVideoInput: facts.hasVideoInput,
+    referenceImageCount: facts.referenceImageCount,
     user: { memberTier },
   };
 }

@@ -31,7 +31,8 @@ Keep these entities distinct:
 Prefer adding new behavior by extending contracts and pure helpers instead of growing `WorkspacePage.client.tsx`.
 
 - Add a new block type by updating `workspace-types.ts`, `workspace-templates.ts`, node rendering in `_components/nodes/`, and compatibility tests.
-- Add a new model by updating `workspace-capabilities.ts` and generation/pricing adapters. The shot block should derive connectors from capabilities.
+- Add or publish a model only through `frontend/config/model-registry.json` and its documented generators. Studio visibility additionally requires an explicit block/workflow certification in `workspace-model-certification.ts`; uncertified models fail closed.
+- Keep `workspace-capabilities.ts` as the public Studio capability aggregation boundary. Keep engine schema facts in `model-capability-registry.ts`, exact block intent in `workspace-v1-block-matrix.ts`, and normalized pricing/submission facts in `workspace-generation-facts.ts`. The shot block should derive controls and connectors from the resolved policy.
 - Add timeline behavior in `workspace-timeline-editing.ts`, `workspace-timeline-render.ts`, or `workspace-timeline-tracks.ts` before wiring UI.
 - Add sequence list behavior in `workspace/_state/workspace-sequence-operations.ts` before wiring Project media or inspector UI.
 - Add Project media behavior in `workspace/_controllers/useProjectMediaController.ts`, `workspace/_components/TimelineProjectSidebar.tsx`, and pure timeline insertion helpers. Sequence cards manage sequences; folder cards filter media; media cards drag/insert media.
@@ -79,6 +80,7 @@ Prefer adding new behavior by extending contracts and pure helpers instead of gr
 - Block presets define user intent.
 - Engine capabilities define what each selected model supports.
 - The V1 block matrix defines which workflows a block may expose.
+- The Studio certification registry defines which model/block/workflow tuples have passed payload, pricing, and UI verification. Publication alone never makes a model selectable in Studio.
 - Node UI, inspector UI, pricing, and request payloads must derive from the same policy result.
 - Adding an engine requires a test showing that it appears in the right block lists and is absent from incompatible block lists.
 - Adding a block requires payload, pricing, output media, and connector tests.
@@ -86,6 +88,8 @@ Prefer adding new behavior by extending contracts and pure helpers instead of gr
 Keep preset intent in `workspace-block-presets.ts`, engine facts in the model capability registry,
 block/workflow compatibility in `workspace-v1-block-matrix.ts`, and the shared resolved decision in
 `workspace-block-capability-policy.ts`. Do not add surface-local compatibility or pricing allowlists.
+`workspace-generation-facts.ts` is the shared final owner for mode, exact field assignments, reference
+counts, media presence, constraints, and validation used by both wallet preflight and submission.
 
 ## Contracts And Tests
 

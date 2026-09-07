@@ -31,6 +31,7 @@ import type {
 } from '../_lib/workspace-types';
 import { inferWorkspaceEdgeKind } from '../_lib/workspace-templates';
 import { connectedInputKinds } from '../_lib/workspace-graph-helpers';
+import { workspaceGenerationMediaInputsFromGraph } from '../_lib/workspace-generation';
 
 const PRICING_DEBOUNCE_MS = 300;
 
@@ -99,6 +100,8 @@ function pricingRequestKey(request: WorkspacePricingRequest['request']): string 
     seedLocked: request.seedLocked,
     audio: request.audio,
     voiceControl: request.voiceControl,
+    hasVideoInput: request.hasVideoInput,
+    referenceImageCount: request.referenceImageCount,
     memberTier: request.user?.memberTier,
   });
 }
@@ -224,6 +227,11 @@ export function useWorkspaceShotPricing({
           connectedInputs,
           capability: validation.capability,
           memberTier,
+          mediaInputs: workspaceGenerationMediaInputsFromGraph({
+            nodes,
+            edges,
+            shotNodeId: node.id,
+          }),
         });
         return [{
           kind: 'preflight' as const,

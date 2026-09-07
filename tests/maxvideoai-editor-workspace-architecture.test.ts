@@ -176,12 +176,14 @@ const edgeTypesPath = join(workspaceDir, '_components/edges/workspace-smart-edge
 const typesPath = join(workspaceDir, '_lib/workspace-types.ts');
 const capabilitiesPath = join(workspaceDir, '_lib/workspace-capabilities.ts');
 const modelCapabilityRegistryPath = join(workspaceDir, '_lib/models/model-capability-registry.ts');
+const modelCertificationPath = join(workspaceDir, '_lib/models/workspace-model-certification.ts');
 const modelEngineFieldsPath = join(workspaceDir, '_lib/models/model-engine-fields.ts');
 const modelInputConnectorsPath = join(workspaceDir, '_lib/models/model-input-connectors.ts');
 const modelPricingAdapterPath = join(workspaceDir, '_lib/models/model-pricing-adapter.ts');
 const blockCapabilityPolicyPath = join(workspaceDir, '_lib/models/workspace-block-capability-policy.ts');
 const blockPresetsPath = join(workspaceDir, '_lib/workspace-block-presets.ts');
 const generationPath = join(workspaceDir, '_lib/workspace-generation.ts');
+const generationFactsPath = join(workspaceDir, '_lib/workspace-generation-facts.ts');
 const generationRoutingPath = join(workspaceDir, '_lib/workspace-generation-routing.ts');
 const pricingPath = join(workspaceDir, '_lib/workspace-pricing.ts');
 const mediaAvailabilityPath = join(workspaceDir, '_lib/workspace-media-availability.ts');
@@ -1223,11 +1225,13 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(existsSync(typesPath), 'workspace graph and timeline contracts should live in _lib/workspace-types.ts');
   assert.ok(existsSync(capabilitiesPath), 'workspace capabilities should keep a narrow public facade');
   assert.ok(existsSync(modelCapabilityRegistryPath), 'model capability mapping should live in _lib/models/model-capability-registry.ts');
+  assert.ok(existsSync(modelCertificationPath), 'Studio model readiness should live in a fail-closed certification registry');
   assert.ok(existsSync(modelEngineFieldsPath), 'engine field scanning helpers should live in _lib/models/model-engine-fields.ts');
   assert.ok(existsSync(modelInputConnectorsPath), 'model input connectors should live in _lib/models/model-input-connectors.ts');
   assert.ok(existsSync(modelPricingAdapterPath), 'model render pricing options should live in _lib/models/model-pricing-adapter.ts');
   assert.ok(existsSync(blockPresetsPath), 'canvas block presets should live in a focused route-local helper');
   assert.ok(existsSync(generationPath), 'workspace generation adapter should live in _lib/workspace-generation.ts');
+  assert.ok(existsSync(generationFactsPath), 'pricing and submission should share normalized generation facts');
   assert.ok(existsSync(generationRoutingPath), 'generation routing should live outside WorkspacePage and UI components');
   assert.ok(existsSync(pricingPath), 'workspace pricing adapter should live in _lib/workspace-pricing.ts');
   assert.ok(existsSync(mediaAvailabilityPath), 'workspace media availability helpers should live in a pure route-local helper');
@@ -1770,10 +1774,9 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(generationSource, /export function createPendingWorkspaceOutput/, 'generation adapter should create a processing output block before media exists');
   assert.match(generationSource, /createMockWorkspaceOutput/, 'generation adapter should keep an isolated mock output fallback');
   assert.match(generationSource, /buildWorkspaceShotGenerateRequest/, 'generation adapter should expose a tested request builder');
-  assert.match(generationSource, /workspaceAudioEnabledForRequest/, 'generation adapter should sanitize audio from engine render options');
+  assert.match(generationSource, /resolveWorkspaceGenerationFacts/, 'generation adapter should consume the shared normalized generation facts');
   assert.match(pricingSource, /PreflightRequest/, 'pricing adapter should build the same preflight payload shape as generate video');
-  assert.match(pricingSource, /resolveWorkspaceGenerationMode/, 'pricing adapter should reuse the generated-shot mode routing');
-  assert.match(pricingSource, /workspaceAudioEnabledForRequest/, 'pricing adapter should price only supported engine audio toggles');
+  assert.match(pricingSource, /resolveWorkspaceGenerationFacts/, 'pricing adapter should consume the same normalized facts as submission');
   assert.match(mediaAvailabilitySource, /export function isPlayableVideoUrl/, 'media availability helper should detect playable video sources');
   assert.match(mediaAvailabilitySource, /export function isPlayableAudioUrl/, 'media availability helper should detect playable audio sources');
   assert.match(mediaAvailabilitySource, /export function outputStatus/, 'media availability helper should derive placeholder, processing, and ready output states');
@@ -3162,7 +3165,7 @@ test('MaxVideoAI editor generation resolves connected output media references', 
 
 test('MaxVideoAI editor generate block derives unified connectors from existing engine schemas', () => {
   const testEngine: EngineCaps = {
-    id: 'test-unified-video',
+    id: 'seedance-2-5',
     label: 'Test Unified Video',
     provider: 'test',
     status: 'live',
@@ -3228,7 +3231,7 @@ test('MaxVideoAI editor generate block derives unified connectors from existing 
   );
 
   const settings: WorkspaceShotSettings = {
-    modelId: 'test-unified-video',
+    modelId: 'seedance-2-5',
     workflowType: 'text_to_video',
     durationSec: 5,
     aspectRatio: '16:9',

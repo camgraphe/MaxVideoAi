@@ -4,6 +4,7 @@ import test from 'node:test';
 import { getWorkspaceBlockPreset } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-block-presets';
 import { getWorkspaceModelCapability } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-capabilities';
 import { buildWorkspaceShotGenerateRequest } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-generation';
+import { resolveWorkspaceGenerationFacts } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-generation-facts';
 import {
   audioPackForWorkflow,
   buildWorkspaceAudioGenerationRequest,
@@ -42,6 +43,7 @@ function capabilityFor(settings: WorkspaceShotSettings) {
 const V1_PAYLOAD_PRESET_IDS = [
   'generate-video',
   'modify-video',
+  'extend-video',
   'generate-image',
   'modify-image',
   'audio-music',
@@ -67,6 +69,7 @@ test('every V1 block matrix preset has a payload coverage case', () => {
 test('V1 block presets resolve to their dedicated generation routes', () => {
   assert.equal(resolveWorkspaceGenerationRoute(shot('generate-video')), 'video');
   assert.equal(resolveWorkspaceGenerationRoute(shot('modify-video')), 'video');
+  assert.equal(resolveWorkspaceGenerationRoute(shot('extend-video')), 'video');
   assert.equal(resolveWorkspaceGenerationRoute(shot('generate-image')), 'image');
   assert.equal(resolveWorkspaceGenerationRoute(shot('modify-image')), 'image');
   assert.equal(resolveWorkspaceGenerationRoute(shot('audio-music')), 'audio');
@@ -120,6 +123,178 @@ test('video generation request preserves render controls and excludes media unsu
   assert.deepEqual(request.inputs?.map((input) => [input.kind, input.url]), [
     ['video', 'https://example.com/motion.mp4'],
     ['audio', 'https://example.com/music.mp3'],
+  ]);
+});
+
+test('Seedance 2.5 image-to-video payload preserves exact start and end field slots', () => {
+  const settings = {
+    ...shot('generate-video'),
+    modelId: 'seedance-2-5',
+    workflowType: 'image_to_video' as const,
+    resolution: '720p' as const,
+  };
+  const capability = getWorkspaceModelCapability(settings.modelId);
+  assert.ok(capability);
+  const request = buildWorkspaceShotGenerateRequest({
+    settings,
+    capability,
+    prompt: 'Move from dawn to dusk.',
+    connectedInputs: ['prompt', 'start_image', 'end_image'],
+    referenceImages: ['https://example.com/start.png', 'https://example.com/end.png'],
+    startImageUrl: 'https://example.com/start.png',
+    endImageUrl: 'https://example.com/end.png',
+    videoReferences: [],
+    audioReferences: [],
+    mediaInputs: [
+      { semanticKind: 'start_image', kind: 'image', url: 'https://example.com/start.png' },
+      { semanticKind: 'end_image', kind: 'image', url: 'https://example.com/end.png' },
+    ],
+    shotNodeId: 'shot-seedance-25-i2v',
+    outputName: 'Dawn to dusk',
+  });
+
+  assert.equal(request.mode, 'i2v');
+  assert.deepEqual(request.inputs?.map((input) => input.slotId), ['image_url', 'end_image_url']);
+});
+
+test('MiniMax H3 reference payload preserves exact multimodal slots and media provenance', () => {
+  const settings = {
+    ...shot('generate-video'),
+    modelId: 'minimax-h3',
+    workflowType: 'storyboard_to_video' as const,
+    resolution: '2K' as const,
+  };
+  const capability = getWorkspaceModelCapability(settings.modelId);
+  assert.ok(capability);
+  const request = buildWorkspaceShotGenerateRequest({
+    settings,
+    capability,
+    prompt: 'Keep the character and timing consistent.',
+    connectedInputs: ['prompt', 'reference', 'video_reference', 'audio'],
+    referenceImages: ['https://example.com/character.png'],
+    videoReferences: ['https://example.com/motion.mp4'],
+    audioReferences: ['https://example.com/dialogue.wav'],
+    mediaInputs: [
+      {
+        semanticKind: 'reference',
+        kind: 'image',
+        url: 'https://example.com/character.png',
+        assetId: 'asset-image',
+        mimeType: 'image/png',
+        sizeBytes: 1200,
+        width: 1024,
+        height: 1024,
+      },
+      {
+        semanticKind: 'video_reference',
+        kind: 'video',
+        url: 'https://example.com/motion.mp4',
+        assetId: 'asset-video',
+        mimeType: 'video/mp4',
+        sizeBytes: 5000,
+        durationSec: 8,
+      },
+      {
+        semanticKind: 'audio',
+        kind: 'audio',
+        url: 'https://example.com/dialogue.wav',
+        assetId: 'asset-audio',
+        mimeType: 'audio/wav',
+        sizeBytes: 2400,
+        durationSec: 8,
+      },
+    ],
+    shotNodeId: 'shot-h3-reference',
+    outputName: 'H3 reference shot',
+  });
+
+  assert.equal(request.mode, 'ref2v');
+  assert.deepEqual(request.inputs?.map((input) => input.slotId), [
+    'reference_image_urls',
+    'reference_video_urls',
+    'reference_audio_urls',
+  ]);
+  assert.deepEqual(request.inputs?.map((input) => ({
+    assetId: input.assetId,
+    type: input.type,
+    size: input.size,
+    width: input.width,
+    height: input.height,
+    durationSec: input.durationSec,
+  })), [
+    { assetId: 'asset-image', type: 'image/png', size: 1200, width: 1024, height: 1024, durationSec: undefined },
+    { assetId: 'asset-video', type: 'video/mp4', size: 5000, width: undefined, height: undefined, durationSec: 8 },
+    { assetId: 'asset-audio', type: 'audio/wav', size: 2400, width: undefined, height: undefined, durationSec: 8 },
+  ]);
+});
+
+test('normalized generation facts and final request resolve the same Seedance video-input mode', () => {
+  const settings = {
+    ...shot('modify-video'),
+    modelId: 'seedance-2-5',
+    workflowType: 'video_to_video' as const,
+    resolution: '720p' as const,
+  };
+  const capability = getWorkspaceModelCapability(settings.modelId);
+  assert.ok(capability);
+  const mediaInputs = [{
+    semanticKind: 'video_reference' as const,
+    kind: 'video' as const,
+    url: 'https://example.com/source.mp4',
+    durationSec: 8,
+  }];
+  const facts = resolveWorkspaceGenerationFacts({
+    settings,
+    capability,
+    connectedInputs: ['prompt', 'video_reference'],
+    mediaInputs,
+  });
+  const request = buildWorkspaceShotGenerateRequest({
+    settings,
+    capability,
+    prompt: 'Restyle the source clip.',
+    connectedInputs: ['prompt', 'video_reference'],
+    referenceImages: [],
+    videoReferences: ['https://example.com/source.mp4'],
+    audioReferences: [],
+    mediaInputs,
+    shotNodeId: 'seedance-v2v-facts',
+    outputName: 'Restyled clip',
+  });
+
+  assert.equal(facts.mode, 'v2v');
+  assert.equal(facts.hasVideoInput, true);
+  assert.equal(request.mode, facts.mode);
+  assert.deepEqual(request.inputs?.map((input) => input.slotId), facts.assignments.map((assignment) => assignment.fieldId));
+});
+
+test('Extend Video routes one-to-three Seedance sources through the extension field', () => {
+  const settings = shot('extend-video');
+  const capability = capabilityFor(settings);
+  const mediaInputs = Array.from({ length: 3 }, (_, index) => ({
+    semanticKind: 'video_reference' as const,
+    kind: 'video' as const,
+    url: `https://example.com/source-${index + 1}.mp4`,
+    durationSec: 4,
+  }));
+  const request = buildWorkspaceShotGenerateRequest({
+    settings,
+    capability,
+    prompt: 'Continue these clips into one coherent scene.',
+    connectedInputs: ['prompt', 'video_reference'],
+    referenceImages: [],
+    videoReferences: mediaInputs.map((input) => input.url),
+    audioReferences: [],
+    mediaInputs,
+    shotNodeId: 'extend-video-shot',
+    outputName: 'Extended scene',
+  });
+
+  assert.equal(request.mode, 'extend');
+  assert.deepEqual(request.inputs?.map((input) => input.slotId), [
+    'extension_source_videos',
+    'extension_source_videos',
+    'extension_source_videos',
   ]);
 });
 

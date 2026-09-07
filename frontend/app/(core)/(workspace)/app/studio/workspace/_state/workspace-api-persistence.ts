@@ -32,6 +32,8 @@ import {
   normalizeWorkspaceEdgeTypes,
   normalizeWorkspaceGraphNodes,
 } from './workspace-normalizers';
+import { getWorkspaceModelCapabilities } from '../_lib/models/model-capability-registry';
+import { normalizeWorkspaceShotForCapability } from '../_lib/models/workspace-model-selection';
 import { saveStudioSequencesToApi } from './workspace-sequence-api-persistence';
 import {
   DEFAULT_WORKSPACE_SEQUENCE_ID,
@@ -434,6 +436,10 @@ function normalizePersistedProjectAsset(value: unknown): WorkspaceAssetRecord | 
         : undefined,
     durationSec: typeof record.durationSec === 'number' && Number.isFinite(record.durationSec) ? record.durationSec : undefined,
     dimensions: typeof record.dimensions === 'string' ? record.dimensions : undefined,
+    mimeType: typeof record.mimeType === 'string' ? record.mimeType : undefined,
+    sizeBytes: typeof record.sizeBytes === 'number' && Number.isFinite(record.sizeBytes) ? record.sizeBytes : undefined,
+    width: typeof record.width === 'number' && Number.isFinite(record.width) ? record.width : undefined,
+    height: typeof record.height === 'number' && Number.isFinite(record.height) ? record.height : undefined,
   };
 }
 
@@ -495,7 +501,24 @@ export function normalizePersistedWorkspaceState(
   if (!parsed || !Array.isArray(parsed.nodes) || !Array.isArray(parsed.edges) || !Array.isArray(parsed.timelineItems)) return null;
   const activeTemplateId = starterTemplateIdForPersistedWorkspace(parsed, options);
   const normalizedNodes = normalizeWorkspaceGraphNodes(parsed.nodes);
-  const nodes = migrateStarterGeneratedCopyForNodes(activeTemplateId, normalizedNodes);
+  const migratedNodes = migrateStarterGeneratedCopyForNodes(activeTemplateId, normalizedNodes);
+  const capabilitiesById = new Map(getWorkspaceModelCapabilities().map((capability) => [capability.id, capability]));
+  let compatibilityAdjustmentCount = 0;
+  const nodes = migratedNodes.map((node) => {
+    if (node.data.kind !== 'shot' || !node.data.shot) return node;
+    const capability = capabilitiesById.get(node.data.shot.modelId);
+    if (!capability) return node;
+    const normalized = normalizeWorkspaceShotForCapability(node.data.shot, capability);
+    if (!normalized.adjustments.length) return node;
+    compatibilityAdjustmentCount += 1;
+    return {
+      ...node,
+      data: {
+        ...node.data,
+        shot: normalized.shot,
+      },
+    };
+  });
   const edges = normalizeWorkspaceEdgeTypes(
     normalizeGeneratedOutputEdges(nodes, normalizeShotOutputEdges(nodes, normalizeOutputOnlySourceEdges(nodes, parsed.edges)))
   );
@@ -573,5 +596,6 @@ export function normalizePersistedWorkspaceState(
     timelinePanelHeight: coerceTimelinePanelHeight(parsed.timelinePanelHeight),
     timelineInPointSec: coerceTimelineMarker(parsed.timelineInPointSec),
     timelineOutPointSec: coerceTimelineMarker(parsed.timelineOutPointSec),
+    compatibilityAdjustmentCount: compatibilityAdjustmentCount || undefined,
   };
 }

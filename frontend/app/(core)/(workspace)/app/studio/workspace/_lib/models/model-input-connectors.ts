@@ -116,7 +116,7 @@ function sourceTypeForField(field: EngineInputField): WorkspaceInputConnector['s
   return 'control';
 }
 
-function blockModesForEngineModes(modes: Mode[] | undefined): WorkspaceBlockMode[] | undefined {
+export function blockModesForEngineModes(modes: Mode[] | undefined): WorkspaceBlockMode[] | undefined {
   if (!modes?.length) return undefined;
   const mapped = new Set<WorkspaceBlockMode>();
   for (const mode of modes) {
@@ -124,7 +124,8 @@ function blockModesForEngineModes(modes: Mode[] | undefined): WorkspaceBlockMode
     if (mode === 'i2v') mapped.add('image-to-video');
     if (mode === 'ref2v' || mode === 'r2v') mapped.add('reference-to-video');
     if (mode === 'fl2v') mapped.add('first-last-video');
-    if (mode === 'v2v' || mode === 'extend' || mode === 'retake') mapped.add('video-edit');
+    if (mode === 'v2v' || mode === 'retake') mapped.add('video-edit');
+    if (mode === 'extend') mapped.add('video-extend');
     if (mode === 'reframe') mapped.add('video-reframe');
     if (mode === 't2i') mapped.add('text-to-image');
     if (mode === 'i2i') mapped.add('image-edit');
@@ -155,9 +156,15 @@ function acceptedMediaKindsForKind(kind: WorkspaceEdgeKind): WorkspaceAcceptedMe
 
 function acceptedFormatsForSourceType(
   sourceType: WorkspaceInputConnector['sourceType'],
-  engine?: EngineCaps
+  engine?: EngineCaps,
+  field?: EngineInputField,
 ): string[] | undefined {
   if (sourceType === 'text') return ['text/plain'];
+  const fieldFormats = [
+    ...(field?.acceptedMimeTypes ?? []),
+    ...(field?.acceptedFileExtensions ?? []),
+  ];
+  if (fieldFormats.length) return Array.from(new Set(fieldFormats));
   if (sourceType === 'image') {
     const modeCapsFormats = Object.values(engine?.modeCaps ?? {})
       .flatMap((caps) => caps?.acceptsImageFormats ?? []);
@@ -176,8 +183,10 @@ function acceptedFormatsForSourceType(
 
 function maxFileSizeMbForSourceType(
   sourceType: WorkspaceInputConnector['sourceType'],
-  engine?: EngineCaps
+  engine?: EngineCaps,
+  field?: EngineInputField,
 ): number | undefined {
+  if (typeof field?.maxSizeMB === 'number') return field.maxSizeMB;
   if (sourceType === 'image') {
     return engine?.inputSchema?.constraints?.maxImageSizeMB ?? engine?.inputLimits.imageMaxMB;
   }
@@ -215,13 +224,14 @@ function connectorPolicyMetadata({
   sourceType: WorkspaceInputConnector['sourceType'];
 }): Pick<
   WorkspaceInputConnector,
-  'acceptedFormats' | 'acceptedMediaKinds' | 'maxDurationSec' | 'maxFileSizeMb' | 'minCount' | 'requiredInModes' | 'supportedInModes'
+  'acceptedFormats' | 'acceptedMediaKinds' | 'minDurationSec' | 'maxDurationSec' | 'maxFileSizeMb' | 'minCount' | 'requiredInModes' | 'supportedInModes'
 > {
   return {
     acceptedMediaKinds: acceptedMediaKindsForKind(kind),
-    acceptedFormats: acceptedFormatsForSourceType(sourceType, engine),
+    acceptedFormats: acceptedFormatsForSourceType(sourceType, engine, field),
+    minDurationSec: field?.minDurationSec,
     maxDurationSec: maxDurationSecForSourceType(sourceType, field, engine),
-    maxFileSizeMb: maxFileSizeMbForSourceType(sourceType, engine),
+    maxFileSizeMb: maxFileSizeMbForSourceType(sourceType, engine, field),
     minCount: field?.minCount ?? (origin === 'required' ? 1 : 0),
     requiredInModes: blockModesForEngineModes(field?.requiredInModes),
     supportedInModes: blockModesForEngineModes(field?.modes),
@@ -517,6 +527,10 @@ function isModifyVideo(settings: WorkspaceShotSettings): boolean {
   return presetId(settings) === 'modify-video' || settings.workflowType === 'video_to_video';
 }
 
+function isExtendVideo(settings: WorkspaceShotSettings): boolean {
+  return presetId(settings) === 'extend-video';
+}
+
 function isGenerateVideo(settings: WorkspaceShotSettings): boolean {
   return presetId(settings) === 'generate-video' ||
     settings.workflowType === 'text_to_video' ||
@@ -529,6 +543,7 @@ export function inferWorkspaceBlockMode(
 ): WorkspaceBlockMode {
   const connected = new Set(connectedInputs.map(normalizeConnectedInputKind));
   if (settings.family === 'chat') return 'chat';
+  if (isExtendVideo(settings)) return 'video-extend';
   if (settings.toolKind) return isModifyVideo(settings) ? 'video-edit' : 'tool';
   if (isModifyImage(settings)) return 'image-edit';
   if (isModifyVideo(settings)) return 'video-edit';
@@ -554,6 +569,7 @@ function workflowForBlockMode(
     'reference-to-video': 'storyboard_to_video',
     'first-last-video': 'image_to_video',
     'video-edit': 'video_to_video',
+    'video-extend': 'video_to_video',
     'text-to-image': 'text_to_image',
     'image-edit': 'image_to_image',
   };
@@ -656,10 +672,19 @@ function generationModeForV1VideoBlock(
   if (mode === 'reference-to-video') {
     return modes.find((candidate) => candidate === 'r2v' || candidate === 'ref2v') ?? null;
   }
-  if (mode === 'first-last-video') return modes.includes('fl2v') ? 'fl2v' : null;
+  if (mode === 'first-last-video') {
+    if (modes.includes('fl2v')) return 'fl2v';
+    const supportsEndImageInImageToVideo = capability?.input_connectors.some((connector) => (
+      connector.kind === 'end_image' &&
+      connector.fieldId === 'end_image_url' &&
+      connector.supportedInModes?.includes('image-to-video')
+    ));
+    return modes.includes('i2v') && supportsEndImageInImageToVideo ? 'i2v' : null;
+  }
   if (mode === 'video-edit') {
     return modes.find((candidate) => candidate === 'v2v' || candidate === 'extend' || candidate === 'retake' || candidate === 'reframe') ?? null;
   }
+  if (mode === 'video-extend') return modes.includes('extend') ? 'extend' : null;
   return null;
 }
 

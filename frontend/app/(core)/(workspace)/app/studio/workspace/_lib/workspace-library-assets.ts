@@ -9,6 +9,10 @@ export type WorkspaceLibraryAsset = {
   url?: string;
   durationSec?: number;
   dimensions?: string;
+  mimeType?: string;
+  sizeBytes?: number;
+  width?: number;
+  height?: number;
 };
 
 export type WorkspaceLibraryRequestOptions = {
@@ -263,6 +267,8 @@ export function workspaceLibraryAssetFromUploadedAsset(
     durationSec?: unknown;
     duration?: unknown;
     source?: unknown;
+    size?: unknown;
+    sizeBytes?: unknown;
   };
   const url = typeof asset.url === 'string' ? asset.url : '';
   if (!url) return null;
@@ -296,6 +302,10 @@ export function workspaceLibraryAssetFromUploadedAsset(
     url,
     durationSec,
     dimensions: width && height ? `${width}x${height}` : undefined,
+    mimeType: mime ?? undefined,
+    sizeBytes: positiveMediaDimension(asset.sizeBytes) ?? positiveMediaDimension(asset.size) ?? undefined,
+    width: width ?? undefined,
+    height: height ?? undefined,
   };
 }
 
@@ -337,5 +347,7 @@ export function workspaceAssetRecordFromLibraryAsset(asset: WorkspaceLibraryAsse
     subtitle: asset.kind === 'video' ? 'Video' : asset.kind === 'audio' ? 'Audio' : asset.kind === 'text' ? 'Text' : 'Image',
     url: asset.url ?? asset.thumbUrl,
     thumbUrl: asset.thumbUrl,
+    mimeType: asset.mimeType,
+    sizeBytes: asset.sizeBytes,
   };
 }

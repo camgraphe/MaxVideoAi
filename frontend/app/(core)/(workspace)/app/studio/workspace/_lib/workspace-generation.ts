@@ -3,18 +3,15 @@ import type {
   WorkspaceEdgeKind,
   WorkspaceGraphEdge,
   WorkspaceGraphNode,
+  WorkspaceGenerationMediaInput,
   WorkspaceModelCapability,
   WorkspaceOutputMetadata,
   WorkspaceShotSettings,
 } from './workspace-types';
 import {
-  workspaceAudioEnabledForRequest,
-} from './workspace-capabilities';
-import {
   resolveWorkspaceGenerationIntent,
-  workspaceConnectorSupportsBlockMode,
 } from './models/model-input-connectors';
-import { resolveWorkspaceBlockPolicy } from './models/workspace-block-capability-policy';
+import { resolveWorkspaceGenerationFacts } from './workspace-generation-facts';
 import { connectedInputKinds } from './workspace-graph-helpers';
 import { outputSourceHandleForKind } from '../_state/workspace-normalizers';
 import { WORKSPACE_EDGE_COLORS, createWorkspaceEdge } from './workspace-templates';
@@ -109,6 +106,58 @@ function mediaUrlFromConnectedNode(node: WorkspaceGraphNode, kind: WorkspaceEdge
     return output.kind === 'image' ? outputUrl ?? thumbUrl : thumbUrl;
   }
   return outputUrl ?? audioUrl ?? thumbUrl;
+}
+
+function generationMediaKindForEdge(kind: WorkspaceEdgeKind): WorkspaceGenerationMediaInput['kind'] | null {
+  if (['audio', 'music', 'voiceover', 'sfx'].includes(kind)) return 'audio';
+  if (['video_reference', 'motion_reference', 'previous_shot', 'continuity'].includes(kind)) return 'video';
+  if (['start_image', 'end_image', 'product', 'reference', 'style', 'character', 'logo'].includes(kind)) return 'image';
+  return null;
+}
+
+function dimensionsFromAsset(node: WorkspaceGraphNode): { width?: number; height?: number } {
+  const asset = node.data.asset;
+  if (asset?.width && asset.height) return { width: asset.width, height: asset.height };
+  const match = asset?.dimensions?.match(/^(\d+)x(\d+)$/i);
+  if (match) return { width: Number(match[1]), height: Number(match[2]) };
+  const sourceMetadata = node.data.output?.sourceMetadata;
+  return {
+    width: sourceMetadata?.width ?? undefined,
+    height: sourceMetadata?.height ?? undefined,
+  };
+}
+
+export function workspaceGenerationMediaInputsFromGraph(params: {
+  nodes: WorkspaceGraphNode[];
+  edges: WorkspaceGraphEdge[];
+  shotNodeId: string;
+}): WorkspaceGenerationMediaInput[] {
+  return params.edges.flatMap((edge) => {
+    if (edge.target !== params.shotNodeId) return [];
+    const semanticKind = (edge.targetHandle ?? edge.data?.kind) as WorkspaceEdgeKind | undefined;
+    if (!semanticKind) return [];
+    const kind = generationMediaKindForEdge(semanticKind);
+    if (!kind) return [];
+    const node = params.nodes.find((candidate) => candidate.id === edge.source);
+    if (!node) return [];
+    const url = mediaUrlFromConnectedNode(node, semanticKind);
+    if (!url) return [];
+    const dimensions = dimensionsFromAsset(node);
+    const asset = node.data.asset;
+    const output = node.data.output;
+    return [{
+      semanticKind,
+      kind,
+      url,
+      name: asset?.filename ?? node.data.title,
+      assetId: asset?.id ?? output?.providerOutputId ?? node.id,
+      mimeType: asset?.mimeType,
+      sizeBytes: asset?.sizeBytes,
+      width: dimensions.width,
+      height: dimensions.height,
+      durationSec: asset?.durationSec ?? output?.sourceMetadata?.durationSec ?? undefined,
+    }];
+  });
 }
 
 export function mediaUrlsFromKinds(
@@ -616,31 +665,24 @@ export function buildWorkspaceShotGenerateRequest(params: {
   endImageUrl?: string;
   videoReferences: string[];
   audioReferences: string[];
+  mediaInputs?: WorkspaceGenerationMediaInput[];
   shotNodeId: string;
   outputName: string;
   submissionId?: string;
 }): WorkspaceShotGenerateRequest {
-  const audioEnabled = workspaceAudioEnabledForRequest(params.settings, params.capability);
-  const intent = resolveWorkspaceGenerationIntent({
+  const facts = resolveWorkspaceGenerationFacts({
     settings: params.settings,
     connectedInputs: params.connectedInputs,
     capability: params.capability,
+    mediaInputs: params.mediaInputs,
   });
-  if (!intent.canRoute) {
-    throw new Error(`Selected model is not compatible with the ${intent.workflowType} workflow.`);
+  if (!facts.canRoute) {
+    throw new Error(`Selected model is not compatible with the ${facts.workflowType} workflow.`);
   }
-  const policy = resolveWorkspaceBlockPolicy({
-    settings: params.settings,
-    capability: params.capability,
-    connectedInputs: [...params.connectedInputs],
-  });
-  const activeConnectors = policy.inputConnectors.filter((connector) => {
-    if (connector.disabledReason) return false;
-    if (intent.blockMode === 'first-last-video' && (connector.kind === 'start_image' || connector.kind === 'end_image')) {
-      return true;
-    }
-    return workspaceConnectorSupportsBlockMode(connector, intent.blockMode);
-  });
+  if (facts.issues.length) {
+    throw new Error(facts.issues.map((issue) => issue.message).join(' '));
+  }
+  const activeConnectors = facts.activeConnectors;
   const supportsAny = (kinds: WorkspaceEdgeKind[]) => activeConnectors.some((connector) => kinds.includes(connector.kind));
   const referenceImages = supportsAny(['start_image', 'end_image', 'reference', 'product', 'character', 'logo'])
     ? params.referenceImages
@@ -651,11 +693,56 @@ export function buildWorkspaceShotGenerateRequest(params: {
     ? params.startImageUrl ?? referenceImages[0]
     : referenceImages[0];
   const primaryAudioUrl = audioReferences[0];
+  const exactMediaInputs = facts.assignments.map((input) => {
+    const name = input.name ?? input.url.split('/').pop()?.split('?')[0] ?? `${input.semanticKind}-${input.kind}`;
+    return {
+      name,
+      type: input.mimeType ?? `${input.kind}/*`,
+      size: input.sizeBytes ?? 0,
+      kind: input.kind,
+      slotId: input.fieldId,
+      label: input.label,
+      url: input.url,
+      width: input.width,
+      height: input.height,
+      durationSec: input.durationSec,
+      assetId: input.assetId,
+    };
+  });
+  const fallbackMediaInputs = exactMediaInputs.length
+    ? []
+    : [
+        ...videoReferences.map((url, index) => {
+          const connector = activeConnectors.find((candidate) => candidate.kind === 'video_reference');
+          return {
+            name: `video-reference-${index + 1}`,
+            type: 'video/*',
+            size: 0,
+            kind: 'video' as const,
+            slotId: connector?.fieldId,
+            label: connector?.label,
+            url,
+          };
+        }),
+        ...audioReferences.map((url, index) => {
+          const connector = activeConnectors.find((candidate) => candidate.kind === 'audio');
+          return {
+            name: `audio-reference-${index + 1}`,
+            type: 'audio/*',
+            size: 0,
+            kind: 'audio' as const,
+            slotId: connector?.fieldId,
+            label: connector?.label,
+            url,
+          };
+        }),
+      ];
+  const requestMediaInputs = exactMediaInputs.length ? exactMediaInputs : fallbackMediaInputs;
   const request: WorkspaceShotGenerateRequest = {
     engineId: params.settings.modelId,
     prompt: params.prompt,
-    mode: intent.generationMode,
-    durationSec: params.settings.durationSec,
+    mode: facts.mode,
+    durationSec: facts.durationSec,
     durationOption: params.settings.durationSec,
     aspectRatio: params.settings.aspectRatio,
     resolution: params.settings.resolution,
@@ -667,30 +754,11 @@ export function buildWorkspaceShotGenerateRequest(params: {
     visibility: 'private',
     indexable: false,
     ...(typeof params.settings.seed === 'number' ? { seed: params.settings.seed } : {}),
-    ...(typeof audioEnabled === 'boolean' ? { audio: audioEnabled } : {}),
+    ...(typeof facts.audio === 'boolean' ? { audio: facts.audio } : {}),
     ...(primaryImageUrl ? { imageUrl: primaryImageUrl, referenceImages } : {}),
-    ...(intent.generationMode === 'fl2v' && params.endImageUrl ? { endImageUrl: params.endImageUrl } : {}),
+    ...((facts.mode === 'fl2v' || facts.mode === 'i2v') && params.endImageUrl ? { endImageUrl: params.endImageUrl } : {}),
     ...(primaryAudioUrl ? { audioUrl: primaryAudioUrl } : {}),
-    ...(videoReferences.length || audioReferences.length
-      ? {
-          inputs: [
-            ...videoReferences.map((url, index) => ({
-              name: `video-reference-${index + 1}`,
-              type: 'video/*',
-              size: 0,
-              kind: 'video' as const,
-              url,
-            })),
-            ...audioReferences.map((url, index) => ({
-              name: `audio-reference-${index + 1}`,
-              type: 'audio/*',
-              size: 0,
-              kind: 'audio' as const,
-              url,
-            })),
-          ],
-        }
-      : {}),
+    ...(requestMediaInputs.length ? { inputs: requestMediaInputs } : {}),
   };
   return request;
 }

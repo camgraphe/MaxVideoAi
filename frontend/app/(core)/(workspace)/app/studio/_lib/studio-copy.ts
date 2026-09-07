@@ -321,6 +321,7 @@ export type StudioCopy = {
     studioApiUnauthorized: string;
     studioApiUnavailable: string;
     studioLocalFallbackActive: string;
+    workspaceSettingsAdjusted: string;
     canvasTemplateNotFound: string;
     projectMediaAssetNotFound: string;
     projectMediaFolderNotFound: string;
@@ -892,6 +893,10 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
       modifyVideoDescription: 'Video-to-video generation workflow block.',
       modifyVideoTitle: 'Modify video',
       modifyVideoSubtitle: 'Video-to-video edit workflow.',
+      extendVideo: 'Extend video',
+      extendVideoDescription: 'Continue or stitch one to three source clips.',
+      extendVideoTitle: 'Extend video',
+      extendVideoSubtitle: 'Continuation workflow for source clips.',
       storyboard: 'Storyboard',
       storyboardDescription: 'Generate storyboard panels, timing notes, and continuity references.',
       storyboardGenerationTitle: 'Storyboard generation',
@@ -1530,6 +1535,7 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
     studioApiUnauthorized: 'Sign in to sync Studio projects. Local draft mode is active.',
     studioApiUnavailable: 'Studio sync is temporarily unavailable. Local draft mode is active.',
     studioLocalFallbackActive: 'Local draft mode active.',
+    workspaceSettingsAdjusted: 'Saved settings were updated on {count} block(s) to match the current model capabilities.',
     canvasTemplateNotFound: 'Canvas template not found.',
     projectMediaAssetNotFound: 'Project media asset not found.',
     projectMediaFolderNotFound: 'Project media folder not found.',

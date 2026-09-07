@@ -9,6 +9,9 @@ import {
   getWorkspaceBlockCompatibleCapabilities,
   resolveWorkspaceBlockPolicy,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-block-capability-policy';
+import {
+  isWorkspaceModelCertifiedForBlock,
+} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-model-certification';
 import { getWorkspaceModelCapabilities } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-capabilities';
 import {
   getWorkspaceBlockPreset,
@@ -20,6 +23,7 @@ const expectedV1Presets = [
   'modify-image',
   'generate-video',
   'modify-video',
+  'extend-video',
   'audio-music',
   'audio-voiceover',
   'audio-sfx',
@@ -61,6 +65,7 @@ test('Studio V1 block contracts define exact workflow intent and output media', 
     'character_to_video',
   ]);
   assert.deepEqual(getWorkspaceV1BlockContract('modify-video').workflows, ['video_to_video']);
+  assert.deepEqual(getWorkspaceV1BlockContract('extend-video').requiredInputsByWorkflow.video_to_video, ['prompt', 'video_reference']);
   assert.deepEqual(getWorkspaceV1BlockContract('generate-image').workflows, ['text_to_image']);
   assert.deepEqual(getWorkspaceV1BlockContract('modify-image').workflows, ['image_to_image']);
   assert.equal(getWorkspaceV1BlockContract('angle').outputKind, 'image');
@@ -107,7 +112,7 @@ test('Studio V1 generate video excludes storyboard-only models without a referen
 
   const storyboardOnlyCapability = {
     ...sourceCapability,
-    id: 'test-storyboard-only-video',
+    id: 'minimax-h3',
     workflows: ['storyboard_to_video'] as const,
     text_to_video: false,
     image_to_video: false,
@@ -118,12 +123,12 @@ test('Studio V1 generate video excludes storyboard-only models without a referen
 
   const plainPromptCompatible = getWorkspaceBlockCompatibleCapabilities({
     settings: preset.defaultShot,
-    capabilities: [...capabilities, storyboardOnlyCapability],
+    capabilities: [...capabilities.filter((capability) => capability.id !== storyboardOnlyCapability.id), storyboardOnlyCapability],
     connectedInputs: ['prompt'],
   });
   const referenceCompatible = getWorkspaceBlockCompatibleCapabilities({
     settings: preset.defaultShot,
-    capabilities: [...capabilities, storyboardOnlyCapability],
+    capabilities: [...capabilities.filter((capability) => capability.id !== storyboardOnlyCapability.id), storyboardOnlyCapability],
     connectedInputs: ['prompt', 'reference'],
   });
 
@@ -137,4 +142,90 @@ test('Studio V1 tool blocks only expose their product tool capabilities', () => 
   assert.ok(compatibleIds('angle').every((id) => id.startsWith('angle-')));
   assert.ok(compatibleIds('upscale-image').every((id) => id.startsWith('upscale-image-')));
   assert.ok(compatibleIds('upscale-video').every((id) => id.startsWith('upscale-video-')));
+});
+
+test('Studio certification declares exact new-engine block and workflow tuples', () => {
+  assert.equal(isWorkspaceModelCertifiedForBlock({
+    modelId: 'seedance-2-5',
+    presetId: 'generate-video',
+    workflowType: 'text_to_video',
+  }), true);
+  assert.equal(isWorkspaceModelCertifiedForBlock({
+    modelId: 'seedance-2-5',
+    presetId: 'generate-video',
+    workflowType: 'image_to_video',
+  }), true);
+  assert.equal(isWorkspaceModelCertifiedForBlock({
+    modelId: 'seedance-2-5',
+    presetId: 'modify-video',
+    workflowType: 'video_to_video',
+  }), true);
+  assert.equal(isWorkspaceModelCertifiedForBlock({
+    modelId: 'seedance-2-5',
+    presetId: 'extend-video',
+    workflowType: 'video_to_video',
+  }), true);
+  assert.equal(isWorkspaceModelCertifiedForBlock({
+    modelId: 'minimax-h3',
+    presetId: 'generate-video',
+    workflowType: 'text_to_video',
+  }), true);
+  assert.equal(isWorkspaceModelCertifiedForBlock({
+    modelId: 'minimax-h3',
+    presetId: 'modify-video',
+    workflowType: 'video_to_video',
+  }), false);
+  assert.equal(isWorkspaceModelCertifiedForBlock({
+    modelId: 'minimax-h3',
+    presetId: 'extend-video',
+    workflowType: 'video_to_video',
+  }), false);
+});
+
+test('Extend Video is a Seedance 2.5-only block with a three-source capacity', () => {
+  assert.deepEqual(compatibleIds('extend-video'), ['seedance-2-5']);
+  const preset = getWorkspaceBlockPreset('extend-video');
+  const capability = getWorkspaceModelCapabilities().find((candidate) => candidate.id === 'seedance-2-5');
+  assert.ok(preset?.defaultShot);
+  assert.ok(capability);
+  const policy = resolveWorkspaceBlockPolicy({
+    settings: preset.defaultShot,
+    capability,
+    connectedInputs: ['prompt', 'video_reference'],
+  });
+  const sourceConnector = policy.inputConnectors.find((connector) => connector.kind === 'video_reference');
+  assert.equal(policy.mode, 'video-extend');
+  assert.equal(sourceConnector?.fieldId, 'extension_source_videos');
+  assert.equal(sourceConnector?.maxCount, 3);
+});
+
+test('MiniMax H3 exposes exact render choices and derives framing from image inputs', () => {
+  const preset = getWorkspaceBlockPreset('generate-video');
+  const capability = getWorkspaceModelCapabilities().find((candidate) => candidate.id === 'minimax-h3');
+  assert.ok(preset?.defaultShot);
+  assert.ok(capability);
+
+  assert.deepEqual(capability.supported_resolutions, ['768P', '2K', '4K']);
+  assert.deepEqual(capability.supported_durations, [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
+  assert.deepEqual(
+    capability.render_options.map((option) => [option.id, option.control, option.defaultEnabled]),
+    [['audio', 'included', true]],
+  );
+
+  const textPolicy = resolveWorkspaceBlockPolicy({
+    settings: { ...preset.defaultShot, modelId: 'minimax-h3', workflowType: 'text_to_video' },
+    capability,
+    connectedInputs: ['prompt'],
+  });
+  const imagePolicy = resolveWorkspaceBlockPolicy({
+    settings: { ...preset.defaultShot, modelId: 'minimax-h3', workflowType: 'image_to_video' },
+    capability,
+    connectedInputs: ['prompt', 'start_image'],
+  });
+
+  assert.equal(textPolicy.controlFields.includes('aspectRatio'), true);
+  assert.equal(textPolicy.controlFields.includes('audioEnabled'), true);
+  assert.equal(imagePolicy.mode, 'image-to-video');
+  assert.equal(imagePolicy.controlFields.includes('aspectRatio'), false);
+  assert.equal(imagePolicy.controlFields.includes('audioEnabled'), true);
 });

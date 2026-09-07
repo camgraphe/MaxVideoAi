@@ -165,6 +165,7 @@ function toolbarBlocks(copy: StudioCopy['canvas']['nodes']): Record<'audio' | 'i
       },
       presetBlock('generate-video', copy, <Clapperboard size={18} />),
       presetBlock('modify-video', copy, <SlidersHorizontal size={18} />),
+      presetBlock('extend-video', copy, <Video size={18} />),
       presetBlock('upscale-video', copy, <Sparkles size={18} />),
     ],
     audio: [
