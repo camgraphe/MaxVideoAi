@@ -73,7 +73,7 @@ function estimateAudioPricing(settings: WorkspaceShotSettings, prompt: string): 
     mood: config.requiresMood ? audioSettings?.mood ?? 'epic' : null,
     voiceMode: config.includesVoice ? 'standard' : null,
     script: config.includesVoice ? prompt : null,
-    musicEnabled: audioSettings?.musicEnabled ?? config.defaultMusicEnabled,
+    musicEnabled: settings.workflowType === 'sfx_generation' ? false : audioSettings?.musicEnabled ?? config.defaultMusicEnabled,
   });
   return readyWorkspacePricingEstimate(pricing.totalCents, pricing.currency, pricing);
 }

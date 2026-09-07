@@ -20,7 +20,6 @@ const workerPath = join(root, 'frontend/scripts/run-timeline-export-worker.ts');
 const compositionPath = join(root, 'frontend/src/remotion/timeline-export/TimelineComposition.tsx');
 const operationsGuidePath = join(root, 'docs/engineering/maxvideoai-editor-server-render.md');
 const workerDockerfilePath = join(root, 'Dockerfile.timeline-worker');
-const envExamplePath = join(root, 'frontend/.env.local.example');
 
 test('timeline export API contract exposes job status and artifact separately', () => {
   const contractSource = readFileSync(contractsPath, 'utf8');
@@ -191,7 +190,7 @@ test('timeline export worker has a dedicated Docker image and documented env', (
   assert.match(dockerfile, /ffmpeg/, 'worker image should install FFmpeg for MP4 rendering');
   assert.doesNotMatch(dockerfile, /mock-server\.js/, 'worker image must not reuse the mock API runtime');
 
-  const envSource = readFileSync(envExamplePath, 'utf8');
+  const envSource = readFileSync(operationsGuidePath, 'utf8');
   assert.match(envSource, /TIMELINE_EXPORT_ECS_REGION=us-east-1/);
   assert.match(envSource, /TIMELINE_EXPORT_ECS_CLUSTER=maxvideoai-timeline-exports/);
   assert.match(envSource, /TIMELINE_EXPORT_ECS_TASK_DEFINITION=maxvideoai-timeline-export-worker:2/);

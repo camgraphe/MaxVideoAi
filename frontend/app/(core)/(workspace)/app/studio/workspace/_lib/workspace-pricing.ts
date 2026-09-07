@@ -134,7 +134,12 @@ export function buildWorkspaceShotPreflightRequest({
     seedLocked: typeof settings.seed === 'number',
     ...(typeof facts.audio === 'boolean' ? { audio: facts.audio } : {}),
     hasVideoInput: facts.hasVideoInput,
-    referenceImageCount: facts.referenceImageCount,
+    inputs: facts.assignments.flatMap((assignment) => assignment.assetId ? [{
+      assetId: assignment.assetId,
+      slotId: assignment.fieldId,
+      kind: assignment.kind,
+      url: assignment.url,
+    }] : []),
     user: { memberTier },
   };
 }

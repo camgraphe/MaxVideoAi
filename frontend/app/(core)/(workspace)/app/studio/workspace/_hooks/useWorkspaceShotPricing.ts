@@ -101,7 +101,7 @@ function pricingRequestKey(request: WorkspacePricingRequest['request']): string 
     audio: request.audio,
     voiceControl: request.voiceControl,
     hasVideoInput: request.hasVideoInput,
-    referenceImageCount: request.referenceImageCount,
+    inputs: request.inputs,
     memberTier: request.user?.memberTier,
   });
 }

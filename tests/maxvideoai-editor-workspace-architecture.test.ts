@@ -818,7 +818,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(projectsPageSource, /StudioProjectsPageClient/, 'projects route should delegate to a route-local project creation client');
   assert.match(projectsPageSource, /HeaderBar/, 'projects route should keep the normal app header before entering the editor workspace');
   assert.match(projectsPageSource, /AppSidebar/, 'projects route should keep the normal app sidebar before entering the editor workspace');
-  assert.match(appSidebarSource, /id:\s*'studio'[\s\S]*href:\s*'\/app\/studio\/projects'/, 'global app navigation should expose Studio project selection');
+  assert.match(readFileSync(join(root, 'frontend/components/app/app-navigation.ts'), 'utf8'), /id:\s*'studio'[\s\S]*href:\s*'\/app\/studio\/projects'/, 'the current shared navigation owner should expose Studio project selection');
   assert.match(projectsClientSource, /STUDIO_PROJECTS_STORAGE_KEY/, 'projects client should keep a local draft fallback');
   assert.match(projectsClientSource, /\/api\/studio\/projects/, 'projects client should sync projects with the Studio API when available');
   assert.match(projectsClientSource, /authFetch/, 'projects client should use authenticated fetches for project sync');
@@ -3064,7 +3064,8 @@ test('MaxVideoAI editor active model capabilities expose additive engine contrac
     assert.ok(capability.input_connectors.length > 0, `${capability.id} should expose editor input connectors`);
     assert.ok(capability.supported_aspect_ratios.length > 0, `${capability.id} should expose supported aspect ratios`);
     assert.ok(capability.supported_resolutions.length > 0, `${capability.id} should expose supported resolutions`);
-    assert.ok(capability.supported_fps.length > 0, `${capability.id} should expose supported FPS values`);
+    assert.ok(Array.isArray(capability.supported_fps), `${capability.id} should project the FPS capability list, including fixed/unspecified FPS engines`);
+    assert.ok(capability.supported_fps.every((fps) => Number.isFinite(fps) && fps > 0));
 
     const connectorKinds = new Set(capability.input_connectors.map((connector) => connector.kind));
     const requiredKinds = new Set(capability.required_inputs);

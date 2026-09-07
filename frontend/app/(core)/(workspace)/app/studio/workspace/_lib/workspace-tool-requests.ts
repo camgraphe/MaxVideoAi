@@ -280,7 +280,7 @@ export function buildWorkspaceAudioGenerateRequest({
     ...(config.includesVoice && audioSettings?.language ? { language: audioSettings.language } : {}),
     durationSec: settings.durationSec,
     ...(config.supportsMusicToggle
-      ? { musicEnabled: audioSettings?.musicEnabled ?? config.defaultMusicEnabled }
+      ? { musicEnabled: settings.workflowType === 'sfx_generation' ? false : audioSettings?.musicEnabled ?? config.defaultMusicEnabled }
       : {}),
   };
   return request;

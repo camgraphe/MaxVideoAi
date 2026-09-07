@@ -1512,7 +1512,7 @@ test('Studio block capability policy defines a normalized per-preset capability 
       outputMediaKind: 'audio',
       outputCount: 1,
       requiredInputs: ['prompt'],
-      optionalInputs: ['video_reference', 'motion_reference'],
+      optionalInputs: [],
       readyInputs: ['prompt'],
       missingInputs: ['prompt'],
       mode: 'tool',

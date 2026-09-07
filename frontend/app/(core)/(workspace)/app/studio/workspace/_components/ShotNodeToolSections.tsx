@@ -381,7 +381,7 @@ function renderAudioSection(
   const audio = shot.toolSettings?.audio ?? {
     mood: 'epic' as const,
     intensity: 'standard' as const,
-    musicEnabled: getAudioPackConfig(shot.workflowType === 'cinematic_voiceover' ? 'cinematic_voice' : shot.workflowType === 'cinematic_audio' ? 'cinematic' : shot.workflowType === 'voiceover_generation' ? 'voice_only' : shot.workflowType === 'sfx_generation' ? 'sfx_only' : 'music_only').defaultMusicEnabled,
+    musicEnabled: shot.workflowType === 'sfx_generation' ? false : getAudioPackConfig(shot.workflowType === 'cinematic_voiceover' ? 'cinematic_voice' : shot.workflowType === 'cinematic_audio' ? 'cinematic' : shot.workflowType === 'voiceover_generation' ? 'voice_only' : 'music_only').defaultMusicEnabled,
     voiceGender: 'neutral' as const,
     voiceProfile: 'balanced' as const,
     voiceDelivery: 'natural' as const,

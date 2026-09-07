@@ -350,7 +350,7 @@ function virtualCapability(input: {
     supports_people_reference: input.optionalInputs.includes('character'),
     supports_product_reference: input.optionalInputs.includes('product'),
     supported_aspect_ratios: ['16:9', '9:16', '1:1', '4:5'],
-    supported_durations: input.family === 'audio' ? [3, 5, 8, 10, 15, 20, 30, 45, 60, 90, 120, 180] : [1, 5, 7, 8, 10],
+    supported_durations: input.workflow === 'sfx_generation' ? [3, 5, 8, 10, 15, 20, 30] : input.family === 'audio' ? [3, 5, 8, 10, 15, 20, 30, 45, 60, 90, 120, 180] : [1, 5, 7, 8, 10],
     supported_resolutions: ['720p', '1080p', '1440p', '4k'],
     supported_fps: [24, 30],
     input_connectors: inputConnectors,
@@ -394,7 +394,7 @@ function getVirtualWorkspaceCapabilities(): WorkspaceModelCapability[] {
       outputKind: 'audio',
       workflow: 'sfx_generation',
       requiredInputs: ['prompt'],
-      optionalInputs: ['video_reference', 'motion_reference'],
+      optionalInputs: [],
     }),
     virtualCapability({
       id: 'audio-cinematic',

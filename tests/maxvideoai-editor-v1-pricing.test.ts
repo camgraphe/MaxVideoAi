@@ -54,17 +54,20 @@ test('video pricing and submission facts share mode, media presence, and referen
       semanticKind: 'reference' as const,
       kind: 'image' as const,
       url: `https://example.com/reference-${index + 1}.png`,
+      assetId: `reference-${index + 1}`,
     })),
     {
       semanticKind: 'video_reference' as const,
       kind: 'video' as const,
       url: 'https://example.com/motion.mp4',
+      assetId: 'motion',
       durationSec: 5,
     },
     {
       semanticKind: 'audio' as const,
       kind: 'audio' as const,
       url: 'https://example.com/dialogue.wav',
+      assetId: 'dialogue',
       durationSec: 4,
     },
   ];
@@ -87,7 +90,11 @@ test('video pricing and submission facts share mode, media presence, and referen
   assert.equal(facts.hasVideoInput, true);
   assert.deepEqual(facts.referenceBudget, { used: 8, maximum: 12, exceeded: false });
   assert.equal(preflight.mode, facts.mode);
-  assert.equal(preflight.referenceImageCount, facts.referenceImageCount);
+  assert.equal(preflight.inputs?.filter((input) => input.kind === 'image').length, facts.referenceImageCount);
+  assert.deepEqual(preflight.inputs, facts.assignments.map((assignment) => ({
+    assetId: assignment.assetId, slotId: assignment.fieldId, kind: assignment.kind, url: assignment.url,
+  })));
+  assert.equal('referenceImageCount' in preflight, false, 'reference counts must be derived from owned media by the server');
   assert.equal(preflight.hasVideoInput, facts.hasVideoInput);
 });
 

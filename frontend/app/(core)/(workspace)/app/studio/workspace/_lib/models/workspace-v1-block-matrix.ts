@@ -103,7 +103,7 @@ export const WORKSPACE_V1_BLOCK_MATRIX = {
     outputKind: 'audio',
     workflows: ['sfx_generation'],
     requiredInputsByWorkflow: { sfx_generation: ['prompt'] },
-    optionalInputs: ['video_reference', 'motion_reference'],
+    optionalInputs: [],
     visibleControls: ['model', 'durationSec', 'audioMood', 'audioIntensity'],
     pricingRelevantFields: ['model', 'durationSec'],
   },
