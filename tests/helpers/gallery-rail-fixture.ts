@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { readFile } from 'node:fs/promises';
 import { build } from 'esbuild';
 
 // Keep the real rail, cards, grouping and media components. Only replace the
@@ -23,6 +24,13 @@ export async function buildGalleryFixture() {
     define: { 'process.env.NODE_ENV': '"test"' }, write: false, outfile: 'gallery-fixture.js',
     tsconfig: path.join(frontend, 'tsconfig.json'),
     plugins: [{ name: 'gallery-host-adapters', setup(builder) {
+      // esbuild does not run Next's styled-jsx transform. Keep the real style and
+      // component; remove only its compile-time marker before React sees the DOM.
+      builder.onLoad({ filter: /ProcessingOverlay\.tsx$/ }, async (args) => ({
+        contents: (await readFile(args.path, 'utf8')).replace(/<style jsx>/g, '<style>'),
+        loader: 'tsx',
+        resolveDir: path.dirname(args.path),
+      }));
       builder.onResolve({ filter: /.*/ }, (args) => args.path in stubs ? { path: args.path, namespace: 'gallery-host' } : undefined);
       builder.onLoad({ filter: /.*/, namespace: 'gallery-host' }, (args) => ({ contents: stubs[args.path], loader: 'jsx', resolveDir: frontend }));
     } }],

@@ -70,7 +70,7 @@ test('workspace generation wallet preflight is split from generation submission 
   assert.doesNotMatch(generationRunnerSource, /const presentInsufficientFunds =/);
   assert.doesNotMatch(generationRunnerSource, /const unitCostCents =/);
   assert.doesNotMatch(generationRunnerSource, /const poll = async/, 'generation polling belongs in workspace-generation-iteration-runner');
-  assert.doesNotMatch(generationRunnerSource, /window\.setInterval/, 'progress timers belong in workspace-generation-iteration-runner');
+  assert.doesNotMatch(generationRunnerSource, /window\.setInterval/, 'generation submission orchestration must not own a progress timer');
 
   assert.match(walletPreflightSource, /export function useWorkspaceWalletPreflight/);
   assert.match(walletPreflightSource, /CURRENCY_LOCALE/);
@@ -79,5 +79,7 @@ test('workspace generation wallet preflight is split from generation submission 
   assert.match(walletPreflightSource, /verifyWalletBalance/);
   assert.match(generationIterationRunnerSource, /export async function runWorkspaceGenerationIteration/);
   assert.match(generationIterationRunnerSource, /const poll = async/);
-  assert.match(generationIterationRunnerSource, /window\.setInterval/);
+  assert.doesNotMatch(generationIterationRunnerSource, /window\.setInterval/, 'elapsed time must not synthesize progress');
+  assert.match(generationIterationRunnerSource, /await getJobStatus\(jobId\)/, 'the existing iteration poll reads real status');
+  assert.match(generationIterationRunnerSource, /window\.setTimeout\(poll, pollProjection\.nextPollDelayMs\)/, 'poll scheduling follows the status projection');
 });
