@@ -7,6 +7,7 @@ import { ChevronDown, Moon, Sun } from 'lucide-react';
 import { ReconsentPrompt } from '@/components/legal/ReconsentPrompt';
 import { AppLanguageToggle } from '@/components/AppLanguageToggle';
 import { useThemePreference } from '@/hooks/useThemePreference';
+import { isAppExperiencePath } from '@/lib/app-experience-path';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
@@ -233,7 +234,7 @@ export function HeaderBar() {
             type="button"
             variant="ghost"
             size="sm"
-            className="app-topbar-menu min-h-0 h-9 w-9 shrink-0 rounded-full border border-hairline bg-surface p-2 text-text-primary hover:bg-surface-2 hidden md:inline-flex xl:hidden"
+            className="app-topbar-menu min-h-0 h-9 w-9 shrink-0 rounded-full border border-hairline bg-surface p-2 text-text-primary hover:bg-surface-2 inline-flex xl:hidden"
             aria-label={t('workspace.header.mobileToggle', 'Open menu')}
             onClick={() => setMobileMenuOpen(true)}
           >
@@ -440,7 +441,7 @@ export function HeaderBar() {
           </div>
         </div>
       </header>
-      <WorkspaceMobileNav onOpenMenu={() => setMobileMenuOpen(true)} />
+      {isAppExperiencePath(pathname) ? <WorkspaceMobileNav onOpenMenu={() => setMobileMenuOpen(true)} /> : null}
       {mobileMenuOpen ? (
         <HeaderMobileMenu
           ctaLabel={ctaLabel}
