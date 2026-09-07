@@ -5,7 +5,6 @@ import type { AppLocale } from '@/i18n/locales';
 import { dispatchGaEvent } from '@/lib/analytics/ga-events';
 import { classifyTopupFailure } from '@/lib/analytics/topup-failure';
 import { runPreflight } from '@/lib/api';
-import { authFetch } from '@/lib/authFetch';
 import { formatRateLimitMessage } from '@/lib/wallet/rate-limit-message';
 import type { EngineCaps, Mode, PreflightRequest, PreflightResponse } from '@/types/engines';
 import type { WorkspaceCopy } from '../_lib/workspace-copy';
@@ -198,24 +197,7 @@ export function useWorkspacePricingGate({
   );
 
   useEffect(() => {
-    if (!authChecked) return undefined;
-    let mounted = true;
-    (async () => {
-      try {
-        const res = await authFetch('/api/member-status');
-        if (!res.ok) return;
-        const json = await res.json();
-        if (mounted) {
-          const tier = (json?.tier ?? 'Member') as MemberTier;
-          setMemberTier(tier);
-        }
-      } catch {
-        // noop
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
+    if (authChecked) setMemberTier('Member');
   }, [authChecked, setMemberTier]);
 
   useEffect(() => {

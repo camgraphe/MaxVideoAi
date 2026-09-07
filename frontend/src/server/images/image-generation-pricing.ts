@@ -1,3 +1,4 @@
+import { LIVE_MEMBERSHIP_POLICY } from '@/lib/membership-policy';
 import { computeBillingProductSnapshot } from '@/lib/billing-products';
 import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
 import { computeCanonicalBillingSnapshot } from '@/server/pricing/quote-billing';
@@ -30,7 +31,7 @@ export async function resolveImageGenerationPricingSnapshot(params: {
   requestedMembershipTier: string | undefined;
   trustedQuotedBilling: TrustedQuotedBilling | undefined;
 }): Promise<{ pricing: PricingSnapshot; membershipTier: string | undefined }> {
-  const membershipTier = params.trustedQuotedBilling?.membershipTier ?? params.requestedMembershipTier;
+  const membershipTier = params.trustedQuotedBilling?.membershipTier ?? LIVE_MEMBERSHIP_POLICY.tier;
   const referenceImageCount = isLumaAgentsImageEngineId(params.engine.id)
     ? params.mode === 'i2i'
       ? Math.max(0, params.combinedImageCount - 1)

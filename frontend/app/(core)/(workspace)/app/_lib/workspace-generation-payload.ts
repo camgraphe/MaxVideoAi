@@ -121,7 +121,7 @@ export function buildWorkspaceGeneratePayload(
     prompt: options.trimmedPrompt,
     mode: options.submissionMode,
     durationSec: resolvedDurationSeconds,
-    membershipTier: options.memberTier,
+    membershipTier: 'Member',
     payment: { mode: options.paymentMode },
     cfgScale: typeof options.cfgScale === 'number' ? options.cfgScale : undefined,
     ...(options.selectedEngineId.startsWith('sora-2')

@@ -1,3 +1,4 @@
+import { requiresMembershipPricingRefresh, MEMBERSHIP_PRICING_REFRESH_MESSAGE } from '@/lib/membership-policy';
 import type { NextRequest } from 'next/server';
 import Stripe from 'stripe';
 import { getPlatformFeeCents } from '@maxvideoai/pricing';
@@ -110,6 +111,9 @@ export async function resolveGenerateBillingPreflight(params: {
   voiceControl: boolean;
   deps?: BillingPreflightDeps;
 }): Promise<GenerateBillingPreflightResult> {
+  if (requiresMembershipPricingRefresh(params.membershipTier)) {
+    return { ok: false, status: 409, body: { ok: false, error: 'PRICING_REFRESH_REQUIRED', message: MEMBERSHIP_PRICING_REFRESH_MESSAGE } };
+  }
   const deps = params.deps ?? {};
   const getUserPreferredCurrencyFn = deps.getUserPreferredCurrencyFn ?? getUserPreferredCurrency;
   const resolveCurrencyFn = deps.resolveCurrencyFn ?? resolveCurrency;

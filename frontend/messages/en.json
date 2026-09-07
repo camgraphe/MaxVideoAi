@@ -2521,8 +2521,8 @@
       {
         "title": "Price system",
         "items": [
-          "Preview the exact price before you generate. The price chip updates with duration, resolution, and automatic discounts.",
-          "Wallet funding options and your Member status are shown in Billing."
+          "Preview the exact price before you generate. The price chip updates with duration and resolution.",
+          "Wallet funding options and payment history are shown in Billing."
         ]
       },
       {
@@ -3974,8 +3974,8 @@
             "answer": "Credits don’t expire while your account remains active."
           },
           {
-            "question": "How do discounts work?",
-            "answer": "Member status applies automatically based on your last 30 days of spend."
+            "question": "Which price applies?",
+            "answer": "New generations use standard pricing. The exact price is shown before confirmation."
           }
         ],
         "footnote": "VAT included where applicable. Refunds on failed generations. “Works with” indicates compatibility; trademarks belong to their respective owners."

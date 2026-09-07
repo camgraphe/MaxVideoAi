@@ -2548,8 +2548,8 @@
       {
         "title": "Sistema de precios",
         "items": [
-          "Previsualiza el precio exacto antes de generar. La pastilla se ajusta con duración, resolución y descuentos automáticos.",
-          "Las opciones de recarga de la billetera y tu estado de Miembro se muestran en Facturación."
+          "Previsualiza el precio exacto antes de generar. La pastilla se ajusta con la duración y la resolución.",
+          "Las opciones de recarga y el historial de pagos se muestran en Facturación."
         ]
       },
       {
@@ -3833,8 +3833,8 @@
             "answer": "No, mientras la cuenta siga activa."
           },
           {
-            "question": "¿Cómo funcionan los descuentos?",
-            "answer": "El estado de miembro se aplica automáticamente según tu gasto de los últimos 30 días."
+            "question": "¿Qué precio se aplica?",
+            "answer": "Las nuevas generaciones usan el precio estándar. El precio exacto se muestra antes de confirmar."
           }
         ],
         "footnote": "IVA incluido cuando aplica. Reembolsos en renders fallidos. “Funciona con” indica compatibilidad; las marcas pertenecen a sus dueños."

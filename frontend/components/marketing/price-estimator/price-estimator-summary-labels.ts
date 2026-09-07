@@ -2,16 +2,12 @@ type PriceEstimatorTranslate = (key: string, fallback: string) => string | null 
 
 type BuildPriceEstimatorSummaryLabelsInput = {
   chargedNote: string;
-  fields: Record<string, string>;
-  memberTooltipLabel: string;
   priceChipSuffix?: string | null;
   t: PriceEstimatorTranslate;
 };
 
 export function buildPriceEstimatorSummaryLabels({
   chargedNote,
-  fields,
-  memberTooltipLabel,
   priceChipSuffix,
   t,
 }: BuildPriceEstimatorSummaryLabelsInput) {
@@ -24,8 +20,6 @@ export function buildPriceEstimatorSummaryLabels({
     duration: t('pricing.estimator.durationLabel', 'Duration') ?? 'Duration',
     engine: t('pricing.estimator.engineLabel', 'Engine') ?? 'Engine',
     engineRate: t('pricing.estimator.engineRateLabel', 'Engine rate') ?? 'Engine rate',
-    memberStatus: fields.memberStatus,
-    memberTooltip: memberTooltipLabel,
     priceChipSuffix: priceChipSuffix ?? t('pricing.priceChipSuffix', 'Price before you generate.') ?? 'Price before you generate.',
     resolution: t('pricing.estimator.resolutionLabel', 'Resolution') ?? 'Resolution',
   };

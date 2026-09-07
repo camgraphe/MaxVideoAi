@@ -896,11 +896,17 @@ test('stale request/catalog/membership/price/currency/snapshot fail closed befor
         quote: quoteFor(videoRequest, { catalogRevision: 'mcp-catalog-v2:stale' }), databaseNow: NOW,
       }),
     }],
-    ['membership', {
-      resolveMembershipPricing: async () => ({
-        tier: 'plus', source: 'app_receipts_rolling_30d', spent30Cents: 5_000,
-        thresholdCents: 5_000, discountPercent: 0.05,
-      }),
+    ['historical discounted membership', {
+      lockOwnedQuote: async () => {
+        const stored = quoteFor(videoRequest);
+        stored.priceCents = 119;
+        stored.pricingSnapshot = {
+          ...stored.pricingSnapshot,
+          membership: { ...membership, tier: 'plus', spent30Cents: 5000, thresholdCents: 5000, discountPercent: 0.05 },
+          canonicalPricing: { ...canonicalPricing(119), membershipTier: 'plus', discount: { tier: 'plus', percentApplied: 0.05, amountCents: 6 } },
+        };
+        return { quote: stored, databaseNow: NOW };
+      },
     }],
     ['price', {
       priceGeneration: async () => ({

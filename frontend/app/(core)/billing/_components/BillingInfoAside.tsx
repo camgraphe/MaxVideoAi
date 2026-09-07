@@ -1,12 +1,10 @@
 import type { BillingCopy } from '../_lib/billing-copy';
-import type { MemberStatus } from '../_lib/billing-types';
 
 type BillingInfoAsideProps = {
   copy: BillingCopy;
-  member: MemberStatus | null;
 };
 
-export function BillingInfoAside({ copy, member }: BillingInfoAsideProps) {
+export function BillingInfoAside({ copy }: BillingInfoAsideProps) {
   return (
     <aside className="space-y-4">
       <section className="rounded-card border border-border bg-surface p-4 shadow-card">
@@ -31,20 +29,6 @@ export function BillingInfoAside({ copy, member }: BillingInfoAsideProps) {
         </div>
       </section>
 
-      <section className="rounded-card border border-border bg-surface p-4 shadow-card">
-        <h2 className="text-lg font-semibold text-text-primary">{copy.membership.title}</h2>
-        <p className="mt-1 text-sm text-text-secondary">{copy.membership.description}</p>
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <span className="rounded-full bg-bg px-2 py-1 text-xs text-text-secondary">
-            {member?.tier ?? '--'}
-          </span>
-          <span className="rounded-full bg-surface-2 px-2 py-1 text-xs text-brand">
-            {typeof member?.savingsPct === 'number'
-              ? copy.membership.savingsChip.replace('{percent}', String(member.savingsPct))
-              : '--'}
-          </span>
-        </div>
-      </section>
     </aside>
   );
 }

@@ -1,3 +1,4 @@
+import { retireMembershipPricing } from '@/lib/membership-policy';
 import { withDbTransaction, type QueryExecutor, type TransactionQueryExecutor } from '@/lib/db';
 import { getActiveAccountRestriction } from '@/server/fraud-cleanup';
 import {
@@ -285,7 +286,7 @@ function requireMembershipPricing(value: MembershipPricingContext): MembershipPr
   ) {
     throw new AgentApiError('INTERNAL_ERROR', 'The account membership price is unavailable.');
   }
-  return value;
+  return retireMembershipPricing(value);
 }
 
 export function buildGenerationPricingSnapshot(

@@ -9,7 +9,7 @@ import { getEngineSelectFamilyRank } from '@/lib/engine-family-priority';
 import type { PricingRuleLite } from '@/lib/pricing-rules';
 import { applyEnginePricingOverride } from '@/lib/pricing-definition';
 import { buildPublicPricingFacts, buildPublicUnitPricingFacts } from '@/lib/pricing-public-facts';
-import { projectPublicPricingSnapshot, quotePublicPricing, type PublicPricingMembershipTier } from '@/lib/pricing-public-quote';
+import { projectPublicPricingSnapshot, quotePublicPricing } from '@/lib/pricing-public-quote';
 import { EngineSelect } from '@/components/ui/EngineSelect';
 import type { SelectOption } from '@/components/ui/SelectMenu';
 import { PriceEstimatorSelectGroup } from '@/components/marketing/price-estimator/PriceEstimatorSelectGroup';
@@ -22,11 +22,9 @@ import {
   FAL_ENGINE_META_BY_ID,
   FAL_ENGINE_REGISTRY,
   formatCurrency,
-  MEMBER_ORDER,
   PER_IMAGE_ENGINE_IDS,
   SUPPORTED_MODES,
   type EngineOption,
-  type MemberTier,
 } from '@/components/marketing/price-estimator/price-estimator-options';
 export interface PriceEstimatorProps {
   variant?: 'full' | 'lite';
@@ -188,7 +186,6 @@ export function PriceEstimator({
     }
   }, [selectedEngine, duration, selectedResolution]);
 
-  const [memberTier, setMemberTier] = useState<MemberTier>('Member');
   const [audioEnabled, setAudioEnabled] = useState(true);
   const selectedEngineKey = selectedEngine?.id ?? null;
 
@@ -234,7 +231,6 @@ export function PriceEstimator({
     }));
   }, [selectedEngine]);
 
-  const pricingMemberTier = memberTier.toLowerCase() as PublicPricingMembershipTier;
 
   const pricingQuote = useMemo(() => {
     if (!selectedEngine || !activeResolution) return null;
@@ -268,7 +264,7 @@ export function PriceEstimator({
           engineId: facts.facts.engineId,
           ...(mode ? { mode } : {}),
           resolution: selectedResolution,
-          membershipTier: pricingMemberTier,
+          membershipTier: 'member',
         },
         compatibilityProfileId: perImage
           ? facts.compatibilityProfileId
@@ -287,7 +283,7 @@ export function PriceEstimator({
     } catch {
       return null;
     }
-  }, [selectedEngine, activeResolution, audioEnabled, engineMode, duration, selectedResolution, pricingMemberTier, pricingRules]);
+  }, [selectedEngine, activeResolution, audioEnabled, engineMode, duration, selectedResolution, pricingRules]);
 
   const pricingSnapshot = pricingQuote?.snapshot ?? null;
 
@@ -308,32 +304,16 @@ export function PriceEstimator({
   }, [pricingSnapshot]);
 
   const currency = pricingSnapshot?.currency ?? selectedEngine?.currency ?? 'USD';
-  const tiers = dictionary.pricing.member.tiers;
-  const tooltip = dictionary.pricing.member.tooltip;
-  const memberNames = useMemo(
-    () => new Map<MemberTier, string>(MEMBER_ORDER.map((tier, index) => [tier, (tiers[index]?.name ?? tier) as string])),
-    [tiers]
-  );
-  const memberBenefits = useMemo(
-    () => new Map<MemberTier, string>(MEMBER_ORDER.map((tier, index) => [tier, dictionary.pricing.member.tiers[index]?.benefit ?? ''])),
-    [dictionary.pricing.member.tiers]
-  );
-
   const chargedNote =
     dictionary.pricing.estimator.chargedNote ?? t('pricing.estimator.chargedNote', 'Charged only if render succeeds.') ??
     'Charged only if render succeeds.';
-  const memberTooltipLabel = tooltip ?? 'Status updates daily on your last 30 days of spend.';
   const priceChipSuffix = t('pricing.priceChipSuffix', dictionary.pricing.priceChipSuffix);
 
   const isLite = variant === 'lite';
   const activeDurationOption = filteredDurationOptions.find((option) => option.value === duration) ?? null;
   const durationDisplay = activeDurationOption?.label ?? `${duration}s`;
-  const discountPercent = Math.round(pricing.discountRate * 100);
-  const memberBenefitCopy = memberBenefits.get(memberTier);
   const summaryLabels = buildPriceEstimatorSummaryLabels({
     chargedNote,
-    fields,
-    memberTooltipLabel,
     priceChipSuffix,
     t,
   });
@@ -477,18 +457,13 @@ export function PriceEstimator({
             activeResolutionLabel={activeResolution?.label}
             audioEnabled={audioEnabled}
             currency={currency}
-            discountPercent={discountPercent}
             durationDisplay={durationDisplay}
             estimateLabels={estimateLabels}
             labels={summaryLabels}
-            memberBenefitCopy={memberBenefitCopy}
-            memberNames={memberNames}
-            memberTier={memberTier}
             priceTotal={pricing.total}
             rate={rate}
             selectedEngine={selectedEngine}
             selectedResolution={selectedResolution}
-            onMemberTierChange={setMemberTier}
           />
         </div>
       </div>

@@ -4,6 +4,14 @@
 
 The pricing parity foundation, billing migration, and public projection migration are complete. The legacy pricing facade and specialized commercial snapshot layer are deleted, and an architecture contract now enforces one commercial formula owner. The three-domain admin cockpit is also complete, repository-verified, and operationally accepted against a configured isolated PostgreSQL database. The deterministic audit reports **178 scenarios, 178 matches, 0 mismatches, and 4 compatibility profiles in use**. The exhaustive public contract reports **492 unchanged rows**. Wallet/direct generation, image, audio, storyboard, tool charges, public pricing pages, model pages, estimators, chips, JSON-LD, workspace preflight, and image estimates are canonical-authoritative.
 
+## Membership discount retirement
+
+Membership discounts are retired for all new live quotes. The browser-safe policy in `frontend/src/lib/membership-policy.ts` projects every live membership input to the legacy wire tier `member`, with a zero threshold and zero discount. Billing, public, fixed-product, image, storyboard, agent, and MCP quote adapters enforce that policy even when a caller supplies a stale Plus/Pro tier, a historical percentage, or an injected tier map. Account status still reports receipt-ledger spend because other account views use it, but spend no longer changes the price of a new generation.
+
+The canonical package remains able to interpret historical membership discounts. Persisted quote snapshots, receipts, refunds, and already-paid continuation amounts must retain their original tier and discount itemization. Agent/MCP confirmation compares a stored pending quote against the current standard quote and uses the existing price-change/reconfirmation response when they differ. First-party web charge requests additionally bind the displayed policy revision through `x-maxvideoai-pricing-policy`; a missing or old revision returns `409 PRICING_REFRESH_REQUIRED` before charging so an old browser tab cannot submit a price it displayed under the former policy.
+
+The membership admin route is now read-only. Inventory and immutable audit history remain available for historical analysis, while preview, confirmation, and rollback mutations return `410 membership_retired`. Do not edit stored tiers or migrate historical rows to express this retirement; live adapters own the current product policy.
+
 The commercial values and pricing results remain unchanged: no price, margin, surcharge, membership discount, currency, rounding outcome, wallet debit, direct-payment comparison, public display, structured-data offer, or seeded product value changed. The admin mutation workflow changed from direct mutation to a server-owned `preview → explicit confirmation → transactional apply` protocol. The public batch added one named rounding-only compatibility profile after the frozen fixture demonstrated the historical behavior it preserves.
 
 ## Ownership model

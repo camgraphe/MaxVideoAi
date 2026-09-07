@@ -2556,8 +2556,8 @@
       {
         "title": "Système tarifaire",
         "items": [
-          "Prévisualisez le prix exact avant de générer. La pastille évolue selon durée, résolution et remises automatiques.",
-          "Les options de recharge du portefeuille et votre statut Membre sont affichés dans Facturation."
+          "Prévisualisez le prix exact avant de générer. La pastille évolue selon la durée et la résolution.",
+          "Les options de recharge et l’historique des paiements sont affichés dans Facturation."
         ]
       },
       {
@@ -3841,8 +3841,8 @@
             "answer": "Non, tant que le compte reste actif."
           },
           {
-            "question": "Comment fonctionnent les remises ?",
-            "answer": "Le statut membre s’applique automatiquement selon vos dépenses des 30 derniers jours."
+            "question": "Quel tarif s’applique ?",
+            "answer": "Les nouvelles générations utilisent le tarif standard. Le prix exact est affiché avant confirmation."
           }
         ],
         "footnote": "TVA incluse le cas échéant. Remboursements en cas d’échec. « Fonctionne avec » indique la compatibilité ; les marques appartiennent à leurs propriétaires."

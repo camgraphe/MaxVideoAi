@@ -1,3 +1,4 @@
+import { LIVE_PRICING_POLICY_REVISION, PRICING_POLICY_HEADER } from '@/lib/membership-policy';
 import { authFetch } from '@/lib/authFetch';
 import { translateError } from '@/lib/error-messages';
 import type { AudioGenerateRequestBody, AudioGenerateResponse } from '@/lib/audio-generation';
@@ -139,7 +140,7 @@ export async function runGenerate(
   payload: GeneratePayload,
   options?: GenerateOptions
 ): Promise<GenerateResult> {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const headers: Record<string, string> = { 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION };
   if (options?.token) {
     headers.Authorization = `Bearer ${options.token}`;
   }
@@ -195,7 +196,7 @@ export async function runGenerate(
 export async function runImageGeneration(payload: ImageGenerationRequest): Promise<ImageGenerationResponse> {
   const response = await authFetch('/api/images/generate', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION },
     body: JSON.stringify(payload),
   });
   const data = (await response.json().catch(() => null)) as ImageGenerationResponse | null;
@@ -217,7 +218,7 @@ export async function runImageGeneration(payload: ImageGenerationRequest): Promi
 export async function runAudioGenerate(payload: AudioGenerateRequestBody): Promise<AudioGenerateResponse> {
   const response = await authFetch('/api/audio/generate', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION },
     body: JSON.stringify(payload),
   });
   const data = (await response.json().catch(() => null)) as
@@ -245,7 +246,7 @@ export async function runAudioGenerate(payload: AudioGenerateRequestBody): Promi
 export async function runCharacterBuilderTool(payload: CharacterBuilderRequest): Promise<CharacterBuilderResponse> {
   const response = await authFetch('/api/tools/character-builder', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION },
     body: JSON.stringify(payload),
   });
   const data = (await response.json().catch(() => null)) as CharacterBuilderResponse | null;
@@ -267,7 +268,7 @@ export async function runCharacterBuilderTool(payload: CharacterBuilderRequest):
 export async function runAngleTool(payload: AngleToolRequest): Promise<AngleToolResponse> {
   const response = await authFetch('/api/tools/angle', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION },
     body: JSON.stringify(payload),
   });
   const data = (await response.json().catch(() => null)) as
@@ -294,7 +295,7 @@ export async function runAngleTool(payload: AngleToolRequest): Promise<AngleTool
 export async function runUpscaleTool(payload: UpscaleToolRequest): Promise<UpscaleToolResponse> {
   const response = await authFetch(`/api/tools/upscale/${payload.mediaType}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION },
     body: JSON.stringify(payload),
   });
   const data = (await response.json().catch(() => null)) as
@@ -323,7 +324,7 @@ export async function runBackgroundRemovalTool(
 ): Promise<BackgroundRemovalToolResponse> {
   const response = await authFetch('/api/tools/background-removal', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION },
     body: JSON.stringify(payload),
   });
   const data = (await response.json().catch(() => null)) as

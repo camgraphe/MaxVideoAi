@@ -1,3 +1,4 @@
+import { requireCurrentWebPricingPolicy } from '@/server/pricing/web-pricing-policy';
 export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -49,6 +50,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(userGate.body, { status: userGate.status });
   }
   metricState.userId = userGate.userId;
+  const pricingPolicyError = requireCurrentWebPricingPolicy(req, 'video');
+  if (pricingPolicyError) return pricingPolicyError;
 
   const result = await executeVideoGeneration({
     req,

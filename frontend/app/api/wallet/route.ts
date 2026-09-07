@@ -1,3 +1,5 @@
+import { requireCurrentWebPricingPolicy } from '@/server/pricing/web-pricing-policy';
+import { requiresMembershipPricingRefresh, MEMBERSHIP_PRICING_REFRESH_MESSAGE } from '@/lib/membership-policy';
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import Stripe from 'stripe';
@@ -199,6 +201,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid top-up amount' }, { status: 400 });
   }
   const requestMode = typeof body.mode === 'string' ? body.mode.trim().toLowerCase() : '';
+  if (requestMode === 'direct') {
+    const pricingPolicyError = requireCurrentWebPricingPolicy(req, 'video');
+    if (pricingPolicyError) return pricingPolicyError;
+  }
   const isExpressCheckoutTopUp = requestMode === 'express_checkout' || requestMode === 'checkout_elements';
   const checkoutLocale = resolveCheckoutLocale(req, body.locale);
   const checkoutCopy = CHECKOUT_COPY_BY_LOCALE[checkoutLocale];
@@ -299,6 +305,9 @@ export async function POST(req: NextRequest) {
       resolution = soraRequest.resolution === 'auto' ? defaultResolution : soraRequest.resolution;
     }
 
+    if (requiresMembershipPricingRefresh(body.membershipTier)) {
+      return NextResponse.json({ error: 'PRICING_REFRESH_REQUIRED', message: MEMBERSHIP_PRICING_REFRESH_MESSAGE }, { status: 409 });
+    }
     const pricingEngine = applyEngineVariantPricing(engine, mode);
     const pricing = await computeCanonicalBillingSnapshot({
       engine: pricingEngine,

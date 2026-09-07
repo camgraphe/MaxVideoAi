@@ -134,10 +134,10 @@ test('billing feature modules own their explicit responsibilities', () => {
   assert.match(receiptsHookSource, /receiptsCollapsed/);
   assert.match(sessionHookSource, /export function useBillingSessionState/);
   assert.match(sessionHookSource, /\/api\/wallet/);
-  assert.match(sessionHookSource, /\/api\/member-status\?includeTiers=1/);
+  assert.doesNotMatch(sessionHookSource, /\/api\/member-status/);
   assert.match(sessionHookSource, /\/api\/stripe-mode/);
   assert.match(sessionHookSource, /writeLastKnownWallet/);
-  assert.match(sessionHookSource, /writeLastKnownMember/);
+  assert.doesNotMatch(sessionHookSource, /writeLastKnownMember/);
   assert.match(analyticsHookSource, /export function useBillingTopupAnalytics/);
   assert.match(analyticsHookSource, /topup_started/);
   assert.match(quotesHookSource, /export function useBillingTopupQuotes/);

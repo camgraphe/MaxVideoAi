@@ -36,10 +36,6 @@ function formatCurrency(currency: string, cents: number) {
   }).format(cents / 100);
 }
 
-function formatPercentage(value: number | undefined) {
-  if (typeof value !== 'number') return '';
-  return `${Math.round(value * 100)}%`;
-}
 
 export function PriceChip({
   engineId,
@@ -112,10 +108,6 @@ export function PriceChip({
   const engineVersion = localizedMeta?.versionLabel ?? rosterEntry?.versionLabel ?? (definition.version ? `v${definition.version}` : undefined);
   const displayResolution = formatResolutionLabel(canonicalId, resolution);
   const formattedTotal = formatCurrency(snapshot.currency, snapshot.totalCents);
-  const formattedDiscount = snapshot.discount
-    ? `${formatPercentage(snapshot.discount.percentApplied)} · -${formatCurrency(snapshot.currency, snapshot.discount.amountCents)}`
-    : t('pricing.noMemberDiscount', 'No member discount');
-  const memberLabel = snapshot.membershipTier ? snapshot.membershipTier.toUpperCase() : 'MEMBER';
 
   const prefix = dictionary.pricing.priceChipPrefix ?? t('pricing.priceChipPrefix', 'This render');
   const chipSuffix = suffix ?? dictionary.pricing.priceChipSuffix ?? t('pricing.priceChipSuffix', 'Price before you generate.');
@@ -159,13 +151,6 @@ export function PriceChip({
               <p className="text-sm font-medium text-text-primary">
                 {snapshot.base.seconds}s · {displayResolution.toUpperCase()}
               </p>
-            </div>
-            <div>
-              <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
-                {t('pricing.memberDiscount', 'Member discount')}
-              </span>
-              <p className="text-sm font-medium text-text-primary">{formattedDiscount}</p>
-              <p className="text-[11px] text-text-muted">{t('pricing.memberTier', 'Tier')}: {memberLabel}</p>
             </div>
             <div className="border-t border-hairline pt-2">
               <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">

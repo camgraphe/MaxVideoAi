@@ -118,7 +118,7 @@ export function BillingClient({
     copy,
     session,
   });
-  const { wallet, member, stripeMode } = useBillingSessionState({
+  const { wallet, stripeMode } = useBillingSessionState({
     authLoading,
     session,
     onDetectedCurrency: applyDetectedCurrency,
@@ -360,7 +360,7 @@ export function BillingClient({
                 walletQuoteLoading={walletQuoteLoading}
               />
 
-              <BillingInfoAside copy={copy} member={member} />
+              <BillingInfoAside copy={copy} />
             </section>
 
             <ReceiptsPanel
