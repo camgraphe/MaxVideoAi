@@ -68,8 +68,9 @@ test('video and image composers opt into one responsive workspace density contra
   assert.match(coreSettingsSource, /portal=\{compact\}/);
   assert.match(imageSettingsSource, /portal=\{compact\}/);
   assert.doesNotMatch(composerSource, /overflow-x-auto/, 'essential settings must wrap without a hidden horizontal scroll area');
-  assert.match(composerSource, /workspaceDensity[\s\S]*app-composer-toolbar-layout flex flex-col/);
-  assert.match(composerSource, /workspaceDensity[\s\S]*app-composer-submit w-full/);
+  assert.match(composerSource, /workspaceDensity[\s\S]*app-composer-toolbar-layout flex gap-3/);
+  assert.match(composerSource, /app-composer-settings-group[\s\S]*workspaceDensity \? optionsControl : null/);
+  assert.match(composerSource, /workspaceDensity \? 'app-composer-submit' : 'lg:items-end'/);
   assert.match(videoComposerSource, /<CoreSettingsBar[\s\S]*trailingControl=\{<WorkspaceOptionsButton/);
   assert.match(imageSurfaceSource, /<ImageSettingsBar[\s\S]*trailingControl=/);
   assert.doesNotMatch(composerSource, /Estimated price|Estimated credits/);
@@ -133,7 +134,8 @@ test('workspace preview and image prompt density stay opt-in without changing sh
   assert.match(composerSource, /!min-h-11 gap-3[\s\S]*lg:min-w-\[176px\]/);
   assert.match(compositePreviewSource, /density\?: 'default' \| 'workspace'/);
   assert.match(compositePreviewSource, /workspaceDensity \? 'px-0 py-0' : 'px-4 py-4'/);
-  assert.match(compositePreviewSource, /workspaceDensity \? 'mt-1' : 'mt-3'/);
+  assert.match(compositePreviewSource, /workspaceDensity \? 'mt-0' : 'mt-3'/);
+  assert.match(compositePreviewSource, /compact=\{workspaceDensity\}/);
   assert.match(compositePreviewSource, /workspaceDensity \? 'px-3 py-0' : 'px-3 py-2'/);
   assert.match(compositePreviewSource, /if \(workspaceDensity\) return;/);
   assert.match(compositePreviewSource, /const width = Math\.min\(availableWidth, maxWidth, \(maxHeight \* 16\) \/ 9\)/);

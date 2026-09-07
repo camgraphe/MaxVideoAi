@@ -126,7 +126,6 @@ export function Composer({
       return `${currency} ${price.toFixed(2)}`;
     }
   }, [price, currency, isPricing, preflight?.ok]);
-  const memberDiscount = preflight?.pricing?.discount;
   const promptLabel = promptField?.label ?? 'Prompt';
   const promptDescription = promptField?.description;
   const negativePromptLabel = negativePromptField?.label ?? 'Negative prompt';
@@ -223,30 +222,23 @@ export function Composer({
   const composerToolbar = (settingsBar || onGenerate) ? (
               <div className={clsx('app-composer-toolbar border-t border-border/65 dark:border-white/[0.06]', workspaceDensity ? 'px-3 py-1' : 'px-4 py-3')}>
                 <div className={workspaceDensity
-                  ? 'app-composer-toolbar-layout flex flex-col gap-3'
+                  ? 'app-composer-toolbar-layout flex gap-3'
                   : 'flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between'}>
-                  {settingsBar ? (
+                  {(settingsBar || (workspaceDensity && optionsControl)) ? (
                     <div className={clsx(
-                      'min-w-0 flex-1',
-                      workspaceDensity && 'w-full'
+                      'app-composer-settings-group min-w-0 flex-1',
+                      workspaceDensity && 'flex flex-wrap items-end gap-2'
                     )}>
                       {settingsBar}
+                      {workspaceDensity ? optionsControl : null}
                     </div>
                   ) : null}
-                  {optionsControl}
+                  {!workspaceDensity ? optionsControl : null}
                   {onGenerate ? (
                     <div className={clsx(
                       'flex shrink-0 flex-col gap-2',
-                      workspaceDensity ? 'app-composer-submit w-full' : 'lg:items-end'
+                      workspaceDensity ? 'app-composer-submit' : 'lg:items-end'
                     )}>
-                      {memberDiscount && memberDiscount.amountCents > 0 ? (
-                        <span className="app-member-savings text-[11px] text-text-muted">
-                          {composerCopy.memberLabel.replace(
-                            '{percent}',
-                            String(Math.round((memberDiscount.percentApplied ?? 0) * 100))
-                          )}
-                        </span>
-                      ) : null}
                       {workspaceDensity && !formattedPrice ? <span className="app-quote-status" role="status">{isPricing ? workbenchCopy.calculating : workbenchCopy.priceUnavailable}</span> : null}
                       <div className={clsx('flex w-full items-center gap-2 lg:w-auto', workspaceDensity && 'app-generation-controls')}>
                         {generateControl}

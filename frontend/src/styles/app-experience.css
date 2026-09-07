@@ -164,14 +164,21 @@
 .app-experience .app-prompt-heading button { min-height: 44px !important; }
 .app-experience .app-composer-toolbar { margin-top: 8px; padding: 8px 0; background: var(--app-canvas); }
 .app-experience .app-composer-toolbar > div { flex-wrap: wrap; gap: 8px; }
-.app-experience .app-composer-toolbar-layout { min-width: 0; }
-.app-experience .app-composer-submit { min-width: 0; display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; padding-top: 8px; }
-.app-experience .app-composer-submit > .app-member-savings { min-width: 0; flex: 1 1 180px; line-height: 1.5; overflow-wrap: anywhere; }
+.app-experience .app-composer-toolbar { container-type: inline-size; }
+.app-experience .app-composer-toolbar-layout { min-width: 0; flex-direction: row; flex-wrap: wrap; align-items: end; }
+.app-experience .app-composer-settings-group { display: flex; flex: 1 1 420px; min-width: 0; align-items: end; }
+.app-experience .app-composer-settings-group > :first-child { flex: 1 1 320px; min-width: 0; }
+.app-experience .app-composer-submit { min-width: 0; display: flex; flex: 0 1 auto; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
 .app-experience .app-generation-controls { width: auto; min-width: 0; max-width: 100%; flex: 0 1 260px; margin-inline-start: auto; }
 .app-experience .app-generation-controls > :not(.app-generation-action) { flex-shrink: 0; }
 .app-experience .app-generation-controls .app-generation-action { width: auto; min-width: 0; max-width: 100%; flex: 1 1 auto; padding-block: 10px; }
 @media (max-width: 639px) {
   .app-experience .app-generation-controls { flex-basis: 100%; }
+}
+@container (max-width: 720px) {
+  .app-experience .app-composer-settings-group,
+  .app-experience .app-composer-submit { flex-basis: 100%; }
+  .app-experience .app-composer-submit { justify-content: space-between; }
 }
 .app-experience .app-composer-toolbar button { min-height: 44px !important; }
 .app-experience .app-composer-toolbar [aria-haspopup="listbox"] { border: 1px solid var(--app-line); background: var(--app-panel); }
@@ -181,6 +188,12 @@
 .app-settings-menu [role="option"] { min-height: 44px; border-radius: 5px; }
 .app-settings-menu [role="option"][aria-selected="true"] { background: var(--app-accent-soft); color: var(--app-accent); }
 .app-experience .app-quote-status { max-width: 80px; font-size: 11px; color: var(--app-muted); }
+.app-experience .app-preview-frame.is-workspace { border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.app-experience .app-preview-frame.is-workspace .app-preview-media { border: 1px solid var(--app-line); border-bottom: 0; border-radius: 8px 8px 0 0; }
+.app-experience .app-preview-frame.is-workspace .app-preview-toolbar { min-height: 52px; border-color: var(--app-line); border-radius: 0 0 8px 8px; background: var(--app-panel); box-shadow: none; }
+.app-experience .app-preview-toolbar-actions { gap: 4px; }
+.app-experience .app-preview-toolbar-action { width: 44px; padding-inline: 0; border-radius: 6px; }
+.app-experience .app-preview-toolbar-action[aria-pressed="true"] { color: var(--app-accent); background: var(--app-accent-soft); box-shadow: none; }
 .app-experience .app-mode-switch { margin-bottom: 6px; gap: 14px; }
 .app-experience .app-audio-workbench { padding-top: 14px; }
 .app-experience .app-audio-workbench > div:first-child { gap: 12px; padding-bottom: 230px; }
@@ -239,8 +252,14 @@
 
 /* Recent reusable outputs stay distinct from generation activity. */
 .app-experience .app-media-rail { width: 100%; min-width: 0; }
-.app-experience .app-media-rail-switch,
-.app-experience .app-recent-filters { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+.app-experience .app-media-rail-switch { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+.app-experience .app-recent-filters { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.app-experience .app-recent-kind-selector { display: inline-flex; min-width: 0; overflow: hidden; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+.app-experience .app-recent-media .app-recent-kind-selector > button { min-width: 0; border: 0; border-radius: 0; background: transparent; }
+.app-experience .app-recent-kind-selector > button + button { border-left: 1px solid var(--border); }
+.app-experience .app-recent-media .app-recent-kind-selector > button[aria-pressed="true"] { color: var(--brand); background: var(--brand-soft); box-shadow: inset 0 -2px var(--brand); }
+.app-experience .app-recent-refresh { display: grid; place-items: center; flex: none; width: 44px; padding: 0; }
+.app-experience .app-recent-refresh svg { width: 18px; height: 18px; }
 .app-experience .app-media-rail-switch > button,
 .app-experience .app-recent-media button,
 .app-experience .app-recent-role-dialog button,

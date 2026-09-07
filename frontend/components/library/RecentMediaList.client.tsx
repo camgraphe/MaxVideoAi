@@ -1,6 +1,7 @@
 'use client';
 
 import type { DragEvent } from 'react';
+import { RefreshCw } from 'lucide-react';
 import { AppGlyph } from '@/components/app/AppGlyph';
 import { LibraryImageThumbnail } from './LibraryImageThumbnail.client';
 import { recentMediaCopy } from './recent-media-copy';
@@ -17,9 +18,11 @@ export function RecentMediaList<T extends RecentMediaCardAsset>({ assets, kind, 
   const copy = recentMediaCopy(locale);
   const selectionLabel = actionLabel ?? copy.use;
   return <section className="app-recent-media" aria-label={copy.title}>
-    <div className="app-recent-filters" aria-label={copy.title}>
-      {(['image', 'video', 'audio'] as const).map((value) => <button type="button" key={value} aria-pressed={value === kind} onClick={() => onKindChange(value)}>{copy[value]}</button>)}
-      {authenticated && !error ? <button type="button" onClick={onRetry} disabled={loading || refreshing} aria-busy={refreshing}>{refreshing ? copy.refreshing : copy.refresh}</button> : null}
+    <div className="app-recent-filters">
+      <div className="app-recent-kind-selector" role="group" aria-label={copy.title}>
+        {(['image', 'video', 'audio'] as const).map((value) => <button type="button" key={value} aria-pressed={value === kind} onClick={() => onKindChange(value)}>{copy[value]}</button>)}
+      </div>
+      {authenticated && !error ? <button className="app-recent-refresh" type="button" onClick={onRetry} disabled={loading || refreshing} aria-busy={refreshing} aria-label={refreshing ? copy.refreshing : copy.refresh} title={refreshing ? copy.refreshing : copy.refresh}><RefreshCw aria-hidden className={refreshing ? 'animate-spin' : undefined} /></button> : null}
     </div>
     <p className="app-recent-helper">{copy.helper}</p>
     {!authenticated ? <p role="status">{copy.auth}</p> : loading ? <p role="status">{copy.loading}</p> : error ? <div role="alert"><p>{copy.error}</p><button type="button" onClick={onRetry}>{copy.retry}</button></div> : !assets.length ? <p role="status">{copy.empty}</p> :
