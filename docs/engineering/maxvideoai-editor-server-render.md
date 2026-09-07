@@ -18,7 +18,7 @@ The editor export flow creates `app_timeline_exports` jobs from the route-local 
 - A manifest is limited to 30 minutes, 120 clips, 12 tracks, and 108,000 frames. Source and composition dimensions are limited to an 8,192-pixel edge and 40 megapixels.
 - Each unique input is limited to 512 MiB and all probed inputs together to 2 GiB. At most four `HEAD` probes run concurrently; each probe is capped at three seconds and manifest validation at ten seconds.
 - Remotion renders at concurrency two. The default whole-render deadline is 30 minutes and `TIMELINE_EXPORT_RENDER_TIMEOUT_MS` may configure it between one and 45 minutes. Timeout cancellation uses Remotion's cancellation signal.
-- The completed local artifact is checked before it is read or uploaded and is limited to 1 GiB. The per-job temporary directory is removed on success, failure, or timeout.
+- The completed local artifact is checked before it is read or uploaded and is limited to 512 MiB. The per-job temporary directory is removed on success, failure, or timeout.
 
 ## User Billing
 
