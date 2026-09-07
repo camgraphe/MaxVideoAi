@@ -3,8 +3,8 @@ import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import test from 'node:test';
-import * as React from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
+import * as React from '../frontend/node_modules/react';
+import { renderToStaticMarkup } from '../frontend/node_modules/react-dom/server';
 
 import type { Dictionary } from '../frontend/lib/i18n/types';
 import {

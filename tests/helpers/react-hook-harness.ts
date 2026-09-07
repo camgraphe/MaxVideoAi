@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { createElement } from 'react';
-import { act, create, type ReactTestRenderer } from 'react-test-renderer';
+import { createElement } from '../../frontend/node_modules/react';
+import { act, create, type ReactTestRenderer } from '../../frontend/node_modules/react-test-renderer';
 
 export function mountHook<Props, Result>(
   useHook: (props: Props) => Result,

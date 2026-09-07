@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test, { mock } from 'node:test';
-import { createElement } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
+import { createElement } from '../frontend/node_modules/react';
+import { renderToStaticMarkup } from '../frontend/node_modules/react-dom/server';
 import { mountHook } from './helpers/react-hook-harness';
 import {
   WORKSPACE_TEMPLATE_SUMMARIES,
