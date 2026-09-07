@@ -1,5 +1,7 @@
 # Refonte visuelle de l’application — Implementation Plan
 
+> **Retour utilisateur après livraison : direction visuelle refusée.** Les améliorations fonctionnelles restent acquises, mais le résultat est jugé trop proche du formulaire et des composants existants. Les cases de qualification technique ci-dessous ne valent pas acceptation du concept. La nouvelle exploration est cadrée dans `../specs/2026-09-07-app-concept-reset.md`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Une revue indépendante des contrats fonctionnels peut avancer pendant le travail visuel ; un seul propriétaire coordonne la direction graphique.
 
 **Goal:** Livrer une refonte visuelle substantielle, fonctionnelle et mobile de l’application en conservant les acquis techniques.
