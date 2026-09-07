@@ -13,7 +13,7 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import type { WalletCheckoutReturnTarget } from '@/lib/wallet/checkout-return';
 import { BillingAuthGateModal } from './BillingAuthGateModal';
 import { BillingCheckoutReturnNotice } from './BillingCheckoutReturnNotice';
-import { BillingHero } from './BillingHero';
+import { BillingWalletOverview } from './BillingWalletOverview';
 import { BillingInfoAside } from './BillingInfoAside';
 import { ReceiptsPanel } from './ReceiptsPanel';
 import { WalletTopupPanel } from './WalletTopupPanel';
@@ -32,6 +32,7 @@ import {
 } from '../_lib/billing-intent';
 import { recordCheckoutInteractionEvent } from '../_lib/checkout-interaction-events';
 import { formatRateLimitMessage } from '../_lib/rate-limit-message';
+import styles from './billing-page.module.css';
 
 const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? '';
@@ -63,7 +64,6 @@ export function BillingClient({
     () => initialBillingIntent ?? parseBillingIntent(searchParams),
     [initialBillingIntent, searchParams],
   );
-  const walletQuoteLoading = copy.wallet.quoteLoading ?? DEFAULT_BILLING_COPY.wallet.quoteLoading;
   const walletQuoteError = copy.wallet.quoteError ?? DEFAULT_BILLING_COPY.wallet.quoteError;
   const { session, loading: authLoading } = useRequireAuth({ redirectIfLoggedOut: false });
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -118,7 +118,7 @@ export function BillingClient({
     copy,
     session,
   });
-  const { wallet, stripeMode } = useBillingSessionState({
+  const { wallet, walletStatus, refreshWallet, stripeMode } = useBillingSessionState({
     authLoading,
     session,
     onDetectedCurrency: applyDetectedCurrency,
@@ -272,10 +272,10 @@ export function BillingClient({
   );
 
   const selectedTopupQuote = topupQuotes[selectedTopupCents];
-  const selectedTopupLocalLabel =
-    selectedTopupQuote && normalizedChargeCurrency !== 'USD'
-      ? `≈ ${formatLocalAmount(selectedTopupQuote.amountMinor, selectedTopupQuote.currency)}`
-      : null;
+  const selectedTopupPaymentLabel = selectedTopupQuote
+    ? formatLocalAmount(selectedTopupQuote.amountMinor, selectedTopupQuote.currency)
+    : null;
+  const selectedTopupLocalLabel = normalizedChargeCurrency !== 'USD' ? selectedTopupPaymentLabel : null;
 
   if (authLoading) {
     return null;
@@ -286,14 +286,21 @@ export function BillingClient({
       <HeaderBar />
       <div className="flex flex-1 min-w-0">
         <AppSidebar />
-        <main className="relative flex-1 min-w-0 overflow-y-auto p-3 pb-36 sm:p-4 lg:p-7 lg:pb-10">
+        <main className={styles.page}>
           {toast && (
             <div className="pointer-events-none absolute left-1/2 top-3 z-50 -translate-x-1/2 transform rounded-input border border-border bg-surface px-4 py-2 text-sm text-text-primary shadow-card">
               {toast}
             </div>
           )}
-          <div className="mx-auto max-w-7xl">
-            <BillingHero copy={copy} stripeMode={stripeMode} wallet={wallet} />
+          <div className={styles.content}>
+            <BillingWalletOverview
+              canRefresh={Boolean(session)}
+              copy={copy}
+              onRefresh={() => { void refreshWallet(); }}
+              stripeMode={stripeMode}
+              wallet={wallet}
+              walletStatus={walletStatus}
+            />
             {checkoutReturnTarget ? (
               <BillingCheckoutReturnNotice
                 href={checkoutReturnTarget}
@@ -301,7 +308,7 @@ export function BillingClient({
               />
             ) : null}
 
-            <section className="grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
+            <section className={styles.workspaceGrid}>
               <WalletTopupPanel
                 applyCustomAmount={applyCustomAmount}
                 checkoutCaptchaError={hostedCheckout.captchaError ? copy.wallet.captchaError : null}
@@ -320,7 +327,6 @@ export function BillingClient({
                 customAmountValid={customAmountValid}
                 customCardActive={customCardActive}
                 expressRequested={expressRequested}
-                formatLocalAmount={formatLocalAmount}
                 formatUsdAmount={formatUsdAmount}
                 handleCheckoutCaptchaError={hostedCheckout.handleCaptchaError}
                 handleCheckoutCaptchaRequired={hostedCheckout.requireCaptcha}
@@ -352,12 +358,11 @@ export function BillingClient({
                 selectedTopupAmountLabel={selectedTopupAmountLabel}
                 selectedTopupCents={selectedTopupCents}
                 selectedTopupLocalLabel={selectedTopupLocalLabel}
+                selectedTopupPaymentLabel={selectedTopupPaymentLabel}
                 session={session}
                 stripePromise={stripePromise}
-                topupQuotes={topupQuotes}
                 turnstileSiteKey={TURNSTILE_SITE_KEY}
                 wallet={wallet}
-                walletQuoteLoading={walletQuoteLoading}
               />
 
               <BillingInfoAside copy={copy} />

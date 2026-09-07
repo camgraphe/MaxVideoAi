@@ -6,6 +6,9 @@ const pagePath = 'frontend/app/(core)/billing/page.tsx';
 const clientPath = 'frontend/app/(core)/billing/_components/BillingClient.tsx';
 const authGatePath = 'frontend/app/(core)/billing/_components/BillingAuthGateModal.tsx';
 const walletPanelPath = 'frontend/app/(core)/billing/_components/WalletTopupPanel.tsx';
+const walletOverviewPath = 'frontend/app/(core)/billing/_components/BillingWalletOverview.tsx';
+const amountPickerPath = 'frontend/app/(core)/billing/_components/WalletAmountPicker.tsx';
+const checkoutSummaryPath = 'frontend/app/(core)/billing/_components/WalletCheckoutSummary.tsx';
 const receiptsPanelPath = 'frontend/app/(core)/billing/_components/ReceiptsPanel.tsx';
 const expressCheckoutPath = 'frontend/app/(core)/billing/_components/WalletExpressCheckout.tsx';
 const currencyHookPath = 'frontend/app/(core)/billing/_hooks/useBillingCurrencyState.ts';
@@ -27,6 +30,9 @@ test('billing page delegates client billing behavior to route-local modules', ()
     clientPath,
     authGatePath,
     walletPanelPath,
+    walletOverviewPath,
+    amountPickerPath,
+    checkoutSummaryPath,
     receiptsPanelPath,
     expressCheckoutPath,
     currencyHookPath,
@@ -63,7 +69,7 @@ test('billing client keeps orchestration separate from copy, checkout widgets, a
   assert.match(clientSource, /from '\.\/WalletTopupPanel';/);
   assert.match(clientSource, /from '\.\/ReceiptsPanel';/);
   assert.match(clientSource, /from '\.\/BillingAuthGateModal';/);
-  assert.match(clientSource, /from '\.\/BillingHero';/);
+  assert.match(clientSource, /from '\.\/BillingWalletOverview';/);
   assert.match(clientSource, /useBillingCurrencyState\(\{/);
   assert.match(clientSource, /useBillingReceipts\(\{/);
   assert.match(clientSource, /useBillingSessionState\(\{/);
@@ -105,6 +111,9 @@ test('billing feature modules own their explicit responsibilities', () => {
   const intentSource = readFileSync(intentPath, 'utf8');
   const clientSource = readFileSync(clientPath, 'utf8');
   const walletPanelSource = readFileSync(walletPanelPath, 'utf8');
+  const walletOverviewSource = readFileSync(walletOverviewPath, 'utf8');
+  const amountPickerSource = readFileSync(amountPickerPath, 'utf8');
+  const checkoutSummarySource = readFileSync(checkoutSummaryPath, 'utf8');
   const receiptsPanelSource = readFileSync(receiptsPanelPath, 'utf8');
   const expressCheckoutSource = readFileSync(expressCheckoutPath, 'utf8');
   const currencyHookSource = readFileSync(currencyHookPath, 'utf8');
@@ -120,10 +129,15 @@ test('billing feature modules own their explicit responsibilities', () => {
   assert.match(authGateSource, /from '@\/components\/ui\/useAccessibleModal';/);
 
   assert.match(walletPanelSource, /export function WalletTopupPanel/);
+  assert.match(walletPanelSource, /<WalletAmountPicker/);
+  assert.match(walletPanelSource, /<WalletCheckoutSummary/);
   assert.match(walletPanelSource, /<WalletExpressCheckout/);
   assert.match(walletPanelSource, /<TurnstileChallenge/);
   assert.match(receiptsPanelSource, /export function ReceiptsPanel/);
   assert.match(receiptsPanelSource, /formatReceiptSurfaceLabel/);
+  assert.match(walletOverviewSource, /export function BillingWalletOverview/);
+  assert.match(amountPickerSource, /export function WalletAmountPicker/);
+  assert.match(checkoutSummarySource, /export function WalletCheckoutSummary/);
   assert.match(expressCheckoutSource, /export function WalletExpressCheckout/);
   assert.match(currencyHookSource, /export function useBillingCurrencyState/);
   assert.match(currencyHookSource, /\/api\/me\/currency/);

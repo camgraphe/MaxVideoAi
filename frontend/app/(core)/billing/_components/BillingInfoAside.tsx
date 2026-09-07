@@ -1,4 +1,6 @@
+import { CheckCircle2 } from 'lucide-react';
 import type { BillingCopy } from '../_lib/billing-copy';
+import styles from './billing-page.module.css';
 
 type BillingInfoAsideProps = {
   copy: BillingCopy;
@@ -6,29 +8,27 @@ type BillingInfoAsideProps = {
 
 export function BillingInfoAside({ copy }: BillingInfoAsideProps) {
   return (
-    <aside className="space-y-4">
-      <section className="rounded-card border border-border bg-surface p-4 shadow-card">
+    <aside className={styles.infoAside}>
+      <section>
         <h2 className="text-lg font-semibold text-text-primary">{copy.refunds.title}</h2>
-        <ul className="mt-3 grid gap-2 text-sm text-text-secondary">
+        <ul className={styles.protectionList}>
           {copy.refunds.points.map((point) => (
-            <li key={point} className="flex gap-2">
-              <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" aria-hidden="true" />
+            <li key={point}>
+              <CheckCircle2 size={17} strokeWidth={1.8} aria-hidden="true" />
               <span>{point}</span>
             </li>
           ))}
         </ul>
-        <div className="mt-4 border-t border-border pt-4">
-          <h3 className="text-sm font-semibold text-text-primary">{copy.faq.title}</h3>
-          <div className="mt-2 grid gap-2 text-sm text-text-secondary">
-            {copy.faq.entries.map((entry, index) => (
-              <p key={index}>
-                <span className="font-medium text-text-primary">{entry.question}</span> {entry.answer}
-              </p>
-            ))}
-          </div>
-        </div>
       </section>
-
+      <section className={styles.faqList}>
+          <h3 className="text-sm font-semibold text-text-primary">{copy.faq.title}</h3>
+          {copy.faq.entries.map((entry) => (
+            <details key={entry.question}>
+              <summary>{entry.question}</summary>
+              <p>{entry.answer}</p>
+            </details>
+          ))}
+      </section>
     </aside>
   );
 }

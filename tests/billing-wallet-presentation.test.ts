@@ -1,0 +1,94 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import test from 'node:test';
+import * as React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { JSDOM } from 'jsdom';
+import { DEFAULT_BILLING_COPY } from '../frontend/app/(core)/billing/_lib/billing-copy';
+
+(globalThis as typeof globalThis & { React: typeof React }).React = React;
+
+async function loadBillingPresentation() {
+  const require = createRequire(import.meta.url);
+  const previousCssLoader = require.extensions['.css'];
+  require.extensions['.css'] = (module) => {
+    const classes = new Proxy({}, { get: (_target, property) => String(property) });
+    module.exports = { __esModule: true, default: classes };
+  };
+  try {
+    const [{ BillingWalletOverview }, { WalletCheckoutSummary }] = await Promise.all([
+      import('../frontend/app/(core)/billing/_components/BillingWalletOverview'),
+      import('../frontend/app/(core)/billing/_components/WalletCheckoutSummary'),
+    ]);
+    return { BillingWalletOverview, WalletCheckoutSummary };
+  } finally {
+    if (previousCssLoader) require.extensions['.css'] = previousCssLoader;
+    else delete require.extensions['.css'];
+  }
+}
+
+test('wallet overview makes the available balance and refresh action explicit', async () => {
+  const { BillingWalletOverview } = await loadBillingPresentation();
+  const markup = renderToStaticMarkup(React.createElement(BillingWalletOverview, {
+    copy: DEFAULT_BILLING_COPY,
+    stripeMode: 'test',
+    wallet: { balance: 42.5, currency: 'USD' },
+    walletStatus: 'ready',
+    onRefresh() {},
+  }));
+  const document = new JSDOM(markup).window.document;
+
+  assert.match(document.querySelector('[data-wallet-balance]')?.textContent ?? '', /\$42\.50/);
+  assert.equal(
+    document.querySelector('button')?.textContent?.trim(),
+    DEFAULT_BILLING_COPY.wallet.refreshBalance,
+  );
+  assert.match(document.body.textContent ?? '', new RegExp(DEFAULT_BILLING_COPY.hero.testMode));
+});
+
+test('checkout summary separates the quoted payment from USD wallet credits', async () => {
+  const { WalletCheckoutSummary } = await loadBillingPresentation();
+  const markup = renderToStaticMarkup(React.createElement(WalletCheckoutSummary, {
+    copy: DEFAULT_BILLING_COPY,
+    creditsLabel: '$25',
+    paymentAmountLabel: '€23.10',
+    quoteLoading: false,
+    quoteError: null,
+    isTopupStarting: false,
+    onCheckout() {},
+  }));
+  const document = new JSDOM(markup).window.document;
+  const rows = Array.from(document.querySelectorAll('dl > div')).map((row) => row.textContent?.trim());
+
+  assert.deepEqual(rows.slice(0, 2), [
+    `${DEFAULT_BILLING_COPY.wallet.paymentAmount}€23.10`,
+    `${DEFAULT_BILLING_COPY.wallet.creditsReceived}$25`,
+  ]);
+  assert.match(
+    document.querySelector('button')?.textContent ?? '',
+    /Continue to secure Stripe Checkout/,
+  );
+});
+
+test('billing copy exposes the paid-versus-received distinction in every locale', () => {
+  for (const locale of ['en', 'fr', 'es']) {
+    const dictionary = JSON.parse(readFileSync(`frontend/messages/${locale}.json`, 'utf8'));
+    const wallet = dictionary.workspace.billing.wallet;
+    assert.equal(typeof wallet.paymentAmount, 'string');
+    assert.ok(wallet.paymentAmount.length > 0);
+    assert.equal(typeof wallet.creditsReceived, 'string');
+    assert.ok(wallet.creditsReceived.length > 0);
+    assert.notEqual(wallet.paymentAmount, wallet.creditsReceived);
+  }
+});
+
+test('billing local styles preserve touch targets and reduced-motion behavior', () => {
+  const styles = readFileSync(
+    'frontend/app/(core)/billing/_components/billing-page.module.css',
+    'utf8',
+  );
+
+  assert.match(styles, /min-height:\s*44px/);
+  assert.match(styles, /prefers-reduced-motion:\s*reduce/);
+});
