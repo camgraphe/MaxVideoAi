@@ -9,6 +9,13 @@ import {
   type LegacyJobMediaRow,
 } from '../media-library-records';
 import { promoteCompletedMcpJobOutputs } from './mcp-output-assets';
+import {
+  buildMediaLibrarySearchPattern,
+  decodeMediaLibraryCursor,
+  resolveMediaLibraryLimit,
+  sliceMediaLibraryPage,
+  type MediaLibraryPage,
+} from './pagination';
 
 export async function upsertJobOutputs(outputs: JobOutputRecord[]): Promise<void> {
   if (!outputs.length) return;
@@ -128,8 +135,34 @@ export async function listRecentOutputs(params: {
   surface?: string | null;
   limit?: number;
 }): Promise<JobOutputRecord[]> {
+  const requestedLimit = Math.min(200, Math.max(1, params.limit ?? 50));
+  const items: JobOutputRecord[] = [];
+  let cursor: string | null = null;
+  do {
+    const page = await listRecentOutputPage({
+      ...params,
+      limit: Math.min(100, requestedLimit - items.length),
+      cursor,
+    });
+    items.push(...page.items);
+    cursor = page.nextCursor;
+  } while (cursor && items.length < requestedLimit);
+  return items.slice(0, requestedLimit);
+}
+
+export async function listRecentOutputPage(params: {
+  userId: string;
+  kind?: import('../media-library-records').MediaKind | null;
+  surface?: string | null;
+  limit?: number;
+  cursor?: string | null;
+  q?: string | null;
+  jobId?: string | null;
+}): Promise<MediaLibraryPage<JobOutputRecord>> {
   await ensureMediaLibrarySchema();
-  const limit = Math.min(200, Math.max(1, params.limit ?? 50));
+  const limit = resolveMediaLibraryLimit(params.limit);
+  const cursor = decodeMediaLibraryCursor(params.cursor);
+  const searchPattern = buildMediaLibrarySearchPattern(params.q);
   const rows = await query<DbJobOutputRow>(
     `SELECT o.id, o.job_id, o.user_id, o.kind, o.url, o.storage_url, o.thumb_url, o.preview_url, o.mime_type,
             o.width, o.height, o.duration_sec, o.position, o.status, o.metadata, o.created_at,
@@ -149,11 +182,32 @@ export async function listRecentOutputs(params: {
         AND ($3::text IS NULL OR o.kind = $3::text)
         AND ($4::text IS NULL OR j.surface = $4::text OR j.settings_snapshot->>'surface' = $4::text)
         AND ($4::text IS NULL OR $4::text <> 'storyboard' OR o.job_id NOT LIKE 'storyboard_kling_first_frame_%')
-      ORDER BY o.created_at DESC
+        AND ($5::text IS NULL OR o.job_id = $5::text)
+        AND (
+          $6::text IS NULL
+          OR COALESCE(j.prompt, '') ILIKE $6::text ESCAPE '\\'
+          OR o.job_id ILIKE $6::text ESCAPE '\\'
+          OR COALESCE(o.metadata->>'label', '') ILIKE $6::text ESCAPE '\\'
+          OR COALESCE(o.metadata->>'fileName', o.metadata->>'filename', '') ILIKE $6::text ESCAPE '\\'
+        )
+        AND (
+          $7::timestamptz IS NULL
+          OR (o.created_at, o.id) < ($7::timestamptz, $8::text)
+        )
+      ORDER BY o.created_at DESC, o.id DESC
       LIMIT $2`,
-    [params.userId, limit, params.kind ?? null, params.surface ?? null]
+    [
+      params.userId,
+      limit + 1,
+      params.kind ?? null,
+      params.surface ?? null,
+      params.jobId ?? null,
+      searchPattern,
+      cursor?.createdAt ?? null,
+      cursor?.id ?? null,
+    ]
   );
-  return rows.map(mapOutputRow);
+  return sliceMediaLibraryPage(rows.map(mapOutputRow), limit);
 }
 
 export async function listStoryboardKlingFirstFrameOutputs(params: {

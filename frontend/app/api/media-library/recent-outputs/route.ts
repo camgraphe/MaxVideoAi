@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { extractStoryboardGeneratorDraftFromPrompt } from '@/lib/storyboard-generator-handoff';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import {
-  listRecentOutputs,
+  listRecentOutputPage,
   listStoryboardKlingFirstFrameOutputs,
   type JobOutputRecord,
   type MediaKind,
@@ -46,14 +46,19 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false, outputs: [], error: 'UNAUTHORIZED' }, { status: 401 });
   }
 
-  let outputs: Awaited<ReturnType<typeof listRecentOutputs>>;
+  let page: Awaited<ReturnType<typeof listRecentOutputPage>>;
   const surface = req.nextUrl.searchParams.get('surface');
+  const requestedJobId = req.nextUrl.searchParams.get('jobId');
+  const jobId = requestedJobId && requestedJobId.length <= 256 ? requestedJobId : null;
   try {
-    outputs = await listRecentOutputs({
+    page = await listRecentOutputPage({
       userId,
       kind: normalizeKind(req.nextUrl.searchParams.get('kind')),
       surface,
       limit: Number(req.nextUrl.searchParams.get('limit') ?? 50),
+      cursor: req.nextUrl.searchParams.get('cursor'),
+      q: req.nextUrl.searchParams.get('q'),
+      jobId,
     });
   } catch (error) {
     console.error('[media-library] failed to list recent outputs', error);
@@ -61,11 +66,11 @@ export async function GET(req: NextRequest) {
   }
 
   let klingFirstFramesByParentJobId = new Map<string, JobOutputRecord>();
-  if (surface === 'storyboard' && outputs.length) {
+  if (surface === 'storyboard' && page.items.length) {
     try {
       klingFirstFramesByParentJobId = await listStoryboardKlingFirstFrameOutputs({
         userId,
-        parentJobIds: outputs.map((output) => output.jobId),
+        parentJobIds: page.items.map((output) => output.jobId),
       });
     } catch (error) {
       console.error('[media-library] failed to list storyboard first frames', error);
@@ -74,7 +79,7 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     ok: true,
-    outputs: outputs.map((output) => ({
+    outputs: page.items.map((output) => ({
       id: output.id,
       jobId: output.jobId,
       url: output.url,
@@ -94,5 +99,7 @@ export async function GET(req: NextRequest) {
       klingFirstFrame:
         surface === 'storyboard' ? buildRecentOutputImage(klingFirstFramesByParentJobId.get(output.jobId)) : null,
     })),
+    nextCursor: page.nextCursor,
+    hasMore: page.hasMore,
   });
 }

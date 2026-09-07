@@ -22,14 +22,13 @@ test('workspace library exposes storyboard as a saved image source', async () =>
 
   assert.equal(copy.tabs.storyboard, 'Storyboard assets');
   assert.match(copy.assets.emptyStoryboard, /storyboard/i);
-  assert.equal(
+  assert.deepEqual(
     module.buildSavedAssetsKey({
       userId: 'user_1',
       activeKind: 'image',
       activeSource: 'storyboard',
-      limit: 60,
     }),
-    '/api/media-library/assets?limit=60&kind=image&source=storyboard'
+    ['/api/media-library/assets?limit=60&kind=image&source=storyboard', 'user_1']
   );
 });
 

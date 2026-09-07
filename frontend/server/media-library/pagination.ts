@@ -11,6 +11,7 @@ export type MediaLibraryPage<T> = {
 
 const DEFAULT_MEDIA_LIBRARY_LIMIT = 60;
 const MAX_MEDIA_LIBRARY_LIMIT = 100;
+export const MAX_MEDIA_LIBRARY_SEARCH_LENGTH = 200;
 
 function normalizeLimit(value: unknown): number | null {
   if (typeof value === 'number' && Number.isFinite(value)) return Math.trunc(value);
@@ -24,6 +25,18 @@ function normalizeLimit(value: unknown): number | null {
 export function resolveMediaLibraryLimit(value: unknown): number {
   const normalized = normalizeLimit(value) ?? DEFAULT_MEDIA_LIBRARY_LIMIT;
   return Math.min(MAX_MEDIA_LIBRARY_LIMIT, Math.max(1, normalized));
+}
+
+export function normalizeMediaLibrarySearchQuery(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim().slice(0, MAX_MEDIA_LIBRARY_SEARCH_LENGTH);
+  return normalized || null;
+}
+
+export function buildMediaLibrarySearchPattern(value: unknown): string | null {
+  const query = normalizeMediaLibrarySearchQuery(value);
+  if (!query) return null;
+  return `%${query.replaceAll('\\', '\\\\').replaceAll('%', '\\%').replaceAll('_', '\\_')}%`;
 }
 
 export function encodeMediaLibraryCursor(cursor: MediaLibraryCursor): string {

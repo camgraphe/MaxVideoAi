@@ -12,6 +12,37 @@ import {
   resolveLibraryAssetIdentity,
 } from '../frontend/server/media-library';
 import { mapAssetRow } from '../frontend/server/media-library-records';
+import {
+  buildMediaLibrarySearchPattern,
+  decodeMediaLibraryCursor,
+  sliceMediaLibraryPage,
+} from '../frontend/server/media-library/pagination';
+
+test('media library cursors preserve equal-timestamp ordering and terminate', () => {
+  const items = Array.from({ length: 125 }, (_, index) => ({
+    id: `asset-${String(index).padStart(3, '0')}`,
+    createdAt: '2026-09-01T10:00:00.000Z',
+  }));
+  const first = sliceMediaLibraryPage(items, 60);
+  assert.equal(first.items.length, 60);
+  assert.equal(first.hasMore, true);
+  const cursor = decodeMediaLibraryCursor(first.nextCursor);
+  assert.deepEqual(cursor, { createdAt: '2026-09-01T10:00:00.000Z', id: 'asset-065' });
+  const remaining = items.filter((item) => item.id < cursor!.id);
+  const second = sliceMediaLibraryPage(remaining, 60);
+  const final = sliceMediaLibraryPage(
+    remaining.filter((item) => item.id < decodeMediaLibraryCursor(second.nextCursor)!.id),
+    60
+  );
+  assert.equal(first.items.length + second.items.length + final.items.length, 125);
+  assert.equal(final.nextCursor, null);
+});
+
+test('media library search bounds input and escapes SQL wildcard characters', () => {
+  assert.equal(buildMediaLibrarySearchPattern(' 100%_match\\ '), '%100\\%\\_match\\\\%');
+  assert.equal(buildMediaLibrarySearchPattern('x'.repeat(250)), `%${'x'.repeat(200)}%`);
+  assert.equal(buildMediaLibrarySearchPattern('   '), null);
+});
 
 test('normalizes PostgreSQL media asset timestamps to ISO strings', () => {
   const createdAt = new Date('2026-08-25T21:13:23.000Z');

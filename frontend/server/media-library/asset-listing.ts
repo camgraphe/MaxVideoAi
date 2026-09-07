@@ -16,6 +16,7 @@ import {
   type MediaKind,
 } from '../media-library-records';
 import {
+  buildMediaLibrarySearchPattern,
   decodeMediaLibraryCursor,
   resolveMediaLibraryLimit,
   sliceMediaLibraryPage,
@@ -72,6 +73,7 @@ export async function listLibraryAssetPage(params: {
   includeOutputs?: boolean;
   limit?: number;
   cursor?: string | null;
+  q?: string | null;
 }): Promise<MediaLibraryPage<MediaAssetRecord>> {
   await ensureMediaLibrarySchema();
   await ensureAssetSchema();
@@ -80,8 +82,8 @@ export async function listLibraryAssetPage(params: {
   const cursor = decodeMediaLibraryCursor(params.cursor);
   const source = params.source && params.source !== 'all' ? normalizeMediaAssetSource(params.source) : null;
   const originUrl = normalizeString(params.originUrl) ?? null;
+  const searchPattern = buildMediaLibrarySearchPattern(params.q);
   const shouldIncludeJobOutputs = Boolean(params.includeOutputs) && (!source || source === 'saved_job_output');
-  const outputCursorId = cursor?.id?.startsWith('output:') ? cursor.id.slice('output:'.length) : cursor?.id ?? null;
   const values: unknown[] = [
     params.userId,
     pageLimit,
@@ -90,6 +92,7 @@ export async function listLibraryAssetPage(params: {
     originUrl,
     cursor?.createdAt ?? null,
     cursor?.id ?? null,
+    searchPattern,
   ];
   const rows = await query<DbMediaAssetRow>(
     `SELECT id, public_id, user_id, kind, url, thumb_url, preview_url, mime_type, width, height, size_bytes, source,
@@ -114,6 +117,12 @@ export async function listLibraryAssetPage(params: {
         )
         AND ($5::text IS NULL OR url = $5::text OR metadata->>'originUrl' = $5::text)
         AND (
+          $8::text IS NULL
+          OR COALESCE(metadata->>'label', '') ILIKE $8::text ESCAPE '\\'
+          OR COALESCE(metadata->>'fileName', metadata->>'filename', '') ILIKE $8::text ESCAPE '\\'
+          OR COALESCE(source_job_id, metadata->>'jobId', metadata->>'sourceJobId', '') ILIKE $8::text ESCAPE '\\'
+        )
+        AND (
           $6::timestamptz IS NULL
           OR (created_at, id) < ($6::timestamptz, $7::text)
         )
@@ -136,7 +145,6 @@ export async function listLibraryAssetPage(params: {
 
   if (shouldIncludeJobOutputs) {
     const outputValues = [...values];
-    outputValues[6] = outputCursorId;
     const outputRows = await query<DbJobOutputRow>(
       `SELECT o.id, o.job_id, o.user_id, o.kind, o.url, o.storage_url, o.thumb_url, o.preview_url, o.mime_type,
               o.width, o.height, o.duration_sec, o.position, o.status, o.metadata, o.created_at,
@@ -159,8 +167,15 @@ export async function listLibraryAssetPage(params: {
           AND ($4::text IS NULL OR $4::text = 'saved_job_output')
           AND ($5::text IS NULL OR o.url = $5::text OR o.storage_url = $5::text OR o.metadata->>'originUrl' = $5::text)
           AND (
+            $8::text IS NULL
+            OR COALESCE(j.prompt, '') ILIKE $8::text ESCAPE '\\'
+            OR o.job_id ILIKE $8::text ESCAPE '\\'
+            OR COALESCE(o.metadata->>'label', '') ILIKE $8::text ESCAPE '\\'
+            OR COALESCE(o.metadata->>'fileName', o.metadata->>'filename', '') ILIKE $8::text ESCAPE '\\'
+          )
+          AND (
             $6::timestamptz IS NULL
-            OR (o.created_at, o.id) < ($6::timestamptz, $7::text)
+            OR (o.created_at, 'output:' || o.id) < ($6::timestamptz, $7::text)
           )
         ORDER BY o.created_at DESC, o.id DESC
         LIMIT $2`,
@@ -223,6 +238,12 @@ export async function listLibraryAssetPage(params: {
           )
         )
         AND ($5::text IS NULL OR url = $5::text OR metadata->>'originUrl' = $5::text)
+        AND (
+          $8::text IS NULL
+          OR COALESCE(metadata->>'label', '') ILIKE $8::text ESCAPE '\\'
+          OR COALESCE(metadata->>'fileName', metadata->>'filename', '') ILIKE $8::text ESCAPE '\\'
+          OR COALESCE(metadata->>'jobId', metadata->>'sourceJobId', asset_id, '') ILIKE $8::text ESCAPE '\\'
+        )
         AND (
           $6::timestamptz IS NULL
           OR (created_at, asset_id) < ($6::timestamptz, $7::text)
