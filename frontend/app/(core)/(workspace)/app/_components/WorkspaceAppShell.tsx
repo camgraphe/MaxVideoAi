@@ -5,6 +5,7 @@ import { recentMediaCopy } from '@/components/library/recent-media-copy';
 import { AppGlyph } from '@/components/app/AppGlyph';
 import type { RecentReferenceDropProps } from './WorkspaceRecentReferences.client';
 import dynamic from 'next/dynamic';
+import { focusWorkspaceRecentTarget } from '../_lib/workspace-recent-focus';
 import { WorkspaceCreationHeading } from './WorkspaceCreationHeading';
 import type { GalleryRailProps } from '@/components/GalleryRail';
 import type { EngineCaps, Mode } from '@/types/engines';
@@ -109,6 +110,15 @@ export function WorkspaceAppShell({
   const recentOpenerRef = useRef<HTMLButtonElement>(null);
   const recentPanelId = useId();
   const copy = recentMediaCopy(modeLabelLocale);
+  const closeMobileRecent = () => {
+    setMobileRecentOpen(false);
+    setRailView('activity');
+    if (window.matchMedia('(min-width: 1088px)').matches) return;
+    requestAnimationFrame(() => {
+      const opener = recentOpenerRef.current;
+      focusWorkspaceRecentTarget(opener, opener?.closest<HTMLElement>('.app-creation-heading') ?? opener);
+    });
+  };
   const openRecentMedia = () => {
     if (railView !== 'recent') onOpenRecentMedia?.();
     setRailView('recent');
@@ -136,15 +146,15 @@ export function WorkspaceAppShell({
           </div>
           {recentMedia ? <div id={recentPanelId} ref={recentPanelRef} tabIndex={-1} hidden={railView !== 'recent'}
             className={`app-recent-rail-panel${mobileRecentOpen ? ' is-mobile-open' : ''}`}
-            onKeyDown={(event) => { if (event.key === 'Escape') { setMobileRecentOpen(false); setRailView('activity'); recentOpenerRef.current?.focus(); } }}>
-            <button className="app-recent-mobile-close" type="button" onClick={() => { setMobileRecentOpen(false); setRailView('activity'); recentOpenerRef.current?.focus(); }}>{copy.close}</button>
+            onKeyDown={(event) => { if (event.key === 'Escape') { closeMobileRecent(); } }}>
+            <button className="app-recent-mobile-close" type="button" onClick={closeMobileRecent}>{copy.close}</button>
             {recentMedia}
           </div> : null}
         </div>
       }
     >
       <WorkspaceCreationHeading action={recentMedia ? <button ref={recentOpenerRef} className="app-recent-mobile-open" type="button" aria-expanded={mobileRecentOpen} aria-controls={recentPanelId}
-        onClick={() => { openRecentMedia(); requestAnimationFrame(() => { recentPanelRef.current?.focus(); recentPanelRef.current?.scrollIntoView({ block: 'nearest' }); }); }}><AppGlyph name="library" />{copy.title}</button> : null} />
+        onClick={() => { openRecentMedia(); requestAnimationFrame(() => { focusWorkspaceRecentTarget(recentPanelRef.current); }); }}><AppGlyph name="library" />{copy.title}</button> : null} />
       {notice && (
         <div className="rounded-card border border-warning-border bg-warning-bg px-4 py-2 text-sm text-warning shadow-card">
           {notice}
