@@ -13,22 +13,22 @@ Le script copie uniquement une liste explicite d’assets existants dans la zone
 Parcours :
 
 - Créer → Récents → ajouter une image, une vidéo ou un audio en référence ; dépôt direct depuis la colonne desktop, choix du rôle si nécessaire, remplacement confirmé et Annuler.
-- Créer → Ajouter → choisir/importer/créer une référence image, vidéo ou audio.
+- Créer → Départ / Fin / Ajouter → choisir/importer/créer une référence dans le rôle disponible.
 - Vidéo → Comparer → examiner un modèle à réglages identiques, ou prévisualiser ses adaptations → Utiliser ce modèle. Fermer annule le changement proposé.
 - Options → durée/résolution/format/son → estimation catalogue actualisée et visible près de Simuler.
 - Créer une référence → résultat illustratif → Utiliser et revenir au brouillon.
 - Gérer → aperçu, rôle, remplacement, retrait/annulation, ordre.
-- Changer de profil → conserver les médias et résoudre les incompatibilités.
+- Changer de modèle → conserver les médias et résoudre les incompatibilités. Aucun scénario de démonstration à choisir avant d’ajouter une référence.
 - Médias → recherche/filtre → aperçu/écoute → réutiliser dans un créateur compatible.
 - Wallet visible → état non connecté et lien vers la facturation réelle.
 - Menu MaxVideoAI → modèles, comparatifs détaillés, exemples, tarifs, outils et guides dans un autre onglet.
 - Compte → apparence, mouvement, profil local, présentation des connexions.
 
-La variante `?volume=50` ajoute des copies identifiées comme médias de test pour éprouver la densité, sans modifier les capacités des profils. Les plafonds de références restent des fixtures UI indépendantes des modèles réels. Aucun rendu, devis personnalisé, paiement, upload serveur, changement de compte réel ou projet Studio n’est produit. Les brouillons vivent en mémoire ; seule l’apparence persiste sous une clé propre à cette maquette.
+La variante `?volume=50` ajoute des copies identifiées comme médias de test pour éprouver la densité. Pour les six modèles vidéo exposés, les rôles, plafonds et modes compatibles sont projetés depuis le catalogue réel ; les autres activités conservent leurs fixtures de présentation. Cette projection ne remplace pas la validation de fichiers, les budgets partagés ni les devis du produit. Aucun rendu, devis personnalisé, paiement, upload serveur, changement de compte réel ou projet Studio n’est produit. Les brouillons vivent en mémoire ; seule l’apparence persiste sous une clé propre à cette maquette.
 
 `export-catalog.ts` projette six modèles disponibles et 152 scénarios texte-vers-vidéo avec les propriétaires du catalogue, des options et de la tarification publique déjà utilisés par MaxVideoAI. Le navigateur choisit un scénario complet, sans formule de prix supplémentaire. Les montants sont des **estimations catalogue Member en USD**, sans ajustements en base ni compte connecté ; la date de préparation est visible dans Détails. Toute référence ajoutée, source requise manquante ou combinaison non couverte retire le montant. Les devis image/audio et ceux avec références restent à raccorder. Les six modèles sont le périmètre de cette revue, pas une réduction du catalogue de l’app.
 
-Le lecteur audio est réel ; la forme d’onde est un motif décoratif, pas une analyse du fichier. Les médias copiés n’ont pas été optimisés pour mesurer une performance de production. La refonte réelle devra réutiliser ses contrats de médias, de génération, de références et de pagination.
+Le lecteur audio est réel ; la forme d’onde est un motif décoratif, pas une analyse du fichier. Les médias copiés n’ont pas été optimisés pour mesurer une performance de production. L’intégration dans le produit réutilise ses contrats de médias, de génération, de références et de pagination ; elle est suivie dans `docs/superpowers/plans/2026-09-07-connected-app-integration.md`.
 
 Voir `experience-map.md`, `visual-rules.md`, `review.md`, `integration-contract.md` et le plan `docs/superpowers/plans/2026-09-07-model-choice-price-concept.md`.
 

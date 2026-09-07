@@ -37,14 +37,14 @@ export function AppGlyph(props: { name: AppGlyphName; className?: string }): JSX
 ```
 Keep the `HeaderWalletStatus` public props and existing `useHeaderAccountState` authority. Navigation exports data/pure active-state selection separately from rendering, preserving `NAV_ITEMS` for its existing consumers.
 
-- [ ] Inspect the header's account/auth/service-notice, locale resolver, navigation feature flags and focus owner; record all destinations before replacing the app shell.
-- [ ] Add a behavior test for creation-route grouping, non-app exclusions and access to all existing destinations. Use fixtures including `/app`, `/app/image`, `/app/audio`, `/app/library`, `/jobs`, `/dashboard`, `/settings`, `/account/connections`, `/billing`; tools obey the existing flag.
-- [ ] Implement named primary navigation (Create, Media, Tools when available, Activity, Account) with activity tabs for Video/Image/Audio near the creator. A compact desktop rail and bottom mobile navigation share active selection. Account/dashboard/billing/history/connections and all existing tools retain a named complete-menu path. Do not invent a Studio destination.
-- [ ] Separate app site menu from marketing header. In app routes show the official logo/site trigger, Assistants link and real wallet/appropriate account-auth access. Site menu exposes localized public destinations in separate tabs, real account destinations, theme/language and close/focus behavior. Preserve marketing HeaderBar output outside app routes.
-- [ ] Promote ChatGPT and Claude with existing official local logos in the app header and visible connection guide links; retain Codex and all-assistant access. Keep localized new-tab guide navigation and no invented connection status.
-- [ ] Use existing wallet data with a persistent Wallet label and formatted balance; distinguish pending/unavailable from zero. Preserve billing navigation, auth return target, top-up and balance-refresh owner; do not add a second account fetch.
-- [ ] Replace old purple app presentation with approved cream/charcoal/saffron tokens under `.app-experience`, scoped shell CSS and geometric pictograms. Keep native account/auth state and brand colors in external provider marks.
-- [ ] Run focused tests, lint touched files, TypeScript and diff check. Commit only owned task files and write a task report. Root verifies actual browser geometry and visual consistency independently.
+- [x] Inspect the header's account/auth/service-notice, locale resolver, navigation feature flags and focus owner; record all destinations before replacing the app shell.
+- [x] Add a behavior test for creation-route grouping, non-app exclusions and access to all existing destinations. Use fixtures including `/app`, `/app/image`, `/app/audio`, `/app/library`, `/jobs`, `/dashboard`, `/settings`, `/account/connections`, `/billing`; tools obey the existing flag.
+- [x] Implement named primary navigation (Create, Media, Tools when available, Activity, Account) with activity tabs for Video/Image/Audio near the creator. A compact desktop rail and bottom mobile navigation share active selection. Account/dashboard/billing/history/connections and all existing tools retain a named complete-menu path. Do not invent a Studio destination.
+- [x] Separate app site menu from marketing header. In app routes show the official logo/site trigger, Assistants link and real wallet/appropriate account-auth access. Site menu exposes localized public destinations in separate tabs, real account destinations, theme/language and close/focus behavior. Preserve marketing HeaderBar output outside app routes.
+- [x] Promote ChatGPT and Claude with existing official local logos in the app header and visible connection guide links; retain Codex and all-assistant access. Keep localized new-tab guide navigation and no invented connection status.
+- [x] Use existing wallet data with a persistent Wallet label and formatted balance; distinguish pending/unavailable from zero. Preserve billing navigation, auth return target, top-up and balance-refresh owner; do not add a second account fetch.
+- [x] Replace old purple app presentation with approved cream/charcoal/saffron tokens under `.app-experience`, scoped shell CSS and geometric pictograms. Keep native account/auth state and brand colors in external provider marks.
+- [x] Run focused tests, lint touched files, TypeScript and diff check. Commit only owned task files and write a task report. Root verifies actual browser geometry and visual consistency independently.
 
 ## Task 2: Creation input and model/action surfaces
 
@@ -55,13 +55,13 @@ Keep the `HeaderWalletStatus` public props and existing `useHeaderAccountState` 
 
 **Interfaces:** Preserve existing composer props and upload/library callbacks. Any additional presentation prop is optional and workspace-specific; default shared behavior remains unchanged. `AppGlyph` from Task 1 supplies input pictograms.
 
-- [ ] Read current schema/field/reference budgets and composer contract assertions before changing markup. Inventory visible mode toggles, advanced settings, quantity, error/loading/locked states and price output.
-- [ ] Add focused tests for progressive reference presentation (empty, one, multiple, capacity, required source), preserving each field's callback/role. Update exact layout assertions only where the approved visual behavior changes, retaining ownership guards.
-- [ ] Implement a real labelled Prompt/Script input with stable border/background/inset focus and no clipped resize/scroll edges. Reduce placeholder bulk while preserving upload locks, accepted-kind hints and errors. Use named Add/Manage actions with a reference glyph; never reserve a large empty card per theoretical reference.
-- [ ] Separate compact start/end image targets from image/video/audio collections according to the selected model schema. Keep optional end frame visible in a keyframe workflow; collection capacity grows progressively. Role names, replace/remove and touch alternatives stay explicit. Preserve the existing family/variant picker and its complete catalogue.
-- [ ] Preserve the current engine picker and live price owners. Make the chosen model and core settings immediately recognizable, Options visibly bordered/accented in both themes, quantity and canonical quote adjacent to Generate. No prototype catalogue or estimate is copied into production.
-- [ ] Arrange preview, inputs and actions as an app workbench. Keep the important price/action area accessible on narrow or short screens, preserve natural audio-reader dimensions, and keep advanced controls reachable by scrolling. Show a compact illustrated empty preview location without mounting a media element. Result caption describes the actual output; no permanent demo title. Pending occupies the preview location; Task 4 owns honest status/progress/ETA data.
-- [ ] Run affected composer/assets/image ownership tests, lint and TypeScript. Root exercises model/mode/settings/ref actions and all remaining fields before accepting the task.
+- [x] Read current schema/field/reference budgets and composer contract assertions before changing markup. Inventory visible mode toggles, advanced settings, quantity, error/loading/locked states and price output.
+- [x] Add focused tests for progressive reference presentation (empty, one, multiple, capacity, required source), preserving each field's callback/role. Update exact layout assertions only where the approved visual behavior changes, retaining ownership guards.
+- [x] Implement a real labelled Prompt/Script input with stable border/background/inset focus and no clipped resize/scroll edges. Reduce placeholder bulk while preserving upload locks, accepted-kind hints and errors. Use named Add/Manage actions with a reference glyph; never reserve a large empty card per theoretical reference.
+- [x] Separate compact start/end image targets from image/video/audio collections according to the selected model schema. Keep optional end frame visible in a keyframe workflow; collection capacity grows progressively. Role names, replace/remove and touch alternatives stay explicit. Preserve the existing family/variant picker and its complete catalogue.
+- [x] Preserve the current engine picker and live price owners. Make the chosen model and core settings immediately recognizable, Options visibly bordered/accented in both themes, quantity and canonical quote adjacent to Generate. No prototype catalogue or estimate is copied into production.
+- [x] Arrange preview, inputs and actions as an app workbench. Keep the important price/action area accessible on narrow or short screens, preserve natural audio-reader dimensions, and keep advanced controls reachable by scrolling. Show a compact illustrated empty preview location without mounting a media element. Result caption describes the actual output; no permanent demo title. Pending occupies the preview location; Task 4 owns honest status/progress/ETA data.
+- [x] Run affected composer/assets/image ownership tests, lint and TypeScript. Root exercises model/mode/settings/ref actions and all remaining fields before accepting the task.
 
 ## Task 3: Recent media to references
 
@@ -72,12 +72,12 @@ Keep the `HeaderWalletStatus` public props and existing `useHeaderAccountState` 
 
 **Interfaces:** Presentation consumes existing owned media identities and an explicit insertion callback. Production selections must go through existing library-selection handlers; the prototype's `recentIds`, MIME type and illustrative roles are not a production API.
 
-- [ ] Trace current account-scoped media and recent-output listing, original/thumbnail roles and insertion handlers. Keep the generation activity rail available and distinguish recent reusable media from jobs still rendering.
-- [ ] Add a bounded recent list with image/video/audio filters, lazy thumbnails, empty/loading/error/retry and a named mobile opener. Use shared existing SWR keys/feed rather than parallel polling of the same account.
-- [ ] Add explicit reference insertion and an internal desktop drop shortcut only where the destination role/metadata can be validated by the existing owner. Multiple roles require a chooser; incompatible/full states explain the issue. Replacing an existing reference must preserve it until valid selection is confirmed.
-- [ ] Test incompatible types, shared/per-role limits, signed/original URL preservation, stale account/filter results and role selection using pure helpers/owned fixtures. Keep file uploads in their existing owner and never claim a local fixture proves live auth.
-- [ ] Preserve a destination-neutral card interface for future Studio project/canvas insertion. Document the Studio command boundary without adding a pretend success button or timeline mutation.
-- [ ] Run focused tests, lint and TypeScript; commit with a report. UI and MCP continue to share existing backend contracts.
+- [x] Trace current account-scoped media and recent-output listing, original/thumbnail roles and insertion handlers. Keep the generation activity rail available and distinguish recent reusable media from jobs still rendering.
+- [x] Add a bounded recent list with image/video/audio filters, lazy thumbnails, empty/loading/error/retry and a named mobile opener. Use shared existing SWR keys/feed rather than parallel polling of the same account.
+- [x] Add explicit reference insertion and an internal desktop drop shortcut only where the destination role/metadata can be validated by the existing owner. Multiple roles require a chooser; incompatible/full states explain the issue. Replacing an existing reference must preserve it until valid selection is confirmed.
+- [x] Test incompatible types, shared/per-role limits, signed/original URL preservation, stale account/filter results and role selection using pure helpers/owned fixtures. Keep file uploads in their existing owner and never claim a local fixture proves live auth.
+- [x] Preserve a destination-neutral card interface for future Studio project/canvas insertion. Document the Studio command boundary without adding a pretend success button or timeline mutation.
+- [x] Run focused tests, lint and TypeScript; commit with a report. UI and MCP continue to share existing backend contracts.
 
 ## Task 4: Observed generation time and honest pending progress
 
@@ -85,23 +85,25 @@ Keep the `HeaderWalletStatus` public props and existing `useHeaderAccountState` 
 
 **Interfaces:** Prefer the measured average already projected as `EngineCaps.avgDurationMs`; retain an explicit fallback when unavailable. A provider-reported percentage is distinct from synthetic internal progress and from an ETA. Extend optional metadata only through existing owners; no duplicate polling or new pricing/submission authority.
 
-- [ ] Trace the admin measurement pipeline, averages API/cache, selected engine data and client ETA. Verify completed-duration units, aliases, sample availability and degraded behavior with existing tests or disposable fixtures. No production database write or schema setup for QA.
-- [ ] Connect observed duration to the creator's ETA and retain a clearly approximate fallback. Do not multiply an engine-wide average by invented mode/quality factors. Keep estimates non-blocking; distinguish total estimated duration from elapsed time and overdue state.
-- [ ] Display queued/processing/finalizing state and elapsed time in the pending reader. Display a percentage only when explicitly reported by the provider with known provenance. Preserve zero, reject non-finite values, bound percentages and prevent terminal-state regression. A successful status check may update a last-checked indication; network failure must not pretend generation is still freshly confirmed.
-- [ ] Preserve existing polling cadence/backoff, one outstanding request per job, chronological rail ordering, completion/media persistence, auth and billing. Do not hold an actually completed result behind an artificial ETA.
-- [ ] Add meaningful tests for measured/fallback ETA, zero/invalid/provider-vs-synthetic progress, stale/terminal transitions and degraded checks. Verify representative pending/overdue/error/completed UI with controlled local fixtures without paid generation.
-- [ ] Document measurement ownership and limits, run affected provider/generation/polling contracts, lint and TypeScript, commit and obtain independent review.
+- [x] Trace the admin measurement pipeline, averages API/cache, selected engine data and client ETA. Verify completed-duration units, aliases, sample availability and degraded behavior with existing tests or disposable fixtures. No production database write or schema setup for QA.
+- [x] Connect observed duration to the creator's ETA and retain a clearly approximate fallback. Do not multiply an engine-wide average by invented mode/quality factors. Keep estimates non-blocking; distinguish total estimated duration from elapsed time and overdue state.
+- [x] Display queued/processing/finalizing state and elapsed time in the pending reader. Display a percentage only when explicitly reported by the provider with known provenance. Preserve zero, reject non-finite values, bound percentages and prevent terminal-state regression. A successful status check may update a last-checked indication; network failure must not pretend generation is still freshly confirmed.
+- [x] Preserve existing polling cadence/backoff, one outstanding request per job, chronological rail ordering, completion/media persistence, auth and billing. Do not hold an actually completed result behind an artificial ETA.
+- [x] Add meaningful tests for measured/fallback ETA, zero/invalid/provider-vs-synthetic progress, stale/terminal transitions and degraded checks. Verify representative pending/overdue/error/completed UI with controlled local fixtures without paid generation.
+- [x] Document measurement ownership and limits, run affected provider/generation/polling contracts, lint and TypeScript, commit and obtain independent review.
 
 ## Task 5: Browser qualification and integration review
 
+User follow-up: complete the direct Départ / Fin / Ajouter presentation in the real reference owner, following prototype f067d5349 without copying its mode logic. Fix the confirmed intermediate-width image gallery placement that compresses the form. Preserve existing import/library callbacks and perform dialog focus handoff explicitly. These targeted fixes receive an independent review before final integration review.
+
 **Files:** `docs/engineering/app-experience.md`, task ledger, ignored screenshots/measurement artifacts; only targeted fixes in implementation files.
 
-- [ ] Run local app and inspect before/candidate layouts with the same viewport and route; distinguish guest, controlled fixture and actual authenticated evidence.
-- [ ] Verify 1440×960, 900×700, 390×844, 320×740 and 844×390: visible wallet/navigation, complete prompt focus, reference additions and errors, core options, price/action, scroll reachability and no horizontal overflow. Inspect light/dark, empty/loading/results and native audio controls.
-- [ ] Verify menu keyboard loop, Escape/focus return, localized links, account/auth destinations, draft persistence and dynamic panels. Preserve all functions inventoried before replacement.
-- [ ] Run frontend lint, exposure lint, TypeScript and affected architecture/behavior suites; full `test:validate` if generation/polling/persistence responsibilities changed. Compare loading evidence where production-like builds are runnable; do not claim a performance gain from CSS or syntax checks.
+- [x] Run local app and inspect before/candidate layouts with the same viewport and route; distinguish guest, controlled fixture and actual authenticated evidence.
+- [x] Verify 1440×960, 900×700, 390×844, 320×740 and 844×390: visible wallet/navigation, complete prompt focus, reference additions and errors, core options, price/action, scroll reachability and no horizontal overflow. Inspect light/dark, empty/loading/results and native audio controls.
+- [x] Verify menu keyboard loop, Escape/focus return, localized links, account/auth destinations, draft persistence and dynamic panels. Preserve all functions inventoried before replacement.
+- [x] Run frontend lint, exposure lint, TypeScript and affected architecture/behavior suites; full `test:validate` if generation/polling/persistence responsibilities changed. Compare loading evidence where production-like builds are runnable; do not claim a performance gain from CSS or syntax checks.
 - [ ] Obtain independent spec/quality review of each task and a final integration review. Fix material findings and record unresolved real-session/device/performance qualification honestly.
-- [ ] Leave a reviewable isolated branch and local preview; no deployment, merge or payment.
+- [x] Leave a reviewable isolated branch and local preview; no deployment, merge or payment.
 
 ## Progress
 
