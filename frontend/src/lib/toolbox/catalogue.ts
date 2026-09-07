@@ -17,7 +17,7 @@ export type ToolDefinition = {
 export const TOOLBOX: readonly ToolDefinition[] = [
   { id: 'upscale', version: 1, group: 'quick', inputKinds: ['image', 'video'], outputKinds: ['image', 'video'], minInputs: 1, maxInputs: 1, href: '/app/tools/upscale', studio: 'existing-adapter', mcpExecution: false },
   { id: 'background-removal', version: 1, group: 'quick', inputKinds: ['video'], outputKinds: ['video'], minInputs: 1, maxInputs: 1, href: '/app/tools/background-removal', studio: 'standalone', mcpExecution: false },
-  { id: 'character-builder', version: 1, group: 'workshop', inputKinds: ['image'], outputKinds: ['image'], minInputs: 0, maxInputs: 14, href: '/app/tools/character-builder', studio: 'existing-adapter', mcpExecution: false },
+  { id: 'character-builder', version: 1, group: 'workshop', inputKinds: ['image'], outputKinds: ['image'], minInputs: 0, maxInputs: 2, href: '/app/tools/character-builder', studio: 'existing-adapter', mcpExecution: false },
   { id: 'storyboard', version: 1, group: 'workshop', inputKinds: ['image'], outputKinds: ['image'], minInputs: 0, maxInputs: 1, href: '/app/tools/storyboard', studio: 'standalone', mcpExecution: false },
   { id: 'angle', version: 1, group: 'workshop', inputKinds: ['image'], outputKinds: ['image'], minInputs: 1, maxInputs: 1, href: '/app/tools/angle', studio: 'existing-adapter', mcpExecution: false },
 ];
