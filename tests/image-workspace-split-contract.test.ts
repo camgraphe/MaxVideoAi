@@ -213,3 +213,10 @@ test('image workspace foundations are split from the route orchestrator', () => 
   const lineCount = source.split('\n').length;
   assert.ok(lineCount <= 500, `ImageWorkspace should stay below 500 lines after shell extraction, got ${lineCount}`);
 });
+
+
+test('image mobile gallery stays inside the main shell column at intermediate widths', () => {
+  const source = readFileSync(shellPath, 'utf8');
+  assert.doesNotMatch(source, /<>|<\/>/, 'a fragment must not expose the mobile rail as a sibling to the outer md:flex-row layout');
+  assert.match(source, /<main[\s\S]*<\/main>\s*\{!isDesktopLayout[\s\S]*variant="mobile"[\s\S]*\) : null\}\s*<\/div>\s*\{isDesktopLayout[\s\S]*variant="desktop"/, 'mobile rail follows the form inside its column; desktop rail remains alongside the column');
+});

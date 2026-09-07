@@ -51,8 +51,9 @@ test('Gemini Omni Studio owns Omni assets and hides duplicate generic controls',
   const source = readFileSync(composerSurfacePath, 'utf8');
   assert.match(source, /OMNI_CUSTOM_FIELD_IDS/, 'custom Omni field ids should be centralized');
   assert.match(source, /showOmniStudioPanel/, 'surface should compute an Omni panel gate');
-  assert.match(source, /filter\(\(entry\) =>/, 'Composer asset fields should be filterable');
-  assert.match(source, /if \(showOmniStudioPanel\) return false/, 'Omni asset fields should not be duplicated in Composer');
+  assert.match(source, /getWorkspaceReferenceFields/, 'Composer delegates generic asset availability to the shared owner');
+  const availability = readFileSync('frontend/app/(core)/(workspace)/app/_lib/workspace-reference-fields.ts', 'utf8');
+  assert.match(availability, /fields\.filter\(\(\{ field \}\) => !showOmniStudioPanel/, 'the shared owner excludes Omni assets from generic controls');
   assert.match(source, /OMNI_CUSTOM_FIELD_IDS\.has\(field\.id\)/, 'generic advanced settings should hide Omni custom fields');
 });
 

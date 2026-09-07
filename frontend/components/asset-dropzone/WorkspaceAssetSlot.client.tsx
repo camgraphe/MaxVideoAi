@@ -4,7 +4,7 @@
 import { AppGlyph } from '@/components/app/AppGlyph';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { workspaceReferenceCopy } from '@/components/composer/workspace-reference-copy';
-import type { AssetDropzoneSlotProps } from './AssetDropzoneSlot';
+import type { AssetDropzoneSlotProps } from './asset-dropzone-types';
 
 /** Media, upload and removal are siblings: native controls never activate replacement. */
 export function WorkspaceAssetSlot({ asset, accept, mediaKind = 'image', slotIndex, slotLabel, disabled, disabledReason, minCount, inputRef, canOpenLibrary, onDisabledAttempt, onDrop, onPaste, onInputChange, onSelectFileSlot, onOpenLibrarySlot, onRemoveSlot, assetCopy }: AssetDropzoneSlotProps) {

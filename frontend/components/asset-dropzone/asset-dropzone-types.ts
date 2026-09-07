@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react';
+import type { ChangeEvent, ClipboardEvent, DragEvent, ReactNode } from 'react';
+import type { getLocalizedAssetDropzoneCopy } from '@/lib/ltx-localization';
 import type { EngineInputField } from '@/types/engines';
 
 export type AssetSlotAttachment = {
@@ -35,4 +36,35 @@ export type AssetUploadMeta = {
   durationSec?: number;
   width?: number;
   height?: number;
+};
+
+type AssetDropzoneCopy = ReturnType<typeof getLocalizedAssetDropzoneCopy>;
+export type AssetDropzoneSlotProps = {
+  accept: string;
+  mediaKind?: 'image' | 'video' | 'audio';
+  asset: AssetSlotAttachment | null;
+  assetCopy: AssetDropzoneCopy;
+  canOpenLibrary: boolean;
+  compactDensity: boolean;
+  compactCollectionLayout: boolean;
+  workspaceDensity: boolean;
+  disabled: boolean;
+  disabledReason: string | null;
+  displaySlotCount: number;
+  engineId: string;
+  filledAssetCount: number;
+  fullBleedSingleAsset: boolean;
+  hideRequiredSlotCopy: boolean;
+  inputRef: (element: HTMLInputElement | null) => void;
+  isCollectionField: boolean;
+  minCount: number;
+  slotIndex: number;
+  slotLabel: string;
+  onDisabledAttempt: () => void;
+  onDrop: (event: DragEvent<HTMLDivElement>, slotIndex: number) => void;
+  onInputChange: (event: ChangeEvent<HTMLInputElement>, slotIndex: number) => void;
+  onOpenLibrarySlot: (slotIndex: number) => void;
+  onPaste: (event: ClipboardEvent<HTMLDivElement>, slotIndex: number) => void;
+  onRemoveSlot: (slotIndex: number) => void;
+  onSelectFileSlot: (slotIndex: number) => void;
 };

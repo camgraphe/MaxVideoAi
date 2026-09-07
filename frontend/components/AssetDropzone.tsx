@@ -11,13 +11,13 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import { getLocalizedAssetDropzoneCopy, normalizeUiLocale } from '@/lib/ltx-localization';
 import { normalizeMinimumImageSide } from '@/lib/image-dimension-constraints';
 import { resolveEngineMediaFieldConstraint } from '@/lib/media-field-constraints';
+import { buildAssetFieldHelperLines } from '@/components/asset-dropzone/asset-field-helper-lines';
 import { AssetFieldTooltip } from '@/components/asset-dropzone/AssetFieldTooltip';
 import { AssetFieldGuidance } from '@/components/asset-dropzone/AssetFieldGuidance';
 import { AssetFieldDisabledBadge, AssetFieldDisabledNotice } from '@/components/asset-dropzone/AssetFieldDisabledState';
 import { AssetDropzoneSlot } from '@/components/asset-dropzone/AssetDropzoneSlot';
 import {
   buildAssetFieldTooltipLines,
-  formatAcceptedAudioExtensions,
   readMediaDuration,
   resolveAcceptedAudioInputTypes,
   resolveAssetFieldTitle,
@@ -41,8 +41,6 @@ interface AssetDropzoneProps {
   assets: (AssetSlotAttachment | null)[];
   headerAction?: ReactNode;
   density?: 'default' | 'compact' | 'workspace';
-  workspaceAssetLimit?: number;
-  workspaceShowDetails?: boolean;
   onSelect?: (field: EngineInputField, file: File, slotIndex: number, meta?: AssetUploadMeta) => void;
   onRemove?: (field: EngineInputField, index: number) => void;
   onError?: (message: string) => void;
@@ -66,8 +64,6 @@ export function AssetDropzone({
   assets,
   headerAction,
   density = 'default',
-  workspaceAssetLimit = Infinity,
-  workspaceShowDetails = true,
   onSelect,
   onRemove,
   onError,
@@ -115,13 +111,13 @@ export function AssetDropzone({
 
   const filledAssetCount = useMemo(() => assets.filter((asset) => asset != null).length, [assets]);
   const displaySlots = useMemo(() => {
-    if (density === 'workspace') return getWorkspaceReferenceSlots({ assets, maxCount, minCount, limit: workspaceAssetLimit });
+    if (density === 'workspace') return getWorkspaceReferenceSlots({ assets, maxCount, minCount });
     return getVisibleAssetSlots({
       assets,
       maxCount,
       minCount,
     });
-  }, [assets, maxCount, minCount, density, workspaceAssetLimit]);
+  }, [assets, maxCount, minCount, density]);
   const renderSlots = useMemo(() => {
     if (!isCollectionField || displaySlots.length <= 1) return displaySlots;
     const emptySlots = displaySlots.filter((slot) => slot.asset == null);
@@ -259,65 +255,9 @@ export function AssetDropzone({
     [field, handleFile, onUrlSelect]
   );
 
-  const helperLines = useMemo(() => {
-    const lines: string[] = [];
-    if (field.type === 'image') {
-      if (acceptFormats.length) {
-        lines.push(assetCopy.formats(acceptFormats.map((ext) => ext.toUpperCase()).join(', ')));
-      } else {
-        lines.push(assetCopy.formats('PNG, JPG, WebP'));
-      }
-      const maxImage = caps?.maxUploadMB ?? constraints.maxImageSizeMB ?? limits.imageMaxMB;
-      if (maxImage) lines.push(assetCopy.mbMax(maxImage));
-      if (minimumImageSidePx != null) lines.push(`${minimumImageSidePx} x ${minimumImageSidePx} px min`);
-    } else if (field.type === 'video') {
-      lines.push(assetCopy.formats('MP4, MOV'));
-      const maxVideo = constraints.maxVideoSizeMB ?? limits.videoMaxMB;
-      if (maxVideo) lines.push(assetCopy.mbMax(maxVideo));
-      const maxVideoDuration = field.maxDurationSec ?? limits.videoMaxDurationSec;
-      if (maxVideoDuration) lines.push(assetCopy.secondsMax(maxVideoDuration));
-    } else {
-      const audioFormats = formatAcceptedAudioExtensions(mediaFieldConstraint);
-      lines.push(assetCopy.formats(audioFormats));
-      const maxAudio = mediaFieldConstraint.maxSizeMB ?? limits.videoMaxMB;
-      if (maxAudio) lines.push(assetCopy.mbMax(maxAudio));
-      const minAudioDuration = field.minDurationSec;
-      const maxAudioDuration = field.maxDurationSec ?? limits.audioMaxDurationSec;
-      if (typeof minAudioDuration === 'number' && typeof maxAudioDuration === 'number') {
-        lines.push(assetCopy.secondsRequired(minAudioDuration, maxAudioDuration));
-      } else if (typeof maxAudioDuration === 'number') {
-        lines.push(assetCopy.secondsMax(maxAudioDuration));
-      }
-      if (field.id === 'audio_url') {
-        lines.push(assetCopy.videoLengthFollowsAudio);
-      }
-    }
-    if (field.maxCount && field.maxCount > 1) {
-      lines.push(assetCopy.upToFiles(field.maxCount));
-    }
-    if (field.minCount && field.minCount > 1) {
-      lines.push(assetCopy.atLeastFiles(field.minCount));
-    }
-    return lines;
-  }, [
-    acceptFormats,
-    assetCopy,
-    caps?.maxUploadMB,
-    constraints.maxImageSizeMB,
-    constraints.maxVideoSizeMB,
-    field.id,
-    field.maxCount,
-    field.maxDurationSec,
-    field.minCount,
-    field.minDurationSec,
-    field.type,
-    limits.audioMaxDurationSec,
-    limits.imageMaxMB,
-    limits.videoMaxDurationSec,
-    limits.videoMaxMB,
-    mediaFieldConstraint,
-    minimumImageSidePx,
-  ]);
+  const helperLines = useMemo(() => buildAssetFieldHelperLines({
+    field, engine, caps, acceptFormats, minimumImageSidePx, mediaFieldConstraint, assetCopy,
+  }), [field, engine, caps, acceptFormats, minimumImageSidePx, mediaFieldConstraint, assetCopy]);
 
   const defaultFieldTitle = resolveAssetFieldTitle(field, role, assetCopy);
   const frameTitle = field.id === 'image_url' ? (locale === 'fr' ? 'Image de départ' : locale === 'es' ? 'Imagen inicial' : 'Start image') : field.id === 'end_image_url' ? (locale === 'fr' ? 'Image de fin' : locale === 'es' ? 'Imagen final' : 'End image') : null;
@@ -405,15 +345,15 @@ export function AssetDropzone({
   if (workspaceDensity) {
     const copy = workspaceReferenceCopy(locale);
     return <div className="app-reference-field" data-reference-field={field.id}>
-      {filledAssetCount || workspaceShowDetails || headerAction ? <div className="app-reference-field-heading"><strong>{fieldTitle}</strong>{required ? <small>{copy.required}</small> : null}{headerAction}</div> : null}
+      <div className="app-reference-field-heading"><strong>{fieldTitle}</strong>{required ? <small>{copy.required}</small> : null}{headerAction}</div>
       {disabledReason ? <p className="app-reference-disabled" role="note">{disabledReason}</p> : null}
       <div className="app-reference-slots">
           {renderSlots.map(renderSlot)}
       </div>
-      {workspaceShowDetails ? <details className="app-reference-guidance"><summary>{copy.details}{isCollectionField ? ` · ${filledAssetCount}/${maxCount}` : ''}</summary>
+      <details className="app-reference-guidance"><summary>{copy.details}{isCollectionField ? ` · ${filledAssetCount}/${maxCount}` : ''}</summary>
         {guidance ? <p>{guidance.label} {guidance.tooltip}</p> : null}
         {detailsTooltipLines.map((line) => <p key={line}>{line}</p>)}
-      </details> : null}
+      </details>
     </div>;
   }
 

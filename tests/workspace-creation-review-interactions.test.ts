@@ -4,19 +4,31 @@ import { createRequire } from 'node:module';
 import * as React from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
+import { SWRConfig } from 'swr';
 import { JSDOM } from 'jsdom';
 import { I18nProvider } from '../frontend/lib/i18n/I18nProvider';
 import type { Dictionary } from '../frontend/lib/i18n/types';
 import { AudioWorkspacePreview, type AudioWorkspacePreviewProps } from '../frontend/app/(core)/(workspace)/app/audio/_components/audio-workspace-preview';
 import { DEFAULT_AUDIO_WORKSPACE_COPY } from '../frontend/app/(core)/(workspace)/app/audio/copy';
 import { listFalEngines } from '../frontend/src/config/falEngines';
+import { useAccessibleModal } from '../frontend/components/ui/useAccessibleModal';
 import type { ComposerProps } from '../frontend/components/composer/composer-types';
+
+async function loadReferenceSection() {
+  const require = createRequire(import.meta.url);
+  const previousCssLoader = require.extensions['.css'];
+  require.extensions['.css'] = () => {};
+  try { return await import('../frontend/components/composer/WorkspaceReferenceSection.client'); } finally {
+    if (previousCssLoader) require.extensions['.css'] = previousCssLoader; else delete require.extensions['.css'];
+  }
+}
 
 async function mount(element: React.ReactNode) {
   const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost/app', pretendToBeVisual: true });
-  const globals = { window: dom.window, document: dom.window.document, navigator: dom.window.navigator, React, IS_REACT_ACT_ENVIRONMENT: true };
+  const globals = { window: dom.window, document: dom.window.document, navigator: dom.window.navigator, HTMLElement: dom.window.HTMLElement, React, IS_REACT_ACT_ENVIRONMENT: true };
   const previous = new Map(Object.keys(globals).map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
   for (const [key, value] of Object.entries(globals)) Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
+  dom.window.HTMLElement.prototype.getClientRects = function () { return [{ width: 10, height: 10 }] as unknown as DOMRectList; };
   const container = dom.window.document.getElementById('root')!;
   const root = createRoot(container);
   const render = async (child: React.ReactNode) => {
@@ -78,7 +90,7 @@ test('real Composer renders Spanish statuses and associates both single and mult
   const fixture = await mount(React.createElement(Composer, props));
   try {
     assert.match(fixture.container.textContent!, /Calculando…/);
-    assert.match(fixture.container.textContent!, /Imágenes/);
+    assert.match(fixture.container.textContent!, /Referencias/);
     const label = fixture.container.querySelector('label')!;
     assert.equal(label.control?.tagName, 'TEXTAREA');
     await fixture.render(React.createElement(Composer, { ...props, isPricing: false, multiPrompt: { enabled: true, scenes: [{ id: 'scene-1', prompt: '', duration: 5 }], totalDurationSec: 5, minDurationSec: 1, maxDurationSec: 15, onToggle() {}, onAddScene() {}, onRemoveScene() {}, onUpdateScene() {} } }));
@@ -92,7 +104,7 @@ test('real Composer renders Spanish statuses and associates both single and mult
     const manage = fixture.container.querySelector<HTMLButtonElement>('.app-reference-heading button')!;
     await act(async () => manage.click());
     assert.equal(manage.getAttribute('aria-expanded'), 'true');
-    const upload = fixture.container.querySelector<HTMLButtonElement>('.app-reference-add-target')!;
+    const upload = fixture.dom.window.document.querySelector<HTMLButtonElement>('.app-reference-add-target')!;
     upload.focus();
     await act(async () => upload.dispatchEvent(new fixture.dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
     assert.equal(manage.getAttribute('aria-expanded'), 'false');
@@ -116,9 +128,12 @@ test('rendered sparse references retain upload/library/remove indices and native
   const props: ComposerProps = { engine, density: 'workspace', prompt: '', onPromptChange() {}, price: null, currency: 'USD', isLoading: false, promptRequired: true, assetFields: [{ field: { id: 'refs', type: 'video', label: 'Refs', maxCount: 50 }, required: false }], assets: { refs: slots }, onAssetRemove: (field, index) => removed.push([field.id, index]), onOpenLibrary: (field, index) => library.push([field.id, index]) };
   const fixture = await mount(React.createElement(Composer, props));
   try {
+    const command = fixture.container.querySelector<HTMLButtonElement>('[data-reference-command="collections"]')!;
+    await act(async () => command.click());
+    const doc = fixture.dom.window.document;
     let fileSelections = 0;
-    fixture.container.querySelectorAll('input[type="file"]').forEach(input => input.addEventListener('click', (event) => { event.preventDefault(); fileSelections += 1; }));
-    const filled = fixture.container.querySelector<HTMLElement>('[data-asset-index="49"]')!;
+    doc.querySelectorAll('input[type="file"]').forEach(input => input.addEventListener('click', (event) => { event.preventDefault(); fileSelections += 1; }));
+    const filled = doc.querySelector<HTMLElement>('[data-asset-index="49"]')!;
     await act(async () => filled.querySelector('video')!.click());
     assert.equal(fileSelections, 0);
     const remove = filled.querySelector<HTMLButtonElement>('button[aria-label^="Quitar"]')!;
@@ -126,9 +141,162 @@ test('rendered sparse references retain upload/library/remove indices and native
     assert.equal(fileSelections, 0, 'keyboard event cannot bubble into an upload container');
     await act(async () => remove.click());
     assert.deepEqual(removed, [['refs', 49]]);
+    await act(async () => doc.querySelector<HTMLButtonElement>('[data-asset-index="0"] .app-reference-add-target')!.click());
+    assert.equal(fileSelections, 1);
     await act(async () => filled.querySelector<HTMLButtonElement>('button[aria-label^="Biblioteca"]')!.click());
     assert.deepEqual(library, [['refs', 49]]);
-    await act(async () => fixture.container.querySelector<HTMLButtonElement>('[data-asset-index="0"] .app-reference-add-target')!.click());
-    assert.equal(fileSelections, 1);
+    assert.equal(doc.querySelector('[role="dialog"]'), null);
+    assert.equal(doc.activeElement, command);
+  } finally { await fixture.cleanup(); }
+});
+
+
+test('direct frame commands order Start before End, preserve exact uploads and safely hand off to Library', async () => {
+  const { WorkspaceReferenceSection } = await loadReferenceSection();
+  const baseEngine = listFalEngines().find(entry => entry.id === 'seedance-2-0')!.engine;
+  const engine = { ...baseEngine, inputSchema: { constraints: { supportedFormats: ['png'] } } };
+  const start = { id: 'image_url', label: 'Start image', type: 'image' as const, maxCount: 1 };
+  const end = { id: 'end_image_url', label: 'End image', type: 'image' as const, maxCount: 1 };
+  const asset = { kind: 'image' as const, name: 'Existing start', type: 'image/png', size: 1, previewUrl: '/existing.png' };
+  const uploads: unknown[][] = [];
+  const removals: unknown[][] = [];
+  const handoffs: unknown[][] = [];
+  let libraryOpener: Element | null = null;
+  function Library({ close }: { close: () => void }) {
+    const { dialogRef, onDialogKeyDown } = useAccessibleModal({ onClose: close });
+    return React.createElement('div', { ref: dialogRef, role: 'dialog', 'aria-modal': 'true', onKeyDown: onDialogKeyDown }, React.createElement('button', { onClick: close }, 'Cancel library'));
+  }
+  function Fixture() {
+    const [library, setLibrary] = React.useState(false);
+    return React.createElement(React.Fragment, null, React.createElement(WorkspaceReferenceSection, {
+      engine, assetFields: [{ field: end, role: 'frame', required: false }, { field: start, role: 'primary', required: false }],
+      assets: { image_url: [asset] }, referenceWarning: '',
+      onAssetAdd: (...args) => uploads.push(args), onAssetRemove: (...args) => removals.push(args),
+      onOpenLibrary: (...args) => {
+        assert.equal(document.querySelector('[role="dialog"]'), null, 'reference dialog is gone before the Library callback');
+        assert.equal(document.body.style.overflow, '', 'the popup body lock is released before Library mounts');
+        libraryOpener = document.activeElement;
+        handoffs.push(args); setLibrary(true);
+      },
+    }), library ? React.createElement(Library, { close: () => setLibrary(false) }) : null);
+  }
+  const fixture = await mount(React.createElement(Fixture));
+  const doc = fixture.dom.window.document;
+  const click = async (node: HTMLElement) => act(async () => node.click());
+  try {
+    const commands = [...fixture.container.querySelectorAll<HTMLButtonElement>('[data-reference-command]')];
+    assert.deepEqual(commands.map(node => node.dataset.referenceCommand), ['image_url', 'end_image_url']);
+    assert.equal(doc.querySelector('input[type="file"]'), null, 'no empty dropzone appears in the toolbar');
+    await click(commands[1]);
+    assert.equal(doc.querySelector('[role="dialog"] h2')?.textContent, 'Fin');
+    assert.equal(doc.querySelectorAll('[data-reference-field]').length, 1);
+    await act(async () => new Promise(resolve => setTimeout(resolve, 5)));
+    const popup = doc.querySelector<HTMLElement>('[role="dialog"]')!;
+    const buttons = [...popup.querySelectorAll<HTMLButtonElement>('button:not([disabled]), summary')];
+    assert.equal(doc.activeElement, buttons[0], 'popup gives initial focus to Close');
+    buttons[0].focus();
+    await act(async () => buttons[0].dispatchEvent(new fixture.dom.window.KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true })));
+    assert.equal(doc.activeElement, buttons.at(-1), 'Shift+Tab wraps inside the focused popup');
+    await act(async () => buttons.at(-1)!.dispatchEvent(new fixture.dom.window.KeyboardEvent('keydown', { key: 'Tab', bubbles: true })));
+    assert.equal(doc.activeElement, buttons[0], 'Tab wraps back to Close');
+    const input = doc.querySelector<HTMLInputElement>('input[type="file"]')!;
+    const file = new fixture.dom.window.File(['png'], 'end.png', { type: 'image/png' });
+    Object.defineProperty(input, 'files', { value: [file], configurable: true });
+    await act(async () => input.dispatchEvent(new fixture.dom.window.Event('change', { bubbles: true })));
+    assert.equal(uploads.length, 1); assert.equal(uploads[0][0], end); assert.equal(uploads[0][1], file); assert.equal(uploads[0][2], 0);
+    const dialog = doc.querySelector<HTMLElement>('[role="dialog"]')!;
+    await act(async () => dialog.dispatchEvent(new fixture.dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
+    assert.equal(doc.activeElement, commands[1]); assert.equal(doc.body.style.overflow, '');
+    await click(commands[0]);
+    const replaceInput = doc.querySelector<HTMLInputElement>('input[type="file"]')!;
+    Object.defineProperty(replaceInput, 'files', { value: [], configurable: true });
+    await act(async () => replaceInput.dispatchEvent(new fixture.dom.window.Event('change', { bubbles: true })));
+    assert.equal(uploads.length, 1, 'cancelled replacement does not mutate the existing asset');
+    assert.equal(doc.querySelector('.app-reference-media img')?.getAttribute('src'), '/existing.png');
+    await click(doc.querySelector<HTMLButtonElement>('button[aria-label^="Biblioteca"]')!);
+    assert.deepEqual(handoffs, [[start, 0]]); assert.equal(libraryOpener, commands[0]);
+    assert.equal(doc.querySelectorAll('[role="dialog"]').length, 1); assert.equal(doc.body.style.overflow, 'hidden');
+    await click([...doc.querySelectorAll<HTMLButtonElement>('button')].find(button => button.textContent === 'Cancel library')!);
+    assert.equal(doc.activeElement, commands[0]); assert.equal(doc.body.style.overflow, '');
+    await click(commands[0]);
+    assert.equal(doc.querySelector('.app-reference-media img')?.getAttribute('src'), '/existing.png');
+    await click(doc.querySelector<HTMLButtonElement>('button[aria-label^="Quitar"]')!);
+    assert.deepEqual(removals, [[start, 0]]);
+  } finally { await fixture.cleanup(); }
+});
+
+test('required audio and disabled explanations remain visible, while fifty references have a bounded summary and complete inventory', async () => {
+  const { WorkspaceReferenceSection } = await loadReferenceSection();
+  const engine = listFalEngines().find(entry => entry.id === 'seedance-2-0')!.engine;
+  const assets = Array.from({ length: 50 }, (_, index) => ({ kind: 'image' as const, name: `Ref ${index}`, type: 'image/png', size: 1, previewUrl: `/ref-${index}.png` }));
+  const props = { engine, assetFields: [
+    { field: { id: 'references', type: 'image' as const, label: 'Images', maxCount: 50 }, required: false },
+    { field: { id: 'audio_url', type: 'audio' as const, label: 'Source audio', minCount: 1, maxCount: 1 }, required: true, disabled: true, disabledReason: 'Sign in to upload audio' },
+  ], assets: { references: assets }, referenceWarning: '' };
+  const fixture = await mount(React.createElement(WorkspaceReferenceSection, props));
+  const doc = fixture.dom.window.document;
+  try {
+    assert.match(fixture.container.textContent!, /Obligatorio · Source audio/);
+    assert.equal(fixture.container.querySelectorAll('.app-reference-selected-summary button').length, 3);
+    assert.equal(fixture.container.querySelectorAll('img').length, 3);
+    assert.equal(doc.querySelector('audio'), null);
+    const command = fixture.container.querySelector<HTMLButtonElement>('[data-reference-command="collections"]')!;
+    await act(async () => fixture.container.querySelector<HTMLButtonElement>('.app-reference-selected-summary button')!.click());
+    assert.equal(doc.querySelectorAll('[data-reference-field="references"] [data-asset-index]').length, 50);
+    assert.ok(doc.querySelector('[data-reference-field="references"] [data-asset-index="49"]'));
+    const audio = doc.querySelector('[data-reference-field="audio_url"]')!;
+    assert.match(audio.textContent!, /Sign in to upload audio/);
+    assert.equal(audio.querySelector<HTMLInputElement>('input')?.accept, '.mp3,.wav');
+    assert.equal(audio.querySelector<HTMLButtonElement>('button')?.disabled, true);
+    const dialog = doc.querySelector<HTMLElement>('[role="dialog"]')!;
+    await act(async () => dialog.dispatchEvent(new fixture.dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
+    assert.equal(doc.activeElement, command, 'summary opens with the stable toolbar command as focus return');
+  } finally { await fixture.cleanup(); }
+});
+
+test('image source and mask preserve their actual titles instead of becoming video frame commands', async () => {
+  const { WorkspaceReferenceSection } = await loadReferenceSection();
+  const base = listFalEngines().find(entry => entry.id === 'seedance-2-0')!.engine;
+  const engine = { ...base, modes: ['t2i' as const, 'i2i' as const] };
+  const fixture = await mount(React.createElement(WorkspaceReferenceSection, { engine, referenceWarning: '', assets: {}, assetFields: [
+    { field: { id: 'image_url', type: 'image', label: 'Source image', maxCount: 1 }, role: 'primary', required: true },
+    { field: { id: 'mask', type: 'image', label: 'Mask', maxCount: 1 }, required: true },
+  ] }));
+  try {
+    assert.equal(fixture.container.querySelector('[data-reference-command="image_url"]'), null);
+    assert.match(fixture.container.textContent!, /Source image, Mask/);
+    await act(async () => fixture.container.querySelector<HTMLButtonElement>('[data-reference-command="collections"]')!.click());
+    const text = fixture.dom.window.document.querySelector('[role="dialog"]')!.textContent!;
+    assert.match(text, /Source image/); assert.match(text, /Mask/); assert.doesNotMatch(text, /Imagen inicial|Inicio/);
+  } finally { await fixture.cleanup(); }
+});
+
+
+test('actual image Library owns focus, Escape and body lock and restores its connected command', async () => {
+  const { ImageLibraryModal } = await import('../frontend/app/(core)/(workspace)/app/image/_components/ImageLibraryModal');
+  const { DEFAULT_COPY } = await import('../frontend/app/(core)/(workspace)/app/image/_lib/image-workspace-copy');
+  function Fixture() {
+    const [open, setOpen] = React.useState(false);
+    return React.createElement(React.Fragment, null,
+      React.createElement('button', { onClick: (event: React.MouseEvent<HTMLButtonElement>) => { event.currentTarget.focus(); setOpen(true); } }, 'Reference command'),
+      React.createElement(SWRConfig, { value: { provider: () => new Map(), isPaused: () => true } },
+        React.createElement(ImageLibraryModal, { open, onClose: () => setOpen(false), onSelect() {}, onToggleCharacter() {}, selectedCharacterReferences: [], characterSelectionLimit: 1, copy: DEFAULT_COPY.library, characterCopy: DEFAULT_COPY.characterPicker, selectionMode: 'reference', initialSource: 'all', supportedFormats: ['png'], supportedFormatsLabel: 'PNG', toolsEnabled: false })));
+  }
+  const fixture = await mount(React.createElement(Fixture));
+  const doc = fixture.dom.window.document;
+  try {
+    assert.equal(doc.querySelector('[role="dialog"]'), null);
+    assert.equal(doc.body.style.overflow, '');
+    const command = fixture.container.querySelector<HTMLButtonElement>('button')!;
+    await act(async () => { command.click(); });
+    await act(async () => new Promise(resolve => setTimeout(resolve, 5)));
+    const dialog = doc.querySelector<HTMLElement>('[role="dialog"]')!;
+    assert.equal(dialog.getAttribute('aria-label'), DEFAULT_COPY.library.modal.title);
+    assert.equal(doc.body.style.overflow, 'hidden');
+    assert.ok(dialog.contains(doc.activeElement));
+    assert.equal(dialog.querySelector('input[type="file"]')?.getAttribute('tabindex'), '-1');
+    await act(async () => dialog.dispatchEvent(new fixture.dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
+    assert.equal(doc.querySelector('[role="dialog"]'), null);
+    assert.equal(doc.activeElement, command); assert.equal(doc.body.style.overflow, '');
   } finally { await fixture.cleanup(); }
 });

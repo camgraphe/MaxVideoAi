@@ -7,6 +7,7 @@ import type {
   MouseEvent as ReactMouseEvent,
 } from 'react';
 import type { AssetLibraryBrowserProps, AssetLibrarySource } from '@/components/library/AssetLibraryBrowser';
+import { useAccessibleModal } from '@/components/ui/useAccessibleModal';
 import { Button } from '@/components/ui/Button';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import { translateError } from '@/lib/error-messages';
@@ -59,7 +60,11 @@ export type ImageLibraryModalProps = {
   toolsEnabled: boolean;
 };
 
-export function ImageLibraryModal({
+export function ImageLibraryModal(props: ImageLibraryModalProps) {
+  return props.open ? <OpenImageLibraryModal {...props} /> : null;
+}
+
+function OpenImageLibraryModal({
   open,
   onClose,
   onSelect,
@@ -79,6 +84,8 @@ export function ImageLibraryModal({
   const [activeSource, setActiveSource] = useState<AssetLibrarySource>(initialSource);
   const [isImporting, setIsImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
+  const handleClose = useCallback(() => { if (!isImporting) onClose(); }, [isImporting, onClose]);
+  const { dialogRef, onDialogKeyDown } = useAccessibleModal({ onClose: handleClose, closeDisabled: isImporting });
   const importInputRef = useRef<HTMLInputElement | null>(null);
   const isCharacterMode = selectionMode === 'character';
   const importLabel = t(
@@ -312,7 +319,7 @@ export function ImageLibraryModal({
 
   const handleBackdropClick = (event: ReactMouseEvent<HTMLDivElement>) => {
     if (event.target === event.currentTarget) {
-      onClose();
+      handleClose();
     }
   };
 
@@ -323,7 +330,11 @@ export function ImageLibraryModal({
   return (
     <div
       className="fixed inset-0 z-[10050] flex items-center justify-center bg-surface-on-media-dark-60 px-3 py-6 sm:px-6"
+      ref={dialogRef}
+      tabIndex={-1}
+      onKeyDown={onDialogKeyDown}
       role="dialog"
+      aria-label={isCharacterMode ? characterCopy.title : copy.modal.title}
       aria-modal="true"
       onMouseDown={handleBackdropClick}
     >
@@ -334,6 +345,8 @@ export function ImageLibraryModal({
             type="file"
             accept="image/*"
             className="sr-only"
+            tabIndex={-1}
+            aria-hidden="true"
             onChange={handleImportChange}
           />
         ) : null}
@@ -342,7 +355,7 @@ export function ImageLibraryModal({
           layout="modal"
           title={isCharacterMode ? characterCopy.title : copy.modal.title}
           subtitle={supportedFormatsHint ?? (isCharacterMode ? characterCopy.description : copy.modal.description)}
-          onClose={onClose}
+          onClose={isImporting ? undefined : handleClose}
           closeLabel={copy.modal.close}
           assets={browserAssets}
           isLoading={isLoading}

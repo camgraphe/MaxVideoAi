@@ -1,7 +1,9 @@
 import type { JSX } from 'react';
 
-export type AppGlyphName = 'create' | 'image' | 'video' | 'audio' | 'library' | 'tools' | 'settings' | 'wallet' | 'reference' | 'prompt' | 'connect' | 'menu' | 'external';
+export type AppGlyphName = 'create' | 'image' | 'video' | 'audio' | 'library' | 'tools' | 'settings' | 'wallet' | 'reference' | 'prompt' | 'connect' | 'menu' | 'external' | 'start' | 'end';
 const PATHS: Record<AppGlyphName, string> = {
+  start: 'M3 3h18v18H3V3zm2 2v14h14V5H5zm2 3h2v8H7zm4 0 6 4-6 4V8z',
+  end: 'M3 3h18v18H3V3zm2 2v14h14V5H5zm10 3h2v8h-2zM7 8l6 4-6 4V8z',
   create: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM16 13h3v3h3v3h-3v3h-3v-3h-3v-3h3z',
   image: 'M3 3h18v18H3V3zm2 2v14h14V5H5zm2 11 4-5 3 3 2-2 2 5H7zm2-9a2 2 0 1 0 0 4 2 2 0 0 0 0-4z',
   video: 'M3 4h18v16H3V4zm2 2v12h14V6H5zm4 1 7 5-7 5V7z',

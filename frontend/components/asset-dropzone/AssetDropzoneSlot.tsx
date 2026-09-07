@@ -3,44 +3,14 @@
 
 import clsx from 'clsx';
 import { WorkspaceAssetSlot } from './WorkspaceAssetSlot.client';
-import type { ChangeEvent, ClipboardEvent, DragEvent, KeyboardEvent } from 'react';
+import type { KeyboardEvent } from 'react';
 import { Lock, Trash2, X } from 'lucide-react';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
 import { Button } from '@/components/ui/Button';
-import type { getLocalizedAssetDropzoneCopy } from '@/lib/ltx-localization';
 import { AssetMediaPickerMenu } from './AssetMediaPickerMenu';
-import type { AssetSlotAttachment } from './asset-dropzone-types';
 import { useExclusiveMediaPicker } from './useExclusiveMediaPicker';
-type AssetDropzoneCopy = ReturnType<typeof getLocalizedAssetDropzoneCopy>;
-export type AssetDropzoneSlotProps = {
-  accept: string;
-  mediaKind?: 'image' | 'video' | 'audio';
-  asset: AssetSlotAttachment | null;
-  assetCopy: AssetDropzoneCopy;
-  canOpenLibrary: boolean;
-  compactDensity: boolean;
-  compactCollectionLayout: boolean;
-  workspaceDensity: boolean;
-  disabled: boolean;
-  disabledReason: string | null;
-  displaySlotCount: number;
-  engineId: string;
-  filledAssetCount: number;
-  fullBleedSingleAsset: boolean;
-  hideRequiredSlotCopy: boolean;
-  inputRef: (element: HTMLInputElement | null) => void;
-  isCollectionField: boolean;
-  minCount: number;
-  slotIndex: number;
-  slotLabel: string;
-  onDisabledAttempt: () => void;
-  onDrop: (event: DragEvent<HTMLDivElement>, slotIndex: number) => void;
-  onInputChange: (event: ChangeEvent<HTMLInputElement>, slotIndex: number) => void;
-  onOpenLibrarySlot: (slotIndex: number) => void;
-  onPaste: (event: ClipboardEvent<HTMLDivElement>, slotIndex: number) => void;
-  onRemoveSlot: (slotIndex: number) => void;
-  onSelectFileSlot: (slotIndex: number) => void;
-};
+import type { AssetDropzoneSlotProps } from './asset-dropzone-types';
+export type { AssetDropzoneSlotProps } from './asset-dropzone-types';
 export function AssetDropzoneSlot(props: AssetDropzoneSlotProps) {
   if (props.workspaceDensity) return <WorkspaceAssetSlot {...props} />;
   return <DefaultAssetDropzoneSlot {...props} />;
