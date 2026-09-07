@@ -159,7 +159,7 @@ test('workspace video preview shares first-paint geometry with its boot skeleton
 
 test('video composer limits calm upload locks to the winning guest-auth reason', () => {
   assert.match(
-    videoComposerSource,
+    readFileSync('frontend/app/(core)/(workspace)/app/_lib/workspace-reference-fields.ts', 'utf8'),
     /disabledPresentation:\s*disabledReason && disabledReason === guestUploadLockedReason\s*\? 'auth-lock'/
   );
 });

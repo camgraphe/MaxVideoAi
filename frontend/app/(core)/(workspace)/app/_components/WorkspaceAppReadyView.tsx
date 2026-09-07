@@ -1,6 +1,8 @@
 'use client';
 
 import { WorkspaceAppShell } from './WorkspaceAppShell';
+import { WorkspaceRecentReferences } from './WorkspaceRecentReferences.client';
+import { getKlingO3AssetState, supportsKlingO3VideoToVideo } from '../_lib/kling-o3-unified-workflow';
 import { WorkspaceComposerSurface } from './WorkspaceComposerSurface';
 import { WorkspaceRuntimeModals } from './WorkspaceRuntimeModals';
 import type { useWorkspaceAppBootstrap } from '../_hooks/useWorkspaceAppBootstrap';
@@ -194,7 +196,18 @@ export function WorkspaceAppReadyView({
 
   return (
     <>
-      <WorkspaceAppShell
+      <WorkspaceRecentReferences userId={app.user?.id} locale={uiLocale} engineId={selectedEngine.id} engine={selectedEngine}
+        fields={inputSchemaSummary.assetFields} inputAssets={inputAssets} inputSchema={selectedEngine.inputSchema}
+        mode={submissionMode} onInsert={handleSelectLibraryAsset} availability={{
+          inputAssets, isUnifiedSeedance, isUnifiedKlingO3, guestUploadLockedReason, workflowCopy,
+          klingO3VideoToVideoSupported: supportsKlingO3VideoToVideo(selectedEngine),
+          hasAnyVideoInput: getKlingO3AssetState({ inputAssets, klingElements }).hasAnyVideoInput,
+          showOmniStudioPanel: selectedEngine.id === 'gemini-omni-flash',
+          showLumaRay32KeyframeEditor: selectedEngine.id === 'luma-ray-3-2' && submissionMode === 'v2v',
+        }}>
+      {({ recentMedia, recentDropProps }) => <WorkspaceAppShell
+        recentMedia={recentMedia}
+        recentDropProps={recentDropProps}
         selectedEngine={selectedEngine}
         engines={engines}
         normalizedPendingGroups={normalizedPendingGroups}
@@ -309,7 +322,8 @@ export function WorkspaceAppReadyView({
             setViewMode={setViewMode}
           />
         }
-      />
+      />}
+      </WorkspaceRecentReferences>
       <WorkspaceRuntimeModals
         viewerGroup={viewerGroup}
         onCloseViewer={() => setViewerTarget(null)}

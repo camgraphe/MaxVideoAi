@@ -115,7 +115,8 @@ export function normalizeAssetLibraryPayload(
           url: asset.url,
           thumbUrl: asset.thumbUrl ?? null,
           previewUrl: asset.previewUrl ?? null,
-          kind: mime?.startsWith('video/') ? 'video' : 'image',
+          kind: asset.kind === 'audio' || asset.kind === 'video' || asset.kind === 'image'
+            ? asset.kind : mime?.startsWith('audio/') ? 'audio' : mime?.startsWith('video/') ? 'video' : 'image',
           width: asset.width ?? null,
           height: asset.height ?? null,
           size: asset.size ?? null,
@@ -129,11 +130,7 @@ export function normalizeAssetLibraryPayload(
         } satisfies UserAsset;
       })
     : [];
-  const filteredAssets = assets.filter((asset) =>
-    kind === 'video'
-      ? Boolean(asset.mime?.startsWith('video/'))
-      : !asset.mime || asset.mime.startsWith('image/')
-  );
+  const filteredAssets = assets.filter((asset) => asset.kind === kind);
   return filteredAssets.filter(
     (asset, index, list) => list.findIndex((entry) => entry.url === asset.url) === index
   );
@@ -149,6 +146,9 @@ export function getLibraryAssetFieldMismatchMessage(field: EngineInputField, ass
   }
   if (field.type === 'image' && asset.kind !== 'image') {
     return 'This slot requires an image source. Pick an image from the library or import one.';
+  }
+  if (field.type === 'audio' && asset.kind !== 'audio') {
+    return 'This slot requires an audio source. Pick audio from recent media or import an audio file.';
   }
   return null;
 }

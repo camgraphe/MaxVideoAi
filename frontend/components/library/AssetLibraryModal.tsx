@@ -1,7 +1,9 @@
 'use client';
 
 import clsx from 'clsx';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useId, useMemo, useRef, useState } from 'react';
+import { useAccessibleModal } from '@/components/ui/useAccessibleModal';
+import { assetLibraryLocaleDefaults, assetLibraryActionsCopy } from './asset-library-copy';
 import type { ChangeEvent } from 'react';
 import { AssetLibraryBrowser } from '@/components/library/AssetLibraryBrowser';
 import { Button } from '@/components/ui/Button';
@@ -228,10 +230,13 @@ export function AssetLibraryModal({
 }: AssetLibraryModalProps) {
   const { t, locale } = useI18n();
   const uiLocale = normalizeUiLocale(locale);
-  const rawCopy = t('workspace.generate.assetLibrary', DEFAULT_ASSET_LIBRARY_COPY);
+  const { dialogRef, onDialogKeyDown } = useAccessibleModal({ onClose });
+  const titleId = useId();
+  const actionCopy = assetLibraryActionsCopy(uiLocale);
+  const rawCopy = t('workspace.generate.assetLibrary', {});
   const copyAssetLibrary = useMemo(
-    () => mergeCopy(DEFAULT_ASSET_LIBRARY_COPY, (rawCopy ?? {}) as Partial<typeof DEFAULT_ASSET_LIBRARY_COPY>),
-    [rawCopy]
+    () => mergeCopy({ ...DEFAULT_ASSET_LIBRARY_COPY, ...assetLibraryLocaleDefaults(uiLocale), tabs: { ...DEFAULT_ASSET_LIBRARY_COPY.tabs, ...assetLibraryLocaleDefaults(uiLocale).tabs } }, rawCopy ?? {}),
+    [rawCopy, uiLocale]
   );
   const importLabel = copyAssetLibrary.import ?? DEFAULT_ASSET_LIBRARY_COPY.import;
   const importingLabel = copyAssetLibrary.importing ?? DEFAULT_ASSET_LIBRARY_COPY.importing;
@@ -409,13 +414,16 @@ export function AssetLibraryModal({
       : [];
 
   return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-surface-on-media-dark-50 px-2 py-2 backdrop-blur-sm sm:px-4 sm:py-4">
+    <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1} onKeyDown={onDialogKeyDown} className="fixed inset-0 z-[10000] flex items-center justify-center bg-surface-on-media-dark-50 px-2 py-2 backdrop-blur-sm sm:px-4 sm:py-4">
+      <h2 id={titleId} className="sr-only">{libraryTitle} · {fieldLabel}</h2>
       <div className="absolute inset-0" role="presentation" onClick={onClose} />
       <input
         ref={importInputRef}
         type="file"
         accept={importAccept}
         className="sr-only"
+        aria-hidden="true"
+        tabIndex={-1}
         onChange={handleImportChange}
       />
       <AssetLibraryBrowser
@@ -427,7 +435,7 @@ export function AssetLibraryModal({
         assetType={assetType}
         assets={assets}
         isLoading={isLoading}
-        error={importError ?? error}
+        error={importError ?? (error ? actionCopy.loadError : null)}
         source={source}
         availableSources={[...sourceOptions]}
         sourceLabels={copyAssetLibrary.tabs}
@@ -488,7 +496,7 @@ export function AssetLibraryModal({
                   }}
                   disabled={isDeleting}
                 >
-                  {isDeleting ? 'Deleting...' : 'Delete'}
+                  {isDeleting ? actionCopy.deleting : actionCopy.delete}
                 </Button>
               ) : null}
               <Button
@@ -502,7 +510,7 @@ export function AssetLibraryModal({
                   isDeleting ? 'opacity-60' : 'hover:bg-brandHover'
                 )}
               >
-                Use
+                {actionCopy.use}
               </Button>
             </>
           );

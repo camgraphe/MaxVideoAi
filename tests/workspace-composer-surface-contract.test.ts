@@ -45,13 +45,15 @@ test('workspace composer and settings surface is owned by a route-local componen
   assert.match(surfaceSource, /buildComposerAttachments/);
   assert.match(surfaceSource, /buildComposerPromotedActions/);
   assert.match(surfaceSource, /normalizeExtraInputValue/);
-  assert.match(surfaceSource, /getSeedanceFieldBlockKey/);
+  assert.match(surfaceSource, /getWorkspaceReferenceFields/);
+  const fieldSource = readFileSync('frontend/app/(core)/(workspace)/app/_lib/workspace-reference-fields.ts', 'utf8');
+  assert.match(fieldSource, /getSeedanceFieldBlockKey/);
   assert.match(surfaceSource, /MULTI_PROMPT_MIN_SEC/);
   assert.match(surfaceSource, /getLocalizedModeLabel/);
   assert.match(surfaceSource, /<Composer[\s\S]*density="workspace"/);
   assert.match(surfaceSource, /<CoreSettingsBar[\s\S]*density="workspace"/);
   assert.match(
-    surfaceSource,
+    fieldSource,
     /disabledPresentation:\s*disabledReason && disabledReason === guestUploadLockedReason\s*\? 'auth-lock'/,
     'only the winning guest upload-lock reason should opt into the calm auth-lock presentation'
   );

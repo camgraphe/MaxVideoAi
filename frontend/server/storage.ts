@@ -728,13 +728,14 @@ export async function createSignedUploadUrl(params: {
   };
 }
 
-export async function getStorageObjectMetadata(key: string): Promise<{ size: number | null; mime: string | null }> {
+export async function getStorageObjectMetadata(key: string, signal?: AbortSignal): Promise<{ size: number | null; mime: string | null }> {
   const client = getS3Client();
   const response = await client.send(
     new HeadObjectCommand({
       Bucket: S3_BUCKET,
       Key: key,
-    })
+    }),
+    { abortSignal: signal }
   );
   return {
     size: typeof response.ContentLength === 'number' ? response.ContentLength : null,
