@@ -21,7 +21,7 @@ export function ToolboxCatalogue({ locale, mediaKind, onSelect }: { locale: stri
     </div></div>
     {quick.length ? <ul className={styles.quickGrid}>{quick.map(tool => {
       const text = copy.tools[tool.visual];
-      const content = <><div className={styles.quickArt}><ToolboxScene kind={tool.visual} /><span className={styles.artLabel}>{copy.illustration}</span></div><div className={styles.quickCaption}><span className={styles.kind}>{text.tag}</span><h3>{text.title}</h3><p>{text.body}</p><span className={styles.action} aria-hidden="true">↗</span></div></>;
+      const content = <><div className={styles.quickArt}><ToolboxScene kind={tool.visual} /><span className={styles.artLabel}>{copy.illustration}</span></div><div className={styles.quickCaption}><span className={styles.kind}>{text.tag}</span><h3>{text.title}</h3><p>{text.body}</p></div></>;
       return <li key={tool.visual}>{onSelect ? <button type="button" className={styles.quickTool} onClick={() => onSelect(tool.id, tool.mediaKind)}>{content}</button> : <Link prefetch={false} className={styles.quickTool} href={`${tool.href}${tool.id === 'upscale' ? `?kind=${tool.mediaKind}` : ''}`} aria-label={`${text.title} — ${copy.open}`}>{content}</Link>}</li>;
     })}</ul> : <div className={styles.empty}><span aria-hidden="true" className={styles.sound}>▂ ▅ ▃ ▇ ▄ ▆ ▂</span><h3>{copy.noAudio}</h3><p>{copy.audioHint}</p><Link href="/app/audio" prefetch={false}>{copy.audioOpen} <span aria-hidden="true">↗</span></Link></div>}
     {workshops.length > 0 ? <section className={styles.workshopSection} aria-labelledby={`${id}-workshops`}>
