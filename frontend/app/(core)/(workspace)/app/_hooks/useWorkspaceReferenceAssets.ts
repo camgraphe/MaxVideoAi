@@ -125,12 +125,12 @@ export function useWorkspaceReferenceAssets({
       const blockedMessage = getSeedanceFieldBlockedMessage(field);
       if (blockedMessage) {
         showNotice(blockedMessage);
-        return;
+        return blockedMessage;
       }
       const mismatchMessage = getLibraryAssetFieldMismatchMessage(field, asset);
       if (mismatchMessage) {
         showNotice(mismatchMessage);
-        return;
+        return mismatchMessage;
       }
 
       const shouldMirrorVideo =
@@ -161,12 +161,11 @@ export function useWorkspaceReferenceAssets({
         })
       );
       if (!insertion.accepted) {
-        showNotice(
-          insertion.reason === 'reference_budget'
+        const message = insertion.reason === 'reference_budget'
             ? `Maximum ${insertion.maxTotal} total references reached for this engine mode.`
-            : `Maximum ${field.label ?? 'reference image'} count reached for this engine.`
-        );
-        return;
+            : `Maximum ${field.label ?? 'reference image'} count reached for this engine.`;
+        showNotice(message);
+        return message;
       }
       setAssetPickerTarget(null);
       if (!reservationId) {

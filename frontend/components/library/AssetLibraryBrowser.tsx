@@ -1,6 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
+import { ReferenceLibraryPicker, type ReferencePickerSelection } from './ReferenceLibraryPicker.client';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useId, useMemo, useState } from 'react';
@@ -47,11 +48,14 @@ export type AssetBrowserToolLink = {
 };
 
 export interface AssetLibraryBrowserProps {
+  selection?: ReferencePickerSelection;
+  selectionGuidance?: string | null;
   locale?: string;
   renderContinuation?: (asset: AssetBrowserAsset) => ReactNode;
   assetType: 'image' | 'video' | 'audio';
   layout?: 'modal' | 'page';
   title: string;
+  headingId?: string;
   subtitle?: string;
   countLabel?: string | null;
   onClose?: () => void;
@@ -96,7 +100,12 @@ function formatSize(bytes?: number | null) {
   return `${bytes} B`;
 }
 
-export function AssetLibraryBrowser({
+export function AssetLibraryBrowser(props: AssetLibraryBrowserProps) {
+  if (props.selection) return <ReferenceLibraryPicker key={`${props.selection.scope}:${props.source}:${props.assetType}`} {...props} selection={props.selection} />;
+  return <AssetLibraryCollection {...props} />;
+}
+
+function AssetLibraryCollection({
   locale = 'en',
   renderContinuation,
   assetType,

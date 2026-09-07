@@ -61,7 +61,7 @@ export function resolveModalFocusRecoveryTarget({
 
 function getFocusableElements(container: HTMLElement): HTMLElement[] {
   return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
-    (element) => element.getAttribute('aria-hidden') !== 'true' && element.tabIndex >= 0 && element.getClientRects().length > 0
+    (element) => !element.matches(':disabled') && element.getAttribute('aria-hidden') !== 'true' && element.tabIndex >= 0 && element.getClientRects().length > 0
   );
 }
 

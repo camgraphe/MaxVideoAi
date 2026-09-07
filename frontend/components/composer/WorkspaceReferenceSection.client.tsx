@@ -10,6 +10,7 @@ import { getLocalizedAssetDropzoneCopy, normalizeUiLocale } from '@/lib/ltx-loca
 import type { ComposerProps } from './composer-types';
 import { getReferenceCommandAvailability } from './workspace-reference-availability';
 import { getWorkspaceFrameCommand } from './workspace-reference-commands';
+import { WorkspaceReferenceInventory } from './WorkspaceReferenceInventory.client';
 import { WorkspaceReferencePopup } from './WorkspaceReferencePopup.client';
 import { resolveWorkspaceReferenceFieldTitle, workspaceReferenceCopy } from './workspace-reference-copy';
 
@@ -99,11 +100,11 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
       </button>)}
       {selectedCollections.length > 3 ? <span>+{selectedCollections.length - 3}</span> : null}
     </div> : null}
-    {popupFields.length ? <WorkspaceReferencePopup title={popupTitle} closeLabel={copy.close} onClose={close}>
-      {popupFields.map((entry) => <AssetDropzone key={entry.field.id} {...entry} headerAction={undefined}
+    {popupFields.length ? <WorkspaceReferencePopup singleRole={Boolean(activeFrame)} title={popupTitle} closeLabel={copy.close} onClose={close}>
+      <WorkspaceReferenceInventory fields={popupFields} assets={assets} locale={locale} renderField={(entry) => <AssetDropzone key={entry.field.id} {...entry} headerAction={undefined}
         density="workspace" engine={engine} caps={caps}
         assets={assets[entry.field.id] ?? []} onSelect={onAssetAdd} onRemove={removeAsset}
-        onError={onNotice} onOpenLibrary={onOpenLibrary ? openLibrary : undefined} onUrlSelect={onAssetUrlSelect} referenceWarning={referenceWarning} />)}
+        onError={onNotice} onOpenLibrary={onOpenLibrary ? openLibrary : undefined} onUrlSelect={onAssetUrlSelect} referenceWarning={referenceWarning} />} />
     </WorkspaceReferencePopup> : null}
   </section>;
 }

@@ -474,6 +474,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         />
       </ImageWorkspaceShell>
       <ImageWorkspaceRuntimeModals
+        referenceSlotLimit={referenceSlotLimit}
         authModalOpen={authModalOpen}
         characterSelectionLimit={characterSelectionLimit}
         closeLibraryModal={closeLibraryModal}

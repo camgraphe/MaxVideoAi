@@ -40,7 +40,7 @@ export function ImageAdvancedSettings({
   if (!hasContent) return null;
 
   return (
-    <div className="space-y-3">
+    <div className={clsx('space-y-3', expanded && 'app-advanced-content')}>
       {open === undefined ? <Button
         type="button"
         size="sm"

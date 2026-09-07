@@ -100,7 +100,7 @@ test('feed reuses the account-scoped SWR page; insertion and desktop drop stay u
   assert.match(shell, /onClick=\{openRecentMedia\}/);
   assert.match(shell, /onClick=\{\(\) => \{ openRecentMedia\(\); requestAnimationFrame/);
   const modal = source('frontend/components/library/AssetLibraryModal.tsx');
-  assert.match(modal, /useAccessibleModal\(\{ onClose \}\)/); assert.match(modal, /aria-labelledby=\{titleId\}/); assert.match(modal, /actionCopy\.loadError/);
+  assert.match(modal, /useAccessibleModal\(\{ onClose: handleClose, closeDisabled: busy \}\)/); assert.match(modal, /aria-labelledby=\{titleId\}/); assert.match(modal, /actionCopy\.loadError/);
 });
 
 test('selected media names accept relative sources and never expose signed queries or throw', () => {

@@ -1,6 +1,8 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { createPortal } from 'react-dom';
+import { referencePickerCopy } from '@/components/library/reference-picker-copy';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   ChangeEvent,
@@ -19,10 +21,10 @@ import {
   isSupportedImageFormat,
   isSupportedImageMime,
 } from '@/lib/image/formats';
-import useSWR from 'swr';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useImageLibraryData } from '../_hooks/useImageLibraryData';
 import type {
   CharacterReferenceSelection,
-  CharacterReferencesResponse,
 } from '@/types/image-generation';
 import {
   formatCharacterReferenceDate,
@@ -35,7 +37,6 @@ import {
 } from '../_lib/image-workspace-copy';
 import {
   DEFAULT_UPLOAD_LIMIT_MB,
-  type AssetsResponse,
   type LibraryAsset,
 } from '../_lib/image-workspace-types';
 
@@ -46,8 +47,9 @@ const AssetLibraryBrowser = dynamic<AssetLibraryBrowserProps>(
 
 export type ImageLibraryModalProps = {
   open: boolean;
+  target?: { scope: string; capacity?: number; slotIndex?: number | null };
   onClose: () => void;
-  onSelect: (asset: LibraryAsset) => void;
+  onSelect: (asset: LibraryAsset) => boolean | void;
   onToggleCharacter: (reference: CharacterReferenceSelection) => void;
   selectedCharacterReferences: CharacterReferenceSelection[];
   characterSelectionLimit: number;
@@ -61,11 +63,14 @@ export type ImageLibraryModalProps = {
 };
 
 export function ImageLibraryModal(props: ImageLibraryModalProps) {
-  return props.open ? <OpenImageLibraryModal {...props} /> : null;
+  const { user } = useRequireAuth({ redirectIfLoggedOut: false });
+  return props.open ? <OpenImageLibraryModal key={user?.id ?? 'guest'} {...props} userId={user?.id ?? null} /> : null;
 }
 
 function OpenImageLibraryModal({
+  userId,
   open,
+  target,
   onClose,
   onSelect,
   onToggleCharacter,
@@ -78,15 +83,19 @@ function OpenImageLibraryModal({
   supportedFormats,
   supportedFormatsLabel,
   toolsEnabled,
-}: ImageLibraryModalProps) {
+}: ImageLibraryModalProps & { userId: string | null }) {
   const { t, locale } = useI18n();
   const uiLocale = normalizeUiLocale(locale);
   const [activeSource, setActiveSource] = useState<AssetLibrarySource>(initialSource);
+  const [isSelecting, setIsSelecting] = useState(false);
+  const pickerCopy = referencePickerCopy(uiLocale);
   const [isImporting, setIsImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
-  const handleClose = useCallback(() => { if (!isImporting) onClose(); }, [isImporting, onClose]);
-  const { dialogRef, onDialogKeyDown } = useAccessibleModal({ onClose: handleClose, closeDisabled: isImporting });
+  const handleClose = useCallback(() => { if (!isImporting && !isSelecting) onClose(); }, [isImporting, isSelecting, onClose]);
+  const { dialogRef, onDialogKeyDown } = useAccessibleModal({ onClose: handleClose, closeDisabled: isImporting || isSelecting });
   const importInputRef = useRef<HTMLInputElement | null>(null);
+  const mounted = useRef(true);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const isCharacterMode = selectionMode === 'character';
   const importLabel = t(
     'workspace.generate.assetLibrary.import',
@@ -104,39 +113,7 @@ function OpenImageLibraryModal({
         ? 'La importación falló. Inténtalo de nuevo.'
         : 'Import failed. Please try again.'
   ) as string;
-  const swrKey = !open
-    ? null
-    : isCharacterMode
-      ? '/api/character-references?limit=60'
-      : activeSource === 'all'
-        ? '/api/user-assets?limit=60'
-        : `/api/user-assets?limit=60&source=${encodeURIComponent(activeSource)}`;
-  const { data, error, isLoading, mutate } = useSWR(swrKey, async (url: string) => {
-    const response = await authFetch(url);
-    if (isCharacterMode) {
-      const payload = (await response.json().catch(() => null)) as CharacterReferencesResponse | null;
-      if (!response.ok || !payload?.ok) {
-        let message: string | undefined;
-        if (payload && typeof payload.error === 'string') {
-          message = payload.error;
-        }
-        throw new Error(message ?? 'Failed to load character references');
-      }
-      return payload.characters;
-    }
-    const payload = (await response.json().catch(() => null)) as AssetsResponse | null;
-    if (!response.ok || !payload?.ok) {
-      let message: string | undefined;
-      if (payload && typeof payload === 'object' && 'error' in payload) {
-        const maybeError = (payload as { error?: unknown }).error;
-        if (typeof maybeError === 'string') {
-          message = maybeError;
-        }
-      }
-      throw new Error(message ?? 'Failed to load library');
-    }
-    return payload.assets;
-  });
+  const { data, error, isLoading, mutate } = useImageLibraryData({ userId, source: activeSource, isCharacterMode });
 
   useEffect(() => {
     if (!open) return;
@@ -176,9 +153,10 @@ function OpenImageLibraryModal({
           throw new Error(message);
         }
 
+        if (!mounted.current) return;
         const uploadedAsset = payload.asset as LibraryAsset;
         void mutate();
-        onSelect({
+        const accepted = onSelect({
           id: uploadedAsset.id ?? `library_${Date.now().toString(36)}`,
           url: uploadedAsset.url,
           mime: uploadedAsset.mime ?? null,
@@ -188,13 +166,14 @@ function OpenImageLibraryModal({
           source: uploadedAsset.source ?? 'upload',
           createdAt: uploadedAsset.createdAt,
         });
+        if (accepted === false) setImportError(pickerCopy.error);
       } catch (uploadError) {
         setImportError(uploadError instanceof Error ? uploadError.message : importFailedLabel);
       } finally {
         setIsImporting(false);
       }
     },
-    [importFailedLabel, isCharacterMode, mutate, onSelect, t]
+    [importFailedLabel, isCharacterMode, mutate, onSelect, pickerCopy.error, t]
   );
 
   const assets = useMemo(() => {
@@ -301,22 +280,8 @@ function OpenImageLibraryModal({
     : supportedFormats.length && supportedFormatsLabel.length
       ? formatTemplate(copy.supportedFormats, { formats: supportedFormatsLabel })
       : null;
-  const toolLinks = toolsEnabled
-    ? [
-        { href: '/app/image', label: 'Create image' },
-        { href: '/app/tools/storyboard', label: 'Storyboard' },
-        { href: '/app/tools/angle', label: 'Change angle' },
-        { href: '/app/tools/character-builder', label: 'Character builder' },
-      ]
-    : [{ href: '/app/image', label: 'Create image' }];
   const searchPlaceholder = t('workspace.library.browser.searchPlaceholder', 'Search assets…') as string;
   const sourcesTitle = t('workspace.library.browser.sourcesTitle', 'Library') as string;
-  const toolsTitle = t('workspace.library.browser.toolsTitle', 'Create or transform') as string;
-  const toolsDescription = t(
-    'workspace.library.browser.toolsDescription',
-    'Open another workspace to prepare a better source before importing it here.'
-  ) as string;
-
   const handleBackdropClick = (event: ReactMouseEvent<HTMLDivElement>) => {
     if (event.target === event.currentTarget) {
       handleClose();
@@ -327,9 +292,9 @@ function OpenImageLibraryModal({
     return null;
   }
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[10050] flex items-center justify-center bg-surface-on-media-dark-60 px-3 py-6 sm:px-6"
+      className="app-experience app-library-picker-layer"
       ref={dialogRef}
       tabIndex={-1}
       onKeyDown={onDialogKeyDown}
@@ -338,7 +303,7 @@ function OpenImageLibraryModal({
       aria-modal="true"
       onMouseDown={handleBackdropClick}
     >
-      <div className="h-[92svh] w-full max-w-6xl overflow-hidden sm:h-[84vh]">
+      <div className="app-picker-container">
         {!isCharacterMode ? (
           <input
             ref={importInputRef}
@@ -351,14 +316,25 @@ function OpenImageLibraryModal({
           />
         ) : null}
         <AssetLibraryBrowser
+          locale={uiLocale}
+          selection={{
+            scope: `${userId ?? "guest"}:${selectionMode}:${target?.scope ?? 'reference'}`,
+            busy: isImporting || isSelecting,
+            onBusyChange: setIsSelecting,
+            onConfirm: isCharacterMode ? undefined : (asset) => onSelect(asset as LibraryAsset),
+            selectedIds: isCharacterMode ? selectedCharacterIds : undefined,
+            isDisabled: isCharacterMode ? (asset) => !selectedCharacterIds.has(asset.id) && selectedCharacterReferences.length >= characterSelectionLimit : undefined,
+            onToggle: isCharacterMode ? (asset) => { const character = characterMap.get(asset.id); if (character) onToggleCharacter(character); } : undefined,
+          }}
           assetType="image"
           layout="modal"
-          title={isCharacterMode ? characterCopy.title : copy.modal.title}
-          subtitle={supportedFormatsHint ?? (isCharacterMode ? characterCopy.description : copy.modal.description)}
-          onClose={isImporting ? undefined : handleClose}
+          title={isCharacterMode ? characterCopy.title : pickerCopy.title}
+          subtitle={isCharacterMode ? supportedFormatsHint ?? undefined : [target?.slotIndex != null ? `${pickerCopy.slot} ${target.slotIndex + 1}` : null, target?.capacity ? `${pickerCopy.capacity} ${target.capacity}` : null].filter(Boolean).join(' · ')}
+          selectionGuidance={!isCharacterMode ? supportedFormatsHint : undefined}
+          onClose={handleClose}
           closeLabel={copy.modal.close}
           assets={browserAssets}
-          isLoading={isLoading}
+          isLoading={!userId || isLoading}
           error={
             importError ??
             (error ? (isCharacterMode ? (error instanceof Error ? error.message : characterCopy.empty) : copy.modal.error) : null)
@@ -374,7 +350,7 @@ function OpenImageLibraryModal({
                 variant="outline"
                 size="sm"
                 className="rounded-full border-border bg-surface-2 px-3 text-sm text-text-secondary hover:bg-surface-3 hover:text-text-primary"
-                disabled={isImporting}
+                disabled={!userId || isImporting}
                 onClick={() => importInputRef.current?.click()}
               >
                 {isImporting ? importingLabel : importLabel}
@@ -383,43 +359,9 @@ function OpenImageLibraryModal({
           }
           searchPlaceholder={searchPlaceholder}
           sourcesTitle={sourcesTitle}
-          toolsTitle={toolsEnabled ? toolsTitle : undefined}
-          toolsDescription={toolsEnabled ? toolsDescription : undefined}
-          toolLinks={toolLinks}
           emptyLabel={emptyLabel}
           emptySearchLabel={copy.modal.empty}
-          renderAssetActions={(asset) =>
-            isCharacterMode ? (
-              (() => {
-                const character = characterMap.get(asset.id);
-                if (!character) return null;
-                const isSelected = selectedCharacterIds.has(character.id);
-                const isDisabled = !isSelected && selectedCharacterReferences.length >= characterSelectionLimit;
-                return (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={isSelected ? 'primary' : 'outline'}
-                    disabled={isDisabled}
-                    onClick={() => onToggleCharacter(character)}
-                    className="min-h-0 h-9 rounded-full px-3 text-[11px] font-semibold"
-                  >
-                    {isSelected ? characterCopy.selected : characterCopy.select}
-                  </Button>
-                );
-              })()
-            ) : (
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => onSelect(asset as LibraryAsset)}
-                className="min-h-0 h-9 rounded-full px-3 text-[11px] font-semibold"
-              >
-                {copy.overlay}
-              </Button>
-            )
-          }
+          renderAssetActions={() => null}
           renderAssetMeta={(asset) =>
             isCharacterMode ? (
               (() => {
@@ -428,7 +370,7 @@ function OpenImageLibraryModal({
                 return (
                   <>
                     <span>{formatCharacterReferenceDate(character.createdAt)}</span>
-                    <span>{getCharacterReferenceLabel(character)}</span>
+                    <span>{getCharacterReferenceLabel(character, uiLocale)}</span>
                   </>
                 );
               })()
@@ -438,6 +380,6 @@ function OpenImageLibraryModal({
           }
         />
       </div>
-    </div>
+    </div>, document.body
   );
 }

@@ -342,11 +342,10 @@ export function useImageReferenceSlots({
       if (preferredIndex !== undefined && (!Number.isInteger(preferredIndex) || preferredIndex < 0 || preferredIndex >= referenceSlotLimit)) return false;
       if (!isSupportedReferenceAsset(asset.mime, asset.url)) {
         showUnsupportedFormatError();
-        return;
+        return false;
       }
       const slotIndex = resolveTargetReferenceSlotIndex(preferredIndex ?? libraryModal.slotIndex);
       if (slotIndex >= referenceSlotLimit || slotIndex < 0) {
-        closeLibraryModal();
         return false;
       }
       const index = slotIndex;

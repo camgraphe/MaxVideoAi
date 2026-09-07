@@ -16,8 +16,8 @@ export function WorkspaceAssetSlot({ asset, accept, mediaKind = 'image', slotInd
     onPaste={(event) => { if (disabled) onDisabledAttempt(); else onPaste(event, slotIndex); }}>
     <input ref={inputRef} type="file" accept={accept} className="sr-only" tabIndex={-1} aria-hidden disabled={disabled} onChange={(event) => onInputChange(event, slotIndex)} />
     {!asset ? <div className="app-reference-empty-actions">
-      <button className="app-reference-add-target" type="button" disabled={disabled} title={disabledReason ?? accept} aria-label={`${copy.upload} · ${slotLabel} · ${accept}`} onClick={() => onSelectFileSlot(slotIndex)}><AppGlyph name={mediaKind} /><span>{slotLabel}{slotIndex < minCount ? <small>{copy.required}</small> : null}</span></button>
-      {canOpenLibrary ? <button type="button" className="app-reference-library-target" disabled={disabled} title={`${copy.library} · ${slotLabel}`} aria-label={`${copy.library} · ${slotLabel}`} onClick={() => onOpenLibrarySlot(slotIndex)}><AppGlyph name="library" /></button> : null}
+      <button className="app-reference-add-target" type="button" disabled={disabled} title={disabledReason ?? accept} aria-label={`${copy.upload} · ${slotLabel} · ${accept}`} onClick={() => onSelectFileSlot(slotIndex)}><AppGlyph name={mediaKind} /><span>{copy.upload}{slotIndex < minCount ? <small>{copy.required}</small> : null}</span></button>
+      {canOpenLibrary ? <button type="button" className="app-reference-library-target" disabled={disabled} title={`${copy.library} · ${slotLabel}`} aria-label={`${copy.library} · ${slotLabel}`} onClick={() => onOpenLibrarySlot(slotIndex)}><AppGlyph name="library" /><span>{copy.library}</span></button> : null}
     </div> : <>
     {asset ? <div className="app-reference-media">
       {asset.kind === 'image' ? <img src={asset.previewUrl} alt={asset.name} loading="lazy" /> : asset.kind === 'video' ? <video src={asset.previewUrl} controls preload="none" aria-label={asset.name} /> : <audio src={asset.previewUrl} controls preload="none" aria-label={asset.name} />}

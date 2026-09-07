@@ -10,6 +10,7 @@ import { useWorkspaceKlingElementAssets } from './useWorkspaceKlingElementAssets
 import { useWorkspaceReferenceAssets } from './useWorkspaceReferenceAssets';
 
 type UseWorkspaceAssetsOptions = {
+  userId?: string | null;
   inputAssets: WorkspaceInputAssetState;
   setInputAssets: Dispatch<SetStateAction<WorkspaceInputAssetState>>;
   commitInputAssetMutation: CommitInputAssetMutation;
@@ -26,6 +27,7 @@ type UseWorkspaceAssetsOptions = {
 };
 
 export function useWorkspaceAssets({
+  userId,
   inputAssets,
   setInputAssets,
   commitInputAssetMutation,
@@ -53,6 +55,7 @@ export function useWorkspaceAssets({
     handleDeleteLibraryAsset,
     resetAssetLibraryForSource,
   } = useWorkspaceAssetLibrary({
+    userId,
     showNotice,
     setInputAssets,
   });
