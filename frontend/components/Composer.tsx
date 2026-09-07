@@ -249,7 +249,7 @@ export function Composer({
                       ) : null}
                       <div className="flex w-full items-center gap-2 lg:w-auto">
                         {generateControl}
-                        {workspaceDensity && !formattedPrice ? <span className="app-quote-status" role="status">{isPricing ? (locale === 'fr' ? 'Calcul…' : 'Calculating…') : (locale === 'fr' ? 'Prix indisponible' : 'Price unavailable')}</span> : null}
+                        {workspaceDensity && !formattedPrice ? <span className="app-quote-status" role="status">{isPricing ? workbenchCopy.calculating : workbenchCopy.priceUnavailable}</span> : null}
                         <Button
                           type="button"
                           size="md"
@@ -372,7 +372,7 @@ export function Composer({
               workspaceDensity ? 'flex-wrap gap-2 pb-2 pt-3' : 'flex-wrap gap-3 pb-2 pt-4'
             )}>
               <div className={clsx('flex items-center gap-2 pt-1', workspaceDensity && 'shrink-0')}>
-                <label htmlFor={promptId} className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{promptLabel}</label>
+                {multiPromptEnabled ? <h2 id={`${promptId}-heading`} className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{promptLabel}</h2> : <label htmlFor={promptId} className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{promptLabel}</label>}
                 {typeof promptMaxChars === 'number' ? (
                   <div className={clsx('text-[12px]', promptTooLong ? 'text-error' : 'text-text-muted')}>
                     {promptCharCount}/{promptMaxChars}
@@ -416,7 +416,7 @@ export function Composer({
               </div>
             </div>
             {multiPromptEnabled && multiPrompt ? (
-              <ComposerMultiPromptEditor multiPrompt={multiPrompt} />
+              <ComposerMultiPromptEditor multiPrompt={multiPrompt} labelledBy={`${promptId}-heading`} />
             ) : (
               <textarea
                 id={promptId}

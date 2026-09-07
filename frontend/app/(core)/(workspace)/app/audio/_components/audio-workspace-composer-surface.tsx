@@ -15,7 +15,7 @@ import {
 import AudioLatestRendersRail from '../AudioLatestRendersRail';
 import type { AudioWorkspaceCopy } from '../copy';
 import type { SourceVideoState } from '../_lib/audio-workspace-types';
-import { WorkspaceEmptyPreview } from '@/components/composer/WorkspaceEmptyPreview.client';
+import { AudioWorkspacePreview, type AudioWorkspacePreviewProps } from './audio-workspace-preview';
 import { AudioGenerationDock } from './audio-generation-dock';
 import { AudioOptionsSection } from './audio-options-section';
 import { AudioSourceVideoSection } from './audio-source-video-section';
@@ -30,6 +30,8 @@ type AudioOption = {
 
 interface AudioWorkspaceComposerSurfaceProps {
   activeJobId: string | null;
+  previewJob?: AudioWorkspacePreviewProps['activeJob'];
+  previewResult?: AudioWorkspacePreviewProps['result'];
   activeProgress: number | null;
   canGenerate: boolean;
   composerIsScript: boolean;
@@ -113,6 +115,8 @@ interface AudioWorkspaceComposerSurfaceProps {
 
 export function AudioWorkspaceComposerSurface({
   activeJobId,
+  previewJob,
+  previewResult,
   activeProgress,
   canGenerate,
   composerIsScript,
@@ -220,7 +224,7 @@ export function AudioWorkspaceComposerSurface({
           <p className="mt-2 text-xs text-text-muted">{modeOptions.find((entry) => entry.id === pack)?.description}</p>
         </section>
 
-        {!activeJobId && !resultJobId ? <WorkspaceEmptyPreview media="audio" /> : null}
+        <AudioWorkspacePreview activeJob={previewJob} result={previewResult} awaitingJob={Boolean(inProgressMessage) || Boolean((activeJobId || resultJobId) && !previewJob && !previewResult)} copy={copy} />
 
         {(sourceVideoRequired || sourceVideo) ? (
           <AudioSourceVideoSection

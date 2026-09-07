@@ -379,6 +379,8 @@ export default function AudioWorkspace() {
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <AudioWorkspaceComposerSurface
           activeJobId={activeJob?.jobId ?? null}
+          previewJob={activeJob}
+          previewResult={result}
           activeProgress={activeProgress}
           canGenerate={canGenerate}
           composerIsScript={composerIsScript}

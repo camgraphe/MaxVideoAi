@@ -36,7 +36,7 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
           {expanded ? copy.close : count ? copy.manage : copy.add}
         </button>
       </div>
-      {kinds.length ? <div className="app-reference-kinds">{kinds.map((kind) => <span key={kind}><AppGlyph name={kind === 'audio' ? 'audio' : kind === 'video' ? 'video' : 'image'} />{kind === 'image' ? 'Images' : kind === 'video' ? (locale === 'fr' ? 'Vidéos' : 'Videos') : 'Audio'}</span>)}</div> : null}
+      {kinds.length ? <div className="app-reference-kinds">{kinds.map((kind) => <span key={kind}><AppGlyph name={kind === 'audio' ? 'audio' : kind === 'video' ? 'video' : 'image'} />{copy.kinds[kind === 'audio' ? 'audio' : kind === 'video' ? 'video' : 'image']}</span>)}</div> : null}
       <div id={inventoryId} className={expanded ? 'app-reference-inventory' : 'app-reference-summary'}>
         {fields.some(({ entry }) => isWorkspaceFrameField(entry)) ? <div className="app-reference-frames">{fields.filter(({ entry }) => isWorkspaceFrameField(entry)).map(renderField)}</div> : null}
         <div className="app-reference-collections">{fields.filter(({ entry }) => !isWorkspaceFrameField(entry)).map(renderField)}</div>

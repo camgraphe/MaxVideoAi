@@ -3,11 +3,12 @@ import type { ComposerProps } from './composer-types';
 
 type ComposerMultiPromptEditorProps = {
   multiPrompt: NonNullable<ComposerProps['multiPrompt']>;
+  labelledBy?: string;
 };
 
-export function ComposerMultiPromptEditor({ multiPrompt }: ComposerMultiPromptEditorProps) {
+export function ComposerMultiPromptEditor({ multiPrompt, labelledBy }: ComposerMultiPromptEditorProps) {
   return (
-    <div className="space-y-3 px-4 pb-4">
+    <div className="space-y-3 px-4 pb-4" role={labelledBy ? 'group' : undefined} aria-labelledby={labelledBy}>
       {multiPrompt.scenes.map((scene, index) => {
         const maxPromptChars = multiPrompt.maxPromptChars;
         const promptOverLimit =
@@ -33,6 +34,7 @@ export function ComposerMultiPromptEditor({ multiPrompt }: ComposerMultiPromptEd
               ) : null}
             </div>
             <textarea
+              aria-label={`Scene ${index + 1} prompt`}
               value={scene.prompt}
               maxLength={maxPromptChars}
               onChange={(event) => multiPrompt.onUpdateScene(scene.id, { prompt: event.currentTarget.value })}
