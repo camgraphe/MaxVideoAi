@@ -1,6 +1,6 @@
 # Revue du prototype global — 7 septembre 2026
 
-Statut : proposition interactive prête à examiner ; direction visuelle non encore validée par l’utilisateur. Cette revue ne valide pas une intégration de production.
+Statut : direction visuelle retenue par l’utilisateur. Le lot suivant ajoute le choix du modèle et le prix avant génération ; la conservation des fonctions importantes est exigée dans `integration-contract.md`. Cette revue ne valide pas une intégration de production.
 
 ## Démontré dans le navigateur
 
@@ -27,11 +27,25 @@ Captures de travail : `.superpowers/sdd/global-app-concept/captures/`. Les captu
 
 ## Non démontré / lot suivant
 
-- Catalogue de modèles et devis réels : les profils du prototype et leurs plafonds sont des fixtures, jamais des promesses sur un moteur.
+- Catalogue complet et devis personnalisés / avec références / image / audio : non raccordés. Le nouveau sélecteur démontre six modèles réels et leurs estimations publiques texte-vers-vidéo ; les profils de références et leurs plafonds restent des fixtures indépendantes, jamais des promesses sur un moteur.
 - Tous les contrôles avancés image/vidéo/audio, contraintes de métadonnées et erreurs détaillées par fichier ; sauvegarde/restauration inter-session et résolution de conflits entre onglets.
 - Outils, connexions effectives, compte/facturation et Studio : accès de périmètre présentés, aucune simulation d’un succès serveur. Pas de timeline persistée ni génération audio MCP autonome ajoutées ici.
 - Performance de production : galerie sans lecteurs au repos et interface bornée constatées, mais pas de gain Core Web Vitals revendiqué. Les assets de démonstration sont des copies locales ; le raccordement devra conserver les renditions et lectures réelles existantes et produire des mesures comparables.
 
-Séquence suivante : retour sur cette composition globale et ses interactions → intégration des surfaces retenues dans les orchestrateurs existants → extension aux outils et au compte → Studio et montage MCP borné.
+Séquence suivante : intégrer les surfaces retenues et leurs fonctions dans les orchestrateurs existants en appliquant le contrat de conservation → extension aux outils et au compte → Studio et montage MCP borné.
 
 Vérifications de source : préparation reproductible avec `preview.py --prepare-only`, analyse syntaxique Node des deux modules, `git diff --cached --check`. Aucun message de console de niveau erreur dans le dernier parcours. Aucun fichier de production frontend modifié par ce prototype.
+
+## Lot modèle et prix — vérifications supplémentaires
+
+- Projection reproductible de six modèles disponibles et 152 scénarios depuis les mêmes propriétaires de catalogue, d’options et de tarification que l’estimateur public. Tarif Member/USD versionné, sans règles DB ni session réelle. Aucun coût fournisseur ni règle de marge exposés dans le module navigateur.
+- Vérification des 152 lignes : sélection d’un scénario exact ; absence de montant si durée/résolution/format non pris en charge, référence présente ou source obligatoire manquante. Un modèle avec son inclus ne satisfait pas silencieusement une demande sans son. La préparation d’un candidat ne modifie pas le brouillon.
+- Comparaison au réglage courant ; Sora proposé avec résolution adaptée, Wan avec durée adaptée, sans prix trompeur à côté d’un réglage incompatible. Le panneau candidat affiche les changements et l’estimation de ses propres valeurs avant application.
+- Sora préparé à 12 secondes puis annulé avec Échap : Veo, 8 secondes, 1080p et son conservés ; focus rendu à Comparer. Application de Kling, changement de durée et du son : montant mis à jour ; fermeture des réglages avec retour au bouton Son.
+- Ajout d’une référence image : le montant texte seul disparaît. Changement vers Kling puis création d’une référence audio et retour : texte, modèle, 8 secondes, 1080p, 16:9, absence de son et deux références retrouvés.
+- Application de Sora à 12 secondes et 9:16 sur mobile : valeurs et estimation conservées. Thème clair/sombre inspecté ; aucune erreur de console dans le dernier parcours.
+- À 1440 × 960 : hauteur de page 960 px, commande principale terminant à 942 px. À 320 × 740 : largeur de document 320 px ; Ajouter finit à 542 px, avant le pied d’action à 553 px ; Générer/Simuler reste au-dessus de la navigation à 671 px. Ligne de références de 64 px ; aucun bouton visible sous 44 × 44 px.
+- Panneaux de modèle à 320 et 390 px : aucune largeur débordante ; boutons/sélecteurs tactiles de 44 px minimum. Boucle Tab/Maj-Tab et Échap vérifiés. Champ d’instruction ciblé : entièrement au-dessus du pied d’action dans le parcours testé. Clavier virtuel et appareils physiques restent non qualifiés.
+- Contrats `pricing-public-authority.test.ts` et `pricing-architecture.test.ts` : 11 tests réussis. Analyse syntaxique des trois modules et `git diff --check` réussis. Le build Next et les contrôles de production ne sont pas revendiqués pour ce lot documentaire.
+
+Captures supplémentaires locales : `model-price-320.png`, `model-compare-390.png`, `model-price-1440.png`, `model-compare-1440.png`. Les montants correspondent au catalogue préparé pour cette revue, pas à un engagement de prix d’un compte connecté.

@@ -2,6 +2,7 @@
 
 import argparse
 import shutil
+import subprocess
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -13,7 +14,11 @@ def prepare_preview():
     output = root / ".superpowers/sdd/global-app-concept/prototype"
     assets = output / "assets"
     assets.mkdir(parents=True, exist_ok=True)
-    for name in ("index.html", "app.css", "app.js", "data.js"):
+    subprocess.run([
+        str(root / "node_modules/.bin/tsx"), "--tsconfig", str(root / "frontend/tsconfig.json"),
+        str(source / "export-catalog.ts"), str(output / "catalog.generated.js"),
+    ], cwd=root, check=True)
+    for name in ("index.html", "app.css", "app.js", "data.js", "model-choice.js"):
         shutil.copyfile(source / name, output / name)
     authored_assets = {
         "GeistLatin.woff2": "frontend/app/(core)/_fonts/GeistLatin.woff2",

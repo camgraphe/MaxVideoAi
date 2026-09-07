@@ -2,6 +2,8 @@
 
 ## Retour qui fait autorité
 
+**Dernier retour — direction globale retenue.** L’utilisateur apprécie le nouveau prototype et accepte cette direction visuelle. Il exige que le choix de plusieurs modèles et le prix avant génération occupent une place centrale, dans l’esprit MaxVideoAI. Il demande de continuer à apporter des idées et à améliorer le produit pendant sa construction, tout en conservant les fonctions importantes de l’ancienne version. Cette acceptation concerne la direction ; elle ne transforme pas les actions simulées en fonctions intégrées.
+
 Le premier lot améliore des fonctions, mais garde le concept de l’ancienne interface : formulaire central, iconographie jugée cheap, types de boutons et espacements trop familiers. Il n’est pas accepté comme refonte visuelle. La prochaine proposition doit changer le modèle de travail et le langage visuel avant sa généralisation.
 
 ## Clarification de périmètre — toute l’application
@@ -58,4 +60,6 @@ L’audio comprend écoute, import et réutilisation, mais aussi les usages exis
 
 ## Proposition interactive globale disponible
 
-Le prototype `docs/design/global-app-concept/` matérialise la carte des actions et les règles visuelles avant généralisation. Création image/vidéo/audio, références progressives, détour de création avec retour, bibliothèque et préférences sont manipulables localement. Sa revue distingue les comportements essayés des raccordements encore absents. Le style reste proposé ; aucun retour visuel favorable n’est présumé.
+Le prototype `docs/design/global-app-concept/` matérialise la carte des actions et les règles visuelles avant généralisation. Création image/vidéo/audio, références progressives, détour de création avec retour, bibliothèque et préférences sont manipulables localement. La direction visuelle est désormais retenue. Sa revue distingue les comportements essayés des raccordements encore absents.
+
+Le lot `../plans/2026-09-07-model-choice-price-concept.md` ajoute le choix d’un modèle et les estimations du catalogue public à cette composition : comparer aux mêmes réglages, prévisualiser les adaptations, appliquer sans perdre le brouillon. Aucun faux devis de référence ni prix personnalisé n’est déduit de l’estimation texte seule. `docs/design/global-app-concept/integration-contract.md` fixe les critères de conservation avant remplacement des écrans réels.

@@ -51,7 +51,7 @@ Le langage visuel repose sur une vraie hiérarchie de typographie, des pictos pl
 
 Source reproductible : `docs/design/global-app-concept/` (carte d’actions, règles visuelles, prototype, serveur local et revue). `python3 docs/design/global-app-concept/preview.py` prépare la copie servie sous `.superpowers/sdd/global-app-concept/prototype/`, puis ouvre un serveur local sur le port 3025. Les assets existants sont copiés à la préparation, sans duplication de ces originaux dans Git ; les captures restent locales.
 
-Les tâches 1 et 2 sont réalisées. La tâche 3 attend le retour visuel réel de l’utilisateur ; aucun accord sur la nouvelle direction n’est présumé. Voir `docs/design/global-app-concept/review.md` pour les parcours essayés et les limites non démontrées.
+Les trois tâches sont réalisées. L’utilisateur retient la direction visuelle et demande de rendre centraux le choix du modèle et le prix avant génération, tout en conservant les fonctions importantes du produit. Le lot suivant est décrit dans `2026-09-07-model-choice-price-concept.md`. Voir `docs/design/global-app-concept/review.md` pour les parcours essayés et les limites non démontrées.
 
 ## Task 1 — Fixer les usages et la grammaire visuelle
 
@@ -129,7 +129,7 @@ export const initialState = {
 - [x] Inspecter les trois écrans comme un ensemble : identité, navigation, pictos, boutons, espacement et densité doivent constituer un langage commun, tout en servant des usages différents.
 - [x] Inspecter les états vides, la sélection, les menus ouverts et la variante mobile. Corriger les contrôles coupés, focus perdus ou commandes essentielles masquées.
 - [x] Ouvrir le prototype dans Codex et présenter les parcours manipulables. Expliquer brièvement les arbitrages et les limites de simulation.
-- [ ] Recueillir le retour sur cette direction globale avant d’investir dans sa généralisation aux composants de production.
+- [x] Recueillir le retour sur cette direction globale avant d’investir dans sa généralisation aux composants de production. Direction retenue ; raccordement des fonctions et prix exigé, conservation explicite des fonctions importantes.
 
 ## Frontières pour l’intégration suivante
 

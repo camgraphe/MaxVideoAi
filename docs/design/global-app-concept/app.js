@@ -1,8 +1,12 @@
 import { profiles, media, labels, defaults, icon } from './data.js';
+import { catalogue } from './catalog.generated.js';
+import { createModelChoices, money, soundLabel } from './model-choice.js';
+
+const { initialModelChoice, modelFor, differences, matchingQuote, adaptChoice } = createModelChoices(catalogue);
 
 const $ = (s) => document.querySelector(s);
 const esc = (s = '') => String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
-const freshDraft = kind => ({ profile: defaults[kind], prompt: '', refs: [], output: null, format: '16:9', duration: '5 s' });
+const freshDraft = kind => ({ profile: defaults[kind], prompt: '', refs: [], output: null, format: '16:9', duration: '5 s', modelChoice: initialModelChoice() });
 const state = {
   screen: 'create', kind: 'video', drafts: Object.fromEntries(Object.keys(labels).map(k => [k, freshDraft(k)])),
   selected: null, query: '', filter: 'all', panel: null, picks: [], returnContext: null,
@@ -51,7 +55,7 @@ function canInsert(role, amount = 1, replaceId = null) {
 function renderReferences() {
   const refs = draft().refs, invalid = invalidRefs(), p = profile();
   const visibleCount = innerWidth <= 350 ? (refs.length > 1 ? 0 : 1) : innerWidth <= 600 ? 2 : innerWidth <= 1100 && innerWidth > 800 ? 3 : 4;
-  return `<div class="reference-line"><div class="refs-label"><strong>Références</strong><small>${refs.length ? p.max ? `${refs.length} / ${p.max}` : `${refs.length} à vérifier` : p.roles.some(r=>r.required) ? 'Source requise' : 'Facultatives'}</small></div>
+  return `<div class="reference-line"><button class="refs-label" data-action="profile" aria-label="Scénarios de références de démonstration"><strong>Références</strong><small>${refs.length ? p.max ? `${refs.length} / ${p.max}` : `${refs.length} à vérifier` : p.roles.some(r=>r.required) ? 'Source requise' : 'Scénarios · démo'} ${icon('down')}</small></button>
     ${refs.length ? `<div class="ref-thumbs">${refs.slice(0, visibleCount).map((r, i) => {
       const m = asset(r.assetId);
       return `<button class="ref-thumb ${invalid.includes(r) ? 'invalid' : ''}" data-action="reference" data-id="${r.id}" aria-label="Gérer ${esc(m.name)}, ${esc(roleFor(r.role)?.name || r.role)}">${m.kind === 'image' ? `<img src="${esc(m.url)}" alt="" style="object-position:${esc(m.focus||'50% 50%')}">` : icon(m.kind)}<span class="ref-count">${i + 1}</span></button>`;
@@ -61,6 +65,43 @@ function renderReferences() {
     ${invalid.length ? `<p class="error">${invalid.length} référence(s) incompatible(s) conservée(s). Changez de profil ou retirez-les du brouillon.</p>` : ''}
     ${missingRequired().length ? `<p class="error">À ajouter : ${missingRequired().map(r => r.name).join(', ')}.</p>` : ''}`;
 }
+function currentQuote(choice = draft().modelChoice) {
+  return matchingQuote(choice, draft().refs.length, missingRequired().length > 0);
+}
+function quoteDisplay(choice = draft().modelChoice) {
+  const quote = state.kind === 'video' ? currentQuote(choice) : null;
+  return `<button class="price-readout" data-action="price-info" aria-label="Détails du prix avant génération"><span>${quote ? 'Estimation catalogue' : 'Prix avant génération'}</span><strong>${quote ? esc(money(quote)) : 'Devis à raccorder'}</strong></button>`;
+}
+function modelToolbar() {
+  if (state.kind !== 'video') return `${button(`<span class="profile-name">${esc(profile().name)}</span>${icon('down')}`,'profile',state.kind,'','profile-button')}${button('Réglages','controls','settings','','subtle')}`;
+  const model = modelFor(draft().modelChoice);
+  return `<button class="model-trigger" data-action="models" aria-label="Choisir un modèle : ${esc(model.label)}"><span class="model-symbol">${icon('video')}</span><span class="model-title"><small>Modèle</small><strong>${esc(model.label)}</strong></span>${icon('down')}</button>${button('Comparer','models','replace','','compare-button')}`;
+}
+function quickControls() {
+  const d = draft();
+  if (state.kind !== 'video') return `${state.kind === 'audio' ? '' : button(esc(d.format),'controls',null,'','value')}${state.kind !== 'image' ? button(esc(d.duration),'controls',null,'','value') : ''}${button('Options','controls','settings','','value')}`;
+  const c = d.modelChoice;
+  return `${button(`${c.duration} s`,'controls',null,'aria-label="Régler la durée"','value')}${button(esc(c.resolution),'controls',null,'aria-label="Régler la résolution"','value')}${button(esc(c.format),'controls',null,'aria-label="Régler le format"','value')}${button(soundLabel(c),'controls','audio','aria-label="Régler le son"','value')}${button('Options','controls','settings','','value')}`;
+}
+function modelControls(choice) {
+  const model = modelFor(choice);
+  const select = (name, label, values) => `<label>${label}<select id="model-${name}" data-model-field="${name}" aria-label="${label}">${values.map(([value,text])=>`<option value="${esc(value)}" ${String(choice[name])===String(value)?'selected':''}>${esc(text)}</option>`).join('')}</select></label>`;
+  return `<div class="model-fields">${select('duration','Durée',model.durations.map(v=>[v,`${v} s`]))}${select('resolution','Résolution',model.resolutions.map(r=>[r.value,r.label]))}${select('format','Format',model.formats.map(v=>[v,v==='auto'?'Automatique':v]))}${select('audio','Son du clip',model.audio==='optional'?[[true,'Avec son'],[false,'Sans son']]:[[model.audio==='included',model.audio==='included'?'Son inclus':'Sans son']])}</div>`;
+}
+function changeSummary(choice) {
+  const previous = draft().modelChoice;
+  const names = {duration:'Durée',resolution:'Résolution',format:'Format',audio:'Son'};
+  const value = (key,c) => key==='audio'?soundLabel(c):key==='duration'?`${c[key]} s`:c[key];
+  const changes = Object.keys(names).filter(key=>previous[key]!==choice[key]);
+  return changes.length ? `<div class="model-changes"><small>Changements proposés</small>${changes.map(key=>`<div><span>${names[key]}</span><span>${esc(value(key,previous))} → <strong>${esc(value(key,choice))}</strong></span></div>`).join('')}</div>` : '<p class="panel-intro model-preserved">Vos réglages sont conservés.</p>';
+}
+function modelList() {
+  const choice = draft().modelChoice;
+  return `<p class="panel-intro">Même durée, résolution, format et son. Six modèles du catalogue pour éprouver ce choix.</p><div class="comparison-context"><span>${choice.duration} s</span><span>${esc(choice.resolution)}</span><span>${esc(choice.format)}</span><span>${soundLabel(choice)}</span>${button('Modifier','controls','settings')}</div>${draft().refs.length || missingRequired().length ? '<p class="error">Les devis avec références ne sont pas raccordés dans cette maquette.</p>' : ''}<div class="model-list">${catalogue.models.map(model=>{
+    const proposed = {...choice,modelId:model.id}, diff = differences(model, choice), quote = currentQuote(proposed), selected = choice.modelId === model.id;
+    return `<button class="model-option ${selected?'selected':''}" data-action="candidate" data-id="${model.id}" aria-label="Examiner ${esc(model.label)}${selected?', modèle actuel':''}"><span class="model-glyph">${selected?icon('check'):icon('video')}</span><span class="model-description"><strong>${esc(model.label)}</strong><small>${diff.length ? `${diff.join(' · ')} à adapter` : 'Réglages conservés'}${selected?' · Actuel':''}</small></span><span class="model-cost">${diff.length?'Adapter':quote?esc(money(quote)):'Devis à raccorder'}${icon('arrow')}</span></button>`;
+  }).join('')}</div><div class="quote-scope"><span>Estimation catalogue · Member · USD</span>${button('Détails','price-info',null)}</div>`;
+}
 function returnBar() {
   const c = state.returnContext;
   return c ? `<div class="returnbar"><div><strong>Créer une référence ${labels[state.kind].toLowerCase()}</strong><small>Retour à votre brouillon ${labels[c.kind].toLowerCase()} · ${esc(c.role.name)}</small></div><div class="row">${button('Annuler le détour','cancel-return','back')}${draft().output ? button('Utiliser et revenir','complete-return','check','','primary') : ''}</div></div>` : '';
@@ -69,11 +110,11 @@ function creator() {
   const d = draft(), m = asset(d.output);
   return `${returnBar()}<div class="pagehead"><h1>Créer</h1><div class="modes" aria-label="Type de création">${Object.entries(labels).map(([k,l]) => `<button class="mode ${state.kind === k ? 'active' : ''}" data-action="kind" data-kind="${k}" aria-pressed="${state.kind===k}">${icon(k)}${l}</button>`).join('')}</div>${button('Nouveau','new','plus')}</div>
     <div class="work-layout"><section class="workbench" aria-label="Créateur ${labels[state.kind]}">
-      <div class="toolbar">${button(`<span class="profile-name">${esc(profile().name)}</span>${icon('down')}`,'profile',state.kind,'','profile-button')}${button('Réglages','controls','settings','','subtle')}</div>
+      <div class="toolbar">${modelToolbar()}</div>
       ${m ? `<div class="screen">${reader(m,'')}</div><div class="asset-caption"><div><strong>${esc(m.name)}</strong><small style="display:block;margin-top:4px">Exemple local · aucune génération</small></div>${button('Réutiliser','reuse', 'replace', `data-id="${m.id}"`)}</div>` : `<div class="screen screen-empty"><div class="empty-icon">${icon(state.kind)}</div><h2>${state.kind === 'audio' ? 'Donnez du son à votre idée.' : state.kind === 'image' ? 'Donnez forme à votre idée.' : 'Mettez votre idée en mouvement.'}</h2><p>Une instruction suffit pour commencer.</p></div>`}
       <div id="references">${renderReferences()}</div>
       <div class="compose"><label for="prompt">${state.kind === 'audio' && d.profile === 'voice' ? 'Votre script' : 'Votre direction'}</label><textarea id="prompt" rows="3" placeholder="Décrivez ce que vous voulez créer…">${esc(d.prompt)}</textarea></div>
-      <div class="commandbar"><div class="quick-values">${state.kind === 'audio' ? '' : button(esc(d.format),'controls',null,'','value')}${state.kind !== 'image' ? button(esc(d.duration),'controls',null,'','value') : ''}${button('Options','controls','settings','','value')}</div>${button('Simuler le résultat','simulate','arrow',invalidRefs().length || missingRequired().length ? 'disabled' : '', 'primary generate')}</div>
+      <div class="commandbar"><div class="quick-values">${quickControls()}</div><div class="creation-action">${quoteDisplay()}${button('Simuler','simulate','arrow',invalidRefs().length || missingRequired().length ? 'disabled' : '', 'primary generate')}</div></div>
     </section><aside class="shelf"><div class="shelf-head"><span class="tiny">Vos médias</span><button class="icon-btn" data-action="navigate" data-screen="library" aria-label="Ouvrir les médias">${icon('arrow')}</button></div><div class="shelf-items">${media.slice(0,4).map(m => `<button class="shelf-media" data-action="preview" data-id="${m.id}">${thumb(m)}<div class="shelf-caption">${esc(m.name)}</div></button>`).join('')}</div>${button('Tout voir','navigate',null,'data-screen="library"','','')}</aside></div>`;
 }
 const filteredMedia = () => media.filter(m => (state.filter === 'all' || m.kind === state.filter) && m.name.toLocaleLowerCase('fr').includes(state.query.toLocaleLowerCase('fr')));
@@ -103,10 +144,14 @@ function futureScreen() {
 function render() {
   const active = document.activeElement;
   const focus = active?.closest('#app') && active.dataset.action ? {...active.dataset} : null;
+  const focusLabel = active?.getAttribute('aria-label'), focusText = active?.textContent;
   applyTheme();
   const nav=[['create','create','Créer'],['library','library','Médias'],['tools','tools','Outils'],['studio','studio','Studio'],['settings','settings','Compte']];
   $('#app').innerHTML=`<div class="app-shell"><nav class="nav" aria-label="Navigation principale"><div class="brand" aria-label="MaxVideoAI">M/</div>${nav.map(([k,i,l])=>`<button class="nav-button ${state.screen===k?'active':''} ${k==='settings'?'nav-bottom':''}" data-action="navigate" data-screen="${k}" aria-current="${state.screen===k?'page':'false'}">${icon(i)}${l}</button>`).join('')}</nav><main class="main"><header class="topbar"><span class="wordmark">MaxVideoAI <span class="muted">/ Espace créatif</span></span><div class="top-right"><span class="demo-label"><i class="dot"></i>Prototype · local</span>${button('<span>Assistants</span>','assistants','connect','aria-label="Assistants"')}<div class="avatar" aria-hidden="true">${esc(state.name.slice(0,2).toUpperCase())}</div></div></header><div class="content">${state.screen==='create'?creator():state.screen==='library'?library():state.screen==='settings'?settings():futureScreen()}</div></main></div>`;
-  if(focus) [...document.querySelectorAll('#app [data-action]')].find(el=>Object.entries(focus).every(([key,value])=>el.dataset[key]===value))?.focus({preventScroll:true});
+  if(focus){
+    const matches=[...document.querySelectorAll('#app [data-action]')].filter(el=>Object.entries(focus).every(([key,value])=>el.dataset[key]===value));
+    (matches.find(el=>focusLabel&&el.getAttribute('aria-label')===focusLabel)||matches.find(el=>el.textContent===focusText)||matches[0])?.focus({preventScroll:true});
+  }
 }
 function toast(message, undo=null) {
   clearTimeout(noticeTimer);state.undo=undo;
@@ -114,22 +159,34 @@ function toast(message, undo=null) {
   $('#notice').classList.add('shown');noticeTimer=setTimeout(()=>{$('#notice').classList.remove('shown');state.undo=null;},undo?12000:6500);
 }
 function openPanel(type, args={}) {
-  if(!$('#panel').open){const el=document.activeElement;restoreFocus=el?.dataset?.action ? {action:el.dataset.action,id:el.dataset.id,kind:el.dataset.kind} : null;}
+  if(!$('#panel').open){const el=document.activeElement;restoreFocus=el?.dataset?.action ? {action:el.dataset.action,id:el.dataset.id,kind:el.dataset.kind,label:el.getAttribute('aria-label'),text:el.textContent} : null;}
   state.panel={type,...args};state.picks=[];renderPanel();
   if(!$('#panel').open)$('#panel').showModal();
   $('#panel .icon-btn')?.focus();
 }
 function closePanel() {
   $('#panel').close();$('#panel').innerHTML='';state.panel=null;
-  if(restoreFocus){const f=restoreFocus;[...document.querySelectorAll('#app [data-action]')].find(el=>el.dataset.action===f.action&&el.dataset.id===f.id&&el.dataset.kind===f.kind)?.focus();}
+  if(restoreFocus){
+    const f=restoreFocus,matches=[...document.querySelectorAll('#app [data-action]')].filter(el=>el.dataset.action===f.action&&el.dataset.id===f.id&&el.dataset.kind===f.kind);
+    (matches.find(el=>f.label&&el.getAttribute('aria-label')===f.label)||matches.find(el=>el.textContent===f.text)||matches[0])?.focus();
+  }
 }
 function panelLayout(title,body) {
   $('#panel').innerHTML=`<div class="panel-header"><h2 id="panel-title">${title}</h2><button class="icon-btn" data-action="close" aria-label="Fermer">${icon('close')}</button></div><div class="panel-body">${body}</div>`;
 }
 function renderPanel() {
   const p=state.panel;if(!p)return;
-  if(p.type==='add'){
-    panelLayout('Ajouter une référence',`<p class="panel-intro">Choisissez son rôle. Les choix dépendent du profil actif.</p>${profile().roles.map(r=>`<div class="role-row">${icon(r.kind)}<div class="grow"><strong>${r.name}</strong><small>${draft().refs.filter(x=>x.role===r.id).length} / ${r.max}${r.required?' · Requise':''}</small><div class="role-options">${button('Choisir','pick',null,`data-role="${r.id}" aria-label="Choisir : ${r.name}" ${canInsert(r)?'':'disabled'}`)}${button('Importer','import',null,`data-role="${r.id}" aria-label="Importer : ${r.name}" ${canInsert(r)?'':'disabled'}`)}${button('Créer','create-reference',null,`data-role="${r.id}" aria-label="Créer : ${r.name}" ${!state.returnContext&&canInsert(r)?'':'disabled'}`)}</div></div></div>`).join('')}<small style="display:block;margin-top:18px">${draft().refs.length} / ${profile().max} au total · limites illustratives du prototype</small>`);
+  if(p.type==='models'){
+    panelLayout('Choisir votre modèle',modelList());
+  }else if(p.type==='candidate'){
+    const choice=p.choice, model=modelFor(choice);
+    panelLayout(esc(model.label),`${button('Tous les modèles','models','back','','back-models')}${modelControls(choice)}<div id="model-changes">${changeSummary(choice)}</div><div class="panel-footer"><div id="candidate-quote" class="candidate-quote" role="status"><strong>${esc(money(currentQuote(choice)))}</strong><small>Estimation catalogue · Member · USD</small></div>${button('Utiliser ce modèle','apply-model','check','','primary')}</div>`);
+  }else if(p.type==='price-info'){
+    panelLayout('Le prix avant de créer',`<div class="price-explanation"><p>Le montant affiché correspond à <strong>une vidéo créée depuis du texte</strong>, aux réglages sélectionnés.</p><p>Il provient du catalogue public et du moteur de prix MaxVideoAI, au tarif Member en USD. Cette maquette n’utilise ni votre compte ni les ajustements de prix en base de données.</p><p>Dans l’app, le devis sera confirmé par le serveur avec les références, les options, la quantité et votre tarif. Ici, les devis image, audio et avec références restent à raccorder.</p><small>Catalogue préparé le ${esc(new Intl.DateTimeFormat('fr-FR',{dateStyle:'short'}).format(new Date(catalogue.scope.generatedAt)))}. La simulation ne génère aucun média et ne débite rien.</small></div>`);
+  }else if(p.type==='controls' && state.kind==='video'){
+    panelLayout('Réglages de création',`${modelControls(draft().modelChoice)}<div class="panel-footer"><div id="settings-quote" class="candidate-quote" role="status"><strong>${esc(money(currentQuote()))}</strong><small>Estimation catalogue · Member · USD</small></div>${button('Terminé','close','check','','primary')}</div>`);
+  }else if(p.type==='add'){
+    panelLayout('Ajouter une référence',`<p class="panel-intro">Scénario de références indépendant du modèle : limites illustratives pour essayer les interactions.</p>${profile().roles.map(r=>`<div class="role-row">${icon(r.kind)}<div class="grow"><strong>${r.name}</strong><small>${draft().refs.filter(x=>x.role===r.id).length} / ${r.max}${r.required?' · Requise':''}</small><div class="role-options">${button('Choisir','pick',null,`data-role="${r.id}" aria-label="Choisir : ${r.name}" ${canInsert(r)?'':'disabled'}`)}${button('Importer','import',null,`data-role="${r.id}" aria-label="Importer : ${r.name}" ${canInsert(r)?'':'disabled'}`)}${button('Créer','create-reference',null,`data-role="${r.id}" aria-label="Créer : ${r.name}" ${!state.returnContext&&canInsert(r)?'':'disabled'}`)}</div></div></div>`).join('')}<small style="display:block;margin-top:18px">${draft().refs.length} / ${profile().max} au total · limites illustratives du prototype</small>`);
   }else if(p.type==='pick'){
     const role=roleFor(p.role),choices=media.filter(m=>m.kind===role.kind);
     panelLayout(p.replaceId?'Remplacer la référence':role.name,`<p class="panel-intro">${p.replaceId?'La référence actuelle reste en place jusqu’à votre choix.':'Sélectionnez un ou plusieurs médias compatibles.'}</p><div class="picker-grid">${choices.map(m=>`<button class="pick-card" data-action="pick-item" data-id="${m.id}" aria-pressed="${state.picks.includes(m.id)}" aria-label="Choisir ${esc(m.name)}">${thumb(m)}<span class="name">${esc(m.name)}</span>${state.picks.includes(m.id)?`<span class="pick-mark">${icon('check')}</span>`:''}</button>`).join('')}</div><div class="panel-footer"><small>${state.picks.length} sélectionné(s)</small>${button(p.replaceId?'Remplacer':'Ajouter la sélection','confirm-picks','check',!state.picks.length?'disabled':'','primary')}</div>`);
@@ -140,7 +197,7 @@ function renderPanel() {
       return `<div class="manage-row">${thumb(m,false)}<div><strong>${esc(m.name)}</strong><small>${esc(role?.name||'Incompatible avec ce profil')}</small>${profile().roles.filter(s=>s.kind===m.kind).length?`<label class="role-select">Rôle<select data-role-ref="${r.id}" aria-label="Rôle de ${esc(m.name)}"><option value="" ${role?'':'selected'} disabled>Attribuer un rôle</option>${profile().roles.filter(s=>s.kind===m.kind).map(s=>`<option value="${s.id}" ${r.role===s.id?'selected':''}>${s.name}</option>`).join('')}</select></label>`:''}</div><div class="manage-actions">${button('Aperçu','reference-preview','play',`data-id="${r.id}"`)}${button('Remplacer','replace','replace',`data-id="${r.id}" ${role?'':'disabled'}`)}${button('Retirer','remove','remove',`data-id="${r.id}"`,'danger')}<button class="icon-btn" data-action="move" data-id="${r.id}" data-step="-1" aria-label="Monter ${esc(m.name)}" ${i===0?'disabled':''}>${icon('up')}</button><button class="icon-btn" data-action="move" data-id="${r.id}" data-step="1" aria-label="Descendre ${esc(m.name)}" ${i===draft().refs.length-1?'disabled':''}>${icon('down')}</button></div></div>`;
     }).join('')||'<p class="panel-intro">Aucune référence dans ce brouillon.</p>'}${button('Ajouter une référence','add','plus','','outline')}`);
   }else if(p.type==='profile'){
-    panelLayout('Choisir un profil',`<p class="panel-intro">Scénarios d’interface. Les modèles, leurs limites réelles et les devis seront raccordés à l’intégration.</p>${Object.entries(profiles).filter(([,v])=>v.kind===state.kind).map(([key,v])=>`<button class="choice-row" data-action="set-profile" data-value="${key}">${icon(v.kind)}<div class="grow"><strong>${v.name}</strong><small>${v.detail}</small>${invalidRefs(v).length?`<small class="error">${invalidRefs(v).length} référence(s) deviendront incompatibles, sans être effacées.</small>`:""}</div>${draft().profile===key?icon('check'):icon('arrow')}</button>`).join('')}<p class="panel-intro" style="margin-top:18px">Vos références restent conservées si vous changez de profil. Les incompatibilités empêchent la simulation jusqu’à résolution.</p>`);
+    panelLayout('Scénarios de références',`<p class="panel-intro">Ces profils servent à tester les interactions. Leurs limites sont illustratives et ne décrivent pas les capacités du modèle sélectionné.</p>${Object.entries(profiles).filter(([,v])=>v.kind===state.kind).map(([key,v])=>`<button class="choice-row" data-action="set-profile" data-value="${key}">${icon(v.kind)}<div class="grow"><strong>${v.name}</strong><small>${v.detail}</small>${invalidRefs(v).length?`<small class="error">${invalidRefs(v).length} référence(s) deviendront incompatibles, sans être effacées.</small>`:""}</div>${draft().profile===key?icon('check'):icon('arrow')}</button>`).join('')}<p class="panel-intro" style="margin-top:18px">Vos références restent conservées si vous changez de profil. Les incompatibilités empêchent la simulation jusqu’à résolution.</p>`);
   }else if(p.type==='controls'){
     panelLayout('Réglages de création',`<p class="panel-intro">Valeurs locales pour éprouver les commandes. Aucun devis n’est calculé.</p><div class="stack">${state.kind!=='audio'?`<label>Format<select id="format"><option ${draft().format==='16:9'?'selected':''}>16:9</option><option ${draft().format==='9:16'?'selected':''}>9:16</option><option ${draft().format==='1:1'?'selected':''}>1:1</option></select></label>`:''}${state.kind!=='image'?`<label>Durée de démonstration<select id="duration"><option ${draft().duration==='5 s'?'selected':''}>5 s</option><option ${draft().duration==='10 s'?'selected':''}>10 s</option></select></label>`:''}</div><div class="panel-footer"><small>Conservés dans le brouillon</small>${button('Terminé','close','check','','primary')}</div>`);
   }else if(p.type==='preview'){
@@ -197,7 +254,13 @@ document.addEventListener('click',event=>{
     state.kind=el.dataset.kind;render();
   }else if(a==='new'){
     const kind=state.kind,previous=structuredClone(draft());state.drafts[kind]=freshDraft(kind);render();toast('Nouveau brouillon.',()=>{state.drafts[kind]=previous;render();});
-  }else if(['add','manage','profile','controls'].includes(a))openPanel(a);
+  }else if(['add','manage','profile','controls','models','price-info'].includes(a))openPanel(a);
+  else if(a==='candidate'){
+    const model=catalogue.models.find(m=>m.id===id);if(model)openPanel('candidate',{choice:adaptChoice(model,draft().modelChoice)});
+  }else if(a==='apply-model'){
+    if(state.panel?.type!=='candidate')return;
+    draft().modelChoice=structuredClone(state.panel.choice);closePanel();render();toast('Modèle appliqué. Instruction et références conservées.');
+  }
   else if(a==='reference')openPanel('reference',{id});
   else if(a==='pick')openPanel('pick',{role:el.dataset.role});
   else if(a==='replace'){const r=byId(id);if(r)openPanel('pick',{role:r.role,replaceId:id});}
@@ -259,6 +322,17 @@ document.addEventListener('input',e=>{
   if(e.target.id==='library-search'){state.query=e.target.value;state.selected=null;$('#media-grid').innerHTML=libraryGrid();$('#selection').innerHTML='';}
 });
 document.addEventListener('change',e=>{
+  if(e.target.dataset.modelField){
+    const field=e.target.dataset.modelField;
+    const choice=state.panel?.type==='candidate'?state.panel.choice:draft().modelChoice;
+    choice[field]=field==='duration'?Number(e.target.value):field==='audio'?e.target.value==='true':e.target.value;
+    if(state.panel?.type==='candidate'){
+      $('#model-changes').innerHTML=changeSummary(choice);
+      $('#candidate-quote strong').textContent=money(currentQuote(choice));
+    }else{
+      render();$('#settings-quote strong').textContent=money(currentQuote());
+    }
+  }
   if(['format','duration'].includes(e.target.id)){draft()[e.target.id]=e.target.value;render();}
   if(e.target.dataset.roleRef){
     const id=e.target.dataset.roleRef, role=roleFor(e.target.value), reference=byId(id);
