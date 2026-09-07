@@ -4,7 +4,13 @@
 
 Le premier lot améliore des fonctions, mais garde le concept de l’ancienne interface : formulaire central, iconographie jugée cheap, types de boutons et espacements trop familiers. Il n’est pas accepté comme refonte visuelle. La prochaine proposition doit changer le modèle de travail et le langage visuel avant sa généralisation.
 
-## Unité de travail
+## Clarification de périmètre — toute l’application
+
+La dernière planche concernait surtout le Studio/canevas. Elle ne définit pas la refonte globale demandée. L’utilisateur attend une nouvelle expérience sur la création vidéo/image, la bibliothèque, les outils, les paramètres et la navigation. Le Studio doit reprendre cette identité avec ses interactions propres ; l’app générale ne devient pas un canevas.
+
+Le plan actif est `../plans/2026-09-07-global-app-concept.md`. Son prochain livrable est un prototype interactif réunissant création, bibliothèque et paramètres, en desktop et mobile. Les trois variantes ci-dessous restent des explorations antérieures centrées sur le Studio, pas une sélection obligatoire pour l’app entière.
+
+## Unité de travail du Studio explorée précédemment
 
 L’utilisateur agit sur un **plan ou un média**, avec ses références, son instruction, son modèle, ses paramètres, ses versions et ses actions suivantes. La saisie d’un prompt reste nécessaire ; elle ne définit plus à elle seule toute la composition. Aucun résultat fictif ne doit être présenté comme produit par un moteur. Le démarrage sans média et la génération texte seule doivent rester directs.
 
