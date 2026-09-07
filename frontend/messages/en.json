@@ -3068,6 +3068,16 @@
   },
   "workspace": {
     "header": {
+      "wallet": {
+        "label": "Wallet",
+        "loading": "Loading…",
+        "unavailable": "Unavailable"
+      },
+      "walletTopUp": {
+        "label": "Top up available",
+        "copy": "Click to add funds and keep generating without interruption.",
+        "cta": "Top up now"
+      },
       "marketingNav": "Marketing navigation",
       "walletLabel": "Wallet",
       "memberFallback": "Member",

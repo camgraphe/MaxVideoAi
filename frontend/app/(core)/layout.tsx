@@ -1,6 +1,7 @@
 import localFont from 'next/font/local';
 import { AppExperienceRoot } from '@/components/AppExperienceRoot';
 import '@/styles/app-experience.css';
+import '@/styles/app-shell.css';
 import type { Metadata, Viewport } from 'next';
 import { cookies } from 'next/headers';
 import type { ReactNode } from 'react';

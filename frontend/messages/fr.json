@@ -3103,6 +3103,16 @@
   },
   "workspace": {
     "header": {
+      "wallet": {
+        "label": "Wallet",
+        "loading": "Chargement…",
+        "unavailable": "Indisponible"
+      },
+      "walletTopUp": {
+        "label": "Ajouter des fonds",
+        "copy": "Ajoutez des fonds pour continuer à générer sans interruption.",
+        "cta": "Recharger"
+      },
       "marketingNav": "Navigation marketing",
       "walletLabel": "Portefeuille",
       "memberFallback": "Membre",

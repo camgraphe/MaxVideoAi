@@ -4,7 +4,7 @@ import test from 'node:test';
 import { isAppExperiencePath } from '../frontend/lib/app-experience-path';
 
 test('application presentation and quick navigation share a route boundary', () => {
-  for (const path of ['/app', '/app/image', '/app/library', '/dashboard', '/settings', '/settings/privacy', '/jobs', '/billing', '/account/connections']) {
+  for (const path of ['/app', '/app/image', '/app/audio', '/app/library', '/dashboard', '/settings', '/settings/privacy', '/jobs', '/billing', '/account/connections']) {
     assert.equal(isAppExperiencePath(path), true, path);
   }
   for (const path of [undefined, null, '/', '/fr', '/login', '/admin', '/mcp/reference-upload/private-token', '/application', '/settings-other']) {

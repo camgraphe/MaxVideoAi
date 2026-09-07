@@ -19,6 +19,8 @@ import { HeaderAuthActions } from '@/components/header/HeaderAuthActions';
 import { HeaderLogoMark } from '@/components/header/HeaderLogoMark';
 import { MarketingNavEntryContent } from '@/components/marketing/MarketingNavEntryContent';
 import { getAccountInitials } from '@/components/header/header-nav-helpers';
+import { AppSiteMenu } from '@/components/app/AppSiteMenu.client';
+import { AppNavigation } from '@/components/app/AppNavigation.client';
 import { WorkspaceMobileNav } from '@/components/header/WorkspaceMobileNav';
 import { HeaderMobileMenu } from '@/components/header/HeaderMobileMenu';
 import { HeaderWalletStatus } from '@/components/header/HeaderWalletStatus';
@@ -223,7 +225,13 @@ export function HeaderBar() {
           {bannerMessage}
         </div>
       ) : null}
-      <header
+      {isAppExperiencePath(pathname) ? (
+        <header className="app-connected-header">
+          <AppSiteMenu email={email} authResolved={authResolved} isAdmin={isAdmin} signinHref={signinHref} signupHref={signupHref} themeToggleLabel={themeToggleLabel} onToggleTheme={toggleTheme} onSignOut={handleSignOut}>
+            <HeaderWalletStatus authResolved={authResolved} promptId={walletPromptId} t={t} wallet={wallet} walletPromptOpen={walletPromptOpen} onOpenPrompt={openWalletPrompt} onSchedulePromptClose={scheduleWalletPromptClose} />
+          </AppSiteMenu>
+        </header>
+      ) : <header
         className={clsx(
           'app-topbar sticky top-0 z-40 flex h-[var(--header-height)] items-center justify-between px-3 sm:px-5 lg:px-8',
           'border-b border-hairline bg-surface'
@@ -440,8 +448,9 @@ export function HeaderBar() {
             )}
           </div>
         </div>
-      </header>
-      {isAppExperiencePath(pathname) ? <WorkspaceMobileNav onOpenMenu={() => setMobileMenuOpen(true)} /> : null}
+      </header>}
+      {isAppExperiencePath(pathname) ? <WorkspaceMobileNav /> : null}
+      {isAppExperiencePath(pathname) ? <AppNavigation variant="activities" /> : null}
       {mobileMenuOpen ? (
         <HeaderMobileMenu
           ctaLabel={ctaLabel}
