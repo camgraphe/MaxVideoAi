@@ -1520,6 +1520,11 @@
       "path": "docs/engineering/maxvideoai-editor-server-render.md",
       "gitBlob": "cd5cf692679e72c2c3d6cbc02beced6b44ddc40b",
       "sha256": "b81a1d23decc54102672e902508275e958c7963df9eb42d27586fdb5d99898ad"
+    },
+    {
+      "path": "frontend/public/storyboard/examples/storyboarder-product-reference.jpg",
+      "gitBlob": "d328e80c1d0b7979f02a7c1b0c9c2bf0a6a24e15",
+      "sha256": "0b78ca82c0b6703df5ef3b8731f883c3bd95701e4f7df465d783bbd85eb5637a"
     }
   ]
 }
