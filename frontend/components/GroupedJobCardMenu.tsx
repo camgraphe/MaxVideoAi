@@ -1,6 +1,8 @@
 'use client';
 
 import clsx from 'clsx';
+import { GalleryMediaActionPanel } from './library/GalleryMediaActionPanel.client';
+import { galleryMediaAssets } from './library/gallery-media-assets';
 import type { Ref } from 'react';
 import type { GroupSummary } from '@/types/groups';
 import { Button, ButtonLink } from '@/components/ui/Button';
@@ -41,10 +43,17 @@ export function GroupedJobCardMenu({
   const showGalleryActions = menuVariant === 'gallery';
   const showGalleryImageActions = menuVariant === 'gallery-image';
 
+  const assets = galleryMediaAssets(group, showGalleryImageActions ? 'image' : 'video');
+  if ((showGalleryActions || showGalleryImageActions) && assets.length) return <GalleryMediaActionPanel
+    assets={assets} menuRef={menuRef} onClose={closeMenu} onPreview={() => handleAction('open')}
+    onRemake={showGalleryActions && onOpen ? handleRemake : undefined}
+    onSave={showGalleryImageActions ? () => handleAction('save-image') : undefined}
+    onCopy={showGalleryImageActions ? () => handleAction('copy') : undefined} />;
+
   return (
     <div
       ref={menuRef}
-      className="absolute right-3 top-12 z-40 w-48 rounded-card border border-border bg-surface p-2 text-sm text-text-secondary shadow-card"
+      className="app-group-media-menu absolute right-3 top-12 z-40 w-48 rounded-card border border-border bg-surface p-2 text-sm text-text-secondary shadow-card"
     >
       {showGalleryActions ? (
         <>

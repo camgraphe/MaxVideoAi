@@ -144,6 +144,7 @@ export function useLibraryPageData({
           kind: activeKind,
           width: output.width,
           height: output.height,
+          durationSec: output.durationSec,
           size: null,
           mime: output.mime,
           source: 'recent',

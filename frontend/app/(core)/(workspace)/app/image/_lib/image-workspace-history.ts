@@ -120,6 +120,7 @@ export function buildCompletedGroup({
     durationSec: 0,
     priceCents: totalPriceCents ?? null,
     currency: currency ?? null,
+    originalUrl: image.url,
     thumbUrl: image.thumbUrl ?? image.url,
     aspectRatio,
     prompt,

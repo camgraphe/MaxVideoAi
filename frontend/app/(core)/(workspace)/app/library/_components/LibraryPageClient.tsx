@@ -5,14 +5,14 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import deepmerge from 'deepmerge';
-import { AudioWaveform, Clapperboard, Images, CheckCircle2, Download, History, Plus, RefreshCw, Trash2, Upload, X } from 'lucide-react';
+import { AudioWaveform, Clapperboard, Images, CheckCircle2, History, Plus, RefreshCw, Trash2, Upload, X } from 'lucide-react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Button, ButtonLink } from '@/components/ui/Button';
+import { MediaDestinationActions } from '@/components/library/MediaDestinationActions.client';
 import { AssetLibraryBrowser } from '@/components/library/AssetLibraryBrowser';
 import { FEATURES } from '@/content/feature-flags';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import { buildAppDownloadUrl, suggestDownloadFilename } from '@/lib/download';
 import { buildLoginHref } from '@/lib/auth-entry-href';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useLibraryAssetMutations } from '../_hooks/useLibraryAssetMutations';
@@ -32,7 +32,7 @@ export function LibraryPageClient() {
   const searchParams = useSearchParams();
   const libraryEntry = useMemo(() => resolveLibraryEntry(searchParams), [searchParams]);
   const toolsEnabled = FEATURES.workflows.toolsSection;
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { user, loading: authLoading } = useRequireAuth({ redirectIfLoggedOut: false });
   const rawCopy = t('workspace.library', DEFAULT_LIBRARY_COPY);
   const copy = useMemo<LibraryCopy>(() => {
@@ -213,7 +213,9 @@ export function LibraryPageClient() {
               ) : null}
               <AssetLibraryBrowser
                 layout="page"
-                title={copy.hero.title}
+                locale={locale}
+                renderContinuation={(asset) => <MediaDestinationActions asset={asset} userId={user?.id} locale={locale} />}
+                title={locale === 'fr' ? 'Médias' : locale === 'es' ? 'Medios' : 'Media'}
                 subtitle={activeView === 'review' ? copy.review.subtitle : copy.hero.subtitle}
                 countLabel={assetCountLabel}
                 assetType={activeKind}
@@ -334,10 +336,8 @@ export function LibraryPageClient() {
                     </Button>
                   </>
                 }
-                headerActions={
-                  <>
-                    {activeView === 'saved' ? (
-                      <Button
+                headingActions={<>
+                    <Button
                         type="button"
                         variant="outline"
                         size="sm"
@@ -348,12 +348,19 @@ export function LibraryPageClient() {
                         <Upload className="h-4 w-4" aria-hidden />
                         {isImporting ? copy.browser.importing : copy.browser.import}
                       </Button>
-                    ) : null}
+                    <ButtonLink href={activeKind === 'video' ? '/app' : activeKind === 'audio' ? '/app/audio' : '/app/image'} prefetch={false} variant="outline" size="sm" className="!min-h-11 gap-2 rounded-full px-3 text-sm">
+                      <Plus className="h-4 w-4" aria-hidden />
+                      {t('workspace.library.browser.create', 'Create')}
+                    </ButtonLink>
+                  </>}
+                headerActions={
+                  <>
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="!min-h-11 gap-2 rounded-full border-border bg-surface-2 px-3 text-sm text-text-secondary hover:bg-surface-3 hover:text-text-primary"
+                      className="!min-h-11 !h-11 !w-11 rounded-lg border-border bg-surface-2 !p-0 text-text-secondary"
+                      title={copy.browser.refresh}
                       onClick={() => {
                         clearMutationErrors();
                         if (activeView === 'review') {
@@ -364,12 +371,8 @@ export function LibraryPageClient() {
                       }}
                     >
                       <RefreshCw className="h-4 w-4" aria-hidden />
-                      {copy.browser.refresh}
+                      <span className="sr-only">{copy.browser.refresh}</span>
                     </Button>
-                    <ButtonLink href={activeKind === 'video' ? '/app' : activeKind === 'audio' ? '/app/audio' : '/app/image'} prefetch={false} variant="outline" size="sm" className="!min-h-11 gap-2 rounded-full px-3 text-sm">
-                      <Plus className="h-4 w-4" aria-hidden />
-                      {t('workspace.library.browser.create', 'Create')}
-                    </ButtonLink>
                   </>
                 }
                 renderAssetMeta={(asset) =>
@@ -421,18 +424,6 @@ export function LibraryPageClient() {
                     </>
                   ) : (
                     <>
-                      <ButtonLink
-                        linkComponent="a"
-                        href={buildAppDownloadUrl(asset.url, suggestDownloadFilename(asset.url, asset.url.split('/').pop() ?? 'asset'))}
-                        variant="outline"
-                        size="sm"
-                        className="!min-h-11 flex-1 gap-1.5 rounded-xl border-border/70 bg-surface px-2 text-text-secondary hover:border-text-muted hover:text-text-primary"
-                        aria-label={`${copy.assets.downloadButton} ${asset.url.split('/').pop() ?? copy.assets.assetFallback}`}
-                        title={`${copy.assets.downloadButton} ${asset.url.split('/').pop() ?? copy.assets.assetFallback}`}
-                      >
-                        <Download className="h-4 w-4 shrink-0" aria-hidden />
-                        <span className="text-xs">{copy.assets.downloadButton}</span>
-                      </ButtonLink>
                       <Button
                         type="button"
                         variant="ghost"

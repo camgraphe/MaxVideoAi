@@ -17,6 +17,7 @@ export interface GroupMemberSummary {
   priceCents?: number | null;
   currency?: string | null;
   thumbUrl?: string | null;
+  originalUrl?: string | null;
   videoUrl?: string | null;
   previewVideoUrl?: string | null;
   audioUrl?: string | null;

@@ -338,15 +338,16 @@ export function useImageReferenceSlots({
   }, []);
 
   const handleLibrarySelect = useCallback(
-    (asset: LibraryAsset) => {
+    (asset: LibraryAsset, preferredIndex?: number) => {
+      if (preferredIndex !== undefined && (!Number.isInteger(preferredIndex) || preferredIndex < 0 || preferredIndex >= referenceSlotLimit)) return false;
       if (!isSupportedReferenceAsset(asset.mime, asset.url)) {
         showUnsupportedFormatError();
         return;
       }
-      const slotIndex = resolveTargetReferenceSlotIndex(libraryModal.slotIndex);
-      if (slotIndex >= referenceSlotLimit) {
+      const slotIndex = resolveTargetReferenceSlotIndex(preferredIndex ?? libraryModal.slotIndex);
+      if (slotIndex >= referenceSlotLimit || slotIndex < 0) {
         closeLibraryModal();
-        return;
+        return false;
       }
       const index = slotIndex;
       setReferenceSlots((previous) => {
@@ -364,6 +365,7 @@ export function useImageReferenceSlots({
         return next;
       });
       closeLibraryModal();
+      return true;
     },
     [
       closeLibraryModal,

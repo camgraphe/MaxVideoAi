@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState, type DragEvent, type ReactNode } from 'react';
+import { useMediaHandoff } from '@/components/library/useMediaHandoff';
 import { RecentMediaList } from '@/components/library/RecentMediaList.client';
 import { recentMediaCopy } from '@/components/library/recent-media-copy';
 import type { AssetFieldConfig } from '@/components/Composer';
@@ -24,13 +25,14 @@ export function WorkspaceRecentReferences({ userId, locale, engineId, engine, fi
   onInsert: (field: EngineInputField, asset: UserAsset, index?: number) => Promise<unknown>;
   children: (surface: { recentMedia: ReactNode; recentDropProps: RecentReferenceDropProps; refreshRecentMedia: () => void }) => ReactNode;
 }) {
+  const handoff = useMediaHandoff(userId, 'video');
   const [kind, setKind] = useState<'image' | 'video' | 'audio'>('image');
   const feed = useWorkspaceRecentMedia(userId, kind);
   const [selection, setSelection] = useState<Selection | null>(null);
   const drag = useRef<{ selection: Selection; token: string } | null>(null);
   const copy = recentMediaCopy(locale);
   const eligibleFields = getWorkspaceReferenceFields(fields, availability);
-  const selected = selection?.engineId === engineId ? resolveCurrentRecentAsset(selection, feed.scope, feed.assets) : null;
+  const selected = handoff.asset ?? (selection?.engineId === engineId ? resolveCurrentRecentAsset(selection, feed.scope, feed.assets) : null);
   const metadataNeeded = Boolean(selected && eligibleFields.some((entry) => !entry.disabled && entry.field.type === selected.kind &&
     getRecentReferenceIssue(selected, entry, inputAssets, inputSchema, mode, undefined, engine) === 'metadata'));
   const metadata = useWorkspaceRecentMetadata(selected, userId, metadataNeeded);
@@ -67,7 +69,7 @@ export function WorkspaceRecentReferences({ userId, locale, engineId, engine, fi
   return <>
     {children({ recentMedia, recentDropProps, refreshRecentMedia: feed.retry })}
     {selected ? <WorkspaceRecentRoleDialog key={`${selection?.scope}:${engineId}:${selected.id}`} asset={metadata.asset ?? selected} fields={eligibleFields} inputAssets={inputAssets}
-      inputSchema={inputSchema} engine={engine} mode={mode} locale={locale} metadataLoading={metadata.loading} metadataError={metadata.error} onMetadataRetry={metadata.retry} onClose={() => setSelection(null)}
+      inputSchema={inputSchema} engine={engine} mode={mode} locale={locale} metadataLoading={metadata.loading} metadataError={metadata.error} onMetadataRetry={metadata.retry} onClose={() => { setSelection(null); handoff.close(); }}
       onInsert={(entry, index) => onInsert(entry.field, metadata.asset ?? selected, index)} /> : null}
   </>;
 }

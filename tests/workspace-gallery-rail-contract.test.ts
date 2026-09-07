@@ -26,7 +26,7 @@ test('workspace video rail opens renders in the composite preview, not the group
   assert.match(cardMenuSource, /onClick=\{\(\)\s*=>\s*handleAction\('open'\)\}/);
   assert.doesNotMatch(cardMenuSource, /showGalleryActions[\s\S]*onClick=\{\(\)\s*=>\s*handleAction\('view'\)\}/);
 
-  assert.match(railCardsSource, /openLabel=\{feedType === 'video' \? 'Preview' : undefined\}/);
+  assert.match(railCardsSource, /openLabel=\{locale === 'fr' \? 'Aperçu' : locale === 'es' \? 'Vista previa' : 'Preview'\}/);
   assert.match(railCardsSource, /showOpenOverlay=\{false\}/);
   assert.match(railSource, /onGroupAction\(original,\s*'open',\s*\{\s*autoPlayPreview:\s*true\s*\}\)/);
 });

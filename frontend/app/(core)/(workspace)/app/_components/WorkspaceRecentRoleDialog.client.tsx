@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AppGlyph } from '@/components/app/AppGlyph';
-import { LibraryImageThumbnail } from '@/components/library/LibraryImageThumbnail.client';
 import type { AssetFieldConfig } from '@/components/Composer';
-import { recentMediaCopy, recentMediaFilename } from '@/components/library/recent-media-copy';
-import { useAccessibleModal } from '@/components/ui/useAccessibleModal';
+import { recentMediaCopy } from '@/components/library/recent-media-copy';
+import { mediaReferenceLabel } from '@/components/library/media-reference-label';
+import { MediaActionPanel } from '@/components/library/MediaActionPanel.client';
 import type { EngineCaps, EngineInputSchema, Mode } from '@/types/engines';
 import { getRecentReferenceIssue } from '../_lib/workspace-recent-media';
 import type { ReferenceAsset, UserAsset } from '../_lib/workspace-assets';
@@ -17,7 +17,6 @@ export function WorkspaceRecentRoleDialog({ asset, fields, inputAssets, inputSch
   onInsert: (entry: AssetFieldConfig, slotIndex?: number) => Promise<unknown>;
 }) {
   const copy = recentMediaCopy(locale);
-  const titleId = useId();
   const compatible = fields.filter(({ field }) => field.type === asset.kind);
   const [fieldId, setFieldId] = useState('');
   const [slot, setSlot] = useState('add');
@@ -27,24 +26,21 @@ export function WorkspaceRecentRoleDialog({ asset, fields, inputAssets, inputSch
   const entry = compatible.find(({ field }) => field.id === fieldId) ?? (compatible.length === 1 ? compatible[0] : null);
   const slotIndex = slot === 'add' ? undefined : Number(slot);
   const issue = entry ? getRecentReferenceIssue(asset, entry, inputAssets, inputSchema, mode, slotIndex, engine) : null;
-  const { dialogRef, onDialogKeyDown } = useAccessibleModal({ onClose });
   const disabledReason = entry?.disabled ? entry.disabledReason || copy.noRole : null;
-  return <div className="app-recent-modal-backdrop" onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-    <div ref={dialogRef} className="app-recent-role-dialog" role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1} onKeyDown={onDialogKeyDown}>
-      <header><h2 id={titleId}>{copy.use}</h2><button type="button" data-modal-initial-focus onClick={onClose}>{copy.close}</button></header>
-      <div className="app-recent-selected-media"><span className="app-recent-cover">{asset.kind === 'image' ? <LibraryImageThumbnail asset={asset} /> : <AppGlyph name={asset.kind} />}</span><span><strong>{copy[asset.kind]}</strong><small>{recentMediaFilename(asset.url, copy[asset.kind])}</small></span></div>
+  return <MediaActionPanel asset={asset} locale={locale} onClose={onClose}>
+    <div className="app-recent-role-dialog app-media-reference-body">
       {!compatible.length ? <p>{copy.noRole}</p> : <>
         {compatible.length <= 4 ? <fieldset className="app-recent-role-choices"><legend>{copy.role}</legend>
           {compatible.map((candidate) => <button type="button" key={candidate.field.id} aria-pressed={entry?.field.id === candidate.field.id}
             onClick={() => { setFieldId(candidate.field.id); setSlot('add'); }}>
-            <AppGlyph name="reference" /><span>{candidate.field.label}{candidate.required ? ` · ${copy.required}` : ''}</span>
+            <AppGlyph name="reference" /><span>{mediaReferenceLabel(candidate, locale, engine)}{candidate.required ? ` · ${copy.required}` : ''}</span>
           </button>)}
         </fieldset> : <label>{copy.role}<select value={entry?.field.id ?? ''} onChange={(event) => { setFieldId(event.target.value); setSlot('add'); }}>
           <option value="" disabled>{copy.role}</option>
-          {compatible.map((candidate) => <option key={candidate.field.id} value={candidate.field.id}>{candidate.field.label}{candidate.required ? ` · ${copy.required}` : ''}</option>)}
+          {compatible.map((candidate) => <option key={candidate.field.id} value={candidate.field.id}>{mediaReferenceLabel(candidate, locale, engine)}{candidate.required ? ` · ${copy.required}` : ''}</option>)}
         </select></label>}
         {entry ? <>
-          <p>{entry.field.label} · {copy[asset.kind]}{entry.required ? ` · ${copy.required}` : ''}{entry.field.maxCount ? ` · max. ${entry.field.maxCount}` : ''}</p>
+          <p>{mediaReferenceLabel(entry, locale, engine)} · {copy[asset.kind]}{entry.required ? ` · ${copy.required}` : ''}{entry.field.maxCount ? ` · max. ${entry.field.maxCount}` : ''}</p>
           {entry.field.description ? <p>{entry.field.description}</p> : null}
           {(inputAssets[entry.field.id] ?? []).some(Boolean) ? <label>{copy.slot}<select value={slot} onChange={(event) => setSlot(event.target.value)}>
             <option value="add">{copy.add}</option>
@@ -60,5 +56,5 @@ export function WorkspaceRecentRoleDialog({ asset, fields, inputAssets, inputSch
         }}>{pending ? copy.preparing : slot === 'add' ? copy.add : copy.replace}</button>
       </>}
     </div>
-  </div>;
+  </MediaActionPanel>;
 }
