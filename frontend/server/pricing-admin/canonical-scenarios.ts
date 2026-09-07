@@ -148,15 +148,26 @@ export function resolveCanonicalAdminScenarioPolicy(input: {
   return resolveScenarioPolicy(input.scenario, input.databaseRules);
 }
 
-export function quoteCanonicalAdminScenarios(input: {
+type QuoteCanonicalScenariosInput = {
   databaseRules: PricingPolicyRule[];
   scenarios?: PricingAuditScenario[];
   membershipDiscounts?: Partial<PricingMembershipDiscountMap>;
   requestedSurcharges?: RequestedPricingSurcharge[];
-}): AdminCanonicalScenarioOutcome[] {
+};
+
+const HISTORICAL_MEMBERSHIP_DISCOUNTS: PricingMembershipDiscountMap = {
+  member: 0,
+  plus: 0.05,
+  pro: 0.1,
+};
+
+function quoteCanonicalScenarios(
+  input: QuoteCanonicalScenariosInput,
+  projection: 'live' | 'historical',
+): AdminCanonicalScenarioOutcome[] {
   const policyDocument = getVersionedPricingPolicy();
   const profiles = new Map(policyDocument.compatibilityProfiles.map((profile) => [profile.id, profile]));
-  const membershipDiscounts = LIVE_MEMBERSHIP_DISCOUNTS;
+  const membershipDiscounts = projection === 'live' ? LIVE_MEMBERSHIP_DISCOUNTS : HISTORICAL_MEMBERSHIP_DISCOUNTS;
   const scenarios = input.scenarios ?? buildPricingAuditScenarios();
   const projectionScenarios = [
     ...scenarios,
@@ -241,7 +252,9 @@ export function quoteCanonicalAdminScenarios(input: {
           ...(surcharge ? { surcharge } : {}),
         };
       }
-      const membershipTier = LIVE_MEMBERSHIP_POLICY.tier;
+      const membershipTier = projection === 'live'
+        ? LIVE_MEMBERSHIP_POLICY.tier
+        : scenario.membershipTier ?? 'member';
       const quote = quoteCanonicalPricing({
         facts,
         scenario: {
@@ -265,6 +278,18 @@ export function quoteCanonicalAdminScenarios(input: {
       };
     })
     .sort((left, right) => left.scenarioId.localeCompare(right.scenarioId));
+}
+
+/** Active inventory and mutation previews always use the retired live membership policy. */
+export function quoteCanonicalAdminScenarios(input: QuoteCanonicalScenariosInput): AdminCanonicalScenarioOutcome[] {
+  return quoteCanonicalScenarios(input, 'live');
+}
+
+/** Frozen pre-retirement audit reproduction only; never use for an active quote or preview. */
+export function quoteHistoricalCanonicalAuditScenarios(
+  input: Omit<QuoteCanonicalScenariosInput, 'membershipDiscounts'>,
+): AdminCanonicalScenarioOutcome[] {
+  return quoteCanonicalScenarios(input, 'historical');
 }
 
 function quotesDiffer(current: AdminCanonicalScenarioQuote, proposed: AdminCanonicalScenarioQuote): boolean {

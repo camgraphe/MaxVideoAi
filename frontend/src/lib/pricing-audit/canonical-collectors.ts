@@ -1,5 +1,5 @@
 import {
-  quoteCanonicalAdminScenarios,
+  quoteHistoricalCanonicalAuditScenarios,
   resolveCanonicalAdminScenarioPolicy,
 } from '@/server/pricing-admin/canonical-scenarios';
 
@@ -26,7 +26,7 @@ export function collectCanonicalPricingOutputs(
   const scenarios = buildPricingAuditScenarios();
   const baselineById = new Map(baselineRows.map((row) => [row.scenarioId, row]));
   const canonicalById = new Map(
-    quoteCanonicalAdminScenarios({ databaseRules: [], scenarios }).map((outcome) => [outcome.scenarioId, outcome])
+    quoteHistoricalCanonicalAuditScenarios({ databaseRules: [], scenarios }).map((outcome) => [outcome.scenarioId, outcome])
   );
 
   return scenarios

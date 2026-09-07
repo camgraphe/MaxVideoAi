@@ -172,11 +172,11 @@ test('canonical shadow quotes match frozen outputs except the approved Gemini Om
   );
 });
 
-test('canonical audit delegates quote projection to the shared admin-safe projector', () => {
+test('canonical audit delegates to the explicit historical projector without changing the live admin default', () => {
   const collectorSource = readFileSync('frontend/src/lib/pricing-audit/canonical-collectors.ts', 'utf8');
   const projectorSource = readFileSync('frontend/server/pricing-admin/canonical-scenarios.ts', 'utf8');
 
-  assert.match(collectorSource, /quoteCanonicalAdminScenarios/);
+  assert.match(collectorSource, /quoteHistoricalCanonicalAuditScenarios/);
   assert.doesNotMatch(collectorSource, /quoteCanonicalPricing|resolvePricingPolicy|buildCanonicalPricingFacts|collectLegacyPricingOutputs/);
   assert.match(projectorSource, /buildCanonicalPricingFacts/);
   assert.match(projectorSource, /quoteCanonicalPricing/);
