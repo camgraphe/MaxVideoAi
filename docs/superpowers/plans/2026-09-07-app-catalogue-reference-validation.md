@@ -75,4 +75,10 @@ assert.equal(result[0].disabledReason, 'Model restriction');
 - [x] Mount actual components with controlled local assets to exercise the compatibility matrix without paid calls. Check light/dark, keyboard and touch-visible reasons, deletion/unlocking, popup handoff and exact callback identity. Capture before/after evidence and remove the complete temporary route before the build.
 - [x] Verify available connected wallet/history/catalogue/quote reads and existing validation/auth failure paths. Use existing disposable/fake-provider tests for accepted/pending/completed and invalid generation cases without billing. Distinguish this from actual provider success.
 - [x] Run focused checks first, then the full repository suite and production build if mode/input behavior changed. Preserve target-runtime and production-performance qualification limits.
-- [ ] Obtain final independent review of this lot from `8d431d688` to its final source commit. Resolve material findings with one final fix wave and scoped review. Keep the branch and preview available for validation.
+- [x] Obtain final independent review of this lot from `8d431d688` to its final source commit. Resolve material findings with one final fix wave and scoped review. Keep the branch and preview available for validation.
+
+## Completion
+
+The whole-lot review of `8d431d688..d1327aed9` found two app-validation gaps and one copy issue. The single final fix wave at `7f7ac5858` resolves mobile selected-model/variant readability, independent wallet loading/lifecycle, and count-neutral catalogue summaries. Scoped re-review passed with all findings addressed and no new breakage. Final validation at that source commit passed 4,448/4,448 tests and an 861-page production build. The branch and worktree remain isolated for user validation; no push, merge or deployment was performed.
+
+Local reports, captures, test logs and the guarded preview launcher are archived under `.superpowers/artifacts/2026-09-07-app-catalogue-validation/`. The temporary QA routes were removed before the final build. See the specification's qualification section for runtime, physical-device, storage and provider/payment limits.
