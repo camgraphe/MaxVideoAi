@@ -73,8 +73,8 @@
 
 **Fichiers :** tests existants des zones modifiées, nouveaux tests comportementaux si une interaction le nécessite ; `docs/engineering/app-experience.md` pour les frontières ; preuves privées sous `.superpowers/sdd/2026-09-07-app-experience-first-lot/qa/`.
 
-- [ ] Supprimer la route de fixture `frontend/app/(core)/api/experience-review/page.tsx` et déplacer le fixture hors du tsconfig de production.
-- [ ] Exécuter :
+- [x] Supprimer la route de fixture `frontend/app/(core)/api/experience-review/page.tsx` et déplacer le fixture hors du tsconfig de production.
+- [x] Exécuter :
 
 ```sh
 NODE_PATH="$PWD/frontend/node_modules" pnpm test:validate
@@ -85,10 +85,19 @@ pnpm --prefix frontend run i18n:check
 git diff --check
 ```
 
-- [ ] Build production avec les variables factices documentées dans `qa/task-5-baseline-loading.md` ; mesurer le candidat avec les mêmes 3 runs Lighthouse.
-- [ ] Corriger les régressions reproduites, puis revue indépendante du diff intégré. Ne pas présenter les fixtures comme une validation de l’auth ou des générations réelles.
-- [ ] Conserver captures + bilan des limites ; commits lisibles, branche isolée, aucune fusion ni publication.
+- [x] Build production avec les variables factices documentées dans `qa/task-5-baseline-loading.md` ; mesurer le candidat avec les mêmes 3 runs Lighthouse.
+- [x] Corriger les régressions reproduites, puis revue indépendante du diff intégré. Ne pas présenter les fixtures comme une validation de l’auth ou des générations réelles.
+- [x] Conserver captures + bilan des limites ; commits lisibles, branche isolée, aucune fusion ni publication.
 
 ## Critère de fin
 
 Le résultat présente une nouvelle composition reconnaissable sur les quatre familles d’écrans, des commandes réelles et les contrôles techniques passants. Une interface fonctionnelle mais visuellement quasi inchangée ne satisfait pas ce plan.
+
+## Livraison du premier lot
+
+- Refonte visuelle commitée dans `3447794ca`, périmètre de navigation corrigé dans `a97b3f501`.
+- Suite complète 4 365/4 365, puis 8/8 tests ciblés de la correction. Lint, exposition, i18n, TypeScript et build production final réussis.
+- Revue indépendante complète puis contre-revue de la correction : aucun finding P1/P2 restant.
+- Lighthouse local, mêmes trois runs que la référence : score médian 0,77 stable ; LCP 6 221 → 6 088 ms (plages recouvrantes), CLS 0,009177 → 0,002975. FCP 1 654 → 1 807 ms et +28 kB transférés : coût documenté de la nouvelle police. Aucune conclusion de performance terrain.
+- Preuves privées conservées dans `.superpowers/sdd/2026-09-07-app-experience-first-lot/qa/` : `validation.md`, `task-5-loading-comparison.md` et `review/index.html`. La revue contient les captures réelles et qualifie les données de test.
+- Aucun merge, push ou déploiement. Ce lot livre les surfaces applicatives listées ; la refonte du canevas Studio et l’assemblage enregistré de clips restent un lot distinct.
