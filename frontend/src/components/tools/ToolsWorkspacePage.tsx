@@ -1,64 +1,51 @@
 'use client';
 
-/* eslint-disable @next/next/no-img-element */
+import Image from 'next/image';
 import Link from 'next/link';
-import { Camera, Clapperboard, Eraser, Maximize2, Sparkles, Wrench } from 'lucide-react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
-import { ButtonLink } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { FEATURES } from '@/content/feature-flags';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { ToolCatalogueIllustration } from './ToolCatalogueIllustration';
+import styles from './tools-catalogue.module.css';
 
 const DEFAULT_TOOLS_COPY = {
-  "disabledTitle": "Tools are disabled",
-  "disabledBody": "Enable `FEATURES.workflows.toolsSection` to access this area.",
+  "disabledTitle": "Tools are unavailable",
+  "disabledBody": "Please check back later.",
   "eyebrow": "Workspace",
   "title": "Tools",
-  "subtitle": "Build reusable first-frame assets before launching image-to-video runs.",
+  "subtitle": "Prepare references. Refine your images and videos.",
   "characterEyebrow": "Character consistency",
-  "characterTitle": "Consistent Character Builder",
-  "characterBody": "Build a portrait anchor or an 8-panel character sheet with 4 full-body angles and 4 close-ups before reusing it in later image or video workflows.",
-  "characterBadge": "8-panel sheet",
+  "characterTitle": "Character Builder",
+  "characterBody": "Create a consistent character across eight views.",
+  "characterBadge": "Image",
   "storyboardEyebrow": "Reference boards",
-  "storyboardTitle": "Storyboard Tool",
-  "storyboardBody": "Generate a Storyboarder reference for Seedance and Kling. Use product, cooking, film, and animation boards for Seedance 2; use Kling when real people are required.",
-  "storyboardBadge": "Seedance + Kling",
+  "storyboardTitle": "Storyboard",
+  "storyboardBody": "Turn an idea into a visual shot sequence.",
+  "storyboardBadge": "Image",
   "angleEyebrow": "Perspective control",
   "angleTitle": "Angle / Perspective",
-  "angleBody": "Upload an image, adjust camera angle controls, and generate a first frame ready for image-to-video workflows.",
-  "angleBadge": "New viewpoint",
-  "upscaleEyebrow": "Resolution boost",
-  "upscaleTitle": "AI Upscale",
-  "upscaleBody": "Upscale images or short videos with SeedVR2, Topaz, FlashVSR, and Recraft before reusing them in later workflows.",
-  "upscaleBadge": "Image + video",
+  "angleBody": "Explore a new camera angle from one image.",
+  "angleBadge": "Image",
+  "open": "Open",
   "backgroundRemovalEyebrow": "Video cleanup",
-  "backgroundRemovalTitle": "Video Background Remover",
-  "backgroundRemovalBody": "Remove video backgrounds in MaxVideoAI, create green-screen-style cutouts, export alpha video, and reuse clean subjects.",
-  "backgroundRemovalBadge": "AI rotoscoping",
-  "open": "Open Tool"
+  "backgroundRemovalTitle": "Background Removal",
+  "backgroundRemovalBody": "Isolate a subject from its video background.",
+  "backgroundRemovalBadge": "Video",
+  "upscaleEyebrow": "Resolution boost",
+  "upscaleTitle": "Upscale",
+  "upscaleBody": "Increase the resolution of images and videos.",
+  "upscaleBadge": "Image + video"
 } as const;
 
-const CHARACTER_CARD_BACKGROUND_URL =
-  '/assets/tools/character-builder-workspace.png';
-const ANGLE_CARD_BACKGROUND_URL = '/assets/tools/angle-workspace.png';
-
-function ToolPreviewPanel({
-  children,
-  className = '',
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <div className={`relative overflow-hidden border-b border-border bg-surface-2/80 ${className}`}>
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.14),transparent_34%)]" />
-      {children}
-    </div>
-  );
-}
-
+const TOOLS = [
+  { key: 'character', href: '/app/tools/character-builder', covers: ['/assets/blog/character-builder/consistent-character-eight-panel-sheet.webp'] },
+  { key: 'storyboard', href: '/app/tools/storyboard', illustration: 'storyboard' },
+  { key: 'angle', href: '/app/tools/angle', covers: ['/assets/tools/angle-orbit-product-source.webp', '/assets/tools/angle-orbit-product-45.webp'] },
+  { key: 'upscale', href: '/app/tools/upscale', illustration: 'upscale' },
+  { key: 'backgroundRemoval', href: '/app/tools/background-removal', covers: ['/assets/tools/background-removal-product-cutout.webp'] },
+] as const;
 
 export default function ToolsPage() {
   const { loading: authLoading } = useRequireAuth({ redirectIfLoggedOut: false });
@@ -68,244 +55,45 @@ export default function ToolsPage() {
     ...((t('workspace.tools') ?? {}) as Partial<typeof DEFAULT_TOOLS_COPY>),
   };
 
-  if (authLoading) {
-    return (
-      <div className="flex min-h-screen flex-col bg-bg">
-        <HeaderBar />
-        <div className="flex flex-1 min-w-0 flex-col md:flex-row">
-          <AppSidebar />
-          <main className="flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
-            <div className="w-full animate-pulse rounded-card border border-border bg-surface p-8">
-              <div className="h-4 w-24 rounded bg-surface-2" />
-              <div className="mt-4 h-10 w-64 rounded bg-surface-2" />
-              <div className="mt-3 h-4 w-96 rounded bg-surface-2" />
-            </div>
-          </main>
-        </div>
-      </div>
-    );
-  }
-
-  if (!FEATURES.workflows.toolsSection) {
-    return (
-      <div className="flex min-h-screen flex-col bg-bg">
-        <HeaderBar />
-        <div className="flex flex-1 min-w-0 flex-col md:flex-row">
-          <AppSidebar />
-          <main className="flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
-            <div className="w-full rounded-card border border-border bg-surface p-6">
-              <h1 className="text-2xl font-semibold text-text-primary">{copy.disabledTitle}</h1>
-              <p className="mt-2 text-sm text-text-secondary">{copy.disabledBody}</p>
-            </div>
-          </main>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex min-h-screen flex-col bg-bg">
       <HeaderBar />
       <div className="flex flex-1 min-w-0 flex-col md:flex-row">
         <AppSidebar />
-        <main className="flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
-          <div className="w-full space-y-6">
-            <section className="rounded-card border border-border bg-surface p-6">
-              <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.eyebrow}</p>
-              <h1 className="mt-2 text-3xl font-semibold text-text-primary">{copy.title}</h1>
-              <p className="mt-2 max-w-2xl text-sm text-text-secondary">{copy.subtitle}</p>
-            </section>
-
-            <section className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
-              <Card className="overflow-hidden border border-border bg-surface p-0">
-                <ToolPreviewPanel className="aspect-[16/9] p-4">
-                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(15,23,42,0.06))]" />
-                  <div className="relative flex h-full items-center justify-center rounded-[18px] border border-border/80 bg-bg/70 p-3 shadow-[0_18px_40px_rgba(15,23,42,0.14)] backdrop-blur-sm">
-                    <img
-                      src={CHARACTER_CARD_BACKGROUND_URL}
-                      alt="Character Builder workspace preview"
-                      className="h-full w-full rounded-[14px] object-cover object-top"
-                    />
-                  </div>
-                </ToolPreviewPanel>
-                <div className="p-5">
-                  <div className="mb-4 flex items-center gap-3">
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-input bg-brand/10 text-brand">
-                      <Sparkles className="h-5 w-5" />
-                    </span>
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.characterEyebrow}</p>
-                      <h2 className="text-lg font-semibold text-text-primary">{copy.characterTitle}</h2>
+        <main className={`${styles.catalogue} app-scroll-surface overflow-y-auto`} aria-busy={authLoading}>
+          <header className={styles.heading}>
+            <h1>{!authLoading && !FEATURES.workflows.toolsSection ? copy.disabledTitle : copy.title}</h1>
+            <p>{!authLoading && !FEATURES.workflows.toolsSection ? copy.disabledBody : copy.subtitle}</p>
+          </header>
+          {authLoading ? (
+            <div className={styles.grid} aria-hidden="true">
+              {TOOLS.map(({ key }) => <div key={key} className={styles.skeleton} />)}
+            </div>
+          ) : FEATURES.workflows.toolsSection ? (
+            <ul className={styles.grid}>
+              {TOOLS.map((tool) => (
+                <li key={tool.key} className={styles.item}>
+                  <Link href={tool.href} prefetch={false} className={styles.tool} aria-labelledby={`${tool.key}-title ${tool.key}-open`}>
+                    <div className={`${styles.cover} ${'covers' in tool && tool.covers.length > 1 ? styles.pair : ''}`}>
+                      {'covers' in tool ? tool.covers.map((src) => (
+                        <div key={src} className={styles.image}>
+                          <Image src={src} alt="" fill loading="lazy" sizes={tool.covers.length > 1 ? '(max-width: 640px) 46vw, (max-width: 1050px) 22vw, 15vw' : '(max-width: 640px) 92vw, (max-width: 1050px) 44vw, 30vw'} />
+                        </div>
+                      )) : <ToolCatalogueIllustration kind={tool.illustration} />}
                     </div>
-                  </div>
-                  <p className="text-sm text-text-secondary">{copy.characterBody}</p>
-                  <div className="mt-5 flex items-center justify-between">
-                    <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs font-semibold text-text-secondary">
-                      <Sparkles className="h-3.5 w-3.5" />
-                      {copy.characterBadge}
-                    </span>
-                    <ButtonLink href="/app/tools/character-builder" variant="primary" linkComponent={Link}>
-                      {copy.open}
-                    </ButtonLink>
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="overflow-hidden border border-border bg-surface p-0">
-                <ToolPreviewPanel className="aspect-[16/9] p-4">
-                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(15,23,42,0.06))]" />
-                  <div className="relative grid h-full grid-cols-3 gap-2 rounded-[18px] border border-border/80 bg-bg/70 p-3 shadow-[0_18px_40px_rgba(15,23,42,0.14)] backdrop-blur-sm">
-                    {[CHARACTER_CARD_BACKGROUND_URL, ANGLE_CARD_BACKGROUND_URL, CHARACTER_CARD_BACKGROUND_URL].map((src, index) => (
-                      <div key={`${src}-${index}`} className="overflow-hidden rounded-[12px] border border-border bg-surface-2">
-                        <img
-                          src={src}
-                          alt=""
-                          className="h-full w-full object-cover object-top"
-                        />
+                    <div className={styles.caption}>
+                      <div className={styles.titleRow}>
+                        <h2 id={`${tool.key}-title`}>{copy[`${tool.key}Title`]}</h2>
+                        <span className={styles.kind}>{copy[`${tool.key}Badge`]}</span>
                       </div>
-                    ))}
-                  </div>
-                </ToolPreviewPanel>
-                <div className="p-5">
-                  <div className="mb-4 flex items-center gap-3">
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-input bg-brand/10 text-brand">
-                      <Clapperboard className="h-5 w-5" />
-                    </span>
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.storyboardEyebrow}</p>
-                      <h2 className="text-lg font-semibold text-text-primary">{copy.storyboardTitle}</h2>
+                      <p>{copy[`${tool.key}Body`]}</p>
+                      <span className={styles.open} id={`${tool.key}-open`}>{copy.open}<span aria-hidden="true">→</span></span>
                     </div>
-                  </div>
-                  <p className="text-sm text-text-secondary">{copy.storyboardBody}</p>
-                  <div className="mt-5 flex items-center justify-between">
-                    <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs font-semibold text-text-secondary">
-                      <Clapperboard className="h-3.5 w-3.5" />
-                      {copy.storyboardBadge}
-                    </span>
-                    <ButtonLink href="/app/tools/storyboard" variant="primary" linkComponent={Link}>
-                      {copy.open}
-                    </ButtonLink>
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="overflow-hidden border border-border bg-surface p-0">
-                <ToolPreviewPanel className="aspect-[16/9] p-4">
-                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(15,23,42,0.06))]" />
-                  <div className="relative flex h-full items-center justify-center rounded-[18px] border border-border/80 bg-bg/70 p-3 shadow-[0_18px_40px_rgba(15,23,42,0.14)] backdrop-blur-sm">
-                    <img
-                      src={ANGLE_CARD_BACKGROUND_URL}
-                      alt="Angle workspace preview"
-                      className="h-full w-full rounded-[14px] object-cover object-top"
-                    />
-                  </div>
-                </ToolPreviewPanel>
-                <div className="p-5">
-                  <div className="mb-4 flex items-center gap-3">
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-input bg-brand/10 text-brand">
-                      <Wrench className="h-5 w-5" />
-                    </span>
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.angleEyebrow}</p>
-                      <h2 className="text-lg font-semibold text-text-primary">{copy.angleTitle}</h2>
-                    </div>
-                  </div>
-                  <p className="text-sm text-text-secondary">{copy.angleBody}</p>
-                  <div className="mt-5 flex items-center justify-between">
-                    <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs font-semibold text-text-secondary">
-                      <Camera className="h-3.5 w-3.5" />
-                      {copy.angleBadge}
-                    </span>
-                    <ButtonLink href="/app/tools/angle" variant="primary" linkComponent={Link}>
-                      {copy.open}
-                    </ButtonLink>
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="overflow-hidden border border-border bg-surface p-0">
-                <ToolPreviewPanel className="aspect-[16/9] p-4">
-                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(15,23,42,0.06))]" />
-                  <div className="relative grid h-full grid-cols-2 gap-3 rounded-[18px] border border-border/80 bg-bg/70 p-3 shadow-[0_18px_40px_rgba(15,23,42,0.14)] backdrop-blur-sm">
-                    <div className="overflow-hidden rounded-[14px] border border-border bg-surface-2">
-                      <img
-                        src={ANGLE_CARD_BACKGROUND_URL}
-                        alt="Low resolution preview"
-                        className="h-full w-full scale-110 object-cover object-top blur-[1px]"
-                      />
-                    </div>
-                    <div className="overflow-hidden rounded-[14px] border border-border bg-surface-2">
-                      <img
-                        src={ANGLE_CARD_BACKGROUND_URL}
-                        alt="Upscaled preview"
-                        className="h-full w-full object-cover object-top"
-                      />
-                    </div>
-                  </div>
-                </ToolPreviewPanel>
-                <div className="p-5">
-                  <div className="mb-4 flex items-center gap-3">
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-input bg-brand/10 text-brand">
-                      <Maximize2 className="h-5 w-5" />
-                    </span>
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.upscaleEyebrow}</p>
-                      <h2 className="text-lg font-semibold text-text-primary">{copy.upscaleTitle}</h2>
-                    </div>
-                  </div>
-                  <p className="text-sm text-text-secondary">{copy.upscaleBody}</p>
-                  <div className="mt-5 flex items-center justify-between">
-                    <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs font-semibold text-text-secondary">
-                      <Maximize2 className="h-3.5 w-3.5" />
-                      {copy.upscaleBadge}
-                    </span>
-                    <ButtonLink href="/app/tools/upscale" variant="primary" linkComponent={Link}>
-                      {copy.open}
-                    </ButtonLink>
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="overflow-hidden border border-border bg-surface p-0">
-                <ToolPreviewPanel className="aspect-[16/9] p-4">
-                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(15,23,42,0.06))]" />
-                  <div className="relative grid h-full grid-cols-2 gap-3 rounded-[18px] border border-border/80 bg-bg/70 p-3 shadow-[0_18px_40px_rgba(15,23,42,0.14)] backdrop-blur-sm">
-                    <div className="overflow-hidden rounded-[14px] border border-border bg-surface-2">
-                      <img
-                        src={ANGLE_CARD_BACKGROUND_URL}
-                        alt="Source video preview"
-                        className="h-full w-full object-cover object-top"
-                      />
-                    </div>
-                    <div className="flex items-center justify-center overflow-hidden rounded-[14px] border border-border bg-[linear-gradient(45deg,#e5e7eb_25%,transparent_25%),linear-gradient(-45deg,#e5e7eb_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#e5e7eb_75%),linear-gradient(-45deg,transparent_75%,#e5e7eb_75%)] bg-[length:18px_18px] bg-[position:0_0,0_9px,9px_-9px,-9px_0px]">
-                      <div className="h-20 w-12 rounded-t-full bg-brand shadow-[0_12px_24px_rgba(59,130,246,0.28)]" />
-                    </div>
-                  </div>
-                </ToolPreviewPanel>
-                <div className="p-5">
-                  <div className="mb-4 flex items-center gap-3">
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-input bg-brand/10 text-brand">
-                      <Eraser className="h-5 w-5" />
-                    </span>
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.backgroundRemovalEyebrow}</p>
-                      <h2 className="text-lg font-semibold text-text-primary">{copy.backgroundRemovalTitle}</h2>
-                    </div>
-                  </div>
-                  <p className="text-sm text-text-secondary">{copy.backgroundRemovalBody}</p>
-                  <div className="mt-5 flex items-center justify-between">
-                    <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs font-semibold text-text-secondary">
-                      <Eraser className="h-3.5 w-3.5" />
-                      {copy.backgroundRemovalBadge}
-                    </span>
-                    <ButtonLink href="/app/tools/background-removal" variant="primary" linkComponent={Link}>
-                      {copy.open}
-                    </ButtonLink>
-                  </div>
-                </div>
-              </Card>
-            </section>
-          </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : null}
         </main>
       </div>
     </div>
