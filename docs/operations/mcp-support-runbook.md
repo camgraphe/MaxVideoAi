@@ -32,6 +32,7 @@ covers the previous 13-tool profile rather than the new direct-file path.
 | `paidGeneration` | true | Exact quotes and explicitly confirmed wallet-funded generations are public. |
 | `trial` | false | No promotional MCP trial is available. |
 | `referenceUploads` | true | Private reference-upload handoffs are public and use the production storage namespace. |
+| `montagePreparation` | false | Montage preparation remains unpublished and absent from default tool discovery. |
 
 Post-cutover validation items:
 

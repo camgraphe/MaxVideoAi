@@ -16,6 +16,7 @@ test('the common MCP publication source owns the approved production launch stat
     paidGeneration: true,
     trial: false,
     referenceUploads: true,
+    montagePreparation: false,
   };
 
   assert.deepEqual(mcpPublication, expected);

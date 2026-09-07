@@ -7,7 +7,8 @@
     "discovery": false,
     "paidGeneration": false,
     "trial": false,
-    "referenceUploads": false
+    "referenceUploads": false,
+    "montagePreparation": false
   },
   "preview": {
     "publicMarketing": true,
@@ -17,7 +18,8 @@
     "discovery": true,
     "paidGeneration": false,
     "trial": false,
-    "referenceUploads": false
+    "referenceUploads": false,
+    "montagePreparation": false
   },
   "enabled": {
     "publicMarketing": true,
@@ -27,6 +29,7 @@
     "discovery": true,
     "paidGeneration": true,
     "trial": true,
-    "referenceUploads": true
+    "referenceUploads": true,
+    "montagePreparation": false
   }
 }
