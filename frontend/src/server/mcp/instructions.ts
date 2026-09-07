@@ -1,6 +1,7 @@
 export type MaxVideoAiMcpInstructionCapabilities = {
   paidGeneration: boolean;
   referenceUploads: boolean;
+  montagePreparation?: boolean;
 };
 
 export function buildMaxVideoAiMcpInstructions(
@@ -51,6 +52,12 @@ export function buildMaxVideoAiMcpInstructions(
     );
   }
 
+  if (capabilities.montagePreparation) {
+    instructions.push(
+      'Use prepare_montage only for a caller-supplied semantic ordering of 2–12 owned ready videos. It validates frame-aligned trims and returns an edit plan; it does not inspect video contents, render, modify media, persist a Studio project, or return a Studio URL.',
+    );
+  }
+
   if (capabilities.paidGeneration) {
     instructions.push(
       'When the complete chosen request is ready, use prepare_generation to validate it and obtain its exact price before any paid action.',
@@ -78,4 +85,5 @@ export function buildMaxVideoAiMcpInstructions(
 export const MAXVIDEOAI_MCP_INSTRUCTIONS = buildMaxVideoAiMcpInstructions({
   paidGeneration: false,
   referenceUploads: false,
+  montagePreparation: false,
 });

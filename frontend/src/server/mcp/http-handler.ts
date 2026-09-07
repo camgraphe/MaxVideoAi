@@ -99,6 +99,7 @@ const AUDITABLE_TOOL_NAMES = new Set([
   'list_media',
   'create_reference_upload_link',
   'import_reference_files',
+  'prepare_montage',
 ]);
 
 function parseSseJsonRpcPayload(body: string): unknown {

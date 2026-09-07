@@ -6,5 +6,6 @@
   "discovery": true,
   "paidGeneration": true,
   "trial": false,
-  "referenceUploads": true
+  "referenceUploads": true,
+  "montagePreparation": false
 }
