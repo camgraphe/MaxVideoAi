@@ -92,7 +92,7 @@ function buildStressNodes(): StressWorkspaceNode[] {
             kind: 'video',
             filename: `perf_video_${index + 1}.mp4`,
             subtitle: 'Video · 6s',
-            url: '/assets/gallery/aerial-road.mp4',
+            url: '/media/mcp/project-demo/watch-wan-3-prime-scroll.mp4',
             thumbUrl: '/assets/placeholders/thumb-16x9.png',
             durationSec: 6,
             dimensions: '1920x1080',
@@ -190,7 +190,7 @@ function buildStressTimelineItems(): StressWorkspaceTimelineItem[] {
       linkedGroupKind: 'video-audio',
       mediaKind: 'video',
       hasEmbeddedAudio: true,
-      mediaUrl: '/assets/gallery/aerial-road.mp4',
+      mediaUrl: '/media/mcp/project-demo/watch-wan-3-prime-scroll.mp4',
       thumbnailUrl: '/assets/placeholders/thumb-16x9.png',
       modelId: 'seedance-2-0',
       status: 'completed',
@@ -272,6 +272,20 @@ test('stress fixture scrubs, drags, zooms, and pans without timing out', async (
   test.setTimeout(90_000);
   const errors = trackEditorClientErrors(page);
   const stressState = buildStressWorkspaceState();
+  const mediaRequests: string[] = [];
+  page.on('request', (request) => {
+    if (/\.(?:mp4|wav)(?:\?|$)/.test(request.url())) mediaRequests.push(new URL(request.url()).pathname);
+  });
+  // The anonymous local preview has no legal-document database. Mock only this
+  // unrelated server dependency; all editor rendering and media readers stay real.
+  await page.route('**/api/legal/cookies/version', (route) => route.fulfill({
+    status: 200, contentType: 'application/json',
+    body: JSON.stringify({ ok: true, version: 'studio-local-fixture', publishedAt: null }),
+  }));
+  await page.route('**/api/legal/cookies', (route) => route.fulfill({
+    status: 200, contentType: 'application/json',
+    body: JSON.stringify({ ok: true, version: 'studio-local-fixture' }),
+  }));
 
   await page.addInitScript((state) => {
     window.localStorage.setItem('maxvideoai.editor.workspace.v1', JSON.stringify(state));
@@ -281,6 +295,7 @@ test('stress fixture scrubs, drags, zooms, and pans without timing out', async (
 
   await openEditorWorkspace(page);
   await switchEditorFocus(page, 'Viewer');
+  const initialMediaRequests = mediaRequests.length;
 
   const persistedItemCount = await page.evaluate(() => {
     const parsed = JSON.parse(window.localStorage.getItem('maxvideoai.editor.workspace.v1') ?? '{}') as { timelineItems?: unknown[] };
@@ -288,6 +303,12 @@ test('stress fixture scrubs, drags, zooms, and pans without timing out', async (
   });
   expect(persistedItemCount).toBeGreaterThanOrEqual(STRESS_TIMELINE_ITEM_COUNT);
   await expect(page.locator('[data-timeline-item]').first()).toBeVisible();
+
+  await measureInteraction('first timeline Play on stress fixture', async () => {
+    await page.getByRole('button', { name: 'Play timeline', exact: true }).click();
+    await expect.poll(() => programPlayheadSec(page)).toBeGreaterThan(0.1);
+    await page.getByRole('button', { name: 'Pause timeline', exact: true }).click();
+  });
 
   await measureInteraction('timeline scrub on stress fixture', async () => {
     await setTimelineScrubber(page, 42);
@@ -334,4 +355,16 @@ test('stress fixture scrubs, drags, zooms, and pans without timing out', async (
   });
 
   assertNoEditorClientErrors(errors);
+  await test.info().attach('studio-stress-measurements', {
+    body: JSON.stringify({
+      fixture: { nodes: STRESS_NODE_COUNT, timelineItems: STRESS_TIMELINE_ITEM_COUNT },
+      viewport: page.viewportSize(),
+      environment: 'local Next development server; fresh browser context; mocked account/persistence/legal APIs',
+      initialMediaRequests,
+      totalMediaRequests: mediaRequests.length,
+      mediaRequestPaths: [...new Set(mediaRequests)],
+      interactions: test.info().annotations.filter((annotation) => annotation.type === 'perf'),
+    }, null, 2),
+    contentType: 'application/json',
+  });
 });
