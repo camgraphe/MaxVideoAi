@@ -280,7 +280,11 @@
 .app-experience .app-reference-command-media img { width: 100%; height: 100%; object-fit: cover; border-radius: 3px; }
 .app-experience .app-reference-command-media .app-reference-command-status { position: absolute; right: -3px; bottom: -3px; display: grid; place-items: center; width: 12px; height: 12px; border-radius: 50%; background: var(--app-panel); color: var(--app-accent); font-size: 10px; line-height: 1; }
 .app-experience .app-reference-command[aria-expanded="true"] { background: var(--app-accent-soft); border-color: var(--app-accent); }
+.app-experience .app-reference-command.is-add-disabled { border-color: var(--app-line); color: var(--app-muted); }
+.app-experience .app-reference-command.is-add-disabled:not(:disabled) { border-style: dashed; }
 .app-experience .app-reference-command small { color: var(--app-muted); font-size: 10px; }
+.app-experience .app-reference-restrictions { display: grid; gap: 2px; margin-top: 4px; color: var(--app-muted); font-size: 11px; line-height: 1.35; overflow-wrap: anywhere; }
+.app-experience .app-reference-restrictions p { margin: 0; }
 .app-experience .app-reference-required { margin-top: 4px; font-size: 11px; color: var(--app-muted); overflow-wrap: anywhere; }
 .app-experience .app-reference-selected-summary { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding-top: 6px; }
 .app-experience .app-reference-selected-summary button { display: inline-flex; align-items: center; gap: 6px; min-width: 0; max-width: 180px; }

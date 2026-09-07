@@ -25,7 +25,7 @@ export function getWorkspaceReferenceFields(fields: AssetFieldConfig[], options:
   const { inputAssets, isUnifiedSeedance, isUnifiedKlingO3, klingO3VideoToVideoSupported, hasAnyVideoInput,
     guestUploadLockedReason, workflowCopy, showOmniStudioPanel, showLumaRay32KeyframeEditor } = options;
   return fields.filter(({ field }) => !showOmniStudioPanel && !(showLumaRay32KeyframeEditor && LUMA_CUSTOM_ASSETS.has(field.id))).map((entry) => {
-      const fieldHasOwnAssets = (inputAssets[entry.field.id] ?? []).some((asset) => asset !== null);
+      const fieldHasOwnAssets = (inputAssets[entry.field.id] ?? []).some((asset) => asset != null);
       const blockKey = isUnifiedSeedance
         ? getSeedanceFieldBlockKey(entry.field.id, inputAssets, fieldHasOwnAssets)
         : null;
@@ -41,8 +41,18 @@ export function getWorkspaceReferenceFields(fields: AssetFieldConfig[], options:
           : isUnifiedKlingO3 && hasAnyVideoInput && isKlingO3FrameFieldId(entry.field.id)
             ? KLING_O3_VIDEO_FRAME_IGNORED_MESSAGE
             : null;
-      const disabledReason = klingO3DisabledReason ?? workflowDisabledReason ?? guestUploadLockedReason;
-    return { ...entry, disabled: Boolean(disabledReason), disabledReason,
-      disabledPresentation: disabledReason && disabledReason === guestUploadLockedReason ? 'auth-lock' : 'default' };
+      const derivedDisabledReason = klingO3DisabledReason ?? workflowDisabledReason ?? guestUploadLockedReason;
+      const preservesIncomingRestriction = entry.disabled === true;
+      const disabledReason = preservesIncomingRestriction
+        ? entry.disabledReason ?? derivedDisabledReason
+        : derivedDisabledReason;
+    return {
+      ...entry,
+      disabled: preservesIncomingRestriction || Boolean(derivedDisabledReason),
+      disabledReason,
+      disabledPresentation: disabledReason && disabledReason === guestUploadLockedReason
+        ? 'auth-lock'
+        : entry.disabledPresentation ?? 'default',
+    };
   });
 }
