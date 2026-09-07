@@ -1,20 +1,30 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { consumeMediaHandoff, type MediaDestination } from '@/lib/media-handoff';
 import type { AssetBrowserAsset } from './AssetLibraryBrowser';
 
-/** One pending original per tab, account and destination; no draft mutation until confirmation. */
+/** One pending original per tab and exact navigation scope; arrival never mutates a draft. */
 export function useMediaHandoff(userId: string | null | undefined, destination: MediaDestination) {
   const params = useSearchParams();
   const token = params?.get('media');
-  const [pending, setPending] = useState<{ userId: string; asset: AssetBrowserAsset } | null>(null);
+  const scope = userId && token ? JSON.stringify([userId, destination, token]) : null;
+  const [pending, setPending] = useState<{ scope: string; asset: AssetBrowserAsset } | null>(null);
+  // StrictMode replays effects after the storage value has already been consumed.
+  const attemptedScope = useRef<string | null>(null);
   useEffect(() => {
-    if (!userId || !token) return;
+    if (attemptedScope.current === scope) return;
+    attemptedScope.current = scope;
+    setPending(null);
+    if (!scope || !userId || !token) return;
     try {
       const asset = consumeMediaHandoff(window.sessionStorage, userId, destination, token);
-      if (asset) setPending({ userId, asset });
+      if (asset) setPending({ scope, asset });
     } catch { /* Storage can be unavailable; no media is inserted. */ }
-  }, [userId, destination, token]);
-  return { asset: pending && pending.userId === userId ? pending.asset : null, close: () => setPending(null) };
+  }, [scope, userId, destination, token]);
+  return {
+    // Hide stale media during render, before the invalidating effect runs.
+    asset: pending?.scope === scope ? pending?.asset ?? null : null,
+    close: () => setPending((current) => current?.scope === scope ? null : current),
+  };
 }

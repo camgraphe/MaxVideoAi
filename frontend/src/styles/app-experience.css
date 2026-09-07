@@ -370,9 +370,9 @@
 .app-experience .app-media-collection .app-library-heading { padding-bottom: 16px; gap: 14px; }
 .app-experience .app-media-collection .app-library-heading p { display: none; }
 .app-experience .app-media-filters { width: 100%; display: grid; grid-template-columns: minmax(180px, 360px) minmax(160px, 240px); gap: 12px; align-items: end; }
-.app-experience .app-media-source-filter > p, .app-experience .app-media-source-filter > [role="group"] { display: none; }
-.app-experience .app-media-source-filter > label { display: flex; }
-.app-experience .app-media-source-filter > label > span { display: none; }
+.app-experience .app-media-collection .app-media-source-filter > p, .app-experience .app-media-collection .app-media-source-filter > [role="group"] { display: none; }
+.app-experience .app-media-collection .app-media-source-filter > label { display: flex; }
+.app-experience .app-media-collection .app-media-source-filter > label > span { display: none; }
 .app-experience .app-media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 22px 16px; }
 .app-experience .app-media-collection .app-library-asset { border-radius: 12px; }
 .app-experience .app-media-collection .app-library-asset > div:first-child { aspect-ratio: 4 / 3 !important; border-radius: 12px; overflow: hidden; }
