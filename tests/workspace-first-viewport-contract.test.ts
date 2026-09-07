@@ -104,29 +104,17 @@ test('workspace mobile settings wrap with touch targets and visible dropdown aff
   assert.doesNotMatch(composerSource, /overflow-x-auto|scrollbar-width:none/, 'essential controls cannot depend on hidden scrollbars');
 });
 
-test('workspace solo assets stretch while workspace-only vertical density exposes advanced controls', () => {
+test('workspace references delegate compact semantics while default consumers retain their layout', () => {
   assert.match(assetDropzoneSource, /density\?: 'default' \| 'compact' \| 'workspace'/);
-  assert.match(assetDropzoneSource, /const workspaceDensity = density === 'workspace'/);
-  assert.match(assetDropzoneSource, /const shouldLimitSoloWidth = isSoloField && displaySlots\.length === 1 && !workspaceDensity/);
-  assert.match(composerSource, /density=\{workspaceDensity \? 'workspace' : 'default'\}/);
-  assert.match(composerSource, /getWorkspaceAssetGridClass\(orderedAssetFields\.length\)/);
-  assert.match(composerSource, /!workspaceDensity && field\.maxCount/);
-  assert.match(composerSource, /workspaceDensity \? 'space-y-2' : 'space-y-4'/);
-  assert.match(composerSource, /workspaceDensity[\s\S]*min-h-\[164px\][\s\S]*resize-y/);
-  assert.match(composerSource, /workspaceDensity \? 'h-9' : 'h-11'/);
-  assert.match(composerSource, /workspaceDensity \? 'space-y-2 border-t[\s\S]*pt-2/);
-  assert.match(composerSource, /workspaceDensity \? 'flex-wrap gap-2 pb-2 pt-3'/);
-  assert.match(composerSource, /workspaceDensity \? 'px-3 py-1' : 'px-4 py-3'/);
-  assert.match(assetDropzoneSource, /workspaceDensity=\{workspaceDensity\}/);
-  assert.match(assetDropzoneSource, /workspaceDensity && 'h-full min-h-\[150px\]'/);
-  assert.match(assetDropzoneSource, /workspaceDensity && 'app-reference-surface h-full'/);
-  assert.match(assetDropzoneSource, /workspaceDensity && !fullBleedSingleAsset && \(disabled \? 'min-h-8' : 'h-8'\)/);
-  assert.match(assetDropzoneSource, /workspaceDensity && !fullBleedSingleAsset && 'min-h-0 flex-1'/);
-  assert.match(assetDropzoneSource, /visibleHelperText \|\| isCollectionField \|\| workspaceDensity/);
-  assert.match(assetDropzoneSource, /workspaceDensity && !fullBleedSingleAsset && 'flex h-8 items-end'/);
-  assert.match(assetDropzoneSlotSource, /'min-h-\[96px\] h-full rounded-\[12px\] border-0 bg-transparent'/);
-  assert.match(assetDropzoneSlotSource, /workspaceDensity && isLockedEmptySlot[\s\S]*'h-10 w-10'/);
-  assert.match(assetDropzoneSlotSource, /workspaceDensity && isLockedEmptySlot \? 'gap-2'/);
+  assert.match(assetDropzoneSource, /getWorkspaceReferenceSlots/);
+  assert.match(assetDropzoneSource, /if \(workspaceDensity\)/);
+  assert.match(assetDropzoneSource, /app-reference-field/);
+  assert.match(composerSource, /<WorkspaceReferenceSection/);
+  assert.match(composerSource, /<ComposerReferenceFields/);
+  assert.match(composerSource, /workspaceDensity[\s\S]*min-h-\[96px\][\s\S]*resize-y/);
+  assert.match(assetDropzoneSlotSource, /if \(props\.workspaceDensity\) return <WorkspaceAssetSlot/);
+  assert.match(composerSource, /workspaceDensity \? composerToolbar : null/);
+  assert.match(composerSource, /!workspaceDensity \? composerToolbar : null/);
 });
 
 test('workspace preview and image prompt density stay opt-in without changing shared defaults', () => {
@@ -135,10 +123,10 @@ test('workspace preview and image prompt density stay opt-in without changing sh
   assert.match(imageSurfaceSource, /<Composer[\s\S]*compactPrompt/);
   assert.match(composerTypesSource, /compactPrompt\?: boolean/);
   assert.match(composerSource, /hidden=\{workspaceDensity && !visibleModeToggles/);
-  assert.match(composerSource, /rows=\{workspaceDensity \? 5 : compactPrompt \? 2 : 6\}/);
-  assert.match(composerSource, /min-h-\[164px\]/);
+  assert.match(composerSource, /rows=\{workspaceDensity \? 3 : compactPrompt \? 2 : 6\}/);
+  assert.match(composerSource, /min-h-\[96px\]/);
   assert.doesNotMatch(composerSource, /sm:h-10 sm:min-h-0/);
-  assert.match(composerSource, /density=\{workspaceDensity \? 'workspace' : 'default'\}/);
+  assert.match(composerSource, /<WorkspaceReferenceSection/);
   assert.match(composerSource, /workspaceDensity \? 'px-3 py-1' : 'px-4 py-3'/);
   assert.match(composerSource, /!min-h-11 gap-3[\s\S]*lg:min-w-\[176px\]/);
   assert.match(compositePreviewSource, /density\?: 'default' \| 'workspace'/);
@@ -185,7 +173,7 @@ test('workspace density never changes route order by authentication state', () =
 });
 
 // The empty editor must never flash a large player before the form becomes usable.
-test('empty workspaces keep their model chooser and boot heading without a player', () => {
+test('empty workspaces keep their model chooser and illustrated result frame without a media reader', () => {
   const boot = readFileSync('frontend/app/(core)/(workspace)/app/_components/WorkspaceBootSkeletons.tsx', 'utf8');
   const bootSurface = readFileSync('frontend/app/(core)/(workspace)/app/_components/WorkspaceBootSurface.tsx', 'utf8');
   assert.match(videoPreviewSource, /if \(!group && !isLoading\)/);
@@ -193,4 +181,8 @@ test('empty workspaces keep their model chooser and boot heading without a playe
   assert.match(boot, /if \(!posterSrc\)/);
   assert.match(videoShellSource, /<WorkspaceCreationHeading/);
   assert.match(bootSurface, /<WorkspaceCreationHeading/);
+  assert.match(videoPreviewSource, /<WorkspaceEmptyPreview media="video"/);
+  assert.match(imageSurfaceSource, /<WorkspaceEmptyPreview media="image"/);
+  const empty = readFileSync('frontend/components/composer/WorkspaceEmptyPreview.client.tsx', 'utf8');
+  assert.doesNotMatch(empty, /<video|<audio|<img|https?:/);
 });

@@ -1,6 +1,6 @@
 'use client';
 
-import { AudioLines, ChevronDown, Clock3, Coins } from 'lucide-react';
+import { AudioLines, Clock3, Coins } from 'lucide-react';
 
 import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
@@ -24,7 +24,7 @@ export function AudioGenerationDock({
   priceLabel: string;
 }) {
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[80] border-t border-hairline bg-bg px-4 py-3 shadow-[0_-18px_44px_rgba(15,23,42,0.08)] md:left-[188px] lg:px-7 xl:right-[332px]">
+    <div className="app-audio-generation-dock fixed bottom-0 left-0 right-0 z-30 border-t border-hairline bg-bg px-4 py-3 shadow-[0_-18px_44px_rgba(15,23,42,0.08)] lg:px-7">
       <div className="mx-auto flex w-full max-w-[980px] flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-2">
           {durationLabel ? (
@@ -62,19 +62,10 @@ export function AudioGenerationDock({
               size="lg"
               onClick={onGenerate}
               disabled={!canGenerate}
-              className="min-w-0 flex-1 rounded-r-none sm:min-w-[210px]"
+              className="min-w-0 flex-1 rounded-input sm:min-w-[210px]"
             >
               <UIIcon icon={AudioLines} size={18} />
               {copy.pricing.generate}
-            </Button>
-            <Button
-              type="button"
-              size="lg"
-              disabled={!canGenerate}
-              aria-label="Audio generation options"
-              className="rounded-l-none border-l border-white/25 px-3"
-            >
-              <ChevronDown className="h-4 w-4" aria-hidden />
             </Button>
           </div>
         </div>

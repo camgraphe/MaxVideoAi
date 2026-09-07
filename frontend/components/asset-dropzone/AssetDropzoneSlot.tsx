@@ -2,6 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import clsx from 'clsx';
+import { WorkspaceAssetSlot } from './WorkspaceAssetSlot.client';
 import type { ChangeEvent, ClipboardEvent, DragEvent, KeyboardEvent } from 'react';
 import { Lock, Trash2, X } from 'lucide-react';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
@@ -11,8 +12,9 @@ import { AssetMediaPickerMenu } from './AssetMediaPickerMenu';
 import type { AssetSlotAttachment } from './asset-dropzone-types';
 import { useExclusiveMediaPicker } from './useExclusiveMediaPicker';
 type AssetDropzoneCopy = ReturnType<typeof getLocalizedAssetDropzoneCopy>;
-type AssetDropzoneSlotProps = {
+export type AssetDropzoneSlotProps = {
   accept: string;
+  mediaKind?: 'image' | 'video' | 'audio';
   asset: AssetSlotAttachment | null;
   assetCopy: AssetDropzoneCopy;
   canOpenLibrary: boolean;
@@ -39,7 +41,11 @@ type AssetDropzoneSlotProps = {
   onRemoveSlot: (slotIndex: number) => void;
   onSelectFileSlot: (slotIndex: number) => void;
 };
-export function AssetDropzoneSlot({
+export function AssetDropzoneSlot(props: AssetDropzoneSlotProps) {
+  if (props.workspaceDensity) return <WorkspaceAssetSlot {...props} />;
+  return <DefaultAssetDropzoneSlot {...props} />;
+}
+function DefaultAssetDropzoneSlot({
   accept,
   asset,
   assetCopy,

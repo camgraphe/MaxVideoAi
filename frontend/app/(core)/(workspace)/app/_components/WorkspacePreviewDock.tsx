@@ -2,6 +2,7 @@
 
 import type { Dispatch, SetStateAction } from 'react';
 import dynamic from 'next/dynamic';
+import { WorkspaceEmptyPreview } from '@/components/composer/WorkspaceEmptyPreview.client';
 import { EngineSettingsBar } from '@/components/EngineSettingsBar';
 import type { CompositePreviewDockProps } from '@/components/groups/CompositePreviewDock';
 import type { EngineCaps, Mode } from '@/types/engines';
@@ -82,11 +83,11 @@ export function WorkspacePreviewDock({
           density="compact"
         />
   );
-  // No preview means no player placeholder: keep creation controls stable at boot.
+  // A local illustration reserves the result location without mounting a media reader.
   if (!group && !isLoading) {
-    return <section className="app-model-strip rounded-card border border-border bg-surface shadow-card">
+    return <><section className="app-model-strip rounded-card border border-border bg-surface shadow-card">
       <div className="px-4 py-1">{engineSettings}</div>
-    </section>;
+    </section><WorkspaceEmptyPreview media="video" /></>;
   }
 
   return (

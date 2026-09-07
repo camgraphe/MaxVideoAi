@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ComponentProps, Dispatch, SetStateAction } from 'react';
 import dynamic from 'next/dynamic';
+import { WorkspaceOptionsButton } from '@/components/composer/WorkspaceOptionsButton.client';
 import { Composer, type ComposerPromotedAction, type MultiPromptScene } from '@/components/Composer';
 import { CoreIterationsControl, CoreSettingsBar } from '@/components/CoreSettingsBar';
 import { SettingsControls } from '@/components/SettingsControls';
@@ -276,6 +277,7 @@ export function WorkspaceComposerSurface({
   handleOpenKlingAssetLibrary,
   setViewMode,
 }: WorkspaceComposerSurfaceProps) {
+  const [optionsOpen, setOptionsOpen] = useState(false);
   const [storyboardModalOpen, setStoryboardModalOpen] = useState(false);
   const klingO3AssetState = useMemo(
     () => getKlingO3AssetState({ inputAssets, klingElements }),
@@ -483,6 +485,7 @@ export function WorkspaceComposerSurface({
       ) : null}
       <Composer
         density="workspace"
+        optionsControl={<WorkspaceOptionsButton open={optionsOpen} onToggle={() => setOptionsOpen((value) => !value)} />}
         engine={selectedEngine}
         prompt={prompt}
         onPromptChange={setPrompt}
@@ -491,6 +494,7 @@ export function WorkspaceComposerSurface({
         price={price}
         currency={currency}
         isLoading={isPricing || isSubmitting}
+        isPricing={isPricing}
         error={preflightError}
         messages={preflight?.ok ? preflight.messages : undefined}
         textareaRef={composerRef}
@@ -594,6 +598,7 @@ export function WorkspaceComposerSurface({
               />
             ) : null}
             <SettingsControls
+              advancedOpen={optionsOpen}
               engine={selectedEngine}
               caps={capability}
               durationSec={durationSec}

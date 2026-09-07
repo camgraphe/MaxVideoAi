@@ -4,6 +4,9 @@ import type { FormEvent } from 'react';
 import { WorkspaceCreationHeading } from '../../_components/WorkspaceCreationHeading';
 import type { EngineCaps } from '@/types/engines';
 import type { ImageGenerationMode } from '@/types/image-generation';
+import { WorkspaceEmptyPreview } from '@/components/composer/WorkspaceEmptyPreview.client';
+import { WorkspaceOptionsButton } from '@/components/composer/WorkspaceOptionsButton.client';
+import { useState } from 'react';
 import { Composer, type AssetFieldConfig, type ComposerAttachment } from '@/components/Composer';
 import { ImageAdvancedSettings } from '@/components/ImageAdvancedSettings';
 import { ImageCountControl, ImageSettingsBar } from '@/components/ImageSettingsBar';
@@ -221,11 +224,12 @@ export function ImageWorkspaceComposerSurface({
             />
           </div>
   );
+  const [optionsOpen, setOptionsOpen] = useState(false);
   return (
     <div className="flex flex-col gap-1">
       <WorkspaceCreationHeading media="image" />
       {!compositePreviewEntry ? (
-        <section className="app-model-strip rounded-card border border-border bg-surface px-4 py-1 shadow-card">{engineSettings}</section>
+        <><section className="app-model-strip rounded-card border border-border bg-surface px-4 py-1 shadow-card">{engineSettings}</section><WorkspaceEmptyPreview media="image" /></>
       ) : <ImageCompositePreviewDock
         density="workspace"
         entry={compositePreviewEntry}
@@ -266,6 +270,7 @@ export function ImageWorkspaceComposerSurface({
 
         <Composer
           density="workspace"
+          optionsControl={(showSeedControl || showThinkingLevelControl || showCustomImageSizeControl || showMaskUrlControl || showEnableWebSearchControl || showLimitGenerationsControl || showWatermarkControl) ? <WorkspaceOptionsButton open={optionsOpen} onToggle={() => setOptionsOpen((value) => !value)} /> : undefined}
           compactPrompt
           engine={selectedEngineCaps}
           prompt={prompt}
@@ -362,6 +367,7 @@ export function ImageWorkspaceComposerSurface({
           extraFields={
             <div className="space-y-6">
               <ImageAdvancedSettings
+                open={optionsOpen}
                 title={advancedSettingsTitle}
                 seed={
                   showSeedControl

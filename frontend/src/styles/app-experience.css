@@ -120,3 +120,100 @@
 
 .app-experience .app-mobile-menu nav > div:first-child { border: 0; border-radius: 0; background: transparent; padding: 0; }
 .app-experience .app-account-panel form > div:first-child { border: 0; padding: 0; }
+
+/* Creation workbench: progressive inputs and an independent command row. */
+.app-experience .app-workspace-main { padding: 16px 24px; gap: 12px; }
+.app-experience .app-creation-heading { align-items: center; padding-bottom: 8px; }
+.app-experience .app-creation-heading h1 { font-size: 23px; }
+.app-experience .app-model-strip { padding-bottom: 4px; }
+.app-experience .app-empty-preview { display: flex; align-items: center; justify-content: center; gap: 14px; min-height: 106px; padding: 14px; border: 1px solid var(--app-line); border-radius: 7px; color: var(--app-muted); background: var(--app-panel); }
+.app-experience .app-empty-preview-frame { display: grid; place-items: center; width: 76px; height: 48px; border: 1px solid var(--app-line); border-radius: 4px; }
+.app-experience .app-empty-preview-frame svg { width: 26px; height: 26px; color: var(--app-accent); }
+.app-experience .app-workspace-references { padding: 3px 0; }
+.app-experience .app-reference-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px; }
+.app-experience .app-reference-heading > span { display: flex; align-items: center; gap: 8px; font-weight: 550; }
+.app-experience .app-workspace-references button, .app-experience .app-reference-guidance summary { min-height: 44px; border-radius: 5px; padding: 6px 9px; font-size: 12px; }
+.app-experience .app-workspace-references button { border: 1px solid var(--app-line); background: var(--app-panel); }
+.app-experience .app-workspace-references button:disabled { opacity: .55; cursor: not-allowed; }
+.app-experience .app-reference-frames { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 4px 0; }
+.app-experience .app-reference-collections { display: grid; gap: 8px; }
+.app-experience .app-reference-field { min-width: 0; border-top: 1px solid var(--app-line); padding: 6px 0; }
+.app-experience .app-reference-frames .app-reference-field { border: 1px solid var(--app-line); border-radius: 5px; padding: 8px; }
+.app-experience .app-reference-field-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; }
+.app-experience .app-reference-field-heading strong { font-weight: 550; }
+.app-experience .app-reference-field-heading small, .app-experience .app-reference-slot-label small { color: var(--app-muted); font-size: 11px; }
+.app-experience .app-reference-slots { display: flex; flex-wrap: wrap; gap: 8px; }
+.app-experience .app-workspace-asset-slot { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; min-width: 0; width: 100%; padding-top: 5px; }
+.app-experience .app-workspace-asset-slot > svg { flex: none; width: 36px; height: 36px; padding: 7px; border: 1px dashed var(--app-line); border-radius: 4px; color: var(--app-accent); }
+.app-experience .app-reference-slot-label { display: grid; flex: 1; min-width: 70px; font-size: 11px; overflow-wrap: anywhere; }
+.app-experience .app-reference-slot-actions { display: flex; flex-wrap: wrap; gap: 4px; }
+.app-experience .app-reference-media { min-width: 0; max-width: 100%; }
+.app-experience .app-reference-media img { width: 52px; height: 52px; object-fit: cover; border-radius: 4px; }
+.app-experience .app-reference-media video { width: 200px; height: 112px; object-fit: contain; border-radius: 4px; }
+.app-experience .app-reference-media:has(audio) { flex-basis: 100%; }
+.app-experience .app-reference-media audio { width: 100%; height: 54px; }
+.app-experience .app-reference-guidance { font-size: 11px; color: var(--app-muted); }
+.app-experience .app-reference-guidance summary { display: flex; align-items: center; width: fit-content; padding-left: 0; cursor: pointer; }
+.app-experience .app-reference-guidance summary::before { content: '+'; padding-right: 6px; }
+.app-experience .app-reference-guidance[open] summary::before { content: '−'; }
+.app-experience .app-reference-guidance p { margin: 4px 0; }
+.app-experience .app-reference-disabled { font-size: 11px; color: var(--app-muted); margin-top: 4px; }
+.app-experience .app-reference-inventory { max-height: min(420px, 55svh); overflow-y: auto; padding: 4px; border-bottom: 1px solid var(--app-line); scrollbar-gutter: stable; }
+.app-experience .app-prompt-surface { border-radius: 7px; }
+.app-experience .app-prompt-surface:focus-within { box-shadow: inset 0 0 0 2px var(--app-accent); }
+.app-experience .app-prompt-heading { padding: 8px 12px 0; align-items: center; }
+.app-experience .app-prompt-heading label { font-size: 13px; font-weight: 550; text-transform: none; letter-spacing: 0; color: var(--app-ink); }
+.app-experience [data-workspace-prompt] { display: block; height: 96px; min-height: 96px; max-height: 240px; padding: 9px 12px 12px; font-size: 15px; line-height: 1.5; border-radius: 7px; }
+.app-experience .app-prompt-heading button { min-height: 44px !important; }
+.app-experience .app-composer-toolbar { margin-top: 8px; padding: 8px 0; background: var(--app-canvas); }
+.app-experience .app-composer-toolbar > div { flex-wrap: wrap; gap: 8px; }
+.app-experience .app-composer-toolbar button { min-height: 44px !important; }
+.app-experience .app-composer-toolbar [aria-haspopup="listbox"] { border: 1px solid var(--app-line); background: var(--app-panel); }
+.app-experience .app-options-button { display: inline-flex; align-items: center; align-self: flex-start; gap: 7px; flex: none; min-height: 44px; border: 1px solid var(--app-accent); background: var(--app-accent-soft); color: var(--app-accent); padding: 8px 12px; border-radius: 5px; font-size: 13px; font-weight: 550; }
+.app-experience .app-quote-status { max-width: 80px; font-size: 11px; color: var(--app-muted); }
+.app-experience .app-mode-switch { margin-bottom: 6px; gap: 14px; }
+.app-experience .app-audio-workbench { padding-top: 14px; }
+.app-experience .app-audio-workbench > div:first-child { gap: 12px; padding-bottom: 230px; }
+.app-experience .app-audio-workbench section { border-radius: 7px; box-shadow: none; }
+.app-experience .app-audio-workbench h1 { font-size: 23px; }
+.app-experience .app-audio-workbench textarea { min-height: 96px; max-height: 240px; border: 1px solid var(--app-line); background: var(--app-panel); }
+.app-experience .app-audio-workbench summary { min-height: 44px; }
+.app-experience .app-audio-generation-dock { left: 86px; right: 0; bottom: 0; background: var(--app-canvas); }
+.app-experience .app-audio-generation-dock > div { flex-wrap: wrap; gap: 8px; }
+.app-experience .app-audio-generation-dock > div > div { min-width: 0; }
+@media (max-width: 767px) {
+  .app-experience .app-workspace-main { padding: 10px 12px; gap: 8px; }
+  .app-experience .app-creation-heading { padding-bottom: 4px; }
+  .app-experience .app-creation-heading h1 { font-size: 20px; }
+  .app-experience .app-empty-preview { min-height: 72px; padding: 8px; font-size: 12px; }
+  .app-experience .app-empty-preview-frame { width: 58px; height: 38px; }
+  .app-experience .app-reference-frames { gap: 6px; }
+  .app-experience .app-reference-frames .app-reference-field { padding: 5px; }
+  .app-experience .app-reference-slot-actions button { padding-inline: 6px; font-size: 11px; }
+  .app-experience .app-audio-generation-dock { left: 0; bottom: calc(70px + env(safe-area-inset-bottom)); padding: 8px 12px; }
+  .app-experience .app-audio-workbench > div:first-child { padding-bottom: 300px; }
+}
+@media (max-height: 550px) {
+  .app-experience .app-empty-preview { min-height: 56px; }
+  .app-experience .app-audio-generation-dock { position: static; }
+}
+.app-experience .app-reference-kinds { display: flex; flex-wrap: wrap; gap: 12px; color: var(--app-muted); font-size: 11px; margin-bottom: 5px; }
+.app-experience .app-reference-kinds span { display: inline-flex; align-items: center; gap: 4px; }
+.app-experience .app-reference-kinds svg { width: 14px; height: 14px; }
+.app-experience .app-audio-workbench textarea:focus-visible { outline: 2px solid var(--app-accent); outline-offset: -2px; box-shadow: none; }
+.app-experience .app-audio-workbench details > summary { border-color: var(--app-accent); color: var(--app-accent); }
+.app-experience .app-reference-empty-actions { display: flex; gap: 4px; width: 100%; min-width: 0; }
+.app-experience .app-reference-add-target { display: flex; flex: 1; align-items: center; gap: 5px; min-width: 0; text-align: left; border-style: dashed !important; padding: 5px !important; }
+.app-experience .app-reference-add-target svg { flex: none; width: 20px; height: 20px; color: var(--app-accent); }
+.app-experience .app-reference-add-target span { overflow-wrap: anywhere; line-height: 1.2; }
+.app-experience .app-reference-add-target small { display: block; font-size: 9px; margin-top: 2px; }
+.app-experience .app-reference-library-target { display: grid; place-items: center; flex: none; width: 44px; padding: 8px !important; }
+.app-experience .app-reference-library-target svg { width: 20px; height: 20px; }
+.app-experience .app-workspace-references button:focus-visible, .app-experience .app-options-button:focus-visible { outline: 2px solid var(--app-accent); outline-offset: 2px; }
+.app-experience .app-audio-mode-tab { background: var(--app-panel); color: var(--app-muted); }
+.app-experience .app-audio-mode-tab[aria-pressed="true"] { border-color: var(--app-accent); background: var(--app-accent-soft); color: var(--app-accent); }
+.app-experience .app-audio-mode-tab:focus-visible { outline: 2px solid var(--app-accent); outline-offset: 2px; }
+.app-experience .app-audio-generation-dock { height: auto; min-height: 0; padding-bottom: 12px; }
+@media (min-width: 1280px) {
+  .app-experience .app-audio-generation-dock { right: 332px; }
+}

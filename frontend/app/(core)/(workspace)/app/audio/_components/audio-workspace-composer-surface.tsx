@@ -1,9 +1,7 @@
 'use client';
 
 import type { RefObject } from 'react';
-import { AudioLines } from 'lucide-react';
 import { Textarea } from '@/components/ui/Input';
-import { UIIcon } from '@/components/ui/UIIcon';
 import {
   type AudioIntensity,
   type AudioLyria3Bpm,
@@ -17,6 +15,7 @@ import {
 import AudioLatestRendersRail from '../AudioLatestRendersRail';
 import type { AudioWorkspaceCopy } from '../copy';
 import type { SourceVideoState } from '../_lib/audio-workspace-types';
+import { WorkspaceEmptyPreview } from '@/components/composer/WorkspaceEmptyPreview.client';
 import { AudioGenerationDock } from './audio-generation-dock';
 import { AudioOptionsSection } from './audio-options-section';
 import { AudioSourceVideoSection } from './audio-source-video-section';
@@ -195,7 +194,7 @@ export function AudioWorkspaceComposerSurface({
   voiceSample,
 }: AudioWorkspaceComposerSurfaceProps) {
   return (
-    <main className="min-h-0 flex-1 overflow-y-auto px-4 py-5 lg:px-7 lg:py-6">
+    <main className="app-audio-workbench min-h-0 flex-1 overflow-y-auto px-4 py-5 lg:px-7 lg:py-6">
       <div className="mx-auto flex w-full max-w-[980px] flex-col gap-4 pb-28">
         {inProgressMessage ? (
           <div
@@ -213,27 +212,15 @@ export function AudioWorkspaceComposerSurface({
           </div>
         ) : null}
 
-        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-          <div className="flex items-start gap-4">
-            <span className="mt-1 flex h-9 w-9 items-center justify-center rounded-[9px] border border-hairline bg-surface text-brand shadow-sm">
-              <UIIcon icon={AudioLines} size={20} strokeWidth={1.9} />
-            </span>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.hero.eyebrow}</p>
-              <h1 className="mt-1 text-2xl font-semibold tracking-normal text-text-primary md:text-3xl">{copy.hero.title}</h1>
-              <p className="mt-1 max-w-2xl text-sm text-text-secondary">{copy.hero.body}</p>
-            </div>
-          </div>
-        </div>
-
-        <section className="rounded-[12px] border border-hairline bg-surface p-4 shadow-card">
-          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-sm font-semibold text-text-primary">{copy.controls.chooseType}</h2>
-          </div>
-          <div className="mt-3">
-            <AudioModePicker value={pack} options={modeOptions} onChange={handlePackChange} />
-          </div>
+        <header className="app-creation-heading">
+          <h1 className="text-xl font-semibold text-text-primary">{copy.hero.title}</h1>
+        </header>
+        <section className="app-audio-mode-section" aria-label={copy.controls.chooseType}>
+          <AudioModePicker value={pack} options={modeOptions} onChange={handlePackChange} />
+          <p className="mt-2 text-xs text-text-muted">{modeOptions.find((entry) => entry.id === pack)?.description}</p>
         </section>
+
+        {!activeJobId && !resultJobId ? <WorkspaceEmptyPreview media="audio" /> : null}
 
         {(sourceVideoRequired || sourceVideo) ? (
           <AudioSourceVideoSection
@@ -255,7 +242,7 @@ export function AudioWorkspaceComposerSurface({
               <span className="shrink-0 text-xs text-text-muted">{composerValue.length} / {composerMaxLength}</span>
             </div>
             <Textarea
-              rows={9}
+              rows={3}
               value={composerValue}
               onChange={(event) => {
                 if (composerIsScript) {
@@ -265,7 +252,7 @@ export function AudioWorkspaceComposerSurface({
                 }
               }}
               placeholder={composerPlaceholder}
-              className="min-h-[260px] resize-y bg-bg pr-4 text-base leading-7"
+              className="min-h-[96px] resize-y bg-bg pr-4 text-base leading-6"
               maxLength={composerMaxLength}
             />
           </label>

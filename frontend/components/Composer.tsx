@@ -2,11 +2,13 @@
 /* eslint-disable @next/next/no-img-element */
 
 import clsx from 'clsx';
-import { useMemo, useCallback, useRef, useEffect, useState } from 'react';
+import { useMemo, useCallback, useRef, useEffect, useState, useId } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { CURRENCY_LOCALE } from '@/lib/intl';
-import { AssetDropzone } from '@/components/AssetDropzone';
+import { WorkspaceReferenceSection } from '@/components/composer/WorkspaceReferenceSection.client';
+import { workspaceReferenceCopy } from '@/components/composer/workspace-reference-copy';
+import { ComposerReferenceFields } from '@/components/composer/ComposerReferenceFields';
 import { ComposerMultiPromptEditor } from '@/components/composer/ComposerMultiPromptEditor';
 import { ComposerPromotedActionIcon } from '@/components/composer/ComposerPromotedActionIcon';
 import { hasMissingRequiredComposerAsset } from '@/components/composer/composer-generation';
@@ -57,6 +59,8 @@ export function Composer({
   onAssetUrlSelect,
   settingsBar,
   generateControl,
+  optionsControl,
+  isPricing = false,
   modeToggles,
   activeManualMode,
   onModeToggle,
@@ -69,7 +73,9 @@ export function Composer({
   generateLabel,
   generateLoadingLabel,
 }: ComposerProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const promptId = useId();
+  const workbenchCopy = workspaceReferenceCopy(locale);
   const workspaceDensity = density === 'workspace';
   const composerCopy = useMemo<ComposerCopy>(() => {
     const localized = t('workspace.generate.composer', DEFAULT_COMPOSER_COPY) as Partial<ComposerCopy> | undefined;
@@ -113,13 +119,13 @@ export function Composer({
   const [isPulseVisible, setIsPulseVisible] = useState(false);
   const animationTimeoutRef = useRef<number | null>(null);
   const formattedPrice = useMemo(() => {
-    if (price == null) return null;
+    if (price == null || isPricing || preflight?.ok === false) return null;
     try {
       return new Intl.NumberFormat(CURRENCY_LOCALE, { style: 'currency', currency }).format(price);
     } catch {
       return `${currency} ${price.toFixed(2)}`;
     }
-  }, [price, currency]);
+  }, [price, currency, isPricing, preflight?.ok]);
   const memberDiscount = preflight?.pricing?.discount;
   const promptLabel = promptField?.label ?? 'Prompt';
   const promptDescription = promptField?.description;
@@ -173,7 +179,7 @@ export function Composer({
   const assetFieldLayoutClass = workspaceDensity
     ? getWorkspaceAssetGridClass(orderedAssetFields.length)
     : useLtxAssetGridLayout ? 'grid gap-4 md:grid-cols-2' : 'flex flex-wrap gap-4';
-  const promptPlaceholderValue = hasReferenceImage
+  const promptPlaceholderValue = workspaceDensity && !promptPlaceholder && !promptPlaceholderWithAsset ? workbenchCopy.placeholder : hasReferenceImage
     ? promptPlaceholderWithAsset ?? composerCopy.prompt.placeholderWithImage ?? promptPlaceholder ?? composerCopy.prompt.placeholder
     : promptPlaceholder ?? composerCopy.prompt.placeholder;
   const visibleModeToggles = modeToggles && modeToggles.length > 1 ? modeToggles : null;
@@ -213,6 +219,83 @@ export function Composer({
   const resolvedGenerateLabel = isLoading
     ? generateLoadingLabel ?? composerCopy.button.loading
     : generateLabel ?? composerCopy.button.idle;
+
+  const composerToolbar = (settingsBar || onGenerate) ? (
+              <div className={clsx('app-composer-toolbar border-t border-border/65 dark:border-white/[0.06]', workspaceDensity ? 'px-3 py-1' : 'px-4 py-3')}>
+                <div className={workspaceDensity
+                  ? 'flex flex-col gap-3 lg:flex-row lg:flex-nowrap lg:items-center'
+                  : 'flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between'}>
+                  {settingsBar ? (
+                    <div className={clsx(
+                      'min-w-0 flex-1',
+                      workspaceDensity && 'w-full'
+                    )}>
+                      {settingsBar}
+                    </div>
+                  ) : null}
+                  {optionsControl}
+                  {onGenerate ? (
+                    <div className={clsx(
+                      'flex shrink-0 flex-col gap-2',
+                      workspaceDensity ? 'w-full lg:w-auto' : 'lg:items-end'
+                    )}>
+                      {memberDiscount && memberDiscount.amountCents > 0 ? (
+                        <span className="text-[11px] text-text-muted">
+                          {composerCopy.memberLabel.replace(
+                            '{percent}',
+                            String(Math.round((memberDiscount.percentApplied ?? 0) * 100))
+                          )}
+                        </span>
+                      ) : null}
+                      <div className="flex w-full items-center gap-2 lg:w-auto">
+                        {generateControl}
+                        {workspaceDensity && !formattedPrice ? <span className="app-quote-status" role="status">{isPricing ? (locale === 'fr' ? 'Calcul…' : 'Calculating…') : (locale === 'fr' ? 'Prix indisponible' : 'Price unavailable')}</span> : null}
+                        <Button
+                          type="button"
+                          size="md"
+                          disabled={isGenerateDisabled}
+                          className={clsx(
+                            'app-generation-action relative w-full justify-between overflow-hidden rounded-[24px] text-left',
+                            'transform-gpu transition-transform duration-200 ease-out motion-reduce:transform-none motion-reduce:animate-none motion-reduce:transition-none',
+                            'border border-brand shadow-card',
+                            'disabled:border-border disabled:bg-surface disabled:text-text-muted disabled:shadow-none',
+                            workspaceDensity
+                              ? '!min-h-11 gap-3 px-4 py-0 lg:w-auto lg:min-w-[176px]'
+                              : 'min-w-[220px] gap-4 px-5 py-3',
+                            isButtonAnimating && !isGenerateDisabled ? 'animate-button-pop' : '',
+                            isGenerateDisabled ? '' : 'active:scale-[0.97]',
+                            formattedPrice && !workspaceDensity ? 'sm:min-w-[260px]' : ''
+                          )}
+                          onClick={handleGenerateClick}
+                        >
+                          <span className="relative z-10 text-sm font-semibold uppercase tracking-micro">{resolvedGenerateLabel}</span>
+                          {formattedPrice ? (
+                            <span
+                              className={clsx(
+                                'relative z-10 inline-flex items-center rounded-full py-1 text-sm font-semibold normal-case backdrop-blur',
+                                workspaceDensity ? 'px-3' : 'px-3.5',
+                                isGenerateDisabled
+                                  ? 'border border-border/80 bg-surface-2 text-text-secondary shadow-none'
+                                  : 'border border-white/25 bg-surface text-text-primary shadow-[0_8px_18px_rgba(15,23,42,0.12)]'
+                              )}
+                            >
+                              {formattedPrice}
+                            </span>
+                          ) : null}
+                          <span
+                            aria-hidden
+                            className={clsx(
+                              'pointer-events-none absolute inset-0 rounded-[24px] bg-surface-on-media-20 opacity-0 transition-opacity duration-200 ease-out',
+                              isPulseVisible && !isGenerateDisabled ? 'opacity-100' : ''
+                            )}
+                          />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            ) : null;
 
   return (
     <Card
@@ -268,6 +351,14 @@ export function Composer({
           </div>
         </div>
 
+        {workspaceDensity && assetFields.length > 0 ? <>
+          <WorkspaceReferenceSection engine={engine} caps={caps} assetFields={orderedAssetFields} assets={assets}
+            onAssetAdd={onAssetAdd} onAssetRemove={onAssetRemove} onNotice={onNotice}
+            onOpenLibrary={onOpenLibrary} onAssetUrlSelect={onAssetUrlSelect} referenceWarning={composerCopy.assetSlots.referenceWarning} />
+          {showSoraImageWarning ? <p className="text-xs text-text-muted" role="note">Real people — including public figures — cannot be generated. Input images with faces of humans are currently rejected. OpenAI</p> : null}
+          {afterAssets}
+        </> : null}
+
         <div className="space-y-3">
             <div
               className={clsx(
@@ -281,7 +372,7 @@ export function Composer({
               workspaceDensity ? 'flex-wrap gap-2 pb-2 pt-3' : 'flex-wrap gap-3 pb-2 pt-4'
             )}>
               <div className={clsx('flex items-center gap-2 pt-1', workspaceDensity && 'shrink-0')}>
-                <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{promptLabel}</span>
+                <label htmlFor={promptId} className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{promptLabel}</label>
                 {typeof promptMaxChars === 'number' ? (
                   <div className={clsx('text-[12px]', promptTooLong ? 'text-error' : 'text-text-muted')}>
                     {promptCharCount}/{promptMaxChars}
@@ -328,16 +419,17 @@ export function Composer({
               <ComposerMultiPromptEditor multiPrompt={multiPrompt} />
             ) : (
               <textarea
+                id={promptId}
                 value={prompt}
                 onChange={(event) => onPromptChange(event.currentTarget.value)}
                 placeholder={promptPlaceholderValue}
-                rows={workspaceDensity ? 5 : compactPrompt ? 2 : 6}
+                rows={workspaceDensity ? 3 : compactPrompt ? 2 : 6}
                 aria-label={promptLabel}
                 data-workspace-prompt
                 aria-invalid={promptTooLong || undefined}
                 className={clsx(
                   workspaceDensity
-                    ? 'min-h-[164px] w-full resize-y border-0 bg-transparent px-4 pb-3 pt-0 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-0 dark:text-white dark:placeholder:text-white/32'
+                    ? 'min-h-[96px] w-full resize-y border-0 bg-transparent px-4 pb-3 pt-0 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-0 dark:text-white dark:placeholder:text-white/32'
                     : 'min-h-[180px] w-full border-0 bg-transparent px-5 pb-4 pt-0 text-sm leading-6 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-0 dark:text-white dark:placeholder:text-white/32',
                   promptTooLong ? 'focus-visible:ring-error' : ''
                 )}
@@ -345,85 +437,12 @@ export function Composer({
                 suppressHydrationWarning
               />
             )}
-
-            {(settingsBar || onGenerate) ? (
-              <div className={clsx('app-composer-toolbar border-t border-border/65 dark:border-white/[0.06]', workspaceDensity ? 'px-3 py-1' : 'px-4 py-3')}>
-                <div className={workspaceDensity
-                  ? 'flex flex-col gap-3 lg:flex-row lg:flex-nowrap lg:items-center'
-                  : 'flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between'}>
-                  {settingsBar ? (
-                    <div className={clsx(
-                      'min-w-0 flex-1',
-                      workspaceDensity && 'w-full'
-                    )}>
-                      {settingsBar}
-                    </div>
-                  ) : null}
-                  {onGenerate ? (
-                    <div className={clsx(
-                      'flex shrink-0 flex-col gap-2',
-                      workspaceDensity ? 'w-full lg:w-auto' : 'lg:items-end'
-                    )}>
-                      {memberDiscount && memberDiscount.amountCents > 0 ? (
-                        <span className="text-[11px] text-text-muted">
-                          {composerCopy.memberLabel.replace(
-                            '{percent}',
-                            String(Math.round((memberDiscount.percentApplied ?? 0) * 100))
-                          )}
-                        </span>
-                      ) : null}
-                      <div className="flex w-full items-center gap-2 lg:w-auto">
-                        {generateControl}
-                        <Button
-                          type="button"
-                          size="md"
-                          disabled={isGenerateDisabled}
-                          className={clsx(
-                            'app-generation-action relative w-full justify-between overflow-hidden rounded-[24px] text-left',
-                            'transform-gpu transition-transform duration-200 ease-out motion-reduce:transform-none motion-reduce:animate-none motion-reduce:transition-none',
-                            'border border-brand shadow-card',
-                            'disabled:border-border disabled:bg-surface disabled:text-text-muted disabled:shadow-none',
-                            workspaceDensity
-                              ? '!min-h-11 gap-3 px-4 py-0 lg:w-auto lg:min-w-[176px]'
-                              : 'min-w-[220px] gap-4 px-5 py-3',
-                            isButtonAnimating && !isGenerateDisabled ? 'animate-button-pop' : '',
-                            isGenerateDisabled ? '' : 'active:scale-[0.97]',
-                            formattedPrice && !workspaceDensity ? 'sm:min-w-[260px]' : ''
-                          )}
-                          onClick={handleGenerateClick}
-                        >
-                          <span className="relative z-10 text-sm font-semibold uppercase tracking-micro">{resolvedGenerateLabel}</span>
-                          {formattedPrice ? (
-                            <span
-                              className={clsx(
-                                'relative z-10 inline-flex items-center rounded-full py-1 text-sm font-semibold normal-case backdrop-blur',
-                                workspaceDensity ? 'px-3' : 'px-3.5',
-                                isGenerateDisabled
-                                  ? 'border border-border/80 bg-surface-2 text-text-secondary shadow-none'
-                                  : 'border border-white/25 bg-surface text-text-primary shadow-[0_8px_18px_rgba(15,23,42,0.12)]'
-                              )}
-                            >
-                              {formattedPrice}
-                            </span>
-                          ) : null}
-                          <span
-                            aria-hidden
-                            className={clsx(
-                              'pointer-events-none absolute inset-0 rounded-[24px] bg-surface-on-media-20 opacity-0 transition-opacity duration-200 ease-out',
-                              isPulseVisible && !isGenerateDisabled ? 'opacity-100' : ''
-                            )}
-                          />
-                        </Button>
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-            ) : null}
+            {!workspaceDensity ? composerToolbar : null}
           </div>
         </div>
+        {workspaceDensity ? composerToolbar : null}
 
-        {assetFields.length > 0 ? (
+        {!workspaceDensity && assetFields.length > 0 ? (
           <div className="space-y-2">
             <div
               className={clsx(
@@ -431,28 +450,9 @@ export function Composer({
                 assetFieldLayoutClass
               )}
             >
-              {orderedAssetFields.map(({ field, required, role, headerAction, guidance, disabled, disabledReason, disabledPresentation }) => (
-                <AssetDropzone key={field.id} density={workspaceDensity ? 'workspace' : 'default'}
-                  engine={engine}
-                  caps={caps}
-                  field={field}
-                  required={required}
-                  isSoloField={orderedAssetFields.length === 1}
-                  className={!workspaceDensity && field.maxCount && field.maxCount > 1 ? 'md:col-span-2' : undefined}
-                  role={role}
-                  assets={assets[field.id] ?? []}
-                  headerAction={headerAction}
-                  guidance={guidance}
-                  disabled={disabled}
-                  disabledReason={disabledReason} disabledPresentation={disabledPresentation}
-                  onSelect={onAssetAdd}
-                  onRemove={onAssetRemove}
-                  onError={onNotice}
-                  onOpenLibrary={onOpenLibrary}
-                  onUrlSelect={onAssetUrlSelect}
-                  referenceWarning={composerCopy.assetSlots.referenceWarning}
-                />
-              ))}
+              <ComposerReferenceFields orderedAssetFields={orderedAssetFields} engine={engine} caps={caps} assets={assets}
+                onAssetAdd={onAssetAdd} onAssetRemove={onAssetRemove} onNotice={onNotice}
+                onOpenLibrary={onOpenLibrary} onAssetUrlSelect={onAssetUrlSelect} referenceWarning={composerCopy.assetSlots.referenceWarning} />
             </div>
             {showSoraImageWarning ? (
               <p className="text-[12px] text-text-muted" role="note">

@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, type LucideIcon } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 import { SelectMenu } from '@/components/ui/SelectMenu';
 import { UIIcon } from '@/components/ui/UIIcon';
@@ -17,7 +17,7 @@ export function AudioModePicker({
   onChange: (pack: AudioPackId) => void;
 }) {
   return (
-    <div className="grid gap-2 md:grid-cols-2 2xl:grid-cols-4">
+    <div className="app-audio-mode-tabs flex flex-wrap gap-2">
       {options.map((mode) => (
         <AudioModeCard
           key={mode.id}
@@ -40,46 +40,19 @@ function AudioModeCard({
   onClick: () => void;
 }) {
   const Icon = AUDIO_MODE_META[mode.id].icon;
-
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={[
-        'group relative min-h-[86px] overflow-hidden rounded-[10px] border px-3.5 py-3 text-left transition duration-200',
-        active
-          ? 'border-brand bg-brand-soft shadow-[0_14px_34px_rgba(46,99,216,0.12)] ring-1 ring-brand/25'
-          : 'border-hairline bg-surface hover:border-brand/45 hover:bg-surface-hover hover:shadow-card',
-      ].join(' ')}
+      aria-label={mode.label}
+      title={mode.description}
+      aria-describedby={`audio-mode-${mode.id}-description`}
+      className="app-audio-mode-tab inline-flex min-h-11 items-center gap-2 rounded-input border border-border px-3 py-2 text-left text-sm"
     >
-      <div className="flex items-start gap-3">
-        <span
-          className={[
-            'flex h-10 w-10 shrink-0 items-center justify-center rounded-[9px] transition',
-            active
-              ? 'bg-brand text-on-brand shadow-[0_10px_28px_rgba(46,99,216,0.22)]'
-              : 'bg-brand-soft text-brand group-hover:bg-brand-soft-hover',
-          ].join(' ')}
-        >
-          <UIIcon icon={Icon} size={21} strokeWidth={1.9} />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-sm font-semibold text-text-primary">{mode.label}</span>
-          <span className="mt-1 block text-xs leading-5 text-text-secondary">{mode.description}</span>
-        </span>
-        <span
-          className={[
-            'flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition',
-            active
-              ? 'border-brand bg-brand text-on-brand'
-              : 'border-hairline bg-surface text-transparent group-hover:border-brand/45',
-          ].join(' ')}
-          aria-hidden
-        >
-          {active ? <Check className="h-3.5 w-3.5" /> : null}
-        </span>
-      </div>
+      <UIIcon icon={Icon} size={20} />
+      <span>{mode.label}</span>
+      <span id={`audio-mode-${mode.id}-description`} className="sr-only">{mode.description}</span>
     </button>
   );
 }

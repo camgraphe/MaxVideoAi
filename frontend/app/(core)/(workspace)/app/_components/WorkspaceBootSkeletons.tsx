@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { WorkspaceEmptyPreview } from '@/components/composer/WorkspaceEmptyPreview.client';
 import { WorkspacePreviewColumn } from '@/components/groups/WorkspacePreviewColumn';
 
 const COMPOSITE_PREVIEW_POSTER_SIZES = '(max-width: 1024px) 100vw, calc(100vw - 420px)';
@@ -40,7 +41,7 @@ export function GalleryRailSkeleton({ responsive = false }: { responsive?: boole
 
 export function WorkspaceBootPreview({ posterSrc }: { posterSrc?: string | null }) {
   if (!posterSrc) {
-    return <section className="app-model-strip rounded-card border border-border bg-surface shadow-card" aria-hidden><WorkspacePreviewHeaderSkeleton /></section>;
+    return <><section className="app-model-strip rounded-card border border-border bg-surface shadow-card" aria-hidden><WorkspacePreviewHeaderSkeleton /></section><WorkspaceEmptyPreview media="video" /></>;
   }
   return (
     <section className="rounded-card border border-border bg-surface-glass-90 shadow-card" aria-hidden>

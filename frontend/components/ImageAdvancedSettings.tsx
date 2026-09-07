@@ -16,10 +16,12 @@ const ImageAdvancedSettingsContent = dynamic<ImageAdvancedSettingsContentProps>(
 
 export type ImageAdvancedSettingsProps = ImageAdvancedSettingsContentProps & {
   title: string;
+  open?: boolean;
 };
 
 export function ImageAdvancedSettings({
   title,
+  open,
   seed,
   maskUrl,
   customImageSize,
@@ -29,6 +31,7 @@ export function ImageAdvancedSettings({
   watermark,
 }: ImageAdvancedSettingsProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const expanded = open ?? isOpen;
   const hasContent = useMemo(
     () => Boolean(seed || maskUrl || customImageSize || enableWebSearch || thinkingLevel || limitGenerations || watermark),
     [customImageSize, enableWebSearch, limitGenerations, maskUrl, seed, thinkingLevel, watermark]
@@ -38,7 +41,7 @@ export function ImageAdvancedSettings({
 
   return (
     <div className="space-y-3">
-      <Button
+      {open === undefined ? <Button
         type="button"
         size="sm"
         variant="ghost"
@@ -56,8 +59,8 @@ export function ImageAdvancedSettings({
         >
           <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-      </Button>
-      {isOpen ? (
+      </Button> : null}
+      {expanded ? (
         <ImageAdvancedSettingsContent
           seed={seed}
           maskUrl={maskUrl}
