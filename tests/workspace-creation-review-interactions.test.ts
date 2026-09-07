@@ -5,6 +5,8 @@ import * as React from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { SWRConfig } from 'swr';
+import { AppRouterContext } from 'next/dist/shared/lib/app-router-context.shared-runtime';
+import { PathnameContext, SearchParamsContext } from 'next/dist/shared/lib/hooks-client-context.shared-runtime';
 import { JSDOM } from 'jsdom';
 import { I18nProvider } from '../frontend/lib/i18n/I18nProvider';
 import type { Dictionary } from '../frontend/lib/i18n/types';
@@ -244,6 +246,7 @@ test('required audio and disabled explanations remain visible, while fifty refer
     await act(async () => fixture.container.querySelector<HTMLButtonElement>('.app-reference-selected-summary button')!.click());
     assert.equal(doc.querySelectorAll('[data-reference-field="references"] [data-asset-index]').length, 50);
     assert.ok(doc.querySelector('[data-reference-field="references"] [data-asset-index="49"]'));
+    await act(async () => doc.querySelector<HTMLButtonElement>('[data-reference-role="audio_url"]')!.click());
     const audio = doc.querySelector('[data-reference-field="audio_url"]')!;
     assert.match(audio.textContent!, /Sign in to upload audio/);
     assert.equal(audio.querySelector<HTMLInputElement>('input')?.accept, '.mp3,.wav');
@@ -254,20 +257,43 @@ test('required audio and disabled explanations remain visible, while fifty refer
   } finally { await fixture.cleanup(); }
 });
 
-test('image source and mask preserve their actual titles instead of becoming video frame commands', async () => {
+test('image source, mask and custom roles retain distinct names and original upload/library field indices', async () => {
   const { WorkspaceReferenceSection } = await loadReferenceSection();
   const base = listFalEngines().find(entry => entry.id === 'seedance-2-0')!.engine;
-  const engine = { ...base, modes: ['t2i' as const, 'i2i' as const] };
-  const fixture = await mount(React.createElement(WorkspaceReferenceSection, { engine, referenceWarning: '', assets: {}, assetFields: [
+  const engine = { ...base, modes: ['t2i' as const, 'i2i' as const], inputSchema: { ...base.inputSchema!, constraints: { ...base.inputSchema?.constraints, minImageSidePx: undefined } } };
+  const fields: ComposerProps['assetFields'] = [
     { field: { id: 'image_url', type: 'image', label: 'Source image', maxCount: 1 }, role: 'primary', required: true },
     { field: { id: 'mask', type: 'image', label: 'Mask', maxCount: 1 }, required: true },
-  ] }));
+    { field: { id: 'style_reference', type: 'image', label: 'Style reference', maxCount: 3 }, required: false },
+  ];
+  const uploads: unknown[][] = []; const library: unknown[][] = [];
+  const existing = { kind: 'image' as const, name: 'Style', type: 'image/png', size: 1, previewUrl: '/style.png' };
+  const fixture = await mount(React.createElement(WorkspaceReferenceSection, { engine, referenceWarning: '', assets: { style_reference: [null, existing] }, assetFields: fields,
+    onAssetAdd: (field, file, index) => uploads.push([field, file, index]), onOpenLibrary: (field, index) => library.push([field, index]) }));
+  const doc = fixture.dom.window.document;
   try {
     assert.equal(fixture.container.querySelector('[data-reference-command="image_url"]'), null);
     assert.match(fixture.container.textContent!, /Source image, Mask/);
-    await act(async () => fixture.container.querySelector<HTMLButtonElement>('[data-reference-command="collections"]')!.click());
-    const text = fixture.dom.window.document.querySelector('[role="dialog"]')!.textContent!;
-    assert.match(text, /Source image/); assert.match(text, /Mask/); assert.doesNotMatch(text, /Imagen inicial|Inicio/);
+    const command = fixture.container.querySelector<HTMLButtonElement>('[data-reference-command="collections"]')!;
+    for (const [position, entry] of fields.entries()) {
+      await act(async () => command.click());
+      const roles = [...doc.querySelectorAll<HTMLButtonElement>('[data-reference-role]')];
+      assert.equal(new Set(roles.map(role => role.textContent)).size, 3);
+      assert.match(roles[0].textContent!, /Source image/); assert.match(roles[1].textContent!, /Mask/); assert.match(roles[2].textContent!, /Style reference/);
+      await act(async () => roles[position].click());
+      const inventory = doc.querySelector(`[data-reference-field="${entry.field.id}"]`)!;
+      assert.equal(doc.querySelectorAll('[data-reference-field]').length, 1);
+      const index = position === 2 ? 1 : 0;
+      const slot = inventory.querySelector(`[data-asset-index="${index}"]`)!;
+      const input = slot.querySelector<HTMLInputElement>('input[type="file"]')!;
+      const file = new fixture.dom.window.File(['fixture'], 'reference.png', { type: 'image/png' });
+      Object.defineProperty(input, 'files', { configurable: true, value: [file] });
+      await act(async () => input.dispatchEvent(new fixture.dom.window.Event('change', { bubbles: true })));
+      assert.deepEqual(uploads[position], [entry.field, file, index]);
+      await act(async () => slot.querySelector<HTMLButtonElement>('button[aria-label^="Biblioteca"]')!.click());
+      assert.deepEqual(library[position], [entry.field, index]);
+      assert.equal(doc.querySelector('[role="dialog"]'), null); assert.equal(doc.activeElement, command);
+    }
   } finally { await fixture.cleanup(); }
 });
 
@@ -282,7 +308,10 @@ test('actual image Library owns focus, Escape and body lock and restores its con
       React.createElement(SWRConfig, { value: { provider: () => new Map(), isPaused: () => true } },
         React.createElement(ImageLibraryModal, { open, onClose: () => setOpen(false), onSelect() {}, onToggleCharacter() {}, selectedCharacterReferences: [], characterSelectionLimit: 1, copy: DEFAULT_COPY.library, characterCopy: DEFAULT_COPY.characterPicker, selectionMode: 'reference', initialSource: 'all', supportedFormats: ['png'], supportedFormatsLabel: 'PNG', toolsEnabled: false })));
   }
-  const fixture = await mount(React.createElement(Fixture));
+  const router = { back() {}, forward() {}, refresh() {}, push() {}, replace() {}, prefetch: async () => {} };
+  const fixture = await mount(React.createElement(AppRouterContext.Provider, { value: router },
+    React.createElement(PathnameContext.Provider, { value: '/app/image' },
+      React.createElement(SearchParamsContext.Provider, { value: new URLSearchParams() }, React.createElement(Fixture)))));
   const doc = fixture.dom.window.document;
   try {
     assert.equal(doc.querySelector('[role="dialog"]'), null);

@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from 'react';
 import { AppGlyph } from '@/components/app/AppGlyph';
 import type { AssetFieldConfig, AssetSlotAttachment } from '@/components/AssetDropzone';
-import { workspaceReferenceCopy } from './workspace-reference-copy';
+import { resolveWorkspaceReferenceFieldTitle, workspaceReferenceCopy } from './workspace-reference-copy';
 
 /** Role navigation changes presentation only. Draft mutation stays in the rendered field owner. */
 export function WorkspaceReferenceInventory({ fields, assets, locale, renderField }: {
@@ -23,7 +23,10 @@ export function WorkspaceReferenceInventory({ fields, assets, locale, renderFiel
       {fields.map(entry => {
         const kind = entry.field.type === 'audio' ? 'audio' : entry.field.type === 'video' ? 'video' : 'image';
         const isSourceVideo = kind === 'video' && entry.field.id === 'video_url';
-        const label = isSourceVideo ? locale === 'fr' ? 'Vidéo source' : locale === 'es' ? 'Video fuente' : 'Source video' : copy.kinds[kind];
+        const isKnownCollection = ['image_urls', 'video_urls', 'audio_urls'].includes(entry.field.id);
+        const label = isSourceVideo ? locale === 'fr' ? 'Vidéo source' : locale === 'es' ? 'Video fuente' : 'Source video'
+          : isKnownCollection ? copy.kinds[kind]
+          : resolveWorkspaceReferenceFieldTitle(entry.field, entry.role ?? 'generic', locale);
         const count = (assets[entry.field.id] ?? []).filter(Boolean).length;
         const capacity = entry.field.maxCount;
         return <button key={entry.field.id} type="button" aria-pressed={entry === selected} data-reference-role={entry.field.id} onClick={() => setActiveId(entry.field.id)}

@@ -201,3 +201,43 @@ test('image and character library SWR caches are account scoped across reopen an
     assert.match(requests[0].url, /kind=image/); assert.match(requests[2].url, /character-references/);
   } finally { globalThis.fetch = oldFetch; await h.close(); }
 });
+
+test('audio source-video owner masks account data/loading/errors synchronously and rejects late replies on switch, logout and reopen', async () => {
+  const { useAudioGeneratedVideos } = await import('../frontend/app/(core)/(workspace)/app/audio/_hooks/useAudioGeneratedVideos');
+  const h = await harness(); const oldFetch = globalThis.fetch;
+  const requests: { resolve: (response: Response) => void }[] = [];
+  globalThis.fetch = async () => new Promise(resolve => requests.push({ resolve }));
+  let state!: ReturnType<typeof useAudioGeneratedVideos>;
+  const observations: { account: string | null; ids: string[]; error: string | null; loading: boolean }[] = [];
+  function Owner({ account, open }: { account: string | null; open: boolean }) {
+    state = useAudioGeneratedVideos({ user: account ? { id: account } : null, open, loadErrorMessage: 'Could not load clips' });
+    observations.push({ account, ids: state.generatedVideos.map(clip => clip.jobId), error: state.generatedVideosError, loading: state.isGeneratedVideosLoading });
+    return React.createElement('output', {}, JSON.stringify(state));
+  }
+  const render = (account: string | null, open = true) => h.render(React.createElement(Owner, { account, open }));
+  const reply = (index: number, id: string) => act(async () => requests[index].resolve(Response.json({ ok: true, jobs: [{ jobId: id, videoUrl: `https://private.example/${id}.mp4?sig=Exact`, thumbUrl: `https://private.example/${id}.jpg`, durationSec: 5, aspectRatio: '16:9', createdAt: '2026-09-08T00:00:00Z', hasAudio: true, engineLabel: 'Model' }] })));
+  try {
+    await render('A'); await reply(0, 'A-original');
+    assert.equal(state.generatedVideos[0].url, 'https://private.example/A-original.mp4?sig=Exact');
+    await render('A', false);
+    const start = observations.length;
+    await render('B', false);
+    assert.ok(observations.slice(start).every(value => value.ids.length === 0 && value.error === null && value.loading === false));
+    await render('B'); assert.equal(requests.length, 2); assert.equal(state.isGeneratedVideosLoading, true); await reply(1, 'B-original');
+    await render('B', false); await render('B'); assert.equal(requests.length, 2, 'same account reopen can retain its own loaded clips');
+    await render('A'); assert.equal(requests.length, 3);
+    await render('B'); assert.equal(requests.length, 4); await reply(3, 'B-new'); await reply(2, 'A-late');
+    assert.deepEqual(state.generatedVideos.map(clip => clip.jobId), ['B-new']);
+    await render('A'); assert.equal(requests.length, 5);
+    const logoutStart = observations.length; await render(null);
+    await act(async () => requests[4].resolve(Response.json({ ok: false, error: 'A-private-error' }, { status: 500 })));
+    assert.ok(observations.slice(logoutStart).every(value => value.ids.length === 0 && value.error === null && value.loading === false));
+    await render('B'); assert.equal(requests.length, 6);
+    await act(async () => requests[5].resolve(Response.json({ ok: false, error: 'B-error' }, { status: 500 })));
+    assert.equal(state.generatedVideosError, 'B-error'); assert.equal(state.isGeneratedVideosLoading, false);
+    const errorSwitch = observations.length; await render('A');
+    assert.ok(observations.slice(errorSwitch).every(value => value.error === null && value.ids.length === 0 && value.loading));
+    await render('A', false); await reply(6, 'closed-late'); await render('A'); assert.equal(requests.length, 8);
+    await reply(7, 'A-reopened'); assert.deepEqual(state.generatedVideos.map(clip => clip.jobId), ['A-reopened']);
+  } finally { globalThis.fetch = oldFetch; await h.close(); }
+});

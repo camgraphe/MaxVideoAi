@@ -214,7 +214,10 @@ test('partially available collections open allowed controls while locked empty c
     await act(async () => partial.click());
     const dialog = fixture.dom.window.document.querySelector<HTMLElement>('[role="dialog"]')!;
     assert.ok(dialog);
+    await act(async () => dialog.querySelector<HTMLButtonElement>('[data-reference-role="image_urls"]')!.click());
     assert.equal(dialog.querySelector<HTMLButtonElement>('[data-reference-field="image_urls"] .app-reference-add-target')?.disabled, true);
+    assert.match(dialog.querySelector('[data-reference-field="image_urls"]')!.textContent!, new RegExp(modelRestriction));
+    await act(async () => dialog.querySelector<HTMLButtonElement>('[data-reference-role="video_urls"]')!.click());
     const allowedLibrary = dialog.querySelector<HTMLButtonElement>('[data-reference-field="video_urls"] .app-reference-library-target')!;
     assert.equal(allowedLibrary.disabled, false);
     await act(async () => allowedLibrary.click());

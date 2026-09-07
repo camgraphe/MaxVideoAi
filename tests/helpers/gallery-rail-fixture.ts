@@ -7,6 +7,9 @@ import { build } from 'esbuild';
 export async function buildGalleryFixture() {
   const frontend = path.join(process.cwd(), 'frontend');
   const stubs: Record<string, string> = {
+    '@/hooks/useRequireAuth': `export function useRequireAuth() { return { user: { id: 'fixture-user' }, loading: false }; }`,
+    'next/navigation': `export function useRouter() { return { push() {}, replace() {}, prefetch() {} }; }`,
+    '@/lib/authFetch': `export async function authFetch() { throw new Error('Unexpected network request in gallery fixture'); }`,
     '@/lib/api': `
       export function useInfiniteJobs() { return window.galleryFeed; }
       export function useEngines() { return { data: { engines: [] } }; }
