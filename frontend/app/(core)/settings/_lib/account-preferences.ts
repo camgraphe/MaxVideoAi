@@ -2,6 +2,10 @@ import type { User } from '@supabase/supabase-js';
 
 export type AccountNameClient = {
   auth: {
+    getUser(): Promise<{
+      data: { user: User | null };
+      error: { message: string } | null;
+    }>;
     updateUser(attributes: { data: Record<string, unknown> }): Promise<{
       data: { user: User | null };
       error: { message: string } | null;
@@ -23,9 +27,10 @@ export function validateAccountName(value: string) {
   return { name, error: null };
 }
 
-export async function updateAccountName(client: AccountNameClient, name: string) {
+export async function updateAccountName(client: AccountNameClient, expectedUserId: string, name: string) {
   const result = await client.auth.updateUser({ data: { name, full_name: name } });
   if (result.error) throw new Error(result.error.message);
   if (!result.data.user) throw new Error('Account update did not return a user.');
+  if (result.data.user.id !== expectedUserId) throw new Error('Account changed before the update completed.');
   return result.data.user;
 }

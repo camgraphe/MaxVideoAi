@@ -13,13 +13,22 @@ test('account update patches only owned keys so concurrent unrelated metadata is
   const user = { id: 'user-1', user_metadata: { plan: 'pro', name: 'Old', full_name: 'Old' } } as unknown as User;
   let submitted: Record<string, unknown> | undefined;
   const returned = { ...user, user_metadata: { ...user.user_metadata, name: 'New', full_name: 'New' } } as User;
-  const result = await updateAccountName({ auth: { updateUser: async ({ data }) => { submitted = data; return { data: { user: returned }, error: null }; } } }, 'New');
+  const result = await updateAccountName({ auth: { getUser: async () => ({ data: { user }, error: null }), updateUser: async ({ data }) => { submitted = data; return { data: { user: returned }, error: null }; } } }, user.id, 'New');
 
   assert.deepEqual(submitted, { name: 'New', full_name: 'New' });
   assert.equal(result, returned);
 });
 
 test('account update surfaces provider errors and missing completion users', async () => {
-  await assert.rejects(() => updateAccountName({ auth: { updateUser: async () => ({ data: { user: null }, error: { message: 'Denied' } }) } }, 'Name'), /Denied/);
-  await assert.rejects(() => updateAccountName({ auth: { updateUser: async () => ({ data: { user: null }, error: null }) } }, 'Name'), /did not return a user/);
+  const getUser = async () => ({ data: { user: null }, error: null });
+  await assert.rejects(() => updateAccountName({ auth: { getUser, updateUser: async () => ({ data: { user: null }, error: { message: 'Denied' } }) } }, 'user-1', 'Name'), /Denied/);
+  await assert.rejects(() => updateAccountName({ auth: { getUser, updateUser: async () => ({ data: { user: null }, error: null }) } }, 'user-1', 'Name'), /did not return a user/);
+});
+
+test('account update rejects a completion returned for another identity', async () => {
+  const otherUser = { id: 'user-2', user_metadata: {} } as unknown as User;
+  await assert.rejects(
+    () => updateAccountName({ auth: { getUser: async () => ({ data: { user: otherUser }, error: null }), updateUser: async () => ({ data: { user: otherUser }, error: null }) } }, 'user-1', 'Name'),
+    /Account changed/
+  );
 });
