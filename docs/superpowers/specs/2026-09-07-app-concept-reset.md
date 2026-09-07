@@ -6,7 +6,7 @@ Le premier lot améliore des fonctions, mais garde le concept de l’ancienne in
 
 ## Clarification de périmètre — toute l’application
 
-La dernière planche concernait surtout le Studio/canevas. Elle ne définit pas la refonte globale demandée. L’utilisateur attend une nouvelle expérience sur la création vidéo/image, la bibliothèque, les outils, les paramètres et la navigation. Le Studio doit reprendre cette identité avec ses interactions propres ; l’app générale ne devient pas un canevas.
+La dernière planche concernait surtout le Studio/canevas. Elle ne définit pas la refonte globale demandée. L’utilisateur attend une nouvelle expérience sur la création vidéo/image/audio, la bibliothèque, les outils, les paramètres et la navigation. Le Studio doit reprendre cette identité avec ses interactions propres ; l’app générale ne devient pas un canevas.
 
 Le plan actif est `../plans/2026-09-07-global-app-concept.md`. Son prochain livrable est un prototype interactif réunissant création, bibliothèque et paramètres, en desktop et mobile. Les trois variantes ci-dessous restent des explorations antérieures centrées sur le Studio, pas une sélection obligatoire pour l’app entière.
 
@@ -45,3 +45,17 @@ Références fonctionnelles consultées : [Unreal, objet sélectionné et pannea
 - Régie : trois tentatives, toutes terminées en erreur réseau de l’outil intégré. Focus : une tentative, même échec. Aucun rendu de ces deux directions n’est disponible.
 - Aucun choix visuel reçu ; aucune nouvelle présentation implémentée pendant cette exploration. Les chiffres et dimensions affichés sur la planche sont du contenu illustratif à remplacer par les valeurs réelles dans tout prototype.
 - La prochaine preuve attendue est interactive : sélection d’un plan et de ses outils, modification contextuelle, comparaison et retour mobile. La sélection visuelle reste ouverte.
+
+## Exigences confirmées — raccords, audio et références progressives
+
+Le produit devient un logiciel de création interconnecté. Image, vidéo et audio sont des médias réutilisables entre activités, sous réserve des capacités du destinataire. Chaque emplacement propose une action courte Ajouter puis Bibliothèque / Importer / Créer. Créer une référence est un détour avec retour au même brouillon et au rôle visé, sans perte des autres entrées. Le contexte peut aussi être transmis aux outils, puis au Studio pour la finalisation.
+
+Les références occupent une ligne compacte à vide ; les vignettes apparaissent avec le contenu. Les grandes collections ont une vue de gestion dédiée, des compteurs, une recherche et une sélection multiple. Aucun modèle ne reçoit artificiellement une capacité de 50 références. Première/dernière image et autres rôles contraints restent identifiables sans créer de grands blocs vides. Remplacer conserve l’ancienne référence jusqu’à validation ; Retirer ne supprime pas le média ; Supprimer de la bibliothèque reste une action distincte.
+
+L’utilisateur demande des pictos stylisés et cohérents, créés pour le produit ou issus d’une bibliothèque de qualité, et autorise la recherche d’inspiration GitHub. Le prototype doit démontrer ces choix sur les commandes réelles, les états vides et remplis et le mobile, avant généralisation.
+
+L’audio comprend écoute, import et réutilisation, mais aussi les usages existants de musique, voix et sonorisation d’une vidéo. Les outils MCP actuels savent lister/importer les trois types ; leur génération audio autonome et une piste audio de timeline ne sont pas encore des capacités établies. Le montage minimal reste borné à l’ordre des clips ; les écarts de contrat seront explicitement traités dans le lot d’intégration.
+
+## Proposition interactive globale disponible
+
+Le prototype `docs/design/global-app-concept/` matérialise la carte des actions et les règles visuelles avant généralisation. Création image/vidéo/audio, références progressives, détour de création avec retour, bibliothèque et préférences sont manipulables localement. Sa revue distingue les comportements essayés des raccordements encore absents. Le style reste proposé ; aucun retour visuel favorable n’est présumé.
