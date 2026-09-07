@@ -1,5 +1,6 @@
 import {
   AUDIO_MAX_DURATION_SEC,
+  AUDIO_SFX_MAX_DURATION_SEC,
   AUDIO_MIN_DURATION_SEC,
   AUDIO_PROMPT_MAX_LENGTH,
   AUDIO_SCRIPT_MAX_LENGTH,
@@ -232,6 +233,13 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
 
   const sourceVideoUrl = normalizeString(body.sourceVideoUrl);
   const sourceJobId = normalizeString(body.sourceJobId);
+  if (pack === 'sfx_only' && (sourceVideoUrl || sourceJobId)) {
+    throw new AudioGenerationError('Standalone SFX accepts a text prompt, not a source video.', {
+      status: 400,
+      code: 'audio_source_unsupported',
+      field: 'sourceVideoUrl',
+    });
+  }
   if (packConfig.requiresVideo && !sourceVideoUrl && !sourceJobId) {
     throw new AudioGenerationError('A source video is required.', {
       status: 400,
@@ -239,7 +247,7 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
       field: 'sourceVideoUrl',
     });
   }
-  if ((pack === 'music_only' || pack === 'cinematic') && !prompt) {
+  if ((pack === 'music_only' || pack === 'sfx_only' || pack === 'cinematic') && !prompt) {
     throw new AudioGenerationError('An audio prompt is required for this mode.', {
       status: 400,
       code: 'audio_prompt_required',
@@ -524,6 +532,11 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
   }
 
   const durationInput = normalizeOptionalInteger(body.durationSec);
+  if (pack === 'sfx_only' && durationInput != null && durationInput > AUDIO_SFX_MAX_DURATION_SEC) {
+    throw new AudioGenerationError('Standalone SFX supports at most 30 seconds.', {
+      status: 400, code: 'audio_duration_invalid', field: 'durationSec',
+    });
+  }
   const requestedDurationSec =
     durationInput == null
       ? null
@@ -532,8 +545,8 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
           code: 'audio_duration_invalid',
           label: 'Duration',
         });
-  if (pack === 'music_only' && !sourceVideoUrl && !sourceJobId && durationInput == null) {
-    throw new AudioGenerationError('Duration is required when generating music without a video.', {
+  if ((pack === 'music_only' || pack === 'sfx_only') && !sourceVideoUrl && !sourceJobId && durationInput == null) {
+    throw new AudioGenerationError('Duration is required when generating standalone audio without a video.', {
       status: 400,
       code: 'audio_duration_required',
       field: 'durationSec',
@@ -612,7 +625,7 @@ export function resolveAudioRenderDuration(params: {
     return estimateVoiceScriptDurationSec(params.script ?? '');
   }
 
-  if (params.pack === 'music_only') {
+  if (params.pack === 'music_only' || params.pack === 'sfx_only') {
     return validateAudioDurationInRange(params.probedDurationSec ?? params.requestedDurationSec ?? AUDIO_MIN_DURATION_SEC, {
       field: 'durationSec',
       code: 'audio_duration_invalid',

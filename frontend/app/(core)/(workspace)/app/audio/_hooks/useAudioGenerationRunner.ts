@@ -115,7 +115,7 @@ export function useAudioGenerationRunner({
     setPendingAudioGenerations((previous) => [
       {
         id: pendingId,
-        label: copy.modes[pack]?.label ?? pack,
+        label: (copy.modes as Partial<Record<AudioPackId, { label: string }>>)[pack]?.label ?? pack,
         startedAt: Date.now(),
       },
       ...previous,
