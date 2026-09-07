@@ -47,3 +47,20 @@ L’utilisateur a ensuite demandé une tâche Billing/Wallet, autorisé d’autr
 La priorité1 du fil principal (latence Activity) est donc confiée à la troisième tâche, qui possède le chemin de chargement et les adaptations ciblées nécessaires des helpers et tests, sans refonte visuelle supplémentaire. Billing possède ses composants/hooks/styles locaux et prépare séparément tout contrat nécessaire au wallet d’en-tête; politique tarifaire, configuration Stripe live et paiements réels sont hors scope. Les tâches partent du projet par défaut et doivent composer le socle app qualifié dans leur copie : elles ne sont pas présumées avoir hérité automatiquement de cette branche.
 
 Le fil principal conserve comparaison des devis, adaptation des modèles, continuité des références/brouillons, cohérence visuelle et intégration finale. Chaque tâche fournit commits, prévisualisation sur port distinct et preuves de validation. Rien n’est automatiquement fusionné ou déployé.
+
+## Quatrième tâche : Toolbox visuelle et parcours outils
+
+À la demande explicite de l’utilisateur, la tâche `01a07e3c-37a3-7691-a1c1-497e34094416` est lancée en `gpt-6-astra`, dans `/Users/adrienmillot/.codex/worktrees/8710/MaxVideoAi V2`. Elle reprend le prétravail de « Étudier une toolbox d’outils » (`01a07dd1-19cc-7430-bf1b-8f09f70cdf00`) et le brief actualisé le 8 septembre : `/Users/adrienmillot/Desktop/MaxVideoAi V2/docs/plans/2026-09-07-maxvideoai-toolbox-discovery-brief.md`. Elle compose le socle app `cf5acc60f` dans sa propre branche après audit des divergences ; les sources restent intactes.
+
+Le mandat couvre la conception et l’implémentation d’une vraie boîte à outils : petites tuiles par résultat attendu, ateliers créatifs plus développés, menus et surfaces de travail refondus, médias d’entrée, devis exact, exécution, progression et réutilisation des résultats. Le catalogue et les fonctions existants doivent rester exécutables. Les nouveaux candidats du brief sont sélectionnés selon qualité, fiabilité et rapport qualité/prix ; une recherche fournisseur ne vaut pas qualification ni autorisation d’un benchmark payant. Les tarifs existants ne changent pas comme effet de bord visuel.
+
+L’utilisateur insiste sur une esthétique forte, y compris figurative. Chaque famille doit disposer d’un langage visuel soigné : illustrations explicatives, compositions avant/après adaptées, pictogrammes cohérents et retours de sélection/mouvement utiles. Cette exigence concerne autant les panneaux ouverts que les vignettes. Distinguer illustration et véritable résultat ; respecter mobile, clavier, réduction des animations et coût de rendu. La simple grille de cartes génériques ne suffit pas.
+
+Frontières acceptées par Studio ; le contrat détaillé reste à finaliser entre les deux tâches :
+
+- Toolbox possède les identités produit stables, le catalogue, l’éligibilité média, les schémas de réglages, les parcours standalone et la surface réutilisable des outils.
+- Studio possède leur présentation dans ses menus, blocs et inspecteur, les adaptateurs canevas/timeline et la persistance du projet. Son raccord SFX historique et son montage MCP minimal restent dans son périmètre.
+- Partager `toolId`/version, IDs de médias, contraintes, devis serveur, cycle de job, sorties et filiation ; ne pas dupliquer l’exécution ni stocker les endpoints fournisseurs dans les projets. Les changements partagés indispensables sont isolés et documentés.
+- Synchronisation envoyée aux deux tâches : premier point sur le contrat avant de figer les blocs, second point sur un parcours Outils → Studio effectivement essayé avant livraison. Toolbox a confirmé son démarrage ; Studio a confirmé les frontières et partagé ses adaptateurs existants, avec un contrat additif et une migration progressive des blocs.
+
+Le fil principal conserve le style global et la revue d’intégration. La prévisualisation Toolbox utilise un port libre différent de 3026 et 3032. Les limites d’exécution, de données et de publication des autres tâches s’appliquent également.
