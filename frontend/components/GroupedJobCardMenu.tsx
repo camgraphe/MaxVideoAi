@@ -1,6 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
+import { ActivityJobActionPanel } from './library/ActivityJobActionPanel.client';
 import { GalleryMediaActionPanel } from './library/GalleryMediaActionPanel.client';
 import { galleryMediaAssets } from './library/gallery-media-assets';
 import type { Ref } from 'react';
@@ -43,7 +44,19 @@ export function GroupedJobCardMenu({
   const showGalleryActions = menuVariant === 'gallery';
   const showGalleryImageActions = menuVariant === 'gallery-image';
 
-  const assets = galleryMediaAssets(group, showGalleryImageActions ? 'image' : 'video');
+  const showActivityActions = menuVariant === 'activity';
+  const activityKind = group.hero.audioUrl ? 'audio' : isImageGroup || (!group.hero.videoUrl && group.hero.job?.renderIds?.length) ? 'image' : 'video';
+  const assets = galleryMediaAssets(group, showActivityActions ? activityKind : showGalleryImageActions ? 'image' : 'video');
+  if (showActivityActions && assets.length) return <GalleryMediaActionPanel
+    assets={assets} menuRef={menuRef} onClose={closeMenu} onPreview={() => handleAction('open')}
+    onSave={() => handleAction('save-to-library')} saving={savingToLibrary}
+    recreateHref={recreateHref} recreateLabel={recreateLabel}
+    onRemove={allowRemove && group.count <= 1 ? () => handleAction('remove') : undefined} />;
+
+  if (showActivityActions) return <ActivityJobActionPanel
+    menuRef={menuRef} onClose={closeMenu} onOpen={() => handleAction('open')} openLabel={openLabel}
+    recreateHref={recreateHref} recreateLabel={recreateLabel}
+    onRemove={allowRemove && group.count <= 1 ? () => handleAction('remove') : undefined} />;
   if ((showGalleryActions || showGalleryImageActions) && assets.length) return <GalleryMediaActionPanel
     assets={assets} menuRef={menuRef} onClose={closeMenu} onPreview={() => handleAction('open')}
     onRemake={showGalleryActions && onOpen ? handleRemake : undefined}

@@ -49,3 +49,12 @@ test('gallery continuation refuses thumbnail-only and pending outputs and keeps 
   group.members = [{ ...member, videoUrl: 'https://private.example/original.mp4', previewVideoUrl: 'https://private.example/preview.mp4' }];
   assert.equal(galleryMediaAssets(group, 'video')[0].url, 'https://private.example/original.mp4');
 });
+
+test('activity audio originals and separate single-image jobs retain their exact assets', () => {
+  const member = { id: 'one', engineLabel: 'Engine', durationSec: 4, createdAt: '2026-09-07', source: 'job' as const, status: 'completed' as const };
+  const group: GroupSummary = { id: 'group', hero: member, members: [member], previews: [], count: 1, source: 'history', totalPriceCents: null, createdAt: '2026-09-07' };
+  group.members = [{ ...member, audioUrl: 'https://private.example/original.wav?signature=exact', thumbUrl: 'https://private.example/cover.webp' }];
+  assert.equal(galleryMediaAssets(group, 'audio')[0].url, 'https://private.example/original.wav?signature=exact');
+  group.members = ['one', 'two'].map((id) => ({ ...member, id, job: { jobId: id, engineLabel: 'Engine', durationSec: 0, prompt: '', createdAt: member.createdAt, renderIds: [`https://private.example/${id}.png`] } }));
+  assert.deepEqual(galleryMediaAssets(group, 'image').map((entry) => entry.url), ['https://private.example/one.png', 'https://private.example/two.png']);
+});

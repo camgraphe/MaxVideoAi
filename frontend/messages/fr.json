@@ -3554,6 +3554,32 @@
       }
     },
     "jobs": {
+      "activity": {
+        "title": "Activité",
+        "description": "Vos générations, dans l’ordre. Ouvrez un résultat pour continuer à créer.",
+        "source": "Source",
+        "sources": {
+          "all": "Toutes les sources",
+          "video": "Vidéo",
+          "image": "Image",
+          "audio": "Audio",
+          "storyboard": "Storyboard",
+          "character": "Personnage",
+          "angle": "Angle",
+          "upscale": "Agrandissement",
+          "background-removal": "Suppression du fond"
+        },
+        "status": "Statut de l’activité chargée",
+        "statuses": {
+          "all": "Tous les statuts",
+          "pending": "En cours",
+          "completed": "Terminé",
+          "failed": "Échec"
+        },
+        "statusHint": "Les statuts filtrent l’activité chargée. Chargez la suite pour consulter les générations plus anciennes.",
+        "filteredEmpty": "Aucune génération correspondante dans l’activité chargée.",
+        "refresh": "Actualiser"
+      },
       "title": "Historique",
       "sections": {
         "video": "Historique vidéo",

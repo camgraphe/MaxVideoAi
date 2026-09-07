@@ -135,9 +135,9 @@ export function GroupedJobCard({
   }, [previewCount]);
   const showMenu = Boolean(onAction) && actionMenu;
   const isCurated = Boolean(hero.job?.curated);
-  const isRailCard = menuVariant === 'gallery' || menuVariant === 'gallery-image';
+  const isRailCard = menuVariant === 'gallery' || menuVariant === 'gallery-image' || menuVariant === 'activity';
   const showCompactMenuButton = menuVariant === 'compact' || isRailCard;
-  const useRailCaption = isRailCard && !isCurated && !showLibraryCta && !showImageCta && !isImageGroup;
+  const useRailCaption = menuVariant === 'activity' || (isRailCard && !isCurated && !showLibraryCta && !showImageCta && !isImageGroup);
 
   const handleAction = (action: GroupedJobAction) => {
     setMenuOpen(false);
@@ -185,7 +185,7 @@ export function GroupedJobCard({
       ref={cardRef}
       className={clsx(
         'relative overflow-visible rounded-card border bg-surface-glass-90 p-0 shadow-card transition-[border-color,box-shadow]',
-        (menuVariant === 'gallery' || menuVariant === 'gallery-image') && 'app-rail-media-card',
+        isRailCard && 'app-rail-media-card',
         selected ? 'border-brand ring-2 ring-brand/25' : 'border-border',
         menuOpen && 'z-30'
       )}

@@ -3546,6 +3546,32 @@
       }
     },
     "jobs": {
+      "activity": {
+        "title": "Actividad",
+        "description": "Tus generaciones, en orden. Abre un resultado para seguir creando.",
+        "source": "Origen",
+        "sources": {
+          "all": "Todos los orígenes",
+          "video": "Vídeo",
+          "image": "Imagen",
+          "audio": "Audio",
+          "storyboard": "Storyboard",
+          "character": "Personaje",
+          "angle": "Ángulo",
+          "upscale": "Ampliación",
+          "background-removal": "Eliminar fondo"
+        },
+        "status": "Estado de la actividad cargada",
+        "statuses": {
+          "all": "Todos los estados",
+          "pending": "En curso",
+          "completed": "Completado",
+          "failed": "Fallido"
+        },
+        "statusHint": "Los estados filtran la actividad cargada. Carga más para consultar generaciones anteriores.",
+        "filteredEmpty": "No hay generaciones coincidentes en la actividad cargada.",
+        "refresh": "Actualizar"
+      },
       "title": "Historial",
       "sections": {
         "video": "Historial de video",

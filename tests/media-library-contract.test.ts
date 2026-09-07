@@ -417,7 +417,11 @@ test('library cards use icon actions and put source navigation on the visual', (
   assert.doesNotMatch(clientSource, /\?\?\s*asset\.url/);
   assert.match(clientSource, /getAssetHrefLabel=\{\(\)\s*=>[\s\S]*copy\.assets\.openAssetButton/);
   assert.doesNotMatch(clientSource, />\s*\{copy\.assets\.useSettingsButton\}\s*</);
-  assert.match(clientSource, /<Download\s+className=/);
+  const panelSource = fs.readFileSync(path.join(process.cwd(), 'frontend/components/library/MediaActionPanel.client.tsx'), 'utf8');
+  assert.match(browserSource, /<MediaActionPanel/);
+  assert.match(panelSource, /buildAppDownloadUrl\(asset\.url, suggestDownloadFilename/);
+  assert.match(panelSource, /\{copy\.download\}/);
+  assert.match(panelSource, /useAccessibleModal/);
   assert.match(clientSource, /<Trash2\s+className=/);
 });
 
@@ -528,9 +532,9 @@ test('history cards use thumbnails and explicit card actions', () => {
   assert.match(cardSource, /aria-label=\{actionMenuLabel\}/);
   assert.match(jobsShellSource, /openLabel=\{copy\.actions\.openDetails\}/);
   assert.match(jobsShellSource, /actionMenuLabel=\{copy\.actions\.actions\}/);
-  assert.match(jobsShellSource, /expandSection/);
-  assert.match(jobsShellSource, /collapseSection/);
-  assert.match(jobsShellSource, /<ChevronDown/);
+  assert.match(jobsShellSource, /<select value=\{source\}/);
+  assert.match(jobsShellSource, /JOBS_SOURCES\.map/);
+  assert.doesNotMatch(jobsShellSource, /expandSection|collapseSection|CollapsedGroupRail/);
   assert.doesNotMatch(`${jobsSource}\n${jobsShellSource}`, /'▸'|'▾'/);
 });
 
@@ -567,9 +571,10 @@ test('history can save renders to library from cards and job details', () => {
   assert.match(jobsSource, /saveAssetToLibrary/);
   assert.match(jobsHelpersSource, /function\s+resolveGroupLibrarySavePayload/);
   assert.match(jobsHelpersSource, /function\s+resolveEntryLibrarySavePayload/);
-  assert.match(jobsShellSource, /showLibraryCta/);
-  assert.match(jobsShellSource, /<CollapsedGroupRail[\s\S]*onSaveToLibrary/);
-  assert.match(jobsShellSource, /onSaveToLibrary=\{onSaveGroupToLibrary\}/);
+  assert.match(jobsShellSource, /menuVariant="activity"/);
+  const activityMenuSource = fs.readFileSync(path.join(process.cwd(), 'frontend/components/GroupedJobCardMenu.tsx'), 'utf8');
+  assert.match(activityMenuSource, /showActivityActions && assets.length/);
+  assert.match(activityMenuSource, /onSave=\{\(\) => handleAction\('save-to-library'\)\}/);
   assert.match(jobsShellSource, /onSaveToLibrary=\{onSaveLightboxEntryToLibrary\}/);
   assert.match(apiSource, /kind\?:\s*'image'\s*\|\s*'video'\s*\|\s*'audio'/);
   assert.match(apiSource, /thumbUrl:\s*payload\.thumbUrl/);

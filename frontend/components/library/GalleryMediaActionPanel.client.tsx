@@ -1,12 +1,14 @@
 'use client';
+import Link from 'next/link';
 import { useState, type Ref } from 'react';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { MediaActionPanel } from './MediaActionPanel.client';
 import { MediaDestinationActions } from './MediaDestinationActions.client';
 import type { AssetBrowserAsset } from './AssetLibraryBrowser';
-export function GalleryMediaActionPanel({ assets, onClose, menuRef, onPreview, onRemake, onSave, onCopy }: {
+export function GalleryMediaActionPanel({ assets, onClose, menuRef, onPreview, onRemake, onSave, onCopy, recreateHref, recreateLabel, onRemove, saving }: {
   assets: AssetBrowserAsset[]; onClose: () => void; menuRef: Ref<HTMLDivElement>;
+  recreateHref?: string; recreateLabel?: string; onRemove?: () => void; saving?: boolean;
   onPreview: () => void; onRemake?: () => void; onSave?: () => void; onCopy?: () => void;
 }) {
   const { user } = useRequireAuth({ redirectIfLoggedOut: false });
@@ -19,7 +21,9 @@ export function GalleryMediaActionPanel({ assets, onClose, menuRef, onPreview, o
     <MediaDestinationActions key={asset.id} asset={asset} userId={user?.id} locale={locale} onNavigate={onClose} />
     <button type="button" onClick={onPreview}>{labels[0]}</button>
     {onRemake ? <button type="button" onClick={onRemake}>{labels[1]}</button> : null}
-    {onSave ? <button type="button" onClick={onSave}>{labels[2]}</button> : null}
+    {onSave ? <button type="button" onClick={onSave} disabled={saving}>{labels[2]}</button> : null}
+    {recreateHref ? <Link href={recreateHref} onClick={onClose}>{recreateLabel ?? labels[1]}</Link> : null}
+    {onRemove ? <button type="button" onClick={onRemove}>{locale.startsWith('fr') ? 'Retirer de l’historique' : locale.startsWith('es') ? 'Quitar del historial' : 'Remove from history'}</button> : null}
     {onCopy ? <button type="button" onClick={onCopy}>{labels[3]}</button> : null}
   </MediaActionPanel>;
 }
