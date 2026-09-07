@@ -300,3 +300,80 @@ test('actual image Library owns focus, Escape and body lock and restores its con
     assert.equal(doc.activeElement, command); assert.equal(doc.body.style.overflow, '');
   } finally { await fixture.cleanup(); }
 });
+
+test('removing controlled frame and sparse collection assets keeps focus in the popup and Escape returns to the stable command', async () => {
+  const { WorkspaceReferenceSection } = await loadReferenceSection();
+  const engine = listFalEngines().find(entry => entry.id === 'seedance-2-0')!.engine;
+  const asset = { kind: 'image' as const, name: 'Selected image', previewUrl: '/selected.png', size: 1, type: 'image/png' };
+  const sparse: ComposerProps['assets'][string] = Array(50).fill(null); sparse[49] = asset;
+  const removed: Array<[string, number]> = [];
+  function Fixture() {
+    const [assets, setAssets] = React.useState<ComposerProps['assets']>({ image_url: [asset], end_image_url: [asset], references: sparse });
+    return React.createElement(WorkspaceReferenceSection, {
+      engine, assets, referenceWarning: '', assetFields: [
+        { field: { id: 'image_url', type: 'image', label: 'Start image', maxCount: 1 }, required: false },
+        { field: { id: 'end_image_url', type: 'image', label: 'End image', maxCount: 1 }, required: false },
+        { field: { id: 'references', type: 'image', label: 'References', maxCount: 50 }, required: false },
+      ], onAssetRemove: (field, index) => {
+        removed.push([field.id, index]);
+        setAssets(current => ({ ...current, [field.id]: current[field.id].map((entry, slotIndex) => slotIndex === index ? null : entry) }));
+      },
+    });
+  }
+  const fixture = await mount(React.createElement(Fixture));
+  const doc = fixture.dom.window.document;
+  try {
+    for (const [commandId, fieldId, slotIndex] of [['end_image_url', 'end_image_url', 0], ['collections', 'references', 49]] as const) {
+      const command = fixture.container.querySelector<HTMLButtonElement>(`[data-reference-command="${commandId}"]`)!;
+      await act(async () => command.click());
+      const dialog = doc.querySelector<HTMLElement>('[role="dialog"]')!;
+      const remove = dialog.querySelector<HTMLButtonElement>(`[data-reference-field="${fieldId}"] [data-asset-index="${slotIndex}"] button[aria-label^="Quitar"]`)!;
+      remove.focus();
+      await act(async () => remove.click());
+      assert.equal(remove.isConnected, false, 'the actual state update unmounts the focused remove control');
+      assert.ok(dialog.contains(doc.activeElement), 'focus remains inside the still-open popup after removal');
+      assert.equal(doc.body.style.overflow, 'hidden');
+      assert.equal(command.isConnected, true);
+      await act(async () => doc.activeElement!.dispatchEvent(new fixture.dom.window.KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true })));
+      assert.ok(dialog.contains(doc.activeElement), 'Tab containment still works after the focused control disappears');
+      await act(async () => doc.activeElement!.dispatchEvent(new fixture.dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
+      assert.equal(doc.querySelector('[role="dialog"]'), null, 'Escape from the recovered active element closes the popup');
+      assert.equal(doc.activeElement, command);
+      assert.equal(doc.body.style.overflow, '');
+    }
+    assert.deepEqual(removed, [['end_image_url', 0], ['references', 49]]);
+  } finally { await fixture.cleanup(); }
+});
+
+test('populated frame commands show their original previews and states without duplicating frames in the bounded collection summary', async () => {
+  const { WorkspaceReferenceSection } = await loadReferenceSection();
+  const engine = listFalEngines().find(entry => entry.id === 'seedance-2-0')!.engine;
+  const image = { kind: 'image' as const, name: 'Reference', previewUrl: '/ref.png', size: 1, type: 'image/png' };
+  const fixture = await mount(React.createElement(WorkspaceReferenceSection, {
+    engine, referenceWarning: '', assets: {
+      image_url: [{ ...image, name: 'Full start name', previewUrl: '/original-start.png', status: 'uploading' }],
+      end_image_url: [{ ...image, name: 'Full end name', previewUrl: '/original-end.png', status: 'error', error: 'Upload failed' }],
+      references: Array(50).fill(image),
+    }, assetFields: [
+      { field: { id: 'image_url', type: 'image', label: 'Start image', maxCount: 1 }, required: false },
+      { field: { id: 'end_image_url', type: 'image', label: 'End image', maxCount: 1 }, required: false },
+      { field: { id: 'references', type: 'image', label: 'References', maxCount: 50 }, required: false },
+    ],
+  }));
+  try {
+    const start = fixture.container.querySelector('[data-reference-command="image_url"]')!;
+    const end = fixture.container.querySelector('[data-reference-command="end_image_url"]')!;
+    assert.equal(start.querySelector('img')?.getAttribute('src'), '/original-start.png');
+    assert.equal(end.querySelector('img')?.getAttribute('src'), '/original-end.png');
+    assert.equal(start.getAttribute('aria-label'), 'Inicio · Full start name');
+    assert.equal(end.getAttribute('aria-label'), 'Fin · Full end name');
+    assert.ok(start.querySelector('[role="status"]')); assert.match(end.querySelector('[role="alert"]')!.textContent!, /Upload failed/);
+    assert.equal(start.querySelector('svg'), null); assert.equal(end.querySelector('svg'), null);
+    assert.doesNotMatch(start.textContent!, /✓/);
+    const summary = fixture.container.querySelector('.app-reference-selected-summary')!;
+    assert.equal(summary.querySelectorAll('button').length, 3);
+    assert.equal(summary.querySelectorAll('img[src="/ref.png"]').length, 3);
+    assert.doesNotMatch(summary.textContent!, /Full start name|Full end name/);
+    assert.match(summary.textContent!, /\+47/);
+  } finally { await fixture.cleanup(); }
+});
