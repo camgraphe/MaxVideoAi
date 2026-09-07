@@ -26,3 +26,11 @@
 ## Commit
 
 - Implementation commit: `6f6abedb7c6e6616480af6673c7c017ee8845850`
+
+## Follow-up: accessible refresh DOM contract
+
+- Updated the existing revalidation behavior test to locate the icon-only refresh button by its localized accessible name, verify that the action is visible and idle, then retain the same click, request-count, refreshed-result, and shared-page assertions.
+- `node .superpowers/artifacts/2026-09-07-connected-app-review/run-validation.cjs ./frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test tests/workspace-recent-media-dom.test.ts tests/workspace-recent-media.test.ts` — passed, 14/14, exit 0 after the shared SWR handle closed naturally in 30.8 seconds.
+- `node .superpowers/artifacts/2026-09-07-connected-app-review/run-validation.cjs ./frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test tests/workspace-recent-media.test.ts` — passed, 9/9.
+- Removed the blanket 720px composer container cutoff and reduced the settings group's preferred flex basis to 380px, allowing the MiniMax four-control configuration and actions to share a 673px composer when their actual widths fit. Smaller containers and wider setting sets continue to wrap through intrinsic flex sizing.
+- Controller live check at a 1139px viewport / 673px composer: the 447.92px MiniMax settings group and 217.08px submit group share the same 44px row without overlap.

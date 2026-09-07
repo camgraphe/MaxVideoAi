@@ -167,8 +167,10 @@ test('reopening Recents and its visible Refresh action revalidate the same succe
     assert.equal(requests.length, 3);
     assert.equal(h.dom.window.document.querySelectorAll('.app-recent-list li').length, 2);
     completed = 3;
-    const refresh = [...h.dom.window.document.querySelectorAll<HTMLButtonElement>('.app-recent-media button')].find(button => button.textContent === 'Refresh')!;
+    const refresh = h.dom.window.document.querySelector<HTMLButtonElement>('.app-recent-media button[aria-label="Refresh"]')!;
     assert.ok(refresh);
+    assert.ok(refresh.getClientRects().length > 0, 'the accessible Refresh action should be visible while Recents is open');
+    assert.equal(refresh.getAttribute('aria-busy'), 'false');
     await act(async () => refresh.click()); await h.flush();
     assert.equal(requests.length, 4);
     assert.equal(h.dom.window.document.querySelectorAll('.app-recent-list li').length, 3);
