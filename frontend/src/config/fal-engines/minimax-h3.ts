@@ -99,6 +99,7 @@ export const MINIMAX_H3_ENGINE: EngineCaps = {
         minCount: 0,
         maxCount: 9,
         maxSizeMB: 30,
+        imageAspectRatio: { min: 0.4, max: 2.5 },
         acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
         acceptedFileExtensions: [...IMAGE_FORMATS],
         source: 'either',

@@ -33,6 +33,7 @@ import {
 import {
   resolveEngineMediaFieldConstraint,
   validateMediaFileAgainstConstraint,
+  validateImageAspectRatio,
 } from '@/lib/media-field-constraints';
 
 const VIDEO_FIELD_BY_SETTING: Record<string, string> = {
@@ -758,6 +759,17 @@ function validateReferences(
     );
     if (!fields.length) fail('references', 'reference_invalid');
     validateTrustedReferenceDuration(reference, fields, candidate, options);
+    if (fields.length === 1 && fields[0]!.imageAspectRatio) {
+      if (reference.kind !== 'asset') {
+        // Budget estimates may describe unverified media; executable quotes may not.
+        if (!options.allowUnverifiedReferenceDuration) fail('references', 'reference_invalid');
+      } else if (options.resolvedReferences) {
+        const resolved = resolvedReference(reference, options);
+        if (validateImageAspectRatio(fields[0]!, resolved?.width, resolved?.height) !== 'valid') {
+          fail('references', 'reference_invalid');
+        }
+      }
+    }
     selectedFields.push(fields);
     if (fields.length === 1) {
       const field = fields[0]!;

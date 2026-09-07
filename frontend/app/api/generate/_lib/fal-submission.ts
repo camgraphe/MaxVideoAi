@@ -147,7 +147,7 @@ export async function submitFalGenerateTask(params: {
             engineId: params.engineId,
             requestId,
           });
-          params.persistProviderJobId(requestId);
+          return params.persistProviderJobId(requestId);
         },
         onQueueUpdate: (status) => {
           if (!status) return;

@@ -6,6 +6,7 @@ import { linkFalJob } from '@/server/admin-job-tools';
 import { updateJobFromFalWebhook } from '@/server/fal-webhook-handler';
 import { backfillCompletedMcpJobOutputs } from '@/server/media-library/mcp-output-assets';
 import { toUserFacingFailureMessage } from '@/server/user-facing-failure-messages';
+import { getFalPollTiming } from '@/server/fal-poll-timing';
 
 type FalPendingJob = {
   job_id: string;
@@ -19,8 +20,6 @@ type FalPendingJob = {
 
 const POLL_BASE_DELAYS_MS = [5_000, 15_000, 30_000, 60_000, 120_000];
 const POLL_INITIAL_DELAY_MS = 5_000;
-const POLL_MAX_DURATION_MS = 35 * 60_000;
-const POLL_TIMEOUT_GRACE_MS = 20 * 60_000;
 const FAILURE_STATES = new Set(['FAILED', 'FAIL', 'ERROR', 'ERRORED', 'CANCELLED', 'CANCELED', 'NOT_FOUND', 'MISSING', 'UNKNOWN']);
 const COMPLETED_STATES = new Set(['COMPLETED', 'FINISHED', 'SUCCESS', 'SUCCEEDED', 'OK']);
 
@@ -113,10 +112,7 @@ export async function runFalPoll() {
         continue;
       }
 
-      const createdAtMs = Date.parse(job.created_at);
-      const ageMs = Number.isFinite(createdAtMs) ? now - createdAtMs : 0;
-      const timedOut = Number.isFinite(createdAtMs) && ageMs > POLL_MAX_DURATION_MS;
-      const beyondTimeoutGrace = Number.isFinite(createdAtMs) && ageMs > POLL_MAX_DURATION_MS + POLL_TIMEOUT_GRACE_MS;
+      const { ageMs, timedOut, beyondTimeoutGrace, graceMs } = getFalPollTiming(job.engine_id, job.created_at, now);
 
       const pollHistory = await query<{ attempts: number; last_attempt_at: string | null }>(
         `SELECT COUNT(*)::int AS attempts, MAX(created_at) AS last_attempt_at
@@ -179,7 +175,7 @@ export async function runFalPoll() {
             {
               reason: 'Unable to determine render engine during timeout grace window.',
               ageMs,
-              graceMs: POLL_TIMEOUT_GRACE_MS,
+              graceMs,
             },
             engineIdForLookup
           );
@@ -212,7 +208,7 @@ export async function runFalPoll() {
             {
               reason: 'Render status temporarily unavailable during timeout grace window.',
               ageMs,
-              graceMs: POLL_TIMEOUT_GRACE_MS,
+              graceMs,
             },
             engineIdForLookup
           );
@@ -263,7 +259,7 @@ export async function runFalPoll() {
               reason: 'Render still processing during timeout grace window.',
               falStatus: state,
               ageMs,
-              graceMs: POLL_TIMEOUT_GRACE_MS,
+              graceMs,
             },
             engineIdForLookup
           );
@@ -281,7 +277,7 @@ export async function runFalPoll() {
               reason: 'Render result not ready during timeout grace window.',
               falStatus: state ?? null,
               ageMs,
-              graceMs: POLL_TIMEOUT_GRACE_MS,
+              graceMs,
             },
             engineIdForLookup
           );

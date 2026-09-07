@@ -153,6 +153,7 @@ export type AgentModelReferenceFieldDetails = Readonly<{
   type: 'image' | 'video' | 'audio';
   roles: readonly CanonicalGenerationReferenceRole[];
   assetRequired: boolean;
+  imageAspectRatio?: Readonly<{ min: number; max: number }>;
   assetRequiredWhen?: Readonly<{
     setting: 'resolution';
     values: readonly string[];

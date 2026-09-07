@@ -169,6 +169,7 @@ export interface EngineInputField {
   minDurationSec?: number;
   maxDurationSec?: number;
   maxSizeMB?: number;
+  imageAspectRatio?: { min: number; max: number };
   acceptedMimeTypes?: string[];
   acceptedFileExtensions?: string[];
   slotLabelPattern?: string;

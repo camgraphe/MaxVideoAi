@@ -136,7 +136,8 @@ function projectReferences(
     return [Object.freeze({
       type: field.type,
       roles: Object.freeze([...roles]),
-      assetRequired: requiresOwnedReferenceAsset(roles, mode, engine.id, engine) || durationSec !== null,
+      assetRequired: requiresOwnedReferenceAsset(roles, mode, engine.id, engine) || durationSec !== null || Boolean(field.imageAspectRatio),
+      ...(field.imageAspectRatio ? { imageAspectRatio: Object.freeze({ ...field.imageAspectRatio }) } : {}),
       ...(assetRequiredWhen ? { assetRequiredWhen } : {}),
       ...(durationSec ? { durationSec } : {}),
       required: field.requiredInModes

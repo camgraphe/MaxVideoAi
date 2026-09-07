@@ -61,6 +61,19 @@ async function generateViaFal(
   let enqueuedRequestId: string | undefined;
   let result: Awaited<ReturnType<typeof falClient.subscribe>>;
   try {
+    if (payload.submissionMode === 'enqueue') {
+      const queued = await falClient.queue.submit(model, { input: requestBody, webhookUrl });
+      enqueuedRequestId = queued.request_id;
+      if (!enqueuedRequestId) throw new Error('FAL queue response did not contain a request ID');
+      await hooks?.onRequestId?.(enqueuedRequestId);
+      return {
+        provider,
+        thumbUrl: fallbackThumb,
+        providerJobId: enqueuedRequestId,
+        status: 'queued',
+        progress: 0,
+      };
+    }
     result = await falClient.subscribe(model, {
       input: requestBody,
       webhookUrl,

@@ -7,6 +7,19 @@ export type MediaFieldConstraint = {
   unmappedDeclaredFormats?: string[];
 };
 
+export function validateImageAspectRatio(
+  field: EngineInputField,
+  width: number | null | undefined,
+  height: number | null | undefined,
+): 'valid' | 'unverified' | 'unsupported' {
+  const range = field.type === 'image' ? field.imageAspectRatio : undefined;
+  if (!range) return 'valid';
+  if (!Number.isSafeInteger(width) || !Number.isSafeInteger(height)
+    || Number(width) <= 0 || Number(height) <= 0) return 'unverified';
+  const ratio = Number(width) / Number(height);
+  return ratio >= range.min && ratio <= range.max ? 'valid' : 'unsupported';
+}
+
 export type MediaFileConstraintValidation =
   | { ok: true }
   | {
