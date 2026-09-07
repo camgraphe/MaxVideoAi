@@ -102,10 +102,13 @@ User follow-up: complete the direct Départ / Fin / Ajouter presentation in the 
 - [x] Verify 1440×960, 900×700, 390×844, 320×740 and 844×390: visible wallet/navigation, complete prompt focus, reference additions and errors, core options, price/action, scroll reachability and no horizontal overflow. Inspect light/dark, empty/loading/results and native audio controls.
 - [x] Verify menu keyboard loop, Escape/focus return, localized links, account/auth destinations, draft persistence and dynamic panels. Preserve all functions inventoried before replacement.
 - [x] Run frontend lint, exposure lint, TypeScript and affected architecture/behavior suites; full `test:validate` if generation/polling/persistence responsibilities changed. Compare loading evidence where production-like builds are runnable; do not claim a performance gain from CSS or syntax checks.
-- [ ] Obtain independent spec/quality review of each task and a final integration review. Fix material findings and record unresolved real-session/device/performance qualification honestly.
+- [x] Obtain independent spec/quality review of each task and a final integration review. Fix material findings and record unresolved real-session/device/performance qualification honestly.
 - [x] Leave a reviewable isolated branch and local preview; no deployment, merge or payment.
 
 ## Progress
 
 - Baseline `ebead7f23`: clean isolated worktree; 21 affected route/presentation tests pass with `tsx --tsconfig frontend/tsconfig.json`. The initial raw Node invocation lacked the tsconfig alias and was corrected before implementation.
 - User input affordance/logo feedback is applied to the prototype first; its visual rules are binding for the integration above.
+- Tasks 1–5 are implemented and independently approved. Whole-branch review of `1fe1d1aa2..4fdfe87fa` found two Important and two Minor integration gaps. The single final fix wave `287a434d6` addressed all four; scoped re-review found no new breakage or open findings.
+- Final source validation: 4,429 tests passed with no failures or skips, production build passed with 861 static pages, and lint, TypeScript, exposure and localization checks passed. Temporary browser fixture routes were removed before the final build. Qualification limits and ownership are recorded in `docs/engineering/app-experience.md`.
+- The isolated branch and local previews are retained for user validation. No push, merge, deployment, paid generation or production data mutation was performed. Saved Studio timeline/canvas integration remains a separate bounded lot.
