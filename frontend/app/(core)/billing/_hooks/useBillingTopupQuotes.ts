@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { USD_TOPUP_TIERS } from '@/config/topupTiers';
 import type { BillingSession, TopupQuote } from '../_lib/billing-types';
+import { createBillingRequestScope } from '../_lib/billing-request-scope';
 
 export function useBillingTopupQuotes({
   authLoading,
@@ -22,12 +23,15 @@ export function useBillingTopupQuotes({
   const [topupQuotes, setTopupQuotes] = useState<Record<number, TopupQuote>>({});
   const [quoteLoading, setQuoteLoading] = useState(false);
   const [quoteError, setQuoteError] = useState<string | null>(null);
+  const requestScopeRef = useRef(createBillingRequestScope());
 
   useEffect(() => {
     if (authLoading) return;
-    let canceled = false;
+    const accountId = session?.user?.id ?? 'anonymous';
+    const requestToken = requestScopeRef.current.begin(accountId);
 
     async function loadQuotes() {
+      setTopupQuotes({});
       setQuoteLoading(true);
       setQuoteError(null);
       const token = session?.access_token ?? null;
@@ -49,7 +53,7 @@ export function useBillingTopupQuotes({
         if (!response.ok || !data?.ok) {
           throw new Error(data?.error ?? 'quote_failed');
         }
-        if (canceled) return;
+        if (!requestScopeRef.current.isCurrent(requestToken)) return;
         const mapped: Record<number, TopupQuote> = {};
         (data.quotes ?? []).forEach((entry: Record<string, unknown>) => {
           const usdAmount = Number(entry?.usdAmountCents);
@@ -61,13 +65,13 @@ export function useBillingTopupQuotes({
         });
         setTopupQuotes(mapped);
       } catch (error) {
-        if (!canceled) {
+        if (requestScopeRef.current.isCurrent(requestToken)) {
           console.warn('[billing] topup quote fetch failed', error);
           setTopupQuotes({});
           setQuoteError(quoteErrorMessage);
         }
       } finally {
-        if (!canceled) {
+        if (requestScopeRef.current.isCurrent(requestToken)) {
           setQuoteLoading(false);
         }
       }
@@ -75,7 +79,7 @@ export function useBillingTopupQuotes({
 
     loadQuotes();
     return () => {
-      canceled = true;
+      requestScopeRef.current.invalidate();
     };
   }, [authLoading, customAmountCents, customAmountValid, normalizedChargeCurrency, quoteErrorMessage, session]);
 

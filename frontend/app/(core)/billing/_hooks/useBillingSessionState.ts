@@ -1,17 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   readLastKnownUserId,
   writeLastKnownWallet,
 } from '@/lib/last-known';
 import type { BillingSession } from '../_lib/billing-types';
+import { createBillingRequestScope } from '../_lib/billing-request-scope';
 
 type BillingWallet = {
   balance: number;
   currency: string;
   hasCompletedTopUp: boolean;
 };
+
+export type BillingWalletStatus = 'idle' | 'loading' | 'ready' | 'refreshing' | 'error';
 
 export function useBillingSessionState({
   authLoading,
@@ -23,53 +26,74 @@ export function useBillingSessionState({
   onDetectedCurrency: (currency: string) => void;
 }) {
   const [wallet, setWallet] = useState<BillingWallet | null>(null);
+  const [walletStatus, setWalletStatus] = useState<BillingWalletStatus>('idle');
+  const [walletError, setWalletError] = useState<string | null>(null);
   const [stripeMode, setStripeMode] = useState<'test' | 'live' | 'disabled'>('disabled');
+  const walletRequestScopeRef = useRef(createBillingRequestScope());
+  const activeAccountIdRef = useRef<string | null>(null);
+
+  const accountId = session?.user?.id ?? null;
+  const accessToken = session?.access_token ?? null;
+
+  const refreshWallet = useCallback(async (): Promise<boolean> => {
+    if (!accountId) {
+      walletRequestScopeRef.current.invalidate();
+      setWallet(null);
+      setWalletStatus('idle');
+      setWalletError(null);
+      return false;
+    }
+
+    const requestToken = walletRequestScopeRef.current.begin(accountId);
+    setWalletStatus((current) => current === 'ready' || current === 'refreshing' ? 'refreshing' : 'loading');
+    setWalletError(null);
+    const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
+
+    try {
+      const response = await fetch('/api/wallet', { headers, cache: 'no-store' });
+      const data = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(data?.error ?? 'wallet_load_failed');
+      }
+      if (!walletRequestScopeRef.current.isCurrent(requestToken)) return false;
+      const balance = typeof data?.balance === 'number' ? data.balance : null;
+      if (balance === null) throw new Error('wallet_balance_missing');
+      const currency = typeof data.currency === 'string' ? data.currency : 'USD';
+      const nextWallet = {
+        balance,
+        currency,
+        hasCompletedTopUp: data.hasCompletedTopUp === true,
+      };
+      setWallet(nextWallet);
+      setWalletStatus('ready');
+      if (accountId) {
+        writeLastKnownWallet(nextWallet, accountId ?? readLastKnownUserId());
+      }
+      onDetectedCurrency(String(data.settlementCurrency ?? currency).toUpperCase());
+      return true;
+    } catch (error) {
+      if (!walletRequestScopeRef.current.isCurrent(requestToken)) return false;
+      setWalletError(error instanceof Error ? error.message : 'wallet_load_failed');
+      setWalletStatus('error');
+      return false;
+    }
+  }, [accessToken, accountId, onDetectedCurrency]);
 
   useEffect(() => {
     if (authLoading) return;
-
-    let mounted = true;
-    async function load() {
-      if (!session && mounted) {
-        setWallet(null);
-      }
-
-      const token = session?.access_token ?? null;
-      const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-      if (session) {
-        fetch('/api/wallet', { headers, cache: 'no-store' })
-          .then(async (response) => {
-            const payload = await response.json().catch(() => null);
-            if (!response.ok) {
-              throw new Error(payload?.error ?? 'wallet_load_failed');
-            }
-            return payload;
-          })
-          .then((data) => {
-            if (!mounted || !data) return;
-            const balance = typeof data.balance === 'number' ? data.balance : null;
-            if (balance === null) return;
-            const currency = typeof data.currency === 'string' ? data.currency : 'USD';
-            const hasCompletedTopUp = data.hasCompletedTopUp === true;
-            const nextWallet = { balance, currency, hasCompletedTopUp };
-            setWallet(nextWallet);
-            if (session.user?.id) {
-              writeLastKnownWallet(nextWallet, session.user.id ?? readLastKnownUserId());
-            }
-            const resolvedCurrency = String(data.settlementCurrency ?? currency ?? 'USD').toUpperCase();
-            onDetectedCurrency(resolvedCurrency);
-          })
-          .catch(() => undefined);
-      }
-
-
+    if (activeAccountIdRef.current !== accountId) {
+      walletRequestScopeRef.current.invalidate();
+      activeAccountIdRef.current = accountId;
+      setWallet(null);
+      setWalletError(null);
+      setWalletStatus(accountId ? 'loading' : 'idle');
     }
+    if (accountId) {
+      void refreshWallet();
+    }
+  }, [accountId, authLoading, refreshWallet]);
 
-    load();
-    return () => {
-      mounted = false;
-    };
-  }, [authLoading, onDetectedCurrency, session]);
+  useEffect(() => () => walletRequestScopeRef.current.invalidate(), []);
 
   useEffect(() => {
     if (authLoading) return;
@@ -85,6 +109,9 @@ export function useBillingSessionState({
 
   return {
     wallet,
+    walletError,
+    walletStatus,
+    refreshWallet,
     stripeMode,
   };
 }
