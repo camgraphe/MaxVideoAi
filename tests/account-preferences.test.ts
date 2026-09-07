@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import type { User } from '@supabase/supabase-js';
-import { updateAccountName, validateAccountName } from '../frontend/app/(core)/settings/_lib/account-preferences';
+import { updateAccountNameWithToken, validateAccountName } from '../frontend/app/(core)/settings/_lib/account-preferences';
 
 test('account name validation trims values and enforces the 1–80 character boundary', () => {
   assert.deepEqual(validateAccountName('   '), { name: '', error: 'required' });
@@ -9,26 +9,25 @@ test('account name validation trims values and enforces the 1–80 character bou
   assert.deepEqual(validateAccountName('a'.repeat(81)), { name: 'a'.repeat(81), error: 'tooLong' });
 });
 
-test('account update patches only owned keys so concurrent unrelated metadata is preserved', async () => {
-  const user = { id: 'user-1', user_metadata: { plan: 'pro', name: 'Old', full_name: 'Old' } } as unknown as User;
-  let submitted: Record<string, unknown> | undefined;
-  const returned = { ...user, user_metadata: { ...user.user_metadata, name: 'New', full_name: 'New' } } as User;
-  const result = await updateAccountName({ auth: { getUser: async () => ({ data: { user }, error: null }), updateUser: async ({ data }) => { submitted = data; return { data: { user: returned }, error: null }; } } }, user.id, 'New');
+test('account update binds a minimal metadata patch to the captured bearer token', async () => {
+  const user = { id: 'user-1', user_metadata: { plan: 'pro', name: 'New', full_name: 'New' } } as unknown as User;
+  let request: { input: string | URL | Request; init?: RequestInit } | undefined;
+  const result = await updateAccountNameWithToken({
+    accessToken: 'captured-token', expectedUserId: user.id, name: 'New',
+    supabaseUrl: 'https://project.supabase.co/', anonKey: 'public-anon',
+    fetcher: async (input, init) => { request = { input, init }; return Response.json(user); },
+  });
 
-  assert.deepEqual(submitted, { name: 'New', full_name: 'New' });
-  assert.equal(result, returned);
+  assert.equal(request?.input, 'https://project.supabase.co/auth/v1/user');
+  assert.equal(new Headers(request?.init?.headers).get('authorization'), 'Bearer captured-token');
+  assert.equal(new Headers(request?.init?.headers).get('apikey'), 'public-anon');
+  assert.deepEqual(JSON.parse(String(request?.init?.body)), { data: { name: 'New', full_name: 'New' } });
+  assert.deepEqual(result, user);
 });
 
-test('account update surfaces provider errors and missing completion users', async () => {
-  const getUser = async () => ({ data: { user: null }, error: null });
-  await assert.rejects(() => updateAccountName({ auth: { getUser, updateUser: async () => ({ data: { user: null }, error: { message: 'Denied' } }) } }, 'user-1', 'Name'), /Denied/);
-  await assert.rejects(() => updateAccountName({ auth: { getUser, updateUser: async () => ({ data: { user: null }, error: null }) } }, 'user-1', 'Name'), /did not return a user/);
-});
-
-test('account update rejects a completion returned for another identity', async () => {
-  const otherUser = { id: 'user-2', user_metadata: {} } as unknown as User;
-  await assert.rejects(
-    () => updateAccountName({ auth: { getUser: async () => ({ data: { user: otherUser }, error: null }), updateUser: async () => ({ data: { user: otherUser }, error: null }) } }, 'user-1', 'Name'),
-    /Account changed/
-  );
+test('account update surfaces API errors, missing users, and mismatched identities', async () => {
+  const common = { accessToken: 'token', expectedUserId: 'user-1', name: 'Name', supabaseUrl: 'https://project.supabase.co', anonKey: 'anon' };
+  await assert.rejects(() => updateAccountNameWithToken({ ...common, fetcher: async () => Response.json({ message: 'Denied' }, { status: 403 }) }), /Denied/);
+  await assert.rejects(() => updateAccountNameWithToken({ ...common, fetcher: async () => Response.json({}) }), /did not return a user/);
+  await assert.rejects(() => updateAccountNameWithToken({ ...common, fetcher: async () => Response.json({ id: 'user-2' }) }), /Account changed/);
 });

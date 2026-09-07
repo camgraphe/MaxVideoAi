@@ -5,11 +5,15 @@ import * as React from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { User } from '@supabase/supabase-js';
-import type { AccountNameClient } from '../frontend/app/(core)/settings/_lib/account-preferences';
+import { type AccountNameClient, updateAccountNameWithToken } from '../frontend/app/(core)/settings/_lib/account-preferences';
 import { useAccountNameForm } from '../frontend/app/(core)/settings/_hooks/useAccountNameForm';
 
 const messages = { required: 'Required', tooLong: 'Too long', generic: 'Failed', success: 'Saved' };
 const makeUser = (id: string, name: string) => ({ id, email: `${id}@test.invalid`, user_metadata: { name, full_name: name } }) as unknown as User;
+const makeClient = (user: User, accessToken = `token-${user.id}`): AccountNameClient => ({ auth: {
+  getSession: async () => ({ data: { session: { access_token: accessToken, user } }, error: null }),
+  getUser: async () => ({ data: { user }, error: null }),
+} });
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
@@ -17,7 +21,7 @@ function deferred<T>() {
   return { promise, resolve };
 }
 
-async function mountForm(user: User, loadClient: () => Promise<AccountNameClient>) {
+async function mountForm(user: User, loadClient: () => Promise<AccountNameClient>, updateName: typeof updateAccountNameWithToken) {
   const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost/settings' });
   const previous = new Map<string, PropertyDescriptor | undefined>();
   for (const [key, value] of Object.entries({
@@ -32,7 +36,7 @@ async function mountForm(user: User, loadClient: () => Promise<AccountNameClient
   let currentUser = user;
   let state!: ReturnType<typeof useAccountNameForm>;
   function Fixture() {
-    state = useAccountNameForm(currentUser, loadClient);
+    state = useAccountNameForm(currentUser, { loadClient, updateName });
     return null;
   }
   const root = createRoot(dom.window.document.getElementById('root')!);
@@ -53,14 +57,12 @@ async function mountForm(user: User, loadClient: () => Promise<AccountNameClient
 }
 
 test('pending save blocks a double submission and reports success only after completion', async () => {
-  const gate = deferred<ReturnType<AccountNameClient['auth']['updateUser']> extends Promise<infer T> ? T : never>();
+  const gate = deferred<User>();
   let updates = 0;
   const user = makeUser('user-a', 'Old');
-  const client: AccountNameClient = { auth: {
-    getUser: async () => ({ data: { user }, error: null }),
-    updateUser: async () => { updates += 1; return gate.promise; },
-  } };
-  const form = await mountForm(user, async () => client);
+  const client = makeClient(user);
+  const updateName: typeof updateAccountNameWithToken = async () => { updates += 1; return gate.promise; };
+  const form = await mountForm(user, async () => client, updateName);
   try {
     await form.changeName('New');
     let first!: Promise<void>;
@@ -68,7 +70,7 @@ test('pending save blocks a double submission and reports success only after com
     assert.equal(updates, 1);
     assert.equal(form.state.busy, true);
     assert.equal(form.state.status, null);
-    gate.resolve({ data: { user: makeUser('user-a', 'New') }, error: null });
+    gate.resolve(makeUser('user-a', 'New'));
     await act(async () => first);
     assert.equal(form.state.busy, false);
     assert.deepEqual(form.state.status, { kind: 'success', message: 'Saved' });
@@ -80,11 +82,9 @@ test('cancel invalidates a pending save and restores the saved name', async () =
   const loader = deferred<AccountNameClient>();
   let updates = 0;
   const user = makeUser('user-a', 'Old');
-  const client: AccountNameClient = { auth: {
-    getUser: async () => ({ data: { user }, error: null }),
-    updateUser: async () => { updates += 1; return { data: { user }, error: null }; },
-  } };
-  const form = await mountForm(user, () => loader.promise);
+  const client = makeClient(user);
+  const updateName: typeof updateAccountNameWithToken = async () => { updates += 1; return user; };
+  const form = await mountForm(user, () => loader.promise, updateName);
   try {
     await form.changeName('New');
     let save!: Promise<void>;
@@ -101,11 +101,9 @@ test('cancel invalidates a pending save and restores the saved name', async () =
 
 test('provider failure clears pending state and exposes the real error', async () => {
   const user = makeUser('user-a', 'Old');
-  const client: AccountNameClient = { auth: {
-    getUser: async () => ({ data: { user }, error: null }),
-    updateUser: async () => ({ data: { user: null }, error: { message: 'Provider denied update' } }),
-  } };
-  const form = await mountForm(user, async () => client);
+  const client = makeClient(user);
+  const updateName: typeof updateAccountNameWithToken = async () => { throw new Error('Provider denied update'); };
+  const form = await mountForm(user, async () => client, updateName);
   try {
     await form.changeName('New');
     await act(async () => form.state.save(messages));
@@ -120,11 +118,9 @@ test('account switch before client readiness prevents the stale write', async ()
   const userA = makeUser('user-a', 'Alice');
   const userB = makeUser('user-b', 'Bob');
   let updates = 0;
-  const client: AccountNameClient = { auth: {
-    getUser: async () => ({ data: { user: userB }, error: null }),
-    updateUser: async () => { updates += 1; return { data: { user: userB }, error: null }; },
-  } };
-  const form = await mountForm(userA, () => loader.promise);
+  const client = makeClient(userB);
+  const updateName: typeof updateAccountNameWithToken = async () => { updates += 1; return userB; };
+  const form = await mountForm(userA, () => loader.promise, updateName);
   try {
     await form.changeName('Alice edited');
     let save!: Promise<void>;
@@ -136,5 +132,32 @@ test('account switch before client readiness prevents the stale write', async ()
     assert.equal(form.state.name, 'Bob');
     assert.equal(form.state.busy, false);
     assert.equal(form.state.status, null);
+  } finally { await form.dispose(); }
+});
+
+test('session switch after token verification cannot retarget the bound mutation', async () => {
+  const userA = makeUser('user-a', 'Alice');
+  const userB = makeUser('user-b', 'Bob');
+  let ambientUser = userA;
+  const client: AccountNameClient = { auth: {
+    getSession: async () => ({ data: { session: { access_token: 'token-a', user: userA } }, error: null }),
+    getUser: async (token) => {
+      assert.equal(token, 'token-a');
+      ambientUser = userB;
+      return { data: { user: userA }, error: null };
+    },
+  } };
+  let boundRequest: { accessToken: string; expectedUserId: string } | null = null;
+  const updateName: typeof updateAccountNameWithToken = async ({ accessToken, expectedUserId }) => {
+    boundRequest = { accessToken, expectedUserId };
+    return userA;
+  };
+  const form = await mountForm(userA, async () => client, updateName);
+  try {
+    await form.changeName('Alice edited');
+    await act(async () => form.state.save(messages));
+    assert.equal(ambientUser.id, 'user-b');
+    assert.deepEqual(boundRequest, { accessToken: 'token-a', expectedUserId: 'user-a' });
+    assert.deepEqual(form.state.status, { kind: 'success', message: 'Saved' });
   } finally { await form.dispose(); }
 });

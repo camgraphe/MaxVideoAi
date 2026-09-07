@@ -3,11 +3,14 @@
 import { useEffect, useRef, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { loadSupabaseClient } from '@/lib/supabaseClientLoader';
-import { getAccountName, updateAccountName, validateAccountName } from '../_lib/account-preferences';
+import { getAccountName, updateAccountNameWithToken, validateAccountName } from '../_lib/account-preferences';
 
 type LoadAccountNameClient = () => Promise<import('../_lib/account-preferences').AccountNameClient>;
+type UpdateAccountName = typeof updateAccountNameWithToken;
 
-export function useAccountNameForm(user: User | null, loadClient: LoadAccountNameClient = loadSupabaseClient) {
+export function useAccountNameForm(user: User | null, dependencies: { loadClient?: LoadAccountNameClient; updateName?: UpdateAccountName } = {}) {
+  const loadClient = dependencies.loadClient ?? loadSupabaseClient;
+  const updateName = dependencies.updateName ?? updateAccountNameWithToken;
   const initialName = getAccountName(user);
   const [name, setName] = useState(initialName);
   const [savedName, setSavedName] = useState(initialName);
@@ -59,11 +62,16 @@ export function useAccountNameForm(user: User | null, loadClient: LoadAccountNam
     try {
       const client = await loadClient();
       if (requestRef.current !== request || userIdRef.current !== expectedUserId) return;
-      const currentUserResult = await client.auth.getUser();
+      const sessionResult = await client.auth.getSession();
+      if (requestRef.current !== request || userIdRef.current !== expectedUserId) return;
+      if (sessionResult.error) throw new Error(sessionResult.error.message);
+      const capturedSession = sessionResult.data.session;
+      if (!capturedSession || capturedSession.user.id !== expectedUserId) return;
+      const currentUserResult = await client.auth.getUser(capturedSession.access_token);
       if (requestRef.current !== request || userIdRef.current !== expectedUserId) return;
       if (currentUserResult.error) throw new Error(currentUserResult.error.message);
       if (currentUserResult.data.user?.id !== expectedUserId) return;
-      await updateAccountName(client, expectedUserId, validation.name);
+      await updateName({ accessToken: capturedSession.access_token, expectedUserId, name: validation.name });
       if (requestRef.current !== request || userIdRef.current !== expectedUserId) return;
       setName(validation.name);
       setSavedName(validation.name);
