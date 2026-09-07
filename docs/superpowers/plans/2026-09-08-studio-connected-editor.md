@@ -4,7 +4,7 @@
 
 Spécification : `docs/superpowers/plans/2026-09-08-app-studio-parallel-roadmap.md`, source `ef3393c0d22418ce471b9a4cea9d098eded32801` dans la worktree coordinatrice `3f9b`. Tâche coordinatrice : `01a07920-6fc3-7131-911d-321ce840ffdd`.
 
-Travail exclusivement dans `/Users/adrienmillot/.codex/worktrees/dce6/MaxVideoAi V2`, branche `codex/studio-connected-editor`, créée depuis `ab2cb9fbd552e2eab7b07b8c519aff0f219e1d07`. Worktree liée vérifiée, état initial propre. Aucun serveur ni test n'a encore été lancé.
+Travail exclusivement dans `/Users/adrienmillot/.codex/worktrees/dce6/MaxVideoAi V2`, branche `codex/studio-connected-editor`, créée depuis `ab2cb9fbd552e2eab7b07b8c519aff0f219e1d07`. Worktree liée vérifiée, état initial propre.
 
 Sources à composer :
 
@@ -37,6 +37,15 @@ Livrables : manifeste de provenance, inventaire des actions, socle compilable, l
 4. Vérifier canevas, viewer, timeline, panneaux, menus, focus, audio et réduction des animations en desktop/mobile, clair/sombre.
 
 Livrables : refonte effective, captures et vérifications d'interactions. Captures seules non recevables comme preuve de performance.
+
+Décisions issues du contrôle réel du socle :
+
+- Création nommée Texte / Image / Vidéo / Audio : activation au clavier, clic ou toucher crée exactement un bloc au centre visible ; dépôt conserve le placement précis. Pas d'action armée qui ne peut se terminer qu'à la souris.
+- Sélection indépendante de l'inspecteur : bande d'actions à taille écran, Réglages explicites, fermeture sans perdre la sélection. Connexions par sélection d'une source compatible et retrait annullable, avec la même validation que les poignées.
+- Un titre de projet, surfaces Canevas / Viewer, panneau lisible, menus peu profonds. Le contenu des sources et sorties domine ; prix et état de devis demeurent exacts. Contrôles avancés restent disponibles dans l'inspecteur canonique.
+- Actions clips/pistes accessibles sans clic droit. Audio visible et préservé ; pas de faux bouton Play sur une image ou un média indisponible.
+- Grille de qualification :1440×900,390×844,320px et844×390 ; clair/sombre, clavier/toucher et réduction des mouvements. L'interface importée déborde sur mobile et miniaturise trop les blocs : ces défauts sont à corriger, pas à reprendre.
+- Terminologie coordonnée : Image de début / Image de fin / Références (Start frame / End frame / References ; Imagen inicial / Imagen final / Referencias). Garder les rôles particuliers et tous les IDs/slots/budgets.
 
 ## Task 3: Connecter bibliothèque et récents
 
@@ -82,4 +91,8 @@ Décision : importer Studio sélectivement — son arbre complet remplace des pr
 ## Progression
 
 - Branche isolée créée ; contrat de coordination et instructions Studio lus.
-- Audits en lecture seule en cours ; aucun code produit modifié, aucun environnement distant utilisé.
+- Socle app/main composé en `3bb6188e0`, Studio committé et local importés séparément (`2975d7e3a`, `11dc9213b`) avec manifestes ; adaptations partagées isolées, socle final `e101e2840`.
+- Task1 :413 tests Node22 réussis, TypeScript et lint réussis (deux warnings hérités) ; revue indépendante en cours. Voir `docs/engineering/studio-import/` pour provenance, interfaces et exclusions explicites.
+- Prévisualisation séparée :3032, auth anonyme locale3033 ; lanceur `scripts/studio-local-preview.mjs` refuse les fichiers d'environnement et ne transmet aucune configuration DB/génération/paiement/stockage.
+- Raccord Toolbox : contrat additionnel source `faf137284`, propriétaire `01a07e3c-37a3-7691-a1c1-497e34094416`. Studio consomme identités et contrôles sans créer un second catalogue. Essai d'intégration requis avant livraison ; anciens projets non migrés implicitement.
+- Aucun environnement distant, génération payante, push ou déploiement utilisé.
