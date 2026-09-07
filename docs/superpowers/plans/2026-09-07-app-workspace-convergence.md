@@ -53,4 +53,14 @@
 2. Replace nested heavy cards with a responsive visual catalogue: purposeful existing image covers or custom app pictograms, tool name, concise benefit, clear open action and useful grouping if justified. Keep all five destinations and locale behavior. Stable lazy image geometry, no autoplay/video load for decoration.
 3. Match heading/filter/button treatment to Creation, Media and Activity. Check light/dark and mobile, preserving 44px actions and no clipping. Use the shared scroll treatment where relevant.
 4. Run focused navigation/architecture checks, types/lint, self-review and commit. Root completes cross-screen screenshots, keyboard/mobile QA and exact data/behavior checks.
+5. Leave final cross-screen validation until Task 5 completes.
+
+### Task 5: App menus and popup interaction polish
+
+**Files:** Existing composer options/settings popup owners, reference/library picker presentation, media action menus and app-scoped shared dialog styles; focused contracts/interaction tests for any changed behavior. Discover exact owners from `Composer` and workspace runtime modal wiring before editing, keep AppClient an orchestrator.
+
+1. Inventory the app popup/menu entry points reached from creation options, start/end/reference, media reuse and output actions. Read their current apply/cancel/selection contracts and retain existing useful controls. Model picker and new media continuation panel from Tasks 1–2 establish the common visual language.
+2. Replace inherited dense presentation in those entry points with consistent headers, close/back controls, clear option grouping, concise labels and readable selected/disabled states. Use immediate selection where already immediate; explicit Apply and Cancel where staging exists. Never silently change generation settings merely by opening a panel or discard a staged value through decoration changes.
+3. Make mobile panels fit the usable viewport with a bounded body, fine scrollbar, visible essential footer actions and safe focus/escape behavior. Preserve multi-reference management, replace/remove/add roles and model-specific incompatibility feedback.
+4. Exercise the actual UI states, run focused changed-behavior/architecture checks plus lint/types, self-review and commit. Root qualifies light/dark, desktop/mobile overlays and restored focus, without paid actions.
 5. Stop only the owned dev preview, build using the secret-free validation launcher, then run full tests against the complete production manifest; restart guarded preview. Complete independent final increment review and retain isolated branch for user validation.

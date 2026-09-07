@@ -8,6 +8,7 @@ The approved concept in `docs/design/global-app-concept/` sets the visual direct
 - Media: a visual responsive collection, with compact search/kind/source/saved-generated controls. Import, pagination, server search, original downloads, saving and confirmed deletion remain. A discoverable media action panel offers only supported, connected reuse destinations. Recent reference role selection and generation compatibility remain authoritative.
 - Activity: one initial chronological feed, with media/tool source filtering and honest loading/error/empty states. Preserve grouped outputs, preview, save, retry/status refresh and existing continuation/refinement/comparison actions. Avoid mounting seven initial feeds and seven skeleton rails.
 - Tools: replace the old nested-card hub with a coherent visual collection of the five real tools, retaining descriptions that explain purpose and their actual routes.
+- Popups and menus: redesign the app's creation options, reference/library pickers and media action menus alongside the primary screens. Distinguish immediate selection from an explicit Apply action, retain validation/cancel semantics and unsaved input, group related choices and keep close/back controls visible on mobile. Avoid a blanket marketing/admin dialog rewrite.
 - All touched screens: accessible light/dark treatments, visible essential actions, mobile touch targets at least 44px, no horizontal page overflow, bounded media loading and original assets retained for reuse/download.
 
 ## Boundaries
