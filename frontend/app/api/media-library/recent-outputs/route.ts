@@ -7,6 +7,7 @@ import {
   type JobOutputRecord,
   type MediaKind,
 } from '@/server/media-library';
+import { parseMediaLibraryExactJobId } from '@/server/media-library/pagination';
 
 export const runtime = 'nodejs';
 
@@ -48,8 +49,10 @@ export async function GET(req: NextRequest) {
 
   let page: Awaited<ReturnType<typeof listRecentOutputPage>>;
   const surface = req.nextUrl.searchParams.get('surface');
-  const requestedJobId = req.nextUrl.searchParams.get('jobId');
-  const jobId = requestedJobId && requestedJobId.length <= 256 ? requestedJobId : null;
+  const exactJob = parseMediaLibraryExactJobId(req.nextUrl.searchParams.get('jobId'));
+  if ('error' in exactJob) {
+    return NextResponse.json({ ok: false, outputs: [], error: exactJob.error }, { status: 400 });
+  }
   try {
     page = await listRecentOutputPage({
       userId,
@@ -58,7 +61,7 @@ export async function GET(req: NextRequest) {
       limit: Number(req.nextUrl.searchParams.get('limit') ?? 50),
       cursor: req.nextUrl.searchParams.get('cursor'),
       q: req.nextUrl.searchParams.get('q'),
-      jobId,
+      jobId: exactJob.value,
     });
   } catch (error) {
     console.error('[media-library] failed to list recent outputs', error);

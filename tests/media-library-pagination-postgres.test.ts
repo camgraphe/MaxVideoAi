@@ -102,6 +102,9 @@ test('recent output search and cursors run against PostgreSQL', { timeout: 90_00
 
     for (let index = 0; index < 125; index += 1) {
       const suffix = String(index).padStart(3, '0');
+      const originUrl = index === 100
+        ? 'https://origin.example.test/cross-boundary.png'
+        : `https://example.test/asset-a-${suffix}.png`;
       await database.pool.query(
         `INSERT INTO media_assets
           (id,user_id,kind,url,mime_type,source,status,metadata,created_at)
@@ -109,8 +112,21 @@ test('recent output search and cursors run against PostgreSQL', { timeout: 90_00
         [
           `asset-a-${suffix}`,
           `https://example.test/asset-a-${suffix}.png`,
-          JSON.stringify({ label: index === 118 ? 'saved 50%_literal\\ name' : `saved ${suffix}` }),
+          JSON.stringify({
+            label: index === 118 ? 'saved 50%_literal\\ name' : `saved ${suffix}`,
+            ...(index === 100 ? { originUrl } : {}),
+          }),
           timestamp,
+        ]
+      );
+      await database.pool.query(
+        `INSERT INTO user_assets (asset_id,user_id,url,mime_type,source,metadata,created_at)
+         VALUES ($1,'user-a',$2,'image/png','upload',$3::jsonb,$4)`,
+        [
+          `legacy-copy-${suffix}`,
+          originUrl,
+          JSON.stringify({ originUrl }),
+          new Date(Date.parse(timestamp) - (index + 1) * 1000).toISOString(),
         ]
       );
     }
@@ -132,6 +148,7 @@ test('recent output search and cursors run against PostgreSQL', { timeout: 90_00
     } while (cursor);
     assert.equal(assetIds.length, 126);
     assert.equal(new Set(assetIds).size, 126);
+    assert.ok(assetIds.every((id) => !id.startsWith('legacy-copy-')));
 
     const savedWildcard = await listLibraryAssetPage({
       userId: 'user-a', kind: 'image', source: 'upload', q: '50%_literal\\', limit: 60,

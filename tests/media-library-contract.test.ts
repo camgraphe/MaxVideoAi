@@ -15,6 +15,7 @@ import { mapAssetRow } from '../frontend/server/media-library-records';
 import {
   buildMediaLibrarySearchPattern,
   decodeMediaLibraryCursor,
+  parseMediaLibraryExactJobId,
   sliceMediaLibraryPage,
 } from '../frontend/server/media-library/pagination';
 
@@ -42,6 +43,28 @@ test('media library search bounds input and escapes SQL wildcard characters', ()
   assert.equal(buildMediaLibrarySearchPattern(' 100%_match\\ '), '%100\\%\\_match\\\\%');
   assert.equal(buildMediaLibrarySearchPattern('x'.repeat(250)), `%${'x'.repeat(200)}%`);
   assert.equal(buildMediaLibrarySearchPattern('   '), null);
+});
+
+test('an invalid explicit exact-job filter cannot broaden into recent outputs', () => {
+  assert.deepEqual(parseMediaLibraryExactJobId(null), { provided: false, value: null });
+  assert.deepEqual(parseMediaLibraryExactJobId('job-old'), { provided: true, value: 'job-old' });
+  assert.deepEqual(parseMediaLibraryExactJobId('x'.repeat(257)), {
+    provided: true,
+    error: 'INVALID_JOB_ID',
+  });
+  assert.deepEqual(parseMediaLibraryExactJobId(' job-old'), {
+    provided: true,
+    error: 'INVALID_JOB_ID',
+  });
+});
+
+test('recent-output route rejects an invalid explicit job filter', () => {
+  const source = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/api/media-library/recent-outputs/route.ts'),
+    'utf8'
+  );
+  assert.match(source, /parseMediaLibraryExactJobId/);
+  assert.match(source, /outputs:\s*\[\],\s*error:\s*exactJob\.error[\s\S]*status:\s*400/);
 });
 
 test('normalizes PostgreSQL media asset timestamps to ISO strings', () => {
@@ -277,8 +300,9 @@ test('deduplicates canonical and legacy library rows by media URL identity', () 
       sourceOutputId: null,
     })
   );
-  assert.match(source, /const\s+dedupeKey\s*=\s*resolveLibraryAssetDedupeKey\(asset\)/);
-  assert.match(source, /seen\.has\(dedupeKey\)/);
+  assert.match(source, /ROW_NUMBER\(\) OVER/);
+  assert.match(source, /PARTITION BY kind, logical_origin/);
+  assert.match(source, /WHERE logical_rank = 1[\s\S]*created_at, id/);
 });
 
 test('deduplicates copied generated assets against legacy origin urls', () => {
@@ -307,8 +331,8 @@ test('deduplicates copied generated assets against legacy origin urls', () => {
       },
     })
   );
-  assert.match(source, /resolveLibraryAssetOriginDedupeKey\(asset\)/);
-  assert.match(source, /resolveLibraryAssetOriginDedupeKey\(legacyAsset\)/);
+  assert.match(source, /COALESCE\(NULLIF\(metadata->>'originUrl', ''\), url\) AS logical_origin/);
+  assert.match(source, /ORDER BY source_priority ASC, created_at DESC, id DESC/);
 });
 
 test('media asset insert keeps saved job output linked to the source output', () => {

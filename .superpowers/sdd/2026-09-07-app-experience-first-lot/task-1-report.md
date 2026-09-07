@@ -30,3 +30,16 @@ Passed:
 - Search text is trimmed and capped at 200 characters; page size is 60 and server cursor page size is capped at 100.
 - The broader shared-tree contract run had unrelated concurrent failures from parent-owned navigation line count and missing root React resolution in two tests; all task-owned focused contracts passed.
 
+## Review fixes
+
+- Replaced page-local multi-query deduplication with one parameterized SQL union. It normalizes source fields, partitions the filtered collection by media kind and canonical origin URL, selects the established current/output/legacy representative, and applies the stable `(created_at, id)` cursor after deduplication.
+- Invalid explicit `jobId` values, including values over 256 characters, now return `400 INVALID_JOB_ID`; they cannot fall through to an unfiltered recent-output listing.
+- Removed the migrated `savedAssetLimit` and `recentOutputLimit` hook arguments.
+- Expanded the disposable PostgreSQL fixture to 125 current assets, 125 legacy mirrors, and one distinct legacy asset. Traversal returns exactly 126 unique logical assets across three pages, preserves the current representative, covers an origin URL whose current and legacy URLs differ, and still verifies search, ownership, and exact old-job lookup.
+
+Review-fix verification passed:
+
+- `node node_modules/tsx/dist/cli.mjs --tsconfig frontend/tsconfig.json --test tests/media-library-pagination-postgres.test.ts tests/media-library-contract.test.ts tests/media-library-server-architecture.test.ts tests/library-performance-contract.test.ts tests/workspace-library-page-architecture.test.ts tests/storyboard-library-category.test.ts` — 47/47 passed.
+- `cd frontend && ./node_modules/.bin/tsc --noEmit` — passed.
+- Focused ESLint over all owned server/API/hook/helper files — passed with no warnings.
+- `git diff --check` — passed after removing one trailing blank line reported by the combined verification command.

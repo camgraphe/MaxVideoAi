@@ -36,10 +36,6 @@ export function useLibraryPageData({
   activeSource: SavedAssetSource;
   toolsEnabled: boolean;
   jobId?: string | null;
-  /** @deprecated Cursor pages use the fixed library page size. */
-  savedAssetLimit?: number;
-  /** @deprecated Cursor pages use the fixed library page size. */
-  recentOutputLimit?: number;
 }) {
   const [searchQuery, setSearchQueryState] = useState('');
   const router = useRouter();

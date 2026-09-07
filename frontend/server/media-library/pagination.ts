@@ -39,6 +39,17 @@ export function buildMediaLibrarySearchPattern(value: unknown): string | null {
   return `%${query.replaceAll('\\', '\\\\').replaceAll('%', '\\%').replaceAll('_', '\\_')}%`;
 }
 
+export function parseMediaLibraryExactJobId(value: string | null):
+  | { provided: false; value: null }
+  | { provided: true; value: string }
+  | { provided: true; error: 'INVALID_JOB_ID' } {
+  if (value === null) return { provided: false, value: null };
+  if (!value || value !== value.trim() || value.length > 256) {
+    return { provided: true, error: 'INVALID_JOB_ID' };
+  }
+  return { provided: true, value };
+}
+
 export function encodeMediaLibraryCursor(cursor: MediaLibraryCursor): string {
   return Buffer.from(JSON.stringify(cursor), 'utf8').toString('base64url');
 }
