@@ -205,8 +205,9 @@ export function WorkspaceAppReadyView({
           showOmniStudioPanel: selectedEngine.id === 'gemini-omni-flash',
           showLumaRay32KeyframeEditor: selectedEngine.id === 'luma-ray-3-2' && submissionMode === 'v2v',
         }}>
-      {({ recentMedia, recentDropProps }) => <WorkspaceAppShell
+      {({ recentMedia, recentDropProps, refreshRecentMedia }) => <WorkspaceAppShell
         recentMedia={recentMedia}
+        onOpenRecentMedia={refreshRecentMedia}
         recentDropProps={recentDropProps}
         selectedEngine={selectedEngine}
         engines={engines}

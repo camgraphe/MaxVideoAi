@@ -22,7 +22,7 @@ export function WorkspaceRecentReferences({ userId, locale, engineId, engine, fi
   availability: WorkspaceReferenceAvailability; inputSchema?: EngineInputSchema; mode: Mode;
   inputAssets: Record<string, (ReferenceAsset | null)[]>;
   onInsert: (field: EngineInputField, asset: UserAsset, index?: number) => Promise<unknown>;
-  children: (surface: { recentMedia: ReactNode; recentDropProps: RecentReferenceDropProps }) => ReactNode;
+  children: (surface: { recentMedia: ReactNode; recentDropProps: RecentReferenceDropProps; refreshRecentMedia: () => void }) => ReactNode;
 }) {
   const [kind, setKind] = useState<'image' | 'video' | 'audio'>('image');
   const feed = useWorkspaceRecentMedia(userId, kind);
@@ -55,7 +55,7 @@ export function WorkspaceRecentReferences({ userId, locale, engineId, engine, fi
   };
   const recentMedia = <>
     <RecentMediaList assets={feed.assets} kind={kind} onKindChange={(next) => { setKind(next); setSelection(null); drag.current = null; }}
-      onSelect={choose} loading={feed.loading} error={feed.error} authenticated={Boolean(userId)} onRetry={feed.retry} locale={locale}
+      onSelect={choose} loading={feed.loading} refreshing={feed.refreshing} error={feed.error} authenticated={Boolean(userId)} onRetry={feed.retry} locale={locale}
       onDragStart={(event, asset) => {
         if (!feed.scope) { event.preventDefault(); return; }
         const token = crypto.randomUUID();
@@ -65,7 +65,7 @@ export function WorkspaceRecentReferences({ userId, locale, engineId, engine, fi
     <p className="app-recent-drop-hint">{copy.drop}</p>
   </>;
   return <>
-    {children({ recentMedia, recentDropProps })}
+    {children({ recentMedia, recentDropProps, refreshRecentMedia: feed.retry })}
     {selected ? <WorkspaceRecentRoleDialog key={`${selection?.scope}:${engineId}:${selected.id}`} asset={metadata.asset ?? selected} fields={eligibleFields} inputAssets={inputAssets}
       inputSchema={inputSchema} engine={engine} mode={mode} locale={locale} metadataLoading={metadata.loading} metadataError={metadata.error} onMetadataRetry={metadata.retry} onClose={() => setSelection(null)}
       onInsert={(entry, index) => onInsert(entry.field, metadata.asset ?? selected, index)} /> : null}

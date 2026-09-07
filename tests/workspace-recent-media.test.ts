@@ -95,6 +95,10 @@ test('feed reuses the account-scoped SWR page; insertion and desktop drop stay u
   assert.match(adapter, /resolveCurrentRecentAsset/); assert.match(adapter, /getData\(RECENT_MEDIA_DRAG_TYPE\)/);
   const ready = source('frontend/app/(core)/(workspace)/app/_components/WorkspaceAppReadyView.tsx');
   assert.match(ready, /onInsert=\{handleSelectLibraryAsset\}/);
+  assert.match(ready, /onOpenRecentMedia=\{refreshRecentMedia\}/);
+  assert.match(shell, /if \(railView !== 'recent'\) onOpenRecentMedia\?\.\(\)/);
+  assert.match(shell, /onClick=\{openRecentMedia\}/);
+  assert.match(shell, /onClick=\{\(\) => \{ openRecentMedia\(\); requestAnimationFrame/);
   const modal = source('frontend/components/library/AssetLibraryModal.tsx');
   assert.match(modal, /useAccessibleModal\(\{ onClose \}\)/); assert.match(modal, /aria-labelledby=\{titleId\}/); assert.match(modal, /actionCopy\.loadError/);
 });

@@ -16,6 +16,7 @@ export function useWorkspaceRecentMedia(userId: string | null | undefined, kind:
     assets: key && !error ? projectRecentMedia(query.data, kind) : [],
     loading: Boolean(key && query.isLoading),
     error,
-    retry: () => { void query.mutate(); },
+    refreshing: Boolean(key && query.isValidating),
+    retry: () => { if (key && !query.isValidating) void query.mutate(); },
   };
 }

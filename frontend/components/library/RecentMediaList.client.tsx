@@ -9,16 +9,17 @@ import { recentMediaCopy } from './recent-media-copy';
 export type RecentMediaCardAsset = {
   id: string; url: string; thumbUrl?: string | null; kind: 'image' | 'video' | 'audio'; createdAt?: string;
 };
-export function RecentMediaList<T extends RecentMediaCardAsset>({ assets, kind, onKindChange, onSelect, onDragStart, onDragEnd, loading, error, authenticated, onRetry, locale, actionLabel }: {
+export function RecentMediaList<T extends RecentMediaCardAsset>({ assets, kind, onKindChange, onSelect, onDragStart, onDragEnd, loading, refreshing = false, error, authenticated, onRetry, locale, actionLabel }: {
   assets: T[]; kind: T['kind']; onKindChange: (kind: T['kind']) => void;
   onSelect: (asset: T) => void; onDragStart?: (event: DragEvent, asset: T) => void; onDragEnd?: () => void;
-  loading: boolean; error: boolean; authenticated: boolean; onRetry: () => void; locale: string; actionLabel?: string;
+  loading: boolean; refreshing?: boolean; error: boolean; authenticated: boolean; onRetry: () => void; locale: string; actionLabel?: string;
 }) {
   const copy = recentMediaCopy(locale);
   const selectionLabel = actionLabel ?? copy.use;
   return <section className="app-recent-media" aria-label={copy.title}>
     <div className="app-recent-filters" aria-label={copy.title}>
       {(['image', 'video', 'audio'] as const).map((value) => <button type="button" key={value} aria-pressed={value === kind} onClick={() => onKindChange(value)}>{copy[value]}</button>)}
+      {authenticated && !error ? <button type="button" onClick={onRetry} disabled={loading || refreshing} aria-busy={refreshing}>{refreshing ? copy.refreshing : copy.refresh}</button> : null}
     </div>
     <p className="app-recent-helper">{copy.helper}</p>
     {!authenticated ? <p role="status">{copy.auth}</p> : loading ? <p role="status">{copy.loading}</p> : error ? <div role="alert"><p>{copy.error}</p><button type="button" onClick={onRetry}>{copy.retry}</button></div> : !assets.length ? <p role="status">{copy.empty}</p> :

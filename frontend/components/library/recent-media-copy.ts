@@ -2,7 +2,7 @@ export function recentMediaCopy(locale: string) {
   if (locale.startsWith('fr')) return {
     title: 'Récents', activity: 'Activité', open: 'Ouvrir les récents', close: 'Fermer',
     image: 'Images', video: 'Vidéos', audio: 'Audio', use: 'Utiliser en référence',
-    loading: 'Chargement des médias…', error: 'Impossible de charger les médias. Réessayez.', retry: 'Réessayer',
+    loading: 'Chargement des médias…', error: 'Impossible de charger les médias. Réessayez.', retry: 'Réessayer', refresh: 'Actualiser', refreshing: 'Actualisation…',
     empty: 'Aucun média terminé dans cette catégorie.', auth: 'Connectez-vous pour retrouver vos médias.',
     helper: '12 médias récents · Choisir pour ajouter',
     role: 'Rôle de la référence', required: 'Requis', slot: 'Emplacement', add: 'Ajouter', replace: 'Remplacer',
@@ -13,7 +13,7 @@ export function recentMediaCopy(locale: string) {
   if (locale.startsWith('es')) return {
     title: 'Recientes', activity: 'Actividad', open: 'Abrir recientes', close: 'Cerrar',
     image: 'Imágenes', video: 'Vídeos', audio: 'Audio', use: 'Usar como referencia',
-    loading: 'Cargando medios…', error: 'No se pueden cargar los medios. Inténtalo de nuevo.', retry: 'Reintentar',
+    loading: 'Cargando medios…', error: 'No se pueden cargar los medios. Inténtalo de nuevo.', retry: 'Reintentar', refresh: 'Actualizar', refreshing: 'Actualizando…',
     empty: 'No hay medios terminados en esta categoría.', auth: 'Inicia sesión para ver tus medios.',
     helper: '12 medios recientes · Elige para añadir',
     role: 'Rol de la referencia', required: 'Obligatorio', slot: 'Posición', add: 'Añadir', replace: 'Reemplazar',
@@ -24,7 +24,7 @@ export function recentMediaCopy(locale: string) {
   return {
     title: 'Recents', activity: 'Activity', open: 'Open recent media', close: 'Close',
     image: 'Images', video: 'Videos', audio: 'Audio', use: 'Use as reference',
-    loading: 'Loading media…', error: 'Unable to load media. Please try again.', retry: 'Retry',
+    loading: 'Loading media…', error: 'Unable to load media. Please try again.', retry: 'Retry', refresh: 'Refresh', refreshing: 'Refreshing…',
     empty: 'No completed media in this category.', auth: 'Sign in to see your media.',
     helper: '12 recent media · Choose to add',
     role: 'Reference role', required: 'Required', slot: 'Slot', add: 'Add', replace: 'Replace',

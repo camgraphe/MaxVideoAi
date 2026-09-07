@@ -61,6 +61,7 @@ type WorkspaceAppShellProps = {
   setViewerTarget: PreviewDockProps['setViewerTarget'];
   composerSurface: ReactNode;
   recentMedia?: ReactNode;
+  onOpenRecentMedia?: () => void;
   recentDropProps?: RecentReferenceDropProps;
 };
 
@@ -99,6 +100,7 @@ export function WorkspaceAppShell({
   setViewerTarget,
   composerSurface,
   recentMedia,
+  onOpenRecentMedia,
   recentDropProps,
 }: WorkspaceAppShellProps) {
   const [railView, setRailView] = useState<'activity' | 'recent'>('activity');
@@ -107,13 +109,18 @@ export function WorkspaceAppShell({
   const recentOpenerRef = useRef<HTMLButtonElement>(null);
   const recentPanelId = useId();
   const copy = recentMediaCopy(modeLabelLocale);
+  const openRecentMedia = () => {
+    if (railView !== 'recent') onOpenRecentMedia?.();
+    setRailView('recent');
+    setMobileRecentOpen(true);
+  };
   return (
     <WorkspaceChrome
       rail={
         <div className="app-media-rail">
           {recentMedia ? <div className="app-media-rail-switch" aria-label={copy.title}>
             <button type="button" aria-pressed={railView === 'activity'} onClick={() => { setRailView('activity'); setMobileRecentOpen(false); }}>{copy.activity}</button>
-            <button type="button" aria-pressed={railView === 'recent'} onClick={() => { setRailView('recent'); setMobileRecentOpen(true); }}>{copy.title}</button>
+            <button type="button" aria-pressed={railView === 'recent'} onClick={openRecentMedia}>{copy.title}</button>
           </div> : null}
           <div hidden={railView !== 'activity'}>
         <GalleryRail
@@ -138,7 +145,7 @@ export function WorkspaceAppShell({
     >
       <WorkspaceCreationHeading />
       {recentMedia ? <button ref={recentOpenerRef} className="app-recent-mobile-open" type="button" aria-expanded={mobileRecentOpen} aria-controls={recentPanelId}
-        onClick={() => { setRailView('recent'); setMobileRecentOpen(true); requestAnimationFrame(() => { recentPanelRef.current?.focus(); recentPanelRef.current?.scrollIntoView({ block: 'nearest' }); }); }}><AppGlyph name="library" />{copy.title}</button> : null}
+        onClick={() => { openRecentMedia(); requestAnimationFrame(() => { recentPanelRef.current?.focus(); recentPanelRef.current?.scrollIntoView({ block: 'nearest' }); }); }}><AppGlyph name="library" />{copy.title}</button> : null}
       {notice && (
         <div className="rounded-card border border-warning-border bg-warning-bg px-4 py-2 text-sm text-warning shadow-card">
           {notice}

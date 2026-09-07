@@ -32,12 +32,14 @@ test('actual SWR recents deduplicate the shared page and suppress old account/fi
   globalThis.fetch = async (input) => new Promise<Response>(resolve => requests.push({ url: String(input), resolve }));
   function Feed({ owner, kind }: { owner: string | null; kind: 'image' | 'audio' }) {
     const feed = useWorkspaceRecentMedia(owner, kind);
-    return React.createElement('output', {}, JSON.stringify({ ids: feed.assets.map(a => a.id), loading: feed.loading }));
+    return React.createElement(React.Fragment, {}, React.createElement('output', {}, JSON.stringify({ ids: feed.assets.map(a => a.id), loading: feed.loading })), React.createElement('button', { 'data-recent-refresh': true, onClick: feed.retry }, 'Refresh pending'));
   }
   const cache = new Map();
   const view = (owner: string | null, kind: 'image' | 'audio') => React.createElement(SWRConfig, { value: { provider: () => cache } }, React.createElement(Feed, { owner, kind }), React.createElement(Feed, { owner, kind }));
   try {
     await h.render(view('owner-a', 'image')); await h.flush(); assert.equal(requests.length, 1);
+    await act(async () => h.dom.window.document.querySelector<HTMLButtonElement>('[data-recent-refresh]')!.click());
+    assert.equal(requests.length, 1, 'opening while the current page is loading must not duplicate its request');
     await h.render(view('owner-b', 'audio')); await h.flush(); assert.equal(requests.length, 2);
     await act(async () => requests[0].resolve(Response.json({ ok: true, outputs: [{ ...image, url: 'https://media.example/image.png', jobId: 'job1', status: 'ready' }] })));
     assert.doesNotMatch(h.dom.window.document.body.textContent ?? '', /out1/);
@@ -128,5 +130,48 @@ test('production internal drag validates current feed token and shares the exact
     await dispatch(h.dom.window.document.getElementById('drop')!, 'drop');
     assert.equal(h.dom.window.document.querySelector('[role="dialog"]'), null);
     assert.equal(inserted.length, 3);
+  } finally { globalThis.fetch = oldFetch; await h.close(); }
+});
+
+test('reopening Recents and its visible Refresh action revalidate the same successful shared page after completion', async () => {
+  const h = await harness();
+  const oldFetch = globalThis.fetch;
+  let completed = 0;
+  const requests: string[] = [];
+  globalThis.fetch = async (input) => {
+    requests.push(String(input));
+    return Response.json({ ok: true, outputs: Array.from({ length: completed }, (_, index) => ({ ...image, id: `new-${index}`, url: `https://media.example/new-${index}.png`, jobId: `job-${index}`, status: 'ready' })) });
+  };
+  function View() {
+    const [open, setOpen] = React.useState(false);
+    return React.createElement(WorkspaceRecentReferences, {
+      userId: 'refresh-owner', locale: 'en', engineId: 'engine', fields: [], inputAssets: {}, mode: 'i2v',
+      availability: { inputAssets: {}, isUnifiedSeedance: false, isUnifiedKlingO3: false, klingO3VideoToVideoSupported: true, hasAnyVideoInput: false, guestUploadLockedReason: null, workflowCopy: { clearReferencesToUseStartEnd: '', clearStartEndToUseReferences: '' }, showOmniStudioPanel: false, showLumaRay32KeyframeEditor: false },
+      onInsert: async () => undefined,
+      children: ({ recentMedia, refreshRecentMedia }) => React.createElement('div', {},
+        React.createElement('button', { id: 'toggle-recents', onClick: () => { if (!open) refreshRecentMedia(); setOpen(!open); } }, open ? 'Activity' : 'Recents'),
+        React.createElement('div', { hidden: !open }, recentMedia)),
+    });
+  }
+  try {
+    await h.render(React.createElement(View)); await h.flush();
+    assert.equal(requests.length, 1);
+    assert.equal(h.dom.window.document.querySelectorAll('.app-recent-list li').length, 0);
+    completed = 1;
+    await act(async () => h.dom.window.document.getElementById('toggle-recents')!.click()); await h.flush();
+    assert.equal(requests.length, 2);
+    assert.equal(h.dom.window.document.querySelectorAll('.app-recent-list li').length, 1);
+    await act(async () => h.dom.window.document.getElementById('toggle-recents')!.click());
+    completed = 2;
+    await act(async () => h.dom.window.document.getElementById('toggle-recents')!.click()); await h.flush();
+    assert.equal(requests.length, 3);
+    assert.equal(h.dom.window.document.querySelectorAll('.app-recent-list li').length, 2);
+    completed = 3;
+    const refresh = [...h.dom.window.document.querySelectorAll<HTMLButtonElement>('.app-recent-media button')].find(button => button.textContent === 'Refresh')!;
+    assert.ok(refresh);
+    await act(async () => refresh.click()); await h.flush();
+    assert.equal(requests.length, 4);
+    assert.equal(h.dom.window.document.querySelectorAll('.app-recent-list li').length, 3);
+    assert.equal(new Set(requests).size, 1, 'all refreshes reuse the existing kind-filtered Library page');
   } finally { globalThis.fetch = oldFetch; await h.close(); }
 });
