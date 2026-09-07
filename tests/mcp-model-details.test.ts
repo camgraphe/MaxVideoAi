@@ -357,6 +357,14 @@ test('LTX audio-to-video details expose trusted per-file duration limits', async
   assert.deepEqual(source.durationSec, { min: 2, max: 20, combinedMax: null });
 });
 
+test('MiniMax reference image details require verified assets and publish the accepted geometry', async () => {
+  const details = await getAgentModelDetails('minimax-h3', realRegistryDetailsDeps());
+  const field = details.modes.find((mode) => mode.mode === 'ref2v')?.references.find((reference) => reference.type === 'image');
+  assert.ok(field);
+  assert.equal(field.assetRequired, true);
+  assert.deepEqual(field.imageAspectRatio, { min: 0.4, max: 2.5 });
+});
+
 test('Luma Ray 2 V2V details explain source-derived duration and fixed pricing resolution', async () => {
   const details = await getAgentModelDetails('lumaRay2', realRegistryDetailsDeps());
   const mode = details.modes.find((candidate) => candidate.mode === 'v2v');

@@ -20,6 +20,8 @@ export type GenerateAttachment = {
 };
 
 export type GeneratePayload = {
+  /** Internal execution policy; MCP returns after queue acceptance. */
+  submissionMode?: 'enqueue';
   engineId: string;
   prompt: string;
   durationSec?: number;

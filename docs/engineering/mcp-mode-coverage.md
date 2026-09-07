@@ -6,6 +6,19 @@ of truth; this file explains the MCP projection and must not duplicate prices.
 
 ## Current coverage
 
+Fal-primary MCP video execution uses enqueue-only submission from the trusted
+paid continuation. Provider-ID tracking completes before acceptance; webhook
+and cron owners finish the job. Keep this separate from the site's synchronous
+subscription: MCP's 120-second request lifetime cannot contain long renders.
+`frontend/server/fal-poll-timing.ts` owns the bounded timeout policy (90 minutes
+for H3, 55 minutes for other Fal engines); terminal errors remain refund-eligible.
+
+H3 `ref2v` image fields publish `imageAspectRatio` bounds of 0.4–2.5 and require
+an owned asset. Validate stored dimensions before an exact MCP quote and again
+at execution, using the shared media-field constraint helper. Never trust
+client dimension claims or silently crop references. See the
+[7 September incident audit](../operations/minimax-h3-mcp-incident-20260907.md).
+
 Checked 2026-09-03 against the canonical runtime registry and engine schemas.
 
 MCP catalog and exact hidden-model resolution are read-only database paths. They

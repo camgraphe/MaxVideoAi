@@ -254,5 +254,18 @@ export async function submitGenerateProviderTask(params: {
   if (!falSubmission.ok) {
     return { kind: 'error_response', status: falSubmission.status, body: falSubmission.body };
   }
+  if (params.falPayload.submissionMode === 'enqueue') {
+    // The initial job and charge already exist. Do not overwrite a fast terminal webhook
+    // with a queued finalization (including its media and refund state).
+    return {
+      kind: 'accepted_response',
+      body: {
+        ok: true,
+        jobId: params.jobId,
+        providerJobId: falSubmission.generationResult.providerJobId,
+        status: 'queued',
+      },
+    };
+  }
   return { kind: 'generation_result', generationResult: falSubmission.generationResult };
 }

@@ -274,12 +274,7 @@ test('Seedance source and reference fields enforce canonical HTTPS media kinds',
 
 test('MiniMax H3 provider constraints receive references in their canonical media fields', () => {
   const minimax = registryCapability('minimax-h3');
-  const reference = (id: string, mediaKind: 'image' | 'video' | 'audio') => ({
-    kind: 'https' as const,
-    url: `https://cdn.example.com/${id}`,
-    role: 'reference' as const,
-    mediaKind,
-  });
+  const image = { kind: 'asset' as const, assetId: 'owned-image', role: 'reference' as const };
   const audio = { kind: 'asset' as const, assetId: 'owned-voice', role: 'reference' as const };
   const resolvedAudio = [{
     assetId: audio.assetId,
@@ -304,9 +299,18 @@ test('MiniMax H3 provider constraints receive references in their canonical medi
     { resolvedReferences: resolvedAudio },
   ));
   assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(
-    { ...ref2v, references: [reference('subject.png', 'image'), audio] },
+    { ...ref2v, references: [image, audio] },
     minimax,
-    { resolvedReferences: resolvedAudio },
+    { resolvedReferences: [...resolvedAudio, {
+      assetId: image.assetId,
+      role: image.role,
+      mediaKind: 'image',
+      storageUrl: 'https://assets.example.com/subject.png',
+      width: 1024,
+      height: 1024,
+      durationSec: null,
+      mimeType: 'image/png',
+    }] },
   ));
 });
 

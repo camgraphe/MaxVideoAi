@@ -92,6 +92,7 @@ test('submitFalGenerateTask returns generation results and persists request ids'
     getLastProviderJobId: () => null,
     setLastProviderJobId: () => undefined,
     persistProviderJobId: async (providerJobId) => {
+      await new Promise<void>((resolve) => setImmediate(resolve));
       persisted.push(providerJobId);
     },
     logMetricFn: () => undefined,

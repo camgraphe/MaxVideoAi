@@ -3,6 +3,7 @@ import {
   hasFieldSpecificMediaConstraint,
   resolveEngineMediaFieldConstraint,
   validateMediaFileAgainstConstraint,
+  validateImageAspectRatio,
 } from '@/lib/media-field-constraints';
 import type { ReferenceBudgetMediaItem } from '@/lib/reference-budget';
 import { getFalEngineById } from '@/config/falEngines';
@@ -34,6 +35,7 @@ type MediaConstraintError =
   | 'MEDIA_FORMAT_UNSUPPORTED'
   | 'MEDIA_DIMENSIONS_UNVERIFIED'
   | 'MEDIA_DIMENSIONS_TOO_SMALL'
+  | 'MEDIA_ASPECT_RATIO_UNSUPPORTED'
   | 'MEDIA_DURATION_UNVERIFIED'
   | 'MEDIA_DURATION_UNSUPPORTED'
   | 'MEDIA_COMBINED_DURATION_EXCEEDED';
@@ -327,6 +329,16 @@ export async function validateGenerationMediaConstraints(params: {
 
     const trustedWidth = normalizeDimension(stored.width);
     const trustedHeight = normalizeDimension(stored.height);
+    const imageRatio = validateImageAspectRatio(field, trustedWidth, trustedHeight);
+    if (imageRatio !== 'valid') {
+      return failure({
+        error: imageRatio === 'unverified' ? 'MEDIA_DIMENSIONS_UNVERIFIED' : 'MEDIA_ASPECT_RATIO_UNSUPPORTED',
+        fieldId: candidate.fieldId,
+        message: imageRatio === 'unverified'
+          ? 'This image reference has no trusted dimension metadata. Upload it again before generating.'
+          : `This image is ${trustedWidth} x ${trustedHeight} px. ${engine.label} requires an image width/height ratio between ${field.imageAspectRatio!.min} and ${field.imageAspectRatio!.max}. Crop or pad the image before generating.`,
+      });
+    }
     if (
       requiresOwnedMedia
       && (field.type === 'image' || field.type === 'video')
