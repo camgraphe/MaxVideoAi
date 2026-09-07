@@ -12,7 +12,7 @@ const state = {
   screen: 'create', kind: 'video', drafts: Object.fromEntries(Object.keys(labels).map(k => [k, freshDraft(k)])),
   selected: null, query: '', filter: 'all', panel: null, picks: [], returnContext: null,
   appearance: 'dark', reduced: false, accountTab: 'appearance', name: 'Créateur', undo: null,
-  recentIds: ['v1','i2','a1','i3','i4','i1'], recentFilter: 'all',
+  recentIds: ['v1','i2','a1','i3','i4','i1'], recentFilter: 'all', modelFamily: 'all',
 };
 state.drafts.video.output = 'v1';
 state.drafts.video.prompt = 'Un mouvement de caméra lent. Préserver la lumière et la matière du plan.';
@@ -65,17 +65,20 @@ function canInsert(role, amount = 1, replaceId = null) {
 }
 function renderReferences() {
   const refs = draft().refs, invalid = invalidRefs(), p = profile();
-  const visibleCount = innerWidth <= 350 ? (refs.length > 1 ? 0 : 1) : innerWidth <= 600 ? 2 : innerWidth <= 1100 && innerWidth > 800 ? 3 : 4;
-  return `<div class="reference-line"><button class="refs-label" data-action="profile" aria-label="Scénarios de références de démonstration"><strong>${icon('reference')}Références</strong><small>${refs.length ? p.max ? `${refs.length} / ${p.max}` : `${refs.length} à vérifier` : p.roles.some(r=>r.required) ? 'Source requise' : 'Scénarios · démo'} ${icon('down')}</small></button>
-    ${refs.length ? `<div class="ref-thumbs">${refs.slice(0, visibleCount).map((r, i) => {
-      const m = asset(r.assetId);
-      return `<button class="ref-thumb ${invalid.includes(r) ? 'invalid' : ''}" data-action="reference" data-id="${r.id}" aria-label="Gérer ${esc(m.name)}, ${esc(roleFor(r.role)?.name || r.role)}">${m.kind === 'image' ? `<img src="${esc(m.url)}" alt="" style="object-position:${esc(m.focus||'50% 50%')}">` : icon(m.kind)}<span class="ref-count">${i + 1}</span></button>`;
-    }).join('')}${refs.length > visibleCount ? `<button class="refs-extra" data-action="manage" aria-label="Gérer les ${refs.length} références">+${refs.length-visibleCount}</button>` : ''}</div>` : `<span class="reference-empty">${p.roles.length ? 'Image, vidéo ou audio selon le profil' : 'Ce profil utilise uniquement du texte'}</span>`}
-    ${p.roles.length ? `<button class="ref-add" data-action="add">${icon('plus')} Ajouter</button>` : ''}
-    ${refs.length ? button('Gérer', 'manage', null) : ''}</div>
-    ${invalid.length ? `<p class="error">${invalid.length} référence(s) incompatible(s) conservée(s). Changez de profil ou retirez-les du brouillon.</p>` : ''}
-    ${missingRequired().length ? `<p class="error">À ajouter : ${missingRequired().map(r => r.name).join(', ')}.</p>` : ''}`;
+  const frameRoles = p.roles.filter(r => ['first','last'].includes(r.id));
+  const collection = refs.filter(r => !frameRoles.some(role => role.id === r.role));
+  const visibleCount = innerWidth <= 350 ? (collection.length > 1 ? 0 : 1) : innerWidth <= 600 ? 2 : 4;
+  const frames = frameRoles.length ? `<div class="reference-frames" aria-label="Images de début et de fin">${frameRoles.map(role => {
+    const ref=refs.find(r=>r.role===role.id),m=ref&&asset(ref.assetId),name=role.id==='first'?'Image de départ':'Image de fin';
+    return `<div class="frame-slot"><button class="frame-target ${ref?'ref-thumb':''} ${ref&&invalid.includes(ref)?'invalid':''}" data-action="${ref?'reference':'pick'}" ${ref?`data-id="${ref.id}"`:''} data-role="${role.id}" data-drop-role="${role.id}" aria-label="${ref?'Gérer':'Ajouter'} : ${name}"><span class="frame-picture">${m?`<img src="${esc(m.url)}" alt="">`:icon('image')}</span><span><strong>${name}</strong><small>${m?esc(m.name):role.required?'À ajouter':'Facultative'}</small></span>${ref?'':icon('plus')}</button>${ref?`<button class="icon-btn" data-action="remove" data-id="${ref.id}" aria-label="Retirer : ${name}">${icon('remove')}</button>`:''}</div>`;
+  }).join('')}</div>` : '';
+  return `<div class="reference-line"><button class="refs-label" data-action="profile" aria-label="Scénarios de références de démonstration"><strong>${icon('reference')}Références</strong><small>${refs.length ? p.max ? `${refs.length} / ${p.max}` : `${refs.length} à vérifier` : 'Scénarios · démo'} ${icon('down')}</small></button>
+    ${collection.length ? `<div class="ref-thumbs">${collection.slice(0,visibleCount).map((r,i)=>{const m=asset(r.assetId);return `<button class="ref-thumb ${invalid.includes(r)?'invalid':''}" data-action="reference" data-id="${r.id}" aria-label="Gérer ${esc(m.name)}, ${esc(roleFor(r.role)?.name||r.role)}">${m.kind==='image'?`<img src="${esc(m.url)}" alt="" style="object-position:${esc(m.focus||'50% 50%')}">`:icon(m.kind)}<span class="ref-count">${i+1}</span></button>`;}).join('')}${collection.length>visibleCount?`<button class="refs-extra" data-action="manage" aria-label="Gérer les ${refs.length} références">+${collection.length-visibleCount}</button>`:''}</div>` : `<span class="reference-empty">${p.roles.length ? p.roles.filter(r=>!frameRoles.includes(r)).map(r=>icon(r.kind)).join('') : 'Texte seul'}</span>`}
+    ${p.roles.length?`<button class="ref-add" data-action="add">${icon('plus')} Ajouter</button>`:''}${refs.length?button('Gérer','manage',null):''}</div>${frames}
+    ${invalid.length?`<p class="error">${invalid.length} référence(s) incompatible(s) conservée(s). Changez de profil ou retirez-les du brouillon.</p>`:''}
+    ${missingRequired().length?`<p class="error">À ajouter : ${missingRequired().map(r=>r.name).join(', ')}.</p>`:''}`;
 }
+
 function currentQuote(choice = draft().modelChoice) {
   return matchingQuote(choice, draft().refs.length, missingRequired().length > 0);
 }
@@ -86,7 +89,7 @@ function quoteDisplay(choice = draft().modelChoice) {
 function modelToolbar() {
   if (state.kind !== 'video') return `${button(`<span class="profile-name">${esc(profile().name)}</span>${icon('down')}`,'profile',state.kind,'','profile-button')}${button('Réglages','controls','settings','','subtle')}`;
   const model = modelFor(draft().modelChoice);
-  return `<button class="model-trigger" data-action="models" aria-label="Choisir un modèle : ${esc(model.label)}"><span class="model-symbol">${icon('video')}</span><span class="model-title"><small>Modèle</small><strong>${esc(model.label)}</strong></span>${icon('down')}</button>${button('Comparer','models','replace','','compare-button')}`;
+  return `<button class="model-trigger" data-action="models" aria-label="Choisir un modèle : ${esc(model.label)}"><span class="model-symbol">${icon('video')}</span><span class="model-title"><small>${esc(model.familyLabel)}</small><strong>${esc(model.label)}</strong></span>${icon('down')}</button>${button('Comparer','models','replace','','compare-button')}`;
 }
 function quickControls() {
   const d = draft();
@@ -107,12 +110,21 @@ function changeSummary(choice) {
   return changes.length ? `<div class="model-changes"><small>Changements proposés</small>${changes.map(key=>`<div><span>${names[key]}</span><span>${esc(value(key,previous))} → <strong>${esc(value(key,choice))}</strong></span></div>`).join('')}</div>` : '<p class="panel-intro model-preserved">Vos réglages sont conservés.</p>';
 }
 function modelList() {
-  const choice = draft().modelChoice;
-  return `<p class="panel-intro">Même durée, résolution, format et son. Six modèles du catalogue pour éprouver ce choix.</p><div class="comparison-context"><span>${choice.duration} s</span><span>${esc(choice.resolution)}</span><span>${esc(choice.format)}</span><span>${soundLabel(choice)}</span>${button('Modifier','controls','settings')}</div>${draft().refs.length || missingRequired().length ? '<p class="error">Les devis avec références ne sont pas raccordés dans cette maquette.</p>' : ''}<div class="model-list">${catalogue.models.map(model=>{
-    const proposed = {...choice,modelId:model.id}, diff = differences(model, choice), quote = currentQuote(proposed), selected = choice.modelId === model.id;
-    return `<button class="model-option ${selected?'selected':''}" data-action="candidate" data-id="${model.id}" aria-label="Examiner ${esc(model.label)}${selected?', modèle actuel':''}"><span class="model-glyph">${selected?icon('check'):icon('video')}</span><span class="model-description"><strong>${esc(model.label)}</strong><small>${diff.length ? `${diff.join(' · ')} à adapter` : 'Réglages conservés'}${selected?' · Actuel':''}</small></span><span class="model-cost">${diff.length?'Adapter':quote?esc(money(quote)):'Devis à raccorder'}${icon('arrow')}</span></button>`;
-  }).join('')}</div><div class="quote-scope"><span>Estimation catalogue · Member · USD</span>${button('Détails','price-info',null)}</div>${externalLink('Comparatifs détaillés sur le site','/ai-video-engines')}`;
+  const choice=draft().modelChoice, families=[...new Map(catalogue.models.map(m=>[m.familyId,m.familyLabel])).entries()];
+  const shown=catalogue.models.filter(m=>state.modelFamily==='all'||m.familyId===state.modelFamily);
+  const option=model=>{const proposed={...choice,modelId:model.id},diff=differences(model,choice),quote=currentQuote(proposed),selected=choice.modelId===model.id;
+    return `<button class="model-option ${selected?'selected':''}" data-action="candidate" data-id="${model.id}" aria-label="Examiner ${esc(model.label)}${selected?', modèle actuel':''}"><span class="model-glyph">${selected?icon('check'):icon('video')}</span><span class="model-description"><strong>${esc(model.label)}</strong><small>${diff.length?`${diff.join(' · ')} à adapter`:'Réglages conservés'}${selected?' · Actuel':''}</small></span><span class="model-cost">${diff.length?'Adapter':quote?esc(money(quote)):'Devis à raccorder'}${icon('arrow')}</span></button>`;};
+  return `<p class="panel-intro">Choisissez une famille, puis sa variante. Six modèles du catalogue sont raccordés dans cette maquette.</p><div class="comparison-context"><span>${choice.duration} s</span><span>${esc(choice.resolution)}</span><span>${esc(choice.format)}</span><span>${soundLabel(choice)}</span>${button('Modifier','controls','settings')}</div><nav class="model-family-tabs" aria-label="Familles de modèles">${[['all','Toutes'],...families].map(([id,name])=>`<button data-action="model-family" data-id="${esc(id)}" aria-pressed="${state.modelFamily===id}">${esc(name)}</button>`).join('')}</nav>${draft().refs.length||missingRequired().length?'<p class="error">Les devis avec références ne sont pas raccordés dans cette maquette.</p>':''}<div class="model-list">${families.filter(([id])=>shown.some(m=>m.familyId===id)).map(([id,name])=>`<section class="model-family-group" aria-label="${esc(name)}"><h3>${esc(name)}<small>${shown.filter(m=>m.familyId===id).length} variante(s)</small></h3>${shown.filter(m=>m.familyId===id).map(option).join('')}</section>`).join('')}</div><div class="quote-scope"><span>Estimation catalogue · Member · USD</span>${button('Détails','price-info',null)}</div>${externalLink('Comparatifs détaillés sur le site','/ai-video-engines')}`;
 }
+function previewStage(d,m) {
+  if(d.pending){
+    const stages=['En attente','Création en cours','Finalisation'];
+    return `<div class="screen pending-stage" role="status" aria-label="Simulation locale : ${stages[d.pending.step]}"><div class="preview-frame">${icon(state.kind)}</div><strong>${stages[d.pending.step]}</strong><div class="pending-track" aria-hidden="true"><i></i></div><small>Simulation locale · ${Math.floor((Date.now()-d.pending.started)/1000)} s écoulées</small><div class="pending-steps">${stages.map((name,i)=>`<span class="${i===d.pending.step?'active':''}">${i<d.pending.step?icon('check'):`<i>${i+1}</i>`}${name}</span>`).join('')}</div></div>`;
+  }
+  if(m)return `<div class="screen">${reader(m,'')}</div><div class="asset-caption"><span class="output-origin">${icon(m.kind)}Exemple local</span>${button('Réutiliser','reuse','replace',`data-id="${m.id}" aria-label="Réutiliser ce média"`)}</div>`;
+  return `<div class="screen screen-empty"><span class="preview-corner top-left"></span><span class="preview-corner bottom-right"></span><div class="preview-frame">${icon(state.kind)}</div><strong>Aperçu ${labels[state.kind].toLowerCase()}</strong><p>Votre ${labels[state.kind].toLowerCase()} apparaîtra ici.</p><span class="preview-baseline" aria-hidden="true"><i></i><i></i><i></i></span></div>`;
+}
+
 function returnBar() {
   const c = state.returnContext;
   return c ? `<div class="returnbar"><div><strong>Créer une référence ${labels[state.kind].toLowerCase()}</strong><small>Retour à votre brouillon ${labels[c.kind].toLowerCase()} · ${esc(c.role.name)}</small></div><div class="row">${button('Annuler le détour','cancel-return','back')}${draft().output ? button('Utiliser et revenir','complete-return','check','','primary') : ''}</div></div>` : '';
@@ -123,11 +135,11 @@ function creator() {
     <div class="work-layout"><section class="workbench" aria-label="Créateur ${labels[state.kind]}">
       <div class="toolbar">${modelToolbar()}</div>
       <div class="work-scroll" role="region" aria-label="Aperçu, références et instruction" tabindex="0">
-      ${m ? `<div class="screen">${reader(m,'')}</div><div class="asset-caption"><div><strong>${esc(m.name)}</strong><small style="display:block;margin-top:4px">Exemple local · aucune génération</small></div>${button('Réutiliser','reuse', 'replace', `data-id="${m.id}"`)}</div>` : `<div class="screen screen-empty"><div class="empty-icon">${icon(state.kind)}</div><h2>${state.kind === 'audio' ? 'Donnez du son à votre idée.' : state.kind === 'image' ? 'Donnez forme à votre idée.' : 'Mettez votre idée en mouvement.'}</h2><p>Une instruction suffit pour commencer.</p></div>`}
+      ${previewStage(d,m)}
       <div id="references"><span class="drop-feedback" role="status"></span>${renderReferences()}</div>
       <div class="compose"><label for="prompt">${icon('prompt')}${state.kind === 'audio' && d.profile === 'voice' ? 'Script' : 'Prompt'}</label><textarea id="prompt" rows="3" placeholder="Décrivez ce que vous voulez créer…">${esc(d.prompt)}</textarea></div>
       </div>
-      <div class="commandbar"><div class="quick-values">${quickControls()}</div><div class="creation-action">${quoteDisplay()}${button('Simuler','simulate','arrow',invalidRefs().length || missingRequired().length ? 'disabled' : '', 'primary generate')}</div></div>
+      <div class="commandbar"><div class="quick-values">${quickControls()}</div><div class="creation-action">${quoteDisplay()}${button(d.pending?'Simulation…':'Simuler','simulate','arrow',d.pending || invalidRefs().length || missingRequired().length ? 'disabled' : '', 'primary generate')}</div></div>
     </section>${recentShelf()}</div>`;
 }
 const filteredMedia = () => media.filter(m => (state.filter === 'all' || m.kind === state.filter) && m.name.toLocaleLowerCase('fr').includes(state.query.toLocaleLowerCase('fr')));
@@ -248,8 +260,8 @@ function renderPanel() {
     panelLayout(`${esc(p.name)} · connexion`,`<p class="panel-intro">Parcours prévu : ouvrir la connexion, autoriser l’accès, vérifier l’état puis choisir les actions disponibles. La maquette n’effectue aucune connexion.</p><div class="choice-row">${icon('library')}<div><strong>Image · vidéo · audio</strong><small>Liste et import de références déjà présents côté MCP.</small></div></div><div class="choice-row">${icon('create')}<div><strong>Créer et suivre</strong><small>Génération image/vidéo existante ; génération audio autonome à compléter côté MCP.</small></div></div>`);
   }
 }
-function recentDestination(id, replaceId) {
-  const m=asset(id), roles=profile().roles.filter(r=>r.kind===m?.kind);
+function recentDestination(id, replaceId, targetRole) {
+  const m=asset(id), roles=profile().roles.filter(r=>r.kind===m?.kind&&(!targetRole||r.id===targetRole));
   if(!m)return {allowed:false,roles:[],message:'Ce média n’est plus disponible.'};
   if(replaceId){
     const old=byId(replaceId),role=old&&roleFor(old.role);
@@ -262,8 +274,8 @@ function recentDestination(id, replaceId) {
 function revealReferences() {
   $('#references')?.scrollIntoView({block:'nearest',behavior:state.reduced||matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
 }
-function requestRecent(id, replaceId) {
-  const destination=recentDestination(id,replaceId);
+function requestRecent(id, replaceId, targetRole) {
+  const destination=recentDestination(id,replaceId,targetRole);
   if(!destination.allowed){toast(destination.message);return;}
   if(replaceId){openPanel('recent-replace',{id,replaceId});return;}
   if(destination.available.length>1){openPanel('recent-role',{id});return;}
@@ -326,6 +338,7 @@ document.addEventListener('click',event=>{
   }else if(a==='new'){
     const kind=state.kind,previous=structuredClone(draft());state.drafts[kind]=freshDraft(kind);render();toast('Nouveau brouillon.',()=>{state.drafts[kind]=previous;render();});
   }else if(['add','manage','profile','controls','models','price-info','recent','wallet','site'].includes(a))openPanel(a);
+  else if(a==='model-family'){state.modelFamily=id;renderPanel();$('#panel [data-action="model-family"][data-id="'+id+'"]')?.focus();}
   else if(a==='recent-add')requestRecent(id);
   else if(a==='confirm-recent')applyRecent(id,el.dataset.role);
   else if(a==='confirm-replacement'){
@@ -363,7 +376,9 @@ document.addEventListener('click',event=>{
   else if(a==='complete-return')finishReference(true);
   else if(a==='simulate'){
     if(invalidRefs().length||missingRequired().length)return;
-    draft().output=media.find(m=>m.kind===(profile().outputKind||state.kind))?.id;promoteRecent([draft().output]);render();toast('Exemple local affiché. Aucune génération ni dépense.');
+    if(draft().pending)return;
+    const target=draft(),kind=state.kind,outputKind=profile().outputKind||kind,run={step:0,started:Date.now()};target.pending=run;render();
+    [1,2,3].forEach(step=>setTimeout(()=>{if(target.pending!==run)return;if(step<3)run.step=step;else{delete target.pending;target.output=media.find(m=>m.kind===outputKind)?.id;promoteRecent([target.output]);}if(draft()===target&&state.screen==='create'){render();if(step===3)toast('Exemple local affiché. Aucune génération ni dépense.');}},step*1200));
   }else if(a==='import')upload(el.dataset.role);
   else if(a==='library-import')upload();
   else if(a==='preview')openPanel('preview',{id});

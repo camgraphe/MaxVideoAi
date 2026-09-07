@@ -6,6 +6,7 @@ import { buildEngineOption, buildAudioAddonPayload } from '../../../frontend/com
 import { getPricingKernel } from '../../../frontend/src/lib/pricing-kernel';
 import { buildPublicPricingFacts } from '../../../frontend/src/lib/pricing-public-facts';
 import { quotePublicPricing } from '../../../frontend/src/lib/pricing-public-quote';
+import { getModelFamilyDefinition } from '../../../frontend/config/model-families';
 
 const ids = ['veo-3-1-fast', 'veo-3-1', 'kling-3-pro', 'sora-2', 'wan-2-6', 'seedance-2-5'];
 const entries = listFalEngines();
@@ -35,7 +36,8 @@ const models = ids.map(id => {
     return { duration, resolution: resolution.value, audio, totalCents: quote.customerTotalCents, currency: quote.currency };
   })));
   return {
-    id, label: option.label, durations, resolutions: option.resolutions.map(r => ({ value: r.value, label: r.label })),
+    id, label: option.label, familyId: entry.family, familyLabel: getModelFamilyDefinition(entry.family)?.label ?? option.label,
+    durations, resolutions: option.resolutions.map(r => ({ value: r.value, label: r.label })),
     formats: entry.engine.aspectRatios,
     audio: option.audioToggle ? 'optional' : option.audioIncluded ? 'included' : 'none',
     defaultDuration: option.defaultDuration, quotes,

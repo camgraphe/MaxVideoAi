@@ -279,3 +279,45 @@ dialog{color:var(--text);background:var(--surface);border:1px solid var(--line);
   .quick-values .options-control>.icon{width:15px;height:15px}
 }
 @media(max-width:600px){.work-scroll{padding-right:12px}}
+
+/* Explicit keyframes, family navigation and recognizable preview lifecycle. */
+.reference-frames{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:10px 0 0}
+.frame-slot{min-width:0;display:flex;gap:4px;align-items:center}
+.frame-slot .frame-target{min-width:0;flex:1;width:auto;height:68px;display:flex;gap:10px;align-items:center;text-align:left;padding:8px;border:1px dashed var(--line);border-radius:5px;background:var(--surface);overflow:hidden}
+.frame-target>span:nth-child(2){min-width:0;flex:1}
+.frame-target strong{display:block;font-size:12px;font-weight:600;line-height:1.25}
+.frame-target small{display:block;font-size:11px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
+.frame-picture{width:42px;height:42px;display:grid;place-items:center;flex:none;background:var(--soft);color:var(--accent);overflow:hidden;border-radius:3px}
+.frame-picture img{width:100%;height:100%;object-fit:cover}
+.frame-target>.icon{width:16px;flex:none}
+.frame-slot .icon-btn{min-width:44px;min-height:44px;color:var(--muted)}
+.frame-slot .frame-target.invalid{border:2px solid var(--danger)}
+.reference-empty>.icon{width:19px;margin-right:8px;color:var(--muted)}
+.model-family-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:16px 0 8px}
+.model-family-tabs button{min-height:44px;padding:0 13px;border:1px solid var(--line);border-radius:4px;font-size:12px}
+.model-family-tabs button[aria-pressed=true]{color:var(--accent);border-color:var(--accent);background:var(--soft)}
+.model-family-group h3{display:flex;align-items:center;justify-content:space-between;padding:16px 0 7px;font-size:13px}
+.model-family-group h3 small{font-size:11px;font-weight:400;color:var(--muted)}
+.output-origin{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:12px}
+.output-origin .icon{width:18px;color:var(--accent)}
+.work-scroll>.screen-empty,.work-scroll>.pending-stage{position:relative;min-height:190px;align-items:center;justify-content:center;flex-direction:column;background:var(--surface);border:1px solid var(--line);padding:20px;text-align:center;gap:8px}
+.screen-empty strong,.pending-stage>strong{font-weight:550;font-size:17px;letter-spacing:-.3px}
+.screen-empty p{font-size:12px;letter-spacing:0;margin:0;color:var(--muted)}
+.preview-frame{width:76px;height:48px;border:1px solid var(--line);display:grid;place-items:center;background:var(--soft);color:var(--accent);margin-bottom:4px}
+.preview-frame>.icon{width:28px;height:28px}
+.preview-corner{position:absolute;width:18px;height:18px;border-color:var(--accent);opacity:.4}
+.preview-corner.top-left{top:12px;left:12px;border-left:2px solid;border-top:2px solid}
+.preview-corner.bottom-right{bottom:12px;right:12px;border-right:2px solid;border-bottom:2px solid}
+.preview-baseline{position:absolute;bottom:12px;display:flex;gap:4px;width:70px;opacity:.5}
+.preview-baseline i{height:3px;background:var(--line);flex:1}
+.pending-stage small{font-size:12px;color:var(--muted)}
+.pending-track{width:min(220px,85%);height:3px;background:var(--line);overflow:hidden;margin:7px 0}
+.pending-track i{display:block;width:35%;height:100%;background:var(--accent);animation:pending-travel 1.7s ease-in-out infinite alternate}
+.pending-steps{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:13px}
+.pending-steps>span{display:flex;gap:5px;align-items:center;font-size:10px;color:var(--muted)}
+.pending-steps>span.active{color:var(--accent)}
+.pending-steps .icon,.pending-steps i{width:14px;height:14px;font-style:normal;display:grid;place-items:center}
+@keyframes pending-travel{from{transform:translateX(0)}to{transform:translateX(185%)}}
+@media(max-width:600px){.reference-frames{gap:7px}.frame-slot .frame-target{height:66px;gap:6px;padding:6px}.frame-picture{width:28px;height:36px}.frame-picture>.icon{width:20px}.frame-target strong{font-size:11px}.frame-target small{font-size:10px}.frame-target>.icon{display:none}.frame-slot:has(.ref-thumb){flex-wrap:wrap}.frame-slot:has(.ref-thumb) .icon-btn{width:100%;border:1px solid var(--line)}.work-scroll>.screen-empty,.work-scroll>.pending-stage{min-height:175px;height:auto;padding:15px}.pending-steps{gap:8px}.model-family-tabs{gap:5px}.model-family-tabs button{padding:0 10px}}
+@media(prefers-reduced-motion:reduce){.pending-track i{animation:none}}
+[data-motion=reduced] .pending-track i{animation:none}

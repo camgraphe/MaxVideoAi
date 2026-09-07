@@ -8,7 +8,7 @@
 
 **Tech Stack:** Next.js 15, React 18, TypeScript, existing SWR, scoped CSS/Tailwind, local Geist, existing accessible modal primitive. No new dependencies.
 
-**Spec:** `docs/design/global-app-concept/integration-contract.md`, `experience-map.md`, prototype and user feedback of 7 September (prompt boundary, reference pictogram, visible Options in light theme, official logo).
+**Spec:** `docs/design/global-app-concept/integration-contract.md`, `experience-map.md`, prototype and user feedback of 7 September (prompt boundary, reference roles, model families, visible Options, official logo, empty/pending reader and observed generation time).
 
 ## Global Constraints
 
@@ -57,8 +57,9 @@ Keep the `HeaderWalletStatus` public props and existing `useHeaderAccountState` 
 - [ ] Read current schema/field/reference budgets and composer contract assertions before changing markup. Inventory visible mode toggles, advanced settings, quantity, error/loading/locked states and price output.
 - [ ] Add focused tests for progressive reference presentation (empty, one, multiple, capacity, required source), preserving each field's callback/role. Update exact layout assertions only where the approved visual behavior changes, retaining ownership guards.
 - [ ] Implement a real labelled Prompt/Script input with stable border/background/inset focus and no clipped resize/scroll edges. Reduce placeholder bulk while preserving upload locks, accepted-kind hints and errors. Use named Add/Manage actions with a reference glyph; never reserve a large empty card per theoretical reference.
+- [ ] Separate compact start/end image targets from image/video/audio collections according to the selected model schema. Keep optional end frame visible in a keyframe workflow; collection capacity grows progressively. Role names, replace/remove and touch alternatives stay explicit. Preserve the existing family/variant picker and its complete catalogue.
 - [ ] Preserve the current engine picker and live price owners. Make the chosen model and core settings immediately recognizable, Options visibly bordered/accented in both themes, quantity and canonical quote adjacent to Generate. No prototype catalogue or estimate is copied into production.
-- [ ] Arrange preview, inputs and actions as an app workbench. Keep the important price/action area accessible on narrow or short screens, preserve natural audio-reader dimensions, and keep advanced controls reachable by scrolling. Empty/loading geometry remains consistent; no new player flashes before the form.
+- [ ] Arrange preview, inputs and actions as an app workbench. Keep the important price/action area accessible on narrow or short screens, preserve natural audio-reader dimensions, and keep advanced controls reachable by scrolling. Show a compact illustrated empty preview location without mounting a media element. Result caption describes the actual output; no permanent demo title. Pending occupies the preview location; Task 4 owns honest status/progress/ETA data.
 - [ ] Run affected composer/assets/image ownership tests, lint and TypeScript. Root exercises model/mode/settings/ref actions and all remaining fields before accepting the task.
 
 ## Task 3: Recent media to references
@@ -77,7 +78,20 @@ Keep the `HeaderWalletStatus` public props and existing `useHeaderAccountState` 
 - [ ] Preserve a destination-neutral card interface for future Studio project/canvas insertion. Document the Studio command boundary without adding a pretend success button or timeline mutation.
 - [ ] Run focused tests, lint and TypeScript; commit with a report. UI and MCP continue to share existing backend contracts.
 
-## Task 4: Browser qualification and integration review
+## Task 4: Observed generation time and honest pending progress
+
+**Files:** Existing `frontend/lib/render-eta.ts`, `api-engines.ts`, job/status types and adapters; route-local generation/render polling and preview owners; `frontend/server/generate-metrics.ts`, engine averages route and job status projection only where needed. Read provider and polling contracts before editing.
+
+**Interfaces:** Prefer the measured average already projected as `EngineCaps.avgDurationMs`; retain an explicit fallback when unavailable. A provider-reported percentage is distinct from synthetic internal progress and from an ETA. Extend optional metadata only through existing owners; no duplicate polling or new pricing/submission authority.
+
+- [ ] Trace the admin measurement pipeline, averages API/cache, selected engine data and client ETA. Verify completed-duration units, aliases, sample availability and degraded behavior with existing tests or disposable fixtures. No production database write or schema setup for QA.
+- [ ] Connect observed duration to the creator's ETA and retain a clearly approximate fallback. Do not multiply an engine-wide average by invented mode/quality factors. Keep estimates non-blocking; distinguish total estimated duration from elapsed time and overdue state.
+- [ ] Display queued/processing/finalizing state and elapsed time in the pending reader. Display a percentage only when explicitly reported by the provider with known provenance. Preserve zero, reject non-finite values, bound percentages and prevent terminal-state regression. A successful status check may update a last-checked indication; network failure must not pretend generation is still freshly confirmed.
+- [ ] Preserve existing polling cadence/backoff, one outstanding request per job, chronological rail ordering, completion/media persistence, auth and billing. Do not hold an actually completed result behind an artificial ETA.
+- [ ] Add meaningful tests for measured/fallback ETA, zero/invalid/provider-vs-synthetic progress, stale/terminal transitions and degraded checks. Verify representative pending/overdue/error/completed UI with controlled local fixtures without paid generation.
+- [ ] Document measurement ownership and limits, run affected provider/generation/polling contracts, lint and TypeScript, commit and obtain independent review.
+
+## Task 5: Browser qualification and integration review
 
 **Files:** `docs/engineering/app-experience.md`, task ledger, ignored screenshots/measurement artifacts; only targeted fixes in implementation files.
 

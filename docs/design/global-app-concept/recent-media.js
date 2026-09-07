@@ -37,7 +37,7 @@ export function installMediaDrag({ getAsset, getDestination, onDrop, onReject })
     if (!zone) { clearFeedback(); return; }
     event.preventDefault();
     const reference = event.target.closest('.ref-thumb');
-    const destination = getDestination(dragging, reference?.dataset.id);
+    const destination = getDestination(dragging, reference?.dataset.id, event.target.closest('[data-drop-role]')?.dataset.dropRole);
     clearFeedback();
     zone.dataset.dropState = destination.allowed ? 'allowed' : 'blocked';
     if (reference && destination.allowed) reference.classList.add('drop-target-replace');
@@ -56,12 +56,13 @@ export function installMediaDrag({ getAsset, getDestination, onDrop, onReject })
     event.preventDefault();
     const id = dragging, zone = event.target.closest?.('#references');
     const replacement = event.target.closest?.('.ref-thumb')?.dataset.id;
+    const role = event.target.closest?.('[data-drop-role]')?.dataset.dropRole;
     const received = event.dataTransfer.getData(mime);
-    const destination = zone && received === id ? getDestination(id, replacement) : null;
+    const destination = zone && received === id ? getDestination(id, replacement, role) : null;
     reset();
     if (!destination) return;
     if (!destination.allowed) { onReject(destination.message); return; }
-    onDrop(id, replacement);
+    onDrop(id, replacement, role);
   });
   document.addEventListener('dragend', reset);
   window.addEventListener('blur', reset);
