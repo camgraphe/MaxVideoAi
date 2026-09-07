@@ -163,7 +163,7 @@ export function EngineSelect({
             : 'px-2.5 py-1.5 text-[12px] sm:px-3 sm:py-2 sm:text-[13px]'
           : 'px-4 py-3 text-sm'
       )}
-      aria-haspopup="listbox"
+      aria-haspopup="dialog"
       aria-expanded={open}
     >
       <div className={clsx('flex min-w-0 items-center', controlPresentation === 'workspace' ? 'gap-2' : 'gap-4')}>

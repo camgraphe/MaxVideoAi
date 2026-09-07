@@ -64,7 +64,7 @@ test('model keyboard navigation skips unmounted families and disabled choices wi
       React.createElement('div', { ref: state.contentRef },
         React.createElement('button', { id: 'close', onClick: () => { closeCount++; setOpen(false); } }, 'Close'),
         ...[0, 1, 3].map((index) => React.createElement('button', {
-          key: index, id: engines[index].id, role: 'option', disabled: index === 1,
+          key: index, id: engines[index].id, 'data-engine-option': true, disabled: index === 1,
           ref: (node: HTMLButtonElement | null) => { state.itemRefs.current[index] = node; },
         }, engines[index].id))));
   }
@@ -120,7 +120,7 @@ test('rendered dropdown reports catalogue coverage and explains legacy-only empt
     Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
   }
 
-  const current = selectorEngine('current-model', 'Current Model');
+  const current = { ...selectorEngine('current-model', 'Current Model'), avgDurationMs: 42000, durationSource: 'completion_event' as const, durationSampleCount: 12 };
   const otherCurrent = selectorEngine('other-current', 'Other Current');
   const legacy = selectorEngine('legacy-secret', 'Legacy Secret');
   const engines = [current, otherCurrent, legacy];
@@ -147,6 +147,8 @@ test('rendered dropdown reports catalogue coverage and explains legacy-only empt
     contentRef: React.createRef<HTMLDivElement>(),
     copy: DEFAULT_ENGINE_SELECT_COPY,
     engines,
+    engineScores: { 'current-model': 9.1 },
+    disabledEngineReasons: { 'current-model': 'Requires a compatible reference' },
     formatEngineShort: (engine: EngineCaps | null | undefined) => engine?.label ?? '',
     hasLegacyEngines: true,
     highlightedIndex: 0,
@@ -171,8 +173,23 @@ test('rendered dropdown reports catalogue coverage and explains legacy-only empt
     await act(async () => { root.render(React.createElement(EngineSelectDropdown, props)); });
     assert.match(portalElement.textContent ?? '', /Models: 2\/3 · Families: 2/);
     assert.match(portalElement.textContent ?? '', /1 legacy model hidden/);
+    const selection = portalElement.querySelector<HTMLButtonElement>('[data-engine-option]')!;
+    assert.equal(selection.disabled, true);
+    assert.equal(selection.getAttribute('aria-pressed'), 'true');
+    assert.match(selection.textContent ?? '', /Requires a compatible reference/);
+    assert.doesNotMatch(selection.textContent ?? '', /9\.1|Observed completions|Fixture provider/);
+    const details = portalElement.querySelector<HTMLDetailsElement>('details.app-engine-details')!;
+    assert.equal(details.open, false);
+    assert.match(details.querySelector('summary')?.textContent ?? '', /Details.*Current Model/);
+    assert.match(details.textContent ?? '', /Score: 9\.1\/10/);
+    assert.match(details.textContent ?? '', /Observed completions \(12\)/);
+    await act(async () => { details.querySelector('summary')!.click(); });
+    assert.equal(details.open, true, 'native disclosure opens independently of disabled model selection');
+
 
     const input = portalElement.querySelector<HTMLInputElement>('input:not([type="checkbox"])')!;
+    // React was imported before JSDOM and enables its legacy input polyfill.
+    Object.assign(input, { attachEvent() {}, detachEvent() {} });
     await act(async () => {
       const setInputValue = Object.getOwnPropertyDescriptor(
         dom.window.HTMLInputElement.prototype,
@@ -187,6 +204,11 @@ test('rendered dropdown reports catalogue coverage and explains legacy-only empt
       portalElement.textContent ?? '',
       /1 matching legacy model is hidden\. Turn on Legacy models to include it\./,
     );
+    await act(async () => { portalElement.querySelector<HTMLButtonElement>('[aria-label="Clear search"]')!.click(); });
+    assert.equal(input.value, '');
+    assert.equal(dom.window.document.activeElement, input, 'clearing search returns focus to the input');
+    assert.ok(portalElement.querySelector('[data-engine-option]'));
+
   } finally {
     await act(async () => { root.unmount(); });
     dom.window.close();

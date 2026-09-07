@@ -65,3 +65,14 @@ test('workspace shell, notice, preview composition, and route navigation are own
   assert.match(routeHookSource, /useRouter/);
   assert.match(routeHookSource, /onboarding/);
 });
+
+
+test('mobile Recents lives in the creation heading action with drawer state and focus return intact', () => {
+  const shell = readFileSync(appShellPath, 'utf8');
+  const heading = readFileSync('frontend/app/(core)/(workspace)/app/_components/WorkspaceCreationHeading.tsx', 'utf8');
+  assert.match(heading, /action\?: ReactNode/);
+  assert.match(heading, /\{action\}/);
+  assert.match(shell, /<WorkspaceCreationHeading action=\{recentMedia \? <button ref=\{recentOpenerRef\}/);
+  assert.match(shell, /aria-expanded=\{mobileRecentOpen\} aria-controls=\{recentPanelId\}/);
+  assert.match(shell, /recentOpenerRef\.current\?\.focus\(\)/);
+});

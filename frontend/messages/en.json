@@ -3397,6 +3397,9 @@
         }
       },
       "engineSelect": {
+        "details": "Details",
+        "clearSearch": "Clear search",
+        "observedTiming": "Observed completions",
         "avgDuration": "Avg {value}",
         "choose": "Choose engine",
         "variant": "Variant",

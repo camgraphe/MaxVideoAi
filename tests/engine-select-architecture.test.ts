@@ -63,12 +63,16 @@ test('engine select modules expose the expected contracts', () => {
   assert.match(dropdownSource, /createPortal/);
   assert.match(dropdownSource, /getModeDisplayOrder/);
   assert.match(dropdownSource, /formatEngineSelectScore\(engineScores\?\.\[engine\.id\]\)/);
-  assert.match(dropdownSource, /Score \$\{value\}\/10/);
+  assert.match(dropdownSource, /copy\.score.*scoreLabel.*\/10/);
   assert.doesNotMatch(dropdownSource, /formatEngineSelectScorePercent\(engineScores/);
-  assert.match(dropdownSource, /grid min-h-\[250px\] min-w-0/);
-  assert.match(dropdownSource, /<select value=\{activeFamily\?\.id/);
-  assert.doesNotMatch(dropdownSource, /overflow-x-auto overscroll-x-contain/, 'mobile families use a visible native select');
-  assert.match(dropdownSource, /max-h-\[min\(36vh,300px\)\]/);
+  assert.match(dropdownSource, /app-engine-browser-body grid min-h-0/);
+  assert.match(dropdownSource, /app-engine-families app-scroll-surface/);
+  assert.doesNotMatch(dropdownSource, /<select/, 'family navigation remains visible at every size');
+  assert.match(dropdownSource, /<details className="app-engine-details/);
+  assert.match(dropdownSource, /data-engine-option="true"/);
+  assert.match(dropdownSource, /aria-pressed=\{active\}/);
+  assert.doesNotMatch(dropdownSource, /role="listbox"/, 'disclosures are native controls alongside selection buttons, not invalid listbox children');
+  assert.match(dropdownSource, /engine\.durationSource === 'completion_event'/);
   assert.match(dropdownStateHookSource, /export function useEngineSelectDropdownState/);
   assert.match(dropdownStateHookSource, /document\.addEventListener\('mousedown'/);
   assert.match(dropdownStateHookSource, /highlightedEngineIdRef/);
@@ -100,10 +104,10 @@ test('engine rows render launch badges from registry metadata without model-spec
 
 test('narrow engine rows keep complete model names alongside badges and scores', () => {
   assert.match(dropdownSource, /flex min-w-0 flex-col gap-1 sm:flex-row/);
-  assert.match(dropdownSource, /break-words text-\[13px\] font-semibold/);
+  assert.match(dropdownSource, /break-words text-sm font-semibold/);
   assert.doesNotMatch(
     dropdownSource,
-    /<p className="truncate text-\[13px\] font-semibold text-text-primary">/,
+    /<p className="truncate text-sm font-semibold text-text-primary">/,
   );
 });
 

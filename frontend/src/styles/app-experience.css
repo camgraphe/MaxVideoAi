@@ -161,6 +161,15 @@
 .app-experience .app-prompt-heading { padding: 8px 12px 0; align-items: center; }
 .app-experience .app-prompt-heading label { font-size: 13px; font-weight: 550; text-transform: none; letter-spacing: 0; color: var(--app-ink); }
 .app-experience [data-workspace-prompt] { display: block; height: 96px; min-height: 96px; max-height: 240px; padding: 9px 12px 12px; font-size: 15px; line-height: 1.5; border-radius: 7px; }
+.app-experience :is([data-workspace-prompt], .app-scroll-surface) { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--app-muted) 55%, transparent) transparent; scrollbar-gutter: stable; }
+@supports selector(::-webkit-scrollbar) {
+  .app-experience :is([data-workspace-prompt], .app-scroll-surface) { scrollbar-width: auto; scrollbar-color: auto; }
+  .app-experience :is([data-workspace-prompt], .app-scroll-surface)::-webkit-scrollbar { width: 8px; height: 8px; }
+  .app-experience :is([data-workspace-prompt], .app-scroll-surface)::-webkit-scrollbar-track { background: transparent; margin-block: 6px; }
+  .app-experience :is([data-workspace-prompt], .app-scroll-surface)::-webkit-scrollbar-thumb { border: 2px solid transparent; border-radius: 999px; background: color-mix(in srgb, var(--app-muted) 55%, transparent); background-clip: padding-box; }
+  .app-experience :is([data-workspace-prompt], .app-scroll-surface)::-webkit-scrollbar-thumb:hover { background-color: var(--app-accent); }
+  .app-experience :is([data-workspace-prompt], .app-scroll-surface)::-webkit-scrollbar-corner { background: transparent; }
+}
 .app-experience .app-prompt-heading button { min-height: 44px !important; }
 .app-experience .app-composer-toolbar { margin-top: 8px; padding: 8px 0; background: var(--app-canvas); }
 .app-experience .app-composer-toolbar > div { flex-wrap: wrap; gap: 8px; }
@@ -331,3 +340,28 @@
   .app-experience.app-reference-modal-layer { padding: 8px; }
   .app-experience .app-reference-popup { padding: 10px; }
 }
+
+/* One bounded browser body; only each column owns its native scroll. */
+.app-experience .app-engine-browser { border-radius: 12px; }
+.app-experience .app-engine-browser > :not(.app-engine-browser-body) { flex-shrink: 0; }
+.app-experience .app-engine-families { padding-top: 8px; }
+.app-experience .app-engine-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; }
+.app-experience .app-engine-details[open] { grid-column: 1 / -1; }
+.app-experience .app-engine-row > button[aria-pressed="true"] { background: var(--app-accent-soft); box-shadow: inset 3px 0 var(--app-accent); }
+.app-experience .app-engine-details summary::marker { color: var(--app-muted); }
+.app-experience .app-engine-details[open] { background: var(--app-canvas); border-radius: 6px; }
+.app-experience .app-engine-details summary { padding-block: 12px; }
+@media (max-width: 639px) {
+  .app-experience .app-engine-browser-body { grid-template-rows: auto minmax(0, 1fr); }
+  .app-experience .app-engine-families { scroll-snap-type: x proximity; }
+  .app-experience .app-engine-families > button { max-width: 170px; }
+  .app-experience .app-creation-heading .app-recent-mobile-open { align-self: center; }
+}
+@media (max-height: 460px) {
+  .app-experience .app-engine-browser-body { grid-template-columns: 120px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
+  .app-experience .app-engine-families { display: block; height: 100%; overflow-x: hidden; overflow-y: auto; }
+  .app-experience .app-engine-families > button { min-width: 0; width: 100%; }
+}
+
+.app-experience .app-engine-catalogue-note { position: absolute; z-index: 1; left: 12px; right: 12px; box-shadow: 0 8px 24px #0002; }
+.app-experience .app-engine-catalogue-details summary::-webkit-details-marker { display: none; }

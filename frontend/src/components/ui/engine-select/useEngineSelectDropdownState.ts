@@ -117,7 +117,7 @@ export function useEngineSelectDropdownState({
 
     function handleKey(event: KeyboardEvent) {
       const target = event.target as HTMLElement | null;
-      const isOptionTarget = Boolean(target?.closest('[role="option"]'));
+      const isOptionTarget = Boolean(target?.closest('[data-engine-option], [role="option"]'));
       const isTriggerTarget = Boolean(target && triggerRef.current?.contains(target));
       if (event.key === 'Escape') {
         event.preventDefault();

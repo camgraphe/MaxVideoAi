@@ -3432,6 +3432,9 @@
         }
       },
       "engineSelect": {
+        "details": "Détails",
+        "clearSearch": "Effacer la recherche",
+        "observedTiming": "Générations terminées observées",
         "avgDuration": "Moy. {value}",
         "choose": "Choisir un modèle",
         "variant": "Variante",

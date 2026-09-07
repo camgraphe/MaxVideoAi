@@ -143,9 +143,8 @@ export function WorkspaceAppShell({
         </div>
       }
     >
-      <WorkspaceCreationHeading />
-      {recentMedia ? <button ref={recentOpenerRef} className="app-recent-mobile-open" type="button" aria-expanded={mobileRecentOpen} aria-controls={recentPanelId}
-        onClick={() => { openRecentMedia(); requestAnimationFrame(() => { recentPanelRef.current?.focus(); recentPanelRef.current?.scrollIntoView({ block: 'nearest' }); }); }}><AppGlyph name="library" />{copy.title}</button> : null}
+      <WorkspaceCreationHeading action={recentMedia ? <button ref={recentOpenerRef} className="app-recent-mobile-open" type="button" aria-expanded={mobileRecentOpen} aria-controls={recentPanelId}
+        onClick={() => { openRecentMedia(); requestAnimationFrame(() => { recentPanelRef.current?.focus(); recentPanelRef.current?.scrollIntoView({ block: 'nearest' }); }); }}><AppGlyph name="library" />{copy.title}</button> : null} />
       {notice && (
         <div className="rounded-card border border-warning-border bg-warning-bg px-4 py-2 text-sm text-warning shadow-card">
           {notice}

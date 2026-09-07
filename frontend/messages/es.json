@@ -3424,6 +3424,9 @@
         }
       },
       "engineSelect": {
+        "details": "Detalles",
+        "clearSearch": "Borrar búsqueda",
+        "observedTiming": "Generaciones completadas observadas",
         "avgDuration": "Prom. {value}",
         "choose": "Elegir modelo",
         "variant": "Variante",
