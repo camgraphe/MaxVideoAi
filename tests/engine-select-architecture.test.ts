@@ -11,6 +11,7 @@ const registryHookPath = join(root, 'frontend/src/components/ui/engine-select/us
 const modalPath = join(root, 'frontend/src/components/ui/engine-select/BrowseEnginesModal.tsx');
 const helpersPath = join(root, 'frontend/src/components/ui/engine-select/engine-select-helpers.ts');
 const copyPath = join(root, 'frontend/src/components/ui/engine-select/engine-select-copy.ts');
+const cataloguePath = join(root, 'frontend/src/components/ui/engine-select/engine-select-catalogue.ts');
 const typesPath = join(root, 'frontend/src/components/ui/engine-select/engine-select-types.ts');
 const variantControlPath = join(root, 'frontend/src/components/ui/engine-select/EngineVariantControl.tsx');
 
@@ -30,6 +31,7 @@ test('engine select delegates modal rendering, copy, helpers, and contracts', ()
   assert.ok(existsSync(registryHookPath), 'engine registry state should live in a focused hook');
   assert.ok(existsSync(helpersPath), 'engine select helpers should live in a focused module');
   assert.ok(existsSync(copyPath), 'engine select default copy should live in a focused module');
+  assert.ok(existsSync(cataloguePath), 'catalogue summary and search should live in a focused module');
   assert.ok(existsSync(typesPath), 'engine select contracts should live in a focused module');
 
   assert.match(engineSelectSource, /from '\.\/engine-select\/BrowseEnginesModal'/);
@@ -38,6 +40,7 @@ test('engine select delegates modal rendering, copy, helpers, and contracts', ()
   assert.match(engineSelectSource, /from '\.\/engine-select\/useEngineSelectRegistry'/);
   assert.match(engineSelectSource, /from '\.\/engine-select\/engine-select-helpers'/);
   assert.match(engineSelectSource, /from '\.\/engine-select\/engine-select-copy'/);
+  assert.match(dropdownSource, /from '\.\/engine-select-catalogue';/);
   assert.match(engineSelectSource, /from '\.\/engine-select\/engine-select-types'/);
 });
 
@@ -77,6 +80,9 @@ test('engine select modules expose the expected contracts', () => {
   assert.match(helpersSource, /export function compareEnginesByDefaultPriority/);
   assert.match(helpersSource, /export const DEFAULT_MODE_OPTIONS/);
   assert.match(copySource, /export const DEFAULT_ENGINE_SELECT_COPY/);
+  const catalogueSource = readFileSync(cataloguePath, 'utf8');
+  assert.match(catalogueSource, /export function getEngineSelectCatalogueSummary/);
+  assert.match(catalogueSource, /export function filterEngineFamilyGroups/);
   assert.match(typesSource, /export interface EngineSelectProps/);
   assert.match(typesSource, /export type EngineRegistryMeta/);
 });
@@ -89,6 +95,15 @@ test('engine rows render launch badges from registry metadata without model-spec
     dropdownSource,
     /engine\.id\s*===\s*['"]seedance-2-5['"]/,
     'launch badge rendering must stay driven by registry metadata',
+  );
+});
+
+test('narrow engine rows keep complete model names alongside badges and scores', () => {
+  assert.match(dropdownSource, /flex min-w-0 flex-col gap-1 sm:flex-row/);
+  assert.match(dropdownSource, /break-words text-\[13px\] font-semibold/);
+  assert.doesNotMatch(
+    dropdownSource,
+    /<p className="truncate text-\[13px\] font-semibold text-text-primary">/,
   );
 });
 

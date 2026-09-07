@@ -308,6 +308,7 @@ export function EngineSelect({
               activeOptionId={activeOptionId}
               contentRef={contentRef}
               copy={copy}
+              engines={engines}
               formatEngineShort={formatEngineShort}
               hasLegacyEngines={hasLegacyEngines}
               highlightedIndex={highlightedIndex}

@@ -145,24 +145,38 @@ test('buildEngineFamilyGroups orders models by score when score data is availabl
   ]);
 });
 
-test('buildEngineFamilyGroups hides legacy variants unless selected or explicitly enabled', () => {
+test('buildEngineFamilyGroups preserves current, legacy, selected legacy, and paused boundaries', () => {
   const meta = registryMeta([
     { id: 'seedance-2-0', family: 'seedance', rank: 1 },
     { id: 'seedance-1-5-pro', family: 'seedance', rank: 2, isLegacy: true },
+    { id: 'seedance-paused', family: 'seedance', rank: 3 },
   ]);
 
+  const engines = [
+    engine('seedance-2-0', 'Seedance 2.0'),
+    engine('seedance-1-5-pro', 'Seedance 1.5 Pro'),
+    { ...engine('seedance-paused', 'Seedance Paused'), availability: 'paused' as const },
+  ];
+
   const hiddenLegacy = buildEngineFamilyGroups({
-    engines: [engine('seedance-2-0', 'Seedance 2.0'), engine('seedance-1-5-pro', 'Seedance 1.5 Pro')],
+    engines,
     registryMeta: meta,
   });
   assert.deepEqual(hiddenLegacy[0].engines.map((entry) => entry.id), ['seedance-2-0']);
 
   const selectedLegacy = buildEngineFamilyGroups({
-    engines: [engine('seedance-2-0', 'Seedance 2.0'), engine('seedance-1-5-pro', 'Seedance 1.5 Pro')],
+    engines,
     registryMeta: meta,
     selectedEngineId: 'seedance-1-5-pro',
   });
   assert.deepEqual(selectedLegacy[0].engines.map((entry) => entry.id), ['seedance-2-0', 'seedance-1-5-pro']);
+
+  const allLegacy = buildEngineFamilyGroups({
+    engines,
+    registryMeta: meta,
+    showLegacy: true,
+  });
+  assert.deepEqual(allLegacy[0].engines.map((entry) => entry.id), ['seedance-2-0', 'seedance-1-5-pro']);
 });
 
 test('buildEngineFamilyGroups creates readable fallback families and formats compact scores', () => {

@@ -8,6 +8,11 @@ import type { EngineAvailability, EngineCaps } from '@/types/engines';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import type { EngineSelectCopy } from './engine-select-copy';
 import {
+  filterEngineFamilyGroups,
+  getEngineSelectCatalogueSummary,
+  normalizeEngineSelectQuery,
+} from './engine-select-catalogue';
+import {
   buildEngineFamilyGroups,
   formatAvgDuration,
   formatEngineSelectScore,
@@ -20,6 +25,7 @@ type EngineSelectDropdownProps = {
   activeOptionId?: string;
   contentRef: RefObject<HTMLDivElement>;
   copy: EngineSelectCopy;
+  engines: EngineCaps[];
   engineScores?: Record<string, number | null | undefined>;
   formatEngineShort: (engine: EngineCaps | null | undefined) => string;
   hasLegacyEngines: boolean;
@@ -55,31 +61,6 @@ const AVAILABILITY_DOT_CLASS: Record<EngineAvailability, string> = {
   waitlist: 'bg-sky-500',
   paused: 'bg-rose-500',
 };
-
-function normalizeQuery(value: string) {
-  return value.trim().toLowerCase();
-}
-
-function engineMatchesQuery(engine: EngineCaps, meta: EngineRegistryMeta | null, query: string, familyLabel: string) {
-  if (!query) return true;
-  const entry = meta?.meta.get(engine.id);
-  const haystack = [
-    engine.id,
-    engine.label,
-    engine.provider,
-    engine.providerMeta?.provider,
-    engine.providerMeta?.modelSlug,
-    entry?.marketingName,
-    entry?.cardTitle,
-    entry?.provider,
-    entry?.family,
-    familyLabel,
-  ]
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase();
-  return haystack.includes(query);
-}
 
 export function getDropdownGeometry(position: DropdownPosition, viewport?: { width: number; height: number }) {
   if (!viewport && typeof window === 'undefined') {
@@ -123,6 +104,7 @@ export function EngineSelectDropdown({
   activeOptionId,
   contentRef,
   copy,
+  engines,
   engineScores,
   formatEngineShort,
   hasLegacyEngines,
@@ -145,6 +127,16 @@ export function EngineSelectDropdown({
   visibleEngines,
 }: EngineSelectDropdownProps) {
   const [query, setQuery] = useState('');
+  const catalogueGroups = useMemo(
+    () =>
+      buildEngineFamilyGroups({
+        engines,
+        engineScores,
+        registryMeta,
+        showLegacy: true,
+      }),
+    [engineScores, engines, registryMeta]
+  );
   const familyGroups = useMemo(
     () =>
       buildEngineFamilyGroups({
@@ -160,21 +152,43 @@ export function EngineSelectDropdown({
     () => new Map(visibleEngines.map((engine, index) => [engine.id, index] as const)),
     [visibleEngines]
   );
-  const normalizedQuery = normalizeQuery(query);
-  const filteredGroups = useMemo(() => {
-    return familyGroups
-      .map((group) => {
-        const familyMatches = group.label.toLowerCase().includes(normalizedQuery) || group.id.includes(normalizedQuery);
-        const engines = normalizedQuery
-          ? group.engines.filter((engine) => engineMatchesQuery(engine, registryMeta, normalizedQuery, group.label))
-          : group.engines;
-        return {
-          ...group,
-          engines: familyMatches && normalizedQuery ? group.engines : engines,
-        };
-      })
-      .filter((group) => group.engines.length > 0);
-  }, [familyGroups, normalizedQuery, registryMeta]);
+  const normalizedQuery = normalizeEngineSelectQuery(query);
+  const filteredGroups = useMemo(
+    () => filterEngineFamilyGroups({ groups: familyGroups, query, registryMeta }),
+    [familyGroups, query, registryMeta]
+  );
+  const filteredCatalogueGroups = useMemo(
+    () => filterEngineFamilyGroups({ groups: catalogueGroups, query, registryMeta }),
+    [catalogueGroups, query, registryMeta]
+  );
+  const catalogueSummary = useMemo(
+    () => getEngineSelectCatalogueSummary({ engines, visibleEngines, registryMeta }),
+    [engines, registryMeta, visibleEngines]
+  );
+  const visibleEngineIds = useMemo(
+    () => new Set(visibleEngines.map((engine) => engine.id)),
+    [visibleEngines]
+  );
+  const matchingHiddenLegacyCount = normalizedQuery
+    ? filteredCatalogueGroups
+        .flatMap((group) => group.engines)
+        .filter(
+          (engine) =>
+            !visibleEngineIds.has(engine.id) &&
+            Boolean(registryMeta?.meta.get(engine.id)?.isLegacy),
+        ).length
+    : 0;
+  const catalogueSummaryLabel = copy.catalogueSummary
+    .replace('{visible}', String(catalogueSummary.visibleCount))
+    .replace('{total}', String(catalogueSummary.totalCount))
+    .replace('{families}', String(catalogueSummary.familyCount));
+  const hiddenLegacyLabel = (
+    catalogueSummary.hiddenLegacyCount === 1 ? copy.legacyHiddenOne : copy.legacyHiddenMany
+  ).replace('{count}', String(catalogueSummary.hiddenLegacyCount));
+  const emptySearchLabel = copy.emptySearch.replace('{query}', query.trim());
+  const emptySearchLegacyLabel = (
+    matchingHiddenLegacyCount === 1 ? copy.emptySearchLegacyOne : copy.emptySearchLegacyMany
+  ).replace('{count}', String(matchingHiddenLegacyCount));
 
   const selectedFamilyId =
     filteredGroups.find((group) => group.engines.some((engine) => engine.id === selectedEngine.id))?.id ??
@@ -250,6 +264,16 @@ export function EngineSelectDropdown({
             </button>
           </div>
         </div>
+        <div
+          role="status"
+          aria-live="polite"
+          className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-hairline px-3 py-1.5 text-[10px] text-text-muted"
+        >
+          <span>{catalogueSummaryLabel}</span>
+          {catalogueSummary.hiddenLegacyCount > 0 ? (
+            <span className="text-text-secondary">· {hiddenLegacyLabel}</span>
+          ) : null}
+        </div>
 
         <div className="grid min-h-[250px] min-w-0 sm:grid-cols-[170px_minmax(0,1fr)]">
           <div className="min-w-0 border-b border-hairline bg-surface-2/60 sm:border-b-0 sm:border-r">
@@ -281,7 +305,7 @@ export function EngineSelectDropdown({
                       if (firstIndex >= 0) onHighlight(firstIndex);
                     }}
                     className={clsx(
-                      'flex min-w-[116px] snap-start items-center gap-2 rounded-input border px-2.5 py-2 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:min-w-0 sm:w-full',
+                      'flex min-h-11 min-w-[116px] snap-start items-center gap-2 rounded-input border px-2.5 py-2 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:min-w-0 sm:w-full',
                       active
                         ? 'border-brand/25 bg-surface text-text-primary shadow-sm'
                         : 'border-transparent text-text-secondary hover:bg-surface'
@@ -290,7 +314,7 @@ export function EngineSelectDropdown({
                   >
                     <EngineIcon engine={{ id: group.id, label: group.label, brandId: group.brandId }} size={24} className="shrink-0" />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[12px] font-semibold">{group.label}</span>
+                      <span className="block break-words text-[12px] font-semibold leading-tight">{group.label}</span>
                       <span className="block text-[9px] text-text-muted">{group.engines.length} {copy.models.toLowerCase()}</span>
                     </span>
                     <ChevronRight aria-hidden="true" className={clsx('hidden h-3.5 w-3.5 sm:block', active ? 'text-brand' : 'text-text-muted')} />
@@ -302,7 +326,7 @@ export function EngineSelectDropdown({
 
           <div className="min-w-0">
             <div className="flex items-center justify-between gap-3 px-3 pb-1 pt-2">
-              <p className="truncate text-[10px] font-semibold uppercase tracking-micro text-text-muted">
+              <p className="min-w-0 break-words text-[10px] font-semibold uppercase leading-tight tracking-micro text-text-muted">
                 {activeFamily?.label ?? copy.models}
               </p>
               {activeFamily ? (
@@ -361,9 +385,9 @@ export function EngineSelectDropdown({
                     >
                       <EngineIcon engine={engine} size={28} className="mt-0.5 shrink-0" />
                       <div className="min-w-0 flex-1">
-                        <div className="flex min-w-0 items-start justify-between gap-3">
+                        <div className="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                           <div className="min-w-0">
-                            <p className="truncate text-[13px] font-semibold text-text-primary">
+                            <p className="break-words text-[13px] font-semibold leading-tight text-text-primary">
                               {meta?.marketingName ?? formatEngineShort(engine)}
                             </p>
                             <p className="truncate text-[10px] text-text-muted">
@@ -417,6 +441,16 @@ export function EngineSelectDropdown({
                   </li>
                 );
               })}
+              {!activeFamily && normalizedQuery ? (
+                <li className="flex min-h-[180px] items-center justify-center px-6 py-8 text-center" role="status">
+                  <div className="max-w-sm space-y-2">
+                    <p className="text-sm font-medium text-text-primary">{emptySearchLabel}</p>
+                    {matchingHiddenLegacyCount > 0 ? (
+                      <p className="text-xs leading-relaxed text-text-secondary">{emptySearchLegacyLabel}</p>
+                    ) : null}
+                  </div>
+                </li>
+              ) : null}
             </ul>
           </div>
         </div>

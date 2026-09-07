@@ -3533,7 +3533,13 @@
         },
         "families": "Familias",
         "models": "Modelos",
-        "searchPlaceholder": "Buscar un modelo"
+        "searchPlaceholder": "Buscar un modelo",
+        "catalogueSummary": "{visible} de {total} modelos en {families} familias",
+        "legacyHiddenOne": "1 modelo antiguo oculto",
+        "legacyHiddenMany": "{count} modelos antiguos ocultos",
+        "emptySearch": "Ningún modelo coincide con «{query}».",
+        "emptySearchLegacyOne": "Hay 1 modelo antiguo coincidente oculto. Activa Modelos antiguos para incluirlo.",
+        "emptySearchLegacyMany": "Hay {count} modelos antiguos coincidentes ocultos. Activa Modelos antiguos para incluirlos."
       }
     },
     "jobs": {
