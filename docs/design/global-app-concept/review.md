@@ -80,3 +80,7 @@ Sources de la décision de navigation : [Adobe — crédits génératifs](https:
 État vide inspecté à 390 px : titre, ajout et saisie accessibles. Les messages avec Annuler sont désormais positionnés au-dessus du pied d’action et suivent son déplacement au redimensionnement ; le bouton principal reste dégagé. Aucun avertissement ni erreur de console dans le dernier parcours.
 
 Vérification de source : préparation reproductible, syntaxe des quatre modules JavaScript et du script Python, `git diff --check`. Captures locales : `recents-wallet-1440.png`, `recents-wallet-390.png`, `recents-wallet-landscape.png`, `recents-audio-390.png`. Aucun fichier frontend de production modifié dans ce lot.
+
+## Lisibilité du prompt, des références et de la marque
+
+Retour utilisateur appliqué : picto original de médias superposés devant Références, picto et label Prompt/Script, fond et bordure du champ visibles au repos, focus dessiné à l’intérieur et espace réservé au défilement. Boutons de réglages délimités, Options accentué ; les cinq réglages restent sur une ligne à 320 px, chacun au moins 44 px de large. Le monogramme provisoire est remplacé par le logo officiel du dépôt, copié sans modification ; variante compacte visible dans l’en-tête mobile. Vérification navigateur en clair à 1280 et 320 px ; aucun débordement horizontal, pied à 663 px avant la navigation à 671 px sur le format 320 × 740.

@@ -42,3 +42,7 @@ La présentation des cartes reçoit des identifiants de médias, une sélection 
 - Le clic, le clavier, le toucher et le dépôt interne appellent la même validation de type, rôle, métadonnées et budget. Plusieurs rôles possibles ouvrent un choix. Déposer sur une référence prépare un remplacement ; confirmation atomique et annulation restaurent l’ancien média et son rôle.
 - Les actions Studio doivent invoquer ses commandes de projet/canevas/timeline avec contrôle d’accès, identifiant canonique, sauvegarde, réponse d’erreur et annulation. Un média audio attend une destination audio prise en charge. La première tranche de montage MCP reste le placement ordonné des plans ; aucun enrichissement automatique de la timeline n’est implicite.
 - Sur mobile, conserver un bouton Récents et une action explicite sur chaque carte. Le dépôt ne doit jamais être le seul accès. Les commandes principales et la navigation occupent une place réelle hors de la zone défilante.
+
+## Précisions visuelles du 7 septembre
+
+Conserver le logo officiel `frontend/public/assets/branding/logo-mark.svg`, vérifié en petit format, au lieu du monogramme provisoire. Identifier Références par un picto média explicite. Le champ Prompt/Script conserve un label, un fond distinct, un contour complet et un focus intérieur qui ne se fait pas couper par la zone défilante. Les réglages sont de vrais boutons délimités ; Options a une présence renforcée en clair comme en sombre. Ces changements ne doivent ni réduire les cibles sous 44 px ni masquer une commande sur petit écran.

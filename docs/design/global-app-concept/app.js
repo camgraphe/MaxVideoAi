@@ -66,7 +66,7 @@ function canInsert(role, amount = 1, replaceId = null) {
 function renderReferences() {
   const refs = draft().refs, invalid = invalidRefs(), p = profile();
   const visibleCount = innerWidth <= 350 ? (refs.length > 1 ? 0 : 1) : innerWidth <= 600 ? 2 : innerWidth <= 1100 && innerWidth > 800 ? 3 : 4;
-  return `<div class="reference-line"><button class="refs-label" data-action="profile" aria-label="Scénarios de références de démonstration"><strong>Références</strong><small>${refs.length ? p.max ? `${refs.length} / ${p.max}` : `${refs.length} à vérifier` : p.roles.some(r=>r.required) ? 'Source requise' : 'Scénarios · démo'} ${icon('down')}</small></button>
+  return `<div class="reference-line"><button class="refs-label" data-action="profile" aria-label="Scénarios de références de démonstration"><strong>${icon('reference')}Références</strong><small>${refs.length ? p.max ? `${refs.length} / ${p.max}` : `${refs.length} à vérifier` : p.roles.some(r=>r.required) ? 'Source requise' : 'Scénarios · démo'} ${icon('down')}</small></button>
     ${refs.length ? `<div class="ref-thumbs">${refs.slice(0, visibleCount).map((r, i) => {
       const m = asset(r.assetId);
       return `<button class="ref-thumb ${invalid.includes(r) ? 'invalid' : ''}" data-action="reference" data-id="${r.id}" aria-label="Gérer ${esc(m.name)}, ${esc(roleFor(r.role)?.name || r.role)}">${m.kind === 'image' ? `<img src="${esc(m.url)}" alt="" style="object-position:${esc(m.focus||'50% 50%')}">` : icon(m.kind)}<span class="ref-count">${i + 1}</span></button>`;
@@ -90,9 +90,9 @@ function modelToolbar() {
 }
 function quickControls() {
   const d = draft();
-  if (state.kind !== 'video') return `${state.kind === 'audio' ? '' : button(esc(d.format),'controls',null,'','value')}${state.kind !== 'image' ? button(esc(d.duration),'controls',null,'','value') : ''}${button('Options','controls','settings','','value')}`;
+  if (state.kind !== 'video') return `${state.kind === 'audio' ? '' : button(esc(d.format),'controls',null,'','value')}${state.kind !== 'image' ? button(esc(d.duration),'controls',null,'','value') : ''}${button('Options','controls','settings','','value options-control')}`;
   const c = d.modelChoice;
-  return `${button(`${c.duration} s`,'controls',null,'aria-label="Régler la durée"','value')}${button(esc(c.resolution),'controls',null,'aria-label="Régler la résolution"','value')}${button(esc(c.format),'controls',null,'aria-label="Régler le format"','value')}${button(soundLabel(c),'controls','audio','aria-label="Régler le son"','value')}${button('Options','controls','settings','','value')}`;
+  return `${button(`${c.duration} s`,'controls',null,'aria-label="Régler la durée"','value')}${button(esc(c.resolution),'controls',null,'aria-label="Régler la résolution"','value')}${button(esc(c.format),'controls',null,'aria-label="Régler le format"','value')}${button(soundLabel(c),'controls','audio','aria-label="Régler le son"','value')}${button('Options','controls','settings','','value options-control')}`;
 }
 function modelControls(choice) {
   const model = modelFor(choice);
@@ -125,7 +125,7 @@ function creator() {
       <div class="work-scroll" role="region" aria-label="Aperçu, références et instruction" tabindex="0">
       ${m ? `<div class="screen">${reader(m,'')}</div><div class="asset-caption"><div><strong>${esc(m.name)}</strong><small style="display:block;margin-top:4px">Exemple local · aucune génération</small></div>${button('Réutiliser','reuse', 'replace', `data-id="${m.id}"`)}</div>` : `<div class="screen screen-empty"><div class="empty-icon">${icon(state.kind)}</div><h2>${state.kind === 'audio' ? 'Donnez du son à votre idée.' : state.kind === 'image' ? 'Donnez forme à votre idée.' : 'Mettez votre idée en mouvement.'}</h2><p>Une instruction suffit pour commencer.</p></div>`}
       <div id="references"><span class="drop-feedback" role="status"></span>${renderReferences()}</div>
-      <div class="compose"><label for="prompt">${state.kind === 'audio' && d.profile === 'voice' ? 'Votre script' : 'Votre direction'}</label><textarea id="prompt" rows="3" placeholder="Décrivez ce que vous voulez créer…">${esc(d.prompt)}</textarea></div>
+      <div class="compose"><label for="prompt">${icon('prompt')}${state.kind === 'audio' && d.profile === 'voice' ? 'Script' : 'Prompt'}</label><textarea id="prompt" rows="3" placeholder="Décrivez ce que vous voulez créer…">${esc(d.prompt)}</textarea></div>
       </div>
       <div class="commandbar"><div class="quick-values">${quickControls()}</div><div class="creation-action">${quoteDisplay()}${button('Simuler','simulate','arrow',invalidRefs().length || missingRequired().length ? 'disabled' : '', 'primary generate')}</div></div>
     </section>${recentShelf()}</div>`;
@@ -162,7 +162,7 @@ function render() {
   const workScroll=sameContext?$('.work-scroll')?.scrollTop||0:0, shelfScroll=sameContext?$('.recent-list')?.scrollTop||0:0;
   applyTheme();
   const nav=[['create','create','Créer'],['library','library','Médias'],['tools','tools','Outils'],['studio','studio','Studio'],['settings','settings','Compte']];
-  $('#app').innerHTML=`<div class="app-shell"><nav class="nav" aria-label="Navigation principale"><div class="brand" aria-label="MaxVideoAI">M/</div>${nav.map(([k,i,l])=>`<button class="nav-button ${state.screen===k?'active':''} ${k==='settings'?'nav-bottom':''}" data-action="navigate" data-screen="${k}" aria-current="${state.screen===k?'page':'false'}">${icon(i)}${l}</button>`).join('')}</nav><main class="main"><header class="topbar"><button class="site-trigger" data-action="site" aria-label="Menu MaxVideoAI : site et aide"><span>MaxVideoAI<small>Menu · prototype</small></span>${icon('down')}</button><div class="top-right">${button('<span>Assistants</span>','assistants','connect','aria-label="Assistants"','assistant-shortcut')}<button class="wallet-trigger" data-action="wallet" aria-label="Wallet : solde non connecté">${icon('wallet')}<span><small>Wallet</small><strong>— USD</strong></span></button><div class="avatar" aria-hidden="true">${esc(state.name.slice(0,2).toUpperCase())}</div></div></header><div class="content">${state.screen==='create'?creator():state.screen==='library'?library():state.screen==='settings'?settings():futureScreen()}</div></main></div>`;
+  $('#app').innerHTML=`<div class="app-shell"><nav class="nav" aria-label="Navigation principale"><div class="brand"><img src="assets/logo-mark.svg" alt="MaxVideoAI" width="38" height="38"></div>${nav.map(([k,i,l])=>`<button class="nav-button ${state.screen===k?'active':''} ${k==='settings'?'nav-bottom':''}" data-action="navigate" data-screen="${k}" aria-current="${state.screen===k?'page':'false'}">${icon(i)}${l}</button>`).join('')}</nav><main class="main"><header class="topbar"><button class="site-trigger" data-action="site" aria-label="Menu MaxVideoAI : site et aide"><img class="mobile-brand" src="assets/logo-mark.svg" alt="" width="28" height="28"><span>MaxVideoAI<small>Menu · prototype</small></span>${icon('down')}</button><div class="top-right">${button('<span>Assistants</span>','assistants','connect','aria-label="Assistants"','assistant-shortcut')}<button class="wallet-trigger" data-action="wallet" aria-label="Wallet : solde non connecté">${icon('wallet')}<span><small>Wallet</small><strong>— USD</strong></span></button><div class="avatar" aria-hidden="true">${esc(state.name.slice(0,2).toUpperCase())}</div></div></header><div class="content">${state.screen==='create'?creator():state.screen==='library'?library():state.screen==='settings'?settings():futureScreen()}</div></main></div>`;
   renderedContext=`${state.screen}:${state.kind}`;
   if($('.work-scroll'))$('.work-scroll').scrollTop=workScroll;
   if($('.recent-list'))$('.recent-list').scrollTop=shelfScroll;

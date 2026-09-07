@@ -34,6 +34,8 @@ export const defaults = { video: 'mixed', image: 'images', audio: 'music' };
 
 // Original geometric pictograms: common 24-unit grid, solid mass + tinted detail.
 const shapes = {
+  reference: '<path d="M2 2h15v3H5v12H2z" opacity=".4"/><path d="M7 7h15v15H7z" opacity=".25"/><circle cx="17.5" cy="11.5" r="1.5"/><path d="m8 20 5-7 4 5 2-2 3 4v2H8z"/>',
+  prompt: '<path d="M3 4h18v15H3z" opacity=".2"/><path d="M6 7h10v2H6zm0 4h7v2H6zm0 4h6v2H6zm10-4h2v7h-2z"/>',
   create: '<path d="M4 3h10l6 6v12H4z" opacity=".25"/><path d="M13 3v7h7M7 14h10v2H7zm0 4h6v2H7z"/><path d="m8 5 1 3 3 1-3 1-1 3-1-3-3-1 3-1z"/>',
   image: '<path d="M3 4h18v16H3z" opacity=".25"/><circle cx="16" cy="9" r="2"/><path d="m3 18 6-8 5 6 3-3 4 5v2H3z"/>',
   video: '<path d="M3 5h18v14H3z" opacity=".25"/><path d="m10 8 7 4-7 4zM2 3h6v2H2zm8 0h5v2h-5zm7 0h5v2h-5zM2 19h6v2H2zm8 0h5v2h-5zm7 0h5v2h-5z"/>',
