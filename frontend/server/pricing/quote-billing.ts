@@ -1,13 +1,12 @@
 import {
   projectCanonicalQuoteToSnapshot,
   quoteCanonicalPricing,
-  type MemberTier,
   type PricingCompatibilityProfile,
   type PricingSnapshot,
 } from '@maxvideoai/pricing';
 import { getPricingDetails } from '@/lib/fal-catalog';
 import { buildAudioPricingPresentation, type AudioPricingInput } from '@/lib/audio-generation';
-import { getMembershipDiscountMap } from '@/lib/membership';
+import { LIVE_MEMBERSHIP_POLICY, LIVE_MEMBERSHIP_DISCOUNTS } from '@/lib/membership-policy';
 import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
 import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
 import type { PricingContext } from '@/lib/pricing-context';
@@ -22,11 +21,6 @@ import {
   resolveServerBillingPolicy,
   type ResolveServerPricingPolicyDependencies,
 } from './resolve-pricing-policy';
-
-function normalizeMembershipTier(value: string | null | undefined): 'member' | 'plus' | 'pro' {
-  const normalized = value?.trim().toLowerCase();
-  return normalized === 'plus' || normalized === 'pro' ? normalized : 'member';
-}
 
 export async function computeCanonicalBillingSnapshot(
   context: PricingContext,
@@ -46,19 +40,8 @@ export async function computeCanonicalBillingSnapshot(
     dependencies.pricingPolicy
   );
   const currency = (context.currency ?? policy.rule.currency ?? pricingDetails?.currency ?? context.engine.pricing?.currency ?? 'USD').toUpperCase();
-  const memberTier = normalizeMembershipTier(context.membershipTier);
-  const membershipDiscounts = dependencies.membershipDiscounts ?? await getMembershipDiscountMap();
-  const memberTierDiscounts: Record<MemberTier, number> = {
-    member: 0,
-    plus: 0.05,
-    pro: 0.1,
-  };
-  (Object.keys(memberTierDiscounts) as Array<keyof typeof memberTierDiscounts>).forEach((tier) => {
-    const override = membershipDiscounts[tier];
-    if (typeof override === 'number' && Number.isFinite(override)) {
-      memberTierDiscounts[tier] = Math.max(0, override);
-    }
-  });
+  const memberTier = LIVE_MEMBERSHIP_POLICY.tier;
+  const memberTierDiscounts = LIVE_MEMBERSHIP_DISCOUNTS;
 
   const billingFacts = buildBillingPricingFacts(context, pricingDetails, currency);
   const policyDocument = getVersionedPricingPolicy();
@@ -176,8 +159,8 @@ export async function computeCanonicalStoryboardBillingSnapshot(
       engineId: STORYBOARD_BILLING_ENGINE_ID,
       mode: input.operation,
       resolution: projection.resolution,
-      membershipTier: projection.membershipTier,
-      discountPercent: projection.discountPercent,
+      membershipTier: LIVE_MEMBERSHIP_POLICY.tier,
+      discountPercent: LIVE_MEMBERSHIP_POLICY.discountPercent,
     },
     policy,
     compatibilityProfile,

@@ -63,32 +63,35 @@ test('video and image composers opt into one responsive workspace density contra
   assert.match(imageSurfaceSource, /<Composer[\s\S]*density="workspace"/);
   assert.match(videoComposerSource, /<CoreSettingsBar[\s\S]*density="workspace"/);
   assert.match(imageSurfaceSource, /<ImageSettingsBar[\s\S]*density="workspace"/);
-  assert.match(coreSettingsSource, /workspaceDensity[\s\S]*flex-nowrap/);
-  assert.match(imageSettingsSource, /workspaceDensity[\s\S]*flex-nowrap/);
+  assert.match(coreSettingsSource, /workspaceDensity[\s\S]*w-full flex-wrap/);
+  assert.match(imageSettingsSource, /workspaceDensity[\s\S]*w-full flex-wrap/);
   assert.match(coreSettingsSource, /portal=\{compact\}/);
   assert.match(imageSettingsSource, /portal=\{compact\}/);
-  assert.match(composerSource, /workspaceDensity[\s\S]*overflow-x-auto/);
-  assert.match(composerSource, /workspaceDensity[\s\S]*lg:flex-row[\s\S]*lg:flex-nowrap/);
-  assert.match(composerSource, /workspaceDensity[\s\S]*w-full lg:w-auto/);
+  assert.doesNotMatch(composerSource, /overflow-x-auto/, 'essential settings must wrap without a hidden horizontal scroll area');
+  assert.match(composerSource, /workspaceDensity[\s\S]*app-composer-toolbar-layout flex gap-3/);
+  assert.match(composerSource, /app-composer-settings-group[\s\S]*workspaceDensity \? optionsControl : null/);
+  assert.match(composerSource, /workspaceDensity \? 'app-composer-submit' : 'lg:items-end'/);
+  assert.match(videoComposerSource, /<CoreSettingsBar[\s\S]*trailingControl=\{<WorkspaceOptionsButton/);
+  assert.match(imageSurfaceSource, /<ImageSettingsBar[\s\S]*trailingControl=/);
   assert.doesNotMatch(composerSource, /Estimated price|Estimated credits/);
 });
 
 test('workspace quantity controls sit beside the generate action', () => {
   assert.match(composerTypesSource, /generateControl\?: ReactNode/);
-  assert.match(composerSource, /<div className="flex w-full items-center gap-2 lg:w-auto">[\s\S]*\{generateControl\}[\s\S]*<Button/);
+  assert.match(composerSource, /app-generation-controls[\s\S]*\{generateControl\}[\s\S]*<Button/);
   assert.match(videoComposerSource, /generateControl=\{[\s\S]*<CoreIterationsControl[\s\S]*iterations=\{form\.iterations\}/);
   assert.match(imageSurfaceSource, /generateControl=\{[\s\S]*<ImageCountControl[\s\S]*value=\{numImages\}/);
   assert.match(coreSettingsSource, /action\s*\?\s*'h-11[\s\S]*!bg-\[image:var\(--brand-gradient\)\]/);
   assert.match(imageSettingsSource, /action\s*\?\s*'h-11[\s\S]*!bg-\[image:var\(--brand-gradient\)\]/);
 });
 
-test('workspace mobile settings keep intrinsic controls inside the local scroller without reserved chevron width', () => {
+test('workspace mobile settings wrap with touch targets and visible dropdown affordances', () => {
   assert.match(coreSettingsSource, /compact \? 'min-w-0 flex-none'/);
   assert.match(imageSettingsSource, /compact \? 'min-w-0 flex-none'/);
-  assert.match(coreSettingsSource, /compact \? 'h-9 !min-w-0 gap-1\.5 px-2 text-\[11px\]/);
-  assert.match(imageSettingsSource, /compact \? 'h-9 !min-w-0 gap-1\.5 px-2 text-\[11px\]/);
-  assert.match(coreSettingsSource, /hideChevron=\{compact\}/);
-  assert.match(imageSettingsSource, /hideChevron=\{compact\}/);
+  assert.match(coreSettingsSource, /compact \? '!min-h-11 sm:h-9 sm:!min-h-0 !min-w-0 gap-1\.5 px-2\.5 text-xs/);
+  assert.match(imageSettingsSource, /compact \? '!min-h-11 sm:h-9 sm:!min-h-0 !min-w-0 gap-1\.5 px-2\.5 text-xs/);
+  assert.match(coreSettingsSource, /hideChevron=\{false\}/);
+  assert.match(imageSettingsSource, /hideChevron=\{false\}/);
   assert.match(coreSettingsSource, /formatCompactResolutionLabel/);
   assert.match(imageSettingsSource, /formatCompactResolutionLabel/);
   assert.match(coreSettingsSource, /const showIcon = !compact \|\| !\['iterations', 'fps'\]\.includes\(kind\)/);
@@ -97,36 +100,24 @@ test('workspace mobile settings keep intrinsic controls inside the local scrolle
   assert.match(imageSettingsSource, /'inline-flex h-4 items-center leading-none'/);
   assert.match(coreSettingsSource, /<span className="block truncate leading-none">\{label\}<\/span>/);
   assert.match(imageSettingsSource, /<span className="block truncate leading-none">\{label\}<\/span>/);
-  assert.match(coreSettingsSource, /flex-nowrap gap-1\.5/);
-  assert.match(imageSettingsSource, /flex-nowrap gap-1\.5/);
+  assert.match(coreSettingsSource, /w-full flex-wrap gap-1\.5/);
+  assert.match(imageSettingsSource, /w-full flex-wrap gap-1\.5/);
   assert.doesNotMatch(coreSettingsSource, /compact \? 'min-w-0 flex-1/);
   assert.doesNotMatch(imageSettingsSource, /compact \? 'min-w-0 flex-1/);
-  assert.match(composerSource, /overflow-x-auto[\s\S]*\[scrollbar-width:none\][\s\S]*\[&::-webkit-scrollbar\]:hidden/);
+  assert.doesNotMatch(composerSource, /overflow-x-auto|scrollbar-width:none/, 'essential controls cannot depend on hidden scrollbars');
 });
 
-test('workspace solo assets stretch while workspace-only vertical density exposes advanced controls', () => {
+test('workspace references delegate compact semantics while default consumers retain their layout', () => {
   assert.match(assetDropzoneSource, /density\?: 'default' \| 'compact' \| 'workspace'/);
-  assert.match(assetDropzoneSource, /const workspaceDensity = density === 'workspace'/);
-  assert.match(assetDropzoneSource, /const shouldLimitSoloWidth = isSoloField && displaySlots\.length === 1 && !workspaceDensity/);
-  assert.match(composerSource, /density=\{workspaceDensity \? 'workspace' : 'default'\}/);
-  assert.match(composerSource, /getWorkspaceAssetGridClass\(orderedAssetFields\.length\)/);
-  assert.match(composerSource, /!workspaceDensity && field\.maxCount/);
-  assert.match(composerSource, /workspaceDensity \? 'space-y-2' : 'space-y-4'/);
-  assert.match(composerSource, /workspaceDensity[\s\S]*min-h-\[164px\][\s\S]*resize-y/);
-  assert.match(composerSource, /workspaceDensity \? 'h-9' : 'h-11'/);
-  assert.match(composerSource, /workspaceDensity \? 'space-y-2 border-t[\s\S]*pt-2/);
-  assert.match(composerSource, /workspaceDensity \? 'flex-nowrap gap-2 pb-1 pt-2'/);
-  assert.match(composerSource, /workspaceDensity \? 'px-3 py-1' : 'px-4 py-3'/);
-  assert.match(assetDropzoneSource, /workspaceDensity=\{workspaceDensity\}/);
-  assert.match(assetDropzoneSource, /workspaceDensity && 'h-full min-h-\[150px\]'/);
-  assert.match(assetDropzoneSource, /workspaceDensity && 'h-full'/);
-  assert.match(assetDropzoneSource, /workspaceDensity && !fullBleedSingleAsset && \(disabled \? 'min-h-8' : 'h-8'\)/);
-  assert.match(assetDropzoneSource, /workspaceDensity && !fullBleedSingleAsset && 'min-h-0 flex-1'/);
-  assert.match(assetDropzoneSource, /visibleHelperText \|\| isCollectionField \|\| workspaceDensity/);
-  assert.match(assetDropzoneSource, /workspaceDensity && !fullBleedSingleAsset && 'flex h-8 items-end'/);
-  assert.match(assetDropzoneSlotSource, /'min-h-\[96px\] h-full rounded-\[12px\] border-0 bg-transparent'/);
-  assert.match(assetDropzoneSlotSource, /workspaceDensity && isLockedEmptySlot[\s\S]*'h-10 w-10'/);
-  assert.match(assetDropzoneSlotSource, /workspaceDensity && isLockedEmptySlot \? 'gap-2'/);
+  assert.match(assetDropzoneSource, /getWorkspaceReferenceSlots/);
+  assert.match(assetDropzoneSource, /if \(workspaceDensity\)/);
+  assert.match(assetDropzoneSource, /app-reference-field/);
+  assert.match(composerSource, /<WorkspaceReferenceSection/);
+  assert.match(composerSource, /<ComposerReferenceFields/);
+  assert.match(composerSource, /workspaceDensity[\s\S]*min-h-\[96px\][\s\S]*resize-y/);
+  assert.match(assetDropzoneSlotSource, /if \(props\.workspaceDensity\) return <WorkspaceAssetSlot/);
+  assert.match(composerSource, /workspaceDensity \? composerToolbar : null/);
+  assert.match(composerSource, /!workspaceDensity \? composerToolbar : null/);
 });
 
 test('workspace preview and image prompt density stay opt-in without changing shared defaults', () => {
@@ -135,15 +126,16 @@ test('workspace preview and image prompt density stay opt-in without changing sh
   assert.match(imageSurfaceSource, /<Composer[\s\S]*compactPrompt/);
   assert.match(composerTypesSource, /compactPrompt\?: boolean/);
   assert.match(composerSource, /hidden=\{workspaceDensity && !visibleModeToggles/);
-  assert.match(composerSource, /rows=\{workspaceDensity \? 7 : compactPrompt \? 2 : 6\}/);
-  assert.match(composerSource, /min-h-\[164px\]/);
+  assert.match(composerSource, /rows=\{workspaceDensity \? 3 : compactPrompt \? 2 : 6\}/);
+  assert.match(composerSource, /min-h-\[96px\]/);
   assert.doesNotMatch(composerSource, /sm:h-10 sm:min-h-0/);
-  assert.match(composerSource, /density=\{workspaceDensity \? 'workspace' : 'default'\}/);
+  assert.match(composerSource, /<WorkspaceReferenceSection/);
   assert.match(composerSource, /workspaceDensity \? 'px-3 py-1' : 'px-4 py-3'/);
-  assert.match(composerSource, /h-10 gap-3[\s\S]*lg:min-w-\[176px\]/);
+  assert.match(composerSource, /!min-h-11 gap-3[\s\S]*lg:min-w-\[176px\]/);
   assert.match(compositePreviewSource, /density\?: 'default' \| 'workspace'/);
   assert.match(compositePreviewSource, /workspaceDensity \? 'px-0 py-0' : 'px-4 py-4'/);
-  assert.match(compositePreviewSource, /workspaceDensity \? 'mt-1' : 'mt-3'/);
+  assert.match(compositePreviewSource, /workspaceDensity \? 'mt-0' : 'mt-3'/);
+  assert.match(compositePreviewSource, /compact=\{workspaceDensity\}/);
   assert.match(compositePreviewSource, /workspaceDensity \? 'px-3 py-0' : 'px-3 py-2'/);
   assert.match(compositePreviewSource, /if \(workspaceDensity\) return;/);
   assert.match(compositePreviewSource, /const width = Math\.min\(availableWidth, maxWidth, \(maxHeight \* 16\) \/ 9\)/);
@@ -171,7 +163,7 @@ test('workspace video preview shares first-paint geometry with its boot skeleton
 
 test('video composer limits calm upload locks to the winning guest-auth reason', () => {
   assert.match(
-    videoComposerSource,
+    readFileSync('frontend/app/(core)/(workspace)/app/_lib/workspace-reference-fields.ts', 'utf8'),
     /disabledPresentation:\s*disabledReason && disabledReason === guestUploadLockedReason\s*\? 'auth-lock'/
   );
 });
@@ -182,4 +174,19 @@ test('workspace density never changes route order by authentication state', () =
   assert.doesNotMatch(videoShellSource, /authStatus|session|user/);
   assert.doesNotMatch(imageSurfaceSource, /authStatus/);
   assert.match(workspaceChromeSource, /p-4 lg:px-7 lg:py-2/);
+});
+
+// The empty editor must never flash a large player before the form becomes usable.
+test('empty workspaces keep their model chooser and illustrated result frame without a media reader', () => {
+  const boot = readFileSync('frontend/app/(core)/(workspace)/app/_components/WorkspaceBootSkeletons.tsx', 'utf8');
+  const bootSurface = readFileSync('frontend/app/(core)/(workspace)/app/_components/WorkspaceBootSurface.tsx', 'utf8');
+  assert.match(videoPreviewSource, /if \(!group && !isLoading\)/);
+  assert.match(imageSurfaceSource, /!compositePreviewEntry \? \(/);
+  assert.match(boot, /if \(!posterSrc\)/);
+  assert.match(videoShellSource, /<WorkspaceCreationHeading/);
+  assert.match(bootSurface, /<WorkspaceCreationHeading/);
+  assert.match(videoPreviewSource, /<WorkspaceEmptyPreview media="video"/);
+  assert.match(imageSurfaceSource, /<WorkspaceEmptyPreview media="image"/);
+  const empty = readFileSync('frontend/components/composer/WorkspaceEmptyPreview.client.tsx', 'utf8');
+  assert.doesNotMatch(empty, /<video|<audio|<img|https?:/);
 });

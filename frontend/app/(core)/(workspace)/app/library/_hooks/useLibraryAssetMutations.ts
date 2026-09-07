@@ -2,17 +2,14 @@
 
 import { useCallback, useRef, useState } from 'react';
 import type { ChangeEvent, Dispatch, SetStateAction } from 'react';
-import type { KeyedMutator } from 'swr';
 import type { AssetBrowserAsset } from '@/components/library/AssetLibraryBrowser';
 import { authFetch } from '@/lib/authFetch';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import {
   resolveImageUploadErrorMessage,
-  type AssetsResponse,
   type LibraryCopy,
   type LibraryKind,
   type LibraryView,
-  type RecentOutputsResponse,
   type SavedAssetSource,
 } from '../_lib/library-page-helpers';
 
@@ -28,8 +25,8 @@ export function useLibraryAssetMutations({
   activeKind: LibraryKind;
   activeSource: SavedAssetSource;
   copy: LibraryCopy;
-  mutateAssets: KeyedMutator<AssetsResponse>;
-  mutateRecentOutputs: KeyedMutator<RecentOutputsResponse>;
+  mutateAssets: () => Promise<unknown>;
+  mutateRecentOutputs: () => Promise<unknown>;
   setActiveSource: Dispatch<SetStateAction<SavedAssetSource>>;
   setActiveView: Dispatch<SetStateAction<LibraryView>>;
 }) {

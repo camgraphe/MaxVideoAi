@@ -1,3 +1,4 @@
+import { requireCurrentWalletDirectPricingPolicy } from '@/server/pricing/wallet-direct-policy';
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import Stripe from 'stripe';
@@ -8,9 +9,8 @@ import { ensureBillingSchema } from '@/lib/schema';
 import { applyMockWalletTopUp } from '@/lib/wallet';
 import { getConfiguredEngine } from '@/server/engines';
 import { getSoraVariantForEngine, isSoraEngineId, parseSoraRequest, type SoraRequest } from '@/lib/sora';
-import { getUserPreferredCurrency, normalizeCurrencyCode, resolveCurrency, resolveEnabledCurrencies } from '@/lib/currency';
+import { getUserPreferredCurrency, normalizeCurrencyCode, resolveCurrency, resolveEnabledCurrencies, type Currency } from '@/lib/currency';
 import { convertCents } from '@/lib/exchange';
-import type { Currency } from '@/lib/currency';
 import { applyEngineVariantPricing } from '@/lib/pricing-addons';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { CONSENT_COOKIE_NAME, parseConsent } from '@/lib/consent';
@@ -33,7 +33,6 @@ import { findReusableExpressCheckoutSession } from '@/server/checkout-session-re
 import { getWalletSummary } from '@/server/wallet-summary';
 import { buildCheckoutAttemptAttributionMetadata, buildWalletAttributionMetadata, normalizeWalletAttribution } from '@/server/wallet-attribution';
 import { resolveWalletDirectPricingGate } from '@/lib/wallet-direct-pricing';
-
 const WALLET_DISPLAY_CURRENCY = 'USD';
 const WALLET_DISPLAY_CURRENCY_LOWER = 'usd';
 const STRIPE_TAX_CODE_ELECTRONIC_SERVICES = ENV.STRIPE_TAX_CODE_ELECTRONIC_SERVICES ?? 'txcd_10103001';
@@ -58,7 +57,6 @@ const CHECKOUT_COPY_BY_LOCALE: Record<
 };
 
 export const dynamic = 'force-dynamic';
-
 function json(body: unknown, init?: Parameters<typeof NextResponse.json>[1]) {
   const response = NextResponse.json(body, init);
   response.headers.set('Cache-Control', 'private, no-store');
@@ -199,6 +197,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid top-up amount' }, { status: 400 });
   }
   const requestMode = typeof body.mode === 'string' ? body.mode.trim().toLowerCase() : '';
+  const pricingPolicyError = requireCurrentWalletDirectPricingPolicy(req, requestMode, body.membershipTier);
+  if (pricingPolicyError) return pricingPolicyError;
   const isExpressCheckoutTopUp = requestMode === 'express_checkout' || requestMode === 'checkout_elements';
   const checkoutLocale = resolveCheckoutLocale(req, body.locale);
   const checkoutCopy = CHECKOUT_COPY_BY_LOCALE[checkoutLocale];

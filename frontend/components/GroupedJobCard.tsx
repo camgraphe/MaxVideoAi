@@ -135,7 +135,9 @@ export function GroupedJobCard({
   }, [previewCount]);
   const showMenu = Boolean(onAction) && actionMenu;
   const isCurated = Boolean(hero.job?.curated);
-  const showCompactMenuButton = menuVariant === 'compact';
+  const isRailCard = menuVariant === 'gallery' || menuVariant === 'gallery-image' || menuVariant === 'activity';
+  const showCompactMenuButton = menuVariant === 'compact' || isRailCard;
+  const useRailCaption = menuVariant === 'activity' || (isRailCard && !isCurated && !showLibraryCta && !showImageCta && !isImageGroup);
 
   const handleAction = (action: GroupedJobAction) => {
     setMenuOpen(false);
@@ -183,6 +185,7 @@ export function GroupedJobCard({
       ref={cardRef}
       className={clsx(
         'relative overflow-visible rounded-card border bg-surface-glass-90 p-0 shadow-card transition-[border-color,box-shadow]',
+        isRailCard && 'app-rail-media-card',
         selected ? 'border-brand ring-2 ring-brand/25' : 'border-border',
         menuOpen && 'z-30'
       )}
@@ -250,7 +253,7 @@ export function GroupedJobCard({
               'absolute right-3 top-3 flex h-8 items-center justify-center rounded-full border border-white/70 bg-white/85 text-black/80 shadow-md backdrop-blur hover:bg-white/95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
               showCompactMenuButton ? 'gap-1.5 px-3 text-[12px] font-semibold' : 'w-8'
             )}
-            aria-haspopup="menu"
+            aria-haspopup={isRailCard ? 'dialog' : 'menu'}
             aria-expanded={menuOpen}
             aria-label={actionMenuLabel}
           >
@@ -272,7 +275,11 @@ export function GroupedJobCard({
           </button>
         )}
       </div>
-      <div className="overflow-hidden rounded-b-card">
+      {useRailCaption ? <div className="app-rail-caption">
+        <EngineIcon engine={engine ?? undefined} label={hero.engineLabel} size={20} />
+        <strong title={hero.engineLabel}>{hero.engineLabel}</strong>
+        <span>{detailLabel}</span>{formattedPrice ? <span>{formattedPrice}</span> : null}
+      </div> : <div className="overflow-hidden rounded-b-card">
         <div className="flex items-center justify-between gap-4 border-t border-hairline bg-surface-glass-80 px-3 py-2 text-sm text-text-secondary">
           <div className="flex items-center gap-2">
             <EngineIcon engine={engine ?? undefined} label={hero.engineLabel} size={28} className="shrink-0" />
@@ -345,7 +352,7 @@ export function GroupedJobCard({
             ) : null}
           </div>
         </div>
-      </div>
+      </div>}
 
       {showMenu && menuOpen ? (
         <GroupedJobCardMenu

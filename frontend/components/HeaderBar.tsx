@@ -6,6 +6,8 @@ import { useEffect, useMemo, useRef, useState, useId } from 'react';
 import { ChevronDown, Moon, Sun } from 'lucide-react';
 import { ReconsentPrompt } from '@/components/legal/ReconsentPrompt';
 import { AppLanguageToggle } from '@/components/AppLanguageToggle';
+import { useThemePreference } from '@/hooks/useThemePreference';
+import { isAppExperiencePath } from '@/lib/app-experience-path';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
@@ -16,6 +18,10 @@ import { HeaderAccountMenu } from '@/components/header/HeaderAccountMenu';
 import { HeaderAuthActions } from '@/components/header/HeaderAuthActions';
 import { HeaderLogoMark } from '@/components/header/HeaderLogoMark';
 import { MarketingNavEntryContent } from '@/components/marketing/MarketingNavEntryContent';
+import { getAccountInitials } from '@/components/header/header-nav-helpers';
+import { AppSiteMenu } from '@/components/app/AppSiteMenu.client';
+import { AppNavigation } from '@/components/app/AppNavigation.client';
+import { WorkspaceMobileNav } from '@/components/header/WorkspaceMobileNav';
 import { HeaderMobileMenu } from '@/components/header/HeaderMobileMenu';
 import { HeaderWalletStatus } from '@/components/header/HeaderWalletStatus';
 import {
@@ -30,13 +36,13 @@ export function HeaderBar() {
   const { locale, t } = useI18n();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { email, authResolved, wallet, isAdmin, signOut } = useHeaderAccountState();
+  const { email, authResolved, wallet, walletLoading, isAdmin, signOut } = useHeaderAccountState();
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [walletPromptOpen, setWalletPromptOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileDropdownOpen, setMobileDropdownOpen] = useState<Record<string, boolean>>({});
   const [desktopDropdownOpen, setDesktopDropdownOpen] = useState<string | null>(null);
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const { resolvedTheme: theme, toggleTheme } = useThemePreference();
   const desktopDropdownCloseTimeout = useRef<number | null>(null);
   const avatarRef = useRef<HTMLButtonElement>(null);
 
@@ -48,10 +54,9 @@ export function HeaderBar() {
   const menuRef = useRef<HTMLDivElement>(null);
   const walletPromptCloseTimeout = useRef<number | null>(null);
   const walletPromptId = useId();
-  const themeStorageKey = 'mv-theme';
   const loginLabel = t('nav.login', 'Log in');
   const ctaLabel = t('nav.cta', 'Generate');
-  const createAccountMobile = locale === 'fr' ? 'Creer' : locale === 'es' ? 'Crear' : 'Create';
+  const createAccountMobile = locale === 'fr' ? 'Créer' : locale === 'es' ? 'Crear' : 'Create';
   const signInMobile = locale === 'fr' ? 'Connexion' : locale === 'es' ? 'Entrar' : 'Sign in';
   const themeToggleLabel =
     theme === 'dark'
@@ -73,29 +78,6 @@ export function HeaderBar() {
   const [serviceNotice, setServiceNotice] = useState<string>(envNotice);
   const bannerMessage = serviceNotice?.trim() ?? '';
   const showServiceNotice = Boolean(bannerMessage);
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const stored = window.localStorage.getItem(themeStorageKey);
-    const resolved = stored === 'dark' || stored === 'light' ? stored : 'light';
-    setTheme(resolved);
-    if (resolved === 'dark') {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    } else {
-      document.documentElement.removeAttribute('data-theme');
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    const nextTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(nextTheme);
-    if (nextTheme === 'dark') {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    } else {
-      document.documentElement.removeAttribute('data-theme');
-    }
-    window.localStorage.setItem(themeStorageKey, nextTheme);
-  };
-
   const handleSignOut = () => {
     setAccountMenuOpen(false);
     signOut();
@@ -226,16 +208,7 @@ export function HeaderBar() {
     }, delay);
   };
 
-  const initials = useMemo(() => {
-    if (!email) return '?';
-    const [namePart] = email.split('@');
-    if (!namePart) return email.slice(0, 2).toUpperCase();
-    const tokens = namePart.replace(/[^a-zA-Z0-9]+/g, ' ').trim().split(' ').filter(Boolean);
-    if (tokens.length >= 2) {
-      return (tokens[0][0] + tokens[1][0]).toUpperCase();
-    }
-    return namePart.slice(0, 2).toUpperCase();
-  }, [email]);
+  const initials = useMemo(() => getAccountInitials(email), [email]);
 
   const rawMarketingLinks = t('nav.links', MARKETING_TOP_NAV_LINKS);
   const marketingLinks = useMemo(() => normalizeMarketingLinks(rawMarketingLinks), [rawMarketingLinks]);
@@ -252,9 +225,15 @@ export function HeaderBar() {
           {bannerMessage}
         </div>
       ) : null}
-      <header
+      {isAppExperiencePath(pathname) ? (
+        <header className="app-connected-header">
+          <AppSiteMenu email={email} authResolved={authResolved} isAdmin={isAdmin} signinHref={signinHref} signupHref={signupHref} themeToggleLabel={themeToggleLabel} onToggleTheme={toggleTheme} onSignOut={handleSignOut}>
+            <HeaderWalletStatus walletLoading={walletLoading} promptId={walletPromptId} t={t} wallet={wallet} walletPromptOpen={walletPromptOpen} onOpenPrompt={openWalletPrompt} onSchedulePromptClose={scheduleWalletPromptClose} />
+          </AppSiteMenu>
+        </header>
+      ) : <header
         className={clsx(
-          'sticky top-0 z-40 flex h-[var(--header-height)] items-center justify-between px-5 lg:px-8',
+          'app-topbar sticky top-0 z-40 flex h-[var(--header-height)] items-center justify-between px-3 sm:px-5 lg:px-8',
           'border-b border-hairline bg-surface'
         )}
       >
@@ -263,7 +242,7 @@ export function HeaderBar() {
             type="button"
             variant="ghost"
             size="sm"
-            className="min-h-0 h-9 w-9 shrink-0 rounded-full border border-hairline bg-surface p-2 text-text-primary hover:bg-surface-2 xl:hidden"
+            className="app-topbar-menu min-h-0 h-9 w-9 shrink-0 rounded-full border border-hairline bg-surface p-2 text-text-primary hover:bg-surface-2 inline-flex xl:hidden"
             aria-label={t('workspace.header.mobileToggle', 'Open menu')}
             onClick={() => setMobileMenuOpen(true)}
           >
@@ -275,7 +254,7 @@ export function HeaderBar() {
           </Button>
           <HeaderLogoMark />
           <nav
-            className="hidden items-center gap-7 text-sm font-medium text-text-secondary xl:flex"
+            className="app-marketing-nav hidden items-center gap-7 text-sm font-medium text-text-secondary xl:flex"
             aria-label={t('workspace.header.marketingNav', 'Marketing navigation')}
           >
             {marketingLinks.map((item) => {
@@ -418,7 +397,7 @@ export function HeaderBar() {
 
         <div className="flex min-w-0 shrink-0 items-center justify-end gap-2 text-xs text-text-muted sm:gap-3">
           <HeaderWalletStatus
-            authResolved={authResolved}
+            walletLoading={walletLoading}
             promptId={walletPromptId}
             t={t}
             wallet={wallet}
@@ -441,7 +420,7 @@ export function HeaderBar() {
               </span>
             </Button>
           </div>
-          <div className="flex w-32 shrink-0 justify-end sm:w-[205px]">
+          <div className="flex w-40 shrink-0 justify-end sm:w-[205px]">
             {email ? (
               <HeaderAccountMenu
                 accountMenuOpen={accountMenuOpen}
@@ -465,11 +444,13 @@ export function HeaderBar() {
                 t={t}
               />
             ) : (
-              <div className="h-10 w-full rounded-input bg-surface-2 shadow-sm" aria-hidden />
+              <div className="h-11 w-full rounded-input bg-surface-2 shadow-sm" aria-hidden />
             )}
           </div>
         </div>
-      </header>
+      </header>}
+      {isAppExperiencePath(pathname) ? <WorkspaceMobileNav /> : null}
+      {isAppExperiencePath(pathname) ? <AppNavigation variant="activities" /> : null}
       {mobileMenuOpen ? (
         <HeaderMobileMenu
           ctaLabel={ctaLabel}

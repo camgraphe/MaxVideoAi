@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { authFetch } from '@/lib/authFetch';
 import {
@@ -19,16 +19,29 @@ type FetchAssetLibraryOptions = {
 };
 
 type UseWorkspaceAssetLibraryOptions = {
+  userId?: string | null;
   showNotice: (message: string) => void;
   setInputAssets: Dispatch<SetStateAction<Record<string, (ReferenceAsset | null)[]>>>;
 };
 
 export function useWorkspaceAssetLibrary({
+  userId = null,
   showNotice,
   setInputAssets,
 }: UseWorkspaceAssetLibraryOptions) {
+  const owner = useRef({ userId, version: 0 });
+  const requestVersion = useRef(0);
+  if (owner.current.userId !== userId) {
+    owner.current = { userId, version: owner.current.version + 1 };
+    requestVersion.current += 1;
+  }
+  const [libraryOwnerId, setLibraryOwnerId] = useState(userId);
   const [assetPickerTarget, setAssetPickerTarget] = useState<AssetPickerTarget | null>(null);
   const [assetLibrary, setAssetLibrary] = useState<UserAsset[]>([]);
+  const accountScope = owner.current;
+  const setScopedAssetLibrary = useCallback<Dispatch<SetStateAction<UserAsset[]>>>((next) => {
+    if (owner.current === accountScope) setAssetLibrary(next);
+  }, [accountScope]);
   const [isAssetLibraryLoading, setIsAssetLibraryLoading] = useState(false);
   const [assetLibraryError, setAssetLibraryError] = useState<string | null>(null);
   const [assetLibrarySource, setAssetLibrarySource] = useState<AssetLibrarySource>('all');
@@ -46,28 +59,46 @@ export function useWorkspaceAssetLibrary({
     return 'image';
   }, [assetPickerTarget]);
   const assetLibraryRequestKey = assetPickerTarget
-    ? buildAssetLibraryCacheKey(assetLibraryKind, assetLibrarySource)
+    ? `${userId ?? "guest"}:${buildAssetLibraryCacheKey(assetLibraryKind, assetLibrarySource)}`
     : null;
   const visibleAssetLibrary = useMemo(
-    () => assetLibrary.filter((asset) => asset.kind === assetLibraryKind),
-    [assetLibrary, assetLibraryKind]
+    () => libraryOwnerId === userId && userId && assetLibraryLoadedKey === assetLibraryRequestKey ? assetLibrary.filter((asset) => asset.kind === assetLibraryKind) : [],
+    [assetLibrary, assetLibraryKind, assetLibraryLoadedKey, assetLibraryRequestKey, libraryOwnerId, userId]
   );
 
   const resetAssetLibraryForSource = useCallback((nextSource: AssetLibrarySource) => {
+    requestVersion.current += 1;
+    setIsAssetLibraryLoading(false);
     setAssetLibrarySource(nextSource);
     setAssetLibrary([]);
     setAssetLibraryError(null);
     setAssetLibraryLoadedKey(null);
   }, []);
 
+  useEffect(() => {
+    setLibraryOwnerId(userId);
+    setAssetPickerTarget(null);
+    setAssetLibrary([]);
+    setAssetLibraryLoadedKey(null);
+    setAssetLibraryError(null);
+    setIsAssetLibraryLoading(false);
+  }, [userId]);
+
+  useEffect(() => () => { requestVersion.current += 1; }, []);
+
   const fetchAssetLibrary = useCallback(async (options?: FetchAssetLibraryOptions) => {
+    if (!userId || owner.current.userId !== userId) return;
+    const scope = owner.current;
+    const request = ++requestVersion.current;
+    const isCurrent = () => owner.current === scope && requestVersion.current === request;
     const source = options?.source ?? assetLibrarySource;
     const kind = options?.kind ?? assetLibraryKind;
-    const requestKey = buildAssetLibraryCacheKey(kind, source);
+    const requestKey = `${userId}:${buildAssetLibraryCacheKey(kind, source)}`;
     setIsAssetLibraryLoading(true);
     setAssetLibraryError(null);
     try {
       const assetResponse = await authFetch(buildAssetLibraryUrl(kind, source));
+      if (!isCurrent()) return;
       if (assetResponse.status === 401) {
         setAssetLibrary([]);
         setAssetLibraryError(
@@ -77,6 +108,7 @@ export function useWorkspaceAssetLibrary({
         return;
       }
       const payload = await assetResponse.json().catch(() => null);
+      if (!isCurrent()) return;
       if (!assetResponse.ok || !payload?.ok) {
         const message =
           typeof payload?.error === 'string'
@@ -89,6 +121,7 @@ export function useWorkspaceAssetLibrary({
       setAssetLibrary(normalizeAssetLibraryPayload(payload, source, kind));
       setAssetLibraryLoadedKey(requestKey);
     } catch (error) {
+      if (!isCurrent()) return;
       console.error('[assets] failed to load library', error);
       setAssetLibraryError(
         error instanceof Error
@@ -99,17 +132,19 @@ export function useWorkspaceAssetLibrary({
       );
       setAssetLibraryLoadedKey(requestKey);
     } finally {
-      setIsAssetLibraryLoading(false);
+      if (isCurrent()) setIsAssetLibraryLoading(false);
     }
-  }, [assetLibraryKind, assetLibrarySource]);
+  }, [assetLibraryKind, assetLibrarySource, userId]);
 
   useEffect(() => {
-    if (!assetPickerTarget || !assetLibraryRequestKey || isAssetLibraryLoading) return;
+    if (!userId || libraryOwnerId !== userId || !assetPickerTarget || !assetLibraryRequestKey || isAssetLibraryLoading) return;
     if (assetLibraryLoadedKey === assetLibraryRequestKey) return;
     setAssetLibrary([]);
     setAssetLibraryError(null);
     void fetchAssetLibrary({ kind: assetLibraryKind, source: assetLibrarySource });
   }, [
+    userId,
+    libraryOwnerId,
     assetLibraryKind,
     assetLibraryLoadedKey,
     assetLibraryRequestKey,
@@ -180,11 +215,11 @@ export function useWorkspaceAssetLibrary({
   }, []);
 
   return {
-    assetPickerTarget,
+    assetPickerTarget: libraryOwnerId === userId ? assetPickerTarget : null,
     setAssetPickerTarget,
     assetLibraryKind,
     assetLibrarySource,
-    setAssetLibrary,
+    setAssetLibrary: setScopedAssetLibrary,
     visibleAssetLibrary,
     isAssetLibraryLoading,
     assetLibraryError,

@@ -27,7 +27,8 @@ test('image advanced fields load only after the stable toggle is expanded', () =
     wrapperSource,
     /dynamic(?:<[^>]+>)?\(\s*\(\) =>\s*import\('\.\/image-advanced-settings\/ImageAdvancedSettingsContent'\)/
   );
-  assert.match(wrapperSource, /isOpen \? \(\s*<ImageAdvancedSettingsContent/);
+  assert.match(wrapperSource, /const expanded = open \?\? isOpen/);
+  assert.match(wrapperSource, /expanded \? \(\s*<ImageAdvancedSettingsContent/);
   assert.doesNotMatch(wrapperSource, /import \{ SelectMenu \}/);
   assert.match(contentSource, /export function ImageAdvancedSettingsContent/);
   assert.match(contentSource, /<SelectMenu/);

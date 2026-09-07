@@ -1,4 +1,4 @@
-import { getMembershipTiers, type MembershipTierConfig } from '@/lib/membership';
+import { type MembershipTierConfig } from '@/lib/membership';
 import { query } from '@/lib/db';
 import { normalizeMediaUrl } from '@/lib/media';
 import { ensureBillingSchema } from '@/lib/schema';
@@ -256,10 +256,8 @@ export async function getVisitorMemberStatus(includeTiers: boolean): Promise<{
   spentToday: number;
   tiers?: MembershipTierConfig[];
 }> {
-  const [videos, tiers] = await Promise.all([
-    listStarterPlaylistVideos(VISITOR_STARTER_LOOKUP_LIMIT),
-    getMembershipTiers(),
-  ]);
+  const videos = await listStarterPlaylistVideos(VISITOR_STARTER_LOOKUP_LIMIT);
+  const tiers: MembershipTierConfig[] = [];
 
   const costs = videos
     .map((video) => getVideoCostCents(video))

@@ -1,3 +1,4 @@
+import { requireCurrentWebPricingPolicy } from '@/server/pricing/web-pricing-policy';
 export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -43,6 +44,8 @@ export async function POST(req: NextRequest) {
   if (!userId) {
     return respondError('t2i', 'auth_required', 'Authentication required.', 401);
   }
+  const pricingPolicyError = requireCurrentWebPricingPolicy(req, 'image');
+  if (pricingPolicyError) return pricingPolicyError;
   const restriction = await getActiveAccountRestriction(userId);
   if (restriction) {
     return respondError('t2i', 'account_restricted', RESTRICTED_ACCOUNT_MESSAGE, 403);

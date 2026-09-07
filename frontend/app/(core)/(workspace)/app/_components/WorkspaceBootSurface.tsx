@@ -11,6 +11,7 @@ import {
   GalleryRailSkeleton,
   WorkspaceBootPreview,
 } from './WorkspaceBootSkeletons';
+import { WorkspaceCreationHeading } from './WorkspaceCreationHeading';
 import { WorkspaceChrome } from './WorkspaceChrome';
 
 const CompositePreviewDock = dynamic<CompositePreviewDockProps>(
@@ -58,6 +59,7 @@ export function WorkspaceBootSurface({
     <WorkspaceChrome
       rail={<GalleryRailSkeleton responsive />}
     >
+      <WorkspaceCreationHeading />
       <WorkspaceBootContent
         initialPreviewGroup={initialPreviewGroup}
         initialPreviewPosterSrc={initialPreviewPosterSrc}

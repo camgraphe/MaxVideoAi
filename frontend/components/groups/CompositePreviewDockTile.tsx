@@ -1,5 +1,7 @@
 'use client';
 
+import { normalizeGenerationObservation } from '@/lib/generation-observation';
+
 import clsx from 'clsx';
 import Image from 'next/image';
 import type { VideoItem } from '@/types/video-groups';
@@ -129,6 +131,10 @@ export function CompositePreviewDockTile({
           className="absolute inset-0"
           state={itemStatus === 'error' ? 'error' : 'pending'}
           message={itemMessage}
+          observation={normalizeGenerationObservation(item.meta?.observation)}
+          startedAt={typeof item.meta?.startedAt === 'number' ? item.meta.startedAt : undefined}
+          etaSeconds={typeof item.meta?.etaSeconds === 'number' ? item.meta.etaSeconds : undefined}
+          etaSource={item.meta?.etaSource === 'observed' ? 'observed' : 'heuristic'}
           tone="light"
           tileIndex={index + 1}
           tileCount={tileCount}

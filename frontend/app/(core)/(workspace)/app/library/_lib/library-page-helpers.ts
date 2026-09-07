@@ -65,12 +65,16 @@ export type AssetsResponse = {
   ok: boolean;
   error?: string;
   assets: UserAsset[];
+  nextCursor?: string | null;
+  hasMore?: boolean;
 };
 
 export type RecentOutputsResponse = {
   ok: boolean;
   error?: string;
   outputs: RecentOutput[];
+  nextCursor?: string | null;
+  hasMore?: boolean;
 };
 
 export interface LibraryCopy {
@@ -239,41 +243,56 @@ export function buildSavedAssetsKey({
   userId,
   activeKind,
   activeSource,
-  limit,
+  cursor,
+  searchQuery,
+  activeView = 'saved',
 }: {
   userId: string | null | undefined;
   activeKind: LibraryKind;
   activeSource: SavedAssetSource;
-  limit: number;
+  cursor?: string | null;
+  searchQuery?: string;
+  activeView?: LibraryView;
 }) {
-  if (!userId) return null;
+  if (!userId || activeView !== 'saved') return null;
   const params = new URLSearchParams({
-    limit: String(limit),
+    limit: String(LIBRARY_PAGE_SIZE),
     kind: activeKind,
   });
   if (activeSource !== 'all') {
     params.set('source', activeSource);
   }
-  return `/api/media-library/assets?${params.toString()}`;
+  if (cursor) params.set('cursor', cursor);
+  const q = searchQuery?.trim().slice(0, 200);
+  if (q) params.set('q', q);
+  return [`/api/media-library/assets?${params.toString()}`, userId] as const;
 }
 
 export function buildRecentOutputsKey({
   userId,
   activeKind,
   activeView,
-  limit,
+  cursor,
+  searchQuery,
+  jobId,
 }: {
   userId: string | null | undefined;
   activeKind: LibraryKind;
   activeView: LibraryView;
-  limit: number;
+  cursor?: string | null;
+  searchQuery?: string;
+  jobId?: string | null;
 }) {
   if (!userId || activeView !== 'review') return null;
   const params = new URLSearchParams({
-    limit: String(limit),
+    limit: String(LIBRARY_PAGE_SIZE),
     kind: activeKind,
   });
-  return `/api/media-library/recent-outputs?${params.toString()}`;
+  if (cursor) params.set('cursor', cursor);
+  const q = searchQuery?.trim().slice(0, 200);
+  if (q) params.set('q', q);
+  if (jobId) params.set('jobId', jobId);
+  return [`/api/media-library/recent-outputs?${params.toString()}`, userId] as const;
 }
 
 export function formatTemplate(template: string, values: Record<string, string | number>): string {
@@ -282,7 +301,7 @@ export function formatTemplate(template: string, values: Record<string, string |
   }, template);
 }
 
-export const assetsFetcher = async (url: string): Promise<AssetsResponse> => {
+export const assetsFetcher = async ([url]: readonly [string, string]): Promise<AssetsResponse> => {
   const res = await authFetch(url);
   const json = (await res.json().catch(() => null)) as AssetsResponse | null;
   if (!res.ok || !json) {
@@ -291,7 +310,7 @@ export const assetsFetcher = async (url: string): Promise<AssetsResponse> => {
   return json;
 };
 
-export const recentOutputsFetcher = async (url: string): Promise<RecentOutputsResponse> => {
+export const recentOutputsFetcher = async ([url]: readonly [string, string]): Promise<RecentOutputsResponse> => {
   const res = await authFetch(url);
   const json = (await res.json().catch(() => null)) as RecentOutputsResponse | null;
   if (!res.ok || !json) {

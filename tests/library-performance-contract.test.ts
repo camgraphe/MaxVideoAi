@@ -20,8 +20,9 @@ test('library page loads media in bounded pages instead of fetching hundreds upf
   assert.match(helpersSource, /export const\s+LIBRARY_PAGE_SIZE\s*=\s*60/);
   assert.match(helpersSource, /export function buildSavedAssetsKey/);
   assert.match(helpersSource, /export function buildRecentOutputsKey/);
-  assert.match(dataHookSource, /savedAssetLimit/);
-  assert.match(dataHookSource, /recentOutputLimit/);
+  assert.match(dataHookSource, /useSWRInfinite/);
+  assert.match(dataHookSource, /previousPageData\.nextCursor/);
+  assert.match(dataHookSource, /activeQuery\.setSize/);
   assert.doesNotMatch(clientSource, /limit=200/);
 });
 

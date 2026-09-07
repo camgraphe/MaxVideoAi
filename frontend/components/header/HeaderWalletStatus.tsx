@@ -2,49 +2,55 @@
 
 import Link from 'next/link';
 import { Wallet } from 'lucide-react';
-import { ButtonLink } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
+import { AppGlyph } from '@/components/app/AppGlyph';
+import { ButtonLink } from '@/components/ui/Button';
 
 type HeaderTranslate = (key: string, fallback: string) => string | undefined;
 
 type HeaderWalletStatusProps = {
-  authResolved: boolean;
   promptId: string;
   t: HeaderTranslate;
   wallet: { balance: number } | null;
+  walletLoading: boolean;
   walletPromptOpen: boolean;
   onOpenPrompt: () => void;
   onSchedulePromptClose: () => void;
 };
 
 export function HeaderWalletStatus({
-  authResolved,
   promptId,
   t,
   wallet,
+  walletLoading,
   walletPromptOpen,
   onOpenPrompt,
   onSchedulePromptClose,
 }: HeaderWalletStatusProps) {
-  const walletAmount = wallet ? `$${wallet.balance.toFixed(2)}` : authResolved ? '--' : '...';
+  const walletAmount = wallet ? `$${wallet.balance.toFixed(2)}` : walletLoading ? '...' : '--';
   const walletBaseLabel = t('workspace.header.wallet.label', 'Wallet') ?? 'Wallet';
-  const walletLabel = wallet ? `${walletBaseLabel}: ${walletAmount}` : walletBaseLabel;
+  const missingLabel = walletLoading
+    ? t('workspace.header.wallet.loading', 'Loading…') ?? 'Loading…'
+    : t('workspace.header.wallet.unavailable', 'Unavailable') ?? 'Unavailable';
+  const walletLabel = `${walletBaseLabel}: ${wallet ? walletAmount : missingLabel}`;
 
   return (
     <div className="relative shrink-0" onMouseEnter={onOpenPrompt} onMouseLeave={onSchedulePromptClose}>
       <Link
         href="/billing"
         prefetch={false}
-        className="flex h-10 w-[72px] items-center justify-center gap-1 rounded-input border border-hairline bg-surface px-2 py-1 text-text-primary shadow-sm transition-colors hover:border-border-hover hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:gap-1.5 lg:w-24 lg:gap-2 lg:px-3"
+        className="app-wallet-trigger flex !min-h-11 w-[72px] items-center justify-center gap-1 rounded-input border border-hairline bg-surface px-2 py-1 text-text-primary shadow-sm transition-colors hover:border-border-hover hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:gap-1.5 lg:w-24 lg:gap-2 lg:px-3"
         aria-label={walletLabel}
         aria-describedby={walletPromptOpen ? promptId : undefined}
         onFocus={onOpenPrompt}
         onBlur={onSchedulePromptClose}
       >
-        <UIIcon icon={Wallet} size={16} className="text-text-primary" />
+        <UIIcon icon={Wallet} size={16} className="app-wallet-legacy-icon text-text-primary" />
+        <span hidden className="app-wallet-glyph"><AppGlyph name="wallet" /></span>
+        <span className="app-wallet-copy"><span hidden className="app-wallet-label">{walletBaseLabel}</span>
         <span className="max-w-[5rem] truncate text-xs font-semibold tracking-normal text-text-primary sm:max-w-none sm:text-sm">
-          {walletAmount}
-        </span>
+          {wallet ? walletAmount : <><span className="app-wallet-fallback">{walletAmount}</span><span hidden className="app-wallet-state">{missingLabel}</span></>}
+        </span></span>
       </Link>
       {walletPromptOpen ? (
         <div

@@ -177,8 +177,8 @@ test('canonical public quote owns policy, override precedence, discount, and sna
     compatibilityProfileId: 'standard',
   });
   assert.equal(standard.marginCents, 13);
-  assert.equal(standard.discountCents, 3);
-  assert.equal(standard.customerTotalCents, 53);
+  assert.equal(standard.discountCents, 0);
+  assert.equal(standard.customerTotalCents, 56);
   assert.equal(standard.policyProvenance.source, 'versioned');
 
   const overridden = publicQuote.quotePublicPricing({

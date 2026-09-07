@@ -1,3 +1,4 @@
+import type { GenerationObservation } from '@/lib/generation-observation';
 import type { ResultProvider, VideoGroup, VideoItem } from '@/types/video-groups';
 
 export type SharedVideoPreview = {
@@ -15,6 +16,7 @@ export type SharedVideoPreview = {
 };
 
 export type SelectedVideoPreview = {
+  startedAt?: number;
   localKey?: string;
   batchId?: string;
   iterationIndex?: number;
@@ -24,6 +26,8 @@ export type SelectedVideoPreview = {
   previewVideoUrl?: string;
   aspectRatio?: string;
   thumbUrl?: string;
+  observation?: GenerationObservation;
+  etaSource?: 'observed' | 'heuristic';
   progress?: number;
   status?: 'pending' | 'completed' | 'failed';
   message?: string;
@@ -100,6 +104,9 @@ export function mapSelectedPreviewToGroup(
       prompt: preview.prompt,
       status: preview.status ?? (preview.videoUrl ? 'completed' : 'pending'),
       progress: preview.progress,
+      observation: preview.observation,
+      startedAt: preview.startedAt,
+      etaSource: preview.etaSource,
       message: preview.message,
       etaSeconds: preview.etaSeconds,
       etaLabel: preview.etaLabel,

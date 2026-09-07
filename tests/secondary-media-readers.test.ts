@@ -166,5 +166,7 @@ test('image-kind filtering reaches the existing bounded user-owned query before 
   assert.match(route, /getRouteAuthContext\(req\)/);
   assert.match(route, /kind: requestedKind === 'image'.*requestedKind : null/);
   const listing = readFileSync('frontend/server/media-library/asset-listing.ts', 'utf8');
-  assert.match(listing, /WHERE user_id = \$1[\s\S]*kind = \$3::text[\s\S]*LIMIT \$2/);
+  assert.match(listing, /WHERE a\.user_id = \$1/);
+  assert.match(listing, /WHERE u\.user_id = \$1/);
+  assert.match(listing, /WHERE \(\$3::text IS NULL OR kind = \$3::text\)[\s\S]*LIMIT \$2/);
 });

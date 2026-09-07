@@ -13,6 +13,12 @@ export function useJobsCopy(): JobsCopy {
     return {
       ...DEFAULT_JOBS_COPY,
       ...rawCopy,
+      activity: {
+        ...DEFAULT_JOBS_COPY.activity,
+        ...(rawCopy.activity ?? {}),
+        sources: { ...DEFAULT_JOBS_COPY.activity.sources, ...(rawCopy.activity?.sources ?? {}) },
+        statuses: { ...DEFAULT_JOBS_COPY.activity.statuses, ...(rawCopy.activity?.statuses ?? {}) },
+      },
       sections: {
         ...DEFAULT_JOBS_COPY.sections,
         ...(rawCopy.sections ?? {}),

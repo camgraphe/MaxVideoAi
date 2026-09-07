@@ -3,6 +3,11 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import mcpPublication from '@/config/mcp-publication.json';
 import { FEATURES } from '@/content/feature-flags';
 import {
+  createPrepareMontageService,
+  type MontageEditPlan,
+  type PrepareMontageInput,
+} from '@/server/agent-api/montage-plan';
+import {
   createAgentAccountStatusService,
   type AgentAccountStatusWalletDeps,
 } from '@/server/agent-api/account-status';
@@ -89,6 +94,7 @@ import { registerListModelsTool } from '@/server/mcp/tools/list-models';
 import { registerGetModelDetailsTool } from '@/server/mcp/tools/get-model-details';
 import { registerListMediaTool } from '@/server/mcp/tools/list-media';
 import { registerListRecentGenerationsTool } from '@/server/mcp/tools/list-recent-generations';
+import { registerPrepareMontageTool } from '@/server/mcp/tools/prepare-montage';
 import { registerPrepareGenerationTool } from '@/server/mcp/tools/prepare-generation';
 import { registerPresentGenerationTool } from '@/server/mcp/tools/present-generation';
 import { registerRecommendModelsTool } from '@/server/mcp/tools/recommend-models';
@@ -142,11 +148,16 @@ export type MaxVideoAiMcpServices = {
     input: ImportReferenceFilesInput,
     principal: AgentPrincipal,
   ): Promise<ImportReferenceFilesResult>;
+  prepareMontage?(
+    input: PrepareMontageInput,
+    principal: AgentPrincipal,
+  ): Promise<MontageEditPlan>;
 };
 
 export type MaxVideoAiMcpServerOptions = {
   paidGeneration?: boolean;
   referenceUploads?: boolean;
+  montagePreparation?: boolean;
 };
 
 export function createDefaultMaxVideoAiMcpServices(
@@ -234,6 +245,7 @@ export function createDefaultMaxVideoAiMcpServices(
     listMedia: (input, principal) => listAgentMedia(input, principal),
     createReferenceUploadLink: createDefaultReferenceUploadLinkService(config.accountUrl),
     importReferenceFiles: createDefaultReferenceFileImportService(config.accountUrl),
+    prepareMontage: createPrepareMontageService(),
   };
 }
 
@@ -244,6 +256,7 @@ export function createMaxVideoAiMcpServer(
 ): McpServer {
   const referenceUploads = options.referenceUploads ?? FEATURES.mcp.referenceUploads;
   const paidGeneration = options.paidGeneration ?? mcpPublication.paidGeneration;
+  const montagePreparation = options.montagePreparation ?? mcpPublication.montagePreparation;
   const server = new McpServer(
     {
       name: 'maxvideoai',
@@ -251,7 +264,7 @@ export function createMaxVideoAiMcpServer(
       websiteUrl: 'https://maxvideoai.com/mcp',
     },
     {
-      instructions: buildMaxVideoAiMcpInstructions({ paidGeneration, referenceUploads }),
+      instructions: buildMaxVideoAiMcpInstructions({ paidGeneration, referenceUploads, montagePreparation }),
       capabilities: { tools: {} },
     }
   );
@@ -266,6 +279,9 @@ export function createMaxVideoAiMcpServer(
     registerListMediaTool(server, principal, services);
     registerCreateReferenceUploadLinkTool(server, principal, services);
     registerImportReferenceFilesTool(server, principal, services);
+  }
+  if (montagePreparation) {
+    registerPrepareMontageTool(server, principal, services);
   }
   if (paidGeneration) {
     registerGenerationResultApp(server);

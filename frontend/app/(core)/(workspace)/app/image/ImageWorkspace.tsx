@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from 'react';
 import type { ImageGenerationMode } from '@/types/image-generation';
+import { ImageMediaHandoff } from './_components/ImageMediaHandoff.client';
 import { ImageWorkspaceComposerSurface } from './_components/ImageWorkspaceComposerSurface';
 import { ImageWorkspaceEmptyState } from './_components/ImageWorkspaceEmptyState';
 import { ImageWorkspaceRuntimeModals } from './_components/ImageWorkspaceRuntimeModals';
@@ -401,6 +402,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
 
   return (
     <>
+      <ImageMediaHandoff modelName={selectedEngine?.name} slots={displayedReferenceSlots} limit={referenceSlotLimit} onInsert={handleLibrarySelect} />
       <ImageWorkspaceShell
         isDesktopLayout={isDesktopLayout}
         galleryRailProps={{
@@ -472,6 +474,7 @@ export default function ImageWorkspace({ engines }: ImageWorkspaceProps) {
         />
       </ImageWorkspaceShell>
       <ImageWorkspaceRuntimeModals
+        referenceSlotLimit={referenceSlotLimit}
         authModalOpen={authModalOpen}
         characterSelectionLimit={characterSelectionLimit}
         closeLibraryModal={closeLibraryModal}

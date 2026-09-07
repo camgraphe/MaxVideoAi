@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
 
-import { createGenerateMetricLogger } from '../frontend/app/api/generate/_lib/metric-logger';
+import { createGenerateMetricLogger, terminalGenerateMetricStatus } from '../frontend/app/api/generate/_lib/metric-logger';
 import type { GenerateMetricInput } from '../frontend/server/generate-metrics';
 
 const root = process.cwd();
@@ -84,6 +84,7 @@ test('metric logger records state, duration, and merged metadata', () => {
         durationSec: 8,
         resolution: '1080p',
         paymentMode: 'wallet',
+        durationSource: 'request_elapsed',
       },
     },
   ]);
@@ -111,4 +112,16 @@ test('metric logger honors explicit duration and error code', () => {
   assert.equal(recorded[0]?.durationMs, 12);
   assert.equal(recorded[0]?.errorCode, 'PROVIDER_ERROR');
   assert.equal(recorded[0]?.jobId, 'job_456');
+});
+
+
+test('provider submission status only adds a metric event for terminal results', () => {
+  for (const status of ['pending', 'running', 'queued', 'processing', 'accepted']) {
+    assert.equal(terminalGenerateMetricStatus(status), null, status);
+  }
+  assert.equal(terminalGenerateMetricStatus('completed'), 'completed');
+  assert.equal(terminalGenerateMetricStatus('failed'), 'failed');
+  const executor = readFileSync(join(root, 'frontend/src/server/video-generation/execute-prepared-video-generation.ts'), 'utf8');
+  assert.match(executor, /const metricStatus = terminalGenerateMetricStatus\(status\)/);
+  assert.match(executor, /if \(metricStatus\) logMetric\(metricStatus/);
 });

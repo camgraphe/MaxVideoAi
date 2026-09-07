@@ -13,6 +13,9 @@ const FOCUSABLE_SELECTOR = [
   'input:not([disabled])',
   'select:not([disabled])',
   'textarea:not([disabled])',
+  'summary',
+  'audio[controls]',
+  'video[controls]',
   '[tabindex]:not([tabindex="-1"])',
 ].join(',');
 
@@ -58,7 +61,7 @@ export function resolveModalFocusRecoveryTarget({
 
 function getFocusableElements(container: HTMLElement): HTMLElement[] {
   return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
-    (element) => element.getAttribute('aria-hidden') !== 'true' && element.tabIndex >= 0
+    (element) => !element.matches(':disabled') && element.getAttribute('aria-hidden') !== 'true' && element.tabIndex >= 0 && element.getClientRects().length > 0
   );
 }
 

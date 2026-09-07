@@ -33,6 +33,7 @@ const expectedKeys = [
   'paidGeneration',
   'trial',
   'referenceUploads',
+  'montagePreparation',
 ];
 
 for (const [state, publication] of Object.entries(fixtureStates)) {

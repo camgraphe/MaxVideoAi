@@ -12,6 +12,60 @@ import {
   resolveLibraryAssetIdentity,
 } from '../frontend/server/media-library';
 import { mapAssetRow } from '../frontend/server/media-library-records';
+import {
+  buildMediaLibrarySearchPattern,
+  decodeMediaLibraryCursor,
+  parseMediaLibraryExactJobId,
+  sliceMediaLibraryPage,
+} from '../frontend/server/media-library/pagination';
+
+test('media library cursors preserve equal-timestamp ordering and terminate', () => {
+  const items = Array.from({ length: 125 }, (_, index) => ({
+    id: `asset-${String(index).padStart(3, '0')}`,
+    createdAt: '2026-09-01T10:00:00.000Z',
+  }));
+  const first = sliceMediaLibraryPage(items, 60);
+  assert.equal(first.items.length, 60);
+  assert.equal(first.hasMore, true);
+  const cursor = decodeMediaLibraryCursor(first.nextCursor);
+  assert.deepEqual(cursor, { createdAt: '2026-09-01T10:00:00.000Z', id: 'asset-065' });
+  const remaining = items.filter((item) => item.id < cursor!.id);
+  const second = sliceMediaLibraryPage(remaining, 60);
+  const final = sliceMediaLibraryPage(
+    remaining.filter((item) => item.id < decodeMediaLibraryCursor(second.nextCursor)!.id),
+    60
+  );
+  assert.equal(first.items.length + second.items.length + final.items.length, 125);
+  assert.equal(final.nextCursor, null);
+});
+
+test('media library search bounds input and escapes SQL wildcard characters', () => {
+  assert.equal(buildMediaLibrarySearchPattern(' 100%_match\\ '), '%100\\%\\_match\\\\%');
+  assert.equal(buildMediaLibrarySearchPattern('x'.repeat(250)), `%${'x'.repeat(200)}%`);
+  assert.equal(buildMediaLibrarySearchPattern('   '), null);
+});
+
+test('an invalid explicit exact-job filter cannot broaden into recent outputs', () => {
+  assert.deepEqual(parseMediaLibraryExactJobId(null), { provided: false, value: null });
+  assert.deepEqual(parseMediaLibraryExactJobId('job-old'), { provided: true, value: 'job-old' });
+  assert.deepEqual(parseMediaLibraryExactJobId('x'.repeat(257)), {
+    provided: true,
+    error: 'INVALID_JOB_ID',
+  });
+  assert.deepEqual(parseMediaLibraryExactJobId(' job-old'), {
+    provided: true,
+    error: 'INVALID_JOB_ID',
+  });
+});
+
+test('recent-output route rejects an invalid explicit job filter', () => {
+  const source = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/api/media-library/recent-outputs/route.ts'),
+    'utf8'
+  );
+  assert.match(source, /parseMediaLibraryExactJobId/);
+  assert.match(source, /outputs:\s*\[\],\s*error:\s*exactJob\.error[\s\S]*status:\s*400/);
+});
 
 test('normalizes PostgreSQL media asset timestamps to ISO strings', () => {
   const createdAt = new Date('2026-08-25T21:13:23.000Z');
@@ -246,8 +300,9 @@ test('deduplicates canonical and legacy library rows by media URL identity', () 
       sourceOutputId: null,
     })
   );
-  assert.match(source, /const\s+dedupeKey\s*=\s*resolveLibraryAssetDedupeKey\(asset\)/);
-  assert.match(source, /seen\.has\(dedupeKey\)/);
+  assert.match(source, /ROW_NUMBER\(\) OVER/);
+  assert.match(source, /PARTITION BY kind, logical_origin/);
+  assert.match(source, /WHERE logical_rank = 1[\s\S]*created_at, id/);
 });
 
 test('deduplicates copied generated assets against legacy origin urls', () => {
@@ -276,8 +331,8 @@ test('deduplicates copied generated assets against legacy origin urls', () => {
       },
     })
   );
-  assert.match(source, /resolveLibraryAssetOriginDedupeKey\(asset\)/);
-  assert.match(source, /resolveLibraryAssetOriginDedupeKey\(legacyAsset\)/);
+  assert.match(source, /COALESCE\(NULLIF\(metadata->>'originUrl', ''\), url\) AS logical_origin/);
+  assert.match(source, /ORDER BY source_priority ASC, created_at DESC, id DESC/);
 });
 
 test('media asset insert keeps saved job output linked to the source output', () => {
@@ -362,7 +417,11 @@ test('library cards use icon actions and put source navigation on the visual', (
   assert.doesNotMatch(clientSource, /\?\?\s*asset\.url/);
   assert.match(clientSource, /getAssetHrefLabel=\{\(\)\s*=>[\s\S]*copy\.assets\.openAssetButton/);
   assert.doesNotMatch(clientSource, />\s*\{copy\.assets\.useSettingsButton\}\s*</);
-  assert.match(clientSource, /<Download\s+className=/);
+  const panelSource = fs.readFileSync(path.join(process.cwd(), 'frontend/components/library/MediaActionPanel.client.tsx'), 'utf8');
+  assert.match(browserSource, /<MediaActionPanel/);
+  assert.match(panelSource, /buildAppDownloadUrl\(asset\.url, suggestDownloadFilename/);
+  assert.match(panelSource, /\{copy\.download\}/);
+  assert.match(panelSource, /useAccessibleModal/);
   assert.match(clientSource, /<Trash2\s+className=/);
 });
 
@@ -473,9 +532,9 @@ test('history cards use thumbnails and explicit card actions', () => {
   assert.match(cardSource, /aria-label=\{actionMenuLabel\}/);
   assert.match(jobsShellSource, /openLabel=\{copy\.actions\.openDetails\}/);
   assert.match(jobsShellSource, /actionMenuLabel=\{copy\.actions\.actions\}/);
-  assert.match(jobsShellSource, /expandSection/);
-  assert.match(jobsShellSource, /collapseSection/);
-  assert.match(jobsShellSource, /<ChevronDown/);
+  assert.match(jobsShellSource, /<select value=\{source\}/);
+  assert.match(jobsShellSource, /JOBS_SOURCES\.map/);
+  assert.doesNotMatch(jobsShellSource, /expandSection|collapseSection|CollapsedGroupRail/);
   assert.doesNotMatch(`${jobsSource}\n${jobsShellSource}`, /'▸'|'▾'/);
 });
 
@@ -512,9 +571,10 @@ test('history can save renders to library from cards and job details', () => {
   assert.match(jobsSource, /saveAssetToLibrary/);
   assert.match(jobsHelpersSource, /function\s+resolveGroupLibrarySavePayload/);
   assert.match(jobsHelpersSource, /function\s+resolveEntryLibrarySavePayload/);
-  assert.match(jobsShellSource, /showLibraryCta/);
-  assert.match(jobsShellSource, /<CollapsedGroupRail[\s\S]*onSaveToLibrary/);
-  assert.match(jobsShellSource, /onSaveToLibrary=\{onSaveGroupToLibrary\}/);
+  assert.match(jobsShellSource, /menuVariant="activity"/);
+  const activityMenuSource = fs.readFileSync(path.join(process.cwd(), 'frontend/components/GroupedJobCardMenu.tsx'), 'utf8');
+  assert.match(activityMenuSource, /showActivityActions && assets.length/);
+  assert.match(activityMenuSource, /onSave=\{\(\) => handleAction\('save-to-library'\)\}/);
   assert.match(jobsShellSource, /onSaveToLibrary=\{onSaveLightboxEntryToLibrary\}/);
   assert.match(apiSource, /kind\?:\s*'image'\s*\|\s*'video'\s*\|\s*'audio'/);
   assert.match(apiSource, /thumbUrl:\s*payload\.thumbUrl/);

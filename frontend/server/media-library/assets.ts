@@ -29,6 +29,7 @@ export async function listLibraryAssets(params: {
   includeOutputs?: boolean;
   limit?: number;
   cursor?: string | null;
+  q?: string | null;
 }): Promise<MediaAssetRecord[]> {
   const page = await listLibraryAssetPage({
     userId: params.userId,
@@ -38,6 +39,7 @@ export async function listLibraryAssets(params: {
     includeOutputs: params.includeOutputs,
     limit: params.limit,
     cursor: params.cursor ?? null,
+    q: params.q ?? null,
   });
   return page.items;
 }
@@ -50,6 +52,7 @@ export async function listLibraryAssetPage(params: {
   includeOutputs?: boolean;
   limit?: number;
   cursor?: string | null;
+  q?: string | null;
 }): Promise<MediaLibraryPage<MediaAssetRecord>> {
   return listLibraryAssetPageFromListing(params);
 }

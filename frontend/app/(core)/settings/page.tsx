@@ -9,13 +9,13 @@ import { SettingsTabs } from '@/components/settings/SettingsTabs';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useMarketingPreference } from '@/hooks/useMarketingPreference';
 import { FEATURES } from '@/content/feature-flags';
-import type { User } from '@supabase/supabase-js';
 import deepmerge from 'deepmerge';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { authFetch } from '@/lib/authFetch';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
 import { Button } from '@/components/ui/Button';
 import { resolveSettingsContentTab } from '@/lib/settings-navigation';
+import { AccountSettingsPanel } from './_components/AccountSettingsPanel';
 
 const DEFAULT_SETTINGS_COPY = {
   title: 'Settings',
@@ -28,12 +28,23 @@ const DEFAULT_SETTINGS_COPY = {
   },
   account: {
     title: 'Account',
-    fields: {
-      name: { label: 'Name', placeholder: 'Your name' },
-      email: { label: 'Email', placeholder: 'you@domain.com' },
-      locale: { label: 'Locale', options: ['EN', 'FR', 'ES'] },
-      theme: { label: 'Theme', options: ['System', 'Light', 'Dark'] },
+    guest: {
+      description: 'Sign in to update your account preferences.',
+      action: 'Log in',
     },
+    fields: {
+      name: { label: 'Name', placeholder: 'Your name', help: '1–80 characters.' },
+      email: { label: 'Email', placeholder: 'you@domain.com', readOnly: 'Email changes are managed separately.' },
+      locale: { label: 'Language', description: 'Interface language:' },
+      theme: {
+        label: 'Appearance',
+        description: 'Saved on this device.',
+        options: { light: 'Light', dark: 'Dark', system: 'System' },
+      },
+    },
+    actions: { save: 'Save', saving: 'Saving…', cancel: 'Cancel' },
+    validation: { required: 'Enter a name.', tooLong: 'Name must be 80 characters or fewer.' },
+    status: { success: 'Name saved.', genericError: 'Could not save your name. Try again.' },
   },
   team: {
     title: 'Team',
@@ -106,7 +117,7 @@ export default function SettingsPage() {
       <HeaderBar />
       <div className="flex flex-1 min-w-0">
         <AppSidebar />
-        <main className="flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
+        <main className="app-settings-main flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
           <h1 className="mb-4 text-xl font-semibold text-text-primary">{copy.title}</h1>
 
           <SettingsTabs
@@ -117,76 +128,12 @@ export default function SettingsPage() {
             notificationsSoonLabel={copy.notifications.srSoon}
           />
 
-          {tab === 'account' && <AccountTab user={user} copy={copy.account} />}
+          {tab === 'account' && <AccountSettingsPanel user={user} copy={copy.account} />}
           {tab === 'privacy' && <PrivacyTab guest={isGuest} copy={copy.privacy} />}
           {tab === 'notifications' && <NotificationsTab live={notificationsLive} copy={copy.notifications} guest={isGuest} />}
         </main>
       </div>
     </div>
-  );
-}
-
-type AccountTabProps = {
-  user: User | null;
-  copy: SettingsCopy['account'];
-};
-
-function AccountTab({ user, copy }: AccountTabProps) {
-  const nameDefault =
-    typeof user?.user_metadata?.full_name === 'string'
-      ? user?.user_metadata?.full_name
-      : user?.user_metadata?.name ?? '';
-  const emailDefault = user?.email ?? '';
-
-  return (
-    <section className="rounded-card border border-border bg-surface p-4 shadow-card">
-      <h2 className="mb-3 text-lg font-semibold text-text-primary">{copy.title}</h2>
-      <div className="grid grid-gap-sm sm:grid-cols-2">
-        <label className="text-sm">
-          <span className="mb-1 block text-text-secondary">{copy.fields.name.label}</span>
-          <input
-            className="w-full rounded-input border border-border bg-bg px-3 py-2"
-            placeholder={copy.fields.name.placeholder}
-            defaultValue={nameDefault}
-            readOnly={!nameDefault}
-          />
-        </label>
-        <label className="text-sm">
-          <span className="mb-1 block text-text-secondary">{copy.fields.email.label}</span>
-          <input
-            type="email"
-            className="w-full rounded-input border border-border bg-bg px-3 py-2"
-            placeholder={copy.fields.email.placeholder}
-            defaultValue={emailDefault}
-            readOnly
-          />
-        </label>
-        <label className="text-sm">
-          <span className="mb-1 block text-text-secondary">{copy.fields.locale.label}</span>
-          <select
-            className="w-full rounded-input border border-border bg-bg px-3 py-2"
-            defaultValue={copy.fields.locale.options[0]}
-            disabled
-          >
-            {copy.fields.locale.options.map((option) => (
-              <option key={option}>{option}</option>
-            ))}
-          </select>
-        </label>
-        <label className="text-sm">
-          <span className="mb-1 block text-text-secondary">{copy.fields.theme.label}</span>
-          <select
-            className="w-full rounded-input border border-border bg-bg px-3 py-2"
-            defaultValue={copy.fields.theme.options[0]}
-            disabled
-          >
-            {copy.fields.theme.options.map((option) => (
-              <option key={option}>{option}</option>
-            ))}
-          </select>
-        </label>
-      </div>
-    </section>
   );
 }
 

@@ -60,8 +60,9 @@ test('workspace library data and mutation hooks own server data workflows', () =
 
   assert.match(dataHookSource, /'use client';/);
   assert.match(dataHookSource, /export function useLibraryPageData/);
-  assert.match(dataHookSource, /useSWR<AssetsResponse>/);
-  assert.match(dataHookSource, /useSWR<RecentOutputsResponse>/);
+  assert.match(dataHookSource, /useSWRInfinite<AssetsResponse>/);
+  assert.match(dataHookSource, /useSWRInfinite<RecentOutputsResponse>/);
+  assert.match(dataHookSource, /previousPageData\.nextCursor/);
   assert.match(dataHookSource, /dedupingInterval: 60_000/);
   assert.match(dataHookSource, /dedupingInterval: 30_000/);
   assert.match(dataHookSource, /buildSavedAssetsKey/);

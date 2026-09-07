@@ -1,3 +1,4 @@
+import { degradedGenerationObservation } from '@/lib/generation-observation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import { getJobStatus } from '@/lib/api';
@@ -182,6 +183,11 @@ export function useWorkspaceRenderState({
             );
             setSelectedPreview((cur) => applyPolledJobStatusToSelectedPreview(cur, render, status));
           } catch (error) {
+            if (cancelled) return;
+            setRenders((prev) => prev.map((item) => item.jobId === render.jobId && item.status === 'pending'
+              ? { ...item, observation: degradedGenerationObservation(item.observation) } : item));
+            setSelectedPreview((cur) => cur && cur.id === render.jobId && cur.status === 'pending'
+              ? { ...cur, observation: degradedGenerationObservation(cur.observation) } : cur);
             const statusCode = typeof error === 'object' && error ? (error as { status?: unknown }).status : undefined;
             if (statusCode === 404) {
               statusErrorCountsRef.current.delete(render.jobId);

@@ -1,6 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useAccessibleModal } from '@/components/ui/useAccessibleModal';
+import { useI18n } from '@/lib/i18n/I18nProvider';
+import { Button } from '@/components/ui/Button';
+import { X } from 'lucide-react';
 import { copyTextToClipboard } from '@/lib/clipboard';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { MediaLightboxEntryCard } from '@/components/media-lightbox/MediaLightboxEntryCard';
@@ -30,6 +34,8 @@ export function MediaLightbox({
   onUseTemplate,
   templateLabel,
 }: MediaLightboxProps) {
+  const { dialogRef, onDialogKeyDown } = useAccessibleModal({ onClose });
+  const { t } = useI18n();
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [refreshStates, setRefreshStates] = useState<Record<string, MediaLightboxLoadingState>>({});
   const [downloadStates, setDownloadStates] = useState<Record<string, MediaLightboxLoadingState>>({});
@@ -73,20 +79,6 @@ export function MediaLightbox({
       }));
     }
   }, []);
-
-  const handleKeyDown = useCallback(
-    (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose();
-      }
-    },
-    [onClose]
-  );
-
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
 
   useEffect(() => {
     setRefreshStates((prev) => {
@@ -198,6 +190,7 @@ export function MediaLightbox({
     () => entries.some((entry) => Boolean(entry.videoUrl || entry.audioUrl || entry.imageUrl || entry.thumbUrl)),
     [entries]
   );
+  const hasPendingEntry = useMemo(() => entries.some((entry) => entry.status === 'pending'), [entries]);
   const specs = useMemo(() => {
     const next: Array<{ label: string; value: string }> = [];
     if (title) {
@@ -219,7 +212,11 @@ export function MediaLightbox({
 
   return (
     <div
-      className="fixed inset-0 z-[9998] flex items-center justify-center bg-slate-950/45 px-4 py-6 backdrop-blur-[3px]"
+      className="fixed inset-0 z-[9998] flex items-center justify-center bg-slate-950/45 p-2 backdrop-blur-[3px] sm:px-4 sm:py-6"
+      ref={dialogRef}
+      tabIndex={-1}
+      onKeyDown={onDialogKeyDown}
+      aria-label={title}
       role="dialog"
       aria-modal="true"
       onClick={(event) => {
@@ -228,8 +225,15 @@ export function MediaLightbox({
         }
       }}
     >
-      <div className="w-full max-w-[1180px] max-h-[calc(100vh-48px)] overflow-y-auto rounded-[30px] border border-hairline bg-surface p-6 shadow-float sm:p-7">
-        {!hasAtLeastOneRenderableMedia ? (
+      <div className="w-full max-w-[1180px] max-h-[calc(100dvh-16px)] overflow-y-auto overscroll-contain rounded-2xl border border-hairline bg-surface px-4 pb-5 shadow-float sm:max-h-[calc(100dvh-48px)] sm:rounded-[30px] sm:px-7 sm:pb-7">
+        <div className="sticky top-0 z-20 -mx-4 mb-3 flex items-center justify-between gap-3 border-b border-hairline bg-surface px-4 py-3 sm:-mx-7 sm:px-7">
+          <p className="min-w-0 text-sm font-semibold text-text-primary">{t('workspace.result.title', 'Result')}</p>
+          <Button type="button" variant="outline" size="sm" onClick={onClose} data-modal-initial-focus="true" className="!min-h-11 gap-2 rounded-full">
+            <X className="h-4 w-4" aria-hidden />
+            {t('workspace.result.close', 'Close')}
+          </Button>
+        </div>
+        {!hasAtLeastOneRenderableMedia && !hasPendingEntry ? (
           <p className="mb-4 rounded-input border border-dashed border-border bg-bg px-3 py-2 text-sm text-text-muted">
             Media will be available once the render completes.
           </p>
@@ -251,7 +255,6 @@ export function MediaLightbox({
               subtitle={subtitle}
               templateLabel={templateLabel}
               title={title}
-              onClose={onClose}
               onCopyLink={(entryId, url) => {
                 void handleCopyLink(entryId, url);
               }}

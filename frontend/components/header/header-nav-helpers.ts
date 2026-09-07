@@ -72,3 +72,11 @@ export function normalizeMarketingLinks(rawMarketingLinks: unknown): HeaderMarke
 export function getGuestMobileNavItems() {
   return NAV_ITEMS.filter((item) => GUEST_MOBILE_NAV_ITEM_IDS.has(item.id));
 }
+
+export function getAccountInitials(email: string | null | undefined): string {
+  if (!email) return '?';
+  const [namePart] = email.split('@');
+  if (!namePart) return email.slice(0, 2).toUpperCase();
+  const tokens = namePart.replace(/[^a-zA-Z0-9]+/g, ' ').trim().split(' ').filter(Boolean);
+  return tokens.length >= 2 ? (tokens[0][0] + tokens[1][0]).toUpperCase() : namePart.slice(0, 2).toUpperCase();
+}

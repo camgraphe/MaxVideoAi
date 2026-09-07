@@ -1,3 +1,4 @@
+import { LIVE_MEMBERSHIP_DISCOUNTS } from '@/lib/membership-policy';
 import { isDatabaseConfigured, query, withDbTransaction, type QueryExecutor } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
 
@@ -93,11 +94,7 @@ export async function getMembershipTiers(): Promise<MembershipTierConfig[]> {
 }
 
 export async function getMembershipDiscountMap(): Promise<Record<string, number>> {
-  const tiers = await loadTiers();
-  return tiers.reduce<Record<string, number>>((acc, tier) => {
-    acc[tier.tier.toLowerCase()] = tier.discountPercent;
-    return acc;
-  }, {});
+  return { ...LIVE_MEMBERSHIP_DISCOUNTS };
 }
 
 export async function getMembershipThresholds(): Promise<MembershipTierConfig[]> {

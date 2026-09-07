@@ -183,6 +183,7 @@ test('readiness records the owner-approved direct production publication state',
     paidGeneration: true,
     trial: false,
     referenceUploads: true,
+    montagePreparation: false,
   };
 
   assert.deepEqual(publication, expected);

@@ -25,20 +25,18 @@ export function ImageWorkspaceShell({
   isDesktopLayout,
 }: ImageWorkspaceShellProps) {
   return (
-    <>
-      <div className={clsx('flex w-full flex-1 min-w-0', isDesktopLayout ? 'flex-row' : 'flex-col')}>
-        <div className="flex w-full flex-1 min-w-0 flex-col overflow-hidden">
-          <main className="flex w-full flex-1 min-w-0 flex-col gap-[var(--stack-gap-lg)] p-4 sm:px-6 sm:py-4">
-            {children}
-          </main>
-        </div>
-        {isDesktopLayout ? (
-          <ImageWorkspaceGalleryRail {...galleryRailProps} variant="desktop" />
+    <div className={clsx('flex w-full flex-1 min-w-0', isDesktopLayout ? 'flex-row' : 'flex-col')}>
+      <div className="flex w-full flex-1 min-w-0 flex-col overflow-hidden">
+        <main className="app-workspace-main flex w-full flex-1 min-w-0 flex-col gap-[var(--stack-gap-lg)] p-4 sm:px-6 sm:py-4">
+          {children}
+        </main>
+        {!isDesktopLayout ? (
+          <ImageWorkspaceGalleryRail {...galleryRailProps} variant="mobile" />
         ) : null}
       </div>
-      {!isDesktopLayout ? (
-        <ImageWorkspaceGalleryRail {...galleryRailProps} variant="mobile" />
+      {isDesktopLayout ? (
+        <ImageWorkspaceGalleryRail {...galleryRailProps} variant="desktop" />
       ) : null}
-    </>
+    </div>
   );
 }

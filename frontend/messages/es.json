@@ -2548,8 +2548,8 @@
       {
         "title": "Sistema de precios",
         "items": [
-          "Previsualiza el precio exacto antes de generar. La pastilla se ajusta con duración, resolución y descuentos automáticos.",
-          "Las opciones de recarga de la billetera y tu estado de Miembro se muestran en Facturación."
+          "Previsualiza el precio exacto antes de generar. La pastilla se ajusta con la duración y la resolución.",
+          "Las opciones de recarga y el historial de pagos se muestran en Facturación."
         ]
       },
       {
@@ -3095,19 +3095,53 @@
   },
   "workspace": {
     "header": {
+      "wallet": {
+        "label": "Wallet",
+        "loading": "Cargando…",
+        "unavailable": "No disponible"
+      },
+      "walletTopUp": {
+        "label": "Añadir fondos",
+        "copy": "Añade fondos para seguir generando sin interrupciones.",
+        "cta": "Recargar"
+      },
       "marketingNav": "Navegación de marketing",
       "walletLabel": "Billetera",
       "memberFallback": "Miembro",
       "signedIn": "Sesión iniciada",
       "themeToggle": {
-        "toDark": "Cambiar a modo oscuro",
-        "toLight": "Cambiar a modo claro"
+        "toLight": "Cambiar a tema claro",
+        "toDark": "Cambiar a tema oscuro"
       },
       "primaryNav": "Navegación principal",
       "signOut": "Cerrar sesión",
       "createAccount": "Crear cuenta",
       "signIn": "Iniciar sesión",
-      "logoAria": "Ir a la página de marketing"
+      "logoAria": "Ir a la página de marketing",
+      "quickNav": {
+        "video": "Vídeo",
+        "image": "Imagen",
+        "library": "Biblioteca",
+        "menu": "Menú"
+      },
+      "createVideo": "Crear un vídeo",
+      "mobileClose": "Cerrar menú",
+      "mobileToggle": "Abrir menú",
+      "controlLabels": {
+        "duration": "Duración",
+        "resolution": "Resolución",
+        "aspect": "Formato",
+        "audio": "Audio",
+        "iterations": "Resultados",
+        "fps": "Fotogramas por segundo",
+        "hdr": "HDR",
+        "images": "Imágenes",
+        "format": "Formato de archivo",
+        "quality": "Calidad",
+        "style": "Estilo"
+      },
+      "createImage": "Crear una imagen",
+      "workspaceLabel": "Espacio de creación"
     },
     "sidebar": {
       "aria": {
@@ -3140,6 +3174,22 @@
         "claude": "Claude",
         "chatgpt": "ChatGPT",
         "codex": "Codex"
+      },
+      "groups": {
+        "create": "Crear",
+        "organize": "Espacio de trabajo",
+        "account": "Cuenta"
+      },
+      "shortLabels": {
+        "generate": "Vídeo",
+        "generate-image": "Imagen",
+        "generate-audio": "Audio",
+        "tools": "Herramientas creativas",
+        "dashboard": "Vista general",
+        "library": "Biblioteca",
+        "jobs": "Actividad",
+        "billing": "Facturación",
+        "settings": "Ajustes"
       }
     },
     "languageToggle": {
@@ -3374,6 +3424,9 @@
         }
       },
       "engineSelect": {
+        "details": "Detalles",
+        "clearSearch": "Borrar búsqueda",
+        "observedTiming": "Generaciones completadas observadas",
         "avgDuration": "Prom. {value}",
         "choose": "Elegir modelo",
         "variant": "Variante",
@@ -3480,10 +3533,45 @@
               "Video de referencia"
             ]
           }
-        }
+        },
+        "families": "Familias",
+        "models": "Modelos",
+        "searchPlaceholder": "Buscar un modelo",
+        "catalogueSummary": "Modelos: {visible}/{total} · Familias: {families}",
+        "legacyHiddenOne": "1 modelo antiguo oculto",
+        "legacyHiddenMany": "{count} modelos antiguos ocultos",
+        "emptySearch": "Ningún modelo coincide con «{query}».",
+        "emptySearchLegacyOne": "Hay 1 modelo antiguo coincidente oculto. Activa Modelos antiguos para incluirlo.",
+        "emptySearchLegacyMany": "Hay {count} modelos antiguos coincidentes ocultos. Activa Modelos antiguos para incluirlos."
       }
     },
     "jobs": {
+      "activity": {
+        "title": "Actividad",
+        "description": "Tus generaciones, en orden. Abre un resultado para seguir creando.",
+        "source": "Origen",
+        "sources": {
+          "all": "Todos los orígenes",
+          "video": "Vídeo",
+          "image": "Imagen",
+          "audio": "Audio",
+          "storyboard": "Storyboard",
+          "character": "Personaje",
+          "angle": "Ángulo",
+          "upscale": "Ampliación",
+          "background-removal": "Eliminar fondo"
+        },
+        "status": "Estado de la actividad cargada",
+        "statuses": {
+          "all": "Todos los estados",
+          "pending": "En curso",
+          "completed": "Completado",
+          "failed": "Fallido"
+        },
+        "statusHint": "Los estados filtran la actividad cargada. Carga más para consultar generaciones anteriores.",
+        "filteredEmpty": "No hay generaciones coincidentes en la actividad cargada.",
+        "refresh": "Actualizar"
+      },
       "title": "Historial",
       "sections": {
         "video": "Historial de video",
@@ -3774,8 +3862,8 @@
             "answer": "No, mientras la cuenta siga activa."
           },
           {
-            "question": "¿Cómo funcionan los descuentos?",
-            "answer": "El estado de miembro se aplica automáticamente según tu gasto de los últimos 30 días."
+            "question": "¿Qué precio se aplica?",
+            "answer": "Las nuevas generaciones usan el precio estándar. El precio exacto se muestra antes de confirmar."
           }
         ],
         "footnote": "IVA incluido cuando aplica. Reembolsos en renders fallidos. “Funciona con” indica compatibilidad; las marcas pertenecen a sus dueños."
@@ -3889,7 +3977,7 @@
         "refreshing": "Actualizando historial…"
       },
       "runButton": {
-        "idle": "Generar imágenes",
+        "idle": "Generar",
         "running": "Generando…"
       },
       "errors": {
@@ -3971,8 +4059,8 @@
         }
       },
       "views": {
-        "saved": "Recursos guardados",
-        "review": "Revisar renders recientes"
+        "saved": "Medios guardados",
+        "review": "Medios generados"
       },
       "media": {
         "images": "Imágenes",
@@ -3988,7 +4076,10 @@
         "import": "Importar",
         "importing": "Importando…",
         "importFailed": "No se pudo importar. Intenta de nuevo.",
-        "refresh": "Actualizar"
+        "refresh": "Actualizar",
+        "searchSaved": "Buscar nombres o ID de resultados…",
+        "searchRenders": "Buscar prompts o ID de resultados…",
+        "create": "Crear"
       },
       "tabs": {
         "all": "Todas las imágenes",
@@ -4010,7 +4101,9 @@
         "saving": "Guardando…",
         "saved": "Guardado",
         "saveError": "No se pudo guardar este render en la Biblioteca.",
-        "openRender": "Abrir render"
+        "openRender": "Abrir render",
+        "linkedResult": "Resultado enlazado",
+        "showAll": "Todos los resultados"
       },
       "assets": {
         "title": "Recursos de la biblioteca",
@@ -4030,6 +4123,19 @@
         "useSettingsButton": "Abrir fuente",
         "deleting": "Eliminando…",
         "assetFallback": "Recurso"
+      },
+      "sources": {
+        "video": {
+          "all": "Todos los vídeos",
+          "upload": "Vídeos importados",
+          "generated": "Resultados guardados",
+          "upscale": "Vídeos ampliados"
+        },
+        "audio": {
+          "all": "Todos los audios",
+          "upload": "Audios importados",
+          "generated": "Resultados de audio guardados"
+        }
       }
     },
     "settings": {
@@ -4043,31 +4149,47 @@
       },
       "account": {
         "title": "Cuenta",
+        "guest": {
+          "description": "Inicia sesión para actualizar las preferencias de tu cuenta.",
+          "action": "Iniciar sesión"
+        },
         "fields": {
           "name": {
             "label": "Nombre",
-            "placeholder": "Tu nombre"
+            "placeholder": "Tu nombre",
+            "help": "Entre 1 y 80 caracteres."
           },
           "email": {
-            "label": "Email",
-            "placeholder": "tu@dominio.com"
+            "label": "Correo electrónico",
+            "placeholder": "tu@dominio.com",
+            "readOnly": "Los cambios de correo electrónico se gestionan por separado."
           },
           "locale": {
             "label": "Idioma",
-            "options": [
-              "EN",
-              "FR",
-              "ES"
-            ]
+            "description": "Idioma de la interfaz:"
           },
           "theme": {
-            "label": "Tema",
-            "options": [
-              "Sistema",
-              "Claro",
-              "Oscuro"
-            ]
+            "label": "Apariencia",
+            "description": "Se guarda en este dispositivo.",
+            "options": {
+              "light": "Claro",
+              "dark": "Oscuro",
+              "system": "Sistema"
+            }
           }
+        },
+        "actions": {
+          "save": "Guardar",
+          "saving": "Guardando…",
+          "cancel": "Cancelar"
+        },
+        "validation": {
+          "required": "Introduce un nombre.",
+          "tooLong": "El nombre debe tener 80 caracteres como máximo."
+        },
+        "status": {
+          "success": "Nombre guardado.",
+          "genericError": "No se pudo guardar tu nombre. Inténtalo de nuevo."
         }
       },
       "team": {
@@ -4112,32 +4234,32 @@
       }
     },
     "tools": {
-      "disabledTitle": "Las herramientas están desactivadas",
-      "disabledBody": "Activa `FEATURES.workflows.toolsSection` para acceder a esta sección.",
+      "disabledTitle": "Las herramientas no están disponibles",
+      "disabledBody": "Vuelve a intentarlo más tarde.",
       "eyebrow": "Workspace",
       "title": "Herramientas",
-      "subtitle": "Crea assets reutilizables de primera imagen antes de lanzar renders image-to-video.",
+      "subtitle": "Prepara referencias. Mejora tus imágenes y vídeos.",
       "characterEyebrow": "Consistencia de personaje",
-      "characterTitle": "Generador de personaje coherente",
-      "characterBody": "Crea un retrato ancla o una hoja de personaje de 8 paneles con 4 ángulos full body y 4 close-ups antes de reutilizarla en flujos de imagen o video.",
-      "characterBadge": "Hoja de 8 paneles",
+      "characterTitle": "Creador de personajes",
+      "characterBody": "Crea un personaje coherente desde ocho vistas.",
+      "characterBadge": "Imagen",
       "storyboardEyebrow": "Tableros de referencia",
-      "storyboardTitle": "Herramienta Storyboard",
-      "storyboardBody": "Genera una referencia Storyboarder para Seedance y Kling. Usa producto, cocina, film o animación para Seedance 2; usa Kling cuando necesites personas reales.",
-      "storyboardBadge": "Seedance + Kling",
+      "storyboardTitle": "Storyboard",
+      "storyboardBody": "Convierte una idea en una secuencia de planos.",
+      "storyboardBadge": "Imagen",
       "angleEyebrow": "Control de perspectiva",
-      "angleTitle": "Angle / Perspective",
-      "angleBody": "Sube una imagen, ajusta el ángulo de cámara y genera una primera imagen lista para workflows image-to-video.",
-      "angleBadge": "Nueva vista",
-      "open": "Abrir herramienta",
+      "angleTitle": "Ángulo / Perspectiva",
+      "angleBody": "Explora un nuevo ángulo a partir de una imagen.",
+      "angleBadge": "Imagen",
+      "open": "Abrir",
       "backgroundRemovalEyebrow": "Limpieza de video",
-      "backgroundRemovalTitle": "Video Background Remover",
-      "backgroundRemovalBody": "Elimina fondos de video en MaxVideoAI, crea recortes tipo pantalla verde, exporta video con alpha y reutiliza sujetos limpios.",
-      "backgroundRemovalBadge": "Rotoscopia IA",
+      "backgroundRemovalTitle": "Eliminar fondo de vídeo",
+      "backgroundRemovalBody": "Aísla un sujeto del fondo de su vídeo.",
+      "backgroundRemovalBadge": "Vídeo",
       "upscaleEyebrow": "Mejora de resolución",
-      "upscaleTitle": "AI Upscale",
-      "upscaleBody": "Upscalea assets de imagen o video corto con SeedVR2, Topaz, FlashVSR y Recraft antes de reutilizarlos en otros flujos.",
-      "upscaleBadge": "Imagen + video"
+      "upscaleTitle": "Upscale",
+      "upscaleBody": "Aumenta la resolución de imágenes y vídeos.",
+      "upscaleBadge": "Imagen + vídeo"
     },
     "storyboard": {
       "disabledTitle": "Las herramientas están desactivadas",
@@ -5007,6 +5129,48 @@
       "recentFailed": "Failed",
       "authTitle": "Inicia sesión para usar la herramienta",
       "authBody": "La eliminación de fondo usa facturación de wallet y biblioteca privada."
+    },
+    "result": {
+      "title": "Resultado",
+      "close": "Cerrar",
+      "duration": "Duración",
+      "aspect": "Formato",
+      "audioOn": "Activado",
+      "audioOff": "Desactivado",
+      "downloading": "Descargando…",
+      "download": "Descargar",
+      "copied": "Enlace copiado",
+      "copyLink": "Copiar enlace",
+      "checking": "Comprobando…",
+      "refresh": "Actualizar estado",
+      "openOriginal": "Abrir original",
+      "remix": "Crear variante",
+      "reuse": "Usar ajustes",
+      "saving": "Guardando…",
+      "saved": "Guardado",
+      "retrySave": "Reintentar",
+      "save": "Guardar",
+      "details": "Detalles del resultado",
+      "status": {
+        "completed": "Listo",
+        "pending": "Procesando",
+        "failed": "Error"
+      },
+      "unavailable": "Vista previa no disponible",
+      "audioOutput": "Resultado de audio",
+      "processing": "Procesando…",
+      "copy": "Copiar",
+      "copyDone": "Copiado",
+      "more": "Ver más",
+      "less": "Ver menos",
+      "metadata": {
+        "job_id": "ID del resultado",
+        "group": "Grupo",
+        "created": "Creación",
+        "duration": "Duración",
+        "cost": "Coste",
+        "batch": "Lote"
+      }
     }
   },
   "cookieBanner": {

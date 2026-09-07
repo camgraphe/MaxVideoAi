@@ -75,6 +75,9 @@ function toVideoItem(member: GroupMemberSummary): VideoItem {
   if (member.prompt) {
     meta.prompt = member.prompt;
   }
+  meta.observation = member.observation;
+  meta.startedAt = Date.parse(member.createdAt);
+  meta.etaSource = member.etaSource;
   if (typeof member.progress === 'number') {
     meta.progress = member.progress;
   }

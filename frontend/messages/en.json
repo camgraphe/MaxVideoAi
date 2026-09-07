@@ -2521,8 +2521,8 @@
       {
         "title": "Price system",
         "items": [
-          "Preview the exact price before you generate. The price chip updates with duration, resolution, and automatic discounts.",
-          "Wallet funding options and your Member status are shown in Billing."
+          "Preview the exact price before you generate. The price chip updates with duration and resolution.",
+          "Wallet funding options and payment history are shown in Billing."
         ]
       },
       {
@@ -3068,19 +3068,53 @@
   },
   "workspace": {
     "header": {
+      "wallet": {
+        "label": "Wallet",
+        "loading": "Loading…",
+        "unavailable": "Unavailable"
+      },
+      "walletTopUp": {
+        "label": "Top up available",
+        "copy": "Click to add funds and keep generating without interruption.",
+        "cta": "Top up now"
+      },
       "marketingNav": "Marketing navigation",
       "walletLabel": "Wallet",
       "memberFallback": "Member",
       "signedIn": "Signed in",
       "themeToggle": {
-        "toDark": "Switch to dark theme",
-        "toLight": "Switch to light theme"
+        "toLight": "Switch to light theme",
+        "toDark": "Switch to dark theme"
       },
       "primaryNav": "Primary navigation",
       "signOut": "Sign out",
       "createAccount": "Create account",
       "signIn": "Sign in",
-      "logoAria": "Go to marketing homepage"
+      "logoAria": "Go to marketing homepage",
+      "quickNav": {
+        "video": "Video",
+        "image": "Image",
+        "library": "Library",
+        "menu": "Menu"
+      },
+      "createVideo": "Create video",
+      "mobileClose": "Close menu",
+      "mobileToggle": "Open menu",
+      "controlLabels": {
+        "duration": "Duration",
+        "resolution": "Resolution",
+        "aspect": "Format",
+        "audio": "Audio",
+        "iterations": "Outputs",
+        "fps": "Frame rate",
+        "hdr": "HDR",
+        "images": "Images",
+        "format": "File format",
+        "quality": "Quality",
+        "style": "Style"
+      },
+      "createImage": "Create image",
+      "workspaceLabel": "Creative workspace"
     },
     "sidebar": {
       "aria": {
@@ -3113,6 +3147,22 @@
         "claude": "Claude",
         "chatgpt": "ChatGPT",
         "codex": "Codex"
+      },
+      "groups": {
+        "create": "Create",
+        "organize": "Workspace",
+        "account": "Account"
+      },
+      "shortLabels": {
+        "generate": "Video",
+        "generate-image": "Image",
+        "generate-audio": "Audio",
+        "tools": "Creative tools",
+        "dashboard": "Overview",
+        "library": "Library",
+        "jobs": "Activity",
+        "billing": "Billing",
+        "settings": "Settings"
       }
     },
     "languageToggle": {
@@ -3347,6 +3397,9 @@
         }
       },
       "engineSelect": {
+        "details": "Details",
+        "clearSearch": "Clear search",
+        "observedTiming": "Observed completions",
         "avgDuration": "Avg {value}",
         "choose": "Choose engine",
         "variant": "Variant",
@@ -3453,7 +3506,16 @@
               "Reference video"
             ]
           }
-        }
+        },
+        "families": "Families",
+        "models": "Models",
+        "searchPlaceholder": "Search models",
+        "catalogueSummary": "Models: {visible}/{total} · Families: {families}",
+        "legacyHiddenOne": "1 legacy model hidden",
+        "legacyHiddenMany": "{count} legacy models hidden",
+        "emptySearch": "No models match “{query}”.",
+        "emptySearchLegacyOne": "1 matching legacy model is hidden. Turn on Legacy models to include it.",
+        "emptySearchLegacyMany": "{count} matching legacy models are hidden. Turn on Legacy models to include them."
       }
     },
     "image": {
@@ -3552,7 +3614,7 @@
         "refreshing": "Refreshing history…"
       },
       "runButton": {
-        "idle": "Generate images",
+        "idle": "Generate",
         "running": "Generating…"
       },
       "errors": {
@@ -3625,6 +3687,32 @@
       }
     },
     "jobs": {
+      "activity": {
+        "title": "Activity",
+        "description": "Your generations, in order. Open a result to keep creating.",
+        "source": "Source",
+        "sources": {
+          "all": "All sources",
+          "video": "Video",
+          "image": "Image",
+          "audio": "Audio",
+          "storyboard": "Storyboard",
+          "character": "Character",
+          "angle": "Angle",
+          "upscale": "Upscale",
+          "background-removal": "Background removal"
+        },
+        "status": "Status of loaded activity",
+        "statuses": {
+          "all": "All statuses",
+          "pending": "In progress",
+          "completed": "Completed",
+          "failed": "Failed"
+        },
+        "statusHint": "Status filters apply to loaded activity. Load more to check older generations.",
+        "filteredEmpty": "No matching generations in the loaded activity.",
+        "refresh": "Refresh"
+      },
       "title": "History",
       "sections": {
         "video": "Video history",
@@ -3915,8 +4003,8 @@
             "answer": "Credits don’t expire while your account remains active."
           },
           {
-            "question": "How do discounts work?",
-            "answer": "Member status applies automatically based on your last 30 days of spend."
+            "question": "Which price applies?",
+            "answer": "New generations use standard pricing. The exact price is shown before confirmation."
           }
         ],
         "footnote": "VAT included where applicable. Refunds on failed generations. “Works with” indicates compatibility; trademarks belong to their respective owners."
@@ -3944,8 +4032,8 @@
         }
       },
       "views": {
-        "saved": "Saved assets",
-        "review": "Review recent renders"
+        "saved": "Saved media",
+        "review": "Generated media"
       },
       "media": {
         "images": "Images",
@@ -3961,7 +4049,10 @@
         "import": "Import",
         "importing": "Importing…",
         "importFailed": "Import failed. Please try again.",
-        "refresh": "Refresh"
+        "refresh": "Refresh",
+        "searchSaved": "Search names or render IDs…",
+        "searchRenders": "Search prompts or render IDs…",
+        "create": "Create"
       },
       "tabs": {
         "all": "All images",
@@ -3983,7 +4074,9 @@
         "saving": "Saving…",
         "saved": "Saved",
         "saveError": "Unable to save this render to Library.",
-        "openRender": "Open render"
+        "openRender": "Open render",
+        "linkedResult": "Linked result",
+        "showAll": "All renders"
       },
       "assets": {
         "title": "Library assets",
@@ -4003,6 +4096,19 @@
         "useSettingsButton": "Open source",
         "deleting": "Deleting…",
         "assetFallback": "Asset"
+      },
+      "sources": {
+        "video": {
+          "all": "All videos",
+          "upload": "Uploaded videos",
+          "generated": "Saved renders",
+          "upscale": "Upscaled videos"
+        },
+        "audio": {
+          "all": "All audio",
+          "upload": "Uploaded audio",
+          "generated": "Saved audio renders"
+        }
       }
     },
     "settings": {
@@ -4016,31 +4122,47 @@
       },
       "account": {
         "title": "Account",
+        "guest": {
+          "description": "Sign in to update your account preferences.",
+          "action": "Log in"
+        },
         "fields": {
           "name": {
             "label": "Name",
-            "placeholder": "Your name"
+            "placeholder": "Your name",
+            "help": "1–80 characters."
           },
           "email": {
             "label": "Email",
-            "placeholder": "you@domain.com"
+            "placeholder": "you@domain.com",
+            "readOnly": "Email changes are managed separately."
           },
           "locale": {
-            "label": "Locale",
-            "options": [
-              "EN",
-              "FR",
-              "ES"
-            ]
+            "label": "Language",
+            "description": "Interface language:"
           },
           "theme": {
-            "label": "Theme",
-            "options": [
-              "System",
-              "Light",
-              "Dark"
-            ]
+            "label": "Appearance",
+            "description": "Saved on this device.",
+            "options": {
+              "light": "Light",
+              "dark": "Dark",
+              "system": "System"
+            }
           }
+        },
+        "actions": {
+          "save": "Save",
+          "saving": "Saving…",
+          "cancel": "Cancel"
+        },
+        "validation": {
+          "required": "Enter a name.",
+          "tooLong": "Name must be 80 characters or fewer."
+        },
+        "status": {
+          "success": "Name saved.",
+          "genericError": "Could not save your name. Try again."
         }
       },
       "team": {
@@ -4085,31 +4207,31 @@
       }
     },
     "tools": {
-      "disabledTitle": "Tools are disabled",
-      "disabledBody": "Enable `FEATURES.workflows.toolsSection` to access this area.",
+      "disabledTitle": "Tools are unavailable",
+      "disabledBody": "Please check back later.",
       "eyebrow": "Workspace",
       "title": "Tools",
-      "subtitle": "Build reusable first-frame assets before launching image-to-video runs.",
+      "subtitle": "Prepare references. Refine your images and videos.",
       "characterEyebrow": "Character consistency",
-      "characterTitle": "Consistent Character Builder",
-      "characterBody": "Build a portrait anchor or an 8-panel character sheet with 4 full-body angles and 4 close-ups before reusing it in later image or video workflows.",
-      "characterBadge": "8-panel sheet",
+      "characterTitle": "Character Builder",
+      "characterBody": "Create a consistent character across eight views.",
+      "characterBadge": "Image",
       "storyboardEyebrow": "Reference boards",
-      "storyboardTitle": "Storyboard Tool",
-      "storyboardBody": "Generate a Storyboarder reference for Seedance and Kling. Use product, cooking, film, and animation boards for Seedance 2; use Kling when real people are required.",
-      "storyboardBadge": "Seedance + Kling",
+      "storyboardTitle": "Storyboard",
+      "storyboardBody": "Turn an idea into a visual shot sequence.",
+      "storyboardBadge": "Image",
       "angleEyebrow": "Perspective control",
       "angleTitle": "Angle / Perspective",
-      "angleBody": "Upload an image, adjust camera angle controls, and generate a first frame ready for image-to-video workflows.",
-      "angleBadge": "New viewpoint",
-      "open": "Open Tool",
+      "angleBody": "Explore a new camera angle from one image.",
+      "angleBadge": "Image",
+      "open": "Open",
       "backgroundRemovalEyebrow": "Video cleanup",
-      "backgroundRemovalTitle": "Video Background Remover",
-      "backgroundRemovalBody": "Remove video backgrounds in MaxVideoAI, create green-screen-style cutouts, export alpha video, and reuse clean subjects.",
-      "backgroundRemovalBadge": "AI rotoscoping",
+      "backgroundRemovalTitle": "Background Removal",
+      "backgroundRemovalBody": "Isolate a subject from its video background.",
+      "backgroundRemovalBadge": "Video",
       "upscaleEyebrow": "Resolution boost",
-      "upscaleTitle": "AI Upscale",
-      "upscaleBody": "Upscale images or short videos with SeedVR2, Topaz, FlashVSR, and Recraft before reusing them in later workflows.",
+      "upscaleTitle": "Upscale",
+      "upscaleBody": "Increase the resolution of images and videos.",
       "upscaleBadge": "Image + video"
     },
     "storyboard": {
@@ -4980,6 +5102,48 @@
       "recentFailed": "Failed",
       "authTitle": "Sign in to use the tool",
       "authBody": "Background removal uses wallet billing and private library storage."
+    },
+    "result": {
+      "title": "Result",
+      "close": "Close",
+      "duration": "Duration",
+      "aspect": "Format",
+      "audioOn": "On",
+      "audioOff": "Off",
+      "downloading": "Downloading…",
+      "download": "Download",
+      "copied": "Link copied",
+      "copyLink": "Copy link",
+      "checking": "Checking…",
+      "refresh": "Refresh status",
+      "openOriginal": "Open original",
+      "remix": "Remix",
+      "reuse": "Use settings",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "retrySave": "Retry save",
+      "save": "Save to library",
+      "details": "Render details",
+      "status": {
+        "completed": "Ready",
+        "pending": "Processing",
+        "failed": "Failed"
+      },
+      "unavailable": "Preview unavailable",
+      "audioOutput": "Audio output",
+      "processing": "Processing…",
+      "copy": "Copy",
+      "copyDone": "Copied",
+      "more": "Show more",
+      "less": "Show less",
+      "metadata": {
+        "job_id": "Render ID",
+        "group": "Group",
+        "created": "Created",
+        "duration": "Duration",
+        "cost": "Cost",
+        "batch": "Batch"
+      }
     }
   },
   "cookieBanner": {

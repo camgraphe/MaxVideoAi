@@ -334,10 +334,7 @@ export default function AudioWorkspace() {
               duration: estimatedDurationSec ? formatAudioDurationLabel(estimatedDurationSec) : '-',
             })
         : copy.pricing.missingOptions;
-  const activeProgress =
-    activeJob?.status === 'running' || activeJob?.status === 'pending'
-      ? activeJob.progress
-      : null;
+
   const displayDurationSec = pack === 'voice_only' ? null : estimatedDurationSec;
   const dockDurationLabel = displayDurationSec ? formatAudioDurationLabel(displayDurationSec) : null;
   const dockPriceLabel = quote ? formatCurrency(quote.totalCents, quote.currency, locale) : '-';
@@ -379,7 +376,8 @@ export default function AudioWorkspace() {
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <AudioWorkspaceComposerSurface
           activeJobId={activeJob?.jobId ?? null}
-          activeProgress={activeProgress}
+          previewJob={activeJob}
+          previewResult={result}
           canGenerate={canGenerate}
           composerIsScript={composerIsScript}
           composerLabel={composerLabel}

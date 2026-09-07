@@ -166,6 +166,7 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     showNotice: noticeState.showNotice,
   });
   const assets = useWorkspaceAssets({
+    userId: app.user?.id,
     inputAssets: assetState.inputAssets,
     setInputAssets: assetState.setInputAssets,
     commitInputAssetMutation: assetState.commitInputAssetMutation,

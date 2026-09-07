@@ -3,10 +3,9 @@
 import { useEffect, useState } from 'react';
 import {
   readLastKnownUserId,
-  writeLastKnownMember,
   writeLastKnownWallet,
 } from '@/lib/last-known';
-import type { BillingSession, MemberStatus } from '../_lib/billing-types';
+import type { BillingSession } from '../_lib/billing-types';
 
 type BillingWallet = {
   balance: number;
@@ -24,7 +23,6 @@ export function useBillingSessionState({
   onDetectedCurrency: (currency: string) => void;
 }) {
   const [wallet, setWallet] = useState<BillingWallet | null>(null);
-  const [member, setMember] = useState<MemberStatus | null>(null);
   const [stripeMode, setStripeMode] = useState<'test' | 'live' | 'disabled'>('disabled');
 
   useEffect(() => {
@@ -64,33 +62,7 @@ export function useBillingSessionState({
           .catch(() => undefined);
       }
 
-      fetch('/api/member-status?includeTiers=1', { headers, cache: 'no-store' })
-        .then(async (response) => {
-          const payload = await response.json().catch(() => null);
-          if (!response.ok) {
-            throw new Error(payload?.error ?? 'member_status_load_failed');
-          }
-          return payload;
-        })
-        .then((data) => {
-          if (!mounted || !data) return;
-          if (typeof data.tier === 'string') {
-            const nextMember = data as MemberStatus;
-            setMember(nextMember);
-            if (session?.user?.id) {
-              writeLastKnownMember(
-                {
-                  tier: nextMember.tier,
-                  spent30: nextMember.spent30,
-                  spentToday: nextMember.spentToday,
-                  savingsPct: nextMember.savingsPct,
-                },
-                session.user.id ?? readLastKnownUserId()
-              );
-            }
-          }
-        })
-        .catch(() => undefined);
+
     }
 
     load();
@@ -113,7 +85,6 @@ export function useBillingSessionState({
 
   return {
     wallet,
-    member,
     stripeMode,
   };
 }

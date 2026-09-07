@@ -57,7 +57,8 @@ test('workspace pricing and auth gate orchestration is owned by route-local modu
   assert.match(hookSource, /runPreflight/);
   assert.match(hookSource, /inputs: buildWorkspacePreflightInputs\(inputAssets\)/);
   assert.match(hookSource, /runPreflight\(payload, \{ accessToken \}\)/);
-  assert.match(hookSource, /authFetch\('\/api\/member-status'\)/);
+  assert.doesNotMatch(hookSource, /\/api\/member-status/);
+  assert.match(hookSource, /setMemberTier\('Member'\)/);
   assert.match(hookSource, /useHostedWalletCheckout\(\{/);
   assert.match(hookSource, /getSufficientTopUpAmountCents/);
   assert.match(hookSource, /returnTarget: '\/app'/);

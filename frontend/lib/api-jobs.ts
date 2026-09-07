@@ -1,3 +1,4 @@
+import { generationStage, isStaleGenerationUpdate, mergeGenerationObservation, normalizeGenerationObservation } from '@/lib/generation-observation';
 import { useEffect, useRef, useState } from 'react';
 import useSWRInfinite from 'swr/infinite';
 import { authFetch } from '@/lib/authFetch';
@@ -39,6 +40,7 @@ function normalizeJobFromApi(job: Job): Job {
 
   return {
     ...job,
+    observation: normalizeGenerationObservation(job.observation) ?? { stage: generationStage(job.status) },
     status,
     progress,
     message,
@@ -101,12 +103,14 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
     options?.surface === 'background-removal'
       ? options.surface
       : 'all';
+  const feedScope = JSON.stringify([cacheKey, pageSize, feedType, feedSurface]);
   const lastRevalidateRef = useRef<number>(0);
   const lastKnownUserIdRef = useRef<string | null>(typeof window === 'undefined' ? null : readLastKnownUserId());
   const [stableStore, setStableStore] = useState<{
+    scope: string;
     byId: Record<string, Job>;
     order: string[];
-  }>({ byId: {}, order: [] });
+  }>({ scope: feedScope, byId: {}, order: [] });
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -176,8 +180,8 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
   }, []);
 
   useEffect(() => {
-    setStableStore({ byId: {}, order: [] });
-  }, [cacheKey, feedSurface, feedType]);
+    setStableStore({ scope: feedScope, byId: {}, order: [] });
+  }, [feedScope]);
 
   const getJobsKey = (index: number, previousPage: JobsPage | null | undefined): JobsKey | null => {
     if (!cacheKey) return null;
@@ -193,7 +197,7 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
     return fetchJobsPage(limit, cursor, { type, surface });
   };
 
-  const swr = useSWRInfinite<JobsPage, Error>(getJobsKey, fetchJobs);
+  const swr = useSWRInfinite<JobsPage, Error>(getJobsKey, fetchJobs, { keepPreviousData: false, persistSize: false });
 
   const { mutate } = swr;
 
@@ -229,11 +233,12 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
                 typeof detail.progress === 'number' && Number.isFinite(detail.progress)
                   ? Math.max(0, Math.min(100, detail.progress))
                   : undefined;
+              if (isStaleGenerationUpdate(job, detail)) return job;
               const next = {
                 ...job,
                 status: detail.status ?? job.status,
                 progress:
-                  typeof progressFromDetail === 'number' && progressFromDetail > 0
+                  typeof progressFromDetail === 'number' && Number.isFinite(progressFromDetail)
                     ? progressFromDetail
                     : job.progress,
                 videoUrl: detail.videoUrl ?? job.videoUrl,
@@ -251,6 +256,7 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
                 heroRenderId: detail.heroRenderId ?? job.heroRenderId,
                 localKey: detail.localKey ?? job.localKey,
                 message: detail.message ?? job.message,
+                observation: mergeGenerationObservation(job.observation, detail.observation),
                 etaSeconds: detail.etaSeconds ?? job.etaSeconds,
                 etaLabel: detail.etaLabel ?? job.etaLabel,
               };
@@ -307,7 +313,7 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
         const rest = { ...prev.byId };
         delete rest[jobId];
         const order = prev.order.filter((id) => id !== jobId);
-        return { byId: rest, order };
+        return { ...prev, byId: rest, order };
       });
       void mutate(
         (pages) => {
@@ -326,7 +332,7 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
     const jobs = swr.data?.flatMap((page) => page.jobs) ?? [];
     if (!jobs.length) {
       if (swr.data) {
-        setStableStore({ byId: {}, order: [] });
+        setStableStore({ scope: feedScope, byId: {}, order: [] });
       }
       return;
     }
@@ -338,7 +344,7 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
           .filter((jobId): jobId is string => jobId.length > 0)
       );
       const byId: Record<string, Job> = {};
-      Object.entries(prev.byId).forEach(([jobId, job]) => {
+      Object.entries(prev.scope === feedScope ? prev.byId : {}).forEach(([jobId, job]) => {
         if (currentJobIds.has(jobId)) {
           byId[jobId] = job;
         }
@@ -355,7 +361,8 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
           return;
         }
 
-        const merged: Job = { ...existing, ...job };
+        if (isStaleGenerationUpdate(existing, job)) return;
+        const merged: Job = { ...existing, ...job, observation: mergeGenerationObservation(existing.observation, job.observation) };
         if (job.thumbUrl == null && existing.thumbUrl != null) merged.thumbUrl = existing.thumbUrl;
         if (job.videoUrl == null && existing.videoUrl != null) merged.videoUrl = existing.videoUrl;
         if (job.audioUrl == null && existing.audioUrl != null) merged.audioUrl = existing.audioUrl;
@@ -393,9 +400,9 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
         });
       }
 
-      return { byId, order: nextOrder };
+      return { scope: feedScope, byId, order: nextOrder };
     });
-  }, [swr.data]);
+  }, [feedScope, swr.data]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -420,7 +427,9 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
     clearMissingStatusRetries(seen);
   }, [swr.data]);
 
-  const stableJobs = stableStore.order.map((id) => stableStore.byId[id]).filter(Boolean);
+  const stableJobs = stableStore.scope === feedScope
+    ? stableStore.order.map((id) => stableStore.byId[id]).filter(Boolean)
+    : [];
 
   return { ...swr, stableJobs } as typeof swr & { stableJobs: Job[] };
 }

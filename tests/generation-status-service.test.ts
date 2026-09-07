@@ -537,6 +537,7 @@ test('web status mapper preserves the authenticated video response fixture', () 
     createdAt: '2026-07-16T10:00:00.000Z',
     status: 'completed',
     progress: 100,
+    observation: { stage: 'completed' },
     videoUrl: 'https://cdn.maxvideoai.com/video.mp4',
     previewVideoUrl: 'https://cdn.maxvideoai.com/video-preview.mp4',
     audioUrl: 'https://cdn.maxvideoai.com/audio.mp3',

@@ -71,6 +71,7 @@ function createFixture(): string {
       paidGeneration: false,
       trial: false,
       referenceUploads: false,
+      montagePreparation: false,
     }, null, 2)}\n`,
   );
   const fixtureVercelPath = join(fixture, 'frontend/vercel.json');
@@ -181,6 +182,7 @@ function setReleasePublication(fixture: string): void {
       paidGeneration: true,
       trial: false,
       referenceUploads: true,
+      montagePreparation: false,
     }, null, 2)}\n`,
   );
   const vercelPath = join(fixture, 'frontend/vercel.json');
@@ -308,7 +310,7 @@ test('production Vercel preflight fails closed when neither FAL credential alias
   }
 });
 
-test('production Vercel preflight requires the first candidate to keep all eight flags false', () => {
+test('production Vercel preflight requires the first candidate to keep all nine flags false', () => {
   const fixture = createFixture();
   try {
     const publicationPath = join(fixture, 'frontend/config/mcp-publication.json');
@@ -318,7 +320,7 @@ test('production Vercel preflight requires the first candidate to keep all eight
 
     const result = runPreflight(fixture);
     assert.equal(result.status, 67, result.stderr);
-    assert.equal(result.stderr, 'PUBLICATION_BLOCKED expected=all-eight-false\n');
+    assert.equal(result.stderr, 'PUBLICATION_BLOCKED expected=all-nine-false\n');
     assert.doesNotMatch(`${result.stdout}${result.stderr}`, new RegExp(SECRET_SENTINEL));
   } finally {
     rmSync(fixture, { recursive: true, force: true });
@@ -342,7 +344,7 @@ test('production Vercel preflight refuses MCP schedules while the dark-candidate
 
     const result = runPreflight(fixture);
     assert.equal(result.status, 70, result.stderr);
-    assert.equal(result.stderr, 'CRON_INVENTORY_BLOCKED expected=no-mcp-crons-while-all-eight-false\n');
+    assert.equal(result.stderr, 'CRON_INVENTORY_BLOCKED expected=no-mcp-crons-while-all-nine-false\n');
   } finally {
     rmSync(fixture, { recursive: true, force: true });
   }

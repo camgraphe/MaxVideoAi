@@ -549,6 +549,7 @@ test('public fixture corpus covers every approved intent with strict labels and 
     paidGeneration: true,
     trial: false,
     referenceUploads: true,
+    montagePreparation: false,
   });
 });
 

@@ -716,6 +716,7 @@ test('verified OAuth acquisition completes one local SDK trial without wallet or
   const publication = JSON.parse(
     readFileSync('frontend/config/mcp-publication.json', 'utf8'),
   ) as Record<string, unknown>;
-  assert.equal(Object.keys(publication).length, 8);
+  assert.equal(Object.keys(publication).length, 9);
+  assert.equal(publication.montagePreparation, false);
   assert.ok(Object.values(publication).every((value) => value === false));
 });

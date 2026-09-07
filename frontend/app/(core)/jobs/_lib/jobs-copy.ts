@@ -1,5 +1,16 @@
 export const DEFAULT_JOBS_COPY = {
   title: 'History',
+  activity: {
+    title: 'Activity',
+    description: 'Your generations, in order. Open a result to keep creating.',
+    source: 'Source',
+    sources: { all: 'All sources', video: 'Video', image: 'Image', audio: 'Audio', storyboard: 'Storyboard', character: 'Character', angle: 'Angle', upscale: 'Upscale', 'background-removal': 'Background removal' },
+    status: 'Status of loaded activity',
+    statuses: { all: 'All statuses', pending: 'In progress', completed: 'Completed', failed: 'Failed' },
+    statusHint: 'Status filters apply to loaded activity. Load more to check older generations.',
+    filteredEmpty: 'No matching generations in the loaded activity.',
+    refresh: 'Refresh',
+  },
   sections: {
     video: 'Video history',
     audio: 'Audio history',

@@ -117,7 +117,7 @@ export const DEFAULT_BILLING_COPY = {
       { question: 'Do I need a subscription?', answer: 'No. Pay as you go.' },
       { question: 'Can I buy just one small render?', answer: 'Yes — funds are debited per run from your $10 Starter balance.' },
       { question: 'Will my credits expire?', answer: 'Credits don’t expire while your account remains active.' },
-      { question: 'How do discounts work?', answer: 'Member status applies automatically based on your last 30 days of spend.' },
+      { question: 'Which price applies?', answer: 'New generations use standard pricing. The exact price is shown before confirmation.' },
     ],
     footnote:
       'VAT included where applicable. Refunds on failed renders. “Works with” indicates compatibility; trademarks belong to their respective owners.',

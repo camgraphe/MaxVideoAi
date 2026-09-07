@@ -32,6 +32,7 @@ const splitFiles = [
   '_components/ImageWorkspaceGalleryRail.tsx',
   '_components/ImageWorkspaceComposerSurface.tsx',
   '_hooks/useImageComposerPersistence.ts',
+  '_hooks/useImageLibraryData.ts',
   '_hooks/useImageWorkspaceDisplayState.ts',
   '_hooks/useImageWorkspaceReferenceAssets.tsx',
   '_hooks/useImageWorkspaceViewer.ts',
@@ -212,4 +213,22 @@ test('image workspace foundations are split from the route orchestrator', () => 
 
   const lineCount = source.split('\n').length;
   assert.ok(lineCount <= 500, `ImageWorkspace should stay below 500 lines after shell extraction, got ${lineCount}`);
+});
+
+
+test('image mobile gallery stays inside the main shell column at intermediate widths', () => {
+  const source = readFileSync(shellPath, 'utf8');
+  assert.doesNotMatch(source, /<>|<\/>/, 'a fragment must not expose the mobile rail as a sibling to the outer md:flex-row layout');
+  assert.match(source, /<main[\s\S]*<\/main>\s*\{!isDesktopLayout[\s\S]*variant="mobile"[\s\S]*\) : null\}\s*<\/div>\s*\{isDesktopLayout[\s\S]*variant="desktop"/, 'mobile rail follows the form inside its column; desktop rail remains alongside the column');
+});
+
+
+test('image library presentation delegates account-scoped listing to its route-local data owner', () => {
+  const modal = readFileSync(path.join(imageDir, '_components/ImageLibraryModal.tsx'), 'utf8');
+  const data = readFileSync(path.join(imageDir, '_hooks/useImageLibraryData.ts'), 'utf8');
+  assert.match(modal, /useImageLibraryData/);
+  assert.doesNotMatch(modal, /useSWR/);
+  assert.match(data, /\['image-reference-library', userId, url\]/);
+  assert.match(data, /keepPreviousData: false/);
+  assert.match(data, /kind=image/);
 });

@@ -31,9 +31,10 @@ const ImageLibraryModal = dynamic<ImageLibraryModalProps>(
 type ImageWorkspaceRuntimeModalsProps = {
   authModalOpen: boolean;
   characterSelectionLimit: number;
+  referenceSlotLimit: number;
   closeLibraryModal: () => void;
   closeViewer: () => void;
-  handleLibrarySelect: (asset: LibraryAsset) => void;
+  handleLibrarySelect: (asset: LibraryAsset) => boolean | void;
   handleSaveVariantToLibrary: (entry: MediaLightboxEntry) => Promise<void>;
   libraryModal: ImageLibraryModalState;
   loginRedirectTarget: string;
@@ -50,6 +51,7 @@ type ImageWorkspaceRuntimeModalsProps = {
 export function ImageWorkspaceRuntimeModals({
   authModalOpen,
   characterSelectionLimit,
+  referenceSlotLimit,
   closeLibraryModal,
   closeViewer,
   handleLibrarySelect,
@@ -84,6 +86,7 @@ export function ImageWorkspaceRuntimeModals({
       ) : null}
       {libraryModal.open ? (
         <ImageLibraryModal
+          target={{ scope: `${libraryModal.slotIndex ?? "append"}:${referenceSlotLimit}:${supportedReferenceFormats.join(",")}`, capacity: referenceSlotLimit, slotIndex: libraryModal.slotIndex }}
           open={libraryModal.open}
           onClose={closeLibraryModal}
           onSelect={handleLibrarySelect}

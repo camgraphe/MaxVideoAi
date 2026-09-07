@@ -61,6 +61,7 @@ export function SettingsControls({
   advancedFields = [],
   advancedFieldValues = {},
   onAdvancedFieldChange,
+  advancedOpen,
   variant = 'full',
 }: SettingsControlsProps) {
   const showCore = variant !== 'advanced';
@@ -113,6 +114,7 @@ export function SettingsControls({
   } = controlState;
 
   const advancedPanelProps = {
+    advancedOpen,
     advancedFieldValues,
     advancedFields,
     cameraFixed,

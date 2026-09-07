@@ -1,3 +1,4 @@
+import { generationStage } from '@/lib/generation-observation';
 import { useCallback, useEffect, useRef, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
 
 import {
@@ -257,6 +258,8 @@ export function useAudioWorkspaceRestoration({
       const progress = typeof detail.progress === 'number' ? detail.progress : status === 'completed' ? 100 : 0;
 
       const normalizedJob: ActiveAudioJobState = {
+        startedAt: detail.createdAt ? Date.parse(detail.createdAt) : undefined,
+        observation: { stage: generationStage(detail.status) },
         jobId: detail.jobId,
         status,
         progress,

@@ -235,6 +235,8 @@ export interface EngineCaps {
   status: EngineStatus;
   latencyTier: LatencyTier;
   avgDurationMs?: number | null;
+  durationSampleCount?: number | null;
+  durationSource?: 'completion_event' | null;
   queueDepth?: number;
   region?: string;
   vendorAccountId?: string;

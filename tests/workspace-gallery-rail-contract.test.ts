@@ -26,7 +26,7 @@ test('workspace video rail opens renders in the composite preview, not the group
   assert.match(cardMenuSource, /onClick=\{\(\)\s*=>\s*handleAction\('open'\)\}/);
   assert.doesNotMatch(cardMenuSource, /showGalleryActions[\s\S]*onClick=\{\(\)\s*=>\s*handleAction\('view'\)\}/);
 
-  assert.match(railCardsSource, /openLabel=\{feedType === 'video' \? 'Preview' : undefined\}/);
+  assert.match(railCardsSource, /openLabel=\{locale === 'fr' \? 'Aperçu' : locale === 'es' \? 'Vista previa' : 'Preview'\}/);
   assert.match(railCardsSource, /showOpenOverlay=\{false\}/);
   assert.match(railSource, /onGroupAction\(original,\s*'open',\s*\{\s*autoPlayPreview:\s*true\s*\}\)/);
 });
@@ -129,7 +129,7 @@ test('composite preview preserves preview urls but plays canonical video urls', 
   assert.match(videoSettingsSource, /from '\.\/workspace-video-job-media'/);
   assert.match(videoJobMediaSource, /previewVideoUrl:\s*patch\.previewVideoUrl\s*\?\?\s*current\.previewVideoUrl/);
   assert.match(videoJobMediaSource, /previewUrl:\s*patch\.previewVideoUrl\s*\?\?\s*item\.previewUrl/);
-  assert.match(renderGroupSource, /previewVideoUrl:\s*gatingActive\s*\?\s*null\s*:\s*item\.previewVideoUrl\s*\?\?\s*null/);
+  assert.match(renderGroupSource, /previewVideoUrl:\s*item\.previewVideoUrl\s*\?\?\s*null/);
   assert.match(dockUtilsSource, /function getInlinePreviewUrl\(item: VideoItem\): string \{\s*return item\.url;\s*\}/);
   assert.doesNotMatch(dockUtilsSource, /return item\.previewUrl \?\? item\.url/);
 });

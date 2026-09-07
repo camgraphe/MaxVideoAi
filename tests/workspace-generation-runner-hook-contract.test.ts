@@ -45,7 +45,7 @@ test('workspace generation runner is owned by a route-local hook', () => {
   assert.match(iterationRunnerSource, /projectGenerationPollStatus/);
   assert.match(iterationRunnerSource, /runGenerate/);
   assert.match(iterationRunnerSource, /getJobStatus/);
-  assert.match(iterationRunnerSource, /window\.setInterval/);
+  assert.doesNotMatch(iterationRunnerSource, /window\.setInterval/, 'Synthetic progress must not add a timer');
 
   const hookLineCount = hookSource.split('\n').length;
   assert.ok(hookLineCount <= 420, `useWorkspaceGenerationRunner should stay below 420 lines, got ${hookLineCount}`);

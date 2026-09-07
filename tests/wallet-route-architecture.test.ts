@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import test from 'node:test';
 
 const routeSource = readFileSync(join(process.cwd(), 'frontend/app/api/wallet/route.ts'), 'utf8');
+const directPolicySource = readFileSync(join(process.cwd(), 'frontend/server/pricing/wallet-direct-policy.ts'), 'utf8');
 
 test('wallet GET delegates ledger aggregation to the shared wallet summary service', () => {
   assert.match(routeSource, /getWalletSummary/);
@@ -15,5 +16,8 @@ test('wallet GET delegates ledger aggregation to the shared wallet summary servi
 test('wallet route keeps checkout mutation behavior while staying below its post-extraction cap', () => {
   assert.match(routeSource, /export async function POST/);
   assert.match(routeSource, /stripe\.checkout\.sessions\.create/);
+  assert.match(routeSource, /requireCurrentWalletDirectPricingPolicy/);
+  assert.match(directPolicySource, /requireCurrentWebPricingPolicy/);
+  assert.match(directPolicySource, /requiresMembershipPricingRefresh/);
   assert.ok(routeSource.split('\n').length <= 600);
 });

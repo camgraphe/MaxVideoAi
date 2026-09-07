@@ -2,6 +2,7 @@
 
 import type { Dispatch, SetStateAction } from 'react';
 import dynamic from 'next/dynamic';
+import { WorkspaceEmptyPreview } from '@/components/composer/WorkspaceEmptyPreview.client';
 import { EngineSettingsBar } from '@/components/EngineSettingsBar';
 import type { CompositePreviewDockProps } from '@/components/groups/CompositePreviewDock';
 import type { EngineCaps, Mode } from '@/types/engines';
@@ -66,17 +67,7 @@ export function WorkspacePreviewDock({
   compositeOverrideSummary: GroupSummary | null;
   setViewerTarget: Dispatch<SetStateAction<WorkspaceViewerTarget>>;
 }) {
-  return (
-    <CompositePreviewDock
-      density="workspace"
-      group={group}
-      isLoading={isLoading}
-      autoPlayRequestId={autoPlayRequestId}
-      copyPrompt={hasSharedVideoSettings ? null : sharedPrompt}
-      onCopyPrompt={hasSharedVideoSettings ? undefined : sharedPrompt ? onCopySharedPrompt : undefined}
-      showTitle={false}
-      guidedNavigation={guidedNavigation}
-      engineSettings={
+  const engineSettings = (
         <EngineSettingsBar
           engines={engines}
           engineId={engineId}
@@ -91,7 +82,25 @@ export function WorkspacePreviewDock({
           controlPresentation="workspace"
           density="compact"
         />
-      }
+  );
+  // A local illustration reserves the result location without mounting a media reader.
+  if (!group && !isLoading) {
+    return <><section className="app-model-strip rounded-card border border-border bg-surface shadow-card">
+      <div className="px-4 py-1">{engineSettings}</div>
+    </section><WorkspaceEmptyPreview media="video" /></>;
+  }
+
+  return (
+    <CompositePreviewDock
+      density="workspace"
+      group={group}
+      isLoading={isLoading}
+      autoPlayRequestId={autoPlayRequestId}
+      copyPrompt={hasSharedVideoSettings ? null : sharedPrompt}
+      onCopyPrompt={hasSharedVideoSettings ? undefined : sharedPrompt ? onCopySharedPrompt : undefined}
+      showTitle={false}
+      guidedNavigation={guidedNavigation}
+      engineSettings={engineSettings}
       onOpenModal={(nextGroup) => {
         if (!nextGroup) return;
         if (renderGroups.has(nextGroup.id)) {

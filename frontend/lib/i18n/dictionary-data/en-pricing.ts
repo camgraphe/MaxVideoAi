@@ -108,8 +108,8 @@ export const pricing: Dictionary['pricing'] = {
           answer: 'Failed renders auto-refund within minutes. You only pay when the job completes successfully.',
         },
         {
-          question: 'What are member discounts?',
-          answer: 'Spend $50 in 30 days to save 5%, $200 to save 10%. Savings apply automatically to every eligible run.',
+          question: 'Does account spending change generation prices?',
+          answer: 'No. New generations use the standard price shown before you generate, regardless of recent account spending.',
         },
       ],
     },

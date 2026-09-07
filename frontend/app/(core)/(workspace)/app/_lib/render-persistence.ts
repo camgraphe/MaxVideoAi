@@ -1,3 +1,4 @@
+import { normalizeGenerationObservation, type GenerationObservation } from '@/lib/generation-observation';
 import { isPlaceholderMediaUrl } from '@/lib/media';
 import type { PreflightResponse } from '@/types/engines';
 
@@ -14,6 +15,8 @@ export type LocalRender = {
   aspectRatio: string;
   durationSec: number;
   prompt: string;
+  observation?: GenerationObservation;
+  etaSource?: 'observed' | 'heuristic';
   progress: number; // 0-100
   message: string;
   status: 'pending' | 'completed' | 'failed';
@@ -60,6 +63,8 @@ type PersistedRender = {
   aspectRatio: string;
   durationSec: number;
   prompt: string;
+  observation?: GenerationObservation;
+  etaSource?: 'observed' | 'heuristic';
   progress: number;
   message: string;
   status: 'pending' | 'completed' | 'failed';
@@ -159,6 +164,8 @@ function coercePersistedRender(entry: PersistedRender): LocalRender | null {
     durationSec,
     prompt: typeof entry.prompt === 'string' ? entry.prompt : '',
     progress,
+    observation: normalizeGenerationObservation(entry.observation),
+    etaSource: entry.etaSource === 'observed' ? 'observed' : 'heuristic',
     message: typeof entry.message === 'string' && entry.message.length ? entry.message : '',
     status,
     videoUrl: typeof entry.videoUrl === 'string' && entry.videoUrl.length ? entry.videoUrl : undefined,
@@ -240,6 +247,8 @@ export function serializePendingRenders(renders: LocalRender[]): string | null {
       durationSec: render.durationSec,
       prompt: render.prompt,
       progress: render.progress,
+      observation: render.observation,
+      etaSource: render.etaSource,
       message: render.message,
       status: render.status,
       videoUrl: render.videoUrl,
