@@ -4,19 +4,17 @@ import { useHostedWalletCheckout } from '@/hooks/useHostedWalletCheckout';
 import type { AppLocale } from '@/i18n/locales';
 import { dispatchGaEvent } from '@/lib/analytics/ga-events';
 import { classifyTopupFailure } from '@/lib/analytics/topup-failure';
-import { runPreflight } from '@/lib/api';
 import { formatRateLimitMessage } from '@/lib/wallet/rate-limit-message';
-import type { EngineCaps, Mode, PreflightRequest, PreflightResponse } from '@/types/engines';
+import type { EngineCaps, Mode, PreflightResponse } from '@/types/engines';
 import type { WorkspaceCopy } from '../_lib/workspace-copy';
 import type { ReferenceAsset } from '../_lib/workspace-assets';
 import type { FormState } from '../_lib/workspace-form-state';
-import { buildWorkspacePreflightInputs } from '../_lib/workspace-generation-inputs';
-import { DEBOUNCE_MS } from '../_lib/workspace-client-helpers';
+import { buildWorkspacePreflightRequest } from '../_lib/workspace-preflight-request';
+import { useWorkspacePreflightQuote } from './useWorkspacePreflightQuote';
 import {
   buildWorkspaceTopupAnalyticsPayload,
   getSufficientTopUpAmountCents,
 } from '../_lib/workspace-topup';
-import { workspaceModeSupportsRequestField } from '../_lib/workspace-mode-request-fields';
 
 export type MemberTier = 'Member' | 'Plus' | 'Pro';
 
@@ -69,16 +67,6 @@ type UseWorkspacePricingGateResult = {
   setTopUpModal: Dispatch<SetStateAction<TopUpModalState>>;
 };
 
-function getPreflightErrorMessage(response: PreflightResponse): string {
-  return (
-    (typeof response.error?.message === 'string' && response.error.message.trim().length
-      ? response.error.message.trim()
-      : undefined) ??
-    response.messages?.find((entry) => typeof entry === 'string' && entry.trim().length)?.trim() ??
-    'Unable to compute pricing'
-  );
-}
-
 export function useWorkspacePricingGate({
   accessToken,
   locale,
@@ -94,9 +82,15 @@ export function useWorkspacePricingGate({
   submissionMode,
   inputAssets,
 }: UseWorkspacePricingGateOptions): UseWorkspacePricingGateResult {
-  const [preflight, setPreflight] = useState<PreflightResponse | null>(null);
-  const [preflightError, setPreflightError] = useState<string | undefined>();
-  const [isPricing, setPricing] = useState(false);
+  const { preflight, preflightError, setPreflightError, isPricing, price, currency } = useWorkspacePreflightQuote({
+    request: form && selectedEngine ? buildWorkspacePreflightRequest({
+      form, selectedEngine, memberTier, supportsAudioToggle,
+      effectiveDurationSec, voiceControlEnabled, submissionMode, inputAssets,
+    }) : null,
+    iterations: form?.iterations ?? 1,
+    accessToken,
+    authChecked,
+  });
   const [topUpModal, setTopUpModal] = useState<TopUpModalState>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [topUpAmount, setTopUpAmount] = useState<number>(1000);
@@ -104,7 +98,7 @@ export function useWorkspacePricingGate({
 
   const showComposerError = useCallback((message: string) => {
     setPreflightError(message);
-  }, []);
+  }, [setPreflightError]);
 
   const handleHostedTopupStarted = useCallback(({ amountCents }: { amountCents: number; currency: string }) => {
     const payload = buildWorkspaceTopupAnalyticsPayload(amountCents);
@@ -200,95 +194,6 @@ export function useWorkspacePricingGate({
     if (authChecked) setMemberTier('Member');
   }, [authChecked, setMemberTier]);
 
-  useEffect(() => {
-    if (!form || !selectedEngine || !authChecked) return;
-    let canceled = false;
-
-    const capability = selectedEngine.modeCaps?.[submissionMode];
-    const shouldSendResolution = workspaceModeSupportsRequestField({
-      inputSchema: selectedEngine.inputSchema,
-      capability,
-      fieldId: 'resolution',
-      mode: submissionMode,
-    });
-    const shouldSendAspectRatio = workspaceModeSupportsRequestField({
-      inputSchema: selectedEngine.inputSchema,
-      capability,
-      fieldId: 'aspect_ratio',
-      mode: submissionMode,
-    });
-
-    const payload: PreflightRequest = {
-      engine: form.engineId,
-      mode: submissionMode,
-      durationSec: effectiveDurationSec,
-      ...(shouldSendResolution
-        ? { resolution: form.resolution as PreflightRequest['resolution'] }
-        : {}),
-      ...(shouldSendAspectRatio
-        ? { aspectRatio: form.aspectRatio as PreflightRequest['aspectRatio'] }
-        : {}),
-      fps: form.fps,
-      seedLocked: Boolean(form.seedLocked),
-      loop: form.loop,
-      ...(supportsAudioToggle ? { audio: form.audio } : {}),
-      ...(voiceControlEnabled ? { voiceControl: true } : {}),
-      inputs: buildWorkspacePreflightInputs(inputAssets),
-      ...(Object.keys(form.extraInputValues).length ? { extraInputValues: form.extraInputValues } : {}),
-      user: { memberTier },
-    };
-    setPricing(true);
-    setPreflightError(undefined);
-
-    const timeout = setTimeout(() => {
-      Promise.resolve()
-        .then(() => runPreflight(payload, { accessToken }))
-        .then((response) => {
-          if (canceled) return;
-          setPreflight(response);
-          if (!response.ok) {
-            setPreflightError(getPreflightErrorMessage(response));
-            return;
-          }
-          setPreflightError(undefined);
-        })
-        .catch((err) => {
-          if (canceled) return;
-          console.error('[preflight] failed', err);
-          setPreflightError(err instanceof Error ? err.message : 'Preflight failed');
-        })
-        .finally(() => {
-          if (!canceled) {
-            setPricing(false);
-          }
-        });
-    }, DEBOUNCE_MS);
-
-    return () => {
-      canceled = true;
-      clearTimeout(timeout);
-    };
-  }, [
-    form,
-    selectedEngine,
-    memberTier,
-    authChecked,
-    supportsAudioToggle,
-    effectiveDurationSec,
-    voiceControlEnabled,
-    submissionMode,
-    inputAssets,
-    accessToken,
-  ]);
-
-  const singlePriceCents = typeof preflight?.total === 'number' ? preflight.total : null;
-  const singlePrice = typeof singlePriceCents === 'number' ? singlePriceCents / 100 : null;
-  const price =
-    typeof singlePrice === 'number' && form?.iterations
-      ? singlePrice * form.iterations
-      : singlePrice;
-  const currency = preflight?.currency ?? 'USD';
-
   return useMemo(
     () => ({
       preflight,
@@ -335,6 +240,7 @@ export function useWorkspacePricingGate({
       preflightError,
       price,
       showComposerError,
+      setPreflightError,
       topUpAmount,
       topUpError,
       topUpModal,

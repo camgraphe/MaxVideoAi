@@ -54,9 +54,16 @@ test('workspace pricing and auth gate orchestration is owned by route-local modu
   assert.doesNotMatch(appSource, /Wallet balance too low/);
 
   assert.match(hookSource, /export function useWorkspacePricingGate/);
-  assert.match(hookSource, /runPreflight/);
-  assert.match(hookSource, /inputs: buildWorkspacePreflightInputs\(inputAssets\)/);
-  assert.match(hookSource, /runPreflight\(payload, \{ accessToken \}\)/);
+  const quoteSource = fs.readFileSync(path.join(path.dirname(hookPath), 'useWorkspacePreflightQuote.ts'), 'utf8');
+  const requestSource = fs.readFileSync(path.join(path.dirname(hookPath), '../_lib/workspace-preflight-request.ts'), 'utf8');
+  assert.match(hookSource, /useWorkspacePreflightQuote/);
+  assert.match(hookSource, /buildWorkspacePreflightRequest/);
+  assert.doesNotMatch(hookSource, /runPreflight|buildWorkspacePreflightInputs/);
+  assert.match(requestSource, /inputs: buildWorkspacePreflightInputs\(inputAssets\)/);
+  assert.match(requestSource, /workspaceModeSupportsRequestField/);
+  assert.doesNotMatch(requestSource, /iterations|runPreflight|useEffect/);
+  assert.match(quoteSource, /runPreflight\(payload, \{ accessToken \}\)/);
+  assert.doesNotMatch(quoteSource, /useHostedWalletCheckout|authFetch|setMemberTier|setTopUpModal/);
   assert.doesNotMatch(hookSource, /\/api\/member-status/);
   assert.match(hookSource, /setMemberTier\('Member'\)/);
   assert.match(hookSource, /useHostedWalletCheckout\(\{/);

@@ -84,7 +84,11 @@ export function useWorkspaceWalletPreflight({
   const verifyWalletBalance = useCallback(
     async ({ preflight, iterationCount, currencyCode }: VerifyWalletBalanceOptions) => {
       const unitCostCents = resolvePreflightUnitCostCents(preflight);
-      if (typeof unitCostCents !== 'number' || unitCostCents <= 0) return true;
+      if (!preflight?.ok || typeof unitCostCents !== 'number' || !Number.isFinite(unitCostCents) || unitCostCents < 0) {
+        showComposerError('Unable to compute pricing');
+        return false;
+      }
+      if (unitCostCents === 0) return true;
 
       const requiredCents = unitCostCents * iterationCount;
       try {
@@ -102,7 +106,7 @@ export function useWorkspaceWalletPreflight({
         return true;
       }
     },
-    [presentInsufficientFunds]
+    [presentInsufficientFunds, showComposerError]
   );
 
   return {
