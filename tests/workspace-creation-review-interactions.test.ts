@@ -103,7 +103,7 @@ test('real Composer renders Spanish statuses and associates both single and mult
     assert.equal(heading?.textContent, 'Prompt');
     assert.equal(fixture.container.querySelector('label[for]'), null);
     assert.equal(group.querySelector('textarea')?.getAttribute('aria-label'), 'Scene 1 prompt');
-    const manage = fixture.container.querySelector<HTMLButtonElement>('.app-reference-heading button')!;
+    const manage = fixture.container.querySelector<HTMLButtonElement>('.app-reference-commands button')!;
     await act(async () => manage.click());
     assert.equal(manage.getAttribute('aria-expanded'), 'true');
     const upload = fixture.dom.window.document.querySelector<HTMLButtonElement>('.app-reference-add-target')!;

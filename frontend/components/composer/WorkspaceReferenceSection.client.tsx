@@ -58,9 +58,7 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
     onOpenLibrary?.(field, slotIndex);
   };
   return <section className="app-workspace-references" aria-label={copy.title}>
-    <div className="app-reference-heading">
-      <span><AppGlyph name="reference" />{copy.title}{selected.length ? ` · ${selected.length}` : ''}</span>
-      <div className="app-reference-commands">
+    <div className="app-reference-commands">
         {orderedFrames.map((entry) => {
           const command = getWorkspaceFrameCommand(entry, engine)!;
           const asset = (assets[entry.field.id] ?? []).find(Boolean);
@@ -79,10 +77,11 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
         {collections.length ? <button ref={(node) => { if (node) commandRefs.current.set('collections', node); else commandRefs.current.delete('collections'); }} type="button" className={`app-reference-command${collectionAvailability.addDisabled ? ' is-add-disabled' : ''}`} data-reference-command="collections"
           data-add-disabled={collectionAvailability.addDisabled || undefined} aria-disabled={!collectionAvailability.canOpen || undefined}
           aria-label={collectionAvailability.addDisabled && selectedCollections.length ? copy.manage : copy.add} aria-describedby={[collectionRequired.length ? requiredId : null, collections.some((entry) => entry.disabled) ? restrictionId : null].filter(Boolean).join(' ') || undefined} aria-haspopup="dialog" aria-expanded={activeCommand === 'collections'} onClick={(event) => { if (collectionAvailability.canOpen) open('collections', event.currentTarget); }}>
-          <span>{copy.title}</span><span aria-hidden="true">{collectionAvailability.addDisabled && selectedCollections.length ? copy.manage : '+'}</span>
+          <span className="app-reference-command-media"><AppGlyph name="reference" /></span>
+          <span className="app-reference-command-label">{copy.title}</span>
+          <span aria-hidden="true">{collectionAvailability.addDisabled && selectedCollections.length ? selectedCollections.length : '+'}</span>
         </button> : null}
         {assetFields.map((entry) => entry.headerAction ? <span key={entry.field.id}>{entry.headerAction}</span> : null)}
-      </div>
     </div>
     {restrictionReasons.length ? <div id={restrictionId} className="app-reference-restrictions" aria-live="polite">
       {restrictionReasons.map((reason) => <p key={reason}>{reason}</p>)}
