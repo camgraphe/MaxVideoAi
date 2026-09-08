@@ -220,6 +220,8 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     negativePrompt: routeForm.negativePrompt,
     selectedEngine: composer.selectedEngine,
     preflight: pricing.preflight,
+    accessToken: app.session?.access_token ?? null,
+    authChecked: draft.authChecked,
     memberTier: routeForm.memberTier,
     showComposerError: pricing.showComposerError,
     writeScopedStorage: draft.writeScopedStorage,

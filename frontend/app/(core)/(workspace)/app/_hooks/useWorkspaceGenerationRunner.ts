@@ -11,16 +11,10 @@ import type {
 import type { JobsPage } from '@/types/jobs';
 import type { SelectedVideoPreview } from '@/lib/video-preview-group';
 import type { SWRInfiniteKeyedMutator } from 'swr/infinite';
-import {
-  type LocalRender,
-} from '../_lib/render-persistence';
-import {
-  emitClientMetric,
-} from '../_lib/workspace-client-helpers';
+import type { LocalRender } from '../_lib/render-persistence';
+import { emitClientMetric } from '../_lib/workspace-client-helpers';
 import type { FormState } from '../_lib/workspace-form-state';
-import {
-  prepareGenerationInputs,
-} from '../_lib/workspace-generation-inputs';
+import { prepareGenerationInputs } from '../_lib/workspace-generation-inputs';
 import {
   getLumaRay2GenerationContext,
   getStartRenderValidationMessage,
@@ -32,6 +26,7 @@ import type {
 } from '../_lib/workspace-input-schema';
 import type { ReferenceAsset } from '../_lib/workspace-assets';
 import type { WorkspaceFailureCopy } from '../_lib/workspace-failure-messages';
+import { useWorkspaceSubmissionScope } from './useWorkspaceSubmissionScope';
 import { useWorkspaceWalletPreflight } from './useWorkspaceWalletPreflight';
 import { runWorkspaceGenerationIteration } from './workspace-generation-iteration-runner';
 
@@ -70,6 +65,8 @@ type UseWorkspaceGenerationRunnerOptions = {
   negativePrompt: string;
   selectedEngine: EngineCaps | null;
   preflight: PreflightResponse | null;
+  accessToken: string | null;
+  authChecked: boolean;
   memberTier: MemberTier;
   showComposerError: (message: string) => void;
   writeScopedStorage: (base: string, value: string | null) => void;
@@ -130,6 +127,8 @@ export function useWorkspaceGenerationRunner({
   negativePrompt,
   selectedEngine,
   preflight,
+  accessToken,
+  authChecked,
   memberTier,
   showComposerError,
   writeScopedStorage,
@@ -180,6 +179,12 @@ export function useWorkspaceGenerationRunner({
 }: UseWorkspaceGenerationRunnerOptions) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submissionGuardRef = useRef(false);
+  const { captureAttempt, isMounted } = useWorkspaceSubmissionScope({
+    preflight, accessToken, authChecked,
+    draft: { form, engine: selectedEngine?.id, activeMode, submissionMode, effectivePrompt,
+      effectiveDurationSec, negativePrompt, inputAssets, memberTier, cfgScale, supportsAudioToggle,
+      multiPromptActive, multiPromptScenes, voiceIds, voiceControlEnabled, shotType, klingElements },
+  });
   const { presentInsufficientFunds, verifyWalletBalance } = useWorkspaceWalletPreflight({
     workspaceCopy,
     setTopUpModal,
@@ -195,15 +200,20 @@ export function useWorkspaceGenerationRunner({
     if (submissionGuardRef.current) return;
     submissionGuardRef.current = true;
     setIsSubmitting(true);
+    const attempt = captureAttempt();
 
     try {
       const { supabase } = await import('@/lib/supabaseClient');
+      if (!attempt.isCurrent()) return;
       const { data } = await supabase.auth.getSession();
+      if (!attempt.isCurrent()) return;
       const token = data.session?.access_token ?? null;
       if (!token) {
         setAuthModalOpen(true);
         return;
       }
+      const isSubmissionCurrent = () => attempt.isQuoteCurrent(token);
+      if (!isSubmissionCurrent()) return;
       setPreflightError(undefined);
       const trimmedPrompt = effectivePrompt.trim();
       const trimmedNegativePrompt = negativePrompt.trim();
@@ -254,8 +264,8 @@ export function useWorkspaceGenerationRunner({
       const currencyCode = preflight?.pricing?.currency ?? preflight?.currency ?? 'USD';
 
       if (paymentMode === 'wallet') {
-        const hasWalletBalance = await verifyWalletBalance({ preflight, iterationCount, currencyCode });
-        if (!hasWalletBalance) return;
+        const hasWalletBalance = await verifyWalletBalance({ preflight, iterationCount, currencyCode, accessToken: token, isCurrent: isSubmissionCurrent });
+        if (!hasWalletBalance || !isSubmissionCurrent()) return;
       }
 
       const generationInputs = prepareGenerationInputs({
@@ -284,7 +294,9 @@ export function useWorkspaceGenerationRunner({
       }
 
       for (let iterationIndex = 0; iterationIndex < iterationCount; iterationIndex += 1) {
+        if (!isSubmissionCurrent()) return;
         void runWorkspaceGenerationIteration({
+          isSubmissionCurrent,
           activeMode,
           allowsUnifiedVeoFirstLast,
           batchId,
@@ -336,7 +348,7 @@ export function useWorkspaceGenerationRunner({
       }
     } finally {
       submissionGuardRef.current = false;
-      setIsSubmitting(false);
+      if (isMounted()) setIsSubmitting(false);
     }
   }, [
     audioWorkflowUnsupported,
@@ -349,6 +361,8 @@ export function useWorkspaceGenerationRunner({
     negativePrompt,
     selectedEngine,
     preflight,
+    captureAttempt,
+    isMounted,
     memberTier,
     showComposerError,
     writeScopedStorage,
@@ -398,7 +412,6 @@ export function useWorkspaceGenerationRunner({
     shotType,
     klingElements,
   ]);
-
   return {
     isSubmitting,
     startRender,

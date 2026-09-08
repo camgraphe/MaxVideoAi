@@ -91,6 +91,8 @@ test('workspace generation ignores a second submission while session preflight i
       label: 'Test Video',
     } as never,
     preflight: null,
+    accessToken: null,
+    authChecked: true,
     memberTier: 'Member' as const,
     showComposerError: noOp,
     writeScopedStorage: noOp,

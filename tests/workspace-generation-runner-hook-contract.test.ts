@@ -31,6 +31,14 @@ test('workspace generation runner is owned by a route-local hook', () => {
   assert.match(hookSource, /export function useWorkspaceGenerationRunner/);
   assert.match(hookSource, /const startRender = useCallback/);
   assert.match(hookSource, /prepareGenerationInputs/);
+  assert.match(hookSource, /useWorkspaceSubmissionScope/);
+  assert.match(appSource, /accessToken: app\.session\?\.access_token \?\? null/);
+  assert.match(hookSource, /attempt\.isQuoteCurrent\(token\)/);
+  assert.match(hookSource, /!hasWalletBalance \|\| !isSubmissionCurrent\(\)/);
+  assert.match(iterationRunnerSource, /if \(!isSubmissionCurrent\(\)\) return;\s+const res = await runGenerate/);
+  const scopeSource = fs.readFileSync(path.join(path.dirname(hookPath), 'useWorkspaceSubmissionScope.ts'), 'utf8');
+  assert.match(scopeSource, /useLayoutEffect/);
+  assert.doesNotMatch(scopeSource, /authFetch|runGenerate|runPreflight|localStorage/);
   assert.match(hookSource, /runWorkspaceGenerationIteration/);
   assert.doesNotMatch(hookSource, /prepareLocalGenerationRender/);
   assert.doesNotMatch(hookSource, /projectAcceptedGenerationResult/);

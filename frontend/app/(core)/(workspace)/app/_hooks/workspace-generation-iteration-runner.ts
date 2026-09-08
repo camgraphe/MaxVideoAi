@@ -57,6 +57,7 @@ type PresentInsufficientFunds = (options: {
 }) => void;
 
 type RunWorkspaceGenerationIterationOptions = {
+  isSubmissionCurrent: () => boolean;
   activeMode: Mode;
   allowsUnifiedVeoFirstLast: boolean;
   batchId: string;
@@ -107,6 +108,7 @@ type RunWorkspaceGenerationIterationOptions = {
 };
 
 export async function runWorkspaceGenerationIteration({
+  isSubmissionCurrent,
   activeMode,
   allowsUnifiedVeoFirstLast,
   batchId,
@@ -155,6 +157,7 @@ export async function runWorkspaceGenerationIteration({
   workspaceCopy,
   writeScopedStorage,
 }: RunWorkspaceGenerationIterationOptions) {
+  if (!isSubmissionCurrent()) return;
   const {
     inputsPayload,
     primaryAttachment,
@@ -282,6 +285,7 @@ export async function runWorkspaceGenerationIteration({
       has_audio: Boolean(form.audio),
     });
 
+    if (!isSubmissionCurrent()) return;
     const res = await runGenerate(generatePayload, token ? { token } : undefined);
 
     const acceptedResult = projectAcceptedGenerationResult({
