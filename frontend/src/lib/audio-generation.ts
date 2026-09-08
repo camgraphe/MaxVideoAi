@@ -402,7 +402,7 @@ function buildMusicVendorCostComponent(input: { durationSec: number; musicModel?
   };
 }
 
-function buildVoiceVendorCostComponent(durationSec: number, script?: string | null, voiceModel?: AudioVoiceModel | null) {
+function buildVoiceVendorCostComponent(durationSec: number, script?: string | null, voiceModel?: AudioVoiceModel | null, wholeCentEstimate = false) {
   if (voiceModel === 'minimax') {
     const characters = Array.from(script?.trim() ?? '').length;
     return { type: 'voice_minimax_speech_02_hd', label: 'MiniMax Speech-02 HD', model: AUDIO_MINIMAX_SPEECH_MODEL_ID,
@@ -415,12 +415,13 @@ function buildVoiceVendorCostComponent(durationSec: number, script?: string | nu
     label: 'Seed Audio 1.0',
     model: AUDIO_SEED_AUDIO_MODEL_ID,
     unit: 'minute',
-    units: billedMinutes,
-    amountCents: Math.max(1, Math.ceil(exactMinutes * AUDIO_PRICE_SEED_AUDIO_CENTS_PER_MINUTE - 1e-9)),
+    units: wholeCentEstimate ? billedMinutes : exactMinutes,
+    amountCents: wholeCentEstimate ? Math.max(1, Math.ceil(exactMinutes * AUDIO_PRICE_SEED_AUDIO_CENTS_PER_MINUTE - 1e-9)) : exactMinutes * AUDIO_PRICE_SEED_AUDIO_CENTS_PER_MINUTE,
   };
 }
 
 function buildAudioVendorCostComponents(input: {
+  wholeCentEstimate?: boolean;
   voiceModel?: AudioVoiceModel | null;
   pack: AudioPackId;
   durationSec: number;
@@ -474,7 +475,7 @@ function buildAudioVendorCostComponents(input: {
   }
 
   if (config.includesVoice) {
-    components.push(buildVoiceVendorCostComponent(durationSec, input.script, input.voiceModel));
+    components.push(buildVoiceVendorCostComponent(durationSec, input.script, input.voiceModel, input.wholeCentEstimate));
   }
 
   return components.length ? components : [buildMusicVendorCostComponent({
@@ -484,6 +485,8 @@ function buildAudioVendorCostComponents(input: {
 }
 
 export function buildAudioVendorCostFacts(input: {
+  /** Reproduce historical pre-2026-09-08 vendor estimates for frozen audits only. */
+  wholeCentEstimate?: boolean;
   voiceModel?: AudioVoiceModel | null;
   pack: AudioPackId;
   durationSec: number;

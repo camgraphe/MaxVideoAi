@@ -81,14 +81,14 @@ export async function computeCanonicalBillingSnapshot(
   return snapshot;
 }
 
-export async function computeCanonicalAudioBillingSnapshot(input: AudioPricingInput): Promise<PricingSnapshot> {
+export async function computeCanonicalAudioBillingSnapshot(input: AudioPricingInput, dependencies: { pricingPolicy?: ResolveServerPricingPolicyDependencies } = {}): Promise<PricingSnapshot> {
   const { policy, vendorAccountId } = await resolveServerBillingPolicy({
     engineId: 'audio-generation',
     mode: input.pack,
     resolution: 'audio',
-  });
+  }, undefined, dependencies.pricingPolicy);
   const policyDocument = getVersionedPricingPolicy();
-  const profileId = policy.rule.compatibilityProfile ?? 'audio-current';
+  const profileId = policy.rule.compatibilityProfile ?? 'audio-tripled-rounded';
   const compatibilityProfile = policyDocument.compatibilityProfiles.find((profile) => profile.id === profileId);
   if (!compatibilityProfile) throw new Error(`Missing pricing compatibility profile ${profileId}`);
   const presentation = buildAudioPricingPresentation(input);

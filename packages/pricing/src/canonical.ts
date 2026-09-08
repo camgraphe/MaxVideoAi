@@ -141,10 +141,12 @@ export function quoteCanonicalPricing(input: {
   );
   let subtotalBeforeDiscountExactCents = vendorBaseForMath + marginCents + surchargeCents;
   if (compatibilityProfile.subtotalRounding) {
+    const increment = compatibilityProfile.subtotalRoundingIncrementCents ?? 1;
+    if (!Number.isSafeInteger(increment) || increment < 1) throw new PricingDomainError('invalid_scenario', 'subtotal rounding increment must be a positive integer');
     subtotalBeforeDiscountExactCents = roundCents(
-      facts.vendorSubtotalExactCents * (1 + marginPercent + surchargePercent) + marginFlatCents,
+      (facts.vendorSubtotalExactCents * (1 + marginPercent + surchargePercent) + marginFlatCents) / increment,
       compatibilityProfile.subtotalRounding
-    );
+    ) * increment;
     marginCents = Math.max(0, subtotalBeforeDiscountExactCents - vendorSubtotalCents - surchargeCents);
   }
   const discountPercent = compatibilityProfile.discountPercentOverride ?? scenario.discountPercent;

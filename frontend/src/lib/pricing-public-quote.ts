@@ -143,7 +143,7 @@ export function quotePublicAudioPricingSnapshot(input: AudioPricingInput): Prici
       membershipTier: 'member',
       discountPercent: 0,
     },
-    compatibilityProfileId: 'audio-current',
+
   });
   const snapshot = projectPublicPricingSnapshot({
     quote,

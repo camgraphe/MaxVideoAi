@@ -193,3 +193,10 @@ git diff --check
 ```
 
 Keep the admin event ID with the operational change record. If any parity difference is intended, review it as a separate commercial decision and update frozen fixtures only with explicit approval.
+
+
+## Audio policy change — 2026-09-08
+
+The approved versioned Audio rule now uses a 200% markup (provider cost ×3), zero flat fee, and the `audio-tripled-rounded` profile. `subtotalRoundingIncrementCents: 5` applies upward rounding once to the combined exact provider subtotal plus commercial components. The canonical kernel owns this generic increment; UI, billing and MCP consume its result. Fractional Seed costs are no longer rounded before live commercial math. Database overrides keep the existing precedence; this code change does not mutate production policy rows.
+
+The historical `audio-current` profile remains available. Historical audit reproduction explicitly retains the former 150% markup and whole-cent Seed estimate; active admin previews use the current policy. Immutable public/billing fixtures remain untouched. The 15 approved Audio public-price changes are recorded separately in `tests/fixtures/audio-pricing-change-2026-09-08.json`, including their previous totals; the read-only public baseline checks every other field and row unchanged. The current full public baseline contains 592 rows.

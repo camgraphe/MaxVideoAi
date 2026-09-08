@@ -1,4 +1,5 @@
 import { LIVE_PRICING_POLICY_REVISION, PRICING_POLICY_HEADER } from '@/lib/membership-policy';
+import { AUDIO_PRICING_POLICY_HEADER, AUDIO_PRICING_POLICY_REVISION } from '@/lib/audio-pricing-policy';
 import { authFetch } from '@/lib/authFetch';
 import { translateError } from '@/lib/error-messages';
 import type { AudioGenerateRequestBody, AudioGenerateResponse } from '@/lib/audio-generation';
@@ -218,7 +219,7 @@ export async function runImageGeneration(payload: ImageGenerationRequest): Promi
 export async function runAudioGenerate(payload: AudioGenerateRequestBody): Promise<AudioGenerateResponse> {
   const response = await authFetch('/api/audio/generate', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION },
+    headers: { 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION, [AUDIO_PRICING_POLICY_HEADER]: AUDIO_PRICING_POLICY_REVISION },
     body: JSON.stringify(payload),
   });
   const data = (await response.json().catch(() => null)) as

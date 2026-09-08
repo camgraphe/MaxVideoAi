@@ -176,7 +176,11 @@ function quoteCanonicalScenarios(
 
   return projectionScenarios
     .map((scenario): AdminCanonicalScenarioOutcome => {
-      const policy = resolveScenarioPolicy(scenario, input.databaseRules, policyDocument.rules);
+      // Frozen audit reproduction keeps the former Audio policy; active quotes and admin previews use the current rule.
+      const versionedRules = projection === 'historical'
+        ? policyDocument.rules.map(rule => rule.engineId === 'audio-generation' ? { ...rule, marginPercent: 1.5, compatibilityProfile: 'audio-current' } : rule)
+        : policyDocument.rules;
+      const policy = resolveScenarioPolicy(scenario, input.databaseRules, versionedRules);
       const profileId = resolveCompatibilityProfileId(scenario, policy);
       const compatibilityProfile = profiles.get(profileId);
       if (!compatibilityProfile) {
@@ -232,7 +236,7 @@ function quoteCanonicalScenarios(
           surcharge,
         };
       }
-      const facts = buildCanonicalPricingFacts(scenario);
+      const facts = buildCanonicalPricingFacts(scenario, projection === 'historical');
       if (!facts) {
         return {
           status: 'unsupported',
