@@ -4,6 +4,8 @@ Activity is the authenticated chronological generation history rendered by
 `frontend/app/(core)/jobs`. Its initial collection uses one 24-item
 `useInfiniteJobs` feed and keeps explicit server-side source filters for video,
 image, audio, storyboard, character, angle, upscale, and background removal.
+The same `/api/jobs` collection endpoint also serves workspace consumers, so its
+initialized-schema requirement applies to every consumer, not only Activity.
 
 ## Owners
 
@@ -17,9 +19,9 @@ image, audio, storyboard, character, angle, upscale, and background removal.
   chronological `app_jobs` query and cursor.
 - `frontend/server/media-library/job-outputs.ts` owns `job_outputs` reads and the
   exact output overlay applied to the web payload.
-- Neon migrations are the production schema authority. Runtime schema helpers
-  remain compatibility/bootstrap tools for explicit local, development, and
-  mutation paths.
+- The explicit baseline bootstrap plus Neon migrations are the production schema
+  authority. Runtime schema helpers remain compatibility tools for that bounded
+  operational command and mutation paths.
 
 ## Initial read-path contract
 
@@ -31,8 +33,8 @@ runtime's first Activity request wait for schema maintenance unrelated to the
 requested account data.
 
 `listJobOutputsByJobIds(ids)` keeps its historical default and ensures the media
-schema for existing mutation/local-development consumers. The Activity list is
-the explicit exception: it calls `listJobOutputsByJobIds(ids, {
+schema for existing mutation/local-development consumers. The jobs collection
+is the explicit exception: it calls `listJobOutputsByJobIds(ids, {
 ensureSchema: false })` after deployment migrations have established the table.
 Do not broaden this opt-out to a caller that may run before migrations.
 
@@ -42,6 +44,34 @@ the response fallback; stored output rows override only the matching fields when
 present. Completed generation, webhook, polling, repair, and admin paths remain
 responsible for durable output projection. Do not reintroduce synchronous repair
 writes in the list request.
+
+For legacy videos, `preview_frame` remains the pure in-memory `thumbUrl` fallback
+when `thumb_url` is empty and no output projection exists. This preserves the
+existing poster for Save to Library without a list-time write, remote fetch, or
+synthetic output id.
+
+## New database initialization
+
+The ordered Neon migrations are incremental and do not contain the original
+`app_jobs` baseline. A genuinely empty database must therefore run the explicit
+baseline command before the migrations:
+
+```bash
+APPLICATION_DATABASE_URL='<direct target URL>' pnpm db:bootstrap:neon
+DATABASE_URL_UNPOOLED='<same direct target URL>' pnpm db:migrate:neon
+```
+
+The bootstrap ignores inherited `DATABASE_URL`, requires a separately supplied
+direct non-pooled Neon URL, and is never invoked by a request, build, or deploy
+hook. Its local-PostgreSQL escape hatch works only under `NODE_ENV=test` with an
+explicit test-only flag. Apply it only to an authorized new target; established
+databases normally need only the ordered migrations.
+
+`tests/application-schema-bootstrap-postgres.test.ts` qualifies the complete
+empty PostgreSQL → explicit baseline → all migrations → read-only jobs/output
+query sequence. A missing/incompatible primary `app_jobs` schema makes the jobs
+route return 503. A missing/incompatible optional `job_outputs` projection is
+caught and returns the exact `app_jobs` fallback with 200.
 
 Stale audio expiry and explicitly requested Fal refresh keep their existing
 status-reconciliation behavior. They are separate from schema/output repair and
@@ -69,6 +99,8 @@ results.
   boundary.
 - `tests/jobs-route-timing.test.ts` for bounded non-personal diagnostics.
 - `tests/recent-generations-service.test.ts` and media continuation/library
-  contracts for query ownership and exact originals.
+  contracts for query ownership, exact originals, and legacy poster fallback.
+- `tests/application-schema-bootstrap-postgres.test.ts` for the new-database
+  initialization sequence outside request handling.
 - Compare first-page server latency before and after on the same guarded dataset;
   do not claim browser or field improvement without browser/field evidence.

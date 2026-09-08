@@ -56,6 +56,9 @@ locks were not assumed responsible.
 - The first page no longer waits for legacy output repair writes. Existing
   `job_outputs` still enrich the response; when an output projection is absent,
   the exact `app_jobs` original/settings/status mapping remains intact.
+- A legacy video's existing `preview_frame` remains its pure in-memory thumbnail
+  fallback when `thumb_url` and `job_outputs` are absent. No output id is invented
+  and no remote thumbnail work is added to the list path.
 - Stale audio reconciliation, explicit Fal refresh, provider-id deduplication,
   pagination, account/source isolation, pending observations, and all media
   actions remain unchanged.
@@ -93,15 +96,26 @@ available for that run.
 Neon compute wake latency remains: the preliminary cold read needed about 2.5
 seconds before subsequent reads. The correction removes approximately 15 seconds
 of application-controlled sequential schema work; it does not claim to remove
-database cold-start latency. Deployments must apply canonical Neon migrations
-before this read path runs. A missing/outdated schema now produces the existing
-503 database-unavailable response instead of attempting request-time repair.
+database cold-start latency. The incremental migrations do not contain the
+original `app_jobs` baseline. New targets must run the explicit
+`APPLICATION_DATABASE_URL=... pnpm db:bootstrap:neon` command before the ordered
+migrations; the command ignores inherited `DATABASE_URL` and accepts only an
+explicit direct Neon target (apart from its test-only local escape hatch). It is
+not wired into requests, builds, or deploys.
+
+The empty PostgreSQL → explicit baseline → all migrations → read-only Activity
+query sequence passes on a disposable database. A missing/incompatible primary
+`app_jobs` schema produces the existing 503. Missing/incompatible optional
+`job_outputs` enrichment is deliberately caught and returns the `app_jobs`
+fallback with 200.
 
 ## Verification
 
-- Focused Activity, jobs lifecycle, continuation, and media-library contracts:
-  67 passed, 0 failed.
-- Full repository validation: 4,472 passed, 0 failed in 96.9 seconds.
+- Focused Activity, jobs lifecycle, continuation, media-library, legacy-poster,
+  and disposable-bootstrap contracts: 70 passed, 0 failed.
+- Full repository validation before the additive review corrections: 4,472
+  passed, 0 failed in 96.9 seconds. The additive corrections are revalidated
+  separately before handoff.
 - Frontend TypeScript (`tsc --noEmit`), frontend lint, public exposure lint, and
   `git diff --check`: passed.
 - Sanitized production build: passed, including model/media prebuild gates and
