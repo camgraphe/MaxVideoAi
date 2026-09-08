@@ -419,50 +419,6 @@
   z-index: 3;
 }
 
-.shotHiddenConnectorAnchors {
-  display: flex;
-  min-height: 8px;
-  align-items: center;
-  gap: 4px;
-  pointer-events: none;
-}
-
-.shotHiddenConnectorAnchor {
-  position: relative;
-  display: block;
-  width: 8px;
-  height: 8px;
-}
-
-.shotHiddenHandle {
-  top: 50%;
-  left: -16px;
-  width: 8px;
-  height: 8px;
-  opacity: 0.01;
-  pointer-events: none !important;
-  transform: translate(-50%, -50%);
-}
-
-.shotConnectionsButton {
-  min-height: 32px;
-  border: 1px solid color-mix(in srgb, var(--node-accent) 22%, var(--studio-border));
-  border-radius: 8px;
-  background: var(--studio-control-bg);
-  color: var(--studio-text);
-  cursor: pointer;
-  font: inherit;
-  font-size: 11px;
-  font-weight: 720;
-}
-
-.shotConnectionsButton:hover,
-.shotConnectionsButton:focus-visible {
-  border-color: color-mix(in srgb, var(--node-accent) 58%, var(--studio-border));
-  outline: 2px solid color-mix(in srgb, var(--studio-primary) 72%, transparent);
-  outline-offset: 1px;
-}
-
 .nodeActionButton {
   display: inline-flex;
   align-items: center;

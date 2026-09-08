@@ -3,6 +3,7 @@
 import { Handle, Position, useNodeId, useUpdateNodeInternals } from '@xyflow/react';
 import { useEffect, type CSSProperties } from 'react';
 import { inputHandles, outputHandles } from './workspace-node-frame';
+import connectionStyles from '../../_styles/canvas-shot-connections.module.css';
 import styles from '../../_styles/canvas-nodes.module.css';
 import type { WorkspaceEdgeKind, WorkspaceGraphNode, WorkspaceInputConnector } from '../../_lib/workspace-types';
 import { edgeLabel, WORKSPACE_EDGE_COLORS } from '../../_lib/workspace-templates';
@@ -107,19 +108,19 @@ export function ShotInputDock({ data }: { data: WorkspaceGraphNode['data'] }) {
             );
           })}
           {presentation.optionalEmpty.length ? (
-            <div className={styles.shotHiddenConnectorAnchors} aria-hidden="true">
+            <div className={connectionStyles.shotHiddenConnectorAnchors} aria-hidden="true">
               {presentation.optionalEmpty.map(({ handle, connector }) => {
                 const color = WORKSPACE_EDGE_COLORS[handle] ?? '#8b5cf6';
                 const isDisabled = connector?.remainingCount === 0 || Boolean(connector?.disabledReason);
                 return (
-                  <span key={`shot-hidden-input-${handle}`} className={styles.shotHiddenConnectorAnchor} data-shot-hidden-connector-anchor={handle}>
+                  <span key={`shot-hidden-input-${handle}`} className={connectionStyles.shotHiddenConnectorAnchor} data-shot-hidden-connector-anchor={handle}>
                     <Handle
                       id={handle}
                       type="target"
                       position={Position.Left}
                       tabIndex={-1}
                       aria-hidden="true"
-                      className={`${styles.graphHandle} ${styles.shotHiddenHandle}`}
+                      className={`${styles.graphHandle} ${connectionStyles.shotHiddenHandle}`}
                       style={{
                         borderColor: color,
                         '--workspace-handle-color': color,
@@ -133,7 +134,7 @@ export function ShotInputDock({ data }: { data: WorkspaceGraphNode['data'] }) {
           ) : null}
           <button
             type="button"
-            className={`${styles.shotConnectionsButton} nodrag`}
+            className={`${connectionStyles.shotConnectionsButton} nodrag`}
             data-canvas-connect-handle={presentation.optionalEmpty[0]?.handle ?? presentation.visible[0]?.handle}
             data-canvas-connections-fallback="true"
           >

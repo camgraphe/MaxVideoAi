@@ -264,6 +264,7 @@ const canvasStylesPath = join(workspaceDir, '_styles/canvas.module.css');
 const canvasToolbarStylesPath = join(workspaceDir, '_styles/canvas-toolbar.module.css');
 const canvasNavigatorStylesPath = join(workspaceDir, '_styles/canvas-navigator.module.css');
 const canvasNodeStylesPath = join(workspaceDir, '_styles/canvas-nodes.module.css');
+const canvasShotConnectionsStylesPath = join(workspaceDir, '_styles/canvas-shot-connections.module.css');
 const canvasShotControlsStylesPath = join(workspaceDir, '_styles/canvas-shot-controls.module.css');
 const workspaceEnginePickerStylesPath = join(workspaceDir, '_styles/workspace-engine-picker.module.css');
 const canvasMapStylesPath = join(workspaceDir, '_styles/canvas-map.module.css');
@@ -1446,6 +1447,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const canvasToolbarStyleSource = source(canvasToolbarStylesPath);
   const canvasNavigatorStyleSource = source(canvasNavigatorStylesPath);
   const canvasNodeStyleSource = source(canvasNodeStylesPath);
+  const canvasShotConnectionsStyleSource = source(canvasShotConnectionsStylesPath);
   const canvasShotControlsStyleSource = source(canvasShotControlsStylesPath);
   const canvasMapStyleSource = source(canvasMapStylesPath);
   const timelineStyleSource = source(timelineStylesPath);
@@ -2650,6 +2652,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(lineCount(canvasStyleSource) <= 300, 'canvas CSS module should stay under the focused surface threshold');
   assert.ok(lineCount(canvasToolbarStyleSource) <= 520, 'canvas toolbar CSS module should stay under the focused toolbar threshold');
   assert.ok(lineCount(canvasNodeStyleSource) <= 520, 'canvas node CSS module should stay under the focused node styling threshold');
+  assert.ok(lineCount(canvasShotConnectionsStyleSource) <= 80, 'shot connection disclosure CSS should stay focused on its local affordances');
   assert.ok(lineCount(canvasShotControlsStyleSource) <= 280, 'shot control CSS module should stay focused on inline generation controls');
   assert.ok(lineCount(canvasMapStyleSource) <= 300, 'canvas map CSS module should stay small and focused');
   assert.match(canvasStyleSource, /\.canvasShell/, 'canvas surface should be styled in focused canvas CSS');
@@ -2661,6 +2664,10 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(canvasNodeStyleSource, /\.mediaPickerEmpty/, 'empty media picker state should be styled in focused canvas node CSS');
   assert.match(canvasNodeStyleSource, /\.processingPreview/, 'processing output placeholders should be styled in focused canvas node CSS');
   assert.match(canvasNodeStyleSource, /\.previewVideo/, 'playable video previews should be styled in focused canvas node CSS');
+  assert.match(shotInputDockSource, /canvas-shot-connections\.module\.css/, 'shot connection disclosure should import its focused local CSS owner');
+  assert.match(canvasShotConnectionsStyleSource, /\.shotHiddenConnectorAnchors/, 'shot connection CSS should own optional semantic anchors');
+  assert.match(canvasShotConnectionsStyleSource, /\.shotConnectionsButton/, 'shot connection CSS should own the persistent Connections action');
+  assert.doesNotMatch(canvasNodeStyleSource, /\.shotHiddenConnectorAnchors|\.shotConnectionsButton/, 'general node CSS should not reclaim shot connection disclosure styles');
   assert.doesNotMatch(canvasStyleSource, /\.graphNode/, 'canvas surface CSS should no longer own workspace node card styles');
   assert.doesNotMatch(canvasStyleSource, /\.shotInputDock/, 'canvas surface CSS should no longer own generate block connector styles');
   assert.doesNotMatch(canvasStyleSource, /\.mediaPickerEmpty/, 'canvas surface CSS should no longer own media picker node styles');
