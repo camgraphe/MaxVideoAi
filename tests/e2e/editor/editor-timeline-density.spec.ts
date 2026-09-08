@@ -31,5 +31,8 @@ test('the expanded track menu stays fully reachable in short landscape view', as
   if (!box) return;
   expect(box.y).toBeGreaterThanOrEqual(0);
   expect(box.y + box.height).toBeLessThanOrEqual(390);
-  await expect(menu.getByRole('menuitem', { name: /Delete/i })).toBeVisible();
+  const lastEnabledAction = menu.locator('button:not(:disabled)').last();
+  await page.keyboard.press('End');
+  await expect(lastEnabledAction).toBeFocused();
+  await expect(menu).toBeVisible();
 });

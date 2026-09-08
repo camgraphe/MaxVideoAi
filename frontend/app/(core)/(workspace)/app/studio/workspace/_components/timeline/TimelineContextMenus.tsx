@@ -64,7 +64,7 @@ export const TimelineContextMenus = memo(function TimelineContextMenus({
     const buttons = Array.from(rootRef.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)') ?? []);
     const index = buttons.findIndex((button) => button === document.activeElement);
     const next = event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1 : (index + (event.key === 'ArrowDown' ? 1 : -1) + buttons.length) % buttons.length;
-    buttons[next]?.focus();
+    buttons[next]?.focus({ preventScroll: true });
   };
   const trackLabel = trackMenu ? localizeWorkspaceTimelineTrackLabel(trackMenu.trackId, canvasNodeCopy) : '';
   const trackKindLabel = trackMenu

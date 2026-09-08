@@ -416,6 +416,19 @@ for (const scenario of [
   });
 }
 
+test('guided canvas keeps selected node commands available without dismissing the guide', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openResponsiveGuideProject(page);
+  await expect(page.locator('[data-canvas-guide-annotation]')).toHaveCount(5);
+
+  const generationNode = page.locator('.react-flow__node[data-id="shot-01"]');
+  await generationNode.click();
+  const nodeCommands = page.locator('[data-canvas-node-actions-overlay]');
+  await expect(nodeCommands.locator('[data-canvas-node-inspect-button="shot-01"]')).toBeVisible();
+  await expect(nodeCommands.locator('[data-canvas-node-actions-button]')).toBeVisible();
+  await expect(page.locator('[data-canvas-guide-annotation]')).toHaveCount(5);
+});
+
 test('desktop surface guide preserves its timeline gap after measured copy expands', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await openResponsiveGuideProject(page);

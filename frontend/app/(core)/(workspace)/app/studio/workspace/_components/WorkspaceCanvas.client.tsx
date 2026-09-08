@@ -757,9 +757,7 @@ function WorkspaceCanvasInner({
       onClickCapture={handleCanvasClickCapture}
     >
       <CanvasNodeActionsProvider
-        isSingleSelection={selectedNodeIds.length === 1 && (
-          guide.state.hidden || guide.state.annotations.length === 0
-        )}
+        isSingleSelection={selectedNodeIds.length === 1}
         onConnections={(nodeId) => {
           onCanvasInteraction();
           setConnectionTarget({ id: nodeId });
