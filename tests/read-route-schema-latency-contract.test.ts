@@ -20,6 +20,17 @@ test('exports summary reads migrated tables without global schema bootstrap', ()
   );
 });
 
+test('Billing GETs read migrated tables and preserve currency POST initialization', () => {
+  const currency = readFileSync('frontend/app/api/me/currency/route.ts', 'utf8');
+  const receipts = readFileSync('frontend/app/api/receipts/route.ts', 'utf8');
+  const [get, post] = currency.split('export async function POST');
+  assert.doesNotMatch(get, /await ensureBillingSchema/);
+  assert.match(post, /await ensureBillingSchema/);
+  assert.doesNotMatch(receipts, /ensureBillingSchema/);
+  assert.match(get, /getUserPreferredCurrency\(userId, \{ throwOnError: true \}\)/);
+  assert.match(get, /getWalletBalancesByCurrency\(userId, \{ throwOnError: true \}\)/);
+});
+
 test('pricing preflight uses the read-only engine catalog and disables fallback bootstrap', () => {
   assert.match(
     mediaAwarePreflightSource,

@@ -82,7 +82,10 @@ function consumeMockWalletBalance(
   return { ok: true, balanceCents: current, remainingCents: remaining };
 }
 
-export async function getWalletBalancesByCurrency(userId: string): Promise<WalletBalanceByCurrency[]> {
+export async function getWalletBalancesByCurrency(
+  userId: string,
+  options: { throwOnError?: boolean } = {},
+): Promise<WalletBalanceByCurrency[]> {
   if (!isDatabaseConfigured()) return [];
   try {
     const rows = await query<{ currency: string | null; balance_cents: string | number | null }>(
@@ -112,6 +115,7 @@ export async function getWalletBalancesByCurrency(userId: string): Promise<Walle
       balanceCents: Number(row.balance_cents ?? 0),
     }));
   } catch (error) {
+    if (options.throwOnError) throw error;
     console.warn('[wallet] failed to load balances', error instanceof Error ? error.message : error);
     return [];
   }

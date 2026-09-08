@@ -10,6 +10,15 @@ configuration as part of a customer request.
 - `GET /api/wallet` authenticates, reads the user's preferred currency, and
   aggregates the account-scoped receipt ledger. Its POST mutation retains the
   historical billing bootstrap and checkout behavior.
+- `GET /api/me/currency` reads the confirmed account's currency and ledger
+  balances with strict error propagation. Its POST retains schema initialization
+  and currency-change validation. Other callers of the shared currency/balance
+  helpers retain their existing fallback behavior unless they explicitly opt in
+  to `throwOnError`.
+- `GET /api/receipts` authenticates before reading the account's paginated ledger
+  and resolves its stored Stripe document metadata. A configured database failure
+  returns 503, never a successful empty mock ledger. The intentional unconfigured
+  local response remains explicitly marked `mock: true`.
 - `GET /api/user/exports/summary` counts the account's visible jobs and retains
   the idempotent per-user `user_preferences` initialization. It does not run the
   unrelated global billing bootstrap.
@@ -54,6 +63,10 @@ build, or deploy hook.
   preflight boundaries.
 - `tests/wallet-route-architecture.test.ts` keeps GET read-only from global
   bootstrap while preserving POST initialization.
+- `tests/billing-read-routes-postgres.test.ts` executes both Billing GET handlers
+  against initialized disposable PostgreSQL with read-only transactions. It checks
+  zero unauthenticated database work, SELECT-only reads, account isolation,
+  pagination, original amounts, stored invoice precedence and honest failures.
 - `tests/preflight-media-pricing.test.ts` and pricing authority tests preserve
   exact canonical price/error behavior.
 - `tests/preflight-system-settings-postgres.test.ts` compares read-only preflight

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { isDatabaseConfigured, query } from '@/lib/db';
 import { ENV } from '@/lib/env';
-import { ensureBillingSchema } from '@/lib/schema';
 import { resolveStripeBillingDocument } from '@/lib/stripe-receipts';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 
@@ -15,13 +14,6 @@ const stripe = ENV.STRIPE_SECRET_KEY
 export async function GET(req: NextRequest) {
   const databaseConfigured = isDatabaseConfigured();
   if (!databaseConfigured) {
-    return NextResponse.json({ ok: true, receipts: [], nextCursor: null, mock: true });
-  }
-
-  try {
-    await ensureBillingSchema();
-  } catch (error) {
-    console.warn('[api/receipts] schema init failed, returning mock ledger', error);
     return NextResponse.json({ ok: true, receipts: [], nextCursor: null, mock: true });
   }
 
@@ -88,8 +80,8 @@ export async function GET(req: NextRequest) {
       params
     );
   } catch (error) {
-    console.warn('[api/receipts] query failed, returning mock ledger', error);
-    return NextResponse.json({ ok: true, receipts: [], nextCursor: null, mock: true });
+    console.warn('[api/receipts] read failed', { type: error instanceof Error ? error.name : 'unknown' });
+    return NextResponse.json({ ok: false, error: 'Payment history unavailable' }, { status: 503 });
   }
 
   const hasMore = rows.length > limit;
