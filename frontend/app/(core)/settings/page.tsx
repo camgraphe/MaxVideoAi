@@ -117,8 +117,12 @@ export default function SettingsPage() {
       <HeaderBar />
       <div className="flex flex-1 min-w-0">
         <AppSidebar />
-        <main className="app-settings-main flex-1 min-w-0 overflow-y-auto p-5 lg:p-7">
-          <h1 className="mb-4 text-xl font-semibold text-text-primary">{copy.title}</h1>
+        <main className="app-settings-main min-w-0 flex-1 overflow-y-auto px-4 pb-24 pt-4 sm:px-6 lg:px-8 lg:pt-7">
+          <div className="mx-auto max-w-5xl">
+          <div className="mb-4">
+            <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.tabs[tab]}</p>
+            <h1 className="mt-1 text-2xl font-semibold text-text-primary">{copy.title}</h1>
+          </div>
 
           <SettingsTabs
             activeTab={tab}
@@ -131,6 +135,7 @@ export default function SettingsPage() {
           {tab === 'account' && <AccountSettingsPanel user={user} copy={copy.account} />}
           {tab === 'privacy' && <PrivacyTab guest={isGuest} copy={copy.privacy} />}
           {tab === 'notifications' && <NotificationsTab live={notificationsLive} copy={copy.notifications} guest={isGuest} />}
+          </div>
         </main>
       </div>
     </div>
@@ -269,28 +274,21 @@ function NotificationsTab({
         </div>
         {prefError ? <p className="text-xs text-state-warning">{prefError}</p> : null}
         <div className="grid grid-gap-sm sm:grid-cols-2">
-          <ToggleRow label={copy.toggles.jobDone} disabled={guest} />
-          <ToggleRow label={copy.toggles.jobFailed} disabled={guest} />
-          <ToggleRow label={copy.toggles.lowWallet} disabled={guest} />
-          <ToggleRow label={copy.toggles.weeklySummary} disabled={guest} />
+          <ToggleRow label={copy.toggles.jobDone} soonLabel={copy.srSoon} />
+          <ToggleRow label={copy.toggles.jobFailed} soonLabel={copy.srSoon} />
+          <ToggleRow label={copy.toggles.lowWallet} soonLabel={copy.srSoon} />
+          <ToggleRow label={copy.toggles.weeklySummary} soonLabel={copy.srSoon} />
         </div>
       </div>
     </section>
   );
 }
 
-function ToggleRow({ label, disabled = false }: { label: string; disabled?: boolean }) {
+function ToggleRow({ label, soonLabel }: { label: string; soonLabel: string }) {
   return (
-    <div className="flex items-center justify-between rounded-input border border-border bg-bg px-3 py-2 text-sm">
+    <div className="flex items-center justify-between rounded-input border border-border bg-bg px-3 py-2 text-sm opacity-70">
       <span className="text-text-secondary">{label}</span>
-      <label className="inline-flex cursor-pointer items-center">
-        <input type="checkbox" className="peer sr-only" defaultChecked={!disabled} disabled={disabled} />
-        <span
-          className={`h-5 w-9 rounded-full ring-1 ring-border transition ${
-            disabled ? 'bg-surface-disabled opacity-70' : 'bg-surface peer-checked:bg-brand'
-          }`}
-        />
-      </label>
+      <span className="text-[11px] font-semibold uppercase tracking-wide text-text-muted">{soonLabel}</span>
     </div>
   );
 }

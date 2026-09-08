@@ -3407,7 +3407,6 @@
           "alwaysCurrent": "Toujours à jour"
         },
         "priceLabel": "Ce rendu : {amount}",
-        "memberLabel": "Tarif membre — Vous économisez {percent} %",
         "labels": {
           "required": "Obligatoire",
           "optional": "Optionnel"
@@ -3806,19 +3805,6 @@
         "quoteLoading": "Calcul des totaux…",
         "quoteError": "Impossible de récupérer les taux. Montant finalisé au paiement."
       },
-      "membership": {
-        "title": "Statut membre",
-        "description": "Statut automatique — aucun abonnement. Calcul basé sur 30 jours glissants. Mise à jour quotidienne selon vos dépenses.",
-        "defaultTier": "Membre",
-        "savingsChip": "Vous économisez {percent} %",
-        "defaultLine": "{tier} — tarif standard sur chaque rendu.",
-        "thresholdLine": "{tier} — dépensez {amount} / 30 jours pour économiser {percent} % sur chaque rendu éligible.",
-        "labels": {
-          "member": "Membre",
-          "plus": "Plus",
-          "pro": "Pro"
-        }
-      },
       "teams": {
         "title": "Pour les équipes",
         "description": "Portefeuille partagé et rôles. Un solde unique pour toute l’équipe. Budgets souples/durs par projet. Résumé quotidien par e-mail.",
@@ -3843,9 +3829,7 @@
           "duration": "Durée (s)",
           "resolution": "Résolution"
         },
-        "note": "Vous êtes débité uniquement si la génération réussit.",
-        "memberChipSavings": "Tarif membre — Vous économisez {percent} %",
-        "memberChipBase": "Tarif membre"
+        "note": "Vous êtes débité uniquement si la génération réussit."
       },
     "receipts": {
       "ledgerLabel": "Activité du portefeuille",

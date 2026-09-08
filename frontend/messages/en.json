@@ -3372,7 +3372,6 @@
           "alwaysCurrent": "Always-current"
         },
         "priceLabel": "This render: {amount}",
-        "memberLabel": "Member price — You save {percent}%",
         "labels": {
           "required": "Required",
           "optional": "Optional"
@@ -3939,19 +3938,6 @@
         "quoteLoading": "Fetching live totals…",
         "quoteError": "Unable to fetch FX quotes. Amount finalized at checkout."
       },
-      "membership": {
-        "title": "Member Status",
-        "description": "Status is automatic — no subscription. Calculated on a rolling 30 days of spend. Status updates daily based on your last 30 days of spend.",
-        "defaultTier": "Member",
-        "savingsChip": "You save {percent}%",
-        "defaultLine": "{tier} — standard rate on every render.",
-        "thresholdLine": "{tier} — spend {amount} / 30 days to save {percent}% on every eligible render.",
-        "labels": {
-          "member": "Member",
-          "plus": "Plus",
-          "pro": "Pro"
-        }
-      },
       "teams": {
         "title": "For Teams",
         "description": "Shared wallet & roles. Let your team create with one balance. Set soft/hard project budgets. Daily summary by email.",
@@ -3976,9 +3962,7 @@
           "duration": "Duration (sec)",
           "resolution": "Resolution"
         },
-        "note": "Note: You’ll be charged only if the generation succeeds.",
-        "memberChipSavings": "Member price — You save {percent}%",
-        "memberChipBase": "Member price"
+        "note": "Note: You’ll be charged only if the generation succeeds."
       },
     "receipts": {
       "ledgerLabel": "Wallet activity",

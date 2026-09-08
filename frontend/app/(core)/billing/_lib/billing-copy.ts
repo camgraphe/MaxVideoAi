@@ -66,20 +66,6 @@ export const DEFAULT_BILLING_COPY = {
     quoteLoading: 'Fetching live totals…',
     quoteError: 'Unable to fetch FX quotes. Amount finalized at checkout.',
   },
-  membership: {
-    title: 'Member Status',
-    description:
-      'Status is automatic — no subscription. Calculated on a rolling 30 days of spend. Status updates daily based on your last 30 days of spend.',
-    defaultTier: 'Member',
-    savingsChip: 'You save {percent}%',
-    defaultLine: '{tier} — standard rate on every render.',
-    thresholdLine: '{tier} — spend {amount} / 30 days to save {percent}% on every eligible render.',
-    labels: {
-      member: 'Member',
-      plus: 'Plus',
-      pro: 'Pro',
-    },
-  },
   teams: {
     title: 'For Teams',
     description: 'Shared wallet & roles. Let your team create with one balance. Set soft/hard project budgets. Daily summary by email.',
@@ -169,4 +155,4 @@ export const DEFAULT_BILLING_COPY = {
   },
 };
 
-export type BillingCopy = Omit<typeof DEFAULT_BILLING_COPY, 'estimator'>;
+export type BillingCopy = typeof DEFAULT_BILLING_COPY;

@@ -30,7 +30,7 @@ export function SettingsTabs({
   notificationsSoonLabel?: string;
 }) {
   return (
-    <nav className="app-settings-tabs mb-4 flex flex-wrap gap-2" aria-label="Settings tabs">
+    <nav className="app-settings-tabs -mx-1 mb-5 flex max-w-full flex-nowrap gap-2 overflow-x-auto px-1 pb-1" aria-label="Settings tabs">
       {SETTINGS_TAB_ITEMS.map((item) => {
         const active = activeTab === item.id;
         return (
@@ -40,7 +40,7 @@ export function SettingsTabs({
             prefetch={false}
             variant="outline"
             size="sm"
-            className={`!min-h-11 px-3 text-sm ${
+            className={`!min-h-11 shrink-0 px-3 text-sm ${
               active
                 ? 'border-brand bg-surface text-text-primary shadow-card hover:border-brand'
                 : 'border-border bg-bg text-text-secondary hover:bg-surface'

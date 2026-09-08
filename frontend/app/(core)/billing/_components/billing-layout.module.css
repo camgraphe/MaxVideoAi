@@ -20,8 +20,11 @@
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: end;
   gap: 22px;
-  padding: 18px 0 24px;
-  border-bottom: 1px solid var(--border);
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  box-shadow: 0 18px 50px color-mix(in srgb, #000 7%, transparent);
 }
 
 .walletIntro h1 {
@@ -98,8 +101,8 @@
 
 .testMode {
   position: absolute;
-  right: 0;
-  top: 2px;
+  right: 18px;
+  top: 14px;
   color: var(--warning);
   font-size: 0.68rem;
   font-weight: 700;
@@ -109,14 +112,20 @@
 
 .workspaceGrid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(238px, 0.33fr);
+  grid-template-columns: minmax(0, 1fr) minmax(250px, 0.34fr);
   gap: 24px;
   align-items: start;
   padding-top: 24px;
 }
 
 .infoAside {
+  overflow: hidden;
+  padding: 18px;
+  border: 1px solid var(--border);
   border-top: 3px solid var(--brand);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
 }
 
 .infoAside h2 {
@@ -245,11 +254,12 @@
 
   .walletOverview {
     gap: 17px;
-    padding: 12px 2px 18px;
+    padding: 17px;
+    border-radius: 15px;
   }
 
   .balanceCluster {
-    grid-template-columns: 38px minmax(0, 1fr) auto;
+    grid-template-columns: 38px minmax(0, 1fr) 44px;
     gap: 9px;
   }
 
@@ -271,6 +281,7 @@
 
   .infoAside {
     grid-template-columns: 1fr;
+    padding: 16px;
   }
 
   .returnNotice {

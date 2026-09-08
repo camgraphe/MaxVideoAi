@@ -7,7 +7,6 @@ export const DEFAULT_COMPOSER_COPY = {
     alwaysCurrent: 'Always-current',
   },
   priceLabel: 'This render: {amount}',
-  memberLabel: 'Member price — You save {percent}%',
   labels: {
     required: 'Required',
     optional: 'Optional',

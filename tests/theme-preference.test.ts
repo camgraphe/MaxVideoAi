@@ -26,6 +26,15 @@ test('absence defaults to system and follows the OS', () => {
   assert.deepEqual(readThemeSnapshot(browser.window), { preference: 'system', resolvedTheme: 'dark' });
 });
 
+test('saved light and dark preferences remain authoritative over the system default', () => {
+  const browser = createThemeWindow(true);
+  browser.window.localStorage.setItem('mv-theme', 'light');
+  assert.deepEqual(readThemeSnapshot(browser.window), { preference: 'light', resolvedTheme: 'light' });
+  browser.window.localStorage.setItem('mv-theme', 'dark');
+  browser.setDark(false);
+  assert.deepEqual(readThemeSnapshot(browser.window), { preference: 'dark', resolvedTheme: 'dark' });
+});
+
 test('theme preference publishes same-tab changes and applies the resolved root theme', () => {
   const browser = createThemeWindow(false);
   let events = 0;

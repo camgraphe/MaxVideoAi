@@ -10,3 +10,8 @@ test('settings page delegates functional account preferences while preserving co
   assert.match(settingsPageSource, /<AccountSettingsPanel user=\{user\} copy=\{copy\.account\}/);
   assert.doesNotMatch(settingsPageSource, /function AccountTab/);
 });
+
+test('unfinished notification preferences render as statuses instead of inert toggles', () => {
+  assert.match(settingsPageSource, /<ToggleRow label={copy\.toggles\.jobDone} soonLabel={copy\.srSoon}/);
+  assert.doesNotMatch(settingsPageSource, /defaultChecked={!disabled}/);
+});

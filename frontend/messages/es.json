@@ -3399,7 +3399,6 @@
           "alwaysCurrent": "Siempre actualizado"
         },
         "priceLabel": "Este render: {amount}",
-        "memberLabel": "Precio miembro — Ahorras {percent} %",
         "labels": {
           "required": "Obligatorio",
           "optional": "Opcional"
@@ -3798,19 +3797,6 @@
         "quoteLoading": "Calculando totales…",
         "quoteError": "No se pudieron obtener tasas. El monto se confirma al pagar."
       },
-      "membership": {
-        "title": "Estado de miembro",
-        "description": "Estado automático — sin suscripción. Se calcula sobre los últimos 30 días. Se actualiza a diario según tu gasto.",
-        "defaultTier": "Miembro",
-        "savingsChip": "Ahorra {percent} %",
-        "defaultLine": "{tier}: tarifa estándar en cada render.",
-        "thresholdLine": "{tier}: gasta {amount} / 30 días para ahorrar {percent} % en cada render elegible.",
-        "labels": {
-          "member": "Miembro",
-          "plus": "Plus",
-          "pro": "Pro"
-        }
-      },
       "teams": {
         "title": "Para equipos",
         "description": "Billetera compartido y roles. Un único saldo para todos. Presupuestos blandos/duros por proyecto. Resumen diario por correo.",
@@ -3835,9 +3821,7 @@
           "duration": "Duración (s)",
           "resolution": "Resolución"
         },
-        "note": "Solo se cobra si la generación tiene éxito.",
-        "memberChipSavings": "Precio miembro — Ahorra {percent} %",
-        "memberChipBase": "Precio miembro"
+        "note": "Solo se cobra si la generación tiene éxito."
       },
     "receipts": {
       "ledgerLabel": "Actividad de la billetera",

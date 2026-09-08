@@ -8,8 +8,11 @@
 
 .receiptsPanel {
   margin-top: 32px;
-  padding-top: 24px;
-  border-top: 1px solid var(--border);
+  padding: 20px 22px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
 }
 
 .receiptsHeader {
@@ -210,6 +213,11 @@
 }
 
 @media (max-width: 640px) {
+  .receiptsPanel {
+    padding: 17px 15px;
+    border-radius: 15px;
+  }
+
   .receiptsHeader {
     align-items: stretch;
     flex-direction: column;

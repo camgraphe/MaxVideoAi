@@ -78,6 +78,23 @@ test('billing styles stay split by page responsibility', () => {
   }
 });
 
+test('authenticated workspace copy does not advertise retired member pricing offers', () => {
+  const billingCopy = readFileSync(copyPath, 'utf8');
+  const composerCopy = readFileSync('frontend/components/composer/composer-copy.ts', 'utf8');
+  assert.doesNotMatch(billingCopy, /Member Status|Member price|You save/);
+  assert.doesNotMatch(composerCopy, /Member price|You save/);
+
+  for (const locale of ['en', 'fr', 'es']) {
+    const dictionary = JSON.parse(readFileSync(`frontend/messages/${locale}.json`, 'utf8')) as { workspace: unknown };
+    const workspaceCopy = JSON.stringify(dictionary.workspace);
+    assert.doesNotMatch(
+      workspaceCopy,
+      /Member price|You save|Tarif membre|Vous économisez|Precio miembro|Ahorras|Ahorra/,
+      `${locale} workspace copy should not advertise member pricing`,
+    );
+  }
+});
+
 test('billing client keeps orchestration separate from copy, checkout widgets, and receipts UI', () => {
   const clientSource = readFileSync(clientPath, 'utf8');
   const clientLines = clientSource.split('\n').length;

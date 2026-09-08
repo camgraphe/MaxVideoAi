@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Monitor, Moon, Sun } from 'lucide-react';
+import { Monitor, Moon, Sun, UserRound } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import { AppLanguageToggle } from '@/components/AppLanguageToggle';
 import { Button, ButtonLink } from '@/components/ui/Button';
@@ -36,8 +36,12 @@ export function AccountSettingsPanel({ user, copy }: { user: User | null; copy: 
   const messages = { required: copy.validation.required, tooLong: copy.validation.tooLong, generic: copy.status.genericError, success: copy.status.success };
 
   return (
-    <section className="app-account-panel rounded-card border border-border bg-surface p-4 shadow-card sm:p-6">
-      <h2 className="text-lg font-semibold text-text-primary">{copy.title}</h2>
+    <section className="app-account-panel overflow-hidden rounded-card border border-border bg-surface shadow-card">
+      <header className="flex items-center gap-3 border-b border-border px-4 py-4 sm:px-6">
+        <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand-soft text-brand" aria-hidden><UserRound className="h-5 w-5" /></span>
+        <h2 className="text-lg font-semibold text-text-primary">{copy.title}</h2>
+      </header>
+      <div className="p-4 sm:p-6">
       <form className="mt-5 space-y-6" onSubmit={(event) => { event.preventDefault(); void form.save(messages); }}>
         {user ? <div className="grid gap-4 sm:grid-cols-2">
           <label className="text-sm" htmlFor="settings-account-name">
@@ -84,12 +88,13 @@ export function AccountSettingsPanel({ user, copy }: { user: User | null; copy: 
 
         {user ? <div>
           {form.status ? <p role={form.status.kind === 'error' ? 'alert' : 'status'} aria-live="polite" className={`mb-3 text-sm ${form.status.kind === 'error' ? 'text-state-warning' : 'text-state-success'}`}>{form.status.message}</p> : null}
-          <div className="flex flex-wrap gap-2">
-            <Button type="submit" disabled={!form.dirty || form.busy || Boolean(form.validation.error)}>{form.busy ? copy.actions.saving : copy.actions.save}</Button>
-            <Button type="button" variant="outline" disabled={!form.dirty || form.busy} onClick={form.cancel}>{copy.actions.cancel}</Button>
+          <div className="flex flex-col gap-2 min-[420px]:flex-row">
+            <Button type="submit" className="w-full min-[420px]:w-auto" disabled={!form.dirty || form.busy || Boolean(form.validation.error)}>{form.busy ? copy.actions.saving : copy.actions.save}</Button>
+            <Button type="button" variant="outline" className="w-full min-[420px]:w-auto" disabled={!form.dirty || form.busy} onClick={form.cancel}>{copy.actions.cancel}</Button>
           </div>
         </div> : null}
       </form>
+      </div>
     </section>
   );
 }
