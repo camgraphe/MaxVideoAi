@@ -384,10 +384,9 @@ export function CanvasFloatingToolbar({
             {TOOLBOX.filter((tool) => tool.studio === 'standalone').map((tool) => (
               <a key={tool.id} role="menuitem" href={tool.href} target="_blank" rel="noopener noreferrer"
                 className={styles.workbenchLink}
-                aria-label={`${toolsCopy.tools[tool.id as ToolboxVisualId].title} — ${toolsCopy.open}${tool.qualificationRequired ? ` · ${copy.toolbar.validation}` : ''}`}
+                aria-label={`${toolsCopy.tools[tool.id as ToolboxVisualId].title} — ${toolsCopy.open}`}
                 onClick={() => setActiveMenu(null)}>
                 <span>{toolsCopy.tools[tool.id as ToolboxVisualId].title}</span>
-                {tool.qualificationRequired ? <em className={styles.validationBadge}>{copy.toolbar.validation}</em> : null}
                 <ArrowUpRight size={14} aria-hidden="true" />
               </a>
             ))}
