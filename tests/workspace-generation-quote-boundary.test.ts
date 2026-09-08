@@ -213,7 +213,12 @@ test('implicit authFetch callers still resolve session and attach its token', as
     f.sessionHint();
     const { authFetch } = await import('../frontend/src/lib/authFetch');
     let response!: Promise<Response>;
-    await act(async () => { response = authFetch('/api/wallet'); await new Promise(resolve => setTimeout(resolve, 0)); });
+    await act(async () => {
+      response = authFetch('/api/wallet');
+      for (let attempt = 0; attempt < 100 && f.pendingSessions === 0; attempt += 1) {
+        await new Promise(resolve => setTimeout(resolve, 1));
+      }
+    });
     assert.equal(f.pendingSessions, 1); assert.equal(f.wallet.length, 0);
     await f.session(); assert.equal(f.wallet.length, 1);
     assert.equal(new Headers(f.walletRequests[0].headers).get('Authorization'), 'Bearer fixture-a');
