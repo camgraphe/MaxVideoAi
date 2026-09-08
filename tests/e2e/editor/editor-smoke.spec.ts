@@ -1048,7 +1048,7 @@ test('mobile responsive canvas controls timeline scroll and export dialog stay u
   const canvasToolbar = page.getByLabel('Canvas creation toolbar');
   await expectWithinViewport(page, canvasToolbar, 'mobile canvas creation toolbar');
   const imageTools = page.getByRole('button', { name: 'Image tools' });
-  await expectTapTarget(imageTools, 'mobile Image tools button', 38);
+  await expectTapTarget(imageTools, 'mobile Image tools button', 44);
   await imageTools.click();
   const imageMenu = page.getByRole('menu', { name: 'Image tools' });
   await expectWithinViewport(page, imageMenu, 'mobile Image tools drawer menu');
@@ -1056,7 +1056,7 @@ test('mobile responsive canvas controls timeline scroll and export dialog stay u
   await page.keyboard.press('Escape');
 
   const canvasNavigation = page.getByRole('button', { name: 'Open canvas navigation' });
-  await expectTapTarget(canvasNavigation, 'mobile canvas navigator button', 38);
+  await expectTapTarget(canvasNavigation, 'mobile canvas navigator button', 44);
   await canvasNavigation.click();
   const canvasNavigationId = await canvasNavigation.getAttribute('aria-controls');
   expect(canvasNavigationId).toBeTruthy();
@@ -1083,7 +1083,7 @@ test('mobile responsive canvas controls timeline scroll and export dialog stay u
   expect(timelineScrollMetrics.scrollLeft).toBeGreaterThan(timelineScrollMetrics.before);
 
   const exportTrigger = page.getByRole('button', { name: 'Open export dialog' });
-  await expectTapTarget(exportTrigger, 'mobile export dialog trigger', 38);
+  await expectTapTarget(exportTrigger, 'mobile export dialog trigger', 44);
   await exportTrigger.click();
   const exportDialog = page.getByRole('dialog', { name: 'Export sequence' });
   await expectWithinViewport(page, exportDialog, 'mobile export dialog');
@@ -3360,7 +3360,9 @@ test('Studio native video connectors follow engine switching', async ({ page }) 
     await expect(node.locator('[data-shot-connector-kind="music"]')).toHaveCount(0);
     await expect(node.locator('[data-shot-connector-kind="sfx"]')).toHaveCount(0);
     await expect(node.locator('[data-shot-connector-kind="prompt"]')).toBeVisible();
-    await expect(node.locator('[data-shot-connector-kind="start_image"]')).toBeVisible();
+    await expect(node.locator('[data-shot-connector-kind="start_image"]')).toHaveCount(0);
+    await expect(inspector.locator('[data-inspector-connector-kind="start_image"]'))
+      .toHaveAttribute('data-inspector-connector-state', 'available');
     const nodeVideoReference = node.locator('[data-shot-connector-row="input"][data-shot-connector-kind="video_reference"]');
     const inspectorVideoReference = inspector.locator('[data-inspector-connector-kind="video_reference"]');
     if (selection.videoReferenceCapacity) {
@@ -3396,7 +3398,10 @@ test('Studio exposes certified Seedance 2.5 and MiniMax H3 controls from their c
 
   await selectEngine('Seedance 2.5', 'seedance-2-5');
   await expect(trigger).toHaveText('Seedance 2.5');
-  await expect(node.locator('[data-shot-connector-row="input"][data-shot-connector-kind="video_reference"]')).toContainText('10/10');
+  await expect(node.locator('[data-shot-connector-row="input"][data-shot-connector-kind="video_reference"]')).toHaveCount(0);
+  await node.getByRole('button', { name: /Open .* settings/ }).click();
+  const inspector = page.getByRole('complementary', { name: 'Node settings' });
+  await expect(inspector.locator('[data-inspector-connector-kind="video_reference"]')).toContainText('10/10');
 
   await selectEngine('MiniMax H3', 'minimax-h3');
   await expect(trigger).toHaveText('MiniMax H3');
