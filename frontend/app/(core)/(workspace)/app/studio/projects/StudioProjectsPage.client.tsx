@@ -261,7 +261,7 @@ export default function StudioProjectsPageClient({ initialStarterTemplateId = nu
         const nextNotice = studioProjectsApiNotice(serverResult.status, studioCopy.notices);
         setApiNotice(nextNotice);
         if (!serverResult.data) return;
-        const reconciledProjects = mergeStudioProjectRecords(serverResult.data, localProjects);
+        const reconciledProjects = mergeStudioProjectRecords(serverResult.data, readStudioProjects(studioCopy));
         setProjects(reconciledProjects);
         writeStudioProjects(reconciledProjects);
       })

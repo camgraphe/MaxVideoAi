@@ -235,3 +235,11 @@ test('project reconciliation never applies the local creation cap to authoritati
   assert.deepEqual(reconciled.slice(0, 40).map(({ id }) => id), serverProjects.map(({ id }) => id));
   assert.equal(reconciled[40]?.id, 'local');
 });
+
+test('a delayed server listing reconciles against the current cache instead of the mount snapshot', () => {
+  const projects = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/projects/StudioProjectsPage.client.tsx'), 'utf8');
+  assert.match(
+    projects,
+    /mergeStudioProjectRecords\(serverResult\.data, readStudioProjects\(studioCopy\)\)/,
+  );
+});
