@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { canonicalMediaAssetFields } from '@/lib/media-identity';
 
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import {
@@ -111,6 +112,9 @@ export function createImageUploadPostHandler(
         ok: true,
         asset: {
           id: routeAsset.assetId,
+          legacyAssetId: routeAsset.assetId,
+          ...canonicalMediaAssetFields(routeAsset.canonicalAssetId, 'image'),
+          mediaFacts: { source: 'probe', width: stored.width, height: stored.height },
           url: routeAsset.url,
           width: routeAsset.width,
           height: routeAsset.height,

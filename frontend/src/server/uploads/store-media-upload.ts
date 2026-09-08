@@ -1,4 +1,5 @@
 import { ensureReusableAsset } from '@/server/media-library';
+import type { MediaFacts } from '@/lib/media-identity';
 import { createHash } from 'node:crypto';
 import { probeMediaBuffer } from '@/server/media/detect-has-audio';
 import { deleteStorageObjectByUrl, uploadFileBuffer, recordUserAsset } from '@/server/storage';
@@ -75,6 +76,7 @@ export type StoreMediaUploadInput = {
 };
 
 export type StoredMediaUpload = {
+  mediaFacts?: MediaFacts;
   assetId: string;
   legacyAssetId: string;
   width: null;
@@ -240,6 +242,7 @@ function createStoreMediaUploadService(
       await renewProducerClaim();
       producerCheckpoint();
       const metadata = {
+        mediaFacts: { source: 'probe', durationSec: duration.durationSec },
         originalName: input.fileName,
         kind: mediaKind,
         durationSec: duration.durationSec,
@@ -268,7 +271,7 @@ function createStoreMediaUploadService(
         sizeBytes: input.bytes.length,
         durationSec: duration.durationSec,
         thumbUrl: previewUrl,
-        metadata: { originalName: input.fileName },
+        metadata: { originalName: input.fileName, mediaFacts: { source: 'probe', durationSec: duration.durationSec } },
       });
       producerCheckpoint();
       await renewProducerClaim();
@@ -290,6 +293,7 @@ function createStoreMediaUploadService(
       producerClaim = null;
       return {
         assetId: canonicalAsset.publicId,
+        mediaFacts: { source: 'probe', durationSec: duration.durationSec },
         legacyAssetId,
         width: null,
         height: null,

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { canonicalMediaAssetFields } from '@/lib/media-identity';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { getFalEngineById } from '@/config/falEngines';
 import {
@@ -159,6 +160,9 @@ export async function handleAudioUpload(
       ok: true,
       asset: {
         id: stored.legacyAssetId,
+        legacyAssetId: stored.legacyAssetId,
+        ...canonicalMediaAssetFields(stored.assetId, 'audio'),
+        mediaFacts: stored.mediaFacts,
         url: stored.storageUrl,
         width: stored.width,
         height: stored.height,

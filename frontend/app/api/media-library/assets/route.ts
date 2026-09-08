@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { canonicalMediaAssetFields, readMediaFacts } from '@/lib/media-identity';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { deleteLibraryAsset, listLibraryAssetPage, type MediaKind } from '@/server/media-library';
 
@@ -34,6 +35,8 @@ export async function GET(req: NextRequest) {
     ok: true,
     assets: page.items.map((asset) => ({
       id: asset.id,
+      ...canonicalMediaAssetFields(asset.publicId, asset.kind),
+      mediaFacts: readMediaFacts(asset.metadata.mediaFacts),
       url: asset.url,
       thumbUrl: asset.thumbUrl,
       previewUrl: asset.previewUrl,

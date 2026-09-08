@@ -200,6 +200,8 @@ test('authenticated upload preserves the existing route response projection', as
     ok: true,
     asset: {
       id: 'asset_123',
+      legacyAssetId: 'asset_123',
+      mediaFacts: { source: 'probe', width: 1280, height: 720 },
       url: 'https://cdn.example.com/reference.webp',
       width: 1280,
       height: 720,
