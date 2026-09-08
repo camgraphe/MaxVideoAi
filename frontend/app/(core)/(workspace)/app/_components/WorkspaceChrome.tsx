@@ -14,7 +14,7 @@ export function WorkspaceChrome({
   return (
     <div className="flex min-h-screen flex-col bg-bg">
       <HeaderBar />
-      <div className="flex flex-1 flex-col min-[1088px]:flex-row">
+      <div className="flex flex-1 flex-col min-[768px]:flex-row">
         <div className="flex min-w-0 flex-1">
           <AppSidebar />
           <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
@@ -23,7 +23,7 @@ export function WorkspaceChrome({
             </main>
           </div>
         </div>
-        <div className="app-results-rail border-t border-hairline bg-surface-glass-70 px-4 py-4 min-[1088px]:flex min-[1088px]:w-[320px] min-[1088px]:justify-end min-[1088px]:border-t-0 min-[1088px]:bg-transparent min-[1088px]:py-4 min-[1088px]:pl-2 min-[1088px]:pr-0">
+        <div className="app-results-rail border-t border-hairline bg-surface-glass-70 px-4 py-4 min-[768px]:flex min-[768px]:w-[240px] min-[768px]:justify-end min-[768px]:border-t-0 min-[768px]:bg-transparent min-[768px]:py-4 min-[768px]:pl-2 min-[768px]:pr-0 min-[900px]:w-[272px] min-[1088px]:w-[320px]">
           {rail}
         </div>
       </div>

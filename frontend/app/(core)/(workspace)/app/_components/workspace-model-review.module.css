@@ -31,7 +31,7 @@
   width: 19px;
   height: 19px;
 }
-@media (max-width: 760px) {
+@media (max-width: 1087px) {
   .modelStrip {
     grid-template-columns: minmax(0, 1fr) 44px;
     align-items: end;

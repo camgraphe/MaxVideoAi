@@ -71,7 +71,7 @@ export function GalleryRail({
   const [responsiveDesktop, setResponsiveDesktop] = useState(false);
   useEffect(() => {
     if (!responsiveVariant) return undefined;
-    const mediaQuery = window.matchMedia('(min-width: 1088px)');
+    const mediaQuery = window.matchMedia('(min-width: 768px)');
     const handleChange = (event: MediaQueryListEvent | MediaQueryList) => setResponsiveDesktop(event.matches);
     handleChange(mediaQuery);
     if (typeof mediaQuery.addEventListener === 'function') {
@@ -431,7 +431,7 @@ export function GalleryRail({
     <div
       className={clsx(
         'relative',
-        responsiveVariant ? 'min-[1088px]:min-h-0 min-[1088px]:flex-1' : isDesktopVariant ? 'min-h-0 flex-1' : ''
+        responsiveVariant ? 'min-[768px]:min-h-0 min-[768px]:flex-1' : isDesktopVariant ? 'min-h-0 flex-1' : ''
       )}
     >
       <div
@@ -439,7 +439,7 @@ export function GalleryRail({
         className={clsx(
           'scrollbar-rail app-gallery-rail-grid mt-1 space-y-4',
           responsiveVariant
-            ? 'min-[1088px]:h-full min-[1088px]:overflow-y-auto min-[1088px]:pr-6 min-[1088px]:pt-3'
+            ? 'min-[768px]:h-full min-[768px]:overflow-y-auto min-[768px]:pr-6 min-[768px]:pt-3'
             : isDesktopVariant
               ? 'h-full overflow-y-auto pr-6 pt-3'
               : ''
@@ -481,7 +481,7 @@ export function GalleryRail({
   return (
     <>
       {responsiveVariant ? (
-        <aside className="flex w-full flex-col gap-4 min-[1088px]:h-[calc(125vh-var(--header-height))] min-[1088px]:max-w-[312px] min-[1088px]:shrink-0 min-[1088px]:gap-0 min-[1088px]:border-l min-[1088px]:border-border min-[1088px]:bg-bg/80 min-[1088px]:px-3 min-[1088px]:pb-6 min-[1088px]:pt-4">
+        <aside className="flex w-full flex-col gap-4 min-[768px]:h-[calc(125vh-var(--header-height))] min-[768px]:max-w-[232px] min-[768px]:shrink-0 min-[768px]:gap-0 min-[768px]:border-l min-[768px]:border-border min-[768px]:bg-bg/80 min-[768px]:px-2 min-[768px]:pb-6 min-[768px]:pt-4 min-[900px]:max-w-[264px] min-[1088px]:max-w-[312px] min-[1088px]:px-3">
           {content}
         </aside>
       ) : isDesktopVariant ? (

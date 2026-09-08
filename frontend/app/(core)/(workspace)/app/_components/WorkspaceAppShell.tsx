@@ -115,7 +115,7 @@ export function WorkspaceAppShell({
   const closeMobileRecent = () => {
     setMobileRecentOpen(false);
     setRailView('activity');
-    if (window.matchMedia('(min-width: 1088px)').matches) return;
+    if (window.matchMedia('(min-width: 768px)').matches) return;
     requestAnimationFrame(() => {
       const opener = recentOpenerRef.current;
       focusWorkspaceRecentTarget(opener, opener?.closest<HTMLElement>('.app-creation-heading') ?? opener);

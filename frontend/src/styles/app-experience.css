@@ -106,6 +106,15 @@
   .app-experience .app-settings-tabs > a { font-size: 12px; }
   .app-experience .app-results-rail { border-left: 0; border-top: 1px solid var(--app-line); }
 }
+@media (min-width: 768px) {
+  .app-experience .app-results-rail { flex: none; width: 240px; padding: 16px 0 16px 8px; border-top: 0; background: transparent; }
+}
+@media (min-width: 900px) {
+  .app-experience .app-results-rail { width: 272px; }
+}
+@media (min-width: 1088px) {
+  .app-experience .app-results-rail { width: 320px; }
+}
 @media (prefers-reduced-motion: reduce) {
   .app-experience *, .app-experience *::before, .app-experience *::after { scroll-behavior: auto !important; transition-duration: 0s !important; animation-duration: 0s !important; }
 }
@@ -320,7 +329,7 @@
 .app-experience .app-recent-role-dialog .app-recent-insert { width: 100%; margin-top: 12px; border-color: var(--brand); }
 .app-experience .app-recent-mobile-open,
 .app-experience .app-recent-mobile-close { display: none; }
-@media (max-width: 1087px) {
+@media (max-width: 767px) {
   .app-experience .app-recent-mobile-open { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; }
   .app-experience .app-recent-mobile-close { display: block; margin-bottom: 8px; }
   .app-experience .app-recent-rail-panel:not(.is-mobile-open) { display: none; }
@@ -455,7 +464,7 @@
 .app-experience .app-rail-caption strong { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 550; }
 .app-experience .app-rail-caption > span { flex-shrink: 0; color: var(--app-muted); font-size: 11px; }
 .app-experience .app-rail-media-card > div:first-child > button { min-height: 44px; padding-inline: 10px; font-size: 12px; }
-@media (min-width: 720px) and (max-width: 1087px) {
+@media (min-width: 720px) and (max-width: 767px) {
   .app-experience .app-results-rail .app-gallery-rail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
   .app-experience .app-results-rail .app-gallery-rail-grid > :not([hidden]) ~ :not([hidden]) { margin-top: 0; }
   .app-experience .app-results-rail .app-gallery-rail-grid .app-rail-media-card { margin-bottom: 0; }
