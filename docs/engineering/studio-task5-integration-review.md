@@ -37,3 +37,22 @@ run failed at its five-second navigation assertion: the trace showed a pending
 workspace RSC request following successful controlled GET 200 / POST 503, not an
 API recovery failure. Cold development compilation is not production performance
 evidence. Final qualification must rerun the complete relevant suite.
+
+## Canvas correction follow-up
+
+`5dec7888d` changes padding to pixel strings; `c81c56d50` also reserves the map
+at the 601–700px boundary. The four EN/light viewport checks then returned **3/4**:
+desktop and both portrait sizes pass, but 844×390 still clamps to 46.8px-wide
+cards. Its real canvas is approximately y102–280 (178px), so reserving 162px for
+vertical controls leaves almost no usable area. The landscape layout remains a
+blocking product finding, not an assertion to relax.
+
+The new optional-connector E2E passes **2/2 in 5.9s**, desktop and 390px:
+an empty optional video port stays mounted with nonzero noninteractive geometry;
+keyboard insertion reveals it, its transformed SVG endpoint reaches the real
+left target boundary, removing its last link hides the row without removing the
+source, Escape restores focus to the same card's persistent Connections button,
+and keyboard Undo restores the edge. The initial endpoint probe incorrectly
+expected the handle center; inspection of installed XYFlow `getHandlePosition`
+confirmed that a left target ends at its left boundary, and the assertion was
+corrected to that contract rather than widening its tolerance.
