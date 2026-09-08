@@ -33,9 +33,11 @@ export function sequenceNameForIndex(index: number): string {
 }
 
 export function workspaceSequencePreviewUrl(sequence: Pick<WorkspaceSequenceRecord, 'timelineItems'>): string | null {
-  const previewItem =
-    sequence.timelineItems.find((item) => isWorkspaceTimelineVideoTrack(item.track) && (item.thumbnailUrl || item.mediaUrl)) ?? null;
-  return previewItem?.thumbnailUrl ?? previewItem?.mediaUrl ?? null;
+  const previewItem = sequence.timelineItems.find((item) => (
+    isWorkspaceTimelineVideoTrack(item.track)
+    && (item.thumbnailUrl || (item.mediaKind === 'image' && item.mediaUrl))
+  )) ?? null;
+  return previewItem?.thumbnailUrl ?? (previewItem?.mediaKind === 'image' ? previewItem.mediaUrl : null) ?? null;
 }
 
 export function buildWorkspaceSequenceSummaries(params: {

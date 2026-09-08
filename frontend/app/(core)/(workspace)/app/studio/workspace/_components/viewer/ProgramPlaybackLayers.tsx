@@ -18,6 +18,7 @@ type ProgramPlaybackLayersProps = {
   registerPlaybackVideo: (video: HTMLVideoElement | null) => void;
   syncPlaybackAudios: () => void;
   syncPlaybackVideos: () => void;
+  onMediaAccessError?: (item: PlaybackLayer['item']) => void;
 };
 
 export function ProgramPlaybackLayers({
@@ -30,6 +31,7 @@ export function ProgramPlaybackLayers({
   registerPlaybackVideo,
   syncPlaybackAudios,
   syncPlaybackVideos,
+  onMediaAccessError,
 }: ProgramPlaybackLayersProps) {
   return (
     <>
@@ -56,6 +58,7 @@ export function ProgramPlaybackLayers({
               Boolean(layer.item.linkedGroupId && linkedAudioGroupIds.has(layer.item.linkedGroupId))
             }
             onLoadedMetadata={syncPlaybackVideos}
+            onError={() => onMediaAccessError?.(layer.item)}
             playsInline
             preload="auto"
             src={layer.url}
@@ -73,6 +76,7 @@ export function ProgramPlaybackLayers({
           data-playback-audio-track-id={layer.item.track}
           muted={Boolean(layer.item.audioMix?.muted)}
           onLoadedMetadata={syncPlaybackAudios}
+          onError={() => onMediaAccessError?.(layer.item)}
           preload="auto"
           src={layer.url}
         />

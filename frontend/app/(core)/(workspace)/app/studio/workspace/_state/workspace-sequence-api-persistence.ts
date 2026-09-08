@@ -26,7 +26,7 @@ function workspaceSequenceTimelineState(sequence: WorkspaceSequenceRecord): Reco
   };
 }
 
-function normalizeStudioSequenceApiRecord(value: unknown): WorkspaceSequenceRecord | null {
+export function normalizeStudioSequenceApiRecord(value: unknown): WorkspaceSequenceRecord | null {
   if (!value || typeof value !== 'object') return null;
   const record = value as Partial<{
     id: unknown;

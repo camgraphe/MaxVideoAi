@@ -86,8 +86,9 @@ function isPlayableImageUrl(url?: string | null): boolean {
 }
 
 function playableVideoUrlForItem(item: WorkspaceTimelineItem | null): string | null {
-  if (!item || !isPlayableVideoUrl(item.mediaUrl)) return null;
-  return item.mediaUrl ?? null;
+  const url = item?.mediaAccessRequired ? item.mediaAccessUrl : item?.mediaUrl;
+  if (!item || !isPlayableVideoUrl(url)) return null;
+  return url ?? null;
 }
 
 function playableImageUrlForItem(item: WorkspaceTimelineItem | null): string | null {
@@ -97,8 +98,9 @@ function playableImageUrlForItem(item: WorkspaceTimelineItem | null): string | n
 }
 
 function playableAudioUrlForItem(item: WorkspaceTimelineItem | null): string | null {
-  if (!item || !isPlayableAudioUrl(item.mediaUrl)) return null;
-  return item.mediaUrl ?? null;
+  const url = item?.mediaAccessRequired ? item.mediaAccessUrl : item?.mediaUrl;
+  if (!item || !isPlayableAudioUrl(url)) return null;
+  return url ?? null;
 }
 
 function clampSeconds(value: number, min: number, max: number): number {

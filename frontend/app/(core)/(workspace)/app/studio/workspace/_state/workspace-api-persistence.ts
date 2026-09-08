@@ -35,7 +35,8 @@ import {
 } from './workspace-normalizers';
 import { getWorkspaceModelCapabilities } from '../_lib/models/model-capability-registry';
 import { normalizeWorkspaceShotForCapability } from '../_lib/models/workspace-model-selection';
-import { saveStudioSequencesToApi } from './workspace-sequence-api-persistence';
+import { normalizeStudioSequenceApiRecord, saveStudioSequencesToApi } from './workspace-sequence-api-persistence';
+import { stripStudioMediaAccess } from './workspace-media-access';
 import {
   DEFAULT_WORKSPACE_SEQUENCE_ID,
   coerceAudioTrackCount,
@@ -61,16 +62,18 @@ export {
   saveStudioSequencesToApi,
 } from './workspace-sequence-api-persistence';
 
-export type StudioApiSyncStatus = 'ready' | 'unauthorized' | 'unavailable' | 'error';
+export type StudioApiSyncStatus = 'ready' | 'unauthorized' | 'unavailable' | 'conflict' | 'error';
 
 export type StudioApiResult<T> = {
   data: T | null;
   status: StudioApiSyncStatus;
+  reason?: 'not_found';
 };
 
 export function studioApiSyncStatusFromResponse(response: Response): StudioApiSyncStatus {
   if (response.status === 401) return 'unauthorized';
   if (response.status === 503) return 'unavailable';
+  if (response.status === 409) return 'conflict';
   if (!response.ok) return 'error';
   return 'ready';
 }
@@ -212,7 +215,40 @@ export function normalizeStudioProjectApiRecord(value: unknown): StudioProjectSt
     settings: coerceWorkspaceProjectSettings(record.settings),
     canvasTemplateId: normalizeStudioProjectTemplateId(record.canvasTemplateId),
     workspaceState: record.workspaceState,
+    revision: Number.isSafeInteger(record.revision) && (record.revision ?? -1) >= 0 ? record.revision : undefined,
+    persistenceMode: record.persistenceMode === 'connected' ? 'connected' : record.persistenceMode === 'legacy' ? 'legacy' : undefined,
   };
+}
+
+export async function readStudioConnectedWorkspaceFromApiResult(
+  projectId: string,
+  signal?: AbortSignal,
+): Promise<StudioApiResult<{ project: StudioProjectStorageRecord; sequences: WorkspaceSequenceRecord[] }>> {
+  if (!hasAuthFetchSessionHint()) return { data: null, status: 'unauthorized' };
+  try {
+    const response = await authFetch(`/api/studio/projects/${encodeURIComponent(projectId)}/workspace`, {
+      headers: { Accept: 'application/json' }, cache: 'no-store', signal,
+    });
+    if (response.status === 404) return { data: null, status: 'error', reason: 'not_found' };
+    const status = studioApiSyncStatusFromResponse(response);
+    if (status !== 'ready') return { data: null, status };
+    const payload = await response.json().catch(() => null);
+    const project = normalizeStudioProjectApiRecord(payload?.project);
+    if (!payload?.ok || !project || project.persistenceMode !== 'connected' || !Array.isArray(payload.sequences)) {
+      return { data: null, status: 'error' };
+    }
+    return {
+      data: {
+        project,
+        sequences: payload.sequences
+          .map(normalizeStudioSequenceApiRecord)
+          .filter((sequence: WorkspaceSequenceRecord | null): sequence is WorkspaceSequenceRecord => Boolean(sequence)),
+      },
+      status: 'ready',
+    };
+  } catch {
+    return { data: null, status: 'error' };
+  }
 }
 
 export async function readStudioProjectFromApi(projectId: string, signal?: AbortSignal): Promise<StudioProjectStorageRecord | null> {
@@ -231,6 +267,7 @@ export async function readStudioProjectFromApiResult(
       cache: 'no-store',
       signal,
     });
+    if (response.status === 404) return { data: null, status: 'error', reason: 'not_found' };
     const status = studioApiSyncStatusFromResponse(response);
     if (status !== 'ready') return { data: null, status };
     const payload = await response.json().catch(() => null);
@@ -352,8 +389,36 @@ export async function saveStudioWorkspaceToApi(params: {
   canvasTemplateId: WorkspaceTemplateId;
   settings: StudioProjectStorageRecord['settings'];
   workspaceState: PersistedWorkspaceState;
+  expectedRevision?: number;
   signal?: AbortSignal;
-}): Promise<StudioApiSyncStatus> {
+}): Promise<{ status: StudioApiSyncStatus; revision?: number }> {
+  if (Number.isSafeInteger(params.expectedRevision) && (params.expectedRevision ?? -1) >= 0) {
+    if (!hasAuthFetchSessionHint()) return { status: 'unauthorized' };
+    try {
+      const response = await authFetch(`/api/studio/projects/${encodeURIComponent(params.projectId)}/workspace`, {
+        method: 'PUT',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          expectedRevision: params.expectedRevision,
+          snapshot: stripStudioMediaAccess({
+            name: params.name,
+            canvasTemplateId: params.canvasTemplateId,
+            settings: params.settings,
+            workspaceState: params.workspaceState,
+          }),
+        }),
+        signal: params.signal,
+      });
+      const status = studioApiSyncStatusFromResponse(response);
+      if (status !== 'ready') return { status };
+      const payload = await response.json().catch(() => null);
+      return payload?.ok && Number.isSafeInteger(payload.revision)
+        ? { status: 'ready', revision: payload.revision }
+        : { status: 'error' };
+    } catch {
+      return { status: 'error' };
+    }
+  }
   const sequenceSyncStatus = await saveStudioSequencesToApi({
     projectId: params.projectId,
     sequences: params.workspaceState.sequences ?? [],
@@ -365,8 +430,8 @@ export async function saveStudioWorkspaceToApi(params: {
       ? stripWorkspaceSequencesForProjectApi(params.workspaceState)
       : params.workspaceState,
   });
-  if (projectSyncStatus !== 'ready') return projectSyncStatus;
-  return sequenceSyncStatus;
+  if (projectSyncStatus !== 'ready') return { status: projectSyncStatus };
+  return { status: sequenceSyncStatus };
 }
 
 export function describeCanvasTemplate(nodes: WorkspaceGraphNode[], edges: WorkspaceGraphEdge[]): string {
@@ -422,6 +487,7 @@ function normalizePersistedProjectAsset(value: unknown): WorkspaceAssetRecord | 
     id: record.id,
     ...workspaceMediaContractFields(record, kind),
     previewUrl: record.previewUrl,
+    mediaAccessRequired: record.mediaAccessRequired === true,
     kind,
     filename: record.filename,
     subtitle: typeof record.subtitle === 'string' && record.subtitle.trim() ? record.subtitle : kind,

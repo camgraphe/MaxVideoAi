@@ -340,6 +340,9 @@ export type StudioCopy = {
     outPointSet: string;
     inOutPointsCleared: string;
     workspaceSavedReturningToProjects: string;
+    workspaceConflict: string;
+    reloadServerVersion: string;
+    projectAccessError: string;
     projectLoadedCleanSequence: string;
     deleteTrackWithClipsConfirm: string;
     deleteTrackConfirm: string;
@@ -1582,6 +1585,9 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
     outPointSet: 'Out point set at {timecode}.',
     inOutPointsCleared: 'In and Out points cleared.',
     workspaceSavedReturningToProjects: 'Workspace saved. Returning to projects.',
+    workspaceConflict: 'This project changed in another tab. Your local draft is preserved.',
+    reloadServerVersion: 'Reload server version',
+    projectAccessError: 'This Studio project is not available for this account.',
     projectLoadedCleanSequence: '{name} project loaded with a clean sequence.',
     deleteTrackWithClipsConfirm: 'Delete {track} and all clips on this track?',
     deleteTrackConfirm: 'Delete {track}?',

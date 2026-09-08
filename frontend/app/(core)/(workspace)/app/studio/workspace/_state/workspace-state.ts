@@ -101,6 +101,8 @@ export type StudioProjectStorageRecord = {
   settings?: WorkspaceProjectSettings;
   canvasTemplateId: WorkspaceTemplateId;
   workspaceState?: unknown;
+  revision?: number;
+  persistenceMode?: 'legacy' | 'connected';
 };
 
 export type TimelineHistoryState = {

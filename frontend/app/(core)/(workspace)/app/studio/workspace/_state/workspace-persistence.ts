@@ -20,7 +20,13 @@ export function normalizeStudioProjectStorageRecord(value: unknown): StudioProje
     settings: record.settings,
     canvasTemplateId: isWorkspaceTemplateId(record.canvasTemplateId) ? record.canvasTemplateId : 'product-ad',
     workspaceState: record.workspaceState,
+    revision: Number.isSafeInteger(record.revision) && (record.revision ?? -1) >= 0 ? record.revision : undefined,
+    persistenceMode: record.persistenceMode === 'connected' ? 'connected' : record.persistenceMode === 'legacy' ? 'legacy' : undefined,
   };
+}
+
+export function workspaceStorageKeyForConnectedProject(accountId: string, projectId: string): string {
+  return `${STORAGE_KEY}.connected.${encodeURIComponent(accountId)}.${encodeURIComponent(projectId)}`;
 }
 
 export function readStudioProject(projectId?: string): StudioProjectStorageRecord | null {

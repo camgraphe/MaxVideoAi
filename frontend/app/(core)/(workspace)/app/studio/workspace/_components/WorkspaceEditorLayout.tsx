@@ -40,6 +40,7 @@ import shellStyles from '../_styles/shell.module.css';
 import { WorkspaceCanvasInspectorPanel } from './WorkspaceCanvasInspectorPanel';
 import { WorkspaceCanvas } from './WorkspaceCanvas.client';
 import { WorkspaceEditorTopbar } from './WorkspaceEditorTopbar';
+import { WorkspaceConnectedStatus } from './WorkspaceConnectedStatus';
 import { WorkspaceGuideSurfaceLayer } from './WorkspaceGuideSurfaceLayer';
 import { WorkspaceMobilePanelFrame } from './WorkspaceMobilePanelFrame';
 import { WorkspaceMobilePanelControls } from './WorkspaceMobilePanelControls';
@@ -63,10 +64,8 @@ type WorkspaceEditorLayoutControllers = {
   timelineTrack: ReturnType<typeof useWorkspaceTimelineTrackActions>;
 };
 type WorkspaceEditorLayoutProps = {
-  activeEditorSurface: WorkspaceEditorSurface;
-  activeTemplateId: WorkspaceTemplateId;
-  activeTemplateName: string;
-  activeUserCanvasTemplateId: string | null;
+  activeEditorSurface: WorkspaceEditorSurface; activeTemplateId: WorkspaceTemplateId;
+  activeTemplateName: string; activeUserCanvasTemplateId: string | null;
   audioTrackCount: number;
   canvasRevision: number;
   canGoToNextTimelineCut: boolean;
@@ -108,6 +107,8 @@ type WorkspaceEditorLayoutProps = {
   timelinePanelHeight: number | null;
   userCanvasTemplates: WorkspaceUserCanvasTemplate[];
   videoTrackCount: number;
+  onMediaAccessError?: (item: WorkspaceTimelineItem) => void;
+  connectedConflict: boolean; projectAccessError: boolean;
 };
 export function WorkspaceEditorLayout({
   activeEditorSurface,
@@ -155,6 +156,8 @@ export function WorkspaceEditorLayout({
   timelinePanelHeight,
   userCanvasTemplates,
   videoTrackCount,
+  onMediaAccessError,
+  connectedConflict, projectAccessError,
 }: WorkspaceEditorLayoutProps) {
   const editorShellStyle = timelinePanelHeight ? ({ '--timeline-panel-height': `${timelinePanelHeight}px` } as CSSProperties) : undefined;
   const {
@@ -195,21 +198,17 @@ export function WorkspaceEditorLayout({
       data-studio-theme={studioTheme.resolvedTheme}
     >
       <WorkspaceEditorTopbar
-        activeTemplateName={activeTemplateName}
-        focusMode={focusMode}
-        mockMode={mockMode}
-        onEditorSurfaceChange={setActiveEditorSurface}
-        onExitToProjects={shell.handleExitToProjects}
-        onFocusModeChange={setFocusMode}
-        onToggleMockMode={() => setMockMode((value) => !value)}
-        studioCopy={studioCopy}
-        studioTheme={studioTheme}
+        activeTemplateName={activeTemplateName} focusMode={focusMode} mockMode={mockMode}
+        onEditorSurfaceChange={setActiveEditorSurface} onExitToProjects={shell.handleExitToProjects}
+        onFocusModeChange={setFocusMode} onToggleMockMode={() => setMockMode((value) => !value)}
+        studioCopy={studioCopy} studioTheme={studioTheme}
       />
       {notice ? (
         <div className={styles.editorToast} role="status" aria-live="polite" data-editor-status="true">
           {notice}
         </div>
       ) : null}
+      <WorkspaceConnectedStatus conflict={connectedConflict} projectAccessError={projectAccessError} notices={studioCopy.notices} />
       <div
         className={`${styles.editorBody} ${focusMode === 'canvas' ? styles.canvasEditorBody : ''} ${
           shouldShowCanvasInspector ? styles.canvasEditorBodyInspectorOpen : ''
@@ -343,6 +342,7 @@ export function WorkspaceEditorLayout({
             onSelectItem={(itemId) => selection.handleSelectTimelineItem(itemId)}
             onSendSnapshotToCanvas={canvas.handleSendProgramSnapshotToCanvas}
             onTogglePlayback={timelinePlayback.handleToggleTimelinePlayback}
+            onMediaAccessError={onMediaAccessError}
           />
         )}
         <WorkspaceGuideSurfaceLayer activeMobilePanel={mobilePanels.activePanel} copy={studioCopy.canvas.guide} focusMode={focusMode} guide={canvas.guide} presentation={guidePresentation} timelinePanelHeight={timelinePanelHeight} />

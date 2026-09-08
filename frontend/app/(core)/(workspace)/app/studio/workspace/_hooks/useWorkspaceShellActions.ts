@@ -31,6 +31,8 @@ type UseWorkspaceShellActionsParams = {
   setTimelinePanelHeight: Dispatch<SetStateAction<number | null>>;
   studioNotices: StudioCopy['notices'];
   workspaceStorageKey: string;
+  persistWorkspaceLocally?: (state: PersistedWorkspaceState) => void;
+  saveWorkspace?: (state: PersistedWorkspaceState) => Promise<unknown>;
 };
 
 export function useWorkspaceShellActions({
@@ -48,6 +50,8 @@ export function useWorkspaceShellActions({
   setTimelinePanelHeight,
   studioNotices,
   workspaceStorageKey,
+  persistWorkspaceLocally,
+  saveWorkspace,
 }: UseWorkspaceShellActionsParams): {
   handleExitToProjects: () => void;
   handleExportQualityPresetChange: (preset: WorkspaceTimelineExportQualityPreset) => void;
@@ -70,7 +74,8 @@ export function useWorkspaceShellActions({
   const handleExitToProjects = useCallback(() => {
     if (typeof window === 'undefined') return;
     const state = buildPersistedWorkspaceState();
-    window.localStorage.setItem(workspaceStorageKey, JSON.stringify(state));
+    if (persistWorkspaceLocally) persistWorkspaceLocally(state);
+    else window.localStorage.setItem(workspaceStorageKey, JSON.stringify(state));
     setNotice(studioNotices.workspaceSavedReturningToProjects);
 
     const navigateToProjects = () => {
@@ -82,14 +87,17 @@ export function useWorkspaceShellActions({
       return;
     }
 
-    void saveStudioWorkspaceToApi({
-      projectId,
-      name: activeTemplateName,
-      canvasTemplateId: activeTemplateId,
-      settings: state.projectSettings,
-      workspaceState: state,
-    }).finally(navigateToProjects);
-  }, [activeTemplateId, activeTemplateName, buildPersistedWorkspaceState, projectId, setNotice, studioNotices.workspaceSavedReturningToProjects, workspaceStorageKey]);
+    const saving = saveWorkspace
+      ? saveWorkspace(state)
+      : saveStudioWorkspaceToApi({
+          projectId,
+          name: activeTemplateName,
+          canvasTemplateId: activeTemplateId,
+          settings: state.projectSettings,
+          workspaceState: state,
+        });
+    void saving.finally(navigateToProjects);
+  }, [activeTemplateId, activeTemplateName, buildPersistedWorkspaceState, persistWorkspaceLocally, projectId, saveWorkspace, setNotice, studioNotices.workspaceSavedReturningToProjects, workspaceStorageKey]);
 
   const handleExportRangeModeChange = useCallback((mode: WorkspaceTimelineExportRangeMode) => {
     resetExportSession();

@@ -11,6 +11,8 @@ import { useWorkspaceCompletedExportAssets } from './_hooks/useWorkspaceComplete
 import { useWorkspaceEditorNotice } from './_hooks/useWorkspaceEditorNotice';
 import { useWorkspaceExportState } from './_hooks/useWorkspaceExportState';
 import { useWorkspacePersistenceEffects } from './_hooks/useWorkspacePersistenceEffects';
+import { useStudioMediaAccount } from './_hooks/useStudioMediaAccount';
+import { useWorkspaceMediaAccess } from './_hooks/useWorkspaceMediaAccess';
 import { useWorkspaceProjectMediaActions } from './_hooks/useWorkspaceProjectMediaActions';
 import { useWorkspaceProjectMediaMetadataHydration } from './_hooks/useWorkspaceProjectMediaMetadataHydration';
 import { useWorkspaceSelectionActions } from './_hooks/useWorkspaceSelectionActions';
@@ -50,6 +52,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   const { dictionary } = useI18n();
   const studioCopy = useMemo(() => resolveStudioCopy(dictionary), [dictionary]);
   const studioTheme = useStudioThemeMode();
+  const mediaAccountId = useStudioMediaAccount();
   const defaultTemplate = useMemo(() => createStarterWorkspaceTemplate(MINIMAL_START_WORKSPACE_TEMPLATE_ID), []);
   const defaultGuideState = useMemo(() => createWorkspaceCanvasGuideState(defaultTemplate), [defaultTemplate]);
   const defaultSequence = useMemo(
@@ -247,26 +250,15 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     timelineItemsRef,
   });
 
-  useWorkspacePersistenceEffects({
-    activeTemplateId,
-    activeTemplateName,
+  const persistence = useWorkspacePersistenceEffects({
+    activeTemplateId, activeTemplateName,
     applyTimelineSelection: selectionActions.applyTimelineSelection,
     buildPersistedWorkspaceState: sequenceSnapshots.buildPersistedWorkspaceState,
-    hydrated,
-    projectId,
+    hydrated, mediaAccountId, projectId,
     resetCanvasHistory: canvasHistoryController.resetCanvasHistory,
     resetTimelineHistory: timelineHistoryController.resetTimelineHistory,
-    setActiveEditorSurface,
-    setActiveSequenceId,
-    setActiveTemplateId,
-    setActiveUserCanvasTemplateId,
-    setAudioTrackCount,
-    setCanvasRevision,
-    setEdges,
-    setFocusMode,
-    setGuideState,
-    setHiddenVideoTracks,
-    setHydrated,
+    setActiveEditorSurface, setActiveSequenceId, setActiveTemplateId, setActiveUserCanvasTemplateId,
+    setAudioTrackCount, setCanvasRevision, setEdges, setFocusMode, setGuideState, setHiddenVideoTracks, setHydrated,
     setIsTimelinePlaying: timelinePlayback.setIsTimelinePlaying,
     setLockedTimelineTracks,
     setMutedAudioTracks,
@@ -288,6 +280,11 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     studioNotices: studioCopy.notices,
     timelineItemsRef,
     workspaceStorageKey,
+  });
+
+  const handleMediaAccessError = useWorkspaceMediaAccess({
+    accountId: mediaAccountId, enabled: persistence.connected, projectAssets, projectId,
+    setProjectAssets, setSequences, setTimelineItems, timelineItemsRef,
   });
 
   useWorkspaceTimelineSelectionSync({
@@ -433,7 +430,9 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setProjectSettings,
     setTimelinePanelHeight,
     studioNotices: studioCopy.notices,
-    workspaceStorageKey,
+    workspaceStorageKey: persistence.storageKey,
+    persistWorkspaceLocally: persistence.persistLocal,
+    saveWorkspace: persistence.saveNow,
   });
 
   return (
@@ -490,10 +489,10 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
       studioTheme={studioTheme}
       timelineDurationSec={timelineDurationSec}
       timelineInsertIntoClipEnabled={timelineInsertIntoClipEnabled}
-      timelineItems={timelineItems}
-      timelinePanelHeight={timelinePanelHeight}
-      userCanvasTemplates={userCanvasTemplates}
-      videoTrackCount={videoTrackCount}
+      timelineItems={timelineItems} timelinePanelHeight={timelinePanelHeight}
+      userCanvasTemplates={userCanvasTemplates} videoTrackCount={videoTrackCount}
+      onMediaAccessError={handleMediaAccessError} connectedConflict={persistence.connectedConflict}
+      projectAccessError={persistence.projectAccessError}
     />
   );
 }

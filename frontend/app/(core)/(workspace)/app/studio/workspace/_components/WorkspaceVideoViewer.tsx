@@ -31,6 +31,7 @@ type WorkspaceVideoViewerProps = {
   onSelectItem: (itemId: string) => void;
   onSendSnapshotToCanvas: (snapshot: WorkspaceProgramSnapshotPayload) => void;
   onTogglePlayback: () => void;
+  onMediaAccessError?: (item: WorkspaceTimelineItem) => void;
 };
 
 function programModelLabel(modelId?: string): string | null {
@@ -71,6 +72,7 @@ export function WorkspaceVideoViewer({
   onSelectItem,
   onSendSnapshotToCanvas,
   onTogglePlayback,
+  onMediaAccessError,
 }: WorkspaceVideoViewerProps) {
   const {
     activePlaybackItem,
@@ -122,6 +124,7 @@ export function WorkspaceVideoViewer({
               shouldShowEmptyState={shouldShowEmptyState}
               syncPlaybackAudios={syncPlaybackAudios}
               syncPlaybackVideos={syncPlaybackVideos}
+              onMediaAccessError={onMediaAccessError}
             />
           )}
           controls={(
