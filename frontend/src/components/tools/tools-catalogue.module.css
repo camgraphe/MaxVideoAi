@@ -17,7 +17,6 @@
 .quickArt::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, transparent 52%, rgba(5,10,11,.3)); }
 .quickArt img { object-fit: cover; transform: scale(1.015); transition: transform 240ms cubic-bezier(.2,.7,.2,1), filter 240ms ease; }
 .quickTool:hover .quickArt img { transform: scale(1.045); filter: saturate(1.05) contrast(1.02); }
-.availability { position: absolute; top: 10px; right: 10px; padding: 5px 8px; border: 1px solid rgba(255,255,255,.28); border-radius: 999px; background: rgba(9,18,18,.7); color: #fff; font-size: 9px; font-weight: 700; letter-spacing: .04em; backdrop-filter: blur(8px); }
 .quickCaption { position: relative; flex: 1; padding: 15px 15px 17px; }
 .kind { font-size: 9px; font-weight: 650; letter-spacing: .07em; text-transform: uppercase; color: var(--app-muted, var(--text-secondary)); }
 .quickCaption h3 { display: flex; justify-content: space-between; gap: 10px; margin-top: 7px; font-size: 16px; line-height: 1.25; font-weight: 620; letter-spacing: -.03em; }

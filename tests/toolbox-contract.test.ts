@@ -34,7 +34,7 @@ test('toolbox catalogue exposes every implemented tool', () => {
   assert.doesNotMatch(finishingCopySource, /being tested|cours de test|probando|in validation|en validation|en validación/i);
   assert.match(catalogueSource, /text\.body/);
   assert.match(catalogueSource, /text\.tag/);
-  assert.match(catalogueSource, /copy\.available/);
+  assert.doesNotMatch(catalogueSource, /copy\.available|styles\.availability/);
   assert.match(catalogueSource, /<h1>\{copy\.workspace\}<\/h1>/);
   assert.doesNotMatch(catalogueSource, /\{copy\.title\}|\{copy\.subtitle\}/);
   assert.match(catalogueStyles, /@media\(max-width: 700px\)/);

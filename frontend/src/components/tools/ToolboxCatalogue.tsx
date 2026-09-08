@@ -30,7 +30,7 @@ export function ToolboxCatalogue({ locale, mediaKind, onSelect }: { locale: stri
       const text = copy.tools[tool.visual];
       const artwork = isQuickToolArtId(tool.visual) ? QUICK_TOOL_ART[tool.visual] : null;
       const content = <>
-        <div className={styles.quickArt}>{artwork ? <Image src={artwork} alt="" fill sizes="(max-width: 700px) 92vw, (max-width: 1050px) 44vw, 22vw" loading="lazy" /> : null}<span className={styles.availability}>{copy.available}</span></div>
+        <div className={styles.quickArt}>{artwork ? <Image src={artwork} alt="" fill sizes="(max-width: 700px) 92vw, (max-width: 1050px) 44vw, 22vw" loading="lazy" /> : null}</div>
         <div className={styles.quickCaption}>
           <span className={styles.kind}>{text.tag}</span>
           <h3>{text.title}<span aria-hidden="true">↗</span></h3>
