@@ -5,7 +5,7 @@ import { ReferenceLibraryPicker, type ReferencePickerSelection } from './Referen
 import Link from 'next/link';
 import { useEffect, useId, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
-import { AudioWaveform, Film } from 'lucide-react';
+import { AudioWaveform, Ellipsis, Film } from 'lucide-react';
 import { MediaActionPanel } from './MediaActionPanel.client';
 import { LibraryImageThumbnail } from './LibraryImageThumbnail.client';
 import { mediaActionCopy, compactMediaSource } from './media-action-copy';
@@ -430,7 +430,10 @@ function AssetLibraryCollection({
                           ) : (
                             <LibraryImageThumbnail asset={asset} className="absolute inset-0 h-full w-full object-cover" />
                           )}
-                          {isPageLayout ? <button type="button" className="app-media-card-open absolute inset-0 z-10" onClick={() => setSelectedId(asset.id)} aria-label={actionCopy.title}><span>{actionCopy.actions} ↗</span></button> : assetHref ? (
+                          {isPageLayout ? <button type="button" className="app-media-card-open absolute inset-0 z-10" onClick={() => setSelectedId(asset.id)} aria-label={actionCopy.title} title={actionCopy.title}>
+                            <span className="app-media-card-action-chip" aria-hidden><Ellipsis /></span>
+                            <span className="sr-only">{actionCopy.actions}</span>
+                          </button> : assetHref ? (
                             <Link
                               href={assetHref}
                               prefetch={false}

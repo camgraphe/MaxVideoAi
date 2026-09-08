@@ -49,7 +49,8 @@ test('library and image asset pickers include storyboard source when tools are e
 
   assert.match(clientSource, /\['all', 'upload', 'generated', 'storyboard', 'character', 'angle', 'upscale'\]/);
   assert.match(clientSource, /emptyStoryboard/);
-  assert.match(clientSource, /\/app\/tools\/storyboard/);
+  assert.doesNotMatch(clientSource, /toolsTitle=/);
+  assert.doesNotMatch(clientSource, /toolLinks=/);
 
   assert.match(dataHookSource, /asset\.source !== 'storyboard'/);
   assert.match(assetBrowserSource, /'storyboard'/);

@@ -417,9 +417,10 @@
 .app-experience .app-media-collection .app-library-asset > div:first-child { aspect-ratio: 4 / 3 !important; border-radius: 12px; overflow: hidden; }
 .app-experience .app-media-collection .app-library-asset > div:last-child { padding: 9px 2px 0; }
 .app-experience .app-media-collection .app-library-asset > div:last-child > div { flex-direction: row; flex-wrap: wrap; gap: 8px; }
-.app-experience .app-media-card-open { display: flex; align-items: end; justify-content: end; padding: 10px; border: 0; }
-.app-experience .app-media-card-open span { display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 8px; background: #191916e6; color: #fffaf0; font-size: 12px; }
-.app-experience .app-media-card-open:hover span { background: var(--app-accent); color: var(--on-brand); }
+.app-experience .app-media-card-open { display: flex; align-items: start; justify-content: end; padding: 10px; border: 0; background: transparent; }
+.app-experience .app-media-card-action-chip { display: inline-flex; width: 36px; height: 36px; align-items: center; justify-content: center; border: 1px solid rgb(255 255 255 / .22); border-radius: 10px; background: rgb(15 17 17 / .64); color: rgb(255 255 255 / .88); box-shadow: 0 6px 18px rgb(0 0 0 / .18); backdrop-filter: blur(10px); transition: background-color 140ms ease, color 140ms ease, transform 140ms ease; }
+.app-experience .app-media-card-action-chip svg { width: 20px; height: 20px; stroke-width: 2; }
+.app-experience .app-media-card-open:hover .app-media-card-action-chip { background: var(--app-accent); color: var(--on-brand); transform: translateY(-1px); }
 .app-experience .app-media-card-open:focus-visible { outline: 3px solid var(--app-accent); outline-offset: -3px; }
 .app-experience .app-media-panel-backdrop { position: fixed; inset: 0; z-index: 190; display: flex; align-items: center; justify-content: center; padding: 20px; background: #080907b3; backdrop-filter: blur(5px); }
 .app-experience .app-media-panel { width: min(100%, 520px); max-height: calc(100dvh - 40px); overflow-y: auto; overscroll-behavior: contain; padding: 22px; border: 1px solid var(--app-line); border-radius: 20px; background: var(--app-panel, var(--surface)); color: var(--app-ink); box-shadow: 0 20px 80px #0005; }
@@ -458,7 +459,7 @@
   .app-experience .app-media-panel { max-height: calc(100dvh - 16px); border-radius: 18px; padding: 18px 16px max(18px, env(safe-area-inset-bottom)); }
   .app-experience .app-media-panel h2 { font-size: 21px; }
   .app-experience .app-media-card-open { padding: 6px; }
-  .app-experience .app-media-card-open span { font-size: 11px; padding-inline: 10px; }
+  .app-experience .app-media-card-action-chip { width: 34px; height: 34px; }
 }
 .app-experience .app-rail-media-card .app-rail-caption { display: flex; align-items: center; gap: 7px; min-height: 48px; padding: 8px 10px; border-top: 1px solid var(--app-line); }
 .app-experience .app-rail-caption strong { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 550; }

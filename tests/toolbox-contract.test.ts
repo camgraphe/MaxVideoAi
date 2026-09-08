@@ -39,7 +39,7 @@ test('toolbox catalogue exposes every implemented tool', () => {
   assert.match(catalogueStyles, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
 });
 
-test('all released finishing tools are discoverable from Toolbox, the app menu, Media and Studio', () => {
+test('all released finishing tools are discoverable from Toolbox, the app menu and Studio', () => {
   const finishingDefinitions = TOOLBOX.filter((tool) => FINISHING_TOOL_IDS.includes(tool.id as typeof FINISHING_TOOL_IDS[number]));
   assert.deepEqual(finishingDefinitions.map((tool) => tool.id), FINISHING_TOOL_IDS);
   assert.ok(finishingDefinitions.every((tool) => tool.group === 'quick' && tool.href === `/app/tools/${tool.id}`));
@@ -48,14 +48,6 @@ test('all released finishing tools are discoverable from Toolbox, the app menu, 
   for (const tool of finishingDefinitions) assert.ok(menuHrefs.has(tool.href), `${tool.id} should be in the app tool menu`);
   assert.ok(NAV_ITEMS.some((item) => item.id === 'tools' && item.href === '/app/tools'), 'Studio account navigation should expose Toolbox');
 
-  const mediaSource = readFileSync(
-    join(process.cwd(), 'frontend/app/(core)/(workspace)/app/library/_components/LibraryPageClient.tsx'),
-    'utf8'
-  );
-  const browserSource = readFileSync(
-    join(process.cwd(), 'frontend/components/library/AssetLibraryBrowser.tsx'),
-    'utf8'
-  );
   const studioTopbarSource = readFileSync(
     join(process.cwd(), 'frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceEditorTopbar.tsx'),
     'utf8'
@@ -64,9 +56,6 @@ test('all released finishing tools are discoverable from Toolbox, the app menu, 
     join(process.cwd(), 'frontend/components/app/AppSiteMenu.client.tsx'),
     'utf8'
   );
-  for (const tool of finishingDefinitions) assert.match(mediaSource, new RegExp(tool.href.replaceAll('/', '\\/')));
-  assert.match(browserSource, /assetType !== 'audio'/);
-  assert.doesNotMatch(browserSource, /hasToolLinks && !isPageLayout/);
   assert.match(studioTopbarSource, /AppSiteMenuButton/);
   assert.match(appMenuSource, /getAppMenuItems\([^)]*studioVisible/);
 });

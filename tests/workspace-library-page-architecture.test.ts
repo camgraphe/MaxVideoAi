@@ -40,6 +40,8 @@ test('workspace library client delegates data and mutation orchestration', () =>
   assert.doesNotMatch(clientSource, /authFetch/);
   assert.doesNotMatch(clientSource, /prepareImageFileForUpload/);
   assert.ok(clientLines < 500, `expected LibraryPageClient to stay under 500 lines, got ${clientLines}`);
+  assert.doesNotMatch(clientSource, /countLabel=/, 'a paginated page must not present its loaded batch as a total');
+  assert.doesNotMatch(clientSource, /toolsTitle=|toolsDescription=|toolLinks=/, 'Media should stay focused on browsing and managing media');
 });
 
 test('workspace library import input stays hidden from keyboard traversal', () => {
