@@ -24,6 +24,7 @@ function connector(
     kind,
     label: kind,
     required: false,
+    sourceType: 'control',
     maxCount: 1,
     connectedCount: 0,
     remainingCount: 1,
