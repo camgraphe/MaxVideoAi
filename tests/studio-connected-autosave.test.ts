@@ -86,18 +86,18 @@ test('a recovered connected draft is resumed only at its exact server revision',
   const draft = readStudioConnectedWorkspaceDraft(storage, 'scope-key', (value) => value as never);
   assert.deepEqual(draft, { dirty: true, revision: 4, state: draftState });
   assert.deepEqual(resolveStudioConnectedWorkspaceHydration({ serverRevision: 4, serverState: server, draft }), {
-    state: draftState, conflict: false, source: 'draft',
+    state: draftState, baseRevision: 4, conflict: false, source: 'draft',
   });
   assert.deepEqual(resolveStudioConnectedWorkspaceHydration({ serverRevision: 5, serverState: server, draft }), {
-    state: draftState, conflict: true, source: 'draft',
+    state: draftState, baseRevision: 4, conflict: true, source: 'draft',
   });
   const identical = { dirty: true, revision: 5, state: server };
   assert.deepEqual(resolveStudioConnectedWorkspaceHydration({ serverRevision: 5, serverState: server, draft: identical }), {
-    state: server, conflict: false, source: 'server',
+    state: server, baseRevision: 5, conflict: false, source: 'server',
   });
   assert.deepEqual(resolveStudioConnectedWorkspaceHydration({
     serverRevision: 6, serverState: server, draft: { dirty: false, revision: 5, state: draftState },
-  }), { state: server, conflict: false, source: 'server' });
+  }), { state: server, baseRevision: 6, conflict: false, source: 'server' });
 });
 
 test('a reopened stale draft starts blocked without issuing a write', async () => {

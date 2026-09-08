@@ -57,13 +57,14 @@ export function resolveStudioConnectedWorkspaceHydration(params: {
   serverRevision: number;
   serverState: PersistedWorkspaceState;
   draft: StudioConnectedWorkspaceDraft | null;
-}): { state: PersistedWorkspaceState; conflict: boolean; source: 'server' | 'draft' } {
+}): { state: PersistedWorkspaceState; baseRevision: number; conflict: boolean; source: 'server' | 'draft' } {
   if (!params.draft || !params.draft.dirty || studioWorkspaceSnapshotFingerprint(params.draft.state)
     === studioWorkspaceSnapshotFingerprint(params.serverState)) {
-    return { state: params.serverState, conflict: false, source: 'server' };
+    return { state: params.serverState, baseRevision: params.serverRevision, conflict: false, source: 'server' };
   }
   return {
     state: params.draft.state,
+    baseRevision: params.draft.revision,
     conflict: params.draft.revision !== params.serverRevision,
     source: 'draft',
   };

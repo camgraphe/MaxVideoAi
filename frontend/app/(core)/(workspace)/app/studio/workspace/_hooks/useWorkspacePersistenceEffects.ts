@@ -445,14 +445,14 @@ export function useWorkspacePersistenceEffects({
                 serverState: serverPersisted,
                 draft: connectedDraft,
               })
-            : { state: serverPersisted, conflict: false, source: 'server' as const };
+            : { state: serverPersisted, baseRevision: serverProject.revision ?? 0, conflict: false, source: 'server' as const };
           applyPersistedWorkspace(hydration.state);
           if (connected && mediaAccountId) {
             const scope = `${mediaAccountId}:${projectId}`;
             let queue: StudioConnectedSaveQueue<SavePayload>;
             queue = createStudioConnectedSaveQueue<SavePayload>({
               scope,
-              initialRevision: serverProject.revision!,
+              initialRevision: hydration.baseRevision,
               initialConflictDraft: hydration.conflict ? {
                 name: serverProject.name,
                 canvasTemplateId: serverProject.canvasTemplateId,
