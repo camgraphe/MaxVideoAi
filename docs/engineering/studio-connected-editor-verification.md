@@ -19,7 +19,7 @@ Le socle composé au commit `e101e2840` conserve l'app qualifiée et le main ré
 
 ## PostgreSQL jetable
 
-Le test `tests/connected-montage-disposable-postgres.test.ts` utilise le helper local existant : nouveau répertoire unique, cluster PostgreSQL 17, socket Unix seulement, aucune adresse réseau d'écoute, écriture et lecture d'une ligne, arrêt et nettoyage dans `finally`. Il ne lit pas une URL de base héritée. Le préfixe court `stpg` respecte la limite de chemin de socket sur macOS.
+Le test `tests/connected-montage-disposable-postgres.test.ts` utilise le helper local existant : nouveau répertoire unique, version majeure PostgreSQL 17 explicitement contrôlée avant écriture, répertoires data/socket correspondant à cette instance, socket Unix seulement, aucune adresse réseau d'écoute, écriture et lecture d'une ligne, arrêt et nettoyage dans `finally`. Il ne lit pas une URL de base héritée. Le préfixe court `stpg` respecte la limite de chemin de socket sur macOS.
 
 Commande vérifiée, 1/1 réussi :
 
