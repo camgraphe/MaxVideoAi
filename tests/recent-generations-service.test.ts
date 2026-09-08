@@ -385,3 +385,22 @@ test('web recent mapper preserves the authenticated route fixture including prom
     indexable: true,
   });
 });
+
+test('web recent mapper reuses a legacy video preview frame as its thumbnail without an output projection', () => {
+  const payload = mapRecentGenerationRecordToWeb(
+    recentRecord({
+      surface: 'video',
+      status: 'completed',
+      progress: 100,
+      thumb_url: '',
+      video_url: 'https://cdn.maxvideoai.com/video.mp4',
+      preview_frame: 'https://cdn.maxvideoai.com/existing-poster.webp',
+      render_ids: null,
+    })
+  );
+
+  assert.equal(payload.thumbUrl, 'https://cdn.maxvideoai.com/existing-poster.webp');
+  assert.equal(payload.previewFrame, 'https://cdn.maxvideoai.com/existing-poster.webp');
+  assert.equal(payload.videoUrl, 'https://cdn.maxvideoai.com/video.mp4');
+  assert.equal('outputId' in payload, false);
+});

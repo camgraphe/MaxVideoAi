@@ -28,7 +28,12 @@ export function mapRecentGenerationRecordToWeb(record: RecentGenerationRecord) {
     engineLabel: record.engine_label,
     durationSec: record.duration_sec,
     prompt: record.prompt,
-    thumbUrl: normalizeMediaUrl(record.thumb_url) ?? primaryThumb ?? primaryImage ?? undefined,
+    thumbUrl:
+      normalizeMediaUrl(record.thumb_url)
+      ?? normalizeMediaUrl(record.preview_frame)
+      ?? primaryThumb
+      ?? primaryImage
+      ?? undefined,
     videoUrl: normalizeMediaUrl(record.video_url) ?? undefined,
     previewVideoUrl: normalizeMediaUrl(record.preview_video_url) ?? undefined,
     audioUrl: normalizeMediaUrl(record.audio_url) ?? undefined,
