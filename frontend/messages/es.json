@@ -5759,6 +5759,10 @@
         },
         "toolbar": {
           "ariaLabel": "Barra de herramientas de creación del lienzo",
+          "add": "Añadir",
+          "selection": "Selección",
+          "workbenches": "Abrir un taller",
+          "validation": "Validación",
           "undoTooltip": "Deshacer (Cmd/Ctrl + Z)",
           "undoTitle": "Deshacer edición del lienzo (Cmd/Ctrl + Z)",
           "undo": "Deshacer edición del lienzo",

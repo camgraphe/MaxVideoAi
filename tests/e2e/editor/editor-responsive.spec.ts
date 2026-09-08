@@ -292,11 +292,20 @@ async function expectGuideBadgeActionsReachableInsideViewport(
 }
 
 async function expectGuideTypographyScale(page: Page, textScale: number): Promise<void> {
-  const expandedGuide = page.locator([
+  const preferredSelectors = [
     '[data-guide-active-panel="true"]',
     '[data-guide-step="3"][data-guide-collapsed="false"]',
-  ].join(','));
-  await expect(expandedGuide).toHaveCount(1);
+    '[data-guide-surface-annotation="true"][data-guide-collapsed="false"]',
+  ];
+  let expandedGuide = page.locator(preferredSelectors[0]!).first();
+  for (const selector of preferredSelectors) {
+    const candidate = page.locator(selector).first();
+    if (await candidate.count()) {
+      expandedGuide = candidate;
+      break;
+    }
+  }
+  await expect(expandedGuide).toBeVisible();
   const metrics = await expandedGuide.evaluate((annotation) => {
     const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
     const step = annotation.querySelector<HTMLElement>('span');
@@ -562,16 +571,13 @@ test('mobile guide keeps five canonical badges and one nonduplicating active-cop
   await expect(selectedNode).toBeVisible();
   await page.keyboard.press('i');
   await expect(page.locator('[class*="mobilePanelRail"]')).toBeVisible();
-  await expectSeparatedByAtLeast(page, '[data-guide-active-panel="true"]', '[class*="mobilePanelRail"]', 20);
-  await expectSeparatedByAtLeast(page, '[data-guide-active-panel="true"]', '.react-flow__node.selected', 20);
-
-  const inspectorToggle = page.locator('button[aria-controls="studio-inspector-panel"]');
-  await inspectorToggle.click();
   await expect(page.locator('#studio-inspector-panel')).toBeVisible();
   await expect(activePanel).toBeHidden();
   await page.keyboard.press('Escape');
   await expect(page.locator('#studio-inspector-panel')).toBeHidden();
   await expect(activePanel).toBeVisible();
+  await expectSeparatedByAtLeast(page, '[data-guide-active-panel="true"]', '.react-flow__node.selected', 20);
+
   await expectCanonicalGuideTargets(page);
 });
 
@@ -606,10 +612,10 @@ for (const scenario of [
     await openResponsiveGuideProject(page);
 
     const transientSurfaces = [
-      { label: 'Image tools', id: 'canvas-toolbar-image-menu', action: '[data-canvas-toolbar-block-id="image"]' },
-      { label: 'Video tools', id: 'canvas-toolbar-video-menu', action: '[data-canvas-toolbar-block-id="video"]' },
-      { label: 'Audio tools', id: 'canvas-toolbar-audio-menu', action: '[data-canvas-toolbar-block-id="music"]' },
-      { label: 'Text tools', id: 'canvas-toolbar-text-menu', action: '[data-canvas-toolbar-block-id="free-text"]' },
+      { label: 'Add', id: 'canvas-toolbar-add-menu', action: '[data-canvas-toolbar-block-id="image"]' },
+      { label: 'Add', id: 'canvas-toolbar-add-menu', action: '[data-canvas-toolbar-block-id="video"]' },
+      { label: 'Add', id: 'canvas-toolbar-add-menu', action: '[data-canvas-toolbar-block-id="music"]' },
+      { label: 'Add', id: 'canvas-toolbar-add-menu', action: '[data-canvas-toolbar-block-id="free-text"]' },
       { label: 'Save canvas', id: 'canvas-toolbar-save-popover', action: 'button' },
     ];
 

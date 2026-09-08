@@ -1,4 +1,4 @@
-import { Link2, Plus, Trash2, Unlink2 } from 'lucide-react';
+import { Link2, Lock, Plus, Trash2, Unlink2, Unlock } from 'lucide-react';
 import { memo, useEffect, useRef } from 'react';
 import type { KeyboardEvent, MouseEvent, PointerEvent as ReactPointerEvent } from 'react';
 
@@ -22,6 +22,7 @@ export type TimelineContextMenuState = {
 export type TimelineTrackContextMenuState = {
   canAdd: boolean;
   canDelete: boolean;
+  isLocked: boolean;
   kind: 'video' | 'audio';
   label: string;
   trackId: WorkspaceTimelineTrack;
@@ -34,7 +35,7 @@ type TimelineContextMenusProps = {
   canvasNodeCopy: StudioCopy['canvas']['nodes'];
   clipMenu: TimelineContextMenuState | null;
   onClipMenuAction: (action: 'link' | 'unlink') => void;
-  onTrackMenuAction: (action: 'add' | 'delete') => void;
+  onTrackMenuAction: (action: 'add' | 'delete' | 'toggle-lock') => void;
   trackMenu: TimelineTrackContextMenuState | null;
 };
 
@@ -117,6 +118,15 @@ export const TimelineContextMenus = memo(function TimelineContextMenus({
           onPointerDown={stopMenuPointer}
         >
           <span>{copy.tracks.trackContextLabel.replace('{track}', trackLabel)}</span>
+          <button
+            type="button"
+            role="menuitem"
+            data-timeline-menu-toggle-lock={trackMenu.trackId}
+            onClick={() => onTrackMenuAction('toggle-lock')}
+          >
+            {trackMenu.isLocked ? <Unlock size={14} /> : <Lock size={14} />}
+            {(trackMenu.isLocked ? copy.tracks.unlockTrack : copy.tracks.lockTrack).replace('{track}', trackLabel)}
+          </button>
           <button
             type="button"
             role="menuitem"

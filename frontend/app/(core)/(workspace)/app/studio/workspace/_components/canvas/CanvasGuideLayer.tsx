@@ -60,10 +60,8 @@ const GUIDE_BADGE_SIZE = { width: 28, height: 28 };
 const GUIDE_DRAG_THRESHOLD = 4;
 const FUNCTIONAL_EDGE_SAMPLE_INTERVAL = 16;
 const TRANSIENT_TOOLBAR_PROTECTED_SELECTORS = [
-  '#canvas-toolbar-image-menu',
-  '#canvas-toolbar-video-menu',
-  '#canvas-toolbar-audio-menu',
-  '#canvas-toolbar-text-menu',
+  '#canvas-toolbar-add-menu',
+  '#canvas-toolbar-selection-menu',
   '#canvas-toolbar-save-popover',
 ];
 const PROTECTED_SELECTORS = [
@@ -71,6 +69,7 @@ const PROTECTED_SELECTORS = [
   '.react-flow__handle',
   '[data-canvas-miniature-map="true"]',
   '[data-canvas-floating-toolbar="true"]',
+  '[data-canvas-node-actions-overlay="true"]',
   '[data-canvas-navigator="true"]',
   '[data-studio-canvas-inspector="true"]',
   '[data-canvas-guide-controls="true"]',
@@ -160,12 +159,16 @@ function actionTraySideForPlacement(
 
 function findSafeCanvasBadge(params: {
   anchorRect: WorkspaceGuideRect;
+  minimumGap: number;
   preferredPlacement: WorkspaceGuidePlacement;
   protectedRects: readonly WorkspaceGuideRect[];
   seedRect: WorkspaceGuideRect;
   viewportRect: WorkspaceGuideRect;
 }): WorkspaceGuidePlacementResult | null {
-  const { anchorRect, preferredPlacement, protectedRects, seedRect, viewportRect } = params;
+  const { anchorRect, minimumGap, preferredPlacement, protectedRects, seedRect, viewportRect } = params;
+  const clearanceRects = minimumGap
+    ? protectedRects.map((rect) => expandWorkspaceGuideRect(rect, minimumGap))
+    : protectedRects;
   const maxX = viewportRect.x + viewportRect.width - GUIDE_BADGE_SIZE.width;
   const maxY = viewportRect.y + viewportRect.height - GUIDE_BADGE_SIZE.height;
   const xCandidates = [
@@ -183,7 +186,7 @@ function findSafeCanvasBadge(params: {
     ...protectedRects.flatMap((rect) => [rect.y - GUIDE_BADGE_SIZE.height, rect.y + rect.height]),
   ];
   const rankCandidates = (candidates: WorkspaceGuideRect[]) => candidates
-    .filter((candidate) => !protectedRects.some((protectedRect) => rectanglesIntersect(candidate, protectedRect)))
+    .filter((candidate) => !clearanceRects.some((protectedRect) => rectanglesIntersect(candidate, protectedRect)))
     .sort((left, right) => (
       Math.hypot(left.x - seedRect.x, left.y - seedRect.y)
       - Math.hypot(right.x - seedRect.x, right.y - seedRect.y)
@@ -459,8 +462,9 @@ export function CanvasGuideLayer({
     }
 
     const zoom = reactFlow.getZoom();
-    const compact = compactMarkers || compactWorkspaceGuideAtZoom(zoom);
-    const placementGap = compact || presentation.isMobile
+    const compactAtZoom = compactWorkspaceGuideAtZoom(zoom);
+    const compact = compactMarkers || compactAtZoom;
+    const placementGap = compactAtZoom || presentation.isMobile
       ? WORKSPACE_GUIDE_COMPACT_GAP
       : WORKSPACE_GUIDE_DESKTOP_GAP;
     const viewportRect = rectFromDomRect(canvasRect);
@@ -474,14 +478,18 @@ export function CanvasGuideLayer({
         rectFromDomRect(element.getBoundingClientRect()),
         placementGap,
       ));
-    const hasVisibleSurfaceCallout = Boolean(
-      canvasShell.ownerDocument.querySelector('[data-guide-surface-annotation="true"]'),
-    );
+    const visibleSurfaceCallout = canvasShell.ownerDocument.querySelector<HTMLElement>([
+      '[data-guide-active-panel="true"]',
+      '[data-guide-surface-annotation="true"]',
+    ].join(','));
+    const measuredSurfaceRect = visibleSurfaceCallout && isVisibleProtectedElement(visibleSurfaceCallout)
+      ? rectFromDomRect(visibleSurfaceCallout.getBoundingClientRect())
+      : null;
     const protectedRects = [
       ...canvasProtectedRects,
       ...transientToolbarProtectedRects,
-      ...(hasVisibleSurfaceCallout && presentation.surfaceRect
-        ? [expandWorkspaceGuideRect(presentation.surfaceRect, placementGap)]
+      ...(measuredSurfaceRect ?? presentation.surfaceRect
+        ? [expandWorkspaceGuideRect(measuredSurfaceRect ?? presentation.surfaceRect!, placementGap)]
         : []),
     ];
     const acceptedRects: WorkspaceGuideRect[] = [];
@@ -512,7 +520,21 @@ export function CanvasGuideLayer({
         previousPlacement: previousSidesRef.current.get(resolved.annotation.id) ?? null,
         ...(manualPosition ? { manualPosition } : {}),
       });
-      if ((!shouldUseBadge && placement.collapsed) || !placementIsSafe(placement, viewportRect, protectedRects)) {
+      const clearsAnchor = !rectanglesIntersect(
+        placement.rect,
+        expandWorkspaceGuideRect(anchorRect, placementGap),
+      );
+      const protectedGap = window.innerWidth >= 768 ? placementGap : 0;
+      const clearsProtectedRects = !protectedGap || !protectedRects.some((rect) => rectanglesIntersect(
+        placement.rect,
+        expandWorkspaceGuideRect(rect, protectedGap),
+      ));
+      if ((!shouldUseBadge && placement.collapsed)
+        || (!manualPosition && (
+          !clearsAnchor
+          || !clearsProtectedRects
+          || !placementIsSafe(placement, viewportRect, protectedRects)
+        ))) {
         placement = resolveWorkspaceGuidePlacement({
           anchorRect,
           calloutSize: GUIDE_BADGE_SIZE,
@@ -527,6 +549,7 @@ export function CanvasGuideLayer({
         if (!placementIsSafe(placement, viewportRect, protectedRects)) {
           const safeBadge = findSafeCanvasBadge({
             anchorRect,
+            minimumGap: protectedGap,
             preferredPlacement: placement.side,
             protectedRects,
             seedRect: placement.rect,
@@ -550,7 +573,10 @@ export function CanvasGuideLayer({
       });
     }
 
-    presentation.reportCanvasProtectedRects([...canvasProtectedRects, ...acceptedRects]);
+    // The surface explanation takes placement precedence; once it reports its rect,
+    // this layer moves badges around it. Reporting badges in both directions creates
+    // a circular mobile layout where neither side can claim a safe slot.
+    presentation.reportCanvasProtectedRects(canvasProtectedRects);
     setPlacements((current) => placementsEqual(current, nextPlacements) ? current : nextPlacements);
 
     if (!initialFit.isCompleted() && canvasAnnotations.length && nodes.length) {

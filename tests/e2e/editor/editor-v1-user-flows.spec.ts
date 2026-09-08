@@ -170,7 +170,7 @@ test('blank project creates a connected multi-output image workflow and inserts 
 
   const promptNodeId = await placeCanvasToolbarBlock({
     page,
-    menuLabel: 'Text tools',
+    menuLabel: 'Add',
     blockId: 'free-text',
     xRatio: 0.12,
     yRatio: 0.4,
@@ -180,7 +180,7 @@ test('blank project creates a connected multi-output image workflow and inserts 
 
   const imageNodeId = await placeCanvasToolbarBlock({
     page,
-    menuLabel: 'Image tools',
+    menuLabel: 'Add',
     blockId: 'generate-image',
     xRatio: 0.82,
     yRatio: 0.58,

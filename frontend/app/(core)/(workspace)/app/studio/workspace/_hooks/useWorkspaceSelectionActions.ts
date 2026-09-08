@@ -1,4 +1,4 @@
-import { useCallback, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
+import { useCallback, useRef, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
 import {
   defaultTimelineSelectionIds,
   uniqueTimelineSelectionIds,
@@ -45,6 +45,8 @@ export function useWorkspaceSelectionActions({
   handleSelectedCanvasNodeChange: (nodeId: string | null) => void;
   handleSyncSelectedCanvasNode: (nodeId: string | null) => void;
 } {
+  const lastInspectedCanvasNodeIdRef = useRef<string | null>(null);
+
   const handleResetExportRangeMode = useCallback(() => {
     setExportRangeMode('sequence');
   }, [setExportRangeMode]);
@@ -163,6 +165,7 @@ export function useWorkspaceSelectionActions({
 
   const handleInspectCanvasNode = useCallback(
     (nodeId: string | null) => {
+      if (nodeId) lastInspectedCanvasNodeIdRef.current = nodeId;
       setActiveEditorSurface('canvas');
       setInspectedProjectAssetId(null);
       setInspectedSequenceId(null);
@@ -174,7 +177,12 @@ export function useWorkspaceSelectionActions({
 
   const handleCloseCanvasInspector = useCallback(() => {
     setIsCanvasInspectorOpen(false);
-    requestAnimationFrame(() => document.querySelector<HTMLElement>('[data-canvas-selection-settings]')?.focus());
+    const nodeId = lastInspectedCanvasNodeIdRef.current;
+    requestAnimationFrame(() => {
+      if (!nodeId) return;
+      const escapedNodeId = typeof CSS === 'undefined' ? nodeId : CSS.escape(nodeId);
+      document.querySelector<HTMLElement>(`[data-canvas-node-inspect-button="${escapedNodeId}"]`)?.focus();
+    });
   }, [setIsCanvasInspectorOpen]);
 
   return {

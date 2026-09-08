@@ -67,7 +67,7 @@
   position: relative;
   height: 100vh;
   display: grid;
-  --timeline-panel-fallback-height: 252px;
+  --timeline-panel-fallback-height: 220px;
   grid-template-rows: 54px minmax(300px, 1fr) var(--timeline-panel-height, var(--timeline-panel-fallback-height));
   overflow: hidden;
   background:
@@ -534,7 +534,7 @@
 
 @media (max-width: 1120px) {
   .editorShell {
-    --timeline-panel-fallback-height: 260px;
+    --timeline-panel-fallback-height: 220px;
     grid-template-rows: auto minmax(300px, 1fr) var(--timeline-panel-height, var(--timeline-panel-fallback-height));
   }
 
@@ -808,7 +808,7 @@
     right: 12px;
     bottom: 74px;
     width: auto;
-    max-height: min(56dvh, 440px);
+    max-height: min(40dvh, 340px);
     border-radius: 14px;
     transform: none;
   }
@@ -893,5 +893,6 @@
   .canvasEditorBody { padding-top:0; }
   .canvasEditorBody .mobilePanelRail { display:none; }
   .projectMediaPanelSlot,.inspectorPanelSlot { top:48px; bottom:4px; }
+  .editorShell :global([class*="toolbarPopover"]) { max-height:min(37dvh,144px); }
 }
 @media(prefers-reduced-motion:reduce) { .editorShell * { animation-duration:0s !important; transition-duration:0s !important; scroll-behavior:auto !important; } }

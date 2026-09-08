@@ -1,4 +1,4 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 import { DEFAULT_WORKSPACE_PROJECT_SETTINGS } from '../../../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-settings';
 import { createStarterWorkspaceTemplate } from '../../../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-templates';
 import { assertNoClientErrors, trackClientErrors, type ClientErrors } from '../admin-helpers';
@@ -7,6 +7,15 @@ type EditorResourceError = {
   status: number;
   url: string;
 };
+
+export async function canvasNodeControls(page: Page, node: Locator = page.locator('.react-flow__node.selected')) {
+  await expect(node).toHaveClass(/selected/);
+  const nodeId = await node.getAttribute('data-id');
+  expect(nodeId).not.toBeNull();
+  return page.locator('[data-canvas-node-actions-overlay]').filter({
+    has: page.locator(`[data-canvas-node-inspect-button=${JSON.stringify(nodeId)}]`),
+  });
+}
 type EditorConsoleError = {
   text: string;
   url: string;

@@ -3,6 +3,7 @@ import { createStarterWorkspaceTemplate } from '../../../frontend/app/(core)/(wo
 import {
   assertNoEditorClientErrors,
   canvasNodeCount,
+  canvasNodeControls,
   dragTimelineClip,
   dragTimelineClipEnd,
   dropProjectMediaAssetOnTimelineTrack,
@@ -1046,10 +1047,10 @@ test('mobile responsive canvas controls timeline scroll and export dialog stay u
 
   const canvasToolbar = page.getByLabel('Canvas creation toolbar');
   await expectWithinViewport(page, canvasToolbar, 'mobile canvas creation toolbar');
-  const imageTools = page.getByRole('button', { name: 'Image tools' });
+  const imageTools = page.getByRole('button', { name: 'Add', exact: true });
   await expectTapTarget(imageTools, 'mobile Image tools button', 44);
   await imageTools.click();
-  const imageMenu = page.getByRole('menu', { name: 'Image tools' });
+  const imageMenu = page.getByRole('menu', { name: 'Add', exact: true });
   await expectWithinViewport(page, imageMenu, 'mobile Image tools drawer menu');
   await expect(imageMenu.locator('[data-canvas-toolbar-block-id="generate-image"]')).toBeVisible();
   await page.keyboard.press('Escape');
@@ -1385,11 +1386,14 @@ test('canvas toolbar can marquee select multiple nodes and delete them', async (
   const initialNodeCount = await canvasNodeCount(page);
   expect(initialNodeCount).toBeGreaterThan(selectedNodeIds.length);
 
-  const marqueeSelect = page.getByRole('button', { name: 'Marquee select canvas nodes' });
+  await page.getByRole('button', { name: 'Selection', exact: true }).click();
+  const marqueeSelect = page.getByRole('menuitemradio', { name: 'Marquee select canvas nodes' });
   await expect(marqueeSelect).toBeVisible();
   await marqueeSelect.click();
-  await expect(marqueeSelect).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByRole('button', { name: 'Delete selected canvas nodes' })).toBeDisabled();
+  await page.getByRole('button', { name: 'Selection', exact: true }).click();
+  await expect(marqueeSelect).toHaveAttribute('aria-checked', 'true');
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('toolbar', { name: 'Selection actions' })).toHaveCount(0);
 
   await marqueeSelectCanvasNodes(page, selectedNodeIds);
 
@@ -1400,8 +1404,9 @@ test('canvas toolbar can marquee select multiple nodes and delete them', async (
     await expect(page.locator(`.react-flow__node[data-id="${nodeId}"]`)).toHaveClass(/selected/);
   }
   await expect(page.getByText(/\d+ selected/)).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Delete selected canvas nodes' })).toBeEnabled();
-  await page.getByRole('button', { name: 'Delete selected canvas nodes' }).click();
+  const selectionActions = page.getByRole('toolbar', { name: 'Selection actions' });
+  await selectionActions.getByRole('button', { name: 'Actions', exact: true }).click();
+  await selectionActions.getByRole('menuitem', { name: 'Delete', exact: true }).click();
 
   await expect.poll(() => canvasNodeCount(page)).toBe(initialNodeCount - selectedCount);
   for (const nodeId of selectedNodeIds) {
@@ -1422,7 +1427,8 @@ test('canvas marquee selection draws a visible dashed selection rectangle', asyn
   expect(bounds).not.toBeNull();
   if (!bounds) return;
 
-  const marqueeSelect = page.getByRole('button', { name: 'Marquee select canvas nodes' });
+  await page.getByRole('button', { name: 'Selection', exact: true }).click();
+  const marqueeSelect = page.getByRole('menuitemradio', { name: 'Marquee select canvas nodes' });
   await expect(marqueeSelect).toBeVisible();
   await marqueeSelect.click();
 
@@ -1467,12 +1473,9 @@ test('canvas toolbar groups creation tools by media workflow', async ({ page }) 
 
   await expect(page.getByRole('button', { name: 'Undo canvas edit' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Redo canvas edit' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Select canvas nodes', exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Marquee select canvas nodes' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Image tools' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Video tools' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Audio tools' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Text tools' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Selection', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Add', exact: true })).toBeVisible();
+  await expect(page.locator('[data-canvas-floating-toolbar]').getByRole('button')).toHaveCount(5);
   await expect(page.getByRole('button', { name: 'Save canvas' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Open canvas navigation' })).toBeVisible();
 
@@ -1485,8 +1488,8 @@ test('canvas toolbar groups creation tools by media workflow', async ({ page }) 
   await expect(page.getByRole('button', { name: 'Canvas tools' })).toHaveCount(0);
   await expect(page.getByText('Fit graph')).toHaveCount(0);
 
-  await page.getByRole('button', { name: 'Image tools' }).click();
-  const imageMenu = page.getByRole('menu', { name: 'Image tools' });
+  await page.getByRole('button', { name: 'Add', exact: true }).click();
+  const imageMenu = page.getByRole('menu', { name: 'Add', exact: true });
   await expect(imageMenu).toBeVisible();
   await expect(imageMenu.locator('[data-canvas-toolbar-block-id="image"]')).toContainText('Image');
   await expect(imageMenu.locator('[data-canvas-toolbar-block-id="generate-image"]')).toContainText('Generate image');
@@ -1494,8 +1497,7 @@ test('canvas toolbar groups creation tools by media workflow', async ({ page }) 
   await expect(imageMenu.locator('[data-canvas-toolbar-block-id="angle"]')).toContainText('Angle');
   await expect(imageMenu.locator('[data-canvas-toolbar-block-id="upscale-image"]')).toContainText('Upscale image');
 
-  await page.getByRole('button', { name: 'Video tools' }).click();
-  const videoMenu = page.getByRole('menu', { name: 'Video tools' });
+  const videoMenu = page.getByRole('menu', { name: 'Add', exact: true });
   await expect(videoMenu).toBeVisible();
   await expect(videoMenu.locator('[data-canvas-toolbar-block-id="video"]')).toContainText('Video');
   await expect(videoMenu.locator('[data-canvas-toolbar-block-id="generate-video"]')).toContainText('Generate video');
@@ -1505,8 +1507,7 @@ test('canvas toolbar groups creation tools by media workflow', async ({ page }) 
   await expect(videoMenu.locator('[data-canvas-toolbar-block-id="character-video"]')).toHaveCount(0);
   await expect(videoMenu.locator('[data-canvas-toolbar-block-id="upscale-video"]')).toContainText('Upscale video');
 
-  await page.getByRole('button', { name: 'Audio tools' }).click();
-  const audioMenu = page.getByRole('menu', { name: 'Audio tools' });
+  const audioMenu = page.getByRole('menu', { name: 'Add', exact: true });
   await expect(audioMenu).toBeVisible();
   await expect(audioMenu.locator('[data-canvas-toolbar-block-id="music"]')).toContainText('Music');
   await expect(audioMenu.locator('[data-canvas-toolbar-block-id="audio-music"]')).toContainText('Generate music');
@@ -1515,8 +1516,7 @@ test('canvas toolbar groups creation tools by media workflow', async ({ page }) 
   await expect(audioMenu.locator('[data-canvas-toolbar-block-id="audio-sound-design"]')).toContainText('Sound design');
   await expect(audioMenu.locator('[data-canvas-toolbar-block-id="audio-sound-design-voice"]')).toContainText('Sound design + voice');
 
-  await page.getByRole('button', { name: 'Text tools' }).click();
-  const textMenu = page.getByRole('menu', { name: 'Text tools' });
+  const textMenu = page.getByRole('menu', { name: 'Add', exact: true });
   await expect(textMenu).toBeVisible();
   await expect(textMenu.locator('[data-canvas-toolbar-block-id="free-text"]')).toContainText('Free text');
   await expect(textMenu.locator('[data-canvas-toolbar-block-id="chat-box"]')).toContainText('Chat box');
@@ -1530,7 +1530,7 @@ test('studio menu popover and dialog controls support keyboard focus return', as
   await openFreshEditorWorkspace(page);
   await switchEditorFocus(page, 'Canvas');
 
-  const imageTools = page.getByRole('button', { name: 'Image tools' });
+  const imageTools = page.getByRole('button', { name: 'Add', exact: true });
   await imageTools.focus();
   await page.keyboard.press('Enter');
   await expect(imageTools).toHaveAttribute('aria-expanded', 'true');
@@ -1588,9 +1588,10 @@ test('canvas keyboard shortcuts undo and redo canvas actions without stealing ed
   await switchEditorFocus(page, 'Canvas');
 
   const initialNodeCount = await canvasNodeCount(page);
-  await page.getByRole('button', { name: 'Text tools' }).click();
+  await page.getByRole('button', { name: 'Add', exact: true }).click();
   const promptTemplate = page.locator('[data-canvas-toolbar-block-id="free-text"]');
   const canvas = page.locator('.react-flow');
+  await promptTemplate.scrollIntoViewIfNeeded();
   const templateBox = await promptTemplate.boundingBox();
   const canvasBox = await canvas.boundingBox();
   expect(templateBox).not.toBeNull();
@@ -2860,11 +2861,15 @@ test('guide anchors survive validation and a mocked failed generation response w
 
   await page.locator('.react-flow__node[data-id="prompt-product-ad"]').click({ force: true });
   await expect(page.locator('.react-flow__node[data-id="prompt-product-ad"]')).toHaveClass(/selected/);
-  await page.getByRole('button', { name: 'Delete selected canvas nodes' }).click();
+  let selectedNode = await canvasNodeControls(page, page.locator('.react-flow__node[data-id="prompt-product-ad"]'));
+  await selectedNode.locator('[data-canvas-node-actions-button]').click();
+  await selectedNode.getByRole('menuitem', { name: 'Delete', exact: true }).click();
   await expect(page.locator('.react-flow__node[data-id="prompt-product-ad"]')).toHaveCount(0);
   await page.locator('.react-flow__node[data-id="asset-product-image"]').click({ force: true });
   await expect(page.locator('.react-flow__node[data-id="asset-product-image"]')).toHaveClass(/selected/);
-  await page.getByRole('button', { name: 'Delete selected canvas nodes' }).click();
+  selectedNode = await canvasNodeControls(page, page.locator('.react-flow__node[data-id="asset-product-image"]'));
+  await selectedNode.locator('[data-canvas-node-actions-button]').click();
+  await selectedNode.getByRole('menuitem', { name: 'Delete', exact: true }).click();
   await expect(page.locator('.react-flow__node[data-id="asset-product-image"]')).toHaveCount(0);
   await expect(generateButton).toBeDisabled();
   await expect(validationStatus).toContainText('Needs attention');
@@ -2991,7 +2996,8 @@ test('copying and pasting all guided starter nodes leaves the guide annotation c
   const guideAnnotations = page.locator('[data-canvas-guide-annotation]');
   await expect(guideAnnotations).toHaveCount(5);
 
-  await page.getByRole('button', { name: 'Marquee select canvas nodes' }).click();
+  await page.getByRole('button', { name: 'Selection', exact: true }).click();
+  await page.getByRole('menuitemradio', { name: 'Marquee select canvas nodes' }).click();
   await marqueeSelectCanvasNodes(page, ['asset-product-image', 'prompt-product-ad', 'shot-01']);
   await expect(page.locator('.react-flow__node.selected')).toHaveCount(3);
   await copyCanvasGraphSelection(page);
@@ -3823,9 +3829,10 @@ test('canvas templates can be saved and applied without changing the timeline', 
   await expect(savedTemplateButton).toBeVisible();
   await page.getByRole('button', { name: 'Open canvas navigation' }).click();
 
-  await page.getByRole('button', { name: 'Text tools' }).click();
+  await page.getByRole('button', { name: 'Add', exact: true }).click();
   const promptTemplate = page.locator('[data-canvas-toolbar-block-id="free-text"]');
   const canvas = page.locator('.react-flow');
+  await promptTemplate.scrollIntoViewIfNeeded();
   const templateBox = await promptTemplate.boundingBox();
   const canvasBox = await canvas.boundingBox();
   expect(templateBox).not.toBeNull();
@@ -3927,8 +3934,8 @@ test('video block template uses custom drag and clears the ghost after the mouse
   await openFreshEditorWorkspace(page);
   await switchEditorFocus(page, 'Canvas');
 
-  await page.getByRole('button', { name: 'Video tools' }).click();
-  const videoMenu = page.getByRole('menu', { name: 'Video tools' });
+  await page.getByRole('button', { name: 'Add', exact: true }).click();
+  const videoMenu = page.getByRole('menu', { name: 'Add', exact: true });
   const videoTemplate = videoMenu.locator('[data-canvas-toolbar-block-id="video"]');
   await expect(videoTemplate).toBeVisible();
   await expect(videoTemplate).not.toHaveAttribute('draggable', 'true');
@@ -3999,7 +4006,7 @@ test('dropped generate blocks default to Seedance 2.0', async ({ page }) => {
   await openFreshEditorWorkspace(page);
   await switchEditorFocus(page, 'Canvas');
 
-  await page.getByRole('button', { name: 'Video tools' }).click();
+  await page.getByRole('button', { name: 'Add', exact: true }).click();
   const generateTemplate = page.locator('[data-canvas-toolbar-block-id="generate-video"]');
   const canvas = page.locator('.react-flow');
   await expect(generateTemplate).toBeVisible();
@@ -4130,8 +4137,8 @@ test('canvas file drop on a compatible empty block fills that block instead of a
   await openFreshEditorWorkspace(page);
   await switchEditorFocus(page, 'Canvas');
 
-  await page.getByRole('button', { name: 'Video tools' }).click();
-  const videoMenu = page.getByRole('menu', { name: 'Video tools' });
+  await page.getByRole('button', { name: 'Add', exact: true }).click();
+  const videoMenu = page.getByRole('menu', { name: 'Add', exact: true });
   const videoTemplate = videoMenu.locator('[data-canvas-toolbar-block-id="video"]');
   const canvas = page.locator('.react-flow');
   await expect(videoTemplate).toBeVisible();

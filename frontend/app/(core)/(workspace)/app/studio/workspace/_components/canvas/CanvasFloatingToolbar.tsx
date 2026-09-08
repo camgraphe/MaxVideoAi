@@ -11,6 +11,7 @@ import {
 } from 'react';
 import {
   AudioWaveform,
+  ArrowUpRight,
   BoxSelect,
   Clapperboard,
   ImagePlus,
@@ -18,6 +19,7 @@ import {
   Mic2,
   Music2,
   MousePointer2,
+  Plus,
   Redo2,
   Save,
   SlidersHorizontal,
@@ -42,8 +44,11 @@ import {
 import type { StudioCopy } from '../../../_lib/studio-copy';
 import { StudioMenu } from '../ui/StudioMenu';
 import { StudioPopover } from '../ui/StudioPopover';
+import { TOOLBOX } from '@/lib/toolbox/catalogue';
+import { toolboxCopy, type ToolboxVisualId } from '@/components/tools/toolbox-copy';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 
-type ToolbarMenuId = 'audio' | 'image' | 'save' | 'text' | 'video';
+type ToolbarMenuId = 'add' | 'selection' | 'save';
 
 export type CanvasSelectionTool = 'pointer' | 'marquee';
 
@@ -68,8 +73,6 @@ export type CanvasFloatingToolbarProps = {
   canUndo: boolean;
   canRenameActiveCanvas: boolean;
   selectionTool: CanvasSelectionTool;
-  selectedNodeCount: number;
-  onDeleteSelectedNodes: () => void;
   onRedo: () => void;
   onRenameActiveCanvas: (name: string) => void;
   onSaveActiveCanvas: () => void;
@@ -193,11 +196,19 @@ export function CanvasFloatingToolbar({
   onUndo,
   onCreateBlock,
 }: CanvasFloatingToolbarProps) {
+  const { locale } = useI18n();
+  const toolsCopy = toolboxCopy(locale);
   const suppressBlockClickRef = useRef(false);
   const [activeMenu, setActiveMenu] = useState<ToolbarMenuId | null>(null);
   const [canvasName, setCanvasName] = useState('');
   const [renameCanvasName, setRenameCanvasName] = useState('');
   const blocks = toolbarBlocks(copy.nodes);
+  const groupLabels = {
+    image: copy.toolbar.imageTools,
+    video: copy.toolbar.videoTools,
+    audio: copy.toolbar.audioTools,
+    text: copy.toolbar.textTools,
+  };
 
   const handleBlockMouseDown = (
     event: ReactMouseEvent,
@@ -316,106 +327,72 @@ export function CanvasFloatingToolbar({
         <Redo2 size={18} />
       </button>
       <span className={styles.toolbarSeparator} />
-      <button
-        type="button"
-        className={`${styles.toolbarButton} ${selectionTool === 'pointer' ? styles.toolbarButtonActive : ''}`}
-        aria-label={copy.toolbar.selectNodes}
-        aria-pressed={selectionTool === 'pointer'}
-        onClick={() => onSelectionToolChange('pointer')}
-      >
-        <MousePointer2 size={18} />
-      </button>
-      <button
-        type="button"
-        className={`${styles.toolbarButton} ${selectionTool === 'marquee' ? styles.toolbarButtonActive : ''}`}
-        aria-label={copy.toolbar.marqueeSelectNodes}
-        aria-pressed={selectionTool === 'marquee'}
-        onClick={() => onSelectionToolChange('marquee')}
-      >
-        <BoxSelect size={18} />
-      </button>
-
-      <span className={styles.toolbarSeparator} />
-
       <StudioMenu
-        id="canvas-toolbar-image-menu"
-        label={copy.toolbar.imageTools}
-        open={activeMenu === 'image'}
-        onOpenChange={setMenuOpen('image')}
+        id="canvas-toolbar-selection-menu"
+        label={copy.toolbar.selection}
+        open={activeMenu === 'selection'}
+        onOpenChange={setMenuOpen('selection')}
         className={styles.toolbarControl}
         menuClassName={styles.toolbarPopover}
         trigger={(triggerProps) => (
           <ToolbarMenuButton
-            active={activeMenu === 'image'}
-            icon={<ImagePlus size={18} />}
-            label={copy.nodes.image}
-            menuId="image"
+            active={activeMenu === 'selection'}
+            icon={selectionTool === 'pointer' ? <MousePointer2 size={18} /> : <BoxSelect size={18} />}
+            label={copy.toolbar.selection}
+            menuId="selection"
             triggerProps={triggerProps}
           />
         )}
       >
-        <ToolbarPanelHeader title={copy.toolbar.imageTools} description={copy.toolbar.imageToolsDescription} />
-        <BlockOptionList blocks={blocks.image} onBlockClick={handleBlockClick} onBlockMouseDown={handleBlockMouseDown} />
+        {(['pointer', 'marquee'] as const).map((tool) => (
+          <button key={tool} type="button" role="menuitemradio" aria-checked={selectionTool === tool}
+            className={styles.selectionOption} onClick={() => {
+              onSelectionToolChange(tool);
+              setActiveMenu(null);
+            }}>
+            {tool === 'pointer' ? <MousePointer2 size={18} /> : <BoxSelect size={18} />}
+            {tool === 'pointer' ? copy.toolbar.selectNodes : copy.toolbar.marqueeSelectNodes}
+          </button>
+        ))}
       </StudioMenu>
       <StudioMenu
-        id="canvas-toolbar-video-menu"
-        label={copy.toolbar.videoTools}
-        open={activeMenu === 'video'}
-        onOpenChange={setMenuOpen('video')}
+        id="canvas-toolbar-add-menu"
+        label={copy.toolbar.add}
+        open={activeMenu === 'add'}
+        onOpenChange={setMenuOpen('add')}
         className={styles.toolbarControl}
-        menuClassName={styles.toolbarPopover}
+        menuClassName={`${styles.toolbarPopover} ${styles.addPalette}`}
         trigger={(triggerProps) => (
           <ToolbarMenuButton
-            active={activeMenu === 'video'}
-            icon={<Video size={18} />}
-            label={copy.nodes.video}
-            menuId="video"
+            active={activeMenu === 'add'}
+            icon={<Plus size={18} />}
+            label={copy.toolbar.add}
+            menuId="add"
             triggerProps={triggerProps}
           />
         )}
       >
-        <ToolbarPanelHeader title={copy.toolbar.videoTools} description={copy.toolbar.videoToolsDescription} />
-        <BlockOptionList blocks={blocks.video} onBlockClick={handleBlockClick} onBlockMouseDown={handleBlockMouseDown} />
-      </StudioMenu>
-      <StudioMenu
-        id="canvas-toolbar-audio-menu"
-        label={copy.toolbar.audioTools}
-        open={activeMenu === 'audio'}
-        onOpenChange={setMenuOpen('audio')}
-        className={styles.toolbarControl}
-        menuClassName={styles.toolbarPopover}
-        trigger={(triggerProps) => (
-          <ToolbarMenuButton
-            active={activeMenu === 'audio'}
-            icon={<Music2 size={18} />}
-            label={copy.nodes.edgeAudio}
-            menuId="audio"
-            triggerProps={triggerProps}
-          />
-        )}
-      >
-        <ToolbarPanelHeader title={copy.toolbar.audioTools} description={copy.toolbar.audioToolsDescription} />
-        <BlockOptionList blocks={blocks.audio} onBlockClick={handleBlockClick} onBlockMouseDown={handleBlockMouseDown} />
-      </StudioMenu>
-      <StudioMenu
-        id="canvas-toolbar-text-menu"
-        label={copy.toolbar.textTools}
-        open={activeMenu === 'text'}
-        onOpenChange={setMenuOpen('text')}
-        className={styles.toolbarControl}
-        menuClassName={styles.toolbarPopover}
-        trigger={(triggerProps) => (
-          <ToolbarMenuButton
-            active={activeMenu === 'text'}
-            icon={<Type size={18} />}
-            label={copy.nodes.text}
-            menuId="text"
-            triggerProps={triggerProps}
-          />
-        )}
-      >
-        <ToolbarPanelHeader title={copy.toolbar.textTools} description={copy.toolbar.textToolsDescription} />
-        <BlockOptionList blocks={blocks.text} onBlockClick={handleBlockClick} onBlockMouseDown={handleBlockMouseDown} />
+        {(['image', 'video', 'audio', 'text'] as const).map((group) => (
+          <div key={group} role="group" aria-label={groupLabels[group]} className={styles.paletteGroup}>
+            <div className={styles.popoverHeader}><strong>{groupLabels[group]}</strong></div>
+            <BlockOptionList blocks={blocks[group]} onBlockClick={handleBlockClick} onBlockMouseDown={handleBlockMouseDown} />
+          </div>
+        ))}
+        <div role="group" aria-label={copy.toolbar.workbenches} className={styles.workbenchGroup}>
+          <div className={styles.popoverHeader}><strong>{copy.toolbar.workbenches}</strong></div>
+          <div className={styles.workbenchList}>
+            {TOOLBOX.filter((tool) => tool.studio === 'standalone').map((tool) => (
+              <a key={tool.id} role="menuitem" href={tool.href} target="_blank" rel="noopener noreferrer"
+                className={styles.workbenchLink}
+                aria-label={`${toolsCopy.tools[tool.id as ToolboxVisualId].title} — ${toolsCopy.open}${tool.qualificationRequired ? ` · ${copy.toolbar.validation}` : ''}`}
+                onClick={() => setActiveMenu(null)}>
+                <span>{toolsCopy.tools[tool.id as ToolboxVisualId].title}</span>
+                {tool.qualificationRequired ? <em className={styles.validationBadge}>{copy.toolbar.validation}</em> : null}
+                <ArrowUpRight size={14} aria-hidden="true" />
+              </a>
+            ))}
+          </div>
+        </div>
       </StudioMenu>
 
       <StudioPopover
@@ -520,7 +497,7 @@ function ToolbarMenuButton({
       onKeyDown={triggerProps.onKeyDown}
     >
       {icon}
-      {menuId !== 'save' ? <span>{label}</span> : null}
+      {menuId === 'add' ? <span>{label}</span> : null}
     </button>
   );
 }

@@ -27,6 +27,7 @@ import {
   DEFAULT_STUDIO_COPY,
   localizeStudioEdgeKindLabel,
 } from '../../../_lib/studio-copy';
+import { CanvasNodeActionsMenu, CanvasNodeActionsPortal } from './CanvasNodeActionsMenu';
 
 const SOURCE_NODE_MIN_WIDTH = 190;
 const SOURCE_NODE_MIN_HEIGHT = 132;
@@ -226,15 +227,20 @@ export function NodeFrame({
           {data.subtitle ? <p className={styles.nodeSubtitle}>{data.subtitle}</p> : null}
         </div>
         {selected ? (
-          <button
-            type="button"
-            className={`${styles.nodeInspectButton} nodrag nowheel`}
-            data-canvas-node-inspect-button={nodeId}
-            aria-label={(copy?.openSettings ?? 'Open {name} settings').replace('{name}', data.title)}
-            title={copy?.openSettingsTitle ?? 'Open settings (I)'}
-          >
-            <Settings2 size={13} strokeWidth={2.2} />
-          </button>
+          <CanvasNodeActionsPortal accent={accent}>
+          <div className={styles.nodeHeaderActions}>
+            <button
+              type="button"
+              className={`${styles.nodeInspectButton} nodrag nowheel`}
+              data-canvas-node-inspect-button={nodeId}
+              aria-label={(copy?.openSettings ?? 'Open {name} settings').replace('{name}', data.title)}
+              title={copy?.openSettingsTitle ?? 'Open settings (I)'}
+            >
+              <Settings2 size={13} strokeWidth={2.2} />
+            </button>
+            <CanvasNodeActionsMenu nodeId={nodeId} data={data} />
+          </div>
+          </CanvasNodeActionsPortal>
         ) : null}
       </div>
       {children}

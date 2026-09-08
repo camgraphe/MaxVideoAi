@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { openMinimalEditorWorkspace } from './editor-helpers';
+import { canvasNodeControls, openMinimalEditorWorkspace } from './editor-helpers';
 
 const viewports = [
   { width: 1440, height: 900 },
@@ -31,7 +31,8 @@ for (const viewport of viewports) {
       if (await themeSwitch.isVisible()) await themeSwitch.click();
 
       expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
-      const settings = page.locator('[data-canvas-selection-settings]');
+      const controls = await canvasNodeControls(page);
+      const settings = controls.locator('[data-canvas-node-inspect-button]');
       await expectActionInViewport(page, settings);
       await settings.click();
       const close = page.locator('[data-canvas-inspector-close]');
@@ -39,10 +40,32 @@ for (const viewport of viewports) {
       await close.click();
       await expect(settings).toBeFocused();
 
-      const video = page.locator('[data-canvas-toolbar-menu-id="video"]');
+      const actions = controls.locator('[data-canvas-node-actions-button]');
+      await expectActionInViewport(page, actions);
+      await actions.focus();
+      await page.keyboard.press('ArrowDown');
+      const menu = controls.getByRole('menu');
+      await expect(menu.getByRole('menuitem').first()).toBeFocused();
+      const canvasBounds = await page.locator('.react-flow').boundingBox();
+      await expect.poll(async () => {
+        const bounds = await menu.boundingBox();
+        return Boolean(bounds && canvasBounds && bounds.x >= canvasBounds.x && bounds.y >= canvasBounds.y
+          && bounds.x + bounds.width <= canvasBounds.x + canvasBounds.width + 1
+          && bounds.y + bounds.height <= canvasBounds.y + canvasBounds.height + 1);
+      }).toBe(true);
+      for (const item of await menu.getByRole('menuitem').all()) {
+        expect((await item.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+      }
+      await page.keyboard.press('End');
+      await expect(menu.getByRole('menuitem').last()).toBeFocused();
+      await page.keyboard.press('Escape');
+      await expect(actions).toBeFocused();
+
+      const video = page.locator('[data-canvas-toolbar-menu-id="add"]');
       await expectActionInViewport(page, video);
       await video.click();
       const create = page.locator('[data-canvas-toolbar-preset-id="generate-video"]');
+      await create.scrollIntoViewIfNeeded();
       await expectActionInViewport(page, create);
       await testInfo.attach(`studio-${viewport.width}-${viewport.height}-${theme}`, {
         body: await page.screenshot(), contentType: 'image/png',

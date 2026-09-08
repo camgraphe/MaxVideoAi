@@ -5767,6 +5767,10 @@
         },
         "toolbar": {
           "ariaLabel": "Barre d’outils de création du canevas",
+          "add": "Ajouter",
+          "selection": "Sélection",
+          "workbenches": "Ouvrir un atelier",
+          "validation": "Validation",
           "undoTooltip": "Annuler (Cmd/Ctrl + Z)",
           "undoTitle": "Annuler la modification du canevas (Cmd/Ctrl + Z)",
           "undo": "Annuler la modification du canevas",

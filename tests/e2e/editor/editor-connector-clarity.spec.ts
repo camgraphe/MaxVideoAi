@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { createStarterWorkspaceTemplate } from '../../../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-templates';
 import { DEFAULT_WORKSPACE_PROJECT_SETTINGS } from '../../../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-settings';
-import { openEditorWorkspace } from './editor-helpers';
+import { canvasNodeControls, openEditorWorkspace } from './editor-helpers';
 
 for (const width of [1440, 390]) {
   test(`optional connector preserves its anchor, edge and keyboard focus at ${width}px`, async ({ page }) => {
@@ -38,8 +38,9 @@ for (const width of [1440, 390]) {
     expect(anchorState.height).toBeGreaterThan(0);
     expect(anchorState.tabIndex).toBe(-1);
     expect(anchorState.pointerEvents).toBe('none');
-    const selection = page.getByRole('toolbar', { name: 'Selection actions', exact: true });
-    await selection.getByRole('button', { name: 'Connections', exact: true }).click();
+    const controls = await canvasNodeControls(page, node);
+    await controls.locator('[data-canvas-node-actions-button]').click();
+    await controls.getByRole('menuitem', { name: 'Connections', exact: true }).click();
     const dialog = page.getByRole('dialog', { name: 'Connections', exact: true });
     await dialog.getByRole('combobox', { name: 'Inputs', exact: true }).selectOption('video_reference');
     await expect(dialog.locator('[data-canvas-connector-capacity]')).toContainText(/remaining.*maximum/);

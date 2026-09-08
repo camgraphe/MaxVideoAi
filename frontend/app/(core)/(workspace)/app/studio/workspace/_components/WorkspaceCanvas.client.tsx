@@ -64,6 +64,7 @@ import {
 } from './canvas/CanvasNavigatorPanel';
 import { CanvasMap } from './canvas/CanvasMap';
 import { CanvasSelectionActions } from './canvas/CanvasSelectionActions';
+import { CanvasNodeActionsProvider } from './canvas/CanvasNodeActionsContext';
 import { CanvasConnectionPicker } from './canvas/CanvasConnectionPicker';
 import { CanvasPaletteDragPreview } from './canvas/CanvasPaletteDragPreview';
 import { workspaceEdgeTypes } from './edges/workspace-smart-edge';
@@ -114,7 +115,7 @@ type WorkspaceCanvasProps = {
   onInspectNode: (nodeId: string | null) => void;
   toolbar: Omit<
     CanvasFloatingToolbarProps,
-    'copy' | 'onCreateBlock' | 'onDeleteSelectedNodes' | 'onSelectionToolChange' | 'selectedNodeCount' | 'selectionTool'
+    'copy' | 'onCreateBlock' | 'onSelectionToolChange' | 'selectionTool'
   >;
   canvasNavigator: Omit<CanvasNavigatorPanelProps, 'copy'>;
   guide: WorkspaceGuideController;
@@ -667,6 +668,23 @@ function WorkspaceCanvasInner({
     onCanvasInteraction();
   }, [onCanvasInteraction, onSelectedNodeChange, onSelectedNodeSync, reactFlow, selectedNodeIds, syncSelectedNodeIds]);
 
+  const handleDeleteNode = useCallback((nodeId: string) => {
+    void reactFlow.deleteElements({ nodes: [{ id: nodeId }] });
+    syncSelectedNodeIds(selectedNodeIds.filter((id) => id !== nodeId));
+    if (selectedNodeIdRef.current === nodeId) {
+      selectedNodeIdRef.current = null;
+      onSelectedNodeChange(null);
+      onSelectedNodeSync(null);
+    }
+    onCanvasInteraction();
+  }, [onCanvasInteraction, onSelectedNodeChange, onSelectedNodeSync, reactFlow, selectedNodeIds, syncSelectedNodeIds]);
+
+  const handleCopyNode = useCallback(async (nodeId: string) => {
+    onCanvasInteraction();
+    onCopySelectedNodes([nodeId]);
+    return writeCanvasClipboardMarker();
+  }, [onCanvasInteraction, onCopySelectedNodes]);
+
   const handleConnectStart = useCallback<OnConnectStart>(
     (event, params) => {
       onCanvasInteraction();
@@ -738,6 +756,15 @@ function WorkspaceCanvasInner({
       aria-label={copy.ariaLabel}
       onClickCapture={handleCanvasClickCapture}
     >
+      <CanvasNodeActionsProvider
+        isSingleSelection={selectedNodeIds.length === 1 && guide.state.hidden}
+        onConnections={(nodeId) => {
+          onCanvasInteraction();
+          setConnectionTarget({ id: nodeId });
+        }}
+        onCopyNode={handleCopyNode}
+        onDeleteNode={handleDeleteNode}
+      >
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -802,6 +829,7 @@ function WorkspaceCanvasInner({
         {paletteDragPreview ? <CanvasPaletteDragPreview preview={paletteDragPreview} /> : null}
         <CanvasMap copy={copy.map} edges={edges} nodes={nodes} />
       </ReactFlow>
+      </CanvasNodeActionsProvider>
       <CanvasGuideLayer
         canvasShellRef={canvasShellRef}
         copy={copy.guide}
@@ -821,11 +849,6 @@ function WorkspaceCanvasInner({
           onCreateNodeFromPaletteDrop({ kind, presetId, position: canvasCenterFlowPosition() });
         }}
         selectionTool={selectionTool}
-        selectedNodeCount={selectedNodeIds.length}
-        onDeleteSelectedNodes={() => {
-          onCanvasInteraction();
-          handleDeleteSelectedNodes();
-        }}
         onSelectionToolChange={(tool) => {
           onCanvasInteraction();
           setSelectionTool(tool);
@@ -843,8 +866,6 @@ function WorkspaceCanvasInner({
         key={JSON.stringify(selectedNodeIds.slice().sort())}
         nodes={nodes.filter((node) => selectedNodeIds.includes(node.id))}
         copy={copy.nodes}
-        onSettings={onInspectNode}
-        onConnections={(id) => { onCanvasInteraction(); setConnectionTarget({ id }); }}
         onCopy={() => { onCanvasInteraction(); onCopySelectedNodes(selectedNodeIds); return writeCanvasClipboardMarker(); }}
         onDelete={handleDeleteSelectedNodes}
       />

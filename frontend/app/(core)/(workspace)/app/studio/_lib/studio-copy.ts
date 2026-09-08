@@ -811,6 +811,10 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
     },
     toolbar: {
       ariaLabel: 'Canvas creation toolbar',
+      add: 'Add',
+      selection: 'Selection',
+      workbenches: 'Open workbench',
+      validation: 'Validation',
       undoTooltip: 'Undo (Cmd/Ctrl + Z)',
       undoTitle: 'Undo canvas edit (Cmd/Ctrl + Z)',
       undo: 'Undo canvas edit',

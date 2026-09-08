@@ -90,6 +90,7 @@ const studioCanvasTemplatesApiPath = join(studioApiDir, 'canvas-templates/route.
 const studioCanvasTemplateApiPath = join(studioApiDir, 'canvas-templates/[templateId]/route.ts');
 const studioChatApiPath = join(studioApiDir, 'chat/route.ts');
 const studioRouteUtilsPath = join(studioApiDir, '_lib/studio-route-utils.ts');
+const studioAccessPath = join(studioServerDir, 'access.ts');
 const studioServerContractsPath = join(studioServerDir, 'contracts.ts');
 const studioChatServerPath = join(studioServerDir, 'chat.ts');
 const studioServerSchemaPath = join(studioServerDir, 'schema.ts');
@@ -610,6 +611,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.equal(existsSync(studioCanvasTemplateApiPath), false, 'saved canvases should not expose a global mutation API');
   assert.ok(existsSync(studioChatApiPath), 'Studio chat should use an authenticated route handler');
   assert.ok(existsSync(studioRouteUtilsPath), 'studio route handlers should share auth/database response utilities');
+  assert.ok(existsSync(studioAccessPath), 'Studio page and API entry points should share one access policy');
   assert.ok(existsSync(studioServerContractsPath), 'studio server persistence contracts should live under frontend/src/server/studio');
   assert.ok(existsSync(studioChatServerPath), 'Studio chat provider calls should live in server-only Studio code');
   assert.ok(existsSync(studioServerSchemaPath), 'studio server schema helper should live under frontend/src/server/studio');
@@ -1183,6 +1185,7 @@ test('MaxVideoAI editor owns authenticated Studio persistence contracts', () => 
   const projectSequencesApiSource = source(studioProjectSequencesApiPath);
   const projectSequenceApiSource = source(studioProjectSequenceApiPath);
   const routeUtilsSource = source(studioRouteUtilsPath);
+  const accessSource = source(studioAccessPath);
   const schemaSource = source(studioServerSchemaPath);
   const repositorySource = source(studioServerRepositoryPath);
   const migrationSource = source(studioMigrationPath);
@@ -1199,7 +1202,9 @@ test('MaxVideoAI editor owns authenticated Studio persistence contracts', () => 
   assert.match(projectSequenceApiSource, /STUDIO_SEQUENCE_LAST_SEQUENCE/, 'sequence deletion should reject deleting the final project sequence');
   assert.equal(existsSync(studioCanvasTemplatesApiPath), false, 'unused global canvas-template collection API should be removed');
   assert.equal(existsSync(studioCanvasTemplateApiPath), false, 'unused global canvas-template detail API should be removed');
-  assert.match(routeUtilsSource, /getRouteAuthContext/, 'studio APIs must require the existing route auth context');
+  assert.match(routeUtilsSource, /resolveStudioApiAccess/, 'studio APIs must use the shared Studio access policy');
+  assert.match(accessSource, /getRouteAuthContext/, 'the shared Studio access policy must retain bearer and cookie route authentication');
+  assert.match(accessSource, /isUserAdmin/, 'the shared Studio access policy must enforce the current admin gate');
   assert.match(routeUtilsSource, /isDatabaseConfigured/, 'studio APIs should return a clean unavailable response when DATABASE_URL is missing');
   assert.match(routeUtilsSource, /DATABASE_NOT_CONFIGURED/, 'database-missing responses should be explicit for client fallback logic');
   assert.match(schemaSource, /studio_projects/, 'server schema should create the studio_projects table');
