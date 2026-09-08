@@ -93,6 +93,8 @@ La revue indépendante a renforcé la causalité de cette preuve : exiger un **n
 
 ## Contrôles restant ouverts
 
+La matrice géométrique `editor-canvas-clarity.spec.ts` prépare la qualification finale (24 combinaisons EN/FR/ES, quatre viewports, deux thèmes). Trois passages de référence échouent actuellement pour la raison attendue : titre et réglages recouverts par le HUD après fit, sur desktop EN, portrait FR et paysage ES. Les captures ont été inspectées ; ce défaut doit être corrigé dans Task5 avant la remise, sans affaiblir les assertions. Les anciennes huit vérifications de boutons dans le viewport ne détectaient pas ce recouvrement interne du canevas.
+
 Le lot médias `bd7aeb3cb` est figé, avec rapport `28475b388` :429tests ciblés,45tests upload et11parcours navigateur réussis, TypeScript/exposure/diff sans erreur, lint sans erreur avec2warnings hérités. Les six contrats provisoirement en échec pendant Task3 passent dans ce dernier run. Revue indépendante Approved, puis correctif du seul Minor cache upload canevas `f426be90c` avec5/5tests DOM et re-revue Approved. Les parcours navigateur prouvent l'édition et la sauvegarde locale ; le test HTTP séparé `7cbafa1db`, également revu Approved, qualifie le résolveur authentifié, sans confondre les deux environnements.
 
 Commande UI/MCP persistée, sauvegarde concurrente, réouverture sans cache local, polish de densité des blocs, qualification responsive du lot complet et build final restent à exécuter. `prepare_montage` demeure un plan non persisté et ne satisfait pas ces critères ; les21tests MCP existants ciblés passent avant Task4, sans prétendre prouver une écriture.
