@@ -19,9 +19,9 @@ function createThemeWindow(initialDark = false) {
   return { window: dom.window as unknown as Window, setDark(value: boolean) { dark = value; listeners.forEach((listener) => listener()); }, listenerCount: () => listeners.size };
 }
 
-test('legacy absence remains light and explicit system follows the OS', () => {
+test('absence defaults to system and follows the OS', () => {
   const browser = createThemeWindow(true);
-  assert.deepEqual(readThemeSnapshot(browser.window), { preference: 'light', resolvedTheme: 'light' });
+  assert.deepEqual(readThemeSnapshot(browser.window), { preference: 'system', resolvedTheme: 'dark' });
   browser.window.localStorage.setItem('mv-theme', 'system');
   assert.deepEqual(readThemeSnapshot(browser.window), { preference: 'system', resolvedTheme: 'dark' });
 });
@@ -59,7 +59,7 @@ test('blocked localStorage falls back to tab memory without crashing consumers',
     get() { throw new DOMException('Storage blocked', 'SecurityError'); },
   });
 
-  assert.deepEqual(readThemeSnapshot(browser.window), { preference: 'light', resolvedTheme: 'light' });
+  assert.deepEqual(readThemeSnapshot(browser.window), { preference: 'system', resolvedTheme: 'light' });
   assert.doesNotThrow(() => persistThemePreference(browser.window, 'dark'));
   assert.deepEqual(readThemeSnapshot(browser.window), { preference: 'dark', resolvedTheme: 'dark' });
 });

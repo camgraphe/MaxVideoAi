@@ -8,6 +8,8 @@ export const THEME_CHANGE_EVENT = 'mv-theme-change';
 export type ThemePreference = 'light' | 'dark' | 'system';
 export type ResolvedTheme = 'light' | 'dark';
 
+const DEFAULT_THEME_PREFERENCE: ThemePreference = 'system';
+
 type ThemeSnapshot = {
   preference: ThemePreference;
   resolvedTheme: ResolvedTheme;
@@ -37,7 +39,7 @@ function prefersDark(browserWindow: Window) {
 
 export function readThemeSnapshot(browserWindow: Window): ThemeSnapshot {
   const stored = readStoredPreference(browserWindow);
-  const preference: ThemePreference = stored === 'system' ? 'system' : isExplicitTheme(stored) ? stored : 'light';
+  const preference: ThemePreference = stored === 'system' ? 'system' : isExplicitTheme(stored) ? stored : DEFAULT_THEME_PREFERENCE;
   const resolvedTheme = preference === 'system'
     ? prefersDark(browserWindow) ? 'dark' : 'light'
     : preference;
