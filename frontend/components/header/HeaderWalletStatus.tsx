@@ -66,16 +66,28 @@ export function HeaderWalletStatus({
           <p className="mt-1 text-sm text-text-primary">
             {t('workspace.header.walletTopUp.copy', 'Click to add funds and keep generating without interruption.')}
           </p>
-          <ButtonLink
-            href="/billing"
-            prefetch={false}
-            size="sm"
-            className="mt-3 w-full shadow-card"
-            onFocus={onOpenPrompt}
-            onBlur={onSchedulePromptClose}
-          >
-            {t('workspace.header.walletTopUp.cta', 'Top up now')}
-          </ButtonLink>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <ButtonLink
+              href="/billing"
+              prefetch={false}
+              size="sm"
+              className="shadow-card"
+              onFocus={onOpenPrompt}
+              onBlur={onSchedulePromptClose}
+            >
+              {t('workspace.header.walletTopUp.cta', 'Top up')}
+            </ButtonLink>
+            <ButtonLink
+              href="/billing#billing-history-title"
+              prefetch={false}
+              size="sm"
+              variant="outline"
+              onFocus={onOpenPrompt}
+              onBlur={onSchedulePromptClose}
+            >
+              {t('workspace.header.walletTopUp.documentsCta', 'Documents')}
+            </ButtonLink>
+          </div>
         </div>
       ) : null}
     </div>

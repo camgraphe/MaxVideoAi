@@ -3076,7 +3076,8 @@
       "walletTopUp": {
         "label": "Top up available",
         "copy": "Click to add funds and keep generating without interruption.",
-        "cta": "Top up now"
+        "cta": "Top up",
+        "documentsCta": "Documents"
       },
       "marketingNav": "Marketing navigation",
       "walletLabel": "Wallet",
@@ -3965,10 +3966,11 @@
         "note": "Note: You’ll be charged only if the generation succeeds."
       },
     "receipts": {
-      "ledgerLabel": "Wallet activity",
-      "title": "Payment history",
-        "subtitle": "Wallet top-ups, render charges, refunds, and Stripe receipts where available.",
-        "empty": "No receipts yet.",
+      "ledgerLabel": "Billing documents",
+      "title": "Receipts & invoices",
+        "subtitle": "Download Stripe documents for wallet top-ups and review charges or refunds.",
+        "openDocuments": "Receipts & invoices",
+        "empty": "No payment documents or wallet activity yet.",
         "loading": "Loading…",
         "loadMore": "Load more",
         "exportCsv": "Export CSV",

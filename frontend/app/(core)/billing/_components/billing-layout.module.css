@@ -53,10 +53,15 @@
 
 .balanceCluster {
   display: grid;
-  grid-template-columns: 42px minmax(132px, auto) auto;
+  grid-template-columns: 42px minmax(132px, auto) auto auto;
   align-items: center;
   gap: 12px;
   min-width: 360px;
+}
+
+.documentsButton {
+  min-height: 44px;
+  white-space: nowrap;
 }
 
 .balanceIcon {
@@ -259,7 +264,7 @@
   }
 
   .balanceCluster {
-    grid-template-columns: 38px minmax(0, 1fr) 44px;
+    grid-template-columns: 38px minmax(0, 1fr) 44px 44px;
     gap: 9px;
   }
 
@@ -272,6 +277,15 @@
     width: 44px;
     padding: 0;
     font-size: 0;
+  }
+
+  .documentsButton {
+    width: 44px;
+    padding: 0;
+  }
+
+  .documentsButton span {
+    display: none;
   }
 
   .workspaceGrid {

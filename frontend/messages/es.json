@@ -3103,7 +3103,8 @@
       "walletTopUp": {
         "label": "Añadir fondos",
         "copy": "Añade fondos para seguir generando sin interrupciones.",
-        "cta": "Recargar"
+        "cta": "Recargar",
+        "documentsCta": "Documentos"
       },
       "marketingNav": "Navegación de marketing",
       "walletLabel": "Billetera",
@@ -3824,10 +3825,11 @@
         "note": "Solo se cobra si la generación tiene éxito."
       },
     "receipts": {
-      "ledgerLabel": "Actividad de la billetera",
-      "title": "Historial de pagos",
-        "subtitle": "Recargas de billetera, cargos de render, reembolsos y recibos de Stripe disponibles.",
-        "empty": "Aún no hay recibos.",
+      "ledgerLabel": "Documentos de facturación",
+      "title": "Recibos y facturas",
+        "subtitle": "Descarga los documentos de Stripe de tus recargas y consulta cargos o reembolsos.",
+        "openDocuments": "Recibos y facturas",
+        "empty": "Aún no hay documentos de pago ni movimientos de la billetera.",
         "loading": "Cargando…",
         "loadMore": "Cargar más",
         "exportCsv": "Exportar CSV",

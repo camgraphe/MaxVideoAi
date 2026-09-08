@@ -3111,7 +3111,8 @@
       "walletTopUp": {
         "label": "Ajouter des fonds",
         "copy": "Ajoutez des fonds pour continuer à générer sans interruption.",
-        "cta": "Recharger"
+        "cta": "Recharger",
+        "documentsCta": "Documents"
       },
       "marketingNav": "Navigation marketing",
       "walletLabel": "Portefeuille",
@@ -3832,10 +3833,11 @@
         "note": "Vous êtes débité uniquement si la génération réussit."
       },
     "receipts": {
-      "ledgerLabel": "Activité du portefeuille",
-      "title": "Historique de paiement",
-        "subtitle": "Recharges du portefeuille, débits de rendu, remboursements et reçus Stripe disponibles.",
-        "empty": "Pas encore de reçus.",
+      "ledgerLabel": "Documents de facturation",
+      "title": "Reçus et factures",
+        "subtitle": "Téléchargez les documents Stripe de vos recharges et consultez les débits ou remboursements.",
+        "openDocuments": "Reçus et factures",
+        "empty": "Aucun document de paiement ni mouvement du portefeuille.",
         "loading": "Chargement…",
         "loadMore": "Charger plus",
         "exportCsv": "Exporter en CSV",

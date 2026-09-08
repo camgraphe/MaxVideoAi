@@ -30,7 +30,7 @@ async function loadBillingPresentation() {
   }
 }
 
-test('wallet overview makes the available balance and refresh action explicit', async () => {
+test('wallet overview makes the available balance, refresh action, and billing documents explicit', async () => {
   const { BillingWalletOverview } = await loadBillingPresentation();
   const markup = renderToStaticMarkup(React.createElement(BillingWalletOverview, {
     copy: DEFAULT_BILLING_COPY,
@@ -45,6 +45,10 @@ test('wallet overview makes the available balance and refresh action explicit', 
   assert.equal(
     document.querySelector('button')?.textContent?.trim(),
     DEFAULT_BILLING_COPY.wallet.refreshBalance,
+  );
+  assert.equal(
+    document.querySelector('a[href="#billing-history-title"]')?.textContent?.trim(),
+    DEFAULT_BILLING_COPY.receipts.openDocuments,
   );
   assert.match(document.body.textContent ?? '', new RegExp(DEFAULT_BILLING_COPY.hero.testMode));
 });

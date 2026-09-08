@@ -42,6 +42,13 @@ Both successful top-up translators call the canonical `recordStripeTopup` functi
 invoice fields, checkout attribution, and analytics updates in one transaction-oriented flow.
 Document normalization and Stripe receipt lookup stay in `stripe-webhook-documents.ts`.
 
+Wallet top-up Checkout Sessions enable Stripe's post-purchase invoice creation. The completed
+Session or PaymentIntent supplies the invoice or charge identity; the canonical top-up receipt
+stores those identifiers and cached URLs when available. `GET /api/receipts` resolves a hosted
+invoice or PDF first and falls back to the Stripe charge receipt. The authenticated Billing page
+exposes those documents under `#billing-history-title`; older payments remain limited to the
+document Stripe produced for that original Checkout.
+
 Failed top-up cards are owned by `stripe-webhook-failed-payments.ts`. It records deduplicated failed
 card attempts for first-wallet-top-up checkout attempts. At five failed attempts, it expires an open,
 unpaid Checkout Session and records the rate-limited outcome, subject to the existing receipt and

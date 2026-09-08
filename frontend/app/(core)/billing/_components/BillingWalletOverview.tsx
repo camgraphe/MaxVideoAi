@@ -1,7 +1,7 @@
 'use client';
 
-import { RefreshCw, WalletCards } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { FileText, RefreshCw, WalletCards } from 'lucide-react';
+import { Button, ButtonLink } from '@/components/ui/Button';
 import type { BillingWalletStatus } from '../_hooks/useBillingSessionState';
 import type { BillingCopy } from '../_lib/billing-copy';
 import styles from './billing-layout.module.css';
@@ -62,6 +62,16 @@ export function BillingWalletOverview({
           <RefreshCw size={16} className={isRefreshing ? styles.spinning : undefined} aria-hidden="true" />
           {copy.wallet.refreshBalance}
         </Button>
+        <ButtonLink
+          href="#billing-history-title"
+          size="md"
+          variant="outline"
+          className={styles.documentsButton}
+          aria-label={copy.receipts.openDocuments}
+        >
+          <FileText size={16} aria-hidden="true" />
+          <span>{copy.receipts.openDocuments}</span>
+        </ButtonLink>
       </div>
 
       {stripeMode === 'test' ? <p className={styles.testMode} role="status">{copy.hero.testMode}</p> : null}
