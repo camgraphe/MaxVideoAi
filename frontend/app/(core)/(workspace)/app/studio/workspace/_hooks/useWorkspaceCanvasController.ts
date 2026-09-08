@@ -181,6 +181,7 @@ export function useWorkspaceCanvasController({
     setNotice,
     setSelectedNodeId,
     studioCanvasNodeCopy: studioCanvasCopy.nodes,
+    studioCanvasPolicyCopy: studioCanvasCopy.controls.policy,
     studioNotices,
   });
 

@@ -67,6 +67,7 @@ function localizedConnectionRejectionReason(
   if (reason.code === 'model_unsupported') return notices.modelDoesNotSupportConnector;
   if (reason.code === 'incompatible_family') return notices.connectorsNotCompatible;
   if (reason.code === 'connector_disabled') {
+    if (reason.reason) return reason.reason;
     return formatNotice(notices.connectorDisabled, {
       connector: localizeStudioEdgeKindLabel(reason.connectorKind, studioCanvasNodeCopy),
     });
@@ -107,6 +108,7 @@ type UseWorkspaceGraphActionsParams = {
   setNotice: Dispatch<SetStateAction<string | null>>;
   setSelectedNodeId: Dispatch<SetStateAction<string | null>>;
   studioCanvasNodeCopy: StudioCopy['canvas']['nodes'];
+  studioCanvasPolicyCopy?: StudioCopy['canvas']['controls']['policy'];
   studioNotices: StudioCopy['notices'];
 };
 
@@ -137,6 +139,7 @@ export function useWorkspaceGraphActions({
   setNotice,
   setSelectedNodeId,
   studioCanvasNodeCopy,
+  studioCanvasPolicyCopy,
   studioNotices,
 }: UseWorkspaceGraphActionsParams): {
   handleCreateNodeFromHandleDrop: (request: WorkspaceHandleDropRequest) => void;
@@ -328,17 +331,31 @@ export function useWorkspaceGraphActions({
   );
 
   const isValidConnection = useCallback(
-    (connection: Connection | WorkspaceGraphEdge) => !workspaceConnectionRejectionReason({ connection, nodes, edges, capabilities }),
-    [capabilities, edges, nodes]
+    (connection: Connection | WorkspaceGraphEdge) => !workspaceConnectionRejectionReason({
+      connection,
+      nodes,
+      edges,
+      capabilities,
+      policyCopy: studioCanvasPolicyCopy,
+      edgeLabel: (kind) => localizeStudioEdgeKindLabel(kind, studioCanvasNodeCopy),
+    }),
+    [capabilities, edges, nodes, studioCanvasNodeCopy, studioCanvasPolicyCopy]
   );
 
   const handleInvalidConnection = useCallback(
     (connection: Connection | WorkspaceGraphEdge) => {
-      const reason = workspaceConnectionRejectionReason({ connection, nodes, edges, capabilities });
+      const reason = workspaceConnectionRejectionReason({
+        connection,
+        nodes,
+        edges,
+        capabilities,
+        policyCopy: studioCanvasPolicyCopy,
+        edgeLabel: (kind) => localizeStudioEdgeKindLabel(kind, studioCanvasNodeCopy),
+      });
       if (!reason) return;
       setNotice(localizedConnectionRejectionReason(reason, studioNotices, studioCanvasNodeCopy));
     },
-    [capabilities, edges, nodes, setNotice, studioCanvasNodeCopy, studioNotices]
+    [capabilities, edges, nodes, setNotice, studioCanvasNodeCopy, studioCanvasPolicyCopy, studioNotices]
   );
 
   const onConnect = useCallback(
@@ -351,6 +368,8 @@ export function useWorkspaceGraphActions({
           nodes: currentNodes,
           edges: currentEdges,
           capabilities,
+          policyCopy: studioCanvasPolicyCopy,
+          edgeLabel: (kind) => localizeStudioEdgeKindLabel(kind, studioCanvasNodeCopy),
         });
         if (rejectionReason || !connection.source || !connection.target) {
           return { edges: currentEdges, nodes: currentNodes };
@@ -383,6 +402,7 @@ export function useWorkspaceGraphActions({
       commitCanvasGraph,
       setNotice,
       studioCanvasNodeCopy,
+      studioCanvasPolicyCopy,
       studioNotices,
     ]
   );
@@ -429,6 +449,8 @@ export function useWorkspaceGraphActions({
           nodes: candidateNodes,
           edges: currentEdges,
           capabilities,
+          policyCopy: studioCanvasPolicyCopy,
+          edgeLabel: (kind) => localizeStudioEdgeKindLabel(kind, studioCanvasNodeCopy),
         });
         if (rejectionReason) return { edges: currentEdges, nodes: currentNodes };
         return {
@@ -456,6 +478,7 @@ export function useWorkspaceGraphActions({
       setNotice,
       setSelectedNodeId,
       studioCanvasNodeCopy,
+      studioCanvasPolicyCopy,
       studioNotices,
     ]
   );

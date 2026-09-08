@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import type { Connection } from '@xyflow/react';
 import { Link2, Plus, Unplug, X } from 'lucide-react';
 import { workspaceConnectionCandidates } from '../../_lib/workspace-canvas-actions';
+import { projectWorkspaceConnectionSlots } from '../../_lib/workspace-graph-helpers';
 import {
   resolveWorkspaceHandleDropDraft,
   type WorkspaceHandleDropRequest,
@@ -89,9 +90,19 @@ export function CanvasConnectionPicker({
   onClose,
 }: CanvasConnectionPickerProps) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const projectedConnectors = projectWorkspaceConnectionSlots({
+    targetNode: node,
+    edges,
+    capabilities: node.data.modelCapabilities ?? [],
+  }).map((connector) => ({
+    ...connector,
+    label: localizeStudioEdgeKindLabel(connector.kind, copy),
+  }));
   const connectors = node.data.inputConnectors?.length
     ? node.data.inputConnectors
-    : (node.data.targetHandles ?? []).map((kind) => fallbackConnector(kind, copy));
+    : projectedConnectors.length
+      ? projectedConnectors
+      : (node.data.targetHandles ?? []).map((kind) => fallbackConnector(kind, copy));
   const outgoing = edges.filter((edge) => edge.source === node.id);
   const restorePanelFocus = () => requestAnimationFrame(() => panelRef.current?.focus());
 

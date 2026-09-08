@@ -98,6 +98,29 @@ test('Connections renders every policy slot and exposes create-and-connect throu
       handleType: 'target',
       position: { x: 240, y: 320 },
     }]);
+
+    const output: WorkspaceGraphNode = {
+      id: 'output', type: 'output', position: { x: 500, y: 400 },
+      data: { kind: 'output', title: 'Generated clip', targetHandles: ['generated_output'] },
+    };
+    const generatedEdge: WorkspaceGraphEdge = {
+      id: 'generated-link', source: shot.id, target: output.id,
+      sourceHandle: 'video_reference', targetHandle: 'generated_output', data: { kind: 'generated_output' },
+    };
+    await act(async () => root.render(React.createElement(CanvasConnectionPicker as React.ComponentType<Record<string, unknown>>, {
+      node: output,
+      nodes: [shot, output],
+      edges: [generatedEdge],
+      copy: DEFAULT_STUDIO_COPY.canvas.nodes,
+      isValidConnection: () => false,
+      onConnect() {},
+      onDisconnect() {},
+      onClose() {},
+    })));
+
+    const generatedSlot = dom.window.document.querySelector<HTMLElement>('[data-connection-slot="generated_output"]');
+    assert.equal(generatedSlot?.dataset.connectionSlotStatus, 'full');
+    assert.match(generatedSlot?.textContent ?? '', /Required.*1 used \/ 1 maximum.*Full/s);
   } finally {
     await act(async () => root.unmount());
     dom.window.close();

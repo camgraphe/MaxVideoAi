@@ -247,3 +247,64 @@ test('invalid cable callback exposes the precise admission reason to non-drag pa
   handleInvalidConnection?.(fullEdge);
   assert.deepEqual(notices, [DEFAULT_STUDIO_COPY.notices.duplicateGraphLink]);
 });
+
+test('invalid cable callback preserves the policy reason for a disabled connector', () => {
+  const { shot, firstPrompt } = graphActionFixture();
+  const startImage: WorkspaceGraphNode = {
+    id: 'start-image', type: 'asset-image', position: { x: 0, y: 0 },
+    data: { kind: 'asset-image', title: 'Start image', sourceHandles: ['reference'] },
+  };
+  const referenceImage: WorkspaceGraphNode = {
+    ...startImage,
+    id: 'reference-image',
+    data: { ...startImage.data, title: 'Reference image' },
+  };
+  const configuredShot: WorkspaceGraphNode = {
+    ...shot,
+    data: {
+      ...shot.data,
+      shot: { ...shot.data.shot!, modelId: 'seedance-2-0' },
+    },
+  };
+  const startImageEdge = {
+    id: 'start-image-edge',
+    source: startImage.id,
+    target: configuredShot.id,
+    sourceHandle: 'reference' as const,
+    targetHandle: 'start_image' as const,
+    data: { kind: 'start_image' as const },
+  };
+  const localizedPolicyCopy = {
+    ...DEFAULT_STUDIO_COPY.canvas.controls.policy,
+    startImageDisablesReference: 'Localized start image exclusion.',
+  };
+  const notices: Array<string | null> = [];
+  let actions: ReturnType<typeof useWorkspaceGraphActions>;
+  function Probe() {
+    actions = useWorkspaceGraphActions({
+      capabilities: getWorkspaceModelCapabilities(),
+      commitCanvasGraph() {},
+      defaultModelId: configuredShot.data.shot!.modelId,
+      edges: [startImageEdge],
+      nodes: [firstPrompt, startImage, referenceImage, configuredShot],
+      setActiveEditorSurface() {},
+      setAssetPickerNodeId() {},
+      setNotice: (notice) => notices.push(notice),
+      setSelectedNodeId() {},
+      studioCanvasNodeCopy: DEFAULT_STUDIO_COPY.canvas.nodes,
+      studioCanvasPolicyCopy: localizedPolicyCopy,
+      studioNotices: DEFAULT_STUDIO_COPY.notices,
+    });
+    return null;
+  }
+  renderToStaticMarkup(createElement(Probe));
+
+  actions!.handleInvalidConnection({
+    source: referenceImage.id,
+    target: configuredShot.id,
+    sourceHandle: 'reference',
+    targetHandle: 'reference',
+  });
+
+  assert.deepEqual(notices, [localizedPolicyCopy.startImageDisablesReference]);
+});

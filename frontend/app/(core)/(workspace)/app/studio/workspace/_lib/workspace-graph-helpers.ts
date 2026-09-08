@@ -169,11 +169,15 @@ export function connectorForTarget({
   targetHandle,
   capabilities,
   connectedInputs = [],
+  policyCopy,
+  edgeLabel,
 }: {
   targetNode: WorkspaceGraphNode | null;
   targetHandle: WorkspaceEdgeKind;
   capabilities: ReturnType<typeof getWorkspaceModelCapabilities>;
   connectedInputs?: WorkspaceEdgeKind[];
+  policyCopy?: StudioCopy['canvas']['controls']['policy'];
+  edgeLabel?: (kind: WorkspaceEdgeKind) => string;
 }): WorkspaceInputConnector | null {
   if (!targetNode) return null;
   if (targetNode.data.kind === 'shot' && targetNode.data.shot) {
@@ -182,6 +186,8 @@ export function connectorForTarget({
       settings: targetNode.data.shot,
       capability,
       connectedInputs,
+      policyCopy,
+      edgeLabel,
     }).inputConnectors.find((connector) => connector.kind === targetHandle) ?? null;
   }
   if (targetNode.data.kind === 'output' && targetHandle === 'generated_output') {
@@ -257,11 +263,15 @@ export function workspaceConnectionRejectionReason({
   nodes,
   edges,
   capabilities,
+  policyCopy,
+  edgeLabel,
 }: {
   connection: WorkspaceConnectionLike;
   nodes: WorkspaceGraphNode[];
   edges: WorkspaceGraphEdge[];
   capabilities: ReturnType<typeof getWorkspaceModelCapabilities>;
+  policyCopy?: StudioCopy['canvas']['controls']['policy'];
+  edgeLabel?: (kind: WorkspaceEdgeKind) => string;
 }): WorkspaceConnectionRejection | null {
   if (!connection.source || !connection.target || !connection.sourceHandle || !connection.targetHandle) {
     return { code: 'missing_endpoint' };
@@ -301,6 +311,8 @@ export function workspaceConnectionRejectionReason({
     targetHandle,
     capabilities,
     connectedInputs: connectedInputKinds(connection.target, edges),
+    policyCopy,
+    edgeLabel,
   });
   if (!connector) {
     return targetNode.data.kind === 'shot' ? { code: 'model_unsupported' } : { code: 'target_unsupported' };
