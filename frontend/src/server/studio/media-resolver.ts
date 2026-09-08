@@ -5,7 +5,7 @@ import { validReferenceMediaUrl } from '@/server/agent-api/reference-assets';
 import { resolveSupportedReferenceMedia } from '@/server/agent-api/reference-media-policy';
 import { extractStorageKeyFromUrl, ownedMediaStorageKeyForUrl } from '@/server/storage';
 
-type MediaRow = { id: string; public_id?: string; job_id?: string; user_id: string; kind: string; url: string; storage_url?: string | null; thumb_url?: string | null; preview_url?: string | null; mime_type?: string | null; original_name?: string | null; metadata?: Record<string, unknown>; status: string; deleted_at?: unknown; hidden?: boolean; job_user_id?: string };
+type MediaRow = { id: string; public_id?: string; job_id?: string; user_id: string; kind: string; url: string; storage_url?: string | null; thumb_url?: string | null; preview_url?: string | null; mime_type?: string | null; original_name?: string | null; metadata?: Record<string, unknown>; status: string; deleted_at?: unknown; hidden?: boolean; job_user_id?: string; source_job_id?: string | null; source_output_id?: string | null };
 export type StudioMediaExecutor = (sql: string, values: string[]) => Promise<MediaRow[]>;
 export type StudioResolvedMedia = {
   id: string;
@@ -48,6 +48,19 @@ export async function resolveStudioMedia(
     || (row.job_user_id && row.job_user_id !== userId)
     || (ref.type === 'asset' ? row.public_id !== ref.assetId : row.id !== ref.outputId || row.job_id !== ref.jobId)) {
     throw new Error('MEDIA_NOT_AVAILABLE');
+  }
+  if (options.lockAsset && ref.type === 'asset' && (row.source_job_id || row.source_output_id)) {
+    const lockedSources = row.source_output_id
+      ? await execute(`SELECT o.id FROM job_outputs o
+          JOIN app_jobs j ON j.job_id = o.job_id
+          WHERE o.id = $2 AND o.user_id = $1 AND o.status = 'ready'
+            AND j.user_id = $1 AND j.hidden IS NOT TRUE
+            AND ($3 = '' OR o.job_id = $3)
+          FOR SHARE OF o, j`, [userId, row.source_output_id, row.source_job_id ?? ''])
+      : await execute(`SELECT j.job_id AS id FROM app_jobs j
+          WHERE j.job_id = $2 AND j.user_id = $1 AND j.hidden IS NOT TRUE
+          FOR SHARE OF j`, [userId, row.source_job_id ?? '']);
+    if (!lockedSources[0]) throw new Error('MEDIA_NOT_AVAILABLE');
   }
   const url = row.storage_url || row.url;
   const media = resolveSupportedReferenceMedia(row.kind, row.mime_type);

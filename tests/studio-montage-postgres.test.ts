@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
+import { setTimeout as delay } from 'node:timers/promises';
 import type { Pool } from 'pg';
 
 import { startDisposablePostgres, missingDisposablePostgresCommand } from './helpers/disposable-postgres';
@@ -17,6 +18,7 @@ const firstAssetId = `ma_${'a'.repeat(32)}`;
 const secondAssetId = `ma_${'b'.repeat(32)}`;
 const ownerBFirstAssetId = `ma_${'8'.repeat(32)}`;
 const ownerBSecondAssetId = `ma_${'9'.repeat(32)}`;
+const linkedAssetId = `ma_${'7'.repeat(32)}`;
 
 const input = {
   title: 'Persistent montage',
@@ -31,16 +33,19 @@ const input = {
 async function verifiedDatabase() {
   assert.equal(missingDisposablePostgresCommand(), null);
   const database = await startDisposablePostgres('stmon');
-  const socket = new URL(database.databaseUrl).searchParams.get('host');
-  const facts = (await database.pool.query(
-    "SELECT current_setting('listen_addresses') AS listeners, current_setting('server_version_num')::int AS version, current_setting('unix_socket_directories') AS sockets",
-  )).rows[0];
-  assert.equal(facts.listeners, '');
-  assert.equal(facts.sockets, socket);
-  assert.ok(facts.version >= 170000 && facts.version < 180000);
-  await database.pool.query(await readFile('neon/migrations/26_studio_projects.sql', 'utf8'));
-  await database.pool.query(await readFile('neon/migrations/42_studio_connected_montages.sql', 'utf8'));
-  await database.pool.query(`
+  try {
+    const socket = new URL(database.databaseUrl).searchParams.get('host');
+    assert.ok(socket?.includes('/stmon-') && socket.endsWith('/socket'));
+    const facts = (await database.pool.query(
+      "SELECT current_setting('listen_addresses') AS listeners, current_setting('server_version_num')::int AS version, current_setting('unix_socket_directories') AS sockets, current_setting('data_directory') AS directory",
+    )).rows[0];
+    assert.equal(facts.listeners, '');
+    assert.equal(facts.sockets, socket);
+    assert.equal(facts.directory, socket.replace(/\/socket$/u, '/data'));
+    assert.ok(facts.version >= 170000 && facts.version < 180000);
+    await database.pool.query(await readFile('neon/migrations/26_studio_projects.sql', 'utf8'));
+    await database.pool.query(await readFile('neon/migrations/42_studio_connected_montages.sql', 'utf8'));
+    await database.pool.query(`
     CREATE TABLE app_jobs(job_id text PRIMARY KEY, user_id text NOT NULL, hidden boolean NOT NULL DEFAULT false);
     CREATE TABLE job_outputs(id text PRIMARY KEY, job_id text NOT NULL, user_id text NOT NULL, kind text NOT NULL,
       url text NOT NULL, storage_url text, mime_type text, status text, metadata jsonb);
@@ -48,6 +53,8 @@ async function verifiedDatabase() {
       url text NOT NULL, storage_url text, thumb_url text, preview_url text, mime_type text, status text,
       deleted_at timestamptz, source_job_id text, source_output_id text, metadata jsonb);
     INSERT INTO app_jobs VALUES ('job-visible', '${ownerA}', false), ('job-hidden', '${ownerA}', true);
+    INSERT INTO job_outputs VALUES ('output-visible', 'job-visible', '${ownerA}', 'video',
+      'https://cdn.maxvideoai.com/linked.mp4', null, 'video/mp4', 'ready', '{"mediaFacts":{"source":"probe","durationSec":6}}');
     INSERT INTO media_assets VALUES
       ('internal-a', '${firstAssetId}', '${ownerA}', 'video', 'https://cdn.maxvideoai.com/a.mp4', null, null, null,
        'video/mp4', 'ready', null, null, null,
@@ -64,9 +71,16 @@ async function verifiedDatabase() {
       ('deleted', 'ma_${'f'.repeat(32)}', '${ownerA}', 'video', 'https://cdn.maxvideoai.com/f.mp4', null, null, null,
        'video/mp4', 'ready', now(), null, null, '{"mediaFacts":{"source":"probe","durationSec":6}}'),
       ('hidden', 'ma_${'0'.repeat(32)}', '${ownerA}', 'video', 'https://cdn.maxvideoai.com/hidden.mp4', null, null, null,
-       'video/mp4', 'ready', null, 'job-hidden', null, '{"mediaFacts":{"source":"probe","durationSec":6}}');
-  `);
-  return database;
+       'video/mp4', 'ready', null, 'job-hidden', null, '{"mediaFacts":{"source":"probe","durationSec":6}}'),
+      ('linked', '${linkedAssetId}', '${ownerA}', 'video', 'https://cdn.maxvideoai.com/linked.mp4', null, null, null,
+       'video/mp4', 'ready', null, 'job-visible', 'output-visible',
+       '{"mediaFacts":{"source":"probe","durationSec":6,"width":1920,"height":1080,"hasAudio":true}}');
+    `);
+    return database;
+  } catch (error) {
+    await database.cleanup();
+    throw error;
+  }
 }
 
 function transactionFor(pool: Pool, afterStage?: (stage: StudioMontageTransactionStage) => void) {
@@ -187,6 +201,40 @@ test('idempotency is owner-scoped and invalid, unmeasured, foreign, pending, del
       assert.equal((await database.pool.query('SELECT count(*)::int AS count FROM studio_projects')).rows[0].count, before);
     }
   } finally {
+    await database.cleanup();
+  }
+});
+
+test('linked job and output state is revalidated under locks before any montage row is written', async () => {
+  const database = await verifiedDatabase();
+  const blocker = await database.pool.connect();
+  try {
+    await blocker.query('BEGIN');
+    await blocker.query("UPDATE app_jobs SET hidden=true WHERE job_id='job-visible'");
+    const create = createStudioMontageProject({ userId: ownerA }, {
+      ...input,
+      idempotencyKey: 'linked-race',
+      clips: [{ ...input.clips[0], assetId: linkedAssetId }, input.clips[1]],
+    }, {
+      withTransaction: transactionFor(database.pool), featureEnabled: true,
+      createIds: () => ({ projectId: 'project-linked-race', sequenceId: 'sequence-linked-race' }),
+    });
+    let waiting = false;
+    for (let attempt = 0; attempt < 100; attempt += 1) {
+      const activity = await database.pool.query(`SELECT EXISTS (
+        SELECT 1 FROM pg_stat_activity
+        WHERE wait_event_type = 'Lock' AND query LIKE '%FOR SHARE OF o, j%'
+      ) AS waiting`);
+      if (activity.rows[0].waiting) { waiting = true; break; }
+      await delay(10);
+    }
+    assert.equal(waiting, true, 'the source revalidation must wait on the concurrent app_jobs update');
+    await blocker.query('COMMIT');
+    await assert.rejects(create, /MEDIA_NOT_AVAILABLE/u);
+    assert.equal((await database.pool.query("SELECT count(*)::int AS count FROM studio_projects WHERE id='project-linked-race'")).rows[0].count, 0);
+  } finally {
+    await blocker.query('ROLLBACK').catch(() => undefined);
+    blocker.release();
     await database.cleanup();
   }
 });

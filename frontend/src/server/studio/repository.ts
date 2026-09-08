@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { query, withDbTransaction } from '@/lib/db';
+import { query, withDbTransaction, type QueryExecutor } from '@/lib/db';
 import type { StudioProjectRecord, StudioSequenceRecord } from './contracts';
 import { ensureStudioProjectSchema } from './schema';
 
@@ -67,21 +67,28 @@ function mapSequence(row: StudioSequenceRow): StudioSequenceRecord {
   };
 }
 
-async function studioProjectAccess(params: { userId: string; projectId: string }): Promise<'legacy' | 'connected' | null> {
-  const rows = await query<{ id: string; persistence_mode: string }>(
+async function studioProjectAccess(
+  params: { userId: string; projectId: string },
+  executor: QueryExecutor = { query },
+  lock = false,
+): Promise<'legacy' | 'connected' | null> {
+  const rows = await executor.query<{ id: string; persistence_mode: string }>(
     `SELECT id, COALESCE(to_jsonb(studio_projects)->>'persistence_mode', 'legacy') AS persistence_mode
        FROM studio_projects
       WHERE user_id = $1
         AND id = $2
         AND deleted_at IS NULL
-      LIMIT 1`,
+      LIMIT 1${lock ? ' FOR UPDATE' : ''}`,
     [params.userId, params.projectId]
   );
   return rows[0]?.persistence_mode === 'connected' ? 'connected' : rows[0] ? 'legacy' : null;
 }
 
-async function requireLegacyStudioProject(params: { userId: string; projectId: string }): Promise<void> {
-  const access = await studioProjectAccess(params);
+async function requireLegacyStudioProject(
+  params: { userId: string; projectId: string },
+  executor: QueryExecutor,
+): Promise<void> {
+  const access = await studioProjectAccess(params, executor, true);
   if (access === 'connected') throw new Error('STUDIO_CONNECTED_PROJECT_REVISION_REQUIRED');
   if (!access) throw new Error('STUDIO_PROJECT_NOT_FOUND');
 }
@@ -155,11 +162,11 @@ export async function upsertStudioSequence(params: {
   timelineState?: unknown;
 }): Promise<StudioSequenceRecord> {
   await ensureStudioProjectSchema();
-  await requireLegacyStudioProject(params);
-
   const id = params.id?.trim() || studioId('sequence');
   const name = params.name.trim() || 'Untitled sequence';
-  const rows = await query<StudioSequenceRow>(
+  return withDbTransaction(async (executor) => {
+    await requireLegacyStudioProject(params, executor);
+    const rows = await executor.query<StudioSequenceRow>(
     `INSERT INTO studio_sequences (
         id, user_id, project_id, name, settings, timeline_state
       )
@@ -183,8 +190,9 @@ export async function upsertStudioSequence(params: {
       JSON.stringify(params.timelineState ?? {}),
     ]
   );
-  if (!rows[0]) throw new Error('STUDIO_SEQUENCE_CONFLICT');
-  return mapSequence(rows[0]);
+    if (!rows[0]) throw new Error('STUDIO_SEQUENCE_CONFLICT');
+    return mapSequence(rows[0]);
+  });
 }
 
 export async function deleteStudioSequence(params: {
@@ -193,8 +201,8 @@ export async function deleteStudioSequence(params: {
   sequenceId: string;
 }): Promise<{ ok: true } | { ok: false; reason: 'last_sequence' | 'not_found' }> {
   await ensureStudioProjectSchema();
-  await requireLegacyStudioProject(params);
   return withDbTransaction(async (executor) => {
+    await requireLegacyStudioProject(params, executor);
     const targetRows = await executor.query<{ id: string }>(
       `SELECT id
          FROM studio_sequences
@@ -262,13 +270,14 @@ export async function upsertStudioProject(params: {
 }): Promise<StudioProjectRecord> {
   await ensureStudioProjectSchema();
   const id = params.id?.trim() || studioId('project');
-  if (params.id?.trim()) {
-    const access = await studioProjectAccess({ userId: params.userId, projectId: id });
-    if (access === 'connected') throw new Error('STUDIO_CONNECTED_PROJECT_REVISION_REQUIRED');
-  }
   const name = params.name.trim() || 'Untitled edit';
   const canvasTemplateId = params.canvasTemplateId?.trim() || DEFAULT_STUDIO_PROJECT_CANVAS_TEMPLATE_ID;
-  const rows = await query<StudioProjectRow>(
+  return withDbTransaction(async (executor) => {
+    if (params.id?.trim()) {
+      const access = await studioProjectAccess({ userId: params.userId, projectId: id }, executor, true);
+      if (access === 'connected') throw new Error('STUDIO_CONNECTED_PROJECT_REVISION_REQUIRED');
+    }
+    const rows = await executor.query<StudioProjectRow>(
     `INSERT INTO studio_projects (
         id, user_id, name, canvas_template_id, settings, workspace_state
       )
@@ -296,8 +305,9 @@ export async function upsertStudioProject(params: {
       JSON.stringify(params.workspaceState ?? {}),
     ]
   );
-  if (!rows[0]) throw new Error('STUDIO_PROJECT_CONFLICT');
-  return mapProject(rows[0]);
+    if (!rows[0]) throw new Error('STUDIO_PROJECT_CONFLICT');
+    return mapProject(rows[0]);
+  });
 }
 
 export async function deleteStudioProject(params: {
@@ -305,8 +315,9 @@ export async function deleteStudioProject(params: {
   projectId: string;
 }): Promise<boolean> {
   await ensureStudioProjectSchema();
-  await requireLegacyStudioProject(params);
-  const rows = await query<{ id: string }>(
+  return withDbTransaction(async (executor) => {
+    await requireLegacyStudioProject(params, executor);
+    const rows = await executor.query<{ id: string }>(
     `UPDATE studio_projects
         SET deleted_at = NOW(),
             updated_at = NOW()
@@ -316,5 +327,6 @@ export async function deleteStudioProject(params: {
       RETURNING id`,
     [params.userId, params.projectId]
   );
-  return Boolean(rows[0]);
+    return Boolean(rows[0]);
+  });
 }

@@ -1,6 +1,7 @@
 import { withDbTransaction, type QueryExecutor } from '@/lib/db';
 import { assertStudioConnectedSchemaReady } from './connected-schema';
 import { StudioConnectedPersistenceError } from './montage-command';
+import type { StudioProjectRecord, StudioSequenceRecord } from './contracts';
 export { StudioConnectedPersistenceError } from './montage-command';
 
 type TransactionRunner = <T>(callback: (executor: QueryExecutor) => Promise<T>) => Promise<T>;
@@ -88,6 +89,77 @@ function stripTransientAccess(value: unknown): unknown {
   return Object.fromEntries(Object.entries(value as WorkspaceRecord)
     .filter(([key]) => key !== 'mediaAccessUrl' && key !== 'mediaAccessExpiresAt')
     .map(([key, nested]) => [key, stripTransientAccess(nested)]));
+}
+
+function isoDate(value: Date | string): string {
+  return value instanceof Date ? value.toISOString() : new Date(value).toISOString();
+}
+
+export async function readStudioWorkspace(
+  actor: { userId: string },
+  projectId: string,
+  dependencies: {
+    withTransaction?: TransactionRunner;
+    afterProjectLock?: () => void | Promise<void>;
+  } = {},
+): Promise<{ project: StudioProjectRecord; sequences: StudioSequenceRecord[] }> {
+  if (!actor.userId || actor.userId !== actor.userId.trim() || !projectId?.trim() || projectId !== projectId.trim()) {
+    throw new Error('UNAUTHORIZED');
+  }
+  const runTransaction = dependencies.withTransaction ?? defaultTransactionRunner;
+  return runTransaction(async (executor) => {
+    await assertStudioConnectedSchemaReady(executor);
+    const projects = await executor.query<{
+      id: string; user_id: string; name: string; canvas_template_id: string; settings: unknown;
+      workspace_state: unknown; revision: string | number; persistence_mode: string;
+      created_at: Date | string; updated_at: Date | string;
+    }>(`
+      SELECT id, user_id, name, canvas_template_id, settings, workspace_state,
+             revision, persistence_mode, created_at, updated_at
+        FROM studio_projects
+       WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL
+       FOR SHARE
+    `, [projectId, actor.userId]);
+    const row = projects[0];
+    if (!row) throw new Error('STUDIO_PROJECT_NOT_FOUND');
+    if (row.persistence_mode !== 'connected') {
+      throw new StudioConnectedPersistenceError('STUDIO_CONNECTED_PROJECT_REQUIRED', 409);
+    }
+    await dependencies.afterProjectLock?.();
+    const sequenceRows = await executor.query<{
+      id: string; user_id: string; project_id: string; name: string; settings: unknown;
+      timeline_state: unknown; created_at: Date | string; updated_at: Date | string;
+    }>(`
+      SELECT id, user_id, project_id, name, settings, timeline_state, created_at, updated_at
+        FROM studio_sequences
+       WHERE project_id = $1 AND user_id = $2 AND deleted_at IS NULL
+       ORDER BY created_at, id
+    `, [projectId, actor.userId]);
+    return {
+      project: {
+        id: row.id,
+        userId: row.user_id,
+        name: row.name,
+        canvasTemplateId: row.canvas_template_id,
+        settings: row.settings,
+        workspaceState: row.workspace_state,
+        revision: Number(row.revision),
+        persistenceMode: 'connected',
+        createdAt: isoDate(row.created_at),
+        updatedAt: isoDate(row.updated_at),
+      },
+      sequences: sequenceRows.map((sequence) => ({
+        id: sequence.id,
+        userId: sequence.user_id,
+        projectId: sequence.project_id,
+        name: sequence.name,
+        settings: sequence.settings,
+        timelineState: sequence.timeline_state,
+        createdAt: isoDate(sequence.created_at),
+        updatedAt: isoDate(sequence.updated_at),
+      })),
+    };
+  });
 }
 
 export async function saveStudioWorkspace(

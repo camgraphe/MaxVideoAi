@@ -7,6 +7,7 @@ import { startDisposablePostgres, missingDisposablePostgresCommand } from './hel
 import type { QueryExecutor } from '../frontend/src/lib/db';
 import { getDb } from '../frontend/src/lib/db';
 import {
+  readStudioWorkspace,
   saveStudioWorkspace,
   StudioConnectedPersistenceError,
 } from '../frontend/src/server/studio/workspace-command';
@@ -22,13 +23,16 @@ const owner = '00000000-0000-4000-8000-00000000000a';
 async function verifiedDatabase() {
   assert.equal(missingDisposablePostgresCommand(), null);
   const database = await startDisposablePostgres('strev');
-  const socket = new URL(database.databaseUrl).searchParams.get('host');
-  const facts = (await database.pool.query("SELECT current_setting('listen_addresses') AS listeners, current_setting('server_version_num')::int AS version, current_setting('unix_socket_directories') AS sockets")).rows[0];
-  assert.deepEqual({ listeners: facts.listeners, sockets: facts.sockets }, { listeners: '', sockets: socket });
-  assert.ok(facts.version >= 170000 && facts.version < 180000);
-  await database.pool.query(await readFile('neon/migrations/26_studio_projects.sql', 'utf8'));
-  await database.pool.query(await readFile('neon/migrations/42_studio_connected_montages.sql', 'utf8'));
-  await database.pool.query(`
+  try {
+    const socket = new URL(database.databaseUrl).searchParams.get('host');
+    assert.ok(socket?.includes('/strev-') && socket.endsWith('/socket'));
+    const facts = (await database.pool.query("SELECT current_setting('listen_addresses') AS listeners, current_setting('server_version_num')::int AS version, current_setting('unix_socket_directories') AS sockets, current_setting('data_directory') AS directory")).rows[0];
+    assert.deepEqual({ listeners: facts.listeners, sockets: facts.sockets }, { listeners: '', sockets: socket });
+    assert.equal(facts.directory, socket.replace(/\/socket$/u, '/data'));
+    assert.ok(facts.version >= 170000 && facts.version < 180000);
+    await database.pool.query(await readFile('neon/migrations/26_studio_projects.sql', 'utf8'));
+    await database.pool.query(await readFile('neon/migrations/42_studio_connected_montages.sql', 'utf8'));
+    await database.pool.query(`
     INSERT INTO studio_projects(id,user_id,name,canvas_template_id,settings,workspace_state,persistence_mode,revision)
     VALUES ('connected-project','${owner}','Connected','minimal-start','{"fps":24,"aspectRatio":"16:9","resolution":"1080p"}',
       '{"nodes":[],"edges":[],"timelineItems":[],"sequences":[],"activeSequenceId":"sequence-main","activeTemplateId":"minimal-start","projectSettings":{"fps":24,"aspectRatio":"16:9","resolution":"1080p"}}',
@@ -37,9 +41,14 @@ async function verifiedDatabase() {
     INSERT INTO studio_sequences(id,user_id,project_id,name,settings,timeline_state)
     VALUES ('sequence-main','${owner}','connected-project','Main sequence','{"fps":24,"aspectRatio":"16:9","resolution":"1080p"}',
       '{"timelineItems":[],"audioTrackCount":2,"videoTrackCount":1}');
-  `);
-  process.env.DATABASE_URL = database.databaseUrl;
-  return database;
+    `);
+    process.env.DATABASE_URL = database.databaseUrl;
+    return database;
+  } catch (error) {
+    delete process.env.DATABASE_URL;
+    await database.cleanup();
+    throw error;
+  }
 }
 
 function transactionFor(pool: Pool) {
@@ -123,6 +132,71 @@ test('the atomic save replaces the connected aggregate only after validation and
     }, { withTransaction: transactionFor(database.pool) }), /at least one sequence/u);
     assert.equal((await database.pool.query("SELECT revision FROM studio_projects WHERE id='connected-project'")).rows[0].revision, '1');
   } finally {
+    delete process.env.DATABASE_URL;
+    await database.cleanup();
+  }
+});
+
+test('the connected workspace reader locks the aggregate so project revision and sequences come from one state', async () => {
+  const database = await verifiedDatabase();
+  const locked = Promise.withResolvers<void>();
+  const release = Promise.withResolvers<void>();
+  try {
+    const deps = { withTransaction: transactionFor(database.pool) };
+    const read = readStudioWorkspace({ userId: owner }, 'connected-project', {
+      ...deps,
+      afterProjectLock: async () => { locked.resolve(); await release.promise; },
+    });
+    await locked.promise;
+    let saveSettled = false;
+    const save = saveStudioWorkspace({ userId: owner }, {
+      projectId: 'connected-project', expectedRevision: 0, snapshot: snapshot('After read'),
+    }, deps).finally(() => { saveSettled = true; });
+    await new Promise<void>((resolve) => setImmediate(resolve));
+    assert.equal(saveSettled, false, 'the writer must wait for the aggregate reader lock');
+    release.resolve();
+    const original = await read;
+    assert.equal(original.project.revision, 0);
+    assert.equal(original.project.name, 'Connected');
+    assert.deepEqual(original.sequences.map((sequence) => sequence.id), ['sequence-main']);
+    assert.deepEqual(await save, { projectId: 'connected-project', revision: 1 });
+  } finally {
+    delete process.env.DATABASE_URL;
+    await database.cleanup();
+  }
+});
+
+test('legacy writers lock the parent inside their transaction and recheck a concurrent transition to connected mode', async () => {
+  const database = await verifiedDatabase();
+  const operations = [
+    () => upsertStudioProject({ userId: owner, id: 'legacy-project', name: 'Racing project write' }),
+    () => upsertStudioSequence({ userId: owner, projectId: 'legacy-project', id: 'legacy-race-sequence', name: 'Racing sequence write' }),
+    () => deleteStudioSequence({ userId: owner, projectId: 'legacy-project', sequenceId: 'legacy-sequence-a' }),
+    () => deleteStudioProject({ userId: owner, projectId: 'legacy-project' }),
+  ];
+  try {
+    await database.pool.query(`INSERT INTO studio_sequences(id,user_id,project_id,name,settings,timeline_state)
+      VALUES ('legacy-sequence-a','${owner}','legacy-project','A','{}','{}'),
+             ('legacy-sequence-b','${owner}','legacy-project','B','{}','{}')`);
+    for (const operation of operations) {
+      const blocker = await database.pool.connect();
+      try {
+        await blocker.query('BEGIN');
+        await blocker.query("SELECT id FROM studio_projects WHERE id='legacy-project' FOR UPDATE");
+        await blocker.query("UPDATE studio_projects SET persistence_mode='connected' WHERE id='legacy-project'");
+        const attempted = operation();
+        await new Promise<void>((resolve) => setImmediate(resolve));
+        await blocker.query('COMMIT');
+        await assert.rejects(attempted, /STUDIO_CONNECTED_PROJECT_REVISION_REQUIRED/u);
+      } finally {
+        await blocker.query('ROLLBACK').catch(() => undefined);
+        blocker.release();
+      }
+      await database.pool.query("UPDATE studio_projects SET persistence_mode='legacy' WHERE id='legacy-project'");
+    }
+    assert.equal((await database.pool.query("SELECT deleted_at FROM studio_projects WHERE id='legacy-project'")).rows[0].deleted_at, null);
+  } finally {
+    await getDb().end();
     delete process.env.DATABASE_URL;
     await database.cleanup();
   }
