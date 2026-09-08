@@ -357,7 +357,7 @@
 
 @media(max-height:500px) and (min-width:621px) {
   .canvasNavigator {
-    right:16px;
+    right:208px;
     bottom:8px;
     left:auto;
   }

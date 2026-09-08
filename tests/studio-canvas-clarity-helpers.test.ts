@@ -114,7 +114,7 @@ test('both initial and explicit fit consume the same useful-surface helper and h
   assert.match(shellStyles, /@media\(max-height:500px\) and \(min-width:621px\)[\s\S]*\.canvasEditorBody \.mobilePanelRail \{ display:none; \}/);
   assert.match(actionStyles, /@media\(max-height:500px\) and \(min-width:621px\)[\s\S]*\.selectionActions \{[\s\S]*left:8px;[\s\S]*width:300px;/);
   assert.match(toolbarStyles, /@media\(max-height:500px\) and \(min-width:621px\)[\s\S]*\.canvasToolbar \{[\s\S]*left:8px;[\s\S]*width:300px;/);
-  assert.match(navigatorStyles, /@media\(max-height:500px\) and \(min-width:621px\)[\s\S]*\.canvasNavigator \{[\s\S]*right:16px;[\s\S]*left:auto;/);
+  assert.match(navigatorStyles, /@media\(max-height:500px\) and \(min-width:621px\)[\s\S]*\.canvasNavigator \{[\s\S]*right:208px;[\s\S]*left:auto;/);
   assert.match(navigatorStyles, /\.navigatorTrigger \{[\s\S]*min-height: 44px;/);
   assert.match(map, /const collapseMapForFit = window\.innerWidth <= 600 \|\| window\.innerHeight <= 500/);
   assert.match(map, /setIsOpen\(false\)[\s\S]*mapExpanded: collapseMapForFit \? false : isOpen/);
