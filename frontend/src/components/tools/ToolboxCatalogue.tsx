@@ -18,9 +18,7 @@ export function ToolboxCatalogue({ locale, mediaKind, onSelect }: { locale: stri
   const visibleCount = quick.length;
   return <div className={styles.catalogue}>
     <header className={styles.heading}>
-      <span className={styles.eyebrow}>{copy.workspace}</span>
-      <h1>{copy.title}</h1>
-      <p>{copy.subtitle}</p>
+      <h1>{copy.workspace}</h1>
     </header>
     <div className={styles.sectionBar}>
       <div><h2>{copy.quick}</h2><p aria-live="polite">{visibleCount} {visibleCount === 1 ? copy.resultCountSingular : copy.results}</p></div>

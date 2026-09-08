@@ -35,6 +35,8 @@ test('toolbox catalogue exposes every implemented tool', () => {
   assert.match(catalogueSource, /text\.body/);
   assert.match(catalogueSource, /text\.tag/);
   assert.match(catalogueSource, /copy\.available/);
+  assert.match(catalogueSource, /<h1>\{copy\.workspace\}<\/h1>/);
+  assert.doesNotMatch(catalogueSource, /\{copy\.title\}|\{copy\.subtitle\}/);
   assert.match(catalogueStyles, /@media\(max-width: 700px\)/);
   assert.match(catalogueStyles, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
 });
