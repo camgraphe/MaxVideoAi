@@ -62,6 +62,7 @@ export function createStudioConnectedSaveQueue<TSnapshot>(options: {
       void drain();
     },
     whenIdle(): Promise<StudioConnectedSaveStatus> {
+      if (disposed) return Promise.resolve('error');
       if (!inFlight && (pending === null || blockedByConflict)) return Promise.resolve(lastStatus);
       return new Promise((resolve) => waiters.push(resolve));
     },
@@ -70,7 +71,8 @@ export function createStudioConnectedSaveQueue<TSnapshot>(options: {
     dispose() {
       disposed = true;
       pending = null;
-      settle(lastStatus);
+      lastStatus = 'error';
+      settle('error');
     },
   };
 }

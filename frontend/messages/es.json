@@ -5250,7 +5250,9 @@
           "errorCount": "Añade entre 2 y 12 clips.",
           "errorTrim": "Cada recorte debe permanecer dentro de su fuente medida.",
           "errorDuration": "El montaje no puede superar los 180 segundos.",
-          "errorRequest": "No se pudo crear el montaje. Inténtalo de nuevo."
+          "errorRequest": "No se pudo crear el montaje. Inténtalo de nuevo.",
+          "errorLibrary": "No se pudo cargar la biblioteca de vídeos.",
+          "retryLibrary": "Reintentar la biblioteca de vídeos"
         }
       },
       "topbar": {

@@ -15,6 +15,7 @@ const styles = { ...baseStyles, ...shellStyles };
 
 type WorkspaceEditorTopbarProps = {
   activeTemplateName: string;
+  exitToProjectsDisabled: boolean;
   focusMode: WorkspaceFocusMode;
   mockMode: boolean;
   onEditorSurfaceChange: (surface: WorkspaceEditorSurface) => void;
@@ -27,6 +28,7 @@ type WorkspaceEditorTopbarProps = {
 
 export function WorkspaceEditorTopbar({
   activeTemplateName,
+  exitToProjectsDisabled,
   focusMode,
   mockMode,
   onEditorSurfaceChange,
@@ -56,7 +58,7 @@ export function WorkspaceEditorTopbar({
           priority
         />
         <div>
-          <button type="button" className={styles.projectsButton} onClick={onExitToProjects}>{studioCopy.topbar.breadcrumbProjects}</button>
+          <button type="button" className={styles.projectsButton} disabled={exitToProjectsDisabled} onClick={onExitToProjects}>{studioCopy.topbar.breadcrumbProjects}</button>
           <p title={displayTemplateName}>{displayTemplateName}</p>
         </div>
       </div>
@@ -92,7 +94,7 @@ export function WorkspaceEditorTopbar({
           <Settings size={15} />
           <span>{mockMode ? studioCopy.topbar.mock : studioCopy.topbar.live}</span>
         </button>
-        <StudioHeaderSession onExitToProjects={onExitToProjects} studioCopy={studioCopy} />
+        <StudioHeaderSession exitToProjectsDisabled={exitToProjectsDisabled} onExitToProjects={onExitToProjects} studioCopy={studioCopy} />
         <div className={styles.topbarActions}>
           <StudioLanguageToggle />
           {isHydrated ? (

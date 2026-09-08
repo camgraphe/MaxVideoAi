@@ -26,11 +26,12 @@ function formatCopyValue(value: string, replacements: Record<string, string | nu
 }
 
 type StudioHeaderSessionProps = {
+  exitToProjectsDisabled: boolean;
   onExitToProjects: () => void;
   studioCopy: StudioCopy;
 };
 
-export function StudioHeaderSession({ onExitToProjects, studioCopy }: StudioHeaderSessionProps) {
+export function StudioHeaderSession({ exitToProjectsDisabled, onExitToProjects, studioCopy }: StudioHeaderSessionProps) {
   const { authResolved, email, wallet, isAdmin, signOut } = useHeaderAccountState();
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [walletPromptOpen, setWalletPromptOpen] = useState(false);
@@ -181,6 +182,7 @@ export function StudioHeaderSession({ onExitToProjects, studioCopy }: StudioHead
         <button
           type="button"
           className={styles.studioSessionExit}
+          disabled={exitToProjectsDisabled}
           onClick={onExitToProjects}
           aria-label={studioCopy.topbar.exitToProjects}
           title={studioCopy.topbar.saveAndReturnToProjects}

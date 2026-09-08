@@ -47,6 +47,8 @@ function StudioMontageDialog({ copy, idempotencyKeys, onClose }: {
 }) {
   const router = useRouter();
   const occurrenceRef = useRef(0);
+  const [loadAttempt, setLoadAttempt] = useState(0);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,7 +67,7 @@ function StudioMontageDialog({ copy, idempotencyKeys, onClose }: {
     const controller = new AbortController();
     let active = true;
     setLoading(true);
-    setError(null);
+    setLoadError(null);
     void authFetch('/api/media-library/assets?limit=60&kind=video', {
       headers: { Accept: 'application/json' }, cache: 'no-store', signal: controller.signal,
     }).then(async (response) => {
@@ -82,7 +84,7 @@ function StudioMontageDialog({ copy, idempotencyKeys, onClose }: {
         };
       }));
     }).catch((cause) => {
-      if (active && (cause as { name?: string })?.name !== 'AbortError') setError(copy.errorRequest);
+      if (active && (cause as { name?: string })?.name !== 'AbortError') setLoadError(copy.errorLibrary);
     }).finally(() => {
       if (active) setLoading(false);
     });
@@ -90,14 +92,14 @@ function StudioMontageDialog({ copy, idempotencyKeys, onClose }: {
       active = false;
       controller.abort();
     };
-  }, [copy.errorRequest]);
+  }, [copy.errorLibrary, loadAttempt]);
 
   const totalFrames = useMemo(() => clips.reduce((sum, clip) => sum + clip.durationFrames, 0), [clips]);
   const validationError = validateStudioMontageDraft({ title, settings, clips });
   const errorForValidation = (reason: typeof validationError) => reason === 'title' ? copy.errorTitle
     : reason === 'count' ? copy.errorCount : reason === 'trim' ? copy.errorTrim
       : reason === 'duration' ? copy.errorDuration : null;
-  const displayedError = errorForValidation(validationError) ?? error;
+  const validationCopy = errorForValidation(validationError);
 
   const addClip = (asset: NonNullable<StudioMontageLibraryChoice['eligible']>) => {
     if (clips.length >= MONTAGE_MAX_CLIPS) return;
@@ -168,7 +170,8 @@ function StudioMontageDialog({ copy, idempotencyKeys, onClose }: {
               <label><span>{copy.audio}</span><select value={settings.audioMode} onChange={(event) => setSettings((current) => ({ ...current, audioMode: event.target.value as MontageSettings['audioMode'] }))}><option value="preserve">{copy.preserveAudio}</option><option value="mute">{copy.muteAudio}</option></select></label>
             </div>
             <section className={styles.montageLibrary} aria-labelledby="studio-montage-library"><h3 id="studio-montage-library">{copy.library}</h3>
-              {loading ? <p>{copy.loading}</p> : assets.length ? <div className={styles.montageAssetList}>{assets.map((choice) => (
+              {loadError ? <div className={styles.deleteWarning} role="alert" data-studio-montage-library-error="true"><span>{loadError}</span><button type="button" onClick={() => setLoadAttempt((attempt) => attempt + 1)} data-studio-montage-library-retry="true">{copy.retryLibrary}</button></div>
+                : loading ? <p>{copy.loading}</p> : assets.length ? <div className={styles.montageAssetList}>{assets.map((choice) => (
                 <article key={choice.key} data-studio-montage-library-asset={choice.eligible?.assetId ?? choice.key} data-studio-montage-eligible={choice.eligible ? 'true' : 'false'}>{choice.thumbnailUrl ? <img src={choice.thumbnailUrl} alt="" /> : <span><Film size={18} /></span>}<strong>{choice.name}</strong><small>{choice.eligible ? `${choice.eligible.durationSec.toFixed(2)}s` : copy.ineligible}</small>
                   <button type="button" aria-label={`${choice.eligible ? copy.add : copy.ineligible}: ${choice.name}`} onClick={() => choice.eligible && addClip(choice.eligible)} disabled={!choice.eligible || clips.length >= MONTAGE_MAX_CLIPS} data-studio-montage-add={choice.eligible?.assetId}>{choice.eligible ? copy.add : copy.ineligible}</button>
                 </article>
@@ -183,7 +186,8 @@ function StudioMontageDialog({ copy, idempotencyKeys, onClose }: {
               </li>)}</ol>
             </section>
             <div className={styles.montageSummary}>{copy.total.replace('{frames}', String(totalFrames)).replace('{seconds}', (totalFrames / settings.fps).toFixed(2))}</div>
-            {displayedError ? <div className={styles.deleteWarning} role={error ? 'alert' : 'status'} aria-live="polite" data-studio-montage-error="true">{displayedError}</div> : null}
+            {validationCopy ? <div className={styles.deleteWarning} role="status" aria-live="polite" data-studio-montage-validation-error="true">{validationCopy}</div> : null}
+            {error ? <div className={styles.deleteWarning} role="alert" aria-live="polite" data-studio-montage-error="true">{error}</div> : null}
             <div className={styles.dialogActions}><button type="button" className={styles.dialogSecondaryButton} disabled={submitting} onClick={onClose}>{copy.cancel}</button><button type="submit" className={styles.dialogPrimaryButton} disabled={submitting || Boolean(validationError)} data-studio-montage-submit="true">{submitting ? copy.creating : copy.create}</button></div>
             </fieldset>
       </form>

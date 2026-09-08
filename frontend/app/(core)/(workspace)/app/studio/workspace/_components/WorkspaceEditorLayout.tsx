@@ -199,6 +199,7 @@ export function WorkspaceEditorLayout({
       <WorkspaceEditorTopbar
         activeTemplateName={activeTemplateName} focusMode={focusMode} mockMode={mockMode}
         onEditorSurfaceChange={setActiveEditorSurface} onExitToProjects={shell.handleExitToProjects}
+        exitToProjectsDisabled={shell.exitToProjectsDisabled}
         onFocusModeChange={setFocusMode} onToggleMockMode={() => setMockMode((value) => !value)}
         studioCopy={studioCopy} studioTheme={studioTheme}
       />

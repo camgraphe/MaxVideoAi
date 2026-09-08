@@ -237,6 +237,7 @@ export type StudioCopy = {
       fps: string; aspectRatio: string; resolution: string; audio: string; preserveAudio: string; muteAudio: string;
       total: string; cancel: string; create: string; creating: string;
       errorTitle: string; errorCount: string; errorTrim: string; errorDuration: string; errorRequest: string;
+      errorLibrary: string; retryLibrary: string;
     };
   };
   topbar: {
@@ -551,6 +552,7 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
       errorTitle: 'Enter a project title without leading or trailing spaces.',
       errorCount: 'Add between 2 and 12 clips.', errorTrim: 'Every trim must stay within its measured source.',
       errorDuration: 'The montage cannot exceed 180 seconds.', errorRequest: 'The montage could not be created. Try again.',
+      errorLibrary: 'The video library could not be loaded.', retryLibrary: 'Retry video library',
     },
   },
   topbar: {

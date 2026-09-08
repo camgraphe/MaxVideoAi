@@ -5223,7 +5223,9 @@
           "errorCount": "Add between 2 and 12 clips.",
           "errorTrim": "Every trim must stay within its measured source.",
           "errorDuration": "The montage cannot exceed 180 seconds.",
-          "errorRequest": "The montage could not be created. Try again."
+          "errorRequest": "The montage could not be created. Try again.",
+          "errorLibrary": "The video library could not be loaded.",
+          "retryLibrary": "Retry video library"
         }
       },
       "topbar": {

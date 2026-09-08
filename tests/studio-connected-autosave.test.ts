@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import test from 'node:test';
 
 import { createStudioConnectedSaveQueue } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_state/studio-connected-save-queue';
@@ -144,4 +146,43 @@ test('account changes clear project media and connected exits wait for a real AC
   assert.deepEqual({ navigations, notices }, { navigations: ['go'], notices: ['conflict', 'saved'] });
   await completeStudioWorkspaceExit({ connected: false, save: async () => 'error', notices: copy, setNotice: (notice) => notices.push(notice), navigate: () => navigations.push('go') });
   assert.deepEqual({ navigations, notices }, { navigations: ['go', 'go'], notices: ['conflict', 'saved', 'saved'] });
+});
+
+test('disposing an in-flight connected save cannot acknowledge a pending Projects exit', async () => {
+  const deferred = Promise.withResolvers<{ status: 'ready'; revision: number }>();
+  const queue = createStudioConnectedSaveQueue<{ value: string }>({
+    scope: 'owner-a:project-a', initialRevision: 0, save: () => deferred.promise,
+  });
+  const notices: string[] = [];
+  const navigations: string[] = [];
+  const exit = completeStudioWorkspaceExit({
+    connected: true,
+    save: () => {
+      queue.enqueue({ value: 'pending' });
+      return queue.whenIdle();
+    },
+    notices: {
+      studioApiUnauthorized: 'unauthorized', studioApiUnavailable: 'unavailable',
+      workspaceConflict: 'conflict', workspaceSavedReturningToProjects: 'saved',
+    },
+    setNotice: (notice) => notices.push(notice),
+    navigate: () => navigations.push('go'),
+  });
+  await new Promise<void>((resolvePending) => setImmediate(resolvePending));
+  queue.dispose();
+  await exit;
+  assert.deepEqual(navigations, []);
+  assert.deepEqual(notices, ['unavailable']);
+  deferred.resolve({ status: 'ready', revision: 1 });
+});
+
+test('both Projects exits stay disabled until a project persistence mode is resolved', () => {
+  const workspace = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/WorkspacePage.client.tsx'), 'utf8');
+  const layout = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceEditorLayout.tsx'), 'utf8');
+  const topbar = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceEditorTopbar.tsx'), 'utf8');
+  const session = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_components/StudioHeaderSession.tsx'), 'utf8');
+  assert.match(workspace, /exitReady: persistence\.exitReady/);
+  assert.match(layout, /exitToProjectsDisabled=\{shell\.exitToProjectsDisabled\}/);
+  assert.match(topbar, /disabled=\{exitToProjectsDisabled\}[\s\S]*StudioHeaderSession[\s\S]*exitToProjectsDisabled=\{exitToProjectsDisabled\}/);
+  assert.match(session, /disabled=\{exitToProjectsDisabled\}/);
 });

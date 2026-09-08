@@ -5258,7 +5258,9 @@
           "errorCount": "Ajoutez entre 2 et 12 plans.",
           "errorTrim": "Chaque coupe doit rester dans les limites de sa source mesurée.",
           "errorDuration": "Le montage ne peut pas dépasser 180 secondes.",
-          "errorRequest": "Le montage n’a pas pu être créé. Réessayez."
+          "errorRequest": "Le montage n’a pas pu être créé. Réessayez.",
+          "errorLibrary": "La médiathèque vidéo n’a pas pu être chargée.",
+          "retryLibrary": "Réessayer la médiathèque vidéo"
         }
       },
       "topbar": {

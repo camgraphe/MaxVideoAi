@@ -21,6 +21,7 @@ type UseWorkspaceShellActionsParams = {
   activeTemplateName: string;
   buildPersistedWorkspaceState: () => PersistedWorkspaceState;
   connected: boolean;
+  exitReady: boolean;
   hasValidTimelineInOut: boolean;
   openExportDialog: () => void;
   projectId?: string;
@@ -70,6 +71,7 @@ export function useWorkspaceShellActions({
   activeTemplateName,
   buildPersistedWorkspaceState,
   connected,
+  exitReady,
   hasValidTimelineInOut,
   openExportDialog,
   projectId,
@@ -84,6 +86,7 @@ export function useWorkspaceShellActions({
   persistWorkspaceLocally,
   saveWorkspace,
 }: UseWorkspaceShellActionsParams): {
+  exitToProjectsDisabled: boolean;
   handleExitToProjects: () => void;
   handleExportQualityPresetChange: (preset: WorkspaceTimelineExportQualityPreset) => void;
   handleExportRangeModeChange: (mode: WorkspaceTimelineExportRangeMode) => void;
@@ -104,6 +107,10 @@ export function useWorkspaceShellActions({
 
   const handleExitToProjects = useCallback(() => {
     if (typeof window === 'undefined') return;
+    if (!exitReady) {
+      setNotice(studioNotices.studioApiUnavailable);
+      return;
+    }
     const state = buildPersistedWorkspaceState();
     if (persistWorkspaceLocally) persistWorkspaceLocally(state);
     else window.localStorage.setItem(workspaceStorageKey, JSON.stringify(state));
@@ -129,7 +136,7 @@ export function useWorkspaceShellActions({
       setNotice,
       navigate: navigateToProjects,
     });
-  }, [activeTemplateId, activeTemplateName, buildPersistedWorkspaceState, connected, persistWorkspaceLocally, projectId, saveWorkspace, setNotice, studioNotices, workspaceStorageKey]);
+  }, [activeTemplateId, activeTemplateName, buildPersistedWorkspaceState, connected, exitReady, persistWorkspaceLocally, projectId, saveWorkspace, setNotice, studioNotices, workspaceStorageKey]);
 
   const handleExportRangeModeChange = useCallback((mode: WorkspaceTimelineExportRangeMode) => {
     resetExportSession();
@@ -146,6 +153,7 @@ export function useWorkspaceShellActions({
   }, [setTimelinePanelHeight]);
 
   return {
+    exitToProjectsDisabled: !exitReady,
     handleExitToProjects,
     handleExportQualityPresetChange,
     handleExportRangeModeChange,

@@ -202,6 +202,7 @@ export function useWorkspacePersistenceEffects({
 }: UseWorkspacePersistenceEffectsParams): {
   connectedConflict: boolean;
   connected: boolean;
+  exitReady: boolean;
   projectAccessError: boolean;
   persistLocal: (state: PersistedWorkspaceState) => void;
   reloadServerVersion: () => void;
@@ -220,6 +221,7 @@ export function useWorkspacePersistenceEffects({
   const previousMediaAccountIdRef = useRef<string | null | undefined>(undefined);
   const [connectedConflict, setConnectedConflict] = useState(false);
   const [projectAccessError, setProjectAccessError] = useState(false);
+  const [exitReady, setExitReady] = useState(!projectId);
   const [autosaveReadiness, setAutosaveReadiness] = useState({
     api: false,
     local: false,
@@ -237,6 +239,7 @@ export function useWorkspacePersistenceEffects({
     baselineRef.current = null;
     setConnectedConflict(false);
     setProjectAccessError(false);
+    setExitReady(!projectId);
     notifiedAutosaveFallbackStatusesRef.current.clear();
     setAutosaveReadiness({ api: false, local: false, workspaceStorageKey });
 
@@ -390,6 +393,7 @@ export function useWorkspacePersistenceEffects({
         if (cancelled) return;
         if (initialProjectResult.reason === 'not_found') {
           setProjectAccessError(true);
+          setExitReady(true);
           return;
         }
         let serverProjectResult = initialProjectResult;
@@ -399,6 +403,7 @@ export function useWorkspacePersistenceEffects({
           const atomic = await readStudioConnectedWorkspaceFromApiResult(projectId, projectController.signal);
           if (atomic.reason === 'not_found') {
             setProjectAccessError(true);
+            setExitReady(true);
             return;
           }
           serverProjectResult = { data: atomic.data?.project ?? null, status: atomic.status };
@@ -497,6 +502,7 @@ export function useWorkspacePersistenceEffects({
               : JSON.stringify(serverPersisted));
           }
           setAutosaveReadiness({ api: true, local: true, workspaceStorageKey: activeStorageKey });
+          setExitReady(true);
           return;
         }
         const serverHasCleanWorkspace = serverWorkspaceSnapshotKind === 'missing'
@@ -506,10 +512,12 @@ export function useWorkspacePersistenceEffects({
             applyStoredProjectWorkspace(serverProject);
           }
           setAutosaveReadiness({ api: true, local: true, workspaceStorageKey });
+          setExitReady(true);
           return;
         }
         if (persisted) {
           setAutosaveReadiness({ api: false, local: true, workspaceStorageKey });
+          setExitReady(true);
           return;
         }
         // A project snapshot stripped of sequences is not authoritative when
@@ -701,6 +709,7 @@ export function useWorkspacePersistenceEffects({
   return {
     connected: Boolean(connectedQueueRef.current),
     connectedConflict,
+    exitReady,
     persistLocal,
     projectAccessError,
     reloadServerVersion,

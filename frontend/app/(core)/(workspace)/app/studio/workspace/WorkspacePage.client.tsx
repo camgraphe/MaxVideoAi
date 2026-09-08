@@ -421,6 +421,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     activeTemplateName,
     buildPersistedWorkspaceState: sequenceSnapshots.buildPersistedWorkspaceState,
     connected: persistence.connected,
+    exitReady: persistence.exitReady,
     hasValidTimelineInOut: exportState.hasValidTimelineInOut,
     openExportDialog: exportController.openExportDialog,
     projectId,
