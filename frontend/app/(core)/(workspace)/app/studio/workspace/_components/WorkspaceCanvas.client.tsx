@@ -784,6 +784,7 @@ function WorkspaceCanvasInner({
         fitView={!initialViewport}
         fitViewOptions={workspaceCanvasFitViewOptions({
           mapExpanded: typeof window === 'undefined' || window.innerWidth > 600,
+          viewportHeight: typeof window === 'undefined' ? 900 : window.innerHeight,
           viewportWidth: typeof window === 'undefined' ? 1440 : window.innerWidth,
         })}
         onMoveEnd={(_, viewport) => onViewportChange(viewport)}

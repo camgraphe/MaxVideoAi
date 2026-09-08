@@ -67,21 +67,25 @@ test('shot connector presentation preserves distinct semantic handles and every 
 });
 
 test('canvas fit reserves the shared useful surface and adapts the map inset without overwriting viewport policy', () => {
-  assert.deepEqual(workspaceCanvasFitViewOptions({ viewportWidth: 1440, mapExpanded: true }), {
+  assert.deepEqual(workspaceCanvasFitViewOptions({ viewportWidth: 1440, viewportHeight: 900, mapExpanded: true }), {
     includeHiddenNodes: false,
     padding: { top: '76px', right: '204px', bottom: '86px', left: '24px' },
   });
-  assert.deepEqual(workspaceCanvasFitViewOptions({ viewportWidth: 390, mapExpanded: false }), {
+  assert.deepEqual(workspaceCanvasFitViewOptions({ viewportWidth: 390, viewportHeight: 844, mapExpanded: false }), {
     includeHiddenNodes: false,
     padding: { top: '128px', right: '20px', bottom: '92px', left: '20px' },
   });
-  assert.deepEqual(workspaceCanvasFitViewOptions({ viewportWidth: 601, mapExpanded: true }), {
+  assert.deepEqual(workspaceCanvasFitViewOptions({ viewportWidth: 601, viewportHeight: 844, mapExpanded: true }), {
     includeHiddenNodes: false,
     padding: { top: '128px', right: '204px', bottom: '92px', left: '20px' },
   });
-  assert.deepEqual(workspaceCanvasFitViewOptions({ viewportWidth: 700, mapExpanded: true }), {
+  assert.deepEqual(workspaceCanvasFitViewOptions({ viewportWidth: 700, viewportHeight: 844, mapExpanded: true }), {
     includeHiddenNodes: false,
     padding: { top: '128px', right: '204px', bottom: '92px', left: '20px' },
+  });
+  assert.deepEqual(workspaceCanvasFitViewOptions({ viewportWidth: 844, viewportHeight: 390, mapExpanded: true }), {
+    includeHiddenNodes: false,
+    padding: { top: '70px', right: '204px', bottom: '76px', left: '20px' },
   });
 });
 
@@ -89,6 +93,7 @@ test('both initial and explicit fit consume the same useful-surface helper and h
   const canvas = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceCanvas.client.tsx'), 'utf8');
   const map = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_components/canvas/CanvasMap.tsx'), 'utf8');
   const dock = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/workspace-shot-input-dock.tsx'), 'utf8');
+  const shellStyles = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_styles/shell.module.css'), 'utf8');
 
   assert.match(canvas, /fitViewOptions=\{workspaceCanvasFitViewOptions\(/);
   assert.match(canvas, /fitView=\{!initialViewport\}/, 'saved viewports remain authoritative');
@@ -96,6 +101,8 @@ test('both initial and explicit fit consume the same useful-surface helper and h
   assert.match(dock, /useUpdateNodeInternals\(\)/);
   assert.match(dock, /outputs\.join\(/, 'output-handle changes also refresh React Flow internals');
   assert.match(dock, /data-shot-hidden-connector-anchor/);
+  assert.match(shellStyles, /@media\(max-height:500px\) and \(min-width:621px\)[\s\S]*\.canvasEditorBody \{ padding-top:0; \}/);
+  assert.match(shellStyles, /@media\(max-height:500px\) and \(min-width:621px\)[\s\S]*\.canvasEditorBody \.mobilePanelRail \{ display:none; \}/);
 });
 
 test('Connections explains separate remaining capacity and restores focus to its persistent card command', () => {

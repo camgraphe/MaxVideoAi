@@ -435,7 +435,11 @@ export function CanvasMap({
     (event: ReactMouseEvent<HTMLButtonElement>) => {
       event.stopPropagation();
       void reactFlow.fitView({
-        ...workspaceCanvasFitViewOptions({ mapExpanded: isOpen, viewportWidth: window.innerWidth }),
+        ...workspaceCanvasFitViewOptions({
+          mapExpanded: isOpen,
+          viewportHeight: window.innerHeight,
+          viewportWidth: window.innerWidth,
+        }),
         duration: motionDuration(),
       });
     },

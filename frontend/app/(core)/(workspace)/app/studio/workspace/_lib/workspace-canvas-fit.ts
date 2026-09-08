@@ -4,8 +4,21 @@ const COMPACT_CANVAS_BREAKPOINT = 700;
 
 export function workspaceCanvasFitViewOptions(params: {
   mapExpanded: boolean;
+  viewportHeight: number;
   viewportWidth: number;
 }): FitViewOptions {
+  if (params.viewportHeight <= 500 && params.viewportWidth > COMPACT_CANVAS_BREAKPOINT) {
+    return {
+      includeHiddenNodes: false,
+      padding: {
+        top: '70px',
+        right: `${params.mapExpanded ? 204 : 20}px`,
+        bottom: '76px',
+        left: '20px',
+      },
+    };
+  }
+
   if (params.viewportWidth <= COMPACT_CANVAS_BREAKPOINT) {
     return {
       includeHiddenNodes: false,

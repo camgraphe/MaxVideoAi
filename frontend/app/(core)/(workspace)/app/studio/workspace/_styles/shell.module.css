@@ -890,6 +890,8 @@
   .topbarRight { grid-column:3; }
   .editorShell { grid-template-rows:54px minmax(0,1fr) 110px; }
   .editorBody { padding-top:48px; }
+  .canvasEditorBody { padding-top:0; }
+  .canvasEditorBody .mobilePanelRail { display:none; }
   .projectMediaPanelSlot,.inspectorPanelSlot { top:48px; bottom:4px; }
 }
 @media(prefers-reduced-motion:reduce) { .editorShell * { animation-duration:0s !important; transition-duration:0s !important; scroll-behavior:auto !important; } }
