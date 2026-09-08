@@ -48,6 +48,10 @@ Si une régression confirmée exige de toucher ce moteur, convenir d'un lot born
 
 Le test `editor-media-decoding.spec.ts`, revu à `e1c1e1848`, vérifie des frames réellement décodées, le RMS audio et un nouveau callback après seek. Le test de stress historique mesure seulement horloge et gestes. Ne pas confondre leurs preuves.
 
+### Première présentation du montage connecté
+
+Le navigateur privé réel a révélé un défaut de première présentation : la fixture320×180 n’occupe qu’une petite vignette au centre du programme1080p, puisque la commande reprend le `scale:1` historique. Ce n’est pas une régression de décodage. Examiner le helper existant de composition/Fit et initialiser les seuls NOUVEAUX montages connectés avec un ajustement conservant le ratio et l’image entière, commun à UI et MCP. Ne pas modifier les transforms des projets enregistrés ni la sémantique générale des insertions historiques. Si les dimensions mesurées manquent, conserver le fallback existant explicite ; aucune mesure/probe distante implicite. Ajouter un test pur de cette initialisation et une vérification de géométrie réelle du programme, tout en conservant les assertions de lecture native.
+
 ## Qualification complète adaptée
 
 - Ciblés, puis TypeScript, lint, exposure, registre, suites Studio et contrats MCP.
