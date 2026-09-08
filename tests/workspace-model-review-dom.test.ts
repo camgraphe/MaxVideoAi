@@ -112,6 +112,12 @@ async function mount({
   let accountId: string | null = 'a',
     accessToken: string | null = 'token-a';
   let current!: ReturnType<typeof useWorkspaceModelReview>;
+  const authRenders: Array<{
+    authStatus: string;
+    savedCount: number;
+    panel: ReturnType<typeof useWorkspaceModelReview>['panel'];
+    memoryOnly: boolean;
+  }> = [];
   const writes: string[] = [];
   const root = createRoot(dom.window.document.getElementById('root')!);
   const setter = (field: keyof WorkspaceModelSetup) => (value: never) => {
@@ -161,6 +167,12 @@ async function mount({
         ]),
       ),
     } as Parameters<typeof useReview>[0]);
+    authRenders.push({
+      authStatus,
+      savedCount: current.savedSetups.length,
+      panel: current.panel,
+      memoryOnly: current.memoryOnly,
+    });
     return React.createElement(I18nProvider, {
       locale: locale as 'en',
       dictionary: {},
@@ -193,6 +205,7 @@ async function mount({
     storage,
     requests,
     writes,
+    authRenders,
     get setup() {
       return setup;
     },
@@ -360,6 +373,112 @@ test('storage failure preserves in memory, explicit removal only removes the sav
     await f.dispose();
   }
 });
+test('memory-only configurations survive same-account refresh while every pending render and retired callback stays masked', async () => {
+  const f = await mount({ storageUnavailable: true });
+  try {
+    const original = structuredClone(f.setup);
+    const modelId = original.form.engineId;
+    await f.click('Choose Veo');
+    await f.tick();
+    await f.respond(0);
+    await f.click('Apply model');
+    const snapshot = structuredClone(f.current.savedSetups[0].saved);
+    assert.equal(f.current.memoryOnly, true);
+    await f.click('Choose Kling');
+    await f.tick();
+    await f.respond(1);
+    assert.equal(f.current.canApply, true);
+    const retired = f.current;
+    const live = structuredClone(f.setup);
+    const writeCount = f.writes.length;
+    const invokeRetired = async () => {
+      await act(async () => {
+        retired.apply();
+        retired.selectSavedSetup(modelId);
+        retired.removeSavedSetup(modelId);
+        retired.requestModel('kling-3-pro');
+        retired.open('saved');
+        retired.retry();
+        retired.close();
+      });
+      assert.deepEqual(f.setup, live);
+      assert.equal(f.writes.length, writeCount);
+    };
+
+    await f.pending();
+    await invokeRetired();
+    assert.equal(f.current.available, false);
+    assert.equal(f.current.canApply, false);
+    assert.equal(f.current.candidate, null);
+    assert.deepEqual(f.current.savedSetups, []);
+    assert.equal(f.current.panel, null);
+    assert.equal(f.current.memoryOnly, false);
+    assert.ok(
+      f.authRenders
+        .filter((render) => render.authStatus === 'refreshing')
+        .every((render) => render.savedCount === 0 && render.panel === null && !render.memoryOnly),
+    );
+
+    await f.auth('a');
+    assert.equal(f.current.memoryOnly, true);
+    assert.equal(f.current.savedSetups.length, 1);
+    assert.deepEqual(f.current.savedSetups[0].saved, snapshot);
+    await f.click('Configurations · 1');
+    await invokeRetired();
+    assert.equal(f.current.panel, 'saved');
+    assert.equal(f.current.savedSetups.length, 1);
+    assert.match(f.dom.window.document.body.textContent ?? '', /Saved in memory/);
+    await act(async () => f.current.selectSavedSetup(modelId));
+    await f.tick();
+    await f.respond(2);
+    await f.click('Apply model');
+    assert.deepEqual(f.setup, original);
+    assert.equal(f.storage.length, 0);
+  } finally {
+    await f.dispose();
+  }
+});
+
+for (const replacement of ['b', null]) {
+  test(`memory-only configurations are retired after refresh then ${replacement ?? 'logout'}, including returning to account A`, async () => {
+    const f = await mount({ storageUnavailable: true });
+    try {
+      await f.click('Choose Veo');
+      await f.tick();
+      await f.respond(0);
+      await f.click('Apply model');
+      assert.equal(f.current.savedSetups.length, 1);
+      const retired = f.current;
+      const modelId = f.current.savedSetups[0].modelId;
+      const live = structuredClone(f.setup);
+      const writeCount = f.writes.length;
+      await f.pending();
+      const firstReplacementRender = f.authRenders.length;
+      await f.auth(replacement);
+      await f.pending();
+      await f.auth('a');
+      await act(async () => {
+        retired.selectSavedSetup(modelId);
+        retired.removeSavedSetup(modelId);
+        retired.open('saved');
+        retired.apply();
+      });
+      assert.ok(
+        f.authRenders
+          .slice(firstReplacementRender)
+          .every((render) => render.savedCount === 0 && render.panel === null),
+      );
+      assert.deepEqual(f.current.savedSetups, []);
+      assert.equal(f.current.panel, null);
+      assert.deepEqual(f.setup, live);
+      assert.equal(f.writes.length, writeCount);
+      assert.equal(f.storage.length, 0);
+    } finally {
+      await f.dispose();
+    }
+  });
+}
+
 test('malformed storage stays recoverable and blocks transitions until explicitly cleared', async () => {
   const f = await mount({ stored: '{bad' });
   try {

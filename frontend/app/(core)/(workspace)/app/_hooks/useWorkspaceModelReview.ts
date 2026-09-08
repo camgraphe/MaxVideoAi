@@ -88,7 +88,9 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
     setPanel(null);
     setSelection(null);
     setError(null);
-    if (store.scope !== eligibleAccount)
+    // Pending auth masks the last confirmed store without losing its memory-only snapshots.
+    // Only a confirmed replacement account or logout retires that store.
+    if (!waitingForAccount && store.scope !== eligibleAccount)
       setStore({ scope: eligibleAccount, entries: {}, loaded: false, memoryOnly: false });
   }
   const signature = workspaceModelSetupSignature(current);
