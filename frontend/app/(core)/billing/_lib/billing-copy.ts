@@ -86,6 +86,12 @@ export const DEFAULT_BILLING_COPY = {
     subtitle: 'Download Stripe documents for wallet top-ups and review charges or refunds.',
     openDocuments: 'Receipts & invoices',
     empty: 'No payment documents or wallet activity yet.',
+    documentsEmpty: 'No wallet top-up documents yet.',
+    activityEmpty: 'No wallet activity yet.',
+    tabs: {
+      documents: 'Documents',
+      activity: 'Wallet activity',
+    },
     loading: 'Loading…',
     loadMore: 'Load more',
     exportCsv: 'Export CSV',

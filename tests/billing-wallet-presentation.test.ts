@@ -89,7 +89,7 @@ test('billing copy exposes the paid-versus-received distinction in every locale'
   }
 });
 
-test('payment history renders ledger movements with expandable document details', async () => {
+test('billing history separates Stripe documents from wallet activity', async () => {
   const { ReceiptsPanel } = await loadBillingPresentation();
   const markup = renderToStaticMarkup(React.createElement(ReceiptsPanel, {
     copy: DEFAULT_BILLING_COPY,
@@ -97,9 +97,11 @@ test('payment history renders ledger movements with expandable document details'
     formatMoney: (amountCents: number, currency: string) => `${currency} ${(amountCents / 100).toFixed(2)}`,
     onExportCsv() {},
     onLoadMoreReceipts() {},
+    onSelectReceiptsView() {},
     onToggleReceipts() {},
     receipts: { items: [], nextCursor: null, loading: false, error: null },
     receiptsCollapsed: false,
+    receiptsView: 'documents',
     visibleReceipts: [{
       id: 7,
       type: 'topup',
@@ -118,6 +120,8 @@ test('payment history renders ledger movements with expandable document details'
   const document = new JSDOM(markup).window.document;
 
   assert.equal(document.querySelectorAll('details').length, 1);
+  assert.equal(document.querySelectorAll('[role="tab"]').length, 2);
+  assert.equal(document.querySelector('[role="tab"][aria-selected="true"]')?.textContent?.trim(), 'Documents');
   assert.match(document.querySelector('summary')?.textContent ?? '', /USD 25\.00/);
   assert.equal(document.querySelector('a[href="https://pay.example.test/receipt/7"]')?.getAttribute('target'), '_blank');
 });

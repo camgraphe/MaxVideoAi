@@ -1,8 +1,26 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { BillingSession, ReceiptItem, ReceiptsState } from '../_lib/billing-types';
+import type {
+  BillingReceiptsView,
+  BillingSession,
+  ReceiptItem,
+  ReceiptsState,
+} from '../_lib/billing-types';
 import { useBillingRequestOwner } from './useBillingRequestOwner';
+
+const EMPTY_RECEIPTS: ReceiptsState = { items: [], nextCursor: null, loading: false, error: null };
+
+function createReceiptViews(): Record<BillingReceiptsView, ReceiptsState> {
+  return {
+    documents: { ...EMPTY_RECEIPTS },
+    activity: { ...EMPTY_RECEIPTS },
+  };
+}
+
+function pageSizeFor(view: BillingReceiptsView): number {
+  return view === 'documents' ? 8 : 25;
+}
 
 export function useBillingReceipts({
   authLoading,
@@ -18,36 +36,46 @@ export function useBillingReceipts({
   const accountId = authLoading ? null : session?.user?.id ?? null;
   const accessToken = session?.access_token ?? null;
   const { owner, requestScope, isActive } = useBillingRequestOwner(accountId);
-  const [state, setState] = useState<{ owner: typeof owner; receipts: ReceiptsState }>({
-    owner, receipts: { items: [], nextCursor: null, loading: false },
-  });
-  const receipts: ReceiptsState = accountId && state.owner === owner
-    ? state.receipts
-    : { items: [], nextCursor: null, loading: Boolean(accountId), error: null };
+  const [receiptsView, setReceiptsView] = useState<BillingReceiptsView>('documents');
+  const [state, setState] = useState<{
+    owner: typeof owner;
+    views: Record<BillingReceiptsView, ReceiptsState>;
+  }>({ owner, views: createReceiptViews() });
+  const receipts = accountId && state.owner === owner
+    ? state.views[receiptsView]
+    : { ...EMPTY_RECEIPTS, loading: Boolean(accountId) };
   const [receiptsCollapsed, setReceiptsCollapsed] = useState(true);
-  const toggleReceipts = useCallback(() => setReceiptsCollapsed((prev) => !prev), []);
-  const setReceipts = useCallback((update: ReceiptsState | ((previous: ReceiptsState) => ReceiptsState)) => {
-    setState((previous) => ({
-      owner,
-      receipts: typeof update === 'function'
-        ? update(previous.owner === owner ? previous.receipts : { items: [], nextCursor: null, loading: false })
-        : update,
-    }));
+  const toggleReceipts = useCallback(() => setReceiptsCollapsed((previous) => !previous), []);
+
+  const setScopedReceipts = useCallback((
+    view: BillingReceiptsView,
+    update: ReceiptsState | ((previous: ReceiptsState) => ReceiptsState),
+  ) => {
+    setState((previous) => {
+      const views = previous.owner === owner ? previous.views : createReceiptViews();
+      return {
+        owner,
+        views: {
+          ...views,
+          [view]: typeof update === 'function' ? update(views[view]) : update,
+        },
+      };
+    });
   }, [owner]);
 
-  const refreshReceipts = useCallback(async (): Promise<boolean> => {
+  const refreshReceiptScope = useCallback(async (view: BillingReceiptsView): Promise<boolean> => {
     if (!isActive() || !accountId) return false;
     const requestToken = requestScope.begin(accountId);
     const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
-    setReceipts((state) => ({ ...state, loading: true, error: null }));
+    setScopedReceipts(view, (current) => ({ ...current, loading: true, error: null }));
     try {
-      const response = await fetch('/api/receipts?limit=25', { headers, cache: 'no-store' });
+      const response = await fetch(`/api/receipts?limit=${pageSizeFor(view)}&scope=${view}`, { headers, cache: 'no-store' });
       const data = await response.json().catch(() => null);
       if (!response.ok || !data?.ok || !Array.isArray(data.receipts)) {
         throw new Error(data?.error ?? 'receipts_load_failed');
       }
       if (!isActive() || !requestScope.isCurrent(requestToken)) return false;
-      setReceipts({
+      setScopedReceipts(view, {
         items: data.receipts as ReceiptItem[],
         nextCursor: data.nextCursor ?? null,
         loading: false,
@@ -56,23 +84,32 @@ export function useBillingReceipts({
       return true;
     } catch {
       if (!isActive() || !requestScope.isCurrent(requestToken)) return false;
-      setReceipts((state) => ({ ...state, loading: false, error: loadReceiptsError }));
+      setScopedReceipts(view, (current) => ({ ...current, loading: false, error: loadReceiptsError }));
       return false;
     }
-  }, [accessToken, accountId, isActive, loadReceiptsError, requestScope, setReceipts]);
+  }, [accessToken, accountId, isActive, loadReceiptsError, requestScope, setScopedReceipts]);
+
+  const refreshReceipts = useCallback(
+    () => refreshReceiptScope(receiptsView),
+    [receiptsView, refreshReceiptScope],
+  );
 
   useEffect(() => {
-    if (accountId) void refreshReceipts();
-  }, [accountId, refreshReceipts]);
+    if (accountId) void refreshReceiptScope('documents');
+  }, [accountId, refreshReceiptScope]);
+
+  const selectReceiptsView = useCallback((view: BillingReceiptsView) => {
+    setReceiptsView(view);
+    void refreshReceiptScope(view);
+  }, [refreshReceiptScope]);
 
   const loadMoreReceipts = useCallback(async () => {
     if (!isActive() || !accountId || receipts.loading || receipts.nextCursor === null) return;
-    setReceipts((state) => ({ ...state, loading: true }));
+    const view = receiptsView;
+    setScopedReceipts(view, (current) => ({ ...current, loading: true }));
     const requestToken = requestScope.begin(accountId);
     const headers: Record<string, string> | undefined = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
-    const url = receipts.nextCursor
-      ? `/api/receipts?limit=25&cursor=${encodeURIComponent(receipts.nextCursor)}`
-      : '/api/receipts?limit=25';
+    const url = `/api/receipts?limit=${pageSizeFor(view)}&scope=${view}&cursor=${encodeURIComponent(receipts.nextCursor)}`;
 
     try {
       const response = await fetch(url, { headers });
@@ -81,18 +118,18 @@ export function useBillingReceipts({
         throw new Error(data?.error ?? 'receipts_load_more_failed');
       }
       if (!isActive() || !requestScope.isCurrent(requestToken)) return;
-      setReceipts((state) => ({
-        ...state,
-        items: [...state.items, ...((data.receipts ?? []) as ReceiptItem[])],
+      setScopedReceipts(view, (current) => ({
+        ...current,
+        items: [...current.items, ...((data.receipts ?? []) as ReceiptItem[])],
         nextCursor: data.nextCursor ?? null,
         loading: false,
         error: null,
       }));
     } catch {
       if (!isActive() || !requestScope.isCurrent(requestToken)) return;
-      setReceipts((state) => ({ ...state, loading: false, error: loadMoreError }));
+      setScopedReceipts(view, (current) => ({ ...current, loading: false, error: loadMoreError }));
     }
-  }, [accessToken, accountId, isActive, loadMoreError, receipts.loading, receipts.nextCursor, requestScope, setReceipts]);
+  }, [accessToken, accountId, isActive, loadMoreError, receipts.loading, receipts.nextCursor, receiptsView, requestScope, setScopedReceipts]);
 
   const exportCSV = useCallback(() => {
     if (!isActive()) return;
@@ -110,20 +147,22 @@ export function useBillingReceipts({
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = url;
-    anchor.download = 'receipts.csv';
+    anchor.download = 'wallet-activity.csv';
     anchor.click();
     URL.revokeObjectURL(url);
   }, [isActive, receipts.items]);
 
   const visibleReceipts = useMemo(
-    () => (receiptsCollapsed ? receipts.items.slice(0, 2) : receipts.items),
-    [receipts.items, receiptsCollapsed]
+    () => receiptsView === 'activity' && receiptsCollapsed ? receipts.items.slice(0, 2) : receipts.items,
+    [receipts.items, receiptsCollapsed, receiptsView]
   );
 
   return {
     receipts,
     receiptsCollapsed,
+    receiptsView,
     visibleReceipts,
+    selectReceiptsView,
     toggleReceipts,
     loadMoreReceipts,
     refreshReceipts,

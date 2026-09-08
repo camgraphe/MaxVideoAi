@@ -7,6 +7,7 @@ const eventStatePath = 'frontend/app/api/stripe/webhook/_lib/stripe-webhook-even
 const failedPaymentsPath = 'frontend/app/api/stripe/webhook/_lib/stripe-webhook-failed-payments.ts';
 const refundsPath = 'frontend/app/api/stripe/webhook/_lib/stripe-webhook-refunds.ts';
 const documentsPath = 'frontend/app/api/stripe/webhook/_lib/stripe-webhook-documents.ts';
+const invoiceEventsPath = 'frontend/app/api/stripe/webhook/_lib/stripe-webhook-invoice-events.ts';
 const topupEventsPath = 'frontend/app/api/stripe/webhook/_lib/stripe-webhook-topup-events.ts';
 const topupPersistencePath = 'frontend/app/api/stripe/webhook/_lib/stripe-webhook-topup-persistence.ts';
 const mcpAttributionPath = 'frontend/app/api/stripe/webhook/_lib/stripe-webhook-mcp-attribution.ts';
@@ -92,6 +93,7 @@ test('Stripe webhook modules stay focused instead of creating a new catch-all', 
     failedPaymentsPath,
     refundsPath,
     documentsPath,
+    invoiceEventsPath,
     topupEventsPath,
     topupPersistencePath,
     mcpAttributionPath,

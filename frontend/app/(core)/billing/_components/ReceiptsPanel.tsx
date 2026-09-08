@@ -1,7 +1,7 @@
-import { ChevronDown, Download, FileText } from 'lucide-react';
+import { ChevronDown, Download, FileText, WalletCards } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import type { BillingCopy } from '../_lib/billing-copy';
-import type { ReceiptItem, ReceiptsState } from '../_lib/billing-types';
+import type { BillingReceiptsView, ReceiptItem, ReceiptsState } from '../_lib/billing-types';
 import { formatReceiptSurfaceLabel } from '../_lib/billing-utils';
 import styles from './billing-receipts.module.css';
 
@@ -11,9 +11,11 @@ type ReceiptsPanelProps = {
   formatMoney: (amountCents: number, currency: string) => string;
   onExportCsv: () => void;
   onLoadMoreReceipts: () => void;
+  onSelectReceiptsView: (view: BillingReceiptsView) => void;
   onToggleReceipts: () => void;
   receipts: ReceiptsState;
   receiptsCollapsed: boolean;
+  receiptsView: BillingReceiptsView;
   visibleReceipts: ReceiptItem[];
 };
 
@@ -23,11 +25,15 @@ export function ReceiptsPanel({
   formatMoney,
   onExportCsv,
   onLoadMoreReceipts,
+  onSelectReceiptsView,
   onToggleReceipts,
   receipts,
   receiptsCollapsed,
+  receiptsView,
   visibleReceipts,
 }: ReceiptsPanelProps) {
+  const showingActivity = receiptsView === 'activity';
+
   return (
     <section className={styles.receiptsPanel} aria-labelledby="billing-history-title">
       <header className={styles.receiptsHeader}>
@@ -36,30 +42,57 @@ export function ReceiptsPanel({
           <h2 id="billing-history-title">{copy.receipts.title}</h2>
           <p>{copy.receipts.subtitle}</p>
         </div>
-        <div>
-          {!receiptsCollapsed ? (
+        <div className={styles.receiptsActions}>
+          {showingActivity && !receiptsCollapsed ? (
             <Button type="button" variant="ghost" size="md" onClick={onExportCsv}>
               <Download size={16} aria-hidden="true" />
               {copy.receipts.exportCsv}
             </Button>
           ) : null}
-          <Button
-            type="button"
-            variant="outline"
-            size="md"
-            onClick={onToggleReceipts}
-            aria-expanded={!receiptsCollapsed}
-          >
-            {receiptsCollapsed ? copy.receipts.collapsedLabel : copy.receipts.expandedLabel}
-            <ChevronDown size={16} aria-hidden="true" className={!receiptsCollapsed ? styles.chevronOpen : undefined} />
-          </Button>
+          {showingActivity ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="md"
+              onClick={onToggleReceipts}
+              aria-expanded={!receiptsCollapsed}
+            >
+              {receiptsCollapsed ? copy.receipts.collapsedLabel : copy.receipts.expandedLabel}
+              <ChevronDown size={16} aria-hidden="true" className={!receiptsCollapsed ? styles.chevronOpen : undefined} />
+            </Button>
+          ) : null}
         </div>
       </header>
+
+      <div className={styles.receiptTabs} role="tablist" aria-label={copy.receipts.title}>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={!showingActivity}
+          className={!showingActivity ? styles.receiptTabActive : undefined}
+          onClick={() => onSelectReceiptsView('documents')}
+        >
+          <FileText size={16} aria-hidden="true" />
+          {copy.receipts.tabs.documents}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={showingActivity}
+          className={showingActivity ? styles.receiptTabActive : undefined}
+          onClick={() => onSelectReceiptsView('activity')}
+        >
+          <WalletCards size={16} aria-hidden="true" />
+          {copy.receipts.tabs.activity}
+        </button>
+      </div>
 
       {receipts.error ? <p className={styles.receiptError} role="status">{receipts.error}</p> : null}
       <div className={styles.receiptLedger} aria-busy={receipts.loading}>
         {visibleReceipts.length === 0 && !receipts.loading ? (
-          <p className={styles.receiptsEmpty}>{copy.receipts.empty}</p>
+          <p className={styles.receiptsEmpty}>
+            {showingActivity ? copy.receipts.activityEmpty : copy.receipts.documentsEmpty}
+          </p>
         ) : null}
         {visibleReceipts.map((receipt) => (
           <ReceiptRow
@@ -73,7 +106,7 @@ export function ReceiptsPanel({
         {receipts.loading ? <p className={styles.receiptsLoading}>{copy.receipts.loading}</p> : null}
       </div>
 
-      {!receiptsCollapsed && receipts.nextCursor ? (
+      {receipts.nextCursor && (!showingActivity || !receiptsCollapsed) ? (
         <div className={styles.receiptsFooter}>
           <Button type="button" variant="outline" size="md" onClick={onLoadMoreReceipts} disabled={receipts.loading}>
             {receipts.loading ? copy.receipts.loading : copy.receipts.loadMore}

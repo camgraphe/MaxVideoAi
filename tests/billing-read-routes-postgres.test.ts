@@ -112,6 +112,24 @@ test('Billing GETs read only the authenticated ledger and expose database failur
     assert.equal(fixture.statements.length, 2);
     assert.ok(fixture.statements.every(sql => /^\s*SELECT\b/i.test(sql)));
   });
+  await t.test('document scope returns top-ups without wallet charges hiding them', async () => {
+    fixture.statements.length = 0;
+    const response = await routes.getReceipts(new Request('http://localhost/api/receipts?limit=25&scope=documents'));
+    assert.equal(response.status, 200);
+    const data = await response.json();
+    assert.deepEqual(data.receipts.map((row: { type: string }) => row.type), ['topup']);
+    assert.equal(data.receipts[0].description, 'Own top-up');
+    assert.equal(data.receipts[0].document_type, 'invoice');
+    assert.equal(fixture.statements.length, 1);
+    assert.match(fixture.statements[0], /type = 'topup'/);
+    assert.match(fixture.statements[0], /stripe_invoice_id IS NOT NULL/);
+  });
+  await t.test('unknown receipt scopes are rejected before database access', async () => {
+    fixture.statements.length = 0;
+    const response = await routes.getReceipts(new Request('http://localhost/api/receipts?scope=private'));
+    assert.equal(response.status, 400);
+    assert.deepEqual(fixture.statements, []);
+  });
   await t.test('a configured database failure is never a successful empty ledger or currency fallback', async () => {
     for (const table of ['profiles', 'app_receipts']) {
       await pg.pool.query(`ALTER TABLE ${table} RENAME TO temporarily_unavailable`);

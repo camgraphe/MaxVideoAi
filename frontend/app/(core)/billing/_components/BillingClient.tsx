@@ -171,7 +171,9 @@ export function BillingClient({
   const {
     receipts,
     receiptsCollapsed,
+    receiptsView,
     visibleReceipts,
+    selectReceiptsView,
     toggleReceipts,
     loadMoreReceipts,
     refreshReceipts,
@@ -391,9 +393,11 @@ export function BillingClient({
               formatMoney={formatMoney}
               onExportCsv={exportCSV}
               onLoadMoreReceipts={loadMoreReceipts}
+              onSelectReceiptsView={selectReceiptsView}
               onToggleReceipts={toggleReceipts}
               receipts={receipts}
               receiptsCollapsed={receiptsCollapsed}
+              receiptsView={receiptsView}
               visibleReceipts={visibleReceipts}
             />
 

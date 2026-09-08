@@ -35,7 +35,7 @@
   font-size: 0.76rem;
 }
 
-.receiptsHeader > div:last-child {
+.receiptsActions {
   display: flex;
   gap: 7px;
 }
@@ -46,6 +46,48 @@
 
 .chevronOpen {
   transform: rotate(180deg);
+}
+
+.receiptTabs {
+  display: inline-flex;
+  gap: 4px;
+  margin-top: 16px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+
+.receiptTabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 9px;
+  color: var(--text-secondary);
+  background: transparent;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.receiptTabs button:hover {
+  color: var(--text-primary);
+  background: var(--surface-hover);
+}
+
+.receiptTabs button:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.receiptTabs .receiptTabActive {
+  color: var(--text-primary);
+  background: var(--surface);
+  box-shadow: 0 1px 7px color-mix(in srgb, var(--text-primary) 9%, transparent);
 }
 
 .receiptLedger {
@@ -223,12 +265,23 @@
     flex-direction: column;
   }
 
-  .receiptsHeader > div:last-child {
+  .receiptsActions {
     width: 100%;
   }
 
   .receiptsHeader button {
     flex: 1;
+  }
+
+  .receiptTabs {
+    display: flex;
+    width: 100%;
+  }
+
+  .receiptTabs button {
+    flex: 1;
+    justify-content: center;
+    min-height: 44px;
   }
 
   .receiptRow summary {

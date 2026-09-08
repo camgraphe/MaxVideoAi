@@ -20,12 +20,27 @@ export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const limit = Math.min(100, Math.max(1, Number(url.searchParams.get('limit') ?? '50')));
   const cursor = url.searchParams.get('cursor');
+  const scope = url.searchParams.get('scope') ?? 'activity';
+  if (scope !== 'activity' && scope !== 'documents') {
+    return NextResponse.json({ error: 'Invalid receipt scope' }, { status: 400 });
+  }
 
   const { userId } = await getRouteAuthContext(req);
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const params: Array<string | number> = [userId];
   let where = 'WHERE user_id = $1';
+  if (scope === 'documents') {
+    where += ` AND type = 'topup'
+      AND (
+        stripe_invoice_id IS NOT NULL
+        OR stripe_hosted_invoice_url IS NOT NULL
+        OR stripe_invoice_pdf IS NOT NULL
+        OR stripe_receipt_url IS NOT NULL
+        OR stripe_charge_id IS NOT NULL
+        OR stripe_payment_intent_id IS NOT NULL
+      )`;
+  }
   if (cursor) {
     params.push(Number(cursor));
     where += ` AND id < $${params.length}`;
@@ -90,7 +105,10 @@ export async function GET(req: NextRequest) {
 
   const sanitized = await Promise.all(
     items.map(async (row) => {
-      const document = await resolveStripeBillingDocument(stripe, {
+      const hasCachedInvoice = Boolean(row.stripe_hosted_invoice_url || row.stripe_invoice_pdf);
+      const hasCachedReceiptWithoutInvoice = Boolean(row.stripe_receipt_url && !row.stripe_invoice_id);
+      const lookupClient = hasCachedInvoice || hasCachedReceiptWithoutInvoice ? null : stripe;
+      const document = await resolveStripeBillingDocument(lookupClient, {
         type: row.kind,
         stripeInvoiceId: row.stripe_invoice_id,
         stripeHostedInvoiceUrl: row.stripe_hosted_invoice_url,

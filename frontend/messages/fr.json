@@ -3838,6 +3838,12 @@
         "subtitle": "Téléchargez les documents Stripe de vos recharges et consultez les débits ou remboursements.",
         "openDocuments": "Reçus et factures",
         "empty": "Aucun document de paiement ni mouvement du portefeuille.",
+        "documentsEmpty": "Aucun document de recharge pour le moment.",
+        "activityEmpty": "Aucun mouvement du portefeuille pour le moment.",
+        "tabs": {
+          "documents": "Documents",
+          "activity": "Activité du wallet"
+        },
         "loading": "Chargement…",
         "loadMore": "Charger plus",
         "exportCsv": "Exporter en CSV",
@@ -3850,8 +3856,14 @@
         "total": "Total",
         "walletMovement": "Mouvement du portefeuille",
           "tax": "Taxe",
-          "discount": "Remise"
-      }
+          "discount": "Remise",
+          "document": "Document"
+        },
+        "viewReceipt": "Voir le reçu",
+        "viewInvoice": "Voir la facture",
+        "receiptLabel": "Reçu",
+        "invoiceLabel": "Facture",
+        "contactSupport": "Contacter le support"
     },
     "checkoutReturn": {
       "successTitle": "Retour du paiement",

@@ -27,7 +27,9 @@ Each event type has one handler owner:
 | Stripe event | Handler owner |
 | --- | --- |
 | `checkout.session.completed` | `stripe-webhook-topup-events.ts` |
+| `checkout.session.async_payment_succeeded` | `stripe-webhook-topup-events.ts` |
 | `payment_intent.succeeded` | `stripe-webhook-topup-events.ts` |
+| `invoice.paid` | `stripe-webhook-invoice-events.ts` |
 | `payment_intent.payment_failed` | `stripe-webhook-failed-payments.ts` |
 | `charge.refunded` | `stripe-webhook-refunds.ts` |
 | `charge.failed` | `stripe-webhook-failed-payments.ts` |
@@ -48,6 +50,11 @@ stores those identifiers and cached URLs when available. `GET /api/receipts` res
 invoice or PDF first and falls back to the Stripe charge receipt. The authenticated Billing page
 exposes those documents under `#billing-history-title`; older payments remain limited to the
 document Stripe produced for that original Checkout.
+
+`checkout.session.completed` credits the wallet only when `payment_status` is `paid`. Delayed
+payment methods are credited by `checkout.session.async_payment_succeeded`. `invoice.paid` enriches
+the existing canonical top-up receipt with the final hosted invoice and PDF without crediting the
+wallet again. The live webhook endpoint must subscribe to every handled event in the table above.
 
 Failed top-up cards are owned by `stripe-webhook-failed-payments.ts`. It records deduplicated failed
 card attempts for first-wallet-top-up checkout attempts. At five failed attempts, it expires an open,

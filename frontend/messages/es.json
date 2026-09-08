@@ -3830,6 +3830,12 @@
         "subtitle": "Descarga los documentos de Stripe de tus recargas y consulta cargos o reembolsos.",
         "openDocuments": "Recibos y facturas",
         "empty": "Aún no hay documentos de pago ni movimientos de la billetera.",
+        "documentsEmpty": "Aún no hay documentos de recargas.",
+        "activityEmpty": "Aún no hay movimientos en la billetera.",
+        "tabs": {
+          "documents": "Documentos",
+          "activity": "Actividad de la billetera"
+        },
         "loading": "Cargando…",
         "loadMore": "Cargar más",
         "exportCsv": "Exportar CSV",
@@ -3842,8 +3848,14 @@
         "total": "Total",
         "walletMovement": "Movimiento de la billetera",
           "tax": "Impuestos",
-          "discount": "Descuento"
-      }
+          "discount": "Descuento",
+          "document": "Documento"
+        },
+        "viewReceipt": "Ver recibo",
+        "viewInvoice": "Ver factura",
+        "receiptLabel": "Recibo",
+        "invoiceLabel": "Factura",
+        "contactSupport": "Contactar con soporte"
     },
     "checkoutReturn": {
       "successTitle": "Regreso del pago",
