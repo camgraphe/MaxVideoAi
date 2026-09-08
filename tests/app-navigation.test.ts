@@ -48,6 +48,7 @@ test('app shell keeps account authority, localized separate public links, and na
   assert.match(menu, /showModal\(\)/);
   assert.match(menu, /addEventListener\('close', restoreFocus\)/);
   assert.match(menu, /openerRef\.current\?\.focus\(\)/);
+  assert.match(menu, /event\.metaKey \|\| event\.ctrlKey \|\| event\.shiftKey \|\| event\.altKey/, 'saved Studio navigation should preserve modified-link browser behavior');
   assert.match(navigation, /getAppNavigationSelection\(pathname, undefined, studioVisible\)/);
   assert.match(css, /\.app-experience \.app-site-dialog\[open\] \{ display: flex; flex-direction: column;/);
   assert.match(css, /\.app-site-dialog-body \{ min-height: 0;[^}]*overflow-y: auto/);

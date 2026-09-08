@@ -26,7 +26,7 @@ test('Studio preview is admin-only across navigation, pages, APIs, and visitor a
   assert.match(navigation, /canShowStudioNavigation\(isAdmin:\s*boolean\)/);
   assert.match(sidebar, /useAdminNavigationAccess/);
   assert.match(header, /WorkspaceMobileNav studioVisible=\{canShowStudioNavigation\(isAdmin\)\}/);
-  assert.match(siteMenu, /getAppMenuItems\(undefined, canShowStudioNavigation\(isAdmin\)\)/);
+  assert.match(siteMenu, /getAppMenuItems\(undefined, studioVisible \?\? canShowStudioNavigation\(isAdmin\)\)/);
   assert.doesNotMatch(visitorAccess, /normalized\.startsWith\('\/app\/studio/);
   assert.match(middleware, /canUseLocalAdminBypassForProtectedPath\(req, pathname, FEATURES\.studio\.adminOnly\)/);
 
