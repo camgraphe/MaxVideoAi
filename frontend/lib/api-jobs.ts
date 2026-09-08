@@ -87,9 +87,11 @@ async function fetchJobsPage(
 type JobsKey = readonly ['jobs', string, number, string | null, JobFeedType, JobFeedSurface];
 
 export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; surface?: JobFeedSurface }) {
-  const [cacheKey, setCacheKey] = useState<string | null>(() =>
-    typeof window === 'undefined' ? null : readLastKnownUserId()
-  );
+  // Keep the server render and the first client render identical. Reading the
+  // browser-only identity in the state initializer made SWR start immediately
+  // on the client while the server rendered the idle state, which caused
+  // Activity (and any other jobs feed) to hydrate with different controls.
+  const [cacheKey, setCacheKey] = useState<string | null>(null);
   const feedType: JobFeedType =
     options?.type === 'image' || options?.type === 'video' ? options.type : 'all';
   const feedSurface: JobFeedSurface =
