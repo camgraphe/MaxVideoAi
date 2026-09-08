@@ -56,14 +56,19 @@ test('all released finishing tools are discoverable from Toolbox, the app menu, 
     join(process.cwd(), 'frontend/components/library/AssetLibraryBrowser.tsx'),
     'utf8'
   );
-  const studioNavigationSource = readFileSync(
-    join(process.cwd(), 'frontend/app/(core)/(workspace)/app/studio/workspace/_components/StudioHeaderSession.tsx'),
+  const studioTopbarSource = readFileSync(
+    join(process.cwd(), 'frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceEditorTopbar.tsx'),
+    'utf8'
+  );
+  const appMenuSource = readFileSync(
+    join(process.cwd(), 'frontend/components/app/AppSiteMenu.client.tsx'),
     'utf8'
   );
   for (const tool of finishingDefinitions) assert.match(mediaSource, new RegExp(tool.href.replaceAll('/', '\\/')));
   assert.match(browserSource, /assetType !== 'audio'/);
   assert.doesNotMatch(browserSource, /hasToolLinks && !isPageLayout/);
-  assert.match(studioNavigationSource, /NAV_ITEMS\.map/);
+  assert.match(studioTopbarSource, /AppSiteMenuButton/);
+  assert.match(appMenuSource, /getAppMenuItems\([^)]*studioVisible/);
 });
 test('versioned blocks preserve exact typed IDs and reject ambiguous references and provider settings', () => {
   assert.deepEqual(validateToolBlock(block), block);
