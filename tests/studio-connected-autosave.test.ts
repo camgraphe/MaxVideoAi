@@ -218,3 +218,20 @@ test('an authoritative project listing preserves unmatched local-only projects w
     [['shared', 'connected'], ['server', 'legacy'], ['local', 'local-only']],
   );
 });
+
+test('project reconciliation never applies the local creation cap to authoritative server rows', () => {
+  const serverProjects = Array.from({ length: 40 }, (_, index) => ({
+    id: `server-${index}`, name: `Server ${index}`, persistenceMode: 'legacy' as const,
+    settings: {}, canvasTemplateId: 'minimal-start' as const,
+    createdAt: '2026-09-08T00:00:00.000Z', updatedAt: '2026-09-08T00:00:00.000Z',
+  }));
+  const localProject = {
+    id: 'local', name: 'Local', persistenceMode: 'local-only' as const,
+    settings: {}, canvasTemplateId: 'minimal-start' as const,
+    createdAt: '2026-09-08T00:00:00.000Z', updatedAt: '2026-09-08T00:00:00.000Z',
+  };
+  const reconciled = mergeStudioProjectRecords(serverProjects, [localProject]);
+  assert.equal(reconciled.length, 41);
+  assert.deepEqual(reconciled.slice(0, 40).map(({ id }) => id), serverProjects.map(({ id }) => id));
+  assert.equal(reconciled[40]?.id, 'local');
+});
