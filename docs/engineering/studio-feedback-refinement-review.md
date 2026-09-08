@@ -31,6 +31,17 @@ ou écriture distante n'a été effectué.
 - Le dialogue Médias du projet restaure le focus et se ferme par Échap sur
   mobile. Le calcul de prix est stabilisé sur les faits métier, pas sur les
   mesures React Flow.
+- Le Studio produit démarre désormais directement en Live et n'affiche plus de
+  bouton Mock. Une simulation locale reste disponible uniquement pour les E2E
+  via une requête explicite ignorée en production; elle n'est ni visible ni
+  persistée.
+- Le logo M ouvre exactement le menu de l'app (destinations, langue, apparence,
+  compte). Les navigations internes passent par la même sauvegarde/ACK que la
+  sortie Studio, et le bouton Projets reste visible même sans e-mail résolu.
+- L'ancienne oscillation des arêtes a été rattachée au cycle devis → hauteur du
+  bloc → mesure React Flow. Le correctif `0d88e42ea` garde une signature métier
+  stable; le chemin SVG a été observé identique sur vingt mesures successives
+  dans la prévisualisation courante.
 
 ## Commits à relire
 
@@ -43,6 +54,8 @@ ou écriture distante n'a été effectué.
 | `09e79ae05` | Stabilisation des interactions compactes : menu de piste sans scroll de focus, vrai glisser depuis la palette et réglage multi-sorties restauré dans l'inspecteur. |
 | `4f7f2ded5` | Contrat E2E du guide : la copie développée peut passer dynamiquement du badge au panneau de surface sans produire un faux échec. |
 | `d6f0ed116` | Clavier et guide : navigation des menus sans scroll parasite ; Réglages et Actions restent accessibles sur le seul bloc sélectionné pendant un guide visible. |
+| `be1ad24e9` | Contrat partagé app : le contenu exact du menu MaxVideoAI est réutilisable, conserve le focus et laisse les clics modifiés au navigateur. |
+| `1c9f3f2e1` | Propriétaire Studio : Live par défaut, test simulation non-production caché, menu M, sortie Projets persistante et navigation app sauvegardée. |
 
 Le guide traite ce petit portail comme un obstacle de placement afin de préserver
 la lisibilité du canevas.
@@ -60,7 +73,7 @@ preuves PostgreSQL/Auth privées restent celles du manifeste principal.
 
 ## Qualification
 
-- 517/517 contrats Studio/éditeur réussis sous Node 22.23.2. Les contrats de
+- 518/518 contrats Studio/éditeur réussis sous Node 22.23.2. Les contrats de
   persistance démarrent PostgreSQL 17 en socket local jetable, vérifient sa
   version et son dossier de données, puis le détruisent.
 - TypeScript, lint frontend, contrôle d'exposition, audit d'architecture et
@@ -75,6 +88,9 @@ preuves PostgreSQL/Auth privées restent celles du manifeste principal.
   150 % ont en plus réussi 5/5 chacun après stabilisation. Le maintien des
   commandes locales pendant le guide et la navigation clavier du menu de piste
   ont réussi ensemble 3/3.
+- Le complément topbar et préférences a réussi 17/17 contrôles Playwright :
+  navigation sauvegardée, absence de Mock, focus du menu, desktop, mobile
+  320/390 px, paysage court et clair/sombre.
 - Build Next 15 de production réussi sous Node 22 : registre et projections
   modèles cohérents, contrôles médias réussis, compilation et génération de
   871/871 pages.

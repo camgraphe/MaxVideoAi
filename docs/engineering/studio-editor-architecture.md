@@ -104,7 +104,7 @@ The Studio shell owns its matte surfaces, type hierarchy and saffron selection t
 
 `CanvasFloatingToolbar.onCreateBlock` creates exactly one block at the visible canvas center for click, tap or Enter. Palette dragging keeps its precise drop location; it does not reuse a second-click placement arm. `CanvasConnectionPicker` builds candidates through `workspaceConnectionCandidates` and the existing graph validator, then invokes the same connect/remove callbacks as handles. Disconnect uses normal graph history and does not delete its source. The guide menu retains hide/reset/delete and an explicit compact-marker option. The miniature map starts collapsed on small screens.
 
-`workspaceGenerationActionReady` is shared by shot cards, their inspector and the generation action callback. Live needs current ready pricing; a recalculating request clears the old amount immediately. Explicit Mock can simulate without a Live quote but still passes operational/model/input validation. `submitWorkspaceShotGeneration` must propagate Live failures in every environment, never silently substitute mock outputs. Certification and common/advanced field ownership remain in existing block policies and the canonical inspector.
+`workspaceGenerationActionReady` is shared by shot cards, their inspector and the generation action callback. Product Studio is always Live and needs current ready pricing; a recalculating request clears the old amount immediately. The only simulation entry is the explicit `__studio_test_simulation=1` query in non-production E2E/preview runs. Production ignores that query, and the UI never exposes or persists a mode toggle. `submitWorkspaceShotGeneration` must propagate Live failures in every environment, never silently substitute mock outputs. Certification and common/advanced field ownership remain in existing block policies and the canonical inspector.
 
 Canvas `VideoPreview`/`AudioPreview` and `NodeInspectorMediaPreview` mount native controls only after explicit playback intent, with `preload="none"`. Originals are unchanged. Images and unavailable media do not expose pretend Play controls. This is not a change to `ProgramPlaybackLayers` or program synchronization: those timeline readers remain separate owners and still require measured loading work. Compare network/interaction results before claiming performance improvements.
 
@@ -304,8 +304,9 @@ Timeline sizing, export readiness, and inspector file details depend on real med
 
 Keep shell actions close to the surface that owns the user intent.
 
-- The topbar owns project navigation, mode switching, session/wallet, language, theme, and the Mock/Live toggle.
-- Mock/Live stays to the left of the wallet/session cluster so account and balance controls remain grouped.
+- The topbar owns Canvas/Viewer switching, the shared MaxVideoAI app menu, session/wallet, project identity, and an explicit saved exit.
+- Language and appearance live in the shared app menu. Same-tab app destinations delegate to the Studio save/ACK navigation boundary; the account pill does not duplicate app navigation.
+- Product Studio has no Mock/Live control. Live is the default; the non-production E2E simulation query is a hidden test harness and is ignored in production.
 - Export belongs to the timeline toolbar because it exports the active sequence, not the whole workspace shell.
 - Export dialog state still lives in the export controller and runtime modals. Moving the button must not move export job orchestration into the timeline component.
 
