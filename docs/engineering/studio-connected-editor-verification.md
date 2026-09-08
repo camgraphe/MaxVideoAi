@@ -1,19 +1,18 @@
-# Studio connecté — qualification en cours
+# Studio connecté — qualification terminée pour revue
 
 Branche de revue `codex/studio-connected-editor`, worktree `dce6`. Ce document distingue les contrôles effectivement exécutés des travaux encore ouverts. Aucune qualification de déploiement n'est annoncée.
 
-## État actuel — Task 4 qualifiée, Task 5 en cours
+## État actuel — Tasks 1 à 5 terminées, intégration non effectuée
 
-Les sections suivantes conservent la chronologie des contrôles et de leurs
-corrections, pas une liste de blocages tous encore ouverts. Task 4 est approuvée
-au produit `18bf21cad` : navigateur connecté réel6/6, brouillons locaux avec HTTP
-contrôlé6/6, suite Studio483/483 sans skip. Les détails et limites corrigés sont
-dans `studio-task4-integration-review.md`. Le build complet intermédiaire867/867
-pages est passé, mais devra être rejoué après le polish.
+La [remise finale](studio-connected-editor-final-review.md) fait autorité pour
+l’état courant et les limites. Produit4a119520a :496/496 Studio,87/87 MCP,
+80/80 E2E,2/2 HTTP montage,7/7 navigateur privé connecté et build867/867 réussis.
+Revue produit indépendante Approved ; branche/worktree conservées, aucun push,
+merge ou déploiement. La prévisualisation3032 reste anonyme avec brouillons locaux.
 
-Task 5 est en cours dans `studio-task5-integration-review.md` : les connexions
-optionnelles et leur focus sont vérifiés, le fit paysage reste bloquant, et les
-menus/Projects/Copy/Annuler/première présentation du montage suivent le brief.
+Les sections suivantes sont la chronologie des contrôles et corrections, pas une
+liste de blocages encore ouverts. La matrice finale inclut36 combinaisons de fit
+et cinq menus ouverts ; les défauts de paysage, focus, Copy et Annuler sont clos.
 
 ## Socle
 

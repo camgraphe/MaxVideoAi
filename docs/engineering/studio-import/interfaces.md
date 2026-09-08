@@ -1,5 +1,9 @@
 # Studio baseline composition — 2026-09-08
 
+Historical Task1 baseline document. Its environment statements describe that
+stage only. Current completed Tasks1–5, persistence evidence and integration limits
+are in [the final review](../studio-connected-editor-final-review.md).
+
 Source provenance is recorded in `committed-source.json`, `dirty-source.json`, and
 `shared-source.json`. Committed files were imported by exact paths from
 `6165afc34bb27b8b3dc2d05074b09cdcdb44c13f`; local certification work was copied in

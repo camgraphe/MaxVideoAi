@@ -3,7 +3,9 @@
 Task 4 is qualified at product `18bf21cad`; its persistence, recovery, ownership,
 idempotency and real browser evidence remain in `studio-task4-integration-review.md`.
 Task 5 is the already-planned final interface pass, explicitly reaffirmed by the
-coordinator. This document records intermediate checks, not a release approval.
+coordinator. The product is now qualified for owner review at4a119520a; see the
+[final handoff](studio-connected-editor-final-review.md). The sections below retain
+the full correction chronology and do not constitute production release approval.
 
 ## First canvas sublot: e82cc214f — not yet approved
 
@@ -262,3 +264,18 @@ run uses the baseline's existing helper and the verified identical stress test;
 no baseline product or files were modified. Raw reports:
 `.superpowers/studio-visuals/final-baseline-performance-corrected.json` and
 `final-studio-performance.json` (three passes each).
+
+## Final completion
+
+The final frozen4a replay passes74/74 UI scenarios in3.2min, followed by6/6
+model/Projects smokes in17.5s: **80/80** overall. The six smoke locations shifted
+after the fixture edit, so the second run selects their exact names rather than
+obsolete source lines; no missing test is counted as a pass. This includes the
+corrected legacy Projects actions and all36 fit/five-menu cases after CSS extraction.
+Final HTTP montage replay is **2/2,23.47s**, and exact4a private connected browser
+is **7/7,64.60s**, both zero skips. The full build and496/87 suites above remain
+green, product review is Approved, and all planned Task5 work is complete.
+
+The branch/worktree and anonymous previews are retained for owner validation.
+The137-entry product manifest is final through4a; subsequent commits are proof
+and handoff documentation only. No integration, push, deployment or paid action.

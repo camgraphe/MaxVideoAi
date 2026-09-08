@@ -1,5 +1,8 @@
 # Studio — socle et interactions séparables du raccord médias
 
+Document historique Task2. Pour l’état complet actuel, les137 commits et les
+limites Tasks1–5, consulter [la remise finale](studio-connected-editor-final-review.md).
+
 Remise à la tâche coordinatrice le 8 septembre 2026. Branche source de revue : `codex/studio-connected-editor`. Ce document ne demande ni push ni déploiement. Le runtime médias Task 3 et le montage persisté Task 4 ne sont pas inclus dans cette qualification.
 
 ## Ordre des changements

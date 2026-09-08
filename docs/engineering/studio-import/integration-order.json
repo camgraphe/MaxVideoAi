@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "status": "INTERMEDIATE_TASK_5_IN_PROGRESS_NOT_RELEASE_APPROVED",
-  "snapshotHead": "d754057a968205f7465fc2b0aa5247f51b1f1ee5",
+  "status": "QUALIFIED_FOR_OWNER_REVIEW_NOT_INTEGRATED",
+  "snapshotHead": "4a119520ac3b2ad5529890bae932599ad9651737",
   "branch": "codex/studio-connected-editor",
   "defaultBranchBase": "ab2cb9fbd552e2eab7b07b8c519aff0f219e1d07",
   "qualifiedAppSource": "ef3393c0d",
@@ -11,7 +11,7 @@
     "Preserve the current app, Activity, shared media, Audio, Toolbox, Billing, global CSS and MCP Audio owners.",
     "Do not replay the composition merge. Apply Studio-owned changes only after resolving shared prerequisites against the receiving branch.",
     "No automatic cherry-pick script is provided: mixed and shared commits require owner review.",
-    "The final post-polish snapshot and verification must supersede this intermediate manifest."
+    "This final product snapshot supersedes the intermediate manifest; subsequent root verification and handoff-only commits are recorded in the final review document."
   ],
   "additionalEquivalentOutsideThisHistory": {
     "source": "746a0cf49",
@@ -719,6 +719,152 @@
       "sha": "d754057a968205f7465fc2b0aa5247f51b1f1ee5",
       "subject": "test(studio): isolate consent dependency in local UI fixtures",
       "action": "REVIEW_AND_APPLY_IN_ORDER"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 114,
+      "sha": "dda228de1d40d2e19ca63f62532d06af1a8e5a54",
+      "subject": "fix(studio): fit landscape canvas between controls"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 115,
+      "sha": "783ab3ea3f00da13092fb4294a6389c198d9a3bb",
+      "subject": "docs(studio): record reviewed integration order snapshot"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 116,
+      "sha": "eaec620b89d51b7774df573a81e86075e728d1be",
+      "subject": "test(studio): verify canvas command hit targets across phone landscapes"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 117,
+      "sha": "681b75f3877d24292b3cc01138d1b879dd03ac64",
+      "subject": "fix(studio): coordinate short canvas controls"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 118,
+      "sha": "6330d550571621cdd38d36c349137c94078c6d1b",
+      "subject": "fix(studio): scope copy feedback to selection"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 119,
+      "sha": "b321928d3158a2c73d6f34ecdfc8141a13a0dd14",
+      "subject": "fix(studio): contain measured montage clips"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 120,
+      "sha": "435c3cc00631e2d0e07da2db61b9b61220c57d73",
+      "subject": "fix(studio): avoid short canvas map controls"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 121,
+      "sha": "399b4cc090416cd2abf639cf44543b8ff322b771",
+      "subject": "fix(studio): expose actual media undo state"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 122,
+      "sha": "3e8ade2a62e97e830c38c7136221a5d316634098",
+      "subject": "docs(studio): qualify connected montage first-frame presentation"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 123,
+      "sha": "f8e11353489f9bb2fe2a303df7dd628a7a99db00",
+      "subject": "fix(studio): serialize canvas selection scope"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 124,
+      "sha": "420f43470d267f4a7a28e21cae484a61f7d10260",
+      "subject": "test(studio): include output area in fitted card containment"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 125,
+      "sha": "320fe48e3ed58260588f9fe9523466c832219328",
+      "subject": "fix(studio): keep canvas overlays outside fitted graph"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 126,
+      "sha": "0ba7bfba9ec21c156326fa41e4b935be68affd2c",
+      "subject": "fix(studio): clarify projects and montage actions",
+      "note": "Studio-scoped locale keys only; review these shared message-file hunks with the app owner rather than replacing the whole files."
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 127,
+      "sha": "ce89230cef1c49fa61b4d9be0e895e8d2e9ee227",
+      "subject": "test(studio): align smoke checks with canvas clarity"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 128,
+      "sha": "0e172e66a867bd62c85c93e3342e132fa4bf3744",
+      "subject": "fix(studio): remove duplicate card settings row"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 129,
+      "sha": "fb1a6c1f4c3e8a7da6a8e28bfc5d69ec1f5177ff",
+      "subject": "test(studio): verify open canvas menus and media undo state"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 130,
+      "sha": "a3f42bf48270fbc37b85e73b04ed5ae316b3cec3",
+      "subject": "fix(studio): contain compact canvas menus"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 131,
+      "sha": "2266ab39c69e8b47e3e9eab20e0a768356e028a7",
+      "subject": "test(studio): preserve model checks in inspector"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 132,
+      "sha": "26cbbed36a04c9f3dbf5c8260e2a6cf36e2818c0",
+      "subject": "fix(studio): bound canvas menu geometry"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 133,
+      "sha": "3ba2ebd8361efa7a54e008c23994c9f4e7365fcf",
+      "subject": "test(studio): qualify six viewport boundaries and open menus"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 134,
+      "sha": "927edf00c81a0307dc8e2a45a67d36c99a65fa07",
+      "subject": "test(studio): qualify twelve clip mobile creation controls"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 135,
+      "sha": "df2d32c9eb6f0e941161f2b48a5e54c39c84012b",
+      "subject": "refactor(studio): isolate shot connection styles"
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 136,
+      "sha": "490977173a0dd69886772812564e05dc0770edb2",
+      "subject": "fix(studio): describe starter outcomes",
+      "note": "Studio-scoped locale keys only; review these shared message-file hunks with the app owner rather than replacing the whole files."
+    },
+    {
+      "action": "REVIEW_AND_APPLY_IN_ORDER",
+      "order": 137,
+      "sha": "4a119520ac3b2ad5529890bae932599ad9651737",
+      "subject": "test(studio): isolate projects legal fixture"
     }
   ]
 }
