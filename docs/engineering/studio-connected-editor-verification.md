@@ -29,26 +29,32 @@ PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH" pnpm dlx node@22 frontend/node_
 
 Ce test démontre la disponibilité de l'environnement, pas encore la commande de montage ni sa concurrence.
 
-## Référence visuelle et mesures avant refonte
+## Référence visuelle et mesures comparables
 
 Le contrôle réel desktop 1440×900 et mobile 390×844, clair et sombre, constate des blocs trop miniaturisés, des actions non nommées et un débordement mobile. Les captures de référence sont des artefacts locaux de travail ; elles ne constituent pas une mesure de performance.
 
 Le test de stress hérité utilisait un média absent. La fixture a été corrigée vers le média local existant `watch-wan-3-prime-scroll.mp4` (6 secondes, 1920×1080 vérifiés par ffprobe) et le WAV local. Les API compte/persistance et consentement, étrangères à la mesure de rendu, sont simulées. Les lecteurs, interactions et requêtes de médias restent réels.
 
-La mesure BEFORE a été exécutée sur une copie temporaire **figée du commit `332bf4abf`**, distincte de la worktree en refonte, sur le port 3034. Contexte navigateur neuf, viewport 1280×720, Next en développement, 80 blocs et 150 éléments de timeline. Un passage réussi :
+La mesure BEFORE a été exécutée sur une copie temporaire **figée du commit `332bf4abf`**, distincte de la worktree en refonte, sur le port 3034. La mesure AFTER utilise le lot visuel Task 2 sur 3032. Même fixture, contexte navigateur neuf, viewport 1280×720, Next en développement, 80 blocs et 150 éléments de timeline. Un passage réussi par version :
 
-| Mesure | Avant |
-| --- | ---: |
-| Requêtes média avant première lecture | 150 |
-| Requêtes média sur tout le parcours | 203 |
-| Première commande Play jusqu'à progression du playhead | 353 ms |
-| Scrub jusqu'à position attendue | 85 ms |
-| Déplacement d'un clip avec geste automatisé | 1 646 ms |
-| Deux incréments de zoom timeline | 157 ms |
-| Pan du canevas avec geste automatisé | 540 ms |
+| Mesure | Avant | Après Task 2 |
+| --- | ---: | ---: |
+| Requêtes média avant première lecture | 150 | 150 |
+| Requêtes média sur tout le parcours | 203 | 178 |
+| Première commande Play jusqu'à progression du playhead | 353 ms | 291 ms |
+| Scrub jusqu'à position attendue | 85 ms | 49 ms |
+| Déplacement d'un clip avec geste automatisé | 1 646 ms | 326 ms |
+| Deux incréments de zoom timeline | 157 ms | 98 ms |
+| Pan du canevas avec geste automatisé | 540 ms | 161 ms |
 
-Ces temps comprennent les gestes et assertions du navigateur, ne sont ni des Core Web Vitals ni un benchmark de production. Le chargement initial élevé provient notamment de toutes les couches timeline montées avec préchargement automatique ; il reste à comparer après le lot. Aucune amélioration de performance n'est encore revendiquée.
+Ces temps comprennent les gestes et assertions du navigateur, ne sont ni des Core Web Vitals ni un benchmark de production. Un passage ne permet pas d'attribuer causalement les différences à la refonte. Le chargement initial élevé demeure : toutes les couches timeline sont encore montées avec préchargement automatique. Aucune amélioration de charge initiale n'est revendiquée. Rapports bruts locaux : `.superpowers/studio-visuals/before-performance.json` et `after-performance.json`.
+
+## Interactions Task 2
+
+Au commit `603f45a4b`, 397 tests Studio et TypeScript passent ; lint sans erreur, avec deux avertissements hérités. Quatre parcours Playwright passent : création unique au clavier, inspecteur explicite et retour de focus, actions de piste sans clic droit, inspecteur mobile immédiat et connexions annulables. Les générations de test restent explicitement simulées ; les erreurs Live ne deviennent plus des succès Mock.
+
+La revue indépendante a demandé un parcours supplémentaire : après sélection timeline, la gestion des connexions doit rendre à Annuler la portée canevas. Elle a également demandé le transfert du focus après activation d'un lecteur natif. Correctifs et tests de non-régression en cours ; ce lot n'est pas encore déclaré définitivement approuvé.
 
 ## Contrôles restant ouverts
 
-Refonte et interactions complètes, parcours bibliothèque/récents avec identités canoniques, commande UI/MCP persistée, sauvegarde concurrente, réouverture sans cache local, matrice responsive et build final restent à exécuter. `prepare_montage` demeure un plan non persisté et ne satisfait pas ces critères.
+Clôture de revue des interactions, parcours bibliothèque/récents avec identités canoniques, commande UI/MCP persistée, sauvegarde concurrente, réouverture sans cache local, matrice responsive complète et build final restent à exécuter. `prepare_montage` demeure un plan non persisté et ne satisfait pas ces critères.
