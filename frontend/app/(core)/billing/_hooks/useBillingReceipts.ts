@@ -1,8 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { BillingSession, ReceiptItem, ReceiptsState } from '../_lib/billing-types';
-import { createBillingRequestScope } from '../_lib/billing-request-scope';
+import { useBillingRequestOwner } from './useBillingRequestOwner';
 
 export function useBillingReceipts({
   authLoading,
@@ -15,22 +15,29 @@ export function useBillingReceipts({
   loadReceiptsError: string;
   loadMoreError: string;
 }) {
-  const [receipts, setReceipts] = useState<ReceiptsState>({ items: [], nextCursor: null, loading: false });
-  const [receiptsCollapsed, setReceiptsCollapsed] = useState(true);
-  const requestScopeRef = useRef(createBillingRequestScope());
-  const activeAccountIdRef = useRef<string | null>(null);
-  const accountId = session?.user?.id ?? null;
+  const accountId = authLoading ? null : session?.user?.id ?? null;
   const accessToken = session?.access_token ?? null;
+  const { owner, requestScope, isActive } = useBillingRequestOwner(accountId);
+  const [state, setState] = useState<{ owner: typeof owner; receipts: ReceiptsState }>({
+    owner, receipts: { items: [], nextCursor: null, loading: false },
+  });
+  const receipts: ReceiptsState = accountId && state.owner === owner
+    ? state.receipts
+    : { items: [], nextCursor: null, loading: Boolean(accountId), error: null };
+  const [receiptsCollapsed, setReceiptsCollapsed] = useState(true);
   const toggleReceipts = useCallback(() => setReceiptsCollapsed((prev) => !prev), []);
+  const setReceipts = useCallback((update: ReceiptsState | ((previous: ReceiptsState) => ReceiptsState)) => {
+    setState((previous) => ({
+      owner,
+      receipts: typeof update === 'function'
+        ? update(previous.owner === owner ? previous.receipts : { items: [], nextCursor: null, loading: false })
+        : update,
+    }));
+  }, [owner]);
 
   const refreshReceipts = useCallback(async (): Promise<boolean> => {
-    if (!accountId) {
-      requestScopeRef.current.invalidate();
-      setReceipts({ items: [], nextCursor: null, loading: false, error: null });
-      return false;
-    }
-
-    const requestToken = requestScopeRef.current.begin(accountId);
+    if (!isActive() || !accountId) return false;
+    const requestToken = requestScope.begin(accountId);
     const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
     setReceipts((state) => ({ ...state, loading: true, error: null }));
     try {
@@ -39,7 +46,7 @@ export function useBillingReceipts({
       if (!response.ok || !data?.ok || !Array.isArray(data.receipts)) {
         throw new Error(data?.error ?? 'receipts_load_failed');
       }
-      if (!requestScopeRef.current.isCurrent(requestToken)) return false;
+      if (!isActive() || !requestScope.isCurrent(requestToken)) return false;
       setReceipts({
         items: data.receipts as ReceiptItem[],
         nextCursor: data.nextCursor ?? null,
@@ -48,29 +55,20 @@ export function useBillingReceipts({
       });
       return true;
     } catch {
-      if (!requestScopeRef.current.isCurrent(requestToken)) return false;
+      if (!isActive() || !requestScope.isCurrent(requestToken)) return false;
       setReceipts((state) => ({ ...state, loading: false, error: loadReceiptsError }));
       return false;
     }
-  }, [accessToken, accountId, loadReceiptsError]);
+  }, [accessToken, accountId, isActive, loadReceiptsError, requestScope, setReceipts]);
 
   useEffect(() => {
-    if (authLoading) return;
-    if (activeAccountIdRef.current !== accountId) {
-      requestScopeRef.current.invalidate();
-      activeAccountIdRef.current = accountId;
-      setReceipts({ items: [], nextCursor: null, loading: false, error: null });
-    }
     if (accountId) void refreshReceipts();
-  }, [accountId, authLoading, refreshReceipts]);
-
-  useEffect(() => () => requestScopeRef.current.invalidate(), []);
+  }, [accountId, refreshReceipts]);
 
   const loadMoreReceipts = useCallback(async () => {
-    if (receipts.loading || receipts.nextCursor === null) return;
+    if (!isActive() || !accountId || receipts.loading || receipts.nextCursor === null) return;
     setReceipts((state) => ({ ...state, loading: true }));
-    if (!accountId) return;
-    const requestToken = requestScopeRef.current.begin(accountId);
+    const requestToken = requestScope.begin(accountId);
     const headers: Record<string, string> | undefined = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
     const url = receipts.nextCursor
       ? `/api/receipts?limit=25&cursor=${encodeURIComponent(receipts.nextCursor)}`
@@ -82,7 +80,7 @@ export function useBillingReceipts({
       if (!response.ok || !data?.ok || !Array.isArray(data.receipts)) {
         throw new Error(data?.error ?? 'receipts_load_more_failed');
       }
-      if (!requestScopeRef.current.isCurrent(requestToken)) return;
+      if (!isActive() || !requestScope.isCurrent(requestToken)) return;
       setReceipts((state) => ({
         ...state,
         items: [...state.items, ...((data.receipts ?? []) as ReceiptItem[])],
@@ -91,12 +89,13 @@ export function useBillingReceipts({
         error: null,
       }));
     } catch {
-      if (!requestScopeRef.current.isCurrent(requestToken)) return;
+      if (!isActive() || !requestScope.isCurrent(requestToken)) return;
       setReceipts((state) => ({ ...state, loading: false, error: loadMoreError }));
     }
-  }, [accessToken, accountId, loadMoreError, receipts.loading, receipts.nextCursor]);
+  }, [accessToken, accountId, isActive, loadMoreError, receipts.loading, receipts.nextCursor, requestScope, setReceipts]);
 
   const exportCSV = useCallback(() => {
+    if (!isActive()) return;
     const rows: string[] = [
       'id,type,amount,currency,description,created_at,job_id,tax_amount_cents,discount_amount_cents,document_type,document_url',
     ];
@@ -114,7 +113,7 @@ export function useBillingReceipts({
     anchor.download = 'receipts.csv';
     anchor.click();
     URL.revokeObjectURL(url);
-  }, [receipts.items]);
+  }, [isActive, receipts.items]);
 
   const visibleReceipts = useMemo(
     () => (receiptsCollapsed ? receipts.items.slice(0, 2) : receipts.items),

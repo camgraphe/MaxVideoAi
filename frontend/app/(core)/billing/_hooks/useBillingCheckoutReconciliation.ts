@@ -1,10 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import {
   runBillingCheckoutReconciliation,
   type BillingCheckoutReconciliationResult,
 } from '../_lib/billing-checkout-reconciliation';
+
+import { useBillingRequestOwner } from './useBillingRequestOwner';
 
 export type BillingCheckoutReconciliationStatus = 'idle' | 'refreshing' | Exclude<BillingCheckoutReconciliationResult, 'cancelled'>;
 
@@ -17,30 +19,22 @@ export function useBillingCheckoutReconciliation({
   refreshWallet: () => Promise<boolean>;
   refreshReceipts: () => Promise<boolean>;
 }) {
-  const [status, setStatus] = useState<BillingCheckoutReconciliationStatus>('idle');
+  const { owner, isActive } = useBillingRequestOwner(accountId);
+  const [state, setState] = useState<{ owner: typeof owner; status: BillingCheckoutReconciliationStatus }>({ owner, status: 'idle' });
   const generationRef = useRef(0);
 
-  useEffect(() => {
-    generationRef.current += 1;
-    setStatus('idle');
-  }, [accountId]);
-
-  useEffect(() => () => {
-    generationRef.current += 1;
-  }, []);
-
   const reconcile = useCallback(async () => {
-    if (!accountId) return;
+    if (!isActive()) return;
     const generation = ++generationRef.current;
-    setStatus('refreshing');
+    setState({ owner, status: 'refreshing' });
     const result = await runBillingCheckoutReconciliation({
       refreshWallet,
       refreshReceipts,
-      isActive: () => generationRef.current === generation,
+      isActive: () => isActive() && generationRef.current === generation,
     });
-    if (generationRef.current !== generation || result === 'cancelled') return;
-    setStatus(result);
-  }, [accountId, refreshReceipts, refreshWallet]);
+    if (!isActive() || generationRef.current !== generation || result === 'cancelled') return;
+    setState({ owner, status: result });
+  }, [isActive, owner, refreshReceipts, refreshWallet]);
 
-  return { reconcile, status };
+  return { reconcile, status: accountId && state.owner === owner ? state.status : 'idle' as const };
 }

@@ -17,12 +17,13 @@ async function loadBillingPresentation() {
     module.exports = { __esModule: true, default: classes };
   };
   try {
-    const [{ BillingWalletOverview }, { WalletCheckoutSummary }, { ReceiptsPanel }] = await Promise.all([
+    const [{ BillingWalletOverview }, { WalletCheckoutSummary }, { ReceiptsPanel }, { WalletTopupPanel }] = await Promise.all([
       import('../frontend/app/(core)/billing/_components/BillingWalletOverview'),
       import('../frontend/app/(core)/billing/_components/WalletCheckoutSummary'),
       import('../frontend/app/(core)/billing/_components/ReceiptsPanel'),
+      import('../frontend/app/(core)/billing/_components/WalletTopupPanel'),
     ]);
-    return { BillingWalletOverview, WalletCheckoutSummary, ReceiptsPanel };
+    return { BillingWalletOverview, WalletCheckoutSummary, ReceiptsPanel, WalletTopupPanel };
   } finally {
     if (previousCssLoader) require.extensions['.css'] = previousCssLoader;
     else delete require.extensions['.css'];
@@ -126,4 +127,36 @@ test('billing local styles preserve touch targets and reduced-motion behavior', 
 
   assert.match(styles, /min-height:\s*44px/);
   assert.match(styles, /prefers-reduced-motion:\s*reduce/);
+});
+
+
+test('currency selector displays the quoted currency while enabled options are still loading', async () => {
+  const { WalletTopupPanel } = await loadBillingPresentation();
+  const noop = () => {};
+  const markup = renderToStaticMarkup(React.createElement(WalletTopupPanel, {
+    applyCustomAmount: noop, checkoutCaptchaError: null, checkoutCaptchaRequired: false,
+    checkoutCaptchaResetGeneration: 0, checkoutCaptchaToken: null, copy: DEFAULT_BILLING_COPY,
+    currencyLoading: true, currencyOptions: ['USD'], currencyStatus: 'Detecting currencies…',
+    currencyStatusClass: '', customAmountCents: null, customAmountError: null, customAmountInput: '',
+    customAmountInputRef: null, customAmountValid: false, customCardActive: false, expressRequested: false,
+    formatUsdAmount: (cents) => `$${cents / 100}`, handleCheckoutCaptchaError: noop,
+    handleCheckoutCaptchaRequired: noop, handleCheckoutCaptchaToken: noop, handleCurrencyChange: noop,
+    handleExpressTopupFailed: noop, handleExpressTopupStarted: noop, handleTopUp: noop,
+    isTopupStarting: false, locale: 'en', normalizedChargeCurrency: 'EUR', onCustomAmountInputChange: noop,
+    onExpressReveal: noop, onOpenCustomAmountEditor: noop, onPresetSelected: noop,
+    quoteError: null, quoteLoading: false, selectedTopupAmountLabel: '$10', selectedTopupCents: 1000,
+    selectedTopupLocalLabel: '€8.60', selectedTopupPaymentLabel: '€8.60', session: null,
+    stripePromise: null, turnstileSiteKey: '', wallet: null,
+  }));
+  const document = new JSDOM(markup).window.document;
+  const select = document.querySelector('select')!;
+  assert.equal(select.value, 'EUR');
+  assert.equal(select.disabled, true);
+  assert.equal(select.selectedOptions[0].textContent, 'EUR');
+  assert.match(document.body.textContent ?? '', /€8.60/);
+});
+
+test('receipt document and support links have 44px touch targets', () => {
+  const css = readFileSync('frontend/app/(core)/billing/_components/billing-receipts.module.css', 'utf8');
+  assert.match(css, /\.receiptDetails a\s*\{[^}]*min-height:\s*44px/);
 });

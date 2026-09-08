@@ -186,7 +186,7 @@ export function BillingClient({
     reconcile: reconcileCheckoutReturn,
     status: checkoutReconciliationStatus,
   } = useBillingCheckoutReconciliation({
-    accountId: session?.user?.id ?? null,
+    accountId: authLoading ? null : session?.user?.id ?? null,
     refreshWallet,
     refreshReceipts,
   });
@@ -202,6 +202,8 @@ export function BillingClient({
   // no FX preview when using Checkout redirection
 
   useBillingCheckoutReturnToast({
+    accountId: session?.user?.id ?? null,
+    authLoading,
     cancelledMessage: copy.toasts.cancelled,
     onAmountReturned: restoreTopupSelection,
     onCancelled: triggerTopupCancelled,

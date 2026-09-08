@@ -256,6 +256,9 @@ function CurrencySelect({
         onChange={onChange}
         disabled={currencyLoading}
       >
+        {!currencyOptions.includes(normalizedChargeCurrency) ? (
+          <option value={normalizedChargeCurrency} disabled>{normalizedChargeCurrency}</option>
+        ) : null}
         {currencyOptions.map((option) => <option key={option} value={option}>{option}</option>)}
       </select>
       <p className={currencyStatusClass} data-error={currencyStatusClass.includes('warning')}>{currencyStatus}</p>

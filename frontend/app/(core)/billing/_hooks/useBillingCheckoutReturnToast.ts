@@ -7,6 +7,8 @@ import {
 import { recordCheckoutInteractionEvent } from '../_lib/checkout-interaction-events';
 
 type CheckoutReturnToastOptions = {
+  accountId: string | null;
+  authLoading: boolean;
   cancelledMessage: string;
   onAmountReturned: (amountCents: number | null) => void;
   onCancelled: (amountCents: number | null, currency: string) => void;
@@ -19,6 +21,8 @@ type CheckoutReturnToastOptions = {
 };
 
 export function useBillingCheckoutReturnToast({
+  accountId,
+  authLoading,
   cancelledMessage,
   onAmountReturned,
   onCancelled,
@@ -46,6 +50,7 @@ export function useBillingCheckoutReturnToast({
     if (!status) return undefined;
     const returnStatus = status === 'success' ? 'success' : status === 'cancelled' ? 'cancelled' : null;
     if (!returnStatus) return undefined;
+    if (returnStatus === 'success' && (authLoading || !accountId)) return undefined;
     const message = returnStatus === 'success' ? successMessage : cancelledMessage;
 
     onStatus(returnStatus);
@@ -83,5 +88,5 @@ export function useBillingCheckoutReturnToast({
     );
     window.history.replaceState({}, '', url.toString());
     return () => window.clearTimeout(timeout);
-  }, [cancelledMessage, onAmountReturned, onCancelled, onGoogleAdsConversion, onReturnTarget, onStatus, onSuccess, onToast, successMessage]);
+  }, [accountId, authLoading, cancelledMessage, onAmountReturned, onCancelled, onGoogleAdsConversion, onReturnTarget, onStatus, onSuccess, onToast, successMessage]);
 }

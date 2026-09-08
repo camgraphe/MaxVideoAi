@@ -188,3 +188,15 @@ test('billing feature modules own their explicit responsibilities', () => {
   assert.match(clientSource, /from '\.\.\/_lib\/billing-intent';/);
   assert.match(utilsSource, /export function parseAmountToCents/);
 });
+
+
+test('billing read owners share render-time identity and callback retirement', () => {
+  const ownerPath = 'frontend/app/(core)/billing/_hooks/useBillingRequestOwner.ts';
+  assert.equal(existsSync(ownerPath), true);
+  for (const file of [sessionHookPath, receiptsHookPath, quotesHookPath, reconciliationHookPath]) {
+    assert.match(readFileSync(file, 'utf8'), /useBillingRequestOwner/);
+  }
+  const clientSource = readFileSync(clientPath, 'utf8');
+  assert.match(clientSource, /useBillingCheckoutReconciliation\(\{\s*accountId: authLoading \? null : session\?\.user\?\.id \?\? null/);
+  assert.match(clientSource, /useBillingCheckoutReturnToast\(\{\s*accountId: session\?\.user\?\.id \?\? null,\s*authLoading,/);
+});
