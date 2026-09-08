@@ -8,17 +8,6 @@
   min-width: 0;
   width: 100%;
 }
-@media (max-width: 760px) {
-  .modelStrip {
-    display: flex;
-    flex-direction: column-reverse;
-    align-items: stretch;
-    gap: 2px;
-  }
-  .modelStrip > .commands {
-    justify-content: flex-end;
-  }
-}
 .commands {
   display: flex;
   flex-wrap: wrap;
@@ -36,6 +25,38 @@
 }
 .commands button {
   background: transparent;
+}
+.commandIcon {
+  display: none;
+  width: 19px;
+  height: 19px;
+}
+@media (max-width: 760px) {
+  .modelStrip {
+    grid-template-columns: minmax(0, 1fr) 44px;
+    align-items: end;
+    gap: 6px;
+  }
+  .modelStrip > .commands {
+    width: 44px;
+    flex-wrap: nowrap;
+  }
+  .commands button {
+    width: 44px;
+    min-width: 44px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+  }
+  .commands .status {
+    display: none;
+  }
+  .commandIcon {
+    display: block;
+  }
+  .commandLabel {
+    display: none;
+  }
 }
 .commands button:focus-visible,
 .dialog button:focus-visible,

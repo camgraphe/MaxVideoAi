@@ -271,6 +271,11 @@ async function mount({
 test('rendered Cancel and Escape leave every draft setter untouched and restore focus/scroll', async () => {
   const f = await mount();
   try {
+    const compareOpener = f.dom.window.document.querySelector<HTMLButtonElement>(
+      '[data-model-review-opener]',
+    );
+    assert.equal(compareOpener?.getAttribute('aria-label'), 'Compare');
+    assert.ok(compareOpener?.querySelector('svg'));
     assert.equal(
       [...f.dom.window.document.querySelectorAll('button')].some(
         (button) => button.textContent === 'Configurations',
