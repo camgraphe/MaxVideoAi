@@ -133,7 +133,11 @@ export const TimelineRuler = memo(function TimelineRuler({
             </span>
           ) : null}
           {rulerTicks.map((tickSec) => (
-            <span key={tickSec} style={{ left: tickSec * pixelsPerSecond }}>
+            <span
+              key={tickSec}
+              data-timeline-ruler-tick={tickSec}
+              style={{ left: tickSec * pixelsPerSecond }}
+            >
               {formatWorkspaceTimecode(tickSec, projectFps)}
             </span>
           ))}
