@@ -49,6 +49,7 @@ const imageWorkspaceSource = readFileSync(
   'frontend/app/(core)/(workspace)/app/image/ImageWorkspace.tsx',
   'utf8'
 );
+const appExperienceStyles = readFileSync('frontend/src/styles/app-experience.css', 'utf8');
 
 test('route-local surfaces opt into compact workspace engine controls', () => {
   assert.match(videoPreviewSource, /controlPresentation="workspace"/);
@@ -83,6 +84,14 @@ test('workspace quantity controls sit beside the generate action', () => {
   assert.match(imageSurfaceSource, /generateControl=\{[\s\S]*<ImageCountControl[\s\S]*value=\{numImages\}/);
   assert.match(coreSettingsSource, /action\s*\?\s*'h-11[\s\S]*!bg-\[image:var\(--brand-gradient\)\]/);
   assert.match(imageSettingsSource, /action\s*\?\s*'h-11[\s\S]*!bg-\[image:var\(--brand-gradient\)\]/);
+});
+
+test('narrow composer toolbars keep settings and submit actions on stable rows', () => {
+  assert.match(appExperienceStyles, /@container \(max-width: 720px\)/);
+  assert.match(appExperienceStyles, /app-composer-toolbar-layout \{ flex-direction: column; align-items: stretch; \}/);
+  assert.match(appExperienceStyles, /app-composer-submit \{ width: 100%; flex: none; justify-content: flex-end; \}/);
+  assert.match(appExperienceStyles, /app-generation-controls \{ width: 100%; flex: 1 1 auto; margin-inline-start: 0; \}/);
+  assert.match(appExperienceStyles, /app-generation-controls \.app-generation-action \{ width: 100%; \}/);
 });
 
 test('workspace mobile settings wrap with touch targets and compact controls', () => {
