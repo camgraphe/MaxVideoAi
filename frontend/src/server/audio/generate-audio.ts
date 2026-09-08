@@ -221,6 +221,7 @@ export async function executeReservedAudioRun(params: ReservedAudioRun): Promise
     }
 
     let uploadedAudioUrl: string | null = persistedOriginal?.audioUrl ?? null;
+    let uploadedAudioMimeType: string | null = persistedOriginal?.mimeType ?? null;
     let uploadedVideoUrl: string | null = null;
     let uploadedThumbUrl: string | null = initialThumb;
 
@@ -235,6 +236,7 @@ export async function executeReservedAudioRun(params: ReservedAudioRun): Promise
         audioBuffer,
       });
       uploadedAudioUrl = uploadedAudio.audioUrl;
+      uploadedAudioMimeType = 'audio/mp4';
     }
 
     if (videoBuffer) {
@@ -253,7 +255,7 @@ export async function executeReservedAudioRun(params: ReservedAudioRun): Promise
 
     const outputBuffer = audioBuffer ?? videoBuffer;
     const measuredDurationSec = persistedOriginal?.durationSec ?? (outputBuffer ? await detectMediaBufferDuration(outputBuffer, { streamSelector: 'audio' }) : null);
-    const finalSettingsSnapshotJson = buildProviderSnapshot({ ...initialSettingsSnapshot, measuredDurationSec, durationSec: measuredDurationSec ?? durationSec, mediaFacts: measuredDurationSec ? { source: 'probe', durationSec: measuredDurationSec } : null }, {
+    const finalSettingsSnapshotJson = buildProviderSnapshot({ ...initialSettingsSnapshot, measuredDurationSec, durationSec: measuredDurationSec ?? durationSec, mediaFacts: measuredDurationSec ? { source: 'probe', durationSec: measuredDurationSec } : null, audioMimeType: uploadedAudioMimeType }, {
       soundDesign:
         soundDesign
           ? {
@@ -323,6 +325,8 @@ export async function executeReservedAudioRun(params: ReservedAudioRun): Promise
       preview_frame: uploadedThumbUrl ?? initialThumb,
       render_ids: null,
       duration_sec: Math.ceil(measuredDurationSec ?? durationSec),
+      measured_duration_sec: measuredDurationSec,
+      audio_mime_type: uploadedAudioMimeType,
       status: 'completed',
     }).catch((outputError) => {
       console.warn('[audio] failed to persist job outputs', { jobId }, outputError);

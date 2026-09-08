@@ -4,7 +4,7 @@ import test from 'node:test';
 
 const read = (path: string) => readFileSync(path, 'utf8');
 
-test('Audio MCP prepare and confirm stay focused and are not publicly registered by Task 2', () => {
+test('Audio MCP prepare and confirm stay focused while Task 3 registers only thin public adapters', () => {
   const prepare = read('frontend/src/server/agent-api/prepare-audio-generation.ts');
   const confirm = read('frontend/src/server/agent-api/confirm-audio-generation.ts');
   const server = read('frontend/src/server/mcp/server.ts');
@@ -16,7 +16,17 @@ test('Audio MCP prepare and confirm stay focused and are not publicly registered
   assert.ok(confirm.indexOf('await confirmationTransaction') < confirm.indexOf('await dependencies.executeRun'));
   assert.match(confirm, /buildReservation: buildAudioRunReservation/);
   assert.match(confirm, /reserveInitialJob: .*createInitialAudioJobInExecutor/);
-  assert.doesNotMatch(server, /prepare_audio_generation|confirm_audio_generation|list_audio_capabilities/);
+  assert.match(server, /registerListAudioCapabilitiesTool/);
+  assert.match(server, /registerPrepareAudioGenerationTool/);
+  assert.match(server, /registerConfirmAudioGenerationTool/);
+  for (const adapter of [
+    'frontend/src/server/mcp/tools/list-audio-capabilities.ts',
+    'frontend/src/server/mcp/tools/prepare-audio-generation.ts',
+    'frontend/src/server/mcp/tools/confirm-audio-generation.ts',
+  ]) {
+    const source = read(adapter);
+    assert.doesNotMatch(source, /database|sql\(|query\(|executeReservedAudioRun|reserveWalletCharge/);
+  }
 });
 
 test('Audio reference resolution accepts only exact owned assets and completed job outputs', () => {

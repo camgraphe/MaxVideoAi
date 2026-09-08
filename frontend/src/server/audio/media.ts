@@ -399,5 +399,5 @@ export async function persistOriginalAudio(params: { userId: string; jobId: stri
   const extension = wav ? 'wav' : flac ? 'flac' : ogg ? 'ogg' : 'mp3';
   const mime = wav ? 'audio/wav' : flac ? 'audio/flac' : ogg ? 'audio/ogg' : 'audio/mpeg';
   const upload = await dependencies.upload({ data: audioBuffer, mime, fileName: `${params.jobId}.${extension}`, prefix: 'renders', userId: params.userId });
-  return { audioUrl: upload.url, durationSec };
+  return { audioUrl: upload.url, durationSec, mimeType: mime };
 }

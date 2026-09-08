@@ -193,6 +193,47 @@ test('agent status rejects absolute private MaxVideoAI result paths', () => {
   }
 });
 
+test('agent status exposes a completed Audio original with measured facts and exact MIME', () => {
+  const result = mapGenerationStatusRecordToAgent(generationRecord({
+    job_id: 'audio_job_1',
+    surface: 'audio',
+    status: 'completed',
+    progress: 88,
+    video_url: null,
+    audio_url: 'https://cdn.maxvideoai.com/generated/audio_job_1.flac',
+    duration_sec: 13,
+    settings_snapshot: {
+      schemaVersion: 3,
+      surface: 'audio',
+      measuredDurationSec: 12.375,
+      mediaFacts: { source: 'probe', durationSec: 12.375 },
+      audioMimeType: 'audio/flac',
+      providerSecret: 'hidden',
+    },
+  }));
+
+  assert.deepEqual(result, {
+    jobId: 'audio_job_1',
+    surface: 'audio',
+    status: 'completed',
+    progress: 100,
+    message: null,
+    priceCents: 42,
+    currency: 'USD',
+    paymentStatus: 'paid_wallet',
+    result: {
+      surface: 'audio',
+      audioUrl: 'https://cdn.maxvideoai.com/generated/audio_job_1.flac',
+      videoUrl: null,
+      thumbnailUrl: null,
+      mimeType: 'audio/flac',
+      durationSec: 12.375,
+    },
+    retryAfterSeconds: null,
+  });
+  assert.doesNotMatch(JSON.stringify(result), /providerSecret|hidden/);
+});
+
 test('web status mapper honors explicit null repair overrides instead of restoring stale row media', () => {
   const payload = mapGenerationStatusRecordToWeb(
     generationRecord({

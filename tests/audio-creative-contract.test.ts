@@ -68,4 +68,5 @@ test('standalone persistence uploads the exact original bytes and records probe 
   assert.equal(uploaded, bytes);
   assert.equal(result.durationSec, 37.4);
   assert.equal(result.audioUrl, 'https://fixture.example/stored.mp3');
+  assert.equal(result.mimeType, 'audio/mpeg');
 });

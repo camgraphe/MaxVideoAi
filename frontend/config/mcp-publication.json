@@ -7,5 +7,6 @@
   "paidGeneration": true,
   "trial": false,
   "referenceUploads": true,
-  "montagePreparation": false
+  "montagePreparation": false,
+  "audioGeneration": false
 }

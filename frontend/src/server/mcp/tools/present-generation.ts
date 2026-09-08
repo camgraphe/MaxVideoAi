@@ -27,9 +27,11 @@ type GenerationDownloadServices = Pick<MaxVideoAiMcpServices, 'createGenerationD
 
 function primaryOutputUrl(recovery: AgentGenerationRecovery): string | null {
   if (recovery.status !== 'completed' || !recovery.result) return null;
-  return recovery.result.surface === 'video'
-    ? recovery.result.videoUrl
-    : recovery.result.imageUrls[0] ?? null;
+  if (recovery.result.surface === 'video') return recovery.result.videoUrl;
+  if (recovery.result.surface === 'audio') {
+    return recovery.result.audioUrl ?? recovery.result.videoUrl;
+  }
+  return recovery.result.imageUrls[0] ?? null;
 }
 
 function generationDownloadFilename(recovery: AgentGenerationRecovery, mediaUrl: string): string {
@@ -38,7 +40,7 @@ function generationDownloadFilename(recovery: AgentGenerationRecovery, mediaUrl:
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '')
     .slice(0, 96) || 'generation';
-  let extension = recovery.surface === 'video' ? 'mp4' : 'jpg';
+  let extension = recovery.surface === 'video' ? 'mp4' : recovery.surface === 'audio' ? 'm4a' : 'jpg';
   try {
     const match = new URL(mediaUrl).pathname.match(/\.([a-z0-9]{2,5})$/i);
     if (match?.[1]) extension = match[1].toLowerCase();

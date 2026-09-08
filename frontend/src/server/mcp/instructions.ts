@@ -2,6 +2,7 @@ export type MaxVideoAiMcpInstructionCapabilities = {
   paidGeneration: boolean;
   referenceUploads: boolean;
   montagePreparation?: boolean;
+  audioGeneration?: boolean;
 };
 
 export function buildMaxVideoAiMcpInstructions(
@@ -58,6 +59,15 @@ export function buildMaxVideoAiMcpInstructions(
     );
   }
 
+  if (capabilities.audioGeneration) {
+    instructions.push(
+      'For Audio work, call list_audio_capabilities first and use only a currently available mode and its exact settings and owned reference roles.',
+      'Use prepare_audio_generation to validate the complete Audio request and display its exact cents, currency, expiry, balance, and top-up state. Wait for explicit approval of that exact quote before confirm_audio_generation.',
+      'Audio confirmation authorizes one paid attempt. A failed or refunded attempt cannot be replayed into a new generation: prepare a fresh quote and obtain new explicit approval. Never automatically retry an Audio provider failure.',
+      'Recover Audio jobs through get_generation_status or list_recent_generations with surface audio. Present completed original Audio with present_generation; use get_generation_download only from the result app.',
+    );
+  }
+
   if (capabilities.paidGeneration) {
     instructions.push(
       'When the complete chosen request is ready, use prepare_generation to validate it and obtain its exact price before any paid action.',
@@ -86,4 +96,5 @@ export const MAXVIDEOAI_MCP_INSTRUCTIONS = buildMaxVideoAiMcpInstructions({
   paidGeneration: false,
   referenceUploads: false,
   montagePreparation: false,
+  audioGeneration: false,
 });

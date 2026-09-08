@@ -154,12 +154,28 @@ test('agent surface SQL matches JavaScript trim semantics on real PostgreSQL JSO
         [fixtures.length - index, fixture.jobId, index, fixture.renderIds === null ? null : JSON.stringify(fixture.renderIds)]
       );
     }
+    await client.query(
+      `INSERT INTO app_jobs (
+        id, job_id, user_id, updated_at, surface, billing_product_key, settings_snapshot,
+        engine_id, engine_label, duration_sec, prompt, audio_url, created_at,
+        final_price_cents, currency, payment_status, render_ids, status,
+        progress, visibility, indexable, hidden
+      ) VALUES (
+        100, 'audio-original', 'user_1', NOW(), 'audio', 'audio:sfx_only',
+        '{"surface":"audio","audioMimeType":"audio/flac","measuredDurationSec":12.375}'::jsonb,
+        'audio-sfx-only', 'Sound effect', 13, 'A wooden door closes',
+        'https://cdn.maxvideoai.com/original.flac', NOW() + INTERVAL '1 second',
+        45, 'USD', 'paid_wallet', NULL, 'completed',
+        100, 'private', false, false
+      )`,
+    );
 
     const queryFn = async (sql: string, params?: ReadonlyArray<unknown>) =>
       (await client.query(sql, params ? [...params] : [])).rows as RecentGenerationRecord[];
-    const [images, videos] = await Promise.all([
+    const [images, videos, audio] = await Promise.all([
       listRecentGenerations({ userId: 'user_1', surface: 'image', limit: 50, queryFn }),
       listRecentGenerations({ userId: 'user_1', surface: 'video', limit: 50, queryFn }),
+      listRecentGenerations({ userId: 'user_1', surface: 'audio', limit: 50, queryFn }),
     ]);
     const expectedImages = fixtures.filter((fixture) => fixture.expected === 'image').map((fixture) => fixture.jobId).sort();
     const expectedVideos = fixtures.filter((fixture) => fixture.expected === 'video').map((fixture) => fixture.jobId).sort();
@@ -168,6 +184,15 @@ test('agent surface SQL matches JavaScript trim semantics on real PostgreSQL JSO
     assert.ok(images.items.every((item) => item.surface === 'image'));
     assert.deepEqual(videos.items.map((item) => item.jobId).sort(), expectedVideos);
     assert.ok(videos.items.every((item) => item.surface === 'video'));
+    assert.deepEqual(audio.items.map((item) => item.jobId), ['audio-original']);
+    assert.deepEqual(audio.items[0]?.result, {
+      surface: 'audio',
+      audioUrl: 'https://cdn.maxvideoai.com/original.flac',
+      videoUrl: null,
+      thumbnailUrl: null,
+      mimeType: 'audio/flac',
+      durationSec: 12.375,
+    });
   } finally {
     await client.end().catch(() => undefined);
     await stopPostgres(server);

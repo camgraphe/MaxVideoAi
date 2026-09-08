@@ -310,6 +310,36 @@ test('completed video recovery exposes bounded stable links while non-terminal j
   assert.deepEqual(buildGenerationResourceLinks(buildAgentGenerationRecovery(status())), []);
 });
 
+test('completed Audio recovery targets the Audio workspace and exposes the exact original resource', () => {
+  const recovery = buildAgentGenerationRecovery({
+    jobId: 'audio-job-1',
+    surface: 'audio',
+    status: 'completed',
+    progress: 100,
+    message: null,
+    priceCents: 45,
+    currency: 'USD',
+    paymentStatus: 'paid_wallet',
+    result: {
+      surface: 'audio',
+      audioUrl: 'https://cdn.maxvideoai.com/generated/audio-job-1.wav',
+      videoUrl: null,
+      thumbnailUrl: null,
+      mimeType: 'audio/wav',
+      durationSec: 7.125,
+    },
+    retryAfterSeconds: null,
+  });
+
+  assert.equal(recovery.workspace.url, 'https://maxvideoai.com/app/audio?job=audio-job-1');
+  assert.deepEqual(buildGenerationResourceLinks(recovery), [{
+    uri: 'https://cdn.maxvideoai.com/generated/audio-job-1.wav',
+    name: 'MaxVideoAI output',
+    description: 'output for generation audio-job-1',
+    mimeType: 'audio/wav',
+  }]);
+});
+
 test('failed recovery gives Claude and Codex a stable actionable code without provider details', async (t) => {
   const recovery = buildAgentGenerationRecovery(status({
     status: 'failed',

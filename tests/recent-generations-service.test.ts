@@ -97,6 +97,31 @@ test('recent agent reads retain failed jobs instead of applying the web feed exp
   assert.match(querySql, /LOWER\(COALESCE\(j\.status, ''\)\)/);
 });
 
+test('recent agent Audio filter uses the exact surface and returns Audio only', async () => {
+  let querySql = '';
+  const result = await listRecentGenerations({
+    userId: 'user_1',
+    surface: 'audio',
+    queryFn: async (sql) => {
+      querySql = sql;
+      return [recentRecord({
+        job_id: 'audio_job_1',
+        surface: 'audio',
+        settings_snapshot: { surface: 'audio', measuredDurationSec: 8.25, audioMimeType: 'audio/mp4' },
+        status: 'completed',
+        progress: 100,
+        video_url: null,
+        audio_url: 'https://cdn.maxvideoai.com/generated/audio_job_1.m4a',
+      })];
+    },
+  });
+
+  assert.match(querySql, /= 'audio'/);
+  assert.equal(result.items.length, 1);
+  assert.equal(result.items[0]?.surface, 'audio');
+  assert.equal(result.items[0]?.result?.surface, 'audio');
+});
+
 test('recent failed filter includes provider polling stalled as a terminal state', async () => {
   let statusValues: unknown;
   const result = await listRecentGenerations({

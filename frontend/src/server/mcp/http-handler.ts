@@ -18,7 +18,10 @@ import {
   createMaxVideoAiMcpServer,
 } from '@/server/mcp/server';
 import { isMcpFoundationFeatureEnabled } from '@/server/mcp/feature-access';
-import { resolveMcpRuntimeCapabilities } from '@/server/mcp/operational-access';
+import {
+  resolveMcpRuntimeCapabilities,
+  type McpRuntimeCapabilities,
+} from '@/server/mcp/operational-access';
 import { withMcpNoindexHeaders } from '@/server/mcp/response-headers';
 import type { TrialRiskRequestContext } from '@/server/agent-api/prepare-generation';
 
@@ -33,6 +36,7 @@ export type McpHttpHandlerDeps = {
   recordEvent?(event: McpAuditEvent): Promise<boolean>;
   recordConnection?(principal: AgentPrincipal): Promise<McpConnectionBindingResult>;
   accountStatusDeps?: AgentAccountStatusWalletDeps;
+  runtimeCapabilities?: McpRuntimeCapabilities;
 };
 
 function jsonRpcError(status: number, code: number, message: string, headers?: HeadersInit): Response {
@@ -100,6 +104,9 @@ const AUDITABLE_TOOL_NAMES = new Set([
   'create_reference_upload_link',
   'import_reference_files',
   'prepare_montage',
+  'list_audio_capabilities',
+  'prepare_audio_generation',
+  'confirm_audio_generation',
 ]);
 
 function parseSseJsonRpcPayload(body: string): unknown {
@@ -247,7 +254,8 @@ export async function handleMcpHttpRequest(
   injectedDeps?: McpHttpHandlerDeps
 ): Promise<Response> {
   const requestHost = getMcpRequestHost(request.headers);
-  const capabilities = resolveMcpRuntimeCapabilities(process.env, requestHost);
+  const capabilities = injectedDeps?.runtimeCapabilities
+    ?? resolveMcpRuntimeCapabilities(process.env, requestHost);
   const enabled =
     injectedDeps?.enabled ??
     (isMcpFoundationFeatureEnabled('transport', process.env, requestHost) &&

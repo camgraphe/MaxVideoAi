@@ -11,6 +11,9 @@ import { listModelsInputSchema } from '@/server/mcp/tools/list-models';
 import { listRecentGenerationsInputSchema } from '@/server/mcp/tools/list-recent-generations';
 import { prepareGenerationInputSchema } from '@/server/mcp/tools/prepare-generation';
 import { prepareMontageInputSchema } from '@/server/mcp/tools/prepare-montage';
+import { listAudioCapabilitiesInputSchema } from '@/server/mcp/tools/list-audio-capabilities';
+import { prepareAudioGenerationInputSchema } from '@/server/mcp/tools/prepare-audio-generation';
+import { confirmAudioGenerationInputSchema } from '@/server/mcp/tools/confirm-audio-generation';
 import { recommendModelsInputSchema } from '@/server/mcp/tools/recommend-models';
 
 export const MCP_TOOL_INPUT_SCHEMAS = {
@@ -23,6 +26,9 @@ export const MCP_TOOL_INPUT_SCHEMAS = {
   create_reference_upload_link: createReferenceUploadLinkInputSchema,
   import_reference_files: importReferenceFilesInputSchema,
   prepare_montage: prepareMontageInputSchema,
+  list_audio_capabilities: listAudioCapabilitiesInputSchema,
+  prepare_audio_generation: prepareAudioGenerationInputSchema,
+  confirm_audio_generation: confirmAudioGenerationInputSchema,
   prepare_generation: prepareGenerationInputSchema,
   confirm_generation: confirmGenerationInputSchema,
   get_generation_status: getGenerationStatusInputSchema,

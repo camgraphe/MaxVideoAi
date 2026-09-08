@@ -22,11 +22,19 @@ export type AgentGenerationResult =
       surface: 'image';
       imageUrls: string[];
       thumbnailUrls: string[];
+    }
+  | {
+      surface: 'audio';
+      audioUrl: string | null;
+      videoUrl: string | null;
+      thumbnailUrl: string | null;
+      mimeType: string;
+      durationSec: number | null;
     };
 
 export type AgentGenerationStatus = {
   jobId: string;
-  surface: 'video' | 'image';
+  surface: 'video' | 'image' | 'audio';
   status: 'accepted' | 'running' | 'completed' | 'failed';
   progress: number | null;
   message: string | null;
