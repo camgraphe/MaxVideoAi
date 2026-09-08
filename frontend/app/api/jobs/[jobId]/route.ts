@@ -2,7 +2,6 @@ import { generationStage, type GenerationObservation } from '@/lib/generation-ob
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured, query } from '@/lib/db';
 import { shouldUseFalApis } from '@/lib/result-provider';
-import { ensureBillingSchema } from '@/lib/schema';
 import { resolveFalModelId } from '@/lib/fal-catalog';
 import { getFalClient } from '@/lib/fal-client';
 import { normalizeMediaUrl } from '@/lib/media';
@@ -120,13 +119,6 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
     return json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   }
 
-  try {
-    await ensureBillingSchema();
-  } catch (error) {
-    console.warn('[api/jobs] schema init failed', error);
-    return json({ ok: false, error: 'Database unavailable' }, { status: 503 });
-  }
-
   let job: GenerationStatusRecord | null;
   try {
     job = await readOwnedGenerationRecord({ userId, jobId });
@@ -157,7 +149,7 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
   });
 
   try {
-    let outputMap = await listJobOutputsByJobIds([job.job_id]);
+    let outputMap = await listJobOutputsByJobIds([job.job_id], { ensureSchema: false });
     if (!outputMap.has(job.job_id)) {
       await upsertLegacyJobOutputs({
         job_id: job.job_id,
@@ -172,7 +164,7 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
         duration_sec: job.duration_sec,
         status: job.status,
       });
-      outputMap = await listJobOutputsByJobIds([job.job_id]);
+      outputMap = await listJobOutputsByJobIds([job.job_id], { ensureSchema: false });
     }
     const enriched = applyOutputsToJobPayload(
       {

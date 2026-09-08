@@ -7,6 +7,10 @@ configuration as part of a customer request.
 ## Current read boundaries
 
 - `GET /api/jobs` reads `app_jobs` and optionally enriches from `job_outputs`.
+- `GET /api/jobs/[jobId]` reads the owned generation and existing `job_outputs`
+  projection without global billing or media schema bootstrap. Its bounded legacy
+  output repair remains a mutation owner only when the migrated projection is
+  actually missing.
 - `GET /api/wallet` authenticates, reads the user's preferred currency, and
   aggregates the account-scoped receipt ledger. Its POST mutation retains the
   historical billing bootstrap and checkout behavior.
