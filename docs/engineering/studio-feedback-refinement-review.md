@@ -42,6 +42,20 @@ ou écriture distante n'a été effectué.
   bloc → mesure React Flow. Le correctif `0d88e42ea` garde une signature métier
   stable; le chemin SVG a été observé identique sur vingt mesures successives
   dans la prévisualisation courante.
+- Connexions est maintenant un tableau de slots issu de la politique du modèle :
+  obligatoire/facultatif, utilisé/maximum, disponible/plein/désactivé et motif
+  d'indisponibilité. Une source existante ou un nouveau bloc peut être connecté
+  depuis le même panneau; la création et l'arête sont validées et commitées
+  ensemble. Le câble direct suit exactement le même validateur et affiche le
+  motif métier du refus au lieu d'échouer silencieusement.
+- Le Viewer dispose de deux panneaux rétractables indépendants et d'un mode Focus.
+  Échap restaure la combinaison exacte qui précédait Focus. Cet état reste une
+  préférence de présentation de la session et n'entre pas dans le projet. Les
+  tiroirs mobiles restent les propriétaires de Médias du projet et de l'inspecteur.
+- Le HUD du programme est ramené aux transports, marques In/Out et Snapshot;
+  Clear n'existe que lorsqu'une marque est active. La règle, le zéro, les pistes
+  de 64 px et la tête de lecture partagent désormais la même origine géométrique,
+  y compris après scroll, resize et sur les breakpoints mobiles.
 
 ## Commits à relire
 
@@ -56,6 +70,10 @@ ou écriture distante n'a été effectué.
 | `d6f0ed116` | Clavier et guide : navigation des menus sans scroll parasite ; Réglages et Actions restent accessibles sur le seul bloc sélectionné pendant un guide visible. |
 | `be1ad24e9` | Contrat partagé app : le contenu exact du menu MaxVideoAI est réutilisable, conserve le focus et laisse les clics modifiés au navigateur. |
 | `1c9f3f2e1` | Propriétaire Studio : Live par défaut, test simulation non-production caché, menu M, sortie Projets persistante et navigation app sauvegardée. |
+| `3520730f9` | Viewer : HUD compact, panneaux rétractables, Focus et restauration Échap, copies EN/FR/ES et cibles 44 px. |
+| `bbcc50fca` | Timeline : règle, zéro, pistes et tête de lecture alignés sur desktop/mobile après scroll et redimensionnement. |
+| `a2ee16ddc` | Connexions : slots issus des capacités du modèle, compteurs, motifs de refus et création-connexion atomique. |
+| `f2116248b` | Couture UI/métier : le panneau appelle réellement créer-connecter et les câbles directs refusés remontent leur motif canonique. |
 
 Le guide traite ce petit portail comme un obstacle de placement afin de préserver
 la lisibilité du canevas.
@@ -64,8 +82,8 @@ la lisibilité du canevas.
 
 La copie jetable active est servie sur
 `http://127.0.0.1:3048/app/studio/projects`, avec auth locale séparée sur 3049.
-Le projet inspecté pendant la revue est accessible à
-`http://127.0.0.1:3048/app/studio/workspace/project_9cbff557-783e-4541-b701-72a2d623291e`.
+Le projet inspecté pendant la dernière revue est accessible à
+`http://127.0.0.1:3048/app/studio/workspace/project_004fb2e9-cbcd-4ce1-9fe0-ad15958b82c2`.
 La copie se trouve dans `/private/tmp/studio-review-3048.u4fsoh` et ne reçoit
 aucun fichier d'environnement. DB, paiement, stockage et génération sont absents.
 Les projets de cette prévisualisation sont donc des brouillons navigateur; les
@@ -73,7 +91,7 @@ preuves PostgreSQL/Auth privées restent celles du manifeste principal.
 
 ## Qualification
 
-- 518/518 contrats Studio/éditeur réussis sous Node 22.23.2. Les contrats de
+- 529/529 contrats Studio/éditeur réussis sous Node 22.23.2. Les contrats de
   persistance démarrent PostgreSQL 17 en socket local jetable, vérifient sa
   version et son dossier de données, puis le détruisent.
 - TypeScript, lint frontend, contrôle d'exposition, audit d'architecture et
@@ -91,6 +109,11 @@ preuves PostgreSQL/Auth privées restent celles du manifeste principal.
 - Le complément topbar et préférences a réussi 17/17 contrôles Playwright :
   navigation sauvegardée, absence de Mock, focus du menu, desktop, mobile
   320/390 px, paysage court et clair/sombre.
+- La passe de feedback a été rejouée dans le navigateur sur la copie jetable :
+  panneau Connexions et création-connexion, capacités recalculées, panneaux
+  Viewer indépendants, Focus + Échap, HUD, règle et tête de lecture, desktop
+  1440×1000, mobile 390×844 et thème sombre. Trois chemins SVG ont été comparés
+  avant/après une attente de 900 ms et sont restés strictement identiques.
 - Build Next 15 de production réussi sous Node 22 : registre et projections
   modèles cohérents, contrôles médias réussis, compilation et génération de
   871/871 pages.

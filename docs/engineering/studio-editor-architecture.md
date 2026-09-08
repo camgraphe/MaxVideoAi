@@ -158,6 +158,12 @@ slots. Semantic React Flow edge kinds remain stable for saved projects, while re
 the exact engine field ID used in the API attachment. Known media provenance (asset ID, MIME, bytes,
 dimensions, and duration) travels with that assignment so schema constraints can fail before billing.
 
+Connection UI projects `inputConnectors` from that resolved policy in policy order,
+including field identity, required state, current count, maximum count, and disabled
+reason. Picker actions, direct cable drag, and create-and-connect all call the same
+graph admission rule. Create-and-connect commits the node and edge as one operation,
+so a rejected or stale slot never leaves an orphan block.
+
 Persisted shot settings are normalized against current certified capability values during hydration.
 The exact input schema wins over broad catalog summary values. Unsupported stored values move to the
 engine default, unrelated node state is preserved, and the editor emits one localized compatibility
@@ -269,6 +275,9 @@ Timeline UI should call named operations. It should not encode new editing rules
 - Invalid or ambiguous drops revert to the previous committed item positions.
 - Trim cannot extend beyond the source media duration.
 - Viewer preview must follow the same active sequence and playhead as the timeline.
+- Ruler ticks, track lanes, scrubber, and playhead use the same track-label width
+  and lane inset. The zero tick stays inside that origin and the playhead line
+  must join the ruler and every compact track without a visual gap.
 
 ## Add Viewer Behavior
 
@@ -277,6 +286,10 @@ Timeline UI should call named operations. It should not encode new editing rules
 3. Keep playback driven by the shared timeline playhead.
 4. Keep viewer controls focused on playback, in/out, snapshot, and monitor zoom.
 5. Add E2E coverage for frame stepping, cuts, trim preview, and audio sync when behavior changes.
+6. Desktop Project media and clip inspector visibility is transient presentation
+   state. Focus may collapse both, but Escape must restore the exact prior pair.
+   Do not serialize this state into project or sequence persistence, and keep the
+   existing mobile drawer path available.
 
 ## Add Project Media Behavior
 
