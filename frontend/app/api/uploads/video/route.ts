@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { canonicalMediaAssetFields } from '@/lib/media-identity';
 
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { MediaUploadError, storeVideoUpload } from '@/server/uploads/store-media-upload';
@@ -81,6 +82,10 @@ export async function POST(req: NextRequest) {
       ok: true,
       asset: {
         id: stored.legacyAssetId,
+        legacyAssetId: stored.legacyAssetId,
+        ...canonicalMediaAssetFields(stored.assetId, 'video'),
+        durationSec: stored.durationSec,
+        mediaFacts: stored.mediaFacts,
         url: stored.storageUrl,
         width: stored.width,
         height: stored.height,

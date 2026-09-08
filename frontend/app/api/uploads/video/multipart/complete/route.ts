@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { canonicalMediaAssetFields } from '@/lib/media-identity';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { ensureReusableAsset } from '@/server/media-library';
 import {
@@ -139,7 +140,7 @@ export async function POST(req: NextRequest) {
       metadata: { originalName: fileName, kind: 'video', chunkedUpload: true },
     });
 
-    await ensureReusableAsset({
+    const canonicalAsset = await ensureReusableAsset({
       userId,
       url: uploadResult.url,
       kind: 'video',
@@ -156,6 +157,8 @@ export async function POST(req: NextRequest) {
       ok: true,
       asset: {
         id: assetId,
+        legacyAssetId: assetId,
+        ...canonicalMediaAssetFields(canonicalAsset?.publicId, 'video'),
         url: uploadResult.url,
         width: null,
         height: null,

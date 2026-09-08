@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { readMediaFacts } from '@/lib/media-identity';
 import { extractStoryboardGeneratorDraftFromPrompt } from '@/lib/storyboard-generator-handoff';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import {
@@ -84,6 +85,8 @@ export async function GET(req: NextRequest) {
     ok: true,
     outputs: page.items.map((output) => ({
       id: output.id,
+      ref: { type: 'job-output', jobId: output.jobId, outputId: output.id, kind: output.kind },
+      mediaFacts: readMediaFacts(output.metadata.mediaFacts),
       jobId: output.jobId,
       url: output.url,
       thumbUrl: output.thumbUrl,

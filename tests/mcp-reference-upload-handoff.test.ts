@@ -419,6 +419,7 @@ test('shared video and audio storage owners verify metadata and return the canon
     });
 
     assert.deepEqual(stored, {
+      mediaFacts: { source: 'probe', durationSec: 4.25 },
       assetId: `ma_${(candidate.kind === 'video' ? 'a' : 'b').repeat(32)}`,
       legacyAssetId: `legacy-${candidate.kind}-1`,
       width: null,
