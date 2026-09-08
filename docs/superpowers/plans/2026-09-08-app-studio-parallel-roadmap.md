@@ -1,5 +1,13 @@
 # Suite app et Studio en parallèle — 8 septembre 2026
 
+## Organisation actuelle : deux tâches
+
+À la demande de l’utilisateur, les tâches Audio, Toolbox, Billing et Activity ont été arrêtées à un checkpoint propre puis archivées le 8 septembre. Leurs branches, commits, rapports et travaux incomplets sont conservés. Leur archivage ne vaut ni intégration ni validation des incréments restants.
+
+La tâche principale reprend leurs suites, les corrections du créateur, la cohérence visuelle et la qualification combinée. Studio reste l’unique tâche parallèle pour le canevas, les médias du projet et la première tranche de timeline MCP vidéo. Toute coordination Audio/Toolbox/Billing passe désormais par la tâche principale. Aucune nouvelle tâche annexe n’est relancée pour ces suites.
+
+La [passation de consolidation](2026-09-08-app-consolidation-handoff.md) contient les HEAD vérifiés, les commits à reprendre, les réserves de revue et l’ordre de reprise. Les sections ci-dessous conservent l’historique des mandats et ne décrivent plus des tâches toutes actives.
+
 ## Point de départ
 
 L'app est qualifiée à `0eb139aa5` sur `codex/app-catalogue-validation` (source `45c45a812`, 4469 tests, build861pages). Le premier chargement d'Activité reste mesuré à17–18s; aucune amélioration de latence n'est revendiquée.
