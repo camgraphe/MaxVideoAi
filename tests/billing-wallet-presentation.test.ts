@@ -118,10 +118,11 @@ test('payment history renders ledger movements with expandable document details'
 });
 
 test('billing local styles preserve touch targets and reduced-motion behavior', () => {
-  const styles = readFileSync(
-    'frontend/app/(core)/billing/_components/billing-page.module.css',
-    'utf8',
-  );
+  const styles = [
+    'frontend/app/(core)/billing/_components/billing-layout.module.css',
+    'frontend/app/(core)/billing/_components/billing-topup.module.css',
+    'frontend/app/(core)/billing/_components/billing-receipts.module.css',
+  ].map((path) => readFileSync(path, 'utf8')).join('\n');
 
   assert.match(styles, /min-height:\s*44px/);
   assert.match(styles, /prefers-reduced-motion:\s*reduce/);

@@ -3,7 +3,7 @@ import { ButtonLink } from '@/components/ui/Button';
 import type { WalletCheckoutReturnTarget } from '@/lib/wallet/checkout-return';
 import type { BillingCheckoutReconciliationStatus } from '../_hooks/useBillingCheckoutReconciliation';
 import type { BillingCopy } from '../_lib/billing-copy';
-import styles from './billing-page.module.css';
+import styles from './billing-layout.module.css';
 
 export function BillingCheckoutReturnNotice({
   copy,

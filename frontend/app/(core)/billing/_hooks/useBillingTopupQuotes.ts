@@ -28,7 +28,8 @@ export function useBillingTopupQuotes({
   useEffect(() => {
     if (authLoading) return;
     const accountId = session?.user?.id ?? 'anonymous';
-    const requestToken = requestScopeRef.current.begin(accountId);
+    const requestScope = requestScopeRef.current;
+    const requestToken = requestScope.begin(accountId);
 
     async function loadQuotes() {
       setTopupQuotes({});
@@ -53,7 +54,7 @@ export function useBillingTopupQuotes({
         if (!response.ok || !data?.ok) {
           throw new Error(data?.error ?? 'quote_failed');
         }
-        if (!requestScopeRef.current.isCurrent(requestToken)) return;
+        if (!requestScope.isCurrent(requestToken)) return;
         const mapped: Record<number, TopupQuote> = {};
         (data.quotes ?? []).forEach((entry: Record<string, unknown>) => {
           const usdAmount = Number(entry?.usdAmountCents);
@@ -65,13 +66,13 @@ export function useBillingTopupQuotes({
         });
         setTopupQuotes(mapped);
       } catch (error) {
-        if (requestScopeRef.current.isCurrent(requestToken)) {
+        if (requestScope.isCurrent(requestToken)) {
           console.warn('[billing] topup quote fetch failed', error);
           setTopupQuotes({});
           setQuoteError(quoteErrorMessage);
         }
       } finally {
-        if (requestScopeRef.current.isCurrent(requestToken)) {
+        if (requestScope.isCurrent(requestToken)) {
           setQuoteLoading(false);
         }
       }
@@ -79,7 +80,7 @@ export function useBillingTopupQuotes({
 
     loadQuotes();
     return () => {
-      requestScopeRef.current.invalidate();
+      requestScope.invalidate();
     };
   }, [authLoading, customAmountCents, customAmountValid, normalizedChargeCurrency, quoteErrorMessage, session]);
 

@@ -4,7 +4,7 @@ import { RefreshCw, WalletCards } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import type { BillingWalletStatus } from '../_hooks/useBillingSessionState';
 import type { BillingCopy } from '../_lib/billing-copy';
-import styles from './billing-page.module.css';
+import styles from './billing-layout.module.css';
 
 type BillingWalletOverviewProps = {
   copy: BillingCopy;

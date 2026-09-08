@@ -45,8 +45,8 @@ export function useBillingCheckoutReturnToast({
     const parsedCurrency = String(currencyParam ?? 'USD').toUpperCase();
     if (!status) return undefined;
     const returnStatus = status === 'success' ? 'success' : status === 'cancelled' ? 'cancelled' : null;
-    const message = returnStatus === 'success' ? successMessage : returnStatus === 'cancelled' ? cancelledMessage : null;
-    if (!message) return undefined;
+    if (!returnStatus) return undefined;
+    const message = returnStatus === 'success' ? successMessage : cancelledMessage;
 
     onStatus(returnStatus);
     onToast(message);

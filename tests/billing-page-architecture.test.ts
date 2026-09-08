@@ -26,6 +26,11 @@ const utilsPath = 'frontend/app/(core)/billing/_lib/billing-utils.ts';
 const accessibleModalHookPath = 'frontend/components/ui/useAccessibleModal.ts';
 const hostedCheckoutHookPath = 'frontend/hooks/useHostedWalletCheckout.ts';
 const checkoutReturnNoticePath = 'frontend/app/(core)/billing/_components/BillingCheckoutReturnNotice.tsx';
+const stylePaths = [
+  'frontend/app/(core)/billing/_components/billing-layout.module.css',
+  'frontend/app/(core)/billing/_components/billing-topup.module.css',
+  'frontend/app/(core)/billing/_components/billing-receipts.module.css',
+];
 
 test('billing page delegates client billing behavior to route-local modules', () => {
   for (const file of [
@@ -52,6 +57,7 @@ test('billing page delegates client billing behavior to route-local modules', ()
     accessibleModalHookPath,
     hostedCheckoutHookPath,
     checkoutReturnNoticePath,
+    ...stylePaths,
   ]) {
     assert.equal(existsSync(file), true, `${file} should exist`);
   }
@@ -63,6 +69,13 @@ test('billing page delegates client billing behavior to route-local modules', ()
   assert.doesNotMatch(pageSource, /'use client'/);
   assert.match(pageSource, /import \{ BillingClient \} from '\.\/_components\/BillingClient';/);
   assert.match(pageSource, /export const dynamic = 'force-dynamic';/);
+});
+
+test('billing styles stay split by page responsibility', () => {
+  for (const file of stylePaths) {
+    const lineCount = readFileSync(file, 'utf8').split('\n').length;
+    assert.ok(lineCount < 500, `expected ${file} to stay under 500 lines, got ${lineCount}`);
+  }
 });
 
 test('billing client keeps orchestration separate from copy, checkout widgets, and receipts UI', () => {

@@ -11,7 +11,7 @@ import { WalletCheckoutSummary } from './WalletCheckoutSummary';
 import { WalletExpressCheckout } from './WalletExpressCheckout';
 import type { BillingCopy } from '../_lib/billing-copy';
 import type { BillingSession } from '../_lib/billing-types';
-import styles from './billing-page.module.css';
+import styles from './billing-topup.module.css';
 
 type WalletTopupPanelProps = {
   applyCustomAmount: () => void;

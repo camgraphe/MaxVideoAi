@@ -5,7 +5,7 @@ import { USD_TOPUP_TIERS } from '@/config/topupTiers';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import type { BillingCopy } from '../_lib/billing-copy';
-import styles from './billing-page.module.css';
+import styles from './billing-topup.module.css';
 
 type WalletAmountPickerProps = {
   applyCustomAmount: () => void;

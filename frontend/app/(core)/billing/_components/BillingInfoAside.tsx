@@ -1,6 +1,6 @@
 import { CheckCircle2 } from 'lucide-react';
 import type { BillingCopy } from '../_lib/billing-copy';
-import styles from './billing-page.module.css';
+import styles from './billing-layout.module.css';
 
 type BillingInfoAsideProps = {
   copy: BillingCopy;

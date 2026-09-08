@@ -3,7 +3,7 @@
 import { ArrowRight, LockKeyhole } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import type { BillingCopy } from '../_lib/billing-copy';
-import styles from './billing-page.module.css';
+import styles from './billing-topup.module.css';
 
 type WalletCheckoutSummaryProps = {
   copy: BillingCopy;

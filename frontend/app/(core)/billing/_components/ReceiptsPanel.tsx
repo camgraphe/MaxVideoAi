@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/Button';
 import type { BillingCopy } from '../_lib/billing-copy';
 import type { ReceiptItem, ReceiptsState } from '../_lib/billing-types';
 import { formatReceiptSurfaceLabel } from '../_lib/billing-utils';
-import styles from './billing-page.module.css';
+import styles from './billing-receipts.module.css';
 
 type ReceiptsPanelProps = {
   copy: BillingCopy;
