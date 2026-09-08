@@ -197,6 +197,20 @@ test('connected Studio persists ordered MCP and UI montages with private playbac
       await expect.poll(() => stale!.page.evaluate(() => Object.keys(localStorage).some((key) => (
         localStorage.getItem(key) ?? ''
       ).includes('Unsaved stale tab edit')))).toBe(true);
+      const writesBeforeConflictReopen = stale.workspaceWrites.length;
+      await stale.page.reload({ waitUntil: 'domcontentloaded' });
+      await expect(stale.page.locator('[data-timeline-item]')).toHaveCount(2);
+      await stale.page.locator('[data-timeline-item="montage-clip-01"]').click();
+      await expect(stale.page.getByLabel('Clip name', { exact: true })).toHaveValue('Unsaved stale tab edit');
+      await expect(conflictAlert).toBeVisible();
+      await stale.page.waitForTimeout(1_200);
+      assert.equal(stale.workspaceWrites.length, writesBeforeConflictReopen, 'Recovering a stale local draft must not silently rebase it onto the latest server revision.');
+      const conflictedUrl = stale.page.url();
+      await stale.page.getByRole('button', { name: 'Projects', exact: true }).click();
+      await stale.page.waitForTimeout(1_200);
+      assert.equal(stale.page.url(), conflictedUrl, 'Exit must stay in the editor when the real save result is conflict.');
+      await expect(stale.page.getByLabel('Clip name', { exact: true })).toHaveValue('Unsaved stale tab edit');
+      await expect(stale.page.getByText('Workspace saved. Returning to projects.', { exact: true })).toHaveCount(0);
       stale.page.once('dialog', (dialog) => { void dialog.accept(); });
       await stale.page.getByRole('button', { name: 'Reload server version', exact: true }).click();
       await expect(conflictAlert).toHaveCount(0);
@@ -291,6 +305,49 @@ test('connected Studio persists ordered MCP and UI montages with private playbac
           throw error;
         } finally { await switched.close(); }
       }
+    });
+
+    await t.test('failed autosave stays local across reopen and exit waits for a real successful retry', async () => {
+      const offline = await openFresh();
+      const endpoint = `${runtime.browserOrigin}/api/studio/projects/${montage.projectId}/workspace`;
+      let failWrites = true;
+      try {
+        await offline.page.route(endpoint, (route) => route.request().method() === 'PUT' && failWrites
+          ? route.fulfill({ status: 503, json: { ok: false, error: 'CONTROLLED_LOCAL_SAVE_UNAVAILABLE' } })
+          : route.continue());
+        const failedSave = offline.page.waitForResponse((response) => response.url() === endpoint && response.request().method() === 'PUT' && response.status() === 503);
+        void failedSave.catch(() => undefined);
+        await offline.page.locator('[data-timeline-item="montage-clip-01"]').click();
+        await offline.page.getByLabel('Clip name', { exact: true }).fill('Recovered offline browser draft');
+        await failedSave;
+        await expect(offline.page.getByText('Studio sync is temporarily unavailable. Local draft mode is active.', { exact: true })).toBeVisible();
+        const beforeRecovery = await runtime.database.pool.query('SELECT timeline_state FROM studio_sequences WHERE id=$1', [montage.sequenceId]);
+        assert.equal(beforeRecovery.rows[0].timeline_state.timelineItems[0].title, 'A real browser edit');
+        await offline.page.reload({ waitUntil: 'domcontentloaded' });
+        await expect(offline.page.locator('[data-timeline-item]')).toHaveCount(2);
+        await offline.page.locator('[data-timeline-item="montage-clip-01"]').click();
+        await expect(offline.page.getByLabel('Clip name', { exact: true })).toHaveValue('Recovered offline browser draft');
+        const failedExit = offline.page.waitForResponse((response) => response.url() === endpoint && response.request().method() === 'PUT' && response.status() === 503);
+        void failedExit.catch(() => undefined);
+        await offline.page.getByRole('button', { name: 'Projects', exact: true }).click();
+        await failedExit;
+        await offline.page.waitForTimeout(1_200);
+        assert.equal(offline.page.url(), `${runtime.browserOrigin}${montage.studioUrl}`);
+        await expect(offline.page.getByLabel('Clip name', { exact: true })).toHaveValue('Recovered offline browser draft');
+        await expect(offline.page.getByText('Workspace saved. Returning to projects.', { exact: true })).toHaveCount(0);
+        failWrites = false;
+        const successfulExit = offline.page.waitForResponse((response) => response.url() === endpoint && response.request().method() === 'PUT' && response.status() === 200);
+        void successfulExit.catch(() => undefined);
+        await offline.page.getByRole('button', { name: 'Projects', exact: true }).click();
+        await successfulExit;
+        await expect(offline.page).toHaveURL(`${runtime.browserOrigin}/app/studio/projects`);
+        const recovered = await runtime.database.pool.query('SELECT timeline_state FROM studio_sequences WHERE id=$1', [montage.sequenceId]);
+        assert.equal(recovered.rows[0].timeline_state.timelineItems[0].title, 'Recovered offline browser draft');
+        assert.deepEqual(offline.errors, []);
+      } catch (error) {
+        await offline.page.screenshot({ path: 'output/playwright/studio-connected/local-recovery-failure.png', fullPage: true }).catch(() => undefined);
+        throw error;
+      } finally { await offline.close(); }
     });
 
     await t.test('a fresh context renews a retained private clip after its bin entry was removed', async () => {
