@@ -7,10 +7,10 @@
 ## Lot 1 — Release baseline and regressions
 
 - [x] Confirm isolated branch, clean worktree, architecture audit, and existing focused commits.
-- [ ] Re-run the complete test suite with the repository-supported Node 22 runtime.
-- [ ] Fix remaining reproducible application failures: legacy marketing assets, Studio auth contracts, Angle atomic wallet behavior, and broken UI contracts.
-- [ ] Run lint, exposure lint, TypeScript, `git diff --check`, and a production build.
-- [ ] Smoke-test authenticated routes on desktop, tablet, and mobile.
+- [x] Re-run the complete test suite with the repository-supported Node 22 runtime.
+- [x] Fix remaining reproducible application failures: legacy marketing assets, Studio auth contracts, Angle atomic wallet behavior, and broken UI contracts.
+- [x] Run lint, exposure lint, TypeScript, `git diff --check`, and a production build.
+- [x] Smoke-test authenticated routes on desktop, tablet, and mobile.
 
 ## Lot 2 — Video and Image creation consistency
 
@@ -55,7 +55,7 @@
 
 ## Final review
 
-- [ ] Integrate each lot with a focused commit and rerun affected contracts after every merge.
-- [ ] Run the complete test suite, lint, TypeScript, exposure checks, production build, and `git diff --check`.
-- [ ] Review `/app`, `/app/image`, `/app/audio`, `/app/library`, `/jobs`, `/app/tools`, `/settings`, `/billing`, and admin Studio in the in-app browser.
-- [ ] Leave the authenticated local application open for manual user review and document any environment-only limitation precisely.
+- [x] Integrate each lot with a focused commit and rerun affected contracts after every merge.
+- [x] Run the complete test suite, lint, TypeScript, exposure checks, production build, and `git diff --check`.
+- [x] Review `/app`, `/app/image`, `/app/audio`, `/app/library`, `/jobs`, `/app/tools`, `/settings`, `/billing`, and admin Studio in the in-app browser.
+- [x] Leave the authenticated local application open for manual user review and document any environment-only limitation precisely.
