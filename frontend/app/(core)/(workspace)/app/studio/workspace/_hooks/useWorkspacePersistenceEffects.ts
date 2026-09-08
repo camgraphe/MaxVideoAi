@@ -402,15 +402,14 @@ export function useWorkspacePersistenceEffects({
               scope,
               initialRevision: serverProject.revision!,
               save: async ({ expectedRevision, snapshot }) => {
-                const result = await saveStudioWorkspaceToApi({
+                return saveStudioWorkspaceToApi({
                   projectId,
                   ...snapshot,
                   expectedRevision,
                 });
-                if (result.status === 'ready') {
-                  baselineRef.current = studioWorkspaceSnapshotFingerprint(snapshot.workspaceState);
-                }
-                return result;
+              },
+              onSaved: (snapshot) => {
+                baselineRef.current = studioWorkspaceSnapshotFingerprint(snapshot.workspaceState);
               },
               onConflict: (draft) => {
                 if (cancelled || typeof window === 'undefined') return;

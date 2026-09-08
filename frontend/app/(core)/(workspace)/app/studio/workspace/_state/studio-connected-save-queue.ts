@@ -7,6 +7,7 @@ export function createStudioConnectedSaveQueue<TSnapshot>(options: {
   initialRevision: number;
   save(request: { scope: string; expectedRevision: number; snapshot: TSnapshot }): Promise<SaveResult>;
   onRevision?: (revision: number) => void;
+  onSaved?: (snapshot: TSnapshot, revision: number) => void;
   onConflict?: (draft: TSnapshot) => void;
 }) {
   let revision = options.initialRevision;
@@ -36,6 +37,7 @@ export function createStudioConnectedSaveQueue<TSnapshot>(options: {
     if (result.status === 'ready' && Number.isSafeInteger(result.revision) && (result.revision ?? -1) > revision) {
       revision = result.revision!;
       options.onRevision?.(revision);
+      options.onSaved?.(snapshot, revision);
       if (pending !== null) void drain();
       else settle('ready');
       return;

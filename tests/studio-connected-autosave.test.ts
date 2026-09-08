@@ -29,15 +29,18 @@ test('connected autosave sends one request at a time, coalesces edits and chains
 test('a conflict blocks retries, preserves the latest draft and a disposed context ignores late ACKs', async () => {
   const first = Promise.withResolvers<{ status: 'ready'; revision: number }>();
   const revisions: number[] = [];
+  const savedDrafts: Array<{ value: string }> = [];
   const stale = createStudioConnectedSaveQueue<{ value: string }>({
     scope: 'owner-a:project-a', initialRevision: 0, save: () => first.promise,
     onRevision: (revision) => revisions.push(revision),
+    onSaved: (draft) => savedDrafts.push(draft),
   });
   stale.enqueue({ value: 'stale' });
   stale.dispose();
   first.resolve({ status: 'ready', revision: 1 });
   await new Promise<void>((resolve) => setImmediate(resolve));
   assert.deepEqual(revisions, []);
+  assert.deepEqual(savedDrafts, [], 'consumer side effects are suppressed with the late ACK');
 
   const conflict = createStudioConnectedSaveQueue<{ value: string }>({
     scope: 'owner-b:project-b', initialRevision: 7,
