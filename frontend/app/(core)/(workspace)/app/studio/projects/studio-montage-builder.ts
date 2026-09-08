@@ -48,11 +48,18 @@ export function retimeStudioMontageClips(
   previousFps: MontageSettings['fps'],
   nextFps: MontageSettings['fps'],
 ): StudioMontageClipDraft[] {
-  return clips.map((clip) => ({
-    ...clip,
-    sourceInFrame: Math.round((clip.sourceInFrame / previousFps) * nextFps),
-    durationFrames: Math.max(1, Math.round((clip.durationFrames / previousFps) * nextFps)),
-  }));
+  return clips.map((clip) => {
+    const measuredFrames = Math.max(1, Math.floor(clip.measuredDurationSec * nextFps));
+    const sourceInFrame = Math.min(
+      measuredFrames - 1,
+      Math.max(0, Math.round((clip.sourceInFrame / previousFps) * nextFps)),
+    );
+    const sourceOutFrame = Math.min(
+      measuredFrames,
+      Math.max(sourceInFrame + 1, Math.round(((clip.sourceInFrame + clip.durationFrames) / previousFps) * nextFps)),
+    );
+    return { ...clip, sourceInFrame, durationFrames: sourceOutFrame - sourceInFrame };
+  });
 }
 
 export function validateStudioMontageDraft(params: {

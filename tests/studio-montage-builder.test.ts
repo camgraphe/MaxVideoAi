@@ -34,6 +34,11 @@ test('clip drafts keep order and exact frame trims while fps changes preserve ed
   assert.deepEqual(retimeStudioMontageClips([second], 24, 60)[0], {
     ...second, sourceInFrame: 30, durationFrames: 60,
   });
+  assert.deepEqual(retimeStudioMontageClips([{
+    ...first, measuredDurationSec: 1, sourceInFrame: 12, durationFrames: 12,
+  }], 24, 25)[0], {
+    ...first, measuredDurationSec: 1, sourceInFrame: 13, durationFrames: 12,
+  });
   assert.deepEqual(studioMontageBusinessPayload({ title: 'Cut', settings, clips: [first, second] }).clips, [
     { assetId, sourceInFrame: 0, durationFrames: 60 },
     { assetId, sourceInFrame: 12, durationFrames: 24 },
@@ -57,6 +62,7 @@ test('the projects route hides the creator behind the exact server gate and the 
   assert.match(client, /useAccessibleModal<HTMLFormElement>/);
   assert.match(client, /closeDisabled: submitting/);
   assert.match(client, /<fieldset className=\{styles\.montageFields\} disabled=\{submitting\}>/);
+  assert.match(client, /controller\.abort\(\), STUDIO_MONTAGE_CREATE_TIMEOUT_MS/);
   assert.match(client, /data-modal-initial-focus="true"/);
   assert.match(client, /data-studio-montage-move-up=\{index\}/);
   assert.match(client, /data-studio-montage-move-down=\{index\}/);

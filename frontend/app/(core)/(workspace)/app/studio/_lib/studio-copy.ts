@@ -232,7 +232,7 @@ export type StudioCopy = {
     customCanvas: string;
     montage: {
       open: string; title: string; subtitle: string; projectTitle: string;
-      library: string; loading: string; empty: string; add: string; ineligible: string; orderedClips: string;
+      library: string; loading: string; empty: string; add: string; ineligible: string; orderedClips: string; clip: string;
       moveUp: string; moveDown: string; remove: string; sourceInFrame: string; durationFrames: string;
       fps: string; aspectRatio: string; resolution: string; audio: string; preserveAudio: string; muteAudio: string;
       total: string; cancel: string; create: string; creating: string;
@@ -543,7 +543,7 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
       title: 'New media montage',
       subtitle: 'Choose measured videos, repeat or reorder them, then set exact frame trims.',
       projectTitle: 'Project title', library: 'Eligible video library', loading: 'Loading videos…',
-      empty: 'No video is available yet.', add: 'Add clip', ineligible: 'Measured original required', orderedClips: 'Ordered clips',
+      empty: 'No video is available yet.', add: 'Add clip', ineligible: 'Measured original required', orderedClips: 'Ordered clips', clip: 'Clip',
       moveUp: 'Move up', moveDown: 'Move down', remove: 'Remove', sourceInFrame: 'Source in frame',
       durationFrames: 'Duration in frames', fps: 'Frame rate', aspectRatio: 'Aspect ratio',
       resolution: 'Resolution', audio: 'Audio', preserveAudio: 'Preserve embedded audio', muteAudio: 'Mute audio',

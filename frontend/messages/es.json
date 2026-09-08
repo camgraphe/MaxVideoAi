@@ -5230,6 +5230,7 @@
           "add": "Añadir clip",
           "ineligible": "Se requiere el original medido",
           "orderedClips": "Clips en orden",
+          "clip": "Clip",
           "moveUp": "Subir",
           "moveDown": "Bajar",
           "remove": "Eliminar",

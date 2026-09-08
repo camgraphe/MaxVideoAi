@@ -5238,6 +5238,7 @@
           "add": "Ajouter le plan",
           "ineligible": "Original mesuré requis",
           "orderedClips": "Plans dans l’ordre",
+          "clip": "Plan",
           "moveUp": "Monter",
           "moveDown": "Descendre",
           "remove": "Retirer",

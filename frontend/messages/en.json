@@ -5203,6 +5203,7 @@
           "add": "Add clip",
           "ineligible": "Measured original required",
           "orderedClips": "Ordered clips",
+          "clip": "Clip",
           "moveUp": "Move up",
           "moveDown": "Move down",
           "remove": "Remove",

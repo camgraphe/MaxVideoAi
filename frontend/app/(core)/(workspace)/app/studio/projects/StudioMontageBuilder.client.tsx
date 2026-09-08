@@ -32,6 +32,8 @@ type StudioMontageLibraryChoice = {
   eligible: NonNullable<ReturnType<typeof studioMontageLibraryAsset>> | null;
 };
 
+export const STUDIO_MONTAGE_CREATE_TIMEOUT_MS = 20_000;
+
 function attemptId(): string {
   return globalThis.crypto?.randomUUID
     ? `studio-ui-${globalThis.crypto.randomUUID()}`
@@ -95,6 +97,7 @@ function StudioMontageDialog({ copy, idempotencyKeys, onClose }: {
   const errorForValidation = (reason: typeof validationError) => reason === 'title' ? copy.errorTitle
     : reason === 'count' ? copy.errorCount : reason === 'trim' ? copy.errorTrim
       : reason === 'duration' ? copy.errorDuration : null;
+  const displayedError = errorForValidation(validationError) ?? error;
 
   const addClip = (asset: NonNullable<StudioMontageLibraryChoice['eligible']>) => {
     if (clips.length >= MONTAGE_MAX_CLIPS) return;
@@ -128,10 +131,13 @@ function StudioMontageDialog({ copy, idempotencyKeys, onClose }: {
     idempotencyKeys.set(identity, idempotencyKey);
     setSubmitting(true);
     setError(null);
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), STUDIO_MONTAGE_CREATE_TIMEOUT_MS);
     try {
       const response = await authFetch('/api/studio/montages', {
         method: 'POST', headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...business, idempotencyKey }),
+        signal: controller.signal,
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok || !payload?.ok || typeof payload.montage?.studioUrl !== 'string') throw new Error('CREATE_FAILED');
@@ -139,6 +145,8 @@ function StudioMontageDialog({ copy, idempotencyKeys, onClose }: {
     } catch {
       setError(copy.errorRequest);
       setSubmitting(false);
+    } finally {
+      window.clearTimeout(timeoutId);
     }
   };
 
@@ -162,12 +170,12 @@ function StudioMontageDialog({ copy, idempotencyKeys, onClose }: {
             <section className={styles.montageLibrary} aria-labelledby="studio-montage-library"><h3 id="studio-montage-library">{copy.library}</h3>
               {loading ? <p>{copy.loading}</p> : assets.length ? <div className={styles.montageAssetList}>{assets.map((choice) => (
                 <article key={choice.key} data-studio-montage-library-asset={choice.eligible?.assetId ?? choice.key} data-studio-montage-eligible={choice.eligible ? 'true' : 'false'}>{choice.thumbnailUrl ? <img src={choice.thumbnailUrl} alt="" /> : <span><Film size={18} /></span>}<strong>{choice.name}</strong><small>{choice.eligible ? `${choice.eligible.durationSec.toFixed(2)}s` : copy.ineligible}</small>
-                  <button type="button" onClick={() => choice.eligible && addClip(choice.eligible)} disabled={!choice.eligible || clips.length >= MONTAGE_MAX_CLIPS} data-studio-montage-add={choice.eligible?.assetId}>{choice.eligible ? copy.add : copy.ineligible}</button>
+                  <button type="button" aria-label={`${choice.eligible ? copy.add : copy.ineligible}: ${choice.name}`} onClick={() => choice.eligible && addClip(choice.eligible)} disabled={!choice.eligible || clips.length >= MONTAGE_MAX_CLIPS} data-studio-montage-add={choice.eligible?.assetId}>{choice.eligible ? copy.add : copy.ineligible}</button>
                 </article>
               ))}</div> : <p>{copy.empty}</p>}
             </section>
             <section className={styles.montageOrder} aria-labelledby="studio-montage-order"><h3 id="studio-montage-order">{copy.orderedClips}</h3>
-              <ol>{clips.map((clip, index) => <li key={clip.occurrenceId} data-studio-montage-clip={clip.occurrenceId} data-studio-montage-asset-id={clip.assetId}>
+              <ol>{clips.map((clip, index) => <li key={clip.occurrenceId} aria-label={`${copy.clip} ${index + 1} — ${clip.assetName}`} data-studio-montage-clip={clip.occurrenceId} data-studio-montage-asset-id={clip.assetId}>
                 <span className={styles.montageClipIndex}>{index + 1}</span><strong>{clip.assetName}</strong>
                 <label><span>{copy.sourceInFrame}</span><input type="number" min={0} step={1} value={clip.sourceInFrame} onChange={(event) => patchClip(clip.occurrenceId, { sourceInFrame: Number(event.target.value) })} /></label>
                 <label><span>{copy.durationFrames}</span><input type="number" min={1} step={1} value={clip.durationFrames} onChange={(event) => patchClip(clip.occurrenceId, { durationFrames: Number(event.target.value) })} /></label>
@@ -175,7 +183,7 @@ function StudioMontageDialog({ copy, idempotencyKeys, onClose }: {
               </li>)}</ol>
             </section>
             <div className={styles.montageSummary}>{copy.total.replace('{frames}', String(totalFrames)).replace('{seconds}', (totalFrames / settings.fps).toFixed(2))}</div>
-            {error ? <div className={styles.deleteWarning} role="alert" data-studio-montage-error="true">{error}</div> : null}
+            {displayedError ? <div className={styles.deleteWarning} role={error ? 'alert' : 'status'} aria-live="polite" data-studio-montage-error="true">{displayedError}</div> : null}
             <div className={styles.dialogActions}><button type="button" className={styles.dialogSecondaryButton} disabled={submitting} onClick={onClose}>{copy.cancel}</button><button type="submit" className={styles.dialogPrimaryButton} disabled={submitting || Boolean(validationError)} data-studio-montage-submit="true">{submitting ? copy.creating : copy.create}</button></div>
             </fieldset>
       </form>
