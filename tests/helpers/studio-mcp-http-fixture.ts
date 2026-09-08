@@ -2,16 +2,18 @@ import assert from 'node:assert/strict';
 import { request } from 'node:http';
 
 /** Real HTTP to the owned IPv4 child; the localhost authority matches NextURL rewrites. */
-export function postStudioMcpRequest(
+function postOwnedStudioRequest(
   runtime: { origin: string; mcpHost: string },
+  path: string,
   body: unknown,
   credentials: { token?: string; cookie?: string } = {},
 ): Promise<Response> {
-  const endpoint = new URL('/mcp', runtime.origin);
+  const endpoint = new URL(path, runtime.origin);
   assert.equal(endpoint.protocol, 'http:');
   assert.equal(endpoint.hostname, '127.0.0.1');
   assert.notEqual(endpoint.port, '3026');
   assert.equal(runtime.mcpHost, `localhost:${endpoint.port}`);
+  assert.equal(endpoint.origin, runtime.origin);
   return new Promise((resolve, reject) => {
     const outgoing = request(endpoint, { method: 'POST', headers: {
       Host: runtime.mcpHost, Accept: 'application/json, text/event-stream', 'Content-Type': 'application/json',
@@ -38,6 +40,23 @@ export function postStudioMcpRequest(
     outgoing.once('error', reject);
     outgoing.end(JSON.stringify(body));
   });
+}
+
+export function postStudioMcpRequest(
+  runtime: { origin: string; mcpHost: string },
+  body: unknown,
+  credentials: { token?: string; cookie?: string } = {},
+): Promise<Response> {
+  return postOwnedStudioRequest(runtime, '/mcp', body, credentials);
+}
+
+/** The UI command uses its real route and session cookie, never an OAuth-principal shim. */
+export function postStudioMontageUiRequest(
+  runtime: { origin: string; mcpHost: string },
+  body: unknown,
+  credentials: { token?: string; cookie?: string } = {},
+): Promise<Response> {
+  return postOwnedStudioRequest(runtime, '/api/studio/montages', body, credentials);
 }
 
 export async function readStudioMcpResponse(response: Response) {

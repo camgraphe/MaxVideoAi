@@ -48,5 +48,23 @@ Malgré son titre fonctionnel, ce commit ne fait que supprimer deux lignes blanc
 
 Tous les writers utilisent désormais `git commit --only -- <chemins explicites>`, avec contrôle d’index avant/après. Les sources app et ancien éditeur restent en lecture seule.
 
-La chaîne minimale finale, le commit MCP partagé isolé et ses symboles exacts, les résultats HTTP/CAS/browser et la confirmation du gate `studioMontageCreation:false` seront ajoutés après qualification. Ne pas intégrer une chaîne partielle sur la seule foi des tests unitaires serveur.
+La chaîne minimale finale et les résultats HTTP/CAS/browser complets seront ajoutés après qualification. Ne pas intégrer une chaîne partielle sur la seule foi des tests unitaires serveur.
 
+## MCP partagé isolé : 1c41f3d16
+
+Ce commit est distinct des propriétaires Studio et QA. Il conserve `studioMontageCreation:false` dans la publication ; l’override de qualification demande un environnement non production et un Host/config loopback cohérents.
+
+Symboles ajoutés : `MaxVideoAiMcpServices.createStudioMontage`, `MaxVideoAiMcpServerOptions.studioMontageCreation`, `registerCreateStudioMontageTool`, `createStudioMontageToolInputSchema`, `MCP_TOOL_INPUT_SCHEMAS.create_studio_montage`, capacité d’instructions `studioMontageCreation`, nom d’audit `create_studio_montage`. Le transport dérive la gate avec `isStudioMontageCreationEnabled` et la transmet au serveur. `prepare_montage` reste distinct, désactivé par défaut et non persisté.
+
+Chemins produit partagés :
+
+- `frontend/config/mcp-publication.json`
+- `frontend/src/server/mcp/http-handler.ts`
+- `frontend/src/server/mcp/instructions.ts`
+- `frontend/src/server/mcp/server.ts`
+- `frontend/src/server/mcp/tool-input-schemas.ts`
+- `frontend/src/server/mcp/tools/create-studio-montage.ts`
+
+Nouveau test : `tests/mcp-studio-montage-tools-contract.test.ts`. Projections de publication mises à jour : `tests/admin-mcp-architecture.test.ts`, `tests/fixtures/mcp-launch-publication-states.json`, `tests/mcp-config.test.ts`, `tests/mcp-launch-readiness.test.ts`, `tests/mcp-legal-support-readiness.test.ts`, `tests/mcp-paid-e2e-proof-contract.test.ts`, `tests/mcp-production-vercel-preflight.test.ts`, `tests/mcp-tool-selection-eval.test.ts`, `tests/mcp-trial-reconciliation.test.ts`.
+
+L’implémenteur rapporte12/12 tests MCP/prepare/config et TypeScript réussis. La racine a ensuite passé le vrai HTTP1/1 (12,04s) : création MCP, SQL ordre/trims/propriété/reçu, accès privé signé300s, sauvegarde CAS0→1, refus stale/anciens writers, rejeu UI cookie et MCP préservant l’édition. Ce passage ne qualifie pas encore le navigateur. La revue a demandé trois renforcements : lecture projet/séquences atomique, verrouillage transactionnel des sources et anciens writers, erreurs métier MCP actionnables au lieu de `INTERNAL_ERROR`. Le test HTTP renforcé doit passer après leurs corrections.

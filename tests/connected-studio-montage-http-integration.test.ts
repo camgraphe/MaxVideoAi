@@ -3,7 +3,7 @@ import test from 'node:test';
 import { startStudioIntegrationRuntime } from './helpers/studio-integration-runtime';
 import { STUDIO_FIXTURE_OWNERS } from './helpers/studio-auth-fixture';
 import { initializeStudioConnectedFixture, STUDIO_CONNECTED_ASSET_IDS, STUDIO_CONNECTED_MONTAGE_INPUT } from './helpers/studio-connected-fixture-data';
-import { postStudioMcpRequest, readStudioMcpResponse } from './helpers/studio-mcp-http-fixture';
+import { postStudioMcpRequest, postStudioMontageUiRequest, readStudioMcpResponse } from './helpers/studio-mcp-http-fixture';
 import { STUDIO_PRIVATE_MEDIA_KEYS, validateStudioPrivateMediaRequest } from './helpers/studio-private-storage-fixture';
 
 test('real MCP persists caller-ordered videos, enforces owner and idempotency, and coexists with revisioned UI saves', { timeout: 180_000 }, async () => {
@@ -117,15 +117,27 @@ test('real MCP persists caller-ordered videos, enforces owner and idempotency, a
     const kept = await runtime.database.pool.query('SELECT name, revision FROM studio_projects WHERE id = $1', [montage.projectId]);
     assert.equal(kept.rows[0].name, snapshot.name);
     assert.equal(Number(kept.rows[0].revision), 1);
+    const cookie = runtime.auth.cookiesFor(ownerA).map((item) => `${item.name}=${item.value}`).join('; ');
+    assert.equal((await postStudioMontageUiRequest(runtime, STUDIO_CONNECTED_MONTAGE_INPUT)).status, 401);
+    const uiReplay = await postStudioMontageUiRequest(runtime, STUDIO_CONNECTED_MONTAGE_INPUT, { cookie });
+    assert.equal(uiReplay.status, 200, (await uiReplay.clone().text()).slice(0, 1000));
+    const uiMontage = (await uiReplay.json()).montage;
+    assert.equal(uiMontage.projectId, montage.projectId, 'UI and MCP must share the exact same owner-scoped command receipt.');
+    assert.equal(uiMontage.revision, 1);
+    const uiConflict = await postStudioMontageUiRequest(runtime, { ...STUDIO_CONNECTED_MONTAGE_INPUT, title: 'Changed via UI' }, { cookie });
+    assert.equal(uiConflict.status, 409);
     const conflict = await call({ ...STUDIO_CONNECTED_MONTAGE_INPUT, clips: [...STUDIO_CONNECTED_MONTAGE_INPUT.clips].reverse() });
     assert.equal(conflict.result.isError, true, 'Same exact key with a new order must be rejected.');
+    assert.notEqual(conflict.result.structuredContent.error.code, 'INTERNAL_ERROR', 'An exact-key conflict is an actionable business refusal, not an unknown server incident.');
     const foreign = await call(STUDIO_CONNECTED_MONTAGE_INPUT, ownerB.access_token);
     assert.equal(foreign.result.isError, true);
+    assert.notEqual(foreign.result.structuredContent.error.code, 'INTERNAL_ERROR');
     const unknownFacts = await call({ ...STUDIO_CONNECTED_MONTAGE_INPUT, idempotencyKey: 'unmeasured-is-not-trim-proof', clips: [
       { assetId: STUDIO_CONNECTED_ASSET_IDS.unmeasured, sourceInFrame: 0, durationFrames: 30 },
       STUDIO_CONNECTED_MONTAGE_INPUT.clips[1],
     ] });
     assert.equal(unknownFacts.result.isError, true);
+    assert.notEqual(unknownFacts.result.structuredContent.error.code, 'INTERNAL_ERROR');
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int AS count FROM studio_projects')).rows[0].count, 1);
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int AS count FROM studio_sequences')).rows[0].count, 1);
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int AS count FROM studio_project_commands')).rows[0].count, 1);
