@@ -1,6 +1,6 @@
 # Workspace Model Review Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Choosing a video model previews its actual adaptations and quote without changing the draft, and preserves previous configurations and their references for recovery.
 
@@ -68,11 +68,11 @@ export function prepareWorkspaceModelCandidate(options: {
 
 WorkspaceModelCandidate exposes the prepared setup, workflow projection, effectiveDurationSec, supportsAudioToggle, voiceControlEnabled, structured setting changes, references kept/removed, comparable boolean and any blocking input/unsupported-workflow reasons. Define these types in the new module with exported names; Task 2 consumes them directly. Changes cover effective mode/duration/resolution/ratio/FPS/audio/loop, quantity and model-specific settings that become inactive. Missing media and long prompts are validation information, never invented inputs.
 
-- [ ] Capture existing live derived behavior with real engines in the P0/P1 tests before extraction. Add cases for Seedance start/end versus mixed references, MiniMax H3 audio references, Veo first/last, Kling subjects, manual extend/retake, Omni context and source-driven duration. Run focused tests before modifying the hook.
-- [ ] Move the pure derivation to the shared resolver, keeping all existing public hook fields/effects. Do not move mode orchestration back to AppClient or duplicate the original resolver for candidate use.
-- [ ] Implement candidate preparation: begin with the same requested-engine coercion as a real switch; derive the candidate workflow/schema, reconcile asset fields and budget with NO release callback, normalize allowed extra settings and repeat only until stable. Bound convergence; return a non-applicable reason if it cannot stabilize. Never mutate or revoke the original assets. Use type/role/capacity information, not assumptions from provider names. Do not move a reference into a semantically different role automatically.
-- [ ] Report removed assets and changed settings explicitly. Keep the original setup separately for the later snapshot; it is not part of the candidate's charge request. Mark comparable only if the effective generation conditions remain equivalent, including roles/asset identities, voice/multiprompt and specialized settings.
-- [ ] Tests must demonstrate real behavior, not just call the resolver twice. Example expectations with real fixture inputs:
+- [x] Capture existing live derived behavior with real engines in the P0/P1 tests before extraction. Add cases for Seedance start/end versus mixed references, MiniMax H3 audio references, Veo first/last, Kling subjects, manual extend/retake, Omni context and source-driven duration. Run focused tests before modifying the hook.
+- [x] Move the pure derivation to the shared resolver, keeping all existing public hook fields/effects. Do not move mode orchestration back to AppClient or duplicate the original resolver for candidate use.
+- [x] Implement candidate preparation: begin with the same requested-engine coercion as a real switch; derive the candidate workflow/schema, reconcile asset fields and budget with NO release callback, normalize allowed extra settings and repeat only until stable. Bound convergence; return a non-applicable reason if it cannot stabilize. Never mutate or revoke the original assets. Use type/role/capacity information, not assumptions from provider names. Do not move a reference into a semantically different role automatically.
+- [x] Report removed assets and changed settings explicitly. Keep the original setup separately for the later snapshot; it is not part of the candidate's charge request. Mark comparable only if the effective generation conditions remain equivalent, including roles/asset identities, voice/multiprompt and specialized settings.
+- [x] Tests must demonstrate real behavior, not just call the resolver twice. Example expectations with real fixture inputs:
 
 ```ts
 assert.deepEqual(current, before, 'candidate creation does not mutate the current setup');
@@ -83,7 +83,10 @@ assert.equal(candidate.effectiveDurationSec, expectedSourceDuration);
 ```
 
 Use the project's existing real engine fixtures/helpers and independently expected mode/duration values. Also run existing p0-video-workspace, workspace-reference-model-matrix, p1-workspace-capabilities and affected contracts to preserve actual behavior.
-- [ ] Update ownership contracts to point to the new pure responsibility rather than relaxing semantic constraints. Typecheck, focused lint/tests, self-review, commit and report signatures/counts. Do not run the full suite/build while the controller's preview is active.
+- [x] Update ownership contracts to point to the new pure responsibility rather than relaxing semantic constraints. Typecheck, focused lint/tests, self-review, commit and report signatures/counts. Do not run the full suite/build while the controller's preview is active.
+
+
+Task 1 qualified: `50c8a20e7`, 62 focused tests plus types/lint/exposure passed; independent review PASS. Current quote prerequisite `fedc6306f` also independently accepted. Task 2 still owns visible review, storage and recovery.
 
 ### Task 2: Preview, compare and recover model configurations
 
