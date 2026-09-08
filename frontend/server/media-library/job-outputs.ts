@@ -72,11 +72,14 @@ export async function upsertLegacyJobOutputs(row: LegacyJobMediaRow): Promise<vo
   });
 }
 
-export async function listJobOutputsByJobIds(jobIds: string[]): Promise<Map<string, JobOutputRecord[]>> {
+export async function listJobOutputsByJobIds(
+  jobIds: string[],
+  options: { ensureSchema?: boolean } = {}
+): Promise<Map<string, JobOutputRecord[]>> {
   const ids = Array.from(new Set(jobIds.filter(Boolean)));
   const map = new Map<string, JobOutputRecord[]>();
   if (!ids.length) return map;
-  await ensureMediaLibrarySchema();
+  if (options.ensureSchema !== false) await ensureMediaLibrarySchema();
   const rows = await query<DbJobOutputRow>(
     `SELECT id, job_id, user_id, kind, url, storage_url, thumb_url, preview_url, mime_type, width, height,
             duration_sec, position, status, metadata, created_at

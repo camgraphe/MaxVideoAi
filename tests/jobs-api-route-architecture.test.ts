@@ -91,3 +91,21 @@ test('jobs API keeps storyboard renders out of generic video and image feeds', (
     'surface=video should explicitly reject storyboard jobs'
   );
 });
+
+test('jobs list reads migrated tables without request-time schema or legacy repair work', () => {
+  assert.doesNotMatch(
+    routeSource,
+    /ensureBillingSchema/,
+    'the latency-sensitive GET must not run the application schema bootstrap'
+  );
+  assert.doesNotMatch(
+    routeSource,
+    /upsertLegacyJobOutputs/,
+    'the list response must not wait for legacy output repair writes'
+  );
+  assert.match(
+    routeSource,
+    /listJobOutputsByJobIds\(jobIds,\s*\{\s*ensureSchema:\s*false\s*\}\)/,
+    'the list response should read already-migrated output rows directly'
+  );
+});
