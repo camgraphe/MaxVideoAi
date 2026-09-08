@@ -85,13 +85,13 @@ test('workspace quantity controls sit beside the generate action', () => {
   assert.match(imageSettingsSource, /action\s*\?\s*'h-11[\s\S]*!bg-\[image:var\(--brand-gradient\)\]/);
 });
 
-test('workspace mobile settings wrap with touch targets and visible dropdown affordances', () => {
+test('workspace mobile settings wrap with touch targets and compact controls', () => {
   assert.match(coreSettingsSource, /compact \? 'min-w-0 flex-none'/);
   assert.match(imageSettingsSource, /compact \? 'min-w-0 flex-none'/);
   assert.match(coreSettingsSource, /compact \? '!min-h-11 sm:h-9 sm:!min-h-0 !min-w-0 gap-1\.5 px-2\.5 text-xs/);
   assert.match(imageSettingsSource, /compact \? '!min-h-11 sm:h-9 sm:!min-h-0 !min-w-0 gap-1\.5 px-2\.5 text-xs/);
-  assert.match(coreSettingsSource, /hideChevron=\{false\}/);
-  assert.match(imageSettingsSource, /hideChevron=\{false\}/);
+  assert.match(coreSettingsSource, /hideChevron=\{compact\}/);
+  assert.match(imageSettingsSource, /hideChevron=\{compact\}/);
   assert.match(coreSettingsSource, /formatCompactResolutionLabel/);
   assert.match(imageSettingsSource, /formatCompactResolutionLabel/);
   assert.match(coreSettingsSource, /const showIcon = !compact \|\| !\['iterations', 'fps'\]\.includes\(kind\)/);

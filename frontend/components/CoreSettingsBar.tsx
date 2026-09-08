@@ -238,13 +238,13 @@ function InlineSelectControl({
         buttonClassName={clsx(
           'min-h-0 rounded-full border-border bg-surface py-0 font-medium shadow-none dark:border-white/10 dark:bg-white/[0.07] dark:text-white/92 dark:hover:border-white/16 dark:hover:bg-white/[0.1]',
           action
-            ? 'h-11 !min-w-0 gap-1.5 border-brand !bg-[image:var(--brand-gradient)] px-3 text-[11px] !text-on-brand shadow-card'
+            ? 'h-11 !min-w-0 border-brand !bg-[image:var(--brand-gradient)] px-2.5 text-[11px] !text-on-brand shadow-card'
             : compact ? '!min-h-11 sm:h-9 sm:!min-h-0 !min-w-0 gap-1.5 px-2.5 text-xs' : 'h-10 px-3 text-[12px]'
         )}
         menuPlacement="top"
         menuClassName={compact ? 'app-experience app-settings-menu' : undefined}
         portal={compact}
-        hideChevron={false}
+        hideChevron={compact}
       />
     </div>
   );
