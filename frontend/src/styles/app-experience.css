@@ -429,6 +429,12 @@
 .app-experience .app-rail-caption strong { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 550; }
 .app-experience .app-rail-caption > span { flex-shrink: 0; color: var(--app-muted); font-size: 11px; }
 .app-experience .app-rail-media-card > div:first-child > button { min-height: 44px; padding-inline: 10px; font-size: 12px; }
+@media (min-width: 720px) and (max-width: 1087px) {
+  .app-experience .app-results-rail .app-gallery-rail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .app-experience .app-results-rail .app-gallery-rail-grid > :not([hidden]) ~ :not([hidden]) { margin-top: 0; }
+  .app-experience .app-results-rail .app-gallery-rail-grid .app-rail-media-card { margin-bottom: 0; }
+  .app-experience .app-results-rail .app-gallery-rail-sentinel { grid-column: 1 / -1; }
+}
 .app-experience .app-media-panel-cover { height: min(190px, 27dvh); aspect-ratio: auto; flex-shrink: 0; }
 .app-experience .app-media-panel header { position: sticky; top: -22px; z-index: 2; background: var(--surface); padding: 12px 0; margin-top: -12px; }
 .app-experience .app-media-collection .skeleton, .app-experience .app-media-collection .bg-placeholder { background-color: var(--surface-2); }

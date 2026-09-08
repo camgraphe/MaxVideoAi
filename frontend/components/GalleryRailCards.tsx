@@ -72,7 +72,7 @@ export function GalleryRailCards({
             </div>
           </div>
         ))}
-      <div ref={sentinelRef} className="h-1 w-full" aria-hidden />
+      <div ref={sentinelRef} className="app-gallery-rail-sentinel h-1 w-full" aria-hidden />
     </>
   );
 }

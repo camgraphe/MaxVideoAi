@@ -15,6 +15,8 @@ function countLines(source: string) {
 
 test('gallery rail delegates cards, snackbar, status blocks, scrollbar, and pure helpers', () => {
   const railSource = readSource('frontend/components/GalleryRail.tsx');
+  const railCardsSource = readSource('frontend/components/GalleryRailCards.tsx');
+  const appStyles = readSource('frontend/src/styles/app-experience.css');
 
   assert.ok(countLines(railSource) <= 500, `GalleryRail.tsx should stay under 500 lines, found ${countLines(railSource)}`);
   assert.match(railSource, /GalleryRailCards/);
@@ -25,6 +27,9 @@ test('gallery rail delegates cards, snackbar, status blocks, scrollbar, and pure
   assert.doesNotMatch(railSource, /function resolveBackgroundWarmPreviewLimit/);
   assert.doesNotMatch(railSource, /function Snackbar/);
   assert.doesNotMatch(railSource, /createPortal/);
+  assert.match(railSource, /app-gallery-rail-grid/);
+  assert.match(railCardsSource, /app-gallery-rail-sentinel/);
+  assert.match(appStyles, /@media \(min-width: 720px\) and \(max-width: 1087px\)[\s\S]*app-gallery-rail-grid[\s\S]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
 });
 
 test('grouped job card delegates media, preview grid, menu, and action types', () => {

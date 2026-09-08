@@ -437,7 +437,7 @@ export function GalleryRail({
       <div
         ref={scrollContainerRef}
         className={clsx(
-          'scrollbar-rail mt-1 space-y-4',
+          'scrollbar-rail app-gallery-rail-grid mt-1 space-y-4',
           responsiveVariant
             ? 'min-[1088px]:h-full min-[1088px]:overflow-y-auto min-[1088px]:pr-6 min-[1088px]:pt-3'
             : isDesktopVariant
