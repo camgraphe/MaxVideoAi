@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import { startStudioIntegrationRuntime } from './helpers/studio-integration-runtime';
 import { STUDIO_FIXTURE_OWNERS } from './helpers/studio-auth-fixture';
@@ -146,5 +147,38 @@ test('real MCP persists caller-ordered videos, enforces owner and idempotency, a
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int AS count FROM studio_projects')).rows[0].count, 1);
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int AS count FROM studio_sequences')).rows[0].count, 1);
     assert.equal((await runtime.database.pool.query('SELECT count(*)::int AS count FROM studio_project_commands')).rows[0].count, 1);
+  } finally { await runtime.close(); }
+});
+
+test('missing connected migration fails closed through real UI and MCP without applying runtime DDL', { timeout: 180_000 }, async () => {
+  const runtime = await startStudioIntegrationRuntime({
+    mcp: { studioMontageCreation: true },
+    initializeDatabase: async (database) => {
+      for (const name of ['26_studio_projects.sql', '29_mcp_audit_events.sql', '41_mcp_client_family.sql']) {
+        await database.pool.query(await readFile(`neon/migrations/${name}`, 'utf8'));
+      }
+    },
+  });
+  try {
+    const session = runtime.auth.createSession(STUDIO_FIXTURE_OWNERS[0], { clientId: 'studio-unmigrated-local-fixture' });
+    const cookie = runtime.auth.cookiesFor(session).map((item) => `${item.name}=${item.value}`).join('; ');
+    const ui = await postStudioMontageUiRequest(runtime, STUDIO_CONNECTED_MONTAGE_INPUT, { cookie });
+    assert.equal(ui.status, 503);
+    assert.deepEqual(await ui.json(), { ok: false, error: 'STUDIO_CONNECTED_SCHEMA_UNAVAILABLE' });
+    const mcp = await readStudioMcpResponse(await postStudioMcpRequest(runtime, {
+      jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'create_studio_montage', arguments: STUDIO_CONNECTED_MONTAGE_INPUT },
+    }, { token: session.access_token }));
+    assert.equal(mcp.result.isError, true);
+    assert.equal(mcp.result.structuredContent.error.code, 'RATE_LIMITED');
+    assert.equal(mcp.result.structuredContent.error.retryable, true);
+    const aggregate = await fetch(`${runtime.origin}/api/studio/projects/does-not-exist/workspace`, {
+      headers: { Authorization: `Bearer ${session.access_token}` }, signal: AbortSignal.timeout(30_000),
+    });
+    assert.equal(aggregate.status, 503);
+    const schema = await runtime.database.pool.query(`SELECT to_regclass('public.studio_project_commands') AS receipt_table,
+      EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='studio_projects' AND column_name='revision') AS revision_column,
+      EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='studio_projects' AND column_name='persistence_mode') AS mode_column`);
+    assert.deepEqual(schema.rows, [{ receipt_table: null, revision_column: false, mode_column: false }]);
+    assert.equal((await runtime.database.pool.query('SELECT count(*)::int AS count FROM studio_projects')).rows[0].count, 0);
   } finally { await runtime.close(); }
 });
