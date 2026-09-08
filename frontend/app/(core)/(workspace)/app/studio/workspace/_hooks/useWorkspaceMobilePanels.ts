@@ -8,17 +8,27 @@ type UseWorkspaceMobilePanelsOptions = {
   canOpenInspector: boolean;
   canOpenProjectMedia: boolean;
   focusMode: string;
+  onInspectCanvasNode?: (nodeId: string | null) => void;
 };
 
 export function useWorkspaceMobilePanels({
   canOpenInspector,
   canOpenProjectMedia,
   focusMode,
+  onInspectCanvasNode,
 }: UseWorkspaceMobilePanelsOptions) {
   const [activePanel, setActivePanel] = useState<MobileWorkspacePanel>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
   const projectMediaPanelRef = useRef<HTMLDivElement | null>(null);
   const inspectorPanelRef = useRef<HTMLDivElement | null>(null);
+
+  const inspectCanvasNode = useCallback((nodeId: string | null) => {
+    onInspectCanvasNode?.(nodeId);
+    if (nodeId && window.matchMedia('(max-width: 1120px)').matches) {
+      returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      setActivePanel('inspector');
+    }
+  }, [onInspectCanvasNode]);
 
   const closePanel = useCallback(() => {
     setActivePanel(null);
@@ -60,6 +70,7 @@ export function useWorkspaceMobilePanels({
     activePanel,
     closePanel,
     inspectorPanelRef,
+    inspectCanvasNode,
     projectMediaPanelRef,
     togglePanel,
   };

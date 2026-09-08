@@ -36,6 +36,7 @@ export function useWorkspaceSelectionActions({
   handleClearProjectMediaInspector: () => void;
   handleClearSequenceInspector: () => void;
   handleInspectCanvasNode: (nodeId: string | null) => void;
+  handleCloseCanvasInspector: () => void;
   handleInspectProjectAsset: (assetId: string) => void;
   handleInspectSequence: (sequenceId: string) => void;
   handleResetExportRangeMode: () => void;
@@ -171,6 +172,11 @@ export function useWorkspaceSelectionActions({
     [setActiveEditorSurface, setInspectedProjectAssetId, setInspectedSequenceId, setIsCanvasInspectorOpen, setSelectedNodeId]
   );
 
+  const handleCloseCanvasInspector = useCallback(() => {
+    setIsCanvasInspectorOpen(false);
+    requestAnimationFrame(() => document.querySelector<HTMLElement>('[data-canvas-selection-settings]')?.focus());
+  }, [setIsCanvasInspectorOpen]);
+
   return {
     applyDefaultTimelineSelection,
     applyTimelineSelection,
@@ -178,6 +184,7 @@ export function useWorkspaceSelectionActions({
     handleClearProjectMediaInspector,
     handleClearSequenceInspector,
     handleInspectCanvasNode,
+    handleCloseCanvasInspector,
     handleInspectProjectAsset,
     handleInspectSequence,
     handleResetExportRangeMode,

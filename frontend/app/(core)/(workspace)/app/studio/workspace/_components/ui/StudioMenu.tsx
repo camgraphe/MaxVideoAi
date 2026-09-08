@@ -164,7 +164,9 @@ export function StudioMenu({
   };
 
   return (
-    <div ref={rootRef} className={className}>
+    <div ref={rootRef} className={className} onBlur={(event) => {
+      if (open && event.relatedTarget instanceof Node && !event.currentTarget.contains(event.relatedTarget)) closeMenu(false);
+    }}>
       {trigger(triggerProps)}
       {open ? (
         <div
@@ -174,6 +176,12 @@ export function StudioMenu({
           role="menu"
           aria-label={label}
           onKeyDown={handleMenuKeyDown}
+          onClickCapture={(event) => {
+            if (!(event.target instanceof Element) || !event.target.closest(MENU_ITEM_SELECTOR)) return;
+            window.requestAnimationFrame(() => {
+              if (document.activeElement === document.body) triggerRef.current?.focus();
+            });
+          }}
         >
           {children}
         </div>

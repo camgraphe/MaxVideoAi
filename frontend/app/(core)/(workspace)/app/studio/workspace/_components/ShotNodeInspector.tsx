@@ -30,6 +30,7 @@ import {
 import { resolveWorkspaceBlockPolicy } from '../_lib/models/workspace-block-capability-policy';
 import { buildWorkspaceEnginePickerGroups } from '../_lib/models/workspace-engine-picker';
 import { workspaceShotPatchForModelSelection } from '../_lib/models/workspace-model-selection';
+import { workspaceGenerationActionReady } from '../_lib/workspace-canvas-actions';
 
 const styles = { ...baseStyles, ...inspectorStyles };
 
@@ -95,7 +96,7 @@ export function ShotNodeInspector({
   const inputConnectors = Array.isArray(node.data.inputConnectors) ? node.data.inputConnectors : selectedCapability?.input_connectors ?? [];
   const availableInputConnectors = inputConnectors.filter((connector) => !connector.disabledReason);
   const incompatibleInputConnectors = inputConnectors.filter((connector) => Boolean(connector.disabledReason));
-  const pricingEstimate = node.data.pricingEstimate?.label ?? copy.estimating;
+  const pricingEstimate = node.data.mockGeneration ? copy.simulation : node.data.pricingEstimate?.label ?? copy.estimating;
   const edgeLabel = (kind: string) => localizeStudioEdgeKindLabel(kind, copy);
   const outputName = localizeWorkspaceShotOutputName(node, copy);
   const patchShot = (patch: Partial<WorkspaceShotSettings>) => onPatchShot(node.id, patch);
@@ -162,7 +163,7 @@ export function ShotNodeInspector({
         <strong>{pricingEstimate}</strong>
       </div>
 
-      <button type="button" className={styles.primaryPanelButton} disabled={!validation?.canGenerate || shot.status === 'generating'} onClick={() => onGenerateShot(node.id)}>
+      <button type="button" className={styles.primaryPanelButton} disabled={!workspaceGenerationActionReady(Boolean(validation?.canGenerate), shot.status, node.data.pricingEstimate, node.data.mockGeneration)} onClick={() => onGenerateShot(node.id)}>
         <Sparkles size={15} />
         {shot.status === 'generating' ? copy.generating : copy.generate}
       </button>

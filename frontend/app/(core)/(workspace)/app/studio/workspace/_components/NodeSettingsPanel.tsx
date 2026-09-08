@@ -1,6 +1,7 @@
 'use client';
 
 import { Plus, Send, Sparkles } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 import { FieldLabel, SelectControl } from './NodeInspectorControls';
 import { NodeInspectorConnections } from './NodeInspectorConnections';
 import { NodeInspectorMediaPreview } from './NodeInspectorMediaPreview';
@@ -95,7 +96,7 @@ function AssetInspector({
   );
   return (
     <>
-      <NodeInspectorMediaPreview kind={asset?.kind} thumbUrl={asset?.thumbUrl ?? null} url={asset?.url ?? null} />
+      <NodeInspectorMediaPreview copy={copy} kind={asset?.kind} thumbUrl={asset?.thumbUrl ?? null} url={asset?.url ?? null} />
       {!asset?.thumbUrl && !asset?.url ? (
         <button type="button" className={styles.primaryPanelButton} onClick={() => onOpenAssetLibrary(node.id)}>
           <Plus size={15} />
@@ -231,7 +232,7 @@ function OutputInspector({
   const outputCount = Array.isArray(node.data.sourceHandles) ? node.data.sourceHandles.length : 0;
   return (
     <>
-      <NodeInspectorMediaPreview kind={output?.kind} thumbUrl={output?.thumbUrl ?? null} url={output?.url ?? null} />
+      <NodeInspectorMediaPreview copy={copy} kind={output?.kind} thumbUrl={output?.thumbUrl ?? null} url={output?.url ?? null} />
       <div className={styles.infoGrid}>
         <span>{copy.model}</span>
         <strong>{output?.modelLabel ?? copy.unknown}</strong>
@@ -276,10 +277,12 @@ export function NodeSettingsPanel({
   onSendOutputToTimeline,
   onOpenAssetLibrary,
 }: NodeSettingsPanelProps) {
+  const panelRef = useRef<HTMLElement>(null);
+  useEffect(() => { panelRef.current?.focus({ preventScroll: true }); }, [selectedNode?.id]);
   if (!selectedNode) return <EmptyInspector copy={copy} />;
 
   return (
-    <aside className={styles.settingsPanel} aria-label={copy.nodeSettingsAria}>
+    <aside ref={panelRef} tabIndex={-1} className={styles.settingsPanel} aria-label={copy.nodeSettingsAria}>
       <div className={styles.panelHeader}>
         <div>
           <p className={styles.panelTitle}>{selectedNode.data.title}</p>

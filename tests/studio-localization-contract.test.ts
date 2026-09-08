@@ -376,6 +376,8 @@ test('Studio localization dictionaries expose required copy in every locale', ()
 
 test('Studio guide controls and steps stay aligned across locales', () => {
   const expectedControlKeys = [
+    'compact',
+    'expanded',
     'menu',
     'listLabel',
     'show',

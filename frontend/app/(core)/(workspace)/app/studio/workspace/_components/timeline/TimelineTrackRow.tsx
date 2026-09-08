@@ -1,4 +1,4 @@
-import { Eye, EyeOff, Lock, Plus, Unlock, Volume2, VolumeX } from 'lucide-react';
+import { Eye, EyeOff, Lock, MoreHorizontal, Plus, Unlock, Volume2, VolumeX } from 'lucide-react';
 import type {
   DragEvent as ReactDragEvent,
   MouseEvent,
@@ -48,7 +48,7 @@ type TimelineTrackRowProps = {
   onClearExternalDropPreview: () => void;
   onDropExternal: (event: ReactDragEvent<HTMLDivElement>, trackId: WorkspaceTimelineTrack) => void;
   onExternalDropOver: (event: ReactDragEvent<HTMLDivElement>, trackId: WorkspaceTimelineTrack) => void;
-  onOpenTrackContextMenu: (event: MouseEvent<HTMLDivElement>, track: TimelineTrackDefinition) => void;
+  onOpenTrackContextMenu: (event: MouseEvent<HTMLElement>, track: TimelineTrackDefinition) => void;
   onSurfaceClick: (event: MouseEvent<HTMLDivElement>) => void;
   onSurfacePointerDown: (event: ReactPointerEvent<HTMLDivElement>) => void;
   onToggleAudioTrackMute: (trackId: WorkspaceTimelineAudioTrack) => void;
@@ -124,6 +124,7 @@ export const TimelineTrackRow = memo(function TimelineTrackRow({
           {track.icon}
           <span>{track.label}</span>
         </div>
+        <button type="button" className={styles.trackIconButton} data-timeline-track-actions={track.id} data-timeline-control="true" aria-label={copy.trackContextLabel.replace('{track}', track.label)} aria-haspopup="menu" onClick={(event) => onOpenTrackContextMenu(event, track)}><MoreHorizontal size={16} /></button>
         <div className={`${styles.trackLabelControls} ${isAudioTrack ? styles.trackLabelControlsAudio : ''}`} data-timeline-control="true">
           {track.kind === 'video' && isHighestVideoTrack ? (
             <button

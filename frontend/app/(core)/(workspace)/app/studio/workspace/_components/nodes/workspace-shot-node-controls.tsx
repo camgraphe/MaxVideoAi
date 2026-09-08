@@ -16,6 +16,7 @@ import {
 import { resolveWorkspaceBlockPolicy } from '../../_lib/models/workspace-block-capability-policy';
 import { buildWorkspaceEnginePickerGroups } from '../../_lib/models/workspace-engine-picker';
 import { workspaceShotPatchForModelSelection } from '../../_lib/models/workspace-model-selection';
+import { workspaceGenerationActionReady } from '../../_lib/workspace-canvas-actions';
 import { WorkspaceEnginePicker } from '../WorkspaceEnginePicker';
 import { WorkspaceControlField } from './WorkspaceControlField';
 import {
@@ -71,9 +72,10 @@ export function ShotNodeControls({ data, nodeId }: ShotNodeControlsProps) {
     edgeLabel: (kind) => localizeStudioEdgeKindLabel(kind, copy),
   });
   const hideModelSelect = !policy.controlFields.includes('model') || !sections.includes('model-select') || (isToolOnlyPreset(shot) && compatibleCapabilities.length <= 1);
+  const commonFields = policy.controlFields.filter((field) => ['durationSec', 'aspectRatio', 'resolution', 'audioEnabled'].includes(field));
   const canGenerate = validation?.canGenerate ?? policy.canGenerate;
-  const estimatedCost = data.pricingEstimate?.label ?? copy.estimating;
-  const pricingDetail = data.pricingEstimate?.error ?? estimatedCost;
+  const estimatedCost = data.mockGeneration ? copy.simulation : data.pricingEstimate?.label ?? copy.estimating;
+  const pricingDetail = data.mockGeneration ? estimatedCost : data.pricingEstimate?.error ?? estimatedCost;
   const patchShot = (patch: Partial<WorkspaceShotSettings>) => data.onPatchShot?.(nodeId, patch);
   const edgeLabel = (kind: string) => localizeStudioEdgeKindLabel(kind, copy);
   const missingInputs = validation?.missingInputs ?? [];
@@ -83,7 +85,7 @@ export function ShotNodeControls({ data, nodeId }: ShotNodeControlsProps) {
     : incompatibleInputs.length
       ? formatCopyValue(copy.unsupportedInputs, { inputs: incompatibleInputs.map(edgeLabel).join(', ') })
       : copy.connectedInputsMatch;
-  const statusDetail = data.pricingEstimate?.error
+  const statusDetail = !data.mockGeneration && data.pricingEstimate?.error
     ? `${validationText}. ${data.pricingEstimate.error}`
     : validationText;
 
@@ -108,7 +110,7 @@ export function ShotNodeControls({ data, nodeId }: ShotNodeControlsProps) {
       )}
 
       <div className={styles.shotSettingsGrid}>
-        {policy.controlFields.filter((field) => field !== 'model').map((field) => (
+        {commonFields.map((field) => (
           <WorkspaceControlField
             key={field}
             copy={controlCopy}
@@ -120,12 +122,14 @@ export function ShotNodeControls({ data, nodeId }: ShotNodeControlsProps) {
         ))}
       </div>
 
+      <button type="button" className={`${styles.shotOptionsButton} nodrag`} data-canvas-node-inspect-button={nodeId}>{copy.settings}</button>
+
       <div className={styles.shotActionRow}>
         <button
           type="button"
           className={`${styles.shotGenerateButton} nodrag`}
           data-shot-generation-action="true"
-          disabled={!canGenerate || shot.status === 'generating'}
+          disabled={!workspaceGenerationActionReady(canGenerate, shot.status, data.pricingEstimate, data.mockGeneration)}
           aria-busy={shot.status === 'generating'}
           onClick={() => data.onGenerateShot?.(nodeId)}
         >
@@ -150,7 +154,7 @@ export function ShotNodeControls({ data, nodeId }: ShotNodeControlsProps) {
       >
         {canGenerate ? <CheckCircle2 size={12} /> : <AlertTriangle size={12} />}
         <span>{canGenerate ? copy.readyToGenerate : copy.needsAttention}</span>
-        <small title={statusDetail}>{statusDetail}</small>
+        {!canGenerate || data.pricingEstimate?.error ? <small title={statusDetail}>{statusDetail}</small> : null}
       </div>
     </div>
   );

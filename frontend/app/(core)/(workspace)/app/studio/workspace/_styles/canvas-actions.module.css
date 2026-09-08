@@ -1,0 +1,21 @@
+.selectionActions { position:absolute; z-index:46; top:12px; left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:4px; max-width:calc(100% - 32px); padding:6px; border:1px solid var(--studio-border); border-radius:14px; background:var(--studio-surface-strong); box-shadow:0 12px 35px var(--studio-node-shadow); }
+.selectionMenuRoot { position:relative; }
+.selectionMenu { position:absolute; right:0; top:calc(100% + 8px); width:220px; padding:6px; border:1px solid var(--studio-border); border-radius:12px; background:var(--studio-popover-bg); box-shadow:0 16px 45px var(--studio-node-shadow); }
+.selectionMenu button { width:100%; justify-content:flex-start; }
+.selectionTitle { max-width:150px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 10px; font-size:12px; font-weight:700; }
+.selectionActions button,.connectionPicker button { flex-shrink:0; min-height:44px; display:flex; align-items:center; justify-content:center; gap:7px; padding:8px 12px; border:0; border-radius:8px; background:var(--studio-control-bg); color:var(--studio-text); font:inherit; font-size:12px; cursor:pointer; white-space:nowrap; }
+.selectionActions button:hover,.connectionPicker button:hover { background:var(--studio-control-bg-hover); }
+.selectionActions button:focus-visible,.connectionPicker :focus-visible { outline:2px solid var(--studio-primary); outline-offset:-2px; }
+.connectionBackdrop { position:absolute; inset:0; z-index:160; display:grid; place-items:center; padding:12px; background:#0006; }
+.connectionPicker { width:min(440px,100%); max-height:100%; min-height:0; display:flex; flex-direction:column; border:1px solid var(--studio-border); border-radius:18px; background:var(--studio-surface-strong); box-shadow:0 20px 60px var(--studio-node-shadow); color:var(--studio-text); }
+.connectionPicker header { display:flex; align-items:center; justify-content:space-between; padding:16px; border-bottom:1px solid var(--studio-border); }
+.connectionPicker h2 { margin:2px 0; font-size:18px; }
+.connectionPicker h3 { font-size:12px; margin:20px 0 8px; color:var(--studio-text-muted); }
+.connectionContent { overflow:auto; padding:0 16px 16px; overscroll-behavior:contain; }
+.connectionContent label { display:grid; gap:8px; margin-top:16px; font-size:12px; }
+.connectionContent select { min-height:44px; border:1px solid var(--studio-border); border-radius:8px; padding:8px; color:var(--studio-text); background:var(--studio-control-bg); }
+.connectionContent section > button { width:100%; justify-content:flex-start; margin:4px 0; text-align:left; }
+.connectionContent small,.connectionRow small { display:block; color:var(--studio-text-muted); }
+.connectionRow { display:flex; gap:8px; justify-content:space-between; align-items:center; padding:8px 0; font-size:13px; }
+.connectionContent p { font-size:13px; color:var(--studio-text-muted); }
+@media(max-width:700px) { .selectionActions { top:8px; left:8px; right:8px; transform:none; max-width:none; justify-content:space-between; } .selectionTitle { display:none; } .selectionActions > button,.selectionMenuRoot > button { padding:6px 8px; gap:5px; font-size:11px; } }

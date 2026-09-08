@@ -116,7 +116,7 @@ export function useWorkspaceShotPricing({
   capabilities,
 }: UseWorkspaceShotPricingOptions): Record<string, WorkspacePricingEstimate> {
   const [memberTier, setMemberTier] = useState('Member');
-  const [estimates, setEstimates] = useState<Record<string, WorkspacePricingEstimate>>({});
+  const [estimates, setEstimates] = useState<Record<string, WorkspacePricingEstimate & { requestKey: string }>>({});
 
   useEffect(() => {
     let canceled = false;
@@ -250,11 +250,12 @@ export function useWorkspaceShotPricing({
 
     let canceled = false;
     const activeNodeIds = new Set(pricingRequests.map((request) => request.nodeId));
-    setEstimates((current) =>
-      pricingRequests.reduce<Record<string, WorkspacePricingEstimate>>((next, request) => {
-        next[request.nodeId] = request.kind === 'local'
+    setEstimates(() =>
+      pricingRequests.reduce<Record<string, WorkspacePricingEstimate & { requestKey: string }>>((next, request) => {
+        const estimate = request.kind === 'local'
           ? request.estimate
-          : loadingWorkspacePricingEstimate(current[request.nodeId]);
+          : loadingWorkspacePricingEstimate();
+        next[request.nodeId] = { ...estimate, requestKey: request.key };
         return next;
       }, {})
     );
@@ -311,9 +312,9 @@ export function useWorkspaceShotPricing({
       ).then((results) => {
         if (canceled) return;
         setEstimates((current) =>
-          results.reduce<Record<string, WorkspacePricingEstimate>>((next, [nodeId, estimate]) => {
+          results.reduce<Record<string, WorkspacePricingEstimate & { requestKey: string }>>((next, [nodeId, estimate]) => {
             if (activeNodeIds.has(nodeId)) {
-              next[nodeId] = estimate;
+              next[nodeId] = { ...estimate, requestKey: pricingRequests.find((request) => request.nodeId === nodeId)!.key };
             }
             return next;
           }, { ...current })
@@ -327,5 +328,10 @@ export function useWorkspaceShotPricing({
     };
   }, [pricingRequests]);
 
-  return estimates;
+  // Projection happens during render: an old quote is never actionable for new settings,
+  // even before effect cleanup or the next debounced request starts.
+  return Object.fromEntries(pricingRequests.map((request) => [request.nodeId,
+    request.kind === 'local' ? request.estimate : estimates[request.nodeId]?.requestKey === request.key
+      ? estimates[request.nodeId] : loadingWorkspacePricingEstimate(),
+  ]));
 }

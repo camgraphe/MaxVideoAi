@@ -63,6 +63,8 @@ import {
   type CanvasNavigatorPanelProps,
 } from './canvas/CanvasNavigatorPanel';
 import { CanvasMap } from './canvas/CanvasMap';
+import { CanvasSelectionActions } from './canvas/CanvasSelectionActions';
+import { CanvasConnectionPicker } from './canvas/CanvasConnectionPicker';
 import { CanvasPaletteDragPreview } from './canvas/CanvasPaletteDragPreview';
 import { workspaceEdgeTypes } from './edges/workspace-smart-edge';
 import { workspaceNodeTypes } from './nodes/workspace-node-types';
@@ -111,7 +113,7 @@ type WorkspaceCanvasProps = {
   onInspectNode: (nodeId: string | null) => void;
   toolbar: Omit<
     CanvasFloatingToolbarProps,
-    'copy' | 'onDeleteSelectedNodes' | 'onSelectionToolChange' | 'selectedNodeCount' | 'selectionTool'
+    'copy' | 'onCreateBlock' | 'onDeleteSelectedNodes' | 'onSelectionToolChange' | 'selectedNodeCount' | 'selectionTool'
   >;
   canvasNavigator: Omit<CanvasNavigatorPanelProps, 'copy'>;
   guide: WorkspaceGuideController;
@@ -309,6 +311,7 @@ function WorkspaceCanvasInner({
   const [selectionTool, setSelectionTool] = useState<CanvasSelectionTool>('pointer');
   const [isGuideDragging, setIsGuideDragging] = useState(false);
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
+  const [connectionTarget, setConnectionTarget] = useState<{ id: string; handle?: WorkspaceEdgeKind } | null>(null);
   const [handleDropPreview, setHandleDropPreview] = useState<HandleDropPreview | null>(null);
   const handleDropPreviewRef = useRef<HandleDropPreview | null>(null);
   const {
@@ -390,7 +393,6 @@ function WorkspaceCanvasInner({
   const {
     handleDragOver,
     handleDrop,
-    handlePalettePlacementCommit,
     paletteDragPreview,
   } = useCanvasController({
     canvasShellRef,
@@ -456,11 +458,13 @@ function WorkspaceCanvasInner({
         autoCenterNode.position.x + nodeWidth / 2,
         autoCenterNode.position.y + nodeHeight / 2,
         {
-          duration: 160,
-          zoom: Math.max(reactFlow.getZoom(), 0.7),
+          duration: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 160,
+          zoom: Math.max(reactFlow.getZoom(), 0.85),
         }
       );
       onAutoCenterNodeConsumed();
+      const element = canvasShellRef.current?.querySelector<HTMLElement>(`.react-flow__node[data-id="${CSS.escape(autoCenterNodeId)}"]`);
+      element?.focus({ preventScroll: true });
     });
 
     return () => {
@@ -598,6 +602,15 @@ function WorkspaceCanvasInner({
     (event: ReactMouseEvent<HTMLElement>) => {
       const target = event.target;
       if (!(target instanceof Element)) return;
+      const connectButton = target.closest<HTMLElement>('[data-canvas-connect-handle]');
+      if (connectButton) {
+        const nodeId = connectButton.closest('.react-flow__node')?.getAttribute('data-id');
+        if (nodeId) {
+          event.preventDefault(); event.stopPropagation();
+          setConnectionTarget({ id: nodeId, handle: connectButton.dataset.canvasConnectHandle as WorkspaceEdgeKind });
+        }
+        return;
+      }
       const inspectButton = target.closest<HTMLElement>('[data-canvas-node-inspect-button]');
       if (!inspectButton || !canvasShellRef.current?.contains(inspectButton)) return;
       const nodeId = inspectButton.dataset.canvasNodeInspectButton;
@@ -724,8 +737,7 @@ function WorkspaceCanvasInner({
           syncSelectedNodeIds([node.id]);
           onInspectNode(node.id);
         }}
-        onPaneClick={(event) => {
-          if (handlePalettePlacementCommit(event)) return;
+        onPaneClick={() => {
           onCanvasInteraction();
           selectedNodeIdRef.current = null;
           syncSelectedNodeIds([]);
@@ -773,6 +785,10 @@ function WorkspaceCanvasInner({
       <CanvasFloatingToolbar
         {...toolbar}
         copy={copy}
+        onCreateBlock={(kind, presetId) => {
+          onCanvasInteraction();
+          onCreateNodeFromPaletteDrop({ kind, presetId, position: canvasCenterFlowPosition() });
+        }}
         selectionTool={selectionTool}
         selectedNodeCount={selectedNodeIds.length}
         onDeleteSelectedNodes={() => {
@@ -792,6 +808,26 @@ function WorkspaceCanvasInner({
           toolbar.onUndo();
         }}
       />
+      <CanvasSelectionActions
+        nodes={nodes.filter((node) => selectedNodeIds.includes(node.id))}
+        copy={copy.nodes}
+        onSettings={onInspectNode}
+        onConnections={(id) => setConnectionTarget({ id })}
+        onCopy={() => onCopySelectedNodes(selectedNodeIds)}
+        onDelete={handleDeleteSelectedNodes}
+      />
+      {connectionTarget && nodes.find((node) => node.id === connectionTarget.id) ? <CanvasConnectionPicker
+        key={`${connectionTarget.id}:${connectionTarget.handle ?? ''}`}
+        node={nodes.find((node) => node.id === connectionTarget.id)!}
+        initialHandle={connectionTarget.handle}
+        nodes={nodes}
+        edges={edges}
+        copy={copy.nodes}
+        isValidConnection={isValidConnection}
+        onConnect={onConnect}
+        onDisconnect={(id) => onEdgesChange([{ id, type: 'remove' }])}
+        onClose={() => setConnectionTarget(null)}
+      /> : null}
       <CanvasNavigatorPanel {...canvasNavigator} copy={copy} />
       {nodes.length === 0 ? (
         <div className={styles.canvasEmptyState}>

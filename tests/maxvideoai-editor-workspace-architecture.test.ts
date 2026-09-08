@@ -1495,7 +1495,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(canvasSource, /panOnDrag=\{!isMarqueeSelectionTool && !isGuideDragging\}/, 'canvas should disable pane panning while marquee selection or guide dragging is active');
   assert.match(canvasSource, /deleteElements\(\{ nodes: selectedNodeIds\.map/, 'canvas should delete the current React Flow node selection through React Flow');
   assert.match(canvasFloatingToolbarSource, /copy\.toolbar\.marqueeSelectNodes/, 'canvas toolbar should expose an explicit marquee selection tool through localized copy');
-  assert.match(canvasFloatingToolbarSource, /copy\.toolbar\.deleteSelectedNodes/, 'canvas toolbar should expose a selected-node deletion action through localized copy');
+  assert.match(source(join(workspaceDir, '_components/canvas/CanvasSelectionActions.tsx')), /copy\.deleteSelection/, 'selection actions should expose deletion through localized copy');
   assert.match(canvasFloatingToolbarSource, /copy\.toolbar\.imageTools/, 'canvas toolbar should group image creation actions through localized copy');
   assert.match(canvasFloatingToolbarSource, /presetBlock\('generate-image'/, 'canvas toolbar should expose image generation entry points through block presets');
   assert.match(canvasFloatingToolbarSource, /presetBlock\('character-builder'/, 'canvas toolbar should expose character builder entry points through block presets');
@@ -1522,13 +1522,13 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(canvasSource, /onDragOver/, 'canvas should accept block template drags from the floating toolbar');
   assert.match(canvasSource, /onDrop/, 'canvas should create dropped block templates on the pane');
   assert.match(canvasPaletteDragPreviewSource, /maxvideoai:palette-drag-start/, 'canvas palette preview should define the pointer-based block template drag event');
-  assert.match(canvasPaletteDragPreviewSource, /maxvideoai:palette-placement-arm/, 'canvas palette preview should define the click-to-place block template event');
+  assert.doesNotMatch(canvasPaletteDragPreviewSource, /maxvideoai:palette-placement-arm/, 'palette activation no longer leaves an armed placement state');
   assert.match(canvasControllerSource, /PALETTE_DRAG_START_EVENT/, 'canvas controller should listen for pointer-based block template drags from the floating toolbar');
-  assert.match(canvasControllerSource, /PALETTE_PLACEMENT_ARM_EVENT/, 'canvas controller should listen for click-to-place block template choices from the floating toolbar');
+  assert.match(canvasSource, /onCreateNodeFromPaletteDrop\(\{ kind, presetId, position: canvasCenterFlowPosition\(\) \}\)/, 'activation must reuse graph creation at the visible center');
   assert.match(canvasSource, /paletteDragPreview/, 'canvas should show a ghost block while dragging a toolbar template');
-  assert.match(canvasSource, /handlePalettePlacementCommit/, 'canvas should commit click-to-place block templates from pane clicks');
+  assert.doesNotMatch(canvasSource, /handlePalettePlacementCommit/, 'pane clicks must not create a second node after activation');
   assert.match(canvasControllerSource, /screenToFlowPosition/, 'canvas controller should convert dropped toolbar templates into flow coordinates');
-  assert.match(canvasControllerSource, /handlePalettePlacementMove/, 'canvas controller should let the click-to-place ghost follow the pointer');
+  assert.match(canvasControllerSource, /handleMove/, 'canvas controller should retain precise pointer drag placement');
   assert.match(canvasControllerSource, /event\.key === 'Escape'/, 'canvas controller should cancel click-to-place placement with Escape');
   assert.match(canvasPaletteDragPreviewSource, /application\/x-maxvideoai-node-kind/, 'canvas palette preview should define the block template drag payload type');
   assert.match(canvasControllerSource, /WORKSPACE_NODE_KIND_DRAG_TYPE/, 'canvas controller should read the block template drag payload');
@@ -2057,7 +2057,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(nodeInspectorConnectionsSource, /connectedEdges/, 'node inspector connection component should own graph connection row derivation');
   assert.match(nodeInspectorConnectionsSource, /localizeStudioEdgeKindLabel/, 'node inspector connection component should render localized connector labels');
   assert.doesNotMatch(settingsSource, /<video[\s\S]*controls/, 'node settings panel should not own playable media preview markup inline');
-  assert.match(nodeInspectorMediaPreviewSource, /<video[\s\S]*controls/, 'output and video inspectors should render playable media when a video URL exists');
+  assert.match(nodeInspectorMediaPreviewSource, /<VideoPreview[\s\S]*videoUrl=/, 'inspectors reuse the demand-mounted native media preview');
   assert.match(nodeInspectorMediaPreviewSource, /workspace-media-availability/, 'node inspector media preview should consume shared playable media helpers');
   assert.match(settingsSource, /disabled=\{!canSendOutputToTimeline\}/, 'output inspector should disable timeline send for placeholder and processing outputs');
   assert.match(settingsSource, /onOpenAssetLibrary/, 'asset inspector should expose the same library picker action');
@@ -2471,7 +2471,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(canvasFloatingToolbarSource, /draggable/, 'canvas toolbar block templates should not use native HTML drag because it can leave the custom ghost stuck');
   assert.doesNotMatch(canvasFloatingToolbarSource, /dataTransfer\.setData\('application\/x-maxvideoai-node-kind'/, 'canvas toolbar block templates should avoid native drag payloads');
   assert.match(canvasFloatingToolbarSource, /PALETTE_DRAG_START_EVENT/, 'canvas toolbar should start pointer-based template drags for robust canvas drops');
-  assert.match(canvasFloatingToolbarSource, /PALETTE_PLACEMENT_ARM_EVENT/, 'canvas toolbar should arm click-to-place template placement for block choices');
+  assert.match(canvasFloatingToolbarSource, /onCreateBlock\(kind, presetId\)/, 'ordinary palette activation should complete creation immediately');
   assert.match(canvasFloatingToolbarSource, /handleBlockClick/, 'canvas toolbar block templates should support click-to-place placement');
   assert.match(canvasFloatingToolbarSource, /onClick=\{\(event\) => onBlockClick\(event, block\.kind, block\.presetId\)\}/, 'canvas toolbar block template clicks should close the menu and arm a ghost placement');
   assert.match(canvasFloatingToolbarSource, /event\.preventDefault\(\)/, 'canvas toolbar pointer drags should prevent native text selection');
@@ -2506,7 +2506,8 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(canvasToolbarStyleSource, /\.blockOption/, 'canvas toolbar block template cards should be styled with focused toolbar CSS');
   assert.match(canvasFloatingToolbarSource, /StudioMenu/, 'canvas toolbar block pickers should use the shared Studio menu primitive for keyboard handling');
   assert.match(canvasFloatingToolbarSource, /data-canvas-toolbar-menu-id/, 'canvas toolbar menu buttons should expose stable menu ids');
-  assert.match(canvasFloatingToolbarSource, /block\.meta/, 'canvas toolbar block cards should expose compact metadata chips');
+  assert.match(canvasFloatingToolbarSource, /block\.label/, 'short creation menus retain localized action names');
+  assert.doesNotMatch(canvasFloatingToolbarSource, /block\.meta/, 'creation menus avoid redundant metadata chip rows');
   assert.match(canvasFloatingToolbarSource, /copy\.toolbar\.saveCanvas/, 'canvas toolbar should expose saving as a direct canvas action');
   assert.doesNotMatch(canvasFloatingToolbarSource, /copy\.toolbar\.canvasTemplates/, 'canvas toolbar should not expose starter templates as an active creation tool');
   assert.doesNotMatch(canvasFloatingToolbarSource, /onApplyUserTemplate/, 'canvas toolbar should not own saved canvas navigation');

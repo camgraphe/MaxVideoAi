@@ -264,13 +264,8 @@
 .trackAddButton,
 .trackIconButton {
   display: grid;
-  width: 18px;
-  height: 18px;
   place-items: center;
-  border: 1px solid rgba(129, 140, 248, 0.34);
   border-radius: 6px;
-  background: rgba(79, 70, 229, 0.42);
-  color: #e0e7ff;
   cursor: pointer;
 }
 
@@ -305,12 +300,6 @@
   background: rgba(124, 58, 237, 0.66);
   color: var(--studio-text-strong);
   outline: none;
-}
-
-.trackIconButton {
-  border-color: var(--studio-border);
-  background: var(--studio-surface);
-  color: var(--studio-text-muted);
 }
 
 .trackIconButtonActive {
@@ -561,18 +550,28 @@
 }
 
 @media (max-width: 1120px) {
-  .timelinePanel { --timeline-track-label-width: 118px; --timeline-track-lane-padding-x: 8px; }
+  .timelinePanel { --timeline-track-lane-padding-x: 8px; }
   .timelineViewport { overscroll-behavior-x: contain; touch-action: pan-x pan-y; }
   .timelineRuler { height: 28px; }
   .timelineRulerToolSlot { gap: 4px; padding: 0 8px; }
   .timelineRulerToolButton { width: 40px; height: 40px; }
-  .trackIconButton { width: 36px; height: 36px; }
-  .trackLabel { gap: 5px; padding: 0 8px; font-size: 11px; }
-  .trackLabelControls { width: 64px; gap: 4px; padding-right: 16px; }
   .trackLane { padding-inline: var(--timeline-track-lane-padding-x); }
   .timelinePanel :global([class*="timelineTopbar"]) { height: auto; min-height: 52px; grid-template-columns: auto minmax(max-content, 1fr); overflow-x: auto; overscroll-behavior-x: contain; padding: 6px 8px; scrollbar-width: none; }
   .timelinePanel :global([class*="timelineTopbar"]::-webkit-scrollbar) { width: 0; height: 0; }
   .timelinePanel :global([class*="timelineZoomSlot"]) { min-width: max-content; }
-  .timelinePanel :global([class*="timelineTransport"] button), .timelinePanel :global([class*="timelineZoomControl"] button), .timelinePanel :global([class*="timelineExportButton"]) { width: 40px; min-width: 40px; height: 40px; min-height: 40px; }
-  .timelinePanel :global([class*="timelineExportButton"]) { padding: 0; }
 }
+
+.timelinePanel { --timeline-track-label-width:200px; }
+.trackLabel { flex-wrap:wrap; gap:2px; padding:4px 8px; }
+.trackLabelMain { min-width:56px; }
+.trackLabelControls { width:auto; padding-right:0; gap:2px; }
+.trackIconButton { width:44px; height:44px; border:0; background:var(--studio-control-bg); color:var(--studio-text); }
+.trackAddButton { width:24px; height:24px; right:0; background:var(--studio-control-bg); color:var(--studio-text); }
+.timelineTrack { min-height:58px; }
+.timelinePanel :global([class*="timelineTopbar"]) { min-width:0; overflow:auto; overscroll-behavior:contain; }
+.timelinePanel :global([class*="timelineTransport"] button),.timelinePanel :global([class*="timelineZoomControl"] button),.timelinePanel :global([class*="timelineExportButton"]) { width:44px; min-width:44px; height:44px; min-height:44px; }
+.timelinePanel :global([class*="timelineExportButton"]) { width:auto; padding:0 12px; color:var(--studio-on-primary); }
+.timelinePanel :global([class*="timelineExportButton"] span) { display:inline; }
+.timelinePanel :global([class*="timelineZoomControl"]) { height:44px; }
+.timelinePanel :global([class*="timelineTopbar"]) { flex-basis:56px; height:56px; padding:6px 10px; }
+@media(max-width:620px) { .timelinePanel { --timeline-track-label-width:150px; } .trackLabelMain { flex:1 1 60px; } .trackLabelControls { width:100%; justify-content:flex-start; } .timelineTrack { min-height:94px; } }

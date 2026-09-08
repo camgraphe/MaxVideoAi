@@ -290,6 +290,8 @@ export type StudioCopy = {
         reset: string;
         resetConfirm: string;
         move: string;
+        compact: string;
+        expanded: string;
       };
       steps: Record<StudioGuideCopyKey, { title: string; body: string; ariaLabel: string }>;
     };
@@ -595,6 +597,8 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
         reset: 'Reset guide',
         resetConfirm: 'Restore deleted explanations and default positions? Your nodes and timeline will not change.',
         move: 'Move explanation',
+        compact: 'Compact markers',
+        expanded: 'Expanded explanations',
       },
       steps: {
         'guided-product-ad:reference': { title: 'Choose the product image', body: 'Replace this example with the product or packshot you want to animate.', ariaLabel: 'Step 1: Choose the product image' },
@@ -1065,15 +1069,30 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
       required: 'Required',
       optional: 'Optional',
       connections: 'Connections',
+      settings: 'Settings',
+      closeSettings: 'Close settings',
+      closeConnections: 'Close connections',
+      selectionActions: 'Selection actions',
+      blocks: 'blocks',
+      copySelection: 'Copy',
+      deleteSelection: 'Delete',
+      connectSource: 'Connect',
+      noCompatibleSources: 'No compatible source available. Add a source or disconnect an occupied input.',
+      disconnect: 'Disconnect',
+      audioUnavailable: 'Audio unavailable',
+      simulation: 'Simulation',
+      actions: 'Actions',
+      playMedia: 'Play video',
+      listen: 'Listen',
       connectedInputs: 'Connected inputs',
       connectedOutputs: 'Connected outputs',
       toNode: 'To {node}',
       fromNode: 'From {node}',
       noGraphConnections: 'No graph connections yet.',
       promptRoleSceneDescription: 'Scene description',
-      edgeReference: 'Reference',
-      edgeStartImage: 'Start image',
-      edgeEndImage: 'End image',
+      edgeReference: 'References',
+      edgeStartImage: 'Start frame',
+      edgeEndImage: 'End frame',
       edgeProduct: 'Product',
       edgeCharacter: 'Character',
       edgeStyle: 'Style',

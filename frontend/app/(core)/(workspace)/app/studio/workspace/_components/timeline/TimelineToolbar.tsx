@@ -1,5 +1,5 @@
 import { Download, MousePointer2, Redo2, Scissors, Undo2, ZoomIn, ZoomOut } from 'lucide-react';
-import { memo } from 'react';
+import { memo, type MouseEvent } from 'react';
 
 import styles from '../../_styles/timeline-controls.module.css';
 import type { StudioCopy } from '../../../_lib/studio-copy';
@@ -22,6 +22,8 @@ type TimelineToolbarProps = {
   onZoomChange: (pixelsPerSecond: number) => void;
   pixelsPerSecond: number;
   playheadSec: number;
+  selectionActionsLabel: string;
+  onOpenSelectionActions?: (event: MouseEvent<HTMLButtonElement>) => void;
 };
 
 const TIMELINE_ZOOM_STEP = 8;
@@ -42,6 +44,8 @@ export const TimelineToolbar = memo(function TimelineToolbar({
   onZoomChange,
   pixelsPerSecond,
   playheadSec,
+  selectionActionsLabel,
+  onOpenSelectionActions,
 }: TimelineToolbarProps) {
   return (
     <div className={styles.timelineTopbar} data-timeline-topbar="true">
@@ -55,6 +59,7 @@ export const TimelineToolbar = memo(function TimelineToolbar({
         </time>
       </div>
       <div className={styles.timelineZoomSlot}>
+        {onOpenSelectionActions ? <button type="button" className={styles.timelineSelectionActions} data-timeline-selection-actions aria-haspopup="menu" onClick={onOpenSelectionActions}>{selectionActionsLabel}</button> : null}
         <div className={styles.timelineTransport} data-timeline-transport="true">
           <button
             type="button"

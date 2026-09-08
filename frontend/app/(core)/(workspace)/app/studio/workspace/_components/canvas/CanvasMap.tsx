@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useRef, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import { Maximize2, Minus, Plus } from 'lucide-react';
 import { useReactFlow, useStore, type XYPosition } from '@xyflow/react';
 
@@ -418,11 +418,14 @@ export function CanvasMap({
   nodes: WorkspaceGraphNode[];
 }) {
   const reactFlow = useReactFlow<WorkspaceGraphNode, WorkspaceGraphEdge>();
+  const [isOpen, setIsOpen] = useState(false);
+  useEffect(() => { setIsOpen(!window.matchMedia('(max-width: 600px)').matches); }, []);
+  const motionDuration = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 160;
 
   const handleZoomOut = useCallback(
     (event: ReactMouseEvent<HTMLButtonElement>) => {
       event.stopPropagation();
-      void reactFlow.zoomOut({ duration: 160 });
+      void reactFlow.zoomOut({ duration: motionDuration() });
     },
     [reactFlow]
   );
@@ -430,7 +433,7 @@ export function CanvasMap({
   const handleFitView = useCallback(
     (event: ReactMouseEvent<HTMLButtonElement>) => {
       event.stopPropagation();
-      void reactFlow.fitView({ duration: 180, padding: 0.18, includeHiddenNodes: false });
+      void reactFlow.fitView({ duration: motionDuration(), padding: 0.18, includeHiddenNodes: false });
     },
     [reactFlow]
   );
@@ -438,23 +441,21 @@ export function CanvasMap({
   const handleZoomIn = useCallback(
     (event: ReactMouseEvent<HTMLButtonElement>) => {
       event.stopPropagation();
-      void reactFlow.zoomIn({ duration: 160 });
+      void reactFlow.zoomIn({ duration: motionDuration() });
     },
     [reactFlow]
   );
 
   return (
     <div
-      className={`${styles.canvasNavigator} nodrag nopan`}
+      className={`${styles.canvasNavigator} ${!isOpen ? styles.canvasNavigatorCollapsed : ''} nodrag nopan`}
       data-canvas-navigator="true"
       aria-label={copy.navigationLabel}
       onPointerDown={(event) => event.stopPropagation()}
       onClick={(event) => event.stopPropagation()}
     >
-      <div className={styles.canvasNavigatorHeader}>
-        <span>{copy.mapTitle}</span>
-      </div>
-      <CanvasMiniatureMap copy={copy} edges={edges} nodes={nodes} />
+      <button type="button" className={styles.canvasNavigatorHeader} aria-expanded={isOpen} aria-controls="canvas-map-content" onClick={() => setIsOpen(!isOpen)}>{copy.mapTitle}</button>
+      {isOpen ? <div id="canvas-map-content"><CanvasMiniatureMap copy={copy} edges={edges} nodes={nodes} />
       <div className={styles.canvasNavigatorControls} role="group" aria-label={copy.zoomControls}>
         <button type="button" onClick={handleZoomOut} aria-label={copy.zoomOut} title={copy.zoomOut}>
           <Minus size={13} strokeWidth={2.4} />
@@ -466,6 +467,7 @@ export function CanvasMap({
           <Plus size={13} strokeWidth={2.4} />
         </button>
       </div>
+      </div> : null}
     </div>
   );
 }

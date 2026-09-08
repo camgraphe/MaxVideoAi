@@ -75,13 +75,77 @@
     var(--studio-bg);
   color: var(--studio-text);
   font-family:
-    Inter,
+    var(--font-app, system-ui),
     ui-sans-serif,
     system-ui,
     -apple-system,
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
+}
+
+/* Studio's matte surfaces and saffron commands are scoped to this editor. */
+.editorShell {
+  --studio-bg:#171918;
+  --studio-bg-soft:#202321;
+  --studio-surface:#292c29;
+  --studio-surface-strong:#202320;
+  --studio-border:#454942;
+  --studio-text:#eeeee6;
+  --studio-text-strong:#faf9f1;
+  --studio-text-muted:#b5b9af;
+  --studio-primary:#e6bf76;
+  --studio-primary-2:#e6bf76;
+  --studio-active-control-bg:#e6bf76;
+  --studio-on-primary:#24251f;
+  --studio-accent-text:#edc984;
+  --studio-control-bg:#333730;
+  --studio-control-bg-hover:#41463b;
+  --studio-control-text:#eeeee6;
+  --studio-popover-bg:#252924;
+  --studio-popover-accent-bg:#252924;
+  --studio-popover-header-bg:#202320;
+  --studio-media-sidebar-bg:#202320;
+  --studio-media-input-bg:#292c29;
+  --studio-media-tool-bg:#292c29;
+  --studio-media-tile-bg:#292c29;
+  --studio-media-tile-hover-bg:#343a30;
+  --studio-media-dialog-bg:#252924;
+  --studio-media-footer-bg:#202320;
+  --studio-select-text:#eeeee6;
+  min-width:0;
+  width:100%;
+  height:100dvh;
+}
+
+.editorShell.editorShell[data-studio-theme="light"] {
+  --studio-bg:#eeeee6;
+  --studio-bg-soft:#e7e8de;
+  --studio-surface:#fafaf4;
+  --studio-surface-strong:#f6f6ef;
+  --studio-border:#cccec3;
+  --studio-text:#33372d;
+  --studio-text-strong:#20261b;
+  --studio-text-muted:#666f5c;
+  --studio-primary:#d6ad5d;
+  --studio-primary-2:#d6ad5d;
+  --studio-active-control-bg:#e8c98c;
+  --studio-on-primary:#282c20;
+  --studio-accent-text:#755217;
+  --studio-control-bg:#efefe6;
+  --studio-control-bg-hover:#e2e5d6;
+  --studio-control-text:#33372d;
+  --studio-popover-bg:#fafaf4;
+  --studio-popover-accent-bg:#fafaf4;
+  --studio-popover-header-bg:#efefe6;
+  --studio-media-sidebar-bg:#f6f6ef;
+  --studio-media-input-bg:#fafaf4;
+  --studio-media-tool-bg:#efefe6;
+  --studio-media-tile-bg:#fafaf4;
+  --studio-media-tile-hover-bg:#eeefe3;
+  --studio-media-dialog-bg:#fafaf4;
+  --studio-media-footer-bg:#f6f6ef;
+  --studio-select-text:#33372d;
 }
 
 .editorShell[data-studio-theme="light"] {
@@ -760,3 +824,48 @@
     transition: none;
   }
 }
+
+.projectsButton { border:0; background:none; color:var(--studio-text-muted); padding:0; text-align:left; font:inherit; font-size:11px; cursor:pointer; }
+.brandCluster { min-width:0; max-width:30%; }
+.brandCluster > div { min-width:0; }
+.brandCluster p { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.modeSwitch { padding:0; border:0; background:none; }
+.modeSwitch button { min-height:44px; border-radius:0; border-bottom:3px solid transparent; }
+.modeSwitch .modeActive { background:transparent; color:var(--studio-text-strong); border-bottom-color:var(--studio-primary); box-shadow:none; }
+.iconButton,.studioLanguageButton { min-width:44px; min-height:44px; }
+.desktopPanelCloseButton { display:flex; align-items:center; justify-content:space-between; width:100%; min-height:44px; padding:8px 16px; border:0; border-bottom:1px solid var(--studio-border); background:var(--studio-surface-strong); color:var(--studio-text); cursor:pointer; }
+.mobilePanelChrome:has(.desktopPanelCloseButton) { grid-template-rows:auto minmax(0,1fr); }
+.editorShell :focus-visible { outline:2px solid var(--studio-primary); outline-offset:-2px; }
+@media(max-width:1120px) {
+  .brandCluster { max-width:100%; flex:1 1 100%; }
+  .brandCluster > div { display:flex; align-items:center; gap:12px; width:100%; }
+  .projectsButton { min-height:44px; }
+  .brandLogo { width:24px; height:24px; }
+  .editorTopbar { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:4px 8px; padding:4px 8px; }
+  .brandCluster { grid-column:1/-1; }
+  .modeSwitch { grid-column:1; order:0; width:auto; }
+  .modeSwitch button { padding:0 8px; }
+  .topbarRight { grid-column:2; gap:4px; }
+  .topbarActions { gap:4px; }
+  .topbarRight .iconButton span { display:inline; }
+  .mobilePanelRail { border:0; padding:0; box-shadow:none; }
+  .mobilePanelButton,.mobilePanelButtonActive { min-height:44px; }
+  .editorShell :global([class*="canvasToolbar"] [class*="toolbarButton"]) { width:auto; min-width:44px; height:44px; flex:0 0 auto; }
+}
+@media(max-width:620px) {
+  .editorTopbar { grid-template-columns:1fr; }
+  .modeSwitch { grid-column:1; grid-row:3; }
+  .topbarRight { grid-column:1; justify-content:space-between; }
+  .editorShell { --timeline-panel-fallback-height:210px; grid-template-rows:auto minmax(0,1fr) minmax(150px,min(var(--timeline-panel-height,var(--timeline-panel-fallback-height)),30dvh)); }
+}
+@media(max-height:500px) and (min-width:621px) {
+  .editorTopbar { grid-template-columns:minmax(100px,1fr) auto auto; }
+  .brandCluster { grid-column:1; }
+  .brandCluster p { max-width:140px; }
+  .modeSwitch { grid-column:2; }
+  .topbarRight { grid-column:3; }
+  .editorShell { grid-template-rows:54px minmax(0,1fr) 110px; }
+  .editorBody { padding-top:48px; }
+  .projectMediaPanelSlot,.inspectorPanelSlot { top:48px; bottom:4px; }
+}
+@media(prefers-reduced-motion:reduce) { .editorShell * { animation-duration:0s !important; transition-duration:0s !important; scroll-behavior:auto !important; } }

@@ -9,7 +9,6 @@ import {
   FileText,
   ImageIcon,
   Music2,
-  Play,
   Plus,
   Send,
   Sparkles,
@@ -59,6 +58,7 @@ function EmptyMediaPicker({
       <span>{icon}</span>
       <strong>
         <Plus size={15} />
+        {label}
       </strong>
     </button>
   );
@@ -118,15 +118,10 @@ export function AssetVideoNode(props: NodeProps<WorkspaceGraphNode>) {
   return (
     <NodeFrame nodeId={props.id} data={props.data} selected={props.selected} icon={<Video size={14} />} className={styles.assetNode}>
       {playableVideoUrl ? (
-        <VideoPreview videoUrl={playableVideoUrl} posterUrl={thumbUrl || null} />
+        <VideoPreview videoUrl={playableVideoUrl} posterUrl={thumbUrl || null} label={copy?.playMedia} />
       ) : (
         <MediaPreview data={props.data} icon={<Video size={22} />} label={copy?.addVideo ?? 'Add video'} nodeId={props.id} />
       )}
-      {thumbUrl && !playableVideoUrl ? (
-        <div className={styles.previewPlayBadge}>
-          <Play size={14} />
-        </div>
-      ) : null}
       <AssetMeta data={props.data} />
     </NodeFrame>
   );
@@ -137,17 +132,12 @@ export function AssetAudioNode(props: NodeProps<WorkspaceGraphNode>) {
   const asset = props.data.asset;
   const audioUrl = asset && typeof asset === 'object' && 'url' in asset ? String(asset.url ?? '') : '';
   const playableAudioUrl = isPlayableAudioUrl(audioUrl) ? audioUrl : null;
-  const bars = [36, 58, 42, 76, 50, 64, 32, 82, 45, 68, 40, 54, 72, 35, 62, 48, 70, 44, 60, 38];
   return (
     <NodeFrame nodeId={props.id} data={props.data} selected={props.selected} icon={<Music2 size={14} />} className={styles.audioNode}>
       {playableAudioUrl ? (
-        <AudioPreview audioUrl={playableAudioUrl} />
+        <AudioPreview audioUrl={playableAudioUrl} label={copy?.listen} />
       ) : props.data.asset ? (
-        <div className={styles.waveform} aria-hidden="true">
-          {bars.map((height, index) => (
-            <span key={`${height}-${index}`} style={{ height: `${height}%` }} />
-          ))}
-        </div>
+        <div className={styles.nodePreviewEmpty}><Music2 size={24} /><span>{copy?.audioUnavailable ?? 'Audio unavailable'}</span></div>
       ) : (
         <EmptyMediaPicker data={props.data} icon={<Music2 size={22} />} label={copy?.addAudio ?? 'Add audio'} nodeId={props.id} />
       )}
@@ -170,6 +160,7 @@ export function TextPromptNode(props: NodeProps<WorkspaceGraphNode>) {
         value={value}
         onChange={(event) => props.data.onPromptChange?.(props.id, event.currentTarget.value)}
         rows={4}
+        aria-label={copy?.promptFallback ?? 'Prompt'}
         spellCheck={false}
       />
       <div className={styles.nodeMetaRow}>
@@ -192,6 +183,7 @@ export function NoteNode(props: NodeProps<WorkspaceGraphNode>) {
         value={value}
         onChange={(event) => props.data.onPromptChange?.(props.id, event.currentTarget.value)}
         rows={5}
+        aria-label={copy?.canvasNote ?? 'Canvas note'}
         spellCheck={false}
       />
       <div className={styles.nodeMetaRow}>
@@ -233,27 +225,24 @@ export function ShotNode(props: NodeProps<WorkspaceGraphNode>) {
 export function OutputNode(props: NodeProps<WorkspaceGraphNode>) {
   const copy = nodeCopy(props.data);
   const output = props.data.output;
-  const thumbUrl = output?.thumbUrl ?? output?.url ?? null;
+  const thumbUrl = output?.thumbUrl ?? (output?.kind === 'image' ? output.url : null);
   const status = outputStatus(output);
   const playableVideoUrl = output?.kind === 'video' && isPlayableVideoUrl(output.url) ? output.url : null;
   const playableAudioUrl = output?.kind === 'audio' && isPlayableAudioUrl(output.url) ? output.url : null;
   const canSendToTimeline = status === 'ready' && Boolean(output?.url);
   return (
-    <NodeFrame nodeId={props.id} data={props.data} selected={props.selected} icon={<Play size={14} />} className={styles.outputNode}>
+    <NodeFrame nodeId={props.id} data={props.data} selected={props.selected} icon={<Clapperboard size={14} />} className={styles.outputNode}>
       {playableVideoUrl ? (
-        <VideoPreview videoUrl={playableVideoUrl} posterUrl={output?.thumbUrl ?? null} />
+        <VideoPreview videoUrl={playableVideoUrl} posterUrl={output?.thumbUrl ?? null} label={copy?.playMedia} />
       ) : playableAudioUrl ? (
-        <AudioPreview audioUrl={playableAudioUrl} />
+        <AudioPreview audioUrl={playableAudioUrl} label={copy?.listen} />
       ) : thumbUrl ? (
         <div className={styles.nodePreview}>
           <img src={thumbUrl} alt="" />
-          <span className={styles.previewPlayBadge}>
-            <Play size={14} />
-          </span>
         </div>
       ) : (
         <div className={`${styles.nodePreviewEmpty} ${status === 'processing' ? styles.processingPreview : ''}`}>
-          {status === 'processing' ? <Sparkles size={22} /> : <Play size={22} />}
+          {status === 'processing' ? <Sparkles size={22} /> : <Clapperboard size={22} />}
           <span>{status === 'processing' ? copy?.processing ?? 'Processing' : copy?.placeholder ?? 'Placeholder'}</span>
         </div>
       )}
@@ -262,7 +251,7 @@ export function OutputNode(props: NodeProps<WorkspaceGraphNode>) {
         <span>{
           status === 'ready' && output?.sourceMetadata?.measurementStatus === 'measured' && output.sourceMetadata.durationSec
             ? `${output.sourceMetadata.durationSec}s`
-            : status
+            : copy?.[status] ?? status
         }</span>
       </div>
       <button
@@ -272,7 +261,7 @@ export function OutputNode(props: NodeProps<WorkspaceGraphNode>) {
         onClick={() => props.data.onSendOutputToTimeline?.(props.id)}
       >
         <Send size={13} />
-        {copy?.sendToTimeline ?? 'Send to timeline'}
+        {copy?.insertAtPlayhead ?? 'Insert at playhead'}
       </button>
     </NodeFrame>
   );

@@ -36,13 +36,15 @@
 .timelineTopbar {
   flex: 0 0 44px;
   display: grid;
-  grid-template-columns: minmax(118px, 1fr) minmax(0, auto);
+  grid-template-columns: minmax(90px, 1fr) minmax(0, auto);
   height: 44px;
   align-items: center;
   column-gap: 12px;
   padding: 0 18px;
   border-bottom: 1px solid var(--studio-border);
 }
+
+.timelineSelectionActions { min-height:44px; border:1px solid var(--studio-border); border-radius:8px; padding:0 12px; background:var(--studio-control-bg); color:var(--studio-text); font:inherit; font-size:12px; white-space:nowrap; cursor:pointer; }
 
 .timelineTimecodeCluster {
   display: flex;

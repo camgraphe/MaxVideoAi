@@ -31,6 +31,7 @@ import {
 } from '../../_lib/studio-copy';
 
 type UseWorkspaceRenderNodesOptions = {
+  mockMode: boolean;
   capabilities: WorkspaceModelCapability[];
   edges: WorkspaceGraphEdge[];
   nodes: WorkspaceGraphNode[];
@@ -129,6 +130,7 @@ function referencePreviewForShotNode(
 }
 
 export function useWorkspaceRenderNodes({
+  mockMode,
   capabilities,
   edges,
   nodes,
@@ -230,6 +232,7 @@ export function useWorkspaceRenderNodes({
           referencePreview: referencePreviewForShotNode(node, nodes, edges),
           validation,
           pricingEstimate: pricingEstimates[node.id],
+          mockGeneration: mockMode,
           studioCanvasCopy,
           onGenerateShot: (nodeId: string): void => {
             void onGenerateShot(nodeId);
@@ -238,5 +241,5 @@ export function useWorkspaceRenderNodes({
         },
       };
     });
-  }, [capabilities, edges, nodes, onGenerateShot, onOpenAssetLibrary, onPatchNodeData, onPatchShot, onRunChat, onSendOutputToTimeline, pricingEstimates, studioCanvasCopy]);
+  }, [capabilities, edges, mockMode, nodes, onGenerateShot, onOpenAssetLibrary, onPatchNodeData, onPatchShot, onRunChat, onSendOutputToTimeline, pricingEstimates, studioCanvasCopy]);
 }

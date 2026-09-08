@@ -4,6 +4,8 @@
 
 import baseStyles from '../maxvideoai-editor.module.css';
 import inspectorStyles from '../_styles/inspector.module.css';
+import { AudioPreview, VideoPreview } from './nodes/workspace-node-media-preview';
+import type { StudioCopy } from '../../_lib/studio-copy';
 import {
   isPlayableAudioUrl,
   isPlayableVideoUrl,
@@ -15,25 +17,27 @@ export function NodeInspectorMediaPreview({
   kind,
   thumbUrl,
   url,
+  copy,
 }: {
   kind?: string;
   thumbUrl?: string | null;
   url?: string | null;
+  copy: StudioCopy['canvas']['nodes'];
 }) {
   const playableVideoUrl = kind === 'video' && isPlayableVideoUrl(url) ? url : null;
   const playableAudioUrl = kind === 'audio' && isPlayableAudioUrl(url) ? url : null;
-  const previewUrl = thumbUrl ?? url ?? null;
+  const previewUrl = thumbUrl ?? (kind === 'image' || kind === 'logo' ? url : null);
   if (playableVideoUrl) {
     return (
       <div className={styles.inspectorPreview}>
-        <video className={`${styles.previewVideo} nodrag`} controls playsInline preload="metadata" poster={thumbUrl ?? undefined} src={playableVideoUrl} />
+        <VideoPreview videoUrl={playableVideoUrl} posterUrl={thumbUrl} label={copy.playMedia} />
       </div>
     );
   }
   if (playableAudioUrl) {
     return (
       <div className={styles.inspectorPreview}>
-        <audio className={`${styles.previewAudio} nodrag`} controls preload="metadata" src={playableAudioUrl} />
+        <AudioPreview audioUrl={playableAudioUrl} label={copy.listen} />
       </div>
     );
   }

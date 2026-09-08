@@ -56,7 +56,7 @@
 
 .shotSettingsGrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 7px;
 }
 
@@ -251,3 +251,17 @@
 .shotValidationWarning svg {
   color: var(--studio-warning-text);
 }
+
+.shotControlPanel { gap:12px; background:none; }
+.shotControlField { font-size:11px; text-transform:none; gap:6px; }
+.shotModelField { grid-template-columns:1fr; }
+.shotSelect { height:36px; font-size:12px; background:var(--studio-control-bg); border-color:var(--studio-border); }
+.shotModelSummary { grid-template-columns:1fr; font-size:11px; }
+.shotModelSummary strong { font-size:14px; text-align:left; }
+.shotGenerateButton { min-height:44px; background:var(--studio-primary); color:var(--studio-on-primary); font-size:13px; box-shadow:none; }
+.shotGeneratePrice { font-size:12px; }
+.shotValidationLine { font-size:11px; grid-template-columns:auto minmax(0,1fr); }
+.shotValidationLine small { grid-column:1/-1; white-space:normal; font-size:11px; }
+.shotToggleRow { height:36px; font-size:11px; }
+.shotToggleButton { min-height:28px; font-size:11px; }
+.shotOptionsButton { display:flex; justify-content:center; min-height:36px; align-items:center; border:1px solid var(--studio-border); border-radius:8px; background:var(--studio-control-bg); color:var(--studio-text); font:inherit; font-size:12px; cursor:pointer; }

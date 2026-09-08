@@ -94,6 +94,7 @@ export function ShotInputDock({ data }: { data: WorkspaceGraphNode['data'] }) {
                   {required ? ' *' : ''}
                 </span>
                 {capacityLabel ? <span className={styles.shotInputCapacity}>{capacityLabel}</span> : null}
+                <button type="button" className={`${styles.connectorAction} nodrag`} data-canvas-connect-handle={handle} aria-label={`${copy.connections}: ${label}`}>{copy.connectSource}</button>
               </div>
             );
           })}

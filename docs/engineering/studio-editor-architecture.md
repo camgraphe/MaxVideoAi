@@ -98,6 +98,18 @@ Use this map before adding new code. If a change does not fit one of these owner
 
 When a feature crosses surfaces, split it by owner. For example, a generated video output used in the timeline should have canvas output metadata in node code, Project media card behavior in the media controller/sidebar, and insertion rules in timeline helpers.
 
+### Connected editor interaction contract
+
+The Studio shell owns its matte surfaces, type hierarchy and saffron selection tokens locally; do not project its CSS into the global application. `CanvasSelectionActions` stays in screen space, with Settings and Connections direct and secondary operations in Actions. Selection never opens the inspector implicitly. `useWorkspaceMobilePanels.inspectCanvasNode` combines explicit inspection with immediate drawer opening at the shell's mobile breakpoint; closing preserves selection and returns focus.
+
+`CanvasFloatingToolbar.onCreateBlock` creates exactly one block at the visible canvas center for click, tap or Enter. Palette dragging keeps its precise drop location; it does not reuse a second-click placement arm. `CanvasConnectionPicker` builds candidates through `workspaceConnectionCandidates` and the existing graph validator, then invokes the same connect/remove callbacks as handles. Disconnect uses normal graph history and does not delete its source. The guide menu retains hide/reset/delete and an explicit compact-marker option. The miniature map starts collapsed on small screens.
+
+`workspaceGenerationActionReady` is shared by shot cards, their inspector and the generation action callback. Live needs current ready pricing; a recalculating request clears the old amount immediately. Explicit Mock can simulate without a Live quote but still passes operational/model/input validation. `submitWorkspaceShotGeneration` must propagate Live failures in every environment, never silently substitute mock outputs. Certification and common/advanced field ownership remain in existing block policies and the canonical inspector.
+
+Canvas `VideoPreview`/`AudioPreview` and `NodeInspectorMediaPreview` mount native controls only after explicit playback intent, with `preload="none"`. Originals are unchanged. Images and unavailable media do not expose pretend Play controls. This is not a change to `ProgramPlaybackLayers` or program synchronization: those timeline readers remain separate owners and still require measured loading work. Compare network/interaction results before claiming performance improvements.
+
+The named track-actions button and selected-clip toolbar action invoke the existing timeline context-menu callbacks. Keep their 44px targets, keyboard navigation, constrained popovers and original edit/link/undo semantics.
+
 ## Guided Canvas Annotations
 
 - Guided annotations are per-canvas presentation state, not graph nodes.

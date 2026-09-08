@@ -22,7 +22,6 @@ import {
   Save,
   SlidersHorizontal,
   Sparkles,
-  Trash2,
   Type,
   Undo2,
   Video,
@@ -39,7 +38,6 @@ import type {
 } from '../../_lib/workspace-types';
 import {
   PALETTE_DRAG_START_EVENT,
-  PALETTE_PLACEMENT_ARM_EVENT,
 } from './CanvasPaletteDragPreview';
 import type { StudioCopy } from '../../../_lib/studio-copy';
 import { StudioMenu } from '../ui/StudioMenu';
@@ -57,7 +55,6 @@ type ToolbarBlockDefinition = {
   description: string;
   icon: ReactNode;
   accent: string;
-  meta: string[];
 };
 
 type ToolbarBlockStyle = CSSProperties & {
@@ -79,27 +76,11 @@ export type CanvasFloatingToolbarProps = {
   onSaveCanvasTemplate: (name: string) => void;
   onSelectionToolChange: (tool: CanvasSelectionTool) => void;
   onUndo: () => void;
+  onCreateBlock: (kind: WorkspaceNodeKind, presetId?: WorkspaceGenerationPresetId) => void;
 };
 
 function copyValue(copy: StudioCopy['canvas']['nodes'], key: string, fallback: string): string {
   return copy[key] ?? fallback;
-}
-
-function uniqueMeta(values: string[]): string[] {
-  return Array.from(new Set(values.filter(Boolean))).slice(0, 3);
-}
-
-function outputKindLabel(kind: WorkspaceBlockPreset['outputKind'], copy: StudioCopy['canvas']['nodes']): string {
-  if (kind === 'audio') return copy.audioReference;
-  if (kind === 'image') return copy.image;
-  if (kind === 'text') return copy.text;
-  return copy.video;
-}
-
-function presetMeta(preset: WorkspaceBlockPreset, copy: StudioCopy['canvas']['nodes']): string[] {
-  const workflowLabel = preset.family === 'upscale' ? copy.upscale : copy.workflow;
-  const modeLabel = preset.nodeKind === 'chat' ? copy.chatbotMode : workflowLabel;
-  return uniqueMeta([outputKindLabel(preset.outputKind, copy), modeLabel, copy.outputs]);
 }
 
 function blockFromPreset(preset: WorkspaceBlockPreset, copy: StudioCopy['canvas']['nodes'], icon: ReactNode): ToolbarBlockDefinition {
@@ -111,7 +92,6 @@ function blockFromPreset(preset: WorkspaceBlockPreset, copy: StudioCopy['canvas'
     description: copyValue(copy, preset.descriptionKey, preset.id),
     icon,
     accent: preset.accent,
-    meta: presetMeta(preset, copy),
   };
 }
 
@@ -129,7 +109,6 @@ function presetBlock(
       description: presetId,
       icon,
       accent: '#8b5cf6',
-      meta: uniqueMeta([copy.workflow, copy.outputs]),
     };
   }
   return blockFromPreset(preset, copy, icon);
@@ -145,7 +124,6 @@ function toolbarBlocks(copy: StudioCopy['canvas']['nodes']): Record<'audio' | 'i
         description: copy.imageDescription,
         icon: <ImagePlus size={18} />,
         accent: '#8b5cf6',
-        meta: uniqueMeta([copy.image, copy.assetFallback, copy.outputs]),
       },
       presetBlock('generate-image', copy, <WandSparkles size={18} />),
       presetBlock('modify-image', copy, <SlidersHorizontal size={18} />),
@@ -161,7 +139,6 @@ function toolbarBlocks(copy: StudioCopy['canvas']['nodes']): Record<'audio' | 'i
         description: copy.videoDescription,
         icon: <Video size={18} />,
         accent: '#3b82f6',
-        meta: uniqueMeta([copy.video, copy.assetFallback, copy.outputs]),
       },
       presetBlock('generate-video', copy, <Clapperboard size={18} />),
       presetBlock('modify-video', copy, <SlidersHorizontal size={18} />),
@@ -172,11 +149,10 @@ function toolbarBlocks(copy: StudioCopy['canvas']['nodes']): Record<'audio' | 'i
       {
         id: 'music',
         kind: 'asset-audio',
-        label: copy.music,
+        label: copy.edgeAudio,
         description: copy.musicDescription,
         icon: <Music2 size={18} />,
         accent: '#22c55e',
-        meta: uniqueMeta([copy.audioReference, copy.assetFallback, copy.outputs]),
       },
       presetBlock('audio-music', copy, <WandSparkles size={18} />),
       presetBlock('audio-voiceover', copy, <Mic2 size={18} />),
@@ -192,7 +168,6 @@ function toolbarBlocks(copy: StudioCopy['canvas']['nodes']): Record<'audio' | 'i
         description: copy.freeTextDescription,
         icon: <Type size={18} />,
         accent: '#60a5fa',
-        meta: uniqueMeta([copy.text, copy.promptRole, copy.outputs]),
       },
       presetBlock('chat-box', copy, <MessageSquareText size={18} />),
     ],
@@ -210,14 +185,13 @@ export function CanvasFloatingToolbar({
   canUndo,
   canRenameActiveCanvas,
   selectionTool,
-  selectedNodeCount,
-  onDeleteSelectedNodes,
   onRedo,
   onRenameActiveCanvas,
   onSaveActiveCanvas,
   onSaveCanvasTemplate,
   onSelectionToolChange,
   onUndo,
+  onCreateBlock,
 }: CanvasFloatingToolbarProps) {
   const suppressBlockClickRef = useRef(false);
   const [activeMenu, setActiveMenu] = useState<ToolbarMenuId | null>(null);
@@ -288,21 +262,9 @@ export function CanvasFloatingToolbar({
       return;
     }
 
-    const rect = event.currentTarget.getBoundingClientRect();
-    const clientX = event.clientX || rect.left + rect.width / 2;
-    const clientY = event.clientY || rect.top + rect.height / 2;
     clearTextSelection();
     setActiveMenu(null);
-    window.dispatchEvent(
-      new CustomEvent(PALETTE_PLACEMENT_ARM_EVENT, {
-        detail: {
-          kind,
-          presetId,
-          clientX,
-          clientY,
-        },
-      })
-    );
+    onCreateBlock(kind, presetId);
   };
 
   const handleSaveCanvasAs = (event: FormEvent<HTMLFormElement>) => {
@@ -372,15 +334,6 @@ export function CanvasFloatingToolbar({
       >
         <BoxSelect size={18} />
       </button>
-      <button
-        type="button"
-        className={styles.toolbarButton}
-        aria-label={copy.toolbar.deleteSelectedNodes}
-        disabled={selectedNodeCount === 0}
-        onClick={onDeleteSelectedNodes}
-      >
-        <Trash2 size={18} />
-      </button>
 
       <span className={styles.toolbarSeparator} />
 
@@ -395,7 +348,7 @@ export function CanvasFloatingToolbar({
           <ToolbarMenuButton
             active={activeMenu === 'image'}
             icon={<ImagePlus size={18} />}
-            label={copy.toolbar.imageTools}
+            label={copy.nodes.image}
             menuId="image"
             triggerProps={triggerProps}
           />
@@ -415,7 +368,7 @@ export function CanvasFloatingToolbar({
           <ToolbarMenuButton
             active={activeMenu === 'video'}
             icon={<Video size={18} />}
-            label={copy.toolbar.videoTools}
+            label={copy.nodes.video}
             menuId="video"
             triggerProps={triggerProps}
           />
@@ -435,7 +388,7 @@ export function CanvasFloatingToolbar({
           <ToolbarMenuButton
             active={activeMenu === 'audio'}
             icon={<Music2 size={18} />}
-            label={copy.toolbar.audioTools}
+            label={copy.nodes.edgeAudio}
             menuId="audio"
             triggerProps={triggerProps}
           />
@@ -455,7 +408,7 @@ export function CanvasFloatingToolbar({
           <ToolbarMenuButton
             active={activeMenu === 'text'}
             icon={<Type size={18} />}
-            label={copy.toolbar.textTools}
+            label={copy.nodes.text}
             menuId="text"
             triggerProps={triggerProps}
           />
@@ -567,6 +520,7 @@ function ToolbarMenuButton({
       onKeyDown={triggerProps.onKeyDown}
     >
       {icon}
+      {menuId !== 'save' ? <span>{label}</span> : null}
     </button>
   );
 }
@@ -614,11 +568,6 @@ function BlockOptionList({
           <span className={styles.blockOptionContent}>
             <strong>{block.label}</strong>
             <small>{block.description}</small>
-            <span className={styles.blockOptionMeta} aria-hidden="true">
-              {block.meta.map((item) => (
-                <em key={item}>{item}</em>
-              ))}
-            </span>
           </span>
         </button>
       ))}

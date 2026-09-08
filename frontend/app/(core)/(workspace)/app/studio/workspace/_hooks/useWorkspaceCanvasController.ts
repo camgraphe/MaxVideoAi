@@ -203,6 +203,7 @@ export function useWorkspaceCanvasController({
     edges,
     mockMode,
     nodes,
+    pricingEstimates,
     onGeneratedProjectAsset,
     patchShot,
     setActiveEditorSurface,
@@ -236,6 +237,7 @@ export function useWorkspaceCanvasController({
   });
 
   const renderNodes = useWorkspaceRenderNodes({
+    mockMode,
     capabilities,
     edges,
     nodes,

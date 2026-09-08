@@ -13,12 +13,14 @@ import {
 } from '../_lib/workspace-generation';
 import { workspaceAssetFromOutputNode } from '../_lib/workspace-generated-media';
 import { resolveWorkspaceEngineOperationalEligibility } from '../_lib/models/workspace-engine-availability';
+import { workspaceGenerationActionReady } from '../_lib/workspace-canvas-actions';
 import type {
   WorkspaceAssetRecord,
   WorkspaceChatMessage,
   WorkspaceGraphEdge,
   WorkspaceGraphNode,
   WorkspaceModelCapability,
+  WorkspacePricingEstimate,
   WorkspaceShotSettings,
 } from '../_lib/workspace-types';
 import {
@@ -44,6 +46,7 @@ type UseWorkspaceGenerationActionsParams = {
   edges: WorkspaceGraphEdge[];
   mockMode: boolean;
   nodes: WorkspaceGraphNode[];
+  pricingEstimates: Record<string, WorkspacePricingEstimate>;
   onGeneratedProjectAsset: (asset: WorkspaceAssetRecord) => void;
   patchShot: (nodeId: string, patch: Partial<WorkspaceShotSettings>) => void;
   setActiveEditorSurface: Dispatch<SetStateAction<WorkspaceEditorSurface>>;
@@ -99,6 +102,7 @@ export function useWorkspaceGenerationActions({
   edges,
   mockMode,
   nodes,
+  pricingEstimates,
   onGeneratedProjectAsset,
   patchShot,
   setActiveEditorSurface,
@@ -126,6 +130,11 @@ export function useWorkspaceGenerationActions({
       if (!operationalEligibility.isOperational || !validation.canGenerate) {
         patchShot(nodeId, { status: 'incompatible' });
         setNotice(studioNotices.generationInvalidInputs);
+        return;
+      }
+      const estimate = pricingEstimates[nodeId];
+      if (!workspaceGenerationActionReady(validation.canGenerate, shotNode.data.shot.status, estimate, mockMode)) {
+        setNotice(estimate?.error ?? estimate?.label ?? studioCanvasNodeCopy.estimating);
         return;
       }
 
@@ -320,6 +329,7 @@ export function useWorkspaceGenerationActions({
       capabilities,
       edges,
       mockMode,
+      pricingEstimates,
       nodes,
       onGeneratedProjectAsset,
       patchShot,

@@ -12,6 +12,7 @@ type WorkspaceMobilePanelFrameProps = {
   closeLabel: string;
   title: string;
   onClose: () => void;
+  desktopClose?: boolean;
 };
 
 export function WorkspaceMobilePanelFrame({
@@ -19,6 +20,7 @@ export function WorkspaceMobilePanelFrame({
   closeLabel,
   title,
   onClose,
+  desktopClose = false,
 }: WorkspaceMobilePanelFrameProps) {
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key !== 'Escape') return;
@@ -31,8 +33,9 @@ export function WorkspaceMobilePanelFrame({
     <div className={styles.mobilePanelChrome} onKeyDown={handleKeyDown}>
       <button
         type="button"
-        className={styles.mobilePanelCloseButton}
+        className={`${styles.mobilePanelCloseButton} ${desktopClose ? styles.desktopPanelCloseButton : ''}`}
         data-mobile-panel-close="true"
+        data-canvas-inspector-close={desktopClose || undefined}
         aria-label={closeLabel}
         onClick={onClose}
       >

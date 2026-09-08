@@ -4,7 +4,7 @@
   top: 16px;
   z-index: 7;
   width: 180px;
-  height: 166px;
+  height: 196px;
   overflow: hidden;
   border: 1px solid var(--studio-border);
   border-radius: 11px;
@@ -19,7 +19,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 34px;
+  min-height: 44px;
+  width:100%;
+  border:0;
+  background:var(--studio-surface-strong);
+  pointer-events:auto;
+  cursor:pointer;
   padding: 0 11px;
   border-bottom: 1px solid var(--studio-border);
   color: var(--studio-text);
@@ -28,6 +33,8 @@
   letter-spacing: 0;
   text-transform: uppercase;
 }
+.canvasNavigatorCollapsed { height:44px; width:auto; }
+@media(max-width:600px) { .canvasNavigator { top:76px; right:8px; } }
 
 .canvasNavigatorControls {
   position: absolute;
@@ -43,7 +50,7 @@
 .canvasNavigatorControls button {
   display: inline-flex;
   width: 100%;
-  height: 28px;
+  height: 44px;
   align-items: center;
   justify-content: center;
   border: 0;
@@ -63,7 +70,7 @@
 .canvasMiniMap {
   position: absolute;
   right: 24px;
-  top: 40px;
+  top: 50px;
   z-index: 8;
   display: block;
   width: 164px;

@@ -178,14 +178,14 @@ export function WorkspaceEditorLayout({
     sequenceName: localizeStudioGeneratedSequenceDisplayName(exportState.exportManifest.sequenceName, studioCopy.viewer.projectMedia),
   };
   const shouldShowCanvasInspector = focusMode === 'canvas' && isCanvasInspectorOpen && Boolean(canvas.selectedNode);
-  const canOpenMobileProjectMedia = focusMode === 'viewer';
   const canOpenMobileInspector = focusMode === 'viewer' || shouldShowCanvasInspector;
   const mobileInspectorLabel = focusMode === 'canvas' ? studioCopy.canvas.nodes.inspectorTitle : studioCopy.timeline.inspector.clipInspector;
   const closeProjectMediaDrawerLabel = `${studioCopy.projects.closeDialog}: ${studioCopy.viewer.projectMedia.title}`;
   const closeInspectorDrawerLabel = `${studioCopy.projects.closeDialog}: ${mobileInspectorLabel}`;
   const mobilePanels = useWorkspaceMobilePanels({
     canOpenInspector: canOpenMobileInspector,
-    canOpenProjectMedia: canOpenMobileProjectMedia,
+    canOpenProjectMedia: focusMode === 'viewer',
+    onInspectCanvasNode: selection.handleInspectCanvasNode,
     focusMode,
   });
   const canvasGuideViewport = useWorkspaceCanvasGuideViewport({ activeTemplateId, activeUserCanvasTemplateId, canvasRevision, sourceTemplateId: canvas.guide.state.sourceTemplateId });
@@ -233,7 +233,7 @@ export function WorkspaceEditorLayout({
           inspectorLabel={mobileInspectorLabel}
           mediaLabel={studioCopy.viewer.projectMedia.title}
           showInspector={canOpenMobileInspector}
-          showMedia={canOpenMobileProjectMedia}
+          showMedia={focusMode === 'viewer'}
           onTogglePanel={mobilePanels.togglePanel}
         />
         {focusMode === 'viewer' ? (
@@ -294,7 +294,7 @@ export function WorkspaceEditorLayout({
             onCanvasInteraction={selection.handleCanvasInteraction}
             onSelectedNodeChange={selection.handleSelectedCanvasNodeChange}
             onSelectedNodeSync={selection.handleSyncSelectedCanvasNode}
-            onInspectNode={selection.handleInspectCanvasNode}
+            onInspectNode={mobilePanels.inspectCanvasNode}
             onViewportChange={canvasGuideViewport.onViewportChange}
             toolbar={{
               activeCanvasName: userCanvasTemplates.find((template) => template.id === activeUserCanvasTemplateId)?.name ?? null,
@@ -363,7 +363,8 @@ export function WorkspaceEditorLayout({
             <WorkspaceMobilePanelFrame
               closeLabel={closeInspectorDrawerLabel}
               title={mobileInspectorLabel}
-              onClose={mobilePanels.closePanel}
+              desktopClose
+              onClose={() => { mobilePanels.closePanel(); selection.handleCloseCanvasInspector(); }}
             >
               {shouldShowCanvasInspector ? (
                 <WorkspaceCanvasInspectorPanel
@@ -402,7 +403,6 @@ export function WorkspaceEditorLayout({
           </div>
         )}
       </div>
-
       <WorkspaceTimeline
         copy={studioCopy.timeline}
         canvasNodeCopy={studioCopy.canvas.nodes}

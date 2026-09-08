@@ -1675,10 +1675,10 @@ test('Studio shot-node pricing errors remain available beyond the compact price 
     'utf8'
   );
 
-  assert.match(nodeControlsSource, /const pricingDetail = data\.pricingEstimate\?\.error \?\? estimatedCost/);
+  assert.match(nodeControlsSource, /const pricingDetail = data\.mockGeneration \? estimatedCost : data\.pricingEstimate\?\.error \?\? estimatedCost/);
   assert.match(nodeControlsSource, /title=\{pricingDetail\}/);
   assert.match(nodeControlsSource, /aria-label=\{pricingDetail\}/);
-  assert.match(nodeControlsSource, /const statusDetail = data\.pricingEstimate\?\.error[\s\S]*data\.pricingEstimate\.error[\s\S]*: validationText/);
+  assert.match(nodeControlsSource, /const statusDetail = !data\.mockGeneration && data\.pricingEstimate\?\.error[\s\S]*data\.pricingEstimate\.error[\s\S]*: validationText/);
   assert.match(nodeControlsSource, /<small title=\{statusDetail\}>\{statusDetail\}<\/small>/);
 });
 

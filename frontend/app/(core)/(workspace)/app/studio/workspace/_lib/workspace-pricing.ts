@@ -208,13 +208,10 @@ export function buildWorkspaceStoryboardImageEstimateRequest({
   };
 }
 
-export function loadingWorkspacePricingEstimate(previous?: WorkspacePricingEstimate): WorkspacePricingEstimate {
+export function loadingWorkspacePricingEstimate(): WorkspacePricingEstimate {
   return {
     status: 'loading',
-    label: previous?.status === 'ready' ? previous.label : 'Estimating...',
-    totalCents: previous?.totalCents,
-    currency: previous?.currency,
-    pricing: previous?.pricing,
+    label: 'Estimating...',
   };
 }
 

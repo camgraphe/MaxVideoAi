@@ -806,40 +806,25 @@ export async function submitWorkspaceShotGeneration(params: {
     capability: params.capability,
     connectedInputs,
   }).workflowType;
-  try {
-    const { submitWorkspaceGenerationByFamily } = await import('./workspace-generation-routing');
-    const outputs = await submitWorkspaceGenerationByFamily({
-      nodes: params.nodes,
-      edges: params.edges,
-      shotNode,
-      settings: generationInputs.settings,
-      capability: params.capability,
-      prompt: generationInputs.prompt,
-      outputName: generationInputs.outputName,
-      connectedInputs,
-      resolvedWorkflowType,
-      submissionId,
-    });
-    return createWorkspaceGenerationResults({
-      shotNode,
-      settings: generationInputs.settings,
-      capability: params.capability,
-      outputs,
-      siblingCount,
-      submissionId,
-    });
-  } catch (error) {
-    if (process.env.NODE_ENV !== 'production') {
-      return createMockWorkspaceOutputs({
-        shotNode,
-        settings: generationInputs.settings,
-        capability: params.capability,
-        nodes: params.nodes,
-        edges: params.edges,
-        siblingCount,
-        submissionId,
-      });
-    }
-    throw error;
-  }
+  const { submitWorkspaceGenerationByFamily } = await import('./workspace-generation-routing');
+  const outputs = await submitWorkspaceGenerationByFamily({
+    nodes: params.nodes,
+    edges: params.edges,
+    shotNode,
+    settings: generationInputs.settings,
+    capability: params.capability,
+    prompt: generationInputs.prompt,
+    outputName: generationInputs.outputName,
+    connectedInputs,
+    resolvedWorkflowType,
+    submissionId,
+  });
+  return createWorkspaceGenerationResults({
+    shotNode,
+    settings: generationInputs.settings,
+    capability: params.capability,
+    outputs,
+    siblingCount,
+    submissionId,
+  });
 }

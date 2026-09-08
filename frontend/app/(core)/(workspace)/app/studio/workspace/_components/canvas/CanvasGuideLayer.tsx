@@ -2,6 +2,7 @@
 
 import {
   getNodesBounds,
+  getViewportForBounds,
   useOnViewportChange,
   useReactFlow,
 } from '@xyflow/react';
@@ -378,6 +379,7 @@ export function CanvasGuideLayer({
   const reportCanvasProtectedRects = presentation.reportCanvasProtectedRects;
   const reactFlow = useReactFlow<WorkspaceGraphNode, WorkspaceGraphEdge>();
   const [guideMenuOpen, setGuideMenuOpen] = useState(false);
+  const [compactMarkers, setCompactMarkers] = useState(false);
   const [placements, setPlacements] = useState<PlacedCanvasAnnotation[]>([]);
   const [dragPreview, setDragPreview] = useState<{ annotationId: string; position: WorkspaceGuidePoint } | null>(null);
   const calloutRefs = useRef(new Map<string, HTMLElement>());
@@ -457,7 +459,7 @@ export function CanvasGuideLayer({
     }
 
     const zoom = reactFlow.getZoom();
-    const compact = compactWorkspaceGuideAtZoom(zoom);
+    const compact = compactMarkers || compactWorkspaceGuideAtZoom(zoom);
     const placementGap = compact || presentation.isMobile
       ? WORKSPACE_GUIDE_COMPACT_GAP
       : WORKSPACE_GUIDE_DESKTOP_GAP;
@@ -557,10 +559,10 @@ export function CanvasGuideLayer({
       ));
       if (allNodesMeasured) {
         initialFit.markCompleted();
-        void reactFlow.fitBounds(
+        void reactFlow.setViewport(getViewportForBounds(
           expandWorkspaceGuideFitBounds(getNodesBounds(nodes), GUIDE_CALLOUT_FALLBACK_SIZE),
-          { padding: 0 },
-        );
+          canvasRect.width, canvasRect.height, 0.72, 1, 0,
+        ));
       }
     }
   };
@@ -574,6 +576,7 @@ export function CanvasGuideLayer({
     scheduleMeasure();
   }, [
     canvasAnnotations,
+    compactMarkers,
     edges,
     guide.state.hidden,
     guideMenuOpen,
@@ -818,6 +821,9 @@ export function CanvasGuideLayer({
             }}
           >
             {guide.state.hidden ? copy.controls.show : copy.controls.hide}
+          </button>
+          <button type="button" role="menuitem" onClick={() => { setCompactMarkers(!compactMarkers); setGuideMenuOpen(false); }}>
+            {compactMarkers ? copy.controls.expanded : copy.controls.compact}
           </button>
           <button type="button" role="menuitem" onClick={handleDeleteAll}>
             {copy.controls.deleteAll}

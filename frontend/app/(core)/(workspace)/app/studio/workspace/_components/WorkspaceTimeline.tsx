@@ -418,6 +418,8 @@ export function WorkspaceTimeline({
         aria-label={copy.tools.resizeTimeline}
       />
       <TimelineToolbar
+        selectionActionsLabel={canvasNodeCopy.selectionActions}
+        onOpenSelectionActions={selectedItem ? (event) => handleOpenClipContextMenu(event, selectedItem) : undefined}
         activeTimelineTool={activeTimelineTool}
         canRedo={canRedo}
         canUndo={canUndo}

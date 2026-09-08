@@ -56,8 +56,8 @@ export function WorkspaceEditorTopbar({
           priority
         />
         <div>
-          <p>{studioCopy.topbar.productName}</p>
-          <span>{studioCopy.topbar.breadcrumbProjects} / {displayTemplateName} / {studioCopy.topbar.breadcrumbWorkspace}</span>
+          <button type="button" className={styles.projectsButton} onClick={onExitToProjects}>{studioCopy.topbar.breadcrumbProjects}</button>
+          <p title={displayTemplateName}>{displayTemplateName}</p>
         </div>
       </div>
       <div className={styles.modeSwitch} aria-label={studioCopy.topbar.workspaceViewLabel}>

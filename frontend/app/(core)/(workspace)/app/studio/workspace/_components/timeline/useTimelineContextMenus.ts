@@ -53,7 +53,7 @@ export function useTimelineContextMenus({
     setTrackMenu(null);
   }, []);
 
-  const handleOpenClipContextMenu = useCallback((event: MouseEvent<HTMLDivElement>, item: WorkspaceTimelineItem) => {
+  const handleOpenClipContextMenu = useCallback((event: MouseEvent<HTMLElement>, item: WorkspaceTimelineItem) => {
     event.preventDefault();
     event.stopPropagation();
     const clickedKey = selectionKeyForTimelineItem(item);
@@ -77,7 +77,7 @@ export function useTimelineContextMenus({
       itemIds: menuItemIds,
       selectedClipCount: menuItems.length,
       x: viewportWidth ? Math.min(event.clientX, Math.max(12, viewportWidth - 224)) : event.clientX,
-      y: viewportHeight ? Math.min(event.clientY, Math.max(12, viewportHeight - 120)) : event.clientY,
+      y: viewportHeight ? Math.max(12, Math.min(event.clientY, viewportHeight - 160)) : event.clientY,
     });
   }, [items, onSelectItem, selectedItemIds, selectedKeys]);
 
@@ -88,7 +88,7 @@ export function useTimelineContextMenus({
     setClipMenu(null);
   }, [clipMenu, onLinkItems, onUnlinkItems]);
 
-  const handleOpenTrackContextMenu = useCallback((event: MouseEvent<HTMLDivElement>, track: TimelineTrackDefinition) => {
+  const handleOpenTrackContextMenu = useCallback((event: MouseEvent<HTMLElement>, track: TimelineTrackDefinition) => {
     event.preventDefault();
     event.stopPropagation();
     setClipMenu(null);
@@ -101,7 +101,7 @@ export function useTimelineContextMenus({
       label: track.label,
       trackId: track.id,
       x: viewportWidth ? Math.min(event.clientX, Math.max(12, viewportWidth - 212)) : event.clientX,
-      y: viewportHeight ? Math.min(event.clientY, Math.max(12, viewportHeight - 118)) : event.clientY,
+      y: viewportHeight ? Math.max(12, Math.min(event.clientY, viewportHeight - 160)) : event.clientY,
     });
   }, [audioTrackCount, maxAudioTrackCount, maxVideoTrackCount, minAudioTrackCount, videoTrackCount]);
 

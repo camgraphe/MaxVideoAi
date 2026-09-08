@@ -1,6 +1,6 @@
 import { Link2, Plus, Trash2, Unlink2 } from 'lucide-react';
-import { memo } from 'react';
-import type { MouseEvent, PointerEvent as ReactPointerEvent } from 'react';
+import { memo, useEffect, useRef } from 'react';
+import type { KeyboardEvent, MouseEvent, PointerEvent as ReactPointerEvent } from 'react';
 
 import styles from '../../_styles/timeline-context-menu.module.css';
 import type { WorkspaceTimelineTrack } from '../../_lib/workspace-types';
@@ -50,13 +50,28 @@ export const TimelineContextMenus = memo(function TimelineContextMenus({
   onTrackMenuAction,
   trackMenu,
 }: TimelineContextMenusProps) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!clipMenu && !trackMenu) return;
+    const launcher = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    rootRef.current?.querySelector<HTMLElement>('button:not(:disabled)')?.focus();
+    return () => { if (launcher?.isConnected) launcher.focus(); };
+  }, [clipMenu, trackMenu]);
+  const navigateMenu = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    const buttons = Array.from(rootRef.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)') ?? []);
+    const index = buttons.findIndex((button) => button === document.activeElement);
+    const next = event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1 : (index + (event.key === 'ArrowDown' ? 1 : -1) + buttons.length) % buttons.length;
+    buttons[next]?.focus();
+  };
   const trackLabel = trackMenu ? localizeWorkspaceTimelineTrackLabel(trackMenu.trackId, canvasNodeCopy) : '';
   const trackKindLabel = trackMenu
     ? localizeWorkspaceTimelineTrackKindLabel(trackMenu.kind, canvasNodeCopy).toLocaleLowerCase()
     : '';
 
   return (
-    <>
+    <div ref={rootRef} onKeyDown={navigateMenu}>
       {clipMenu ? (
         <div
           className={styles.timelineContextMenu}
@@ -122,6 +137,6 @@ export const TimelineContextMenus = memo(function TimelineContextMenus({
           </button>
         </div>
       ) : null}
-    </>
+    </div>
   );
 });

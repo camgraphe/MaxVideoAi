@@ -506,6 +506,7 @@ export type WorkspaceNodeData = Record<string, unknown> & {
   referencePreview?: WorkspaceReferencePreview | null;
   validation?: WorkspaceShotValidation;
   pricingEstimate?: WorkspacePricingEstimate;
+  mockGeneration?: boolean;
   onGenerateShot?: (nodeId: string) => void;
   onPatchShot?: (nodeId: string, patch: Partial<WorkspaceShotSettings>) => void;
   onSendOutputToTimeline?: (nodeId: string) => void;
