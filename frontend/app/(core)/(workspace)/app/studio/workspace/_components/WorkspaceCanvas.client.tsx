@@ -840,6 +840,7 @@ function WorkspaceCanvasInner({
         }}
       />
       <CanvasSelectionActions
+        key={selectedNodeIds.slice().sort().join('|')}
         nodes={nodes.filter((node) => selectedNodeIds.includes(node.id))}
         copy={copy.nodes}
         onSettings={onInspectNode}
