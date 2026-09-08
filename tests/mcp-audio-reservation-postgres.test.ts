@@ -48,6 +48,17 @@ test('Audio quotes share real SQL state/ownership and reserve wallet, job and cl
     }
     assert.equal(calls, 0);
   });
+  await t.test('an account without a receipt cannot reserve a positive charge', async () => {
+    const emptyUserId = '00000000-0000-4000-8000-000000000064';
+    await pg.pool.query("INSERT INTO profiles VALUES ($1,'usd')", [emptyUserId]);
+    const reservation = buildAudioRunReservation(prepared, emptyUserId);
+    await assert.rejects(
+      withDbTransaction(executor => createInitialAudioJobInExecutor(executor, reservation.initialJob)),
+      /Insufficient wallet balance/
+    );
+    assert.equal((await pg.pool.query('SELECT count(*)::int AS n FROM app_receipts WHERE user_id=$1', [emptyUserId])).rows[0].n, 0);
+    assert.equal((await pg.pool.query('SELECT count(*)::int AS n FROM app_jobs WHERE user_id=$1', [emptyUserId])).rows[0].n, 0);
+  });
   await t.test('wrong-surface reads and mutations leave Audio and video states intact', async () => {
     const audio = await insert();
     assert.equal(await videoQuotes.getOwnedQuote(owner(audio.quoteId)), null);
@@ -101,6 +112,67 @@ test('Audio quotes share real SQL state/ownership and reserve wallet, job and cl
     const job = (await pg.pool.query('SELECT user_id,engine_id,status,payment_status,settings_snapshot FROM app_jobs WHERE job_id=$1', [first])).rows[0];
     assert.equal(job.user_id, userId); assert.equal(job.engine_id, 'audio-song'); assert.equal(job.payment_status, 'paid_wallet');
     assert.equal(job.settings_snapshot.lyrics, request.settings.lyrics);
+  });
+  await t.test('distinct quotes for one 70-cent account serialize before reserving 45 cents', async () => {
+    const competingUserId = '00000000-0000-4000-8000-000000000063';
+    await pg.pool.query("INSERT INTO profiles VALUES ($1,'usd')", [competingUserId]);
+    await pg.pool.query("INSERT INTO app_receipts(user_id,type,amount_cents,currency) VALUES ($1,'topup',70,'USD')", [competingUserId]);
+    const quotes = await Promise.all([0, 1].map(() => audioQuoteRepository.insertPreparedQuote({
+      userId: competingUserId,
+      oauthClientId,
+      request,
+      requestHash: hashCanonicalAudioRequest(request),
+      catalogRevision: 'audio-wallet-race-v1',
+      pricingSnapshot: prepared.pricingSnapshot,
+      priceCents: 45,
+      currency: 'USD',
+      fundingMode: 'wallet',
+    })));
+    await pg.pool.query(`
+      CREATE FUNCTION hold_competing_audio_charge() RETURNS trigger LANGUAGE plpgsql AS $$
+      BEGIN
+        IF NEW.user_id = '${competingUserId}' AND NEW.type = 'charge' THEN
+          PERFORM pg_sleep(0.2);
+        END IF;
+        RETURN NEW;
+      END;
+      $$;
+      CREATE TRIGGER hold_competing_audio_charge
+      BEFORE INSERT ON app_receipts
+      FOR EACH ROW EXECUTE FUNCTION hold_competing_audio_charge();
+    `);
+    const reserve = (quoteId: string) => withDbTransaction(async executor => {
+      const locked = await audioQuoteRepository.lockOwnedQuote({ quoteId, userId: competingUserId, oauthClientId }, { executor });
+      assert.ok(locked);
+      const reservation = buildAudioRunReservation(prepared, competingUserId);
+      await createInitialAudioJobInExecutor(executor, reservation.initialJob);
+      const claimed = await audioQuoteRepository.claimPreparedQuote({
+        quoteId,
+        userId: competingUserId,
+        oauthClientId,
+        jobId: reservation.initialJob.jobId,
+      }, { executor, claimedAt: locked.databaseNow });
+      assert.ok(claimed);
+      return claimed.jobId;
+    });
+
+    const results = await Promise.allSettled(quotes.map(quote => reserve(quote.quoteId)));
+    await pg.pool.query('DROP TRIGGER hold_competing_audio_charge ON app_receipts; DROP FUNCTION hold_competing_audio_charge()');
+    assert.equal(results.filter(result => result.status === 'fulfilled').length, 1);
+    assert.equal(results.filter(result => result.status === 'rejected').length, 1);
+    assert.match(String((results.find(result => result.status === 'rejected') as PromiseRejectedResult).reason), /Insufficient wallet balance/);
+
+    const ledger = await pg.pool.query(`
+      SELECT
+        count(*) FILTER (WHERE type='charge')::int AS charges,
+        COALESCE(SUM(CASE WHEN type='topup' THEN amount_cents WHEN type='refund' THEN amount_cents WHEN type='charge' THEN -amount_cents ELSE 0 END), 0)::int AS balance
+      FROM app_receipts
+      WHERE user_id=$1
+    `, [competingUserId]);
+    assert.deepEqual(ledger.rows[0], { charges: 1, balance: 25 });
+    assert.equal((await pg.pool.query('SELECT count(*)::int AS n FROM app_jobs WHERE user_id=$1', [competingUserId])).rows[0].n, 1);
+    assert.equal((await pg.pool.query("SELECT count(*)::int AS n FROM mcp_generation_quotes WHERE user_id=$1 AND state='claimed'", [competingUserId])).rows[0].n, 1);
+    assert.equal((await pg.pool.query("SELECT count(*)::int AS n FROM mcp_generation_quotes WHERE user_id=$1 AND state='prepared'", [competingUserId])).rows[0].n, 1);
   });
   await t.test('mixed history uses the actual tool and Audio top-up requires a fresh Audio quote', async () => {
     const rows = await listMcpActivityHistory({ userId, clientLabels: { [oauthClientId]: 'Test assistant' } });

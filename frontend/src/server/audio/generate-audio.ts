@@ -62,9 +62,8 @@ export async function generateAudioRun(params: {
 
 /** Shared provider execution after a committed wallet/job reservation. It never reserves a second charge. */
 export async function executeReservedAudioRun(params: ReservedAudioRun): Promise<AudioGenerateResponse> {
-  const { jobId, initialSettingsSnapshot, initialThumb, pricingSnapshotJson } = params;
-  const { normalized, packConfig, sourceJob, sourceVideoUrl, sourceProbe, durationSec, pricingSnapshot } = params.prepared;
-  const amountCents = pricingSnapshot.totalCents;
+  const { jobId, initialSettingsSnapshot, initialThumb } = params;
+  const { normalized, sourceJob, sourceVideoUrl, sourceProbe, durationSec, pricingSnapshot } = params.prepared;
 
   try {
     await updateAudioJob(jobId, {
@@ -353,21 +352,24 @@ export async function executeReservedAudioRun(params: ReservedAudioRun): Promise
       status: 'failed',
       progress: 0,
       message,
-      paymentStatus: 'refunded_wallet',
+      // A failed job remains visibly charged until exact receipt reconciliation
+      // commits. Existing readers treat this as a recoverable pending refund.
+      paymentStatus: 'paid_wallet',
       settingsSnapshotJson:
         providerFailures && providerFailures.length
           ? buildProviderSnapshot(initialSettingsSnapshot, { failures: providerFailures })
           : JSON.stringify(initialSettingsSnapshot),
     });
-    await refundAudioCharge({
-      userId: params.userId,
-      jobId,
-      amountCents,
-      currency: pricingSnapshot.currency,
-      description: `${packConfig.label} refund`,
-      billingProductKey: packConfig.billingProductKey,
-      pricingSnapshotJson,
-    });
+    try {
+      await refundAudioCharge({ userId: params.userId, jobId });
+    } catch (refundError) {
+      console.error('[audio] wallet refund reconciliation pending', { jobId }, refundError);
+      throw new AudioGenerationError(`${message} Wallet refund reconciliation is pending.`, {
+        status: 502,
+        code: 'audio_refund_reconciliation_pending',
+        providerFailures,
+      });
+    }
 
     if (error instanceof AudioGenerationError) {
       throw error;

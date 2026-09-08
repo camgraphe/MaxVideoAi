@@ -1,4 +1,4 @@
-import { isDatabaseConfigured, query, type QueryExecutor } from '@/lib/db';
+import { isDatabaseConfigured, query, type QueryExecutor, withDbTransaction } from '@/lib/db';
 import { receiptsPriceOnlyEnabled } from '@/lib/env';
 import { getUserPreferredCurrency, normalizeCurrencyCode } from '@/lib/currency';
 import type { Currency } from '@/lib/currency';
@@ -203,6 +203,23 @@ async function reserveWalletChargeWithQueryExecutor(
     const applicationFeeParam = priceOnly ? null : params.applicationFeeCents;
     const vendorAccountParam = priceOnly ? null : params.vendorAccountId;
 
+    // Every funded account has at least one receipt. Its oldest immutable row is
+    // a collision-free, per-user transaction lock shared by every reservation.
+    // Keep this as a separate statement so READ COMMITTED takes a fresh balance
+    // snapshot after a competing reservation commits.
+    const accountLock = await executor.query<{ id: string }>(
+      `SELECT id
+         FROM app_receipts
+        WHERE user_id = $1
+        ORDER BY id
+        LIMIT 1
+        FOR UPDATE`,
+      [params.userId]
+    );
+    if (!accountLock[0]) {
+      return { ok: false, balanceCents: 0 };
+    }
+
     const rows = await executor.query<{
       balance_cents: string | number | null;
       remaining_cents: string | number | null;
@@ -352,14 +369,20 @@ export async function reserveWalletCharge(
   params: ReserveWalletChargeParams,
   options: Omit<ReserveWalletChargeOptions, 'allowMockFallback'> = {}
 ): Promise<ReserveWalletChargeResult> {
-  return reserveWalletChargeWithQueryExecutor(
-    { query },
+  if (!isDatabaseConfigured()) {
+    return reserveWalletChargeWithQueryExecutor({ query }, params, {
+      ...options,
+      allowMockFallback: true,
+    });
+  }
+  return withDbTransaction(executor => reserveWalletChargeWithQueryExecutor(
+    executor,
     params,
     {
       ...options,
       allowMockFallback: true,
     }
-  );
+  ));
 }
 
 export async function reserveWalletChargeInExecutor(

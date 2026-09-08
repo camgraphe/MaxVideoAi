@@ -64,4 +64,26 @@ test('web Audio still reserves once then executes the same runtime, preserving o
   assert.equal(fixture.submitted, 2); assert.equal(fixture.persistCalls, 1);
   assert.deepEqual((await database.pool.query("SELECT type,amount_cents FROM app_receipts WHERE job_id <> $1 AND type IN ('charge','refund') ORDER BY id", [response.jobId])).rows,
     [{ type: 'charge', amount_cents: 45 }, { type: 'refund', amount_cents: 45 }]);
+  await database.pool.query("ALTER TABLE app_receipts ADD CONSTRAINT reject_runner_refund CHECK (type <> 'refund') NOT VALID");
+  const originalConsoleError = console.error;
+  console.error = () => undefined;
+  try {
+    await assert.rejects(
+      runtime.generateAudioRun({ userId, body: {} }),
+      error => error instanceof Error
+        && /Fixture provider failure/.test(error.message)
+        && /refund reconciliation is pending/i.test(error.message)
+    );
+  } finally {
+    console.error = originalConsoleError;
+  }
+  const pendingRefund = (await database.pool.query(`SELECT status,payment_status,message,
+    (SELECT count(*)::int FROM app_receipts r WHERE r.job_id=j.job_id AND r.type='refund') AS refunds
+    FROM app_jobs j WHERE j.job_id <> $1 ORDER BY j.id DESC LIMIT 1`, [response.jobId])).rows[0];
+  assert.deepEqual(pendingRefund, {
+    status: 'failed',
+    payment_status: 'paid_wallet',
+    message: 'Fixture provider failure',
+    refunds: 0,
+  });
 });
