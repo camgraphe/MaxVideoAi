@@ -379,7 +379,7 @@ export function CanvasGuideLayer({
   const reportCanvasProtectedRects = presentation.reportCanvasProtectedRects;
   const reactFlow = useReactFlow<WorkspaceGraphNode, WorkspaceGraphEdge>();
   const [guideMenuOpen, setGuideMenuOpen] = useState(false);
-  const [compactMarkers, setCompactMarkers] = useState(false);
+  const [compactMarkers, setCompactMarkers] = useState(true);
   const [placements, setPlacements] = useState<PlacedCanvasAnnotation[]>([]);
   const [dragPreview, setDragPreview] = useState<{ annotationId: string; position: WorkspaceGuidePoint } | null>(null);
   const calloutRefs = useRef(new Map<string, HTMLElement>());
