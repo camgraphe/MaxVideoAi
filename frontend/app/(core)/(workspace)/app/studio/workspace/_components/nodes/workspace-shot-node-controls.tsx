@@ -122,8 +122,6 @@ export function ShotNodeControls({ data, nodeId }: ShotNodeControlsProps) {
         ))}
       </div>
 
-      <button type="button" className={`${styles.shotOptionsButton} nodrag`} data-canvas-node-inspect-button={nodeId}>{copy.settings}</button>
-
       <div className={styles.shotActionRow}>
         <button
           type="button"

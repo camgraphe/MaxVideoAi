@@ -130,3 +130,15 @@ test('Connections explains separate remaining capacity and restores focus to its
   assert.match(picker, /data-canvas-connections-fallback/);
   assert.match(picker, /data-studio-canvas-shell/);
 });
+
+test('Settings keeps explicit screen-sized, card and keyboard access without a duplicate full-width card row', () => {
+  const canvas = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceCanvas.client.tsx'), 'utf8');
+  const selectionActions = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_components/canvas/CanvasSelectionActions.tsx'), 'utf8');
+  const nodeFrame = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/workspace-node-frame.tsx'), 'utf8');
+  const shotControls = readFileSync(resolve('frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/workspace-shot-node-controls.tsx'), 'utf8');
+
+  assert.match(selectionActions, /data-canvas-selection-settings[\s\S]*onSettings\(node\.id\)/u);
+  assert.match(nodeFrame, /data-canvas-node-inspect-button=\{nodeId\}[\s\S]*aria-label=/u);
+  assert.match(canvas, /event\.key\.toLowerCase\(\) !== 'i'[\s\S]*onInspectNode\(selectedNodeId\)/u);
+  assert.doesNotMatch(shotControls, /shotOptionsButton/u);
+});

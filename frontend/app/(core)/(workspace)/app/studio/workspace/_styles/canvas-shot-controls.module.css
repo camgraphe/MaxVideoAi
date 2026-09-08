@@ -264,4 +264,3 @@
 .shotValidationLine small { grid-column:1/-1; white-space:normal; font-size:11px; }
 .shotToggleRow { height:36px; font-size:11px; }
 .shotToggleButton { min-height:28px; font-size:11px; }
-.shotOptionsButton { display:flex; justify-content:center; min-height:36px; align-items:center; border:1px solid var(--studio-border); border-radius:8px; background:var(--studio-control-bg); color:var(--studio-text); font:inherit; font-size:12px; cursor:pointer; }
