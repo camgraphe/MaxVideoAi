@@ -354,7 +354,7 @@
 .toolbarPopover { background:var(--studio-popover-bg); border-radius:14px; }
 .canvasToolbar { border-radius:16px; background:var(--studio-surface-strong); }
 @media(max-width:760px) { .toolbarSeparator { display:none; } }
-@media(max-height:500px) and (min-width:701px) {
+@media(max-height:500px) and (min-width:621px) {
   .canvasToolbar { left:8px; bottom:8px; width:300px; max-width:300px; flex-wrap:wrap; justify-content:center; gap:2px; transform:none; }
   .toolbarSeparator { display:none; }
 }

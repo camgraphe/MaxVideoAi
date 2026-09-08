@@ -16,7 +16,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 13px;
   border: 1px solid var(--studio-border);
   border-radius: 9px;
@@ -352,5 +352,13 @@
 
   .templateGrid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media(max-height:500px) and (min-width:621px) {
+  .canvasNavigator {
+    right:16px;
+    bottom:8px;
+    left:auto;
   }
 }

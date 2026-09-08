@@ -7,12 +7,12 @@ export function workspaceCanvasFitViewOptions(params: {
   viewportHeight: number;
   viewportWidth: number;
 }): FitViewOptions {
-  if (params.viewportHeight <= 500 && params.viewportWidth > COMPACT_CANVAS_BREAKPOINT) {
+  if (params.viewportHeight <= 500 && params.viewportWidth >= 621) {
     return {
       includeHiddenNodes: false,
       padding: {
         top: '8px',
-        right: `${params.mapExpanded ? 204 : 20}px`,
+        right: '130px',
         bottom: '8px',
         left: '320px',
       },

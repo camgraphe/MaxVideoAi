@@ -420,7 +420,7 @@ export function CanvasMap({
 }) {
   const reactFlow = useReactFlow<WorkspaceGraphNode, WorkspaceGraphEdge>();
   const [isOpen, setIsOpen] = useState(false);
-  useEffect(() => { setIsOpen(!window.matchMedia('(max-width: 600px)').matches); }, []);
+  useEffect(() => { setIsOpen(window.innerWidth > 600 && window.innerHeight > 500); }, []);
   const motionDuration = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 160;
 
   const handleZoomOut = useCallback(
@@ -434,9 +434,11 @@ export function CanvasMap({
   const handleFitView = useCallback(
     (event: ReactMouseEvent<HTMLButtonElement>) => {
       event.stopPropagation();
+      const collapseMapForFit = window.innerWidth <= 600 || window.innerHeight <= 500;
+      if (collapseMapForFit) setIsOpen(false);
       void reactFlow.fitView({
         ...workspaceCanvasFitViewOptions({
-          mapExpanded: isOpen,
+          mapExpanded: collapseMapForFit ? false : isOpen,
           viewportHeight: window.innerHeight,
           viewportWidth: window.innerWidth,
         }),
