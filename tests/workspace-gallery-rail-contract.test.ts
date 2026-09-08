@@ -76,6 +76,19 @@ test('grouped job media action surface does not nest the action menu control', (
   );
 });
 
+test('workspace gallery cards keep their action launcher compact and accessible', () => {
+  const cardSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/components/GroupedJobCard.tsx'),
+    'utf8'
+  );
+
+  assert.match(cardSource, /const isGalleryRailCard = menuVariant === 'gallery' \|\| menuVariant === 'gallery-image'/);
+  assert.match(cardSource, /isGalleryRailCard \? \(\s*<SlidersHorizontal/);
+  assert.match(cardSource, /aria-label=\{actionMenuLabel\}/);
+  assert.match(cardSource, /title=\{actionMenuLabel\}/);
+  assert.match(cardSource, /showCompactMenuButton \? \(\s*<>\s*<span>\{actionMenuLabel\}<\/span>/);
+});
+
 test('Seedance completion persists canonical video outputs before preview enrichment', () => {
   const pollSource = fs.readFileSync(
     path.join(process.cwd(), 'frontend/server/byteplus-poll.ts'),

@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 import clsx from 'clsx';
-import { ChevronDown, Maximize2, Plus } from 'lucide-react';
+import { ChevronDown, Maximize2, Plus, SlidersHorizontal } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { EngineCaps } from '@/types/engines';
 import type { GroupSummary } from '@/types/groups';
@@ -135,8 +135,9 @@ export function GroupedJobCard({
   }, [previewCount]);
   const showMenu = Boolean(onAction) && actionMenu;
   const isCurated = Boolean(hero.job?.curated);
-  const isRailCard = menuVariant === 'gallery' || menuVariant === 'gallery-image' || menuVariant === 'activity';
-  const showCompactMenuButton = menuVariant === 'compact' || isRailCard;
+  const isGalleryRailCard = menuVariant === 'gallery' || menuVariant === 'gallery-image';
+  const isRailCard = isGalleryRailCard || menuVariant === 'activity';
+  const showCompactMenuButton = menuVariant === 'compact' || menuVariant === 'activity';
   const useRailCaption = menuVariant === 'activity' || (isRailCard && !isCurated && !showLibraryCta && !showImageCta && !isImageGroup);
 
   const handleAction = (action: GroupedJobAction) => {
@@ -250,14 +251,20 @@ export function GroupedJobCard({
               setMenuOpen((prev) => !prev);
             }}
             className={clsx(
-              'absolute right-3 top-3 flex h-8 items-center justify-center rounded-full border border-white/70 bg-white/85 text-black/80 shadow-md backdrop-blur hover:bg-white/95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
-              showCompactMenuButton ? 'gap-1.5 px-3 text-[12px] font-semibold' : 'w-8'
+              'absolute right-3 top-3 flex items-center justify-center rounded-full border shadow-md backdrop-blur-md transition-[background-color,border-color,color,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
+              isGalleryRailCard
+                ? 'h-10 w-10 border-white/25 bg-black/45 text-white/90 hover:scale-[1.04] hover:border-white/45 hover:bg-black/65 hover:text-white'
+                : 'h-8 border-white/70 bg-white/85 text-black/80 hover:bg-white/95',
+              showCompactMenuButton ? 'gap-1.5 px-3 text-[12px] font-semibold' : !isGalleryRailCard && 'w-8'
             )}
             aria-haspopup={isRailCard ? 'dialog' : 'menu'}
             aria-expanded={menuOpen}
             aria-label={actionMenuLabel}
+            title={actionMenuLabel}
           >
-            {showCompactMenuButton ? (
+            {isGalleryRailCard ? (
+              <SlidersHorizontal className="h-[18px] w-[18px]" aria-hidden="true" />
+            ) : showCompactMenuButton ? (
               <>
                 <span>{actionMenuLabel}</span>
                 <ChevronDown
