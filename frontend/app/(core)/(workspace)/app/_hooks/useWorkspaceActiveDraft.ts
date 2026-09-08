@@ -170,12 +170,15 @@ export function useWorkspaceActiveDraft(options: WorkspaceActiveDraftOptions) {
         applyWorkspacePreparedSetup(saved, options);
         options.markLegacyReady();
         restored = true;
-      } else
-        loaded = {
+      } else {
+        const rejected: Store = {
           ...loaded,
+          current: null,
           recovery: loaded.current,
           error: engine ? 'invalid' : 'retired',
         };
+        loaded = save(rejected) ? storeRef.current : rejected;
+      }
     }
     storeRef.current = loaded;
     setStore(loaded);

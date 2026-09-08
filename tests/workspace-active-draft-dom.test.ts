@@ -9,7 +9,10 @@ import { useWorkspaceRouteFormState } from '../frontend/app/(core)/(workspace)/a
 import { useWorkspaceAssetState } from '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceAssetState';
 import { useWorkspaceDraftHydration } from '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceDraftHydration';
 import { useWorkspaceInputSchemaState } from '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceInputSchemaState';
-import { workspaceActiveDraftKey } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-active-draft';
+import {
+  decodeWorkspaceActiveDraft,
+  workspaceActiveDraftKey,
+} from '../frontend/app/(core)/(workspace)/app/_lib/workspace-active-draft';
 import { coerceFormState } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers';
 import { serializeWorkspaceModelSetup } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-model-setups';
 import {
@@ -258,6 +261,33 @@ async function mount({
     async retireEngine(id: string) {
       await act(async () => root.unmount());
       engines = engines.filter((e) => e.id !== id);
+      root = createRoot(container);
+      await act(async () => root.render(React.createElement(Fixture)));
+    },
+    async pauseEngine(id: string) {
+      await act(async () => root.unmount());
+      engines = engines.map((engine) =>
+        engine.id === id ? { ...engine, availability: 'paused' as const } : engine,
+      );
+      root = createRoot(container);
+      await act(async () => root.render(React.createElement(Fixture)));
+    },
+    async removeEngineField(id: string, fieldId: string) {
+      await act(async () => root.unmount());
+      engines = engines.map((engine) =>
+        engine.id === id
+          ? {
+              ...engine,
+              inputSchema: engine.inputSchema
+                ? {
+                    ...engine.inputSchema,
+                    required: engine.inputSchema.required?.filter((field) => field.id !== fieldId),
+                    optional: engine.inputSchema.optional?.filter((field) => field.id !== fieldId),
+                  }
+                : engine.inputSchema,
+            }
+          : engine,
+      );
       root = createRoot(container);
       await act(async () => root.render(React.createElement(Fixture)));
     },
@@ -572,17 +602,78 @@ test('explicit job/model requests retain the previous complete setup for Configu
     await view.close();
   }
 });
-test('retired active model remains recoverable and is never restored onto the fallback model', async () => {
+for (const rejected of ['retired', 'paused', 'inapplicable'] as const)
+  test(`${rejected} active model recovery stays removed after remount`, async () => {
+    const view = await mount();
+    try {
+      const engine = allEngines.find((entry) => entry.id === 'seedance-2-0')!;
+      await act(async () => {
+        view.current.setForm(coerceFormState(engine, 't2v', null));
+        view.current.setPrompt(`recover ${rejected}`);
+        view.current.setInputAssets({ image_url: [media('image_url')] });
+      });
+      const expected = snapshot(view);
+      if (rejected === 'retired') await view.retireEngine(expected.form.engineId);
+      else if (rejected === 'paused') await view.pauseEngine(expected.form.engineId);
+      else await view.removeEngineField(expected.form.engineId, 'image_url');
+      assert.equal(view.current.hydration.error, rejected === 'inapplicable' ? 'invalid' : 'retired');
+      assert.deepEqual(view.current.hydration.recoverySetup.setup, expected);
+      assert.deepEqual(view.current.inputAssets, {});
+      const fallback = snapshot(view);
+      await act(async () => view.current.hydration.removeRecovery());
+      assert.equal(view.current.hydration.recoverySetup, null);
+      assert.deepEqual(snapshot(view), fallback);
+      const removed = decodeWorkspaceActiveDraft(
+        view.storage.getItem(workspaceActiveDraftKey('a')),
+        'a',
+      );
+      assert.equal(removed.current, null);
+      assert.equal(removed.recovery, null);
+      await view.remount();
+      assert.equal(view.current.hydration.recoverySetup, null);
+      assert.equal(view.current.prompt, fallback.prompt);
+      assert.deepEqual(snapshot(view).form, fallback.form);
+      assert.deepEqual(view.current.inputAssets, fallback.inputAssets);
+      assert.equal(view.current.negativePrompt, fallback.negativePrompt);
+    } finally {
+      await view.close();
+    }
+  });
+
+test('explicit request keeps displaced recovery distinct and Remove preserves the new current draft', async () => {
   const view = await mount();
   try {
     await act(async () => {
+      view.current.setPrompt('previous active draft');
       view.current.setInputAssets({ image_url: [media('image_url')] });
     });
-    const expected = snapshot(view);
-    await view.retireEngine(expected.form.engineId);
-    assert.equal(view.current.hydration.error, 'retired');
-    assert.deepEqual(view.current.hydration.recoverySetup.setup, expected);
-    assert.deepEqual(view.current.inputAssets, {});
+    const previous = snapshot(view);
+    await view.request('seedance-2-0');
+    assert.deepEqual(view.current.hydration.recoverySetup.setup, previous);
+    await view.remount();
+    assert.equal(view.current.form.engineId, 'seedance-2-0');
+    assert.deepEqual(view.current.hydration.recoverySetup.setup, previous);
+    await act(async () => view.current.setPrompt('new current draft'));
+    const next = snapshot(view);
+    assert.notDeepEqual(next, previous);
+    let stored = decodeWorkspaceActiveDraft(
+      view.storage.getItem(workspaceActiveDraftKey('a')),
+      'a',
+    );
+    assert.deepEqual(stored.recovery?.setup, previous);
+    assert.deepEqual(stored.current?.setup, next);
+    await view.request(null);
+    assert.deepEqual(snapshot(view), next);
+    await act(async () => view.current.hydration.removeRecovery());
+    stored = decodeWorkspaceActiveDraft(
+      view.storage.getItem(workspaceActiveDraftKey('a')),
+      'a',
+    );
+    assert.equal(stored.recovery, null);
+    assert.deepEqual(stored.current?.setup, next);
+    await view.remount();
+    assert.deepEqual(snapshot(view), next);
+    assert.equal(view.current.hydration.recoverySetup, null);
   } finally {
     await view.close();
   }
