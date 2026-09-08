@@ -67,8 +67,22 @@ function OwnedAudioCreationWorkspace({ userId }: { userId: string | null }) {
     } catch { if (stillOwned() && sequence === restoreSequence.current) setNotice(copy.error); }
   }, [copy.error, stillOwned, userId, setResult, router, pathname]);
   const queryJob = params?.get('job');
-  useEffect(() => { if (queryJob && requestedIntent !== 'video') void selectJob(queryJob); }, [queryJob, requestedIntent, selectJob]);
-  const chooseIntent = (next: AudioCreationIntent) => { router.replace(`${pathname}?intent=${next}`, { scroll: false }); setNotice(null); setLibraryOpen(false); };
+  useEffect(() => {
+    if (queryJob && requestedIntent !== 'video') void selectJob(queryJob);
+    return () => { restoreSequence.current++; };
+  }, [queryJob, requestedIntent, selectJob]);
+  const chooseIntent = (next: AudioCreationIntent) => {
+    // Next's native history integration updates useSearchParams without an RSC navigation.
+    // Read the live URL so rapid choices cannot overwrite a newer history entry.
+    const url = new URL(window.location.href);
+    url.searchParams.set('intent', next);
+    url.searchParams.delete('job');
+    url.searchParams.delete('reuse');
+    if (url.href !== window.location.href) window.history.pushState(null, '', url);
+    restoreSequence.current++;
+    setNotice(null);
+    setLibraryOpen(false);
+  };
 
   const generate = async () => {
     if (!stillOwned() || !isCurrentQuote() || !quote || !userId || quote.expiresAt <= Date.now() || submitting.current.has(quote.inputKey)) return;
@@ -111,7 +125,14 @@ function OwnedAudioCreationWorkspace({ userId }: { userId: string | null }) {
     const next = AUDIO_CREATION_INTENTS.find(key => AUDIO_INTENT_PACK[key] === snapshot.pack);
     if (!next) { router.push(`${pathname}?intent=video&job=${encodeURIComponent(result!.jobId)}`); return; }
     // Reuse targets the actual intent before applying the snapshot through the dedicated link.
-    if (next !== intent) { router.replace(`${pathname}?intent=${next}&job=${encodeURIComponent(result!.jobId)}&reuse=1`, { scroll: false }); return; }
+    if (next !== intent) {
+      const url = new URL(window.location.href);
+      url.searchParams.set('intent', next);
+      url.searchParams.set('job', result!.jobId);
+      url.searchParams.set('reuse', '1');
+      window.history.pushState(null, '', url);
+      return;
+    }
     update(audioCreationReusePatch(snapshot, draft, copy.reference));
   };
   // Cross-intent reuse waits for navigation and an owned job read, then applies once.
