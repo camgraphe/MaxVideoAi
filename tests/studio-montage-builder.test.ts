@@ -69,7 +69,7 @@ test('the projects route hides the creator behind the exact server gate and the 
   assert.match(client, /data-studio-montage-remove=\{index\}/);
   assert.match(client, /data-studio-montage-library-error="true"/);
   assert.match(client, /data-studio-montage-library-retry="true"/);
-  assert.match(client, /setLoadAttempt\(\(attempt\) => attempt \+ 1\)/);
+  assert.match(client, /setLoadAttempt\(\(attempt\) => attempt \+ 1\)[\s\S]*dialogRef\.current\?\.focus\(\)/);
   assert.match(client, /\{validationCopy \?[\s\S]*data-studio-montage-validation-error="true"/);
   assert.match(client, /\{loadError \?[\s\S]*data-studio-montage-library-error="true"/);
 });

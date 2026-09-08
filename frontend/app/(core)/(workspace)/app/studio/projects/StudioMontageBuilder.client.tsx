@@ -122,6 +122,10 @@ function StudioMontageDialog({ copy, idempotencyKeys, onClose }: {
     setClips((current) => retimeStudioMontageClips(current, settings.fps, fps));
     setSettings((current) => ({ ...current, fps }));
   };
+  const retryLibrary = () => {
+    setLoadAttempt((attempt) => attempt + 1);
+    window.setTimeout(() => dialogRef.current?.focus(), 0);
+  };
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -170,7 +174,7 @@ function StudioMontageDialog({ copy, idempotencyKeys, onClose }: {
               <label><span>{copy.audio}</span><select value={settings.audioMode} onChange={(event) => setSettings((current) => ({ ...current, audioMode: event.target.value as MontageSettings['audioMode'] }))}><option value="preserve">{copy.preserveAudio}</option><option value="mute">{copy.muteAudio}</option></select></label>
             </div>
             <section className={styles.montageLibrary} aria-labelledby="studio-montage-library"><h3 id="studio-montage-library">{copy.library}</h3>
-              {loadError ? <div className={styles.deleteWarning} role="alert" data-studio-montage-library-error="true"><span>{loadError}</span><button type="button" onClick={() => setLoadAttempt((attempt) => attempt + 1)} data-studio-montage-library-retry="true">{copy.retryLibrary}</button></div>
+              {loadError ? <div className={styles.deleteWarning} role="alert" data-studio-montage-library-error="true"><span>{loadError}</span><button type="button" onClick={retryLibrary} data-studio-montage-library-retry="true">{copy.retryLibrary}</button></div>
                 : loading ? <p>{copy.loading}</p> : assets.length ? <div className={styles.montageAssetList}>{assets.map((choice) => (
                 <article key={choice.key} data-studio-montage-library-asset={choice.eligible?.assetId ?? choice.key} data-studio-montage-eligible={choice.eligible ? 'true' : 'false'}>{choice.thumbnailUrl ? <img src={choice.thumbnailUrl} alt="" /> : <span><Film size={18} /></span>}<strong>{choice.name}</strong><small>{choice.eligible ? `${choice.eligible.durationSec.toFixed(2)}s` : copy.ineligible}</small>
                   <button type="button" aria-label={`${choice.eligible ? copy.add : copy.ineligible}: ${choice.name}`} onClick={() => choice.eligible && addClip(choice.eligible)} disabled={!choice.eligible || clips.length >= MONTAGE_MAX_CLIPS} data-studio-montage-add={choice.eligible?.assetId}>{choice.eligible ? copy.add : copy.ineligible}</button>
