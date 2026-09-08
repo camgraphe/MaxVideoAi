@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { startDisposablePostgres, type DisposablePostgres } from './disposable-postgres';
-import { startStudioAuthFixture } from './studio-auth-fixture';
+import { startStudioAuthFixture, STUDIO_FIXTURE_OWNERS } from './studio-auth-fixture';
 import { STUDIO_PRIVATE_STORAGE_ENV } from './studio-private-storage-fixture';
 
 async function freeLoopbackPort(): Promise<number> {
@@ -94,6 +94,19 @@ export async function startStudioIntegrationRuntime(options: {
     assert.equal(settings.rows[0].sockets, socket);
     assert.equal(settings.rows[0].directory, socket!.replace(/\/socket$/, '/data'));
     await options.initializeDatabase(database);
+    await database.pool.query(`
+      CREATE TABLE IF NOT EXISTS user_roles (
+        user_id text NOT NULL,
+        role text NOT NULL,
+        PRIMARY KEY (user_id, role)
+      )
+    `);
+    await database.pool.query(`
+      INSERT INTO user_roles (user_id, role)
+      SELECT owner_id, 'admin'
+      FROM unnest($1::text[]) AS owner_id
+      ON CONFLICT DO NOTHING
+    `, [[...STUDIO_FIXTURE_OWNERS]]);
     await archiveSnapshot(root, temporaryRoot, revision);
     const port = await freeLoopbackPort();
     const origin = `http://127.0.0.1:${port}`;

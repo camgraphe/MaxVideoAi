@@ -525,9 +525,6 @@ test('connected Studio persists ordered MCP and UI montages with private playbac
         });
         await creator.page.goto(`${runtime.browserOrigin}/app/studio/projects`, { waitUntil: 'domcontentloaded' });
         await creator.page.getByRole('button', { name: 'Reject all', exact: true }).click();
-        await creator.page.getByRole('button', { name: 'MaxVideoAI Menu', exact: true }).click();
-        await creator.page.getByRole('button', { name: 'Switch to dark theme', exact: true }).click();
-        await creator.page.getByRole('button', { name: 'Close ×', exact: true }).click();
         await expect(creator.page.locator('html')).toHaveAttribute('data-theme', 'dark');
         const open = creator.page.locator('[data-studio-montage-open="true"]');
         await expect(open).toBeVisible();
@@ -536,10 +533,10 @@ test('connected Studio persists ordered MCP and UI montages with private playbac
         await expect(dialog).toBeVisible();
         await expect(dialog.locator('[data-studio-montage-validation-error="true"]')).toBeVisible();
         await expect(dialog.locator('[data-studio-montage-title-input="true"]')).toBeFocused();
-        await expect(dialog.locator('[data-studio-montage-library-error="true"][role="alert"]')).toContainText('The video library could not be loaded.');
+        await expect(dialog.locator('[data-studio-montage-library-error="true"][role="alert"]')).toContainText('Media videos could not be loaded.');
         await dialog.locator('[data-studio-montage-title-input="true"]').fill('Preserved during library retry');
         await dialog.getByRole('combobox', { name: 'Frame rate', exact: true }).selectOption('30');
-        await dialog.getByRole('button', { name: 'Retry video library', exact: true }).click();
+        await dialog.getByRole('button', { name: 'Retry Media videos', exact: true }).click();
         await expect(dialog.locator('[data-studio-montage-add]')).toHaveCount(2);
         await expect(dialog.locator('[data-studio-montage-library-error="true"]')).toHaveCount(0);
         await expect(dialog.locator('[data-studio-montage-title-input="true"]')).toHaveValue('Preserved during library retry');
