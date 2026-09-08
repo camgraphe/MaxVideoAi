@@ -5,10 +5,10 @@ import { expect } from '@playwright/test';
 import { startStudioIntegrationRuntime } from './helpers/studio-integration-runtime';
 import { startStudioConnectedBrowserFixture } from './helpers/studio-connected-browser-fixture';
 import { STUDIO_FIXTURE_OWNERS } from './helpers/studio-auth-fixture';
-import { initializeStudioConnectedFixture, STUDIO_CONNECTED_MONTAGE_INPUT } from './helpers/studio-connected-fixture-data';
+import { initializeStudioConnectedFixture, STUDIO_CONNECTED_ASSET_IDS, STUDIO_CONNECTED_MONTAGE_INPUT } from './helpers/studio-connected-fixture-data';
 import { postStudioMcpRequest, readStudioMcpResponse } from './helpers/studio-mcp-http-fixture';
 
-test('fresh authenticated Studio opens the MCP-persisted montage, decodes private media and reopens a server-acknowledged edit', { timeout: 180_000 }, async (t) => {
+test('connected Studio persists ordered MCP and UI montages with private playback and revision-safe editing', { timeout: 240_000 }, async (t) => {
   const runtime = await startStudioIntegrationRuntime({
     mcp: { studioMontageCreation: true }, privateStorage: true,
     initializeDatabase: initializeStudioConnectedFixture,
@@ -255,6 +255,124 @@ test('fresh authenticated Studio opens the MCP-persisted montage, decodes privat
       assert.equal(browserFixture.readPrivateRequests().slice(privateBeforeForeign).some((entry) => entry.status === 200 || entry.status === 206), false);
       assert.deepEqual(forbidden.errors, []);
     } finally { await forbidden.close(); }
+
+    await t.test('a fresh context renews a retained private clip after its bin entry was removed', async () => {
+    // The real removal contract keeps clips when their bin entry is removed.
+    // Persist that state via CAS, then require a fresh reader to request access
+    // from the live timeline ref, with no transient URL seeded in localStorage.
+    const workspaceEndpoint = `${runtime.origin}/api/studio/projects/${montage.projectId}/workspace`;
+    const aggregateResponse = await fetch(workspaceEndpoint, { headers: { Authorization: `Bearer ${session.access_token}` }, signal: AbortSignal.timeout(30_000) });
+    assert.equal(aggregateResponse.status, 200);
+    const binAggregate = await aggregateResponse.json();
+    const retainedTimelineSnapshot = {
+      name: binAggregate.project.name, canvasTemplateId: binAggregate.project.canvasTemplateId, settings: binAggregate.project.settings,
+      workspaceState: {
+        ...binAggregate.project.workspaceState,
+        projectAssets: binAggregate.project.workspaceState.projectAssets.filter((asset: { ref: { assetId: string } }) => asset.ref.assetId !== STUDIO_CONNECTED_ASSET_IDS.b),
+        sequences: binAggregate.sequences.map((sequence: { id: string; name: string; settings: unknown; timelineState: Record<string, unknown> }) => ({
+          id: sequence.id, name: sequence.name, projectSettings: sequence.settings, ...sequence.timelineState,
+        })),
+      },
+    };
+    const binRemoval = await fetch(workspaceEndpoint, {
+      method: 'PUT', headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ expectedRevision: binAggregate.project.revision, snapshot: retainedTimelineSnapshot }),
+      signal: AbortSignal.timeout(30_000),
+    });
+    assert.equal(binRemoval.status, 200, (await binRemoval.clone().text()).slice(0, 1000));
+    const withoutBin = await openFresh();
+    try {
+      const retainedVideo = withoutBin.page.locator('video[data-playback-item-id="montage-clip-01"]');
+      await expect(retainedVideo, 'A retained private clip must mount from its live timeline reference after reopening without its bin entry.').toHaveCount(1);
+      await expect.poll(() => retainedVideo.evaluate((element) => (element as HTMLVideoElement).readyState)).toBeGreaterThanOrEqual(2);
+      assert.deepEqual(withoutBin.errors, []);
+    } catch (error) {
+      await withoutBin.page.screenshot({ path: 'output/playwright/studio-connected/retained-clip-failure.png', fullPage: true }).catch(() => undefined);
+      throw error;
+    } finally { await withoutBin.close(); }
+    });
+
+    await t.test('mobile keyboard creation saves the exact caller-ordered clips through the shared command', async () => {
+    // UI creation consumes an explicit shared-library listing fixture; the listing
+    // owner is outside this minimal SQL schema. Studio command/Auth/resolution and
+    // every project/sequence/receipt write remain the real routes and database.
+    const creator = await prepareFresh();
+    try {
+      await creator.page.setViewportSize({ width: 390, height: 844 });
+      await creator.page.emulateMedia({ reducedMotion: 'reduce', colorScheme: 'dark' });
+      const library = await runtime.database.pool.query(`SELECT public_id, kind, url, mime_type, metadata
+        FROM media_assets WHERE user_id=$1 ORDER BY public_id`, [STUDIO_FIXTURE_OWNERS[0]]);
+      await creator.page.route(`${runtime.browserOrigin}/api/media-library/assets?**`, (route) => route.fulfill({ json: {
+        ok: true, hasMore: false, nextCursor: null,
+        assets: library.rows.map((asset) => ({
+          id: asset.public_id, ref: { type: 'asset', assetId: asset.public_id, kind: asset.kind },
+          kind: asset.kind, url: asset.url, mime: asset.mime_type, mediaFacts: asset.metadata.mediaFacts,
+        })),
+      } }));
+      await creator.page.goto(`${runtime.browserOrigin}/app/studio/projects`, { waitUntil: 'domcontentloaded' });
+      await creator.page.getByRole('button', { name: 'Reject all', exact: true }).click();
+      const open = creator.page.locator('[data-studio-montage-open="true"]');
+      await expect(open).toBeVisible();
+      await open.click();
+      const dialog = creator.page.locator('[data-studio-montage-dialog="true"]');
+      await expect(dialog).toBeVisible();
+      await expect(dialog.locator('[data-studio-montage-title-input="true"]')).toBeFocused();
+      await creator.page.keyboard.press('Escape');
+      await expect(dialog).toHaveCount(0);
+      await expect(open).toBeFocused();
+      await open.click();
+      await expect(dialog.locator('[data-studio-montage-add]')).toHaveCount(2);
+      await expect(dialog.locator(`[data-studio-montage-add="${STUDIO_CONNECTED_ASSET_IDS.unmeasured}"]`)).toHaveCount(0);
+      await dialog.locator('[data-studio-montage-title-input="true"]').fill('Ordered from the Studio interface');
+      await dialog.getByLabel('Frame rate', { exact: true }).selectOption('30');
+      await expect(dialog.locator('[data-studio-montage-submit="true"]')).toBeDisabled();
+      for (const assetId of [STUDIO_CONNECTED_ASSET_IDS.a, STUDIO_CONNECTED_ASSET_IDS.b, STUDIO_CONNECTED_ASSET_IDS.a]) {
+        await dialog.locator(`[data-studio-montage-add="${assetId}"]`).click();
+      }
+      const ordered = dialog.locator('[data-studio-montage-clip]');
+      await expect(ordered).toHaveCount(3);
+      await ordered.nth(2).getByRole('button', { name: 'Remove 3', exact: true }).click();
+      await expect(ordered).toHaveCount(2);
+      await dialog.locator('[data-studio-montage-move-up="1"]').click();
+      await expect(ordered.nth(0)).toHaveAttribute('data-studio-montage-asset-id', STUDIO_CONNECTED_ASSET_IDS.b);
+      await dialog.locator('[data-studio-montage-move-down="0"]').focus();
+      await creator.page.keyboard.press('Enter');
+      await expect(ordered.nth(0)).toHaveAttribute('data-studio-montage-asset-id', STUDIO_CONNECTED_ASSET_IDS.a);
+      await dialog.locator('[data-studio-montage-move-up="1"]').focus();
+      await creator.page.keyboard.press('Enter');
+      for (const [index, clip] of STUDIO_CONNECTED_MONTAGE_INPUT.clips.entries()) {
+        await ordered.nth(index).getByLabel('Source in frame', { exact: true }).fill(String(clip.sourceInFrame));
+        await ordered.nth(index).getByLabel('Duration in frames', { exact: true }).fill(String(clip.durationFrames));
+      }
+      const dialogBox = await dialog.boundingBox();
+      assert.ok(dialogBox && dialogBox.x >= 0 && dialogBox.width <= 390 && dialogBox.y >= 0 && dialogBox.y + dialogBox.height <= 845, 'The ordered creation dialog must fit the mobile viewport.');
+      await creator.page.screenshot({ path: 'output/playwright/studio-connected/mobile-ordered-creation.png', fullPage: true });
+      const creation = creator.page.waitForResponse((response) => response.url() === `${runtime.browserOrigin}/api/studio/montages` && response.request().method() === 'POST');
+      void creation.catch(() => undefined);
+      await dialog.locator('[data-studio-montage-submit="true"]').click();
+      const response = await creation;
+      assert.equal(response.status(), 200, (await response.text()).slice(0, 1000));
+      const input = response.request().postDataJSON();
+      assert.deepEqual(input.clips, STUDIO_CONNECTED_MONTAGE_INPUT.clips);
+      assert.deepEqual(input.settings, STUDIO_CONNECTED_MONTAGE_INPUT.settings);
+      assert.match(input.idempotencyKey, /^studio-ui-/u);
+      const uiMontage = (await response.json()).montage;
+      assert.equal(uiMontage.persisted, true);
+      assert.notEqual(uiMontage.projectId, montage.projectId);
+      await expect(creator.page).toHaveURL(`${runtime.browserOrigin}${uiMontage.studioUrl}`);
+      await expect(creator.page.locator('[data-timeline-item]')).toHaveCount(2);
+      const uiReceipt = await runtime.database.pool.query('SELECT request_payload FROM studio_project_commands WHERE project_id=$1 AND user_id=$2', [uiMontage.projectId, STUDIO_FIXTURE_OWNERS[0]]);
+      assert.deepEqual(uiReceipt.rows.map((row) => row.request_payload), [input]);
+      const uiSequence = await runtime.database.pool.query('SELECT timeline_state FROM studio_sequences WHERE id=$1 AND project_id=$2', [uiMontage.sequenceId, uiMontage.projectId]);
+      assert.deepEqual(uiSequence.rows[0].timeline_state.timelineItems.map((item: { montageSource: { assetId: string } }) => item.montageSource.assetId), [STUDIO_CONNECTED_ASSET_IDS.b, STUDIO_CONNECTED_ASSET_IDS.a]);
+      assert.deepEqual(creator.errors, []);
+      assert.equal((await runtime.database.pool.query('SELECT count(*)::int AS count FROM studio_project_commands')).rows[0].count, 2);
+    } catch (error) {
+      await creator.page.screenshot({ path: 'output/playwright/studio-connected/creation-failure.png', fullPage: true }).catch(() => undefined);
+      t.diagnostic(`UI creation: ${JSON.stringify(creator.errors)}; runtime tail: ${runtime.readLogs().slice(-2000)}`);
+      throw error;
+    } finally { await creator.close(); }
+    });
   } finally {
     try { await browserFixture?.close(); } finally { await runtime.close(); }
   }

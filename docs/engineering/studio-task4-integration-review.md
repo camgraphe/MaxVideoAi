@@ -121,3 +121,16 @@ La re-revue corrective indépendante de `de02e5825` et `c774f6a6e` est **Approve
 Le correctif client est une chaîne additive : `704c9d974` stabilise le timestamp de séquence et ajoute le fingerprint canonique ; `909e37f60` branche son consommateur, omis du premier commit puis ajouté sans réécriture. Un passage sur704 atteint déjà zéro-write de simple ouverture, vraie édition du premier onglet persistée,409 attendu du second et brouillon local conservé. Il révèle ensuite le bouton Recharger non cliquable : le statut réutilise un toast `pointer-events:none`. Le correctif de ce statut interactif et la protection du baseline contre un ACK tardif d’un ancien contexte sont demandés ; le parcours final reste ouvert.
 
 `4a72b3d04` déplace l’effet consommateur `onSaved` derrière le guard de queue disposed ; `139bf2e01` rend le seul statut de conflit interactif, bouton44px et focus visible, sans changer les toasts ordinaires. Navigateur réel complet **1/1 GREEN,36,31s**, snapshot `db6560345` : toute la chaîne de lecture privée, absence d’autosave de simple ouverture, édition ACK, conflit/brouillon/rechargement, réouverture neuve et refus d’un autre compte passe. Capture inspectée. Ce sous-lot client attend sa revue indépendante ; l’entrée UI de nouvelle création reste distincte et non encore qualifiée.
+
+## Revue client : quatre chemins supplémentaires à corriger
+
+La revue indépendante Sol high du sous-lot client figé à `139bf2e01` conclut **Needs changes**, sans remettre en cause l’Approved serveur/MCP. Elle demande :
+
+1. Découvrir les références privées du bin **et** de la timeline active et de toutes les séquences vivantes ; le serveur accepte déjà ces références mais le client ne les demande pas toutes.
+2. Attendre le résultat réel de sauvegarde avant d’annoncer un succès et de quitter. Conflit, session expirée ou panne doivent conserver l’éditeur et rendre l’état local/non enregistré visible, y compris après autosave.
+3. Lire et proposer la récupération du brouillon connecté partitionné par compte/projet, au lieu de le réécrire à partir du serveur dès la réouverture. Ne pas rebaser silencieusement un ancien brouillon sur une nouvelle révision.
+4. Purger immédiatement le contenu et les URL privées déjà hydratés lors d’un changement de compte sans démontage ; disposer les seules requêtes tardives ne retire pas l’ancien contenu affiché.
+
+La racine a reproduit le premier cas dans un navigateur vierge sur `7caa7cea2` : retrait de B du bin par vrai PUT CAS, maintien des deux clips, fermeture/réouverture ; le clip B reste en DOM mais aucun élément vidéo ne monte (**RED, 44,84s**). Capture `retained-clip-failure.png` inspectée. Les assertions de création UI ajoutées n’étaient pas atteintes dans ce passage ; elles ont maintenant leur sous-test séparé.
+
+Le builder UI est figé dans `89af69248`, dix chemins Studio/tests uniquement. Ses quatre tests purs, l’ensemble ciblé43/43 et TypeScript sont rapportés verts par le writer ; revue UI indépendante et preuve mobile vers vrai reçu SQL en cours. Il utilise la même commande serveur que MCP, n’affiche pas son déclencheur quand la gate est false, et ne change pas la publication MCP. La chaîne finale d’intégration reste suspendue à ces correctifs et vérifications.
